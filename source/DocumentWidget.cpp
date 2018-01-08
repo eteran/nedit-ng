@@ -1150,7 +1150,7 @@ void DocumentWidget::SetTabDist(int tabDist) {
     if (buffer_->BufGetTabDist() != tabDist) {
         int64_t saveCursorPositions[MAX_PANES + 1];
         int64_t saveVScrollPositions[MAX_PANES + 1];
-        int saveHScrollPositions[MAX_PANES + 1];
+        int64_t saveHScrollPositions[MAX_PANES + 1];
 
         ignoreModify_ = true;
 
@@ -1784,7 +1784,7 @@ bool DocumentWidget::CheckReadOnly() const {
 void DocumentWidget::MakeSelectionVisible(TextArea *area) {
 
 	bool isRect;
-    int horizOffset;
+    int64_t horizOffset;
     int64_t left;
     int64_t leftX;
     int64_t rectEnd;
@@ -2218,7 +2218,7 @@ void DocumentWidget::RevertToSaved() {
     if(auto win = MainWindow::fromDocument(this)) {
         int64_t insertPositions[MAX_PANES];
         int64_t topLines[MAX_PANES];
-        int horizOffsets[MAX_PANES];
+        int64_t horizOffsets[MAX_PANES];
         int openFlags = 0;
 
         // Can't revert untitled windows
@@ -2682,7 +2682,7 @@ void DocumentWidget::addWrapNewlines() {
 
     int64_t insertPositions[MAX_PANES];
     int64_t topLines[MAX_PANES];
-    int horizOffset;
+    int64_t horizOffset;
 
     const std::vector<TextArea *> textAreas = textPanes();
     const size_t paneCount = textAreas.size();

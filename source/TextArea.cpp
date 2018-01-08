@@ -783,7 +783,7 @@ void TextArea::autoScrollTimerTimeout() {
 
     QFontMetrics fm(font_);
     int64_t topLineNum;
-	int horizOffset;
+    int64_t horizOffset;
     int64_t cursorX;
     int64_t y;
     int fontWidth    = fm.maxWidth();
@@ -2569,10 +2569,10 @@ void TextArea::findLineEnd(int64_t startPos, int64_t startPosIsLineStart, int64_
  * @return
  */
 bool TextArea::updateHScrollBarRange() {
-	int maxWidth = 0;
-	int sliderMax;
+    int64_t maxWidth = 0;
+    int64_t sliderMax;
 	int sliderWidth;
-	int origHOffset = horizOffset_;
+    int64_t origHOffset = horizOffset_;
 
 	if(!horizontalScrollBar()->isVisible()) {
         return false;
@@ -2587,16 +2587,16 @@ bool TextArea::updateHScrollBarRange() {
 	   in view, scroll to the left to bring the end of the longest line to
 	   the right margin */
     if (maxWidth < rect_.width() + horizOffset_ && horizOffset_ > 0)
-        horizOffset_ = std::max(0, maxWidth - rect_.width());
+        horizOffset_ = std::max<int64_t>(0, maxWidth - rect_.width());
 
 	// Readjust the scroll bar
     sliderWidth = rect_.width();
-	sliderMax   = std::max(maxWidth, sliderWidth + horizOffset_);
+    sliderMax   = std::max(maxWidth, sliderWidth + horizOffset_);
 
 	horizontalScrollBar()->setMinimum(0);
-    horizontalScrollBar()->setMaximum(std::max(sliderMax - rect_.width(), 0));
+    horizontalScrollBar()->setMaximum(static_cast<int>(std::max<int64_t>(sliderMax - rect_.width(), 0)));
     horizontalScrollBar()->setPageStep(std::max(rect_.width() - 100, 10));
-	horizontalScrollBar()->setValue(horizOffset_);
+    horizontalScrollBar()->setValue(static_cast<int>(horizOffset_));
 
     // Return true if scroll position was changed
 	return origHOffset != horizOffset_;
@@ -2662,10 +2662,10 @@ int64_t TextArea::posToVisibleLineNum(int64_t pos, int64_t *lineNum) const {
  */
 void TextArea::blankCursorProtrusions() {
 
-	int x;
-	int width;
-    int cursorX    = cursor_.x();
-    int cursorY    = cursor_.y();
+    int64_t x;
+    int64_t width;
+    int64_t cursorX = cursor_.x();
+    int64_t cursorY = cursor_.y();
     QFontMetrics fm(font_);
 	int fontWidth  = fm.maxWidth();
     int fontHeight = ascent_ + descent_;
@@ -2683,7 +2683,11 @@ void TextArea::blankCursorProtrusions() {
 		return;
 	}
 
-    viewport()->update(QRect(x, cursorY, width, fontHeight));
+    viewport()->update(QRect(
+                           static_cast<int>(x),
+                           static_cast<int>(cursorY),
+                           static_cast<int>(width),
+                           fontHeight));
 }
 
 /**
@@ -2692,9 +2696,9 @@ void TextArea::blankCursorProtrusions() {
  * @param visLineNum
  * @return
  */
-int TextArea::measureVisLine(int visLineNum) const {
+int64_t TextArea::measureVisLine(int visLineNum) const {
 
-    int width                  = 0;
+    int64_t width              = 0;
     int charCount              = 0;
     int64_t lineLen            = visLineLength(visLineNum);
     const int64_t lineStartPos = lineStarts_[visLineNum];
@@ -3141,7 +3145,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   this line.  Also check for the cases which are not caught as the
 	   line is scanned above: when the cursor appears at the very end
 	   of the redisplayed section. */
-	const int y_orig = cursor_.y();
+    const int64_t y_orig = cursor_.y();
 	if (cursorOn_) {
 		if (hasCursor) {
 			drawCursor(painter, cursorX, y);
@@ -3638,7 +3642,7 @@ int64_t TextArea::TextDCountLines(int64_t startPos, int64_t endPos, bool startPo
  * @param updateVScrollBar
  * @param updateHScrollBar
  */
-void TextArea::setScroll(int64_t topLineNum, int horizOffset, bool updateVScrollBar, bool updateHScrollBar) {
+void TextArea::setScroll(int64_t topLineNum, int64_t horizOffset, bool updateVScrollBar, bool updateHScrollBar) {
 
 	/* Do nothing if scroll position hasn't actually changed or there's no
 	   window to draw in yet */
@@ -3783,7 +3787,7 @@ void TextArea::offsetLineStarts(int64_t newTopLineNum) {
 ** Set the scroll position of the text display vertically by line number and
 ** horizontally by pixel offset from the left margin
 */
-void TextArea::TextDSetScroll(int64_t topLineNum, int horizOffset) {
+void TextArea::TextDSetScroll(int64_t topLineNum, int64_t horizOffset) {
 
 	int vPadding = P_cursorVPadding;
 
@@ -3796,7 +3800,7 @@ void TextArea::TextDSetScroll(int64_t topLineNum, int horizOffset) {
 
 	int sliderMax = horizontalScrollBar()->maximum();
 
-    horizOffset = qBound(0, horizOffset, sliderMax);
+    horizOffset = qBound<int64_t>(0, horizOffset, sliderMax);
 
 	setScroll(topLineNum, horizOffset, true, true);
 }
@@ -3877,7 +3881,7 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
         break;
     }
 
-    QPoint abs = mapToGlobal(QPoint(rel_x, rel_y));
+    QPoint abs = mapToGlobal(QPoint(static_cast<int>(rel_x), static_cast<int>(rel_y)));
 
 	// If we're not in strict mode try to keep the tip on-screen
     if (calltip_.alignMode == TipAlignStrict::Sloppy) {
@@ -4203,7 +4207,7 @@ void TextArea::checkAutoShowInsertPos() {
 ** the overall performance of the text display.
 */
 void TextArea::TextDMakeInsertPosVisible() {
-	int hOffset;
+    int64_t hOffset;
     int64_t topLine;
     int64_t x;
     int64_t y;
@@ -5761,7 +5765,7 @@ int64_t TextArea::xyToPos(int64_t x, int64_t y, PositionTypes posType) const {
 
 	// Find the visible line number corresponding to the y coordinate
     int fontHeight = ascent_ + descent_;
-    int visLineNum = (y - rect_.top()) / fontHeight;
+    int64_t visLineNum = (y - rect_.top()) / fontHeight;
 
     if (visLineNum < 0) {
 		return firstChar_;
@@ -6123,7 +6127,7 @@ void TextArea::mousePanAP(QMouseEvent *event, EventFlags flags) {
 
     int lineHeight = ascent_ + descent_;
     int64_t topLineNum;
-	int horizOffset;
+    int64_t horizOffset;
 
     switch(dragState_) {
     case MOUSE_PAN:
@@ -6147,7 +6151,7 @@ void TextArea::mousePanAP(QMouseEvent *event, EventFlags flags) {
 ** Get the current scroll position for the text display, in terms of line
 ** number of the top line and horizontal pixel offset from the left margin
 */
-void TextArea::TextDGetScroll(int64_t *topLineNum, int *horizOffset) {
+void TextArea::TextDGetScroll(int64_t *topLineNum, int64_t *horizOffset) {
 	*topLineNum = topLineNum_;
 	*horizOffset = horizOffset_;
 }
@@ -7243,7 +7247,7 @@ void TextArea::pageLeftAP(EventFlags flags) {
 			ringIfNecessary(silent);
 			return;
 		}
-		int horizOffset = std::max(0, horizOffset_ - rect_.width());
+        int horizOffset = std::max<int64_t>(0, horizOffset_ - rect_.width());
 		TextDSetScroll(topLineNum_, horizOffset);
 	} else {
         int64_t lineStartPos = buffer_->BufStartOfLine(insertPos);
@@ -7254,7 +7258,7 @@ void TextArea::pageLeftAP(EventFlags flags) {
         int64_t indent = buffer_->BufCountDispChars(lineStartPos, insertPos);
         int64_t pos = buffer_->BufCountForwardDispChars(lineStartPos, std::max<int64_t>(0, indent - rect_.width() / maxCharWidth));
 		TextDSetInsertPosition(pos);
-        TextDSetScroll(topLineNum_, std::max(0, horizOffset_ - rect_.width()));
+        TextDSetScroll(topLineNum_, std::max<int64_t>(0, horizOffset_ - rect_.width()));
 		checkMoveSelectionChange(flags, insertPos);
 		checkAutoShowInsertPos();
 		callCursorMovementCBs();
@@ -7266,15 +7270,15 @@ void TextArea::pageRightAP(EventFlags flags) {
     EMIT_EVENT_0("page_right");
 
     QFontMetrics fm(font_);
-    int64_t insertPos  = cursorPos_;
-	int maxCharWidth   = fm.maxWidth();
-	int oldHorizOffset = horizOffset_;
+    int64_t insertPos      = cursorPos_;
+    int maxCharWidth       = fm.maxWidth();
+    int64_t oldHorizOffset = horizOffset_;
 	bool silent = flags & NoBellFlag;
 
 	cancelDrag();
 	if (flags & ScrollbarFlag) {
-        const int sliderMax   = horizontalScrollBar()->maximum();
-        const int horizOffset = std::min(horizOffset_ + rect_.width(), sliderMax);
+        const int sliderMax    = horizontalScrollBar()->maximum();
+        const auto horizOffset = std::min<int64_t>(horizOffset_ + rect_.width(), sliderMax);
 
 		if (horizOffset_ == horizOffset) {
 			ringIfNecessary(silent);
@@ -8146,7 +8150,7 @@ void TextArea::scrollUpAP(int count, ScrollUnits units, EventFlags flags) {
     EMIT_EVENT_0("scroll_up");
 
     int64_t topLineNum;
-    int horizOffset;
+    int64_t horizOffset;
     int nLines = count;
 
     if(units == ScrollUnits::Pages) {
@@ -8162,7 +8166,7 @@ void TextArea::scrollDownAP(int count, ScrollUnits units, EventFlags flags) {
     EMIT_EVENT_0("scroll_down");
 
     int64_t topLineNum;
-    int horizOffset;
+    int64_t horizOffset;
     int nLines = count;
 
     if(units == ScrollUnits::Pages) {
@@ -8189,7 +8193,7 @@ void TextArea::scrollToLineAP(int line, EventFlags flags) {
     EMIT_EVENT_0("scroll_to_line");
 
     int64_t topLineNum;
-    int horizOffset;
+    int64_t horizOffset;
 
     TextDGetScroll(&topLineNum, &horizOffset);
     TextDSetScroll(line, horizOffset);

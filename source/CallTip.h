@@ -11,7 +11,7 @@ enum class TipAlignStrict { Sloppy, Strict };
 struct CallTip {
     int ID;                   //  ID of displayed calltip.  Equals zero if none is displayed.
     bool anchored;            //  Is it anchored to a position
-    int pos;                  //  Position tip is anchored to
+    int64_t pos;              //  Position tip is anchored to
     TipHAlignMode hAlign;     //  horizontal alignment
     TipVAlignMode vAlign;     //  vertical alignment
     TipAlignStrict alignMode; //  Strict or sloppy alignment

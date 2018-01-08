@@ -247,12 +247,12 @@ public:
     void TextDXYToUnconstrainedPosition(const Point &coord, int64_t *row, int64_t *column) const;
     int64_t TextDXYToPosition(const Point &coord) const;
     int64_t TextDOffsetWrappedColumn(int64_t row, int64_t column) const;
-    void TextDGetScroll(int64_t *topLineNum, int *horizOffset);
+    void TextDGetScroll(int64_t *topLineNum, int64_t *horizOffset);
     bool TextDInSelection(const Point &p) const;
     int64_t TextGetCursorPos() const;
     int64_t TextDGetInsertPosition() const;
     int64_t TextDPosToLineAndCol(int64_t pos, int64_t *lineNum, int64_t *column);
-    void TextDSetScroll(int64_t topLineNum, int horizOffset);
+    void TextDSetScroll(int64_t topLineNum, int64_t horizOffset);
     void TextSetCursorPos(int64_t pos);
     void TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user);
     int64_t TextFirstVisiblePos() const;
@@ -317,7 +317,7 @@ private:
     bool emptyLinesVisible() const;
     int64_t posToVisibleLineNum(int64_t pos, int64_t *lineNum) const;
 	void blankCursorProtrusions();
-    int measureVisLine(int visLineNum) const;
+    int64_t measureVisLine(int visLineNum) const;
     int64_t visLineLength(int64_t visLineNum) const;
     bool wrapUsesCharacter(int64_t lineEndPos) const;
     void extendRangeForStyleMods(int64_t *start, int64_t *end);
@@ -329,7 +329,7 @@ private:
     void drawString(QPainter *painter, int style, int x, int y, int toX, char *string, long nChars);
 	void drawCursor(QPainter *painter, int x, int y);
     QColor getRangesetColor(int ind, QColor bground) const;
-    void setScroll(int64_t topLineNum, int horizOffset, bool updateVScrollBar, bool updateHScrollBar);
+    void setScroll(int64_t topLineNum, int64_t horizOffset, bool updateVScrollBar, bool updateHScrollBar);
     void offsetLineStarts(int64_t newTopLineNum);
 	void cancelDrag();
 	void checkAutoShowInsertPos();
@@ -385,7 +385,7 @@ private:
     int64_t cursorToHint_        = NO_HINT;        // Tells the buffer modified callback where to move the cursor, to reduce the number of redraw calls
     int emTabsBeforeCursor_      = 0;              // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
     int64_t firstChar_           = 0;              // Buffer positions of first and last displayed character (lastChar points either to a newline or one character beyond the end of the buffer)
-    int horizOffset_             = 0;              // Horizontal scroll pos. in pixels
+    int64_t horizOffset_         = 0;              // Horizontal scroll pos. in pixels
     int64_t lastChar_            = 0;
     int lineNumLeft_             = 0;
     int lineNumWidth_            = 0;
