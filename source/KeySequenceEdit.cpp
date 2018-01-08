@@ -169,7 +169,7 @@ void KeySequenceEdit::setKeySequence(const QKeySequence &keySequence) {
 	keys_.clear();
 
     for (int i = 0; i < keySequence_.count(); ++i) {
-        keys_.push_back(keySequence[i]);
+        keys_.push_back(keySequence[static_cast<uint>(i)]);
 	}
 
     lineEdit_->setText(keySequence_.toString(QKeySequence::NativeText));
