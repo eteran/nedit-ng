@@ -62,6 +62,6 @@ int DeleteTagsFileEx(const QString &tagSpec, TagSearchMode file_type, bool force
 int tagsShowCalltipEx(TextArea *area, const QString &text);
 QList<Tag> LookupTag(const QString &name, TagSearchMode search_type);
 void showMatchingCalltipEx(TextArea *area, int i);
-bool fakeRegExSearchEx(view::string_view buffer, const QString &searchString, int *startPos, int *endPos);
+bool fakeRegExSearchEx(view::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos);
 
 #endif

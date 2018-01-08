@@ -7,7 +7,7 @@
  * @param newStart
  * @param newEnd
  */
-void TextSelection::setSelection(int newStart, int newEnd) {
+void TextSelection::setSelection(int64_t newStart, int64_t newEnd) {
 	selected	= (newStart != newEnd);
 	zeroWidth	= (newStart == newEnd);
 	rectangular = false;
@@ -22,7 +22,7 @@ void TextSelection::setSelection(int newStart, int newEnd) {
  * @param newRectStart
  * @param newRectEnd
  */
-void TextSelection::setRectSelect(int newStart, int newEnd, int newRectStart, int newRectEnd) {
+void TextSelection::setRectSelect(int64_t newStart, int64_t newEnd, int64_t newRectStart, int64_t newRectEnd) {
 	selected	= (newRectStart < newRectEnd);
 	zeroWidth	= (newRectStart == newRectEnd);
 	rectangular = true;
@@ -41,7 +41,7 @@ void TextSelection::setRectSelect(int newStart, int newEnd, int newRectStart, in
  * @param rectEnd
  * @return
  */
-bool TextSelection::getSelectionPos(int *start, int *end, bool *isRect, int *rectStart, int *rectEnd) const {
+bool TextSelection::getSelectionPos(int64_t *start, int64_t *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const {
 	// Always fill in the parameters (zero-width can be requested too). 
 	*isRect = this->rectangular;
 	*start  = this->start;
@@ -61,7 +61,7 @@ bool TextSelection::getSelectionPos(int *start, int *end, bool *isRect, int *rec
  *
  * Update an individual selection for changes in the corresponding text
  */
-void TextSelection::updateSelection(int pos, int nDeleted, int nInserted) {
+void TextSelection::updateSelection(int64_t pos, int64_t nDeleted, int64_t nInserted) {
 	if ((!selected && !zeroWidth) || pos > end) {
 		return;
 	}
@@ -89,7 +89,7 @@ void TextSelection::updateSelection(int pos, int nDeleted, int nInserted) {
 ** Return true if position "pos" with indentation "dispIndex" is in this
 ** selection
 */
-bool TextSelection::inSelection(int pos, int lineStartPos, int dispIndex) const {
+bool TextSelection::inSelection(int64_t pos, int64_t lineStartPos, int64_t dispIndex) const {
     return this->selected && ((!rectangular && pos >= start && pos < end) || (rectangular && pos >= start && lineStartPos <= end && dispIndex >= rectStart && dispIndex < rectEnd));
 }
 
@@ -97,6 +97,6 @@ bool TextSelection::inSelection(int pos, int lineStartPos, int dispIndex) const 
 ** Return true if this selection is rectangular, and touches a buffer position
 ** within "rangeStart" to "rangeEnd"
 */
-bool TextSelection::rangeTouchesRectSel(int rangeStart, int rangeEnd) const {
+bool TextSelection::rangeTouchesRectSel(int64_t rangeStart, int64_t rangeEnd) const {
     return selected && rectangular && end >= rangeStart && start <= rangeEnd;
 }

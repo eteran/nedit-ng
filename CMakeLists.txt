@@ -64,16 +64,13 @@ else()
 	add_compile_options(-W -Wall -pedantic -Wunused -Wno-unused-macros -Wno-shadow -Wno-switch-enum -Wno-unknown-pragmas)
 endif()
 
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wuseless-cast -Wno-padded -Wno-date-time -Wno-newline-eof -Wno-exit-time-destructors")
-# -Weverything
-# -Wno-c++98-compat-pedantic
-# -Wno-c++98-compat
-# -Wno-documentation-unknown-command
-# -Wno-global-constructors
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+	add_compile_options(-Wshorten-64-to-32 -Wconditional-uninitialized) # -Weverything -Wno-documentation -Wno-missing-prototypes -Wno-date-time -Wno-padded -Wno-documentation-unknown-command -Wno-exit-time-destructors -Wno-c++98-compat-pedantic -Wno-c++98-compat -Wno-global-constructors -Wno-weak-vtables -Wno-implicit-fallthrough)
+endif()
+
+# -Wuseless-cast
 # -Wno-gnu-zero-variadic-macro-arguments
-# -Wno-documentation
-# -Wno-missing-prototypes
-# -Wno-used-but-marked-unused
+# 
 
 add_subdirectory (Util)
 add_subdirectory (source)

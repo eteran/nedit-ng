@@ -49,13 +49,13 @@ void SaveTheme();
 bool LoadHighlightStringEx(const QString &string);
 bool NamedStyleExists(const QString &styleName);
 bool parseString(HighlightData *pattern, const char **string, char **styleString, int64_t length, char *prevChar, bool anchored, const QString &delimiters, const char *look_behind_to, const char *match_till);
-char getPrevChar(TextBuffer *buf, int pos);
+char getPrevChar(TextBuffer *buf, int64_t pos);
 HighlightData *patternOfStyle(HighlightData *patterns, int style);
-int backwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
+int64_t backwardOneContext(TextBuffer *buf, ReparseContext *context, int64_t fromPos);
 int findTopLevelParentIndex(const gsl::span<HighlightPattern> &patList, int index);
 int FontOfNamedStyleIsBold(const QString &styleName);
 int FontOfNamedStyleIsItalic(const QString &styleName);
-int forwardOneContext(TextBuffer *buf, ReparseContext *context, int fromPos);
+int64_t forwardOneContext(TextBuffer *buf, ReparseContext *context, int64_t fromPos);
 int indexOfNamedPattern(const gsl::span<HighlightPattern> &patList, const QString &patName);
 PatternSet *FindPatternSet(const QString &langModeName);
 QString BgColorOfNamedStyleEx(const QString &styleName);
@@ -63,10 +63,10 @@ QString ColorOfNamedStyleEx(const QString &styleName);
 QString WriteHighlightStringEx();
 size_t IndexOfNamedStyle(const QString &styleName);
 std::unique_ptr<PatternSet> readDefaultPatternSet(const QString &langModeName);
-void handleUnparsedRegionCBEx(const TextArea *area, int pos, const void *user);
+void handleUnparsedRegionCBEx(const TextArea *area, int64_t pos, const void *user);
 void RemoveWidgetHighlightEx(TextArea *area);
 void RenameHighlightPattern(const QString &oldName, const QString &newName);
-void SyntaxHighlightModifyCBEx(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *user);
+void SyntaxHighlightModifyCBEx(int64_t pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user);
 
 
 // list of available highlight styles

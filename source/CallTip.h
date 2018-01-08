@@ -2,6 +2,8 @@
 #ifndef CALL_TIP_H_
 #define CALL_TIP_H_
 
+#include <cstdint>
+
 enum class TipHAlignMode  { Left, Center, Right };
 enum class TipVAlignMode  { Above, Below };
 enum class TipAlignStrict { Sloppy, Strict };

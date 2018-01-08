@@ -3,11 +3,12 @@
 #define DRAG_END_EVENT_H_
 
 #include "Util/string_view.h"
+#include <cstdint>
 
 struct DragEndEvent {
-	int               startPos;
-	int               nCharsDeleted;
-	int               nCharsInserted;
+    int64_t           startPos;
+    int64_t           nCharsDeleted;
+    int64_t           nCharsInserted;
 	view::string_view deletedText;
 };
 

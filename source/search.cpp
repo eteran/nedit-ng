@@ -26,12 +26,12 @@ int NHist = 0;
 SearchReplaceHistoryEntry SearchReplaceHistory[MAX_SEARCH_HISTORY];
 static int HistStart = 0;
 
-static bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters);
-static bool backwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
-static bool forwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
-static bool searchRegex(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags);
-static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW);
-static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, const char *delimiters);
+static bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters);
+static bool backwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters, int defaultFlags);
+static bool forwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters, int defaultFlags);
+static bool searchRegex(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters, int defaultFlags);
+static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW);
+static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, const char *delimiters);
 static std::string upCaseStringEx(view::string_view inString);
 static std::string downCaseStringEx(view::string_view inString);
 
@@ -85,13 +85,13 @@ int countWritableWindows() {
 ** first replacement (returned in "copyStart", and the end of the last
 ** replacement (returned in "copyEnd")
 */
-std::string ReplaceAllInStringEx(view::string_view inString, const QString &searchString, const QString &replaceString, SearchType searchType, int *copyStart, int *copyEnd, const QString &delimiters, bool *ok) {
-    int startPos;
-    int endPos;
-    int lastEndPos;
-    int copyLen;
-    int searchExtentBW;
-    int searchExtentFW;
+std::string ReplaceAllInStringEx(view::string_view inString, const QString &searchString, const QString &replaceString, SearchType searchType, int64_t *copyStart, int64_t *copyEnd, const QString &delimiters, bool *ok) {
+    int64_t startPos;
+    int64_t endPos;
+    int64_t lastEndPos;
+    int64_t copyLen;
+    int64_t searchExtentBW;
+    int64_t searchExtentFW;
 
     // reject empty string
     if (searchString.isNull()) {
@@ -106,7 +106,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
     int nFound     = 0;
     int removeLen  = 0;
     int addLen     = 0;
-    int beginPos   = 0;
+    int64_t beginPos   = 0;
 
     *copyStart = -1;
 
@@ -152,7 +152,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
                 addLen += replaceLen;
             }
 
-            if (endPos == gsl::narrow<int>(inString.size())) {
+            if (endPos == gsl::narrow<int64_t>(inString.size())) {
                 break;
             }
         }
@@ -207,7 +207,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 
             // start next after match unless match was empty, then endPos+1
             beginPos = (startPos == endPos) ? endPos + 1 : endPos;
-            if (endPos == gsl::narrow<int>(inString.size())) {
+            if (endPos == gsl::narrow<int64_t>(inString.size())) {
                 break;
             }
         }
@@ -227,7 +227,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 ** alternative set of word delimiters for regular expression "<" and ">"
 ** characters, or simply passed as null for the default delimiter set.
 */
-bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const QString &delimiters) {
+bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const QString &delimiters) {
 
     return SearchString(
                 string,
@@ -244,7 +244,7 @@ bool SearchString(view::string_view string, const QString &searchString, Directi
 
 }
 
-static bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters) {
+static bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters) {
 	switch (searchType) {
     case SearchType::CaseSenseWord:
         return searchLiteralWord(string, searchString.toStdString(), true, direction, wrap, beginPos, startPos, endPos, delimiters);
@@ -277,7 +277,7 @@ static bool SearchString(view::string_view string, const QString &searchString, 
 **  will suffice in that case.
 **
 */
-static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, const char *delimiters) {
+static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, const char *delimiters) {
 
 	std::string lcString;
 	std::string ucString;
@@ -302,8 +302,8 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
                     (cignore_L || filePtr == string.begin() ||                                         // border case
                      safe_ctype<isspace>(filePtr[-1]) || strchr(delimiters, filePtr[-1]))) {           // next char left delimits word ?
 
-                    *startPos = gsl::narrow<int>(filePtr - string.begin());
-                    *endPos   = gsl::narrow<int>(tempPtr - string.begin());
+                    *startPos = filePtr - string.begin();
+                    *endPos   = tempPtr - string.begin();
 					return true;
 				}
 			}
@@ -376,7 +376,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 	}
 }
 
-static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW) {
+static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW) {
 
 
 	std::string lcString;
@@ -404,8 +404,8 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 
 				if (ucPtr == ucString.end()) {
 					// matched whole string 
-                    *startPos = gsl::narrow<int>(filePtr - string.begin());
-                    *endPos   = gsl::narrow<int>(tempPtr - string.begin());
+                    *startPos = filePtr - string.begin();
+                    *endPos   = tempPtr - string.begin();
 
 					if(searchExtentBW) {
 						*searchExtentBW = *startPos;
@@ -484,14 +484,14 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 	}
 }
 
-static bool searchRegex(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
+static bool searchRegex(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters, int defaultFlags) {
     if (direction == Direction::Forward)
 		return forwardRegexSearch(string, searchString, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, defaultFlags);
 	else
 		return backwardRegexSearch(string, searchString, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, defaultFlags);
 }
 
-static bool forwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
+static bool forwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters, int defaultFlags) {
 
 	try {
         Regex compiledRE(searchString, defaultFlags);
@@ -499,15 +499,15 @@ static bool forwardRegexSearch(view::string_view string, view::string_view searc
 		// search from beginPos to end of string 
 		if (compiledRE.execute(string, beginPos, delimiters, false)) {
 
-            *startPos = gsl::narrow<int>(compiledRE.startp[0] - &string[0]);
-            *endPos   = gsl::narrow<int>(compiledRE.endp[0]   - &string[0]);
+            *startPos = compiledRE.startp[0] - &string[0];
+            *endPos   = compiledRE.endp[0]   - &string[0];
 
 			if(searchExtentFW) {
-                *searchExtentFW = gsl::narrow<int>(compiledRE.extentpFW - &string[0]);
+                *searchExtentFW = compiledRE.extentpFW - &string[0];
 			}
 
 			if(searchExtentBW) {
-                *searchExtentBW = gsl::narrow<int>(compiledRE.extentpBW - &string[0]);
+                *searchExtentBW = compiledRE.extentpBW - &string[0];
 			}
 
 			return true;
@@ -521,15 +521,15 @@ static bool forwardRegexSearch(view::string_view string, view::string_view searc
 		// search from the beginning of the string to beginPos 
 		if (compiledRE.execute(string, 0, beginPos, delimiters, false)) {
 
-            *startPos = gsl::narrow<int>(compiledRE.startp[0] - &string[0]);
-            *endPos   = gsl::narrow<int>(compiledRE.endp[0]   - &string[0]);
+            *startPos = compiledRE.startp[0] - &string[0];
+            *endPos   = compiledRE.endp[0]   - &string[0];
 
 			if(searchExtentFW) {
-                *searchExtentFW = gsl::narrow<int>(compiledRE.extentpFW - &string[0]);
+                *searchExtentFW = compiledRE.extentpFW - &string[0];
 			}
 
 			if(searchExtentBW) {
-                *searchExtentBW = gsl::narrow<int>(compiledRE.extentpBW - &string[0]);
+                *searchExtentBW = compiledRE.extentpBW - &string[0];
 			}
 			return true;
 		}
@@ -544,7 +544,7 @@ static bool forwardRegexSearch(view::string_view string, view::string_view searc
 	}
 }
 
-static bool backwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int beginPos, int *startPos, int *endPos, int *searchExtentBW, int *searchExtentFW, const char *delimiters, int defaultFlags) {
+static bool backwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters, int defaultFlags) {
 
 	try {
 		Regex compiledRE(searchString, defaultFlags);
@@ -556,15 +556,15 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
             // NOTE(eteran): why do we use NUL as the previous char, and not string[beginPos - 1] (assuming that beginPos > 0)?
             if (compiledRE.execute(string, 0, beginPos, '\0', '\0', delimiters, true)) {
 
-                *startPos = gsl::narrow<int>(compiledRE.startp[0] - &string[0]);
-                *endPos   = gsl::narrow<int>(compiledRE.endp[0]   - &string[0]);
+                *startPos = compiledRE.startp[0] - &string[0];
+                *endPos   = compiledRE.endp[0]   - &string[0];
 
 				if(searchExtentFW) {
-                    *searchExtentFW = gsl::narrow<int>(compiledRE.extentpFW - &string[0]);
+                    *searchExtentFW = compiledRE.extentpFW - &string[0];
 				}
 
 				if(searchExtentBW) {
-                    *searchExtentBW = gsl::narrow<int>(compiledRE.extentpBW - &string[0]);
+                    *searchExtentBW = compiledRE.extentpBW - &string[0];
 				}
 
 				return true;
@@ -583,15 +583,15 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
 
 		if (compiledRE.execute(string, beginPos, delimiters, true)) {
 
-            *startPos = gsl::narrow<int>(compiledRE.startp[0] - &string[0]);
-            *endPos   = gsl::narrow<int>(compiledRE.endp[0]   - &string[0]);
+            *startPos = compiledRE.startp[0] - &string[0];
+            *endPos   = compiledRE.endp[0]   - &string[0];
 
 			if(searchExtentFW) {
-                *searchExtentFW = gsl::narrow<int>(compiledRE.extentpFW - &string[0]);
+                *searchExtentFW = compiledRE.extentpFW - &string[0];
 			}
 
 			if(searchExtentBW) {
-                *searchExtentBW = gsl::narrow<int>(compiledRE.extentpBW - &string[0]);
+                *searchExtentBW = compiledRE.extentpBW - &string[0];
 			}
 
 			return true;
@@ -633,7 +633,7 @@ static std::string downCaseStringEx(view::string_view inString) {
 ** code to continue using strings to represent the search and replace
 ** items.
 */
-bool replaceUsingREEx(view::string_view searchStr, view::string_view replaceStr, view::string_view sourceStr, int beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
+bool replaceUsingREEx(view::string_view searchStr, view::string_view replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
     try {
         Regex compiledRE(searchStr, defaultFlags);
         compiledRE.execute(sourceStr, beginPos, sourceStr.size(), prevChar, '\0', delimiters, false);
@@ -645,7 +645,7 @@ bool replaceUsingREEx(view::string_view searchStr, view::string_view replaceStr,
 }
 
 
-bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags) {
+bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags) {
     return replaceUsingREEx(
                 searchStr.toStdString(),
                 replaceStr.toStdString(),

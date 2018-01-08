@@ -419,9 +419,9 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
         }
 
         if ((*LoopStackPtr)->value == NEEDS_BREAK) {
-            (*LoopStackPtr)->value = gsl::narrow<int>(breakAddr - *LoopStackPtr);
+            (*LoopStackPtr)->value = breakAddr - *LoopStackPtr;
         } else if ((*LoopStackPtr)->value == NEEDS_CONTINUE) {
-            (*LoopStackPtr)->value = gsl::narrow<int>(continueAddr - *LoopStackPtr);
+            (*LoopStackPtr)->value = continueAddr - *LoopStackPtr;
         } else {
 			qCritical("NEdit: internal error (uat) in macro parser");
         }
@@ -946,7 +946,7 @@ static int pushArraySymVal() {
 	STACKDUMP(0, 3);
 
     Symbol *sym   = Context->PC++->sym;
-    int initEmpty = Context->PC++->value;
+    int64_t initEmpty = Context->PC++->value;
 
 	if (sym->type == LOCAL_SYM) {
         dataPtr = &FP_GET_SYM_VAL(Context->FrameP, sym);
@@ -1524,7 +1524,7 @@ static int concat() {
 static int callSubroutine() {
 
     Symbol *sym = Context->PC++->sym;
-    int nArgs   = Context->PC++->value;
+    int64_t nArgs   = Context->PC++->value;
 
 	DISASM_RT(PC - 3, 3);
 	STACKDUMP(nArgs, 3);
@@ -1741,12 +1741,12 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray) {
 ** I really need to optimize the size approximation rather than assuming
 ** a worst case size for every integer argument
 */
-static int makeArrayKeyFromArgs(int nArgs, std::string *keyString, int leaveParams) {
+static int makeArrayKeyFromArgs(int64_t nArgs, std::string *keyString, int leaveParams) {
 	DataValue tmpVal;
 
     std::string str;
 
-    for (int i = nArgs - 1; i >= 0; --i) {
+    for (int64_t i = nArgs - 1; i >= 0; --i) {
 		if (i != nArgs - 1) {
             str.append(ARRAY_DIM_SEP);
 		}
@@ -1762,7 +1762,7 @@ static int makeArrayKeyFromArgs(int nArgs, std::string *keyString, int leavePara
 	}
 
 	if (!leaveParams) {
-        for (int i = nArgs - 1; i >= 0; --i) {
+        for (int64_t i = nArgs - 1; i >= 0; --i) {
             POP(tmpVal);
 		}
 	}
@@ -1869,7 +1869,7 @@ static int arrayRef() {
 	DataValue valueItem;
     std::string keyString;
 
-    int nDim = Context->PC++->value;
+    int64_t nDim = Context->PC++->value;
 
 	DISASM_RT(PC - 2, 2);
 	STACKDUMP(nDim, 3);
@@ -1914,7 +1914,7 @@ static int arrayAssign() {
 	DataValue srcValue;
 	DataValue dstArray;
 
-    int nDim = Context->PC++->value;
+    int64_t nDim = Context->PC++->value;
 
 	DISASM_RT(PC - 2, 1);
 	STACKDUMP(nDim, 3);
@@ -1967,8 +1967,8 @@ static int arrayRefAndAssignSetup() {
 	DataValue moveExpr;
     std::string keyString;
 
-    int binaryOp = Context->PC++->value;
-    int nDim     = Context->PC++->value;
+    int64_t binaryOp = Context->PC++->value;
+    int64_t nDim     = Context->PC++->value;
 
 	DISASM_RT(PC - 3, 3);
 	STACKDUMP(nDim + 1, 3);
@@ -2168,7 +2168,7 @@ static int deleteArrayElement() {
 	DataValue theArray;
     std::string keyString;
 
-    int nDim = Context->PC++->value;
+    int64_t nDim = Context->PC++->value;
 
 	DISASM_RT(PC - 2, 2);
 	STACKDUMP(nDim + 1, 3);

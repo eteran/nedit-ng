@@ -77,7 +77,7 @@ public:
 	void dragStartCallback(TextArea *area);
     void dragEndCallback(TextArea *area, DragEndEvent *data);
 	void smartIndentCallback(TextArea *area, SmartIndentEvent *data);
-    void modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText);
+    void modifiedCallback(int64_t pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText);
 
 public:
     static DocumentWidget *fromArea(TextArea *area);
@@ -141,10 +141,10 @@ public:
     void findDefinitionHelper(TextArea *area, const QString &arg, TagSearchMode search_type);
     void FindDefinition(TextArea *area, const QString &tagName);
     void finishMacroCmdExecutionEx();
-    void gotoAP(TextArea *area, int lineNum, int column);
+    void gotoAP(TextArea *area, int64_t lineNum, int64_t column);
     void gotoMark(TextArea *area, QChar label, bool extendSel);
     void GotoMatchingCharacter(TextArea *area);
-    void handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &styleBuf, int pos) const;
+    void handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &styleBuf, int64_t pos) const;
     void macroBannerTimeoutProc();
     void MakeSelectionVisible(TextArea *area);
     void moveDocument(MainWindow *fromWindow);
@@ -158,7 +158,7 @@ public:
     void repeatMacro(const QString &macro, int how);
     void ResumeMacroExecutionEx();
     void runMacroEx(Program *prog);
-    void SelectNumberedLineEx(TextArea *area, int lineNum);
+    void SelectNumberedLineEx(TextArea *area, int64_t lineNum);
     void SelectToMatchingCharacter(TextArea *area);
     void SetAutoIndent(IndentStyle state);
     void SetAutoScroll(int margin);
@@ -200,7 +200,7 @@ private:
     bool bckError(const QString &errString, const QString &file);
     bool doOpen(const QString &name, const QString &path, int flags);
     bool doSave();
-    boost::optional<int> findMatchingCharEx(char toMatch, Style styleToMatch, int charPos, int startLimit, int endLimit);
+    boost::optional<int64_t> findMatchingCharEx(char toMatch, Style styleToMatch, int64_t charPos, int64_t startLimit, int64_t endLimit);
     bool includeFile(const QString &name);
     bool writeBckVersion();
     HighlightData *compilePatternsEx(const gsl::span<HighlightPattern> &patternSrc);
@@ -217,7 +217,7 @@ private:
     QString backupFileNameEx() const;
     QString getWindowsMenuEntry() const;
     std::shared_ptr<Regex> compileREAndWarnEx(const QString &re);
-    Style GetHighlightInfoEx(int pos);
+    Style GetHighlightInfoEx(int64_t pos);
     StyleTableEntry *styleTableEntryOfCodeEx(size_t hCode) const;
     TextArea *createTextArea(TextBuffer *buffer);
     void AbortMacroCommandEx();
@@ -225,7 +225,7 @@ private:
     void addRedoItem(const UndoInfo &redo);
     void addUndoItem(const UndoInfo &undo);
     void addWrapNewlines();
-    void appendDeletedText(view::string_view deletedText, int deletedLen, Direction direction);
+    void appendDeletedText(view::string_view deletedText, int64_t deletedLen, Direction direction);
     void AttachHighlightToWidgetEx(TextArea *area);
     void BeginLearnEx();
     void cancelLearnEx();
@@ -246,7 +246,7 @@ private:
     void FinishLearnEx();
     void FlashMatchingEx(TextArea *area);
     void FreeHighlightingDataEx();
-    void issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, int replaceLeft, int replaceRight, CommandSource source);
+    void issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, int64_t replaceLeft, int64_t replaceRight, CommandSource source);
     void reapplyLanguageMode(size_t mode, bool forceDefaults);
     void Redo();
     void refreshMenuBar();
@@ -258,13 +258,13 @@ private:
     void removeUndoItem();
     void ReplayEx();
     void RevertToSaved();
-    void SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText);    
+    void SaveUndoInformation(int64_t pos, int64_t nInserted, int64_t nDeleted, view::string_view deletedText);
     void SetModeMessageEx(const QString &message);
     void SetWindowModified(bool modified);
     void trimUndoList(size_t maxLength);
     void Undo();
     void UnloadLanguageModeTipsFileEx();
-    void UpdateMarkTable(int pos, int nInserted, int nDeleted);
+    void UpdateMarkTable(int64_t pos, int64_t nInserted, int64_t nDeleted);
     void UpdateStatsLine(TextArea *area);    
 
 public:

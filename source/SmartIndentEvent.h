@@ -11,7 +11,7 @@ enum SmartIndentCallbackReasons {
 
 struct SmartIndentEvent {
 	SmartIndentCallbackReasons reason;
-	int                        pos;
+    int64_t                    pos;
 	int                        indentRequest;
 	view::string_view          charsTyped;
 };

@@ -154,6 +154,7 @@ static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *docu
 
 static std::error_code readSearchArgs(Arguments arguments, Direction *searchDirection, SearchType *searchType, WrapMode *wrap);
 static std::error_code readArgument(const DataValue &dv, int *result);
+static std::error_code readArgument(const DataValue &dv, int64_t *result);
 static std::error_code readArgument(const DataValue &dv, std::string *result);
 static std::error_code readArgument(const DataValue &dv, QString *result);
 
@@ -2362,8 +2363,8 @@ static std::error_code focusWindowMS(DocumentWidget *document, Arguments argumen
 */
 static std::error_code getRangeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    int from;
-    int to;
+    int64_t from;
+    int64_t to;
     TextBuffer *buf = document->buffer_;
 
     // Validate arguments and convert to int
@@ -2371,8 +2372,8 @@ static std::error_code getRangeMS(DocumentWidget *document, Arguments arguments,
         return ec;
     }
 
-    from = qBound(0, from, buf->BufGetLength());
-    to   = qBound(0, to,   buf->BufGetLength());
+    from = qBound<int64_t>(0, from, buf->BufGetLength());
+    to   = qBound<int64_t>(0, to,   buf->BufGetLength());
 
     if (from > to) {
         std::swap(from, to);
@@ -2391,7 +2392,7 @@ static std::error_code getRangeMS(DocumentWidget *document, Arguments arguments,
 static std::error_code getCharacterMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 
-    int pos;
+    int64_t pos;
     TextBuffer *buf = document->buffer_;
 
     // Validate arguments and convert to int
@@ -2399,7 +2400,7 @@ static std::error_code getCharacterMS(DocumentWidget *document, Arguments argume
         return ec;
     }
 
-    pos = qBound(0, pos, buf->BufGetLength());
+    pos = qBound<int64_t>(0, pos, buf->BufGetLength());
 
     // Return the character in a pre-allocated string)
     std::string str(1, buf->BufGetCharacter(pos));
@@ -2416,8 +2417,8 @@ static std::error_code replaceRangeMS(DocumentWidget *document, Arguments argume
 
     document = MacroFocusDocument();
 
-    int from;
-    int to;
+    int64_t from;
+    int64_t to;
     TextBuffer *buf = document->buffer_;
     std::string string;
 
@@ -2426,8 +2427,8 @@ static std::error_code replaceRangeMS(DocumentWidget *document, Arguments argume
         return ec;
     }
 
-    from = qBound(0, from, buf->BufGetLength());
-    to   = qBound(0, to,   buf->BufGetLength());
+    from = qBound<int64_t>(0, from, buf->BufGetLength());
+    to   = qBound<int64_t>(0, to,   buf->BufGetLength());
 
     if (from > to) {
         std::swap(from, to);
@@ -2802,11 +2803,11 @@ static std::error_code searchMS(DocumentWidget *document, Arguments arguments, D
 ** also returns the ending position of the match in $searchEndPos
 */
 static std::error_code searchStringMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-    int beginPos;
+    int64_t beginPos;
     WrapMode wrap;
     bool found     = false;
-    int foundStart = -1;
-    int foundEnd   = 0;
+    int64_t foundStart = -1;
+    int64_t foundEnd   = 0;
     SearchType type;
     bool skipSearch = false;
     std::string string;
@@ -2826,7 +2827,7 @@ static std::error_code searchStringMS(DocumentWidget *document, Arguments argume
         return ec;
     }
 
-    auto len = gsl::narrow<int>(to_string(arguments[0]).size());
+    int64_t len = to_string(arguments[0]).size();
     if (beginPos > len) {
         if (direction == Direction::Forward) {
             if (wrap == WrapMode::Wrap) {
@@ -2889,8 +2890,8 @@ static std::error_code replaceInStringMS(DocumentWidget *document, Arguments arg
     QString searchStr;
     QString replaceStr;
     auto searchType = SearchType::Literal;
-    int copyStart;
-    int copyEnd;
+    int64_t copyStart;
+    int64_t copyEnd;
     bool force = false;
     int i;
 
@@ -2997,8 +2998,8 @@ static std::error_code setCursorPosMS(DocumentWidget *document, Arguments argume
 }
 
 static std::error_code selectMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-    int start;
-    int end;
+    int64_t start;
+    int64_t end;
 
     // Get arguments and convert to int
     if(std::error_code ec = readArguments(arguments, 0, &start, &end)) {
@@ -3010,8 +3011,8 @@ static std::error_code selectMS(DocumentWidget *document, Arguments arguments, D
         std::swap(start, end);
     }
 
-    start = qBound(0, start, document->buffer_->BufGetLength());
-    end   = qBound(0, end,   document->buffer_->BufGetLength());
+    start = qBound<int64_t>(0, start, document->buffer_->BufGetLength());
+    end   = qBound<int64_t>(0, end,   document->buffer_->BufGetLength());
 
     // Make the selection
     document->buffer_->BufSelect(start, end);
@@ -3704,9 +3705,9 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
 
     std::string sourceStr;
     QString splitStr;
-    SearchType searchType;
-    int foundStart;
-    int foundEnd;
+    SearchType searchType = SearchType::Literal;
+    int64_t foundStart;
+    int64_t foundEnd;
     DataValue element;
     std::error_code ec;
 
@@ -3727,16 +3728,14 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
         if ((ec = readArgument(arguments[2], &typeSplitStr)) || !StringToSearchType(typeSplitStr, &searchType)) {
             return MacroErrorCode::UnrecognizedArgument;
         }
-    } else {
-        searchType = SearchType::Literal;
     }
 
     *result = to_value(std::make_shared<Array>());
 
-    int beginPos  = 0;
-    int lastEnd   = 0;
+    int64_t beginPos  = 0;
+    int64_t lastEnd   = 0;
     int indexNum  = 0;
-    int strLength = sourceStr.size();
+    int64_t strLength = sourceStr.size();
     bool found    = true;
     while (found && beginPos < strLength) {
 
@@ -3755,8 +3754,8 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
                     nullptr,
                     document->GetWindowDelimitersEx());
 
-        int elementEnd = found ? foundStart : strLength;
-        int elementLen = elementEnd - lastEnd;
+        int64_t elementEnd = found ? foundStart : strLength;
+        int64_t elementLen = elementEnd - lastEnd;
 
         std::string str(&sourceStr[lastEnd], elementLen);
 
@@ -3793,7 +3792,7 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
         } else {
             /* We skipped the last character to prevent an endless loop.
                Add it to the list. */
-            int elementLen = strLength - lastEnd;
+            int64_t elementLen = strLength - lastEnd;
             std::string str(&sourceStr[lastEnd], elementLen);
 
             element = to_value(str);
@@ -3890,12 +3889,12 @@ static std::error_code lineMV(DocumentWidget *document, Arguments arguments, Dat
         return MacroErrorCode::TooManyArguments;
     }
 
-    int line;
-    int colNum;
+    int64_t line;
+    int64_t colNum;
 
     TextBuffer *buf = document->buffer_;
     TextArea *area  = MainWindow::fromDocument(document)->lastFocus();
-    int cursorPos   = area->TextGetCursorPos();
+    int64_t cursorPos   = area->TextGetCursorPos();
 
     if (!area->TextDPosToLineAndCol(cursorPos, &line, &colNum)) {
         line = buf->BufCountLines(0, cursorPos) + 1;
@@ -3913,7 +3912,7 @@ static std::error_code columnMV(DocumentWidget *document, Arguments arguments, D
 
     TextBuffer *buf = document->buffer_;
     TextArea *area  = MainWindow::fromDocument(document)->lastFocus();
-    int cursorPos   = area->TextGetCursorPos();
+    int64_t cursorPos   = area->TextGetCursorPos();
 
     *result = to_value(buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos));
     return MacroErrorCode::Success;
@@ -4501,11 +4500,11 @@ static std::error_code rangesetGetByNameMS(DocumentWidget *document, Arguments a
 static std::error_code rangesetAddMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
     TextBuffer *buffer = document->buffer_;
     const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-    int start;
-    int end;
-    int rectStart;
-    int rectEnd;
-    int index;
+    int64_t start;
+    int64_t end;
+    int64_t rectStart;
+    int64_t rectEnd;
+    int64_t index;
     bool isRect;
     int label = 0;
 
@@ -4561,9 +4560,9 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
         }
 
         // make sure range is in order and fits buffer size
-        int maxpos = buffer->BufGetLength();
-        start = qBound(0, start, maxpos);
-        end   = qBound(0, end, maxpos);
+        int64_t maxpos = buffer->BufGetLength();
+        start = qBound<int64_t>(0, start, maxpos);
+        end   = qBound<int64_t>(0, end, maxpos);
 
         if (start > end) {
             std::swap(start, end);
@@ -4596,7 +4595,10 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
 static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
     TextBuffer *buffer = document->buffer_;
     const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-    int start, end, rectStart, rectEnd;
+    int64_t start;
+    int64_t end;
+    int64_t rectStart;
+    int64_t rectEnd;
     bool isRect;
     int label = 0;
 
@@ -4650,9 +4652,9 @@ static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments ar
         }
 
         // make sure range is in order and fits buffer size
-        int maxpos = buffer->BufGetLength();
-        start = qBound(0, start, maxpos);
-        end   = qBound(0, end, maxpos);
+        int64_t maxpos = buffer->BufGetLength();
+        start = qBound<int64_t>(0, start, maxpos);
+        end   = qBound<int64_t>(0, end, maxpos);
 
         if (start > end) {
             std::swap(start, end);
@@ -4773,10 +4775,10 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 
     const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
     Rangeset *rangeset;
-    int start = 0;
-    int end = 0;
-    int dummy;
-    int rangeIndex;
+    int64_t start = 0;
+    int64_t end = 0;
+    int64_t dummy;
+    int64_t rangeIndex;
     DataValue element;
     int label = 0;
 
@@ -4834,7 +4836,7 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 static std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
     TextBuffer *buffer = document->buffer_;
     const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-    int rangeIndex;
+    int64_t rangeIndex;
     int label = 0;
 
     if (arguments.size() < 1 || arguments.size() > 2) {
@@ -4855,7 +4857,7 @@ static std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments
         return MacroErrorCode::RangesetDoesNotExist;
     }
 
-    int pos = 0;
+    int64_t pos = 0;
     if (arguments.size() == 1) {
         TextArea *area = MainWindow::fromDocument(document)->lastFocus();
         pos = area->TextGetCursorPos();
@@ -4865,7 +4867,7 @@ static std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments
         }
     }
 
-    int maxpos = buffer->BufGetLength();
+    int64_t maxpos = buffer->BufGetLength();
     if (pos < 0 || pos > maxpos) {
         rangeIndex = 0;
     } else {
@@ -5304,6 +5306,29 @@ static std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arg
 /*
 ** Get an integer value from a tagged DataValue structure.
 */
+static std::error_code readArgument(const DataValue &dv, int64_t *result) {
+
+    if(is_integer(dv)) {
+        *result = to_integer(dv);
+        return MacroErrorCode::Success;
+    }
+
+    if(is_string(dv)) {
+        auto s = QString::fromStdString(to_string(dv));
+        bool ok;
+        int64_t val = s.toLongLong(&ok);
+        if(!ok) {
+           return MacroErrorCode::NotAnInteger;
+        }
+
+        *result = val;
+        return MacroErrorCode::Success;
+    }
+
+    return MacroErrorCode::UnknownObject;
+
+}
+
 static std::error_code readArgument(const DataValue &dv, int *result) {
 
     if(is_integer(dv)) {

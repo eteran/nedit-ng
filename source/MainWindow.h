@@ -69,8 +69,8 @@ public:
     bool SearchAndSelectEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap);
     bool SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, bool continued);
     bool SearchAndSelectSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
-    bool searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW);
-    bool SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW);
+    bool searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, int64_t *left, int64_t *right, int64_t *searchExtentBW, int64_t *searchExtentFW);
+    bool SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *extentBW, int64_t *extentFW);
     DocumentWidget *CreateDocument(QString name);
     DocumentWidget *currentDocument() const;
     DocumentWidget *documentAt(size_t index) const;
@@ -90,8 +90,8 @@ public:
     void EndISearchEx();
     void forceShowLineNumbers();
     void initToggleButtonsiSearch(SearchType searchType);
-    void iSearchRecordLastBeginPosEx(Direction direction, int initPos);
-    void iSearchTryBeepOnWrapEx(Direction direction, int beginPos, int startPos);
+    void iSearchRecordLastBeginPosEx(Direction direction, int64_t initPos);
+    void iSearchTryBeepOnWrapEx(Direction direction, int64_t beginPos, int64_t startPos);
     void openFile(DocumentWidget *document, const QString &text);
     void parseGeometry(QString geometry);
     void ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
@@ -416,8 +416,8 @@ private:
     bool iSearchLastRegexCase_   = true;  // idem, for regex mode in incremental search bar
     bool wasSelected_            = false; // last selection state (for dim/undim of selection related menu items
     int iSearchHistIndex_        = 0;     // find and replace dialogs
-    int iSearchLastBeginPos_     = 0;     // beg. pos. last match of current i.s.
-    int iSearchStartPos_         = -1;    // start pos. of current incr. search
+    int64_t iSearchLastBeginPos_ = 0;     // beg. pos. last match of current i.s.
+    int64_t iSearchStartPos_     = -1;    // start pos. of current incr. search
 #if defined(REPLACE_SCOPE)
     QAction *replaceScopeInWindow_;
     QAction *replaceScopeInSelection_;

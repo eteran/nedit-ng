@@ -737,13 +737,13 @@ QList<Tag> LookupTag(const QString &name, TagSearchMode search_type) {
 ** into NEdit compatible regular expressions and does the search.
 ** Etags search expressions are plain literals strings, which
 */
-bool fakeRegExSearchEx(view::string_view buffer, const QString &searchString, int *startPos, int *endPos) {
+bool fakeRegExSearchEx(view::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos) {
 
     if(searchString.isEmpty()) {
         return false;
     }
 
-    int searchStartPos;
+    int64_t searchStartPos;
     Direction dir;
     bool ctagsMode;
 
@@ -760,7 +760,7 @@ bool fakeRegExSearchEx(view::string_view buffer, const QString &searchString, in
         ctagsMode      = true;
     } else if (searchString.size() > 1 && searchString[0] == QLatin1Char('?')) {
         dir            = Direction::Backward;
-        searchStartPos = gsl::narrow<int>(fileString.size());
+        searchStartPos = fileString.size();
         ctagsMode      = true;
 	} else {
 		qWarning("NEdit: Error parsing tag file search string");
@@ -837,7 +837,7 @@ bool fakeRegExSearchEx(view::string_view buffer, const QString &searchString, in
  * string is reached before n lines, return the number of lines advanced,
  * else normally return -1.
  */
-static int moveAheadNLinesEx(view::string_view str, int *pos, int n) {
+static int moveAheadNLinesEx(view::string_view str, int64_t *pos, int n) {
 
     int i = n;
     while (str.begin() + *pos != str.end() && n > 0) {
@@ -861,8 +861,8 @@ static int moveAheadNLinesEx(view::string_view str, int *pos, int n) {
 */
 void showMatchingCalltipEx(TextArea *area, int i) {
     try {
-        int startPos = 0;
-        int endPos = 0;
+        int64_t startPos = 0;
+        int64_t endPos = 0;
 
         // 1. Open the target file
         NormalizePathnameEx(tagFiles[i]);
@@ -901,7 +901,7 @@ void showMatchingCalltipEx(TextArea *area, int i) {
         }
 
         if (searchMode == TagSearchMode::TIP) {
-            int dummy;
+            int64_t dummy;
 
             // 4. Find the end of the calltip (delimited by an empty line)
             endPos = startPos;
@@ -937,8 +937,8 @@ void showMatchingCalltipEx(TextArea *area, int i) {
         }
 
         // 5. Copy the calltip to a string
-        int tipLen = endPos - startPos;
-        auto message = QString::fromLatin1(&fileString[startPos], tipLen);
+        int64_t tipLen = endPos - startPos;
+        auto message = QString::fromLatin1(&fileString[startPos], gsl::narrow<int>(tipLen));
 
         // 6. Display it
         tagsShowCalltipEx(area, message);
@@ -970,8 +970,8 @@ enum tftoken_types {
 
 // A wrapper for SearchString
 static bool searchLine(const std::string &line, const std::string &regex) {
-    int dummy1;
-    int dummy2;
+    int64_t dummy1;
+    int64_t dummy2;
     return SearchString(
                 line,
                 QString::fromStdString(regex),

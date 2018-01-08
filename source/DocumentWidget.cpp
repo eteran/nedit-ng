@@ -66,8 +66,8 @@ struct ShellCommandData {
     QTimer        bannerTimer;
     TextArea *    area;
     int           flags;
-    int           leftPos;
-    int           rightPos;
+    int64_t       leftPos;
+    int64_t       rightPos;
     CommandSource source;
     bool          bannerIsUp;
 };
@@ -141,7 +141,7 @@ constexpr auto PREFERRED_CMPBUF_LEN = 0x8000ul;
 constexpr int MOD_CHECK_INTERVAL = 3000;
 
 
-void modifiedCB(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText, void *user) {
+void modifiedCB(int64_t pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
     if(auto document = static_cast<DocumentWidget *>(user)) {
         document->modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText);
     }
@@ -177,9 +177,9 @@ void dragEndCB(TextArea *area, DragEndEvent *data, void *user) {
 ** have been shrunken by the user (eg, by Undo). If necessary, the starting
 ** and ending positions (part of the state of the command) are corrected.
 */
-void safeBufReplace(TextBuffer *buf, int *start, int *end, const std::string &text) {
+void safeBufReplace(TextBuffer *buf, int64_t *start, int64_t *end, const std::string &text) {
 
-    const int length = buf->BufGetLength();
+    const int64_t length = buf->BufGetLength();
 
     *start = std::min(length, *start);
     *end   = std::min(length, *end);
@@ -191,7 +191,7 @@ void safeBufReplace(TextBuffer *buf, int *start, int *end, const std::string &te
 ** Update a position across buffer modifications specified by
 ** "modPos", "nDeleted", and "nInserted".
 */
-void maintainPosition(int &position, int modPos, int nInserted, int nDeleted) {
+void maintainPosition(int64_t &position, int64_t modPos, int64_t nInserted, int64_t nDeleted) {
     if (modPos > position) {
         return;
     }
@@ -207,7 +207,7 @@ void maintainPosition(int &position, int modPos, int nInserted, int nDeleted) {
 ** Update a selection across buffer modifications specified by
 ** "pos", "nDeleted", and "nInserted".
 */
-void maintainSelection(TextSelection &sel, int pos, int nInserted, int nDeleted) {
+void maintainSelection(TextSelection &sel, int64_t pos, int64_t nInserted, int64_t nDeleted) {
     if (!sel.selected || pos > sel.end) {
         return;
     }
@@ -226,7 +226,7 @@ void maintainSelection(TextSelection &sel, int pos, int nInserted, int nDeleted)
  * @param nDeleted
  * @return
  */
-UndoTypes determineUndoType(int nInserted, int nDeleted) {
+UndoTypes determineUndoType(int64_t nInserted, int64_t nDeleted) {
 
     const bool textDeleted  = (nDeleted  > 0);
     const bool textInserted = (nInserted > 0);
@@ -702,8 +702,8 @@ size_t DocumentWidget::matchLanguageMode() const {
 
     for (size_t i = 0; i < LanguageModes.size(); i++) {
         if (!LanguageModes[i].recognitionExpr.isNull()) {
-            int beginPos;
-            int endPos;
+            int64_t beginPos;
+            int64_t endPos;
             bool result = SearchString(first200,
                                   LanguageModes[i].recognitionExpr,
                                   Direction::Forward,
@@ -768,7 +768,7 @@ void DocumentWidget::UpdateStatsLine(TextArea *area) {
 		}
 
 		// Compose the string to display. If line # isn't available, leave it off
-        const int pos = area->TextGetCursorPos();
+        const int64_t pos = area->TextGetCursorPos();
 
 		QString format;
 		switch(fileFormat_) {
@@ -785,9 +785,9 @@ void DocumentWidget::UpdateStatsLine(TextArea *area) {
 
 		QString string;
 		QString slinecol;
-		int line;
-		int colNum;
-        const int length = buffer_->BufGetLength();
+        int64_t line;
+        int64_t colNum;
+        const int64_t length = buffer_->BufGetLength();
 
 		if (!area->TextDPosToLineAndCol(pos, &line, &colNum)) {
             string   = tr("%1%2%3 %4 bytes").arg(path_, filename_, format).arg(length);
@@ -848,7 +848,7 @@ void DocumentWidget::dragStartCallback(TextArea *area) {
 ** Keep the marks in the windows book-mark table up to date across
 ** changes to the underlying buffer
 */
-void DocumentWidget::UpdateMarkTable(int pos, int nInserted, int nDeleted) {
+void DocumentWidget::UpdateMarkTable(int64_t pos, int64_t nInserted, int64_t nDeleted) {
 
     for (size_t i = 0; i < nMarks_; ++i) {
         maintainSelection(markTable_[i].sel,       pos, nInserted, nDeleted);
@@ -864,7 +864,7 @@ void DocumentWidget::UpdateMarkTable(int pos, int nInserted, int nDeleted) {
  * @param nRestyled
  * @param deletedText
  */
-void DocumentWidget::modifiedCallback(int pos, int nInserted, int nDeleted, int nRestyled, view::string_view deletedText) {
+void DocumentWidget::modifiedCallback(int64_t pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText) {
 
     Q_UNUSED(nRestyled);
 
@@ -1148,8 +1148,8 @@ void DocumentWidget::SetTabDist(int tabDist) {
     emit_event("set_tab_dist", QString::number(tabDist));
 
     if (buffer_->BufGetTabDist() != tabDist) {
-        int saveCursorPositions[MAX_PANES + 1];
-        int saveVScrollPositions[MAX_PANES + 1];
+        int64_t saveCursorPositions[MAX_PANES + 1];
+        int64_t saveVScrollPositions[MAX_PANES + 1];
         int saveHScrollPositions[MAX_PANES + 1];
 
         ignoreModify_ = true;
@@ -1400,7 +1400,7 @@ void DocumentWidget::dimSelDepItemsInMenu(QMenu *menuPane, const gsl::span<MenuD
 ** Note: This routine must be kept efficient.  It is called for every
 **       character typed.
 */
-void DocumentWidget::SaveUndoInformation(int pos, int nInserted, int nDeleted, view::string_view deletedText) {
+void DocumentWidget::SaveUndoInformation(int64_t pos, int64_t nInserted, int64_t nDeleted, view::string_view deletedText) {
 
     const int isUndo = (!undo_.empty() && undo_.front().inUndo);
     const int isRedo = (!redo_.empty() && redo_.front().inUndo);
@@ -1524,7 +1524,7 @@ void DocumentWidget::ClearRedoList() {
 ** for continuing of a string of one character deletes or replaces, but will
 ** work with more than one character.
 */
-void DocumentWidget::appendDeletedText(view::string_view deletedText, int deletedLen, Direction direction) {
+void DocumentWidget::appendDeletedText(view::string_view deletedText, int64_t deletedLen, Direction direction) {
     UndoInfo &undo = undo_.front();
 
     // re-allocate, adding space for the new character(s)
@@ -1673,7 +1673,7 @@ void DocumentWidget::Undo() {
         // use the saved undo information to reverse changes
         buffer_->BufReplaceEx(undo.startPos, undo.endPos, undo.oldText);
 
-        auto restoredTextLength = gsl::narrow<int>(undo.oldText.size());
+        int64_t restoredTextLength = undo.oldText.size();
         if (!buffer_->BufGetPrimary().selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
@@ -1726,7 +1726,7 @@ void DocumentWidget::Redo() {
         // use the saved redo information to reverse changes
         buffer_->BufReplaceEx(redo.startPos, redo.endPos, redo.oldText);
 
-        auto restoredTextLength = gsl::narrow<int>(redo.oldText.size());
+        int64_t restoredTextLength = redo.oldText.size();
         if (!buffer_->BufGetPrimary().selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
@@ -1785,17 +1785,17 @@ void DocumentWidget::MakeSelectionVisible(TextArea *area) {
 
 	bool isRect;
     int horizOffset;
-    int left;
+    int64_t left;
     int leftX;
-    int rectEnd;
-    int rectStart;
-    int right;
+    int64_t rectEnd;
+    int64_t rectStart;
+    int64_t right;
     int rightX;
-    int topLineNum;
+    int64_t topLineNum;
     int y;
 
-    const int topChar  = area->TextFirstVisiblePos();
-    const int lastChar = area->TextLastVisiblePos();
+    const int64_t topChar  = area->TextFirstVisiblePos();
+    const int64_t lastChar = area->TextLastVisiblePos();
 
     // find out where the selection is
     if (!buffer_->BufGetSelectionPos(&left, &right, &isRect, &rectStart, &rectEnd)) {
@@ -1818,12 +1818,12 @@ void DocumentWidget::MakeSelectionVisible(TextArea *area) {
 		area->TextDGetScroll(&topLineNum, &horizOffset);
         if (right > lastChar) {
             // End of sel. is below bottom of screen
-            const int leftLineNum   = topLineNum + area->TextDCountLines(topChar, left, false);
-            const int targetLineNum = topLineNum + scrollOffset;
+            const int64_t leftLineNum   = topLineNum + area->TextDCountLines(topChar, left, false);
+            const int64_t targetLineNum = topLineNum + scrollOffset;
 
             if (leftLineNum >= targetLineNum) {
                 // Start of sel. is not between top & target
-                int linesToScroll = area->TextDCountLines(lastChar, right, false) + scrollOffset;
+                int64_t linesToScroll = area->TextDCountLines(lastChar, right, false) + scrollOffset;
                 if (leftLineNum - linesToScroll < targetLineNum) {
                     linesToScroll = leftLineNum - targetLineNum;
                 }
@@ -1833,13 +1833,13 @@ void DocumentWidget::MakeSelectionVisible(TextArea *area) {
             }
         } else if (left < topChar) {
             // Start of sel. is above top of screen
-            const int lastLineNum   = topLineNum + rows;
-            const int rightLineNum  = lastLineNum - area->TextDCountLines(right, lastChar, false);
-            const int targetLineNum = lastLineNum - scrollOffset;
+            const int64_t lastLineNum   = topLineNum + rows;
+            const int64_t rightLineNum  = lastLineNum - area->TextDCountLines(right, lastChar, false);
+            const int64_t targetLineNum = lastLineNum - scrollOffset;
 
             if (rightLineNum <= targetLineNum) {
                 // End of sel. is not between bottom & target
-				int linesToScroll = area->TextDCountLines(left, topChar, false) + scrollOffset;
+                int64_t linesToScroll = area->TextDCountLines(left, topChar, false) + scrollOffset;
                 if (rightLineNum + linesToScroll > targetLineNum) {
                     linesToScroll = targetLineNum - rightLineNum;
                 }
@@ -2216,8 +2216,8 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
 void DocumentWidget::RevertToSaved() {
 
     if(auto win = MainWindow::fromDocument(this)) {
-        int insertPositions[MAX_PANES];
-        int topLines[MAX_PANES];
+        int64_t insertPositions[MAX_PANES];
+        int64_t topLines[MAX_PANES];
         int horizOffsets[MAX_PANES];
         int openFlags = 0;
 
@@ -2680,8 +2680,8 @@ bool DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
 */
 void DocumentWidget::addWrapNewlines() {
 
-    int insertPositions[MAX_PANES];
-    int topLines[MAX_PANES];
+    int64_t insertPositions[MAX_PANES];
+    int64_t topLines[MAX_PANES];
     int horizOffset;
 
     const std::vector<TextArea *> textAreas = textPanes();
@@ -3196,15 +3196,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     }
 #endif
 
-    const long fileLength = statbuf.st_size;
-
-    // NOTE(eteran): due to the usage of 32-bit ints (all over the place), there is a limit of 2GB
-    if(fileLength > std::numeric_limits<int>::max()) {
-        filenameSet_ = false; // Temp. prevent check for changes.
-        QMessageBox::critical(this, tr("Error opening File"), tr("The file %1 exceeds %2 bytes in size, currently, this is unsupported.").arg(name).arg(std::numeric_limits<int>::max()));
-        filenameSet_ = true;
-        return false;
-    }
+    const int64_t fileLength = statbuf.st_size;
 
     // Allocate space for the whole contents of the file (unfortunately)
     try {
@@ -3616,8 +3608,8 @@ bool DocumentWidget::includeFile(const QString &name) {
 }
 
 void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
-    int selStart;
-    int selEnd;
+    int64_t selStart;
+    int64_t selEnd;
 
     /* get the character to match and its position from the selection, or
        the character before the insert point if nothing is selected.
@@ -3644,7 +3636,7 @@ void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
     }
 
     // Search for it in the buffer
-    boost::optional<int> matchPos = findMatchingCharEx(buffer_->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, 0, buffer_->BufGetLength());
+    boost::optional<int64_t> matchPos = findMatchingCharEx(buffer_->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, 0, buffer_->BufGetLength());
     if (!matchPos) {
         QApplication::beep();
         return;
@@ -3661,7 +3653,7 @@ void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
     area->setAutoShowInsertPos(true);
 }
 
-boost::optional<int> DocumentWidget::findMatchingCharEx(char toMatch, Style styleToMatch, int charPos, int startLimit, int endLimit) {
+boost::optional<int64_t> DocumentWidget::findMatchingCharEx(char toMatch, Style styleToMatch, int64_t charPos, int64_t startLimit, int64_t endLimit) {
 
     Style style;
     bool matchSyntaxBased = matchSyntaxBased_;
@@ -3690,9 +3682,9 @@ boost::optional<int> DocumentWidget::findMatchingCharEx(char toMatch, Style styl
     switch(direction) {
     case Direction::Forward:
     {
-        const int beginPos = charPos + 1;
+        const int64_t beginPos = charPos + 1;
 
-        for (int pos = beginPos; pos < endLimit; pos++) {
+        for (int64_t pos = beginPos; pos < endLimit; pos++) {
             const char ch = buffer_->BufGetCharacter(pos);
             if (ch == matchChar) {
                 if (matchSyntaxBased) {
@@ -3719,9 +3711,9 @@ boost::optional<int> DocumentWidget::findMatchingCharEx(char toMatch, Style styl
     }
     case Direction::Backward:
         if(charPos != startLimit) {
-            const int beginPos = charPos - 1;
+            const int64_t beginPos = charPos - 1;
 
-            for (int pos = beginPos; pos >= startLimit; pos--) {
+            for (int64_t pos = beginPos; pos >= startLimit; pos--) {
                 const char ch = buffer_->BufGetCharacter(pos);
                 if (ch == matchChar) {
                     if (matchSyntaxBased) {
@@ -3753,8 +3745,8 @@ boost::optional<int> DocumentWidget::findMatchingCharEx(char toMatch, Style styl
 
 void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
 
-    int selStart;
-    int selEnd;
+    int64_t selStart;
+    int64_t selEnd;
 
     /* get the character to match and its position from the selection, or
        the character before the insert point if nothing is selected.
@@ -3780,14 +3772,14 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
     }
 
     // Search for it in the buffer
-    boost::optional<int> matchPos = findMatchingCharEx(buffer_->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, 0, buffer_->BufGetLength());
+    boost::optional<int64_t> matchPos = findMatchingCharEx(buffer_->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, 0, buffer_->BufGetLength());
     if (!matchPos) {
         QApplication::beep();
         return;
     }
 
-    const int startPos = (*matchPos > selStart) ? selStart : *matchPos;
-    const int endPos   = (*matchPos > selStart) ? *matchPos : selStart;
+    const int64_t startPos = (*matchPos > selStart) ? selStart : *matchPos;
+    const int64_t endPos   = (*matchPos > selStart) ? *matchPos : selStart;
 
     /* temporarily shut off autoShowInsertPos before setting the cursor
        position so MakeSelectionVisible gets a chance to place the cursor
@@ -3917,10 +3909,10 @@ void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, 
         }
 
         // get the selection or the insert position
-        const int pos = area->TextGetCursorPos();
+        const int64_t pos = area->TextGetCursorPos();
 
-        int left;
-        int right;
+        int64_t left;
+        int64_t right;
         if (buffer_->GetSimpleSelection(&left, &right)) {
             flags = ACCUMULATE | REPLACE_SELECTION;
         } else {
@@ -3932,8 +3924,8 @@ void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, 
            for # in the shell command */
         QString fullName = FullPath();
 
-        int line;
-        int column;
+        int64_t line;
+        int64_t column;
         area->TextDPosToLineAndCol(pos, &line, &column);
 
         QString substitutedCommand = command;
@@ -4401,15 +4393,15 @@ void DocumentWidget::SetOverstrike(bool overstrike) {
  * @param lineNum
  * @param column
  */
-void DocumentWidget::gotoAP(TextArea *area, int lineNum, int column) {
+void DocumentWidget::gotoAP(TextArea *area, int64_t lineNum, int64_t column) {
 
-	int position;
+    int64_t position;
 
 	// User specified column, but not line number
     if (lineNum == -1) {
 		position = area->TextGetCursorPos();
 
-		int curCol;
+        int64_t curCol;
         if (!area->TextDPosToLineAndCol(position, &lineNum, &curCol)) {
 			return;
 		}
@@ -4552,7 +4544,7 @@ void DocumentWidget::UnloadLanguageModeTipsFileEx() {
 ** REPLACE_SELECTION, ERROR_DIALOGS, and OUTPUT_TO_STRING can only be used
 ** along with ACCUMULATE (these operations can't be done incrementally).
 */
-void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, int replaceLeft, int replaceRight, CommandSource source) {
+void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, int64_t replaceLeft, int64_t replaceRight, CommandSource source) {
 
     // verify consistency of input parameters
     if ((flags & ERROR_DIALOGS || flags & REPLACE_SELECTION || flags & OUTPUT_TO_STRING) && !(flags & ACCUMULATE)) {
@@ -4797,13 +4789,13 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
             TextBuffer *buf = area->TextGetBuffer();
 
             if (cmdData->flags & REPLACE_SELECTION) {
-                int reselectStart = buf->BufGetPrimary().rectangular ? -1 : buf->BufGetPrimary().start;
+                int64_t reselectStart = buf->BufGetPrimary().rectangular ? -1 : buf->BufGetPrimary().start;
                 buf->BufReplaceSelectedEx(output_string);
 
                 area->TextSetCursorPos(buf->BufCursorPosHint());
 
                 if (reselectStart != -1) {
-                    buf->BufSelect(reselectStart, reselectStart + gsl::narrow<int>(output_string.size()));
+                    buf->BufSelect(reselectStart, reselectStart + output_string.size());
                 }
             } else {
                 safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, output_string);
@@ -4840,11 +4832,11 @@ void DocumentWidget::ExecCursorLineEx(TextArea *area, CommandSource source) {
         return;
     }
 
-    int left;
-    int right;
-    int insertPos;
-    int line;
-    int column;
+    int64_t left;
+    int64_t right;
+    int64_t insertPos;
+    int64_t line;
+    int64_t column;
 
     // Can't do two shell commands at once in the same window
     if (shellCmdData_) {
@@ -4853,7 +4845,7 @@ void DocumentWidget::ExecCursorLineEx(TextArea *area, CommandSource source) {
     }
 
     // get all of the text on the line with the insert position
-    int pos = area->TextGetCursorPos();
+    int64_t pos = area->TextGetCursorPos();
 
     if (!buffer_->GetSimpleSelection(&left, &right)) {
         left  = pos;
@@ -4937,8 +4929,8 @@ void DocumentWidget::FilterSelection(const QString &command, CommandSource sourc
         return;
     }
 
-    const int left  = buffer_->BufGetPrimary().start;
-    const int right = buffer_->BufGetPrimary().end;
+    const int64_t left  = buffer_->BufGetPrimary().start;
+    const int64_t right = buffer_->BufGetPrimary().end;
 
     // Issue the command and collect its output
     issueCommandEx(
@@ -4960,10 +4952,10 @@ void DocumentWidget::FilterSelection(const QString &command, CommandSource sourc
 void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, CommandSource source) {
 
     int flags = 0;
-    int left  = 0;
-    int right = 0;
-    int line;
-    int column;
+    int64_t left  = 0;
+    int64_t right = 0;
+    int64_t line;
+    int64_t column;
 
     // Can't do two shell commands at once in the same window
     if (shellCmdData_) {
@@ -4974,7 +4966,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
     /* Substitute the current file name for % and the current line number
        for # in the shell command */
     auto fullName = tr("%1%2").arg(path_, filename_);
-    int pos = area->TextGetCursorPos();
+    int64_t pos = area->TextGetCursorPos();
     area->TextDPosToLineAndCol(pos, &line, &column);
 
     QString substitutedCommand = command;
@@ -5430,12 +5422,12 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
     }
 
     // get the character to match and the position to start from
-    const int currentPos = area->TextGetCursorPos();
+    const int64_t currentPos = area->TextGetCursorPos();
     if(currentPos == 0) {
         return;
     }
 
-    const int pos = currentPos - 1;
+    const int64_t pos = currentPos - 1;
 
     const char ch = buffer_->BufGetCharacter(pos);
 
@@ -5455,9 +5447,9 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
        AND using delimiter flashing (otherwise search the whole buffer) */
     bool constrain = (textPanes().empty() && (showMatchingStyle_ == ShowMatchingStyle::Delimiter));
 
-    int startPos;
-    int endPos;
-    int searchPos;
+    int64_t startPos;
+    int64_t endPos;
+    int64_t searchPos;
 
     if (matchIt->direction == Direction::Backward) {
         startPos  = constrain ? area->TextFirstVisiblePos() : 0;
@@ -5470,7 +5462,7 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
     }
 
     // do the search
-    boost::optional<int> matchPos = findMatchingCharEx(ch, style, searchPos, startPos, endPos);
+    boost::optional<int64_t> matchPos = findMatchingCharEx(ch, style, searchPos, startPos, endPos);
     if (!matchPos) {
         return;
     }
@@ -5639,7 +5631,7 @@ QColor DocumentWidget::GetHighlightBGColorOfCodeEx(size_t hCode) const {
 ** value is returned for two positions, the corresponding characters have
 ** the same highlight style.
 **/
-Style DocumentWidget::GetHighlightInfoEx(int pos) {
+Style DocumentWidget::GetHighlightInfoEx(int64_t pos) {
 
     HighlightData *pattern = nullptr;
     const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
@@ -5839,7 +5831,7 @@ int DocumentWidget::HighlightLengthOfCodeFromPosEx(int pos, size_t *checkCode) {
 ** needs re-parsing.  This routine applies pass 2 patterns to a chunk of
 ** the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
 */
-void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &styleBuf, int pos) const {
+void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &styleBuf, int64_t pos) const {
 
     TextBuffer *buf = buffer_;
     const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
@@ -5859,10 +5851,10 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
     /* Find the point at which to begin parsing to ensure that the character at
        pos is parsed correctly (beginSafety), at most one context distance back
        from pos, unless there is a pass 1 section from which to start */
-    int beginParse  = pos;
-    int beginSafety = backwardOneContext(buf, context, beginParse);
+    int64_t beginParse  = pos;
+    int64_t beginSafety = backwardOneContext(buf, context, beginParse);
 
-    for (int p = beginParse; p >= beginSafety; p--) {
+    for (int64_t p = beginParse; p >= beginSafety; p--) {
         char ch = styleBuf->BufGetCharacter(p);
         if (ch != UNFINISHED_STYLE && ch != PLAIN_STYLE && static_cast<uint8_t>(ch) < firstPass2Style) {
             beginSafety = p + 1;
@@ -5874,10 +5866,10 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
        necessary to ensure that the changes at endParse are correct.  Stop at
        the end of the unfinished region, or a max. of PASS_2_REPARSE_CHUNK_SIZE
        characters forward from the requested position */
-    int endParse  = std::min(buf->BufGetLength(), pos + PASS_2_REPARSE_CHUNK_SIZE);
-    int endSafety = forwardOneContext(buf, context, endParse);
+    int64_t endParse  = std::min(buf->BufGetLength(), pos + PASS_2_REPARSE_CHUNK_SIZE);
+    int64_t endSafety = forwardOneContext(buf, context, endParse);
 
-    for (int p = pos; p < endSafety; p++) {
+    for (int64_t p = pos; p < endSafety; p++) {
         char ch = styleBuf->BufGetCharacter(p);
         if (ch != UNFINISHED_STYLE && ch != PLAIN_STYLE && static_cast<uint8_t>(ch) < firstPass2Style) {
             endParse  = std::min(endParse, p);
@@ -5951,7 +5943,7 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
     const QCursor prevCursor = cursor();
     setCursor(Qt::WaitCursor);
 
-    const int bufLength = buffer_->BufGetLength();
+    const int64_t bufLength = buffer_->BufGetLength();
 
     /* Parse the buffer with pass 1 patterns.  If there are none, initialize
        the style buffer to all UNFINISHED_STYLE to trigger parsing later */
@@ -7016,16 +7008,16 @@ void DocumentWidget::AddMarkEx(TextArea *area, QChar label) {
     markTable_[index].cursorPos = area->TextGetCursorPos();
 }
 
-void DocumentWidget::SelectNumberedLineEx(TextArea *area, int lineNum) {
+void DocumentWidget::SelectNumberedLineEx(TextArea *area, int64_t lineNum) {
     int i;
-    int lineStart = 0;
+    int64_t lineStart = 0;
 
     // count lines to find the start and end positions for the selection
     if (lineNum < 1) {
         lineNum = 1;
     }
 
-    int lineEnd = -1;
+    int64_t lineEnd = -1;
 
     for (i = 1; i <= lineNum && lineEnd < buffer_->BufGetLength(); i++) {
         lineStart = lineEnd + 1;
@@ -7073,13 +7065,13 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
     const TextSelection &sel    = markTable_[index].sel;
     const TextSelection &oldSel = buffer_->BufGetPrimary();
 
-    int cursorPos = markTable_[index].cursorPos;
+    int64_t cursorPos = markTable_[index].cursorPos;
     if (extendSel) {
 
-        const int oldStart = oldSel.selected ? oldSel.start : area->TextGetCursorPos();
-        const int oldEnd   = oldSel.selected ? oldSel.end   : area->TextGetCursorPos();
-        const int newStart = sel.selected    ? sel.start    : cursorPos;
-        const int newEnd   = sel.selected    ? sel.end      : cursorPos;
+        const int64_t oldStart = oldSel.selected ? oldSel.start : area->TextGetCursorPos();
+        const int64_t oldEnd   = oldSel.selected ? oldSel.end   : area->TextGetCursorPos();
+        const int64_t newStart = sel.selected    ? sel.start    : cursorPos;
+        const int64_t newEnd   = sel.selected    ? sel.end      : cursorPos;
 
         buffer_->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
     } else {
@@ -7314,7 +7306,7 @@ int DocumentWidget::ShowTipStringEx(const QString &text, bool anchored, int pos,
     tagFiles[i], tagSearch[i], tagPosInf[i] */
 void DocumentWidget::editTaggedLocationEx(TextArea *area, int i) {
 
-    int endPos;
+    int64_t endPos;
     int rows;
     QString filename;
     QString pathname;
@@ -7343,7 +7335,7 @@ void DocumentWidget::editTaggedLocationEx(TextArea *area, int i) {
         return;
     }
 
-    int startPos = tagPosInf[i];
+    int64_t startPos = tagPosInf[i];
 
     if (tagSearch[i].isEmpty()) {
         // if the search string is empty, select the numbered line
@@ -7366,7 +7358,7 @@ void DocumentWidget::editTaggedLocationEx(TextArea *area, int i) {
 
     /* Position it nicely in the window,
        about 1/4 of the way down from the top */
-    int lineNum = documentToSearch->buffer_->BufCountLines(0, startPos);
+    int64_t lineNum = documentToSearch->buffer_->BufCountLines(0, startPos);
 
     rows = area->getRows();
 

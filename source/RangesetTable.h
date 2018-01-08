@@ -17,14 +17,14 @@ public:
     int nRangesetsAvailable() const;
     int RangesetCreate();
     int RangesetFindIndex(int label, bool must_be_active) const;
-    int RangesetIndex1ofPos(int pos, bool needs_color);
+    int RangesetIndex1ofPos(int64_t pos, bool needs_color);
     int RangesetTableGetColorValid(int index, QColor *color) const;
     QString RangesetTableGetColorName(int index) const;
     Rangeset *RangesetFetch(int label);
     Rangeset *RangesetForget(int label);
     std::vector<uint8_t> RangesetGetList() const;
     void RangesetTableAssignColorPixel(int index, const QColor &color);
-    void RangesetTableUpdatePos(int pos, int ins, int del);
+    void RangesetTableUpdatePos(int64_t pos, int64_t ins, int64_t del);
 
 public:
 	static int RangesetLabelOK(int label);

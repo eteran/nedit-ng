@@ -8,10 +8,10 @@
 #include <gsl/gsl_util>
 #include <memory>
 
-static std::string makeIndentString(int indent, int tabDist, int allowTabs);
+static std::string makeIndentString(int64_t indent, int tabDist, bool allowTabs);
 static std::string shiftLineLeftEx(view::string_view line, long lineLen, int tabDist, int nChars);
 static std::string shiftLineRightEx(view::string_view line, long lineLen, int tabsAllowed, int tabDist, int nChars);
-static QString shiftLineRightEx(const QString &line, long lineLen, int tabsAllowed, int tabDist, int nChars);
+static QString shiftLineRightEx(const QString &line, int64_t lineLen, int tabsAllowed, int tabDist, int nChars);
 static QString shiftLineLeftEx(const QString &line, long lineLen, int tabDist, int nChars);
 static std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars);
 static bool atTabStop(int pos, int tabDist);
@@ -19,15 +19,15 @@ static int countLinesEx(view::string_view text);
 static int countLinesEx(const QString &text);
 
 template <class In>
-static int findLeftMarginEx(In first, In last, long length, int tabDist);
+static int findLeftMarginEx(In first, In last, int64_t length, int tabDist);
 
-static int findParagraphEnd(TextBuffer *buf, int startPos);
-static int findParagraphStart(TextBuffer *buf, int startPos);
+static int64_t findParagraphEnd(TextBuffer *buf, int64_t startPos);
+static int64_t findParagraphStart(TextBuffer *buf, int64_t startPos);
 static int nextTab(int pos, int tabDist);
-static std::string fillParagraphEx(view::string_view text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs);
-static std::string fillParagraphsEx(view::string_view text, int rightMargin, int tabDist, int useTabs, int alignWithFirst);
+static std::string fillParagraphEx(view::string_view text, int64_t leftMargin, int64_t firstLineIndent, int64_t rightMargin, int tabDist, bool allowTabs);
+static std::string fillParagraphsEx(view::string_view text, int64_t rightMargin, int tabDist, int useTabs, bool alignWithFirst);
 static void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUpper);
-static void shiftRectEx(DocumentWidget *document, TextArea *area, int direction, bool byTab, int selStart, int selEnd, int rectStart, int rectEnd);
+static void shiftRectEx(DocumentWidget *document, TextArea *area, int direction, bool byTab, int64_t selStart, int64_t selEnd, int64_t rectStart, int64_t rectEnd);
 
 
 /*
@@ -36,11 +36,11 @@ static void shiftRectEx(DocumentWidget *document, TextArea *area, int direction,
 ** tab if emulated tabs are turned on, or a hardware tab if not).
 */
 void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection direction, bool byTab) {
-    int selStart;
-    int selEnd;
+    int64_t selStart;
+    int64_t selEnd;
     bool isRect;
-    int rectStart;
-    int rectEnd;
+    int64_t rectStart;
+    int64_t rectEnd;
     int shiftDist;
     TextBuffer *buf = document->buffer_;
     std::string text;
@@ -48,7 +48,7 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
     // get selection, if no text selected, use current insert position
     if (!buf->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
 
-        const int cursorPos = area->TextGetCursorPos();
+        const int64_t cursorPos = area->TextGetCursorPos();
         selStart = buf->BufStartOfLine(cursorPos);
         selEnd = buf->BufEndOfLine(cursorPos);
 
@@ -61,8 +61,8 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
         text = buf->BufGetRangeEx(selStart, selEnd);
 
     } else if (isRect) {
-        const int cursorPos = area->TextGetCursorPos();
-        int origLength = buf->BufGetLength();
+        const int64_t cursorPos = area->TextGetCursorPos();
+        int64_t origLength = buf->BufGetLength();
         shiftRectEx(document, area, direction, byTab, selStart, selEnd, rectStart, rectEnd);
 
         area->TextSetCursorPos((cursorPos < (selEnd + selStart) / 2) ? selStart : cursorPos + (buf->BufGetLength() - origLength));
@@ -91,7 +91,7 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
 
     buf->BufReplaceSelectedEx(shiftedText);
 
-    const int newEndPos = selStart + gsl::narrow<int>(shiftedText.size());
+    const int64_t newEndPos = selStart + shiftedText.size();
     buf->BufSelect(selStart, newEndPos);
 }
 
@@ -100,8 +100,8 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
 ** if "byTab" is true.  (The length of a tab stop is the size of an emulated
 ** tab if emulated tabs are turned on, or a hardware tab if not).
 */
-static void shiftRectEx(DocumentWidget *document, TextArea *area, int direction, bool byTab, int selStart, int selEnd, int rectStart, int rectEnd) {
-    int offset;
+static void shiftRectEx(DocumentWidget *document, TextArea *area, int direction, bool byTab, int64_t selStart, int64_t selEnd, int64_t rectStart, int64_t rectEnd) {
+    int64_t offset;
     TextBuffer *buf = document->buffer_;
 
     // Make sure selStart and SelEnd refer to whole lines
@@ -158,17 +158,18 @@ void DowncaseSelectionEx(DocumentWidget *document, TextArea *area) {
 ** change to upper case, otherwise, change to lower case.
 */
 static void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUpper) {
+
     TextBuffer *buf = document->buffer_;
-    int start;
-    int end;
-    int rectStart;
-    int rectEnd;
+    int64_t start;
+    int64_t end;
+    int64_t rectStart;
+    int64_t rectEnd;
     bool isRect;
 
     // Get the selection.  Use character before cursor if no selection
     if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
         char bufChar[2] = " ";
-        int cursorPos = area->TextGetCursorPos();
+        int64_t cursorPos = area->TextGetCursorPos();
         if (cursorPos == 0) {
             QApplication::beep();
             return;
@@ -203,14 +204,14 @@ static void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUppe
 
 void FillSelectionEx(DocumentWidget *document, TextArea *area) {
     TextBuffer *buf = document->buffer_;
-    int left;
-    int right;
-    int rectStart;
-    int rectEnd;
+    int64_t left;
+    int64_t right;
+    int64_t rectStart;
+    int64_t rectEnd;
     bool isRect;
-    int rightMargin;
+    int64_t rightMargin;
 
-    int insertPos = area->TextGetCursorPos();
+    int64_t insertPos = area->TextGetCursorPos();
     int hasSelection = document->buffer_->BufGetPrimary().selected;
     std::string text;
 
@@ -269,7 +270,7 @@ void FillSelectionEx(DocumentWidget *document, TextArea *area) {
     } else {
         buf->BufReplaceEx(left, right, filledText);
         if (hasSelection) {
-            buf->BufSelect(left, left + gsl::narrow<int>(filledText.size()));
+            buf->BufSelect(left, left + filledText.size());
         }
     }
 
@@ -278,7 +279,7 @@ void FillSelectionEx(DocumentWidget *document, TextArea *area) {
     if (hasSelection && isRect) {
         area->TextSetCursorPos(buf->BufCursorPosHint());
     } else {
-        const auto len = gsl::narrow<int>(filledText.size());
+        const int64_t len = filledText.size();
         area->TextSetCursorPos(insertPos < left ? left : (insertPos > left + len ? left + len : insertPos));
     }
 }
@@ -348,9 +349,9 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 	** Shift right adds a maximum of nChars character per line.
 	*/
 	if (direction == SHIFT_RIGHT) {
-        bufLen = text.size() + gsl::narrow<size_t>(countLinesEx(text) * nChars);
+        bufLen = text.size() + countLinesEx(text) * nChars;
 	} else {
-        bufLen = text.size() + gsl::narrow<size_t>(countLinesEx(text) * tabDist);
+        bufLen = text.size() + countLinesEx(text) * tabDist;
 	}
 
 	std::string shiftedText;
@@ -391,12 +392,12 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 	return shiftedText;
 }
 
-static QString shiftLineRightEx(const QString &line, long lineLen, int tabsAllowed, int tabDist, int nChars) {
+static QString shiftLineRightEx(const QString &line, int64_t lineLen, int tabsAllowed, int tabDist, int nChars) {
     int whiteWidth, i;
 
     auto lineInPtr = line.begin();
     QString lineOut;
-    lineOut.reserve(lineLen + nChars);
+    lineOut.reserve(gsl::narrow<int>(lineLen + nChars));
 
     auto lineOutPtr = std::back_inserter(lineOut);
     whiteWidth = 0;
@@ -487,7 +488,7 @@ static QString shiftLineLeftEx(const QString &line, long lineLen, int tabDist, i
     auto lineInPtr = line.begin();
 
     QString out;
-    out.reserve(lineLen + tabDist);
+    out.reserve(gsl::narrow<int>(lineLen + tabDist));
 
     int whiteWidth = 0;
     int lastWhiteWidth = 0;
@@ -633,7 +634,7 @@ static int countLinesEx(const QString &text) {
 ** comes first.
 */
 template <class In>
-static int findLeftMarginEx(In first, In last, long length, int tabDist) {
+static int findLeftMarginEx(In first, In last, int64_t length, int tabDist) {
 
 	int col        = 0;
 	int leftMargin = INT_MAX;
@@ -677,7 +678,7 @@ static int findLeftMarginEx(In first, In last, long length, int tabDist) {
 ** capability not currently used in NEdit, but carried over from code for
 ** previous versions which did all paragraphs together).
 */
-static std::string fillParagraphsEx(view::string_view text, int rightMargin, int tabDist, int useTabs, int alignWithFirst) {
+static std::string fillParagraphsEx(view::string_view text, int64_t rightMargin, int tabDist, int useTabs, bool alignWithFirst) {
 
 	// Create a buffer to accumulate the filled paragraphs 
     TextBuffer buf;
@@ -687,7 +688,7 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 	** Loop over paragraphs, filling each one, and accumulating the results
 	** in buf
 	*/
-	int paraStart = 0;
+    int64_t paraStart = 0;
 	for (;;) {
 
 		// Skip over white space 
@@ -706,12 +707,12 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
         paraStart = buf.BufStartOfLine(paraStart);
 
 		// Find the end of the paragraph 
-        int paraEnd = findParagraphEnd(&buf, paraStart);
+        int64_t paraEnd = findParagraphEnd(&buf, paraStart);
 
 		/* Operate on either the one paragraph, or to make them all identical,
 		   do all of them together (fill paragraph can format all the paragraphs
 		   it finds with identical specs if it gets passed more than one) */
-        int fillEnd = alignWithFirst ? buf.BufGetLength() : paraEnd;
+        int64_t fillEnd = alignWithFirst ? buf.BufGetLength() : paraEnd;
 
 		/* Get the paragraph in a text string (or all of the paragraphs if
 		   we're making them all the same) */
@@ -747,7 +748,7 @@ static std::string fillParagraphsEx(view::string_view text, int rightMargin, int
 ** true) calculated using tabDist, and spaces.  Returns a newly allocated
 ** string as the function result, and the length of the new string in filledLen.
 */
-static std::string fillParagraphEx(view::string_view text, int leftMargin, int firstLineIndent, int rightMargin, int tabDist, int allowTabs) {
+static std::string fillParagraphEx(view::string_view text, int64_t leftMargin, int64_t firstLineIndent, int64_t rightMargin, int tabDist, bool allowTabs) {
 
     size_t nLines = 1;
 
@@ -786,7 +787,7 @@ static std::string fillParagraphEx(view::string_view text, int leftMargin, int f
 	   Algorithm: scan through characters, counting columns, and when the
 	   margin width is exceeded, search backward for beginning of the word
 	   and convert the last whitespace character into a newline */
-    int col = firstLineIndent;
+    int64_t col = firstLineIndent;
     bool inWhitespace;
 
     for (auto it = cleanedText.begin(); it != cleanedText.end(); ++it) {
@@ -846,7 +847,7 @@ static std::string fillParagraphEx(view::string_view text, int leftMargin, int f
     return outText;
 }
 
-static std::string makeIndentString(int indent, int tabDist, int allowTabs) {
+static std::string makeIndentString(int64_t indent, int tabDist, bool allowTabs) {
 
     std::string indentString;
     indentString.reserve(indent);
@@ -873,11 +874,11 @@ static std::string makeIndentString(int indent, int tabDist, int allowTabs) {
 /*
 ** Find the boundaries of the paragraph containing pos
 */
-static int findParagraphEnd(TextBuffer *buf, int startPos) {
+static int64_t findParagraphEnd(TextBuffer *buf, int64_t startPos) {
 
     static const char whiteChars[] = " \t";
 
-    int pos = buf->BufEndOfLine(startPos) + 1;
+    int64_t pos = buf->BufEndOfLine(startPos) + 1;
 	while (pos < buf->BufGetLength()) {
         char c = buf->BufGetCharacter(pos);
 		if (c == '\n')
@@ -890,15 +891,15 @@ static int findParagraphEnd(TextBuffer *buf, int startPos) {
 	return pos < buf->BufGetLength() ? pos : buf->BufGetLength();
 }
 
-static int findParagraphStart(TextBuffer *buf, int startPos) {
+static int64_t findParagraphStart(TextBuffer *buf, int64_t startPos) {
 
     static const char whiteChars[] = " \t";
 
 	if (startPos == 0)
 		return 0;
 
-    int parStart = buf->BufStartOfLine(startPos);
-    int pos      = parStart - 2;
+    int64_t parStart = buf->BufStartOfLine(startPos);
+    int64_t pos      = parStart - 2;
 
     while (pos > 0) {
         char c = buf->BufGetCharacter(pos);

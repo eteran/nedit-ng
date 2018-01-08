@@ -445,7 +445,7 @@ Program *ParseMacro(const std::string &expr, std::string *msg, int *stoppedAt)
 
     if (yyparse()) {
         *msg       = ErrMsg;
-        *stoppedAt = (InPtr - start);
+        *stoppedAt = gsl::narrow<int>(InPtr - start);
         delete FinishCreatingProgram();
         return nullptr;
     }
@@ -455,7 +455,7 @@ Program *ParseMacro(const std::string &expr, std::string *msg, int *stoppedAt)
 
     /* parse succeeded */
     *msg       = "";
-    *stoppedAt = (InPtr - start);
+    *stoppedAt = gsl::narrow<int>(InPtr - start);
     return prog;
 }
 

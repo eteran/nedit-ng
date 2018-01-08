@@ -93,7 +93,7 @@ enum ExecReturnCodes {
 
 union Inst {
 	int (*func)();
-	int value;
+    int64_t value;
 	Symbol *sym;
 };
 

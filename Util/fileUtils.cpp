@@ -440,7 +440,7 @@ void ConvertFromDosFileString(char *fileString, size_t *length, char *pendingCR)
  * @param length
  * @param pendingCR
  */
-void ConvertFromDosFileString(char *fileString, int *length, char *pendingCR) {
+void ConvertFromDosFileString(char *fileString, int64_t *length, char *pendingCR) {
 	Q_ASSERT(fileString);
 	char *outPtr = fileString;
 	char *inPtr = fileString;
@@ -462,7 +462,7 @@ void ConvertFromDosFileString(char *fileString, int *length, char *pendingCR) {
 	}
 
 	*outPtr = '\0';
-    *length = gsl::narrow<int>(outPtr - fileString);
+    *length = outPtr - fileString;
 }
 
 /**
@@ -486,7 +486,7 @@ void ConvertFromMacFileString(char *fileString, size_t length) {
  * @param fileString
  * @param length
  */
-void ConvertFromMacFileString(char *fileString, int length) {
+void ConvertFromMacFileString(char *fileString, int64_t length) {
 	Q_ASSERT(fileString);
     std::transform(fileString, fileString + length, fileString, [](char ch) {
         if(ch == '\r') {

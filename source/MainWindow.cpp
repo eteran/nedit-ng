@@ -5860,9 +5860,9 @@ void MainWindow::SetIncrementalSearchLineMS(bool value) {
 /*
 ** Search the text in "document", attempting to match "searchString"
 */
-bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int beginPos, int *startPos, int *endPos, int *extentBW, int *extentFW) {
+bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *extentBW, int64_t *extentFW) {
     bool found;
-    int fileEnd = document->buffer_->BufGetLength() - 1;
+    int64_t fileEnd = document->buffer_->BufGetLength() - 1;
     bool outsideBounds;
 
     // reject empty string
@@ -6026,11 +6026,11 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
 ** adds the search string to the global search history.
 */
 bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap) {
-    int startPos;
-    int endPos;
-    int beginPos;
-    int selStart;
-    int selEnd;
+    int64_t startPos;
+    int64_t endPos;
+    int64_t beginPos;
+    int64_t selStart;
+    int64_t selEnd;
     int movedFwd = 0;
 
     // Save a copy of searchString in the search history
@@ -6051,7 +6051,7 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, con
         selEnd = -1;
         // no selection, or no match, search relative cursor
 
-        int cursorPos = area->TextGetCursorPos();
+        int64_t cursorPos = area->TextGetCursorPos();
         if (direction == Direction::Backward) {
             // use the insert position - 1 for backward searches
             beginPos = cursorPos - 1;
@@ -6105,9 +6105,9 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, con
 ** current cursor position.
 */
 bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, bool continued) {
-    int beginPos;
-    int startPos;
-    int endPos;
+    int64_t beginPos;
+    int64_t startPos;
+    int64_t endPos;
 
     /* If there's a search in progress, start the search from the original
        starting position, otherwise search from the cursor position. */
@@ -6123,7 +6123,7 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
        clear the selection, set the cursor back to what would be the
        beginning of the search, and return. */
     if (searchString.isEmpty()) {
-        int beepBeginPos = (direction == Direction::Backward) ? beginPos - 1 : beginPos;
+        int64_t beepBeginPos = (direction == Direction::Backward) ? beginPos - 1 : beginPos;
         iSearchTryBeepOnWrapEx(direction, beepBeginPos, beepBeginPos);
         iSearchRecordLastBeginPosEx(direction, iSearchStartPos_);
 
@@ -6172,10 +6172,10 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
 ** using algorithm "searchType" and direction "direction"
 */
 bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap) {
-    int startPos = 0;
-    int endPos = 0;
-    int searchExtentBW;
-    int searchExtentFW;
+    int64_t startPos = 0;
+    int64_t endPos = 0;
+    int64_t searchExtentBW;
+    int64_t searchExtentFW;
 
     // Save a copy of search and replace strings in the search history
     saveSearchHistory(searchString, replaceString, searchType, false);
@@ -6185,7 +6185,7 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, co
     // Replace the selected text only if it matches the search string
     if (searchMatchesSelectionEx(document, searchString, searchType, &startPos, &endPos, &searchExtentBW, &searchExtentFW)) {
 
-        int replaceLen = 0;
+        int64_t replaceLen = 0;
 
         // replace the text
         if (isRegexType(searchType)) {
@@ -6203,7 +6203,7 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, co
                 defaultRegexFlags(searchType));
 
             document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
-            replaceLen = gsl::narrow<int>(replaceResult.size());
+            replaceLen = replaceResult.size();
         } else {
             document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toStdString());
             replaceLen = replaceString.size();
@@ -6287,11 +6287,11 @@ bool MainWindow::SearchAndSelectSameEx(DocumentWidget *document, TextArea *area,
 ** Also adds the search and replace strings to the global search history.
 */
 bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap) {
-    int startPos;
-    int endPos;
-    int replaceLen;
-    int searchExtentBW;
-    int searchExtentFW;
+    int64_t startPos;
+    int64_t endPos;
+    int64_t replaceLen;
+    int64_t searchExtentBW;
+    int64_t searchExtentFW;
 
     // Save a copy of search and replace strings in the search history
     saveSearchHistory(searchString, replaceString, searchType, false);
@@ -6303,8 +6303,8 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
     if (!searchMatchesSelectionEx(document, searchString, searchType, &startPos, &endPos, &searchExtentBW, &searchExtentFW)) {
         // get the position to start the search
 
-        int beginPos;
-        int cursorPos = area->TextGetCursorPos();
+        int64_t beginPos;
+        int64_t cursorPos = area->TextGetCursorPos();
         if (direction == Direction::Backward) {
             // use the insert position - 1 for backward searches
             beginPos = cursorPos - 1;
@@ -6337,7 +6337,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
             defaultRegexFlags(searchType));
 
         document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
-        replaceLen = gsl::narrow<int>(replaceResult.size());
+        replaceLen = replaceResult.size();
     } else {
         document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toStdString());
         replaceLen = replaceString.size();
@@ -6510,15 +6510,15 @@ void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QSt
 void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType) {
 
     std::string fileString;
-    int endPos;
-    int extentBW;
-    int extentFW;
-    int lineStart;
-    int rectEnd;
-    int rectStart;
-    int selEnd;
-    int selStart;
-    int startPos;
+    int64_t endPos;
+    int64_t extentBW;
+    int64_t extentFW;
+    int64_t lineStart;
+    int64_t rectEnd;
+    int64_t rectStart;
+    int64_t selEnd;
+    int64_t selStart;
+    int64_t startPos;
     bool isRect;
     bool substSuccess = false;
     bool anyFound     = false;
@@ -6550,9 +6550,9 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
 
     // search the string and do the replacements in the temporary buffer
 
-    int replaceLen = replaceString.size();
-    int beginPos   = 0;
-    int cursorPos  = 0;
+    int64_t replaceLen = replaceString.size();
+    int64_t beginPos   = 0;
+    int64_t cursorPos  = 0;
     int realOffset = 0;
     bool found     = true;
 
@@ -6632,7 +6632,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
             }
 
             tempBuf.BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceResult);
-            replaceLen = gsl::narrow<int>(replaceResult.size());
+            replaceLen = replaceResult.size();
         } else {
             // at this point plain substitutions (should) always work
             tempBuf.BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceString.toStdString());
@@ -6757,8 +6757,8 @@ bool MainWindow::prefOrUserCancelsSubstEx(DocumentWidget *document) {
 */
 bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType) {
 
-    int copyStart;
-    int copyEnd;
+    int64_t copyStart;
+    int64_t copyEnd;
 
     // reject empty string
     if (searchString.isEmpty()) {
@@ -6814,7 +6814,7 @@ bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QS
     document->buffer_->BufReplaceEx(copyStart, copyEnd, newFileString);
 
     // Move the cursor to the end of the last replacement
-    area->TextSetCursorPos(copyStart + gsl::narrow<int>(newFileString.size()));
+    area->TextSetCursorPos(copyStart + newFileString.size());
 
     return true;
 }
@@ -6901,7 +6901,7 @@ void MainWindow::DoFindReplaceDlogEx(DocumentWidget *document, TextArea *area, D
 ** Reset window->iSearchLastBeginPos_ to the resulting initial
 ** search begin position for incremental searches.
 */
-void MainWindow::iSearchRecordLastBeginPosEx(Direction direction, int initPos) {
+void MainWindow::iSearchRecordLastBeginPosEx(Direction direction, int64_t initPos) {
     iSearchLastBeginPos_ = initPos;
     if (direction == Direction::Backward) {
         iSearchLastBeginPos_--;
@@ -6913,7 +6913,7 @@ void MainWindow::iSearchRecordLastBeginPosEx(Direction direction, int initPos) {
 ** Emit a beep if the search wrapped over BOF/EOF compared to
 ** the last startPos of the current incremental search.
 */
-void MainWindow::iSearchTryBeepOnWrapEx(Direction direction, int beginPos, int startPos) {
+void MainWindow::iSearchTryBeepOnWrapEx(Direction direction, int64_t beginPos, int64_t startPos) {
     if (GetPrefBeepOnSearchWrap()) {
         if (direction == Direction::Forward) {
             if ((startPos >= beginPos && iSearchLastBeginPos_ < beginPos) || (startPos < beginPos && iSearchLastBeginPos_ >= beginPos)) {
@@ -6932,21 +6932,21 @@ void MainWindow::iSearchTryBeepOnWrapEx(Direction direction, int beginPos, int s
 ** current primary selection using search algorithm "searchType".  If true,
 ** also return the position of the selection in "left" and "right".
 */
-bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, int *left, int *right, int *searchExtentBW, int *searchExtentFW) {
+bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, int64_t *left, int64_t *right, int64_t *searchExtentBW, int64_t *searchExtentFW) {
 
-    int selLen;
-    int selStart;
-    int selEnd;
-    int startPos;
-    int endPos;
-    int extentBW;
-    int extentFW;
-    int beginPos;
+    int64_t selLen;
+    int64_t selStart;
+    int64_t selEnd;
+    int64_t startPos;
+    int64_t endPos;
+    int64_t extentBW;
+    int64_t extentFW;
+    int64_t beginPos;
     int regexLookContext = isRegexType(searchType) ? 1000 : 0;
     std::string string;
-    int rectStart;
-    int rectEnd;
-    int lineStart = 0;
+    int64_t rectStart;
+    int64_t rectEnd;
+    int64_t lineStart = 0;
     bool isRect;
 
     // find length of selection, give up on no selection or too long
@@ -6965,7 +6965,7 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
     /* get the selected text plus some additional context for regular
        expression lookahead */
     if (isRect) {
-        int stringStart = lineStart + rectStart - regexLookContext;
+        int64_t stringStart = lineStart + rectStart - regexLookContext;
         if (stringStart < 0) {
             stringStart = 0;
         }
@@ -6974,7 +6974,7 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
         selLen = rectEnd - rectStart;
         beginPos = lineStart + rectStart - stringStart;
     } else {
-        int stringStart = selStart - regexLookContext;
+        int64_t stringStart = selStart - regexLookContext;
         if (stringStart < 0) {
             stringStart = 0;
         }

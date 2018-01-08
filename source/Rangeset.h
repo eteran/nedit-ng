@@ -13,13 +13,13 @@ struct Range;
 struct RangesetInfo {
     bool        defined = false;
     int         label   = 0;
-    int         count   = 0;
+    int64_t     count   = 0;
 	QString     color;
 	QString     name;
     QString     mode;
 };
 
-using RangesetUpdateFn = Rangeset *(Rangeset *rangeset, int pos, int ins, int del);
+using RangesetUpdateFn = Rangeset *(Rangeset *rangeset, int64_t pos, int64_t ins, int64_t del);
 
 class Rangeset {
 public:
@@ -32,26 +32,26 @@ public:
 
 public:
     static void RangesFree(Range *ranges);
-    static Range *RangesNew(int n);
-    static Range *RangesRealloc(Range *ranges, int n);
+    static Range *RangesNew(int64_t n);
+    static Range *RangesRealloc(Range *ranges, int64_t n);
 
 public:
-    static void RangesetRefreshRange(TextBuffer *buffer, int start, int end);
+    static void RangesetRefreshRange(TextBuffer *buffer, int64_t start, int64_t end);
 
 public:
     bool RangesetAssignColorName(TextBuffer *buffer, const QString &color_name);
     bool RangesetAssignName(const QString &name);
     bool RangesetChangeModifyResponse(QString name);
-    bool RangesetFindRangeNo(int index, int *start, int *end) const;
-    int RangesetAddBetween(TextBuffer *buffer, int start, int end);
-    int RangesetAdd(TextBuffer *buffer, Rangeset *plusSet);
-    int RangesetCheckRangeOfPos(int pos);
-    int RangesetFindRangeOfPos(int pos, int incl_end) const;
+    bool RangesetFindRangeNo(int64_t index, int64_t *start, int64_t *end) const;
+    int64_t RangesetAddBetween(TextBuffer *buffer, int64_t start, int64_t end);
+    int64_t RangesetAdd(TextBuffer *buffer, Rangeset *plusSet);
+    int64_t RangesetCheckRangeOfPos(int64_t pos);
+    int64_t RangesetFindRangeOfPos(int64_t pos, int incl_end) const;
     int RangesetGetColorValid(QColor *color) const;
-    int RangesetGetNRanges() const;
-    int RangesetInverse(TextBuffer *buffer);
-    int RangesetRemoveBetween(TextBuffer *buffer, int start, int end);
-    int RangesetRemove(TextBuffer *buffer, Rangeset *minusSet);
+    int64_t RangesetGetNRanges() const;
+    int64_t RangesetInverse(TextBuffer *buffer);
+    int64_t RangesetRemoveBetween(TextBuffer *buffer, int64_t start, int64_t end);
+    int64_t RangesetRemove(TextBuffer *buffer, Rangeset *minusSet);
     QString RangesetGetName() const;
     RangesetInfo RangesetGetInfo() const;
     void RangesetEmpty(TextBuffer *buffer);
@@ -61,8 +61,8 @@ public:
     RangesetUpdateFn *update_fn_; // modification update function
     QString update_name_;         // update function name
 
-    int last_index_;              // a place to start looking
-    int n_ranges_;                // how many ranges in ranges
+    int64_t last_index_;          // a place to start looking
+    int64_t n_ranges_;            // how many ranges in ranges
     Range *ranges_;               // the ranges table
     uint8_t label_;               // a number 1-63
 

@@ -8,8 +8,8 @@
 #include <cstring>
 
 struct Range {
-    int start;
-    int end; /* range from [start-]end */
+    int64_t start;
+    int64_t end; /* range from [start-]end */
 };
 
 namespace {
@@ -37,11 +37,11 @@ struct {
 
 // -------------------------------------------------------------------------- 
 
-bool is_start(int i) {
+bool is_start(int64_t i) {
     return !(i & 1);
 }
 
-bool is_end(int i) {
+bool is_end(int64_t i) {
     return (i & 1);
 }
 
@@ -65,16 +65,16 @@ void rangesetRefreshAllRanges(TextBuffer *buffer, Rangeset *rangeset) {
 //               data-structures instead of replacing a few random
 //               functions
 template <class T>
-int at_or_before(const T *table, int base, int len, T val) {
+int64_t at_or_before(const T *table, int64_t base, int64_t len, T val) {
 
-    int mid = 0;
+    int64_t mid = 0;
 
     if (base >= len) {
         return len;		/* not sure what this means! */
     }
 
-    int lo = base;			/* first valid index */
-    int hi = len - 1;		/* last valid index */
+    int64_t lo = base;			/* first valid index */
+    int64_t hi = len - 1;		/* last valid index */
 
     while (lo <= hi) {
         mid = (lo + hi) / 2;
@@ -99,19 +99,19 @@ int at_or_before(const T *table, int base, int len, T val) {
 }
 
 template <class T>
-int weighted_at_or_before(const T *table, int base, int len, T val) {
+int64_t weighted_at_or_before(const T *table, int64_t base, int64_t len, T val) {
 
-    int mid = 0;
+    int64_t mid = 0;
 
     if (base >= len) {
         return len;		/* not sure what this means! */
     }
 
-    int lo = base;          /* first valid index */
-    int hi = len - 1;       /* last valid index */
+    int64_t lo = base;          /* first valid index */
+    int64_t hi = len - 1;       /* last valid index */
 
-    int min = table[lo];    /* establish initial min/max */
-    int max = table[hi];
+    int64_t min = table[lo];    /* establish initial min/max */
+    int64_t max = table[hi];
 
     if (val <= min) {   /* initial range checks */
         return lo;		/* needed to avoid out-of-range mid values */
@@ -155,16 +155,16 @@ int weighted_at_or_before(const T *table, int base, int len, T val) {
 ** update the last_index value of the range set. Return's the index value. This
 ** will be twice p->n_ranges if pos is beyond the end.
 */
-int rangesetWeightedAtOrBefore(Rangeset *rangeset, int pos) {
+int64_t rangesetWeightedAtOrBefore(Rangeset *rangeset, int64_t pos) {
 
-    int i;
-    auto rangeTable = reinterpret_cast<int *>(rangeset->ranges_);
+    int64_t i;
+    auto rangeTable = reinterpret_cast<int64_t *>(rangeset->ranges_);
 
-    int n = rangeset->n_ranges_;
+    int64_t n = rangeset->n_ranges_;
 	if (n == 0)
 		return 0;
 
-    int last = rangeset->last_index_;
+    int64_t last = rangeset->last_index_;
 
 	if (last >= n || last < 0)
 		last = 0;
@@ -185,9 +185,10 @@ int rangesetWeightedAtOrBefore(Rangeset *rangeset, int pos) {
 /*
 ** Adjusts values in tab[] by an amount delta, perhaps moving them meanwhile.
 */
-int rangesetShuffleToFrom(int *rangeTable, int to, int from, int n, int delta) {
-    int end;
-    int diff = from - to;
+template <class T>
+int64_t rangesetShuffleToFrom(T *rangeTable, int64_t to, int64_t from, int64_t n, int64_t delta) {
+    int64_t end;
+    int64_t diff = from - to;
 
     if (n <= 0) {
         return 0;
@@ -232,26 +233,26 @@ int rangesetShuffleToFrom(int *rangeTable, int to, int from, int n, int delta) {
 ** (start < pos && pos <= end), any text inserted will extend that range.
 ** Insertions appear to occur before deletions. This will never add new ranges.
 */
-Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, int pos, int ins, int del) {
+Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, int64_t pos, int64_t ins, int64_t del) {
 
-    auto rangeTable = reinterpret_cast<int *>(rangeset->ranges_);
+    auto rangeTable = reinterpret_cast<int64_t *>(rangeset->ranges_);
 
-    int n = 2 * rangeset->n_ranges_;
+    int64_t n = 2 * rangeset->n_ranges_;
 
-    int i = rangesetWeightedAtOrBefore(rangeset, pos);
+    int64_t i = rangesetWeightedAtOrBefore(rangeset, pos);
 
     if (i == n) {
         return rangeset;	/* all beyond the end */
     }
 
-    int end_del  = pos + del;
-    int movement = ins - del;
+    int64_t end_del  = pos + del;
+    int64_t movement = ins - del;
 
     /* the idea now is to determine the first range not concerned with the
        movement: its index will be j. For indices j to n-1, we will adjust
        position by movement only. (They may need shuffling up or down, depending
        on whether ranges have been deleted or created by the change.) */
-    int j = i;
+    int64_t j = i;
     while (j < n && rangeTable[j] <= end_del) { /* skip j to first ind beyond changes */
         j++;
     }
@@ -285,13 +286,13 @@ Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, int pos, int ins, int del) 
 ** Insertions appear to occur before deletions. This will never add new ranges.
 ** (Almost identical to rangesetInsDelMaintain().)
 */
-Rangeset *rangesetInclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
+Rangeset *rangesetInclMaintain(Rangeset *rangeset, int64_t pos, int64_t ins, int64_t del) {
 
-    auto rangeTable = reinterpret_cast<int *>(rangeset->ranges_);
+    auto rangeTable = reinterpret_cast<int64_t *>(rangeset->ranges_);
 
-    int n = 2 * rangeset->n_ranges_;
+    int64_t n = 2 * rangeset->n_ranges_;
 
-    int i = rangesetWeightedAtOrBefore(rangeset, pos);
+    int64_t i = rangesetWeightedAtOrBefore(rangeset, pos);
 
     if (i == n) {
         return rangeset;	/* all beyond the end */
@@ -304,14 +305,14 @@ Rangeset *rangesetInclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
         i++;
     }
 
-    int end_del  = pos + del;
-    int movement = ins - del;
+    int64_t end_del  = pos + del;
+    int64_t movement = ins - del;
 
     /* the idea now is to determine the first range not concerned with the
        movement: its index will be j. For indices j to n-1, we will adjust
        position by movement only. (They may need shuffling up or down, depending
        on whether ranges have been deleted or created by the change.) */
-    int j = i;
+    int64_t j = i;
     while (j < n && rangeTable[j] <= end_del) { /* skip j to first ind beyond changes */
         j++;
     }
@@ -346,26 +347,26 @@ Rangeset *rangesetInclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 ** range. Deletions appear to occur before insertions. This will never add new
 ** ranges.
 */
-Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, int pos, int ins, int del) {
+Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, int64_t pos, int64_t ins, int64_t del) {
 
-    auto rangeTable = reinterpret_cast<int *>(rangeset->ranges_);
+    auto rangeTable = reinterpret_cast<int64_t *>(rangeset->ranges_);
 
-    int n = 2 * rangeset->n_ranges_;
+    int64_t n = 2 * rangeset->n_ranges_;
 
-    int i = rangesetWeightedAtOrBefore(rangeset, pos);
+    int64_t i = rangesetWeightedAtOrBefore(rangeset, pos);
 
     if (i == n) {
         return rangeset;	/* all beyond the end */
     }
 
-    int end_del  = pos + del;
-    int movement = ins - del;
+    int64_t end_del  = pos + del;
+    int64_t movement = ins - del;
 
     /* the idea now is to determine the first range not concerned with the
        movement: its index will be j. For indices j to n-1, we will adjust
        position by movement only. (They may need shuffling up or down, depending
        on whether ranges have been deleted or created by the change.) */
-    int j = i;
+    int64_t j = i;
     while (j < n && rangeTable[j] <= end_del) { /* skip j to first ind beyond changes */
         j++;
     }
@@ -402,13 +403,13 @@ Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, int pos, int ins, int del) 
 ** range. Deletions appear to occur before insertions. This will never add new
 ** ranges. (Almost identical to rangesetDelInsMaintain().)
 */
-Rangeset *rangesetExclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
+Rangeset *rangesetExclMaintain(Rangeset *rangeset, int64_t pos, int64_t ins, int64_t del) {
 
-    auto rangeTable = reinterpret_cast<int *>(rangeset->ranges_);
+    auto rangeTable = reinterpret_cast<int64_t *>(rangeset->ranges_);
 
-    int n = 2 * rangeset->n_ranges_;
+    int64_t n = 2 * rangeset->n_ranges_;
 
-    int i = rangesetWeightedAtOrBefore(rangeset, pos);
+    int64_t i = rangesetWeightedAtOrBefore(rangeset, pos);
 
     if (i == n) {
         return rangeset;	/* all beyond the end */
@@ -421,14 +422,14 @@ Rangeset *rangesetExclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
         i++;
     }
 
-    int end_del  = pos + del;
-    int movement = ins - del;
+    int64_t end_del  = pos + del;
+    int64_t movement = ins - del;
 
     /* the idea now is to determine the first range not concerned with the
        movement: its index will be j. For indices j to n-1, we will adjust
        position by movement only. (They may need shuffling up or down, depending
        on whether ranges have been deleted or created by the change.) */
-    int j = i;
+    int64_t j = i;
     while (j < n && rangeTable[j] <= end_del) { /* skip j to first ind beyond changes */
         j++;
     }
@@ -462,13 +463,13 @@ Rangeset *rangesetExclMaintain(Rangeset *rangeset, int pos, int ins, int del) {
 ** may be broken in two if the deletion point pos+del does not extend beyond the
 ** end. Inserted text is never included in the range.
 */
-Rangeset *rangesetBreakMaintain(Rangeset *rangeset, int pos, int ins, int del) {
+Rangeset *rangesetBreakMaintain(Rangeset *rangeset, int64_t pos, int64_t ins, int64_t del) {
 
-    auto rangeTable = reinterpret_cast<int *>(rangeset->ranges_);
+    auto rangeTable = reinterpret_cast<int64_t *>(rangeset->ranges_);
 
-    int n = 2 * rangeset->n_ranges_;
+    int64_t n = 2 * rangeset->n_ranges_;
 
-    int i = rangesetWeightedAtOrBefore(rangeset, pos);
+    int64_t i = rangesetWeightedAtOrBefore(rangeset, pos);
 
     if (i == n) {
         return rangeset;	/* all beyond the end */
@@ -481,14 +482,14 @@ Rangeset *rangesetBreakMaintain(Rangeset *rangeset, int pos, int ins, int del) {
         i++;
     }
 
-    int end_del = pos + del;
-    int movement = ins - del;
+    int64_t end_del = pos + del;
+    int64_t movement = ins - del;
 
     /* the idea now is to determine the first range not concerned with the
        movement: its index will be j. For indices j to n-1, we will adjust
        position by movement only. (They may need shuffling up or down, depending
        on whether ranges have been deleted or created by the change.) */
-    int j = i;
+    int64_t j = i;
     while (j < n && rangeTable[j] <= end_del) { /* skip j to first ind beyond changes */
         j++;
     }
@@ -557,7 +558,7 @@ QString Rangeset::RangesetGetName() const {
  * @param end
  * @return
  */
-bool Rangeset::RangesetFindRangeNo(int index, int *start, int *end) const {
+bool Rangeset::RangesetFindRangeNo(int64_t index, int64_t *start, int64_t *end) const {
 
     if (index < 0 || n_ranges_ <= index || !ranges_) {
         return false;
@@ -574,15 +575,15 @@ bool Rangeset::RangesetFindRangeNo(int index, int *start, int *end) const {
 ** rangeset. Returns the containing range's index if true, -1 otherwise.
 ** Note: ranges are indexed from zero.
 */
-int Rangeset::RangesetFindRangeOfPos(int pos, int incl_end) const {
+int64_t Rangeset::RangesetFindRangeOfPos(int64_t pos, int incl_end) const {
 
     if (!n_ranges_ || !ranges_) {
         return -1;
     }
 
-    auto ranges = reinterpret_cast<int *>(ranges_);		/* { s1,e1, s2,e2, s3,e3,... } */
-    int len = n_ranges_ * 2;
-    int ind = at_or_before(ranges, 0, len, pos);
+    auto ranges = reinterpret_cast<int64_t *>(ranges_);		/* { s1,e1, s2,e2, s3,e3,... } */
+    int64_t len = n_ranges_ * 2;
+    int64_t ind = at_or_before(ranges, 0, len, pos);
 
     if (ind == len) {
         return -1;			/* beyond end */
@@ -612,7 +613,7 @@ int Rangeset::RangesetGetColorValid(QColor *color) const {
 /*
 ** Get number of ranges in rangeset.
 */
-int Rangeset::RangesetGetNRanges() const {
+int64_t Rangeset::RangesetGetNRanges() const {
     return n_ranges_;
 }
 
@@ -621,17 +622,17 @@ int Rangeset::RangesetGetNRanges() const {
 ** Returns the number of ranges if successful, -1 otherwise. Never adds more
 ** than one range.
 */
-int Rangeset::RangesetInverse(TextBuffer *buffer) {
+int64_t Rangeset::RangesetInverse(TextBuffer *buffer) {
 
-    int maxpos = buffer->BufGetLength();
-    int n;
+    int64_t maxpos = buffer->BufGetLength();
+    int64_t n;
 
-    auto rangeTable = reinterpret_cast<int *>(ranges_);
+    auto rangeTable = reinterpret_cast<int64_t *>(ranges_);
 
     if (n_ranges_ == 0) {
         if (!rangeTable) {
             ranges_    = RangesNew(1);
-            rangeTable = reinterpret_cast<int *>(ranges_);
+            rangeTable = reinterpret_cast<int64_t *>(ranges_);
         }
 
         rangeTable[0] = 0;
@@ -675,13 +676,13 @@ int Rangeset::RangesetInverse(TextBuffer *buffer) {
 /*
 ** Merge the ranges in rangeset plusSet into rangeset this.
 */
-int Rangeset::RangesetAdd(TextBuffer *buffer, Rangeset *plusSet) {
+int64_t Rangeset::RangesetAdd(TextBuffer *buffer, Rangeset *plusSet) {
 
     Range *origRanges = ranges_;
-    int nOrigRanges   = n_ranges_;
+    int64_t nOrigRanges   = n_ranges_;
 
     Range *plusRanges = plusSet->ranges_;
-    int nPlusRanges   = plusSet->n_ranges_;
+    int64_t nPlusRanges   = plusSet->n_ranges_;
 
     if (nPlusRanges == 0) {
         return nOrigRanges;	/* no ranges in plusSet - nothing to do */
@@ -768,10 +769,10 @@ int Rangeset::RangesetAdd(TextBuffer *buffer, Rangeset *plusSet) {
 ** Add the range indicated by the positions start and end. Returns the
 ** new number of ranges in the set.
 */
-int Rangeset::RangesetAddBetween(TextBuffer *buffer, int start, int end) {
+int64_t Rangeset::RangesetAddBetween(TextBuffer *buffer, int64_t start, int64_t end) {
 
-    int i;
-    auto rangeTable = reinterpret_cast<int *>(ranges_);
+    int64_t i;
+    auto rangeTable = reinterpret_cast<int64_t *>(ranges_);
 
     if (start > end) {
         /* quietly sort the positions */
@@ -780,11 +781,11 @@ int Rangeset::RangesetAddBetween(TextBuffer *buffer, int start, int end) {
         return n_ranges_; /* no-op - empty range == no range */
     }
 
-    int n = 2 * n_ranges_;
+    int64_t n = 2 * n_ranges_;
 
     if (n == 0) {			/* make sure we have space */
         ranges_    = RangesNew(1);
-        rangeTable = reinterpret_cast<int *>(ranges_);
+        rangeTable = reinterpret_cast<int64_t *>(ranges_);
         i = 0;
     } else {
         i = rangesetWeightedAtOrBefore(this, start);
@@ -800,7 +801,7 @@ int Rangeset::RangesetAddBetween(TextBuffer *buffer, int start, int end) {
         return n_ranges_;
     }
 
-    int j = i;
+    int64_t j = i;
     while (j < n && rangeTable[j] <= end) { /* skip j to first ind beyond changes */
         j++;
     }
@@ -891,17 +892,17 @@ bool Rangeset::RangesetChangeModifyResponse(QString name) {
 ** position. We also don't allow checking of the endpoint.
 ** Returns the including range index, or -1 if not found.
 */
-int Rangeset::RangesetCheckRangeOfPos(int pos) {
+int64_t Rangeset::RangesetCheckRangeOfPos(int64_t pos) {
 
-    int index;
+    int64_t index;
 
-    int len = n_ranges_;
+    int64_t len = n_ranges_;
     if (len == 0) {
         return -1; /* no ranges */
     }
 
-    auto ranges = reinterpret_cast<int *>(ranges_); /* { s1,e1, s2,e2, s3,e3,... } */
-    int last = last_index_;
+    auto ranges = reinterpret_cast<int64_t *>(ranges_); /* { s1,e1, s2,e2, s3,e3,... } */
+    int64_t last = last_index_;
 
     /* try to profit from the last lookup by using its index */
     if (last >= len || last < 0) {
@@ -954,13 +955,13 @@ int Rangeset::RangesetCheckRangeOfPos(int pos) {
 /*
 ** Subtract the ranges of minusSet from this rangeset .
 */
-int Rangeset::RangesetRemove(TextBuffer *buffer, Rangeset *minusSet) {
+int64_t Rangeset::RangesetRemove(TextBuffer *buffer, Rangeset *minusSet) {
 
     Range *origRanges = ranges_;
-    int nOrigRanges   = n_ranges_;
+    int64_t nOrigRanges   = n_ranges_;
 
     Range *minusRanges = ranges_;
-    int nMinusRanges   = minusSet->n_ranges_;
+    int64_t nMinusRanges   = minusSet->n_ranges_;
 
     if (nOrigRanges == 0 || nMinusRanges == 0) {
         return 0;		/* no ranges in origSet or minusSet - nothing to do */
@@ -1051,9 +1052,9 @@ int Rangeset::RangesetRemove(TextBuffer *buffer, Rangeset *minusSet) {
 ** new number of ranges in the set.
 */
 
-int Rangeset::RangesetRemoveBetween(TextBuffer *buffer, int start, int end) {
+int64_t Rangeset::RangesetRemoveBetween(TextBuffer *buffer, int64_t start, int64_t end) {
 
-    auto rangeTable = reinterpret_cast<int *>(ranges_);
+    auto rangeTable = reinterpret_cast<int64_t *>(ranges_);
 
     if (start > end) {
         /* quietly sort the positions */
@@ -1062,15 +1063,15 @@ int Rangeset::RangesetRemoveBetween(TextBuffer *buffer, int start, int end) {
         return n_ranges_; /* no-op - empty range == no range */
     }
 
-    int n = 2 * n_ranges_;
+    int64_t n = 2 * n_ranges_;
 
-    int i = rangesetWeightedAtOrBefore(this, start);
+    int64_t i = rangesetWeightedAtOrBefore(this, start);
 
     if (i == n) {
         return n_ranges_;		/* beyond last range */
     }
 
-    int j = i;
+    int64_t j = i;
     while (j < n && rangeTable[j] <= end) { /* skip j to first ind beyond changes */
         j++;
     }
@@ -1123,8 +1124,8 @@ void Rangeset::RangesetEmpty(TextBuffer *buffer) {
         color_set_ = -1;
 
         while (n_ranges_--) {
-            int start = ranges[n_ranges_].start;
-            int end   = ranges[n_ranges_].end;
+            int64_t start = ranges[n_ranges_].start;
+            int64_t end   = ranges[n_ranges_].end;
             Rangeset::RangesetRefreshRange(buffer, start, end);
         }
     }
@@ -1155,7 +1156,7 @@ RangesetInfo Rangeset::RangesetGetInfo() const {
 ** Refresh the given range on the screen. If the range indicated is null, we
 ** refresh the screen for the whole file.
 */
-void Rangeset::RangesetRefreshRange(TextBuffer *buffer, int start, int end) {
+void Rangeset::RangesetRefreshRange(TextBuffer *buffer, int64_t start, int64_t end) {
     if (buffer) {
         buffer->BufCheckDisplay(start, end);
     }
@@ -1176,9 +1177,7 @@ void Rangeset::RangesetInit(int label) {
     RangesetChangeModifyResponse(DEFAULT_UPDATE_FN_NAME);
 }
 
-Range *Rangeset::RangesNew(int n) {
-
-    Range *newRanges;
+Range *Rangeset::RangesNew(int64_t n) {
 
     if (n != 0) {
         /* We use a blocked allocation scheme here, with a block size of factor.
@@ -1204,7 +1203,7 @@ Range *Rangeset::RangesNew(int n) {
          * n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15)
          */
         n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
-        newRanges = reinterpret_cast<Range *>(malloc(n * sizeof (Range)));
+        auto newRanges = reinterpret_cast<Range *>(malloc(n * sizeof (Range)));
         return newRanges;
     }
 
@@ -1215,7 +1214,7 @@ void Rangeset::RangesFree(Range *ranges) {
     free(ranges);
 }
 
-Range *Rangeset::RangesRealloc(Range *ranges, int n) {
+Range *Rangeset::RangesRealloc(Range *ranges, int64_t n) {
 
     if (n > 0) {
         // see RangesNew() for comments
