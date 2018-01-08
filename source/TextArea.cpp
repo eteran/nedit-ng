@@ -2984,13 +2984,13 @@ void TextArea::redisplayLineEx(int visLineNum, int leftClip, int rightClip, int6
 void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex) {
 
 	int i;
-    int startX;	
+    int64_t startX;
     int64_t charWidth;
     int startIndex;
 	int style;
     int64_t charLen;
 	int outStartIndex;
-	int cursorX = 0;
+    int64_t cursorX = 0;
 	bool hasCursor = false;
     int64_t dispIndexOffset;
     int64_t cursorPos = cursorPos_;
@@ -3053,7 +3053,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   that's off the left edge of the displayed area) to find the first
 	   character position that's not clipped, and the x coordinate for drawing
 	   that character */
-	int x = rect_.left() - horizOffset_;
+    int64_t x = rect_.left() - horizOffset_;
 	int outIndex = 0;
 
     int charIndex;
@@ -3241,7 +3241,7 @@ int TextArea::styleOfPos(int64_t lineStartPos, int64_t lineLen, int64_t lineInde
 ** rectangle where text would have drawn from x to toX and from y to
 ** the maximum y extent of the current font(s).
 */
-void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, char *string, long nChars) {
+void TextArea::drawString(QPainter *painter, int style, int64_t x, int y, int64_t toX, char *string, long nChars) {
 
     QColor bground       = palette().color(QPalette::Base);
     QColor fground       = palette().color(QPalette::Text);
@@ -3348,10 +3348,12 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
         if (toX >= rect_.left()) {
             painter->fillRect(
                         QRect(
-                            std::max(x, rect_.left()),
+                            static_cast<int>(std::max<int64_t>(x, rect_.left())),
                             y,
-                            toX - std::max(x, rect_.left()),
-                            ascent_ + descent_), bground);
+                            static_cast<int>(toX - std::max<int64_t>(x, rect_.left())),
+                            ascent_ + descent_
+                            ),
+                        bground);
 		}
 
 		return;
@@ -3379,7 +3381,11 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
 
     auto s = asciiToUnicode(string, nChars);
 
-    QRect rect(x, y, toX - x, ascent_ + descent_);
+    QRect rect(
+                static_cast<int>(x),
+                y,
+                static_cast<int>(toX - x),
+                ascent_ + descent_);
 
     // TODO(eteran): 2.0, OPTIMIZATION? since Qt will auto-fill the BG with the
 	//               default base color we only need to play with the
@@ -3401,7 +3407,7 @@ void TextArea::drawString(QPainter *painter, int style, int x, int y, int toX, c
  * @param x
  * @param y
  */
-void TextArea::drawCursor(QPainter *painter, int x, int y) {
+void TextArea::drawCursor(QPainter *painter, int64_t x, int64_t y) {
 
 	QPainterPath path;
     QFontMetrics fm(font_);
@@ -3420,7 +3426,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
     y += 1;
     fontHeight -= 1;
 
-    int bot = y + fontHeight - 1;
+    int64_t bot = y + fontHeight - 1;
 
     if (x < rect_.left() - 1 || x > rect_.left() + rect_.width()) {
 		return;
@@ -3430,13 +3436,13 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 	   width, rounded to an even number of pixels so that X will draw an
 	   odd number centered on the stem at x. */
 	int cursorWidth = (fontWidth / 3) * 2;
-	int left  = x - cursorWidth / 2;
-	int right = left + cursorWidth;
+    int64_t left  = x - cursorWidth / 2;
+    int64_t right = left + cursorWidth;
 
 	// Create segments and draw cursor
 	switch(cursorStyle_) {
     case CursorStyles::Caret: {
-        const int midY = bot - fontHeight / 5;
+        const int64_t midY = bot - fontHeight / 5;
 
 		path.moveTo(left, bot);
 		path.lineTo(x, midY);
@@ -3471,7 +3477,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
         break;
     }
     case CursorStyles::Dim: {
-        const int midY = y + fontHeight / 2;
+        const int64_t midY = y + fontHeight / 2;
 
         path.moveTo(x, y);
         path.lineTo(x, y);
@@ -4057,7 +4063,7 @@ bool TextArea::TextDPositionToXY(int64_t pos, int64_t *x, int64_t *y) const {
     int64_t lineLen;
     int64_t visLineNum;
 	int outIndex;
-	int xStep;
+    int64_t xStep;
     char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 
 	// If position is not displayed, return false
@@ -5789,7 +5795,7 @@ int64_t TextArea::xyToPos(int64_t x, int64_t y, PositionTypes posType) const {
 
 	/* Step through character positions from the beginning of the line
 	   to find the character position corresponding to the x coordinate */
-    int xStep = rect_.left() - horizOffset_;
+    int64_t xStep = rect_.left() - horizOffset_;
     int outIndex = 0;
     for (int charIndex = 0; charIndex < lineLen; charIndex++) {
 
@@ -7056,9 +7062,6 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
     const TextSelection *sec     = &buffer_->BufGetSecondary();
     const TextSelection *primary = &buffer_->BufGetPrimary();
 
-    int64_t newPrimaryStart;
-    int64_t newPrimaryEnd;
-    bool secWasRect;
 	DragStates dragState = dragState_; // save before endDrag
 	bool silent = flags & NoBellFlag;
 
@@ -7090,11 +7093,11 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 	std::string primaryText = buffer_->BufGetSelectionTextEx();
 	std::string secText     = buffer_->BufGetSecSelectTextEx();
 
-	secWasRect = sec->rectangular;
+    const bool secWasRect = sec->rectangular;
 	buffer_->BufReplaceSecSelectEx(primaryText);
-	newPrimaryStart = primary->start;
+    const int64_t newPrimaryStart = primary->start;
 	buffer_->BufReplaceSelectedEx(secText);
-    newPrimaryEnd = newPrimaryStart + secText.size();
+    const int64_t newPrimaryEnd = newPrimaryStart + secText.size();
 
 	buffer_->BufSecondaryUnselect();
 	if (secWasRect) {
@@ -7247,7 +7250,7 @@ void TextArea::pageLeftAP(EventFlags flags) {
 			ringIfNecessary(silent);
 			return;
 		}
-        int horizOffset = std::max<int64_t>(0, horizOffset_ - rect_.width());
+        int64_t horizOffset = std::max<int64_t>(0, horizOffset_ - rect_.width());
 		TextDSetScroll(topLineNum_, horizOffset);
 	} else {
         int64_t lineStartPos = buffer_->BufStartOfLine(insertPos);

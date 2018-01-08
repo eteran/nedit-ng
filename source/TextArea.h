@@ -326,8 +326,8 @@ private:
     void redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);
     void redisplayLineEx(int visLineNum, int leftClip, int rightClip, int64_t leftCharIndex, int64_t rightCharIndex);
     int styleOfPos(int64_t lineStartPos, int64_t lineLen, int64_t lineIndex, int64_t dispIndex, int thisChar) const;
-    void drawString(QPainter *painter, int style, int x, int y, int toX, char *string, long nChars);
-	void drawCursor(QPainter *painter, int x, int y);
+    void drawString(QPainter *painter, int style, int64_t x, int y, int64_t toX, char *string, long nChars);
+    void drawCursor(QPainter *painter, int64_t x, int64_t y);
     QColor getRangesetColor(int ind, QColor bground) const;
     void setScroll(int64_t topLineNum, int64_t horizOffset, bool updateVScrollBar, bool updateHScrollBar);
     void offsetLineStarts(int64_t newTopLineNum);
