@@ -2546,7 +2546,7 @@ void TextArea::findLineEnd(int64_t startPos, int64_t startPosIsLineStart, int64_
 	// if we're not wrapping use more efficient BufEndOfLine
 	if (!P_continuousWrap) {
 		*lineEnd = buffer_->BufEndOfLine(startPos);
-        *nextLineStart = std::min<int64_t>(buffer_->BufGetLength(), *lineEnd + 1);
+        *nextLineStart = std::min(buffer_->BufGetLength(), *lineEnd + 1);
 		return;
 	}
 
@@ -5577,7 +5577,7 @@ void TextArea::forwardParagraphAP(EventFlags flags) {
 		return;
 	}
 
-    pos = std::min<int64_t>(buffer_->BufEndOfLine(insertPos) + 1, buffer_->BufGetLength());
+    pos = std::min(buffer_->BufEndOfLine(insertPos) + 1, buffer_->BufGetLength());
 	while (pos < buffer_->BufGetLength()) {
 		char c = buffer_->BufGetCharacter(pos);
 		if (c == '\n')
@@ -5585,7 +5585,7 @@ void TextArea::forwardParagraphAP(EventFlags flags) {
 		if (strchr(whiteChars, c) != nullptr)
 			pos++;
 		else
-            pos = std::min<int64_t>(buffer_->BufEndOfLine(pos) + 1, buffer_->BufGetLength());
+            pos = std::min(buffer_->BufEndOfLine(pos) + 1, buffer_->BufGetLength());
 	}
 	TextDSetInsertPosition(std::min(pos + 1, buffer_->BufGetLength()));
 	checkMoveSelectionChange(flags, insertPos);

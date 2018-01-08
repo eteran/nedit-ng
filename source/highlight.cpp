@@ -237,7 +237,7 @@ static void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highl
 		   hierarchy and start again from where the previous parse left off. */
 		if (endAt < endParse) {
 			beginParse = endAt;
-            endParse = forwardOneContext(buf, context, std::max<int64_t>(endAt, std::max<int64_t>(lastModified(styleBuf), lastMod)));
+            endParse = forwardOneContext(buf, context, std::max(endAt, std::max(lastModified(styleBuf), lastMod)));
 			if (is_plain(parseInStyle)) {
                 qCritical("NEdit: internal error: incr. reparse fell short");
 				return;
@@ -253,7 +253,7 @@ static void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highl
 			   reparse until nothing changes */
 		} else {
 			lastMod = lastModified(styleBuf);
-            endParse = std::min<int64_t>(buf->BufGetLength(), forwardOneContext(buf, context, lastMod) + (REPARSE_CHUNK_SIZE << nPasses));
+            endParse = std::min(buf->BufGetLength(), forwardOneContext(buf, context, lastMod) + (REPARSE_CHUNK_SIZE << nPasses));
 		}
 	}
 }
@@ -318,7 +318,7 @@ static int64_t parseBufferRange(HighlightData *pass1Patterns, HighlightData *pas
     } else if (endParse >= buf->BufGetLength() || (buf->BufGetCharacter(endParse - 1) == '\n')) {
 		endSafety = endParse;
     } else {
-        endSafety = std::min<int64_t>(buf->BufGetLength(), buf->BufEndOfLine(endParse) + 1);
+        endSafety = std::min(buf->BufGetLength(), buf->BufEndOfLine(endParse) + 1);
     }
 
 	// copy the buffer range into a string 
@@ -348,7 +348,7 @@ static int64_t parseBufferRange(HighlightData *pass1Patterns, HighlightData *pas
 		match_to);
 
 	// On non top-level patterns, parsing can end early 
-    endParse = std::min<int64_t>(endParse, stringPtr - string + beginSafety);
+    endParse = std::min(endParse, stringPtr - string + beginSafety);
 
 	// If there are no pass 2 patterns, we're done 
 	if (!pass2Patterns)
@@ -401,7 +401,7 @@ static int64_t parseBufferRange(HighlightData *pass1Patterns, HighlightData *pas
 			prevChar = getPrevChar(buf, beginSafety);
 			passTwoParseString(pass2Patterns, string, styleString, endParse - beginSafety, &prevChar, delimiters, string, match_to);
 		} else {
-            startPass2Safety = std::max<int64_t>(beginSafety, backwardOneContext(buf, contextRequirements, modEnd));
+            startPass2Safety = std::max(beginSafety, backwardOneContext(buf, contextRequirements, modEnd));
 
 
 			prevChar = getPrevChar(buf, startPass2Safety);
@@ -999,7 +999,7 @@ int64_t backwardOneContext(TextBuffer *buf, ReparseContext *context, int64_t fro
 	else if (context->nChars == 0)
         return std::max<int64_t>(0, buf->BufCountBackwardNLines(fromPos, context->nLines - 1) - 1);
 	else
-        return std::max<int64_t>(0, std::min<int64_t>(std::max<int64_t>(0, buf->BufCountBackwardNLines(fromPos, context->nLines - 1) - 1), fromPos - context->nChars));
+        return std::max<int64_t>(0, std::min(std::max<int64_t>(0, buf->BufCountBackwardNLines(fromPos, context->nLines - 1) - 1), fromPos - context->nChars));
 }
 
 /*
@@ -1012,11 +1012,11 @@ int64_t backwardOneContext(TextBuffer *buf, ReparseContext *context, int64_t fro
 */
 int64_t forwardOneContext(TextBuffer *buf, ReparseContext *context, int64_t fromPos) {
 	if (context->nLines == 0)
-        return std::min<int64_t>(buf->BufGetLength(), fromPos + context->nChars);
+        return std::min(buf->BufGetLength(), fromPos + context->nChars);
 	else if (context->nChars == 0)
-        return std::min<int64_t>(buf->BufGetLength(), buf->BufCountForwardNLines(fromPos, context->nLines));
+        return std::min(buf->BufGetLength(), buf->BufCountForwardNLines(fromPos, context->nLines));
 	else
-        return std::min<int64_t>(buf->BufGetLength(), std::max<int64_t>(buf->BufCountForwardNLines(fromPos, context->nLines), fromPos + context->nChars));
+        return std::min(buf->BufGetLength(), std::max(buf->BufCountForwardNLines(fromPos, context->nLines), fromPos + context->nChars));
 }
 
 /*
