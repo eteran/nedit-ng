@@ -206,7 +206,7 @@ int execError(const std::error_code &error_code, T ... args) {
 
     std::string str = error_code.message();
 
-    snprintf(msg, sizeof(msg), str.c_str(), args...);
+    qsnprintf(msg, sizeof(msg), str.c_str(), args...);
     ErrMsg = msg;
     return STAT_ERROR;
 }
@@ -215,7 +215,7 @@ template <class ...T>
 int execError(const char *s1, T ... args) {
     static char msg[MAX_ERR_MSG_LEN];
 
-    snprintf(msg, sizeof(msg), s1, args...);
+    qsnprintf(msg, sizeof(msg), s1, args...);
     ErrMsg = msg;
     return STAT_ERROR;
 }

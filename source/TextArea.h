@@ -246,8 +246,8 @@ public:
 	void TextDSetColors(const QColor &textFgP, const QColor &textBgP, const QColor &selectFgP, const QColor &selectBgP, const QColor &hiliteFgP, const QColor &hiliteBgP, const QColor &lineNoFgP, const QColor &cursorFgP);
     void TextDXYToUnconstrainedPosition(const QPoint &coord, int64_t *row, int64_t *column) const;
     int64_t TextDXYToPosition(const QPoint &coord) const;
-    int64_t TextDOffsetWrappedColumn(int64_t row, int64_t column) const;
-    void TextDGetScroll(int64_t *topLineNum, int64_t *horizOffset);
+    int64_t TextDOffsetWrappedColumn(int row, int64_t column) const;
+    void TextDGetScroll(int64_t *topLineNum, int *horizOffset);
     bool TextDInSelection(const QPoint &p) const;
     int64_t TextGetCursorPos() const;
     int64_t TextDGetInsertPosition() const;
@@ -280,7 +280,7 @@ public:
     void TextCutClipboard();
 	void TextPasteClipboard();
 	void TextColPasteClipboard();
-    int64_t TextDOffsetWrappedRow(int64_t row) const;
+    int64_t TextDOffsetWrappedRow(int row) const;
 	void TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int textLeft);
     int64_t TextDPreferredColumn(int *visLineNum, int64_t *lineStartPos);
     int64_t TextDPosOfPreferredCol(int64_t column, int64_t lineStartPos);
@@ -371,29 +371,30 @@ private:
     int64_t getAbsTopLineNum() const;
 	CursorStyles getCursorStyle() const;
 
-    bool cursorOn_               = false;
-    bool needAbsTopLineNum_      = false;          // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display
-    bool pointerHidden_          = false;          // true if the mouse pointer is hidden
-    bool suppressResync_         = false;          // Suppress resynchronization of line starts during buffer updates
+private:
     CallTip calltip_;                              // The info for the calltip itself
     CursorStyles cursorStyle_    = CursorStyles::Normal;  // One of enum cursorStyles above
     DragStates dragState_        = NOT_CLICKED;    // Why is the mouse being dragged and what is being acquired
     int64_t absTopLineNum_       = 1;              // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
-    int clickCount_              = 0;
     int64_t cursorPos_           = 0;
     int64_t cursorPreferredCol_  = -1;             // Column for vert. cursor movement
     int64_t cursorToHint_        = NO_HINT;        // Tells the buffer modified callback where to move the cursor, to reduce the number of redraw calls
-    int emTabsBeforeCursor_      = 0;              // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
     int64_t firstChar_           = 0;              // Buffer positions of first and last displayed character (lastChar points either to a newline or one character beyond the end of the buffer)
-    int horizOffset_             = 0;              // Horizontal scroll pos. in pixels
     int64_t lastChar_            = 0;
+    int64_t nBufferLines_        = 0;              // # of newlines in the buffer
+    int64_t topLineNum_          = 1;              // Line number of top displayed line of file (first line of file is 1)
+    int clickCount_              = 0;
+    int emTabsBeforeCursor_      = 0;              // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
+    int horizOffset_             = 0;              // Horizontal scroll pos. in pixels
     int lineNumLeft_             = 0;
     int lineNumWidth_            = 0;
     int modifyingTabDist_        = 0;              // Whether tab distance is being modified
-    int64_t nBufferLines_        = 0;              // # of newlines in the buffer
     int nLinesDeleted_           = 0;              // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
     int nVisibleLines_           = 1;              // # of visible (displayed) lines
-    int64_t topLineNum_          = 1;              // Line number of top displayed line of file (first line of file is 1)
+    bool cursorOn_               = false;
+    bool needAbsTopLineNum_      = false;          // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display
+    bool pointerHidden_          = false;          // true if the mouse pointer is hidden
+    bool suppressResync_         = false;          // Suppress resynchronization of line starts during buffer updates
 
 private:
     QColor cursorFGPixel_        = Qt::black;
