@@ -4512,7 +4512,6 @@ int TextArea::TextDMoveUp(bool absolute) {
 
 int TextArea::TextDMoveDown(bool absolute) {
     int64_t lineStartPos;
-    int64_t column;
     int64_t nextLineStartPos;
     int64_t newPos;
     int64_t visLineNum;
@@ -4531,7 +4530,7 @@ int TextArea::TextDMoveDown(bool absolute) {
 		visLineNum = -1;
 	}
 
-	column = cursorPreferredCol_ >= 0 ? cursorPreferredCol_ : buffer_->BufCountDispChars(lineStartPos, cursorPos_);
+    int64_t column = cursorPreferredCol_ >= 0 ? cursorPreferredCol_ : buffer_->BufCountDispChars(lineStartPos, cursorPos_);
 
 	if (absolute)
 		nextLineStartPos = buffer_->BufCountForwardNLines(lineStartPos, 1);
@@ -7499,7 +7498,6 @@ void TextArea::previousPageAP(EventFlags flags) {
 ** of the current insert position.
 */
 int64_t TextArea::TextDPreferredColumn(int64_t *visLineNum, int64_t *lineStartPos) {
-    int64_t column;
 
 	/* Find the position of the start of the line.  Use the line starts array
 	if possible, to avoid unbounded line-counting in continuous wrap mode */
@@ -7511,7 +7509,7 @@ int64_t TextArea::TextDPreferredColumn(int64_t *visLineNum, int64_t *lineStartPo
 	}
 
 	// Decide what column to move to, if there's a preferred column use that
-	column = (cursorPreferredCol_ >= 0) ? cursorPreferredCol_ : buffer_->BufCountDispChars(*lineStartPos, cursorPos_);
+    int64_t column = (cursorPreferredCol_ >= 0) ? cursorPreferredCol_ : buffer_->BufCountDispChars(*lineStartPos, cursorPos_);
     return column;
 }
 
@@ -7554,17 +7552,22 @@ int64_t TextArea::TextDPosToLineAndCol(int64_t pos, int64_t *lineNum, int64_t *c
 	   maintained separately, as needed.  Only return it if we're actually
 	   keeping track of it and pos is in the displayed text */
 	if (P_continuousWrap) {
-		if (!maintainingAbsTopLineNum() || pos < firstChar_ || pos > lastChar_)
+        if (!maintainingAbsTopLineNum() || pos < firstChar_ || pos > lastChar_) {
             return false;
+        }
+
 		*lineNum = absTopLineNum_ + buffer_->BufCountLines(firstChar_, pos);
         *column  = buffer_->BufCountDispChars(buffer_->BufStartOfLine(pos), pos);
 		return true;
 	}
 
 	// Only return the data if pos is within the displayed text
-	if (!posToVisibleLineNum(pos, lineNum))
+    int64_t visibleLinNum;
+    if (!posToVisibleLineNum(pos, &visibleLinNum)) {
         return false;
-	*column = buffer_->BufCountDispChars(lineStarts_[*lineNum], pos);
+    }
+
+    *column = buffer_->BufCountDispChars(lineStarts_[visibleLinNum], pos);
 	*lineNum += topLineNum_;
 	return true;
 }
