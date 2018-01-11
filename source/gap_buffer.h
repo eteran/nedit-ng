@@ -111,7 +111,7 @@ gap_buffer<Ch, Tr>::gap_buffer() : gap_buffer(0){
 template <class Ch, class Tr>
 gap_buffer<Ch, Tr>::gap_buffer(int64_t size) {
 
-    buf_       = new Ch[size + PreferredGapSize + 1];
+    buf_       = new Ch[static_cast<size_t>(size + PreferredGapSize + 1)];
     gap_start_ = 0;
     gap_end_   = PreferredGapSize;
     size_      = 0;
@@ -202,7 +202,7 @@ int gap_buffer<Ch, Tr>::compare(int64_t pos, view_type str) const {
     // but that would also be slightly less efficient since "to_view" *may* do
     // a gap move. Worth it for the simplicity?
 
-    int64_t posEnd = pos + str.size();
+    int64_t posEnd = pos + static_cast<int64_t>(str.size());
     if (posEnd > size()) {
         return 1;
     }
@@ -216,13 +216,13 @@ int gap_buffer<Ch, Tr>::compare(int64_t pos, view_type str) const {
     } else if (pos >= gap_start_) {
         return Tr::compare(&buf_[pos + gap_size()], str.data(), str.size());
     } else {
-        const int64_t part1Length = gap_start_ - pos;
+        const auto part1Length = static_cast<size_t>(gap_start_ - pos);
         const int result = Tr::compare(&buf_[pos], str.data(), part1Length);
         if (result) {
             return result;
         }
 
-        return Tr::compare(&buf_[gap_end_], &str[part1Length], str.size() - part1Length);
+        return Tr::compare(&buf_[gap_end_], &str[part1Length], static_cast<size_t>(str.size() - part1Length));
     }
 }
 
@@ -249,7 +249,7 @@ int gap_buffer<Ch, Tr>::compare(int64_t pos, Ch ch) const {
 template <class Ch, class Tr>
 auto gap_buffer<Ch, Tr>::to_string() const -> string_type {
     string_type text;
-    text.reserve(size());
+    text.reserve(static_cast<size_t>(size()));
 
     std::copy_n(buf_,            gap_start_,          std::back_inserter(text));
     std::copy_n(&buf_[gap_end_], size() - gap_start_, std::back_inserter(text));
@@ -269,7 +269,7 @@ auto gap_buffer<Ch, Tr>::to_string(int64_t start, int64_t end) const -> string_t
     assert(start <= end);
 
     const int64_t length = end - start;
-    text.reserve(length);
+    text.reserve(static_cast<size_t>(length));
 
     // Copy the text from the buffer to the returned string
     if (end <= gap_start_) {
@@ -305,7 +305,7 @@ auto gap_buffer<Ch, Tr>::to_view() -> view_type {
     // get the start position of the actual data
     Ch *const text = &buf_[(leftLen == 0) ? gap_end_ : 0];
 
-    return view_type(text, bufLen);
+    return view_type(text, static_cast<size_t>(bufLen));
 }
 
 /**
@@ -331,7 +331,7 @@ auto gap_buffer<Ch, Tr>::to_view(int64_t start, int64_t end) -> view_type {
     // get the start position of the actual data
     Ch *const text = &buf_[(leftLen == 0) ? gap_end_ : 0];
 
-    return view_type(text + start, end - start);
+    return view_type(text + start, static_cast<size_t>(end - start));
 }
 
 /**
@@ -358,7 +358,7 @@ void gap_buffer<Ch, Tr>::insert(int64_t pos, view_type str) {
 
     assert(pos <= size() && pos >= 0);
 
-    const int64_t length = str.size();
+    const int64_t length = static_cast<int64_t>(str.size());
 
     /* Prepare the buffer to receive the new text.  If the new text fits in
        the current buffer, just move the gap (if necessary) to where
@@ -444,18 +444,18 @@ void gap_buffer<Ch, Tr>::replace(int64_t start, int64_t end, Ch ch) {
  */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::assign(view_type str) {
-    const int64_t length = str.size();
+    const int64_t length = static_cast<int64_t>(str.size());
 
     delete [] buf_;
 
     // Start a new buffer with a gap of GapSize in the center
-    buf_       = new Ch[length + PreferredGapSize + 1];
+    buf_       = new Ch[static_cast<size_t>(length + PreferredGapSize + 1)];
     size_      = length;
     gap_start_ = length / 2;
     gap_end_   = gap_start_ + PreferredGapSize;
 
-    Tr::copy(&buf_[0],        &str[0],          gap_start_);
-    Tr::copy(&buf_[gap_end_], &str[gap_start_], length - gap_start_);
+    Tr::copy(&buf_[0],        &str[0],          static_cast<size_t>(gap_start_));
+    Tr::copy(&buf_[gap_end_], &str[gap_start_], static_cast<size_t>(length - gap_start_));
 
     buf_[length + PreferredGapSize] = Ch();
 
@@ -481,9 +481,9 @@ void gap_buffer<Ch, Tr>::move_gap(int64_t pos) {
     const int64_t gapLen = gap_end_ - gap_start_;
 
     if (pos > gap_start_) {
-        Tr::move(&buf_[gap_start_], &buf_[gap_end_], pos - gap_start_);
+        Tr::move(&buf_[gap_start_], &buf_[gap_end_], static_cast<size_t>(pos - gap_start_));
     } else {
-        Tr::move(&buf_[pos + gapLen], &buf_[pos], gap_start_ - pos);
+        Tr::move(&buf_[pos + gapLen], &buf_[pos], static_cast<size_t>(gap_start_ - pos));
     }
 
     gap_end_   += (pos - gap_start_);
@@ -497,18 +497,18 @@ void gap_buffer<Ch, Tr>::move_gap(int64_t pos) {
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::reallocate_buffer(int64_t new_gap_start, int64_t new_gap_size) {
 
-    auto newBuf = new Ch[size() + new_gap_size + 1];
+    auto newBuf = new Ch[static_cast<size_t>(size() + new_gap_size + 1)];
 
     int64_t new_gap_end = new_gap_start + new_gap_size;
 
     if (new_gap_start <= gap_start_) {
-        Tr::copy(newBuf,                                            &buf_[0],             new_gap_start);
-        Tr::copy(&newBuf[new_gap_end],                              &buf_[new_gap_start], gap_start_ - new_gap_start);
-        Tr::copy(&newBuf[new_gap_end + gap_start_ - new_gap_start], &buf_[gap_end_],      size() - gap_start_);
+        Tr::copy(newBuf,                                            &buf_[0],             static_cast<size_t>(new_gap_start));
+        Tr::copy(&newBuf[new_gap_end],                              &buf_[new_gap_start], static_cast<size_t>(gap_start_ - new_gap_start));
+        Tr::copy(&newBuf[new_gap_end + gap_start_ - new_gap_start], &buf_[gap_end_],      static_cast<size_t>(size() - gap_start_));
     } else { // newGapStart > gapStart_
-        Tr::copy(newBuf,             &buf_[0],                                        gap_start_);
-        Tr::copy(&newBuf[gap_start_], &buf_[gap_end_],                                new_gap_start - gap_start_);
-        Tr::copy(&newBuf[new_gap_end],  &buf_[gap_end_ + new_gap_start - gap_start_], size() - new_gap_start);
+        Tr::copy(newBuf,             &buf_[0],                                        static_cast<size_t>(gap_start_));
+        Tr::copy(&newBuf[gap_start_], &buf_[gap_end_],                                static_cast<size_t>(new_gap_start - gap_start_));
+        Tr::copy(&newBuf[new_gap_end],  &buf_[gap_end_ + new_gap_start - gap_start_], static_cast<size_t>(size() - new_gap_start));
     }
 
     delete [] buf_;

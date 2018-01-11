@@ -145,7 +145,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceEx(int64_t start, int64_t end, view_type
 
     // TODO(eteran): 2.0, do same type of parameter normalization as BufRemove does?
 
-    const int64_t nInserted = text.size();
+    const int64_t nInserted = static_cast<int64_t>(text.size());
 
     callPreDeleteCBs(start, end - start);
     const string_type deletedText = BufGetRangeEx(start, end);
@@ -284,7 +284,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRectEx(int64_t startPos, int64_t rectStart,
         // TODO(eteran): 2.0, remove the need for this temp
         string_type temp;
         overlayRectInLineEx(line, insLine, rectStart, rectEnd, tabDist_, useTabs_, &temp, &endOffset);
-        len = temp.size();
+        len = static_cast<int64_t>(temp.size());
 
         for(auto it = outStr.rbegin(); it != outStr.rend() && (*it == Ch(' ') || *it == Ch('\t')); ++it) {
             --len;
@@ -310,7 +310,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRectEx(int64_t startPos, int64_t rectStart,
     deleteRange(start, end);
     insertEx(start, outStr);
 
-    *nInserted = outStr.size();
+    *nInserted = static_cast<int64_t>(outStr.size());
     *nDeleted  = end - start;
     *endPos    = start + outStr.size() - len + endOffset;
 }
@@ -390,7 +390,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceRectEx(int64_t start, int64_t end, int64
 
     if (nInsertedLines < nDeletedLines) {
 
-        insText.reserve(text.size() + nDeletedLines - nInsertedLines);
+        insText.reserve(static_cast<size_t>(text.size()) + nDeletedLines - nInsertedLines);
         insText.assign(text.begin(), text.end());
         insText.append(nDeletedLines - nInsertedLines, Ch('\n'));
 
@@ -455,7 +455,7 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufClearRect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept {
 
     const int64_t nLines = BufCountLines(start, end);
-    const string_type newlineString(nLines, Ch('\n'));
+    const string_type newlineString(static_cast<size_t>(nLines), Ch('\n'));
 
     BufOverlayRectEx(start, rectStart, rectEnd, newlineString, nullptr, nullptr);
 }
@@ -471,7 +471,7 @@ auto BasicTextBuffer<Ch, Tr>::BufGetTextInRectEx(int64_t start, int64_t end, int
     assert(end >= start);
 
     string_type textOut;
-    textOut.reserve(end - start);
+    textOut.reserve(static_cast<size_t>(end - start));
 
     int64_t lineStart = start;
     auto outPtr = std::back_inserter(textOut);
@@ -1739,7 +1739,7 @@ void BasicTextBuffer<Ch, Tr>::insertColInLineEx(view_type line, view_type insLin
 
     // If there's no text after the column and no text to insert, that's all
     if (insLine.empty() && linePtr == line.end()) {
-        *endOffset = outStr->size();
+        *endOffset = static_cast<int64_t>(outStr->size());
         return;
     }
 
@@ -1753,7 +1753,7 @@ void BasicTextBuffer<Ch, Tr>::insertColInLineEx(view_type line, view_type insLin
        the inserted string began at column 0 to its new column destination */
     if (!insLine.empty()) {
         string_type retabbedStr = realignTabsEx(insLine, 0, indent, tabDist, useTabs);
-        len = retabbedStr.size();
+        len = static_cast<int64_t>(retabbedStr.size());
 
         for (Ch ch : retabbedStr) {
             *outPtr++ = ch;
@@ -1764,7 +1764,7 @@ void BasicTextBuffer<Ch, Tr>::insertColInLineEx(view_type line, view_type insLin
 
     // If the original line did not extend past "column", that's all
     if (linePtr == line.end()) {
-        *endOffset = outStr->size();
+        *endOffset = static_cast<int64_t>(outStr->size());
         return;
     }
 
@@ -1777,7 +1777,7 @@ void BasicTextBuffer<Ch, Tr>::insertColInLineEx(view_type line, view_type insLin
     // realign tabs for text beyond "column" and write it out
     string_type retabbedStr = realignTabsEx(substr(linePtr, line.end()), postColIndent, indent, tabDist, useTabs);
 
-    *endOffset = outStr->size();
+    *endOffset = static_cast<int64_t>(outStr->size());
 
     std::copy(retabbedStr.begin(), retabbedStr.end(), outPtr);
 }
@@ -1823,7 +1823,7 @@ void BasicTextBuffer<Ch, Tr>::deleteRectFromLine(view_type line, int64_t rectSta
 
     // If the line ended before rectEnd, there's nothing more to do
     if (c == line.end()) {
-        *endOffset = outStr->size();
+        *endOffset = static_cast<int64_t>(outStr->size());
         return;
     }
 
@@ -1837,7 +1837,7 @@ void BasicTextBuffer<Ch, Tr>::deleteRectFromLine(view_type line, int64_t rectSta
        spaces, then back to tabs with the correct offset */
     string_type retabbedStr = realignTabsEx(substr(c, line.end()), postRectIndent, indent, tabDist, useTabs);
 
-    *endOffset = outStr->size();
+    *endOffset = static_cast<int64_t>(outStr->size());
 
     std::copy(retabbedStr.begin(), retabbedStr.end(), outPtr);
 }
