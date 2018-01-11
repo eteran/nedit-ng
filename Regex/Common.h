@@ -37,14 +37,14 @@ uint8_t GET_OP_CODE(T *p) {
  * escape.
  *--------------------------------------------------------------------*/
 template <class Ch>
-uint8_t literal_escape(Ch ch) {
+char literal_escape(Ch ch) {
 
     static const char valid_escape[] = {
         'a', 'b', 'e', 'f', 'n', 'r', 't', 'v', '(', ')', '-', '[', ']', '<',
         '>', '{', '}', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\0'
     };
 
-    static const uint8_t value[] = {
+    static const char value[] = {
         '\a', '\b', 0x1B, // Escape character in ASCII character set.
         '\f', '\n', '\r', '\t', '\v', '(', ')', '-', '[', ']', '<', '>', '{',
         '}', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\0'
@@ -73,7 +73,7 @@ uint8_t literal_escape(Ch ch) {
  * \0000 is specified.
  *--------------------------------------------------------------------*/
 template <class T>
-uint8_t numeric_escape(T ch, const char **parse) {
+char numeric_escape(T ch, const char **parse) {
 
     static const char digits[] = "fedcbaFEDCBA9876543210";
 
@@ -152,7 +152,7 @@ uint8_t numeric_escape(T ch, const char **parse) {
         *parse = scan;
     }
 
-    return static_cast<uint8_t>(value);
+    return static_cast<char>(value);
 }
 
 /**

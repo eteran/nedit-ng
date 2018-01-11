@@ -303,7 +303,7 @@ void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
  * node and operand.  The parameter 'insert_pos' points to the location
  * where the new node is to be inserted.
  *----------------------------------------------------------------------*/
-uint8_t *insert(uint8_t op, uint8_t *insert_pos, long min, long max, size_t index) {
+uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned long max, size_t index) {
 
     uint8_t *src;
     uint8_t *dst;
@@ -615,7 +615,7 @@ uint8_t *back_ref(const char *ch, int *flag_param, ShortcutEscapeFlags flags) {
 uint8_t *atom(int *flag_param, len_range *range_param) {
 
     uint8_t *ret_val;
-    uint8_t test;
+    char test;
     int flags_local;
     len_range range_local;
 
@@ -766,7 +766,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
     case '[': {
         unsigned int second_value;
         unsigned int last_value;
-        uint8_t last_emit = 0;
+        char last_emit = '\0';
 
         // Handle characters that can only occur at the start of a class.
 
@@ -861,7 +861,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
                         emit_class_byte(second_value);
                     }
 
-                    last_emit = static_cast<uint8_t>(last_value);
+                    last_emit = last_value;
 
                     ++pContext.Reg_Parse;
 
@@ -1266,8 +1266,8 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
          */
 
         tail(ret_val, emit_node(BACK));              // 1
-        (void)insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 2,4
-        (void)insert(NOTHING, ret_val, 0UL, 0UL, 0); // 3
+        insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 2,4
+        insert(NOTHING, ret_val, 0UL, 0UL, 0); // 3
 
         next = emit_node(NOTHING); // 2,3
 

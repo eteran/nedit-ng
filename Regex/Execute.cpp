@@ -14,6 +14,8 @@
 #include <cstring>
 #include <algorithm>
 
+#include <QtGlobal>
+
 // Address of this used as flag.
 uint8_t Compute_Size;
 
@@ -81,7 +83,7 @@ bool isDelimiter(int ch) {
  *
  * Returns the actual number of matches.
  *----------------------------------------------------------------------*/
-unsigned long greedy(uint8_t *p, long max) {
+unsigned long greedy(uint8_t *p, unsigned long max) {
 
     unsigned long count = REG_ZERO;
 
@@ -657,7 +659,9 @@ int match(uint8_t *prog, int *branch_index_param) {
             switch (GET_OP_CODE(scan)) {
             case LAZY_STAR:
                 lazy = true;
-                /* fallthrough */
+            #ifdef Q_FALLTHROUGH
+                Q_FALLTHROUGH();
+            #endif
             case STAR:
                 min = REG_ZERO;
                 max = ULONG_MAX;
@@ -665,7 +669,9 @@ int match(uint8_t *prog, int *branch_index_param) {
 
             case LAZY_PLUS:
                 lazy = true;
-                /* fallthrough */
+            #ifdef Q_FALLTHROUGH
+                Q_FALLTHROUGH();
+            #endif
             case PLUS:
                 min = REG_ONE;
                 max = ULONG_MAX;
@@ -673,7 +679,9 @@ int match(uint8_t *prog, int *branch_index_param) {
 
             case LAZY_QUESTION:
                 lazy = true;
-                /* fallthrough */
+            #ifdef Q_FALLTHROUGH
+                Q_FALLTHROUGH();
+            #endif
             case QUESTION:
                 min = REG_ZERO;
                 max = REG_ONE;
@@ -681,7 +689,9 @@ int match(uint8_t *prog, int *branch_index_param) {
 
             case LAZY_BRACE:
                 lazy = true;
-                /* fallthrough */
+            #ifdef Q_FALLTHROUGH
+                Q_FALLTHROUGH();
+            #endif
             case BRACE:
                 min = static_cast<unsigned long>(GET_OFFSET(scan + NEXT_PTR_SIZE));
 
