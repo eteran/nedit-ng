@@ -62,10 +62,11 @@ if(MSVC)
 
 else()
 	add_compile_options(-W -Wall -pedantic -Wunused -Wno-unused-macros -Wno-shadow -Wno-switch-enum -Wno-unknown-pragmas)
-endif()
-
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-	add_compile_options(-Wshorten-64-to-32 -Wconditional-uninitialized -Wuseless-cast) # -Weverything -Wno-documentation -Wno-missing-prototypes -Wno-date-time -Wno-padded -Wno-documentation-unknown-command -Wno-exit-time-destructors -Wno-c++98-compat-pedantic -Wno-c++98-compat -Wno-global-constructors -Wno-weak-vtables -Wno-implicit-fallthrough)
+	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+		add_compile_options(-Wshorten-64-to-32 -Wconditional-uninitialized -Wsign-conversion) # -Weverything -Wno-documentation -Wno-missing-prototypes -Wno-date-time -Wno-padded -Wno-documentation-unknown-command -Wno-exit-time-destructors -Wno-c++98-compat-pedantic -Wno-c++98-compat -Wno-global-constructors -Wno-weak-vtables -Wno-implicit-fallthrough)
+	else()
+#		add_compile_options(-Wuseless-cast)
+	endif()
 endif()
 
 # 
