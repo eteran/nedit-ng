@@ -17,6 +17,7 @@
 #include <QPointer>
 #include <QRect>
 #include <QTime>
+#include <QVector>
 #include <memory>
 #include <vector>
 #include <boost/optional.hpp>
@@ -409,7 +410,7 @@ private:
     Point mouseCoord_;                             // Last known mouse position in drag operation (for autoscroll)
     std::shared_ptr<TextBuffer> styleBuffer_;      // Optional parallel buffer containing color and font information
     std::unique_ptr<TextBuffer> dragOrigBuf_;      // backup buffer copy used during block dragging of selections
-    std::vector<int64_t> lineStarts_ = { 0 };
+    QVector<int64_t> lineStarts_ = { 0 };
     std::vector<QColor> bgClassPixel_;             // table of colors for each BG class
     std::vector<uint8_t> bgClass_;                 // obtains index into bgClassPixel[]
     std::vector<StyleTableEntry> styleTable_;      // Table of fonts and colors for coloring/syntax-highlighting

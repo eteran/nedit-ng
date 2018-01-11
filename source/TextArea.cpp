@@ -7564,6 +7564,7 @@ int64_t TextArea::TextDPosToLineAndCol(int64_t pos, int64_t *lineNum, int64_t *c
 	// Only return the data if pos is within the displayed text
     int64_t visibleLinNum;
     if (!posToVisibleLineNum(pos, &visibleLinNum)) {
+        *lineNum = visibleLinNum;
         return false;
     }
 
