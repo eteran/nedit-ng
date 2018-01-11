@@ -98,7 +98,6 @@ add_executable(nedit-ng
 	${QRC_SOURCES}
 	${UIC_SOURCES}
 
-	Point.h
 	gap_buffer.h
 	gap_buffer_fwd.h
 	gap_buffer_iterator.h
