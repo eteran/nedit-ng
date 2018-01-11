@@ -315,7 +315,7 @@ private:
     void findLineEnd(int64_t startPos, int64_t startPosIsLineStart, int64_t *lineEnd, int64_t *nextLineStart);
     bool updateHScrollBarRange();
     bool emptyLinesVisible() const;
-    int64_t posToVisibleLineNum(int64_t pos, int64_t *lineNum) const;
+    bool posToVisibleLineNum(int64_t pos, int64_t *lineNum) const;
 	void blankCursorProtrusions();
     int64_t measureVisLine(int visLineNum) const;
     int64_t visLineLength(int64_t visLineNum) const;
