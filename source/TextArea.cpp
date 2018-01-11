@@ -3883,7 +3883,7 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
         break;
     }
 
-    QPoint abs = mapToGlobal(QPoint(static_cast<int>(rel_x), static_cast<int>(rel_y)));
+    QPoint abs = mapToGlobal(QPoint(rel_x, rel_y));
 
 	// If we're not in strict mode try to keep the tip on-screen
     if (calltip_.alignMode == TipAlignStrict::Sloppy) {

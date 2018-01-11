@@ -89,7 +89,7 @@ unsigned long greedy(uint8_t *p, unsigned long max) {
 
     const char *input_str = eContext.Reg_Input;
     uint8_t *operand = OPERAND(p); // Literal char or start of class characters.
-    unsigned long max_cmp = (max > 0) ? static_cast<unsigned long>(max) : ULONG_MAX;
+    unsigned long max_cmp = (max > 0) ? max : ULONG_MAX;
 
     switch (GET_OP_CODE(p)) {
     case ANY:

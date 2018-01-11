@@ -2161,7 +2161,7 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
             offset = 0;
         }
 
-        size_t nRead = ::fread(fileString + offset, 1, static_cast<size_t>(restLen), fp);
+        size_t nRead = ::fread(fileString + offset, 1, restLen, fp);
         if (nRead != restLen) {
             MainWindow::AllWindowsUnbusyEx();
             return true;
