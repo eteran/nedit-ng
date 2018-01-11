@@ -2620,7 +2620,7 @@ bool TextArea::emptyLinesVisible() const {
  * @param lineNum
  * @return
  */
-int64_t TextArea::posToVisibleLineNum(int64_t pos, int64_t *lineNum) const {
+bool TextArea::posToVisibleLineNum(int64_t pos, int64_t *lineNum) const {
 
 	if (pos < firstChar_) {
         return false;
