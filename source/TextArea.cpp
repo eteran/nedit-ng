@@ -7569,7 +7569,7 @@ int64_t TextArea::TextDPosToLineAndCol(int64_t pos, int64_t *lineNum, int64_t *c
     }
 
     *column = buffer_->BufCountDispChars(lineStarts_[visibleLinNum], pos);
-	*lineNum += topLineNum_;
+    *lineNum = visibleLinNum + topLineNum_;
 	return true;
 }
 
