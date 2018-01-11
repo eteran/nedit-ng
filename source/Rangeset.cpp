@@ -1203,8 +1203,8 @@ Range *Rangeset::RangesNew(int64_t n) {
          *     n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15)
          */
         n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
-        auto newRanges = reinterpret_cast<Range *>(malloc(n * sizeof (Range)));
-        return newRanges;
+        size_t size = static_cast<size_t>(n) * sizeof(Range);
+        return reinterpret_cast<Range *>(malloc(size));
     }
 
     return nullptr;
@@ -1220,7 +1220,7 @@ Range *Rangeset::RangesRealloc(Range *ranges, int64_t n) {
         // see RangesNew() for comments
         n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
 
-        size_t size = n * sizeof(Range);
+        size_t size = static_cast<size_t>(n) * sizeof(Range);
         return reinterpret_cast<Range *>(realloc(ranges, size));
     } else {
         free(ranges);
