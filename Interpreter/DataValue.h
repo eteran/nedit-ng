@@ -36,7 +36,7 @@ struct ArrayIterator {
 struct DataValue {
     boost::variant<
         boost::blank,
-        int,
+        int32_t,
         std::string,
         ArrayPtr,
         ArrayIterator,
@@ -48,73 +48,75 @@ struct DataValue {
 };
 
 // accessors
-inline DataValue to_value(const ArrayPtr &map) {
+inline DataValue make_value(const ArrayPtr &map) {
     DataValue DV;
     DV.value = map;
     return DV;
 }
 
-inline DataValue to_value(const ArrayIterator &iter) {
+inline DataValue make_value(const ArrayIterator &iter) {
     DataValue DV;
     DV.value = iter;
     return DV;
 }
 
-inline DataValue to_value() {
+inline DataValue make_value() {
     DataValue DV;
     return DV;
 }
 
-inline DataValue to_value(int n) {
+inline DataValue make_value(int32_t n) {
     DataValue DV;
     DV.value = n;
     return DV;
 }
 
-inline DataValue to_value(int64_t n) {
-    DataValue DV;
-    // TODO(eteran): warn if actually truncating
-    DV.value = n;
+inline DataValue make_value(int64_t n) {
+    DataValue DV;    
+    if(n > std::numeric_limits<int32_t>::max() || n < std::numeric_limits<int32_t>::min()) {
+        qWarning("A value being stored in a macro variable will be truncated");
+    }
+    DV.value = static_cast<int32_t>(n);
     return DV;
 }
 
-inline DataValue to_value(bool n) {
+inline DataValue make_value(bool n) {
     DataValue DV;
     DV.value = n ? 1 : 0;
     return DV;
 }
 
-inline DataValue to_value(view::string_view str) {
+inline DataValue make_value(view::string_view str) {
     DataValue DV;
     DV.value = str.to_string();
     return DV;
 }
 
-inline DataValue to_value(const QString &str) {
+inline DataValue make_value(const QString &str) {
     DataValue DV;
     DV.value = str.toStdString();
     return DV;
 }
 
-inline DataValue to_value(Program *prog) {
+inline DataValue make_value(Program *prog) {
     DataValue DV;
     DV.value = prog;
     return DV;
 }
 
-inline DataValue to_value(Inst *inst) {
+inline DataValue make_value(Inst *inst) {
     DataValue DV;
     DV.value = inst;
     return DV;
 }
 
-inline DataValue to_value(DataValue *v) {
+inline DataValue make_value(DataValue *v) {
     DataValue DV;
     DV.value = v;
     return DV;
 }
 
-inline DataValue to_value(LibraryRoutine routine) {
+inline DataValue make_value(LibraryRoutine routine) {
     DataValue DV;
     DV.value = routine;
     return DV;

@@ -3402,7 +3402,7 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
 
         // Call newline macro with the position at which to add newline/indent
         std::array<DataValue, 1> args;
-        args[0] = to_value(cbInfo->pos);
+        args[0] = make_value(cbInfo->pos);
 
         ++(winData->inNewLineMacro);
 
@@ -3484,8 +3484,8 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
            and the character(s) inserted.  Don't allow
            preemption or time limit.  Execution must not overlap or re-enter */
         std::array<DataValue, 2> args;
-        args[0] = to_value(cbInfo->pos);
-        args[1] = to_value(cbInfo->charsTyped);
+        args[0] = make_value(cbInfo->pos);
+        args[1] = make_value(cbInfo->charsTyped);
 
         ++(winData->inModMacro);
 

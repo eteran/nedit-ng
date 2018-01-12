@@ -231,11 +231,11 @@ void InitMacroGlobals() {
     for (int i = 0; i < 9; i++) {
         static char argName[3] = "$x";
         argName[1] = static_cast<char>('1' + i);
-        InstallSymbol(argName, ARG_SYM, to_value(i));
+        InstallSymbol(argName, ARG_SYM, make_value(i));
 	}
 
 	// Add special symbol $n_args 
-    InstallSymbol("$n_args", ARG_SYM, to_value(N_ARGS_ARG_SYM));
+    InstallSymbol("$n_args", ARG_SYM, make_value(N_ARGS_ARG_SYM));
 }
 
 /**
@@ -283,7 +283,7 @@ Program *FinishCreatingProgram() {
 	/* Local variables' values are stored on the stack.  Here we assign
 	   frame pointer offsets to them. */
     for(Symbol *s : newProg->localSymList) {
-        s->value = to_value(fpOffset++);
+        s->value = make_value(fpOffset++);
 	}
 
     DISASM(newProg->code.data(), newProg->code.size());
@@ -453,16 +453,16 @@ int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue>
         *(context->StackP++) = dv;
     }
 
-    *(context->StackP++) = to_value(static_cast<Inst*>(nullptr));        // return PC
-    *(context->StackP++) = to_value(static_cast<DataValue*>(nullptr));   // old FrameP
-    *(context->StackP++) = to_value(static_cast<int>(arguments.size())); // nArgs
-    *(context->StackP++) = to_value();                                   // cached arg array
+    *(context->StackP++) = make_value(static_cast<Inst*>(nullptr));        // return PC
+    *(context->StackP++) = make_value(static_cast<DataValue*>(nullptr));   // old FrameP
+    *(context->StackP++) = make_value(static_cast<int>(arguments.size())); // nArgs
+    *(context->StackP++) = make_value();                                   // cached arg array
 
     context->FrameP = context->StackP;
 
     // Initialize and make room on the stack for local variables
     for(Symbol *s : prog->localSymList) {
-        FP_GET_SYM_VAL(context->FrameP, s) = to_value();
+        FP_GET_SYM_VAL(context->FrameP, s) = make_value();
         context->StackP++;
     }
 
@@ -537,16 +537,16 @@ void RunMacroAsSubrCall(Program *prog) {
 
 	/* See subroutine "callSubroutine" for a description of the stack frame
        for a subroutine call */
-    *Context->StackP++ = to_value(Context->PC);     // return PC
-    *Context->StackP++ = to_value(Context->FrameP); // old FrameP
-    *Context->StackP++ = to_value(0);               // nArgs
-    *Context->StackP++ = to_value();                // cached arg array
+    *Context->StackP++ = make_value(Context->PC);     // return PC
+    *Context->StackP++ = make_value(Context->FrameP); // old FrameP
+    *Context->StackP++ = make_value(0);               // nArgs
+    *Context->StackP++ = make_value();                // cached arg array
 
     Context->FrameP = Context->StackP;
     Context->PC = prog->code.data();
 
     for(Symbol *s : prog->localSymList) {
-        FP_GET_SYM_VAL(Context->FrameP, s) = to_value();
+        FP_GET_SYM_VAL(Context->FrameP, s) = make_value();
         Context->StackP++;
 	}
 }
@@ -614,7 +614,7 @@ Symbol *InstallIteratorSymbol() {
 
     auto symbolName = QString(QLatin1String("aryiter %1")).arg(interatorNameIndex++);
 
-    return InstallSymbolEx(symbolName, LOCAL_SYM, to_value(ArrayIterator()));
+    return InstallSymbolEx(symbolName, LOCAL_SYM, make_value(ArrayIterator()));
 }
 
 /*
@@ -644,7 +644,7 @@ Symbol *InstallStringConstSymbol(view::string_view str) {
 
     auto stringName = QString(QLatin1String("string #%1")).arg(stringConstIndex++);
 
-    DataValue value = to_value(str);
+    DataValue value = make_value(str);
     return InstallSymbolEx(stringName, CONST_SYM, value);
 }
 
@@ -791,7 +791,7 @@ Symbol *PromoteToGlobal(Symbol *sym) {
     do {                                                                       \
         if (Context->StackP >= &Context->Stack[STACK_SIZE])                    \
             return execError(StackOverflowMsg);                                \
-        *Context->StackP++ = to_value(number);                                 \
+        *Context->StackP++ = make_value(number);                               \
     } while(0)
 
 
@@ -799,7 +799,7 @@ Symbol *PromoteToGlobal(Symbol *sym) {
     do {                                                                       \
         if (Context->StackP >= &Context->Stack[STACK_SIZE])                    \
             return execError(StackOverflowMsg);                                \
-        *Context->StackP++ = to_value(string);                                 \
+        *Context->StackP++ = make_value(string);                               \
     } while(0)
 
 #define BINARY_NUMERIC_OPERATION(op)                                           \
@@ -853,7 +853,7 @@ static int pushSymVal() {
 			return execError("referenced undefined argument: %s", s->name.c_str());
 		}
 		if (argNum == N_ARGS_ARG_SYM) {
-            symVal = to_value(nArgs);
+            symVal = make_value(nArgs);
 		} else {
             symVal = FP_GET_ARG_N(Context->FrameP, argNum);
 		}
@@ -913,7 +913,7 @@ static int pushArgArray() {
 
     if (!is_array(*resultArray)) {
 
-        *resultArray = to_value(std::make_shared<Array>());
+        *resultArray = make_value(std::make_shared<Array>());
 
 		for (int argNum = 0; argNum < nArgs; ++argNum) {
 
@@ -957,7 +957,7 @@ static int pushArraySymVal() {
 	}
 
     if (initEmpty && is_unset(*dataPtr)) {
-        *dataPtr = to_value(std::make_shared<Array>());
+        *dataPtr = make_value(std::make_shared<Array>());
 	}
 
     if (is_unset(*dataPtr)) {
@@ -1050,7 +1050,7 @@ static int add() {
         PEEK(leftVal, 1);
         if (is_array(leftVal)) {
 
-            DataValue resultArray = to_value(std::make_shared<Array>());
+            DataValue resultArray = make_value(std::make_shared<Array>());
 
             POP(rightVal);
             POP(leftVal);
@@ -1124,7 +1124,7 @@ static int subtract() {
         PEEK(leftVal, 1);
         if(is_array(leftVal)) {
 
-            DataValue resultArray = to_value(std::make_shared<Array>());
+            DataValue resultArray = make_value(std::make_shared<Array>());
 
             POP(rightVal);
             POP(leftVal);
@@ -1262,25 +1262,25 @@ static int eq() {
     if (is_integer(v1) && is_integer(v2)) {
         auto n1 = to_integer(v1);
         auto n2 = to_integer(v2);
-        v1 = to_value(n1 == n2);
+        v1 = make_value(n1 == n2);
     } else if (is_string(v1) && is_string(v2)) {
         auto s1 = to_string(v1);
         auto s2 = to_string(v2);
-        v1 = to_value(s1 == s2);
+        v1 = make_value(s1 == s2);
     } else if (is_string(v1) && is_integer(v2)) {
 		int number;
         if (!StringToNum(to_string(v1), &number)) {
-            v1 = to_value(0);
+            v1 = make_value(0);
 		} else {
-            v1 = to_value(number == to_integer(v2));
+            v1 = make_value(number == to_integer(v2));
 		}
     } else if (is_string(v2) && is_integer(v1)) {
 		int number;
         std::string s2 = to_string(v1);
         if (!StringToNum(s2, &number)) {
-            v1 = to_value(0);
+            v1 = make_value(0);
 		} else {
-            v1 = to_value(number == to_integer(v1));
+            v1 = make_value(number == to_integer(v1));
 		}
 	} else {
 		return execError("incompatible types to compare");
@@ -1316,7 +1316,7 @@ static int bitAnd() {
         PEEK(leftVal, 1);
         if(is_array(leftVal)) {
 
-            DataValue resultArray = to_value(std::make_shared<Array>());
+            DataValue resultArray = make_value(std::make_shared<Array>());
 
             POP(rightVal);
             POP(leftVal);
@@ -1379,7 +1379,7 @@ static int bitOr() {
         PEEK(leftVal, 1);
         if(is_array(leftVal)) {
 
-            DataValue resultArray = to_value(std::make_shared<Array>());
+            DataValue resultArray = make_value(std::make_shared<Array>());
 
             POP(rightVal);
             POP(leftVal);
@@ -1566,17 +1566,17 @@ static int callSubroutine() {
 	*/
 	if (sym->type == MACRO_FUNCTION_SYM) {
 
-        *Context->StackP++ = to_value(Context->PC);     // return PC
-        *Context->StackP++ = to_value(Context->FrameP); // old FrameP
-        *Context->StackP++ = to_value(nArgs);          // nArgs
-        *Context->StackP++ = to_value();               // cached arg array
+        *Context->StackP++ = make_value(Context->PC);     // return PC
+        *Context->StackP++ = make_value(Context->FrameP); // old FrameP
+        *Context->StackP++ = make_value(nArgs);          // nArgs
+        *Context->StackP++ = make_value();               // cached arg array
 
         Context->FrameP = Context->StackP;
         Program* prog  = to_program(sym->value);
         Context->PC     = prog->code.data();
 
         for(Symbol *s : prog->localSymList) {
-            FP_GET_SYM_VAL(Context->FrameP, s) = to_value();
+            FP_GET_SYM_VAL(Context->FrameP, s) = make_value();
             Context->StackP++;
 		}
 		return STAT_OK;
@@ -1637,7 +1637,7 @@ static int returnValOrNone(bool valOnStack) {
 		if (valOnStack) {
 			PUSH(retVal);
 		} else {
-            PUSH(to_value());
+            PUSH(make_value());
 		}
     } else if (Context->PC->func == fetchRetVal) {
 		if (valOnStack) {
@@ -2034,7 +2034,7 @@ static int beginArrayIter() {
 		return execError("can't iterate non-array");
 	}
 
-    *iteratorValPtr = to_value(arrayIterateFirst(&arrayVal));
+    *iteratorValPtr = make_value(arrayIterateFirst(&arrayVal));
 	return STAT_OK;
 }
 
@@ -2082,7 +2082,7 @@ static int arrayIter() {
 		return execError("can't assign to: %s", item->name.c_str());
 	}
 
-    *itemValPtr = to_value();
+    *itemValPtr = make_value();
 
     if (iterator->type != LOCAL_SYM) {
         return execError("bad temporary iterator: %s", iterator->name.c_str());
@@ -2093,8 +2093,8 @@ static int arrayIter() {
     ArrayIterator thisEntry = to_iterator(*iteratorValPtr);
 
     if (thisEntry.it != thisEntry.m->end()) {
-        *itemValPtr     = to_value(thisEntry.it->first);
-        *iteratorValPtr = to_value(arrayIterateNext(thisEntry));
+        *itemValPtr     = make_value(thisEntry.it->first);
+        *iteratorValPtr = make_value(arrayIterateNext(thisEntry));
 	} else {
         Context->PC = branchAddr;
 	}
