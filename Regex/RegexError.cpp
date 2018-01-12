@@ -1,6 +1,7 @@
 
 #include "RegexError.h"
 #include <cstdarg>
+#include <QByteArray>
 
 /**
  * @brief RegexError::RegexError
@@ -10,7 +11,7 @@ RegexError::RegexError(const char *fmt, ...) {
     char buf[1024];
     va_list ap;
     va_start(ap, fmt);
-    vsnprintf(buf, sizeof(buf), fmt, ap);
+    qvsnprintf(buf, sizeof(buf), fmt, ap);
     va_end(ap);
     error_ = buf;
 }

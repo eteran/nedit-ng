@@ -10,6 +10,7 @@
 #include "Util/utils.h"
 #include <cstring>
 #include <algorithm>
+#include <QtGlobal>
 
 namespace {
 
@@ -213,10 +214,14 @@ uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) {
 
         case TEST_COUNT:
             pContext.Reg_Size += NEXT_PTR_SIZE; // Make room for a test value.
-            /* fallthrough */
+        #ifdef Q_FALLTHROUGH
+            Q_FALLTHROUGH();
+        #endif
         case INC_COUNT:
             pContext.Reg_Size += INDEX_SIZE; // Make room for an index value.
-            /* fallthrough */
+        #ifdef Q_FALLTHROUGH
+            Q_FALLTHROUGH();
+        #endif
         default:
             pContext.Reg_Size += NODE_SIZE; // Make room for the node.
         }
@@ -951,7 +956,9 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
     /* Fall through to Default case to handle literal escapes and numeric
        escapes. */
 
-        /* fallthrough */
+#ifdef Q_FALLTHROUGH
+    Q_FALLTHROUGH();
+#endif
     default:
         --pContext.Reg_Parse; /* If we fell through from the above code, we are now
                         pointing at the back slash (\) character. */
