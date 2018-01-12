@@ -57,6 +57,7 @@ public:
     boost::optional<int64_t> BufSearchForwardEx(int64_t startPos, view_type searchChars) const noexcept;
     Ch BufGetCharacter(int64_t pos) const noexcept;
     int BufCmpEx(int64_t pos, view_type cmpText) const noexcept;
+    int BufCmpEx(int64_t pos, Ch *cmpText, int64_t size) const noexcept;
     int BufCmpEx(int64_t pos, Ch ch) const noexcept;
     int64_t BufCountBackwardNLines(int64_t startPos, int64_t nLines) const noexcept;
     int BufCountDispChars(int64_t lineStartPos, int64_t targetPos) const noexcept;

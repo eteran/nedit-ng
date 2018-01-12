@@ -1009,6 +1009,11 @@ boost::optional<int64_t> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(int64_t st
 ** != 0 otherwise.
 */
 template <class Ch, class Tr>
+int BasicTextBuffer<Ch, Tr>::BufCmpEx(int64_t pos, Ch *cmpText, int64_t size) const noexcept {
+    return buffer_.compare(pos, view_type(cmpText, size));
+}
+
+template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::BufCmpEx(int64_t pos, view_type cmpText) const noexcept {
     return buffer_.compare(pos, cmpText);
 }

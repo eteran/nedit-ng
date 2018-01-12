@@ -132,7 +132,7 @@ constexpr CharMatchTable FlashingChars[] = {
 /*
  * Number of bytes read at once by cmpWinAgainstFile
  */
-constexpr auto PREFERRED_CMPBUF_LEN = 0x8000ul;
+constexpr auto PREFERRED_CMPBUF_LEN = static_cast<int64_t>(0x8000);
 
 /* Maximum frequency in miliseconds of checking for external modifications.
    The periodic check is only performed on buffer modification, and the check
@@ -2100,19 +2100,12 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
 
     char pendingCR = '\0';
 
-    FILE *fp = ::fopen(fileName.toUtf8().data(), "r");
-    if (!fp) {
+    QFile file(fileName);
+    if(!file.open(QIODevice::ReadOnly)) {
         return true;
     }
 
-    auto _ = gsl::finally([fp] { ::fclose(fp); });
-
-    struct stat statbuf;
-    if (::fstat(fileno(fp), &statbuf) != 0) {
-        return true;
-    }
-
-    const off_t fileLen = statbuf.st_size;
+    int64_t fileLen = file.size();
 
     // For UNIX/macOS files, we can do a quick check to see if the on disk file
     // has a different length, but for DOS files, it's not that simple...
@@ -2131,7 +2124,7 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
         break;
     }
 
-    size_t restLen = std::min(PREFERRED_CMPBUF_LEN, static_cast<size_t>(fileLen));
+    int64_t restLen = std::min(PREFERRED_CMPBUF_LEN, fileLen);
     int bufPos     = 0;
     int filePos    = 0;
     char fileString[PREFERRED_CMPBUF_LEN + 2];
@@ -2142,25 +2135,23 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
 
     while (restLen > 0) {
 
-        size_t offset;
+        size_t offset = 0;
         if (pendingCR) {
-            fileString[0] = pendingCR;
-            offset = 1;
-        } else {
-            offset = 0;
+            fileString[offset++] = pendingCR;
         }
 
-        size_t nRead = ::fread(fileString + offset, 1, restLen, fp);
+        int64_t nRead = file.read(fileString + offset, restLen);
+
         if (nRead != restLen) {
             MainWindow::AllWindowsUnbusyEx();
             return true;
         }
+
         filePos += nRead;
+        nRead   += offset;
 
-        nRead += offset;
-
-        // check for on-disk file format changes, but only for the first hunk
-        if (bufPos == 0 && fileFormat_ != FormatOfFileEx(view::string_view(fileString, nRead))) {
+        // check for on-disk file format changes, but only for the first chunk
+        if (bufPos == 0 && fileFormat_ != FormatOfFileEx(view::string_view(fileString, static_cast<size_t>(nRead)))) {
             MainWindow::AllWindowsUnbusyEx();
             return true;
         }
@@ -2176,21 +2167,19 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
             break;
         }
 
-        int rv = buffer_->BufCmpEx(bufPos, view::string_view(fileString, nRead));
-        if (rv) {
+        if (int rv = buffer_->BufCmpEx(bufPos, fileString, nRead)) {
             MainWindow::AllWindowsUnbusyEx();
             return rv;
         }
 
         bufPos += nRead;
-        restLen = std::min(static_cast<size_t>(fileLen - filePos), PREFERRED_CMPBUF_LEN);
+        restLen = std::min(fileLen - filePos, PREFERRED_CMPBUF_LEN);
     }
 
     MainWindow::AllWindowsUnbusyEx();
 
     if (pendingCR) {
-        int rv = buffer_->BufCmpEx(bufPos, pendingCR);
-        if (rv) {
+        if (int rv = buffer_->BufCmpEx(bufPos, pendingCR)) {
             return rv;
         }
         bufPos += 1;
@@ -2199,6 +2188,7 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
     if (bufPos != buffer_->BufGetLength()) {
         return true;
     }
+
     return false;
 }
 

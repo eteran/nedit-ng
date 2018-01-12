@@ -25,7 +25,6 @@
 #include "Util/utils.h"
 #include "Util/version.h"
 
-#include <gsl/gsl_util>
 #include <boost/optional.hpp>
 #include <stack>
 #include <fstream>
@@ -2734,18 +2733,13 @@ static std::error_code writeOrAppendFile(bool append, DocumentWidget *document, 
         return ec;
     }
 
-    // open the file
-    FILE *fp = ::fopen(name.c_str(), append ? "a" : "w");
-    if (!fp) {
+    std::ofstream file(name, append ? std::ios::app | std::ios::out : std::ios::out);
+    if(!file) {
         *result = make_value(false);
         return MacroErrorCode::Success;
     }
 
-    auto _ = gsl::finally([fp] { ::fclose(fp); });
-
-    // write the string to the file
-    ::fwrite(string.data(), 1, string.size(), fp);
-    if (::ferror(fp)) {
+    if(!file.write(string.data(), static_cast<std::streamsize>(string.size()))) {
         *result = make_value(false);
         return MacroErrorCode::Success;
     }
