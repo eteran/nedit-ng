@@ -222,8 +222,8 @@ private:
     TextArea *createTextArea(TextBuffer *buffer);
     void AbortMacroCommandEx();
     void actionClose(CloseMode mode);
-    void addRedoItem(const UndoInfo &redo);
-    void addUndoItem(const UndoInfo &undo);
+    void addRedoItem(UndoInfo &&redo);
+    void addUndoItem(UndoInfo &&undo);
     void addWrapNewlines();
     void appendDeletedText(view::string_view deletedText, int64_t deletedLen, Direction direction);
     void AttachHighlightToWidgetEx(TextArea *area);
