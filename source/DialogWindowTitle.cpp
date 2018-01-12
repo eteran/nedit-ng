@@ -9,6 +9,30 @@
 #include "Util/fileUtils.h"
 #include "Util/utils.h"
 
+namespace {
+
+/*
+** Remove empty paranthesis pairs and multiple spaces in a row
+** with one space.
+** Also remove leading and trailing spaces and dashes.
+*/
+QString compressWindowTitle(const QString &title) {
+
+    QString result = title;
+
+    // remove empty brackets
+    result.replace(QLatin1String("()"), QString());
+    result.replace(QLatin1String("{}"), QString());
+    result.replace(QLatin1String("[]"), QString());
+
+    // remove leading/trailing whitspace/dashes
+    result.replace(QRegExp(QLatin1String("^[\\s-]+")), QString());
+    result.replace(QRegExp(QLatin1String("[\\s-]+$")), QString());
+    return result.simplified();
+}
+
+}
+
 struct UpdateState {
 	bool fileNamePresent;
 	bool hostNamePresent;
@@ -223,26 +247,6 @@ QString DialogWindowTitle::FormatWindowTitleEx(const QString &filename, const QS
 	suppressFormatUpdate_ = false;
 
 	return title;
-}
-
-/*
-** Remove empty paranthesis pairs and multiple spaces in a row
-** with one space.
-** Also remove leading and trailing spaces and dashes.
-*/
-QString DialogWindowTitle::compressWindowTitle(const QString &title) {
-
-	QString result = title;
-
-	// remove empty brackets
-	result.replace(QLatin1String("()"), QString());
-	result.replace(QLatin1String("{}"), QString());
-	result.replace(QLatin1String("[]"), QString());
-	
-	// remove leading/trailing whitspace/dashes
-	result.replace(QRegExp(QLatin1String("^[\\s-]+")), QString());
-	result.replace(QRegExp(QLatin1String("[\\s-]+$")), QString()); 
-	return result.simplified();
 }
 
 /**
@@ -587,169 +591,169 @@ void DialogWindowTitle::on_editDirectory_textChanged(const QString &text) {
  * @return
  */
 QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat, UpdateState *state) {
-	QString title;
+    QString title;
 
-	// Flags to supress one of these if both are specified and they are identical 
-	bool serverNameSeen = false;
-	bool clearCaseViewTagSeen = false;
+    // Flags to supress one of these if both are specified and they are identical
+    bool serverNameSeen = false;
+    bool clearCaseViewTagSeen = false;
 
-	bool fileNamePresent   = false;
-	bool hostNamePresent   = false;
-	bool userNamePresent   = false;
-	bool serverNamePresent = false;
-	bool clearCasePresent  = false;
-	bool fileStatusPresent = false;
-	bool dirNamePresent    = false;
-	int noOfComponents     = -1;
-	bool shortStatus       = false;
+    bool fileNamePresent   = false;
+    bool hostNamePresent   = false;
+    bool userNamePresent   = false;
+    bool serverNamePresent = false;
+    bool clearCasePresent  = false;
+    bool fileStatusPresent = false;
+    bool dirNamePresent    = false;
+    int noOfComponents     = -1;
+    bool shortStatus       = false;
 
-	auto format_it = titleFormat.begin();
+    auto format_it = titleFormat.begin();
 
-	while (format_it != titleFormat.end()) {
-		QChar c = *format_it++;
-		if (c == QLatin1Char('%')) {
-			
-			if (format_it == titleFormat.end()) {
-				title.push_back(QLatin1Char('%'));
-				break;
-			}
-			
-			c = *format_it++;
-			
-			switch (c.toLatin1()) {
-			case 'c': // ClearCase view tag 
-				clearCasePresent = true;
-				if (!clearCaseViewTag.isNull()) {
-					if (!serverNameSeen || serverName != clearCaseViewTag) {
-						title.append(clearCaseViewTag);
-						clearCaseViewTagSeen = true;
-					}
-				}
-				break;
+    while (format_it != titleFormat.end()) {
+        QChar c = *format_it++;
+        if (c == QLatin1Char('%')) {
 
-			case 's': // server name 
-				serverNamePresent = true;
-				if (isServer && !serverName.isEmpty()) { // only applicable for servers 
-					if (!clearCaseViewTagSeen || serverName != clearCaseViewTag) {
-						title.append(serverName);
-						serverNameSeen = true;
-					}
-				}
-				break;
+            if (format_it == titleFormat.end()) {
+                title.push_back(QLatin1Char('%'));
+                break;
+            }
 
-			case 'd': // directory without any limit to no. of components 
-				dirNamePresent = true;
-				if (filenameSet) {
-					title.append(path);
-				}
-				break;
+            c = *format_it++;
 
-			case '0': // directory with limited no. of components 
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-				if (*format_it == QLatin1Char('d')) {
-					dirNamePresent = true;
+            switch (c.toLatin1()) {
+            case 'c': // ClearCase view tag
+                clearCasePresent = true;
+                if (!clearCaseViewTag.isNull()) {
+                    if (!serverNameSeen || serverName != clearCaseViewTag) {
+                        title.append(clearCaseViewTag);
+                        clearCaseViewTagSeen = true;
+                    }
+                }
+                break;
+
+            case 's': // server name
+                serverNamePresent = true;
+                if (isServer && !serverName.isEmpty()) { // only applicable for servers
+                    if (!clearCaseViewTagSeen || serverName != clearCaseViewTag) {
+                        title.append(serverName);
+                        serverNameSeen = true;
+                    }
+                }
+                break;
+
+            case 'd': // directory without any limit to no. of components
+                dirNamePresent = true;
+                if (filenameSet) {
+                    title.append(path);
+                }
+                break;
+
+            case '0': // directory with limited no. of components
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                if (*format_it == QLatin1Char('d')) {
+                    dirNamePresent = true;
                     noOfComponents = c.digitValue();
-					format_it++; // delete the argument 
+                    format_it++; // delete the argument
 
-					if (filenameSet) {
-						QString trailingPath = GetTrailingPathComponentsEx(path, noOfComponents);
+                    if (filenameSet) {
+                        QString trailingPath = GetTrailingPathComponentsEx(path, noOfComponents);
 
-						// prefix with ellipsis if components were skipped 
-						if (trailingPath != path) {
-							title.append(QLatin1String("..."));
-						}
-						title.append(trailingPath);
-					}
-				}
-				break;
+                        // prefix with ellipsis if components were skipped
+                        if (trailingPath != path) {
+                            title.append(QLatin1String("..."));
+                        }
+                        title.append(trailingPath);
+                    }
+                }
+                break;
 
-			case 'f': // file name 
-				fileNamePresent = true;
-				title.append(filename);
-				break;
+            case 'f': // file name
+                fileNamePresent = true;
+                title.append(filename);
+                break;
 
-			case 'h': // host name 
-				hostNamePresent = true;
-				title.append(GetNameOfHostEx());
-				break;
+            case 'h': // host name
+                hostNamePresent = true;
+                title.append(GetNameOfHostEx());
+                break;
 
-			case 'S': // file status 
-				fileStatusPresent = true;
-				if (lockReasons.isAnyLockedIgnoringUser() && fileChanged)
-					title.append(tr("read only, modified"));
-				else if (lockReasons.isAnyLockedIgnoringUser())
-					title.append(tr("read only"));
-				else if (lockReasons.isUserLocked() && fileChanged)
-					title.append(tr("locked, modified"));
-				else if (lockReasons.isUserLocked())
-					title.append(tr("locked"));
-				else if (fileChanged)
-					title.append(tr("modified"));
-				break;
+            case 'S': // file status
+                fileStatusPresent = true;
+                if (lockReasons.isAnyLockedIgnoringUser() && fileChanged)
+                    title.append(tr("read only, modified"));
+                else if (lockReasons.isAnyLockedIgnoringUser())
+                    title.append(tr("read only"));
+                else if (lockReasons.isUserLocked() && fileChanged)
+                    title.append(tr("locked, modified"));
+                else if (lockReasons.isUserLocked())
+                    title.append(tr("locked"));
+                else if (fileChanged)
+                    title.append(tr("modified"));
+                break;
 
-			case 'u': // user name 
-				userNamePresent = true;
-				title.append(GetUserNameEx());
-				break;
+            case 'u': // user name
+                userNamePresent = true;
+                title.append(GetUserNameEx());
+                break;
 
-			case '%': // escaped % 
-				title.append(QLatin1Char('%'));
-				break;
+            case '%': // escaped %
+                title.append(QLatin1Char('%'));
+                break;
 
-			case '*': // short file status ? 
-				fileStatusPresent = true;
-				if (format_it != titleFormat.end() && *format_it == QLatin1Char('S')) {
-					++format_it;
-					shortStatus = true;
-					if (lockReasons.isAnyLockedIgnoringUser() && fileChanged)
-						title.append(tr("RO*"));
-					else if (lockReasons.isAnyLockedIgnoringUser())
-						title.append(tr("RO"));
-					else if (lockReasons.isUserLocked() && fileChanged)
-						title.append(tr("LO*"));
-					else if (lockReasons.isUserLocked())
-						title.append(tr("LO"));
-					else if (fileChanged)
-						title.append(tr("*"));
-					break;
-				}
+            case '*': // short file status ?
+                fileStatusPresent = true;
+                if (format_it != titleFormat.end() && *format_it == QLatin1Char('S')) {
+                    ++format_it;
+                    shortStatus = true;
+                    if (lockReasons.isAnyLockedIgnoringUser() && fileChanged)
+                        title.append(tr("RO*"));
+                    else if (lockReasons.isAnyLockedIgnoringUser())
+                        title.append(tr("RO"));
+                    else if (lockReasons.isUserLocked() && fileChanged)
+                        title.append(tr("LO*"));
+                    else if (lockReasons.isUserLocked())
+                        title.append(tr("LO"));
+                    else if (fileChanged)
+                        title.append(tr("*"));
+                    break;
+                }
             #ifdef Q_FALLTHROUGH
                 Q_FALLTHROUGH();
             #endif
-			default:
-				title.append(c);
-				break;
-			}
-		} else {
-			title.append(c);
-		}
-	}
+            default:
+                title.append(c);
+                break;
+            }
+        } else {
+            title.append(c);
+        }
+    }
 
-	title = DialogWindowTitle::compressWindowTitle(title);
+    title = compressWindowTitle(title);
 
-	if (title.isEmpty()) {
-		title = tr("<empty>"); // For preview purposes only 
-	}
-	
-	if(state) {
-		state->fileNamePresent   = fileNamePresent;
-		state->hostNamePresent   = hostNamePresent;
-		state->userNamePresent   = userNamePresent;
-		state->serverNamePresent = serverNamePresent;
-		state->clearCasePresent  = clearCasePresent;
-		state->fileStatusPresent = fileStatusPresent; 
-		state->dirNamePresent    = dirNamePresent;
-		state->shortStatus       = shortStatus;
-		state->noOfComponents    = noOfComponents;
-	}
+    if (title.isEmpty()) {
+        title = tr("<empty>"); // For preview purposes only
+    }
 
-	return title;
+    if(state) {
+        state->fileNamePresent   = fileNamePresent;
+        state->hostNamePresent   = hostNamePresent;
+        state->userNamePresent   = userNamePresent;
+        state->serverNamePresent = serverNamePresent;
+        state->clearCasePresent  = clearCasePresent;
+        state->fileStatusPresent = fileStatusPresent;
+        state->dirNamePresent    = dirNamePresent;
+        state->shortStatus       = shortStatus;
+        state->noOfComponents    = noOfComponents;
+    }
+
+    return title;
 }

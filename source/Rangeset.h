@@ -31,14 +31,6 @@ public:
     ~Rangeset()                           = default;
 
 public:
-    static void RangesFree(Range *ranges);
-    static Range *RangesNew(int64_t n);
-    static Range *RangesRealloc(Range *ranges, int64_t n);
-
-public:
-    static void RangesetRefreshRange(TextBuffer *buffer, int64_t start, int64_t end);
-
-public:
     bool RangesetAssignColorName(TextBuffer *buffer, const QString &color_name);
     bool RangesetAssignName(const QString &name);
     bool RangesetChangeModifyResponse(QString name);

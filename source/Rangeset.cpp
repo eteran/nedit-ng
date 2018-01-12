@@ -35,6 +35,17 @@ struct {
 };
 
 
+/*
+** Refresh the given range on the screen. If the range indicated is null, we
+** refresh the screen for the whole file.
+*/
+void RangesetRefreshRange(TextBuffer *buffer, int64_t start, int64_t end) {
+    if (buffer) {
+        buffer->BufCheckDisplay(start, end);
+    }
+}
+
+
 // -------------------------------------------------------------------------- 
 
 bool is_start(int64_t i) {
@@ -48,8 +59,62 @@ bool is_end(int64_t i) {
 void rangesetRefreshAllRanges(TextBuffer *buffer, Rangeset *rangeset) {
 
     for (int i = 0; i < rangeset->n_ranges_; ++i) {
-        Rangeset::RangesetRefreshRange(buffer, rangeset->ranges_[i].start, rangeset->ranges_[i].end);
+        RangesetRefreshRange(buffer, rangeset->ranges_[i].start, rangeset->ranges_[i].end);
     }
+}
+
+// --------------------------------------------------------------------------
+
+Range *RangesNew(int64_t n) {
+
+    if (n != 0) {
+        /* We use a blocked allocation scheme here, with a block size of factor.
+         * Only allocations of multiples of factor will be allowed.
+         * Be sure to allocate at least one more than we really need, and
+         * round up to next higher multiple of factor, ie
+         *     n = (((n + 1) + factor - 1) / factor) * factor
+         * If we choose factor = (1 << factor_bits), we can use shifts
+         * instead of multiply/divide, ie
+         *     n = ((n + (1 << factor_bits)) >> factor_bits) << factor_bits
+         * or
+         *     n = (1 + (n >> factor_bits)) << factor_bits
+         *
+         * Since the shifts just strip the end 1 bits, we can even get away with
+         *     n = ((1 << factor_bits) + n) & (~0 << factor_bits);
+         * Finally, we decide on factor_bits according to the size of n:
+         * if n >= 256, we probably want less reallocation on growth than
+         * otherwise; choose some arbitrary values thus:
+         *     factor_bits = (n >= 256) ? 6 : 4
+         * so
+         *     n = (n >= 256) ? (n + (1<<6)) & (~0<<6) : (n + (1<<4)) & (~0<<4)
+         * or
+         *     n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15)
+         */
+        n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
+        size_t size = static_cast<size_t>(n) * sizeof(Range);
+        return reinterpret_cast<Range *>(malloc(size));
+    }
+
+    return nullptr;
+}
+
+void RangesFree(Range *ranges) {
+    free(ranges);
+}
+
+Range *RangesRealloc(Range *ranges, int64_t n) {
+
+    if (n > 0) {
+        // see RangesNew() for comments
+        n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
+
+        size_t size = static_cast<size_t>(n) * sizeof(Range);
+        return reinterpret_cast<Range *>(realloc(ranges, size));
+    } else {
+        free(ranges);
+    }
+
+    return nullptr;
 }
 
 // -------------------------------------------------------------------------- 
@@ -275,7 +340,7 @@ Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, int64_t pos, int64_t ins, i
 
     n -= (j - i);
     rangeset->n_ranges_ = n / 2;
-    rangeset->ranges_   = Rangeset::RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
+    rangeset->ranges_   = RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
 
     /* final adjustments */
     return rangeset;
@@ -335,7 +400,7 @@ Rangeset *rangesetInclMaintain(Rangeset *rangeset, int64_t pos, int64_t ins, int
 
     n -= (j - i);
     rangeset->n_ranges_ = n / 2;
-    rangeset->ranges_ = Rangeset::RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
+    rangeset->ranges_ = RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
 
     /* final adjustments */
     return rangeset;
@@ -391,7 +456,7 @@ Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, int64_t pos, int64_t ins, i
 
     n -= (j - i);
     rangeset->n_ranges_ = n / 2;
-    rangeset->ranges_ = Rangeset::RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
+    rangeset->ranges_ = RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
 
     /* final adjustments */
     return rangeset;
@@ -453,7 +518,7 @@ Rangeset *rangesetExclMaintain(Rangeset *rangeset, int64_t pos, int64_t ins, int
 
     n -= (j - i);
     rangeset->n_ranges_ = n / 2;
-    rangeset->ranges_ = Rangeset::RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
+    rangeset->ranges_ = RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
 
     /* final adjustments */
     return rangeset;
@@ -534,7 +599,7 @@ Rangeset *rangesetBreakMaintain(Rangeset *rangeset, int64_t pos, int64_t ins, in
 
     n -= j - i;
     rangeset->n_ranges_ = n / 2;
-    rangeset->ranges_ = Rangeset::RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
+    rangeset->ranges_ = RangesRealloc(rangeset->ranges_, rangeset->n_ranges_);
 
     /* final adjustments */
     return rangeset;
@@ -1115,7 +1180,6 @@ int64_t Rangeset::RangesetRemoveBetween(TextBuffer *buffer, int64_t start, int64
 /*
 ** Remove all ranges from a range set.
 */
-
 void Rangeset::RangesetEmpty(TextBuffer *buffer) {
     Range *ranges = ranges_;
 
@@ -1126,14 +1190,14 @@ void Rangeset::RangesetEmpty(TextBuffer *buffer) {
         while (n_ranges_--) {
             int64_t start = ranges[n_ranges_].start;
             int64_t end   = ranges[n_ranges_].end;
-            Rangeset::RangesetRefreshRange(buffer, start, end);
+            RangesetRefreshRange(buffer, start, end);
         }
     }
 
     color_name_ = QString();
     name_        = QString();
 
-    Rangeset::RangesFree(ranges_);
+    RangesFree(ranges_);
     ranges_ = nullptr;
 }
 
@@ -1153,16 +1217,6 @@ RangesetInfo Rangeset::RangesetGetInfo() const {
 }
 
 /*
-** Refresh the given range on the screen. If the range indicated is null, we
-** refresh the screen for the whole file.
-*/
-void Rangeset::RangesetRefreshRange(TextBuffer *buffer, int64_t start, int64_t end) {
-    if (buffer) {
-        buffer->BufCheckDisplay(start, end);
-    }
-}
-
-/*
 ** Initialise a new range set.
 */
 void Rangeset::RangesetInit(int label) {
@@ -1175,56 +1229,4 @@ void Rangeset::RangesetInit(int label) {
     color_set_  = 0;
 
     RangesetChangeModifyResponse(DEFAULT_UPDATE_FN_NAME);
-}
-
-Range *Rangeset::RangesNew(int64_t n) {
-
-    if (n != 0) {
-        /* We use a blocked allocation scheme here, with a block size of factor.
-         * Only allocations of multiples of factor will be allowed.
-         * Be sure to allocate at least one more than we really need, and
-         * round up to next higher multiple of factor, ie
-         *     n = (((n + 1) + factor - 1) / factor) * factor
-         * If we choose factor = (1 << factor_bits), we can use shifts
-         * instead of multiply/divide, ie
-         *     n = ((n + (1 << factor_bits)) >> factor_bits) << factor_bits
-         * or
-         *     n = (1 + (n >> factor_bits)) << factor_bits
-         *
-         * Since the shifts just strip the end 1 bits, we can even get away with
-         *     n = ((1 << factor_bits) + n) & (~0 << factor_bits);
-         * Finally, we decide on factor_bits according to the size of n:
-         * if n >= 256, we probably want less reallocation on growth than
-         * otherwise; choose some arbitrary values thus:
-         *     factor_bits = (n >= 256) ? 6 : 4
-         * so
-         *     n = (n >= 256) ? (n + (1<<6)) & (~0<<6) : (n + (1<<4)) & (~0<<4)
-         * or
-         *     n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15)
-         */
-        n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
-        size_t size = static_cast<size_t>(n) * sizeof(Range);
-        return reinterpret_cast<Range *>(malloc(size));
-    }
-
-    return nullptr;
-}
-
-void Rangeset::RangesFree(Range *ranges) {
-    free(ranges);
-}
-
-Range *Rangeset::RangesRealloc(Range *ranges, int64_t n) {
-
-    if (n > 0) {
-        // see RangesNew() for comments
-        n = (n >= 256) ? ((n + 64) & ~63) : ((n + 16) & ~15);
-
-        size_t size = static_cast<size_t>(n) * sizeof(Range);
-        return reinterpret_cast<Range *>(realloc(ranges, size));
-    } else {
-        free(ranges);
-    }
-
-    return nullptr;
 }

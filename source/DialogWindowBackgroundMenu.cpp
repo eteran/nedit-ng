@@ -359,17 +359,14 @@ std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbo
 	}
 
     auto f = std::make_unique<MenuItem>();
-	f->name = nameText;
-	f->cmd  = cmdText;
-
-    QKeySequence shortcut = ui.editAccelerator->keySequence();
-
+    f->name      = nameText;
+    f->cmd       = cmdText;
 	f->input     = ui.checkRequiresSelection->isChecked() ? FROM_SELECTION : FROM_NONE;
 	f->output    = TO_SAME_WINDOW;
 	f->repInput  = false;
 	f->saveFirst = false;
 	f->loadAfter = false;
-    f->shortcut  = shortcut;
+    f->shortcut  = ui.editAccelerator->keySequence();
 
 	return f;
 }
