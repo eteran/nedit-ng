@@ -333,7 +333,7 @@ static std::error_code routineName(DocumentWidget *document, Arguments arguments
         }                                                                                              \
     }                                                                                                  \
                                                                                                        \
-    *result = to_value();                                                                              \
+    *result = make_value();                                                                            \
     return MacroErrorCode::Success;                                                                    \
 }
 
@@ -360,7 +360,7 @@ static std::error_code routineName(DocumentWidget *document, Arguments arguments
         }                                                                                              \
     }                                                                                                  \
                                                                                                        \
-    *result = to_value();                                                                              \
+    *result = make_value();                                                                            \
     return MacroErrorCode::Success;                                                                    \
 }
 
@@ -387,7 +387,7 @@ static std::error_code routineName(DocumentWidget *document, Arguments arguments
         }                                                                                              \
     }                                                                                                  \
                                                                                                        \
-    *result = to_value();                                                                              \
+    *result = make_value();                                                                            \
     return MacroErrorCode::Success;                                                                    \
 }
 
@@ -604,32 +604,32 @@ static const SubRoutine TextAreaSubrNames[] = {
                                                                                                                               \
         QString string;                                                                                                       \
         if(std::error_code ec = readArguments(arguments, 0, &string)) {                                                       \
-            return ec;                                                                                                    \
+            return ec;                                                                                                        \
         }                                                                                                                     \
                                                                                                                               \
         if(auto window = MainWindow::fromDocument(document)) {                                                                \
             window->slotName(document, string);                                                                               \
         }                                                                                                                     \
                                                                                                                               \
-        *result = to_value();                                                                                                 \
+        *result = make_value();                                                                                               \
         return MacroErrorCode::Success;                                                                                       \
     }
 
 #define WINDOW_MENU_EVENT(routineName, slotName)                                                                                \
-    static std::error_code routineName(DocumentWidget *document, Arguments arguments, DataValue *result) {        \
+    static std::error_code routineName(DocumentWidget *document, Arguments arguments, DataValue *result) {                      \
                                                                                                                                 \
         /* ensure that we are dealing with the document which currently has the focus */                                        \
         document = MacroRunDocumentEx();                                                                                        \
                                                                                                                                 \
         if(!arguments.empty()) {                                                                                                \
-            return MacroErrorCode::WrongNumberOfArguments;                                                                  \
+            return MacroErrorCode::WrongNumberOfArguments;                                                                      \
         }                                                                                                                       \
                                                                                                                                 \
         if(auto window = MainWindow::fromDocument(document)) {                                                                  \
             window->slotName(document);                                                                                         \
         }                                                                                                                       \
                                                                                                                                 \
-        *result = to_value();                                                                                                   \
+        *result = make_value();                                                                                                 \
         return MacroErrorCode::Success;                                                                                         \
     }
 
