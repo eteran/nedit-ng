@@ -9,7 +9,7 @@
 
 class WindowMenuEvent : public QEvent {
 public:
-    static constexpr QEvent::Type eventType = static_cast<QEvent::Type>(QEvent::User + 2);
+    static constexpr auto eventType = static_cast<QEvent::Type>(QEvent::User + 2);
 
 public:
     WindowMenuEvent(const QString &macroString, const QStringList &arguments);
