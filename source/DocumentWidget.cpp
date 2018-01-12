@@ -1662,7 +1662,7 @@ void DocumentWidget::Undo() {
         // use the saved undo information to reverse changes
         buffer_->BufReplaceEx(undo.startPos, undo.endPos, undo.oldText);
 
-        const int64_t restoredTextLength = undo.oldText.size();
+        const auto restoredTextLength = static_cast<int64_t>(undo.oldText.size());
         if (!buffer_->BufGetPrimary().selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
@@ -1715,7 +1715,7 @@ void DocumentWidget::Redo() {
         // use the saved redo information to reverse changes
         buffer_->BufReplaceEx(redo.startPos, redo.endPos, redo.oldText);
 
-        const int64_t restoredTextLength = redo.oldText.size();
+        const auto restoredTextLength = static_cast<int64_t>(redo.oldText.size());
         if (!buffer_->BufGetPrimary().selected || GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
