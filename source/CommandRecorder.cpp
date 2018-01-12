@@ -3,15 +3,9 @@
 #include "TextEditEvent.h"
 #include "WindowMenuEvent.h"
 #include "DocumentWidget.h"
-#include <QMutex>
 #include <QtDebug>
 
 namespace {
-
-#if 0
-// Arrays for translating escape characters in escapeStringChars
-const char ReplaceChars[] = "\\\"ntbrfav";
-#endif
 
 // List of actions not useful when learning a macro sequence (also see below)
 QLatin1String IgnoredActions[] = {
@@ -348,6 +342,7 @@ void CommandRecorder::setRecording(bool enabled) {
 
     if(isRecording_ == enabled) {
         // no change in state, do nothing
+        return;
     }
 
     if(!enabled) {
