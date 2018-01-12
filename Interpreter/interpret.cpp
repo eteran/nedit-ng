@@ -833,8 +833,6 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 */
 static int pushSymVal() {
 
-    int nArgs;
-    int argNum;
 	DataValue symVal;
 
 	DISASM_RT(PC - 1, 2);
@@ -847,8 +845,8 @@ static int pushSymVal() {
 	} else if (s->type == GLOBAL_SYM || s->type == CONST_SYM) {
 		symVal = s->value;
 	} else if (s->type == ARG_SYM) {
-        nArgs = FP_GET_ARG_COUNT(Context->FrameP);
-        argNum = to_integer(s->value);
+        int nArgs = FP_GET_ARG_COUNT(Context->FrameP);
+        int argNum = to_integer(s->value);
 		if (argNum >= nArgs) {
 			return execError("referenced undefined argument: %s", s->name.c_str());
 		}
@@ -901,15 +899,14 @@ static int pushArgCount() {
 }
 
 static int pushArgArray() {
-	int nArgs;
+
 	DataValue argVal;
-	DataValue *resultArray;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(0, 3);
 
-    nArgs = FP_GET_ARG_COUNT(Context->FrameP);
-    resultArray = &FP_GET_ARG_ARRAY_CACHE(Context->FrameP);
+    int nArgs = FP_GET_ARG_COUNT(Context->FrameP);
+    DataValue *resultArray = &FP_GET_ARG_ARRAY_CACHE(Context->FrameP);
 
     if (!is_array(*resultArray)) {
 
@@ -925,6 +922,7 @@ static int pushArgArray() {
 			}
 		}
 	}
+
 	PUSH(*resultArray);
 	return STAT_OK;
 }
@@ -945,7 +943,7 @@ static int pushArraySymVal() {
 	DISASM_RT(PC - 1, 3);
 	STACKDUMP(0, 3);
 
-    Symbol *sym   = Context->PC++->sym;
+    Symbol *sym       = Context->PC++->sym;
     int64_t initEmpty = Context->PC++->value;
 
 	if (sym->type == LOCAL_SYM) {
@@ -1741,7 +1739,7 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray) {
 ** I really need to optimize the size approximation rather than assuming
 ** a worst case size for every integer argument
 */
-static int makeArrayKeyFromArgs(int64_t nArgs, std::string *keyString, int leaveParams) {
+static int makeArrayKeyFromArgs(int64_t nArgs, std::string *keyString, bool leaveParams) {
 	DataValue tmpVal;
 
     std::string str;
