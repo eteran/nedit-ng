@@ -163,13 +163,6 @@ DialogPrint::DialogPrint(const QString &PrintFileName, const QString &jobName, Q
 /*
 ** LoadPrintPreferences
 **
-** Read an X database to obtain print dialog preferences.
-**
-**	prefDB		X database potentially containing print preferences
-**	appName		Application name which can be used to qualify
-**			resource names for database lookup.
-**	appClass	Application class which can be used to qualify
-**			resource names for database lookup.
 **	lookForFlpr	Check if the flpr print command is installed
 **			and use that for the default if it's found.
 **			(flpr is a Fermilab utility for printing on
@@ -281,7 +274,6 @@ void DialogPrint::updatePrintCmd() {
 
 	// Compose the command from the options determined above
 	ui.editCommand->setText(tr("%1%2%3%4%5").arg(PrintCommand, copiesArg, queueArg, hostArg, jobArg));
-
 
 	// Indicate that the command field was synthesized from the other fields,
 	// so future dialog invocations can safely re-generate the command without

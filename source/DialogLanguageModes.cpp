@@ -149,7 +149,7 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
         }
 
         ui.editName      ->setText(ptr->name);
-        ui.editExtensions->setText(extensions.join(QLatin1String(" ")));
+        ui.editExtensions->setText(extensions.join(QLatin1Char(' ')));
         ui.editRegex     ->setText(ptr->recognitionExpr);
         ui.editCallTips  ->setText(ptr->defTipsFile);
         ui.editDelimiters->setText(ptr->delimiters);
