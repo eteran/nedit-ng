@@ -76,17 +76,19 @@ bool checkDoMacroArg(const QString &macro) {
  */
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
 
+#ifdef NDEBUG
+    // filter out messages that come from Qt itself
+    if(!context.file && context.line == 0 && !context.function) {
+        return;
+    }
+#endif
+
     switch (type) {
     case QtDebugMsg:
         fprintf(stderr, "Debug: %s (%s:%u, %s)\n", qPrintable(msg), context.file, context.line, context.function);
         break;
     case QtWarningMsg:
-        /* NOTE(eteran): filter out QXcbClipboard messages. They come from Qt
-         * but are unsightly, and there isn't much that I can do to
-         * prevent them */
-        if(!msg.startsWith(QLatin1String("QXcbClipboard"))) {
-            fprintf(stderr, "Warning: %s (%s:%u, %s)\n", qPrintable(msg), context.file, context.line, context.function);
-        }
+        fprintf(stderr, "Warning: %s (%s:%u, %s)\n", qPrintable(msg), context.file, context.line, context.function);
         break;
     case QtInfoMsg:
         fprintf(stderr, "Info: %s (%s:%u, %s)\n", qPrintable(msg), context.file, context.line, context.function);
