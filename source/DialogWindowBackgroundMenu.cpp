@@ -13,6 +13,30 @@
 
 #include <QMessageBox>
 
+namespace {
+
+/*
+** If "string" is not terminated with a newline character,  return a
+** reallocated string which does end in a newline (otherwise, just pass on
+** string as function value).  (The macro language requires newline terminators
+** for statements, but the text widget doesn't force it like the NEdit text
+** buffer does, so this might avoid some confusion.)
+*/
+QString ensureNewline(const QString &string) {
+
+    if(string.isNull()) {
+        return QString();
+    }
+
+    if(string.endsWith(QLatin1Char('\n'))) {
+        return string;
+    }
+
+    return string + QLatin1Char('\n');
+}
+
+}
+
 /**
  * @brief DialogWindowBackgroundMenu::DialogWindowBackgroundMenu
  * @param parent
@@ -385,26 +409,6 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 	}
 
 	return true;
-}
-
-/*
-** If "string" is not terminated with a newline character,  return a
-** reallocated string which does end in a newline (otherwise, just pass on
-** string as function value).  (The macro language requires newline terminators
-** for statements, but the text widget doesn't force it like the NEdit text
-** buffer does, so this might avoid some confusion.)
-*/
-QString DialogWindowBackgroundMenu::ensureNewline(const QString &string) {
-
-	if(string.isNull()) {
-		return QString();
-	}
-
-	if(string.endsWith(QLatin1Char('\n'))) {
-		return string;
-	}
-
-	return string + QLatin1Char('\n');
 }
 
 /**

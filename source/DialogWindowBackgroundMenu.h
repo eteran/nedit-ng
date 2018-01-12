@@ -45,7 +45,6 @@ private:
     bool checkMacroText(const QString &macro, Verbosity verbosity);
     bool updateCurrentItem();
     bool updateCurrentItem(const QModelIndex &index);
-    QString ensureNewline(const QString &string);
     std::unique_ptr<MenuItem> readFields(Verbosity verbosity);
     void updateButtonStates();
     void updateButtonStates(const QModelIndex &current);

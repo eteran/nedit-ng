@@ -26,7 +26,6 @@ private:
 	bool updateSmartIndentData();
 	bool checkSmartIndentDialogData();
 	std::unique_ptr<SmartIndentEntry>  getSmartIndentDialogData();
-	QString ensureNewline(const QString &string);
 	
 private Q_SLOTS:
 	void on_buttonCommon_clicked();
