@@ -408,13 +408,12 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
     // works correctly
     LastCreated = this;
 
-#if 0
-    ui.labelFileAndSize->setElideMode(Qt::ElideLeft);
-#else
+    // make the QLineEdit look and act like a QLabel
+    // this gives us a scrollable/selectable "label"
     auto pal = ui.labelFileAndSize->palette();
     pal.setBrush(QPalette::Base, pal.brush(QPalette::Window));
     ui.labelFileAndSize->setPalette(pal);
-#endif
+
     // Every document has a backing buffer
 	buffer_ = new TextBuffer();
     buffer_->BufAddModifyCB(SyntaxHighlightModifyCBEx, this);
@@ -506,13 +505,6 @@ DocumentWidget::~DocumentWidget() noexcept {
     buffer_->BufRemoveModifyCB(modifiedCB, this);
     buffer_->BufRemoveModifyCB(SyntaxHighlightModifyCBEx, this);
 
-    // NOTE(eteran): undo data structures are value based, so they'll auto-cleanup
-#if 0
-    // free the undo and redo lists
-    ClearUndoList();
-    ClearRedoList();
-#endif
-
     delete buffer_;
 }
 
@@ -574,16 +566,16 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
 */
 void DocumentWidget::SetWindowModified(bool modified) {
     if(auto win = MainWindow::fromDocument(this)) {
+
 		if (!fileChanged_ && modified) {
 			win->ui.action_Close->setEnabled(true);
 			fileChanged_ = true;
-			win->UpdateWindowTitle(this);
-			RefreshTabState();
 		} else if (fileChanged_ && !modified) {
 			fileChanged_ = false;
-			win->UpdateWindowTitle(this);
-			RefreshTabState();
 		}
+
+        win->UpdateWindowTitle(this);
+        RefreshTabState();
 	}
 }
 
@@ -686,7 +678,7 @@ void DocumentWidget::action_Set_Language_Mode(const QString &languageMode, bool 
  * @param languageMode
  */
 void DocumentWidget::action_Set_Language_Mode(const QString &languageMode) {
-    action_Set_Language_Mode(languageMode, false);
+    action_Set_Language_Mode(languageMode, /*forceNewDefaults=*/false);
 }
 
 /**
