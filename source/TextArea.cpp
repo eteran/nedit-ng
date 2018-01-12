@@ -7543,7 +7543,7 @@ int64_t TextArea::TextDGetInsertPosition() const {
 ** WORKS FOR DISPLAYED LINES AND, IN CONTINUOUS WRAP MODE, ONLY WHEN THE
 ** ABSOLUTE LINE NUMBER IS BEING MAINTAINED.  Otherwise, it returns false.
 */
-int64_t TextArea::TextDPosToLineAndCol(int64_t pos, int64_t *lineNum, int64_t *column) {
+bool TextArea::TextDPosToLineAndCol(int64_t pos, int64_t *lineNum, int64_t *column) {
 
 	/* In continuous wrap mode, the absolute (non-wrapped) line count is
 	   maintained separately, as needed.  Only return it if we're actually

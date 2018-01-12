@@ -251,7 +251,7 @@ public:
     bool TextDInSelection(const QPoint &p) const;
     int64_t TextGetCursorPos() const;
     int64_t TextDGetInsertPosition() const;
-    int64_t TextDPosToLineAndCol(int64_t pos, int64_t *lineNum, int64_t *column);
+    bool TextDPosToLineAndCol(int64_t pos, int64_t *lineNum, int64_t *column);
     void TextDSetScroll(int64_t topLineNum, int horizOffset);
     void TextSetCursorPos(int64_t pos);
     void TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user);
