@@ -1078,7 +1078,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
         const int tabDist             = tabDistIsDef                                 || forceDefaults ? GetPrefTabDist(mode)     : buffer_->BufGetTabDistance();
         const int emTabDist           = emTabDistIsDef                               || forceDefaults ? GetPrefEmTabDist(mode)   : oldEmTabDist;
         IndentStyle indentStyle       = indentStyleIsDef                             || forceDefaults ? GetPrefAutoIndent(mode)  : indentStyle_;
-        int highlight                 = highlightIsDef                               || forceDefaults ? GetPrefHighlightSyntax() : highlightSyntax_;
+        bool highlight                = highlightIsDef                               || forceDefaults ? GetPrefHighlightSyntax() : highlightSyntax_;
 
         /* Dim/undim smart-indent and highlighting menu items depending on
            whether patterns/macros are available */
@@ -1371,7 +1371,7 @@ void DocumentWidget::dimSelDepItemsInMenu(QMenu *menuPane, const gsl::span<MenuD
             if(QMenu *subMenu = action->menu()) {
                 dimSelDepItemsInMenu(subMenu, menuList, enabled);
             } else {
-                int index = action->data().value<int>();
+                int index = action->data().toInt();
                 if (index < 0 || index >= menuList.size()) {
                     return;
                 }
