@@ -142,13 +142,11 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 
 
 #ifdef Q_OS_LINUX
-    static QLibrary lib(QLatin1String("libKF5WidgetsAddons.so"));
-    if(lib.load()) {
-        using DisablerFunc = void (*)(QWidget *);
-        static auto setNoAccel = reinterpret_cast<DisablerFunc>(lib.resolve("_ZN19KAcceleratorManager10setNoAccelEP7QWidget"));
-        if (setNoAccel) {
-            setNoAccel(ui.tabWidget->tabBar());
-        }
+    using DisablerFunc = void (*)(QWidget *);
+
+    static auto setNoAccel = reinterpret_cast<DisablerFunc>(QLibrary::resolve(QLatin1String("libKF5WidgetsAddons.so"), "_ZN19KAcceleratorManager10setNoAccelEP7QWidget"));
+    if (setNoAccel) {
+        setNoAccel(ui.tabWidget->tabBar());
     }
 #endif
 
