@@ -58,6 +58,10 @@
 #include <glob.h>
 #endif
 
+#ifdef Q_OS_LINUX
+#include <QLibrary>
+#endif
+
 namespace {
 
 // Min. # of columns in line number display
@@ -135,6 +139,17 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     connect(qApp, &QApplication::focusChanged, this, &MainWindow::focusChanged);
 
     ui.menu_Windows->setStyleSheet(QLatin1String("QMenu { menu-scrollable: 1; }"));
+
+
+#ifdef Q_OS_LINUX
+    QLibrary lib(QLatin1String("libKF5WidgetsAddons.so"));
+    if(lib.load()) {
+        using DisablerFunc = void (*)(QWidget *);
+        if (auto setNoAccel = reinterpret_cast<DisablerFunc>(lib.resolve("_ZN19KAcceleratorManager10setNoAccelEP7QWidget"))) {
+            setNoAccel(ui.tabWidget->tabBar());
+        }
+    }
+#endif
 
 	setupMenuGroups();
 	setupTabBar();
@@ -230,7 +245,6 @@ void MainWindow::setupTabBar() {
 	ui.tabWidget->setCornerWidget(deleteTabButton);
 	
     connect(deleteTabButton, &QToolButton::clicked, this, &MainWindow::on_action_Close_triggered);
-
     ui.tabWidget->tabBar()->installEventFilter(this);
 }
 
@@ -896,7 +910,7 @@ void MainWindow::on_action_Delete_triggered() {
 DocumentWidget *MainWindow::CreateDocument(QString name) {
     auto document = new DocumentWidget(name, this);
     int i = ui.tabWidget->addTab(document, name);
-	ui.tabWidget->setCurrentIndex(i);
+    ui.tabWidget->setCurrentIndex(i);
     return document;
 }
 

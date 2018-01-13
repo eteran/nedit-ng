@@ -76,7 +76,7 @@ bool checkDoMacroArg(const QString &macro) {
  */
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
 
-#ifdef NDEBUG
+#if defined(NDEBUG)
     // filter out messages that come from Qt itself
     if(!context.file && context.line == 0 && !context.function) {
         return;
