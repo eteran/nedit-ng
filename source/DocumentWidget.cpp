@@ -3024,7 +3024,7 @@ void DocumentWidget::open(const QString &fullpath) {
         return;
     }
 
-    EditExistingFileEx(
+    DocumentWidget::EditExistingFileEx(
                 this,
                 filename,
                 pathname,
