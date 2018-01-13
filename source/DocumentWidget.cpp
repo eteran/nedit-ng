@@ -2826,13 +2826,9 @@ int DocumentWidget::fileWasModifiedExternally() const {
     }
 
     QString fullname = FullPath();
+    QFileInfo fi(fullname);
 
-    struct stat statbuf;
-    if (::stat(fullname.toUtf8().data(), &statbuf) != 0) {
-        return false;
-    }
-
-    if (lastModTime_ == statbuf.st_mtime) {
+    if (lastModTime_ == fi.lastModified().toTime_t()) {
         return false;
     }
 
