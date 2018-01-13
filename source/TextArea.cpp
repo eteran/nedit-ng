@@ -71,11 +71,6 @@ QString asciiToUnicode(const char *chars, int64_t len) {
 
 constexpr int CALLTIP_EDGE_GUARD = 5;
 
-/* Number of pixels of motion from the initial (grab-focus) button press
-   required to begin recognizing a mouse drag for the purpose of making a
-   selection */
-const int SELECT_THRESHOLD = 4; // QApplication::startDragDistance();
-
 // Length of delay in milliseconds for vertical autoscrolling
 constexpr int VERTICAL_SCROLL_DELAY = 50;
 
@@ -6002,7 +5997,7 @@ void TextArea::extendAdjustAP(QMouseEvent *event, EventFlags flags) {
 	if (dragState_ == PRIMARY_CLICKED) {
 
         const QPoint point = event->pos() - btnDownCoord_;
-        if(point.manhattanLength() > SELECT_THRESHOLD) {
+        if(point.manhattanLength() > QApplication::startDragDistance()) {
 			dragState_ = rectDrag ? PRIMARY_RECT_DRAG : PRIMARY_DRAG;
 		} else {
 			return;
@@ -6367,7 +6362,7 @@ void TextArea::secondaryOrDragAdjustAP(QMouseEvent *event, EventFlags flags) {
 	   initial mouse down to be considered a drag */
 	if (dragState_ == CLICKED_IN_SELECTION) {
         const QPoint point = event->pos() - btnDownCoord_;
-        if(point.manhattanLength() > SELECT_THRESHOLD) {
+        if(point.manhattanLength() > QApplication::startDragDistance()) {
 			BeginBlockDrag();
 		} else {
 			return;
@@ -6401,7 +6396,7 @@ void TextArea::secondaryAdjustAP(QMouseEvent *event, EventFlags flags) {
 	   far enough from the initial mouse down to be considered a drag */
 	if (dragState_ == SECONDARY_CLICKED) {
         const QPoint point = event->pos() - btnDownCoord_;
-        if(point.manhattanLength() > SELECT_THRESHOLD) {
+        if(point.manhattanLength() > QApplication::startDragDistance()) {
 			dragState_ = rectDrag ? SECONDARY_RECT_DRAG : SECONDARY_DRAG;
 		} else {
 			return;
