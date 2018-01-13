@@ -98,10 +98,10 @@ CommandRecorder::CommandRecorder(QObject *parent) : QObject(parent), isRecording
  * @brief CommandRecorder::getInstance
  * @return global unique instance
  */
-CommandRecorder &CommandRecorder::getInstance() {
+CommandRecorder *CommandRecorder::instance() {
 
     static CommandRecorder instance;
-    return instance;
+    return &instance;
 }
 
 /**

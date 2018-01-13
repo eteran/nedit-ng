@@ -5246,7 +5246,7 @@ bool MainWindow::CloseAllFilesAndWindowsEx() {
  * @param document
  */
 void MainWindow::action_Repeat(DocumentWidget *document) {
-    QString LastCommand = CommandRecorder::getInstance().lastCommand;
+    QString LastCommand = CommandRecorder::instance()->lastCommand;
 
     if(LastCommand.isNull()) {
         QMessageBox::warning(
