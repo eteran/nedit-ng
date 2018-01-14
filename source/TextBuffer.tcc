@@ -1377,7 +1377,7 @@ void BasicTextBuffer<Ch, Tr>::insertColEx(int64_t column, int64_t startPos, view
 ** screen for a change in a selection.
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::redisplaySelection(const TextSelection *oldSelection, TextSelection *newSelection) noexcept {
+void BasicTextBuffer<Ch, Tr>::redisplaySelection(const TextSelection *oldSelection, TextSelection *newSelection) const noexcept {
 
     /* If either selection is rectangular, add an additional character to
        the end of the selection to request the redraw routines to wipe out
