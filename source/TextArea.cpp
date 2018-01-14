@@ -4771,7 +4771,7 @@ void TextArea::TextDOverstrikeEx(view::string_view text) {
 void TextArea::TextDInsertEx(view::string_view text) {
     int64_t pos = cursorPos_;
 
-    cursorToHint_ = pos + text.size();
+    cursorToHint_ = pos + static_cast<int64_t>(text.size());
 	buffer_->BufInsertEx(pos, text);
 	cursorToHint_ = NO_HINT;
 }
