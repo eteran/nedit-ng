@@ -3,7 +3,6 @@
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "EditFlags.h"
-#include "macro.h"
 #include "preferences.h"
 
 #include "Util/ServerCommon.h"

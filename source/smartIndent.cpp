@@ -6,7 +6,6 @@
 #include "SmartIndentEntry.h"
 #include "WrapStyle.h"
 #include "interpret.h"
-#include "macro.h"
 #include "preferences.h"
 #include "Util/Input.h"
 #include "shift.h"
