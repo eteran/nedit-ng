@@ -1,6 +1,12 @@
 
 #include "HighlightPattern.h"
 
+HighlightPattern::HighlightPattern() : flags(0) {
+}
+
+HighlightPattern::HighlightPattern(const QString &styleName) : style(styleName), flags(0) {
+}
+
 bool HighlightPattern::operator==(const HighlightPattern &rhs) const {
 
     if (flags != rhs.flags) {

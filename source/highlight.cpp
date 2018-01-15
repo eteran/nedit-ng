@@ -445,7 +445,6 @@ parseDone:
 bool parseString(HighlightData *pattern, const char **string, char **styleString, int64_t length, char *prevChar, bool anchored, const QString &delimiters, const char *look_behind_to, const char *match_to) {
 
 	bool subExecuted;
-	int *subExpr;
     char succChar = match_to ? (*match_to) : '\0';
 	HighlightData *subPat = nullptr;
 	HighlightData *subSubPat;
@@ -507,8 +506,8 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
 							subExecuted = true;
 						}
 
-                        for (subExpr = subPat->endSubexprs; *subExpr != -1; subExpr++) {
-							recolorSubexpr(pattern->endRE, *subExpr, subPat->style, *string, *styleString);
+                        for (int subExpr : subPat->endSubexprs) {
+                            recolorSubexpr(pattern->endRE, subExpr, subPat->style, *string, *styleString);
                         }
 					}
 				}
@@ -622,8 +621,9 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
 					}
 					subExecuted = true;
 				}
-				for (subExpr = subSubPat->startSubexprs; *subExpr != -1; subExpr++)
-					recolorSubexpr(subPat->startRE, *subExpr, subSubPat->style, *string, *styleString);
+                for (int subExpr : subSubPat->startSubexprs) {
+                    recolorSubexpr(subPat->startRE, subExpr, subSubPat->style, *string, *styleString);
+                }
 			}
 		}
 

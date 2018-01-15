@@ -4,6 +4,7 @@
 
 #include "Regex.h"
 #include <memory>
+#include <vector>
 #include <cstdint>
 
 // "Compiled" version of pattern specification 
@@ -15,8 +16,8 @@ public:
     std::shared_ptr<Regex> subPatternRE;
     uint8_t style;
 	int colorOnly;
-	int startSubexprs[NSUBEXP + 1];
-	int endSubexprs[NSUBEXP + 1];
+    std::vector<int> startSubexprs;
+    std::vector<int> endSubexprs;
 	int flags;
 	int nSubPatterns;
 	int nSubBranches; // Number of top-level branches of subPatternRE 

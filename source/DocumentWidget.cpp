@@ -6047,22 +6047,8 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     HighlightPattern *p1Ptr = pass1PatternSrc;
     HighlightPattern *p2Ptr = pass2PatternSrc;
 
-    p1Ptr->name         = QString();
-    p1Ptr->startRE      = QString();
-    p1Ptr->endRE        = QString();
-    p1Ptr->errorRE      = QString();
-    p1Ptr->style        = tr("Plain");
-    p1Ptr->flags        = 0;
-
-    p2Ptr->name 		= QString();
-    p2Ptr->startRE  	= QString();
-    p2Ptr->endRE		= QString();
-    p2Ptr->errorRE  	= QString();
-    p2Ptr->style		= tr("Plain");
-    p2Ptr->flags		= 0;
-
-    p1Ptr++;
-    p2Ptr++;
+    *p1Ptr++ = HighlightPattern(tr("Plain"));
+    *p2Ptr++ = HighlightPattern(tr("Plain"));
 
     for(const HighlightPattern &pattern : patterns) {
         if (pattern.flags & DEFER_PARSING) {
@@ -6277,17 +6263,16 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
         static const QRegularExpression re(QLatin1String("[0-9]+"));
 
         {
-            int nSubExprs = 0;
             if (!patternSrc[i].startRE.isNull()) {
                 Input in(&patternSrc[i].startRE);
                 Q_FOREVER {
                     if(in.match(QLatin1Char('&'))) {
-                        compiledPats[i].startSubexprs[nSubExprs++] = 0;
+                        compiledPats[i].startSubexprs.push_back(0);
                     } else if(in.match(QLatin1Char('\\'))) {
 
                         QString number;
                         if(in.match(re, &number)) {
-                            compiledPats[i].startSubexprs[nSubExprs++] = number.toInt();
+                            compiledPats[i].startSubexprs.push_back(number.toInt());
                         } else {
                             break;
                         }
@@ -6296,21 +6281,19 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
                     }
                 }
             }
-            compiledPats[i].startSubexprs[nSubExprs] = -1;
         }
 
         {
-            int nSubExprs = 0;
             if (!patternSrc[i].endRE.isNull()) {
                 Input in(&patternSrc[i].endRE);
                 Q_FOREVER {
                     if(in.match(QLatin1Char('&'))) {
-                        compiledPats[i].endSubexprs[nSubExprs++] = 0;
+                        compiledPats[i].endSubexprs.push_back(0);
                     } else if(in.match(QLatin1Char('\\'))) {
 
                         QString number;
                         if(in.match(re, &number)) {
-                            compiledPats[i].endSubexprs[nSubExprs++] = number.toInt();
+                            compiledPats[i].endSubexprs.push_back(number.toInt());
                         } else {
                             break;
                         }
@@ -6319,7 +6302,6 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
                     }
                 }
             }
-            compiledPats[i].endSubexprs[nSubExprs] = -1;
         }
     }
 
