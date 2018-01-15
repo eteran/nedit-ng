@@ -1546,20 +1546,9 @@ void DocumentWidget::addUndoItem(UndoInfo &&undo) {
     // Add the item to the beginning of the list
     undo_.emplace_front(std::move(undo));
 
-    // Increment the operation and memory counts
-    undoMemUsed_ += undo.oldText.size();
-
     // Trim the list if it exceeds any of the limits
     if (undo_.size() > UNDO_OP_LIMIT) {
         trimUndoList(UNDO_OP_TRIMTO);
-    }
-
-    if (undoMemUsed_ > UNDO_WORRY_LIMIT) {
-        trimUndoList(UNDO_WORRY_TRIMTO);
-    }
-
-    if (undoMemUsed_ > UNDO_PURGE_LIMIT) {
-        trimUndoList(UNDO_PURGE_TRIMTO);
     }
 
     if(MainWindow *window = MainWindow::fromDocument(this)) {
@@ -1588,11 +1577,6 @@ void DocumentWidget::removeUndoItem() {
     if (undo_.empty()) {
         return;
     }
-
-    const UndoInfo &undo = undo_.front();
-
-    // Decrement the operation and memory counts
-    undoMemUsed_ -= undo.oldText.size();
 
     // Remove and free the item
     undo_.pop_front();
@@ -1636,10 +1620,7 @@ void DocumentWidget::trimUndoList(size_t maxLength) {
     }
 
     // Trim off all subsequent entries
-    while(it != undo_.end()) {
-        undoMemUsed_ -= it->oldText.size();
-        it = undo_.erase(it);
-    }
+    undo_.erase(it, undo_.end());
 }
 
 void DocumentWidget::Undo() {

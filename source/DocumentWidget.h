@@ -307,7 +307,6 @@ private:
     int autoSaveCharCount_ = 0;                         // count of single characters typed since last backup file generated
     int autoSaveOpCount_   = 0;                         // count of editing operations ""
     size_t nMarks_         = 0;                         // number of active bookmarks
-    size_t undoMemUsed_    = 0;                         // amount of memory (in bytes) dedicated to the undo list
     mode_t mode_           = 0;                         // permissions of file being edited
     time_t lastModTime_    = 0;                         // time of last modification to file
     uid_t uid_             = 0;                         // last recorded user id of the file
