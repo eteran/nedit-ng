@@ -6091,8 +6091,8 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
        0 should have a default style of UNFINISHED_STYLE.  With no pass 2
        patterns, unstyled areas of pass 1 patterns should be PLAIN_STYLE
        to avoid triggering re-parsing every time they are encountered */
-    const int noPass1 = (nPass1Patterns == 0);
-    const int noPass2 = (nPass2Patterns == 0);
+    const bool noPass1 = (nPass1Patterns == 0);
+    const bool noPass2 = (nPass2Patterns == 0);
 
     if (noPass2) {
         pass1Pats[0].style = PLAIN_STYLE;
