@@ -156,6 +156,7 @@ int main(int argc, char *argv[]) {
     QFile file(styleFile);
     if(file.open(QIODevice::ReadOnly)) {
         qApp->setStyleSheet(QString::fromUtf8(file.readAll()));
+        file.close();
     }
 
 	// Initialize global symbols and subroutines used in the macro language
