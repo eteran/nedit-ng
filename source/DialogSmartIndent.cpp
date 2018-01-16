@@ -154,11 +154,13 @@ void DialogSmartIndent::on_buttonDelete_clicked() {
 	}
 
 	// if a stored version of the pattern set exists, delete it from the list 
-    for (auto it = SmartIndentSpecs.begin(); it != SmartIndentSpecs.end(); ++it) {
-        if (languageMode_ == it->lmName) {
-            SmartIndentSpecs.erase(it);
-		}
-	}
+    auto it = std::find_if(SmartIndentSpecs.begin(), SmartIndentSpecs.end(), [this](const SmartIndentEntry &entry) {
+        return entry.lmName == languageMode_;
+    });
+
+    if(it != SmartIndentSpecs.end()) {
+        SmartIndentSpecs.erase(it);
+    }
 
 	// Clear out the dialog 
 	setSmartIndentDialogData(nullptr);
