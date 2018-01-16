@@ -13,6 +13,7 @@ qt5_add_resources(QRC_SOURCES
 )
 
 qt5_wrap_cpp(MOC_SOURCES
+	ElidedLabel.h
 	CallTipWidget.h
 	CommandRecorder.h
 	Dialog.h
@@ -98,6 +99,8 @@ add_executable(nedit-ng
 	${QRC_SOURCES}
 	${UIC_SOURCES}
 
+	ElidedLabel.h
+	ElidedLabel.cpp
 	gap_buffer.h
 	gap_buffer_fwd.h
 	gap_buffer_iterator.h
