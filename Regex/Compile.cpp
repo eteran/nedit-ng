@@ -620,7 +620,7 @@ uint8_t *back_ref(const char *ch, int *flag_param, ShortcutEscapeFlags flags) {
 uint8_t *atom(int *flag_param, len_range *range_param) {
 
     uint8_t *ret_val;
-    char test;
+    uint8_t test;
     int flags_local;
     len_range range_local;
 
@@ -769,9 +769,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
         break;
 
     case '[': {
-        unsigned int second_value;
-        unsigned int last_value;
-        char last_emit = '\0';
+        uint8_t last_emit = 0x00;
 
         // Handle characters that can only occur at the start of a class.
 
@@ -792,7 +790,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
             /* If '-' or ']' is the first character in a class,
                it is a literal character in the class. */
 
-            last_emit = *pContext.Reg_Parse;
+            last_emit = static_cast<uint8_t>(*pContext.Reg_Parse);
             emit_byte(*pContext.Reg_Parse);
             ++pContext.Reg_Parse;
         }
@@ -820,7 +818,8 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
                        already emitted the first character of the class, we do
                        not want to emit it again. */
 
-                    second_value = static_cast<unsigned int>(last_emit) + 1;
+                    unsigned int last_value;
+                    unsigned int second_value = static_cast<unsigned int>(last_emit) + 1;
 
                     if (*pContext.Reg_Parse == '\\') {
                         /* Handle escaped characters within a class range.
@@ -832,10 +831,10 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 
                         ++pContext.Reg_Parse;
 
-                        if ((test = numeric_escape(*pContext.Reg_Parse, &pContext.Reg_Parse))) {
-                            last_value = static_cast<unsigned int>(test);
-                        } else if ((test = literal_escape(*pContext.Reg_Parse))) {
-                            last_value = static_cast<unsigned int>(test);
+                        if ((test = numeric_escape<uint8_t>(*pContext.Reg_Parse, &pContext.Reg_Parse))) {
+                            last_value = test;
+                        } else if ((test = literal_escape<uint8_t>(*pContext.Reg_Parse))) {
+                            last_value = test;
                         } else if (shortcut_escape(*pContext.Reg_Parse, nullptr, CHECK_CLASS_ESCAPE)) {
                             raise<RegexError>("\\%c is not allowed as range operand", *pContext.Reg_Parse);
                         } else {
@@ -866,7 +865,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
                         emit_class_byte(second_value);
                     }
 
-                    last_emit = last_value;
+                    last_emit = static_cast<uint8_t>(last_value);
 
                     ++pContext.Reg_Parse;
 
@@ -874,11 +873,11 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
             } else if (*pContext.Reg_Parse == '\\') {
                 ++pContext.Reg_Parse;
 
-                if ((test = numeric_escape(*pContext.Reg_Parse, &pContext.Reg_Parse)) != '\0') {
+                if ((test = numeric_escape<uint8_t>(*pContext.Reg_Parse, &pContext.Reg_Parse)) != '\0') {
                     emit_class_byte(test);
 
                     last_emit = test;
-                } else if ((test = literal_escape(*pContext.Reg_Parse)) != '\0') {
+                } else if ((test = literal_escape<uint8_t>(*pContext.Reg_Parse)) != '\0') {
                     emit_byte(test);
                     last_emit = test;
                 } else if (shortcut_escape(*pContext.Reg_Parse, nullptr, CHECK_CLASS_ESCAPE)) {
@@ -904,7 +903,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
             } else {
                 emit_class_byte(*pContext.Reg_Parse); // Ordinary class character.
 
-                last_emit = *pContext.Reg_Parse;
+                last_emit = static_cast<uint8_t>(*pContext.Reg_Parse);
                 ++pContext.Reg_Parse;
             }
         } // End of while (Reg_Parse != Reg_Parse_End && *pContext.Reg_Parse != ']')
@@ -985,13 +984,13 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
                 if (*pContext.Reg_Parse == '\\') {
                     ++pContext.Reg_Parse; // Point to escaped character
 
-                    if ((test = numeric_escape(*pContext.Reg_Parse, &pContext.Reg_Parse))) {
+                    if ((test = numeric_escape<uint8_t>(*pContext.Reg_Parse, &pContext.Reg_Parse))) {
                         if (pContext.Is_Case_Insensitive) {
                             emit_byte(tolower(test));
                         } else {
                             emit_byte(test);
                         }
-                    } else if ((test = literal_escape(*pContext.Reg_Parse))) {
+                    } else if ((test = literal_escape<uint8_t>(*pContext.Reg_Parse))) {
                         emit_byte(test);
                     } else if (back_ref(pContext.Reg_Parse, nullptr, CHECK_ESCAPE)) {
                         // Leave back reference for next 'atom' call

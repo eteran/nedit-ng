@@ -36,8 +36,8 @@ uint8_t GET_OP_CODE(T *p) {
  * Returns the proper character value or nullptr if not a valid literal
  * escape.
  *--------------------------------------------------------------------*/
-template <class Ch>
-char literal_escape(Ch ch) {
+template <class R, class Ch>
+R literal_escape(Ch ch) {
 
     static const char valid_escape[] = {
         'a', 'b', 'e', 'f', 'n', 'r', 't', 'v', '(', ')', '-', '[', ']', '<',
@@ -52,7 +52,7 @@ char literal_escape(Ch ch) {
 
     for (int i = 0; valid_escape[i] != '\0'; i++) {
         if (static_cast<char>(ch) == valid_escape[i]) {
-            return value[i];
+            return static_cast<R>(value[i]);
         }
     }
 
@@ -72,8 +72,8 @@ char literal_escape(Ch ch) {
  * octal escape.  raise<RegexError> is called if \x0, \x00, \0, \00, \000, or
  * \0000 is specified.
  *--------------------------------------------------------------------*/
-template <class T>
-char numeric_escape(T ch, const char **parse) {
+template <class R, class T>
+R numeric_escape(T ch, const char **parse) {
 
     static const char digits[] = "fedcbaFEDCBA9876543210";
 
@@ -152,7 +152,7 @@ char numeric_escape(T ch, const char **parse) {
         *parse = scan;
     }
 
-    return static_cast<char>(value);
+    return static_cast<R>(value);
 }
 
 /**

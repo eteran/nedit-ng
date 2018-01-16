@@ -59,11 +59,11 @@ bool Regex::SubstituteRE(view::string_view source, std::string &dest) const {
             if ('1' <= *in && *in <= '9') {
                 paren_no = static_cast<size_t>(*in++ - '0');
 
-            } else if ((test = literal_escape(*in)) != '\0') {
+            } else if ((test = literal_escape<char>(*in)) != '\0') {
                 ch = test;
                 in++;
 
-            } else if ((test = numeric_escape(*in, &src_alias)) != '\0') {
+            } else if ((test = numeric_escape<char>(*in, &src_alias)) != '\0') {
                 ch = test;
                 in = src_alias;
                 in++;
