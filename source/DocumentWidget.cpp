@@ -1923,8 +1923,8 @@ void DocumentWidget::CheckForChangesToFileEx() {
              */
             fileMissing_ = true;
             lastModTime_ = 1;
-            dev_      = 0;
-            ino_       = 0;
+            dev_         = 0;
+            ino_         = 0;
 
             /* Warn the user, if they like to be warned (Maybe this should be its
                 own preference setting: GetPrefWarnFileDeleted()) */
@@ -2801,9 +2801,13 @@ int DocumentWidget::fileWasModifiedExternally() const {
     }
 
     QString fullname = FullPath();
-    QFileInfo fi(fullname);
 
-    if (lastModTime_ == fi.lastModified().toTime_t()) {
+    struct stat statbuf;
+    if (::stat(fullname.toLocal8Bit().data(), &statbuf) != 0) {
+        return false;
+    }
+
+    if (lastModTime_ == statbuf.st_mtime) {
         return false;
     }
 
