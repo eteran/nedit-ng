@@ -93,14 +93,18 @@ void DialogFonts::on_buttonFill_clicked() {
  */
 void DialogFonts::on_buttonBox_clicked(QAbstractButton *button) {
 
-	if(button == ui.buttonBox->button(QDialogButtonBox::Ok)) {
-		updateFonts();
-		accept();
-	} else if(button == ui.buttonBox->button(QDialogButtonBox::Apply)) {
-		updateFonts();
-	} else {
-		reject();
-	}
+    switch(ui.buttonBox->standardButton(button)) {
+    case QDialogButtonBox::Ok:
+        updateFonts();
+        accept();
+        break;
+    case QDialogButtonBox::Apply:
+        updateFonts();
+        break;
+    default:
+        reject();
+        break;
+    }
 }
 
 
