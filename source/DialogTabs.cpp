@@ -97,6 +97,7 @@ void DialogTabs::on_buttonBox_accepted() {
 			return;
 		}
 
+        // NOTE(eteran): BUGCHECK, I think this should be emTabDist >= 1000
 		if (emTabDist <= 0 || tabDist >= 1000) {
 			QMessageBox::warning(this, tr("Tab Spacing"), tr("Emulated tab spacing out of range"));
 			return;

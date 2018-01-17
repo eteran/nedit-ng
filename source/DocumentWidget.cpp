@@ -698,8 +698,6 @@ size_t DocumentWidget::matchLanguageMode() const {
                                   0,
                                   &beginPos,
                                   &endPos,
-                                  nullptr,
-                                  nullptr,
                                   QString());
 
             if (result) {

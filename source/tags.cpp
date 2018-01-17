@@ -809,14 +809,32 @@ bool fakeRegExSearchEx(view::string_view buffer, const QString &searchString, in
 		}
 	}
 
-    bool found = SearchString(fileString, searchSubs, dir, SearchType::Regex, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, QString());
+    bool found = SearchString(
+                fileString,
+                searchSubs,
+                dir,
+                SearchType::Regex,
+                WrapMode::NoWrap,
+                searchStartPos,
+                startPos,
+                endPos,
+                QString());
 
 	if (!found && !ctagsMode) {
 		/* position of the target definition could have been drifted before
 		   startPos, if nothing has been found by now try searching backward
 		   again from startPos.
 		*/
-        found = SearchString(fileString, searchSubs, Direction::Backward, SearchType::Regex, WrapMode::NoWrap, searchStartPos, startPos, endPos, nullptr, nullptr, QString());
+        found = SearchString(
+                    fileString,
+                    searchSubs,
+                    Direction::Backward,
+                    SearchType::Regex,
+                    WrapMode::NoWrap,
+                    searchStartPos,
+                    startPos,
+                    endPos,
+                    QString());
 	}
 
 	// return the result 
@@ -914,8 +932,6 @@ void showMatchingCalltipEx(TextArea *area, int i) {
                         startPos,
                         &endPos,
                         &dummy,
-                        nullptr,
-                        nullptr,
                         QString());
 
             if (!found) {
@@ -981,8 +997,6 @@ static bool searchLine(const std::string &line, const std::string &regex) {
                 0,
                 &dummy1,
                 &dummy2,
-                nullptr,
-                nullptr,
                 QString());
 }
 
