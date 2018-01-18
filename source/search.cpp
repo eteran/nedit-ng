@@ -178,7 +178,19 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
     lastEndPos = 0;
 
     while (found) {
-        found = SearchString(inString, searchString, Direction::Forward, searchType, WrapMode::NoWrap, beginPos, &startPos, &endPos, &searchExtentBW, &searchExtentFW, delimiters);
+        found = SearchString(
+                    inString,
+                    searchString,
+                    Direction::Forward,
+                    searchType,
+                    WrapMode::NoWrap,
+                    beginPos,
+                    &startPos,
+                    &endPos,
+                    &searchExtentBW,
+                    &searchExtentFW,
+                    delimiters);
+
         if (found) {
             if (beginPos != 0) {
 

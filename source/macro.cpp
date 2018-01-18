@@ -3731,7 +3731,7 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
     bool found    = true;
     while (found && beginPos < strLength) {
 
-        auto indexStr      = std::to_string(indexNum);
+        auto indexStr = std::to_string(indexNum);
 
         found = SearchString(
                     sourceStr,

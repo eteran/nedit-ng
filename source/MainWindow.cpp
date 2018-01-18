@@ -5873,6 +5873,20 @@ void MainWindow::SetIncrementalSearchLineMS(bool value) {
 /*
 ** Search the text in "document", attempting to match "searchString"
 */
+bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, int64_t *startPos, int64_t *endPos) {
+    return SearchWindowEx(
+                document,
+                searchString,
+                direction,
+                searchType,
+                searchWrap,
+                beginPos,
+                startPos,
+                endPos,
+                nullptr,
+                nullptr);
+}
+
 bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *extentBW, int64_t *extentFW) {
     bool found;
     int64_t fileEnd = document->buffer_->BufGetLength() - 1;
@@ -6084,7 +6098,7 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, con
     iSearchRecordLastBeginPosEx(direction, beginPos);
 
     // do the search.  SearchWindow does appropriate dialogs and beeps
-    if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos, &startPos, &endPos, nullptr, nullptr)) {
+    if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos, &startPos, &endPos)) {
         return false;
     }
 
@@ -6092,7 +6106,7 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, con
        beginning at the start of the search, go to the next occurrence,
        otherwise repeated finds will get "stuck" at zero-length matches */
     if (direction == Direction::Forward && beginPos == startPos && beginPos == endPos) {
-        if (!movedFwd && !SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr)) {
+        if (!movedFwd && !SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos + 1, &startPos, &endPos)) {
             return false;
         }
     }
@@ -6159,7 +6173,7 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
         beginPos--;
 
     // do the search.  SearchWindow does appropriate dialogs and beeps
-    if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos, &startPos, &endPos, nullptr, nullptr))
+    if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos, &startPos, &endPos))
         return false;
 
     iSearchLastBeginPos_ = startPos;
@@ -6168,7 +6182,7 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
        beginning at the start of the search, go to the next occurrence,
        otherwise repeated finds will get "stuck" at zero-length matches */
     if (direction == Direction::Forward && beginPos == startPos && beginPos == endPos)
-        if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos + 1, &startPos, &endPos, nullptr, nullptr))
+        if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos + 1, &startPos, &endPos))
             return false;
 
     iSearchLastBeginPos_ = startPos;
