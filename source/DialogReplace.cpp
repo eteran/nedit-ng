@@ -12,6 +12,54 @@
 #include <QMessageBox>
 #include <QMimeData>
 
+namespace {
+
+/*
+** Count no. of writable windows, but first update the status of all files.
+*/
+int countWritableWindows() {
+
+    int nWritable = 0;
+
+    std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+    size_t nBefore = documents.size();
+
+    auto first = documents.begin();
+    auto last  = documents.end();
+
+    for(auto it = first; it != last; ++it) {
+        DocumentWidget *document = *it;
+
+        /* We must be very careful! The status check may trigger a pop-up
+           dialog when the file has changed on disk, and the user may destroy
+           arbitrary windows in response. */
+        document->CheckForChangesToFileEx();
+
+        std::vector<DocumentWidget *> afterDocuments = DocumentWidget::allDocuments();
+        size_t nAfter = afterDocuments.size();
+
+        if (nAfter != nBefore) {
+            // The user has destroyed a file; start counting all over again
+            nBefore = nAfter;
+
+            documents = afterDocuments;
+            first     = documents.begin();
+            last      = documents.end();
+            it        = first;
+            nWritable = 0;
+            continue;
+        }
+
+        if (!document->lockReasons_.isAnyLocked()) {
+            ++nWritable;
+        }
+    }
+
+    return nWritable;
+}
+
+}
+
 /**
  * @brief DialogReplace::DialogReplace
  * @param window

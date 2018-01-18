@@ -99,7 +99,6 @@ bool ReadNumericFieldEx(Input &in, int *value);
 bool ReadQuotedStringEx(Input &in, QString *errMsg, QString *string);
 bool SkipDelimiterEx(Input &in, QString *errMsg);
 
-int SkipOptSeparatorEx(QChar separator, Input &in);
 QString MakeQuotedStringEx(const QString &string);
 QString ReadSymbolicFieldEx(Input &input);
 void ImportPrefFile(const QString &filename);

@@ -54,7 +54,7 @@ bool checkDoMacroArg(const QString &macro) {
 
     /* Add a terminating newline (which command line users are likely to omit
        since they are typically invoking a single routine) */
-    auto macroString = macro + QLatin1Char('\n');
+    QString macroString = macro + QLatin1Char('\n');
 
     // Do a test parse
     Program *const prog = ParseMacroEx(macroString, &errMsg, &stoppedAt);

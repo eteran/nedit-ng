@@ -62,7 +62,7 @@ uint16_t GET_UPPER(uint8_t *p) {
  * @return
  */
 bool isDelimiter(int ch) {
-    unsigned int n = static_cast<unsigned int>(ch);
+    auto n = static_cast<unsigned int>(ch);
     if(n < eContext.Current_Delimiters.size()) {
         return eContext.Current_Delimiters[n];
     }
@@ -1132,6 +1132,7 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, char prev_
     eContext.Start_Of_String = string;
     eContext.Look_Behind_To  = (look_behind_to ? look_behind_to : string);
 
+    // TODO(eteran): remove the need for these NUL chars
     eContext.Prev_Is_BOL   = (prev_char == '\n') || (prev_char == '\0');
     eContext.Succ_Is_EOL   = (succ_char == '\n') || (succ_char == '\0');
     eContext.Prev_Is_Delim = eContext.Current_Delimiters[static_cast<uint8_t>(prev_char)];

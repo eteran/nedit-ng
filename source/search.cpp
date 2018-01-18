@@ -26,7 +26,7 @@ int NHist = 0;
 SearchReplaceHistoryEntry SearchReplaceHistory[MAX_SEARCH_HISTORY];
 static int HistStart = 0;
 
-static bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters);
+static bool SearchString(view::string_view string, view::string_view searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters);
 static bool backwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters, int defaultFlags);
 static bool forwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters, int defaultFlags);
 static bool searchRegex(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters, int defaultFlags);
@@ -34,50 +34,6 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, const char *delimiters);
 static std::string upCaseStringEx(view::string_view inString);
 static std::string downCaseStringEx(view::string_view inString);
-
-/*
-** Count no. of writable windows, but first update the status of all files.
-*/
-int countWritableWindows() {
-
-    int nWritable = 0;
-
-    std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
-    size_t nBefore = documents.size();
-
-    auto first = documents.begin();
-    auto last = documents.end();
-
-    for(auto it = first; it != last; ++it) {
-        DocumentWidget *document = *it;
-
-		/* We must be very careful! The status check may trigger a pop-up
-		   dialog when the file has changed on disk, and the user may destroy
-		   arbitrary windows in response. */
-        document->CheckForChangesToFileEx();
-
-        std::vector<DocumentWidget *> afterDocuments = DocumentWidget::allDocuments();
-        size_t nAfter = afterDocuments.size();
-
-		if (nAfter != nBefore) {
-			// The user has destroyed a file; start counting all over again 
-			nBefore = nAfter;
-
-            documents = afterDocuments;
-            first     = documents.begin();
-            last      = documents.end();
-            it        = first;
-			nWritable = 0;
-			continue;
-		}
-		
-        if (!document->lockReasons_.isAnyLocked()) {
-			++nWritable;
-		}
-	}
-
-	return nWritable;
-}
 
 /*
 ** Replace all occurences of "searchString" in "inString" with "replaceString"
@@ -101,12 +57,12 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 
     /* rehearse the search first to determine the size of the buffer needed
        to hold the substituted text.  No substitution done here yet */
-    int replaceLen = replaceString.size();
-    bool found     = true;
-    int nFound     = 0;
-    int removeLen  = 0;
-    int addLen     = 0;
-    int64_t beginPos   = 0;
+    bool found       = true;
+    int replaceLen   = replaceString.size();
+    int nFound       = 0;
+    int removeLen    = 0;
+    int addLen       = 0;
+    int64_t beginPos = 0;
 
     *copyStart = -1;
 
@@ -167,7 +123,6 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
        and last substitutions */
     copyLen = *copyEnd - *copyStart;
 
-
     std::string outString;
     outString.reserve(copyLen - removeLen + addLen);
 
@@ -193,7 +148,6 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 
         if (found) {
             if (beginPos != 0) {
-
                 outString.append(&inString[lastEndPos], &inString[lastEndPos + startPos - lastEndPos]);
             }
 
@@ -258,7 +212,7 @@ bool SearchString(view::string_view string, const QString &searchString, Directi
 
     return SearchString(
                 string,
-                searchString,
+                searchString.toStdString(),
                 direction,
                 searchType,
                 wrap,
@@ -271,20 +225,20 @@ bool SearchString(view::string_view string, const QString &searchString, Directi
 
 }
 
-static bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters) {
+static bool SearchString(view::string_view string, view::string_view searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters) {
 	switch (searchType) {
     case SearchType::CaseSenseWord:
-        return searchLiteralWord(string, searchString.toStdString(), true, direction, wrap, beginPos, startPos, endPos, delimiters);
+        return searchLiteralWord(string, searchString, true, direction, wrap, beginPos, startPos, endPos, delimiters);
     case SearchType::LiteralWord:
-        return searchLiteralWord(string, searchString.toStdString(), false, direction, wrap, beginPos, startPos, endPos, delimiters);
+        return searchLiteralWord(string, searchString, false, direction, wrap, beginPos, startPos, endPos, delimiters);
     case SearchType::CaseSense:
-        return searchLiteral(string, searchString.toStdString(), true, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
+        return searchLiteral(string, searchString, true, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
     case SearchType::Literal:
-        return searchLiteral(string, searchString.toStdString(), false, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
+        return searchLiteral(string, searchString, false, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
     case SearchType::Regex:
-        return searchRegex(string, searchString.toStdString(), direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_STANDARD);
+        return searchRegex(string, searchString, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_STANDARD);
     case SearchType::RegexNoCase:
-        return searchRegex(string, searchString.toStdString(), direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_CASE_INSENSITIVE);
+        return searchRegex(string, searchString, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_CASE_INSENSITIVE);
 	}
 
     Q_UNREACHABLE();
@@ -293,12 +247,12 @@ static bool SearchString(view::string_view string, const QString &searchString, 
 /*
 **  Searches for whole words (Markus Schwarzenberg).
 **
-**  If the first/last character of `searchString' is a "normal
-**  word character" (not contained in `delimiters', not a whitespace)
+**  If the first/last character of 'searchString' is a "normal
+**  word character" (not contained in 'delimiters', not a whitespace)
 **  then limit search to strings, who's next left/next right character
-**  is contained in `delimiters' or is a whitespace or text begin or end.
+**  is contained in 'delimiters' or is a whitespace or text begin or end.
 **
-**  If the first/last character of `searchString' itself is contained
+**  If the first/last character of searchString' itself is contained
 **  in delimiters or is a white space, then the neighbour character of the
 **  first/last character will not be checked, just a simple match
 **  will suffice in that case.
@@ -311,7 +265,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
     bool cignore_L = false;
     bool cignore_R = false;
 
-    auto do_search_word2 = [&](const view::string_view::iterator filePtr) {
+    auto do_search_word = [&](const view::string_view::iterator filePtr) {
 		if (*filePtr == ucString[0] || *filePtr == lcString[0]) {
 
 			// matched first character 
@@ -365,7 +319,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
     if (direction == Direction::Forward) {
 		// search from beginPos to end of string 
         for (auto filePtr = string.begin() + beginPos; filePtr != string.end(); ++filePtr) {
-            if(do_search_word2(filePtr)) {
+            if(do_search_word(filePtr)) {
 				return true;
 			}
 		}
@@ -374,7 +328,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 
 		// search from start of file to beginPos 
 		for (auto filePtr = string.begin(); filePtr <= string.begin() + beginPos; filePtr++) {
-            if(do_search_word2(filePtr)) {
+            if(do_search_word(filePtr)) {
 				return true;
 			}
 		}
@@ -385,7 +339,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 		// says begin searching from the far end of the file 
 		if (beginPos >= 0) {
 			for (auto filePtr = string.begin() + beginPos; filePtr >= string.begin(); filePtr--) {
-                if(do_search_word2(filePtr)) {
+                if(do_search_word(filePtr)) {
 					return true;
 				}
 			}
@@ -395,7 +349,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 
 		// search from end of file to beginPos 
 		for (auto filePtr = string.begin() + string.size(); filePtr >= string.begin() + beginPos; filePtr--) {
-            if(do_search_word2(filePtr)) {
+            if(do_search_word(filePtr)) {
 				return true;
 			}
 		}
@@ -417,7 +371,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
         lcString = downCaseStringEx(searchString);
     }
 
-    auto do_search2 = [&](view::string_view::iterator filePtr) {
+    auto do_search = [&](view::string_view::iterator filePtr) {
 		if (*filePtr == ucString[0] || *filePtr == lcString[0]) {
 			// matched first character 
 			auto ucPtr   = ucString.begin();
@@ -449,8 +403,6 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
         return false;
 	};
 
-
-
     if (direction == Direction::Forward) {
 
 		auto first = string.begin();
@@ -459,7 +411,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 
 		// search from beginPos to end of string 
 		for (auto filePtr = mid; filePtr != last; ++filePtr) {
-            if(do_search2(filePtr)) {
+            if(do_search(filePtr)) {
 				return true;
 			}
 		}
@@ -472,7 +424,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
         // NOTE(eteran): this used to include "mid", but that seems redundant given that we already looked there
 		//               in the first loop
 		for (auto filePtr = first; filePtr != mid; ++filePtr) {
-            if(do_search2(filePtr)) {
+            if(do_search(filePtr)) {
 				return true;
 			}
 		}
@@ -489,7 +441,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 
 		if (beginPos >= 0) {
 			for (auto filePtr = mid; filePtr >= first; --filePtr) {
-                if(do_search2(filePtr)) {
+                if(do_search(filePtr)) {
 					return true;
 				}
 			}
@@ -502,7 +454,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 		// search from end of file to beginPos 
 		// how to get the text string length from the text widget (under 1.1)
 		for (auto filePtr = last; filePtr >= mid; --filePtr) {
-            if(do_search2(filePtr)) {
+            if(do_search(filePtr)) {
 				return true;
 			}
 		}
@@ -512,10 +464,15 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 }
 
 static bool searchRegex(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters, int defaultFlags) {
-    if (direction == Direction::Forward)
-		return forwardRegexSearch(string, searchString, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, defaultFlags);
-	else
-		return backwardRegexSearch(string, searchString, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, defaultFlags);
+
+    switch(direction) {
+    case Direction::Forward:
+        return forwardRegexSearch(string, searchString, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, defaultFlags);
+    case Direction::Backward:
+        return backwardRegexSearch(string, searchString, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, defaultFlags);
+    }
+
+    Q_UNREACHABLE();
 }
 
 static bool forwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters, int defaultFlags) {
@@ -524,7 +481,7 @@ static bool forwardRegexSearch(view::string_view string, view::string_view searc
         Regex compiledRE(searchString, defaultFlags);
 
 		// search from beginPos to end of string 
-		if (compiledRE.execute(string, beginPos, delimiters, false)) {
+        if (compiledRE.execute(string, static_cast<size_t>(beginPos), delimiters, false)) {
 
             *startPos = compiledRE.startp[0] - &string[0];
             *endPos   = compiledRE.endp[0]   - &string[0];
@@ -546,7 +503,7 @@ static bool forwardRegexSearch(view::string_view string, view::string_view searc
 		}
 
 		// search from the beginning of the string to beginPos 
-		if (compiledRE.execute(string, 0, beginPos, delimiters, false)) {
+        if (compiledRE.execute(string, 0, static_cast<size_t>(beginPos), delimiters, false)) {
 
             *startPos = compiledRE.startp[0] - &string[0];
             *endPos   = compiledRE.endp[0]   - &string[0];
@@ -581,7 +538,7 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
         if (beginPos >= 0) {
 
             // NOTE(eteran): why do we use NUL as the previous char, and not string[beginPos - 1] (assuming that beginPos > 0)?
-            if (compiledRE.execute(string, 0, beginPos, '\0', '\0', delimiters, true)) {
+            if (compiledRE.execute(string, 0, static_cast<size_t>(beginPos), '\0', '\0', delimiters, true)) {
 
                 *startPos = compiledRE.startp[0] - &string[0];
                 *endPos   = compiledRE.endp[0]   - &string[0];
@@ -608,7 +565,7 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
 			beginPos = 0;
 		}
 
-		if (compiledRE.execute(string, beginPos, delimiters, true)) {
+        if (compiledRE.execute(string, static_cast<size_t>(beginPos), delimiters, true)) {
 
             *startPos = compiledRE.startp[0] - &string[0];
             *endPos   = compiledRE.endp[0]   - &string[0];
@@ -660,10 +617,10 @@ static std::string downCaseStringEx(view::string_view inString) {
 ** code to continue using strings to represent the search and replace
 ** items.
 */
-bool replaceUsingREEx(view::string_view searchStr, view::string_view replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
+bool replaceUsingREEx(view::string_view searchStr, view::string_view replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, char prevChar, const char *delimiters, int defaultFlags) {
     try {
         Regex compiledRE(searchStr, defaultFlags);
-        compiledRE.execute(sourceStr, beginPos, sourceStr.size(), prevChar, '\0', delimiters, false);
+        compiledRE.execute(sourceStr, static_cast<size_t>(beginPos), sourceStr.size(), prevChar, '\0', delimiters, false);
         return compiledRE.SubstituteRE(replaceStr, dest);
     } catch(const RegexError &e) {
         Q_UNUSED(e);
@@ -672,7 +629,7 @@ bool replaceUsingREEx(view::string_view searchStr, view::string_view replaceStr,
 }
 
 
-bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags) {
+bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, char prevChar, const QString &delimiters, int defaultFlags) {
     return replaceUsingREEx(
                 searchStr.toStdString(),
                 replaceStr.toStdString(),

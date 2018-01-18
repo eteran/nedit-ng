@@ -1300,23 +1300,6 @@ bool SkipDelimiterEx(Input &in, QString *errMsg) {
 	}
 
 	++in;
-
-	in.skipWhitespace();
-	return true;
-}
-
-/*
-** Skip an optional separator and its surrounding whitespace
-** return true if delimiter found
-*/
-int SkipOptSeparatorEx(QChar separator, Input &in) {
-	in.skipWhitespace();
-
-	if (*in != separator) {
-		return false;
-	}
-
-	++in;
 	in.skipWhitespace();
 	return true;
 }

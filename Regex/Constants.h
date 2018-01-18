@@ -28,9 +28,9 @@ constexpr int INDEX_SIZE    = 1;
 constexpr int LENGTH_SIZE   = 4;
 constexpr int NODE_SIZE     = NEXT_PTR_SIZE + OP_CODE_SIZE;
 
-const auto REG_INFINITY   = 0UL;
-const auto REG_ZERO       = 0UL;
-const auto REG_ONE        = 1UL;
+constexpr auto REG_INFINITY = 0UL;
+constexpr auto REG_ZERO     = 0UL;
+constexpr auto REG_ONE      = 1UL;
 
 
 /* Number of bytes to offset from the beginning of the regex program to the start

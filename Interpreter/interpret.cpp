@@ -481,7 +481,7 @@ int ContinueMacroEx(std::shared_ptr<MacroContext> &continuation, DataValue *resu
     /* To allow macros to be invoked arbitrarily (such as those automatically
        triggered within smart-indent) within executing macros, this call is
        reentrant. */
-    auto oldContext = std::exchange(Context, continuation);
+    std::shared_ptr<MacroContext> oldContext = std::exchange(Context, continuation);
 
     /*
     ** Execution Loop:  Call the succesive routine addresses in the program

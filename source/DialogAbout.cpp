@@ -129,9 +129,9 @@ DialogAbout::DialogAbout(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f)
  */
 QString DialogAbout::createInfoString() {
 
-	auto versionString = tr("%1.%2").arg(NEDIT_VERSION_MAJ).arg(NEDIT_VERSION_REV);
-	auto platformBits  = tr("%1 bit").arg(QSysInfo::WordSize);
-	auto localeString  = QLocale::system().bcp47Name();
+    auto versionString   = tr("%1.%2").arg(NEDIT_VERSION_MAJ).arg(NEDIT_VERSION_REV);
+    auto platformBits    = tr("%1 bit").arg(QSysInfo::WordSize);
+    QString localeString = QLocale::system().bcp47Name();
 
     return tr("nedit-ng version %1\n"
               "\n"

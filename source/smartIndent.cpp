@@ -153,7 +153,7 @@ QString CommonMacros;
 static void insertShiftedMacro(QTextStream &ts, const QString &macro);
 static bool isDefaultIndentSpec(const SmartIndentEntry *indentSpec);
 static bool loadDefaultIndentSpec(const QString &lmName);
-static int siParseError(const Input &in, const QString &message);
+static bool siParseError(const Input &in, const QString &message);
 static QString readSIMacroEx(Input &in);
 
 
@@ -281,12 +281,16 @@ int LoadSmartIndentCommonStringEx(const QString &string) {
 	return true;
 }
 
-/*
-** Read a macro (arbitrary text terminated by the macro end boundary string)
-** from the position pointed to by *inPtr, trim off added tabs and return an
-** allocated copy of the string, and advance *inPtr to the end of the macro.
-** Returns nullptr if the macro end boundary string is not found.
-*/
+
+/**
+ * Read a macro (arbitrary text terminated by the macro end boundary string)
+ * trim off added tabs and return the string. Returns QString() if the macro
+ * end boundary string is not found.
+ *
+ * @brief readSIMacroEx
+ * @param in
+ * @return
+ */
 static QString readSIMacroEx(Input &in) {
 	// Strip leading newline
 	if (*in == QLatin1Char('\n')) {
@@ -309,7 +313,7 @@ static QString readSIMacroEx(Input &in) {
     return ShiftTextEx(macroStr, SHIFT_LEFT, true, 8, 8);
 }
 
-static int siParseError(const Input &in, const QString &message) {
+static bool siParseError(const Input &in, const QString &message) {
 	return ParseErrorEx(
 	            nullptr,
                 *in.string(),
