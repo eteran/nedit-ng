@@ -95,7 +95,7 @@ public:
 
 public:
 	// resource setters
-	void setWordDelimiters(const QString &delimiters);
+    void setWordDelimiters(const std::string &delimiters);
 	void setBacklightCharTypes(const QString &charTypes);
     void setAutoShowInsertPos(bool value);
     void setEmulateTabs(int value);

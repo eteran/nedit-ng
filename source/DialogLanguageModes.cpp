@@ -434,7 +434,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
                     }
 
                     for(TextArea *area : document->textPanes()) {
-                        area->setWordDelimiters(newDelimiters);
+                        area->setWordDelimiters(newDelimiters.toStdString());
                     }
 
                     document->languageMode_ = static_cast<size_t>(i);

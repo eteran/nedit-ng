@@ -1051,7 +1051,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
         const std::vector<TextArea *> textAreas = textPanes();
         for(TextArea *area : textAreas) {
-            area->setWordDelimiters(delimiters);
+            area->setWordDelimiters(delimiters.toStdString());
         }
 
         /* Decide on desired values for language-specific parameters.  If a

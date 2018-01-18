@@ -333,11 +333,14 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, QFont fontStruc
     // defaults for the "resources"
     P_cursorBlinkRate = QApplication::cursorFlashTime() / 2;
 
+    /* Add mandatory delimiters blank, tab, and newline to the list of
+     * delimiters. */
+    setWordDelimiters(GetPrefDelimiters().toStdString());
+
     P_colorizeHighlightedText = GetPrefColorizeHighlightedText();
     P_rows           = GetPrefRows();
     P_columns        = GetPrefCols();
     P_readOnly       = document->lockReasons().isAnyLocked();
-    P_delimiters     = GetPrefDelimiters().toStdString();
     P_wrapMargin     = GetPrefWrapMargin();
     P_autoIndent     = document->indentStyle_ == IndentStyle::Auto;
     P_smartIndent    = document->indentStyle_ == IndentStyle::Smart;
@@ -373,10 +376,6 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, QFont fontStruc
 
 	// Decide if the horizontal scroll bar needs to be visible
 	hideOrShowHScrollBar();
-
-    /* Add mandatory delimiters blank, tab, and newline to the list of
-     * delimiters. */
-    setWordDelimiters(QString::fromStdString(P_delimiters));
 
 #if 0
 	// NOTE(eteran): this seems to be a viable approach for shortcuts
@@ -1991,15 +1990,15 @@ int64_t TextArea::TextDStartOfLine(int64_t pos) const {
 	return retLineStart;
 }
 
-/** When continuous wrap is on, and the user inserts or deletes characters,
-** wrapping can happen before and beyond the changed position.  This routine
-** finds the extent of the changes, and counts the deleted and inserted lines
-** over that range.  It also attempts to minimize the size of the range to
-** what has to be counted and re-displayed, so the results can be useful
-** both for delimiting where the line starts need to be recalculated, and
-** for deciding what part of the text to redisplay.
-*/
 /**
+ * When continuous wrap is on, and the user inserts or deletes characters,
+ * wrapping can happen before and beyond the changed position.  This routine
+ * finds the extent of the changes, and counts the deleted and inserted lines
+ * over that range.  It also attempts to minimize the size of the range to what
+ * has to be counted and re-displayed, so the results can be useful both for
+ * delimiting where the line starts need to be recalculated, and for deciding
+ * what part of the text to redisplay.
+ *
  * @brief TextArea::findWrapRangeEx
  * @param deletedText
  * @param pos
@@ -2012,18 +2011,17 @@ int64_t TextArea::TextDStartOfLine(int64_t pos) const {
  */
 void TextArea::findWrapRangeEx(view::string_view deletedText, int64_t pos, int64_t nInserted, int64_t nDeleted, int64_t *modRangeStart, int64_t *modRangeEnd, int64_t *linesInserted, int64_t *linesDeleted) {
 
-    int64_t length;
     int64_t retPos;
     int64_t retLines;
     int64_t retLineStart;
-    int64_t retLineEnd;
-	int nVisLines   = nVisibleLines_;
+    int64_t retLineEnd;	
     int64_t countFrom;
     int64_t countTo;
     int64_t lineStart;
     int64_t adjLineStart;
 	int visLineNum = 0;
-	int nLines = 0;
+    int nLines     = 0;
+    int nVisLines  = nVisibleLines_;
 
 	/*
 	** Determine where to begin searching: either the previous newline, or
@@ -2032,16 +2030,21 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, int64_t pos, int64
 	*/
 	if (pos >= firstChar_ && pos <= lastChar_) {
 		int i;
-		for (i = nVisLines - 1; i > 0; i--)
-            if (lineStarts_[i] != -1 && pos >= lineStarts_[i])
+        for (i = nVisLines - 1; i > 0; i--) {
+            if (lineStarts_[i] != -1 && pos >= lineStarts_[i]) {
 				break;
+            }
+        }
+
 		if (i > 0) {
             countFrom = lineStarts_[i - 1];
 			visLineNum = i - 1;
-		} else
+        } else {
 			countFrom = buffer_->BufStartOfLine(pos);
-	} else
+        }
+    } else {
 		countFrom = buffer_->BufStartOfLine(pos);
+    }
 
 	/*
 	** Move forward through the (new) text one line at a time, counting
@@ -2058,11 +2061,14 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, int64_t pos, int64
 		if (retPos >= buffer_->BufGetLength()) {
 			countTo = buffer_->BufGetLength();
 			*modRangeEnd = countTo;
-			if (retPos != retLineEnd)
+            if (retPos != retLineEnd) {
 				nLines++;
+            }
 			break;
-		} else
+        } else {
 			lineStart = retPos;
+        }
+
 		nLines++;
 		if (lineStart > pos + nInserted && buffer_->BufGetCharacter(lineStart - 1) == '\n') {
 			countTo = lineStart;
@@ -2070,12 +2076,13 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, int64_t pos, int64
 			break;
 		}
 
-		/* Don't try to resync in continuous wrap mode with non-fixed font
-		   sizes; it would result in a chicken-and-egg dependency between
-		   the calculations for the inserted and the deleted lines.
-			   If we're in that mode, the number of deleted lines is calculated in
-			   advance, without resynchronization, so we shouldn't resynchronize
-			   for the inserted lines either. */
+        /*
+         * Don't try to resync in continuous wrap mode with non-fixed font
+         * sizes; it would result in a chicken-and-egg dependency between the
+         * calculations for the inserted and the deleted lines. If we're in
+         * that mode, the number of deleted lines is calculated in advance,
+         * without resynchronization, so we shouldn't resynchronize for the
+         * inserted lines either. */
 		if (suppressResync_) {
 			continue;
 		}
@@ -2083,25 +2090,31 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, int64_t pos, int64
 		/* check for synchronization with the original line starts array
 		   before pos, if so, the modified range can begin later */
 		if (lineStart <= pos) {
-            while (visLineNum < nVisLines && lineStarts_[visLineNum] < lineStart)
+            while (visLineNum < nVisLines && lineStarts_[visLineNum] < lineStart) {
 				visLineNum++;
+            }
+
             if (visLineNum < nVisLines && lineStarts_[visLineNum] == lineStart) {
 				countFrom = lineStart;
 				nLines = 0;
-                if (visLineNum + 1 < nVisLines && lineStarts_[visLineNum + 1] != -1)
+                if (visLineNum + 1 < nVisLines && lineStarts_[visLineNum + 1] != -1) {
                     *modRangeStart = std::min(pos, lineStarts_[visLineNum + 1] - 1);
-				else
+                } else {
 					*modRangeStart = countFrom;
-			} else
+                }
+            } else {
 				*modRangeStart = std::min(*modRangeStart, lineStart - 1);
+            }
 		}
 
-		/* check for synchronization with the original line starts array
-			   after pos, if so, the modified range can end early */
+        /* check for synchronization with the original line starts array after
+         * pos, if so, the modified range can end early */
 		else if (lineStart > pos + nInserted) {
 			adjLineStart = lineStart - nInserted + nDeleted;
-            while (visLineNum < nVisLines && lineStarts_[visLineNum] < adjLineStart)
+            while (visLineNum < nVisLines && lineStarts_[visLineNum] < adjLineStart) {
 				visLineNum++;
+            }
+
             if (visLineNum < nVisLines && lineStarts_[visLineNum] != -1 && lineStarts_[visLineNum] == adjLineStart) {
 				countTo = TextDEndOfLine(lineStart, true);
 				*modRangeEnd = lineStart;
@@ -2137,19 +2150,22 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, int64_t pos, int64
 		return;
 	}
 
-	length = (pos - countFrom) + nDeleted + (countTo - (pos + nInserted));
+    int64_t length = (pos - countFrom) + nDeleted + (countTo - (pos + nInserted));
     TextBuffer deletedTextBuf;
-	if (pos > countFrom)
+    if (pos > countFrom) {
         deletedTextBuf.BufCopyFromBuf(buffer_, countFrom, pos, 0);
+    }
+
     if (nDeleted != 0) {
         deletedTextBuf.BufInsertEx(pos - countFrom, deletedText);
     }
+
     if (countTo > pos + nInserted) {
         deletedTextBuf.BufCopyFromBuf(buffer_, pos + nInserted, countTo, pos - countFrom + nDeleted);
     }
 
-	/* Note that we need to take into account an offset for the style buffer:
-	   the deletedTextBuf can be out of sync with the style buffer. */
+    /* Note that we need to take into account an offset for the style buffer:
+     * the deletedTextBuf can be out of sync with the style buffer. */
     wrappedLineCounter(&deletedTextBuf, 0, length, INT_MAX, true, countFrom, &retPos, &retLines, &retLineStart, &retLineEnd);
 
 	*linesDeleted = retLines;
@@ -2372,7 +2388,7 @@ void TextArea::calcLastChar() {
 		;
 	}
 
-	lastChar_ = i < 0 ? 0 : TextDEndOfLine(lineStarts_[i], true);
+    lastChar_ = (i < 0) ? 0 : TextDEndOfLine(lineStarts_[i], true);
 }
 
 /*
@@ -2395,12 +2411,18 @@ int64_t TextArea::TextDCountBackwardNLines(int64_t startPos, int64_t nLines) con
 	while (true) {
         int64_t lineStart = buffer_->BufStartOfLine(pos);
         wrappedLineCounter(buffer_, lineStart, pos, INT_MAX, true, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
-		if (retLines > nLines)
+
+        if (retLines > nLines) {
 			return TextDCountForwardNLines(lineStart, retLines - nLines, true);
+        }
+
 		nLines -= retLines;
-		pos = lineStart - 1;
-		if (pos < 0)
+        pos = lineStart - 1;
+
+        if (pos < 0) {
 			return 0;
+        }
+
 		nLines -= 1;
 	}
 }
@@ -2659,15 +2681,15 @@ void TextArea::blankCursorProtrusions() {
 
     int  x;
     int width;
-    const int cursorX = cursor_.x();
-    const int cursorY = cursor_.y();
     QFontMetrics fm(font_);
-	int fontWidth  = fm.maxWidth();
-    int fontHeight = ascent_ + descent_;
-    const int left       = rect_.left();
-    const int right      = rect_.right();
+    int fontWidth         = fm.maxWidth();
+    int fontHeight        = ascent_ + descent_;
+    const int left        = rect_.left();
+    const int right       = rect_.right();
+    const int cursorX     = cursor_.x();
+    const int cursorY     = cursor_.y();
+    const int cursorWidth = (fontWidth / 3) * 2;
 
-	int cursorWidth = (fontWidth / 3) * 2;
 	if (cursorX >= left - 1 && cursorX <= left + cursorWidth / 2 - 1) {
 		x = cursorX - cursorWidth / 2;
 		width = left - x;
@@ -2774,7 +2796,7 @@ bool TextArea::wrapUsesCharacter(int64_t lineEndPos) const {
 		return true;
 	}
 
-	char c = buffer_->BufGetCharacter(lineEndPos);
+    const char c = buffer_->BufGetCharacter(lineEndPos);
 	return (c == '\n') || ((c == '\t' || c == ' ') && lineEndPos + 1 != buffer_->BufGetLength());
 }
 
@@ -2826,9 +2848,7 @@ void TextArea::extendRangeForStyleMods(int64_t *start, int64_t *end) {
 void TextArea::textDRedisplayRange(int64_t start, int64_t end) {
 
     int startLine;
-    int lastLine;
-    int64_t startIndex;
-    int64_t endIndex;
+    int lastLine;    
 
 	// If the range is outside of the displayed text, just return
 	if (end < firstChar_ || (start > lastChar_ && !emptyLinesVisible()))
@@ -2857,15 +2877,16 @@ void TextArea::textDRedisplayRange(int64_t start, int64_t end) {
 	}
 
 	// Get the starting and ending positions within the lines
-	startIndex = (lineStarts_[startLine] == -1) ? 0 : start - lineStarts_[startLine];
+    int64_t startIndex = (lineStarts_[startLine] == -1) ? 0 : start - lineStarts_[startLine];
+    int64_t endIndex;
 	if (end >= lastChar_) {
-		/*  Request to redisplay beyond lastChar_, so tell
-			redisplayLine() to display everything to infy.  */
+        /* Request to redisplay beyond lastChar_, so tell redisplayLine() to
+         * display everything to infy.  */
 		endIndex = INT_MAX;
 	} else if (lineStarts_[lastLine] == -1) {
-		/*  Here, lastLine is determined by posToVisibleLineNum() (see
-			if/else above) but deemed to be out of display according to
-			lineStarts_. */
+        /*  Here, lastLine is determined by posToVisibleLineNum()
+         * (see if/else above) but deemed to be out of display according to
+         * lineStarts_. */
 		endIndex = 0;
 	} else {
 		endIndex = end - lineStarts_[lastLine];
@@ -2897,7 +2918,6 @@ void TextArea::textDRedisplayRange(int64_t start, int64_t end) {
  * @brief TextArea::redrawLineNumbersEx
  */
 void TextArea::redrawLineNumbersEx() {
-
     viewport()->repaint(QRect(lineNumLeft_, rect_.top(), lineNumWidth_, rect_.height()));
 }
 
@@ -2957,8 +2977,8 @@ void TextArea::redisplayLineEx(int visLineNum, int leftClip, int rightClip, int6
 	}
 
 	// Calculate y coordinate of the string to draw
-    int fontHeight = ascent_ + descent_;
-    int y = rect_.top() + visLineNum * fontHeight;
+    const int fontHeight = ascent_ + descent_;
+    const int y = rect_.top() + visLineNum * fontHeight;
 
 	viewport()->update(QRect(leftClip, y, rightClip - leftClip, fontHeight));
 }
@@ -6807,9 +6827,11 @@ int64_t TextArea::TextDOffsetWrappedRow(int row) const {
 	return buffer_->BufCountLines(firstChar_, lineStarts_[row]);
 }
 
-void TextArea::setWordDelimiters(const QString &delimiters) {
-	// add mandatory delimiters blank, tab, and newline to the list
-    P_delimiters = tr(" \t\n%1").arg(delimiters).toStdString();
+void TextArea::setWordDelimiters(const std::string &delimiters) {
+
+    // add mandatory delimiters blank, tab, and newline to the list
+    P_delimiters = " \t\n";
+    P_delimiters += delimiters;
 }
 
 void TextArea::setAutoShowInsertPos(bool value) {
