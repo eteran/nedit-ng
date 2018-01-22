@@ -56,9 +56,8 @@ template <class Ch, class Tr = std::char_traits<Ch>>
 constexpr view::basic_string_view<Ch, Tr> substr(const Ch *first, const Ch *last) {
 
     const Ch *data = first;
-    typename view::basic_string_view<Ch, Tr>::size_type size = std::distance(first, last);
-
-    return view::basic_string_view<Ch, Tr>(data, size);
+    auto size = std::distance(first, last);
+    return view::basic_string_view<Ch, Tr>(data, static_cast<size_t>(size));
 }
 
 template <class Ch, class Tr = std::char_traits<Ch>>

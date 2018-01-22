@@ -10,6 +10,8 @@
 #include <cstdint>
 #include <cstring>
 
+#include <QtGlobal>
+
 extern uint8_t Compute_Size;
 
 template <class T>
@@ -24,6 +26,7 @@ T *OPERAND(T *p) {
 
 template <class T>
 uint8_t GET_OP_CODE(T *p) {
+    Q_ASSERT(p);
     return *reinterpret_cast<uint8_t *>(p);
 }
 

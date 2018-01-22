@@ -96,10 +96,10 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
                 replaceUsingREEx(
                     searchString,
                     replaceString,
-                    substr(inString, searchExtentBW),
+                    substr(inString, static_cast<size_t>(searchExtentBW)),
                     startPos - searchExtentBW,
                     replaceResult,
-                    startPos == 0 ? '\0' : inString[startPos - 1],
+                    startPos == 0 ? '\0' : inString[static_cast<size_t>(startPos) - 1],
                     delimiters,
                     defaultRegexFlags(searchType));
 
@@ -124,7 +124,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
     copyLen = *copyEnd - *copyStart;
 
     std::string outString;
-    outString.reserve(copyLen - removeLen + addLen);
+    outString.reserve(static_cast<size_t>(copyLen - removeLen + addLen));
 
     /* Scan through the text buffer again, substituting the replace string
        and copying the part between replaced text to the new buffer  */
@@ -148,7 +148,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
 
         if (found) {
             if (beginPos != 0) {
-                outString.append(&inString[lastEndPos], &inString[lastEndPos + startPos - lastEndPos]);
+                outString.append(&inString[static_cast<size_t>(lastEndPos)], &inString[static_cast<size_t>(lastEndPos + startPos - lastEndPos)]);
             }
 
             if (isRegexType(searchType)) {
@@ -157,10 +157,10 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
                 replaceUsingREEx(
                     searchString,
                     replaceString,
-                    substr(inString, searchExtentBW),
+                    substr(inString, static_cast<size_t>(searchExtentBW)),
                     startPos - searchExtentBW,
                     replaceResult,
-                    startPos == 0 ? '\0' : inString[startPos - 1],
+                    startPos == 0 ? '\0' : inString[static_cast<size_t>(startPos) - 1],
                     delimiters,
                     defaultRegexFlags(searchType));
 

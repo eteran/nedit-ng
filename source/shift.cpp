@@ -9,10 +9,10 @@
 #include <memory>
 
 static std::string makeIndentString(int64_t indent, int tabDist, bool allowTabs);
-static std::string shiftLineLeftEx(view::string_view line, long lineLen, int tabDist, int nChars);
-static std::string shiftLineRightEx(view::string_view line, long lineLen, int tabsAllowed, int tabDist, int nChars);
+static std::string shiftLineLeftEx(view::string_view line, int64_t lineLen, int tabDist, int nChars);
+static std::string shiftLineRightEx(view::string_view line, int64_t lineLen, int tabsAllowed, int tabDist, int nChars);
 static QString shiftLineRightEx(const QString &line, int64_t lineLen, int tabsAllowed, int tabDist, int nChars);
-static QString shiftLineLeftEx(const QString &line, long lineLen, int tabDist, int nChars);
+static QString shiftLineLeftEx(const QString &line, int64_t lineLen, int tabDist, int nChars);
 static std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars);
 static bool atTabStop(int pos, int tabDist);
 static int countLinesEx(view::string_view text);
@@ -91,7 +91,7 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
 
     buf->BufReplaceSelectedEx(shiftedText);
 
-    const int64_t newEndPos = selStart + shiftedText.size();
+    const int64_t newEndPos = selStart + static_cast<int64_t>(shiftedText.size());
     buf->BufSelect(selStart, newEndPos);
 }
 
@@ -270,7 +270,7 @@ void FillSelectionEx(DocumentWidget *document, TextArea *area) {
     } else {
         buf->BufReplaceEx(left, right, filledText);
         if (hasSelection) {
-            buf->BufSelect(left, left + filledText.size());
+            buf->BufSelect(left, left + static_cast<int64_t>(filledText.size()));
         }
     }
 
@@ -279,7 +279,7 @@ void FillSelectionEx(DocumentWidget *document, TextArea *area) {
     if (hasSelection && isRect) {
         area->TextSetCursorPos(buf->BufCursorPosHint());
     } else {
-        const int64_t len = filledText.size();
+        const auto len = static_cast<int64_t>(filledText.size());
         area->TextSetCursorPos(insertPos < left ? left : (insertPos > left + len ? left + len : insertPos));
     }
 }
@@ -349,9 +349,9 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 	** Shift right adds a maximum of nChars character per line.
 	*/
 	if (direction == SHIFT_RIGHT) {
-        bufLen = text.size() + countLinesEx(text) * nChars;
+        bufLen = text.size() + static_cast<size_t>(countLinesEx(text) * nChars);
 	} else {
-        bufLen = text.size() + countLinesEx(text) * tabDist;
+        bufLen = text.size() + static_cast<size_t>(countLinesEx(text) * tabDist);
 	}
 
 	std::string shiftedText;
@@ -438,12 +438,12 @@ static QString shiftLineRightEx(const QString &line, int64_t lineLen, int tabsAl
     }
 }
 
-static std::string shiftLineRightEx(view::string_view line, long lineLen, int tabsAllowed, int tabDist, int nChars) {
+static std::string shiftLineRightEx(view::string_view line, int64_t lineLen, int tabsAllowed, int tabDist, int nChars) {
     int whiteWidth;
 
 	auto lineInPtr = line.begin();
     std::string lineOut;
-	lineOut.reserve(lineLen + nChars);
+    lineOut.reserve(static_cast<size_t>(lineLen + nChars));
 
 	auto lineOutPtr = std::back_inserter(lineOut);
 	whiteWidth = 0;
@@ -467,7 +467,7 @@ static std::string shiftLineRightEx(view::string_view line, long lineLen, int ta
 				// if we're now at a tab stop, change last 8 spaces to a tab 
 				if (tabsAllowed && atTabStop(whiteWidth, tabDist)) {
 				
-                    lineOut.resize(lineOut.size() - tabDist);
+                    lineOut.resize(lineOut.size() - static_cast<size_t>(tabDist));
 				
 					//lineOutPtr -= tabDist;
 					*lineOutPtr++ = '\t';
@@ -484,7 +484,7 @@ static std::string shiftLineRightEx(view::string_view line, long lineLen, int ta
 	}
 }
 
-static QString shiftLineLeftEx(const QString &line, long lineLen, int tabDist, int nChars) {
+static QString shiftLineLeftEx(const QString &line, int64_t lineLen, int tabDist, int nChars) {
     auto lineInPtr = line.begin();
 
     QString out;
@@ -540,12 +540,12 @@ static QString shiftLineLeftEx(const QString &line, long lineLen, int tabDist, i
     }
 }
 
-static std::string shiftLineLeftEx(view::string_view line, long lineLen, int tabDist, int nChars) {
+static std::string shiftLineLeftEx(view::string_view line, int64_t lineLen, int tabDist, int nChars) {
 
     auto lineInPtr = line.begin();
 
     std::string out;
-    out.reserve(lineLen + tabDist);
+    out.reserve(static_cast<size_t>(lineLen + tabDist));
 
     int whiteWidth = 0;
     int lastWhiteWidth = 0;
@@ -722,7 +722,7 @@ static std::string fillParagraphsEx(view::string_view text, int64_t rightMargin,
 		   the paragraph, and for rest of the remainder of the paragraph */
 		auto it = std::find(paraText.begin(), paraText.end(), '\n');
 		
-        long firstLineLen     = std::distance(paraText.begin(), it);
+        long firstLineLen    = std::distance(paraText.begin(), it);
 		auto secondLineStart = (it == paraText.end()) ? paraText.begin() : it + 1;
 		int firstLineIndent  = findLeftMarginEx(paraText.begin(), paraText.end(), firstLineLen, tabDist);
 		int leftMargin       = findLeftMarginEx(secondLineStart,  paraText.end(), paraEnd - paraStart - (secondLineStart - paraText.begin()), tabDist);
@@ -850,7 +850,7 @@ static std::string fillParagraphEx(view::string_view text, int64_t leftMargin, i
 static std::string makeIndentString(int64_t indent, int tabDist, bool allowTabs) {
 
     std::string indentString;
-    indentString.reserve(indent);
+    indentString.reserve(static_cast<size_t>(indent));
 
     auto outPtr = std::back_inserter(indentString);
 

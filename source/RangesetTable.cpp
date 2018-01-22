@@ -258,7 +258,7 @@ int RangesetTable::RangesetCreate() {
         return std::find(list.begin(), list.end(), ch) == list.end();
     });
 
-    size_t firstAvailableIndex = it - std::begin(rangeset_labels);
+    auto firstAvailableIndex = static_cast<size_t>(it - std::begin(rangeset_labels));
 
     if(firstAvailableIndex >= sizeof(rangeset_labels)) {
         return 0;

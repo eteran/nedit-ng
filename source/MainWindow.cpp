@@ -6230,7 +6230,7 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, co
                 defaultRegexFlags(searchType));
 
             document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
-            replaceLen = replaceResult.size();
+            replaceLen = static_cast<int64_t>(replaceResult.size());
         } else {
             document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toStdString());
             replaceLen = replaceString.size();
@@ -6364,7 +6364,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
             defaultRegexFlags(searchType));
 
         document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
-        replaceLen = replaceResult.size();
+        replaceLen = static_cast<int64_t>(replaceResult.size());
     } else {
         document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toStdString());
         replaceLen = replaceString.size();
@@ -6657,7 +6657,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
             }
 
             tempBuf.BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceResult);
-            replaceLen = replaceResult.size();
+            replaceLen = static_cast<int64_t>(replaceResult.size());
         } else {
             // at this point plain substitutions (should) always work
             tempBuf.BufReplaceEx(startPos + realOffset, endPos + realOffset, replaceString.toStdString());
@@ -6839,7 +6839,7 @@ bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QS
     document->buffer_->BufReplaceEx(copyStart, copyEnd, newFileString);
 
     // Move the cursor to the end of the last replacement
-    area->TextSetCursorPos(copyStart + newFileString.size());
+    area->TextSetCursorPos(copyStart + static_cast<int64_t>(newFileString.size()));
 
     return true;
 }
@@ -7039,7 +7039,8 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
 
     // return the start and end of the selection
     if (isRect) {
-        document->buffer_->GetSimpleSelection(left, right);
+        bool ret = document->buffer_->GetSimpleSelection(left, right);
+        Q_ASSERT(ret);
     } else {
         *left  = selStart;
         *right = selEnd;

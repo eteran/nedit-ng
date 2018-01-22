@@ -2821,7 +2821,7 @@ static std::error_code searchStringMS(DocumentWidget *document, Arguments argume
         return ec;
     }
 
-    int64_t len = to_string(arguments[0]).size();
+    auto len = static_cast<int64_t>(to_string(arguments[0]).size());
     if (beginPos > len) {
         if (direction == Direction::Forward) {
             if (wrap == WrapMode::Wrap) {
@@ -2938,9 +2938,9 @@ static std::error_code replaceInStringMS(DocumentWidget *document, Arguments arg
         std::string new_string;
         new_string.reserve(string.size() + replacedStr.size());
 
-        new_string.append(string.substr(0, copyStart));
+        new_string.append(string.substr(0, static_cast<size_t>(copyStart)));
         new_string.append(replacedStr);
-        new_string.append(string.substr(copyEnd));
+        new_string.append(string.substr(static_cast<size_t>(copyEnd)));
 
         *result = make_value(new_string);
     }
@@ -3727,7 +3727,7 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
     int64_t beginPos  = 0;
     int64_t lastEnd   = 0;
     int indexNum  = 0;
-    int64_t strLength = sourceStr.size();
+    auto strLength = static_cast<int64_t>(sourceStr.size());
     bool found    = true;
     while (found && beginPos < strLength) {
 
@@ -3747,7 +3747,7 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
         int64_t elementEnd = found ? foundStart : strLength;
         int64_t elementLen = elementEnd - lastEnd;
 
-        std::string str(&sourceStr[lastEnd], elementLen);
+        std::string str(&sourceStr[static_cast<size_t>(lastEnd)], static_cast<size_t>(elementLen));
 
         element = make_value(str);
         if (!ArrayInsert(result, indexStr, &element)) {
@@ -3783,7 +3783,7 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
             /* We skipped the last character to prevent an endless loop.
                Add it to the list. */
             int64_t elementLen = strLength - lastEnd;
-            std::string str(&sourceStr[lastEnd], elementLen);
+            std::string str(&sourceStr[static_cast<size_t>(lastEnd)], static_cast<size_t>(elementLen));
 
             element = make_value(str);
             if (!ArrayInsert(result, indexStr, &element)) {

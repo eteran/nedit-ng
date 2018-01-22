@@ -1028,17 +1028,17 @@ int64_t Rangeset::RangesetRemove(TextBuffer *buffer, Rangeset *minusSet) {
     Range *minusRanges   = minusSet->ranges_;
     int64_t nMinusRanges = minusSet->n_ranges_;
 
-    if (nOrigRanges == 0 || nMinusRanges == 0 || !origRanges || !minusRanges) {
+    if (nOrigRanges == 0 || nMinusRanges == 0) {
         // no ranges in origSet or minusSet - nothing to do
         return 0;
     }
 
+    Q_ASSERT(origRanges);
+    Q_ASSERT(minusRanges);
+
     /* we must provide more space: each range in minusSet might split a range in origSet */
     Range *newRanges = RangesNew(n_ranges_ + minusSet->n_ranges_);
-    if(!newRanges) {
-        // This really shouldn't happen...
-        return 0;
-    }
+    Q_ASSERT(newRanges);
 
     Range *oldRanges = origRanges;
     ranges_   = newRanges;

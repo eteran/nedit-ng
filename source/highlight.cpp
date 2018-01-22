@@ -549,11 +549,8 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
 			return false;
 		}
 
-        if(!subPat) {
-            qCritical("NEdit: Internal error, failed to match in parseString [2]");
-            return false;
-        }
-		
+        Q_ASSERT(subPat);
+
 		// the sub-pattern is a simple match, just color it 
 		if (!subPat->subPatternRE) {
 			fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], /* subPat->startRE->endp[0],*/ subPat->style, prevChar);

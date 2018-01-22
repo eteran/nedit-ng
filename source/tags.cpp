@@ -760,7 +760,7 @@ bool fakeRegExSearchEx(view::string_view buffer, const QString &searchString, in
         ctagsMode      = true;
     } else if (searchString.size() > 1 && searchString[0] == QLatin1Char('?')) {
         dir            = Direction::Backward;
-        searchStartPos = fileString.size();
+        searchStartPos = static_cast<int64_t>(fileString.size());
         ctagsMode      = true;
 	} else {
 		qWarning("NEdit: Error parsing tag file search string");
@@ -859,7 +859,7 @@ static int moveAheadNLinesEx(view::string_view str, int64_t *pos, int n) {
 
     int i = n;
     while (str.begin() + *pos != str.end() && n > 0) {
-        if (str[*pos] == '\n') {
+        if (str[static_cast<size_t>(*pos)] == '\n') {
             --n;
         }
         ++(*pos);
@@ -947,14 +947,14 @@ void showMatchingCalltipEx(TextArea *area, int i) {
 
             // Make sure not to overrun the fileString with ". . ."
             if (static_cast<size_t>(endPos) <= (fileString.size() - 5)) {
-                fileString.replace(endPos, 5, ". . .");
+                fileString.replace(static_cast<size_t>(endPos), 5, ". . .");
                 endPos += 5;
             }
         }
 
         // 5. Copy the calltip to a string
         int64_t tipLen = endPos - startPos;
-        auto message = QString::fromLatin1(&fileString[startPos], gsl::narrow<int>(tipLen));
+        auto message = QString::fromLatin1(&fileString[static_cast<size_t>(startPos)], gsl::narrow<int>(tipLen));
 
         // 6. Display it
         tagsShowCalltipEx(area, message);

@@ -4747,7 +4747,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
                 area->TextSetCursorPos(buf->BufCursorPosHint());
 
                 if (reselectStart != -1) {
-                    buf->BufSelect(reselectStart, reselectStart + output_string.size());
+                    buf->BufSelect(reselectStart, reselectStart + static_cast<int64_t>(output_string.size()));
                 }
             } else {
                 safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, output_string);
@@ -6090,15 +6090,17 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     const bool noPass1 = (nPass1Patterns == 0);
     const bool noPass2 = (nPass2Patterns == 0);
 
-    if (noPass2 && pass1Pats) {
+    if (noPass2) {
+        Q_ASSERT(pass1Pats);
         pass1Pats[0].style = PLAIN_STYLE;
-    } else if (noPass1 && pass2Pats) {
-        pass2Pats[0].style = PLAIN_STYLE;
-    } else if(pass1Pats && pass2Pats) {
-        pass1Pats[0].style = UNFINISHED_STYLE;
+    } else if (noPass1) {
+        Q_ASSERT(pass2Pats);
         pass2Pats[0].style = PLAIN_STYLE;
     } else {
-        qCritical("NEdit: Internal error: could not create highlight patterns.");
+        Q_ASSERT(pass1Pats);
+        Q_ASSERT(pass2Pats);
+        pass1Pats[0].style = UNFINISHED_STYLE;
+        pass2Pats[0].style = PLAIN_STYLE;
     }
 
     for (size_t i = 1; i < nPass1Patterns; i++) {
