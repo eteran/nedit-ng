@@ -4478,7 +4478,7 @@ int TextArea::TextDMoveUp(bool absolute) {
     } else if (posToVisibleLineNum(cursorPos_, &visLineNum)) {
 		lineStartPos = lineStarts_[visLineNum];
     } else {
-		lineStartPos =TextDStartOfLine(cursorPos_);
+        lineStartPos = TextDStartOfLine(cursorPos_);
 		visLineNum = -1;
 	}
 
@@ -4493,6 +4493,7 @@ int TextArea::TextDMoveUp(bool absolute) {
 	if (absolute) {
 		prevLineStartPos = buffer_->BufCountBackwardNLines(lineStartPos, 1);
 	} else if (visLineNum != -1 && visLineNum != 0) {
+        Q_ASSERT(visLineNum > 0);
 		prevLineStartPos = lineStarts_[visLineNum - 1];
 	} else {
 		prevLineStartPos = TextDCountBackwardNLines(lineStartPos, 1);

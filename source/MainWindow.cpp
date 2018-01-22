@@ -4571,13 +4571,11 @@ void MainWindow::action_Prev_Document() {
         if(currentIndex == 0) {
 
             std::vector<MainWindow *> windows = MainWindow::allWindows();
-            auto thisIndex = std::find(windows.begin(), windows.end(), this);
-            decltype(thisIndex) nextIndex;
+            auto thisIndex = std::find(windows.rbegin(), windows.rend(), this);
+            auto nextIndex = std::next(thisIndex);
 
-            if(thisIndex == windows.begin()) {
-                nextIndex = std::prev(windows.end());
-            } else {
-                nextIndex = std::prev(thisIndex);
+            if(nextIndex == windows.rend()) {
+                nextIndex = windows.rbegin();
             }
 
             // raise the window set the focus to the first document in it
