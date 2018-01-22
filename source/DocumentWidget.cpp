@@ -4668,7 +4668,8 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
        present the information to the user. */
     if (cmdData->flags & ERROR_DIALOGS) {
         bool cancel = false;
-        bool failure = exitStatus != QProcess::NormalExit;
+        // NOTE(eteran): assumes UNIX return code style!
+        bool failure = exitCode != 0;
         bool errorReport = !errText.isEmpty();
 
         static constexpr int DF_MAX_MSG_LENGTH = 4096;
