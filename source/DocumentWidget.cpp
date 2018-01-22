@@ -3522,7 +3522,11 @@ bool DocumentWidget::includeFile(const QString &name) {
     }
 
     QFile file(name);
-    file.open(QFile::ReadOnly);
+    if(!file.open(QFile::ReadOnly)) {
+        QMessageBox::critical(this, tr("Error opening File"), file.errorString());
+        return false;
+    }
+
     uchar *memory = file.map(0, file.size());
     if (!memory) {
         QMessageBox::critical(this, tr("Error opening File"), file.errorString());
@@ -5843,7 +5847,7 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
             beginParse, endParse, beginSafety, endSafety); */
 
     std::string str             = buf->BufGetRangeEx(beginSafety, endSafety);
-    const char *string          = str.data();
+    const char *string          = &str[0];
     const char *const match_to  = string + str.size();
 
     std::string styleStr  = styleBuf->BufGetRangeEx(beginSafety, endSafety);
@@ -6313,6 +6317,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
         } else {
             compiledPats[i].startRE = compileREAndWarnEx(patternSrc[i].startRE);
             if (!compiledPats[i].startRE) {
+                delete [] compiledPats;
                 return nullptr;
             }
         }
@@ -6322,6 +6327,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
         } else {
             compiledPats[i].endRE = compileREAndWarnEx(patternSrc[i].endRE);
             if (!compiledPats[i].endRE) {
+                delete [] compiledPats;
                 return nullptr;
             }
         }
@@ -6331,6 +6337,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
         } else {
             compiledPats[i].errorRE = compileREAndWarnEx(patternSrc[i].errorRE);
             if (!compiledPats[i].errorRE) {
+                delete [] compiledPats;
                 return nullptr;
             }
         }

@@ -5121,7 +5121,7 @@ boost::optional<int64_t> TextArea::spanBackward(TextBuffer *buf, int64_t startPo
         return boost::none;
 	}
 
-    int64_t pos = (startPos == 0) ? 0 : startPos - 1;
+    int64_t pos = startPos - 1;
 	while (pos >= 0) {
 
         auto it = std::find_if(searchChars.begin(), searchChars.end(), [ignoreSpace, buf, pos](char ch) {

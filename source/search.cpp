@@ -679,8 +679,11 @@ void saveSearchHistory(const QString &searchString, QString replaceString, Searc
 	   new one is also incremental, just update the entry */
 	if (currentItemIsIncremental && isIncremental) {
 
-        SearchReplaceHistory[historyIndex(1)].search = searchString;
-        SearchReplaceHistory[historyIndex(1)].type   = searchType;
+        const int index = historyIndex(1);
+        if(index >= 0) {
+            SearchReplaceHistory[index].search = searchString;
+            SearchReplaceHistory[index].type   = searchType;
+        }
 		return;
 	}
 	currentItemIsIncremental = isIncremental;

@@ -326,7 +326,7 @@ static int64_t parseBufferRange(HighlightData *pass1Patterns, HighlightData *pas
     std::string str      = buf     ->BufGetRangeEx(beginSafety, endSafety);
 	std::string styleStr = styleBuf->BufGetRangeEx(beginSafety, endSafety);
 	
-    const char *const string   = str.data();
+    const char *const string   = &str[0];
 	char *const styleString    = &styleStr[0];
 	const char *const match_to = string + str.size();
 

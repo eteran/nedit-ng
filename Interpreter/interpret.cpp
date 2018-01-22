@@ -1732,12 +1732,10 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray) {
 }
 
 /*
-** creates an allocated string of a single key for all the sub-scripts
+** creates a string of a single key for all the sub-scripts
 ** using ARRAY_DIM_SEP as a separator
 ** this function uses the PEEK macros in order to remove most limits on
 ** the number of arguments to an array
-** I really need to optimize the size approximation rather than assuming
-** a worst case size for every integer argument
 */
 static int makeArrayKeyFromArgs(int64_t nArgs, std::string *keyString, bool leaveParams) {
 	DataValue tmpVal;
@@ -1771,8 +1769,7 @@ static int makeArrayKeyFromArgs(int64_t nArgs, std::string *keyString, bool leav
 }
 
 /*
-** insert a DataValue into an array, allocate the array if needed
-** keyStr must be a string that was allocated with AllocString()
+** insert a DataValue into an array
 */
 bool ArrayInsert(DataValue *theArray, const std::string &keyStr, DataValue *theValue) {
 

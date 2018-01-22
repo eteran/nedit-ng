@@ -987,7 +987,7 @@ boost::optional<int64_t> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(int64_t st
         return boost::none;
     }
 
-    int64_t pos = (startPos == 0) ? 0 : startPos - 1;
+    int64_t pos = startPos - 1;
 
     while (true) {
         for (Ch ch : searchChars) {
@@ -1089,7 +1089,7 @@ boost::optional<int64_t> BasicTextBuffer<Ch, Tr>::searchBackward(int64_t startPo
         return boost::none;
     }
 
-    int64_t pos = (startPos == 0) ? 0 : startPos - 1;
+    int64_t pos = startPos - 1;
     while (true) {
         if (buffer_[pos] == searchChar) {
             return pos;

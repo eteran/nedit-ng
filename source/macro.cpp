@@ -2316,8 +2316,7 @@ static std::error_code focusWindowMS(DocumentWidget *document, Arguments argumen
     } else {
         // just use the plain name as supplied
         it = std::find_if(documents.begin(), documents.end(), [&string](DocumentWidget *doc) {
-            QString fullname = doc->FullPath();
-            return fullname == string;
+            return doc->FullPath() == string;
         });
 
         // didn't work? try normalizing the string passed in
@@ -4338,9 +4337,6 @@ static std::error_code versionMV(DocumentWidget *document, Arguments arguments, 
 */
 static std::error_code rangesetCreateMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    int nRangesetsRequired;
-    DataValue element;
-
     std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
     if (arguments.size() > 1)
@@ -4355,6 +4351,8 @@ static std::error_code rangesetCreateMS(DocumentWidget *document, Arguments argu
         *result = make_value(label);
         return MacroErrorCode::Success;
     } else {
+
+        int nRangesetsRequired;
         if (std::error_code ec = readArgument(arguments[0], &nRangesetsRequired)) {
             return ec;
         }
@@ -4365,9 +4363,8 @@ static std::error_code rangesetCreateMS(DocumentWidget *document, Arguments argu
             return MacroErrorCode::Success;
 
         for (int i = 0; i < nRangesetsRequired; i++) {
-            element = make_value(rangesetTable->RangesetCreate());
-
-            ArrayInsert(result, std::to_string(i), &element);
+            DataValue element = make_value(rangesetTable->RangesetCreate());
+            (void)ArrayInsert(result, std::to_string(i), &element);
         }
 
         return MacroErrorCode::Success;
