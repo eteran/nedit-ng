@@ -2307,12 +2307,12 @@ static std::error_code focusWindowMS(DocumentWidget *document, Arguments argumen
 
     } else if (string == QLatin1String("next")) {
 
-        auto curr = std::find_if(documents.begin(), documents.end(), [document](DocumentWidget *doc) {
+        it = std::find_if(documents.begin(), documents.end(), [document](DocumentWidget *doc) {
             return doc == document;
         });
 
-        if(curr != documents.end()) {
-            it = std::next(curr);
+        if(it != documents.end()) {
+            it = std::next(it);
         }
     } else {
         // just use the plain name as supplied
