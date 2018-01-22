@@ -115,16 +115,6 @@ constexpr int RANGESET_MASK  = (0x3F << RANGESET_SHIFT);
    stack in the redisplayLine routine for drawing strings */
 constexpr int MAX_DISP_LINE_LEN = 1000;
 
-template <class T>
-T min3(T i1, T i2, T i3) {
-	return std::min(i1, std::min(i2, i3));
-}
-
-template <class T>
-T max3(T i1, T i2, T i3) {
-    return std::max(i1, std::max(i2, i3));
-}
-
 bool offscreenV(QDesktopWidget *desktop, int top, int height) {
     return (top < CALLTIP_EDGE_GUARD || top + height >= desktop->height() - CALLTIP_EDGE_GUARD);
 }
@@ -6596,8 +6586,8 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
     tempBuf.BufSetTabDist(buffer_->BufGetTabDist());
     tempBuf.BufSetUseTabs(buffer_->BufGetUseTabs());
 
-    tempStart = min3<int64_t>(dragInsertPos_, origSel->start, buffer_->BufCountBackwardNLines(firstChar_, nLines + 2));
-    tempEnd   = buffer_->BufCountForwardNLines(max3<int64_t>(dragInsertPos_, origSel->start, lastChar_), nLines + 2) + origSel->end - origSel->start;
+    tempStart = std::min<int64_t>({dragInsertPos_, origSel->start, buffer_->BufCountBackwardNLines(firstChar_, nLines + 2)});
+    tempEnd   = buffer_->BufCountForwardNLines(std::max<int64_t>({dragInsertPos_, origSel->start, lastChar_}), nLines + 2) + origSel->end - origSel->start;
 
 	const std::string text = origBuf->BufGetRangeEx(tempStart, tempEnd);
     tempBuf.BufSetAllEx(text);
