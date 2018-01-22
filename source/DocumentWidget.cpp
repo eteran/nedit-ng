@@ -6212,6 +6212,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
     /* Allocate memory for the compiled patterns.  The list is terminated
        by a record with style == 0. */
     auto compiledPats = new HighlightData[static_cast<size_t>(patternSrc.size() + 1)];
+
     compiledPats[patternSrc.size()].style = 0;
 
     // Build the tree of parse expressions
@@ -6258,6 +6259,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
                         this,
                         tr("Color-only Pattern"),
                         tr("Color-only pattern \"%1\" may not have subpatterns").arg(patternSrc[i].name));
+            delete [] compiledPats;
             return nullptr;
         }
 
@@ -6408,6 +6410,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
             compiledPats[patternNum].subPatternRE = std::make_shared<Regex>(bigPattern, REDFLT_STANDARD);
         } catch(const RegexError &e) {
             qWarning("NEdit: Error compiling syntax highlight patterns:\n%s", e.what());
+            delete [] compiledPats;
             return nullptr;
         }
     }
