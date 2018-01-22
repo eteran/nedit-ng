@@ -6581,10 +6581,9 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
     int64_t beginPos   = 0;
     int64_t cursorPos  = 0;
     int realOffset = 0;
-    bool found     = true;
 
-    while (found) {
-        found = SearchString(
+    Q_FOREVER {
+        bool found = SearchString(
                     fileString,
                     searchString,
                     Direction::Forward,
@@ -6630,7 +6629,6 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
            can consider the artificial end of the range as the end of a line,
            and match a fictional whole line beginning there) */
         if (startPos == (selEnd - selStart)) {
-            found = false;
             break;
         }
 

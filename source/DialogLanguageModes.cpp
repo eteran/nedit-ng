@@ -196,7 +196,7 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
             break;
         }
     } else {
-        ui.editName      ->setText(ptr->name);
+        ui.editName      ->setText(QString());
         ui.editExtensions->setText(QString());
         ui.editRegex     ->setText(QString());
         ui.editCallTips  ->setText(QString());

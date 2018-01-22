@@ -2136,11 +2136,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
             }
 
             if (runDocument) {
-                Symbol *sym = LookupSymbolEx(subrName);
-                if(!sym) {
-                    subrPtr = make_value(prog);
-                    sym = InstallSymbolEx(subrName, MACRO_FUNCTION_SYM, subrPtr);
-                } else {
+                if(Symbol *sym = LookupSymbolEx(subrName)) {
                     if (sym->type == MACRO_FUNCTION_SYM) {
                         delete to_program(sym->value);
                     } else {
@@ -2148,6 +2144,10 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
                     }
 
                     sym->value = make_value(prog);
+                } else {
+                    subrPtr = make_value(prog);
+                    sym = InstallSymbolEx(subrName, MACRO_FUNCTION_SYM, subrPtr);
+                    Q_UNUSED(sym);
                 }
             }
 

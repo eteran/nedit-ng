@@ -6090,13 +6090,15 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     const bool noPass1 = (nPass1Patterns == 0);
     const bool noPass2 = (nPass2Patterns == 0);
 
-    if (noPass2) {
+    if (noPass2 && pass1Pats) {
         pass1Pats[0].style = PLAIN_STYLE;
-    } else if (noPass1) {
+    } else if (noPass1 && pass2Pats) {
         pass2Pats[0].style = PLAIN_STYLE;
-    } else {
+    } else if(pass1Pats && pass2Pats) {
         pass1Pats[0].style = UNFINISHED_STYLE;
         pass2Pats[0].style = PLAIN_STYLE;
+    } else {
+        qCritical("NEdit: Internal error: could not create highlight patterns.");
     }
 
     for (size_t i = 1; i < nPass1Patterns; i++) {

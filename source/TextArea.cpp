@@ -7575,16 +7575,15 @@ bool TextArea::TextDPosToLineAndCol(int64_t pos, int64_t *lineNum, int64_t *colu
 		return true;
 	}
 
-	// Only return the data if pos is within the displayed text
-    int visibleLinNum;
-    if (!posToVisibleLineNum(pos, &visibleLinNum)) {
-        *lineNum = visibleLinNum;
+    // Only return the data if pos is within the displayed text
+    int visLineNum;
+    if (!posToVisibleLineNum(pos, &visLineNum)) {
         return false;
     }
 
-    *column = buffer_->BufCountDispChars(lineStarts_[visibleLinNum], pos);
-    *lineNum = visibleLinNum + topLineNum_;
-	return true;
+    *column = buffer_->BufCountDispChars(lineStarts_[visLineNum], pos);
+    *lineNum = visLineNum + topLineNum_;
+    return true;
 }
 
 void TextArea::addCursorMovementCallback(cursorMovedCBEx callback, void *arg) {

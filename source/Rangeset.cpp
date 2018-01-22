@@ -1022,18 +1022,23 @@ int64_t Rangeset::RangesetCheckRangeOfPos(int64_t pos) {
 */
 int64_t Rangeset::RangesetRemove(TextBuffer *buffer, Rangeset *minusSet) {
 
-    Range *origRanges = ranges_;
-    int64_t nOrigRanges   = n_ranges_;
+    int64_t nOrigRanges  = n_ranges_;
+    Range *origRanges    = ranges_;
 
-    Range *minusRanges = ranges_;
-    int64_t nMinusRanges   = minusSet->n_ranges_;
+    Range *minusRanges   = minusSet->ranges_;
+    int64_t nMinusRanges = minusSet->n_ranges_;
 
-    if (nOrigRanges == 0 || nMinusRanges == 0) {
-        return 0;		/* no ranges in origSet or minusSet - nothing to do */
+    if (nOrigRanges == 0 || nMinusRanges == 0 || !origRanges || !minusRanges) {
+        // no ranges in origSet or minusSet - nothing to do
+        return 0;
     }
 
     /* we must provide more space: each range in minusSet might split a range in origSet */
     Range *newRanges = RangesNew(n_ranges_ + minusSet->n_ranges_);
+    if(!newRanges) {
+        // This really shouldn't happen...
+        return 0;
+    }
 
     Range *oldRanges = origRanges;
     ranges_   = newRanges;
@@ -1044,21 +1049,23 @@ int64_t Rangeset::RangesetRemove(TextBuffer *buffer, Rangeset *minusSet) {
      * discarded at the end */
     while (nOrigRanges > 0) {
         do {
-            /* skip all minusRanges ranges strictly in front of *origRanges */
+            // skip all minusRanges ranges strictly in front of *origRanges
             while (nMinusRanges > 0 && minusRanges->end <= origRanges->start) {
-                ++minusRanges;      /* *minusRanges in front of *origRanges: move onto next *minusRanges */
+
+                // *minusRanges in front of *origRanges: move onto next *minusRanges
+                ++minusRanges;
                 --nMinusRanges;
             }
 
             if (nMinusRanges > 0) {
-                /* keep all origRanges ranges strictly in front of *minusRanges */
+                // keep all origRanges ranges strictly in front of *minusRanges
                 while (nOrigRanges > 0 && origRanges->end <= minusRanges->start) {
                     *newRanges++ = *origRanges++;   /* *minusRanges beyond *origRanges: save *origRanges in *newRanges */
                     --nOrigRanges;
                     ++n_ranges_;
                 }
             } else {
-                /* no more minusRanges ranges to remove - save the rest of origRanges */
+                // no more minusRanges ranges to remove - save the rest of origRanges
                 while (nOrigRanges > 0) {
                     *newRanges++ = *origRanges++;
                     --nOrigRanges;
@@ -1067,13 +1074,13 @@ int64_t Rangeset::RangesetRemove(TextBuffer *buffer, Rangeset *minusSet) {
             }
         } while (nMinusRanges > 0 && minusRanges->end <= origRanges->start); /* any more non-overlaps */
 
-        /* when we get here either we're done, or we have overlap */
+        // when we get here either we're done, or we have overlap
         if (nOrigRanges > 0) {
             if (minusRanges->start <= origRanges->start) {
-                /* origRanges->start inside *minusRanges */
+                // origRanges->start inside *minusRanges
                 if (minusRanges->end < origRanges->end) {
                     RangesetRefreshRange(buffer, origRanges->start, minusRanges->end);
-                    origRanges->start = minusRanges->end;  /* cut off front of original *origRanges */
+                    origRanges->start = minusRanges->end;  // cut off front of original *origRanges
                     minusRanges++;      /* dealt with this *minusRanges: move on */
                     nMinusRanges--;
                 } else {

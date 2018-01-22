@@ -446,7 +446,6 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
 
 	bool subExecuted;
     char succChar = match_to ? (*match_to) : '\0';
-	HighlightData *subPat = nullptr;
 	HighlightData *subSubPat;
 
 	if (length <= 0) {
@@ -487,8 +486,9 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
 			if (subIndex == 0) {
 				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], pattern->style, prevChar);
 				subExecuted = false;
+
 				for (int i = 0; i < pattern->nSubPatterns; i++) {
-					subPat = pattern->subPatterns[i];
+                    HighlightData *const subPat = pattern->subPatterns[i];
 					if (subPat->colorOnly) {
 						if (!subExecuted) {
                             if (!pattern->endRE->ExecRE(
@@ -511,6 +511,7 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
                         }
 					}
 				}
+
 				*string = stringPtr;
 				*styleString = stylePtr;
 				return true;
@@ -530,7 +531,9 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
 			--subIndex;
 		}
 
+        HighlightData *subPat = nullptr;
 		int i;
+
 		// Figure out which sub-pattern matched 
 		for (i = 0; i < pattern->nSubPatterns; i++) {
 			subPat = pattern->subPatterns[i];
@@ -541,13 +544,16 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
 			}
 		}
 		
-		if (i == pattern->nSubPatterns) {
-            qCritical("NEdit: Internal error, failed to match in parseString");
+        if (i == pattern->nSubPatterns) {
+            qCritical("NEdit: Internal error, failed to match in parseString [1]");
 			return false;
 		}
-		
-		Q_ASSERT(subPat);
 
+        if(!subPat) {
+            qCritical("NEdit: Internal error, failed to match in parseString [2]");
+            return false;
+        }
+		
 		// the sub-pattern is a simple match, just color it 
 		if (!subPat->subPatternRE) {
 			fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], /* subPat->startRE->endp[0],*/ subPat->style, prevChar);
