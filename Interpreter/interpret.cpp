@@ -435,7 +435,7 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 ** (if any) can be read from "result".  If MACRO_PREEMPT is returned, the
 ** macro exceeded its alotted time-slice and scheduled...
 */
-int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg) {
+int ExecuteMacroEx(DocumentWidget *document, const std::shared_ptr<Program> &prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg) {
 
     /* Create an execution context (a stack, a stack pointer, a frame pointer,
        and a program counter) which will retain the program state across
@@ -533,7 +533,7 @@ int ContinueMacroEx(std::shared_ptr<MacroContext> &continuation, DataValue *resu
 ** separate contexts, and serializes processing of the two macros without
 ** additional work.
 */
-void RunMacroAsSubrCall(Program *prog) {
+void RunMacroAsSubrCall(const std::shared_ptr<Program> &prog) {
 
 	/* See subroutine "callSubroutine" for a description of the stack frame
        for a subroutine call */
@@ -1569,9 +1569,9 @@ static int callSubroutine() {
         *Context->StackP++ = make_value(nArgs);          // nArgs
         *Context->StackP++ = make_value();               // cached arg array
 
-        Context->FrameP = Context->StackP;
-        Program* prog  = to_program(sym->value);
-        Context->PC     = prog->code.data();
+        Context->FrameP                = Context->StackP;
+        std::shared_ptr<Program> prog  = to_program(sym->value);
+        Context->PC                    = prog->code.data();
 
         for(Symbol *s : prog->localSymList) {
             FP_GET_SYM_VAL(Context->FrameP, s) = make_value();

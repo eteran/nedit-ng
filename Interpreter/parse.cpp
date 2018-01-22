@@ -1,5 +1,6 @@
 
 #include "parse.h"
+#include "interpret.h"
 #include <string>
 #include <QString>
 
@@ -12,7 +13,7 @@ Program *ParseMacro(const std::string &expr, std::string *msg, int *stoppedAt);
  * @param stoppedAt
  * @return
  */
-Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt) {
+std::shared_ptr<Program> ParseMacroEx(const QString &expr, QString *message, int *stoppedAt) {
 
     auto str = expr.toStdString();
 
@@ -20,5 +21,5 @@ Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt) {
     Program *p = ParseMacro(str, &msg, stoppedAt);
 
     *message = QString::fromStdString(msg);
-    return p;
+    return std::shared_ptr<Program>(p);
 }

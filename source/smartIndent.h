@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <QPointer>
+#include <memory>
 
 class SmartIndentEntry;
 class DialogSmartIndent;
@@ -30,8 +31,8 @@ extern std::vector<SmartIndentEntry> SmartIndentSpecs;
 extern QPointer<DialogSmartIndent> SmartIndentDlg;
 
 struct SmartIndentData {
-    Program *newlineMacro = nullptr;
-    Program *modMacro     = nullptr;
+    std::shared_ptr<Program> newlineMacro;
+    std::shared_ptr<Program> modMacro;
     int inNewLineMacro    = 0;
     int inModMacro        = 0;
 };

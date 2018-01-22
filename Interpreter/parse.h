@@ -5,6 +5,9 @@
 struct Program;
 class QString;
 
-Program *ParseMacroEx(const QString &expr, QString *message, int *stoppedAt);
+#include <memory>
+
+
+std::shared_ptr<Program> ParseMacroEx(const QString &expr, QString *message, int *stoppedAt);
 
 #endif
