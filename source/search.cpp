@@ -669,28 +669,29 @@ void saveSearchHistory(const QString &searchString, QString replaceString, Searc
 		return;
     }
 
+    const int index = historyIndex(1);
+
 	// If replaceString is nullptr, duplicate the last one (if any) 
     if(replaceString.isNull()) {
-        replaceString = (NHist >= 1) ? SearchReplaceHistory[historyIndex(1)].replace : QLatin1String("");
+        replaceString = (index != -1) ? SearchReplaceHistory[index].replace : QString();
     }
 
 	/* Compare the current search and replace strings against the saved ones.
 	   If they are identical, don't bother saving */
-    if (NHist >= 1 && searchType == SearchReplaceHistory[historyIndex(1)].type && SearchReplaceHistory[historyIndex(1)].search == searchString && SearchReplaceHistory[historyIndex(1)].replace == replaceString) {
+    if (index != -1 && searchType == SearchReplaceHistory[index].type && SearchReplaceHistory[index].search == searchString && SearchReplaceHistory[index].replace == replaceString) {
 		return;
 	}
 
 	/* If the current history item came from an incremental search, and the
 	   new one is also incremental, just update the entry */
-	if (currentItemIsIncremental && isIncremental) {
-
-        const int index = historyIndex(1);
-        if(index >= 0) {
+    if (currentItemIsIncremental && isIncremental) {
+        if(index != -1) {
             SearchReplaceHistory[index].search = searchString;
             SearchReplaceHistory[index].type   = searchType;
         }
 		return;
 	}
+
 	currentItemIsIncremental = isIncremental;
 
     if (NHist == 0) {
@@ -726,7 +727,7 @@ void saveSearchHistory(const QString &searchString, QString replaceString, Searc
 int historyIndex(int nCycles) {
 
     if (nCycles > NHist || nCycles <= 0) {
-		return -1;
+        return -1;
     }
 
     int index = HistStart - nCycles;

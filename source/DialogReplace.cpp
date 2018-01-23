@@ -119,7 +119,7 @@ void DialogReplace::keyPressEvent(QKeyEvent *event) {
             searchStr  = QString();
             replaceStr = QString();
 			searchType = GetPrefSearch();
-		} else {
+        } else {
             searchStr  = SearchReplaceHistory[historyIndex(index)].search;
             replaceStr = SearchReplaceHistory[historyIndex(index)].replace;
             searchType = SearchReplaceHistory[historyIndex(index)].type;

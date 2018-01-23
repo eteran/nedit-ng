@@ -6404,7 +6404,7 @@ bool MainWindow::ReplaceSameEx(DocumentWidget *document, TextArea *area, Directi
     }
 
     const int index = historyIndex(1);
-    if (NHist == -1) {
+    if (index == -1) {
         QApplication::beep();
         return false;
     }
@@ -6457,7 +6457,7 @@ bool MainWindow::ReplaceFindSameEx(DocumentWidget *document, TextArea *area, Dir
     }
 
     const int index = historyIndex(1);
-    if (NHist == -1) {
+    if (index == -1) {
         QApplication::beep();
         return false;
     }
