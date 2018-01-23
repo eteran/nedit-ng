@@ -6297,12 +6297,18 @@ bool MainWindow::SearchAndSelectSameEx(DocumentWidget *document, TextArea *area,
         return false;
     }
 
+    const int index = historyIndex(1);
+    if(index == -1) {
+        QApplication::beep();
+        return false;
+    }
+
     return SearchAndSelectEx(
                 document,
                 area,                
-                SearchReplaceHistory[historyIndex(1)].search,
+                SearchReplaceHistory[index].search,
                 direction,
-                SearchReplaceHistory[historyIndex(1)].type,
+                SearchReplaceHistory[index].type,
                 searchWrap);
 }
 
@@ -6397,13 +6403,19 @@ bool MainWindow::ReplaceSameEx(DocumentWidget *document, TextArea *area, Directi
         return false;
     }
 
+    const int index = historyIndex(1);
+    if (NHist == -1) {
+        QApplication::beep();
+        return false;
+    }
+
     return SearchAndReplaceEx(
                 document,
                 area,                
-                SearchReplaceHistory[historyIndex(1)].search,
-                SearchReplaceHistory[historyIndex(1)].replace,
+                SearchReplaceHistory[index].search,
+                SearchReplaceHistory[index].replace,
                 direction,
-                SearchReplaceHistory[historyIndex(1)].type,
+                SearchReplaceHistory[index].type,
                 searchWrap);
 }
 

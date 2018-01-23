@@ -270,9 +270,9 @@ void BeginCreatingProgram() {
 ** symbol table) as a package that ExecuteMacro can execute.  This
 ** program must be freed with FreeProgram.
 */
-Program *FinishCreatingProgram() {
+std::shared_ptr<Program> FinishCreatingProgram() {
 
-    auto newProg = new Program;
+    auto newProg = std::make_shared<Program>();
     std::copy(Prog, ProgP, std::back_inserter(newProg->code));
 
     newProg->localSymList = LocalSymList;

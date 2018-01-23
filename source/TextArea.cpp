@@ -4476,10 +4476,11 @@ int TextArea::TextDMoveUp(bool absolute) {
 		lineStartPos = buffer_->BufStartOfLine(cursorPos_);
 		visLineNum = -1;
     } else if (posToVisibleLineNum(cursorPos_, &visLineNum)) {
-		lineStartPos = lineStarts_[visLineNum];
+        Q_ASSERT(visLineNum >= 0);
+        lineStartPos = lineStarts_[visLineNum];
     } else {
         lineStartPos = TextDStartOfLine(cursorPos_);
-		visLineNum = -1;
+        visLineNum = -1;
 	}
 
     if (lineStartPos == 0) {
@@ -4492,8 +4493,7 @@ int TextArea::TextDMoveUp(bool absolute) {
 	// count forward from the start of the previous line to reach the column
 	if (absolute) {
 		prevLineStartPos = buffer_->BufCountBackwardNLines(lineStartPos, 1);
-	} else if (visLineNum != -1 && visLineNum != 0) {
-        Q_ASSERT(visLineNum > 0);
+	} else if (visLineNum != -1 && visLineNum != 0) {        
 		prevLineStartPos = lineStarts_[visLineNum - 1];
 	} else {
 		prevLineStartPos = TextDCountBackwardNLines(lineStartPos, 1);
@@ -5719,13 +5719,13 @@ void TextArea::selectWord(int pointerX) {
     int y;
     int64_t insertPos = cursorPos_;
 
-	TextDPositionToXY(insertPos, &x, &y);
+    if(TextDPositionToXY(insertPos, &x, &y)) {
+        if (pointerX < x && insertPos > 0 && buffer_->BufGetCharacter(insertPos - 1) != '\n') {
+            --insertPos;
+        }
 
-	if (pointerX < x && insertPos > 0 && buffer_->BufGetCharacter(insertPos - 1) != '\n') {
-		insertPos--;
-	}
-
-	buffer_->BufSelect(startOfWord(insertPos), endOfWord(insertPos));
+        buffer_->BufSelect(startOfWord(insertPos), endOfWord(insertPos));
+    }
 }
 
 /*
