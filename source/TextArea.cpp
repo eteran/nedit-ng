@@ -2204,10 +2204,9 @@ int64_t TextArea::TextDEndOfLine(int64_t pos, bool startPosIsLineStart) const {
 */
 void TextArea::updateLineStarts(int64_t pos, int64_t charsInserted, int64_t charsDeleted, int64_t linesInserted, int64_t linesDeleted, int *scrolled) {
 
-    int i;
     int lineOfPos;
     int lineOfEnd;
-    int nVisLines = nVisibleLines_;
+    int nVisLines = nVisibleLines_;    
     int64_t charDelta = charsInserted - charsDeleted;
     int64_t lineDelta = linesInserted - linesDeleted;
 
@@ -2216,7 +2215,7 @@ void TextArea::updateLineStarts(int64_t pos, int64_t charsInserted, int64_t char
 	   start entries and first and last characters */
 	if (pos + charsDeleted < firstChar_) {
 		topLineNum_ += lineDelta;
-        for (i = 0; i < nVisLines && lineStarts_[i] != -1; i++) {
+        for (int i = 0; i < nVisLines && lineStarts_[i] != -1; i++) {
             lineStarts_[i] += charDelta;
         }
 
@@ -2259,13 +2258,13 @@ void TextArea::updateLineStarts(int64_t pos, int64_t charsInserted, int64_t char
 		posToVisibleLineNum(pos, &lineOfPos);
 		// salvage line starts after the changed area
 		if (lineDelta == 0) {
-            for (i = lineOfPos + 1; i < nVisLines && lineStarts_[i] != -1; i++)
+            for (int i = lineOfPos + 1; i < nVisLines && lineStarts_[i] != -1; i++)
                 lineStarts_[i] += charDelta;
 		} else if (lineDelta > 0) {
-            for (i = nVisLines - 1; i >= lineOfPos + lineDelta + 1; i--)
+            for (int64_t i = nVisLines - 1; i >= lineOfPos + lineDelta + 1; i--)
                 lineStarts_[i] = lineStarts_[i - lineDelta] + (lineStarts_[i - lineDelta] == -1 ? 0 : charDelta);
 		} else /* (lineDelta < 0) */ {
-            for (i = std::max(0, lineOfPos + 1); i < nVisLines + lineDelta; i++)
+            for (int i = std::max(0, lineOfPos + 1); i < nVisLines + lineDelta; i++)
                 lineStarts_[i] = lineStarts_[i - lineDelta] + (lineStarts_[i - lineDelta] == -1 ? 0 : charDelta);
 		}
 
@@ -3741,7 +3740,6 @@ void TextArea::offsetLineStarts(int64_t newTopLineNum) {
     int64_t oldFirstChar  = firstChar_;
     int64_t lineDelta     = newTopLineNum - oldTopLineNum;
     int nVisLines         = nVisibleLines_;
-	int i;
     int64_t lastLineNum;
 
 	// If there was no offset, nothing needs to be changed
@@ -3766,13 +3764,13 @@ void TextArea::offsetLineStarts(int64_t newTopLineNum) {
 
 	// Fill in the line starts array
 	if (lineDelta < 0 && -lineDelta < nVisLines) {
-        for (i = nVisLines - 1; i >= -lineDelta; i--) {
+        for (int64_t i = nVisLines - 1; i >= -lineDelta; i--) {
             lineStarts_[i] = lineStarts_[i + lineDelta];
         }
 
 		calcLineStarts(0, -lineDelta);
 	} else if (lineDelta > 0 && lineDelta < nVisLines) {
-        for (i = 0; i < nVisLines - lineDelta; i++) {
+        for (int64_t i = 0; i < nVisLines - lineDelta; i++) {
             lineStarts_[i] = lineStarts_[i + lineDelta];
         }
 
@@ -4161,7 +4159,7 @@ void TextArea::cancelDrag() {
 /*
 ** Cursor movement functions
 */
-int TextArea::TextDMoveRight() {
+bool TextArea::TextDMoveRight() {
 	if (cursorPos_ >= buffer_->BufGetLength()) {
         return false;
 	}
@@ -4179,13 +4177,7 @@ void TextArea::TextDSetInsertPosition(int64_t newPos) {
 		return;
 	}
 
-	if (newPos < 0) {
-		newPos = 0;
-	}
-
-	if (newPos > buffer_->BufGetLength()) {
-		newPos = buffer_->BufGetLength();
-	}
+    newPos = qBound<int64_t>(0, newPos, buffer_->BufGetLength());
 
 	// cursor movement cancels vertical cursor motion column
 	cursorPreferredCol_ = -1;
@@ -4456,7 +4448,7 @@ void TextArea::keyMoveExtendSelection(int64_t origPos, bool rectangular) {
 }
 
 
-int TextArea::TextDMoveLeft() {
+bool TextArea::TextDMoveLeft() {
 	if (cursorPos_ <= 0) {
         return false;
 	}
@@ -4465,7 +4457,7 @@ int TextArea::TextDMoveLeft() {
 	return true;
 }
 
-int TextArea::TextDMoveUp(bool absolute) {
+bool TextArea::TextDMoveUp(bool absolute) {
     int64_t lineStartPos;
     int64_t prevLineStartPos;
     int visLineNum;
@@ -4513,7 +4505,7 @@ int TextArea::TextDMoveUp(bool absolute) {
 	return true;
 }
 
-int TextArea::TextDMoveDown(bool absolute) {
+bool TextArea::TextDMoveDown(bool absolute) {
     int64_t lineStartPos;
     int64_t nextLineStartPos;
     int64_t newPos;
@@ -5829,13 +5821,13 @@ int64_t TextArea::xyToPos(int x, int y, PositionTypes posType) const {
 ** from the last newline.  Obviously this is time consuming, because it
 ** invloves character re-counting.
 */
-int64_t TextArea::TextDOffsetWrappedColumn(int row, int64_t column) const {
+int64_t TextArea::TextDOffsetWrappedColumn(int64_t row, int64_t column) const {
 
 	if (!P_continuousWrap || row < 0 || row > nVisibleLines_) {
 		return column;
 	}
 
-    const int64_t dispLineStart = lineStarts_[row];
+    const int64_t dispLineStart = lineStarts_[static_cast<int>(row)];
 	if (dispLineStart == -1) {
 		return column;
 	}

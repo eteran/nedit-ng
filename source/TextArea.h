@@ -246,7 +246,7 @@ public:
 	void TextDSetColors(const QColor &textFgP, const QColor &textBgP, const QColor &selectFgP, const QColor &selectBgP, const QColor &hiliteFgP, const QColor &hiliteBgP, const QColor &lineNoFgP, const QColor &cursorFgP);
     void TextDXYToUnconstrainedPosition(const QPoint &coord, int64_t *row, int64_t *column) const;
     int64_t TextDXYToPosition(const QPoint &coord) const;
-    int64_t TextDOffsetWrappedColumn(int row, int64_t column) const;
+    int64_t TextDOffsetWrappedColumn(int64_t row, int64_t column) const;
     void TextDGetScroll(int64_t *topLineNum, int *horizOffset);
     bool TextDInSelection(const QPoint &p) const;
     int64_t TextGetCursorPos() const;
@@ -268,10 +268,10 @@ public:
 	void TextDRedrawCalltip(int calltipID);
 	void TextDSetupBGClassesEx(const QString &str);
     void TextDSetupBGClasses(const QString &s, std::vector<QColor> *pp_bgClassPixel, std::vector<uint8_t> *pp_bgClass, const QColor &bgPixelDefault);
-	int TextDMoveRight();
-	int TextDMoveLeft();
-	int TextDMoveUp(bool absolute);
-	int TextDMoveDown(bool absolute);
+    bool TextDMoveRight();
+    bool TextDMoveLeft();
+    bool TextDMoveUp(bool absolute);
+    bool TextDMoveDown(bool absolute);
     void TextDSetInsertPosition(int64_t newPos);
 	void TextDMakeInsertPosVisible();
 	void TextInsertAtCursorEx(view::string_view chars, bool allowPendingDelete, bool allowWrap);
