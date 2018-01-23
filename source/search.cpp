@@ -287,6 +287,11 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
                     *endPos   = tempPtr - string.begin();
 					return true;
 				}
+
+                // NOTE(eteran): this doesn't seem possible, but just being careful
+                if(ucPtr == ucString.end()) {
+                    break;
+                }
 			}
 		}
 		
@@ -300,11 +305,11 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 		delimiters = delimiterString.data();
     }
 
-    if (safe_ctype<isspace>(searchString[0]) || strchr(delimiters, searchString[0])) {
+    if (safe_ctype<isspace>(searchString.front()) || strchr(delimiters, searchString.front())) {
 		cignore_L = true;
 	}
 
-    if (safe_ctype<isspace>(searchString[searchString.size() - 1]) || strchr(delimiters, searchString[searchString.size() - 1])) {
+    if (safe_ctype<isspace>(searchString.back()) || strchr(delimiters, searchString.back())) {
 		cignore_R = true;
 	}
 

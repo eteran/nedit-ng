@@ -6456,13 +6456,19 @@ bool MainWindow::ReplaceFindSameEx(DocumentWidget *document, TextArea *area, Dir
         return false;
     }
 
+    const int index = historyIndex(1);
+    if (NHist == -1) {
+        QApplication::beep();
+        return false;
+    }
+
     return ReplaceAndSearchEx(
                 document,
                 area,                
-                SearchReplaceHistory[historyIndex(1)].search,
-                SearchReplaceHistory[historyIndex(1)].replace,
+                SearchReplaceHistory[index].search,
+                SearchReplaceHistory[index].replace,
                 direction,
-                SearchReplaceHistory[historyIndex(1)].type,
+                SearchReplaceHistory[index].type,
                 searchWrap);
 }
 
