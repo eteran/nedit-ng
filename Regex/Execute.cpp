@@ -1100,7 +1100,7 @@ look_behind_to string            end           match_to
  * @param match_to
  * @return
  */
-bool Regex::ExecRE(const char *string, const char *end, bool reverse, char prev_char, char succ_char, const char *delimiters, const char *look_behind_to, const char *match_to) {
+bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_char, int succ_char, const char *delimiters, const char *look_behind_to, const char *match_to) {
     assert(string);
 
     Regex *const re = this;
@@ -1133,8 +1133,8 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, char prev_
     eContext.Look_Behind_To  = (look_behind_to ? look_behind_to : string);
 
     // TODO(eteran): remove the need for these NUL chars
-    eContext.Prev_Is_BOL   = (prev_char == '\n') || (prev_char == '\0');
-    eContext.Succ_Is_EOL   = (succ_char == '\n') || (succ_char == '\0');
+    eContext.Prev_Is_BOL   = (prev_char == '\n') || (prev_char == -1);
+    eContext.Succ_Is_EOL   = (succ_char == '\n') || (succ_char == -1);
     eContext.Prev_Is_Delim = eContext.Current_Delimiters[static_cast<uint8_t>(prev_char)];
     eContext.Succ_Is_Delim = eContext.Current_Delimiters[static_cast<uint8_t>(succ_char)];
 

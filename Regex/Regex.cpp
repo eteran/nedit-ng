@@ -165,8 +165,8 @@ bool Regex::execute(view::string_view string, size_t offset, size_t end_offset, 
 		string,
 		offset,
 		end_offset,
-		(offset     == 0            ) ? '\0' : string[offset - 1],
-		(end_offset == string.size()) ? '\0' : string[end_offset],
+        (offset     == 0            ) ? -1 : string[offset - 1],
+        (end_offset == string.size()) ? -1 : string[end_offset],
 		delimiters,
 		reverse);
 }
@@ -182,7 +182,7 @@ bool Regex::execute(view::string_view string, size_t offset, size_t end_offset, 
  * @param reverse
  * @return
  */
-bool Regex::execute(view::string_view string, size_t offset, size_t end_offset, char prev, char succ, const char *delimiters, bool reverse) {
+bool Regex::execute(view::string_view string, size_t offset, size_t end_offset, int prev, int succ, const char *delimiters, bool reverse) {
 	assert(offset <= end_offset);
 	assert(end_offset <= string.size());
 	return ExecRE(

@@ -99,7 +99,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
                     substr(inString, static_cast<size_t>(searchExtentBW)),
                     startPos - searchExtentBW,
                     replaceResult,
-                    startPos == 0 ? '\0' : inString[static_cast<size_t>(startPos) - 1],
+                    startPos == 0 ? -1 : inString[static_cast<size_t>(startPos) - 1],
                     delimiters,
                     defaultRegexFlags(searchType));
 
@@ -160,7 +160,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
                     substr(inString, static_cast<size_t>(searchExtentBW)),
                     startPos - searchExtentBW,
                     replaceResult,
-                    startPos == 0 ? '\0' : inString[static_cast<size_t>(startPos) - 1],
+                    startPos == 0 ? -1 : inString[static_cast<size_t>(startPos) - 1],
                     delimiters,
                     defaultRegexFlags(searchType));
 
@@ -541,9 +541,7 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
 		// search from beginPos to start of file.  A negative begin pos	
 		// says begin searching from the far end of the file.		
         if (beginPos >= 0) {
-
-            // NOTE(eteran): why do we use NUL as the previous char, and not string[beginPos - 1] (assuming that beginPos > 0)?
-            if (compiledRE.execute(string, 0, static_cast<size_t>(beginPos), '\0', '\0', delimiters, true)) {
+            if (compiledRE.execute(string, 0, static_cast<size_t>(beginPos), -1, -1, delimiters, true)) {
 
                 *startPos = compiledRE.startp[0] - &string[0];
                 *endPos   = compiledRE.endp[0]   - &string[0];
@@ -622,10 +620,10 @@ static std::string downCaseStringEx(view::string_view inString) {
 ** code to continue using strings to represent the search and replace
 ** items.
 */
-bool replaceUsingREEx(view::string_view searchStr, view::string_view replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, char prevChar, const char *delimiters, int defaultFlags) {
+bool replaceUsingREEx(view::string_view searchStr, view::string_view replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
     try {
         Regex compiledRE(searchStr, defaultFlags);
-        compiledRE.execute(sourceStr, static_cast<size_t>(beginPos), sourceStr.size(), prevChar, '\0', delimiters, false);
+        compiledRE.execute(sourceStr, static_cast<size_t>(beginPos), sourceStr.size(), prevChar, -1, delimiters, false);
         return compiledRE.SubstituteRE(replaceStr, dest);
     } catch(const RegexError &e) {
         Q_UNUSED(e);
@@ -634,7 +632,7 @@ bool replaceUsingREEx(view::string_view searchStr, view::string_view replaceStr,
 }
 
 
-bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, char prevChar, const QString &delimiters, int defaultFlags) {
+bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags) {
     return replaceUsingREEx(
                 searchStr.toStdString(),
                 replaceStr.toStdString(),

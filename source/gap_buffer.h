@@ -33,7 +33,7 @@ public:
 
 public:
     gap_buffer();
-    explicit gap_buffer(int64_t size);
+    explicit gap_buffer(size_type size);
     gap_buffer(const gap_buffer&)            = delete;
     gap_buffer& operator=(const gap_buffer&) = delete;
     ~gap_buffer() noexcept;
@@ -54,49 +54,48 @@ public:
     const_reverse_iterator crend() const   { return const_reverse_iterator(begin()); }
 
 public:
-    int64_t gap_size() const { return gap_end_ - gap_start_; }
-    int64_t size() const     { return size_; }
-    bool empty() const       { return size() == 0; }
+    size_type gap_size() const noexcept { return gap_end_ - gap_start_; }
+    size_type size() const noexcept     { return size_; }
+    bool empty() const noexcept         { return size() == 0; }
 
 public:
-    Ch operator[](int64_t n) const;
-    Ch& operator[](int64_t n);
-    Ch at(int64_t n) const;
-    Ch& at(int64_t n);
+    Ch operator[](size_type n) const noexcept;
+    Ch& operator[](size_type n) noexcept;
+    Ch at(size_type n) const;
+    Ch& at(size_type n);
 
 public:
-    int compare(int64_t pos, view_type str) const;
-    int compare(int64_t pos, Ch ch) const;
+    int compare(size_type pos, view_type str) const;
+    int compare(size_type pos, Ch ch) const;
 
 public:
     string_type to_string() const;
-    string_type to_string(int64_t start, int64_t end) const;
+    string_type to_string(size_type start, size_type end) const;
     view_type to_view();
-    view_type to_view(int64_t start, int64_t end);
+    view_type to_view(size_type start, size_type end);
 
 public:
     void append(view_type str);
     void append(Ch ch);
-    void insert(int64_t pos, view_type str);
-    void insert(int64_t pos, Ch ch);
-    void erase(int64_t start, int64_t end);
-    void replace(int64_t start, int64_t end, view_type str);
-    void replace(int64_t start, int64_t end, Ch ch);
+    void insert(size_type pos, view_type str);
+    void insert(size_type pos, Ch ch);
+    void erase(size_type start, size_type end);
+    void replace(size_type start, size_type end, view_type str);
+    void replace(size_type start, size_type end, Ch ch);
     void assign(view_type str);
     void clear();
 
 private:
-    void move_gap(int64_t pos);
-    void reallocate_buffer(int64_t new_gap_start, int64_t new_gap_size);
-    void delete_range(int64_t start, int64_t end);
+    void move_gap(size_type pos);
+    void reallocate_buffer(size_type new_gap_start, size_type new_gap_size);
+    void delete_range(size_type start, size_type end);
 
 private:
-    Ch *buf_;            // points to the internal buffer
-    int64_t gap_start_;  // points to the first character of the gap
-    int64_t gap_end_;    // points to the first char after the gap
-    int64_t size_;       // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd - gapStart + length)
+    Ch *buf_;              // points to the internal buffer
+    size_type gap_start_;  // points to the first character of the gap
+    size_type gap_end_;    // points to the first char after the gap
+    size_type size_;       // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd - gapStart + length)
 };
-
 
 /**
  *
@@ -109,14 +108,12 @@ gap_buffer<Ch, Tr>::gap_buffer() : gap_buffer(0){
  *
  */
 template <class Ch, class Tr>
-gap_buffer<Ch, Tr>::gap_buffer(int64_t size) {
+gap_buffer<Ch, Tr>::gap_buffer(size_type size) {
 
-    buf_       = new Ch[static_cast<size_t>(size + PreferredGapSize + 1)];
+    buf_       = new Ch[static_cast<size_t>(size + PreferredGapSize)];
     gap_start_ = 0;
     gap_end_   = PreferredGapSize;
     size_      = 0;
-
-    buf_[size + PreferredGapSize] = Ch();
 
 #ifdef PURIFY
     std::fill(&buf_[gapStart_], &buf_[gapEnd_], Ch('.'));
@@ -135,7 +132,7 @@ gap_buffer<Ch, Tr>::~gap_buffer() noexcept {
  *
  */
 template <class Ch, class Tr>
-Ch gap_buffer<Ch, Tr>::operator[](int64_t n) const {
+Ch gap_buffer<Ch, Tr>::operator[](size_type n) const noexcept {
 
     if (n < gap_start_) {
         return buf_[n];
@@ -148,7 +145,7 @@ Ch gap_buffer<Ch, Tr>::operator[](int64_t n) const {
  *
  */
 template <class Ch, class Tr>
-Ch& gap_buffer<Ch, Tr>::operator[](int64_t n) {
+Ch& gap_buffer<Ch, Tr>::operator[](size_type n) noexcept {
 
     if (n < gap_start_) {
         return buf_[n];
@@ -161,7 +158,7 @@ Ch& gap_buffer<Ch, Tr>::operator[](int64_t n) {
  *
  */
 template <class Ch, class Tr>
-Ch gap_buffer<Ch, Tr>::at(int64_t n) const {
+Ch gap_buffer<Ch, Tr>::at(size_type n) const {
 
     if (n >= size() || n < 0) {
         raise<std::out_of_range>("gap_buffer::operator[]");
@@ -178,7 +175,7 @@ Ch gap_buffer<Ch, Tr>::at(int64_t n) const {
  *
  */
 template <class Ch, class Tr>
-Ch& gap_buffer<Ch, Tr>::at(int64_t n) {
+Ch& gap_buffer<Ch, Tr>::at(size_type n) {
 
     if (n >= size() || n < 0) {
         raise<std::out_of_range>("gap_buffer::at");
@@ -195,14 +192,14 @@ Ch& gap_buffer<Ch, Tr>::at(int64_t n) {
  *
  */
 template <class Ch, class Tr>
-int gap_buffer<Ch, Tr>::compare(int64_t pos, view_type str) const {
+int gap_buffer<Ch, Tr>::compare(size_type pos, view_type str) const {
 
     // NOTE(eteran): could just be:
     // return to_view(pos, pos + str.size()).compare(str);
     // but that would also be slightly less efficient since "to_view" *may* do
     // a gap move. Worth it for the simplicity?
 
-    int64_t posEnd = pos + static_cast<int64_t>(str.size());
+    auto posEnd = pos + static_cast<size_type>(str.size());
     if (posEnd > size()) {
         return 1;
     }
@@ -230,7 +227,7 @@ int gap_buffer<Ch, Tr>::compare(int64_t pos, view_type str) const {
  *
  */
 template <class Ch, class Tr>
-int gap_buffer<Ch, Tr>::compare(int64_t pos, Ch ch) const {
+int gap_buffer<Ch, Tr>::compare(size_type pos, Ch ch) const {
     if (pos >= size()) {
         return 1;
     }
@@ -261,14 +258,14 @@ auto gap_buffer<Ch, Tr>::to_string() const -> string_type {
  *
  */
 template <class Ch, class Tr>
-auto gap_buffer<Ch, Tr>::to_string(int64_t start, int64_t end) const -> string_type {
+auto gap_buffer<Ch, Tr>::to_string(size_type start, size_type end) const -> string_type {
     string_type text;
 
     assert(start <= size() && start >= 0);
     assert(end   <= size() && end   >= 0);
     assert(start <= end);
 
-    const int64_t length = end - start;
+    const difference_type length = end - start;
     text.reserve(static_cast<size_t>(length));
 
     // Copy the text from the buffer to the returned string
@@ -277,7 +274,7 @@ auto gap_buffer<Ch, Tr>::to_string(int64_t start, int64_t end) const -> string_t
     } else if (start >= gap_start_) {
         std::copy_n(&buf_[start + gap_size()], length, std::back_inserter(text));
     } else {
-        const int64_t part1Length = gap_start_ - start;
+        const difference_type part1Length = gap_start_ - start;
 
         std::copy_n(&buf_[start],    part1Length,          std::back_inserter(text));
         std::copy_n(&buf_[gap_end_], length - part1Length, std::back_inserter(text));
@@ -292,9 +289,9 @@ auto gap_buffer<Ch, Tr>::to_string(int64_t start, int64_t end) const -> string_t
 template <class Ch, class Tr>
 auto gap_buffer<Ch, Tr>::to_view() -> view_type {
 
-    const int64_t bufLen   = size();
-    int64_t leftLen        = gap_start_;
-    const int64_t rightLen = bufLen - leftLen;
+    const size_type bufLen   = size();
+    size_type leftLen        = gap_start_;
+    const size_type rightLen = bufLen - leftLen;
 
     // find where best to put the gap to minimise memory movement
     if (leftLen != 0 && rightLen != 0) {
@@ -312,15 +309,15 @@ auto gap_buffer<Ch, Tr>::to_view() -> view_type {
  *
  */
 template <class Ch, class Tr>
-auto gap_buffer<Ch, Tr>::to_view(int64_t start, int64_t end) -> view_type {
+auto gap_buffer<Ch, Tr>::to_view(size_type start, size_type end) -> view_type {
 
     assert(start <= size() && start >= 0);
     assert(end   <= size() && end   >= 0);
     assert(start <= end);
 
-    const int64_t bufLen   = size();
-    int64_t leftLen        = gap_start_;
-    const int64_t rightLen = bufLen - leftLen;
+    const size_type bufLen   = size();
+    size_type leftLen        = gap_start_;
+    const size_type rightLen = bufLen - leftLen;
 
     // find where best to put the gap to minimise memory movement
     if (leftLen != 0 && rightLen != 0) {
@@ -354,11 +351,11 @@ void gap_buffer<Ch, Tr>::append(Ch ch) {
  *
  */
 template <class Ch, class Tr>
-void gap_buffer<Ch, Tr>::insert(int64_t pos, view_type str) {
+void gap_buffer<Ch, Tr>::insert(size_type pos, view_type str) {
 
     assert(pos <= size() && pos >= 0);
 
-    const int64_t length = static_cast<int64_t>(str.size());
+    const auto length = static_cast<size_type>(str.size());
 
     /* Prepare the buffer to receive the new text.  If the new text fits in
        the current buffer, just move the gap (if necessary) to where
@@ -382,11 +379,11 @@ void gap_buffer<Ch, Tr>::insert(int64_t pos, view_type str) {
  *
  */
 template <class Ch, class Tr>
-void gap_buffer<Ch, Tr>::insert(int64_t pos, Ch ch) {
+void gap_buffer<Ch, Tr>::insert(size_type pos, Ch ch) {
 
     assert(pos <= size() && pos >= 0);
 
-    const int64_t length = 1;
+    const size_type length = 1;
 
     /* Prepare the buffer to receive the new text.  If the new text fits in
        the current buffer, just move the gap (if necessary) to where
@@ -410,7 +407,7 @@ void gap_buffer<Ch, Tr>::insert(int64_t pos, Ch ch) {
  *
  */
 template <class Ch, class Tr>
-void gap_buffer<Ch, Tr>::erase(int64_t start, int64_t end) {
+void gap_buffer<Ch, Tr>::erase(size_type start, size_type end) {
 
     assert(start <= size() && start >= 0);
     assert(end   <= size() && end   >= 0);
@@ -423,7 +420,7 @@ void gap_buffer<Ch, Tr>::erase(int64_t start, int64_t end) {
  *
  */
 template <class Ch, class Tr>
-void gap_buffer<Ch, Tr>::replace(int64_t start, int64_t end, view_type str) {
+void gap_buffer<Ch, Tr>::replace(size_type start, size_type end, view_type str) {
 
     erase(start, end);
     insert(start, str);
@@ -433,7 +430,7 @@ void gap_buffer<Ch, Tr>::replace(int64_t start, int64_t end, view_type str) {
  *
  */
 template <class Ch, class Tr>
-void gap_buffer<Ch, Tr>::replace(int64_t start, int64_t end, Ch ch) {
+void gap_buffer<Ch, Tr>::replace(size_type start, size_type end, Ch ch) {
 
     erase(start, end);
     insert(start, ch);
@@ -444,20 +441,18 @@ void gap_buffer<Ch, Tr>::replace(int64_t start, int64_t end, Ch ch) {
  */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::assign(view_type str) {
-    const int64_t length = static_cast<int64_t>(str.size());
+    const auto length = static_cast<size_type>(str.size());
 
     delete [] buf_;
 
     // Start a new buffer with a gap of GapSize in the center
-    buf_       = new Ch[static_cast<size_t>(length + PreferredGapSize + 1)];
+    buf_       = new Ch[static_cast<size_t>(length + PreferredGapSize)];
     size_      = length;
     gap_start_ = length / 2;
     gap_end_   = gap_start_ + PreferredGapSize;
 
     Tr::copy(&buf_[0],        &str[0],                               static_cast<size_t>(gap_start_));
     Tr::copy(&buf_[gap_end_], &str[static_cast<size_t>(gap_start_)], static_cast<size_t>(length - gap_start_));
-
-    buf_[length + PreferredGapSize] = Ch();
 
 #ifdef PURIFY
     std::fill(&buf_[gapStart_], &buf_[gapEnd_], Ch('.'));
@@ -476,14 +471,14 @@ void gap_buffer<Ch, Tr>::clear() {
  *
  */
 template <class Ch, class Tr>
-void gap_buffer<Ch, Tr>::move_gap(int64_t pos) {
+void gap_buffer<Ch, Tr>::move_gap(size_type pos) {
 
-    const int64_t gapLen = gap_end_ - gap_start_;
+    const difference_type gap_length = gap_end_ - gap_start_;
 
     if (pos > gap_start_) {
         Tr::move(&buf_[gap_start_], &buf_[gap_end_], static_cast<size_t>(pos - gap_start_));
     } else {
-        Tr::move(&buf_[pos + gapLen], &buf_[pos], static_cast<size_t>(gap_start_ - pos));
+        Tr::move(&buf_[pos + gap_length], &buf_[pos], static_cast<size_t>(gap_start_ - pos));
     }
 
     gap_end_   += (pos - gap_start_);
@@ -491,15 +486,15 @@ void gap_buffer<Ch, Tr>::move_gap(int64_t pos) {
 }
 
 /*
-** Reallocate the text storage in "buf_" to have a gap starting at "newGapStart"
-** and a gap size of "newGapLen", preserving the buffer's current contents.
+** Reallocate the text storage in "buf_" to have a gap starting at "new_gap_start"
+** and a gap size of "new_gap_size", preserving the buffer's current contents.
 */
 template <class Ch, class Tr>
-void gap_buffer<Ch, Tr>::reallocate_buffer(int64_t new_gap_start, int64_t new_gap_size) {
+void gap_buffer<Ch, Tr>::reallocate_buffer(size_type new_gap_start, size_type new_gap_size) {
 
-    auto newBuf = new Ch[static_cast<size_t>(size() + new_gap_size + 1)];
+    auto newBuf = new Ch[static_cast<size_t>(size() + new_gap_size)];
 
-    int64_t new_gap_end = new_gap_start + new_gap_size;
+    const size_type new_gap_end = new_gap_start + new_gap_size;
 
     if (new_gap_start <= gap_start_) {
         Tr::copy(newBuf,                                            &buf_[0],             static_cast<size_t>(new_gap_start));
@@ -517,8 +512,6 @@ void gap_buffer<Ch, Tr>::reallocate_buffer(int64_t new_gap_start, int64_t new_ga
     gap_start_ = new_gap_start;
     gap_end_   = new_gap_end;
 
-    buf_[size() + new_gap_size] = Ch();
-
 #ifdef PURIFY
     std::fill(&buf_[gapStart_], &buf_[gapEnd_], Ch('.'));
 #endif
@@ -529,7 +522,7 @@ void gap_buffer<Ch, Tr>::reallocate_buffer(int64_t new_gap_start, int64_t new_ga
 ** to the site of the delete).
 */
 template <class Ch, class Tr>
-void gap_buffer<Ch, Tr>::delete_range(int64_t start, int64_t end) {
+void gap_buffer<Ch, Tr>::delete_range(size_type start, size_type end) {
 
     // if the gap is not contiguous to the area to remove, move it there
     if (start > gap_start_) {

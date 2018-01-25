@@ -96,10 +96,10 @@ static QString createPatternsString(const PatternSet *patSet, const QString &ind
 static std::unique_ptr<PatternSet> highlightErrorEx(const Input &in, const QString &message);
 static std::unique_ptr<PatternSet> readPatternSetEx(Input &in);
 static std::vector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBraces, QString *errMsg, bool *ok);
-static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, uint8_t style, char *prevChar);
+static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, uint8_t style, int *prevChar);
 static void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, int64_t pos, int64_t nInserted, const QString &delimiters);
 static void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleString, int64_t startPos, int64_t endPos, int firstPass2Style);
-static void passTwoParseString(HighlightData *pattern, const char *string, char *styleString, int64_t length, char *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till);
+static void passTwoParseString(HighlightData *pattern, const char *first, const char *last, const char *string, char *styleString, int64_t length, int *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till);
 static void recolorSubexpr(const std::shared_ptr<Regex> &re, int subexpr, int style, const char *string, char *styleString);
 
 // list of available highlight styles
@@ -332,12 +332,14 @@ static int64_t parseBufferRange(HighlightData *pass1Patterns, HighlightData *pas
 
 	// Parse it with pass 1 patterns 
 	// printf("parsing from %d thru %d\n", beginSafety, endSafety); 
-	char prevChar         = getPrevChar(buf, beginParse);
+    int prevChar          = getPrevChar(buf, beginParse);
     const char *stringPtr = &string     [beginParse - beginSafety];
 	char *stylePtr        = &styleString[beginParse - beginSafety];
 	
 	parseString(
 		pass1Patterns, 
+        string,
+        string + str.size(),
 		&stringPtr, 
         &stylePtr,
 		endParse - beginParse, 
@@ -386,10 +388,30 @@ static int64_t parseBufferRange(HighlightData *pass1Patterns, HighlightData *pas
 		prevChar = getPrevChar(buf, beginSafety);
 
 		if (endPass2Safety == endSafety) {
-			passTwoParseString(pass2Patterns, string, styleString, endParse - beginSafety, &prevChar, delimiters, string, match_to);
+            passTwoParseString(
+                        pass2Patterns,
+                        string,
+                        string + str.size(),
+                        string,
+                        styleString,
+                        endParse - beginSafety,
+                        &prevChar,
+                        delimiters,
+                        string,
+                        match_to);
 			goto parseDone;
 		} else {
-			passTwoParseString(pass2Patterns, string, styleString, modStart - beginSafety, &prevChar, delimiters, string, match_to);
+            passTwoParseString(
+                        pass2Patterns,
+                        string,
+                        string + str.size(),
+                        string,
+                        styleString,
+                        modStart - beginSafety,
+                        &prevChar,
+                        delimiters,
+                        string,
+                        match_to);
 		}
 	}
 
@@ -399,13 +421,32 @@ static int64_t parseBufferRange(HighlightData *pass1Patterns, HighlightData *pas
 	if (endParse > modEnd) {
 		if (beginSafety > modEnd) {
 			prevChar = getPrevChar(buf, beginSafety);
-			passTwoParseString(pass2Patterns, string, styleString, endParse - beginSafety, &prevChar, delimiters, string, match_to);
+            passTwoParseString(
+                        pass2Patterns,
+                        string,
+                        string + str.size(),
+                        string,
+                        styleString,
+                        endParse - beginSafety,
+                        &prevChar,
+                        delimiters,
+                        string,
+                        match_to);
 		} else {
             startPass2Safety = std::max(beginSafety, backwardOneContext(buf, contextRequirements, modEnd));
 
-
 			prevChar = getPrevChar(buf, startPass2Safety);
-			passTwoParseString(pass2Patterns, &string[startPass2Safety - beginSafety], &styleString[startPass2Safety - beginSafety], endParse - startPass2Safety, &prevChar, delimiters, string, match_to);
+            passTwoParseString(
+                        pass2Patterns,
+                        string,
+                        string + str.size(),
+                        &string[startPass2Safety - beginSafety],
+                        &styleString[startPass2Safety - beginSafety],
+                        endParse - startPass2Safety,
+                        &prevChar,
+                        delimiters,
+                        string,
+                        match_to);
 		}
 	}
 
@@ -442,10 +483,10 @@ parseDone:
 ** the error pattern matched, if the end of the string was reached without
 ** matching the end expression, or in the unlikely event of an internal error.
 */
-bool parseString(HighlightData *pattern, const char **string, char **styleString, int64_t length, char *prevChar, bool anchored, const QString &delimiters, const char *look_behind_to, const char *match_to) {
+bool parseString(HighlightData *pattern, const char *first, const char *last, const char **string, char **styleString, int64_t length, int *prevChar, bool anchored, const QString &delimiters, const char *look_behind_to, const char *match_to) {
 
 	bool subExecuted;
-    char succChar = match_to ? (*match_to) : '\0';
+    const int succChar = (match_to && (match_to != last)) ? (*match_to) : -1;
 	HighlightData *subSubPat;
 
 	if (length <= 0) {
@@ -481,7 +522,7 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
 		   done.  Fill in the style string, update the pointers, color the
 	       end expression if there were coloring sub-patterns, and return */
 		const char *savedStartPtr = stringPtr;
-		char savedPrevChar        = *prevChar;
+        const int savedPrevChar   = *prevChar;
 		if (pattern->endRE) {
 			if (subIndex == 0) {
 				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], pattern->style, prevChar);
@@ -574,6 +615,8 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
 			// Parse to the end of the subPattern 
 			parseString(
 				subPat, 
+                first,
+                last,
 				&stringPtr, 
 				&stylePtr, 
 				length - (stringPtr - *string), 
@@ -593,6 +636,8 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
 			// Parse to the end of the subPattern 
 			parseString(
 				subPat, 
+                first,
+                last,
 				&stringPtr, 
 				&stylePtr, 
 				pattern->subPatternRE->endp[0] - stringPtr, 
@@ -667,7 +712,7 @@ bool parseString(HighlightData *pattern, const char **string, char **styleString
 ** have the same meaning as in parseString, except that strings aren't doubly
 ** indirect and string pointers are not updated.
 */
-static void passTwoParseString(HighlightData *pattern, const char *string, char *styleString, int64_t length, char *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till) {
+static void passTwoParseString(HighlightData *pattern, const char *first, const char *last, const char *string, char *styleString, int64_t length, int *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till) {
 
 	bool inParseRegion = false;
 	char *stylePtr;
@@ -695,6 +740,8 @@ static void passTwoParseString(HighlightData *pattern, const char *string, char 
 
 			parseString(
 				pattern, 
+                first,
+                last,
 				&stringPtr, 
 				&stylePtr, 
                 std::min(parseEnd - parseStart,
@@ -720,7 +767,7 @@ static void passTwoParseString(HighlightData *pattern, const char *string, char 
 ** character, prevChar, which is fed to regular the expression matching
 ** routines for determining word and line boundaries at the start of the string.
 */
-static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, uint8_t style, char *prevChar) {
+static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, uint8_t style, int *prevChar) {
 
     const long len = toPtr - *stringPtr;
 
@@ -809,8 +856,8 @@ static int64_t lastModified(const std::shared_ptr<TextBuffer> &styleBuf) {
 /*
 ** Get the character before position "pos" in buffer "buf"
 */
-char getPrevChar(TextBuffer *buf, int64_t pos) {
-	return pos == 0 ? '\0' : buf->BufGetCharacter(pos - 1);
+int getPrevChar(TextBuffer *buf, int64_t pos) {
+    return pos == 0 ? -1 : buf->BufGetCharacter(pos - 1);
 }
 
 static int parentStyleOf(const std::vector<uint8_t> &parentStyles, int style) {

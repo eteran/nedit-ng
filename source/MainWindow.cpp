@@ -6223,7 +6223,7 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, co
                 foundString,
                 startPos - searchExtentBW,
                 replaceResult,
-                startPos == 0 ? '\0' : document->buffer_->BufGetCharacter(startPos - 1),
+                startPos == 0 ? -1 : document->buffer_->BufGetCharacter(startPos - 1),
                 document->GetWindowDelimitersEx(),
                 defaultRegexFlags(searchType));
 
@@ -6363,7 +6363,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
             foundString,
             startPos - searchExtentBW,
             replaceResult,
-            startPos == 0 ? '\0' : document->buffer_->BufGetCharacter(startPos - 1),
+            startPos == 0 ? -1 : document->buffer_->BufGetCharacter(startPos - 1),
             delimieters,
             defaultRegexFlags(searchType));
 
@@ -6659,7 +6659,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
                             foundString,
                             startPos - extentBW,
                             replaceResult,
-                            (startPos + realOffset) == 0 ? '\0' : tempBuf.BufGetCharacter(startPos + realOffset - 1),
+                            (startPos + realOffset) == 0 ? -1 : tempBuf.BufGetCharacter(startPos + realOffset - 1),
                             document->GetWindowDelimitersEx(),
                             defaultRegexFlags(searchType));
 

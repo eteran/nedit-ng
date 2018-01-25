@@ -5853,10 +5853,12 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
     char *stylePtr        = &styleStr[0];
 
     // Parse it with pass 2 patterns
-    char prevChar = getPrevChar(buf, beginSafety);
+    int prevChar = getPrevChar(buf, beginSafety);
 
     parseString(
         pass2Patterns,
+        string,
+        string + str.size(),
         &string,
         &stylePtr,
         endParse - beginSafety,
@@ -5878,7 +5880,7 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
 */
 void DocumentWidget::StartHighlightingEx(bool warn) {
 
-    char prevChar = '\0';
+    int prevChar = -1;
 
     /* Find the pattern set matching the window's current
        language mode, tell the user if it can't be done */
@@ -5917,6 +5919,8 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
 
         parseString(
             highlightData->pass1Patterns,
+            bufString.data(),
+            bufString.data() + bufString.size(),
             &stringPtr,
             &stylePtr,
             bufLength,
