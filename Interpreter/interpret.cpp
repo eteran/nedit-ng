@@ -339,9 +339,9 @@ bool AddBranchOffset(Inst *to, const char **msg) {
 	}
 
     // NOTE(eteran): Should be ptrdiff_t for branch offsets
-    // NOTE(eteran): we don't use gsl::narrow here because
-    //               when to is nullptr (why?) it produces values
-    //               that won't fit into an int on 64-bit systems
+    /* NOTE(eteran): we don't use gsl::narrow here because when to is nullptr
+     * (to indicate end of program) it produces values that won't fit into an
+     * int on 64-bit systems */
     ProgP->value = static_cast<int>(to - ProgP);
     ProgP++;
     return true;

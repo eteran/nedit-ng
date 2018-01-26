@@ -1822,7 +1822,7 @@ void MainWindow::updatePrevOpenMenu() {
     // Sort the previously opened file list if requested
     QVector<QString> prevOpenSorted = PrevOpen;
     if (GetPrefSortOpenPrevMenu()) {
-        qSort(prevOpenSorted);
+        std::sort(prevOpenSorted.begin(), prevOpenSorted.end());
     }
 
     for(int i = 0; i < prevOpenSorted.size(); ++i) {
@@ -5208,25 +5208,6 @@ void MainWindow::on_action_Cancel_Learn_triggered() {
 bool MainWindow::CloseAllFilesAndWindowsEx() {
 
     for(MainWindow *window : MainWindow::allWindows()) {
-
-        // NOTE(eteran): the original code took measures to ensure that
-        // if this was being called from a macro, that the window which
-        // the macro was running in would be closed last to avoid an infinite
-        // loop due to closing modifying the list of windows while it was being
-        // iterated. Since this code operates on a COPY of the list of windows
-        // I don't think such measures are necessary anymore. But I will
-        // include the original comment just in case..
-
-        /*
-         * When we're exiting through a macro, the document running the
-         * macro does not disappear from the list, so we could get stuck
-         * in an endless loop if we try to close it. Therefore, we close
-         * other documents first. (Note that the document running the macro
-         * may get closed because it is in the same window as another
-         * document that gets closed, but it won't disappear; it becomes
-         * Untitled.)
-         */
-
         if (!window->CloseAllDocumentsInWindow()) {
             return false;
         }

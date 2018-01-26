@@ -2473,7 +2473,7 @@ void TextArea::updateVScrollBarRange() {
 	   bar maximum value is chosen to generally represent the size of the whole
 	   buffer, with minor adjustments to keep the scroll bar widget happy */
 	if(P_continuousWrap) {
-        int sliderSize = std::max(nVisibleLines_, 1); // Avoid X warning (size < 1)
+        int sliderSize = std::max(nVisibleLines_, 1);
         auto sliderMax = std::max<int64_t>(nBufferLines_ + 2 + P_cursorVPadding, sliderSize + sliderValue);
 
 		verticalScrollBar()->setMinimum(0);

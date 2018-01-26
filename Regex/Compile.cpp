@@ -1879,10 +1879,6 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 
     Regex *const re = this;
 
-    // NOTE(eteran): previously uninitialized
-    std::fill(re->startp.begin(), re->startp.end(), nullptr);
-    std::fill(re->endp.begin(),   re->endp.end(),   nullptr);
-
     int flags_local;
     len_range range_local;
 

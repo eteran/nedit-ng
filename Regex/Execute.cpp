@@ -1132,7 +1132,6 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_c
     eContext.Start_Of_String = string;
     eContext.Look_Behind_To  = (look_behind_to ? look_behind_to : string);
 
-    // TODO(eteran): remove the need for these NUL chars
     eContext.Prev_Is_BOL   = (prev_char == '\n') || (prev_char == -1);
     eContext.Succ_Is_EOL   = (succ_char == '\n') || (succ_char == -1);
     eContext.Prev_Is_Delim = eContext.Current_Delimiters[static_cast<uint8_t>(prev_char)];
