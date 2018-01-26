@@ -1010,21 +1010,9 @@ void MainWindow::updateWindowMenu() {
     // Make a sorted list of windows
     std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
-    // NOTE(eteran): on my system, I have observed a **consistent** crash
-    // when documents.size() == 17 while using std::sort. This makes zero sense at all...
-    qSort(documents.begin(), documents.end(), [](const DocumentWidget *a, const DocumentWidget *b) {
-
-        // Untitled first
-        int rc = (a->filenameSet_ == b->filenameSet_) ? 0 : a->filenameSet_ && !b->filenameSet_ ? 1 : -1;
-        if (rc != 0) {
-            return rc < 0;
-        }
-
-        if(a->filename_ < b->filename_) {
-            return true;
-        }
-
-        return a->path_ < b->path_;
+    std::sort(documents.begin(), documents.end(), [](const DocumentWidget *a, const DocumentWidget *b) {
+        // Untitled first, then filename and path are considered
+        return std::tie(a->filenameSet_, a->filename_, a->path_) < std::tie(b->filenameSet_, b->filename_, b->path_);
     });
 
     ui.menu_Windows->clear();
@@ -1039,7 +1027,7 @@ void MainWindow::updateWindowMenu() {
         QString title = document->getWindowsMenuEntry();
 
         QAction *action = ui.menu_Windows->addAction(title);
-        connect(action, &QAction::triggered, this, [document]() {
+        connect(action, &QAction::triggered, document, [document]() {
             document->RaiseFocusDocumentWindow(true);
         });
     }
@@ -1096,11 +1084,8 @@ void MainWindow::SortTabBar() {
 	}
 
 	// sort them first by filename, then by path
-    qSort(windows.begin(), windows.end(), [](const DocumentWidget *a, const DocumentWidget *b) {
-		if(a->filename_ < b->filename_) {
-			return true;
-		}
-		return a->path_ < b->path_;
+    std::sort(windows.begin(), windows.end(), [](const DocumentWidget *a, const DocumentWidget *b) {
+        return std::tie(a->filename_, a->path_) < std::tie(b->filename_, b->path_);
 	});
 
 	// shuffle around the tabs to their new indexes
@@ -1476,6 +1461,8 @@ void MainWindow::TempShowISearch(bool state) {
 */
 QString MainWindow::UniqueUntitledNameEx() {
 
+    const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+
     for (int i = 0; i < INT_MAX; i++) {
         QString name;
 
@@ -1483,9 +1470,7 @@ QString MainWindow::UniqueUntitledNameEx() {
             name = tr("Untitled");
         } else {
             name = tr("Untitled_%1").arg(i);
-        }
-
-        std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+        }        
 
         auto it = std::find_if(documents.begin(), documents.end(), [name](DocumentWidget *document) {
             return document->filename_ == name;
