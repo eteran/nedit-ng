@@ -443,9 +443,7 @@ private:
     void *highlightCBArg_;                          // Arg to unfinishedHighlightCB
 
 private:
-    bool        P_autoShowInsertPos  = true;
-    bool        P_autoWrapPastedText = false;
-    bool        P_heavyCursor        = false;
+    bool        P_autoShowInsertPos  = true;    
     bool        P_pendingDelete      = true;
     int         P_lineNumCols        = 0;
     int         P_marginHeight       = DefaultVMargin;
@@ -454,6 +452,8 @@ private:
     std::string P_delimiters;
 
 private:
+    bool        P_heavyCursor;
+    bool        P_autoWrapPastedText;
     bool        P_colorizeHighlightedText;
 	bool        P_autoWrap;
 	bool        P_continuousWrap;

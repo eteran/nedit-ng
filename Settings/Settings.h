@@ -102,7 +102,9 @@ public:
 
 public:
     // Advanced
+    bool autoWrapPastedText;
     bool colorizeHighlightedText;
+    bool heavyCursor;
     bool alwaysCheckRelativeTagsSpecs;
     bool findReplaceUsesSelection;
     bool focusOnRaise;
@@ -114,7 +116,7 @@ public:
     bool typingHidesPointer;
     bool undoModifiesSelection;
     int autoScrollVPadding;
-    int maxPrevOpenFiles;
+    int maxPrevOpenFiles;    
     VirtKeyOverride overrideDefaultVirtualKeyBindings; // TODO(eteran): deprecated, remove this
     TruncSubstitution truncSubstitution;
     QString backlightCharTypes;

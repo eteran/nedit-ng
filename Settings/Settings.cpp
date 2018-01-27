@@ -168,6 +168,8 @@ void Settings::loadPreferences() {
     typingHidesPointer                = settings.value(tr("nedit.typingHidesPointer"),  		      false).toBool();
     alwaysCheckRelativeTagsSpecs      = settings.value(tr("nedit.alwaysCheckRelativeTagsSpecs"),      true).toBool();
     colorizeHighlightedText           = settings.value(tr("nedit.colorizeHighlightedText"),           true).toBool();
+    autoWrapPastedText                = settings.value(tr("nedit.autoWrapPastedText"),                false).toBool();
+    heavyCursor                       = settings.value(tr("nedit.heavyCursor"),                       false).toBool();
     prefFileRead                      = settings.value(tr("nedit.prefFileRead"),				      false).toBool();
     findReplaceUsesSelection          = settings.value(tr("nedit.findReplaceUsesSelection"),	      false).toBool();    
     titleFormat                       = settings.value(tr("nedit.titleFormat"),                       QLatin1String("{%c} [%s] %f (%S) - %d")).toString();
@@ -261,6 +263,8 @@ void Settings::importSettings(const QString &filename) {
     smartTags                         = settings.value(tr("nedit.smartTags"),					      smartTags).toBool();
     typingHidesPointer                = settings.value(tr("nedit.typingHidesPointer"),  		      typingHidesPointer).toBool();
     alwaysCheckRelativeTagsSpecs      = settings.value(tr("nedit.alwaysCheckRelativeTagsSpecs"),      alwaysCheckRelativeTagsSpecs).toBool();
+    heavyCursor                       = settings.value(tr("nedit.heavyCursor"),                       heavyCursor).toBool();
+    autoWrapPastedText                = settings.value(tr("nedit.autoWrapPastedText"),                autoWrapPastedText).toBool();
     colorizeHighlightedText           = settings.value(tr("nedit.colorizeHighlightedText"),           colorizeHighlightedText).toBool();
     prefFileRead                      = settings.value(tr("nedit.prefFileRead"),				      prefFileRead).toBool();
     findReplaceUsesSelection          = settings.value(tr("nedit.findReplaceUsesSelection"),	      findReplaceUsesSelection).toBool();    
@@ -347,6 +351,8 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.maxPrevOpenFiles"), maxPrevOpenFiles);
     settings.setValue(tr("nedit.smartTags"), smartTags);
     settings.setValue(tr("nedit.typingHidesPointer"), typingHidesPointer);
+    settings.setValue(tr("nedit.autoWrapPastedText"), autoWrapPastedText);
+    settings.setValue(tr("nedit.heavyCursor"), heavyCursor);
     settings.setValue(tr("nedit.alwaysCheckRelativeTagsSpecs"), alwaysCheckRelativeTagsSpecs);
     settings.setValue(tr("nedit.colorizeHighlightedText"), colorizeHighlightedText);
     settings.setValue(tr("nedit.prefFileRead"), prefFileRead);

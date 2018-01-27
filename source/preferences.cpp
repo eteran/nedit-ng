@@ -248,6 +248,14 @@ void SetPrefSearch(SearchType searchType) {
     g_Settings.searchMethod = searchType;
 }
 
+bool GetPrefHeavyCursor() {
+    return g_Settings.heavyCursor;
+}
+
+bool GetPrefAutoWrapPastedText() {
+    return g_Settings.autoWrapPastedText;
+}
+
 bool GetPrefColorizeHighlightedText() {
     return g_Settings.colorizeHighlightedText;
 }

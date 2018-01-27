@@ -328,18 +328,20 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, QFont fontStruc
     setWordDelimiters(GetPrefDelimiters().toStdString());
 
     P_colorizeHighlightedText = GetPrefColorizeHighlightedText();
-    P_rows           = GetPrefRows();
-    P_columns        = GetPrefCols();
-    P_readOnly       = document->lockReasons().isAnyLocked();
-    P_wrapMargin     = GetPrefWrapMargin();
-    P_autoIndent     = document->indentStyle_ == IndentStyle::Auto;
-    P_smartIndent    = document->indentStyle_ == IndentStyle::Smart;
-    P_autoWrap       = document->wrapMode_ == WrapStyle::Newline;
-    P_continuousWrap = document->wrapMode_ == WrapStyle::Continuous;
-    P_overstrike     = document->overstrike_;
-    P_hidePointer    = GetPrefTypingHidesPointer();
-    P_cursorVPadding = GetVerticalAutoScroll();
-    P_emulateTabs    = GetPrefEmTabDist(PLAIN_LANGUAGE_MODE);
+    P_autoWrapPastedText      = GetPrefAutoWrapPastedText();
+    P_heavyCursor             = GetPrefHeavyCursor();
+    P_rows                    = GetPrefRows();
+    P_columns                 = GetPrefCols();
+    P_readOnly                = document->lockReasons().isAnyLocked();
+    P_wrapMargin              = GetPrefWrapMargin();
+    P_autoIndent              = document->indentStyle_ == IndentStyle::Auto;
+    P_smartIndent             = document->indentStyle_ == IndentStyle::Smart;
+    P_autoWrap                = document->wrapMode_ == WrapStyle::Newline;
+    P_continuousWrap          = document->wrapMode_ == WrapStyle::Continuous;
+    P_overstrike              = document->overstrike_;
+    P_hidePointer             = GetPrefTypingHidesPointer();
+    P_cursorVPadding          = GetVerticalAutoScroll();
+    P_emulateTabs             = GetPrefEmTabDist(PLAIN_LANGUAGE_MODE);
 
     QFontMetrics fm(fontStruct);
 	QFontInfo    fi(fontStruct);

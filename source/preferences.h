@@ -67,6 +67,8 @@ int GetPrefTabBarHideOne();
 int GetPrefTabDist(size_t langMode);
 bool GetPrefToolTips();
 bool GetPrefTypingHidesPointer();
+bool GetPrefAutoWrapPastedText();
+bool GetPrefHeavyCursor();
 int GetPrefWarnFileMods();
 int GetPrefWarnRealFileMods();
 int GetPrefWrapMargin();
