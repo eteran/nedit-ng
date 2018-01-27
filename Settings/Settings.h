@@ -108,14 +108,14 @@ public:
     bool focusOnRaise;
     bool forceOSConversion;
     bool honorSymlinks;
-    bool remapDeleteKey;
-    bool stdOpenDialog;
+    bool remapDeleteKey; // TODO(eteran): deprecated, remove this
+    bool stdOpenDialog;  // TODO(eteran): deprecated, remove this
     bool stickyCaseSenseButton;
     bool typingHidesPointer;
     bool undoModifiesSelection;
     int autoScrollVPadding;
     int maxPrevOpenFiles;
-    VirtKeyOverride overrideDefaultVirtualKeyBindings;
+    VirtKeyOverride overrideDefaultVirtualKeyBindings; // TODO(eteran): deprecated, remove this
     TruncSubstitution truncSubstitution;
     QString backlightCharTypes;
     QString tagFile;
