@@ -264,19 +264,6 @@ SearchType GetPrefSearch() {
     return g_Settings.searchMethod;
 }
 
-#if defined(REPLACE_SCOPE)
-void SetPrefReplaceDefScope(int scope) {
-    if(g_Settings.replaceDefaultScope != scope) {
-        PrefsHaveChanged = true;
-    }
-    g_Settings.replaceDefaultScope = scope;
-}
-
-int GetPrefReplaceDefScope() {
-    return g_Settings.replaceDefaultScope;
-}
-#endif
-
 void SetPrefAutoIndent(IndentStyle state) {
     if(g_Settings.autoIndent != state) {
         PrefsHaveChanged = true;

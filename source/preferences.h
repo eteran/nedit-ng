@@ -160,11 +160,6 @@ QFont GetPrefBoldFont();
 QFont GetPrefBoldItalicFont();
 QFont GetPrefItalicFont();
 
-#if defined(REPLACE_SCOPE)
-void SetPrefReplaceDefScope(int scope);
-int GetPrefReplaceDefScope();
-#endif
-
 bool PreferencesChanged();
 QString ImportedSettingsFile();
 

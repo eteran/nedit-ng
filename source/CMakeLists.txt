@@ -78,7 +78,6 @@ qt5_wrap_ui(UIC_SOURCES
 	DialogPromptString.ui
 	DialogPrompt.ui
 	DialogRepeat.ui
-	DialogReplaceScope.ui
 	DialogReplace.ui
 	DialogShellMenu.ui
 	DialogSmartIndentCommon.ui
@@ -224,7 +223,6 @@ add_executable(nedit-ng
 	RangesetTable.cpp
 	RangesetTable.h
 	ReparseContext.h
-	ReplaceScope.h
 	search.cpp
 	search.h
 	shift.cpp

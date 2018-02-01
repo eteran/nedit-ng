@@ -96,9 +96,6 @@ public:
     QString smartIndentInitCommon;
     QString textFont;
     QString titleFormat;
-#if defined(REPLACE_SCOPE)
-    int replaceDefaultScope;
-#endif
 
 public:
     // Advanced

@@ -143,10 +143,6 @@ void Settings::loadPreferences() {
     warnRealFileMods      = settings.value(tr("nedit.warnRealFileMods"),      true).toBool();
     warnExit              = settings.value(tr("nedit.warnExit"),              true).toBool();
 
-#if defined(REPLACE_SCOPE)
-    replaceDefaultScope   = settings.value(tr("nedit.replaceDefaultScope"),   REPL_DEF_SCOPE_SMART).toInt();
-#endif
-
     textRows                          = settings.value(tr("nedit.textRows"),					      24).toInt();
     textCols                          = settings.value(tr("nedit.textCols"),					      80).toInt();
     tabDistance                       = settings.value(tr("nedit.tabDistance"), 				      8).toInt();
@@ -239,10 +235,6 @@ void Settings::importSettings(const QString &filename) {
     warnRealFileMods      = settings.value(tr("nedit.warnRealFileMods"),      warnRealFileMods).toBool();
     warnExit              = settings.value(tr("nedit.warnExit"),              warnExit).toBool();
 
-#if defined(REPLACE_SCOPE)
-    replaceDefaultScope   = settings.value(tr("nedit.replaceDefaultScope"),   replaceDefaultScope).toInt();
-#endif
-
     textRows                          = settings.value(tr("nedit.textRows"),					      textRows).toInt();
     textCols                          = settings.value(tr("nedit.textCols"),					      textCols).toInt();
     tabDistance                       = settings.value(tr("nedit.tabDistance"), 				      tabDistance).toInt();
@@ -329,9 +321,7 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.warnFileMods"), warnFileMods);
     settings.setValue(tr("nedit.warnRealFileMods"), warnRealFileMods);
     settings.setValue(tr("nedit.warnExit"), warnExit);    
-#if defined(REPLACE_SCOPE)
-	settings.setValue(tr("nedit.replaceDefaultScope"),     replaceDefaultScope);
-#endif
+
     settings.setValue(tr("nedit.textRows"), textRows);
     settings.setValue(tr("nedit.textCols"), textCols);
     settings.setValue(tr("nedit.tabDistance"), tabDistance);

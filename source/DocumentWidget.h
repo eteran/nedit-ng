@@ -188,11 +188,6 @@ public:
     void editTaggedLocationEx(TextArea *area, int i);
     void SetBacklightChars(const QString &applyBacklightTypes);
 
-public:
-#if defined(REPLACE_SCOPE)
-    bool selectionSpansMultipleLines();
-#endif
-
 private:
     void createSelectMenuEx(TextArea *area, const QStringList &args);
     int findAllMatchesEx(TextArea *area, const QString &string);

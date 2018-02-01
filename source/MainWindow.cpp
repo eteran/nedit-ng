@@ -532,39 +532,6 @@ void MainWindow::setupMenuAlternativeMenus() {
     } else {
         ui.action_New_Window->setText(tr("New &Window"));
     }
-
-#if defined(REPLACE_SCOPE)
-    auto replaceScopeGroup = new QActionGroup(this);
-    auto replaceScopeMenu = new QMenu(tr("Default &Replace Scope"), this);
-
-    replaceScopeInWindow_    = replaceScopeMenu->addAction(tr("In &Window"));
-    replaceScopeInSelection_ = replaceScopeMenu->addAction(tr("In &Selection"));
-    replaceScopeSmart_       = replaceScopeMenu->addAction(tr("Smart"));
-
-    replaceScopeInWindow_->setCheckable(true);
-    replaceScopeInSelection_->setCheckable(true);
-    replaceScopeSmart_->setCheckable(true);
-
-    switch(GetPrefReplaceDefScope()) {
-    case REPL_DEF_SCOPE_WINDOW:
-        replaceScopeInWindow_->setChecked(true);
-        break;
-    case REPL_DEF_SCOPE_SELECTION:
-        replaceScopeInSelection_->setChecked(true);
-        break;
-    case REPL_DEF_SCOPE_SMART:
-        replaceScopeSmart_->setChecked(true);
-        break;
-    }
-
-    ui.menu_Default_Searching->addMenu(replaceScopeMenu);
-
-    replaceScopeGroup->addAction(replaceScopeInWindow_);
-    replaceScopeGroup->addAction(replaceScopeInSelection_);
-    replaceScopeGroup->addAction(replaceScopeSmart_);
-
-    connect(replaceScopeGroup, &QActionGroup::triggered, this, &MainWindow::defaultReplaceScopeGroupTriggered);
-#endif
 }
 
 /**
@@ -4049,34 +4016,6 @@ void MainWindow::on_action_Default_Search_Keep_Dialogs_Up_toggled(bool state) {
     }
 }
 
-#if defined(REPLACE_SCOPE)
-/**
- * @brief MainWindow::defaultReplaceScopeGroupTriggered
- * @param action
- */
-void MainWindow::defaultReplaceScopeGroupTriggered(QAction *action) {
-
-    std::vector<MainWindow *> windows = MainWindow::allWindows();
-
-    if(action == replaceScopeInWindow_) {
-        SetPrefReplaceDefScope(REPL_DEF_SCOPE_WINDOW);
-        for(MainWindow *window : windows) {
-            no_signals(window->replaceScopeInWindow_)->setChecked(true);
-        }
-    } else if(action == replaceScopeInSelection_) {
-        SetPrefReplaceDefScope(REPL_DEF_SCOPE_SELECTION);
-        for(MainWindow *window : windows) {
-            no_signals(window->replaceScopeInSelection_)->setChecked(true);
-        }
-    } else if(action == replaceScopeSmart_) {
-        SetPrefReplaceDefScope(REPL_DEF_SCOPE_SMART);
-        for(MainWindow *window : windows) {
-            no_signals(window->replaceScopeSmart_)->setChecked(true);
-        }
-    }
-}
-#endif
-
 /**
  * @brief MainWindow::defaultSearchGroupTriggered
  * @param action
@@ -6862,39 +6801,6 @@ void MainWindow::DoFindReplaceDlogEx(DocumentWidget *document, TextArea *area, D
 
     // Set the state of the Keep Dialog Up button
     dialogReplace_->ui.checkKeep->setChecked(keepDialogs);
-
-#if defined(REPLACE_SCOPE)
-
-    if (wasSelected_) {
-        // If a selection exists, the default scope depends on the preference
-        // of the user.
-        switch (GetPrefReplaceDefScope()) {
-        case REPL_DEF_SCOPE_SELECTION:
-            // The user prefers selection scope, no matter what the size of
-            // the selection is.
-            dialogReplace_->ui.radioSelection->setChecked(true);
-            break;
-        case REPL_DEF_SCOPE_SMART:
-            if (document->selectionSpansMultipleLines()) {
-                /* If the selection spans multiple lines, the user most
-                   likely wants to perform a replacement in the selection */
-                dialogReplace_->ui.radioSelection->setChecked(true);
-            } else {
-                /* It's unlikely that the user wants a replacement in a
-                   tiny selection only. */
-                dialogReplace_->ui.radioWindow->setChecked(true);
-            }
-            break;
-        default:
-            // The user always wants window scope as default.
-            dialogReplace_->ui.radioWindow->setChecked(true);
-            break;
-        }
-    } else {
-        // No selection -> always choose "In Window" as default.
-        dialogReplace_->ui.radioWindow->setChecked(true);
-    }
-#endif
 
     dialogReplace_->UpdateReplaceActionButtons();
 

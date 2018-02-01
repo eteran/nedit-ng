@@ -256,9 +256,6 @@ public:
     void defaultSizeGroupTriggered(QAction *action);
     void macroTriggered(QAction *action);
     void shellTriggered(QAction *action);
-#if defined(REPLACE_SCOPE)
-    void defaultReplaceScopeGroupTriggered(QAction *action);
-#endif
 
 public Q_SLOTS:
     void on_tabWidget_tabCountChanged(int count);
@@ -419,11 +416,7 @@ private:
     int iSearchHistIndex_        = 0;     // find and replace dialogs
     int64_t iSearchLastBeginPos_ = 0;     // beg. pos. last match of current i.s.
     int64_t iSearchStartPos_     = -1;    // start pos. of current incr. search
-#if defined(REPLACE_SCOPE)
-    QAction *replaceScopeInWindow_;
-    QAction *replaceScopeInSelection_;
-    QAction *replaceScopeSmart_;
-#endif
+
 public:
     Ui::MainWindow ui;
 };

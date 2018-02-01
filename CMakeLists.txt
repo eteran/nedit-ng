@@ -7,7 +7,6 @@ option(ENABLE_USAN   "Enable undefined santiziers")
 option(ENABLE_MSAN   "Enable memory santiziers")
 option(ENABLE_TSAN   "Enable thread santiziers")
 option(ENABLE_LTO    "Enable Link Time Optimization")
-option(REPLACE_SCOPE "Use Alternative Search Dialog")
 option(PURIFY        "Fill Unused TextBuffer space")
 
 set(VISUAL_CTRL_CHARS ON CACHE BOOL "Visualize ASCII Control Characters")
@@ -41,10 +40,6 @@ endif()
 
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
-endif()
-
-if(REPLACE_SCOPE)
-	add_definitions(-DREPLACE_SCOPE)
 endif()
 
 if(PURIFY)
