@@ -147,25 +147,19 @@ void DialogFonts::on_fontBoldItalic_currentFontChanged(const QFont &font) {
  * @param errorLabel
  * @return
  */
-DialogFonts::FontStatus DialogFonts::showFontStatus(const QFont &font, QLabel *errorLabel) {
+void DialogFonts::showFontStatus(const QFont &font, QLabel *errorLabel) {
 
-    QString msg;
-
-    FontStatus status = checkFontStatus(font);
-    switch(status) {
+    switch(checkFontStatus(font)) {
     case BAD_SIZE:
-        msg = tr("(height of font below does not match primary)");
+        errorLabel->setText(tr("(height of font below does not match primary)"));
         break;
     case BAD_SPACING:
-        msg = tr("(spacing of font below does not match primary)");
+        errorLabel->setText(tr("(spacing of font below does not match primary)"));
         break;
     default:
-        msg = QString();
+        errorLabel->setText(QString());
         break;
     }
-
-    errorLabel->setText(msg);
-    return status;
 }
 
 

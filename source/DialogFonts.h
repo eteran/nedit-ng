@@ -32,7 +32,7 @@ private Q_SLOTS:
 private:
 	void updateFonts();
     FontStatus checkFontStatus(const QFont &font);
-    FontStatus showFontStatus(const QFont &font, QLabel *errorLabel);
+    void showFontStatus(const QFont &font, QLabel *errorLabel);
 
 private:
 	Ui::DialogFonts ui;
