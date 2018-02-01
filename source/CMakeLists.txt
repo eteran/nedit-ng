@@ -13,6 +13,7 @@ qt5_add_resources(QRC_SOURCES
 )
 
 qt5_wrap_cpp(MOC_SOURCES
+	FixedFontSelector.h
 	ElidedLabel.h
 	CallTipWidget.h
 	CommandRecorder.h
@@ -59,6 +60,7 @@ qt5_wrap_cpp(MOC_SOURCES
 )
 
 qt5_wrap_ui(UIC_SOURCES
+	FixedFontSelector.ui
 	CallTipWidget.ui
 	DialogAbout.ui
 	DialogColors.ui
@@ -98,6 +100,8 @@ add_executable(nedit-ng
 	${QRC_SOURCES}
 	${UIC_SOURCES}
 
+	FixedFontSelector.h
+	FixedFontSelector.cpp
 	ElidedLabel.h
 	ElidedLabel.cpp
 	gap_buffer.h

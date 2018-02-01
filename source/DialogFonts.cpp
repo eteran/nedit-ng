@@ -23,44 +23,16 @@ DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFl
 
 	// Set initial values
     if (document_) {
-        ui.editFontPrimary->setText(document->fontName_);
-        ui.editFontBold->setText(document->boldFontName_);
-        ui.editFontItalic->setText(document->italicFontName_);
-        ui.editFontBoldItalic->setText(document->boldItalicFontName_);
+        ui.fontPrimary->setCurrentFont(document->fontName_);
+        ui.fontBold->setCurrentFont(document->boldFontName_);
+        ui.fontItalic->setCurrentFont(document->italicFontName_);
+        ui.fontBoldItalic->setCurrentFont(document->boldItalicFontName_);
 	} else {
-		ui.editFontPrimary->setText(GetPrefFontName());
-		ui.editFontBold->setText(GetPrefBoldFontName());
-		ui.editFontItalic->setText(GetPrefItalicFontName());
-		ui.editFontBoldItalic->setText(GetPrefBoldItalicFontName());
+        ui.fontPrimary->setCurrentFont(GetPrefFontName());
+        ui.fontBold->setCurrentFont(GetPrefBoldFontName());
+        ui.fontItalic->setCurrentFont(GetPrefItalicFontName());
+        ui.fontBoldItalic->setCurrentFont(GetPrefBoldItalicFontName());
 	}	
-}
-
-/**
- * @brief DialogFonts::on_buttonPrimaryFont_clicked
- */
-void DialogFonts::on_buttonPrimaryFont_clicked() {
-	browseFont(ui.editFontPrimary);
-}
-
-/**
- * @brief DialogFonts::on_buttonFontItalic_clicked
- */
-void DialogFonts::on_buttonFontItalic_clicked() {
-	browseFont(ui.editFontItalic);
-}
-
-/**
- * @brief DialogFonts::on_buttonFontBold_clicked
- */
-void DialogFonts::on_buttonFontBold_clicked() {
-	browseFont(ui.editFontBold);
-}
-
-/**
- * @brief DialogFonts::on_buttonFontBoldItalic_clicked
- */
-void DialogFonts::on_buttonFontBoldItalic_clicked() {
-	browseFont(ui.editFontBoldItalic);
 }
 
 /**
@@ -68,23 +40,22 @@ void DialogFonts::on_buttonFontBoldItalic_clicked() {
  */
 void DialogFonts::on_buttonFill_clicked() {
 
-    QFont font;
-    font = Font::fromString(ui.editFontPrimary->text());
+    QFont font = ui.fontPrimary->currentFont();
 
     QFont boldFont(font);
     boldFont.setBold(true);
     boldFont.setItalic(false);
-    ui.editFontBold->setText(boldFont.toString());
+    ui.fontBold->setCurrentFont(boldFont);
 
     QFont italicFont(font);
     italicFont.setItalic(true);
     italicFont.setBold(false);
-    ui.editFontItalic->setText(italicFont.toString());
+    ui.fontItalic->setCurrentFont(italicFont);
 
     QFont boldItalicFont(font);
     boldItalicFont.setBold(true);
     boldItalicFont.setItalic(true);
-    ui.editFontBoldItalic->setText(boldItalicFont.toString());
+    ui.fontBoldItalic->setCurrentFont(boldItalicFont);
 }
 
 /**
@@ -115,10 +86,10 @@ void DialogFonts::on_buttonBox_clicked(QAbstractButton *button) {
  */
 void DialogFonts::updateFonts() {
 
-	QString fontName       = ui.editFontPrimary->text();
-	QString italicName     = ui.editFontItalic->text();
-	QString boldName       = ui.editFontBold->text();
-	QString boldItalicName = ui.editFontBoldItalic->text();
+    QString fontName       = ui.fontPrimary->currentFont().toString();
+    QString italicName     = ui.fontItalic->currentFont().toString();
+    QString boldName       = ui.fontBold->currentFont().toString();
+    QString boldItalicName = ui.fontBoldItalic->currentFont().toString();
 
     if (document_) {
         document_->action_Set_Fonts(fontName, italicName, boldName, boldItalicName);
@@ -131,40 +102,40 @@ void DialogFonts::updateFonts() {
 }
 
 /**
- * @brief DialogFonts::on_editFontPrimary_textChanged
+ * @brief DialogFonts::on_fontPrimary_textChanged
  * @param text
  */
-void DialogFonts::on_editFontPrimary_textChanged(const QString &text) {
-	Q_UNUSED(text);
+void DialogFonts::on_fontPrimary_currentFontChanged(const QFont &font) {
+    Q_UNUSED(font);
 
-	showFontStatus(ui.editFontItalic->text(),     ui.labelItalicError);
-	showFontStatus(ui.editFontBold->text(),       ui.labelBoldError);
-	showFontStatus(ui.editFontBoldItalic->text(), ui.labelBoldItalicError);
+    showFontStatus(ui.fontItalic->currentFont(),     ui.labelItalicError);
+    showFontStatus(ui.fontBold->currentFont(),       ui.labelBoldError);
+    showFontStatus(ui.fontBoldItalic->currentFont(), ui.labelBoldItalicError);
 
 }
 
 /**
- * @brief DialogFonts::on_editFontItalic_textChanged
+ * @brief DialogFonts::on_fontItalic_textChanged
  * @param text
  */
-void DialogFonts::on_editFontItalic_textChanged(const QString &text) {
-	showFontStatus(text, ui.labelItalicError);
+void DialogFonts::on_fontItalic_currentFontChanged(const QFont &font) {
+    showFontStatus(font, ui.labelItalicError);
 }
 
 /**
- * @brief DialogFonts::on_editFontBold_textChanged
+ * @brief DialogFonts::on_fontBold_textChanged
  * @param text
  */
-void DialogFonts::on_editFontBold_textChanged(const QString &text) {
-	showFontStatus(text, ui.labelBoldError);
+void DialogFonts::on_fontBold_currentFontChanged(const QFont &font) {
+    showFontStatus(font, ui.labelBoldError);
 }
 
 /**
- * @brief DialogFonts::on_editFontBoldItalic_textChanged
+ * @brief DialogFonts::on_fontBoldItalic_textChanged
  * @param text
  */
-void DialogFonts::on_editFontBoldItalic_textChanged(const QString &text) {
-	showFontStatus(text, ui.labelBoldItalicError);
+void DialogFonts::on_fontBoldItalic_currentFontChanged(const QFont &font) {
+    showFontStatus(font, ui.labelBoldItalicError);
 }
 
 /**
@@ -176,31 +147,25 @@ void DialogFonts::on_editFontBoldItalic_textChanged(const QString &text) {
  * @param errorLabel
  * @return
  */
-DialogFonts::FontStatus DialogFonts::showFontStatus(const QString &font, QLabel *errorLabel) {
+DialogFonts::FontStatus DialogFonts::showFontStatus(const QFont &font, QLabel *errorLabel) {
 
-	QString msg;
+    QString msg;
 
-	FontStatus status = checkFontStatus(font);
-	switch(status) {
-	case BAD_PRIMARY:
-		msg = tr("(font below may not match primary font)");
-		break;
-	case BAD_FONT:
-		msg = tr("(xxx font below is invalid xxx)");
-		break;
-	case BAD_SIZE:
-		msg = tr("(height of font below does not match primary)");
-		break;
-	case BAD_SPACING:
-		msg = tr("(spacing of font below does not match primary)");
-		break;
-	default:
-		msg = QString();
-		break;
-	}
+    FontStatus status = checkFontStatus(font);
+    switch(status) {
+    case BAD_SIZE:
+        msg = tr("(height of font below does not match primary)");
+        break;
+    case BAD_SPACING:
+        msg = tr("(spacing of font below does not match primary)");
+        break;
+    default:
+        msg = QString();
+        break;
+    }
 
-	errorLabel->setText(msg);
-	return status;
+    errorLabel->setText(msg);
+    return status;
 }
 
 
@@ -212,55 +177,29 @@ DialogFonts::FontStatus DialogFonts::showFontStatus(const QString &font, QLabel 
  * @param font
  * @return
  */
-DialogFonts::FontStatus DialogFonts::checkFontStatus(const QString &font) {
+DialogFonts::FontStatus DialogFonts::checkFontStatus(const QFont &font) {
 
-	QString testName = font;
-	if (testName.isEmpty()) {
-		return BAD_FONT;
-	}
-
-    QFont f = Font::fromString(testName);
-    QFontMetrics fm(f);
+    QFontMetrics fm(font);
 
     const int testWidth  = fm.width(QLatin1Char('i')); // NOTE(eteran): min-width?
     const int testHeight = fm.lineSpacing();
 
-
-	// Get width and height of the primary font 
-	QString primaryName = ui.editFontPrimary->text();
-	if (primaryName.isEmpty()) {
-		return BAD_FONT;
-    }
-
-    QFont primaryFont = Font::fromString(primaryName);	
+    // Get width and height of the primary font
+    QFont primaryFont = ui.fontPrimary->currentFont();
     QFontMetrics primaryFm(primaryFont);
 
     const int primaryWidth  = primaryFm.width(QLatin1Char('i')); // NOTE(eteran): min-width?
     const int primaryHeight = primaryFm.lineSpacing();
 
-	// Compare font information 
-	if (testWidth != primaryWidth) {
-		return BAD_SPACING;
-	}
-		
-	if (testHeight != primaryHeight) {
-		return BAD_SIZE;
-	}
-
-	return GOOD_FONT;
-}
-
-/*
-** Put up a font selector panel to set the font name in the text widget "fontTextW"
-*/
-void DialogFonts::browseFont(QLineEdit *lineEdit) {
-
-    bool ok;
-    auto currFont = Font::fromString(lineEdit->text());
-    QFont newFont = QFontDialog::getFont(&ok, currFont, this);
-
-    if(ok) {
-        newFont.setStyleName(QString());
-        lineEdit->setText(newFont.toString());
+    // Compare font information
+    if (testWidth != primaryWidth) {
+        return BAD_SPACING;
     }
+
+    if (testHeight != primaryHeight) {
+        return BAD_SIZE;
+    }
+
+    return GOOD_FONT;
 }
+
