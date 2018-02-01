@@ -10,6 +10,7 @@
 #include "preferences.h"
 #include "Regex.h"
 #include "userCmds.h"
+#include "Util/algorithm.h"
 #include <gsl/gsl_util>
 
 #include <algorithm>

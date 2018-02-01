@@ -5,6 +5,7 @@
 #include "TextBuffer.h"
 #include "Util/utils.h"
 #include "Util/string_view.h"
+#include "Util/algorithm.h"
 #include <gsl/gsl_util>
 #include <memory>
 
