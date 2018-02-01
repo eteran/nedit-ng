@@ -30,9 +30,9 @@ private Q_SLOTS:
     void on_fontBoldItalic_currentFontChanged(const QFont &font);
 
 private:
-	void updateFonts();
     FontStatus checkFontStatus(const QFont &font);
     void showFontStatus(const QFont &font, QLabel *errorLabel);
+    void updateFonts();
 
 private:
 	Ui::DialogFonts ui;

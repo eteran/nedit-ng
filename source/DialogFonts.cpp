@@ -1,10 +1,7 @@
 
 #include "DialogFonts.h"
 #include "DocumentWidget.h"
-#include "Font.h"
 #include "preferences.h"
-
-#include <QFontDialog>
 
 /**
  * @brief DialogFonts::DialogFonts

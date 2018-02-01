@@ -16,12 +16,6 @@ FixedFontSelector::FixedFontSelector(QWidget *parent) : QWidget(parent) {
 }
 
 /**
- * @brief FixedFontSelector::~FixedFontSelector
- */
-FixedFontSelector::~FixedFontSelector() {
-}
-
-/**
  * @brief FixedFontSelector::currentFont
  * @return
  */
