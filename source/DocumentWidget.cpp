@@ -580,9 +580,9 @@ void DocumentWidget::RefreshTabState() {
 
     if(auto w = MainWindow::fromDocument(this)) {
         QTabWidget *tabWidget = w->tabWidget();
-		int index = tabWidget->indexOf(this);
+        int index = tabWidget->indexOf(this);
 
-		QString labelString;
+        QString labelString;
 
         static const auto saveIcon = QIcon::fromTheme(QLatin1String("document-save"));
         if(!saveIcon.isNull()) {
@@ -590,11 +590,10 @@ void DocumentWidget::RefreshTabState() {
             labelString = filename_;
         } else {
             /* Set tab label to document's filename. Position of
-               "*" (modified) will change per label alignment setting */
+            "*" (modified) will change per label alignment setting */
             QStyle *const style = tabWidget->tabBar()->style();
             const int alignment = style->styleHint(QStyle::SH_TabBar_Alignment);
 
-            QString labelString;
             if (alignment != Qt::AlignRight) {
                 labelString = tr("%1%2").arg(fileChanged_ ? tr("*") : QString(), filename_);
             } else {
@@ -602,16 +601,16 @@ void DocumentWidget::RefreshTabState() {
             }
         }
 
-		QString tipString;
-		if (GetPrefShowPathInWindowsMenu() && filenameSet_) {
+        QString tipString;
+        if (GetPrefShowPathInWindowsMenu() && filenameSet_) {
             tipString = tr("%1 - %2").arg(labelString, path_);
-		} else {
-			tipString = labelString;
-		}
+        } else {
+            tipString = labelString;
+        }
 
         tabWidget->setTabText(index, labelString);
         tabWidget->setTabToolTip(index, tipString);
-	}
+    }
 }
 
 /*
