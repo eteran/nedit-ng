@@ -7,6 +7,7 @@ set(CMAKE_AUTORCC ON)
 
 find_package(Qt5 5.4.0 REQUIRED Core Xml)
 find_package(X11 REQUIRED)
+find_package(Boost 1.35 REQUIRED)
 
 add_executable(nedit-import
 	import.cpp
@@ -18,6 +19,11 @@ target_link_libraries(nedit-import LINK_PUBLIC
 	Settings
 	Interpreter
 	X11
+)
+
+target_include_directories (nedit-ng PRIVATE
+	${Boost_INCLUDE_DIR}
+	${X11_INCLUDE_DIR}
 )
 
 set_property(TARGET nedit-import PROPERTY CXX_STANDARD 14)

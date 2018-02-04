@@ -28,6 +28,8 @@
 #include <array>
 #include <boost/optional.hpp>
 
+#include <sys/stat.h>
+
 class HighlightData;
 class HighlightPattern;
 class MainWindow;
