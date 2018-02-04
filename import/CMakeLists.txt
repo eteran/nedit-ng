@@ -21,7 +21,7 @@ target_link_libraries(nedit-import LINK_PUBLIC
 	X11
 )
 
-target_include_directories (nedit-ng PRIVATE
+target_include_directories (nedit-import PRIVATE
 	${Boost_INCLUDE_DIR}
 	${X11_INCLUDE_DIR}
 )
