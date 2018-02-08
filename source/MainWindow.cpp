@@ -325,6 +325,9 @@ void MainWindow::setupGlobalPrefenceDefaults() {
     no_signals(ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows)->setChecked(GetPrefGlobalTabNavigate());
     no_signals(ui.action_Default_Tab_Sort_Tabs_Alphabetically)->setChecked(GetPrefSortTabs());
 
+    // enable moving tabs if they aren't sortable
+    tabWidget()->tabBar()->setMovable(!GetPrefSortTabs());
+
     no_signals(ui.tabWidget)->tabBar()->setVisible(GetPrefTabBar());
     ui.tabWidget->setTabBarAutoHide(GetPrefTabBarHideOne());
 
@@ -4184,6 +4187,11 @@ void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool sta
     if (state) {
         for(MainWindow *window : windows) {
             window->SortTabBar();
+            window->tabWidget()->tabBar()->setMovable(false);
+        }
+    } else {
+        for(MainWindow *window : windows) {
+            window->tabWidget()->tabBar()->setMovable(true);
         }
     }
 }

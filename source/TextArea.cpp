@@ -3316,13 +3316,13 @@ void TextArea::drawString(QPainter *painter, int style, int64_t x, int y, int64_
             if(style & PRIMARY_MASK) {
                 bground = palette().color(QPalette::Highlight);
 
-            // NOTE(eteran): enabling this makes working with darker themes a lot nicer
-            // basically what it does is make it so highlights are disabled inside of
-            // selections. Giving the user control over the foreground color inside
-            // a highlight selection.
-            if(!P_colorizeHighlightedText) {
-                fground = palette().color(QPalette::HighlightedText);
-            }
+                // NOTE(eteran): enabling this makes working with darker themes a lot nicer
+                // basically what it does is make it so highlights are disabled inside of
+                // selections. Giving the user control over the foreground color inside
+                // a highlight selection.
+                if(!P_colorizeHighlightedText) {
+                    fground = palette().color(QPalette::HighlightedText);
+                }
 
             } else if(style & HIGHLIGHT_MASK) {
                 bground = highlightBGPixel_;
