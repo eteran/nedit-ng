@@ -59,7 +59,6 @@ int GetPrefShowPathInWindowsMenu();
 int GetPrefSmartTags();
 int GetPrefSortOpenPrevMenu();
 int GetPrefStatsLine();
-int GetPrefStdOpenDialog();
 int GetPrefStickyCaseSenseBtn();
 int GetPrefTabBarHideOne();
 int GetPrefTabDist(size_t langMode);

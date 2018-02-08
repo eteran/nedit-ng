@@ -153,7 +153,6 @@ void Settings::loadPreferences() {
     boldItalicHighlightFont           = settings.value(tr("nedit.boldItalicHighlightFont"), 	      DEFAULT_BOLD_ITALIC_FONT).toString();
     shell                             = settings.value(tr("nedit.shell"),						      QLatin1String("DEFAULT")).toString();
     geometry                          = settings.value(tr("nedit.geometry"),					      QString()).toString();
-    stdOpenDialog                     = settings.value(tr("nedit.stdOpenDialog"),				      false).toBool();
     tagFile                           = settings.value(tr("nedit.tagFile"), 					      QString()).toString();
     wordDelimiters                    = settings.value(tr("nedit.wordDelimiters"),  			      DEFAULT_DELIMETERS).toString();
     serverName                        = settings.value(tr("nedit.serverName"),  				      QString()).toString();
@@ -243,7 +242,6 @@ void Settings::importSettings(const QString &filename) {
     boldItalicHighlightFont           = settings.value(tr("nedit.boldItalicHighlightFont"), 	      boldItalicHighlightFont).toString();
     shell                             = settings.value(tr("nedit.shell"),						      shell).toString();
     geometry                          = settings.value(tr("nedit.geometry"),					      geometry).toString();
-    stdOpenDialog                     = settings.value(tr("nedit.stdOpenDialog"),				      stdOpenDialog).toBool();
     tagFile                           = settings.value(tr("nedit.tagFile"), 					      tagFile).toString();
     wordDelimiters                    = settings.value(tr("nedit.wordDelimiters"),  			      wordDelimiters).toString();
     serverName                        = settings.value(tr("nedit.serverName"),  				      serverName).toString();
@@ -328,7 +326,6 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.boldItalicHighlightFont"), boldItalicHighlightFont);
     settings.setValue(tr("nedit.shell"), shell);
     settings.setValue(tr("nedit.geometry"), geometry);
-    settings.setValue(tr("nedit.stdOpenDialog"), stdOpenDialog);
     settings.setValue(tr("nedit.tagFile"), tagFile);
     settings.setValue(tr("nedit.wordDelimiters"), wordDelimiters);
     settings.setValue(tr("nedit.serverName"), serverName);

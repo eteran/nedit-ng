@@ -492,11 +492,6 @@ bool GetPrefFindReplaceUsesSelection() {
     return g_Settings.findReplaceUsesSelection;
 }
 
-// Advanced
-int GetPrefStdOpenDialog() {
-    return g_Settings.stdOpenDialog;
-}
-
 void SetPrefRows(int nRows) {
     if(g_Settings.textRows != nRows) {
         PrefsHaveChanged = true;

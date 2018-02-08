@@ -471,7 +471,6 @@ int main(int argc, char *argv[]) {
     settings.focusOnRaise                      = false;
     settings.forceOSConversion                 = true;
     settings.honorSymlinks                     = true;
-    settings.stdOpenDialog                     = false;
     settings.stickyCaseSenseButton             = true;
     settings.typingHidesPointer                = false;
     settings.undoModifiesSelection             = true;
