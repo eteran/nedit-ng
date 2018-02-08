@@ -354,6 +354,9 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, QFont fontStruc
 	fixedFontWidth_     = fi.fixedPitch() ? fm.maxWidth() : -1;
     calltip_.ID         = 0;
 
+    // this will set the rect_ correctly
+    rect_.setLeft(P_marginWidth);
+
     /* Attach the callback to the text buffer for receiving modification
      * information */
 	if (buffer) {
