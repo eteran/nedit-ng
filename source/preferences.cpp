@@ -493,11 +493,6 @@ bool GetPrefFindReplaceUsesSelection() {
 }
 
 // Advanced
-int GetPrefMapDelete() {
-    return g_Settings.remapDeleteKey;
-}
-
-// Advanced
 int GetPrefStdOpenDialog() {
     return g_Settings.stdOpenDialog;
 }

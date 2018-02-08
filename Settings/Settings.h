@@ -106,7 +106,6 @@ public:
     bool focusOnRaise;
     bool forceOSConversion;
     bool honorSymlinks;
-    bool remapDeleteKey; // TODO(eteran): deprecated, remove this
     bool stdOpenDialog;  // TODO(eteran): deprecated, remove this
     bool stickyCaseSenseButton;
     bool typingHidesPointer;

@@ -52,7 +52,6 @@ int GetPrefGlobalTabNavigate();
 int GetPrefInsertTabs();
 int GetPrefISearchLine();
 int GetPrefLineNums();
-int GetPrefMapDelete();
 int GetPrefMatchSyntaxBased();
 int GetPrefMaxPrevOpenFiles();
 int GetPrefRows();
