@@ -5051,9 +5051,6 @@ void MainWindow::closeEvent(QCloseEvent *event) {
         } else {
             int resp = QMessageBox::Close;
             if (GetPrefWarnExit()) {
-                /* TODO(eteran): 2.0 this is probably better off with
-                 * "Ok" "Cancel", but we are being consistant with the original
-                 * UI for now */
                 resp = QMessageBox::question(this,
                                              tr("Close Window"),
                                              tr("Close ALL documents in this window?"),

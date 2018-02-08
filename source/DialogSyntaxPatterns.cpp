@@ -112,27 +112,23 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 			}
         } else if (*activePatternSet != *currentPatternSet) {
 
-            // TODO(eteran): 2.0, use QMessageBox::Apply | QMessageBox::Discard | QMessageBox::Cancel
-			QMessageBox messageBox(this);
-			messageBox.setWindowTitle(tr("Language Mode"));
-			messageBox.setIcon(QMessageBox::Warning);
-			messageBox.setText(tr("Apply changes for language mode %1?").arg(previousLanguage_));
-			QPushButton *buttonApply   = messageBox.addButton(tr("Apply Changes"), QMessageBox::AcceptRole);
-            QPushButton *buttonDiscard = messageBox.addButton(tr("Discard Changes"), QMessageBox::DestructiveRole);
-			QPushButton *buttonCancel  = messageBox.addButton(QMessageBox::Cancel);
-			Q_UNUSED(buttonDiscard);
+            int resp = QMessageBox::warning(
+                        this,
+                        tr("Language Mode"),
+                        tr("Apply changes for language mode %1?").arg(previousLanguage_),
+                        QMessageBox::Apply | QMessageBox::Discard | QMessageBox::Cancel);
 
-			messageBox.exec();
-			if (messageBox.clickedButton() == buttonCancel) {
-
-				// reselect the old item
+            switch(resp) {
+            case QMessageBox::Cancel:
+                // reselect the old item
                 if(auto blocker = no_signals(ui.comboLanguageMode)) {
                     SetLangModeMenu(previousLanguage_);
                 }
-				return;
-			} else if (messageBox.clickedButton() == buttonApply) {
-				updatePatternSet();
-			}
+                return;
+            case QMessageBox::Apply:
+                updatePatternSet();
+                break;
+            }
 		}
 	}
 
