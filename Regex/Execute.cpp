@@ -432,7 +432,7 @@ int match(uint8_t *prog, int *branch_index_param) {
                      /* Check to see if the current character is not a delimiter
                         and the preceding character is. */
             {
-                int prev_is_delim;
+                bool prev_is_delim;
                 if (eContext.Reg_Input == eContext.Start_Of_String) {
                     prev_is_delim = eContext.Prev_Is_Delim;
                 } else {
@@ -456,7 +456,7 @@ int match(uint8_t *prog, int *branch_index_param) {
                      /* Check to see if the current character is a delimiter
                     and the preceding character is not. */
             {
-                int prev_is_delim;
+                bool prev_is_delim;
                 if (eContext.Reg_Input == eContext.Start_Of_String) {
                     prev_is_delim = eContext.Prev_Is_Delim;
                 } else {
@@ -1134,8 +1134,8 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_c
 
     eContext.Prev_Is_BOL   = (prev_char == '\n') || (prev_char == -1);
     eContext.Succ_Is_EOL   = (succ_char == '\n') || (succ_char == -1);
-    eContext.Prev_Is_Delim = eContext.Current_Delimiters[static_cast<uint8_t>(prev_char)];
-    eContext.Succ_Is_Delim = eContext.Current_Delimiters[static_cast<uint8_t>(succ_char)];
+    eContext.Prev_Is_Delim = (prev_char == -1) || eContext.Current_Delimiters[static_cast<uint8_t>(prev_char)];
+    eContext.Succ_Is_Delim = (succ_char == -1) || eContext.Current_Delimiters[static_cast<uint8_t>(succ_char)];
 
     pContext.Total_Paren = re->program[1];
     pContext.Num_Braces  = re->program[2];
