@@ -6,7 +6,6 @@
 #include "SearchType.h"
 #include "ShowMatchingStyle.h"
 #include "TruncSubstitution.h"
-#include "VirtKeyOverride.h"
 #include "WrapMode.h"
 #include "WrapStyle.h"
 
@@ -89,7 +88,6 @@ QString LanguageModeName(size_t mode);
 SearchType GetPrefSearch();
 ShowMatchingStyle GetPrefShowMatching();
 TruncSubstitution GetPrefTruncSubstitution();
-VirtKeyOverride GetPrefOverrideVirtKeyBindings();
 WrapMode GetPrefSearchWraps();
 WrapStyle GetPrefWrap(size_t langMode);
 

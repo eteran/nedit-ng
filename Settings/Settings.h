@@ -6,7 +6,6 @@
 #include "IndentStyle.h"
 #include "ShowMatchingStyle.h"
 #include "TruncSubstitution.h"
-#include "VirtKeyOverride.h"
 #include "SearchType.h"
 #include "ReplaceAllDefaultScope.h"
 
@@ -114,7 +113,6 @@ public:
     bool undoModifiesSelection;
     int autoScrollVPadding;
     int maxPrevOpenFiles;    
-    VirtKeyOverride overrideDefaultVirtualKeyBindings; // TODO(eteran): deprecated, remove this
     TruncSubstitution truncSubstitution;
     QString backlightCharTypes;
     QString tagFile;

@@ -16,7 +16,6 @@ add_library (Settings
 	Settings.h
 	ShowMatchingStyle.h
 	TruncSubstitution.h
-	VirtKeyOverride.h
 	WrapStyle.h
 	ReplaceAllDefaultScope.h
 )

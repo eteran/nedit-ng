@@ -105,12 +105,11 @@ void Settings::loadPreferences() {
     smartIndentInit       = settings.value(tr("nedit.smartIndentInit"),       loadResource(QLatin1String("res/DefaultSmartIndentInit.txt"))).toString();
     smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), loadResource(QLatin1String("res/DefaultSmartIndentInitCommon.txt"))).toString();
 
-    autoWrap                          = readEnum(settings, tr("nedit.autoWrap"),                          WrapStyle::Continuous);
-    autoIndent                        = readEnum(settings, tr("nedit.autoIndent"),                        IndentStyle::Auto);
-    showMatching                      = readEnum(settings, tr("nedit.showMatching"),                      ShowMatchingStyle::Delimiter);
-    searchMethod                      = readEnum(settings, tr("nedit.searchMethod"),                      SearchType::Literal);
-    overrideDefaultVirtualKeyBindings = readEnum(settings, tr("nedit.overrideDefaultVirtualKeyBindings"), VirtKeyOverride::VIRT_KEY_OVERRIDE_AUTO);
-    truncSubstitution                 = readEnum(settings, tr("nedit.truncSubstitution"),                 TruncSubstitution::Fail);
+    autoWrap              = readEnum(settings, tr("nedit.autoWrap"),          WrapStyle::Continuous);
+    autoIndent            = readEnum(settings, tr("nedit.autoIndent"),        IndentStyle::Auto);
+    showMatching          = readEnum(settings, tr("nedit.showMatching"),      ShowMatchingStyle::Delimiter);
+    searchMethod          = readEnum(settings, tr("nedit.searchMethod"),      SearchType::Literal);
+    truncSubstitution     = readEnum(settings, tr("nedit.truncSubstitution"), TruncSubstitution::Fail);
 
     wrapMargin            = settings.value(tr("nedit.wrapMargin"),            0).toInt();
     autoSave              = settings.value(tr("nedit.autoSave"),              true).toBool();
@@ -197,12 +196,11 @@ void Settings::importSettings(const QString &filename) {
     smartIndentInit       = settings.value(tr("nedit.smartIndentInit"),       smartIndentInit).toString();
     smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), smartIndentInitCommon).toString();
 
-    autoWrap                          = readEnum(settings, tr("nedit.autoWrap"),                          autoWrap);
-    autoIndent                        = readEnum(settings, tr("nedit.autoIndent"),                        autoIndent);
-    showMatching                      = readEnum(settings, tr("nedit.showMatching"),                      showMatching);
-    searchMethod                      = readEnum(settings, tr("nedit.searchMethod"),                      searchMethod);
-    overrideDefaultVirtualKeyBindings = readEnum(settings, tr("nedit.overrideDefaultVirtualKeyBindings"), overrideDefaultVirtualKeyBindings);
-    truncSubstitution                 = readEnum(settings, tr("nedit.truncSubstitution"),                 truncSubstitution);
+    autoWrap              = readEnum(settings, tr("nedit.autoWrap"),          autoWrap);
+    autoIndent            = readEnum(settings, tr("nedit.autoIndent"),        autoIndent);
+    showMatching          = readEnum(settings, tr("nedit.showMatching"),      showMatching);
+    searchMethod          = readEnum(settings, tr("nedit.searchMethod"),      searchMethod);
+    truncSubstitution     = readEnum(settings, tr("nedit.truncSubstitution"), truncSubstitution);
 
     wrapMargin            = settings.value(tr("nedit.wrapMargin"),            wrapMargin).toInt();
     autoSave              = settings.value(tr("nedit.autoSave"),              autoSave).toBool();
@@ -288,7 +286,6 @@ bool Settings::savePreferences() {
     writeEnum(settings, tr("nedit.autoIndent"),                        autoIndent);
     writeEnum(settings, tr("nedit.showMatching"),                      showMatching);
     writeEnum(settings, tr("nedit.searchMethod"),                      searchMethod);
-    writeEnum(settings, tr("nedit.overrideDefaultVirtualKeyBindings"), overrideDefaultVirtualKeyBindings);
     writeEnum(settings, tr("nedit.truncSubstitution"),                 truncSubstitution);
 
     settings.setValue(tr("nedit.wrapMargin"), wrapMargin);

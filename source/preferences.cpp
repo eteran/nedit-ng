@@ -841,10 +841,6 @@ bool GetPrefHonorSymlinks() {
     return g_Settings.honorSymlinks;
 }
 
-VirtKeyOverride GetPrefOverrideVirtKeyBindings() {
-    return g_Settings.overrideDefaultVirtualKeyBindings;
-}
-
 TruncSubstitution GetPrefTruncSubstitution() {
     return g_Settings.truncSubstitution;
 }

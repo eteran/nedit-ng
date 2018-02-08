@@ -478,7 +478,6 @@ int main(int argc, char *argv[]) {
     settings.undoModifiesSelection             = true;
     settings.autoScrollVPadding                = 4;
     settings.maxPrevOpenFiles                  = 30;
-    settings.overrideDefaultVirtualKeyBindings = VirtKeyOverride::VIRT_KEY_OVERRIDE_AUTO;
     settings.truncSubstitution                 = TruncSubstitution::Fail;
     settings.backlightCharTypes                = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
     settings.tagFile                           = QString();
