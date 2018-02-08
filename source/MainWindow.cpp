@@ -1911,7 +1911,9 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
     //       `gcc -print-prog-name=cc1plus` -v
     //       `gcc -print-prog-name=cc1` -v
     //       etc...
-    static auto includeDir = QLatin1String("/usr/include/");
+    static QLatin1String includeDirs[] = {
+        QLatin1String("/usr/include/")
+    };
 
     /* get the string, or skip if we can't get the selection data, or it's
        obviously not a file name */
@@ -1923,77 +1925,79 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
     static QRegularExpression reSystem(QLatin1String("#include\\s*<([^>]+)>"));
     static QRegularExpression reLocal(QLatin1String("#include\\s*\"([^\"]+)\""));
 
-    QString nameText = text;
+    for(QLatin1String includeDir : includeDirs) {
+        QString nameText = text;
 
-    // extract name from #include syntax
-	// TODO(eteran): 2.0, support import/include syntax from multiple languages
-    QRegularExpressionMatch match = reLocal.match(nameText);
-    if(match.hasMatch()) {
-        nameText = match.captured(1);
-    } else {
-        match = reSystem.match(nameText);
+        // extract name from #include syntax
+        // TODO(eteran): 2.0, support import/include syntax from multiple languages
+        QRegularExpressionMatch match = reLocal.match(nameText);
         if(match.hasMatch()) {
-            nameText = tr("%1%2").arg(includeDir, match.captured(1));
-        }
-    }
-
-    // strip whitespace from name
-    nameText.remove(QLatin1Char(' '));
-    nameText.remove(QLatin1Char('\t'));
-    nameText.remove(QLatin1Char('\n'));
-
-    // Process ~ characters in name
-    nameText = ExpandTildeEx(nameText);
-
-    // If path name is relative, make it refer to current window's directory
-    if (!QFileInfo(nameText).isAbsolute()) {
-        nameText = tr("%1%2").arg(document->path_, nameText);
-    }
-
-#if !defined(DONT_HAVE_GLOB)
-    // Expand wildcards in file name.
-    {
-        glob_t globbuf;
-        glob(nameText.toUtf8().data(), GLOB_NOCHECK, nullptr, &globbuf);
-
-        for (size_t i = 0; i < globbuf.gl_pathc; i++) {
-            QString pathname;
-            QString filename;
-            if (!ParseFilenameEx(QString::fromUtf8(globbuf.gl_pathv[i]), &filename, &pathname) != 0) {
-                QApplication::beep();
-            } else {
-                DocumentWidget::EditExistingFileEx(
-                            GetPrefOpenInTab() ? document : nullptr,
-                            filename,
-                            pathname,
-                            0,
-                            QString(),
-                            false,
-                            QString(),
-                            GetPrefOpenInTab(),
-                            false);
+            nameText = match.captured(1);
+        } else {
+            match = reSystem.match(nameText);
+            if(match.hasMatch()) {
+                nameText = tr("%1%2").arg(includeDir, match.captured(1));
             }
         }
-        globfree(&globbuf);
+
+        // strip whitespace from name
+        nameText.remove(QLatin1Char(' '));
+        nameText.remove(QLatin1Char('\t'));
+        nameText.remove(QLatin1Char('\n'));
+
+        // Process ~ characters in name
+        nameText = ExpandTildeEx(nameText);
+
+        // If path name is relative, make it refer to current window's directory
+        if (!QFileInfo(nameText).isAbsolute()) {
+            nameText = tr("%1%2").arg(document->path_, nameText);
+        }
+
+    #if !defined(DONT_HAVE_GLOB)
+        // Expand wildcards in file name.
+        {
+            glob_t globbuf;
+            glob(nameText.toUtf8().data(), GLOB_NOCHECK, nullptr, &globbuf);
+
+            for (size_t i = 0; i < globbuf.gl_pathc; i++) {
+                QString pathname;
+                QString filename;
+                if (!ParseFilenameEx(QString::fromUtf8(globbuf.gl_pathv[i]), &filename, &pathname) != 0) {
+                    QApplication::beep();
+                } else {
+                    DocumentWidget::EditExistingFileEx(
+                                GetPrefOpenInTab() ? document : nullptr,
+                                filename,
+                                pathname,
+                                0,
+                                QString(),
+                                false,
+                                QString(),
+                                GetPrefOpenInTab(),
+                                false);
+                }
+            }
+            globfree(&globbuf);
+        }
+    #else
+        QString pathname;
+        QString filename;
+        if (ParseFilenameEx(nameText, &filename, &pathname) != 0) {
+            QApplication::beep();
+        } else {
+            DocumentWidget::EditExistingFileEx(
+                        GetPrefOpenInTab() ? document : nullptr,
+                        filename,
+                        pathname,
+                        0,
+                        QString(),
+                        false,
+                        QString(),
+                        GetPrefOpenInTab(),
+                        false);
+        }
+    #endif
     }
-#else
-	QString pathname;
-	QString filename;
-	if (ParseFilenameEx(nameText, &filename, &pathname) != 0) {
-		QApplication::beep();
-	} else {
-		DocumentWidget::EditExistingFileEx(
-                    GetPrefOpenInTab() ? document : nullptr,
-		            filename,
-		            pathname,
-		            0,
-		            QString(),
-		            false,
-		            QString(),
-		            GetPrefOpenInTab(),
-		            false);
-	}
-#endif
 
     MainWindow::CheckCloseDimEx();
 }

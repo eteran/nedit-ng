@@ -7115,7 +7115,7 @@ void TextArea::ExchangeSelections() {
 
     if (!buffer_->BufGetSecondary().selected) {
 		return;
-	}
+    }
 
     // TODO(eteran): implement ExchangeSelections
     qWarning("ExchangeSelections not implemented");
@@ -7131,7 +7131,7 @@ void TextArea::ExchangeSelections() {
 	**    requested property atom in  inside of an XtConvertSelectionProc.
 	**    It's simply not worth duplicating all of Xt's selection handling
 	**    routines for a little performance, and this would make the code
-	**    incompatible with Motif text widgets */
+    **    incompatible with Motif text widgets */
 }
 
 /*
