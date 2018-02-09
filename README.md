@@ -58,24 +58,12 @@ Dependency                                  | Version Required
   active developer community, making it significantly easier for contributions
   to be made by the open source community.
 
-### Some things which couldn't be faithfully ported :-(
-
-There aren't many of them, but some things just can't be done in Qt to my 
-knowlege.
-
-* Secondary selection stuff. NEdit (apparently) has some features involing 
-  X11's secondary selection system. I honestly had no idea these existed before
-  starting this project. And it seems that secondary selections are not a 
-  terribly popular concept. Qt has no first class support for this. So I am a 
-  bit torn about how much effort should be put into trying to reproduce these 
-  features manually.
-
 Version 1.0's goal is to be a nearly 1:1 port of the original NEdit. Once that 
 is complete some post 1.0 goals are already planned:
 
 * Cross platform
 * Internationalization!
-* Python scripting support in addition to the built-in macro system
+* Python/LUA scripting support in addition to the built-in macro system
 * An improved preferences system
 * Extensibility though plugins
 * Sessions, meaning that you can save and restore an edit session (such as 
