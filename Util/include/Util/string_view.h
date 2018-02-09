@@ -9,6 +9,7 @@
 #include <iosfwd>
 #include <iterator>
 #include <stdexcept>
+#include <functional>
 #include <string>
 
 namespace view {
@@ -559,9 +560,6 @@ struct hash_constants<uint32_t>{
 }
 
 namespace std {
-
-template <class Key>
-struct hash;
 
 template <>
 struct hash<view::string_view> {
