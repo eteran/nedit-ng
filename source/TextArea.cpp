@@ -1009,64 +1009,64 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
         pageRightAP(); // page-right()
         return;
 #endif
-    } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Up) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::AltModifier | Qt::ShiftModifier))) {
         processShiftUpAP(RectFlag); // process-shift-up(rect)
         return;
-    } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::MetaModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Up) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::MetaModifier | Qt::ShiftModifier))) {
         processShiftUpAP(RectFlag); // process-shift-up(rect)
         return;
-    } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Down) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::AltModifier | Qt::ShiftModifier))) {
         processShiftDownAP(RectFlag); // process-shift-down(rect)
         return;
-    } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::MetaModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Down) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::MetaModifier | Qt::ShiftModifier))) {
         processShiftDownAP(RectFlag); // process-shift-down(rect)
         return;
-    } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Up) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier))) {
         backwardParagraphAP(ExtendFlag | RectFlag); // backward-paragraph(extent, rect)
         return;
-    } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Up) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier))) {
         backwardParagraphAP(ExtendFlag | RectFlag); // backward-paragraph(extend, rect)
         return;
-    } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::ControlModifier  | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Up) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ControlModifier  | Qt::ShiftModifier))) {
         backwardParagraphAP(ExtendFlag); // backward-paragraph(extend)
         return;
-    } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Down) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier))) {
         forwardParagraphAP(ExtendFlag | RectFlag); // forward-paragraph(extent, rect)
         return;
-    } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Down) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier))) {
         forwardParagraphAP(ExtendFlag | RectFlag); // forward-paragraph(extend, rect)
         return;
-    } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::ControlModifier  | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Down) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ControlModifier  | Qt::ShiftModifier))) {
         forwardParagraphAP(ExtendFlag); // forward-paragraph(extend)
         return;
-    } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::ControlModifier  | Qt::AltModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Right) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ControlModifier  | Qt::AltModifier | Qt::ShiftModifier))) {
         forwardWordAP(ExtendFlag | RectFlag); // forward-word(extend, rect)
         return;
-    } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::ControlModifier  | Qt::MetaModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Right) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ControlModifier  | Qt::MetaModifier | Qt::ShiftModifier))) {
         forwardWordAP(ExtendFlag | RectFlag); // forward-word(extend, rect)
         return;
-    } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Right) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::AltModifier | Qt::ShiftModifier))) {
         keySelectAP(RightFlag | RectFlag); // key-select(right, rect)
         return;
-    } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::MetaModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Right) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::MetaModifier | Qt::ShiftModifier))) {
         keySelectAP(RightFlag | RectFlag); // key-select(right, rect)
         return;
-    } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Right) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ControlModifier | Qt::ShiftModifier))) {
         forwardWordAP(ExtendFlag); // forward-word(extend)
         return;
-    } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::ControlModifier  | Qt::AltModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Left) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ControlModifier  | Qt::AltModifier | Qt::ShiftModifier))) {
         backwardWordAP(ExtendFlag | RectFlag); // backward-word(extend, rect)
         return;
-    } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::ControlModifier  | Qt::MetaModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Left) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ControlModifier  | Qt::MetaModifier | Qt::ShiftModifier))) {
         backwardWordAP(ExtendFlag | RectFlag); // backward-word(extend, rect)
         return;
-    } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Left) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::AltModifier | Qt::ShiftModifier))) {
         keySelectAP(LeftFlag | RectFlag); // key-select(left, rect)
         return;
-    } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::MetaModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Left) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::MetaModifier | Qt::ShiftModifier))) {
         keySelectAP(LeftFlag | RectFlag); // key-select(left, rect)
         return;
-    } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Left) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ControlModifier | Qt::ShiftModifier))) {
         backwardWordAP(ExtendFlag); // backward-word(extend)
         return;
     } else if ((event->key() == Qt::Key_End) && (event->modifiers() == (Qt::AltModifier | Qt::ShiftModifier))) {
@@ -1144,16 +1144,16 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
     } else if ((event->key() == Qt::Key_Tab) && (event->modifiers() == (Qt::NoModifier))) {
         processTabAP(); // process-tab()
         return;
-    } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::NoModifier))) {
+    } else if ((event->key() == Qt::Key_Right) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::NoModifier))) {
         forwardCharacterAP(); // forward-character()
         return;
-    } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::NoModifier))) {
+    } else if ((event->key() == Qt::Key_Left) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::NoModifier))) {
         backwardCharacterAP(); // backward-character()
         return;
-    } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::NoModifier))) {
+    } else if ((event->key() == Qt::Key_Up) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::NoModifier))) {
         processUpAP(); // process-up()
         return;
-    } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::NoModifier))) {
+    } else if ((event->key() == Qt::Key_Down) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::NoModifier))) {
         processDownAP(); // process-down()
         return;
     } else if ((event->key() == Qt::Key_Return) && (event->modifiers() == (Qt::NoModifier))) {
@@ -1201,16 +1201,16 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
     } else if ((event->key() == Qt::Key_Insert) && (event->modifiers() == (Qt::NoModifier))) {
         toggleOverstrikeAP(); // toggle-overstrike()
         return;
-    } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Up) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ShiftModifier))) {
         processShiftUpAP(); // process-shift-up()
         return;
-    } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Down) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ShiftModifier))) {
         processShiftDownAP(); // process-shift-down()
         return;
-    } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Left) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ShiftModifier))) {
         keySelectAP(LeftFlag); // key-select(left)
         return;
-    } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::ShiftModifier))) {
+    } else if ((event->key() == Qt::Key_Right) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ShiftModifier))) {
         keySelectAP(RightFlag); // key-select(right)
         return;
     } else if ((event->key() == Qt::Key_Delete) && (event->modifiers() == (Qt::ShiftModifier))) {
@@ -1231,16 +1231,16 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
     } else if ((event->key() == Qt::Key_End) && (event->modifiers() == (Qt::ControlModifier))) {
         endOfFileAP(); // end-of-file()
         return;
-    } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::ControlModifier))) {
+    } else if ((event->key() == Qt::Key_Left) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ControlModifier))) {
         backwardWordAP(); // backward-word()
         return;
-    } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::ControlModifier))) {
+    } else if ((event->key() == Qt::Key_Right) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ControlModifier))) {
         forwardWordAP(); // forward-word()
         return;
-    } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::ControlModifier))) {
+    } else if ((event->key() == Qt::Key_Up) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ControlModifier))) {
         backwardParagraphAP(); // backward-paragraph()
         return;
-    } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::ControlModifier))) {
+    } else if ((event->key() == Qt::Key_Down) && ((event->modifiers() &~Qt::KeypadModifier) == (Qt::ControlModifier))) {
         forwardParagraphAP(); // forward-paragraph()
         return;
     }
