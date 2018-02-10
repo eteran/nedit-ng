@@ -9,6 +9,8 @@ find_package(Qt5 5.4.0 REQUIRED Core Xml)
 find_package(X11 REQUIRED)
 find_package(Boost 1.35 REQUIRED)
 
+link_directories(${X11_LIBRARY_DIR})
+
 add_executable(nedit-import
 	import.cpp
 )

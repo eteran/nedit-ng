@@ -557,6 +557,14 @@ struct hash_constants<uint32_t>{
     static constexpr uint32_t FNV_prime        = 16777619;
 };
 
+#ifdef Q_OS_MACOS
+template <>
+struct hash_constants<unsigned long>{
+    static constexpr uint32_t FNV_offset_basis = 0x811c9dc5;
+    static constexpr uint32_t FNV_prime        = 16777619;
+};
+#endif
+
 }
 
 namespace std {
