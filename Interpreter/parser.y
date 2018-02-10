@@ -432,7 +432,7 @@ blank:  /* nothing */
 ** as a pointer to a static string in msg, and the length of the string up
 ** to where parsing failed in stoppedAt.
 */
-std::shared_ptr<Program> ParseMacro(const std::string &expr, std::string *msg, int *stoppedAt) {
+Program *ParseMacro(const std::string &expr, std::string *msg, int *stoppedAt) {
     BeginCreatingProgram();
 
     /* call yyparse to parse the string and check for success.  If the parse
@@ -445,13 +445,13 @@ std::shared_ptr<Program> ParseMacro(const std::string &expr, std::string *msg, i
     if (yyparse()) {
         *msg       = ErrMsg;
         *stoppedAt = gsl::narrow<int>(InPtr - start);
-        std::shared_ptr<Program> prog = FinishCreatingProgram();
-        (void)prog;
+        Program *prog = FinishCreatingProgram();
+        delete prog;
         return nullptr;
     }
 
     /* get the newly created program */
-    std::shared_ptr<Program> prog = FinishCreatingProgram();
+    Program *prog = FinishCreatingProgram();
 
     /* parse succeeded */
     *msg       = "";

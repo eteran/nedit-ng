@@ -145,7 +145,7 @@ bool AddImmediate(int value, const char **msg);
 bool AddOp(int op, const char **msg);
 bool AddSym(Symbol *sym, const char **msg);
 Inst *GetPC();
-std::shared_ptr<Program> FinishCreatingProgram();
+Program *FinishCreatingProgram();
 Symbol *InstallIteratorSymbol();
 Symbol *InstallStringConstSymbol(view::string_view str);
 Symbol *InstallSymbol(const std::string &name, SymTypes type, const DataValue &value);
