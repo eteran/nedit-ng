@@ -557,7 +557,7 @@ struct hash_constants<uint32_t>{
     static constexpr uint32_t FNV_prime        = 16777619;
 };
 
-#ifdef Q_OS_MACOS
+#ifdef __APPLE__
 template <>
 struct hash_constants<unsigned long>{
     static constexpr uint32_t FNV_offset_basis = 0x811c9dc5;
