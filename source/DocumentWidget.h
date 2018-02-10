@@ -159,7 +159,7 @@ public:
     void ReadMacroInitFileEx();
     void repeatMacro(const QString &macro, int how);
     void ResumeMacroExecutionEx();
-    void runMacroEx(const std::shared_ptr<Program> &prog);
+    void runMacroEx(Program *prog);
     void SelectNumberedLineEx(TextArea *area, int64_t lineNum);
     void SelectToMatchingCharacter(TextArea *area);
     void SetAutoIndent(IndentStyle state);

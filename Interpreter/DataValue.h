@@ -24,7 +24,6 @@ using Arguments      = gsl::span<DataValue>;
 using LibraryRoutine = std::error_code (*)(DocumentWidget *document, Arguments arguments, DataValue *result);
 using Array          = std::map<std::string, DataValue>;
 using ArrayPtr       = std::shared_ptr<Array>;
-using ProgramPtr     = std::shared_ptr<Program>;
 
 // NOTE(eteran): we use a kind of "fat iterator", because the arrayIter function
 // needs to know if the iterator is at the end of the map. This requirement
@@ -42,7 +41,7 @@ struct DataValue {
         ArrayPtr,
         ArrayIterator,
         LibraryRoutine,
-        ProgramPtr,
+        Program*,
         Inst*,
         DataValue*
     > value;
@@ -99,7 +98,7 @@ inline DataValue make_value(const QString &str) {
     return DV;
 }
 
-inline DataValue make_value(const ProgramPtr &prog) {
+inline DataValue make_value(Program *prog) {
     DataValue DV;
     DV.value = prog;
     return DV;
@@ -147,8 +146,8 @@ inline int to_integer(const DataValue &dv) {
     return boost::get<int>(dv.value);
 }
 
-inline ProgramPtr to_program(const DataValue &dv) {
-    return boost::get<ProgramPtr>(dv.value);
+inline Program *to_program(const DataValue &dv) {
+    return boost::get<Program*>(dv.value);
 }
 
 inline LibraryRoutine to_subroutine(const DataValue &dv) {

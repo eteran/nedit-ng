@@ -30,10 +30,10 @@ void ReturnShellCommandOutputEx(DocumentWidget *document, const QString &outText
 struct MacroCommandData {
     QTimer                        bannerTimer;
     QTimer                        continuationTimer;
-    std::shared_ptr<Program>      program;
-    std::shared_ptr<MacroContext> context;
+    Program *                     program           = nullptr;
     bool                          bannerIsUp        = false;
     bool                          closeOnCompletion = false;
+    std::shared_ptr<MacroContext> context;
 };
 
 

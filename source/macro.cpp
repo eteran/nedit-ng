@@ -2064,7 +2064,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
     Input in(&string);
 
     DataValue subrPtr;
-    std::stack<std::shared_ptr<Program>> progStack;
+    std::stack<Program *> progStack;
 
     while (!in.atEnd()) {
 
@@ -2121,7 +2121,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
 
             int stoppedAt;
             QString errMsg;
-            std::shared_ptr<Program> prog = ParseMacroEx(code, &errMsg, &stoppedAt);
+            Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
             if(!prog) {
                 if(errPos) {
                     *errPos = in.index() + stoppedAt;
@@ -2138,8 +2138,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
             if (runDocument) {
                 if(Symbol *sym = LookupSymbolEx(subrName)) {
                     if (sym->type == MACRO_FUNCTION_SYM) {
-                        // delete the macro
-                        sym->value = make_value();
+                        delete to_program(sym->value);
                     } else {
                         sym->type = MACRO_FUNCTION_SYM;
                     }
@@ -2163,7 +2162,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
             QString code = in.mid();
             int stoppedAt;
             QString errMsg;
-            std::shared_ptr<Program> prog = ParseMacroEx(code, &errMsg, &stoppedAt);
+            Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
             if(!prog) {
                 if (errPos) {
                     *errPos = in.index() + stoppedAt;
@@ -2202,7 +2201,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
     //  Unroll reversal stack for macros loaded from macros.
     while (!progStack.empty()) {
 
-        std::shared_ptr<Program> prog = progStack.top();
+        Program *const prog = progStack.top();
         progStack.pop();
 
         RunMacroAsSubrCall(prog);

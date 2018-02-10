@@ -159,9 +159,9 @@ void StartLoopAddrList();
 void SwapCode(Inst *start, Inst *boundary, Inst *end);
 
 /* Routines for executing programs */
-int ExecuteMacroEx(DocumentWidget *document, const std::shared_ptr<Program> &prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg);
+int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg);
 int ContinueMacroEx(std::shared_ptr<MacroContext> &continuation, DataValue *result, QString *msg);
-void RunMacroAsSubrCall(const std::shared_ptr<Program> &prog);
+void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro();
 
 Symbol *PromoteToGlobal(Symbol *sym);

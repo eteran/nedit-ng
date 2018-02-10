@@ -382,7 +382,7 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 	QString errMsg;
 	int stoppedAt;
 
-    std::shared_ptr<Program> prog = ParseMacroEx(macro, &errMsg, &stoppedAt);
+    Program *prog = ParseMacroEx(macro, &errMsg, &stoppedAt);
 	if(!prog) {
         if(verbosity == Verbosity::Verbose) {
 			ParseErrorEx(this, macro, stoppedAt, tr("macro"), errMsg);
@@ -393,6 +393,7 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 		ui.editMacro->setFocus();
 		return false;
 	}
+    delete prog;
 
 	if(stoppedAt != macro.size()) {
         if(verbosity == Verbosity::Verbose) {

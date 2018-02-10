@@ -57,13 +57,14 @@ bool checkDoMacroArg(const QString &macro) {
     QString macroString = macro + QLatin1Char('\n');
 
     // Do a test parse
-    std::shared_ptr<Program> prog = ParseMacroEx(macroString, &errMsg, &stoppedAt);
+    Program *const prog = ParseMacroEx(macroString, &errMsg, &stoppedAt);
 
     if(!prog) {
         ParseErrorEx(nullptr, macroString, stoppedAt, QLatin1String("argument to -do"), errMsg);
         return false;
     }
 
+    delete prog;
     return true;
 }
 

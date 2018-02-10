@@ -4082,7 +4082,7 @@ void DocumentWidget::BeginSmartIndentEx(bool warn) {
     QString errMsg;
 
     auto winData = std::make_unique<SmartIndentData>();
-    winData->newlineMacro = ParseMacroEx(indentMacros->newlineMacro, &errMsg, &stoppedAt);
+    winData->newlineMacro   = ParseMacroEx(indentMacros->newlineMacro, &errMsg, &stoppedAt);
 
     if (!winData->newlineMacro) {
         ParseErrorEx(this, indentMacros->newlineMacro, stoppedAt, tr("newline macro"), errMsg);
@@ -4094,6 +4094,8 @@ void DocumentWidget::BeginSmartIndentEx(bool warn) {
     } else {
         winData->modMacro = ParseMacroEx(indentMacros->modMacro, &errMsg, &stoppedAt);
         if (!winData->modMacro) {
+
+            delete winData->newlineMacro;
             ParseErrorEx(this, indentMacros->modMacro, stoppedAt, tr("smart indent modify macro"), errMsg);
             return;
         }
@@ -5104,7 +5106,7 @@ void DocumentWidget::repeatMacro(const QString &macro, int how) {
     // Parse the resulting macro into an executable program "prog"
     QString errMsg;
     int stoppedAt;
-    std::shared_ptr<Program> prog = ParseMacroEx(loopedCmd, &errMsg, &stoppedAt);
+    Program *const prog = ParseMacroEx(loopedCmd, &errMsg, &stoppedAt);
     if(!prog) {
         qWarning("NEdit: internal error, repeat macro syntax wrong: %s", qPrintable(errMsg));
         return;
@@ -5206,7 +5208,7 @@ bool DocumentWidget::ReadMacroFileEx(const QString &fileName, bool warnNotExist)
 ** a macro is running, and handling preemption, resumption, and cancellation.
 ** frees prog when macro execution is complete;
 */
-void DocumentWidget::runMacroEx(const std::shared_ptr<Program> &prog) {
+void DocumentWidget::runMacroEx(Program *prog) {
 
     /* If a macro is already running, just call the program as a subroutine,
        instead of starting a new one, so we don't have to keep a separate
@@ -5287,6 +5289,7 @@ void DocumentWidget::finishMacroCmdExecutionEx() {
     }
 
     // Free execution information
+    delete macroCmdData_->program;
     macroCmdData_ = nullptr;
 
     /* If macro closed its own window, window was made empty and untitled,
@@ -6548,7 +6551,7 @@ void DocumentWidget::ReplayEx() {
         QString errMsg;
         int stoppedAt;
 
-        std::shared_ptr<Program> prog = ParseMacroEx(replayMacro, &errMsg, &stoppedAt);
+        Program *prog = ParseMacroEx(replayMacro, &errMsg, &stoppedAt);
         if(!prog) {
             qWarning("NEdit: internal error, learn/replay macro syntax error: %s", qPrintable(errMsg));
             return;
@@ -6623,7 +6626,7 @@ void DocumentWidget::DoMacroEx(const QString &macro, const QString &errInName) {
 
     // Parse the macro and report errors if it fails
     int stoppedAt;
-    std::shared_ptr<Program> const prog = ParseMacroEx(qMacro, &errMsg, &stoppedAt);
+    Program *const prog = ParseMacroEx(qMacro, &errMsg, &stoppedAt);
     if(!prog) {
         ParseErrorEx(this, qMacro, stoppedAt, errInName, errMsg);
         return;
@@ -6663,6 +6666,19 @@ int DocumentWidget::ReadMacroStringEx(const QString &string, const QString &errI
  * @brief DocumentWidget::EndSmartIndentEx
  */
 void DocumentWidget::EndSmartIndent() {
+    const std::unique_ptr<SmartIndentData> &winData = smartIndentData_;
+
+    if(!winData) {
+        return;
+    }
+
+    // Free programs and allocated data
+    if (winData->modMacro) {
+        delete winData->modMacro;
+    }
+
+    delete winData->newlineMacro;
+
     smartIndentData_ = nullptr;
 }
 
