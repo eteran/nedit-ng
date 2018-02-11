@@ -119,7 +119,7 @@ public:
     QFont FontOfNamedStyleEx(const QString &styleName) const;
     QString FileName() const;
     QString FullPath() const;
-    QString GetAnySelectionEx();
+    QString GetAnySelectionEx(bool beep_on_error);
     QString GetWindowDelimiters() const;
     QString GetWindowDelimitersEx() const;
     QString HighlightNameOfCodeEx(size_t hCode) const;

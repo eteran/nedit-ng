@@ -5394,6 +5394,11 @@ void TextArea::copyPrimaryAP(EventFlags flags) {
 */
 void TextArea::InsertPrimarySelection(bool isColumnar) {
 
+    if(!QApplication::clipboard()->supportsSelection()) {
+        QApplication::beep();
+        return;
+    }
+
 	const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
 	if(!mimeData->hasText()) {
 		return;

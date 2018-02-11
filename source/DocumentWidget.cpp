@@ -3774,13 +3774,12 @@ void DocumentWidget::findDefinitionHelper(TextArea *area, const QString &arg, Ta
 	} else {
 		searchMode = search_type;
 
-		const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
-		if(!mimeData->hasText()) {
+        QString selected = GetAnySelectionEx(false);
+        if(selected.isEmpty()) {
 			return;
 		}
 
-		QString string = mimeData->text();
-		findDef(area, string, search_type);
+        findDef(area, selected, search_type);
 	}
 }
 
@@ -6695,19 +6694,24 @@ bool DocumentWidget::InSmartIndentMacrosEx() const {
  * @brief DocumentWidget::GetAnySelectionEx
  * @return
  */
-QString DocumentWidget::GetAnySelectionEx() {
+QString DocumentWidget::GetAnySelectionEx(bool beep_on_error) {
 
     // If the selection is in the window's own buffer get it from there
     if (buffer_->BufGetPrimary().selected) {
         return QString::fromStdString(buffer_->BufGetSelectionTextEx());
     }
 
-    const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
-    if(mimeData->hasText()) {
-        return mimeData->text();
+    if(QApplication::clipboard()->supportsSelection()) {
+        const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
+        if(mimeData->hasText()) {
+            return mimeData->text();
+        }
     }
 
-    QApplication::beep();
+    if(beep_on_error) {
+        QApplication::beep();
+    }
+
     return QString();
 }
 

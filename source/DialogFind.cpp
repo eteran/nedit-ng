@@ -197,17 +197,11 @@ void DialogFind::initToggleButtons(SearchType searchType) {
  */
 void DialogFind::setTextField(DocumentWidget *document) {
 
-    Q_UNUSED(document);
-
     QString initialText;
 
     if (GetPrefFindReplaceUsesSelection()) {
-        const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
-        if(mimeData->hasText()) {
-            initialText = mimeData->text();
-        }
+        initialText = document->GetAnySelectionEx(false);
     }
-
 
     // Update the field
     ui.textFind->setText(initialText);

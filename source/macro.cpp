@@ -2488,7 +2488,7 @@ static std::error_code getSelectionMS(DocumentWidget *document, Arguments argume
             return MacroErrorCode::UnrecognizedArgument;
         }
 
-        QString text = document->GetAnySelectionEx();
+        QString text = document->GetAnySelectionEx(true);
         if (text.isNull()) {
             text = QLatin1String("");
         }

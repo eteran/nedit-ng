@@ -1882,9 +1882,9 @@ void MainWindow::action_Open_Selected(DocumentWidget *document) {
     emit_event("open_selected");
 
     // Get the selected text, if there's no selection, do nothing
-    const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
-    if(mimeData->hasText()) {
-        openFile(document, mimeData->text());
+    const QString selected = document->GetAnySelectionEx(false);
+    if(!selected.isEmpty()) {
+        openFile(document, selected);
     } else {
         QApplication::beep();
     }
@@ -2319,13 +2319,13 @@ void MainWindow::action_Goto_Selected(DocumentWidget *document) {
 
     emit_event("goto_selected");
 
-    const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
-    if(!mimeData->hasText()) {
+    const QString selected = document->GetAnySelectionEx(false);
+    if(selected.isEmpty()) {
         QApplication::beep();
         return;
     }
 
-    action_Goto_Line_Number(document, mimeData->text());
+    action_Goto_Line_Number(document, selected);
 }
 
 /**
@@ -6396,10 +6396,8 @@ bool MainWindow::ReplaceFindSameEx(DocumentWidget *document, TextArea *area, Dir
  */
 void MainWindow::SearchForSelectedEx(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap) {
 
-    // skip if we can't get the selection data or it's too long
-    // should be of type text???
-    const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
-    if(!mimeData->hasText()) {
+    QString selected = document->GetAnySelectionEx(false);
+    if(selected.isEmpty()) {
         if (GetPrefSearchDlogs()) {
             QMessageBox::warning(document, tr("Wrong Selection"), tr("Selection not appropriate for searching"));
         } else {
@@ -6409,7 +6407,7 @@ void MainWindow::SearchForSelectedEx(DocumentWidget *document, TextArea *area, D
     }
 
     // make the selection the current search string
-    QString searchString = mimeData->text();
+    QString searchString = selected;
 
     if (searchString.isEmpty()) {
         QApplication::beep();

@@ -424,15 +424,10 @@ void DialogReplace::on_checkCase_toggled(bool checked) {
  */
 void DialogReplace::setTextField(DocumentWidget *document) {
 
-    Q_UNUSED(document);
-	
     QString initialText;
 
 	if (GetPrefFindReplaceUsesSelection()) {
-        const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
-        if(mimeData->hasText()) {
-            initialText = mimeData->text();
-        }
+        initialText = document->GetAnySelectionEx(false);
 	}
 
 	// Update the field 
