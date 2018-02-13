@@ -3413,7 +3413,7 @@ void MainWindow::action_Print(DocumentWidget *document) {
 
     emit_event("print");
     if(QPointer<TextArea> area = lastFocus_) {
-        document->PrintWindow(area, false);
+        document->PrintWindow(area, /*selectedOnly=*/false);
     }
 }
 
@@ -3435,7 +3435,7 @@ void MainWindow::action_Print_Selection(DocumentWidget *document) {
 
     emit_event("print_selection");
     if(QPointer<TextArea> area = lastFocus_) {
-        document->PrintWindow(area, true);
+        document->PrintWindow(area, /*selectedOnly=*/true);
     }
 }
 
@@ -3652,7 +3652,6 @@ void MainWindow::on_action_Tab_Stops_triggered() {
  */
 void MainWindow::on_action_Text_Fonts_triggered() {
     if(DocumentWidget *document = currentDocument()) {
-
         auto dialogFonts = std::make_unique<DialogFonts>(document, this);
         dialogFonts->exec();
     }
@@ -3832,7 +3831,6 @@ void MainWindow::defaultWrapGroupTriggered(QAction *action) {
  * @brief MainWindow::on_action_Default_Wrap_Margin_triggered
  */
 void MainWindow::on_action_Default_Wrap_Margin_triggered() {
-
 	auto dialog = std::make_unique<DialogWrapMargin>(nullptr, this);
     dialog->exec();
 }

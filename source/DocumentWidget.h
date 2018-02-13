@@ -151,7 +151,7 @@ public:
     void MakeSelectionVisible(TextArea *area);
     void moveDocument(MainWindow *fromWindow);
     void open(const QString &fullpath);
-    void PrintStringEx(const std::string &string, const QString &jobName);
+    void PrintStringEx(const std::string &string, const QString &jobname);
     void PrintWindow(TextArea *area, bool selectedOnly);
     void RaiseDocument();
     void RaiseDocumentWindow();
@@ -189,6 +189,7 @@ public:
     int ShowTipStringEx(const QString &text, bool anchored, int pos, bool lookup, TagSearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode);
     void editTaggedLocationEx(TextArea *area, int i);
     void SetBacklightChars(const QString &applyBacklightTypes);
+    QFont defaultFont() const;
 
 private:
     void createSelectMenuEx(TextArea *area, const QStringList &args);

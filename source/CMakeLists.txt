@@ -5,7 +5,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 #set(CMAKE_AUTOUIC ON)
 #set(CMAKE_AUTORCC ON)
 
-find_package(Qt5 5.4.0 REQUIRED Widgets Network Xml)
+find_package(Qt5 5.4.0 REQUIRED Widgets Network Xml PrintSupport)
 find_package(Boost 1.35 REQUIRED)
 
 qt5_add_resources(QRC_SOURCES
@@ -281,6 +281,7 @@ target_link_libraries(nedit-ng LINK_PUBLIC
 	Qt5::Widgets
 	Qt5::Network
 	Qt5::Xml
+	Qt5::PrintSupport
 )
 
 set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)

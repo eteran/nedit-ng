@@ -3948,21 +3948,16 @@ void DocumentWidget::PrintWindow(TextArea *area, bool selectedOnly) {
  *
  * @brief DocumentWidget::PrintStringEx
  * @param string
- * @param jobName
+ * @param jobname
  */
-void DocumentWidget::PrintStringEx(const std::string &string, const QString &jobName) {
+void DocumentWidget::PrintStringEx(const std::string &string, const QString &jobname) {
 
-    QTemporaryFile tempFile(tr("nedit-XXXXXX"));
-	if(!tempFile.open()) {
-		QMessageBox::warning(this, tr("Error while Printing"), tr("Unable to write file for printing:\n%1").arg(tempFile.errorString()));
-		return;
-	}
+    auto dialog = std::make_unique<DialogPrint>(
+                QString::fromStdString(string),
+                jobname,
+                this,
+                this);
 
-    tempFile.write(string.data(), gsl::narrow<int64_t>(string.size()));
-	tempFile.close();
-
-    // Print the temporary file, then delete it and return success
-	auto dialog = std::make_unique<DialogPrint>(tempFile.fileName(), jobName, this);
     dialog->exec();
 }
 
@@ -7247,4 +7242,12 @@ void DocumentWidget::editTaggedLocationEx(TextArea *area, int i) {
 
     area->TextDSetScroll(lineNum - rows / 4, 0);
     area->TextSetCursorPos(endPos);
+}
+
+/**
+ * @brief DocumentWidget::defaultFont
+ * @return
+ */
+QFont DocumentWidget::defaultFont() const {
+    return fontStruct_;
 }

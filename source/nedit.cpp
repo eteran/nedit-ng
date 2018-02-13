@@ -2,7 +2,6 @@
 #include "nedit.h"
 #include "CommandRecorder.h"
 #include "DialogAbout.h"
-#include "DialogPrint.h"
 #include "DocumentWidget.h"
 #include "EditFlags.h"
 #include "interpret.h"
@@ -170,9 +169,6 @@ int main(int argc, char *argv[]) {
 	/* Store preferences from the command line and .nedit file,
 	   and set the appropriate preferences */
 	RestoreNEditPrefs();
-
-	// More preference stuff
-	DialogPrint::LoadPrintPreferencesEx(true);
 
 	// Install word delimiters for regular expression matching
     Regex::SetDefaultWordDelimiters(GetPrefDelimiters().toStdString());
