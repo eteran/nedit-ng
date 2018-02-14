@@ -646,7 +646,7 @@ void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
 
     QString path = document->path_;
 
-    MainWindow::EditNewFileEx(openInTab ? this : nullptr, QString(), false, QString(), path);
+    MainWindow::EditNewFileEx(openInTab ? this : nullptr, QString(), /*iconic=*/false, QString(), path);
     MainWindow::CheckCloseDimEx();
 }
 
@@ -1037,30 +1037,17 @@ void MainWindow::SortTabBar() {
 		return;
     }
 
-	// need more than one tab to sort
-    const size_t nDoc = TabCount();
-	if (nDoc < 2) {
-		return;
-	}
-
 	// get a list of all the documents
-    std::vector<DocumentWidget *> windows;
-	windows.reserve(nDoc);
-
-    for(size_t i = 0; i < nDoc; ++i) {
-        if(auto document = documentAt(i)) {
-            windows.push_back(document);
-		}
-	}
+    std::vector<DocumentWidget *> documents = openDocuments();
 
 	// sort them first by filename, then by path
-    std::sort(windows.begin(), windows.end(), [](const DocumentWidget *a, const DocumentWidget *b) {
+    std::sort(documents.begin(), documents.end(), [](const DocumentWidget *a, const DocumentWidget *b) {
         return std::tie(a->filename_, a->path_) < std::tie(b->filename_, b->path_);
 	});
 
 	// shuffle around the tabs to their new indexes
-    for(size_t i = 0; i < windows.size(); ++i) {
-		int from = ui.tabWidget->indexOf(windows[i]);
+    for(size_t i = 0; i < documents.size(); ++i) {
+        int from = ui.tabWidget->indexOf(documents[i]);
         int to   = gsl::narrow<int>(i);
         ui.tabWidget->tabBar()->moveTab(from, to);
 	}
@@ -1856,7 +1843,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
             if(DocumentWidget *document = documentAt(static_cast<size_t>(index))) {
 
                 if(selected == newTab) {
-                    MainWindow::EditNewFileEx(this, QString(), false, QString(), document->path_);
+                    MainWindow::EditNewFileEx(this, QString(), /*iconic=*/false, QString(), document->path_);
                 } else if(selected == closeTab) {
                     document->actionClose(CloseMode::Prompt);
                 } else if(selected == detachTab) {
@@ -4875,7 +4862,7 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
  */
 void MainWindow::action_New_Window(DocumentWidget *document) {
     emit_event("new_window");
-    MainWindow::EditNewFileEx(GetPrefOpenInTab() ? nullptr : this, QString(), false, QString(), document->path_);
+    MainWindow::EditNewFileEx(GetPrefOpenInTab() ? nullptr : this, QString(), /*iconic=*/false, QString(), document->path_);
     MainWindow::CheckCloseDimEx();
 }
 
