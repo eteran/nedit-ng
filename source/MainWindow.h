@@ -63,7 +63,6 @@ public:
     bool prefOrUserCancelsSubstEx(DocumentWidget *document);
     bool ReplaceAllEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
     bool ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap);
-    bool ReplaceFindSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
     bool ReplaceSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
     bool SearchAndReplaceEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap);
     bool SearchAndSelectEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap);
@@ -84,8 +83,6 @@ public:
     std::vector<DocumentWidget *> openDocuments() const;
     void addToGroup(QActionGroup *group, QMenu *menu);
     void BeginISearchEx(Direction direction);
-    void DoFindDlogEx(DocumentWidget *document, Direction direction, bool keepDialogs, SearchType searchType);
-    void DoFindReplaceDlogEx(DocumentWidget *document, TextArea *area, Direction direction, bool keepDialogs, SearchType searchType);
     void EditHighlightPatterns();
     void EditHighlightStyles(const QString &initialStyle);
     void EndISearchEx();
@@ -203,7 +200,6 @@ public Q_SLOTS:
     void action_Shell_Menu_Command(DocumentWidget *document, const QString &name);
     void action_Shift_Find_Again(DocumentWidget *document);
     void action_Shift_Find(DocumentWidget *document);
-    void action_Shift_Find_Incremental(DocumentWidget *document);
     void action_Shift_Find_Selection(DocumentWidget *document);
     void action_Shift_Goto_Matching(DocumentWidget *document);
     void action_Shift_Left(DocumentWidget *document);

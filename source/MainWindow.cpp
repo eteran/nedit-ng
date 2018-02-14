@@ -2005,7 +2005,7 @@ void MainWindow::action_Shift_Left(DocumentWidget *document) {
     }
 
     if(QPointer<TextArea> area = lastFocus_) {
-        ShiftSelectionEx(document, area, SHIFT_LEFT, false);
+        ShiftSelectionEx(document, area, SHIFT_LEFT, /*byTab=*/false);
     }
 }
 
@@ -2032,7 +2032,7 @@ void MainWindow::action_Shift_Right(DocumentWidget *document) {
     }
 
     if(QPointer<TextArea> area = lastFocus_) {
-        ShiftSelectionEx(document, area, SHIFT_RIGHT, false);
+        ShiftSelectionEx(document, area, SHIFT_RIGHT, /*byTab=*/false);
     }
 }
 
@@ -2059,7 +2059,7 @@ void MainWindow::action_Shift_Left_Tabs(DocumentWidget *document) {
     }
 
     if(QPointer<TextArea> area = lastFocus_) {
-        ShiftSelectionEx(document, area, SHIFT_LEFT, true);
+        ShiftSelectionEx(document, area, SHIFT_LEFT, /*byTab=*/true);
     }
 }
 
@@ -2085,7 +2085,7 @@ void MainWindow::action_Shift_Right_Tabs(DocumentWidget *document) {
     }
 
     if(QPointer<TextArea> area = lastFocus_) {
-        ShiftSelectionEx(document, area, SHIFT_RIGHT, true);
+        ShiftSelectionEx(document, area, SHIFT_RIGHT, /*byTab=*/true);
     }
 }
 
@@ -2332,11 +2332,35 @@ void MainWindow::on_action_Goto_Selected_triggered() {
  * @param keepDialog
  */
 void MainWindow::action_Find_Dialog(DocumentWidget *document, Direction direction, SearchType type, bool keepDialog) {
-    DoFindDlogEx(
-        document,
-        direction,
-        keepDialog,
-        type);
+
+    if(!dialogFind_) {
+        dialogFind_ = new DialogFind(this, document);
+    }
+
+    dialogFind_->setTextField(document);
+
+    if(dialogFind_->isVisible()) {
+        dialogFind_->raise();
+        dialogFind_->activateWindow();
+        return;
+    }
+
+    // Set the initial search type
+    dialogFind_->initToggleButtons(type);
+
+    // Set the initial direction based on the direction argument
+    dialogFind_->ui.checkBackward->setChecked(direction == Direction::Backward);
+
+    // Set the state of the Keep Dialog Up button
+    dialogFind_->ui.checkKeep->setChecked(keepDialog);
+
+    // Set the state of the Find button
+    dialogFind_->fUpdateActionButtons();
+
+    // start the search history mechanism at the current history item
+    fHistIndex_ = 0;
+
+    dialogFind_->show();
 }
 
 /**
@@ -2504,20 +2528,9 @@ void MainWindow::on_action_Find_Incremental_triggered() {
 
 /**
  * @brief MainWindow::action_Shift_Find_Incremental
- * @param document
- */
-void MainWindow::action_Shift_Find_Incremental(DocumentWidget *document) {
-    Q_UNUSED(document);
-    BeginISearchEx(Direction::Backward);
-}
-
-/**
- * @brief MainWindow::action_Shift_Find_Incremental
  */
 void MainWindow::action_Shift_Find_Incremental() {
-    if(DocumentWidget *document = currentDocument()) {
-        action_Shift_Find_Incremental(document);
-    }
+    BeginISearchEx(Direction::Backward);
 }
 
 /**
@@ -2802,38 +2815,10 @@ void MainWindow::EndISearchEx() {
     iSearchStartPos_ = -1;
 
     // Mark the end of incremental search history overwriting
-    saveSearchHistory(QString(), QString(), SearchType::Literal, false);
+    saveSearchHistory(QString(), QString(), SearchType::Literal, /*isIncremental=*/false);
 
     // Pop down the search line (if it's not pegged up in Preferences)
     TempShowISearch(false);
-}
-
-/**
- * @brief MainWindow::action_Shift_Replace
- * @param document
- */
-void MainWindow::action_Shift_Replace(DocumentWidget *document) {
-    if (document->CheckReadOnly()) {
-        return;
-    }
-
-    if(QPointer<TextArea> area = lastFocus_) {
-        DoFindReplaceDlogEx(
-                    document,
-                    area,
-                    Direction::Backward,
-                    GetPrefKeepSearchDlogs(),
-                    GetPrefSearch());
-    }
-}
-
-/**
- * @brief MainWindow::action_Shift_Replace
- */
-void MainWindow::action_Shift_Replace() {
-    if(DocumentWidget *document = currentDocument()) {
-        action_Shift_Replace(document);
-    }
 }
 
 /**
@@ -2847,10 +2832,24 @@ void MainWindow::action_Replace_Find_Again(DocumentWidget *document, Direction d
     }
 
     if(QPointer<TextArea> area = lastFocus_) {
-        ReplaceFindSameEx(
+        if (NHist < 1) {
+            QApplication::beep();
+            return;
+        }
+
+        const int index = historyIndex(1);
+        if (index == -1) {
+            QApplication::beep();
+            return;
+        }
+
+        ReplaceAndSearchEx(
                     document,
                     area,
+                    SearchReplaceHistory[index].search,
+                    SearchReplaceHistory[index].replace,
                     direction,
+                    SearchReplaceHistory[index].type,
                     wrap);
     }
 }
@@ -5347,12 +5346,53 @@ void MainWindow::action_Replace_Dialog(DocumentWidget *document, Direction direc
         return;
     }
 
-    if(QPointer<TextArea> area = lastFocus_) {
-        DoFindReplaceDlogEx(document,
-                            area,
-                            direction,
-                            keepDialog,
-                            type);
+    if (!dialogReplace_) {
+        dialogReplace_ = new DialogReplace(this, document);
+    }
+
+    dialogReplace_->setTextField(document);
+
+    // If the window is already up, just pop it to the top
+    if(dialogReplace_->isVisible()) {
+        dialogReplace_->raise();
+        dialogReplace_->activateWindow();
+        return;
+    }
+
+    // Blank the Replace with field
+    dialogReplace_->ui.textReplace->setText(QString());
+
+    // Set the initial search type
+    dialogReplace_->initToggleButtons(type);
+
+    // Set the initial direction based on the direction argument
+    dialogReplace_->ui.checkBackward->setChecked(direction == Direction::Backward);
+
+    // Set the state of the Keep Dialog Up button
+    dialogReplace_->ui.checkKeep->setChecked(keepDialog);
+
+    dialogReplace_->UpdateReplaceActionButtons();
+
+    // Start the search history mechanism at the current history item
+    rHistIndex_ = 0;
+
+    dialogReplace_->show();
+}
+
+/**
+ * @brief MainWindow::action_Shift_Replace
+ * @param document
+ */
+void MainWindow::action_Shift_Replace(DocumentWidget *document) {
+    action_Replace_Dialog(document, Direction::Backward, GetPrefSearch(), GetPrefKeepSearchDlogs());
+}
+
+/**
+ * @brief MainWindow::action_Shift_Replace
+ */
+void MainWindow::action_Shift_Replace() {
+    if(DocumentWidget *document = currentDocument()) {
+        action_Shift_Replace(document);
     }
 }
 
@@ -6144,45 +6184,6 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, co
     return replaced;
 }
 
-/**
- * @brief MainWindow::DoFindDlogEx
- * @param document
- * @param direction
- * @param keepDialogs
- * @param searchType
- */
-void MainWindow::DoFindDlogEx(DocumentWidget *document, Direction direction, bool keepDialogs, SearchType searchType) {
-
-    if(!dialogFind_) {
-        dialogFind_ = new DialogFind(this, document);
-    }
-
-    dialogFind_->setTextField(document);
-
-    if(dialogFind_->isVisible()) {
-        dialogFind_->raise();
-        dialogFind_->activateWindow();
-        return;
-    }
-
-    // Set the initial search type
-    dialogFind_->initToggleButtons(searchType);
-
-    // Set the initial direction based on the direction argument
-    dialogFind_->ui.checkBackward->setChecked(direction == Direction::Forward ? false : true);
-
-    // Set the state of the Keep Dialog Up button
-    dialogFind_->ui.checkKeep->setChecked(keepDialogs);
-
-    // Set the state of the Find button
-    dialogFind_->fUpdateActionButtons();
-
-    // start the search history mechanism at the current history item
-    fHistIndex_ = 0;
-
-    dialogFind_->show();
-}
-
 /*
 ** Fetch and verify (particularly regular expression) search string,
 ** direction, and search type from the Find dialog.  If the search string
@@ -6343,32 +6344,6 @@ void MainWindow::action_Replace_Find(DocumentWidget *document, const QString &se
                     searchType,
                     searchWraps);
     }
-}
-
-/*
-** Search and replace using previously entered search strings (from dialog
-** or selection).
-*/
-bool MainWindow::ReplaceFindSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap) {
-    if (NHist < 1) {
-        QApplication::beep();
-        return false;
-    }
-
-    const int index = historyIndex(1);
-    if (index == -1) {
-        QApplication::beep();
-        return false;
-    }
-
-    return ReplaceAndSearchEx(
-                document,
-                area,                
-                SearchReplaceHistory[index].search,
-                SearchReplaceHistory[index].replace,
-                direction,
-                SearchReplaceHistory[index].type,
-                searchWrap);
 }
 
 /**
@@ -6755,51 +6730,6 @@ bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QS
     area->TextSetCursorPos(copyStart + static_cast<int64_t>(newFileString.size()));
 
     return true;
-}
-
-/**
- * @brief MainWindow::DoFindReplaceDlogEx
- * @param document
- * @param area
- * @param direction
- * @param keepDialogs
- * @param searchType
- */
-void MainWindow::DoFindReplaceDlogEx(DocumentWidget *document, TextArea *area, Direction direction, bool keepDialogs, SearchType searchType) {
-
-    Q_UNUSED(area);
-
-    if (!dialogReplace_) {
-        dialogReplace_ = new DialogReplace(this, document);
-    }
-
-    dialogReplace_->setTextField(document);
-
-    // If the window is already up, just pop it to the top
-    if(dialogReplace_->isVisible()) {
-        dialogReplace_->raise();
-        dialogReplace_->activateWindow();
-        return;
-    }
-
-    // Blank the Replace with field
-    dialogReplace_->ui.textReplace->setText(QString());
-
-    // Set the initial search type
-    dialogReplace_->initToggleButtons(searchType);
-
-    // Set the initial direction based on the direction argument
-    dialogReplace_->ui.checkBackward->setChecked(direction == Direction::Forward ? false : true);
-
-    // Set the state of the Keep Dialog Up button
-    dialogReplace_->ui.checkKeep->setChecked(keepDialogs);
-
-    dialogReplace_->UpdateReplaceActionButtons();
-
-    // Start the search history mechanism at the current history item
-    rHistIndex_ = 0;
-
-    dialogReplace_->show();
 }
 
 /*
