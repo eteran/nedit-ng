@@ -416,8 +416,13 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	splitter_ = new QSplitter(Qt::Vertical, this);
 	splitter_->setChildrenCollapsible(false);
 	ui.verticalLayout->addWidget(splitter_);
-	ui.verticalLayout->setContentsMargins(0, 0, 0, 0);
 
+    // NOTE(eteran): I'm not sure why this is necessary to make things look right :-/
+#ifdef Q_OS_MACOS
+    ui.verticalLayout->setContentsMargins(0, 5, 0, 0);
+#else
+    ui.verticalLayout->setContentsMargins(0, 0, 0, 0);
+#endif
 	// initialize the members
 	filename_              = name;
 	indentStyle_           = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
