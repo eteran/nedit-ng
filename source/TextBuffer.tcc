@@ -538,7 +538,7 @@ void BasicTextBuffer<Ch, Tr>::BufSelect(int64_t start, int64_t end) noexcept {
     redisplaySelection(&oldSelection, &primary_);
 
 #ifdef Q_OS_UNIX
-    if(syncXSelection_) {
+    if(syncXSelection_ && QApplication::clipboard()->supportsSelection()) {
         std::string text = BufGetSelectionTextEx();
         QApplication::clipboard()->setText(QString::fromStdString(text), QClipboard::Selection);
     }
@@ -557,7 +557,7 @@ void BasicTextBuffer<Ch, Tr>::BufUnselect() noexcept {
     // having a selection and then clicking in one of our windows. Which results
     // in us taking ownership of the selection but setting it to nothing :-/
 #if defined(Q_OS_UNIX) && 0
-    if(syncXSelection_) {
+    if(syncXSelection_ && QApplication::clipboard()->supportsSelection()) {
         QApplication::clipboard()->setText(QString(), QClipboard::Selection);
     }
 #endif
@@ -571,7 +571,7 @@ void BasicTextBuffer<Ch, Tr>::BufRectSelect(int64_t start, int64_t end, int64_t 
     redisplaySelection(&oldSelection, &primary_);
 
 #ifdef Q_OS_UNIX
-    if(syncXSelection_) {
+    if(syncXSelection_ && QApplication::clipboard()->supportsSelection()) {
         std::string text = BufGetSelectionTextEx();
         QApplication::clipboard()->setText(QString::fromStdString(text), QClipboard::Selection);
     }
