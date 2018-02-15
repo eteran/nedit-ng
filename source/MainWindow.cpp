@@ -449,8 +449,6 @@ void MainWindow::setupMenuDefaults() {
  */
 void MainWindow::setupMenuStrings() {
 
-    // NOTE(eteran): this doesn't seem to work as well on OSX
-#ifndef Q_OS_MACOS
 	ui.action_Shift_Left         ->setText(tr("Shift &Left\t[Shift] Ctrl+9"));
 	ui.action_Shift_Right        ->setText(tr("Shift Ri&ght\t[Shift] Ctrl+0"));
 	ui.action_Find               ->setText(tr("&Find...\t[Shift] Ctrl+F"));
@@ -463,7 +461,7 @@ void MainWindow::setupMenuStrings() {
 	ui.action_Mark               ->setText(tr("Mar&k\tAlt+M a-z"));
 	ui.action_Goto_Mark          ->setText(tr("G&oto Mark\t[Shift] Alt+G a-z"));
 	ui.action_Goto_Matching      ->setText(tr("Goto &Matching (..)\t[Shift] Ctrl+M"));
-#endif
+
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_9), this, SLOT(action_Shift_Left_Tabs()));
     new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_0), this, SLOT(action_Shift_Right_Tabs()));
 

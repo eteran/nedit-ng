@@ -144,6 +144,7 @@ int main(int argc, char *argv[]) {
 #endif
 #ifdef Q_OS_MACOS
     QCoreApplication::setAttribute(Qt::AA_DontShowIconsInMenus);
+    QCoreApplication::setAttribute(Qt::AA_DontUseNativeMenuBar);
 #endif
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
