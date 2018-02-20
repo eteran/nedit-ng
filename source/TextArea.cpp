@@ -1219,7 +1219,7 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
     } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::NoModifier))) {
         processDownAP(); // process-down()
         return;
-#if Q_OS_MACOS
+#ifdef Q_OS_MACOS
     } else if ((event->key() == Qt::Key_Right) && (event->modifiers() == (Qt::KeypadModifier))) {
         forwardCharacterAP(); // forward-character()
         return;
@@ -1291,7 +1291,7 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
         keySelectAP(RightFlag); // key-select(right)
         return;
 
-#if Q_OS_MACOS
+#ifdef Q_OS_MACOS
     } else if ((event->key() == Qt::Key_Up) && (event->modifiers() == (Qt::ShiftModifier | Qt::KeypadModifier))) {
         processShiftUpAP(); // process-shift-up()
         return;
@@ -1336,7 +1336,7 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
     } else if ((event->key() == Qt::Key_Down) && (event->modifiers() == (Qt::ControlModifier))) {
         forwardParagraphAP(); // forward-paragraph()
         return;
-#if Q_OS_MACOS
+#ifdef Q_OS_MACOS
     } else if ((event->key() == Qt::Key_Left) && (event->modifiers() == (Qt::ControlModifier | Qt::KeypadModifier))) {
         backwardWordAP(); // backward-word()
         return;
