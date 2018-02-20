@@ -2934,6 +2934,9 @@ void TextArea::redrawLineNumbers(QPainter *painter) {
 		return;
     }
 
+    painter->setPen(lineNumFGPixel_);
+    painter->setFont(font_);
+
 	// Draw the line numbers, aligned to the text
     int y        = rect_.top();
     int64_t line = getAbsTopLineNum();
