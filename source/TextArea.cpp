@@ -4943,7 +4943,7 @@ bool TextArea::pendingSelection() const {
 */
 std::string TextArea::wrapTextEx(view::string_view startLine, view::string_view text, int64_t bufOffset, int wrapMargin, int64_t *breakBefore) {
 
-    int64_t startLineLen = startLine.size();
+    auto startLineLen = gsl::narrow<int64_t>(startLine.size());
     int64_t breakAt;
     int64_t charsAdded;
     int64_t firstBreak = -1;
@@ -5004,7 +5004,7 @@ void TextArea::TextDOverstrikeEx(view::string_view text) {
 
     int64_t startPos    = cursorPos_;
     int64_t lineStart   = buffer_->BufStartOfLine(startPos);
-    int textLen         = gsl::narrow<int>(text.size());
+    auto textLen        = gsl::narrow<int64_t>(text.size());
     int64_t p;
     int64_t endPos;
 
