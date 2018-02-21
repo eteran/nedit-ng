@@ -164,7 +164,9 @@ private Q_SLOTS:
 private:
 	bool clickTracker(QMouseEvent *event, bool inDoubleClickHandler);
 
-public Q_SLOTS:    
+public Q_SLOTS:
+    void previousDocumentAP(EventFlags flags = NoneFlag);
+    void nextDocumentAP(EventFlags flags = NoneFlag);
     void beginningOfSelectionAP(EventFlags flags = NoneFlag);
 	void forwardCharacterAP(EventFlags flags = NoneFlag);
 	void backwardCharacterAP(EventFlags flags = NoneFlag);

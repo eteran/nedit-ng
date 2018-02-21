@@ -35,6 +35,8 @@
 #include <memory>
 #include "Font.h"
 
+//#define USE_NEW_INPUT_HANDLER
+
 #define EMIT_EVENT_0(name)                                       \
     do {                                                         \
         if(!(flags & SupressRecording)) {                        \
@@ -289,6 +291,167 @@ bool isModifier(QKeyEvent *e) {
         return false;
     }
 }
+
+#ifdef USE_NEW_INPUT_HANDLER
+struct InputHandler {
+    using handler_type = void (TextArea::*)(TextArea::EventFlags flags);
+
+    Qt::Key               key;
+    Qt::KeyboardModifiers modifiers;
+    handler_type          handler;
+    TextArea::EventFlags  flags; // flags to pass to the handler
+};
+
+// NOTE(eteran): a nullptr handler just means "beep"
+constexpr InputHandler inputHandlers[] = {
+    // NOTE(eteran): higher lever should capture these, so let's avoid inserting chars from this event
+    { Qt::Key_Z,         Qt::ControlModifier,					                                            nullptr,                                     TextArea::NoneFlag },
+    { Qt::Key_Z,         Qt::ShiftModifier | Qt::ControlModifier,                                           nullptr,                                     TextArea::NoneFlag },
+    { Qt::Key_X,         Qt::ShiftModifier | Qt::ControlModifier,                                           nullptr,                                     TextArea::NoneFlag },
+    { Qt::Key_C,         Qt::ControlModifier,					                                            nullptr,                                     TextArea::NoneFlag },
+    { Qt::Key_B,         Qt::ControlModifier,					                                            nullptr,                                     TextArea::NoneFlag },
+
+	// real handlers
+    { Qt::Key_PageUp,    Qt::ControlModifier,										                        &TextArea::previousDocumentAP,               TextArea::NoneFlag }, // previous-document()
+    { Qt::Key_PageDown,  Qt::ControlModifier,									                            &TextArea::nextDocumentAP,                   TextArea::NoneFlag },	 // next-document()
+    { Qt::Key_PageUp,    Qt::ShiftModifier | Qt::AltModifier,						                        &TextArea::previousPageAP,                   TextArea::ExtendFlag | TextArea::RectFlag },  // previous-page(extend, rect)
+    { Qt::Key_PageUp,    Qt::ShiftModifier | Qt::MetaModifier,  					                        &TextArea::previousPageAP,                   TextArea::ExtendFlag | TextArea::RectFlag },  // previous-page(extend, rect)
+    { Qt::Key_PageUp,    Qt::ShiftModifier, 										                        &TextArea::previousPageAP,                   TextArea::ExtendFlag },  // previous-page(extend)
+    { Qt::Key_PageUp,    Qt::NoModifier,											                        &TextArea::previousPageAP,                   TextArea::NoneFlag },  // previous-page()
+    { Qt::Key_PageDown,  Qt::ShiftModifier | Qt::AltModifier,					                            &TextArea::nextPageAP,                       TextArea::ExtendFlag | TextArea::RectFlag },  // next-page(extend, rect)
+    { Qt::Key_PageDown,  Qt::ShiftModifier | Qt::MetaModifier,  				                            &TextArea::nextPageAP,                       TextArea::ExtendFlag | TextArea::RectFlag },  // next-page(extend, rect)
+    { Qt::Key_PageDown,  Qt::ShiftModifier, 									                            &TextArea::nextPageAP,                       TextArea::ExtendFlag },  // next-page(extend)
+    { Qt::Key_PageDown,  Qt::NoModifier,										                            &TextArea::nextPageAP,                       TextArea::NoneFlag },  // next-page()
+    { Qt::Key_PageUp,    Qt::ControlModifier | Qt::ShiftModifier | Qt::AltModifier,                         &TextArea::pageLeftAP,                       TextArea::ExtendFlag | TextArea::RectFlag },  // page-left(extent, rect);
+    { Qt::Key_PageUp,    Qt::ControlModifier | Qt::MetaModifier | Qt::AltModifier,                          &TextArea::pageLeftAP,                       TextArea::ExtendFlag | TextArea::RectFlag },  // page-left(extent, rect);
+    { Qt::Key_PageUp,    Qt::ControlModifier | Qt::ShiftModifier,					                        &TextArea::pageLeftAP,                       TextArea::ExtendFlag },  // page-left(extent);
+#if 0 // NOTE(eteran): no page left/right on most keyboards, so conflict here :-/
+    { Qt::Key_PageUp,    Qt::ControlModifier,                                                               &TextArea::pageLeftAP,                       TextArea::NoneFlag }, // page-left()
+    { Qt::Key_PageDown,  Qt::ControlModifier,                                                               &TextArea::pageRightAP,                      TextArea::NoneFlag }, // page-right()
+#endif
+    { Qt::Key_PageDown,  Qt::ControlModifier | Qt::ShiftModifier | Qt::AltModifier,                         &TextArea::pageRightAP,                      TextArea::ExtendFlag | TextArea::RectFlag },  // page-right(extent, rect);
+    { Qt::Key_PageDown,  Qt::ControlModifier | Qt::MetaModifier | Qt::AltModifier,                          &TextArea::pageRightAP,                      TextArea::ExtendFlag | TextArea::RectFlag },  // page-right(extent, rect);
+    { Qt::Key_PageDown,  Qt::ControlModifier | Qt::ShiftModifier,                                           &TextArea::pageRightAP,                      TextArea::ExtendFlag },  // page-right(extent);
+    { Qt::Key_Up,        Qt::AltModifier | Qt::ShiftModifier,                                               &TextArea::processShiftUpAP,                 TextArea::RectFlag },  // process-shift-up(rect)
+    { Qt::Key_Up,        Qt::MetaModifier | Qt::ShiftModifier,                                              &TextArea::processShiftUpAP,                 TextArea::RectFlag },  // process-shift-up(rect)
+    { Qt::Key_Down,      Qt::AltModifier | Qt::ShiftModifier,                                               &TextArea::processShiftDownAP,               TextArea::RectFlag },  // process-shift-down(rect)
+    { Qt::Key_Down,      Qt::MetaModifier | Qt::ShiftModifier,                                              &TextArea::processShiftDownAP,               TextArea::RectFlag },  // process-shift-down(rect)
+    { Qt::Key_Up,        Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier,                         &TextArea::backwardParagraphAP,              TextArea::ExtendFlag | TextArea::RectFlag },  // backward-paragraph(extent, rect)
+    { Qt::Key_Up,        Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier,                        &TextArea::backwardParagraphAP,              TextArea::ExtendFlag | TextArea::RectFlag },  // backward-paragraph(extend, rect)
+    { Qt::Key_Up,        Qt::ControlModifier | Qt::ShiftModifier,                                           &TextArea::backwardParagraphAP,              TextArea::ExtendFlag },  // backward-paragraph(extend)
+    { Qt::Key_Down,      Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier,                         &TextArea::forwardParagraphAP,               TextArea::ExtendFlag | TextArea::RectFlag },  // forward-paragraph(extent, rect)
+    { Qt::Key_Down,      Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier,                        &TextArea::forwardParagraphAP,               TextArea::ExtendFlag | TextArea::RectFlag },  // forward-paragraph(extend, rect)
+    { Qt::Key_Down,      Qt::ControlModifier | Qt::ShiftModifier,                                           &TextArea::forwardParagraphAP,               TextArea::ExtendFlag }, // forward-paragraph(extend)
+    { Qt::Key_Right,     Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier,                         &TextArea::forwardWordAP,                    TextArea::ExtendFlag | TextArea::RectFlag }, // forward-word(extend, rect)
+    { Qt::Key_Right,     Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier,                        &TextArea::forwardWordAP,                    TextArea::ExtendFlag | TextArea::RectFlag }, // forward-word(extend, rect)
+    { Qt::Key_Right,     Qt::AltModifier | Qt::ShiftModifier,                                               &TextArea::keySelectAP,                      TextArea::RightFlag | TextArea::RectFlag },  // key-select(right, rect)
+    { Qt::Key_Right,     Qt::MetaModifier | Qt::ShiftModifier,                                              &TextArea::keySelectAP,                      TextArea::RightFlag | TextArea::RectFlag },  // key-select(right, rect)
+    { Qt::Key_Right,     Qt::ControlModifier | Qt::ShiftModifier,                                           &TextArea::forwardWordAP,                    TextArea::ExtendFlag },  // forward-word(extend)
+    { Qt::Key_Left,      Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier,                         &TextArea::backwardWordAP,                   TextArea::ExtendFlag | TextArea::RectFlag }, // backward-word(extend, rect)
+    { Qt::Key_Left,      Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier,                        &TextArea::backwardWordAP,                   TextArea::ExtendFlag | TextArea::RectFlag }, // backward-word(extend, rect)
+    { Qt::Key_Left,      Qt::AltModifier | Qt::ShiftModifier,                                               &TextArea::keySelectAP,                      TextArea::LeftFlag | TextArea::RectFlag },  // key-select(left, rect)
+    { Qt::Key_Left,      Qt::MetaModifier | Qt::ShiftModifier,                                              &TextArea::keySelectAP,                      TextArea::LeftFlag | TextArea::RectFlag },  // key-select(left, rect)
+    { Qt::Key_Left,      Qt::ControlModifier | Qt::ShiftModifier,                                           &TextArea::backwardWordAP,                   TextArea::ExtendFlag },  // backward-word(extend)
+#ifdef Q_OS_MACOS
+    { Qt::Key_Up,        Qt::AltModifier | Qt::ShiftModifier | Qt::KeypadModifier,                          &TextArea::processShiftUpAP,                 TextArea::RectFlag },  // process-shift-up(rect)
+    { Qt::Key_Up,        Qt::MetaModifier | Qt::ShiftModifier | Qt::KeypadModifier,                         &TextArea::processShiftUpAP,                 TextArea::RectFlag },  // process-shift-up(rect)
+    { Qt::Key_Down,      Qt::AltModifier | Qt::ShiftModifier | Qt::KeypadModifier,                          &TextArea::processShiftDownAP,               TextArea::RectFlag },  // process-shift-down(rect)
+    { Qt::Key_Down,      Qt::MetaModifier | Qt::ShiftModifier | Qt::KeypadModifier,                         &TextArea::processShiftDownAP,               TextArea::RectFlag },  // process-shift-down(rect)
+    { Qt::Key_Up,        Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier | Qt::KeypadModifier,    &TextArea::backwardParagraphAP,              TextArea::ExtendFlag | TextArea::RectFlag },  // backward-paragraph(extent, rect)
+    { Qt::Key_Up,        Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier | Qt::KeypadModifier,   &TextArea::backwardParagraphAP,              TextArea::ExtendFlag | TextArea::RectFlag },  // backward-paragraph(extend, rect)
+    { Qt::Key_Up,        Qt::ControlModifier | Qt::ShiftModifier | Qt::KeypadModifier,                      &TextArea::backwardParagraphAP,              TextArea::ExtendFlag }, // backward-paragraph(extend)
+    { Qt::Key_Down,      Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier | Qt::KeypadModifier,    &TextArea::forwardParagraphAP,               TextArea::ExtendFlag | TextArea::RectFlag },  // forward-paragraph(extent, rect)
+    { Qt::Key_Down,      Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier | Qt::KeypadModifier,   &TextArea::forwardParagraphAP,               TextArea::ExtendFlag | TextArea::RectFlag },  // forward-paragraph(extend, rect)
+    { Qt::Key_Down,      Qt::ControlModifier | Qt::ShiftModifier | Qt::KeypadModifier,                      &TextArea::forwardParagraphAP,               TextArea::ExtendFlag }, // forward-paragraph(extend)
+    { Qt::Key_Right,     Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier | Qt::KeypadModifier,    &TextArea::forwardWordAP,                    TextArea::ExtendFlag | TextArea::RectFlag }, // forward-word(extend, rect)
+    { Qt::Key_Right,     Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier | Qt::KeypadModifier,   &TextArea::forwardWordAP,                    TextArea::ExtendFlag | TextArea::RectFlag }, // forward-word(extend, rect)
+    { Qt::Key_Right,     Qt::AltModifier | Qt::ShiftModifier | Qt::KeypadModifier,                          &TextArea::keySelectAP,                      TextArea::RightFlag | TextArea::RectFlag },  // key-select(right, rect)
+    { Qt::Key_Right,     Qt::MetaModifier | Qt::ShiftModifier | Qt::KeypadModifier,                         &TextArea::keySelectAP,                      TextArea::RightFlag | TextArea::RectFlag },  // key-select(right, rect)
+    { Qt::Key_Right,     Qt::ControlModifier | Qt::ShiftModifier | Qt::KeypadModifier,                      &TextArea::forwardWordAP,                    TextArea::ExtendFlag },  // forward-word(extend)
+    { Qt::Key_Left,      Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier | Qt::KeypadModifier,    &TextArea::backwardWordAP,                   TextArea::ExtendFlag | TextArea::RectFlag }, // backward-word(extend, rect)
+    { Qt::Key_Left,      Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier | Qt::KeypadModifier,   &TextArea::backwardWordAP,                   TextArea::ExtendFlag | TextArea::RectFlag }, // backward-word(extend, rect)
+    { Qt::Key_Left,      Qt::AltModifier | Qt::ShiftModifier | Qt::KeypadModifier,                          &TextArea::keySelectAP,                      TextArea::LeftFlag | TextArea::RectFlag },  // key-select(left, rect)
+    { Qt::Key_Left,      Qt::MetaModifier | Qt::ShiftModifier | Qt::KeypadModifier,                         &TextArea::keySelectAP,                      TextArea::LeftFlag | TextArea::RectFlag },  // key-select(left, rect)
+    { Qt::Key_Left,      Qt::ControlModifier | Qt::ShiftModifier | Qt::KeypadModifier,                      &TextArea::backwardWordAP,                   TextArea::ExtendFlag },  // backward-word(extend)
+#endif
+    { Qt::Key_End,       Qt::AltModifier | Qt::ShiftModifier,                                               &TextArea::endOfLineAP,                      TextArea::ExtendFlag | TextArea::RectFlag },  // end-of-line(extend, rect)
+    { Qt::Key_End,       Qt::MetaModifier | Qt::ShiftModifier,                                              &TextArea::endOfLineAP,                      TextArea::ExtendFlag | TextArea::RectFlag },  // end-of-line(extend, rect)
+    { Qt::Key_End,       Qt::ShiftModifier,                                                                 &TextArea::endOfLineAP,                      TextArea::ExtendFlag },  // end-of-line(extend)
+    { Qt::Key_End,       Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier,                         &TextArea::endOfFileAP,                      TextArea::ExtendFlag | TextArea::RectFlag },  // end-of-file(extend, rect)
+    { Qt::Key_End,       Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier,                        &TextArea::endOfFileAP,                      TextArea::ExtendFlag | TextArea::RectFlag },  // end-of-file(extend, rect)
+    { Qt::Key_End,       Qt::ControlModifier | Qt::ShiftModifier,                                           &TextArea::endOfFileAP,                      TextArea::ExtendFlag },  // end-of-file(extend)
+    { Qt::Key_Home,      Qt::AltModifier | Qt::ShiftModifier,                                               &TextArea::beginningOfLineAP,                TextArea::ExtendFlag | TextArea::RectFlag },  // beginning-of-line(extend, rect)
+    { Qt::Key_Home,      Qt::MetaModifier | Qt::ShiftModifier,                                              &TextArea::beginningOfLineAP,                TextArea::ExtendFlag | TextArea::RectFlag },  // beginning-of-line(extend, rect)
+    { Qt::Key_Home,      Qt::ShiftModifier,                                                                 &TextArea::beginningOfLineAP,                TextArea::ExtendFlag },  // beginning-of-line(extend)
+    { Qt::Key_Home,      Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier,                         &TextArea::beginningOfFileAP,                TextArea::ExtendFlag | TextArea::RectFlag },  // beginning-of-file(extend, rect)
+    { Qt::Key_Home,      Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier,                        &TextArea::beginningOfFileAP,                TextArea::ExtendFlag | TextArea::RectFlag },  // beginning-of-file(extend, rect)
+    { Qt::Key_Home,      Qt::ControlModifier | Qt::ShiftModifier,                                           &TextArea::beginningOfFileAP,                TextArea::ExtendFlag },  // beginning-of-file(extend)
+    { Qt::Key_Insert,    Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier,                         &TextArea::copyPrimaryAP,                    TextArea::RectFlag },  // copy-primary(rect)
+    { Qt::Key_Insert,    Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier,                        &TextArea::copyPrimaryAP,                    TextArea::RectFlag },  // copy-primary(rect)
+    { Qt::Key_Delete,    Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier,                         &TextArea::cutPrimaryAP,                     TextArea::RectFlag },  // cut-primary(rect)
+    { Qt::Key_Delete,    Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier,                        &TextArea::cutPrimaryAP,                     TextArea::RectFlag },  // cut-primary(rect)
+    { Qt::Key_Space,     Qt::ControlModifier | Qt::ShiftModifier,                                           &TextArea::keySelectAP,                      TextArea::NoneFlag },  // key-select()
+    { Qt::Key_Space,     Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier,                         &TextArea::keySelectAP,                      TextArea::RectFlag },  // key-select(rect)
+    { Qt::Key_Space,     Qt::ControlModifier | Qt::MetaModifier | Qt::ShiftModifier,                        &TextArea::keySelectAP,                      TextArea::RectFlag },  // key-select(rect)
+    { Qt::Key_Delete,    Qt::ControlModifier | Qt::ShiftModifier,                                           &TextArea::cutPrimaryAP,                     TextArea::NoneFlag },  // cut-primary()
+    { Qt::Key_Delete,    Qt::ControlModifier,                                                               &TextArea::deleteToEndOfLineAP,              TextArea::NoneFlag },  // delete-to-end-of-line()
+    { Qt::Key_U,         Qt::ControlModifier,                                                               &TextArea::deleteToStartOfLineAP,            TextArea::NoneFlag },  // delete-to-start-of-line()
+    { Qt::Key_Slash,     Qt::ControlModifier,                                                               &TextArea::selectAllAP,                      TextArea::NoneFlag },  // select-all()
+    { Qt::Key_Backslash, Qt::ControlModifier,                                                               &TextArea::deselectAllAP,                    TextArea::NoneFlag },  // deselect-all()
+    { Qt::Key_Tab,       Qt::NoModifier,                                                                    &TextArea::processTabAP,                     TextArea::NoneFlag },  // process-tab()
+    { Qt::Key_Right,     Qt::NoModifier,                                                                    &TextArea::forwardCharacterAP,               TextArea::NoneFlag },  // forward-character()
+    { Qt::Key_Left,      Qt::NoModifier,                                                                    &TextArea::backwardCharacterAP,              TextArea::NoneFlag },  // backward-character()
+    { Qt::Key_Up,        Qt::NoModifier,                                                                    &TextArea::processUpAP,                      TextArea::NoneFlag },  // process-up()
+    { Qt::Key_Down,      Qt::NoModifier,                                                                    &TextArea::processDownAP,                    TextArea::NoneFlag },  // process-down()
+#ifdef Q_OS_MACOS
+    { Qt::Key_Right,     Qt::KeypadModifier,                                                                &TextArea::forwardCharacterAP,               TextArea::NoneFlag },  // forward-character()
+    { Qt::Key_Left,      Qt::KeypadModifier,                                                                &TextArea::backwardCharacterAP,              TextArea::NoneFlag },  // backward-character()
+    { Qt::Key_Up,        Qt::KeypadModifier,                                                                &TextArea::processUpAP,                      TextArea::NoneFlag },  // process-up()
+    { Qt::Key_Down,      Qt::KeypadModifier,                                                                &TextArea::processDownAP,                    TextArea::NoneFlag },  // process-down()
+#endif
+    { Qt::Key_Return,    Qt::NoModifier,                                                                    &TextArea::newlineAP,                        TextArea::NoneFlag },  // newline()
+    { Qt::Key_Enter,     Qt::KeypadModifier,                                                                &TextArea::newlineAP,                        TextArea::NoneFlag },  // newline()
+    { Qt::Key_Backspace, Qt::NoModifier,                                                                    &TextArea::deletePreviousCharacterAP,        TextArea::NoneFlag },  // delete-previous-character()
+    { Qt::Key_Backspace, Qt::ShiftModifier,                                                                 &TextArea::deletePreviousCharacterAP,        TextArea::NoneFlag },  // delete-previous-character()
+    { Qt::Key_Backspace, Qt::ControlModifier | Qt::ShiftModifier,                                           &TextArea::deletePreviousWordAP,             TextArea::NoneFlag },  // delete-previous-word()
+    { Qt::Key_Escape,    Qt::NoModifier,                                                                    &TextArea::processCancelAP,                  TextArea::NoneFlag },  // process-cancel()
+    { Qt::Key_Return,    Qt::ControlModifier,                                                               &TextArea::newlineAndIndentAP,               TextArea::NoneFlag },  // newline-and-indent()
+    { Qt::Key_Enter,     Qt::KeypadModifier | Qt::ControlModifier,                                          &TextArea::newlineAndIndentAP,               TextArea::NoneFlag },  // newline-and-indent()
+    { Qt::Key_Return,    Qt::ShiftModifier,                                                                 &TextArea::newlineNoIndentAP,                TextArea::NoneFlag },  // newline-no-indent()
+    { Qt::Key_Enter,     Qt::KeypadModifier | Qt::ShiftModifier,                                            &TextArea::newlineNoIndentAP,                TextArea::NoneFlag },  // newline-no-indent()
+    { Qt::Key_Home,      Qt::NoModifier,                                                                    &TextArea::beginningOfLineAP,                TextArea::NoneFlag },  // process-home()
+    { Qt::Key_Backspace, Qt::ControlModifier,                                                               &TextArea::deletePreviousWordAP,             TextArea::NoneFlag },  // delete-previous-word()
+    { Qt::Key_End,       Qt::NoModifier,                                                                    &TextArea::endOfLineAP,                      TextArea::NoneFlag },  // end-of-line()
+    { Qt::Key_Delete,    Qt::NoModifier,                                                                    &TextArea::deleteNextCharacterAP,            TextArea::NoneFlag },  // delete-next-character()
+    { Qt::Key_Insert,    Qt::NoModifier,                                                                    &TextArea::toggleOverstrikeAP,               TextArea::NoneFlag },  // toggle-overstrike()
+    { Qt::Key_Up,        Qt::ShiftModifier,                                                                 &TextArea::processShiftUpAP,                 TextArea::NoneFlag },  // process-shift-up()
+    { Qt::Key_Down,      Qt::ShiftModifier,                                                                 &TextArea::processShiftDownAP,               TextArea::NoneFlag },  // process-shift-down()
+    { Qt::Key_Left,      Qt::ShiftModifier,                                                                 &TextArea::keySelectAP,                      TextArea::LeftFlag },  // key-select(left)
+    { Qt::Key_Right,     Qt::ShiftModifier,                                                                 &TextArea::keySelectAP,                      TextArea::RightFlag },  // key-select(right)
+#ifdef Q_OS_MACOS
+    { Qt::Key_Up,        Qt::ShiftModifier | Qt::KeypadModifier,                                            &TextArea::processShiftUpAP,                 TextArea::NoneFlag },  // process-shift-up()
+    { Qt::Key_Down,      Qt::ShiftModifier | Qt::KeypadModifier,                                            &TextArea::processShiftDownAP,               TextArea::NoneFlag },  // process-shift-down()
+    { Qt::Key_Left,      Qt::ShiftModifier | Qt::KeypadModifier,                                            &TextArea::keySelectAP,                      TextArea::LeftFlag },  // key-select(left)
+    { Qt::Key_Right,     Qt::ShiftModifier | Qt::KeypadModifier,                                            &TextArea::keySelectAP,                      TextArea::RightFlag },  // key-select(right)
+#endif
+    { Qt::Key_Delete,    Qt::ShiftModifier,                                                                 &TextArea::cutClipboardAP,                   TextArea::NoneFlag },  // cut-clipboard()
+    { Qt::Key_Insert,    Qt::ControlModifier,                                                               &TextArea::copyClipboardAP,                  TextArea::NoneFlag },  // copy-clipboard()
+    { Qt::Key_Insert,    Qt::ShiftModifier,                                                                 &TextArea::pasteClipboardAP,                 TextArea::NoneFlag },  // paste-clipboard()
+    { Qt::Key_Insert,    Qt::ControlModifier | Qt::ShiftModifier,                                           &TextArea::copyPrimaryAP,                    TextArea::NoneFlag },  // copy-primary()
+    { Qt::Key_Home,      Qt::ControlModifier,                                                               &TextArea::beginningOfFileAP,                TextArea::NoneFlag },  // begining-of-file()
+    { Qt::Key_End,       Qt::ControlModifier,                                                               &TextArea::endOfFileAP,                      TextArea::NoneFlag },  // end-of-file()
+    { Qt::Key_Left,      Qt::ControlModifier,                                                               &TextArea::backwardWordAP,                   TextArea::NoneFlag },  // backward-word()
+    { Qt::Key_Right,     Qt::ControlModifier,                                                               &TextArea::forwardWordAP,                    TextArea::NoneFlag },  // forward-word()
+    { Qt::Key_Up,        Qt::ControlModifier,                                                               &TextArea::backwardParagraphAP,              TextArea::NoneFlag },  // backward-paragraph()
+    { Qt::Key_Down,      Qt::ControlModifier,                                                               &TextArea::forwardParagraphAP,               TextArea::NoneFlag },  // forward-paragraph()
+#ifdef Q_OS_MACOS
+    { Qt::Key_Left,      Qt::ControlModifier | Qt::KeypadModifier,                                          &TextArea::backwardWordAP,                   TextArea::NoneFlag },  // backward-word()
+    { Qt::Key_Right,     Qt::ControlModifier | Qt::KeypadModifier,                                          &TextArea::forwardWordAP,                    TextArea::NoneFlag },  // forward-word()
+    { Qt::Key_Up,        Qt::ControlModifier | Qt::KeypadModifier,                                          &TextArea::backwardParagraphAP,              TextArea::NoneFlag },  // backward-paragraph()
+    { Qt::Key_Down,      Qt::ControlModifier | Qt::KeypadModifier,                                          &TextArea::forwardParagraphAP,               TextArea::NoneFlag },  // forward-paragraph()
+#endif
+};
+#endif
 
 }
 
@@ -922,6 +1085,20 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
         return;
     }
 
+#ifdef USE_NEW_INPUT_HANDLER
+    auto it = std::find_if(std::begin(inputHandlers), std::end(inputHandlers), [event](const InputHandler &handler) {
+       return handler.key == event->key() && handler.modifiers == event->modifiers();
+    });
+
+    if(it != std::end(inputHandlers)) {
+        if(it->handler) {
+            (this->*(it->handler))(it->flags);
+        } else {
+            QApplication::beep();
+        }
+        return;
+    }
+#else
     /* PageLeft and PageRight are placed later than the PageUp/PageDown
        bindings.  Some systems map osfPageLeft to Ctrl-PageUp.
        Overloading this single key gives problems, and we want to give
@@ -947,38 +1124,34 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
         QApplication::beep();
 		return;
     } else if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::ControlModifier))) {
-#if 0
-        previousDocumentAP(); // "previous-document"
+        previousDocumentAP(); // previous-document()
         return;
-#endif
     } else if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::ShiftModifier | Qt::AltModifier))) {
-        previousPageAP(ExtendFlag | RectFlag); // "previous-page(extend, rect)"
+        previousPageAP(ExtendFlag | RectFlag); // previous-page(extend, rect)
         return;
     } else if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::ShiftModifier | Qt::MetaModifier))) {
-        previousPageAP(ExtendFlag | RectFlag); // "previous-page(extend, rect)"
+        previousPageAP(ExtendFlag | RectFlag); // previous-page(extend, rect)
         return;
     } else if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::ShiftModifier))) {
-        previousPageAP(ExtendFlag); // "previous-page(extend)"
+        previousPageAP(ExtendFlag); // previous-page(extend)
         return;
     } else if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::NoModifier))) {
-        previousPageAP(); // "previous-page()"
+        previousPageAP(); // previous-page()
         return;
     } else if ((event->key() == Qt::Key_PageDown) && (event->modifiers() == (Qt::ControlModifier))) {
-#if 0
-        nextDocumentAP(); // "next-document"
+        nextDocumentAP(); // next-document()
         return;
-#endif
     } else if ((event->key() == Qt::Key_PageDown) && (event->modifiers() == (Qt::ShiftModifier | Qt::AltModifier))) {
-        nextPageAP(ExtendFlag | RectFlag); // "next-page(extend, rect)"
+        nextPageAP(ExtendFlag | RectFlag); // next-page(extend, rect)
         return;
     } else if ((event->key() == Qt::Key_PageDown) && (event->modifiers() == (Qt::ShiftModifier | Qt::MetaModifier))) {
-        nextPageAP(ExtendFlag | RectFlag); // "next-page(extend, rect)"
+        nextPageAP(ExtendFlag | RectFlag); // next-page(extend, rect)
         return;
     } else if ((event->key() == Qt::Key_PageDown) && (event->modifiers() == (Qt::ShiftModifier))) {
-        nextPageAP(ExtendFlag); // "next-page(extend)"
+        nextPageAP(ExtendFlag); // next-page(extend)
         return;
     } else if ((event->key() == Qt::Key_PageDown) && (event->modifiers() == (Qt::NoModifier))) {
-        nextPageAP(); // "next-page()"
+        nextPageAP(); // next-page()
         return;
     } else if ((event->key() == Qt::Key_PageUp) && (event->modifiers() == (Qt::ControlModifier | Qt::ShiftModifier | Qt::AltModifier))) {
         pageLeftAP(ExtendFlag | RectFlag); // page-left(extent, rect);
@@ -1351,6 +1524,7 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
         return;
 #endif
     }
+#endif
 
     // NOTE(eteran): these were added because Qt handles disabled shortcuts differently from Motif
     // In Motif, they are apparently still caught, but just do nothing, in Qt, it acts like
@@ -8320,4 +8494,14 @@ void TextArea::scrollToLineAP(int line, EventFlags flags) {
 
     TextDGetScroll(&topLineNum, &horizOffset);
     TextDSetScroll(line, horizOffset);
+}
+
+void TextArea::previousDocumentAP(EventFlags flags) {
+    EMIT_EVENT_0("previous_document");
+    // handled at higher layer, this is a placeholder
+}
+
+void TextArea::nextDocumentAP(EventFlags flags) {
+    EMIT_EVENT_0("next_document");
+    // handled at higher layer, this is a placeholder
 }
