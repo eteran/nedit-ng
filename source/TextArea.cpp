@@ -4029,7 +4029,6 @@ void TextArea::offsetLineStarts(int64_t newTopLineNum) {
     int64_t oldFirstChar  = firstChar_;
     int64_t lineDelta     = newTopLineNum - oldTopLineNum;
     int nVisLines         = nVisibleLines_;
-    int64_t lastLineNum;
 
 	// If there was no offset, nothing needs to be changed
 	if (lineDelta == 0)
@@ -4038,8 +4037,9 @@ void TextArea::offsetLineStarts(int64_t newTopLineNum) {
 	/* Find the new value for firstChar by counting lines from the nearest
 	   known line start (start or end of buffer, or the closest value in the
 	   lineStarts array) */
-	lastLineNum = oldTopLineNum + nVisLines - 1;
-	if (newTopLineNum < oldTopLineNum && newTopLineNum < -lineDelta) {
+    int64_t lastLineNum = oldTopLineNum + nVisLines - 1;
+
+    if (newTopLineNum < oldTopLineNum && newTopLineNum < -lineDelta) {
 		firstChar_ = TextDCountForwardNLines(0, newTopLineNum - 1, true);
 	} else if (newTopLineNum < oldTopLineNum) {
 		firstChar_ = TextDCountBackwardNLines(firstChar_, -lineDelta);
