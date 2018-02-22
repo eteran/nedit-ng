@@ -9,6 +9,7 @@
 #include "X11Colors.h"
 
 #include <QMessageBox>
+#include <QColorDialog>
 
 /**
  * @brief DialogDrawingStyles::DialogDrawingStyles
@@ -245,16 +246,20 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 
         switch(style->font) {
         case PLAIN_FONT:
-            ui.radioPlain->setChecked(true);
+            ui.checkBold->setChecked(false);
+            ui.checkItalic->setChecked(false);
             break;
         case BOLD_FONT:
-            ui.radioBold->setChecked(true);
+            ui.checkBold->setChecked(true);
+            ui.checkItalic->setChecked(false);
             break;
         case ITALIC_FONT:
-            ui.radioItalic->setChecked(true);
+            ui.checkBold->setChecked(false);
+            ui.checkItalic->setChecked(true);
             break;
         case BOLD_ITALIC_FONT:
-            ui.radioBoldItalic->setChecked(true);
+            ui.checkBold->setChecked(true);
+            ui.checkItalic->setChecked(true);
             break;
         }
 
@@ -368,7 +373,9 @@ std::unique_ptr<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbos
         rgb = X11Colors::fromString(hs->bgColor);
         if (!rgb.isValid()) {
             if (verbosity == Verbosity::Verbose) {
-                QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X background color specification: %1").arg(hs->bgColor));
+                QMessageBox::warning(this,
+                                     tr("Invalid Color"),
+                                     tr("Invalid X background color specification: %1").arg(hs->bgColor));
             }
 
             return nullptr;;
@@ -376,11 +383,11 @@ std::unique_ptr<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbos
     }
 
     // read the font buttons 
-    if (ui.radioBold->isChecked()) {
+    if (ui.checkBold->isChecked() && !ui.checkItalic->isChecked()) {
     	hs->font = BOLD_FONT;
-    } else if (ui.radioItalic->isChecked()) {
+    } else if (!ui.checkBold->isChecked() && ui.checkItalic->isChecked()) {
     	hs->font = ITALIC_FONT;
-    } else if (ui.radioBoldItalic->isChecked()) {
+    } else if (ui.checkBold->isChecked() && ui.checkItalic->isChecked()) {
     	hs->font = BOLD_ITALIC_FONT;
     } else {
     	hs->font = PLAIN_FONT;
@@ -508,4 +515,32 @@ int DialogDrawingStyles::countPlainEntries() const {
         }
     }
     return count;
+}
+
+/**
+ * @brief DialogColors::chooseColor
+ * @param edit
+ */
+void DialogDrawingStyles::chooseColor(QLineEdit *edit) {
+
+    QString name = edit->text();
+
+    QColor color = QColorDialog::getColor(X11Colors::fromString(name), this);
+    if(color.isValid()) {
+        edit->setText(tr("#%1").arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0')));
+    }
+}
+
+/**
+ * @brief DialogDrawingStyles::on_buttonForeground_clicked
+ */
+void DialogDrawingStyles::on_buttonForeground_clicked() {
+    chooseColor(ui.editColorFG);
+}
+
+/**
+ * @brief DialogDrawingStyles::on_buttonBackground_clicked
+ */
+void DialogDrawingStyles::on_buttonBackground_clicked() {
+    chooseColor(ui.editColorBG);
 }

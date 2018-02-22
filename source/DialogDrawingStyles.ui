@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>557</width>
-    <height>383</height>
+    <width>506</width>
+    <height>365</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -28,7 +28,7 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
@@ -128,7 +128,18 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="editColorFG"/>
+        <layout class="QHBoxLayout" name="horizontalLayout_3">
+         <item>
+          <widget class="QLineEdit" name="editColorFG"/>
+         </item>
+         <item>
+          <widget class="QToolButton" name="buttonForeground">
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QLabel" name="label_4">
@@ -138,7 +149,18 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="editColorBG"/>
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
+         <item>
+          <widget class="QLineEdit" name="editColorBG"/>
+         </item>
+         <item>
+          <widget class="QToolButton" name="buttonBackground">
+           <property name="text">
+            <string>...</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <widget class="QLabel" name="label_5">
@@ -153,34 +175,17 @@
           <string/>
          </property>
          <layout class="QGridLayout" name="gridLayout">
-          <item row="0" column="0">
-           <widget class="QRadioButton" name="radioPlain">
-            <property name="text">
-             <string>P&amp;lain</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
           <item row="0" column="1">
-           <widget class="QRadioButton" name="radioItalic">
+           <widget class="QCheckBox" name="checkItalic">
             <property name="text">
-             <string>&amp;Italic</string>
+             <string>Italic</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QRadioButton" name="radioBold">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="checkBold">
             <property name="text">
-             <string>&amp;Bold</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1">
-           <widget class="QRadioButton" name="radioBoldItalic">
-            <property name="text">
-             <string>B&amp;old Italic</string>
+             <string>Bold</string>
             </property>
            </widget>
           </item>

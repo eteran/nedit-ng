@@ -37,6 +37,8 @@ private Q_SLOTS:
 	void on_buttonDown_clicked();
 	void on_buttonBox_clicked(QAbstractButton *button);
 	void on_buttonBox_accepted();
+    void on_buttonForeground_clicked();
+    void on_buttonBackground_clicked();
 	
 private:
     void updateButtonStates(const QModelIndex &current);
@@ -47,6 +49,7 @@ private:
 	bool updateCurrentItem();
     bool updateCurrentItem(const QModelIndex &index);
     int countPlainEntries() const;
+    void chooseColor(QLineEdit *edit);
 
 private:
 	Ui::DialogDrawingStyles ui;
