@@ -100,6 +100,8 @@ add_executable(nedit-ng
 	${QRC_SOURCES}
 	${UIC_SOURCES}
 
+	Main.cpp
+	Main.h
 	FixedFontSelector.h
 	FixedFontSelector.cpp
 	ElidedLabel.h
