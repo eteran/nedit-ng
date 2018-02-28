@@ -35,7 +35,7 @@
 #include <memory>
 #include "Font.h"
 
-//#define USE_NEW_INPUT_HANDLER
+#define USE_NEW_INPUT_HANDLER
 
 #define EMIT_EVENT_0(name)                                       \
     do {                                                         \
@@ -304,14 +304,6 @@ struct InputHandler {
 
 // NOTE(eteran): a nullptr handler just means "beep"
 constexpr InputHandler inputHandlers[] = {
-    // NOTE(eteran): higher lever should capture these, so let's avoid inserting chars from this event
-    { Qt::Key_Z,         Qt::ControlModifier,					                                            nullptr,                                     TextArea::NoneFlag },
-    { Qt::Key_Z,         Qt::ShiftModifier | Qt::ControlModifier,                                           nullptr,                                     TextArea::NoneFlag },
-    { Qt::Key_X,         Qt::ShiftModifier | Qt::ControlModifier,                                           nullptr,                                     TextArea::NoneFlag },
-    { Qt::Key_C,         Qt::ControlModifier,					                                            nullptr,                                     TextArea::NoneFlag },
-    { Qt::Key_B,         Qt::ControlModifier,					                                            nullptr,                                     TextArea::NoneFlag },
-
-	// real handlers
     { Qt::Key_PageUp,    Qt::ControlModifier,										                        &TextArea::previousDocumentAP,               TextArea::NoneFlag }, // previous-document()
     { Qt::Key_PageDown,  Qt::ControlModifier,									                            &TextArea::nextDocumentAP,                   TextArea::NoneFlag },	 // next-document()
     { Qt::Key_PageUp,    Qt::ShiftModifier | Qt::AltModifier,						                        &TextArea::previousPageAP,                   TextArea::ExtendFlag | TextArea::RectFlag },  // previous-page(extend, rect)
@@ -1533,6 +1525,9 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
     if(event->modifiers() == Qt::ControlModifier) {
         switch(event->key()) {
         case Qt::Key_W:
+        case Qt::Key_Z:
+        case Qt::Key_C:
+        case Qt::Key_B:
         case Qt::Key_X:
         case Qt::Key_D:
         case Qt::Key_Apostrophe:
@@ -1542,6 +1537,15 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
         }
     }
 
+    // See above note...
+    if(event->modifiers() == (Qt::ShiftModifier | Qt::ControlModifier)) {
+        switch(event->key()) {
+        case Qt::Key_Z:
+        case Qt::Key_X:
+            QApplication::beep();
+            return;
+        }
+    }
     // if the user prefers, we can hide the pointer during typing
     if(P_hidePointer) {
         setCursor(Qt::BlankCursor);
