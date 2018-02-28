@@ -3648,21 +3648,6 @@ void TextArea::drawString(QPainter *painter, int style, int64_t x, int y, int64_
 		return;
 	}
 
-#if 0
-    QFontMetrics fm(renderFont);
-
-	/* If any space around the character remains unfilled (due to use of
-	   different sized fonts for highlighting), fill in above or below
-	   to erase previously drawn characters */
-	if (fm.ascent() < ascent_) {
-		painter->fillRect(QRect(x, y, toX - x, ascent_ - fm.ascent()), bground);
-	}
-
-	if (fm.descent() < descent_) {
-		painter->fillRect(QRect(x, y + ascent_ + fm.descent(), toX - x, descent_ - fm.descent()), bground);
-	}
-#endif
-
 	// Underline if style is secondary selection
 	if (style & SECONDARY_MASK || underlineStyle) {
         renderFont.setUnderline(true);
@@ -3676,10 +3661,6 @@ void TextArea::drawString(QPainter *painter, int style, int64_t x, int y, int64_
                 static_cast<int>(toX - x),
                 ascent_ + descent_);
 
-    // TODO(eteran): 2.0, OPTIMIZATION? since Qt will auto-fill the BG with the
-	//               default base color we only need to play with the
-	//               background mode if drawing a non-base color.
-	//               Probably same with font
     painter->save();
     painter->setFont(renderFont);
     painter->fillRect(rect, bground);
