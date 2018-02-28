@@ -466,7 +466,7 @@ static std::error_code scrollDownMS(DocumentWidget *document, Arguments argument
 
     if(auto window = MainWindow::fromDocument(document)) {
         if(TextArea *area = window->lastFocus()) {
-            area->scrollDownAP(count, units, TextArea::SupressRecording);                                                                             \
+            area->scrollDownAP(count, units, TextArea::SupressRecording);
         }
     }
 
@@ -505,7 +505,7 @@ static std::error_code scrollUpMS(DocumentWidget *document, Arguments arguments,
 
     if(auto window = MainWindow::fromDocument(document)) {
         if(TextArea *area = window->lastFocus()) {
-            area->scrollUpAP(count, units, TextArea::SupressRecording);                                                                             \
+            area->scrollUpAP(count, units, TextArea::SupressRecording);
         }
     }
 
