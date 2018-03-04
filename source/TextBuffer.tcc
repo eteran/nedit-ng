@@ -334,11 +334,6 @@ void BasicTextBuffer<Ch, Tr>::BufOverlayRectEx(int64_t startPos, int64_t rectSta
         rectEnd = rectStart + textWidthEx(text, tabDist_);
     }
 
-#if 0
-    // NOTE(eteran): this call seems entirely redundant
-    lineStartPos = BufStartOfLine(startPos);
-#endif
-
     const int64_t nDeleted = BufEndOfLine(BufCountForwardNLines(startPos, nLines)) - lineStartPos;
     callPreDeleteCBs(lineStartPos, nDeleted);
 
