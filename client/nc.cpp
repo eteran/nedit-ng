@@ -65,26 +65,29 @@ int nextArg(const QStringList &args, int argIndex) {
 */
 void copyCommandLineArg(CommandLine *commandLine, const QString &arg) {
 
+    constexpr auto Quote = QLatin1Char('\'');
+
     auto outPtr = std::back_inserter(commandLine->shell);
 
-    *outPtr++ = QLatin1Char('\'');
+    *outPtr++ = Quote;
     for(QChar ch : arg) {
 
-        if (ch == QLatin1Char('\'')) {
-            *outPtr++ = QLatin1Char('\'');
+        if (ch == Quote) {
+            *outPtr++ = Quote;
             *outPtr++ = QLatin1Char('\\');
         }
 
         *outPtr++ = ch;
 
-        if (ch == QLatin1Char('\'')) {
-            *outPtr++ = QLatin1Char('\'');
+        if (ch == Quote) {
+            *outPtr++ = Quote;
         }
     }
 
-    *outPtr++ = QLatin1Char('\'');
+    *outPtr++ = Quote;
     *outPtr++ = QLatin1Char(' ');
 }
+
 /**
  * @brief printNcVersion
  */
