@@ -47,12 +47,14 @@ struct {
  * @param args
  * @param argIndex
  */
-void nextArg(const QStringList &args, int *argIndex) {
-    if (*argIndex + 1 >= args.size()) {
-        fprintf(stderr, "nc: %s requires an argument\n%s", qPrintable(args[*argIndex]), cmdLineHelp);
+int nextArg(const QStringList &args, int argIndex) {
+    if (argIndex + 1 >= args.size()) {
+        fprintf(stderr, "nc: %s requires an argument\n%s", qPrintable(args[argIndex]), cmdLineHelp);
         exit(EXIT_FAILURE);
     }
-    (*argIndex)++;
+
+    ++argIndex;
+    return argIndex;
 }
 
 /* Copies a given nc command line argument to the server startup command
@@ -135,13 +137,13 @@ bool parseCommandLine(const QStringList &args, CommandLine *commandLine) {
         } else if (opts && args[i] == QLatin1String("-wait")) {
             ServerPreferences.waitForClose = true;
         } else if (opts && args[i] == QLatin1String("-svrname")) {
-            nextArg(args, &i);
+            i = nextArg(args, i);
             ServerPreferences.serverName = args[i];
         } else if (opts && args[i] == QLatin1String("-svrcmd")) {
-            nextArg(args, &i);
+            i = nextArg(args, i);
             ServerPreferences.serverCmd = args[i];
         } else if (opts && args[i] == QLatin1String("-timeout")) {
-            nextArg(args, &i);
+            i = nextArg(args, i);
 
             bool ok;
             int n = args[i].toInt(&ok);
@@ -151,16 +153,16 @@ bool parseCommandLine(const QStringList &args, CommandLine *commandLine) {
                 ServerPreferences.timeOut = n;
             }
         } else if (opts && args[i] == QLatin1String("-do")) {
-            nextArg(args, &i);
+            i = nextArg(args, i);
             toDoCommand = args[i];
         } else if (opts && args[i] == QLatin1String("-lm")) {
             copyCommandLineArg(commandLine, args[i]);
-            nextArg(args, &i);
+            i = nextArg(args, i);
             langMode = args[i];
             copyCommandLineArg(commandLine, args[i]);
         } else if (opts && (args[i] == QLatin1String("-g") || args[i] == QLatin1String("-geometry"))) {
             copyCommandLineArg(commandLine, args[i]);
-            nextArg(args, &i);
+            i = nextArg(args, i);
             geometry = args[i];
             copyCommandLineArg(commandLine, args[i]);
         } else if (opts && args[i] == QLatin1String("-read")) {
@@ -179,7 +181,7 @@ bool parseCommandLine(const QStringList &args, CommandLine *commandLine) {
             iconic = 1;
             copyCommandLineArg(commandLine, args[i]);
         } else if (opts && args[i] == QLatin1String("-line")) {
-            nextArg(args, &i);
+            i = nextArg(args, i);
 
             bool ok;
             int lineArg = args[i].toInt(&ok);
