@@ -7,9 +7,32 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5 5.4.0 REQUIRED Widgets Network Xml PrintSupport)
 find_package(Boost 1.35 REQUIRED)
+find_package(Qt5LinguistTools)
+
+set(TRANSLATIONS
+    res/translations/nedit-ng_fr.ts
+)
+
+qt5_add_translation(QM_FILES ${TRANSLATIONS})
+set(QM_FILES ${QM_FILES} PARENT_SCOPE)
+add_custom_target (translations ALL DEPENDS ${QM_FILES})
+
+# Create translations QRC file - ts.qrc
+set(TRANSLATIONS_QRC "${CMAKE_CURRENT_BINARY_DIR}/translations.qrc")
+
+file(WRITE ${TRANSLATIONS_QRC} "<RCC>\n\t<qresource prefix=\"/translations\">")
+foreach(QM_FILE ${QM_FILES})
+	get_filename_component(QM_FILE_NAME ${QM_FILE} NAME)
+	file(APPEND ${TRANSLATIONS_QRC} "\n\t\t<file>${QM_FILE_NAME}</file>")
+endforeach()
+
+file(APPEND ${TRANSLATIONS_QRC} "\n\t</qresource>\n</RCC>")
+list(APPEND QRC_FILES ${TRANSLATIONS_QRC})
+
 
 qt5_add_resources(QRC_SOURCES
 	nedit.qrc
+	${TRANSLATIONS_QRC}
 )
 
 qt5_wrap_cpp(MOC_SOURCES
