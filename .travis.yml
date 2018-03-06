@@ -21,8 +21,8 @@ before_install:
     - sudo apt-get update -qq
 
 install:
-    - if [ "$QT_BASE" = "55" ]; then sudo apt-get install -qq qt55base qt55xmlpatterns; source /opt/qt55/bin/qt55-env.sh; fi
-    - if [ "$QT_BASE" = "56" ]; then sudo apt-get install -qq qt56base qt56xmlpatterns; source /opt/qt56/bin/qt56-env.sh; fi
+    - if [ "$QT_BASE" = "55" ]; then sudo apt-get install -qq qt55base qt55xmlpatterns qt59tools; source /opt/qt55/bin/qt55-env.sh; fi
+    - if [ "$QT_BASE" = "56" ]; then sudo apt-get install -qq qt56base qt56xmlpatterns qt59tools; source /opt/qt56/bin/qt56-env.sh; fi
 
 before_script:
     - mkdir build && cd build && CXX=g++-5 cmake ..
