@@ -16,6 +16,14 @@ auto DEFAULT_BOLD_FONT        = QLatin1String("Courier New,10,-1,5,75,0,0,0,0,0"
 auto DEFAULT_ITALIC_FONT      = QLatin1String("Courier New,10,-1,5,50,1,0,0,0,0");
 auto DEFAULT_BOLD_ITALIC_FONT = QLatin1String("Courier New,10,-1,5,75,1,0,0,0,0");
 
+#if defined(Q_OS_LINUX)
+    auto shellCommandsResource = QLatin1String("res/DefaultShellCommandsLinux.txt");
+#elif defined(Q_OS_FREEBSD)
+    auto shellCommandsResource = QLatin1String("res/DefaultShellCommandsFreeBSD.txt");
+#else
+    auto shellCommandsResource = QLatin1String("res/DefaultShellCommands.txt");
+#endif
+
 template <class T>
 using IsEnum = typename std::enable_if<std::is_enum<T>::value>::type;
 
@@ -89,15 +97,8 @@ void Settings::loadPreferences() {
     QString filename = configFile();
     QSettings settings(filename, QSettings::IniFormat);
 
-    fileVersion   = settings.value(tr("nedit.fileVersion"),   1).toInt();
-
-#if defined(Q_OS_LINUX)
-    shellCommands = settings.value(tr("nedit.shellCommands"), loadResource(QLatin1String("res/DefaultShellCommandsLinux.txt"))).toString();
-#elif defined(Q_OS_FREEBSD)
-    shellCommands = settings.value(tr("nedit.shellCommands"), loadResource(QLatin1String("res/DefaultShellCommandsFreeBSD.txt"))).toString();
-#else
-    shellCommands = settings.value(tr("nedit.shellCommands"), loadResource(QLatin1String("res/DefaultShellCommands.txt"))).toString();
-#endif
+    fileVersion           = settings.value(tr("nedit.fileVersion"),           1).toInt();
+    shellCommands         = settings.value(tr("nedit.shellCommands"),         loadResource(shellCommandsResource)).toString();
     macroCommands         = settings.value(tr("nedit.macroCommands"),         loadResource(QLatin1String("res/DefaultMacroCommands.txt"))).toString();
     bgMenuCommands        = settings.value(tr("nedit.bgMenuCommands"),        loadResource(QLatin1String("res/DefaultBackgroundMenuCommands.txt"))).toString();
     highlightPatterns     = settings.value(tr("nedit.highlightPatterns"),     loadResource(QLatin1String("res/DefaultHighlightPatterns.txt"))).toString();
