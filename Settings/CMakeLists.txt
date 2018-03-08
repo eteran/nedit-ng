@@ -17,7 +17,6 @@ add_library (Settings
 	ShowMatchingStyle.h
 	TruncSubstitution.h
 	WrapStyle.h
-	ReplaceAllDefaultScope.h
 )
 
 target_include_directories (Settings PUBLIC

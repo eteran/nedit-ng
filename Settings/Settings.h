@@ -7,7 +7,6 @@
 #include "ShowMatchingStyle.h"
 #include "TruncSubstitution.h"
 #include "SearchType.h"
-#include "ReplaceAllDefaultScope.h"
 
 #include <QFont>
 #include <QObject>
