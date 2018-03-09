@@ -713,7 +713,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	// Find windows that are currently using this pattern set and re-do the highlighting
     for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         if (!patSet->patterns.empty()) {
-            if (document->GetLanguageMode() != PLAIN_LANGUAGE_MODE && (LanguageModeName(document->GetLanguageMode()) == patSet->languageMode)) {
+            if (document->GetLanguageMode() != PLAIN_LANGUAGE_MODE && (Preferences::LanguageModeName(document->GetLanguageMode()) == patSet->languageMode)) {
 				/*  The user worked on the current document's language mode, so
 				    we have to make some changes immediately. For inactive
 				    modes, the changes will be activated on activation.  */
@@ -726,7 +726,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 					}
 
 					//  Reactivate highlighting if it's default
-                    document->highlightSyntax_ = GetPrefHighlightSyntax();
+                    document->highlightSyntax_ = Preferences::GetPrefHighlightSyntax();
 				}
 
                 if (document->highlightSyntax_) {
@@ -753,7 +753,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	}
 
 	// Note that preferences have been changed
-	MarkPrefsChanged();
+    Preferences::MarkPrefsChanged();
 	return true;
 }
 

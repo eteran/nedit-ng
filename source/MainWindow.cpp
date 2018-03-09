@@ -160,8 +160,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     setupPrevOpenMenuActions();
     updatePrevOpenMenu();
 
-    showISearchLine_       = GetPrefISearchLine();
-    showLineNumbers_       = GetPrefLineNums();
+    showISearchLine_       = Preferences::GetPrefISearchLine();
+    showLineNumbers_       = Preferences::GetPrefLineNums();
 
     // make sure that the ifind button has an icon
     ui.buttonIFind->setIcon(QIcon::fromTheme(tr("edit-find"), QIcon(QLatin1String("://res/edit-find.svg"))));
@@ -169,7 +169,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 	// default to hiding the optional panels
     ui.incrementalSearchFrame->setVisible(showISearchLine_);
 
-    ui.action_Statistics_Line->setChecked(GetPrefStatsLine());
+    ui.action_Statistics_Line->setChecked(Preferences::GetPrefStatsLine());
 
     MainWindow::CheckCloseDimEx();
 
@@ -197,12 +197,12 @@ void MainWindow::parseGeometry(QString geometry) {
        are the same as the rows and cols preferences, and specifying a window
        location will force all the windows to pile on top of one another */
     if (geometry.isEmpty()) {
-        geometry = GetPrefGeometry();
+        geometry = Preferences::GetPrefGeometry();
     }
 
     if (geometry.isEmpty()) {
-        rows = GetPrefRows();
-        cols = GetPrefCols();
+        rows = Preferences::GetPrefRows();
+        cols = Preferences::GetPrefCols();
     } else {
 
         QRegExp regex(QLatin1String("(?:([0-9]+)(?:[xX]([0-9]+)(?:([\\+-][0-9]+)(?:([\\+-][0-9]+))?)?)?)?"));
@@ -253,7 +253,7 @@ void MainWindow::setupTabBar() {
 void MainWindow::setupGlobalPrefenceDefaults() {
 
     // Default Indent
-    switch(GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
+    switch(Preferences::GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
     case IndentStyle::None:
         no_signals(ui.action_Default_Indent_Off)->setChecked(true);
         break;
@@ -268,7 +268,7 @@ void MainWindow::setupGlobalPrefenceDefaults() {
     }
 
     // Default Wrap
-    switch(GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
+    switch(Preferences::GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
     case WrapStyle::None:
         no_signals(ui.action_Default_Wrap_None)->setChecked(true);
         break;
@@ -283,12 +283,12 @@ void MainWindow::setupGlobalPrefenceDefaults() {
     }
 
     // Default Search Settings
-    no_signals(ui.action_Default_Search_Verbose)->setChecked(GetPrefSearchDlogs());
-    no_signals(ui.action_Default_Search_Wrap_Around)->setChecked(GetPrefSearchWraps() == WrapMode::Wrap);
-    no_signals(ui.action_Default_Search_Beep_On_Search_Wrap)->setChecked(GetPrefBeepOnSearchWrap());
-    no_signals(ui.action_Default_Search_Keep_Dialogs_Up)->setChecked(GetPrefKeepSearchDlogs());
+    no_signals(ui.action_Default_Search_Verbose)->setChecked(Preferences::GetPrefSearchDlogs());
+    no_signals(ui.action_Default_Search_Wrap_Around)->setChecked(Preferences::GetPrefSearchWraps() == WrapMode::Wrap);
+    no_signals(ui.action_Default_Search_Beep_On_Search_Wrap)->setChecked(Preferences::GetPrefBeepOnSearchWrap());
+    no_signals(ui.action_Default_Search_Keep_Dialogs_Up)->setChecked(Preferences::GetPrefKeepSearchDlogs());
 
-    switch(GetPrefSearch()) {
+    switch(Preferences::GetPrefSearch()) {
     case SearchType::Literal:
         no_signals(ui.action_Default_Search_Literal)->setChecked(true);
         break;
@@ -310,35 +310,35 @@ void MainWindow::setupGlobalPrefenceDefaults() {
     }
 
     // Default syntax
-    if(GetPrefHighlightSyntax()) {
+    if(Preferences::GetPrefHighlightSyntax()) {
         no_signals(ui.action_Default_Syntax_On)->setChecked(true);
     } else {
         no_signals(ui.action_Default_Syntax_Off)->setChecked(true);
     }
 
-    no_signals(ui.action_Default_Apply_Backlighting)->setChecked(GetPrefBacklightChars());
+    no_signals(ui.action_Default_Apply_Backlighting)->setChecked(Preferences::GetPrefBacklightChars());
 
     // Default tab settings
-    no_signals(ui.action_Default_Tab_Open_File_In_New_Tab)->setChecked(GetPrefOpenInTab());
-    no_signals(ui.action_Default_Tab_Show_Tab_Bar)->setChecked(GetPrefTabBar());
-    no_signals(ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open)->setChecked(GetPrefTabBarHideOne());
-    no_signals(ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows)->setChecked(GetPrefGlobalTabNavigate());
-    no_signals(ui.action_Default_Tab_Sort_Tabs_Alphabetically)->setChecked(GetPrefSortTabs());
+    no_signals(ui.action_Default_Tab_Open_File_In_New_Tab)->setChecked(Preferences::GetPrefOpenInTab());
+    no_signals(ui.action_Default_Tab_Show_Tab_Bar)->setChecked(Preferences::GetPrefTabBar());
+    no_signals(ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open)->setChecked(Preferences::GetPrefTabBarHideOne());
+    no_signals(ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows)->setChecked(Preferences::GetPrefGlobalTabNavigate());
+    no_signals(ui.action_Default_Tab_Sort_Tabs_Alphabetically)->setChecked(Preferences::GetPrefSortTabs());
 
     // enable moving tabs if they aren't sortable
-    tabWidget()->tabBar()->setMovable(!GetPrefSortTabs());
+    tabWidget()->tabBar()->setMovable(!Preferences::GetPrefSortTabs());
 
-    no_signals(ui.tabWidget)->tabBar()->setVisible(GetPrefTabBar());
-    ui.tabWidget->setTabBarAutoHide(GetPrefTabBarHideOne());
+    no_signals(ui.tabWidget)->tabBar()->setVisible(Preferences::GetPrefTabBar());
+    ui.tabWidget->setTabBarAutoHide(Preferences::GetPrefTabBarHideOne());
 
-    no_signals(ui.action_Default_Show_Tooltips)->setChecked(GetPrefToolTips());
-    no_signals(ui.action_Default_Statistics_Line)->setChecked(GetPrefStatsLine());
-    no_signals(ui.action_Default_Incremental_Search_Line)->setChecked(GetPrefISearchLine());
-    no_signals(ui.action_Default_Show_Line_Numbers)->setChecked(GetPrefLineNums());
-    no_signals(ui.action_Default_Make_Backup_Copy)->setChecked(GetPrefSaveOldVersion());
-    no_signals(ui.action_Default_Incremental_Backup)->setChecked(GetPrefAutoSave());
+    no_signals(ui.action_Default_Show_Tooltips)->setChecked(Preferences::GetPrefToolTips());
+    no_signals(ui.action_Default_Statistics_Line)->setChecked(Preferences::GetPrefStatsLine());
+    no_signals(ui.action_Default_Incremental_Search_Line)->setChecked(Preferences::GetPrefISearchLine());
+    no_signals(ui.action_Default_Show_Line_Numbers)->setChecked(Preferences::GetPrefLineNums());
+    no_signals(ui.action_Default_Make_Backup_Copy)->setChecked(Preferences::GetPrefSaveOldVersion());
+    no_signals(ui.action_Default_Incremental_Backup)->setChecked(Preferences::GetPrefAutoSave());
 
-    switch(GetPrefShowMatching()) {
+    switch(Preferences::GetPrefShowMatching()) {
     case ShowMatchingStyle::None:
         no_signals(ui.action_Default_Matching_Off)->setChecked(true);
         break;
@@ -350,17 +350,17 @@ void MainWindow::setupGlobalPrefenceDefaults() {
         break;
     }
 
-    no_signals(ui.action_Default_Matching_Syntax_Based)->setChecked(GetPrefMatchSyntaxBased());
-    no_signals(ui.action_Default_Terminate_with_Line_Break_on_Save)->setChecked(GetPrefAppendLF());
-    no_signals(ui.action_Default_Popups_Under_Pointer)->setChecked(GetPrefRepositionDialogs());
-    no_signals(ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom)->setChecked(GetPrefAutoScroll());
-    no_signals(ui.action_Default_Warnings_Files_Modified_Externally)->setChecked(GetPrefWarnFileMods());
-    no_signals(ui.action_Default_Warnings_Check_Modified_File_Contents)->setChecked(GetPrefWarnRealFileMods());
-    no_signals(ui.action_Default_Warnings_On_Exit)->setChecked(GetPrefWarnExit());
-    ui.action_Default_Warnings_Check_Modified_File_Contents->setEnabled(GetPrefWarnFileMods());
+    no_signals(ui.action_Default_Matching_Syntax_Based)->setChecked(Preferences::GetPrefMatchSyntaxBased());
+    no_signals(ui.action_Default_Terminate_with_Line_Break_on_Save)->setChecked(Preferences::GetPrefAppendLF());
+    no_signals(ui.action_Default_Popups_Under_Pointer)->setChecked(Preferences::GetPrefRepositionDialogs());
+    no_signals(ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom)->setChecked(Preferences::GetPrefAutoScroll());
+    no_signals(ui.action_Default_Warnings_Files_Modified_Externally)->setChecked(Preferences::GetPrefWarnFileMods());
+    no_signals(ui.action_Default_Warnings_Check_Modified_File_Contents)->setChecked(Preferences::GetPrefWarnRealFileMods());
+    no_signals(ui.action_Default_Warnings_On_Exit)->setChecked(Preferences::GetPrefWarnExit());
+    ui.action_Default_Warnings_Check_Modified_File_Contents->setEnabled(Preferences::GetPrefWarnFileMods());
 
-    no_signals(ui.action_Default_Sort_Open_Prev_Menu)->setChecked(GetPrefSortOpenPrevMenu());
-    no_signals(ui.action_Default_Show_Path_In_Windows_Menu)->setChecked(GetPrefShowPathInWindowsMenu());
+    no_signals(ui.action_Default_Sort_Open_Prev_Menu)->setChecked(Preferences::GetPrefSortOpenPrevMenu());
+    no_signals(ui.action_Default_Show_Path_In_Windows_Menu)->setChecked(Preferences::GetPrefShowPathInWindowsMenu());
 }
 
 /**
@@ -369,7 +369,7 @@ void MainWindow::setupGlobalPrefenceDefaults() {
 void MainWindow::setupDocumentPrefernceDefaults() {
 
     // based on document, which defaults to this
-    switch(GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
+    switch(Preferences::GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
     case IndentStyle::None:
         no_signals(ui.action_Indent_Off)->setChecked(true);
         break;
@@ -384,7 +384,7 @@ void MainWindow::setupDocumentPrefernceDefaults() {
     }
 
     // based on document, which defaults to this
-    switch(GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
+    switch(Preferences::GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
     case WrapStyle::None:
         no_signals(ui.action_Wrap_None)->setChecked(true);
         break;
@@ -398,7 +398,7 @@ void MainWindow::setupDocumentPrefernceDefaults() {
         break;
     }
 
-    switch(GetPrefShowMatching()) {
+    switch(Preferences::GetPrefShowMatching()) {
     case ShowMatchingStyle::None:
         no_signals(ui.action_Matching_Off)->setChecked(true);
         break;
@@ -410,7 +410,7 @@ void MainWindow::setupDocumentPrefernceDefaults() {
         break;
     }
 
-    if(GetPrefSmartTags()) {
+    if(Preferences::GetPrefSmartTags()) {
         no_signals(ui.action_Default_Tag_Smart)->setChecked(true);
     } else {
         no_signals(ui.action_Default_Tag_Show_All)->setChecked(true);
@@ -423,14 +423,14 @@ void MainWindow::setupDocumentPrefernceDefaults() {
 void MainWindow::setupMenuDefaults() {
 
     // active settings
-    no_signals(ui.action_Statistics_Line)->setChecked(GetPrefStatsLine());
-    no_signals(ui.action_Incremental_Search_Line)->setChecked(GetPrefISearchLine());
-    no_signals(ui.action_Show_Line_Numbers)->setChecked(GetPrefLineNums());
-    no_signals(ui.action_Highlight_Syntax)->setChecked(GetPrefHighlightSyntax());
-    no_signals(ui.action_Apply_Backlighting)->setChecked(GetPrefBacklightChars());
-    no_signals(ui.action_Make_Backup_Copy)->setChecked(GetPrefAutoSave());
-    no_signals(ui.action_Incremental_Backup)->setChecked(GetPrefSaveOldVersion());
-    no_signals(ui.action_Matching_Syntax)->setChecked(GetPrefMatchSyntaxBased());
+    no_signals(ui.action_Statistics_Line)->setChecked(Preferences::GetPrefStatsLine());
+    no_signals(ui.action_Incremental_Search_Line)->setChecked(Preferences::GetPrefISearchLine());
+    no_signals(ui.action_Show_Line_Numbers)->setChecked(Preferences::GetPrefLineNums());
+    no_signals(ui.action_Highlight_Syntax)->setChecked(Preferences::GetPrefHighlightSyntax());
+    no_signals(ui.action_Apply_Backlighting)->setChecked(Preferences::GetPrefBacklightChars());
+    no_signals(ui.action_Make_Backup_Copy)->setChecked(Preferences::GetPrefAutoSave());
+    no_signals(ui.action_Incremental_Backup)->setChecked(Preferences::GetPrefSaveOldVersion());
+    no_signals(ui.action_Matching_Syntax)->setChecked(Preferences::GetPrefMatchSyntaxBased());
 
     setupGlobalPrefenceDefaults();
     setupDocumentPrefernceDefaults();
@@ -488,7 +488,7 @@ void MainWindow::setupMenuStrings() {
  * @brief MainWindow::setupPrevOpenMenuActions
  */
 void MainWindow::setupPrevOpenMenuActions() {
-    const int maxPrevOpenFiles = GetPrefMaxPrevOpenFiles();
+    const int maxPrevOpenFiles = Preferences::GetPrefMaxPrevOpenFiles();
 
     if (maxPrevOpenFiles <= 0) {
         ui.action_Open_Previous->setEnabled(false);
@@ -530,7 +530,7 @@ void MainWindow::setupPrevOpenMenuActions() {
  * @brief MainWindow::setupMenuAlternativeMenus
  */
 void MainWindow::setupMenuAlternativeMenus() {
-	if(!GetPrefOpenInTab()) {
+    if(!Preferences::GetPrefOpenInTab()) {
 		ui.action_New_Window->setText(tr("New &Tab"));
     } else {
         ui.action_New_Window->setText(tr("New &Window"));
@@ -631,7 +631,7 @@ void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
 
     switch(mode) {
     case NewMode::Prefs:
-        openInTab = GetPrefOpenInTab();
+        openInTab = Preferences::GetPrefOpenInTab();
         break;
     case NewMode::Tab:
         openInTab = true;
@@ -640,7 +640,7 @@ void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
         openInTab = false;
         break;
     case NewMode::Opposite:
-        openInTab = !GetPrefOpenInTab();
+        openInTab = !Preferences::GetPrefOpenInTab();
         break;
     }
 
@@ -930,12 +930,12 @@ void MainWindow::UpdateWindowTitle(DocumentWidget *document) {
         document->filename_,
         document->path_,
 		clearCaseTag,
-        GetPrefServerName(),
+        Preferences::GetPrefServerName(),
 		IsServer,
         document->filenameSet_,
         document->lockReasons_,
         document->fileChanged_,
-        GetPrefTitleFormat());
+        Preferences::GetPrefTitleFormat());
 
 	setWindowTitle(title);
 
@@ -1033,7 +1033,7 @@ size_t MainWindow::TabCount() const {
 */
 void MainWindow::SortTabBar() {
 
-    if (!GetPrefSortTabs()) {
+    if (!Preferences::GetPrefSortTabs()) {
 		return;
     }
 
@@ -1497,7 +1497,7 @@ DocumentWidget *MainWindow::FindWindowWithFile(const QString &name, const QStrin
 
     const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
-    if (!GetPrefHonorSymlinks()) {
+    if (!Preferences::GetPrefHonorSymlinks()) {
 
         QString fullname = tr("%1%2").arg(path, name);
 
@@ -1578,7 +1578,7 @@ void MainWindow::ShowLineNumbers(bool state) {
 */
 void MainWindow::AddToPrevOpenMenu(const QString &filename) {
 
-    const int maxPrevOpenFiles = GetPrefMaxPrevOpenFiles();
+    const int maxPrevOpenFiles = Preferences::GetPrefMaxPrevOpenFiles();
 
     // If the Open Previous command is disabled, just return
     if (maxPrevOpenFiles < 1) {
@@ -1639,7 +1639,7 @@ void MainWindow::ReadNEditDB() {
 
 	static QDateTime lastNeditdbModTime;
 
-    const int maxPrevOpenFiles = GetPrefMaxPrevOpenFiles();
+    const int maxPrevOpenFiles = Preferences::GetPrefMaxPrevOpenFiles();
 
     /*  If the Open Previous command is disabled or the user set the
         resource to an (invalid) negative value, just return.  */
@@ -1741,7 +1741,7 @@ void MainWindow::WriteNEditDB() {
     }
 
     // If the Open Previous command is disabled, just return
-    if (GetPrefMaxPrevOpenFiles() < 1) {
+    if (Preferences::GetPrefMaxPrevOpenFiles() < 1) {
         return;
     }
 
@@ -1768,7 +1768,7 @@ void MainWindow::WriteNEditDB() {
 */
 void MainWindow::updatePrevOpenMenu() {
 
-    if (GetPrefMaxPrevOpenFiles() < 1) {
+    if (Preferences::GetPrefMaxPrevOpenFiles() < 1) {
         ui.action_Open_Previous->setEnabled(false);
         return;
     }
@@ -1778,7 +1778,7 @@ void MainWindow::updatePrevOpenMenu() {
 
     // Sort the previously opened file list if requested
     QVector<QString> prevOpenSorted = PrevOpen;
-    if (GetPrefSortOpenPrevMenu()) {
+    if (Preferences::GetPrefSortOpenPrevMenu()) {
         std::sort(prevOpenSorted.begin(), prevOpenSorted.end());
     }
 
@@ -1956,14 +1956,14 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
                     QApplication::beep();
                 } else {
                     DocumentWidget::EditExistingFileEx(
-                                GetPrefOpenInTab() ? document : nullptr,
+                                Preferences::GetPrefOpenInTab() ? document : nullptr,
                                 filename,
                                 pathname,
                                 0,
                                 QString(),
                                 false,
                                 QString(),
-                                GetPrefOpenInTab(),
+                                Preferences::GetPrefOpenInTab(),
                                 false);
                 }
             }
@@ -2371,8 +2371,8 @@ void MainWindow::action_Shift_Find(DocumentWidget *document) {
     action_Find_Dialog(
         document,
         Direction::Backward,
-        GetPrefSearch(),
-        GetPrefKeepSearchDlogs());
+        Preferences::GetPrefSearch(),
+        Preferences::GetPrefKeepSearchDlogs());
 }
 
 /**
@@ -2411,7 +2411,7 @@ void MainWindow::action_Shift_Find_Again(DocumentWidget *document) {
     action_Find_Again(
         document,
         Direction::Backward,
-        GetPrefSearchWraps());
+        Preferences::GetPrefSearchWraps());
 }
 
 /**
@@ -2453,8 +2453,8 @@ void MainWindow::action_Shift_Find_Selection(DocumentWidget *document) {
     action_Find_Selection(
         document,
         Direction::Backward,
-        GetPrefSearch(),
-        GetPrefSearchWraps());
+        Preferences::GetPrefSearch(),
+        Preferences::GetPrefSearchWraps());
 }
 
 /**
@@ -2514,7 +2514,7 @@ void MainWindow::on_editIFind_textChanged(const QString &text) {
                                 text,
                                 direction,
                                 searchType,
-                                GetPrefSearchWraps(),
+                                Preferences::GetPrefSearchWraps(),
                                 iSearchStartPos_ != -1);
     }
 }
@@ -2603,7 +2603,7 @@ void MainWindow::on_editIFind_returnPressed() {
 
     // find the text and mark it
     if(DocumentWidget *document = currentDocument()) {
-        action_Find(document, searchString, direction, searchType, GetPrefSearchWraps());
+        action_Find(document, searchString, direction, searchType, Preferences::GetPrefSearchWraps());
     }
 }
 
@@ -2644,7 +2644,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     // determine the strings and button settings to use
     if (index == 0) {
         searchStr  = QString();
-        searchType = GetPrefSearch();
+        searchType = Preferences::GetPrefSearch();
     } else {
         searchStr  = SearchReplaceHistory[historyIndex(index)].search;
         searchType = SearchReplaceHistory[historyIndex(index)].type;
@@ -2702,7 +2702,7 @@ void MainWindow::on_checkIFindRegex_toggled(bool searchRegex) {
     bool searchCaseSense = ui.checkIFindCase->isChecked();
 
     // In sticky mode, restore the state of the Case Sensitive button
-    if (GetPrefStickyCaseSenseBtn()) {
+    if (Preferences::GetPrefStickyCaseSenseBtn()) {
         if (searchRegex) {
             iSearchLastLiteralCase_ = searchCaseSense;
             no_signals(ui.checkIFindCase)->setChecked(iSearchLastRegexCase_);
@@ -2860,7 +2860,7 @@ void MainWindow::action_Replace_Find_Again(DocumentWidget *document, Direction d
 void MainWindow::on_action_Replace_Find_Again_triggered() {
 
     if(DocumentWidget *document = currentDocument()) {
-        action_Replace_Find_Again(document, Direction::Forward, GetPrefSearchWraps());
+        action_Replace_Find_Again(document, Direction::Forward, Preferences::GetPrefSearchWraps());
     }
 }
 
@@ -2869,7 +2869,7 @@ void MainWindow::on_action_Replace_Find_Again_triggered() {
  * @param document
  */
 void MainWindow::action_Shift_Replace_Find_Again(DocumentWidget *document) {
-    action_Replace_Find_Again(document, Direction::Backward, GetPrefSearchWraps());
+    action_Replace_Find_Again(document, Direction::Backward, Preferences::GetPrefSearchWraps());
 }
 
 /**
@@ -2902,7 +2902,7 @@ void MainWindow::on_action_Replace_Again_triggered() {
     if(DocumentWidget *document = currentDocument()) {
         action_Replace_Again(document,
                              Direction::Forward,
-                             GetPrefSearchWraps());
+                             Preferences::GetPrefSearchWraps());
     }
 }
 
@@ -2914,7 +2914,7 @@ void MainWindow::action_Shift_Replace_Again() {
     if(DocumentWidget *document = currentDocument()) {
         action_Replace_Again(document,
                              Direction::Backward,
-                             GetPrefSearchWraps());
+                             Preferences::GetPrefSearchWraps());
     }
 }
 
@@ -3203,7 +3203,7 @@ void MainWindow::updateTipsFileMenuEx() {
 
     auto tipsMenu = new QMenu(this);
 
-    for(TagFile &tf : TipsFileList) {
+    for(Tags::TagFile &tf : Tags::TipsFileList) {
         auto filename = tf.filename;
         QAction *action = tipsMenu->addAction(filename);
         action->setData(filename);
@@ -3227,7 +3227,7 @@ void MainWindow::updateTagsFileMenuEx() {
 
     auto tagsMenu = new QMenu(this);
 
-    for(TagFile &tf : TagsFileList) {
+    for(Tags::TagFile &tf : Tags::TagsFileList) {
         auto filename = tf.filename;
         QAction *action = tagsMenu->addAction(filename);
         action->setData(filename);
@@ -3254,7 +3254,7 @@ void MainWindow::action_Unload_Tips_File(DocumentWidget *document, const QString
     Q_UNUSED(document);
     emit_event("unload_tips_file", filename);
 
-    if (DeleteTagsFileEx(filename, TagSearchMode::TIP, true)) {
+    if (Tags::DeleteTagsFileEx(filename, Tags::SearchMode::TIP, true)) {
         for(MainWindow *window : MainWindow::allWindows()) {
             window->updateTipsFileMenuEx();
         }
@@ -3271,7 +3271,7 @@ void MainWindow::action_Unload_Tags_File(DocumentWidget *document, const QString
     Q_UNUSED(document);
     emit_event("unload_tags_file", filename);
 
-    if (DeleteTagsFileEx(filename, TagSearchMode::TAG, true)) {
+    if (Tags::DeleteTagsFileEx(filename, Tags::SearchMode::TAG, true)) {
         for(MainWindow *window : MainWindow::allWindows()) {
              window->updateTagsFileMenuEx();
         }
@@ -3288,7 +3288,7 @@ void MainWindow::action_Load_Tips_File(DocumentWidget *document, const QString &
     Q_UNUSED(document);
     emit_event("load_tips_file", filename);
 
-    if (!AddTagsFileEx(filename, TagSearchMode::TIP)) {
+    if (!Tags::AddTagsFileEx(filename, Tags::SearchMode::TIP)) {
         QMessageBox::warning(this, tr("Error Reading File"), tr("Error reading tips file:\n'%1'\ntips not loaded").arg(filename));
     }
 }
@@ -3326,7 +3326,7 @@ void MainWindow::action_Load_Tags_File(DocumentWidget *document, const QString &
 
     emit_event("load_tags_file", filename);
 
-    if (!AddTagsFileEx(filename, TagSearchMode::TAG)) {
+    if (!Tags::AddTagsFileEx(filename, Tags::SearchMode::TAG)) {
         QMessageBox::warning(
                     document,
                     tr("Error Reading File"),
@@ -3666,7 +3666,7 @@ void MainWindow::on_action_Highlight_Syntax_toggled(bool state) {
  */
 void MainWindow::on_action_Apply_Backlighting_toggled(bool state) {
     if(DocumentWidget *document = currentDocument()) {
-        document->SetBacklightChars(state ? GetPrefBacklightCharTypes() : QString());
+        document->SetBacklightChars(state ? Preferences::GetPrefBacklightCharTypes() : QString());
     }
 }
 
@@ -3745,7 +3745,7 @@ void MainWindow::on_action_Read_Only_toggled(bool state) {
  * @brief MainWindow::on_action_Save_Defaults_triggered
  */
 void MainWindow::on_action_Save_Defaults_triggered() {
-    SaveNEditPrefsEx(this, false);
+    Preferences::SaveNEditPrefsEx(this, false);
 }
 
 /**
@@ -3763,11 +3763,11 @@ void MainWindow::on_action_Default_Language_Modes_triggered() {
 void MainWindow::defaultIndentGroupTriggered(QAction *action) {
 
     if(action == ui.action_Default_Indent_Off) {
-        SetPrefAutoIndent(IndentStyle::None);
+        Preferences::SetPrefAutoIndent(IndentStyle::None);
     } else if(action == ui.action_Default_Indent_On) {
-        SetPrefAutoIndent(IndentStyle::Auto);
+        Preferences::SetPrefAutoIndent(IndentStyle::Auto);
     } else if(action == ui.action_Default_Indent_Smart) {
-        SetPrefAutoIndent(IndentStyle::Smart);
+        Preferences::SetPrefAutoIndent(IndentStyle::Smart);
     } else {
         qWarning("NEdit: invalid default indent");
     }
@@ -3786,7 +3786,7 @@ void MainWindow::on_action_Default_Program_Smart_Indent_triggered() {
         }
     }
 
-    if (LanguageModeName(0).isNull()) {
+    if (Preferences::LanguageModeName(0).isNull()) {
         QMessageBox::warning(this,
                              tr("Language Mode"),
                              tr("No Language Modes defined"));
@@ -3803,11 +3803,11 @@ void MainWindow::on_action_Default_Program_Smart_Indent_triggered() {
 void MainWindow::defaultWrapGroupTriggered(QAction *action) {
 
     if(action == ui.action_Default_Wrap_None) {
-        SetPrefWrap(WrapStyle::None);
+        Preferences::SetPrefWrap(WrapStyle::None);
     } else if(action == ui.action_Default_Wrap_Auto_Newline) {
-        SetPrefWrap(WrapStyle::Newline);
+        Preferences::SetPrefWrap(WrapStyle::Newline);
     } else if(action == ui.action_Default_Wrap_Continuous) {
-        SetPrefWrap(WrapStyle::Continuous);
+        Preferences::SetPrefWrap(WrapStyle::Continuous);
     } else {
         qWarning("NEdit: invalid default wrap");
     }
@@ -3827,9 +3827,9 @@ void MainWindow::on_action_Default_Wrap_Margin_triggered() {
  */
 void MainWindow::defaultTagCollisionsGroupTriggered(QAction *action) {
     if(action == ui.action_Default_Tag_Show_All) {
-        SetPrefSmartTags(false);
+        Preferences::SetPrefSmartTags(false);
     } else if(action == ui.action_Default_Tag_Smart) {
-        SetPrefSmartTags(true);
+        Preferences::SetPrefSmartTags(true);
     } else {
         qWarning("NEdit: invalid default collisions");
     }
@@ -3844,7 +3844,7 @@ void MainWindow::on_action_Default_Command_Shell_triggered() {
         tr("Command Shell"),
         tr("Enter shell path:"),
         QLineEdit::Normal,
-        GetPrefShell(),
+        Preferences::GetPrefShell(),
         &ok);
 
     if (ok && !shell.isEmpty()) {
@@ -3860,7 +3860,7 @@ void MainWindow::on_action_Default_Command_Shell_triggered() {
             }
         }
 
-        SetPrefShell(shell);
+        Preferences::SetPrefShell(shell);
     }
 }
 
@@ -3928,7 +3928,7 @@ void MainWindow::on_action_Default_Window_Background_Menu_triggered() {
 void MainWindow::on_action_Default_Sort_Open_Prev_Menu_toggled(bool state) {
     /* Set the preference, make the other windows' menus agree,
        and invalidate their Open Previous menus */
-    SetPrefSortOpenPrevMenu(state);
+    Preferences::SetPrefSortOpenPrevMenu(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Sort_Open_Prev_Menu)->setChecked(state);
     }
@@ -3941,7 +3941,7 @@ void MainWindow::on_action_Default_Sort_Open_Prev_Menu_toggled(bool state) {
 void MainWindow::on_action_Default_Show_Path_In_Windows_Menu_toggled(bool state) {
 
     // Set the preference and make the other windows' menus agree
-    SetPrefShowPathInWindowsMenu(state);
+    Preferences::SetPrefShowPathInWindowsMenu(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Show_Path_In_Windows_Menu)->setChecked(state);
     }
@@ -3965,7 +3965,7 @@ void MainWindow::on_action_Default_Customize_Window_Title_triggered() {
  */
 void MainWindow::on_action_Default_Search_Verbose_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefSearchDlogs(state);
+    Preferences::SetPrefSearchDlogs(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Search_Verbose)->setChecked(state);
     }
@@ -3977,7 +3977,7 @@ void MainWindow::on_action_Default_Search_Verbose_toggled(bool state) {
  */
 void MainWindow::on_action_Default_Search_Wrap_Around_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefSearchWraps(state);
+    Preferences::SetPrefSearchWraps(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Search_Wrap_Around)->setChecked(state);
     }
@@ -3989,7 +3989,7 @@ void MainWindow::on_action_Default_Search_Wrap_Around_toggled(bool state) {
  */
 void MainWindow::on_action_Default_Search_Beep_On_Search_Wrap_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefBeepOnSearchWrap(state);
+    Preferences::SetPrefBeepOnSearchWrap(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Search_Beep_On_Search_Wrap)->setChecked(state);
     }
@@ -4001,7 +4001,7 @@ void MainWindow::on_action_Default_Search_Beep_On_Search_Wrap_toggled(bool state
  */
 void MainWindow::on_action_Default_Search_Keep_Dialogs_Up_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefKeepSearchDlogs(state);
+    Preferences::SetPrefKeepSearchDlogs(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Search_Keep_Dialogs_Up)->setChecked(state);
     }
@@ -4016,32 +4016,32 @@ void MainWindow::defaultSearchGroupTriggered(QAction *action) {
     std::vector<MainWindow *> windows = MainWindow::allWindows();
 
     if(action == ui.action_Default_Search_Literal) {
-        SetPrefSearch(SearchType::Literal);
+        Preferences::SetPrefSearch(SearchType::Literal);
         for(MainWindow *window : windows) {
             no_signals(window->ui.action_Default_Search_Literal)->setChecked(true);
         }
     } else if(action == ui.action_Default_Search_Literal_Case_Sensitive) {
-        SetPrefSearch(SearchType::CaseSense);
+        Preferences::SetPrefSearch(SearchType::CaseSense);
         for(MainWindow *window : windows) {
             no_signals(window->ui.action_Default_Search_Literal_Case_Sensitive)->setChecked(true);
         }
     } else if(action == ui.action_Default_Search_Literal_Whole_Word) {
-        SetPrefSearch(SearchType::LiteralWord);
+        Preferences::SetPrefSearch(SearchType::LiteralWord);
         for(MainWindow *window : windows) {
             no_signals(window->ui.action_Default_Search_Literal_Whole_Word)->setChecked(true);
         }
     } else if(action == ui.action_Default_Search_Literal_Case_Sensitive_Whole_Word) {
-        SetPrefSearch(SearchType::CaseSenseWord);
+        Preferences::SetPrefSearch(SearchType::CaseSenseWord);
         for(MainWindow *window : windows) {
             no_signals(window->ui.action_Default_Search_Literal_Case_Sensitive_Whole_Word)->setChecked(true);
         }
     } else if(action == ui.action_Default_Search_Regular_Expression) {
-        SetPrefSearch(SearchType::Regex);
+        Preferences::SetPrefSearch(SearchType::Regex);
         for(MainWindow *window : windows) {
             no_signals(window->ui.action_Default_Search_Regular_Expression)->setChecked(true);
         }
     } else if(action == ui.action_Default_Search_Regular_Expresison_Case_Insensitive) {
-        SetPrefSearch(SearchType::RegexNoCase);
+        Preferences::SetPrefSearch(SearchType::RegexNoCase);
         for(MainWindow *window : windows) {
             no_signals(window->ui.action_Default_Search_Regular_Expresison_Case_Insensitive)->setChecked(true);
         }
@@ -4057,12 +4057,12 @@ void MainWindow::defaultSyntaxGroupTriggered(QAction *action) {
     std::vector<MainWindow *> windows = MainWindow::allWindows();
 
     if(action == ui.action_Default_Syntax_Off) {
-        SetPrefHighlightSyntax(false);
+        Preferences::SetPrefHighlightSyntax(false);
         for(MainWindow *window : windows) {
             no_signals(window->ui.action_Default_Syntax_Off)->setChecked(true);
         }
     } else if(action == ui.action_Default_Syntax_On) {
-        SetPrefHighlightSyntax(true);
+        Preferences::SetPrefHighlightSyntax(true);
         for(MainWindow *window : windows) {
             no_signals(window->ui.action_Default_Syntax_On)->setChecked(true);
         }
@@ -4089,7 +4089,7 @@ void MainWindow::on_action_Default_Syntax_Text_Drawing_Styles_triggered() {
  */
 void MainWindow::on_action_Default_Apply_Backlighting_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefBacklightChars(state);
+    Preferences::SetPrefBacklightChars(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Apply_Backlighting)->setChecked(state);
     }
@@ -4101,11 +4101,11 @@ void MainWindow::on_action_Default_Apply_Backlighting_toggled(bool state) {
  */
 void MainWindow::on_action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefOpenInTab(state);
+    Preferences::SetPrefOpenInTab(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Tab_Open_File_In_New_Tab)->setChecked(state);
 
-        if(!GetPrefOpenInTab()) {
+        if(!Preferences::GetPrefOpenInTab()) {
             window->ui.action_New_Window->setText(tr("New &Tab"));
         } else {
             window->ui.action_New_Window->setText(tr("New &Window"));
@@ -4119,7 +4119,7 @@ void MainWindow::on_action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) 
  */
 void MainWindow::on_action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefTabBar(state);
+    Preferences::SetPrefTabBar(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Tab_Show_Tab_Bar)->setChecked(state);
         window->tabWidget()->tabBar()->setVisible(state);
@@ -4132,7 +4132,7 @@ void MainWindow::on_action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
  */
 void MainWindow::on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefTabBarHideOne(state);
+    Preferences::SetPrefTabBarHideOne(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open)->setChecked(state);
         window->tabWidget()->setTabBarAutoHide(state);
@@ -4145,7 +4145,7 @@ void MainWindow::on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Op
  */
 void MainWindow::on_action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefGlobalTabNavigate(state);
+    Preferences::SetPrefGlobalTabNavigate(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows)->setChecked(state);
     }
@@ -4157,7 +4157,7 @@ void MainWindow::on_action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(boo
  */
 void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefSortTabs(state);
+    Preferences::SetPrefSortTabs(state);
 
     std::vector<MainWindow *> windows = MainWindow::allWindows();
 
@@ -4186,7 +4186,7 @@ void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool sta
  */
 void MainWindow::on_action_Default_Show_Tooltips_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefToolTips(state);
+    Preferences::SetPrefToolTips(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Show_Tooltips)->setChecked(state);
     }
@@ -4198,7 +4198,7 @@ void MainWindow::on_action_Default_Show_Tooltips_toggled(bool state) {
  */
 void MainWindow::on_action_Default_Statistics_Line_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefStatsLine(state);
+    Preferences::SetPrefStatsLine(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Statistics_Line)->setChecked(state);
     }
@@ -4210,7 +4210,7 @@ void MainWindow::on_action_Default_Statistics_Line_toggled(bool state) {
  */
 void MainWindow::on_action_Default_Incremental_Search_Line_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefISearchLine(state);
+    Preferences::SetPrefISearchLine(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Incremental_Search_Line)->setChecked(state);
     }
@@ -4222,7 +4222,7 @@ void MainWindow::on_action_Default_Incremental_Search_Line_toggled(bool state) {
  */
 void MainWindow::on_action_Default_Show_Line_Numbers_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefLineNums(state);
+    Preferences::SetPrefLineNums(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Show_Line_Numbers)->setChecked(state);
     }
@@ -4234,7 +4234,7 @@ void MainWindow::on_action_Default_Show_Line_Numbers_toggled(bool state) {
  */
 void MainWindow::on_action_Default_Make_Backup_Copy_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefSaveOldVersion(state);
+    Preferences::SetPrefSaveOldVersion(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Make_Backup_Copy)->setChecked(state);
     }
@@ -4246,7 +4246,7 @@ void MainWindow::on_action_Default_Make_Backup_Copy_toggled(bool state) {
  */
 void MainWindow::on_action_Default_Incremental_Backup_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefAutoSave(state);
+    Preferences::SetPrefAutoSave(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Incremental_Backup)->setChecked(state);
     }
@@ -4261,17 +4261,17 @@ void MainWindow::defaultMatchingGroupTriggered(QAction *action) {
     std::vector<MainWindow *> windows = MainWindow::allWindows();
 
     if(action == ui.action_Default_Matching_Off) {
-        SetPrefShowMatching(ShowMatchingStyle::None);
+        Preferences::SetPrefShowMatching(ShowMatchingStyle::None);
         for(MainWindow *window : windows) {
             no_signals(window->ui.action_Default_Matching_Off)->setChecked(true);
         }
     } else if(action == ui.action_Default_Matching_Delimiter) {
-        SetPrefShowMatching(ShowMatchingStyle::Delimiter);
+        Preferences::SetPrefShowMatching(ShowMatchingStyle::Delimiter);
         for(MainWindow *window : windows) {
             no_signals(window->ui.action_Default_Matching_Delimiter)->setChecked(true);
         }
     } else if(action == ui.action_Default_Matching_Range) {
-        SetPrefShowMatching(ShowMatchingStyle::Range);
+        Preferences::SetPrefShowMatching(ShowMatchingStyle::Range);
         for(MainWindow *window : windows) {
             no_signals(window->ui.action_Default_Matching_Range)->setChecked(true);
         }
@@ -4284,7 +4284,7 @@ void MainWindow::defaultMatchingGroupTriggered(QAction *action) {
  */
 void MainWindow::on_action_Default_Matching_Syntax_Based_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefMatchSyntaxBased(state);
+    Preferences::SetPrefMatchSyntaxBased(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Matching_Syntax_Based)->setChecked(state);
     }
@@ -4296,7 +4296,7 @@ void MainWindow::on_action_Default_Matching_Syntax_Based_toggled(bool state) {
  */
 void MainWindow::on_action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefAppendLF(state);
+    Preferences::SetPrefAppendLF(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Terminate_with_Line_Break_on_Save)->setChecked(state);
     }
@@ -4308,7 +4308,7 @@ void MainWindow::on_action_Default_Terminate_with_Line_Break_on_Save_toggled(boo
  */
 void MainWindow::on_action_Default_Popups_Under_Pointer_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefRepositionDialogs(state);
+    Preferences::SetPrefRepositionDialogs(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Popups_Under_Pointer)->setChecked(state);
     }
@@ -4320,7 +4320,7 @@ void MainWindow::on_action_Default_Popups_Under_Pointer_toggled(bool state) {
  */
 void MainWindow::on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefAutoScroll(state);
+    Preferences::SetPrefAutoScroll(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom)->setChecked(state);
     }
@@ -4332,10 +4332,10 @@ void MainWindow::on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bo
  */
 void MainWindow::on_action_Default_Warnings_Files_Modified_Externally_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefWarnFileMods(state);
+    Preferences::SetPrefWarnFileMods(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Warnings_Files_Modified_Externally)->setChecked(state);
-        window->ui.action_Default_Warnings_Check_Modified_File_Contents->setEnabled(GetPrefWarnFileMods());
+        window->ui.action_Default_Warnings_Check_Modified_File_Contents->setEnabled(Preferences::GetPrefWarnFileMods());
     }
 }
 
@@ -4345,7 +4345,7 @@ void MainWindow::on_action_Default_Warnings_Files_Modified_Externally_toggled(bo
  */
 void MainWindow::on_action_Default_Warnings_Check_Modified_File_Contents_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefWarnRealFileMods(state);
+    Preferences::SetPrefWarnRealFileMods(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Warnings_Check_Modified_File_Contents)->setChecked(state);
     }
@@ -4357,7 +4357,7 @@ void MainWindow::on_action_Default_Warnings_Check_Modified_File_Contents_toggled
  */
 void MainWindow::on_action_Default_Warnings_On_Exit_toggled(bool state) {
     // Set the preference and make the other windows' menus agree
-    SetPrefWarnExit(state);
+    Preferences::SetPrefWarnExit(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Warnings_On_Exit)->setChecked(state);
     }
@@ -4389,8 +4389,8 @@ void MainWindow::defaultSizeGroupTriggered(QAction *action) {
  * @param cols
  */
 void MainWindow::setWindowSizeDefault(int rows, int cols) {
-    SetPrefRows(rows);
-    SetPrefCols(cols);
+    Preferences::SetPrefRows(rows);
+    Preferences::SetPrefCols(cols);
     updateWindowSizeMenus();
 }
 
@@ -4407,8 +4407,8 @@ void MainWindow::updateWindowSizeMenus() {
  * @brief MainWindow::updateWindowSizeMenu
  */
 void MainWindow::updateWindowSizeMenu() {
-    const int rows = GetPrefRows();
-    const int cols = GetPrefCols();
+    const int rows = Preferences::GetPrefRows();
+    const int cols = Preferences::GetPrefCols();
 
     no_signals(ui.action_Default_Size_24_x_80)->setChecked(rows == 24 && cols == 80);
     no_signals(ui.action_Default_Size_40_x_80)->setChecked(rows == 40 && cols == 80);
@@ -4430,7 +4430,7 @@ void MainWindow::action_Next_Document() {
 
     emit_event("next_document");
 
-    bool crossWindows = GetPrefGlobalTabNavigate();
+    bool crossWindows = Preferences::GetPrefGlobalTabNavigate();
     int currentIndex  = ui.tabWidget->currentIndex();
     int nextIndex     = currentIndex + 1;
     int tabCount      = ui.tabWidget->count();
@@ -4476,7 +4476,7 @@ void MainWindow::action_Prev_Document() {
 
     emit_event("previous_document");
 
-    bool crossWindows = GetPrefGlobalTabNavigate();
+    bool crossWindows = Preferences::GetPrefGlobalTabNavigate();
     int currentIndex  = ui.tabWidget->currentIndex();
     int prevIndex     = currentIndex - 1;
     int tabCount      = ui.tabWidget->count();
@@ -4861,7 +4861,7 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
  */
 void MainWindow::action_New_Window(DocumentWidget *document) {
     emit_event("new_window");
-    MainWindow::EditNewFileEx(GetPrefOpenInTab() ? nullptr : this, QString(), /*iconic=*/false, QString(), document->path_);
+    MainWindow::EditNewFileEx(Preferences::GetPrefOpenInTab() ? nullptr : this, QString(), /*iconic=*/false, QString(), document->path_);
     MainWindow::CheckCloseDimEx();
 }
 
@@ -4897,7 +4897,7 @@ void MainWindow::action_Exit(DocumentWidget *document) {
        confirm with the user before exiting. */
 
     // NOTE(eteran): test if the current window is NOT the only document
-    if (GetPrefWarnExit() && documents.size() >= 2) {
+    if (Preferences::GetPrefWarnExit() && documents.size() >= 2) {
 
         auto exitMsg = tr("Editing: ");
 
@@ -4963,11 +4963,11 @@ void MainWindow::on_action_Exit_triggered() {
 */
 bool MainWindow::CheckPrefsChangesSavedEx() {
 
-    if (!PreferencesChanged()) {
+    if (!Preferences::PreferencesChanged()) {
         return true;
     }
 
-    QString importedFile = ImportedSettingsFile();
+    QString importedFile = Preferences::ImportedSettingsFile();
 
     QMessageBox messageBox(this);
     messageBox.setWindowTitle(tr("Default Preferences"));
@@ -4984,7 +4984,7 @@ bool MainWindow::CheckPrefsChangesSavedEx() {
 
     messageBox.exec();
     if(messageBox.clickedButton() == buttonSave) {
-        SaveNEditPrefsEx(this, true);
+        Preferences::SaveNEditPrefsEx(this, true);
         return true;
     } else if(messageBox.clickedButton() == buttonDontSave) {
         return true;
@@ -5046,7 +5046,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
             }
         } else {
             int resp = QMessageBox::Close;
-            if (GetPrefWarnExit()) {
+            if (Preferences::GetPrefWarnExit()) {
                 resp = QMessageBox::question(this,
                                              tr("Close Window"),
                                              tr("Close ALL documents in this window?"),
@@ -5234,7 +5234,7 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event) {
 
     if(qobject_cast<QTabBar*>(object)) {
         if(event->type() == QEvent::ToolTip) {
-            if(!GetPrefToolTips()) {
+            if(!Preferences::GetPrefToolTips()) {
                 return true;
             }
         }
@@ -5274,8 +5274,8 @@ void MainWindow::on_action_Find_triggered() {
         action_Find_Dialog(
                     document,
                     Direction::Forward,
-                    GetPrefSearch(),
-                    GetPrefKeepSearchDlogs());
+                    Preferences::GetPrefSearch(),
+                    Preferences::GetPrefKeepSearchDlogs());
     }
 }
 
@@ -5288,7 +5288,7 @@ void MainWindow::on_action_Find_Again_triggered() {
         action_Find_Again(
                     document,
                     Direction::Forward,
-                    GetPrefSearchWraps());
+                    Preferences::GetPrefSearchWraps());
     }
 }
 
@@ -5301,8 +5301,8 @@ void MainWindow::on_action_Find_Selection_triggered() {
         action_Find_Selection(
                     document,
                     Direction::Forward,
-                    GetPrefSearch(),
-                    GetPrefSearchWraps());
+                    Preferences::GetPrefSearch(),
+                    Preferences::GetPrefSearchWraps());
     }
 }
 
@@ -5384,7 +5384,7 @@ void MainWindow::action_Replace_Dialog(DocumentWidget *document, Direction direc
  * @param document
  */
 void MainWindow::action_Shift_Replace(DocumentWidget *document) {
-    action_Replace_Dialog(document, Direction::Backward, GetPrefSearch(), GetPrefKeepSearchDlogs());
+    action_Replace_Dialog(document, Direction::Backward, Preferences::GetPrefSearch(), Preferences::GetPrefKeepSearchDlogs());
 }
 
 /**
@@ -5404,8 +5404,8 @@ void MainWindow::on_action_Replace_triggered() {
     if(DocumentWidget *document = currentDocument()) {
         action_Replace_Dialog(document,
                               Direction::Forward,
-                              GetPrefSearch(),
-                              GetPrefKeepSearchDlogs());
+                              Preferences::GetPrefSearch(),
+                              Preferences::GetPrefKeepSearchDlogs());
     }
 }
 
@@ -5755,7 +5755,7 @@ void MainWindow::EditHighlightStyles(const QString &initialStyle) {
 */
 void MainWindow::EditHighlightPatterns() {
 
-    if (LanguageModeName(0).isNull()) {
+    if (Preferences::LanguageModeName(0).isNull()) {
 
         QMessageBox::warning(this,
                              tr("No Language Modes"),
@@ -5765,7 +5765,7 @@ void MainWindow::EditHighlightPatterns() {
     }
 
     if(DocumentWidget *document = currentDocument()) {
-        QString languageName = LanguageModeName((document->languageMode_ == PLAIN_LANGUAGE_MODE) ? 0 : document->languageMode_);
+        QString languageName = Preferences::LanguageModeName((document->languageMode_ == PLAIN_LANGUAGE_MODE) ? 0 : document->languageMode_);
 
         auto SyntaxPatterns = std::make_unique<DialogSyntaxPatterns>(this);
         SyntaxPatterns->setLanguageName(languageName);
@@ -5880,9 +5880,9 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
         if (!found) {
             if (searchWrap == WrapMode::Wrap) {
                 if (direction == Direction::Forward && beginPos != 0) {
-                    if (GetPrefBeepOnSearchWrap()) {
+                    if (Preferences::GetPrefBeepOnSearchWrap()) {
                         QApplication::beep();
-                    } else if (GetPrefSearchDlogs()) {
+                    } else if (Preferences::GetPrefSearchDlogs()) {
 
                         QMessageBox messageBox(document);
                         messageBox.setWindowTitle(tr("Wrap Search"));
@@ -5912,9 +5912,9 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
                                 document->GetWindowDelimitersEx());
 
                 } else if (direction == Direction::Backward && beginPos != fileEnd) {
-                    if (GetPrefBeepOnSearchWrap()) {
+                    if (Preferences::GetPrefBeepOnSearchWrap()) {
                         QApplication::beep();
-                    } else if (GetPrefSearchDlogs()) {
+                    } else if (Preferences::GetPrefSearchDlogs()) {
 
                         QMessageBox messageBox(document);
                         messageBox.setWindowTitle(tr("Wrap Search"));
@@ -5944,7 +5944,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
                 }
             }
             if (!found) {
-                if (GetPrefSearchDlogs()) {
+                if (Preferences::GetPrefSearchDlogs()) {
                     QMessageBox::information(document, tr("String not found"), tr("String was not found"));
                 } else {
                     QApplication::beep();
@@ -6358,7 +6358,7 @@ void MainWindow::SearchForSelectedEx(DocumentWidget *document, TextArea *area, D
 
     QString selected = document->GetAnySelectionEx(false);
     if(selected.isEmpty()) {
-        if (GetPrefSearchDlogs()) {
+        if (Preferences::GetPrefSearchDlogs()) {
             QMessageBox::warning(document, tr("Wrong Selection"), tr("Selection not appropriate for searching"));
         } else {
             QApplication::beep();
@@ -6581,7 +6581,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
         }
     } else {
         //  Nothing found, tell the user about it
-        if (GetPrefSearchDlogs()) {
+        if (Preferences::GetPrefSearchDlogs()) {
 
             if (dialogFind_) {
                 if(!dialogFind_->keepDialog()) {
@@ -6617,7 +6617,7 @@ bool MainWindow::prefOrUserCancelsSubstEx(DocumentWidget *document) {
 
     bool cancel = true;
 
-    switch (GetPrefTruncSubstitution()) {
+    switch (Preferences::GetPrefTruncSubstitution()) {
     case TruncSubstitution::Silent:
         //  silently fail the operation
         cancel = true;
@@ -6701,7 +6701,7 @@ bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QS
         if (document->multiFileBusy_) {
             // only needed during multi-file replacements
             document->replaceFailed_ = true;
-        } else if (GetPrefSearchDlogs()) {
+        } else if (Preferences::GetPrefSearchDlogs()) {
 
             if (dialogFind_) {
                 if(!dialogFind_->keepDialog()) {
@@ -6749,7 +6749,7 @@ void MainWindow::iSearchRecordLastBeginPosEx(Direction direction, int64_t initPo
 ** the last startPos of the current incremental search.
 */
 void MainWindow::iSearchTryBeepOnWrapEx(Direction direction, int64_t beginPos, int64_t startPos) {
-    if (GetPrefBeepOnSearchWrap()) {
+    if (Preferences::GetPrefBeepOnSearchWrap()) {
         if (direction == Direction::Forward) {
             if ((startPos >= beginPos && iSearchLastBeginPos_ < beginPos) || (startPos < beginPos && iSearchLastBeginPos_ >= beginPos)) {
                 QApplication::beep();
@@ -6872,8 +6872,8 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
 ** and "Unload Calltips File" menu items in the existing windows.
 */
 void MainWindow::updateMenuItems() {
-    const bool tipStat = !TipsFileList.empty();
-    const bool tagStat = !TagsFileList.empty();
+    const bool tipStat = !Tags::TipsFileList.empty();
+    const bool tagStat = !Tags::TagsFileList.empty();
 
     for(MainWindow *window : MainWindow::allWindows()) {
         window->ui.action_Unload_Calltips_File->setEnabled(tipStat);

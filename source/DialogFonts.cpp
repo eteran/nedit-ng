@@ -25,10 +25,10 @@ DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFl
         ui.fontItalic->setCurrentFont(document->italicFontName_);
         ui.fontBoldItalic->setCurrentFont(document->boldItalicFontName_);
 	} else {
-        ui.fontPrimary->setCurrentFont(GetPrefFontName());
-        ui.fontBold->setCurrentFont(GetPrefBoldFontName());
-        ui.fontItalic->setCurrentFont(GetPrefItalicFontName());
-        ui.fontBoldItalic->setCurrentFont(GetPrefBoldItalicFontName());
+        ui.fontPrimary->setCurrentFont(Preferences::GetPrefFontName());
+        ui.fontBold->setCurrentFont(Preferences::GetPrefBoldFontName());
+        ui.fontItalic->setCurrentFont(Preferences::GetPrefItalicFontName());
+        ui.fontBoldItalic->setCurrentFont(Preferences::GetPrefBoldItalicFontName());
 	}	
 }
 
@@ -91,10 +91,10 @@ void DialogFonts::updateFonts() {
     if (document_) {
         document_->action_Set_Fonts(fontName, italicName, boldName, boldItalicName);
 	} else {
-        SetPrefFont(fontName);
-        SetPrefItalicFont(italicName);
-        SetPrefBoldFont(boldName);
-        SetPrefBoldItalicFont(boldItalicName);
+        Preferences::SetPrefFont(fontName);
+        Preferences::SetPrefItalicFont(italicName);
+        Preferences::SetPrefBoldFont(boldName);
+        Preferences::SetPrefBoldItalicFont(boldItalicName);
 	}
 }
 

@@ -108,7 +108,7 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 	/* We suppressed multiple beeps/dialogs. If there wasn't any file in
 	   which the replacement succeeded, we should still warn the user */
 	if (replaceFailed) {
-		if (GetPrefSearchDlogs()) {
+        if (Preferences::GetPrefSearchDlogs()) {
 			if (noWritableLeft) {
 				QMessageBox::information(this, tr("Read-only Files"), tr("All selected files have become read-only."));
 			} else {

@@ -25,14 +25,14 @@ DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
     ui.labelErrorMatchBG->setVisible(false);
     ui.labelErrorCursor->setVisible(false);
 
-    ui.editFG->setText(GetPrefColorName(TEXT_FG_COLOR));
-    ui.editBG->setText(GetPrefColorName(TEXT_BG_COLOR));
-    ui.editSelectionFG->setText(GetPrefColorName(SELECT_FG_COLOR));
-    ui.editSelectionBG->setText(GetPrefColorName(SELECT_BG_COLOR));
-    ui.editMatchFG->setText(GetPrefColorName(HILITE_FG_COLOR));
-    ui.editMatchBG->setText(GetPrefColorName(HILITE_BG_COLOR));
-    ui.editLineNumbers->setText(GetPrefColorName(LINENO_FG_COLOR));
-    ui.editCursor->setText(GetPrefColorName(CURSOR_FG_COLOR));
+    ui.editFG->setText(Preferences::GetPrefColorName(TEXT_FG_COLOR));
+    ui.editBG->setText(Preferences::GetPrefColorName(TEXT_BG_COLOR));
+    ui.editSelectionFG->setText(Preferences::GetPrefColorName(SELECT_FG_COLOR));
+    ui.editSelectionBG->setText(Preferences::GetPrefColorName(SELECT_BG_COLOR));
+    ui.editMatchFG->setText(Preferences::GetPrefColorName(HILITE_FG_COLOR));
+    ui.editMatchBG->setText(Preferences::GetPrefColorName(HILITE_BG_COLOR));
+    ui.editLineNumbers->setText(Preferences::GetPrefColorName(LINENO_FG_COLOR));
+    ui.editCursor->setText(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
 }
 
 /**
@@ -260,12 +260,12 @@ void DialogColors::updateColors() {
             cursorFg);
 	}
 
-    SetPrefColorName(TEXT_FG_COLOR, textFg);
-    SetPrefColorName(TEXT_BG_COLOR, textBg);
-    SetPrefColorName(SELECT_FG_COLOR, selectFg);
-    SetPrefColorName(SELECT_BG_COLOR, selectBg);
-    SetPrefColorName(HILITE_FG_COLOR, hiliteFg);
-    SetPrefColorName(HILITE_BG_COLOR, hiliteBg);
-    SetPrefColorName(LINENO_FG_COLOR, lineNoFg);
-    SetPrefColorName(CURSOR_FG_COLOR, cursorFg);
+    Preferences::SetPrefColorName(TEXT_FG_COLOR, textFg);
+    Preferences::SetPrefColorName(TEXT_BG_COLOR, textBg);
+    Preferences::SetPrefColorName(SELECT_FG_COLOR, selectFg);
+    Preferences::SetPrefColorName(SELECT_BG_COLOR, selectBg);
+    Preferences::SetPrefColorName(HILITE_FG_COLOR, hiliteFg);
+    Preferences::SetPrefColorName(HILITE_BG_COLOR, hiliteBg);
+    Preferences::SetPrefColorName(LINENO_FG_COLOR, lineNoFg);
+    Preferences::SetPrefColorName(CURSOR_FG_COLOR, cursorFg);
 }

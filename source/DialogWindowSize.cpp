@@ -40,8 +40,8 @@ void DialogWindowSize::on_buttonBox_accepted() {
 	}
 
 	// set the corresponding preferences and dismiss the dialog 
-	SetPrefRows(rowValue);
-	SetPrefCols(colValue);
+    Preferences::SetPrefRows(rowValue);
+    Preferences::SetPrefCols(colValue);
 	
 	accept();
 }

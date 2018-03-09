@@ -6,6 +6,10 @@
 
 class Help {
     Q_DECLARE_TR_FUNCTIONS(Help)
+
+private:
+    Help() = delete;
+
 public:
     enum class Topic {
         HELP_START,

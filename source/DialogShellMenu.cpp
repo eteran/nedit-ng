@@ -397,7 +397,7 @@ bool DialogShellMenu::applyDialogChanges() {
     }
 
 	// Note that preferences have been changed
-	MarkPrefsChanged();
+    Preferences::MarkPrefsChanged();
 	return true;
 }
 

@@ -386,8 +386,8 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
     // Add the name to the convenience menu of previously opened files
     auto fullname = tr("%1%2").arg(path, name);
 
-    if (GetPrefAlwaysCheckRelTagsSpecs()) {
-        AddRelTagsFileEx(GetPrefTagFile(), path, TagSearchMode::TAG);
+    if (Preferences::GetPrefAlwaysCheckRelTagsSpecs()) {
+        Tags::AddRelTagsFileEx(Preferences::GetPrefTagFile(), path, Tags::SearchMode::TAG);
     }
 
     MainWindow::AddToPrevOpenMenu(fullname);
@@ -425,33 +425,33 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 #endif
 	// initialize the members
 	filename_              = name;
-	indentStyle_           = GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
-	autoSave_              = GetPrefAutoSave();
-	saveOldVersion_        = GetPrefSaveOldVersion();
-	wrapMode_              = GetPrefWrap(PLAIN_LANGUAGE_MODE);
-    showMatchingStyle_     = GetPrefShowMatching();
-	matchSyntaxBased_      = GetPrefMatchSyntaxBased();
-	highlightSyntax_       = GetPrefHighlightSyntax();
-	backlightChars_        = GetPrefBacklightChars();
+    indentStyle_           = Preferences::GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
+    autoSave_              = Preferences::GetPrefAutoSave();
+    saveOldVersion_        = Preferences::GetPrefSaveOldVersion();
+    wrapMode_              = Preferences::GetPrefWrap(PLAIN_LANGUAGE_MODE);
+    showMatchingStyle_     = Preferences::GetPrefShowMatching();
+    matchSyntaxBased_      = Preferences::GetPrefMatchSyntaxBased();
+    highlightSyntax_       = Preferences::GetPrefHighlightSyntax();
+    backlightChars_        = Preferences::GetPrefBacklightChars();
 	
 	if (backlightChars_) {
-        QString cTypes = GetPrefBacklightCharTypes();
+        QString cTypes = Preferences::GetPrefBacklightCharTypes();
         if (!cTypes.isNull()) {
             backlightCharTypes_ = cTypes;
 		}
 	}
 	
     flashTimer_            = new QTimer(this);
-	fontName_              = GetPrefFontName();
-	italicFontName_        = GetPrefItalicFontName();
-	boldFontName_          = GetPrefBoldFontName();
-	boldItalicFontName_    = GetPrefBoldItalicFontName();
-    fontStruct_            = GetPrefDefaultFont();
-	italicFontStruct_      = GetPrefItalicFont();
-	boldFontStruct_        = GetPrefBoldFont();
-	boldItalicFontStruct_  = GetPrefBoldItalicFont();	
+    fontName_              = Preferences::GetPrefFontName();
+    italicFontName_        = Preferences::GetPrefItalicFontName();
+    boldFontName_          = Preferences::GetPrefBoldFontName();
+    boldItalicFontName_    = Preferences::GetPrefBoldItalicFontName();
+    fontStruct_            = Preferences::GetPrefDefaultFont();
+    italicFontStruct_      = Preferences::GetPrefItalicFont();
+    boldFontStruct_        = Preferences::GetPrefBoldFont();
+    boldItalicFontStruct_  = Preferences::GetPrefBoldItalicFont();
 	languageMode_          = PLAIN_LANGUAGE_MODE;
-    showStats_             = GetPrefStatsLine();
+    showStats_             = Preferences::GetPrefStatsLine();
 	
     ShowStatsLine(showStats_);
 
@@ -467,8 +467,8 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
     buffer_->BufAddModifyCB(modifiedCB, this);
 
     // Set the requested hardware tab distance and useTabs in the text buffer
-    buffer_->BufSetTabDistance(GetPrefTabDist(PLAIN_LANGUAGE_MODE));
-    buffer_->BufSetUseTabs(GetPrefInsertTabs());
+    buffer_->BufSetTabDistance(Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE));
+    buffer_->BufSetUseTabs(Preferences::GetPrefInsertTabs());
 
     static int n = 0;
     area->setObjectName(tr("TextArea_%1").arg(n++));
@@ -516,16 +516,16 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
 
     auto area = new TextArea(this,
                              buffer,
-                             GetPrefDefaultFont());
+                             Preferences::GetPrefDefaultFont());
 
-    const QColor textFgPix   = X11Colors::fromString(GetPrefColorName(TEXT_FG_COLOR));
-    const QColor textBgPix   = X11Colors::fromString(GetPrefColorName(TEXT_BG_COLOR));
-    const QColor selectFgPix = X11Colors::fromString(GetPrefColorName(SELECT_FG_COLOR));
-    const QColor selectBgPix = X11Colors::fromString(GetPrefColorName(SELECT_BG_COLOR));
-    const QColor hiliteFgPix = X11Colors::fromString(GetPrefColorName(HILITE_FG_COLOR));
-    const QColor hiliteBgPix = X11Colors::fromString(GetPrefColorName(HILITE_BG_COLOR));
-    const QColor lineNoFgPix = X11Colors::fromString(GetPrefColorName(LINENO_FG_COLOR));
-    const QColor cursorFgPix = X11Colors::fromString(GetPrefColorName(CURSOR_FG_COLOR));
+    const QColor textFgPix   = X11Colors::fromString(Preferences::GetPrefColorName(TEXT_FG_COLOR));
+    const QColor textBgPix   = X11Colors::fromString(Preferences::GetPrefColorName(TEXT_BG_COLOR));
+    const QColor selectFgPix = X11Colors::fromString(Preferences::GetPrefColorName(SELECT_FG_COLOR));
+    const QColor selectBgPix = X11Colors::fromString(Preferences::GetPrefColorName(SELECT_BG_COLOR));
+    const QColor hiliteFgPix = X11Colors::fromString(Preferences::GetPrefColorName(HILITE_FG_COLOR));
+    const QColor hiliteBgPix = X11Colors::fromString(Preferences::GetPrefColorName(HILITE_BG_COLOR));
+    const QColor lineNoFgPix = X11Colors::fromString(Preferences::GetPrefColorName(LINENO_FG_COLOR));
+    const QColor cursorFgPix = X11Colors::fromString(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
 
     area->TextDSetColors(
         textFgPix,
@@ -607,7 +607,7 @@ void DocumentWidget::RefreshTabState() {
         }
 
         QString tipString;
-        if (GetPrefShowPathInWindowsMenu() && filenameSet_) {
+        if (Preferences::GetPrefShowPathInWindowsMenu() && filenameSet_) {
             tipString = tr("%1 - %2").arg(labelString, path_);
         } else {
             tipString = labelString;
@@ -668,7 +668,7 @@ void DocumentWidget::SetLanguageMode(size_t mode, bool forceNewDefaults) {
  */
 void DocumentWidget::action_Set_Language_Mode(const QString &languageMode, bool forceNewDefaults) {
     emit_event("set_language_mode", languageMode);
-    SetLanguageMode(FindLanguageMode(languageMode), forceNewDefaults);
+    SetLanguageMode(Preferences::FindLanguageMode(languageMode), forceNewDefaults);
 }
 
 /**
@@ -987,7 +987,7 @@ void DocumentWidget::RaiseFocusDocumentWindow(bool focus) {
  * @brief DocumentWidget::RaiseDocumentWindow
  */
 void DocumentWidget::RaiseDocumentWindow() {
-    RaiseFocusDocumentWindow(GetPrefFocusOnRaise());
+    RaiseFocusDocumentWindow(Preferences::GetPrefFocusOnRaise());
 }
 
 /**
@@ -1042,13 +1042,13 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
         // Decref oldMode's default calltips file if needed
         if (oldMode != PLAIN_LANGUAGE_MODE && !LanguageModes[oldMode].defTipsFile.isNull()) {
-            DeleteTagsFileEx(LanguageModes[oldMode].defTipsFile, TagSearchMode::TIP, false);
+            Tags::DeleteTagsFileEx(LanguageModes[oldMode].defTipsFile, Tags::SearchMode::TIP, false);
         }
 
         // Set delimiters for all text widgets
         QString delimiters;
         if (mode == PLAIN_LANGUAGE_MODE || LanguageModes[mode].delimiters.isNull()) {
-            delimiters = GetPrefDelimiters();
+            delimiters = Preferences::GetPrefDelimiters();
         } else {
             delimiters = LanguageModes[mode].delimiters;
         }
@@ -1061,26 +1061,26 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
         /* Decide on desired values for language-specific parameters.  If a
            parameter was set to its default value, set it to the new default,
            otherwise, leave it alone */
-        const bool wrapModeIsDef = (wrapMode_ == GetPrefWrap(oldMode));
-        const bool tabDistIsDef  = (buffer_->BufGetTabDistance() == GetPrefTabDist(oldMode));
+        const bool wrapModeIsDef = (wrapMode_ == Preferences::GetPrefWrap(oldMode));
+        const bool tabDistIsDef  = (buffer_->BufGetTabDistance() == Preferences::GetPrefTabDist(oldMode));
 
         const int oldEmTabDist = textAreas[0]->getEmulateTabs();
-        const QString oldlanguageModeName = LanguageModeName(oldMode);
+        const QString oldlanguageModeName = Preferences::LanguageModeName(oldMode);
 
-        const bool emTabDistIsDef     = oldEmTabDist == GetPrefEmTabDist(oldMode);
-        const bool indentStyleIsDef   = indentStyle_ == GetPrefAutoIndent(oldMode)   || (GetPrefAutoIndent(oldMode) == IndentStyle::Smart && indentStyle_ == IndentStyle::Auto && !SmartIndentMacrosAvailable(LanguageModeName(oldMode)));
-        const bool highlightIsDef     = highlightSyntax_ == GetPrefHighlightSyntax() || (GetPrefHighlightSyntax() && FindPatternSet(!oldlanguageModeName.isNull() ? oldlanguageModeName : QLatin1String("")) == nullptr);
-        const WrapStyle wrapMode      = wrapModeIsDef                                || forceDefaults ? GetPrefWrap(mode)        : wrapMode_;
-        const int tabDist             = tabDistIsDef                                 || forceDefaults ? GetPrefTabDist(mode)     : buffer_->BufGetTabDistance();
-        const int emTabDist           = emTabDistIsDef                               || forceDefaults ? GetPrefEmTabDist(mode)   : oldEmTabDist;
-        IndentStyle indentStyle       = indentStyleIsDef                             || forceDefaults ? GetPrefAutoIndent(mode)  : indentStyle_;
-        bool highlight                = highlightIsDef                               || forceDefaults ? GetPrefHighlightSyntax() : highlightSyntax_;
+        const bool emTabDistIsDef     = oldEmTabDist == Preferences::GetPrefEmTabDist(oldMode);
+        const bool indentStyleIsDef   = indentStyle_ == Preferences::GetPrefAutoIndent(oldMode)   || (Preferences::GetPrefAutoIndent(oldMode) == IndentStyle::Smart && indentStyle_ == IndentStyle::Auto && !SmartIndentMacrosAvailable(Preferences::LanguageModeName(oldMode)));
+        const bool highlightIsDef     = highlightSyntax_ == Preferences::GetPrefHighlightSyntax() || (Preferences::GetPrefHighlightSyntax() && FindPatternSet(!oldlanguageModeName.isNull() ? oldlanguageModeName : QLatin1String("")) == nullptr);
+        const WrapStyle wrapMode      = wrapModeIsDef                                || forceDefaults ? Preferences::GetPrefWrap(mode)        : wrapMode_;
+        const int tabDist             = tabDistIsDef                                 || forceDefaults ? Preferences::GetPrefTabDist(mode)     : buffer_->BufGetTabDistance();
+        const int emTabDist           = emTabDistIsDef                               || forceDefaults ? Preferences::GetPrefEmTabDist(mode)   : oldEmTabDist;
+        IndentStyle indentStyle       = indentStyleIsDef                             || forceDefaults ? Preferences::GetPrefAutoIndent(mode)  : indentStyle_;
+        bool highlight                = highlightIsDef                               || forceDefaults ? Preferences::GetPrefHighlightSyntax() : highlightSyntax_;
 
         /* Dim/undim smart-indent and highlighting menu items depending on
            whether patterns/macros are available */
-        QString languageModeName   = LanguageModeName(mode);
+        QString languageModeName   = Preferences::LanguageModeName(mode);
         bool haveHighlightPatterns = FindPatternSet(languageModeName);
-        bool haveSmartIndentMacros = SmartIndentMacrosAvailable(LanguageModeName(mode));
+        bool haveSmartIndentMacros = SmartIndentMacrosAvailable(Preferences::LanguageModeName(mode));
 
         if (topDocument) {
             win->ui.action_Highlight_Syntax->setEnabled(haveHighlightPatterns);
@@ -1119,7 +1119,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
         // Load calltips files for new mode
         if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[mode].defTipsFile.isNull()) {
-            AddTagsFileEx(LanguageModes[mode].defTipsFile, TagSearchMode::TIP);
+            Tags::AddTagsFileEx(LanguageModes[mode].defTipsFile, Tags::SearchMode::TIP);
         }
 
         // Add/remove language specific menu items
@@ -1284,7 +1284,7 @@ QString DocumentWidget::getWindowsMenuEntry() const {
 
     auto fullTitle = tr("%1%2").arg(filename_, fileChanged_ ? tr("*") : QString());
 
-    if (GetPrefShowPathInWindowsMenu() && filenameSet_) {
+    if (Preferences::GetPrefShowPathInWindowsMenu() && filenameSet_) {
         fullTitle.append(tr(" - "));
         fullTitle.append(path_);
     }
@@ -1640,7 +1640,7 @@ void DocumentWidget::Undo() {
         buffer_->BufReplaceEx(undo.startPos, undo.endPos, undo.oldText);
 
         const auto restoredTextLength = static_cast<int64_t>(undo.oldText.size());
-        if (!buffer_->BufGetPrimary().selected || GetPrefUndoModifiesSelection()) {
+        if (!buffer_->BufGetPrimary().selected || Preferences::GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
             if(QPointer<TextArea> area = win->lastFocus_) {
@@ -1648,7 +1648,7 @@ void DocumentWidget::Undo() {
             }
         }
 
-        if (GetPrefUndoModifiesSelection()) {
+        if (Preferences::GetPrefUndoModifiesSelection()) {
             if (restoredTextLength > 0) {
                 buffer_->BufSelect(undo.startPos, undo.startPos + restoredTextLength);
             } else {
@@ -1693,7 +1693,7 @@ void DocumentWidget::Redo() {
         buffer_->BufReplaceEx(redo.startPos, redo.endPos, redo.oldText);
 
         const auto restoredTextLength = static_cast<int64_t>(redo.oldText.size());
-        if (!buffer_->BufGetPrimary().selected || GetPrefUndoModifiesSelection()) {
+        if (!buffer_->BufGetPrimary().selected || Preferences::GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
             if(QPointer<TextArea> area = win->lastFocus_) {
@@ -1701,7 +1701,7 @@ void DocumentWidget::Redo() {
             }
         }
 
-        if (GetPrefUndoModifiesSelection()) {
+        if (Preferences::GetPrefUndoModifiesSelection()) {
 
             if (restoredTextLength > 0) {
                 buffer_->BufSelect(redo.startPos, redo.startPos + restoredTextLength);
@@ -1930,7 +1930,7 @@ void DocumentWidget::CheckForChangesToFileEx() {
 
             /* Warn the user, if they like to be warned (Maybe this should be its
                 own preference setting: GetPrefWarnFileDeleted()) */
-            if (GetPrefWarnFileMods()) {
+            if (Preferences::GetPrefWarnFileMods()) {
                 bool save = false;
 
                 //  Set title, message body and button to match stat()'s error.
@@ -2016,11 +2016,11 @@ void DocumentWidget::CheckForChangesToFileEx() {
 
             lastModTime_ = 0; // Inhibit further warnings
             fileMissing_ = false;
-            if (!GetPrefWarnFileMods()) {
+            if (!Preferences::GetPrefWarnFileMods()) {
                 return;
             }
 
-            if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(fullname)) {
+            if (Preferences::GetPrefWarnRealFileMods() && !cmpWinAgainstFile(fullname)) {
                 // Contents hasn't changed. Update the modification time.
                 lastModTime_ = statbuf.st_mtime;
                 return;
@@ -2308,7 +2308,7 @@ int DocumentWidget::SaveWindow() {
     }
 
     // Check for external modifications and warn the user
-    if (GetPrefWarnFileMods() && fileWasModifiedExternally()) {
+    if (Preferences::GetPrefWarnFileMods() && fileWasModifiedExternally()) {
 
         QMessageBox messageBox(this);
         messageBox.setWindowTitle(tr("Save File"));
@@ -2372,7 +2372,7 @@ bool DocumentWidget::doSave() {
              changes. If the file is created for the first time, it has
              zero size on disk, and the check would falsely conclude that the
              file has changed on disk, and would pop up a warning dialog */
-    if (!buffer_->BufIsEmpty() && buffer_->BufGetCharacter(buffer_->BufGetLength() - 1) != '\n' && GetPrefAppendLF()) {
+    if (!buffer_->BufIsEmpty() && buffer_->BufGetCharacter(buffer_->BufGetLength() - 1) != '\n' && Preferences::GetPrefAppendLF()) {
         buffer_->BufAppendEx('\n');
     }
 
@@ -2414,9 +2414,9 @@ bool DocumentWidget::doSave() {
     }
 
     // write to the file
-	::fwrite(fileString.data(), 1, fileString.size(), fp);
+    ::fwrite(fileString.data(), 1, fileString.size(), fp);
 
-    if (ferror(fp)) {
+    if (::ferror(fp)) {
         QMessageBox::critical(this, tr("Error saving File"), tr("%1 not saved:\n%2").arg(filename_, ErrorString(errno)));
 		QFile::remove(fullname);
         return false;
@@ -2453,7 +2453,7 @@ bool DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
     // NOTE(eteran): this seems a bit redundant to other code...
     if(auto win = MainWindow::fromDocument(this)) {
 
-        int  retVal;
+        int retVal;
         QString fullname;
 
         if(newName.isNull()) {
@@ -2813,7 +2813,7 @@ int DocumentWidget::fileWasModifiedExternally() const {
         return false;
     }
 
-    if (GetPrefWarnRealFileMods() && !cmpWinAgainstFile(fullname)) {
+    if (Preferences::GetPrefWarnRealFileMods() && !cmpWinAgainstFile(fullname)) {
         return false;
     }
 
@@ -2836,7 +2836,7 @@ int DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
              /* New File */
              (fileMissing_ && lastModTime_ == 0) ||
              /* File deleted/modified externally, ignored by user. */
-             !GetPrefWarnFileMods())) {
+             !Preferences::GetPrefWarnFileMods())) {
 
         CloseDocument();
         // up-to-date windows don't have outstanding backup files to close
@@ -3013,7 +3013,7 @@ void DocumentWidget::open(const QString &fullpath) {
                 QString(),
                 false,
                 QString(),
-                GetPrefOpenInTab(),
+                Preferences::GetPrefOpenInTab(),
                 false);
 
     MainWindow::CheckCloseDimEx();
@@ -3182,7 +3182,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
         assert(readLen <= fileString.size());
 
         // Detect and convert DOS and Macintosh format files
-        if (GetPrefForceOSConversion()) {
+        if (Preferences::GetPrefForceOSConversion()) {
             switch (FormatOfFileEx(view::string_view(fileString.data(), readLen))) {
             case FileFormats::Dos:
                 ConvertFromDosFileString(fileString.data(), &readLen, nullptr);
@@ -3320,7 +3320,7 @@ void DocumentWidget::RefreshMenuToggleStates() {
         no_signals(win->ui.action_Matching_Syntax)->setChecked(matchSyntaxBased_);
         no_signals(win->ui.action_Read_Only)->setChecked(lockReasons_.isUserLocked());
 
-        win->ui.action_Indent_Smart->setEnabled(SmartIndentMacrosAvailable(LanguageModeName(languageMode_)));
+        win->ui.action_Indent_Smart->setEnabled(SmartIndentMacrosAvailable(Preferences::LanguageModeName(languageMode_)));
         win->ui.action_Highlight_Syntax->setEnabled(languageMode_ != PLAIN_LANGUAGE_MODE);
 
         SetAutoIndent(indentStyle_);
@@ -3758,13 +3758,13 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
 void DocumentWidget::FindDefCalltip(TextArea *area, const QString &tipName) {
 
 	// Reset calltip parameters to reasonable defaults
-	globAnchored  = false;
-	globPos       = -1;
-    globHAlign    = TipHAlignMode::Left;
-    globVAlign    = TipVAlignMode::Below;
-    globAlignMode = TipAlignStrict::Sloppy;
+    Tags::globAnchored  = false;
+    Tags::globPos       = -1;
+    Tags::globHAlign    = TipHAlignMode::Left;
+    Tags::globVAlign    = TipVAlignMode::Below;
+    Tags::globAlignMode = TipAlignStrict::Sloppy;
 
-    findDefinitionHelper(area, tipName, TagSearchMode::TIP);
+    findDefinitionHelper(area, tipName, Tags::SearchMode::TIP);
 
 }
 
@@ -3773,11 +3773,11 @@ void DocumentWidget::FindDefCalltip(TextArea *area, const QString &tipName) {
 ** loaded tags file and bring up the file and line that the tags file
 ** indicates.
 */
-void DocumentWidget::findDefinitionHelper(TextArea *area, const QString &arg, TagSearchMode search_type) {
+void DocumentWidget::findDefinitionHelper(TextArea *area, const QString &arg, Tags::SearchMode search_type) {
 	if (!arg.isNull()) {
 		findDef(area, arg, search_type);
 	} else {
-		searchMode = search_type;
+        Tags::searchMode = search_type;
 
         QString selected = GetAnySelectionEx(false);
         if(selected.isEmpty()) {
@@ -3792,10 +3792,10 @@ void DocumentWidget::findDefinitionHelper(TextArea *area, const QString &arg, Ta
 ** This code path is followed if the request came from either
 ** FindDefinition or FindDefCalltip.  This should probably be refactored.
 */
-int DocumentWidget::findDef(TextArea *area, const QString &value, TagSearchMode search_type) {
+int DocumentWidget::findDef(TextArea *area, const QString &value, Tags::SearchMode search_type) {
 	int status = 0;
 
-	searchMode = search_type;
+    Tags::searchMode = search_type;
 
     // make sure that the whole value is ascii
     auto p = std::find_if(value.begin(), value.end(), [](QChar ch) {
@@ -3808,17 +3808,17 @@ int DocumentWidget::findDef(TextArea *area, const QString &value, TagSearchMode 
         status = findAllMatchesEx(area, value);
 
         // If we didn't find a requested calltip, see if we can use a tag
-        if (status == 0 && search_type == TagSearchMode::TIP && !TagsFileList.empty()) {
-            searchMode = TagSearchMode::TIP_FROM_TAG;
+        if (status == 0 && search_type == Tags::SearchMode::TIP && !Tags::TagsFileList.empty()) {
+            Tags::searchMode = Tags::SearchMode::TIP_FROM_TAG;
             status = findAllMatchesEx(area, value);
         }
 
         if (status == 0) {
             // Didn't find any matches
-            if (searchMode == TagSearchMode::TIP_FROM_TAG || searchMode == TagSearchMode::TIP) {
-                tagsShowCalltipEx(area, tr("No match for \"%1\" in calltips or tags.").arg(tagName));
+            if (Tags::searchMode == Tags::SearchMode::TIP_FROM_TAG || Tags::searchMode == Tags::SearchMode::TIP) {
+                Tags::tagsShowCalltipEx(area, tr("No match for \"%1\" in calltips or tags.").arg(Tags::tagName));
             } else {
-                QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags %2").arg(tagName, (TagsFileList.size() > 1) ? tr("files") : tr("file")));
+                QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags %2").arg(Tags::tagName, (Tags::TagsFileList.size() > 1) ? tr("files") : tr("file")));
             }
         }
     } else {
@@ -3835,7 +3835,7 @@ int DocumentWidget::findDef(TextArea *area, const QString &value, TagSearchMode 
  * @param tagName
  */
 void DocumentWidget::FindDefinition(TextArea *area, const QString &tagName) {
-    findDefinitionHelper(area, tagName, TagSearchMode::TAG);
+    findDefinitionHelper(area, tagName, Tags::SearchMode::TAG);
 }
 
 /**
@@ -4030,7 +4030,7 @@ void DocumentWidget::BeginSmartIndentEx(bool warn) {
     static bool initialized = false;
 
     // Find the window's language mode.  If none is set, warn the user
-    QString modeName = LanguageModeName(languageMode_);
+    QString modeName = Preferences::LanguageModeName(languageMode_);
     if(modeName.isNull()) {
         if (warn) {
             QMessageBox::warning(
@@ -4084,7 +4084,7 @@ void DocumentWidget::BeginSmartIndentEx(bool warn) {
     winData->newlineMacro   = ParseMacroEx(indentMacros->newlineMacro, &errMsg, &stoppedAt);
 
     if (!winData->newlineMacro) {
-        ParseErrorEx(this, indentMacros->newlineMacro, stoppedAt, tr("newline macro"), errMsg);
+        Preferences::ParseErrorEx(this, indentMacros->newlineMacro, stoppedAt, tr("newline macro"), errMsg);
         return;
     }
 
@@ -4095,7 +4095,7 @@ void DocumentWidget::BeginSmartIndentEx(bool warn) {
         if (!winData->modMacro) {
 
             delete winData->newlineMacro;
-            ParseErrorEx(this, indentMacros->modMacro, stoppedAt, tr("smart indent modify macro"), errMsg);
+            Preferences::ParseErrorEx(this, indentMacros->modMacro, stoppedAt, tr("smart indent modify macro"), errMsg);
             return;
         }
     }
@@ -4469,7 +4469,7 @@ void DocumentWidget::UnloadLanguageModeTipsFileEx() {
 
     const size_t mode = languageMode_;
     if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[mode].defTipsFile.isNull()) {
-        DeleteTagsFileEx(LanguageModes[mode].defTipsFile, TagSearchMode::TIP, false);
+        Tags::DeleteTagsFileEx(LanguageModes[mode].defTipsFile, Tags::SearchMode::TIP, false);
     }
 }
 
@@ -4554,7 +4554,7 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
     QStringList args;
     args << QLatin1String("-c");
     args << command;
-    process->start(GetPrefShell(), args);
+    process->start(Preferences::GetPrefShell(), args);
 
     // if there's nothing to write to the process' stdin, close it now, otherwise
     // write it to the process
@@ -4974,7 +4974,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
         break;
     case TO_NEW_WINDOW:
         if(DocumentWidget *document = MainWindow::EditNewFileEx(
-                    GetPrefOpenInTab() ? inWindow : nullptr,
+                    Preferences::GetPrefOpenInTab() ? inWindow : nullptr,
                     QString(),
                     false,
                     QString(),
@@ -5450,7 +5450,7 @@ void DocumentWidget::eraseFlashEx() {
 PatternSet *DocumentWidget::findPatternsForWindowEx(bool warn) {
 
     // Find the window's language mode.  If none is set, warn user
-    QString modeName = LanguageModeName(languageMode_);
+    QString modeName = Preferences::LanguageModeName(languageMode_);
     if(modeName.isNull()) {
         if (warn) {
             QMessageBox::warning(this,
@@ -6627,7 +6627,7 @@ void DocumentWidget::DoMacroEx(const QString &macro, const QString &errInName) {
     int stoppedAt;
     Program *const prog = ParseMacroEx(qMacro, &errMsg, &stoppedAt);
     if(!prog) {
-        ParseErrorEx(this, qMacro, stoppedAt, errInName, errMsg);
+        Preferences::ParseErrorEx(this, qMacro, stoppedAt, errInName, errMsg);
         return;
     }
 
@@ -6725,7 +6725,7 @@ QFont DocumentWidget::FontOfNamedStyleEx(const QString &styleName) const {
     const size_t styleNo = IndexOfNamedStyle(styleName);
 
     if (styleNo == STYLE_NOT_FOUND) {
-        return GetPrefDefaultFont();
+        return Preferences::GetPrefDefaultFont();
     } else {
 
         const int fontNum = HighlightStyles[styleNo].font;
@@ -7008,12 +7008,12 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
         return -1;
     }
 
-    tagName = string;
+    Tags::tagName = string;
 
-    QList<Tag> tags = LookupTag(string, searchMode);
+    QList<Tags::Tag> tags = Tags::LookupTag(string, Tags::searchMode);
 
     // First look up all of the matching tags
-    for(const Tag &tag : tags) {
+    for(const Tags::Tag &tag : tags) {
 
         QString fileToSearch = tag.file;
         QString searchString = tag.searchString;
@@ -7026,28 +7026,28 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
         ** current language mode, but don't skip anything if the window is in
         ** PLAIN_LANGUAGE_MODE.
         */
-        if (GetLanguageMode() != PLAIN_LANGUAGE_MODE && GetPrefSmartTags() && langMode != PLAIN_LANGUAGE_MODE && langMode != GetLanguageMode()) {
+        if (GetLanguageMode() != PLAIN_LANGUAGE_MODE && Preferences::GetPrefSmartTags() && langMode != PLAIN_LANGUAGE_MODE && langMode != GetLanguageMode()) {
             continue;
         }
 
         if (QFileInfo(fileToSearch).isAbsolute()) {
-            tagFiles[nMatches] = fileToSearch;
+            Tags::tagFiles[nMatches] = fileToSearch;
         } else {
-            tagFiles[nMatches] = tr("%1%2").arg(tagPath, fileToSearch);
+            Tags::tagFiles[nMatches] = tr("%1%2").arg(tagPath, fileToSearch);
         }
 
-        tagSearch[nMatches] = searchString;
-        tagPosInf[nMatches] = startPos;
+        Tags::tagSearch[nMatches] = searchString;
+        Tags::tagPosInf[nMatches] = startPos;
 
         // NOTE(eteran): no error checking...
-        ParseFilenameEx(tagFiles[nMatches], &filename, &pathname);
+        ParseFilenameEx(Tags::tagFiles[nMatches], &filename, &pathname);
 
         // Is this match in the current file?  If so, use it!
-        if (GetPrefSmartTags() && filename_ == filename && path_ == pathname) {
+        if (Preferences::GetPrefSmartTags() && filename_ == filename && path_ == pathname) {
             if (nMatches) {
-                tagFiles[0]  = tagFiles[nMatches];
-                tagSearch[0] = tagSearch[nMatches];
-                tagPosInf[0] = tagPosInf[nMatches];
+                Tags::tagFiles[0]  = Tags::tagFiles[nMatches];
+                Tags::tagSearch[0] = Tags::tagSearch[nMatches];
+                Tags::tagPosInf[0] = Tags::tagPosInf[nMatches];
             }
             nMatches = 1;
             break;
@@ -7059,8 +7059,8 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
             pathMatch = nMatches;
         }
 
-        if (++nMatches >= MAXDUPTAGS) {
-            QMessageBox::warning(this, tr("Tags"), tr("Too many duplicate tags, first %1 shown").arg(MAXDUPTAGS));
+        if (++nMatches >= Tags::MAXDUPTAGS) {
+            QMessageBox::warning(this, tr("Tags"), tr("Too many duplicate tags, first %1 shown").arg(Tags::MAXDUPTAGS));
             break;
         }
     }
@@ -7071,17 +7071,17 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
     }
 
     // Only one of the matches is in the same dir. as this file.  Use it.
-    if (GetPrefSmartTags() && samePath == 1 && nMatches > 1) {
-        tagFiles[0]  = tagFiles[pathMatch];
-        tagSearch[0] = tagSearch[pathMatch];
-        tagPosInf[0] = tagPosInf[pathMatch];
+    if (Preferences::GetPrefSmartTags() && samePath == 1 && nMatches > 1) {
+        Tags::tagFiles[0]  = Tags::tagFiles[pathMatch];
+        Tags::tagSearch[0] = Tags::tagSearch[pathMatch];
+        Tags::tagPosInf[0] = Tags::tagPosInf[pathMatch];
         nMatches = 1;
     }
 
     //  If all of the tag entries are the same file, just use the first.
-    if (GetPrefSmartTags()) {
+    if (Preferences::GetPrefSmartTags()) {
         for (i = 1; i < nMatches; i++) {
-            if(tagFiles[i] != tagFiles[i - 1]) {
+            if(Tags::tagFiles[i] != Tags::tagFiles[i - 1]) {
                 break;
             }
         }
@@ -7099,18 +7099,18 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
             QString temp;
 
             // NOTE(eteran): no error checking...
-            ParseFilenameEx(tagFiles[i], &filename, &pathname);
-            if ((i < nMatches - 1 && (tagFiles[i] == tagFiles[i + 1])) || (i > 0 && (tagFiles[i] == tagFiles[i - 1]))) {
+            ParseFilenameEx(Tags::tagFiles[i], &filename, &pathname);
+            if ((i < nMatches - 1 && (Tags::tagFiles[i] == Tags::tagFiles[i + 1])) || (i > 0 && (Tags::tagFiles[i] == Tags::tagFiles[i - 1]))) {
 
-                if (!tagSearch[i].isEmpty() && (tagPosInf[i] != -1)) {
+                if (!Tags::tagSearch[i].isEmpty() && (Tags::tagPosInf[i] != -1)) {
                     // etags
-                    temp = QString::asprintf("%2d. %s%s %8i %s", i + 1, qPrintable(pathname), qPrintable(filename), tagPosInf[i], qPrintable(tagSearch[i]));
-                } else if (!tagSearch[i].isEmpty()) {
+                    temp = QString::asprintf("%2d. %s%s %8i %s", i + 1, qPrintable(pathname), qPrintable(filename), Tags::tagPosInf[i], qPrintable(Tags::tagSearch[i]));
+                } else if (!Tags::tagSearch[i].isEmpty()) {
                     // ctags search expr
-                    temp = QString::asprintf("%2d. %s%s          %s", i + 1, qPrintable(pathname), qPrintable(filename), qPrintable(tagSearch[i]));
+                    temp = QString::asprintf("%2d. %s%s          %s", i + 1, qPrintable(pathname), qPrintable(filename), qPrintable(Tags::tagSearch[i]));
                 } else {
                     // line number only
-                    temp = QString::asprintf("%2d. %s%s %8i", i + 1, qPrintable(pathname), qPrintable(filename), tagPosInf[i]);
+                    temp = QString::asprintf("%2d. %s%s %8i", i + 1, qPrintable(pathname), qPrintable(filename), Tags::tagPosInf[i]);
                 }
             } else {
                 temp = QString::asprintf("%2d. %s%s", i + 1, qPrintable(pathname), qPrintable(filename));
@@ -7127,10 +7127,10 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
     **  No need for a dialog list, there is only one tag matching --
     **  Go directly to the tag
     */
-    if (searchMode == TagSearchMode::TAG) {
+    if (Tags::searchMode == Tags::SearchMode::TAG) {
         editTaggedLocationEx(area, 0);
     } else {
-        showMatchingCalltipEx(area, 0);
+        Tags::showMatchingCalltipEx(area, 0);
     }
 
     return 1;
@@ -7146,7 +7146,7 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
 void DocumentWidget::createSelectMenuEx(TextArea *area, const QStringList &args) {
 
     auto dialog = std::make_unique<DialogDuplicateTags>(this, area);
-    dialog->setTag(tagName);
+    dialog->setTag(Tags::tagName);
     for(int i = 0; i < args.size(); ++i) {
         dialog->addListItem(args[i], i);
     }
@@ -7160,23 +7160,23 @@ void DocumentWidget::createSelectMenuEx(TextArea *area, const QStringList &args)
 **                  tip and/or tag database depending on search_type
 **  search_type:    Either TIP or TIP_FROM_TAG
 */
-int DocumentWidget::ShowTipStringEx(const QString &text, bool anchored, int pos, bool lookup, TagSearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode) {
-    if (search_type == TagSearchMode::TAG) {
+int DocumentWidget::ShowTipStringEx(const QString &text, bool anchored, int pos, bool lookup, Tags::SearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode) {
+    if (search_type == Tags::SearchMode::TAG) {
         return 0;
     }
 
     // So we don't have to carry all of the calltip alignment info around
-    globAnchored  = anchored;
-    globPos       = pos;
-    globHAlign    = hAlign;
-    globVAlign    = vAlign;
-    globAlignMode = alignMode;
+    Tags::globAnchored  = anchored;
+    Tags::globPos       = pos;
+    Tags::globHAlign    = hAlign;
+    Tags::globVAlign    = vAlign;
+    Tags::globAlignMode = alignMode;
 
     // If this isn't a lookup request, just display it.
 
     if(auto window = MainWindow::fromDocument(this)) {
         if (!lookup) {
-            return tagsShowCalltipEx(window->lastFocus(), text);
+            return Tags::tagsShowCalltipEx(window->lastFocus(), text);
         } else {
             return findDef(window->lastFocus(), text, search_type);
         }
@@ -7195,7 +7195,7 @@ void DocumentWidget::editTaggedLocationEx(TextArea *area, int i) {
     QString pathname;
 
     // NOTE(eteran): no error checking...
-    ParseFilenameEx(tagFiles[i], &filename, &pathname);
+    ParseFilenameEx(Tags::tagFiles[i], &filename, &pathname);
 
     // open the file containing the definition
     DocumentWidget::EditExistingFileEx(
@@ -7206,7 +7206,7 @@ void DocumentWidget::editTaggedLocationEx(TextArea *area, int i) {
                 QString(),
                 false,
                 QString(),
-                GetPrefOpenInTab(),
+                Preferences::GetPrefOpenInTab(),
                 false);
 
     DocumentWidget *documentToSearch = MainWindow::FindWindowWithFile(filename, pathname);
@@ -7214,24 +7214,24 @@ void DocumentWidget::editTaggedLocationEx(TextArea *area, int i) {
         QMessageBox::warning(
                     this,
                     tr("File not found"),
-                    tr("File %1 not found").arg(tagFiles[i]));
+                    tr("File %1 not found").arg(Tags::tagFiles[i]));
         return;
     }
 
-    int64_t startPos = tagPosInf[i];
+    int64_t startPos = Tags::tagPosInf[i];
 
-    if (tagSearch[i].isEmpty()) {
+    if (Tags::tagSearch[i].isEmpty()) {
         // if the search string is empty, select the numbered line
         SelectNumberedLineEx(area, startPos);
         return;
     }
 
     // search for the tags file search string in the newly opened file
-    if (!fakeRegExSearchEx(documentToSearch->buffer_->BufAsStringEx(), tagSearch[i], &startPos, &endPos)) {
+    if (!Tags::fakeRegExSearchEx(documentToSearch->buffer_->BufAsStringEx(), Tags::tagSearch[i], &startPos, &endPos)) {
         QMessageBox::warning(
                     this,
                     tr("Tag Error"),
-                    tr("Definition for %1\nnot found in %2").arg(tagName, tagFiles[i]));
+                    tr("Definition for %1\nnot found in %2").arg(Tags::tagName, Tags::tagFiles[i]));
         return;
     }
 

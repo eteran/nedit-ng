@@ -11,7 +11,7 @@ DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt
 
     const int margin = document ?
                 document->firstPane()->getWrapMargin() :
-                GetPrefWrapMargin();
+                Preferences::GetPrefWrapMargin();
 
     ui.checkWrapAndFill->setChecked(margin == 0);
     ui.spinWrapAndFill->setValue(margin);
@@ -34,7 +34,7 @@ void DialogWrapMargin::on_buttonBox_accepted() {
 
 	// Set the value in either the requested window or default preferences 
     if(!document_) {
-		SetPrefWrapMargin(margin);
+        Preferences::SetPrefWrapMargin(margin);
 	} else {
         document_->setWrapMargin(margin);
 	}

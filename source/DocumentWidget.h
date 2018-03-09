@@ -13,7 +13,7 @@
 #include "ShowMatchingStyle.h"
 #include "TextBufferFwd.h"
 #include "Util/string_view.h"
-#include "tags.h"
+#include "Tags.h"
 #include "UndoInfo.h"
 #include "MenuData.h"
 #include "WrapStyle.h"
@@ -106,7 +106,7 @@ public:
     bool modeMessageDisplayed() const;
     bool ReadMacroFileEx(const QString &fileName, bool warnNotExist);
     HighlightPattern *FindPatternOfWindowEx(const QString &name) const;
-    int findDef(TextArea *area, const QString &value, TagSearchMode search_type);
+    int findDef(TextArea *area, const QString &value, Tags::SearchMode search_type);
     size_t HighlightCodeOfPosEx(int pos);
     int HighlightLengthOfCodeFromPosEx(int pos, size_t *checkCode);
     int ReadMacroStringEx(const QString &string, const QString &errIn);
@@ -140,7 +140,7 @@ public:
     void execAP(TextArea *area, const QString &command);
     void ExecShellCommandEx(TextArea *area, const QString &command, CommandSource source);
     void FindDefCalltip(TextArea *area, const QString &tipName);
-    void findDefinitionHelper(TextArea *area, const QString &arg, TagSearchMode search_type);
+    void findDefinitionHelper(TextArea *area, const QString &arg, Tags::SearchMode search_type);
     void FindDefinition(TextArea *area, const QString &tagName);
     void finishMacroCmdExecutionEx();
     void gotoAP(TextArea *area, int64_t lineNum, int64_t column);
@@ -186,7 +186,7 @@ public:
     void StartHighlightingEx(bool warn);
     void StopHighlightingEx();
     void UpdateHighlightStylesEx();
-    int ShowTipStringEx(const QString &text, bool anchored, int pos, bool lookup, TagSearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode);
+    int ShowTipStringEx(const QString &text, bool anchored, int pos, bool lookup, Tags::SearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode);
     void editTaggedLocationEx(TextArea *area, int i);
     void SetBacklightChars(const QString &applyBacklightTypes);
     QFont defaultFont() const;

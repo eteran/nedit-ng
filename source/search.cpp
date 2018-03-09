@@ -301,7 +301,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 
 
 	// If there is no language mode, we use the default list of delimiters 
-	QByteArray delimiterString = GetPrefDelimiters().toLatin1();
+    QByteArray delimiterString = Preferences::GetPrefDelimiters().toLatin1();
 	if(!delimiters) {
 		delimiters = delimiterString.data();
     }

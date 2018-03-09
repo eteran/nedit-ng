@@ -205,12 +205,12 @@ int LoadSmartIndentStringEx(const QString &string) {
 		}
 
 		// read language mode name
-		is.lmName = ReadSymbolicFieldEx(in);
+        is.lmName = Preferences::ReadSymbolicFieldEx(in);
 		if (is.lmName.isNull()) {
 			return siParseError(in, QLatin1String("language mode name required"));
 		}
 
-		if (!SkipDelimiterEx(in, &errMsg)) {
+        if (!Preferences::SkipDelimiterEx(in, &errMsg)) {
 			return siParseError(in, errMsg);
 		}
 
@@ -314,7 +314,7 @@ static QString readSIMacroEx(Input &in) {
 }
 
 static bool siParseError(const Input &in, const QString &message) {
-	return ParseErrorEx(
+    return Preferences::ParseErrorEx(
 	            nullptr,
                 *in.string(),
                 in.index(),

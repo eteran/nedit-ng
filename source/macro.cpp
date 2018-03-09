@@ -723,7 +723,7 @@ static bool searchKeepDialogs(Arguments arguments, int index) {
     for(int i = index; i < arguments.size(); ++i) {
         QString arg;
         if (std::error_code ec = readArgument(arguments[i], &arg)) {
-            return GetPrefKeepSearchDlogs();
+            return Preferences::GetPrefKeepSearchDlogs();
         }
 
         if (arg.compare(QLatin1String("keep"), Qt::CaseInsensitive) == 0)
@@ -733,7 +733,7 @@ static bool searchKeepDialogs(Arguments arguments, int index) {
             return false;
     }
 
-    return GetPrefKeepSearchDlogs();
+    return Preferences::GetPrefKeepSearchDlogs();
 }
 
 
@@ -747,7 +747,7 @@ static WrapMode searchWrap(Arguments arguments, int index) {
     for(int i = index; i < arguments.size(); ++i) {
         QString arg;
         if (std::error_code ec = readArgument(arguments[i], &arg)) {
-            return GetPrefSearchWraps();
+            return Preferences::GetPrefSearchWraps();
         }
 
         if (arg.compare(QLatin1String("wrap"), Qt::CaseInsensitive) == 0)
@@ -757,7 +757,7 @@ static WrapMode searchWrap(Arguments arguments, int index) {
             return WrapMode::NoWrap;
     }
 
-    return GetPrefSearchWraps();
+    return Preferences::GetPrefSearchWraps();
 }
 
 /*
@@ -787,7 +787,7 @@ bool StringToSearchType(const QString &string, SearchType *searchType) {
         }
     }
 
-    *searchType = GetPrefSearch();
+    *searchType = Preferences::GetPrefSearch();
     return false;
 }
 
@@ -804,7 +804,7 @@ static SearchType searchType(Arguments arguments, int index) {
         QString arg;
 
         if (std::error_code ec = readArgument(arguments[i], &arg)) {
-            return GetPrefSearch();
+            return Preferences::GetPrefSearch();
         }
 
         SearchType type;
@@ -813,7 +813,7 @@ static SearchType searchType(Arguments arguments, int index) {
         }
     }
 
-    return GetPrefSearch();
+    return Preferences::GetPrefSearch();
 }
 
 static std::error_code closeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
@@ -2094,7 +2094,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
                 if(errPos) {
                     *errPos = in.index();
                 }
-                return ParseErrorEx(
+                return Preferences::ParseErrorEx(
                             dialogParent,
                             *in.string(),
                             in.index(),
@@ -2109,7 +2109,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
                 if(errPos) {
                     *errPos = in.index();
                 }
-                return ParseErrorEx(
+                return Preferences::ParseErrorEx(
                             dialogParent,
                             *in.string(),
                             in.index(),
@@ -2127,7 +2127,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
                     *errPos = in.index() + stoppedAt;
                 }
 
-                return ParseErrorEx(
+                return Preferences::ParseErrorEx(
                             dialogParent,
                             code,
                             stoppedAt,
@@ -2168,7 +2168,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
                     *errPos = in.index() + stoppedAt;
                 }
 
-                return ParseErrorEx(
+                return Preferences::ParseErrorEx(
                             dialogParent,
                             code,
                             stoppedAt,
@@ -3283,7 +3283,7 @@ static std::error_code calltipMS(DocumentWidget *document, Arguments arguments, 
     bool lookup = true;
     int i;
     int anchorPos;
-    auto mode      = TagSearchMode::None;
+    auto mode      = Tags::SearchMode::None;
     auto hAlign    = TipHAlignMode::Left;
     auto vAlign    = TipVAlignMode::Below;
     auto alignMode = TipAlignStrict::Sloppy;
@@ -3341,11 +3341,11 @@ static std::error_code calltipMS(DocumentWidget *document, Arguments arguments, 
             break;
         case 't':
             if (txtArg == "tipText") {
-                mode = TagSearchMode::None;
+                mode = Tags::SearchMode::None;
             } else if (txtArg == "tipKey") {
-                mode = TagSearchMode::TIP;
+                mode = Tags::SearchMode::TIP;
             } else if (txtArg == "tagKey") {
-                mode = TagSearchMode::TIP_FROM_TAG;
+                mode = Tags::SearchMode::TIP_FROM_TAG;
             } else {
                 return MacroErrorCode::UnrecognizedArgument;
             }
@@ -3355,7 +3355,7 @@ static std::error_code calltipMS(DocumentWidget *document, Arguments arguments, 
         }
     }
 
-    if (mode == TagSearchMode::None) {
+    if (mode == Tags::SearchMode::None) {
         lookup = false;
     }
 
@@ -4224,7 +4224,7 @@ static std::error_code serverNameMV(DocumentWidget *document, Arguments argument
     Q_UNUSED(document);
     Q_UNUSED(arguments);
 
-    *result = make_value(GetPrefServerName());
+    *result = make_value(Preferences::GetPrefServerName());
     return MacroErrorCode::Success;
 }
 
@@ -4266,7 +4266,7 @@ static std::error_code languageModeMV(DocumentWidget *document, Arguments argume
 
     Q_UNUSED(arguments);
 
-    QString lmName = LanguageModeName(document->GetLanguageMode());
+    QString lmName = Preferences::LanguageModeName(document->GetLanguageMode());
 
     if(lmName.isNull()) {
         lmName = QLatin1String("Plain");

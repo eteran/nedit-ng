@@ -378,7 +378,7 @@ static QString copyMacroToEnd(Input &in) {
     QString code = input.mid();
 
     if (!code.startsWith(QLatin1Char('{'))) {
-        ParseErrorEx(nullptr, code, input.index() - in.index(), QLatin1String("macro menu item"), QLatin1String("expecting '{'"));
+        Preferences::ParseErrorEx(nullptr, code, input.index() - in.index(), QLatin1String("macro menu item"), QLatin1String("expecting '{'"));
         return QString();
     }
 
@@ -388,7 +388,7 @@ static QString copyMacroToEnd(Input &in) {
 
     Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
     if(!prog) {
-        ParseErrorEx(nullptr, code, stoppedAt, QLatin1String("macro menu item"), errMsg);
+        Preferences::ParseErrorEx(nullptr, code, stoppedAt, QLatin1String("macro menu item"), errMsg);
         return QString();
     }
     delete prog;
@@ -497,23 +497,23 @@ static void parseMenuItemName(const QString &menuItemName, const std::shared_ptr
 
     int index = menuItemName.indexOf(QLatin1Char('@'));
     if(index != -1) {
-        QStringRef languageString = menuItemName.midRef(index);
+        QString languageString = menuItemName.mid(index);
         if(languageString == QLatin1String("*")) {
             /* only language is "*": this is for all but language specific macros */
             info->umiIsDefault = true;
             return;
         }
 
-        QVector<QStringRef> languages = languageString.split(QLatin1Char('@'), QString::SkipEmptyParts);
+        QStringList languages = languageString.split(QLatin1Char('@'), QString::SkipEmptyParts);
         std::vector<size_t> languageModes;
 
         // setup a list of all language modes related to given menu item
-        for(const QStringRef &language : languages) {
+        for(const QString &language : languages) {
             /* lookup corresponding language mode index; if PLAIN is
                returned then this means, that language mode name after
                "@" is unknown (i.e. not defined) */
 
-            size_t languageMode = FindLanguageMode(language);
+            size_t languageMode = Preferences::FindLanguageMode(language);
             if (languageMode == PLAIN_LANGUAGE_MODE) {
                 languageModes.push_back(UNKNOWN_LANGUAGE_MODE);
             } else {

@@ -4,10 +4,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5 5.4.0 REQUIRED Widgets)
 
-qt5_wrap_cpp(MOC_SOURCES
-	Settings.h
-)
-
 add_library (Settings 
 	${MOC_SOURCES}
 	IndentStyle.h

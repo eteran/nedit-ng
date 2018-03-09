@@ -19,7 +19,7 @@ Dialog::Dialog(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
 void Dialog::showEvent(QShowEvent *event) {
     Q_UNUSED(event);
 
-    if(GetPrefRepositionDialogs()) {
+    if(Preferences::GetPrefRepositionDialogs()) {
         QPoint pos = QCursor::pos();
 
         int x = pos.x() - (width() / 2);

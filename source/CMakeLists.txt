@@ -267,8 +267,8 @@ add_executable(nedit-ng
 	StyleTableEntry.h
 	TabWidget.cpp
 	TabWidget.h
-	tags.cpp
-	tags.h
+	Tags.cpp
+	Tags.h
 	TextArea.cpp
 	TextArea.h
 	TextBuffer.cpp

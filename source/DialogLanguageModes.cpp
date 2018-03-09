@@ -278,12 +278,12 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 	QString tipsFile = ui.editCallTips->text();
 	if(!tipsFile.isEmpty()) {
 		// Ensure that AddTagsFile will work
-        if (!AddTagsFileEx(tipsFile, TagSearchMode::TIP)) {
+        if (!Tags::AddTagsFileEx(tipsFile, Tags::SearchMode::TIP)) {
             if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Error reading Calltips"), tr("Can't read default calltips file(s):\n  \"%1\"\n").arg(tipsFile));
 			}
 			return nullptr;
-        } else if (!DeleteTagsFileEx(tipsFile, TagSearchMode::TIP, false)) {
+        } else if (!Tags::DeleteTagsFileEx(tipsFile, Tags::SearchMode::TIP, false)) {
             qCritical("NEdit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"", qPrintable(tipsFile));
 		}
 	}
@@ -430,7 +430,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
                     QString newDelimiters = lang->delimiters;
 
                     if(newDelimiters.isNull()) {
-                        newDelimiters = GetPrefDelimiters();
+                        newDelimiters = Preferences::GetPrefDelimiters();
                     }
 
                     for(TextArea *area : document->textPanes()) {
@@ -496,7 +496,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
         for(DocumentWidget *document : DocumentWidget::allDocuments()) {
             const size_t languageMode = document->GetLanguageMode();
             if (languageMode != PLAIN_LANGUAGE_MODE && !LanguageModes[languageMode].defTipsFile.isNull()) {
-                AddTagsFileEx(LanguageModes[languageMode].defTipsFile, TagSearchMode::TIP);
+                Tags::AddTagsFileEx(LanguageModes[languageMode].defTipsFile, Tags::SearchMode::TIP);
             }
         }
 
@@ -509,7 +509,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
         UpdateLangModeMenuSmartIndent();
 
         // Note that preferences have been changed
-        MarkPrefsChanged();
+        Preferences::MarkPrefsChanged();
     }
 
 	return true;

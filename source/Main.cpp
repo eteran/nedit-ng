@@ -65,7 +65,7 @@ bool checkDoMacroArg(const QString &macro) {
     Program *const prog = ParseMacroEx(macroString, &errMsg, &stoppedAt);
 
     if(!prog) {
-        ParseErrorEx(nullptr, macroString, stoppedAt, QLatin1String("argument to -do"), errMsg);
+        Preferences::ParseErrorEx(nullptr, macroString, stoppedAt, QLatin1String("argument to -do"), errMsg);
         return false;
     }
 
@@ -118,10 +118,10 @@ Main::Main(const QStringList &args) {
 
     /* Store preferences from the command line and .nedit file,
        and set the appropriate preferences */
-    RestoreNEditPrefs();
+    Preferences::RestoreNEditPrefs();
 
     // Install word delimiters for regular expression matching
-    Regex::SetDefaultWordDelimiters(GetPrefDelimiters().toStdString());
+    Regex::SetDefaultWordDelimiters(Preferences::GetPrefDelimiters().toStdString());
 
     /* Read the nedit dynamic database of files for the Open Previous
     command (and eventually other information as well) */
@@ -138,24 +138,22 @@ Main::Main(const QStringList &args) {
             break; // treat all remaining arguments as filenames
         } else if (arg == QLatin1String("-import")) {
             i = nextArg(args, i);
-            ImportPrefFile(args[i]);
+            Preferences::ImportPrefFile(args[i]);
         }
     }
 
     /* Load the default tags file. Don't complain if it doesn't load, the tag
        file resource is intended to be set and forgotten.  Running nedit in a
        directory without a tags should not cause it to spew out errors. */
-    if (!GetPrefTagFile().isEmpty()) {
-        AddTagsFileEx(GetPrefTagFile(), TagSearchMode::TAG);
+    if (!Preferences::GetPrefTagFile().isEmpty()) {
+        Tags::AddTagsFileEx(Preferences::GetPrefTagFile(), Tags::SearchMode::TAG);
     }
 
-    if (!GetPrefServerName().isEmpty()) {
+    if (!Preferences::GetPrefServerName().isEmpty()) {
         IsServer = true;
     }
 
     bool fileSpecified = false;
-
-    Settings &settings = GetSettings();
 
     for (int i = 1; i < args.size(); i++) {
 
@@ -164,7 +162,7 @@ Main::Main(const QStringList &args) {
             continue;
         } else if (opts && args[i] == QLatin1String("-tags")) {
             i = nextArg(args, i);
-            if (!AddTagsFileEx(args[i], TagSearchMode::TAG)) {
+            if (!Tags::AddTagsFileEx(args[i], Tags::SearchMode::TAG)) {
                 fprintf(stderr, "NEdit: Unable to load tags file\n");
             }
 
@@ -175,24 +173,24 @@ Main::Main(const QStringList &args) {
             }
         } else if (opts && args[i] == QLatin1String("-svrname")) {
             i = nextArg(args, i);
-            settings.serverName = args[i];
+            Settings::serverName = args[i];
         } else if (opts && (args[i] == QLatin1String("-font") || args[i] == QLatin1String("-fn"))) {
             i = nextArg(args, i);
-            settings.textFont = args[i];
+            Settings::textFont = args[i];
         } else if (opts && args[i] == QLatin1String("-wrap")) {
-            settings.autoWrap = WrapStyle::Continuous;
+            Settings::autoWrap = WrapStyle::Continuous;
         } else if (opts && args[i] == QLatin1String("-nowrap")) {
-            settings.autoWrap = WrapStyle::None;
+            Settings::autoWrap = WrapStyle::None;
         } else if (opts && args[i] == QLatin1String("-autowrap")) {
-            settings.autoWrap = WrapStyle::Newline;
+            Settings::autoWrap = WrapStyle::Newline;
         } else if (opts && args[i] == QLatin1String("-autoindent")) {
-            settings.autoIndent = IndentStyle::Auto;
+            Settings::autoIndent = IndentStyle::Auto;
         } else if (opts && args[i] == QLatin1String("-noautoindent")) {
-            settings.autoIndent = IndentStyle::None;
+            Settings::autoIndent = IndentStyle::None;
         } else if (opts && args[i] == QLatin1String("-autosave")) {
-            settings.autoSave = true;
+            Settings::autoSave = true;
         } else if (opts && args[i] == QLatin1String("-noautosave")) {
-            settings.autoSave = false;
+            Settings::autoSave = false;
         } else if (opts && args[i] == QLatin1String("-rows")) {
             i = nextArg(args, i);
 
@@ -201,7 +199,7 @@ Main::Main(const QStringList &args) {
             if(!ok) {
                 fprintf(stderr, "NEdit: argument to rows should be a number\n");
             } else {
-                settings.textRows = n;
+                Settings::textRows = n;
             }
         } else if (opts && args[i] == QLatin1String("-columns")) {
             i = nextArg(args, i);
@@ -211,7 +209,7 @@ Main::Main(const QStringList &args) {
             if(!ok) {
                 fprintf(stderr, "NEdit: argument to cols should be a number\n");
             } else {
-                settings.textCols = n;
+                Settings::textCols = n;
             }
         } else if (opts && args[i] == QLatin1String("-tabs")) {
             i = nextArg(args, i);
@@ -221,7 +219,7 @@ Main::Main(const QStringList &args) {
             if(!ok) {
                 fprintf(stderr, "NEdit: argument to tabs should be a number\n");
             } else {
-                settings.tabDistance = n;
+                Settings::tabDistance = n;
             }
         } else if (opts && args[i] == QLatin1String("-read")) {
             editFlags |= PREF_READ_ONLY;
@@ -291,7 +289,7 @@ Main::Main(const QStringList &args) {
                     isTabbed = 1; // new tab for file in group
                     break;
                 default:          // not in group
-                    isTabbed = (tabbed == -1) ? GetPrefOpenInTab() : tabbed;
+                    isTabbed = (tabbed == -1) ? Preferences::GetPrefOpenInTab() : tabbed;
                 }
 
                 /* Files are opened in background to improve opening speed

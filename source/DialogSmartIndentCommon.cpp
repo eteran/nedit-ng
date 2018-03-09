@@ -153,7 +153,7 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	}
 
 	// Note that preferences have been changed 
-	MarkPrefsChanged();
+    Preferences::MarkPrefsChanged();
 
 	return true;
 }

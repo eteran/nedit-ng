@@ -9,6 +9,8 @@
 // Some default colors
 namespace {
 
+bool settingsLoaded_ = false;
+
 auto DEFAULT_DELIMETERS       = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
 auto DEFAULT_BACKLIGHT_CHARS  = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
 auto DEFAULT_TEXT_FONT        = QLatin1String("Courier New,10,-1,5,50,0,0,0,0,0");
@@ -38,6 +40,85 @@ void writeEnum(QSettings &settings, const QString &key, const T &value) {
 }
 
 }
+
+bool Settings::appendLF;
+bool Settings::autoSave;
+bool Settings::autoScroll;
+bool Settings::backlightChars;
+bool Settings::beepOnSearchWrap;
+bool Settings::globalTabNavigate;
+bool Settings::highlightSyntax;
+bool Settings::insertTabs;
+bool Settings::iSearchLine;
+bool Settings::lineNumbers;
+bool Settings::matchSyntaxBased;
+bool Settings::openInTab;
+bool Settings::pathInWindowsMenu;
+bool Settings::prefFileRead;
+bool Settings::repositionDialogs;
+bool Settings::retainSearchDialogs;
+bool Settings::saveOldVersion;
+bool Settings::searchDialogs;
+bool Settings::searchWraps;
+bool Settings::smartTags;
+bool Settings::sortOpenPrevMenu;
+bool Settings::sortTabs;
+bool Settings::statisticsLine;
+bool Settings::tabBar;
+bool Settings::tabBarHideOne;
+bool Settings::toolTips;
+bool Settings::warnExit;
+bool Settings::warnFileMods;
+bool Settings::warnRealFileMods;
+int Settings::fileVersion;
+IndentStyle Settings::autoIndent;
+WrapStyle Settings::autoWrap;
+int Settings::emulateTabs;
+SearchType Settings::searchMethod;
+ShowMatchingStyle Settings::showMatching;
+int Settings::tabDistance;
+int Settings::textCols;
+int Settings::textRows;
+int Settings::wrapMargin;
+QString Settings::bgMenuCommands;
+QString Settings::boldHighlightFont;
+QString Settings::boldItalicHighlightFont;
+QString Settings::colors[8];
+QString Settings::geometry;
+QString Settings::highlightPatterns;
+QString Settings::italicHighlightFont;
+QString Settings::languageModes;
+QString Settings::macroCommands;
+QString Settings::serverName;
+QString Settings::shell;
+QString Settings::shellCommands;
+QString Settings::smartIndentInit;
+QString Settings::smartIndentInitCommon;
+QString Settings::textFont;
+QString Settings::titleFormat;
+
+bool Settings::autoWrapPastedText;
+bool Settings::colorizeHighlightedText;
+bool Settings::heavyCursor;
+bool Settings::alwaysCheckRelativeTagsSpecs;
+bool Settings::findReplaceUsesSelection;
+bool Settings::focusOnRaise;
+bool Settings::forceOSConversion;
+bool Settings::honorSymlinks;
+bool Settings::stickyCaseSenseButton;
+bool Settings::typingHidesPointer;
+bool Settings::undoModifiesSelection;
+int Settings::autoScrollVPadding;
+int Settings::maxPrevOpenFiles;
+TruncSubstitution Settings::truncSubstitution;
+QString Settings::backlightCharTypes;
+QString Settings::tagFile;
+QString Settings::wordDelimiters;
+
+QFont Settings::plainFontStruct;
+QFont Settings::boldFontStruct;
+QFont Settings::italicFontStruct;
+QFont Settings::boldItalicFontStruct;
 
 /**
  * @brief Settings::themeFile

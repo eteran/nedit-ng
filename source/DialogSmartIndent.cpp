@@ -48,7 +48,7 @@ QString ensureNewline(const QString &string) {
 DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 		
-    QString languageMode = LanguageModeName((document->GetLanguageMode() == PLAIN_LANGUAGE_MODE) ? 0 : document->GetLanguageMode());
+    QString languageMode = Preferences::LanguageModeName((document->GetLanguageMode() == PLAIN_LANGUAGE_MODE) ? 0 : document->GetLanguageMode());
 
 	updateLanguageModes();
 	setLanguageMode(languageMode);
@@ -264,7 +264,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	   re-do the smart indent macros */
     for(DocumentWidget *document : DocumentWidget::allDocuments()) {
 
-        QString lmName = LanguageModeName(document->GetLanguageMode());
+        QString lmName = Preferences::LanguageModeName(document->GetLanguageMode());
 		if(!lmName.isNull()) {
 			if (lmName == newMacros->lmName) {
 
@@ -281,7 +281,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	}
 
 	// Note that preferences have been changed 
-	MarkPrefsChanged();
+    Preferences::MarkPrefsChanged();
 	return true;
 }
 
@@ -325,7 +325,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 
     Program *prog = ParseMacroEx(widgetText, &errMsg, &stoppedAt);
 	if(!prog) {
-		ParseErrorEx(this, widgetText, stoppedAt, tr("newline macro"), errMsg);	
+        Preferences::ParseErrorEx(this, widgetText, stoppedAt, tr("newline macro"), errMsg);
 		QTextCursor cursor = ui.editNewline->textCursor();
 		cursor.setPosition(stoppedAt);
 		ui.editNewline->setTextCursor(cursor);
@@ -344,7 +344,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
         Program *prog = ParseMacroEx(widgetText, &errMsg, &stoppedAt);
 
 		if(!prog) {
-			ParseErrorEx(this, widgetText, stoppedAt, tr("modify macro"), errMsg);
+            Preferences::ParseErrorEx(this, widgetText, stoppedAt, tr("modify macro"), errMsg);
 			QTextCursor cursor = ui.editModMacro->textCursor();
 			cursor.setPosition(stoppedAt);
 			ui.editModMacro->setTextCursor(cursor);

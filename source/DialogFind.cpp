@@ -62,7 +62,7 @@ void DialogFind::keyPressEvent(QKeyEvent *event) {
 		SearchType searchType;
 		if (index == 0) {
             searchStr  = QString();
-			searchType = GetPrefSearch();
+            searchType = Preferences::GetPrefSearch();
         } else {
             searchStr  = SearchReplaceHistory[historyIndex(index)].search;
             searchType = SearchReplaceHistory[historyIndex(index)].type;
@@ -199,7 +199,7 @@ void DialogFind::setTextField(DocumentWidget *document) {
 
     QString initialText;
 
-    if (GetPrefFindReplaceUsesSelection()) {
+    if (Preferences::GetPrefFindReplaceUsesSelection()) {
         initialText = document->GetAnySelectionEx(false);
     }
 
@@ -225,7 +225,7 @@ void DialogFind::on_buttonFind_clicked() {
 	ui.textFind->setFocus();
 
 	// find the text and mark it 
-    window_->action_Find(document_, searchString, direction, searchType, GetPrefSearchWraps());
+    window_->action_Find(document_, searchString, direction, searchType, Preferences::GetPrefSearchWraps());
 
 	// pop down the dialog 
 	if (!keepDialog()) {
@@ -298,7 +298,7 @@ void DialogFind::on_checkRegex_toggled(bool checked) {
 	bool searchCaseSense = ui.checkCase->isChecked();
 
 	// In sticky mode, restore the state of the Case Sensitive button 
-	if (GetPrefStickyCaseSenseBtn()) {
+    if (Preferences::GetPrefStickyCaseSenseBtn()) {
 		if (searchRegex) {
 			lastLiteralCase_ = searchCaseSense;
 			ui.checkCase->setChecked(lastRegexCase_);

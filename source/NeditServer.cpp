@@ -28,7 +28,7 @@ bool isLocatedOnDesktopEx(MainWindow *window, long currentDesktop) {
 
 MainWindow *findWindowOnDesktopEx(int tabbed, long currentDesktop) {
 
-    if (tabbed == 0 || (tabbed == -1 && !GetPrefOpenInTab())) {
+    if (tabbed == 0 || (tabbed == -1 && !Preferences::GetPrefOpenInTab())) {
         /* A new window is requested, unless we find an untitled unmodified
             document on the current desktop */
         for(DocumentWidget *document : DocumentWidget::allDocuments()) {
@@ -64,7 +64,7 @@ MainWindow *findWindowOnDesktopEx(int tabbed, long currentDesktop) {
  */
 NeditServer::NeditServer(QObject *parent) : QObject(parent) {
 
-    QString socketName = LocalSocketName(GetPrefServerName());
+    QString socketName = LocalSocketName(Preferences::GetPrefServerName());
     server_ = new QLocalServer(this);
     server_->setSocketOptions(QLocalServer::UserAccessOption);
     connect(server_, &QLocalServer::newConnection, this, &NeditServer::newConnection);
@@ -238,7 +238,7 @@ void NeditServer::newConnection() {
                         geometry,
                         iconicFlag,
                         langMode.isEmpty() ? QString() : langMode,
-                        tabbed == -1 ? GetPrefOpenInTab() : tabbed,
+                        tabbed == -1 ? Preferences::GetPrefOpenInTab() : tabbed,
                         true);
 
             if (document) {

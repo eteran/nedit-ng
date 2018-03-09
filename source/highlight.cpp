@@ -1138,39 +1138,37 @@ void SaveTheme() {
         root.setAttribute(QLatin1String("name"), QLatin1String("default"));
         xml.appendChild(root);
 
-        // save basic color settings...
-        const Settings &settings = GetSettings();
-
+        // save basic color Settings::..
         {
             QDomElement text = xml.createElement(QLatin1String("text"));
-            text.setAttribute(QLatin1String("foreground"), settings.colors[ColorTypes::TEXT_FG_COLOR]);
-            text.setAttribute(QLatin1String("background"), settings.colors[ColorTypes::TEXT_BG_COLOR]);
+            text.setAttribute(QLatin1String("foreground"), Settings::colors[ColorTypes::TEXT_FG_COLOR]);
+            text.setAttribute(QLatin1String("background"), Settings::colors[ColorTypes::TEXT_BG_COLOR]);
             root.appendChild(text);
         }
 
         {
             QDomElement selection = xml.createElement(QLatin1String("selection"));
-            selection.setAttribute(QLatin1String("foreground"), settings.colors[ColorTypes::SELECT_FG_COLOR]);
-            selection.setAttribute(QLatin1String("background"), settings.colors[ColorTypes::SELECT_BG_COLOR]);
+            selection.setAttribute(QLatin1String("foreground"), Settings::colors[ColorTypes::SELECT_FG_COLOR]);
+            selection.setAttribute(QLatin1String("background"), Settings::colors[ColorTypes::SELECT_BG_COLOR]);
             root.appendChild(selection);
         }
 
         {
             QDomElement highlight = xml.createElement(QLatin1String("highlight"));
-            highlight.setAttribute(QLatin1String("foreground"), settings.colors[ColorTypes::HILITE_FG_COLOR]);
-            highlight.setAttribute(QLatin1String("background"), settings.colors[ColorTypes::HILITE_BG_COLOR]);
+            highlight.setAttribute(QLatin1String("foreground"), Settings::colors[ColorTypes::HILITE_FG_COLOR]);
+            highlight.setAttribute(QLatin1String("background"), Settings::colors[ColorTypes::HILITE_BG_COLOR]);
             root.appendChild(highlight);
         }
 
         {
             QDomElement cursor = xml.createElement(QLatin1String("cursor"));
-            cursor.setAttribute(QLatin1String("foreground"), settings.colors[ColorTypes::CURSOR_FG_COLOR]);
+            cursor.setAttribute(QLatin1String("foreground"), Settings::colors[ColorTypes::CURSOR_FG_COLOR]);
             root.appendChild(cursor);
         }
 
         {
             QDomElement lineno = xml.createElement(QLatin1String("line-numbers"));
-            lineno.setAttribute(QLatin1String("foreground"), settings.colors[ColorTypes::LINENO_FG_COLOR]);
+            lineno.setAttribute(QLatin1String("foreground"), Settings::colors[ColorTypes::LINENO_FG_COLOR]);
             root.appendChild(lineno);
         }
 
@@ -1207,23 +1205,21 @@ void LoadTheme() {
     if(xml.setContent(&file)) {
         QDomElement root = xml.firstChildElement(QLatin1String("theme"));
 
-        // load basic color settings...
+        // load basic color Settings::..
         QDomElement text      = root.firstChildElement(QLatin1String("text"));
         QDomElement selection = root.firstChildElement(QLatin1String("selection"));
         QDomElement highlight = root.firstChildElement(QLatin1String("highlight"));
         QDomElement cursor    = root.firstChildElement(QLatin1String("cursor"));
         QDomElement lineno    = root.firstChildElement(QLatin1String("line-numbers"));
 
-        Settings &settings = GetSettings();
-
-        settings.colors[ColorTypes::TEXT_BG_COLOR]   = text.attribute(QLatin1String("background"),      NEDIT_DEFAULT_TEXT_BG);
-        settings.colors[ColorTypes::TEXT_FG_COLOR]   = text.attribute(QLatin1String("foreground"),      NEDIT_DEFAULT_TEXT_FG);
-        settings.colors[ColorTypes::SELECT_BG_COLOR] = selection.attribute(QLatin1String("background"), NEDIT_DEFAULT_SEL_BG);
-        settings.colors[ColorTypes::SELECT_FG_COLOR] = selection.attribute(QLatin1String("foreground"), NEDIT_DEFAULT_SEL_FG);
-        settings.colors[ColorTypes::HILITE_BG_COLOR] = highlight.attribute(QLatin1String("background"), NEDIT_DEFAULT_HI_BG);
-        settings.colors[ColorTypes::HILITE_FG_COLOR] = highlight.attribute(QLatin1String("foreground"), NEDIT_DEFAULT_HI_FG);
-        settings.colors[ColorTypes::CURSOR_FG_COLOR] = cursor.attribute(QLatin1String("foreground"),    NEDIT_DEFAULT_LINENO_FG);
-        settings.colors[ColorTypes::LINENO_FG_COLOR] = lineno.attribute(QLatin1String("foreground"),    NEDIT_DEFAULT_CURSOR_FG);
+        Settings::colors[ColorTypes::TEXT_BG_COLOR]   = text.attribute(QLatin1String("background"),      NEDIT_DEFAULT_TEXT_BG);
+        Settings::colors[ColorTypes::TEXT_FG_COLOR]   = text.attribute(QLatin1String("foreground"),      NEDIT_DEFAULT_TEXT_FG);
+        Settings::colors[ColorTypes::SELECT_BG_COLOR] = selection.attribute(QLatin1String("background"), NEDIT_DEFAULT_SEL_BG);
+        Settings::colors[ColorTypes::SELECT_FG_COLOR] = selection.attribute(QLatin1String("foreground"), NEDIT_DEFAULT_SEL_FG);
+        Settings::colors[ColorTypes::HILITE_BG_COLOR] = highlight.attribute(QLatin1String("background"), NEDIT_DEFAULT_HI_BG);
+        Settings::colors[ColorTypes::HILITE_FG_COLOR] = highlight.attribute(QLatin1String("foreground"), NEDIT_DEFAULT_HI_FG);
+        Settings::colors[ColorTypes::CURSOR_FG_COLOR] = cursor.attribute(QLatin1String("foreground"),    NEDIT_DEFAULT_LINENO_FG);
+        Settings::colors[ColorTypes::LINENO_FG_COLOR] = lineno.attribute(QLatin1String("foreground"),    NEDIT_DEFAULT_CURSOR_FG);
 
         // load styles for syntax highlighting...
         QDomElement style = root.firstChildElement(QLatin1String("style"));
@@ -1432,17 +1428,17 @@ QString createPatternsString(const PatternSet *patSet, const QString &indentStr)
             << QLatin1Char(':');
 
         if (!pat.startRE.isNull()) {
-            out << MakeQuotedStringEx(pat.startRE);
+            out << Preferences::MakeQuotedStringEx(pat.startRE);
         }
         out << QLatin1Char(':');
 
         if (!pat.endRE.isNull()) {
-            out << MakeQuotedStringEx(pat.endRE);
+            out << Preferences::MakeQuotedStringEx(pat.endRE);
         }
         out << QLatin1Char(':');
 
         if (!pat.errorRE.isNull()) {
-            out << MakeQuotedStringEx(pat.errorRE);
+            out << Preferences::MakeQuotedStringEx(pat.errorRE);
         }
         out << QLatin1Char(':')
             << pat.style
@@ -1476,14 +1472,14 @@ static std::unique_ptr<PatternSet> readPatternSetEx(Input &in) {
     auto patSet = std::make_unique<PatternSet>();
 
     // read language mode field
-    QString l = ReadSymbolicFieldEx(in);
+    QString l = Preferences::ReadSymbolicFieldEx(in);
     patSet->languageMode = l;
 
     if (patSet->languageMode.isNull()) {
         return highlightErrorEx(in, QLatin1String("language mode must be specified"));
     }
 
-    if (!SkipDelimiterEx(in, &errMsg)) {
+    if (!Preferences::SkipDelimiterEx(in, &errMsg)) {
         return highlightErrorEx(in, errMsg);
     }
 
@@ -1498,14 +1494,14 @@ static std::unique_ptr<PatternSet> readPatternSetEx(Input &in) {
     }
 
     // read line context field
-    if (!ReadNumericFieldEx(in, &patSet->lineContext))
+    if (!Preferences::ReadNumericFieldEx(in, &patSet->lineContext))
         return highlightErrorEx(in, QLatin1String("unreadable line context field"));
 
-    if (!SkipDelimiterEx(in, &errMsg))
+    if (!Preferences::SkipDelimiterEx(in, &errMsg))
         return highlightErrorEx(in, errMsg);
 
     // read character context field
-    if (!ReadNumericFieldEx(in, &patSet->charContext))
+    if (!Preferences::ReadNumericFieldEx(in, &patSet->charContext))
         return highlightErrorEx(in, QLatin1String("unreadable character context field"));
 
     // read pattern list
@@ -1578,59 +1574,59 @@ static std::vector<HighlightPattern> readHighlightPatternsEx(Input &in, int with
 static int readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *pattern) {
 
     // read the name field
-    QString name = ReadSymbolicFieldEx(in);
+    QString name = Preferences::ReadSymbolicFieldEx(in);
     if (name.isNull()) {
         *errMsg = QLatin1String("pattern name is required");
         return false;
     }
     pattern->name = name;
 
-    if (!SkipDelimiterEx(in, errMsg))
+    if (!Preferences::SkipDelimiterEx(in, errMsg))
         return false;
 
     // read the start pattern
-    if (!ReadQuotedStringEx(in, errMsg, &pattern->startRE))
+    if (!Preferences::ReadQuotedStringEx(in, errMsg, &pattern->startRE))
         return false;
 
-    if (!SkipDelimiterEx(in, errMsg))
+    if (!Preferences::SkipDelimiterEx(in, errMsg))
         return false;
 
     // read the end pattern
 
     if (*in == QLatin1Char(':')) {
         pattern->endRE = QString();
-    } else if (!ReadQuotedStringEx(in, errMsg, &pattern->endRE)) {
+    } else if (!Preferences::ReadQuotedStringEx(in, errMsg, &pattern->endRE)) {
         return false;
     }
 
-    if (!SkipDelimiterEx(in, errMsg))
+    if (!Preferences::SkipDelimiterEx(in, errMsg))
         return false;
 
     // read the error pattern
     if (*in == QLatin1Char(':')) {
         pattern->errorRE = QString();
-    } else if (!ReadQuotedStringEx(in, errMsg, &pattern->errorRE)) {
+    } else if (!Preferences::ReadQuotedStringEx(in, errMsg, &pattern->errorRE)) {
         return false;
     }
 
-    if (!SkipDelimiterEx(in, errMsg))
+    if (!Preferences::SkipDelimiterEx(in, errMsg))
         return false;
 
     // read the style field
-    pattern->style = ReadSymbolicFieldEx(in);
+    pattern->style = Preferences::ReadSymbolicFieldEx(in);
 
     if (pattern->style.isNull()) {
         *errMsg = QLatin1String("style field required in pattern");
         return false;
     }
 
-    if (!SkipDelimiterEx(in, errMsg))
+    if (!Preferences::SkipDelimiterEx(in, errMsg))
         return false;
 
     // read the sub-pattern-of field
-    pattern->subPatternOf = ReadSymbolicFieldEx(in);
+    pattern->subPatternOf = Preferences::ReadSymbolicFieldEx(in);
 
-    if (!SkipDelimiterEx(in, errMsg))
+    if (!Preferences::SkipDelimiterEx(in, errMsg))
         return false;
 
     // read flags field
@@ -1703,7 +1699,7 @@ static bool isDefaultPatternSet(const PatternSet *patSet) {
 ** Short-hand functions for formating and outputing errors for
 */
 static std::unique_ptr<PatternSet> highlightErrorEx(const Input &in, const QString &message) {
-    ParseErrorEx(
+    Preferences::ParseErrorEx(
                 nullptr,
                 *in.string(),
                 in.index(),
