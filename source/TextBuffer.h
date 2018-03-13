@@ -174,10 +174,10 @@ private:
     bool syncXSelection_   = true;
 
 private:
-    gap_buffer<char> buffer_;
-    TextSelection    primary_;   // highlighted areas
-    TextSelection    secondary_;
-    TextSelection    highlight_;
+    gap_buffer<Ch> buffer_;
+    TextSelection  primary_;   // highlighted areas
+    TextSelection  secondary_;
+    TextSelection  highlight_;
 
 private:
     std::deque<std::pair<bufPreDeleteCallbackProc, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
