@@ -4,7 +4,7 @@
 #include "DialogLanguageModes.h"
 #include "DocumentWidget.h"
 #include "Help.h"
-#include "highlight.h"
+#include "Highlight.h"
 #include "HighlightPattern.h"
 #include "HighlightPatternModel.h"
 #include "HighlightStyle.h"
@@ -40,7 +40,7 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f
 
 	// populate the highlight style combo
     if(auto blocker = no_signals(ui.comboHighlightStyle)) {
-        for(const HighlightStyle &style : HighlightStyles) {
+        for(const HighlightStyle &style : Highlight::HighlightStyles) {
             ui.comboHighlightStyle->addItem(style.name);
         }
     }
@@ -82,7 +82,7 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 	if(!previousLanguage_.isEmpty()) {
 
 		// Look up the original version of the patterns being edited        
-        const PatternSet *activePatternSet = FindPatternSet(previousLanguage_);
+        const PatternSet *activePatternSet = Highlight::FindPatternSet(previousLanguage_);
         if(!activePatternSet) {
             activePatternSet = &emptyPatSet;
 		}
@@ -135,7 +135,7 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
     model_->clear();
 
 	// Find the associated pattern set (patSet) to edit
-	if(PatternSet *patSet = FindPatternSet(name)) {
+    if(PatternSet *patSet = Highlight::FindPatternSet(name)) {
 
 		// Copy the list of highlight style information to one that the user can freely edit
 		for(HighlightPattern &pattern: patSet->patterns) {
@@ -259,7 +259,7 @@ void DialogSyntaxPatterns::on_buttonLanguageMode_clicked() {
 void DialogSyntaxPatterns::on_buttonHighlightStyle_clicked() {
 	QString style = ui.comboHighlightStyle->currentText();
 	if(!style.isEmpty()) {
-        auto DrawingStyles = std::make_unique<DialogDrawingStyles>(this, HighlightStyles, this);
+        auto DrawingStyles = std::make_unique<DialogDrawingStyles>(this, Highlight::HighlightStyles, this);
         DrawingStyles->setStyleByName(style);
         DrawingStyles->exec();
 	}
@@ -433,15 +433,15 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
 	}
 
 	// if a stored version of the pattern set exists, delete it from the list
-    auto it = PatternSets.begin();
-    for (; it != PatternSets.end(); ++it) {
+    auto it = Highlight::PatternSets.begin();
+    for (; it != Highlight::PatternSets.end(); ++it) {
         if (languageMode == it->languageMode) {
 			break;
 		}
 	}
 
-    if (it != PatternSets.end()) {
-        PatternSets.erase(it);
+    if (it != Highlight::PatternSets.end()) {
+        Highlight::PatternSets.erase(it);
 	}
 
     model_->clear();
@@ -458,7 +458,7 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
 
 	const QString languageMode = ui.comboLanguageMode->currentText();
 
-	std::unique_ptr<PatternSet> defaultPatSet = readDefaultPatternSet(languageMode);
+    std::unique_ptr<PatternSet> defaultPatSet = Highlight::readDefaultPatternSet(languageMode);
 	if(!defaultPatSet) {
 		QMessageBox::warning(this, tr("No Default Pattern"), tr("There is no default pattern set for language mode %1").arg(languageMode));
 		return;
@@ -475,14 +475,14 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
 	}
 
 	// if a stored version of the pattern set exists, replace it, if it doesn't, add a new one
-	auto it = std::find_if(PatternSets.begin(), PatternSets.end(), [languageMode](const PatternSet &pattern) {
+    auto it = std::find_if(Highlight::PatternSets.begin(), Highlight::PatternSets.end(), [languageMode](const PatternSet &pattern) {
 		return pattern.languageMode == languageMode;
 	});
 
-    if (it != PatternSets.end()) {
+    if (it != Highlight::PatternSets.end()) {
         *it = *defaultPatSet;
 	} else {
-        PatternSets.push_back(*defaultPatSet);
+        Highlight::PatternSets.push_back(*defaultPatSet);
 	}
 
     model_->clear();
@@ -670,7 +670,7 @@ void DialogSyntaxPatterns::updateHighlightStyleMenu() {
         QString pattern = ui.comboHighlightStyle->currentText();
         ui.comboHighlightStyle->clear();
 
-        for(const HighlightStyle &style : HighlightStyles) {
+        for(const HighlightStyle &style : Highlight::HighlightStyles) {
             ui.comboHighlightStyle->addItem(style.name);
         }
 
@@ -696,14 +696,14 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	}
 
 	// Find the pattern being modified
-	auto it = std::find_if(PatternSets.begin(), PatternSets.end(), [this](const PatternSet &pattern) {
+    auto it = std::find_if(Highlight::PatternSets.begin(), Highlight::PatternSets.end(), [this](const PatternSet &pattern) {
 		return pattern.languageMode == ui.comboLanguageMode->currentText();
 	});
 
 	// If it's a new pattern, add it at the end, otherwise free the existing pattern set and replace it
     size_t oldNum;
-    if (it == PatternSets.end()) {
-        PatternSets.push_back(*patSet);
+    if (it == Highlight::PatternSets.end()) {
+        Highlight::PatternSets.push_back(*patSet);
 		oldNum = 0;
 	} else {
         oldNum = it->patterns.size();

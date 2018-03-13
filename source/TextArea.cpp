@@ -8,7 +8,7 @@
 #include "DocumentWidget.h"
 #include "TextBuffer.h"
 #include "DragEndEvent.h"
-#include "highlight.h"
+#include "Highlight.h"
 #include "preferences.h"
 #include "X11Colors.h"
 #include "SmartIndentEvent.h"

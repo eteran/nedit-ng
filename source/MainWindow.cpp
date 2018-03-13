@@ -22,7 +22,7 @@
 #include "DialogWrapMargin.h"
 #include "DocumentWidget.h"
 #include "Help.h"
-#include "highlight.h"
+#include "Highlight.h"
 #include "LanguageMode.h"
 #include "nedit.h"
 #include "PatternSet.h"
@@ -5745,7 +5745,7 @@ MainWindow *MainWindow::fromDocument(const DocumentWidget *document) {
 */
 void MainWindow::EditHighlightStyles(const QString &initialStyle) {
 
-    auto DrawingStyles = std::make_unique<DialogDrawingStyles>(nullptr, HighlightStyles, this);
+    auto DrawingStyles = std::make_unique<DialogDrawingStyles>(nullptr, Highlight::HighlightStyles, this);
     DrawingStyles->setStyleByName(initialStyle);
     DrawingStyles->exec();
 }
@@ -5780,7 +5780,7 @@ void MainWindow::EditHighlightPatterns() {
 */
 void MainWindow::RenameHighlightPattern(const QString &oldName, const QString &newName) {
 
-    for(PatternSet &patternSet : PatternSets) {
+    for(PatternSet &patternSet : Highlight::PatternSets) {
         if (patternSet.languageMode == oldName) {
             patternSet.languageMode = newName;
         }

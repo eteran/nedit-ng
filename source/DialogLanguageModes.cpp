@@ -2,7 +2,7 @@
 #include "DialogLanguageModes.h"
 #include "DialogSyntaxPatterns.h"
 #include "DocumentWidget.h"
-#include "highlight.h"
+#include "Highlight.h"
 #include "LanguageMode.h"
 #include "LanguageModeModel.h"
 #include "MainWindow.h"
@@ -604,7 +604,7 @@ int DialogLanguageModes::countLanguageModes(const QString &name) const {
  * @return
  */
 bool DialogLanguageModes::LMHasHighlightPatterns(const QString &name) const {
-    if (FindPatternSet(name) != nullptr) {
+    if (Highlight::FindPatternSet(name) != nullptr) {
         return true;
     }
 

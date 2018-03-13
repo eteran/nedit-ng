@@ -2,7 +2,7 @@
 #include "preferences.h"
 #include "DocumentWidget.h"
 #include "Font.h"
-#include "highlight.h"
+#include "Highlight.h"
 #include "Util/Input.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
@@ -101,7 +101,7 @@ void Preferences::SaveNEditPrefsEx(QWidget *parent, bool quietly) {
     Settings::shellCommands         = WriteShellCmdsStringEx();
     Settings::macroCommands         = WriteMacroCmdsStringEx();
     Settings::bgMenuCommands        = WriteBGMenuCmdsStringEx();
-    Settings::highlightPatterns     = WriteHighlightStringEx();
+    Settings::highlightPatterns     = Highlight::WriteHighlightStringEx();
     Settings::languageModes         = WriteLanguageModesStringEx();
     Settings::smartIndentInit       = SmartIndent::WriteSmartIndentStringEx();
     Settings::smartIndentInitCommon = SmartIndent::WriteSmartIndentCommonStringEx();
@@ -113,7 +113,7 @@ void Preferences::SaveNEditPrefsEx(QWidget *parent, bool quietly) {
                     tr("Unable to save preferences in %1").arg(prefFileName));
     }
 
-    SaveTheme();
+    Highlight::saveTheme();
     PrefsHaveChanged = false;
 }
 
@@ -1252,7 +1252,7 @@ void Preferences::translatePrefFormats(uint32_t fileVer) {
         LoadBGMenuCmdsStringEx(Settings::bgMenuCommands);
     }
     if (!Settings::highlightPatterns.isNull()) {
-        LoadHighlightStringEx(Settings::highlightPatterns);
+        Highlight::LoadHighlightStringEx(Settings::highlightPatterns);
     }
     if (!Settings::languageModes.isNull()) {
         loadLanguageModesStringEx(Settings::languageModes);
@@ -1264,7 +1264,7 @@ void Preferences::translatePrefFormats(uint32_t fileVer) {
         SmartIndent::LoadSmartIndentCommonStringEx(Settings::smartIndentInitCommon);
     }
 
-    LoadTheme();
+    Highlight::loadTheme();
 
     // translate the font names into fontLists suitable for the text widget
     Settings::plainFontStruct      = Font::fromString(Settings::textFont);

@@ -277,8 +277,8 @@ add_executable(nedit-ng
 	gap_buffer.h
 	gap_buffer_fwd.h
 	gap_buffer_iterator.h
-	highlight.cpp
-	highlight.h
+	Highlight.cpp
+	Highlight.h
 	macro.cpp
 	macro.h
 	nedit.cpp

@@ -2,7 +2,7 @@
 #include "WindowHighlightData.h"
 #include "HighlightData.h"
 #include "StyleTableEntry.h"
-#include "highlight.h"
+#include "Highlight.h"
 
 namespace {
 

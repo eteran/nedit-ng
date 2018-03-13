@@ -12,7 +12,7 @@
 #include "Font.h"
 #include "FontType.h"
 #include "HighlightData.h"
-#include "highlight.h"
+#include "Highlight.h"
 #include "HighlightStyle.h"
 #include "Util/Input.h"
 #include "interpret.h"
@@ -1069,7 +1069,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
         const bool emTabDistIsDef     = oldEmTabDist == Preferences::GetPrefEmTabDist(oldMode);
         const bool indentStyleIsDef   = indentStyle_ == Preferences::GetPrefAutoIndent(oldMode)   || (Preferences::GetPrefAutoIndent(oldMode) == IndentStyle::Smart && indentStyle_ == IndentStyle::Auto && !SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(oldMode)));
-        const bool highlightIsDef     = highlightSyntax_ == Preferences::GetPrefHighlightSyntax() || (Preferences::GetPrefHighlightSyntax() && FindPatternSet(!oldlanguageModeName.isNull() ? oldlanguageModeName : QLatin1String("")) == nullptr);
+        const bool highlightIsDef     = highlightSyntax_ == Preferences::GetPrefHighlightSyntax() || (Preferences::GetPrefHighlightSyntax() && Highlight::FindPatternSet(!oldlanguageModeName.isNull() ? oldlanguageModeName : QLatin1String("")) == nullptr);
         const WrapStyle wrapMode      = wrapModeIsDef                                || forceDefaults ? Preferences::GetPrefWrap(mode)        : wrapMode_;
         const int tabDist             = tabDistIsDef                                 || forceDefaults ? Preferences::GetPrefTabDist(mode)     : buffer_->BufGetTabDistance();
         const int emTabDist           = emTabDistIsDef                               || forceDefaults ? Preferences::GetPrefEmTabDist(mode)   : oldEmTabDist;
@@ -1079,7 +1079,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
         /* Dim/undim smart-indent and highlighting menu items depending on
            whether patterns/macros are available */
         QString languageModeName   = Preferences::LanguageModeName(mode);
-        bool haveHighlightPatterns = FindPatternSet(languageModeName);
+        bool haveHighlightPatterns = Highlight::FindPatternSet(languageModeName);
         bool haveSmartIndentMacros = SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(mode));
 
         if (topDocument) {
@@ -5466,7 +5466,7 @@ PatternSet *DocumentWidget::findPatternsForWindowEx(bool warn) {
     }
 
     // Look up the appropriate pattern for the language
-    PatternSet *const patterns = FindPatternSet(modeName);
+    PatternSet *const patterns = Highlight::FindPatternSet(modeName);
     if(!patterns) {
         if (warn) {
             QMessageBox::warning(this,
@@ -5602,11 +5602,11 @@ Style DocumentWidget::GetHighlightInfoEx(int64_t pos) {
     }
 
     if (highlightData->pass1Patterns) {
-        pattern = patternOfStyle(highlightData->pass1Patterns, style);
+        pattern = Highlight::patternOfStyle(highlightData->pass1Patterns, style);
     }
 
     if (!pattern && highlightData->pass2Patterns) {
-        pattern = patternOfStyle(highlightData->pass2Patterns, style);
+        pattern = Highlight::patternOfStyle(highlightData->pass2Patterns, style);
     }
 
     if (!pattern) {
@@ -5805,7 +5805,7 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
        pos is parsed correctly (beginSafety), at most one context distance back
        from pos, unless there is a pass 1 section from which to start */
     int64_t beginParse  = pos;
-    int64_t beginSafety = backwardOneContext(buf, context, beginParse);
+    int64_t beginSafety = Highlight::backwardOneContext(buf, context, beginParse);
 
     for (int64_t p = beginParse; p >= beginSafety; p--) {
         char ch = styleBuf->BufGetCharacter(p);
@@ -5820,7 +5820,7 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
        the end of the unfinished region, or a max. of PASS_2_REPARSE_CHUNK_SIZE
        characters forward from the requested position */
     int64_t endParse  = std::min(buf->BufGetLength(), pos + PASS_2_REPARSE_CHUNK_SIZE);
-    int64_t endSafety = forwardOneContext(buf, context, endParse);
+    int64_t endSafety = Highlight::forwardOneContext(buf, context, endParse);
 
     for (int64_t p = pos; p < endSafety; p++) {
         char ch = styleBuf->BufGetCharacter(p);
@@ -5833,7 +5833,7 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
             if (static_cast<uint8_t>(ch) < firstPass2Style) {
                 endSafety = p;
             } else {
-                endSafety = forwardOneContext(buf, context, endParse);
+                endSafety = Highlight::forwardOneContext(buf, context, endParse);
             }
             break;
         }
@@ -5852,9 +5852,9 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
     char *stylePtr        = &styleStr[0];
 
     // Parse it with pass 2 patterns
-    int prevChar = getPrevChar(buf, beginSafety);
+    int prevChar = Highlight::getPrevChar(buf, beginSafety);
 
-    parseString(
+    Highlight::parseString(
         pass2Patterns,
         string,
         string + str.size(),
@@ -5916,7 +5916,7 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
         const char *stringPtr       = bufString.data();
         const char *const match_to  = bufString.data() + bufString.size();
 
-        parseString(
+        Highlight::parseString(
             highlightData->pass1Patterns,
             bufString.data(),
             bufString.data() + bufString.size(),
@@ -5980,13 +5980,13 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     }
 
     // Check that the styles and parent pattern names actually exist
-    if (!NamedStyleExists(tr("Plain"))) {
+    if (!Highlight::NamedStyleExists(tr("Plain"))) {
         QMessageBox::warning(this, tr("Highlight Style"), tr("Highlight style \"Plain\" is missing"));
         return nullptr;
     }
 
     for(const HighlightPattern &pattern : patterns) {
-        if (!pattern.subPatternOf.isNull() && indexOfNamedPattern(patterns, pattern.subPatternOf) == -1) {
+        if (!pattern.subPatternOf.isNull() && Highlight::indexOfNamedPattern(patterns, pattern.subPatternOf) == -1) {
             QMessageBox::warning(
                         this,
                         tr("Parent Pattern"),
@@ -5996,7 +5996,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     }
 
     for(const HighlightPattern &pattern : patterns) {
-        if (!NamedStyleExists(pattern.style)) {
+        if (!Highlight::NamedStyleExists(pattern.style)) {
             QMessageBox::warning(
                         this,
                         tr("Highlight Style"),
@@ -6013,7 +6013,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
 
         if (!pattern.subPatternOf.isNull()) {
 
-            int parentindex = findTopLevelParentIndex(patterns, gsl::narrow<int>(i));
+            int parentindex = Highlight::findTopLevelParentIndex(patterns, gsl::narrow<int>(i));
             if (parentindex == -1) {
                 QMessageBox::warning(
                             this,
@@ -6129,7 +6129,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
         if(pass1PatternSrc[i].subPatternOf.isNull()) {
             *parentStylesPtr++ = PLAIN_STYLE;
         } else {
-            *parentStylesPtr++ = pass1Pats[indexOfNamedPattern({pass1PatternSrc, gsl::narrow<std::ptrdiff_t>(nPass1Patterns)}, pass1PatternSrc[i].subPatternOf)].style;
+            *parentStylesPtr++ = pass1Pats[Highlight::indexOfNamedPattern({pass1PatternSrc, gsl::narrow<std::ptrdiff_t>(nPass1Patterns)}, pass1PatternSrc[i].subPatternOf)].style;
         }
     }
 
@@ -6137,7 +6137,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
         if(pass2PatternSrc[i].subPatternOf.isNull()) {
             *parentStylesPtr++ = PLAIN_STYLE;
         } else {
-            *parentStylesPtr++ = pass2Pats[indexOfNamedPattern({pass2PatternSrc, gsl::narrow<std::ptrdiff_t>(nPass2Patterns)}, pass2PatternSrc[i].subPatternOf)].style;
+            *parentStylesPtr++ = pass2Pats[Highlight::indexOfNamedPattern({pass2PatternSrc, gsl::narrow<std::ptrdiff_t>(nPass2Patterns)}, pass2PatternSrc[i].subPatternOf)].style;
         }
     }
 
@@ -6150,11 +6150,11 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
         p->underline     = false;
         p->highlightName = pat->name;
         p->styleName     = pat->style;
-        p->font          = FontOfNamedStyleEx      (pat->style);
-        p->colorName     = ColorOfNamedStyleEx     (pat->style);
-        p->bgColorName   = BgColorOfNamedStyleEx   (pat->style);
-        p->isBold        = FontOfNamedStyleIsBold  (pat->style);
-        p->isItalic      = FontOfNamedStyleIsItalic(pat->style);
+        p->font          = FontOfNamedStyleEx(pat->style);
+        p->colorName     = Highlight::FgColorOfNamedStyleEx     (pat->style);
+        p->bgColorName   = Highlight::BgColorOfNamedStyleEx   (pat->style);
+        p->isBold        = Highlight::FontOfNamedStyleIsBold  (pat->style);
+        p->isItalic      = Highlight::FontOfNamedStyleIsItalic(pat->style);
 
         // And now for the more physical stuff
         p->color = X11Colors::fromString(p->colorName);
@@ -6229,7 +6229,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
         if (patternSrc[i].subPatternOf.isNull()) {
             compiledPats[0].nSubPatterns++;
         } else {
-            compiledPats[indexOfNamedPattern(patternSrc, patternSrc[i].subPatternOf)].nSubPatterns++;
+            compiledPats[Highlight::indexOfNamedPattern(patternSrc, patternSrc[i].subPatternOf)].nSubPatterns++;
         }
     }
 
@@ -6247,7 +6247,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
         if (patternSrc[i].subPatternOf.isNull()) {
             compiledPats[0].subPatterns[compiledPats[0].nSubPatterns++] = &compiledPats[i];
         } else {
-            parentIndex = indexOfNamedPattern(patternSrc, patternSrc[i].subPatternOf);
+            parentIndex = Highlight::indexOfNamedPattern(patternSrc, patternSrc[i].subPatternOf);
             compiledPats[parentIndex].subPatterns[compiledPats[parentIndex].nSubPatterns++] = &compiledPats[i];
         }
     }
@@ -6256,7 +6256,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
        just colors and fonts for sub-expressions of the parent pattern */
     for (int i = 0; i < patternSrc.size(); i++) {
         compiledPats[i].colorOnly      = patternSrc[i].flags & COLOR_ONLY;
-        compiledPats[i].userStyleIndex = IndexOfNamedStyle(patternSrc[i].style);
+        compiledPats[i].userStyleIndex = Highlight::IndexOfNamedStyle(patternSrc[i].style);
 
         if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {
             QMessageBox::warning(
@@ -6722,13 +6722,13 @@ QString DocumentWidget::GetAnySelectionEx(bool beep_on_error) {
 */
 QFont DocumentWidget::FontOfNamedStyleEx(const QString &styleName) const {
 
-    const size_t styleNo = IndexOfNamedStyle(styleName);
+    const size_t styleNo = Highlight::IndexOfNamedStyle(styleName);
 
     if (styleNo == STYLE_NOT_FOUND) {
         return Preferences::GetPrefDefaultFont();
     } else {
 
-        const int fontNum = HighlightStyles[styleNo].font;
+        const int fontNum = Highlight::HighlightStyles[styleNo].font;
 
         switch(fontNum) {
         case BOLD_FONT:

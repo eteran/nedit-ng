@@ -3,7 +3,7 @@
 #include "DialogSyntaxPatterns.h"
 #include "DocumentWidget.h"
 #include "FontType.h"
-#include "highlight.h"
+#include "Highlight.h"
 #include "HighlightStyleModel.h"
 #include "preferences.h"
 #include "X11Colors.h"

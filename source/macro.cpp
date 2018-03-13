@@ -15,7 +15,7 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "WrapMode.h"
-#include "highlight.h"
+#include "Highlight.h"
 #include "interpret.h"
 #include "parse.h"
 #include "preferences.h"
@@ -5028,7 +5028,7 @@ static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *docu
     }
 
     // insert color name
-    DV = make_value(ColorOfNamedStyleEx(styleName));
+    DV = make_value(Highlight::FgColorOfNamedStyleEx(styleName));
     if (!ArrayInsert(result, "color", &DV)) {
         return MacroErrorCode::InsertFailed;
     }
@@ -5046,7 +5046,7 @@ static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *docu
     }
 
     // Prepare array element for background color name
-    DV = make_value(BgColorOfNamedStyleEx(styleName));
+    DV = make_value(Highlight::BgColorOfNamedStyleEx(styleName));
     if (!ArrayInsert(result, "background", &DV)) {
         return MacroErrorCode::InsertFailed;
     }
@@ -5064,13 +5064,13 @@ static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *docu
     }
 
     // Put boldness value in array
-    DV = make_value(FontOfNamedStyleIsBold(styleName));
+    DV = make_value(Highlight::FontOfNamedStyleIsBold(styleName));
     if (!ArrayInsert(result, "bold", &DV)) {
         return MacroErrorCode::InsertFailed;
     }
 
     // Put italicity value in array
-    DV = make_value(FontOfNamedStyleIsItalic(styleName));
+    DV = make_value(Highlight::FontOfNamedStyleIsItalic(styleName));
     if (!ArrayInsert(result, "italic", &DV)) {
         return MacroErrorCode::InsertFailed;
     }
@@ -5103,7 +5103,7 @@ static std::error_code getStyleByNameMS(DocumentWidget *document, Arguments argu
 
     *result = make_value(ArrayPtr());
 
-    if (!NamedStyleExists(styleName)) {
+    if (!Highlight::NamedStyleExists(styleName)) {
         // if the given name is invalid we just return an empty array.
         return MacroErrorCode::Success;
     }

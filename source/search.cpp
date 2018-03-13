@@ -6,7 +6,7 @@
 #include "TruncSubstitution.h"
 #include "TextBuffer.h"
 #include "WrapStyle.h"
-#include "highlight.h"
+#include "Highlight.h"
 #include "preferences.h"
 #include "Regex.h"
 #include "userCmds.h"
