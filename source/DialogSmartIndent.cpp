@@ -11,7 +11,7 @@
 #include "MainWindow.h"
 #include "preferences.h"
 #include "SmartIndentEntry.h"
-#include "smartIndent.h"
+#include "SmartIndent.h"
 
 #include <QMessageBox>
 
@@ -54,7 +54,7 @@ DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, 
 	setLanguageMode(languageMode);
 
 	// Fill in the dialog information for the selected language mode 
-    setSmartIndentDialogData(findIndentSpec(languageMode_));
+    setSmartIndentDialogData(SmartIndent::findIndentSpec(languageMode_));
 }
 
 /**
@@ -89,7 +89,7 @@ void DialogSmartIndent::setLanguageMode(const QString &s) {
  */
 void DialogSmartIndent::on_comboLanguageMode_currentIndexChanged(const QString &text) {
 	languageMode_ = text;
-    setSmartIndentDialogData(findIndentSpec(text));
+    setSmartIndentDialogData(SmartIndent::findIndentSpec(text));
 }
 
 /**
@@ -171,7 +171,7 @@ void DialogSmartIndent::on_buttonDelete_clicked() {
  */
 void DialogSmartIndent::on_buttonRestore_clicked() {
 
-    const SmartIndentEntry *defaultIS = findDefaultIndentSpec(languageMode_);
+    const SmartIndentEntry *defaultIS = SmartIndent::findDefaultIndentSpec(languageMode_);
     if(!defaultIS) {
         QMessageBox::warning(
                     this,

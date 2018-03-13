@@ -8,7 +8,7 @@
 #include "MainWindow.h"
 #include "search.h"
 #include "Settings.h"
-#include "smartIndent.h"
+#include "SmartIndent.h"
 #include "Tags.h"
 #include "TextBuffer.h"
 #include "userCmds.h"
@@ -103,8 +103,8 @@ void Preferences::SaveNEditPrefsEx(QWidget *parent, bool quietly) {
     Settings::bgMenuCommands        = WriteBGMenuCmdsStringEx();
     Settings::highlightPatterns     = WriteHighlightStringEx();
     Settings::languageModes         = WriteLanguageModesStringEx();
-    Settings::smartIndentInit       = WriteSmartIndentStringEx();
-    Settings::smartIndentInitCommon = WriteSmartIndentCommonStringEx();
+    Settings::smartIndentInit       = SmartIndent::WriteSmartIndentStringEx();
+    Settings::smartIndentInitCommon = SmartIndent::WriteSmartIndentCommonStringEx();
 
     if (!Settings::savePreferences()) {
         QMessageBox::warning(
@@ -1258,10 +1258,10 @@ void Preferences::translatePrefFormats(uint32_t fileVer) {
         loadLanguageModesStringEx(Settings::languageModes);
     }
     if (!Settings::smartIndentInit.isNull()) {
-        LoadSmartIndentStringEx(Settings::smartIndentInit);
+        SmartIndent::LoadSmartIndentStringEx(Settings::smartIndentInit);
     }
     if (!Settings::smartIndentInitCommon.isNull()) {
-        LoadSmartIndentCommonStringEx(Settings::smartIndentInitCommon);
+        SmartIndent::LoadSmartIndentCommonStringEx(Settings::smartIndentInitCommon);
     }
 
     LoadTheme();

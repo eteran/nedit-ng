@@ -4,7 +4,7 @@
 #include "LanguageMode.h"
 #include "macro.h"
 #include "preferences.h"
-#include "smartIndent.h"
+#include "SmartIndent.h"
 
 #include <QMessageBox>
 
@@ -87,7 +87,7 @@ void DialogSmartIndentCommon::on_buttonRestore_clicked() {
 	}
 
 	// replace common macros with default 
-    CommonMacros = QString::fromLatin1(defaultCommonMacros());
+    CommonMacros = QString::fromLatin1(SmartIndent::defaultCommonMacros());
 
 	// Update the dialog 
 	ui.editCode->setPlainText(CommonMacros);

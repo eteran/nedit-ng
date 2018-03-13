@@ -20,7 +20,7 @@
 #include "parse.h"
 #include "preferences.h"
 #include "search.h"
-#include "smartIndent.h"
+#include "SmartIndent.h"
 #include "Util/fileUtils.h"
 #include "Util/utils.h"
 #include "Util/version.h"

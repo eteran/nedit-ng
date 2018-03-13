@@ -32,7 +32,7 @@
 #include "Settings.h"
 #include "shift.h"
 #include "SignalBlocker.h"
-#include "smartIndent.h"
+#include "SmartIndent.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "userCmds.h"

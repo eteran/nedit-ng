@@ -27,7 +27,7 @@
 #include "SignalBlocker.h"
 #include "SmartIndentEntry.h"
 #include "SmartIndentEvent.h"
-#include "smartIndent.h"
+#include "SmartIndent.h"
 #include "Style.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
@@ -1068,7 +1068,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
         const QString oldlanguageModeName = Preferences::LanguageModeName(oldMode);
 
         const bool emTabDistIsDef     = oldEmTabDist == Preferences::GetPrefEmTabDist(oldMode);
-        const bool indentStyleIsDef   = indentStyle_ == Preferences::GetPrefAutoIndent(oldMode)   || (Preferences::GetPrefAutoIndent(oldMode) == IndentStyle::Smart && indentStyle_ == IndentStyle::Auto && !SmartIndentMacrosAvailable(Preferences::LanguageModeName(oldMode)));
+        const bool indentStyleIsDef   = indentStyle_ == Preferences::GetPrefAutoIndent(oldMode)   || (Preferences::GetPrefAutoIndent(oldMode) == IndentStyle::Smart && indentStyle_ == IndentStyle::Auto && !SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(oldMode)));
         const bool highlightIsDef     = highlightSyntax_ == Preferences::GetPrefHighlightSyntax() || (Preferences::GetPrefHighlightSyntax() && FindPatternSet(!oldlanguageModeName.isNull() ? oldlanguageModeName : QLatin1String("")) == nullptr);
         const WrapStyle wrapMode      = wrapModeIsDef                                || forceDefaults ? Preferences::GetPrefWrap(mode)        : wrapMode_;
         const int tabDist             = tabDistIsDef                                 || forceDefaults ? Preferences::GetPrefTabDist(mode)     : buffer_->BufGetTabDistance();
@@ -1080,7 +1080,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
            whether patterns/macros are available */
         QString languageModeName   = Preferences::LanguageModeName(mode);
         bool haveHighlightPatterns = FindPatternSet(languageModeName);
-        bool haveSmartIndentMacros = SmartIndentMacrosAvailable(Preferences::LanguageModeName(mode));
+        bool haveSmartIndentMacros = SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(mode));
 
         if (topDocument) {
             win->ui.action_Highlight_Syntax->setEnabled(haveHighlightPatterns);
@@ -3320,7 +3320,7 @@ void DocumentWidget::RefreshMenuToggleStates() {
         no_signals(win->ui.action_Matching_Syntax)->setChecked(matchSyntaxBased_);
         no_signals(win->ui.action_Read_Only)->setChecked(lockReasons_.isUserLocked());
 
-        win->ui.action_Indent_Smart->setEnabled(SmartIndentMacrosAvailable(Preferences::LanguageModeName(languageMode_)));
+        win->ui.action_Indent_Smart->setEnabled(SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(languageMode_)));
         win->ui.action_Highlight_Syntax->setEnabled(languageMode_ != PLAIN_LANGUAGE_MODE);
 
         SetAutoIndent(indentStyle_);
@@ -4042,7 +4042,7 @@ void DocumentWidget::BeginSmartIndentEx(bool warn) {
     }
 
     // Look up the appropriate smart-indent macros for the language
-    const SmartIndentEntry *indentMacros = findIndentSpec(modeName);
+    const SmartIndentEntry *indentMacros = SmartIndent::findIndentSpec(modeName);
     if(!indentMacros) {
         if (warn) {
             QMessageBox::warning(

@@ -9,7 +9,7 @@
 #include "preferences.h"
 #include "Regex.h"
 #include "search.h"
-#include "smartIndent.h"
+#include "SmartIndent.h"
 #include "TextArea.h"
 #include "userCmds.h"
 
@@ -464,7 +464,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
                     dialogSyntaxPatterns_->RenameHighlightPattern(oldName, newName);
                 }
 
-                RenameSmartIndentMacros(oldName, newName);
+                SmartIndent::RenameSmartIndentMacros(oldName, newName);
 
                 // make a copy of the language mode, and set the new name
                 LanguageMode newLanguageMode = *lang;
@@ -506,7 +506,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
         }
 
 		// The same for the smart indent macro dialog
-        UpdateLangModeMenuSmartIndent();
+        SmartIndent::UpdateLangModeMenuSmartIndent();
 
         // Note that preferences have been changed
         Preferences::MarkPrefsChanged();
@@ -633,7 +633,7 @@ void DialogLanguageModes::on_buttonDelete_clicked() {
                 }
 
                 // don't allow deletion if data will be lost
-                if (LMHasSmartIndentMacros(current->name)) {
+                if (SmartIndent::LMHasSmartIndentMacros(current->name)) {
                     QMessageBox::warning(this,
                                          tr("Smart Indent Macros exist"),
                                          tr("This language mode has smart indent macros defined. Please delete the macros first, in Preferences -> Default Settings -> Auto Indent -> Program Smart Indent, before proceeding here."));
