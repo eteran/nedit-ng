@@ -174,8 +174,11 @@ private:
     static QStringList readExtensionListEx(Input &in);
     static bool modeErrorEx(const Input &in, const QString &message);
     static QString getDefaultShell();
+
+public:
+    static std::vector<LanguageMode> LanguageModes;
 };
 
-extern std::vector<LanguageMode> LanguageModes;
+
 
 #endif

@@ -690,12 +690,12 @@ size_t DocumentWidget::matchLanguageMode() const {
 	// Do a regular expression search on for recognition pattern
     const std::string first200 = buffer_->BufGetRangeEx(0, 200);
 
-    for (size_t i = 0; i < LanguageModes.size(); i++) {
-        if (!LanguageModes[i].recognitionExpr.isNull()) {
+    for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
+        if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {
             int64_t beginPos;
             int64_t endPos;
             bool result = SearchString(first200,
-                                  LanguageModes[i].recognitionExpr,
+                                  Preferences::LanguageModes[i].recognitionExpr,
                                   Direction::Forward,
                                   SearchType::Regex,
                                   WrapMode::NoWrap,
@@ -720,8 +720,8 @@ size_t DocumentWidget::matchLanguageMode() const {
 		fileNameLen = versionExtendedPathIndex;
 	}
 
-    for (size_t i = 0; i < LanguageModes.size(); i++) {
-        Q_FOREACH(const QString &ext, LanguageModes[i].extensions) {
+    for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
+        Q_FOREACH(const QString &ext, Preferences::LanguageModes[i].extensions) {
             if(filename_.midRef(0, fileNameLen).endsWith(ext)) {
                 return i;
             }
@@ -1041,16 +1041,16 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
         languageMode_ = mode;
 
         // Decref oldMode's default calltips file if needed
-        if (oldMode != PLAIN_LANGUAGE_MODE && !LanguageModes[oldMode].defTipsFile.isNull()) {
-            Tags::DeleteTagsFileEx(LanguageModes[oldMode].defTipsFile, Tags::SearchMode::TIP, false);
+        if (oldMode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[oldMode].defTipsFile.isNull()) {
+            Tags::DeleteTagsFileEx(Preferences::LanguageModes[oldMode].defTipsFile, Tags::SearchMode::TIP, false);
         }
 
         // Set delimiters for all text widgets
         QString delimiters;
-        if (mode == PLAIN_LANGUAGE_MODE || LanguageModes[mode].delimiters.isNull()) {
+        if (mode == PLAIN_LANGUAGE_MODE || Preferences::LanguageModes[mode].delimiters.isNull()) {
             delimiters = Preferences::GetPrefDelimiters();
         } else {
-            delimiters = LanguageModes[mode].delimiters;
+            delimiters = Preferences::LanguageModes[mode].delimiters;
         }
 
         const std::vector<TextArea *> textAreas = textPanes();
@@ -1118,8 +1118,8 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
         SetEmTabDist(emTabDist);
 
         // Load calltips files for new mode
-        if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[mode].defTipsFile.isNull()) {
-            Tags::AddTagsFileEx(LanguageModes[mode].defTipsFile, Tags::SearchMode::TIP);
+        if (mode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[mode].defTipsFile.isNull()) {
+            Tags::AddTagsFileEx(Preferences::LanguageModes[mode].defTipsFile, Tags::SearchMode::TIP);
         }
 
         // Add/remove language specific menu items
@@ -1338,7 +1338,7 @@ QString DocumentWidget::GetWindowDelimiters() const {
     if (languageMode_ == PLAIN_LANGUAGE_MODE)
         return QString();
     else
-        return LanguageModes[languageMode_].delimiters;
+        return Preferences::LanguageModes[languageMode_].delimiters;
 }
 
 /*
@@ -4468,8 +4468,8 @@ void DocumentWidget::ClearModeMessageEx() {
 void DocumentWidget::UnloadLanguageModeTipsFileEx() {
 
     const size_t mode = languageMode_;
-    if (mode != PLAIN_LANGUAGE_MODE && !LanguageModes[mode].defTipsFile.isNull()) {
-        Tags::DeleteTagsFileEx(LanguageModes[mode].defTipsFile, Tags::SearchMode::TIP, false);
+    if (mode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[mode].defTipsFile.isNull()) {
+        Tags::DeleteTagsFileEx(Preferences::LanguageModes[mode].defTipsFile, Tags::SearchMode::TIP, false);
     }
 }
 
@@ -6756,7 +6756,7 @@ QString DocumentWidget::GetWindowDelimitersEx() const {
     if (languageMode_ == PLAIN_LANGUAGE_MODE) {
         return QString();
     } else {
-        return LanguageModes[languageMode_].delimiters;
+        return Preferences::LanguageModes[languageMode_].delimiters;
     }
 }
 

@@ -27,17 +27,20 @@
 #include <pwd.h>
 #include <unistd.h>
 
+// list of available language modes and language specific preferences
+std::vector<LanguageMode> Preferences::LanguageModes;
+
 namespace {
 
 constexpr int ConfigFileVersion = 1;
 
-QLatin1String AutoWrapTypes[] = {
+const QLatin1String AutoWrapTypes[] = {
     QLatin1String("None"),
     QLatin1String("Newline"),
     QLatin1String("Continuous")
 };
 
-QLatin1String AutoIndentTypes[] = {
+const QLatin1String AutoIndentTypes[] = {
     QLatin1String("None"),
     QLatin1String("Auto"),
     QLatin1String("Smart")
@@ -52,9 +55,6 @@ bool PrefsHaveChanged = false;
 QString ImportedFile;
 
 }
-
-// list of available language modes and language specific preferences
-std::vector<LanguageMode> LanguageModes;
 
 QString Preferences::ImportedSettingsFile() {
     return ImportedFile;

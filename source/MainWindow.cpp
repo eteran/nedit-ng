@@ -1303,8 +1303,8 @@ void MainWindow::updateLanguageModeSubmenu() {
     action->setChecked(true);
     languageGroup->addAction(action);
 
-    for (size_t i = 0; i < LanguageModes.size(); i++) {
-        QAction *action = languageMenu->addAction(LanguageModes[i].name);
+    for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
+        QAction *action = languageMenu->addAction(Preferences::LanguageModes[i].name);
         action->setData(static_cast<qulonglong>(i));
         action->setCheckable(true);
         languageGroup->addAction(action);
@@ -1325,7 +1325,7 @@ void MainWindow::updateLanguageModeSubmenu() {
             if(mode == PLAIN_LANGUAGE_MODE) {
                 document->action_Set_Language_Mode(QString());
             } else {
-                document->action_Set_Language_Mode(LanguageModes[mode].name);
+                document->action_Set_Language_Mode(Preferences::LanguageModes[mode].name);
             }
         }
     });

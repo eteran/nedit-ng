@@ -47,7 +47,7 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f
 
 	// populate language mode combo
     if(auto blocker = no_signals(ui.comboLanguageMode)) {
-        for(const LanguageMode &lang : LanguageModes) {
+        for(const LanguageMode &lang : Preferences::LanguageModes) {
             ui.comboLanguageMode->addItem(lang.name);
         }
     }
@@ -652,7 +652,7 @@ void DialogSyntaxPatterns::UpdateLanguageModeMenu() {
         const QString language = ui.comboLanguageMode->currentText();
         ui.comboLanguageMode->clear();
 
-        for(const LanguageMode &lang : LanguageModes) {
+        for(const LanguageMode &lang : Preferences::LanguageModes) {
             ui.comboLanguageMode->addItem(lang.name);
         }
 

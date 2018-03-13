@@ -27,7 +27,7 @@ DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatte
     ui.listItems->setModel(model_);
 
     // Copy the list of menu information to one that the user can freely edit
-    for(const LanguageMode &lang : LanguageModes) {
+    for(const LanguageMode &lang : Preferences::LanguageModes) {
         model_->addItem(lang);
     }
 
@@ -411,7 +411,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 
         if (languageMode != PLAIN_LANGUAGE_MODE) {
 
-            const QString documentLanguage = LanguageModes[languageMode].name;
+            const QString documentLanguage = Preferences::LanguageModes[languageMode].name;
 
             // assume plain as default
             document->languageMode_ = PLAIN_LANGUAGE_MODE;
@@ -475,12 +475,12 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
         }
 
         // Replace the old language mode list with the new one from the dialog
-        LanguageModes.clear();
+        Preferences::LanguageModes.clear();
 
         for (int i = 0; i < model_->rowCount(); i++) {
             QModelIndex index = model_->index(i, 0);
             auto item = model_->itemFromIndex(index);
-            LanguageModes.push_back(*item);
+            Preferences::LanguageModes.push_back(*item);
         }
 
         /* Update user menu info to update language mode dependencies of
@@ -495,8 +495,8 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
         // and load any needed calltips files ...
         for(DocumentWidget *document : DocumentWidget::allDocuments()) {
             const size_t languageMode = document->GetLanguageMode();
-            if (languageMode != PLAIN_LANGUAGE_MODE && !LanguageModes[languageMode].defTipsFile.isNull()) {
-                Tags::AddTagsFileEx(LanguageModes[languageMode].defTipsFile, Tags::SearchMode::TIP);
+            if (languageMode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[languageMode].defTipsFile.isNull()) {
+                Tags::AddTagsFileEx(Preferences::LanguageModes[languageMode].defTipsFile, Tags::SearchMode::TIP);
             }
         }
 
