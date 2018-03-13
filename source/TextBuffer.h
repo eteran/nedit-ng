@@ -19,6 +19,7 @@ class BasicTextBuffer {
 public:
     using string_type = std::basic_string<Ch, Tr>;
     using view_type   = view::basic_string_view<Ch, Tr>;
+    using size_type   = typename gap_buffer<Ch, Tr>::size_type;
 
 public:
     using bufModifyCallbackProc    = void (*)(int64_t pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view_type deletedText, void *user);

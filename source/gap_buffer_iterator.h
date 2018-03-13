@@ -11,6 +11,8 @@ template <class Ch, class Tr>
 class gap_buffer_iterator {
     using traits_type = typename std::iterator<std::random_access_iterator_tag, Ch>;
 
+    using size_type = typename gap_buffer<Ch, Tr>::size_type;
+
     template <class U, class Y>
     friend class gap_buffer_const_iterator;
 
@@ -22,8 +24,8 @@ public:
     using value_type        = typename traits_type::value_type;
 
 public:
-    gap_buffer_iterator()                                     : gap_buffer_iterator(nullptr, 0) {}
-    gap_buffer_iterator(gap_buffer<Ch, Tr> *buf, int64_t pos) : buf_(buf), pos_(pos) {}
+    gap_buffer_iterator()                                       : gap_buffer_iterator(nullptr, 0) {}
+    gap_buffer_iterator(gap_buffer<Ch, Tr> *buf, size_type pos) : buf_(buf), pos_(pos) {}
     gap_buffer_iterator(const gap_buffer_iterator &rhs)         = default;
     gap_buffer_iterator& operator=(const gap_buffer_iterator &) = default;
 
@@ -63,13 +65,16 @@ public:
 
 private:
     gap_buffer<Ch, Tr> *buf_;
-    int64_t             pos_;
+    size_type           pos_;
 };
 
 // const version
 template <class Ch, class Tr>
 class gap_buffer_const_iterator {
     using traits_type = typename std::iterator<std::random_access_iterator_tag, const Ch>;
+
+    using size_type = typename gap_buffer<Ch, Tr>::size_type;
+
 public:
     using difference_type   = typename traits_type::difference_type;
     using iterator_category = typename traits_type::iterator_category;
@@ -79,7 +84,7 @@ public:
 
 public:
     gap_buffer_const_iterator()                                             : gap_buffer_const_iterator(nullptr, 0) {}
-    gap_buffer_const_iterator(const gap_buffer<Ch, Tr> *buf, int64_t pos)   : buf_(buf), pos_(pos) {}
+    gap_buffer_const_iterator(const gap_buffer<Ch, Tr> *buf, size_type pos) : buf_(buf), pos_(pos) {}
     gap_buffer_const_iterator(const gap_buffer_const_iterator &rhs)         = default;
     gap_buffer_const_iterator& operator=(const gap_buffer_const_iterator &) = default;
 
@@ -130,7 +135,7 @@ public:
 
 private:
     const gap_buffer<Ch, Tr> *buf_;
-    int64_t                   pos_;
+    size_type                 pos_;
 };
 
 #endif
