@@ -31,7 +31,7 @@ public:
         TIP
     };
 
-    struct TagFile {
+    struct File {
         QString   filename;
         QDateTime date;
         bool      loaded;
@@ -59,7 +59,7 @@ public:
     static void showMatchingCalltipEx(TextArea *area, size_t i);
 
 public:
-    static QList<Tag> LookupTagFromList(std::deque<TagFile> *FileList, const QString &name, SearchMode mode);
+    static QList<Tag> LookupTagFromList(std::deque<File> *FileList, const QString &name, SearchMode mode);
     static QList<Tag> getTag(const QString &name, SearchMode mode);
     static int addTag(const QString &name, const QString &file, size_t lang, const QString &search, int posInf, const QString &path, int index);
     static bool searchLine(const std::string &line, const std::string &regex);
@@ -70,13 +70,13 @@ private:
     static int loadTipsFile(const QString &tipsFile, int index, int recLevel);
     static int nextTFBlock(std::istream &is, QString &header, QString &body, int *blkLine, int *currLine);
     static int scanETagsLine(const QString &line, const QString &tagPath, int index, QString &file, int recLevel);
-    static std::deque<TagFile> *tagListByType(SearchMode mode);
+    static std::deque<File> *tagListByType(SearchMode mode);
     static int scanCTagsLine(const QString &line, const QString &tagPath, int index);
     static bool delTag(int index);
 
 public:
-    static std::deque<TagFile> TagsFileList; // list of loaded tags files
-    static std::deque<TagFile> TipsFileList; // list of loaded calltips tag files
+    static std::deque<File> TagsFileList; // list of loaded tags files
+    static std::deque<File> TipsFileList; // list of loaded calltips tag files
 
     static SearchMode searchMode;
     static QString    tagName;

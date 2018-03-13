@@ -127,8 +127,8 @@ int moveAheadNLinesEx(view::string_view str, int64_t *pos, int n) {
 
 
 // list of loaded tags/tips files
-std::deque<Tags::TagFile> Tags::TagsFileList;
-std::deque<Tags::TagFile> Tags::TipsFileList;
+std::deque<Tags::File> Tags::TagsFileList;
+std::deque<Tags::File> Tags::TipsFileList;
 
 /* These are all transient global variables -- they don't hold any state
     between tag/tip lookups */
@@ -214,7 +214,7 @@ bool Tags::AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, S
     bool added = false;
 
     searchMode = mode;
-    std::deque<TagFile> *FileList = tagListByType(searchMode);
+    std::deque<File> *FileList = tagListByType(searchMode);
 
     if(tagSpec.isEmpty()) {
         return false;
@@ -236,7 +236,7 @@ bool Tags::AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, S
 
         pathName = NormalizePathnameEx(pathName);
 
-        auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](const TagFile &tag) {
+        auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](const File &tag) {
             return tag.filename == pathName;
         });
 
@@ -253,7 +253,7 @@ bool Tags::AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, S
             continue;
         }
 
-        TagFile tag = {
+        File tag = {
             pathName,
             timestamp,
             false,
@@ -282,7 +282,7 @@ bool Tags::AddTagsFileEx(const QString &tagSpec, SearchMode mode) {
     bool added = true;
 
     searchMode = mode;
-    std::deque<TagFile> *FileList = tagListByType(searchMode);
+    std::deque<File> *FileList = tagListByType(searchMode);
 
     if(tagSpec.isEmpty()) {
         return false;
@@ -301,7 +301,7 @@ bool Tags::AddTagsFileEx(const QString &tagSpec, SearchMode mode) {
 
 		pathName = NormalizePathnameEx(pathName);
 
-        auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](const TagFile &tag) {
+        auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](const File &tag) {
 			return tag.filename == pathName;
         });
 
@@ -324,7 +324,7 @@ bool Tags::AddTagsFileEx(const QString &tagSpec, SearchMode mode) {
             continue;
         }
 
-        TagFile tag = {
+        File tag = {
             pathName,
             timestamp,
             false,
@@ -353,7 +353,7 @@ bool Tags::DeleteTagsFileEx(const QString &tagSpec, SearchMode mode, bool force_
     }
 
     searchMode = mode;
-    std::deque<TagFile> *const FileList = tagListByType(searchMode);
+    std::deque<File> *const FileList = tagListByType(searchMode);
 
     bool removed = true;
 
@@ -372,7 +372,7 @@ bool Tags::DeleteTagsFileEx(const QString &tagSpec, SearchMode mode, bool force_
 
         auto it = FileList->begin();
         while(it != FileList->end()) {
-            TagFile &t = *it;
+            File &t = *it;
 
             if (t.filename != pathName) {
                 ++it;
@@ -624,7 +624,7 @@ int Tags::loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 	return nTagsAdded;
 }
 
-QList<Tags::Tag> Tags::LookupTagFromList(std::deque<TagFile> *FileList, const QString &name, SearchMode mode) {
+QList<Tags::Tag> Tags::LookupTagFromList(std::deque<File> *FileList, const QString &name, SearchMode mode) {
 
 	/*
 	** Go through the list of all tags Files:
@@ -637,7 +637,7 @@ QList<Tags::Tag> Tags::LookupTagFromList(std::deque<TagFile> *FileList, const QS
 	**
 	*/
     if (!name.isNull()) {
-        for(TagFile &tf : *FileList) {
+        for(File &tf : *FileList) {
 
             int load_status;
 		
@@ -1294,7 +1294,7 @@ QMultiHash<QString, Tags::Tag> *Tags::hashTableByType(SearchMode mode) {
     }
 }
 
-std::deque<Tags::TagFile> *Tags::tagListByType(SearchMode mode) {
+std::deque<Tags::File> *Tags::tagListByType(SearchMode mode) {
     if (mode == SearchMode::TAG) {
         return &TagsFileList;
     } else {
