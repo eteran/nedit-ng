@@ -154,12 +154,12 @@ void DialogSmartIndent::on_buttonDelete_clicked() {
 	}
 
 	// if a stored version of the pattern set exists, delete it from the list 
-    auto it = std::find_if(SmartIndentSpecs.begin(), SmartIndentSpecs.end(), [this](const SmartIndentEntry &entry) {
+    auto it = std::find_if(SmartIndent::SmartIndentSpecs.begin(), SmartIndent::SmartIndentSpecs.end(), [this](const SmartIndentEntry &entry) {
         return entry.lmName == languageMode_;
     });
 
-    if(it != SmartIndentSpecs.end()) {
-        SmartIndentSpecs.erase(it);
+    if(it != SmartIndent::SmartIndentSpecs.end()) {
+        SmartIndent::SmartIndentSpecs.erase(it);
     }
 
 	// Clear out the dialog 
@@ -192,16 +192,16 @@ void DialogSmartIndent::on_buttonRestore_clicked() {
 
 	// if a stored version of the indent macros exist, replace them, if not, add a new one
     size_t i;
-    for (i = 0; i < SmartIndentSpecs.size(); i++) {
-        if (languageMode_ == SmartIndentSpecs[i].lmName) {
+    for (i = 0; i < SmartIndent::SmartIndentSpecs.size(); i++) {
+        if (languageMode_ == SmartIndent::SmartIndentSpecs[i].lmName) {
 			break;
 		}
 	}
 	
-    if (i < SmartIndentSpecs.size()) {
-        SmartIndentSpecs[i] = *defaultIS;
+    if (i < SmartIndent::SmartIndentSpecs.size()) {
+        SmartIndent::SmartIndentSpecs[i] = *defaultIS;
 	} else {
-        SmartIndentSpecs.push_back(*defaultIS);
+        SmartIndent::SmartIndentSpecs.push_back(*defaultIS);
 	}
 
 	// Update the dialog 
@@ -248,14 +248,14 @@ bool DialogSmartIndent::updateSmartIndentData() {
     std::unique_ptr<SmartIndentEntry> newMacros = getSmartIndentDialogData();
 
 	// Find the original macros
-    auto it = std::find_if(SmartIndentSpecs.begin(), SmartIndentSpecs.end(), [this](const SmartIndentEntry &entry) {
+    auto it = std::find_if(SmartIndent::SmartIndentSpecs.begin(), SmartIndent::SmartIndentSpecs.end(), [this](const SmartIndentEntry &entry) {
         return entry.lmName == languageMode_;
     });
 
 	/* If it's a new language, add it at the end, otherwise free the
 	   existing macros and replace it */
-    if (it == SmartIndentSpecs.end()) {
-        SmartIndentSpecs.push_back(*newMacros);
+    if (it == SmartIndent::SmartIndentSpecs.end()) {
+        SmartIndent::SmartIndentSpecs.push_back(*newMacros);
 	} else {
         *it = *newMacros;
 	}

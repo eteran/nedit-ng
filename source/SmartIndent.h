@@ -36,11 +36,12 @@ public:
 
 private:
     static bool siParseError(const Input &in, const QString &message);
-};
 
-extern QString CommonMacros;
-extern std::vector<SmartIndentEntry> SmartIndentSpecs;
-extern QPointer<DialogSmartIndent> SmartIndentDlg;
+public:
+    static QString                       CommonMacros;
+    static std::vector<SmartIndentEntry> SmartIndentSpecs;
+    static QPointer<DialogSmartIndent>   SmartIndentDlg;
+};
 
 struct SmartIndentData {
     Program *newlineMacro = nullptr;

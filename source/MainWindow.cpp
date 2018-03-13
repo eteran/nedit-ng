@@ -3778,11 +3778,11 @@ void MainWindow::defaultIndentGroupTriggered(QAction *action) {
  */
 void MainWindow::on_action_Default_Program_Smart_Indent_triggered() {
 
-    if (!SmartIndentDlg) {
+    if (!SmartIndent::SmartIndentDlg) {
         // We pass this document so that the dialog can show the information for the currently
         // active language mode
         if(DocumentWidget *document = currentDocument()) {
-            SmartIndentDlg = new DialogSmartIndent(document, this);
+            SmartIndent::SmartIndentDlg = new DialogSmartIndent(document, this);
         }
     }
 
@@ -3793,7 +3793,7 @@ void MainWindow::on_action_Default_Program_Smart_Indent_triggered() {
         return;
     }
 
-    SmartIndentDlg->exec();
+    SmartIndent::SmartIndentDlg->exec();
 }
 
 /**

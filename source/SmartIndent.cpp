@@ -18,7 +18,9 @@
 #include <cstdio>
 #include <cstring>
 
-QPointer<DialogSmartIndent> SmartIndentDlg;
+QPointer<DialogSmartIndent>   SmartIndent::SmartIndentDlg;
+std::vector<SmartIndentEntry> SmartIndent::SmartIndentSpecs;
+QString                       SmartIndent::CommonMacros;
 
 namespace {
 
@@ -206,7 +208,7 @@ bool loadDefaultIndentSpec(const QString &lmName) {
 
     for(const SmartIndentEntry &entry : DefaultIndentSpecs) {
         if (entry.lmName == lmName) {
-            SmartIndentSpecs.push_back(entry);
+            SmartIndent::SmartIndentSpecs.push_back(entry);
             return true;
         }
     }
@@ -214,10 +216,6 @@ bool loadDefaultIndentSpec(const QString &lmName) {
 }
 
 }
-
-std::vector<SmartIndentEntry> SmartIndentSpecs;
-QString CommonMacros;
-
 
 /**
  * @brief defaultCommonMacros

@@ -4063,7 +4063,7 @@ void DocumentWidget::BeginSmartIndentEx(bool warn) {
        (Note that when these return, the immediate commands in the file have not
        necessarily been executed yet.  They are only SCHEDULED for execution) */
     if (!initialized) {
-        if (!ReadMacroStringEx(CommonMacros, tr("smart indent common initialization macros"))) {
+        if (!ReadMacroStringEx(SmartIndent::CommonMacros, tr("smart indent common initialization macros"))) {
             return;
         }
 

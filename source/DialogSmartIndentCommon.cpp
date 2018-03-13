@@ -42,7 +42,7 @@ QString ensureNewline(const QString &string) {
 DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 	
-	ui.editCode->setPlainText(CommonMacros);
+    ui.editCode->setPlainText(SmartIndent::CommonMacros);
 }
 
 /**
@@ -87,10 +87,10 @@ void DialogSmartIndentCommon::on_buttonRestore_clicked() {
 	}
 
 	// replace common macros with default 
-    CommonMacros = QString::fromLatin1(SmartIndent::defaultCommonMacros());
+    SmartIndent::CommonMacros = QString::fromLatin1(SmartIndent::defaultCommonMacros());
 
 	// Update the dialog 
-	ui.editCode->setPlainText(CommonMacros);
+    ui.editCode->setPlainText(SmartIndent::CommonMacros);
 }
 
 /**
@@ -130,14 +130,14 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	QString code = ui.editCode->toPlainText();
 
 	// Get the current data 
-	CommonMacros = ensureNewline(code);
+    SmartIndent::CommonMacros = ensureNewline(code);
 
 	/* Re-execute initialization macros (macros require a window to function,
 	   since user could theoretically execute an action routine, but it
 	   probably won't be referenced in a smart indent initialization) */
     std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
     if(!documents.empty()) {
-        if (!documents[0]->ReadMacroStringEx(CommonMacros, tr("common macros"))) {
+        if (!documents[0]->ReadMacroStringEx(SmartIndent::CommonMacros, tr("common macros"))) {
 			return false;
 		}
 	}
