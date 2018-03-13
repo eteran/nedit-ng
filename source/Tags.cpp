@@ -136,9 +136,9 @@ Tags::SearchMode Tags::searchMode = Tags::SearchMode::TAG;
 QString          Tags::tagName;
 
 
-std::array<QString, Tags::MAXDUPTAGS> Tags::tagFiles;
-std::array<QString, Tags::MAXDUPTAGS> Tags::tagSearch;
-std::array<int    , Tags::MAXDUPTAGS> Tags::tagPosInf;
+QString Tags::tagFiles[MAXDUPTAGS];
+QString Tags::tagSearch[MAXDUPTAGS];
+int     Tags::tagPosInf[MAXDUPTAGS];
 
 bool           Tags::globAnchored;
 int            Tags::globPos;

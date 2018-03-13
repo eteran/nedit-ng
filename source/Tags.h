@@ -82,9 +82,9 @@ public:
     static QString    tagName;
 
 public:
-    static std::array<QString, MAXDUPTAGS> tagFiles;
-    static std::array<QString, MAXDUPTAGS> tagSearch;
-    static std::array<int,     MAXDUPTAGS> tagPosInf;
+    static QString tagFiles[MAXDUPTAGS];
+    static QString tagSearch[MAXDUPTAGS];
+    static int     tagPosInf[MAXDUPTAGS];
 
 public:
     static bool           globAnchored;

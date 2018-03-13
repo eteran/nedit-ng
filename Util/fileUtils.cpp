@@ -444,8 +444,11 @@ void ConvertFromDosFileString(char *fileString, int64_t *length, char *pendingCR
 	Q_ASSERT(fileString);
 	char *outPtr = fileString;
 	char *inPtr = fileString;
-	if (pendingCR)
-		*pendingCR = 0;
+
+    if (pendingCR) {
+        *pendingCR = '\0';
+    }
+
 	while (inPtr < fileString + *length) {
 		if (*inPtr == '\r') {
 			if (inPtr < fileString + *length - 1) {
