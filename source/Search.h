@@ -14,9 +14,6 @@ class MainWindow;
 class TextArea;
 class Regex;
 
-// Maximum length of search string history
-constexpr int MAX_SEARCH_HISTORY = 100;
-
 namespace Search {
     struct HistoryEntry {
         QString    search;
@@ -35,7 +32,5 @@ namespace Search {
     void saveSearchHistory(const QString &searchString, QString replaceString, SearchType searchType, bool isIncremental);
     HistoryEntry *HistoryByIndex(int index);
 }
-
-std::unique_ptr<Regex> make_regex(const QString &re, int flags);
 
 #endif

@@ -10,6 +10,8 @@ add_library (Util
 	ServerCommon.cpp
 	utils.cpp
 	Input.cpp
+	regex.cpp
+	include/Util/regex.h
 	include/Util/Input.h
 	include/Util/algorithm.h
 	include/Util/ClearCase.h
@@ -28,6 +30,7 @@ target_include_directories (Util PUBLIC
 )
 
 target_link_libraries(Util LINK_PUBLIC
+	Regex
 	GSL
 	Qt5::Core
 	Qt5::Network

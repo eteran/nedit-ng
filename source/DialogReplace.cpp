@@ -5,6 +5,7 @@
 #include "MainWindow.h"
 #include "preferences.h"
 #include "Regex.h"
+#include "Util/regex.h"
 #include "Search.h"
 
 #include <QClipboard>

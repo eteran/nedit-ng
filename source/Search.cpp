@@ -27,6 +27,9 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 
 namespace {
 
+// Maximum length of search string history
+constexpr int MAX_SEARCH_HISTORY = 100;
+
 // History mechanism for search and replace strings
 Search::HistoryEntry SearchReplaceHistory[MAX_SEARCH_HISTORY];
 int NHist = 0;
@@ -784,13 +787,4 @@ auto Search::HistoryByIndex(int index) -> HistoryEntry * {
     return &SearchReplaceHistory[n];
 }
 
-/**
- * @brief make_regex
- * @param re
- * @param flags
- * @return
- */
-std::unique_ptr<Regex> make_regex(const QString &re, int flags) {
-    return std::make_unique<Regex>(re.toStdString(), flags);
-}
 

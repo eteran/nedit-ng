@@ -40,6 +40,7 @@
 #include "Util/ClearCase.h"
 #include "Util/fileUtils.h"
 #include "Util/utils.h"
+#include "Util/regex.h"
 #include "WindowMenuEvent.h"
 
 #include <QClipboard>
