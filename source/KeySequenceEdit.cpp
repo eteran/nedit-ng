@@ -61,7 +61,7 @@ void KeySequenceEdit::resetState() {
 	
     prevKey_ = -1;
     lineEdit_->setText(keySequence_.toString(QKeySequence::NativeText));
-    lineEdit_->setPlaceholderText(KeySequenceEdit::tr("Press shortcut"));
+    lineEdit_->setPlaceholderText(tr("Press shortcut"));
 
     // hook the clear button...
     if(auto action = lineEdit_->findChild<QAction *>()) {

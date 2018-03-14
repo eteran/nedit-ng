@@ -102,9 +102,7 @@ public:
     static std::vector<PatternSet>     PatternSets;
 };
 
-void handleUnparsedRegionCBEx(const TextArea *area, int64_t pos, const void *user);
 void SyntaxHighlightModifyCBEx(int64_t pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user);
-void RemoveWidgetHighlightEx(TextArea *area);
 
 
 #endif

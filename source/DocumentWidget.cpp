@@ -171,6 +171,12 @@ void dragEndCB(TextArea *area, DragEndEvent *data, void *user) {
 	}
 }
 
+void handleUnparsedRegionCB(const TextArea *area, int64_t pos, const void *user) {
+    if(auto document = static_cast<const DocumentWidget *>(user)) {
+        document->handleUnparsedRegionEx(area->getStyleBuffer(), pos);
+    }
+}
+
 /*
 ** Buffer replacement wrapper routine to be used for inserting output from
 ** a command into the buffer, which takes into account that the buffer may
@@ -1307,7 +1313,7 @@ void DocumentWidget::StopHighlightingEx() {
     /* Remove and detach style buffer and style table from all text
        display(s) of window, and redisplay without highlighting */
     for(TextArea *area : textPanes()) {
-        RemoveWidgetHighlightEx(area);
+        area->RemoveWidgetHighlightEx();
     }
 }
 
@@ -5953,7 +5959,7 @@ void DocumentWidget::AttachHighlightToWidgetEx(TextArea *area) {
                     highlightData->styleBuffer,
                     highlightData->styleTable,
                     UNFINISHED_STYLE,
-                    handleUnparsedRegionCBEx,
+                    handleUnparsedRegionCB,
                     this);
     }
 }

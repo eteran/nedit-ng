@@ -233,6 +233,7 @@ private Q_SLOTS:
     void exchangeAP(QMouseEvent *event, TextArea::EventFlags flags = NoneFlag);
 
 public:
+    void RemoveWidgetHighlightEx();
     void TextDMaintainAbsLineNum(bool state);
     int TextDShowCalltip(const QString &text, bool anchored, int pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode);
     int64_t TextDStartOfLine(int64_t pos) const;

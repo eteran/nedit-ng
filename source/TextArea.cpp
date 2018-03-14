@@ -8490,3 +8490,10 @@ void TextArea::nextDocumentAP(EventFlags flags) {
     EMIT_EVENT_0("next_document");
     // handled at higher layer, this is a placeholder
 }
+
+/*
+** Remove style information from a text widget and redisplay it.
+*/
+void TextArea::RemoveWidgetHighlightEx() {
+    TextDAttachHighlightData(nullptr, {}, UNFINISHED_STYLE, nullptr, nullptr);
+}

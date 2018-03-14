@@ -153,17 +153,7 @@ void SyntaxHighlightModifyCBEx(int64_t pos, int64_t nInserted, int64_t nDeleted,
     }
 }
 
-/*
-** Remove style information from a text widget and redisplay it.
-*/
-void RemoveWidgetHighlightEx(TextArea *area) {
-    area->TextDAttachHighlightData(nullptr, {}, UNFINISHED_STYLE, nullptr, nullptr);
-}
 
-void handleUnparsedRegionCBEx(const TextArea *area, int64_t pos, const void *user) {
-    auto document = static_cast<const DocumentWidget *>(user);
-    document->handleUnparsedRegionEx(area->getStyleBuffer(), pos);
-}
 
 /*
 ** Re-parse the smallest region possible around a modification to buffer "buf"
