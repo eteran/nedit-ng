@@ -212,7 +212,7 @@ void DialogSmartIndent::on_buttonRestore_clicked() {
  * @brief DialogSmartIndent::on_buttonHelp_clicked
  */
 void DialogSmartIndent::on_buttonHelp_clicked() {
-    Help::displayTopic(this, Help::Topic::HELP_SMART_INDENT);
+    Help::displayTopic(this, Help::Topic::SmartIndent);
 }
 
 /**
