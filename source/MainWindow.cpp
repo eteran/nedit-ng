@@ -5996,7 +5996,7 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, con
     int movedFwd = 0;
 
     // Save a copy of searchString in the search history
-    Search::saveSearchHistory(searchString, QString(), searchType, false);
+    Search::saveSearchHistory(searchString, QString(), searchType, /*isIncremental=*/false);
 
     /* set the position to start the search so we don't find the same
        string that was found on the last search	*/
@@ -6098,7 +6098,7 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
        the search history itself, which can be detected by matching the
        search string with the search string of the current history index. */
     if (!(iSearchHistIndex_ > 1 && (searchString == Search::HistoryByIndex(iSearchHistIndex_)->search))) {
-        Search::saveSearchHistory(searchString, QString(), searchType, true);
+        Search::saveSearchHistory(searchString, QString(), searchType, /*isIncremental=*/true);
         // Reset the incremental search history pointer to the beginning
         iSearchHistIndex_ = 1;
     }
@@ -6141,7 +6141,7 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, co
     int64_t searchExtentFW;
 
     // Save a copy of search and replace strings in the search history
-    Search::saveSearchHistory(searchString, replaceString, searchType, false);
+    Search::saveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
 
     bool replaced = false;
 
@@ -6220,7 +6220,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
     int64_t searchExtentFW;
 
     // Save a copy of search and replace strings in the search history
-    Search::saveSearchHistory(searchString, replaceString, searchType, false);
+    Search::saveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
 
     // If the text selected in the window matches the search string,
     // the user is probably using search then replace method, so
@@ -6431,7 +6431,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
     bool cancelSubst  = true;
 
     // save a copy of search and replace strings in the search history
-    Search::saveSearchHistory(searchString, replaceString, searchType, false);
+    Search::saveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
 
     // find out where the selection is
     if (!document->buffer_->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
@@ -6670,7 +6670,7 @@ bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QS
     }
 
     // save a copy of search and replace strings in the search history
-    Search::saveSearchHistory(searchString, replaceString, searchType, false);
+    Search::saveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
 
     // view the entire text buffer from the text area widget as a string
     view::string_view fileString = document->buffer_->BufAsStringEx();
