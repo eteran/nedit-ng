@@ -48,7 +48,6 @@ struct ShellCommandData;
 struct SmartIndentData;
 struct SmartIndentEvent;
 
-
 class QFrame;
 class QLabel;
 class QMenu;

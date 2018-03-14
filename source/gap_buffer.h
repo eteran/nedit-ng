@@ -18,14 +18,14 @@ public:
     using view_type   = view::basic_string_view<Ch, Tr>;
 
 public:
-    using value_type             = std::allocator<char>::value_type;
-    using allocator_type         = std::allocator<char>;
+    using value_type             = typename std::allocator<Ch>::value_type;
+    using allocator_type         = std::allocator<Ch>;
     using size_type              = int64_t; // NOTE(eteran): typically unsigned...
-    using difference_type        = std::allocator<char>::difference_type;
-    using reference              = std::allocator<char>::reference;
-    using const_reference        = std::allocator<char>::const_reference;
-    using pointer                = std::allocator<char>::pointer;
-    using const_pointer          = std::allocator<char>::const_pointer;
+    using difference_type        = typename std::allocator<Ch>::difference_type;
+    using reference              = typename std::allocator<Ch>::reference;
+    using const_reference        = typename std::allocator<Ch>::const_reference;
+    using pointer                = typename std::allocator<Ch>::pointer;
+    using const_pointer          = typename std::allocator<Ch>::const_pointer;
     using iterator               = gap_buffer_iterator<Ch, Tr>;
     using const_iterator         = gap_buffer_const_iterator<Ch, Tr>;
     using reverse_iterator       = std::reverse_iterator<iterator>;
