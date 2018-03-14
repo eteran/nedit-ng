@@ -6,7 +6,7 @@
  * @brief displayTopic
  * @param topic
  */
-void Help::displayTopic(QWidget *parent, Help::Topic topic) {
+void Help::displayTopic(QWidget *parent, Topic topic) {
     Q_UNUSED(topic);
 
     QMessageBox::warning(
