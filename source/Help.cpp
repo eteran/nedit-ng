@@ -6,11 +6,11 @@
  * @brief displayTopic
  * @param topic
  */
-void Help::displayTopic(Help::Topic topic) {
+void Help::displayTopic(QWidget *parent, Help::Topic topic) {
     Q_UNUSED(topic);
 
     QMessageBox::warning(
-                nullptr,
+                parent,
                 tr("Not Implemented"),
                 tr("Sorry, but the help system is not yet implemented!"));
 }

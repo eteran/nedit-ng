@@ -507,7 +507,7 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
  * @brief DialogSyntaxPatterns::on_buttonHelp_clicked
  */
 void DialogSyntaxPatterns::on_buttonHelp_clicked() {
-    Help::displayTopic(Help::Topic::HELP_SYNTAX);
+    Help::displayTopic(this, Help::Topic::HELP_SYNTAX);
 }
 
 /**

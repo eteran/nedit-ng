@@ -549,7 +549,7 @@ void DialogWindowTitle::on_buttonBox_clicked(QAbstractButton *button) {
 	} else if(ui.buttonBox->standardButton(button) == QDialogButtonBox::RestoreDefaults) {
 		ui.editFormat->setText(QLatin1String("{%c} [%s] %f (%S) - %d"));
 	} else if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Help) {
-        Help::displayTopic(Help::Topic::HELP_CUSTOM_TITLE_DIALOG);
+        Help::displayTopic(this, Help::Topic::HELP_CUSTOM_TITLE_DIALOG);
 	}
 }
 

@@ -56,7 +56,7 @@ public:
         HELP_CUSTOM_TITLE_DIALOG,
     };
 
-    static void displayTopic(Topic topic);
+    static void displayTopic(QWidget *parent, Topic topic);
 
 };
 
