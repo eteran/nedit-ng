@@ -22,7 +22,7 @@
 #include "MainWindow.h"
 #include "PatternSet.h"
 #include "preferences.h"
-#include "search.h"
+#include "Search.h"
 #include "Settings.h"
 #include "SignalBlocker.h"
 #include "SmartIndentEntry.h"
@@ -700,7 +700,7 @@ size_t DocumentWidget::matchLanguageMode() const {
         if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {
             int64_t beginPos;
             int64_t endPos;
-            bool result = SearchString(first200,
+            bool result = Search::SearchString(first200,
                                   Preferences::LanguageModes[i].recognitionExpr,
                                   Direction::Forward,
                                   SearchType::Regex,

@@ -14,8 +14,8 @@ struct RangesetInfo {
     bool        defined = false;
     int         label   = 0;
     int64_t     count   = 0;
-	QString     color;
-	QString     name;
+    QString     color;
+    QString     name;
     QString     mode;
 };
 

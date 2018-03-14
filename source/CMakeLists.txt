@@ -285,8 +285,8 @@ add_executable(nedit-ng
 	nedit.h
 	preferences.cpp
 	preferences.h
-	search.cpp
-	search.h
+	Search.cpp
+	Search.h
 	shift.cpp
 	shift.h
 	userCmds.cpp

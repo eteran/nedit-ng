@@ -1,5 +1,5 @@
 
-#include "search.h"
+#include "Search.h"
 #include "Util/utils.h"
 #include "DocumentWidget.h"
 #include "MainWindow.h"
@@ -18,23 +18,70 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-#include <memory>
 
-int NHist = 0;
-
-
-// History mechanism for search and replace strings 
-SearchReplaceHistoryEntry SearchReplaceHistory[MAX_SEARCH_HISTORY];
-static int HistStart = 0;
-
-static bool SearchString(view::string_view string, view::string_view searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters);
 static bool backwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters, int defaultFlags);
 static bool forwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters, int defaultFlags);
 static bool searchRegex(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters, int defaultFlags);
 static bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW);
 static bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, const char *delimiters);
-static std::string upCaseStringEx(view::string_view inString);
-static std::string downCaseStringEx(view::string_view inString);
+
+namespace {
+
+// History mechanism for search and replace strings
+Search::HistoryEntry SearchReplaceHistory[MAX_SEARCH_HISTORY];
+int NHist = 0;
+int HistStart = 0;
+
+std::string to_upper(view::string_view s) {
+
+    std::string str;
+    str.reserve(s.size());
+    std::transform(s.begin(), s.end(), std::back_inserter(str), [](char ch) {
+        return safe_ctype<toupper>(ch);
+    });
+    return str;
+}
+
+std::string to_lower(view::string_view s) {
+
+    std::string str;
+    str.reserve(s.size());
+    std::transform(s.begin(), s.end(), std::back_inserter(str), [](char ch) {
+        return safe_ctype<tolower>(ch);
+    });
+    return str;
+}
+
+/*
+** Search the null terminated string "string" for "searchString", beginning at
+** "beginPos".  Returns the boundaries of the match in "startPos" and "endPos".
+** searchExtentBW and searchExtentFW return the backwardmost and forwardmost
+** positions used to make the match, which are usually startPos and endPos,
+** but may extend further if positive lookahead or lookbehind was used in
+** a regular expression match.  "delimiters" may be used to provide an
+** alternative set of word delimiters for regular expression "<" and ">"
+** characters, or simply passed as null for the default delimiter set.
+*/
+bool SearchStringEx(view::string_view string, view::string_view searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters) {
+    switch (searchType) {
+    case SearchType::CaseSenseWord:
+        return searchLiteralWord(string, searchString, /*caseSense=*/true, direction, wrap, beginPos, startPos, endPos, delimiters);
+    case SearchType::LiteralWord:
+        return searchLiteralWord(string, searchString, /*caseSense=*/false, direction, wrap, beginPos, startPos, endPos, delimiters);
+    case SearchType::CaseSense:
+        return searchLiteral(string, searchString, /*caseSense=*/true, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
+    case SearchType::Literal:
+        return searchLiteral(string, searchString, /*caseSense=*/false, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
+    case SearchType::Regex:
+        return searchRegex(string, searchString, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_STANDARD);
+    case SearchType::RegexNoCase:
+        return searchRegex(string, searchString, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_CASE_INSENSITIVE);
+    }
+
+    Q_UNREACHABLE();
+}
+
+}
 
 /*
 ** Replace all occurences of "searchString" in "inString" with "replaceString"
@@ -42,7 +89,7 @@ static std::string downCaseStringEx(view::string_view inString);
 ** first replacement (returned in "copyStart", and the end of the last
 ** replacement (returned in "copyEnd")
 */
-std::string ReplaceAllInStringEx(view::string_view inString, const QString &searchString, const QString &replaceString, SearchType searchType, int64_t *copyStart, int64_t *copyEnd, const QString &delimiters, bool *ok) {
+std::string Search::ReplaceAllInStringEx(view::string_view inString, const QString &searchString, const QString &replaceString, SearchType searchType, int64_t *copyStart, int64_t *copyEnd, const QString &delimiters, bool *ok) {
     int64_t startPos;
     int64_t endPos;
     int64_t lastEndPos;
@@ -184,17 +231,7 @@ std::string ReplaceAllInStringEx(view::string_view inString, const QString &sear
     return outString;
 }
 
-/*
-** Search the null terminated string "string" for "searchString", beginning at
-** "beginPos".  Returns the boundaries of the match in "startPos" and "endPos".
-** searchExtentBW and searchExtentFW return the backwardmost and forwardmost
-** positions used to make the match, which are usually startPos and endPos,
-** but may extend further if positive lookahead or lookbehind was used in
-** a regular expression match.  "delimiters" may be used to provide an
-** alternative set of word delimiters for regular expression "<" and ">"
-** characters, or simply passed as null for the default delimiter set.
-*/
-bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, const QString &delimiters) {
+bool Search::SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, const QString &delimiters) {
     return SearchString(
                 string,
                 searchString,
@@ -209,9 +246,9 @@ bool SearchString(view::string_view string, const QString &searchString, Directi
                 delimiters);
 }
 
-bool SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const QString &delimiters) {
+bool Search::SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const QString &delimiters) {
 
-    return SearchString(
+    return SearchStringEx(
                 string,
                 searchString.toStdString(),
                 direction,
@@ -226,24 +263,7 @@ bool SearchString(view::string_view string, const QString &searchString, Directi
 
 }
 
-static bool SearchString(view::string_view string, view::string_view searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const char *delimiters) {
-	switch (searchType) {
-    case SearchType::CaseSenseWord:
-        return searchLiteralWord(string, searchString, true, direction, wrap, beginPos, startPos, endPos, delimiters);
-    case SearchType::LiteralWord:
-        return searchLiteralWord(string, searchString, false, direction, wrap, beginPos, startPos, endPos, delimiters);
-    case SearchType::CaseSense:
-        return searchLiteral(string, searchString, true, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
-    case SearchType::Literal:
-        return searchLiteral(string, searchString, false, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW);
-    case SearchType::Regex:
-        return searchRegex(string, searchString, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_STANDARD);
-    case SearchType::RegexNoCase:
-        return searchRegex(string, searchString, direction, wrap, beginPos, startPos, endPos, searchExtentBW, searchExtentFW, delimiters, REDFLT_CASE_INSENSITIVE);
-	}
 
-    Q_UNREACHABLE();
-}
 
 /*
 **  Searches for whole words (Markus Schwarzenberg).
@@ -318,8 +338,8 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 		ucString = searchString.to_string();
 		lcString = searchString.to_string();
 	} else {
-		ucString = upCaseStringEx(searchString);
-		lcString = downCaseStringEx(searchString);
+        ucString = to_upper(searchString);
+        lcString = to_lower(searchString);
 	}
 
     if (direction == Direction::Forward) {
@@ -373,8 +393,8 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
         lcString = searchString.to_string();
         ucString = searchString.to_string();
     } else {
-        ucString = upCaseStringEx(searchString);
-        lcString = downCaseStringEx(searchString);
+        ucString = to_upper(searchString);
+        lcString = to_lower(searchString);
     }
 
     auto do_search = [&](view::string_view::iterator filePtr) {
@@ -592,26 +612,6 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
 	}
 }
 
-static std::string upCaseStringEx(view::string_view inString) {
-
-	std::string str;
-	str.reserve(inString.size());
-	std::transform(inString.begin(), inString.end(), std::back_inserter(str), [](char ch) {
-        return safe_ctype<toupper>(ch);
-	});
-	return str;
-}
-
-static std::string downCaseStringEx(view::string_view inString) {
-
-    std::string str;
-	str.reserve(inString.size());
-	std::transform(inString.begin(), inString.end(), std::back_inserter(str), [](char ch) {
-        return safe_ctype<tolower>(ch);
-	});
-	return str;
-}
-
 /*
 ** Substitutes a replace string for a string that was matched using a
 ** regular expression.  This was added later and is rather ineficient
@@ -621,7 +621,7 @@ static std::string downCaseStringEx(view::string_view inString) {
 ** code to continue using strings to represent the search and replace
 ** items.
 */
-bool replaceUsingREEx(view::string_view searchStr, view::string_view replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
+bool Search::replaceUsingREEx(view::string_view searchStr, view::string_view replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
     try {
         Regex compiledRE(searchStr, defaultFlags);
         compiledRE.execute(sourceStr, static_cast<size_t>(beginPos), sourceStr.size(), prevChar, -1, delimiters, false);
@@ -633,7 +633,7 @@ bool replaceUsingREEx(view::string_view searchStr, view::string_view replaceStr,
 }
 
 
-bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags) {
+bool Search::replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags) {
     return replaceUsingREEx(
                 searchStr.toStdString(),
                 replaceStr.toStdString(),
@@ -653,7 +653,7 @@ bool replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view:
 ** is made.  To mark the end of an incremental search, call saveSearchHistory
 ** again with an empty search string and isIncremental==false.
 */
-void saveSearchHistory(const QString &searchString, QString replaceString, SearchType searchType, bool isIncremental) {
+void Search::saveSearchHistory(const QString &searchString, QString replaceString, SearchType searchType, bool isIncremental) {
 
     static bool currentItemIsIncremental = false;
 
@@ -685,8 +685,11 @@ void saveSearchHistory(const QString &searchString, QString replaceString, Searc
 	   new one is also incremental, just update the entry */
     if (currentItemIsIncremental && isIncremental) {
         if(index != -1) {
-            SearchReplaceHistory[index].search = searchString;
-            SearchReplaceHistory[index].type   = searchType;
+            HistoryEntry *entry = HistoryByIndex(index);
+            Q_ASSERT(entry);
+
+            entry->search = searchString;
+            entry->type   = searchType;
         }
 		return;
 	}
@@ -707,11 +710,14 @@ void saveSearchHistory(const QString &searchString, QString replaceString, Searc
         NHist++;
     }
 
-    SearchReplaceHistory[HistStart].search  = searchString;
-    SearchReplaceHistory[HistStart].replace = replaceString;
-    SearchReplaceHistory[HistStart].type    = searchType;
+    HistoryEntry *entry = HistoryByIndex(HistStart);
+    Q_ASSERT(entry);
 
-    HistStart++;
+    entry->search  = searchString;
+    entry->replace = replaceString;
+    entry->type    = searchType;
+
+    ++HistStart;
 
     if (HistStart >= MAX_SEARCH_HISTORY) {
         HistStart = 0;
@@ -719,11 +725,34 @@ void saveSearchHistory(const QString &searchString, QString replaceString, Searc
 }
 
 /*
+** Checks whether a search mode in one of the regular expression modes.
+*/
+bool Search::isRegexType(SearchType searchType) {
+    return searchType == SearchType::Regex || searchType == SearchType::RegexNoCase;
+}
+
+/*
+** Returns the default flags for regular expression matching, given a
+** regular expression search mode.
+*/
+int Search::defaultRegexFlags(SearchType searchType) {
+	switch (searchType) {
+    case SearchType::Regex:
+		return REDFLT_STANDARD;
+    case SearchType::RegexNoCase:
+		return REDFLT_CASE_INSENSITIVE;
+	default:
+		// We should never get here, but just in case ... 
+		return REDFLT_STANDARD;
+	}
+}
+
+/*
 ** return an index into the circular buffer arrays of history information
 ** for search strings, given the number of saveSearchHistory cycles back from
 ** the current time.
 */
-int historyIndex(int nCycles) {
+int Search::historyIndex(int nCycles) {
 
     if (nCycles > NHist || nCycles <= 0) {
         return -1;
@@ -737,28 +766,22 @@ int historyIndex(int nCycles) {
     return index;
 }
 
+/**
+ * @brief Search::HistoryByIndex
+ * @param index
+ */
+auto Search::HistoryByIndex(int index) -> HistoryEntry * {
 
-/*
-** Checks whether a search mode in one of the regular expression modes.
-*/
-bool isRegexType(SearchType searchType) {
-    return searchType == SearchType::Regex || searchType == SearchType::RegexNoCase;
-}
+    if (NHist < 1) {
+        return nullptr;
+    }
 
-/*
-** Returns the default flags for regular expression matching, given a
-** regular expression search mode.
-*/
-int defaultRegexFlags(SearchType searchType) {
-	switch (searchType) {
-    case SearchType::Regex:
-		return REDFLT_STANDARD;
-    case SearchType::RegexNoCase:
-		return REDFLT_CASE_INSENSITIVE;
-	default:
-		// We should never get here, but just in case ... 
-		return REDFLT_STANDARD;
-	}
+    const int n = historyIndex(index);
+    if (n == -1) {
+        return nullptr;
+    }
+
+    return &SearchReplaceHistory[n];
 }
 
 /**

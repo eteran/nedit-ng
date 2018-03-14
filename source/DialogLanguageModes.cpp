@@ -8,7 +8,7 @@
 #include "MainWindow.h"
 #include "preferences.h"
 #include "Regex.h"
-#include "search.h"
+#include "Search.h"
 #include "SmartIndent.h"
 #include "TextArea.h"
 #include "userCmds.h"

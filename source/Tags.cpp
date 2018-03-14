@@ -5,7 +5,7 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "preferences.h"
-#include "search.h"
+#include "Search.h"
 #include "LanguageMode.h"
 #include "Util/fileUtils.h"
 #include "Util/utils.h"
@@ -781,7 +781,7 @@ bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchStri
 		}
 	}
 
-    bool found = SearchString(
+    bool found = Search::SearchString(
                 fileString,
                 searchSubs,
                 dir,
@@ -797,7 +797,7 @@ bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchStri
 		   startPos, if nothing has been found by now try searching backward
 		   again from startPos.
 		*/
-        found = SearchString(
+        found = Search::SearchString(
                     fileString,
                     searchSubs,
                     Direction::Backward,
@@ -872,7 +872,7 @@ void Tags::showMatchingCalltipEx(TextArea *area, size_t i) {
 
             // 4. Find the end of the calltip (delimited by an empty line)
             endPos = startPos;
-            bool found = SearchString(
+            bool found = Search::SearchString(
                         fileString,
                         QLatin1String("\\n\\s*\\n"),
                         Direction::Forward,
@@ -931,7 +931,7 @@ void Tags::showMatchingCalltipEx(TextArea *area, size_t i) {
 bool Tags::searchLine(const std::string &line, const std::string &regex) {
     int64_t dummy1;
     int64_t dummy2;
-    return SearchString(
+    return Search::SearchString(
                 line,
                 QString::fromStdString(regex),
                 Direction::Forward,

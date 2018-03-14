@@ -19,7 +19,7 @@
 #include "interpret.h"
 #include "parse.h"
 #include "preferences.h"
-#include "search.h"
+#include "Search.h"
 #include "SmartIndent.h"
 #include "Util/fileUtils.h"
 #include "Util/utils.h"
@@ -2846,7 +2846,7 @@ static std::error_code searchStringMS(DocumentWidget *document, Arguments argume
     }
 
     if (!skipSearch) {
-        found = SearchString(
+        found = Search::SearchString(
                     string,
                     searchStr,
                     direction,
@@ -2915,7 +2915,7 @@ static std::error_code replaceInStringMS(DocumentWidget *document, Arguments arg
 
     // Do the replace
     bool ok;
-    std::string replacedStr = ReplaceAllInStringEx(
+    std::string replacedStr = Search::ReplaceAllInStringEx(
                 string,
                 searchStr,
                 replaceStr,
@@ -3732,7 +3732,7 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
 
         auto indexStr = std::to_string(indexNum);
 
-        found = SearchString(
+        found = Search::SearchString(
                     sourceStr,
                     splitStr,
                     Direction::Forward,
@@ -3797,7 +3797,7 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
                The '\n' gets added in the lines above, but we still have to
                verify whether the pattern also matches the end of the string,
                and add an empty chunk in case it does. */
-            found = SearchString(
+            found = Search::SearchString(
                         sourceStr,
                         splitStr,
                         Direction::Forward,

@@ -4,7 +4,7 @@
 #include "MainWindow.h"
 #include "preferences.h"
 #include "Regex.h"
-#include "search.h"
+#include "Search.h"
 
 #include <QClipboard>
 #include <QKeyEvent>
@@ -52,7 +52,7 @@ void DialogFind::keyPressEvent(QKeyEvent *event) {
 		index += (event->key() == Qt::Key_Up) ? 1 : -1;
 
 		// if the index is out of range, beep and return 
-		if (index != 0 && historyIndex(index) == -1) {
+        if (index != 0 && Search::historyIndex(index) == -1) {
 			QApplication::beep();
 			return;
 		}
@@ -64,8 +64,10 @@ void DialogFind::keyPressEvent(QKeyEvent *event) {
             searchStr  = QString();
             searchType = Preferences::GetPrefSearch();
         } else {
-            searchStr  = SearchReplaceHistory[historyIndex(index)].search;
-            searchType = SearchReplaceHistory[historyIndex(index)].type;
+            const Search::HistoryEntry *entry = Search::HistoryByIndex(index);
+            Q_ASSERT(entry);
+            searchStr  = entry->search;
+            searchType = entry->type;
 		}
 
 		// Set the buttons and fields with the selected search type 
@@ -280,7 +282,7 @@ bool DialogFind::getFindDlogInfoEx(Direction *direction, QString *searchString, 
 
     *direction = ui.checkBackward->isChecked() ? Direction::Backward : Direction::Forward;
 
-	if (isRegexType(*searchType)) {
+    if (Search::isRegexType(*searchType)) {
         // NOTE(eteran): nothing...
 	}
 
