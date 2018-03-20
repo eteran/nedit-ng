@@ -713,7 +713,7 @@ void Search::saveSearchHistory(const QString &searchString, QString replaceStrin
         NHist++;
     }
 
-    HistoryEntry *entry = HistoryByIndex(HistStart);
+    HistoryEntry *entry = &SearchReplaceHistory[HistStart];
     Q_ASSERT(entry);
 
     entry->search  = searchString;
