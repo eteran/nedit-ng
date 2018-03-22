@@ -61,11 +61,11 @@ public:
     static bool parseString(HighlightData *pattern, const char *first, const char *last, const char **string, char **styleString, int64_t length, int *prevChar, bool anchored, const QString &delimiters, const char *look_behind_to, const char *match_to);
     static int getPrevChar(TextBuffer *buf, int64_t pos);
     static HighlightData *patternOfStyle(HighlightData *patterns, int style);
-    static int64_t backwardOneContext(TextBuffer *buf, ReparseContext *context, int64_t fromPos);
+    static int64_t backwardOneContext(TextBuffer *buf, const ReparseContext &context, int64_t fromPos);
     static int findTopLevelParentIndex(const gsl::span<HighlightPattern> &patList, int index);
     static bool FontOfNamedStyleIsBold(const QString &styleName);
     static bool FontOfNamedStyleIsItalic(const QString &styleName);
-    static int64_t forwardOneContext(TextBuffer *buf, ReparseContext *context, int64_t fromPos);
+    static int64_t forwardOneContext(TextBuffer *buf, const ReparseContext &context, int64_t fromPos);
     static int indexOfNamedPattern(const gsl::span<HighlightPattern> &patList, const QString &patName);
     static PatternSet *FindPatternSet(const QString &langModeName);
     static QString BgColorOfNamedStyleEx(const QString &styleName);
@@ -80,7 +80,7 @@ public:
 
 private:
     static std::unique_ptr<PatternSet> readPatternSetEx(Input &in);
-    static int64_t parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, ReparseContext *contextRequirements, int64_t beginParse, int64_t endParse, const QString &delimiters);
+    static int64_t parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, int64_t beginParse, int64_t endParse, const QString &delimiters);
     static int findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlightData> &highlightData, int64_t *pos);
     static void passTwoParseString(HighlightData *pattern, const char *first, const char *last, const char *string, char *styleString, int64_t length, int *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till);
     static std::unique_ptr<PatternSet> readDefaultPatternSet(QByteArray &patternData, const QString &langModeName);

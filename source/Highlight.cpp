@@ -85,8 +85,8 @@ constexpr bool equivalent_style(int style1, int style2, int firstPass2Style) {
 /* Scanning context can be reduced (with big efficiency gains) if we
    know that patterns can't cross line boundaries, which is implied
    by a context requirement of 1 line and 0 characters */
-bool can_cross_line_boundaries(const ReparseContext *contextRequirements) {
-	return (contextRequirements->nLines != 1 || contextRequirements->nChars != 0);
+bool can_cross_line_boundaries(const ReparseContext &contextRequirements) {
+    return (contextRequirements.nLines != 1 || contextRequirements.nChars != 0);
 }
 
 }
@@ -164,9 +164,9 @@ void SyntaxHighlightModifyCBEx(int64_t pos, int64_t nInserted, int64_t nDeleted,
 void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, int64_t pos, int64_t nInserted, const QString &delimiters) {
 
     const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer;
-	HighlightData *pass1Patterns = highlightData->pass1Patterns;
-	HighlightData *pass2Patterns = highlightData->pass2Patterns;
-	ReparseContext *context      = &highlightData->contextRequirements;
+    HighlightData *pass1Patterns  = highlightData->pass1Patterns;
+    HighlightData *pass2Patterns  = highlightData->pass2Patterns;
+    const ReparseContext &context = highlightData->contextRequirements;
 		
     const std::vector<uint8_t> &parentStyles = highlightData->parentStyles;
 
@@ -180,7 +180,7 @@ void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &h
 	   parsing, unless styles are getting changed beyond the last
 	   modification */
     int64_t lastMod  = pos + nInserted;
-    int64_t endParse = Highlight::forwardOneContext(buf, context, lastMod);
+    int64_t endParse = forwardOneContext(buf, context, lastMod);
 
 	/*
 	** Parse the buffer from beginParse, until styles compare
@@ -193,7 +193,7 @@ void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &h
 
 		/* Parse forward from beginParse to one context beyond the end
 		   of the last modification */
-        HighlightData *startPattern = Highlight::patternOfStyle(pass1Patterns, parseInStyle);
+        HighlightData *startPattern = patternOfStyle(pass1Patterns, parseInStyle);
 		/* If there is no pattern matching the style, it must be a pass-2
 		   style. It that case, it is (probably) safe to start parsing with
 		   the root pass-1 pattern again. Anyway, passing a nullptr-pointer to
@@ -246,7 +246,7 @@ void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &h
 ** finished (this will normally be endParse, unless the pass1Patterns is a
 ** pattern which does end and the end is reached).
 */
-int64_t Highlight::parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, ReparseContext *contextRequirements, int64_t beginParse, int64_t endParse, const QString &delimiters) {
+int64_t Highlight::parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, int64_t beginParse, int64_t endParse, const QString &delimiters) {
 
     int64_t endSafety;
     int64_t endPass2Safety;
@@ -261,7 +261,7 @@ int64_t Highlight::parseBufferRange(HighlightData *pass1Patterns, HighlightData 
 	// Begin parsing one context distance back (or to the last style change) 
     int beginStyle = pass1Patterns->style;
 	if (can_cross_line_boundaries(contextRequirements)) {
-        beginSafety = Highlight::backwardOneContext(buf, contextRequirements, beginParse);
+        beginSafety = backwardOneContext(buf, contextRequirements, beginParse);
 		for (p = beginParse; p >= beginSafety; p--) {
 			style = styleBuf->BufGetCharacter(p - 1);
 			if (!equivalent_style(style, beginStyle, firstPass2Style)) {
@@ -287,7 +287,7 @@ int64_t Highlight::parseBufferRange(HighlightData *pass1Patterns, HighlightData 
     }
 
     if (can_cross_line_boundaries(contextRequirements)) {
-        endSafety = Highlight::forwardOneContext(buf, contextRequirements, endParse);
+        endSafety = forwardOneContext(buf, contextRequirements, endParse);
     } else if (endParse >= buf->BufGetLength() || (buf->BufGetCharacter(endParse - 1) == '\n')) {
 		endSafety = endParse;
     } else {
@@ -305,11 +305,11 @@ int64_t Highlight::parseBufferRange(HighlightData *pass1Patterns, HighlightData 
 
 	// Parse it with pass 1 patterns 
 	// printf("parsing from %d thru %d\n", beginSafety, endSafety); 
-    int prevChar          = Highlight::getPrevChar(buf, beginParse);
+    int prevChar          = getPrevChar(buf, beginParse);
     const char *stringPtr = &string     [beginParse - beginSafety];
 	char *stylePtr        = &styleString[beginParse - beginSafety];
 	
-    Highlight::parseString(
+    parseString(
 		pass1Patterns, 
         string,
         string + str.size(),
@@ -880,10 +880,10 @@ int Highlight::findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<Wi
 
     std::vector<uint8_t> &parentStyles = highlightData->parentStyles;
     HighlightData *pass1Patterns       = highlightData->pass1Patterns;
-    ReparseContext *context            = &highlightData->contextRequirements;
+    const ReparseContext &context      = highlightData->contextRequirements;
 
 	// We must begin at least one context distance back from the change 
-    *pos = Highlight::backwardOneContext(buf, context, *pos);
+    *pos = backwardOneContext(buf, context, *pos);
 
 	/* If the new position is outside of any styles or at the beginning of
 	   the buffer, this is a safe place to begin parsing, and we're done */
@@ -911,9 +911,9 @@ int Highlight::findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<Wi
 	** (unfortunately, abutting styles can produce false runs so we're not
 	** really ensuring it, just making it likely).
 	*/
-    if (patternIsParsable(Highlight::patternOfStyle(pass1Patterns, startStyle))) {
-        safeParseStart = Highlight::backwardOneContext(buf, context, *pos);
-        checkBackTo    = Highlight::backwardOneContext(buf, context, safeParseStart);
+    if (patternIsParsable(patternOfStyle(pass1Patterns, startStyle))) {
+        safeParseStart = backwardOneContext(buf, context, *pos);
+        checkBackTo    = backwardOneContext(buf, context, safeParseStart);
 	} else {
 		safeParseStart = 0;
         checkBackTo    = 0;
@@ -932,7 +932,7 @@ int Highlight::findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<Wi
          * with the parent style, provided that the parent is parsable. */
 		int style = highlightData->styleBuffer->BufGetCharacter(i);
 		if (isParentStyle(parentStyles, style, runningStyle)) {
-            if (patternIsParsable(Highlight::patternOfStyle(pass1Patterns, style))) {
+            if (patternIsParsable(patternOfStyle(pass1Patterns, style))) {
 				*pos = i + 1;
 				return style;
 			} else {
@@ -1015,13 +1015,13 @@ int Highlight::findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<Wi
 ** only one extra character, but I'm not sure, and my brain hurts from
 ** thinking about it).
 */
-int64_t Highlight::backwardOneContext(TextBuffer *buf, ReparseContext *context, int64_t fromPos) {
-	if (context->nLines == 0)
-        return std::max<int64_t>(0, fromPos - context->nChars);
-	else if (context->nChars == 0)
-        return std::max<int64_t>(0, buf->BufCountBackwardNLines(fromPos, context->nLines - 1) - 1);
+int64_t Highlight::backwardOneContext(TextBuffer *buf, const ReparseContext &context, int64_t fromPos) {
+    if (context.nLines == 0)
+        return std::max<int64_t>(0, fromPos - context.nChars);
+    else if (context.nChars == 0)
+        return std::max<int64_t>(0, buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1);
 	else
-        return std::max<int64_t>(0, std::min(std::max<int64_t>(0, buf->BufCountBackwardNLines(fromPos, context->nLines - 1) - 1), fromPos - context->nChars));
+        return std::max<int64_t>(0, std::min(std::max<int64_t>(0, buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1), fromPos - context.nChars));
 }
 
 /*
@@ -1032,13 +1032,13 @@ int64_t Highlight::backwardOneContext(TextBuffer *buf, ReparseContext *context, 
 ** next line, rather than the newline character at the end (see notes in
 ** backwardOneContext).
 */
-int64_t Highlight::forwardOneContext(TextBuffer *buf, ReparseContext *context, int64_t fromPos) {
-	if (context->nLines == 0)
-        return std::min(buf->BufGetLength(), fromPos + context->nChars);
-	else if (context->nChars == 0)
-        return std::min(buf->BufGetLength(), buf->BufCountForwardNLines(fromPos, context->nLines));
+int64_t Highlight::forwardOneContext(TextBuffer *buf, const ReparseContext &context, int64_t fromPos) {
+    if (context.nLines == 0)
+        return std::min(buf->BufGetLength(), fromPos + context.nChars);
+    else if (context.nChars == 0)
+        return std::min(buf->BufGetLength(), buf->BufCountForwardNLines(fromPos, context.nLines));
 	else
-        return std::min(buf->BufGetLength(), std::max(buf->BufCountForwardNLines(fromPos, context->nLines), fromPos + context->nChars));
+        return std::min(buf->BufGetLength(), std::max(buf->BufCountForwardNLines(fromPos, context.nLines), fromPos + context.nChars));
 }
 
 /*

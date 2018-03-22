@@ -5799,8 +5799,8 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
     TextBuffer *buf = buffer_;
     const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
 
-    ReparseContext *context = &highlightData->contextRequirements;
-    HighlightData *pass2Patterns = highlightData->pass2Patterns;
+    const ReparseContext &context = highlightData->contextRequirements;
+    HighlightData *pass2Patterns  = highlightData->pass2Patterns;
 
     if (!pass2Patterns) {
         return;

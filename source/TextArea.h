@@ -451,8 +451,8 @@ private:
     bool        P_autoShowInsertPos  = true;    
     bool        P_pendingDelete      = true;
     int         P_lineNumCols        = 0;
-    int         P_marginHeight       = DefaultVMargin;
-    int         P_marginWidth        = DefaultHMargin;
+    const int   P_marginHeight       = DefaultVMargin;
+    const int   P_marginWidth        = DefaultHMargin;
     QSize       size_;
     std::string P_delimiters;
 
