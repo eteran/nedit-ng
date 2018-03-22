@@ -14,6 +14,6 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
 void UpcaseSelectionEx(DocumentWidget *document, TextArea *area);
 void DowncaseSelectionEx(DocumentWidget *document, TextArea *area);
 void FillSelectionEx(DocumentWidget *document, TextArea *area);
-QString ShiftTextEx(const QString &text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars);
+QString ShiftTextEx(const QString &text, ShiftDirection direction, bool tabsAllowed, int tabDist, int nChars);
 
 #endif
