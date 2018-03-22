@@ -2489,6 +2489,9 @@ bool TextArea::posToVisibleLineNum(int64_t pos, int *lineNum) const {
  */
 void TextArea::blankCursorProtrusions() {
 
+    // TODO(eteran): in Qt, this code may not be necessary anymore
+    // I haven't noticed any artifacts when disabling this code
+#if 1
     int  x;
     int width;
     QFontMetrics fm(font_);
@@ -2511,6 +2514,7 @@ void TextArea::blankCursorProtrusions() {
 	}
 
     viewport()->update(QRect(x, cursorY, width, fontHeight));
+#endif
 }
 
 /**
