@@ -2116,6 +2116,11 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
        the user should be given a clue about what is happening. */
     MainWindow::AllWindowsBusyEx(tr("Comparing externally modified %1 ...").arg(filename_));
 
+    // make sure that we unbusy the windows when we're done
+    auto _ = gsl::finally([]() {
+        MainWindow::AllWindowsUnbusyEx();
+    });
+
     while (restLen > 0) {
 
         size_t offset = 0;
@@ -2126,7 +2131,6 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
         int64_t nRead = file.read(fileString + offset, restLen);
 
         if (nRead != restLen) {
-            MainWindow::AllWindowsUnbusyEx();
             return true;
         }
 
@@ -2151,7 +2155,6 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
         }
 
         if (int rv = buffer_->BufCmpEx(bufPos, fileString, nRead)) {
-            MainWindow::AllWindowsUnbusyEx();
             return rv;
         }
 
@@ -2159,7 +2162,6 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
         restLen = std::min(fileLen - filePos, PREFERRED_CMPBUF_LEN);
     }
 
-    MainWindow::AllWindowsUnbusyEx();
 
     if (pendingCR) {
         if (int rv = buffer_->BufCmpEx(bufPos, pendingCR)) {
