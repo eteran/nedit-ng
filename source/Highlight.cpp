@@ -1320,7 +1320,7 @@ bool Highlight::FontOfNamedStyleIsBold(const QString &styleName) {
     size_t styleNo = IndexOfNamedStyle(styleName);
 
     if (styleNo == STYLE_NOT_FOUND) {
-        return 0;
+        return false;
     }
 
     int fontNum = HighlightStyles[styleNo].font;
@@ -1331,7 +1331,7 @@ bool Highlight::FontOfNamedStyleIsItalic(const QString &styleName) {
     size_t styleNo = IndexOfNamedStyle(styleName);
 
     if (styleNo == STYLE_NOT_FOUND) {
-        return 0;
+        return false;
     }
 
     int fontNum = HighlightStyles[styleNo].font;
