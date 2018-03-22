@@ -358,7 +358,7 @@ int startServer(const char *message, const QString &commandLineArgs) {
     return (sysrc) ? 0 : -1;
 }
 
-static void startNewServer(QString commandLine) {
+void startNewServer(QString commandLine) {
 
     switch (startServer("No servers available, start one? (y|n) [y]: ", commandLine)) {
     case -1: // Start failed
