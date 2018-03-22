@@ -437,6 +437,8 @@ private:
     int dragYOffset_;                               // offsets between cursor location and actual insertion point in drag
     int fixedFontWidth_;                            // Font width if all current fonts are fixed and match in width, else -1    
     int64_t rectAnchor_;                            // Anchor for rectangular drag operations
+
+    // TODO(eteran): maybe use QWidget::contentsMargins
     QRect rect_;
     QTimer *autoScrollTimer_;
     QTimer *clickTimer_;
