@@ -6265,7 +6265,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
     /* Process color-only sub patterns (no regular expressions to match,
        just colors and fonts for sub-expressions of the parent pattern */
     for (int i = 0; i < patternSrc.size(); i++) {
-        compiledPats[i].colorOnly      = patternSrc[i].flags & COLOR_ONLY;
+        compiledPats[i].colorOnly      = (patternSrc[i].flags & COLOR_ONLY) != 0;
         compiledPats[i].userStyleIndex = Highlight::IndexOfNamedStyle(patternSrc[i].style);
 
         if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {

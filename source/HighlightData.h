@@ -15,7 +15,7 @@ public:
     std::shared_ptr<Regex> errorRE;
     std::shared_ptr<Regex> subPatternRE;
     uint8_t style;
-	int colorOnly;
+    bool colorOnly;
     std::vector<int> startSubexprs;
     std::vector<int> endSubexprs;
 	int flags;
