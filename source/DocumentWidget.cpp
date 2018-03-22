@@ -1108,7 +1108,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
         // we defer highlighting to RaiseDocument() if doc is hidden
         if (topDocument && highlight) {
-            StartHighlightingEx(false);
+            StartHighlightingEx(/*warn=*/false);
         }
 
         // Force a change of smart indent macros (SetAutoIndent will re-start)
@@ -5197,10 +5197,12 @@ bool DocumentWidget::ReadMacroFileEx(const QString &fileName, bool warnNotExist)
 	/* read-in macro file and force a terminating \n, to prevent syntax
 	** errors with statements on the last line
 	*/
-	QString fileString = ReadAnyTextFileEx(fileName, true);
+    QString fileString = ReadAnyTextFileEx(fileName, /*forceNL=*/true);
 	if (fileString.isNull()) {
         if (warnNotExist) {
-			QMessageBox::critical(this, tr("Read Macro"), tr("Error reading macro file %1: %2").arg(fileName, ErrorString(errno)));
+            QMessageBox::critical(this,
+                                  tr("Read Macro"),
+                                  tr("Error reading macro file %1: %2").arg(fileName, ErrorString(errno)));
 		}
 		return false;
 	}
@@ -6811,7 +6813,7 @@ void DocumentWidget::SetHighlightSyntax(bool value) {
     }
 
     if (highlightSyntax_) {
-        StartHighlightingEx(true);
+        StartHighlightingEx(/*warn=*/true);
     } else {
         StopHighlightingEx();
     }

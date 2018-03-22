@@ -2347,7 +2347,7 @@ static std::error_code focusWindowMS(DocumentWidget *document, Arguments argumen
 
     // turn on syntax highlight that might have been deferred
     if (target->highlightSyntax_ && !target->highlightData_) {
-        target->StartHighlightingEx(false);
+        target->StartHighlightingEx(/*warn=*/false);
     }
 
     // Return the name of the window

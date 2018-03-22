@@ -3652,7 +3652,7 @@ void MainWindow::on_action_Highlight_Syntax_toggled(bool state) {
         document->highlightSyntax_ = state;
 
         if (document->highlightSyntax_) {
-            document->StartHighlightingEx(true);
+            document->StartHighlightingEx(/*warn=*/true);
         } else {
             document->StopHighlightingEx();
         }

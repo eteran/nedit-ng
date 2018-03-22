@@ -736,7 +736,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
                         MainWindow::fromDocument(document)->ui.action_Highlight_Syntax->setEnabled(true);
                         no_signals(MainWindow::fromDocument(document)->ui.action_Highlight_Syntax)->setChecked(true);
 					}
-                    document->StartHighlightingEx(true);
+                    document->StartHighlightingEx(/*warn=*/true);
 				}
 			}
 		} else {
