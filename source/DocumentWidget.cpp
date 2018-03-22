@@ -3770,7 +3770,7 @@ void DocumentWidget::FindDefCalltip(TextArea *area, const QString &tipName) {
     Tags::globPos       = -1;
     Tags::globHAlign    = TipHAlignMode::Left;
     Tags::globVAlign    = TipVAlignMode::Below;
-    Tags::globAlignMode = TipAlignStrict::Sloppy;
+    Tags::globAlignMode = TipAlignMode::Sloppy;
 
     findDefinitionHelper(area, tipName, Tags::SearchMode::TIP);
 
@@ -7170,7 +7170,7 @@ void DocumentWidget::createSelectMenuEx(TextArea *area, const QStringList &args)
 **                  tip and/or tag database depending on search_type
 **  search_type:    Either TIP or TIP_FROM_TAG
 */
-int DocumentWidget::ShowTipStringEx(const QString &text, bool anchored, int pos, bool lookup, Tags::SearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode) {
+int DocumentWidget::ShowTipStringEx(const QString &text, bool anchored, int pos, bool lookup, Tags::SearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode) {
     if (search_type == Tags::SearchMode::TAG) {
         return 0;
     }

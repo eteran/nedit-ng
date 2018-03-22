@@ -3671,7 +3671,7 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 	if (calltip_.anchored) {
 		// Put it at the anchor position
 		if (!TextDPositionToXY(calltip_.pos, &rel_x, &rel_y)) {
-            if (calltip_.alignMode == TipAlignStrict::Strict) {
+            if (calltip_.alignMode == TipAlignMode::Strict) {
 				TextDKillCalltip(calltip_.ID);
 			}
 			return;
@@ -3684,7 +3684,7 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
             rel_y = rect_.height() / 3;
 		} else if (!TextDPositionToXY(cursorPos_, &rel_x, &rel_y)) {
 			// Window has scrolled and tip is now offscreen
-            if (calltip_.alignMode == TipAlignStrict::Strict) {
+            if (calltip_.alignMode == TipAlignMode::Strict) {
 				TextDKillCalltip(calltip_.ID);
 			}
 			return;
@@ -3727,7 +3727,7 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
     QPoint abs = mapToGlobal(QPoint(rel_x, rel_y));
 
 	// If we're not in strict mode try to keep the tip on-screen
-    if (calltip_.alignMode == TipAlignStrict::Sloppy) {
+    if (calltip_.alignMode == TipAlignMode::Sloppy) {
 
         QDesktopWidget *desktop = QApplication::desktop();
 
@@ -7782,7 +7782,7 @@ void TextArea::TextDKillCalltip(int id) {
     }
 }
 
-int TextArea::TextDShowCalltip(const QString &text, bool anchored, int pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode) {
+int TextArea::TextDShowCalltip(const QString &text, bool anchored, int pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode) {
 
     static int StaticCalltipID = 1;
 
@@ -7812,7 +7812,7 @@ int TextArea::TextDShowCalltip(const QString &text, bool anchored, int pos, TipH
         /* Put it next to the cursor, or in the center of the window if the
             cursor is offscreen and mode != strict */
         if (!TextDPositionToXY(TextGetCursorPos(), &rel_x, &rel_y)) {
-            if (alignMode == TipAlignStrict::Strict) {
+            if (alignMode == TipAlignMode::Strict) {
                 QApplication::beep();
                 return 0;
             }

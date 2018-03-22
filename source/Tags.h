@@ -91,7 +91,7 @@ public:
     static int            globPos;
     static TipHAlignMode  globHAlign;
     static TipVAlignMode  globVAlign;
-    static TipAlignStrict globAlignMode;
+    static TipAlignMode globAlignMode;
 };
 
 #endif

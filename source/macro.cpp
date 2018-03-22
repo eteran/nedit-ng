@@ -3286,7 +3286,7 @@ static std::error_code calltipMS(DocumentWidget *document, Arguments arguments, 
     auto mode      = Tags::SearchMode::None;
     auto hAlign    = TipHAlignMode::Left;
     auto vAlign    = TipVAlignMode::Below;
-    auto alignMode = TipAlignStrict::Sloppy;
+    auto alignMode = TipAlignMode::Sloppy;
 
     // Read and check the string
     if (arguments.size() < 1) {
@@ -3337,7 +3337,7 @@ static std::error_code calltipMS(DocumentWidget *document, Arguments arguments, 
         case 's':
             if (txtArg == "strict")
                 return MacroErrorCode::UnrecognizedArgument;
-            alignMode = TipAlignStrict::Strict;
+            alignMode = TipAlignMode::Strict;
             break;
         case 't':
             if (txtArg == "tipText") {

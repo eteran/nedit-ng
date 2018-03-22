@@ -235,7 +235,7 @@ private Q_SLOTS:
 public:
     void RemoveWidgetHighlightEx();
     void TextDMaintainAbsLineNum(bool state);
-    int TextDShowCalltip(const QString &text, bool anchored, int pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignStrict alignMode);
+    int TextDShowCalltip(const QString &text, bool anchored, int pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode);
     int64_t TextDStartOfLine(int64_t pos) const;
     int64_t TextDEndOfLine(int64_t pos, bool startPosIsLineStart) const;
     int64_t TextDCountBackwardNLines(int64_t startPos, int64_t nLines) const;

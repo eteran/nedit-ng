@@ -144,7 +144,7 @@ bool           Tags::globAnchored;
 int            Tags::globPos;
 TipHAlignMode  Tags::globHAlign;
 TipVAlignMode  Tags::globVAlign;
-TipAlignStrict Tags::globAlignMode;
+TipAlignMode Tags::globAlignMode;
 
 
 /* Add a tag specification to the hash table
