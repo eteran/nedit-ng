@@ -844,39 +844,6 @@ void TextArea::backwardCharacterAP(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::selfInsertAP
- * @param string
- * @param flags
- */
-void TextArea::selfInsertAP(const QString &string, EventFlags flags) {
-
-    EMIT_EVENT_1("insert_string", string);
-
-    cancelDrag();
-    if (checkReadOnly()) {
-        return;
-    }
-
-    std::string s = string.toStdString();
-
-    /* If smart indent is on, call the smart indent callback to check the
-       inserted character */
-    if (P_smartIndent) {
-		SmartIndentEvent smartIndent;
-        smartIndent.reason        = CHAR_TYPED;
-        smartIndent.pos           = cursorPos_;
-        smartIndent.indentRequest = 0;
-        smartIndent.charsTyped    = view::string_view(s);
-
-        for(auto &c : smartIndentCallbacks_) {
-            c.first(this, &smartIndent, c.second);
-        }
-    }
-    TextInsertAtCursorEx(s, /*allowPendingDelete=*/true, /*allowWrap=*/true);
-    buffer_->BufUnselect();
-}
-
-/**
  * @brief TextArea::~TextArea
  */
 TextArea::~TextArea() noexcept {
@@ -7665,9 +7632,18 @@ int TextArea::getColumns() const {
     return P_columns;
 }
 
+/**
+ * @brief TextArea::selfInsertAP
+ * @param string
+ * @param flags
+ */
+void TextArea::selfInsertAP(const QString &string, EventFlags flags) {
+    insertStringAP(string, flags);
+}
+
 void TextArea::insertStringAP(const QString &string, EventFlags flags) {
 
-    EMIT_EVENT_0("insert_string");
+    EMIT_EVENT_1("insert_string", string);
 
     cancelDrag();
     if (checkReadOnly()) {
@@ -7677,7 +7653,7 @@ void TextArea::insertStringAP(const QString &string, EventFlags flags) {
     std::string str = string.toStdString();
 
     if (P_smartIndent) {
-		SmartIndentEvent smartIndent;
+        SmartIndentEvent smartIndent;
         smartIndent.reason        = CHAR_TYPED;
         smartIndent.pos           = cursorPos_;
         smartIndent.indentRequest = 0;
@@ -7688,7 +7664,7 @@ void TextArea::insertStringAP(const QString &string, EventFlags flags) {
         }
     }
 
-    TextInsertAtCursorEx(str, true, true);
+    TextInsertAtCursorEx(str, /*allowPendingDelete=*/true, /*allowWrap=*/true);
     buffer_->BufUnselect();
 }
 
