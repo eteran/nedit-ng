@@ -668,7 +668,7 @@ void BasicTextBuffer<Ch, Tr>::BufRectHighlight(int64_t start, int64_t end, int64
 ** Add a callback routine to be called when the buffer is modified
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufAddModifyCB(bufModifyCallbackProc bufModifiedCB, void *user) {
+void BasicTextBuffer<Ch, Tr>::BufAddModifyCB(modify_callback_type bufModifiedCB, void *user) {
     modifyProcs_.emplace_back(bufModifiedCB, user);
 }
 
@@ -677,12 +677,12 @@ void BasicTextBuffer<Ch, Tr>::BufAddModifyCB(bufModifyCallbackProc bufModifiedCB
 ** normal priority callbacks.
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufAddHighPriorityModifyCB(bufModifyCallbackProc bufModifiedCB, void *user) {
+void BasicTextBuffer<Ch, Tr>::BufAddHighPriorityModifyCB(modify_callback_type bufModifiedCB, void *user) {
     modifyProcs_.emplace_front(bufModifiedCB, user);
 }
 
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufRemoveModifyCB(bufModifyCallbackProc bufModifiedCB, void *user) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufRemoveModifyCB(modify_callback_type bufModifiedCB, void *user) noexcept {
 
     for (auto it = modifyProcs_.begin(); it != modifyProcs_.end(); ++it) {
         auto &pair = *it;
@@ -699,7 +699,7 @@ void BasicTextBuffer<Ch, Tr>::BufRemoveModifyCB(bufModifyCallbackProc bufModifie
 ** Add a callback routine to be called before text is deleted from the buffer.
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufAddPreDeleteCB(bufPreDeleteCallbackProc bufPreDeleteCB, void *user) {
+void BasicTextBuffer<Ch, Tr>::BufAddPreDeleteCB(pre_delete_callback_type bufPreDeleteCB, void *user) {
     preDeleteProcs_.emplace_back(bufPreDeleteCB, user);
 }
 
@@ -707,7 +707,7 @@ void BasicTextBuffer<Ch, Tr>::BufAddPreDeleteCB(bufPreDeleteCallbackProc bufPreD
  *
  */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufRemovePreDeleteCB(bufPreDeleteCallbackProc bufPreDeleteCB, void *user) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufRemovePreDeleteCB(pre_delete_callback_type bufPreDeleteCB, void *user) noexcept {
 
     for (auto it = preDeleteProcs_.begin(); it != preDeleteProcs_.end(); ++it) {
         auto &pair = *it;

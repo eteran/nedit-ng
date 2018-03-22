@@ -22,8 +22,8 @@ public:
     using size_type   = typename gap_buffer<Ch, Tr>::size_type;
 
 public:
-    using bufModifyCallbackProc    = void (*)(int64_t pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view_type deletedText, void *user);
-    using bufPreDeleteCallbackProc = void (*)(int64_t pos, int64_t nDeleted, void *user);
+    using modify_callback_type     = void (*)(int64_t pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view_type deletedText, void *user);
+    using pre_delete_callback_type = void (*)(int64_t pos, int64_t nDeleted, void *user);
 
 private:
     /* Initial size for the buffer gap (empty space in the buffer where text
@@ -80,9 +80,9 @@ public:
     string_type BufGetSelectionTextEx() const;
     string_type BufGetTextInRectEx(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) const;
     view_type BufAsStringEx() noexcept;
-    void BufAddHighPriorityModifyCB(bufModifyCallbackProc bufModifiedCB, void *user);
-    void BufAddModifyCB(bufModifyCallbackProc bufModifiedCB, void *user);
-    void BufAddPreDeleteCB(bufPreDeleteCallbackProc bufPreDeleteCB, void *user);
+    void BufAddHighPriorityModifyCB(modify_callback_type bufModifiedCB, void *user);
+    void BufAddModifyCB(modify_callback_type bufModifiedCB, void *user);
+    void BufAddPreDeleteCB(pre_delete_callback_type bufPreDeleteCB, void *user);
     void BufAppendEx(Ch ch) noexcept;
     void BufAppendEx(view_type text) noexcept;
     void BufCheckDisplay(int64_t start, int64_t end) const noexcept;
@@ -96,8 +96,8 @@ public:
     void BufRectHighlight(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept;
     void BufRectSelect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept;
     void BufRemove(int64_t start, int64_t end) noexcept;
-    void BufRemoveModifyCB(bufModifyCallbackProc bufModifiedCB, void *user) noexcept;
-    void BufRemovePreDeleteCB(bufPreDeleteCallbackProc bufPreDeleteCB, void *user) noexcept;
+    void BufRemoveModifyCB(modify_callback_type bufModifiedCB, void *user) noexcept;
+    void BufRemovePreDeleteCB(pre_delete_callback_type bufPreDeleteCB, void *user) noexcept;
     void BufRemoveRect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept;
     void BufRemoveSecSelect() noexcept;
     void BufRemoveSelected() noexcept;
@@ -180,8 +180,8 @@ private:
     TextSelection  highlight_;
 
 private:
-    std::deque<std::pair<bufPreDeleteCallbackProc, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
-    std::deque<std::pair<bufModifyCallbackProc, void *>> modifyProcs_;       // procedures to call when buffer is modified to redisplay contents
+    std::deque<std::pair<pre_delete_callback_type, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
+    std::deque<std::pair<modify_callback_type, void *>> modifyProcs_;       // procedures to call when buffer is modified to redisplay contents
 };
 
 
