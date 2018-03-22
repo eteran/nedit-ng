@@ -65,7 +65,7 @@ bool DialogDuplicateTags::applySelection() {
     if (Tags::searchMode == Tags::SearchMode::TAG) {
         document_->editTaggedLocationEx(area_, i); // Open the file with the definition
     } else {
-        Tags::showMatchingCalltipEx(area_, i);
+        Tags::showMatchingCalltipEx(this, area_, i);
     }
 
     return true;

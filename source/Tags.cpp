@@ -826,7 +826,7 @@ bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchStri
 ** This reads from either a source code file (if searchMode == TIP_FROM_TAG)
 ** or a calltips file (if searchMode == TIP).
 */
-void Tags::showMatchingCalltipEx(TextArea *area, size_t i) {
+void Tags::showMatchingCalltipEx(QWidget *parent, TextArea *area, size_t i) {
     try {
         int64_t startPos = 0;
         int64_t endPos = 0;
@@ -837,7 +837,7 @@ void Tags::showMatchingCalltipEx(TextArea *area, size_t i) {
         std::ifstream file(tagFiles[i].toStdString());
         if(!file) {
             QMessageBox::critical(
-                        nullptr /*parent*/,
+                        parent,
                         tr("Error opening File"),
                         tr("Error opening %1").arg(tagFiles[i]));
             return;
@@ -851,7 +851,7 @@ void Tags::showMatchingCalltipEx(TextArea *area, size_t i) {
             // It's a line number, just go for it
             if ((moveAheadNLinesEx(fileString, &startPos, tagPosInf[i] - 1)) >= 0) {
                 QMessageBox::critical(
-                            nullptr /*parent*/,
+                            parent,
                             tr("Tags Error"),
                             tr("%1\n not long enough for definition to be on line %2").arg(tagFiles[i]).arg(tagPosInf[i]));
                 return;
@@ -860,7 +860,7 @@ void Tags::showMatchingCalltipEx(TextArea *area, size_t i) {
             startPos = tagPosInf[i];
             if (!fakeRegExSearchEx(fileString, tagSearch[i], &startPos, &endPos)) {
                 QMessageBox::critical(
-                            nullptr /*parent*/,
+                            parent,
                             tr("Tag not found"),
                             tr("Definition for %1 not found in %2").arg(tagName, tagFiles[i]));
                 return;
@@ -909,7 +909,7 @@ void Tags::showMatchingCalltipEx(TextArea *area, size_t i) {
         tagsShowCalltipEx(area, message);
     } catch(const std::bad_alloc &) {
         QMessageBox::critical(
-                    nullptr /*parent*/,
+                    parent,
                     tr("Out of Memory"),
                     tr("Can't allocate memory"));
     }
