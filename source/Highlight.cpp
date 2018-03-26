@@ -1324,7 +1324,7 @@ bool Highlight::FontOfNamedStyleIsBold(const QString &styleName) {
     }
 
     int fontNum = HighlightStyles[styleNo].font;
-    return (fontNum == BOLD_FONT || fontNum == BOLD_ITALIC_FONT);
+    return (fontNum & BOLD_FONT);
 }
 
 bool Highlight::FontOfNamedStyleIsItalic(const QString &styleName) {
@@ -1335,7 +1335,7 @@ bool Highlight::FontOfNamedStyleIsItalic(const QString &styleName) {
     }
 
     int fontNum = HighlightStyles[styleNo].font;
-    return (fontNum == ITALIC_FONT || fontNum == BOLD_ITALIC_FONT);
+    return (fontNum & ITALIC_FONT);
 }
 
 /*

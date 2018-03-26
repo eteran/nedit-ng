@@ -6745,7 +6745,7 @@ QFont DocumentWidget::FontOfNamedStyleEx(const QString &styleName) const {
             return boldFontStruct_;
         case ITALIC_FONT:
             return italicFontStruct_;
-        case BOLD_ITALIC_FONT:
+        case BOLD_FONT | ITALIC_FONT:
             return boldItalicFontStruct_;
         case PLAIN_FONT:
         default:

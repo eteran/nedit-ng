@@ -244,24 +244,8 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
         ui.editColorFG->setText(style->color);
         ui.editColorBG->setText(style->bgColor);
 
-        switch(style->font) {
-        case PLAIN_FONT:
-            ui.checkBold->setChecked(false);
-            ui.checkItalic->setChecked(false);
-            break;
-        case BOLD_FONT:
-            ui.checkBold->setChecked(true);
-            ui.checkItalic->setChecked(false);
-            break;
-        case ITALIC_FONT:
-            ui.checkBold->setChecked(false);
-            ui.checkItalic->setChecked(true);
-            break;
-        case BOLD_ITALIC_FONT:
-            ui.checkBold->setChecked(true);
-            ui.checkItalic->setChecked(true);
-            break;
-        }
+        ui.checkBold->setChecked(style->font & BOLD_FONT);
+        ui.checkItalic->setChecked(style->font & ITALIC_FONT);
 
         // ensure that the appropriate buttons are enabled
         updateButtonStates(current);
@@ -382,16 +366,15 @@ std::unique_ptr<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbos
         }
     }
 
-    // read the font buttons 
-    if (ui.checkBold->isChecked() && !ui.checkItalic->isChecked()) {
-    	hs->font = BOLD_FONT;
-    } else if (!ui.checkBold->isChecked() && ui.checkItalic->isChecked()) {
-    	hs->font = ITALIC_FONT;
-    } else if (ui.checkBold->isChecked() && ui.checkItalic->isChecked()) {
-    	hs->font = BOLD_ITALIC_FONT;
-    } else {
-    	hs->font = PLAIN_FONT;
-	}
+    // read the font buttons
+    hs->font = PLAIN_FONT;
+    if (ui.checkBold->isChecked()) {
+        hs->font |= BOLD_FONT;
+    }
+
+    if (ui.checkItalic->isChecked()) {
+        hs->font |= ITALIC_FONT;
+    }
 
     return hs;
 }

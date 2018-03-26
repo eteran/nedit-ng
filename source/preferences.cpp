@@ -825,18 +825,9 @@ QString Preferences::ReadSymbolicFieldEx(Input &input) {
 	   much memory to allocate for the returned string */
 	Input strStart = input;
 
+    static const QRegularExpression re(QLatin1String("[A-Za-z0-9_+$# \t-]*"));
 
-    // TODO(eteran): we can replace this with a regex based input.match
-    while ((*input).isLetterOrNumber() ||
-           *input == QLatin1Char('_') ||
-           *input == QLatin1Char('-') ||
-           *input == QLatin1Char('+') ||
-           *input == QLatin1Char('$') ||
-           *input == QLatin1Char('#') ||
-           *input == QLatin1Char(' ') ||
-           *input == QLatin1Char('\t')) {
-		++input;
-	}
+    input.match(re);
 
 	const int len = input - strStart;
 	if (len == 0) {
@@ -876,11 +867,13 @@ QString Preferences::ReadSymbolicFieldEx(Input &input) {
 */
 bool Preferences::ReadQuotedStringEx(Input &in, QString *errMsg, QString *string) {
 
+    constexpr auto Quote = QLatin1Char('"');
+
 	// skip over blank space
 	in.skipWhitespace();
 
 	// look for initial quote
-    if (*in != QLatin1Char('"')) {
+    if (*in != Quote) {
         *errMsg = tr("expecting quoted string");
 		return false;
 	}
@@ -893,8 +886,8 @@ bool Preferences::ReadQuotedStringEx(Input &in, QString *errMsg, QString *string
 		if (c.atEnd()) {
             *errMsg = tr("string not terminated");
 			return false;
-        } else if (*c == QLatin1Char('"')) {
-            if (*(c + 1) == QLatin1Char('"')) {
+        } else if (*c == Quote) {
+            if (*(c + 1) == Quote) {
 				++c;
 			} else {
 				break;
@@ -909,8 +902,8 @@ bool Preferences::ReadQuotedStringEx(Input &in, QString *errMsg, QString *string
 	auto outPtr = std::back_inserter(str);
 
 	while (true) {
-        if (*in == QLatin1Char('"')) {
-            if (*(in + 1) == QLatin1Char('"')) {
+        if (*in == Quote) {
+            if (*(in + 1) == Quote) {
 				++in;
 			} else {
 				break;
@@ -933,11 +926,13 @@ bool Preferences::ReadQuotedStringEx(Input &in, QString *errMsg, QString *string
 */
 QString Preferences::MakeQuotedStringEx(const QString &string) {
 
+    constexpr auto Quote = QLatin1Char('"');
+
     int length = 0;
 
     // calculate length and allocate returned string
     for(QChar ch: string) {
-        if (ch == QLatin1Char('"')) {
+        if (ch == Quote) {
             length++;
         }
         length++;
@@ -948,18 +943,18 @@ QString Preferences::MakeQuotedStringEx(const QString &string) {
     auto outPtr = std::back_inserter(outStr);
 
     // add starting quote
-    *outPtr++ = QLatin1Char('"');
+    *outPtr++ = Quote;
 
     // copy string, escaping quotes with ""
     for(QChar ch: string) {
-        if (ch == QLatin1Char('"')) {
-            *outPtr++ = QLatin1Char('"');
+        if (ch == Quote) {
+            *outPtr++ = Quote;
         }
         *outPtr++ = ch;
     }
 
     // add ending quote
-    *outPtr++ = QLatin1Char('"');
+    *outPtr++ = Quote;
 
     return outStr;
 }

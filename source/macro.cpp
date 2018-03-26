@@ -3542,12 +3542,10 @@ static std::error_code filenameDialogMS(DocumentWidget *document, Arguments argu
     QString filename;
     if (mode == QLatin1String("exist")) {
         // NOTE(eteran); filters probably don't work quite the same with Qt's dialog
-        // TODO(eteran): does passing document here breaks things like it does in other places?
-        filename = QFileDialog::getOpenFileName(document, title, defaultPath, defaultFilter, nullptr);
+        filename = QFileDialog::getOpenFileName(nullptr, title, defaultPath, defaultFilter, nullptr);
     } else {
         // NOTE(eteran); filters probably don't work quite the same with Qt's dialog
-        // TODO(eteran): does passing document here breaks things like it does in other places?
-        filename = QFileDialog::getSaveFileName(document, title, defaultPath, defaultFilter, nullptr);
+        filename = QFileDialog::getSaveFileName(nullptr, title, defaultPath, defaultFilter, nullptr);
     }
 
     if (!filename.isNull()) {
