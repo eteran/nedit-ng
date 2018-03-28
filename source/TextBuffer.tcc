@@ -783,7 +783,7 @@ int BasicTextBuffer<Ch, Tr>::BufExpandTab(int64_t indent, Ch outStr[MAX_EXP_CHAR
 }
 
 template <class Ch, class Tr>
-int64_t BasicTextBuffer<Ch, Tr>::BufExpandCharacter(Ch ch, int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist) noexcept {
+int BasicTextBuffer<Ch, Tr>::BufExpandCharacter(Ch ch, int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist) noexcept {
 
     // Convert tabs to spaces
     if (ch == Ch('\t')) {
@@ -810,7 +810,7 @@ int64_t BasicTextBuffer<Ch, Tr>::BufExpandCharacter(Ch ch, int64_t indent, Ch ou
 ** for display
 */
 template <class Ch, class Tr>
-int64_t BasicTextBuffer<Ch, Tr>::BufCharWidth(Ch ch, int64_t indent, int tabDist) noexcept {
+int BasicTextBuffer<Ch, Tr>::BufCharWidth(Ch ch, int64_t indent, int tabDist) noexcept {
 
     if (ch == Ch('\t')) {
         return tabDist - (indent % tabDist);
@@ -819,7 +819,7 @@ int64_t BasicTextBuffer<Ch, Tr>::BufCharWidth(Ch ch, int64_t indent, int tabDist
 #if defined(VISUAL_CTRL_CHARS)
     if (static_cast<size_t>(ch) < 32) {
         const Ch *const s = controlCharacter(static_cast<size_t>(ch));
-        return static_cast<int64_t>(Tr::length(s) + 2);
+        return static_cast<int>(Tr::length(s) + 2);
     }
 
     if (ch == 127) {

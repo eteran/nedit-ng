@@ -1499,7 +1499,7 @@ void TextArea::hideOrShowHScrollBar() {
 
 
 /**
- * This is a stripped-down version of the findWrapRange() function above,
+ * This is a stripped-down version of the findWrapRange() function,
  * intended to be used to calculate the number of "deleted" lines during a
  * buffer modification. It is called _before_ the modification takes place.
  *
@@ -1769,7 +1769,7 @@ int64_t TextArea::measurePropChar(char ch, int64_t colNum, int64_t pos) const {
 /*
 ** Find the width of a string in the font of a particular style
 */
-int64_t TextArea::stringWidth(const char *string, int64_t length, int style) const {
+int TextArea::stringWidth(const char *string, int64_t length, int style) const {
 
     QString str = asciiToUnicode(string, length);
 
@@ -4655,9 +4655,8 @@ int TextArea::wrapLine(TextBuffer *buf, int64_t bufOffset, int64_t lineStartPos,
 std::string TextArea::createIndentStringEx(TextBuffer *buf, int64_t bufOffset, int64_t lineStartPos, int64_t lineEndPos, int *column) {
 
 	int indent = -1;
-    int tabDist = buffer_->BufGetTabDist();
-	int i;
-    int useTabs = buffer_->BufGetUseTabs();
+    const int tabDist  = buffer_->BufGetTabDist();
+    const bool useTabs = buffer_->BufGetUseTabs();
 	
 	/* If smart indent is on, call the smart indent callback.  It is not
 	   called when multi-line changes are being made (lineStartPos != 0),
@@ -4704,13 +4703,17 @@ std::string TextArea::createIndentStringEx(TextBuffer *buf, int64_t bufOffset, i
 
 	*indentPtr++ = '\n';
 	if (useTabs) {
-		for (i = 0; i < indent / tabDist; i++)
+        for (int i = 0; i < indent / tabDist; i++) {
 			*indentPtr++ = '\t';
-		for (i = 0; i < indent % tabDist; i++)
+        }
+
+        for (int i = 0; i < indent % tabDist; i++) {
 			*indentPtr++ = ' ';
+        }
 	} else {
-		for (i = 0; i < indent; i++)
+        for (int i = 0; i < indent; i++) {
 			*indentPtr++ = ' ';
+        }
 	}
 
 	// Return any requested stats
@@ -4773,36 +4776,29 @@ void TextArea::newlineAndIndentAP(EventFlags flags) {
 ** calling action proc can just return (this is necessary to preserve
 ** emTabsBeforeCursor which is otherwise cleared by callCursorMovementCBs).
 */
-int TextArea::deleteEmulatedTab() {
+bool TextArea::deleteEmulatedTab() {
 
-	int emTabDist          = P_emulateTabs;
-	int emTabsBeforeCursor = emTabsBeforeCursor_;
-    int64_t startIndent;
-    int64_t toIndent;
-    int64_t insertPos;
-    int64_t startPos;
-    int64_t lineStart;
-    int64_t pos;
-	int indent;
-	int startPosIndent;
-	char c;
+    const int emTabDist          = P_emulateTabs;
+    const int emTabsBeforeCursor = emTabsBeforeCursor_;
 
     if (emTabDist <= 0 || emTabsBeforeCursor <= 0) {
         return false;
     }
 
 	// Find the position of the previous tab stop
-	insertPos = cursorPos_;
-	lineStart = buffer_->BufStartOfLine(insertPos);
-	startIndent = buffer_->BufCountDispChars(lineStart, insertPos);
-	toIndent = (startIndent - 1) - ((startIndent - 1) % emTabDist);
+    const int64_t insertPos   = cursorPos_;
+    const int64_t lineStart   = buffer_->BufStartOfLine(insertPos);
+    const int64_t startIndent = buffer_->BufCountDispChars(lineStart, insertPos);
+    const int64_t toIndent    = (startIndent - 1) - ((startIndent - 1) % emTabDist);
 
 	/* Find the position at which to begin deleting (stop at non-whitespace
 	   characters) */
-	startPosIndent = indent = 0;
-	startPos = lineStart;
-	for (pos = lineStart; pos < insertPos; pos++) {
-		c = buffer_->BufGetCharacter(pos);
+    int startPosIndent = 0;
+    int indent         = 0;
+    int64_t startPos   = lineStart;
+
+    for (int64_t pos = lineStart; pos < insertPos; pos++) {
+        char c = buffer_->BufGetCharacter(pos);
         indent += TextBuffer::BufCharWidth(c, indent, buffer_->BufGetTabDist());
 		if (indent > toIndent)
 			break;
@@ -4811,8 +4807,8 @@ int TextArea::deleteEmulatedTab() {
 	}
 
 	// Just to make sure, check that we're not deleting any non-white chars
-	for (pos = insertPos - 1; pos >= startPos; pos--) {
-		c = buffer_->BufGetCharacter(pos);
+    for (int64_t pos = insertPos - 1; pos >= startPos; pos--) {
+        char c = buffer_->BufGetCharacter(pos);
 		if (c != ' ' && c != '\t') {
 			startPos = pos + 1;
 			break;
@@ -4983,7 +4979,6 @@ void TextArea::processShiftUpAP(EventFlags flags) {
 	bool abs    = flags & AbsoluteFlag;
 
 	cancelDrag();
-
 	if (!TextDMoveUp(abs)) {
 		ringIfNecessary(silent);
 	}
@@ -5002,8 +4997,10 @@ void TextArea::processShiftDownAP(EventFlags flags) {
 	bool abs    = flags & AbsoluteFlag;
 
 	cancelDrag();
-	if (!TextDMoveDown(abs))
+    if (!TextDMoveDown(abs)) {
 		ringIfNecessary(silent);
+    }
+
 	keyMoveExtendSelection(insertPos, flags & RectFlag);
 	checkAutoShowInsertPos();
 	callCursorMovementCBs();
@@ -5079,7 +5076,7 @@ void TextArea::TextPasteClipboard() {
 		return;
 	}
 
-	InsertClipboard(false);
+    InsertClipboard(/*isColumnar=*/false);
 	callCursorMovementCBs();
 }
 
@@ -5089,7 +5086,7 @@ void TextArea::TextColPasteClipboard() {
 		return;
 	}
 
-	InsertClipboard(true);
+    InsertClipboard(/*isColumnar=*/true);
 	callCursorMovementCBs();
 }
 
@@ -5099,8 +5096,6 @@ void TextArea::TextColPasteClipboard() {
 */
 void TextArea::InsertClipboard(bool isColumnar) {
 
-	auto buf = buffer_;
-
 	const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Clipboard);
 	if(!mimeData->hasText()) {
 		return;
@@ -5109,17 +5104,17 @@ void TextArea::InsertClipboard(bool isColumnar) {
 	std::string contents = mimeData->text().toStdString();
 
 	// Insert it in the text widget
-    if (isColumnar && !buf->BufGetPrimary().selected) {
+    if (isColumnar && !buffer_->BufGetPrimary().selected) {
         int64_t cursorPos = cursorPos_;
-        int64_t cursorLineStart = buf->BufStartOfLine(cursorPos);
-        int64_t column = buf->BufCountDispChars(cursorLineStart, cursorPos);
+        int64_t cursorLineStart = buffer_->BufStartOfLine(cursorPos);
+        int64_t column = buffer_->BufCountDispChars(cursorLineStart, cursorPos);
 
 		if (P_overstrike) {
-			buf->BufOverlayRectEx(cursorLineStart, column, -1, contents, nullptr, nullptr);
+            buffer_->BufOverlayRectEx(cursorLineStart, column, -1, contents, nullptr, nullptr);
 		} else {
-			buf->BufInsertColEx(column, cursorLineStart, contents, nullptr, nullptr);
+            buffer_->BufInsertColEx(column, cursorLineStart, contents, nullptr, nullptr);
 		}
-		TextDSetInsertPosition(buf->BufCountForwardDispChars(cursorLineStart, column));
+        TextDSetInsertPosition(buffer_->BufCountForwardDispChars(cursorLineStart, column));
 		if (P_autoShowInsertPos)
 			TextDMakeInsertPosVisible();
 	} else {
@@ -5384,7 +5379,6 @@ void TextArea::forwardParagraphAP(EventFlags flags) {
 
     EMIT_EVENT_0("forward_paragraph");
 
-    int64_t pos;
     int64_t insertPos = cursorPos_;
 	static const char whiteChars[] = " \t";
 	bool silent = flags & NoBellFlag;
@@ -5395,7 +5389,7 @@ void TextArea::forwardParagraphAP(EventFlags flags) {
 		return;
 	}
 
-    pos = std::min(buffer_->BufEndOfLine(insertPos) + 1, buffer_->BufGetLength());
+    int64_t pos = std::min(buffer_->BufEndOfLine(insertPos) + 1, buffer_->BufGetLength());
 	while (pos < buffer_->BufGetLength()) {
 		char c = buffer_->BufGetCharacter(pos);
 		if (c == '\n')
@@ -5405,6 +5399,7 @@ void TextArea::forwardParagraphAP(EventFlags flags) {
 		else
             pos = std::min(buffer_->BufEndOfLine(pos) + 1, buffer_->BufGetLength());
 	}
+
 	TextDSetInsertPosition(std::min(pos + 1, buffer_->BufGetLength()));
 	checkMoveSelectionChange(flags, insertPos);
 	checkAutoShowInsertPos();
@@ -5415,8 +5410,6 @@ void TextArea::backwardParagraphAP(EventFlags flags) {
 
     EMIT_EVENT_0("backward_paragraph");
 
-    int64_t parStart;
-    int64_t pos;
     int64_t insertPos = cursorPos_;
 	static const char whiteChars[] = " \t";
 	bool silent = flags & NoBellFlag;
@@ -5426,9 +5419,11 @@ void TextArea::backwardParagraphAP(EventFlags flags) {
 		ringIfNecessary(silent);
 		return;
 	}
-    parStart = buffer_->BufStartOfLine(std::max<int64_t>(insertPos - 1, 0));
-    pos = std::max<int64_t>(parStart - 2, 0);
-	while (pos > 0) {
+
+    int64_t parStart = buffer_->BufStartOfLine(std::max<int64_t>(insertPos - 1, 0));
+    int64_t pos = std::max<int64_t>(parStart - 2, 0);
+
+    while (pos > 0) {
 		char c = buffer_->BufGetCharacter(pos);
 		if (c == '\n')
 			break;

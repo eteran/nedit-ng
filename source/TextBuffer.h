@@ -70,8 +70,8 @@ public:
     ~BasicTextBuffer() noexcept                         = default;
 
 public:
-    static int64_t BufCharWidth(Ch ch, int64_t indent, int tabDist) noexcept;
-    static int64_t BufExpandCharacter(Ch ch, int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist) noexcept;
+    static int BufCharWidth(Ch ch, int64_t indent, int tabDist) noexcept;
+    static int BufExpandCharacter(Ch ch, int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist) noexcept;
     static int BufExpandTab(int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist) noexcept;
 
 public:

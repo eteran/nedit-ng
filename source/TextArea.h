@@ -305,7 +305,7 @@ private:
     void measureDeletedLines(int64_t pos, int64_t nDeleted);
     void wrappedLineCounter(const TextBuffer *buf, int64_t startPos, int64_t maxPos, int64_t maxLines, bool startPosIsLineStart, int64_t styleBufOffset, int64_t *retPos, int64_t *retLines, int64_t *retLineStart, int64_t *retLineEnd) const;
     int64_t measurePropChar(char ch, int64_t colNum, int64_t pos) const;
-    int64_t stringWidth(const char *string, int64_t length, int style) const;
+    int stringWidth(const char *string, int64_t length, int style) const;
     void findWrapRangeEx(view::string_view deletedText, int64_t pos, int64_t nInserted, int64_t nDeleted, int64_t *modRangeStart, int64_t *modRangeEnd, int64_t *linesInserted, int64_t *linesDeleted);
     void updateLineStarts(int64_t pos, int64_t charsInserted, int64_t charsDeleted, int64_t linesInserted, int64_t linesDeleted, int *scrolled);
 	void hideOrShowHScrollBar();
@@ -346,7 +346,7 @@ private:
     std::string wrapTextEx(view::string_view startLine, view::string_view text, int64_t bufOffset, int wrapMargin, int64_t *breakBefore);
     int wrapLine(TextBuffer *buf, int64_t bufOffset, int64_t lineStartPos, int64_t lineEndPos, int64_t limitPos, int64_t *breakAt, int64_t *charsAdded);
     std::string createIndentStringEx(TextBuffer *buf, int64_t bufOffset, int64_t lineStartPos, int64_t lineEndPos, int *column);
-	int deleteEmulatedTab();
+    bool deleteEmulatedTab();
 	bool deletePendingSelection();
     int64_t startOfWord(int64_t pos) const;
     int64_t endOfWord(int64_t pos) const;
