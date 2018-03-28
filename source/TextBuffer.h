@@ -84,7 +84,7 @@ public:
     int BufCmpEx(int64_t pos, Ch *cmpText, int64_t size) const noexcept;
     int BufCmpEx(int64_t pos, Ch ch) const noexcept;
     int64_t BufCountBackwardNLines(int64_t startPos, int64_t nLines) const noexcept;
-    int BufCountDispChars(int64_t lineStartPos, int64_t targetPos) const noexcept;
+    int64_t BufCountDispChars(int64_t lineStartPos, int64_t targetPos) const noexcept;
     int64_t BufCountForwardDispChars(int64_t lineStartPos, int64_t nChars) const noexcept;
     int64_t BufCountForwardNLines(int64_t startPos, int64_t nLines) const noexcept;
     int64_t BufCountLines(int64_t startPos, int64_t endPos) const noexcept;

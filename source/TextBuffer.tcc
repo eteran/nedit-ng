@@ -836,9 +836,9 @@ int BasicTextBuffer<Ch, Tr>::BufCharWidth(Ch ch, int64_t indent, int tabDist) no
 ** control characters are expanded)
 */
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufCountDispChars(int64_t lineStartPos, int64_t targetPos) const noexcept {
+int64_t BasicTextBuffer<Ch, Tr>::BufCountDispChars(int64_t lineStartPos, int64_t targetPos) const noexcept {
 
-    int charCount = 0;
+    int64_t charCount = 0;
     Ch expandedChar[MAX_EXP_CHAR_LEN];
 
     int64_t pos = lineStartPos;
