@@ -634,7 +634,7 @@ void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QMod
         ui.editRegexError->setText(QString());
         ui.radioPass1->setChecked(true);
         ui.radioSimpleRegex->setChecked(true);
-        setStyleMenu(tr("Plain"));
+        setStyleMenu(QLatin1String("Plain"));
     }
 
     updateButtonStates(current);

@@ -5990,7 +5990,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     }
 
     // Check that the styles and parent pattern names actually exist
-    if (!Highlight::NamedStyleExists(tr("Plain"))) {
+    if (!Highlight::NamedStyleExists(QLatin1String("Plain"))) {
         QMessageBox::warning(this, tr("Highlight Style"), tr("Highlight style \"Plain\" is missing"));
         return nullptr;
     }
@@ -6058,8 +6058,8 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     HighlightPattern *p1Ptr = pass1PatternSrc;
     HighlightPattern *p2Ptr = pass2PatternSrc;
 
-    *p1Ptr++ = HighlightPattern(tr("Plain"));
-    *p2Ptr++ = HighlightPattern(tr("Plain"));
+    *p1Ptr++ = HighlightPattern(QLatin1String("Plain"));
+    *p2Ptr++ = HighlightPattern(QLatin1String("Plain"));
 
     for(const HighlightPattern &pattern : patterns) {
         if (pattern.flags & DEFER_PARSING) {

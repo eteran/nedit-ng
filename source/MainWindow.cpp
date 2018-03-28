@@ -1298,7 +1298,7 @@ void MainWindow::updateLanguageModeSubmenu() {
 
     auto languageGroup = new QActionGroup(this);
     auto languageMenu  = new QMenu(this);
-    QAction *action = languageMenu->addAction(tr("Plain"));
+    QAction *action = languageMenu->addAction(QLatin1String("Plain"));
     action->setData(static_cast<qulonglong>(PLAIN_LANGUAGE_MODE));
     action->setCheckable(true);
     action->setChecked(true);
