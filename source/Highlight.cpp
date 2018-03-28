@@ -772,7 +772,7 @@ void Highlight::modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char
     int64_t modEnd;
     int64_t minPos = INT_MAX;
     int64_t maxPos = 0;
-    const TextSelection *sel = &styleBuf->BufGetPrimary();
+    const TextBuffer::Selection *sel = &styleBuf->BufGetPrimary();
 
 	// Skip the range already marked for redraw 
 	if (sel->selected) {

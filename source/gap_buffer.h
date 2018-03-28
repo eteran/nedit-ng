@@ -36,6 +36,8 @@ public:
     explicit gap_buffer(size_type size);
     gap_buffer(const gap_buffer&)            = delete;
     gap_buffer& operator=(const gap_buffer&) = delete;
+    gap_buffer(gap_buffer&&)                 = delete;
+    gap_buffer& operator=(gap_buffer&&)      = delete;
     ~gap_buffer() noexcept;
 
 public:
@@ -56,6 +58,7 @@ public:
 public:
     size_type gap_size() const noexcept { return gap_end_ - gap_start_; }
     size_type size() const noexcept     { return size_; }
+    size_type capacity() const noexcept { return size_ + gap_end_ - gap_start_; }
     bool empty() const noexcept         { return size() == 0; }
 
 public:
@@ -441,6 +444,9 @@ void gap_buffer<Ch, Tr>::replace(size_type start, size_type end, Ch ch) {
  */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::assign(view_type str) {
+
+    // TODO(eteran): this might be more efficient as: replace(0, size(), str);
+
     const auto length = static_cast<size_type>(str.size());
 
     delete [] buf_;
@@ -473,7 +479,7 @@ void gap_buffer<Ch, Tr>::clear() {
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::move_gap(size_type pos) {
 
-    const difference_type gap_length = gap_end_ - gap_start_;
+    const size_type gap_length = gap_size();
 
     if (pos > gap_start_) {
         Tr::move(&buf_[gap_start_], &buf_[gap_end_], static_cast<size_t>(pos - gap_start_));

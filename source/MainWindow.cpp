@@ -1902,8 +1902,9 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
     //       `gcc -print-prog-name=cc1plus` -v
     //       `gcc -print-prog-name=cc1` -v
     //       etc...
-    static QLatin1String includeDirs[] = {
-        QLatin1String("/usr/include/")
+    static const QLatin1String includeDirs[] = {
+        QLatin1String("/usr/include/"),
+        QLatin1String("/usr/local/include/")
     };
 
     /* get the string, or skip if we can't get the selection data, or it's
@@ -1913,8 +1914,8 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
         return;
     }
 
-    static QRegularExpression reSystem(QLatin1String("#include\\s*<([^>]+)>"));
-    static QRegularExpression reLocal(QLatin1String("#include\\s*\"([^\"]+)\""));
+    static const QRegularExpression reSystem(QLatin1String("#include\\s*<([^>]+)>"));
+    static const QRegularExpression reLocal(QLatin1String("#include\\s*\"([^\"]+)\""));
 
     for(QLatin1String includeDir : includeDirs) {
         QString nameText = text;

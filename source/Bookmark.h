@@ -2,7 +2,7 @@
 #ifndef BOOKMARK_H_
 #define BOOKMARK_H_
 
-#include "TextSelection.h"
+#include "TextBuffer.h"
 #include <QChar>
 #include <cstdint>
 
@@ -11,9 +11,9 @@ constexpr int MAX_MARKS = 36;
 
 // Element in bookmark table
 struct Bookmark {
-    QChar         label;
-    int64_t       cursorPos;
-	TextSelection sel;
+    QChar                 label;
+    int64_t               cursorPos;
+    TextBuffer::Selection sel;
 };
 
 #endif

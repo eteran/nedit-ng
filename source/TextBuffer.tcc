@@ -11,8 +11,7 @@
 #include "Util/algorithm.h"
 
 /*
-** Get the entire contents of a text buffer.  Memory is allocated to contain
-** the returned string, which the caller must free.
+** Get the entire contents of a text buffer.
 */
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetAllEx() const -> string_type {
@@ -20,11 +19,8 @@ auto BasicTextBuffer<Ch, Tr>::BufGetAllEx() const -> string_type {
 }
 
 /*
-** Get the entire contents of a text buffer as a single string.  The gap is
-** moved so that the buffer data can be accessed as a single contiguous
-** character array.
-** This function is intended ONLY to provide a searchable string without copying
-** into a temporary buffer.
+** Get the entire contents of a text buffer as a read-only view of
+** contiguous characters
 */
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufAsStringEx() noexcept -> view_type {
@@ -60,6 +56,11 @@ void BasicTextBuffer<Ch, Tr>::BufSetAllEx(view_type text) {
 */
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(int64_t start, int64_t end) const -> string_type {
+
+    // TODO(eteran): I beleive bad things happend if we pass something like BufGetRangeEx(10, -10)
+    // this will make the first check pass, then start/end will be swapped meaning that it will attempt
+    // to get the range [-10, 10).
+    // the result will be an assert due to the checks in gap_buffer<Ch, Tr>::to_string
 
     /* Make sure start and end are ok.
        If start is bad, return "", if end is bad, adjust it. */
@@ -527,7 +528,7 @@ void BasicTextBuffer<Ch, Tr>::BufCheckDisplay(int64_t start, int64_t end) const 
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSelect(int64_t start, int64_t end) noexcept {
-    const TextSelection oldSelection = primary_;
+    const Selection oldSelection = primary_;
 
     primary_.setSelection(start, end);
     redisplaySelection(&oldSelection, &primary_);
@@ -542,7 +543,7 @@ void BasicTextBuffer<Ch, Tr>::BufSelect(int64_t start, int64_t end) noexcept {
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufUnselect() noexcept {
-    const TextSelection oldSelection = primary_;
+    const Selection oldSelection = primary_;
 
     primary_.selected = false;
     primary_.zeroWidth = false;
@@ -560,7 +561,7 @@ void BasicTextBuffer<Ch, Tr>::BufUnselect() noexcept {
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufRectSelect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept {
-    const TextSelection oldSelection = primary_;
+    const Selection oldSelection = primary_;
 
     primary_.setRectSelect(start, end, rectStart, rectEnd);
     redisplaySelection(&oldSelection, &primary_);
@@ -601,7 +602,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceSelectedEx(view_type text) noexcept {
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSecondarySelect(int64_t start, int64_t end) noexcept {
-    const TextSelection oldSelection = secondary_;
+    const Selection oldSelection = secondary_;
 
     secondary_.setSelection(start, end);
     redisplaySelection(&oldSelection, &secondary_);
@@ -609,7 +610,7 @@ void BasicTextBuffer<Ch, Tr>::BufSecondarySelect(int64_t start, int64_t end) noe
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSecondaryUnselect() noexcept {
-    const TextSelection oldSelection = secondary_;
+    const Selection oldSelection = secondary_;
 
     secondary_.selected = false;
     secondary_.zeroWidth = false;
@@ -618,7 +619,7 @@ void BasicTextBuffer<Ch, Tr>::BufSecondaryUnselect() noexcept {
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSecRectSelect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept {
-    const TextSelection oldSelection = secondary_;
+    const Selection oldSelection = secondary_;
 
     secondary_.setRectSelect(start, end, rectStart, rectEnd);
     redisplaySelection(&oldSelection, &secondary_);
@@ -641,7 +642,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceSecSelectEx(view_type text) noexcept {
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufHighlight(int64_t start, int64_t end) noexcept {
-    const TextSelection oldSelection = highlight_;
+    const Selection oldSelection = highlight_;
 
     highlight_.setSelection(start, end);
     redisplaySelection(&oldSelection, &highlight_);
@@ -649,7 +650,7 @@ void BasicTextBuffer<Ch, Tr>::BufHighlight(int64_t start, int64_t end) noexcept 
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufUnhighlight() noexcept {
-    const TextSelection oldSelection = highlight_;
+    const Selection oldSelection = highlight_;
 
     highlight_.selected = false;
     highlight_.zeroWidth = false;
@@ -658,7 +659,7 @@ void BasicTextBuffer<Ch, Tr>::BufUnhighlight() noexcept {
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufRectHighlight(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept {
-    const TextSelection oldSelection = highlight_;
+    const Selection oldSelection = highlight_;
 
     highlight_.setRectSelect(start, end, rectStart, rectEnd);
     redisplaySelection(&oldSelection, &highlight_);
@@ -1100,7 +1101,7 @@ boost::optional<int64_t> BasicTextBuffer<Ch, Tr>::searchBackward(int64_t startPo
 }
 
 template <class Ch, class Tr>
-auto BasicTextBuffer<Ch, Tr>::getSelectionTextEx(const TextSelection *sel) const -> string_type {
+auto BasicTextBuffer<Ch, Tr>::getSelectionTextEx(const Selection *sel) const -> string_type {
 
     // If there's no selection, return an allocated empty string
     if (!*sel) {
@@ -1373,7 +1374,7 @@ void BasicTextBuffer<Ch, Tr>::insertColEx(int64_t column, int64_t startPos, view
 ** screen for a change in a selection.
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::redisplaySelection(const TextSelection *oldSelection, TextSelection *newSelection) const noexcept {
+void BasicTextBuffer<Ch, Tr>::redisplaySelection(const Selection *oldSelection, Selection *newSelection) const noexcept {
 
     /* If either selection is rectangular, add an additional character to
        the end of the selection to request the redraw routines to wipe out
@@ -1441,7 +1442,7 @@ void BasicTextBuffer<Ch, Tr>::redisplaySelection(const TextSelection *oldSelecti
 }
 
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::removeSelected(const TextSelection *sel) noexcept {
+void BasicTextBuffer<Ch, Tr>::removeSelected(const Selection *sel) noexcept {
 
     assert(sel);
 
@@ -1457,11 +1458,11 @@ void BasicTextBuffer<Ch, Tr>::removeSelected(const TextSelection *sel) noexcept 
 }
 
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::replaceSelectedEx(TextSelection *sel, view_type text) noexcept {
+void BasicTextBuffer<Ch, Tr>::replaceSelectedEx(Selection *sel, view_type text) noexcept {
 
     assert(sel);
 
-    const TextSelection oldSelection = *sel;
+    const Selection oldSelection = *sel;
 
     // If there's no selection, return
     if (!*sel) {
@@ -2041,32 +2042,32 @@ int BasicTextBuffer<Ch, Tr>::BufGetTabDist() const noexcept {
 }
 
 template <class Ch, class Tr>
-const TextSelection &BasicTextBuffer<Ch, Tr>::BufGetPrimary() const {
+auto BasicTextBuffer<Ch, Tr>::BufGetPrimary() const -> const Selection & {
     return primary_;
 }
 
 template <class Ch, class Tr>
-const TextSelection &BasicTextBuffer<Ch, Tr>::BufGetSecondary() const {
+auto BasicTextBuffer<Ch, Tr>::BufGetSecondary() const -> const Selection & {
     return secondary_;
 }
 
 template <class Ch, class Tr>
-const TextSelection &BasicTextBuffer<Ch, Tr>::BufGetHighlight() const {
+auto BasicTextBuffer<Ch, Tr>::BufGetHighlight() const -> const Selection &{
     return highlight_;
 }
 
 template <class Ch, class Tr>
-TextSelection &BasicTextBuffer<Ch, Tr>::BufGetPrimary() {
+auto BasicTextBuffer<Ch, Tr>::BufGetPrimary() -> Selection & {
     return primary_;
 }
 
 template <class Ch, class Tr>
-TextSelection &BasicTextBuffer<Ch, Tr>::BufGetSecondary() {
+auto BasicTextBuffer<Ch, Tr>::BufGetSecondary() -> Selection & {
     return secondary_;
 }
 
 template <class Ch, class Tr>
-TextSelection &BasicTextBuffer<Ch, Tr>::BufGetHighlight() {
+auto BasicTextBuffer<Ch, Tr>::BufGetHighlight() -> Selection & {
     return highlight_;
 }
 
@@ -2079,5 +2080,111 @@ template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::BufSetSyncXSelection(bool sync) {
     return std::exchange(syncXSelection_, sync);
 }
+
+/**
+ * @brief TextSelection::setSelection
+ * @param newStart
+ * @param newEnd
+ */
+template <class Ch, class Tr>
+void BasicTextBuffer<Ch, Tr>::Selection::setSelection(int64_t newStart, int64_t newEnd) {
+    selected	= (newStart != newEnd);
+    zeroWidth	= (newStart == newEnd);
+    rectangular = false;
+    start		= std::min(newStart, newEnd);
+    end 		= std::max(newStart, newEnd);
+}
+
+/**
+ * @brief TextSelection::setRectSelect
+ * @param newStart
+ * @param newEnd
+ * @param newRectStart
+ * @param newRectEnd
+ */
+template <class Ch, class Tr>
+void BasicTextBuffer<Ch, Tr>::Selection::setRectSelect(int64_t newStart, int64_t newEnd, int64_t newRectStart, int64_t newRectEnd) {
+    selected	= (newRectStart < newRectEnd);
+    zeroWidth	= (newRectStart == newRectEnd);
+    rectangular = true;
+    start		= newStart;
+    end 		= newEnd;
+    rectStart	= newRectStart;
+    rectEnd 	= newRectEnd;
+}
+
+/**
+ * @brief TextSelection::getSelectionPos
+ * @param start
+ * @param end
+ * @param isRect
+ * @param rectStart
+ * @param rectEnd
+ * @return
+ */
+template <class Ch, class Tr>
+bool BasicTextBuffer<Ch, Tr>::Selection::getSelectionPos(int64_t *start, int64_t *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const {
+    // Always fill in the parameters (zero-width can be requested too).
+    *isRect = this->rectangular;
+    *start  = this->start;
+    *end    = this->end;
+    if (this->rectangular) {
+        *rectStart = this->rectStart;
+        *rectEnd   = this->rectEnd;
+    }
+    return this->selected;
+}
+
+/**
+ * @brief TextSelection::updateSelection
+ * @param pos
+ * @param nDeleted
+ * @param nInserted
+ *
+ * Update an individual selection for changes in the corresponding text
+ */
+template <class Ch, class Tr>
+void BasicTextBuffer<Ch, Tr>::Selection::updateSelection(int64_t pos, int64_t nDeleted, int64_t nInserted) {
+    if ((!selected && !zeroWidth) || pos > end) {
+        return;
+    }
+
+    if (pos + nDeleted <= start) {
+        start += nInserted - nDeleted;
+        end   += nInserted - nDeleted;
+    } else if (pos <= start && pos + nDeleted >= end) {
+        start     = pos;
+        end       = pos;
+        selected  = false;
+        zeroWidth = false;
+    } else if (pos <= start && pos + nDeleted < end) {
+        start = pos;
+        end   = nInserted + end - nDeleted;
+    } else if (pos < end) {
+        end += nInserted - nDeleted;
+        if (end <= start) {
+            selected = false;
+        }
+    }
+}
+
+/*
+** Return true if position "pos" with indentation "dispIndex" is in this
+** selection
+*/
+template <class Ch, class Tr>
+bool BasicTextBuffer<Ch, Tr>::Selection::inSelection(int64_t pos, int64_t lineStartPos, int64_t dispIndex) const {
+    return this->selected && ((!rectangular && pos >= start && pos < end) || (rectangular && pos >= start && lineStartPos <= end && dispIndex >= rectStart && dispIndex < rectEnd));
+}
+
+/*
+** Return true if this selection is rectangular, and touches a buffer position
+** within "rangeStart" to "rangeEnd"
+*/
+template <class Ch, class Tr>
+bool BasicTextBuffer<Ch, Tr>::Selection::rangeTouchesRectSel(int64_t rangeStart, int64_t rangeEnd) const {
+    return selected && rectangular && end >= rangeStart && start <= rangeEnd;
+}
+
 
 #endif

@@ -2620,7 +2620,7 @@ bool TextArea::wrapUsesCharacter(int64_t lineEndPos) const {
 ** contains auxiliary information for coloring or styling text).
 */
 void TextArea::extendRangeForStyleMods(int64_t *start, int64_t *end) {
-    const TextSelection *sel = &styleBuffer_->BufGetPrimary();
+    const TextBuffer::Selection *sel = &styleBuffer_->BufGetPrimary();
 	int extended = false;
 
 	/* The peculiar protocol used here is that modifications to the style
@@ -4090,7 +4090,7 @@ void TextArea::TextDMakeInsertPosVisible() {
 void TextArea::CancelBlockDrag() {
 
     auto origBuf = std::move(dragOrigBuf_);
-    const TextSelection *origSel = &origBuf->BufGetPrimary();
+    const TextBuffer::Selection *origSel = &origBuf->BufGetPrimary();
     int64_t modRangeStart = -1;
     int64_t origModRangeEnd;
     int64_t bufModRangeEnd;
@@ -4173,7 +4173,7 @@ void TextArea::checkMoveSelectionChange(EventFlags flags, int64_t startPos) {
 */
 void TextArea::keyMoveExtendSelection(int64_t origPos, bool rectangular) {
 
-    const TextSelection *sel = &buffer_->BufGetPrimary();
+    const TextBuffer::Selection *sel = &buffer_->BufGetPrimary();
     int64_t newPos         = cursorPos_;
     int64_t startPos;
     int64_t endPos;
@@ -4443,7 +4443,7 @@ void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDe
 ** first.
 */
 bool TextArea::pendingSelection() const {
-    const TextSelection *sel = &buffer_->BufGetPrimary();
+    const TextBuffer::Selection *sel = &buffer_->BufGetPrimary();
     int64_t pos = cursorPos_;
 
 	return P_pendingDelete && sel->selected && pos >= sel->start && pos <= sel->end;
@@ -5157,7 +5157,7 @@ void TextArea::copyPrimaryAP(EventFlags flags) {
 
     EMIT_EVENT_0("copy_primary");
 
-    const TextSelection *primary = &buffer_->BufGetPrimary();
+    const TextBuffer::Selection *primary = &buffer_->BufGetPrimary();
 	bool rectangular = flags & RectFlag;
     int64_t insertPos;
 
@@ -5449,7 +5449,7 @@ void TextArea::processTabAP(EventFlags flags) {
 
     EMIT_EVENT_0("process_tab");
 
-    const TextSelection *sel = &buffer_->BufGetPrimary();
+    const TextBuffer::Selection *sel = &buffer_->BufGetPrimary();
 	int emTabDist          = P_emulateTabs;
 	int emTabsBeforeCursor = emTabsBeforeCursor_;
     int64_t indent;
@@ -5737,7 +5737,7 @@ void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
 
     EMIT_EVENT_0("extend_start");
 
-    const TextSelection *sel = &buffer_->BufGetPrimary();
+    const TextBuffer::Selection *sel = &buffer_->BufGetPrimary();
     int64_t anchor;
     int64_t rectAnchor;
     int64_t anchorLineStart;
@@ -5989,8 +5989,8 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
     EMIT_EVENT_0("copy_to");
 
     DragStates dragState     = dragState_;
-    const TextSelection *secondary = &buffer_->BufGetSecondary();
-    const TextSelection *primary   = &buffer_->BufGetPrimary();
+    const TextBuffer::Selection *secondary = &buffer_->BufGetSecondary();
+    const TextBuffer::Selection *primary   = &buffer_->BufGetPrimary();
     bool rectangular         = secondary->rectangular;
 
 	endDrag();
@@ -6125,7 +6125,7 @@ void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
 
     EMIT_EVENT_0("secondary_start");
 
-    const TextSelection *sel = &buffer_->BufGetSecondary();
+    const TextBuffer::Selection *sel = &buffer_->BufGetSecondary();
     int64_t anchor;
     int64_t row;
     int64_t column;
@@ -6242,7 +6242,7 @@ void TextArea::BeginBlockDrag() {
     QFontMetrics fm(font_);
     int fontHeight     = ascent_ + descent_;
 	int fontWidth      = fm.maxWidth();
-    const TextSelection *sel = &buffer_->BufGetPrimary();
+    const TextBuffer::Selection *sel = &buffer_->BufGetPrimary();
     int64_t nLines;
     int64_t mousePos;
     int x;
@@ -6340,7 +6340,7 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
     int fontWidth                = fm.maxWidth();
     auto &origBuf                = dragOrigBuf_;
     int dragXOffset              = dragXOffset_;
-    const TextSelection *origSel = &origBuf->BufGetPrimary();
+    const TextBuffer::Selection *origSel = &origBuf->BufGetPrimary();
     bool rectangular             = origSel->rectangular;
     BlockDragTypes oldDragType   = dragType_;
     int64_t nLines               = dragNLines_;
@@ -6744,7 +6744,7 @@ void TextArea::cutPrimaryAP(EventFlags flags) {
 
     EMIT_EVENT_0("cut_primary");
 
-    const TextSelection *primary = &buffer_->BufGetPrimary();
+    const TextBuffer::Selection *primary = &buffer_->BufGetPrimary();
 
 	bool rectangular = flags & RectFlag;
     int64_t insertPos;
@@ -6814,8 +6814,8 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 
     DragStates dragState = dragState_;
 
-    const TextSelection *secondary = &buffer_->BufGetSecondary();
-    const TextSelection *primary   = &buffer_->BufGetPrimary();
+    const TextBuffer::Selection *secondary = &buffer_->BufGetSecondary();
+    const TextBuffer::Selection *primary   = &buffer_->BufGetPrimary();
 
 	int rectangular = secondary->rectangular;
 
@@ -6869,8 +6869,8 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
     Q_UNUSED(event);
     EMIT_EVENT_0("exchange");
 
-    const TextSelection *sec     = &buffer_->BufGetSecondary();
-    const TextSelection *primary = &buffer_->BufGetPrimary();
+    const TextBuffer::Selection *sec     = &buffer_->BufGetSecondary();
+    const TextBuffer::Selection *primary = &buffer_->BufGetPrimary();
 
 	DragStates dragState = dragState_; // save before endDrag
 	bool silent = flags & NoBellFlag;

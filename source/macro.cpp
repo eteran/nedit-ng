@@ -3959,7 +3959,7 @@ static std::error_code selectionLeftMV(DocumentWidget *document, Arguments argum
         return MacroErrorCode::TooManyArguments;
     }
 
-    const TextSelection *sel = &document->buffer_->BufGetPrimary();
+    const TextBuffer::Selection *sel = &document->buffer_->BufGetPrimary();
 
     *result = make_value(sel->selected && sel->rectangular ? sel->rectStart : -1);
     return MacroErrorCode::Success;
@@ -3971,7 +3971,7 @@ static std::error_code selectionRightMV(DocumentWidget *document, Arguments argu
         return MacroErrorCode::TooManyArguments;
     }
 
-    const TextSelection *sel = &document->buffer_->BufGetPrimary();
+    const TextBuffer::Selection *sel = &document->buffer_->BufGetPrimary();
 
     *result = make_value(sel->selected && sel->rectangular ? sel->rectEnd : -1);
     return MacroErrorCode::Success;

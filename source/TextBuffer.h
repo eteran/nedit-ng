@@ -4,13 +4,13 @@
 
 #include "gap_buffer.h"
 #include "TextBufferFwd.h"
-#include "TextSelection.h"
 #include "Util/string_view.h"
 
 #include <gsl/gsl_util>
 
 #include <deque>
 #include <string>
+#include <cstdint>
 
 #include <boost/optional.hpp>
 
@@ -38,6 +38,29 @@ public:
     static constexpr int MAX_EXP_CHAR_LEN = 20;
 
     static constexpr int DefaultTabWidth = 8;
+
+public:
+    class Selection {
+    public:
+        bool getSelectionPos(int64_t *start, int64_t *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const;
+        bool inSelection(int64_t pos, int64_t lineStartPos, int64_t dispIndex) const;
+        bool rangeTouchesRectSel(int64_t rangeStart, int64_t rangeEnd) const;
+        void setRectSelect(int64_t newStart, int64_t newEnd, int64_t newRectStart, int64_t newRectEnd);
+        void setSelection(int64_t newStart, int64_t newEnd);
+        void updateSelection(int64_t pos, int64_t nDeleted, int64_t nInserted);
+
+    public:
+        explicit operator bool() const { return selected; }
+
+    public:
+        bool selected    = false; // true if the selection is active
+        bool rectangular = false; // true if the selection is rectangular
+        bool zeroWidth   = false; // Width 0 selections aren't "real" selections, but they can be useful when creating rectangular selections from the keyboard.
+        int64_t start        = 0; // Pos. of start of selection, or if rectangular start of line containing it.
+        int64_t end          = 0; // Pos. of end of selection, or if rectangular end of line containing it.
+        int64_t rectStart    = 0; // Indent of left edge of rect. selection
+        int64_t rectEnd      = 0; // Indent of right edge of rect. selection
+    };
 
 public:
     BasicTextBuffer();
@@ -114,12 +137,12 @@ public:
     void BufSetUseTabs(bool useTabs) noexcept;
     void BufUnhighlight() noexcept;
     void BufUnselect() noexcept;
-    const TextSelection &BufGetPrimary() const;
-    const TextSelection &BufGetSecondary() const;
-    const TextSelection &BufGetHighlight() const;
-    TextSelection &BufGetPrimary();
-    TextSelection &BufGetSecondary();
-    TextSelection &BufGetHighlight();
+    const Selection &BufGetPrimary() const;
+    const Selection &BufGetSecondary() const;
+    const Selection &BufGetHighlight() const;
+    Selection &BufGetPrimary();
+    Selection &BufGetSecondary();
+    Selection &BufGetHighlight();
     bool BufGetSyncXSelection() const;
     bool BufSetSyncXSelection(bool sync);
 
@@ -136,7 +159,7 @@ private:
     boost::optional<int64_t> searchForward(int64_t startPos, Ch searchChar) const noexcept;
     int64_t insertEx(int64_t pos, view_type text) noexcept;
     int64_t insertEx(int64_t pos, Ch ch) noexcept;
-    string_type getSelectionTextEx(const TextSelection *sel) const;
+    string_type getSelectionTextEx(const Selection *sel) const;
     void callModifyCBs(int64_t pos, int64_t nDeleted, int64_t nInserted, int64_t nRestyled, view_type deletedText) const noexcept;
     void callPreDeleteCBs(int64_t pos, int64_t nDeleted) const noexcept;
     void deleteRange(int64_t start, int64_t end) noexcept;
@@ -144,9 +167,9 @@ private:
     void findRectSelBoundariesForCopy(int64_t lineStartPos, int64_t rectStart, int64_t rectEnd, int64_t *selStart, int64_t *selEnd) const noexcept;
     void insertColEx(int64_t column, int64_t startPos, view_type insText, int64_t *nDeleted, int64_t *nInserted, int64_t *endPos);
     void overlayRectEx(int64_t startPos, int64_t rectStart, int64_t rectEnd, view_type insText, int64_t *nDeleted, int64_t *nInserted, int64_t *endPos);
-    void redisplaySelection(const TextSelection *oldSelection, TextSelection *newSelection) const noexcept;
-    void removeSelected(const TextSelection *sel) noexcept;
-    void replaceSelectedEx(TextSelection *sel, view_type text) noexcept;
+    void redisplaySelection(const Selection *oldSelection, Selection *newSelection) const noexcept;
+    void removeSelected(const Selection *sel) noexcept;
+    void replaceSelectedEx(Selection *sel, view_type text) noexcept;
     void updateSelections(int64_t pos, int64_t nDeleted, int64_t nInserted) noexcept;
 
 private:
@@ -175,9 +198,9 @@ private:
 
 private:
     gap_buffer<Ch> buffer_;
-    TextSelection  primary_;   // highlighted areas
-    TextSelection  secondary_;
-    TextSelection  highlight_;
+    Selection  primary_;   // highlighted areas
+    Selection  secondary_;
+    Selection  highlight_;
 
 private:
     std::deque<std::pair<pre_delete_callback_type, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.

@@ -262,8 +262,6 @@ add_executable(nedit-ng
 	TextBufferFwd.h
 	TextEditEvent.cpp
 	TextEditEvent.h
-	TextSelection.cpp
-	TextSelection.h
 	UndoInfo.cpp
 	UndoInfo.h
 	Verbosity.h

@@ -213,7 +213,7 @@ void maintainPosition(int64_t &position, int64_t modPos, int64_t nInserted, int6
 ** Update a selection across buffer modifications specified by
 ** "pos", "nDeleted", and "nInserted".
 */
-void maintainSelection(TextSelection &sel, int64_t pos, int64_t nInserted, int64_t nDeleted) {
+void maintainSelection(TextBuffer::Selection &sel, int64_t pos, int64_t nInserted, int64_t nDeleted) {
     if (!sel.selected || pos > sel.end) {
         return;
     }
@@ -3932,7 +3932,7 @@ void DocumentWidget::PrintWindow(TextArea *area, bool selectedOnly) {
        wrapping newlines if necessary to make it match the displayed text */
     if (selectedOnly) {
 
-        const TextSelection *sel = &buffer_->BufGetPrimary();
+        const TextBuffer::Selection *sel = &buffer_->BufGetPrimary();
 
         if (!sel->selected) {
             QApplication::beep();
@@ -6955,8 +6955,8 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
     }
 
     // reselect marked the selection, and move the cursor to the marked pos
-    const TextSelection &sel    = markTable_[index].sel;
-    const TextSelection &oldSel = buffer_->BufGetPrimary();
+    const TextBuffer::Selection &sel    = markTable_[index].sel;
+    const TextBuffer::Selection &oldSel = buffer_->BufGetPrimary();
 
     int64_t cursorPos = markTable_[index].cursorPos;
     if (extendSel) {
