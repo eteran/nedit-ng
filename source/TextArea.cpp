@@ -7315,7 +7315,7 @@ int64_t TextArea::TextDPreferredColumn(int *visLineNum, int64_t *lineStartPos) {
 	if (posToVisibleLineNum(cursorPos_, visLineNum)) {
 		*lineStartPos = lineStarts_[*visLineNum];
 	} else {
-		*lineStartPos =TextDStartOfLine(cursorPos_);
+        *lineStartPos = TextDStartOfLine(cursorPos_);
 		*visLineNum = -1;
 	}
 

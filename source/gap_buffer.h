@@ -60,6 +60,7 @@ public:
     size_type size() const noexcept     { return size_; }
     size_type capacity() const noexcept { return size_ + gap_end_ - gap_start_; }
     bool empty() const noexcept         { return size() == 0; }
+    void swap(gap_buffer &other);
 
 public:
     Ch operator[](size_type n) const noexcept;
@@ -543,6 +544,16 @@ void gap_buffer<Ch, Tr>::delete_range(size_type start, size_type end) {
 
     // update the length
     size_ -= (end - start);
+}
+
+template <class Ch, class Tr>
+void gap_buffer<Ch, Tr>::swap(gap_buffer &other) {
+    using std::swap;
+
+    swap(buf_,       other.buf_);
+    swap(gap_start_, other.gap_start_);
+    swap(gap_end_,   other.gap_end_);
+    swap(size_,      other.size_);
 }
 
 #endif
