@@ -89,8 +89,6 @@ private:
     static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, uint8_t style, int *prevChar);
     static void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleString, int64_t startPos, int64_t endPos, int firstPass2Style);
     static int64_t lastModified(const std::shared_ptr<TextBuffer> &styleBuf);
-    static int parentStyleOf(const std::vector<uint8_t> &parentStyles, int style);
-    static bool isParentStyle(const std::vector<uint8_t> &parentStyles, int style1, int style2);
     static bool patternIsParsable(HighlightData *pattern);
     static void recolorSubexpr(const std::shared_ptr<Regex> &re, int subexpr, int style, const char *string, char *styleString);
     static bool readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *pattern);

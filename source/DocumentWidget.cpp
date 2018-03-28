@@ -5527,7 +5527,7 @@ void DocumentWidget::UpdateHighlightStylesEx() {
     }
 
     // Find the pattern set for the window's current language mode
-    PatternSet *patterns = findPatternsForWindowEx(false);
+    PatternSet *patterns = findPatternsForWindowEx(/*warn=*/false);
     if(!patterns) {
         StopHighlightingEx();
         return;

@@ -78,6 +78,22 @@ bool can_cross_line_boundaries(const ReparseContext &contextRequirements) {
     return (contextRequirements.nLines != 1 || contextRequirements.nChars != 0);
 }
 
+int parentStyleOf(const std::vector<uint8_t> &parentStyles, int style) {
+    Q_ASSERT(style != 0);
+    return parentStyles[static_cast<uint8_t>(style) - UNFINISHED_STYLE];
+}
+
+bool isParentStyle(const std::vector<uint8_t> &parentStyles, int style1, int style2) {
+
+    for (int p = parentStyleOf(parentStyles, style2); p != 0; p = parentStyleOf(parentStyles, p)) {
+        if (style1 == p) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 }
 
 /*
@@ -245,7 +261,7 @@ int64_t Highlight::parseBufferRange(HighlightData *pass1Patterns, HighlightData 
     int64_t beginSafety;
     int64_t p;
     int style;
-    int firstPass2Style = pass2Patterns == nullptr ? INT_MAX : pass2Patterns[1].style;
+    int firstPass2Style = (pass2Patterns == nullptr) ? INT_MAX : pass2Patterns[1].style;
 
 	// Begin parsing one context distance back (or to the last style change) 
     int beginStyle = pass1Patterns->style;
@@ -821,22 +837,6 @@ int Highlight::getPrevChar(TextBuffer *buf, int64_t pos) {
     return pos == 0 ? -1 : buf->BufGetCharacter(pos - 1);
 }
 
-int Highlight::parentStyleOf(const std::vector<uint8_t> &parentStyles, int style) {
-    Q_ASSERT(style != 0);
-    return parentStyles[static_cast<uint8_t>(style) - UNFINISHED_STYLE];
-}
-
-bool Highlight::isParentStyle(const std::vector<uint8_t> &parentStyles, int style1, int style2) {
-
-	for (int p = parentStyleOf(parentStyles, style2); p != 0; p = parentStyleOf(parentStyles, p)) {
-		if (style1 == p) {
-			return true;
-		}
-	}
-	
-	return false;
-}
-
 /*
 ** Discriminates patterns which can be used with parseString from those which
 ** can't.  Leaf patterns are not suitable for parsing, because patterns
@@ -1398,34 +1398,36 @@ QString Highlight::createPatternsString(const PatternSet *patSet, const QString 
     QString str;
     QTextStream out(&str);
 
+    const auto Colon = QLatin1Char(':');
+
     for(const HighlightPattern &pat : patSet->patterns) {
 
         out << indentStr
             << pat.name
-            << QLatin1Char(':');
+            << Colon;
 
         if (!pat.startRE.isNull()) {
             out << Preferences::MakeQuotedStringEx(pat.startRE);
         }
-        out << QLatin1Char(':');
+        out << Colon;
 
         if (!pat.endRE.isNull()) {
             out << Preferences::MakeQuotedStringEx(pat.endRE);
         }
-        out << QLatin1Char(':');
+        out << Colon;
 
         if (!pat.errorRE.isNull()) {
             out << Preferences::MakeQuotedStringEx(pat.errorRE);
         }
-        out << QLatin1Char(':')
+        out << Colon
             << pat.style
-            << QLatin1Char(':');
+            << Colon;
 
         if (!pat.subPatternOf.isNull()) {
             out << pat.subPatternOf;
         }
 
-        out << QLatin1Char(':');
+        out << Colon;
 
         if (pat.flags & DEFER_PARSING)            out << QLatin1Char('D');
         if (pat.flags & PARSE_SUBPATS_FROM_START) out << QLatin1Char('R');

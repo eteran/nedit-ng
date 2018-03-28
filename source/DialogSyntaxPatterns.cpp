@@ -135,10 +135,10 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
     model_->clear();
 
 	// Find the associated pattern set (patSet) to edit
-    if(PatternSet *patSet = Highlight::FindPatternSet(name)) {
+    if(const PatternSet *patSet = Highlight::FindPatternSet(name)) {
 
 		// Copy the list of highlight style information to one that the user can freely edit
-		for(HighlightPattern &pattern: patSet->patterns) {
+        for(const HighlightPattern &pattern: patSet->patterns) {
             model_->addItem(pattern);
 		}
 
