@@ -305,7 +305,7 @@ private:
     void measureDeletedLines(int64_t pos, int64_t nDeleted);
     void wrappedLineCounter(const TextBuffer *buf, int64_t startPos, int64_t maxPos, int64_t maxLines, bool startPosIsLineStart, int64_t styleBufOffset, int64_t *retPos, int64_t *retLines, int64_t *retLineStart, int64_t *retLineEnd) const;
     int64_t measurePropChar(char ch, int64_t colNum, int64_t pos) const;
-    int stringWidth(const char *string, int64_t length, int style) const;
+    int stringWidth(const char *string, int length, int style) const;
     void findWrapRangeEx(view::string_view deletedText, int64_t pos, int64_t nInserted, int64_t nDeleted, int64_t *modRangeStart, int64_t *modRangeEnd, int64_t *linesInserted, int64_t *linesDeleted);
     void updateLineStarts(int64_t pos, int64_t charsInserted, int64_t charsDeleted, int64_t linesInserted, int64_t linesDeleted, int *scrolled);
 	void hideOrShowHScrollBar();

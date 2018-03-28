@@ -1750,7 +1750,7 @@ int64_t TextArea::measurePropChar(char ch, int64_t colNum, int64_t pos) const {
     char expChar[TextBuffer::MAX_EXP_CHAR_LEN];
     const std::shared_ptr<TextBuffer> &styleBuf = styleBuffer_;
 
-    int64_t charLen = TextBuffer::BufExpandCharacter(ch, colNum, expChar, buffer_->BufGetTabDist());
+    const int charLen = TextBuffer::BufExpandCharacter(ch, colNum, expChar, buffer_->BufGetTabDist());
 
 	if(!styleBuf) {
 		style = 0;
@@ -1769,7 +1769,7 @@ int64_t TextArea::measurePropChar(char ch, int64_t colNum, int64_t pos) const {
 /*
 ** Find the width of a string in the font of a particular style
 */
-int TextArea::stringWidth(const char *string, int64_t length, int style) const {
+int TextArea::stringWidth(const char *string, int length, int style) const {
 
     QString str = asciiToUnicode(string, length);
 
@@ -2814,9 +2814,9 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	int i;
     int startX;
     int64_t charWidth;
-    int startIndex;
+    int64_t startIndex;
 	int style;
-    int64_t charLen;
+    int charLen;
 	int outStartIndex;
     int cursorX = 0;
 	bool hasCursor = false;
@@ -2884,14 +2884,14 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
     int x = rect_.left() - horizOffset_;
 	int outIndex = 0;
 
-    int charIndex;
+    int64_t charIndex;
 	for (charIndex = 0;; charIndex++) {
 
         char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
         baseChar = '\0';
         charLen = (charIndex >= lineLen) ?
                     1 :
-                    TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->BufGetTabDist());
+                    TextBuffer::BufExpandCharacter(baseChar = lineStr[static_cast<size_t>(charIndex)], outIndex, expandedChar, buffer_->BufGetTabDist());
 
 		style = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
 		charWidth = charIndex >= lineLen ? stdCharWidth : stringWidth(expandedChar, charLen, style);
@@ -2932,12 +2932,12 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 		baseChar = '\0';
         charLen = (charIndex >= lineLen) ?
                     1 :
-                    TextBuffer::BufExpandCharacter(baseChar = lineStr[charIndex], outIndex, expandedChar, buffer_->BufGetTabDist());
+                    TextBuffer::BufExpandCharacter(baseChar = lineStr[static_cast<size_t>(charIndex)], outIndex, expandedChar, buffer_->BufGetTabDist());
 
 		int charStyle = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
 
 		for (i = 0; i < charLen; i++) {
-			if (i != 0 && charIndex < lineLen && lineStr[charIndex] == '\t') {
+            if (i != 0 && charIndex < lineLen && lineStr[static_cast<size_t>(charIndex)] == '\t') {
 				charStyle = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, '\t');
 			}
 
@@ -3904,8 +3904,8 @@ bool TextArea::TextDPositionToXY(int64_t pos, int *x, int *y) const {
     xStep = rect_.left() - horizOffset_;
 	outIndex = 0;
     for (charIndex = 0; charIndex < pos - lineStartPos; charIndex++) {
-        const int64_t charLen = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->BufGetTabDist());
-        const int charStyle   = styleOfPos(lineStartPos, lineLen, charIndex, outIndex, lineStr[charIndex]);
+        const int charLen   = TextBuffer::BufExpandCharacter(lineStr[static_cast<size_t>(charIndex)], outIndex, expandedChar, buffer_->BufGetTabDist());
+        const int charStyle = styleOfPos(lineStartPos, lineLen, charIndex, outIndex, lineStr[static_cast<size_t>(charIndex)]);
 
 		xStep += stringWidth(expandedChar, charLen, charStyle);
 		outIndex += charLen;
@@ -5600,11 +5600,11 @@ int64_t TextArea::xyToPos(int x, int y, PositionTypes posType) const {
 	   to find the character position corresponding to the x coordinate */
     int64_t xStep = rect_.left() - horizOffset_;
     int outIndex = 0;
-    for (int charIndex = 0; charIndex < lineLen; charIndex++) {
+    for (int64_t charIndex = 0; charIndex < lineLen; charIndex++) {
 
         char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 
-        const int64_t charLen   = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->BufGetTabDist());
+        const int charLen       = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->BufGetTabDist());
         const int charStyle     = styleOfPos(lineStart, lineLen, charIndex, outIndex, lineStr[charIndex]);
         const int64_t charWidth = stringWidth(expandedChar, charLen, charStyle);
 
@@ -7699,7 +7699,7 @@ int64_t TextArea::TextDLineAndColToPos(int64_t lineNum, int64_t column) {
     // Only have to count columns if column isn't zero (or negative)
     if (column > 0) {
 
-        int64_t charLen = 0;
+        int charLen = 0;
 
         // Count columns, expanding each character
         std::string lineStr = buffer_->BufGetRangeEx(lineStart, lineEnd);
