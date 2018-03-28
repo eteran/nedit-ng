@@ -450,20 +450,25 @@ void gap_buffer<Ch, Tr>::assign(view_type str) {
 
     const auto length = static_cast<size_type>(str.size());
 
-    delete [] buf_;
-
     // Start a new buffer with a gap of GapSize in the center
-    buf_       = new Ch[static_cast<size_t>(length + PreferredGapSize)];
-    size_      = length;
-    gap_start_ = length / 2;
-    gap_end_   = gap_start_ + PreferredGapSize;
+    auto new_buffer = new Ch[static_cast<size_t>(length + PreferredGapSize)];
+    size_type new_size      = length;
+    size_type new_gap_start = length / 2;
+    size_type new_gap_end   = new_gap_start + PreferredGapSize;
 
-    Tr::copy(&buf_[0],        &str[0],                               static_cast<size_t>(gap_start_));
-    Tr::copy(&buf_[gap_end_], &str[static_cast<size_t>(gap_start_)], static_cast<size_t>(length - gap_start_));
+    Tr::copy(&new_buffer[0],           &str[0],                                  static_cast<size_t>(new_gap_start));
+    Tr::copy(&new_buffer[new_gap_end], &str[static_cast<size_t>(new_gap_start)], static_cast<size_t>(length - new_gap_start));
 
 #ifdef PURIFY
-    std::fill(&buf_[gap_start_], &buf_[gap_end_], Ch('.'));
+    std::fill(&new_buffer[new_gap_start], &new_buffer[new_gap_end], Ch('.'));
 #endif
+
+    delete [] buf_;
+
+    buf_       = new_buffer;
+    size_      = new_size;
+    gap_start_ = new_gap_start;
+    gap_end_   = new_gap_end;
 }
 
 /**
@@ -499,23 +504,23 @@ void gap_buffer<Ch, Tr>::move_gap(size_type pos) {
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::reallocate_buffer(size_type new_gap_start, size_type new_gap_size) {
 
-    auto newBuf = new Ch[static_cast<size_t>(size() + new_gap_size)];
+    auto new_buffer = new Ch[static_cast<size_t>(size() + new_gap_size)];
 
     const size_type new_gap_end = new_gap_start + new_gap_size;
 
     if (new_gap_start <= gap_start_) {
-        Tr::copy(newBuf,                                            &buf_[0],             static_cast<size_t>(new_gap_start));
-        Tr::copy(&newBuf[new_gap_end],                              &buf_[new_gap_start], static_cast<size_t>(gap_start_ - new_gap_start));
-        Tr::copy(&newBuf[new_gap_end + gap_start_ - new_gap_start], &buf_[gap_end_],      static_cast<size_t>(size() - gap_start_));
+        Tr::copy(new_buffer,                                            &buf_[0],             static_cast<size_t>(new_gap_start));
+        Tr::copy(&new_buffer[new_gap_end],                              &buf_[new_gap_start], static_cast<size_t>(gap_start_ - new_gap_start));
+        Tr::copy(&new_buffer[new_gap_end + gap_start_ - new_gap_start], &buf_[gap_end_],      static_cast<size_t>(size() - gap_start_));
     } else { // newGapStart > gap_start_
-        Tr::copy(newBuf,                &buf_[0],                                     static_cast<size_t>(gap_start_));
-        Tr::copy(&newBuf[gap_start_],   &buf_[gap_end_],                              static_cast<size_t>(new_gap_start - gap_start_));
-        Tr::copy(&newBuf[new_gap_end],  &buf_[gap_end_ + new_gap_start - gap_start_], static_cast<size_t>(size() - new_gap_start));
+        Tr::copy(new_buffer,                &buf_[0],                                     static_cast<size_t>(gap_start_));
+        Tr::copy(&new_buffer[gap_start_],   &buf_[gap_end_],                              static_cast<size_t>(new_gap_start - gap_start_));
+        Tr::copy(&new_buffer[new_gap_end],  &buf_[gap_end_ + new_gap_start - gap_start_], static_cast<size_t>(size() - new_gap_start));
     }
 
     delete [] buf_;
 
-    buf_       = newBuf;
+    buf_       = new_buffer;
     gap_start_ = new_gap_start;
     gap_end_   = new_gap_end;
 
