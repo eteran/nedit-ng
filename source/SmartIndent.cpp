@@ -2,13 +2,10 @@
 #include "SmartIndent.h"
 #include "DialogSmartIndent.h"
 #include "DialogSmartIndentCommon.h"
-#include "IndentStyle.h"
 #include "SmartIndentEntry.h"
-#include "WrapStyle.h"
-#include "interpret.h"
 #include "preferences.h"
-#include "Util/Input.h"
 #include "shift.h"
+#include "Util/Input.h"
 #include "Util/utils.h"
 
 #include <QMessageBox>
@@ -229,13 +226,16 @@ QByteArray SmartIndent::defaultCommonMacros() {
 /*
 ** Returns true if there are smart indent macros for a named language
 */
-int SmartIndent::SmartIndentMacrosAvailable(const QString &languageModeName) {
+bool SmartIndent::SmartIndentMacrosAvailable(const QString &languageModeName) {
 	return findIndentSpec(languageModeName) != nullptr;
 }
 
-
-
-int SmartIndent::LoadSmartIndentStringEx(const QString &string) {
+/**
+ * @brief SmartIndent::LoadSmartIndentStringEx
+ * @param string
+ * @return
+ */
+bool SmartIndent::LoadSmartIndentStringEx(const QString &string) {
 
 	Input in(&string);
 	QString errMsg;
@@ -254,18 +254,18 @@ int SmartIndent::LoadSmartIndentStringEx(const QString &string) {
 		// read language mode name
         is.lmName = Preferences::ReadSymbolicFieldEx(in);
 		if (is.lmName.isNull()) {
-            return siParseError(in, tr("language mode name required"));
+            return ParseError(in, tr("language mode name required"));
 		}
 
         if (!Preferences::SkipDelimiterEx(in, &errMsg)) {
-			return siParseError(in, errMsg);
+            return ParseError(in, errMsg);
 		}
 
 		/* look for "Default" keyword, and if it's there, return the default
 		   smart indent macros */
 		if (in.match(QLatin1String("Default"))) {
 			if (!loadDefaultIndentSpec(is.lmName)) {
-                return siParseError(in, tr("no default smart indent macros"));
+                return ParseError(in, tr("no default smart indent macros"));
 			}
 			continue;
 		}
@@ -274,19 +274,19 @@ int SmartIndent::LoadSmartIndentStringEx(const QString &string) {
 		   macro end boundary string) */
 		is.initMacro = readSIMacroEx(in);
 		if(is.initMacro.isNull()) {
-            return siParseError(in, tr("no end boundary to initialization macro"));
+            return ParseError(in, tr("no end boundary to initialization macro"));
 		}
 
 		// read the newline macro
 		is.newlineMacro = readSIMacroEx(in);
 		if(is.newlineMacro.isNull()) {
-            return siParseError(in, tr("no end boundary to newline macro"));
+            return ParseError(in, tr("no end boundary to newline macro"));
 		}
 
 		// read the modify macro
 		is.modMacro = readSIMacroEx(in);
 		if(is.modMacro.isNull()) {
-            return siParseError(in, tr("no end boundary to modify macro"));
+            return ParseError(in, tr("no end boundary to modify macro"));
 		}
 
 		// if there's no mod macro, make it null so it won't be executed
@@ -306,7 +306,7 @@ int SmartIndent::LoadSmartIndentStringEx(const QString &string) {
 	}
 }
 
-int SmartIndent::LoadSmartIndentCommonStringEx(const QString &string) {
+bool SmartIndent::LoadSmartIndentCommonStringEx(const QString &string) {
 
 	Input in(&string);
 
@@ -416,7 +416,7 @@ const SmartIndentEntry *SmartIndent::findIndentSpec(const QString &name) {
 ** Returns true if there are smart indent macros, or potential macros
 ** not yet committed in the smart indent dialog for a language mode,
 */
-int SmartIndent::LMHasSmartIndentMacros(const QString &languageMode) {
+bool SmartIndent::LMHasSmartIndentMacros(const QString &languageMode) {
 	if (findIndentSpec(languageMode) != nullptr) {
 		return true;
 	}
@@ -437,6 +437,7 @@ void SmartIndent::RenameSmartIndentMacros(const QString &oldName, const QString 
             sis.lmName = newName;
 		}
     }
+
 	if (SmartIndentDlg) {
         if(SmartIndentDlg->languageMode_ == oldName) {
             SmartIndentDlg->setLanguageMode(newName);
@@ -456,12 +457,12 @@ void SmartIndent::UpdateLangModeMenuSmartIndent() {
 }
 
 /**
- * @brief SmartIndent::siParseError
+ * @brief SmartIndent::ParseError
  * @param in
  * @param message
  * @return
  */
-bool SmartIndent::siParseError(const Input &in, const QString &message) {
+bool SmartIndent::ParseError(const Input &in, const QString &message) {
     return Preferences::ParseErrorEx(
                 nullptr,
                 *in.string(),

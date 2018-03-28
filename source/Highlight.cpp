@@ -54,17 +54,6 @@ auto NEDIT_DEFAULT_HI_BG      = QLatin1String("red");          /* matching paren
 auto NEDIT_DEFAULT_LINENO_FG  = QLatin1String("black");
 auto NEDIT_DEFAULT_CURSOR_FG  = QLatin1String("black");
 
-
-// Names for the fonts that can be used for syntax highlighting
-constexpr int N_FONT_TYPES = 4;
-
-const QLatin1String FontTypeNames[] = {
-    QLatin1String("Plain"),
-    QLatin1String("Italic"),
-    QLatin1String("Bold"),
-    QLatin1String("Bold Italic")
-};
-
 /* Initial forward expansion of parsing region in incremental reparsing,
    when style changes propagate forward beyond the original modification.
    This distance is increased by a factor of two for each subsequent step. */
@@ -1153,7 +1142,22 @@ void Highlight::saveTheme() {
             if(!hs.bgColor.isEmpty()) {
                 style.setAttribute(QLatin1String("background"), hs.bgColor);
             }
-            style.setAttribute(QLatin1String("font"), FontTypeNames[hs.font]);
+
+            // map the font to it's associated value
+            switch(hs.font) {
+            case PLAIN_FONT:
+                style.setAttribute(QLatin1String("font"), QLatin1String("Plain"));
+                break;
+            case ITALIC_FONT:
+                style.setAttribute(QLatin1String("font"), QLatin1String("Italic"));
+                break;
+            case BOLD_FONT:
+                style.setAttribute(QLatin1String("font"), QLatin1String("Bold"));
+                break;
+            case ITALIC_FONT | BOLD_FONT:
+                style.setAttribute(QLatin1String("font"), QLatin1String("Bold Italic"));
+                break;
+            }
 
             root.appendChild(style);
         }
@@ -1214,16 +1218,16 @@ void Highlight::loadTheme() {
                 continue;
             }
 
-            // map the font to it's associated integer
-            int i;
-            for (i = 0; i < N_FONT_TYPES; i++) {
-                if (FontTypeNames[i] == font) {
-                    hs.font = i;
-                    break;
-                }
-            }
-
-            if (i == N_FONT_TYPES) {
+            // map the font to it's associated value
+            if(font == QLatin1String("Plain")) {
+                hs.font = PLAIN_FONT;
+            } else if(font == QLatin1String("Italic")) {
+                hs.font = ITALIC_FONT;
+            } else if(font == QLatin1String("Bold")) {
+                hs.font = BOLD_FONT;
+            } else if(font == QLatin1String("Bold Italic")) {
+                hs.font = ITALIC_FONT | BOLD_FONT;
+            } else {
                 qWarning("NEdit: unrecognized font type %s in %s", qPrintable(font), qPrintable(hs.name));
                 continue;
             }
@@ -1297,7 +1301,7 @@ QString Highlight::WriteHighlightStringEx() {
         out << patSet.languageMode
             << QLatin1Char(':');
 
-        if (isDefaultPatternSet(&patSet)) {
+        if (isDefaultPatternSet(patSet)) {
             out << QLatin1String("Default\n\t");
         } else {
             out << QString(QLatin1String("%1")).arg(patSet.lineContext)
@@ -1544,7 +1548,7 @@ std::vector<HighlightPattern> Highlight::readHighlightPatternsEx(Input &in, int 
     return ret;
 }
 
-int Highlight::readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *pattern) {
+bool Highlight::readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *pattern) {
 
     // read the name field
     QString name = Preferences::ReadSymbolicFieldEx(in);
@@ -1658,14 +1662,14 @@ std::unique_ptr<PatternSet> Highlight::readDefaultPatternSet(const QString &lang
 /*
 ** Return true if patSet exactly matches one of the default pattern sets
 */
-bool Highlight::isDefaultPatternSet(const PatternSet *patSet) {
+bool Highlight::isDefaultPatternSet(const PatternSet &patSet) {
 
-    std::unique_ptr<PatternSet> defaultPatSet = readDefaultPatternSet(patSet->languageMode);
+    std::unique_ptr<PatternSet> defaultPatSet = readDefaultPatternSet(patSet.languageMode);
     if(!defaultPatSet) {
         return false;
     }
 
-    return (*patSet == *defaultPatSet);
+    return patSet == *defaultPatSet;
 }
 
 /*

@@ -85,7 +85,7 @@ private:
     static void passTwoParseString(HighlightData *pattern, const char *first, const char *last, const char *string, char *styleString, int64_t length, int *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till);
     static std::unique_ptr<PatternSet> readDefaultPatternSet(QByteArray &patternData, const QString &langModeName);
     static std::unique_ptr<PatternSet> highlightErrorEx(const Input &in, const QString &message);
-    static bool isDefaultPatternSet(const PatternSet *patSet);
+    static bool isDefaultPatternSet(const PatternSet &patSet);
     static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, uint8_t style, int *prevChar);
     static void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleString, int64_t startPos, int64_t endPos, int firstPass2Style);
     static int64_t lastModified(const std::shared_ptr<TextBuffer> &styleBuf);
@@ -93,7 +93,7 @@ private:
     static bool isParentStyle(const std::vector<uint8_t> &parentStyles, int style1, int style2);
     static bool patternIsParsable(HighlightData *pattern);
     static void recolorSubexpr(const std::shared_ptr<Regex> &re, int subexpr, int style, const char *string, char *styleString);
-    static int readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *pattern);
+    static bool readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *pattern);
     static std::vector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBraces, QString *errMsg, bool *ok);
     static QString createPatternsString(const PatternSet *patSet, const QString &indentStr);
 

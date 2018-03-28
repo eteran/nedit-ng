@@ -21,10 +21,10 @@ private:
     SmartIndent() = delete;
 
 public:
-    static int LMHasSmartIndentMacros(const QString &languageMode);
-    static int LoadSmartIndentCommonStringEx(const QString &string);
-    static int LoadSmartIndentStringEx(const QString &string);
-    static int SmartIndentMacrosAvailable(const QString &languageModeName);
+    static bool LMHasSmartIndentMacros(const QString &languageMode);
+    static bool LoadSmartIndentCommonStringEx(const QString &string);
+    static bool LoadSmartIndentStringEx(const QString &string);
+    static bool SmartIndentMacrosAvailable(const QString &languageModeName);
     static QString  WriteSmartIndentCommonStringEx();
     static QString WriteSmartIndentStringEx();
     static void EditCommonSmartIndentMacro();
@@ -35,7 +35,7 @@ public:
     static const SmartIndentEntry *findDefaultIndentSpec(const QString &name);
 
 private:
-    static bool siParseError(const Input &in, const QString &message);
+    static bool ParseError(const Input &in, const QString &message);
 
 public:
     static QString                       CommonMacros;
