@@ -17,6 +17,10 @@ std::vector<MenuData> ShellMenuData;
 std::vector<MenuData> MacroMenuData;
 std::vector<MenuData> BGMenuData;
 
+static QString copyMacroToEnd(Input &in);
+static int loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuItems, DialogTypes listType);
+static QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, DialogTypes listType);
+
 namespace {
 
 struct ParseError : std::exception {
@@ -31,16 +35,106 @@ private:
     std::string s_;
 };
 
+/**
+ * @brief setDefaultIndex
+ * @param infoList
+ * @param index
+ */
+void setDefaultIndex(const std::vector<MenuData> &infoList, size_t index) {
+    QString defaultMenuName = infoList[index].info->umiName;
+
+    /* Scan the list for items with the same name and a language mode
+       specified. If one is found, then set the default index to the
+       index of the current default item. */
+    for (const MenuData &data: infoList) {
+        if(const std::shared_ptr<userMenuInfo> &info = data.info) {
+            if (!info->umiIsDefault && info->umiName == defaultMenuName) {
+                info->umiDefaultIndex = index;
+            }
+        }
+    }
 }
 
-static QString copyMacroToEnd(Input &in);
-static int loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuItems, DialogTypes listType);
-static QString stripLanguageModeEx(const QString &menuItemName);
-static QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, DialogTypes listType);
-static std::shared_ptr<userMenuInfo> parseMenuItemRec(const MenuItem &item);
-static void parseMenuItemName(const QString &menuItemName, const std::shared_ptr<userMenuInfo> &info);
-static void setDefaultIndex(const std::vector<MenuData> &infoList, size_t index);
 
+/*
+** Cache user menus:
+** Extract language mode related info out of given menu item name string.
+** Store this info in given user menu info structure.
+*/
+void parseMenuItemName(const QString &menuItemName, const std::shared_ptr<userMenuInfo> &info) {
+
+    int index = menuItemName.indexOf(QLatin1Char('@'));
+    if(index != -1) {
+        QString languageString = menuItemName.mid(index);
+        if(languageString == QLatin1String("*")) {
+            /* only language is "*": this is for all but language specific macros */
+            info->umiIsDefault = true;
+            return;
+        }
+
+        QStringList languages = languageString.split(QLatin1Char('@'), QString::SkipEmptyParts);
+        std::vector<size_t> languageModes;
+
+        // setup a list of all language modes related to given menu item
+        for(const QString &language : languages) {
+            /* lookup corresponding language mode index; if PLAIN is
+               returned then this means, that language mode name after
+               "@" is unknown (i.e. not defined) */
+
+            size_t languageMode = Preferences::FindLanguageMode(language);
+            if (languageMode == PLAIN_LANGUAGE_MODE) {
+                languageModes.push_back(UNKNOWN_LANGUAGE_MODE);
+            } else {
+                languageModes.push_back(languageMode);
+            }
+        }
+
+        if (!languageModes.empty()) {
+            info->umiLanguageModes = languageModes;
+        }
+    }
+}
+
+/*
+** Cache user menus:
+** Returns an allocated copy of menuItemName stripped of language mode
+** parts (i.e. parts starting with "@").
+*/
+QString stripLanguageModeEx(const QString &menuItemName) {
+
+    int index = menuItemName.indexOf(QLatin1Char('@'));
+    if(index != -1) {
+        return menuItemName.mid(0, index);
+    } else {
+        return menuItemName;
+    }
+}
+
+/*
+** Cache user menus:
+** Parse a single menu item. Allocate & setup a user menu info element
+** holding extracted info.
+*/
+std::shared_ptr<userMenuInfo> parseMenuItemRec(const MenuItem &item) {
+
+    // allocate a new user menu info element
+    auto newInfo = std::make_shared<userMenuInfo>();
+
+    /* determine sub-menu depth and allocate some memory
+       for hierarchical ID; init. ID with {0,.., 0} */
+    newInfo->umiName = stripLanguageModeEx(item.name);
+
+    // init. remaining parts of user menu info element
+    newInfo->umiIsDefault    = false;
+    newInfo->umiDefaultIndex = static_cast<size_t>(-1);
+
+    // assign language mode info to new user menu info element
+    parseMenuItemName(item.name, newInfo);
+
+    return newInfo;
+}
+
+}
 
 std::vector<MenuData> &selectMenu(DialogTypes type) {
     switch(type) {
@@ -378,7 +472,13 @@ static QString copyMacroToEnd(Input &in) {
     QString code = input.mid();
 
     if (!code.startsWith(QLatin1Char('{'))) {
-        Preferences::ParseErrorEx(nullptr, code, input.index() - in.index(), QLatin1String("macro menu item"), QLatin1String("expecting '{'"));
+        Preferences::ParseErrorEx(
+                    nullptr,
+                    code,
+                    input.index() - in.index(),
+                    QLatin1String("macro menu item"),
+                    QLatin1String("expecting '{'"));
+
         return QString();
     }
 
@@ -388,7 +488,13 @@ static QString copyMacroToEnd(Input &in) {
 
     Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
     if(!prog) {
-        Preferences::ParseErrorEx(nullptr, code, stoppedAt, QLatin1String("macro menu item"), errMsg);
+        Preferences::ParseErrorEx(
+                    nullptr,
+                    code,
+                    stoppedAt,
+                    QLatin1String("macro menu item"),
+                    errMsg);
+
         return QString();
     }
     delete prog;
@@ -414,7 +520,6 @@ static QString copyMacroToEnd(Input &in) {
     retStr.reserve(stoppedAt - input.index());
 
     auto retPtr = std::back_inserter(retStr);
-
 
     while(input.index() != stoppedAt + in.index()) {
         if(input.match(QLatin1String("\n\t\t"))) {
@@ -461,98 +566,5 @@ void parseMenuItemList(std::vector<MenuData> &itemList) {
 		if (info->umiIsDefault) {
 			setDefaultIndex(itemList, i);
 		}
-    }
-}
-
-/*
-** Cache user menus:
-** Parse a single menu item. Allocate & setup a user menu info element
-** holding extracted info.
-*/
-static std::shared_ptr<userMenuInfo> parseMenuItemRec(const MenuItem &item) {
-
-	// allocate a new user menu info element 
-    auto newInfo = std::make_shared<userMenuInfo>();
-
-	/* determine sub-menu depth and allocate some memory
-	   for hierarchical ID; init. ID with {0,.., 0} */
-    newInfo->umiName = stripLanguageModeEx(item.name);
-
-	// init. remaining parts of user menu info element 
-    newInfo->umiIsDefault    = false;
-    newInfo->umiDefaultIndex = static_cast<size_t>(-1);
-
-	// assign language mode info to new user menu info element 
-    parseMenuItemName(item.name, newInfo);
-
-    return newInfo;
-}
-
-/*
-** Cache user menus:
-** Extract language mode related info out of given menu item name string.
-** Store this info in given user menu info structure.
-*/
-static void parseMenuItemName(const QString &menuItemName, const std::shared_ptr<userMenuInfo> &info) {
-
-    int index = menuItemName.indexOf(QLatin1Char('@'));
-    if(index != -1) {
-        QString languageString = menuItemName.mid(index);
-        if(languageString == QLatin1String("*")) {
-            /* only language is "*": this is for all but language specific macros */
-            info->umiIsDefault = true;
-            return;
-        }
-
-        QStringList languages = languageString.split(QLatin1Char('@'), QString::SkipEmptyParts);
-        std::vector<size_t> languageModes;
-
-        // setup a list of all language modes related to given menu item
-        for(const QString &language : languages) {
-            /* lookup corresponding language mode index; if PLAIN is
-               returned then this means, that language mode name after
-               "@" is unknown (i.e. not defined) */
-
-            size_t languageMode = Preferences::FindLanguageMode(language);
-            if (languageMode == PLAIN_LANGUAGE_MODE) {
-                languageModes.push_back(UNKNOWN_LANGUAGE_MODE);
-            } else {
-                languageModes.push_back(languageMode);
-            }
-        }
-
-        if (!languageModes.empty()) {
-            info->umiLanguageModes = languageModes;
-        }
-    }
-}
-
-/*
-** Cache user menus:
-** Returns an allocated copy of menuItemName stripped of language mode
-** parts (i.e. parts starting with "@").
-*/
-static QString stripLanguageModeEx(const QString &menuItemName) {
-	
-    int index = menuItemName.indexOf(QLatin1Char('@'));
-    if(index != -1) {
-        return menuItemName.mid(0, index);
-    } else {
-        return menuItemName;
-    }
-}
-
-static void setDefaultIndex(const std::vector<MenuData> &infoList, size_t index) {
-    QString defaultMenuName = infoList[index].info->umiName;
-
-    /* Scan the list for items with the same name and a language mode
-       specified. If one is found, then set the default index to the
-       index of the current default item. */
-    for (const MenuData &data: infoList) {
-        if(const std::shared_ptr<userMenuInfo> &info = data.info) {
-            if (!info->umiIsDefault && info->umiName == defaultMenuName) {
-                info->umiDefaultIndex = index;
-            }
-        }
     }
 }
