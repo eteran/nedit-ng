@@ -40,7 +40,7 @@ Dependency                                  | Version Required
 	   nedit users) have grown to appreciate. A change in regex engine would
 	   likely require a rework on the syntax highlighting algorithm.
 	3. The original highligher has some insider information of the regex
-	   implementation which is uses in order to be more efficient. I could 
+	   implementation which it uses in order to be more efficient. I could 
 	   fake this information, but at the cost of efficiency.
 
 ### Improvements already available:
