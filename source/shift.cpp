@@ -764,8 +764,8 @@ void FillSelectionEx(DocumentWidget *document, TextArea *area) {
     TextBuffer *buf = document->buffer_;
     int64_t left;
     int64_t right;
-    int64_t rectStart;
-    int64_t rectEnd;
+    int64_t rectStart = 0;
+    int64_t rectEnd   = 0;
     bool isRect;
     int64_t rightMargin;
 
