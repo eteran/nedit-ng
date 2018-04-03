@@ -2331,7 +2331,7 @@ bool DocumentWidget::SaveWindow() {
 
         QPushButton *buttonContinue = messageBox.addButton(tr("Continue"), QMessageBox::AcceptRole);
         QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
-        Q_UNUSED(buttonContinue);
+        Q_UNUSED(buttonCancel);
 
         messageBox.exec();
         if(messageBox.clickedButton() != buttonContinue) {
