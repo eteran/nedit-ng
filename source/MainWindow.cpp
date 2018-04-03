@@ -6422,15 +6422,15 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
     int64_t extentBW;
     int64_t extentFW;
     int64_t lineStart;
-    int64_t rectEnd;
-    int64_t rectStart;
     int64_t selEnd;
     int64_t selStart;
     int64_t startPos;
-    bool isRect;
+    int64_t rectEnd   = 0;
+    int64_t rectStart = 0;
     bool substSuccess = false;
     bool anyFound     = false;
     bool cancelSubst  = true;
+    bool isRect;
 
     // save a copy of search and replace strings in the search history
     Search::saveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
