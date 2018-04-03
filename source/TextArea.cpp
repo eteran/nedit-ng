@@ -1770,7 +1770,7 @@ int64_t TextArea::measurePropChar(char ch, int64_t colNum, int64_t pos) const {
 ** Find the width of a string in the font of a particular style
 */
 int TextArea::stringWidth(const char *string, int length, int style) const {
-
+#if 1
     QString str = asciiToUnicode(string, length);
 
 	if (style & STYLE_LOOKUP_MASK) {
@@ -1780,6 +1780,11 @@ int TextArea::stringWidth(const char *string, int length, int style) const {
         QFontMetrics fm(font_);
         return fm.width(str);
 	}
+#else
+    Q_UNUSED(string);
+    Q_UNUSED(style);
+    return fixedFontWidth_ * length;
+#endif
 }
 
 /*
