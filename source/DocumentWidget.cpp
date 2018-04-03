@@ -2245,7 +2245,7 @@ void DocumentWidget::RevertToSaved() {
 ** is generated using the name and path stored in the window and adding a
 ** tilde (~) on UNIX and underscore (_) on VMS to the beginning of the name.
 */
-int DocumentWidget::WriteBackupFile() {
+bool DocumentWidget::WriteBackupFile() {
     FILE *fp;
 
     // Generate a name for the autoSave file
@@ -2299,7 +2299,7 @@ int DocumentWidget::WriteBackupFile() {
     return true;
 }
 
-int DocumentWidget::SaveWindow() {
+bool DocumentWidget::SaveWindow() {
 
     // Try to ensure our information is up-to-date
     CheckForChangesToFileEx();
@@ -2334,7 +2334,7 @@ int DocumentWidget::SaveWindow() {
         Q_UNUSED(buttonContinue);
 
         messageBox.exec();
-        if(messageBox.clickedButton() == buttonCancel) {
+        if(messageBox.clickedButton() != buttonContinue) {
             // Cancel and mark file as externally modified
             lastModTime_ = 0;
             fileMissing_ = false;
@@ -2804,7 +2804,7 @@ bool DocumentWidget::bckError(const QString &errString, const QString &file) {
 ** to nedit.  This should return false if the file has been deleted or is
 ** unavailable.
 */
-int DocumentWidget::fileWasModifiedExternally() const {
+bool DocumentWidget::fileWasModifiedExternally() const {
 
     if (!filenameSet_) {
         return false;
@@ -2828,7 +2828,7 @@ int DocumentWidget::fileWasModifiedExternally() const {
     return true;
 }
 
-int DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
+bool DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
 
     // Make sure that the window is not in iconified state
     if (fileChanged_) {
@@ -6446,13 +6446,13 @@ std::shared_ptr<Regex> DocumentWidget::compileREAndWarnEx(const QString &re) {
         return std::make_shared<Regex>(re.toStdString(), REDFLT_STANDARD);
     } catch(const RegexError &e) {
 
-        constexpr int maxLength = 4096;
+        constexpr int MaxLength = 4096;
 
         /* Prevent buffer overflow. If the re is too long, truncate it and append ... */
         QString boundedRe = re;
 
-        if (boundedRe.size() > maxLength) {
-            boundedRe.resize(maxLength - 3);
+        if (boundedRe.size() > MaxLength) {
+            boundedRe.resize(MaxLength - 3);
             boundedRe.append(tr("..."));
         }
 
@@ -6475,7 +6475,7 @@ std::shared_ptr<Regex> DocumentWidget::compileREAndWarnEx(const QString &re) {
 ** Instead, empty it and make it Untitled, and let the macro completion
 ** process close the window when the macro is finished executing.
 */
-int DocumentWidget::MacroWindowCloseActionsEx() {
+bool DocumentWidget::MacroWindowCloseActionsEx() {
     const std::shared_ptr<MacroCommandData> &cmdData = macroCmdData_;
 
     CommandRecorder *recorder = CommandRecorder::instance();
