@@ -6152,7 +6152,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     }
 
     // Set up table for mapping colors and fonts to syntax
-    std::vector<StyleTableEntry> styleTable(nPass1Patterns + nPass2Patterns + 1);
+    std::vector<StyleTableEntry> styleTable(nPass1Patterns + nPass2Patterns);
     auto it = styleTable.begin();
 
     auto setStyleTableEntry = [this](std::vector<StyleTableEntry>::iterator p, HighlightPattern *pat) {
