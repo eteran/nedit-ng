@@ -461,20 +461,22 @@ parseDone:
 ** the error pattern matched, if the end of the string was reached without
 ** matching the end expression, or in the unlikely event of an internal error.
 */
-bool Highlight::parseString(HighlightData *pattern, const char *first, const char *last, const char **string, char **styleString, int64_t length, int *prevChar, bool anchored, const QString &delimiters, const char *look_behind_to, const char *match_to) {
+bool Highlight::parseString(HighlightData *const pattern, const char *const first, const char *const last, const char **string, char **styleString, int64_t length, int *prevChar, bool anchored, const QString &delimiters, const char *look_behind_to, const char *match_to) {
 
 	bool subExecuted;
     const int succChar = (match_to && (match_to != last)) ? (*match_to) : -1;
-	HighlightData *subSubPat;
+    HighlightData *subSubPat;
 
-	if (length <= 0) {
+    if (length <= 0) {
 		return false;
     }
 
     const char *stringPtr = *string;
     char *stylePtr        = *styleString;
+
+    const std::shared_ptr<Regex> &subPatternRE = pattern->subPatternRE;
 	
-    while (pattern->subPatternRE->ExecRE(
+    while (subPatternRE->ExecRE(
                stringPtr,
                anchored ? *string + 1 : *string + length + 1,
                false,
@@ -487,23 +489,24 @@ bool Highlight::parseString(HighlightData *pattern, const char *first, const cha
 		/* Beware of the case where only one real branch exists, but that
 		   branch has sub-branches itself. In that case the top_branch refers
 		   to the matching sub-branch and must be ignored. */
-		int subIndex = (pattern->nSubBranches > 1) ? pattern->subPatternRE->top_branch : 0;
+        int subIndex = (pattern->nSubBranches > 1) ? subPatternRE->top_branch : 0;
 		// Combination of all sub-patterns and end pattern matched 
-		// printf("combined patterns RE matched at %d\n", pattern->subPatternRE->startp[0] - *string); 
+        // printf("combined patterns RE matched at %d\n", subPatternRE->startp[0] - *string);
 		const char *startingStringPtr = stringPtr;
 
 		/* Fill in the pattern style for the text that was skipped over before
 		   the match, and advance the pointers to the start of the pattern */
-		fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->startp[0], pattern->style, prevChar);
+        fillStyleString(&stringPtr, &stylePtr, subPatternRE->startp[0], pattern->style, prevChar);
 
 		/* If the combined pattern matched this pattern's end pattern, we're
 		   done.  Fill in the style string, update the pointers, color the
 	       end expression if there were coloring sub-patterns, and return */
 		const char *savedStartPtr = stringPtr;
         const int savedPrevChar   = *prevChar;
+
 		if (pattern->endRE) {
 			if (subIndex == 0) {
-				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], pattern->style, prevChar);
+                fillStyleString(&stringPtr, &stylePtr, subPatternRE->endp[0], pattern->style, prevChar);
 				subExecuted = false;
 
 				for (int i = 0; i < pattern->nSubPatterns; i++) {
@@ -542,7 +545,7 @@ bool Highlight::parseString(HighlightData *pattern, const char *first, const cha
 		   done.  Fill in the style string, update the pointers, and return */
 		if (pattern->errorRE) {
 			if (subIndex == 0) {
-				fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->startp[0], pattern->style, prevChar);
+                fillStyleString(&stringPtr, &stylePtr, subPatternRE->startp[0], pattern->style, prevChar);
 				*string      = stringPtr;
 				*styleString = stylePtr;
 				return false;
@@ -572,7 +575,7 @@ bool Highlight::parseString(HighlightData *pattern, const char *first, const cha
 
 		// the sub-pattern is a simple match, just color it 
 		if (!subPat->subPatternRE) {
-			fillStyleString(&stringPtr, &stylePtr, pattern->subPatternRE->endp[0], /* subPat->startRE->endp[0],*/ subPat->style, prevChar);
+            fillStyleString(&stringPtr, &stylePtr, subPatternRE->endp[0], /* subPat->startRE->endp[0],*/ subPat->style, prevChar);
 
 			// Parse the remainder of the sub-pattern 
 		} else if (subPat->endRE) {
@@ -585,7 +588,7 @@ bool Highlight::parseString(HighlightData *pattern, const char *first, const cha
                 fillStyleString(
                             &stringPtr,
                             &stylePtr,
-                            pattern->subPatternRE->endp[0], // subPat->startRE->endp[0],
+                            subPatternRE->endp[0], // subPat->startRE->endp[0],
                             subPat->style,
                             prevChar);
             }
@@ -618,12 +621,12 @@ bool Highlight::parseString(HighlightData *pattern, const char *first, const cha
                 last,
 				&stringPtr, 
 				&stylePtr, 
-				pattern->subPatternRE->endp[0] - stringPtr, 
+                subPatternRE->endp[0] - stringPtr,
 				prevChar, 
 				false, 
 				delimiters, 
                 look_behind_to,
-				pattern->subPatternRE->endp[0]);
+                subPatternRE->endp[0]);
 		}
 
 		/* If the sub-pattern has color-only sub-sub-patterns, add color
