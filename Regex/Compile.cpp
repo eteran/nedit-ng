@@ -49,7 +49,7 @@ const char ASCII_Digits[] = "0123456789"; // Same for all locales.
  *
  */
 template <class T>
-constexpr uint8_t PUT_OFFSET_L(T v) {
+constexpr uint8_t PUT_OFFSET_L(T v) noexcept {
     return static_cast<uint8_t>((v >> 8) & 0xff);
 }
 
@@ -57,7 +57,7 @@ constexpr uint8_t PUT_OFFSET_L(T v) {
  *
  */
 template <class T>
-constexpr uint8_t PUT_OFFSET_R(T v) {
+constexpr uint8_t PUT_OFFSET_R(T v) noexcept {
     return static_cast<uint8_t>(v & 0xff);
 }
 
@@ -67,7 +67,7 @@ constexpr uint8_t PUT_OFFSET_R(T v) {
  * @return
  */
 template <class Ch>
-bool IS_QUANTIFIER(Ch ch) {
+bool IS_QUANTIFIER(Ch ch) noexcept {
     return ch == '*' || ch == '+' || ch == '?' || ch == pContext.Brace_Char;
 }
 
@@ -77,7 +77,7 @@ bool IS_QUANTIFIER(Ch ch) {
  * Generate character class sets using locale aware ANSI C functions.
  *
  *--------------------------------------------------------------------*/
-bool init_ansi_classes() {
+bool init_ansi_classes() noexcept {
 
     static bool initialized  = false;
 
@@ -135,7 +135,7 @@ bool init_ansi_classes() {
  * Returns a pointer to the START of the emitted node.
  *----------------------------------------------------------------------*/
 template <class T>
-uint8_t *emit_node(T op_code) {
+uint8_t *emit_node(T op_code) noexcept {
 
     uint8_t *ret_val = pContext.Code_Emit_Ptr; // Return address of start of node
 
@@ -159,7 +159,7 @@ uint8_t *emit_node(T op_code) {
  * Emit (if appropriate) a byte of code (usually part of an operand.)
  *----------------------------------------------------------------------*/
 template <class T>
-void emit_byte(T ch) {
+void emit_byte(T ch) noexcept {
 
     if (pContext.Code_Emit_Ptr == &Compute_Size) {
         pContext.Reg_Size++;
@@ -175,7 +175,7 @@ void emit_byte(T ch) {
  * class operand.)
  *----------------------------------------------------------------------*/
 template <class T>
-void emit_class_byte(T ch) {
+void emit_class_byte(T ch) noexcept {
 
     if (pContext.Code_Emit_Ptr == &Compute_Size) {
         pContext.Reg_Size++;
@@ -199,7 +199,7 @@ void emit_class_byte(T ch) {
  * Emit nodes that need special processing.
  *----------------------------------------------------------------------*/
 template <class Ch>
-uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) {
+uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept {
 
     uint8_t *ret_val = &Compute_Size;
     uint8_t *ptr;

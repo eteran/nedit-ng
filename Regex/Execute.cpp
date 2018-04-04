@@ -29,7 +29,7 @@ bool attempt(Regex *prog, const char *string);
  * @param ptr
  * @return
  */
-bool AT_END_OF_STRING(const char *ptr) {
+bool AT_END_OF_STRING(const char *ptr) noexcept {
 
     if(eContext.End_Of_String != nullptr && ptr >= eContext.End_Of_String) {
         return true;
@@ -43,7 +43,7 @@ bool AT_END_OF_STRING(const char *ptr) {
  * @param p
  * @return
  */
-uint16_t GET_LOWER(uint8_t *p) {
+uint16_t GET_LOWER(uint8_t *p) noexcept {
     return static_cast<uint8_t>(((p[NODE_SIZE + 0] & 0xff) << 8) + ((p[NODE_SIZE + 1]) & 0xff));
 }
 
@@ -52,7 +52,7 @@ uint16_t GET_LOWER(uint8_t *p) {
  * @param p
  * @return
  */
-uint16_t GET_UPPER(uint8_t *p) {
+uint16_t GET_UPPER(uint8_t *p) noexcept {
     return static_cast<uint8_t>(((p[NODE_SIZE + 2] & 0xff) << 8) + ((p[NODE_SIZE + 3]) & 0xff));
 }
 
@@ -61,7 +61,7 @@ uint16_t GET_UPPER(uint8_t *p) {
  * @param ch
  * @return
  */
-bool isDelimiter(int ch) {
+bool isDelimiter(int ch) noexcept {
     auto n = static_cast<unsigned int>(ch);
     if(n < eContext.Current_Delimiters.size()) {
         return eContext.Current_Delimiters[n];

@@ -15,18 +15,17 @@
 extern uint8_t Compute_Size;
 
 template <class T>
-unsigned int U_CHAR_AT(T *p) {
+unsigned int U_CHAR_AT(T *p) noexcept {
     return static_cast<unsigned int>(*p);
 }
 
 template <class T>
-T *OPERAND(T *p) {
+T *OPERAND(T *p) noexcept {
     return p + NODE_SIZE;
 }
 
 template <class T>
-uint8_t GET_OP_CODE(T *p) {
-    Q_ASSERT(p);
+uint8_t GET_OP_CODE(T *p) noexcept {
     return *reinterpret_cast<uint8_t *>(p);
 }
 
@@ -40,7 +39,7 @@ uint8_t GET_OP_CODE(T *p) {
  * escape.
  *--------------------------------------------------------------------*/
 template <class R, class Ch>
-R literal_escape(Ch ch) {
+R literal_escape(Ch ch) noexcept {
 
     static const char valid_escape[] = {
         'a', 'b', 'e', 'f', 'n', 'r', 't', 'v', '(', ')', '-', '[', ']', '<',
@@ -76,7 +75,7 @@ R literal_escape(Ch ch) {
  * \0000 is specified.
  *--------------------------------------------------------------------*/
 template <class R, class T>
-R numeric_escape(T ch, const char **parse) {
+R numeric_escape(T ch, const char **parse) noexcept {
 
     static const char digits[] = "fedcbaFEDCBA9876543210";
 
@@ -164,7 +163,7 @@ R numeric_escape(T ch, const char **parse) {
  * @return
  */
 template <class T>
-uint16_t GET_OFFSET(T *p) {
+uint16_t GET_OFFSET(T *p) noexcept {
     auto ptr = reinterpret_cast<uint8_t *>(p);
     return static_cast<uint16_t>(((ptr[1] & 0xff) << 8) + (ptr[2] & 0xff));
 }
@@ -176,7 +175,7 @@ uint16_t GET_OFFSET(T *p) {
  *       description of the macro).
  *----------------------------------------------------------------------*/
 template <class T>
-uint8_t *next_ptr(T *ptr) {
+uint8_t *next_ptr(T *ptr) noexcept {
 
     if (ptr == &Compute_Size) {
         return nullptr;
