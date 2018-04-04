@@ -6152,44 +6152,50 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     }
 
     // Set up table for mapping colors and fonts to syntax
-    std::vector<StyleTableEntry> styleTable(nPass1Patterns + nPass2Patterns);
-    auto it = styleTable.begin();
+    std::vector<StyleTableEntry> styleTable;
+    styleTable.reserve(nPass1Patterns + nPass2Patterns);
 
-    auto setStyleTableEntry = [this](std::vector<StyleTableEntry>::iterator p, HighlightPattern *pat) {
+    auto it = std::back_inserter(styleTable);
 
-        p->underline     = false;
-        p->highlightName = pat->name;
-        p->styleName     = pat->style;
-        p->font          = FontOfNamedStyleEx(pat->style);
-        p->colorName     = Highlight::FgColorOfNamedStyleEx     (pat->style);
-        p->bgColorName   = Highlight::BgColorOfNamedStyleEx   (pat->style);
-        p->isBold        = Highlight::FontOfNamedStyleIsBold  (pat->style);
-        p->isItalic      = Highlight::FontOfNamedStyleIsItalic(pat->style);
+    auto setStyleTableEntry = [this](HighlightPattern *pat) {
+
+        StyleTableEntry p;
+
+        p.underline     = false;
+        p.highlightName = pat->name;
+        p.styleName     = pat->style;
+        p.font          = FontOfNamedStyleEx(pat->style);
+        p.colorName     = Highlight::FgColorOfNamedStyleEx     (pat->style);
+        p.bgColorName   = Highlight::BgColorOfNamedStyleEx   (pat->style);
+        p.isBold        = Highlight::FontOfNamedStyleIsBold  (pat->style);
+        p.isItalic      = Highlight::FontOfNamedStyleIsItalic(pat->style);
 
         // And now for the more physical stuff
-        p->color = X11Colors::fromString(p->colorName);
+        p.color = X11Colors::fromString(p.colorName);
 
-        if (!p->bgColorName.isNull()) {
-            p->bgColor = X11Colors::fromString(p->bgColorName);
+        if (!p.bgColorName.isNull()) {
+            p.bgColor = X11Colors::fromString(p.bgColorName);
         } else {
-            p->bgColor = p->color;
+            p.bgColor = p.color;
         }
+
+        return p;
     };
 
     // PLAIN_STYLE (pass 1)
-    setStyleTableEntry(it++, noPass1 ? &pass2PatternSrc[0] : &pass1PatternSrc[0]);
+    it++ = setStyleTableEntry(noPass1 ? &pass2PatternSrc[0] : &pass1PatternSrc[0]);
 
     // PLAIN_STYLE (pass 2)
-    setStyleTableEntry(it++, noPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
+    it++ = setStyleTableEntry(noPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
 
     // explicit styles (pass 1)
     for (size_t i = 1; i < nPass1Patterns; i++) {
-        setStyleTableEntry(it++, &pass1PatternSrc[i]);
+        it++ = setStyleTableEntry(&pass1PatternSrc[i]);
     }
 
     // explicit styles (pass 2)
     for (size_t i = 1; i < nPass2Patterns; i++) {
-        setStyleTableEntry(it++, &pass2PatternSrc[i]);
+        it++ = setStyleTableEntry(&pass2PatternSrc[i]);
     }
 
     // Free the temporary sorted pattern source list
