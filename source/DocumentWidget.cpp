@@ -6094,6 +6094,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     } else {
         pass2Pats = compilePatternsEx({pass2PatternSrc, gsl::narrow<int>(nPass2Patterns)});
         if (!pass2Pats) {
+            delete [] pass1Pats;
             return nullptr;
         }
     }
