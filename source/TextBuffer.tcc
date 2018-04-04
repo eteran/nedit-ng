@@ -759,7 +759,7 @@ int64_t BasicTextBuffer<Ch, Tr>::BufEndOfLine(int64_t pos) const noexcept {
 ** for figuring tabs.
 */
 template <class Ch, class Tr>
-int64_t BasicTextBuffer<Ch, Tr>::BufGetExpandedChar(int64_t pos, int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN]) const noexcept {
+int BasicTextBuffer<Ch, Tr>::BufGetExpandedChar(int64_t pos, int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN]) const noexcept {
     return BufExpandCharacter(BufGetCharacter(pos), indent, outStr, tabDist_);
 }
 

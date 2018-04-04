@@ -91,7 +91,7 @@ public:
     int64_t BufCursorPosHint() const noexcept;
     int64_t BufEndOfLine(int64_t pos) const noexcept;
     bool BufGetEmptySelectionPos(int64_t *start, int64_t *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
-    int64_t BufGetExpandedChar(int64_t pos, int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN]) const noexcept;
+    int BufGetExpandedChar(int64_t pos, int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN]) const noexcept;
     int64_t BufGetLength() const noexcept;
     bool BufGetSelectionPos(int64_t *start, int64_t *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
     int BufGetTabDistance() const noexcept;

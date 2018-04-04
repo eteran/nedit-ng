@@ -2544,13 +2544,13 @@ int64_t TextArea::measureVisLine(int visLineNum) const {
             QFontMetrics fm(font_);
 
             for (int i = 0; i < lineLen; i++) {
-                int64_t len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
+                int len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
                 width += fm.width(asciiToUnicode(expandedChar, len));
                 charCount += len;
             }
         } else {
             for (int i = 0; i < lineLen; i++) {
-                int64_t len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
+                int len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
                 auto styleChar = styleBuffer_->BufGetCharacter(lineStartPos + i);
                 uint8_t style = static_cast<uint8_t>(styleChar) - ASCII_A;
 
@@ -2562,7 +2562,7 @@ int64_t TextArea::measureVisLine(int visLineNum) const {
         }
     } else {
         for (int i = 0; i < lineLen; i++) {
-            int64_t len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
+            int len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
             width += (fixedFontWidth_ * len);
             charCount += len;
         }
