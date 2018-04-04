@@ -2535,7 +2535,10 @@ int64_t TextArea::measureVisLine(int visLineNum) const {
     const int64_t lineStartPos = lineStarts_[visLineNum];
     char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 
-
+    // TODO(eteran): this "slow path" can still be made faster. We can do the work in chunks
+    // and only call "fm.width(asciiToUnicode(...))" when we are almost full or the style
+    // has changed. I would expect this to result in significantly less calls to the inefficient
+    // QFontMetrics::width calls
     if(fixedFontWidth_ == -1) {
         if (!styleBuffer_) {
             QFontMetrics fm(font_);
