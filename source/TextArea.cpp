@@ -1770,21 +1770,20 @@ int64_t TextArea::measurePropChar(char ch, int64_t colNum, int64_t pos) const {
 ** Find the width of a string in the font of a particular style
 */
 int TextArea::stringWidth(const char *string, int length, int style) const {
-#if 1
-    QString str = asciiToUnicode(string, length);
 
-	if (style & STYLE_LOOKUP_MASK) {
-        QFontMetrics fm(styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A].font);
-        return fm.width(str);
-	} else {
-        QFontMetrics fm(font_);
-        return fm.width(str);
-	}
-#else
-    Q_UNUSED(string);
-    Q_UNUSED(style);
-    return fixedFontWidth_ * length;
-#endif
+    if(fixedFontWidth_ == -1) {
+        QString str = asciiToUnicode(string, length);
+
+        if (style & STYLE_LOOKUP_MASK) {
+            QFontMetrics fm(styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A].font);
+            return fm.width(str);
+        } else {
+            QFontMetrics fm(font_);
+            return fm.width(str);
+        }
+    } else {
+        return fixedFontWidth_ * length;
+    }
 }
 
 /*
@@ -2536,28 +2535,37 @@ int64_t TextArea::measureVisLine(int visLineNum) const {
     const int64_t lineStartPos = lineStarts_[visLineNum];
     char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 
-    if (!styleBuffer_) {
 
-        QFontMetrics fm(font_);
+    if(fixedFontWidth_ == -1) {
+        if (!styleBuffer_) {
+            QFontMetrics fm(font_);
 
+            for (int i = 0; i < lineLen; i++) {
+                int64_t len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
+                width += fm.width(asciiToUnicode(expandedChar, len));
+                charCount += len;
+            }
+        } else {
+            for (int i = 0; i < lineLen; i++) {
+                int64_t len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
+                auto styleChar = styleBuffer_->BufGetCharacter(lineStartPos + i);
+                uint8_t style = static_cast<uint8_t>(styleChar) - ASCII_A;
+
+                QFontMetrics styleFm(styleTable_[style].font);
+                width += styleFm.width(asciiToUnicode(expandedChar, len));
+
+                charCount += len;
+            }
+        }
+    } else {
         for (int i = 0; i < lineLen; i++) {
             int64_t len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
-            width += fm.width(asciiToUnicode(expandedChar, len));
-			charCount += len;
-		}
-	} else {
-        for (int i = 0; i < lineLen; i++) {
-            int64_t len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
-            auto styleChar = styleBuffer_->BufGetCharacter(lineStartPos + i);
-            uint8_t style = static_cast<uint8_t>(styleChar) - ASCII_A;
+            width += (fixedFontWidth_ * len);
+            charCount += len;
+        }
+    }
 
-            QFontMetrics styleFm(styleTable_[style].font);
-            width += styleFm.width(asciiToUnicode(expandedChar, len));
-
-			charCount += len;
-		}
-	}
-	return width;
+    return width;
 }
 
 /**
