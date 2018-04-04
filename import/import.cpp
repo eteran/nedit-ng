@@ -451,6 +451,8 @@ QString covertRGBColor(const QString &color) {
 
     {
         // convert RGBi style colors
+        // NOTE(eteran): this regex is slightly more brittle than I'd like, but this is such a rarely used format
+        // that I'm leaving it this way for now... I'll improve this later
         static const QRegularExpression rgbi_regex(QLatin1String("RGBi:"
                                                                   "(?<red>[0-9]+(\\.[0-9]+)?)"
                                                                   "/"
