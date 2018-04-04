@@ -11,6 +11,7 @@
 #include <QFile>
 #include <QDomDocument>
 #include <QDomElement>
+#include <QColor>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -420,6 +421,65 @@ int readResource(XrmDatabase db, const std::string &name) {
 	return n;
 }
 
+QString covertRGBColor(const QString &color) {
+
+    {
+        // convert RGB style colors
+        static const QRegularExpression rgb_regex(QLatin1String("rgb:"
+                                                                  "(?<red>[0-9a-fA-F]{1,4})"
+                                                                  "/"
+                                                                  "(?<green>[0-9a-fA-F]{1,4})"
+                                                                  "/"
+                                                                  "(?<blue>[0-9a-fA-F]{1,4})"
+                                                                  ));
+
+        QRegularExpressionMatch match = rgb_regex.match(color);
+        if(match.hasMatch()) {
+            uint16_t r = match.captured(QLatin1String("red")).toUShort(nullptr, 16);
+            uint16_t g = match.captured(QLatin1String("green")).toUShort(nullptr, 16);
+            uint16_t b = match.captured(QLatin1String("blue")).toUShort(nullptr, 16);
+
+            QColor c(r, g, b);
+            auto newColor = QString::asprintf("#%02x%02x%02x",
+                                     ((c.rgb() & 0x00ff0000) >> 16),
+                                     ((c.rgb() & 0x0000ff00) >> 8),
+                                     ((c.rgb() & 0x000000ff) >> 0));
+            return newColor;
+        }
+    }
+
+
+    {
+        // convert RGBi style colors
+        static const QRegularExpression rgbi_regex(QLatin1String("rgbi:"
+                                                                  "(?<red>[0-9]+(\\.[0-9]+)?)"
+                                                                  "/"
+                                                                  "(?<green>[0-9]+(\\.[0-9]+)?)"
+                                                                  "/"
+                                                                  "(?<blue>[0-9]+(\\.[0-9]+)?)"
+                                                                  ));
+
+
+        QRegularExpressionMatch match_rgbi = rgbi_regex.match(color);
+        if(match_rgbi.hasMatch()) {
+            qreal r = match_rgbi.captured(QLatin1String("red")).toDouble();
+            qreal g = match_rgbi.captured(QLatin1String("green")).toDouble();
+            qreal b = match_rgbi.captured(QLatin1String("blue")).toDouble();
+
+            QColor c(static_cast<int>(r * 255), static_cast<int>(g * 255), static_cast<int>(b * 255));
+            auto newColor = QString::asprintf("#%02x%02x%02x",
+                                     ((c.rgb() & 0x00ff0000) >> 16),
+                                     ((c.rgb() & 0x0000ff00) >> 8),
+                                     ((c.rgb() & 0x000000ff) >> 0));
+            return newColor;
+        }
+    }
+
+    // when in doubt, keep the current color
+    return color;
+
+}
+
 }
 
 /**
@@ -545,7 +605,7 @@ int main(int argc, char *argv[]) {
     Settings::showMatching            = from_string<ShowMatchingStyle>(readResource<QString>(prefDB, "nedit.showMatching"));
     Settings::autoIndent              = from_string<IndentStyle>	     (readResource<QString>(prefDB, "nedit.autoIndent"));
 
-    // theme colors
+    // theme colors    
     Settings::colors[ColorTypes::TEXT_BG_COLOR]   = readResource<QString>(prefDB, "nedit.textBgColor");
     Settings::colors[ColorTypes::TEXT_FG_COLOR]   = readResource<QString>(prefDB, "nedit.textFgColor");
     Settings::colors[ColorTypes::SELECT_BG_COLOR] = readResource<QString>(prefDB, "nedit.selectBgColor");
@@ -554,6 +614,12 @@ int main(int argc, char *argv[]) {
     Settings::colors[ColorTypes::HILITE_FG_COLOR] = readResource<QString>(prefDB, "nedit.hiliteFgColor");
     Settings::colors[ColorTypes::CURSOR_FG_COLOR] = readResource<QString>(prefDB, "nedit.cursorFgColor");
     Settings::colors[ColorTypes::LINENO_FG_COLOR] = readResource<QString>(prefDB, "nedit.lineNoFgColor");
+
+    // convert RGB: style colors
+    for(QString &color : Settings::colors) {
+        color = covertRGBColor(color);
+    }
+
 
     // fonts
 #if 0
@@ -582,8 +648,8 @@ int main(int argc, char *argv[]) {
         if(match.hasMatch()) {
             Style s;
             s.name       = match.captured(QLatin1String("name"));
-            s.foreground = match.captured(QLatin1String("foreground"));
-            s.background = match.captured(QLatin1String("background"));
+            s.foreground = covertRGBColor(match.captured(QLatin1String("foreground")));
+            s.background = covertRGBColor(match.captured(QLatin1String("background")));
             s.font       = match.captured(QLatin1String("font"));
 
             styles.push_back(s);
