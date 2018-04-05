@@ -660,10 +660,12 @@ int main(int argc, char *argv[]) {
 	
 	XrmDestroyDatabase(prefDB);
 
+    // Write the INI file...
+    // this has the side effect of creating the configuration directory as well
+    // making it so we don't have to try extra hard to make SaveTheme work :-)
+    Settings::savePreferences();
+
     // Write the theme XML file
     QString themeFilename = Settings::themeFile();
     SaveTheme(themeFilename, styles);
-
-    // Write the INI file...
-    Settings::savePreferences();
 }
