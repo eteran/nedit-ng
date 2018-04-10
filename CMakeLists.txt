@@ -8,9 +8,15 @@ option(ENABLE_USAN      "Enable undefined santiziers")
 option(ENABLE_MSAN      "Enable memory santiziers")
 option(ENABLE_TSAN      "Enable thread santiziers")
 option(ENABLE_LTO       "Enable Link Time Optimization")
+option(ENABLE_STL_DEBUG "Enable STL container debugging")
 option(PURIFY           "Fill Unused TextBuffer space")
 
 set(VISUAL_CTRL_CHARS ON CACHE BOOL "Visualize ASCII Control Characters")
+
+if(ENABLE_STL_DEBUG)
+	add_definitions(-D_GLIBCXX_DEBUG)
+	add_definitions(-D_GLIBCXX_DEBUG_PEDANTIC)
+endif()
 
 if(ENABLE_PROFILING)
 	set(CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        -pg -no-pie")
@@ -20,6 +26,7 @@ endif()
 if(ENABLE_ASAN)
 	set(CMAKE_CXX_FLAGS        "${CMAKE_CXX_FLAGS}        -fsanitize=address") # -fsanitize-address-use-after-scope
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
+	add_definitions(-D_GLIBCXX_SANITIZE_VECTOR)
 endif()
 
 if(ENABLE_USAN)
