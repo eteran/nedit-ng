@@ -598,8 +598,8 @@ void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUpper) {
     TextBuffer *buf = document->buffer_;
     int64_t start;
     int64_t end;
-    int64_t rectStart;
-    int64_t rectEnd;
+    int64_t rectStart = 0;
+    int64_t rectEnd   = 0;
     bool isRect;
 
     // Get the selection.  Use character before cursor if no selection
