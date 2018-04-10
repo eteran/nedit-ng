@@ -284,19 +284,19 @@ unsigned long greedy(uint8_t *p, unsigned long max) {
    only necessary during compilation, can be left out.
    The net result of using this inlined version at two critical places is
    a 25% speedup (again, witnesses on Perl syntax highlighting). */
+uint8_t *NEXT_PTR(uint8_t *in_ptr) {
 
-#define NEXT_PTR(in_ptr, out_ptr)                   \
-    do {                                            \
-        int next_ptr_offset = GET_OFFSET(in_ptr);   \
-        if (next_ptr_offset == 0)                   \
-            out_ptr = nullptr;                      \
-        else {                                      \
-            if (GET_OP_CODE(in_ptr) == BACK)        \
-                out_ptr = in_ptr - next_ptr_offset; \
-            else                                    \
-                out_ptr = in_ptr + next_ptr_offset; \
-        }                                           \
-    } while(0)
+    int next_ptr_offset = GET_OFFSET(in_ptr);
+    if (next_ptr_offset == 0) {
+        return nullptr;
+    } else {
+        if (GET_OP_CODE(in_ptr) == BACK) {
+            return in_ptr - next_ptr_offset;
+        } else {
+            return in_ptr + next_ptr_offset;
+        }
+    }
+}
 
 /*----------------------------------------------------------------------*
  * match - main matching routine
@@ -336,7 +336,7 @@ bool match(uint8_t *prog, int *branch_index_param) {
     uint8_t *scan = prog;
 
     while (scan) {
-        NEXT_PTR(scan, next);
+        next = NEXT_PTR(scan);
 
         switch (GET_OP_CODE(scan)) {
         case BRANCH: {
@@ -361,7 +361,7 @@ bool match(uint8_t *prog, int *branch_index_param) {
                     ++branch_index_local;
 
                     eContext.Reg_Input = save; // Backtrack.
-                    NEXT_PTR(scan, scan);
+                    scan = NEXT_PTR(scan);
                 } while (scan != nullptr && GET_OP_CODE(scan) == BRANCH);
 
                 MATCH_RETURN(false); // NOT REACHED
