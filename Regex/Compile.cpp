@@ -40,7 +40,7 @@ struct len_range {
     long upper;
 };
 
-uint8_t *chunk(int paren, int *flag_param, len_range *range_param);
+uint8_t *chunk(int paren, int *flag_param, len_range &range_param);
 
 const char Default_Meta_Char[] = "{.*+?[(|)^<>$";
 const char ASCII_Digits[] = "0123456789"; // Same for all locales.
@@ -254,19 +254,16 @@ uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept
  *----------------------------------------------------------------------*/
 void tail(uint8_t *search_from, uint8_t *point_to) {
 
-    uint8_t *scan;
-    uint8_t *next;
-
     if (search_from == &Compute_Size) {
         return;
     }
 
     // Find the last node in the chain (node with a null NEXT pointer)
 
-    scan = search_from;
+    uint8_t *scan = search_from;
 
     for (;;) {
-        next = next_ptr(scan);
+        uint8_t *next = next_ptr(scan);
 
         if (!next) {
             break;
@@ -615,16 +612,16 @@ uint8_t *back_ref(const char *ch, int *flag_param, ShortcutEscapeFlags flags) {
  * together so that it can turn them into a single EXACTLY node, which
  * is smaller to store and faster to run.
  *----------------------------------------------------------------------*/
-uint8_t *atom(int *flag_param, len_range *range_param) {
+uint8_t *atom(int *flag_param, len_range &range_param) {
 
     uint8_t *ret_val;
     uint8_t test;
     int flags_local;
     len_range range_local;
 
-    *flag_param = WORST;    // Tentatively.
-    range_param->lower = 0; // Idem
-    range_param->upper = 0;
+    *flag_param = WORST;   // Tentatively.
+    range_param.lower = 0; // Idem
+    range_param.upper = 0;
 
     /* Process any regex comments, e.g. '(?# match next token->)'.  The
        terminating right parenthesis can not be escaped.  The comment stops at
@@ -685,8 +682,8 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
         }
 
         *flag_param |= (HAS_WIDTH | SIMPLE);
-        range_param->lower = 1;
-        range_param->upper = 1;
+        range_param.lower = 1;
+        range_param.upper = 1;
         break;
 
     case '(':
@@ -697,33 +694,33 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 
             if (*pContext.Reg_Parse == ':') {
                 ++pContext.Reg_Parse;
-                ret_val = chunk(NO_CAPTURE, &flags_local, &range_local);
+                ret_val = chunk(NO_CAPTURE, &flags_local, range_local);
             } else if (*pContext.Reg_Parse == '=') {
                 ++pContext.Reg_Parse;
-                ret_val = chunk(POS_AHEAD_OPEN, &flags_local, &range_local);
+                ret_val = chunk(POS_AHEAD_OPEN, &flags_local, range_local);
             } else if (*pContext.Reg_Parse == '!') {
                 ++pContext.Reg_Parse;
-                ret_val = chunk(NEG_AHEAD_OPEN, &flags_local, &range_local);
+                ret_val = chunk(NEG_AHEAD_OPEN, &flags_local, range_local);
             } else if (*pContext.Reg_Parse == 'i') {
                 ++pContext.Reg_Parse;
-                ret_val = chunk(INSENSITIVE, &flags_local, &range_local);
+                ret_val = chunk(INSENSITIVE, &flags_local, range_local);
             } else if (*pContext.Reg_Parse == 'I') {
                 ++pContext.Reg_Parse;
-                ret_val = chunk(SENSITIVE, &flags_local, &range_local);
+                ret_val = chunk(SENSITIVE, &flags_local, range_local);
             } else if (*pContext.Reg_Parse == 'n') {
                 ++pContext.Reg_Parse;
-                ret_val = chunk(NEWLINE, &flags_local, &range_local);
+                ret_val = chunk(NEWLINE, &flags_local, range_local);
             } else if (*pContext.Reg_Parse == 'N') {
                 ++pContext.Reg_Parse;
-                ret_val = chunk(NO_NEWLINE, &flags_local, &range_local);
+                ret_val = chunk(NO_NEWLINE, &flags_local, range_local);
             } else if (*pContext.Reg_Parse == '<') {
                 ++pContext.Reg_Parse;
                 if (*pContext.Reg_Parse == '=') {
                     ++pContext.Reg_Parse;
-                    ret_val = chunk(POS_BEHIND_OPEN, &flags_local, &range_local);
+                    ret_val = chunk(POS_BEHIND_OPEN, &flags_local, range_local);
                 } else if (*pContext.Reg_Parse == '!') {
                     ++pContext.Reg_Parse;
-                    ret_val = chunk(NEG_BEHIND_OPEN, &flags_local, &range_local);
+                    ret_val = chunk(NEG_BEHIND_OPEN, &flags_local, range_local);
                 } else {
                     raise<RegexError>("invalid look-behind syntax, \"(?<%c...)\"", *pContext.Reg_Parse);
                 }
@@ -731,7 +728,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
                 raise<RegexError>("invalid grouping syntax, \"(?%c...)\"", *pContext.Reg_Parse);
             }
         } else { // Normal capturing parentheses
-            ret_val = chunk(PAREN, &flags_local, &range_local);
+            ret_val = chunk(PAREN, &flags_local, range_local);
         }
 
         if (ret_val == nullptr)
@@ -740,7 +737,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
         // Add HAS_WIDTH flag if it was set by call to chunk.
 
         *flag_param |= flags_local & HAS_WIDTH;
-        *range_param = range_local;
+        range_param = range_local;
 
         break;
 
@@ -760,8 +757,8 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
             ret_val = emit_node(EXACTLY); // Treat braces as literals.
             emit_byte('{');
             emit_byte('\0');
-            range_param->lower = 1;
-            range_param->upper = 1;
+            range_param.lower = 1;
+            range_param.upper = 1;
         }
 
         break;
@@ -919,8 +916,8 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 
         ++pContext.Reg_Parse;
         *flag_param |= HAS_WIDTH | SIMPLE;
-        range_param->lower = 1;
-        range_param->upper = 1;
+        range_param.lower = 1;
+        range_param.upper = 1;
     }
 
     break; // End of character class code.
@@ -929,8 +926,8 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
         if ((ret_val = shortcut_escape(*pContext.Reg_Parse, flag_param, EMIT_NODE))) {
 
             ++pContext.Reg_Parse;
-            range_param->lower = 1;
-            range_param->upper = 1;
+            range_param.lower = 1;
+            range_param.upper = 1;
             break;
 
         } else if ((ret_val = back_ref(pContext.Reg_Parse, flag_param, EMIT_NODE))) {
@@ -940,8 +937,8 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
 
             ++pContext.Reg_Parse;
             // Back-references always have an unknown length
-            range_param->lower = -1;
-            range_param->upper = -1;
+            range_param.lower = -1;
+            range_param.upper = -1;
             break;
         }
         /* fallthrough */
@@ -1049,8 +1046,8 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
             if (len == 1)
                 *flag_param |= SIMPLE;
 
-            range_param->lower = len;
-            range_param->upper = len;
+            range_param.lower = len;
+            range_param.upper = len;
 
             emit_byte('\0');
         }
@@ -1068,9 +1065,8 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
  * body of the last branch. It might seem that this node could be
  * dispensed with entirely, but the endmarker role is not redundant.
  *----------------------------------------------------------------------*/
-uint8_t *piece(int *flag_param, len_range *range_param) {
+uint8_t *piece(int *flag_param, len_range &range_param) {
 
-    uint8_t *ret_val;
     uint8_t *next;
     unsigned long min_max[2] = {REG_ZERO, REG_INFINITY};
     int flags_local;
@@ -1081,7 +1077,7 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
     int digit_present[2] = {0, 0};
     len_range range_local;
 
-    ret_val = atom(&flags_local, &range_local);
+    uint8_t *ret_val = atom(&flags_local, range_local);
 
     if (ret_val == nullptr)
         return nullptr; // Something went wrong.
@@ -1090,7 +1086,7 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
 
     if (!isQuantifier(op_code)) {
         *flag_param = flags_local;
-        *range_param = range_local;
+        range_param = range_local;
         return  ret_val;
     } else if (op_code == '{') { // {n,m} quantifier present
         brace_present++;
@@ -1194,7 +1190,7 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
                 regex with such nonsense. */
 
             *flag_param = flags_local;
-            *range_param = range_local;
+            range_param = range_local;
             return ret_val;
         } else if (pContext.Num_Braces > static_cast<int>(std::numeric_limits<uint8_t>::max())) {
             raise<RegexError>("number of {m,n} constructs > %d", UINT8_MAX);
@@ -1220,15 +1216,15 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
     *flag_param = (min_max[0] > REG_ZERO) ? (WORST | HAS_WIDTH) : WORST;
     if (range_local.lower >= 0) {
         if (min_max[1] != REG_INFINITY) {
-            range_param->lower = range_local.lower * min_max[0];
-            range_param->upper = range_local.upper * min_max[1];
+            range_param.lower = range_local.lower * min_max[0];
+            range_param.upper = range_local.upper * min_max[1];
         } else {
-            range_param->lower = -1; // Not a fixed-size length
-            range_param->upper = -1;
+            range_param.lower = -1; // Not a fixed-size length
+            range_param.upper = -1;
         }
     } else {
-        range_param->lower = -1; // Not a fixed-size length
-        range_param->upper = -1;
+        range_param.lower = -1; // Not a fixed-size length
+        range_param.upper = -1;
     }
 
     /*---------------------------------------------------------------------*
@@ -1599,7 +1595,7 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
  * Processes one alternative of an '|' operator.  Connects the NEXT
  * pointers of each regex atom together sequentialy.
  *----------------------------------------------------------------------*/
-uint8_t *alternative(int *flag_param, len_range *range_param) {
+uint8_t *alternative(int *flag_param, len_range &range_param) {
 
     uint8_t *ret_val;
     uint8_t *chain;
@@ -1607,9 +1603,9 @@ uint8_t *alternative(int *flag_param, len_range *range_param) {
     int flags_local;
     len_range range_local;
 
-    *flag_param = WORST;    // Tentatively.
-    range_param->lower = 0; // Idem
-    range_param->upper = 0;
+    *flag_param = WORST;   // Tentatively.
+    range_param.lower = 0; // Idem
+    range_param.upper = 0;
 
     ret_val = emit_node(BRANCH);
     chain = nullptr;
@@ -1618,7 +1614,7 @@ uint8_t *alternative(int *flag_param, len_range *range_param) {
        of alternatives (end of parentheses), or the end of the regex. */
 
     while (*pContext.Reg_Parse != '|' && *pContext.Reg_Parse != ')' && pContext.Reg_Parse != pContext.Reg_Parse_End) {
-        latest = piece(&flags_local, &range_local);
+        latest = piece(&flags_local, range_local);
 
         if(!latest)
             return nullptr; // Something went wrong.
@@ -1626,11 +1622,11 @@ uint8_t *alternative(int *flag_param, len_range *range_param) {
         *flag_param |= flags_local & HAS_WIDTH;
         if (range_local.lower < 0) {
             // Not a fixed length
-            range_param->lower = -1;
-            range_param->upper = -1;
-        } else if (range_param->lower >= 0) {
-            range_param->lower += range_local.lower;
-            range_param->upper += range_local.upper;
+            range_param.lower = -1;
+            range_param.upper = -1;
+        } else if (range_param.lower >= 0) {
+            range_param.lower += range_local.lower;
+            range_param.upper += range_local.upper;
         }
 
         if (chain) { // Connect the regex atoms together sequentialy.
@@ -1658,7 +1654,7 @@ uint8_t *alternative(int *flag_param, len_range *range_param) {
  * expression is a trifle forced, but the need to tie the tails of the  *
  * branches to what follows makes it hard to avoid.                     *
  *----------------------------------------------------------------------*/
-uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
+uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
     uint8_t *ret_val = nullptr;
     uint8_t *this_branch;
@@ -1675,8 +1671,8 @@ uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
     uint8_t *emit_look_behind_bounds = nullptr;
 
     *flag_param = HAS_WIDTH; // Tentatively.
-    range_param->lower = 0;  // Idem
-    range_param->upper = 0;
+    range_param.lower = 0;   // Idem
+    range_param.upper = 0;
 
     // Make an OPEN node, if parenthesized.
 
@@ -1711,25 +1707,27 @@ uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
     // Pick up the branches, linking them together.
 
     do {
-        this_branch = alternative(&flags_local, &range_local);
+        this_branch = alternative(&flags_local, range_local);
 
         if (this_branch == nullptr)
             return nullptr;
 
         if (first) {
             first = 0;
-            *range_param = range_local;
+            range_param = range_local;
             if (ret_val == nullptr)
                 ret_val = this_branch;
-        } else if (range_param->lower >= 0) {
+        } else if (range_param.lower >= 0) {
             if (range_local.lower >= 0) {
-                if (range_local.lower < range_param->lower)
-                    range_param->lower = range_local.lower;
-                if (range_local.upper > range_param->upper)
-                    range_param->upper = range_local.upper;
+                if (range_local.lower < range_param.lower) {
+                    range_param.lower = range_local.lower;
+                }
+                if (range_local.upper > range_param.upper) {
+                    range_param.upper = range_local.upper;
+                }
             } else {
-                range_param->lower = -1; // Branches have different lengths
-                range_param->upper = -1;
+                range_param.lower = -1; // Branches have different lengths
+                range_param.upper = -1;
             }
         }
 
@@ -1791,24 +1789,24 @@ uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
     // Check whether look behind has a fixed size
 
     if (emit_look_behind_bounds) {
-        if (range_param->lower < 0) {
+        if (range_param.lower < 0) {
             raise<RegexError>("look-behind does not have a bounded size");
         }
-        if (range_param->upper > 65535L) {
+        if (range_param.upper > 65535L) {
             raise<RegexError>("max. look-behind size is too large (>65535)");
         }
         if (pContext.Code_Emit_Ptr != &Compute_Size) {
-            *emit_look_behind_bounds++ = PUT_OFFSET_L(range_param->lower);
-            *emit_look_behind_bounds++ = PUT_OFFSET_R(range_param->lower);
-            *emit_look_behind_bounds++ = PUT_OFFSET_L(range_param->upper);
-            *emit_look_behind_bounds = PUT_OFFSET_R(range_param->upper);
+            *emit_look_behind_bounds++ = PUT_OFFSET_L(range_param.lower);
+            *emit_look_behind_bounds++ = PUT_OFFSET_R(range_param.lower);
+            *emit_look_behind_bounds++ = PUT_OFFSET_L(range_param.upper);
+            *emit_look_behind_bounds   = PUT_OFFSET_R(range_param.upper);
         }
     }
 
     // For look ahead/behind, the length must be set to zero again
     if (look_only) {
-        range_param->lower = 0;
-        range_param->upper = 0;
+        range_param.lower = 0;
+        range_param.upper = 0;
     }
 
     zero_width = 0;
@@ -1936,7 +1934,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
         emit_byte('%'); // Placeholder for num of capturing parentheses.
         emit_byte('%'); // Placeholder for num of general {m,n} constructs.
 
-        if (chunk(NO_PAREN, &flags_local, &range_local) == nullptr) {
+        if (chunk(NO_PAREN, &flags_local, range_local) == nullptr) {
             raise<RegexError>("internal error #10, 'CompileRE'");
         }
 
@@ -1973,7 +1971,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
         // Starting-point info.
 
         if (GET_OP_CODE(scan) == EXACTLY) {
-            re->match_start = *OPERAND(scan);
+            re->match_start = static_cast<char>(*OPERAND(scan));
 
         } else if (PLUS <= GET_OP_CODE(scan) && GET_OP_CODE(scan) <= LAZY_PLUS) {
 
@@ -1981,7 +1979,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
                optimized. */
 
             if (GET_OP_CODE(scan + NODE_SIZE) == EXACTLY) {
-                re->match_start = *OPERAND(scan + NODE_SIZE);
+                re->match_start = static_cast<char>(*OPERAND(scan + NODE_SIZE));
             }
         } else if (GET_OP_CODE(scan) == BOL) {
             re->anchor++;

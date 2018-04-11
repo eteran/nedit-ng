@@ -284,17 +284,18 @@ unsigned long greedy(uint8_t *p, unsigned long max) {
    only necessary during compilation, can be left out.
    The net result of using this inlined version at two critical places is
    a 25% speedup (again, witnesses on Perl syntax highlighting). */
-uint8_t *NEXT_PTR(uint8_t *in_ptr) {
+uint8_t *NEXT_PTR(uint8_t *ptr) {
 
-    int next_ptr_offset = GET_OFFSET(in_ptr);
-    if (next_ptr_offset == 0) {
+    const int offset = GET_OFFSET(ptr);
+
+    if (offset == 0) {
         return nullptr;
+    }
+
+    if (GET_OP_CODE(ptr) == BACK) {
+        return (ptr - offset);
     } else {
-        if (GET_OP_CODE(in_ptr) == BACK) {
-            return in_ptr - next_ptr_offset;
-        } else {
-            return in_ptr + next_ptr_offset;
-        }
+        return (ptr + offset);
     }
 }
 
