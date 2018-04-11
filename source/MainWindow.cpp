@@ -6218,6 +6218,22 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
     int64_t startPos;
     int64_t endPos;
     int64_t replaceLen;
+
+    /* NOTE(eteran): OK, the whole point of searchExtentBW, and searchExtentFW
+     * are to help with regex search/replace operations involding look-ahead and
+     * look-behind. For example, if the buffer contains "ABCDEF-A" and we want
+     * the regex to match "(?<=-)[A-Z]" (a captial letter preceded by a dash).
+     * The regex is matching the "A" and thus the start position of the match is
+     * offset 7. However, the searchExtentBW is offset 6 because the "-" was
+     * required for the match.
+     *
+     * We "need" this because essentially what the replace does is extract the
+     * text that matched (in this case "-A") and does the regex replace on THAT.
+     *
+     * Then it will substitute the altered text into the
+     * buffer. There probably is a way to do this without the need to extract
+     * the text in a way that is dependant on this searchExtent concept.
+     */
     int64_t searchExtentBW;
     int64_t searchExtentFW;
 
@@ -6252,8 +6268,6 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
         std::string replaceResult;
         const std::string foundString = document->buffer_->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
 
-        QString delimieters = document->GetWindowDelimitersEx();
-
         Search::replaceUsingREEx(
             searchString,
             replaceString,
@@ -6261,7 +6275,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
             startPos - searchExtentBW,
             replaceResult,
             startPos == 0 ? -1 : document->buffer_->BufGetCharacter(startPos - 1),
-            delimieters,
+            document->GetWindowDelimitersEx(),
             Search::defaultRegexFlags(searchType));
 
         document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
