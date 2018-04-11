@@ -1,6 +1,6 @@
 
 #include "RegexError.h"
-#include <cstdarg>
+#include <QtDebug>
 #include <QByteArray>
 
 /**
@@ -29,5 +29,5 @@ const char *RegexError::what() const noexcept {
  * @param str
  */
 void reg_error(const char *str) {
-    fprintf(stderr, "nedit: Internal error processing regular expression (%s)\n", str);
+    qCritical("NEdit: Internal error processing regular expression (%s)", str);
 }
