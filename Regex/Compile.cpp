@@ -67,7 +67,7 @@ constexpr uint8_t PUT_OFFSET_R(T v) noexcept {
  * @return
  */
 template <class Ch>
-bool IS_QUANTIFIER(Ch ch) noexcept {
+bool isQuantifier(Ch ch) noexcept {
     return ch == '*' || ch == '+' || ch == '?' || ch == pContext.Brace_Char;
 }
 
@@ -79,7 +79,7 @@ bool IS_QUANTIFIER(Ch ch) noexcept {
  *--------------------------------------------------------------------*/
 bool init_ansi_classes() noexcept {
 
-    static bool initialized  = false;
+    static bool initialized = false;
 
     if (!initialized) {
         initialized = true; // Only need to generate character sets once.
@@ -117,9 +117,9 @@ bool init_ansi_classes() noexcept {
             }
         }
 
-        pContext.Word_Char[word_count]    = '\0';
-        pContext.Letter_Char[word_count]  = '\0';
-        pContext.White_Space[space_count] = '\0';
+        pContext.Word_Char[word_count]     = '\0';
+        pContext.Letter_Char[letter_count] = '\0';
+        pContext.White_Space[space_count]  = '\0';
     }
 
     return true;
@@ -310,18 +310,13 @@ void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
  *----------------------------------------------------------------------*/
 uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned long max, size_t index) {
 
-    uint8_t *src;
-    uint8_t *dst;
-    uint8_t *place;
     size_t insert_size = NODE_SIZE;
 
     if (op == BRACE || op == LAZY_BRACE) {
         // Make room for the min and max values.
-
         insert_size += (2 * NEXT_PTR_SIZE);
     } else if (op == INIT_COUNT) {
-        // Make room for an index value .
-
+        // Make room for an index value.
         insert_size += INDEX_SIZE;
     }
 
@@ -330,16 +325,16 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
         return &Compute_Size;
     }
 
-    src = pContext.Code_Emit_Ptr;
+    uint8_t *src = pContext.Code_Emit_Ptr;
     pContext.Code_Emit_Ptr += insert_size;
-    dst = pContext.Code_Emit_Ptr;
+    uint8_t *dst = pContext.Code_Emit_Ptr;
 
     // Relocate the existing emitted code to make room for the new node.
 
     while (src > insert_pos)
         *--dst = *--src;
 
-    place = insert_pos; // Where operand used to be.
+    uint8_t *place = insert_pos; // Where operand used to be.
     *place++ = op;      // Inserted operand.
     *place++ = '\0';    // NEXT pointer for inserted operand.
     *place++ = '\0';
@@ -398,8 +393,9 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
 template <class T>
 uint8_t *shortcut_escape(T ch, int *flag_param, ShortcutEscapeFlags flags) {
 
-    const char *clazz = nullptr;
     static const char codes[] = "ByYdDlLsSwW";
+
+    const char *clazz = nullptr;    
     auto ret_val = reinterpret_cast<uint8_t *>(1); // Assume success.
     const char *valid_codes;
 
@@ -511,6 +507,8 @@ uint8_t *shortcut_escape(T ch, int *flag_param, ShortcutEscapeFlags flags) {
     if (clazz) {
         // Emit bytes within a character class operand.
 
+        // TODO(eteran): maybe emit the length of the string first
+        // so we don't have to depend on the NUL character during execution
         while (*clazz != '\0') {
             emit_byte(*clazz++);
         }
@@ -1030,7 +1028,7 @@ uint8_t *atom(int *flag_param, len_range *range_param) {
                    have an EXACTLY node with an 'abc' operand followed by a STAR
                    node followed by another EXACTLY node with a 'd' operand. */
 
-                if (IS_QUANTIFIER(*pContext.Reg_Parse) && len > 0) {
+                if (isQuantifier(*pContext.Reg_Parse) && len > 0) {
                     pContext.Reg_Parse = parse_save; // Point to previous regex token.
 
                     if (pContext.Code_Emit_Ptr == &Compute_Size) {
@@ -1090,7 +1088,7 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
 
     char op_code = *pContext.Reg_Parse;
 
-    if (!IS_QUANTIFIER(op_code)) {
+    if (!isQuantifier(op_code)) {
         *flag_param = flags_local;
         *range_param = range_local;
         return  ret_val;
@@ -1584,7 +1582,7 @@ uint8_t *piece(int *flag_param, len_range *range_param) {
         raise<RegexError>("internal error #2, 'piece'");
     }
 
-    if (IS_QUANTIFIER(*pContext.Reg_Parse)) {
+    if (isQuantifier(*pContext.Reg_Parse)) {
         if (op_code == '{') {
             raise<RegexError>("nested quantifiers, {m,n}%c", *pContext.Reg_Parse);
         } else {
@@ -1669,8 +1667,9 @@ uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
     int flags_local;
     int first = 1;
     int zero_width;
-    int old_sensitive = pContext.Is_Case_Insensitive;
-    int old_newline = pContext.Match_Newline;
+    bool old_sensitive = pContext.Is_Case_Insensitive;
+    bool old_newline   = pContext.Match_Newline;
+
     len_range range_local;
     int look_only = 0;
     uint8_t *emit_look_behind_bounds = nullptr;
@@ -1700,13 +1699,13 @@ uint8_t *chunk(int paren, int *flag_param, len_range *range_param) {
         ret_val = emit_special(paren, 0, 0);
         emit_look_behind_bounds = ret_val + NODE_SIZE;
     } else if (paren == INSENSITIVE) {
-        pContext.Is_Case_Insensitive = 1;
+        pContext.Is_Case_Insensitive = true;
     } else if (paren == SENSITIVE) {
-        pContext.Is_Case_Insensitive = 0;
+        pContext.Is_Case_Insensitive = false;
     } else if (paren == NEWLINE) {
-        pContext.Match_Newline = 1;
+        pContext.Match_Newline = true;
     } else if (paren == NO_NEWLINE) {
-        pContext.Match_Newline = 0;
+        pContext.Match_Newline = false;
     }
 
     // Pick up the branches, linking them together.
@@ -1919,9 +1918,12 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
          *    Match_Newline:       Newlines are NOT matched by default
          *                         in character classes
          */
-        pContext.Is_Case_Insensitive = ((defaultFlags & REDFLT_CASE_INSENSITIVE) ? 1 : 0);
-        pContext.Match_Newline = 0; /* ((defaultFlags & REDFLT_MATCH_NEWLINE)   ? 1 : 0);
-                              Currently not used. Uncomment if needed. */
+        pContext.Is_Case_Insensitive = ((defaultFlags & REDFLT_CASE_INSENSITIVE) ? true : false);
+#if 0 // Currently not used. Uncomment if needed.
+        pContext.Match_Newline       = ((defaultFlags & REDFLT_MATCH_NEWLINE)    ? true : false);
+#else
+        pContext.Match_Newline       = false;
+#endif
 
         pContext.Reg_Parse       = exp.begin();
         pContext.Reg_Parse_End   = exp.end();

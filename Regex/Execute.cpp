@@ -416,7 +416,7 @@ bool match(uint8_t *prog, int *branch_index_param) {
             if (eContext.Reg_Input == eContext.Start_Of_String) {
                 if (eContext.Prev_Is_BOL)
                     break;
-            } else if (static_cast<int>(*(eContext.Reg_Input - 1)) == '\n') {
+            } else if (eContext.Reg_Input[-1] == '\n') {
                 break;
             }
 
@@ -437,7 +437,7 @@ bool match(uint8_t *prog, int *branch_index_param) {
                 if (eContext.Reg_Input == eContext.Start_Of_String) {
                     prev_is_delim = eContext.Prev_Is_Delim;
                 } else {
-                    prev_is_delim = isDelimiter(*(eContext.Reg_Input - 1));
+                    prev_is_delim = isDelimiter(eContext.Reg_Input[-1]);
                 }
                 if (prev_is_delim) {
                     int current_is_delim;
@@ -461,7 +461,7 @@ bool match(uint8_t *prog, int *branch_index_param) {
                 if (eContext.Reg_Input == eContext.Start_Of_String) {
                     prev_is_delim = eContext.Prev_Is_Delim;
                 } else {
-                    prev_is_delim = isDelimiter(*(eContext.Reg_Input - 1));
+                    prev_is_delim = isDelimiter(eContext.Reg_Input[-1]);
                 }
                 if (!prev_is_delim) {
                     int current_is_delim;
@@ -484,7 +484,7 @@ bool match(uint8_t *prog, int *branch_index_param) {
             if (eContext.Reg_Input == eContext.Start_Of_String) {
                 prev_is_delim = eContext.Prev_Is_Delim;
             } else {
-                prev_is_delim = isDelimiter(*(eContext.Reg_Input - 1));
+                prev_is_delim = isDelimiter(eContext.Reg_Input[-1]);
             }
             if (AT_END_OF_STRING(eContext.Reg_Input)) {
                 current_is_delim = eContext.Succ_Is_Delim;
@@ -695,7 +695,6 @@ bool match(uint8_t *prog, int *branch_index_param) {
             #endif
             case BRACE:
                 min = static_cast<unsigned long>(GET_OFFSET(scan + NEXT_PTR_SIZE));
-
                 max = static_cast<unsigned long>(GET_OFFSET(scan + (2 * NEXT_PTR_SIZE)));
 
                 if (max <= REG_INFINITY) {
