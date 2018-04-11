@@ -35,24 +35,28 @@ bool AT_END_OF_STRING(const char *ptr) noexcept {
         return true;
     }
 
+    if(ptr >= eContext.Real_End_Of_String) {
+        return true;
+    }
+
     return false;
 }
 
 /**
- * @brief GET_LOWER
+ * @brief getLower
  * @param p
  * @return
  */
-uint16_t GET_LOWER(uint8_t *p) noexcept {
+uint16_t getLower(uint8_t *p) noexcept {
     return static_cast<uint8_t>(((p[NODE_SIZE + 0] & 0xff) << 8) + ((p[NODE_SIZE + 1]) & 0xff));
 }
 
 /**
- * @brief GET_UPPER
+ * @brief getUpper
  * @param p
  * @return
  */
-uint16_t GET_UPPER(uint8_t *p) noexcept {
+uint16_t getUpper(uint8_t *p) noexcept {
     return static_cast<uint8_t>(((p[NODE_SIZE + 2] & 0xff) << 8) + ((p[NODE_SIZE + 3]) & 0xff));
 }
 
@@ -823,18 +827,15 @@ bool match(uint8_t *prog, int *branch_index_param) {
 
         case POS_AHEAD_OPEN:
         case NEG_AHEAD_OPEN: {
-            const char *save;
-            const char *saved_end;
-            int answer;
 
-            save = eContext.Reg_Input;
+            const char *save = eContext.Reg_Input;
 
             /* Temporarily ignore the logical end of the string, to allow
                lookahead past the end. */
-            saved_end = eContext.End_Of_String;
+            const char *saved_end = eContext.End_Of_String;
             eContext.End_Of_String = nullptr;
 
-            answer = match(next, nullptr); // Does the look-ahead regex match?
+            bool answer = match(next, nullptr); // Does the look-ahead regex match?
 
             CHECK_RECURSION_LIMIT();
 
@@ -886,8 +887,8 @@ bool match(uint8_t *prog, int *branch_index_param) {
                Lookahead inside lookbehind can still cross that boundary. */
             eContext.End_Of_String = eContext.Reg_Input;
 
-            uint16_t lower = GET_LOWER(scan);
-            uint16_t upper = GET_UPPER(scan);
+            uint16_t lower = getLower(scan);
+            uint16_t upper = getUpper(scan);
 
             /* Start with the shortest match first. This is the most
                efficient direction in general.
@@ -1101,7 +1102,7 @@ look_behind_to string            end           match_to
  * @param match_to
  * @return
  */
-bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_char, int succ_char, const char *delimiters, const char *look_behind_to, const char *match_to) {
+bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_char, int succ_char, const char *delimiters, const char *look_behind_to, const char *match_to, const char *string_end) {
     assert(string);
 
     Regex *const re = this;
@@ -1118,8 +1119,9 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_c
     // If caller has supplied delimiters, make a delimiter table
     eContext.Current_Delimiters = delimiters ? Regex::makeDelimiterTable(delimiters) : Regex::Default_Delimiters;
 
-    // Remember the logical end of the string.
-    eContext.End_Of_String = match_to;
+    // Remember the logical and physical end of the string.
+    eContext.End_Of_String      = match_to;
+    eContext.Real_End_Of_String = string_end;
 
     if (!end && reverse) {
         for (end = string; !AT_END_OF_STRING(end); end++) {

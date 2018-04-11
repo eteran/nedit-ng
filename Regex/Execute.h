@@ -23,7 +23,8 @@ struct ExecuteContext {
     uint32_t *BraceCounts;                       // Define a pointer to an array to hold general (...){m,n} counts.
     const char *Reg_Input;                       // String-input pointer.
     const char *Start_Of_String;                 // Beginning of input, for ^ and < checks.
-    const char *End_Of_String;                   // Logical end of input (if supplied, till \0 otherwise)
+    const char *End_Of_String;                   // Logical end of input
+    const char *Real_End_Of_String;              // Point that the string truly ends and we may not pass safely
     const char *Look_Behind_To;                  // Position till were look behind can safely check back
     array_iterator<NSUBEXP> Start_Ptr_Ptr;       // Pointer to 'startp' array.
     array_iterator<NSUBEXP> End_Ptr_Ptr;         // Ditto for 'endp'.

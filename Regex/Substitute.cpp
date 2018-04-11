@@ -8,10 +8,6 @@
 
 /*
 **  SubstituteRE - Perform substitutions after a 'Regex' match.
-**
-**  This function cleanly shortens results of more than max length to max.
-**  To give the caller a chance to react to this the function returns false
-**  on any error. The substitution will still be executed.
 */
 bool Regex::SubstituteRE(view::string_view source, std::string &dest) const {
 

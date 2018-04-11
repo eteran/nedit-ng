@@ -484,7 +484,8 @@ bool Highlight::parseString(HighlightData *const pattern, const char *const firs
                succChar,
                delimiters.isNull() ? nullptr : delimiters.toLatin1().data(),
                look_behind_to,
-               match_to)) {
+               match_to,
+               last)) {
 	
 		/* Beware of the case where only one real branch exists, but that
 		   branch has sub-branches itself. In that case the top_branch refers
@@ -521,7 +522,8 @@ bool Highlight::parseString(HighlightData *const pattern, const char *const firs
                                         succChar,
                                         delimiters.isNull() ? nullptr : delimiters.toLatin1().data(),
                                         look_behind_to,
-                                        match_to)) {
+                                        match_to,
+                                        last)) {
                                 qCritical("NEdit: Internal error, failed to recover end match in parseString");
 								return false;
 							}
@@ -644,7 +646,8 @@ bool Highlight::parseString(HighlightData *const pattern, const char *const firs
                                 succChar,
                                 delimiters.isNull() ? nullptr : delimiters.toLatin1().data(),
                                 look_behind_to,
-                                match_to)) {
+                                match_to,
+                                last)) {
                         qCritical("NEdit: Internal error, failed to recover start match in parseString");
 						return false;
 					}

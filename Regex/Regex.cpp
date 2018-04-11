@@ -193,7 +193,8 @@ bool Regex::execute(view::string_view string, size_t offset, size_t end_offset, 
 		succ,
 		delimiters,
 		&string[0],
-		&string[string.size()]);
+        &string[string.size()],
+        &string[string.size()]);
 }
 
 

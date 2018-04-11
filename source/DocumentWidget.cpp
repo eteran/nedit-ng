@@ -695,6 +695,9 @@ size_t DocumentWidget::matchLanguageMode() const {
 
 	// Do a regular expression search on for recognition pattern
     const std::string first200 = buffer_->BufGetRangeEx(0, 200);
+    if(first200.empty()) {
+        return PLAIN_LANGUAGE_MODE;
+    }
 
     for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
         if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {

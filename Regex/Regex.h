@@ -38,7 +38,7 @@ public:
 	 * @param look_behind_to Boundary for look-behind; defaults to "string" if nullptr
 	 * @param match_till     Boundary to where match can extend. \0 is assumed to be the boundary if not set. Lookahead can cross the boundary.
 	 */
-    bool ExecRE(const char *string, const char *end, bool reverse, int prev_char, int succ_char, const char *delimiters, const char *look_behind_to, const char *match_to);
+    bool ExecRE(const char *string, const char *end, bool reverse, int prev_char, int succ_char, const char *delimiters, const char *look_behind_to, const char *match_to, const char *string_end);
 
 	/**
      * Match a 'Regex' structure against a string.
@@ -107,8 +107,7 @@ public:
 
 public:
     /* Builds a default delimiter table that persists across 'ExecRE' calls that
-       is identical to 'delimiters'.  Pass nullptr for "default default" set of
-       delimiters. */
+       is identical to 'delimiters'.*/
     static void SetDefaultWordDelimiters(view::string_view delimiters);
 
 public:
