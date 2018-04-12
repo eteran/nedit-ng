@@ -84,6 +84,15 @@ int main(int argc, char *argv[]) {
 #endif
     QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
+    // NOTE(eteran):for issue #38, grab -geometry <arg> before Qt consumes it!
+    QString geometry;
+    for(int i = 0; i < argc; ++i) {
+        if(strcmp(argv[i], "-geometry") == 0) {
+            if(i++ < argc) {
+                geometry = QString::fromLatin1(argv[i]);
+            }
+        }
+    }
 
 	QApplication app(argc, argv);
 	QApplication::setWindowIcon(QIcon(QLatin1String(":/res/nedit.png")));
@@ -94,7 +103,15 @@ int main(int argc, char *argv[]) {
 		app.installTranslator(&translator);
 	}
 
-    Main main{app.arguments()};
+    // NOTE(eteran):for issue #38, re-add -geometry <arg> because Qt has
+    // removed it at this point
+    QStringList arguments = app.arguments();
+    if(!geometry.isNull()) {
+        arguments.insert(1, QLatin1String("-geometry"));
+        arguments.insert(2, geometry);
+    }
+
+    Main main{arguments};
 
 	// Process events. 
     return app.exec();
