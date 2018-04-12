@@ -65,7 +65,7 @@ int nextArg(const QStringList &args, int argIndex) {
 */
 void copyCommandLineArg(CommandLine *commandLine, const QString &arg) {
 
-    constexpr auto Quote = QLatin1Char('\'');
+    constexpr auto Quote = QLatin1Char('"');
 
     auto outPtr = std::back_inserter(commandLine->shell);
 
@@ -329,7 +329,8 @@ int startServer(const char *message, const QString &commandLineArgs) {
 
     // start the server
     auto process = new QProcess;
-    process->start(QString(QLatin1String("%1 %2")).arg(ServerPreferences.serverCmd, commandLineArgs));
+    auto command = QString(QLatin1String("%1 %2")).arg(ServerPreferences.serverCmd, commandLineArgs);
+    process->start(command);
     bool sysrc = process->waitForStarted();
 
     if(!sysrc) {
@@ -358,7 +359,7 @@ int startServer(const char *message, const QString &commandLineArgs) {
     return (sysrc) ? 0 : -1;
 }
 
-void startNewServer(const QString &commandLine) {
+void startNewServer(QString commandLine) {
 
     switch (startServer("No servers available, start one? (y|n) [y]: ", commandLine)) {
     case -1: // Start failed
