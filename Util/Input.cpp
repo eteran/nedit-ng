@@ -38,7 +38,7 @@ QChar Input::operator*() const {
  */
 QChar Input::peek() const {
     if(atEnd()) {
-        return QChar();
+        return {};
     }
 
     return string_->at(index_);
@@ -46,7 +46,7 @@ QChar Input::peek() const {
 
 QChar Input::read() {
     if(atEnd()) {
-        return QChar();
+        return {};
     }
 
     QChar ch = string_->at(index_);
@@ -58,7 +58,7 @@ QChar Input::read() {
 
 QChar Input::operator[](int index) const {
 	if((index_ + index) >= string_->size()) {
-        return QChar();
+        return {};
 	}
 
 	return string_->at(index_ + index);

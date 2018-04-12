@@ -915,7 +915,7 @@ bool Rangeset::RangesetAssignColorName(TextBuffer *buffer, const QString &color_
     color_set_  = 0;
 
     rangesetRefreshAllRanges(buffer, this);
-    return 1;
+    return true;
 }
 
 /*

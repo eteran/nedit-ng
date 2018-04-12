@@ -19,11 +19,11 @@ LanguageModeModel::LanguageModeModel(QObject *parent) : QAbstractItemModel(paren
 QModelIndex LanguageModeModel::index(int row, int column, const QModelIndex &parent) const {
 
     if(row >= rowCount(parent) || column >= columnCount(parent)) {
-        return QModelIndex();
+        return {};
     }
 
     if(row < 0) {
-        return QModelIndex();
+        return {};
     }
 
     return createIndex(row, column);
@@ -36,7 +36,7 @@ QModelIndex LanguageModeModel::index(int row, int column, const QModelIndex &par
  */
 QModelIndex LanguageModeModel::parent(const QModelIndex &index) const {
     Q_UNUSED(index);
-    return QModelIndex();
+    return {};
 }
 
 /**

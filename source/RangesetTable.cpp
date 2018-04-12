@@ -108,8 +108,8 @@ RangesetTable::RangesetTable(TextBuffer *buffer) : buf_(buffer) {
 RangesetTable::~RangesetTable() {
 
     buf_->BufRemoveModifyCB(RangesetBufModifiedCB, this);
-    for (int i = 0; i < N_RANGESETS; i++) {
-        set_[i].RangesetEmpty(buf_);
+    for (Rangeset &value : set_) {
+        value.RangesetEmpty(buf_);
     }
 }
 	
@@ -119,7 +119,7 @@ RangesetTable::~RangesetTable() {
 ** make_active is true, and make it the most visible.
 */
 Rangeset *RangesetTable::RangesetFetch(int label) {
-    int rangesetIndex = RangesetFindIndex(label, 0);
+    int rangesetIndex = RangesetFindIndex(label, false);
 
     if (rangesetIndex < 0) {
         return nullptr;
@@ -136,7 +136,7 @@ Rangeset *RangesetTable::RangesetFetch(int label) {
 ** Forget the rangeset identified by label - clears it, renders it inactive.
 */
 Rangeset *RangesetTable::RangesetForget(int label) {
-    int set_ind = RangesetFindIndex(label, 1);
+    int set_ind = RangesetFindIndex(label, true);
 
     if (set_ind < 0) {
         return nullptr;
@@ -266,7 +266,7 @@ int RangesetTable::RangesetCreate() {
 
     int label = rangeset_labels[firstAvailableIndex];
 
-    int setIndex = RangesetFindIndex(label, 0);
+    int setIndex = RangesetFindIndex(label, false);
 
     if (setIndex < 0) {
         return 0;

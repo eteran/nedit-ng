@@ -11,7 +11,7 @@ class QPrinter;
 class DialogPrint : public Dialog {
 	Q_OBJECT
 public:
-    DialogPrint(const QString &contents, const QString &jobname, DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    DialogPrint(const QString &contents, QString jobname, DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogPrint() override = default;
 
 private Q_SLOTS:

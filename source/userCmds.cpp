@@ -25,10 +25,10 @@ namespace {
 
 struct ParseError : std::exception {
 public:
-	explicit ParseError(const std::string &s) : s_(s) {
+    explicit ParseError(std::string s) : s_(std::move(s)) {
     }
 
-    const char *what() const noexcept {
+    const char *what() const noexcept override {
         return s_.c_str();
     }
 private:

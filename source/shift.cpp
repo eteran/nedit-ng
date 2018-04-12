@@ -121,9 +121,9 @@ std::string fillParagraphEx(view::string_view text, int64_t leftMargin, int64_t 
     // prepend the indent string to each line of the filled text
     std::copy(leadIndentStr.begin(), leadIndentStr.end(), outPtr2);
 
-    for(auto it = cleanedText.begin(); it != cleanedText.end(); ++it) {
-        *outPtr2++ = *it;
-        if (*it == '\n') {
+    for(char ch : cleanedText) {
+        *outPtr2++ = ch;
+        if (ch == '\n') {
             std::copy(indentString.begin(), indentString.end(), outPtr2);
         }
     }

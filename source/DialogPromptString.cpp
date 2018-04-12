@@ -2,7 +2,7 @@
 #include "DialogPromptString.h"
 #include <QPushButton>
 
-DialogPromptString::DialogPromptString(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), result_(0) {
+DialogPromptString::DialogPromptString(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowTitleHint);
 	ui.setupUi(this);
 	setWindowTitle(QLatin1String(" "));

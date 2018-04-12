@@ -33,7 +33,7 @@ private Q_SLOTS:
 	
 private:
 	Ui::DialogPromptString ui;
-	int result_;
+    int result_ = 0;
 	QString text_;
 };
 

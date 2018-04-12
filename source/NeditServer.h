@@ -12,7 +12,7 @@ class NeditServer : public QObject {
 
 public:
     explicit NeditServer(QObject *parent = nullptr);
-    virtual ~NeditServer() = default;
+    ~NeditServer() override = default;
 
 public Q_SLOTS:
     void newConnection();

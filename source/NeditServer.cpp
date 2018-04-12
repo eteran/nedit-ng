@@ -285,7 +285,7 @@ void NeditServer::newConnection() {
                 // of the connection, which matters in the case of the last
                 // document being "closed" and instead of being destroyed,
                 // becomes an untitled window
-                QObject *obj = new QObject(this);
+                auto obj = new QObject(this);
                 connect(document, &DocumentWidget::documentClosed, obj, [socket, obj]() {
                     obj->deleteLater();
                 });

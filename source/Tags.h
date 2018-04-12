@@ -16,7 +16,7 @@ class TextArea;
 class Tags {
     Q_DECLARE_TR_FUNCTIONS(Tags)
 
-private:
+public:
     Tags() = delete;
 
 public:

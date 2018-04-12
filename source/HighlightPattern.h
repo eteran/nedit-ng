@@ -7,7 +7,7 @@
 class HighlightPattern {
 public:
     HighlightPattern();
-    explicit HighlightPattern(const QString &styleName);
+    explicit HighlightPattern(QString styleName);
 
 public:
     bool operator==(const HighlightPattern &rhs) const;
@@ -20,7 +20,7 @@ public:
 	QString errorRE;
 	QString style;
 	QString subPatternOf;
-    int flags;
+    int flags = 0;
 };
 
 #endif

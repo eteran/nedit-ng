@@ -7,7 +7,7 @@
 class Help {
     Q_DECLARE_TR_FUNCTIONS(Help)
 
-private:
+public:
     Help() = delete;
 
 public:

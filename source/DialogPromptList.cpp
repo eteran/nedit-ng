@@ -4,7 +4,7 @@
 
 // NOTE(eteran): maybe we want to present an option to have this be a combo box instead?
 
-DialogPromptList::DialogPromptList(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), result_(0) {
+DialogPromptList::DialogPromptList(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowTitleHint);
 	ui.setupUi(this);
 	setWindowTitle(QLatin1String(" "));

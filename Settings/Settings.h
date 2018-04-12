@@ -27,7 +27,7 @@ enum ColorTypes : int {
 class Settings  {
     Q_DECLARE_TR_FUNCTIONS(Settings)
 
-private:
+public:
     Settings() = delete;
 
 public:

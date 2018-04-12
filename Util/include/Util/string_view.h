@@ -34,7 +34,7 @@ public:
     static constexpr auto npos = size_type(-1);
 
 public:
-    constexpr basic_string_view() noexcept : data_(nullptr), size_(0) {
+    constexpr basic_string_view() noexcept : data_(nullptr) {
 	}
 
     constexpr basic_string_view(const basic_string_view &other) noexcept = default;
@@ -370,7 +370,7 @@ private:
 
 private:
     const Ch *  data_;
-    std::size_t size_;
+    std::size_t size_ = 0;
 };
 
 template <class Ch, class Tr>

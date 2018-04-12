@@ -8,7 +8,7 @@
  * @param macroString
  * @param arguments
  */
-WindowMenuEvent::WindowMenuEvent(const QString &macroString, const QStringList &arguments) : QEvent(eventType), macroString_(macroString), arguments_(arguments)  {
+WindowMenuEvent::WindowMenuEvent(QString macroString, QStringList arguments) : QEvent(eventType), macroString_(std::move(macroString)), arguments_(std::move(arguments))  {
 }
 
 /**

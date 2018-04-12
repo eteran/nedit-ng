@@ -58,7 +58,7 @@ public:
 
 private:
     QString macroRecordBuffer;
-    bool isRecording_;
+    bool isRecording_ = false;
 };
 
 #endif

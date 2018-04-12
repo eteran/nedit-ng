@@ -19,11 +19,11 @@ HighlightStyleModel::HighlightStyleModel(QObject *parent) : QAbstractItemModel(p
 QModelIndex HighlightStyleModel::index(int row, int column, const QModelIndex &parent) const {
 
     if(row >= rowCount(parent) || column >= columnCount(parent)) {
-        return QModelIndex();
+        return {};
     }
 
     if(row < 0) {
-        return QModelIndex();
+        return {};
     }
 
     return createIndex(row, column);
@@ -36,7 +36,7 @@ QModelIndex HighlightStyleModel::index(int row, int column, const QModelIndex &p
  */
 QModelIndex HighlightStyleModel::parent(const QModelIndex &index) const {
     Q_UNUSED(index);
-    return QModelIndex();
+    return {};
 }
 
 /**

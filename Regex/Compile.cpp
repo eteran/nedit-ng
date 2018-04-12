@@ -1745,7 +1745,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
             break;
 
         ++pContext.Reg_Parse;
-    } while (1);
+    } while (true);
 
     // Make a closing node, and hook it on the end.
 

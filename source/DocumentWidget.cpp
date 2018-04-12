@@ -2474,7 +2474,7 @@ bool DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
             dialog.setDirectory(path_);
             dialog.setOptions(QFileDialog::DontUseNativeDialog);
 
-            if(QGridLayout* const layout = qobject_cast<QGridLayout*>(dialog.layout())) {
+            if(auto layout = qobject_cast<QGridLayout*>(dialog.layout())) {
                 if(layout->rowCount() == 4 && layout->columnCount() == 3) {
                     auto boxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
 

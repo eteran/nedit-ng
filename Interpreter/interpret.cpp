@@ -1870,7 +1870,7 @@ static int arrayRef() {
 	STACKDUMP(nDim, 3);
 
 	if (nDim > 0) {
-		int errNum = makeArrayKeyFromArgs(nDim, &keyString, 0);
+        int errNum = makeArrayKeyFromArgs(nDim, &keyString, false);
 		if (errNum != STAT_OK) {
 			return errNum;
 		}
@@ -1917,7 +1917,7 @@ static int arrayAssign() {
 	if (nDim > 0) {
         POP(srcValue);
 
-		int errNum = makeArrayKeyFromArgs(nDim, &keyString, 0);
+        int errNum = makeArrayKeyFromArgs(nDim, &keyString, false);
 		if (errNum != STAT_OK) {
 			return errNum;
 		}
@@ -1973,7 +1973,7 @@ static int arrayRefAndAssignSetup() {
 	}
 
 	if (nDim > 0) {
-		int errNum = makeArrayKeyFromArgs(nDim, &keyString, 1);
+        int errNum = makeArrayKeyFromArgs(nDim, &keyString, true);
 		if (errNum != STAT_OK) {
 			return errNum;
 		}
@@ -2169,7 +2169,7 @@ static int deleteArrayElement() {
 	STACKDUMP(nDim + 1, 3);
 
 	if (nDim > 0) {
-        int errNum = makeArrayKeyFromArgs(nDim, &keyString, 0);
+        int errNum = makeArrayKeyFromArgs(nDim, &keyString, false);
 		if (errNum != STAT_OK) {
 			return errNum;
 		}

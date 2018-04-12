@@ -29,7 +29,7 @@ private:
 
 private:
 	Ui::DialogPrompt ui;
-	int result_;
+    int result_ = 0;
 };
 
 #endif

@@ -80,7 +80,7 @@ public:
     static constexpr int DefaultHMargin = 2;
 
 public:
-    TextArea(DocumentWidget *document, TextBuffer *buffer, QFont fontStruct);
+    TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fontStruct);
     TextArea(const TextArea &other) = delete;
 	TextArea& operator=(const TextArea &) = delete;
     ~TextArea() noexcept override;

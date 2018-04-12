@@ -7,7 +7,7 @@
  * @param parent
  * @param f
  */
-DialogExecuteCommand::DialogExecuteCommand(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), historyIndex_(0) {
+DialogExecuteCommand::DialogExecuteCommand(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 
 	// seed the history with a blank string, makes later logic simpler

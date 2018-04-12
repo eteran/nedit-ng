@@ -1049,7 +1049,7 @@ void MainWindow::SortTabBar() {
 	// shuffle around the tabs to their new indexes
     for(size_t i = 0; i < documents.size(); ++i) {
         int from = ui.tabWidget->indexOf(documents[i]);
-        int to   = gsl::narrow<int>(i);
+        auto to  = gsl::narrow<int>(i);
         ui.tabWidget->tabBar()->moveTab(from, to);
 	}
 }
@@ -1154,8 +1154,8 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 
         bool found = menuData.info->umiLanguageModes.empty();
 
-        for(size_t language = 0; language < menuData.info->umiLanguageModes.size(); ++language) {
-            if(menuData.info->umiLanguageModes[language] == document->languageMode_) {
+        for(size_t languageMode : menuData.info->umiLanguageModes) {
+            if(languageMode == document->languageMode_) {
                 found = true;
             }
         }
@@ -4715,7 +4715,7 @@ QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &
     dialog.setDirectory(document->path_);
     dialog.setOptions(QFileDialog::DontUseNativeDialog);
 
-    if(QGridLayout* const layout = qobject_cast<QGridLayout*>(dialog.layout())) {
+    if(auto layout = qobject_cast<QGridLayout*>(dialog.layout())) {
         if(layout->rowCount() == 4 && layout->columnCount() == 3) {
             auto boxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
 
@@ -6392,7 +6392,7 @@ void MainWindow::action_Replace_Find(DocumentWidget *document, const QString &se
  */
 void MainWindow::SearchForSelectedEx(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap) {
 
-    QString selected = document->GetAnySelectionEx(false);
+    const QString selected = document->GetAnySelectionEx(false);
     if(selected.isEmpty()) {
         if (Preferences::GetPrefSearchDlogs()) {
             QMessageBox::warning(document, tr("Wrong Selection"), tr("Selection not appropriate for searching"));
@@ -6402,10 +6402,7 @@ void MainWindow::SearchForSelectedEx(DocumentWidget *document, TextArea *area, D
         return;
     }
 
-    // make the selection the current search string
-    QString searchString = selected;
-
-    if (searchString.isEmpty()) {
+    if (selected.isEmpty()) {
         QApplication::beep();
         return;
     }
@@ -6422,7 +6419,7 @@ void MainWindow::SearchForSelectedEx(DocumentWidget *document, TextArea *area, D
     SearchAndSelectEx(
                 document,
                 area,                
-                searchString,
+                selected,
                 direction,
                 searchType,
                 searchWrap);

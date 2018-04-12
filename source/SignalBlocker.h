@@ -19,10 +19,10 @@ public:
     SignalBlocker(const SignalBlocker &)            = delete;
     SignalBlocker& operator=(const SignalBlocker &) = delete;
 
-    SignalBlocker(SignalBlocker &&other) : blocked_(std::exchange(other.blocked_, nullptr)), previous_(std::exchange(other.previous_, false)) {
+    SignalBlocker(SignalBlocker &&other) noexcept : blocked_(std::exchange(other.blocked_, nullptr)), previous_(std::exchange(other.previous_, false)) {
     }
 
-    SignalBlocker& operator=(SignalBlocker &&rhs) {
+    SignalBlocker& operator=(SignalBlocker &&rhs) noexcept {
         blocked_  = std::exchange(rhs.blocked_, nullptr);
         previous_ = std::exchange(rhs.previous_, false);
         return *this;

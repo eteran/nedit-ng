@@ -4,7 +4,7 @@
 
 #include "Constants.h"
 #include "Util/string_view.h"
-#include <stdint.h>
+#include <cstdint>
 #include <array>
 #include <bitset>
 

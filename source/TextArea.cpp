@@ -450,7 +450,7 @@ constexpr InputHandler inputHandlers[] = {
  * @param buffer
  * @param fontStruct
  */
-TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, QFont fontStruct) : QAbstractScrollArea(document) {
+TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fontStruct) : QAbstractScrollArea(document) {
 
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -2722,8 +2722,8 @@ void TextArea::textDRedisplayRange(int64_t start, int64_t end) {
 		endIndex = end - lineStarts_[lastLine];
 	}
 
-    const int startLine32 = gsl::narrow<int>(startLine);
-    const int lastLine32  = gsl::narrow<int>(lastLine);
+    const auto startLine32 = gsl::narrow<int>(startLine);
+    const auto lastLine32  = gsl::narrow<int>(lastLine);
 
 	/* If the starting and ending lines are the same, redisplay the single
 	   line between "start" and "end" */

@@ -17,7 +17,7 @@ class QByteArray;
 class SmartIndent {
     Q_DECLARE_TR_FUNCTIONS(SmartIndent)
 
-private:
+public:
     SmartIndent() = delete;
 
 public:

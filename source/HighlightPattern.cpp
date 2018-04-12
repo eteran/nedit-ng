@@ -1,10 +1,10 @@
 
 #include "HighlightPattern.h"
 
-HighlightPattern::HighlightPattern() : flags(0) {
+HighlightPattern::HighlightPattern() {
 }
 
-HighlightPattern::HighlightPattern(const QString &styleName) : style(styleName), flags(0) {
+HighlightPattern::HighlightPattern(QString styleName) : style(std::move(styleName)) {
 }
 
 bool HighlightPattern::operator==(const HighlightPattern &rhs) const {

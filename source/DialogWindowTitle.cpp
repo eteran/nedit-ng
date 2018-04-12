@@ -564,9 +564,8 @@ void DialogWindowTitle::on_editDirectory_textChanged(const QString &text) {
 	}
 
 	QString format = ui.editFormat->text();
-	QString value = text;
 	bool ok;
-	int maxComp = value.toInt(&ok);
+    int maxComp = text.toInt(&ok);
 	if(ok && maxComp >= 0) {
 		format.replace(QRegExp(QLatin1String("%[0-9]?d")), tr("%%1d").arg(maxComp)); 
 	} else {

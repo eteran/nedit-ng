@@ -34,7 +34,7 @@ private:
 
 private:
 	Ui::DialogPromptList ui;
-	int result_;
+    int result_ = 0;
 	QString text_;
 };
 
