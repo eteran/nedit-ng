@@ -1193,6 +1193,33 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
                     if(!menuData.item.shortcut.isEmpty()) {
                         action->setShortcut(menuData.item.shortcut);
                     }
+
+                    connect(action, &QAction::triggered, this, [this, action]() {
+
+                        /* Don't allow users to execute a macro command from the menu (or accel)
+                           if there's already a macro command executing, UNLESS the macro is
+                           directly called from another one.  NEdit can't handle
+                           running multiple, independent uncoordinated, macros in the same
+                           window.  Macros may invoke macro menu commands recursively via the
+                           macro_menu_command action proc, which is important for being able to
+                           repeat any operation, and to embed macros within eachother at any
+                           level, however, a call here with a macro running means that THE USER
+                           is explicitly invoking another macro via the menu or an accelerator,
+                           UNLESS the macro event marker is set */
+                        if(DocumentWidget *document = currentDocument()) {
+                            if(document->macroCmdData_) {
+                                QApplication::beep();
+                                return;
+                            }
+
+                            const auto index = action->data().toUInt();
+                            const QString name = BGMenuData[index].item.name;
+                            if(QPointer<TextArea> area = lastFocus_) {
+                                DoNamedBGMenuCmd(document, area, name, CommandSource::User);
+                            }
+                        }
+
+                    });
                 }
                 break;
             }
@@ -1904,7 +1931,9 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
     //       etc...
     static const QLatin1String includeDirs[] = {
         QLatin1String("/usr/include/"),
+#if 0 // causes spurious message boxes unfortunately because we don't stop after first success... yet
         QLatin1String("/usr/local/include/")
+#endif
     };
 
     /* get the string, or skip if we can't get the selection data, or it's
