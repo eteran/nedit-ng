@@ -12,6 +12,9 @@
 #include <algorithm>
 #include <QtGlobal>
 
+// Address of this used as flag.
+uint8_t Compute_Size;
+
 namespace {
 
 // Flags for function shortcut_escape()

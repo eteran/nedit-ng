@@ -16,9 +16,6 @@
 
 #include <QtGlobal>
 
-// Address of this used as flag.
-uint8_t Compute_Size;
-
 namespace {
 
 bool match(uint8_t *prog, int *branch_index_param);

@@ -12,8 +12,6 @@
 
 class Regex;
 
-extern uint8_t Compute_Size;
-
 // Global work variables for 'ExecRE'.
 
 template <size_t N>
