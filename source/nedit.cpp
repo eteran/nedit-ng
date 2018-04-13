@@ -86,14 +86,11 @@ int main(int argc, char *argv[]) {
 
     // NOTE(eteran):for issue #38, grab -geometry <arg> before Qt consumes it!
     QString geometry;
-    for(int i = 0; i < argc; ++i) {
+    for (int i = 1; i < argc && strcmp(argv[i], "--"); i++) {
         if(strcmp(argv[i], "-geometry") == 0) {
             if(i++ < argc) {
                 geometry = QString::fromLatin1(argv[i]);
             }
-        } else if(strcmp(argv[i], "--") == 0) {
-            // anything that follows this, is a filename, not an argument
-            break;
         }
     }
 
