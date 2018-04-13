@@ -8,7 +8,7 @@
  * @param argument
  * @param flags
  */
-TextEditEvent::TextEditEvent(QString macroString, const QString &argument, TextArea::EventFlags flags) : QEvent(eventType), macroString_(std::move(macroString)), argument_(argument), flags_(flags) {
+TextEditEvent::TextEditEvent(QString macroString, QString argument, TextArea::EventFlags flags) : QEvent(eventType), macroString_(std::move(macroString)), argument_(std::move(argument)), flags_(flags) {
 }
 
 /**

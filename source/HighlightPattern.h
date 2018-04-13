@@ -6,7 +6,7 @@
 
 class HighlightPattern {
 public:
-    HighlightPattern();
+    HighlightPattern() = default;
     explicit HighlightPattern(QString styleName);
 
 public:

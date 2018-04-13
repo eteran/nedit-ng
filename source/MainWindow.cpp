@@ -4565,7 +4565,7 @@ void MainWindow::action_Last_Document() {
  * @param defaultPath
  * @return
  */
-DocumentWidget *MainWindow::EditNewFileEx(MainWindow *window, QString geometry, bool iconic, const QString &languageMode, const QString &defaultPath) {
+DocumentWidget *MainWindow::EditNewFileEx(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode, const QString &defaultPath) {
 
     DocumentWidget *document;
 

@@ -2133,7 +2133,7 @@ static int inArray() {
         const ArrayPtr &m = to_array(leftArray);
 
 		inResult = 1;
-        Array::iterator iter = m->begin();
+        auto iter = m->begin();
         while (inResult && iter != m->end()) {
             inResult = inResult && ArrayGet(&theArray, iter->first, &theValue);
             ++iter;

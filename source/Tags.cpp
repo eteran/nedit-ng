@@ -1200,7 +1200,7 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 		case TF_INCLUDE:
         {
             // nextTFBlock returns a colon-separated list of tips files in body
-            auto ss = body;
+            const QString &ss = body;
             QStringList segments = ss.split(QLatin1Char(':'));
             for(const QString &tipIncFile : segments) {
                 //qDebug("NEdit: including tips file '%s'", qPrintable(tipIncFile));

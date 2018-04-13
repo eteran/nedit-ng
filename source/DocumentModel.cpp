@@ -6,7 +6,7 @@
  * @brief DocumentModel::LanguageModeModel
  * @param parent
  */
-DocumentModel::DocumentModel(QObject *parent) : QAbstractItemModel(parent), showFullPath_(false) {
+DocumentModel::DocumentModel(QObject *parent) : QAbstractItemModel(parent) {
 }
 
 /**

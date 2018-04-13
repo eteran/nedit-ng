@@ -226,6 +226,7 @@ int RangesetTable::nRangesetsAvailable() const {
 std::vector<uint8_t> RangesetTable::RangesetGetList() const {
 
     std::vector<uint8_t> list;
+    list.reserve(n_set_);
 
     for (int i = 0; i < n_set_; i++) {
         list.push_back(rangeset_labels[static_cast<int>(order_[i])]);

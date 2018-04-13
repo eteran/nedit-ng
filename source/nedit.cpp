@@ -91,6 +91,9 @@ int main(int argc, char *argv[]) {
             if(i++ < argc) {
                 geometry = QString::fromLatin1(argv[i]);
             }
+        } else if(strcmp(argv[i], "--") == 0) {
+            // anything that follows this, is a filename, not an argument
+            break;
         }
     }
 

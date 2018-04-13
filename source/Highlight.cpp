@@ -1098,7 +1098,7 @@ void Highlight::saveTheme() {
     QFile file(filename);
     if(file.open(QIODevice::WriteOnly)) {
         QDomDocument xml;
-        QDomProcessingInstruction pi = xml.createProcessingInstruction(QLatin1String("xml"), QLatin1String("version=\"1.0\" encoding=\"UTF-8\""));
+        QDomProcessingInstruction pi = xml.createProcessingInstruction(QLatin1String("xml"), QLatin1String(R"(version="1.0" encoding="UTF-8")"));
 
         xml.appendChild(pi);
 

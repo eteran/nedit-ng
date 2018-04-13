@@ -31,7 +31,7 @@ public:
 
 private:
     QVector<DocumentWidget *> items_;
-    bool showFullPath_;
+    bool showFullPath_ = false;
 };
 
 

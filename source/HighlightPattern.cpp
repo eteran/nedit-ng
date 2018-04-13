@@ -1,9 +1,6 @@
 
 #include "HighlightPattern.h"
 
-HighlightPattern::HighlightPattern() {
-}
-
 HighlightPattern::HighlightPattern(QString styleName) : style(std::move(styleName)) {
 }
 
