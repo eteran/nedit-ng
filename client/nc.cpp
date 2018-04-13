@@ -58,10 +58,8 @@ int nextArg(const QStringList &args, int argIndex) {
 }
 
 /* Copies a given nc command line argument to the server startup command
-** line (-icon, -geometry, -xrm, ...) Special characters are protected from
+** line (-icon, -geometry, ...) Special characters are protected from
 ** the shell by escaping EVERYTHING with \
-** Note that the .shell string in the command line structure is large enough
-** to hold the escaped characters.
 */
 void copyCommandLineArg(CommandLine *commandLine, const QString &arg) {
 
@@ -429,7 +427,6 @@ int main(int argc, char *argv[]) {
         QDataStream stream(&ba, QIODevice::WriteOnly);
         stream.setVersion(QDataStream::Qt_5_0);
         stream << commandLine.jsonRequest;
-        //stream.device()->seek(0);
 
         socket->write(ba);
         socket->flush();
