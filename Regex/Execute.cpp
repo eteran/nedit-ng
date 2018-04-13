@@ -225,7 +225,7 @@ unsigned long greedy(uint8_t *p, unsigned long max) {
         break;
 
     case NOT_SPACE: // same as [^\n \t\r\f\v]-- doesn't match newline.
-        while (count < max_cmp && !safe_ctype<isspace>(*input_str) && !AT_END_OF_STRING(input_str)) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && !safe_ctype<isspace>(*input_str)) {
 
             count++;
             input_str++;

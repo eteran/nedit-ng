@@ -1664,13 +1664,13 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
     uint8_t *ender = nullptr;
     size_t this_paren = 0;
     int flags_local;
-    int first = 1;
+    bool first = true;
     int zero_width;
     bool old_sensitive = pContext.Is_Case_Insensitive;
     bool old_newline   = pContext.Match_Newline;
 
     len_range range_local;
-    int look_only = 0;
+    bool look_only = false;
     uint8_t *emit_look_behind_bounds = nullptr;
 
     *flag_param = HAS_WIDTH; // Tentatively.
@@ -1689,11 +1689,11 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
         ret_val = emit_node(OPEN + this_paren);
     } else if (paren == POS_AHEAD_OPEN || paren == NEG_AHEAD_OPEN) {
         *flag_param = WORST; // Look ahead is zero width.
-        look_only = 1;
+        look_only = true;
         ret_val = emit_node(paren);
     } else if (paren == POS_BEHIND_OPEN || paren == NEG_BEHIND_OPEN) {
         *flag_param = WORST; // Look behind is zero width.
-        look_only = 1;
+        look_only = true;
         // We'll overwrite the zero length later on, so we save the ptr
         ret_val = emit_special(paren, 0, 0);
         emit_look_behind_bounds = ret_val + NODE_SIZE;
@@ -1716,7 +1716,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
             return nullptr;
 
         if (first) {
-            first = 0;
+            first = false;
             range_param = range_local;
             if (ret_val == nullptr)
                 ret_val = this_branch;
