@@ -55,6 +55,71 @@ QLatin1String RedundantActions[] = {
     QLatin1String("start_incremental_find")
 };
 
+/**
+ * @brief isMouseAction
+ * @param ev
+ * @return
+ */
+template <class Event>
+bool isMouseAction(const Event *ev) {
+
+    for(const QLatin1String &action : MouseActions) {
+        if (action == ev->actionString()) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * @brief isRedundantAction
+ * @param ev
+ * @return
+ */
+template <class Event>
+bool isRedundantAction(const Event *ev) {
+
+    for(const QLatin1String &action : RedundantActions) {
+        if (action == ev->actionString()) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
+ * @brief isIgnoredAction
+ * @param ev
+ * @return
+ */
+template <class Event>
+bool isIgnoredAction(const Event *ev) {
+
+    for(const QLatin1String &action : IgnoredActions) {
+        if (action == ev->actionString()) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/*
+** Create a macro string to represent an invocation of an action routine.
+** Returns nullptr for non-operational or un-recordable actions.
+*/
+template <class Event>
+QString actionToString(const Event *ev) {
+
+    if (isIgnoredAction(ev) || isRedundantAction(ev) || isMouseAction(ev)) {
+        return QString();
+    }
+
+    return ev->toString();
+}
+
 }
 
 /**
@@ -175,129 +240,6 @@ void CommandRecorder::lastActionHook(const TextEditEvent *ev) {
         }
     }
 }
-
-/**
- * @brief CommandRecorder::isMouseAction
- * @param ev
- * @return
- */
-bool CommandRecorder::isMouseAction(const WindowMenuEvent *ev) const {
-
-    for(const QLatin1String &action : MouseActions) {
-        if (action == ev->actionString()) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-/**
- * @brief CommandRecorder::isRedundantAction
- * @param ev
- * @return
- */
-bool CommandRecorder::isRedundantAction(const WindowMenuEvent *ev) const {
-
-    for(const QLatin1String &action : RedundantActions) {
-        if (action == ev->actionString()) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-/**
- * @brief CommandRecorder::isIgnoredAction
- * @param ev
- * @return
- */
-bool CommandRecorder::isIgnoredAction(const WindowMenuEvent *ev) const {
-
-    for(const QLatin1String &action : IgnoredActions) {
-        if (action == ev->actionString()) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-/**
- * @brief CommandRecorder::isMouseAction
- * @param ev
- * @return
- */
-bool CommandRecorder::isMouseAction(const TextEditEvent *ev) const {
-
-    for(const QLatin1String &action : MouseActions) {
-        if (action == ev->actionString()) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-/**
- * @brief CommandRecorder::isRedundantAction
- * @param ev
- * @return
- */
-bool CommandRecorder::isRedundantAction(const TextEditEvent *ev) const {
-
-    for(const QLatin1String &action : RedundantActions) {
-        if (action == ev->actionString()) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-/**
- * @brief CommandRecorder::isIgnoredAction
- * @param ev
- * @return
- */
-bool CommandRecorder::isIgnoredAction(const TextEditEvent *ev) const {
-
-    for(const QLatin1String &action : IgnoredActions) {
-        if (action == ev->actionString()) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
-/*
-** Create a macro string to represent an invocation of an action routine.
-** Returns nullptr for non-operational or un-recordable actions.
-*/
-QString CommandRecorder::actionToString(const TextEditEvent *ev) {
-
-    if (isIgnoredAction(ev) || isRedundantAction(ev) || isMouseAction(ev)) {
-        return QString();
-    }
-
-    return ev->toString();
-}
-
-/*
-** Create a macro string to represent an invocation of an action routine.
-** Returns nullptr for non-operational or un-recordable actions.
-*/
-QString CommandRecorder::actionToString(const WindowMenuEvent *ev) {
-
-    if (isIgnoredAction(ev) || isRedundantAction(ev) || isMouseAction(ev)) {
-        return QString();
-    }
-
-    return ev->toString();
-}
-
 
 /**
  * @brief CommandRecorder::startRecording
