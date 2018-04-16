@@ -2,9 +2,9 @@
 #ifndef INPUT_H_
 #define INPUT_H_
 
-#include <QString>
-#include <QRegularExpression>
-#include <cstddef>
+class QRegularExpression;
+class QChar;
+class QString;
 
 class Input {
 public:
@@ -57,7 +57,5 @@ private:
 	const QString *string_;
 	int            index_;
 };
-
-
 
 #endif

@@ -394,22 +394,22 @@ bool DialogMacros::checkMacroText(const QString &macro, Verbosity verbosity) {
         if(verbosity == Verbosity::Verbose) {
             Preferences::ParseErrorEx(this, macro, stoppedAt, tr("macro"), errMsg);
 		}
-		QTextCursor cursor = ui.editMacro->textCursor();
-		cursor.setPosition(stoppedAt);
-		ui.editMacro->setTextCursor(cursor);
-		ui.editMacro->setFocus();
+        QTextCursor cursor = ui.editMacro->textCursor();
+        cursor.setPosition(stoppedAt);
+        ui.editMacro->setTextCursor(cursor);
+        ui.editMacro->setFocus();
 		return false;
-	}
+    }
     delete prog;
 
 	if(stoppedAt != macro.size()) {
         if(verbosity == Verbosity::Verbose) {
             Preferences::ParseErrorEx(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
-		}
-		QTextCursor cursor = ui.editMacro->textCursor();
-		cursor.setPosition(stoppedAt);
-		ui.editMacro->setTextCursor(cursor);
-		ui.editMacro->setFocus();
+        }
+        QTextCursor cursor = ui.editMacro->textCursor();
+        cursor.setPosition(stoppedAt);
+        ui.editMacro->setTextCursor(cursor);
+        ui.editMacro->setFocus();
 	}
 
 	return true;
@@ -472,7 +472,6 @@ bool DialogMacros::updateCurrentItem(const QModelIndex &index) {
         return false;
     }
 
-    // Get the current contents of the dialog fields
     if(!index.isValid()) {
         return false;
     }

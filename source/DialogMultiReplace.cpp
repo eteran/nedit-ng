@@ -51,11 +51,10 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
     int res = QMessageBox::question(
                 this,
                 tr("Multi-File Replacement"),
-                tr("Multi-file replacements are difficult to undo. Proceed with the replacement ?"),
+                tr("Multi-file replacements are difficult to undo. Proceed with the replacement?"),
                 QMessageBox::Yes | QMessageBox::Cancel);
 
 	if(res == QMessageBox::Cancel) {
-		// pop down the multi-file dialog only 
 		hide();
 		return;
 	}
@@ -95,11 +94,9 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
                 }
             }
         }
-
     }
 
     if (!replace_->keepDialog()) {
-		// Pop down both replace dialogs. 
 		replace_->hide();
 	}
 

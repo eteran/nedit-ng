@@ -10,6 +10,7 @@
 #include "NewMode.h"
 #include "SearchType.h"
 #include "WrapMode.h"
+#include "userCmds.h"
 
 #include <vector>
 #include <gsl/span>
@@ -44,7 +45,7 @@ private:
     void setupGlobalPrefenceDefaults();
     void setupDocumentPrefernceDefaults();
     void setupPrevOpenMenuActions();
-    QMenu *createUserMenu(DocumentWidget *document, const gsl::span<MenuData> &data);
+    QMenu *createUserMenu(DocumentWidget *document, const gsl::span<MenuData> &data, DialogTypes type);
     QTabWidget *tabWidget() const;
 
 private:

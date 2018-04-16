@@ -1,6 +1,8 @@
 
 #include "Util/Input.h"
 #include <QRegularExpressionMatch>
+#include <QRegularExpression>
+#include <QString>
 
 /**
  * @brief Input::Input
