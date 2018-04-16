@@ -15,6 +15,7 @@
 #include "userCmds.h"
 
 #include <QMessageBox>
+#include <QRegularExpressionValidator>
 
 /**
  * @brief DialogLanguageModes::DialogLanguageModes
@@ -42,7 +43,8 @@ DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatte
     }
 
 	// Valid characters are letters, numbers, _, -, +, $, #, and internal whitespace.
-	ui.editName->setValidator(new QRegExpValidator(QRegExp(QLatin1String("[\\sA-Za-z0-9_+$#-]+")), this));
+    static const QRegularExpression rx(QLatin1String("[\\sA-Za-z0-9_+$#-]+"));
+    ui.editName->setValidator(new QRegularExpressionValidator(rx, this));
 
 	// 0-100
 	ui.editTabSpacing->setValidator(new QIntValidator(0, 100, this));

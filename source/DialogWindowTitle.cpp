@@ -8,6 +8,7 @@
 #include "Util/ClearCase.h"
 #include "Util/fileUtils.h"
 #include "Util/utils.h"
+#include <QRegularExpressionValidator>
 
 namespace {
 
@@ -56,7 +57,8 @@ DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, 
 	
 	inConstructor_ = true;
 	
-	ui.editDirectory->setValidator(new QRegExpValidator(QRegExp(QLatin1String("[0-9]")), this));
+    static const QRegularExpression rx(QLatin1String("[0-9]"));
+    ui.editDirectory->setValidator(new QRegularExpressionValidator(rx, this));
 
 	/* copy attributes from current this so that we can use as many
 	 * 'real world' defaults as possible when testing the effect

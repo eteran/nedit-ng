@@ -10,6 +10,7 @@
 
 #include <QMessageBox>
 #include <QColorDialog>
+#include <QRegularExpressionValidator>
 
 /**
  * @brief DialogDrawingStyles::DialogDrawingStyles
@@ -37,7 +38,8 @@ DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatte
     }
 
 	// Valid characters are letters, numbers, _, -, +, $, #, and internal whitespace.
-	auto validator = new QRegExpValidator(QRegExp(QLatin1String("[\\sA-Za-z0-9_+$#-]+")), this);
+    static const QRegularExpression rx(QLatin1String("[\\sA-Za-z0-9_+$#-]+"));
+    auto validator = new QRegularExpressionValidator(rx, this);
 	ui.editName->setValidator(validator);
 }
 
