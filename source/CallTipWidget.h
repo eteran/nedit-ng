@@ -9,7 +9,7 @@ class CallTipWidget : public QWidget {
 	Q_OBJECT
 public:
     CallTipWidget(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~CallTipWidget() override = default;
+    ~CallTipWidget() noexcept override = default;
 	
 public:
 	void setText(const QString &text);

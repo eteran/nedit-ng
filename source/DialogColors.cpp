@@ -8,6 +8,18 @@
 #include <QColorDialog>
 #include <QMessageBox>
 
+namespace  {
+/**
+ * @brief showColorStatus
+ * @param text
+ * @param label
+ */
+void showColorStatus(const QString &text, QLabel *label) {
+    label->setVisible(!QColor::isValidColor(text));
+}
+
+}
+
 /**
  * @brief DialogColors::DialogColors
  * @param parent
@@ -45,20 +57,8 @@ void DialogColors::chooseColor(QLineEdit *edit) {
 
     QColor color = QColorDialog::getColor(X11Colors::fromString(name), this);
 	if(color.isValid()) {
-		edit->setText(tr("#%1").arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0')));
+        edit->setText(QString(QLatin1String("#%1")).arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0')));
 	}
-}
-
-/**
- * @brief DialogColors::showColorStatus
- * @param text
- * @param label
- */
-void DialogColors::showColorStatus(const QString &text, QLabel *label) {
-	/* Should set the OK/Apply button sensitivity here, instead
-	   of leaving is sensitive and then complaining if an error. */
-	
-    label->setVisible(!QColor::isValidColor(text));
 }
 
 /**

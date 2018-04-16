@@ -36,8 +36,7 @@ private Q_SLOTS:
 	void on_buttonBox_clicked(QAbstractButton *button);
 	void on_buttonBox_accepted();
   
-private:
-	void showColorStatus(const QString &text, QLabel *label);
+private:	
 	void chooseColor(QLineEdit *edit);
 	bool verifyAllColors();
 	void updateColors();

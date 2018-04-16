@@ -86,20 +86,12 @@ void DialogFind::keyPressEvent(QKeyEvent *event) {
 }
 
 /**
- * @brief DialogFind::on_checkBackward_toggled
- * @param checked
- */
-void DialogFind::on_checkBackward_toggled(bool checked) {
-	Q_UNUSED(checked);
-}
-
-/**
  * @brief DialogFind::on_checkKeep_toggled
  * @param checked
  */
 void DialogFind::on_checkKeep_toggled(bool checked) {
 	if (checked) {
-        setWindowTitle(tr("Find (in %1)").arg(document_->filename_));
+        setWindowTitle(tr("Find (in %1)").arg(document_->FileName()));
 	} else {
 		setWindowTitle(tr("Find"));
 	}

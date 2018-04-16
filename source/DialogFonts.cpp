@@ -29,7 +29,7 @@ DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFl
         ui.fontBold->setCurrentFont(Preferences::GetPrefBoldFontName());
         ui.fontItalic->setCurrentFont(Preferences::GetPrefItalicFontName());
         ui.fontBoldItalic->setCurrentFont(Preferences::GetPrefBoldItalicFontName());
-	}	
+    }
 }
 
 /**

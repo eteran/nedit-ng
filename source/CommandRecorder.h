@@ -18,7 +18,7 @@ public:
 
 private:
     explicit CommandRecorder(QObject *parent = nullptr);
-    ~CommandRecorder() override = default;
+    ~CommandRecorder() noexcept override = default;
 
 public:
     bool eventFilter(QObject *obj, QEvent *event) override;
