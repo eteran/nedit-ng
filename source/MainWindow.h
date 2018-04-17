@@ -45,7 +45,7 @@ private:
     void setupGlobalPrefenceDefaults();
     void setupDocumentPrefernceDefaults();
     void setupPrevOpenMenuActions();
-    QMenu *createUserMenu(DocumentWidget *document, const gsl::span<MenuData> &data, DialogTypes type);
+    QMenu *createUserMenu(DocumentWidget *document, const gsl::span<MenuData> &data);
     QTabWidget *tabWidget() const;
 
 private:
