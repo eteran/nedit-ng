@@ -1,5 +1,6 @@
 
 #include "X11Colors.h"
+#include <QColor>
 
 namespace {
 

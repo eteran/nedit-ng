@@ -36,8 +36,7 @@ std::string makeIndentString(int64_t indent, int tabDist, bool allowTabs) {
 ** Trim leading space, and arrange text to fill between leftMargin and
 ** rightMargin (except for the first line which fills from firstLineIndent),
 ** re-creating whitespace to the left of the text using tabs (if allowTabs is
-** true) calculated using tabDist, and spaces.  Returns a newly allocated
-** string as the function result, and the length of the new string in filledLen.
+** true) calculated using tabDist, and spaces.
 */
 std::string fillParagraphEx(view::string_view text, int64_t leftMargin, int64_t firstLineIndent, int64_t rightMargin, int tabDist, bool allowTabs) {
 
@@ -112,7 +111,6 @@ std::string fillParagraphEx(view::string_view text, int64_t leftMargin, int64_t 
     std::string leadIndentStr = makeIndentString(firstLineIndent, tabDist, allowTabs);
     std::string indentString  = makeIndentString(leftMargin, tabDist, allowTabs);
 
-    // allocate memory for the finished string
     std::string outText;
     outText.reserve(cleanedText.size() + leadIndentStr.size() + indentString.size() * (nLines - 1));
 
@@ -540,9 +538,9 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
     size_t bufLen;
 
     /*
-    ** Allocate memory for shifted string.  Shift left adds a maximum of
-    ** tabDist-2 characters per line (remove one tab, add tabDist-1 spaces).
-    ** Shift right adds a maximum of nChars character per line.
+    ** Shift left adds a maximum of tabDist-2 characters per line
+    ** (remove one tab, add tabDist-1 spaces). Shift right adds a maximum of
+    ** nChars character per line.
     */
     if (direction == SHIFT_RIGHT) {
         bufLen = text.size() + static_cast<size_t>(countLinesEx(text) * nChars);
@@ -849,9 +847,9 @@ QString ShiftTextEx(const QString &text, ShiftDirection direction, bool tabsAllo
     int bufLen;
 
     /*
-    ** Allocate memory for shifted string.  Shift left adds a maximum of
-    ** tabDist-2 characters per line (remove one tab, add tabDist-1 spaces).
-    ** Shift right adds a maximum of nChars character per line.
+    ** Shift left adds a maximum of tabDist-2 characters per line
+    ** (remove one tab, add tabDist-1 spaces). Shift right adds a maximum of
+    ** nChars character per line.
     */
     if (direction == SHIFT_RIGHT) {
         bufLen = text.size() + countLinesEx(text) * nChars;

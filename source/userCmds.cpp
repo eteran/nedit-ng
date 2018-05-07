@@ -17,10 +17,6 @@ std::vector<MenuData> ShellMenuData;
 std::vector<MenuData> MacroMenuData;
 std::vector<MenuData> BGMenuData;
 
-static QString copyMacroToEnd(Input &in);
-static int loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuItems, DialogTypes listType);
-static QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, DialogTypes listType);
-
 namespace {
 
 struct ParseError : std::exception {
@@ -35,200 +31,95 @@ private:
     std::string s_;
 };
 
-/**
- * @brief setDefaultIndex
- * @param infoList
- * @param index
- */
-void setDefaultIndex(const std::vector<MenuData> &infoList, size_t index) {
-    QString defaultMenuName = infoList[index].info->umiName;
-
-    /* Scan the list for items with the same name and a language mode
-       specified. If one is found, then set the default index to the
-       index of the current default item. */
-    for (const MenuData &data: infoList) {
-        if(const std::shared_ptr<userMenuInfo> &info = data.info) {
-            if (!info->umiIsDefault && info->umiName == defaultMenuName) {
-                info->umiDefaultIndex = index;
-            }
-        }
-    }
-}
-
-
 /*
-** Cache user menus:
-** Extract language mode related info out of given menu item name string.
-** Store this info in given user menu info structure.
+** Scan text from "*in" to the end of macro input (matching brace),
+** advancing in, and return macro text as function return value.
+**
+** This is kind of wastefull in that it throws away the compiled macro,
+** to be re-generated from the text as needed, but compile time is
+** negligible for most macros.
 */
-void parseMenuItemName(const QString &menuItemName, const std::shared_ptr<userMenuInfo> &info) {
+QString copyMacroToEnd(Input &in) {
 
-    int index = menuItemName.indexOf(QLatin1Char('@'));
-    if(index != -1) {
-        QString languageString = menuItemName.mid(index);
-        if(languageString == QLatin1String("*")) {
-            /* only language is "*": this is for all but language specific macros */
-            info->umiIsDefault = true;
-            return;
-        }
+    Input input = in;
 
-        QStringList languages = languageString.split(QLatin1Char('@'), QString::SkipEmptyParts);
-        std::vector<size_t> languageModes;
+    // Skip over whitespace to find make sure there's a beginning brace
+    // to anchor the parse (if not, it will take the whole file)
+    input.skipWhitespaceNL();
 
-        // setup a list of all language modes related to given menu item
-        for(const QString &language : languages) {
-            /* lookup corresponding language mode index; if PLAIN is
-               returned then this means, that language mode name after
-               "@" is unknown (i.e. not defined) */
+    QString code = input.mid();
 
-            size_t languageMode = Preferences::FindLanguageMode(language);
-            if (languageMode == PLAIN_LANGUAGE_MODE) {
-                languageModes.push_back(UNKNOWN_LANGUAGE_MODE);
-            } else {
-                languageModes.push_back(languageMode);
-            }
-        }
+    if (!code.startsWith(QLatin1Char('{'))) {
+        Preferences::ParseErrorEx(
+                    nullptr,
+                    code,
+                    input.index() - in.index(),
+                    QLatin1String("macro menu item"),
+                    QLatin1String("expecting '{'"));
 
-        if (!languageModes.empty()) {
-            info->umiLanguageModes = languageModes;
-        }
-    }
-}
-
-/*
-** Cache user menus:
-** Returns an allocated copy of menuItemName stripped of language mode
-** parts (i.e. parts starting with "@").
-*/
-QString stripLanguageModeEx(const QString &menuItemName) {
-
-    int index = menuItemName.indexOf(QLatin1Char('@'));
-    if(index != -1) {
-        return menuItemName.mid(0, index);
-    } else {
-        return menuItemName;
-    }
-}
-
-/*
-** Cache user menus:
-** Parse a single menu item. Allocate & setup a user menu info element
-** holding extracted info.
-*/
-std::shared_ptr<userMenuInfo> parseMenuItemRec(const MenuItem &item) {
-
-    // allocate a new user menu info element
-    auto newInfo = std::make_shared<userMenuInfo>();
-
-    /* determine sub-menu depth and allocate some memory
-       for hierarchical ID; init. ID with {0,.., 0} */
-    newInfo->umiName = stripLanguageModeEx(item.name);
-
-    // init. remaining parts of user menu info element
-    newInfo->umiIsDefault    = false;
-    newInfo->umiDefaultIndex = static_cast<size_t>(-1);
-
-    // assign language mode info to new user menu info element
-    parseMenuItemName(item.name, newInfo);
-
-    return newInfo;
-}
-
-}
-
-std::vector<MenuData> &selectMenu(DialogTypes type) {
-    switch(type) {
-    case DialogTypes::SHELL_CMDS:
-        return ShellMenuData;
-    case DialogTypes::MACRO_CMDS:
-        return MacroMenuData;
-    case DialogTypes::BG_MENU_CMDS:
-        return BGMenuData;
+        return QString();
     }
 
-    Q_UNREACHABLE();
-}
+    // Parse the input
+    int stoppedAt;
+    QString errMsg;
 
-MenuData *findMenuItem(const QString &name, DialogTypes type) {
+    Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
+    if(!prog) {
+        Preferences::ParseErrorEx(
+                    nullptr,
+                    code,
+                    stoppedAt,
+                    QLatin1String("macro menu item"),
+                    errMsg);
 
-    for(MenuData &data: selectMenu(type)) {
-        if (data.item.name == name) {
-            return &data;
+        return QString();
+    }
+    delete prog;
+
+    // Copy and return the body of the macro, stripping outer braces and
+    // extra leading tabs added by the writer routine
+    ++input;
+    input.skipWhitespace();
+
+    if (*input == QLatin1Char('\n')) {
+        ++input;
+    }
+
+    if (*input == QLatin1Char('\t')) {
+        ++input;
+    }
+
+    if (*input == QLatin1Char('\t')) {
+        ++input;
+    }
+
+    QString retStr;
+    retStr.reserve(stoppedAt - input.index());
+
+    auto retPtr = std::back_inserter(retStr);
+
+    while(input.index() != stoppedAt + in.index()) {
+        if(input.match(QLatin1String("\n\t\t"))) {
+            *retPtr++ = QLatin1Char('\n');
+        } else {
+            *retPtr++ = *input++;
         }
     }
 
-    return nullptr;
-}
-
-
-/*
-** Generate a text string for the preferences file describing the contents
-** of the shell cmd list, macro menu and background menus.
-*/
-QString WriteShellCmdsStringEx() {
-    return writeMenuItemStringEx(ShellMenuData, DialogTypes::SHELL_CMDS);
-}
-
-QString WriteMacroCmdsStringEx() {
-    return writeMenuItemStringEx(MacroMenuData, DialogTypes::MACRO_CMDS);
-}
-
-QString WriteBGMenuCmdsStringEx() {
-    return writeMenuItemStringEx(BGMenuData, DialogTypes::BG_MENU_CMDS);
-}
-
-/*
-** Read a string representing shell command menu items, macro menu or
-** background menu and add them to the internal list used for constructing
-** menus
-*/
-int LoadShellCmdsStringEx(const QString &inString) {
-    return loadMenuItemStringEx(inString, ShellMenuData, DialogTypes::SHELL_CMDS);
-}
-
-int LoadMacroCmdsStringEx(const QString &inString) {
-    return loadMenuItemStringEx(inString, MacroMenuData, DialogTypes::MACRO_CMDS);
-}
-
-int LoadBGMenuCmdsStringEx(const QString &inString) {
-    return loadMenuItemStringEx(inString, BGMenuData, DialogTypes::BG_MENU_CMDS);
-}
-
-/*
-** Cache user menus:
-** Setup user menu info after read of macro, shell and background menu
-** string (reason: language mode info from preference string is read *after*
-** user menu preference string was read).
-*/
-void SetupUserMenuInfo() {
-    parseMenuItemList(ShellMenuData);
-    parseMenuItemList(MacroMenuData);
-    parseMenuItemList(BGMenuData);
-}
-
-/*
-** Cache user menus:
-** Update user menu info to take into account e.g. change of language modes
-** (i.e. add / move / delete of language modes etc).
-*/
-void UpdateUserMenuInfo() {
-    for(auto &item : ShellMenuData) {
-        item.info = nullptr;
+    if(retStr.endsWith(QLatin1Char('\t'))) {
+        retStr.chop(1);
     }
-    parseMenuItemList(ShellMenuData);
 
-    for(auto &item : MacroMenuData) {
-        item.info = nullptr;
-    }
-    parseMenuItemList(MacroMenuData);
+    // NOTE(eteran): move past the trailing '}'
+    ++input;
 
-    for(auto &item : BGMenuData) {
-        item.info = nullptr;
-    }
-    parseMenuItemList(BGMenuData);
+    in = input;
+
+    return retStr;
 }
 
-static QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, DialogTypes listType) {
+QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, DialogTypes listType) {
 
     QString outStr;
     auto outPtr = std::back_inserter(outStr);
@@ -305,7 +196,7 @@ static QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, Dia
     return outStr;
 }
 
-static int loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuItems, DialogTypes listType) {
+bool loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuItems, DialogTypes listType) {
 
     try {
         Input in(&inString);
@@ -422,9 +313,6 @@ static int loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &
 
             in.skipWhitespaceNL();
 
-            // parse the accelerator field
-            auto shortcut = QKeySequence::fromString(accStr);
-
             // create a menu item record
             auto f = std::make_unique<MenuItem>();
             f->name      = nameStr;
@@ -434,7 +322,7 @@ static int loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &
             f->repInput  = repInput;
             f->saveFirst = saveFirst;
             f->loadAfter = loadAfter;
-            f->shortcut  = shortcut;
+            f->shortcut  = QKeySequence::fromString(accStr);
 
             // add/replace menu record in the list
             auto it = std::find_if(menuItems.begin(), menuItems.end(), [&f](MenuData &data) {
@@ -453,92 +341,194 @@ static int loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &
     }
 }
 
+/**
+ * @brief setDefaultIndex
+ * @param infoList
+ * @param index
+ */
+void setDefaultIndex(const std::vector<MenuData> &infoList, size_t index) {
+    QString defaultMenuName = infoList[index].info->umiName;
+
+    /* Scan the list for items with the same name and a language mode
+       specified. If one is found, then set the default index to the
+       index of the current default item. */
+    for (const MenuData &data: infoList) {
+        if(const std::shared_ptr<userMenuInfo> &info = data.info) {
+            if (!info->umiIsDefault && info->umiName == defaultMenuName) {
+                info->umiDefaultIndex = index;
+            }
+        }
+    }
+}
+
+
 /*
-** Scan text from "*inPtr" to the end of macro input (matching brace),
-** advancing inPtr, and return macro text as function return value.
-**
-** This is kind of wastefull in that it throws away the compiled macro,
-** to be re-generated from the text as needed, but compile time is
-** negligible for most macros.
+** Cache user menus:
+** Extract language mode related info out of given menu item name string.
+** Store this info in given user menu info structure.
 */
-static QString copyMacroToEnd(Input &in) {
+void parseMenuItemName(const QString &menuItemName, const std::shared_ptr<userMenuInfo> &info) {
 
-    Input input = in;
+    int index = menuItemName.indexOf(QLatin1Char('@'));
+    if(index != -1) {
+        QString languageString = menuItemName.mid(index);
+        if(languageString == QLatin1String("*")) {
+            /* only language is "*": this is for all but language specific macros */
+            info->umiIsDefault = true;
+            return;
+        }
 
-    // Skip over whitespace to find make sure there's a beginning brace
-    // to anchor the parse (if not, it will take the whole file)
-    input.skipWhitespaceNL();
+        QStringList languages = languageString.split(QLatin1Char('@'), QString::SkipEmptyParts);
+        std::vector<size_t> languageModes;
 
-    QString code = input.mid();
+        // setup a list of all language modes related to given menu item
+        for(const QString &language : languages) {
+            /* lookup corresponding language mode index; if PLAIN is
+               returned then this means, that language mode name after
+               "@" is unknown (i.e. not defined) */
 
-    if (!code.startsWith(QLatin1Char('{'))) {
-        Preferences::ParseErrorEx(
-                    nullptr,
-                    code,
-                    input.index() - in.index(),
-                    QLatin1String("macro menu item"),
-                    QLatin1String("expecting '{'"));
+            size_t languageMode = Preferences::FindLanguageMode(language);
+            if (languageMode == PLAIN_LANGUAGE_MODE) {
+                languageModes.push_back(UNKNOWN_LANGUAGE_MODE);
+            } else {
+                languageModes.push_back(languageMode);
+            }
+        }
 
-        return QString();
+        if (!languageModes.empty()) {
+            info->umiLanguageModes = languageModes;
+        }
+    }
+}
+
+/*
+** Cache user menus:
+** Returns the menuItemName stripped of language mode parts
+** (i.e. parts starting with "@").
+*/
+QString stripLanguageModeEx(const QString &menuItemName) {
+
+    int index = menuItemName.indexOf(QLatin1Char('@'));
+    if(index != -1) {
+        return menuItemName.mid(0, index);
+    } else {
+        return menuItemName;
+    }
+}
+
+/*
+** Cache user menus:
+** Parse a single menu item. Allocate & setup a user menu info element
+** holding extracted info.
+*/
+std::shared_ptr<userMenuInfo> parseMenuItemRec(const MenuItem &item) {
+
+    auto newInfo = std::make_shared<userMenuInfo>();
+
+    newInfo->umiName = stripLanguageModeEx(item.name);
+
+    // init. remaining parts of user menu info element
+    newInfo->umiIsDefault    = false;
+    newInfo->umiDefaultIndex = static_cast<size_t>(-1);
+
+    // assign language mode info to new user menu info element
+    parseMenuItemName(item.name, newInfo);
+
+    return newInfo;
+}
+
+}
+
+std::vector<MenuData> &selectMenu(DialogTypes type) {
+    switch(type) {
+    case DialogTypes::SHELL_CMDS:
+        return ShellMenuData;
+    case DialogTypes::MACRO_CMDS:
+        return MacroMenuData;
+    case DialogTypes::BG_MENU_CMDS:
+        return BGMenuData;
     }
 
-    // Parse the input
-    int stoppedAt;
-    QString errMsg;
+    Q_UNREACHABLE();
+}
 
-    Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
-    if(!prog) {
-        Preferences::ParseErrorEx(
-                    nullptr,
-                    code,
-                    stoppedAt,
-                    QLatin1String("macro menu item"),
-                    errMsg);
+MenuData *findMenuItem(const QString &name, DialogTypes type) {
 
-        return QString();
-    }
-    delete prog;
-
-    // Copy and return the body of the macro, stripping outer braces and
-    // extra leading tabs added by the writer routine
-    ++input;
-    input.skipWhitespace();
-
-    if (*input == QLatin1Char('\n')) {
-        ++input;
-    }
-
-    if (*input == QLatin1Char('\t')) {
-        ++input;
-    }
-
-    if (*input == QLatin1Char('\t')) {
-        ++input;
-    }
-
-    QString retStr;
-    retStr.reserve(stoppedAt - input.index());
-
-    auto retPtr = std::back_inserter(retStr);
-
-    while(input.index() != stoppedAt + in.index()) {
-        if(input.match(QLatin1String("\n\t\t"))) {
-            *retPtr++ = QLatin1Char('\n');
-        } else {
-            *retPtr++ = *input++;
+    for(MenuData &data: selectMenu(type)) {
+        if (data.item.name == name) {
+            return &data;
         }
     }
 
-    if(retStr.endsWith(QLatin1Char('\t'))) {
-        retStr.chop(1);
+    return nullptr;
+}
+
+
+/*
+** Generate a text string for the preferences file describing the contents
+** of the shell cmd list, macro menu and background menus.
+*/
+QString WriteShellCmdsStringEx() {
+    return writeMenuItemStringEx(ShellMenuData, DialogTypes::SHELL_CMDS);
+}
+
+QString WriteMacroCmdsStringEx() {
+    return writeMenuItemStringEx(MacroMenuData, DialogTypes::MACRO_CMDS);
+}
+
+QString WriteBGMenuCmdsStringEx() {
+    return writeMenuItemStringEx(BGMenuData, DialogTypes::BG_MENU_CMDS);
+}
+
+/*
+** Read a string representing shell command menu items, macro menu or
+** background menu and add them to the internal list used for constructing
+** menus
+*/
+bool LoadShellCmdsStringEx(const QString &inString) {
+    return loadMenuItemStringEx(inString, ShellMenuData, DialogTypes::SHELL_CMDS);
+}
+
+bool LoadMacroCmdsStringEx(const QString &inString) {
+    return loadMenuItemStringEx(inString, MacroMenuData, DialogTypes::MACRO_CMDS);
+}
+
+bool LoadBGMenuCmdsStringEx(const QString &inString) {
+    return loadMenuItemStringEx(inString, BGMenuData, DialogTypes::BG_MENU_CMDS);
+}
+
+/*
+** Cache user menus:
+** Setup user menu info after read of macro, shell and background menu
+** string (reason: language mode info from preference string is read *after*
+** user menu preference string was read).
+*/
+void SetupUserMenuInfo() {
+    parseMenuItemList(ShellMenuData);
+    parseMenuItemList(MacroMenuData);
+    parseMenuItemList(BGMenuData);
+}
+
+/*
+** Cache user menus:
+** Update user menu info to take into account e.g. change of language modes
+** (i.e. add / move / delete of language modes etc).
+*/
+void UpdateUserMenuInfo() {
+    for(auto &item : ShellMenuData) {
+        item.info = nullptr;
     }
+    parseMenuItemList(ShellMenuData);
 
-    // NOTE(eteran): move past the trailing '}'
-    ++input;
+    for(auto &item : MacroMenuData) {
+        item.info = nullptr;
+    }
+    parseMenuItemList(MacroMenuData);
 
-    in = input;
-
-    return retStr;
+    for(auto &item : BGMenuData) {
+        item.info = nullptr;
+    }
+    parseMenuItemList(BGMenuData);
 }
 
 /*

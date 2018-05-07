@@ -2,7 +2,8 @@
 #ifndef X11_COLORS_H_
 #define X11_COLORS_H_
 
-#include <QColor>
+class QColor;
+class QString;
 
 namespace X11Colors {
 

@@ -821,8 +821,6 @@ QString Preferences::ReadSymbolicFieldEx(Input &input) {
 	// skip over initial blank space
 	input.skipWhitespace();
 
-	/* Find the first invalid character or end of string to know how
-	   much memory to allocate for the returned string */
 	Input strStart = input;
 
     static const QRegularExpression re(QLatin1String("[A-Za-z0-9_+$# \t-]*"));
@@ -861,9 +859,8 @@ QString Preferences::ReadSymbolicFieldEx(Input &input) {
 /*
 ** parse an individual quoted string.  Anything between
 ** double quotes is acceptable, quote characters can be escaped by "".
-** Returns allocated string "string" containing
-** argument minus quotes.  If not successful, returns false with
-** (statically allocated) message in "errMsg".
+** Returns string in "string" containing argument minus quotes.
+** If not successful, returns false with message in "errMsg".
 */
 bool Preferences::ReadQuotedStringEx(Input &in, QString *errMsg, QString *string) {
 
@@ -879,7 +876,7 @@ bool Preferences::ReadQuotedStringEx(Input &in, QString *errMsg, QString *string
 	}
 	++in;
 
-	// calculate max length and allocate returned string
+    // calculate max length
 	Input c = in;
 
 	for ( ;; ++c) {
@@ -930,7 +927,7 @@ QString Preferences::MakeQuotedStringEx(const QString &string) {
 
     int length = 0;
 
-    // calculate length and allocate returned string
+    // calculate length
     for(QChar ch: string) {
         if (ch == Quote) {
             length++;

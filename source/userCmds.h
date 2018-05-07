@@ -16,9 +16,9 @@ enum class DialogTypes {
     BG_MENU_CMDS
 };
 
-int LoadBGMenuCmdsStringEx(const QString &inString);
-int LoadMacroCmdsStringEx(const QString &inString);
-int LoadShellCmdsStringEx(const QString &inString);
+bool LoadBGMenuCmdsStringEx(const QString &inString);
+bool LoadMacroCmdsStringEx(const QString &inString);
+bool LoadShellCmdsStringEx(const QString &inString);
 QString WriteBGMenuCmdsStringEx();
 QString WriteMacroCmdsStringEx();
 QString WriteShellCmdsStringEx();

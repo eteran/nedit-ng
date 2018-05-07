@@ -1,6 +1,5 @@
 
 #include "WindowMenuEvent.h"
-#include "MainWindow.h"
 #include "CommandRecorder.h"
 
 /**
