@@ -4874,7 +4874,7 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
             messageBox.setWindowTitle(tr("Reload File"));
             messageBox.setIcon(QMessageBox::Question);
             messageBox.setText(tr("Re-load file\n%1%2?").arg(document->path_, document->filename_));
-            QPushButton *buttonOk   = messageBox.addButton(tr("Re-read"), QMessageBox::AcceptRole);
+            QPushButton *buttonOk     = messageBox.addButton(tr("Re-read"), QMessageBox::AcceptRole);
             QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
             Q_UNUSED(buttonOk);
 
