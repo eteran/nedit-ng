@@ -419,26 +419,22 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
 
 	const QString languageMode = ui.comboLanguageMode->currentText();
 
-	QMessageBox messageBox(this);
-	messageBox.setWindowTitle(tr("Delete Pattern"));
-	messageBox.setIcon(QMessageBox::Warning);
-	messageBox.setText(tr("Are you sure you want to delete syntax highlighting patterns for language mode %1?").arg(languageMode));
-    QPushButton *buttonYes     = messageBox.addButton(tr("Yes, Delete"), QMessageBox::DestructiveRole);
-	QPushButton *buttonCancel  = messageBox.addButton(QMessageBox::Cancel);
-	Q_UNUSED(buttonYes);
 
-	messageBox.exec();
-	if (messageBox.clickedButton() == buttonCancel) {
+    int resp = QMessageBox::warning(
+                this,
+                tr("Delete Pattern"),
+                tr("Are you sure you want to delete syntax highlighting patterns for language mode %1?").arg(languageMode),
+                QMessageBox::Yes | QMessageBox::Cancel);
+
+
+    if (resp == QMessageBox::Cancel) {
 		return;
 	}
 
 	// if a stored version of the pattern set exists, delete it from the list
-    auto it = Highlight::PatternSets.begin();
-    for (; it != Highlight::PatternSets.end(); ++it) {
-        if (languageMode == it->languageMode) {
-			break;
-		}
-	}
+    auto it = std::find_if(Highlight::PatternSets.begin(), Highlight::PatternSets.end(), [&languageMode](const PatternSet &patternSet) {
+        return patternSet.languageMode == languageMode;
+    });
 
     if (it != Highlight::PatternSets.end()) {
         Highlight::PatternSets.erase(it);
@@ -449,6 +445,14 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
 	// Clear out the dialog
     ui.editContextLines->setText(QString::number(PatternSet::DefaultLineContext));
     ui.editContextChars->setText(QString::number(PatternSet::DefaultCharContext));
+
+    ui.editParentPattern->setText(QString());
+    ui.editPatternName->setText(QString());
+    ui.editRegex->setPlainText(QString());
+    ui.editRegexEnd->setText(QString());
+    ui.editRegexError->setText(QString());
+
+    // TODO(eteran): notify the settings system that things have changed
 }
 
 /**
@@ -460,7 +464,10 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
 
     std::unique_ptr<PatternSet> defaultPatSet = Highlight::readDefaultPatternSet(languageMode);
 	if(!defaultPatSet) {
-		QMessageBox::warning(this, tr("No Default Pattern"), tr("There is no default pattern set for language mode %1").arg(languageMode));
+        QMessageBox::warning(
+                    this,
+                    tr("No Default Pattern"),
+                    tr("There is no default pattern set for language mode %1").arg(languageMode));
 		return;
 	}
 
