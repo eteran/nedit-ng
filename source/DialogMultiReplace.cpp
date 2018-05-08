@@ -39,7 +39,7 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 
 	if (!nSelected) {
 		QMessageBox::information(this, tr("No Files"), tr("No files selected!"));
-		return; // Give the user another chance 
+        return;
 	}
 
 	// Set the initial focus of the dialog back to the search string 
