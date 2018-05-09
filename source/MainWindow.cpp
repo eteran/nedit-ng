@@ -182,8 +182,9 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     MainWindow::CheckCloseDimEx();
 
     const std::vector<MainWindow *> windows = MainWindow::allWindows();
+    const bool enabled = windows.size() > 1;
     for(MainWindow *window : MainWindow::allWindows()) {
-        window->ui.action_Move_Tab_To->setEnabled(windows.size() > 1);
+        window->ui.action_Move_Tab_To->setEnabled(enabled);
     }
 }
 
