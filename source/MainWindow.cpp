@@ -134,6 +134,20 @@ boost::optional<CharacterLocation> StringToLineAndCol(const QString &text) {
     return boost::none;
 }
 
+/**
+ * @brief addToGroup
+ * @param group
+ * @param menu
+ */
+void addToGroup(QActionGroup *group, QMenu *menu) {
+    Q_FOREACH(QAction *action, menu->actions()) {
+        if(QMenu *subMenu = action->menu()) {
+            addToGroup(group, subMenu);
+        }
+        group->addAction(action);
+    }
+}
+
 }
 
 /**
@@ -1241,20 +1255,6 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
     }
 
     return rootMenu;
-}
-
-/**
- * @brief MainWindow::addToGroup
- * @param group
- * @param menu
- */
-void MainWindow::addToGroup(QActionGroup *group, QMenu *menu) {
-    Q_FOREACH(QAction *action, menu->actions()) {
-        if(QMenu *subMenu = action->menu()) {
-            addToGroup(group, subMenu);
-        }
-        group->addAction(action);
-    }
 }
 
 /*

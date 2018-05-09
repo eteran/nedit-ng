@@ -82,7 +82,6 @@ public:
     QString PromptForNewFileEx(DocumentWidget *document, const QString &prompt, FileFormats *fileFormat, bool *addWrap);
     size_t TabCount() const;
     std::vector<DocumentWidget *> openDocuments() const;
-    void addToGroup(QActionGroup *group, QMenu *menu);
     void BeginISearchEx(Direction direction);
     void EditHighlightPatterns();
     void EditHighlightStyles(const QString &initialStyle);

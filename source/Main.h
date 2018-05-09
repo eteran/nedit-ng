@@ -9,7 +9,7 @@ class NeditServer;
 
 class Main {
 public:
-    Main(const QStringList &args);
+    explicit Main(const QStringList &args);
     ~Main();
 
 private:
