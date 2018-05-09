@@ -1151,10 +1151,9 @@ void MainWindow::CheckCloseDimEx() {
 }
 
 /*
-** Create either the variable Shell menu, Macro menu or Background menu
-** items of "window" (driven by value of "menuType")
+** Create either the Shell menu, Macro menu or Background menu
 */
-QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<MenuData> &data) {
+QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<MenuData> &data, CommandTypes type) {
 
     auto rootMenu = new QMenu(this);
     for(int i = 0; i < data.size(); ++i) {
@@ -1181,19 +1180,28 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
             if(subSep == -1) {
                 name = name.mid(index);
 
-                // create the actual action or, if it represents one of our
-                // *very* common entries make it equivalent to the global
-                // QAction representing that task
-                if(menuData.item.cmd.trimmed() == QLatin1String("cut_clipboard()")) {
-                    parentMenu->addAction(ui.action_Cut);
-                } else if(menuData.item.cmd.trimmed() == QLatin1String("copy_clipboard()")) {
-                    parentMenu->addAction(ui.action_Copy);
-                } else if(menuData.item.cmd.trimmed() == QLatin1String("paste_clipboard()")) {
-                    parentMenu->addAction(ui.action_Paste);
-                } else if(menuData.item.cmd.trimmed() == QLatin1String("undo()")) {
-                    parentMenu->addAction(ui.action_Undo);
-                } else if(menuData.item.cmd.trimmed() == QLatin1String("redo()")) {
-                    parentMenu->addAction(ui.action_Redo);
+                if(type != CommandTypes::SHELL_CMDS) {
+                    // create the actual action or, if it represents one of our
+                    // *very* common entries make it equivalent to the global
+                    // QAction representing that task
+                    if(menuData.item.cmd.trimmed() == QLatin1String("cut_clipboard()")) {
+                        parentMenu->addAction(ui.action_Cut);
+                    } else if(menuData.item.cmd.trimmed() == QLatin1String("copy_clipboard()")) {
+                        parentMenu->addAction(ui.action_Copy);
+                    } else if(menuData.item.cmd.trimmed() == QLatin1String("paste_clipboard()")) {
+                        parentMenu->addAction(ui.action_Paste);
+                    } else if(menuData.item.cmd.trimmed() == QLatin1String("undo()")) {
+                        parentMenu->addAction(ui.action_Undo);
+                    } else if(menuData.item.cmd.trimmed() == QLatin1String("redo()")) {
+                        parentMenu->addAction(ui.action_Redo);
+                    } else {
+                        QAction *action = parentMenu->addAction(name);
+                        action->setData(i);
+
+                        if(!menuData.item.shortcut.isEmpty()) {
+                            action->setShortcut(menuData.item.shortcut);
+                        }
+                    }
                 } else {
                     QAction *action = parentMenu->addAction(name);
                     action->setData(i);
@@ -1256,7 +1264,7 @@ void MainWindow::addToGroup(QActionGroup *group, QMenu *menu) {
 void MainWindow::UpdateUserMenus(DocumentWidget *document) {
 
     // update user menus, which are shared over all documents
-    auto shellMenu = createUserMenu(document, ShellMenuData);
+    auto shellMenu = createUserMenu(document, ShellMenuData, CommandTypes::SHELL_CMDS);
     ui.menu_Shell->clear();
     ui.menu_Shell->addAction(ui.action_Execute_Command);
     ui.menu_Shell->addAction(ui.action_Execute_Command_Line);
@@ -1270,7 +1278,7 @@ void MainWindow::UpdateUserMenus(DocumentWidget *document) {
     addToGroup(shellGroup, shellMenu);
     connect(shellGroup, &QActionGroup::triggered, this, &MainWindow::shellTriggered);
 
-    auto macroMenu = createUserMenu(document, MacroMenuData);
+    auto macroMenu = createUserMenu(document, MacroMenuData, CommandTypes::MACRO_CMDS);
     ui.menu_Macro->clear();
     ui.menu_Macro->addAction(ui.action_Learn_Keystrokes);
     ui.menu_Macro->addAction(ui.action_Finish_Learn);
@@ -1286,7 +1294,7 @@ void MainWindow::UpdateUserMenus(DocumentWidget *document) {
     connect(macroGroup, &QActionGroup::triggered, this, &MainWindow::macroTriggered);
 
     // update background menu, which is owned by a single document
-    document->contextMenu_ = createUserMenu(document, BGMenuData);
+    document->contextMenu_ = createUserMenu(document, BGMenuData, CommandTypes::BG_MENU_CMDS);
 
     // handler for BG menu scripts
     connect(document->contextMenu_, &QMenu::triggered, this, [this](QAction *action) {
@@ -6939,7 +6947,7 @@ void MainWindow::updateMenuItems() {
 */
 bool MainWindow::DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source) {
 
-    if(MenuData *p = findMenuItem(name, DialogTypes::SHELL_CMDS)) {
+    if(MenuData *p = findMenuItem(name, CommandTypes::SHELL_CMDS)) {
 
         if (p->item.output == TO_SAME_WINDOW && document->CheckReadOnly()) {
             return false;
@@ -6972,7 +6980,7 @@ bool MainWindow::DoNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, c
     Q_UNUSED(source);
     Q_UNUSED(area);
 
-    if(MenuData *p = findMenuItem(name, DialogTypes::MACRO_CMDS)) {
+    if(MenuData *p = findMenuItem(name, CommandTypes::MACRO_CMDS)) {
         document->DoMacroEx(
             p->item.cmd,
             tr("macro menu command"));
@@ -6996,7 +7004,7 @@ bool MainWindow::DoNamedBGMenuCmd(DocumentWidget *document, TextArea *area, cons
     Q_UNUSED(source);
     Q_UNUSED(area);
 
-    if(MenuData *p = findMenuItem(name, DialogTypes::BG_MENU_CMDS)) {
+    if(MenuData *p = findMenuItem(name, CommandTypes::BG_MENU_CMDS)) {
         document->DoMacroEx(
             p->item.cmd,
             tr("background menu macro"));

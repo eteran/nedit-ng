@@ -10,7 +10,7 @@ struct MenuData;
 class QString;
 
 // types of current dialog and/or menu
-enum class DialogTypes {
+enum class CommandTypes {
     SHELL_CMDS,
     MACRO_CMDS,
     BG_MENU_CMDS
@@ -25,7 +25,7 @@ QString WriteShellCmdsStringEx();
 void SetupUserMenuInfo();
 void UpdateUserMenuInfo();
 void parseMenuItemList(std::vector<MenuData> &itemList);
-MenuData *findMenuItem(const QString &name, DialogTypes type);
+MenuData *findMenuItem(const QString &name, CommandTypes type);
 
 extern std::vector<MenuData> ShellMenuData;
 extern std::vector<MenuData> BGMenuData;

@@ -119,7 +119,7 @@ QString copyMacroToEnd(Input &in) {
     return retStr;
 }
 
-QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, DialogTypes listType) {
+QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, CommandTypes listType) {
 
     QString outStr;
     auto outPtr = std::back_inserter(outStr);
@@ -136,7 +136,7 @@ QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, DialogType
         std::copy(accStr.begin(), accStr.end(), outPtr);
         *outPtr++ = QLatin1Char(':');
 
-        if (listType == DialogTypes::SHELL_CMDS) {
+        if (listType == CommandTypes::SHELL_CMDS) {
             switch(f.input) {
             case FROM_SELECTION: *outPtr++ = QLatin1Char('I'); break;
             case FROM_WINDOW:    *outPtr++ = QLatin1Char('A'); break;
@@ -180,7 +180,7 @@ QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, DialogType
                 *outPtr++ = ch;
         }
 
-        if (listType == DialogTypes::MACRO_CMDS || listType == DialogTypes::BG_MENU_CMDS) {
+        if (listType == CommandTypes::MACRO_CMDS || listType == CommandTypes::BG_MENU_CMDS) {
 
             if(outStr.endsWith(QLatin1Char('\t'))) {
                 outStr.chop(1);
@@ -196,7 +196,7 @@ QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, DialogType
     return outStr;
 }
 
-bool loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuItems, DialogTypes listType) {
+bool loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuItems, CommandTypes listType) {
 
     try {
         Input in(&inString);
@@ -241,7 +241,7 @@ bool loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuIt
 
             for(; !in.atEnd() && *in != QLatin1Char(':'); ++in) {
 
-                if (listType == DialogTypes::SHELL_CMDS) {
+                if (listType == CommandTypes::SHELL_CMDS) {
 
                     switch((*in).toLatin1()) {
                     case 'I':
@@ -286,7 +286,7 @@ bool loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuIt
             QString cmdStr;
 
             // read command field
-            if (listType == DialogTypes::SHELL_CMDS) {
+            if (listType == CommandTypes::SHELL_CMDS) {
 
                 if (*in++ != QLatin1Char('\n')) {
                     raise<ParseError>("command must begin with newline");
@@ -439,20 +439,20 @@ std::shared_ptr<userMenuInfo> parseMenuItemRec(const MenuItem &item) {
 
 }
 
-std::vector<MenuData> &selectMenu(DialogTypes type) {
+std::vector<MenuData> &selectMenu(CommandTypes type) {
     switch(type) {
-    case DialogTypes::SHELL_CMDS:
+    case CommandTypes::SHELL_CMDS:
         return ShellMenuData;
-    case DialogTypes::MACRO_CMDS:
+    case CommandTypes::MACRO_CMDS:
         return MacroMenuData;
-    case DialogTypes::BG_MENU_CMDS:
+    case CommandTypes::BG_MENU_CMDS:
         return BGMenuData;
     }
 
     Q_UNREACHABLE();
 }
 
-MenuData *findMenuItem(const QString &name, DialogTypes type) {
+MenuData *findMenuItem(const QString &name, CommandTypes type) {
 
     for(MenuData &data: selectMenu(type)) {
         if (data.item.name == name) {
@@ -469,15 +469,15 @@ MenuData *findMenuItem(const QString &name, DialogTypes type) {
 ** of the shell cmd list, macro menu and background menus.
 */
 QString WriteShellCmdsStringEx() {
-    return writeMenuItemStringEx(ShellMenuData, DialogTypes::SHELL_CMDS);
+    return writeMenuItemStringEx(ShellMenuData, CommandTypes::SHELL_CMDS);
 }
 
 QString WriteMacroCmdsStringEx() {
-    return writeMenuItemStringEx(MacroMenuData, DialogTypes::MACRO_CMDS);
+    return writeMenuItemStringEx(MacroMenuData, CommandTypes::MACRO_CMDS);
 }
 
 QString WriteBGMenuCmdsStringEx() {
-    return writeMenuItemStringEx(BGMenuData, DialogTypes::BG_MENU_CMDS);
+    return writeMenuItemStringEx(BGMenuData, CommandTypes::BG_MENU_CMDS);
 }
 
 /*
@@ -486,15 +486,15 @@ QString WriteBGMenuCmdsStringEx() {
 ** menus
 */
 bool LoadShellCmdsStringEx(const QString &inString) {
-    return loadMenuItemStringEx(inString, ShellMenuData, DialogTypes::SHELL_CMDS);
+    return loadMenuItemStringEx(inString, ShellMenuData, CommandTypes::SHELL_CMDS);
 }
 
 bool LoadMacroCmdsStringEx(const QString &inString) {
-    return loadMenuItemStringEx(inString, MacroMenuData, DialogTypes::MACRO_CMDS);
+    return loadMenuItemStringEx(inString, MacroMenuData, CommandTypes::MACRO_CMDS);
 }
 
 bool LoadBGMenuCmdsStringEx(const QString &inString) {
-    return loadMenuItemStringEx(inString, BGMenuData, DialogTypes::BG_MENU_CMDS);
+    return loadMenuItemStringEx(inString, BGMenuData, CommandTypes::BG_MENU_CMDS);
 }
 
 /*
