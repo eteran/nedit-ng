@@ -78,12 +78,15 @@ auto neditDBBadFilenameChars = QLatin1String("\n");
 
 QVector<QString> PrevOpen;
 
+struct CharacterLocation {
+    int line;
+    int column;
+};
+
 /*
 ** Extract the line and column number from the text string.
-** Set the line and/or column number to -1 if not specified, and return -1 if
-** both line and column numbers are not specified.
 */
-int StringToLineAndCol(const QString &text, int *lineNum, int *column) {
+boost::optional<CharacterLocation> StringToLineAndCol(const QString &text) {
 
     static const QRegularExpression re(QLatin1String(
                                            "^"
@@ -118,13 +121,17 @@ int StringToLineAndCol(const QString &text, int *lineNum, int *column) {
             c = qBound(0, c, INT_MAX);
         }
 
-        *lineNum = r;
-        *column  = c;
+        if(r == -1 && c == -1) {
+            return boost::none;
+        }
 
-        return (r == -1 && c == -1) ? -1 : 0;
+        CharacterLocation loc;
+        loc.line   = r;
+        loc.column = c;
+        return loc;
     }
 
-    return -1;
+    return boost::none;
 }
 
 }
@@ -2284,20 +2291,18 @@ void MainWindow::action_Goto_Line_Number(DocumentWidget *document, const QString
 
     emit_event("goto_line_number", s);
 
-    int lineNum;
-    int column;
-
     /* Accept various formats:
           [line]:[column]   (menu action)
           line              (macro call)
           line, column      (macro call) */
-    if (StringToLineAndCol(s, &lineNum, &column) == -1) {
+    boost::optional<CharacterLocation> loc = StringToLineAndCol(s);
+    if(!loc) {
         QApplication::beep();
         return;
     }
 
     if(QPointer<TextArea> area = lastFocus_) {
-        document->gotoAP(area, lineNum, column);
+        document->gotoAP(area, loc->line, loc->column);
     }
 }
 
