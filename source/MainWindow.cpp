@@ -1782,12 +1782,12 @@ void MainWindow::WriteNEditDB() {
         QTextStream ts(&file);
 
         static const QString fileHeader = tr("# File name database for NEdit Open Previous command");
-        ts << fileHeader << tr("\n");
+        ts << fileHeader << '\n';
 
         // Write the list of file names
         Q_FOREACH(const QString &line, PrevOpen) {
             if (!line.isEmpty() && !line.startsWith(QLatin1Char('#')) && !line.contains(neditDBBadFilenameChars)) {
-                ts << line << tr("\n");
+                ts << line << '\n';
             }
         }
     }
