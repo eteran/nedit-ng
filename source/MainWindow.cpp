@@ -922,7 +922,7 @@ void MainWindow::selectionChanged(bool selected) {
 
     /* Note we don't change the selection for items like "Open Selected" and
      * "Find Selected". That's because it works on selections in external
-     * applications. Desensitizing it if there's no NEdit selection disables
+     * applications. Disabling it if there's no NEdit selection disables
      * this feature. */
     ui.action_Filter_Selection->setEnabled(selected);
 }
@@ -951,7 +951,7 @@ void MainWindow::UpdateWindowTitle(DocumentWidget *document) {
     QString iconTitle = document->filename_;
 
     if (document->fileChanged_) {
-		iconTitle.append(tr("*"));
+        iconTitle.append(QLatin1Char('*'));
 	}
 
     setWindowIconText(iconTitle);
