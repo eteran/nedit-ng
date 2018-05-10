@@ -688,8 +688,7 @@ void Search::saveSearchHistory(const QString &searchString, QString replaceStrin
 	   new one is also incremental, just update the entry */
     if (currentItemIsIncremental && isIncremental) {
         if(index != -1) {
-            HistoryEntry *entry = HistoryByIndex(index);
-            Q_ASSERT(entry);
+            HistoryEntry *entry = &SearchReplaceHistory[index];
 
             entry->search = searchString;
             entry->type   = searchType;
