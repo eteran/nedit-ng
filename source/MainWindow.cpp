@@ -1387,8 +1387,7 @@ void MainWindow::CreateLanguageModeSubMenu() {
 }
 
 /*
-**  If necessary, enlarges the window and line number display area to make
-**  room for numbers.
+** If necessary, enlarges the line number display area to make room for numbers.
 */
 int MainWindow::updateLineNumDisp() {
 
@@ -1422,7 +1421,7 @@ int MainWindow::updateGutterWidth() {
                this width. */
             maxCols = std::max(maxCols, lineNumCols);
 
-            const int tmpReqCols = area->getBufferLinesCount() < 1 ? 1 : static_cast<int>(log10(static_cast<double>(area->getBufferLinesCount()) + 1)) + 1;
+            const int tmpReqCols = (area->getBufferLinesCount() < 1) ? 1 : static_cast<int>(log10(static_cast<double>(area->getBufferLinesCount()) + 1)) + 1;
 
             reqCols = std::max(reqCols, tmpReqCols);
         }
@@ -1454,9 +1453,7 @@ void MainWindow::TempShowISearch(bool state) {
         return;
     }
 
-    if(ui.incrementalSearchFrame->isVisible() != state) {
-        ui.incrementalSearchFrame->setVisible(state);
-    }
+    ui.incrementalSearchFrame->setVisible(state);
 }
 
 /*
