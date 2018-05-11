@@ -1522,6 +1522,7 @@ void MainWindow::action_Redo(DocumentWidget *document) {
     if (document->CheckReadOnly()) {
         return;
     }
+
     document->Redo();
 }
 
@@ -1538,13 +1539,14 @@ void MainWindow::on_action_Redo_triggered() {
 /*
 ** Check if there is already a window open for a given file
 */
-DocumentWidget *MainWindow::FindWindowWithFile(const QString &name, const QString &path) {
+DocumentWidget *MainWindow::FindWindowWithFile(const QString &filename, const QString &path) {
 
     const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
+#ifdef Q_OS_UNIX
     if (!Preferences::GetPrefHonorSymlinks()) {
 
-        QString fullname = tr("%1%2").arg(path, name);
+        QString fullname = tr("%1%2").arg(path, filename);
 
         struct stat attribute;
         if (::stat(fullname.toUtf8().data(), &attribute) == 0) {
@@ -1560,9 +1562,10 @@ DocumentWidget *MainWindow::FindWindowWithFile(const QString &name, const QStrin
         /* else: Not an error condition, just a new file. Continue to check
          * whether the filename is already in use for an unsaved document. */
     }
+#endif
 
-    auto it = std::find_if(documents.begin(), documents.end(), [name, path](DocumentWidget *document) {
-        return (document->filename_ == name) && (document->path_ == path);
+    auto it = std::find_if(documents.begin(), documents.end(), [filename, path](DocumentWidget *document) {
+        return (document->filename_ == filename) && (document->path_ == path);
     });
 
     if(it != documents.end()) {

@@ -116,7 +116,7 @@ public:
 public:
     static bool CloseAllFilesAndWindowsEx();
     static DocumentWidget *EditNewFileEx(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode, const QString &defaultPath);
-    static DocumentWidget *FindWindowWithFile(const QString &name, const QString &path);
+    static DocumentWidget *FindWindowWithFile(const QString &filename, const QString &path);
     static MainWindow *firstWindow();
     static MainWindow *fromDocument(const DocumentWidget *document);
     static QString UniqueUntitledNameEx();
