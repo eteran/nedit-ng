@@ -68,13 +68,11 @@ namespace {
 // Min. # of columns in line number display
 constexpr int MIN_LINE_NUM_COLS = 4;
 
-bool currentlyBusy = false;
+bool currentlyBusy   = false;
+bool modeMessageSet  = false;
 qint64 busyStartTime = 0;
-bool modeMessageSet = false;
 
 QPointer<DocumentWidget> lastFocusDocument;
-
-auto neditDBBadFilenameChars = QLatin1String("\n");
 
 QVector<QString> PrevOpen;
 
@@ -1580,11 +1578,13 @@ DocumentWidget *MainWindow::FindWindowWithFile(const QString &filename, const QS
 ** counts are required.
 */
 void MainWindow::forceShowLineNumbers() {
-    const bool showLineNum = showLineNumbers_;
-    if (showLineNum) {
-        showLineNumbers_ = false;
-        ShowLineNumbers(showLineNum);
+
+    // we temporarily set showLineNumbers_ to false, because the ShowLineNumbers
+    // function only has an effect if the state is changing
+    if(std::exchange(showLineNumbers_, false)) {
+        ShowLineNumbers(true);
     }
+
 }
 
 /*
@@ -1592,29 +1592,18 @@ void MainWindow::forceShowLineNumbers() {
 */
 void MainWindow::ShowLineNumbers(bool state) {
 
-    if (showLineNumbers_ == state) {
-        return;
-    }
-
     showLineNumbers_ = state;
 
     /* Just setting showLineNumbers_ is sufficient to tell
        updateLineNumDisp() to expand the line number areas and the this
        size for the number of lines required.  To hide the line number
        display, set the width to zero, and contract the this width. */
-    int reqCols = 0;
-    if (state) {
-        reqCols = updateLineNumDisp();
-    }
+    const int reqCols = showLineNumbers_ ? updateLineNumDisp() : 0;
 
     /* line numbers panel is shell-level, hence other
-       tabbed documents in the this should synch */
+       tabbed documents in the this should sync */
     for(DocumentWidget *document : openDocuments()) {
-
-        showLineNumbers_ = state;
-
         for(TextArea *area : document->textPanes()) {
-            //  reqCols should really be cast here, but into what? XmRInt?
             area->setLineNumCols(reqCols);
         }
     }
@@ -1662,7 +1651,7 @@ void MainWindow::AddToPrevOpenMenu(const QString &filename) {
     MainWindow::invalidatePrevOpenMenus();
 
     // Undim the menu in all windows if it was previously empty
-    if (PrevOpen.size() > 0) {
+    if (!PrevOpen.isEmpty()) {
         for(MainWindow *window : MainWindow::allWindows()) {
             window->ui.action_Open_Previous->setEnabled(true);
         }
@@ -1672,16 +1661,16 @@ void MainWindow::AddToPrevOpenMenu(const QString &filename) {
 }
 
 /*
-**  Read database of file names for 'Open Previous' submenu.
+** Read database of file names for 'Open Previous' submenu.
 **
-**  Eventually, this may hold window positions, and possibly file marks (in
-**  which case it should be moved to a different module) but for now it's
-**  just a list of previously opened files.
+** Eventually, this may hold window positions, and possibly file marks (in
+** which case it should be moved to a different module) but for now it's
+** just a list of previously opened files.
 **
-**  This list is read once at startup and potentially refreshed before a
-**  new entry is about to be written to the file or before the menu is
-**  displayed. If the file is modified since the last read (or not read
-**  before), it is read in, otherwise nothing is done.
+** This list is read once at startup and potentially refreshed before a
+** new entry is about to be written to the file.
+** If the file is modified since the last read (or not read before), it is
+** read in, otherwise nothing is done.
 */
 void MainWindow::ReadNEditDB() {
 
@@ -1695,38 +1684,35 @@ void MainWindow::ReadNEditDB() {
         return;
     }
 
-    /* Don't move this check ahead of the previous statements. PrevOpen
-       must be initialized at all times. */
-    const QString fullName = Settings::historyFile();
-    if(fullName.isNull()) {
+    const QString historyFile = Settings::historyFile();
+    if(historyFile.isNull()) {
         return;
     }
 
-    const QFileInfo info(fullName);
+    const QFileInfo info(historyFile);
     const QDateTime mtime = info.lastModified();
 
 	/*  Stat history file to see whether someone touched it after this
 		session last changed it.  */
 	if(lastNeditdbModTime >= mtime) {
 		//  Do nothing, history file is unchanged.
-		return;
-	} else {
-		//  Memorize modtime to compare to next time.
-		lastNeditdbModTime = mtime;
-	}
+        return;
+    }
+
+    //  Memorize modtime to compare to next time.
+    lastNeditdbModTime = mtime;
 
     // open the file
-    QFile file(fullName);
+    QFile file(historyFile);
     if(!file.open(QIODevice::ReadOnly)) {
-		return;
+        return;
 	}
 
     //  Clear previous list.
     PrevOpen.clear();
 
     /* read lines of the file, lines beginning with # are considered to be
-       comments and are thrown away.  Lines are subject to cursory checking,
-       then just copied to the Open Previous file menu list */
+       comments and are thrown away. */
     QTextStream in(&file);
     while (!in.atEnd()) {
         QString line = in.readLine();
@@ -1741,16 +1727,6 @@ void MainWindow::ReadNEditDB() {
             continue;
         }
 
-		// NOTE(eteran): right now, neditDBBadFilenameChars only consists of a
-		// newline character, I don't see how it is even possible for that to
-		// happen as we are reading lines which are obviously delimited by
-		// '\n', but the check remains as we could hypothetically ban other
-		// characters in the future.
-        if(line.contains(neditDBBadFilenameChars)) {
-            qWarning("NEdit: History file may be corrupted");
-            continue;
-        }
-
         PrevOpen.push_back(line);
 
         if (PrevOpen.size() >= maxPrevOpenFiles) {
@@ -1760,16 +1736,11 @@ void MainWindow::ReadNEditDB() {
     }
 }
 
-/*
-** Mark the Previously Opened Files menus of all NEdit windows as invalid.
-** Since actually changing the menus is slow, they're just marked and updated
-** when the user pulls one down.
-*/
+/**
+ * @brief MainWindow::invalidatePrevOpenMenus
+ */
 void MainWindow::invalidatePrevOpenMenus() {
 
-    /* Mark the menus invalid (to be updated when the user pulls one
-       down), unless the menu is torn off, meaning it is visible to the user
-       and should be updated immediately */
     for(MainWindow *window : MainWindow::allWindows()) {
         window->updatePrevOpenMenu();
     }
@@ -1783,8 +1754,8 @@ void MainWindow::invalidatePrevOpenMenus() {
 */
 void MainWindow::WriteNEditDB() {
 
-    QString fullName = Settings::historyFile();
-    if(fullName.isNull()) {
+    QString historyFile = Settings::historyFile();
+    if(historyFile.isNull()) {
         return;
     }
 
@@ -1793,7 +1764,7 @@ void MainWindow::WriteNEditDB() {
         return;
     }
 
-    QFile file(fullName);
+    QFile file(historyFile);
     if(file.open(QIODevice::WriteOnly)) {
         QTextStream ts(&file);
 
@@ -1802,7 +1773,7 @@ void MainWindow::WriteNEditDB() {
 
         // Write the list of file names
         Q_FOREACH(const QString &line, PrevOpen) {
-            if (!line.isEmpty() && !line.startsWith(QLatin1Char('#')) && !line.contains(neditDBBadFilenameChars)) {
+            if (!line.isEmpty() && !line.startsWith(QLatin1Char('#'))) {
                 ts << line << '\n';
             }
         }
@@ -1811,8 +1782,7 @@ void MainWindow::WriteNEditDB() {
 
 /*
 ** Update the Previously Opened Files menu of a single window to reflect the
-** current state of the list as retrieved from FIXME.
-** Thanks to Markus Schwarzenberg for the sorting part.
+** current state of the list.
 */
 void MainWindow::updatePrevOpenMenu() {
 
@@ -1826,6 +1796,7 @@ void MainWindow::updatePrevOpenMenu() {
 
     // Sort the previously opened file list if requested
     QVector<QString> prevOpenSorted = PrevOpen;
+
     if (Preferences::GetPrefSortOpenPrevMenu()) {
         std::sort(prevOpenSorted.begin(), prevOpenSorted.end());
     }
@@ -1917,7 +1888,7 @@ void MainWindow::action_Open_Selected(DocumentWidget *document) {
     emit_event("open_selected");
 
     // Get the selected text, if there's no selection, do nothing
-    const QString selected = document->GetAnySelectionEx(false);
+    const QString selected = document->GetAnySelectionEx(/*beep_on_error=*/false);
     if(!selected.isEmpty()) {
         openFile(document, selected);
     } else {
@@ -2355,7 +2326,7 @@ void MainWindow::action_Goto_Selected(DocumentWidget *document) {
 
     emit_event("goto_selected");
 
-    const QString selected = document->GetAnySelectionEx(false);
+    const QString selected = document->GetAnySelectionEx(/*beep_on_error=*/false);
     if(selected.isEmpty()) {
         QApplication::beep();
         return;
@@ -6417,7 +6388,7 @@ void MainWindow::action_Replace_Find(DocumentWidget *document, const QString &se
  */
 void MainWindow::SearchForSelectedEx(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap) {
 
-    const QString selected = document->GetAnySelectionEx(false);
+    const QString selected = document->GetAnySelectionEx(/*beep_on_error=*/false);
     if(selected.isEmpty()) {
         if (Preferences::GetPrefSearchDlogs()) {
             QMessageBox::warning(document, tr("Wrong Selection"), tr("Selection not appropriate for searching"));

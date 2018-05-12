@@ -2918,8 +2918,8 @@ void DocumentWidget::CloseDocument() {
 
     Q_EMIT documentClosed();
 
-    auto window = MainWindow::fromDocument(this);
-    if(!window) {
+    auto win = MainWindow::fromDocument(this);
+    if(!win) {
         return;
     }
 
@@ -2950,17 +2950,17 @@ void DocumentWidget::CloseDocument() {
 
         StopHighlightingEx();
         EndSmartIndent();
-        window->UpdateWindowTitle(this);
-        window->UpdateWindowReadOnly(this);
-        window->ui.action_Close->setEnabled(false);
-        window->ui.action_Read_Only->setEnabled(true);
-        window->ui.action_Read_Only->setChecked(false);
+        win->UpdateWindowTitle(this);
+        win->UpdateWindowReadOnly(this);
+        win->ui.action_Close->setEnabled(false);
+        win->ui.action_Read_Only->setEnabled(true);
+        win->ui.action_Read_Only->setChecked(false);
         ClearUndoList();
         ClearRedoList();
         UpdateStatsLine(nullptr);
         DetermineLanguageMode(true);
         RefreshTabState();
-        window->updateLineNumDisp();
+        win->updateLineNumDisp();
         return;
     }
 
@@ -2976,11 +2976,11 @@ void DocumentWidget::CloseDocument() {
     // Close of window running a macro may have been disabled.
     MainWindow::CheckCloseDimEx();
 
-    window->ui.action_Move_Tab_To->setEnabled(MainWindow::allWindows().size() > 1);
+    win->ui.action_Move_Tab_To->setEnabled(MainWindow::allWindows().size() > 1);
 
     // if we deleted the last tab, then we can close the window too
-    if(window->TabCount() == 0) {
-        window->deleteLater();
+    if(win->TabCount() == 0) {
+        win->deleteLater();
     }
 }
 
@@ -3790,7 +3790,7 @@ void DocumentWidget::findDefinitionHelper(TextArea *area, const QString &arg, Ta
 	} else {
         Tags::searchMode = search_type;
 
-        QString selected = GetAnySelectionEx(false);
+        QString selected = GetAnySelectionEx(/*beep_on_error=*/false);
         if(selected.isEmpty()) {
 			return;
 		}

@@ -430,7 +430,7 @@ void DialogReplace::setTextField(DocumentWidget *document) {
     QString initialText;
 
     if (Preferences::GetPrefFindReplaceUsesSelection()) {
-        initialText = document->GetAnySelectionEx(false);
+        initialText = document->GetAnySelectionEx(/*beep_on_error=*/false);
 	}
 
 	// Update the field 
