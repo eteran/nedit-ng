@@ -10,6 +10,12 @@ enum class Direction : uint8_t {
     Backward = 2,
 };
 
+inline Direction operator!(Direction& direction) {
+    return (direction == Direction::Forward) ?
+                Direction::Backward :
+                Direction::Forward;
+}
+
 inline QLatin1String to_string(Direction direction) {
 
     switch(direction) {

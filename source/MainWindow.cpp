@@ -2357,7 +2357,7 @@ void MainWindow::action_Goto_Line_Number(DocumentWidget *document) {
     QString text = QInputDialog::getText(
                        this,
                        tr("Goto Line Number"),
-                       tr("Goto Line (and/or Column)  Number:"),
+                       tr("Goto Line (and/or Column) Number:"),
                        QLineEdit::Normal,
                        QString(),
                        &ok);
@@ -2548,7 +2548,7 @@ void MainWindow::action_Shift_Find_Selection() {
 }
 
 /*
-** Called when user types in the incremental search line.  Redoes the
+** Called when user types in the incremental search line. Redoes the
 ** search for the new search string.
 */
 void MainWindow::on_editIFind_textChanged(const QString &text) {
@@ -2585,7 +2585,7 @@ void MainWindow::on_editIFind_textChanged(const QString &text) {
         }
     }
 
-    /* Call the incremental search action proc to do the searching and
+    /* Call the incremental search handler to do the searching and
        selecting (this allows it to be recorded for learn/replay).  If
        there's an incremental search already in progress, mark the operation
        as "continued" so the search routine knows to re-start the search
@@ -2677,9 +2677,7 @@ void MainWindow::on_editIFind_returnPressed() {
 
     // Reverse the search direction if the Ctrl or Shift key was pressed
     if(QApplication::keyboardModifiers() & (Qt::CTRL | Qt::SHIFT)) {
-        direction = (direction == Direction::Forward) ?
-                    Direction::Backward :
-                    Direction::Forward;
+        direction = !direction;
     }
 
     // find the text and mark it
