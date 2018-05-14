@@ -7,12 +7,9 @@
 
 class DocumentWidget;
 class TextArea;
-
 class QString;
 
 void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection direction, bool byTab);
-void UpcaseSelectionEx(DocumentWidget *document, TextArea *area);
-void DowncaseSelectionEx(DocumentWidget *document, TextArea *area);
 void FillSelectionEx(DocumentWidget *document, TextArea *area);
 QString ShiftTextEx(const QString &text, ShiftDirection direction, bool tabsAllowed, int tabDist, int nChars);
 

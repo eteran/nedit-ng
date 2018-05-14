@@ -282,7 +282,7 @@ QLatin1String createRepeatMacro(int how) {
 
 /*
 ** Open an existing file specified by name and path.  Use the window inWindow
-** unless inWindow is nullptr or points to a window which is already in use
+** unless inDocument is nullptr or points to a window which is already in use
 ** (displays a file other than Untitled, or is Untitled but modified).  Flags
 ** can be any of:
 **
@@ -291,7 +291,7 @@ QLatin1String createRepeatMacro(int how) {
 **	SUPPRESS_CREATE_WARN  When creating a file, don't ask the user
 **	PREF_READ_ONLY		  Make the file read-only regardless
 **
-** If languageMode is passed as nullptr, it will be determined automatically
+** If languageMode is passed as QString(), it will be determined automatically
 ** from the file extension or file contents.
 **
 ** If bgOpen is true, then the file will be open in background. This

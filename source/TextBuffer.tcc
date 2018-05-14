@@ -139,7 +139,7 @@ void BasicTextBuffer<Ch, Tr>::BufInsertEx(int64_t pos, Ch ch) noexcept {
 
 /*
 ** Delete the characters between "start" and "end", and insert the
-** null-terminated string "text" in their place in in "buf"
+** string "text" in their place in in "buf"
 */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufReplaceEx(int64_t start, int64_t end, view_type text) noexcept {
@@ -153,6 +153,26 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceEx(int64_t start, int64_t end, view_type
 
     deleteRange(start, end);
     insertEx(start, text);
+    cursorPosHint_ = start + nInserted;
+    callModifyCBs(start, end - start, nInserted, 0, deletedText);
+}
+
+/*
+** Delete the characters between "start" and "end", and insert the
+** character "ch in their place in in "buf"
+*/
+template <class Ch, class Tr>
+void BasicTextBuffer<Ch, Tr>::BufReplaceEx(int64_t start, int64_t end, Ch ch) noexcept {
+
+    // TODO(eteran): 2.0, do same type of parameter normalization as BufRemove does?
+
+    const auto nInserted = 1;
+
+    callPreDeleteCBs(start, end - start);
+    const string_type deletedText = BufGetRangeEx(start, end);
+
+    deleteRange(start, end);
+    insertEx(start, ch);
     cursorPosHint_ = start + nInserted;
     callModifyCBs(start, end - start, nInserted, 0, deletedText);
 }

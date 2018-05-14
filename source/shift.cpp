@@ -586,55 +586,7 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
     return shiftedText;
 }
 
-/*
-** Capitalize or lowercase the contents of the selection (or of the character
-** before the cursor if there is no selection).  If "makeUpper" is true,
-** change to upper case, otherwise, change to lower case.
-*/
-void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUpper) {
 
-    TextBuffer *buf = document->buffer_;
-    int64_t start;
-    int64_t end;
-    int64_t rectStart = 0;
-    int64_t rectEnd   = 0;
-    bool isRect;
-
-    // Get the selection.  Use character before cursor if no selection
-    if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
-        char bufChar[2] = " ";
-        int64_t cursorPos = area->TextGetCursorPos();
-        if (cursorPos == 0) {
-            QApplication::beep();
-            return;
-        }
-        *bufChar = buf->BufGetCharacter(cursorPos - 1);
-        *bufChar = makeUpper ? safe_ctype<toupper>(*bufChar) : safe_ctype<tolower>(*bufChar);
-        buf->BufReplaceEx(cursorPos - 1, cursorPos, bufChar);
-    } else {
-        bool modified = false;
-
-        std::string text = buf->BufGetSelectionTextEx();
-
-        for(char &ch: text) {
-            char oldChar = ch;
-            ch = makeUpper ? safe_ctype<toupper>(ch) : safe_ctype<tolower>(ch);
-            if (ch != oldChar) {
-                modified = true;
-            }
-        }
-
-        if (modified) {
-            buf->BufReplaceSelectedEx(text);
-        }
-
-        if (isRect) {
-            buf->BufRectSelect(start, end, rectStart, rectEnd);
-        } else {
-            buf->BufSelect(start, end);
-        }
-    }
-}
 
 /*
 ** Shift the selection left or right by a single character, or by one tab stop
@@ -750,13 +702,6 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
     buf->BufSelect(selStart, newEndPos);
 }
 
-void UpcaseSelectionEx(DocumentWidget *document, TextArea *area) {
-    changeCaseEx(document, area, true);
-}
-
-void DowncaseSelectionEx(DocumentWidget *document, TextArea *area) {
-    changeCaseEx(document, area, false);
-}
 
 void FillSelectionEx(DocumentWidget *document, TextArea *area) {
     TextBuffer *buf = document->buffer_;

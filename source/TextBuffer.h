@@ -125,6 +125,7 @@ public:
     void BufRemoveSecSelect() noexcept;
     void BufRemoveSelected() noexcept;
     void BufReplaceEx(int64_t start, int64_t end, view_type text) noexcept;
+    void BufReplaceEx(int64_t start, int64_t end, Ch ch) noexcept;
     void BufReplaceRectEx(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd, view_type text);
     void BufReplaceSecSelectEx(view_type text) noexcept;
     void BufReplaceSelectedEx(view_type text) noexcept;

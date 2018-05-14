@@ -146,6 +146,65 @@ void addToGroup(QActionGroup *group, QMenu *menu) {
     }
 }
 
+/*
+** Capitalize or lowercase the contents of the selection (or of the character
+** before the cursor if there is no selection).  If "makeUpper" is true,
+** change to upper case, otherwise, change to lower case.
+*/
+void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUpper) {
+
+    TextBuffer *buf = document->buffer_;
+    int64_t start;
+    int64_t end;
+    int64_t rectStart = 0;
+    int64_t rectEnd   = 0;
+    bool isRect;
+
+    // Get the selection.  Use character before cursor if no selection
+    if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
+        int64_t cursorPos = area->TextGetCursorPos();
+        if (cursorPos == 0) {
+            QApplication::beep();
+            return;
+        }
+
+        char ch = buf->BufGetCharacter(cursorPos - 1);
+
+        ch = makeUpper ? safe_ctype<toupper>(ch) : safe_ctype<tolower>(ch);
+        buf->BufReplaceEx(cursorPos - 1, cursorPos, ch);
+    } else {
+        bool modified = false;
+
+        std::string text = buf->BufGetSelectionTextEx();
+
+        for(char &ch: text) {
+            char oldChar = ch;
+            ch = makeUpper ? safe_ctype<toupper>(ch) : safe_ctype<tolower>(ch);
+            if (ch != oldChar) {
+                modified = true;
+            }
+        }
+
+        if (modified) {
+            buf->BufReplaceSelectedEx(text);
+        }
+
+        if (isRect) {
+            buf->BufRectSelect(start, end, rectStart, rectEnd);
+        } else {
+            buf->BufSelect(start, end);
+        }
+    }
+}
+
+void UpcaseSelectionEx(DocumentWidget *document, TextArea *area) {
+    changeCaseEx(document, area, true);
+}
+
+void DowncaseSelectionEx(DocumentWidget *document, TextArea *area) {
+    changeCaseEx(document, area, false);
+}
+
 }
 
 /**
@@ -897,7 +956,7 @@ void MainWindow::on_action_Delete_triggered() {
  * @param name
  * @return
  */
-DocumentWidget *MainWindow::CreateDocument(QString name) {
+DocumentWidget *MainWindow::CreateDocument(const QString &name) {
     auto document = new DocumentWidget(name, this);
     int i = ui.tabWidget->addTab(document, name);
     ui.tabWidget->setCurrentIndex(i);
@@ -1965,6 +2024,8 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
             nameText = tr("%1%2").arg(document->path_, nameText);
         }
 
+        const bool openInTab = Preferences::GetPrefOpenInTab();
+
     #if !defined(DONT_HAVE_GLOB)
         // Expand wildcards in file name.
         {
@@ -1978,14 +2039,14 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
                     QApplication::beep();
                 } else {
                     DocumentWidget::EditExistingFileEx(
-                                Preferences::GetPrefOpenInTab() ? document : nullptr,
+                                openInTab ? document : nullptr,
                                 filename,
                                 pathname,
                                 0,
                                 QString(),
                                 false,
                                 QString(),
-                                Preferences::GetPrefOpenInTab(),
+                                openInTab,
                                 false);
                 }
             }
@@ -1998,14 +2059,14 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
             QApplication::beep();
         } else {
             DocumentWidget::EditExistingFileEx(
-                        GetPrefOpenInTab() ? document : nullptr,
+                        openInTab ? document : nullptr,
                         filename,
                         pathname,
                         0,
                         QString(),
                         false,
                         QString(),
-                        GetPrefOpenInTab(),
+                        openInTab,
                         false);
         }
     #endif
