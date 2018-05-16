@@ -2692,15 +2692,13 @@ void MainWindow::on_editIFind_returnPressed() {
  */
 void MainWindow::keyPressEvent(QKeyEvent *event) {
 
-	int index;
-
 	// only process up and down arrow keys
     if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down && event->key() != Qt::Key_Escape) {
         QMainWindow::keyPressEvent(event);
         return;
     }
 
-	index = iSearchHistIndex_;
+    int index = iSearchHistIndex_;
 
     // allow escape key to cancel search
     if (event->key() == Qt::Key_Escape) {
@@ -2731,7 +2729,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
         searchType = entry->type;
     }
 
-    /* Set the info used in the value changed callback before calling XmTextSetStringEx(). */
     iSearchHistIndex_ = index;
     initToggleButtonsiSearch(searchType);
 
@@ -3009,7 +3006,7 @@ void MainWindow::action_Mark(DocumentWidget *document, const QString &mark) {
 
     emit_event("mark", mark);
 
-    QChar ch = mark[0];
+    const QChar ch = mark[0];
     if(QPointer<TextArea> area = lastFocus_) {
         document->AddMarkEx(area, ch);
     }
@@ -3021,7 +3018,7 @@ void MainWindow::action_Mark(DocumentWidget *document, const QString &mark) {
  */
 void MainWindow::action_Mark(DocumentWidget *document) {
     bool ok;
-    QString result = QInputDialog::getText(
+    const QString result = QInputDialog::getText(
         this,
         tr("Mark"),
         tr("Enter a single letter label to use for recalling\n"
@@ -3054,7 +3051,7 @@ void MainWindow::on_action_Mark_triggered() {
 void MainWindow::action_Mark_Shortcut() {
 
     if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
-        QKeySequence sequence = shortcut->key();
+        const QKeySequence sequence = shortcut->key();
 
         if(DocumentWidget *document = currentDocument()) {
             switch(sequence[1]) {
@@ -3114,7 +3111,7 @@ void MainWindow::action_Goto_Mark(DocumentWidget *document, const QString &mark,
  */
 void MainWindow::action_Goto_Mark_Dialog(DocumentWidget *document, bool extend) {
     bool ok;
-    QString result = QInputDialog::getText(
+    const QString result = QInputDialog::getText(
         this,
         tr("Goto Mark"),
         tr("Enter the single letter label used to mark\n"
@@ -3137,7 +3134,7 @@ void MainWindow::action_Goto_Mark_Dialog(DocumentWidget *document, bool extend) 
  */
 void MainWindow::on_action_Goto_Mark_triggered() {
 
-    bool extend = (QApplication::keyboardModifiers() & Qt::SHIFT);
+    const bool extend = (QApplication::keyboardModifiers() & Qt::SHIFT);
 
     if(DocumentWidget *document = currentDocument()) {
         action_Goto_Mark_Dialog(document, extend);
@@ -3150,7 +3147,7 @@ void MainWindow::on_action_Goto_Mark_triggered() {
 void MainWindow::action_Shift_Goto_Mark_Shortcut() {
 
     if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
-        QKeySequence sequence = shortcut->key();
+        const QKeySequence sequence = shortcut->key();
 
         if(DocumentWidget *document = currentDocument()) {
             switch(sequence[1]) {
@@ -3193,7 +3190,7 @@ void MainWindow::action_Shift_Goto_Mark_Shortcut() {
  */
 void MainWindow::action_Goto_Mark_Shortcut() {
     if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
-        QKeySequence sequence = shortcut->key();
+        const QKeySequence sequence = shortcut->key();
 
         if(DocumentWidget *document = currentDocument()) {
             switch(sequence[1]) {
@@ -3281,12 +3278,13 @@ void MainWindow::updateTipsFileMenuEx() {
     auto tipsMenu = new QMenu(this);
 
     for(Tags::File &tf : Tags::TipsFileList) {
-        auto filename = tf.filename;
+        const QString &filename = tf.filename;
         QAction *action = tipsMenu->addAction(filename);
         action->setData(filename);
     }
 
     ui.action_Unload_Calltips_File->setMenu(tipsMenu);
+
     connect(tipsMenu, &QMenu::triggered, this, [this](QAction *action) {
         auto filename = action->data().toString();
         if(!filename.isEmpty()) {
@@ -3305,12 +3303,13 @@ void MainWindow::updateTagsFileMenuEx() {
     auto tagsMenu = new QMenu(this);
 
     for(Tags::File &tf : Tags::TagsFileList) {
-        auto filename = tf.filename;
+        const QString &filename = tf.filename;
         QAction *action = tagsMenu->addAction(filename);
         action->setData(filename);
     }
 
     ui.action_Unload_Tags_File->setMenu(tagsMenu);
+
     connect(tagsMenu, &QMenu::triggered, this, [this](QAction *action) {
         auto filename = action->data().toString();
         if(!filename.isEmpty()) {
@@ -3331,7 +3330,7 @@ void MainWindow::action_Unload_Tips_File(DocumentWidget *document, const QString
     Q_UNUSED(document);
     emit_event("unload_tips_file", filename);
 
-    if (Tags::DeleteTagsFileEx(filename, Tags::SearchMode::TIP, true)) {
+    if (Tags::DeleteTagsFileEx(filename, Tags::SearchMode::TIP, /*force_unload=*/true)) {
         for(MainWindow *window : MainWindow::allWindows()) {
             window->updateTipsFileMenuEx();
         }
@@ -3348,7 +3347,7 @@ void MainWindow::action_Unload_Tags_File(DocumentWidget *document, const QString
     Q_UNUSED(document);
     emit_event("unload_tags_file", filename);
 
-    if (Tags::DeleteTagsFileEx(filename, Tags::SearchMode::TAG, true)) {
+    if (Tags::DeleteTagsFileEx(filename, Tags::SearchMode::TAG, /*force_unload=*/true)) {
         for(MainWindow *window : MainWindow::allWindows()) {
              window->updateTagsFileMenuEx();
         }
@@ -3366,7 +3365,10 @@ void MainWindow::action_Load_Tips_File(DocumentWidget *document, const QString &
     emit_event("load_tips_file", filename);
 
     if (!Tags::AddTagsFileEx(filename, Tags::SearchMode::TIP)) {
-        QMessageBox::warning(this, tr("Error Reading File"), tr("Error reading tips file:\n'%1'\ntips not loaded").arg(filename));
+        QMessageBox::warning(
+                    this,
+                    tr("Error Reading File"),
+                    tr("Error reading tips file:\n'%1'\ntips not loaded").arg(filename));
     }
 }
 
@@ -3618,12 +3620,7 @@ void MainWindow::on_action_Statistics_Line_toggled(bool state) {
 ** (when off, it is popped up and down as needed via TempShowISearch)
 */
 void MainWindow::on_action_Incremental_Search_Line_toggled(bool state) {
-    if (showISearchLine_ == state) {
-        return;
-    }
-
     showISearchLine_ = state;
-
     ui.incrementalSearchFrame->setVisible(state);
 }
 
@@ -3822,7 +3819,7 @@ void MainWindow::on_action_Read_Only_toggled(bool state) {
  * @brief MainWindow::on_action_Save_Defaults_triggered
  */
 void MainWindow::on_action_Save_Defaults_triggered() {
-    Preferences::SaveNEditPrefsEx(this, false);
+    Preferences::SaveNEditPrefsEx(this, /*quietly=*/false);
 }
 
 /**
@@ -3969,13 +3966,7 @@ void MainWindow::on_action_Default_Colors_triggered() {
 ** Present a dialog for editing the user specified commands in the shell menu
 */
 void MainWindow::on_action_Default_Shell_Menu_triggered() {
-
-    static QPointer<DialogShellMenu> WindowShellMenu;
-
-    if(!WindowShellMenu) {
-        WindowShellMenu = new DialogShellMenu(this);
-    }
-
+    static auto WindowShellMenu = new DialogShellMenu(this);
     WindowShellMenu->exec();
 }
 
@@ -3984,7 +3975,6 @@ void MainWindow::on_action_Default_Shell_Menu_triggered() {
 ** and background menus
 */
 void MainWindow::on_action_Default_Macro_Menu_triggered() {
-
     auto WindowMacros = std::make_shared<DialogMacros>(this);
     WindowMacros->exec();
 }
@@ -3993,7 +3983,6 @@ void MainWindow::on_action_Default_Macro_Menu_triggered() {
  * @brief MainWindow::on_action_Default_Window_Background_Menu_triggered
  */
 void MainWindow::on_action_Default_Window_Background_Menu_triggered() {
-
     auto WindowBackgroundMenu = std::make_unique<DialogWindowBackgroundMenu>(this);
     WindowBackgroundMenu->exec();
 }
@@ -4003,8 +3992,8 @@ void MainWindow::on_action_Default_Window_Background_Menu_triggered() {
  * @param state
  */
 void MainWindow::on_action_Default_Sort_Open_Prev_Menu_toggled(bool state) {
-    /* Set the preference, make the other windows' menus agree,
-       and invalidate their Open Previous menus */
+
+    // Set the preference, make the other windows' menus agree
     Preferences::SetPrefSortOpenPrevMenu(state);
     for(MainWindow *window : MainWindow::allWindows()) {
         no_signals(window->ui.action_Default_Sort_Open_Prev_Menu)->setChecked(state);
@@ -4041,6 +4030,7 @@ void MainWindow::on_action_Default_Customize_Window_Title_triggered() {
  * @param state
  */
 void MainWindow::on_action_Default_Search_Verbose_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefSearchDlogs(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4053,6 +4043,7 @@ void MainWindow::on_action_Default_Search_Verbose_toggled(bool state) {
  * @param state
  */
 void MainWindow::on_action_Default_Search_Wrap_Around_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefSearchWraps(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4065,6 +4056,7 @@ void MainWindow::on_action_Default_Search_Wrap_Around_toggled(bool state) {
  * @param state
  */
 void MainWindow::on_action_Default_Search_Beep_On_Search_Wrap_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefBeepOnSearchWrap(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4077,6 +4069,7 @@ void MainWindow::on_action_Default_Search_Beep_On_Search_Wrap_toggled(bool state
  * @param state
  */
 void MainWindow::on_action_Default_Search_Keep_Dialogs_Up_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefKeepSearchDlogs(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4165,6 +4158,7 @@ void MainWindow::on_action_Default_Syntax_Text_Drawing_Styles_triggered() {
  * @param state
  */
 void MainWindow::on_action_Default_Apply_Backlighting_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefBacklightChars(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4177,6 +4171,7 @@ void MainWindow::on_action_Default_Apply_Backlighting_toggled(bool state) {
  * @param state
  */
 void MainWindow::on_action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefOpenInTab(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4195,6 +4190,7 @@ void MainWindow::on_action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) 
  * @param state
  */
 void MainWindow::on_action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefTabBar(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4208,6 +4204,7 @@ void MainWindow::on_action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
  * @param state
  */
 void MainWindow::on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefTabBarHideOne(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4221,6 +4218,7 @@ void MainWindow::on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Op
  * @param state
  */
 void MainWindow::on_action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefGlobalTabNavigate(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4233,6 +4231,7 @@ void MainWindow::on_action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(boo
  * @param state
  */
 void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefSortTabs(state);
 
@@ -4242,9 +4241,7 @@ void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool sta
         no_signals(window->ui.action_Default_Tab_Sort_Tabs_Alphabetically)->setChecked(state);
     }
 
-    /* If we just enabled sorting, sort all tabs.  Note that this reorders
-       the next pointers underneath us, which is scary, but SortTabBar never
-       touches windows that are earlier in the window list so it's ok. */
+    // If we just enabled sorting, sort all tabs
     if (state) {
         for(MainWindow *window : windows) {
             window->SortTabBar();
@@ -4262,6 +4259,7 @@ void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool sta
  * @param state
  */
 void MainWindow::on_action_Default_Show_Tooltips_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefToolTips(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4274,6 +4272,7 @@ void MainWindow::on_action_Default_Show_Tooltips_toggled(bool state) {
  * @param state
  */
 void MainWindow::on_action_Default_Statistics_Line_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefStatsLine(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4286,6 +4285,7 @@ void MainWindow::on_action_Default_Statistics_Line_toggled(bool state) {
  * @param state
  */
 void MainWindow::on_action_Default_Incremental_Search_Line_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefISearchLine(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4298,6 +4298,7 @@ void MainWindow::on_action_Default_Incremental_Search_Line_toggled(bool state) {
  * @param state
  */
 void MainWindow::on_action_Default_Show_Line_Numbers_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefLineNums(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4310,6 +4311,7 @@ void MainWindow::on_action_Default_Show_Line_Numbers_toggled(bool state) {
  * @param state
  */
 void MainWindow::on_action_Default_Make_Backup_Copy_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefSaveOldVersion(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4322,6 +4324,7 @@ void MainWindow::on_action_Default_Make_Backup_Copy_toggled(bool state) {
  * @param state
  */
 void MainWindow::on_action_Default_Incremental_Backup_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefAutoSave(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4360,6 +4363,7 @@ void MainWindow::defaultMatchingGroupTriggered(QAction *action) {
  * @param state
  */
 void MainWindow::on_action_Default_Matching_Syntax_Based_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefMatchSyntaxBased(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4372,6 +4376,7 @@ void MainWindow::on_action_Default_Matching_Syntax_Based_toggled(bool state) {
  * @param state
  */
 void MainWindow::on_action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefAppendLF(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4384,6 +4389,7 @@ void MainWindow::on_action_Default_Terminate_with_Line_Break_on_Save_toggled(boo
  * @param state
  */
 void MainWindow::on_action_Default_Popups_Under_Pointer_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefRepositionDialogs(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4396,6 +4402,7 @@ void MainWindow::on_action_Default_Popups_Under_Pointer_toggled(bool state) {
  * @param state
  */
 void MainWindow::on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefAutoScroll(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4408,6 +4415,7 @@ void MainWindow::on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bo
  * @param state
  */
 void MainWindow::on_action_Default_Warnings_Files_Modified_Externally_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefWarnFileMods(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4421,6 +4429,7 @@ void MainWindow::on_action_Default_Warnings_Files_Modified_Externally_toggled(bo
  * @param state
  */
 void MainWindow::on_action_Default_Warnings_Check_Modified_File_Contents_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefWarnRealFileMods(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4433,6 +4442,7 @@ void MainWindow::on_action_Default_Warnings_Check_Modified_File_Contents_toggled
  * @param state
  */
 void MainWindow::on_action_Default_Warnings_On_Exit_toggled(bool state) {
+
     // Set the preference and make the other windows' menus agree
     Preferences::SetPrefWarnExit(state);
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -4600,7 +4610,7 @@ void MainWindow::action_Last_Document() {
     emit_event("last_document");
 
     if(lastFocusDocument) {
-        lastFocusDocument->RaiseFocusDocumentWindow(true);
+        lastFocusDocument->RaiseFocusDocumentWindow(/*focus=*/true);
     }
 }
 
@@ -4682,14 +4692,13 @@ void MainWindow::AllWindowsBusyEx(const QString &message) {
         modeMessageSet = false;
 
         for(DocumentWidget *document : documents) {
-            /* We don't the display message here yet, but defer it for
-               a while. If the wait is short, we don't want
-               to have it flash on and off the screen.  However,
-               we can't use a time since in generally we are in
-               a tight loop and only processing exposure events, so it's
-               up to the caller to make sure that this routine is called
-               at regular intervals.
-            */
+            /*
+             * We don't the display message here yet, but defer it for a while.
+             * If the wait is short, we don't want to have it flash on and off
+             * the screen. However, we can't use a time since in generally we
+             * are in a tight loop, so it's up to the caller to make sure that
+             * this routine is called at regular intervals.
+             */
             document->setCursor(Qt::WaitCursor);
         }
 
@@ -4745,11 +4754,14 @@ void MainWindow::on_action_Save_triggered() {
     }
 }
 
-/*
-** Wrapper for HandleCustomNewFileSB which uses the current window's path
-** (if set) as the default directory, and asks about embedding newlines
-** to make wrapping permanent.
-*/
+/**
+ * @brief MainWindow::PromptForNewFileEx
+ * @param document
+ * @param prompt
+ * @param fileFormat
+ * @param addWrap
+ * @return
+ */
 QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &prompt, FileFormats *fileFormat, bool *addWrap) {
 
     *fileFormat = document->fileFormat_;
@@ -4943,8 +4955,6 @@ void MainWindow::action_New_Window(DocumentWidget *document) {
 }
 
 /**
- * whatever the setting is for what to do with "New", this does the opposite
- *
  * @brief MainWindow::on_action_New_Window_triggered
  */
 void MainWindow::on_action_New_Window_triggered() {
@@ -4972,8 +4982,6 @@ void MainWindow::action_Exit(DocumentWidget *document) {
 
     /* If this is not the last window (more than one window is open),
        confirm with the user before exiting. */
-
-    // NOTE(eteran): test if the current window is NOT the only document
     if (Preferences::GetPrefWarnExit() && documents.size() >= 2) {
 
         auto exitMsg = tr("Editing: ");
@@ -5461,7 +5469,11 @@ void MainWindow::action_Replace_Dialog(DocumentWidget *document, Direction direc
  * @param document
  */
 void MainWindow::action_Shift_Replace(DocumentWidget *document) {
-    action_Replace_Dialog(document, Direction::Backward, Preferences::GetPrefSearch(), Preferences::GetPrefKeepSearchDlogs());
+    action_Replace_Dialog(
+                document,
+                Direction::Backward,
+                Preferences::GetPrefSearch(),
+                Preferences::GetPrefKeepSearchDlogs());
 }
 
 /**
@@ -5554,7 +5566,9 @@ void MainWindow::action_Find_Definition(DocumentWidget *document) {
  * @brief MainWindow::on_action_Find_Definition_triggered
  */
 void MainWindow::on_action_Find_Definition_triggered() {
-    action_Find_Definition(currentDocument());
+    if(DocumentWidget *document = currentDocument()) {
+        action_Find_Definition(document);
+    }
 }
 
 /**
@@ -5569,7 +5583,9 @@ void MainWindow::action_Show_Calltip(DocumentWidget *document) {
  * @brief MainWindow::on_action_Show_Calltip_triggered
  */
 void MainWindow::on_action_Show_Calltip_triggered() {
-    action_Show_Calltip(currentDocument());
+    if(DocumentWidget *document = currentDocument()) {
+        action_Show_Calltip(document);
+    }
 }
 
 /**
@@ -5587,10 +5603,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document) {
         return;
     }
 
-    static QPointer<DialogFilter> dialog;
-    if(!dialog) {
-        dialog = new DialogFilter(this);
-    }
+    static auto dialog = new DialogFilter(this);
 
     int r = dialog->exec();
     if(!r) {
@@ -5662,10 +5675,7 @@ void MainWindow::action_Execute_Command(DocumentWidget *document) {
         return;
     }
 
-    static QPointer<DialogExecuteCommand> dialog;
-    if(!dialog) {
-        dialog = new DialogExecuteCommand(this);
-    }
+    static auto dialog = new DialogExecuteCommand(this);
 
     int r = dialog->exec();
     if(!r) {
@@ -5908,6 +5918,20 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
                 nullptr);
 }
 
+/**
+ * @brief MainWindow::SearchWindowEx
+ * @param document
+ * @param searchString
+ * @param direction
+ * @param searchType
+ * @param searchWrap
+ * @param beginPos
+ * @param startPos
+ * @param endPos
+ * @param extentBW
+ * @param extentFW
+ * @return
+ */
 bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *extentBW, int64_t *extentFW) {
     bool found;
     int64_t fileEnd = document->buffer_->BufGetLength() - 1;
@@ -6013,6 +6037,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
                             return false;
                         }
                     }
+
                     found = Search::SearchString(
                                 fileString,
                                 searchString,
@@ -6027,6 +6052,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
                                 document->GetWindowDelimitersEx());
                 }
             }
+
             if (!found) {
                 if (Preferences::GetPrefSearchDlogs()) {
                     QMessageBox::information(document, tr("String not found"), tr("String was not found"));
@@ -6079,7 +6105,7 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, con
     int64_t beginPos;
     int64_t selStart;
     int64_t selEnd;
-    int movedFwd = 0;
+    bool movedFwd = false;
 
     // Save a copy of searchString in the search history
     Search::saveSearchHistory(searchString, QString(), searchType, /*isIncremental=*/false);
@@ -6092,7 +6118,7 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, con
             beginPos = selStart - 1;
         } else {
             beginPos = selStart + 1;
-            movedFwd = 1;
+            movedFwd = true;
         }
     } else {
         selStart = -1;
@@ -6148,12 +6174,12 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, con
 /*
 ** Search for "searchString" in "window", and select the matching text in
 ** the window when found (or beep or put up a dialog if not found).  If
-** "continued" is TRUE and a prior incremental search starting position is
+** "continued" is true and a prior incremental search starting position is
 ** recorded, search from that original position, otherwise, search from the
 ** current cursor position.
 */
 bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, bool continued) {
-    int64_t beginPos;
+
     int64_t startPos;
     int64_t endPos;
 
@@ -6164,7 +6190,7 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
         iSearchRecordLastBeginPosEx(direction, iSearchStartPos_);
     }
 
-    beginPos = iSearchStartPos_;
+    int64_t beginPos = iSearchStartPos_;
 
     /* If the search string is empty, beep eventually if text wrapped
        back to the initial position, re-init iSearchLastBeginPos,
@@ -6191,21 +6217,25 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
 
 
     // begin at insert position - 1 for backward searches
-    if (direction == Direction::Backward)
-        beginPos--;
+    if (direction == Direction::Backward) {
+        --beginPos;
+    }
 
     // do the search.  SearchWindow does appropriate dialogs and beeps
-    if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos, &startPos, &endPos))
+    if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos, &startPos, &endPos)) {
         return false;
+    }
 
     iSearchLastBeginPos_ = startPos;
 
     /* if the search matched an empty string (possible with regular exps)
        beginning at the start of the search, go to the next occurrence,
        otherwise repeated finds will get "stuck" at zero-length matches */
-    if (direction == Direction::Forward && beginPos == startPos && beginPos == endPos)
-        if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos + 1, &startPos, &endPos))
+    if (direction == Direction::Forward && beginPos == startPos && beginPos == endPos) {
+        if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, beginPos + 1, &startPos, &endPos)) {
             return false;
+        }
+    }
 
     iSearchLastBeginPos_ = startPos;
 
@@ -6217,8 +6247,8 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
 }
 
 /*
-** Replace selection with "replaceString" and search for string "searchString" in window "window",
-** using algorithm "searchType" and direction "direction"
+** Replace selection with "replaceString" and search for string "searchString"
+** in window "window", using algorithm "searchType" and direction "direction"
 */
 bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap) {
     int64_t startPos = 0;
@@ -6273,8 +6303,8 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, co
 ** Fetch and verify (particularly regular expression) search string,
 ** direction, and search type from the Find dialog.  If the search string
 ** is ok, save a copy in the search history, copy it to "searchString",
-** return search type in "searchType", and return TRUE as the function value.
-** Otherwise, return FALSE.
+** return search type in "searchType", and return true as the function value.
+** Otherwise, return false.
 */
 bool MainWindow::SearchAndSelectSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap) {
 
@@ -6304,7 +6334,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
     int64_t replaceLen;
 
     /* NOTE(eteran): OK, the whole point of searchExtentBW, and searchExtentFW
-     * are to help with regex search/replace operations involding look-ahead and
+     * are to help with regex search/replace operations involving look-ahead and
      * look-behind. For example, if the buffer contains "ABCDEF-A" and we want
      * the regex to match "(?<=-)[A-Z]" (a captial letter preceded by a dash).
      * The regex is matching the "A" and thus the start position of the match is
@@ -6699,7 +6729,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
 **  of verbosity, but of data loss. The search is successful, only the
 **  replacement fails due to an internal limitation of NEdit.
 **
-**  The result is either predetermined by the resource or the user's choice.
+**  The result is either predetermined by the setting or the user's choice.
 */
 bool MainWindow::prefOrUserCancelsSubstEx(DocumentWidget *document) {
 
@@ -6821,7 +6851,7 @@ bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QS
 }
 
 /*
-** Reset window->iSearchLastBeginPos_ to the resulting initial
+** Reset iSearchLastBeginPos_ to the resulting initial
 ** search begin position for incremental searches.
 */
 void MainWindow::iSearchRecordLastBeginPosEx(Direction direction, int64_t initPos) {
@@ -6851,12 +6881,13 @@ void MainWindow::iSearchTryBeepOnWrapEx(Direction direction, int64_t beginPos, i
 }
 
 /*
-** Return TRUE if "searchString" exactly matches the text in the window's
+** Return true if "searchString" exactly matches the text in the window's
 ** current primary selection using search algorithm "searchType".  If true,
 ** also return the position of the selection in "left" and "right".
 */
 bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, int64_t *left, int64_t *right, int64_t *searchExtentBW, int64_t *searchExtentFW) {
 
+    const int regexLookContext = Search::isRegexType(searchType) ? 1000 : 0;
     int64_t selLen;
     int64_t selStart;
     int64_t selEnd;
@@ -6865,11 +6896,10 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
     int64_t extentBW;
     int64_t extentFW;
     int64_t beginPos;
-    int regexLookContext = Search::isRegexType(searchType) ? 1000 : 0;
-    std::string string;
     int64_t rectStart;
     int64_t rectEnd;
     int64_t lineStart = 0;
+    std::string string;
     bool isRect;
 
     // find length of selection, give up on no selection or too long

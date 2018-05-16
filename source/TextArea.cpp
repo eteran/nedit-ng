@@ -7787,7 +7787,7 @@ int TextArea::TextDShowCalltip(const QString &text, bool anchored, int pos, TipH
         calltipWidget_ = new CallTipWidget(this, Qt::Tool | Qt::FramelessWindowHint);
     }
 
-    // Expand any tabs in the calltip and make it an XmString
+    // Expand any tabs in the calltip
     QString textCpy = expandAllTabsEx(text, buffer_->BufGetTabDistance());
 
     // Figure out where to put the tip
