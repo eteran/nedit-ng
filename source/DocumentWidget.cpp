@@ -281,10 +281,10 @@ QLatin1String createRepeatMacro(int how) {
 }
 
 /*
-** Open an existing file specified by name and path.  Use the window inWindow
-** unless inDocument is nullptr or points to a window which is already in use
-** (displays a file other than Untitled, or is Untitled but modified).  Flags
-** can be any of:
+** Open an existing file specified by name and path.  Use the document
+** inDocument unless inDocument is nullptr or points to a document which is
+** already in use (displays a file other than Untitled, or is Untitled but
+** modified). Flags can be any of:
 **
 **	CREATE: 		      If file is not found, (optionally) prompt the user
 **                        whether to create
@@ -313,19 +313,26 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
         return document;
     }
 
-    /* If an existing window isn't specified; or the window is already
-       in use (not Untitled or Untitled and modified), or is currently
-       busy running a macro; create the window */
-    DocumentWidget *document = nullptr;
-	if(!inDocument) {
-        MainWindow *const win = new MainWindow();
-        document = win->CreateDocument(name);
+    // helper local function to reduce code duplication
+    auto createInNewWindow = [&name, &geometry, iconic]() {
+        auto win = new MainWindow();
+        DocumentWidget *document = win->CreateDocument(name);
         if(iconic) {
             win->showMinimized();
         } else {
             win->showNormal();
         }
         win->parseGeometry(geometry);
+
+        return document;
+    };
+
+    /* If an existing document isn't specified; or the document is already in
+     * use (not Untitled or Untitled and modified), or is currently busy
+     * running a macro; create the document */
+    DocumentWidget *document = nullptr;
+	if(!inDocument) {
+        document = createInNewWindow();
 	} else if (inDocument->filenameSet_ || inDocument->fileChanged_ || inDocument->macroCmdData_) {
         if (tabbed) {
             if(auto win = MainWindow::fromDocument(inDocument)) {
@@ -334,14 +341,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 				return nullptr;
 			}
         } else {
-            MainWindow *const win = new MainWindow();
-            document = win->CreateDocument(name);
-            if(iconic) {
-                win->showMinimized();
-            } else {
-                win->showNormal();
-            }
-            win->parseGeometry(geometry);
+            document = createInNewWindow();
         }
     } else {
         // open file in untitled document
@@ -369,9 +369,9 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 
     // Decide what language mode to use, trigger language specific actions
     if(languageMode.isNull()) {
-        document->DetermineLanguageMode(true);
+        document->DetermineLanguageMode(/*forceNewDefaults=*/true);
     } else {
-        document->action_Set_Language_Mode(languageMode, true);
+        document->action_Set_Language_Mode(languageMode, /*forceNewDefaults=*/true);
     }
 
     // update tab label and tooltip
@@ -636,6 +636,10 @@ void DocumentWidget::DetermineLanguageMode(bool forceNewDefaults) {
 	SetLanguageMode(matchLanguageMode(), forceNewDefaults);
 }
 
+/**
+ * @brief DocumentWidget::GetLanguageMode
+ * @return
+ */
 size_t DocumentWidget::GetLanguageMode() const {
     return languageMode_;
 }
@@ -703,15 +707,16 @@ size_t DocumentWidget::matchLanguageMode() const {
         if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {
             int64_t beginPos;
             int64_t endPos;
-            bool result = Search::SearchString(first200,
-                                  Preferences::LanguageModes[i].recognitionExpr,
-                                  Direction::Forward,
-                                  SearchType::Regex,
-                                  WrapMode::NoWrap,
-                                  0,
-                                  &beginPos,
-                                  &endPos,
-                                  QString());
+            const bool result = Search::SearchString(
+                        first200,
+                        Preferences::LanguageModes[i].recognitionExpr,
+                        Direction::Forward,
+                        SearchType::Regex,
+                        WrapMode::NoWrap,
+                        0,
+                        &beginPos,
+                        &endPos,
+                        QString());
 
             if (result) {
                 return i;
@@ -729,9 +734,11 @@ size_t DocumentWidget::matchLanguageMode() const {
 		fileNameLen = versionExtendedPathIndex;
 	}
 
+    const QStringRef file = filename_.midRef(0, fileNameLen);
+
     for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
         Q_FOREACH(const QString &ext, Preferences::LanguageModes[i].extensions) {
-            if(filename_.midRef(0, fileNameLen).endsWith(ext)) {
+            if(file.endsWith(ext)) {
                 return i;
             }
 		}
@@ -808,6 +815,10 @@ void DocumentWidget::UpdateStatsLine(TextArea *area) {
 	}
 }
 
+/**
+ * @brief DocumentWidget::movedCallback
+ * @param area
+ */
 void DocumentWidget::movedCallback(TextArea *area) {
 
 	if (ignoreModify_) {
