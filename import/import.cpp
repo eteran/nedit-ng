@@ -215,7 +215,7 @@ std::vector<MenuItem> loadMenuItemString(const QString &inString, bool isShellCo
         item.mnemonic = in.readUntil(QLatin1Char(':'));
         ++in;
 
-        // read flags fiel
+        // read flags field
         for(; !in.atEnd() && *in != QLatin1Char(':'); ++in) {
             item.flags.push_back(*in);
         }
