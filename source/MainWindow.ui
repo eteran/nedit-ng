@@ -224,7 +224,7 @@
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>P&amp;references</string>
+     <string>&amp;Preferences</string>
     </property>
     <widget class="QMenu" name="menu_Show_Matching">
      <property name="title">
@@ -438,7 +438,7 @@
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>&amp;Macro</string>
+     <string>Ma&amp;cro</string>
     </property>
     <addaction name="action_Learn_Keystrokes"/>
     <addaction name="action_Finish_Learn"/>
