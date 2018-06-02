@@ -3966,8 +3966,8 @@ void MainWindow::on_action_Default_Colors_triggered() {
 ** Present a dialog for editing the user specified commands in the shell menu
 */
 void MainWindow::on_action_Default_Shell_Menu_triggered() {
-    static auto WindowShellMenu = new DialogShellMenu(this);
-    WindowShellMenu->exec();
+    auto WindowShellMenu = new DialogShellMenu(this);
+    WindowShellMenu->show();
 }
 
 /*
@@ -3975,15 +3975,15 @@ void MainWindow::on_action_Default_Shell_Menu_triggered() {
 ** and background menus
 */
 void MainWindow::on_action_Default_Macro_Menu_triggered() {
-    auto WindowMacros = std::make_shared<DialogMacros>(this);
-    WindowMacros->exec();
+    auto WindowMacros = new DialogMacros(this);
+    WindowMacros->show();
 }
 
 /**
  * @brief MainWindow::on_action_Default_Window_Background_Menu_triggered
  */
 void MainWindow::on_action_Default_Window_Background_Menu_triggered() {
-    auto WindowBackgroundMenu = std::make_unique<DialogWindowBackgroundMenu>(this);
+    auto WindowBackgroundMenu = new DialogWindowBackgroundMenu(this);
     WindowBackgroundMenu->exec();
 }
 

@@ -37,7 +37,7 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(pa
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::restoreSlot
+ * @brief DialogShellMenu::restoreSlot
  * @param index
  */
 void DialogShellMenu::restoreSlot(const QModelIndex &index) {
