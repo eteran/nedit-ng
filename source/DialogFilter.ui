@@ -88,8 +88,8 @@
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>221</x>
-     <y>120</y>
+     <x>227</x>
+     <y>112</y>
     </hint>
     <hint type="destinationlabel">
      <x>163</x>
@@ -104,12 +104,28 @@
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>327</x>
-     <y>119</y>
+     <x>333</x>
+     <y>112</y>
     </hint>
     <hint type="destinationlabel">
      <x>329</x>
      <y>92</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>textFilter</sender>
+   <signal>returnPressed()</signal>
+   <receiver>DialogFilter</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>181</x>
+     <y>55</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>35</x>
+     <y>73</y>
     </hint>
    </hints>
   </connection>

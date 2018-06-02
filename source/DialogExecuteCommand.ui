@@ -114,5 +114,21 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>textCommand</sender>
+   <signal>returnPressed()</signal>
+   <receiver>DialogExecuteCommand</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>284</x>
+     <y>68</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>77</x>
+     <y>88</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
 </ui>
