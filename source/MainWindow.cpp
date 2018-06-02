@@ -3984,7 +3984,7 @@ void MainWindow::on_action_Default_Macro_Menu_triggered() {
  */
 void MainWindow::on_action_Default_Window_Background_Menu_triggered() {
     auto WindowBackgroundMenu = new DialogWindowBackgroundMenu(this);
-    WindowBackgroundMenu->exec();
+    WindowBackgroundMenu->show();
 }
 
 /**
