@@ -3966,7 +3966,7 @@ void MainWindow::on_action_Default_Colors_triggered() {
 ** Present a dialog for editing the user specified commands in the shell menu
 */
 void MainWindow::on_action_Default_Shell_Menu_triggered() {
-    auto WindowShellMenu = new DialogShellMenu(this);
+    static auto WindowShellMenu = new DialogShellMenu(this);
     WindowShellMenu->show();
 }
 
@@ -3975,7 +3975,7 @@ void MainWindow::on_action_Default_Shell_Menu_triggered() {
 ** and background menus
 */
 void MainWindow::on_action_Default_Macro_Menu_triggered() {
-    auto WindowMacros = new DialogMacros(this);
+    static auto WindowMacros = new DialogMacros(this);
     WindowMacros->show();
 }
 
@@ -3983,7 +3983,7 @@ void MainWindow::on_action_Default_Macro_Menu_triggered() {
  * @brief MainWindow::on_action_Default_Window_Background_Menu_triggered
  */
 void MainWindow::on_action_Default_Window_Background_Menu_triggered() {
-    auto WindowBackgroundMenu = new DialogWindowBackgroundMenu(this);
+    static auto WindowBackgroundMenu = new DialogWindowBackgroundMenu(this);
     WindowBackgroundMenu->show();
 }
 
