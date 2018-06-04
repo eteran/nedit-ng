@@ -493,7 +493,7 @@ int ContinueMacroEx(std::shared_ptr<MacroContext> &continuation, DataValue *resu
         // Execute an instruction
         Inst *inst = Context->PC++;
 
-        auto status = static_cast<OpStatusCodes>((inst->func)());
+        auto status = static_cast<OpStatusCodes>(inst->func());
 
         // If error return was not STAT_OK, return to caller
         switch(status) {
