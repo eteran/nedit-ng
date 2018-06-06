@@ -2442,6 +2442,7 @@ void MainWindow::action_Find_Dialog(DocumentWidget *document, Direction directio
     fHistIndex_ = 0;
 
     dialogFind_->show();
+    dialogFind_->setFocus();
 }
 
 /**
@@ -5462,6 +5463,7 @@ void MainWindow::action_Replace_Dialog(DocumentWidget *document, Direction direc
     rHistIndex_ = 0;
 
     dialogReplace_->show();
+    dialogReplace_->setFocus();
 }
 
 /**
