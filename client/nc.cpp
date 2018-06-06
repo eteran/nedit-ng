@@ -17,6 +17,7 @@
 #include "Util/ServerCommon.h"
 
 #include <memory>
+#include <boost/optional.hpp>
 
 namespace {
 
@@ -106,14 +107,14 @@ void printNcVersion() {
 /**
  * @brief parseCommandLine
  * @param args
- * @param commandLine
  * @return
  *
  * Converts command line into a command string suitable for passing to the
  * server
  */
-bool parseCommandLine(const QStringList &args, CommandLine *commandLine) {
+boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 
+    CommandLine commandLine;
     QString name;
     QString path;
     QString toDoCommand;
@@ -157,15 +158,15 @@ bool parseCommandLine(const QStringList &args, CommandLine *commandLine) {
             i = nextArg(args, i);
             toDoCommand = args[i];
         } else if (opts && args[i] == QLatin1String("-lm")) {
-            copyCommandLineArg(commandLine, args[i]);
+            copyCommandLineArg(&commandLine, args[i]);
             i = nextArg(args, i);
             langMode = args[i];
-            copyCommandLineArg(commandLine, args[i]);
+            copyCommandLineArg(&commandLine, args[i]);
         } else if (opts && (args[i] == QLatin1String("-g") || args[i] == QLatin1String("-geometry"))) {
-            copyCommandLineArg(commandLine, args[i]);
+            copyCommandLineArg(&commandLine, args[i]);
             i = nextArg(args, i);
             geometry = args[i];
-            copyCommandLineArg(commandLine, args[i]);
+            copyCommandLineArg(&commandLine, args[i]);
         } else if (opts && args[i] == QLatin1String("-read")) {
             read = 1;
         } else if (opts && args[i] == QLatin1String("-create")) {
@@ -180,7 +181,7 @@ bool parseCommandLine(const QStringList &args, CommandLine *commandLine) {
             group = 2; // 2: start new group, 1: in group
         } else if (opts && (args[i] == QLatin1String("-iconic") || args[i] == QLatin1String("-icon"))) {
             iconic = 1;
-            copyCommandLineArg(commandLine, args[i]);
+            copyCommandLineArg(&commandLine, args[i]);
         } else if (opts && args[i] == QLatin1String("-line")) {
             i = nextArg(args, i);
 
@@ -215,7 +216,7 @@ bool parseCommandLine(const QStringList &args, CommandLine *commandLine) {
         } else {
             if (!ParseFilenameEx(args[i], &name, &path) != 0) {
                 // An Error, most likely too long paths/strings given
-                return false;
+                return boost::none;
             }
 
             path.append(name);
@@ -276,8 +277,8 @@ bool parseCommandLine(const QStringList &args, CommandLine *commandLine) {
     }
 
     auto doc = QJsonDocument::fromVariant(commandData);
-    commandLine->jsonRequest = doc.toJson(QJsonDocument::Compact);
-    return true;
+    commandLine.jsonRequest = doc.toJson(QJsonDocument::Compact);
+    return commandLine;
 }
 
 /**
@@ -291,15 +292,14 @@ bool parseCommandLine(const QStringList &args, CommandLine *commandLine) {
  * from the shell by escaping EVERYTHING with '\'
  */
 CommandLine processCommandLine(const QStringList &args) {
-    CommandLine commandLine;
 
     // Convert command line arguments into a command string for the server
-    if(!parseCommandLine(args, &commandLine)) {
-        fprintf(stderr, "nc: Invalid commandline argument\n");
-        exit(EXIT_FAILURE);
+    if(boost::optional<CommandLine> commandLine = parseCommandLine(args)) {
+        return *commandLine;
     }
 
-    return commandLine;
+    fprintf(stderr, "nc: Invalid commandline argument\n");
+    exit(EXIT_FAILURE);
 }
 
 /**
