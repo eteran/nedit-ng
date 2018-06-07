@@ -1061,6 +1061,7 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
         case Qt::Key_B:
         case Qt::Key_X:
         case Qt::Key_D:
+        case Qt::Key_R:
         case Qt::Key_Apostrophe:
         case Qt::Key_Period:
             QApplication::beep();
