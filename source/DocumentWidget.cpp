@@ -183,7 +183,7 @@ void handleUnparsedRegionCB(const TextArea *area, int64_t pos, const void *user)
 ** have been shrunken by the user (eg, by Undo). If necessary, the starting
 ** and ending positions (part of the state of the command) are corrected.
 */
-void safeBufReplace(TextBuffer *buf, int64_t *start, int64_t *end, const std::string &text) {
+void safeBufReplace(TextBuffer *buf, int64_t *start, int64_t *end, view::string_view text) {
 
     const int64_t length = buf->BufGetLength();
 
@@ -1548,18 +1548,17 @@ void DocumentWidget::appendDeletedText(view::string_view deletedText, int64_t de
         comboText.append(undo.oldText);
     }
 
-    // free the old saved text and attach the new
-    undo.oldText = comboText;
+    // replace the old saved text and attach the new
+    undo.oldText = std::move(comboText);
 }
 
 /*
-** Add an undo record (already allocated by the caller) to the this's undo
+** Add an undo record to the this's undo
 ** list if the item pushes the undo operation or character counts past the
 ** limits, trim the undo list to an acceptable length.
 */
 void DocumentWidget::addUndoItem(UndoInfo &&undo) {
 
-    // Add the item to the beginning of the list
     undo_.emplace_front(std::move(undo));
 
     // Trim the list if it exceeds any of the limits
@@ -1567,8 +1566,8 @@ void DocumentWidget::addUndoItem(UndoInfo &&undo) {
         trimUndoList(UNDO_OP_TRIMTO);
     }
 
-    if(MainWindow *window = MainWindow::fromDocument(this)) {
-        window->undoAvailable(undo_.size() != 0);
+    if(auto window = MainWindow::fromDocument(this)) {
+        window->undoAvailable(!undo_.empty());
     }
 }
 
@@ -1577,11 +1576,10 @@ void DocumentWidget::addUndoItem(UndoInfo &&undo) {
 */
 void DocumentWidget::addRedoItem(UndoInfo &&redo) {
 
-    // Add the item to the beginning of the list
     redo_.emplace_front(std::move(redo));
 
-    if(MainWindow *window = MainWindow::fromDocument(this)) {
-        window->redoAvailable(redo_.size() != 0);
+    if(auto window = MainWindow::fromDocument(this)) {
+        window->redoAvailable(!redo_.empty());
     }
 }
 
@@ -1594,11 +1592,10 @@ void DocumentWidget::removeUndoItem() {
         return;
     }
 
-    // Remove and free the item
     undo_.pop_front();
 
-    if(MainWindow *window = MainWindow::fromDocument(this)) {
-        window->undoAvailable(undo_.size() != 0);
+    if(auto window = MainWindow::fromDocument(this)) {
+        window->undoAvailable(!undo_.empty());
     }
 }
 
@@ -1607,11 +1604,14 @@ void DocumentWidget::removeUndoItem() {
 */
 void DocumentWidget::removeRedoItem() {
 
-    // Remove and free the item
+    if (redo_.empty()) {
+        return;
+    }
+
     redo_.pop_front();
 
-    if(MainWindow *window = MainWindow::fromDocument(this)) {
-        window->redoAvailable(redo_.size() != 0);
+    if(auto window = MainWindow::fromDocument(this)) {
+        window->redoAvailable(!redo_.empty());
     }
 }
 
@@ -1798,9 +1798,9 @@ void DocumentWidget::MakeSelectionVisible(TextArea *area) {
        necessary), around 1/3 of the height of the window */
     if (!((left >= topChar && right <= lastChar) || (left <= topChar && right >= lastChar))) {
 
-		int rows = area->getRows();
+        const int rows = area->getRows();
+        const int scrollOffset = rows / 3;
 
-		int scrollOffset = rows / 3;
 		area->TextDGetScroll(&topLineNum, &horizOffset);
         if (right > lastChar) {
             // End of sel. is below bottom of screen
@@ -2020,7 +2020,7 @@ void DocumentWidget::CheckForChangesToFileEx() {
             if (fp) {
                 ::fclose(fp);
 
-                bool readOnly = ::access(fullname.toUtf8().data(), W_OK) != 0;
+                const bool readOnly = ::access(fullname.toUtf8().data(), W_OK) != 0;
 
                 if (lockReasons_.isPermLocked() != readOnly) {
                     lockReasons_.setPermLocked(readOnly);
@@ -2085,7 +2085,7 @@ QString DocumentWidget::FileName() const {
 }
 
 /*
- * Check if the contens of the TextBuffer *buf is equal
+ * Check if the contents of the TextBuffer is equal
  * the contens of the file named fileName. The format of
  * the file (UNIX/DOS/MAC) is handled properly.
  *
@@ -2287,10 +2287,11 @@ bool DocumentWidget::WriteBackupFile() {
         return false;
     }
 
-    // get the text buffer contents and its length
+    // get the text buffer contents
     std::string fileString = buffer_->BufGetAllEx();
 
     // add a terminating newline if the file doesn't already have one
+    // TODO(eteran): should this respect Preferences::GetPrefAppendLF() ?
     if (!fileString.empty() && fileString.back() != '\n') {
         fileString.append("\n");
     }
@@ -2475,7 +2476,6 @@ bool DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
     // NOTE(eteran): this seems a bit redundant to other code...
     if(auto win = MainWindow::fromDocument(this)) {
 
-        int retVal;
         QString fullname;
 
         if(newName.isNull()) {
@@ -2590,10 +2590,7 @@ bool DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
             return doSave();
         }
 
-        /* If the file is open in another window, make user close it.  Note that
-           it is possible for user to close the window by hand while the dialog
-           is still up, because the dialog is not application modal, so after
-           doing the dialog, check again whether the window still exists. */
+        // If the file is open in another window, make user close it.
         if (DocumentWidget *otherWindow = MainWindow::FindWindowWithFile(filename, pathname)) {
 
             QMessageBox messageBox(this);
@@ -2609,6 +2606,10 @@ bool DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
                 return false;
             }
 
+            /*
+             * after doing the dialog, check again whether the window still
+             * exists in case the user somehow closed the window
+             */
             if (otherWindow == MainWindow::FindWindowWithFile(filename, pathname)) {
                 if (!otherWindow->CloseFileAndWindow(CloseMode::Prompt)) {
                     return false;
@@ -2625,7 +2626,7 @@ bool DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
         gid_      = 0;
 
         lockReasons_.clear();
-        retVal = doSave();
+        const int retVal = doSave();
         win->UpdateWindowReadOnly(this);
         RefreshTabState();
 
@@ -2739,7 +2740,7 @@ bool DocumentWidget::writeBckVersion() {
     // open the destination file exclusive and with restrictive permissions.
     int out_fd = ::open(bckname.toUtf8().data(), O_CREAT | O_EXCL | O_TRUNC | O_WRONLY, S_IRUSR | S_IWUSR);
     if (out_fd < 0) {
-        return bckError(tr("Error open backup file"), bckname);
+        return backupError(tr("Error open backup file"), bckname);
     }
 
     auto _2 = gsl::finally([out_fd]() {
@@ -2749,7 +2750,7 @@ bool DocumentWidget::writeBckVersion() {
     // Set permissions on new file
     if (::fchmod(out_fd, statbuf.st_mode) != 0) {
 		QFile::remove(bckname);
-        return bckError(tr("fchmod() failed"), bckname);
+        return backupError(tr("fchmod() failed"), bckname);
     }
 
     // Allocate I/O buffer
@@ -2762,7 +2763,7 @@ bool DocumentWidget::writeBckVersion() {
 
         if (bytes_read < 0) {
 			QFile::remove(bckname);
-            return bckError(tr("read() error"), filename_);
+            return backupError(tr("read() error"), filename_);
         }
 
         if (bytes_read == 0) {
@@ -2773,7 +2774,7 @@ bool DocumentWidget::writeBckVersion() {
         ssize_t bytes_written = ::write(out_fd, io_buffer.data(), static_cast<size_t>(bytes_read));
         if (bytes_written != bytes_read) {
 			QFile::remove(bckname);
-            return bckError(ErrorString(errno), bckname);
+            return backupError(ErrorString(errno), bckname);
         }
     }
 
@@ -2784,12 +2785,12 @@ bool DocumentWidget::writeBckVersion() {
 ** Error processing for writeBckVersion, gives the user option to cancel
 ** the subsequent save, or continue and optionally turn off versioning
 */
-bool DocumentWidget::bckError(const QString &errString, const QString &file) {
+bool DocumentWidget::backupError(const QString &errorMessage, const QString &file) {
 
     QMessageBox messageBox(this);
     messageBox.setWindowTitle(tr("Error writing Backup"));
     messageBox.setIcon(QMessageBox::Critical);
-    messageBox.setText(tr("Couldn't write .bck (last version) file.\n%1: %2").arg(file, errString));
+    messageBox.setText(tr("Couldn't write .bck (last version) file.\n%1: %2").arg(file, errorMessage));
 
     QPushButton *buttonCancelSave = messageBox.addButton(tr("Cancel Save"),      QMessageBox::RejectRole);
     QPushButton *buttonTurnOff    = messageBox.addButton(tr("Turn off Backups"), QMessageBox::AcceptRole);
@@ -2916,7 +2917,7 @@ void DocumentWidget::CloseDocument() {
        window), leave the window alive until the macro completes */
     const bool keepWindow = !MacroWindowCloseActionsEx();
 
-    // Kill shell sub-process and free related memory
+    // Kill shell sub-process
     AbortShellCommandEx();
 
     // Unload the default tips files for this language mode if necessary
@@ -2985,13 +2986,20 @@ void DocumentWidget::CloseDocument() {
     MainWindow::UpdateWindowMenus();
 
     // Close of window running a macro may have been disabled.
+    // NOTE(eteran): this may be redundant...
     MainWindow::CheckCloseDimEx();
-
-    win->ui.action_Move_Tab_To->setEnabled(MainWindow::allWindows().size() > 1);
 
     // if we deleted the last tab, then we can close the window too
     if(win->TabCount() == 0) {
         win->deleteLater();
+        win->setVisible(false);
+    }
+
+    // The number of open windows may have changed...
+    const std::vector<MainWindow *> windows = MainWindow::allWindows();
+    const bool enabled = windows.size() > 1;
+    for(MainWindow *window : windows) {
+        window->ui.action_Move_Tab_To->setEnabled(enabled);
     }
 }
 

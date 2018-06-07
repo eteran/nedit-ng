@@ -254,7 +254,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 
     const std::vector<MainWindow *> windows = MainWindow::allWindows();
     const bool enabled = windows.size() > 1;
-    for(MainWindow *window : MainWindow::allWindows()) {
+    for(MainWindow *window : windows) {
         window->ui.action_Move_Tab_To->setEnabled(enabled);
     }
 }
@@ -1146,7 +1146,12 @@ std::vector<MainWindow *> MainWindow::allWindows() {
 
     for(QWidget *widget : widgets) {
         if(auto window = qobject_cast<MainWindow *>(widget)) {
-            windows.push_back(window);
+
+            // only include visible windows, since we make windows scheduled for
+            // delete inVisible
+            if(window->isVisible()) {
+                windows.push_back(window);
+            }
         }
     }
 

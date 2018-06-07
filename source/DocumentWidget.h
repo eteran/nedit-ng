@@ -194,7 +194,7 @@ private:
     void createSelectMenuEx(TextArea *area, const QStringList &args);
     int findAllMatchesEx(TextArea *area, const QString &string);
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
-    bool bckError(const QString &errString, const QString &file);
+    bool backupError(const QString &errorMessage, const QString &file);
     bool doOpen(const QString &name, const QString &path, int flags);
     bool doSave();
     boost::optional<int64_t> findMatchingCharEx(char toMatch, Style styleToMatch, int64_t charPos, int64_t startLimit, int64_t endLimit);
