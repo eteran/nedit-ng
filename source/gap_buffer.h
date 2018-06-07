@@ -26,8 +26,8 @@ public:
     using const_reference        = typename std::allocator<Ch>::const_reference;
     using pointer                = typename std::allocator<Ch>::pointer;
     using const_pointer          = typename std::allocator<Ch>::const_pointer;
-    using iterator               = gap_buffer_iterator<Ch, Tr>;
-    using const_iterator         = gap_buffer_const_iterator<Ch, Tr>;
+    using iterator               = gap_buffer_iterator<Ch, Tr, false>;
+    using const_iterator         = gap_buffer_iterator<Ch, Tr, true>;
     using reverse_iterator       = std::reverse_iterator<iterator>;
     using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
