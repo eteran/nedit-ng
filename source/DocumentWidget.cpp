@@ -3126,7 +3126,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
                 if (resp == QMessageBox::Cancel) {
                     return false;
                 } else if (msgbox.clickedButton() == exitButton) {
-                    exit(EXIT_SUCCESS);
+                    QApplication::quit();
                 }
             }
 
@@ -3186,7 +3186,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
     // Allocate space for the whole contents of the file (unfortunately)
     try {
-        std::vector<char> fileString(static_cast<size_t>(fileLength) + 1); // +1 = space for null
+        std::vector<char> fileString(static_cast<size_t>(fileLength));
 
         // Read the file into fileString and terminate with a null
         size_t readLen = ::fread(fileString.data(), 1, static_cast<size_t>(fileLength), fp);
@@ -3196,7 +3196,6 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
             filenameSet_ = true;
             return false;
         }
-        fileString[readLen] = '\0';
 
         /* Any errors that happen after this point leave the window in a
            "broken" state, and thus RevertToSaved will abandon the window if
