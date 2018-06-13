@@ -24,7 +24,7 @@ public:
     void setDocument(DocumentWidget *document);
     void setTextField(DocumentWidget *document);
 	void initToggleButtons(SearchType searchType);
-	void fUpdateActionButtons();
+    void updateActionButtons();
 	
 private:
     bool getFindDlogInfoEx(Direction *direction, QString *searchString, SearchType *searchType);

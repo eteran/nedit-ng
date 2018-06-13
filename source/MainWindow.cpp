@@ -2441,7 +2441,7 @@ void MainWindow::action_Find_Dialog(DocumentWidget *document, Direction directio
     dialogFind_->ui.checkKeep->setChecked(keepDialog);
 
     // Set the state of the Find button
-    dialogFind_->fUpdateActionButtons();
+    dialogFind_->updateActionButtons();
 
     // start the search history mechanism at the current history item
     fHistIndex_ = 0;

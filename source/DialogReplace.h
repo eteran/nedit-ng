@@ -26,7 +26,7 @@ public:
     void setDocument(DocumentWidget *document);
     void setTextField(DocumentWidget *document);
 	void initToggleButtons(SearchType searchType);
-	void fUpdateActionButtons();
+	void updateActionButtons();
 	void rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceInWinBtn, bool replaceInSelBtn, bool replaceAllBtn);
 	void UpdateReplaceActionButtons();
     bool getReplaceDlogInfo(Direction *direction, QString *searchString, QString *replaceString, SearchType *searchType);

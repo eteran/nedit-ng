@@ -77,7 +77,7 @@ void DialogFind::keyPressEvent(QKeyEvent *event) {
         ui.textFind->setText(searchStr);
 
 		// Set the state of the Find ... button 
-		fUpdateActionButtons();
+        updateActionButtons();
 
 		window_->fHistIndex_ = index;
 	}
@@ -98,9 +98,9 @@ void DialogFind::on_checkKeep_toggled(bool checked) {
 }
 
 /**
- * @brief DialogFind::fUpdateActionButtons
+ * @brief DialogFind::updateActionButtons
  */
-void DialogFind::fUpdateActionButtons() {
+void DialogFind::updateActionButtons() {
 	bool buttonState = !ui.textFind->text().isEmpty();
 	ui.buttonFind->setEnabled(buttonState);
 }
@@ -111,7 +111,7 @@ void DialogFind::fUpdateActionButtons() {
  */
 void DialogFind::on_textFind_textChanged(const QString &text) {
 	Q_UNUSED(text);
-	fUpdateActionButtons();
+    updateActionButtons();
 }
 
 /*
