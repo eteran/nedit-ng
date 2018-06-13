@@ -39,7 +39,7 @@ struct {
     QString serverCmd; // holds executable name + flags
     QString serverName;
     int timeOut;
-    int autoStart;
+    bool autoStart;
     bool waitForClose;
 } ServerPreferences;
 
