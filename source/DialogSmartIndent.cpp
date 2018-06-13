@@ -323,7 +323,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 	QString errMsg;
 	int stoppedAt = 0;
 
-    Program *prog = ParseMacroEx(widgetText, &errMsg, &stoppedAt);
+    Program *prog = ParseMacro(widgetText, &errMsg, &stoppedAt);
 	if(!prog) {
         Preferences::ParseErrorEx(this, widgetText, stoppedAt, tr("newline macro"), errMsg);
 		QTextCursor cursor = ui.editNewline->textCursor();
@@ -341,7 +341,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 		QString widgetText = ensureNewline(modMacroText);
 		QString errMsg;
 		int stoppedAt = 0;
-        Program *prog = ParseMacroEx(widgetText, &errMsg, &stoppedAt);
+        Program *prog = ParseMacro(widgetText, &errMsg, &stoppedAt);
 
 		if(!prog) {
             Preferences::ParseErrorEx(this, widgetText, stoppedAt, tr("modify macro"), errMsg);

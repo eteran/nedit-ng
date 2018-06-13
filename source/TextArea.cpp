@@ -1053,6 +1053,9 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
     // In Motif, they are apparently still caught, but just do nothing, in Qt, it acts like
     // they don't exist, so they get sent to widgets lower in the chain (such as this one)
     // resulting in the suprising ability to type in some funny characters
+
+    // The following characters work with ALT in nedit : vjouyq1234567890
+    // The following characters work with CTRL in nedit: b34578
     if(event->modifiers() == Qt::ControlModifier) {
         switch(event->key()) {
         case Qt::Key_W:

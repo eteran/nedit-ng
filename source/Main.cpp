@@ -62,7 +62,7 @@ bool checkDoMacroArg(const QString &macro) {
     QString macroString = macro + QLatin1Char('\n');
 
     // Do a test parse
-    Program *const prog = ParseMacroEx(macroString, &errMsg, &stoppedAt);
+    Program *const prog = ParseMacro(macroString, &errMsg, &stoppedAt);
 
     if(!prog) {
         Preferences::ParseErrorEx(nullptr, macroString, stoppedAt, QLatin1String("argument to -do"), errMsg);

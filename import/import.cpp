@@ -129,7 +129,7 @@ QString copyMacroToEnd(Input &in) {
     int stoppedAt;
     QString errMsg;
 
-    Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
+    Program *const prog = ParseMacro(code, &errMsg, &stoppedAt);
     if(!prog) {
         qWarning("Error In Macro/Command String");
         return QString();

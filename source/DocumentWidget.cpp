@@ -4110,7 +4110,7 @@ void DocumentWidget::BeginSmartIndentEx(bool warn) {
     QString errMsg;
 
     auto winData = std::make_unique<SmartIndentData>();
-    winData->newlineMacro   = ParseMacroEx(indentMacros->newlineMacro, &errMsg, &stoppedAt);
+    winData->newlineMacro   = ParseMacro(indentMacros->newlineMacro, &errMsg, &stoppedAt);
 
     if (!winData->newlineMacro) {
         Preferences::ParseErrorEx(this, indentMacros->newlineMacro, stoppedAt, tr("newline macro"), errMsg);
@@ -4120,7 +4120,7 @@ void DocumentWidget::BeginSmartIndentEx(bool warn) {
     if (indentMacros->modMacro.isNull()) {
         winData->modMacro = nullptr;
     } else {
-        winData->modMacro = ParseMacroEx(indentMacros->modMacro, &errMsg, &stoppedAt);
+        winData->modMacro = ParseMacro(indentMacros->modMacro, &errMsg, &stoppedAt);
         if (!winData->modMacro) {
 
             delete winData->newlineMacro;
@@ -5134,7 +5134,7 @@ void DocumentWidget::repeatMacro(const QString &macro, int how) {
     // Parse the resulting macro into an executable program "prog"
     QString errMsg;
     int stoppedAt;
-    Program *const prog = ParseMacroEx(loopedCmd, &errMsg, &stoppedAt);
+    Program *const prog = ParseMacro(loopedCmd, &errMsg, &stoppedAt);
     if(!prog) {
         qWarning("NEdit: internal error, repeat macro syntax wrong: %s", qPrintable(errMsg));
         return;
@@ -6588,7 +6588,7 @@ void DocumentWidget::ReplayEx() {
         QString errMsg;
         int stoppedAt;
 
-        Program *prog = ParseMacroEx(replayMacro, &errMsg, &stoppedAt);
+        Program *prog = ParseMacro(replayMacro, &errMsg, &stoppedAt);
         if(!prog) {
             qWarning("NEdit: internal error, learn/replay macro syntax error: %s", qPrintable(errMsg));
             return;
@@ -6663,7 +6663,7 @@ void DocumentWidget::DoMacroEx(const QString &macro, const QString &errInName) {
 
     // Parse the macro and report errors if it fails
     int stoppedAt;
-    Program *const prog = ParseMacroEx(qMacro, &errMsg, &stoppedAt);
+    Program *const prog = ParseMacro(qMacro, &errMsg, &stoppedAt);
     if(!prog) {
         Preferences::ParseErrorEx(this, qMacro, stoppedAt, errInName, errMsg);
         return;

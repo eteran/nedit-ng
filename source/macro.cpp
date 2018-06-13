@@ -2121,9 +2121,9 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
 
             int stoppedAt;
             QString errMsg;
-            Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
+            Program *const prog = ParseMacro(code, &errMsg, &stoppedAt);
             if(!prog) {
-                if(errPos) {
+                if (errPos) {
                     *errPos = in.index() + stoppedAt;
                 }
 
@@ -2162,7 +2162,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
             QString code = in.mid();
             int stoppedAt;
             QString errMsg;
-            Program *const prog = ParseMacroEx(code, &errMsg, &stoppedAt);
+            Program *const prog = ParseMacro(code, &errMsg, &stoppedAt);
             if(!prog) {
                 if (errPos) {
                     *errPos = in.index() + stoppedAt;

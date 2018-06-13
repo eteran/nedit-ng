@@ -382,7 +382,7 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 	QString errMsg;
 	int stoppedAt;
 
-    Program *prog = ParseMacroEx(macro, &errMsg, &stoppedAt);
+    Program *prog = ParseMacro(macro, &errMsg, &stoppedAt);
 	if(!prog) {
         if(verbosity == Verbosity::Verbose) {
             Preferences::ParseErrorEx(this, macro, stoppedAt, tr("macro"), errMsg);
