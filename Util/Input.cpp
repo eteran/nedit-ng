@@ -4,6 +4,9 @@
 #include <QRegularExpression>
 #include <QString>
 
+Input::Input() : string_(nullptr), index_(-1) {
+}
+
 /**
  * @brief Input::Input
  * @param input
