@@ -606,7 +606,6 @@ void SetMacroFocusDocument(DocumentWidget *document) {
 
 /*
 ** install an array iteration symbol
-** it is tagged as an integer but holds an array node pointer
 */
 Symbol *InstallIteratorSymbol() {
 
@@ -618,8 +617,7 @@ Symbol *InstallIteratorSymbol() {
 }
 
 /*
-** Lookup a constant string by its value. This allows reuse of string
-** constants and fixing a leak in the interpreter.
+** Lookup a constant string by its value.
 */
 Symbol *LookupStringConstSymbol(view::string_view value) {
 
@@ -675,11 +673,11 @@ Symbol *LookupSymbol(view::string_view name) {
 /*
 ** install symbol name in symbol table
 */
-Symbol *InstallSymbolEx(const QString &name, enum SymTypes type, const DataValue &value) {
+Symbol *InstallSymbolEx(const QString &name, SymTypes type, const DataValue &value) {
     return InstallSymbol(name.toStdString(), type, value);
 }
 
-Symbol *InstallSymbol(const std::string &name, enum SymTypes type, const DataValue &value) {
+Symbol *InstallSymbol(const std::string &name, SymTypes type, const DataValue &value) {
 
     auto s = new Symbol { name, type, value };
 
@@ -1446,7 +1444,9 @@ static int logicalNot() {
 ** After:  TheStack-> result, next, ...
 */
 static int power() {
-	int n1, n2, n3;
+    int n1;
+    int n2;
+    int n3;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
@@ -1597,6 +1597,7 @@ static int fetchRetVal() {
 static int returnNoVal() {
     return returnValOrNone(false);
 }
+
 static int returnVal() {
     return returnValOrNone(true);
 }
@@ -1688,6 +1689,7 @@ static int branchTrue() {
 
 	return STAT_OK;
 }
+
 static int branchFalse() {
 	int value;
 

@@ -5361,9 +5361,7 @@ DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProcEx() {
 /*
 ** Continue with macro execution after preemption.  Called by the routines
 ** whose actions cause preemption when they have completed their lengthy tasks.
-** Re-establishes macro execution work proc.  Window must be the window in
-** which the macro is executing (the window to which macroCmdData is attached),
-** and not the window to which operations are focused.
+** Re-establishes macro execution work proc.
 */
 void DocumentWidget::ResumeMacroExecutionEx() {
 
