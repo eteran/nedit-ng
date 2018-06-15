@@ -25,6 +25,7 @@ public:
 
 public:
 	Input &operator+=(int n);
+    Input &operator-=(int n);
 
 public:
 	int operator-(const Input &rhs) const;
@@ -41,6 +42,7 @@ public:
 
 public:
     void consume(const QString &chars);
+    void consume(const QRegularExpression &re);
     bool match(const QString &s);
     bool match(QChar ch);
     bool match(const QRegularExpression &re, QString *m = nullptr);

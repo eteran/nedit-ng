@@ -32,6 +32,15 @@ Input &Input::operator+=(int n) {
 	return *this;
 }
 
+Input &Input::operator-=(int n) {
+    index_ -= n;
+    if(index_ < 0) {
+        index_ = 0;
+    }
+
+    return *this;
+}
+
 /**
  * @brief Input::operator *
  * @return
@@ -203,6 +212,18 @@ void Input::consume(const QString &chars) {
 }
 
 /**
+ * @brief Input::consume
+ * @param re
+ */
+void Input::consume(const QRegularExpression &re) {
+    QRegularExpressionMatch match = re.match(string_, index_, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
+    if(match.hasMatch()) {
+        QString cap = match.captured(0);
+        index_ += cap.size();
+    }
+}
+
+/**
  * @brief match
  * @param re
  * @param m
@@ -222,7 +243,7 @@ bool Input::match(const QRegularExpression &re, QString *m) {
         return true;
     }
 
-    return false;;
+    return false;
 }
 
 /**
