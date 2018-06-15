@@ -470,11 +470,11 @@ static int yylex(void) {
     /* skip whitespace, backslash-newline combinations, and comments, which are
        all considered whitespace */
     for (;;) {
-        if (*InPtr == QLatin1Char('\\') && *(InPtr + 1) == QLatin1Char('\n'))
+        if (*InPtr == QLatin1Char('\\') && *(InPtr + 1) == QLatin1Char('\n')) {
             InPtr += 2;
-        else if (*InPtr == QLatin1Char(' ') || *InPtr == QLatin1Char('\t'))
+        } else if (*InPtr == QLatin1Char(' ') || *InPtr == QLatin1Char('\t')) {
             InPtr++;
-        else if (*InPtr == QLatin1Char('#'))
+        } else if (*InPtr == QLatin1Char('#')) {
             while (*InPtr != QLatin1Char('\n') && InPtr != EndPtr) {
                 /* Comments stop at escaped newlines */
                 if (*InPtr == QLatin1Char('\\') && *(InPtr + 1) == QLatin1Char('\n')) {
@@ -482,8 +482,10 @@ static int yylex(void) {
                     break;
                 }
                 InPtr++;
-            }        else
+            }
+        } else {
             break;
+        }
     }
 
     /* return end of input at the end of the string */

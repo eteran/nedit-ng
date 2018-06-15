@@ -30,6 +30,7 @@ public:
 public:
 	int operator-(const Input &rhs) const;
 	Input operator+(int rhs) const;
+    Input operator-(int rhs) const;
 
 public:
 	bool operator==(const Input &rhs) const;

@@ -177,6 +177,17 @@ Input Input::operator+(int rhs) const {
 }
 
 /**
+ * @brief Input::operator -
+ * @param rhs
+ * @return
+ */
+Input Input::operator-(int rhs) const {
+    Input next = *this;
+    next -= rhs;
+    return next;
+}
+
+/**
  * @brief Input::operator ==
  * @param rhs
  * @return
