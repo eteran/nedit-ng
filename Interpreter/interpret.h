@@ -148,6 +148,7 @@ Inst *GetPC();
 Program *FinishCreatingProgram();
 Symbol *InstallIteratorSymbol();
 Symbol *InstallStringConstSymbol(view::string_view str);
+Symbol *InstallStringConstSymbolEx(const QString &str);
 Symbol *InstallSymbol(const std::string &name, SymTypes type, const DataValue &value);
 Symbol *InstallSymbolEx(const QString &name, enum SymTypes type, const DataValue &value);
 Symbol *LookupStringConstSymbol(view::string_view value);

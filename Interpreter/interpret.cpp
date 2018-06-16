@@ -629,6 +629,10 @@ Symbol *LookupStringConstSymbol(view::string_view value) {
 	return nullptr;
 }
 
+Symbol *InstallStringConstSymbolEx(const QString &str) {
+    return InstallStringConstSymbol(str.toStdString());
+}
+
 /*
 ** install string str in the global symbol table with a string name
 */
