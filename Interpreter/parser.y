@@ -544,8 +544,8 @@ static int yylex(void) {
         }
 
 
-        if ((s = LookupSymbol(symName.toStdString())) == nullptr) {
-            s = InstallSymbol(symName.toStdString(),
+        if ((s = LookupSymbolEx(symName)) == nullptr) {
+            s = InstallSymbolEx(symName,
                               symName[0]==QLatin1Char('$') ? (((symName[1] > QLatin1Char('0') && symName[1] <= QLatin1Char('9')) && symName.size() == 2) ? ARG_SYM : GLOBAL_SYM) : LOCAL_SYM,
                               make_value());
         }
@@ -664,7 +664,7 @@ static int yylex(void) {
         }
 
         InPtr++;
-        yylval.sym = InstallStringConstSymbol(string.toStdString());
+        yylval.sym = InstallStringConstSymbolEx(string);
         return STRING;
     }
 
