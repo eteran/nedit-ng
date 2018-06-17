@@ -146,8 +146,8 @@ public Q_SLOTS:
     void action_Execute_Command_Line(DocumentWidget *document);
     void action_Exit(DocumentWidget *document);
     void action_Fill_Paragraph(DocumentWidget *document);
-    void action_Filter_Selection(DocumentWidget *document);
-    void action_Filter_Selection(DocumentWidget *document, const QString &filter);
+    void action_Filter_Selection(DocumentWidget *document, CommandSource source);
+    void action_Filter_Selection(DocumentWidget *document, const QString &filter, CommandSource source);
     void action_Find_Again(DocumentWidget *document, Direction direction, WrapMode wrap);
     void action_Replace_Find_Again(DocumentWidget *document, Direction direction, WrapMode wrap);
     void action_Find_Definition(DocumentWidget *document);

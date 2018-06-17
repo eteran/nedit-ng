@@ -4876,13 +4876,13 @@ void DocumentWidget::ExecCursorLineEx(TextArea *area, CommandSource source) {
 
 }
 
-void DocumentWidget::filterSelection(const QString &filterText) {
+void DocumentWidget::filterSelection(const QString &command, CommandSource source) {
 
     if (CheckReadOnly()) {
         return;
     }
 
-    FilterSelection(filterText, CommandSource::User);
+    FilterSelection(command, source);
 }
 
 /*
@@ -5336,6 +5336,12 @@ void DocumentWidget::finishMacroCmdExecutionEx() {
  */
 DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProcEx() {
 
+
+    // on the last loop, it may have been set to nullptr!
+    if(!macroCmdData_) {
+        return MacroContinuationCode::Stop;
+    }
+
     QString errMsg;
     DataValue result;
     const int stat = ContinueMacroEx(macroCmdData_->context, &result, &errMsg);
@@ -5371,11 +5377,14 @@ void DocumentWidget::ResumeMacroExecutionEx() {
         connect(&cmdData->continuationTimer, &QTimer::timeout, this, [cmdData, this]() {
             if(continueWorkProcEx() == MacroContinuationCode::Stop) {
                 cmdData->continuationTimer.stop();
+                cmdData->continuationTimer.disconnect();
+            } else {
             }
         });
 
         // a timeout of 0 means "run whenever the event loop is idle"
         cmdData->continuationTimer.start(0);
+
     }
 }
 

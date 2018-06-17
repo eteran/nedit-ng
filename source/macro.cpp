@@ -594,6 +594,24 @@ static const SubRoutine TextAreaSubrNames[] = {
 #endif
 };
 
+#define WINDOW_MENU_EVENT_SM(routineName, slotName)                                                                           \
+    static std::error_code routineName(DocumentWidget *document, Arguments arguments, DataValue *result) {                    \
+                                                                                                                              \
+        /* ensure that we are dealing with the document which currently has the focus */                                      \
+        document = MacroRunDocumentEx();                                                                                      \
+                                                                                                                              \
+        QString string;                                                                                                       \
+        if(std::error_code ec = readArguments(arguments, 0, &string)) {                                                       \
+            return ec;                                                                                                        \
+        }                                                                                                                     \
+                                                                                                                              \
+        if(auto window = MainWindow::fromDocument(document)) {                                                                \
+            window->slotName(document, string, CommandSource::Macro);                                                         \
+        }                                                                                                                     \
+                                                                                                                              \
+        *result = make_value();                                                                                               \
+        return MacroErrorCode::Success;                                                                                       \
+    }
 
 #define WINDOW_MENU_EVENT_S(routineName, slotName)                                                                            \
     static std::error_code routineName(DocumentWidget *document, Arguments arguments, DataValue *result) {                    \
@@ -612,6 +630,24 @@ static const SubRoutine TextAreaSubrNames[] = {
                                                                                                                               \
         *result = make_value();                                                                                               \
         return MacroErrorCode::Success;                                                                                       \
+    }
+
+#define WINDOW_MENU_EVENT_M(routineName, slotName)                                                                                \
+    static std::error_code routineName(DocumentWidget *document, Arguments arguments, DataValue *result) {                      \
+                                                                                                                                \
+        /* ensure that we are dealing with the document which currently has the focus */                                        \
+        document = MacroRunDocumentEx();                                                                                        \
+                                                                                                                                \
+        if(!arguments.empty()) {                                                                                                \
+            return MacroErrorCode::WrongNumberOfArguments;                                                                      \
+        }                                                                                                                       \
+                                                                                                                                \
+        if(auto window = MainWindow::fromDocument(document)) {                                                                  \
+            window->slotName(document, CommandSource::Macro);                                                                                         \
+        }                                                                                                                       \
+                                                                                                                                \
+        *result = make_value();                                                                                                 \
+        return MacroErrorCode::Success;                                                                                         \
     }
 
 #define WINDOW_MENU_EVENT(routineName, slotName)                                                                                \
@@ -634,6 +670,10 @@ static const SubRoutine TextAreaSubrNames[] = {
 
 // These emit functions to support calling them from macros, see WINDOW_MENU_EVENT for what
 // these functions will look like
+WINDOW_MENU_EVENT_SM(filterSelectionMS,              action_Filter_Selection)
+
+WINDOW_MENU_EVENT_M(filterSelectionDialogMS,         action_Filter_Selection)
+
 WINDOW_MENU_EVENT_S(includeFileMS,                   action_Include_File)
 WINDOW_MENU_EVENT_S(gotoLineNumberMS,                action_Goto_Line_Number)
 WINDOW_MENU_EVENT_S(openMS,                          action_Open)
@@ -643,7 +683,6 @@ WINDOW_MENU_EVENT_S(unloadTagsFileMS,                action_Unload_Tags_File)
 WINDOW_MENU_EVENT_S(loadTipsFileMS,                  action_Load_Tips_File)
 WINDOW_MENU_EVENT_S(unloadTipsFileMS,                action_Unload_Tips_File)
 WINDOW_MENU_EVENT_S(markMS,                          action_Mark)
-WINDOW_MENU_EVENT_S(filterSelectionMS,               action_Filter_Selection)
 WINDOW_MENU_EVENT_S(executeCommandMS,                action_Execute_Command)
 WINDOW_MENU_EVENT_S(shellMenuCommandMS,              action_Shell_Menu_Command)
 WINDOW_MENU_EVENT_S(macroMenuCommandMS,              action_Macro_Menu_Command)
@@ -681,7 +720,6 @@ WINDOW_MENU_EVENT(revertToSavedMS,                   action_Revert_to_Saved)
 WINDOW_MENU_EVENT(markDialogMS,                      action_Mark)
 WINDOW_MENU_EVENT(showTipMS,                         action_Show_Calltip)
 WINDOW_MENU_EVENT(selectToMatchingMS,                action_Shift_Goto_Matching)
-WINDOW_MENU_EVENT(filterSelectionDialogMS,           action_Filter_Selection)
 WINDOW_MENU_EVENT(executeCommandDialogMS,            action_Execute_Command)
 WINDOW_MENU_EVENT(executeCommandLineMS,              action_Execute_Command_Line)
 WINDOW_MENU_EVENT(repeatMacroDialogMS,               action_Repeat)
@@ -3133,7 +3171,7 @@ static std::error_code dialogMS(DocumentWidget *document, Arguments arguments, D
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
     document = MacroRunDocumentEx();
-    const std::shared_ptr<MacroCommandData> &cmdData = document->macroCmdData_;
+    const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_;
 
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
@@ -3161,11 +3199,11 @@ static std::error_code dialogMS(DocumentWidget *document, Arguments arguments, D
     // Stop macro execution until the dialog is complete
     PreemptMacro();
 
-    // Return placeholder result.  Value will be changed by button callback
+    // Return placeholder result. Value will be changed by button callback
     *result = make_value(0);
 
     // NOTE(eteran): passing document here breaks things...
-    auto prompt = std::make_unique<DialogPrompt>(nullptr);
+    auto prompt = std::make_shared<DialogPrompt>(nullptr);
     prompt->setMessage(message);
     if (arguments.size() == 1) {
         prompt->addButton(QDialogButtonBox::Ok);
@@ -3177,12 +3215,16 @@ static std::error_code dialogMS(DocumentWidget *document, Arguments arguments, D
             prompt->addButton(btnLabel);
         }
     }
-    prompt->exec();
 
-    *result = make_value(prompt->result());
-    ModifyReturnedValueEx(cmdData->context, *result);
+    QObject::connect(prompt.get(), &QDialog::finished, [prompt, document, cmdData](int) {
+        auto result = make_value(prompt->result());
+        ModifyReturnedValueEx(cmdData->context, result);
 
-    document->ResumeMacroExecutionEx();
+        document->ResumeMacroExecutionEx();
+    });
+
+    prompt->setWindowModality(Qt::NonModal);
+    prompt->show();
     return MacroErrorCode::Success;
 }
 
@@ -3227,7 +3269,7 @@ static std::error_code stringDialogMS(DocumentWidget *document, Arguments argume
     *result = make_value(0);
 
     // NOTE(eteran): passing document here breaks things...
-    auto prompt = std::make_unique<DialogPromptString>(nullptr);
+    auto prompt = std::make_shared<DialogPromptString>(nullptr);
     prompt->setMessage(message);
     if (arguments.size() == 1) {
         prompt->addButton(QDialogButtonBox::Ok);
@@ -3239,15 +3281,19 @@ static std::error_code stringDialogMS(DocumentWidget *document, Arguments argume
             prompt->addButton(btnLabel);
         }
     }
-    prompt->exec();
 
-    // Return the button number in the global variable $string_dialog_button
-    ReturnGlobals[STRING_DIALOG_BUTTON]->value = make_value(prompt->result());
+    QObject::connect(prompt.get(), &QDialog::finished, [prompt, document, cmdData](int) {
+        // Return the button number in the global variable $string_dialog_button
+        ReturnGlobals[STRING_DIALOG_BUTTON]->value = make_value(prompt->result());
 
-    *result = make_value(prompt->text());
-    ModifyReturnedValueEx(cmdData->context, *result);
+        auto result = make_value(prompt->text());
+        ModifyReturnedValueEx(cmdData->context, result);
 
-    document->ResumeMacroExecutionEx();
+        document->ResumeMacroExecutionEx();
+    });
+
+    prompt->setWindowModality(Qt::NonModal);
+    prompt->show();
     return MacroErrorCode::Success;
 }
 
@@ -3609,7 +3655,7 @@ static std::error_code listDialogMS(DocumentWidget *document, Arguments argument
     *result = make_value(0);
 
     // NOTE(eteran): passing document here breaks things...
-    auto prompt = std::make_unique<DialogPromptList>(nullptr);
+    auto prompt = std::make_shared<DialogPromptList>(nullptr);
     prompt->setMessage(message);
     prompt->setList(text);
 
@@ -3624,15 +3670,18 @@ static std::error_code listDialogMS(DocumentWidget *document, Arguments argument
         }
     }
 
-    prompt->exec();
+    QObject::connect(prompt.get(), &QDialog::finished, [prompt, document, cmdData](int) {
+        // Return the button number in the global variable $string_dialog_button
+        ReturnGlobals[STRING_DIALOG_BUTTON]->value = make_value(prompt->result());
 
-    // Return the button number in the global variable $string_dialog_button
-    ReturnGlobals[STRING_DIALOG_BUTTON]->value = make_value(prompt->result());
+        auto result = make_value(prompt->text());
+        ModifyReturnedValueEx(cmdData->context, result);
 
-    *result = make_value(prompt->text());
-    ModifyReturnedValueEx(cmdData->context, *result);
+        document->ResumeMacroExecutionEx();
+    });
 
-    document->ResumeMacroExecutionEx();
+    prompt->setWindowModality(Qt::NonModal);
+    prompt->show();
     return MacroErrorCode::Success;
 }
 

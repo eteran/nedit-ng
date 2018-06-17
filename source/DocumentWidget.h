@@ -239,7 +239,7 @@ private:
     void executeModMacroEx(SmartIndentEvent *cbInfo);
     void executeNewlineMacroEx(SmartIndentEvent *cbInfo);
     void FilterSelection(const QString &command, CommandSource source);
-    void filterSelection(const QString &filterText);
+    void filterSelection(const QString &command, CommandSource source);
     void FinishLearnEx();
     void FlashMatchingEx(TextArea *area);
     void FreeHighlightingDataEx();

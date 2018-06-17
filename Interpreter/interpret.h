@@ -118,7 +118,10 @@ struct Program {
 
 /* Information needed to re-start a preempted macro */
 struct MacroContext {
-    DataValue Stack[STACK_SIZE];             // the stack
+
+    using stack_type = std::shared_ptr<DataValue>;
+
+    stack_type Stack;                        // the stack
     DataValue *StackP             = nullptr; // next free spot on stack
     DataValue *FrameP             = nullptr; // frame pointer (start of local variables for the current subroutine invocation)
     Inst *PC                      = nullptr; // program counter during execution
@@ -161,7 +164,7 @@ void SwapCode(Inst *start, Inst *boundary, Inst *end);
 
 /* Routines for executing programs */
 int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg);
-int ContinueMacroEx(std::shared_ptr<MacroContext> &continuation, DataValue *result, QString *msg);
+int ContinueMacroEx(const std::shared_ptr<MacroContext> &continuation, DataValue *result, QString *msg);
 void RunMacroAsSubrCall(Program *prog);
 void PreemptMacro();
 

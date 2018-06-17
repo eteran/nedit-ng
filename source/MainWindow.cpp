@@ -93,7 +93,7 @@ boost::optional<CharacterLocation> StringToLineAndCol(const QString &text) {
                                            "\\s*"
                                            "([:,]"
                                            "\\s*"
-                                           "(?<col>[-+]?[1-9]\\d*))?"
+                                           "(?<col>[-+]?[1-9]\\d*)?)?"
                                            "\\s*"
                                            "$"
                                            ));
@@ -5599,7 +5599,7 @@ void MainWindow::on_action_Show_Calltip_triggered() {
  * @brief MainWindow::action_Filter_Selection
  * @param document
  */
-void MainWindow::action_Filter_Selection(DocumentWidget *document) {
+void MainWindow::action_Filter_Selection(DocumentWidget *document, CommandSource source) {
 
     if (document->CheckReadOnly()) {
         return;
@@ -5618,7 +5618,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document) {
     }
 
     QString filterText = dialog->ui.textFilter->text();
-    action_Filter_Selection(document, filterText);
+    action_Filter_Selection(document, filterText, source);
 }
 
 /**
@@ -5627,7 +5627,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document) {
 void MainWindow::on_action_Filter_Selection_triggered() {
 
     if(DocumentWidget *document = currentDocument()) {
-        action_Filter_Selection(document);
+        action_Filter_Selection(document, CommandSource::User);
     }
 }
 
@@ -5635,7 +5635,7 @@ void MainWindow::on_action_Filter_Selection_triggered() {
  * @brief action_Filter_Selection
  * @param filter
  */
-void MainWindow::action_Filter_Selection(DocumentWidget *document, const QString &filter) {
+void MainWindow::action_Filter_Selection(DocumentWidget *document, const QString &filter, CommandSource source) {
 
     emit_event("filter_selection", filter);
 
@@ -5649,7 +5649,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, const QString
     }
 
     if(!filter.isEmpty()) {
-        document->filterSelection(filter);
+        document->filterSelection(filter, source);
     }
 }
 

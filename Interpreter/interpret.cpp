@@ -52,7 +52,7 @@ Inst *LoopStack[LOOP_STACK_SIZE];      // addresses of break, cont stmts
 Inst **LoopStackPtr = LoopStack;       //  to fill at the end of a loop
 
 // Global data for the interpreter
-std::shared_ptr<MacroContext> Context;
+MacroContext Context;
 
 char *ErrMsg;                           // global for returning error messages from executing functions
 bool PreemptRequest;                    // passes preemption requests from called routines back up to the interpreter
@@ -72,6 +72,29 @@ int              FP_ARG_START_INDEX(const DataValue *FrameP)    { return -(FP_GE
 const DataValue& FP_GET_ARG_N(const DataValue *FrameP, int n)   { return FrameP[n + FP_ARG_START_INDEX(FrameP)];        }
 DataValue&       FP_GET_SYM_N(DataValue *FrameP, int n)         { return FrameP[n];                                     }
 DataValue&       FP_GET_SYM_VAL(DataValue *FrameP, Symbol *sym) { return FP_GET_SYM_N(FrameP, to_integer(sym->value));  }
+
+/*
+** Save and restore execution context to data structure "context"
+*/
+template <class Pointer>
+void saveContext(Pointer context) {
+    context->Stack         = Context.Stack;
+    context->StackP        = Context.StackP;
+    context->FrameP        = Context.FrameP;
+    context->PC            = Context.PC;
+    context->RunDocument   = Context.RunDocument;
+    context->FocusDocument = Context.FocusDocument;
+}
+
+template <class Pointer>
+void restoreContext(Pointer context) {
+    Context.Stack         = context->Stack;
+    Context.StackP        = context->StackP;
+    Context.FrameP        = context->FrameP;
+    Context.PC            = context->PC;
+    Context.RunDocument   = context->RunDocument;
+    Context.FocusDocument = context->FocusDocument;
+}
 
 }
 
@@ -440,8 +463,14 @@ int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue>
     /* Create an execution context (a stack, a stack pointer, a frame pointer,
        and a program counter) which will retain the program state across
        preemption and resumption of execution */
+
+    auto deleter = [](DataValue *ptr) {
+        delete [] ptr;
+    };
+
     auto context = std::make_shared<MacroContext>();
-    context->StackP        = context->Stack;
+    context->Stack         = std::shared_ptr<DataValue>(new DataValue[STACK_SIZE], deleter);
+    context->StackP        = context->Stack.get();
     context->PC            = prog->code.data();
     context->RunDocument   = document;
     context->FocusDocument = document;
@@ -474,40 +503,45 @@ int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue>
 ** Continue the execution of a suspended macro whose state is described in
 ** "continuation"
 */
-int ContinueMacroEx(std::shared_ptr<MacroContext> &continuation, DataValue *result, QString *msg) {
+int ContinueMacroEx(const std::shared_ptr<MacroContext> &continuation, DataValue *result, QString *msg) {
 
 	int instCount = 0;
 
     /* To allow macros to be invoked arbitrarily (such as those automatically
        triggered within smart-indent) within executing macros, this call is
        reentrant. */
-    std::shared_ptr<MacroContext> oldContext = std::exchange(Context, continuation);
+    MacroContext oldContext;
+    saveContext(&oldContext);
+
+    Q_ASSERT(continuation);
 
     /*
     ** Execution Loop:  Call the succesive routine addresses in the program
     ** until one returns something other than STAT_OK, then take action
     */
+    restoreContext(continuation);
     ErrMsg = nullptr;
     Q_FOREVER {
 
         // Execute an instruction
-        Inst *inst = Context->PC++;
+        Inst *inst = Context.PC++;
 
         auto status = static_cast<OpStatusCodes>(inst->func());
 
         // If error return was not STAT_OK, return to caller
         switch(status) {
         case STAT_PREEMPT:
-            continuation = std::exchange(Context, oldContext);
+            saveContext(continuation);
+            restoreContext(&oldContext);
             return MACRO_PREEMPT;
         case STAT_ERROR:
             *msg = QString::fromLatin1(ErrMsg);
-            Context = oldContext;
+            restoreContext(&oldContext);
             return MACRO_ERROR;
         case STAT_DONE:
             *msg = QString();
-            *result = *--Context->StackP;
-            Context = oldContext;
+            *result = *--Context.StackP;
+            restoreContext(&oldContext);
             return MACRO_DONE;
         case STAT_OK:
             break;
@@ -519,7 +553,8 @@ int ContinueMacroEx(std::shared_ptr<MacroContext> &continuation, DataValue *resu
 		++instCount;
 #if defined(ENABLE_PREEMPTION)
         if (instCount >= INSTRUCTION_LIMIT) {
-            continuation = std::exchange(Context, oldContext);
+            saveContext(continuation);
+            restoreContext(&oldContext);
             return MACRO_TIME_LIMIT;
         }
 #endif
@@ -537,17 +572,17 @@ void RunMacroAsSubrCall(Program *prog) {
 
 	/* See subroutine "callSubroutine" for a description of the stack frame
        for a subroutine call */
-    *Context->StackP++ = make_value(Context->PC);     // return PC
-    *Context->StackP++ = make_value(Context->FrameP); // old FrameP
-    *Context->StackP++ = make_value(0);               // nArgs
-    *Context->StackP++ = make_value();                // cached arg array
+    *Context.StackP++ = make_value(Context.PC);     // return PC
+    *Context.StackP++ = make_value(Context.FrameP); // old FrameP
+    *Context.StackP++ = make_value(0);               // nArgs
+    *Context.StackP++ = make_value();                // cached arg array
 
-    Context->FrameP = Context->StackP;
-    Context->PC = prog->code.data();
+    Context.FrameP = Context.StackP;
+    Context.PC = prog->code.data();
 
     for(Symbol *s : prog->localSymList) {
-        FP_GET_SYM_VAL(Context->FrameP, s) = make_value();
-        Context->StackP++;
+        FP_GET_SYM_VAL(Context.FrameP, s) = make_value();
+        Context.StackP++;
 	}
 }
 
@@ -576,11 +611,7 @@ void ModifyReturnedValueEx(const std::shared_ptr<MacroContext> &context, const D
 ** which the macro is executing (where the banner is, not where it is focused)
 */
 DocumentWidget *MacroRunDocumentEx() {
-    if(Context) {
-        return Context->RunDocument;
-    }
-
-    return nullptr;
+    return Context.RunDocument;
 }
 
 /*
@@ -589,11 +620,7 @@ DocumentWidget *MacroRunDocumentEx() {
 ** modify, not the window from which the macro is being run)
 */
 DocumentWidget *MacroFocusDocument() {
-    if(Context) {
-        return Context->FocusDocument;
-    }
-
-    return nullptr;
+    return Context.FocusDocument;
 }
 
 /*
@@ -601,7 +628,7 @@ DocumentWidget *MacroFocusDocument() {
 ** implied window are directed.
 */
 void SetMacroFocusDocument(DocumentWidget *document) {
-    Context->FocusDocument = document;
+    Context.FocusDocument = document;
 }
 
 /*
@@ -743,33 +770,33 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 
 #define POP(dataVal)                                                           \
     do {                                                                       \
-        if (Context->StackP == Context->Stack)                                 \
+        if (Context.StackP == Context.Stack.get())                                 \
             return execError(StackUnderflowMsg);                               \
-        dataVal = *--Context->StackP;                                          \
+        dataVal = *--Context.StackP;                                          \
     } while(0)
 
 #define PUSH(dataVal)                                                          \
     do {                                                                       \
-        if (Context->StackP >= &Context->Stack[STACK_SIZE])                    \
+        if (Context.StackP >= &Context.Stack.get()[STACK_SIZE])                    \
             return execError(StackOverflowMsg);                                \
-        *Context->StackP++ = dataVal;                                          \
+        *Context.StackP++ = dataVal;                                          \
     } while(0)
 
 #define PEEK(dataVal, peekIndex)                                               \
     do {                                                                       \
-        dataVal = *(Context->StackP - peekIndex - 1);                          \
+        dataVal = *(Context.StackP - peekIndex - 1);                          \
     } while(0)
 
 #define POP_INT(number)                                                        \
     do {                                                                       \
-        if (Context->StackP == Context->Stack)                                 \
+        if (Context.StackP == Context.Stack.get())                                 \
             return execError(StackUnderflowMsg);                               \
-        --Context->StackP;                                                     \
-        if (is_string(*Context->StackP)) {                                     \
-            if (!StringToNum(to_string(*Context->StackP), &number))            \
+        --Context.StackP;                                                     \
+        if (is_string(*Context.StackP)) {                                     \
+            if (!StringToNum(to_string(*Context.StackP), &number))            \
                 return execError(StringToNumberMsg);                           \
-        } else if (is_integer(*Context->StackP))                               \
-            number = to_integer(*Context->StackP);                             \
+        } else if (is_integer(*Context.StackP))                               \
+            number = to_integer(*Context.StackP);                             \
         else                                                                   \
             return execError(CantConvertArrayToInteger);                       \
     } while(0)
@@ -777,13 +804,13 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 
 #define POP_STRING(string_ref)                                                 \
     do {                                                                       \
-        if (Context->StackP == Context->Stack)                                 \
+        if (Context.StackP == Context.Stack.get())                                 \
             return execError(StackUnderflowMsg);                               \
-        --Context->StackP;                                                     \
-        if (is_integer(*Context->StackP)) {                                    \
-            string_ref = std::to_string(to_integer(*Context->StackP));         \
-        } else if (is_string(*Context->StackP)) {                              \
-            string_ref = to_string(*Context->StackP);                          \
+        --Context.StackP;                                                     \
+        if (is_integer(*Context.StackP)) {                                    \
+            string_ref = std::to_string(to_integer(*Context.StackP));         \
+        } else if (is_string(*Context.StackP)) {                              \
+            string_ref = to_string(*Context.StackP);                          \
         } else {                                                               \
             return execError(CantConvertArrayToString);                        \
         }                                                                      \
@@ -791,17 +818,17 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 
 #define PUSH_INT(number)                                                       \
     do {                                                                       \
-        if (Context->StackP >= &Context->Stack[STACK_SIZE])                    \
+        if (Context.StackP >= &Context.Stack.get()[STACK_SIZE])                    \
             return execError(StackOverflowMsg);                                \
-        *Context->StackP++ = make_value(number);                               \
+        *Context.StackP++ = make_value(number);                               \
     } while(0)
 
 
 #define PUSH_STRING(string)                                                    \
     do {                                                                       \
-        if (Context->StackP >= &Context->Stack[STACK_SIZE])                    \
+        if (Context.StackP >= &Context.Stack.get()[STACK_SIZE])                    \
             return execError(StackOverflowMsg);                                \
-        *Context->StackP++ = make_value(string);                               \
+        *Context.StackP++ = make_value(string);                               \
     } while(0)
 
 #define BINARY_NUMERIC_OPERATION(op)                                           \
@@ -840,14 +867,14 @@ static int pushSymVal() {
 	DISASM_RT(PC - 1, 2);
 	STACKDUMP(0, 3);
 
-    Symbol *s = Context->PC++->sym;
+    Symbol *s = Context.PC++->sym;
 
 	if (s->type == LOCAL_SYM) {
-        symVal = FP_GET_SYM_VAL(Context->FrameP, s);
+        symVal = FP_GET_SYM_VAL(Context.FrameP, s);
 	} else if (s->type == GLOBAL_SYM || s->type == CONST_SYM) {
 		symVal = s->value;
 	} else if (s->type == ARG_SYM) {
-        int nArgs = FP_GET_ARG_COUNT(Context->FrameP);
+        int nArgs = FP_GET_ARG_COUNT(Context.FrameP);
         int argNum = to_integer(s->value);
 		if (argNum >= nArgs) {
 			return execError("referenced undefined argument: %s", s->name.c_str());
@@ -855,11 +882,11 @@ static int pushSymVal() {
 		if (argNum == N_ARGS_ARG_SYM) {
             symVal = make_value(nArgs);
 		} else {
-            symVal = FP_GET_ARG_N(Context->FrameP, argNum);
+            symVal = FP_GET_ARG_N(Context.FrameP, argNum);
 		}
 	} else if (s->type == PROC_VALUE_SYM) {
 
-        if (std::error_code ec = (to_subroutine(s->value))(Context->FocusDocument, {}, &symVal)) {
+        if (std::error_code ec = (to_subroutine(s->value))(Context.FocusDocument, {}, &symVal)) {
             return execError(ec, s->name.c_str());
 		}
 	} else
@@ -883,12 +910,12 @@ static int pushArgVal() {
     POP_INT(argNum);
 	--argNum;
 
-    const int nArgs = FP_GET_ARG_COUNT(Context->FrameP);
+    const int nArgs = FP_GET_ARG_COUNT(Context.FrameP);
 	if (argNum >= nArgs || argNum < 0) {
         auto argStr = std::to_string(argNum + 1);
         return execError("referenced undefined argument: $args[%s]", argStr.c_str());
 	}
-    PUSH(FP_GET_ARG_N(Context->FrameP, argNum));
+    PUSH(FP_GET_ARG_N(Context.FrameP, argNum));
 	return STAT_OK;
 }
 
@@ -896,7 +923,7 @@ static int pushArgCount() {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(0, 3);
 
-    PUSH_INT(FP_GET_ARG_COUNT(Context->FrameP));
+    PUSH_INT(FP_GET_ARG_COUNT(Context.FrameP));
 	return STAT_OK;
 }
 
@@ -907,8 +934,8 @@ static int pushArgArray() {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(0, 3);
 
-    int nArgs = FP_GET_ARG_COUNT(Context->FrameP);
-    DataValue *resultArray = &FP_GET_ARG_ARRAY_CACHE(Context->FrameP);
+    int nArgs = FP_GET_ARG_COUNT(Context.FrameP);
+    DataValue *resultArray = &FP_GET_ARG_ARRAY_CACHE(Context.FrameP);
 
     if (!is_array(*resultArray)) {
 
@@ -918,7 +945,7 @@ static int pushArgArray() {
 
 			auto intStr = std::to_string(argNum);
 
-            argVal = FP_GET_ARG_N(Context->FrameP, argNum);
+            argVal = FP_GET_ARG_N(Context.FrameP, argNum);
             if (!ArrayInsert(resultArray, intStr, &argVal)) {
 				return execError("array insertion failure");
 			}
@@ -945,11 +972,11 @@ static int pushArraySymVal() {
 	DISASM_RT(PC - 1, 3);
 	STACKDUMP(0, 3);
 
-    Symbol *sym       = Context->PC++->sym;
-    int64_t initEmpty = Context->PC++->value;
+    Symbol *sym       = Context.PC++->sym;
+    int64_t initEmpty = Context.PC++->value;
 
 	if (sym->type == LOCAL_SYM) {
-        dataPtr = &FP_GET_SYM_VAL(Context->FrameP, sym);
+        dataPtr = &FP_GET_SYM_VAL(Context.FrameP, sym);
 	} else if (sym->type == GLOBAL_SYM) {
 		dataPtr = &sym->value;
 	} else {
@@ -985,11 +1012,11 @@ static int assign() {
 	DISASM_RT(PC - 1, 2);
 	STACKDUMP(1, 3);
 
-    Symbol *sym = Context->PC++->sym;
+    Symbol *sym = Context.PC++->sym;
 
     switch(sym->type) {
     case LOCAL_SYM:
-        dataPtr = &FP_GET_SYM_VAL(Context->FrameP, sym);
+        dataPtr = &FP_GET_SYM_VAL(Context.FrameP, sym);
         break;
     case GLOBAL_SYM:
         dataPtr = &sym->value;
@@ -1525,8 +1552,8 @@ static int concat() {
 */
 static int callSubroutine() {
 
-    Symbol *sym = Context->PC++->sym;
-    int64_t nArgs   = Context->PC++->value;
+    Symbol *sym = Context.PC++->sym;
+    int64_t nArgs   = Context.PC++->value;
 
 	DISASM_RT(PC - 3, 3);
 	STACKDUMP(nArgs, 3);
@@ -1538,24 +1565,25 @@ static int callSubroutine() {
 		DataValue result;
 
 		// "pop" stack back to the first argument in the call stack 
-        Context->StackP -= nArgs;
+        Context.StackP -= nArgs;
 
 		// Call the function and check for preemption 
         PreemptRequest = false;
 
-        if (std::error_code ec = to_subroutine(sym->value)(Context->FocusDocument, Arguments(Context->StackP, nArgs), &result)) {
+        if (std::error_code ec = to_subroutine(sym->value)(Context.FocusDocument, Arguments(Context.StackP, nArgs), &result)) {
             return execError(ec, sym->name.c_str());
         }
 
-        if (Context->PC->func == fetchRetVal) {
+        if (Context.PC->func == fetchRetVal) {
 
             if (is_unset(result)) {
                 return execError("%s does not return a value", sym->name.c_str());
             }
 
             PUSH(result);
-            Context->PC++;
+            Context.PC++;
         }
+
         return PreemptRequest ? STAT_PREEMPT : STAT_OK;
 	}
 
@@ -1568,18 +1596,18 @@ static int callSubroutine() {
 	*/
 	if (sym->type == MACRO_FUNCTION_SYM) {
 
-        *Context->StackP++ = make_value(Context->PC);     // return PC
-        *Context->StackP++ = make_value(Context->FrameP); // old FrameP
-        *Context->StackP++ = make_value(nArgs);          // nArgs
-        *Context->StackP++ = make_value();               // cached arg array
+        *Context.StackP++ = make_value(Context.PC);     // return PC
+        *Context.StackP++ = make_value(Context.FrameP); // old FrameP
+        *Context.StackP++ = make_value(nArgs);          // nArgs
+        *Context.StackP++ = make_value();               // cached arg array
 
-        Context->FrameP = Context->StackP;
+        Context.FrameP = Context.StackP;
         Program* prog  = to_program(sym->value);
-        Context->PC     = prog->code.data();
+        Context.PC     = prog->code.data();
 
         for(Symbol *s : prog->localSymList) {
-            FP_GET_SYM_VAL(Context->FrameP, s) = make_value();
-            Context->StackP++;
+            FP_GET_SYM_VAL(Context.FrameP, s) = make_value();
+            Context.StackP++;
 		}
 		return STAT_OK;
 	}
@@ -1625,34 +1653,34 @@ static int returnValOrNone(bool valOnStack) {
 	}
 
 	// get stored return information 
-    int nArgs            = FP_GET_ARG_COUNT(Context->FrameP);
-    DataValue *newFrameP = FP_GET_OLD_FP(Context->FrameP);
-    Context->PC          = FP_GET_RET_PC(Context->FrameP);
+    int nArgs            = FP_GET_ARG_COUNT(Context.FrameP);
+    DataValue *newFrameP = FP_GET_OLD_FP(Context.FrameP);
+    Context.PC          = FP_GET_RET_PC(Context.FrameP);
 
 	// pop past local variables 
-    Context->StackP = Context->FrameP;
+    Context.StackP = Context.FrameP;
 	// pop past function arguments 
-    Context->StackP -= (FP_TO_ARGS_DIST + nArgs);
-    Context->FrameP = newFrameP;
+    Context.StackP -= (FP_TO_ARGS_DIST + nArgs);
+    Context.FrameP = newFrameP;
 
 	// push returned value, if requsted 
-    if(!Context->PC) {
+    if(!Context.PC) {
 		if (valOnStack) {
 			PUSH(retVal);
 		} else {
             PUSH(make_value());
 		}
-    } else if (Context->PC->func == fetchRetVal) {
+    } else if (Context.PC->func == fetchRetVal) {
 		if (valOnStack) {
 			PUSH(retVal);
-            Context->PC++;
+            Context.PC++;
 		} else {
-            return execError("using return value of %s which does not return a value", ((Context->PC - 2)->sym->name.c_str()));
+            return execError("using return value of %s which does not return a value", ((Context.PC - 2)->sym->name.c_str()));
 		}
 	}
 
 	// nullptr return PC indicates end of program 
-    return (Context->PC == nullptr) ? STAT_DONE : STAT_OK;
+    return (Context.PC == nullptr) ? STAT_DONE : STAT_OK;
 }
 
 /*
@@ -1665,7 +1693,7 @@ static int branch() {
 	DISASM_RT(PC - 1, 2);
 	STACKDUMP(0, 3);
 
-    Context->PC += Context->PC->value;
+    Context.PC += Context.PC->value;
 	return STAT_OK;
 }
 
@@ -1684,11 +1712,11 @@ static int branchTrue() {
 	STACKDUMP(1, 3);
 
     POP_INT(value);
-    Inst *addr = Context->PC + Context->PC->value;
-    Context->PC++;
+    Inst *addr = Context.PC + Context.PC->value;
+    Context.PC++;
 
     if (value) {
-        Context->PC = addr;
+        Context.PC = addr;
     }
 
 	return STAT_OK;
@@ -1701,11 +1729,11 @@ static int branchFalse() {
 	STACKDUMP(1, 3);
 
     POP_INT(value);
-    Inst * addr = Context->PC + Context->PC->value;
-    Context->PC++;
+    Inst * addr = Context.PC + Context.PC->value;
+    Context.PC++;
 
     if (!value) {
-        Context->PC = addr;
+        Context.PC = addr;
     }
 
 	return STAT_OK;
@@ -1723,7 +1751,7 @@ static int branchNever() {
 	DISASM_RT(PC - 1, 2);
 	STACKDUMP(0, 3);
 
-    Context->PC++;
+    Context.PC++;
 	return STAT_OK;
 }
 
@@ -1870,7 +1898,7 @@ static int arrayRef() {
 	DataValue valueItem;
     std::string keyString;
 
-    int64_t nDim = Context->PC++->value;
+    int64_t nDim = Context.PC++->value;
 
 	DISASM_RT(PC - 2, 2);
 	STACKDUMP(nDim, 3);
@@ -1915,7 +1943,7 @@ static int arrayAssign() {
 	DataValue srcValue;
 	DataValue dstArray;
 
-    int64_t nDim = Context->PC++->value;
+    int64_t nDim = Context.PC++->value;
 
 	DISASM_RT(PC - 2, 1);
 	STACKDUMP(nDim, 3);
@@ -1968,8 +1996,8 @@ static int arrayRefAndAssignSetup() {
 	DataValue moveExpr;
     std::string keyString;
 
-    int64_t binaryOp = Context->PC++->value;
-    int64_t nDim     = Context->PC++->value;
+    int64_t binaryOp = Context.PC++->value;
+    int64_t nDim     = Context.PC++->value;
 
 	DISASM_RT(PC - 3, 3);
 	STACKDUMP(nDim + 1, 3);
@@ -2021,7 +2049,7 @@ static int beginArrayIter() {
 	DISASM_RT(PC - 1, 2);
 	STACKDUMP(1, 3);
 
-    Symbol *iterator = Context->PC++->sym;
+    Symbol *iterator = Context.PC++->sym;
 
     POP(arrayVal);
 
@@ -2029,7 +2057,7 @@ static int beginArrayIter() {
         return execError("bad temporary iterator: %s", iterator->name.c_str());
 	}
 
-    DataValue *iteratorValPtr = &FP_GET_SYM_VAL(Context->FrameP, iterator);
+    DataValue *iteratorValPtr = &FP_GET_SYM_VAL(Context.FrameP, iterator);
 
     if (!is_array(arrayVal)) {
 		return execError("can't iterate non-array");
@@ -2068,13 +2096,13 @@ static int arrayIter() {
     DISASM_RT(PC - 1, 4);
 	STACKDUMP(0, 3);
 
-    Symbol *const item     = Context->PC++->sym;
-    Symbol *const iterator = Context->PC++->sym;
-    Inst *const branchAddr = Context->PC + Context->PC->value; ++Context->PC;
+    Symbol *const item     = Context.PC++->sym;
+    Symbol *const iterator = Context.PC++->sym;
+    Inst *const branchAddr = Context.PC + Context.PC->value; ++Context.PC;
 
     switch(item->type) {
     case LOCAL_SYM:
-        itemValPtr = &FP_GET_SYM_VAL(Context->FrameP, item);
+        itemValPtr = &FP_GET_SYM_VAL(Context.FrameP, item);
         break;
     case GLOBAL_SYM:
 		itemValPtr = &(item->value);
@@ -2089,7 +2117,7 @@ static int arrayIter() {
         return execError("bad temporary iterator: %s", iterator->name.c_str());
     }
 
-    DataValue *iteratorValPtr = &FP_GET_SYM_VAL(Context->FrameP, iterator);
+    DataValue *iteratorValPtr = &FP_GET_SYM_VAL(Context.FrameP, iterator);
 
     ArrayIterator thisEntry = to_iterator(*iteratorValPtr);
 
@@ -2097,7 +2125,7 @@ static int arrayIter() {
         *itemValPtr     = make_value(thisEntry.it->first);
         *iteratorValPtr = make_value(arrayIterateNext(thisEntry));
 	} else {
-        Context->PC = branchAddr;
+        Context.PC = branchAddr;
 	}
 
 	return STAT_OK;
@@ -2169,7 +2197,7 @@ static int deleteArrayElement() {
 	DataValue theArray;
     std::string keyString;
 
-    int64_t nDim = Context->PC++->value;
+    int64_t nDim = Context.PC++->value;
 
 	DISASM_RT(PC - 2, 2);
 	STACKDUMP(nDim + 1, 3);
