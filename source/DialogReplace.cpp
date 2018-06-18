@@ -80,8 +80,8 @@ DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, Qt::W
  * @param event
  */
 void DialogReplace::showEvent(QShowEvent *event) {
-	ui.textFind->setFocus();
     Dialog::showEvent(event);
+	ui.textFind->setFocus();    
 }
 
 /**

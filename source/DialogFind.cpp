@@ -30,8 +30,8 @@ DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowF
  * @param event
  */
 void DialogFind::showEvent(QShowEvent *event) {    
-	ui.textFind->setFocus();
     Dialog::showEvent(event);
+	ui.textFind->setFocus();    
 }
 
 /**
