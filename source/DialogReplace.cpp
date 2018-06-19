@@ -12,6 +12,7 @@
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QTimer>
 
 namespace {
 
@@ -81,7 +82,7 @@ DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, Qt::W
  */
 void DialogReplace::showEvent(QShowEvent *event) {
     Dialog::showEvent(event);
-	ui.textFind->setFocus();    
+    QTimer::singleShot(0, ui.textFind, SLOT(setFocus()));
 }
 
 /**

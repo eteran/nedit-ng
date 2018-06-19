@@ -11,6 +11,7 @@
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QTimer>
 
 /**
  * @brief DialogFind::DialogFind
@@ -31,7 +32,7 @@ DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowF
  */
 void DialogFind::showEvent(QShowEvent *event) {    
     Dialog::showEvent(event);
-	ui.textFind->setFocus();    
+    QTimer::singleShot(0, ui.textFind, SLOT(setFocus()));
 }
 
 /**
