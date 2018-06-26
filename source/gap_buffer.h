@@ -7,6 +7,7 @@
 
 #include <string>
 #include <algorithm>
+#include <memory>
 #include <cassert>
 #include "Util/string_view.h"
 
@@ -38,7 +39,7 @@ public:
     gap_buffer& operator=(const gap_buffer&) = delete;
     gap_buffer(gap_buffer&&)                 = delete;
     gap_buffer& operator=(gap_buffer&&)      = delete;
-    ~gap_buffer() noexcept;
+    ~gap_buffer() noexcept                   = default;
 
 public:
     iterator begin()              { return iterator(this, 0); }
@@ -95,10 +96,10 @@ private:
     void delete_range(size_type start, size_type end);
 
 private:
-    Ch *buf_;              // points to the internal buffer
-    size_type gap_start_;  // points to the first character of the gap
-    size_type gap_end_;    // points to the first char after the gap
-    size_type size_;       // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd - gapStart + length)
+    std::unique_ptr<Ch[]> buf_;        // points to the internal buffer
+    size_type             gap_start_;  // points to the first character of the gap
+    size_type             gap_end_;    // points to the first char after the gap
+    size_type             size_;       // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd - gapStart + length)
 };
 
 /**
@@ -114,7 +115,7 @@ gap_buffer<Ch, Tr>::gap_buffer() : gap_buffer(0){
 template <class Ch, class Tr>
 gap_buffer<Ch, Tr>::gap_buffer(size_type size) {
 
-    buf_       = new Ch[static_cast<size_t>(size + PreferredGapSize)];
+    buf_       = std::make_unique<Ch[]>(size + PreferredGapSize);
     gap_start_ = 0;
     gap_end_   = PreferredGapSize;
     size_      = 0;
@@ -122,14 +123,6 @@ gap_buffer<Ch, Tr>::gap_buffer(size_type size) {
 #ifdef PURIFY
     std::fill(&buf_[gap_start_], &buf_[gap_end_], Ch('.'));
 #endif
-}
-
-/**
- *
- */
-template <class Ch, class Tr>
-gap_buffer<Ch, Tr>::~gap_buffer() noexcept {
-    delete [] buf_;
 }
 
 /**
@@ -165,7 +158,7 @@ template <class Ch, class Tr>
 Ch gap_buffer<Ch, Tr>::at(size_type n) const {
 
     if (n >= size() || n < 0) {
-        raise<std::out_of_range>("gap_buffer::operator[]");
+        raise<std::out_of_range>("gap_buffer::at");
     }
 
     if (n < gap_start_) {
@@ -219,7 +212,7 @@ int gap_buffer<Ch, Tr>::compare(size_type pos, view_type str) const {
     } else {
         const auto part1Length = static_cast<size_t>(gap_start_ - pos);
         const int result = Tr::compare(&buf_[pos], str.data(), part1Length);
-        if (result) {
+        if (result != 0) {
             return result;
         }
 
@@ -240,7 +233,7 @@ int gap_buffer<Ch, Tr>::compare(size_type pos, Ch ch) const {
         return -1;
     }
 
-    const Ch buffer_char = at(pos);
+    const Ch buffer_char = (*this)[pos];
     return Tr::compare(&buffer_char, &ch, 1);
 }
 
@@ -252,7 +245,7 @@ auto gap_buffer<Ch, Tr>::to_string() const -> string_type {
     string_type text;
     text.reserve(static_cast<size_t>(size()));
 
-    std::copy_n(buf_,            gap_start_,          std::back_inserter(text));
+    std::copy_n(&buf_[0],        gap_start_,          std::back_inserter(text));
     std::copy_n(&buf_[gap_end_], size() - gap_start_, std::back_inserter(text));
 
     return text;
@@ -451,7 +444,7 @@ void gap_buffer<Ch, Tr>::assign(view_type str) {
     const auto length = static_cast<size_type>(str.size());
 
     // Start a new buffer with a gap of GapSize in the center
-    auto new_buffer = new Ch[static_cast<size_t>(length + PreferredGapSize)];
+    auto new_buffer = std::make_unique<Ch[]>(length + PreferredGapSize);
     size_type new_size      = length;
     size_type new_gap_start = length / 2;
     size_type new_gap_end   = new_gap_start + PreferredGapSize;
@@ -463,9 +456,7 @@ void gap_buffer<Ch, Tr>::assign(view_type str) {
     std::fill(&new_buffer[new_gap_start], &new_buffer[new_gap_end], Ch('.'));
 #endif
 
-    delete [] buf_;
-
-    buf_       = new_buffer;
+    buf_       = std::move(new_buffer);
     size_      = new_size;
     gap_start_ = new_gap_start;
     gap_end_   = new_gap_end;
@@ -504,23 +495,21 @@ void gap_buffer<Ch, Tr>::move_gap(size_type pos) {
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::reallocate_buffer(size_type new_gap_start, size_type new_gap_size) {
 
-    auto new_buffer = new Ch[static_cast<size_t>(size() + new_gap_size)];
+    auto new_buffer = std::make_unique<Ch[]>(size() + new_gap_size);
 
     const size_type new_gap_end = new_gap_start + new_gap_size;
 
     if (new_gap_start <= gap_start_) {
-        Tr::copy(new_buffer,                                            &buf_[0],             static_cast<size_t>(new_gap_start));
+        Tr::copy(&new_buffer[0],                                        &buf_[0],             static_cast<size_t>(new_gap_start));
         Tr::copy(&new_buffer[new_gap_end],                              &buf_[new_gap_start], static_cast<size_t>(gap_start_ - new_gap_start));
         Tr::copy(&new_buffer[new_gap_end + gap_start_ - new_gap_start], &buf_[gap_end_],      static_cast<size_t>(size() - gap_start_));
     } else { // newGapStart > gap_start_
-        Tr::copy(new_buffer,                &buf_[0],                                     static_cast<size_t>(gap_start_));
+        Tr::copy(&new_buffer[0],            &buf_[0],                                     static_cast<size_t>(gap_start_));
         Tr::copy(&new_buffer[gap_start_],   &buf_[gap_end_],                              static_cast<size_t>(new_gap_start - gap_start_));
         Tr::copy(&new_buffer[new_gap_end],  &buf_[gap_end_ + new_gap_start - gap_start_], static_cast<size_t>(size() - new_gap_start));
     }
 
-    delete [] buf_;
-
-    buf_       = new_buffer;
+    buf_       = std::move(new_buffer);
     gap_start_ = new_gap_start;
     gap_end_   = new_gap_end;
 
