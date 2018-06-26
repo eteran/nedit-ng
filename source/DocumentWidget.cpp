@@ -524,6 +524,9 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
                              buffer,
                              Preferences::GetPrefDefaultFont());
 
+    area->setCursorVPadding(Preferences::GetVerticalAutoScroll());
+    area->setEmulateTabs(Preferences::GetPrefEmTabDist(PLAIN_LANGUAGE_MODE));
+
     const QColor textFgPix   = X11Colors::fromString(Preferences::GetPrefColorName(TEXT_FG_COLOR));
     const QColor textBgPix   = X11Colors::fromString(Preferences::GetPrefColorName(TEXT_BG_COLOR));
     const QColor selectFgPix = X11Colors::fromString(Preferences::GetPrefColorName(SELECT_FG_COLOR));
