@@ -28,6 +28,7 @@ public:
     gap_buffer_iterator(buffer_type *buf, size_type pos) : buf_(buf), pos_(pos) {}
 
 public:
+    // for construction of a const-iterator from a non-const iterator
     // These only exist for the const version
     template <bool Const = IsConst, typename std::enable_if<Const>::type* = nullptr>
     gap_buffer_iterator(const gap_buffer_iterator<Ch, Tr, false> &other) : buf_(other.buf_), pos_(other.pos_) {}
@@ -67,6 +68,7 @@ public:
     pointer operator->() const                         { return &buf_[pos_];         }
 
 public:
+    // templated to allow comparison between const/non-const iterators
     template <class CharT, class Traits, bool Const> bool operator==(const gap_buffer_iterator<CharT, Traits, Const> &rhs) const { assert(buf_ == rhs.buf_); return pos_ == rhs.pos_; }
     template <class CharT, class Traits, bool Const> bool operator!=(const gap_buffer_iterator<CharT, Traits, Const> &rhs) const { assert(buf_ == rhs.buf_); return pos_ != rhs.pos_; }
     template <class CharT, class Traits, bool Const> bool operator>(const gap_buffer_iterator<CharT, Traits, Const> &rhs) const  { assert(buf_ == rhs.buf_); return pos_ > rhs.pos_;  }
