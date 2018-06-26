@@ -519,7 +519,7 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
 
 	// Update the display to reflect the contents of the buffer
 	if(buffer) {
-        bufModifiedCB(0, buffer->BufGetLength(), 0, 0, std::string(), this);
+        bufModifiedCB(0, buffer->BufGetLength(), 0, 0, {}, this);
 	}
 
 	// Decide if the horizontal scroll bar needs to be visible

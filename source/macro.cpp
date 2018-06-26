@@ -3793,7 +3793,9 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
         int64_t elementEnd = found ? foundStart : strLength;
         int64_t elementLen = elementEnd - lastEnd;
 
-        std::string str(&sourceStr[static_cast<size_t>(lastEnd)], static_cast<size_t>(elementLen));
+        view::string_view str(
+                    &sourceStr[static_cast<size_t>(lastEnd)],
+                    static_cast<size_t>(elementLen));
 
         element = make_value(str);
         if (!ArrayInsert(result, indexStr, &element)) {
