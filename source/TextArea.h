@@ -138,10 +138,6 @@ public:
 protected:
 	bool focusNextPrevChild(bool next) override;
 	void contextMenuEvent(QContextMenuEvent *event) override;
-	void dragEnterEvent(QDragEnterEvent *event) override;
-	void dragLeaveEvent(QDragLeaveEvent *event) override;
-	void dragMoveEvent(QDragMoveEvent *event) override;
-	void dropEvent(QDropEvent *event) override;
 	void keyPressEvent(QKeyEvent *event) override;
 	void mouseDoubleClickEvent(QMouseEvent *event) override;
 	void mouseMoveEvent(QMouseEvent *event) override;
@@ -305,9 +301,9 @@ private:
     void measureDeletedLines(int64_t pos, int64_t nDeleted);
     void wrappedLineCounter(const TextBuffer *buf, int64_t startPos, int64_t maxPos, int64_t maxLines, bool startPosIsLineStart, int64_t styleBufOffset, int64_t *retPos, int64_t *retLines, int64_t *retLineStart, int64_t *retLineEnd) const;
     int64_t measurePropChar(char ch, int64_t colNum, int64_t pos) const;
-    int stringWidth(const char *string, int length, int style) const;
+    int stringWidth(const char *string, int length, uint32_t style) const;
     void findWrapRangeEx(view::string_view deletedText, int64_t pos, int64_t nInserted, int64_t nDeleted, int64_t *modRangeStart, int64_t *modRangeEnd, int64_t *linesInserted, int64_t *linesDeleted);
-    void updateLineStarts(int64_t pos, int64_t charsInserted, int64_t charsDeleted, int64_t linesInserted, int64_t linesDeleted, int *scrolled);
+    void updateLineStarts(int64_t pos, int64_t charsInserted, int64_t charsDeleted, int64_t linesInserted, int64_t linesDeleted, bool *scrolled);
 	void hideOrShowHScrollBar();
     void calcLineStarts(int startLine, int endLine);
 	void calcLastChar();
@@ -328,8 +324,8 @@ private:
     void redrawLineNumbersEx();
     void redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);
     void redisplayLineEx(int visLineNum, int leftClip, int rightClip, int64_t leftCharIndex, int64_t rightCharIndex);
-    int styleOfPos(int64_t lineStartPos, int64_t lineLen, int64_t lineIndex, int64_t dispIndex, int thisChar) const;
-    void drawString(QPainter *painter, int style, int64_t x, int y, int64_t toX, char *string, long nChars);
+    uint32_t styleOfPos(int64_t lineStartPos, int64_t lineLen, int64_t lineIndex, int64_t dispIndex, int thisChar) const;
+    void drawString(QPainter *painter, uint32_t style, int64_t x, int y, int64_t toX, const char *string, long nChars);
     void drawCursor(QPainter *painter, int x, int y);
     QColor getRangesetColor(int ind, QColor bground) const;
     void setScroll(int64_t topLineNum, int horizOffset, bool updateVScrollBar, bool updateHScrollBar);
@@ -420,7 +416,7 @@ private:
 
 private:
     BlockDragTypes dragType_;                       // style of block drag operation
-    char unfinishedStyle_;                          // Style buffer entry which triggers on-the-fly reparsing of region
+    uint32_t unfinishedStyle_;                      // Style buffer entry which triggers on-the-fly reparsing of region
     DocumentWidget *document_;
     int64_t anchor_;                                // Anchor for drag operations
     int ascent_;                                    // Composite ascent and descent for primary font + all-highlight fonts
