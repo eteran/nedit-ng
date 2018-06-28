@@ -265,8 +265,7 @@ public:
 	void TextDUnblankCursor();
 	void TextDBlankCursor();
 	void TextDRedrawCalltip(int calltipID);
-	void TextDSetupBGClassesEx(const QString &str);
-    void TextDSetupBGClasses(const QString &s, std::vector<QColor> *pp_bgClassPixel, std::vector<uint8_t> *pp_bgClass, const QColor &bgPixelDefault);
+    void TextDSetupBGClassesEx(const QString &str);
     bool TextDMoveRight();
     bool TextDMoveLeft();
     bool TextDMoveUp(bool absolute);

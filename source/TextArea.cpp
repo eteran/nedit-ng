@@ -3357,12 +3357,12 @@ QColor TextArea::getRangesetColor(int ind, QColor bground) const {
  */
 void TextArea::TextDResize(int width, int height) {
 
-	int oldVisibleLines = nVisibleLines_;
+    const int oldVisibleLines = nVisibleLines_;
     bool canRedraw      = true;
-    int newVisibleLines = height / (ascent_ + descent_);
+    const int newVisibleLines = height / (ascent_ + descent_);
     int redrawAll       = false;
-    int oldWidth        = rect_.width();
-    int exactHeight     = height - height % (ascent_ + descent_);
+    const int oldWidth        = rect_.width();
+    const int exactHeight     = height - height % (ascent_ + descent_);
 
     rect_.setSize({width, height});
 
@@ -3541,19 +3541,21 @@ void TextArea::TextDUnblankCursor() {
 ** the closest value in the lineStarts array)
 */
 void TextArea::offsetLineStarts(int64_t newTopLineNum) {
-    int64_t oldTopLineNum = topLineNum_;
-    int64_t oldFirstChar  = firstChar_;
-    int64_t lineDelta     = newTopLineNum - oldTopLineNum;
-    int nVisLines         = nVisibleLines_;
+
+    const int64_t oldTopLineNum = topLineNum_;
+    const int64_t oldFirstChar  = firstChar_;
+    const int64_t lineDelta     = newTopLineNum - oldTopLineNum;
+    const int nVisLines         = nVisibleLines_;
 
 	// If there was no offset, nothing needs to be changed
-	if (lineDelta == 0)
+    if (lineDelta == 0) {
 		return;
+    }
 
 	/* Find the new value for firstChar by counting lines from the nearest
 	   known line start (start or end of buffer, or the closest value in the
 	   lineStarts array) */
-    int64_t lastLineNum = oldTopLineNum + nVisLines - 1;
+    const int64_t lastLineNum = oldTopLineNum + nVisLines - 1;
 
     if (newTopLineNum < oldTopLineNum && newTopLineNum < -lineDelta) {
 		firstChar_ = TextDCountForwardNLines(0, newTopLineNum - 1, true);
@@ -3599,7 +3601,7 @@ void TextArea::offsetLineStarts(int64_t newTopLineNum) {
 */
 void TextArea::TextDSetScroll(int64_t topLineNum, int horizOffset) {
 
-	int vPadding = P_cursorVPadding;
+    const int vPadding = P_cursorVPadding;
 
 	// Limit the requested scroll position to allowable values
 	if (topLineNum < 1) {
@@ -3608,10 +3610,7 @@ void TextArea::TextDSetScroll(int64_t topLineNum, int horizOffset) {
 		topLineNum = std::max(topLineNum_, nBufferLines_ + 2 - nVisibleLines_ + vPadding);
 	}
 
-	int sliderMax = horizontalScrollBar()->maximum();
-
-    horizOffset = qBound(0, horizOffset, sliderMax);
-
+    horizOffset = qBound(0, horizOffset, horizontalScrollBar()->maximum());
 	setScroll(topLineNum, horizOffset, true, true);
 }
 
@@ -3659,10 +3658,9 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 		rel_x = calltip_.pos;
     }
 
-    int lineHeight  = ascent_ + descent_;
-    int tipWidth    = calltipWidget_->width();
-    int tipHeight   = calltipWidget_->height();    
-	int flip_delta;
+    const int lineHeight  = ascent_ + descent_;
+    const int tipWidth    = calltipWidget_->width();
+    const int tipHeight   = calltipWidget_->height();
 
     constexpr int borderWidth = 1;
 	rel_x += borderWidth;
@@ -3679,6 +3677,8 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
     default:
         break;
     }
+
+    int flip_delta;
 
     // Adjust rel_y for vertical alignment modes
     switch(calltip_.vAlign) {
@@ -3739,98 +3739,96 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 ** could be better too, but then, who cares!
 */
 void TextArea::TextDSetupBGClassesEx(const QString &str) {
-    TextDSetupBGClasses(str, &bgClassPixel_, &bgClass_, palette().color(QPalette::Base));
-}
 
-void TextArea::TextDSetupBGClasses(const QString &s, std::vector<QColor> *pp_bgClassPixel, std::vector<uint8_t> *pp_bgClass, const QColor &bgPixelDefault) {
+    const QColor bgPixelDefault = palette().color(QPalette::Base);
 
-    pp_bgClassPixel->clear();
-    pp_bgClass->clear();
+    bgClassPixel_.clear();
+    bgClass_.clear();
 
-	if (s.isEmpty()) {
-		return;
-	}
+    if (str.isEmpty()) {
+        return;
+    }
 
     uint8_t bgClass[256]     = {};
-	QColor bgClassPixel[256] = {};
+    QColor bgClassPixel[256] = {};
 
 
-	// default for all chars is class number zero, for standard background
-	bgClassPixel[0] = bgPixelDefault;
+    // default for all chars is class number zero, for standard background
+    bgClassPixel[0] = bgPixelDefault;
 
-	/* since class no == 0 in a "style" has no set bits in BACKLIGHT_MASK
-	   (see styleOfPos()), when drawString() is called for text with a
-	   backlight class no of zero, bgClassPixel[0] is never consulted, and
-	   the default background color is chosen. */
+    /* since class no == 0 in a "style" has no set bits in BACKLIGHT_MASK
+       (see styleOfPos()), when drawString() is called for text with a
+       backlight class no of zero, bgClassPixel[0] is never consulted, and
+       the default background color is chosen. */
 
-	/* The format of the class string s is:
-			  low[-high]{,low[-high]}:color{;low-high{,low[-high]}:color}
-		  eg
-			  32-255:#f0f0f0;1-31,127:red;128-159:orange;9-13:#e5e5e5
-	   where low and high represent a character range between ordinal
-	   ASCII values. Using strtol() allows automatic octal, dec and hex
-	   reading of low and high. The example format sets backgrounds as follows:
-			  char   1 - 8    colored red     (control characters)
-			  char   9 - 13   colored #e5e5e5 (isspace() control characters)
-			  char  14 - 31   colored red     (control characters)
-			  char  32 - 126  colored #f0f0f0
-			  char 127        colored red     (delete character)
-			  char 128 - 159  colored orange  ("shifted" control characters)
-			  char 160 - 255  colored #f0f0f0
-	   Notice that some of the later ranges overwrite the class values defined
-	   for earlier ones (eg the first clause, 32-255:#f0f0f0 sets the DEL
-	   character background color to #f0f0f0; it is then set to red by the
-	   clause 1-31,127:red). */
+    /* The format of the class string s is:
+              low[-high]{,low[-high]}:color{;low-high{,low[-high]}:color}
+          eg
+              32-255:#f0f0f0;1-31,127:red;128-159:orange;9-13:#e5e5e5
+       where low and high represent a character range between ordinal
+       ASCII values. Using strtol() allows automatic octal, dec and hex
+       reading of low and high. The example format sets backgrounds as follows:
+              char   1 - 8    colored red     (control characters)
+              char   9 - 13   colored #e5e5e5 (isspace() control characters)
+              char  14 - 31   colored red     (control characters)
+              char  32 - 126  colored #f0f0f0
+              char 127        colored red     (delete character)
+              char 128 - 159  colored orange  ("shifted" control characters)
+              char 160 - 255  colored #f0f0f0
+       Notice that some of the later ranges overwrite the class values defined
+       for earlier ones (eg the first clause, 32-255:#f0f0f0 sets the DEL
+       character background color to #f0f0f0; it is then set to red by the
+       clause 1-31,127:red). */
 
     size_t class_no = 1;
-	QStringList formats = s.split(QLatin1Char(';'), QString::SkipEmptyParts);
-	for(const QString &format : formats) {
+    QStringList formats = str.split(QLatin1Char(';'), QString::SkipEmptyParts);
+    for(const QString &format : formats) {
 
-		QStringList s1 = format.split(QLatin1Char(':'), QString::SkipEmptyParts);
-		if(s1.size() == 2) {
-			QString ranges = s1[0];
-			QString color  = s1[1];
+        QStringList s1 = format.split(QLatin1Char(':'), QString::SkipEmptyParts);
+        if(s1.size() == 2) {
+            QString ranges = s1[0];
+            QString color  = s1[1];
 
-			if(class_no > UINT8_MAX) {
-				break;
-			}
+            if(class_no > UINT8_MAX) {
+                break;
+            }
 
-			// NOTE(eteran): the original code started at index 1
+            // NOTE(eteran): the original code started at index 1
             // by incrementing before using it. This code post increments
-			// starting the classes at 0, which allows NUL characters
-			// to be styled correctly. I am not aware of any negative
-			// side effects of this.
+            // starting the classes at 0, which allows NUL characters
+            // to be styled correctly. I am not aware of any negative
+            // side effects of this.
             const auto nextClass = static_cast<uint8_t>(class_no++);
 
             QColor pix = X11Colors::fromString(color);
             bgClassPixel[nextClass] = pix;
 
-			QStringList rangeList = ranges.split(QLatin1Char(','), QString::SkipEmptyParts);
-			for(const QString &range : rangeList) {
-				QRegExp regex(QLatin1String("([0-9]+)(?:-([0-9]+))?"));
-				if(regex.exactMatch(range)) {
+            QStringList rangeList = ranges.split(QLatin1Char(','), QString::SkipEmptyParts);
+            for(const QString &range : rangeList) {
+                QRegExp regex(QLatin1String("([0-9]+)(?:-([0-9]+))?"));
+                if(regex.exactMatch(range)) {
 
-					const QString lo = regex.cap(1);
-					const QString hi = regex.cap(2);
+                    const QString lo = regex.cap(1);
+                    const QString hi = regex.cap(2);
 
-					bool loOK;
-					bool hiOK;
-					int lowerBound = lo.toInt(&loOK);
-					int upperBound = hi.toInt(&hiOK);
+                    bool loOK;
+                    bool hiOK;
+                    int lowerBound = lo.toInt(&loOK);
+                    int upperBound = hi.toInt(&hiOK);
 
-					if(loOK) {
-						if(!hiOK) {
-							upperBound = lowerBound;
-						}
+                    if(loOK) {
+                        if(!hiOK) {
+                            upperBound = lowerBound;
+                        }
 
-						for(int i = lowerBound; i <= upperBound; ++i) {
-							bgClass[i] = nextClass;
-						}
-					}
-				}
-			}
-		}
-	}
+                        for(int i = lowerBound; i <= upperBound; ++i) {
+                            bgClass[i] = nextClass;
+                        }
+                    }
+                }
+            }
+        }
+    }
 
     std::vector<uint8_t> backgroundClass;
     backgroundClass.reserve(256);
@@ -3840,8 +3838,9 @@ void TextArea::TextDSetupBGClasses(const QString &s, std::vector<QColor> *pp_bgC
     backgroundPixel.reserve(class_no);
     std::copy_n(bgClassPixel, class_no, std::back_inserter(backgroundPixel));
 
-    *pp_bgClass      = backgroundClass;
-    *pp_bgClassPixel = backgroundPixel;
+    bgClass_      = backgroundClass;
+    bgClassPixel_ = backgroundPixel;
+
 }
 
 /*
