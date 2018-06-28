@@ -24,7 +24,7 @@
  * The opcodes are: */
 
 // DEFINITION            VALUE  MEANING
-enum : uint8_t {
+enum Opcode : uint8_t {
     END          = 1, // End of program.
 
     // Zero width positional assertions.
