@@ -138,12 +138,6 @@ public:
     void BufSetUseTabs(bool useTabs) noexcept;
     void BufUnhighlight() noexcept;
     void BufUnselect() noexcept;
-    const Selection &BufGetPrimary() const;
-    const Selection &BufGetSecondary() const;
-    const Selection &BufGetHighlight() const;
-    Selection &BufGetPrimary();
-    Selection &BufGetSecondary();
-    Selection &BufGetHighlight();
     bool BufGetSyncXSelection() const;
     bool BufSetSyncXSelection(bool sync);
 
@@ -199,15 +193,16 @@ private:
 
 private:
     gap_buffer<Ch> buffer_;
-    Selection  primary_;   // highlighted areas
-    Selection  secondary_;
-    Selection  highlight_;
 
 private:
     std::deque<std::pair<pre_delete_callback_type, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
     std::deque<std::pair<modify_callback_type, void *>> modifyProcs_;       // procedures to call when buffer is modified to redisplay contents
-};
 
+public:
+    Selection primary;   // highlighted areas
+    Selection secondary;
+    Selection highlight;
+};
 
 #include "TextBuffer.tcc"
 

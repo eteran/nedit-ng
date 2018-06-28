@@ -40,7 +40,7 @@ bool DialogRepeat::doRepeatDialogAction() {
 
 	// Find out from the dialog how to repeat the command 
 	if (ui.radioInSelection->isChecked()) {
-        if (!document_->buffer_->BufGetPrimary().selected) {
+        if (!document_->buffer_->primary.selected) {
 			QMessageBox::warning(this, tr("Repeat Macro"), tr("No selection in window to repeat within"));
             return false;
 		}

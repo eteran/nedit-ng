@@ -165,7 +165,7 @@ void dragStartCB(TextArea *area, void *user) {
 	}
 }
 
-void dragEndCB(TextArea *area, DragEndEvent *data, void *user) {
+void dragEndCB(TextArea *area, const DragEndEvent *data, void *user) {
     if(auto document = static_cast<DocumentWidget *>(user)) {
         document->dragEndCallback(area, data);
 	}
@@ -879,7 +879,7 @@ void DocumentWidget::modifiedCallback(int64_t pos, int64_t nInserted, int64_t nD
 
     Q_UNUSED(nRestyled);
 
-    const bool selected = buffer_->BufGetPrimary().selected;
+    const bool selected = buffer_->primary.selected;
 
     // update the table of bookmarks
     if (!ignoreModify_) {
@@ -940,7 +940,7 @@ void DocumentWidget::modifiedCallback(int64_t pos, int64_t nInserted, int64_t nD
  * @param area
  * @param data
  */
-void DocumentWidget::dragEndCallback(TextArea *area, DragEndEvent *data) {
+void DocumentWidget::dragEndCallback(TextArea *area, const DragEndEvent *data) {
 
     // NOTE(eteran): so, it's a minor shame here that we don't use the area
     // variable. The **buffer** is what reports the modifications, and that is
@@ -1663,7 +1663,7 @@ void DocumentWidget::Undo() {
         buffer_->BufReplaceEx(undo.startPos, undo.endPos, undo.oldText);
 
         const auto restoredTextLength = static_cast<int64_t>(undo.oldText.size());
-        if (!buffer_->BufGetPrimary().selected || Preferences::GetPrefUndoModifiesSelection()) {
+        if (!buffer_->primary.selected || Preferences::GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
             if(QPointer<TextArea> area = win->lastFocus_) {
@@ -1716,7 +1716,7 @@ void DocumentWidget::Redo() {
         buffer_->BufReplaceEx(redo.startPos, redo.endPos, redo.oldText);
 
         const auto restoredTextLength = static_cast<int64_t>(redo.oldText.size());
-        if (!buffer_->BufGetPrimary().selected || Preferences::GetPrefUndoModifiesSelection()) {
+        if (!buffer_->primary.selected || Preferences::GetPrefUndoModifiesSelection()) {
             /* position the cursor in the focus pane after the changed text
                to show the user where the undo was done */
             if(QPointer<TextArea> area = win->lastFocus_) {
@@ -3588,7 +3588,7 @@ bool DocumentWidget::includeFile(const QString &name) {
 
     /* insert the contents of the file in the selection or at the insert
        position in the window if no selection exists */
-    if (buffer_->BufGetPrimary().selected) {
+    if (buffer_->primary.selected) {
         buffer_->BufReplaceSelectedEx(fileString);
     } else {
         if(auto win = MainWindow::fromDocument(this)) {
@@ -3956,7 +3956,7 @@ void DocumentWidget::PrintWindow(TextArea *area, bool selectedOnly) {
        wrapping newlines if necessary to make it match the displayed text */
     if (selectedOnly) {
 
-        const TextBuffer::Selection *sel = &buffer_->BufGetPrimary();
+        const TextBuffer::Selection *sel = &buffer_->primary;
 
         if (!sel->selected) {
             QApplication::beep();
@@ -4774,7 +4774,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
             TextBuffer *buf = area->TextGetBuffer();
 
             if (cmdData->flags & REPLACE_SELECTION) {
-                int64_t reselectStart = buf->BufGetPrimary().rectangular ? -1 : buf->BufGetPrimary().start;
+                int64_t reselectStart = buf->primary.rectangular ? -1 : buf->primary.start;
                 buf->BufReplaceSelectedEx(output_string);
 
                 area->TextSetCursorPos(buf->BufCursorPosHint());
@@ -4879,21 +4879,16 @@ void DocumentWidget::ExecCursorLineEx(TextArea *area, CommandSource source) {
 
 }
 
-void DocumentWidget::filterSelection(const QString &command, CommandSource source) {
-
-    if (CheckReadOnly()) {
-        return;
-    }
-
-    FilterSelection(command, source);
-}
-
 /*
 ** Filter the current selection through shell command "command".  The selection
 ** is removed, and replaced by the output from the command execution.  Failed
 ** command status and output to stderr are presented in dialog form.
 */
-void DocumentWidget::FilterSelection(const QString &command, CommandSource source) {
+void DocumentWidget::filterSelection(const QString &command, CommandSource source) {
+
+    if (CheckReadOnly()) {
+        return;
+    }
 
     auto window = MainWindow::fromDocument(this);
     if(!window) {
@@ -4914,8 +4909,8 @@ void DocumentWidget::FilterSelection(const QString &command, CommandSource sourc
         return;
     }
 
-    const int64_t left  = buffer_->BufGetPrimary().start;
-    const int64_t right = buffer_->BufGetPrimary().end;
+    const int64_t left  = buffer_->primary.start;
+    const int64_t right = buffer_->primary.end;
 
     // Issue the command and collect its output
     issueCommandEx(
@@ -5411,7 +5406,7 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
     }
 
     // don't flash matching characters if there's a selection
-    if (buffer_->BufGetPrimary().selected) {
+    if (buffer_->primary.selected) {
         return;
     }
 
@@ -6745,7 +6740,7 @@ bool DocumentWidget::InSmartIndentMacrosEx() const {
 QString DocumentWidget::GetAnySelectionEx(bool beep_on_error) {
 
     // If the selection is in the window's own buffer get it from there
-    if (buffer_->BufGetPrimary().selected) {
+    if (buffer_->primary.selected) {
         return QString::fromStdString(buffer_->BufGetSelectionTextEx());
     }
 
@@ -6935,7 +6930,7 @@ void DocumentWidget::AddMarkEx(TextArea *area, QChar label) {
 
     // store the cursor location and selection position in the table
     markTable_[index].label     = label;
-    markTable_[index].sel       = buffer_->BufGetPrimary();
+    markTable_[index].sel       = buffer_->primary;
     markTable_[index].cursorPos = area->TextGetCursorPos();
 }
 
@@ -6994,7 +6989,7 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
 
     // reselect marked the selection, and move the cursor to the marked pos
     const TextBuffer::Selection &sel    = markTable_[index].sel;
-    const TextBuffer::Selection &oldSel = buffer_->BufGetPrimary();
+    const TextBuffer::Selection &oldSel = buffer_->primary;
 
     int64_t cursorPos = markTable_[index].cursorPos;
     if (extendSel) {

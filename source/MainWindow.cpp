@@ -5605,7 +5605,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, CommandSource
         return;
     }
 
-    if (!document->buffer_->BufGetPrimary().selected) {
+    if (!document->buffer_->primary.selected) {
         QApplication::beep();
         return;
     }
@@ -5643,7 +5643,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, const QString
         return;
     }
 
-    if (!document->buffer_->BufGetPrimary().selected) {
+    if (!document->buffer_->primary.selected) {
         QApplication::beep();
         return;
     }

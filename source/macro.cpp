@@ -3990,7 +3990,7 @@ static std::error_code selectionStartMV(DocumentWidget *document, Arguments argu
         return MacroErrorCode::TooManyArguments;
     }
 
-    *result = make_value(document->buffer_->BufGetPrimary().selected ? document->buffer_->BufGetPrimary().start : -1);
+    *result = make_value(document->buffer_->primary.selected ? document->buffer_->primary.start : -1);
     return MacroErrorCode::Success;
 }
 
@@ -4000,7 +4000,7 @@ static std::error_code selectionEndMV(DocumentWidget *document, Arguments argume
         return MacroErrorCode::TooManyArguments;
     }
 
-    *result = make_value(document->buffer_->BufGetPrimary().selected ? document->buffer_->BufGetPrimary().end : -1);
+    *result = make_value(document->buffer_->primary.selected ? document->buffer_->primary.end : -1);
     return MacroErrorCode::Success;
 }
 
@@ -4010,7 +4010,7 @@ static std::error_code selectionLeftMV(DocumentWidget *document, Arguments argum
         return MacroErrorCode::TooManyArguments;
     }
 
-    const TextBuffer::Selection *sel = &document->buffer_->BufGetPrimary();
+    const TextBuffer::Selection *sel = &document->buffer_->primary;
 
     *result = make_value(sel->selected && sel->rectangular ? sel->rectStart : -1);
     return MacroErrorCode::Success;
@@ -4022,7 +4022,7 @@ static std::error_code selectionRightMV(DocumentWidget *document, Arguments argu
         return MacroErrorCode::TooManyArguments;
     }
 
-    const TextBuffer::Selection *sel = &document->buffer_->BufGetPrimary();
+    const TextBuffer::Selection *sel = &document->buffer_->primary;
 
     *result = make_value(sel->selected && sel->rectangular ? sel->rectEnd : -1);
     return MacroErrorCode::Success;

@@ -76,8 +76,8 @@ Q_SIGNALS:
 public:
 	void movedCallback(TextArea *area);
 	void dragStartCallback(TextArea *area);
-    void dragEndCallback(TextArea *area, DragEndEvent *data);
-	void smartIndentCallback(TextArea *area, SmartIndentEvent *data);
+    void dragEndCallback(TextArea *area, const DragEndEvent *data);
+    void smartIndentCallback(TextArea *area, SmartIndentEvent *data);
     void modifiedCallback(int64_t pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText);
 
 public:
@@ -238,7 +238,6 @@ private:
     void ExecCursorLineEx(TextArea *area, CommandSource source);
     void executeModMacroEx(SmartIndentEvent *cbInfo);
     void executeNewlineMacroEx(SmartIndentEvent *cbInfo);
-    void FilterSelection(const QString &command, CommandSource source);
     void filterSelection(const QString &command, CommandSource source);
     void FinishLearnEx();
     void FlashMatchingEx(TextArea *area);

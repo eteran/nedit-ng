@@ -713,7 +713,7 @@ void FillSelectionEx(DocumentWidget *document, TextArea *area) {
     int64_t rightMargin;
 
     int64_t insertPos = area->TextGetCursorPos();
-    int hasSelection = document->buffer_->BufGetPrimary().selected;
+    int hasSelection = document->buffer_->primary.selected;
     std::string text;
 
     /* Find the range of characters and get the text to fill.  If there is a

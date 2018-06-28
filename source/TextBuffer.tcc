@@ -548,10 +548,10 @@ void BasicTextBuffer<Ch, Tr>::BufCheckDisplay(int64_t start, int64_t end) const 
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSelect(int64_t start, int64_t end) noexcept {
-    const Selection oldSelection = primary_;
+    const Selection oldSelection = primary;
 
-    primary_.setSelection(start, end);
-    redisplaySelection(&oldSelection, &primary_);
+    primary.setSelection(start, end);
+    redisplaySelection(&oldSelection, &primary);
 
 #ifdef Q_OS_UNIX
     if(syncXSelection_ && QApplication::clipboard()->supportsSelection()) {
@@ -563,11 +563,11 @@ void BasicTextBuffer<Ch, Tr>::BufSelect(int64_t start, int64_t end) noexcept {
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufUnselect() noexcept {
-    const Selection oldSelection = primary_;
+    const Selection oldSelection = primary;
 
-    primary_.selected = false;
-    primary_.zeroWidth = false;
-    redisplaySelection(&oldSelection, &primary_);
+    primary.selected = false;
+    primary.zeroWidth = false;
+    redisplaySelection(&oldSelection, &primary);
 
     // NOTE(eteran): I think this breaks some things involving another app
     // having a selection and then clicking in one of our windows. Which results
@@ -581,10 +581,10 @@ void BasicTextBuffer<Ch, Tr>::BufUnselect() noexcept {
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufRectSelect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept {
-    const Selection oldSelection = primary_;
+    const Selection oldSelection = primary;
 
-    primary_.setRectSelect(start, end, rectStart, rectEnd);
-    redisplaySelection(&oldSelection, &primary_);
+    primary.setRectSelect(start, end, rectStart, rectEnd);
+    redisplaySelection(&oldSelection, &primary);
 
 #ifdef Q_OS_UNIX
     if(syncXSelection_ && QApplication::clipboard()->supportsSelection()) {
@@ -596,93 +596,93 @@ void BasicTextBuffer<Ch, Tr>::BufRectSelect(int64_t start, int64_t end, int64_t 
 
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::BufGetSelectionPos(int64_t *start, int64_t *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept {
-    return primary_.getSelectionPos(start, end, isRect, rectStart, rectEnd);
+    return primary.getSelectionPos(start, end, isRect, rectStart, rectEnd);
 }
 
 // Same as above, but also returns TRUE for empty selections
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::BufGetEmptySelectionPos(int64_t *start, int64_t *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept {
-    return primary_.getSelectionPos(start, end, isRect, rectStart, rectEnd) || primary_.zeroWidth;
+    return primary.getSelectionPos(start, end, isRect, rectStart, rectEnd) || primary.zeroWidth;
 }
 
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetSelectionTextEx() const -> string_type {
-    return getSelectionTextEx(&primary_);
+    return getSelectionTextEx(&primary);
 }
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufRemoveSelected() noexcept {
-    removeSelected(&primary_);
+    removeSelected(&primary);
 }
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufReplaceSelectedEx(view_type text) noexcept {
-    replaceSelectedEx(&primary_, text);
+    replaceSelectedEx(&primary, text);
 }
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSecondarySelect(int64_t start, int64_t end) noexcept {
-    const Selection oldSelection = secondary_;
+    const Selection oldSelection = secondary;
 
-    secondary_.setSelection(start, end);
-    redisplaySelection(&oldSelection, &secondary_);
+    secondary.setSelection(start, end);
+    redisplaySelection(&oldSelection, &secondary);
 }
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSecondaryUnselect() noexcept {
-    const Selection oldSelection = secondary_;
+    const Selection oldSelection = secondary;
 
-    secondary_.selected = false;
-    secondary_.zeroWidth = false;
-    redisplaySelection(&oldSelection, &secondary_);
+    secondary.selected = false;
+    secondary.zeroWidth = false;
+    redisplaySelection(&oldSelection, &secondary);
 }
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSecRectSelect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept {
-    const Selection oldSelection = secondary_;
+    const Selection oldSelection = secondary;
 
-    secondary_.setRectSelect(start, end, rectStart, rectEnd);
-    redisplaySelection(&oldSelection, &secondary_);
+    secondary.setRectSelect(start, end, rectStart, rectEnd);
+    redisplaySelection(&oldSelection, &secondary);
 }
 
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetSecSelectTextEx() const -> string_type {
-    return getSelectionTextEx(&secondary_);
+    return getSelectionTextEx(&secondary);
 }
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufRemoveSecSelect() noexcept {
-    removeSelected(&secondary_);
+    removeSelected(&secondary);
 }
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufReplaceSecSelectEx(view_type text) noexcept {
-    replaceSelectedEx(&secondary_, text);
+    replaceSelectedEx(&secondary, text);
 }
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufHighlight(int64_t start, int64_t end) noexcept {
-    const Selection oldSelection = highlight_;
+    const Selection oldSelection = highlight;
 
-    highlight_.setSelection(start, end);
-    redisplaySelection(&oldSelection, &highlight_);
+    highlight.setSelection(start, end);
+    redisplaySelection(&oldSelection, &highlight);
 }
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufUnhighlight() noexcept {
-    const Selection oldSelection = highlight_;
+    const Selection oldSelection = highlight;
 
-    highlight_.selected = false;
-    highlight_.zeroWidth = false;
-    redisplaySelection(&oldSelection, &highlight_);
+    highlight.selected = false;
+    highlight.zeroWidth = false;
+    redisplaySelection(&oldSelection, &highlight);
 }
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufRectHighlight(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept {
-    const Selection oldSelection = highlight_;
+    const Selection oldSelection = highlight;
 
-    highlight_.setRectSelect(start, end, rectStart, rectEnd);
-    redisplaySelection(&oldSelection, &highlight_);
+    highlight.setRectSelect(start, end, rectStart, rectEnd);
+    redisplaySelection(&oldSelection, &highlight);
 }
 
 /*
@@ -1508,9 +1508,9 @@ void BasicTextBuffer<Ch, Tr>::replaceSelectedEx(Selection *sel, view_type text) 
 */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::updateSelections(int64_t pos, int64_t nDeleted, int64_t nInserted) noexcept {
-    primary_  .updateSelection(pos, nDeleted, nInserted);
-    secondary_.updateSelection(pos, nDeleted, nInserted);
-    highlight_.updateSelection(pos, nDeleted, nInserted);
+    primary  .updateSelection(pos, nDeleted, nInserted);
+    secondary.updateSelection(pos, nDeleted, nInserted);
+    highlight.updateSelection(pos, nDeleted, nInserted);
 }
 
 
@@ -2059,36 +2059,6 @@ void BasicTextBuffer<Ch, Tr>::BufSetTabDist(int dist) noexcept {
 template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::BufGetTabDist() const noexcept {
     return tabDist_;
-}
-
-template <class Ch, class Tr>
-auto BasicTextBuffer<Ch, Tr>::BufGetPrimary() const -> const Selection & {
-    return primary_;
-}
-
-template <class Ch, class Tr>
-auto BasicTextBuffer<Ch, Tr>::BufGetSecondary() const -> const Selection & {
-    return secondary_;
-}
-
-template <class Ch, class Tr>
-auto BasicTextBuffer<Ch, Tr>::BufGetHighlight() const -> const Selection &{
-    return highlight_;
-}
-
-template <class Ch, class Tr>
-auto BasicTextBuffer<Ch, Tr>::BufGetPrimary() -> Selection & {
-    return primary_;
-}
-
-template <class Ch, class Tr>
-auto BasicTextBuffer<Ch, Tr>::BufGetSecondary() -> Selection & {
-    return secondary_;
-}
-
-template <class Ch, class Tr>
-auto BasicTextBuffer<Ch, Tr>::BufGetHighlight() -> Selection & {
-    return highlight_;
 }
 
 template <class Ch, class Tr>

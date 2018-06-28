@@ -37,7 +37,7 @@ constexpr int NO_HINT = -1;
 using unfinishedStyleCBProcEx = void (*)(const TextArea *, int64_t, const void *);
 using cursorMovedCBEx         = void (*)(TextArea *, void *);
 using dragStartCBEx           = void (*)(TextArea *, void *);
-using dragEndCBEx             = void (*)(TextArea *, DragEndEvent *, void *);
+using dragEndCBEx             = void (*)(TextArea *, const DragEndEvent *, void *);
 using smartIndentCBEx         = void (*)(TextArea *, SmartIndentEvent *, void *);
 
 class TextArea : public QAbstractScrollArea {
