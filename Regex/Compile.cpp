@@ -1952,8 +1952,8 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 
             // Allocate memory.
 
-            re->program = new uint8_t[pContext.Reg_Size];
-            pContext.Code_Emit_Ptr = re->program;
+            re->program = std::make_unique<uint8_t[]>(pContext.Reg_Size);
+            pContext.Code_Emit_Ptr = &re->program[0];
         }
     }
 
@@ -1966,7 +1966,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 
     // First BRANCH.
 
-    uint8_t *scan = (re->program + REGEX_START_OFFSET);
+    uint8_t *scan = (&re->program[0] + REGEX_START_OFFSET);
 
     if (GET_OP_CODE(next_ptr(scan)) == END) { // Only one top-level choice.
         scan = OPERAND(scan);

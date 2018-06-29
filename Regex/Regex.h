@@ -9,6 +9,8 @@
 #include <array>
 #include <cstdint>
 #include <bitset>
+#include <memory>
+
 
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */
 enum RE_DEFAULT_FLAG {
@@ -21,7 +23,7 @@ enum RE_DEFAULT_FLAG {
 class Regex {
 public:
     Regex(view::string_view exp, int defaultFlags);
-    ~Regex();
+    ~Regex()                        = default;
     Regex(const Regex &)            = delete;
     Regex& operator=(const Regex &) = delete;
 
@@ -118,7 +120,7 @@ public:
     int top_branch              = 0;               /* Zero-based index of the top branch that matches. Used by syntax highlighting only. */
     char match_start            = '\0';            /* Internal use only. */
     char anchor                 = '\0';            /* Internal use only. */
-    uint8_t *program            = nullptr;
+    std::unique_ptr<uint8_t[]> program;
 
 public:
     static std::bitset<256> Default_Delimiters;

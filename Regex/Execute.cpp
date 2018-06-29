@@ -1036,7 +1036,7 @@ bool attempt(Regex *prog, const char *string) {
     std::fill_n(prog->startp.begin(), pContext.Total_Paren + 1, nullptr);
     std::fill_n(prog->endp.begin(),   pContext.Total_Paren + 1, nullptr);
 
-    if (match((prog->program + REGEX_START_OFFSET), &branch_index)) {
+    if (match((&prog->program[0] + REGEX_START_OFFSET), &branch_index)) {
         prog->startp[0]  = string;
         prog->endp[0]    = eContext.Reg_Input;     // <-- One char AFTER
         prog->extentpBW  = eContext.Extent_Ptr_BW; //     matched string!
@@ -1105,7 +1105,7 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_c
     Regex *const re = this;
 
     // Check validity of program.
-    if (U_CHAR_AT(re->program) != MAGIC) {
+    if (U_CHAR_AT(&re->program[0]) != MAGIC) {
         reg_error("corrupted program");
         return false;
     }

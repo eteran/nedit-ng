@@ -112,13 +112,6 @@ ParseContext pContext;
 
 
 /**
- * @brief Regex::~Regex
- */
-Regex::~Regex() {
-	delete [] program;
-}
-
-/**
  * @brief Regex::execute
  * @param string
  * @param reverse

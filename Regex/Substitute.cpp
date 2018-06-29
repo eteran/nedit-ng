@@ -17,7 +17,7 @@ bool Regex::SubstituteRE(view::string_view source, std::string &dest) const {
 
     char test;
 
-    if (U_CHAR_AT(re->program) != MAGIC) {
+    if (U_CHAR_AT(&re->program[0]) != MAGIC) {
         reg_error("damaged Regex passed to 'SubstituteRE'");
         return false;
     }
