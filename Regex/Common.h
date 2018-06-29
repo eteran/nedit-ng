@@ -74,8 +74,8 @@ R literal_escape(Ch ch) noexcept {
  * octal escape.  raise<RegexError> is called if \x0, \x00, \0, \00, \000, or
  * \0000 is specified.
  *--------------------------------------------------------------------*/
-template <class R, class T>
-R numeric_escape(T ch, const char **parse) noexcept {
+template <class R, class Ch>
+R numeric_escape(Ch ch, const char **parse) noexcept {
 
     static const char digits[] = "fedcbaFEDCBA9876543210";
 
