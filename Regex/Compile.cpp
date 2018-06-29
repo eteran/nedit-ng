@@ -1323,8 +1323,8 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
          *          \_____3____|
          */
 
-        (void)insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 2,4
-        (void)insert(NOTHING, ret_val, 0UL, 0UL, 0); // 3
+        insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 2,4
+        insert(NOTHING, ret_val, 0UL, 0UL, 0); // 3
 
         next = emit_node(NOTHING); // 1,2,3
 
@@ -1459,9 +1459,9 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
             tail(emit_node(BACK), ret_val);              // 3
             tail(next, emit_node(BACK));                 // 4
-            (void)insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 6,8
-            (void)insert(NOTHING, ret_val, 0UL, 0UL, 0); // 5
-            (void)insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 8,9
+            insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 6,8
+            insert(NOTHING, ret_val, 0UL, 0UL, 0); // 5
+            insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 8,9
 
             next = emit_node(NOTHING); // 5,6,7
 
@@ -1492,7 +1492,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
             next = emit_special(TEST_COUNT, min_max[1], pContext.Num_Braces); // 2,6
 
             tail(ret_val, next);                        // 2
-            (void)insert(BRANCH, ret_val, 0UL, 0UL, 0); // 3,4,7
+            insert(BRANCH, ret_val, 0UL, 0UL, 0); // 3,4,7
             tail(emit_node(BACK), ret_val);             // 3
 
             next = emit_node(BRANCH); // 4,5
