@@ -287,7 +287,7 @@ unsigned long greedy(uint8_t *p, unsigned long max) {
    a 25% speedup (again, witnesses on Perl syntax highlighting). */
 uint8_t *NEXT_PTR(uint8_t *ptr) {
 
-    const int offset = GET_OFFSET(ptr);
+    const uint16_t offset = GET_OFFSET(ptr);
 
     if (offset == 0) {
         return nullptr;
@@ -763,10 +763,8 @@ bool match(uint8_t *prog, int *branch_index_param) {
 
         case TEST_COUNT:
             if (eContext.BraceCounts[*OPERAND(scan)] < static_cast<unsigned long>(GET_OFFSET(scan + NEXT_PTR_SIZE + INDEX_SIZE))) {
-
                 next = scan + NODE_SIZE + INDEX_SIZE + NEXT_PTR_SIZE;
             }
-
             break;
 
         case BACK_REF:
@@ -1145,9 +1143,7 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_c
 
     // Allocate memory for {m,n} construct counting variables if need be.
     if (pContext.Num_Braces > 0) {
-        eContext.BraceCounts = new uint32_t[pContext.Num_Braces];
-    } else {
-        eContext.BraceCounts = nullptr;
+        eContext.BraceCounts = std::make_unique<uint32_t[]>(pContext.Num_Braces);
     }
 
     /* Initialize the first nine (9) capturing parentheses start and end
@@ -1267,8 +1263,6 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_c
     }
 
 SINGLE_RETURN:
-    delete [] eContext.BraceCounts;
-
     if (eContext.Recursion_Limit_Exceeded) {
         return false;
     }

@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <array>
 #include <bitset>
+#include <memory>
 
 // #define ENABLE_CROSS_REGEX_BACKREF
 
@@ -18,7 +19,7 @@ template <size_t N>
 using array_iterator = typename std::array<const char *, N>::iterator;
 
 struct ExecuteContext {
-    uint32_t *BraceCounts;                       // Define a pointer to an array to hold general (...){m,n} counts.
+    std::unique_ptr<uint32_t[]> BraceCounts;     // Define a pointer to an array to hold general (...){m,n} counts.
     const char *Reg_Input;                       // String-input pointer.
     const char *Start_Of_String;                 // Beginning of input, for ^ and < checks.
     const char *End_Of_String;                   // Logical end of input
