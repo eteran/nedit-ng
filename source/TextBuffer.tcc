@@ -1262,7 +1262,7 @@ void BasicTextBuffer<Ch, Tr>::findRectSelBoundariesForCopy(int64_t lineStartPos,
             break;
         }
 
-        const int64_t width = BufCharWidth(c, indent, tabDist_);
+        const int width = BufCharWidth(c, indent, tabDist_);
         if (indent + width > rectStart) {
             if (indent != rectStart && c != Ch('\t')) {
                 pos++;
@@ -1282,7 +1282,7 @@ void BasicTextBuffer<Ch, Tr>::findRectSelBoundariesForCopy(int64_t lineStartPos,
             break;
         }
 
-        const int64_t width = BufCharWidth(c, indent, tabDist_);
+        const int width = BufCharWidth(c, indent, tabDist_);
         indent += width;
         if (indent > rectEnd) {
             if (indent - width != rectEnd && c != Ch('\t')) {
@@ -1621,7 +1621,7 @@ auto BasicTextBuffer<Ch, Tr>::expandTabsEx(view_type text, int64_t startIndent, 
     int64_t indent = startIndent;
     for (Ch ch : text) {
         if (ch == Ch('\t')) {
-            const int64_t len = BufCharWidth(ch, indent, tabDist);
+            const int len = BufCharWidth(ch, indent, tabDist);
             outLen += static_cast<size_t>(len);
             indent += len;
         } else if (ch == Ch('\n')) {
@@ -1693,7 +1693,7 @@ int BasicTextBuffer<Ch, Tr>::addPaddingEx(Out out, int64_t startIndent, int64_t 
 
     if (useTabs) {
         while (indent < toIndent) {
-            int64_t len = BufCharWidth(Ch('\t'), indent, tabDist);
+            const int len = BufCharWidth(Ch('\t'), indent, tabDist);
             if (len > 1 && indent + len <= toIndent) {
                 *out++ = Ch('\t');
                 ++count;

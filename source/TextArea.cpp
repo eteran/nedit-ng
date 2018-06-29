@@ -5480,7 +5480,7 @@ void TextArea::processTabAP(EventFlags flags) {
 	auto outPtr = std::back_inserter(outStr);
 	indent = startIndent;
 	while (indent < toIndent) {
-        int64_t tabWidth = TextBuffer::BufCharWidth('\t', indent, buffer_->BufGetTabDist());
+        const int tabWidth = TextBuffer::BufCharWidth('\t', indent, buffer_->BufGetTabDist());
         if (buffer_->BufGetUseTabs() && tabWidth > 1 && indent + tabWidth <= toIndent) {
 			*outPtr++ = '\t';
 			indent += tabWidth;
