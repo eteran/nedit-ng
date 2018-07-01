@@ -4,7 +4,6 @@
 
 #include <QTimer>
 #include <memory>
-#include <system_error>
 
 class DocumentWidget;
 class MainWindow;
