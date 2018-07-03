@@ -148,8 +148,8 @@ static std::error_code filenameDialogMS(DocumentWidget *document, Arguments argu
 static std::error_code replaceAllInSelectionMS(DocumentWidget *document, Arguments arguments, DataValue *result);
 static std::error_code replaceAllMS(DocumentWidget *document, Arguments arguments, DataValue *result);
 
-static std::error_code fillPatternResultEx(DataValue *result, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, int bufferPos);
-static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *document, const QString &styleName, bool includeName, size_t patCode, int bufferPos);
+static std::error_code fillPatternResultEx(DataValue *result, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, TextCursor bufferPos);
+static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *document, const QString &styleName, bool includeName, size_t patCode, TextCursor bufferPos);
 
 static std::error_code readSearchArgs(Arguments arguments, Direction *searchDirection, SearchType *searchType, WrapMode *wrap);
 static std::error_code readArgument(const DataValue &dv, int *result);
@@ -2415,7 +2415,7 @@ static std::error_code getRangeMS(DocumentWidget *document, Arguments arguments,
         std::swap(from, to);
     }
 
-    std::string rangeText = buf->BufGetRangeEx(from, to);
+    std::string rangeText = buf->BufGetRangeEx(TextCursor(from), TextCursor(to));
 
     *result = make_value(rangeText);
     return MacroErrorCode::Success;
@@ -2439,7 +2439,7 @@ static std::error_code getCharacterMS(DocumentWidget *document, Arguments argume
     pos = qBound<int64_t>(0, pos, buf->BufGetLength());
 
     // Return the character in a pre-allocated string)
-    std::string str(1, buf->BufGetCharacter(pos));
+    std::string str(1, buf->BufGetCharacter(TextCursor(pos)));
 
     *result = make_value(str);
     return MacroErrorCode::Success;
@@ -2478,7 +2478,7 @@ static std::error_code replaceRangeMS(DocumentWidget *document, Arguments argume
     }
 
     // Do the replace
-    buf->BufReplaceEx(from, to, string);
+    buf->BufReplaceEx(TextCursor(from), TextCursor(to), string);
     *result = make_value();
     return MacroErrorCode::Success;
 }
@@ -2834,6 +2834,7 @@ static std::error_code searchMS(DocumentWidget *document, Arguments arguments, D
 ** also returns the ending position of the match in $searchEndPos
 */
 static std::error_code searchStringMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
     int64_t beginPos;
     WrapMode wrap;
     bool found     = false;
@@ -3021,7 +3022,7 @@ static std::error_code setCursorPosMS(DocumentWidget *document, Arguments argume
 
     // Set the position
     TextArea *area = MainWindow::fromDocument(document)->lastFocus();
-    area->TextSetCursorPos(pos);
+    area->TextSetCursorPos(TextCursor(pos));
     *result = make_value();
     return MacroErrorCode::Success;
 }
@@ -3044,13 +3045,16 @@ static std::error_code selectMS(DocumentWidget *document, Arguments arguments, D
     end   = qBound<int64_t>(0, end,   document->buffer_->BufGetLength());
 
     // Make the selection
-    document->buffer_->BufSelect(start, end);
+    document->buffer_->BufSelect(TextCursor(start), TextCursor(end));
     *result = make_value();
     return MacroErrorCode::Success;
 }
 
 static std::error_code selectRectangleMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-    int start, end, left, right;
+    int64_t start;
+    int64_t end;
+    int left;
+    int right;
 
     // Get arguments and convert to int
     if(std::error_code ec = readArguments(arguments, 0, &start, &end, &left, &right)) {
@@ -3058,7 +3062,7 @@ static std::error_code selectRectangleMS(DocumentWidget *document, Arguments arg
     }
 
     // Make the selection
-    document->buffer_->BufRectSelect(start, end, left, right);
+    document->buffer_->BufRectSelect(TextCursor(start), TextCursor(end), left, right);
     *result = make_value();
     return MacroErrorCode::Success;
 }
@@ -3770,11 +3774,12 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
 
     *result = make_value(std::make_shared<Array>());
 
-    int64_t beginPos  = 0;
-    int64_t lastEnd   = 0;
-    int indexNum  = 0;
-    auto strLength = static_cast<int64_t>(sourceStr.size());
-    bool found    = true;
+    int64_t beginPos = 0;
+    int64_t lastEnd  = 0;
+    int indexNum     = 0;
+    auto strLength   = static_cast<int64_t>(sourceStr.size());
+    bool found       = true;
+
     while (found && beginPos < strLength) {
 
         auto indexStr = std::to_string(indexNum);
@@ -3915,7 +3920,7 @@ static std::error_code cursorMV(DocumentWidget *document, Arguments arguments, D
     }
 
     TextArea *area  = MainWindow::fromDocument(document)->lastFocus();
-    *result         = make_value(area->TextGetCursorPos());
+    *result         = make_value(to_integer(area->TextGetCursorPos()));
     return MacroErrorCode::Success;
 }
 
@@ -3928,12 +3933,12 @@ static std::error_code lineMV(DocumentWidget *document, Arguments arguments, Dat
     int64_t line;
     int64_t colNum;
 
-    TextBuffer *buf = document->buffer_;
-    TextArea *area  = MainWindow::fromDocument(document)->lastFocus();
-    int64_t cursorPos   = area->TextGetCursorPos();
+    TextBuffer *buf      = document->buffer_;
+    TextArea *area       = MainWindow::fromDocument(document)->lastFocus();
+    TextCursor cursorPos = area->TextGetCursorPos();
 
     if (!area->TextDPosToLineAndCol(cursorPos, &line, &colNum)) {
-        line = buf->BufCountLines(0, cursorPos) + 1;
+        line = buf->BufCountLines(TextCursor(), cursorPos) + 1;
     }
 
     *result = make_value(line);
@@ -3946,9 +3951,9 @@ static std::error_code columnMV(DocumentWidget *document, Arguments arguments, D
         return MacroErrorCode::TooManyArguments;
     }
 
-    TextBuffer *buf = document->buffer_;
-    TextArea *area  = MainWindow::fromDocument(document)->lastFocus();
-    int64_t cursorPos   = area->TextGetCursorPos();
+    TextBuffer *buf      = document->buffer_;
+    TextArea *area       = MainWindow::fromDocument(document)->lastFocus();
+    TextCursor cursorPos = area->TextGetCursorPos();
 
     *result = make_value(buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos));
     return MacroErrorCode::Success;
@@ -3990,7 +3995,7 @@ static std::error_code selectionStartMV(DocumentWidget *document, Arguments argu
         return MacroErrorCode::TooManyArguments;
     }
 
-    *result = make_value(document->buffer_->primary.selected ? document->buffer_->primary.start : -1);
+    *result = make_value(document->buffer_->primary.selected ? to_integer(document->buffer_->primary.start) : -1);
     return MacroErrorCode::Success;
 }
 
@@ -4000,7 +4005,7 @@ static std::error_code selectionEndMV(DocumentWidget *document, Arguments argume
         return MacroErrorCode::TooManyArguments;
     }
 
-    *result = make_value(document->buffer_->primary.selected ? document->buffer_->primary.end : -1);
+    *result = make_value(document->buffer_->primary.selected ? to_integer(document->buffer_->primary.end) : -1);
     return MacroErrorCode::Success;
 }
 
@@ -4534,8 +4539,8 @@ static std::error_code rangesetGetByNameMS(DocumentWidget *document, Arguments a
 static std::error_code rangesetAddMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
     TextBuffer *buffer = document->buffer_;
     const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-    int64_t start;
-    int64_t end;
+    TextCursor start;
+    TextCursor end;
     int64_t rectStart;
     int64_t rectEnd;
     int64_t index;
@@ -4560,14 +4565,15 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
         return MacroErrorCode::RangesetDoesNotExist;
     }
 
-    start = end = -1;
+    start = TextCursor(-1);
+    end   = TextCursor(-1);
 
     if (arguments.size() == 1) {
         // pick up current selection in this window
         if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
             return MacroErrorCode::SelectionMissing;
         }
-        if (!targetRangeset->RangesetAddBetween(buffer, start, end)) {
+        if (!targetRangeset->RangesetAddBetween(buffer, TextCursor(start), end)) {
             return MacroErrorCode::FailedToAddSelection;
         }
     }
@@ -4589,28 +4595,33 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
 
     if (arguments.size() == 3) {
         // add a range bounded by the start and end positions in $2, $3
-        if (std::error_code ec = readArguments(arguments, 1, &start, &end)) {
+        int64_t tmp_start;
+        int64_t tmp_end;
+        if (std::error_code ec = readArguments(arguments, 1, &tmp_start, &tmp_end)) {
             return ec;
         }
 
+        start = TextCursor(tmp_start);
+        end   = TextCursor(tmp_end);
+
         // make sure range is in order and fits buffer size
-        int64_t maxpos = buffer->BufGetLength();
-        start = qBound<int64_t>(0, start, maxpos);
-        end   = qBound<int64_t>(0, end, maxpos);
+        const TextCursor maxpos = TextCursor(buffer->BufGetLength());
+        start = qBound(TextCursor(), start, maxpos);
+        end   = qBound(TextCursor(), end,   maxpos);
 
         if (start > end) {
             std::swap(start, end);
         }
 
-        if ((start != end) && !targetRangeset->RangesetAddBetween(buffer, start, end)) {
+        if ((start != end) && !targetRangeset->RangesetAddBetween(buffer, TextCursor(start), TextCursor(end))) {
             return MacroErrorCode::FailedToAddRange;
         }
     }
 
     // (to) which range did we just add?
     if (arguments.size() != 2 && start >= 0) {
-        start = (start + end) / 2; // "middle" of added range
-        index = 1 + targetRangeset->RangesetFindRangeOfPos(start, false);
+        start = (start + to_integer(end)) / 2; // "middle" of added range
+        index = 1 + targetRangeset->RangesetFindRangeOfPos(TextCursor(start), false);
     } else {
         index = 0;
     }
@@ -4656,10 +4667,16 @@ static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments ar
 
     if (arguments.size() == 1) {
         // remove current selection in this window
-        if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
+        TextCursor tmp_start;
+        TextCursor tmp_end;
+        if (!buffer->BufGetSelectionPos(&tmp_start, &tmp_end, &isRect, &rectStart, &rectEnd) || isRect) {
             return MacroErrorCode::SelectionMissing;
         }
-        targetRangeset->RangesetRemoveBetween(buffer, start, end);
+
+        start = to_integer(tmp_start);
+        end   = to_integer(tmp_end);
+
+        targetRangeset->RangesetRemoveBetween(buffer, TextCursor(start), TextCursor(end));
     }
 
     if (arguments.size() == 2) {
@@ -4694,7 +4711,7 @@ static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments ar
             std::swap(start, end);
         }
 
-        targetRangeset->RangesetRemoveBetween(buffer, start, end);
+        targetRangeset->RangesetRemoveBetween(buffer, TextCursor(start), TextCursor(end));
     }
 
     // set up result
@@ -4809,9 +4826,9 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 
     const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
     Rangeset *rangeset;
-    int64_t start = 0;
-    int64_t end = 0;
-    int64_t dummy;
+    TextCursor start = {};
+    TextCursor end   = {};
+    TextCursor dummy;
     int64_t rangeIndex;
     DataValue element;
     int label = 0;
@@ -4850,11 +4867,11 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
     if (!ok)
         return MacroErrorCode::Success;
 
-    element = make_value(start);
+    element = make_value(to_integer(start));
     if (!ArrayInsert(result, "start", &element))
         return MacroErrorCode::InsertFailed;
 
-    element = make_value(end);
+    element = make_value(to_integer(end));
     if (!ArrayInsert(result, "end", &element))
         return MacroErrorCode::InsertFailed;
 
@@ -4894,7 +4911,7 @@ static std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments
     int64_t pos = 0;
     if (arguments.size() == 1) {
         TextArea *area = MainWindow::fromDocument(document)->lastFocus();
-        pos = area->TextGetCursorPos();
+        pos = to_integer(area->TextGetCursorPos());
     } else if (arguments.size() == 2) {
         if (std::error_code ec = readArgument(arguments[1], &pos)) {
             return ec;
@@ -4905,7 +4922,7 @@ static std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments
     if (pos < 0 || pos > maxpos) {
         rangeIndex = 0;
     } else {
-        rangeIndex = rangeset->RangesetFindRangeOfPos(pos, false) + 1;
+        rangeIndex = rangeset->RangesetFindRangeOfPos(TextCursor(pos), false) + 1;
     }
 
     // set up result
@@ -5061,7 +5078,7 @@ static std::error_code rangesetSetModeMS(DocumentWidget *document, Arguments arg
 **      ["style"]       Name of style
 **
 */
-static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *document, const QString &styleName, bool includeName, size_t patCode, int bufferPos) {
+static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *document, const QString &styleName, bool includeName, size_t patCode, TextCursor bufferPos) {
     DataValue DV;
 
     *result = make_value(std::make_shared<Array>());
@@ -5126,7 +5143,7 @@ static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *docu
 
     if (bufferPos >= 0) {
         // insert extent
-        DV = make_value(document->StyleLengthOfCodeFromPosEx(bufferPos));
+        DV = make_value(document->StyleLengthOfCodeFromPosEx(TextCursor(bufferPos)));
         if (!ArrayInsert(result, "extent", &DV)) {
             return MacroErrorCode::InsertFailed;
         }
@@ -5163,7 +5180,7 @@ static std::error_code getStyleByNameMS(DocumentWidget *document, Arguments argu
                 styleName,
                 false,
                 0,
-                -1);
+                TextCursor(-1));
 }
 
 /*
@@ -5180,7 +5197,7 @@ static std::error_code getStyleByNameMS(DocumentWidget *document, Arguments argu
 */
 static std::error_code getStyleAtPosMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    int bufferPos;
+    int64_t bufferPos;
     TextBuffer *buf = document->buffer_;
 
     // Validate number of arguments
@@ -5198,7 +5215,7 @@ static std::error_code getStyleAtPosMS(DocumentWidget *document, Arguments argum
     }
 
     // Determine pattern code
-    size_t patCode = document->HighlightCodeOfPosEx(bufferPos);
+    size_t patCode = document->HighlightCodeOfPosEx(TextCursor(bufferPos));
     if (patCode == 0) {
         // if there is no pattern we just return an empty array.
         return MacroErrorCode::Success;
@@ -5210,7 +5227,7 @@ static std::error_code getStyleAtPosMS(DocumentWidget *document, Arguments argum
         document->HighlightStyleOfCodeEx(patCode),
         true,
         patCode,
-        bufferPos);
+        TextCursor(bufferPos));
 }
 
 /*
@@ -5223,7 +5240,7 @@ static std::error_code getStyleAtPosMS(DocumentWidget *document, Arguments argum
 **      ["pattern"]     Name of pattern
 **
 */
-std::error_code fillPatternResultEx(DataValue *result, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, int bufferPos) {
+std::error_code fillPatternResultEx(DataValue *result, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, TextCursor bufferPos) {
 
     DataValue DV;
 
@@ -5287,7 +5304,7 @@ static std::error_code getPatternByNameMS(DocumentWidget *document, Arguments ar
                 patternName,
                 false,
                 pattern->style,
-                -1);
+                TextCursor(-1));
 }
 
 /*
@@ -5299,7 +5316,7 @@ static std::error_code getPatternByNameMS(DocumentWidget *document, Arguments ar
 **      ["extent"]      Distance from position over which this pattern applies
 */
 static std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-    int bufferPos;
+    int64_t bufferPos;
     TextBuffer *buffer = document->buffer_;
 
     *result = make_value(ArrayPtr());
@@ -5322,7 +5339,7 @@ static std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arg
     }
 
     // Determine the highlighting pattern used
-    size_t patCode = document->HighlightCodeOfPosEx(bufferPos);
+    size_t patCode = document->HighlightCodeOfPosEx(TextCursor(bufferPos));
     if (patCode == 0) {
         // if there is no highlighting pattern we just return an empty array.
         return MacroErrorCode::Success;
@@ -5334,7 +5351,7 @@ static std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arg
         document->HighlightNameOfCodeEx(patCode),
         true,
         document->HighlightStyleOfCodeEx(patCode),
-        bufferPos);
+        TextCursor(bufferPos));
 }
 
 /*

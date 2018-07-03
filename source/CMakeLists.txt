@@ -260,6 +260,7 @@ add_executable(nedit-ng
 	TextBuffer.h
 	TextBuffer.tcc
 	TextBufferFwd.h
+	TextCursor.h
 	TextEditEvent.cpp
 	TextEditEvent.h
 	UndoInfo.cpp

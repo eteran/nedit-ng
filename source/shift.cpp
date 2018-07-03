@@ -139,11 +139,11 @@ std::string fillParagraphEx(view::string_view text, int64_t leftMargin, int64_t 
 /*
 ** Find the boundaries of the paragraph containing pos
 */
-int64_t findParagraphEnd(TextBuffer *buf, int64_t startPos) {
+TextCursor findParagraphEnd(TextBuffer *buf, TextCursor startPos) {
 
     static const char whiteChars[] = " \t";
 
-    int64_t pos = buf->BufEndOfLine(startPos) + 1;
+    TextCursor pos = buf->BufEndOfLine(startPos) + 1;
     while (pos < buf->BufGetLength()) {
         char c = buf->BufGetCharacter(pos);
         if (c == '\n')
@@ -156,7 +156,7 @@ int64_t findParagraphEnd(TextBuffer *buf, int64_t startPos) {
         }
     }
 
-    return pos < buf->BufGetLength() ? pos : buf->BufGetLength();
+    return pos < buf->BufGetLength() ? pos : TextCursor(buf->BufGetLength());
 }
 
 /*
@@ -221,7 +221,7 @@ std::string fillParagraphsEx(view::string_view text, int64_t rightMargin, int ta
     ** Loop over paragraphs, filling each one, and accumulating the results
     ** in buf
     */
-    int64_t paraStart = 0;
+    TextCursor paraStart = {};
     for (;;) {
 
         // Skip over white space
@@ -241,12 +241,12 @@ std::string fillParagraphsEx(view::string_view text, int64_t rightMargin, int ta
         paraStart = buf.BufStartOfLine(paraStart);
 
         // Find the end of the paragraph
-        int64_t paraEnd = findParagraphEnd(&buf, paraStart);
+        TextCursor paraEnd = findParagraphEnd(&buf, paraStart);
 
         /* Operate on either the one paragraph, or to make them all identical,
            do all of them together (fill paragraph can format all the paragraphs
            it finds with identical specs if it gets passed more than one) */
-        int64_t fillEnd = alignWithFirst ? buf.BufGetLength() : paraEnd;
+        TextCursor fillEnd = alignWithFirst ? TextCursor(buf.BufGetLength()) : paraEnd;
 
         /* Get the paragraph in a text string (or all of the paragraphs if
            we're making them all the same) */
@@ -275,15 +275,15 @@ std::string fillParagraphsEx(view::string_view text, int64_t rightMargin, int ta
     return buf.BufGetAllEx();
 }
 
-int64_t findParagraphStart(TextBuffer *buf, int64_t startPos) {
+TextCursor findParagraphStart(TextBuffer *buf, TextCursor startPos) {
 
     static const char whiteChars[] = " \t";
 
     if (startPos == 0)
-        return 0;
+        return TextCursor();
 
-    int64_t parStart = buf->BufStartOfLine(startPos);
-    int64_t pos      = parStart - 2;
+    TextCursor parStart = buf->BufStartOfLine(startPos);
+    TextCursor pos      = parStart - 2;
 
     while (pos > 0) {
         char c = buf->BufGetCharacter(pos);
@@ -296,7 +296,7 @@ int64_t findParagraphStart(TextBuffer *buf, int64_t startPos) {
             pos = parStart - 2;
         }
     }
-    return parStart > 0 ? parStart : 0;
+    return parStart > 0 ? parStart : TextCursor();
 }
 
 int countLinesEx(view::string_view text) {
@@ -593,7 +593,7 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 ** if "byTab" is true.  (The length of a tab stop is the size of an emulated
 ** tab if emulated tabs are turned on, or a hardware tab if not).
 */
-void shiftRectEx(DocumentWidget *document, TextArea *area, int direction, bool byTab, int64_t selStart, int64_t selEnd, int64_t rectStart, int64_t rectEnd) {
+void shiftRectEx(DocumentWidget *document, TextArea *area, int direction, bool byTab, TextCursor selStart, TextCursor selEnd, int64_t rectStart, int64_t rectEnd) {
     int64_t offset;
     TextBuffer *buf = document->buffer_;
 
@@ -627,8 +627,8 @@ void shiftRectEx(DocumentWidget *document, TextArea *area, int direction, bool b
 
     // Do the shift in the temporary buffer
     text = buf->BufGetTextInRectEx(selStart, selEnd, rectStart, rectEnd);
-    tempBuf.BufRemoveRect(0, selEnd - selStart, rectStart, rectEnd);
-    tempBuf.BufInsertColEx(rectStart + offset, 0, text, nullptr, nullptr);
+    tempBuf.BufRemoveRect(TextCursor(), TextCursor(selEnd - selStart), rectStart, rectEnd);
+    tempBuf.BufInsertColEx(rectStart + offset, TextCursor(), text, nullptr, nullptr);
 
     // Make the change in the real buffer
     buf->BufReplaceEx(selStart, selEnd, tempBuf.BufAsStringEx());
@@ -643,8 +643,8 @@ void shiftRectEx(DocumentWidget *document, TextArea *area, int direction, bool b
 ** tab if emulated tabs are turned on, or a hardware tab if not).
 */
 void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection direction, bool byTab) {
-    int64_t selStart;
-    int64_t selEnd;
+    TextCursor selStart;
+    TextCursor selEnd;
     bool isRect;
     int64_t rectStart;
     int64_t rectEnd;
@@ -655,7 +655,7 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
     // get selection, if no text selected, use current insert position
     if (!buf->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
 
-        const int64_t cursorPos = area->TextGetCursorPos();
+        const TextCursor cursorPos = area->TextGetCursorPos();
         selStart = buf->BufStartOfLine(cursorPos);
         selEnd = buf->BufEndOfLine(cursorPos);
 
@@ -668,11 +668,11 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
         text = buf->BufGetRangeEx(selStart, selEnd);
 
     } else if (isRect) {
-        const int64_t cursorPos = area->TextGetCursorPos();
+        const TextCursor cursorPos = area->TextGetCursorPos();
         int64_t origLength = buf->BufGetLength();
         shiftRectEx(document, area, direction, byTab, selStart, selEnd, rectStart, rectEnd);
 
-        area->TextSetCursorPos((cursorPos < (selEnd + selStart) / 2) ? selStart : cursorPos + (buf->BufGetLength() - origLength));
+        area->TextSetCursorPos((cursorPos < (selEnd + to_integer(selStart)) / 2) ? selStart : cursorPos + (buf->BufGetLength() - origLength));
         return;
     } else {
         selStart = buf->BufStartOfLine(selStart);
@@ -698,21 +698,21 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
 
     buf->BufReplaceSelectedEx(shiftedText);
 
-    const int64_t newEndPos = selStart + static_cast<int64_t>(shiftedText.size());
+    const TextCursor newEndPos = selStart + static_cast<int64_t>(shiftedText.size());
     buf->BufSelect(selStart, newEndPos);
 }
 
 
 void FillSelectionEx(DocumentWidget *document, TextArea *area) {
     TextBuffer *buf = document->buffer_;
-    int64_t left;
-    int64_t right;
+    TextCursor left;
+    TextCursor right;
     int64_t rectStart = 0;
     int64_t rectEnd   = 0;
     bool isRect;
     int64_t rightMargin;
 
-    int64_t insertPos = area->TextGetCursorPos();
+    TextCursor insertPos = area->TextGetCursorPos();
     int hasSelection = document->buffer_->primary.selected;
     std::string text;
 

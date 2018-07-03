@@ -2,6 +2,7 @@
 #ifndef UNDO_INFO_H_
 #define UNDO_INFO_H_
 
+#include "TextCursor.h"
 #include <string>
 
 /* The accumulated list of undo operations can potentially consume huge
@@ -26,7 +27,7 @@ enum UndoTypes {
 /* Record on undo list */
 class UndoInfo {
 public:
-    explicit UndoInfo(UndoTypes undoType, int64_t start, int64_t end);
+    explicit UndoInfo(UndoTypes undoType, TextCursor start, TextCursor end);
     UndoInfo(const UndoInfo &)            = default;
     UndoInfo(UndoInfo &&)                 = default;
 	UndoInfo &operator=(const UndoInfo &) = default;
@@ -35,8 +36,8 @@ public:
 	
 public:
 	UndoTypes type;
-    int64_t startPos;
-    int64_t endPos;
+    TextCursor startPos;
+    TextCursor endPos;
 	std::string oldText;
     bool inUndo          = false; // flag to indicate undo command on this record in progress. Redirects SaveUndoInfo to save the next modifications on the redo list instead of the undo list.
     bool restoresToSaved = false; // flag to indicate undoing this operation will restore file to last saved (unmodified) state

@@ -1,7 +1,8 @@
 
-#ifndef SMARTINDENTCBSTRUCT_H_
-#define SMARTINDENTCBSTRUCT_H_
+#ifndef SMART_INDENT_EVENT_H_
+#define SMART_INDENT_EVENT_H_
 
+#include "TextCursor.h"
 #include "Util/string_view.h"
 
 enum SmartIndentCallbackReasons {
@@ -11,7 +12,7 @@ enum SmartIndentCallbackReasons {
 
 struct SmartIndentEvent {
 	SmartIndentCallbackReasons reason;
-    int64_t                    pos;
+    TextCursor                 pos;
 	int                        indentRequest;
 	view::string_view          charsTyped;
 };

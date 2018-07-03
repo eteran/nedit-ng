@@ -45,7 +45,7 @@ public:
         QString searchString;
         QString path;
         size_t  language;
-        int     posInf;
+        int64_t posInf;
         int     index;
     };
 
@@ -61,7 +61,7 @@ public:
 public:
     static QList<Tag> LookupTagFromList(std::deque<File> *FileList, const QString &name, SearchMode mode);
     static QList<Tag> getTag(const QString &name, SearchMode mode);
-    static int addTag(const QString &name, const QString &file, size_t lang, const QString &search, int posInf, const QString &path, int index);
+    static int addTag(const QString &name, const QString &file, size_t lang, const QString &search, int64_t posInf, const QString &path, int index);
     static bool searchLine(const std::string &line, const std::string &regex);
 
 private:
@@ -84,14 +84,14 @@ public:
 public:
     static QString tagFiles[MAXDUPTAGS];
     static QString tagSearch[MAXDUPTAGS];
-    static int     tagPosInf[MAXDUPTAGS];
+    static int64_t tagPosInf[MAXDUPTAGS];
 
 public:
-    static bool           globAnchored;
-    static int            globPos;
-    static TipHAlignMode  globHAlign;
-    static TipVAlignMode  globVAlign;
-    static TipAlignMode globAlignMode;
+    static bool                            globAnchored;
+    static boost::variant<int, TextCursor> globPos;
+    static TipHAlignMode                   globHAlign;
+    static TipVAlignMode                   globVAlign;
+    static TipAlignMode                    globAlignMode;
 };
 
 #endif

@@ -116,7 +116,7 @@ bool isParentStyle(const std::vector<uint8_t> &parentStyles, int style1, int sty
 ** Note: This routine must be kept efficient.  It is called for every
 ** character typed.
 */
-void SyntaxHighlightModifyCBEx(int64_t pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
+void SyntaxHighlightModifyCBEx(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
 
     Q_UNUSED(nRestyled);
     Q_UNUSED(deletedText);
@@ -166,7 +166,7 @@ void SyntaxHighlightModifyCBEx(int64_t pos, int64_t nInserted, int64_t nDeleted,
 ** been presented to the patterns.  Changes the style buffer in "highlightData"
 ** with the parsing result.
 */
-void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, int64_t pos, int64_t nInserted, const QString &delimiters) {
+void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, TextCursor pos, int64_t nInserted, const QString &delimiters) {
 
     const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer;
     HighlightData *pass1Patterns  = highlightData->pass1Patterns;
@@ -178,14 +178,14 @@ void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &h
 	/* Find the position "beginParse" at which to begin reparsing.  This is
 	   far enough back in the buffer such that the guranteed number of
 	   lines and characters of context are examined. */
-    int64_t beginParse = pos;
+    TextCursor beginParse = pos;
     int parseInStyle = findSafeParseRestartPos(buf, highlightData, &beginParse);
 
 	/* Find the position "endParse" at which point it is safe to stop
 	   parsing, unless styles are getting changed beyond the last
 	   modification */
-    int64_t lastMod  = pos + nInserted;
-    int64_t endParse = forwardOneContext(buf, context, lastMod);
+    TextCursor lastMod  = pos + nInserted;
+    TextCursor endParse = forwardOneContext(buf, context, lastMod);
 
 	/*
 	** Parse the buffer from beginParse, until styles compare
@@ -209,7 +209,7 @@ void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &h
 			startPattern = pass1Patterns;
 		}
 
-        int64_t endAt = parseBufferRange(startPattern, pass2Patterns, buf, styleBuf, context, beginParse, endParse, delimiters);
+        TextCursor endAt = parseBufferRange(startPattern, pass2Patterns, buf, styleBuf, context, beginParse, endParse, delimiters);
 
 		/* If parse completed at this level, move one style up in the
 		   hierarchy and start again from where the previous parse left off. */
@@ -231,7 +231,7 @@ void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &h
 			   reparse until nothing changes */
 		} else {
 			lastMod = lastModified(styleBuf);
-            endParse = std::min(buf->BufGetLength(), forwardOneContext(buf, context, lastMod) + (REPARSE_CHUNK_SIZE << nPasses));
+            endParse = std::min(TextCursor(buf->BufGetLength()), forwardOneContext(buf, context, lastMod) + (REPARSE_CHUNK_SIZE << nPasses));
 		}
 	}
 }
@@ -251,15 +251,15 @@ void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &h
 ** finished (this will normally be endParse, unless the pass1Patterns is a
 ** pattern which does end and the end is reached).
 */
-int64_t Highlight::parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, int64_t beginParse, int64_t endParse, const QString &delimiters) {
+TextCursor Highlight::parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, TextCursor beginParse, TextCursor endParse, const QString &delimiters) {
 
-    int64_t endSafety;
-    int64_t endPass2Safety;
-    int64_t startPass2Safety;
-    int64_t modStart;
-    int64_t modEnd;
-    int64_t beginSafety;
-    int64_t p;
+    TextCursor endSafety;
+    TextCursor endPass2Safety;
+    TextCursor startPass2Safety;
+    TextCursor modStart;
+    TextCursor modEnd;
+    TextCursor beginSafety;
+    TextCursor p;
     int style;
     int firstPass2Style = (pass2Patterns == nullptr) ? INT_MAX : pass2Patterns[1].style;
 
@@ -275,7 +275,7 @@ int64_t Highlight::parseBufferRange(HighlightData *pass1Patterns, HighlightData 
 			}
 		}
 	} else {
-        for (beginSafety = std::max<int64_t>(0, beginParse - 1); beginSafety > 0; beginSafety--) {
+        for (beginSafety = std::max(TextCursor(), beginParse - 1); beginSafety > 0; beginSafety--) {
 			style = styleBuf->BufGetCharacter(beginSafety);
 			if (!equivalent_style(style, beginStyle, firstPass2Style) || buf->BufGetCharacter(beginSafety) == '\n') {
 				beginSafety++;
@@ -288,7 +288,7 @@ int64_t Highlight::parseBufferRange(HighlightData *pass1Patterns, HighlightData 
 	   at endParse is complete, unless patterns can't cross line boundaries,
 	   in which case the end of the line is fine */
     if (endParse == 0) {
-		return 0;
+        return TextCursor();
     }
 
     if (can_cross_line_boundaries(contextRequirements)) {
@@ -296,7 +296,7 @@ int64_t Highlight::parseBufferRange(HighlightData *pass1Patterns, HighlightData 
     } else if (endParse >= buf->BufGetLength() || (buf->BufGetCharacter(endParse - 1) == '\n')) {
 		endSafety = endParse;
     } else {
-        endSafety = std::min(buf->BufGetLength(), buf->BufEndOfLine(endParse) + 1);
+        endSafety = std::min(TextCursor(buf->BufGetLength()), buf->BufEndOfLine(endParse) + 1);
     }
 
 	// copy the buffer range into a string 
@@ -341,8 +341,8 @@ int64_t Highlight::parseBufferRange(HighlightData *pass1Patterns, HighlightData 
         modStart = styleBuf->primary.start;
         modEnd   = styleBuf->primary.end;
 	} else {
-        modStart = 0;
-        modEnd   = 0;
+        modStart = TextCursor();
+        modEnd   = TextCursor();
 	}
 
 	/* Re-parse the areas before the modification with pass 2 patterns, from
@@ -776,13 +776,13 @@ void Highlight::fillStyleString(const char **stringPtr, char **stylePtr, const c
 ** for distinguishing pass 2 styles which compare as equal to the unfinished
 ** style in the original buffer, from pass1 styles which signal a change.
 */
-void Highlight::modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleString, int64_t startPos, int64_t endPos, int firstPass2Style) {
+void Highlight::modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleString, TextCursor startPos, TextCursor endPos, int firstPass2Style) {
     char *c;
-    int64_t pos;
-    int64_t modStart;
-    int64_t modEnd;
-    int64_t minPos = INT_MAX;
-    int64_t maxPos = 0;
+    TextCursor pos;
+    TextCursor modStart;
+    TextCursor modEnd;
+    TextCursor minPos = TextCursor(INT_MAX);
+    TextCursor maxPos = TextCursor();
     const TextBuffer::Selection *sel = &styleBuf->primary;
 
 	// Skip the range already marked for redraw 
@@ -828,18 +828,18 @@ void Highlight::modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char
 ** by the convention used for conveying modification information to the
 ** text widget, which is selecting the text)
 */
-int64_t Highlight::lastModified(const std::shared_ptr<TextBuffer> &styleBuf) {
+TextCursor Highlight::lastModified(const std::shared_ptr<TextBuffer> &styleBuf) {
     if (styleBuf->primary.selected) {
-        return std::max<int64_t>(0, styleBuf->primary.end);
+        return std::max(TextCursor(), styleBuf->primary.end);
     }
 
-	return 0;
+    return TextCursor();
 }
 
 /*
 ** Get the character before position "pos" in buffer "buf"
 */
-int Highlight::getPrevChar(TextBuffer *buf, int64_t pos) {
+int Highlight::getPrevChar(TextBuffer *buf, TextCursor pos) {
     return pos == 0 ? -1 : buf->BufGetCharacter(pos - 1);
 }
 
@@ -868,10 +868,10 @@ bool Highlight::patternIsParsable(HighlightData *pattern) {
 ** result in an incorrect re-parse.  However this will happen very rarely,
 ** and, if it does, is unlikely to result in incorrect highlighting.
 */
-int Highlight::findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlightData> &highlightData, int64_t *pos) {
+int Highlight::findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlightData> &highlightData, TextCursor *pos) {
 	
-    int64_t checkBackTo;
-    int64_t safeParseStart;
+    TextCursor checkBackTo;
+    TextCursor safeParseStart;
 
     std::vector<uint8_t> &parentStyles = highlightData->parentStyles;
     HighlightData *pass1Patterns       = highlightData->pass1Patterns;
@@ -910,16 +910,16 @@ int Highlight::findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<Wi
         safeParseStart = backwardOneContext(buf, context, *pos);
         checkBackTo    = backwardOneContext(buf, context, safeParseStart);
 	} else {
-		safeParseStart = 0;
-        checkBackTo    = 0;
+        safeParseStart = TextCursor();
+        checkBackTo    = TextCursor();
 	}
 
 	int runningStyle = startStyle;
-    for (int64_t i = *pos - 1;; i--) {
+    for (TextCursor i = *pos - 1;; i--) {
 
 		// The start of the buffer is certainly a safe place to parse from 
 		if (i == 0) {
-			*pos = 0;
+            *pos = TextCursor();
 			return PLAIN_STYLE;
 		}
 
@@ -1010,13 +1010,13 @@ int Highlight::findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<Wi
 ** only one extra character, but I'm not sure, and my brain hurts from
 ** thinking about it).
 */
-int64_t Highlight::backwardOneContext(TextBuffer *buf, const ReparseContext &context, int64_t fromPos) {
+TextCursor Highlight::backwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos) {
     if (context.nLines == 0)
-        return std::max<int64_t>(0, fromPos - context.nChars);
+        return std::max(TextCursor(), fromPos - context.nChars);
     else if (context.nChars == 0)
-        return std::max<int64_t>(0, buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1);
+        return std::max(TextCursor(), buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1);
 	else
-        return std::max<int64_t>(0, std::min(std::max<int64_t>(0, buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1), fromPos - context.nChars));
+        return std::max(TextCursor(), std::min(std::max(TextCursor(), buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1), fromPos - context.nChars));
 }
 
 /*
@@ -1027,13 +1027,13 @@ int64_t Highlight::backwardOneContext(TextBuffer *buf, const ReparseContext &con
 ** next line, rather than the newline character at the end (see notes in
 ** backwardOneContext).
 */
-int64_t Highlight::forwardOneContext(TextBuffer *buf, const ReparseContext &context, int64_t fromPos) {
+TextCursor Highlight::forwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos) {
     if (context.nLines == 0)
-        return std::min(buf->BufGetLength(), fromPos + context.nChars);
+        return std::min(TextCursor(buf->BufGetLength()), fromPos + context.nChars);
     else if (context.nChars == 0)
-        return std::min(buf->BufGetLength(), buf->BufCountForwardNLines(fromPos, context.nLines));
+        return std::min(TextCursor(buf->BufGetLength()), buf->BufCountForwardNLines(fromPos, context.nLines));
 	else
-        return std::min(buf->BufGetLength(), std::max(buf->BufCountForwardNLines(fromPos, context.nLines), fromPos + context.nChars));
+        return std::min(TextCursor(buf->BufGetLength()), std::max(buf->BufCountForwardNLines(fromPos, context.nLines), fromPos + context.nChars));
 }
 
 /*

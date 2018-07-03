@@ -93,6 +93,7 @@ bool SearchStringEx(view::string_view string, view::string_view searchString, Di
 ** replacement (returned in "copyEnd")
 */
 std::string Search::ReplaceAllInStringEx(view::string_view inString, const QString &searchString, const QString &replaceString, SearchType searchType, int64_t *copyStart, int64_t *copyEnd, const QString &delimiters, bool *ok) {
+
     int64_t startPos;
     int64_t endPos;
     int64_t lastEndPos;
@@ -103,7 +104,7 @@ std::string Search::ReplaceAllInStringEx(view::string_view inString, const QStri
     // reject empty string
     if (searchString.isNull()) {
         *ok = false;
-        return std::string();
+        return {};
     }
 
     /* rehearse the search first to determine the size of the buffer needed
@@ -179,9 +180,9 @@ std::string Search::ReplaceAllInStringEx(view::string_view inString, const QStri
 
     /* Scan through the text buffer again, substituting the replace string
        and copying the part between replaced text to the new buffer  */
-    found = true;
-    beginPos = 0;
-    lastEndPos = 0;
+    found      = true;
+    beginPos   = {};
+    lastEndPos = {};
 
     while (found) {
         found = SearchString(
@@ -199,7 +200,9 @@ std::string Search::ReplaceAllInStringEx(view::string_view inString, const QStri
 
         if (found) {
             if (beginPos != 0) {
-                outString.append(&inString[static_cast<size_t>(lastEndPos)], &inString[static_cast<size_t>(lastEndPos + startPos - lastEndPos)]);
+                outString.append(
+                            &inString[static_cast<size_t>(lastEndPos)],
+                            &inString[static_cast<size_t>(lastEndPos + (startPos - lastEndPos))]);
             }
 
             if (isRegexType(searchType)) {
@@ -235,6 +238,7 @@ std::string Search::ReplaceAllInStringEx(view::string_view inString, const QStri
 }
 
 bool Search::SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, const QString &delimiters) {
+
     return SearchString(
                 string,
                 searchString,
@@ -356,7 +360,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
             return false;
 
 		// search from start of file to beginPos 
-		for (auto filePtr = string.begin(); filePtr <= string.begin() + beginPos; filePtr++) {
+        for (auto filePtr = string.begin(); filePtr <= string.begin() + beginPos; filePtr++) {
             if(do_search_word(filePtr)) {
 				return true;
 			}
@@ -367,7 +371,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
 		// search from beginPos to start of file. A negative begin pos 
 		// says begin searching from the far end of the file 
 		if (beginPos >= 0) {
-			for (auto filePtr = string.begin() + beginPos; filePtr >= string.begin(); filePtr--) {
+            for (auto filePtr = string.begin() + beginPos; filePtr >= string.begin(); filePtr--) {
                 if(do_search_word(filePtr)) {
 					return true;
 				}
@@ -377,7 +381,7 @@ static bool searchLiteralWord(view::string_view string, view::string_view search
             return false;
 
 		// search from end of file to beginPos 
-		for (auto filePtr = string.begin() + string.size(); filePtr >= string.begin() + beginPos; filePtr--) {
+        for (auto filePtr = string.begin() + string.size(); filePtr >= string.begin() + beginPos; filePtr--) {
             if(do_search_word(filePtr)) {
 				return true;
 			}
@@ -435,7 +439,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
     if (direction == Direction::Forward) {
 
 		auto first = string.begin();
-		auto mid   = first + beginPos;
+        auto mid   = first + beginPos;
 		auto last  = string.end();
 
 		// search from beginPos to end of string 
@@ -465,7 +469,7 @@ static bool searchLiteral(view::string_view string, view::string_view searchStri
 		// says begin searching from the far end of the file 
 
 		auto first = string.begin();
-		auto mid   = first + beginPos;
+        auto mid   = first + beginPos;
 		auto last  = string.end();
 
 		if (beginPos >= 0) {
@@ -589,7 +593,7 @@ static bool backwardRegexSearch(view::string_view string, view::string_view sear
 
 		// search from the end of the string to beginPos 
 		if (beginPos < 0) {
-			beginPos = 0;
+            beginPos = 0;
 		}
 
         if (compiledRE.execute(string, static_cast<size_t>(beginPos), delimiters, true)) {

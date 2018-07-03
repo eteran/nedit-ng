@@ -35,7 +35,7 @@ void BasicTextBuffer<Ch, Tr>::BufSetAllEx(view_type text) {
 
     const auto length = static_cast<int64_t>(text.size());
 
-    callPreDeleteCBs(0, buffer_.size());
+    callPreDeleteCBs(TextCursor(), buffer_.size());
 
     // Save information for redisplay, and get rid of the old buffer
     const string_type deletedText = BufGetAllEx();
@@ -43,10 +43,10 @@ void BasicTextBuffer<Ch, Tr>::BufSetAllEx(view_type text) {
     buffer_.assign(text);
 
     // Zero all of the existing selections
-    updateSelections(0, static_cast<int64_t>(deletedText.size()), 0);
+    updateSelections(TextCursor(), static_cast<int64_t>(deletedText.size()), 0);
 
     // Call the saved display routine(s) to update the screen
-    callModifyCBs(0, static_cast<int64_t>(deletedText.size()), length, 0, deletedText);
+    callModifyCBs(TextCursor(), static_cast<int64_t>(deletedText.size()), length, 0, deletedText);
 }
 
 /*
@@ -55,7 +55,7 @@ void BasicTextBuffer<Ch, Tr>::BufSetAllEx(view_type text) {
 ** include the character pointed to by "end"
 */
 template <class Ch, class Tr>
-auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(int64_t start, int64_t end) const -> string_type {
+auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(TextCursor start, TextCursor end) const -> string_type {
 
     // TODO(eteran): I beleive bad things happend if we pass something like BufGetRangeEx(10, -10)
     // this will make the first check pass, then start/end will be swapped meaning that it will attempt
@@ -73,38 +73,38 @@ auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(int64_t start, int64_t end) const ->
     }
 
     if (end > buffer_.size()) {
-        end = buffer_.size();
+        end = TextCursor(buffer_.size());
     }
 
-    return buffer_.to_string(start, end);
+    return buffer_.to_string(to_integer(start), to_integer(end));
 }
 
 /*
 ** Return the character at buffer position "pos".  Positions start at 0.
 */
 template <class Ch, class Tr>
-Ch BasicTextBuffer<Ch, Tr>::BufGetCharacter(int64_t pos) const noexcept {
+Ch BasicTextBuffer<Ch, Tr>::BufGetCharacter(TextCursor pos) const noexcept {
 
     if (pos < 0 || pos >= buffer_.size()) {
         return Ch();
     }
 
-    return buffer_[pos];
+    return buffer_[to_integer(pos)];
 }
 
 /*
 ** Insert null-terminated string "text" at position "pos" in "buf"
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufInsertEx(int64_t pos, view_type text) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufInsertEx(TextCursor pos, view_type text) noexcept {
 
     // if pos is not contiguous to existing text, make it
     if (pos > buffer_.size()) {
-        pos = buffer_.size();
+        pos = TextCursor(buffer_.size());
     }
 
     if (pos < 0) {
-        pos = 0;
+        pos = TextCursor();
     }
 
     // Even if nothing is deleted, we must call these callbacks
@@ -117,15 +117,15 @@ void BasicTextBuffer<Ch, Tr>::BufInsertEx(int64_t pos, view_type text) noexcept 
 }
 
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufInsertEx(int64_t pos, Ch ch) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufInsertEx(TextCursor pos, Ch ch) noexcept {
 
     // if pos is not contiguous to existing text, make it
     if (pos > buffer_.size()) {
-        pos = buffer_.size();
+        pos = TextCursor(buffer_.size());
     }
 
     if (pos < 0) {
-        pos = 0;
+        pos = TextCursor();
     }
 
     // Even if nothing is deleted, we must call these callbacks
@@ -142,7 +142,7 @@ void BasicTextBuffer<Ch, Tr>::BufInsertEx(int64_t pos, Ch ch) noexcept {
 ** string "text" in their place in in "buf"
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufReplaceEx(int64_t start, int64_t end, view_type text) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufReplaceEx(TextCursor start, TextCursor end, view_type text) noexcept {
 
     // TODO(eteran): 2.0, do same type of parameter normalization as BufRemove does?
 
@@ -162,7 +162,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceEx(int64_t start, int64_t end, view_type
 ** character "ch in their place in in "buf"
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufReplaceEx(int64_t start, int64_t end, Ch ch) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufReplaceEx(TextCursor start, TextCursor end, Ch ch) noexcept {
 
     // TODO(eteran): 2.0, do same type of parameter normalization as BufRemove does?
 
@@ -178,7 +178,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceEx(int64_t start, int64_t end, Ch ch) no
 }
 
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufRemove(int64_t start, int64_t end) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufRemove(TextCursor start, TextCursor end) noexcept {
 
     // Make sure the arguments make sense
     if (start > end) {
@@ -186,19 +186,19 @@ void BasicTextBuffer<Ch, Tr>::BufRemove(int64_t start, int64_t end) noexcept {
     }
 
     if (start > buffer_.size()) {
-        start = buffer_.size();
+        start = TextCursor(buffer_.size());
     }
 
     if (start < 0) {
-        start = 0;
+        start = TextCursor();
     }
 
     if (end > buffer_.size()) {
-        end = buffer_.size();
+        end = TextCursor(buffer_.size());
     }
 
     if (end < 0) {
-        end = 0;
+        end = TextCursor();
     }
 
     callPreDeleteCBs(start, end - start);
@@ -212,11 +212,11 @@ void BasicTextBuffer<Ch, Tr>::BufRemove(int64_t start, int64_t end) noexcept {
 }
 
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufCopyFromBuf(BasicTextBuffer<Ch, Tr> *fromBuf, int64_t fromStart, int64_t fromEnd, int64_t toPos) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufCopyFromBuf(BasicTextBuffer<Ch, Tr> *fromBuf, TextCursor fromStart, TextCursor fromEnd, TextCursor toPos) noexcept {
 
     const int64_t length = (fromEnd - fromStart);
 
-    buffer_.insert(toPos, fromBuf->buffer_.to_view(fromStart, fromEnd));
+    buffer_.insert(to_integer(toPos), fromBuf->buffer_.to_view(to_integer(fromStart), to_integer(fromEnd)));
 
     updateSelections(toPos, 0, length);
 }
@@ -230,11 +230,11 @@ void BasicTextBuffer<Ch, Tr>::BufCopyFromBuf(BasicTextBuffer<Ch, Tr> *fromBuf, i
 ** at startPos) are returned in these arguments
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufInsertColEx(int64_t column, int64_t startPos, view_type text, int64_t *charsInserted, int64_t *charsDeleted) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufInsertColEx(int64_t column, TextCursor startPos, view_type text, int64_t *charsInserted, int64_t *charsDeleted) noexcept {
 
-    const int64_t nLines       = countLinesEx(text);
-    const int64_t lineStartPos = BufStartOfLine(startPos);
-    const int64_t nDeleted     = BufEndOfLine(BufCountForwardNLines(startPos, nLines)) - lineStartPos;
+    const int64_t nLines          = countLinesEx(text);
+    const TextCursor lineStartPos = BufStartOfLine(startPos);
+    const int64_t nDeleted        = BufEndOfLine(BufCountForwardNLines(startPos, nLines)) - lineStartPos;
 
     callPreDeleteCBs(lineStartPos, nDeleted);
     const string_type deletedText = BufGetRangeEx(lineStartPos, lineStartPos + nDeleted);
@@ -266,7 +266,7 @@ void BasicTextBuffer<Ch, Tr>::BufInsertColEx(int64_t column, int64_t startPos, v
 ** column (as a hint for routines which need to set a cursor position).
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::overlayRectEx(int64_t startPos, int64_t rectStart, int64_t rectEnd, view_type insText, int64_t *nDeleted, int64_t *nInserted, int64_t *endPos) {
+void BasicTextBuffer<Ch, Tr>::overlayRectEx(TextCursor startPos, int64_t rectStart, int64_t rectEnd, view_type insText, int64_t *nDeleted, int64_t *nInserted, TextCursor *endPos) {
     int64_t len;
     int64_t endOffset;
 
@@ -279,9 +279,9 @@ void BasicTextBuffer<Ch, Tr>::overlayRectEx(int64_t startPos, int64_t rectStart,
        must be padded to align the text beyond the inserted column.  (Space
        for additional newlines if the inserted text extends beyond the end
        of the buffer is counted with the length of insText) */
-    const int64_t start  = BufStartOfLine(startPos);
-    const int64_t nLines = countLinesEx(insText) + 1;
-    const int64_t end    = BufEndOfLine(BufCountForwardNLines(start, nLines - 1));
+    const TextCursor start = BufStartOfLine(startPos);
+    const int64_t nLines   = countLinesEx(insText) + 1;
+    const TextCursor end   = BufEndOfLine(BufCountForwardNLines(start, nLines - 1));
 
     const string_type expIns = expandTabsEx(insText, 0, tabDist_);
 
@@ -293,11 +293,11 @@ void BasicTextBuffer<Ch, Tr>::overlayRectEx(int64_t startPos, int64_t rectStart,
        trailing space from line (whitespace at the ends of lines otherwise
        tends to multiply, since additional padding is added to maintain it */
     auto outPtr = std::back_inserter(outStr);
-    int64_t lineStart = start;
+    TextCursor lineStart = start;
     auto insPtr = insText.begin();
 
     while (true) {
-        const int64_t lineEnd = BufEndOfLine(lineStart);
+        const TextCursor lineEnd  = BufEndOfLine(lineStart);
         const string_type line    = BufGetRangeEx(lineStart, lineEnd);
         const string_type insLine = copyLineEx(insPtr, insText.end());
         insPtr += insLine.size();
@@ -314,7 +314,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRectEx(int64_t startPos, int64_t rectStart,
         std::copy_n(temp.begin(), len, outPtr);
 
         *outPtr++ = Ch('\n');
-        lineStart = (lineEnd < buffer_.size()) ? lineEnd + 1 : buffer_.size();
+        lineStart = (lineEnd < buffer_.size()) ? lineEnd + 1 : TextCursor(buffer_.size());
 
         if (insPtr == insText.end()) {
             break;
@@ -344,12 +344,12 @@ void BasicTextBuffer<Ch, Tr>::overlayRectEx(int64_t startPos, int64_t rectStart,
 ** If rectEnd equals -1, the width of the inserted text is measured first.
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufOverlayRectEx(int64_t startPos, int64_t rectStart, int64_t rectEnd, view_type text, int64_t *charsInserted, int64_t *charsDeleted) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufOverlayRectEx(TextCursor startPos, int64_t rectStart, int64_t rectEnd, view_type text, int64_t *charsInserted, int64_t *charsDeleted) noexcept {
 
     int64_t insertDeleted;
     int64_t nInserted;
-    int64_t nLines = countLinesEx(text);
-    int64_t lineStartPos = BufStartOfLine(startPos);
+    int64_t nLines          = countLinesEx(text);
+    TextCursor lineStartPos = BufStartOfLine(startPos);
 
     if (rectEnd == -1) {
         rectEnd = rectStart + textWidthEx(text, tabDist_);
@@ -383,7 +383,7 @@ void BasicTextBuffer<Ch, Tr>::BufOverlayRectEx(int64_t startPos, int64_t rectSta
 ** rectangle, add extra lines to make room for it.
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufReplaceRectEx(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd, view_type text) {
+void BasicTextBuffer<Ch, Tr>::BufReplaceRectEx(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd, view_type text) {
 
     string_type insText;
     int64_t linesPadded = 0;
@@ -426,7 +426,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceRectEx(int64_t start, int64_t end, int64
     const string_type deletedText = BufGetRangeEx(start, end);
 
     // Delete then insert
-    int64_t hint;
+    TextCursor hint;
     int64_t deleteInserted;
     deleteRect(start, end, rectStart, rectEnd, &deleteInserted, &hint);
 
@@ -447,7 +447,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceRectEx(int64_t start, int64_t end, int64
 ** and end and horizontal displayed-character offsets rectStart and rectEnd.
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufRemoveRect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufRemoveRect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept {
 
     start = BufStartOfLine(start);
     end   = BufEndOfLine(end);
@@ -468,7 +468,7 @@ void BasicTextBuffer<Ch, Tr>::BufRemoveRect(int64_t start, int64_t end, int64_t 
 ** rectEnd.
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufClearRect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufClearRect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept {
 
     const int64_t nLines = BufCountLines(start, end);
     const string_type newlineString(static_cast<size_t>(nLines), Ch('\n'));
@@ -477,9 +477,9 @@ void BasicTextBuffer<Ch, Tr>::BufClearRect(int64_t start, int64_t end, int64_t r
 }
 
 template <class Ch, class Tr>
-auto BasicTextBuffer<Ch, Tr>::BufGetTextInRectEx(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) const -> string_type {
-    int64_t selLeft;
-    int64_t selRight;
+auto BasicTextBuffer<Ch, Tr>::BufGetTextInRectEx(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) const -> string_type {
+    TextCursor selLeft;
+    TextCursor selRight;
 
     start = BufStartOfLine(start);
     end   = BufEndOfLine(end);
@@ -489,7 +489,7 @@ auto BasicTextBuffer<Ch, Tr>::BufGetTextInRectEx(int64_t start, int64_t end, int
     string_type textOut;
     textOut.reserve(static_cast<size_t>(end - start));
 
-    int64_t lineStart = start;
+    TextCursor lineStart = start;
     auto outPtr = std::back_inserter(textOut);
 
     while (lineStart <= end) {
@@ -530,24 +530,24 @@ void BasicTextBuffer<Ch, Tr>::BufSetTabDistance(int tabDist) noexcept {
 
     /* First call the pre-delete callbacks with the previous tab setting
        still active. */
-    callPreDeleteCBs(0, buffer_.size());
+    callPreDeleteCBs(TextCursor(), buffer_.size());
 
     // Change the tab setting
     tabDist_ = tabDist;
 
     // Force any display routines to redisplay everything
     view_type deletedText = BufAsStringEx();
-    callModifyCBs(0, buffer_.size(), buffer_.size(), 0, deletedText);
+    callModifyCBs(TextCursor(), buffer_.size(), buffer_.size(), 0, deletedText);
 }
 
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufCheckDisplay(int64_t start, int64_t end) const noexcept {
+void BasicTextBuffer<Ch, Tr>::BufCheckDisplay(TextCursor start, TextCursor end) const noexcept {
     // just to make sure colors in the selected region are up to date
     callModifyCBs(start, 0, 0, end - start, {});
 }
 
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufSelect(int64_t start, int64_t end) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufSelect(TextCursor start, TextCursor end) noexcept {
     const Selection oldSelection = primary;
 
     primary.setSelection(start, end);
@@ -580,7 +580,7 @@ void BasicTextBuffer<Ch, Tr>::BufUnselect() noexcept {
 }
 
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufRectSelect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufRectSelect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept {
     const Selection oldSelection = primary;
 
     primary.setRectSelect(start, end, rectStart, rectEnd);
@@ -595,13 +595,13 @@ void BasicTextBuffer<Ch, Tr>::BufRectSelect(int64_t start, int64_t end, int64_t 
 }
 
 template <class Ch, class Tr>
-bool BasicTextBuffer<Ch, Tr>::BufGetSelectionPos(int64_t *start, int64_t *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept {
+bool BasicTextBuffer<Ch, Tr>::BufGetSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept {
     return primary.getSelectionPos(start, end, isRect, rectStart, rectEnd);
 }
 
 // Same as above, but also returns TRUE for empty selections
 template <class Ch, class Tr>
-bool BasicTextBuffer<Ch, Tr>::BufGetEmptySelectionPos(int64_t *start, int64_t *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept {
+bool BasicTextBuffer<Ch, Tr>::BufGetEmptySelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept {
     return primary.getSelectionPos(start, end, isRect, rectStart, rectEnd) || primary.zeroWidth;
 }
 
@@ -621,7 +621,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceSelectedEx(view_type text) noexcept {
 }
 
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufSecondarySelect(int64_t start, int64_t end) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufSecondarySelect(TextCursor start, TextCursor end) noexcept {
     const Selection oldSelection = secondary;
 
     secondary.setSelection(start, end);
@@ -638,7 +638,7 @@ void BasicTextBuffer<Ch, Tr>::BufSecondaryUnselect() noexcept {
 }
 
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufSecRectSelect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufSecRectSelect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept {
     const Selection oldSelection = secondary;
 
     secondary.setRectSelect(start, end, rectStart, rectEnd);
@@ -661,7 +661,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceSecSelectEx(view_type text) noexcept {
 }
 
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufHighlight(int64_t start, int64_t end) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufHighlight(TextCursor start, TextCursor end) noexcept {
     const Selection oldSelection = highlight;
 
     highlight.setSelection(start, end);
@@ -678,7 +678,7 @@ void BasicTextBuffer<Ch, Tr>::BufUnhighlight() noexcept {
 }
 
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufRectHighlight(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufRectHighlight(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept {
     const Selection oldSelection = highlight;
 
     highlight.setRectSelect(start, end, rectStart, rectEnd);
@@ -745,11 +745,11 @@ void BasicTextBuffer<Ch, Tr>::BufRemovePreDeleteCB(pre_delete_callback_type bufP
 ** Find the position of the start of the line containing position "pos"
 */
 template <class Ch, class Tr>
-int64_t BasicTextBuffer<Ch, Tr>::BufStartOfLine(int64_t pos) const noexcept {
+TextCursor BasicTextBuffer<Ch, Tr>::BufStartOfLine(TextCursor pos) const noexcept {
 
-    boost::optional<int64_t> startPos = searchBackward(pos, Ch('\n'));
+    boost::optional<TextCursor> startPos = searchBackward(pos, Ch('\n'));
     if (!startPos) {
-        return 0;
+        return {};
     }
 
     return *startPos + 1;
@@ -761,11 +761,11 @@ int64_t BasicTextBuffer<Ch, Tr>::BufStartOfLine(int64_t pos) const noexcept {
 ** or a pointer to one character beyond the end of the buffer)
 */
 template <class Ch, class Tr>
-int64_t BasicTextBuffer<Ch, Tr>::BufEndOfLine(int64_t pos) const noexcept {
+TextCursor BasicTextBuffer<Ch, Tr>::BufEndOfLine(TextCursor pos) const noexcept {
 
-    boost::optional<int64_t> endPos = searchForward(pos, Ch('\n'));
+    boost::optional<TextCursor> endPos = searchForward(pos, Ch('\n'));
     if (!endPos) {
-        return buffer_.size();
+        return TextCursor(buffer_.size());
     }
 
     return *endPos;
@@ -779,7 +779,7 @@ int64_t BasicTextBuffer<Ch, Tr>::BufEndOfLine(int64_t pos) const noexcept {
 ** for figuring tabs.
 */
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufGetExpandedChar(int64_t pos, int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN]) const noexcept {
+int BasicTextBuffer<Ch, Tr>::BufGetExpandedChar(TextCursor pos, int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN]) const noexcept {
     return BufExpandCharacter(BufGetCharacter(pos), indent, outStr, tabDist_);
 }
 
@@ -856,12 +856,12 @@ int BasicTextBuffer<Ch, Tr>::BufCharWidth(Ch ch, int64_t indent, int tabDist) no
 ** control characters are expanded)
 */
 template <class Ch, class Tr>
-int64_t BasicTextBuffer<Ch, Tr>::BufCountDispChars(int64_t lineStartPos, int64_t targetPos) const noexcept {
+int64_t BasicTextBuffer<Ch, Tr>::BufCountDispChars(TextCursor lineStartPos, TextCursor targetPos) const noexcept {
 
     int64_t charCount = 0;
     Ch expandedChar[MAX_EXP_CHAR_LEN];
 
-    int64_t pos = lineStartPos;
+    TextCursor pos = lineStartPos;
     while (pos < targetPos && pos < buffer_.size()) {
         charCount += BufGetExpandedChar(pos++, charCount, expandedChar);
     }
@@ -875,11 +875,11 @@ int64_t BasicTextBuffer<Ch, Tr>::BufCountDispChars(int64_t lineStartPos, int64_t
 ** characters in the buffer, where tabs and control characters are expanded)
 */
 template <class Ch, class Tr>
-int64_t BasicTextBuffer<Ch, Tr>::BufCountForwardDispChars(int64_t lineStartPos, int64_t nChars) const noexcept {
+TextCursor BasicTextBuffer<Ch, Tr>::BufCountForwardDispChars(TextCursor lineStartPos, int64_t nChars) const noexcept {
 
     int64_t charCount = 0;
 
-    int64_t pos = lineStartPos;
+    TextCursor pos = lineStartPos;
     while (charCount < nChars && pos < buffer_.size()) {
         const Ch ch = BufGetCharacter(pos);
         if (ch == Ch('\n')) {
@@ -898,18 +898,18 @@ int64_t BasicTextBuffer<Ch, Tr>::BufCountForwardDispChars(int64_t lineStartPos, 
 ** The character at position "endPos" is not counted.
 */
 template <class Ch, class Tr>
-int64_t BasicTextBuffer<Ch, Tr>::BufCountLines(int64_t startPos, int64_t endPos) const noexcept {
+int64_t BasicTextBuffer<Ch, Tr>::BufCountLines(TextCursor startPos, TextCursor endPos) const noexcept {
 
     int64_t lineCount = 0;
 
-    int64_t pos = startPos;
+    TextCursor pos = startPos;
 
     while (pos < buffer_.size()) {
         if (pos == endPos) {
             return lineCount;
         }
 
-        if (buffer_[pos++] == Ch('\n')) {
+        if (buffer_[to_integer(pos++)] == Ch('\n')) {
             lineCount++;
         }
     }
@@ -921,7 +921,7 @@ int64_t BasicTextBuffer<Ch, Tr>::BufCountLines(int64_t startPos, int64_t endPos)
 ** in "buf" and return its position
 */
 template <class Ch, class Tr>
-int64_t BasicTextBuffer<Ch, Tr>::BufCountForwardNLines(int64_t startPos, int64_t nLines) const noexcept {
+TextCursor BasicTextBuffer<Ch, Tr>::BufCountForwardNLines(TextCursor startPos, int64_t nLines) const noexcept {
 
     int64_t lineCount = 0;
 
@@ -929,10 +929,10 @@ int64_t BasicTextBuffer<Ch, Tr>::BufCountForwardNLines(int64_t startPos, int64_t
         return startPos;
     }
 
-    int64_t pos = startPos;
+    TextCursor pos = startPos;
 
     while (pos < buffer_.size()) {
-        if (buffer_[pos++] == Ch('\n')) {
+        if (buffer_[to_integer(pos++)] == Ch('\n')) {
             lineCount++;
             if (lineCount >= nLines) {
                 return pos;
@@ -949,18 +949,18 @@ int64_t BasicTextBuffer<Ch, Tr>::BufCountForwardNLines(int64_t startPos, int64_t
 ** the line
 */
 template <class Ch, class Tr>
-int64_t BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(int64_t startPos, int64_t nLines) const noexcept {
+TextCursor BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(TextCursor startPos, int64_t nLines) const noexcept {
     if(startPos == 0) {
-        return 0;
+        return TextCursor();
     }
 
-    int64_t pos          = startPos - 1;
-    int64_t lineCount    = -1;
+    TextCursor pos    = startPos - 1;
+    int64_t lineCount = -1;
 
     while (true) {
-        if (buffer_[pos] == Ch('\n')) {
+        if (buffer_[to_integer(pos)] == Ch('\n')) {
             if (++lineCount >= nLines)
-                return pos + 1;
+                return (pos + 1);
         }
         if(pos == 0) {
             break;
@@ -968,7 +968,7 @@ int64_t BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(int64_t startPos, int64_
         pos--;
     }
 
-    return 0;
+    return TextCursor();
 }
 
 /*
@@ -976,13 +976,13 @@ int64_t BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(int64_t startPos, int64_
 ** with the character "startPos", and returning the result
 */
 template <class Ch, class Tr>
-boost::optional<int64_t> BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(int64_t startPos, view_type searchChars) const noexcept {
+boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(TextCursor startPos, view_type searchChars) const noexcept {
 
-    int64_t pos = startPos;
+    TextCursor pos = startPos;
 
     while (pos < buffer_.size()) {
         for (Ch ch : searchChars) {
-            if (buffer_[pos] == ch) {
+            if (buffer_[to_integer(pos)] == ch) {
                 return pos;
             }
         }
@@ -997,17 +997,17 @@ boost::optional<int64_t> BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(int64_t sta
 ** with the character BEFORE "startPos"
 */
 template <class Ch, class Tr>
-boost::optional<int64_t> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(int64_t startPos, view_type searchChars) const noexcept {
+boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(TextCursor startPos, view_type searchChars) const noexcept {
 
     if (startPos == 0) {
         return boost::none;
     }
 
-    int64_t pos = startPos - 1;
+    TextCursor pos = startPos - 1;
 
     while (true) {
         for (Ch ch : searchChars) {
-            if (buffer_[pos] == ch) {
+            if (buffer_[to_integer(pos)] == ch) {
                 return pos;
             }
         }
@@ -1026,18 +1026,18 @@ boost::optional<int64_t> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(int64_t st
 ** != 0 otherwise.
 */
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufCmpEx(int64_t pos, Ch *cmpText, int64_t size) const noexcept {
-    return buffer_.compare(pos, view_type(cmpText, static_cast<size_t>(size)));
+int BasicTextBuffer<Ch, Tr>::BufCmpEx(TextCursor pos, Ch *cmpText, int64_t size) const noexcept {
+    return buffer_.compare(to_integer(pos), view_type(cmpText, static_cast<size_t>(size)));
 }
 
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufCmpEx(int64_t pos, view_type cmpText) const noexcept {
-    return buffer_.compare(pos, cmpText);
+int BasicTextBuffer<Ch, Tr>::BufCmpEx(TextCursor pos, view_type cmpText) const noexcept {
+    return buffer_.compare(to_integer(pos), cmpText);
 }
 
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufCmpEx(int64_t pos, Ch ch) const noexcept {
-    return buffer_.compare(pos, ch);
+int BasicTextBuffer<Ch, Tr>::BufCmpEx(TextCursor pos, Ch ch) const noexcept {
+    return buffer_.compare(to_integer(pos), ch);
 }
 
 /*
@@ -1048,10 +1048,10 @@ int BasicTextBuffer<Ch, Tr>::BufCmpEx(int64_t pos, Ch ch) const noexcept {
 ** the buffer (i.e. not past the end).
 */
 template <class Ch, class Tr>
-int64_t BasicTextBuffer<Ch, Tr>::insertEx(int64_t pos, view_type text) noexcept {
+int64_t BasicTextBuffer<Ch, Tr>::insertEx(TextCursor pos, view_type text) noexcept {
     const auto length = static_cast<int64_t>(text.size());
 
-    buffer_.insert(pos, text);
+    buffer_.insert(to_integer(pos), text);
 
     updateSelections(pos, 0, length);
 
@@ -1059,11 +1059,11 @@ int64_t BasicTextBuffer<Ch, Tr>::insertEx(int64_t pos, view_type text) noexcept 
 }
 
 template <class Ch, class Tr>
-int64_t BasicTextBuffer<Ch, Tr>::insertEx(int64_t pos, Ch ch) noexcept {
+int64_t BasicTextBuffer<Ch, Tr>::insertEx(TextCursor pos, Ch ch) noexcept {
 
     const int64_t length = 1;
 
-    buffer_.insert(pos, ch);
+    buffer_.insert(to_integer(pos), ch);
 
     updateSelections(pos, 0, length);
 
@@ -1078,11 +1078,11 @@ int64_t BasicTextBuffer<Ch, Tr>::insertEx(int64_t pos, Ch ch) noexcept {
 ** count lines quickly, hence searching for a single character: newline)
 */
 template <class Ch, class Tr>
-boost::optional<int64_t> BasicTextBuffer<Ch, Tr>::searchForward(int64_t startPos, Ch searchChar) const noexcept {
+boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor startPos, Ch searchChar) const noexcept {
 
-    int64_t pos = startPos;
+    TextCursor pos = startPos;
     while (pos < buffer_.size()) {
-        if (buffer_[pos] == searchChar) {
+        if (buffer_[to_integer(pos)] == searchChar) {
             return pos;
         }
         pos++;
@@ -1099,15 +1099,15 @@ boost::optional<int64_t> BasicTextBuffer<Ch, Tr>::searchForward(int64_t startPos
 ** count lines quickly, hence searching for a single character: newline)
 */
 template <class Ch, class Tr>
-boost::optional<int64_t> BasicTextBuffer<Ch, Tr>::searchBackward(int64_t startPos, Ch searchChar) const noexcept {
+boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor startPos, Ch searchChar) const noexcept {
 
     if (startPos == 0) {
         return boost::none;
     }
 
-    int64_t pos = startPos - 1;
+    TextCursor pos = startPos - 1;
     while (true) {
-        if (buffer_[pos] == searchChar) {
+        if (buffer_[to_integer(pos)] == searchChar) {
             return pos;
         }
 
@@ -1141,7 +1141,7 @@ auto BasicTextBuffer<Ch, Tr>::getSelectionTextEx(const Selection *sel) const -> 
 ** changed area(s) on the screen and any other listeners.
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::callModifyCBs(int64_t pos, int64_t nDeleted, int64_t nInserted, int64_t nRestyled, view_type deletedText) const noexcept {
+void BasicTextBuffer<Ch, Tr>::callModifyCBs(TextCursor pos, int64_t nDeleted, int64_t nInserted, int64_t nRestyled, view_type deletedText) const noexcept {
 
     for (const auto &pair : modifyProcs_) {
         (pair.first)(pos, nInserted, nDeleted, nRestyled, deletedText, pair.second);
@@ -1153,7 +1153,7 @@ void BasicTextBuffer<Ch, Tr>::callModifyCBs(int64_t pos, int64_t nDeleted, int64
 ** the changed area(s) on the screen and any other listeners.
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::callPreDeleteCBs(int64_t pos, int64_t nDeleted) const noexcept {
+void BasicTextBuffer<Ch, Tr>::callPreDeleteCBs(TextCursor pos, int64_t nDeleted) const noexcept {
 
     for (const auto &pair : preDeleteProcs_) {
         (pair.first)(pos, nDeleted, pair.second);
@@ -1166,9 +1166,9 @@ void BasicTextBuffer<Ch, Tr>::callPreDeleteCBs(int64_t pos, int64_t nDeleted) co
 ** the delete).
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::deleteRange(int64_t start, int64_t end) noexcept {
+void BasicTextBuffer<Ch, Tr>::deleteRange(TextCursor start, TextCursor end) noexcept {
 
-    buffer_.erase(start, end);
+    buffer_.erase(to_integer(start), to_integer(end));
 
     // fix up any selections which might be affected by the change
     updateSelections(start, end - start, 0);
@@ -1183,7 +1183,7 @@ void BasicTextBuffer<Ch, Tr>::deleteRange(int64_t start, int64_t end) noexcept {
 ** routines which need to position the cursor after a delete operation)
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::deleteRect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd, int64_t *replaceLen, int64_t *endPos) {
+void BasicTextBuffer<Ch, Tr>::deleteRect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd, int64_t *replaceLen, TextCursor *endPos) {
 
     int64_t endOffset = 0;
 
@@ -1204,12 +1204,12 @@ void BasicTextBuffer<Ch, Tr>::deleteRect(int64_t start, int64_t end, int64_t rec
 
     /* loop over all lines in the buffer between start and end removing
        the text between rectStart and rectEnd and padding appropriately */
-    int64_t lineStart = start;
+    TextCursor lineStart = start;
     auto outPtr = std::back_inserter(outStr);
 
     while (lineStart <= buffer_.size() && lineStart <= end) {
-        const int64_t lineEnd = BufEndOfLine(lineStart);
-        const string_type line = BufGetRangeEx(lineStart, lineEnd);
+        const TextCursor lineEnd = BufEndOfLine(lineStart);
+        const string_type line   = BufGetRangeEx(lineStart, lineEnd);
 
         // TODO(eteran): 2.0, remove the need for this temp
         string_type temp;
@@ -1250,10 +1250,10 @@ void BasicTextBuffer<Ch, Tr>::deleteRect(int64_t start, int64_t end, int64_t rec
 ** margin for subsequent columnar pastes of this data.
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::findRectSelBoundariesForCopy(int64_t lineStartPos, int64_t rectStart, int64_t rectEnd, int64_t *selStart, int64_t *selEnd) const noexcept {
+void BasicTextBuffer<Ch, Tr>::findRectSelBoundariesForCopy(TextCursor lineStartPos, int64_t rectStart, int64_t rectEnd, TextCursor *selStart, TextCursor *selEnd) const noexcept {
 
-    int64_t pos    = lineStartPos;
-    int indent = 0;
+    TextCursor pos = lineStartPos;
+    int indent     = 0;
 
     // find the start of the selection
     for (; pos < buffer_.size(); pos++) {
@@ -1305,7 +1305,7 @@ void BasicTextBuffer<Ch, Tr>::findRectSelBoundariesForCopy(int64_t lineStartPos,
 ** routines which need to set a cursor position).
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::insertColEx(int64_t column, int64_t startPos, view_type insText, int64_t *nDeleted, int64_t *nInserted, int64_t *endPos) {
+void BasicTextBuffer<Ch, Tr>::insertColEx(int64_t column, TextCursor startPos, view_type insText, int64_t *nDeleted, int64_t *nInserted, TextCursor *endPos) {
 
     int64_t len;
     int64_t endOffset;
@@ -1324,11 +1324,11 @@ void BasicTextBuffer<Ch, Tr>::insertColEx(int64_t column, int64_t startPos, view
        the text beyond the inserted column.  (Space for additional
        newlines if the inserted text extends beyond the end of the buffer
        is counted with the length of insText) */
-    const int64_t start  = BufStartOfLine(startPos);
-    const int64_t nLines = countLinesEx(insText) + 1;
+    const TextCursor start = BufStartOfLine(startPos);
+    const int64_t nLines   = countLinesEx(insText) + 1;
 
-    const int insWidth = textWidthEx(insText, tabDist_);
-    const int64_t end  = BufEndOfLine(BufCountForwardNLines(start, nLines - 1));
+    const int insWidth   = textWidthEx(insText, tabDist_);
+    const TextCursor end = BufEndOfLine(BufCountForwardNLines(start, nLines - 1));
     const string_type replText = BufGetRangeEx(start, end);
 
     const string_type expRep = expandTabsEx(replText, 0, tabDist_);
@@ -1339,12 +1339,12 @@ void BasicTextBuffer<Ch, Tr>::insertColEx(int64_t column, int64_t startPos, view
 
     /* Loop over all lines in the buffer between start and end inserting
        text at column, splitting tabs and adding padding appropriately */
-    auto outPtr       = std::back_inserter(outStr);
-    int64_t lineStart = start;
-    auto insPtr       = insText.begin();
+    auto outPtr          = std::back_inserter(outStr);
+    TextCursor lineStart = start;
+    auto insPtr          = insText.begin();
 
     while (true) {
-        const int64_t lineEnd = BufEndOfLine(lineStart);
+        const TextCursor lineEnd  = BufEndOfLine(lineStart);
         const string_type line    = BufGetRangeEx(lineStart, lineEnd);
         const string_type insLine = copyLineEx(insPtr, insText.end());
         insPtr += insLine.size();
@@ -1367,7 +1367,7 @@ void BasicTextBuffer<Ch, Tr>::insertColEx(int64_t column, int64_t startPos, view
         std::copy_n(temp.begin(), len, outPtr);
 
         *outPtr++ = Ch('\n');
-        lineStart = lineEnd < buffer_.size() ? lineEnd + 1 : buffer_.size();
+        lineStart = lineEnd < buffer_.size() ? lineEnd + 1 : TextCursor(buffer_.size());
         if (insPtr == insText.end()) {
             break;
         }
@@ -1399,10 +1399,10 @@ void BasicTextBuffer<Ch, Tr>::redisplaySelection(const Selection *oldSelection, 
     /* If either selection is rectangular, add an additional character to
        the end of the selection to request the redraw routines to wipe out
        the parts of the selection beyond the end of the line */
-    int64_t oldStart = oldSelection->start;
-    int64_t newStart = newSelection->start;
-    int64_t oldEnd   = oldSelection->end;
-    int64_t newEnd   = newSelection->end;
+    TextCursor oldStart = oldSelection->start;
+    TextCursor newStart = newSelection->start;
+    TextCursor oldEnd   = oldSelection->end;
+    TextCursor newEnd   = newSelection->end;
 
     if (oldSelection->rectangular) {
         oldEnd++;
@@ -1447,10 +1447,10 @@ void BasicTextBuffer<Ch, Tr>::redisplaySelection(const Selection *oldSelection, 
     /* Otherwise, separate into 3 separate regions: ch1, and ch2 (the two
        changed areas), and the unchanged area of their intersection,
        and update only the changed area(s) */
-    const int64_t ch1Start = std::min(oldStart, newStart);
-    const int64_t ch2End   = std::max(oldEnd, newEnd);
-    const int64_t ch1End   = std::max(oldStart, newStart);
-    const int64_t ch2Start = std::min(oldEnd, newEnd);
+    const TextCursor ch1Start = std::min(oldStart, newStart);
+    const TextCursor ch2End   = std::max(oldEnd, newEnd);
+    const TextCursor ch1End   = std::max(oldStart, newStart);
+    const TextCursor ch2Start = std::min(oldEnd, newEnd);
 
     if (ch1Start != ch1End) {
         callModifyCBs(ch1Start, 0, 0, ch1End - ch1Start, {});
@@ -1507,7 +1507,7 @@ void BasicTextBuffer<Ch, Tr>::replaceSelectedEx(Selection *sel, view_type text) 
 ** Update all of the selections in "buf" for changes in the buffer's text
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::updateSelections(int64_t pos, int64_t nDeleted, int64_t nInserted) noexcept {
+void BasicTextBuffer<Ch, Tr>::updateSelections(TextCursor pos, int64_t nDeleted, int64_t nInserted) noexcept {
     primary  .updateSelection(pos, nDeleted, nInserted);
     secondary.updateSelection(pos, nDeleted, nInserted);
     highlight.updateSelection(pos, nDeleted, nInserted);
@@ -1521,12 +1521,12 @@ int64_t BasicTextBuffer<Ch, Tr>::BufGetLength() const noexcept {
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufAppendEx(view_type text) noexcept {
-    BufInsertEx(BufGetLength(), text);
+    BufInsertEx(TextCursor(BufGetLength()), text);
 }
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufAppendEx(Ch ch) noexcept {
-    BufInsertEx(BufGetLength(), ch);
+    BufInsertEx(TextCursor(BufGetLength()), ch);
 }
 
 template <class Ch, class Tr>
@@ -1540,9 +1540,9 @@ bool BasicTextBuffer<Ch, Tr>::BufIsEmpty() const noexcept {
 ** span lines.
 */
 template <class Ch, class Tr>
-bool BasicTextBuffer<Ch, Tr>::GetSimpleSelection(int64_t *left, int64_t *right) const noexcept {
-    int64_t selStart;
-    int64_t selEnd;
+bool BasicTextBuffer<Ch, Tr>::GetSimpleSelection(TextCursor *left, TextCursor *right) const noexcept {
+    TextCursor selStart;
+    TextCursor selEnd;
     int64_t rectStart;
     int64_t rectEnd;
     bool isRect;
@@ -1555,9 +1555,9 @@ bool BasicTextBuffer<Ch, Tr>::GetSimpleSelection(int64_t *left, int64_t *right) 
     }
 
     if (isRect) {
-        const int64_t lineStart = BufStartOfLine(selStart);
-        selStart  = BufCountForwardDispChars(lineStart, rectStart);
-        selEnd    = BufCountForwardDispChars(lineStart, rectEnd);
+        const TextCursor lineStart = BufStartOfLine(selStart);
+        selStart  = TextCursor(BufCountForwardDispChars(lineStart, rectStart));
+        selEnd    = TextCursor(BufCountForwardDispChars(lineStart, rectEnd));
     }
 
     *left  = selStart;
@@ -2037,7 +2037,7 @@ BasicTextBuffer<Ch, Tr>::BasicTextBuffer(int64_t size) : buffer_(size) {
 }
 
 template <class Ch, class Tr>
-int64_t BasicTextBuffer<Ch, Tr>::BufCursorPosHint() const noexcept {
+TextCursor BasicTextBuffer<Ch, Tr>::BufCursorPosHint() const noexcept {
     return cursorPosHint_;
 }
 
@@ -2077,7 +2077,7 @@ bool BasicTextBuffer<Ch, Tr>::BufSetSyncXSelection(bool sync) {
  * @param newEnd
  */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::Selection::setSelection(int64_t newStart, int64_t newEnd) {
+void BasicTextBuffer<Ch, Tr>::Selection::setSelection(TextCursor newStart, TextCursor newEnd) {
     selected	= (newStart != newEnd);
     zeroWidth	= (newStart == newEnd);
     rectangular = false;
@@ -2093,7 +2093,7 @@ void BasicTextBuffer<Ch, Tr>::Selection::setSelection(int64_t newStart, int64_t 
  * @param newRectEnd
  */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::Selection::setRectSelect(int64_t newStart, int64_t newEnd, int64_t newRectStart, int64_t newRectEnd) {
+void BasicTextBuffer<Ch, Tr>::Selection::setRectSelect(TextCursor newStart, TextCursor newEnd, int64_t newRectStart, int64_t newRectEnd) {
     selected	= (newRectStart < newRectEnd);
     zeroWidth	= (newRectStart == newRectEnd);
     rectangular = true;
@@ -2113,7 +2113,7 @@ void BasicTextBuffer<Ch, Tr>::Selection::setRectSelect(int64_t newStart, int64_t
  * @return
  */
 template <class Ch, class Tr>
-bool BasicTextBuffer<Ch, Tr>::Selection::getSelectionPos(int64_t *start, int64_t *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const {
+bool BasicTextBuffer<Ch, Tr>::Selection::getSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const {
     // Always fill in the parameters (zero-width can be requested too).
     *isRect = this->rectangular;
     *start  = this->start;
@@ -2134,7 +2134,7 @@ bool BasicTextBuffer<Ch, Tr>::Selection::getSelectionPos(int64_t *start, int64_t
  * Update an individual selection for changes in the corresponding text
  */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::Selection::updateSelection(int64_t pos, int64_t nDeleted, int64_t nInserted) {
+void BasicTextBuffer<Ch, Tr>::Selection::updateSelection(TextCursor pos, int64_t nDeleted, int64_t nInserted) {
     if ((!selected && !zeroWidth) || pos > end) {
         return;
     }
@@ -2149,7 +2149,7 @@ void BasicTextBuffer<Ch, Tr>::Selection::updateSelection(int64_t pos, int64_t nD
         zeroWidth = false;
     } else if (pos <= start && pos + nDeleted < end) {
         start = pos;
-        end   = nInserted + end - nDeleted;
+        end   = nInserted + (end - nDeleted);
     } else if (pos < end) {
         end += nInserted - nDeleted;
         if (end <= start) {
@@ -2163,7 +2163,7 @@ void BasicTextBuffer<Ch, Tr>::Selection::updateSelection(int64_t pos, int64_t nD
 ** selection
 */
 template <class Ch, class Tr>
-bool BasicTextBuffer<Ch, Tr>::Selection::inSelection(int64_t pos, int64_t lineStartPos, int64_t dispIndex) const {
+bool BasicTextBuffer<Ch, Tr>::Selection::inSelection(TextCursor pos, TextCursor lineStartPos, int64_t dispIndex) const {
     return this->selected && ((!rectangular && pos >= start && pos < end) || (rectangular && pos >= start && lineStartPos <= end && dispIndex >= rectStart && dispIndex < rectEnd));
 }
 
@@ -2172,7 +2172,7 @@ bool BasicTextBuffer<Ch, Tr>::Selection::inSelection(int64_t pos, int64_t lineSt
 ** within "rangeStart" to "rangeEnd"
 */
 template <class Ch, class Tr>
-bool BasicTextBuffer<Ch, Tr>::Selection::rangeTouchesRectSel(int64_t rangeStart, int64_t rangeEnd) const {
+bool BasicTextBuffer<Ch, Tr>::Selection::rangeTouchesRectSel(TextCursor rangeStart, TextCursor rangeEnd) const {
     return selected && rectangular && end >= rangeStart && start <= rangeEnd;
 }
 

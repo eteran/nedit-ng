@@ -18,7 +18,7 @@ const uint8_t rangeset_labels[N_RANGESETS + 1] = {
 														 
 // -------------------------------------------------------------------------- 
 
-void RangesetBufModifiedCB(int64_t pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
+void RangesetBufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
     Q_UNUSED(nRestyled);
 
     if(auto *table = static_cast<RangesetTable *>(user)) {
@@ -182,7 +182,7 @@ int RangesetTable::RangesetFindIndex(int label, bool must_be_active) const {
 ** rangeset was found, 0 otherwise. If needs_color is true, "colorless" ranges
 ** will be skipped.
 */
-int RangesetTable::RangesetIndex1ofPos(int64_t pos, bool needs_color) {
+int RangesetTable::RangesetIndex1ofPos(TextCursor pos, bool needs_color) {
 
     for (int i = 0; i < n_set_; i++) {
         Rangeset *rangeset = &set_[static_cast<int>(order_[i])];
@@ -235,7 +235,7 @@ std::vector<uint8_t> RangesetTable::RangesetGetList() const {
     return list;
 }
 
-void RangesetTable::RangesetTableUpdatePos(int64_t pos, int64_t ins, int64_t del) {
+void RangesetTable::RangesetTableUpdatePos(TextCursor pos, int64_t ins, int64_t del) {
 
     if (ins == 0 && del == 0) {
         return;

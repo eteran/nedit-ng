@@ -56,7 +56,7 @@ enum tftoken_types {
     TF_ERROR_EOF
 };
 
-constexpr int MAXLINE						  = 2048;
+constexpr int MAX_LINE						  = 2048;
 constexpr int MAX_TAG_INCLUDE_RECURSION_LEVEL = 5;
 
 /* Take this many lines when making a tip from a tag.
@@ -89,24 +89,23 @@ QString rstrip(QString s) {
     return s.replace(re, QString());
 }
 
-QList<Tags::Tag> getTagFromTable(QMultiHash<QString, Tags::Tag> *table, const QString &name) {
-    return table->values(name);
+QList<Tags::Tag> getTagFromTable(QMultiHash<QString, Tags::Tag> &table, const QString &name) {
+    return table.values(name);
 }
 
 /*
- * Given a \0 terminated string and a position, advance the position
- * by n lines, where line separators (for now) are \n.  If the end of
- * string is reached before n lines, return the number of lines advanced,
- * else normally return -1.
+ * Given a string and a position, advance the position by n lines, where line
+ * separators (for now) are \n.  If the end of string is reached before n
+ * lines, return the number of lines advanced, else normally return -1.
  */
-int moveAheadNLinesEx(view::string_view str, int64_t *pos, int n) {
+int64_t moveAheadNLinesEx(view::string_view str, int64_t &pos, int64_t n) {
 
-    int i = n;
-    while (str.begin() + *pos != str.end() && n > 0) {
-        if (str[static_cast<size_t>(*pos)] == '\n') {
+    int64_t i = n;
+    while (static_cast<size_t>(pos) != str.size() && n > 0) {
+        if (str[static_cast<size_t>(pos)] == '\n') {
             --n;
         }
-        ++(*pos);
+        ++pos;
     }
 
     if (n == 0) {
@@ -138,13 +137,13 @@ QString          Tags::tagName;
 
 QString Tags::tagFiles[MAXDUPTAGS];
 QString Tags::tagSearch[MAXDUPTAGS];
-int     Tags::tagPosInf[MAXDUPTAGS];
+int64_t Tags::tagPosInf[MAXDUPTAGS];
 
-bool           Tags::globAnchored;
-int            Tags::globPos;
-TipHAlignMode  Tags::globHAlign;
-TipVAlignMode  Tags::globVAlign;
-TipAlignMode Tags::globAlignMode;
+bool                            Tags::globAnchored;
+boost::variant<int, TextCursor> Tags::globPos;
+TipHAlignMode                   Tags::globHAlign;
+TipVAlignMode                   Tags::globVAlign;
+TipAlignMode                    Tags::globAlignMode;
 
 
 /* Add a tag specification to the hash table
@@ -153,7 +152,7 @@ TipAlignMode Tags::globAlignMode;
 **   (We don't return boolean as the return value is used as counter increment!)
 **
 */
-int Tags::addTag(const QString &name, const QString &file, size_t lang, const QString &search, int posInf, const QString &path, int index) {
+int Tags::addTag(const QString &name, const QString &file, size_t lang, const QString &search, int64_t posInf, const QString &path, int index) {
 
     QMultiHash<QString, Tag> *const table = hashTableByType(searchMode);
 
@@ -728,11 +727,11 @@ bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchStri
         ctagsMode      = false;
     } else if (searchString.size() > 1 && searchString[0] == QLatin1Char('/')) {
         dir            = Direction::Forward;
-		searchStartPos = 0;
+        searchStartPos = 0;
         ctagsMode      = true;
     } else if (searchString.size() > 1 && searchString[0] == QLatin1Char('?')) {
         dir            = Direction::Backward;
-        searchStartPos = static_cast<int64_t>(fileString.size());
+        searchStartPos = fileString.size();
         ctagsMode      = true;
 	} else {
 		qWarning("NEdit: Error parsing tag file search string");
@@ -741,7 +740,7 @@ bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchStri
 
 	// Build the search regex. 
     QString searchSubs;
-    searchSubs.reserve(3 * MAXLINE + 3);
+    searchSubs.reserve(3 * MAX_LINE + 3);
     auto outPtr = std::back_inserter(searchSubs);
     auto inPtr = searchString.begin();
 
@@ -829,7 +828,7 @@ bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchStri
 void Tags::showMatchingCalltipEx(QWidget *parent, TextArea *area, size_t i) {
     try {
         int64_t startPos = 0;
-        int64_t endPos = 0;
+        int64_t endPos   = 0;
 
         // 1. Open the target file
         NormalizePathnameEx(tagFiles[i]);
@@ -849,7 +848,7 @@ void Tags::showMatchingCalltipEx(QWidget *parent, TextArea *area, size_t i) {
         // 3. Search for the tagged location (set startPos)
         if (tagSearch[i].isEmpty()) {
             // It's a line number, just go for it
-            if ((moveAheadNLinesEx(fileString, &startPos, tagPosInf[i] - 1)) >= 0) {
+            if ((moveAheadNLinesEx(fileString, startPos, tagPosInf[i] - 1)) >= 0) {
                 QMessageBox::critical(
                             parent,
                             tr("Tags Error"),
@@ -885,14 +884,14 @@ void Tags::showMatchingCalltipEx(QWidget *parent, TextArea *area, size_t i) {
 
             if (!found) {
                 // Just take 4 lines
-                moveAheadNLinesEx(fileString, &endPos, TIP_DEFAULT_LINES);
+                moveAheadNLinesEx(fileString, endPos, TIP_DEFAULT_LINES);
                 --endPos; // Lose the last \n
             }
 
         } else { // Mode = TIP_FROM_TAG
             // 4. Copy TIP_DEFAULT_LINES lines of text to the calltip string
             endPos = startPos;
-            moveAheadNLinesEx(fileString, &endPos, TIP_DEFAULT_LINES);
+            moveAheadNLinesEx(fileString, endPos, TIP_DEFAULT_LINES);
 
             // Make sure not to overrun the fileString with ". . ."
             if (static_cast<size_t>(endPos) <= (fileString.size() - 5)) {
@@ -929,6 +928,7 @@ void Tags::showMatchingCalltipEx(QWidget *parent, TextArea *area, size_t i) {
  * @return
  */
 bool Tags::searchLine(const std::string &line, const std::string &regex) {
+
     int64_t dummy1;
     int64_t dummy2;
     return Search::SearchString(
@@ -1311,9 +1311,9 @@ std::deque<Tags::File> *Tags::tagListByType(SearchMode mode) {
 QList<Tags::Tag> Tags::getTag(const QString &name, SearchMode mode) {
 
     if (mode == SearchMode::TIP) {
-        return getTagFromTable(&LoadedTips, name);
+        return getTagFromTable(LoadedTips, name);
     } else {
-        return getTagFromTable(&LoadedTags, name);
+        return getTagFromTable(LoadedTags, name);
     }
 }
 

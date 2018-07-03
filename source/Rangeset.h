@@ -3,6 +3,7 @@
 #define RANGESET_H_
 
 #include "TextBufferFwd.h"
+#include "TextCursor.h"
 #include <QColor>
 
 constexpr int N_RANGESETS = 63;
@@ -19,7 +20,7 @@ struct RangesetInfo {
     QString     mode;
 };
 
-using RangesetUpdateFn = Rangeset *(Rangeset *rangeset, int64_t pos, int64_t ins, int64_t del);
+using RangesetUpdateFn = Rangeset *(Rangeset *rangeset, TextCursor pos, int64_t ins, int64_t del);
 
 class Rangeset {
 public:
@@ -34,15 +35,15 @@ public:
     bool RangesetAssignColorName(TextBuffer *buffer, const QString &color_name);
     bool RangesetAssignName(const QString &name);
     bool RangesetChangeModifyResponse(QString name);
-    bool RangesetFindRangeNo(int64_t index, int64_t *start, int64_t *end) const;
-    int64_t RangesetAddBetween(TextBuffer *buffer, int64_t start, int64_t end);
+    bool RangesetFindRangeNo(int64_t index, TextCursor *start, TextCursor *end) const;
+    int64_t RangesetAddBetween(TextBuffer *buffer, TextCursor start, TextCursor end);
     int64_t RangesetAdd(TextBuffer *buffer, Rangeset *plusSet);
-    int64_t RangesetCheckRangeOfPos(int64_t pos);
-    int64_t RangesetFindRangeOfPos(int64_t pos, int incl_end) const;
+    int64_t RangesetCheckRangeOfPos(TextCursor pos);
+    int64_t RangesetFindRangeOfPos(TextCursor pos, int incl_end) const;
     int RangesetGetColorValid(QColor *color) const;
     int64_t RangesetGetNRanges() const;
     int64_t RangesetInverse(TextBuffer *buffer);
-    int64_t RangesetRemoveBetween(TextBuffer *buffer, int64_t start, int64_t end);
+    int64_t RangesetRemoveBetween(TextBuffer *buffer, TextCursor start, TextCursor end);
     int64_t RangesetRemove(TextBuffer *buffer, Rangeset *minusSet);
     QString RangesetGetName() const;
     RangesetInfo RangesetGetInfo() const;

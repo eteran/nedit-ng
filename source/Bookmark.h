@@ -3,6 +3,7 @@
 #define BOOKMARK_H_
 
 #include "TextBuffer.h"
+#include "TextCursor.h"
 #include <QChar>
 #include <cstdint>
 
@@ -12,7 +13,7 @@ constexpr int MAX_MARKS = 36;
 // Element in bookmark table
 struct Bookmark {
     QChar                 label;
-    int64_t               cursorPos;
+    TextCursor            cursorPos;
     TextBuffer::Selection sel;
 };
 

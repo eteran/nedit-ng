@@ -11,6 +11,7 @@
 #include "SearchType.h"
 #include "WrapMode.h"
 #include "userCmds.h"
+#include "TextCursor.h"
 
 #include <vector>
 #include <gsl/span>
@@ -69,7 +70,7 @@ public:
     bool SearchAndSelectEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap);
     bool SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, bool continued);
     bool SearchAndSelectSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
-    bool searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, int64_t *left, int64_t *right, int64_t *searchExtentBW, int64_t *searchExtentFW);
+    bool searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, TextCursor *left, TextCursor *right, TextCursor *searchExtentBW, TextCursor *searchExtentFW);
     bool SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *extentBW, int64_t *extentFW);
     bool SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, int64_t *startPos, int64_t *endPos);
     DocumentWidget *CreateDocument(const QString &name);
@@ -88,8 +89,8 @@ public:
     void EndISearchEx();
     void forceShowLineNumbers();
     void initToggleButtonsiSearch(SearchType searchType);
-    void iSearchRecordLastBeginPosEx(Direction direction, int64_t initPos);
-    void iSearchTryBeepOnWrapEx(Direction direction, int64_t beginPos, int64_t startPos);
+    void iSearchRecordLastBeginPosEx(Direction direction, TextCursor initPos);
+    void iSearchTryBeepOnWrapEx(Direction direction, TextCursor beginPos, TextCursor startPos);
     void openFile(DocumentWidget *document, const QString &text);
     void parseGeometry(QString geometry);
     void ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
@@ -406,12 +407,12 @@ private:
     QPointer<DialogFind>    dialogFind_;
     QPointer<DialogReplace> dialogReplace_;
     QPointer<TextArea>      lastFocus_;
-    bool iSearchLastLiteralCase_ = false; // idem, for literal mode
-    bool iSearchLastRegexCase_   = true;  // idem, for regex mode in incremental search bar
-    bool wasSelected_            = false; // last selection state (for dim/undim of selection related menu items
-    int iSearchHistIndex_        = 0;     // find and replace dialogs
-    int64_t iSearchLastBeginPos_ = 0;     // beg. pos. last match of current i.s.
-    int64_t iSearchStartPos_     = -1;    // start pos. of current incr. search
+    bool iSearchLastLiteralCase_    = false;          // idem, for literal mode
+    bool iSearchLastRegexCase_      = true;           // idem, for regex mode in incremental search bar
+    bool wasSelected_               = false;          // last selection state (for dim/undim of selection related menu items
+    int iSearchHistIndex_           = 0;              // find and replace dialogs
+    TextCursor iSearchLastBeginPos_ = {};              // beg. pos. last match of current i.s.
+    TextCursor iSearchStartPos_     = TextCursor(-1); // start pos. of current incr. search
 
 public:
     Ui::MainWindow ui;

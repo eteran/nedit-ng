@@ -4,6 +4,7 @@
 
 #include "gap_buffer.h"
 #include "TextBufferFwd.h"
+#include "TextCursor.h"
 #include "Util/string_view.h"
 
 #include <gsl/gsl_util>
@@ -19,11 +20,10 @@ class BasicTextBuffer {
 public:
     using string_type = std::basic_string<Ch, Tr>;
     using view_type   = view::basic_string_view<Ch, Tr>;
-    using size_type   = typename gap_buffer<Ch, Tr>::size_type;
 
 public:
-    using modify_callback_type     = void (*)(int64_t pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view_type deletedText, void *user);
-    using pre_delete_callback_type = void (*)(int64_t pos, int64_t nDeleted, void *user);
+    using modify_callback_type     = void (*)(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view_type deletedText, void *user);
+    using pre_delete_callback_type = void (*)(TextCursor pos, int64_t nDeleted, void *user);
 
 private:
     /* Initial size for the buffer gap (empty space in the buffer where text
@@ -42,24 +42,24 @@ public:
 public:
     class Selection {
     public:
-        bool getSelectionPos(int64_t *start, int64_t *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const;
-        bool inSelection(int64_t pos, int64_t lineStartPos, int64_t dispIndex) const;
-        bool rangeTouchesRectSel(int64_t rangeStart, int64_t rangeEnd) const;
-        void setRectSelect(int64_t newStart, int64_t newEnd, int64_t newRectStart, int64_t newRectEnd);
-        void setSelection(int64_t newStart, int64_t newEnd);
-        void updateSelection(int64_t pos, int64_t nDeleted, int64_t nInserted);
+        bool getSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const;
+        bool inSelection(TextCursor pos, TextCursor lineStartPos, int64_t dispIndex) const;
+        bool rangeTouchesRectSel(TextCursor rangeStart, TextCursor rangeEnd) const;
+        void setRectSelect(TextCursor newStart, TextCursor newEnd, int64_t newRectStart, int64_t newRectEnd);
+        void setSelection(TextCursor newStart, TextCursor newEnd);
+        void updateSelection(TextCursor pos, int64_t nDeleted, int64_t nInserted);
 
     public:
         explicit operator bool() const { return selected; }
 
     public:
-        bool selected    = false; // true if the selection is active
-        bool rectangular = false; // true if the selection is rectangular
-        bool zeroWidth   = false; // Width 0 selections aren't "real" selections, but they can be useful when creating rectangular selections from the keyboard.
-        int64_t start        = 0; // Pos. of start of selection, or if rectangular start of line containing it.
-        int64_t end          = 0; // Pos. of end of selection, or if rectangular end of line containing it.
-        int64_t rectStart    = 0; // Indent of left edge of rect. selection
-        int64_t rectEnd      = 0; // Indent of right edge of rect. selection
+        bool selected     = false; // true if the selection is active
+        bool rectangular  = false; // true if the selection is rectangular
+        bool zeroWidth    = false; // Width 0 selections aren't "real" selections, but they can be useful when creating rectangular selections from the keyboard.
+        TextCursor start  = {};    // Pos. of start of selection, or if rectangular start of line containing it.
+        TextCursor end    = {};    // Pos. of end of selection, or if rectangular end of line containing it.
+        int64_t rectStart = 0;     // Indent of left edge of rect. selection
+        int64_t rectEnd   = 0;     // Indent of right edge of rect. selection
     };
 
 public:
@@ -77,62 +77,62 @@ public:
 public:
     bool BufGetUseTabs() const noexcept;
     bool BufIsEmpty() const noexcept;
-    boost::optional<int64_t> BufSearchBackwardEx(int64_t startPos, view_type searchChars) const noexcept;
-    boost::optional<int64_t> BufSearchForwardEx(int64_t startPos, view_type searchChars) const noexcept;
-    Ch BufGetCharacter(int64_t pos) const noexcept;
-    int BufCmpEx(int64_t pos, view_type cmpText) const noexcept;
-    int BufCmpEx(int64_t pos, Ch *cmpText, int64_t size) const noexcept;
-    int BufCmpEx(int64_t pos, Ch ch) const noexcept;
-    int64_t BufCountBackwardNLines(int64_t startPos, int64_t nLines) const noexcept;
-    int64_t BufCountDispChars(int64_t lineStartPos, int64_t targetPos) const noexcept;
-    int64_t BufCountForwardDispChars(int64_t lineStartPos, int64_t nChars) const noexcept;
-    int64_t BufCountForwardNLines(int64_t startPos, int64_t nLines) const noexcept;
-    int64_t BufCountLines(int64_t startPos, int64_t endPos) const noexcept;
-    int64_t BufCursorPosHint() const noexcept;
-    int64_t BufEndOfLine(int64_t pos) const noexcept;
-    bool BufGetEmptySelectionPos(int64_t *start, int64_t *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
-    int BufGetExpandedChar(int64_t pos, int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN]) const noexcept;
+    boost::optional<TextCursor> BufSearchBackwardEx(TextCursor startPos, view_type searchChars) const noexcept;
+    boost::optional<TextCursor> BufSearchForwardEx(TextCursor startPos, view_type searchChars) const noexcept;
+    Ch BufGetCharacter(TextCursor pos) const noexcept;
+    int BufCmpEx(TextCursor pos, view_type cmpText) const noexcept;
+    int BufCmpEx(TextCursor pos, Ch *cmpText, int64_t size) const noexcept;
+    int BufCmpEx(TextCursor pos, Ch ch) const noexcept;
+    TextCursor BufCountBackwardNLines(TextCursor startPos, int64_t nLines) const noexcept;
+    int64_t BufCountDispChars(TextCursor lineStartPos, TextCursor targetPos) const noexcept;
+    TextCursor BufCountForwardDispChars(TextCursor lineStartPos, int64_t nChars) const noexcept;
+    TextCursor BufCountForwardNLines(TextCursor startPos, int64_t nLines) const noexcept;
+    int64_t BufCountLines(TextCursor startPos, TextCursor endPos) const noexcept;
+    TextCursor BufCursorPosHint() const noexcept;
+    TextCursor BufEndOfLine(TextCursor pos) const noexcept;
+    bool BufGetEmptySelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
+    int BufGetExpandedChar(TextCursor pos, int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN]) const noexcept;
     int64_t BufGetLength() const noexcept;
-    bool BufGetSelectionPos(int64_t *start, int64_t *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
+    bool BufGetSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
     int BufGetTabDistance() const noexcept;
     int BufGetTabDist() const noexcept;
-    int64_t BufStartOfLine(int64_t pos) const noexcept;
+    TextCursor BufStartOfLine(TextCursor pos) const noexcept;
     string_type BufGetAllEx() const;
-    string_type BufGetRangeEx(int64_t start, int64_t end) const;
+    string_type BufGetRangeEx(TextCursor start, TextCursor end) const;
     string_type BufGetSecSelectTextEx() const;
     string_type BufGetSelectionTextEx() const;
-    string_type BufGetTextInRectEx(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) const;
+    string_type BufGetTextInRectEx(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) const;
     view_type BufAsStringEx() noexcept;
     void BufAddHighPriorityModifyCB(modify_callback_type bufModifiedCB, void *user);
     void BufAddModifyCB(modify_callback_type bufModifiedCB, void *user);
     void BufAddPreDeleteCB(pre_delete_callback_type bufPreDeleteCB, void *user);
     void BufAppendEx(Ch ch) noexcept;
     void BufAppendEx(view_type text) noexcept;
-    void BufCheckDisplay(int64_t start, int64_t end) const noexcept;
-    void BufClearRect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept;
-    void BufCopyFromBuf(BasicTextBuffer *fromBuf, int64_t fromStart, int64_t fromEnd, int64_t toPos) noexcept;
-    void BufHighlight(int64_t start, int64_t end) noexcept;
-    void BufInsertColEx(int64_t column, int64_t startPos, view_type text, int64_t *charsInserted, int64_t *charsDeleted) noexcept;
-    void BufInsertEx(int64_t pos, Ch ch) noexcept;
-    void BufInsertEx(int64_t pos, view_type text) noexcept;
-    void BufOverlayRectEx(int64_t startPos, int64_t rectStart, int64_t rectEnd, view_type text, int64_t *charsInserted, int64_t *charsDeleted) noexcept;
-    void BufRectHighlight(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept;
-    void BufRectSelect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept;
-    void BufRemove(int64_t start, int64_t end) noexcept;
+    void BufCheckDisplay(TextCursor start, TextCursor end) const noexcept;
+    void BufClearRect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept;
+    void BufCopyFromBuf(BasicTextBuffer *fromBuf, TextCursor fromStart, TextCursor fromEnd, TextCursor toPos) noexcept;
+    void BufHighlight(TextCursor start, TextCursor end) noexcept;
+    void BufInsertColEx(int64_t column, TextCursor startPos, view_type text, int64_t *charsInserted, int64_t *charsDeleted) noexcept;
+    void BufInsertEx(TextCursor pos, Ch ch) noexcept;
+    void BufInsertEx(TextCursor pos, view_type text) noexcept;
+    void BufOverlayRectEx(TextCursor startPos, int64_t rectStart, int64_t rectEnd, view_type text, int64_t *charsInserted, int64_t *charsDeleted) noexcept;
+    void BufRectHighlight(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept;
+    void BufRectSelect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept;
+    void BufRemove(TextCursor start, TextCursor end) noexcept;
     void BufRemoveModifyCB(modify_callback_type bufModifiedCB, void *user) noexcept;
     void BufRemovePreDeleteCB(pre_delete_callback_type bufPreDeleteCB, void *user) noexcept;
-    void BufRemoveRect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept;
+    void BufRemoveRect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept;
     void BufRemoveSecSelect() noexcept;
     void BufRemoveSelected() noexcept;
-    void BufReplaceEx(int64_t start, int64_t end, view_type text) noexcept;
-    void BufReplaceEx(int64_t start, int64_t end, Ch ch) noexcept;
-    void BufReplaceRectEx(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd, view_type text);
+    void BufReplaceEx(TextCursor start, TextCursor end, view_type text) noexcept;
+    void BufReplaceEx(TextCursor start, TextCursor end, Ch ch) noexcept;
+    void BufReplaceRectEx(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd, view_type text);
     void BufReplaceSecSelectEx(view_type text) noexcept;
     void BufReplaceSelectedEx(view_type text) noexcept;
-    void BufSecondarySelect(int64_t start, int64_t end) noexcept;
+    void BufSecondarySelect(TextCursor start, TextCursor end) noexcept;
     void BufSecondaryUnselect() noexcept;
-    void BufSecRectSelect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd) noexcept;
-    void BufSelect(int64_t start, int64_t end) noexcept;
+    void BufSecRectSelect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept;
+    void BufSelect(TextCursor start, TextCursor end) noexcept;
     void BufSetAllEx(view_type text);
     void BufSetTabDistance(int tabDist) noexcept;
     void BufSetUseTabs(bool useTabs) noexcept;
@@ -147,25 +147,25 @@ public:
     void BufSetTabDist(int dist) noexcept;
 
 public:
-    bool GetSimpleSelection(int64_t *left, int64_t *right) const noexcept;
+    bool GetSimpleSelection(TextCursor *left, TextCursor *right) const noexcept;
 
 private:
-    boost::optional<int64_t> searchBackward(int64_t startPos, Ch searchChar) const noexcept;
-    boost::optional<int64_t> searchForward(int64_t startPos, Ch searchChar) const noexcept;
-    int64_t insertEx(int64_t pos, view_type text) noexcept;
-    int64_t insertEx(int64_t pos, Ch ch) noexcept;
+    boost::optional<TextCursor> searchBackward(TextCursor startPos, Ch searchChar) const noexcept;
+    boost::optional<TextCursor> searchForward(TextCursor startPos, Ch searchChar) const noexcept;
+    int64_t insertEx(TextCursor pos, view_type text) noexcept;
+    int64_t insertEx(TextCursor pos, Ch ch) noexcept;
     string_type getSelectionTextEx(const Selection *sel) const;
-    void callModifyCBs(int64_t pos, int64_t nDeleted, int64_t nInserted, int64_t nRestyled, view_type deletedText) const noexcept;
-    void callPreDeleteCBs(int64_t pos, int64_t nDeleted) const noexcept;
-    void deleteRange(int64_t start, int64_t end) noexcept;
-    void deleteRect(int64_t start, int64_t end, int64_t rectStart, int64_t rectEnd, int64_t *replaceLen, int64_t *endPos);
-    void findRectSelBoundariesForCopy(int64_t lineStartPos, int64_t rectStart, int64_t rectEnd, int64_t *selStart, int64_t *selEnd) const noexcept;
-    void insertColEx(int64_t column, int64_t startPos, view_type insText, int64_t *nDeleted, int64_t *nInserted, int64_t *endPos);
-    void overlayRectEx(int64_t startPos, int64_t rectStart, int64_t rectEnd, view_type insText, int64_t *nDeleted, int64_t *nInserted, int64_t *endPos);
+    void callModifyCBs(TextCursor pos, int64_t nDeleted, int64_t nInserted, int64_t nRestyled, view_type deletedText) const noexcept;
+    void callPreDeleteCBs(TextCursor pos, int64_t nDeleted) const noexcept;
+    void deleteRange(TextCursor start, TextCursor end) noexcept;
+    void deleteRect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd, int64_t *replaceLen, TextCursor *endPos);
+    void findRectSelBoundariesForCopy(TextCursor lineStartPos, int64_t rectStart, int64_t rectEnd, TextCursor *selStart, TextCursor *selEnd) const noexcept;
+    void insertColEx(int64_t column, TextCursor startPos, view_type insText, int64_t *nDeleted, int64_t *nInserted, TextCursor *endPos);
+    void overlayRectEx(TextCursor startPos, int64_t rectStart, int64_t rectEnd, view_type insText, int64_t *nDeleted, int64_t *nInserted, TextCursor *endPos);
     void redisplaySelection(const Selection *oldSelection, Selection *newSelection) const noexcept;
     void removeSelected(const Selection *sel) noexcept;
     void replaceSelectedEx(Selection *sel, view_type text) noexcept;
-    void updateSelections(int64_t pos, int64_t nDeleted, int64_t nInserted) noexcept;
+    void updateSelections(TextCursor pos, int64_t nDeleted, int64_t nInserted) noexcept;
 
 private:
     static string_type unexpandTabsEx(view_type text, int64_t startIndent, int tabDist);
@@ -186,17 +186,17 @@ private:
     static string_type copyLineEx(Ran first, Ran last);
 
 private:
-    int tabDist_           = DefaultTabWidth;  // equiv. number of characters in a tab
-    bool useTabs_          = true;             // true if buffer routines are allowed to use tabs for padding in rectangular operations
-    int64_t cursorPosHint_ = 0;                // hint for reasonable cursor position after a buffer modification operation
-    bool syncXSelection_   = true;
+    TextCursor cursorPosHint_ = {};               // hint for reasonable cursor position after a buffer modification operation
+    int tabDist_              = DefaultTabWidth;  // equiv. number of characters in a tab
+    bool useTabs_             = true;             // true if buffer routines are allowed to use tabs for padding in rectangular operations
+    bool syncXSelection_      = true;
 
 private:
     gap_buffer<Ch> buffer_;
 
 private:
-    std::deque<std::pair<pre_delete_callback_type, void *>> preDeleteProcs_; // procedure to call before text is deleted from the buffer; at most one is supported.
-    std::deque<std::pair<modify_callback_type, void *>> modifyProcs_;       // procedures to call when buffer is modified to redisplay contents
+    std::deque<std::pair<pre_delete_callback_type, void *>> preDeleteProcs_; // procedures to call before text is deleted from the buffer; at most one is supported.
+    std::deque<std::pair<modify_callback_type, void *>> modifyProcs_;        // procedures to call when buffer is modified to redisplay contents
 
 public:
     Selection primary;   // highlighted areas
