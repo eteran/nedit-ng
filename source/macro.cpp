@@ -2774,7 +2774,7 @@ static std::error_code writeOrAppendFile(bool append, DocumentWidget *document, 
     if(!file) {
         *result = make_value(false);
         return MacroErrorCode::Success;
-    }
+    }   
 
     if(!file.write(string.data(), static_cast<std::streamsize>(string.size()))) {
         *result = make_value(false);
@@ -3833,7 +3833,7 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
             /* We skipped the last character to prevent an endless loop.
                Add it to the list. */
             int64_t elementLen = strLength - lastEnd;
-            std::string str(&sourceStr[static_cast<size_t>(lastEnd)], static_cast<size_t>(elementLen));
+            view::string_view str(&sourceStr[static_cast<size_t>(lastEnd)], static_cast<size_t>(elementLen));
 
             element = make_value(str);
             if (!ArrayInsert(result, indexStr, &element)) {

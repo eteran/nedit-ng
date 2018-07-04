@@ -5,7 +5,7 @@
 #include <QLatin1String>
 #include <QtDebug>
 
-enum class WrapStyle {
+enum class WrapStyle : int {
     Default    = -1,
     None       = 0,
     Newline    = 1,
