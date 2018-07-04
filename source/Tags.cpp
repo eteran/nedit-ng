@@ -721,9 +721,9 @@ bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchStri
     view::string_view fileString = buffer;
 
 	// determine search direction and start position 
-	if (*startPos != -1) { // etags mode! 
+    if (*startPos != -1) { // etags mode!
         dir            = Direction::Forward;
-		searchStartPos = *startPos;
+        searchStartPos = *startPos;
         ctagsMode      = false;
     } else if (searchString.size() > 1 && searchString[0] == QLatin1Char('/')) {
         dir            = Direction::Forward;
@@ -782,6 +782,8 @@ bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchStri
 		}
 	}
 
+    Search::Result searchResult;
+
     bool found = Search::SearchString(
                 fileString,
                 searchSubs,
@@ -789,10 +791,7 @@ bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchStri
                 SearchType::Regex,
                 WrapMode::NoWrap,
                 searchStartPos,
-                startPos,
-                endPos,
-                nullptr,
-                nullptr,
+                &searchResult,
                 QString());
 
 	if (!found && !ctagsMode) {
@@ -807,16 +806,14 @@ bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchStri
                     SearchType::Regex,
                     WrapMode::NoWrap,
                     searchStartPos,
-                    startPos,
-                    endPos,
-                    nullptr,
-                    nullptr,
+                    &searchResult,
                     QString());
 	}
 
 	// return the result 
 	if (found) {
-		// *startPos and *endPos are set in SearchString
+        *startPos = searchResult.start;
+        *endPos   = searchResult.end;
         return true;
 	} else {
 		// startPos, endPos left untouched by SearchString if search failed. 
@@ -873,10 +870,12 @@ void Tags::showMatchingCalltipEx(QWidget *parent, TextArea *area, size_t i) {
         }
 
         if (searchMode == SearchMode::TIP) {
-            int64_t dummy;
 
             // 4. Find the end of the calltip (delimited by an empty line)
             endPos = startPos;
+
+            Search::Result searchResult;
+
             bool found = Search::SearchString(
                         fileString,
                         QLatin1String("\\n\\s*\\n"),
@@ -884,16 +883,15 @@ void Tags::showMatchingCalltipEx(QWidget *parent, TextArea *area, size_t i) {
                         SearchType::Regex,
                         WrapMode::NoWrap,
                         startPos,
-                        &endPos,
-                        &dummy,
-                        nullptr,
-                        nullptr,
+                        &searchResult,
                         QString());
 
             if (!found) {
                 // Just take 4 lines
                 moveAheadNLinesEx(fileString, endPos, TIP_DEFAULT_LINES);
                 --endPos; // Lose the last \n
+            } else {
+                endPos = searchResult.start;
             }
 
         } else { // Mode = TIP_FROM_TAG
@@ -937,8 +935,8 @@ void Tags::showMatchingCalltipEx(QWidget *parent, TextArea *area, size_t i) {
  */
 bool Tags::searchLine(const std::string &line, const std::string &regex) {
 
-    int64_t dummy1;
-    int64_t dummy2;
+    Search::Result searchResult;
+
     return Search::SearchString(
                 line,
                 QString::fromStdString(regex),
@@ -946,10 +944,7 @@ bool Tags::searchLine(const std::string &line, const std::string &regex) {
                 SearchType::Regex,
                 WrapMode::NoWrap,
                 0,
-                &dummy1,
-                &dummy2,
-                nullptr,
-                nullptr,
+                &searchResult,
                 QString());
 }
 

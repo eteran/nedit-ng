@@ -2835,16 +2835,15 @@ static std::error_code searchMS(DocumentWidget *document, Arguments arguments, D
 */
 static std::error_code searchStringMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    int64_t beginPos;
-    WrapMode wrap;
-    bool found     = false;
-    int64_t foundStart = -1;
-    int64_t foundEnd   = 0;
-    SearchType type;
-    bool skipSearch = false;
+    int64_t     beginPos;
+    WrapMode    wrap;
+    SearchType  type;
+    QString     searchStr;
+    Direction   direction;
     std::string string;
-    QString searchStr;
-    Direction direction;
+
+    bool found      = false;
+    bool skipSearch = false;
 
     // Validate arguments and convert to proper types
     if (arguments.size() < 3) {
@@ -2884,6 +2883,8 @@ static std::error_code searchStringMS(DocumentWidget *document, Arguments argume
         }
     }
 
+    Search::Result searchResult = { -1, 0, 0, 0 };
+
     if (!skipSearch) {
         found = Search::SearchString(
                     string,
@@ -2892,16 +2893,13 @@ static std::error_code searchStringMS(DocumentWidget *document, Arguments argume
                     type,
                     wrap,
                     beginPos,
-                    &foundStart,
-                    &foundEnd,
-                    nullptr,
-                    nullptr,
+                    &searchResult,
                     document->GetWindowDelimitersEx());
     }
 
     // Return the results
-    ReturnGlobals[SEARCH_END]->value = make_value(found ? foundEnd : 0);
-    *result = make_value(found ? foundStart : -1);
+    ReturnGlobals[SEARCH_END]->value = make_value(found ? searchResult.end : 0);
+    *result = make_value(found ? searchResult.start : -1);
     return MacroErrorCode::Success;
 }
 
@@ -2955,20 +2953,18 @@ static std::error_code replaceInStringMS(DocumentWidget *document, Arguments arg
     }
 
     // Do the replace
-    bool ok;
-    std::string replacedStr = Search::ReplaceAllInStringEx(
+    boost::optional<std::string> replacedStr = Search::ReplaceAllInStringEx(
                 string,
                 searchStr,
                 replaceStr,
                 searchType,
                 &copyStart,
                 &copyEnd,
-                document->GetWindowDelimitersEx(),
-                &ok);
+                document->GetWindowDelimitersEx());
 
     // Return the results
 
-    if(!ok) {
+    if(!replacedStr) {
         if (force) {
             *result = make_value(string);
         } else {
@@ -2976,10 +2972,10 @@ static std::error_code replaceInStringMS(DocumentWidget *document, Arguments arg
         }
     } else {
         std::string new_string;
-        new_string.reserve(string.size() + replacedStr.size());
+        new_string.reserve(string.size() + replacedStr->size());
 
         new_string.append(string.substr(0, static_cast<size_t>(copyStart)));
-        new_string.append(replacedStr);
+        new_string.append(*replacedStr);
         new_string.append(string.substr(static_cast<size_t>(copyEnd)));
 
         *result = make_value(new_string);
@@ -3750,8 +3746,6 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
     std::string sourceStr;
     QString splitStr;
     SearchType searchType = SearchType::Literal;
-    int64_t foundStart;
-    int64_t foundEnd;
     DataValue element;
     std::error_code ec;
 
@@ -3782,6 +3776,8 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
     auto strLength   = static_cast<int64_t>(sourceStr.size());
     bool found       = true;
 
+    Search::Result searchResult;
+
     while (found && beginPos < strLength) {
 
         auto indexStr = std::to_string(indexNum);
@@ -3793,13 +3789,10 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
                     searchType,
                     WrapMode::NoWrap,
                     beginPos,
-                    &foundStart,
-                    &foundEnd,
-                    nullptr,
-                    nullptr,
+                    &searchResult,
                     document->GetWindowDelimitersEx());
 
-        int64_t elementEnd = found ? foundStart : strLength;
+        int64_t elementEnd = found ? searchResult.start : strLength;
         int64_t elementLen = elementEnd - lastEnd;
 
         view::string_view str(
@@ -3812,16 +3805,16 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
         }
 
         if (found) {
-            if (foundStart == foundEnd) {
-                beginPos = foundEnd + 1; // Avoid endless loop for 0-width match
+            if (searchResult.start == searchResult.end) {
+                beginPos = searchResult.end + 1; // Avoid endless loop for 0-width match
             } else {
-                beginPos = foundEnd;
+                beginPos = searchResult.end;
             }
         } else {
             beginPos = strLength; // Break the loop
         }
 
-        lastEnd = foundEnd;
+        lastEnd = searchResult.end;
         ++indexNum;
     }
 
@@ -3862,10 +3855,7 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
                         searchType,
                         WrapMode::NoWrap,
                         strLength,
-                        &foundStart,
-                        &foundEnd,
-                        nullptr,
-                        nullptr,
+                        &searchResult,
                         document->GetWindowDelimitersEx());
 
             if (found) {

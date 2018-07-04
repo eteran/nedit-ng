@@ -9,6 +9,7 @@
 #include "IndentStyle.h"
 #include "NewMode.h"
 #include "SearchType.h"
+#include "Search.h"
 #include "WrapMode.h"
 #include "userCmds.h"
 #include "TextCursor.h"
@@ -70,9 +71,8 @@ public:
     bool SearchAndSelectEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap);
     bool SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, bool continued);
     bool SearchAndSelectSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
-    bool searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, TextCursor *left, TextCursor *right, TextCursor *searchExtentBW, TextCursor *searchExtentFW);
-    bool SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *extentBW, int64_t *extentFW);
-    bool SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, int64_t *startPos, int64_t *endPos);
+    bool searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, TextCursor *left, TextCursor *right, TextCursor *extentBW, TextCursor *extentFW);
+    bool SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, Search::Result *searchResult);
     DocumentWidget *CreateDocument(const QString &name);
     DocumentWidget *currentDocument() const;
     DocumentWidget *documentAt(size_t index) const;

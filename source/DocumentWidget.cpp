@@ -708,8 +708,9 @@ size_t DocumentWidget::matchLanguageMode() const {
 
     for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
         if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {
-            int64_t beginPos;
-            int64_t endPos;
+
+            Search::Result searchResult;
+
             const bool result = Search::SearchString(
                         first200,
                         Preferences::LanguageModes[i].recognitionExpr,
@@ -717,10 +718,7 @@ size_t DocumentWidget::matchLanguageMode() const {
                         SearchType::Regex,
                         WrapMode::NoWrap,
                         0,
-                        &beginPos,
-                        &endPos,
-                        nullptr,
-                        nullptr,
+                        &searchResult,
                         QString());
 
             if (result) {

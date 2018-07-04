@@ -5908,23 +5908,6 @@ void MainWindow::SetIncrementalSearchLineMS(bool value) {
     no_signals(ui.action_Incremental_Search_Line)->setChecked(value);
 }
 
-/*
-** Search the text in "document", attempting to match "searchString"
-*/
-bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, int64_t *startPos, int64_t *endPos) {
-    return SearchWindowEx(
-                document,
-                searchString,
-                direction,
-                searchType,
-                searchWrap,
-                beginPos,
-                startPos,
-                endPos,
-                nullptr,
-                nullptr);
-}
-
 /**
  * @brief MainWindow::SearchWindowEx
  * @param document
@@ -5939,11 +5922,10 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
  * @param extentFW
  * @return
  */
-bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *extentBW, int64_t *extentFW) {
+bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, Search::Result *searchResult) {
 
     bool found;
-    int64_t fileEnd = document->buffer_->BufGetLength() - 1;
-    bool outsideBounds;
+    const int64_t fileEnd = document->buffer_->BufGetLength() - 1;
 
     // reject empty string
     if (searchString.isEmpty()) {
@@ -5956,18 +5938,13 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
     /* If we're already outside the boundaries, we must consider wrapping
        immediately (Note: fileEnd+1 is a valid starting position. Consider
        searching for $ at the end of a file ending with \n.) */
-    if ((direction == Direction::Forward && beginPos > fileEnd + 1) || (direction == Direction::Backward && beginPos < 0)) {
-        outsideBounds = true;
-    } else {
-        outsideBounds = false;
-    }
+    bool outsideBounds = ((direction == Direction::Forward && beginPos > fileEnd + 1) || (direction == Direction::Backward && beginPos < 0));
 
-    /* search the string copied from the text area widget, and present
-       dialogs, or just beep.  iSearchStartPos is not a perfect indicator that
-       an incremental search is in progress.  A parameter would be better. */
+    /* search the string and present dialogs, or just beep.
+     * iSearchStartPos is not a perfect indicator that an incremental search
+     * is in progress.  A parameter would be better. */
+
     if (iSearchStartPos_ == -1) { // normal search
-
-
 
         found = !outsideBounds && Search::SearchString(
                     fileString,
@@ -5976,10 +5953,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
                     searchType,
                     WrapMode::NoWrap,
                     beginPos,
-                    startPos,
-                    endPos,
-                    extentBW,
-                    extentFW,
+                    searchResult,
                     document->GetWindowDelimitersEx());
 
 
@@ -6023,10 +5997,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
                                 searchType,
                                 WrapMode::NoWrap,
                                 0,
-                                startPos,
-                                endPos,
-                                extentBW,
-                                extentFW,
+                                searchResult,
                                 document->GetWindowDelimitersEx());
 
                 } else if (direction == Direction::Backward && beginPos != fileEnd) {
@@ -6055,10 +6026,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
                                 searchType,
                                 WrapMode::NoWrap,
                                 fileEnd + 1,
-                                startPos,
-                                endPos,
-                                extentBW,
-                                extentFW,
+                                searchResult,
                                 document->GetWindowDelimitersEx());
                 }
             }
@@ -6081,7 +6049,6 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
             outsideBounds = false;
         }
 
-
         found = !outsideBounds && Search::SearchString(
                     fileString,
                     searchString,
@@ -6089,14 +6056,11 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
                     searchType,
                     searchWrap,
                     beginPos,
-                    startPos,
-                    endPos,
-                    extentBW,
-                    extentFW,
+                    searchResult,
                     document->GetWindowDelimitersEx());
 
         if (found) {
-            iSearchTryBeepOnWrapEx(direction, TextCursor(beginPos), TextCursor(*startPos));
+            iSearchTryBeepOnWrapEx(direction, TextCursor(beginPos), TextCursor(searchResult->start));
         } else {
             QApplication::beep();
         }
@@ -6155,27 +6119,26 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, con
        incremental search wraps.  */
     iSearchRecordLastBeginPosEx(direction, beginPos);
 
-    int64_t tmp_startPos;
-    int64_t tmp_endPos;
+    Search::Result searchResult;
 
     // do the search.  SearchWindow does appropriate dialogs and beeps
-    if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, to_integer(beginPos), &tmp_startPos, &tmp_endPos)) {
+    if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, to_integer(beginPos), &searchResult)) {
         return false;
     }
 
-    startPos = TextCursor(tmp_startPos);
-    endPos   = TextCursor(tmp_endPos);
+    startPos = TextCursor(searchResult.start);
+    endPos   = TextCursor(searchResult.end);
 
     /* if the search matched an empty string (possible with regular exps)
        beginning at the start of the search, go to the next occurrence,
        otherwise repeated finds will get "stuck" at zero-length matches */
     if (direction == Direction::Forward && beginPos == startPos && beginPos == endPos) {
-        if (!movedFwd && !SearchWindowEx(document, searchString, direction, searchType, searchWrap, to_integer(beginPos + 1), &tmp_startPos, &tmp_endPos)) {
+        if (!movedFwd && !SearchWindowEx(document, searchString, direction, searchType, searchWrap, to_integer(beginPos + 1), &searchResult)) {
             return false;
         }
 
-        startPos = TextCursor(tmp_startPos);
-        endPos   = TextCursor(tmp_endPos);
+        startPos = TextCursor(searchResult.start);
+        endPos   = TextCursor(searchResult.end);
     }
 
     // if matched text is already selected, just beep
@@ -6241,16 +6204,15 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
         --beginPos;
     }
 
-    int64_t tmp_startPos;
-    int64_t tmp_endPos;
+    Search::Result searchResult;
 
     // do the search.  SearchWindow does appropriate dialogs and beeps
-    if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, to_integer(beginPos), &tmp_startPos, &tmp_endPos)) {
+    if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, to_integer(beginPos), &searchResult)) {
         return false;
     }
 
-    startPos = TextCursor(tmp_startPos);
-    endPos   = TextCursor(tmp_endPos);
+    startPos = TextCursor(searchResult.start);
+    endPos   = TextCursor(searchResult.end);
 
 
     iSearchLastBeginPos_ = startPos;
@@ -6259,12 +6221,12 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
        beginning at the start of the search, go to the next occurrence,
        otherwise repeated finds will get "stuck" at zero-length matches */
     if (direction == Direction::Forward && beginPos == startPos && beginPos == endPos) {
-        if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, to_integer(beginPos + 1), &tmp_startPos, &tmp_endPos)) {
+        if (!SearchWindowEx(document, searchString, direction, searchType, searchWrap, to_integer(beginPos + 1), &searchResult)) {
             return false;
         }
 
-        startPos = TextCursor(tmp_startPos);
-        endPos   = TextCursor(tmp_endPos);
+        startPos = TextCursor(searchResult.start);
+        endPos   = TextCursor(searchResult.end);
 
     }
 
@@ -6284,8 +6246,8 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
 bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap) {
     TextCursor startPos = {};
     TextCursor endPos   = {};
-    TextCursor searchExtentBW;
-    TextCursor searchExtentFW;
+    TextCursor extentBW;
+    TextCursor extentFW;
 
     // Save a copy of search and replace strings in the search history
     Search::saveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
@@ -6293,20 +6255,20 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, co
     bool replaced = false;
 
     // Replace the selected text only if it matches the search string
-    if (searchMatchesSelectionEx(document, searchString, searchType, &startPos, &endPos, &searchExtentBW, &searchExtentFW)) {
+    if (searchMatchesSelectionEx(document, searchString, searchType, &startPos, &endPos, &extentBW, &extentFW)) {
 
         int64_t replaceLen = 0;
 
         // replace the text
         if (Search::isRegexType(searchType)) {
             std::string replaceResult;
-            const std::string foundString = document->buffer_->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
+            const std::string foundString = document->buffer_->BufGetRangeEx(extentBW, extentFW + 1);
 
             Search::replaceUsingREEx(
                 searchString,
                 replaceString,
                 foundString,
-                startPos - searchExtentBW,
+                startPos - extentBW,
                 replaceResult,
                 startPos == 0 ? -1 : document->buffer_->BufGetCharacter(startPos - 1),
                 document->GetWindowDelimitersEx(),
@@ -6365,12 +6327,12 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
     TextCursor endPos;
     int64_t replaceLen;
 
-    /* NOTE(eteran): OK, the whole point of searchExtentBW, and searchExtentFW
+    /* NOTE(eteran): OK, the whole point of extentBW, and extentFW
      * are to help with regex search/replace operations involving look-ahead and
      * look-behind. For example, if the buffer contains "ABCDEF-A" and we want
      * the regex to match "(?<=-)[A-Z]" (a captial letter preceded by a dash).
      * The regex is matching the "A" and thus the start position of the match is
-     * offset 7. However, the searchExtentBW is offset 6 because the "-" was
+     * offset 7. However, the extentBW is offset 6 because the "-" was
      * required for the match.
      *
      * We "need" this because essentially what the replace does is extract the
@@ -6380,8 +6342,8 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
      * buffer. There probably is a way to do this without the need to extract
      * the text in a way that is dependant on this searchExtent concept.
      */
-    TextCursor searchExtentBW;
-    TextCursor searchExtentFW;
+    TextCursor extentBW;
+    TextCursor extentFW;
 
     // Save a copy of search and replace strings in the search history
     Search::saveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
@@ -6390,7 +6352,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
     // the user is probably using search then replace method, so
     // replace the selected text regardless of where the cursor is.
     // Otherwise, search for the string.
-    if (!searchMatchesSelectionEx(document, searchString, searchType, &startPos, &endPos, &searchExtentBW, &searchExtentFW)) {
+    if (!searchMatchesSelectionEx(document, searchString, searchType, &startPos, &endPos, &extentBW, &extentFW)) {
         // get the position to start the search
 
         TextCursor beginPos;
@@ -6403,10 +6365,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
             beginPos = cursorPos;
         }
 
-        int64_t tmp_startPos;
-        int64_t tmp_endPos;
-        int64_t tmp_searchExtentBW;
-        int64_t tmp_searchExtentFW;
+        Search::Result searchResult;
 
         // do the search
         bool found = SearchWindowEx(
@@ -6416,15 +6375,12 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
                     searchType,
                     searchWrap,
                     to_integer(beginPos),
-                    &tmp_startPos,
-                    &tmp_endPos,
-                    &tmp_searchExtentBW,
-                    &tmp_searchExtentFW);
+                    &searchResult);
 
-        startPos       = TextCursor(tmp_startPos);
-        endPos         = TextCursor(tmp_endPos);
-        searchExtentBW = TextCursor(tmp_searchExtentBW);
-        searchExtentFW = TextCursor(tmp_searchExtentFW);
+        startPos = TextCursor(searchResult.start);
+        endPos   = TextCursor(searchResult.end);
+        extentBW = TextCursor(searchResult.extentBW);
+        extentFW = TextCursor(searchResult.extentFW);
 
         if (!found) {
             return false;
@@ -6434,13 +6390,13 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
     // replace the text
     if (Search::isRegexType(searchType)) {
         std::string replaceResult;
-        const std::string foundString = document->buffer_->BufGetRangeEx(searchExtentBW, searchExtentFW + 1);
+        const std::string foundString = document->buffer_->BufGetRangeEx(extentBW, extentFW + 1);
 
         Search::replaceUsingREEx(
             searchString,
             replaceString,
             foundString,
-            startPos - searchExtentBW,
+            startPos - extentBW,
             replaceResult,
             startPos == 0 ? -1 : document->buffer_->BufGetCharacter(startPos - 1),
             document->GetWindowDelimitersEx(),
@@ -6597,13 +6553,10 @@ void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QSt
 void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType) {
 
     std::string fileString;
-    int64_t endPos;
-    int64_t extentBW;
-    int64_t extentFW;
+    Search::Result searchResult;
     TextCursor lineStart;
     TextCursor selEnd;
     TextCursor selStart;
-    int64_t startPos;
     int64_t rectEnd   = 0;
     int64_t rectStart = 0;
     bool substSuccess = false;
@@ -6650,10 +6603,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
                     searchType,
                     WrapMode::NoWrap,
                     to_integer(beginPos),
-                    &startPos,
-                    &endPos,
-                    &extentBW,
-                    &extentFW,
+                    &searchResult,
                     document->GetWindowDelimitersEx());
 
         if (!found) {
@@ -6664,10 +6614,10 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
         /* if the selection is rectangular, verify that the found
            string is in the rectangle */
         if (isRect) {
-            lineStart = document->buffer_->BufStartOfLine(selStart + startPos);
-            if (document->buffer_->BufCountDispChars(lineStart, selStart + startPos) < rectStart || document->buffer_->BufCountDispChars(lineStart, selStart + endPos) > rectEnd) {
+            lineStart = document->buffer_->BufStartOfLine(selStart + searchResult.start);
+            if (document->buffer_->BufCountDispChars(lineStart, selStart + searchResult.start) < rectStart || document->buffer_->BufCountDispChars(lineStart, selStart + searchResult.end) > rectEnd) {
 
-                if(static_cast<size_t>(endPos) == fileString.size()) {
+                if(static_cast<size_t>(searchResult.end) == fileString.size()) {
                     break;
                 }
 
@@ -6676,10 +6626,10 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
                    search after the end of the (false) match, because we
                    could miss a valid match starting between the left boundary
                    and the end of the false match. */
-                if (document->buffer_->BufCountDispChars(lineStart, selStart + startPos) < rectStart && document->buffer_->BufCountDispChars(lineStart, selStart + endPos) > rectStart) {
+                if (document->buffer_->BufCountDispChars(lineStart, selStart + searchResult.start) < rectStart && document->buffer_->BufCountDispChars(lineStart, selStart + searchResult.end) > rectStart) {
                     beginPos += 1;
                 } else {
-                    beginPos = (startPos == endPos) ? TextCursor(endPos + 1) : TextCursor(endPos);
+                    beginPos = (searchResult.start == searchResult.end) ? TextCursor(searchResult.end + 1) : TextCursor(searchResult.end);
                 }
                 continue;
             }
@@ -6688,22 +6638,22 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
         /* Make sure the match did not start past the end (regular expressions
            can consider the artificial end of the range as the end of a line,
            and match a fictional whole line beginning there) */
-        if (startPos == (selEnd - selStart)) {
+        if (searchResult.start == (selEnd - selStart)) {
             break;
         }
 
         // replace the string and compensate for length change
         if (Search::isRegexType(searchType)) {
             std::string replaceResult;
-            const std::string foundString = tempBuf.BufGetRangeEx(TextCursor(extentBW + realOffset), TextCursor(extentFW + realOffset + 1));
+            const std::string foundString = tempBuf.BufGetRangeEx(TextCursor(searchResult.extentBW + realOffset), TextCursor(searchResult.extentFW + realOffset + 1));
 
             substSuccess = Search::replaceUsingREEx(
                             searchString,
                             replaceString,
                             foundString,
-                            startPos - extentBW,
+                            searchResult.start - searchResult.extentBW,
                             replaceResult,
-                            (startPos + realOffset) == 0 ? -1 : tempBuf.BufGetCharacter(TextCursor(startPos + realOffset - 1)),
+                            (searchResult.start + realOffset) == 0 ? -1 : tempBuf.BufGetCharacter(TextCursor(searchResult.start + realOffset - 1)),
                             document->GetWindowDelimitersEx(),
                             Search::defaultRegexFlags(searchType));
 
@@ -6716,20 +6666,20 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
                 }
             }
 
-            tempBuf.BufReplaceEx(TextCursor(startPos + realOffset), TextCursor(endPos + realOffset), replaceResult);
+            tempBuf.BufReplaceEx(TextCursor(searchResult.start + realOffset), TextCursor(searchResult.end + realOffset), replaceResult);
             replaceLen = static_cast<int64_t>(replaceResult.size());
         } else {
             // at this point plain substitutions (should) always work
-            tempBuf.BufReplaceEx(TextCursor(startPos + realOffset), TextCursor(endPos + realOffset), replaceString.toStdString());
+            tempBuf.BufReplaceEx(TextCursor(searchResult.start + realOffset), TextCursor(searchResult.end + realOffset), replaceString.toStdString());
             substSuccess = true;
         }
 
-        realOffset += replaceLen - (endPos - startPos);
+        realOffset += replaceLen - (searchResult.end - searchResult.start);
         // start again after match unless match was empty, then endPos+1
-        beginPos = (startPos == endPos) ? TextCursor(endPos + 1) : TextCursor(endPos);
-        cursorPos = TextCursor(endPos);
+        beginPos = (searchResult.start == searchResult.end) ? TextCursor(searchResult.end + 1) : TextCursor(searchResult.end);
+        cursorPos = TextCursor(searchResult.end);
 
-        if (static_cast<size_t>(endPos) == fileString.size()) {
+        if (static_cast<size_t>(searchResult.end) == fileString.size()) {
             break;
         }
     }
@@ -6858,18 +6808,16 @@ bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QS
 
     QString delimieters = document->GetWindowDelimitersEx();
 
-    bool ok;
-    std::string newFileString = Search::ReplaceAllInStringEx(
+    boost::optional<std::string> newFileString = Search::ReplaceAllInStringEx(
                 fileString,
                 searchString,
                 replaceString,
                 searchType,
                 &copyStart,
                 &copyEnd,
-                delimieters,
-                &ok);
+                delimieters);
 
-    if(!ok) {
+    if(!newFileString) {
         if (document->multiFileBusy_) {
             // only needed during multi-file replacements
             document->replaceFailed_ = true;
@@ -6896,10 +6844,10 @@ bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QS
     }
 
     // replace the contents of the text widget with the substituted text
-    document->buffer_->BufReplaceEx(TextCursor(copyStart), TextCursor(copyEnd), newFileString);
+    document->buffer_->BufReplaceEx(TextCursor(copyStart), TextCursor(copyEnd), *newFileString);
 
     // Move the cursor to the end of the last replacement
-    area->TextSetCursorPos(TextCursor(copyStart + static_cast<int64_t>(newFileString.size())));
+    area->TextSetCursorPos(TextCursor(copyStart + static_cast<int64_t>(newFileString->size())));
 
     return true;
 }
@@ -6939,16 +6887,14 @@ void MainWindow::iSearchTryBeepOnWrapEx(Direction direction, TextCursor beginPos
 ** current primary selection using search algorithm "searchType".  If true,
 ** also return the position of the selection in "left" and "right".
 */
-bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, TextCursor *left, TextCursor *right, TextCursor *searchExtentBW, TextCursor *searchExtentFW) {
+bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, TextCursor *left, TextCursor *right, TextCursor *extentBW, TextCursor *extentFW) {
 
     const int regexLookContext = Search::isRegexType(searchType) ? 1000 : 0;
+
+    Search::Result searchResult;
     int64_t selLen;
     TextCursor selStart;
     TextCursor selEnd;
-    int64_t startPos;
-    int64_t endPos;
-    int64_t extentBW;
-    int64_t extentFW;
     int64_t beginPos;
     int64_t rectStart;
     int64_t rectEnd;
@@ -6972,24 +6918,25 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
     /* get the selected text plus some additional context for regular
        expression lookahead */
     if (isRect) {
-        int64_t stringStart = to_integer(lineStart) + rectStart - regexLookContext;
+        TextCursor stringStart = lineStart + rectStart - regexLookContext;
         if (stringStart < 0) {
-            stringStart = 0;
+            stringStart = TextCursor();
         }
 
-        string = document->buffer_->BufGetRangeEx(TextCursor(stringStart), lineStart + rectEnd + regexLookContext);
-        selLen = rectEnd - rectStart;
-        beginPos = to_integer(lineStart) + (rectStart - stringStart);
+        string   = document->buffer_->BufGetRangeEx(stringStart, lineStart + rectEnd + regexLookContext);
+        selLen   = rectEnd - rectStart;
+        beginPos = to_integer(lineStart) + (rectStart - to_integer(stringStart));
     } else {
         TextCursor stringStart = selStart - regexLookContext;
         if (stringStart < 0) {
             stringStart = TextCursor();
         }
 
-        string = document->buffer_->BufGetRangeEx(stringStart, selEnd + regexLookContext);
-        selLen = selEnd - selStart;
+        string   = document->buffer_->BufGetRangeEx(stringStart, selEnd + regexLookContext);
+        selLen   = selEnd - selStart;
         beginPos = selStart - stringStart;
     }
+
     if (string.empty()) {
         return false;
     }
@@ -7004,10 +6951,7 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
                 searchType,
                 WrapMode::NoWrap,
                 beginPos,
-                &startPos,
-                &endPos,
-                &extentBW,
-                &extentFW,
+                &searchResult,
                 document->GetWindowDelimitersEx());
 
     // decide if it is an exact match
@@ -7015,7 +6959,7 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
         return false;
     }
 
-    if (startPos != beginPos || (endPos - beginPos) != selLen) {
+    if (searchResult.start != beginPos || (searchResult.end - beginPos) != selLen) {
         return false;
     }
 
@@ -7028,12 +6972,12 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
         *right = selEnd;
     }
 
-    if(searchExtentBW) {
-        *searchExtentBW = *left - (startPos - extentBW);
+    if(extentBW) {
+        *extentBW = *left - (searchResult.start - searchResult.extentBW);
     }
 
-    if(searchExtentFW) {
-        *searchExtentFW = *right + (extentFW - endPos);
+    if(extentFW) {
+        *extentFW = *right + (searchResult.extentFW - searchResult.end);
     }
 
     return true;
