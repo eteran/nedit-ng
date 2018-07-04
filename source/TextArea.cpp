@@ -7768,7 +7768,7 @@ void TextArea::TextDKillCalltip(int id) {
     }
 }
 
-int TextArea::TextDShowCalltip(const QString &text, bool anchored, boost::variant<int, TextCursor> pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode) {
+int TextArea::TextDShowCalltip(const QString &text, bool anchored, CallTipPosition pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode) {
 
     static int StaticCalltipID = 1;
 

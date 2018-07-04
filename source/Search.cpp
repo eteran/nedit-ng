@@ -237,22 +237,21 @@ std::string Search::ReplaceAllInStringEx(view::string_view inString, const QStri
     return outString;
 }
 
-bool Search::SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, const QString &delimiters) {
-
-    return SearchString(
-                string,
-                searchString,
-                direction,
-                searchType,
-                wrap,
-                beginPos,
-                startPos,
-                endPos,
-                nullptr,
-                nullptr,
-                delimiters);
-}
-
+/**
+ * @brief Search::SearchString
+ * @param string
+ * @param searchString
+ * @param direction
+ * @param searchType
+ * @param wrap
+ * @param beginPos
+ * @param startPos
+ * @param endPos
+ * @param searchExtentBW
+ * @param searchExtentFW
+ * @param delimiters
+ * @return
+ */
 bool Search::SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, int64_t *startPos, int64_t *endPos, int64_t *searchExtentBW, int64_t *searchExtentFW, const QString &delimiters) {
 
     return SearchStringEx(

@@ -2894,6 +2894,8 @@ static std::error_code searchStringMS(DocumentWidget *document, Arguments argume
                     beginPos,
                     &foundStart,
                     &foundEnd,
+                    nullptr,
+                    nullptr,
                     document->GetWindowDelimitersEx());
     }
 
@@ -3793,6 +3795,8 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
                     beginPos,
                     &foundStart,
                     &foundEnd,
+                    nullptr,
+                    nullptr,
                     document->GetWindowDelimitersEx());
 
         int64_t elementEnd = found ? foundStart : strLength;
@@ -3860,6 +3864,8 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
                         strLength,
                         &foundStart,
                         &foundEnd,
+                        nullptr,
+                        nullptr,
                         document->GetWindowDelimitersEx());
 
             if (found) {

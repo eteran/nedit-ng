@@ -139,11 +139,11 @@ QString Tags::tagFiles[MAXDUPTAGS];
 QString Tags::tagSearch[MAXDUPTAGS];
 int64_t Tags::tagPosInf[MAXDUPTAGS];
 
-bool                            Tags::globAnchored;
-boost::variant<int, TextCursor> Tags::globPos;
-TipHAlignMode                   Tags::globHAlign;
-TipVAlignMode                   Tags::globVAlign;
-TipAlignMode                    Tags::globAlignMode;
+bool            Tags::globAnchored;
+CallTipPosition Tags::globPos;
+TipHAlignMode   Tags::globHAlign;
+TipVAlignMode   Tags::globVAlign;
+TipAlignMode    Tags::globAlignMode;
 
 
 /* Add a tag specification to the hash table
@@ -731,7 +731,7 @@ bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchStri
         ctagsMode      = true;
     } else if (searchString.size() > 1 && searchString[0] == QLatin1Char('?')) {
         dir            = Direction::Backward;
-        searchStartPos = fileString.size();
+        searchStartPos = static_cast<int64_t>(fileString.size());
         ctagsMode      = true;
 	} else {
 		qWarning("NEdit: Error parsing tag file search string");
@@ -753,6 +753,8 @@ bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchStri
             *outPtr++ = *inPtr++;
         }
 	}
+
+    // TODO(eteran): this code is unsafe, and will blowup on makformed input!
 
     while (inPtr != searchString.end()) {
         if ((*inPtr == QLatin1Char('\\') && *std::next(inPtr) == QLatin1Char('/')) || (*inPtr == QLatin1Char('\r') && *std::next(inPtr) == QLatin1Char('$') && std::next(std::next(inPtr)) != searchString.end())) {
@@ -789,6 +791,8 @@ bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchStri
                 searchStartPos,
                 startPos,
                 endPos,
+                nullptr,
+                nullptr,
                 QString());
 
 	if (!found && !ctagsMode) {
@@ -805,6 +809,8 @@ bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchStri
                     searchStartPos,
                     startPos,
                     endPos,
+                    nullptr,
+                    nullptr,
                     QString());
 	}
 
@@ -880,6 +886,8 @@ void Tags::showMatchingCalltipEx(QWidget *parent, TextArea *area, size_t i) {
                         startPos,
                         &endPos,
                         &dummy,
+                        nullptr,
+                        nullptr,
                         QString());
 
             if (!found) {
@@ -940,6 +948,8 @@ bool Tags::searchLine(const std::string &line, const std::string &regex) {
                 0,
                 &dummy1,
                 &dummy2,
+                nullptr,
+                nullptr,
                 QString());
 }
 

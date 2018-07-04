@@ -233,7 +233,7 @@ private Q_SLOTS:
 public:
     void RemoveWidgetHighlightEx();
     void TextDMaintainAbsLineNum(bool state);
-    int TextDShowCalltip(const QString &text, bool anchored, boost::variant<int, TextCursor> pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode);
+    int TextDShowCalltip(const QString &text, bool anchored, CallTipPosition pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode);
     TextCursor TextDStartOfLine(TextCursor pos) const;
     TextCursor TextDEndOfLine(TextCursor pos, bool startPosIsLineStart) const;
     TextCursor TextDCountBackwardNLines(TextCursor startPos, int64_t nLines) const;

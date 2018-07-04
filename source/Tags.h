@@ -87,11 +87,11 @@ public:
     static int64_t tagPosInf[MAXDUPTAGS];
 
 public:
-    static bool                            globAnchored;
-    static boost::variant<int, TextCursor> globPos;
-    static TipHAlignMode                   globHAlign;
-    static TipVAlignMode                   globVAlign;
-    static TipAlignMode                    globAlignMode;
+    static bool            globAnchored;
+    static CallTipPosition globPos;
+    static TipHAlignMode   globHAlign;
+    static TipVAlignMode   globVAlign;
+    static TipAlignMode    globAlignMode;
 };
 
 #endif
