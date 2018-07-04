@@ -218,6 +218,10 @@ bool searchLiteral(view::string_view string, view::string_view searchString, boo
         lcString = to_lower(searchString);
     }
 
+    const auto first = string.begin();
+    const auto mid   = first + beginPos;
+    const auto last  = string.end();
+
     auto do_search = [&](view::string_view::iterator it) {
         if (*it == ucString[0] || *it == lcString[0]) {
             // matched first character
@@ -225,7 +229,7 @@ bool searchLiteral(view::string_view string, view::string_view searchString, boo
             auto lcPtr   = lcString.begin();
             auto tempPtr = it;
 
-            while (*tempPtr == *ucPtr || *tempPtr == *lcPtr) {
+            while (tempPtr != last && (*tempPtr == *ucPtr || *tempPtr == *lcPtr)) {
                 ++tempPtr;
                 ++ucPtr;
                 ++lcPtr;
@@ -243,10 +247,6 @@ bool searchLiteral(view::string_view string, view::string_view searchString, boo
 
         return false;
     };
-
-    const auto first = string.begin();
-    const auto mid   = first + beginPos;
-    const auto last  = string.end();
 
     if (direction == Direction::Forward) {
 
@@ -320,6 +320,10 @@ bool searchLiteralWord(view::string_view string, view::string_view searchString,
     bool cignore_L = false;
     bool cignore_R = false;
 
+    const auto first = string.begin();
+    const auto mid   = first + beginPos;
+    const auto last  = string.end();
+
     auto do_search_word = [&](const view::string_view::iterator it) {
         if (*it == ucString[0] || *it == lcString[0]) {
 
@@ -328,7 +332,7 @@ bool searchLiteralWord(view::string_view string, view::string_view searchString,
             auto lcPtr   = lcString.begin();
             auto tempPtr = it;
 
-            while (*tempPtr == *ucPtr || *tempPtr == *lcPtr) {
+            while (tempPtr != last && (*tempPtr == *ucPtr || *tempPtr == *lcPtr)) {
                 ++tempPtr;
                 ++ucPtr;
                 ++lcPtr;
@@ -377,10 +381,6 @@ bool searchLiteralWord(view::string_view string, view::string_view searchString,
         ucString = to_upper(searchString);
         lcString = to_lower(searchString);
     }
-
-    const auto first = string.begin();
-    const auto mid   = first + beginPos;
-    const auto last  = string.end();
 
     if (direction == Direction::Forward) {
 
