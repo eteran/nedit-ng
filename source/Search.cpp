@@ -206,6 +206,7 @@ bool searchRegex(view::string_view string, view::string_view searchString, Direc
 bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos, Search::Result *result) {
 
     // TODO(eteran): investigate if we can rework this in terms of std::search
+    // TODO(eteran): wrapping seems to be handled at a higher level, is there any code which actually asses WrapMode::Wrap to this function?
 
     std::string lcString;
     std::string ucString;
@@ -314,6 +315,7 @@ bool searchLiteral(view::string_view string, view::string_view searchString, boo
 bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos, Search::Result *result, const char *delimiters) {
 
     // TODO(eteran): investigate if we can rework this in terms of std::search
+    // TODO(eteran): wrapping seems to be handled at a higher level, is there any code which actually asses WrapMode::Wrap to this function?
 
     std::string lcString;
     std::string ucString;
