@@ -9,7 +9,7 @@
 /*
 **  SubstituteRE - Perform substitutions after a 'Regex' match.
 */
-bool Regex::SubstituteRE(view::string_view source, std::string &dest) const {
+bool Regex::SubstituteRE(view::string_view source, std::string &dest) const noexcept {
 
     constexpr auto InvalidParenNumber = static_cast<size_t>(-1);
 

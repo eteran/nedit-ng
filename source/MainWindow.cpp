@@ -6274,7 +6274,7 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, co
             std::string replaceResult;
             const std::string foundString = document->buffer_->BufGetRangeEx(extentBW, extentFW + 1);
 
-            Search::replaceUsingREEx(
+            Search::replaceUsingRE(
                 searchString,
                 replaceString,
                 foundString,
@@ -6402,7 +6402,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
         std::string replaceResult;
         const std::string foundString = document->buffer_->BufGetRangeEx(extentBW, extentFW + 1);
 
-        Search::replaceUsingREEx(
+        Search::replaceUsingRE(
             searchString,
             replaceString,
             foundString,
@@ -6657,7 +6657,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
             std::string replaceResult;
             const std::string foundString = tempBuf.BufGetRangeEx(TextCursor(searchResult.extentBW + realOffset), TextCursor(searchResult.extentFW + realOffset + 1));
 
-            substSuccess = Search::replaceUsingREEx(
+            substSuccess = Search::replaceUsingRE(
                             searchString,
                             replaceString,
                             foundString,

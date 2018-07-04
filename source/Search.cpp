@@ -458,11 +458,31 @@ bool SearchStringEx(view::string_view string, view::string_view searchString, Di
     Q_UNREACHABLE();
 }
 
+/*
+** Substitutes a replace string for a string that was matched using a
+** regular expression.  This was added later and is rather ineficient
+** because instead of using the compiled regular expression that was used
+** to make the match in the first place, it re-compiles the expression
+** and redoes the search on the already-matched string.  This allows the
+** code to continue using strings to represent the search and replace
+** items.
+*/
+bool replaceUsingRegex(view::string_view searchStr, view::string_view replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
+    try {
+        Regex compiledRE(searchStr, defaultFlags);
+        compiledRE.execute(sourceStr, static_cast<size_t>(beginPos), sourceStr.size(), prevChar, -1, delimiters, false);
+        return compiledRE.SubstituteRE(replaceStr, dest);
+    } catch(const RegexError &e) {
+        Q_UNUSED(e);
+        return false;
+    }
+}
+
 }
 
 /*
 ** Replace all occurences of "searchString" in "inString" with "replaceString"
-** and return an allocated string covering the range between the start of the
+** and return a string covering the range between the start of the
 ** first replacement (returned in "copyStart", and the end of the last
 ** replacement (returned in "copyEnd")
 */
@@ -511,7 +531,7 @@ boost::optional<std::string> Search::ReplaceAllInStringEx(view::string_view inSt
             if (isRegexType(searchType)) {
                 std::string replaceResult;
 
-                replaceUsingREEx(
+                replaceUsingRE(
                     searchString,
                     replaceString,
                     substr(inString, static_cast<size_t>(searchResult.extentBW)),
@@ -568,7 +588,7 @@ boost::optional<std::string> Search::ReplaceAllInStringEx(view::string_view inSt
             if (isRegexType(searchType)) {
                 std::string replaceResult;
 
-                replaceUsingREEx(
+                replaceUsingRE(
                     searchString,
                     replaceString,
                     substr(inString, static_cast<size_t>(searchResult.extentBW)),
@@ -624,29 +644,8 @@ bool Search::SearchString(view::string_view string, const QString &searchString,
 
 }
 
-/*
-** Substitutes a replace string for a string that was matched using a
-** regular expression.  This was added later and is rather ineficient
-** because instead of using the compiled regular expression that was used
-** to make the match in the first place, it re-compiles the expression
-** and redoes the search on the already-matched string.  This allows the
-** code to continue using strings to represent the search and replace
-** items.
-*/
-bool Search::replaceUsingREEx(view::string_view searchStr, view::string_view replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
-    try {
-        Regex compiledRE(searchStr, defaultFlags);
-        compiledRE.execute(sourceStr, static_cast<size_t>(beginPos), sourceStr.size(), prevChar, -1, delimiters, false);
-        return compiledRE.SubstituteRE(replaceStr, dest);
-    } catch(const RegexError &e) {
-        Q_UNUSED(e);
-        return false;
-    }
-}
-
-
-bool Search::replaceUsingREEx(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags) {
-    return replaceUsingREEx(
+bool Search::replaceUsingRE(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags) {
+    return replaceUsingRegex(
                 searchStr.toStdString(),
                 replaceStr.toStdString(),
                 sourceStr,

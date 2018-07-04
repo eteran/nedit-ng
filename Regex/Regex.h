@@ -105,7 +105,7 @@ public:
      * @param dest
      * @return
      */
-    bool SubstituteRE(view::string_view source, std::string &dest) const;
+    bool SubstituteRE(view::string_view source, std::string &dest) const noexcept;
 
 public:
     /* Builds a default delimiter table that persists across 'ExecRE' calls that
