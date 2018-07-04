@@ -817,7 +817,7 @@ QString ShiftTextEx(const QString &text, ShiftDirection direction, bool tabsAllo
     while (true) {
         if (textPtr == text.end() || *textPtr == QLatin1Char('\n')) {
 
-            auto segment = text.mid(gsl::narrow<int>(lineStartPtr - text.begin()));
+            auto segment = text.mid(gsl::narrow<int>(lineStartPtr - text.data()));
 
             QString shiftedLineString = (direction == SHIFT_RIGHT) ?
                 shiftLineRightEx(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars):

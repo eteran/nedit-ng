@@ -1136,10 +1136,11 @@ void MainWindow::SortTabBar() {
 	});
 
 	// shuffle around the tabs to their new indexes
-    for(size_t i = 0; i < documents.size(); ++i) {
-        int from = ui.tabWidget->indexOf(documents[i]);
-        auto to  = gsl::narrow<int>(i);
-        ui.tabWidget->tabBar()->moveTab(from, to);
+    int i = 0;
+    for(DocumentWidget *document : documents) {
+        int from = ui.tabWidget->indexOf(document);
+        ui.tabWidget->tabBar()->moveTab(from, i);
+        ++i;
 	}
 }
 

@@ -6046,12 +6046,11 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     /* Make DEFER_PARSING flags agree with top level patterns (originally,
        individual flags had to be correct and were checked here, but dialog now
        shows this setting only on top patterns which is much less confusing) */
-    for (size_t i = 0; i < patterns.size(); i++) {
-        HighlightPattern &pattern = patterns[i];
+    int i = 0;
+    for(HighlightPattern &pattern : patterns) {
 
         if (!pattern.subPatternOf.isNull()) {
-
-            int parentindex = Highlight::findTopLevelParentIndex(patterns, gsl::narrow<int>(i));
+            const int parentindex = Highlight::findTopLevelParentIndex(patterns, i);
             if (parentindex == -1) {
                 QMessageBox::warning(
                             this,
@@ -6066,12 +6065,14 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
                 pattern.flags &= ~DEFER_PARSING;
             }
         }
+
+        ++i;
     }
 
     /* Sort patterns into those to be used in pass 1 parsing, and those to
        be used in pass 2, and add default pattern (0) to each list */
-    size_t nPass1Patterns = 1;
-    size_t nPass2Patterns = 1;
+    int nPass1Patterns = 1;
+    int nPass2Patterns = 1;
     for(const HighlightPattern &pattern : patterns) {
         if (pattern.flags & DEFER_PARSING) {
             nPass2Patterns++;
@@ -6080,8 +6081,8 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
         }
     }
 
-    auto pass1PatternSrc = new HighlightPattern[nPass1Patterns];
-    auto pass2PatternSrc = new HighlightPattern[nPass2Patterns];
+    auto pass1PatternSrc = new HighlightPattern[static_cast<size_t>(nPass1Patterns)];
+    auto pass2PatternSrc = new HighlightPattern[static_cast<size_t>(nPass2Patterns)];
 
     HighlightPattern *p1Ptr = pass1PatternSrc;
     HighlightPattern *p2Ptr = pass2PatternSrc;
@@ -6111,7 +6112,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     if (nPass1Patterns == 0) {
         pass1Pats = nullptr;
     } else {
-        pass1Pats = compilePatternsEx({pass1PatternSrc, gsl::narrow<int>(nPass1Patterns)});
+        pass1Pats = compilePatternsEx({pass1PatternSrc, nPass1Patterns});
         if (!pass1Pats) {
             return nullptr;
         }
@@ -6120,7 +6121,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     if (nPass2Patterns == 0) {
         pass2Pats = nullptr;
     } else {
-        pass2Pats = compilePatternsEx({pass2PatternSrc, gsl::narrow<int>(nPass2Patterns)});
+        pass2Pats = compilePatternsEx({pass2PatternSrc, nPass2Patterns});
         if (!pass2Pats) {
             delete [] pass1Pats;
             return nullptr;
@@ -6147,42 +6148,42 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
         pass2Pats[0].style = PLAIN_STYLE;
     }
 
-    for (size_t i = 1; i < nPass1Patterns; i++) {
+    for (int i = 1; i < nPass1Patterns; i++) {
         pass1Pats[i].style = gsl::narrow<uint8_t>(PLAIN_STYLE + i);
     }
 
-    for (size_t i = 1; i < nPass2Patterns; i++) {
+    for (int i = 1; i < nPass2Patterns; i++) {
         pass2Pats[i].style = gsl::narrow<uint8_t>(PLAIN_STYLE + (noPass1 ? 0 : nPass1Patterns - 1) + i);
     }
 
     // Create table for finding parent styles
     std::vector<uint8_t> parentStyles;
-    parentStyles.reserve(nPass1Patterns + nPass2Patterns + 2);
+    parentStyles.reserve(static_cast<size_t>(nPass1Patterns + nPass2Patterns + 2));
 
     auto parentStylesPtr = std::back_inserter(parentStyles);
 
     *parentStylesPtr++ = '\0';
     *parentStylesPtr++ = '\0';
 
-    for (size_t i = 1; i < nPass1Patterns; i++) {
+    for (int i = 1; i < nPass1Patterns; i++) {
         if(pass1PatternSrc[i].subPatternOf.isNull()) {
             *parentStylesPtr++ = PLAIN_STYLE;
         } else {
-            *parentStylesPtr++ = pass1Pats[Highlight::indexOfNamedPattern({pass1PatternSrc, gsl::narrow<std::ptrdiff_t>(nPass1Patterns)}, pass1PatternSrc[i].subPatternOf)].style;
+            *parentStylesPtr++ = pass1Pats[Highlight::indexOfNamedPattern({pass1PatternSrc, nPass1Patterns}, pass1PatternSrc[i].subPatternOf)].style;
         }
     }
 
-    for (size_t i = 1; i < nPass2Patterns; i++) {
+    for (int i = 1; i < nPass2Patterns; i++) {
         if(pass2PatternSrc[i].subPatternOf.isNull()) {
             *parentStylesPtr++ = PLAIN_STYLE;
         } else {
-            *parentStylesPtr++ = pass2Pats[Highlight::indexOfNamedPattern({pass2PatternSrc, gsl::narrow<std::ptrdiff_t>(nPass2Patterns)}, pass2PatternSrc[i].subPatternOf)].style;
+            *parentStylesPtr++ = pass2Pats[Highlight::indexOfNamedPattern({pass2PatternSrc, nPass2Patterns}, pass2PatternSrc[i].subPatternOf)].style;
         }
     }
 
     // Set up table for mapping colors and fonts to syntax
     std::vector<StyleTableEntry> styleTable;
-    styleTable.reserve(nPass1Patterns + nPass2Patterns);
+    styleTable.reserve(static_cast<size_t>(nPass1Patterns + nPass2Patterns));
 
     auto it = std::back_inserter(styleTable);
 
@@ -6218,12 +6219,12 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     it++ = setStyleTableEntry(noPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
 
     // explicit styles (pass 1)
-    for (size_t i = 1; i < nPass1Patterns; i++) {
+    for (int i = 1; i < nPass1Patterns; i++) {
         it++ = setStyleTableEntry(&pass1PatternSrc[i]);
     }
 
     // explicit styles (pass 2)
-    for (size_t i = 1; i < nPass2Patterns; i++) {
+    for (int i = 1; i < nPass2Patterns; i++) {
         it++ = setStyleTableEntry(&pass2PatternSrc[i]);
     }
 
