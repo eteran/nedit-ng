@@ -21,6 +21,7 @@
 #include <QSettings>
 #include <QString>
 #include <QtDebug>
+#include <QRegularExpression>
 
 #include <cctype>
 #include <memory>

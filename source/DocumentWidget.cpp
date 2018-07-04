@@ -47,6 +47,7 @@
 #include <QSplitter>
 #include <QTemporaryFile>
 #include <QTimer>
+#include <QButtonGroup>
 
 #include <fcntl.h>
 #include <sys/stat.h>

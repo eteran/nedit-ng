@@ -35,7 +35,7 @@ class MainWindow : public QMainWindow {
 
 public:
     MainWindow (QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
-    ~MainWindow() override = default;
+    ~MainWindow() override;
 	
 private:
 	void setupMenuGroups();

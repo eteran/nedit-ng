@@ -8,6 +8,7 @@
 #include "TextBuffer.h"
 
 #include <QMessageBox>
+#include <QIntValidator>
 
 /**
  * @brief DialogTabs::DialogTabs

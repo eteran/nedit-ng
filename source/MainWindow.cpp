@@ -49,6 +49,7 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QShortcut>
+#include <QButtonGroup>
 
 #include <cmath>
 
@@ -219,7 +220,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 
     ui.menu_Windows->setStyleSheet(QLatin1String("QMenu { menu-scrollable: 1; }"));
 
-
 #ifdef Q_OS_LINUX
     using DisablerFunc = void (*)(QWidget *);
 
@@ -257,6 +257,16 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
     for(MainWindow *window : windows) {
         window->ui.action_Move_Tab_To->setEnabled(enabled);
     }
+}
+
+
+/**
+ * @brief MainWindow::~MainWindow
+ */
+MainWindow::~MainWindow() {
+    // disconnect this signal explicitly or we set off the UBSAN during qApp
+    // destruction
+    disconnect(qApp, &QApplication::focusChanged, this, &MainWindow::focusChanged);
 }
 
 /**

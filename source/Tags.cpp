@@ -17,6 +17,7 @@
 #include <QTextStream>
 #include <QFile>
 #include <QFileInfo>
+#include <QRegularExpression>
 
 #include <iostream>
 #include <fstream>

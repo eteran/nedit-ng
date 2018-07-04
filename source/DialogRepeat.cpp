@@ -6,6 +6,7 @@
 #include "TextBuffer.h"
 
 #include <QMessageBox>
+#include <QIntValidator>
 
 DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
 	ui.setupUi(this);
