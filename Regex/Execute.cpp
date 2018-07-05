@@ -1069,15 +1069,15 @@ bool attempt(Regex *prog, const char *string) {
  * it defaults to the start position.
  * Finally, match_to indicates the logical end of the string, till where
  * matches are allowed to extend. Note that look-ahead patterns may look
- * past that boundary. If match_to is set to nullptr, the terminating \0 is
+ * past that boundary. If match_to is set to nullptr, the physical end of the string
  * assumed to correspond to the logical boundary. Match_to, if set, must be
  * larger than or equal to end, if set.
  */
 
 /*
-Notes: look_behind_to <= string <= end <= match_to
+Notes: look_behind_to <= start <= end <= match_to
 
-look_behind_to string            end           match_to
+look_behind_to start             end           match_to
 |              |                 |             |
 +--------------+-----------------+-------------+
 |  Look Behind | String Contents | Look Ahead  |
@@ -1097,8 +1097,7 @@ look_behind_to string            end           match_to
  * @param match_to
  * @return
  */
-bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_char, int succ_char, const char *delimiters, const char *look_behind_to, const char *match_to, const char *string_end) {
-    assert(string);
+bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_char, int succ_char, const char *delimiters, const char *look_behind_to, const char *match_to, const char *string_end) {
 
     Regex *const re = this;
 
@@ -1119,7 +1118,7 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_c
     eContext.Real_End_Of_String = string_end;
 
     if (!end && reverse) {
-        for (end = string; !AT_END_OF_STRING(end); end++) {
+        for (end = start; !AT_END_OF_STRING(end); end++) {
         }
         succ_char = '\n';
     } else if(!end) {
@@ -1127,8 +1126,8 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_c
     }
 
     // Remember the beginning of the string for matching BOL
-    eContext.Start_Of_String = string;
-    eContext.Look_Behind_To  = (look_behind_to ? look_behind_to : string);
+    eContext.Start_Of_String = start;
+    eContext.Look_Behind_To  = (look_behind_to ? look_behind_to : start);
 
     eContext.Prev_Is_BOL   = (prev_char == '\n') || (prev_char == -1);
     eContext.Succ_Is_EOL   = (succ_char == '\n') || (succ_char == -1);
@@ -1151,19 +1150,19 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_c
        crashes when later trying to reference captured parens that do not exist
        in the compiled regex.  We only need to do the first nine since users
        can only specify \1, \2, ... \9. */
-    std::fill_n(re->startp.begin(), 9, string);
-    std::fill_n(re->endp.begin(),   9, string);
+    std::fill_n(re->startp.begin(), 9, start);
+    std::fill_n(re->endp.begin(),   9, start);
 
     if (!reverse) { // Forward Search
         if (re->anchor) {
             // Search is anchored at BOL
 
-            if (attempt(re, string)) {
+            if (attempt(re, start)) {
                 ret_val = true;
                 goto SINGLE_RETURN;
             }
 
-            for (str = string; !AT_END_OF_STRING(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
+            for (str = start; !AT_END_OF_STRING(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
 
                 if (*str == '\n') {
                     if (attempt(re, str + 1)) {
@@ -1178,7 +1177,7 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_c
         } else if (re->match_start != '\0') {
             // We know what char match must start with.
 
-            for (str = string; !AT_END_OF_STRING(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
+            for (str = start; !AT_END_OF_STRING(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
 
                 if (*str == static_cast<uint8_t>(re->match_start)) {
                     if (attempt(re, str)) {
@@ -1192,7 +1191,7 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_c
         } else {
             // General case
 
-            for (str = string; !AT_END_OF_STRING(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
+            for (str = start; !AT_END_OF_STRING(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
 
                 if (attempt(re, str)) {
                     ret_val = true;
@@ -1219,7 +1218,7 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_c
         if (re->anchor) {
             // Search is anchored at BOL
 
-            for (str = (end - 1); str >= string && !eContext.Recursion_Limit_Exceeded; str--) {
+            for (str = (end - 1); str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
 
                 if (*str == '\n') {
                     if (attempt(re, str + 1)) {
@@ -1229,7 +1228,7 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_c
                 }
             }
 
-            if (!eContext.Recursion_Limit_Exceeded && attempt(re, string)) {
+            if (!eContext.Recursion_Limit_Exceeded && attempt(re, start)) {
                 ret_val = true;
                 goto SINGLE_RETURN;
             }
@@ -1238,7 +1237,7 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_c
         } else if (re->match_start != '\0') {
             // We know what char match must start with.
 
-            for (str = end; str >= string && !eContext.Recursion_Limit_Exceeded; str--) {
+            for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
 
                 if (*str == static_cast<uint8_t>(re->match_start)) {
                     if (attempt(re, str)) {
@@ -1252,7 +1251,7 @@ bool Regex::ExecRE(const char *string, const char *end, bool reverse, int prev_c
         } else {
             // General case
 
-            for (str = end; str >= string && !eContext.Recursion_Limit_Exceeded; str--) {
+            for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
 
                 if (attempt(re, str)) {
                     ret_val = true;
