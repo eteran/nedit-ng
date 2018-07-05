@@ -45,14 +45,14 @@ std::vector<PatternSet> Highlight::PatternSets;
 
 namespace {
 
-auto NEDIT_DEFAULT_TEXT_FG    = QLatin1String("#221f1e");
-auto NEDIT_DEFAULT_TEXT_BG    = QLatin1String("#d6d2d0");
-auto NEDIT_DEFAULT_SEL_FG     = QLatin1String("#ffffff");
-auto NEDIT_DEFAULT_SEL_BG     = QLatin1String("#43ace8");
-auto NEDIT_DEFAULT_HI_FG      = QLatin1String("white");        /* These are colors for flashing */
-auto NEDIT_DEFAULT_HI_BG      = QLatin1String("red");          /* matching parens. */
-auto NEDIT_DEFAULT_LINENO_FG  = QLatin1String("black");
-auto NEDIT_DEFAULT_CURSOR_FG  = QLatin1String("black");
+const auto NEDIT_DEFAULT_TEXT_FG    = QLatin1String("#221f1e");
+const auto NEDIT_DEFAULT_TEXT_BG    = QLatin1String("#d6d2d0");
+const auto NEDIT_DEFAULT_SEL_FG     = QLatin1String("#ffffff");
+const auto NEDIT_DEFAULT_SEL_BG     = QLatin1String("#43ace8");
+const auto NEDIT_DEFAULT_HI_FG      = QLatin1String("white");        /* These are colors for flashing */
+const auto NEDIT_DEFAULT_HI_BG      = QLatin1String("red");          /* matching parens. */
+const auto NEDIT_DEFAULT_LINENO_FG  = QLatin1String("black");
+const auto NEDIT_DEFAULT_CURSOR_FG  = QLatin1String("black");
 
 /* Initial forward expansion of parsing region in incremental reparsing,
    when style changes propagate forward beyond the original modification.
@@ -475,6 +475,9 @@ bool Highlight::parseString(HighlightData *const pattern, const char *const firs
     char *stylePtr        = *styleString;
 
     const std::shared_ptr<Regex> &subPatternRE = pattern->subPatternRE;
+
+    const QByteArray delimitersString = delimiters.toLatin1();
+    const char * delimitersPtr = delimiters.isNull() ? nullptr : delimitersString.data();
 	
     while (subPatternRE->ExecRE(
                stringPtr,
@@ -482,7 +485,7 @@ bool Highlight::parseString(HighlightData *const pattern, const char *const firs
                false,
                *prevChar,
                succChar,
-               delimiters.isNull() ? nullptr : delimiters.toLatin1().data(),
+               delimitersPtr,
                look_behind_to,
                match_to,
                last)) {
@@ -520,7 +523,7 @@ bool Highlight::parseString(HighlightData *const pattern, const char *const firs
                                         false,
                                         savedPrevChar,
                                         succChar,
-                                        delimiters.isNull() ? nullptr : delimiters.toLatin1().data(),
+                                        delimitersPtr,
                                         look_behind_to,
                                         match_to,
                                         last)) {
@@ -644,7 +647,7 @@ bool Highlight::parseString(HighlightData *const pattern, const char *const firs
                                 false,
                                 savedPrevChar,
                                 succChar,
-                                delimiters.isNull() ? nullptr : delimiters.toLatin1().data(),
+                                delimitersPtr,
                                 look_behind_to,
                                 match_to,
                                 last)) {
