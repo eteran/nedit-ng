@@ -3836,7 +3836,7 @@ void MainWindow::on_action_Read_Only_toggled(bool state) {
  * @brief MainWindow::on_action_Save_Defaults_triggered
  */
 void MainWindow::on_action_Save_Defaults_triggered() {
-    Preferences::SaveNEditPrefsEx(this, /*quietly=*/false);
+    Preferences::SaveNEditPrefs(this, /*quietly=*/false);
 }
 
 /**
@@ -5086,7 +5086,7 @@ bool MainWindow::CheckPrefsChangesSavedEx() {
 
     messageBox.exec();
     if(messageBox.clickedButton() == buttonSave) {
-        Preferences::SaveNEditPrefsEx(this, true);
+        Preferences::SaveNEditPrefs(this, true);
         return true;
     } else if(messageBox.clickedButton() == buttonDontSave) {
         return true;

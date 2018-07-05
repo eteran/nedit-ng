@@ -153,26 +153,25 @@ public:
 
 public:
     static bool ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message);
-    static bool ReadNumericFieldEx(Input &in, int *value);
-    static bool ReadQuotedStringEx(Input &in, QString *errMsg, QString *string);
-    static bool SkipDelimiterEx(Input &in, QString *errMsg);
+    static bool ReadNumericField(Input &in, int *value);
+    static bool ReadQuotedString(Input &in, QString *errMsg, QString *string);
+    static bool SkipDelimiter(Input &in, QString *errMsg);
 
 public:
-    static QString MakeQuotedStringEx(const QString &string);
-    static QString ReadSymbolicFieldEx(Input &input);
+    static QString MakeQuotedString(const QString &string);
+    static QString ReadSymbolicField(Input &input);
     static void ImportPrefFile(const QString &filename);
     static void MarkPrefsChanged();
     static void RestoreNEditPrefs();
-    static void SaveNEditPrefsEx(QWidget *parent, bool quietly);
+    static void SaveNEditPrefs(QWidget *parent, bool quietly);
     static bool PreferencesChanged();
     static QString ImportedSettingsFile();
 
 private:
-    static int loadLanguageModesStringEx(const QString &string);
+    static int loadLanguageModesString(const QString &string);
     static QString WriteLanguageModesStringEx();
     static void translatePrefFormats(uint32_t fileVer);
     static QStringList readExtensionListEx(Input &in);
-    static bool modeErrorEx(const Input &in, const QString &message);
     static QString getDefaultShell();
 
 public:

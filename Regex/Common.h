@@ -143,9 +143,9 @@ R numeric_escape(Ch ch, const char **parse) noexcept {
 
     if (value == 0) {
         if (ch == '0') {
-            raise<RegexError>("\\00 is an invalid octal escape");
+            Raise<RegexError>("\\00 is an invalid octal escape");
         } else {
-            raise<RegexError>("\\%c0 is an invalid hexadecimal escape", ch);
+            Raise<RegexError>("\\%c0 is an invalid hexadecimal escape", ch);
         }
     } else {
         // Point to the last character of the number on success.

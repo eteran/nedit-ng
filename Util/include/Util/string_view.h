@@ -68,7 +68,7 @@ public:
     }
 
     constexpr const_reference at(size_t pos) const {
-        return pos >= size_ ? raise<std::out_of_range>("string_view::at"), data_[0] : data_[pos];
+        return pos >= size_ ? Raise<std::out_of_range>("string_view::at"), data_[0] : data_[pos];
     }
 
     constexpr const_reference front() const {
@@ -141,7 +141,7 @@ public:
         using std::min;
 
         if (pos > size()) {
-            raise<std::out_of_range>("string_view::copy");
+            Raise<std::out_of_range>("string_view::copy");
         }
 
         size_type rlen = min(count, size_ - pos);
@@ -154,7 +154,7 @@ public:
         using std::min;
 
         if (pos > size()) {
-            raise<std::out_of_range>("string_view::substr");
+            Raise<std::out_of_range>("string_view::substr");
         }
 
         return basic_string_view(data() + pos, min(size() - pos, n));

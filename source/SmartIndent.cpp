@@ -252,12 +252,12 @@ bool SmartIndent::LoadSmartIndentStringEx(const QString &string) {
 		}
 
 		// read language mode name
-        is.lmName = Preferences::ReadSymbolicFieldEx(in);
+        is.lmName = Preferences::ReadSymbolicField(in);
 		if (is.lmName.isNull()) {
             return ParseError(in, tr("language mode name required"));
 		}
 
-        if (!Preferences::SkipDelimiterEx(in, &errMsg)) {
+        if (!Preferences::SkipDelimiter(in, &errMsg)) {
             return ParseError(in, errMsg);
 		}
 

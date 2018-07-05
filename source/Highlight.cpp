@@ -1268,7 +1268,7 @@ bool Highlight::LoadHighlightStringEx(const QString &string) {
     Q_FOREVER {
 
         // Read each pattern set, abort on error
-        std::unique_ptr<PatternSet> patSet = readPatternSetEx(in);
+        std::unique_ptr<PatternSet> patSet = readPatternSet(in);
         if(!patSet) {
             return false;
         }
@@ -1416,17 +1416,17 @@ QString Highlight::createPatternsString(const PatternSet *patSet, const QString 
             << Colon;
 
         if (!pat.startRE.isNull()) {
-            out << Preferences::MakeQuotedStringEx(pat.startRE);
+            out << Preferences::MakeQuotedString(pat.startRE);
         }
         out << Colon;
 
         if (!pat.endRE.isNull()) {
-            out << Preferences::MakeQuotedStringEx(pat.endRE);
+            out << Preferences::MakeQuotedString(pat.endRE);
         }
         out << Colon;
 
         if (!pat.errorRE.isNull()) {
-            out << Preferences::MakeQuotedStringEx(pat.errorRE);
+            out << Preferences::MakeQuotedString(pat.errorRE);
         }
         out << Colon
             << pat.style
@@ -1451,58 +1451,76 @@ QString Highlight::createPatternsString(const PatternSet *patSet, const QString 
 ** Read in a pattern set character string, and advance *inPtr beyond it.
 ** Returns nullptr and outputs an error to stderr on failure.
 */
-std::unique_ptr<PatternSet> Highlight::readPatternSetEx(Input &in) {
-    QString errMsg;
+std::unique_ptr<PatternSet> Highlight::readPatternSet(Input &in) {
 
-    // remove leading whitespace
-    in.skipWhitespaceNL();
+    struct HighlightError {
+        QString message;
+    };
 
-    auto patSet = std::make_unique<PatternSet>();
+    try {
+        QString errMsg;
 
-    // read language mode field
-    QString l = Preferences::ReadSymbolicFieldEx(in);
-    patSet->languageMode = l;
+        // remove leading whitespace
+        in.skipWhitespaceNL();
 
-    if (patSet->languageMode.isNull()) {
-        return highlightErrorEx(in, tr("language mode must be specified"));
-    }
+        auto patSet = std::make_unique<PatternSet>();
 
-    if (!Preferences::SkipDelimiterEx(in, &errMsg)) {
-        return highlightErrorEx(in, errMsg);
-    }
+        // read language mode field
+        patSet->languageMode = Preferences::ReadSymbolicField(in);
 
-    /* look for "Default" keyword, and if it's there, return the default
-       pattern set */
-    if (in.match(QLatin1String("Default"))) {
-        std::unique_ptr<PatternSet> retPatSet = readDefaultPatternSet(patSet->languageMode);
-        if(!retPatSet) {
-            return highlightErrorEx(in, tr("No default pattern set"));
+        if (patSet->languageMode.isNull()) {
+            Raise<HighlightError>(tr("language mode must be specified"));
         }
-        return retPatSet;
+
+        if (!Preferences::SkipDelimiter(in, &errMsg)) {
+            Raise<HighlightError>(errMsg);
+        }
+
+        /* look for "Default" keyword, and if it's there, return the default
+           pattern set */
+        if (in.match(QLatin1String("Default"))) {
+            std::unique_ptr<PatternSet> retPatSet = readDefaultPatternSet(patSet->languageMode);
+            if(!retPatSet) {
+                Raise<HighlightError>(tr("No default pattern set"));
+            }
+            return retPatSet;
+        }
+
+        // read line context field
+        if (!Preferences::ReadNumericField(in, &patSet->lineContext)) {
+            Raise<HighlightError>(tr("unreadable line context field"));
+        }
+
+        if (!Preferences::SkipDelimiter(in, &errMsg)) {
+            Raise<HighlightError>(errMsg);
+        }
+
+        // read character context field
+        if (!Preferences::ReadNumericField(in, &patSet->charContext)) {
+            Raise<HighlightError>(tr("unreadable character context field"));
+        }
+
+        // read pattern list
+        bool ok;
+        std::vector<HighlightPattern> patterns = readHighlightPatternsEx(in, true, &errMsg, &ok);
+        if (!ok) {
+            Raise<HighlightError>(errMsg);
+        }
+
+        patSet->patterns = patterns;
+
+        // pattern set was read correctly, make an allocated copy to return
+        return patSet;
+    } catch(const HighlightError &error) {
+        Preferences::ParseErrorEx(
+                    nullptr,
+                    *in.string(),
+                    in.index(),
+                    tr("highlight pattern"),
+                    error.message);
+
+        return nullptr;
     }
-
-    // read line context field
-    if (!Preferences::ReadNumericFieldEx(in, &patSet->lineContext))
-        return highlightErrorEx(in, tr("unreadable line context field"));
-
-    if (!Preferences::SkipDelimiterEx(in, &errMsg))
-        return highlightErrorEx(in, errMsg);
-
-    // read character context field
-    if (!Preferences::ReadNumericFieldEx(in, &patSet->charContext))
-        return highlightErrorEx(in, tr("unreadable character context field"));
-
-    // read pattern list
-    bool ok;
-    std::vector<HighlightPattern> patterns = readHighlightPatternsEx(in, true, &errMsg, &ok);
-    if (!ok) {
-        return highlightErrorEx(in, errMsg);
-    }
-
-    patSet->patterns = patterns;
-
-    // pattern set was read correctly, make an allocated copy to return
-    return patSet;
 }
 
 /*
@@ -1562,59 +1580,59 @@ std::vector<HighlightPattern> Highlight::readHighlightPatternsEx(Input &in, int 
 bool Highlight::readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *pattern) {
 
     // read the name field
-    QString name = Preferences::ReadSymbolicFieldEx(in);
+    QString name = Preferences::ReadSymbolicField(in);
     if (name.isNull()) {
         *errMsg = tr("pattern name is required");
         return false;
     }
     pattern->name = name;
 
-    if (!Preferences::SkipDelimiterEx(in, errMsg))
+    if (!Preferences::SkipDelimiter(in, errMsg))
         return false;
 
     // read the start pattern
-    if (!Preferences::ReadQuotedStringEx(in, errMsg, &pattern->startRE))
+    if (!Preferences::ReadQuotedString(in, errMsg, &pattern->startRE))
         return false;
 
-    if (!Preferences::SkipDelimiterEx(in, errMsg))
+    if (!Preferences::SkipDelimiter(in, errMsg))
         return false;
 
     // read the end pattern
 
     if (*in == QLatin1Char(':')) {
         pattern->endRE = QString();
-    } else if (!Preferences::ReadQuotedStringEx(in, errMsg, &pattern->endRE)) {
+    } else if (!Preferences::ReadQuotedString(in, errMsg, &pattern->endRE)) {
         return false;
     }
 
-    if (!Preferences::SkipDelimiterEx(in, errMsg))
+    if (!Preferences::SkipDelimiter(in, errMsg))
         return false;
 
     // read the error pattern
     if (*in == QLatin1Char(':')) {
         pattern->errorRE = QString();
-    } else if (!Preferences::ReadQuotedStringEx(in, errMsg, &pattern->errorRE)) {
+    } else if (!Preferences::ReadQuotedString(in, errMsg, &pattern->errorRE)) {
         return false;
     }
 
-    if (!Preferences::SkipDelimiterEx(in, errMsg))
+    if (!Preferences::SkipDelimiter(in, errMsg))
         return false;
 
     // read the style field
-    pattern->style = Preferences::ReadSymbolicFieldEx(in);
+    pattern->style = Preferences::ReadSymbolicField(in);
 
     if (pattern->style.isNull()) {
         *errMsg = tr("style field required in pattern");
         return false;
     }
 
-    if (!Preferences::SkipDelimiterEx(in, errMsg))
+    if (!Preferences::SkipDelimiter(in, errMsg))
         return false;
 
     // read the sub-pattern-of field
-    pattern->subPatternOf = Preferences::ReadSymbolicFieldEx(in);
+    pattern->subPatternOf = Preferences::ReadSymbolicField(in);
 
-    if (!Preferences::SkipDelimiterEx(in, errMsg))
+    if (!Preferences::SkipDelimiter(in, errMsg))
         return false;
 
     // read flags field
@@ -1642,7 +1660,7 @@ std::unique_ptr<PatternSet> Highlight::readDefaultPatternSet(QByteArray &pattern
 
     if(defaultPattern.startsWith(compare)) {
         Input in(&defaultPattern);
-        return readPatternSetEx(in);
+        return readPatternSet(in);
     }
 
     return nullptr;
@@ -1681,20 +1699,6 @@ bool Highlight::isDefaultPatternSet(const PatternSet &patSet) {
     }
 
     return patSet == *defaultPatSet;
-}
-
-/*
-** Short-hand functions for formating and outputing errors for
-*/
-std::unique_ptr<PatternSet> Highlight::highlightErrorEx(const Input &in, const QString &message) {
-    Preferences::ParseErrorEx(
-                nullptr,
-                *in.string(),
-                in.index(),
-                tr("highlight pattern"),
-                message);
-
-    return nullptr;
 }
 
 /*

@@ -57,45 +57,40 @@ public:
 public:
     static void loadTheme();
     static void saveTheme();
+    static bool FontOfNamedStyleIsBold(const QString &styleName);
+    static bool FontOfNamedStyleIsItalic(const QString &styleName);
+    static bool isDefaultPatternSet(const PatternSet &patSet);
     static bool LoadHighlightStringEx(const QString &string);
     static bool NamedStyleExists(const QString &styleName);
     static bool parseString(const HighlightData *pattern, const char *first, const char *last, const char **string, char **styleString, int64_t length, int *prevChar, bool anchored, const QString &delimiters, const char *look_behind_to, const char *match_to);
-    static int getPrevChar(TextBuffer *buf, TextCursor pos);
+    static bool patternIsParsable(HighlightData *pattern);
+    static bool readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *pattern);
     static HighlightData *patternOfStyle(HighlightData *patterns, int style);
-    static TextCursor backwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos);
+    static int findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlightData> &highlightData, TextCursor *pos);
     static int findTopLevelParentIndex(const gsl::span<HighlightPattern> &patList, int index);
-    static bool FontOfNamedStyleIsBold(const QString &styleName);
-    static bool FontOfNamedStyleIsItalic(const QString &styleName);
-    static TextCursor forwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos);
+    static int getPrevChar(TextBuffer *buf, TextCursor pos);
     static int indexOfNamedPattern(const gsl::span<HighlightPattern> &patList, const QString &patName);
     static PatternSet *FindPatternSet(const QString &langModeName);
     static QString BgColorOfNamedStyleEx(const QString &styleName);
+    static QString createPatternsString(const PatternSet *patSet, const QString &indentStr);
     static QString FgColorOfNamedStyleEx(const QString &styleName);
     static QString WriteHighlightStringEx();
     static size_t IndexOfNamedStyle(const QString &styleName);
     static std::unique_ptr<PatternSet> readDefaultPatternSet(const QString &langModeName);
-    static void RenameHighlightPattern(const QString &oldName, const QString &newName);
-
-public:
-    static void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, TextCursor pos, int64_t nInserted, const QString &delimiters);
-
-private:
-    static std::unique_ptr<PatternSet> readPatternSetEx(Input &in);
-    static TextCursor parseBufferRange(const HighlightData *pass1Patterns, const HighlightData *pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, TextCursor beginParse, TextCursor endParse, const QString &delimiters);
-    static int findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlightData> &highlightData, TextCursor *pos);
-    static void passTwoParseString(const HighlightData *pattern, const char *first, const char *last, const char *string, char *styleString, int64_t length, int *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till);
     static std::unique_ptr<PatternSet> readDefaultPatternSet(QByteArray &patternData, const QString &langModeName);
-    static std::unique_ptr<PatternSet> highlightErrorEx(const Input &in, const QString &message);
-    static bool isDefaultPatternSet(const PatternSet &patSet);
-    static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, uint8_t style, int *prevChar);
-    static void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleString, TextCursor startPos, TextCursor endPos, int firstPass2Style);
-    static TextCursor lastModified(const std::shared_ptr<TextBuffer> &styleBuf);
-    static bool patternIsParsable(HighlightData *pattern);
-    static void recolorSubexpr(const std::shared_ptr<Regex> &re, int subexpr, int style, const char *string, char *styleString);
-    static bool readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *pattern);
+    static std::unique_ptr<PatternSet> readPatternSet(Input &in);
     static std::vector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBraces, QString *errMsg, bool *ok);
-    static QString createPatternsString(const PatternSet *patSet, const QString &indentStr);
-
+    static TextCursor backwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos);
+    static TextCursor forwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos);
+    static TextCursor lastModified(const std::shared_ptr<TextBuffer> &styleBuf);
+    static TextCursor parseBufferRange(const HighlightData *pass1Patterns, const HighlightData *pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, TextCursor beginParse, TextCursor endParse, const QString &delimiters);
+    static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, uint8_t style, int *prevChar);
+    static void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, TextCursor pos, int64_t nInserted, const QString &delimiters);
+    static void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleString, TextCursor startPos, TextCursor endPos, int firstPass2Style);
+    static void passTwoParseString(const HighlightData *pattern, const char *first, const char *last, const char *string, char *styleString, int64_t length, int *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till);
+    static void recolorSubexpr(const std::shared_ptr<Regex> &re, int subexpr, int style, const char *string, char *styleString);
+    static void RenameHighlightPattern(const QString &oldName, const QString &newName);
+	
 public:
     static std::vector<HighlightStyle> HighlightStyles;
     static std::vector<PatternSet>     PatternSets;

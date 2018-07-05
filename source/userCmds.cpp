@@ -19,18 +19,6 @@ std::vector<MenuData> BGMenuData;
 
 namespace {
 
-struct ParseError : std::exception {
-public:
-    explicit ParseError(std::string s) : s_(std::move(s)) {
-    }
-
-    const char *what() const noexcept override {
-        return s_.c_str();
-    }
-private:
-    std::string s_;
-};
-
 /*
 ** Scan text from "*in" to the end of macro input (matching brace),
 ** advancing in, and return macro text as function return value.
@@ -198,6 +186,10 @@ QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, CommandTyp
 
 bool loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuItems, CommandTypes listType) {
 
+    struct ParseError {
+        std::string message;
+    };
+
     try {
         Input in(&inString);
 
@@ -214,11 +206,11 @@ bool loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuIt
             // read name field
             QString nameStr = in.readUntil(QLatin1Char(':'));
             if(nameStr.isEmpty()) {
-                raise<ParseError>("no name field");
+                Raise<ParseError>("no name field");
             }
 
             if(in.atEnd()) {
-                raise<ParseError>("end not expected");
+                Raise<ParseError>("end not expected");
             }
 
             ++in;
@@ -227,7 +219,7 @@ bool loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuIt
             QString accStr = in.readUntil(QLatin1Char(':'));
 
             if(in.atEnd()) {
-                raise<ParseError>("end not expected");
+                Raise<ParseError>("end not expected");
             }
 
             ++in;
@@ -269,7 +261,7 @@ bool loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuIt
                         loadAfter = true;
                         break;
                     default:
-                        raise<ParseError>("unreadable flag field");
+                        Raise<ParseError>("unreadable flag field");
                     }
                 } else {
                     switch((*in).toLatin1()) {
@@ -277,7 +269,7 @@ bool loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuIt
                         input = FROM_SELECTION;
                         break;
                     default:
-                        raise<ParseError>("unreadable flag field");
+                        Raise<ParseError>("unreadable flag field");
                     }
                 }
             }
@@ -289,7 +281,7 @@ bool loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuIt
             if (listType == CommandTypes::SHELL_CMDS) {
 
                 if (*in++ != QLatin1Char('\n')) {
-                    raise<ParseError>("command must begin with newline");
+                    Raise<ParseError>("command must begin with newline");
                 }
 
                 // leading whitespace
@@ -298,7 +290,7 @@ bool loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuIt
                 cmdStr = in.readUntil(QLatin1Char('\n'));
 
                 if (cmdStr.isEmpty()) {
-                    raise<ParseError>("shell command field is empty");
+                    Raise<ParseError>("shell command field is empty");
                 }
 
             } else {
@@ -335,8 +327,8 @@ bool loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuIt
                 it->item = *f;
             }
         }
-    } catch(const ParseError &ex) {
-        qWarning("NEdit: Parse error in user defined menu item, %s", ex.what());
+    } catch(const ParseError &error) {
+        qWarning("NEdit: Parse error in user defined menu item, %s", error.message.c_str());
         return false;
     }
 }

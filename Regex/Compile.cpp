@@ -468,7 +468,7 @@ uint8_t *shortcut_escape(T ch, int *flag_param, ShortcutEscapeFlags flags) {
         if (flags == EMIT_NODE) {
             ret_val = emit_node(IS_DELIM);
         } else {
-            raise<RegexError>("internal error #5 'shortcut_escape'");
+            Raise<RegexError>("internal error #5 'shortcut_escape'");
         }
 
         break;
@@ -478,7 +478,7 @@ uint8_t *shortcut_escape(T ch, int *flag_param, ShortcutEscapeFlags flags) {
         if (flags == EMIT_NODE) {
             ret_val = emit_node(NOT_DELIM);
         } else {
-            raise<RegexError>("internal error #6 'shortcut_escape'");
+            Raise<RegexError>("internal error #6 'shortcut_escape'");
         }
 
         break;
@@ -488,7 +488,7 @@ uint8_t *shortcut_escape(T ch, int *flag_param, ShortcutEscapeFlags flags) {
         if (flags == EMIT_NODE) {
             ret_val = emit_node(NOT_BOUNDARY);
         } else {
-            raise<RegexError>("internal error #7 'shortcut_escape'");
+            Raise<RegexError>("internal error #7 'shortcut_escape'");
         }
 
         break;
@@ -497,7 +497,7 @@ uint8_t *shortcut_escape(T ch, int *flag_param, ShortcutEscapeFlags flags) {
         /* We get here if there isn't a case for every character in
            the string "codes" */
 
-        raise<RegexError>("internal error #8 'shortcut_escape'");
+        Raise<RegexError>("internal error #8 'shortcut_escape'");
     }
 
     if (flags == EMIT_NODE && ch != 'B') {
@@ -570,7 +570,7 @@ uint8_t *back_ref(const char *ch, int *flag_param, ShortcutEscapeFlags flags) {
     // Make sure parentheses for requested back-reference are complete.
 
     if (!is_cross_regex && !pContext.Closed_Parens[paren_no]) {
-        raise<RegexError>("\\%d is an illegal back reference", paren_no);
+        Raise<RegexError>("\\%d is an illegal back reference", paren_no);
     }
 
     if (flags == EMIT_NODE) {
@@ -657,7 +657,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 
     if(pContext.Reg_Parse == pContext.Reg_Parse_End) {
         // Supposed to be caught earlier.
-        raise<RegexError>("internal error #3, 'atom'");
+        Raise<RegexError>("internal error #3, 'atom'");
     }
 
     switch (*pContext.Reg_Parse++) {
@@ -725,10 +725,10 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
                     ++pContext.Reg_Parse;
                     ret_val = chunk(NEG_BEHIND_OPEN, &flags_local, range_local);
                 } else {
-                    raise<RegexError>("invalid look-behind syntax, \"(?<%c...)\"", *pContext.Reg_Parse);
+                    Raise<RegexError>("invalid look-behind syntax, \"(?<%c...)\"", *pContext.Reg_Parse);
                 }
             } else {
-                raise<RegexError>("invalid grouping syntax, \"(?%c...)\"", *pContext.Reg_Parse);
+                Raise<RegexError>("invalid grouping syntax, \"(?%c...)\"", *pContext.Reg_Parse);
             }
         } else { // Normal capturing parentheses
             ret_val = chunk(PAREN, &flags_local, range_local);
@@ -746,16 +746,16 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 
     case '|':
     case ')':
-        raise<RegexError>("internal error #3, 'atom'"); // Supposed to be
+        Raise<RegexError>("internal error #3, 'atom'"); // Supposed to be
                                                         // caught earlier.
     case '?':
     case '+':
     case '*':
-        raise<RegexError>("%c follows nothing", pContext.Reg_Parse[-1]);
+        Raise<RegexError>("%c follows nothing", pContext.Reg_Parse[-1]);
 
     case '{':
         if (pContext.Enable_Counting_Quantifier) {
-            raise<RegexError>("{m,n} follows nothing");
+            Raise<RegexError>("{m,n} follows nothing");
         } else {
             ret_val = emit_node(EXACTLY); // Treat braces as literals.
             emit_byte('{');
@@ -834,9 +834,9 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
                         } else if ((test = literal_escape<uint8_t>(*pContext.Reg_Parse))) {
                             last_value = test;
                         } else if (shortcut_escape(*pContext.Reg_Parse, nullptr, CHECK_CLASS_ESCAPE)) {
-                            raise<RegexError>("\\%c is not allowed as range operand", *pContext.Reg_Parse);
+                            Raise<RegexError>("\\%c is not allowed as range operand", *pContext.Reg_Parse);
                         } else {
-                            raise<RegexError>("\\%c is an invalid char class escape sequence", *pContext.Reg_Parse);
+                            Raise<RegexError>("\\%c is an invalid char class escape sequence", *pContext.Reg_Parse);
                         }
                     } else {
                         last_value = U_CHAR_AT(pContext.Reg_Parse);
@@ -852,7 +852,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
                        lower case. */
 
                     if (second_value - 1 > last_value) {
-                        raise<RegexError>("invalid [] range");
+                        Raise<RegexError>("invalid [] range");
                     }
 
                     /* If only one character in range (e.g [a-a]) then this
@@ -884,7 +884,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
                         /* Specifically disallow shortcut escapes as the start
                            of a character class range (see comment above.) */
 
-                        raise<RegexError>("\\%c not allowed as range operand", *pContext.Reg_Parse);
+                        Raise<RegexError>("\\%c not allowed as range operand", *pContext.Reg_Parse);
                     } else {
                         /* Emit the bytes that are part of the shortcut
                            escape sequence's range (e.g. \d = 0123456789) */
@@ -892,7 +892,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
                         shortcut_escape(*pContext.Reg_Parse, nullptr, EMIT_CLASS_BYTES);
                     }
                 } else {
-                    raise<RegexError>("\\%c is an invalid char class escape sequence", *pContext.Reg_Parse);
+                    Raise<RegexError>("\\%c is an invalid char class escape sequence", *pContext.Reg_Parse);
                 }
 
                 ++pContext.Reg_Parse;
@@ -907,7 +907,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
         } // End of while (Reg_Parse != Reg_Parse_End && *pContext.Reg_Parse != ']')
 
         if (*pContext.Reg_Parse != ']')
-            raise<RegexError>("missing right ']'");
+            Raise<RegexError>("missing right ']'");
 
         emit_byte('\0');
 
@@ -1004,7 +1004,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
                         /* None of the above calls generated an error message
                            so generate our own here. */
 
-                        raise<RegexError>("\\%c is an invalid escape sequence", *pContext.Reg_Parse);
+                        Raise<RegexError>("\\%c is an invalid escape sequence", *pContext.Reg_Parse);
 
                     }
 
@@ -1042,7 +1042,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
             }
 
             if (len <= 0)
-                raise<RegexError>("internal error #4, 'atom'");
+                Raise<RegexError>("internal error #4, 'atom'");
 
             *flag_param |= HAS_WIDTH;
 
@@ -1125,9 +1125,9 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
                     digit_present[i]++;
                 } else {
                     if (i == 0) {
-                        raise<RegexError>("min operand of {%lu%c,???} > 65535", min_max[0], *pContext.Reg_Parse);
+                        Raise<RegexError>("min operand of {%lu%c,???} > 65535", min_max[0], *pContext.Reg_Parse);
                     } else {
-                        raise<RegexError>("max operand of {%lu,%lu%c} > 65535", min_max[0], min_max[1], *pContext.Reg_Parse);
+                        Raise<RegexError>("max operand of {%lu,%lu%c} > 65535", min_max[0], min_max[1], *pContext.Reg_Parse);
                     }
                 }
             }
@@ -1145,15 +1145,15 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
         if (digit_present[0] && (min_max[0] == REG_ZERO) && !comma_present) {
 
-            raise<RegexError>("{0} is an invalid range");
+            Raise<RegexError>("{0} is an invalid range");
         } else if (digit_present[0] && (min_max[0] == REG_ZERO) && digit_present[1] && (min_max[1] == REG_ZERO)) {
 
-            raise<RegexError>("{0,0} is an invalid range");
+            Raise<RegexError>("{0,0} is an invalid range");
         } else if (digit_present[1] && (min_max[1] == REG_ZERO)) {
             if (digit_present[0]) {
-                raise<RegexError>("{%lu,0} is an invalid range", min_max[0]);
+                Raise<RegexError>("{%lu,0} is an invalid range", min_max[0]);
             } else {
-                raise<RegexError>("{,0} is an invalid range");
+                Raise<RegexError>("{,0} is an invalid range");
             }
         }
 
@@ -1161,12 +1161,12 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
             min_max[1] = min_max[0]; // {x} means {x,x}
 
         if (*pContext.Reg_Parse != '}') {
-            raise<RegexError>("{m,n} specification missing right '}'");
+            Raise<RegexError>("{m,n} specification missing right '}'");
 
         } else if (min_max[1] != REG_INFINITY && min_max[0] > min_max[1]) {
             // Disallow a backward range.
 
-            raise<RegexError>("{%lu,%lu} is an invalid range", min_max[0], min_max[1]);
+            Raise<RegexError>("{%lu,%lu} is an invalid range", min_max[0], min_max[1]);
         }
     }
 
@@ -1196,7 +1196,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
             range_param = range_local;
             return ret_val;
         } else if (pContext.Num_Braces > static_cast<int>(std::numeric_limits<uint8_t>::max())) {
-            raise<RegexError>("number of {m,n} constructs > %d", UINT8_MAX);
+            Raise<RegexError>("number of {m,n} constructs > %d", UINT8_MAX);
         }
     }
 
@@ -1210,9 +1210,9 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
     if (!(flags_local & HAS_WIDTH)) {
         if (brace_present) {
-            raise<RegexError>("{%lu,%lu} operand could be empty", min_max[0], min_max[1]);
+            Raise<RegexError>("{%lu,%lu} operand could be empty", min_max[0], min_max[1]);
         } else {
-            raise<RegexError>("%c operand could be empty", op_code);
+            Raise<RegexError>("%c operand could be empty", op_code);
         }
     }
 
@@ -1578,14 +1578,14 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
         /* We get here if the IS_QUANTIFIER macro is not coordinated properly
            with this function. */
 
-        raise<RegexError>("internal error #2, 'piece'");
+        Raise<RegexError>("internal error #2, 'piece'");
     }
 
     if (isQuantifier(*pContext.Reg_Parse)) {
         if (op_code == '{') {
-            raise<RegexError>("nested quantifiers, {m,n}%c", *pContext.Reg_Parse);
+            Raise<RegexError>("nested quantifiers, {m,n}%c", *pContext.Reg_Parse);
         } else {
-            raise<RegexError>("nested quantifiers, %c%c", op_code, *pContext.Reg_Parse);
+            Raise<RegexError>("nested quantifiers, %c%c", op_code, *pContext.Reg_Parse);
         }
     }
 
@@ -1681,7 +1681,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
     if (paren == PAREN) {
         if (pContext.Total_Paren >= NSUBEXP) {
-            raise<RegexError>("number of ()'s > %d", static_cast<int>(NSUBEXP));
+            Raise<RegexError>("number of ()'s > %d", static_cast<int>(NSUBEXP));
         }
 
         this_paren = pContext.Total_Paren;
@@ -1780,12 +1780,12 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
     // Check for proper termination.
 
     if (paren != NO_PAREN && *pContext.Reg_Parse++ != ')') {
-        raise<RegexError>("missing right parenthesis ')'");
+        Raise<RegexError>("missing right parenthesis ')'");
     } else if (paren == NO_PAREN && pContext.Reg_Parse != pContext.Reg_Parse_End) {
         if (*pContext.Reg_Parse == ')') {
-            raise<RegexError>("missing left parenthesis '('");
+            Raise<RegexError>("missing left parenthesis '('");
         } else {
-            raise<RegexError>("junk on end"); // "Can't happen" - NOTREACHED
+            Raise<RegexError>("junk on end"); // "Can't happen" - NOTREACHED
         }
     }
 
@@ -1793,10 +1793,10 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
     if (emit_look_behind_bounds) {
         if (range_param.lower < 0) {
-            raise<RegexError>("look-behind does not have a bounded size");
+            Raise<RegexError>("look-behind does not have a bounded size");
         }
         if (range_param.upper > 65535L) {
-            raise<RegexError>("max. look-behind size is too large (>65535)");
+            Raise<RegexError>("max. look-behind size is too large (>65535)");
         }
         if (pContext.Code_Emit_Ptr != &Compute_Size) {
             *emit_look_behind_bounds++ = PUT_OFFSET_L(range_param.lower);
@@ -1892,7 +1892,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 
     // Initialize arrays used by function 'shortcut_escape'.
     if (!init_ansi_classes()) {
-        raise<RegexError>("internal error #1, 'CompileRE'");
+        Raise<RegexError>("internal error #1, 'CompileRE'");
     }
 
     pContext.Code_Emit_Ptr = &Compute_Size;
@@ -1938,7 +1938,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
         emit_byte('%'); // Placeholder for num of general {m,n} constructs.
 
         if (chunk(NO_PAREN, &flags_local, range_local) == nullptr) {
-            raise<RegexError>("internal error #10, 'CompileRE'");
+            Raise<RegexError>("internal error #10, 'CompileRE'");
         }
 
         if (pass == 1) {
@@ -1947,7 +1947,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
                    This is a real issue since the first BRANCH node usually points
                    to the end of the compiled regex code. */
 
-                raise<RegexError>("Regex > %lu bytes", MAX_COMPILED_SIZE);
+                Raise<RegexError>("Regex > %lu bytes", MAX_COMPILED_SIZE);
             }
 
             // Allocate memory.

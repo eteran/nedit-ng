@@ -9,8 +9,8 @@ constexpr void
 #ifdef __GNUC__
 __attribute__(( noinline, cold, noreturn ))
 #endif
-raise(Args && ...args) {
-	throw E(std::forward<Args>(args)...);
+Raise(Args && ...args) {
+    throw E{std::forward<Args>(args)...};
 }
 
 #endif

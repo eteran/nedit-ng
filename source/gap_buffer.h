@@ -158,7 +158,7 @@ template <class Ch, class Tr>
 Ch gap_buffer<Ch, Tr>::at(size_type n) const {
 
     if (n >= size() || n < 0) {
-        raise<std::out_of_range>("gap_buffer::at");
+        Raise<std::out_of_range>("gap_buffer::at");
     }
 
     if (n < gap_start_) {
@@ -175,7 +175,7 @@ template <class Ch, class Tr>
 Ch& gap_buffer<Ch, Tr>::at(size_type n) {
 
     if (n >= size() || n < 0) {
-        raise<std::out_of_range>("gap_buffer::at");
+        Raise<std::out_of_range>("gap_buffer::at");
     }
 
     if (n < gap_start_) {
