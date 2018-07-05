@@ -198,7 +198,7 @@ void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &h
 
 		/* Parse forward from beginParse to one context beyond the end
 		   of the last modification */
-        HighlightData *startPattern = patternOfStyle(pass1Patterns, parseInStyle);
+        const HighlightData *startPattern = patternOfStyle(pass1Patterns, parseInStyle);
 		/* If there is no pattern matching the style, it must be a pass-2
 		   style. It that case, it is (probably) safe to start parsing with
 		   the root pass-1 pattern again. Anyway, passing a nullptr-pointer to
@@ -251,7 +251,7 @@ void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &h
 ** finished (this will normally be endParse, unless the pass1Patterns is a
 ** pattern which does end and the end is reached).
 */
-TextCursor Highlight::parseBufferRange(HighlightData *pass1Patterns, HighlightData *pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, TextCursor beginParse, TextCursor endParse, const QString &delimiters) {
+TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const HighlightData *pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, TextCursor beginParse, TextCursor endParse, const QString &delimiters) {
 
     TextCursor endSafety;
     TextCursor endPass2Safety;
@@ -461,7 +461,7 @@ parseDone:
 ** the error pattern matched, if the end of the string was reached without
 ** matching the end expression, or in the unlikely event of an internal error.
 */
-bool Highlight::parseString(HighlightData *const pattern, const char *const first, const char *const last, const char **string, char **styleString, int64_t length, int *prevChar, bool anchored, const QString &delimiters, const char *look_behind_to, const char *match_to) {
+bool Highlight::parseString(const HighlightData *const pattern, const char *const first, const char *const last, const char **string, char **styleString, int64_t length, int *prevChar, bool anchored, const QString &delimiters, const char *look_behind_to, const char *match_to) {
 
 	bool subExecuted;
     const int succChar = (match_to && (match_to != last)) ? (*match_to) : -1;
@@ -699,7 +699,7 @@ bool Highlight::parseString(HighlightData *const pattern, const char *const firs
 ** have the same meaning as in parseString, except that strings aren't doubly
 ** indirect and string pointers are not updated.
 */
-void Highlight::passTwoParseString(HighlightData *pattern, const char *first, const char *last, const char *string, char *styleString, int64_t length, int *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till) {
+void Highlight::passTwoParseString(const HighlightData *pattern, const char *first, const char *last, const char *string, char *styleString, int64_t length, int *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till) {
 
 	bool inParseRegion = false;
 	char *stylePtr;
