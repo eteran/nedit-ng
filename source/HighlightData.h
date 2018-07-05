@@ -16,8 +16,8 @@ public:
     std::shared_ptr<Regex> subPatternRE;
     uint8_t style;
     bool colorOnly;
-    std::vector<int> startSubexprs;
-    std::vector<int> endSubexprs;
+    std::vector<size_t> startSubexprs;
+    std::vector<size_t> endSubexprs;
 	int flags;
 	int nSubPatterns;
 	int nSubBranches; // Number of top-level branches of subPatternRE 

@@ -65,7 +65,7 @@ bool checkDoMacroArg(const QString &macro) {
     Program *const prog = ParseMacro(macroString, &errMsg, &stoppedAt);
 
     if(!prog) {
-        Preferences::ParseErrorEx(nullptr, macroString, stoppedAt, QLatin1String("argument to -do"), errMsg);
+        Preferences::reportError(nullptr, macroString, stoppedAt, QLatin1String("argument to -do"), errMsg);
         return false;
     }
 

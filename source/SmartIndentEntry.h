@@ -10,7 +10,7 @@ public:
     bool operator!=(const SmartIndentEntry &rhs) const;
 
 public:
-    QString lmName;
+    QString languageMode;
 	QString initMacro;
 	QString newlineMacro;
 	QString modMacro;

@@ -194,7 +194,7 @@ void insertShiftedMacro(QTextStream &ts, const QString &macro) {
 bool isDefaultIndentSpec(const SmartIndentEntry *indentSpec) {
 
     for(const SmartIndentEntry &entry : DefaultIndentSpecs) {
-        if (indentSpec->lmName == entry.lmName) {
+        if (indentSpec->languageMode == entry.languageMode) {
             return (*indentSpec == entry);
         }
     }
@@ -204,7 +204,7 @@ bool isDefaultIndentSpec(const SmartIndentEntry *indentSpec) {
 bool loadDefaultIndentSpec(const QString &lmName) {
 
     for(const SmartIndentEntry &entry : DefaultIndentSpecs) {
-        if (entry.lmName == lmName) {
+        if (entry.languageMode == lmName) {
             SmartIndent::SmartIndentSpecs.push_back(entry);
             return true;
         }
@@ -252,8 +252,8 @@ bool SmartIndent::LoadSmartIndentStringEx(const QString &string) {
 		}
 
 		// read language mode name
-        is.lmName = Preferences::ReadSymbolicField(in);
-		if (is.lmName.isNull()) {
+        is.languageMode = Preferences::ReadSymbolicField(in);
+        if (is.languageMode.isNull()) {
             return ParseError(in, tr("language mode name required"));
 		}
 
@@ -264,7 +264,7 @@ bool SmartIndent::LoadSmartIndentStringEx(const QString &string) {
 		/* look for "Default" keyword, and if it's there, return the default
 		   smart indent macros */
 		if (in.match(QLatin1String("Default"))) {
-			if (!loadDefaultIndentSpec(is.lmName)) {
+            if (!loadDefaultIndentSpec(is.languageMode)) {
                 return ParseError(in, tr("no default smart indent macros"));
 			}
 			continue;
@@ -295,7 +295,7 @@ bool SmartIndent::LoadSmartIndentStringEx(const QString &string) {
 		}
 
         auto it = std::find_if(SmartIndentSpecs.begin(), SmartIndentSpecs.end(), [&is](const SmartIndentEntry &entry) {
-            return entry.lmName == is.lmName;
+            return entry.languageMode == is.languageMode;
         });
 
         if(it == SmartIndentSpecs.end()) {
@@ -337,7 +337,7 @@ QString SmartIndent::WriteSmartIndentStringEx() {
     for(const SmartIndentEntry &sis : SmartIndentSpecs) {
 
 		ts << QLatin1String("\t")
-           << sis.lmName
+           << sis.languageMode
 		   << QLatin1String(":");
 		
         if (isDefaultIndentSpec(&sis)) {
@@ -390,7 +390,7 @@ const SmartIndentEntry *SmartIndent::findDefaultIndentSpec(const QString &name) 
     }
 
     for(const SmartIndentEntry &entry : DefaultIndentSpecs) {
-        if (entry.lmName == name) {
+        if (entry.languageMode == name) {
             return &entry;
         }
     }
@@ -405,7 +405,7 @@ const SmartIndentEntry *SmartIndent::findIndentSpec(const QString &name) {
 	}
 
     for(const SmartIndentEntry &entry : SmartIndentSpecs) {
-        if (entry.lmName == name) {
+        if (entry.languageMode == name) {
             return &entry;
 		}
 	}
@@ -433,8 +433,8 @@ bool SmartIndent::LMHasSmartIndentMacros(const QString &languageMode) {
 void SmartIndent::RenameSmartIndentMacros(const QString &oldName, const QString &newName) {
 
     for(SmartIndentEntry &sis : SmartIndentSpecs) {
-        if (sis.lmName == oldName) {
-            sis.lmName = newName;
+        if (sis.languageMode == oldName) {
+            sis.languageMode = newName;
 		}
     }
 
@@ -463,7 +463,7 @@ void SmartIndent::UpdateLangModeMenuSmartIndent() {
  * @return
  */
 bool SmartIndent::ParseError(const Input &in, const QString &message) {
-    return Preferences::ParseErrorEx(
+    return Preferences::reportError(
                 nullptr,
                 *in.string(),
                 in.index(),

@@ -152,7 +152,7 @@ public:
     static void SetPrefWrapMargin(int margin);
 
 public:
-    static bool ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message);
+    static bool reportError(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message);
     static bool ReadNumericField(Input &in, int *value);
     static bool ReadQuotedString(Input &in, QString *errMsg, QString *string);
     static bool SkipDelimiter(Input &in, QString *errMsg);

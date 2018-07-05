@@ -155,7 +155,7 @@ void DialogSmartIndent::on_buttonDelete_clicked() {
 
 	// if a stored version of the pattern set exists, delete it from the list 
     auto it = std::find_if(SmartIndent::SmartIndentSpecs.begin(), SmartIndent::SmartIndentSpecs.end(), [this](const SmartIndentEntry &entry) {
-        return entry.lmName == languageMode_;
+        return entry.languageMode == languageMode_;
     });
 
     if(it != SmartIndent::SmartIndentSpecs.end()) {
@@ -193,7 +193,7 @@ void DialogSmartIndent::on_buttonRestore_clicked() {
 	// if a stored version of the indent macros exist, replace them, if not, add a new one
     size_t i;
     for (i = 0; i < SmartIndent::SmartIndentSpecs.size(); i++) {
-        if (languageMode_ == SmartIndent::SmartIndentSpecs[i].lmName) {
+        if (languageMode_ == SmartIndent::SmartIndentSpecs[i].languageMode) {
 			break;
 		}
 	}
@@ -249,7 +249,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 
 	// Find the original macros
     auto it = std::find_if(SmartIndent::SmartIndentSpecs.begin(), SmartIndent::SmartIndentSpecs.end(), [this](const SmartIndentEntry &entry) {
-        return entry.lmName == languageMode_;
+        return entry.languageMode == languageMode_;
     });
 
 	/* If it's a new language, add it at the end, otherwise free the
@@ -266,7 +266,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 
         QString lmName = Preferences::LanguageModeName(document->GetLanguageMode());
 		if(!lmName.isNull()) {
-			if (lmName == newMacros->lmName) {
+            if (lmName == newMacros->languageMode) {
 
                 if(auto window = MainWindow::fromDocument(document)) {
                     window->ui.action_Indent_Smart->setEnabled(true);
@@ -325,7 +325,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 
     Program *prog = ParseMacro(widgetText, &errMsg, &stoppedAt);
 	if(!prog) {
-        Preferences::ParseErrorEx(this, widgetText, stoppedAt, tr("newline macro"), errMsg);
+        Preferences::reportError(this, widgetText, stoppedAt, tr("newline macro"), errMsg);
 		QTextCursor cursor = ui.editNewline->textCursor();
 		cursor.setPosition(stoppedAt);
 		ui.editNewline->setTextCursor(cursor);
@@ -344,7 +344,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
         Program *prog = ParseMacro(widgetText, &errMsg, &stoppedAt);
 
 		if(!prog) {
-            Preferences::ParseErrorEx(this, widgetText, stoppedAt, tr("modify macro"), errMsg);
+            Preferences::reportError(this, widgetText, stoppedAt, tr("modify macro"), errMsg);
 			QTextCursor cursor = ui.editModMacro->textCursor();
 			cursor.setPosition(stoppedAt);
 			ui.editModMacro->setTextCursor(cursor);
@@ -365,7 +365,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 std::unique_ptr<SmartIndentEntry> DialogSmartIndent::getSmartIndentDialogData() {
 
 	auto is = std::make_unique<SmartIndentEntry>();
-	is->lmName       = languageMode_;
+    is->languageMode = languageMode_;
 	is->initMacro    = ui.editInit->toPlainText().isEmpty()     ? QString() : ensureNewline(ui.editInit->toPlainText());
 	is->newlineMacro = ui.editNewline->toPlainText().isEmpty()  ? QString() : ensureNewline(ui.editNewline->toPlainText());
 	is->modMacro     = ui.editModMacro->toPlainText().isEmpty() ? QString() : ensureNewline(ui.editModMacro->toPlainText());

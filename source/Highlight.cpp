@@ -656,7 +656,7 @@ bool Highlight::parseString(const HighlightData *const pattern, const char *cons
 					}
 					subExecuted = true;
 				}
-                for (int subExpr : subSubPat->startSubexprs) {
+                for (size_t subExpr : subSubPat->startSubexprs) {
                     recolorSubexpr(subPat->startRE, subExpr, subSubPat->style, *string, *styleString);
                 }
 			}
@@ -1044,13 +1044,11 @@ TextCursor Highlight::forwardOneContext(TextBuffer *buf, const ReparseContext &c
 ** sub-expression, "subExpr", of regular expression "re" applies to the
 ** corresponding portion of "string".
 */
-void Highlight::recolorSubexpr(const std::shared_ptr<Regex> &re, int subexpr, int style, const char *string, char *styleString) {
+void Highlight::recolorSubexpr(const std::shared_ptr<Regex> &re, size_t subexpr, int style, const char *string, char *styleString) {
 
-    auto index = static_cast<size_t>(subexpr);
-
-    const char *stringPtr = re->startp[index];
+    const char *stringPtr = re->startp[subexpr];
 	char *stylePtr        = &styleString[stringPtr - string];
-    fillStyleString(&stringPtr, &stylePtr, re->endp[index], static_cast<uint8_t>(style), nullptr);
+    fillStyleString(&stringPtr, &stylePtr, re->endp[subexpr], static_cast<uint8_t>(style), nullptr);
 }
 
 /*
@@ -1058,24 +1056,33 @@ void Highlight::recolorSubexpr(const std::shared_ptr<Regex> &re, int subexpr, in
 */
 HighlightData *Highlight::patternOfStyle(HighlightData *patterns, int style) {
 
-	for (int i = 0; patterns[i].style != 0; i++)
-		if (patterns[i].style == style)
+    for (int i = 0; patterns[i].style != 0; ++i) {
+        if (patterns[i].style == style) {
 			return &patterns[i];
+        }
+    }
 
-	if (style == PLAIN_STYLE || style == UNFINISHED_STYLE)
+    if (style == PLAIN_STYLE || style == UNFINISHED_STYLE) {
 		return &patterns[0];
+    }
 
 	return nullptr;
 }
 
-int Highlight::indexOfNamedPattern(const gsl::span<HighlightPattern> &patList, const QString &patName) {
+/**
+ * @brief Highlight::indexOfNamedPattern
+ * @param patList
+ * @param patName
+ * @return
+ */
+int Highlight::indexOfNamedPattern(const gsl::span<HighlightPattern> &patterns, const QString &name) {
 
-    if(patName.isNull()) {
+    if(name.isNull()) {
         return -1;
 	}
 	
-    for (int i = 0; i < patList.size(); ++i) {
-        if (patList[i].name == patName) {
+    for (int i = 0; i < patterns.size(); ++i) {
+        if (patterns[i].name == name) {
             return i;
 		}
 	}
@@ -1083,11 +1090,17 @@ int Highlight::indexOfNamedPattern(const gsl::span<HighlightPattern> &patList, c
     return -1;
 }
 
-int Highlight::findTopLevelParentIndex(const gsl::span<HighlightPattern> &patList, int index) {
+/**
+ * @brief Highlight::findTopLevelParentIndex
+ * @param patList
+ * @param index
+ * @return
+ */
+int Highlight::findTopLevelParentIndex(const gsl::span<HighlightPattern> &patterns, int index) {
 
     int topIndex = index;
-    while (!patList[topIndex].subPatternOf.isNull()) {
-        topIndex = indexOfNamedPattern(patList, patList[topIndex].subPatternOf);
+    while (!patterns[topIndex].subPatternOf.isNull()) {
+        topIndex = indexOfNamedPattern(patterns, patterns[topIndex].subPatternOf);
         if (index == topIndex) {
             return -1; // amai: circular dependency ?!
         }
@@ -1095,6 +1108,9 @@ int Highlight::findTopLevelParentIndex(const gsl::span<HighlightPattern> &patLis
     return topIndex;
 }
 
+/**
+ * @brief Highlight::saveTheme
+ */
 void Highlight::saveTheme() {
     QString filename = Settings::themeFile();
 
@@ -1176,6 +1192,9 @@ void Highlight::saveTheme() {
     }
 }
 
+/**
+ * @brief Highlight::loadTheme
+ */
 void Highlight::loadTheme() {
     QString filename = Settings::themeFile();
 
@@ -1189,14 +1208,14 @@ void Highlight::loadTheme() {
 
     QDomDocument xml;
     if(xml.setContent(&file)) {
-        QDomElement root = xml.firstChildElement(QLatin1String("theme"));
+        const QDomElement root = xml.firstChildElement(QLatin1String("theme"));
 
         // load basic color Settings::..
-        QDomElement text      = root.firstChildElement(QLatin1String("text"));
-        QDomElement selection = root.firstChildElement(QLatin1String("selection"));
-        QDomElement highlight = root.firstChildElement(QLatin1String("highlight"));
-        QDomElement cursor    = root.firstChildElement(QLatin1String("cursor"));
-        QDomElement lineno    = root.firstChildElement(QLatin1String("line-numbers"));
+        const QDomElement text      = root.firstChildElement(QLatin1String("text"));
+        const QDomElement selection = root.firstChildElement(QLatin1String("selection"));
+        const QDomElement highlight = root.firstChildElement(QLatin1String("highlight"));
+        const QDomElement cursor    = root.firstChildElement(QLatin1String("cursor"));
+        const QDomElement lineno    = root.firstChildElement(QLatin1String("line-numbers"));
 
         Settings::colors[ColorTypes::TEXT_BG_COLOR]   = text.attribute(QLatin1String("background"),      NEDIT_DEFAULT_TEXT_BG);
         Settings::colors[ColorTypes::TEXT_FG_COLOR]   = text.attribute(QLatin1String("foreground"),      NEDIT_DEFAULT_TEXT_FG);
@@ -1261,7 +1280,7 @@ void Highlight::loadTheme() {
 ** to the PatternSets list of loaded highlight patterns.  Note that the
 ** patterns themselves are not parsed until they are actually used.
 */
-bool Highlight::LoadHighlightStringEx(const QString &string) {
+bool Highlight::LoadHighlightString(const QString &string) {
 
     Input in(&string);
 
@@ -1297,27 +1316,27 @@ bool Highlight::LoadHighlightStringEx(const QString &string) {
 ** containing all of the highlight pattern information from the stored
 ** highlight pattern list (PatternSets) for this NEdit session.
 */
-QString Highlight::WriteHighlightStringEx() {
+QString Highlight::WriteHighlightString() {
 
     QString str;
     QTextStream out(&str);
 
-    for(const PatternSet &patSet : PatternSets) {
-        if (patSet.patterns.empty()) {
+    for(const PatternSet &patternSet : PatternSets) {
+        if (patternSet.patterns.empty()) {
             continue;
         }
 
-        out << patSet.languageMode
+        out << patternSet.languageMode
             << QLatin1Char(':');
 
-        if (isDefaultPatternSet(patSet)) {
+        if (isDefaultPatternSet(patternSet)) {
             out << QLatin1String("Default\n\t");
         } else {
-            out << QString(QLatin1String("%1")).arg(patSet.lineContext)
+            out << QString(QLatin1String("%1")).arg(patternSet.lineContext)
                 << QLatin1Char(':')
-                << QString(QLatin1String("%1")).arg(patSet.charContext)
+                << QString(QLatin1String("%1")).arg(patternSet.charContext)
                 << QLatin1String("{\n")
-                << createPatternsString(&patSet, QLatin1String("\t\t"))
+                << createPatternsString(&patternSet, QLatin1String("\t\t"))
                 << QLatin1String("\t}\n\t");
         }
     }
@@ -1330,24 +1349,24 @@ QString Highlight::WriteHighlightStringEx() {
 }
 
 bool Highlight::FontOfNamedStyleIsBold(const QString &styleName) {
-    size_t styleNo = IndexOfNamedStyle(styleName);
+    const size_t styleNo = IndexOfNamedStyle(styleName);
 
     if (styleNo == STYLE_NOT_FOUND) {
         return false;
     }
 
-    int fontNum = HighlightStyles[styleNo].font;
+    const int fontNum = HighlightStyles[styleNo].font;
     return (fontNum & BOLD_FONT);
 }
 
 bool Highlight::FontOfNamedStyleIsItalic(const QString &styleName) {
-    size_t styleNo = IndexOfNamedStyle(styleName);
+    const size_t styleNo = IndexOfNamedStyle(styleName);
 
     if (styleNo == STYLE_NOT_FOUND) {
         return false;
     }
 
-    int fontNum = HighlightStyles[styleNo].font;
+    const int fontNum = HighlightStyles[styleNo].font;
     return (fontNum & ITALIC_FONT);
 }
 
@@ -1357,7 +1376,7 @@ bool Highlight::FontOfNamedStyleIsItalic(const QString &styleName) {
 ** styleName is valid).
 */
 QString Highlight::FgColorOfNamedStyleEx(const QString &styleName) {
-    size_t styleNo = IndexOfNamedStyle(styleName);
+    const size_t styleNo = IndexOfNamedStyle(styleName);
 
     if (styleNo == STYLE_NOT_FOUND) {
         return QLatin1String("black");
@@ -1370,7 +1389,7 @@ QString Highlight::FgColorOfNamedStyleEx(const QString &styleName) {
 ** Find the background color associated with a named style.
 */
 QString Highlight::BgColorOfNamedStyleEx(const QString &styleName) {
-    size_t styleNo = IndexOfNamedStyle(styleName);
+    const size_t styleNo = IndexOfNamedStyle(styleName);
 
     if (styleNo == STYLE_NOT_FOUND) {
         return QLatin1String("");
@@ -1391,10 +1410,10 @@ bool Highlight::NamedStyleExists(const QString &styleName) {
 ** Look through the list of pattern sets, and find the one for a particular
 ** language.  Returns nullptr if not found.
 */
-PatternSet *Highlight::FindPatternSet(const QString &langModeName) {
+PatternSet *Highlight::FindPatternSet(const QString &languageMode) {
 
     for(PatternSet &patternSet : PatternSets) {
-        if (langModeName == patternSet.languageMode) {
+        if (languageMode == patternSet.languageMode) {
             return &patternSet;
         }
     }
@@ -1402,16 +1421,22 @@ PatternSet *Highlight::FindPatternSet(const QString &langModeName) {
     return nullptr;
 }
 
-QString Highlight::createPatternsString(const PatternSet *patSet, const QString &indentStr) {
+/**
+ * @brief Highlight::createPatternsString
+ * @param patternSet
+ * @param indentString
+ * @return
+ */
+QString Highlight::createPatternsString(const PatternSet *patternSet, const QString &indentString) {
 
     QString str;
     QTextStream out(&str);
 
     const auto Colon = QLatin1Char(':');
 
-    for(const HighlightPattern &pat : patSet->patterns) {
+    for(const HighlightPattern &pat : patternSet->patterns) {
 
-        out << indentStr
+        out << indentString
             << pat.name
             << Colon;
 
@@ -1501,18 +1526,17 @@ std::unique_ptr<PatternSet> Highlight::readPatternSet(Input &in) {
         }
 
         // read pattern list
-        bool ok;
-        std::vector<HighlightPattern> patterns = readHighlightPatternsEx(in, true, &errMsg, &ok);
-        if (!ok) {
+        boost::optional<std::vector<HighlightPattern>> patterns = readHighlightPatterns(in, &errMsg);
+        if (!patterns) {
             Raise<HighlightError>(errMsg);
         }
 
-        patSet->patterns = patterns;
+        patSet->patterns = std::move(*patterns);
 
         // pattern set was read correctly, make an allocated copy to return
         return patSet;
     } catch(const HighlightError &error) {
-        Preferences::ParseErrorEx(
+        Preferences::reportError(
                     nullptr,
                     *in.string(),
                     in.index(),
@@ -1524,38 +1548,29 @@ std::unique_ptr<PatternSet> Highlight::readPatternSet(Input &in) {
 }
 
 /*
-** Parse a set of highlight patterns into an array of HighlightPattern
-** structures, and a language mode name.  If unsuccessful, returns nullptr with
-** (statically allocated) message in "errMsg".
+** Parse a set of highlight patterns into a vector of HighlightPattern
+** structures, and a language mode name.  If unsuccessful, returns an empty
+** vector message in "errMsg".
 */
-std::vector<HighlightPattern> Highlight::readHighlightPatternsEx(Input &in, int withBraces, QString *errMsg, bool *ok) {
+boost::optional<std::vector<HighlightPattern>> Highlight::readHighlightPatterns(Input &in, QString *errMsg) {
     // skip over blank space
     in.skipWhitespaceNL();
 
     // look for initial brace
-    if (withBraces) {
-        if (*in != QLatin1Char('{')) {
-            *errMsg = tr("pattern list must begin with \"{\"");
-            *ok = false;
-            return {};
-        }
-        ++in;
+    if (*in != QLatin1Char('{')) {
+        *errMsg = tr("pattern list must begin with \"{\"");
+        return boost::none;
     }
+    ++in;
 
-    /*
-    ** parse each pattern in the list
-    */
+    // parse each pattern in the list
     std::vector<HighlightPattern> ret;
 
     while (true) {
         in.skipWhitespaceNL();
         if(in.atEnd()) {
-            if (withBraces) {
-                *errMsg = tr("end of pattern list not found");
-                *ok = false;
-                return {};
-            } else
-                break;
+            *errMsg = tr("end of pattern list not found");
+            return boost::none;
         } else if (*in == QLatin1Char('}')) {
             ++in;
             break;
@@ -1563,21 +1578,24 @@ std::vector<HighlightPattern> Highlight::readHighlightPatternsEx(Input &in, int 
 
 
         HighlightPattern pat;
-
-        if (!readHighlightPatternEx(in, errMsg, &pat)) {
-            *ok = false;
-            return {};
+        if (!readHighlightPattern(in, errMsg, &pat)) {
+            return boost::none;
         }
 
         ret.push_back(pat);
     }
 
-
-    *ok = true;
     return ret;
 }
 
-bool Highlight::readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *pattern) {
+/**
+ * @brief Highlight::readHighlightPattern
+ * @param in
+ * @param errMsg
+ * @param pattern
+ * @return
+ */
+bool Highlight::readHighlightPattern(Input &in, QString *errMsg, HighlightPattern *pattern) {
 
     // read the name field
     QString name = Preferences::ReadSymbolicField(in);
@@ -1587,26 +1605,29 @@ bool Highlight::readHighlightPatternEx(Input &in, QString *errMsg, HighlightPatt
     }
     pattern->name = name;
 
-    if (!Preferences::SkipDelimiter(in, errMsg))
+    if (!Preferences::SkipDelimiter(in, errMsg)) {
         return false;
+    }
 
     // read the start pattern
-    if (!Preferences::ReadQuotedString(in, errMsg, &pattern->startRE))
+    if (!Preferences::ReadQuotedString(in, errMsg, &pattern->startRE)) {
         return false;
+    }
 
-    if (!Preferences::SkipDelimiter(in, errMsg))
+    if (!Preferences::SkipDelimiter(in, errMsg)) {
         return false;
+    }
 
     // read the end pattern
-
     if (*in == QLatin1Char(':')) {
         pattern->endRE = QString();
     } else if (!Preferences::ReadQuotedString(in, errMsg, &pattern->endRE)) {
         return false;
     }
 
-    if (!Preferences::SkipDelimiter(in, errMsg))
+    if (!Preferences::SkipDelimiter(in, errMsg)) {
         return false;
+    }
 
     // read the error pattern
     if (*in == QLatin1Char(':')) {
@@ -1615,8 +1636,9 @@ bool Highlight::readHighlightPatternEx(Input &in, QString *errMsg, HighlightPatt
         return false;
     }
 
-    if (!Preferences::SkipDelimiter(in, errMsg))
+    if (!Preferences::SkipDelimiter(in, errMsg)) {
         return false;
+    }
 
     // read the style field
     pattern->style = Preferences::ReadSymbolicField(in);
@@ -1626,26 +1648,28 @@ bool Highlight::readHighlightPatternEx(Input &in, QString *errMsg, HighlightPatt
         return false;
     }
 
-    if (!Preferences::SkipDelimiter(in, errMsg))
+    if (!Preferences::SkipDelimiter(in, errMsg)) {
         return false;
+    }
 
     // read the sub-pattern-of field
     pattern->subPatternOf = Preferences::ReadSymbolicField(in);
 
-    if (!Preferences::SkipDelimiter(in, errMsg))
+    if (!Preferences::SkipDelimiter(in, errMsg)) {
         return false;
+    }
 
     // read flags field
     pattern->flags = 0;
     for (; *in != QLatin1Char('\n') && *in != QLatin1Char('}'); ++in) {
 
-        if (*in == QLatin1Char('D'))
+        if (*in == QLatin1Char('D')) {
             pattern->flags |= DEFER_PARSING;
-        else if (*in == QLatin1Char('R'))
+        } else if (*in == QLatin1Char('R')) {
             pattern->flags |= PARSE_SUBPATS_FROM_START;
-        else if (*in == QLatin1Char('C'))
+        } else if (*in == QLatin1Char('C')) {
             pattern->flags |= COLOR_ONLY;
-        else if (*in != QLatin1Char(' ') && *in != QLatin1Char('\t')) {
+        } else if (*in != QLatin1Char(' ') && *in != QLatin1Char('\t')) {
             *errMsg = tr("unreadable flag field");
             return false;
         }
@@ -1653,6 +1677,12 @@ bool Highlight::readHighlightPatternEx(Input &in, QString *errMsg, HighlightPatt
     return true;
 }
 
+/**
+ * @brief Highlight::readDefaultPatternSet
+ * @param patternData
+ * @param langModeName
+ * @return
+ */
 std::unique_ptr<PatternSet> Highlight::readDefaultPatternSet(QByteArray &patternData, const QString &langModeName) {
 
     auto defaultPattern = QString::fromLatin1(patternData);
@@ -1691,14 +1721,14 @@ std::unique_ptr<PatternSet> Highlight::readDefaultPatternSet(const QString &lang
 /*
 ** Return true if patSet exactly matches one of the default pattern sets
 */
-bool Highlight::isDefaultPatternSet(const PatternSet &patSet) {
+bool Highlight::isDefaultPatternSet(const PatternSet &patternSet) {
 
-    std::unique_ptr<PatternSet> defaultPatSet = readDefaultPatternSet(patSet.languageMode);
+    std::unique_ptr<PatternSet> defaultPatSet = readDefaultPatternSet(patternSet.languageMode);
     if(!defaultPatSet) {
         return false;
     }
 
-    return patSet == *defaultPatSet;
+    return patternSet == *defaultPatSet;
 }
 
 /*

@@ -4115,10 +4115,10 @@ void DocumentWidget::BeginSmartIndentEx(bool warn) {
     QString errMsg;
 
     auto winData = std::make_unique<SmartIndentData>();
-    winData->newlineMacro   = ParseMacro(indentMacros->newlineMacro, &errMsg, &stoppedAt);
+    winData->newlineMacro = ParseMacro(indentMacros->newlineMacro, &errMsg, &stoppedAt);
 
     if (!winData->newlineMacro) {
-        Preferences::ParseErrorEx(this, indentMacros->newlineMacro, stoppedAt, tr("newline macro"), errMsg);
+        Preferences::reportError(this, indentMacros->newlineMacro, stoppedAt, tr("newline macro"), errMsg);
         return;
     }
 
@@ -4129,7 +4129,7 @@ void DocumentWidget::BeginSmartIndentEx(bool warn) {
         if (!winData->modMacro) {
 
             delete winData->newlineMacro;
-            Preferences::ParseErrorEx(this, indentMacros->modMacro, stoppedAt, tr("smart indent modify macro"), errMsg);
+            Preferences::reportError(this, indentMacros->modMacro, stoppedAt, tr("smart indent modify macro"), errMsg);
             return;
         }
     }
@@ -6325,7 +6325,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
 
                         QString number;
                         if(in.match(re, &number)) {
-                            compiledPats[i].startSubexprs.push_back(number.toInt());
+                            compiledPats[i].startSubexprs.push_back(number.toUInt());
                         } else {
                             break;
                         }
@@ -6346,7 +6346,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
 
                         QString number;
                         if(in.match(re, &number)) {
-                            compiledPats[i].endSubexprs.push_back(number.toInt());
+                            compiledPats[i].endSubexprs.push_back(number.toUInt());
                         } else {
                             break;
                         }
@@ -6673,7 +6673,7 @@ void DocumentWidget::DoMacroEx(const QString &macro, const QString &errInName) {
     int stoppedAt;
     Program *const prog = ParseMacro(qMacro, &errMsg, &stoppedAt);
     if(!prog) {
-        Preferences::ParseErrorEx(this, qMacro, stoppedAt, errInName, errMsg);
+        Preferences::reportError(this, qMacro, stoppedAt, errInName, errMsg);
         return;
     }
 

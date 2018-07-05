@@ -7,6 +7,7 @@
 #include "TextCursor.h"
 
 #include <gsl/span>
+#include <boost/optional.hpp>
 #include <vector>
 
 #include <QCoreApplication>
@@ -59,27 +60,27 @@ public:
     static void saveTheme();
     static bool FontOfNamedStyleIsBold(const QString &styleName);
     static bool FontOfNamedStyleIsItalic(const QString &styleName);
-    static bool isDefaultPatternSet(const PatternSet &patSet);
-    static bool LoadHighlightStringEx(const QString &string);
+    static bool isDefaultPatternSet(const PatternSet &patternSet);
+    static bool LoadHighlightString(const QString &string);
     static bool NamedStyleExists(const QString &styleName);
     static bool parseString(const HighlightData *pattern, const char *first, const char *last, const char **string, char **styleString, int64_t length, int *prevChar, bool anchored, const QString &delimiters, const char *look_behind_to, const char *match_to);
     static bool patternIsParsable(HighlightData *pattern);
-    static bool readHighlightPatternEx(Input &in, QString *errMsg, HighlightPattern *pattern);
+    static bool readHighlightPattern(Input &in, QString *errMsg, HighlightPattern *pattern);
     static HighlightData *patternOfStyle(HighlightData *patterns, int style);
     static int findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlightData> &highlightData, TextCursor *pos);
-    static int findTopLevelParentIndex(const gsl::span<HighlightPattern> &patList, int index);
+    static int findTopLevelParentIndex(const gsl::span<HighlightPattern> &patterns, int index);
     static int getPrevChar(TextBuffer *buf, TextCursor pos);
-    static int indexOfNamedPattern(const gsl::span<HighlightPattern> &patList, const QString &patName);
-    static PatternSet *FindPatternSet(const QString &langModeName);
+    static int indexOfNamedPattern(const gsl::span<HighlightPattern> &patterns, const QString &name);
+    static PatternSet *FindPatternSet(const QString &languageMode);
     static QString BgColorOfNamedStyleEx(const QString &styleName);
-    static QString createPatternsString(const PatternSet *patSet, const QString &indentStr);
+    static QString createPatternsString(const PatternSet *patternSet, const QString &indentString);
     static QString FgColorOfNamedStyleEx(const QString &styleName);
-    static QString WriteHighlightStringEx();
+    static QString WriteHighlightString();
     static size_t IndexOfNamedStyle(const QString &styleName);
     static std::unique_ptr<PatternSet> readDefaultPatternSet(const QString &langModeName);
     static std::unique_ptr<PatternSet> readDefaultPatternSet(QByteArray &patternData, const QString &langModeName);
     static std::unique_ptr<PatternSet> readPatternSet(Input &in);
-    static std::vector<HighlightPattern> readHighlightPatternsEx(Input &in, int withBraces, QString *errMsg, bool *ok);
+    static boost::optional<std::vector<HighlightPattern>> readHighlightPatterns(Input &in, QString *errMsg);
     static TextCursor backwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos);
     static TextCursor forwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos);
     static TextCursor lastModified(const std::shared_ptr<TextBuffer> &styleBuf);
@@ -88,7 +89,7 @@ public:
     static void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, TextCursor pos, int64_t nInserted, const QString &delimiters);
     static void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleString, TextCursor startPos, TextCursor endPos, int firstPass2Style);
     static void passTwoParseString(const HighlightData *pattern, const char *first, const char *last, const char *string, char *styleString, int64_t length, int *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till);
-    static void recolorSubexpr(const std::shared_ptr<Regex> &re, int subexpr, int style, const char *string, char *styleString);
+    static void recolorSubexpr(const std::shared_ptr<Regex> &re, size_t subexpr, int style, const char *string, char *styleString);
     static void RenameHighlightPattern(const QString &oldName, const QString &newName);
 	
 public:

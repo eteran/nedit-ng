@@ -38,7 +38,7 @@ QString copyMacroToEnd(Input &in) {
     QString code = input.mid();
 
     if (!code.startsWith(QLatin1Char('{'))) {
-        Preferences::ParseErrorEx(
+        Preferences::reportError(
                     nullptr,
                     code,
                     input.index() - in.index(),
@@ -54,7 +54,7 @@ QString copyMacroToEnd(Input &in) {
 
     Program *const prog = ParseMacro(code, &errMsg, &stoppedAt);
     if(!prog) {
-        Preferences::ParseErrorEx(
+        Preferences::reportError(
                     nullptr,
                     code,
                     stoppedAt,

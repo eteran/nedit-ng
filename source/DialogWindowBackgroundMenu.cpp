@@ -385,7 +385,7 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
     Program *prog = ParseMacro(macro, &errMsg, &stoppedAt);
 	if(!prog) {
         if(verbosity == Verbosity::Verbose) {
-            Preferences::ParseErrorEx(this, macro, stoppedAt, tr("macro"), errMsg);
+            Preferences::reportError(this, macro, stoppedAt, tr("macro"), errMsg);
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
 		cursor.setPosition(stoppedAt);
@@ -397,7 +397,7 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 
 	if(stoppedAt != macro.size()) {
         if(verbosity == Verbosity::Verbose) {
-            Preferences::ParseErrorEx(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
+            Preferences::reportError(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
 		}
 
 		QTextCursor cursor = ui.editMacro->textCursor();

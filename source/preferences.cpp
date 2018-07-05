@@ -102,7 +102,7 @@ void Preferences::SaveNEditPrefs(QWidget *parent, bool quietly) {
     Settings::shellCommands         = WriteShellCmdsStringEx();
     Settings::macroCommands         = WriteMacroCmdsStringEx();
     Settings::bgMenuCommands        = WriteBGMenuCmdsStringEx();
-    Settings::highlightPatterns     = Highlight::WriteHighlightStringEx();
+    Settings::highlightPatterns     = Highlight::WriteHighlightString();
     Settings::languageModes         = WriteLanguageModesStringEx();
     Settings::smartIndentInit       = SmartIndent::WriteSmartIndentStringEx();
     Settings::smartIndentInitCommon = SmartIndent::WriteSmartIndentCommonStringEx();
@@ -980,7 +980,7 @@ bool Preferences::SkipDelimiter(Input &in, QString *errMsg) {
 ** For a dialog, pass the dialog parent in toDialog.
 */
 
-bool Preferences::ParseErrorEx(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message) {
+bool Preferences::reportError(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message) {
 
 	// NOTE(eteran): hack to work around the fact that stoppedAt can be a "one past the end iterator"
     stoppedAt = qBound(0, stoppedAt, string.size() - 1);
@@ -1160,7 +1160,7 @@ int Preferences::loadLanguageModesString(const QString &string) {
             }
         }
     } catch(const ModeError &error) {
-        return ParseErrorEx(
+        return reportError(
                     nullptr,
                     *in.string(),
                     in.index(),
@@ -1260,7 +1260,7 @@ void Preferences::translatePrefFormats(uint32_t fileVer) {
         LoadBGMenuCmdsStringEx(Settings::bgMenuCommands);
     }
     if (!Settings::highlightPatterns.isNull()) {
-        Highlight::LoadHighlightStringEx(Settings::highlightPatterns);
+        Highlight::LoadHighlightString(Settings::highlightPatterns);
     }
     if (!Settings::languageModes.isNull()) {
         loadLanguageModesString(Settings::languageModes);

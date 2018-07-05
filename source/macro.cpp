@@ -2132,7 +2132,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
                 if(errPos) {
                     *errPos = in.index();
                 }
-                return Preferences::ParseErrorEx(
+                return Preferences::reportError(
                             dialogParent,
                             *in.string(),
                             in.index(),
@@ -2147,7 +2147,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
                 if(errPos) {
                     *errPos = in.index();
                 }
-                return Preferences::ParseErrorEx(
+                return Preferences::reportError(
                             dialogParent,
                             *in.string(),
                             in.index(),
@@ -2165,7 +2165,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
                     *errPos = in.index() + stoppedAt;
                 }
 
-                return Preferences::ParseErrorEx(
+                return Preferences::reportError(
                             dialogParent,
                             code,
                             stoppedAt,
@@ -2206,7 +2206,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
                     *errPos = in.index() + stoppedAt;
                 }
 
-                return Preferences::ParseErrorEx(
+                return Preferences::reportError(
                             dialogParent,
                             code,
                             stoppedAt,
