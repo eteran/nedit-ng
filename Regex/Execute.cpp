@@ -376,7 +376,7 @@ bool match(uint8_t *prog, int *branch_index_param) {
             uint8_t *opnd = OPERAND(scan);
 
             // Inline the first character, for speed.
-            if (*opnd != *eContext.Reg_Input) {
+            if (AT_END_OF_STRING(eContext.Reg_Input) || *opnd != *eContext.Reg_Input) {
                 MATCH_RETURN(false);
             }
 
