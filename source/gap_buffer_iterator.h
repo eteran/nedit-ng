@@ -30,10 +30,10 @@ public:
 public:
     // for construction of a const-iterator from a non-const iterator
     // These only exist for the const version
-    template <bool Const = IsConst, typename std::enable_if<Const>::type* = nullptr>
+    template <bool Const = IsConst, class = typename std::enable_if<Const>::type>
     gap_buffer_iterator(const gap_buffer_iterator<Ch, Tr, false> &other) : buf_(other.buf_), pos_(other.pos_) {}
 
-    template <bool Const = IsConst, typename std::enable_if<Const>::type* = nullptr>
+    template <bool Const = IsConst, class = typename std::enable_if<Const>::type>
     gap_buffer_iterator& operator=(const gap_buffer_iterator<Ch, Tr, false> &rhs)  {
         gap_buffer_iterator(rhs).swap(*this);
         return *this;
