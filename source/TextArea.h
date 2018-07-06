@@ -33,6 +33,7 @@ struct SmartIndentEvent;
 class QMenu;
 class QShortcut;
 class QTimer;
+class QLabel;
 
 constexpr auto NO_HINT = TextCursor(-1);
 
@@ -370,6 +371,7 @@ private:
 	void ExchangeSelections();
     int64_t getAbsTopLineNum() const;
 	CursorStyles getCursorStyle() const;
+    void showResizeNotification();
 
 private:
     CallTip calltip_;                              // The info for the calltip itself
@@ -395,8 +397,9 @@ private:
     bool needAbsTopLineNum_      = false;          // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display
     bool pointerHidden_          = false;          // true if the mouse pointer is hidden
     bool suppressResync_         = false;          // Suppress resynchronization of line starts during buffer updates
+    bool showTerminalSizeHint_   = true;
 
-private:
+private:    
     QColor cursorFGPixel_        = Qt::black;
     QColor highlightBGPixel_     = Qt::red;
     QColor highlightFGPixel_     = Qt::white;      // Highlight colors are used when flashing matching parens
@@ -437,6 +440,8 @@ private:
 
     // TODO(eteran): maybe use QWidget::contentsMargins
     QRect rect_;
+    QLabel *resizeWidget_        = nullptr;
+    QTimer *resizeTimer_         = nullptr;
     QTimer *autoScrollTimer_;
     QTimer *clickTimer_;
     QTimer *cursorBlinkTimer_;

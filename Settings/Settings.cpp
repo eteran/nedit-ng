@@ -41,6 +41,7 @@ void writeEnum(QSettings &settings, const QString &key, const T &value) {
 
 }
 
+bool Settings::showResizeNotification;
 bool Settings::appendLF;
 bool Settings::autoSave;
 bool Settings::autoScroll;
@@ -193,36 +194,37 @@ void Settings::loadPreferences() {
     searchMethod          = readEnum(settings, tr("nedit.searchMethod"),      SearchType::Literal);
     truncSubstitution     = readEnum(settings, tr("nedit.truncSubstitution"), TruncSubstitution::Fail);
 
-    wrapMargin            = settings.value(tr("nedit.wrapMargin"),            0).toInt();
-    autoSave              = settings.value(tr("nedit.autoSave"),              true).toBool();
-    openInTab             = settings.value(tr("nedit.openInTab"),             true).toBool();
-    saveOldVersion        = settings.value(tr("nedit.saveOldVersion"),        false).toBool();
-    matchSyntaxBased      = settings.value(tr("nedit.matchSyntaxBased"),      true).toBool();
-    highlightSyntax       = settings.value(tr("nedit.highlightSyntax"),       true).toBool();
-    backlightChars        = settings.value(tr("nedit.backlightChars"),        false).toBool();
-    backlightCharTypes    = settings.value(tr("nedit.backlightCharTypes"),    DEFAULT_BACKLIGHT_CHARS).toString();
-    searchDialogs         = settings.value(tr("nedit.searchDialogs"),         false).toBool();
-    beepOnSearchWrap      = settings.value(tr("nedit.beepOnSearchWrap"),      false).toBool();
-    retainSearchDialogs   = settings.value(tr("nedit.retainSearchDialogs"),   false).toBool();
-    searchWraps           = settings.value(tr("nedit.searchWraps"),           true).toBool();
-    stickyCaseSenseButton = settings.value(tr("nedit.stickyCaseSenseButton"), true).toBool();
-    repositionDialogs     = settings.value(tr("nedit.repositionDialogs"),     false).toBool();
-    autoScroll            = settings.value(tr("nedit.autoScroll"),            false).toBool();
-    autoScrollVPadding    = settings.value(tr("nedit.autoScrollVPadding"),    4).toInt();
-    appendLF              = settings.value(tr("nedit.appendLF"),              true).toBool();
-    sortOpenPrevMenu      = settings.value(tr("nedit.sortOpenPrevMenu"),      true).toBool();
-    statisticsLine        = settings.value(tr("nedit.statisticsLine"),        false).toBool();
-    iSearchLine           = settings.value(tr("nedit.iSearchLine"),           false).toBool();
-    sortTabs              = settings.value(tr("nedit.sortTabs"),              false).toBool();
-    tabBar                = settings.value(tr("nedit.tabBar"),                true).toBool();
-    tabBarHideOne         = settings.value(tr("nedit.tabBarHideOne"),         true).toBool();
-    toolTips              = settings.value(tr("nedit.toolTips"),              true).toBool();
-    globalTabNavigate     = settings.value(tr("nedit.globalTabNavigate"),     false).toBool();
-    lineNumbers           = settings.value(tr("nedit.lineNumbers"),           false).toBool();
-    pathInWindowsMenu     = settings.value(tr("nedit.pathInWindowsMenu"),     true).toBool();
-    warnFileMods          = settings.value(tr("nedit.warnFileMods"),          true).toBool();
-    warnRealFileMods      = settings.value(tr("nedit.warnRealFileMods"),      true).toBool();
-    warnExit              = settings.value(tr("nedit.warnExit"),              true).toBool();
+    wrapMargin             = settings.value(tr("nedit.wrapMargin"),             0).toInt();
+    autoSave               = settings.value(tr("nedit.autoSave"),               true).toBool();
+    openInTab              = settings.value(tr("nedit.openInTab"),              true).toBool();
+    saveOldVersion         = settings.value(tr("nedit.saveOldVersion"),         false).toBool();
+    matchSyntaxBased       = settings.value(tr("nedit.matchSyntaxBased"),       true).toBool();
+    highlightSyntax        = settings.value(tr("nedit.highlightSyntax"),        true).toBool();
+    backlightChars         = settings.value(tr("nedit.backlightChars"),         false).toBool();
+    backlightCharTypes     = settings.value(tr("nedit.backlightCharTypes"),     DEFAULT_BACKLIGHT_CHARS).toString();
+    searchDialogs          = settings.value(tr("nedit.searchDialogs"),          false).toBool();
+    beepOnSearchWrap       = settings.value(tr("nedit.beepOnSearchWrap"),       false).toBool();
+    retainSearchDialogs    = settings.value(tr("nedit.retainSearchDialogs"),    false).toBool();
+    searchWraps            = settings.value(tr("nedit.searchWraps"),            true).toBool();
+    stickyCaseSenseButton  = settings.value(tr("nedit.stickyCaseSenseButton"),  true).toBool();
+    repositionDialogs      = settings.value(tr("nedit.repositionDialogs"),      false).toBool();
+    autoScroll             = settings.value(tr("nedit.autoScroll"),             false).toBool();
+    autoScrollVPadding     = settings.value(tr("nedit.autoScrollVPadding"),     4).toInt();
+    appendLF               = settings.value(tr("nedit.appendLF"),               true).toBool();
+    sortOpenPrevMenu       = settings.value(tr("nedit.sortOpenPrevMenu"),       true).toBool();
+    statisticsLine         = settings.value(tr("nedit.statisticsLine"),         false).toBool();
+    iSearchLine            = settings.value(tr("nedit.iSearchLine"),            false).toBool();
+    sortTabs               = settings.value(tr("nedit.sortTabs"),               false).toBool();
+    tabBar                 = settings.value(tr("nedit.tabBar"),                 true).toBool();
+    tabBarHideOne          = settings.value(tr("nedit.tabBarHideOne"),          true).toBool();
+    toolTips               = settings.value(tr("nedit.toolTips"),               true).toBool();
+    globalTabNavigate      = settings.value(tr("nedit.globalTabNavigate"),      false).toBool();
+    lineNumbers            = settings.value(tr("nedit.lineNumbers"),            false).toBool();
+    pathInWindowsMenu      = settings.value(tr("nedit.pathInWindowsMenu"),      true).toBool();
+    warnFileMods           = settings.value(tr("nedit.warnFileMods"),           true).toBool();
+    warnRealFileMods       = settings.value(tr("nedit.warnRealFileMods"),       true).toBool();
+    warnExit               = settings.value(tr("nedit.warnExit"),               true).toBool();
+    showResizeNotification = settings.value(tr("nedit.showResizeNotification"), false).toBool();
 
     textRows                          = settings.value(tr("nedit.textRows"),					      24).toInt();
     textCols                          = settings.value(tr("nedit.textCols"),					      80).toInt();

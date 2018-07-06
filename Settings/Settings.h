@@ -43,6 +43,7 @@ public:
     static QString themeFile();
 
 public:
+    static bool showResizeNotification;
     static bool appendLF;
     static bool autoSave;
     static bool autoScroll;

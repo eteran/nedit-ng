@@ -182,6 +182,10 @@ bool Preferences::GetPrefColorizeHighlightedText() {
     return Settings::colorizeHighlightedText;
 }
 
+bool Preferences::GetPrefShowResizeNotification() {
+    return Settings::showResizeNotification;
+}
+
 SearchType Preferences::GetPrefSearch() {
     return Settings::searchMethod;
 }

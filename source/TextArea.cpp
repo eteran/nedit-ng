@@ -70,6 +70,8 @@ QString asciiToUnicode(const char *chars, int64_t len) {
     return s;
 }
 
+constexpr int SIZE_HINT_DURATION = 1000;
+
 constexpr int CALLTIP_EDGE_GUARD = 5;
 
 // Length of delay in milliseconds for vertical autoscrolling
@@ -478,6 +480,7 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
      * delimiters. */
     setWordDelimiters(Preferences::GetPrefDelimiters().toStdString());
 
+    showTerminalSizeHint_     = Preferences::GetPrefShowResizeNotification();
     P_colorizeHighlightedText = Preferences::GetPrefColorizeHighlightedText();
     P_autoWrapPastedText      = Preferences::GetPrefAutoWrapPastedText();
     P_heavyCursor             = Preferences::GetPrefHeavyCursor();
@@ -1284,10 +1287,12 @@ void TextArea::resizeEvent(QResizeEvent *event) {
     int lineNumAreaWidth = (P_lineNumCols == 0) ? 0 : P_marginWidth + fm.maxWidth() * P_lineNumCols;
 
 	P_columns = (width - marginWidth * 2 - lineNumAreaWidth) / fm.maxWidth();
-    P_rows    = (height - marginHeight * 2) / (ascent_ + descent_);
+    P_rows    = (height - marginHeight * 1) / (ascent_ + descent_);
 
 	// Resize the text display that the widget uses to render text
-	TextDResize(width - marginWidth * 2 - lineNumAreaWidth, height - marginHeight * 2);
+    TextDResize(width - marginWidth * 2 - lineNumAreaWidth, height - marginHeight * 1);
+
+    showResizeNotification();
 }
 
 /**
@@ -8044,4 +8049,34 @@ void TextArea::nextDocumentAP(EventFlags flags) {
 */
 void TextArea::RemoveWidgetHighlightEx() {
     TextDAttachHighlightData(nullptr, {}, UNFINISHED_STYLE, nullptr, nullptr);
+}
+
+/**
+ * @brief TextArea::showResizeNotification
+ * Shows the size of the widget in rows/columns.
+ * Lifted from TerminalDisplay::showResizeNotification
+ */
+void TextArea::showResizeNotification() {
+    if (showTerminalSizeHint_ && isVisible()) {
+        if (resizeWidget_ == nullptr) {
+            resizeWidget_ = new QLabel(tr("Size: XXX x XXX"), this);
+            resizeWidget_->setMinimumWidth(resizeWidget_->fontMetrics().width(tr("Size: XXX x XXX")));
+            resizeWidget_->setMinimumHeight(resizeWidget_->sizeHint().height());
+            resizeWidget_->setAlignment(Qt::AlignCenter);
+
+            resizeWidget_->setStyleSheet(QStringLiteral("background-color:palette(window);border-style:solid;border-width:1px;border-color:palette(dark)"));
+
+            resizeTimer_ = new QTimer(this);
+            resizeTimer_->setInterval(SIZE_HINT_DURATION);
+            resizeTimer_->setSingleShot(true);
+            connect(resizeTimer_, &QTimer::timeout, resizeWidget_, &QLabel::hide);
+        }
+
+        auto sizeStr = tr("Size: %1 x %2").arg(getColumns()).arg(getRows());
+        resizeWidget_->setText(sizeStr);
+        resizeWidget_->move((width() - resizeWidget_->width()) / 2,
+                            (height() - resizeWidget_->height()) / 2 + 20);
+        resizeWidget_->show();
+        resizeTimer_->start();
+    }
 }

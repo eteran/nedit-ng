@@ -34,6 +34,7 @@ public:
     static QString LanguageModeName(size_t mode);
 
 public:
+    static bool GetPrefShowResizeNotification();
     static bool GetPrefColorizeHighlightedText();
     static bool GetPrefAlwaysCheckRelTagsSpecs();
     static bool GetPrefAppendLF();
