@@ -231,7 +231,7 @@ void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &h
 			   reparse until nothing changes */
 		} else {
 			lastMod = lastModified(styleBuf);
-            endParse = std::min(TextCursor(buf->BufGetLength()), forwardOneContext(buf, context, lastMod) + (REPARSE_CHUNK_SIZE << nPasses));
+            endParse = std::min(buf->BufEndOfBuffer(), forwardOneContext(buf, context, lastMod) + (REPARSE_CHUNK_SIZE << nPasses));
 		}
 	}
 }
@@ -296,7 +296,7 @@ TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const
     } else if (endParse >= buf->BufGetLength() || (buf->BufGetCharacter(endParse - 1) == '\n')) {
 		endSafety = endParse;
     } else {
-        endSafety = std::min(TextCursor(buf->BufGetLength()), buf->BufEndOfLine(endParse) + 1);
+        endSafety = std::min(buf->BufEndOfBuffer(), buf->BufEndOfLine(endParse) + 1);
     }
 
 	// copy the buffer range into a string 
@@ -533,7 +533,7 @@ bool Highlight::parseString(const HighlightData *const pattern, const char *cons
 							subExecuted = true;
 						}
 
-                        for (int subExpr : subPat->endSubexprs) {
+                        for (size_t subExpr : subPat->endSubexprs) {
                             recolorSubexpr(pattern->endRE, subExpr, subPat->style, *string, *styleString);
                         }
 					}
@@ -1015,11 +1015,11 @@ int Highlight::findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<Wi
 */
 TextCursor Highlight::backwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos) {
     if (context.nLines == 0)
-        return std::max(TextCursor(), fromPos - context.nChars);
+        return std::max(buf->BufStartOfBuffer(), fromPos - context.nChars);
     else if (context.nChars == 0)
-        return std::max(TextCursor(), buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1);
+        return std::max(buf->BufStartOfBuffer(), buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1);
 	else
-        return std::max(TextCursor(), std::min(std::max(TextCursor(), buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1), fromPos - context.nChars));
+        return std::max(buf->BufStartOfBuffer(), std::min(std::max(buf->BufStartOfBuffer(), buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1), fromPos - context.nChars));
 }
 
 /*
@@ -1032,11 +1032,11 @@ TextCursor Highlight::backwardOneContext(TextBuffer *buf, const ReparseContext &
 */
 TextCursor Highlight::forwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos) {
     if (context.nLines == 0)
-        return std::min(TextCursor(buf->BufGetLength()), fromPos + context.nChars);
+        return std::min(buf->BufEndOfBuffer(), fromPos + context.nChars);
     else if (context.nChars == 0)
-        return std::min(TextCursor(buf->BufGetLength()), buf->BufCountForwardNLines(fromPos, context.nLines));
+        return std::min(buf->BufEndOfBuffer(), buf->BufCountForwardNLines(fromPos, context.nLines));
 	else
-        return std::min(TextCursor(buf->BufGetLength()), std::max(buf->BufCountForwardNLines(fromPos, context.nLines), fromPos + context.nChars));
+        return std::min(buf->BufEndOfBuffer(), std::max(buf->BufCountForwardNLines(fromPos, context.nLines), fromPos + context.nChars));
 }
 
 /*

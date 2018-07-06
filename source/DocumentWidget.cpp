@@ -186,10 +186,10 @@ void handleUnparsedRegionCB(const TextArea *area, TextCursor pos, const void *us
 */
 void safeBufReplace(TextBuffer *buf, TextCursor *start, TextCursor *end, view::string_view text) {
 
-    const TextCursor length = TextCursor(buf->BufGetLength());
+    const TextCursor last = buf->BufEndOfBuffer();
 
-    *start = std::min(length, *start);
-    *end   = std::min(length, *end);
+    *start = std::min(last, *start);
+    *end   = std::min(last, *end);
 
     buf->BufReplaceEx(*start, *end, text);
 }
@@ -2679,7 +2679,7 @@ void DocumentWidget::addWrapNewlines() {
 
     // Modify the buffer to add wrapping
     TextArea *area = textAreas[0];
-    std::string fileString = area->TextGetWrappedEx(TextCursor(), TextCursor(buffer_->BufGetLength()));
+    std::string fileString = area->TextGetWrappedEx(buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer());
 
     buffer_->BufSetAllEx(fileString);
 
@@ -3630,7 +3630,7 @@ void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
     }
 
     // Search for it in the buffer
-    boost::optional<TextCursor> matchPos = findMatchingCharEx(buffer_->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, TextCursor(), TextCursor(buffer_->BufGetLength()));
+    boost::optional<TextCursor> matchPos = findMatchingCharEx(buffer_->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer());
     if (!matchPos) {
         QApplication::beep();
         return;
@@ -3766,7 +3766,7 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
     }
 
     // Search for it in the buffer
-    boost::optional<TextCursor> matchPos = findMatchingCharEx(buffer_->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, TextCursor(), TextCursor(buffer_->BufGetLength()));
+    boost::optional<TextCursor> matchPos = findMatchingCharEx(buffer_->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer());
     if (!matchPos) {
         QApplication::beep();
         return;
@@ -3970,7 +3970,7 @@ void DocumentWidget::PrintWindow(TextArea *area, bool selectedOnly) {
             fileString = area->TextGetWrappedEx(sel->start, sel->end);
         }
     } else {
-        fileString = area->TextGetWrappedEx(TextCursor(), TextCursor(buffer_->BufGetLength()));
+        fileString = area->TextGetWrappedEx(buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer());
     }
 
     // add a terminating newline if the file doesn't already have one
@@ -5021,7 +5021,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
         if (outputReplacesInput && input != FROM_NONE) {
             if (input == FROM_WINDOW) {
                 left  = TextCursor();
-                right = TextCursor(buffer_->BufGetLength());
+                right = buffer_->BufEndOfBuffer();
             } else if (input == FROM_SELECTION) {
                 buffer_->GetSimpleSelection(&left, &right);
                 flags |= ACCUMULATE | REPLACE_SELECTION;
@@ -5030,7 +5030,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
                     flags |= ACCUMULATE | REPLACE_SELECTION;
                 } else {
                     left  = TextCursor();
-                    right = TextCursor(buffer_->BufGetLength());
+                    right = buffer_->BufEndOfBuffer();
                 }
             }
         } else {
@@ -5443,12 +5443,12 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
     TextCursor searchPos;
 
     if (matchIt->direction == Direction::Backward) {
-        startPos  = constrain ? area->TextFirstVisiblePos() : TextCursor();
+        startPos  = constrain ? area->TextFirstVisiblePos() : buffer_->BufStartOfBuffer();
         endPos    = pos;
         searchPos = endPos;
     } else {
         startPos  = pos;
-        endPos    = constrain ? area->TextLastVisiblePos() : TextCursor(buffer_->BufGetLength());
+        endPos    = constrain ? area->TextLastVisiblePos() : buffer_->BufEndOfBuffer();
         searchPos = startPos;
     }
 
@@ -5857,7 +5857,7 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
        necessary to ensure that the changes at endParse are correct.  Stop at
        the end of the unfinished region, or a max. of PASS_2_REPARSE_CHUNK_SIZE
        characters forward from the requested position */
-    TextCursor endParse  = std::min(TextCursor(buf->BufGetLength()), pos + PASS_2_REPARSE_CHUNK_SIZE);
+    TextCursor endParse  = std::min(buf->BufEndOfBuffer(), pos + PASS_2_REPARSE_CHUNK_SIZE);
     TextCursor endSafety = Highlight::forwardOneContext(buf, context, endParse);
 
     for (TextCursor p = pos; p < endSafety; p++) {
@@ -6960,12 +6960,12 @@ void DocumentWidget::SelectNumberedLineEx(TextArea *area, int64_t lineNum) {
             buffer_->BufSelect(lineStart, lineEnd + 1);
         } else {
             // Don't select past the end of the buffer !
-            buffer_->BufSelect(lineStart, TextCursor(buffer_->BufGetLength()));
+            buffer_->BufSelect(lineStart, buffer_->BufEndOfBuffer());
         }
     } else {
         /* Line was not found -> position the selection & cursor at the end
            without making a real selection and beep */
-        lineStart = TextCursor(buffer_->BufGetLength());
+        lineStart = buffer_->BufEndOfBuffer();
         buffer_->BufSelect(lineStart, lineStart);
         QApplication::beep();
     }
