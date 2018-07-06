@@ -156,7 +156,7 @@ TextCursor findParagraphEnd(TextBuffer *buf, TextCursor startPos) {
         }
     }
 
-    return pos < buf->BufGetLength() ? pos : TextCursor(buf->BufGetLength());
+    return pos < buf->BufGetLength() ? pos : buf->BufEndOfBuffer();
 }
 
 /*
