@@ -64,7 +64,7 @@ auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(TextCursor start, TextCursor end) co
 
     /* Make sure start and end are ok.
        If start is bad, return "", if end is bad, adjust it. */
-    if (start < 0 || start > buffer_.size()) {
+    if (start < BufStartOfBuffer() || start > BufEndOfBuffer()) {
         return string_type();
     }
 
@@ -72,8 +72,8 @@ auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(TextCursor start, TextCursor end) co
         std::swap(start, end);
     }
 
-    if (end > buffer_.size()) {
-        end = TextCursor(buffer_.size());
+    if (end > BufEndOfBuffer()) {
+        end = BufEndOfBuffer();
     }
 
     return buffer_.to_string(to_integer(start), to_integer(end));
@@ -85,7 +85,7 @@ auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(TextCursor start, TextCursor end) co
 template <class Ch, class Tr>
 Ch BasicTextBuffer<Ch, Tr>::BufGetCharacter(TextCursor pos) const noexcept {
 
-    if (pos < 0 || pos >= buffer_.size()) {
+    if (pos < BufStartOfBuffer() || pos >= BufEndOfBuffer()) {
         return Ch();
     }
 
@@ -99,12 +99,12 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufInsertEx(TextCursor pos, view_type text) noexcept {
 
     // if pos is not contiguous to existing text, make it
-    if (pos > buffer_.size()) {
-        pos = TextCursor(buffer_.size());
+    if (pos > BufEndOfBuffer()) {
+        pos = BufEndOfBuffer();
     }
 
-    if (pos < 0) {
-        pos = TextCursor();
+    if (pos < BufStartOfBuffer()) {
+        pos = BufStartOfBuffer();
     }
 
     // Even if nothing is deleted, we must call these callbacks
@@ -120,12 +120,12 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufInsertEx(TextCursor pos, Ch ch) noexcept {
 
     // if pos is not contiguous to existing text, make it
-    if (pos > buffer_.size()) {
-        pos = TextCursor(buffer_.size());
+    if (pos > BufEndOfBuffer()) {
+        pos = BufEndOfBuffer();
     }
 
-    if (pos < 0) {
-        pos = TextCursor();
+    if (pos < BufStartOfBuffer()) {
+        pos = BufStartOfBuffer();
     }
 
     // Even if nothing is deleted, we must call these callbacks
@@ -185,20 +185,20 @@ void BasicTextBuffer<Ch, Tr>::BufRemove(TextCursor start, TextCursor end) noexce
         std::swap(start, end);
     }
 
-    if (start > buffer_.size()) {
-        start = TextCursor(buffer_.size());
+    if (start > BufEndOfBuffer()) {
+        start = BufEndOfBuffer();
     }
 
-    if (start < 0) {
-        start = TextCursor();
+    if (start < BufStartOfBuffer()) {
+        start = BufStartOfBuffer();
     }
 
-    if (end > buffer_.size()) {
-        end = TextCursor(buffer_.size());
+    if (end > BufEndOfBuffer()) {
+        end = BufEndOfBuffer();
     }
 
-    if (end < 0) {
-        end = TextCursor();
+    if (end < BufStartOfBuffer()) {
+        end = BufStartOfBuffer();
     }
 
     callPreDeleteCBs(start, end - start);
@@ -314,7 +314,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRectEx(TextCursor startPos, int64_t rectSta
         std::copy_n(temp.begin(), len, outPtr);
 
         *outPtr++ = Ch('\n');
-        lineStart = (lineEnd < buffer_.size()) ? lineEnd + 1 : TextCursor(buffer_.size());
+        lineStart = (lineEnd < BufEndOfBuffer()) ? lineEnd + 1 : BufEndOfBuffer();
 
         if (insPtr == insText.end()) {
             break;
@@ -741,6 +741,25 @@ void BasicTextBuffer<Ch, Tr>::BufRemovePreDeleteCB(pre_delete_callback_type bufP
     qCritical("NEdit: Internal Error: Can't find pre-delete CB to remove");
 }
 
+/**
+ * @brief BasicTextBuffer<Ch, Tr>::BufEndOfBuffer
+ * @return
+ */
+template <class Ch, class Tr>
+TextCursor BasicTextBuffer<Ch, Tr>::BufEndOfBuffer() const noexcept {
+    return TextCursor(buffer_.size());
+}
+
+/**
+ * @brief BasicTextBuffer<Ch, Tr>::BufStartOfBuffer
+ * @return
+ */
+template <class Ch, class Tr>
+TextCursor BasicTextBuffer<Ch, Tr>::BufStartOfBuffer() const noexcept {
+    return TextCursor();
+}
+
+
 /*
 ** Find the position of the start of the line containing position "pos"
 */
@@ -765,7 +784,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufEndOfLine(TextCursor pos) const noexcept 
 
     boost::optional<TextCursor> endPos = searchForward(pos, Ch('\n'));
     if (!endPos) {
-        return TextCursor(buffer_.size());
+        return BufEndOfBuffer();
     }
 
     return *endPos;
@@ -862,7 +881,7 @@ int64_t BasicTextBuffer<Ch, Tr>::BufCountDispChars(TextCursor lineStartPos, Text
     Ch expandedChar[MAX_EXP_CHAR_LEN];
 
     TextCursor pos = lineStartPos;
-    while (pos < targetPos && pos < buffer_.size()) {
+    while (pos < targetPos && pos < BufEndOfBuffer()) {
         charCount += BufGetExpandedChar(pos++, charCount, expandedChar);
     }
 
@@ -880,7 +899,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountForwardDispChars(TextCursor lineStar
     int64_t charCount = 0;
 
     TextCursor pos = lineStartPos;
-    while (charCount < nChars && pos < buffer_.size()) {
+    while (charCount < nChars && pos < BufEndOfBuffer()) {
         const Ch ch = BufGetCharacter(pos);
         if (ch == Ch('\n')) {
             return pos;
@@ -904,7 +923,7 @@ int64_t BasicTextBuffer<Ch, Tr>::BufCountLines(TextCursor startPos, TextCursor e
 
     TextCursor pos = startPos;
 
-    while (pos < buffer_.size()) {
+    while (pos < BufEndOfBuffer()) {
         if (pos == endPos) {
             return lineCount;
         }
@@ -931,7 +950,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountForwardNLines(TextCursor startPos, i
 
     TextCursor pos = startPos;
 
-    while (pos < buffer_.size()) {
+    while (pos < BufEndOfBuffer()) {
         if (buffer_[to_integer(pos++)] == Ch('\n')) {
             lineCount++;
             if (lineCount >= nLines) {
@@ -950,7 +969,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountForwardNLines(TextCursor startPos, i
 */
 template <class Ch, class Tr>
 TextCursor BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(TextCursor startPos, int64_t nLines) const noexcept {
-    if(startPos == 0) {
+    if(startPos == TextCursor()) {
         return TextCursor();
     }
 
@@ -962,7 +981,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(TextCursor startPos, 
             if (++lineCount >= nLines)
                 return (pos + 1);
         }
-        if(pos == 0) {
+        if(pos == TextCursor()) {
             break;
         }
         pos--;
@@ -980,7 +999,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(TextCurs
 
     TextCursor pos = startPos;
 
-    while (pos < buffer_.size()) {
+    while (pos < BufEndOfBuffer()) {
         for (Ch ch : searchChars) {
             if (buffer_[to_integer(pos)] == ch) {
                 return pos;
@@ -999,7 +1018,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(TextCurs
 template <class Ch, class Tr>
 boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(TextCursor startPos, view_type searchChars) const noexcept {
 
-    if (startPos == 0) {
+    if (startPos == TextCursor()) {
         return boost::none;
     }
 
@@ -1011,7 +1030,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(TextCur
                 return pos;
             }
         }
-        if(pos == 0) {
+        if(pos == TextCursor()) {
             break;
         }
         pos--;
@@ -1081,7 +1100,7 @@ template <class Ch, class Tr>
 boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor startPos, Ch searchChar) const noexcept {
 
     TextCursor pos = startPos;
-    while (pos < buffer_.size()) {
+    while (pos < BufEndOfBuffer()) {
         if (buffer_[to_integer(pos)] == searchChar) {
             return pos;
         }
@@ -1101,7 +1120,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor st
 template <class Ch, class Tr>
 boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor startPos, Ch searchChar) const noexcept {
 
-    if (startPos == 0) {
+    if (startPos == TextCursor()) {
         return boost::none;
     }
 
@@ -1111,7 +1130,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor s
             return pos;
         }
 
-        if(pos == 0) {
+        if(pos == TextCursor()) {
             break;
         }
         pos--;
@@ -1207,7 +1226,7 @@ void BasicTextBuffer<Ch, Tr>::deleteRect(TextCursor start, TextCursor end, int64
     TextCursor lineStart = start;
     auto outPtr = std::back_inserter(outStr);
 
-    while (lineStart <= buffer_.size() && lineStart <= end) {
+    while (lineStart <= BufEndOfBuffer() && lineStart <= end) {
         const TextCursor lineEnd = BufEndOfLine(lineStart);
         const string_type line   = BufGetRangeEx(lineStart, lineEnd);
 
@@ -1256,7 +1275,7 @@ void BasicTextBuffer<Ch, Tr>::findRectSelBoundariesForCopy(TextCursor lineStartP
     int indent     = 0;
 
     // find the start of the selection
-    for (; pos < buffer_.size(); pos++) {
+    for (; pos < BufEndOfBuffer(); ++pos) {
         const Ch c = BufGetCharacter(pos);
         if (c == Ch('\n')) {
             break;
@@ -1276,7 +1295,7 @@ void BasicTextBuffer<Ch, Tr>::findRectSelBoundariesForCopy(TextCursor lineStartP
     *selStart = pos;
 
     // find the end
-    for (; pos < buffer_.size(); pos++) {
+    for (; pos < BufEndOfBuffer(); ++pos) {
         const Ch c = BufGetCharacter(pos);
         if (c == Ch('\n')) {
             break;
@@ -1367,7 +1386,7 @@ void BasicTextBuffer<Ch, Tr>::insertColEx(int64_t column, TextCursor startPos, v
         std::copy_n(temp.begin(), len, outPtr);
 
         *outPtr++ = Ch('\n');
-        lineStart = lineEnd < buffer_.size() ? lineEnd + 1 : TextCursor(buffer_.size());
+        lineStart = lineEnd < BufEndOfBuffer() ? lineEnd + 1 : BufEndOfBuffer();
         if (insPtr == insText.end()) {
             break;
         }

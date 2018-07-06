@@ -3,9 +3,13 @@
 #define TEXT_CURSOR_H_
 
 #include <cstdint>
-#include <type_traits>
 
-#if 1
+#define CURSOR_STRONG_TYPE
+#define CURSOR_COMPARE_TO_INTEGER
+
+#ifdef CURSOR_STRONG_TYPE
+
+#include <type_traits>
 
 template <class Integer>
 using IsInteger = typename std::enable_if<std::is_integral<Integer>::value>::type;
@@ -56,7 +60,7 @@ public:
     constexpr bool operator<=(const BasicTextCursor &rhs) const noexcept { return index_ <= rhs.index_; }
     constexpr bool operator> (const BasicTextCursor &rhs) const noexcept { return index_ >  rhs.index_; }
     constexpr bool operator>=(const BasicTextCursor &rhs) const noexcept { return index_ >= rhs.index_; }
-
+#ifdef CURSOR_COMPARE_TO_INTEGER
     template <class Integer, class = IsInteger<T>>
     constexpr bool operator==(Integer rhs) const noexcept { return index_ == rhs; }
 
@@ -93,7 +97,7 @@ public:
 
     template <class Integer, class = IsInteger<T>>
     friend constexpr bool operator>=(Integer lhs, const BasicTextCursor &rhs) noexcept { return lhs >= rhs.index_; }
-
+#endif
 public:
     template <class Integer, class = IsInteger<T>>
     constexpr BasicTextCursor operator+(Integer n) const noexcept { BasicTextCursor tmp(*this); tmp += n; return tmp; }

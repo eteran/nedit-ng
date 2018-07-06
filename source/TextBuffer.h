@@ -75,33 +75,37 @@ public:
     static int BufExpandTab(int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist) noexcept;
 
 public:
+    bool BufGetEmptySelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
+    bool BufGetSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
+    bool BufGetSyncXSelection() const;
     bool BufGetUseTabs() const noexcept;
     bool BufIsEmpty() const noexcept;
+    bool BufSetSyncXSelection(bool sync);
     boost::optional<TextCursor> BufSearchBackwardEx(TextCursor startPos, view_type searchChars) const noexcept;
     boost::optional<TextCursor> BufSearchForwardEx(TextCursor startPos, view_type searchChars) const noexcept;
     Ch BufGetCharacter(TextCursor pos) const noexcept;
-    int BufCmpEx(TextCursor pos, view_type cmpText) const noexcept;
-    int BufCmpEx(TextCursor pos, Ch *cmpText, int64_t size) const noexcept;
-    int BufCmpEx(TextCursor pos, Ch ch) const noexcept;
-    TextCursor BufCountBackwardNLines(TextCursor startPos, int64_t nLines) const noexcept;
     int64_t BufCountDispChars(TextCursor lineStartPos, TextCursor targetPos) const noexcept;
-    TextCursor BufCountForwardDispChars(TextCursor lineStartPos, int64_t nChars) const noexcept;
-    TextCursor BufCountForwardNLines(TextCursor startPos, int64_t nLines) const noexcept;
     int64_t BufCountLines(TextCursor startPos, TextCursor endPos) const noexcept;
-    TextCursor BufCursorPosHint() const noexcept;
-    TextCursor BufEndOfLine(TextCursor pos) const noexcept;
-    bool BufGetEmptySelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
-    int BufGetExpandedChar(TextCursor pos, int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN]) const noexcept;
     int64_t BufGetLength() const noexcept;
-    bool BufGetSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
+    int BufCmpEx(TextCursor pos, Ch ch) const noexcept;
+    int BufCmpEx(TextCursor pos, Ch *cmpText, int64_t size) const noexcept;
+    int BufCmpEx(TextCursor pos, view_type cmpText) const noexcept;
+    int BufGetExpandedChar(TextCursor pos, int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN]) const noexcept;
     int BufGetTabDistance() const noexcept;
     int BufGetTabDist() const noexcept;
-    TextCursor BufStartOfLine(TextCursor pos) const noexcept;
     string_type BufGetAllEx() const;
     string_type BufGetRangeEx(TextCursor start, TextCursor end) const;
     string_type BufGetSecSelectTextEx() const;
     string_type BufGetSelectionTextEx() const;
     string_type BufGetTextInRectEx(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) const;
+    TextCursor BufCountBackwardNLines(TextCursor startPos, int64_t nLines) const noexcept;
+    TextCursor BufCountForwardDispChars(TextCursor lineStartPos, int64_t nChars) const noexcept;
+    TextCursor BufCountForwardNLines(TextCursor startPos, int64_t nLines) const noexcept;
+    TextCursor BufCursorPosHint() const noexcept;
+    TextCursor BufEndOfLine(TextCursor pos) const noexcept;
+    TextCursor BufStartOfLine(TextCursor pos) const noexcept;
+    TextCursor BufEndOfBuffer() const noexcept;
+    TextCursor BufStartOfBuffer() const noexcept;
     view_type BufAsStringEx() noexcept;
     void BufAddHighPriorityModifyCB(modify_callback_type bufModifiedCB, void *user);
     void BufAddModifyCB(modify_callback_type bufModifiedCB, void *user);
@@ -118,14 +122,14 @@ public:
     void BufOverlayRectEx(TextCursor startPos, int64_t rectStart, int64_t rectEnd, view_type text, int64_t *charsInserted, int64_t *charsDeleted) noexcept;
     void BufRectHighlight(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept;
     void BufRectSelect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept;
-    void BufRemove(TextCursor start, TextCursor end) noexcept;
     void BufRemoveModifyCB(modify_callback_type bufModifiedCB, void *user) noexcept;
     void BufRemovePreDeleteCB(pre_delete_callback_type bufPreDeleteCB, void *user) noexcept;
     void BufRemoveRect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept;
     void BufRemoveSecSelect() noexcept;
     void BufRemoveSelected() noexcept;
-    void BufReplaceEx(TextCursor start, TextCursor end, view_type text) noexcept;
+    void BufRemove(TextCursor start, TextCursor end) noexcept;
     void BufReplaceEx(TextCursor start, TextCursor end, Ch ch) noexcept;
+    void BufReplaceEx(TextCursor start, TextCursor end, view_type text) noexcept;
     void BufReplaceRectEx(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd, view_type text);
     void BufReplaceSecSelectEx(view_type text) noexcept;
     void BufReplaceSelectedEx(view_type text) noexcept;
@@ -138,8 +142,6 @@ public:
     void BufSetUseTabs(bool useTabs) noexcept;
     void BufUnhighlight() noexcept;
     void BufUnselect() noexcept;
-    bool BufGetSyncXSelection() const;
-    bool BufSetSyncXSelection(bool sync);
 
 public:
     /* unlike BufSetTabDistance, this version doesn't execute all of the
