@@ -63,7 +63,7 @@ public:
     static bool isDefaultPatternSet(const PatternSet &patternSet);
     static bool LoadHighlightString(const QString &string);
     static bool NamedStyleExists(const QString &styleName);
-    static bool parseString(const HighlightData *pattern, const char *first, const char *last, const char **string, char **styleString, int64_t length, int *prevChar, bool anchored, const QString &delimiters, const char *look_behind_to, const char *match_to);
+    static bool parseString(const HighlightData *pattern, const char *first, const char *last, const char *&string, char *&styleString, int64_t length, int *prevChar, const QString &delimiters, const char *look_behind_to, const char *match_to);
     static bool patternIsParsable(HighlightData *pattern);
     static bool readHighlightPattern(Input &in, QString *errMsg, HighlightPattern *pattern);
     static HighlightData *patternOfStyle(HighlightData *patterns, int style);
@@ -83,9 +83,9 @@ public:
     static boost::optional<std::vector<HighlightPattern>> readHighlightPatterns(Input &in, QString *errMsg);
     static TextCursor backwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos);
     static TextCursor forwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos);
-    static TextCursor lastModified(const std::shared_ptr<TextBuffer> &styleBuf);
+    static TextCursor lastModified(const std::shared_ptr<TextBuffer> &buffer);
     static TextCursor parseBufferRange(const HighlightData *pass1Patterns, const HighlightData *pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, TextCursor beginParse, TextCursor endParse, const QString &delimiters);
-    static void fillStyleString(const char **stringPtr, char **stylePtr, const char *toPtr, uint8_t style, int *prevChar);
+    static void fillStyleString(const char *&stringPtr, char *&stylePtr, const char *toPtr, uint8_t style, int *prevChar);
     static void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, TextCursor pos, int64_t nInserted, const QString &delimiters);
     static void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleString, TextCursor startPos, TextCursor endPos, int firstPass2Style);
     static void passTwoParseString(const HighlightData *pattern, const char *first, const char *last, const char *string, char *styleString, int64_t length, int *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_till);

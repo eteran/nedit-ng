@@ -1355,8 +1355,7 @@ TextArea *DocumentWidget::firstPane() const {
 ** window.  Returns nullptr when no language mode is set (it would be easy to
 ** return the default delimiter set when the current language mode is "Plain",
 ** or the mode doesn't have its own delimiters, but this is usually used
-** to supply delimiters for RE searching, and ExecRE can skip compiling a
-** delimiter table when delimiters is nullptr).
+** to supply delimiters for RE searching.
 */
 QString DocumentWidget::GetWindowDelimiters() const {
     if (languageMode_ == PLAIN_LANGUAGE_MODE)
@@ -5896,11 +5895,10 @@ void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &s
         pass2Patterns,
         string,
         string + str.size(),
-        &string,
-        &stylePtr,
+        string,
+        stylePtr,
         endParse - beginSafety,
         &prevChar,
-        false,
         GetWindowDelimiters(),
         string,
         match_to);
@@ -5958,11 +5956,10 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
             highlightData->pass1Patterns,
             bufString.data(),
             bufString.data() + bufString.size(),
-            &stringPtr,
-            &stylePtr,
+            stringPtr,
+            stylePtr,
             bufLength,
             &prevChar,
-            false,
             GetWindowDelimiters(),
             stringPtr,
             match_to);
