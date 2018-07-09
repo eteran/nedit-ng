@@ -5,7 +5,6 @@
 #include "TextBuffer.h"
 #include "TextCursor.h"
 #include <QChar>
-#include <cstdint>
 
 // max. # of bookmarks (one per letter & #)
 constexpr int MAX_MARKS = 36;
