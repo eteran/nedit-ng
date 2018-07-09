@@ -35,7 +35,7 @@ void BasicTextBuffer<Ch, Tr>::BufSetAllEx(view_type text) {
 
     const auto length = static_cast<int64_t>(text.size());
 
-    callPreDeleteCBs(TextCursor(), buffer_.size());
+    callPreDeleteCBs(BufStartOfBuffer(), buffer_.size());
 
     // Save information for redisplay, and get rid of the old buffer
     const string_type deletedText = BufGetAllEx();
@@ -43,10 +43,10 @@ void BasicTextBuffer<Ch, Tr>::BufSetAllEx(view_type text) {
     buffer_.assign(text);
 
     // Zero all of the existing selections
-    updateSelections(TextCursor(), static_cast<int64_t>(deletedText.size()), 0);
+    updateSelections(BufStartOfBuffer(), static_cast<int64_t>(deletedText.size()), 0);
 
     // Call the saved display routine(s) to update the screen
-    callModifyCBs(TextCursor(), static_cast<int64_t>(deletedText.size()), length, 0, deletedText);
+    callModifyCBs(BufStartOfBuffer(), static_cast<int64_t>(deletedText.size()), length, 0, deletedText);
 }
 
 /*
@@ -526,18 +526,22 @@ int BasicTextBuffer<Ch, Tr>::BufGetTabDistance() const noexcept {
 ** and used in computing offsets for rectangular selection operations.
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufSetTabDistance(int tabDist) noexcept {
+void BasicTextBuffer<Ch, Tr>::BufSetTabDistance(int distance, bool notify) noexcept {
 
-    /* First call the pre-delete callbacks with the previous tab setting
-       still active. */
-    callPreDeleteCBs(TextCursor(), buffer_.size());
+    if(notify) {
+        /* First call the pre-delete callbacks with the previous tab setting
+           still active. */
+        callPreDeleteCBs(BufStartOfBuffer(), buffer_.size());
 
-    // Change the tab setting
-    tabDist_ = tabDist;
+        // Change the tab setting
+        tabDist_ = distance;
 
-    // Force any display routines to redisplay everything
-    view_type deletedText = BufAsStringEx();
-    callModifyCBs(TextCursor(), buffer_.size(), buffer_.size(), 0, deletedText);
+        // Force any display routines to redisplay everything
+        view_type deletedText = BufAsStringEx();
+        callModifyCBs(BufStartOfBuffer(), buffer_.size(), buffer_.size(), 0, deletedText);
+    } else {
+        tabDist_ = distance;
+    }
 }
 
 template <class Ch, class Tr>
@@ -969,8 +973,8 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountForwardNLines(TextCursor startPos, i
 */
 template <class Ch, class Tr>
 TextCursor BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(TextCursor startPos, int64_t nLines) const noexcept {
-    if(startPos == TextCursor()) {
-        return TextCursor();
+    if(startPos == BufStartOfBuffer()) {
+        return BufStartOfBuffer();
     }
 
     TextCursor pos    = startPos - 1;
@@ -981,13 +985,13 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(TextCursor startPos, 
             if (++lineCount >= nLines)
                 return (pos + 1);
         }
-        if(pos == TextCursor()) {
+        if(pos == BufStartOfBuffer()) {
             break;
         }
         pos--;
     }
 
-    return TextCursor();
+    return BufStartOfBuffer();
 }
 
 /*
@@ -1018,7 +1022,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(TextCurs
 template <class Ch, class Tr>
 boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(TextCursor startPos, view_type searchChars) const noexcept {
 
-    if (startPos == TextCursor()) {
+    if (startPos == BufStartOfBuffer()) {
         return boost::none;
     }
 
@@ -1030,7 +1034,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(TextCur
                 return pos;
             }
         }
-        if(pos == TextCursor()) {
+        if(pos == BufStartOfBuffer()) {
             break;
         }
         pos--;
@@ -1120,7 +1124,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor st
 template <class Ch, class Tr>
 boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor startPos, Ch searchChar) const noexcept {
 
-    if (startPos == TextCursor()) {
+    if (startPos == BufStartOfBuffer()) {
         return boost::none;
     }
 
@@ -1130,7 +1134,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor s
             return pos;
         }
 
-        if(pos == TextCursor()) {
+        if(pos == BufStartOfBuffer()) {
             break;
         }
         pos--;
@@ -2068,11 +2072,6 @@ void BasicTextBuffer<Ch, Tr>::BufSetUseTabs(bool useTabs) noexcept {
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::BufGetUseTabs() const noexcept {
     return useTabs_;
-}
-
-template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufSetTabDist(int dist) noexcept {
-    tabDist_ = dist;
 }
 
 template <class Ch, class Tr>

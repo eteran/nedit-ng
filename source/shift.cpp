@@ -132,7 +132,6 @@ std::string fillParagraphEx(view::string_view text, int64_t leftMargin, int64_t 
         outText.push_back('\n');
     }
 
-    // clean up, return result
     return outText;
 }
 
@@ -146,10 +145,11 @@ TextCursor findParagraphEnd(TextBuffer *buf, TextCursor startPos) {
     TextCursor pos = buf->BufEndOfLine(startPos) + 1;
     while (pos < buf->BufGetLength()) {
         char c = buf->BufGetCharacter(pos);
-        if (c == '\n')
+        if (c == '\n') {
             break;
+        }
 
-        if (strchr(whiteChars, c) != nullptr) {
+        if (::strchr(whiteChars, c) != nullptr) {
             pos++;
         } else {
             pos = buf->BufEndOfLine(pos) + 1;
@@ -279,24 +279,27 @@ TextCursor findParagraphStart(TextBuffer *buf, TextCursor startPos) {
 
     static const char whiteChars[] = " \t";
 
-    if (startPos == 0)
-        return TextCursor();
+    if (startPos == buf->BufStartOfBuffer()) {
+        return buf->BufStartOfBuffer();
+    }
 
     TextCursor parStart = buf->BufStartOfLine(startPos);
     TextCursor pos      = parStart - 2;
 
     while (pos > 0) {
-        char c = buf->BufGetCharacter(pos);
-        if (c == '\n')
+        const char c = buf->BufGetCharacter(pos);
+        if (c == '\n') {
             break;
-        if (strchr(whiteChars, c) != nullptr)
+        }
+
+        if (::strchr(whiteChars, c) != nullptr) {
             pos--;
-        else {
+        } else {
             parStart = buf->BufStartOfLine(pos);
             pos = parStart - 2;
         }
     }
-    return parStart > 0 ? parStart : TextCursor();
+    return parStart > buf->BufStartOfBuffer() ? parStart : buf->BufStartOfBuffer();
 }
 
 int countLinesEx(view::string_view text) {
@@ -619,7 +622,7 @@ void shiftRectEx(DocumentWidget *document, TextArea *area, int direction, bool b
        hide the intermediate steps from the display update routines */
     TextBuffer tempBuf;
     tempBuf.BufSetSyncXSelection(false);
-    tempBuf.BufSetTabDist(buf->BufGetTabDist());
+    tempBuf.BufSetTabDistance(buf->BufGetTabDist(), false);
     tempBuf.BufSetUseTabs(buf->BufGetUseTabs());
 
     std::string text = buf->BufGetRangeEx(selStart, selEnd);

@@ -405,7 +405,7 @@ uint8_t *shortcut_escape(T ch, int *flag_param, ShortcutEscapeFlags flags) {
         valid_codes = codes;
     }
 
-    if (!strchr(valid_codes, static_cast<int>(ch))) {
+    if (!::strchr(valid_codes, static_cast<int>(ch))) {
         return nullptr; // Not a valid shortcut escape sequence
     } else if (flags == CHECK_ESCAPE || flags == CHECK_CLASS_ESCAPE) {
         return ret_val; // Just checking if this is a valid shortcut escape.
@@ -972,7 +972,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
             /* Loop until we find a meta character, shortcut escape, back
                reference, or end of regex string. */
 
-            for (; pContext.Reg_Parse != pContext.Reg_Parse_End && !strchr(pContext.Meta_Char, static_cast<int>(*pContext.Reg_Parse)); len++) {
+            for (; pContext.Reg_Parse != pContext.Reg_Parse_End && !::strchr(pContext.Meta_Char, static_cast<int>(*pContext.Reg_Parse)); len++) {
 
                 /* Save where we are in case we have to back
                    this character out. */

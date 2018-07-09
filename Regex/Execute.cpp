@@ -131,7 +131,7 @@ unsigned long greedy(uint8_t *p, unsigned long max) {
         break;
 
     case ANY_OF: // [...] character class.
-        while (count < max_cmp && !AT_END_OF_STRING(input_str) && strchr(reinterpret_cast<char *>(operand), *input_str) != nullptr) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && ::strchr(reinterpret_cast<char *>(operand), *input_str) != nullptr) {
 
             count++;
             input_str++;
@@ -143,7 +143,7 @@ unsigned long greedy(uint8_t *p, unsigned long max) {
                      match newline (\n added usually to operand at compile
                      time.) */
 
-        while (count < max_cmp && !AT_END_OF_STRING(input_str) && strchr(reinterpret_cast<char *>(operand), *input_str) == nullptr) {
+        while (count < max_cmp && !AT_END_OF_STRING(input_str) && ::strchr(reinterpret_cast<char *>(operand), *input_str) == nullptr) {
 
             count++;
             input_str++;
@@ -602,11 +602,10 @@ bool match(uint8_t *prog, int *branch_index_param) {
 
         case ANY_OF: // [...] character class.
             if (AT_END_OF_STRING(eContext.Reg_Input))
-                MATCH_RETURN(false); /* Needed because strchr ()
-                                    considers \0 as a member
-                                    of the character set. */
+                MATCH_RETURN(false); /* Needed because strchr () considers \0
+                                        as a member of the character set. */
 
-            if (strchr(reinterpret_cast<char *>(OPERAND(scan)), *eContext.Reg_Input) == nullptr) {
+            if (::strchr(reinterpret_cast<char *>(OPERAND(scan)), *eContext.Reg_Input) == nullptr) {
                 MATCH_RETURN(false);
             }
 
@@ -620,7 +619,7 @@ bool match(uint8_t *prog, int *branch_index_param) {
             if (AT_END_OF_STRING(eContext.Reg_Input))
                 MATCH_RETURN(false); // See comment for ANY_OF.
 
-            if (strchr(reinterpret_cast<char *>(OPERAND(scan)), *eContext.Reg_Input) != nullptr) {
+            if (::strchr(reinterpret_cast<char *>(OPERAND(scan)), *eContext.Reg_Input) != nullptr) {
                 MATCH_RETURN(false);
             }
 

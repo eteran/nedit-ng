@@ -112,7 +112,7 @@ R numeric_escape(Ch ch, const char **parse) noexcept {
     const char *scan = *parse;
     scan++; // Only change *parse on success.
 
-    const char *pos_ptr = strchr(digit_str, static_cast<int>(*scan));
+    const char *pos_ptr = ::strchr(digit_str, static_cast<int>(*scan));
 
     for (int i = 0; pos_ptr != nullptr && (i < width); i++) {
         const long pos = (pos_ptr - digit_str) + pos_delta;
@@ -136,7 +136,7 @@ R numeric_escape(Ch ch, const char **parse) noexcept {
         }
 
         scan++;
-        pos_ptr = strchr(digit_str, static_cast<int>(*scan));
+        pos_ptr = ::strchr(digit_str, static_cast<int>(*scan));
     }
 
     // Handle the case of "\0" i.e. trying to specify a nullptr character.

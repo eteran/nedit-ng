@@ -474,7 +474,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
     buffer_->BufAddModifyCB(modifiedCB, this);
 
     // Set the requested hardware tab distance and useTabs in the text buffer
-    buffer_->BufSetTabDistance(Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE));
+    buffer_->BufSetTabDistance(Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE), true);
     buffer_->BufSetUseTabs(Preferences::GetPrefInsertTabs());
 
     static int n = 0;
@@ -1177,7 +1177,7 @@ void DocumentWidget::SetTabDist(int tabDist) {
             area->setModifyingTabDist(1);
         }
 
-        buffer_->BufSetTabDistance(tabDist);
+        buffer_->BufSetTabDistance(tabDist, true);
 
         for(size_t paneIndex = 0; paneIndex < paneCount; ++paneIndex) {
             TextArea *area = textAreas[paneIndex];

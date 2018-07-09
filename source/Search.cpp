@@ -206,7 +206,6 @@ bool searchRegex(view::string_view string, view::string_view searchString, Direc
 bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos, Search::Result *result) {
 
     // TODO(eteran): investigate if we can rework this in terms of std::search
-    // TODO(eteran): wrapping seems to be handled at a higher level, is there any code which actually asses WrapMode::Wrap to this function?
 
     std::string lcString;
     std::string ucString;
@@ -315,7 +314,6 @@ bool searchLiteral(view::string_view string, view::string_view searchString, boo
 bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos, Search::Result *result, const char *delimiters) {
 
     // TODO(eteran): investigate if we can rework this in terms of std::search
-    // TODO(eteran): wrapping seems to be handled at a higher level, is there any code which actually asses WrapMode::Wrap to this function?
 
     std::string lcString;
     std::string ucString;
@@ -340,9 +338,9 @@ bool searchLiteralWord(view::string_view string, view::string_view searchString,
                 ++lcPtr;
 
                 if (ucPtr == ucString.end() &&                                                         // matched whole string
-                    (cignore_R || safe_ctype<isspace>(*tempPtr) || strchr(delimiters, *tempPtr)) &&    // next char right delimits word ?
+                    (cignore_R || safe_ctype<isspace>(*tempPtr) || ::strchr(delimiters, *tempPtr)) &&  // next char right delimits word ?
                     (cignore_L || it == string.begin() ||                                              // border case
-                     safe_ctype<isspace>(it[-1]) || strchr(delimiters, it[-1]))) {                     // next char left delimits word ?
+                     safe_ctype<isspace>(it[-1]) || ::strchr(delimiters, it[-1]))) {                   // next char left delimits word ?
 
                     result->start    = it - string.begin();
                     result->end      = tempPtr - string.begin();
@@ -368,11 +366,11 @@ bool searchLiteralWord(view::string_view string, view::string_view searchString,
         delimiters = delimiterString.data();
     }
 
-    if (safe_ctype<isspace>(searchString.front()) || strchr(delimiters, searchString.front())) {
+    if (safe_ctype<isspace>(searchString.front()) || ::strchr(delimiters, searchString.front())) {
         cignore_L = true;
     }
 
-    if (safe_ctype<isspace>(searchString.back()) || strchr(delimiters, searchString.back())) {
+    if (safe_ctype<isspace>(searchString.back()) || ::strchr(delimiters, searchString.back())) {
         cignore_R = true;
     }
 

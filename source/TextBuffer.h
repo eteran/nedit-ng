@@ -138,15 +138,10 @@ public:
     void BufSecRectSelect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept;
     void BufSelect(TextCursor start, TextCursor end) noexcept;
     void BufSetAllEx(view_type text);
-    void BufSetTabDistance(int tabDist) noexcept;
+    void BufSetTabDistance(int distance, bool notify) noexcept;
     void BufSetUseTabs(bool useTabs) noexcept;
     void BufUnhighlight() noexcept;
     void BufUnselect() noexcept;
-
-public:
-    /* unlike BufSetTabDistance, this version doesn't execute all of the
-     * modification callbacks */
-    void BufSetTabDist(int dist) noexcept;
 
 public:
     bool GetSimpleSelection(TextCursor *left, TextCursor *right) const noexcept;

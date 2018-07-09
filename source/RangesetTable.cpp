@@ -166,7 +166,7 @@ int RangesetTable::RangesetFindIndex(int label, bool must_be_active) const {
        return -1;
     }
 
-    auto p_label = reinterpret_cast<const uint8_t *>(strchr(reinterpret_cast<const char *>(rangeset_labels), label));
+    auto p_label = reinterpret_cast<const uint8_t *>(::strchr(reinterpret_cast<const char *>(rangeset_labels), label));
     if (p_label) {
         auto i = static_cast<int>(p_label - rangeset_labels);
         if (!must_be_active || active_[i])
@@ -288,5 +288,5 @@ int RangesetTable::RangesetCreate() {
 ** Return true if label is a valid identifier for a range set.
 */
 int RangesetTable::RangesetLabelOK(int label) {
-    return strchr(reinterpret_cast<const char *>(rangeset_labels), label) != nullptr;
+    return ::strchr(reinterpret_cast<const char *>(rangeset_labels), label) != nullptr;
 }

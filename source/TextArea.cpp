@@ -5413,7 +5413,7 @@ void TextArea::forwardParagraphAP(EventFlags flags) {
 		char c = buffer_->BufGetCharacter(pos);
 		if (c == '\n')
 			break;
-		if (strchr(whiteChars, c) != nullptr)
+        if (::strchr(whiteChars, c) != nullptr)
 			pos++;
 		else
             pos = std::min(buffer_->BufEndOfLine(pos) + 1, buffer_->BufEndOfBuffer());
@@ -5446,7 +5446,7 @@ void TextArea::backwardParagraphAP(EventFlags flags) {
 		char c = buffer_->BufGetCharacter(pos);
 		if (c == '\n')
 			break;
-		if (strchr(whiteChars, c) != nullptr)
+        if (::strchr(whiteChars, c) != nullptr)
 			pos--;
 		else {
 			parStart = buffer_->BufStartOfLine(pos);
@@ -6265,7 +6265,7 @@ void TextArea::BeginBlockDrag() {
 	   deriving changes */
     dragOrigBuf_ = std::make_unique<TextBuffer>();
     dragOrigBuf_->BufSetSyncXSelection(false);
-    dragOrigBuf_->BufSetTabDistance(buffer_->BufGetTabDist());
+    dragOrigBuf_->BufSetTabDistance(buffer_->BufGetTabDist(), true);
     dragOrigBuf_->BufSetUseTabs(buffer_->BufGetUseTabs());
 
     dragOrigBuf_->BufSetAllEx(buffer_->BufGetAllEx());
@@ -6303,7 +6303,7 @@ void TextArea::BeginBlockDrag() {
         testBuf.BufSetSyncXSelection(false);
 
 		std::string testText = buffer_->BufGetRangeEx(sel->start, sel->end);
-        testBuf.BufSetTabDistance(buffer_->BufGetTabDist());
+        testBuf.BufSetTabDistance(buffer_->BufGetTabDist(), true);
         testBuf.BufSetUseTabs(buffer_->BufGetUseTabs());
         testBuf.BufSetAllEx(testText);
 
@@ -6400,7 +6400,7 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	   (this could be tighter, but hopefully it's not too slow) */
     TextBuffer tempBuf;
     tempBuf.BufSetSyncXSelection(false);
-    tempBuf.BufSetTabDist(buffer_->BufGetTabDist());
+    tempBuf.BufSetTabDistance(buffer_->BufGetTabDist(), false);
     tempBuf.BufSetUseTabs(buffer_->BufGetUseTabs());
 
     const TextCursor tempStart = std::min({ dragInsertPos_, origSel->start, buffer_->BufCountBackwardNLines(firstChar_, nLines + 2) });
