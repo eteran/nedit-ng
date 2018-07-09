@@ -75,7 +75,7 @@ void DialogFind::keyPressEvent(QKeyEvent *event) {
         ui.textFind->setText(searchStr);
 
 		// Set the state of the Find ... button 
-        updateActionButtons();
+        updateFindButton();
 
 		window_->fHistIndex_ = index;
 	}
@@ -96,9 +96,9 @@ void DialogFind::on_checkKeep_toggled(bool checked) {
 }
 
 /**
- * @brief DialogFind::updateActionButtons
+ * @brief DialogFind::updateFindButton
  */
-void DialogFind::updateActionButtons() {
+void DialogFind::updateFindButton() {
 	bool buttonState = !ui.textFind->text().isEmpty();
 	ui.buttonFind->setEnabled(buttonState);
 }
@@ -109,77 +109,64 @@ void DialogFind::updateActionButtons() {
  */
 void DialogFind::on_textFind_textChanged(const QString &text) {
 	Q_UNUSED(text);
-    updateActionButtons();
+    updateFindButton();
 }
 
 /*
-** Shared routine for replace and find dialogs and i-search bar to initialize
-** the state of the regex/case/word toggle buttons, and the sticky case
-** sensitivity states.
+** initialize the state of the regex/case/word toggle buttons, and the sticky
+** case sensitivity states.
 */
 void DialogFind::initToggleButtons(SearchType searchType) {
 	/* Set the initial search type and remember the corresponding case
 	   sensitivity states in case sticky case sensitivity is required. */
 	switch (searchType) {
     case SearchType::Literal:
-		lastLiteralCase_ = false;
-		lastRegexCase_   = true;
-		ui.checkRegex->setChecked(false);
-		ui.checkCase->setChecked(false);
-		if (true) {
-			ui.checkWord->setChecked(false);
-			ui.checkWord->setEnabled(true);
-		}
+        lastLiteralCase_ = false;
+        lastRegexCase_   = true;
+        ui.checkRegex->setChecked(false);
+        ui.checkCase->setChecked(false);
+        ui.checkWord->setChecked(false);
+        ui.checkWord->setEnabled(true);
 		break;
     case SearchType::CaseSense:
-		lastLiteralCase_ = true;
-		lastRegexCase_   = true;
-		ui.checkRegex->setChecked(false);
-		ui.checkCase->setChecked(true);
-		if (true) {
-			ui.checkWord->setChecked(false);
-			ui.checkWord->setEnabled(true);
-		}
+        lastLiteralCase_ = true;
+        lastRegexCase_   = true;
+        ui.checkRegex->setChecked(false);
+        ui.checkCase->setChecked(true);
+        ui.checkWord->setChecked(false);
+        ui.checkWord->setEnabled(true);
 		break;
     case SearchType::LiteralWord:
-		lastLiteralCase_ = false;
-		lastRegexCase_   = true;
-		ui.checkRegex->setChecked(false);
-		ui.checkCase->setChecked(false);
-		if (true) {
-			ui.checkWord->setChecked(true);
-			ui.checkWord->setEnabled(true);
-		}
+        lastLiteralCase_ = false;
+        lastRegexCase_   = true;
+        ui.checkRegex->setChecked(false);
+        ui.checkCase->setChecked(false);
+        ui.checkWord->setChecked(true);
+        ui.checkWord->setEnabled(true);
 		break;
     case SearchType::CaseSenseWord:
-		lastLiteralCase_ = true;
-		lastRegexCase_   = true;
-		ui.checkRegex->setChecked(false);
-		ui.checkCase->setChecked(true);
-		if (true) {
-			ui.checkWord->setChecked(true);
-			ui.checkWord->setEnabled(true);
-		}
+        lastLiteralCase_ = true;
+        lastRegexCase_   = true;
+        ui.checkRegex->setChecked(false);
+        ui.checkCase->setChecked(true);
+        ui.checkWord->setChecked(true);
+        ui.checkWord->setEnabled(true);
 		break;
     case SearchType::Regex:
-		lastLiteralCase_ = false;
-		lastRegexCase_   = true;
-		ui.checkRegex->setChecked(true);
-		ui.checkCase->setChecked(true);
-		if (true) {
-			ui.checkWord->setChecked(false);
-			ui.checkWord->setEnabled(false);
-		}
+        lastLiteralCase_ = false;
+        lastRegexCase_   = true;
+        ui.checkRegex->setChecked(true);
+        ui.checkCase->setChecked(true);
+        ui.checkWord->setChecked(false);
+        ui.checkWord->setEnabled(false);
 		break;
     case SearchType::RegexNoCase:
-		lastLiteralCase_ = false;
-		lastRegexCase_   = false;
-		ui.checkRegex->setChecked(true);
-		ui.checkCase->setChecked(false);
-		if (true) {
-			ui.checkWord->setChecked(false);
-			ui.checkWord->setEnabled(false);
-		}
+        lastLiteralCase_ = false;
+        lastRegexCase_   = false;
+        ui.checkRegex->setChecked(true);
+        ui.checkCase->setChecked(false);
+        ui.checkWord->setChecked(false);
+        ui.checkWord->setEnabled(false);
 		break;
 	}
 }
@@ -205,12 +192,12 @@ void DialogFind::setTextField(DocumentWidget *document) {
  */
 void DialogFind::on_buttonFind_clicked() {
 
-    Direction direction;
+    QString    searchString;
+    Direction  direction;
 	SearchType searchType;
-	
-	// fetch find string, direction and type from the dialog 
-    QString searchString;
-    if (!getFindDlogInfoEx(&direction, &searchString, &searchType)) {
+
+	// fetch find string, direction and type from the dialog     
+    if (!getFields(&direction, &searchString, &searchType)) {
 		return;
     }
 
@@ -230,10 +217,9 @@ void DialogFind::on_buttonFind_clicked() {
 ** Fetch and verify (particularly regular expression) search string,
 ** direction, and search type from the Find dialog.  If the search string
 ** is ok, save a copy in the search history, copy it to "searchString",
-** return search type in "searchType", and return TRUE as the function value.
-** Otherwise, return FALSE.
+** return search type in "searchType", and return true. Otherwise, return false.
 */
-bool DialogFind::getFindDlogInfoEx(Direction *direction, QString *searchString, SearchType *searchType) {
+bool DialogFind::getFields(Direction *direction, QString *searchString, SearchType *searchType) {
 
 	// Get the search string, search type, and direction from the dialog 
 	QString findText = ui.textFind->text();
@@ -271,12 +257,7 @@ bool DialogFind::getFindDlogInfoEx(Direction *direction, QString *searchString, 
 		}
 	}
 
-    *direction = ui.checkBackward->isChecked() ? Direction::Backward : Direction::Forward;
-
-    if (Search::isRegexType(*searchType)) {
-        // NOTE(eteran): nothing...
-	}
-
+    *direction    = ui.checkBackward->isChecked() ? Direction::Backward : Direction::Forward;
     *searchString = findText;
     return true;
 }

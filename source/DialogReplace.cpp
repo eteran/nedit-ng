@@ -129,7 +129,7 @@ void DialogReplace::keyPressEvent(QKeyEvent *event) {
         ui.textReplace->setText(replaceStr);
 
 		// Set the state of the Find ... button 
-		updateActionButtons();
+        updateFindButton();
 
         window_->rHistIndex_ = index;
 	}
@@ -507,9 +507,9 @@ void DialogReplace::initToggleButtons(SearchType searchType) {
 }
 
 /**
- * @brief DialogReplace::updateActionButtons
+ * @brief DialogReplace::updateFindButton
  */
-void DialogReplace::updateActionButtons() {
+void DialogReplace::updateFindButton() {
 	bool buttonState = !ui.textFind->text().isEmpty();
 	ui.buttonFind->setEnabled(buttonState);
 }

@@ -24,10 +24,10 @@ public:
     void setDocument(DocumentWidget *document);
     void setTextField(DocumentWidget *document);
 	void initToggleButtons(SearchType searchType);
-    void updateActionButtons();
+    void updateFindButton();
 	
 private:
-    bool getFindDlogInfoEx(Direction *direction, QString *searchString, SearchType *searchType);
+    bool getFields(Direction *direction, QString *searchString, SearchType *searchType);
 	
 public:
 	bool keepDialog() const;
