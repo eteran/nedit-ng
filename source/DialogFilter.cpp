@@ -64,3 +64,11 @@ void DialogFilter::on_buttonBox_accepted() {
 		history_ << s;
 	}
 }
+
+/**
+ * @brief DialogFilter::currentText
+ * @return
+ */
+QString DialogFilter::currentText() const {
+    return ui.textFilter->text();
+}

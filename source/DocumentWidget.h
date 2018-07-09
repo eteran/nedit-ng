@@ -132,9 +132,9 @@ public:
     void BeginSmartIndentEx(bool warn);
     void CancelMacroOrLearnEx();
     void CheckForChangesToFileEx();
-    void ClearModeMessageEx();
+    void ClearModeMessage();
     void closePane();
-    void DoMacroEx(const QString &macro, const QString &errInName);
+    void DoMacro(const QString &macro, const QString &errInName);
     void EndSmartIndent();
     void execAP(TextArea *area, const QString &command);
     void ExecShellCommandEx(TextArea *area, const QString &command, CommandSource source);
@@ -239,7 +239,7 @@ private:
     void executeModMacroEx(SmartIndentEvent *cbInfo);
     void executeNewlineMacroEx(SmartIndentEvent *cbInfo);
     void filterSelection(const QString &command, CommandSource source);
-    void FinishLearnEx();
+    void FinishLearning();
     void FlashMatchingEx(TextArea *area);
     void FreeHighlightingDataEx();
     void issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, TextCursor replaceLeft, TextCursor replaceRight, CommandSource source);

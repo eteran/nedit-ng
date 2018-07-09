@@ -829,20 +829,20 @@ bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchStri
 ** This reads from either a source code file (if searchMode == TIP_FROM_TAG)
 ** or a calltips file (if searchMode == TIP).
 */
-void Tags::showMatchingCalltipEx(QWidget *parent, TextArea *area, size_t i) {
+void Tags::showMatchingCalltipEx(QWidget *parent, TextArea *area, int id) {
     try {
         int64_t startPos = 0;
         int64_t endPos   = 0;
 
         // 1. Open the target file
-        NormalizePathnameEx(tagFiles[i]);
+        NormalizePathnameEx(tagFiles[id]);
 
-        std::ifstream file(tagFiles[i].toStdString());
+        std::ifstream file(tagFiles[id].toStdString());
         if(!file) {
             QMessageBox::critical(
                         parent,
                         tr("Error opening File"),
-                        tr("Error opening %1").arg(tagFiles[i]));
+                        tr("Error opening %1").arg(tagFiles[id]));
             return;
         }
 
@@ -850,22 +850,22 @@ void Tags::showMatchingCalltipEx(QWidget *parent, TextArea *area, size_t i) {
         std::string fileString(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
 
         // 3. Search for the tagged location (set startPos)
-        if (tagSearch[i].isEmpty()) {
+        if (tagSearch[id].isEmpty()) {
             // It's a line number, just go for it
-            if ((moveAheadNLinesEx(fileString, startPos, tagPosInf[i] - 1)) >= 0) {
+            if ((moveAheadNLinesEx(fileString, startPos, tagPosInf[id] - 1)) >= 0) {
                 QMessageBox::critical(
                             parent,
                             tr("Tags Error"),
-                            tr("%1\n not long enough for definition to be on line %2").arg(tagFiles[i]).arg(tagPosInf[i]));
+                            tr("%1\n not long enough for definition to be on line %2").arg(tagFiles[id]).arg(tagPosInf[id]));
                 return;
             }
         } else {
-            startPos = tagPosInf[i];
-            if (!fakeRegExSearchEx(fileString, tagSearch[i], &startPos, &endPos)) {
+            startPos = tagPosInf[id];
+            if (!fakeRegExSearchEx(fileString, tagSearch[id], &startPos, &endPos)) {
                 QMessageBox::critical(
                             parent,
                             tr("Tag not found"),
-                            tr("Definition for %1 not found in %2").arg(tagName, tagFiles[i]));
+                            tr("Definition for %1 not found in %2").arg(tagName, tagFiles[id]));
                 return;
             }
         }

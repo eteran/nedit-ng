@@ -65,3 +65,11 @@ void DialogExecuteCommand::on_buttonBox_accepted() {
 		history_ << s;
 	}
 }
+
+/**
+ * @brief DialogExecuteCommand::currentText
+ * @return
+ */
+QString DialogExecuteCommand::currentText() const {
+    return ui.textCommand->text();
+}

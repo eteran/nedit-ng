@@ -197,7 +197,7 @@ void NeditServer::newConnection() {
                     } else {
                         (*win)->RaiseDocumentWindow();
                     }
-                    (*win)->DoMacroEx(doCommand, QLatin1String("-do macro"));
+                    (*win)->DoMacro(doCommand, QLatin1String("-do macro"));
                 }
             }
 
@@ -267,7 +267,7 @@ void NeditServer::newConnection() {
                 if (document->macroCmdData_) {
                     QApplication::beep();
                 } else {
-                    document->DoMacroEx(doCommand, QLatin1String("-do macro"));
+                    document->DoMacro(doCommand, QLatin1String("-do macro"));
                 }
             }
 

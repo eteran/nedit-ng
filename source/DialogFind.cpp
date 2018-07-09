@@ -21,9 +21,6 @@
  */
 DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f) : Dialog(window, f), window_(window), document_(document) {
     ui.setupUi(this);
-
-    lastRegexCase_   = true;
-    lastLiteralCase_ = false;
 }
 
 /**
@@ -32,7 +29,7 @@ DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowF
  */
 void DialogFind::showEvent(QShowEvent *event) {    
     Dialog::showEvent(event);
-    QTimer::singleShot(0, ui.textFind, SLOT(setFocus()));
+    ui.textFind->setFocus();
 }
 
 /**

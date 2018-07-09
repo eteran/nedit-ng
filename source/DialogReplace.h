@@ -14,6 +14,8 @@ class MainWindow;
 
 class DialogReplace : public Dialog {
 	Q_OBJECT
+    friend class DialogMultiReplace;
+
 public:
     DialogReplace(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogReplace() override = default;
@@ -27,8 +29,8 @@ public:
     void setTextField(DocumentWidget *document);
 	void initToggleButtons(SearchType searchType);
 	void updateActionButtons();
-	void rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceInWinBtn, bool replaceInSelBtn, bool replaceAllBtn);
-	void UpdateReplaceActionButtons();
+    void setActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceInWinBtn, bool replaceInSelBtn, bool replaceAllBtn);
+    void UpdateReplaceActionButtons();
     bool getReplaceDlogInfo(Direction *direction, QString *searchString, QString *replaceString, SearchType *searchType);
 	void collectWritableWindows();
 
@@ -49,14 +51,17 @@ private Q_SLOTS:
 	void on_buttonMulti_clicked();
 	
 public:
+    Ui::DialogReplace ui;
+
+private:
     MainWindow *window_;
     DocumentWidget *document_;
 
+    bool lastRegexCase_   = true;  /* idem, for regex mode in find dialog */
+    bool lastLiteralCase_ = false; /* idem, for literal mode */
+
     // temporary list of writable documents, used during multi-file replacements
-    std::vector<DocumentWidget *> writableWindows_;
-	Ui::DialogReplace ui;
-	bool lastRegexCase_;        /* idem, for regex mode in find dialog */
-	bool lastLiteralCase_;      /* idem, for literal mode */
+    std::vector<DocumentWidget *> writableWindows_;	
 	QPointer<DialogMultiReplace> dialogMultiReplace_;	
 };
 

@@ -343,7 +343,7 @@ Main::Main(const QStringList &args) {
                     }
 
                     if (!toDoCommand.isNull()) {
-                        document->DoMacroEx(toDoCommand, QLatin1String("-do macro"));
+                        document->DoMacro(toDoCommand, QLatin1String("-do macro"));
                         toDoCommand = QString();
                     }
                 }
@@ -377,7 +377,7 @@ Main::Main(const QStringList &args) {
         MainWindow::CheckCloseDimEx();
 
         if (!toDoCommand.isNull()) {
-            document->DoMacroEx(toDoCommand, QLatin1String("-do macro"));
+            document->DoMacro(toDoCommand, QLatin1String("-do macro"));
         }
     }
 

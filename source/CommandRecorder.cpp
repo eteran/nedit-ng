@@ -8,14 +8,14 @@
 namespace {
 
 // List of actions not useful when learning a macro sequence (also see below)
-QLatin1String IgnoredActions[] = {
+const QLatin1String IgnoredActions[] = {
     QLatin1String("focusIn"),
     QLatin1String("focusOut")
 };
 
 /* List of actions intended to be attached to mouse buttons, which the user
    must be warned can't be recorded in a learn/replay sequence */
-QLatin1String MouseActions[] = {
+const QLatin1String MouseActions[] = {
     QLatin1String("grab_focus"),
     QLatin1String("extend_adjust"),
     QLatin1String("extend_start"),
@@ -36,7 +36,7 @@ QLatin1String MouseActions[] = {
 
 /* List of actions to not record because they
    generate further actions, more suitable for recording */
-QLatin1String RedundantActions[] = {
+const QLatin1String RedundantActions[] = {
     QLatin1String("open_dialog"),
     QLatin1String("save_as_dialog"),
     QLatin1String("revert_to_saved_dialog"),
@@ -208,8 +208,8 @@ void CommandRecorder::lastActionHook(const WindowMenuEvent *ev) {
                 return;
             }
 
-            macroRecordBuffer.append(actionString);
-            macroRecordBuffer.append(QLatin1Char('\n'));
+            macroRecordBuffer_.append(actionString);
+            macroRecordBuffer_.append(QLatin1Char('\n'));
         }
     }
 }
@@ -235,8 +235,8 @@ void CommandRecorder::lastActionHook(const TextEditEvent *ev) {
                 return;
             }
 
-            macroRecordBuffer.append(actionString);
-            macroRecordBuffer.append(QLatin1Char('\n'));
+            macroRecordBuffer_.append(actionString);
+            macroRecordBuffer_.append(QLatin1Char('\n'));
         }
     }
 }
@@ -246,7 +246,7 @@ void CommandRecorder::lastActionHook(const TextEditEvent *ev) {
  */
 void CommandRecorder::startRecording(DocumentWidget *document) {
     setRecording(true);
-    macroRecordWindowEx = document;
+    macroRecordWindow_ = document;
 }
 
 /**
@@ -254,7 +254,15 @@ void CommandRecorder::startRecording(DocumentWidget *document) {
  */
 void CommandRecorder::stopRecording() {
     setRecording(false);
-    macroRecordWindowEx = nullptr;
+    macroRecordWindow_ = nullptr;
+}
+
+/**
+ * @brief CommandRecorder::macroRecordWindow
+ * @return
+ */
+QPointer<DocumentWidget> CommandRecorder::macroRecordWindow() const {
+    return macroRecordWindow_;
 }
 
 /**
@@ -263,8 +271,8 @@ void CommandRecorder::stopRecording() {
  */
 void CommandRecorder::cancelRecording() {
     isRecording_ = false;
-    macroRecordBuffer.clear();
-    macroRecordWindowEx = nullptr;
+    macroRecordBuffer_.clear();
+    macroRecordWindow_ = nullptr;
 }
 
 /**
@@ -289,10 +297,10 @@ void CommandRecorder::setRecording(bool enabled) {
     if(!enabled) {
         // we've been asked to stop recording
         // Store the finished action for the replay menu item
-        replayMacro = macroRecordBuffer;
+        replayMacro = macroRecordBuffer_;
     } else {
         // start recording
-        macroRecordBuffer.clear();
+        macroRecordBuffer_.clear();
     }
 
     isRecording_ = enabled;

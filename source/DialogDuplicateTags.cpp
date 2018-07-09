@@ -60,12 +60,12 @@ bool DialogDuplicateTags::applySelection() {
 		return false;
 	}
 
-    int i = item->data(Qt::UserRole).toInt();
+    const int id = item->data(Qt::UserRole).toInt();
 
     if (Tags::searchMode == Tags::SearchMode::TAG) {
-        document_->editTaggedLocationEx(area_, i); // Open the file with the definition
+        document_->editTaggedLocationEx(area_, id); // Open the file with the definition
     } else {
-        Tags::showMatchingCalltipEx(this, area_, i);
+        Tags::showMatchingCalltipEx(this, area_, id);
     }
 
     return true;

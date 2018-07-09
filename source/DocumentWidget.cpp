@@ -4479,7 +4479,7 @@ void DocumentWidget::SetModeMessageEx(const QString &message) {
 ** Clear special statistics line message set in SetModeMessage, returns
 ** the statistics line to its original state as set in window->showStats_
 */
-void DocumentWidget::ClearModeMessageEx() {
+void DocumentWidget::ClearModeMessage() {
 
     if (!modeMessageDisplayed()) {
         return;
@@ -4649,7 +4649,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
         setCursor(Qt::ArrowCursor);
         window->ui.action_Cancel_Shell_Command->setEnabled(false);
         if (cmdData->bannerIsUp) {
-            ClearModeMessageEx();
+            ClearModeMessage();
         }
     }
 
@@ -5314,7 +5314,7 @@ void DocumentWidget::finishMacroCmdExecutionEx() {
     }
 
     if (macroCmdData_->bannerIsUp) {
-        ClearModeMessageEx();
+        ClearModeMessage();
     }
 
     // Free execution information
@@ -6513,8 +6513,8 @@ bool DocumentWidget::MacroWindowCloseActionsEx() {
 
     CommandRecorder *recorder = CommandRecorder::instance();
 
-    if (recorder->isRecording() && recorder->macroRecordWindowEx == this) {
-        FinishLearnEx();
+    if (recorder->isRecording() && recorder->macroRecordWindow() == this) {
+        FinishLearning();
     }
 
     /* If no macro is executing in the window, allow the close, but check
@@ -6609,7 +6609,7 @@ void DocumentWidget::cancelLearnEx() {
         return;
     }
 
-    DocumentWidget *document = CommandRecorder::instance()->macroRecordWindowEx;
+    DocumentWidget *document = CommandRecorder::instance()->macroRecordWindow();
     Q_ASSERT(document);
 
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -6622,16 +6622,16 @@ void DocumentWidget::cancelLearnEx() {
         window->ui.action_Cancel_Learn->setEnabled(false);
     }
 
-    document->ClearModeMessageEx();
+    document->ClearModeMessage();
 }
 
-void DocumentWidget::FinishLearnEx() {
+void DocumentWidget::FinishLearning() {
 
     if(!CommandRecorder::instance()->isRecording()) {
         return;
     }
 
-    DocumentWidget *document = CommandRecorder::instance()->macroRecordWindowEx;
+    DocumentWidget *document = CommandRecorder::instance()->macroRecordWindow();
     Q_ASSERT(document);
 
     CommandRecorder::instance()->stopRecording();
@@ -6651,7 +6651,7 @@ void DocumentWidget::FinishLearnEx() {
         window->ui.action_Replay_Keystrokes->setEnabled(true);
     }
 
-    document->ClearModeMessageEx();
+    document->ClearModeMessage();
 }
 
 /*
@@ -6659,7 +6659,7 @@ void DocumentWidget::FinishLearnEx() {
 ** Reports errors via a dialog posted over "window", integrating the name
 ** "errInName" into the message to help identify the source of the error.
 */
-void DocumentWidget::DoMacroEx(const QString &macro, const QString &errInName) {
+void DocumentWidget::DoMacro(const QString &macro, const QString &errInName) {
 
     /* Add a terminating newline (which command line users are likely to omit
        since they are typically invoking a single routine) */

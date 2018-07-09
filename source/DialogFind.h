@@ -40,12 +40,13 @@ private Q_SLOTS:
 	void on_buttonFind_clicked();
 	
 public:
+    Ui::DialogFind ui;
+
+private:
     MainWindow *window_;
     DocumentWidget *document_;	
-    bool lastRegexCase_;   // idem, for regex mode in find dialog
-    bool lastLiteralCase_; // idem, for literal mode
-    Ui::DialogFind ui;
+    bool lastRegexCase_   = true;   // idem, for regex mode in find dialog
+    bool lastLiteralCase_ = false; // idem, for literal mode
 };
-
 
 #endif

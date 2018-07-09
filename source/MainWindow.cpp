@@ -4737,7 +4737,7 @@ void MainWindow::AllWindowsBusyEx(const QString &message) {
 void MainWindow::AllWindowsUnbusyEx() {
 
     for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-        document->ClearModeMessageEx();
+        document->ClearModeMessage();
         document->setCursor(Qt::ArrowCursor);
     }
 
@@ -5214,7 +5214,7 @@ void MainWindow::on_action_Learn_Keystrokes_triggered() {
  */
 void MainWindow::on_action_Finish_Learn_triggered() {
     if(DocumentWidget *document = currentDocument()) {
-        document->FinishLearnEx();
+        document->FinishLearning();
     }
 }
 
@@ -5628,7 +5628,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, CommandSource
         return;
     }
 
-    QString filterText = dialog->ui.textFilter->text();
+    QString filterText = dialog->currentText();
     action_Filter_Selection(document, filterText, source);
 }
 
@@ -5700,7 +5700,7 @@ void MainWindow::action_Execute_Command(DocumentWidget *document) {
         return;
     }
 
-    QString commandText = dialog->ui.textCommand->text();
+    QString commandText = dialog->currentText();
     action_Execute_Command(document, commandText);
 }
 
@@ -7050,7 +7050,7 @@ bool MainWindow::DoNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, c
     Q_UNUSED(area);
 
     if(MenuData *p = findMenuItem(name, CommandTypes::MACRO_CMDS)) {
-        document->DoMacroEx(
+        document->DoMacro(
             p->item.cmd,
             tr("macro menu command"));
 
@@ -7074,7 +7074,7 @@ bool MainWindow::DoNamedBGMenuCmd(DocumentWidget *document, TextArea *area, cons
     Q_UNUSED(area);
 
     if(MenuData *p = findMenuItem(name, CommandTypes::BG_MENU_CMDS)) {
-        document->DoMacroEx(
+        document->DoMacro(
             p->item.cmd,
             tr("background menu macro"));
 

@@ -33,23 +33,23 @@ public:
     void cancelRecording();
     bool isRecording() const;
     void setRecording(bool enabled);
+    QPointer<DocumentWidget> macroRecordWindow() const;
 
 private:
     void lastActionHook(const TextEditEvent *ev);
     void lastActionHook(const WindowMenuEvent *ev);
-
 
 public:
     // The last command executed (used by the Repeat command)
     QString lastCommand;    
     QString replayMacro;
 
-    // Window where macro recording is taking place
-    QPointer<DocumentWidget> macroRecordWindowEx;
-
 private:
-    QString macroRecordBuffer;
+    QString macroRecordBuffer_;
     bool isRecording_ = false;
+
+    // Window where macro recording is taking place
+    QPointer<DocumentWidget> macroRecordWindow_;
 };
 
 #endif

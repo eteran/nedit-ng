@@ -69,11 +69,7 @@ int countWritableWindows() {
  * @param f
  */
 DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f) : Dialog(window, f), window_(window), document_(document) {
-	
 	ui.setupUi(this);
-	
-	lastRegexCase_   = true;
-	lastLiteralCase_ = false;
 }
 
 /**
@@ -82,7 +78,7 @@ DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, Qt::W
  */
 void DialogReplace::showEvent(QShowEvent *event) {
     Dialog::showEvent(event);
-    QTimer::singleShot(0, ui.textFind, SLOT(setFocus()));
+    ui.textFind->setFocus();
 }
 
 /**
@@ -195,7 +191,7 @@ void DialogReplace::on_checkKeep_toggled(bool checked) {
  */
 void DialogReplace::on_textFind_textChanged(const QString &text) {
 	Q_UNUSED(text);
-	UpdateReplaceActionButtons();
+    UpdateReplaceActionButtons();
 }
 
 /**
@@ -525,11 +521,11 @@ void DialogReplace::UpdateReplaceActionButtons() {
 
 	// Is there any text in the search for field 
 	bool searchText = !ui.textFind->text().isEmpty();
-	rSetActionButtons(searchText, searchText, searchText, searchText, searchText && window_->wasSelected_, searchText && (countWritableWindows() > 1));
+    setActionButtons(searchText, searchText, searchText, searchText, searchText && window_->wasSelected_, searchText && (countWritableWindows() > 1));
 }
 
 /**
- * @brief DialogReplace::rSetActionButtons
+ * @brief DialogReplace::setActionButtons
  * @param replaceBtn
  * @param replaceFindBtn
  * @param replaceAndFindBtn
@@ -537,7 +533,7 @@ void DialogReplace::UpdateReplaceActionButtons() {
  * @param replaceInSelBtn
  * @param replaceAllBtn
  */
-void DialogReplace::rSetActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceInWinBtn, bool replaceInSelBtn, bool replaceAllBtn) {
+void DialogReplace::setActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceInWinBtn, bool replaceInSelBtn, bool replaceAllBtn) {
 
 	ui.buttonReplace->setEnabled(replaceBtn);
 	ui.buttonFind->setEnabled(replaceFindBtn);

@@ -56,7 +56,7 @@ public:
     static bool DeleteTagsFileEx(const QString &tagSpec, SearchMode mode, bool force_unload);
     static bool fakeRegExSearchEx(view::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos);
     static int tagsShowCalltipEx(TextArea *area, const QString &text);
-    static void showMatchingCalltipEx(QWidget *parent, TextArea *area, size_t i);
+    static void showMatchingCalltipEx(QWidget *parent, TextArea *area, int id);
 
 public:
     static QList<Tag> LookupTagFromList(std::deque<File> *FileList, const QString &name, SearchMode mode);
