@@ -4249,8 +4249,9 @@ void DocumentWidget::action_Set_Fonts(const QString &fontName, const QString &it
         highlightChanged = true;
     }
 
-    if (!primaryChanged && !highlightChanged)
+    if (!primaryChanged && !highlightChanged) {
         return;
+    }
 
     if (primaryChanged) {
         fontName_   = fontName;
