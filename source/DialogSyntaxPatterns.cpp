@@ -70,7 +70,7 @@ void DialogSyntaxPatterns::restoreSlot(const QModelIndex &index) {
  */
 void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 
-    static const PatternSet emptyPatSet;
+    static const PatternSet emptyPatternSet;
 
 	// if there is no change, do nothing
 	if(previousLanguage_== name) {
@@ -84,7 +84,7 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 		// Look up the original version of the patterns being edited        
         const PatternSet *activePatternSet = Highlight::FindPatternSet(previousLanguage_);
         if(!activePatternSet) {
-            activePatternSet = &emptyPatSet;
+            activePatternSet = &emptyPatternSet;
 		}
 
 		/* Get the current information displayed by the dialog.  If it's bad,

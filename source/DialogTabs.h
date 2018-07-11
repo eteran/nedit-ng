@@ -7,11 +7,6 @@
 
 class DocumentWidget;
 
-/*
-** Present the user a dialog for setting tab related preferences, either as
-** defaults, or for a specific window (pass "forWindow" as nullptr to set default
-** preference, or a window to set preferences for the specific window.
-*/
 class DialogTabs : public Dialog {
 public:
 	Q_OBJECT
