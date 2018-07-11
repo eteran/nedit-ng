@@ -176,7 +176,7 @@ Main::Main(const QStringList &args) {
             Settings::serverName = args[i];
         } else if (opts && (args[i] == QLatin1String("-font") || args[i] == QLatin1String("-fn"))) {
             i = nextArg(args, i);
-            Settings::textFont = args[i];
+            Settings::fontName = args[i];
         } else if (opts && args[i] == QLatin1String("-wrap")) {
             Settings::autoWrap = WrapStyle::Continuous;
         } else if (opts && args[i] == QLatin1String("-nowrap")) {

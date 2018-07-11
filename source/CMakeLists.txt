@@ -70,7 +70,6 @@ qt5_wrap_cpp(MOC_SOURCES
 	DocumentModel.h
 	DocumentWidget.h
 	ElidedLabel.h
-	FixedFontSelector.h
 	HighlightPatternModel.h
 	HighlightStyleModel.h
 	KeySequenceEdit.h
@@ -83,7 +82,6 @@ qt5_wrap_cpp(MOC_SOURCES
 )
 
 qt5_wrap_ui(UIC_SOURCES
-	FixedFontSelector.ui
 	CallTipWidget.ui
 	DialogAbout.ui
 	DialogColors.ui
@@ -201,8 +199,6 @@ add_executable(nedit-ng
 	EditFlags.h
 	ElidedLabel.cpp
 	ElidedLabel.h
-	FixedFontSelector.cpp
-	FixedFontSelector.h
 	Font.cpp
 	Font.h
 	FontType.h

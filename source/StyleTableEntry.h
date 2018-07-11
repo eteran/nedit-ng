@@ -3,7 +3,6 @@
 #define STYLE_TABLE_ENTRY_H_
 
 #include <QColor>
-#include <QFont>
 #include <QString>
 
 class StyleTableEntry {
@@ -14,7 +13,6 @@ public:
     QString      bgColorName;
 	QColor       color;
     QColor       bgColor;
-    QFont        font;
     bool         isBold;
     bool         isItalic;
     bool         underline;

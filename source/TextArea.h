@@ -116,8 +116,8 @@ public:
     void setStyleBuffer(const std::shared_ptr<TextBuffer> &buffer);
 
 public:
-    int TextDMinFontWidth(bool considerStyles) const;
-    int TextDMaxFontWidth(bool considerStyles) const;
+    int TextDMinFontWidth() const;
+    int TextDMaxFontWidth() const;
     int TextNumVisibleLines() const;
     int64_t TextFirstVisibleLine() const;
     int TextVisibleWidth() const;    
@@ -303,7 +303,7 @@ private:
     void measureDeletedLines(TextCursor pos, int64_t nDeleted);
     void wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, TextCursor maxPos, int64_t maxLines, bool startPosIsLineStart, int64_t styleBufOffset, TextCursor *retPos, int64_t *retLines, TextCursor *retLineStart, TextCursor *retLineEnd) const;
     int64_t measurePropChar(char ch, int64_t colNum, TextCursor pos) const;
-    int stringWidth(const char *string, int length, uint32_t style) const;
+    int stringWidth(const char *string, int length) const;
     void findWrapRangeEx(view::string_view deletedText, TextCursor pos, int64_t nInserted, int64_t nDeleted, TextCursor *modRangeStart, TextCursor *modRangeEnd, int64_t *linesInserted, int64_t *linesDeleted);
     void updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t charsDeleted, int64_t linesInserted, int64_t linesDeleted, bool *scrolled);
 	void hideOrShowHScrollBar();

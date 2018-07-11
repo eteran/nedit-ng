@@ -1743,24 +1743,18 @@ int64_t TextArea::measurePropChar(char ch, int64_t colNum, TextCursor pos) const
 		}
 	}
 
-	return stringWidth(expChar, charLen, style);
+    return stringWidth(expChar, charLen);
 }
 
 /*
-** Find the width of a string in the font of a particular style
+** Find the width of a string in the font
 */
-int TextArea::stringWidth(const char *string, int length, uint32_t style) const {
+int TextArea::stringWidth(const char *string, int length) const {
 
     if(fixedFontWidth_ == -1) {
         QString str = asciiToUnicode(string, length);
-
-        if (style & STYLE_LOOKUP_MASK) {
-            QFontMetrics fm(styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A].font);
-            return fm.width(str);
-        } else {
-            QFontMetrics fm(font_);
-            return fm.width(str);
-        }
+        QFontMetrics fm(font_);
+        return fm.width(str);
     } else {
         return fixedFontWidth_ * length;
     }
@@ -2534,26 +2528,14 @@ int64_t TextArea::measureVisLine(int visLineNum) const {
     // has changed. I would expect this to result in significantly less calls to the inefficient
     // QFontMetrics::width calls
     if(fixedFontWidth_ == -1) {
-        if (!styleBuffer_) {
-            QFontMetrics fm(font_);
+        QFontMetrics fm(font_);
 
-            for (int i = 0; i < lineLen; i++) {
-                int len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
-                width += fm.width(asciiToUnicode(expandedChar, len));
-                charCount += len;
-            }
-        } else {
-            for (int i = 0; i < lineLen; i++) {
-                int len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
-                auto styleChar = styleBuffer_->BufGetCharacter(lineStartPos + i);
-                uint8_t style = static_cast<uint8_t>(styleChar) - ASCII_A;
-
-                QFontMetrics styleFm(styleTable_[style].font);
-                width += styleFm.width(asciiToUnicode(expandedChar, len));
-
-                charCount += len;
-            }
+        for (int i = 0; i < lineLen; i++) {
+            int len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
+            width += fm.width(asciiToUnicode(expandedChar, len));
+            charCount += len;
         }
+
     } else {
         for (int i = 0; i < lineLen; i++) {
             int len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
@@ -2904,7 +2886,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
                     TextBuffer::BufExpandCharacter(baseChar = lineStr[static_cast<size_t>(charIndex)], outIndex, expandedChar, buffer_->BufGetTabDist());
 
         style = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
-		charWidth = charIndex >= lineLen ? stdCharWidth : stringWidth(expandedChar, charLen, style);
+        charWidth = charIndex >= lineLen ? stdCharWidth : stringWidth(expandedChar, charLen);
 
 		if (x + charWidth >= leftClip && charIndex >= leftCharIndex) {
 			startIndex = charIndex;
@@ -2961,7 +2943,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 
 			if (charIndex < lineLen) {
 				*outPtr = expandedChar[i];
-				charWidth = stringWidth(&expandedChar[i], 1, charStyle);
+                charWidth = stringWidth(&expandedChar[i], 1);
 			} else {
 				charWidth = stdCharWidth;
 			}
@@ -3130,12 +3112,14 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int64_t x, int y, i
                 styleRec = &styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A];
                 underlineStyle = styleRec->underline;
 
-                renderFont  = styleRec->font;
+
+                renderFont.setBold(styleRec->isBold);
+                renderFont.setItalic(styleRec->isItalic);
+
                 fground = styleRec->color;
                 // here you could pick up specific select and highlight fground
             } else {
                 styleRec = nullptr;
-                renderFont = font_;
                 fground = palette().color(QPalette::Text);
             }
 
@@ -3906,10 +3890,9 @@ bool TextArea::TextDPositionToXY(TextCursor pos, int *x, int *y) const {
     int xStep = rect_.left() - horizOffset_;
     int outIndex = 0;
     for (int charIndex = 0; charIndex < pos - lineStartPos; charIndex++) {
-        const int charLen        = TextBuffer::BufExpandCharacter(lineStr[static_cast<size_t>(charIndex)], outIndex, expandedChar, buffer_->BufGetTabDist());
-        const uint32_t charStyle = styleOfPos(lineStartPos, lineLen, charIndex, outIndex, lineStr[static_cast<size_t>(charIndex)]);
+        const int charLen = TextBuffer::BufExpandCharacter(lineStr[static_cast<size_t>(charIndex)], outIndex, expandedChar, buffer_->BufGetTabDist());
 
-		xStep += stringWidth(expandedChar, charLen, charStyle);
+        xStep += stringWidth(expandedChar, charLen);
 		outIndex += charLen;
 	}
 	*x = xStep;
@@ -5624,8 +5607,7 @@ TextCursor TextArea::xyToPos(int x, int y, PositionTypes posType) const {
         char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 
         const int charLen        = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->BufGetTabDist());
-        const uint32_t charStyle = styleOfPos(lineStart, lineLen, charIndex, outIndex, lineStr[charIndex]);
-        const int64_t charWidth  = stringWidth(expandedChar, charLen, charStyle);
+        const int64_t charWidth  = stringWidth(expandedChar, charLen);
 
         if (x < xStep + (posType == PositionTypes::CURSOR_POS ? charWidth / 2 : charWidth)) {
 			return lineStart + charIndex;
@@ -7508,15 +7490,6 @@ void TextArea::updateFontHeightMetrics(const QFont &font) {
     int maxAscent  = fm.ascent();
     int maxDescent = fm.descent();
 
-    /* If there is a (syntax highlighting) style table in use, find the new
-       maximum font height for this text display */
-    for(const StyleTableEntry &style : styleTable_) {
-        QFontMetrics styleFM(style.font);
-
-        maxAscent  = std::max(maxAscent, styleFM.ascent());
-        maxDescent = std::max(maxDescent, styleFM.descent());
-    }
-
     ascent_  = maxAscent;
     descent_ = maxDescent;
 }
@@ -7529,16 +7502,8 @@ void TextArea::updateFontWidthMetrics(const QFont &font) {
     int fontWidth = fm.maxWidth();
     if(!fi.fixedPitch()) {
         fontWidth = -1;
-    } else {
-        for(const StyleTableEntry &style : styleTable_) {
-            QFontMetrics styleFM(style.font);
-            QFontInfo    styleFI(style.font);
-
-            if ((styleFM.maxWidth() != fontWidth || !styleFI.fixedPitch())) {
-                fontWidth = -1;
-            }
-        }
     }
+
     fixedFontWidth_ = fontWidth;
 }
 
@@ -7849,36 +7814,14 @@ TextBuffer *TextArea::TextGetBuffer() const {
     return buffer_;
 }
 
-int TextArea::TextDMinFontWidth(bool considerStyles) const {
-
+int TextArea::TextDMinFontWidth() const {
     QFontMetrics fm(font_);
-
-    int fontWidth = fm.maxWidth();
-    if (considerStyles) {
-        for(const StyleTableEntry &style : styleTable_) {
-            QFontMetrics fm(style.font);
-
-            // NOTE(eteran): this was min_bounds.width, we just assume that 'i' is the thinnest character
-            fontWidth = std::min(fontWidth, fm.width(QLatin1Char('i')));
-        }
-    }
-
-	return fontWidth;
+    return fm.width(QLatin1Char('i'));;
 }
 
-int TextArea::TextDMaxFontWidth(bool considerStyles) const {
-
+int TextArea::TextDMaxFontWidth() const {
     QFontMetrics fm(font_);
-
-    int fontWidth = fm.maxWidth();
-    if (considerStyles) {
-        for(const StyleTableEntry &style : styleTable_) {
-            QFontMetrics fm(style.font);
-            fontWidth = std::max(fontWidth, fm.maxWidth());
-        }
-    }
-
-	return fontWidth;
+    return fm.maxWidth();;
 }
 
 int TextArea::TextNumVisibleLines() const {

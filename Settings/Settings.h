@@ -84,12 +84,9 @@ public:
     static int textRows;
     static int wrapMargin;
     static QString bgMenuCommands;
-    static QString boldHighlightFont;
-    static QString boldItalicHighlightFont;
     static QString colors[8];
     static QString geometry;
     static QString highlightPatterns;
-    static QString italicHighlightFont;
     static QString languageModes;
     static QString macroCommands;
     static QString serverName;
@@ -97,7 +94,7 @@ public:
     static QString shellCommands;
     static QString smartIndentInit;
     static QString smartIndentInitCommon;
-    static QString textFont;
+    static QString fontName;
     static QString titleFormat;
 
 public:
@@ -122,10 +119,7 @@ public:
 
 public:
     // Created implicitly from other "real" settings
-    static QFont plainFontStruct;
-    static QFont boldFontStruct;
-    static QFont italicFontStruct;
-    static QFont boldItalicFontStruct;
+    static QFont font;
 };
 
 #endif

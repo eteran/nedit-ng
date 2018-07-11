@@ -86,7 +86,7 @@ public:
     static std::vector<DocumentWidget *> allDocuments();
 
 public:
-    void action_Set_Fonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName);
+    void action_Set_Fonts(const QString &fontName);
     void action_Set_Language_Mode(const QString &languageMode);
     void action_Set_Language_Mode(const QString &languageMode, bool forceNewDefaults);
 
@@ -115,7 +115,6 @@ public:
     LockReasons lockReasons() const;
     QColor GetHighlightBGColorOfCodeEx(size_t hCode) const;
     QColor HighlightColorValueOfCodeEx(size_t hCode) const;
-    QFont FontOfNamedStyleEx(const QString &styleName) const;
     QString FileName() const;
     QString FullPath() const;
     QString GetAnySelectionEx(bool beep_on_error);
@@ -274,9 +273,6 @@ public:
     QString path_;                                         // path component of file being edited
     QString filename_;                                     // name component of file being edited
     QString fontName_;                                     // names of the text fonts in use
-    QString boldFontName_;
-    QString italicFontName_;
-    QString boldItalicFontName_;
     LockReasons lockReasons_;                              // all ways a file can be locked
     TextBuffer *buffer_;                                   // holds the text being edited
     bool replaceFailed_ = false;                           // flags replacements failures during multi-file replacements
@@ -310,10 +306,7 @@ private:
 private:
     std::array<Bookmark, MAX_MARKS> markTable_;         // marked locations in window
     bool backlightChars_;                               // is char backlighting turned on?
-    QFont boldFontStruct_;
-    QFont boldItalicFontStruct_;
     QFont fontStruct_;
-    QFont italicFontStruct_;
     QString backlightCharTypes_;                        // what backlighting to use
     QString modeMessage_;                               // stats line banner content for learn and shell command executing modes
     QTimer *flashTimer_;                                // timer for getting rid of highlighted matching paren.

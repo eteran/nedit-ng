@@ -82,13 +82,10 @@ public:
     static int GetPrefWrapMargin();
     static int GetVerticalAutoScroll();
     static QString GetPrefBacklightCharTypes();
-    static QString GetPrefBoldFontName();
-    static QString GetPrefBoldItalicFontName();
     static QString GetPrefColorName(ColorTypes index);
     static QString GetPrefDelimiters();
     static QString GetPrefFontName();
     static QString GetPrefGeometry();
-    static QString GetPrefItalicFontName();
     static QString GetPrefServerName();
     static QString GetPrefShell();
     static QString GetPrefTagFile();
@@ -99,9 +96,6 @@ public:
     static WrapMode GetPrefSearchWraps();
     static WrapStyle GetPrefWrap(size_t langMode);
     static QFont GetPrefDefaultFont();
-    static QFont GetPrefBoldFont();
-    static QFont GetPrefBoldItalicFont();
-    static QFont GetPrefItalicFont();
 
 public:
     static void SetPrefAppendLF(bool state);
@@ -110,8 +104,6 @@ public:
     static void SetPrefAutoScroll(bool state);
     static void SetPrefBacklightChars(bool state);
     static void SetPrefBeepOnSearchWrap(bool state);
-    static void SetPrefBoldFont(const QString &fontName);
-    static void SetPrefBoldItalicFont(const QString &fontName);
     static void SetPrefColorName(ColorTypes index, const QString &name);
     static void SetPrefCols(int nCols);
     static void SetPrefEmTabDist(int tabDist);
@@ -122,7 +114,6 @@ public:
     static void SetPrefHighlightSyntax(bool state);
     static void SetPrefInsertTabs(bool state);
     static void SetPrefISearchLine(bool state);
-    static void SetPrefItalicFont(const QString &fontName);
     static void SetPrefKeepSearchDlogs(bool state);
     static void SetPrefLineNums(bool state);
     static void SetPrefMatchSyntaxBased(bool state);

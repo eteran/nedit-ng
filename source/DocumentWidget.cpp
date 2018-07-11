@@ -448,17 +448,11 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 		}
 	}
 	
-    flashTimer_            = new QTimer(this);
-    fontName_              = Preferences::GetPrefFontName();
-    italicFontName_        = Preferences::GetPrefItalicFontName();
-    boldFontName_          = Preferences::GetPrefBoldFontName();
-    boldItalicFontName_    = Preferences::GetPrefBoldItalicFontName();
-    fontStruct_            = Preferences::GetPrefDefaultFont();
-    italicFontStruct_      = Preferences::GetPrefItalicFont();
-    boldFontStruct_        = Preferences::GetPrefBoldFont();
-    boldItalicFontStruct_  = Preferences::GetPrefBoldItalicFont();
-	languageMode_          = PLAIN_LANGUAGE_MODE;
-    showStats_             = Preferences::GetPrefStatsLine();
+    flashTimer_   = new QTimer(this);
+    fontName_     = Preferences::GetPrefFontName();
+    fontStruct_   = Preferences::GetPrefDefaultFont();
+    languageMode_ = PLAIN_LANGUAGE_MODE;
+    showStats_    = Preferences::GetPrefStatsLine();
 	
     ShowStatsLine(showStats_);
 
@@ -4227,45 +4221,21 @@ void DocumentWidget::setWrapMargin(int margin) {
 
 /*
 ** Set the fonts for "window" from a font name, and updates the display.
-** Also updates window->fontList_ which is used for statistics line.
 */
-void DocumentWidget::action_Set_Fonts(const QString &fontName, const QString &italicName, const QString &boldName, const QString &boldItalicName) {
+void DocumentWidget::action_Set_Fonts(const QString &fontName) {
 
-    emit_event("set_fonts", fontName, italicName, boldName, boldItalicName);
+    emit_event("set_fonts", fontName);
 
     // Check which fonts have changed
     bool primaryChanged = fontName != fontName_;
 
-    bool highlightChanged = false;
-    if (italicName != italicFontName_) {
-        highlightChanged = true;
-    }
-
-    if (boldName != boldFontName_) {
-        highlightChanged = true;
-    }
-
-    if (boldItalicName != boldItalicFontName_) {
-        highlightChanged = true;
-    }
-
-    if (!primaryChanged && !highlightChanged) {
+    if (!primaryChanged) {
         return;
     }
 
     if (primaryChanged) {
         fontName_   = fontName;
         fontStruct_ = Font::fromString(fontName_);
-    }
-
-    if (highlightChanged) {
-        italicFontName_       = italicName;
-        boldFontName_         = boldName;
-        boldItalicFontName_   = boldItalicName;
-		
-        italicFontStruct_     = Font::fromString(italicName);
-        boldFontStruct_       = Font::fromString(boldName);
-        boldItalicFontStruct_ = Font::fromString(boldItalicName);
     }
 
     // Change the primary font in all the widgets
@@ -6192,8 +6162,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
         p.underline     = false;
         p.highlightName = pat->name;
         p.styleName     = pat->style;
-        p.font          = FontOfNamedStyleEx(pat->style);
-        p.colorName     = Highlight::FgColorOfNamedStyleEx     (pat->style);
+        p.colorName     = Highlight::FgColorOfNamedStyleEx   (pat->style);
         p.bgColorName   = Highlight::BgColorOfNamedStyleEx   (pat->style);
         p.isBold        = Highlight::FontOfNamedStyleIsBold  (pat->style);
         p.isItalic      = Highlight::FontOfNamedStyleIsItalic(pat->style);
@@ -6757,35 +6726,6 @@ QString DocumentWidget::GetAnySelectionEx(bool beep_on_error) {
     }
 
     return QString();
-}
-
-/*
-** Find the font (font struct) associated with a named style.
-** This routine must only be called with a valid styleName (call
-** NamedStyleExists to find out whether styleName is valid).
-*/
-QFont DocumentWidget::FontOfNamedStyleEx(const QString &styleName) const {
-
-    const size_t styleNo = Highlight::IndexOfNamedStyle(styleName);
-
-    if (styleNo == STYLE_NOT_FOUND) {
-        return Preferences::GetPrefDefaultFont();
-    } else {
-
-        const int fontNum = Highlight::HighlightStyles[styleNo].font;
-
-        switch(fontNum) {
-        case BOLD_FONT:
-            return boldFontStruct_;
-        case ITALIC_FONT:
-            return italicFontStruct_;
-        case BOLD_FONT | ITALIC_FONT:
-            return boldItalicFontStruct_;
-        case PLAIN_FONT:
-        default:
-            return fontStruct_;
-        }
-    }
 }
 
 /*

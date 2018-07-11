@@ -14,9 +14,6 @@ bool settingsLoaded_ = false;
 auto DEFAULT_DELIMETERS       = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
 auto DEFAULT_BACKLIGHT_CHARS  = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
 auto DEFAULT_TEXT_FONT        = QLatin1String("Courier New,10,-1,5,50,0,0,0,0,0");
-auto DEFAULT_BOLD_FONT        = QLatin1String("Courier New,10,-1,5,75,0,0,0,0,0");
-auto DEFAULT_ITALIC_FONT      = QLatin1String("Courier New,10,-1,5,50,1,0,0,0,0");
-auto DEFAULT_BOLD_ITALIC_FONT = QLatin1String("Courier New,10,-1,5,75,1,0,0,0,0");
 
 #if defined(Q_OS_LINUX)
     auto shellCommandsResource = QLatin1String("res/DefaultShellCommandsLinux.txt");
@@ -82,12 +79,9 @@ int Settings::textCols;
 int Settings::textRows;
 int Settings::wrapMargin;
 QString Settings::bgMenuCommands;
-QString Settings::boldHighlightFont;
-QString Settings::boldItalicHighlightFont;
 QString Settings::colors[8];
 QString Settings::geometry;
 QString Settings::highlightPatterns;
-QString Settings::italicHighlightFont;
 QString Settings::languageModes;
 QString Settings::macroCommands;
 QString Settings::serverName;
@@ -95,7 +89,7 @@ QString Settings::shell;
 QString Settings::shellCommands;
 QString Settings::smartIndentInit;
 QString Settings::smartIndentInitCommon;
-QString Settings::textFont;
+QString Settings::fontName;
 QString Settings::titleFormat;
 
 bool Settings::autoWrapPastedText;
@@ -115,11 +109,7 @@ TruncSubstitution Settings::truncSubstitution;
 QString Settings::backlightCharTypes;
 QString Settings::tagFile;
 QString Settings::wordDelimiters;
-
-QFont Settings::plainFontStruct;
-QFont Settings::boldFontStruct;
-QFont Settings::italicFontStruct;
-QFont Settings::boldItalicFontStruct;
+QFont Settings::font;
 
 /**
  * @brief Settings::themeFile
@@ -231,10 +221,7 @@ void Settings::loadPreferences() {
     tabDistance                       = settings.value(tr("nedit.tabDistance"), 				      8).toInt();
     emulateTabs                       = settings.value(tr("nedit.emulateTabs"), 				      0).toInt();
     insertTabs                        = settings.value(tr("nedit.insertTabs"),  				      true).toBool();
-    textFont                          = settings.value(tr("nedit.textFont"),					      DEFAULT_TEXT_FONT).toString();
-    boldHighlightFont                 = settings.value(tr("nedit.boldHighlightFont"),			      DEFAULT_BOLD_FONT).toString();
-    italicHighlightFont               = settings.value(tr("nedit.italicHighlightFont"), 		      DEFAULT_ITALIC_FONT).toString();
-    boldItalicHighlightFont           = settings.value(tr("nedit.boldItalicHighlightFont"), 	      DEFAULT_BOLD_ITALIC_FONT).toString();
+    fontName                          = settings.value(tr("nedit.textFont"),					      DEFAULT_TEXT_FONT).toString();
     shell                             = settings.value(tr("nedit.shell"),						      QLatin1String("DEFAULT")).toString();
     geometry                          = settings.value(tr("nedit.geometry"),					      QString()).toString();
     tagFile                           = settings.value(tr("nedit.tagFile"), 					      QString()).toString();
@@ -320,10 +307,7 @@ void Settings::importSettings(const QString &filename) {
     tabDistance                       = settings.value(tr("nedit.tabDistance"), 				      tabDistance).toInt();
     emulateTabs                       = settings.value(tr("nedit.emulateTabs"), 				      emulateTabs).toInt();
     insertTabs                        = settings.value(tr("nedit.insertTabs"),  				      insertTabs).toBool();
-    textFont                          = settings.value(tr("nedit.textFont"),					      textFont).toString();
-    boldHighlightFont                 = settings.value(tr("nedit.boldHighlightFont"),			      boldHighlightFont).toString();
-    italicHighlightFont               = settings.value(tr("nedit.italicHighlightFont"), 		      italicHighlightFont).toString();
-    boldItalicHighlightFont           = settings.value(tr("nedit.boldItalicHighlightFont"), 	      boldItalicHighlightFont).toString();
+    fontName                          = settings.value(tr("nedit.textFont"),					      fontName).toString();
     shell                             = settings.value(tr("nedit.shell"),						      shell).toString();
     geometry                          = settings.value(tr("nedit.geometry"),					      geometry).toString();
     tagFile                           = settings.value(tr("nedit.tagFile"), 					      tagFile).toString();
@@ -404,10 +388,7 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.tabDistance"), tabDistance);
     settings.setValue(tr("nedit.emulateTabs"), emulateTabs);
     settings.setValue(tr("nedit.insertTabs"), insertTabs);
-    settings.setValue(tr("nedit.textFont"), textFont);
-    settings.setValue(tr("nedit.boldHighlightFont"), boldHighlightFont);
-    settings.setValue(tr("nedit.italicHighlightFont"), italicHighlightFont);
-    settings.setValue(tr("nedit.boldItalicHighlightFont"), boldItalicHighlightFont);
+    settings.setValue(tr("nedit.textFont"), fontName);
     settings.setValue(tr("nedit.shell"), shell);
     settings.setValue(tr("nedit.geometry"), geometry);
     settings.setValue(tr("nedit.tagFile"), tagFile);

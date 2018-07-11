@@ -633,10 +633,7 @@ int main(int argc, char *argv[]) {
     qWarning("WARNING: fonts will not be imported\n"
              "X11 uses a different specification than Qt and it is difficult to map between the two reliably");
 
-    Settings::textFont                = QLatin1String("Courier New,10,-1,5,50,0,0,0,0,0");
-    Settings::boldHighlightFont       = QLatin1String("Courier New,10,-1,5,75,0,0,0,0,0");
-    Settings::italicHighlightFont     = QLatin1String("Courier New,10,-1,5,50,1,0,0,0,0");
-    Settings::boldItalicHighlightFont = QLatin1String("Courier New,10,-1,5,75,1,0,0,0,0");
+    Settings::fontName = QLatin1String("Courier New,10,-1,5,50,0,0,0,0,0");
 #endif
 
     std::vector<Style> styles;

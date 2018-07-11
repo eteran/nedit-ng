@@ -636,67 +636,19 @@ void Preferences::SetPrefColorName(ColorTypes index, const QString &name) {
 }
 
 void Preferences::SetPrefFont(const QString &fontName) {
-    if(Settings::textFont != fontName) {
+    if(Settings::fontName != fontName) {
         PrefsHaveChanged = true;
     }
-    Settings::textFont        = fontName;
-    Settings::plainFontStruct = Font::fromString(fontName);
-}
-
-void Preferences::SetPrefBoldFont(const QString &fontName) {
-    if(Settings::boldHighlightFont != fontName) {
-        PrefsHaveChanged = true;
-    }
-    Settings::boldHighlightFont = fontName;
-    Settings::boldFontStruct    = Font::fromString(fontName);
-}
-
-void Preferences::SetPrefItalicFont(const QString &fontName) {
-    if(Settings::italicHighlightFont != fontName) {
-        PrefsHaveChanged = true;
-    }
-    Settings::italicHighlightFont = fontName;
-    Settings::italicFontStruct    = Font::fromString(fontName);
-}
-
-void Preferences::SetPrefBoldItalicFont(const QString &fontName) {
-    if(Settings::boldItalicHighlightFont != fontName) {
-        PrefsHaveChanged = true;
-    }
-    Settings::boldItalicHighlightFont = fontName;
-    Settings::boldItalicFontStruct    = Font::fromString(fontName);
+    Settings::fontName = fontName;
+    Settings::font     = Font::fromString(fontName);
 }
 
 QString Preferences::GetPrefFontName() {
-    return Settings::textFont;
-}
-
-QString Preferences::GetPrefBoldFontName() {
-    return Settings::boldHighlightFont;
-}
-
-QString Preferences::GetPrefItalicFontName() {
-    return Settings::italicHighlightFont;
-}
-
-QString Preferences::GetPrefBoldItalicFontName() {
-    return Settings::boldItalicHighlightFont;
+    return Settings::fontName;
 }
 
 QFont Preferences::GetPrefDefaultFont() {
-    return Settings::plainFontStruct;
-}
-
-QFont Preferences::GetPrefBoldFont() {
-    return Settings::boldFontStruct;
-}
-
-QFont Preferences::GetPrefItalicFont() {
-    return Settings::italicFontStruct;
-}
-
-QFont Preferences::GetPrefBoldItalicFont() {
-    return Settings::boldItalicFontStruct;
+    return Settings::font;
 }
 
 void Preferences::SetPrefShell(const QString &shell) {
@@ -1278,11 +1230,8 @@ void Preferences::translatePrefFormats(uint32_t fileVer) {
 
     Highlight::loadTheme();
 
-    // translate the font names into fontLists suitable for the text widget
-    Settings::plainFontStruct      = Font::fromString(Settings::textFont);
-    Settings::boldFontStruct       = Font::fromString(Settings::boldHighlightFont);
-    Settings::italicFontStruct     = Font::fromString(Settings::italicHighlightFont);
-    Settings::boldItalicFontStruct = Font::fromString(Settings::boldItalicHighlightFont);
+    // translate the font names into QFont suitable for the text widget
+    Settings::font = Font::fromString(Settings::fontName);
 
     /*
     **  The default set for the comand shell in PrefDescrip ("DEFAULT") is

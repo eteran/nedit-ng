@@ -1317,15 +1317,26 @@ static std::error_code setFontsMS(DocumentWidget *document, Arguments arguments,
     document = MacroRunDocumentEx();
 
     QString fontName;
-    QString italicName;
-    QString boldName;
-    QString boldItalicName;
-    if(std::error_code ec = readArguments(arguments, 0, &fontName, &italicName, &boldName, &boldItalicName)) {
-        qWarning("NEdit: set_fonts requires 4 arguments");
-        return ec;
+
+    if(arguments.size() == 1) {
+        if(std::error_code ec = readArguments(arguments, 0, &fontName)) {
+            qWarning("NEdit: set_fonts requires a string argument");
+            return ec;
+        }
+    } else {
+        QString italicName;
+        QString boldName;
+        QString boldItalicName;
+
+        if(std::error_code ec = readArguments(arguments, 0, &fontName, &italicName, &boldName, &boldItalicName)) {
+            qWarning("NEdit: set_fonts requires 4 arguments");
+            return ec;
+        }
+
+        qWarning("NEdit: support for independent fonts for styles is no longer support, arguments 2-4 are ignored");
     }
 
-    document->action_Set_Fonts(fontName, italicName, boldName, boldItalicName);
+    document->action_Set_Fonts(fontName);
 
     *result = make_value();
     return MacroErrorCode::Success;
@@ -4177,21 +4188,30 @@ static std::error_code fontNameMV(DocumentWidget *document, Arguments arguments,
 static std::error_code fontNameItalicMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
     Q_UNUSED(arguments);
 
-    *result = make_value(document->italicFontName_);
+    qWarning("NEdit: seperate italic fonts are not longer supported");
+
+    // NOTE(eteran): used to be italicFontName_
+    *result = make_value(document->fontName_);
     return MacroErrorCode::Success;
 }
 
 static std::error_code fontNameBoldMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
     Q_UNUSED(arguments);
 
-    *result = make_value(document->boldFontName_);
+    qWarning("NEdit: seperate bold fonts are not longer supported");
+
+    // NOTE(eteran): used to be boldFontName_
+    *result = make_value(document->fontName_);
     return MacroErrorCode::Success;
 }
 
 static std::error_code fontNameBoldItalicMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
     Q_UNUSED(arguments);
 
-    *result = make_value(document->boldItalicFontName_);
+    qWarning("NEdit: seperate bold-italic fonts are not longer supported");
+
+    // NOTE(eteran): used to be boldItalicFontName_
+    *result = make_value(document->fontName_);
     return MacroErrorCode::Success;
 }
 
@@ -4207,7 +4227,7 @@ static std::error_code minFontWidthMV(DocumentWidget *document, Arguments argume
     Q_UNUSED(arguments);
 
     TextArea *area = document->firstPane();
-    *result = make_value(area->TextDMinFontWidth(document->highlightSyntax_));
+    *result = make_value(area->TextDMinFontWidth());
     return MacroErrorCode::Success;
 }
 
@@ -4215,7 +4235,7 @@ static std::error_code maxFontWidthMV(DocumentWidget *document, Arguments argume
     Q_UNUSED(arguments);
 
     TextArea *area = document->firstPane();
-    *result = make_value(area->TextDMaxFontWidth(document->highlightSyntax_));
+    *result = make_value(area->TextDMaxFontWidth());
     return MacroErrorCode::Success;
 }
 
