@@ -495,16 +495,12 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
     P_overstrike              = document->overstrike_;
     P_hidePointer             = Preferences::GetPrefTypingHidesPointer();
 
-    QFontMetrics fm(fontStruct);
-	QFontInfo    fi(fontStruct);
+    font_       = fontStruct;
+    buffer_     = buffer;
+    calltip_.ID = 0;
 
-	ascent_  = fm.ascent();
-	descent_ = fm.descent();
-
-    font_               = fontStruct;
-    buffer_             = buffer;
-	fixedFontWidth_     = fi.fixedPitch() ? fm.maxWidth() : -1;
-    calltip_.ID         = 0;
+    updateFontHeightMetrics(fontStruct);
+    updateFontWidthMetrics(fontStruct);
 
     // this will set the rect_ correctly
     rect_.setLeft(P_marginWidth);
@@ -3214,13 +3210,8 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int64_t x, int y, i
 void TextArea::drawCursor(QPainter *painter, int x, int y) {
 
 	QPainterPath path;
-    QFontMetrics fm(font_);
 
-    // NOTE(eteran): the original code used fontStruct_->min_bounds.width
-    // this doesn't matter for fixed sized fonts, but for variable sized ones
-    // we aren't quite right. I've approximated this with the width of 'i', but
-    // in some fonts, maybe that's not right?
-    const int fontWidth  = fm.width(QLatin1Char('i'));
+    const int fontWidth  = TextDMinFontWidth();
     int fontHeight = ascent_ + descent_;
 
     // NOTE(eteran): some minor adjustments to get things to align "just right"
@@ -7487,11 +7478,8 @@ void TextArea::updateFontHeightMetrics(const QFont &font) {
 
     QFontMetrics fm(font);
 
-    int maxAscent  = fm.ascent();
-    int maxDescent = fm.descent();
-
-    ascent_  = maxAscent;
-    descent_ = maxDescent;
+    ascent_  = fm.ascent();
+    descent_ = fm.descent();
 }
 
 void TextArea::updateFontWidthMetrics(const QFont &font) {
@@ -7815,6 +7803,12 @@ TextBuffer *TextArea::TextGetBuffer() const {
 }
 
 int TextArea::TextDMinFontWidth() const {
+
+    // NOTE(eteran): the original code used fontStruct_->min_bounds.width
+    // this doesn't matter for fixed sized fonts, but for variable sized ones
+    // we aren't quite right. I've approximated this with the width of 'i', but
+    // in some fonts, maybe that's not right?
+
     QFontMetrics fm(font_);
     return fm.width(QLatin1Char('i'));;
 }
