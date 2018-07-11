@@ -20,7 +20,6 @@ add_library (Util
 	include/Util/raise.h
 	include/Util/ServerCommon.h
 	include/Util/string_view.h
-	include/Util/system.h
 	include/Util/utils.h
 	include/Util/version.h
 )
