@@ -2434,7 +2434,7 @@ void MainWindow::action_Find_Dialog(DocumentWidget *document, Direction directio
         dialogFind_ = new DialogFind(this, document);
     }
 
-    dialogFind_->setTextField(document);
+    dialogFind_->setTextFieldFromDocument(document);
 
     if(dialogFind_->isVisible()) {
         dialogFind_->raise();
@@ -2458,7 +2458,6 @@ void MainWindow::action_Find_Dialog(DocumentWidget *document, Direction directio
     fHistIndex_ = 0;
 
     dialogFind_->show();
-    dialogFind_->setFocus();
 }
 
 /**
@@ -5452,7 +5451,7 @@ void MainWindow::action_Replace_Dialog(DocumentWidget *document, Direction direc
         dialogReplace_ = new DialogReplace(this, document);
     }
 
-    dialogReplace_->setTextField(document);
+    dialogReplace_->setTextFieldFromDocument(document);
 
     // If the window is already up, just pop it to the top
     if(dialogReplace_->isVisible()) {
@@ -5479,7 +5478,6 @@ void MainWindow::action_Replace_Dialog(DocumentWidget *document, Direction direc
     rHistIndex_ = 0;
 
     dialogReplace_->show();
-    dialogReplace_->setFocus();
 }
 
 /**

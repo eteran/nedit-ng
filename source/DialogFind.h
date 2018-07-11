@@ -5,6 +5,9 @@
 #include "Dialog.h"
 #include "Direction.h"
 #include "SearchType.h"
+
+#include <boost/optional.hpp>
+
 #include "ui_DialogFind.h"
 
 class DocumentWidget;
@@ -12,6 +15,14 @@ class MainWindow;
 
 class DialogFind : public Dialog {
 	Q_OBJECT
+
+public:
+    struct Fields {
+        Direction  direction;
+        QString    searchString;
+        SearchType searchType;
+    };
+
 public:
     DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogFind() override = default;
@@ -22,12 +33,12 @@ protected:
 
 public:
     void setDocument(DocumentWidget *document);
-    void setTextField(DocumentWidget *document);
+    void setTextFieldFromDocument(DocumentWidget *document);
 	void initToggleButtons(SearchType searchType);
     void updateFindButton();
 	
 private:
-    bool getFields(Direction *direction, QString *searchString, SearchType *searchType);
+    boost::optional<Fields> getFields();
 	
 public:
 	bool keepDialog() const;

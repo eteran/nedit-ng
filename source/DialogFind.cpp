@@ -172,10 +172,10 @@ void DialogFind::initToggleButtons(SearchType searchType) {
 }
 
 /**
- * @brief DialogFind::setTextField
+ * @brief DialogFind::setTextFieldFromDocument
  * @param document
  */
-void DialogFind::setTextField(DocumentWidget *document) {
+void DialogFind::setTextFieldFromDocument(DocumentWidget *document) {
 
     QString initialText;
 
@@ -192,12 +192,9 @@ void DialogFind::setTextField(DocumentWidget *document) {
  */
 void DialogFind::on_buttonFind_clicked() {
 
-    QString    searchString;
-    Direction  direction;
-	SearchType searchType;
-
 	// fetch find string, direction and type from the dialog     
-    if (!getFields(&direction, &searchString, &searchType)) {
+    boost::optional<Fields> fields = getFields();
+    if (!fields) {
 		return;
     }
 
@@ -205,21 +202,26 @@ void DialogFind::on_buttonFind_clicked() {
 	ui.textFind->setFocus();
 
 	// find the text and mark it 
-    window_->action_Find(document_, searchString, direction, searchType, Preferences::GetPrefSearchWraps());
+    window_->action_Find(
+                document_,
+                fields->searchString,
+                fields->direction,
+                fields->searchType,
+                Preferences::GetPrefSearchWraps());
 
-	// pop down the dialog 
 	if (!keepDialog()) {
 		hide();
 	}
 }
 
 /*
-** Fetch and verify (particularly regular expression) search string,
-** direction, and search type from the Find dialog.  If the search string
-** is ok, save a copy in the search history, copy it to "searchString",
-** return search type in "searchType", and return true. Otherwise, return false.
+** Fetch and verify (particularly regular expression) search and replace
+** strings and search type from the Find dialog.  If the strings are ok,
+** save a copy in the search history, and return the fields
 */
-bool DialogFind::getFields(Direction *direction, QString *searchString, SearchType *searchType) {
+boost::optional<DialogFind::Fields> DialogFind::getFields() {
+
+    Fields fields;
 
 	// Get the search string, search type, and direction from the dialog 
 	QString findText = ui.textFind->text();
@@ -227,11 +229,11 @@ bool DialogFind::getFields(Direction *direction, QString *searchString, SearchTy
 	if (ui.checkRegex->isChecked()) {
 		int regexDefault;
 		if (ui.checkCase->isChecked()) {
-            *searchType  = SearchType::Regex;
-			regexDefault = REDFLT_STANDARD;
+            fields.searchType = SearchType::Regex;
+            regexDefault      = REDFLT_STANDARD;
 		} else {
-            *searchType  = SearchType::RegexNoCase;
-			regexDefault = REDFLT_CASE_INSENSITIVE;
+            fields.searchType = SearchType::RegexNoCase;
+            regexDefault      = REDFLT_CASE_INSENSITIVE;
 		}
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
@@ -239,27 +241,27 @@ bool DialogFind::getFields(Direction *direction, QString *searchString, SearchTy
             auto compiledRE = make_regex(findText, regexDefault);
 		} catch(const RegexError &e) {
             QMessageBox::warning(this, tr("Regex Error"), tr("Please respecify the search string:\n%1").arg(QString::fromLatin1(e.what())));
-			return false;
+            return boost::none;
 		}
 	} else {
 		if (ui.checkCase->isChecked()) {
 			if (ui.checkWord->isChecked()) {
-                *searchType = SearchType::CaseSenseWord;
+                fields.searchType = SearchType::CaseSenseWord;
 			} else {
-                *searchType = SearchType::CaseSense;
+                fields.searchType = SearchType::CaseSense;
 			}
 		} else {
 			if (ui.checkWord->isChecked()) {
-                *searchType = SearchType::LiteralWord;
+                fields.searchType = SearchType::LiteralWord;
 			} else {
-                *searchType = SearchType::Literal;
+                fields.searchType = SearchType::Literal;
 			}
 		}
 	}
 
-    *direction    = ui.checkBackward->isChecked() ? Direction::Backward : Direction::Forward;
-    *searchString = findText;
-    return true;
+    fields.direction    = ui.checkBackward->isChecked() ? Direction::Backward : Direction::Forward;
+    fields.searchString = findText;
+    return fields;
 }
 
 /**

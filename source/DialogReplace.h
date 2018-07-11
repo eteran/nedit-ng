@@ -5,8 +5,11 @@
 #include "Dialog.h"
 #include "Direction.h"
 #include "SearchType.h"
-#include "ui_DialogReplace.h"
+
 #include <QPointer>
+#include <boost/optional.hpp>
+
+#include "ui_DialogReplace.h"
 
 class DialogMultiReplace;
 class DocumentWidget;
@@ -17,6 +20,14 @@ class DialogReplace : public Dialog {
     friend class DialogMultiReplace;
 
 public:
+    struct Fields {
+        Direction  direction;
+        QString    searchString;
+        QString    replaceString;
+        SearchType searchType;
+    };
+
+public:
     DialogReplace(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f = Qt::WindowFlags());
     ~DialogReplace() override = default;
 	
@@ -25,14 +36,14 @@ protected:
 	void showEvent(QShowEvent *event) override;
 	
 public:
-    void setDocument(DocumentWidget *document);
-    void setTextField(DocumentWidget *document);
-	void initToggleButtons(SearchType searchType);
-    void updateFindButton();
-    void setActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceInWinBtn, bool replaceInSelBtn, bool replaceAllBtn);
+    boost::optional<Fields> getFields();
+    void collectWritableWindows();
+    void initToggleButtons(SearchType searchType);
     void UpdateReplaceActionButtons();
-    bool getReplaceDlogInfo(Direction *direction, QString *searchString, QString *replaceString, SearchType *searchType);
-	void collectWritableWindows();
+    void setActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceInWinBtn, bool replaceInSelBtn, bool replaceAllBtn);
+    void setDocument(DocumentWidget *document);
+    void setTextFieldFromDocument(DocumentWidget *document);
+    void updateFindButton();
 
 public:
 	bool keepDialog() const;

@@ -29,11 +29,6 @@ void DialogMultiReplace::on_buttonSelectAll_clicked() {
 
 void DialogMultiReplace::on_buttonReplace_clicked() {
 
-    QString searchString;
-    QString replaceString;
-    Direction direction;
-    SearchType searchType;
-
     QModelIndexList selections = ui.listFiles->selectionModel()->selectedRows();
     const int nSelected = selections.size();
 
@@ -62,7 +57,8 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
     /* Fetch the find and replace strings from the dialog;
      * they should have been validated already, but it is possible that the
      * user modified the strings again, so we should verify them again too. */
-    if (!replace_->getReplaceDlogInfo(&direction, &searchString, &replaceString, &searchType)) {
+    boost::optional<DialogReplace::Fields> fields = replace_->getFields();
+    if (!fields) {
 		return;
     }
 
@@ -85,7 +81,11 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
                 writableWin->replaceFailed_ = false;
 
                 if(auto win = MainWindow::fromDocument(writableWin)) {
-                    win->action_Replace_All(writableWin, searchString, replaceString, searchType);
+                    win->action_Replace_All(
+                                writableWin,
+                                fields->searchString,
+                                fields->replaceString,
+                                fields->searchType);
                 }
 
                 writableWin->multiFileBusy_ = false;
