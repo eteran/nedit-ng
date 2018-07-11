@@ -1709,7 +1709,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 }
 
 /*
-** Measure the width in pixels of a character "c" at a particular column
+** Measure the width in pixels of a character "ch" at a particular column
 ** "colNum" and buffer position "pos".  This is for measuring characters in
 ** proportional or mixed-width highlighting fonts.
 **
@@ -1719,23 +1719,18 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 ** in a proportional font is usually a bad idea, so very few users would
 ** choose a proportional font as a default.  There are still probably mixed-
 ** width syntax highlighting cases where things don't redraw properly for
-** insertion/deletion, though static display and wrapping and resizing
-** should now be solid because they are now used for online help display.
+** insertion/deletion.
 */
 int64_t TextArea::measurePropChar(char ch, int64_t colNum, TextCursor pos) const {
 
     char expChar[TextBuffer::MAX_EXP_CHAR_LEN];
     const int charLen = TextBuffer::BufExpandCharacter(ch, colNum, expChar, buffer_->BufGetTabDist());
 
-    uint32_t style;
-    if(!styleBuffer_) {
-		style = 0;
-	} else {
-        style = static_cast<uint8_t>(styleBuffer_->BufGetCharacter(pos));
+    if(styleBuffer_) {
+        const uint32_t style = static_cast<uint8_t>(styleBuffer_->BufGetCharacter(pos));
 		if (style == unfinishedStyle_) {
 			// encountered "unfinished" style, trigger parsing
 			(unfinishedHighlightCB_)(this, pos, highlightCBArg_);
-            style = static_cast<uint8_t>(styleBuffer_->BufGetCharacter(pos));
 		}
 	}
 
