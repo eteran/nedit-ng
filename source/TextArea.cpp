@@ -3221,7 +3221,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
     y += 1;
     fontHeight -= 1;
 
-    const int64_t bot = y + fontHeight - 1;
+    const int bot = y + fontHeight - 1;
 
     if (x < rect_.left() - 1 || x > rect_.left() + rect_.width()) {
 		return;
@@ -3231,13 +3231,13 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 	   width, rounded to an even number of pixels so that X will draw an
 	   odd number centered on the stem at x. */
     const int cursorWidth = (fontWidth / 3) * 2;
-    const int64_t left  = x - cursorWidth / 2;
-    int64_t right = left + cursorWidth;
+    const int left  = x - cursorWidth / 2;
+    int right = left + cursorWidth;
 
 	// Create segments and draw cursor
 	switch(cursorStyle_) {
     case CursorStyles::Caret: {
-        const int64_t midY = bot - fontHeight / 5;
+        const int midY = bot - fontHeight / 5;
 
 		path.moveTo(left, bot);
 		path.lineTo(x, midY);
@@ -3272,7 +3272,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
         break;
     }
     case CursorStyles::Dim: {
-        const int64_t midY = y + fontHeight / 2;
+        const int midY = y + fontHeight / 2;
 
         path.moveTo(x, y);
         path.lineTo(x, y);
