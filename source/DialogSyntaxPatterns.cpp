@@ -11,9 +11,9 @@
 #include "LanguageMode.h"
 #include "MainWindow.h"
 #include "PatternSet.h"
-#include "preferences.h"
 #include "SignalBlocker.h"
 #include "WindowHighlightData.h"
+#include "preferences.h"
 
 #include <QMessageBox>
 

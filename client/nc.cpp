@@ -1,5 +1,6 @@
 
 #include "Settings.h"
+#include "system.h"
 
 #include <QCoreApplication>
 #include <QSettings>
@@ -11,7 +12,6 @@
 #include <QThread>
 
 #include "Util/version.h"
-#include "Util/system.h"
 #include "Util/fileUtils.h"
 #include "Util/ClearCase.h"
 #include "Util/ServerCommon.h"

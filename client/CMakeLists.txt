@@ -8,6 +8,7 @@ set(CMAKE_AUTORCC ON)
 find_package(Qt5 5.4.0 REQUIRED Core Network)
 
 add_executable(nc-ng
+	system.h
 	nc.cpp
 )
 
