@@ -514,7 +514,7 @@ void Preferences::SetPrefMatchSyntaxBased(bool state) {
     Settings::matchSyntaxBased = state;
 }
 
-int Preferences::GetPrefMatchSyntaxBased() {
+bool Preferences::GetPrefMatchSyntaxBased() {
     return Settings::matchSyntaxBased;
 }
 

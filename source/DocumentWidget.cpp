@@ -2694,118 +2694,118 @@ void DocumentWidget::addWrapNewlines() {
 */
 bool DocumentWidget::writeBckVersion() {
 
-	// TODO(eteran): 2.0, this is essentially just a QFile::copy("filename", "filename.bck");
-    // with error reporting
+    struct BackupError {
+        QString filename;
+        QString message;
+    };
 
-    // Do only if version backups are turned on
-    if (!saveOldVersion_) {
+    try {
+        // TODO(eteran): 2.0, this is essentially just a QFile::copy("filename", "filename.bck");
+        // with error reporting
+
+        // Do only if version backups are turned on
+        if (!saveOldVersion_) {
+            return false;
+        }
+
+        // Get the full name of the file
+        QString fullname = FullPath();
+
+        // Generate name for old version
+        auto bckname = tr("%1.bck").arg(fullname);
+
+        // Delete the old backup file
+        // Errors are ignored; we'll notice them later.
+        QFile::remove(bckname);
+
+        /* open the file being edited.  If there are problems with the
+         * old file, don't bother the user, just skip the backup */
+        int in_fd = ::open(fullname.toUtf8().data(), O_RDONLY);
+        if (in_fd < 0) {
+            return false;
+        }
+
+        auto _1 = gsl::finally([in_fd]() {
+            ::close(in_fd);
+        });
+
+        /* Get permissions of the file.
+         * We preserve the normal permissions but not ownership, extended
+         * attributes, et cetera. */
+        struct stat statbuf;
+        if (::fstat(in_fd, &statbuf) != 0) {
+            return false;
+        }
+
+        // open the destination file exclusive and with restrictive permissions.
+        int out_fd = ::open(bckname.toUtf8().data(), O_CREAT | O_EXCL | O_TRUNC | O_WRONLY, S_IRUSR | S_IWUSR);
+        if (out_fd < 0) {
+            Raise<BackupError>(bckname, tr("Error open backup file"));
+        }
+
+        auto _2 = gsl::finally([out_fd]() {
+            ::close(out_fd);
+        });
+
+        // Set permissions on new file
+        if (::fchmod(out_fd, statbuf.st_mode) != 0) {
+            QFile::remove(bckname);
+            Raise<BackupError>(bckname, tr("fchmod() failed"));
+        }
+
+        // Allocate I/O buffer
+        constexpr size_t IO_BUFFER_SIZE = (1024 * 1024);
+        std::vector<char> io_buffer(IO_BUFFER_SIZE);
+
+        // copy loop
+        for (;;) {
+            ssize_t bytes_read = ::read(in_fd, io_buffer.data(), io_buffer.size());
+
+            if (bytes_read < 0) {
+                QFile::remove(bckname);
+                Raise<BackupError>(filename_, tr("read() error"));
+            }
+
+            if (bytes_read == 0) {
+                break; // EOF
+            }
+
+            // write to the file
+            ssize_t bytes_written = ::write(out_fd, io_buffer.data(), static_cast<size_t>(bytes_read));
+            if (bytes_written != bytes_read) {
+                QFile::remove(bckname);
+                Raise<BackupError>(bckname, ErrorString(errno));
+            }
+        }
+
+        return false;
+    } catch(const BackupError &e) {
+        QMessageBox messageBox(this);
+        messageBox.setWindowTitle(tr("Error writing Backup"));
+        messageBox.setIcon(QMessageBox::Critical);
+        messageBox.setText(tr("Couldn't write .bck (last version) file.\n%1: %2").arg(e.filename, e.message));
+
+        QPushButton *buttonCancelSave = messageBox.addButton(tr("Cancel Save"),      QMessageBox::RejectRole);
+        QPushButton *buttonTurnOff    = messageBox.addButton(tr("Turn off Backups"), QMessageBox::AcceptRole);
+        QPushButton *buttonContinue   = messageBox.addButton(tr("Continue"),         QMessageBox::AcceptRole);
+
+        Q_UNUSED(buttonContinue);
+
+        messageBox.exec();
+        if(messageBox.clickedButton() == buttonCancelSave) {
+            return true;
+        }
+
+        if(messageBox.clickedButton() == buttonTurnOff) {
+            saveOldVersion_ = false;
+
+            if(auto win = MainWindow::fromDocument(this)) {
+                no_signals(win->ui.action_Make_Backup_Copy)->setChecked(false);
+            }
+        }
+
         return false;
     }
-
-    // Get the full name of the file
-    QString fullname = FullPath();
-
-    // Generate name for old version
-    auto bckname = tr("%1.bck").arg(fullname);
-
-    // Delete the old backup file
-    // Errors are ignored; we'll notice them later.
-	QFile::remove(bckname);
-
-    /* open the file being edited.  If there are problems with the
-     * old file, don't bother the user, just skip the backup */
-    int in_fd = ::open(fullname.toUtf8().data(), O_RDONLY);
-    if (in_fd < 0) {
-        return false;
-    }
-
-    auto _1 = gsl::finally([in_fd]() {
-        ::close(in_fd);
-    });
-
-    /* Get permissions of the file.
-     * We preserve the normal permissions but not ownership, extended
-     * attributes, et cetera. */
-    struct stat statbuf;
-    if (::fstat(in_fd, &statbuf) != 0) {
-        return false;
-    }
-
-    // open the destination file exclusive and with restrictive permissions.
-    int out_fd = ::open(bckname.toUtf8().data(), O_CREAT | O_EXCL | O_TRUNC | O_WRONLY, S_IRUSR | S_IWUSR);
-    if (out_fd < 0) {
-        return backupError(tr("Error open backup file"), bckname);
-    }
-
-    auto _2 = gsl::finally([out_fd]() {
-        ::close(out_fd);
-    });
-
-    // Set permissions on new file
-    if (::fchmod(out_fd, statbuf.st_mode) != 0) {
-		QFile::remove(bckname);
-        return backupError(tr("fchmod() failed"), bckname);
-    }
-
-    // Allocate I/O buffer
-    constexpr size_t IO_BUFFER_SIZE = (1024 * 1024);
-    std::vector<char> io_buffer(IO_BUFFER_SIZE);
-
-    // copy loop
-    for (;;) {
-        ssize_t bytes_read = ::read(in_fd, io_buffer.data(), io_buffer.size());
-
-        if (bytes_read < 0) {
-			QFile::remove(bckname);
-            return backupError(tr("read() error"), filename_);
-        }
-
-        if (bytes_read == 0) {
-            break; // EOF
-        }
-
-        // write to the file
-        ssize_t bytes_written = ::write(out_fd, io_buffer.data(), static_cast<size_t>(bytes_read));
-        if (bytes_written != bytes_read) {
-			QFile::remove(bckname);
-            return backupError(ErrorString(errno), bckname);
-        }
-    }
-
-    return false;
-}
-
-/*
-** Error processing for writeBckVersion, gives the user option to cancel
-** the subsequent save, or continue and optionally turn off versioning
-*/
-bool DocumentWidget::backupError(const QString &errorMessage, const QString &file) {
-
-    QMessageBox messageBox(this);
-    messageBox.setWindowTitle(tr("Error writing Backup"));
-    messageBox.setIcon(QMessageBox::Critical);
-    messageBox.setText(tr("Couldn't write .bck (last version) file.\n%1: %2").arg(file, errorMessage));
-
-    QPushButton *buttonCancelSave = messageBox.addButton(tr("Cancel Save"),      QMessageBox::RejectRole);
-    QPushButton *buttonTurnOff    = messageBox.addButton(tr("Turn off Backups"), QMessageBox::AcceptRole);
-    QPushButton *buttonContinue   = messageBox.addButton(tr("Continue"),         QMessageBox::AcceptRole);
-
-    Q_UNUSED(buttonContinue);
-
-    messageBox.exec();
-    if(messageBox.clickedButton() == buttonCancelSave) {
-        return true;
-    }
-
-    if(messageBox.clickedButton() == buttonTurnOff) {
-        saveOldVersion_ = false;
-
-        if(auto win = MainWindow::fromDocument(this)) {
-            no_signals(win->ui.action_Make_Backup_Copy)->setChecked(false);
-        }
-    }
-
-    return false;
 }
 
 /*

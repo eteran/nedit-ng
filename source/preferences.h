@@ -63,7 +63,7 @@ public:
     static int GetPrefInsertTabs();
     static int GetPrefISearchLine();
     static int GetPrefLineNums();
-    static int GetPrefMatchSyntaxBased();
+    static bool GetPrefMatchSyntaxBased();
     static int GetPrefMaxPrevOpenFiles();
     static int GetPrefRows();
     static int GetPrefShowPathInWindowsMenu();

@@ -193,7 +193,6 @@ private:
     void createSelectMenuEx(TextArea *area, const QStringList &args);
     int findAllMatchesEx(TextArea *area, const QString &string);
     void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
-    bool backupError(const QString &errorMessage, const QString &file);
     bool doOpen(const QString &name, const QString &path, int flags);
     bool doSave();
     boost::optional<TextCursor> findMatchingCharEx(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit);
@@ -263,6 +262,7 @@ private:
     void UpdateStatsLine(TextArea *area);    
 
 public:
+    bool replaceFailed_     = false;             // flags replacements failures during multi-file replacements
     bool multiFileBusy_     = false;             // suppresses multiple beeps/dialogs during multi-file replacements
     bool filenameSet_       = false;             // is the window still "Untitled"?
     bool fileChanged_       = false;             // has window been modified?
@@ -270,24 +270,23 @@ public:
     FileFormats fileFormat_ = FileFormats::Unix; // whether to save the file straight (Unix format), or convert it to MS DOS style with \r\n line breaks
 
 public:
-    QString path_;                                         // path component of file being edited
+    IndentStyle indentStyle_;                              // whether/how to auto indent
+    LockReasons lockReasons_;                              // all ways a file can be locked
     QString filename_;                                     // name component of file being edited
     QString fontName_;                                     // names of the text fonts in use
-    LockReasons lockReasons_;                              // all ways a file can be locked
-    TextBuffer *buffer_;                                   // holds the text being edited
-    bool replaceFailed_ = false;                           // flags replacements failures during multi-file replacements
-    bool highlightSyntax_;                                 // is syntax highlighting turned on?
-    bool showStats_;                                       // is stats line supposed to be shown
-    bool saveOldVersion_;                                  // keep old version in filename.bc
-    bool autoSave_;                                        // is autosave turned on?
-    size_t languageMode_;                                  // identifies language mode currently selected in the window
-    int matchSyntaxBased_;                                 // Use syntax info to show matching
+    QString path_;                                         // path component of file being edited
     ShowMatchingStyle showMatchingStyle_;                  // How to show matching parens: None, Delimeter, or Range
-    IndentStyle indentStyle_;                              // whether/how to auto indent
+    TextBuffer *buffer_;                                   // holds the text being edited
     WrapStyle wrapMode_;                                   // line wrap style: None, Newline or Continuous
-    std::unique_ptr<WindowHighlightData> highlightData_;   // info for syntax highlighting
+    bool autoSave_;                                        // is autosave turned on?
+    bool highlightSyntax_;                                 // is syntax highlighting turned on?
+    bool matchSyntaxBased_;                                // Use syntax info to show matching
+    bool saveOldVersion_;                                  // keep old version in filename.bc
+    bool showStats_;                                       // is stats line supposed to be shown
+    size_t languageMode_;                                  // identifies language mode currently selected in the window
     std::shared_ptr<MacroCommandData>    macroCmdData_;    // same for macro commands
     std::shared_ptr<RangesetTable>       rangesetTable_;   // current range sets
+    std::unique_ptr<WindowHighlightData> highlightData_;   // info for syntax highlighting
 
 private:
     QMenu *contextMenu_    = nullptr;
@@ -304,18 +303,18 @@ private:
     uid_t uid_             = 0;                         // last recorded user id of the file
 
 private:
-    std::array<Bookmark, MAX_MARKS> markTable_;         // marked locations in window
-    bool backlightChars_;                               // is char backlighting turned on?
+    QSplitter *splitter_;
     QFont fontStruct_;
     QString backlightCharTypes_;                        // what backlighting to use
     QString modeMessage_;                               // stats line banner content for learn and shell command executing modes
     QTimer *flashTimer_;                                // timer for getting rid of highlighted matching paren.
+    bool backlightChars_;                               // is char backlighting turned on?
+    std::array<Bookmark, MAX_MARKS> markTable_;         // marked locations in window
     std::deque<UndoInfo> redo_;                         // info for redoing last undone op
     std::deque<UndoInfo> undo_;                         // info for undoing last operation
     std::unique_ptr<ShellCommandData> shellCmdData_;    // when a shell command is executing, info. about it, otherwise, nullptr
     std::unique_ptr<SmartIndentData>  smartIndentData_; // compiled macros for smart indent
-	QSplitter *splitter_;
-	Ui::DocumentWidget ui;
+    Ui::DocumentWidget ui;
 
 public:
     static DocumentWidget *LastCreated;
