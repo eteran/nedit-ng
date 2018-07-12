@@ -7399,8 +7399,8 @@ void TextArea::TextSetCursorPos(TextCursor pos) {
     callCursorMovementCBs();
 }
 
-void TextArea::setModifyingTabDist(int tabDist) {
-    modifyingTabDist_ = tabDist;
+void TextArea::setModifyingTabDist(bool modifying) {
+    modifyingTabDist_ = modifying;
 }
 
 int64_t TextArea::getBufferLinesCount() const {

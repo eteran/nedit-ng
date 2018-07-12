@@ -112,7 +112,7 @@ public:
 	void setAutoWrap(bool value);
 	void setAutoIndent(bool value);
 	void setSmartIndent(bool value);
-    void setModifyingTabDist(int tabDist);
+    void setModifyingTabDist(bool modifying);
     void setStyleBuffer(const std::shared_ptr<TextBuffer> &buffer);
 
 public:
@@ -389,14 +389,14 @@ private:
     int emTabsBeforeCursor_      = 0;              // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
     int horizOffset_             = 0;              // Horizontal scroll pos. in pixels
     int lineNumLeft_             = 0;
-    int lineNumWidth_            = 0;
-    int modifyingTabDist_        = 0;              // Whether tab distance is being modified
+    int lineNumWidth_            = 0;    
     int nLinesDeleted_           = 0;              // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
     int nVisibleLines_           = 1;              // # of visible (displayed) lines
     bool cursorOn_               = false;
     bool needAbsTopLineNum_      = false;          // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display
     bool pointerHidden_          = false;          // true if the mouse pointer is hidden
     bool suppressResync_         = false;          // Suppress resynchronization of line starts during buffer updates
+    bool modifyingTabDist_       = false;          // Whether tab distance is being modified
     bool showTerminalSizeHint_   = true;
 
 private:    

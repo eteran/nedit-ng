@@ -690,7 +690,7 @@ size_t DocumentWidget::matchLanguageMode() const {
 	/*... look for an explicit mode statement first */
 
 	// Do a regular expression search on for recognition pattern
-    const std::string first200 = buffer_->BufGetRangeEx(TextCursor(), TextCursor(200));
+    const std::string first200 = buffer_->BufGetRangeEx(buffer_->BufStartOfBuffer(), buffer_->BufStartOfBuffer() + 200);
     if(first200.empty()) {
         return PLAIN_LANGUAGE_MODE;
     }
@@ -761,7 +761,7 @@ void DocumentWidget::UpdateStatsLine(TextArea *area) {
             if(!area) {
                 area = firstPane();
             }
-		}
+        }
 
 		// Compose the string to display. If line # isn't available, leave it off
         const TextCursor pos = area->TextGetCursorPos();
@@ -1081,7 +1081,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
         const bool emTabDistIsDef     = oldEmTabDist == Preferences::GetPrefEmTabDist(oldMode);
         const bool indentStyleIsDef   = indentStyle_ == Preferences::GetPrefAutoIndent(oldMode)   || (Preferences::GetPrefAutoIndent(oldMode) == IndentStyle::Smart && indentStyle_ == IndentStyle::Auto && !SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(oldMode)));
-        const bool highlightIsDef     = highlightSyntax_ == Preferences::GetPrefHighlightSyntax() || (Preferences::GetPrefHighlightSyntax() && Highlight::FindPatternSet(!oldlanguageModeName.isNull() ? oldlanguageModeName : QLatin1String("")) == nullptr);
+        const bool highlightIsDef     = highlightSyntax_ == Preferences::GetPrefHighlightSyntax() || (Preferences::GetPrefHighlightSyntax() && Highlight::FindPatternSet(oldlanguageModeName) == nullptr);
         const WrapStyle wrapMode      = wrapModeIsDef                                || forceDefaults ? Preferences::GetPrefWrap(mode)        : wrapMode_;
         const int tabDist             = tabDistIsDef                                 || forceDefaults ? Preferences::GetPrefTabDist(mode)     : buffer_->BufGetTabDistance();
         const int emTabDist           = emTabDistIsDef                               || forceDefaults ? Preferences::GetPrefEmTabDist(mode)   : oldEmTabDist;
@@ -1162,7 +1162,7 @@ void DocumentWidget::SetTabDist(int tabDist) {
 
             area->TextDGetScroll(&saveVScrollPositions[paneIndex], &saveHScrollPositions[paneIndex]);
             saveCursorPositions[paneIndex] = area->TextGetCursorPos();
-            area->setModifyingTabDist(1);
+            area->setModifyingTabDist(true);
         }
 
         buffer_->BufSetTabDistance(tabDist, true);
@@ -1170,7 +1170,7 @@ void DocumentWidget::SetTabDist(int tabDist) {
         for(size_t paneIndex = 0; paneIndex < paneCount; ++paneIndex) {
             TextArea *area = textAreas[paneIndex];
 
-            area->setModifyingTabDist(0);
+            area->setModifyingTabDist(false);
             area->TextSetCursorPos(saveCursorPositions[paneIndex]);
             area->TextDSetScroll(saveVScrollPositions[paneIndex], saveHScrollPositions[paneIndex]);
         }
