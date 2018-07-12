@@ -46,7 +46,7 @@ void BasicTextBuffer<Ch, Tr>::BufSetAll(view_type text) {
     updateSelections(BufStartOfBuffer(), static_cast<int64_t>(deletedText.size()), 0);
 
     // Call the saved display routine(s) to update the screen
-    callModifyCBs(BufStartOfBuffer(), static_cast<int64_t>(deletedText.size()), length, 0, deletedText);
+    callModifyCBs(BufStartOfBuffer(), deletedText.size(), length, 0, deletedText);
 }
 
 /*
