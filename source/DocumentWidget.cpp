@@ -3182,7 +3182,14 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
     // Allocate space for the whole contents of the file (unfortunately)
     try {
-        std::vector<char> fileString(static_cast<size_t>(fileLength));
+
+        // a little trick to avoid std::vector filling with zeros during resize
+        struct uninitialized_char {
+            unsigned char m;
+            uninitialized_char() {}
+        };
+
+        std::vector<uninitialized_char> fileString(static_cast<size_t>(fileLength));
 
         // Read the file into fileString and terminate with a null
         size_t readLen = ::fread(fileString.data(), 1, static_cast<size_t>(fileLength), fp);
@@ -3204,23 +3211,21 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
         ino_         = statbuf.st_ino;
         fileMissing_ = false;
 
-        assert(readLen <= fileString.size());
-
         // Detect and convert DOS and Macintosh format files
         if (Preferences::GetPrefForceOSConversion()) {
-            switch (FormatOfFileEx(view::string_view(fileString.data(), readLen))) {
+            switch (FormatOfFileEx(view::string_view(reinterpret_cast<char *>(fileString.data()), readLen))) {
             case FileFormats::Dos:
-                ConvertFromDosFileString(fileString.data(), &readLen, nullptr);
+                ConvertFromDosFileString(reinterpret_cast<char *>(fileString.data()), &readLen, nullptr);
                 break;
             case FileFormats::Mac:
-                ConvertFromMacFileString(fileString.data(), readLen);
+                ConvertFromMacFileString(reinterpret_cast<char *>(fileString.data()), readLen);
                 break;
             case FileFormats::Unix:
                 break;
             }
         }
 
-        auto contents = view::string_view(fileString.data(), readLen);
+        auto contents = view::string_view(reinterpret_cast<char *>(fileString.data()), readLen);
 
         // Display the file contents in the text widget
         ignoreModify_ = true;
