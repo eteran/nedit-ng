@@ -25,7 +25,6 @@ void DialogWrapMargin::on_checkWrapAndFill_toggled(bool checked) {
 void DialogWrapMargin::on_buttonBox_accepted() {
 
     int margin;
-
     if (ui.checkWrapAndFill->isChecked()) {
         margin = 0;
     } else {

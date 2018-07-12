@@ -1,42 +1,42 @@
 
 #include "DocumentWidget.h"
 #include "CommandRecorder.h"
-#include "DialogMoveDocument.h"
 #include "DialogDuplicateTags.h"
+#include "DialogMoveDocument.h"
 #include "DialogOutput.h"
 #include "DialogPrint.h"
 #include "DialogReplace.h"
 #include "DragEndEvent.h"
 #include "EditFlags.h"
-#include "Util/fileUtils.h"
 #include "Font.h"
 #include "FontType.h"
-#include "HighlightData.h"
 #include "Highlight.h"
+#include "HighlightData.h"
 #include "HighlightStyle.h"
-#include "Util/Input.h"
-#include "interpret.h"
 #include "LanguageMode.h"
-#include "parse.h"
-#include "macro.h"
 #include "MainWindow.h"
 #include "PatternSet.h"
-#include "preferences.h"
 #include "Search.h"
 #include "Settings.h"
 #include "SignalBlocker.h"
+#include "SmartIndent.h"
 #include "SmartIndentEntry.h"
 #include "SmartIndentEvent.h"
-#include "SmartIndent.h"
 #include "Style.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
-#include "userCmds.h"
-#include "Util/ClearCase.h"
-#include "Util/utils.h"
 #include "WindowHighlightData.h"
 #include "WindowMenuEvent.h"
 #include "X11Colors.h"
+#include "interpret.h"
+#include "macro.h"
+#include "parse.h"
+#include "preferences.h"
+#include "userCmds.h"
+#include "Util/ClearCase.h"
+#include "Util/Input.h"
+#include "Util/fileUtils.h"
+#include "Util/utils.h"
 
 #include <QClipboard>
 #include <QFile>
@@ -100,7 +100,7 @@ enum {
 };
 
 struct CharMatchTable {
-    char      c;
+    char      ch;
     char      match;
     Direction direction;
 };
@@ -130,17 +130,11 @@ constexpr CharMatchTable FlashingChars[] = {
     {']', '[',   Direction::Backward},
 };
 
-/*
- * Number of bytes read at once by cmpWinAgainstFile
- */
-constexpr auto PREFERRED_CMPBUF_LEN = static_cast<int64_t>(0x8000);
-
 /* Maximum frequency in miliseconds of checking for external modifications.
    The periodic check is only performed on buffer modification, and the check
    interval is only to prevent checking on every keystroke in case of a file
    system which is slow to process stat requests (which I'm not sure exists) */
 constexpr int MOD_CHECK_INTERVAL = 3000;
-
 
 void modifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
     if(auto document = static_cast<DocumentWidget *>(user)) {
@@ -174,7 +168,7 @@ void dragEndCB(TextArea *area, const DragEndEvent *data, void *user) {
 
 void handleUnparsedRegionCB(const TextArea *area, TextCursor pos, const void *user) {
     if(auto document = static_cast<const DocumentWidget *>(user)) {
-        document->handleUnparsedRegionEx(area->getStyleBuffer(), pos);
+        document->handleUnparsedRegion(area->getStyleBuffer(), pos);
     }
 }
 
@@ -522,24 +516,24 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
     area->setCursorVPadding(Preferences::GetVerticalAutoScroll());
     area->setEmulateTabs(Preferences::GetPrefEmTabDist(PLAIN_LANGUAGE_MODE));
 
-    const QColor textFgPix   = X11Colors::fromString(Preferences::GetPrefColorName(TEXT_FG_COLOR));
-    const QColor textBgPix   = X11Colors::fromString(Preferences::GetPrefColorName(TEXT_BG_COLOR));
-    const QColor selectFgPix = X11Colors::fromString(Preferences::GetPrefColorName(SELECT_FG_COLOR));
-    const QColor selectBgPix = X11Colors::fromString(Preferences::GetPrefColorName(SELECT_BG_COLOR));
-    const QColor hiliteFgPix = X11Colors::fromString(Preferences::GetPrefColorName(HILITE_FG_COLOR));
-    const QColor hiliteBgPix = X11Colors::fromString(Preferences::GetPrefColorName(HILITE_BG_COLOR));
-    const QColor lineNoFgPix = X11Colors::fromString(Preferences::GetPrefColorName(LINENO_FG_COLOR));
-    const QColor cursorFgPix = X11Colors::fromString(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
+    const QColor textFg   = X11Colors::fromString(Preferences::GetPrefColorName(TEXT_FG_COLOR));
+    const QColor textBg   = X11Colors::fromString(Preferences::GetPrefColorName(TEXT_BG_COLOR));
+    const QColor selectFg = X11Colors::fromString(Preferences::GetPrefColorName(SELECT_FG_COLOR));
+    const QColor selectBg = X11Colors::fromString(Preferences::GetPrefColorName(SELECT_BG_COLOR));
+    const QColor hiliteFg = X11Colors::fromString(Preferences::GetPrefColorName(HILITE_FG_COLOR));
+    const QColor hiliteBg = X11Colors::fromString(Preferences::GetPrefColorName(HILITE_BG_COLOR));
+    const QColor lineNoFg = X11Colors::fromString(Preferences::GetPrefColorName(LINENO_FG_COLOR));
+    const QColor cursorFg = X11Colors::fromString(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
 
     area->TextDSetColors(
-        textFgPix,
-        textBgPix,
-        selectFgPix,
-        selectBgPix,
-        hiliteFgPix,
-        hiliteBgPix,
-        lineNoFgPix,
-        cursorFgPix);
+        textFg,
+        textBg,
+        selectFg,
+        selectBg,
+        hiliteFg,
+        hiliteBg,
+        lineNoFg,
+        cursorFg);
 
     // add focus, drag, cursor tracking, and smart indent callbacks
     area->addCursorMovementCallback(movedCB, this);
@@ -1209,7 +1203,7 @@ void DocumentWidget::SetAutoIndent(IndentStyle state) {
     if (indentStyle_ == IndentStyle::Smart && !smartIndent) {
         EndSmartIndent();
     } else if (smartIndent && indentStyle_ != IndentStyle::Smart) {
-        BeginSmartIndentEx(/*warn=*/true);
+        BeginSmartIndent(/*warn=*/true);
     }
 
     indentStyle_ = state;
@@ -2092,6 +2086,9 @@ QString DocumentWidget::FileName() const {
  */
 bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
 
+    // Number of bytes read at once
+    constexpr auto PREFERRED_CMPBUF_LEN = static_cast<int64_t>(0x8000);
+
     char pendingCR = '\0';
 
     QFile file(fileName);
@@ -2672,9 +2669,9 @@ void DocumentWidget::addWrapNewlines() {
 
     // Modify the buffer to add wrapping
     TextArea *area = textAreas[0];
-    std::string fileString = area->TextGetWrappedEx(buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer());
+    std::string fileString = area->TextGetWrapped(buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer());
 
-    buffer_->BufSetAllEx(fileString);
+    buffer_->BufSetAll(fileString);
 
     // restore the insert and scroll positions of each pane
     for(size_t i = 0; i < paneCount; ++i) {
@@ -2949,7 +2946,7 @@ void DocumentWidget::CloseDocument() {
 
         // clear the buffer, but ignore changes
         ignoreModify_ = true;
-        buffer_->BufSetAllEx("");
+        buffer_->BufSetAll("");
         ignoreModify_ = false;
 
         filenameSet_  = false;
@@ -3225,7 +3222,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
         // Display the file contents in the text widget
         ignoreModify_ = true;
-        buffer_->BufSetAllEx(contents);
+        buffer_->BufSetAll(contents);
         ignoreModify_ = false;
 
         // Set window title and file changed flag
@@ -3652,7 +3649,7 @@ boost::optional<TextCursor> DocumentWidget::findMatchingCharEx(char toMatch, Sty
 
     // Look up the matching character and match direction
     auto matchIt = std::find_if(std::begin(MatchingChars), std::end(MatchingChars), [toMatch](const CharMatchTable &entry) {
-        return entry.c == toMatch;
+        return entry.ch == toMatch;
     });
 
     if(matchIt == std::end(MatchingChars)) {
@@ -3806,7 +3803,7 @@ void DocumentWidget::findDefinitionHelper(TextArea *area, const QString &arg, Ta
 	} else {
         Tags::searchMode = search_type;
 
-        QString selected = GetAnySelectionEx(/*beep_on_error=*/false);
+        QString selected = GetAnySelection(/*beep_on_error=*/false);
         if(selected.isEmpty()) {
 			return;
 		}
@@ -3960,10 +3957,10 @@ void DocumentWidget::PrintWindow(TextArea *area, bool selectedOnly) {
         if (sel->rectangular) {
             fileString = buffer_->BufGetSelectionTextEx();
         } else {
-            fileString = area->TextGetWrappedEx(sel->start, sel->end);
+            fileString = area->TextGetWrapped(sel->start, sel->end);
         }
     } else {
-        fileString = area->TextGetWrappedEx(buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer());
+        fileString = area->TextGetWrapped(buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer());
     }
 
     // add a terminating newline if the file doesn't already have one
@@ -4052,7 +4049,7 @@ void DocumentWidget::closePane() {
 ** be repeated whenever a new text widget is created within this window
 ** (a split-window command).
 */
-void DocumentWidget::BeginSmartIndentEx(bool warn) {
+void DocumentWidget::BeginSmartIndent(bool warn) {
 
     static bool initialized = false;
 
@@ -4513,7 +4510,7 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
        window as the macro, regardless of where the output is directed,
        so the user can cancel them as a unit */
     if (source == CommandSource::Macro) {
-        document = MacroRunDocumentEx();
+        document = MacroRunDocument();
     }
 
     // put up a watch cursor over the waiting window
@@ -5397,7 +5394,7 @@ void DocumentWidget::FlashMatchingEx(TextArea *area) {
 
     // is the character one we want to flash?
     auto matchIt = std::find_if(std::begin(FlashingChars), std::end(FlashingChars), [ch](const CharMatchTable &entry) {
-        return entry.c == ch;
+        return entry.ch == ch;
     });
 
     if(matchIt == std::end(FlashingChars)) {
@@ -5605,7 +5602,7 @@ Style DocumentWidget::GetHighlightInfoEx(TextCursor pos) {
 
     // Beware of unparsed regions.
     if (style == UNFINISHED_STYLE) {
-        handleUnparsedRegionEx(highlightData->styleBuffer, pos);
+        handleUnparsedRegion(highlightData->styleBuffer, pos);
         style = highlightData->styleBuffer->BufGetCharacter(pos);
     }
 
@@ -5643,7 +5640,7 @@ int64_t DocumentWidget::StyleLengthOfCodeFromPosEx(TextCursor pos) {
 
             if (hCode == UNFINISHED_STYLE) {
                 // encountered "unfinished" style, trigger parsing
-                handleUnparsedRegionEx(highlightData->styleBuffer, pos);
+                handleUnparsedRegion(highlightData->styleBuffer, pos);
                 hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
             }
 
@@ -5657,7 +5654,7 @@ int64_t DocumentWidget::StyleLengthOfCodeFromPosEx(TextCursor pos) {
             while (hCode == UNFINISHED_STYLE || ((entry = styleTableEntryOfCodeEx(hCode)) && entry->styleName == checkStyleName)) {
                 if (hCode == UNFINISHED_STYLE) {
                     // encountered "unfinished" style, trigger parsing, then loop
-                    handleUnparsedRegionEx(highlightData->styleBuffer, pos);
+                    handleUnparsedRegion(highlightData->styleBuffer, pos);
                     hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
                 } else {
                     // advance the position and get the new code
@@ -5728,7 +5725,7 @@ size_t DocumentWidget::HighlightCodeOfPosEx(TextCursor pos) {
             hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
             if (hCode == UNFINISHED_STYLE) {
                 // encountered "unfinished" style, trigger parsing
-                handleUnparsedRegionEx(highlightData->styleBuffer, pos);
+                handleUnparsedRegion(highlightData->styleBuffer, pos);
                 hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
             }
         }
@@ -5759,7 +5756,7 @@ int64_t DocumentWidget::HighlightLengthOfCodeFromPosEx(TextCursor pos, size_t *c
 
             if (hCode == UNFINISHED_STYLE) {
                 // encountered "unfinished" style, trigger parsing
-                handleUnparsedRegionEx(highlightData->styleBuffer, pos);
+                handleUnparsedRegion(highlightData->styleBuffer, pos);
                 hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
             }
 
@@ -5770,7 +5767,7 @@ int64_t DocumentWidget::HighlightLengthOfCodeFromPosEx(TextCursor pos, size_t *c
             while (hCode == *checkCode || hCode == UNFINISHED_STYLE) {
                 if (hCode == UNFINISHED_STYLE) {
                     // encountered "unfinished" style, trigger parsing, then loop
-                    handleUnparsedRegionEx(highlightData->styleBuffer, pos);
+                    handleUnparsedRegion(highlightData->styleBuffer, pos);
                     hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
                 } else {
                     // advance the position and get the new code
@@ -5792,7 +5789,7 @@ int64_t DocumentWidget::HighlightLengthOfCodeFromPosEx(TextCursor pos, size_t *c
 ** needs re-parsing.  This routine applies pass 2 patterns to a chunk of
 ** the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
 */
-void DocumentWidget::handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &styleBuf, TextCursor pos) const {
+void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &styleBuf, TextCursor pos) const {
 
     TextBuffer *buf = buffer_;
     const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
@@ -5936,7 +5933,7 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
             match_to);
     }
 
-    highlightData->styleBuffer->BufSetAllEx(view::string_view(styleBegin, static_cast<size_t>(stylePtr - styleBegin)));
+    highlightData->styleBuffer->BufSetAll(view::string_view(styleBegin, static_cast<size_t>(stylePtr - styleBegin)));
 
     // install highlight pattern data in the window data structure
     highlightData_ = std::move(highlightData);
@@ -6155,7 +6152,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
 
     auto it = std::back_inserter(styleTable);
 
-    auto setStyleTableEntry = [this](HighlightPattern *pat) {
+    auto createStyleTableEntry = [](HighlightPattern *pat) {
 
         StyleTableEntry p;
 
@@ -6180,19 +6177,19 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     };
 
     // PLAIN_STYLE (pass 1)
-    it++ = setStyleTableEntry(noPass1 ? &pass2PatternSrc[0] : &pass1PatternSrc[0]);
+    it++ = createStyleTableEntry(noPass1 ? &pass2PatternSrc[0] : &pass1PatternSrc[0]);
 
     // PLAIN_STYLE (pass 2)
-    it++ = setStyleTableEntry(noPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
+    it++ = createStyleTableEntry(noPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
 
     // explicit styles (pass 1)
     for (int i = 1; i < nPass1Patterns; i++) {
-        it++ = setStyleTableEntry(&pass1PatternSrc[i]);
+        it++ = createStyleTableEntry(&pass1PatternSrc[i]);
     }
 
     // explicit styles (pass 2)
     for (int i = 1; i < nPass2Patterns; i++) {
-        it++ = setStyleTableEntry(&pass2PatternSrc[i]);
+        it++ = createStyleTableEntry(&pass2PatternSrc[i]);
     }
 
     // Free the temporary sorted pattern source list
@@ -6495,8 +6492,8 @@ bool DocumentWidget::MacroWindowCloseActionsEx() {
 
             const std::shared_ptr<MacroCommandData> &mcd = document->macroCmdData_;
 
-            if (document == MacroRunDocumentEx() && MacroFocusDocument() == this) {
-                SetMacroFocusDocument(MacroRunDocumentEx());
+            if (document == MacroRunDocument() && MacroFocusDocument() == this) {
+                SetMacroFocusDocument(MacroRunDocument());
             } else if (mcd && mcd->context->FocusDocument == this) {
                 mcd->context->FocusDocument = mcd->context->RunDocument;
             }
@@ -6509,7 +6506,7 @@ bool DocumentWidget::MacroWindowCloseActionsEx() {
        execution must otherwise return to the main loop to execute any
        commands), is running in this window, tell the caller not to close,
        and schedule window close on completion of macro */
-    if (MacroRunDocumentEx() == this) {
+    if (MacroRunDocument() == this) {
         cmdData->closeOnCompletion = true;
         return false;
     }
@@ -6707,7 +6704,7 @@ bool DocumentWidget::InSmartIndentMacrosEx() const {
  * @brief DocumentWidget::GetAnySelectionEx
  * @return
  */
-QString DocumentWidget::GetAnySelectionEx(bool beep_on_error) {
+QString DocumentWidget::GetAnySelection(bool beep_on_error) {
 
     // If the selection is in the window's own buffer get it from there
     if (buffer_->primary.selected) {

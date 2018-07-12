@@ -15,8 +15,8 @@ DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f) : Dialog(
 void DialogWindowSize::on_buttonBox_accepted() {
 
 	bool ok;
-	QString width  = ui.editWidth->text();
-	QString height = ui.editHeight->text();
+    const QString width  = ui.editWidth->text();
+    const QString height = ui.editHeight->text();
 
 	if(width.isEmpty()) {
 		QMessageBox::warning(this, tr("Warning"), tr("Please supply a value for number of rows"));

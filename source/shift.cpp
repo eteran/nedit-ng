@@ -215,7 +215,7 @@ std::string fillParagraphsEx(view::string_view text, int64_t rightMargin, int ta
     // Create a buffer to accumulate the filled paragraphs
     TextBuffer buf;
     buf.BufSetSyncXSelection(false);
-    buf.BufSetAllEx(text);
+    buf.BufSetAll(text);
 
     /*
     ** Loop over paragraphs, filling each one, and accumulating the results
@@ -626,7 +626,7 @@ void shiftRectEx(DocumentWidget *document, TextArea *area, int direction, bool b
     tempBuf.BufSetUseTabs(buf->BufGetUseTabs());
 
     std::string text = buf->BufGetRangeEx(selStart, selEnd);
-    tempBuf.BufSetAllEx(text);
+    tempBuf.BufSetAll(text);
 
     // Do the shift in the temporary buffer
     text = buf->BufGetTextInRectEx(selStart, selEnd, rectStart, rectEnd);

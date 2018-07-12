@@ -103,7 +103,7 @@ void Preferences::SaveNEditPrefs(QWidget *parent, bool quietly) {
     Settings::macroCommands         = WriteMacroCmdsStringEx();
     Settings::bgMenuCommands        = WriteBGMenuCmdsStringEx();
     Settings::highlightPatterns     = Highlight::WriteHighlightString();
-    Settings::languageModes         = WriteLanguageModesStringEx();
+    Settings::languageModes         = WriteLanguageModesString();
     Settings::smartIndentInit       = SmartIndent::WriteSmartIndentStringEx();
     Settings::smartIndentInitCommon = SmartIndent::WriteSmartIndentCommonStringEx();
 
@@ -997,7 +997,7 @@ int Preferences::loadLanguageModesString(const QString &string) {
             }
 
             // read list of extensions
-            lm.extensions = readExtensionListEx(in);
+            lm.extensions = readExtensionList(in);
             if (!SkipDelimiter(in, &errMsg)) {
                 Raise<ModeError>(errMsg);
             }
@@ -1125,7 +1125,7 @@ int Preferences::loadLanguageModesString(const QString &string) {
     }
 }
 
-QString Preferences::WriteLanguageModesStringEx() {
+QString Preferences::WriteLanguageModesString() {
 
     QString str;
     QTextStream out(&str);
@@ -1249,7 +1249,7 @@ void Preferences::translatePrefFormats(uint32_t fileVer) {
     SetupUserMenuInfo();
 }
 
-QStringList Preferences::readExtensionListEx(Input &in) {
+QStringList Preferences::readExtensionList(Input &in) {
     QStringList extensionList;
 
     // skip over blank space

@@ -598,7 +598,7 @@ static const SubRoutine TextAreaSubrNames[] = {
     static std::error_code routineName(DocumentWidget *document, Arguments arguments, DataValue *result) {                    \
                                                                                                                               \
         /* ensure that we are dealing with the document which currently has the focus */                                      \
-        document = MacroRunDocumentEx();                                                                                      \
+        document = MacroRunDocument();                                                                                        \
                                                                                                                               \
         QString string;                                                                                                       \
         if(std::error_code ec = readArguments(arguments, 0, &string)) {                                                       \
@@ -617,7 +617,7 @@ static const SubRoutine TextAreaSubrNames[] = {
     static std::error_code routineName(DocumentWidget *document, Arguments arguments, DataValue *result) {                    \
                                                                                                                               \
         /* ensure that we are dealing with the document which currently has the focus */                                      \
-        document = MacroRunDocumentEx();                                                                                      \
+        document = MacroRunDocument();                                                                                        \
                                                                                                                               \
         QString string;                                                                                                       \
         if(std::error_code ec = readArguments(arguments, 0, &string)) {                                                       \
@@ -632,18 +632,18 @@ static const SubRoutine TextAreaSubrNames[] = {
         return MacroErrorCode::Success;                                                                                       \
     }
 
-#define WINDOW_MENU_EVENT_M(routineName, slotName)                                                                                \
+#define WINDOW_MENU_EVENT_M(routineName, slotName)                                                                              \
     static std::error_code routineName(DocumentWidget *document, Arguments arguments, DataValue *result) {                      \
                                                                                                                                 \
         /* ensure that we are dealing with the document which currently has the focus */                                        \
-        document = MacroRunDocumentEx();                                                                                        \
+        document = MacroRunDocument();                                                                                          \
                                                                                                                                 \
         if(!arguments.empty()) {                                                                                                \
             return MacroErrorCode::WrongNumberOfArguments;                                                                      \
         }                                                                                                                       \
                                                                                                                                 \
         if(auto window = MainWindow::fromDocument(document)) {                                                                  \
-            window->slotName(document, CommandSource::Macro);                                                                                         \
+            window->slotName(document, CommandSource::Macro);                                                                   \
         }                                                                                                                       \
                                                                                                                                 \
         *result = make_value();                                                                                                 \
@@ -654,7 +654,7 @@ static const SubRoutine TextAreaSubrNames[] = {
     static std::error_code routineName(DocumentWidget *document, Arguments arguments, DataValue *result) {                      \
                                                                                                                                 \
         /* ensure that we are dealing with the document which currently has the focus */                                        \
-        document = MacroRunDocumentEx();                                                                                        \
+        document = MacroRunDocument();                                                                                          \
                                                                                                                                 \
         if(!arguments.empty()) {                                                                                                \
             return MacroErrorCode::WrongNumberOfArguments;                                                                      \
@@ -857,7 +857,7 @@ static SearchType searchType(Arguments arguments, int index) {
 static std::error_code closeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if(arguments.size() > 1) {
         return MacroErrorCode::WrongNumberOfArguments;
@@ -899,7 +899,7 @@ static std::error_code closeMS(DocumentWidget *document, Arguments arguments, Da
 static std::error_code newMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if(arguments.size() > 1) {
         return MacroErrorCode::WrongNumberOfArguments;
@@ -942,7 +942,7 @@ static std::error_code newMS(DocumentWidget *document, Arguments arguments, Data
 static std::error_code saveAsMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if(arguments.size() > 2 || arguments.empty()) {
         return MacroErrorCode::WrongNumberOfArguments;
@@ -980,7 +980,7 @@ static std::error_code findMS(DocumentWidget *document, Arguments arguments, Dat
     // find( search-string [, search-direction] [, search-type] [, search-wrap] )
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if(arguments.size() > 4 || arguments.empty()) {
         return MacroErrorCode::WrongNumberOfArguments;
@@ -1006,7 +1006,7 @@ static std::error_code findMS(DocumentWidget *document, Arguments arguments, Dat
 static std::error_code findDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     Direction direction = searchDirection(arguments, 0);
     SearchType      type      = searchType(arguments, 0);
@@ -1023,7 +1023,7 @@ static std::error_code findDialogMS(DocumentWidget *document, Arguments argument
 static std::error_code findAgainMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     Direction direction = searchDirection(arguments, 0);
     WrapMode wrap       = searchWrap(arguments, 0);
@@ -1039,7 +1039,7 @@ static std::error_code findAgainMS(DocumentWidget *document, Arguments arguments
 static std::error_code findSelectionMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     Direction direction = searchDirection(arguments, 0);
     SearchType type     = searchType(arguments, 0);
@@ -1056,7 +1056,7 @@ static std::error_code findSelectionMS(DocumentWidget *document, Arguments argum
 static std::error_code replaceMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if(arguments.size() > 5 || arguments.size() < 2) {
         return MacroErrorCode::WrongNumberOfArguments;
@@ -1083,7 +1083,7 @@ static std::error_code replaceMS(DocumentWidget *document, Arguments arguments, 
 static std::error_code replaceDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     Direction direction = searchDirection(arguments, 0);
     SearchType      type      = searchType(arguments, 0);
@@ -1100,7 +1100,7 @@ static std::error_code replaceDialogMS(DocumentWidget *document, Arguments argum
 static std::error_code replaceAgainMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if(arguments.size() != 2) {
         return MacroErrorCode::WrongNumberOfArguments;
@@ -1123,7 +1123,7 @@ static std::error_code gotoMarkMS(DocumentWidget *document, Arguments arguments,
     // goto_mark( mark, [, extend] )
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if(arguments.size() > 2 || arguments.size() < 1) {
         return MacroErrorCode::WrongNumberOfArguments;
@@ -1159,7 +1159,7 @@ static std::error_code gotoMarkDialogMS(DocumentWidget *document, Arguments argu
     // goto_mark( mark, [, extend] )
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if(arguments.size() > 1) {
         return MacroErrorCode::WrongNumberOfArguments;
@@ -1190,7 +1190,7 @@ static std::error_code findDefinitionMS(DocumentWidget *document, Arguments argu
     // find_definition( [ argument ] )
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if(arguments.size() > 1) {
         return MacroErrorCode::WrongNumberOfArguments;
@@ -1216,7 +1216,7 @@ static std::error_code repeatMacroMS(DocumentWidget *document, Arguments argumen
     // repeat_macro( how/count, method )
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     QString howString;
     QString method;
@@ -1253,7 +1253,7 @@ static std::error_code detachDocumentDialogMS(DocumentWidget *document, Argument
     Q_UNUSED(result);
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if(auto window = MainWindow::fromDocument(document)) {
         window->action_Detach_Document_Dialog(document);
@@ -1271,7 +1271,7 @@ static std::error_code setAutoIndentMS(DocumentWidget *document, Arguments argum
     }
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if(string == QLatin1String("off")) {
         document->SetAutoIndent(IndentStyle::None);
@@ -1296,7 +1296,7 @@ static std::error_code setEmTabDistMS(DocumentWidget *document, Arguments argume
     }
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if (number < 1000) {
         if (number < 0) {
@@ -1314,7 +1314,7 @@ static std::error_code setEmTabDistMS(DocumentWidget *document, Arguments argume
 static std::error_code setFontsMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     QString fontName;
 
@@ -1366,7 +1366,7 @@ boost::optional<int> toggle_or_bool(Arguments arguments, int previous, std::erro
 
 static std::error_code setHighlightSyntaxMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     std::error_code ec;
     if(boost::optional<int> next = toggle_or_bool(arguments, document->GetHighlightSyntax(), &ec, "set_highlight_syntax")) {
@@ -1380,7 +1380,7 @@ static std::error_code setHighlightSyntaxMS(DocumentWidget *document, Arguments 
 
 static std::error_code setIncrementalBackupMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     std::error_code ec;
     if(boost::optional<int> next = toggle_or_bool(arguments, document->GetIncrementalBackup(), &ec, "set_incremental_backup")) {
@@ -1393,7 +1393,7 @@ static std::error_code setIncrementalBackupMS(DocumentWidget *document, Argument
 }
 
 static std::error_code setIncrementalSearchLineMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     auto win = MainWindow::fromDocument(document);
     Q_ASSERT(win);
@@ -1410,7 +1410,7 @@ static std::error_code setIncrementalSearchLineMS(DocumentWidget *document, Argu
 
 static std::error_code setMakeBackupCopyMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     std::error_code ec;
     if(boost::optional<int> next = toggle_or_bool(arguments, document->GetMakeBackupCopy(), &ec, "set_make_backup_copy")) {
@@ -1424,7 +1424,7 @@ static std::error_code setMakeBackupCopyMS(DocumentWidget *document, Arguments a
 
 static std::error_code setLockedMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     std::error_code ec;
     if(boost::optional<int> next = toggle_or_bool(arguments, document->GetUserLocked(), &ec, "set_locked")) {
@@ -1438,7 +1438,7 @@ static std::error_code setLockedMS(DocumentWidget *document, Arguments arguments
 
 static std::error_code setLanguageModeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     QString languageMode;
     if(std::error_code ec = readArguments(arguments, 0, &languageMode)) {
@@ -1453,7 +1453,7 @@ static std::error_code setLanguageModeMS(DocumentWidget *document, Arguments arg
 
 static std::error_code setOvertypeModeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     std::error_code ec;
     if(boost::optional<int> next = toggle_or_bool(arguments, document->GetOverstrike(), &ec, "set_overtype_mode")) {
@@ -1467,7 +1467,7 @@ static std::error_code setOvertypeModeMS(DocumentWidget *document, Arguments arg
 
 static std::error_code setShowLineNumbersMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     auto win = MainWindow::fromDocument(document);
     Q_ASSERT(win);
@@ -1484,7 +1484,7 @@ static std::error_code setShowLineNumbersMS(DocumentWidget *document, Arguments 
 
 static std::error_code setShowMatchingMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if (arguments.size() > 0) {
         QString arg;
@@ -1522,7 +1522,7 @@ static std::error_code setShowMatchingMS(DocumentWidget *document, Arguments arg
 
 static std::error_code setMatchSyntaxBasedMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     std::error_code ec;
     if(boost::optional<int> next = toggle_or_bool(arguments, document->GetMatchSyntaxBased(), &ec, "set_match_syntax_based")) {
@@ -1536,7 +1536,7 @@ static std::error_code setMatchSyntaxBasedMS(DocumentWidget *document, Arguments
 
 static std::error_code setStatisticsLineMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     std::error_code ec;
     if(boost::optional<int> next = toggle_or_bool(arguments, document->GetShowStatisticsLine(), &ec, "set_statistics_line")) {
@@ -1550,7 +1550,7 @@ static std::error_code setStatisticsLineMS(DocumentWidget *document, Arguments a
 
 static std::error_code setTabDistMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if (arguments.size() > 0) {
         int newTabDist = 0;
@@ -1571,7 +1571,7 @@ static std::error_code setTabDistMS(DocumentWidget *document, Arguments argument
 
 static std::error_code setUseTabsMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     std::error_code ec;
     if(boost::optional<int> next = toggle_or_bool(arguments, document->GetUseTabs(), &ec, "set_use_tabs")) {
@@ -1585,7 +1585,7 @@ static std::error_code setUseTabsMS(DocumentWidget *document, Arguments argument
 
 static std::error_code setWrapMarginMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if (arguments.size() > 0) {
         int newMargin = 0;
@@ -1611,7 +1611,7 @@ static std::error_code setWrapMarginMS(DocumentWidget *document, Arguments argum
 
 static std::error_code setWrapTextMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if (arguments.size() > 0) {
 
@@ -1639,7 +1639,7 @@ static std::error_code setWrapTextMS(DocumentWidget *document, Arguments argumen
 
 static std::error_code findIncrMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     auto win = MainWindow::fromDocument(document);
     Q_ASSERT(win);
@@ -1678,7 +1678,7 @@ static std::error_code findIncrMS(DocumentWidget *document, Arguments arguments,
 
 static std::error_code startIncrFindMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     auto win = MainWindow::fromDocument(document);
     Q_ASSERT(win);
@@ -1691,7 +1691,7 @@ static std::error_code startIncrFindMS(DocumentWidget *document, Arguments argum
 
 static std::error_code replaceFindMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     auto win = MainWindow::fromDocument(document);
     Q_ASSERT(win);
@@ -1722,7 +1722,7 @@ static std::error_code replaceFindMS(DocumentWidget *document, Arguments argumen
 
 static std::error_code replaceFindSameMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     auto win = MainWindow::fromDocument(document);
     Q_ASSERT(win);
@@ -1745,7 +1745,7 @@ static std::error_code nextDocumentMS(DocumentWidget *document, Arguments argume
 
     Q_UNUSED(arguments);
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     auto win = MainWindow::fromDocument(document);
     Q_ASSERT(win);
@@ -1760,7 +1760,7 @@ static std::error_code prevDocumentMS(DocumentWidget *document, Arguments argume
 
     Q_UNUSED(arguments);
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     auto win = MainWindow::fromDocument(document);
     Q_ASSERT(win);
@@ -1775,7 +1775,7 @@ static std::error_code lastDocumentMS(DocumentWidget *document, Arguments argume
 
     Q_UNUSED(arguments);
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     auto win = MainWindow::fromDocument(document);
     Q_ASSERT(win);
@@ -1788,7 +1788,7 @@ static std::error_code lastDocumentMS(DocumentWidget *document, Arguments argume
 
 static std::error_code backgroundMenuCommandMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     auto win = MainWindow::fromDocument(document);
     Q_ASSERT(win);
@@ -2537,7 +2537,7 @@ static std::error_code getSelectionMS(DocumentWidget *document, Arguments argume
             return MacroErrorCode::UnrecognizedArgument;
         }
 
-        QString text = document->GetAnySelectionEx(true);
+        QString text = document->GetAnySelection(true);
         if (text.isNull()) {
             text = QLatin1String("");
         }
@@ -3147,7 +3147,7 @@ static std::error_code shellCmdMS(DocumentWidget *document, Arguments arguments,
 
     /* Shell command execution requires that the macro be suspended, so
        this subroutine can't be run if macro execution can't be interrupted */
-    if (!MacroRunDocumentEx()->macroCmdData_) {
+    if (!MacroRunDocument()->macroCmdData_) {
         return MacroErrorCode::InvalidContext;
     }
 
@@ -3183,7 +3183,7 @@ static std::error_code dialogMS(DocumentWidget *document, Arguments arguments, D
 
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
     const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_;
 
     /* Dialogs require macro to be suspended and interleaved with other macros.
@@ -3249,7 +3249,7 @@ static std::error_code stringDialogMS(DocumentWidget *document, Arguments argume
 
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
     const std::shared_ptr<MacroCommandData> &cmdData = document->macroCmdData_;
 
     /* Dialogs require macro to be suspended and interleaved with other macros.
@@ -3468,7 +3468,7 @@ static std::error_code replaceAllInSelectionMS(DocumentWidget *document, Argumen
     // replace_in_selection( search-string, replace-string [, search-type] )
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     //  Get the argument list.
     QString searchString;
@@ -3493,7 +3493,7 @@ static std::error_code replaceAllMS(DocumentWidget *document, Arguments argument
     // replace_all( search-string, replace-string [, search-type] )
 
     // ensure that we are dealing with the document which currently has the focus
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     if (arguments.size() < 2 || arguments.size() > 3) {
         return MacroErrorCode::WrongNumberOfArguments;
@@ -3548,7 +3548,7 @@ static std::error_code filenameDialogMS(DocumentWidget *document, Arguments argu
 
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
 
     /* Dialogs require macro to be suspended and interleaved with other macros.
        This subroutine can't be run if macro execution can't be interrupted */
@@ -3627,7 +3627,7 @@ static std::error_code listDialogMS(DocumentWidget *document, Arguments argument
 
     /* Ignore the focused window passed as the function argument and put
        the dialog up over the window which is executing the macro */
-    document = MacroRunDocumentEx();
+    document = MacroRunDocument();
     const std::shared_ptr<MacroCommandData> &cmdData = document->macroCmdData_;
 
     /* Dialogs require macro to be suspended and interleaved with other macros.

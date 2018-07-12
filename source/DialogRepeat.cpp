@@ -15,7 +15,6 @@ DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::Window
 
 void DialogRepeat::setCommand(const QString &command) {
 	
-	
 	/* make a label for the Last command item of the dialog, which includes
 	   the last executed action name */
 	int index = command.indexOf(QLatin1Char('('));
@@ -50,15 +49,14 @@ bool DialogRepeat::doRepeatDialogAction() {
         how = REPEAT_TO_END;
 	} else {
 	
-		QString strTimes = ui.lineEdit->text();
-		
+        const QString strTimes = ui.lineEdit->text();
 		if(strTimes.isEmpty()) {
             QMessageBox::warning(this, tr("Warning"), tr("Please supply a value for number of times"));
 			return false;
 		}
 		
 		bool ok;
-		int nTimes = strTimes.toInt(&ok);
+        const int nTimes = strTimes.toInt(&ok);
 		if(!ok) {
 			QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in number of times").arg(strTimes));
 			return false;
@@ -68,7 +66,7 @@ bool DialogRepeat::doRepeatDialogAction() {
 	}
 
     QString macro;
-    QString replayMacro = CommandRecorder::instance()->replayMacro;
+    const QString replayMacro = CommandRecorder::instance()->replayMacro;
 
 	// Figure out which command user wants to repeat 
 	if (ui.radioLastCommand->isChecked()) {

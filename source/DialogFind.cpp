@@ -180,7 +180,7 @@ void DialogFind::setTextFieldFromDocument(DocumentWidget *document) {
     QString initialText;
 
     if (Preferences::GetPrefFindReplaceUsesSelection()) {
-        initialText = document->GetAnySelectionEx(/*beep_on_error=*/false);
+        initialText = document->GetAnySelection(/*beep_on_error=*/false);
     }
 
     // Update the field

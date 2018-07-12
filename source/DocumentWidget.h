@@ -117,7 +117,7 @@ public:
     QColor HighlightColorValueOfCodeEx(size_t hCode) const;
     QString FileName() const;
     QString FullPath() const;
-    QString GetAnySelectionEx(bool beep_on_error);
+    QString GetAnySelection(bool beep_on_error);
     QString GetWindowDelimiters() const;
     QString GetWindowDelimitersEx() const;
     QString HighlightNameOfCodeEx(size_t hCode) const;
@@ -128,7 +128,7 @@ public:
     TextArea *firstPane() const;
     void AbortShellCommandEx();
     void AddMarkEx(TextArea *area, QChar label);
-    void BeginSmartIndentEx(bool warn);
+    void BeginSmartIndent(bool warn);
     void CancelMacroOrLearnEx();
     void CheckForChangesToFileEx();
     void ClearModeMessage();
@@ -144,7 +144,7 @@ public:
     void gotoAP(TextArea *area, int64_t lineNum, int64_t column);
     void gotoMark(TextArea *area, QChar label, bool extendSel);
     void GotoMatchingCharacter(TextArea *area);
-    void handleUnparsedRegionEx(const std::shared_ptr<TextBuffer> &styleBuf, TextCursor pos) const;
+    void handleUnparsedRegion(const std::shared_ptr<TextBuffer> &styleBuf, TextCursor pos) const;
     void macroBannerTimeoutProc();
     void MakeSelectionVisible(TextArea *area);
     void moveDocument(MainWindow *fromWindow);

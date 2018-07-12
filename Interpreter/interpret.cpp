@@ -609,7 +609,7 @@ void ModifyReturnedValueEx(const std::shared_ptr<MacroContext> &context, const D
 ** Called within a routine invoked from a macro, returns the window in
 ** which the macro is executing (where the banner is, not where it is focused)
 */
-DocumentWidget *MacroRunDocumentEx() {
+DocumentWidget *MacroRunDocument() {
     return Context.RunDocument;
 }
 

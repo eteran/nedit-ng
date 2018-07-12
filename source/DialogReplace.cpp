@@ -37,7 +37,7 @@ int countWritableWindows() {
            arbitrary windows in response. */
         document->CheckForChangesToFileEx();
 
-        std::vector<DocumentWidget *> afterDocuments = DocumentWidget::allDocuments();
+        const std::vector<DocumentWidget *> afterDocuments = DocumentWidget::allDocuments();
         size_t nAfter = afterDocuments.size();
 
         if (nAfter != nBefore) {
@@ -163,14 +163,6 @@ void DialogReplace::keyPressEvent(QKeyEvent *event) {
 	}
 	
 	QDialog::keyPressEvent(event);
-}
-
-/**
- * @brief DialogReplace::on_checkBackward_toggled
- * @param checked
- */
-void DialogReplace::on_checkBackward_toggled(bool checked) {
-	Q_UNUSED(checked);
 }
 
 /**
@@ -352,7 +344,6 @@ void DialogReplace::on_buttonMulti_clicked() {
 		// Set the initial focus of the dialog back to the search string 
 		ui.textFind->setFocus();
 		
-		// pop down the replace dialog 		
 		if(!keepDialog()) {
             hide();
 		}
@@ -382,8 +373,8 @@ void DialogReplace::on_buttonMulti_clicked() {
  */
 void DialogReplace::on_checkRegex_toggled(bool checked) {
 
-	bool searchRegex = checked;
-	bool searchCaseSense = ui.checkCase->isChecked();
+    const bool searchRegex = checked;
+    const bool searchCaseSense = ui.checkCase->isChecked();
 
 	// In sticky mode, restore the state of the Case Sensitive button 
     if (Preferences::GetPrefStickyCaseSenseBtn()) {
@@ -395,6 +386,7 @@ void DialogReplace::on_checkRegex_toggled(bool checked) {
 			ui.checkCase->setChecked(lastLiteralCase_);
 		}
 	}
+
 	// make the Whole Word button insensitive for regex searches 
 	ui.checkWord->setEnabled(!searchRegex);
 }
@@ -405,7 +397,7 @@ void DialogReplace::on_checkRegex_toggled(bool checked) {
  */
 void DialogReplace::on_checkCase_toggled(bool checked) {
 
-	bool searchCaseSense = checked;
+    const bool searchCaseSense = checked;
 
 	/* Save the state of the Case Sensitive button
 	   depending on the state of the Regex button*/
@@ -425,7 +417,7 @@ void DialogReplace::setTextFieldFromDocument(DocumentWidget *document) {
     QString initialText;
 
     if (Preferences::GetPrefFindReplaceUsesSelection()) {
-        initialText = document->GetAnySelectionEx(/*beep_on_error=*/false);
+        initialText = document->GetAnySelection(/*beep_on_error=*/false);
 	}
 
 	// Update the field 
@@ -442,65 +434,53 @@ void DialogReplace::initToggleButtons(SearchType searchType) {
 	   sensitivity states in case sticky case sensitivity is required. */
 	switch (searchType) {
     case SearchType::Literal:
-		lastLiteralCase_ = false;
-		lastRegexCase_   = true;
-		ui.checkRegex->setChecked(false);
-		ui.checkCase->setChecked(false);
-		if (true) {
-			ui.checkWord->setChecked(false);
-			ui.checkWord->setEnabled(true);
-		}
+        lastLiteralCase_ = false;
+        lastRegexCase_   = true;
+        ui.checkRegex->setChecked(false);
+        ui.checkCase->setChecked(false);
+        ui.checkWord->setChecked(false);
+        ui.checkWord->setEnabled(true);
 		break;
     case SearchType::CaseSense:
-		lastLiteralCase_ = true;
-		lastRegexCase_   = true;
-		ui.checkRegex->setChecked(false);
-		ui.checkCase->setChecked(true);
-		if (true) {
-			ui.checkWord->setChecked(false);
-			ui.checkWord->setEnabled(true);
-		}
-		break;
+        lastLiteralCase_ = true;
+        lastRegexCase_   = true;
+        ui.checkRegex->setChecked(false);
+        ui.checkCase->setChecked(true);
+        ui.checkWord->setChecked(false);
+        ui.checkWord->setEnabled(true);
+        break;
     case SearchType::LiteralWord:
-		lastLiteralCase_ = false;
-		lastRegexCase_   = true;
-		ui.checkRegex->setChecked(false);
-		ui.checkCase->setChecked(false);
-		if (true) {
-			ui.checkWord->setChecked(true);
-			ui.checkWord->setEnabled(true);
-		}
-		break;
+        lastLiteralCase_ = false;
+        lastRegexCase_   = true;
+        ui.checkRegex->setChecked(false);
+        ui.checkCase->setChecked(false);
+        ui.checkWord->setChecked(true);
+        ui.checkWord->setEnabled(true);
+        break;
     case SearchType::CaseSenseWord:
-		lastLiteralCase_ = true;
-		lastRegexCase_   = true;
-		ui.checkRegex->setChecked(false);
-		ui.checkCase->setChecked(true);
-		if (true) {
-			ui.checkWord->setChecked(true);
-			ui.checkWord->setEnabled(true);
-		}
-		break;
+        lastLiteralCase_ = true;
+        lastRegexCase_   = true;
+        ui.checkRegex->setChecked(false);
+        ui.checkCase->setChecked(true);
+        ui.checkWord->setChecked(true);
+        ui.checkWord->setEnabled(true);
+        break;
     case SearchType::Regex:
-		lastLiteralCase_ = false;
-		lastRegexCase_   = true;
-		ui.checkRegex->setChecked(true);
-		ui.checkCase->setChecked(true);
-		if (true) {
-			ui.checkWord->setChecked(false);
-			ui.checkWord->setEnabled(false);
-		}
-		break;
+        lastLiteralCase_ = false;
+        lastRegexCase_   = true;
+        ui.checkRegex->setChecked(true);
+        ui.checkCase->setChecked(true);
+        ui.checkWord->setChecked(false);
+        ui.checkWord->setEnabled(false);
+        break;
     case SearchType::RegexNoCase:
-		lastLiteralCase_ = false;
-		lastRegexCase_   = false;
-		ui.checkRegex->setChecked(true);
-		ui.checkCase->setChecked(false);
-		if (true) {
-			ui.checkWord->setChecked(false);
-			ui.checkWord->setEnabled(false);
-		}
-		break;
+        lastLiteralCase_ = false;
+        lastRegexCase_   = false;
+        ui.checkRegex->setChecked(true);
+        ui.checkCase->setChecked(false);
+        ui.checkWord->setChecked(false);
+        ui.checkWord->setEnabled(false);
+        break;
 	}
 }
 
@@ -508,7 +488,7 @@ void DialogReplace::initToggleButtons(SearchType searchType) {
  * @brief DialogReplace::updateFindButton
  */
 void DialogReplace::updateFindButton() {
-	bool buttonState = !ui.textFind->text().isEmpty();
+    const bool buttonState = !ui.textFind->text().isEmpty();
 	ui.buttonFind->setEnabled(buttonState);
 }
 
@@ -518,7 +498,7 @@ void DialogReplace::updateFindButton() {
 void DialogReplace::UpdateReplaceActionButtons() {
 
 	// Is there any text in the search for field 
-	bool searchText = !ui.textFind->text().isEmpty();
+    const bool searchText = !ui.textFind->text().isEmpty();
     setActionButtons(searchText, searchText, searchText, searchText, searchText && window_->wasSelected_, searchText && (countWritableWindows() > 1));
 }
 
@@ -575,15 +555,17 @@ boost::optional<DialogReplace::Fields> DialogReplace::getFields() {
 		}
 	} else {
 		if (ui.checkCase->isChecked()) {
-			if (ui.checkWord->isChecked())
+            if (ui.checkWord->isChecked()) {
                 fields.searchType = SearchType::CaseSenseWord;
-			else
+            } else {
                 fields.searchType = SearchType::CaseSense;
+            }
 		} else {
-			if (ui.checkWord->isChecked())
+            if (ui.checkWord->isChecked()) {
                 fields.searchType = SearchType::LiteralWord;
-			else
+            } else {
                 fields.searchType = SearchType::Literal;
+            }
 		}
 	}
 

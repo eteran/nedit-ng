@@ -6236,7 +6236,7 @@ void TextArea::BeginBlockDrag() {
     dragOrigBuf_->BufSetTabDistance(buffer_->BufGetTabDist(), true);
     dragOrigBuf_->BufSetUseTabs(buffer_->BufGetUseTabs());
 
-    dragOrigBuf_->BufSetAllEx(buffer_->BufGetAllEx());
+    dragOrigBuf_->BufSetAll(buffer_->BufGetAllEx());
 
 	if (sel->rectangular) {
         dragOrigBuf_->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
@@ -6273,7 +6273,7 @@ void TextArea::BeginBlockDrag() {
 		std::string testText = buffer_->BufGetRangeEx(sel->start, sel->end);
         testBuf.BufSetTabDistance(buffer_->BufGetTabDist(), true);
         testBuf.BufSetUseTabs(buffer_->BufGetUseTabs());
-        testBuf.BufSetAllEx(testText);
+        testBuf.BufSetAll(testText);
 
         testBuf.BufRemoveRect(buffer_->BufStartOfBuffer(), buffer_->BufStartOfBuffer() + (sel->end - sel->start), sel->rectStart, sel->rectEnd);
         dragDeleted_ = testBuf.BufGetLength();
@@ -6375,7 +6375,7 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
     const TextCursor tempEnd   = buffer_->BufCountForwardNLines(std::max({dragInsertPos_, origSel->start, lastChar_}), nLines + 2) + (origSel->end - origSel->start);
 
 	const std::string text = origBuf->BufGetRangeEx(tempStart, tempEnd);
-    tempBuf.BufSetAllEx(text);
+    tempBuf.BufSetAll(text);
 
 	// If the drag type is USE_LAST, use the last dragType applied
 	if (dragType == USE_LAST) {
@@ -7547,7 +7547,7 @@ int TextArea::getMarginWidth() const {
 ** Fetch text from the widget's buffer, adding wrapping newlines to emulate
 ** effect acheived by wrapping in the text display in continuous wrap mode.
 */
-std::string TextArea::TextGetWrappedEx(TextCursor startPos, TextCursor endPos) {
+std::string TextArea::TextGetWrapped(TextCursor startPos, TextCursor endPos) {
 
     if (!P_continuousWrap || startPos == endPos) {
         return buffer_->BufGetRangeEx(startPos, endPos);

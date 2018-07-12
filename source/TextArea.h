@@ -285,7 +285,7 @@ public:
 	void TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int textLeft);
     int64_t TextDPreferredColumn(int *visLineNum, TextCursor *lineStartPos);
     TextCursor TextDPosOfPreferredCol(int64_t column, TextCursor lineStartPos);
-    std::string TextGetWrappedEx(TextCursor startPos, TextCursor endPos);
+    std::string TextGetWrapped(TextCursor startPos, TextCursor endPos);
     int getWrapMargin() const;
     int getColumns() const;
     TextCursor TextDLineAndColToPos(int64_t lineNum, int64_t column);

@@ -149,7 +149,7 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
     for(DocumentWidget *document : documents) {
         if (document->indentStyle_ == IndentStyle::Smart && document->GetLanguageMode() != PLAIN_LANGUAGE_MODE) {
             document->EndSmartIndent();
-            document->BeginSmartIndentEx(/*warn=*/false);
+            document->BeginSmartIndent(/*warn=*/false);
 		}
 	}
 

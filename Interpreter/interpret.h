@@ -170,7 +170,7 @@ void PreemptMacro();
 
 Symbol *PromoteToGlobal(Symbol *sym);
 void ModifyReturnedValueEx(const std::shared_ptr<MacroContext> &context, const DataValue &dv);
-DocumentWidget *MacroRunDocumentEx();
+DocumentWidget *MacroRunDocument();
 DocumentWidget *MacroFocusDocument();
 void SetMacroFocusDocument(DocumentWidget *document);
 

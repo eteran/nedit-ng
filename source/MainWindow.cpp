@@ -1963,7 +1963,7 @@ void MainWindow::action_Open_Selected(DocumentWidget *document) {
     emit_event("open_selected");
 
     // Get the selected text, if there's no selection, do nothing
-    const QString selected = document->GetAnySelectionEx(/*beep_on_error=*/false);
+    const QString selected = document->GetAnySelection(/*beep_on_error=*/false);
     if(!selected.isEmpty()) {
         openFile(document, selected);
     } else {
@@ -2403,7 +2403,7 @@ void MainWindow::action_Goto_Selected(DocumentWidget *document) {
 
     emit_event("goto_selected");
 
-    const QString selected = document->GetAnySelectionEx(/*beep_on_error=*/false);
+    const QString selected = document->GetAnySelection(/*beep_on_error=*/false);
     if(selected.isEmpty()) {
         QApplication::beep();
         return;
@@ -6496,7 +6496,7 @@ void MainWindow::action_Replace_Find(DocumentWidget *document, const QString &se
  */
 void MainWindow::SearchForSelectedEx(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap) {
 
-    const QString selected = document->GetAnySelectionEx(/*beep_on_error=*/false);
+    const QString selected = document->GetAnySelection(/*beep_on_error=*/false);
     if(selected.isEmpty()) {
         if (Preferences::GetPrefSearchDlogs()) {
             QMessageBox::warning(document, tr("Wrong Selection"), tr("Selection not appropriate for searching"));
@@ -6595,7 +6595,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
        be undone in a single operation */
     TextBuffer tempBuf;
     tempBuf.BufSetSyncXSelection(false);
-    tempBuf.BufSetAllEx(fileString);
+    tempBuf.BufSetAll(fileString);
 
     // search the string and do the replacements in the temporary buffer
 

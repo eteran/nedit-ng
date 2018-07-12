@@ -161,9 +161,9 @@ public:
 
 private:
     static int loadLanguageModesString(const QString &string);
-    static QString WriteLanguageModesStringEx();
+    static QString WriteLanguageModesString();
     static void translatePrefFormats(uint32_t fileVer);
-    static QStringList readExtensionListEx(Input &in);
+    static QStringList readExtensionList(Input &in);
     static QString getDefaultShell();
 
 public:

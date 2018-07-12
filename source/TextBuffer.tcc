@@ -31,7 +31,7 @@ auto BasicTextBuffer<Ch, Tr>::BufAsStringEx() noexcept -> view_type {
 ** Replace the entire contents of the text buffer
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::BufSetAllEx(view_type text) {
+void BasicTextBuffer<Ch, Tr>::BufSetAll(view_type text) {
 
     const auto length = static_cast<int64_t>(text.size());
 

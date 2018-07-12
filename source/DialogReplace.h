@@ -49,7 +49,6 @@ public:
 	bool keepDialog() const;
 
 private Q_SLOTS:
-	void on_checkBackward_toggled(bool checked);
 	void on_checkRegex_toggled(bool checked);
 	void on_checkCase_toggled(bool checked);
 	void on_checkKeep_toggled(bool checked);
