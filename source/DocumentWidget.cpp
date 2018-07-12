@@ -2477,7 +2477,7 @@ bool DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
             dialog.setFileMode(QFileDialog::AnyFile);
             dialog.setAcceptMode(QFileDialog::AcceptSave);
             dialog.setDirectory(path_);
-            dialog.setOptions(QFileDialog::DontUseNativeDialog);
+            dialog.setOptions(QFileDialog::DontUseNativeDialog | QFileDialog::DontUseCustomDirectoryIcons);
 
             if(auto layout = qobject_cast<QGridLayout*>(dialog.layout())) {
                 if(layout->rowCount() == 4 && layout->columnCount() == 3) {

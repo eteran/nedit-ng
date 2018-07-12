@@ -749,7 +749,7 @@ void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
 QString MainWindow::PromptForExistingFileEx(const QString &path, const QString &prompt) {
 
     QFileDialog dialog(this, prompt);
-    dialog.setOptions(QFileDialog::DontUseNativeDialog);
+    dialog.setOptions(QFileDialog::DontUseNativeDialog | QFileDialog::DontUseCustomDirectoryIcons);
     dialog.setFileMode(QFileDialog::ExistingFile);
 
     if(!path.isEmpty()) {
@@ -4789,7 +4789,7 @@ QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &
     dialog.setFileMode(QFileDialog::AnyFile);
     dialog.setAcceptMode(QFileDialog::AcceptSave);
     dialog.setDirectory(document->path_);
-    dialog.setOptions(QFileDialog::DontUseNativeDialog);
+    dialog.setOptions(QFileDialog::DontUseNativeDialog | QFileDialog::DontUseCustomDirectoryIcons);
 
     if(auto layout = qobject_cast<QGridLayout*>(dialog.layout())) {
         if(layout->rowCount() == 4 && layout->columnCount() == 3) {
