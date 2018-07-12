@@ -858,14 +858,14 @@ void DocumentWidget::UpdateMarkTable(TextCursor pos, int64_t nInserted, int64_t 
 
 /**
  * @brief DocumentWidget::modifiedCallback
+ * @param area
  * @param pos
  * @param nInserted
  * @param nDeleted
  * @param nRestyled
  * @param deletedText
  */
-void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText) {
-
+void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, TextArea *area) {
     Q_UNUSED(nRestyled);
 
     const bool selected = buffer_->primary.selected;
@@ -885,7 +885,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
             if (IsTopDocument()) {
                 win->selectionChanged(selected);
 
-                DimSelectionDepUserMenuItems(selected);
+                updateSelectionSensitiveMenus(selected);
 
                 if(auto dialog = win->dialogReplace_) {
                     dialog->UpdateReplaceActionButtons();
@@ -917,11 +917,24 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
         SetWindowModified(true);
 
         // Update # of bytes, and line and col statistics
-        UpdateStatsLine(nullptr);
+        UpdateStatsLine(area);
 
         // Check if external changes have been made to file and warn user
         CheckForChangesToFileEx();
     }
+}
+
+/**
+ * @brief DocumentWidget::modifiedCallback
+ * @param pos
+ * @param nInserted
+ * @param nDeleted
+ * @param nRestyled
+ * @param deletedText
+ */
+void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText) {
+    modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText, nullptr);
+
 }
 
 /**
@@ -930,14 +943,6 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
  * @param data
  */
 void DocumentWidget::dragEndCallback(TextArea *area, const DragEndEvent *data) {
-
-    // NOTE(eteran): so, it's a minor shame here that we don't use the area
-    // variable. The **buffer** is what reports the modifications, and that is
-    // lower level than a TextArea. So it doesn't pass that along to the other
-    // versions of the modified callback. The code will eventually call
-    // "UpdateStatsLine(nullptr)", which will force it to fall back on the
-    // "lastFocus_" variable. Which **probably** points to the correct widget.
-    Q_UNUSED(area);
 
 	// restore recording of undo information
 	ignoreModify_ = false;
@@ -949,7 +954,7 @@ void DocumentWidget::dragEndCallback(TextArea *area, const DragEndEvent *data) {
 
     /* Save information for undoing this operation not saved while undo
      * recording was off */
-    modifiedCallback(data->startPos, data->nCharsInserted, data->nCharsDeleted, 0, data->deletedText);
+    modifiedCallback(data->startPos, data->nCharsInserted, data->nCharsDeleted, 0, data->deletedText, area);
 }
 
 /**
@@ -1353,30 +1358,30 @@ QString DocumentWidget::GetWindowDelimiters() const {
 }
 
 /*
-** Dim/undim user programmable menu items which depend on there being
+** Disable/enable user programmable menu items which depend on there being
 ** a selection in their associated window.
 */
-void DocumentWidget::DimSelectionDepUserMenuItems(bool enabled) {
+void DocumentWidget::updateSelectionSensitiveMenus(bool enabled) {
 
     if (!IsTopDocument()) {
         return;
     }
 
     if(auto win = MainWindow::fromDocument(this)) {
-        dimSelDepItemsInMenu(win->ui.menu_Shell, ShellMenuData, enabled);
-        dimSelDepItemsInMenu(win->ui.menu_Macro, MacroMenuData, enabled);
-        dimSelDepItemsInMenu(contextMenu_,       BGMenuData,    enabled);
+        updateSelectionSensitiveMenu(win->ui.menu_Shell, ShellMenuData, enabled);
+        updateSelectionSensitiveMenu(win->ui.menu_Macro, MacroMenuData, enabled);
+        updateSelectionSensitiveMenu(contextMenu_,       BGMenuData,    enabled);
 
     }
 }
 
-void DocumentWidget::dimSelDepItemsInMenu(QMenu *menuPane, const gsl::span<MenuData> &menuList, bool enabled) {
+void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menuPane, const gsl::span<MenuData> &menuList, bool enabled) {
 
     if(menuPane) {
         const QList<QAction *> actions = menuPane->actions();
         for(QAction *action : actions) {
             if(QMenu *subMenu = action->menu()) {
-                dimSelDepItemsInMenu(subMenu, menuList, enabled);
+                updateSelectionSensitiveMenu(subMenu, menuList, enabled);
             } else {
                 int index = action->data().toInt();
                 if (index < 0 || index >= menuList.size()) {
@@ -3313,7 +3318,7 @@ void DocumentWidget::refreshMenuBar() {
         win->UpdateUserMenus(this);
 
         // refresh selection-sensitive menus
-        DimSelectionDepUserMenuItems(win->wasSelected_);
+        updateSelectionSensitiveMenus(win->wasSelected_);
     }
 }
 
@@ -4144,9 +4149,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
     std::vector<MainWindow *> allWindows = MainWindow::allWindows();
 
     // except for the source window
-    allWindows.erase(std::remove_if(allWindows.begin(), allWindows.end(), [fromWindow](MainWindow *window) {
-        return window == fromWindow;
-    }), allWindows.end());
+    allWindows.erase(std::remove(allWindows.begin(), allWindows.end(), fromWindow), allWindows.end());
 
     // stop here if there's no other window to move to
     if (allWindows.empty()) {
@@ -4231,22 +4234,17 @@ void DocumentWidget::action_Set_Fonts(const QString &fontName) {
     emit_event("set_fonts", fontName);
 
     // Check which fonts have changed
-    bool primaryChanged = fontName != fontName_;
-
-    if (!primaryChanged) {
+    const bool changed = fontName != fontName_;
+    if (!changed) {
         return;
     }
 
-    if (primaryChanged) {
-        fontName_   = fontName;
-        fontStruct_ = Font::fromString(fontName_);
-    }
+    fontName_   = fontName;
+    fontStruct_ = Font::fromString(fontName);
 
     // Change the primary font in all the widgets
-    if (primaryChanged) {
-        for(TextArea *area : textPanes()) {
-            area->setFont(fontStruct_);
-        }
+    for(TextArea *area : textPanes()) {
+        area->setFont(fontStruct_);
     }
 
     /* Change the highlight fonts, even if they didn't change, because

@@ -79,6 +79,7 @@ public:
     void dragEndCallback(TextArea *area, const DragEndEvent *data);
     void smartIndentCallback(TextArea *area, SmartIndentEvent *data);
     void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText);
+    void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, TextArea *area);
 
 public:
     static DocumentWidget *fromArea(TextArea *area);
@@ -228,8 +229,8 @@ private:
     void ClearUndoList();
     void CloseDocument();
     void DetermineLanguageMode(bool forceNewDefaults);
-    void dimSelDepItemsInMenu(QMenu *menuPane, const gsl::span<MenuData> &menuList, bool enabled);
-    void DimSelectionDepUserMenuItems(bool enabled);
+    void updateSelectionSensitiveMenu(QMenu *menuPane, const gsl::span<MenuData> &menuList, bool enabled);
+    void updateSelectionSensitiveMenus(bool enabled);
     void documentRaised();
     void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, CommandSource source);
     void eraseFlashEx();
