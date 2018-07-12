@@ -1297,7 +1297,7 @@ void TextArea::resizeEvent(QResizeEvent *event) {
  * @param nDeleted
  */
 void TextArea::bufPreDeleteCallback(TextCursor pos, int64_t nDeleted) {
-	if (P_continuousWrap && (fixedFontWidth_ == -1 || modifyingTabDist_)) {
+    if (P_continuousWrap && modifyingTabDist_) {
 		/* Note: we must perform this measurement, even if there is not a
 		   single character deleted; the number of "deleted" lines is the
 		   number of visual lines spanned by the real line in which the
@@ -1585,11 +1585,11 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
     const int tabDist = buffer_->BufGetTabDist();
 
 
-	/* If the font is fixed, or there's a wrap margin set, it's more efficient
-	   to measure in columns, than to count pixels.  Determine if we can count
-       in columns (countPixels == false) or must count pixels (countPixels ==
-       true), and set the wrap target for either pixels or columns */
-	if (fixedFontWidth_ != -1 || P_wrapMargin != 0) {
+    /* If the font is fixed, or there's a wrap margin set, it's more efficient
+     * to measure in columns, than to count pixels.  Determine if we can count
+     * in columns (countPixels == false) or must count pixels (countPixels ==
+     * true), and set the wrap target for either pixels or columns */
+    if (P_wrapMargin != 0) {
 		countPixels = false;
         wrapMargin = P_wrapMargin != 0 ? P_wrapMargin : rect_.width() / fixedFontWidth_;
 		maxWidth = INT_MAX;
@@ -1644,7 +1644,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 		} else {
             colNum += TextBuffer::BufCharWidth(c, colNum, tabDist);
             if (countPixels) {
-				width += measurePropChar(c, colNum, p + styleBufOffset);
+                width += widthInPixels(c, colNum, p + styleBufOffset);
             }
 		}
 
@@ -1660,7 +1660,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 						colNum = 0;
 						width = 0;
 						for (i = b + 1; i < p + 1; i++) {
-							width += measurePropChar(buf->BufGetCharacter(i), colNum, i + styleBufOffset);
+                            width += widthInPixels(buf->BufGetCharacter(i), colNum, i + styleBufOffset);
 							colNum++;
 						}
                     } else {
@@ -1675,7 +1675,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 				newLineStart = std::max(p, lineStart + 1);
                 colNum = TextBuffer::BufCharWidth(c, colNum, tabDist);
                 if (countPixels) {
-					width = measurePropChar(c, colNum, p + styleBufOffset);
+                    width = widthInPixels(c, colNum, p + styleBufOffset);
                 }
 			}
 
@@ -1710,22 +1710,18 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 
 /*
 ** Measure the width in pixels of a character "ch" at a particular column
-** "colNum" and buffer position "pos".  This is for measuring characters in
-** proportional or mixed-width highlighting fonts.
-**
-** A note about proportional and mixed-width fonts: the mixed width and
-** proportional font code in nedit does not get much use in general editing,
-** because nedit doesn't allow per-language-mode fonts, and editing programs
-** in a proportional font is usually a bad idea, so very few users would
-** choose a proportional font as a default.  There are still probably mixed-
-** width syntax highlighting cases where things don't redraw properly for
-** insertion/deletion.
+** "colNum" and buffer position "pos".
 */
-int64_t TextArea::measurePropChar(char ch, int64_t colNum, TextCursor pos) const {
+int64_t TextArea::widthInPixels(char ch, int64_t colNum, TextCursor pos) const {
+
+    Q_UNUSED(pos);
 
     char expChar[TextBuffer::MAX_EXP_CHAR_LEN];
     const int charLen = TextBuffer::BufExpandCharacter(ch, colNum, expChar, buffer_->BufGetTabDist());
 
+#if 0
+    /* NOTE(eteran): I beleive that this is no longer necessary, it will happen
+     * anyway when the line is rendered on an as needed bassis */
     if(styleBuffer_) {
         const uint32_t style = static_cast<uint8_t>(styleBuffer_->BufGetCharacter(pos));
 		if (style == unfinishedStyle_) {
@@ -1733,22 +1729,16 @@ int64_t TextArea::measurePropChar(char ch, int64_t colNum, TextCursor pos) const
 			(unfinishedHighlightCB_)(this, pos, highlightCBArg_);
 		}
 	}
+#endif
 
-    return stringWidth(expChar, charLen);
+    return stringWidth(charLen);
 }
 
 /*
 ** Find the width of a string in the font
 */
-int TextArea::stringWidth(const char *string, int length) const {
-
-    if(fixedFontWidth_ == -1) {
-        QString str = asciiToUnicode(string, length);
-        QFontMetrics fm(font_);
-        return fm.width(str);
-    } else {
-        return fixedFontWidth_ * length;
-    }
+int TextArea::stringWidth(int length) const {
+    return fixedFontWidth_ * length;
 }
 
 /*
@@ -2514,25 +2504,10 @@ int64_t TextArea::measureVisLine(int visLineNum) const {
     const TextCursor lineStartPos = lineStarts_[visLineNum];
     char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 
-    // TODO(eteran): this "slow path" can still be made faster. We can do the work in chunks
-    // and only call "fm.width(asciiToUnicode(...))" when we are almost full or the style
-    // has changed. I would expect this to result in significantly less calls to the inefficient
-    // QFontMetrics::width calls
-    if(fixedFontWidth_ == -1) {
-        QFontMetrics fm(font_);
-
-        for (int i = 0; i < lineLen; i++) {
-            int len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
-            width += fm.width(asciiToUnicode(expandedChar, len));
-            charCount += len;
-        }
-
-    } else {
-        for (int i = 0; i < lineLen; i++) {
-            int len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
-            width += (fixedFontWidth_ * len);
-            charCount += len;
-        }
+    for (int i = 0; i < lineLen; i++) {
+        int len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
+        width += (fixedFontWidth_ * len);
+        charCount += len;
     }
 
     return width;
@@ -2604,7 +2579,6 @@ bool TextArea::wrapUsesCharacter(TextCursor lineEndPos) const {
 */
 void TextArea::extendRangeForStyleMods(TextCursor *start, TextCursor *end) {
     const TextBuffer::Selection *sel = &styleBuffer_->primary;
-	int extended = false;
 
 	/* The peculiar protocol used here is that modifications to the style
 	   buffer are marked by selecting them with the buffer's primary selection.
@@ -2619,20 +2593,12 @@ void TextArea::extendRangeForStyleMods(TextCursor *start, TextCursor *end) {
 	if (sel->selected) {
 		if (sel->start < *start) {
 			*start = sel->start;
-			extended = true;
 		}
+
 		if (sel->end > *end) {
 			*end = sel->end;
-			extended = true;
 		}
 	}
-
-	/* If the selection was extended due to a style change, and some of the
-	   fonts don't match in spacing, extend redraw area to end of line to
-	   redraw characters exposed by possible font size changes */
-    if (fixedFontWidth_ == -1 && extended) {
-		*end = buffer_->BufEndOfLine(*end) + 1;
-    }
 }
 
 /*
@@ -2877,7 +2843,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
                     TextBuffer::BufExpandCharacter(baseChar = lineStr[static_cast<size_t>(charIndex)], outIndex, expandedChar, buffer_->BufGetTabDist());
 
         style = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
-        charWidth = charIndex >= lineLen ? stdCharWidth : stringWidth(expandedChar, charLen);
+        charWidth = charIndex >= lineLen ? stdCharWidth : stringWidth(charLen);
 
 		if (x + charWidth >= leftClip && charIndex >= leftCharIndex) {
 			startIndex = charIndex;
@@ -2934,7 +2900,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 
 			if (charIndex < lineLen) {
 				*outPtr = expandedChar[i];
-                charWidth = stringWidth(&expandedChar[i], 1);
+                charWidth = stringWidth(1);
 			} else {
 				charWidth = stdCharWidth;
 			}
@@ -3013,7 +2979,7 @@ uint32_t TextArea::styleOfPos(TextCursor lineStartPos, int64_t lineLen, int64_t 
     } else if (styleBuffer_) {
         style = static_cast<uint8_t>(styleBuffer_->BufGetCharacter(pos));
         if (style == unfinishedStyle_) {
-            /* encountered "unfinished" style, trigger parsing */
+            // encountered "unfinished" style, trigger parsing
             (unfinishedHighlightCB_)(this, pos, highlightCBArg_);
             style = static_cast<uint8_t>(styleBuffer_->BufGetCharacter(pos));
         }
@@ -3878,7 +3844,7 @@ bool TextArea::TextDPositionToXY(TextCursor pos, int *x, int *y) const {
     for (int charIndex = 0; charIndex < pos - lineStartPos; charIndex++) {
         const int charLen = TextBuffer::BufExpandCharacter(lineStr[static_cast<size_t>(charIndex)], outIndex, expandedChar, buffer_->BufGetTabDist());
 
-        xStep += stringWidth(expandedChar, charLen);
+        xStep += stringWidth(charLen);
 		outIndex += charLen;
 	}
 	*x = xStep;
@@ -5214,8 +5180,7 @@ void TextArea::InsertPrimarySelection(bool isColumnar) {
 
 /*
 ** Translate window coordinates to the nearest row and column number for
-** positioning the cursor.  This, of course, makes no sense when the font
-** is proportional, since there are no absolute columns.
+** positioning the cursor.
 */
 void TextArea::TextDXYToUnconstrainedPosition(const QPoint &coord, int64_t *row, int64_t *column) const {
     xyToUnconstrainedPos(coord.x(), coord.y(), row, column, PositionTypes::CURSOR_POS);
@@ -5223,11 +5188,12 @@ void TextArea::TextDXYToUnconstrainedPosition(const QPoint &coord, int64_t *row,
 
 /*
 ** Translate window coordinates to the nearest row and column number for
-** positioning the cursor.  This, of course, makes no sense when the font is
-** proportional, since there are no absolute columns.  The parameter posType
-** specifies how to interpret the position: CURSOR_POS means translate the
-** coordinates to the nearest position between characters, and CHARACTER_POS
-** means translate the position to the nearest character cell.
+** positioning the cursor.
+**
+** The parameter posType specifies how to interpret the position:
+** CURSOR_POS means translate the coordinates to the nearest position between
+** characters, and CHARACTER_POS means translate the position to the nearest
+** character cell.
 */
 void TextArea::xyToUnconstrainedPos(const QPoint &pos, int64_t *row, int64_t *column, PositionTypes posType) const {
     xyToUnconstrainedPos(pos.x(), pos.y(), row, column, posType);
@@ -5593,7 +5559,7 @@ TextCursor TextArea::xyToPos(int x, int y, PositionTypes posType) const {
         char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 
         const int charLen        = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->BufGetTabDist());
-        const int64_t charWidth  = stringWidth(expandedChar, charLen);
+        const int64_t charWidth  = stringWidth(charLen);
 
         if (x < xStep + (posType == PositionTypes::CURSOR_POS ? charWidth / 2 : charWidth)) {
 			return lineStart + charIndex;
@@ -6486,7 +6452,7 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	if (rectangular || overlay) {
 		insStart = insLineStart;
 		insRectStart = column;
-	} else { // note, this will fail with proportional fonts
+    } else {
         insStart = tempBuf.BufCountForwardDispChars(TextCursor(insLineStart - tempStart), column) + to_integer(tempStart);
 		insRectStart = 0;
 	}
@@ -7484,7 +7450,7 @@ void TextArea::updateFontWidthMetrics(const QFont &font) {
     // If all of the current fonts are fixed and match in width, compute
     int fontWidth = fm.maxWidth();
     if(!fi.fixedPitch()) {
-        fontWidth = -1;
+        qWarning("NEdit: a variable width font has been specified. This is not supported, and will result in unexpected results");
     }
 
     fixedFontWidth_ = fontWidth;
@@ -7633,8 +7599,7 @@ void TextArea::insertStringAP(const QString &string, EventFlags flags) {
 
 /*
 ** Translate line and column to the nearest row and column number for
-** positioning the cursor.  This, of course, makes no sense when the font
-** is proportional, since there are no absolute columns.
+** positioning the cursor.
 */
 TextCursor TextArea::TextDLineAndColToPos(int64_t lineNum, int64_t column) {
 
