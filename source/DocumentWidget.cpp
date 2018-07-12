@@ -3019,17 +3019,17 @@ DocumentWidget *DocumentWidget::fromArea(TextArea *area) {
  * @brief DocumentWidget::open
  * @param fullpath
  */
-void DocumentWidget::open(const QString &fullpath) {
+DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 
     QString filename;
     QString pathname;
 
     if (!ParseFilenameEx(fullpath, &filename, &pathname) != 0) {
         qWarning("NEdit: invalid file name for open action: %s", qPrintable(fullpath));
-        return;
+        return nullptr;
     }
 
-    DocumentWidget::EditExistingFileEx(
+    DocumentWidget *document = DocumentWidget::EditExistingFileEx(
                 this,
                 filename,
                 pathname,
@@ -3041,6 +3041,8 @@ void DocumentWidget::open(const QString &fullpath) {
                 false);
 
     MainWindow::CheckCloseDimEx();
+
+    return document;
 }
 
 /**

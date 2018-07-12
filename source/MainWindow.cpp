@@ -604,7 +604,18 @@ void MainWindow::setupPrevOpenMenuActions() {
                     return;
                 }
 
-                document->open(filename);
+                if(!document->open(filename)) {
+                    int r = QMessageBox::question(
+                                this,
+                                tr("Error Opening File"),
+                                tr("File could not be opened, would you like to remove it from the 'Open Previous' list?"),
+                                QMessageBox::Yes | QMessageBox::No);
+
+                    if(r == QMessageBox::Yes) {
+                        removeFromPrevOpenMenu(filename);
+                        MainWindow::invalidatePrevOpenMenus();
+                    }
+                }
             }
 
             MainWindow::CheckCloseDimEx();
@@ -1853,6 +1864,17 @@ void MainWindow::WriteNEditDB() {
             }
         }
     }
+}
+
+/**
+ * @brief MainWindow::removeFromPrevOpenMenu
+ * @param filename
+ */
+void MainWindow::removeFromPrevOpenMenu(const QString &filename) {
+
+    MainWindow::ReadNEditDB();
+    PrevOpen.removeOne(filename);
+    MainWindow::WriteNEditDB();
 }
 
 /*

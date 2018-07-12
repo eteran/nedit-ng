@@ -132,6 +132,7 @@ public:
     static void updateMenuItems();
     static void UpdateWindowMenus();
     static void WriteNEditDB();
+    static void removeFromPrevOpenMenu(const QString &filename);
 
 public Q_SLOTS:
     // internal variants of signals

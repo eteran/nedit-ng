@@ -148,7 +148,7 @@ public:
     void macroBannerTimeoutProc();
     void MakeSelectionVisible(TextArea *area);
     void moveDocument(MainWindow *fromWindow);
-    void open(const QString &fullpath);
+    DocumentWidget *open(const QString &fullpath);
     void PrintStringEx(const std::string &string, const QString &jobname);
     void PrintWindow(TextArea *area, bool selectedOnly);
     void RaiseDocument();
