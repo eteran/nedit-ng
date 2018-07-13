@@ -419,13 +419,11 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
 
 	const QString languageMode = ui.comboLanguageMode->currentText();
 
-
     int resp = QMessageBox::warning(
                 this,
                 tr("Delete Pattern"),
                 tr("Are you sure you want to delete syntax highlighting patterns for language mode %1?").arg(languageMode),
                 QMessageBox::Yes | QMessageBox::Cancel);
-
 
     if (resp == QMessageBox::Cancel) {
 		return;
@@ -452,7 +450,8 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
     ui.editRegexEnd->setText(QString());
     ui.editRegexError->setText(QString());
 
-    // TODO(eteran): notify the settings system that things have changed
+    // NOTE(eteran): notify the settings system that things have changed
+    Preferences::MarkPrefsChanged();
 }
 
 /**
