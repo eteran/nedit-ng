@@ -402,9 +402,6 @@ bool match(uint8_t *prog, int *branch_index_param) {
 
             /* Note: the SIMILAR operand was converted to lower case during
                regex compile. */
-
-            // TODO(eteran): do we want to (and how do we) factor out this NUL check
-            // and change it to a range check so we aren't sensitive to strings which contain NULs?
             while ((test = *opnd++) != '\0') {
                 if (AT_END_OF_STRING(eContext.Reg_Input) || tolower(*eContext.Reg_Input++) != test) {
                     MATCH_RETURN(false);
