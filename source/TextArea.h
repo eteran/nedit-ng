@@ -374,8 +374,7 @@ private:
     void showResizeNotification();
 
 private:
-    CallTip calltip_;                              // The info for the calltip itself
-    CursorStyles cursorStyle_    = CursorStyles::Normal;  // One of enum cursorStyles above
+    CallTip calltip_;                              // The info for the calltip itself    
     DragStates dragState_        = NOT_CLICKED;    // Why is the mouse being dragged and what is being acquired
     int64_t absTopLineNum_       = 1;              // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
     TextCursor cursorPos_        = {};
@@ -420,23 +419,24 @@ private:
 
 private:
     BlockDragTypes dragType_;                       // style of block drag operation
-    uint32_t unfinishedStyle_;                      // Style buffer entry which triggers on-the-fly reparsing of region
+    CursorStyles cursorStyle_;
     DocumentWidget *document_;
     TextCursor anchor_;                             // Anchor for drag operations
+    TextCursor dragInsertPos_;                      // location where text being block dragged was last inserted
+    TextCursor dragSourceDeletePos_;                // location from which move source text was removed at start of drag
     int ascent_;                                    // Composite ascent and descent for primary font + all-highlight fonts
     int descent_;
+    int dragXOffset_;                               // offsets between cursor location and actual insertion point in drag
+    int dragYOffset_;                               // offsets between cursor location and actual insertion point in drag
+    int fixedFontWidth_;                            // Font width if all current fonts are fixed and match in width, else -1
     int64_t dragDeleted_;                           // # of characters deleted ""
     int64_t dragInserted_;                          // # of characters inserted at drag destination in last drag position
-    TextCursor dragInsertPos_;                      // location where text being block dragged was last inserted
     int64_t dragNLines_;                            // # of newlines in text being drag'd
     int64_t dragRectStart_;                         // rect. offset ""
     int64_t dragSourceDeleted_;                     // # of chars. deleted ""
-    TextCursor dragSourceDeletePos_;                // location from which move source text was removed at start of drag
     int64_t dragSourceInserted_;                    // # of chars. inserted when move source text was deleted
-    int dragXOffset_;                               // offsets between cursor location and actual insertion point in drag
-    int dragYOffset_;                               // offsets between cursor location and actual insertion point in drag
-    int fixedFontWidth_;                            // Font width if all current fonts are fixed and match in width, else -1    
     int64_t rectAnchor_;                            // Anchor for rectangular drag operations
+    uint32_t unfinishedStyle_;                      // Style buffer entry which triggers on-the-fly reparsing of region
 
     // TODO(eteran): maybe use QWidget::contentsMargins
     QRect rect_;

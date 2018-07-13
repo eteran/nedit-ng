@@ -495,6 +495,8 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
     P_overstrike              = document->overstrike_;
     P_hidePointer             = Preferences::GetPrefTypingHidesPointer();
 
+    cursorStyle_ = P_heavyCursor ? CursorStyles::Heavy : CursorStyles::Normal;
+
     font_       = fontStruct;
     buffer_     = buffer;
     calltip_.ID = 0;
@@ -2464,7 +2466,7 @@ void TextArea::blankCursorProtrusions() {
 
     // TODO(eteran): in Qt, this code may not be necessary anymore
     // I haven't noticed any artifacts when disabling this code
-#if 1
+#if 0
     int x;
     int width;
     QFontMetrics fm(font_);
@@ -3193,7 +3195,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 	   odd number centered on the stem at x. */
     const int cursorWidth = (fontWidth / 3) * 2;
     const int left  = x - cursorWidth / 2;
-    int right = left + cursorWidth;
+    const int right = left + cursorWidth;
 
 	// Create segments and draw cursor
 	switch(cursorStyle_) {
@@ -3232,28 +3234,8 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
         path.lineTo(right, bot);
         break;
     }
-    case CursorStyles::Dim: {
-        const int midY = y + fontHeight / 2;
-
-        path.moveTo(x, y);
-        path.lineTo(x, y);
-        path.moveTo(x, midY);
-        path.lineTo(x, midY);
-        path.moveTo(x, bot);
-        path.lineTo(x, bot);
-        break;
-    }
     case CursorStyles::Block: {
-        right = x + fontWidth;
-
-        path.moveTo(x, y);
-        path.lineTo(right, y);
-        path.moveTo(right, y);
-        path.lineTo(right, bot);
-        path.moveTo(right, bot);
-        path.lineTo(x, bot);
-        path.moveTo(x, bot);
-        path.lineTo(x, y);
+        path.addRect(x, y, fontWidth, fontHeight - 1);
         break;
     }
     }
