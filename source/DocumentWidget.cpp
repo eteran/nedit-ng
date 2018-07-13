@@ -2290,9 +2290,10 @@ bool DocumentWidget::WriteBackupFile() {
     std::string fileString = buffer_->BufGetAllEx();
 
     // add a terminating newline if the file doesn't already have one
-    // TODO(eteran): should this respect Preferences::GetPrefAppendLF() ?
-    if (!fileString.empty() && fileString.back() != '\n') {
-        fileString.append("\n");
+    if(Preferences::GetPrefAppendLF()) {
+        if (!fileString.empty() && fileString.back() != '\n') {
+            fileString.append("\n");
+        }
     }
 
     auto _ = gsl::finally([fp] { ::fclose(fp); });
