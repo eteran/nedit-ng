@@ -145,7 +145,6 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufReplaceEx(TextCursor start, TextCursor end, view_type text) noexcept {
 
     // TODO(eteran): 2.0, do same type of parameter normalization as BufRemove does?
-
     const auto nInserted = static_cast<int64_t>(text.size());
 
     callPreDeleteCBs(start, end - start);
@@ -165,7 +164,6 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufReplaceEx(TextCursor start, TextCursor end, Ch ch) noexcept {
 
     // TODO(eteran): 2.0, do same type of parameter normalization as BufRemove does?
-
     const auto nInserted = 1;
 
     callPreDeleteCBs(start, end - start);
