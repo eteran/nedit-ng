@@ -3023,8 +3023,9 @@ uint32_t TextArea::styleOfPos(TextCursor lineStartPos, int64_t lineLen, int64_t 
 */
 void TextArea::drawString(QPainter *painter, uint32_t style, int64_t x, int y, int64_t toX, const char *string, long nChars) {
 
-    QColor bground      = palette().color(QPalette::Base);
-    QColor fground      = palette().color(QPalette::Text);
+    const QPalette &pal = palette();
+    QColor bground      = pal.color(QPalette::Base);
+    QColor fground      = pal.color(QPalette::Text);
     bool underlineStyle = false;
     QFont renderFont    = font_;
 
@@ -3054,8 +3055,8 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int64_t x, int y, i
         bground = highlightBGPixel_;
         break;
     case DrawSelect:
-        fground = palette().color(QPalette::HighlightedText);
-        bground = palette().color(QPalette::Highlight);
+        fground = pal.color(QPalette::HighlightedText);
+        bground = pal.color(QPalette::Highlight);
         break;
     case DrawPlain:
         break;
@@ -3079,7 +3080,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int64_t x, int y, i
                 // here you could pick up specific select and highlight fground
             } else {
                 styleRec = nullptr;
-                fground = palette().color(QPalette::Text);
+                fground = pal.color(QPalette::Text);
             }
 
             /* Background color priority order is:
@@ -3091,14 +3092,14 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int64_t x, int y, i
             ** 6 DefaultBackground
             */
             if(style & PRIMARY_MASK) {
-                bground = palette().color(QPalette::Highlight);
+                bground = pal.color(QPalette::Highlight);
 
                 // NOTE(eteran): enabling this makes working with darker themes a lot nicer
                 // basically what it does is make it so highlights are disabled inside of
                 // selections. Giving the user control over the foreground color inside
                 // a highlight selection.
                 if(!P_colorizeHighlightedText) {
-                    fground = palette().color(QPalette::HighlightedText);
+                    fground = pal.color(QPalette::HighlightedText);
                 }
 
             } else if(style & HIGHLIGHT_MASK) {
@@ -3113,11 +3114,11 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int64_t x, int y, i
             } else if((style & BACKLIGHT_MASK) && !(style & FILL_MASK)) {
                 bground = bgClassPixel_[(style >> BACKLIGHT_SHIFT) & 0xff];
             } else {
-                bground = palette().color(QPalette::Base);
+                bground = pal.color(QPalette::Base);
             }
 
             if (fground == bground) { // B&W kludge
-                fground = palette().color(QPalette::Base);
+                fground = pal.color(QPalette::Base);
             }
         }
         break;
@@ -3240,9 +3241,13 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
     }
     }
 
+    QPen pen(cursorFGPixel_);
+#if 0 // NOTE(eteran): A simpler, more general way to implement "Heavy" cursors
+    pen.setWidth(2);
+#endif
     painter->save();
     painter->setClipping(false);
-    painter->setPen(cursorFGPixel_);
+    painter->setPen(pen);
     painter->drawPath(path);
     painter->setClipping(true);
     painter->restore();
