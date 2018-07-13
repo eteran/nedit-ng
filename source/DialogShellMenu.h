@@ -11,7 +11,7 @@
 struct MenuItem;
 class MenuItemModel;
 
-class DialogShellMenu : public Dialog {
+class DialogShellMenu final : public Dialog {
 	Q_OBJECT
 
 public:

@@ -4589,7 +4589,7 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
         if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
             return MacroErrorCode::SelectionMissing;
         }
-        if (!targetRangeset->RangesetAddBetween(buffer, TextCursor(start), end)) {
+        if (!targetRangeset->RangesetAddBetween(buffer, start, end)) {
             return MacroErrorCode::FailedToAddSelection;
         }
     }
@@ -4629,7 +4629,7 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
             std::swap(start, end);
         }
 
-        if ((start != end) && !targetRangeset->RangesetAddBetween(buffer, TextCursor(start), TextCursor(end))) {
+        if ((start != end) && !targetRangeset->RangesetAddBetween(buffer, start, end)) {
             return MacroErrorCode::FailedToAddRange;
         }
     }
@@ -4637,7 +4637,7 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
     // (to) which range did we just add?
     if (arguments.size() != 2 && start >= 0) {
         start = (start + to_integer(end)) / 2; // "middle" of added range
-        index = 1 + targetRangeset->RangesetFindRangeOfPos(TextCursor(start), false);
+        index = 1 + targetRangeset->RangesetFindRangeOfPos(start, false);
     } else {
         index = 0;
     }
@@ -5159,7 +5159,7 @@ static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *docu
 
     if (bufferPos >= 0) {
         // insert extent
-        DV = make_value(document->StyleLengthOfCodeFromPosEx(TextCursor(bufferPos)));
+        DV = make_value(document->StyleLengthOfCodeFromPosEx(bufferPos));
         if (!ArrayInsert(result, "extent", &DV)) {
             return MacroErrorCode::InsertFailed;
         }

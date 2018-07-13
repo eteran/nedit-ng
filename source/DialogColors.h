@@ -8,7 +8,7 @@
 class DocumentWidget;
 class QLabel;
 
-class DialogColors : public Dialog {
+class DialogColors final : public Dialog {
 	Q_OBJECT
 public:
     DialogColors(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());

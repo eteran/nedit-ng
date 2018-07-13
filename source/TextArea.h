@@ -43,7 +43,7 @@ using dragStartCBEx           = void (*)(TextArea *, void *);
 using dragEndCBEx             = void (*)(TextArea *, const DragEndEvent *, void *);
 using smartIndentCBEx         = void (*)(TextArea *, SmartIndentEvent *, void *);
 
-class TextArea : public QAbstractScrollArea {
+class TextArea final : public QAbstractScrollArea {
 	Q_OBJECT
 public:
     enum EventFlag {

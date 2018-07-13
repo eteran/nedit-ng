@@ -5,7 +5,7 @@
 #include "Dialog.h"
 #include "ui_DialogWindowSize.h"
 
-class DialogWindowSize : public Dialog {
+class DialogWindowSize final : public Dialog {
 	Q_OBJECT
 public:
     DialogWindowSize(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());

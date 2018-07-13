@@ -12,7 +12,7 @@ class DialogSyntaxPatterns;
 class HighlightStyleModel;
 struct HighlightStyle;
 
-class DialogDrawingStyles : public Dialog {
+class DialogDrawingStyles final : public Dialog {
 	Q_OBJECT
 
 public:

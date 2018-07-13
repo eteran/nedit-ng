@@ -10,7 +10,7 @@
 class DocumentWidget;
 class SmartIndentEntry;
 
-class DialogSmartIndent : public Dialog {
+class DialogSmartIndent final : public Dialog {
 	Q_OBJECT
 public:
     DialogSmartIndent(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());

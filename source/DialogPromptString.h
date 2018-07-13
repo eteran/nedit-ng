@@ -5,7 +5,7 @@
 #include "Dialog.h"
 #include "ui_DialogPromptString.h"
 
-class DialogPromptString : public Dialog {
+class DialogPromptString final : public Dialog {
 	Q_OBJECT
 public:
     DialogPromptString(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
