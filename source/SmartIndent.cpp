@@ -240,70 +240,83 @@ bool SmartIndent::LoadSmartIndentStringEx(const QString &string) {
 	Input in(&string);
 	QString errMsg;
 
-	for (;;) {
-		SmartIndentEntry is;
+    struct ParseError {
+        QString message;
+    };
 
-		// skip over blank space
-		in.skipWhitespaceNL();
+    try {
+        for (;;) {
+            SmartIndentEntry is;
 
-		// finished
-		if (in.atEnd()) {
-			return true;
-		}
+            // skip over blank space
+            in.skipWhitespaceNL();
 
-		// read language mode name
-        is.languageMode = Preferences::ReadSymbolicField(in);
-        if (is.languageMode.isNull()) {
-            return ParseError(in, tr("language mode name required"));
-		}
+            // finished
+            if (in.atEnd()) {
+                return true;
+            }
 
-        if (!Preferences::SkipDelimiter(in, &errMsg)) {
-            return ParseError(in, errMsg);
-		}
+            // read language mode name
+            is.languageMode = Preferences::ReadSymbolicField(in);
+            if (is.languageMode.isNull()) {
+                Raise<ParseError>(tr("language mode name required"));
+            }
 
-		/* look for "Default" keyword, and if it's there, return the default
-		   smart indent macros */
-		if (in.match(QLatin1String("Default"))) {
-            if (!loadDefaultIndentSpec(is.languageMode)) {
-                return ParseError(in, tr("no default smart indent macros"));
-			}
-			continue;
-		}
+            if (!Preferences::SkipDelimiter(in, &errMsg)) {
+                Raise<ParseError>(errMsg);
+            }
 
-		/* read the initialization macro (arbitrary text terminated by the
-		   macro end boundary string) */
-		is.initMacro = readSIMacroEx(in);
-		if(is.initMacro.isNull()) {
-            return ParseError(in, tr("no end boundary to initialization macro"));
-		}
+            /* look for "Default" keyword, and if it's there, return the default
+               smart indent macros */
+            if (in.match(QLatin1String("Default"))) {
+                if (!loadDefaultIndentSpec(is.languageMode)) {
+                    Raise<ParseError>(tr("no default smart indent macros"));
+                }
+                continue;
+            }
 
-		// read the newline macro
-		is.newlineMacro = readSIMacroEx(in);
-		if(is.newlineMacro.isNull()) {
-            return ParseError(in, tr("no end boundary to newline macro"));
-		}
+            /* read the initialization macro (arbitrary text terminated by the
+               macro end boundary string) */
+            is.initMacro = readSIMacroEx(in);
+            if(is.initMacro.isNull()) {
+                Raise<ParseError>(tr("no end boundary to initialization macro"));
+            }
 
-		// read the modify macro
-		is.modMacro = readSIMacroEx(in);
-		if(is.modMacro.isNull()) {
-            return ParseError(in, tr("no end boundary to modify macro"));
-		}
+            // read the newline macro
+            is.newlineMacro = readSIMacroEx(in);
+            if(is.newlineMacro.isNull()) {
+                Raise<ParseError>(tr("no end boundary to newline macro"));
+            }
 
-		// if there's no mod macro, make it null so it won't be executed
-		if (is.modMacro.isEmpty()) {
-			is.modMacro = QString();
-		}
+            // read the modify macro
+            is.modMacro = readSIMacroEx(in);
+            if(is.modMacro.isNull()) {
+                Raise<ParseError>(tr("no end boundary to modify macro"));
+            }
 
-        auto it = std::find_if(SmartIndentSpecs.begin(), SmartIndentSpecs.end(), [&is](const SmartIndentEntry &entry) {
-            return entry.languageMode == is.languageMode;
-        });
+            // if there's no mod macro, make it null so it won't be executed
+            if (is.modMacro.isEmpty()) {
+                is.modMacro = QString();
+            }
 
-        if(it == SmartIndentSpecs.end()) {
-            SmartIndentSpecs.push_back(is);
-        } else {
-            *it = is;
+            auto it = std::find_if(SmartIndentSpecs.begin(), SmartIndentSpecs.end(), [&is](const SmartIndentEntry &entry) {
+                return entry.languageMode == is.languageMode;
+            });
+
+            if(it == SmartIndentSpecs.end()) {
+                SmartIndentSpecs.push_back(is);
+            } else {
+                *it = is;
+            }
         }
-	}
+    } catch (const ParseError &e) {
+        return Preferences::reportError(
+                    nullptr,
+                    *in.string(),
+                    in.index(),
+                    tr("smart indent specification"),
+                    e.message);
+    }
 }
 
 bool SmartIndent::LoadSmartIndentCommonStringEx(const QString &string) {
@@ -454,20 +467,4 @@ void SmartIndent::UpdateLangModeMenuSmartIndent() {
 	if(SmartIndentDlg) {
 		SmartIndentDlg->updateLanguageModes();
 	}
-}
-
-/**
- * @brief SmartIndent::ParseError
- * @param in
- * @param message
- * @return
- */
-bool SmartIndent::ParseError(const Input &in, const QString &message) {
-    return Preferences::reportError(
-                nullptr,
-                *in.string(),
-                in.index(),
-                tr("smart indent specification"),
-                message);
-
 }

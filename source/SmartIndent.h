@@ -34,9 +34,6 @@ public:
     static const SmartIndentEntry *findIndentSpec(const QString &name);
     static const SmartIndentEntry *findDefaultIndentSpec(const QString &name);
 
-private:
-    static bool ParseError(const Input &in, const QString &message);
-
 public:
     static QString                       CommonMacros;
     static std::vector<SmartIndentEntry> SmartIndentSpecs;
