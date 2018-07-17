@@ -301,8 +301,8 @@ private:
     void updateFontHeightMetrics(const QFont &font);
     void updateFontWidthMetrics(const QFont &font);
     void measureDeletedLines(TextCursor pos, int64_t nDeleted);
-    void wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, TextCursor maxPos, int64_t maxLines, bool startPosIsLineStart, int64_t styleBufOffset, TextCursor *retPos, int64_t *retLines, TextCursor *retLineStart, TextCursor *retLineEnd) const;
-    int64_t widthInPixels(char ch, int64_t colNum, TextCursor pos) const;
+    void wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, TextCursor maxPos, int64_t maxLines, bool startPosIsLineStart, TextCursor *retPos, int64_t *retLines, TextCursor *retLineStart, TextCursor *retLineEnd) const;
+    int64_t widthInPixels(char ch, int64_t colNum) const;
     int stringWidth(int length) const;
     void findWrapRangeEx(view::string_view deletedText, TextCursor pos, int64_t nInserted, int64_t nDeleted, TextCursor *modRangeStart, TextCursor *modRangeEnd, int64_t *linesInserted, int64_t *linesDeleted);
     void updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t charsDeleted, int64_t linesInserted, int64_t linesDeleted, bool *scrolled);
@@ -323,8 +323,8 @@ private:
     void extendRangeForStyleMods(TextCursor *start, TextCursor *end);
     void redrawLineNumbers(QPainter *painter);
     void redrawLineNumbersEx();
-    void redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex);
-    void redisplayLineEx(int visLineNum, int leftClip, int rightClip, int64_t leftCharIndex, int64_t rightCharIndex);
+    void redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip);
+    void redisplayLineEx(int visLineNum, int64_t leftCharIndex, int64_t rightCharIndex);
     uint32_t styleOfPos(TextCursor lineStartPos, int64_t lineLen, int64_t lineIndex, int64_t dispIndex, int thisChar) const;
     void drawString(QPainter *painter, uint32_t style, int64_t x, int y, int64_t toX, const char *string, long nChars);
     void drawCursor(QPainter *painter, int x, int y);

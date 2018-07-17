@@ -887,9 +887,9 @@ void TextArea::autoScrollTimerTimeout() {
     int horizOffset;
     int cursorX;
     int y;
-    int fontWidth    = fm.maxWidth();
-    int fontHeight   = ascent_ + descent_;
-    QPoint mouseCoord = mouseCoord_;
+    const int fontWidth  = fixedFontWidth_;
+    const int fontHeight = ascent_ + descent_;
+    QPoint mouseCoord    = mouseCoord_;
 
 	/* For vertical autoscrolling just dragging the mouse outside of the top
 	   or bottom of the window is sufficient, for horizontal (non-rectangular)
@@ -1251,7 +1251,7 @@ void TextArea::paintEvent(QPaintEvent *event) {
 
         // draw the lines of text
         for (int line = firstLine; line <= lastLine; line++) {
-            redisplayLine(&painter, line, left, left + width, 0, INT_MAX);
+            redisplayLine(&painter, line, left, left + width);
         }
 
         painter.restore();
@@ -1277,14 +1277,13 @@ void TextArea::paintEvent(QPaintEvent *event) {
  */
 void TextArea::resizeEvent(QResizeEvent *event) {
 
-    QFontMetrics fm(font_);
 	int height           = event->size().height();
 	int width            = event->size().width();
 	int marginWidth      = P_marginWidth;
 	int marginHeight     = P_marginHeight;
-    int lineNumAreaWidth = (P_lineNumCols == 0) ? 0 : P_marginWidth + fm.maxWidth() * P_lineNumCols;
+    int lineNumAreaWidth = (P_lineNumCols == 0) ? 0 : P_marginWidth + fixedFontWidth_ * P_lineNumCols;
 
-	P_columns = (width - marginWidth * 2 - lineNumAreaWidth) / fm.maxWidth();
+    P_columns = (width - marginWidth * 2 - lineNumAreaWidth) / fixedFontWidth_;
     P_rows    = (height - marginHeight * 1) / (ascent_ + descent_);
 
 	// Resize the text display that the widget uses to render text
@@ -1453,8 +1452,8 @@ void TextArea::setBacklightCharTypes(const QString &charTypes) {
  * @brief TextArea::hideOrShowHScrollBar
  */
 void TextArea::hideOrShowHScrollBar() {
-    QFontMetrics fm(font_);
-    if (P_continuousWrap && (P_wrapMargin == 0 || P_wrapMargin * fm.maxWidth() < rect_.width())) {
+
+    if (P_continuousWrap && (P_wrapMargin == 0 || P_wrapMargin * fixedFontWidth_ < rect_.width())) {
 		setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	} else {
 		setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -1516,7 +1515,7 @@ void TextArea::measureDeletedLines(TextCursor pos, int64_t nDeleted) {
 	while (true) {
 		/* advance to the next line.  If the line ended in a real newline
            or the end of the buffer, that's far enough */
-        wrappedLineCounter(buffer_, lineStart, buffer_->BufEndOfBuffer(), 1, true, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+        wrappedLineCounter(buffer_, lineStart, buffer_->BufEndOfBuffer(), 1, true, &retPos, &retLines, &retLineStart, &retLineEnd);
 		if (retPos >= buffer_->BufGetLength()) {
             if (retPos != retLineEnd) {
 				nLines++;
@@ -1553,9 +1552,7 @@ void TextArea::measureDeletedLines(TextCursor pos, int64_t nDeleted) {
 ** Count forward from startPos to either maxPos or maxLines (whichever is
 ** reached first), and return all relevant positions and line count.
 ** The provided TextBuffer may differ from the actual text buffer of the
-** widget. In that case it must be a (partial) copy of the actual text buffer
-** and the styleBufOffset argument must indicate the starting position of the
-** copy, to take into account the correct style information.
+** widget. In that case it must be a (partial) copy of the actual text buffer.
 **
 ** Returned values:
 **
@@ -1566,7 +1563,7 @@ void TextArea::measureDeletedLines(TextCursor pos, int64_t nDeleted) {
 **   retLineStart:  Start of the line where counting ended
 **   retLineEnd:    End position of the last line traversed
 */
-void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, TextCursor maxPos, int64_t maxLines, bool startPosIsLineStart, int64_t styleBufOffset, TextCursor *retPos, int64_t *retLines, TextCursor *retLineStart, TextCursor *retLineEnd) const {
+void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, TextCursor maxPos, int64_t maxLines, bool startPosIsLineStart, TextCursor *retPos, int64_t *retLines, TextCursor *retLineStart, TextCursor *retLineEnd) const {
     TextCursor lineStart;
     TextCursor newLineStart = {};
     TextCursor b;
@@ -1638,7 +1635,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 		} else {
             colNum += TextBuffer::BufCharWidth(c, colNum, tabDist);
             if (countPixels) {
-                width += widthInPixels(c, colNum, p + styleBufOffset);
+                width += widthInPixels(c, colNum);
             }
 		}
 
@@ -1654,7 +1651,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 						colNum = 0;
 						width = 0;
 						for (i = b + 1; i < p + 1; i++) {
-                            width += widthInPixels(buf->BufGetCharacter(i), colNum, i + styleBufOffset);
+                            width += widthInPixels(buf->BufGetCharacter(i), colNum);
 							colNum++;
 						}
                     } else {
@@ -1669,7 +1666,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 				newLineStart = std::max(p, lineStart + 1);
                 colNum = TextBuffer::BufCharWidth(c, colNum, tabDist);
                 if (countPixels) {
-                    width = widthInPixels(c, colNum, p + styleBufOffset);
+                    width = widthInPixels(c, colNum);
                 }
 			}
 
@@ -1704,26 +1701,12 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 
 /*
 ** Measure the width in pixels of a character "ch" at a particular column
-** "colNum" and buffer position "pos".
+** "colNum".
 */
-int64_t TextArea::widthInPixels(char ch, int64_t colNum, TextCursor pos) const {
-
-    Q_UNUSED(pos);
+int64_t TextArea::widthInPixels(char ch, int64_t colNum) const {
 
     char expChar[TextBuffer::MAX_EXP_CHAR_LEN];
     const int charLen = TextBuffer::BufExpandCharacter(ch, colNum, expChar, buffer_->BufGetTabDist());
-
-#if 0
-    /* NOTE(eteran): I beleive that this is no longer necessary, it will happen
-     * anyway when the line is rendered on an as needed bassis */
-    if(styleBuffer_) {
-        const uint32_t style = static_cast<uint8_t>(styleBuffer_->BufGetCharacter(pos));
-		if (style == unfinishedStyle_) {
-			// encountered "unfinished" style, trigger parsing
-			(unfinishedHighlightCB_)(this, pos, highlightCBArg_);
-		}
-	}
-#endif
 
     return stringWidth(charLen);
 }
@@ -1750,7 +1733,7 @@ TextCursor TextArea::TextDStartOfLine(TextCursor pos) const {
 		return buffer_->BufStartOfLine(pos);
 	}
 
-    wrappedLineCounter(buffer_, buffer_->BufStartOfLine(pos), pos, INT_MAX, true, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+    wrappedLineCounter(buffer_, buffer_->BufStartOfLine(pos), pos, INT_MAX, true, &retPos, &retLines, &retLineStart, &retLineEnd);
 	return retLineStart;
 }
 
@@ -1820,7 +1803,7 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, TextCursor pos, in
 
 		/* advance to the next line.  If the line ended in a real newline
 		   or the end of the buffer, that's far enough */
-        wrappedLineCounter(buffer_, lineStart, buffer_->BufEndOfBuffer(), 1, true, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+        wrappedLineCounter(buffer_, lineStart, buffer_->BufEndOfBuffer(), 1, true, &retPos, &retLines, &retLineStart, &retLineEnd);
 		if (retPos >= buffer_->BufGetLength()) {
             countTo = buffer_->BufEndOfBuffer();
 			*modRangeEnd = countTo;
@@ -1935,7 +1918,6 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, TextCursor pos, in
                 TextCursor(length),
                 INT_MAX,
                 true,
-                to_integer(countFrom),
                 &retPos,
                 &retLines,
                 &retLineStart,
@@ -1976,7 +1958,7 @@ TextCursor TextArea::TextDEndOfLine(TextCursor pos, bool startPosIsLineStart) co
 		return pos;
     }
 
-    wrappedLineCounter(buffer_, pos, buffer_->BufEndOfBuffer(), 1, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+    wrappedLineCounter(buffer_, pos, buffer_->BufEndOfBuffer(), 1, startPosIsLineStart, &retPos, &retLines, &retLineStart, &retLineEnd);
 	return retLineEnd;
 }
 
@@ -2188,7 +2170,7 @@ TextCursor TextArea::TextDCountBackwardNLines(TextCursor startPos, int64_t nLine
     TextCursor pos = startPos;
 	while (true) {
         TextCursor lineStart = buffer_->BufStartOfLine(pos);
-        wrappedLineCounter(buffer_, lineStart, pos, INT_MAX, true, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+        wrappedLineCounter(buffer_, lineStart, pos, INT_MAX, true, &retPos, &retLines, &retLineStart, &retLineEnd);
 
         if (retLines > nLines) {
 			return TextDCountForwardNLines(lineStart, retLines - nLines, true);
@@ -2307,7 +2289,7 @@ TextCursor TextArea::TextDCountForwardNLines(TextCursor startPos, int64_t nLines
 	}
 
 	// use the common line counting routine to count forward
-    wrappedLineCounter(buffer_, startPos, buffer_->BufEndOfBuffer(), nLines, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+    wrappedLineCounter(buffer_, startPos, buffer_->BufEndOfBuffer(), nLines, startPosIsLineStart, &retPos, &retLines, &retLineStart, &retLineEnd);
 	return retPos;
 }
 
@@ -2346,7 +2328,7 @@ void TextArea::findLineEnd(TextCursor startPos, int64_t startPosIsLineStart, Tex
 	}
 
 	// use the wrapped line counter routine to count forward one line
-    wrappedLineCounter(buffer_, startPos, buffer_->BufEndOfBuffer(), 1, startPosIsLineStart, 0, nextLineStart, &retLines, &retLineStart, lineEnd);
+    wrappedLineCounter(buffer_, startPos, buffer_->BufEndOfBuffer(), 1, startPosIsLineStart, nextLineStart, &retLines, &retLineStart, lineEnd);
 }
 
 /**
@@ -2595,21 +2577,21 @@ void TextArea::textDRedisplayRange(TextCursor start, TextCursor end) {
 		}
 	}
 
-	// Get the starting and ending positions within the lines
+    // Get the starting and ending positions within the lines
     const int64_t startIndex = (lineStarts_[startLine] == -1) ? 0 : start - lineStarts_[startLine];
     int64_t endIndex;
-	if (end >= lastChar_) {
+    if (end >= lastChar_) {
         /* Request to redisplay beyond lastChar_, so tell redisplayLine() to
          * display everything to infy.  */
-		endIndex = INT_MAX;
-	} else if (lineStarts_[lastLine] == -1) {
+        endIndex = INT_MAX;
+    } else if (lineStarts_[lastLine] == -1) {
         /*  Here, lastLine is determined by posToVisibleLineNum()
          * (see if/else above) but deemed to be out of display according to
          * lineStarts_. */
-		endIndex = 0;
-	} else {
-		endIndex = end - lineStarts_[lastLine];
-	}
+        endIndex = 0;
+    } else {
+        endIndex = end - lineStarts_[lastLine];
+    }
 
     const auto startLine32 = gsl::narrow<int>(startLine);
     const auto lastLine32  = gsl::narrow<int>(lastLine);
@@ -2617,20 +2599,20 @@ void TextArea::textDRedisplayRange(TextCursor start, TextCursor end) {
 	/* If the starting and ending lines are the same, redisplay the single
 	   line between "start" and "end" */
 	if (startLine == lastLine) {
-        redisplayLineEx(startLine32, 0, INT_MAX, startIndex, endIndex);
+        redisplayLineEx(startLine32, startIndex, endIndex);
 		return;
 	}
 
 	// Redisplay the first line from "start"
-    redisplayLineEx(startLine32, 0, INT_MAX, startIndex, INT_MAX);
+    redisplayLineEx(startLine32, startIndex, INT_MAX);
 
 	// Redisplay the lines in between at their full width
     for (int i = startLine32 + 1; i < lastLine32; i++) {
-        redisplayLineEx(i, 0, INT_MAX, 0, INT_MAX);
+        redisplayLineEx(i, 0, INT_MAX);
     }
 
 	// Redisplay the last line to "end"
-    redisplayLineEx(lastLine32, 0, INT_MAX, 0, endIndex);
+    redisplayLineEx(lastLine32, 0, endIndex);
 }
 
 /**
@@ -2688,12 +2670,15 @@ void TextArea::redrawLineNumbers(QPainter *painter) {
  * calculate the rect that would be repainted and trigger an update of that
  * region. We will then repaint that region during the paint event
  */
-void TextArea::redisplayLineEx(int visLineNum, int leftClip, int rightClip, int64_t leftCharIndex, int64_t rightCharIndex) {
+void TextArea::redisplayLineEx(int visLineNum, int64_t leftCharIndex, int64_t rightCharIndex) {
 
-	Q_UNUSED(leftCharIndex);
-	Q_UNUSED(rightCharIndex);
+    // NOTE(eteran): we could do like the original NEdit and onluy update the
+    // characters from leftCharIndex --> rightCharIndex, but we don't yet.
+    // Instead we just unconditionally redisplay the whole line...
+    Q_UNUSED(leftCharIndex);
+    Q_UNUSED(rightCharIndex);
 
-	// If line is not displayed, skip it
+    // If line is not displayed, skip it
 	if (visLineNum < 0 || visLineNum >= nVisibleLines_) {
 		return;
 	}
@@ -2702,19 +2687,17 @@ void TextArea::redisplayLineEx(int visLineNum, int leftClip, int rightClip, int6
     const int fontHeight = ascent_ + descent_;
     const int y = rect_.top() + visLineNum * fontHeight;
 
-	viewport()->update(QRect(leftClip, y, rightClip - leftClip, fontHeight));
+    viewport()->update(QRect(0, y, INT_MAX, fontHeight));
 }
 
 /*
 ** Redisplay the text on a single line represented by "visLineNum" (the
 ** number of lines down from the top of the display), limited by
-** "leftClip" and "rightClip" window coordinates and "leftCharIndex" and
-** "rightCharIndex" character positions (not including the character at
-** position "rightCharIndex").
+** "leftClip" and "rightClip" window coordinates.
 **
 ** The cursor is also drawn if it appears on the line.
 */
-void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip, int leftCharIndex, int rightCharIndex) {
+void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip) {
 
 	int i;
     int startX;
@@ -2726,11 +2709,8 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
     int cursorX = 0;
 	bool hasCursor = false;
     int64_t dispIndexOffset;
-    TextCursor cursorPos = cursorPos_;
-    char outStr[MAX_DISP_LINE_LEN];
+    TextCursor cursorPos = cursorPos_;    
 	char baseChar;
-
-    QFontMetrics fm(font_);
 
     // If line is not displayed, skip it
 	if (visLineNum < 0 || visLineNum >= nVisibleLines_) {
@@ -2765,7 +2745,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   changes based on character position can still occur in this region due
 	   to rectangular selections).  stdCharWidth must be non-zero to prevent a
 	   potential infinite loop if x does not advance */
-	const int stdCharWidth = fm.maxWidth();
+    const int stdCharWidth = fixedFontWidth_;
 	if (stdCharWidth <= 0) {
         qWarning("NEdit: Internal Error, bad font measurement");
 		return;
@@ -2801,7 +2781,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
         style = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
         charWidth = charIndex >= lineLen ? stdCharWidth : stringWidth(charLen);
 
-		if (x + charWidth >= leftClip && charIndex >= leftCharIndex) {
+        if (x + charWidth >= leftClip) {
 			startIndex = charIndex;
 			outStartIndex = outIndex;
 			startX = x;
@@ -2816,11 +2796,12 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   draw parts whenever the style changes (also note if the cursor is on
 	   this line, and where it should be drawn to take advantage of the x
 	   position which we've gone to so much trouble to calculate) */
+    char outStr[MAX_DISP_LINE_LEN];
     char *outPtr = outStr;
 
 	outIndex = outStartIndex;
 	x = startX;
-	for (charIndex = startIndex; charIndex < rightCharIndex; charIndex++) {
+    for (charIndex = startIndex; ; ++charIndex) {
 
 		if (lineStartPos + charIndex == cursorPos) {
 			if (charIndex < lineLen || (charIndex == lineLen && cursorPos >= buffer_->BufGetLength())) {
@@ -2879,7 +2860,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   this line.  Also check for the cases which are not caught as the
 	   line is scanned above: when the cursor appears at the very end
 	   of the redisplayed section. */
-    const int64_t y_orig = cursor_.y();
+    const int y_orig = cursor_.y();
 	if (cursorOn_) {
 		if (hasCursor) {
 			drawCursor(painter, cursorX, y);
@@ -2891,10 +2872,6 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 					drawCursor(painter, x - 1, y);
 				}
 			}
-        } else if(rightCharIndex != INT_MAX) {
-            if ((lineStartPos + rightCharIndex) == cursorPos) {
-                drawCursor(painter, x - 1, y);
-            }
         }
 	}
 
@@ -3334,7 +3311,7 @@ int64_t TextArea::TextDCountLines(TextCursor startPos, TextCursor endPos, bool s
 		return buffer_->BufCountLines(startPos, endPos);
 	}
 
-	wrappedLineCounter(buffer_, startPos, endPos, INT_MAX, startPosIsLineStart, 0, &retPos, &retLines, &retLineStart, &retLineEnd);
+    wrappedLineCounter(buffer_, startPos, endPos, INT_MAX, startPosIsLineStart, &retPos, &retLines, &retLineStart, &retLineEnd);
 	return retLines;
 }
 
@@ -4247,8 +4224,7 @@ bool TextArea::checkReadOnly() const {
 */
 void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDelete, bool allowWrap) {
 
-    QFontMetrics fm(font_);
-    const int fontWidth = fm.maxWidth();
+    const int fontWidth = fixedFontWidth_;
 
 	// Don't wrap if auto-wrap is off or suppressed, or it's just a newline
     if (!allowWrap || !P_autoWrap || chars.compare("\n") == 0) {
@@ -5136,9 +5112,8 @@ void TextArea::xyToUnconstrainedPos(const QPoint &pos, int64_t *row, int64_t *co
 
 void TextArea::xyToUnconstrainedPos(int x, int y, int64_t *row, int64_t *column, PositionTypes posType) const {
 
-    QFontMetrics fm(font_);
-    int fontHeight = ascent_ + descent_;
-	int fontWidth = fm.maxWidth();
+    const int fontHeight = ascent_ + descent_;
+    const int fontWidth = fixedFontWidth_;
 
 	// Find the visible line number corresponding to the y coordinate
     *row = (y - rect_.top()) / fontHeight;
@@ -6121,9 +6096,8 @@ void TextArea::secondaryAdjustAP(QMouseEvent *event, EventFlags flags) {
 */
 void TextArea::BeginBlockDrag() {
 
-    QFontMetrics fm(font_);
-    int fontHeight = ascent_ + descent_;
-    int fontWidth  = fm.maxWidth();
+    const int fontHeight = ascent_ + descent_;
+    const int fontWidth  = fixedFontWidth_;
     const TextBuffer::Selection *sel = &buffer_->primary;
     int64_t nLines;
     TextCursor mousePos;
@@ -6217,9 +6191,8 @@ void TextArea::BeginBlockDrag() {
 */
 void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 
-    QFontMetrics fm(font_);
-    int fontHeight               = ascent_ + descent_;
-    int fontWidth                = fm.maxWidth();
+    const int fontHeight         = ascent_ + descent_;
+    const int fontWidth          = fixedFontWidth_;
     auto &origBuf                = dragOrigBuf_;
     int dragXOffset              = dragXOffset_;
     const TextBuffer::Selection *origSel = &origBuf->primary;
@@ -6527,11 +6500,9 @@ void TextArea::setLineNumCols(int value) {
 
 	P_lineNumCols = value;
 
-    QFontMetrics fm(font_);
-
-	int marginWidth = P_marginWidth;
-	int charWidth   = fm.maxWidth();
-	int lineNumCols = P_lineNumCols;
+    const int marginWidth = P_marginWidth;
+    const int charWidth   = fixedFontWidth_;
+    const int lineNumCols = P_lineNumCols;
 
 	if (lineNumCols == 0) {
 		TextDSetLineNumberArea(0, 0, marginWidth);
@@ -6929,9 +6900,8 @@ void TextArea::pageLeftAP(EventFlags flags) {
 
     EMIT_EVENT_0("page_left");
 
-    QFontMetrics fm(font_);
     TextCursor insertPos = cursorPos_;
-    int maxCharWidth  = fm.maxWidth();
+    const int maxCharWidth  = fixedFontWidth_;
 	bool silent = flags & NoBellFlag;
 
 	cancelDrag();
@@ -6962,9 +6932,8 @@ void TextArea::pageRightAP(EventFlags flags) {
 
     EMIT_EVENT_0("page_right");
 
-    QFontMetrics fm(font_);
     TextCursor insertPos   = cursorPos_;
-    int maxCharWidth       = fm.maxWidth();
+    const int maxCharWidth = fixedFontWidth_;
     int64_t oldHorizOffset = horizOffset_;
 	bool silent = flags & NoBellFlag;
 
@@ -7695,19 +7664,11 @@ TextBuffer *TextArea::TextGetBuffer() const {
 }
 
 int TextArea::TextDMinFontWidth() const {
-
-    // NOTE(eteran): the original code used fontStruct_->min_bounds.width
-    // this doesn't matter for fixed sized fonts, but for variable sized ones
-    // we aren't quite right. I've approximated this with the width of 'i', but
-    // in some fonts, maybe that's not right?
-
-    QFontMetrics fm(font_);
-    return fm.width(QLatin1Char('i'));;
+    return fixedFontWidth_;
 }
 
 int TextArea::TextDMaxFontWidth() const {
-    QFontMetrics fm(font_);
-    return fm.maxWidth();;
+    return fixedFontWidth_;
 }
 
 int TextArea::TextNumVisibleLines() const {
