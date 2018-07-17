@@ -2,19 +2,20 @@
 #include "TextArea.h"
 #include "BlockDragTypes.h"
 #include "CallTipWidget.h"
+#include "DocumentWidget.h"
+#include "DragEndEvent.h"
 #include "DragStates.h"
+#include "Font.h"
+#include "Highlight.h"
+#include "LanguageMode.h"
 #include "MultiClickStates.h"
 #include "RangesetTable.h"
-#include "DocumentWidget.h"
-#include "TextBuffer.h"
-#include "DragEndEvent.h"
-#include "Highlight.h"
-#include "preferences.h"
-#include "X11Colors.h"
 #include "SmartIndentEvent.h"
-#include "LanguageMode.h"
+#include "TextBuffer.h"
 #include "TextEditEvent.h"
-#include <gsl/gsl_util>
+#include "X11Colors.h"
+#include "preferences.h"
+
 #include <QApplication>
 #include <QClipboard>
 #include <QDesktopWidget>
@@ -22,18 +23,19 @@
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
-#include <QPainter>
 #include <QPaintEvent>
+#include <QPainter>
 #include <QPoint>
 #include <QResizeEvent>
 #include <QScrollBar>
 #include <QShortcut>
-#include <QtDebug>
 #include <QTextCodec>
 #include <QTimer>
+#include <QtDebug>
 #include <QtGlobal>
+
 #include <memory>
-#include "Font.h"
+#include <gsl/gsl_util>
 
 #define EMIT_EVENT_0(name)                                       \
     do {                                                         \
@@ -131,7 +133,7 @@ bool offscreenV(QDesktopWidget *desktop, int top, int height) {
 QString expandAllTabsEx(const QString &text, int tab_width) {
 
     // First count 'em
-    const int nTabs = static_cast<int>(std::count(text.begin(), text.end(), QLatin1Char('\t')));
+    const auto nTabs = static_cast<int>(std::count(text.begin(), text.end(), QLatin1Char('\t')));
 
     if (nTabs == 0) {
         return text;
@@ -171,21 +173,25 @@ void findTextMargins(TextBuffer *buf, TextCursor start, TextCursor end, int64_t 
 	bool inWhite = true;
 
     for (TextCursor pos = start; pos < end; pos++) {
-		char c = buf->BufGetCharacter(pos);
-		if (inWhite && c != ' ' && c != '\t') {
+        char ch = buf->BufGetCharacter(pos);
+
+        if (inWhite && ch != ' ' && ch != '\t') {
             inWhite = false;
-			if (width < minWhite)
-				minWhite = width;
-		}
-		if (c == '\n') {
+            if (width < minWhite) {
+                minWhite = width;
+            }
+        }
+
+        if (ch == '\n') {
 			if (width > maxWidth) {
 				maxWidth = width;
 			}
 
 			width = 0;
 			inWhite = true;
-		} else
-            width += TextBuffer::BufCharWidth(c, width, buf->BufGetTabDist());
+        } else {
+            width += TextBuffer::BufCharWidth(ch, width, buf->BufGetTabDist());
+        }
 	}
 
 	if (width > maxWidth) {
@@ -495,8 +501,6 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
     P_overstrike              = document->overstrike_;
     P_hidePointer             = Preferences::GetPrefTypingHidesPointer();
 
-    cursorStyle_ = P_heavyCursor ? CursorStyles::Heavy : CursorStyles::Normal;
-
     font_       = fontStruct;
     buffer_     = buffer;
     calltip_.ID = 0;
@@ -559,10 +563,10 @@ void TextArea::toggleOverstrikeAP(EventFlags flags) {
 
 	if (P_overstrike) {
 		P_overstrike = false;
-        TextDSetCursorStyle(P_heavyCursor ? CursorStyles::Heavy : CursorStyles::Normal);
+        TextDSetCursorStyle(CursorStyles::Normal);
 	} else {
 		P_overstrike = true;
-        if (cursorStyle_ == CursorStyles::Normal || cursorStyle_ == CursorStyles::Heavy) {
+        if (cursorStyle_ == CursorStyles::Normal) {
             TextDSetCursorStyle(CursorStyles::Block);
         }
 	}
@@ -964,7 +968,7 @@ void TextArea::focusInEvent(QFocusEvent *event) {
 	if (P_overstrike) {
         TextDSetCursorStyle(CursorStyles::Block);
 	} else {
-        TextDSetCursorStyle(P_heavyCursor ? CursorStyles::Heavy : CursorStyles::Normal);
+        TextDSetCursorStyle(CursorStyles::Normal);
 	}
 
 	TextDUnblankCursor();
@@ -3153,19 +3157,6 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
         path.lineTo(right, bot);
         break;
     }
-    case CursorStyles::Heavy: {
-        path.moveTo(x - 1, y);
-        path.lineTo(x - 1, bot);
-        path.moveTo(x, y);
-        path.lineTo(x, bot);
-        path.moveTo(x + 1, y);
-        path.lineTo(x + 1, bot);
-        path.moveTo(left, y);
-        path.lineTo(right, y);
-        path.moveTo(left, bot);
-        path.lineTo(right, bot);
-        break;
-    }
     case CursorStyles::Block: {
         path.addRect(x, y, fontWidth, fontHeight - 1);
         break;
@@ -3173,9 +3164,10 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
     }
 
     QPen pen(cursorFGPixel_);
-#if 0 // NOTE(eteran): A simpler, more general way to implement "Heavy" cursors
-    pen.setWidth(2);
-#endif
+    if(P_heavyCursor) {
+        pen.setWidth(2);
+    }
+
     painter->save();
     painter->setClipping(false);
     painter->setPen(pen);
@@ -5865,8 +5857,6 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
         TextDBlankCursor();
         std::string textToCopy = buffer_->BufGetSecSelectTextEx();
         if (primary->selected && rectangular) {
-            TextCursor insertPos = cursorPos_;
-            Q_UNUSED(insertPos);
             buffer_->BufReplaceSelectedEx(textToCopy);
             TextDSetInsertPosition(buffer_->BufCursorPosHint());
         } else if (rectangular) {
@@ -6833,10 +6823,9 @@ void TextArea::setOverstrike(bool value) {
 
 	switch(getCursorStyle()) {
     case CursorStyles::Block:
-        TextDSetCursorStyle(P_heavyCursor ? CursorStyles::Heavy : CursorStyles::Normal);
+        TextDSetCursorStyle(CursorStyles::Normal);
 		break;
     case CursorStyles::Normal:
-    case CursorStyles::Heavy:
         TextDSetCursorStyle(CursorStyles::Block);
         break;
 	default:

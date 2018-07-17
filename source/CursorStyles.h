@@ -6,7 +6,6 @@ enum class CursorStyles {
     Normal,
     Caret,
     Block,
-    Heavy
 };
 
 #endif
