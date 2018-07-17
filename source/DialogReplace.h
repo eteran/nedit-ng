@@ -36,17 +36,19 @@ protected:
 	void showEvent(QShowEvent *event) override;
 	
 public:
-    boost::optional<Fields> getFields();
-    void collectWritableWindows();
-    void initToggleButtons(SearchType searchType);
+    bool keepDialog() const;
     void UpdateReplaceActionButtons();
+    void initToggleButtons(SearchType searchType);
     void setActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceInWinBtn, bool replaceInSelBtn, bool replaceAllBtn);
+    void setDirection(Direction direction);
     void setDocument(DocumentWidget *document);
+    void setKeepDialog(bool keep);
+    void setReplaceText(const QString &text);
     void setTextFieldFromDocument(DocumentWidget *document);
     void updateFindButton();
 
-public:
-	bool keepDialog() const;
+private:
+    boost::optional<Fields> getFields();
 
 private Q_SLOTS:
 	void on_checkRegex_toggled(bool checked);
@@ -60,19 +62,12 @@ private Q_SLOTS:
 	void on_buttonSelection_clicked();
 	void on_buttonMulti_clicked();
 	
-public:
-    Ui::DialogReplace ui;
-
 private:
+    Ui::DialogReplace ui;
     MainWindow *window_;
     DocumentWidget *document_;
-
-    bool lastRegexCase_   = true;  /* idem, for regex mode in find dialog */
-    bool lastLiteralCase_ = false; /* idem, for literal mode */
-
-    // temporary list of writable documents, used during multi-file replacements
-    std::vector<DocumentWidget *> writableWindows_;	
-	QPointer<DialogMultiReplace> dialogMultiReplace_;	
+    bool lastRegexCase_   = true;  // idem, for regex mode in replace dialog
+    bool lastLiteralCase_ = false; // idem, for literal mode
 };
 
 #endif

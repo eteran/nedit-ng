@@ -60,6 +60,26 @@ int countWritableWindows() {
     return nWritable;
 }
 
+/*
+** Collects a list of writable windows (sorted by file name).
+**/
+std::vector<DocumentWidget *> collectWritableWindows() {
+
+    std::vector<DocumentWidget *> documents;
+
+    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+        if (!document->lockReasons().isAnyLocked()) {
+            documents.push_back(document);
+        }
+    }
+
+    std::sort(documents.begin(), documents.end(), [](const DocumentWidget *lhs, const DocumentWidget *rhs) {
+        return lhs->FileName() < rhs->FileName();
+    });
+
+    return documents;
+}
+
 }
 
 /**
@@ -350,22 +370,22 @@ void DialogReplace::on_buttonMulti_clicked() {
 		return;
 	}
 
+    static QPointer<DialogMultiReplace> dialogMultiReplace;
+
 	// Create the dialog if it doesn't already exist 
-	if (!dialogMultiReplace_) {
-        dialogMultiReplace_ = new DialogMultiReplace(this);
+    if (!dialogMultiReplace) {
+        dialogMultiReplace = new DialogMultiReplace(this);
 	}
 
-	// Prepare a list of writable windows 
-	collectWritableWindows();
+    // temporary list of writable documents, used during multi-file replacements
+    std::vector<DocumentWidget *> writeableDocuments = collectWritableWindows();
 
 	// Initialize/update the list of files. 
-    dialogMultiReplace_->uploadFileListItems();
+    dialogMultiReplace->uploadFileListItems(writeableDocuments);
 
 	// Display the dialog 
-    dialogMultiReplace_->exec();
+    dialogMultiReplace->exec();
 }
-
-
 
 /**
  * @brief DialogReplace::on_checkRegex_toggled
@@ -577,27 +597,6 @@ boost::optional<DialogReplace::Fields> DialogReplace::getFields() {
 }
 
 
-/*
-** Collects a list of writable windows (sorted by file name).
-**/
-void DialogReplace::collectWritableWindows() {
-
-    std::vector<DocumentWidget *> documents;
-
-    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-        if (!document->lockReasons().isAnyLocked()) {
-            documents.push_back(document);
-        }
-    }
-
-    std::sort(documents.begin(), documents.end(), [](const DocumentWidget *lhs, const DocumentWidget *rhs) {
-        return lhs->FileName() < rhs->FileName();
-	});
-
-    writableWindows_ = documents;
-}
-
-
 /**
  * @brief DialogReplace::keepDialog
  * @return
@@ -615,4 +614,28 @@ void DialogReplace::setDocument(DocumentWidget *document) {
     if(keepDialog()) {
         setWindowTitle(tr("Replace (in %1)").arg(document_->filename_));
     }
+}
+
+/**
+ * @brief DialogReplace::setDirection
+ * @param direction
+ */
+void DialogReplace::setDirection(Direction direction) {
+    ui.checkBackward->setChecked(direction == Direction::Backward);
+}
+
+/**
+ * @brief DialogReplace::setKeepDialog
+ * @param keep
+ */
+void DialogReplace::setKeepDialog(bool keep) {
+    ui.checkKeep->setChecked(keep);
+}
+
+/**
+ * @brief DialogReplace::setReplaceText
+ * @param text
+ */
+void DialogReplace::setReplaceText(const QString &text) {
+    ui.textReplace->setText(text);
 }

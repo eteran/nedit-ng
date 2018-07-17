@@ -23,7 +23,7 @@ private Q_SLOTS:
 	void on_buttonReplace_clicked();
 	
 public:
-    void uploadFileListItems();
+    void uploadFileListItems(const std::vector<DocumentWidget *> &writeableDocuments);
 	
 public:
 	Ui::DialogMultiReplace ui;

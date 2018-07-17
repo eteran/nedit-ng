@@ -2468,10 +2468,10 @@ void MainWindow::action_Find_Dialog(DocumentWidget *document, Direction directio
     dialogFind_->initToggleButtons(type);
 
     // Set the initial direction based on the direction argument
-    dialogFind_->ui.checkBackward->setChecked(direction == Direction::Backward);
+    dialogFind_->setDirection(direction);
 
     // Set the state of the Keep Dialog Up button
-    dialogFind_->ui.checkKeep->setChecked(keepDialog);
+    dialogFind_->setKeepDialog(keepDialog);
 
     // Set the state of the Find button
     dialogFind_->updateFindButton();
@@ -2480,6 +2480,8 @@ void MainWindow::action_Find_Dialog(DocumentWidget *document, Direction directio
     fHistIndex_ = 0;
 
     dialogFind_->show();
+    dialogFind_->raise();
+    dialogFind_->activateWindow();
 }
 
 /**
@@ -5483,16 +5485,16 @@ void MainWindow::action_Replace_Dialog(DocumentWidget *document, Direction direc
     }
 
     // Blank the Replace with field
-    dialogReplace_->ui.textReplace->setText(QString());
+    dialogReplace_->setReplaceText(QString());
 
     // Set the initial search type
     dialogReplace_->initToggleButtons(type);
 
     // Set the initial direction based on the direction argument
-    dialogReplace_->ui.checkBackward->setChecked(direction == Direction::Backward);
+    dialogReplace_->setDirection(direction);
 
     // Set the state of the Keep Dialog Up button
-    dialogReplace_->ui.checkKeep->setChecked(keepDialog);
+    dialogReplace_->setKeepDialog(keepDialog);
 
     dialogReplace_->UpdateReplaceActionButtons();
 
@@ -5500,6 +5502,8 @@ void MainWindow::action_Replace_Dialog(DocumentWidget *document, Direction direc
     rHistIndex_ = 0;
 
     dialogReplace_->show();
+    dialogReplace_->raise();
+    dialogReplace_->activateWindow();
 }
 
 /**

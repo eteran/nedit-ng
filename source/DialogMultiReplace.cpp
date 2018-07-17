@@ -121,11 +121,11 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 /**
  * @brief DialogMultiReplace::uploadFileListItems
  */
-void DialogMultiReplace::uploadFileListItems() {
+void DialogMultiReplace::uploadFileListItems(const std::vector<DocumentWidget *> &writeableDocuments) {
 
     model_->clear();
 
-    for(DocumentWidget *document : replace_->writableWindows_) {
+    for(DocumentWidget *document : writeableDocuments) {
         model_->addItem(document);
     }
 }

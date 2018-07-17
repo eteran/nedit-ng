@@ -32,16 +32,16 @@ protected:
 	void showEvent(QShowEvent *event) override;
 
 public:
+    void initToggleButtons(SearchType searchType);
+    bool keepDialog() const;
+    void setDirection(Direction direction);
     void setDocument(DocumentWidget *document);
+    void setKeepDialog(bool keep);
     void setTextFieldFromDocument(DocumentWidget *document);
-	void initToggleButtons(SearchType searchType);
     void updateFindButton();
-	
+
 private:
     boost::optional<Fields> getFields();
-	
-public:
-	bool keepDialog() const;
 	
 private Q_SLOTS:
 	void on_checkRegex_toggled(bool checked);
@@ -50,13 +50,11 @@ private Q_SLOTS:
 	void on_textFind_textChanged(const QString &text);
 	void on_buttonFind_clicked();
 	
-public:
-    Ui::DialogFind ui;
-
 private:
+    Ui::DialogFind ui;
     MainWindow *window_;
     DocumentWidget *document_;	
-    bool lastRegexCase_   = true;   // idem, for regex mode in find dialog
+    bool lastRegexCase_   = true;  // idem, for regex mode in find dialog
     bool lastLiteralCase_ = false; // idem, for literal mode
 };
 

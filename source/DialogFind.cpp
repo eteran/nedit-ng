@@ -323,3 +323,19 @@ void DialogFind::setDocument(DocumentWidget *document) {
         setWindowTitle(tr("Find (in %1)").arg(document_->FileName()));
     }
 }
+
+/**
+ * @brief DialogFind::setDirection
+ * @param direction
+ */
+void DialogFind::setDirection(Direction direction) {
+    ui.checkBackward->setChecked(direction == Direction::Backward);
+}
+
+/**
+ * @brief DialogReplace::setKeepDialog
+ * @param keep
+ */
+void DialogFind::setKeepDialog(bool keep) {
+    ui.checkKeep->setChecked(keep);
+}
