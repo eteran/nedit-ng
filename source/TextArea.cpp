@@ -1393,7 +1393,6 @@ void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nD
 
 	// If the changes caused scrolling, re-paint everything and we're done.
 	if (scrolled) {
-		blankCursorProtrusions();
         TextDRedisplayRect(0, rect_.top(), rect_.width() + rect_.left(), rect_.height());
 		if (styleBuffer_) { // See comments in extendRangeForStyleMods
             styleBuffer_->primary.selected  = false;
@@ -1415,9 +1414,6 @@ void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nD
 			endDispPos = pos + nRestyled;
 		} else {
 			endDispPos = P_continuousWrap ? wrapModEnd : buffer_->BufEndOfLine(pos + nInserted) + 1;
-			if (origCursorPos >= startDispPos && (origCursorPos <= endDispPos || endDispPos == buffer_->BufGetLength())) {
-				blankCursorProtrusions();
-			}
 		}
 		/* If more than one line is inserted/deleted, a line break may have
 		   been inserted or removed in between, and the line numbers may
@@ -1429,10 +1425,6 @@ void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nD
 		}
 	} else { // linesInserted != linesDeleted
 		endDispPos = lastChar_ + 1;
-		if (origCursorPos >= pos) {
-			blankCursorProtrusions();
-		}
-
         redrawLineNumbersEx();
 	}
 
@@ -2455,44 +2447,6 @@ bool TextArea::posToVisibleLineNum(TextCursor pos, int *lineNum) const {
 }
 
 /**
- * When the cursor is at the left or right edge of the text, part of it sticks
- * off into the clipped region beyond the text.  Normal redrawing can not
- * overwrite this protruding part of the cursor, so it must be erased
- * independently by calling this routine.
- *
- * @brief TextArea::blankCursorProtrusions
- */
-void TextArea::blankCursorProtrusions() {
-
-    // TODO(eteran): in Qt, this code may not be necessary anymore
-    // I haven't noticed any artifacts when disabling this code
-#if 0
-    int x;
-    int width;
-    QFontMetrics fm(font_);
-    const int fontWidth   = fm.maxWidth();
-    const int fontHeight  = ascent_ + descent_;
-    const int left        = rect_.left();
-    const int right       = rect_.right();
-    const int cursorX     = cursor_.x();
-    const int cursorY     = cursor_.y();
-    const int cursorWidth = (fontWidth / 3) * 2;
-
-	if (cursorX >= left - 1 && cursorX <= left + cursorWidth / 2 - 1) {
-		x = cursorX - cursorWidth / 2;
-		width = left - x;
-	} else if (cursorX >= right - cursorWidth / 2 && cursorX <= right) {
-		x = right;
-		width = cursorX + cursorWidth / 2 + 2 - right;
-	} else {
-		return;
-	}
-
-    viewport()->update(QRect(x, cursorY, width, fontHeight));
-#endif
-}
-
-/**
  * Return the width in pixels of the displayed line pointed to by "visLineNum"
  * @brief TextArea::measureVisLine
  * @param visLineNum
@@ -3399,11 +3353,7 @@ void TextArea::setScroll(int64_t topLineNum, int horizOffset, bool updateVScroll
 		return;
 	}
 
-	/* If part of the cursor is protruding beyond the text clipping region,
-	   clear it off */
-	blankCursorProtrusions();
-
-	/* If the vertical scroll position has changed, update the line
+    /* If the vertical scroll position has changed, update the line
 	   starts array and related counters in the text display */
 	offsetLineStarts(topLineNum);
 
@@ -3442,7 +3392,6 @@ void TextArea::setScroll(int64_t topLineNum, int horizOffset, bool updateVScroll
  */
 void TextArea::TextDSetCursorStyle(CursorStyles style) {
 	cursorStyle_ = style;
-	blankCursorProtrusions();
 	if (cursorOn_) {
 		textDRedisplayRange(cursorPos_ - 1, cursorPos_ + 1);
 	}
@@ -3456,7 +3405,6 @@ void TextArea::TextDBlankCursor() {
 		return;
     }
 
-	blankCursorProtrusions();
     cursorOn_ = false;
 	textDRedisplayRange(cursorPos_ - 1, cursorPos_ + 1);
 }
@@ -7447,9 +7395,6 @@ void TextArea::updateFontWidthMetrics(const QFont &font) {
 ** Change the (non highlight) font
 */
 void TextArea::TextDSetFont(const QFont &font) {
-
-    // If font size changes, cursor will be redrawn in a new position
-    blankCursorProtrusions();
 
     updateFontHeightMetrics(font);
     updateFontWidthMetrics(font);

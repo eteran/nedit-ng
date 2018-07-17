@@ -317,7 +317,6 @@ private:
     bool updateHScrollBarRange();
     bool emptyLinesVisible() const;
     bool posToVisibleLineNum(TextCursor pos, int *lineNum) const;
-	void blankCursorProtrusions();
     int64_t measureVisLine(int visLineNum) const;
     int64_t visLineLength(int visLineNum) const;
     bool wrapUsesCharacter(TextCursor lineEndPos) const;
