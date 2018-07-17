@@ -1438,16 +1438,16 @@ void DocumentWidget::SaveUndoInformation(TextCursor pos, int64_t nInserted, int6
 
         // normal sequential character insertion
         if (((oldType == ONE_CHAR_INSERT || oldType == ONE_CHAR_REPLACE) && newType == ONE_CHAR_INSERT) && (pos == currentUndo->endPos)) {
-            currentUndo->endPos++;
-            autoSaveCharCount_++;
+            ++currentUndo->endPos;
+            ++autoSaveCharCount_;
             return;
         }
 
         // overstrike mode replacement
         if ((oldType == ONE_CHAR_REPLACE && newType == ONE_CHAR_REPLACE) && (pos == currentUndo->endPos)) {
             appendDeletedText(deletedText, nDeleted, Direction::Forward);
-            currentUndo->endPos++;
-            autoSaveCharCount_++;
+            ++currentUndo->endPos;
+            ++autoSaveCharCount_;
             return;
         }
 
@@ -1460,8 +1460,8 @@ void DocumentWidget::SaveUndoInformation(TextCursor pos, int64_t nInserted, int6
         // reverse delete
         if ((oldType == ONE_CHAR_DELETE && newType == ONE_CHAR_DELETE) && (pos == currentUndo->startPos - 1)) {
             appendDeletedText(deletedText, nDeleted, Direction::Backward);
-            currentUndo->startPos--;
-            currentUndo->endPos--;
+            --currentUndo->startPos;
+            --currentUndo->endPos;
             return;
         }
     }
@@ -1478,7 +1478,7 @@ void DocumentWidget::SaveUndoInformation(TextCursor pos, int64_t nInserted, int6
     }
 
     // increment the operation count for the autosave feature
-    autoSaveOpCount_++;
+    ++autoSaveOpCount_;
 
     /* if the this is currently unmodified, remove the previous
        restoresToSaved marker, and set it on this record */
@@ -3681,7 +3681,7 @@ boost::optional<TextCursor> DocumentWidget::findMatchingCharEx(char toMatch, Sty
     {
         const TextCursor beginPos = charPos + 1;
 
-        for (TextCursor pos = beginPos; pos < endLimit; pos++) {
+        for (TextCursor pos = beginPos; pos < endLimit; ++pos) {
             const char ch = buffer_->BufGetCharacter(pos);
             if (ch == matchChar) {
                 if (matchSyntaxBased) {
@@ -3710,7 +3710,7 @@ boost::optional<TextCursor> DocumentWidget::findMatchingCharEx(char toMatch, Sty
         if(charPos != startLimit) {
             const TextCursor beginPos = charPos - 1;
 
-            for (TextCursor pos = beginPos; pos >= startLimit; pos--) {
+            for (TextCursor pos = beginPos; pos >= startLimit; --pos) {
                 const char ch = buffer_->BufGetCharacter(pos);
                 if (ch == matchChar) {
                     if (matchSyntaxBased) {
@@ -5818,7 +5818,7 @@ void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &sty
     TextCursor beginParse  = pos;
     TextCursor beginSafety = Highlight::backwardOneContext(buf, context, beginParse);
 
-    for (TextCursor p = beginParse; p >= beginSafety; p--) {
+    for (TextCursor p = beginParse; p >= beginSafety; --p) {
         char ch = styleBuf->BufGetCharacter(p);
         if (ch != UNFINISHED_STYLE && ch != PLAIN_STYLE && static_cast<uint8_t>(ch) < firstPass2Style) {
             beginSafety = p + 1;
@@ -5833,7 +5833,7 @@ void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &sty
     TextCursor endParse  = std::min(buf->BufEndOfBuffer(), pos + PASS_2_REPARSE_CHUNK_SIZE);
     TextCursor endSafety = Highlight::forwardOneContext(buf, context, endParse);
 
-    for (TextCursor p = pos; p < endSafety; p++) {
+    for (TextCursor p = pos; p < endSafety; ++p) {
         char ch = styleBuf->BufGetCharacter(p);
         if (ch != UNFINISHED_STYLE && ch != PLAIN_STYLE && static_cast<uint8_t>(ch) < firstPass2Style) {
             endParse  = std::min(endParse, p);

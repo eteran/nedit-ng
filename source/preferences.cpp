@@ -886,9 +886,9 @@ QString Preferences::MakeQuotedString(const QString &string) {
     // calculate length
     for(QChar ch: string) {
         if (ch == Quote) {
-            length++;
+            ++length;
         }
-        length++;
+        ++length;
     }
 
     QString outStr;
@@ -950,7 +950,7 @@ bool Preferences::reportError(QWidget *toDialog, const QString &string, int stop
 		} else if (string[c] == QLatin1Char('\n') && nNonWhite >= 5) {
 			break;
 		} else if (string[c] != QLatin1Char(' ') && string[c] != QLatin1Char('\t')) {
-			nNonWhite++;
+            ++nNonWhite;
 		}
 	}
 	

@@ -526,7 +526,7 @@ boost::optional<std::string> Search::ReplaceAllInStringEx(view::string_view inSt
             *copyEnd = searchResult.end;
             // start next after match unless match was empty, then endPos+1
             beginPos = (searchResult.start == searchResult.end) ? searchResult.end + 1 : searchResult.end;
-            nFound++;
+            ++nFound;
             removeLen += searchResult.end - searchResult.start;
             if (isRegexType(searchType)) {
                 std::string replaceResult;
@@ -717,7 +717,7 @@ void Search::saveSearchHistory(const QString &searchString, QString replaceStrin
     /* If there are more than MAX_SEARCH_HISTORY strings saved, recycle
        some space, free the entry that's about to be overwritten */
     if (NHist != MAX_SEARCH_HISTORY) {
-        NHist++;
+        ++NHist;
     }
 
     HistoryEntry *entry = &SearchReplaceHistory[HistStart];

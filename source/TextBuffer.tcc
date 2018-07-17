@@ -908,7 +908,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountForwardDispChars(TextCursor lineStar
         }
 
         charCount += BufCharWidth(ch, charCount, tabDist_);
-        pos++;
+        ++pos;
     }
 
     return pos;
@@ -986,7 +986,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(TextCursor startPos, 
         if(pos == BufStartOfBuffer()) {
             break;
         }
-        pos--;
+        --pos;
     }
 
     return BufStartOfBuffer();
@@ -1007,7 +1007,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(TextCurs
                 return pos;
             }
         }
-        pos++;
+        ++pos;
     }
 
     return boost::none;
@@ -1035,7 +1035,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(TextCur
         if(pos == BufStartOfBuffer()) {
             break;
         }
-        pos--;
+        --pos;
     }
 
     return boost::none;
@@ -1106,7 +1106,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor st
         if (buffer_[to_integer(pos)] == searchChar) {
             return pos;
         }
-        pos++;
+        ++pos;
     }
 
     return boost::none;
@@ -1135,7 +1135,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor s
         if(pos == BufStartOfBuffer()) {
             break;
         }
-        pos--;
+        --pos;
     }
 
     return boost::none;
@@ -1286,7 +1286,7 @@ void BasicTextBuffer<Ch, Tr>::findRectSelBoundariesForCopy(TextCursor lineStartP
         const int width = BufCharWidth(c, indent, tabDist_);
         if (indent + width > rectStart) {
             if (indent != rectStart && c != Ch('\t')) {
-                pos++;
+                ++pos;
                 indent += width;
             }
             break;
@@ -1307,7 +1307,7 @@ void BasicTextBuffer<Ch, Tr>::findRectSelBoundariesForCopy(TextCursor lineStartP
         indent += width;
         if (indent > rectEnd) {
             if (indent - width != rectEnd && c != Ch('\t')) {
-                pos++;
+                ++pos;
             }
             break;
         }
@@ -1426,11 +1426,11 @@ void BasicTextBuffer<Ch, Tr>::redisplaySelection(const Selection *oldSelection, 
     TextCursor newEnd   = newSelection->end;
 
     if (oldSelection->rectangular) {
-        oldEnd++;
+        ++oldEnd;
     }
 
     if (newSelection->rectangular) {
-        newEnd++;
+        ++newEnd;
     }
 
     /* If the old or new selection is unselected, just redisplay the

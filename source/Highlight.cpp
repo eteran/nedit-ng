@@ -267,7 +267,7 @@ TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const
     int beginStyle = pass1Patterns->style;
 	if (can_cross_line_boundaries(contextRequirements)) {
         beginSafety = backwardOneContext(buf, contextRequirements, beginParse);
-		for (p = beginParse; p >= beginSafety; p--) {
+        for (p = beginParse; p >= beginSafety; --p) {
 			style = styleBuf->BufGetCharacter(p - 1);
 			if (!equivalent_style(style, beginStyle, firstPass2Style)) {
 				beginSafety = p;
@@ -275,10 +275,10 @@ TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const
 			}
 		}
 	} else {
-        for (beginSafety = std::max(TextCursor(), beginParse - 1); beginSafety > 0; beginSafety--) {
+        for (beginSafety = std::max(TextCursor(), beginParse - 1); beginSafety > 0; --beginSafety) {
 			style = styleBuf->BufGetCharacter(beginSafety);
 			if (!equivalent_style(style, beginStyle, firstPass2Style) || buf->BufGetCharacter(beginSafety) == '\n') {
-				beginSafety++;
+                ++beginSafety;
 				break;
 			}
 		}
@@ -770,7 +770,7 @@ void Highlight::fillStyleString(const char *&stringPtr, char *&stylePtr, const c
 ** style in the original buffer, from pass1 styles which signal a change.
 */
 void Highlight::modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleString, TextCursor startPos, TextCursor endPos, int firstPass2Style) {
-    char *c;
+    char *ch;
     TextCursor pos;
     TextCursor modStart;
     TextCursor modEnd;
@@ -790,17 +790,17 @@ void Highlight::modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char
 	   the new string with which it will be updated, to find the extent of
 	   the modifications.  Unfinished styles in the original match any
 	   pass 2 style */
-	for (c = styleString, pos = startPos; pos < modStart && pos < endPos; c++, pos++) {
+    for (ch = styleString, pos = startPos; pos < modStart && pos < endPos; ++ch, ++pos) {
         char bufChar = styleBuf->BufGetCharacter(pos);
-        if (*c != bufChar && !(bufChar == UNFINISHED_STYLE && (*c == PLAIN_STYLE || static_cast<uint8_t>(*c) >= firstPass2Style))) {
+        if (*ch != bufChar && !(bufChar == UNFINISHED_STYLE && (*ch == PLAIN_STYLE || static_cast<uint8_t>(*ch) >= firstPass2Style))) {
             minPos = std::min(minPos, pos);
             maxPos = std::max(maxPos, pos);
 		}
     }
 
-    for (c = &styleString[std::max(0, modEnd - startPos)], pos = std::max(modEnd, startPos); pos < endPos; c++, pos++) {
+    for (ch = &styleString[std::max(0, modEnd - startPos)], pos = std::max(modEnd, startPos); pos < endPos; ++ch, ++pos) {
         char bufChar = styleBuf->BufGetCharacter(pos);
-        if (*c != bufChar && !(bufChar == UNFINISHED_STYLE && (*c == PLAIN_STYLE || static_cast<uint8_t>(*c) >= firstPass2Style))) {
+        if (*ch != bufChar && !(bufChar == UNFINISHED_STYLE && (*ch == PLAIN_STYLE || static_cast<uint8_t>(*ch) >= firstPass2Style))) {
 
             minPos = std::min(minPos, pos);
             maxPos = std::max(maxPos, pos + 1);
@@ -908,7 +908,7 @@ int Highlight::findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<Wi
 	}
 
 	int runningStyle = startStyle;
-    for (TextCursor i = *pos - 1;; i--) {
+    for (TextCursor i = *pos - 1;; --i) {
 
 		// The start of the buffer is certainly a safe place to parse from 
 		if (i == 0) {

@@ -6894,7 +6894,7 @@ bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QS
 void MainWindow::iSearchRecordLastBeginPosEx(Direction direction, TextCursor initPos) {
     iSearchLastBeginPos_ = initPos;
     if (direction == Direction::Backward) {
-        iSearchLastBeginPos_--;
+        --iSearchLastBeginPos_;
     }
 }
 

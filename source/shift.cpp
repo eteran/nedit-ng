@@ -95,7 +95,7 @@ std::string fillParagraphEx(view::string_view text, int64_t leftMargin, int64_t 
                         *b = '\n';
                         it = b;
                         col = leftMargin;
-                        nLines++;
+                        ++nLines;
                         break;
                     }
                 } else {
@@ -105,7 +105,7 @@ std::string fillParagraphEx(view::string_view text, int64_t leftMargin, int64_t 
         }
     }
 
-    nLines++;
+    ++nLines;
 
     // produce a string to prepend to lines to indent them to the left margin
     std::string leadIndentStr = makeIndentString(firstLineIndent, tabDist, allowTabs);
@@ -150,7 +150,7 @@ TextCursor findParagraphEnd(TextBuffer *buf, TextCursor startPos) {
         }
 
         if (::strchr(whiteChars, c) != nullptr) {
-            pos++;
+            ++pos;
         } else {
             pos = buf->BufEndOfLine(pos) + 1;
         }
@@ -179,7 +179,7 @@ int findLeftMarginEx(In first, In last, Size length, int tabDist) {
             col += TextBuffer::BufCharWidth('\t', col, tabDist);
             break;
         case ' ':
-            col++;
+            ++col;
             break;
         case '\n':
             col = 0;
@@ -231,7 +231,7 @@ std::string fillParagraphsEx(view::string_view text, int64_t rightMargin, int ta
                 break;
             }
 
-            paraStart++;
+            ++paraStart;
         }
 
         if (paraStart >= buf.BufGetLength()) {
@@ -293,7 +293,7 @@ TextCursor findParagraphStart(TextBuffer *buf, TextCursor startPos) {
         }
 
         if (::strchr(whiteChars, c) != nullptr) {
-            pos--;
+            --pos;
         } else {
             parStart = buf->BufStartOfLine(pos);
             pos = parStart - 2;
@@ -663,7 +663,7 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
         selEnd = buf->BufEndOfLine(cursorPos);
 
         if (selEnd < buf->BufGetLength()) {
-            selEnd++;
+            ++selEnd;
         }
 
         buf->BufSelect(selStart, selEnd);
@@ -682,7 +682,7 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
         if (selEnd != 0 && buf->BufGetCharacter(selEnd - 1) != '\n') {
             selEnd = buf->BufEndOfLine(selEnd);
             if (selEnd < buf->BufGetLength()) {
-                selEnd++;
+                ++selEnd;
             }
         }
         buf->BufSelect(selStart, selEnd);
@@ -739,8 +739,9 @@ void FillSelectionEx(DocumentWidget *document, TextArea *area) {
         left = buf->BufStartOfLine(left);
         if (right != 0 && buf->BufGetCharacter(right - 1) != '\n') {
             right = buf->BufEndOfLine(right);
-            if (right < buf->BufGetLength())
-                right++;
+            if (right < buf->BufGetLength()) {
+                ++right;
+            }
         }
 
         buf->BufSelect(left, right);
