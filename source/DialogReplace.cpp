@@ -35,7 +35,7 @@ int countWritableWindows() {
         /* We must be very careful! The status check may trigger a pop-up
            dialog when the file has changed on disk, and the user may destroy
            arbitrary windows in response. */
-        document->CheckForChangesToFileEx();
+        document->CheckForChangesToFile();
 
         const std::vector<DocumentWidget *> afterDocuments = DocumentWidget::allDocuments();
         size_t nAfter = afterDocuments.size();

@@ -824,7 +824,7 @@ void DocumentWidget::movedCallback(TextArea *area) {
     FlashMatchingEx(area);
 
 	// Check for changes to read-only status and/or file modifications
-    CheckForChangesToFileEx();
+    CheckForChangesToFile();
 
     if(QTimer *const blinkTimer = area->cursorBlinkTimer()) {
         if(!blinkTimer->isActive()) {
@@ -920,7 +920,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
         UpdateStatsLine(area);
 
         // Check if external changes have been made to file and warn user
-        CheckForChangesToFileEx();
+        CheckForChangesToFile();
     }
 }
 
@@ -1891,7 +1891,7 @@ QString DocumentWidget::backupFileNameEx() const {
 ** Check if the file in the window was changed by an external source.
 ** and put up a warning dialog if it has.
 */
-void DocumentWidget::CheckForChangesToFileEx() {
+void DocumentWidget::CheckForChangesToFile() {
 
     // TODO(eteran): 2.0, this concept can probably be reworked in terms of QFileSystemWatcher
     static QPointer<DocumentWidget> lastCheckWindow;
@@ -2317,7 +2317,7 @@ bool DocumentWidget::WriteBackupFile() {
 bool DocumentWidget::SaveWindow() {
 
     // Try to ensure our information is up-to-date
-    CheckForChangesToFileEx();
+    CheckForChangesToFile();
 
     /* Return success if the file is normal & unchanged or is a
         read-only file. */

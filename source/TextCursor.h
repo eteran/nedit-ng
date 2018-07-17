@@ -3,13 +3,9 @@
 #define TEXT_CURSOR_H_
 
 #include <cstdint>
-
-#define CURSOR_STRONG_TYPE
-#define CURSOR_COMPARE_TO_INTEGER
-
-#ifdef CURSOR_STRONG_TYPE
-
 #include <type_traits>
+
+#define CURSOR_COMPARE_TO_INTEGER
 
 template <class Integer>
 using IsInteger = typename std::enable_if<std::is_integral<Integer>::value>::type;
@@ -125,13 +121,6 @@ private:
 };
 
 using TextCursor = BasicTextCursor<int32_t>;
-#else
-using TextCursor = int64_t;
 
-inline int64_t to_integer(TextCursor cursor) {
-    return cursor;
-}
-
-#endif
 
 #endif

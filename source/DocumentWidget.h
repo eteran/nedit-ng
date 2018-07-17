@@ -131,7 +131,7 @@ public:
     void AddMarkEx(TextArea *area, QChar label);
     void BeginSmartIndent(bool warn);
     void CancelMacroOrLearnEx();
-    void CheckForChangesToFileEx();
+    void CheckForChangesToFile();
     void ClearModeMessage();
     void closePane();
     void DoMacro(const QString &macro, const QString &errInName);

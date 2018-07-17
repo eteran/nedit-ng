@@ -5337,7 +5337,7 @@ void MainWindow::focusChanged(QWidget *from, QWidget *to) {
             EndISearchEx();
 
             // Check for changes to read-only status and/or file modifications
-            document->CheckForChangesToFileEx();
+            document->CheckForChangesToFile();
         }
     }
 }
