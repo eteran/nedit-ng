@@ -116,6 +116,7 @@ public:
     static QString backlightCharTypes;
     static QString tagFile;
     static QString wordDelimiters;
+    static QStringList includePaths;
 
 public:
     // Created implicitly from other "real" settings

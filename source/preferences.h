@@ -90,6 +90,7 @@ public:
     static QString GetPrefShell();
     static QString GetPrefTagFile();
     static QString GetPrefTitleFormat();
+    static QStringList GetPrefIncludePaths();
     static SearchType GetPrefSearch();
     static ShowMatchingStyle GetPrefShowMatching();
     static TruncSubstitution GetPrefTruncSubstitution();

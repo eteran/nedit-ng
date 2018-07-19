@@ -691,8 +691,13 @@ void Preferences::SetPrefTitleFormat(const QString &format) {
         window->UpdateWindowTitle(window->currentDocument());
 	}
 }
+
 QString Preferences::GetPrefTitleFormat() {
     return Settings::titleFormat;
+}
+
+QStringList Preferences::GetPrefIncludePaths() {
+    return Settings::includePaths;
 }
 
 bool Preferences::GetPrefUndoModifiesSelection() {

@@ -11,6 +11,11 @@ namespace {
 
 bool settingsLoaded_ = false;
 
+const QStringList DEFAULT_INCLUDE_PATHS = {
+    QLatin1String("/usr/include/"),
+    QLatin1String("/usr/local/include/")
+};
+
 auto DEFAULT_DELIMETERS       = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
 auto DEFAULT_BACKLIGHT_CHARS  = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
 auto DEFAULT_TEXT_FONT        = QLatin1String("Courier New,10,-1,5,50,0,0,0,0,0");
@@ -109,6 +114,7 @@ TruncSubstitution Settings::truncSubstitution;
 QString Settings::backlightCharTypes;
 QString Settings::tagFile;
 QString Settings::wordDelimiters;
+QStringList Settings::includePaths;
 QFont Settings::font;
 
 /**
@@ -226,6 +232,7 @@ void Settings::loadPreferences() {
     geometry                          = settings.value(tr("nedit.geometry"),					      QString()).toString();
     tagFile                           = settings.value(tr("nedit.tagFile"), 					      QString()).toString();
     wordDelimiters                    = settings.value(tr("nedit.wordDelimiters"),  			      DEFAULT_DELIMETERS).toString();
+    includePaths                      = settings.value(tr("nedit.includePaths"),  			          DEFAULT_INCLUDE_PATHS).toStringList();
     serverName                        = settings.value(tr("nedit.serverName"),  				      QString()).toString();
     maxPrevOpenFiles                  = settings.value(tr("nedit.maxPrevOpenFiles"),			      30).toInt();
     smartTags                         = settings.value(tr("nedit.smartTags"),					      true).toBool();
@@ -312,6 +319,7 @@ void Settings::importSettings(const QString &filename) {
     geometry                          = settings.value(tr("nedit.geometry"),					      geometry).toString();
     tagFile                           = settings.value(tr("nedit.tagFile"), 					      tagFile).toString();
     wordDelimiters                    = settings.value(tr("nedit.wordDelimiters"),  			      wordDelimiters).toString();
+    includePaths                      = settings.value(tr("nedit.includePaths"),  			          includePaths).toStringList();
     serverName                        = settings.value(tr("nedit.serverName"),  				      serverName).toString();
     maxPrevOpenFiles                  = settings.value(tr("nedit.maxPrevOpenFiles"),			      maxPrevOpenFiles).toInt();
     smartTags                         = settings.value(tr("nedit.smartTags"),					      smartTags).toBool();
@@ -393,6 +401,7 @@ bool Settings::savePreferences() {
     settings.setValue(tr("nedit.geometry"), geometry);
     settings.setValue(tr("nedit.tagFile"), tagFile);
     settings.setValue(tr("nedit.wordDelimiters"), wordDelimiters);
+    settings.setValue(tr("nedit.includePaths"), includePaths);
     settings.setValue(tr("nedit.serverName"), serverName);
     settings.setValue(tr("nedit.maxPrevOpenFiles"), maxPrevOpenFiles);
     settings.setValue(tr("nedit.smartTags"), smartTags);

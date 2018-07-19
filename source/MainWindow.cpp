@@ -56,10 +56,6 @@
 #include <sys/param.h>
 #include <sys/stat.h>
 
-#if !defined(DONT_HAVE_GLOB)
-#include <glob.h>
-#endif
-
 #ifdef Q_OS_LINUX
 #include <QLibrary>
 #endif
@@ -2012,17 +2008,7 @@ void MainWindow::on_action_Open_Selected_triggered() {
  */
 void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 
-	// TODO(eteran): 2.0, let the user specify a list of potential paths!
-    //       can we ask the system simply or similar?
-    //       `gcc -print-prog-name=cc1plus` -v
-    //       `gcc -print-prog-name=cc1` -v
-    //       etc...
-    static const QLatin1String includeDirs[] = {
-        QLatin1String("/usr/include/"),
-#if 0 // causes spurious message boxes unfortunately because we don't stop after first success... yet
-        QLatin1String("/usr/local/include/")
-#endif
-    };
+    const QStringList includeDirs = Preferences::GetPrefIncludePaths();
 
     /* get the string, or skip if we can't get the selection data, or it's
        obviously not a file name */
@@ -2031,69 +2017,54 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
         return;
     }
 
-    static const QRegularExpression reSystem(QLatin1String("#include\\s*<([^>]+)>"));
-    static const QRegularExpression reLocal(QLatin1String("#include\\s*\"([^\"]+)\""));
+    const bool openInTab = Preferences::GetPrefOpenInTab();
 
-    for(QLatin1String includeDir : includeDirs) {
-        QString nameText = text;
+    QFileInfoList fileList;
+    QString searchName = text;
+    QString searchPath = document->path_;
+
+    for(const QString &includeDir : includeDirs) {
 
         // extract name from #include syntax
         // TODO(eteran): 2.0, support import/include syntax from multiple languages
-        QRegularExpressionMatch match = reLocal.match(nameText);
+        static const QRegularExpression reSystem(QLatin1String("#include\\s*<([^>]+)>"));
+        static const QRegularExpression reLocal(QLatin1String("#include\\s*\"([^\"]+)\""));
+
+        QRegularExpressionMatch match = reLocal.match(text);
         if(match.hasMatch()) {
-            nameText = match.captured(1);
+            searchName = match.captured(1);
         } else {
-            match = reSystem.match(nameText);
+            match = reSystem.match(text);
             if(match.hasMatch()) {
-                nameText = tr("%1%2").arg(includeDir, match.captured(1));
+                // we need to do this because someone could write #include <path/to/file.h>
+                // which confuses QDir..
+                QFileInfo fullPath = tr("%1%2").arg(includeDir, match.captured(1));
+                searchName = fullPath.fileName();
+                searchPath = fullPath.path();
             }
         }
 
-        // strip whitespace from name
-        nameText.remove(QLatin1Char(' '));
-        nameText.remove(QLatin1Char('\t'));
-        nameText.remove(QLatin1Char('\n'));
+        QDir dir(searchPath);
+        QStringList name_filters = { searchName };
+        QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Files);
+        fileList.append(localFileList);
+    }
 
-        // Process ~ characters in name
-        nameText = ExpandTildeEx(nameText);
+    // No match in any of the search directories, just tell the user the file wasn't found
+    if(fileList.isEmpty()) {
+        QMessageBox::critical(
+                    this,
+                    tr("Error opening File"),
+                    tr("Could not open %1%2:\n%3").arg(searchPath, searchName, tr("No such file or directory")));
+        return;
+    }
 
-        // If path name is relative, make it refer to current window's directory
-        if (!QFileInfo(nameText).isAbsolute()) {
-            nameText = tr("%1%2").arg(document->path_, nameText);
-        }
-
-        const bool openInTab = Preferences::GetPrefOpenInTab();
-
-    #if !defined(DONT_HAVE_GLOB)
-        // Expand wildcards in file name.
-        {
-            glob_t globbuf;
-            glob(nameText.toUtf8().data(), GLOB_NOCHECK, nullptr, &globbuf);
-
-            for (size_t i = 0; i < globbuf.gl_pathc; i++) {
-                QString pathname;
-                QString filename;
-                if (!ParseFilenameEx(QString::fromUtf8(globbuf.gl_pathv[i]), &filename, &pathname) != 0) {
-                    QApplication::beep();
-                } else {
-                    DocumentWidget::EditExistingFileEx(
-                                openInTab ? document : nullptr,
-                                filename,
-                                pathname,
-                                0,
-                                QString(),
-                                false,
-                                QString(),
-                                openInTab,
-                                false);
-                }
-            }
-            globfree(&globbuf);
-        }
-    #else
+    // OK, we've got some things to try to open, let's go for it!
+    for (int i = 0; i < fileList.size(); i++) {
+        QFileInfo file = fileList.at(i);
         QString pathname;
         QString filename;
-        if (ParseFilenameEx(nameText, &filename, &pathname) != 0) {
+        if (!ParseFilenameEx(file.absoluteFilePath(), &filename, &pathname) != 0) {
             QApplication::beep();
         } else {
             DocumentWidget::EditExistingFileEx(
@@ -2107,7 +2078,6 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
                         openInTab,
                         false);
         }
-    #endif
     }
 
     MainWindow::CheckCloseDimEx();
