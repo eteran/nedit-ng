@@ -5,6 +5,6 @@
 struct Program;
 class QString;
 
-Program *ParseMacro  (const QString &expr, QString *message, int *stoppedAt);
+Program *ParseMacro(const QString &expr, QString *message, int *stoppedAt);
 
 #endif
