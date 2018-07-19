@@ -5140,10 +5140,13 @@ bool MainWindow::CloseAllDocumentsInWindow() {
             }
         }
 
-        // if there's still documents left in the window...
-        for(DocumentWidget *document : openDocuments()) {
-            if (!document->CloseFileAndWindow(CloseMode::Prompt)) {
-                return false;
+        // NOTE(eteran): suppress tab bar updates until this is done to speed things up!
+        if(auto suppress_signals = no_signals(ui.tabWidget)) {
+            // if there's still documents left in the window...
+            for(DocumentWidget *document : openDocuments()) {
+                if (!document->CloseFileAndWindow(CloseMode::Prompt)) {
+                    return false;
+                }
             }
         }
     }

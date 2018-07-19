@@ -1910,21 +1910,14 @@ void DocumentWidget::CheckForChangesToFile() {
     lastCheckWindow = this;
     lastCheckTime   = timestamp;
 
-    bool silent = false;
+    if(auto win = MainWindow::fromDocument(this)) {
 
-    auto win = MainWindow::fromDocument(this);
+        /* Update the status, but don't pop up a dialog if we're called from a
+         * place where the window might be iconic (e.g., from the replace dialog)
+         * or on another desktop.
+         */
+        const bool silent = (!IsTopDocument() || !win->isVisible());
 
-    /* Update the status, but don't pop up a dialog if we're called from a
-     * place where the window might be iconic (e.g., from the replace dialog)
-     * or on another desktop.
-     */
-    if (!IsTopDocument()) {
-        silent = true;
-    } else if(!win->isVisible()) {
-        silent = true;
-    }
-
-    if(win) {
         // Get the file mode and modification time
         QString fullname = FullPath();
 
@@ -2012,9 +2005,9 @@ void DocumentWidget::CheckForChangesToFile() {
             uid_  = statbuf.st_uid;
             gid_  = statbuf.st_gid;
 
-            FILE *fp = ::fopen(fullname.toUtf8().data(), "r");
-            if (fp) {
-                ::fclose(fp);
+            QFile fp(fullname);
+            if(fp.open(QIODevice::ReadOnly)) {
+                fp.close();
 
                 const bool readOnly = ::access(fullname.toUtf8().data(), W_OK) != 0;
 
