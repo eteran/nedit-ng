@@ -10,8 +10,6 @@
 #include <cstdint>
 #include <cstring>
 
-#include <QtGlobal>
-
 extern uint8_t Compute_Size;
 
 template <class T>
