@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(Qt5 5.4.0 REQUIRED Core Network)
+find_package(Qt5 5.5.0 REQUIRED Core Network)
 
 add_library (Util
 	ClearCase.cpp
