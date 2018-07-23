@@ -1653,7 +1653,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 					if (countPixels) {
 						colNum = 0;
 						width = 0;
-						for (i = b + 1; i < p + 1; i++) {
+						for (i = b + 1; i < p + 1; ++i) {
                             width += widthInPixels(buf->BufGetCharacter(i), colNum);
 							colNum++;
 						}

@@ -113,12 +113,9 @@ gap_buffer<Ch, Tr>::gap_buffer() : gap_buffer(0){
  *
  */
 template <class Ch, class Tr>
-gap_buffer<Ch, Tr>::gap_buffer(size_type size) {
+gap_buffer<Ch, Tr>::gap_buffer(size_type size) : gap_start_(0), gap_end_(PreferredGapSize), size_(0) {
 
-    buf_       = std::make_unique<Ch[]>(size + PreferredGapSize);
-    gap_start_ = 0;
-    gap_end_   = PreferredGapSize;
-    size_      = 0;
+	buf_ = std::make_unique<Ch[]>(size + PreferredGapSize);
 
 #ifdef PURIFY
     std::fill(&buf_[gap_start_], &buf_[gap_end_], Ch('.'));

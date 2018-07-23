@@ -2362,23 +2362,23 @@ static void disasm(Inst *inst, size_t nInstr) {
 					}
 					++i;
 				} else if (j == OP_BRANCH || j == OP_BRANCH_FALSE || j == OP_BRANCH_NEVER || j == OP_BRANCH_TRUE) {
-                    printf("to=(%d) %p", inst[i + 1].value, static_cast<void *>(&inst[i + 1] + inst[i + 1].value));
+					printf("to=(%ld) %p", inst[i + 1].value, static_cast<void *>(&inst[i + 1] + inst[i + 1].value));
 					++i;
 				} else if (j == OP_SUBR_CALL) {
-					printf("%s (%d arg)", inst[i + 1].sym->name.c_str(), inst[i + 2].value);
+					printf("%s (%ld arg)", inst[i + 1].sym->name.c_str(), inst[i + 2].value);
 					i += 2;
 				} else if (j == OP_BEGIN_ARRAY_ITER) {
 					printf("%s in", inst[i + 1].sym->name.c_str());
 					++i;
 				} else if (j == OP_ARRAY_ITER) {
-                    printf("%s = %s++ end-loop=(%d) %p", inst[i + 1].sym->name.c_str(), inst[i + 2].sym->name.c_str(), inst[i + 3].value, static_cast<void *>(&inst[i + 3] + inst[i + 3].value));
+					printf("%s = %s++ end-loop=(%ld) %p", inst[i + 1].sym->name.c_str(), inst[i + 2].sym->name.c_str(), inst[i + 3].value, static_cast<void *>(&inst[i + 3] + inst[i + 3].value));
 					i += 3;
 				} else if (j == OP_ARRAY_REF || j == OP_ARRAY_DELETE || j == OP_ARRAY_ASSIGN) {
-					printf("nDim=%d", inst[i + 1].value);
+					printf("nDim=%ld", inst[i + 1].value);
 					++i;
 				} else if (j == OP_ARRAY_REF_ASSIGN_SETUP) {
 					printf("binOp=%s ", inst[i + 1].value ? "true" : "false");
-					printf("nDim=%d", inst[i + 2].value);
+					printf("nDim=%ld", inst[i + 2].value);
 					i += 2;
 				} else if (j == OP_PUSH_ARRAY_SYM) {
 					printf("%s", inst[++i].sym->name.c_str());
@@ -2391,7 +2391,7 @@ static void disasm(Inst *inst, size_t nInstr) {
 			}
 		}
 		if (j == N_OPS) {
-			printf("%x\n", inst[i].value);
+			printf("%lx\n", inst[i].value);
 		}
 	}
 }
