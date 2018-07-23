@@ -11,7 +11,7 @@ class DialogRepeat final : public Dialog {
 	Q_OBJECT
 public:
     DialogRepeat(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogRepeat() override = default;
+    ~DialogRepeat() noexcept override = default;
 
 public:
     void setCommand(const QString &command);

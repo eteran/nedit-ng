@@ -29,7 +29,7 @@ public:
     Rangeset& operator=(const Rangeset &) = delete;
     Rangeset(Rangeset &&)                 = delete;
     Rangeset& operator=(Rangeset &&)      = delete;
-    ~Rangeset()                           = default;
+    ~Rangeset() noexcept                  = default;
 
 public:
     bool RangesetAssignColorName(TextBuffer *buffer, const QString &color_name);

@@ -29,7 +29,7 @@ public:
 
 public:
     DialogReplace(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogReplace() override = default;
+    ~DialogReplace() noexcept override = default;
 	
 protected:
 	void keyPressEvent(QKeyEvent *event) override;

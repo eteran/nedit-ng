@@ -14,7 +14,7 @@ class DialogWindowTitle final : public Dialog {
 	Q_OBJECT
 public:
     DialogWindowTitle(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogWindowTitle() override = default;
+    ~DialogWindowTitle() noexcept override = default;
 
 private Q_SLOTS:
 	void on_checkFileName_toggled(bool checked);

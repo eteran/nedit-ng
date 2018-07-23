@@ -25,7 +25,7 @@ public:
     BasicTextCursor& operator=(const BasicTextCursor &) = default;
     BasicTextCursor(BasicTextCursor &&)                 = default;
     BasicTextCursor& operator=(BasicTextCursor &&)      = default;
-    ~BasicTextCursor()                                  = default;
+    ~BasicTextCursor() noexcept                         = default;
 
 public:
     constexpr BasicTextCursor& operator++() noexcept   { ++index_; return *this; }

@@ -9,7 +9,7 @@ class DialogWindowSize final : public Dialog {
 	Q_OBJECT
 public:
     DialogWindowSize(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogWindowSize() override = default;
+    ~DialogWindowSize() noexcept override = default;
 
 private Q_SLOTS:
 	void on_buttonBox_accepted();

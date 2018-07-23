@@ -12,7 +12,7 @@ class DialogFonts final : public Dialog {
 
 public:
     DialogFonts(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogFonts() override = default;
+    ~DialogFonts() noexcept override = default;
 
 private Q_SLOTS:
 	void on_buttonBox_clicked(QAbstractButton *button);

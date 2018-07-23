@@ -12,7 +12,7 @@ class DialogColors final : public Dialog {
 	Q_OBJECT
 public:
     DialogColors(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogColors() override = default;
+    ~DialogColors() noexcept override = default;
 
 private Q_SLOTS:
 	void on_buttonFG_clicked();

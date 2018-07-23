@@ -10,7 +10,7 @@ class LanguageModeModel final : public QAbstractItemModel {
 
 public:
     explicit LanguageModeModel(QObject *parent = nullptr) ;
-    ~LanguageModeModel() override = default;
+    ~LanguageModeModel() noexcept override = default;
 
 public:
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;

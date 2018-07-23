@@ -10,7 +10,7 @@ class HighlightStyleModel final : public QAbstractItemModel {
 
 public:
     explicit HighlightStyleModel(QObject *parent = nullptr) ;
-    ~HighlightStyleModel() override = default;
+    ~HighlightStyleModel() noexcept override = default;
 
 public:
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;

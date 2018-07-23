@@ -12,7 +12,7 @@ class DialogPrint final : public Dialog {
 	Q_OBJECT
 public:
     DialogPrint(const QString &contents, QString jobname, DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogPrint() override = default;
+    ~DialogPrint() noexcept override = default;
 
 private Q_SLOTS:
 	void on_buttonPrint_clicked();

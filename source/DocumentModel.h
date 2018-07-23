@@ -10,7 +10,7 @@ class DocumentModel final : public QAbstractItemModel {
 
 public:
     explicit DocumentModel(QObject *parent = nullptr) ;
-    ~DocumentModel() override = default;
+    ~DocumentModel() noexcept override = default;
 
 public:
     QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;

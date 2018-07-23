@@ -12,7 +12,7 @@ class DialogDuplicateTags final : public Dialog {
 	Q_OBJECT
 public:
     DialogDuplicateTags(DocumentWidget *document, TextArea *area, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogDuplicateTags() override = default;
+    ~DialogDuplicateTags() noexcept override = default;
 
 public:
 	void setTag(const QString &tag);

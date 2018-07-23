@@ -12,7 +12,7 @@ public:
 	Q_OBJECT
 public:
     DialogTabs(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogTabs() override = default;
+    ~DialogTabs() noexcept override = default;
 
 private Q_SLOTS:
 	void on_checkEmulateTabs_toggled(bool checked);
