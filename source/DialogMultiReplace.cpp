@@ -70,26 +70,26 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
 
     // Perform the replacements and mark the selected files (history)
     for(QModelIndex index : selections) {
-        if(DocumentWidget *writableWin = model_->itemFromIndex(index)) {
+		if(DocumentWidget *writeableDocument = model_->itemFromIndex(index)) {
 
             /* First check again whether the file is still writable. If the
              * file status has changed or the file was locked in the mean time,
              * we just skip the window. */
-            if (!writableWin->lockReasons().isAnyLocked()) {
+			if (!writeableDocument->lockReasons().isAnyLocked()) {
                 noWritableLeft = false;
-                writableWin->multiFileBusy_ = true; // Avoid multi-beep/dialog
-                writableWin->replaceFailed_ = false;
+				writeableDocument->multiFileBusy_ = true; // Avoid multi-beep/dialog
+				writeableDocument->replaceFailed_ = false;
 
-                if(auto win = MainWindow::fromDocument(writableWin)) {
+				if(auto win = MainWindow::fromDocument(writeableDocument)) {
                     win->action_Replace_All(
-                                writableWin,
+					            writeableDocument,
                                 fields->searchString,
                                 fields->replaceString,
                                 fields->searchType);
                 }
 
-                writableWin->multiFileBusy_ = false;
-                if (!writableWin->replaceFailed_) {
+				writeableDocument->multiFileBusy_ = false;
+				if (!writeableDocument->replaceFailed_) {
                     replaceFailed = false;
                 }
             }

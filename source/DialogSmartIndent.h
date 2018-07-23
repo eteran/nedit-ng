@@ -5,7 +5,7 @@
 #include "Dialog.h"
 #include "ui_DialogSmartIndent.h"
 
-#include <memory>
+#include <boost/optional.hpp>
 
 class DocumentWidget;
 class SmartIndentEntry;
@@ -25,7 +25,7 @@ private:
     void setSmartIndentDialogData(const SmartIndentEntry *is);
 	bool updateSmartIndentData();
 	bool checkSmartIndentDialogData();
-	std::unique_ptr<SmartIndentEntry>  getSmartIndentDialogData();
+	boost::optional<SmartIndentEntry> getSmartIndentDialogData() const;
 	
 private Q_SLOTS:
 	void on_buttonCommon_clicked();

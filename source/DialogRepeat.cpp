@@ -13,17 +13,18 @@ DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::Window
 	ui.lineEdit->setValidator(new QIntValidator(0, INT_MAX, this));
 }
 
-void DialogRepeat::setCommand(const QString &command) {
+bool DialogRepeat::setCommand(const QString &command) {
 	
 	/* make a label for the Last command item of the dialog, which includes
 	   the last executed action name */
 	int index = command.indexOf(QLatin1Char('('));
 	if(index == -1) {
-		return;
+		return false;
 	}
 
 	lastCommand_ = command;
 	ui.radioLastCommand->setText(tr("Last &Command (%1)").arg(command.mid(0, index)));
+	return true;
 }
 
 void DialogRepeat::on_buttonBox_accepted() {

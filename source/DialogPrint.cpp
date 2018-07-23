@@ -8,6 +8,7 @@
 #include <QDir>
 #include <QPainter>
 #include <QFileDialog>
+#include <utility>
 
 /**
  * @brief DialogPrint::DialogPrint
@@ -17,7 +18,7 @@
  * @param parent
  * @param f
  */
-DialogPrint::DialogPrint(const QString &contents, QString jobname, DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document), contents_(contents), jobname_(std::move(jobname)) {
+DialogPrint::DialogPrint(QString contents, QString jobname, DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document), contents_(std::move(contents)), jobname_(std::move(jobname)) {
 	ui.setupUi(this);
 
     QStringList	printers = QPrinterInfo::availablePrinterNames();

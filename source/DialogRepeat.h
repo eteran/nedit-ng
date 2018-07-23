@@ -14,7 +14,7 @@ public:
     ~DialogRepeat() noexcept override = default;
 
 public:
-    void setCommand(const QString &command);
+	bool setCommand(const QString &command);
 
 private Q_SLOTS:
 	void on_buttonBox_accepted();

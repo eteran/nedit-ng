@@ -247,15 +247,15 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	}
 		
 	// Get the current data 
-    std::unique_ptr<SmartIndentEntry> newMacros = getSmartIndentDialogData();
+	auto newMacros = getSmartIndentDialogData();
 
 	// Find the original macros
     auto it = std::find_if(SmartIndent::SmartIndentSpecs.begin(), SmartIndent::SmartIndentSpecs.end(), [this](const SmartIndentEntry &entry) {
         return entry.languageMode == languageMode_;
     });
 
-	/* If it's a new language, add it at the end, otherwise free the
-	   existing macros and replace it */
+	/* If it's a new language, add it at the end, otherwise replace the
+	   existing macros */
     if (it == SmartIndent::SmartIndentSpecs.end()) {
         SmartIndent::SmartIndentSpecs.push_back(*newMacros);
 	} else {
@@ -364,13 +364,13 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
  * @brief DialogSmartIndent::getSmartIndentDialogData
  * @return
  */
-std::unique_ptr<SmartIndentEntry> DialogSmartIndent::getSmartIndentDialogData() {
+boost::optional<SmartIndentEntry> DialogSmartIndent::getSmartIndentDialogData() const {
 
-	auto is = std::make_unique<SmartIndentEntry>();
-    is->languageMode = languageMode_;
-	is->initMacro    = ui.editInit->toPlainText().isEmpty()     ? QString() : ensureNewline(ui.editInit->toPlainText());
-	is->newlineMacro = ui.editNewline->toPlainText().isEmpty()  ? QString() : ensureNewline(ui.editNewline->toPlainText());
-	is->modMacro     = ui.editModMacro->toPlainText().isEmpty() ? QString() : ensureNewline(ui.editModMacro->toPlainText());
+	SmartIndentEntry is;
+	is.languageMode = languageMode_;
+	is.initMacro    = ui.editInit->toPlainText().isEmpty()     ? QString() : ensureNewline(ui.editInit->toPlainText());
+	is.newlineMacro = ui.editNewline->toPlainText().isEmpty()  ? QString() : ensureNewline(ui.editNewline->toPlainText());
+	is.modMacro     = ui.editModMacro->toPlainText().isEmpty() ? QString() : ensureNewline(ui.editModMacro->toPlainText());
 	return is;
 }
 

@@ -247,7 +247,7 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
         }
     }
 
-    // NOTE(eteran): this is only safe if we aren't moving due to a delete operation
+	// this is only safe if we aren't moving due to a delete operation
     if(previous.isValid() && previous != deleted_) {
         if(!updateCurrentItem(previous)) {
             // reselect the old item

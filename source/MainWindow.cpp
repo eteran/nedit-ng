@@ -5267,13 +5267,10 @@ void MainWindow::action_Repeat(DocumentWidget *document) {
         return;
     }
 
-	int index = lastCommand.indexOf(QLatin1Char('('));
-    if(index == -1) {
-        return;
-    }
-
     auto dialog = std::make_unique<DialogRepeat>(document, this);
-	dialog->setCommand(lastCommand);
+	if(!dialog->setCommand(lastCommand)) {
+		return;
+	}
     dialog->exec();
 }
 

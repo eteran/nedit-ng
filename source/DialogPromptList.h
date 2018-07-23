@@ -33,9 +33,9 @@ private:
 	void showEvent(QShowEvent *event) override;
 
 private:
-	Ui::DialogPromptList ui;
-    int result_ = 0;
+	Ui::DialogPromptList ui;    
 	QString text_;
+	int result_ = 0;
 };
 
 #endif
