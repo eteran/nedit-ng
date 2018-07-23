@@ -41,7 +41,7 @@ public:
     void updateFindButton();
 
 private:
-    boost::optional<Fields> getFields();
+    boost::optional<Fields> readFields();
 	
 private Q_SLOTS:
 	void on_checkRegex_toggled(bool checked);

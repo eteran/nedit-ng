@@ -47,7 +47,7 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 	ui.setupUi(this);
     ui.editAccelerator->setMaximumSequenceLength(1);
 
-    ui.buttonPasteLRMacro->setEnabled(!CommandRecorder::instance()->replayMacro.isEmpty());
+	ui.buttonPasteLRMacro->setEnabled(!CommandRecorder::instance()->replayMacro().isEmpty());
 
     model_ = new MenuItemModel(this);
     ui.listItems->setModel(model_);
@@ -130,8 +130,7 @@ void DialogWindowBackgroundMenu::on_buttonDelete_clicked() {
  */
 void DialogWindowBackgroundMenu::on_buttonPasteLRMacro_clicked() {
 
-    QString replayMacro = CommandRecorder::instance()->replayMacro;
-
+	QString replayMacro = CommandRecorder::instance()->replayMacro();
     if (replayMacro.isEmpty()) {
 		return;
 	}
@@ -322,12 +321,9 @@ bool DialogWindowBackgroundMenu::validateFields(Verbosity verbosity) {
 }
 
 /*
-** Read the name, accelerator, mnemonic, and command fields from the shell or
-** macro commands dialog into a newly allocated MenuItem.  Returns a
-** pointer to the new MenuItem structure as the function value, or nullptr on
-** failure.
+** Read the name, accelerator, mnemonic, and command fields.
 */
-std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbosity) {
+boost::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbosity) {
 
 	QString nameText = ui.editName->text();
 
@@ -335,7 +331,7 @@ std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbo
         if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Please specify a name for the menu item"));
 		}
-		return nullptr;
+		return boost::none;
 	}
 
 
@@ -343,7 +339,7 @@ std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbo
         if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Menu item names may not contain colon (:) characters"));
 		}
-		return nullptr;
+		return boost::none;
 	}
 
 	QString cmdText = ui.editMacro->toPlainText();
@@ -351,25 +347,25 @@ std::unique_ptr<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbo
         if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Command to Execute"), tr("Please specify macro command(s) to execute"));
 		}
-		return nullptr;
+		return boost::none;
 	}
 
 	cmdText = ensureNewline(cmdText);
     if (!checkMacroText(cmdText, verbosity)) {
-		return nullptr;
+		return boost::none;
 	}
 
-    auto f = std::make_unique<MenuItem>();
-    f->name      = nameText;
-    f->cmd       = cmdText;
-	f->input     = ui.checkRequiresSelection->isChecked() ? FROM_SELECTION : FROM_NONE;
-	f->output    = TO_SAME_WINDOW;
-	f->repInput  = false;
-	f->saveFirst = false;
-	f->loadAfter = false;
-    f->shortcut  = ui.editAccelerator->keySequence();
+	MenuItem menuItem;
+	menuItem.name      = nameText;
+	menuItem.cmd       = cmdText;
+	menuItem.input     = ui.checkRequiresSelection->isChecked() ? FROM_SELECTION : FROM_NONE;
+	menuItem.output    = TO_SAME_WINDOW;
+	menuItem.repInput  = false;
+	menuItem.saveFirst = false;
+	menuItem.loadAfter = false;
+	menuItem.shortcut  = ui.editAccelerator->keySequence();
 
-	return f;
+	return menuItem;
 }
 
 /**

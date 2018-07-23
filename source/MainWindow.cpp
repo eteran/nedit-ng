@@ -5257,9 +5257,9 @@ bool MainWindow::CloseAllFilesAndWindowsEx() {
  * @param document
  */
 void MainWindow::action_Repeat(DocumentWidget *document) {
-    QString LastCommand = CommandRecorder::instance()->lastCommand;
+	QString lastCommand = CommandRecorder::instance()->lastCommand();
 
-    if(LastCommand.isNull()) {
+	if(lastCommand.isNull()) {
         QMessageBox::warning(
                     this,
                     tr("Repeat Macro"),
@@ -5267,13 +5267,13 @@ void MainWindow::action_Repeat(DocumentWidget *document) {
         return;
     }
 
-    int index = LastCommand.indexOf(QLatin1Char('('));
+	int index = lastCommand.indexOf(QLatin1Char('('));
     if(index == -1) {
         return;
     }
 
     auto dialog = std::make_unique<DialogRepeat>(document, this);
-    dialog->setCommand(LastCommand);
+	dialog->setCommand(lastCommand);
     dialog->exec();
 }
 

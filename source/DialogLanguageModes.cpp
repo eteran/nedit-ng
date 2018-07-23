@@ -241,11 +241,11 @@ void DialogLanguageModes::on_buttonBox_clicked(QAbstractButton *button) {
 ** If any of the information is incorrect or missing, display a warning dialog and
 ** return nullptr.
 */
-std::unique_ptr<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity) {
+boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity) {
 
 	/* Allocate a language mode structure to return, set unread fields to
 	   empty so everything can be freed on errors by freeLanguageModeRec */
-    auto lm = std::make_unique<LanguageMode>();
+	LanguageMode lm;
 
 	// read the name field
 	QString name = ui.editName->text().simplified();
@@ -253,15 +253,15 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
         if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Language Mode Name"), tr("Please specify a name for the language mode"));
 		}
-		return nullptr;
+		return boost::none;
 	}
 
-	lm->name = name;
+	lm.name = name;
 
 	// read the extension list field
 	QString extStr      = ui.editExtensions->text().simplified();
 	QStringList extList = extStr.split(QLatin1Char(' '), QString::SkipEmptyParts);
-	lm->extensions = extList;
+	lm.extensions = extList;
 
 	// read recognition expression
 	QString recognitionExpr = ui.editRegex->text();
@@ -272,10 +272,11 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
             if (verbosity == Verbosity::Verbose) {
                 QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QString::fromLatin1(e.what())));
 			}
-			return nullptr;
+			return boost::none;
 		}
 	}
-    lm->recognitionExpr = !recognitionExpr.isEmpty() ? recognitionExpr : QString();
+
+	lm.recognitionExpr = !recognitionExpr.isEmpty() ? recognitionExpr : QString();
 
 	// Read the default calltips file for the language mode
 	QString tipsFile = ui.editCallTips->text();
@@ -285,69 +286,69 @@ std::unique_ptr<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
             if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Error reading Calltips"), tr("Can't read default calltips file(s):\n  \"%1\"\n").arg(tipsFile));
 			}
-			return nullptr;
+			return boost::none;
         } else if (!Tags::DeleteTagsFileEx(tipsFile, Tags::SearchMode::TIP, false)) {
             qCritical("NEdit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"", qPrintable(tipsFile));
 		}
 	}
-    lm->defTipsFile = !tipsFile.isEmpty() ? tipsFile : QString();
+	lm.defTipsFile = !tipsFile.isEmpty() ? tipsFile : QString();
 
 	// read tab spacing field
 	QString tabsSpacing = ui.editTabSpacing->text();
 	if(tabsSpacing.isEmpty()) {
-		lm->tabDist = LanguageMode::DEFAULT_TAB_DIST;
+		lm.tabDist = LanguageMode::DEFAULT_TAB_DIST;
 	} else {
 		bool ok;
 		int tabsSpacingValue = tabsSpacing.toInt(&ok);
 		if (!ok) {
 			QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in tab spacing").arg(tabsSpacing));
-			return nullptr;
+			return boost::none;
 		}
 
-		lm->tabDist = tabsSpacingValue;
+		lm.tabDist = tabsSpacingValue;
 	}
 
 	// read emulated tab field
 	QString emulatedTabSpacing = ui.editEmulatedTabSpacing->text();
 	if(emulatedTabSpacing.isEmpty()) {
-		lm->emTabDist = LanguageMode::DEFAULT_EM_TAB_DIST;
+		lm.emTabDist = LanguageMode::DEFAULT_EM_TAB_DIST;
 	} else {
 		bool ok;
 		int emulatedTabSpacingValue = emulatedTabSpacing.toInt(&ok);
 		if (!ok) {
 			QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in emulated tab spacing").arg(tabsSpacing));
-			return nullptr;
+			return boost::none;
 		}
 
-		lm->emTabDist = emulatedTabSpacingValue;
+		lm.emTabDist = emulatedTabSpacingValue;
 	}
 
 	// read delimiters string
 	QString delimiters = ui.editDelimiters->text();
 	if(!delimiters.isEmpty()) {
-		lm->delimiters = delimiters;
+		lm.delimiters = delimiters;
 	}
 
 	// read indent style
 	if(ui.radioIndentNone->isChecked()) {
-        lm->indentStyle = IndentStyle::None;
+		lm.indentStyle = IndentStyle::None;
 	} else if(ui.radioIndentAuto->isChecked()) {
-        lm->indentStyle = IndentStyle::Auto;
+		lm.indentStyle = IndentStyle::Auto;
 	} else if(ui.radioIndentSmart->isChecked()) {
-        lm->indentStyle = IndentStyle::Smart;
+		lm.indentStyle = IndentStyle::Smart;
 	} else if(ui.radioIndentDefault->isChecked()) {
-        lm->indentStyle = IndentStyle::Default;
+		lm.indentStyle = IndentStyle::Default;
 	}
 
 	// read wrap style
 	if(ui.radioWrapNone->isChecked()) {
-        lm->wrapStyle = WrapStyle::None;
+		lm.wrapStyle = WrapStyle::None;
 	} else if(ui.radioWrapAuto->isChecked()) {
-        lm->wrapStyle = WrapStyle::Newline;
+		lm.wrapStyle = WrapStyle::Newline;
 	} else if(ui.radioWrapContinuous->isChecked()) {
-        lm->wrapStyle = WrapStyle::Continuous;
+		lm.wrapStyle = WrapStyle::Continuous;
 	} else if(ui.radioWrapDefault->isChecked()) {
-        lm->wrapStyle = WrapStyle::Default;
+		lm.wrapStyle = WrapStyle::Default;
 	}
 
     return lm;
@@ -694,7 +695,7 @@ bool DialogLanguageModes::updateCurrentItem() {
  * @return
  */
 bool DialogLanguageModes::validateFields(Verbosity verbosity) {
-    if(auto ptr = readFields(verbosity)) {
+	if(readFields(verbosity)) {
         return true;
     }
 

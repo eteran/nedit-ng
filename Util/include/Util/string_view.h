@@ -576,7 +576,7 @@ struct hash<view::string_view> {
 
     result_type operator()(argument_type key) const {
 
-        result_type h = detail::hash_constants<result_type>::FNV_offset_basis;;
+		result_type h = detail::hash_constants<result_type>::FNV_offset_basis;
         for(char ch : key) {
             h = (h * detail::hash_constants<result_type>::FNV_prime) ^ static_cast<unsigned char>(ch);
         }

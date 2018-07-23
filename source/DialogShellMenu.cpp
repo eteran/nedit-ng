@@ -298,21 +298,21 @@ void DialogShellMenu::on_buttonBox_accepted() {
 ** pointer to the new MenuItem structure as the function value, or nullptr on
 ** failure.
 */
-std::unique_ptr<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
+boost::optional<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
 
 	QString nameText = ui.editName->text();
 	if (nameText.isEmpty()) {
         if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Please specify a name for the menu item"));
 		}
-		return nullptr;
+		return boost::none;
 	}
 
 	if (nameText.indexOf(QLatin1Char(':')) != -1) {
         if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Menu item names may not contain colon (:) characters"));
 		}
-		return nullptr;
+		return boost::none;
 	}
 
 	QString cmdText = ui.editCommand->toPlainText();
@@ -320,40 +320,37 @@ std::unique_ptr<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
         if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Command to Execute"), tr("Please specify macro command(s) to execute"));
 		}
-		return nullptr;
+		return boost::none;
 	}
 
-    auto f = std::make_unique<MenuItem>();
-	f->name = nameText;
-	f->cmd  = cmdText;
-
-    QKeySequence shortcut = ui.editAccelerator->keySequence();
-
-    f->shortcut = shortcut;
+	MenuItem menuItem;
+	menuItem.name     = nameText;
+	menuItem.cmd      = cmdText;
+	menuItem.shortcut = ui.editAccelerator->keySequence();
 
 	if(ui.radioFromSelection->isChecked()) {
-		f->input = FROM_SELECTION;
+		menuItem.input = FROM_SELECTION;
 	} else if(ui.radioFromDocument->isChecked()) {
-		f->input = FROM_WINDOW;
+		menuItem.input = FROM_WINDOW;
 	} else if(ui.radioFromEither->isChecked()) {
-		f->input = FROM_EITHER;
+		menuItem.input = FROM_EITHER;
 	} else if(ui.radioFromNone->isChecked()) {
-		f->input = FROM_NONE;
+		menuItem.input = FROM_NONE;
 	}
 	
 	if(ui.radioToSameDocument->isChecked()) {
-		f->output = TO_SAME_WINDOW;
+		menuItem.output = TO_SAME_WINDOW;
 	} else if(ui.radioToDialog->isChecked()) {
-		f->output = TO_DIALOG;
+		menuItem.output = TO_DIALOG;
 	} else if(ui.radioToNewDocument->isChecked()) {
-		f->output = TO_NEW_WINDOW;
+		menuItem.output = TO_NEW_WINDOW;
 	}			
 
-	f->repInput  = ui.checkReplaceInput->isChecked();
-	f->saveFirst = ui.checkSaveBeforeExec->isChecked();
-	f->loadAfter = ui.checkReloadAfterExec->isChecked();
+	menuItem.repInput  = ui.checkReplaceInput->isChecked();
+	menuItem.saveFirst = ui.checkSaveBeforeExec->isChecked();
+	menuItem.loadAfter = ui.checkReloadAfterExec->isChecked();
 	
-	return f;
+	return menuItem;
 }
 
 /**
@@ -450,7 +447,7 @@ bool DialogShellMenu::updateCurrentItem() {
  * @return
  */
 bool DialogShellMenu::validateFields(Verbosity verbosity) {
-    if(auto ptr = readFields(verbosity)) {
+	if(readFields(verbosity)) {
 		return true;
 	}
 	

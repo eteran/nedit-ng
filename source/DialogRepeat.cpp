@@ -66,7 +66,7 @@ bool DialogRepeat::doRepeatDialogAction() {
 	}
 
     QString macro;
-    const QString replayMacro = CommandRecorder::instance()->replayMacro;
+	const QString replayMacro = CommandRecorder::instance()->replayMacro();
 
 	// Figure out which command user wants to repeat 
 	if (ui.radioLastCommand->isChecked()) {

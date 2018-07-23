@@ -6,7 +6,7 @@
 #include "Verbosity.h"
 #include "ui_DialogMacros.h"
 
-#include <memory>
+#include <boost/optional.hpp>
 
 struct MenuItem;
 class MenuItemModel;
@@ -42,7 +42,7 @@ private:
     bool checkMacroText(const QString &macro, Verbosity verbosity);
     bool updateCurrentItem();
     bool updateCurrentItem(const QModelIndex &index);
-    std::unique_ptr<MenuItem> readFields(Verbosity verbosity);
+	boost::optional<MenuItem> readFields(Verbosity verbosity);
     void updateButtonStates();
     void updateButtonStates(const QModelIndex &current);
 

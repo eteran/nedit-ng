@@ -6479,7 +6479,7 @@ bool DocumentWidget::MacroWindowCloseActionsEx() {
 
     CommandRecorder *recorder = CommandRecorder::instance();
 
-    if (recorder->isRecording() && recorder->macroRecordWindow() == this) {
+    if (recorder->isRecording() && recorder->macroRecordDocument() == this) {
         FinishLearning();
     }
 
@@ -6550,7 +6550,7 @@ void DocumentWidget::CancelMacroOrLearnEx() {
 */
 void DocumentWidget::ReplayEx() {
 
-    QString replayMacro = CommandRecorder::instance()->replayMacro;
+	QString replayMacro = CommandRecorder::instance()->replayMacro();
 
     // Verify that a replay macro exists and it's not empty and that
     // we're not already running a macro
@@ -6575,7 +6575,7 @@ void DocumentWidget::cancelLearnEx() {
         return;
     }
 
-    DocumentWidget *document = CommandRecorder::instance()->macroRecordWindow();
+    DocumentWidget *document = CommandRecorder::instance()->macroRecordDocument();
     Q_ASSERT(document);
 
     for(MainWindow *window : MainWindow::allWindows()) {
@@ -6597,7 +6597,7 @@ void DocumentWidget::FinishLearning() {
         return;
     }
 
-    DocumentWidget *document = CommandRecorder::instance()->macroRecordWindow();
+    DocumentWidget *document = CommandRecorder::instance()->macroRecordDocument();
     Q_ASSERT(document);
 
     CommandRecorder::instance()->stopRecording();
@@ -7108,7 +7108,7 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
     **  Go directly to the tag
     */
     if (Tags::searchMode == Tags::SearchMode::TAG) {
-        editTaggedLocationEx(area, 0);
+        editTaggedLocation(area, 0);
     } else {
         Tags::showMatchingCalltipEx(this, area, 0);
     }
@@ -7167,7 +7167,7 @@ int DocumentWidget::ShowTipStringEx(const QString &text, bool anchored, int pos,
 
 /*  Open a new (or existing) editor window to the location specified in
     tagFiles[i], tagSearch[i], tagPosInf[i] */
-void DocumentWidget::editTaggedLocationEx(TextArea *area, int i) {
+void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 
     QString filename;
     QString pathname;

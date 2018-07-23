@@ -11,9 +11,9 @@ constexpr int MAX_MARKS = 36;
 
 // Element in bookmark table
 struct Bookmark {
-    QChar                 label;
+	QChar                 label;
     TextCursor            cursorPos;
-    TextBuffer::Selection sel;
+	TextBuffer::Selection sel;
 };
 
 #endif

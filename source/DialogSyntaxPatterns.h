@@ -7,6 +7,7 @@
 #include "ui_DialogSyntaxPatterns.h"
 
 #include <memory>
+#include <boost/optional.hpp>
 
 class HighlightPattern;
 class HighlightPatternModel;
@@ -58,8 +59,8 @@ private:
     bool updateCurrentItem();
     bool updateCurrentItem(const QModelIndex &index);
     bool updatePatternSet();
-    std::unique_ptr<HighlightPattern> readFields(Verbosity verbosity);
-    std::unique_ptr<PatternSet> getDialogPatternSet();
+	boost::optional<HighlightPattern> readFields(Verbosity verbosity);
+	std::unique_ptr<PatternSet> getDialogPatternSet();
     void setStyleMenu(const QString &name);
     void updateLabels();
     void updateButtonStates(const QModelIndex &current);

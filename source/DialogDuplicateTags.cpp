@@ -63,7 +63,7 @@ bool DialogDuplicateTags::applySelection() {
     const int id = item->data(Qt::UserRole).toInt();
 
     if (Tags::searchMode == Tags::SearchMode::TAG) {
-        document_->editTaggedLocationEx(area_, id); // Open the file with the definition
+		document_->editTaggedLocation(area_, id); // Open the file with the definition
     } else {
         Tags::showMatchingCalltipEx(this, area_, id);
     }

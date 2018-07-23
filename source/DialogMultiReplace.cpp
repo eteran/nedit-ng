@@ -57,7 +57,7 @@ void DialogMultiReplace::on_buttonReplace_clicked() {
     /* Fetch the find and replace strings from the dialog;
      * they should have been validated already, but it is possible that the
      * user modified the strings again, so we should verify them again too. */
-    boost::optional<DialogReplace::Fields> fields = replace_->getFields();
+	boost::optional<DialogReplace::Fields> fields = replace_->readFields();
     if (!fields) {
 		return;
     }

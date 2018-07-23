@@ -2,10 +2,10 @@
 #include "DialogFind.h"
 #include "DocumentWidget.h"
 #include "MainWindow.h"
-#include "preferences.h"
 #include "Regex.h"
-#include "Util/regex.h"
 #include "Search.h"
+#include "Util/regex.h"
+#include "preferences.h"
 
 #include <QClipboard>
 #include <QKeyEvent>
@@ -193,7 +193,7 @@ void DialogFind::setTextFieldFromDocument(DocumentWidget *document) {
 void DialogFind::on_buttonFind_clicked() {
 
 	// fetch find string, direction and type from the dialog     
-    boost::optional<Fields> fields = getFields();
+	boost::optional<Fields> fields = readFields();
     if (!fields) {
 		return;
     }
@@ -219,7 +219,7 @@ void DialogFind::on_buttonFind_clicked() {
 ** strings and search type from the Find dialog.  If the strings are ok,
 ** save a copy in the search history, and return the fields
 */
-boost::optional<DialogFind::Fields> DialogFind::getFields() {
+boost::optional<DialogFind::Fields> DialogFind::readFields() {
 
     Fields fields;
 

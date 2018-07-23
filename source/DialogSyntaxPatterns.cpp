@@ -696,8 +696,8 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	}
 
 	// Get the current data
-    std::unique_ptr<PatternSet> patSet = getDialogPatternSet();
-	if(!patSet) {
+	std::unique_ptr<PatternSet> patternSet = getDialogPatternSet();
+	if(!patternSet) {
 		return false;
 	}
 
@@ -709,17 +709,17 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 	// If it's a new pattern, add it at the end, otherwise free the existing pattern set and replace it
     size_t oldNum;
     if (it == Highlight::PatternSets.end()) {
-        Highlight::PatternSets.push_back(*patSet);
+		Highlight::PatternSets.push_back(*patternSet);
 		oldNum = 0;
 	} else {
         oldNum = it->patterns.size();
-        *it = *patSet;
+		*it = *patternSet;
 	}
 
 	// Find windows that are currently using this pattern set and re-do the highlighting
     for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-        if (!patSet->patterns.empty()) {
-            if (document->GetLanguageMode() != PLAIN_LANGUAGE_MODE && (Preferences::LanguageModeName(document->GetLanguageMode()) == patSet->languageMode)) {
+		if (!patternSet->patterns.empty()) {
+			if (document->GetLanguageMode() != PLAIN_LANGUAGE_MODE && (Preferences::LanguageModeName(document->GetLanguageMode()) == patternSet->languageMode)) {
 				/*  The user worked on the current document's language mode, so
 				    we have to make some changes immediately. For inactive
 				    modes, the changes will be activated on activation.  */
@@ -769,13 +769,13 @@ bool DialogSyntaxPatterns::updatePatternSet() {
  */
 bool DialogSyntaxPatterns::checkHighlightDialogData() {
 	// Get the pattern information from the dialog
-    std::unique_ptr<PatternSet> patSet = getDialogPatternSet();
-	if(!patSet) {
+	std::unique_ptr<PatternSet> patternSet = getDialogPatternSet();
+	if(!patternSet) {
 		return false;
 	}
 
 	// Compile the patterns
-    return patSet->patterns.empty() ? true : TestHighlightPatterns(patSet);
+	return patternSet->patterns.empty() ? true : TestHighlightPatterns(patternSet);
 }
 
 /*
@@ -813,19 +813,19 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 
 	/* Allocate a new pattern set structure and copy the fields read from the
 	   dialog, including the modified pattern list into it */
-	auto patSet = std::make_unique<PatternSet>();
-	patSet->languageMode = ui.comboLanguageMode->currentText();
-	patSet->lineContext  = lineContext;
-	patSet->charContext  = charContext;
+	auto patternSet = std::make_unique<PatternSet>();
+	patternSet->languageMode = ui.comboLanguageMode->currentText();
+	patternSet->lineContext  = lineContext;
+	patternSet->charContext  = charContext;
 
-    for (int i = 0; i < model_->rowCount(); ++i) {
-        QModelIndex index = model_->index(i, 0);
-        if(auto pattern = model_->itemFromIndex(index)) {
-            patSet->patterns.push_back(*pattern);
+	for (int i = 0; i < model_->rowCount(); ++i) {
+		QModelIndex index = model_->index(i, 0);
+		if(auto pattern = model_->itemFromIndex(index)) {
+			patternSet->patterns.push_back(*pattern);
         }
 	}
 
-	return patSet;
+	return patternSet;
 }
 
 /*
@@ -834,39 +834,39 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 ** telling the user what's wrong (Passing "silent" as true, suppresses these
 ** dialogs).  Returns nullptr on error.
 */
-std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity verbosity) {
+boost::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity verbosity) {
 
-    auto pat = std::make_unique<HighlightPattern>();
+	HighlightPattern pat;
 
 	// read the type buttons
 	int colorOnly = ui.radioColoring->isChecked();
 	if (ui.radioPass2->isChecked()) {
-		pat->flags |= DEFER_PARSING;
+		pat.flags |= DEFER_PARSING;
 	} else if (colorOnly) {
-		pat->flags = COLOR_ONLY;
+		pat.flags = COLOR_ONLY;
 	}
 
 	// read the name field
 	QString name = ui.editPatternName->text().simplified();
 	if (name.isNull()) {
-		return nullptr;
+		return boost::none;
 	}
 
-	pat->name = name;
-	if (pat->name.isEmpty()) {
+	pat.name = name;
+	if (pat.name.isEmpty()) {
         if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Pattern Name"), tr("Please specify a name for the pattern"));
 		}
-		return nullptr;
+		return boost::none;
 	}
 
 	// read the startRE field
-	pat->startRE = ui.editRegex->toPlainText();
-	if (pat->startRE.isEmpty()) {
+	pat.startRE = ui.editRegex->toPlainText();
+	if (pat.startRE.isEmpty()) {
         if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Matching Regex"), tr("Please specify a regular expression to match"));
 		}
-		return nullptr;
+		return boost::none;
 	}
 
 
@@ -875,20 +875,20 @@ std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity ver
 	if (colorOnly) {
 
 		QString outStr;
-		outStr.reserve(pat->startRE.size());
+		outStr.reserve(pat.startRE.size());
 
 		auto outPtr = std::back_inserter(outStr);
 
-        Q_FOREACH(QChar ch, pat->startRE) {
+		Q_FOREACH(QChar ch, pat.startRE) {
 			if (ch != QLatin1Char(' ') && ch != QLatin1Char('\t')) {
 				*outPtr++ = ch;
 			}
 		}
 
-		pat->startRE = outStr;
+		pat.startRE = outStr;
 
-        static const QRegularExpression re(QLatin1String("[^&\\\\123456789 \\t]"));
-        if (pat->startRE.contains(re) || (pat->startRE[0] != QLatin1Char('\\') && pat->startRE[0] != QLatin1Char('&')) || pat->startRE.contains(QLatin1String("\\\\"))) {
+		static const QRegularExpression re(QLatin1String(R"([^&\\123456789 \t])"));
+		if (pat.startRE.contains(re) || (pat.startRE[0] != QLatin1Char('\\') && pat.startRE[0] != QLatin1Char('&')) || pat.startRE.contains(QLatin1String("\\\\"))) {
 
             if (verbosity == Verbosity::Verbose) {
                 QMessageBox::warning(
@@ -896,7 +896,7 @@ std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity ver
                             tr("Pattern Error"),
                             tr("The expression field in patterns which specify highlighting for a parent, must contain only sub-expression references in regular expression replacement form (&\\1\\2 etc.).  See Help -> Regular Expressions and Help -> Syntax Highlighting for more information"));
 			}
-			return nullptr;
+			return boost::none;
 		}
 	}
 
@@ -907,33 +907,33 @@ std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity ver
             if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Specify Parent Pattern"), tr("Please specify a parent pattern"));
 			}
-			return nullptr;
+			return boost::none;
 		}
 
 		if(!parent.isNull()) {
-			pat->subPatternOf = parent;
+			pat.subPatternOf = parent;
 		}
 	}
 
 	// read the styles option menu
-	pat->style = ui.comboHighlightStyle->currentText();
+	pat.style = ui.comboHighlightStyle->currentText();
 
 	// read the endRE field
 	if (colorOnly || ui.radioRangeRegex->isChecked()) {
-		pat->endRE = ui.editRegexEnd->text();
-		if (!colorOnly && pat->endRE.isEmpty()) {
+		pat.endRE = ui.editRegexEnd->text();
+		if (!colorOnly && pat.endRE.isEmpty()) {
             if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Specify Regex"), tr("Please specify an ending regular expression"));
 			}
-			return nullptr;
+			return boost::none;
 		}
 	}
 
 	// read the errorRE field
 	if (ui.radioRangeRegex->isChecked()) {
-		pat->errorRE = ui.editRegexError->text();
-		if (pat->errorRE.isEmpty()) {
-			pat->errorRE = QString();
+		pat.errorRE = ui.editRegexError->text();
+		if (pat.errorRE.isEmpty()) {
+			pat.errorRE = QString();
 		}
 	}
 
@@ -946,7 +946,7 @@ std::unique_ptr<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity ver
  * @return
  */
 bool DialogSyntaxPatterns::validateFields(Verbosity verbosity) {
-    if(auto ptr = readFields(verbosity)) {
+	if(readFields(verbosity)) {
 		return true;
 	}
 
@@ -966,13 +966,13 @@ bool DialogSyntaxPatterns::TestHighlightPatterns(const std::unique_ptr<PatternSe
 
 	/* Compile the patterns (passing a random window as a source for fonts, and
 	   parent for dialogs, since we really don't care what fonts are used) */
-    if(PatternSet *const patternSet = patSet.get()) {
-        for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-            if(std::shared_ptr<WindowHighlightData> highlightData = document->createHighlightDataEx(patternSet)) {
-                return true;
-            }
-        }
-    }
+	if(PatternSet *const patternSet = patSet.get()) {
+		for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+			if(std::shared_ptr<WindowHighlightData> highlightData = document->createHighlightDataEx(patternSet)) {
+				return true;
+			}
+		}
+	}
 
 	return false;
 }

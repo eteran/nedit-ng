@@ -28,28 +28,29 @@ public:
     static QString quoteString(const QString &s);
 
 public:
-    void startRecording(DocumentWidget *document);
-    void stopRecording();
-    void cancelRecording();
-    bool isRecording() const;
-    void setRecording(bool enabled);
-    QPointer<DocumentWidget> macroRecordWindow() const;
+	QPointer<DocumentWidget> macroRecordDocument() const;
+	QString lastCommand() const;
+	QString replayMacro() const;
+	bool isRecording() const;
+	void cancelRecording();
+	void startRecording(DocumentWidget *document);
+	void stopRecording();
 
 private:
+	void setRecording(bool enabled);
     void lastActionHook(const TextEditEvent *ev);
     void lastActionHook(const WindowMenuEvent *ev);
 
-public:
-    // The last command executed (used by the Repeat command)
-    QString lastCommand;    
-    QString replayMacro;
-
 private:
-    QString macroRecordBuffer_;
+	// The last command executed (used by the Repeat command)
+	QString replayMacro_;
+
+	QString lastCommand_;
+	QString macroRecordBuffer_;
     bool isRecording_ = false;
 
     // Window where macro recording is taking place
-    QPointer<DocumentWidget> macroRecordWindow_;
+	QPointer<DocumentWidget> macroRecordDocument_;
 };
 
 #endif

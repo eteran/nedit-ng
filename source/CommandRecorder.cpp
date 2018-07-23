@@ -198,7 +198,7 @@ void CommandRecorder::lastActionHook(const WindowMenuEvent *ev) {
     // Record the action and its parameters
     QString actionString = actionToString(ev);
     if (!actionString.isNull()) {
-        lastCommand = actionString;
+		lastCommand_ = actionString;
 
         if(isRecording_) {
             /* beep on un-recordable operations which require a mouse position, to
@@ -225,7 +225,7 @@ void CommandRecorder::lastActionHook(const TextEditEvent *ev) {
     // Record the action and its parameters
     QString actionString = actionToString(ev);
     if (!actionString.isNull()) {
-        lastCommand = actionString;
+		lastCommand_ = actionString;
 
         if(isRecording_) {
             /* beep on un-recordable operations which require a mouse position, to
@@ -246,7 +246,7 @@ void CommandRecorder::lastActionHook(const TextEditEvent *ev) {
  */
 void CommandRecorder::startRecording(DocumentWidget *document) {
     setRecording(true);
-    macroRecordWindow_ = document;
+	macroRecordDocument_ = document;
 }
 
 /**
@@ -254,15 +254,15 @@ void CommandRecorder::startRecording(DocumentWidget *document) {
  */
 void CommandRecorder::stopRecording() {
     setRecording(false);
-    macroRecordWindow_ = nullptr;
+	macroRecordDocument_ = nullptr;
 }
 
 /**
  * @brief CommandRecorder::macroRecordWindow
  * @return
  */
-QPointer<DocumentWidget> CommandRecorder::macroRecordWindow() const {
-    return macroRecordWindow_;
+QPointer<DocumentWidget> CommandRecorder::macroRecordDocument() const {
+	return macroRecordDocument_;
 }
 
 /**
@@ -272,7 +272,7 @@ QPointer<DocumentWidget> CommandRecorder::macroRecordWindow() const {
 void CommandRecorder::cancelRecording() {
     isRecording_ = false;
     macroRecordBuffer_.clear();
-    macroRecordWindow_ = nullptr;
+	macroRecordDocument_ = nullptr;
 }
 
 /**
@@ -297,11 +297,27 @@ void CommandRecorder::setRecording(bool enabled) {
     if(!enabled) {
         // we've been asked to stop recording
         // Store the finished action for the replay menu item
-        replayMacro = macroRecordBuffer_;
+		replayMacro_ = macroRecordBuffer_;
     } else {
         // start recording
         macroRecordBuffer_.clear();
     }
 
     isRecording_ = enabled;
+}
+
+/**
+ * @brief CommandRecorder::lastCommand
+ * @return
+ */
+QString CommandRecorder::lastCommand() const {
+	return lastCommand_;
+}
+
+/**
+ * @brief CommandRecorder::replayMacro
+ * @return
+ */
+QString CommandRecorder::replayMacro() const {
+	return replayMacro_;
 }

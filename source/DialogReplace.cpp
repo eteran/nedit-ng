@@ -212,7 +212,7 @@ void DialogReplace::on_textFind_textChanged(const QString &text) {
 void DialogReplace::on_buttonFind_clicked() {
 	
     // Validate and fetch the find and replace strings from the dialog
-    boost::optional<Fields> fields = getFields();
+    boost::optional<Fields> fields = readFields();
     if (!fields) {
 		return;
     }
@@ -246,7 +246,7 @@ void DialogReplace::on_buttonFind_clicked() {
 void DialogReplace::on_buttonReplace_clicked() {
 
     // Validate and fetch the find and replace strings from the dialog
-    boost::optional<Fields> fields = getFields();
+    boost::optional<Fields> fields = readFields();
     if (!fields) {
 		return;
     }
@@ -274,7 +274,7 @@ void DialogReplace::on_buttonReplace_clicked() {
 void DialogReplace::on_buttonReplaceFind_clicked() {
 
     // Validate and fetch the find and replace strings from the dialog
-    boost::optional<Fields> fields = getFields();
+    boost::optional<Fields> fields = readFields();
     if (!fields) {
 		return;
     }
@@ -302,7 +302,7 @@ void DialogReplace::on_buttonReplaceFind_clicked() {
 void DialogReplace::on_buttonWindow_clicked() {
 
     // Validate and fetch the find and replace strings from the dialog
-    boost::optional<Fields> fields = getFields();
+    boost::optional<Fields> fields = readFields();
     if (!fields) {
 		return;
     }
@@ -328,7 +328,7 @@ void DialogReplace::on_buttonWindow_clicked() {
 void DialogReplace::on_buttonSelection_clicked() {
 
     // Validate and fetch the find and replace strings from the dialog
-    boost::optional<Fields> fields = getFields();
+    boost::optional<Fields> fields = readFields();
     if (!fields) {
 		return;
     }
@@ -354,7 +354,7 @@ void DialogReplace::on_buttonSelection_clicked() {
 void DialogReplace::on_buttonMulti_clicked() {
 
     // Validate and fetch the find and replace strings from the dialog
-    boost::optional<Fields> fields = getFields();
+    boost::optional<Fields> fields = readFields();
     if (!fields) {
 		return;
     }
@@ -547,7 +547,7 @@ void DialogReplace::setActionButtons(bool replaceBtn, bool replaceFindBtn, bool 
 ** strings and search type from the Replace dialog.  If the strings are ok,
 ** save a copy in the search history, and return the fields
 */
-boost::optional<DialogReplace::Fields> DialogReplace::getFields() {
+boost::optional<DialogReplace::Fields> DialogReplace::readFields() {
 
     Fields fields;
 

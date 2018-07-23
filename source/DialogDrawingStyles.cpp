@@ -246,11 +246,11 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
         ui.editColorFG->setText(style->color);
         ui.editColorBG->setText(style->bgColor);
 
-        ui.checkBold->setChecked(style->font & BOLD_FONT);
-        ui.checkItalic->setChecked(style->font & ITALIC_FONT);
+		ui.checkBold->setChecked((style->font & BOLD_FONT) != 0);
+		ui.checkItalic->setChecked((style->font & ITALIC_FONT) != 0);
 
         // ensure that the appropriate buttons are enabled
-        updateButtonStates(current);
+		updateButtonStates(current);
 
         // don't allow deleteing the last "Plain" entry since it's reserved
         if (style->name == QLatin1String("Plain")) {
@@ -292,10 +292,10 @@ void DialogDrawingStyles::on_buttonBox_clicked(QAbstractButton *button) {
  * @return
  */
 bool DialogDrawingStyles::validateFields(Verbosity verbosity) {
-    if(auto ptr = readFields(verbosity)) {
-        return true;
-    }
-    return false;
+	if(readFields(verbosity)) {
+		return true;
+	}
+	return false;
 }
 
 /**
@@ -303,79 +303,79 @@ bool DialogDrawingStyles::validateFields(Verbosity verbosity) {
  * @param mode
  * @return
  */
-std::unique_ptr<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosity) {
+boost::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosity) {
 
-    auto hs = std::make_unique<HighlightStyle>();
+	HighlightStyle hs;
 
 	QString name = ui.editName->text().simplified();
     if (name.isNull()) {
-    	return nullptr;
+		return boost::none;
     }
 
-	hs->name = name;
-    if (hs->name.isEmpty()) {
+	hs.name = name;
+	if (hs.name.isEmpty()) {
         if (verbosity == Verbosity::Verbose) {
             QMessageBox::warning(this,
                                  tr("Highlight Style"),
                                  tr("Please specify a name for the highlight style"));
         }
 
-        return nullptr;
+		return boost::none;
     }
 
     // read the color field 
     QString color = ui.editColorFG->text().simplified();
     if (color.isEmpty()) {
-    	return nullptr;
+		return boost::none;
     }
 
-	hs->color = color;
-    if (hs->color.isEmpty()) {
+	hs.color = color;
+	if (hs.color.isEmpty()) {
         if (verbosity == Verbosity::Verbose) {
             QMessageBox::warning(this, tr("Style Color"), tr("Please specify a color for the highlight style"));
         }
-        return nullptr;
+		return boost::none;
     }
 
     // Verify that the color is a valid X color spec
-    QColor rgb = X11Colors::fromString(hs->color);
+	QColor rgb = X11Colors::fromString(hs.color);
     if(!rgb.isValid()) {
         if (verbosity == Verbosity::Verbose) {
-            QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X color specification: %1").arg(hs->color));
+			QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X color specification: %1").arg(hs.color));
         }
-        return nullptr;
+		return boost::none;
     }
 
     // read the background color field - this may be empty
 	QString bgColor = ui.editColorBG->text().simplified();
     if (bgColor.isEmpty()) {
-        hs->bgColor = QString();
+		hs.bgColor = QString();
     } else {
-		hs->bgColor = bgColor;
+		hs.bgColor = bgColor;
 	}
 
     // Verify that the background color (if present) is a valid X color spec 
-    if (!hs->bgColor.isEmpty()) {
-        rgb = X11Colors::fromString(hs->bgColor);
+	if (!hs.bgColor.isEmpty()) {
+		rgb = X11Colors::fromString(hs.bgColor);
         if (!rgb.isValid()) {
             if (verbosity == Verbosity::Verbose) {
                 QMessageBox::warning(this,
                                      tr("Invalid Color"),
-                                     tr("Invalid X background color specification: %1").arg(hs->bgColor));
+				                     tr("Invalid X background color specification: %1").arg(hs.bgColor));
             }
 
-            return nullptr;;
+			return boost::none;
         }
     }
 
     // read the font buttons
-    hs->font = PLAIN_FONT;
+	hs.font = PLAIN_FONT;
     if (ui.checkBold->isChecked()) {
-        hs->font |= BOLD_FONT;
+		hs.font |= BOLD_FONT;
     }
 
     if (ui.checkItalic->isChecked()) {
-        hs->font |= ITALIC_FONT;
+		hs.font |= ITALIC_FONT;
     }
 
     return hs;
@@ -426,7 +426,7 @@ bool DialogDrawingStyles::applyDialogChanges() {
     highlightStyles_ = newStyles;
 	
 	// If a syntax highlighting dialog is up, update its menu 
-    if(dialogSyntaxPatterns_) {
+	if(dialogSyntaxPatterns_) {
         dialogSyntaxPatterns_->updateHighlightStyleMenu();
     }
 

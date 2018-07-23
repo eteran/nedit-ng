@@ -3,7 +3,6 @@
 #define CALL_TIP_H_
 
 #include "TextCursor.h"
-#include <cstdint>
 #include <boost/variant.hpp>
 
 enum class TipHAlignMode { Left, Center, Right };
