@@ -1760,106 +1760,10 @@ bool DocumentWidget::checkReadOnly() const {
 
 /*
 ** If the selection (or cursor position if there's no selection) is not
-** fully shown, scroll to bring it in to view.  Note that as written,
-** this won't work well with multi-line selections.  Modest re-write
-** of the horizontal scrolling part would be quite easy to make it work
-** well with rectangular selections.
+** fully shown, scroll to bring it in to view.
 */
 void DocumentWidget::MakeSelectionVisible(TextArea *area) {
-
-	bool isRect;
-    int horizOffset;
-    TextCursor left;
-    int64_t rectEnd;
-    int64_t rectStart;
-    TextCursor right;
-    int64_t topLineNum;
-    int leftX;
-    int rightX;
-    int y;
-
-    const TextCursor topChar  = area->TextFirstVisiblePos();
-    const TextCursor lastChar = area->TextLastVisiblePos();
-
-    // find out where the selection is
-    if (!buffer_->BufGetSelectionPos(&left, &right, &isRect, &rectStart, &rectEnd)) {
-		left = right = area->TextGetCursorPos();
-        isRect = false;
-    }
-
-    /* Check vertical positioning unless the selection is already shown or
-       already covers the display.  If the end of the selection is below
-       bottom, scroll it in to view until the end selection is scrollOffset
-       lines from the bottom of the display or the start of the selection
-       scrollOffset lines from the top.  Calculate a pleasing distance from the
-       top or bottom of the window, to scroll the selection to (if scrolling is
-       necessary), around 1/3 of the height of the window */
-    if (!((left >= topChar && right <= lastChar) || (left <= topChar && right >= lastChar))) {
-
-        const int rows = area->getRows();
-        const int scrollOffset = rows / 3;
-
-		area->TextDGetScroll(&topLineNum, &horizOffset);
-        if (right > lastChar) {
-            // End of sel. is below bottom of screen
-            const int64_t leftLineNum   = topLineNum + area->TextDCountLines(topChar, left, false);
-            const int64_t targetLineNum = topLineNum + scrollOffset;
-
-            if (leftLineNum >= targetLineNum) {
-                // Start of sel. is not between top & target
-                int64_t linesToScroll = area->TextDCountLines(lastChar, right, false) + scrollOffset;
-                if (leftLineNum - linesToScroll < targetLineNum) {
-                    linesToScroll = leftLineNum - targetLineNum;
-                }
-
-                // Scroll start of selection to the target line
-				area->TextDSetScroll(topLineNum + linesToScroll, horizOffset);
-            }
-        } else if (left < topChar) {
-            // Start of sel. is above top of screen
-            const int64_t lastLineNum   = topLineNum + rows;
-            const int64_t rightLineNum  = lastLineNum - area->TextDCountLines(right, lastChar, false);
-            const int64_t targetLineNum = lastLineNum - scrollOffset;
-
-            if (rightLineNum <= targetLineNum) {
-                // End of sel. is not between bottom & target
-                int64_t linesToScroll = area->TextDCountLines(left, topChar, false) + scrollOffset;
-                if (rightLineNum + linesToScroll > targetLineNum) {
-                    linesToScroll = targetLineNum - rightLineNum;
-                }
-
-                // Scroll end of selection to the target line
-				area->TextDSetScroll(topLineNum - linesToScroll, horizOffset);
-            }
-        }
-    }
-
-    /* If either end of the selection off screen horizontally, try to bring it
-       in view, by making sure both end-points are visible.  Using only end
-       points of a multi-line selection is not a great idea, and disaster for
-       rectangular selections, so this part of the routine should be re-written
-       if it is to be used much with either.  Note also that this is a second
-       scrolling operation, causing the display to jump twice.  It's done after
-       vertical scrolling to take advantage of TextDPosToXY which requires it's
-       reqested position to be vertically on screen) */
-	if (area->TextDPositionToXY(left, &leftX, &y) && area->TextDPositionToXY(right, &rightX, &y) && leftX <= rightX) {
-		area->TextDGetScroll(&topLineNum, &horizOffset);
-
-        const int margin   = area->getMarginWidth();
-        const int width    = area->width();
-        const int numWidth = area->getLineNumWidth();
-        const int numLeft  = area->getLineNumLeft();
-
-        if (leftX < margin + numLeft + numWidth) {
-            horizOffset -= margin + numLeft + numWidth - leftX;
-        } else if (rightX > width - margin) {
-            horizOffset += rightX - (width - margin);
-        }
-
-		area->TextDSetScroll(topLineNum, horizOffset);
-    }
-
-    // make sure that the statistics line is up to date
+	area->TextDMakeSelectionVisible();
 	UpdateStatsLine(area);
 }
 

@@ -252,7 +252,6 @@ public:
     void TextDGetScroll(int64_t *topLineNum, int *horizOffset);
     bool TextDInSelection(const QPoint &p) const;
     TextCursor TextGetCursorPos() const;
-    TextCursor TextDGetInsertPosition() const;
     bool TextDPosToLineAndCol(TextCursor pos, int64_t *lineNum, int64_t *column);
     void TextDSetScroll(int64_t topLineNum, int horizOffset);
     void TextSetCursorPos(TextCursor pos);
@@ -275,6 +274,7 @@ public:
     bool TextDMoveDown(bool absolute);
     void TextDSetInsertPosition(TextCursor newPos);
 	void TextDMakeInsertPosVisible();
+	void TextDMakeSelectionVisible();
 	void TextInsertAtCursorEx(view::string_view chars, bool allowPendingDelete, bool allowWrap);
 	void TextDOverstrikeEx(view::string_view text);
 	void TextDInsertEx(view::string_view text);

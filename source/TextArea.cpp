@@ -5009,26 +5009,27 @@ void TextArea::copyPrimaryAP(EventFlags flags) {
 
     EMIT_EVENT_0("copy_primary");
 
-    const TextBuffer::Selection *primary = &buffer_->primary;
+	const TextBuffer::Selection &primary = buffer_->primary;
     const bool rectangular               = flags & RectFlag;
-    TextCursor insertPos;
 
 	cancelDrag();
 	if (checkReadOnly()) {
 		return;
 	}
 
-	if (primary->selected && rectangular) {
-		std::string textToCopy = buffer_->BufGetSelectionTextEx();
-		insertPos = cursorPos_;
-        int64_t col = buffer_->BufCountDispChars(buffer_->BufStartOfLine(insertPos), insertPos);
+	if (primary.selected && rectangular) {
+		const std::string textToCopy = buffer_->BufGetSelectionTextEx();
+		const TextCursor insertPos = cursorPos_;
+		const int64_t col = buffer_->BufCountDispChars(buffer_->BufStartOfLine(insertPos), insertPos);
+
 		buffer_->BufInsertColEx(col, insertPos, textToCopy, nullptr, nullptr);
         TextDSetInsertPosition(buffer_->BufCursorPosHint());
 
 		checkAutoShowInsertPos();
-	} else if (primary->selected) {
-		std::string textToCopy = buffer_->BufGetSelectionTextEx();
-		insertPos = cursorPos_;
+	} else if (primary.selected) {
+		const std::string textToCopy = buffer_->BufGetSelectionTextEx();
+		const TextCursor insertPos = cursorPos_;
+
 		buffer_->BufInsertEx(insertPos, textToCopy);
         TextDSetInsertPosition(insertPos + textToCopy.size());
 
@@ -5837,13 +5838,13 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 
     EMIT_EVENT_0("copy_to");
 
-    DragStates dragState     = dragState_;
-    const TextBuffer::Selection *secondary = &buffer_->secondary;
-    const TextBuffer::Selection *primary   = &buffer_->primary;
-    bool rectangular         = secondary->rectangular;
+	DragStates dragState                   = dragState_;
+	const TextBuffer::Selection &secondary = buffer_->secondary;
+	const TextBuffer::Selection &primary   = buffer_->primary;
+	bool rectangular                       = secondary.rectangular;
 
 	endDrag();
-	if (!((dragState == SECONDARY_DRAG && secondary->selected) || (dragState == SECONDARY_RECT_DRAG && secondary->selected) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED)) {
+	if (!((dragState == SECONDARY_DRAG && secondary.selected) || (dragState == SECONDARY_RECT_DRAG && secondary.selected) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED)) {
 		return;
 	}
 
@@ -5852,11 +5853,11 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
         return;
     }
 
-	if (secondary->selected) {
+	if (secondary.selected) {
 
         TextDBlankCursor();
         std::string textToCopy = buffer_->BufGetSecSelectTextEx();
-        if (primary->selected && rectangular) {
+		if (primary.selected && rectangular) {
             buffer_->BufReplaceSelectedEx(textToCopy);
             TextDSetInsertPosition(buffer_->BufCursorPosHint());
         } else if (rectangular) {
@@ -5872,7 +5873,7 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
         buffer_->BufSecondaryUnselect();
         TextDUnblankCursor();
 
-	} else if (primary->selected) {
+	} else if (primary.selected) {
 		std::string textToCopy = buffer_->BufGetSelectionTextEx();
         TextDSetInsertPosition(TextDXYToPosition(event->pos()));
 		TextInsertAtCursorEx(textToCopy, false, P_autoWrapPastedText);
@@ -6585,7 +6586,7 @@ void TextArea::cutPrimaryAP(EventFlags flags) {
 
     EMIT_EVENT_0("cut_primary");
 
-    const TextBuffer::Selection *primary = &buffer_->primary;
+	const TextBuffer::Selection &primary = buffer_->primary;
 
 	bool rectangular = flags & RectFlag;
     TextCursor insertPos;
@@ -6595,7 +6596,7 @@ void TextArea::cutPrimaryAP(EventFlags flags) {
 		return;
 	}
 
-	if (primary->selected && rectangular) {
+	if (primary.selected && rectangular) {
 		std::string textToCopy = buffer_->BufGetSelectionTextEx();
 		insertPos = cursorPos_;
         int64_t col = buffer_->BufCountDispChars(buffer_->BufStartOfLine(insertPos), insertPos);
@@ -6604,7 +6605,7 @@ void TextArea::cutPrimaryAP(EventFlags flags) {
 
 		buffer_->BufRemoveSelected();
 		checkAutoShowInsertPos();
-	} else if (primary->selected) {
+	} else if (primary.selected) {
 		std::string textToCopy = buffer_->BufGetSelectionTextEx();
 		insertPos = cursorPos_;
 		buffer_->BufInsertEx(insertPos, textToCopy);
@@ -6655,14 +6656,14 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 
     DragStates dragState = dragState_;
 
-    const TextBuffer::Selection *secondary = &buffer_->secondary;
-    const TextBuffer::Selection *primary   = &buffer_->primary;
+	const TextBuffer::Selection &secondary = buffer_->secondary;
+	const TextBuffer::Selection &primary   = buffer_->primary;
 
-	int rectangular = secondary->rectangular;
+	int rectangular = secondary.rectangular;
 
 	endDrag();
 
-	if (!((dragState == SECONDARY_DRAG && secondary->selected) || (dragState == SECONDARY_RECT_DRAG && secondary->selected) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED)) {
+	if (!((dragState == SECONDARY_DRAG && secondary.selected) || (dragState == SECONDARY_RECT_DRAG && secondary.selected) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED)) {
 		return;
 	}
 
@@ -6671,16 +6672,17 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 		return;
 	}
 
-	if (secondary->selected) {
+	if (secondary.selected) {
 
-        std::string textToCopy = buffer_->BufGetSecSelectTextEx();
-        if (primary->selected && rectangular) {
+		const std::string textToCopy = buffer_->BufGetSecSelectTextEx();
+		if (primary.selected && rectangular) {
             buffer_->BufReplaceSelectedEx(textToCopy);
             TextDSetInsertPosition(buffer_->BufCursorPosHint());
         } else if (rectangular) {
             const TextCursor insertPos = cursorPos_;
-            TextCursor lineStart = buffer_->BufStartOfLine(insertPos);
-            int64_t column = buffer_->BufCountDispChars(lineStart, insertPos);
+			const TextCursor lineStart = buffer_->BufStartOfLine(insertPos);
+			const int64_t column = buffer_->BufCountDispChars(lineStart, insertPos);
+
             buffer_->BufInsertColEx(column, lineStart, textToCopy, nullptr, nullptr);
             TextDSetInsertPosition(buffer_->BufCursorPosHint());
         } else {
@@ -6690,8 +6692,8 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
         buffer_->BufRemoveSecSelect();
         buffer_->BufSecondaryUnselect();
 
-	} else if (primary->selected) {
-		std::string textToCopy = buffer_->BufGetRangeEx(primary->start, primary->end);
+	} else if (primary.selected) {
+		const std::string textToCopy = buffer_->BufGetRangeEx(primary.start, primary.end);
         TextDSetInsertPosition(TextDXYToPosition(event->pos()));
 		TextInsertAtCursorEx(textToCopy, false, P_autoWrapPastedText);
 
@@ -6708,8 +6710,8 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
     Q_UNUSED(event);
     EMIT_EVENT_0("exchange");
 
-    const TextBuffer::Selection *sec     = &buffer_->secondary;
-    const TextBuffer::Selection *primary = &buffer_->primary;
+	const TextBuffer::Selection secondary = buffer_->secondary;
+	const TextBuffer::Selection primary   = buffer_->primary;
 
 	DragStates dragState = dragState_; // save before endDrag
     const bool silent = flags & NoBellFlag;
@@ -6720,7 +6722,7 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 
 	/* If there's no secondary selection here, or the primary and secondary
 	   selection overlap, just beep and return */
-	if (!sec->selected || (primary->selected && ((primary->start <= sec->start && primary->end > sec->start) || (sec->start <= primary->start && sec->end > primary->start)))) {
+	if (!secondary.selected || (primary.selected && ((primary.start <= secondary.start && primary.end > secondary.start) || (secondary.start <= primary.start && secondary.end > primary.start)))) {
 		buffer_->BufSecondaryUnselect();
 		ringIfNecessary(silent);
 		/* If there's no secondary selection, but the primary selection is
@@ -6733,7 +6735,7 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 	}
 
 	// if the primary selection is in another widget, use selection routines
-	if (!primary->selected) {
+	if (!primary.selected) {
 		ExchangeSelections();
 		return;
 	}
@@ -6742,11 +6744,13 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 	std::string primaryText = buffer_->BufGetSelectionTextEx();
 	std::string secText     = buffer_->BufGetSecSelectTextEx();
 
-    const bool secWasRect = sec->rectangular;
+	const bool secWasRect = secondary.rectangular;
 	buffer_->BufReplaceSecSelectEx(primaryText);
-    const TextCursor newPrimaryStart = primary->start;
+
+	const TextCursor newPrimaryStart = primary.start;
 	buffer_->BufReplaceSelectedEx(secText);
-    const TextCursor newPrimaryEnd = newPrimaryStart + secText.size();
+
+	const TextCursor newPrimaryEnd = newPrimaryStart + secText.size();
 
 	buffer_->BufSecondaryUnselect();
 	if (secWasRect) {
@@ -7178,10 +7182,6 @@ TextCursor TextArea::TextDPosOfPreferredCol(int64_t column, TextCursor lineStart
 ** Return the cursor position
 */
 TextCursor TextArea::TextGetCursorPos() const {
-	return TextDGetInsertPosition();
-}
-
-TextCursor TextArea::TextDGetInsertPosition() const {
 	return cursorPos_;
 }
 
@@ -7709,8 +7709,8 @@ void TextArea::deleteNextWordAP(EventFlags flags) {
 
     EMIT_EVENT_0("delete_next_word");
 
-    TextCursor insertPos = TextDGetInsertPosition();
-    TextCursor lineEnd   = buffer_->BufEndOfLine(insertPos);
+	const TextCursor insertPos = cursorPos_;
+	const TextCursor lineEnd   = buffer_->BufEndOfLine(insertPos);
     const bool silent = flags & NoBellFlag;
 
     cancelDrag();
@@ -7858,4 +7858,106 @@ void TextArea::showResizeNotification() {
         resizeWidget_->show();
         resizeTimer_->start();
     }
+}
+
+/*
+** If the selection (or cursor position if there's no selection) is not
+** fully shown, scroll to bring it in to view.  Note that as written,
+** this won't work well with multi-line selections.  Modest re-write
+** of the horizontal scrolling part would be quite easy to make it work
+** well with rectangular selections.
+*/
+void TextArea::TextDMakeSelectionVisible() {
+
+	bool isRect;
+	int horizOffset;
+	TextCursor left;
+	int64_t rectEnd;
+	int64_t rectStart;
+	TextCursor right;
+	int64_t topLineNum;
+	int leftX;
+	int rightX;
+	int y;
+
+	const TextCursor topChar  = TextFirstVisiblePos();
+	const TextCursor lastChar = TextLastVisiblePos();
+
+	// find out where the selection is
+	if (!buffer_->BufGetSelectionPos(&left, &right, &isRect, &rectStart, &rectEnd)) {
+		left = right = TextGetCursorPos();
+		isRect = false;
+	}
+
+	/* Check vertical positioning unless the selection is already shown or
+	   already covers the display.  If the end of the selection is below
+	   bottom, scroll it in to view until the end selection is scrollOffset
+	   lines from the bottom of the display or the start of the selection
+	   scrollOffset lines from the top.  Calculate a pleasing distance from the
+	   top or bottom of the window, to scroll the selection to (if scrolling is
+	   necessary), around 1/3 of the height of the window */
+	if (!((left >= topChar && right <= lastChar) || (left <= topChar && right >= lastChar))) {
+
+		const int rows = getRows();
+		const int scrollOffset = rows / 3;
+
+		TextDGetScroll(&topLineNum, &horizOffset);
+		if (right > lastChar) {
+			// End of sel. is below bottom of screen
+			const int64_t leftLineNum   = topLineNum + TextDCountLines(topChar, left, false);
+			const int64_t targetLineNum = topLineNum + scrollOffset;
+
+			if (leftLineNum >= targetLineNum) {
+				// Start of sel. is not between top & target
+				int64_t linesToScroll = TextDCountLines(lastChar, right, false) + scrollOffset;
+				if (leftLineNum - linesToScroll < targetLineNum) {
+					linesToScroll = leftLineNum - targetLineNum;
+				}
+
+				// Scroll start of selection to the target line
+				TextDSetScroll(topLineNum + linesToScroll, horizOffset);
+			}
+		} else if (left < topChar) {
+			// Start of sel. is above top of screen
+			const int64_t lastLineNum   = topLineNum + rows;
+			const int64_t rightLineNum  = lastLineNum - TextDCountLines(right, lastChar, false);
+			const int64_t targetLineNum = lastLineNum - scrollOffset;
+
+			if (rightLineNum <= targetLineNum) {
+				// End of sel. is not between bottom & target
+				int64_t linesToScroll = TextDCountLines(left, topChar, false) + scrollOffset;
+				if (rightLineNum + linesToScroll > targetLineNum) {
+					linesToScroll = targetLineNum - rightLineNum;
+				}
+
+				// Scroll end of selection to the target line
+				TextDSetScroll(topLineNum - linesToScroll, horizOffset);
+			}
+		}
+	}
+
+	/* If either end of the selection off screen horizontally, try to bring it
+	   in view, by making sure both end-points are visible.  Using only end
+	   points of a multi-line selection is not a great idea, and disaster for
+	   rectangular selections, so this part of the routine should be re-written
+	   if it is to be used much with either.  Note also that this is a second
+	   scrolling operation, causing the display to jump twice.  It's done after
+	   vertical scrolling to take advantage of TextDPosToXY which requires it's
+	   reqested position to be vertically on screen) */
+	if (TextDPositionToXY(left, &leftX, &y) && TextDPositionToXY(right, &rightX, &y) && leftX <= rightX) {
+		TextDGetScroll(&topLineNum, &horizOffset);
+
+		const int margin    = getMarginWidth();
+		const int areaWidth = width();
+		const int numWidth  = getLineNumWidth();
+		const int numLeft   = getLineNumLeft();
+
+		if (leftX < margin + numLeft + numWidth) {
+			horizOffset -= margin + numLeft + numWidth - leftX;
+		} else if (rightX > areaWidth - margin) {
+			horizOffset += rightX - (areaWidth - margin);
+		}
+
+		TextDSetScroll(topLineNum, horizOffset);
+	}
 }
