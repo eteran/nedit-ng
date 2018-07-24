@@ -66,17 +66,15 @@ void DialogTabs::on_checkEmulateTabs_toggled(bool checked) {
  */
 void DialogTabs::on_buttonBox_accepted() {
 
-	// get the values that the user entered and make sure they're ok 
-	bool ok;
-	int emTabDist;
-	bool emulate = ui.checkEmulateTabs->isChecked();
-	bool useTabs = ui.checkUseTabsInPadding->isChecked();	
-	int tabDist  = ui.editTabSpacing->text().toInt(&ok);
+	const bool emulate = ui.checkEmulateTabs->isChecked();
+	const bool useTabs = ui.checkUseTabsInPadding->isChecked();
 
 	if(ui.editTabSpacing->text().isEmpty()) {
 		QMessageBox::critical(this, tr("Warning"), tr("Please supply a value for tab spacing"));
 	}
 	
+	bool ok;
+	int tabDist  = ui.editTabSpacing->text().toInt(&ok);
 	if(!ok) {
 		QMessageBox::critical(this, tr("Warning"), tr("Can't read integer value \"%1\" in tab spacing").arg(ui.editTabSpacing->text()));
 		return;
@@ -87,6 +85,7 @@ void DialogTabs::on_buttonBox_accepted() {
 		return;
 	}
 
+	int emTabDist = 0;
 	if (emulate) {	
 		if(ui.editEmulatedTabSpacing->text().isEmpty()) {
 			QMessageBox::critical(this, tr("Warning"), tr("Please supply a value for emulated tab spacing"));
@@ -104,8 +103,6 @@ void DialogTabs::on_buttonBox_accepted() {
 			QMessageBox::warning(this, tr("Tab Spacing"), tr("Emulated tab spacing out of range"));
 			return;
 		}
-	} else {
-		emTabDist = 0;
 	}
 
 

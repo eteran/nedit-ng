@@ -162,7 +162,7 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr);
 void StartLoopAddrList();
 void SwapCode(Inst *start, Inst *boundary, Inst *end);
 
-/* Routines for executing programs */
+// Routines for executing programs
 int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg);
 int ContinueMacroEx(const std::shared_ptr<MacroContext> &continuation, DataValue *result, QString *msg);
 void RunMacroAsSubrCall(Program *prog);
@@ -174,8 +174,7 @@ DocumentWidget *MacroRunDocument();
 DocumentWidget *MacroFocusDocument();
 void SetMacroFocusDocument(DocumentWidget *document);
 
-/* function used for implicit conversion from string to number */
+// function used for implicit conversion from string to number
 bool StringToNum(const std::string &string, int *number);
-bool StringToNum(const QString &string, int *number);
 
 #endif

@@ -361,9 +361,9 @@ bool AddBranchOffset(Inst *to, const char **msg) {
         return false;
 	}
 
-    /* NOTE(eteran): we don't use gsl::narrow here because when to is nullptr
-     * (to indicate end of program) it produces values that won't fit into an
-     * int on 64-bit systems */
+	/* we don't use gsl::narrow here because when to is nullptr (to indicate
+	 * end of program) it produces values that won't fit into an int on
+	 * 64-bit systems */
     ProgP->value = static_cast<int>(to - ProgP);
     ProgP++;
     return true;
@@ -2160,7 +2160,6 @@ static int inArray() {
     PEEK(leftArray, 0);
     if (is_array(leftArray)) {
 
-        // NOTE(eteran): this is approximately std::set_intersection...
         POP(leftArray);
 
         const ArrayPtr &m = to_array(leftArray);
@@ -2232,16 +2231,6 @@ static int errCheck(const char *s) {
 		return execError("%s result out of range", s);
 	else
 		return STAT_OK;
-}
-
-bool StringToNum(const QString &string, int *number) {
-    bool ok;
-    int n = string.toInt(&ok);
-    if(number) {
-        *number = n;
-    }
-    return ok;
-
 }
 
 bool StringToNum(const std::string &string, int *number) {

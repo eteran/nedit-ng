@@ -25,7 +25,7 @@ using LibraryRoutine = std::error_code (*)(DocumentWidget *document, Arguments a
 using Array          = std::map<std::string, DataValue>;
 using ArrayPtr       = std::shared_ptr<Array>;
 
-// NOTE(eteran): we use a kind of "fat iterator", because the arrayIter function
+// we use a kind of "fat iterator", because the arrayIter function
 // needs to know if the iterator is at the end of the map. This requirement
 // means that we need a reference to the map to compare against
 struct ArrayIterator {

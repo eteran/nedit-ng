@@ -36,7 +36,7 @@ struct MenuItem {
     QString flags;
 };
 
-static QString writeMenuItemStringEx(const std::vector<MenuItem> &menuItems, bool isShellCommand) {
+QString writeMenuItemStringEx(const std::vector<MenuItem> &menuItems, bool isShellCommand) {
 
     QString outStr;
     auto outPtr = std::back_inserter(outStr);
