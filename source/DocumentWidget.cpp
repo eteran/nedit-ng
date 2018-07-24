@@ -3114,7 +3114,8 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
         // Detect and convert DOS and Macintosh format files
         if (Preferences::GetPrefForceOSConversion()) {
-			switch (FormatOfFileEx(view::string_view(&fileString[0], readLen))) {
+			fileFormat_ = FormatOfFileEx(view::string_view(&fileString[0], readLen));
+			switch (fileFormat_) {
             case FileFormats::Dos:
 				ConvertFromDos(&fileString[0], &readLen);
                 break;
