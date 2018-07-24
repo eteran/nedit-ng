@@ -53,6 +53,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+
 // NOTE(eteran): generally, this class reaches out to MainWindow FAR too much
 // it would be better to create some fundamental signals that MainWindow could
 // listen on and update itself as needed. This would reduce a lot fo the heavy
@@ -64,7 +65,7 @@ struct ShellCommandData {
     QTimer        bannerTimer;
     QByteArray    standardError;
     QByteArray    standardOutput;
-    QProcess *    process;    
+	QProcess *    process;
     TextArea *    area;    
     TextCursor    leftPos;
     TextCursor    rightPos;
@@ -2057,10 +2058,10 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
 
         switch(fileFormat_) {
         case FileFormats::Mac:
-            ConvertFromMacFileString(fileString, nRead);
+			ConvertFromMac(fileString, nRead);
             break;
         case FileFormats::Dos:
-            ConvertFromDosFileString(fileString, &nRead, &pendingCR);
+			ConvertFromDos(fileString, &nRead, &pendingCR);
             break;
         case FileFormats::Unix:
             break;
@@ -2323,24 +2324,22 @@ bool DocumentWidget::doSave() {
 	}
 
     // get the text buffer contents and its length
-    std::string fileString = buffer_->BufGetAllEx();
+	std::string text = buffer_->BufGetAllEx();
 
     // If the file is to be saved in DOS or Macintosh format, reconvert
     switch(fileFormat_) {
     case FileFormats::Dos:
-        ConvertToDosFileStringEx(fileString);
+		ConvertToDos(text);
         break;
     case FileFormats::Mac:
-        ConvertToMacFileStringEx(fileString);
+		ConvertToMac(text);
         break;
     default:
         break;
     }
 
     // write to the file
-	file.write(fileString.data(), static_cast<int64_t>(fileString.size()));
-
-	if(file.error()) {
+	if(file.write(text.data(), static_cast<int64_t>(text.size())) == -1) {
 		QMessageBox::critical(this, tr("Error saving File"), tr("%1 not saved:\n%2").arg(filename_, file.errorString()));
 		file.close();
 		file.remove();
@@ -2976,7 +2975,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     filenameSet_ = true;
     fileMissing_ = true;
 
-    FILE *fp = nullptr;
+	FILE *fp = nullptr;
 
     // Get the full name of the file
     const QString fullname = FullPath();
@@ -2987,9 +2986,9 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
        even if they're never actually written.
        To avoid requiring special builds for clearcase users,
        this is now the default.
-    */
+	*/
     {
-        if ((fp = ::fopen(fullname.toUtf8().data(), "r"))) {
+		if ((fp = ::fopen(fullname.toUtf8().data(), "r"))) {
 
             if (::access(fullname.toUtf8().data(), W_OK) != 0) {
                 lockReasons_.setPermLocked(true);
@@ -3091,16 +3090,10 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
     // Allocate space for the whole contents of the file (unfortunately)
     try {
 
-        // a little trick to avoid std::vector filling with zeros during resize
-        struct uninitialized_char {
-            unsigned char m;
-            uninitialized_char() {}
-        };
-
-        std::vector<uninitialized_char> fileString(static_cast<size_t>(fileLength));
+		auto fileString = std::make_unique<char[]>(static_cast<size_t>(fileLength));
 
         // Read the file into fileString and terminate with a null
-        size_t readLen = ::fread(fileString.data(), 1, static_cast<size_t>(fileLength), fp);
+		size_t readLen = ::fread(&fileString[0], 1, static_cast<size_t>(fileLength), fp);
         if (::ferror(fp)) {
             filenameSet_ = false; // Temp. prevent check for changes.
             QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1:\n%2").arg(name, ErrorString(errno)));
@@ -3121,19 +3114,19 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
         // Detect and convert DOS and Macintosh format files
         if (Preferences::GetPrefForceOSConversion()) {
-            switch (FormatOfFileEx(view::string_view(reinterpret_cast<char *>(fileString.data()), readLen))) {
+			switch (FormatOfFileEx(view::string_view(&fileString[0], readLen))) {
             case FileFormats::Dos:
-                ConvertFromDosFileString(reinterpret_cast<char *>(fileString.data()), &readLen, nullptr);
+				ConvertFromDos(&fileString[0], &readLen);
                 break;
             case FileFormats::Mac:
-                ConvertFromMacFileString(reinterpret_cast<char *>(fileString.data()), readLen);
+				ConvertFromMac(&fileString[0], readLen);
                 break;
             case FileFormats::Unix:
                 break;
             }
         }
 
-        auto contents = view::string_view(reinterpret_cast<char *>(fileString.data()), readLen);
+		auto contents = view::string_view(&fileString[0], readLen);
 
         // Display the file contents in the text widget
         ignoreModify_ = true;
@@ -3482,10 +3475,10 @@ bool DocumentWidget::includeFile(const QString &name) {
     // Detect and convert DOS and Macintosh format files
     switch (FormatOfFileEx(fileString)) {
     case FileFormats::Dos:
-        ConvertFromDosFileStringEx(&fileString, nullptr);
+		ConvertFromDos(&fileString);
         break;
     case FileFormats::Mac:
-        ConvertFromMacFileStringEx(&fileString);
+		ConvertFromMac(&fileString);
         break;
     case FileFormats::Unix:
         //  Default is Unix, no conversion necessary.

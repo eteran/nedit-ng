@@ -359,176 +359,17 @@ FileFormats FormatOfFileEx(view::string_view fileString) {
 
 }
 
-/*
-** Converts a string (which may represent the entire contents of the file)
-** from DOS or Macintosh format to Unix format.  Conversion is done in-place.
-** In the DOS case, the length will be shorter. The routine has support for
-** blockwise file to string conversion: if the fileString has a trailing '\r' and
-** 'pendingCR' is not null, the '\r' is deposited in there and is not
-** converted. If there is no trailing '\r', a 0 is deposited in 'pendingCR'
-** It's the caller's responsability to make sure that the pending character,
-** if present, is inserted at the beginning of the next block to convert.
-*/
-void ConvertFromDosFileStringEx(std::string *fileString, char *pendingCR) {
-	Q_ASSERT(fileString);
 
-	if (pendingCR) {
-		*pendingCR = '\0';
-	}
-
-	auto out = fileString->begin();
-	auto it  = fileString->begin();
-
-	while (it != fileString->end()) {
-		if (*it == '\r') {
-			auto next = std::next(it);
-			if (next != fileString->end()) {
-				if (*next == '\n') {
-					++it;
-				}
-			} else {
-				if (pendingCR) {
-					*pendingCR = *it;
-					break; // Don't copy this trailing '\r'
-				}
-			}
-		}
-		*out++ = *it++;
-	}
-
-	// remove the junk left at the end of the string
-	fileString->erase(out, fileString->end());
-}
-
-/**
- * @brief ConvertFromDosFileString
- * @param fileString
- * @param length
- * @param pendingCR
- */
-void ConvertFromDosFileString(char *fileString, size_t *length, char *pendingCR) {
-    Q_ASSERT(fileString);
-    char *outPtr = fileString;
-    char *inPtr = fileString;
-
-    if (pendingCR) {
-        *pendingCR = '\0';
-    }
-
-    while (inPtr < fileString + *length) {
-        if (*inPtr == '\r') {
-            if (inPtr < fileString + *length - 1) {
-                if (*(inPtr + 1) == '\n')
-                    inPtr++;
-            } else {
-                if (pendingCR) {
-                    *pendingCR = *inPtr;
-                    break; // Don't copy this trailing '\r'
-                }
-            }
-        }
-        *outPtr++ = *inPtr++;
-    }
-
-    *outPtr = '\0';
-    *length = static_cast<size_t>(outPtr - fileString);
-}
-
-/**
- * @brief ConvertFromDosFileString
- * @param fileString
- * @param length
- * @param pendingCR
- */
-void ConvertFromDosFileString(char *fileString, int64_t *length, char *pendingCR) {
-	Q_ASSERT(fileString);
-	char *outPtr = fileString;
-	char *inPtr = fileString;
-
-    if (pendingCR) {
-        *pendingCR = '\0';
-    }
-
-	while (inPtr < fileString + *length) {
-		if (*inPtr == '\r') {
-			if (inPtr < fileString + *length - 1) {
-				if (*(inPtr + 1) == '\n')
-					inPtr++;
-			} else {
-				if (pendingCR) {
-					*pendingCR = *inPtr;
-					break; /* Don't copy this trailing '\r' */
-				}
-			}
-		}
-		*outPtr++ = *inPtr++;
-	}
-
-	*outPtr = '\0';
-    *length = outPtr - fileString;
-}
-
-/**
- * @brief ConvertFromMacFileString
- * @param fileString
- * @param length
- */
-void ConvertFromMacFileString(char *fileString, size_t length) {
-    Q_ASSERT(fileString);
-    std::transform(fileString, fileString + length, fileString, [](char ch) {
-        if(ch == '\r') {
-            return '\n';
-        }
-
-        return ch;
-    });
-}
-
-/**
- * @brief ConvertFromMacFileString
- * @param fileString
- * @param length
- */
-void ConvertFromMacFileString(char *fileString, int64_t length) {
-	Q_ASSERT(fileString);
-    std::transform(fileString, fileString + length, fileString, [](char ch) {
-        if(ch == '\r') {
-            return '\n';
-        }
-
-        return ch;
-    });
-}
-
-/**
- * @brief ConvertFromMacFileStringEx
- * @param fileString
- */
-void ConvertFromMacFileStringEx(std::string *fileString) {
-    Q_ASSERT(fileString);
-    std::transform(fileString->begin(), fileString->end(), fileString->begin(), [](char ch) {
-		if(ch == '\r') {
-			return '\n';
-		}
-
-		return ch;
-	});
-}
 
 /*
 ** Converts a string (which may represent the entire contents of the file) from
 ** Unix to DOS format.
-**
-** This could be done more efficiently by asking doSave to allocate some
-** extra memory for this, and only re-allocating if it wasn't enough.  If
-** anyone cares about the performance or the potential for running out of
-** memory on a save, it should probably be redone.
 */
-void ConvertToDosFileStringEx(std::string &fileString) {
+void ConvertToDos(std::string &text) {
 
     // How long a string will we need?
 	size_t outLength = 0;
-	for (char ch : fileString) {
+	for (char ch : text) {
 		if (ch == '\n') {
 			outLength++;
 		}
@@ -541,23 +382,23 @@ void ConvertToDosFileStringEx(std::string &fileString) {
 	auto outPtr = std::back_inserter(outString);
 
     // Do the conversion, free the old string
-	for (char ch : fileString) {
+	for (char ch : text) {
 		if (ch == '\n') {
 			*outPtr++ = '\r';
 		}
 		*outPtr++ = ch;
 	}
 
-	fileString = outString;
+	text = outString;
 }
 
 /*
 ** Converts a string (which may represent the entire contents of the file)
 ** from Unix to Macintosh format.
 */
-void ConvertToMacFileStringEx(std::string &fileString) {
+void ConvertToMac(std::string &text) {
 
-	std::transform(fileString.begin(), fileString.end(), fileString.begin(), [](char ch) {
+	std::transform(text.begin(), text.end(), text.begin(), [](char ch) {
 		if (ch == '\n') {
 			return '\r';
 		}
@@ -574,30 +415,29 @@ void ConvertToMacFileStringEx(std::string &fileString) {
 */
 QString ReadAnyTextFileEx(const QString &fileName, bool forceNL) {
 
-    std::ifstream file(fileName.toStdString());
+	std::ifstream file(fileName.toStdString());
 	if(!file) {
-		return QString();
+		return {};
 	}
 
 	auto contents = std::string(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
 
-	/* Convert linebreaks? */
     switch(FormatOfFileEx(contents)) {
     case FileFormats::Dos:
-		ConvertFromDosFileStringEx(&contents, nullptr);
+		ConvertFromDos(&contents);
 		break;
     case FileFormats::Mac:
-		ConvertFromMacFileStringEx(&contents);
+		ConvertFromMac(&contents);
 		break;
     case FileFormats::Unix:
 		break;
 	}
 
 	if(contents.empty()) {
-		return QString();
+		return {};
 	}
 
-	/* now, that the fileString is in Unix format, check for terminating \n */
+	// now, that the string is in Unix format, check for terminating \n
 	if (forceNL && contents.back() != '\n') {
 		contents.push_back('\n');
 	}
