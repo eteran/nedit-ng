@@ -488,11 +488,6 @@ DocumentWidget::~DocumentWidget() noexcept {
     // And delete the rangeset table too for the same reasons
     rangesetTable_ = nullptr;
 
-    // NOTE(eteran): there used to be some logic about syncronizing the multi-file
-    //               replace dialog. It was complex and error prone. Simpler to
-    //               just make the multi-file replace dialog modal and avoid the
-    //               issue all together
-
     // Free syntax highlighting patterns, if any. w/o redisplaying
     FreeHighlightingDataEx();
 
@@ -1032,7 +1027,6 @@ void DocumentWidget::documentRaised() {
 
 void DocumentWidget::RaiseDocument() {
     if(auto win = MainWindow::fromDocument(this)) {
-        // NOTE(eteran): indirectly triggers a call to documentRaised()
         win->tabWidget()->setCurrentWidget(this);
     }
 }
@@ -1744,12 +1738,20 @@ void DocumentWidget::Redo() {
     }
 }
 
+/**
+ * @brief DocumentWidget::isReadOnly
+ * @return
+ */
+bool DocumentWidget::isReadOnly() const {
+	return lockReasons_.isAnyLocked();
+}
+
 /*
 ** Check the read-only or locked status of the window and beep and return
 ** false if the window should not be written in.
 */
-bool DocumentWidget::CheckReadOnly() const {
-    if (lockReasons_.isAnyLocked()) {
+bool DocumentWidget::checkReadOnly() const {
+	if (isReadOnly()) {
         QApplication::beep();
         return true;
     }
@@ -1984,7 +1986,7 @@ void DocumentWidget::CheckForChangesToFile() {
                 }
 
                 if(save) {
-                    SaveWindow();
+					saveDocument();
                 }
             }
 
@@ -2066,10 +2068,10 @@ QString DocumentWidget::FullPath() const {
 }
 
 /**
- * @brief DocumentWidget::FileName
+ * @brief DocumentWidget::filename
  * @return
  */
-QString DocumentWidget::FileName() const {
+QString DocumentWidget::filename() const {
     return filename_;
 }
 
@@ -2307,7 +2309,11 @@ bool DocumentWidget::WriteBackupFile() {
     return true;
 }
 
-bool DocumentWidget::SaveWindow() {
+/**
+ * @brief DocumentWidget::saveDocument
+ * @return
+ */
+bool DocumentWidget::saveDocument() {
 
     // Try to ensure our information is up-to-date
     CheckForChangesToFile();
@@ -2320,7 +2326,7 @@ bool DocumentWidget::SaveWindow() {
 
     // Prompt for a filename if this is an Untitled window
     if (!filenameSet_) {
-        return SaveWindowAs(QString(), false);
+		return saveDocumentAs(QString(), false);
     }
 
     // Check for external modifications and warn the user
@@ -2388,31 +2394,29 @@ bool DocumentWidget::doSave() {
              changes. If the file is created for the first time, it has
              zero size on disk, and the check would falsely conclude that the
              file has changed on disk, and would pop up a warning dialog */
-    if (!buffer_->BufIsEmpty() && buffer_->BufGetCharacter(TextCursor(buffer_->BufGetLength() - 1)) != '\n' && Preferences::GetPrefAppendLF()) {
+	if (Preferences::GetPrefAppendLF() && !buffer_->BufIsEmpty() && buffer_->BufGetCharacter(buffer_->BufEndOfBuffer() - 1) != '\n') {
         buffer_->BufAppendEx('\n');
     }
 
     // open the file
-    FILE *fp = ::fopen(fullname.toUtf8().data(), "wb");
-    if(!fp) {
-        QMessageBox messageBox(this);
-        messageBox.setWindowTitle(tr("Error saving File"));
-        messageBox.setIcon(QMessageBox::Warning);
-        messageBox.setText(tr("Unable to save %1:\n%2\n\nSave as a new file?").arg(filename_, ErrorString(errno)));
+	QFile file(fullname);
+	if(!file.open(QIODevice::WriteOnly)) {
+		QMessageBox messageBox(this);
+		messageBox.setWindowTitle(tr("Error saving File"));
+		messageBox.setIcon(QMessageBox::Warning);
+		messageBox.setText(tr("Unable to save %1:\n%2\n\nSave as a new file?").arg(filename_, file.errorString()));
 
-        QPushButton *buttonSaveAs = messageBox.addButton(tr("Save As..."), QMessageBox::AcceptRole);
-        QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
-        Q_UNUSED(buttonCancel);
+		QPushButton *buttonSaveAs = messageBox.addButton(tr("Save As..."), QMessageBox::AcceptRole);
+		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
+		Q_UNUSED(buttonCancel);
 
-        messageBox.exec();
-        if(messageBox.clickedButton() == buttonSaveAs) {
-            return SaveWindowAs(QString(), /*addWrap=*/false);
-        }
+		messageBox.exec();
+		if(messageBox.clickedButton() == buttonSaveAs) {
+			return saveDocumentAs(QString(), /*addWrap=*/false);
+		}
 
-        return false;
-    }
-
-    auto _ = gsl::finally([fp] { ::fclose(fp); });
+		return false;
+	}
 
     // get the text buffer contents and its length
     std::string fileString = buffer_->BufGetAllEx();
@@ -2430,11 +2434,12 @@ bool DocumentWidget::doSave() {
     }
 
     // write to the file
-    ::fwrite(fileString.data(), 1, fileString.size(), fp);
+	file.write(fileString.data(), static_cast<int64_t>(fileString.size()));
 
-    if (::ferror(fp)) {
-        QMessageBox::critical(this, tr("Error saving File"), tr("%1 not saved:\n%2").arg(filename_, ErrorString(errno)));
-		QFile::remove(fullname);
+	if(file.error()) {
+		QMessageBox::critical(this, tr("Error saving File"), tr("%1 not saved:\n%2").arg(filename_, file.errorString()));
+		file.close();
+		file.remove();
         return false;
     }
 
@@ -2459,12 +2464,12 @@ bool DocumentWidget::doSave() {
 }
 
 /**
- * @brief DocumentWidget::SaveWindowAs
+ * @brief DocumentWidget::saveDocumentAs
  * @param newName
  * @param addWrap
  * @return
  */
-bool DocumentWidget::SaveWindowAs(const QString &newName, bool addWrap) {
+bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 
     // NOTE(eteran): this seems a bit redundant to other code...
     if(auto win = MainWindow::fromDocument(this)) {
@@ -2878,7 +2883,7 @@ bool DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
         switch(response) {
         case QMessageBox::Yes:
             // Save
-            if (SaveWindow()) {
+			if (saveDocument()) {
                 CloseDocument();
             } else {
                 return false;
@@ -3550,7 +3555,7 @@ void DocumentWidget::actionClose(CloseMode mode) {
 
 bool DocumentWidget::includeFile(const QString &name) {
 
-    if (CheckReadOnly()) {
+	if (checkReadOnly()) {
         return false;
     }
 
@@ -3875,7 +3880,7 @@ void DocumentWidget::FindDefinition(TextArea *area, const QString &tagName) {
  */
 void DocumentWidget::execAP(TextArea *area, const QString &command) {
 
-    if (CheckReadOnly()) {
+	if (checkReadOnly()) {
         return;
     }
 
@@ -4854,7 +4859,7 @@ void DocumentWidget::ExecCursorLineEx(TextArea *area, CommandSource source) {
 */
 void DocumentWidget::filterSelection(const QString &command, CommandSource source) {
 
-    if (CheckReadOnly()) {
+	if (checkReadOnly()) {
         return;
     }
 
@@ -4920,14 +4925,6 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
     QString substitutedCommand = command;
     substitutedCommand.replace(QLatin1Char('%'), fullName);
 	substitutedCommand.replace(QLatin1Char('#'), QString::number(line));
-
-    // NOTE(eteran): probably not possible for this to be true anymore...
-    if(substitutedCommand.isNull()) {
-        QMessageBox::critical(this,
-                              tr("Shell Command"),
-                              tr("Shell command is too long due to filename substitutions with '%%' or line number substitutions with '#'"));
-        return;
-    }
 
     /* Get the command input as a text string.  If there is input, errors
       shouldn't be mixed in with output, so set flags to ERROR_DIALOGS */
@@ -5011,7 +5008,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 
     // If the command requires the file be saved first, save it
     if (saveFirst) {
-        if (!SaveWindow()) {
+		if (!saveDocument()) {
             if (input != FROM_NONE) {
                 return;
             }

@@ -88,7 +88,7 @@ void DialogFind::keyPressEvent(QKeyEvent *event) {
  */
 void DialogFind::on_checkKeep_toggled(bool checked) {
 	if (checked) {
-        setWindowTitle(tr("Find (in %1)").arg(document_->FileName()));
+        setWindowTitle(tr("Find (in %1)").arg(document_->filename()));
 	} else {
 		setWindowTitle(tr("Find"));
 	}
@@ -319,7 +319,7 @@ bool DialogFind::keepDialog() const {
 void DialogFind::setDocument(DocumentWidget *document) {
     document_ = document;
     if(keepDialog()) {
-        setWindowTitle(tr("Find (in %1)").arg(document_->FileName()));
+        setWindowTitle(tr("Find (in %1)").arg(document_->filename()));
     }
 }
 

@@ -145,7 +145,6 @@ void DialogSmartIndent::on_buttonCheck_clicked() {
  */
 void DialogSmartIndent::on_buttonDelete_clicked() {
 
-	// NOTE(eteran): originally was "Yes, Delete"
     int resp = QMessageBox::question(
                 this,
                 tr("Delete Macros"),

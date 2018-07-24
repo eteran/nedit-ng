@@ -73,7 +73,7 @@ std::vector<DocumentWidget *> collectWritableWindows() {
     }
 
     std::sort(documents.begin(), documents.end(), [](const DocumentWidget *lhs, const DocumentWidget *rhs) {
-        return lhs->FileName() < rhs->FileName();
+        return lhs->filename() < rhs->filename();
     });
 
     return documents;

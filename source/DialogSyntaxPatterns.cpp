@@ -450,7 +450,7 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
     ui.editRegexEnd->setText(QString());
     ui.editRegexError->setText(QString());
 
-    // NOTE(eteran): notify the settings system that things have changed
+	// notify the settings system that things have changed
     Preferences::MarkPrefsChanged();
 }
 

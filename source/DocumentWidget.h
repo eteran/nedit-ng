@@ -92,7 +92,8 @@ public:
     void action_Set_Language_Mode(const QString &languageMode, bool forceNewDefaults);
 
 public:
-    bool CheckReadOnly() const;
+	bool checkReadOnly() const;
+	bool isReadOnly() const;
     bool GetHighlightSyntax() const;
     bool GetIncrementalBackup() const;
     bool GetMakeBackupCopy() const;
@@ -116,7 +117,7 @@ public:
     LockReasons lockReasons() const;
     QColor GetHighlightBGColorOfCodeEx(size_t hCode) const;
     QColor HighlightColorValueOfCodeEx(size_t hCode) const;
-    QString FileName() const;
+    QString filename() const;
     QString FullPath() const;
     QString GetAnySelection(bool beep_on_error);
     QString GetWindowDelimiters() const;
@@ -205,8 +206,8 @@ private:
     bool fileWasModifiedExternally() const;
     bool MacroWindowCloseActionsEx();
     size_t matchLanguageMode() const;
-    bool SaveWindow();
-    bool SaveWindowAs(const QString &newName, bool addWrap);
+    bool saveDocument();
+    bool saveDocumentAs(const QString &newName, bool addWrap);
     bool WriteBackupFile();
     MacroContinuationCode continueWorkProcEx();
     PatternSet *findPatternsForWindowEx(bool warn);

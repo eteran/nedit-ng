@@ -868,7 +868,7 @@ void MainWindow::action_Include_File(DocumentWidget *document, const QString &fi
 
     emit_event("include_file", filename);
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -884,7 +884,7 @@ void MainWindow::action_Include_File(DocumentWidget *document, const QString &fi
  * @param document
  */
 void MainWindow::action_Include_File(DocumentWidget *document) {
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -951,7 +951,7 @@ void MainWindow::action_Delete(DocumentWidget *document) {
 
     emit_event("delete");
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -1574,7 +1574,7 @@ void MainWindow::action_Undo(DocumentWidget *document) {
 
     emit_event("undo");
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -1599,7 +1599,7 @@ void MainWindow::action_Redo(DocumentWidget *document) {
 
     emit_event("redo");
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -2095,7 +2095,7 @@ void MainWindow::action_Shift_Left(DocumentWidget *document) {
 
     emit_event("shift_left");
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -2122,7 +2122,7 @@ void MainWindow::action_Shift_Right(DocumentWidget *document) {
 
     emit_event("shift_right");
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -2149,7 +2149,7 @@ void MainWindow::action_Shift_Left_Tabs(DocumentWidget *document) {
 
     emit_event("shift_left_by_tab");
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -2175,7 +2175,7 @@ void MainWindow::action_Shift_Right_Tabs(DocumentWidget *document) {
 
     emit_event("shift_right_by_tab");
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -2201,7 +2201,7 @@ void MainWindow::action_Lower_case(DocumentWidget *document) {
 
     emit_event("lowercase");
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -2228,7 +2228,7 @@ void MainWindow::action_Upper_case(DocumentWidget *document) {
 
     emit_event("uppercase");
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -2255,7 +2255,7 @@ void MainWindow::action_Fill_Paragraph(DocumentWidget *document) {
 
     emit_event("fill_paragraph");
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -2293,7 +2293,7 @@ void MainWindow::action_Insert_Ctrl_Code(DocumentWidget *document, const QString
 
     emit_event("insert_string", str);
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -2307,7 +2307,7 @@ void MainWindow::action_Insert_Ctrl_Code(DocumentWidget *document, const QString
  * @param document
  */
 void MainWindow::action_Insert_Ctrl_Code(DocumentWidget *document) {
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -2919,7 +2919,7 @@ void MainWindow::EndISearchEx() {
  * @param direction
  */
 void MainWindow::action_Replace_Find_Again(DocumentWidget *document, Direction direction, WrapMode wrap) {
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -2970,7 +2970,7 @@ void MainWindow::action_Replace_Again(DocumentWidget *document, Direction direct
 
     emit_event("replace_again", to_string(direction), to_string(wrap));
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -4751,11 +4751,11 @@ void MainWindow::action_Save(DocumentWidget *document) {
 
     emit_event("save");
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
-    document->SaveWindow();
+    document->saveDocument();
 }
 
 /**
@@ -4883,7 +4883,7 @@ void MainWindow::action_Save_As(DocumentWidget *document, const QString &filenam
         emit_event("save_as", filename);
     }
 
-    document->SaveWindowAs(filename, wrapped);
+    document->saveDocumentAs(filename, wrapped);
 }
 
 /**
@@ -5173,7 +5173,7 @@ void MainWindow::action_Execute_Command_Line(DocumentWidget *document) {
 
     emit_event("execute_command_line");
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -5417,7 +5417,7 @@ void MainWindow::action_Replace(DocumentWidget *document, const QString &searchS
 
     emit_event("replace", searchString, replaceString, to_string(direction), to_string(type), to_string(wrap));
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -5441,7 +5441,7 @@ void MainWindow::action_Replace(DocumentWidget *document, const QString &searchS
  */
 void MainWindow::action_Replace_Dialog(DocumentWidget *document, Direction direction, SearchType type, bool keepDialog) {
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -5524,7 +5524,7 @@ void MainWindow::action_Replace_All(DocumentWidget *document, const QString &sea
 
     emit_event("replace_all", searchString, replaceString, to_string(type));
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -5610,7 +5610,7 @@ void MainWindow::on_action_Show_Calltip_triggered() {
  */
 void MainWindow::action_Filter_Selection(DocumentWidget *document, CommandSource source) {
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -5648,7 +5648,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, const QString
 
     emit_event("filter_selection", filter);
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -5670,7 +5670,7 @@ void MainWindow::action_Execute_Command(DocumentWidget *document, const QString 
 
     emit_event("execute_command", command);
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -5687,7 +5687,7 @@ void MainWindow::action_Execute_Command(DocumentWidget *document, const QString 
  */
 void MainWindow::action_Execute_Command(DocumentWidget *document) {
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -6470,7 +6470,7 @@ bool MainWindow::ReplaceSameEx(DocumentWidget *document, TextArea *area, Directi
  */
 void MainWindow::action_Replace_Find(DocumentWidget *document, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps) {
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -6540,7 +6540,7 @@ void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QSt
 
     emit_event("replace_in_selection", searchString, replaceString, to_string(type));
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         return;
     }
 
@@ -7016,7 +7016,7 @@ bool MainWindow::DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, c
 
     if(MenuData *p = findMenuItem(name, CommandTypes::SHELL_CMDS)) {
 
-        if (p->item.output == TO_SAME_WINDOW && document->CheckReadOnly()) {
+        if (p->item.output == TO_SAME_WINDOW && document->checkReadOnly()) {
             return false;
         }
 

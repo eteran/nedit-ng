@@ -1696,7 +1696,7 @@ static std::error_code replaceFindMS(DocumentWidget *document, Arguments argumen
     auto win = MainWindow::fromDocument(document);
     Q_ASSERT(win);
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         // NOTE(eteran): previously was a silent failure
         return MacroErrorCode::ReadOnly;
     }
@@ -1727,7 +1727,7 @@ static std::error_code replaceFindSameMS(DocumentWidget *document, Arguments arg
     auto win = MainWindow::fromDocument(document);
     Q_ASSERT(win);
 
-    if (document->CheckReadOnly()) {
+    if (document->checkReadOnly()) {
         // NOTE(eteran): previously was a silent failure
         return MacroErrorCode::ReadOnly;
     }
