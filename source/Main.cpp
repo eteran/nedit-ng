@@ -367,14 +367,14 @@ Main::Main(const QStringList &args) {
         lastFile->RaiseDocument();
     }
 
-    MainWindow::CheckCloseDimEx();
+    MainWindow::CheckCloseEnableState();
 
     // If no file to edit was specified, open a window to edit "Untitled"
     if (!fileSpecified) {
-        DocumentWidget *document = MainWindow::EditNewFileEx(nullptr, geometry, iconic, langMode, QString());
+        DocumentWidget *document = MainWindow::EditNewFile(nullptr, geometry, iconic, langMode, QString());
 
         document->ReadMacroInitFileEx();
-        MainWindow::CheckCloseDimEx();
+        MainWindow::CheckCloseEnableState();
 
         if (!toDoCommand.isNull()) {
             document->DoMacro(toDoCommand, QLatin1String("-do macro"));

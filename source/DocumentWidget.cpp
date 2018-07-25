@@ -2027,11 +2027,11 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
 
     /* For large files, the comparison can take a while. If it takes too long,
        the user should be given a clue about what is happening. */
-    MainWindow::AllWindowsBusyEx(tr("Comparing externally modified %1 ...").arg(filename_));
+	MainWindow::AllWindowsBusy(tr("Comparing externally modified %1 ...").arg(filename_));
 
     // make sure that we unbusy the windows when we're done
     auto _ = gsl::finally([]() {
-        MainWindow::AllWindowsUnbusyEx();
+		MainWindow::AllWindowsUnbusy();
     });
 
     while (restLen > 0) {
@@ -2052,7 +2052,7 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
 
         // check for on-disk file format changes, but only for the first chunk
         if (bufPos == 0 && fileFormat_ != FormatOfFileEx(view::string_view(fileString, static_cast<size_t>(nRead)))) {
-            MainWindow::AllWindowsUnbusyEx();
+			MainWindow::AllWindowsUnbusy();
             return true;
         }
 
@@ -2231,7 +2231,8 @@ bool DocumentWidget::saveDocument() {
 
     // Prompt for a filename if this is an Untitled window
     if (!filenameSet_) {
-		return saveDocumentAs(QString(), false);
+		// empty string signals a prompt for filename
+		return saveDocumentAs(QString(), /*addWrap=*/false);
     }
 
     // Check for external modifications and warn the user
@@ -2265,12 +2266,12 @@ bool DocumentWidget::saveDocument() {
         return false;
     }
 
-    const bool stat = doSave();
-    if (stat) {
+	const bool status = doSave();
+	if (status) {
         RemoveBackupFile();
     }
 
-    return stat;
+	return status;
 }
 
 bool DocumentWidget::doSave() {
@@ -2317,6 +2318,7 @@ bool DocumentWidget::doSave() {
 
 		messageBox.exec();
 		if(messageBox.clickedButton() == buttonSaveAs) {
+			// empty string signals a prompt for filename
 			return saveDocumentAs(QString(), /*addWrap=*/false);
 		}
 
@@ -2374,98 +2376,15 @@ bool DocumentWidget::doSave() {
  */
 bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 
-    // NOTE(eteran): this seems a bit redundant to other code...
     if(auto win = MainWindow::fromDocument(this)) {
 
         QString fullname;
 
-        if(newName.isNull()) {
-            QFileDialog dialog(this, tr("Save File As"));
-            dialog.setFileMode(QFileDialog::AnyFile);
-            dialog.setAcceptMode(QFileDialog::AcceptSave);
-            dialog.setDirectory(path_);
-            dialog.setOptions(QFileDialog::DontUseNativeDialog | QFileDialog::DontUseCustomDirectoryIcons);
-
-            if(auto layout = qobject_cast<QGridLayout*>(dialog.layout())) {
-                if(layout->rowCount() == 4 && layout->columnCount() == 3) {
-                    auto boxLayout = new QBoxLayout(QBoxLayout::LeftToRight);
-
-                    auto unixCheck = new QRadioButton(tr("&Unix"));
-                    auto dosCheck  = new QRadioButton(tr("D&OS"));
-                    auto macCheck  = new QRadioButton(tr("&Macintosh"));
-
-                    switch(fileFormat_) {
-                    case FileFormats::Dos:
-                        dosCheck->setChecked(true);
-                        break;
-                    case FileFormats::Mac:
-                        macCheck->setChecked(true);
-                        break;
-                    case FileFormats::Unix:
-                        unixCheck->setChecked(true);
-                        break;
-                    }
-
-                    auto group = new QButtonGroup();
-                    group->addButton(unixCheck);
-                    group->addButton(dosCheck);
-                    group->addButton(macCheck);
-
-                    boxLayout->addWidget(unixCheck);
-                    boxLayout->addWidget(dosCheck);
-                    boxLayout->addWidget(macCheck);
-
-                    int row = layout->rowCount();
-
-                    layout->addWidget(new QLabel(tr("Format: ")), row, 0, 1, 1);
-                    layout->addLayout(boxLayout, row, 1, 1, 1, Qt::AlignLeft);
-
-                    ++row;
-
-                    auto wrapCheck = new QCheckBox(tr("&Add line breaks where wrapped"));
-                    if(addWrap) {
-                        wrapCheck->setChecked(true);
-                    }
-
-                    connect(wrapCheck, &QCheckBox::toggled, this, [wrapCheck, this](bool checked) {
-                        if(checked) {
-                            int ret = QMessageBox::information(
-                                        this,
-                                        tr("Add Wrap"),
-                                        tr("This operation adds permanent line breaks to match the automatic wrapping done by the Continuous Wrap mode Preferences Option.\n\n"
-                                           "*** This Option is Irreversable ***\n\n"
-                                           "Once newlines are inserted, continuous wrapping will no longer work automatically on these lines"),
-                                        QMessageBox::Ok | QMessageBox::Cancel);
-
-                            if(ret != QMessageBox::Ok) {
-                                wrapCheck->setChecked(false);
-                            }
-                        }
-                    });
-
-
-                    if (wrapMode_ == WrapStyle::Continuous) {
-                        layout->addWidget(wrapCheck, row, 1, 1, 1);
-                    }
-
-                    if(dialog.exec()) {
-                        if(dosCheck->isChecked()) {
-                            fileFormat_ = FileFormats::Dos;
-                        } else if(macCheck->isChecked()) {
-                            fileFormat_ = FileFormats::Mac;
-                        } else if(unixCheck->isChecked()) {
-                            fileFormat_ = FileFormats::Unix;
-                        }
-
-                        addWrap = wrapCheck->isChecked();
-						QStringList selectedFiles = dialog.selectedFiles();
-                        fullname = selectedFiles[0];
-                    } else {
-                        return false;
-                    }
-
-                }
-            }
+		if(newName.isNull()) {
+			fullname = MainWindow::PromptForNewFile(this, &fileFormat_, &addWrap);
+			if(fullname.isNull()) {
+				return false;
+			}
         } else {
             fullname = newName;
         }
@@ -2888,7 +2807,7 @@ void DocumentWidget::CloseDocument() {
 
     // Close of window running a macro may have been disabled.
     // NOTE(eteran): this may be redundant...
-    MainWindow::CheckCloseDimEx();
+	MainWindow::CheckCloseEnableState();
 
     // if we deleted the last tab, then we can close the window too
     if(win->TabCount() == 0) {
@@ -2947,7 +2866,7 @@ DocumentWidget *DocumentWidget::open(const QString &fullpath) {
                 Preferences::GetPrefOpenInTab(),
                 false);
 
-    MainWindow::CheckCloseDimEx();
+	MainWindow::CheckCloseEnableState();
 
     return document;
 }
@@ -3416,9 +3335,9 @@ void DocumentWidget::macroBannerTimeoutProc() {
 
     // Create message
     if (cCancel.isEmpty()) {
-        SetModeMessageEx(tr("Macro Command in Progress"));
+		SetModeMessage(tr("Macro Command in Progress"));
     } else {
-        SetModeMessageEx(tr("Macro Command in Progress -- Press %1 to Cancel").arg(cCancel));
+		SetModeMessage(tr("Macro Command in Progress -- Press %1 to Cancel").arg(cCancel));
     }
 }
 
@@ -3439,16 +3358,16 @@ void DocumentWidget::shellBannerTimeoutProc() {
 
     // Create message
     if (cCancel.isEmpty()) {
-        SetModeMessageEx(tr("Shell Command in Progress"));
+		SetModeMessage(tr("Shell Command in Progress"));
     } else {
-        SetModeMessageEx(tr("Shell Command in Progress -- Press %1 to Cancel").arg(cCancel));
+		SetModeMessage(tr("Shell Command in Progress -- Press %1 to Cancel").arg(cCancel));
     }
 }
 
 void DocumentWidget::actionClose(CloseMode mode) {
 
     CloseFileAndWindow(mode);
-    MainWindow::CheckCloseDimEx();
+	MainWindow::CheckCloseEnableState();
 }
 
 bool DocumentWidget::includeFile(const QString &name) {
@@ -4326,7 +4245,7 @@ bool DocumentWidget::modeMessageDisplayed() const {
 ** Display a special message in the stats line (show the stats line if it
 ** is not currently shown).
 */
-void DocumentWidget::SetModeMessageEx(const QString &message) {
+void DocumentWidget::SetModeMessage(const QString &message) {
 
     if(message.isNull()) {
         return;
@@ -4863,7 +4782,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
         right = TextCursor();
         break;
     case TO_NEW_WINDOW:
-        if(DocumentWidget *document = MainWindow::EditNewFileEx(
+		if(DocumentWidget *document = MainWindow::EditNewFile(
                     Preferences::GetPrefOpenInTab() ? inWindow : nullptr,
                     QString(),
                     false,
@@ -4874,7 +4793,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
             outWidget = document->firstPane();
             left      = TextCursor();
             right     = TextCursor();
-            MainWindow::CheckCloseDimEx();
+			MainWindow::CheckCloseEnableState();
         }
         break;
     case TO_SAME_WINDOW:
@@ -5057,15 +4976,15 @@ void DocumentWidget::BeginLearnEx() {
 
 	if (cFinish.isEmpty()) {
 		if (cCancel.isEmpty()) {
-            SetModeMessageEx(tr("Learn Mode -- Use menu to finish or cancel"));
+			SetModeMessage(tr("Learn Mode -- Use menu to finish or cancel"));
 		} else {
-            SetModeMessageEx(tr("Learn Mode -- Use menu to finish, press %1 to cancel").arg(cCancel));
+			SetModeMessage(tr("Learn Mode -- Use menu to finish, press %1 to cancel").arg(cCancel));
 		}
 	} else {
 		if (cCancel.isEmpty()) {
-            SetModeMessageEx(tr("Learn Mode -- Press %1 to finish, use menu to cancel").arg(cFinish));
+			SetModeMessage(tr("Learn Mode -- Press %1 to finish, use menu to cancel").arg(cFinish));
 		} else {
-            SetModeMessageEx(tr("Learn Mode -- Press %1 to finish, %2 to cancel").arg(cFinish, cCancel));
+			SetModeMessage(tr("Learn Mode -- Press %1 to finish, %2 to cancel").arg(cFinish, cCancel));
 		}
 	}
 }
@@ -6053,8 +5972,8 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
         p.underline     = false;
         p.highlightName = pat->name;
         p.styleName     = pat->style;
-        p.colorName     = Highlight::FgColorOfNamedStyleEx   (pat->style);
-        p.bgColorName   = Highlight::BgColorOfNamedStyleEx   (pat->style);
+        p.colorName     = Highlight::FgColorOfNamedStyle   (pat->style);
+        p.bgColorName   = Highlight::BgColorOfNamedStyle   (pat->style);
         p.isBold        = Highlight::FontOfNamedStyleIsBold  (pat->style);
         p.isItalic      = Highlight::FontOfNamedStyleIsItalic(pat->style);
 

@@ -118,14 +118,14 @@ void NeditServer::newConnection() {
 
             const int tabbed = -1;
 
-            MainWindow::EditNewFileEx(
+            MainWindow::EditNewFile(
                         findWindowOnDesktopEx(tabbed, currentDesktop),
                         QString(),
                         false,
                         QString(),
                         QString());
 
-            MainWindow::CheckCloseDimEx();
+            MainWindow::CheckCloseEnableState();
         } else {
             (*it)->RaiseDocument();
         }
@@ -167,7 +167,7 @@ void NeditServer::newConnection() {
             if (doCommand.isEmpty()) {
                 if (it == documents.end()) {
 
-                    MainWindow::EditNewFileEx(
+                    MainWindow::EditNewFile(
                                 findWindowOnDesktopEx(tabbed, currentDesktop),
                                 QString(),
                                 iconicFlag,
@@ -201,7 +201,7 @@ void NeditServer::newConnection() {
                 }
             }
 
-            MainWindow::CheckCloseDimEx();
+            MainWindow::CheckCloseEnableState();
             return;
         }
 
@@ -300,6 +300,6 @@ void NeditServer::newConnection() {
         } else {
             lastFile->RaiseDocumentWindow();
         }
-        MainWindow::CheckCloseDimEx();
+        MainWindow::CheckCloseEnableState();
     }
 }

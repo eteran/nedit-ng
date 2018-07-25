@@ -79,8 +79,7 @@ public:
     int updateGutterWidth();
     int updateLineNumDisp();
     QString PromptForExistingFileEx(const QString &path, const QString &prompt);
-    QString PromptForExistingFileEx(const QString &prompt);
-    QString PromptForNewFileEx(DocumentWidget *document, const QString &prompt, FileFormats *fileFormat, bool *addWrap);
+    QString PromptForExistingFileEx(const QString &prompt);	
     size_t TabCount() const;
     std::vector<DocumentWidget *> openDocuments() const;
     void BeginISearchEx(Direction direction);
@@ -115,17 +114,18 @@ public:
     void UpdateWindowTitle(DocumentWidget *document);
 
 public:
-    static bool CloseAllFilesAndWindowsEx();
-    static DocumentWidget *EditNewFileEx(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode, const QString &defaultPath);
+	static bool CloseAllFilesAndWindows();
+	static DocumentWidget *EditNewFile(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode, const QString &defaultPath);
     static DocumentWidget *FindWindowWithFile(const QString &filename, const QString &path);
+	static QString PromptForNewFile(DocumentWidget *document, FileFormats *format, bool *addWrap);
     static MainWindow *firstWindow();
     static MainWindow *fromDocument(const DocumentWidget *document);
     static QString UniqueUntitledNameEx();
     static std::vector<MainWindow *> allWindows();
     static void AddToPrevOpenMenu(const QString &filename);
-    static void AllWindowsBusyEx(const QString &message);
-    static void AllWindowsUnbusyEx();
-    static void CheckCloseDimEx();
+	static void AllWindowsBusy(const QString &message);
+	static void AllWindowsUnbusy();
+	static void CheckCloseEnableState();
     static void invalidatePrevOpenMenus();
     static void ReadNEditDB();
     static void RenameHighlightPattern(const QString &oldName, const QString &newName);

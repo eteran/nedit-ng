@@ -69,11 +69,9 @@ void Preferences::RestoreNEditPrefs() {
 
     Settings::loadPreferences();
 
-    /* Do further parsing on resource types which RestorePreferences does
-       not understand and reads as strings, to put them in the final form
-       in which nedit stores and uses.  If the preferences file was
-       written by an older version of NEdit, update regular expressions in
-       highlight patterns to quote braces and use & instead of \0 */
+	/* Do further parsing on resource types which RestorePreferences does
+	 * not understand and reads as strings, to put them in the final form
+	 * in which nedit stores and uses. */
     translatePrefFormats(NEDIT_VERSION);
 }
 
@@ -1192,17 +1190,10 @@ QString Preferences::WriteLanguageModesString() {
 /*
 ** Many of of NEdit's preferences are much more complicated than just simple
 ** integers or strings.  These are read as strings, but must be parsed and
-** translated into something meaningful.  This routine does the translation,
-** and, in most cases, frees the original string, which is no longer useful.
+** translated into something meaningful.  This routine does the translation.
 **
 ** In addition this function covers settings that, while simple, require
 ** additional steps before they can be published.
-**
-** The argument convertOld attempts a conversion from pre 5.1 format .nedit
-** files (which means patterns and macros may contain regular expressions
-** which are of the older syntax where braces were not quoted, and \0 was a
-** legal substitution character).  Macros, so far can not be automatically
-** converted, unfortunately.
 */
 void Preferences::translatePrefFormats(uint32_t fileVer) {
 
@@ -1279,8 +1270,7 @@ QStringList Preferences::readExtensionList(Input &in) {
 }
 
 /*
-**  This function passes up a pointer to the static name of the default
-**  shell, currently defined as the user's login shell.
+**  This function returns the user's login shell.
 **  In case of errors, the fallback of "sh" will be returned.
 */
 QString Preferences::getDefaultShell() {

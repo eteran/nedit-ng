@@ -288,7 +288,7 @@ TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const
 	   at endParse is complete, unless patterns can't cross line boundaries,
 	   in which case the end of the line is fine */
     if (endParse == 0) {
-        return TextCursor();
+		return TextCursor();
     }
 
     if (can_cross_line_boundaries(contextRequirements)) {
@@ -340,8 +340,8 @@ TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const
         modStart = styleBuf->primary.start;
         modEnd   = styleBuf->primary.end;
 	} else {
-        modStart = TextCursor();
-        modEnd   = TextCursor();
+		modStart = styleBuf->BufStartOfBuffer();
+		modEnd   = styleBuf->BufStartOfBuffer();
 	}
 
 	/* Re-parse the areas before the modification with pass 2 patterns, from
@@ -833,7 +833,7 @@ TextCursor Highlight::lastModified(const std::shared_ptr<TextBuffer> &buffer) {
 ** Get the character before position "pos" in buffer "buf"
 */
 int Highlight::getPrevChar(TextBuffer *buf, TextCursor pos) {
-    return pos == 0 ? -1 : buf->BufGetCharacter(pos - 1);
+	return pos == buf->BufStartOfBuffer() ? -1 : buf->BufGetCharacter(pos - 1);
 }
 
 /*
@@ -1004,12 +1004,15 @@ int Highlight::findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<Wi
 ** thinking about it).
 */
 TextCursor Highlight::backwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos) {
+
+	const TextCursor begin = buf->BufStartOfBuffer();
+
     if (context.nLines == 0)
-        return std::max(buf->BufStartOfBuffer(), fromPos - context.nChars);
+		return std::max(begin, fromPos - context.nChars);
     else if (context.nChars == 0)
-        return std::max(buf->BufStartOfBuffer(), buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1);
+		return std::max(begin, buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1);
 	else
-        return std::max(buf->BufStartOfBuffer(), std::min(std::max(buf->BufStartOfBuffer(), buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1), fromPos - context.nChars));
+		return std::max(begin, std::min(std::max(begin, buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1), fromPos - context.nChars));
 }
 
 /*
@@ -1021,12 +1024,15 @@ TextCursor Highlight::backwardOneContext(TextBuffer *buf, const ReparseContext &
 ** backwardOneContext).
 */
 TextCursor Highlight::forwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos) {
+
+	const TextCursor end = buf->BufEndOfBuffer();
+
     if (context.nLines == 0)
-        return std::min(buf->BufEndOfBuffer(), fromPos + context.nChars);
+		return std::min(end, fromPos + context.nChars);
     else if (context.nChars == 0)
-        return std::min(buf->BufEndOfBuffer(), buf->BufCountForwardNLines(fromPos, context.nLines));
+		return std::min(end, buf->BufCountForwardNLines(fromPos, context.nLines));
 	else
-        return std::min(buf->BufEndOfBuffer(), std::max(buf->BufCountForwardNLines(fromPos, context.nLines), fromPos + context.nChars));
+		return std::min(end, std::max(buf->BufCountForwardNLines(fromPos, context.nLines), fromPos + context.nChars));
 }
 
 /*
@@ -1278,7 +1284,7 @@ bool Highlight::LoadHighlightString(const QString &string) {
     Q_FOREVER {
 
         // Read each pattern set, abort on error
-        std::unique_ptr<PatternSet> patSet = readPatternSet(in);
+		boost::optional<PatternSet> patSet = readPatternSet(in);
         if(!patSet) {
             return false;
         }
@@ -1289,9 +1295,9 @@ bool Highlight::LoadHighlightString(const QString &string) {
         });
 
         if(it != PatternSets.end()) {
-            *it = *patSet;
+			*it = std::move(*patSet);
         } else {
-            PatternSets.push_back(*patSet);
+			PatternSets.push_back(std::move(*patSet));
         }
 
         // if the string ends here, we're done
@@ -1305,7 +1311,7 @@ bool Highlight::LoadHighlightString(const QString &string) {
 /*
 ** Create a string in the correct format for the highlightPatterns resource,
 ** containing all of the highlight pattern information from the stored
-** highlight pattern list (PatternSets) for this NEdit session.
+** highlight pattern list (PatternSets) for this session.
 */
 QString Highlight::WriteHighlightString() {
 
@@ -1366,7 +1372,7 @@ bool Highlight::FontOfNamedStyleIsItalic(const QString &styleName) {
 ** called with a valid styleName (call NamedStyleExists to find out whether
 ** styleName is valid).
 */
-QString Highlight::FgColorOfNamedStyleEx(const QString &styleName) {
+QString Highlight::FgColorOfNamedStyle(const QString &styleName) {
     const size_t styleNo = IndexOfNamedStyle(styleName);
 
     if (styleNo == STYLE_NOT_FOUND) {
@@ -1379,7 +1385,7 @@ QString Highlight::FgColorOfNamedStyleEx(const QString &styleName) {
 /*
 ** Find the background color associated with a named style.
 */
-QString Highlight::BgColorOfNamedStyleEx(const QString &styleName) {
+QString Highlight::BgColorOfNamedStyle(const QString &styleName) {
     const size_t styleNo = IndexOfNamedStyle(styleName);
 
     if (styleNo == STYLE_NOT_FOUND) {
@@ -1404,7 +1410,7 @@ bool Highlight::NamedStyleExists(const QString &styleName) {
 PatternSet *Highlight::FindPatternSet(const QString &languageMode) {
 
     for(PatternSet &patternSet : PatternSets) {
-        if (languageMode == patternSet.languageMode) {
+		if (patternSet.languageMode == languageMode) {
             return &patternSet;
         }
     }
@@ -1467,7 +1473,7 @@ QString Highlight::createPatternsString(const PatternSet *patternSet, const QStr
 ** Read in a pattern set character string, and advance *inPtr beyond it.
 ** Returns nullptr and outputs an error to stderr on failure.
 */
-std::unique_ptr<PatternSet> Highlight::readPatternSet(Input &in) {
+boost::optional<PatternSet> Highlight::readPatternSet(Input &in) {
 
     struct HighlightError {
         QString message;
@@ -1479,12 +1485,12 @@ std::unique_ptr<PatternSet> Highlight::readPatternSet(Input &in) {
         // remove leading whitespace
         in.skipWhitespaceNL();
 
-        auto patSet = std::make_unique<PatternSet>();
+		PatternSet patSet;
 
         // read language mode field
-        patSet->languageMode = Preferences::ReadSymbolicField(in);
+		patSet.languageMode = Preferences::ReadSymbolicField(in);
 
-        if (patSet->languageMode.isNull()) {
+		if (patSet.languageMode.isNull()) {
             Raise<HighlightError>(tr("language mode must be specified"));
         }
 
@@ -1495,7 +1501,7 @@ std::unique_ptr<PatternSet> Highlight::readPatternSet(Input &in) {
         /* look for "Default" keyword, and if it's there, return the default
            pattern set */
         if (in.match(QLatin1String("Default"))) {
-            std::unique_ptr<PatternSet> retPatSet = readDefaultPatternSet(patSet->languageMode);
+			boost::optional<PatternSet> retPatSet = readDefaultPatternSet(patSet.languageMode);
             if(!retPatSet) {
                 Raise<HighlightError>(tr("No default pattern set"));
             }
@@ -1503,7 +1509,7 @@ std::unique_ptr<PatternSet> Highlight::readPatternSet(Input &in) {
         }
 
         // read line context field
-        if (!Preferences::ReadNumericField(in, &patSet->lineContext)) {
+		if (!Preferences::ReadNumericField(in, &patSet.lineContext)) {
             Raise<HighlightError>(tr("unreadable line context field"));
         }
 
@@ -1512,7 +1518,7 @@ std::unique_ptr<PatternSet> Highlight::readPatternSet(Input &in) {
         }
 
         // read character context field
-        if (!Preferences::ReadNumericField(in, &patSet->charContext)) {
+		if (!Preferences::ReadNumericField(in, &patSet.charContext)) {
             Raise<HighlightError>(tr("unreadable character context field"));
         }
 
@@ -1522,7 +1528,7 @@ std::unique_ptr<PatternSet> Highlight::readPatternSet(Input &in) {
             Raise<HighlightError>(errMsg);
         }
 
-        patSet->patterns = std::move(*patterns);
+		patSet.patterns = std::move(*patterns);
 
         // pattern set was read correctly, make an allocated copy to return
         return patSet;
@@ -1534,7 +1540,7 @@ std::unique_ptr<PatternSet> Highlight::readPatternSet(Input &in) {
                     tr("highlight pattern"),
                     error.message);
 
-        return nullptr;
+		return boost::none;
     }
 }
 
@@ -1674,7 +1680,7 @@ bool Highlight::readHighlightPattern(Input &in, QString *errMsg, HighlightPatter
  * @param langModeName
  * @return
  */
-std::unique_ptr<PatternSet> Highlight::readDefaultPatternSet(QByteArray &patternData, const QString &langModeName) {
+boost::optional<PatternSet> Highlight::readDefaultPatternSet(QByteArray &patternData, const QString &langModeName) {
 
     auto defaultPattern = QString::fromLatin1(patternData);
     auto compare        = QString(QLatin1String("%1:")).arg(langModeName);
@@ -1684,15 +1690,14 @@ std::unique_ptr<PatternSet> Highlight::readDefaultPatternSet(QByteArray &pattern
         return readPatternSet(in);
     }
 
-    return nullptr;
+	return boost::none;
 }
 
 /*
 ** Given a language mode name, determine if there is a default (built-in)
-** pattern set available for that language mode, and if so, read it and
-** return a new allocated copy of it.
+** pattern set available for that language mode, and if so, return it
 */
-std::unique_ptr<PatternSet> Highlight::readDefaultPatternSet(const QString &langModeName) {
+boost::optional<PatternSet> Highlight::readDefaultPatternSet(const QString &langModeName) {
     for(int i = 0; i < 28; ++i) {
 
         auto name = QString(QLatin1String("res/DefaultPatternSet%1.txt")).arg(i, 2, 10, QLatin1Char('0'));
@@ -1700,13 +1705,13 @@ std::unique_ptr<PatternSet> Highlight::readDefaultPatternSet(const QString &lang
         QByteArray data = loadResource(name);
 
         if(!data.isNull()) {
-            if(std::unique_ptr<PatternSet> patternSet = readDefaultPatternSet(data, langModeName)) {
+			if(boost::optional<PatternSet> patternSet = readDefaultPatternSet(data, langModeName)) {
                 return patternSet;
             }
         }
     }
 
-    return nullptr;
+	return boost::none;
 }
 
 /*
@@ -1714,7 +1719,7 @@ std::unique_ptr<PatternSet> Highlight::readDefaultPatternSet(const QString &lang
 */
 bool Highlight::isDefaultPatternSet(const PatternSet &patternSet) {
 
-    std::unique_ptr<PatternSet> defaultPatSet = readDefaultPatternSet(patternSet.languageMode);
+	boost::optional<PatternSet> defaultPatSet = readDefaultPatternSet(patternSet.languageMode);
     if(!defaultPatSet) {
         return false;
     }

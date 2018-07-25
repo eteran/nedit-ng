@@ -1,7 +1,7 @@
 
 #include "PatternSet.h"
 
-// NOTE(eteran): comparisons do NOT include the "languageMode"
+// comparisons do NOT include the "languageMode"
 
 /**
  * @brief PatternSet::operator !=

@@ -255,7 +255,7 @@ private:
     void ReplayEx();
     void RevertToSaved();
     void SaveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, view::string_view deletedText);
-    void SetModeMessageEx(const QString &message);
+	void SetModeMessage(const QString &message);
     void SetWindowModified(bool modified);
     void trimUndoList(size_t maxLength);
     void Undo();

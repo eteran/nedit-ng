@@ -246,7 +246,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 
     ui.action_Statistics_Line->setChecked(Preferences::GetPrefStatsLine());
 
-    MainWindow::CheckCloseDimEx();
+	MainWindow::CheckCloseEnableState();
 
     const std::vector<MainWindow *> windows = MainWindow::allWindows();
     const bool enabled = windows.size() > 1;
@@ -614,7 +614,7 @@ void MainWindow::setupPrevOpenMenuActions() {
                 }
             }
 
-            MainWindow::CheckCloseDimEx();
+			MainWindow::CheckCloseEnableState();
         });
 
         ui.action_Open_Previous->setMenu(prevMenu);
@@ -743,8 +743,8 @@ void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
 
     QString path = document->path_;
 
-    MainWindow::EditNewFileEx(openInTab ? this : nullptr, QString(), /*iconic=*/false, QString(), path);
-    MainWindow::CheckCloseDimEx();
+	MainWindow::EditNewFile(openInTab ? this : nullptr, QString(), /*iconic=*/false, QString(), path);
+	MainWindow::CheckCloseEnableState();
 }
 
 /**
@@ -780,7 +780,7 @@ void MainWindow::action_Open(DocumentWidget *document, const QString &filename) 
 
     emit_event("open", filename);
     document->open(filename);
-    MainWindow::CheckCloseDimEx();
+	MainWindow::CheckCloseEnableState();
 }
 
 /**
@@ -1213,11 +1213,11 @@ std::vector<DocumentWidget *> MainWindow::openDocuments() const {
 }
 
 /*
-** Make sure the close menu item is dimmed appropriately for the current
-** set of windows.  It should be dim only for the last Untitled, unmodified,
-** editor window, and sensitive otherwise.
+** Make sure the close menu item is enabled/disabled appropriately for the
+** current set of windows.  It should be disabled only for the last Untitled,
+** unmodified, editor window, and enabled otherwise.
 */
-void MainWindow::CheckCloseDimEx() {
+void MainWindow::CheckCloseEnableState() {
 
     const std::vector<MainWindow *> windows = MainWindow::allWindows();
 
@@ -1955,7 +1955,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
             if(DocumentWidget *document = documentAt(static_cast<size_t>(index))) {
 
                 if(selected == newTab) {
-                    MainWindow::EditNewFileEx(this, QString(), /*iconic=*/false, QString(), document->path_);
+					MainWindow::EditNewFile(this, QString(), /*iconic=*/false, QString(), document->path_);
                 } else if(selected == closeTab) {
                     document->actionClose(CloseMode::Prompt);
                 } else if(selected == detachTab) {
@@ -1988,7 +1988,7 @@ void MainWindow::action_Open_Selected(DocumentWidget *document) {
         QApplication::beep();
     }
 
-    MainWindow::CheckCloseDimEx();
+	MainWindow::CheckCloseEnableState();
 }
 
 /**
@@ -2064,8 +2064,8 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
     }
 
     // OK, we've got some things to try to open, let's go for it!
-    for (int i = 0; i < fileList.size(); i++) {
-        QFileInfo file = fileList.at(i);
+	for (const QFileInfo &file : fileList) {
+
         QString pathname;
         QString filename;
         if (!ParseFilenameEx(file.absoluteFilePath(), &filename, &pathname) != 0) {
@@ -2084,7 +2084,7 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
         }
     }
 
-    MainWindow::CheckCloseDimEx();
+	MainWindow::CheckCloseEnableState();
 }
 
 /**
@@ -4629,7 +4629,7 @@ void MainWindow::action_Last_Document() {
 }
 
 /**
- * @brief MainWindow::EditNewFileEx
+ * @brief MainWindow::EditNewFile
  * @param window
  * @param geometry
  * @param iconic
@@ -4637,7 +4637,7 @@ void MainWindow::action_Last_Document() {
  * @param defaultPath
  * @return
  */
-DocumentWidget *MainWindow::EditNewFileEx(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode, const QString &defaultPath) {
+DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode, const QString &defaultPath) {
 
     DocumentWidget *document;
 
@@ -4660,7 +4660,7 @@ DocumentWidget *MainWindow::EditNewFileEx(MainWindow *window, const QString &geo
         }
     }
 
-    assert(window);
+	Q_ASSERT(window);
 
     document->filename_ = name;
     document->path_     = !defaultPath.isEmpty() ? defaultPath : GetCurrentDirEx();
@@ -4694,10 +4694,10 @@ DocumentWidget *MainWindow::EditNewFileEx(MainWindow *window, const QString &geo
 }
 
 /**
- * @brief MainWindow::AllWindowsBusyEx
+ * @brief MainWindow::AllWindowsBusy
  * @param message
  */
-void MainWindow::AllWindowsBusyEx(const QString &message) {
+void MainWindow::AllWindowsBusy(const QString &message) {
 
     std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
@@ -4720,7 +4720,7 @@ void MainWindow::AllWindowsBusyEx(const QString &message) {
 
         // Show the mode message when we've been busy for more than a second
         for(DocumentWidget *document : documents) {
-            document->SetModeMessageEx(message);
+			document->SetModeMessage(message);
         }
         modeMessageSet = true;
     }
@@ -4729,9 +4729,9 @@ void MainWindow::AllWindowsBusyEx(const QString &message) {
 }
 
 /**
- * @brief MainWindow::AllWindowsUnbusyEx
+ * @brief MainWindow::AllWindowsUnbusy
  */
-void MainWindow::AllWindowsUnbusyEx() {
+void MainWindow::AllWindowsUnbusy() {
 
     for(DocumentWidget *document : DocumentWidget::allDocuments()) {
         document->ClearModeMessage();
@@ -4776,13 +4776,13 @@ void MainWindow::on_action_Save_triggered() {
  * @param addWrap
  * @return
  */
-QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &prompt, FileFormats *fileFormat, bool *addWrap) {
+QString MainWindow::PromptForNewFile(DocumentWidget *document, FileFormats *format, bool *addWrap) {
 
-    *fileFormat = document->fileFormat_;
+	Q_ASSERT(format);
+	Q_ASSERT(addWrap);
 
     QString filename;
-
-    QFileDialog dialog(this, prompt);
+	QFileDialog dialog(document, tr("Save File As"));
 
     dialog.setFileMode(QFileDialog::AnyFile);
     dialog.setAcceptMode(QFileDialog::AcceptSave);
@@ -4830,9 +4830,9 @@ QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &
                 wrapCheck->setChecked(true);
             }
 
-            QObject::connect(wrapCheck, &QCheckBox::toggled, this, [wrapCheck, this](bool checked) {
+			QObject::connect(wrapCheck, &QCheckBox::toggled, document, [wrapCheck, document](bool checked) {
                 if(checked) {
-                    int ret = QMessageBox::information(this, tr("Add Wrap"),
+					int ret = QMessageBox::information(document, tr("Add Wrap"),
                         tr("This operation adds permanent line breaks to match the automatic wrapping done by the Continuous Wrap mode Preferences Option.\n\n"
                            "*** This Option is Irreversable ***\n\n"
                            "Once newlines are inserted, continuous wrapping will no longer work automatically on these lines"),
@@ -4858,7 +4858,9 @@ QString MainWindow::PromptForNewFileEx(DocumentWidget *document, const QString &
                     document->fileFormat_ = FileFormats::Unix;
                 }
 
-                *addWrap = wrapCheck->isChecked();
+				*addWrap    = wrapCheck->isChecked();
+				*format = document->fileFormat_;
+
                 const QStringList files = dialog.selectedFiles();
                 filename = files[0];
             }
@@ -4894,7 +4896,7 @@ void MainWindow::action_Save_As(DocumentWidget *document) {
     bool addWrap = false;
     FileFormats fileFormat;
 
-    QString fullname = PromptForNewFileEx(document, tr("Save File As"), &fileFormat, &addWrap);
+	QString fullname = PromptForNewFile(document, &fileFormat, &addWrap);
     if (fullname.isNull()) {
         return;
     }
@@ -4964,8 +4966,8 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
  */
 void MainWindow::action_New_Window(DocumentWidget *document) {
     emit_event("new_window");
-    MainWindow::EditNewFileEx(Preferences::GetPrefOpenInTab() ? nullptr : this, QString(), /*iconic=*/false, QString(), document->path_);
-    MainWindow::CheckCloseDimEx();
+	MainWindow::EditNewFile(Preferences::GetPrefOpenInTab() ? nullptr : this, QString(), /*iconic=*/false, QString(), document->path_);
+	MainWindow::CheckCloseEnableState();
 }
 
 /**
@@ -5040,7 +5042,7 @@ void MainWindow::action_Exit(DocumentWidget *document) {
     }
 
     // Close all files and exit when the last one is closed
-    if (MainWindow::CloseAllFilesAndWindowsEx()) {
+	if (MainWindow::CloseAllFilesAndWindows()) {
         QApplication::quit();
     }
 }
@@ -5239,7 +5241,7 @@ void MainWindow::on_action_Cancel_Learn_triggered() {
 /*
 ** Close all files and windows, leaving one untitled window
 */
-bool MainWindow::CloseAllFilesAndWindowsEx() {
+bool MainWindow::CloseAllFilesAndWindows() {
 
     for(MainWindow *window : MainWindow::allWindows()) {
         if (!window->CloseAllDocumentsInWindow()) {

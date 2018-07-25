@@ -4069,7 +4069,7 @@ static std::error_code incSearchLineMV(DocumentWidget *document, Arguments argum
         return MacroErrorCode::TooManyArguments;
     }
 
-    *result = make_value(MainWindow::fromDocument(document)->showISearchLine_ ? 1 : 0);
+	*result = make_value(MainWindow::fromDocument(document)->GetIncrementalSearchLineMS() ? 1 : 0);
     return MacroErrorCode::Success;
 }
 
@@ -4079,7 +4079,7 @@ static std::error_code showLineNumbersMV(DocumentWidget *document, Arguments arg
         return MacroErrorCode::TooManyArguments;
     }
 
-    *result = make_value(MainWindow::fromDocument(document)->showLineNumbers_ ? 1 : 0);
+	*result = make_value(MainWindow::fromDocument(document)->GetShowLineNumbers() ? 1 : 0);
     return MacroErrorCode::Success;
 }
 
@@ -5110,7 +5110,7 @@ static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *docu
     }
 
     // insert color name
-    DV = make_value(Highlight::FgColorOfNamedStyleEx(styleName));
+    DV = make_value(Highlight::FgColorOfNamedStyle(styleName));
     if (!ArrayInsert(result, "color", &DV)) {
         return MacroErrorCode::InsertFailed;
     }
@@ -5128,7 +5128,7 @@ static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *docu
     }
 
     // Prepare array element for background color name
-    DV = make_value(Highlight::BgColorOfNamedStyleEx(styleName));
+    DV = make_value(Highlight::BgColorOfNamedStyle(styleName));
     if (!ArrayInsert(result, "background", &DV)) {
         return MacroErrorCode::InsertFailed;
     }
