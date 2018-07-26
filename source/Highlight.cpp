@@ -1068,38 +1068,38 @@ HighlightData *Highlight::patternOfStyle(HighlightData *patterns, int style) {
 
 /**
  * @brief Highlight::indexOfNamedPattern
- * @param patList
- * @param patName
+ * @param patterns
+ * @param name
  * @return
  */
-int Highlight::indexOfNamedPattern(const gsl::span<HighlightPattern> &patterns, const QString &name) {
+size_t Highlight::indexOfNamedPattern(const std::vector<HighlightPattern> &patterns, const QString &name) {
 
     if(name.isNull()) {
-        return -1;
+		return InvalidIndex;
 	}
 	
-    for (int i = 0; i < patterns.size(); ++i) {
+	for (size_t i = 0; i < patterns.size(); ++i) {
         if (patterns[i].name == name) {
-            return i;
+			return i;
 		}
 	}
 	
-    return -1;
+	return InvalidIndex;
 }
 
 /**
  * @brief Highlight::findTopLevelParentIndex
- * @param patList
+ * @param patterns
  * @param index
  * @return
  */
-int Highlight::findTopLevelParentIndex(const gsl::span<HighlightPattern> &patterns, int index) {
+size_t Highlight::findTopLevelParentIndex(const std::vector<HighlightPattern> &patterns, size_t index) {
 
-    int topIndex = index;
+	size_t topIndex = index;
     while (!patterns[topIndex].subPatternOf.isNull()) {
         topIndex = indexOfNamedPattern(patterns, patterns[topIndex].subPatternOf);
         if (index == topIndex) {
-            return -1; // amai: circular dependency ?!
+			return InvalidIndex; // amai: circular dependency ?!
         }
     }
     return topIndex;

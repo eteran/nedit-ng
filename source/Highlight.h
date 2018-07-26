@@ -34,6 +34,8 @@ enum {
 	COLOR_ONLY               = 4
 };
 
+constexpr auto InvalidIndex = static_cast<size_t>(-1);
+
 // How much re-parsing to do when an unfinished style is encountered
 constexpr int PASS_2_REPARSE_CHUNK_SIZE = 1000;
 
@@ -68,9 +70,9 @@ public:
     static bool readHighlightPattern(Input &in, QString *errMsg, HighlightPattern *pattern);
     static HighlightData *patternOfStyle(HighlightData *patterns, int style);
     static int findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlightData> &highlightData, TextCursor *pos);
-    static int findTopLevelParentIndex(const gsl::span<HighlightPattern> &patterns, int index);
-    static int getPrevChar(TextBuffer *buf, TextCursor pos);
-	static int indexOfNamedPattern(const gsl::span<HighlightPattern> &patterns, const QString &name);
+	static size_t findTopLevelParentIndex(const std::vector<HighlightPattern> &patterns, size_t index);
+	static size_t indexOfNamedPattern(const std::vector<HighlightPattern> &patterns, const QString &name);
+	static int getPrevChar(TextBuffer *buf, TextCursor pos);
     static PatternSet *FindPatternSet(const QString &languageMode);
 	static QString BgColorOfNamedStyle(const QString &styleName);
     static QString createPatternsString(const PatternSet *patternSet, const QString &indentString);
