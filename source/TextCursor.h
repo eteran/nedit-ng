@@ -13,7 +13,7 @@ using IsInteger = typename std::enable_if<std::is_integral<Integer>::value>::typ
 template <class T>
 class BasicTextCursor {
 public:
-    using underlying_type = T;
+	using underlying_type = T;
 
 public:
     template <class Integer, class = IsInteger<T>>

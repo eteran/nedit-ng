@@ -448,7 +448,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	
     flashTimer_   = new QTimer(this);
     fontName_     = Preferences::GetPrefFontName();
-    fontStruct_   = Preferences::GetPrefDefaultFont();
+	font_   = Preferences::GetPrefDefaultFont();
     languageMode_ = PLAIN_LANGUAGE_MODE;
     showStats_    = Preferences::GetPrefStatsLine();
 	
@@ -3835,7 +3835,7 @@ void DocumentWidget::splitPane() {
     if(auto activeArea = qobject_cast<TextArea *>(splitter_->widget(0))) {
         area->setLineNumCols(activeArea->getLineNumCols());
         area->setBacklightCharTypes(backlightCharTypes_);
-        area->setFont(fontStruct_);
+		area->setFont(font_);
     }
 
     AttachHighlightToWidgetEx(area);
@@ -4059,11 +4059,11 @@ void DocumentWidget::action_Set_Fonts(const QString &fontName) {
     }
 
     fontName_   = fontName;
-    fontStruct_ = Font::fromString(fontName);
+	font_ = Font::fromString(fontName);
 
     // Change the primary font in all the widgets
     for(TextArea *area : textPanes()) {
-        area->setFont(fontStruct_);
+		area->setFont(font_);
     }
 
     /* Change the highlight fonts, even if they didn't change, because
@@ -4567,7 +4567,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
             TextBuffer *buf = area->TextGetBuffer();
 
             if (cmdData->flags & REPLACE_SELECTION) {
-                TextCursor reselectStart = buf->primary.rectangular ? TextCursor(-1) : buf->primary.start;
+				TextCursor reselectStart = buf->primary.rectangular ? TextCursor(-1) : buf->primary.start;
                 buf->BufReplaceSelectedEx(output_string);
 
                 area->TextSetCursorPos(buf->BufCursorPosHint());
@@ -5390,7 +5390,7 @@ QColor DocumentWidget::GetHighlightBGColorOfCodeEx(size_t hCode) const {
         return entry->bgColor;
     } else {
         // pick up background color of the (first) text widget of the window
-        return firstPane()->getBackgroundPixel();
+		return firstPane()->getBackgroundColor();
     }
 }
 
@@ -5507,7 +5507,7 @@ QColor DocumentWidget::HighlightColorValueOfCodeEx(size_t hCode) const {
     }
 
     // pick up foreground color of the (first) text widget of the window
-    return firstPane()->getForegroundPixel();
+	return firstPane()->getForegroundColor();
 }
 
 /*
@@ -5527,8 +5527,8 @@ StyleTableEntry *DocumentWidget::styleTableEntryOfCodeEx(size_t hCode) const {
 
 
 /*
-** Picks up the entry in the style buffer for the position (if any). Rather
-** like styleOfPos() in TextDisplay.c. Returns the style code or zero.
+** Picks up the entry in the style buffer for the position (if any).
+** Returns the style code or zero.
 */
 size_t DocumentWidget::HighlightCodeOfPosEx(TextCursor pos) {
 
@@ -6675,7 +6675,7 @@ void DocumentWidget::SelectNumberedLineEx(TextArea *area, int64_t lineNum) {
         lineNum = 1;
     }
 
-    TextCursor lineEnd = TextCursor(-1);
+	TextCursor lineEnd = TextCursor(-1);
 
     for (i = 1; i <= lineNum && lineEnd < buffer_->BufGetLength(); i++) {
         lineStart = lineEnd + 1;
@@ -7017,7 +7017,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 
     /* Position it nicely in the window,
        about 1/4 of the way down from the top */
-    const int64_t lineNum = documentToSearch->buffer_->BufCountLines(TextCursor(), TextCursor(startPos));
+	const int64_t lineNum = documentToSearch->buffer_->BufCountLines(TextCursor(0), TextCursor(startPos));
 
     int rows = area->getRows();
 
@@ -7030,5 +7030,5 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
  * @return
  */
 QFont DocumentWidget::defaultFont() const {
-    return fontStruct_;
+	return font_;
 }

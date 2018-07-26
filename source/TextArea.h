@@ -121,15 +121,12 @@ public:
     int TextNumVisibleLines() const;
     int64_t TextFirstVisibleLine() const;
     int TextVisibleWidth() const;    
-    QColor getBackgroundPixel() const;
-    QColor getForegroundPixel() const;
+	QColor getBackgroundColor() const;
+	QColor getForegroundColor() const;
     QFont getFont() const;
     int getEmulateTabs() const;
     int getLineNumCols() const;
     int64_t getBufferLinesCount() const;
-    int getFontHeight() const;
-    int fontDescent() const;
-    int fontAscent() const;
     QTimer *cursorBlinkTimer() const;
     const std::shared_ptr<TextBuffer> &getStyleBuffer() const;
     int getLineNumWidth() const;
@@ -313,7 +310,7 @@ private:
 	void resetAbsLineNum();
 	void updateVScrollBarRange();
     void offsetAbsLineNum(TextCursor oldFirstChar);
-    void findLineEnd(TextCursor startPos, int64_t startPosIsLineStart, TextCursor *lineEnd, TextCursor *nextLineStart);
+	void findLineEnd(TextCursor startPos, bool startPosIsLineStart, TextCursor *lineEnd, TextCursor *nextLineStart);
     bool updateHScrollBarRange();
     bool emptyLinesVisible() const;
     bool posToVisibleLineNum(TextCursor pos, int *lineNum) const;

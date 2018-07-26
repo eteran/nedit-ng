@@ -111,7 +111,7 @@ void copyThruSlash(Out &to, In &from, In end) {
 */
 bool ParseFilenameEx(const QString &fullname, QString *filename, QString *pathname) {
 
-    int fullLen = fullname.size();
+	const int fullLen = fullname.size();
     int scanStart = -1;
 
     /* For clearcase version extended paths, slash characters after the "@@/"
@@ -126,21 +126,21 @@ bool ParseFilenameEx(const QString &fullname, QString *filename, QString *pathna
 
     /* move chars before / (or ] or :) into pathname,& after into filename */
     int pathLen = i + 1;
-    int fileLen = fullLen - pathLen;
+	int fileLen = fullLen - pathLen;
 
-    if (pathname) {
-        *pathname = fullname.left(pathLen);
-    }
+	if (pathname) {
+		*pathname = fullname.left(pathLen);
+	}
 
-    if (filename) {
-        *filename = fullname.mid(pathLen, fileLen);
-    }
+	if (filename) {
+		*filename = fullname.mid(pathLen, fileLen);
+	}
 
-    if (pathname) {
-        *pathname = NormalizePathnameEx(*pathname);
-    }
+	if (pathname) {
+		*pathname = NormalizePathnameEx(*pathname);
+	}
 
-    return true;
+	return true;
 }
 
 /*

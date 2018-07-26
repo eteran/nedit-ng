@@ -1900,7 +1900,10 @@ void TextArea::findWrapRangeEx(view::string_view deletedText, TextCursor pos, in
 	}
 
     const int64_t length = (pos - countFrom) + nDeleted + (countTo - (pos + nInserted));
-    TextBuffer deletedTextBuf;
+
+	TextBuffer deletedTextBuf;
+	deletedTextBuf.BufSetSyncXSelection(false);
+
     if (pos > countFrom) {
         deletedTextBuf.BufCopyFromBuf(buffer_, countFrom, pos, buffer_->BufStartOfBuffer());
     }
@@ -2319,7 +2322,7 @@ void TextArea::offsetAbsLineNum(TextCursor oldFirstChar) {
 ** normal character, and to find that out would otherwise require counting all
 ** the way back to the beginning of the line.
 */
-void TextArea::findLineEnd(TextCursor startPos, int64_t startPosIsLineStart, TextCursor *lineEnd, TextCursor *nextLineStart) {
+void TextArea::findLineEnd(TextCursor startPos, bool startPosIsLineStart, TextCursor *lineEnd, TextCursor *nextLineStart) {
     int64_t retLines;
     TextCursor retLineStart;
 
@@ -6806,12 +6809,12 @@ int64_t TextArea::getAbsTopLineNum() const {
 	return 0;
 }
 
-QColor TextArea::getForegroundPixel() const {
+QColor TextArea::getForegroundColor() const {
     QPalette pal = palette();
     return pal.color(QPalette::Text);
 }
 
-QColor TextArea::getBackgroundPixel() const {
+QColor TextArea::getBackgroundColor() const {
     QPalette pal = palette();
     return pal.color(QPalette::Base);
 }
@@ -6849,7 +6852,8 @@ QFont TextArea::getFont() const {
 
 void TextArea::setFont(const QFont &font) {
 
-    // did the font change?
+	// if we are displaying line numbers, then we'll need to recalculate
+	// the details of it too
     const bool reconfigure = (P_lineNumCols != 0);
 
     TextDSetFont(font);
@@ -6892,7 +6896,6 @@ void TextArea::pageLeftAP(EventFlags flags) {
     EMIT_EVENT_0("page_left");
 
     const TextCursor insertPos = cursorPos_;
-    const int maxCharWidth  = fixedFontWidth_;
     const bool silent = flags & NoBellFlag;
 
 	cancelDrag();
@@ -6910,7 +6913,7 @@ void TextArea::pageLeftAP(EventFlags flags) {
 			return;
 		}
         int64_t indent = buffer_->BufCountDispChars(lineStartPos, insertPos);
-        TextCursor pos = buffer_->BufCountForwardDispChars(lineStartPos, std::max<int64_t>(0, indent - rect_.width() / maxCharWidth));
+		TextCursor pos = buffer_->BufCountForwardDispChars(lineStartPos, std::max<int64_t>(0, indent - rect_.width() / fixedFontWidth_));
 		TextDSetInsertPosition(pos);
         TextDSetScroll(topLineNum_, std::max(0, horizOffset_ - rect_.width()));
 		checkMoveSelectionChange(flags, insertPos);
@@ -6924,7 +6927,6 @@ void TextArea::pageRightAP(EventFlags flags) {
     EMIT_EVENT_0("page_right");
 
     TextCursor insertPos   = cursorPos_;
-    const int maxCharWidth = fixedFontWidth_;
     int64_t oldHorizOffset = horizOffset_;
     const bool silent = flags & NoBellFlag;
 
@@ -6942,7 +6944,7 @@ void TextArea::pageRightAP(EventFlags flags) {
 	} else {
         TextCursor lineStartPos = buffer_->BufStartOfLine(insertPos);
         int64_t indent          = buffer_->BufCountDispChars(lineStartPos, insertPos);
-        TextCursor pos          = buffer_->BufCountForwardDispChars(lineStartPos, indent + rect_.width() / maxCharWidth);
+		TextCursor pos          = buffer_->BufCountForwardDispChars(lineStartPos, indent + rect_.width() / fixedFontWidth_);
 
 		TextDSetInsertPosition(pos);
         TextDSetScroll(topLineNum_, horizOffset_ + rect_.width());
@@ -6970,8 +6972,8 @@ void TextArea::nextPageAP(EventFlags flags) {
     int64_t targetLine;
 	int pageForwardCount = std::max(1, nVisibleLines_ - 1);
 
-	bool silent         = flags & NoBellFlag;
-	bool maintainColumn = flags & ColumnFlag;
+	const bool silent         = flags & NoBellFlag;
+	const bool maintainColumn = flags & ColumnFlag;
 
 	cancelDrag();
 	if (flags & ScrollbarFlag) { // scrollbar only
@@ -7264,23 +7266,6 @@ int64_t TextArea::getBufferLinesCount() const {
     return nBufferLines_;
 }
 
-int TextArea::fontAscent() const {
-    return ascent_;
-}
-
-int TextArea::fontDescent() const {
-    return descent_;
-}
-
-/*
-** Find the height currently being used to display text, which is
-** a composite of all of the active highlighting fonts as determined by the
-** text display component
-*/
-int TextArea::getFontHeight() const {
-    return fontAscent() + fontDescent();
-}
-
 /*
 ** Attach (or remove) highlight information in text display and redisplay.
 ** Highlighting information consists of a style buffer which parallels the
@@ -7327,7 +7312,6 @@ const std::shared_ptr<TextBuffer> &TextArea::getStyleBuffer() const {
  * @param font
  */
 void TextArea::updateFontHeightMetrics(const QFont &font) {
-
     QFontMetrics fm(font);
 
     ascent_  = fm.ascent();
@@ -7338,13 +7322,11 @@ void TextArea::updateFontWidthMetrics(const QFont &font) {
     QFontMetrics fm(font);
     QFontInfo    fi(font);
 
-    // If all of the current fonts are fixed and match in width, compute
-    int fontWidth = fm.maxWidth();
     if(!fi.fixedPitch()) {
         qWarning("NEdit: a variable width font has been specified. This is not supported, and will result in unexpected results");
     }
 
-    fixedFontWidth_ = fontWidth;
+	fixedFontWidth_ = fm.maxWidth();
 }
 
 /*
@@ -7411,6 +7393,8 @@ std::string TextArea::TextGetWrapped(TextCursor startPos, TextCursor endPos) {
        newlines will expand it to.  Since it's a text buffer, if we guess
        wrong, it will fail softly, and simply expand the size */
     TextBuffer outBuf((endPos - startPos) + (endPos - startPos) / 5);
+	outBuf.BufSetSyncXSelection(false);
+
     TextCursor outPos;
 
     /* Go (displayed) line by line through the buffer, adding newlines where

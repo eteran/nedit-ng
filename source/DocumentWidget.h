@@ -306,7 +306,7 @@ private:
 
 private:
     QSplitter *splitter_;
-    QFont fontStruct_;
+	QFont font_;
     QString backlightCharTypes_;                        // what backlighting to use
     QString modeMessage_;                               // stats line banner content for learn and shell command executing modes
     QTimer *flashTimer_;                                // timer for getting rid of highlighted matching paren.

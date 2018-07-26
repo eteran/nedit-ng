@@ -299,7 +299,7 @@ void MainWindow::parseGeometry(QString geometry) {
     }
 
     if(DocumentWidget *document = currentDocument()) {
-        QFontMetrics fm(document->fontStruct_);
+		QFontMetrics fm(document->font_);
 
         const int extent = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
         const int w = extent + (fm.maxWidth() * cols) + (TextArea::DefaultHMargin * 2);
