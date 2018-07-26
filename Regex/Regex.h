@@ -117,7 +117,7 @@ public:
     std::array<const char *, NSUBEXP> endp   = {}; /* Captured text ending locations. */
     const char *extentpBW       = nullptr;         /* Points to the maximum extent of text scanned by ExecRE in front of the string to achieve a match (needed because of positive look-behind.) */
     const char *extentpFW       = nullptr;         /* Points to the maximum extent of text scanned by ExecRE to achieve a match (needed because of positive look-ahead.) */
-    int top_branch              = 0;               /* Zero-based index of the top branch that matches. Used by syntax highlighting only. */
+	size_t top_branch           = 0;               /* Zero-based index of the top branch that matches. Used by syntax highlighting only. */
     char match_start            = '\0';            /* Internal use only. */
     char anchor                 = '\0';            /* Internal use only. */
     std::unique_ptr<uint8_t[]> program;

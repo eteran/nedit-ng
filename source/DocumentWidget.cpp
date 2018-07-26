@@ -6042,7 +6042,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatternsEx(const std::ve
 
 	for (size_t i = 0; i < patternSrc.size(); i++) {
 		if(compiledPats[i].nSubPatterns != 0) {
-			compiledPats[i].subPatterns = std::make_unique<HighlightData *[]>(static_cast<size_t>(compiledPats[i].nSubPatterns));
+			compiledPats[i].subPatterns = std::make_unique<HighlightData *[]>(compiledPats[i].nSubPatterns);
 		}
     }
 
@@ -6162,7 +6162,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatternsEx(const std::ve
         length  = (compiledPats[patternNum].colorOnly || patternSrc[patternNum].endRE.isNull())   ? 0 : patternSrc[patternNum].endRE.size()   + 5;
         length += (compiledPats[patternNum].colorOnly || patternSrc[patternNum].errorRE.isNull()) ? 0 : patternSrc[patternNum].errorRE.size() + 5;
 
-        for (int i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
+		for (size_t i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
 			long subPatIndex = compiledPats[patternNum].subPatterns[i] - &compiledPats[0];
             length += compiledPats[subPatIndex].colorOnly ? 0 : patternSrc[subPatIndex].startRE.size() + 5;
         }
@@ -6195,7 +6195,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatternsEx(const std::ve
             compiledPats[patternNum].nSubBranches++;
         }
 
-        for (int i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
+		for (size_t i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
 			long subPatIndex = compiledPats[patternNum].subPatterns[i] - &compiledPats[0];
 
             if (compiledPats[subPatIndex].colorOnly) {

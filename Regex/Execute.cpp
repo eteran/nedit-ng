@@ -18,7 +18,7 @@
 
 namespace {
 
-bool match(uint8_t *prog, int *branch_index_param);
+bool match(uint8_t *prog, size_t *branch_index_param);
 bool attempt(Regex *prog, const char *string);
 
 /**
@@ -323,7 +323,7 @@ uint8_t *NEXT_PTR(uint8_t *ptr) {
     } while(0)
 
 
-bool match(uint8_t *prog, int *branch_index_param) {
+bool match(uint8_t *prog, size_t *branch_index_param) {
 
     uint8_t *next;          // Next node.
 
@@ -347,7 +347,7 @@ bool match(uint8_t *prog, int *branch_index_param) {
             if (GET_OP_CODE(next) != BRANCH) { // No choice.
                 next = OPERAND(scan);          // Avoid recursion.
             } else {
-                int branch_index_local = 0;
+				size_t branch_index_local = 0;
 
                 do {
                     save = eContext.Reg_Input;
@@ -1014,7 +1014,7 @@ bool match(uint8_t *prog, int *branch_index_param) {
  *----------------------------------------------------------------------*/
 bool attempt(Regex *prog, const char *string) {
 
-    int branch_index = 0; // Must be set to zero !
+	size_t branch_index = 0; // Must be set to zero !
 
     eContext.Reg_Input     = string;
     eContext.Start_Ptr_Ptr = prog->startp.begin();

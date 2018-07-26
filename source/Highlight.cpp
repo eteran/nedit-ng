@@ -491,9 +491,9 @@ bool Highlight::parseString(const HighlightData *pattern, const char *first, con
 		/* Beware of the case where only one real branch exists, but that
 		   branch has sub-branches itself. In that case the top_branch refers
 		   to the matching sub-branch and must be ignored. */
-        int subIndex = (pattern->nSubBranches > 1) ? subPatternRE->top_branch : 0;
+		size_t subIndex = (pattern->nSubBranches > 1) ? subPatternRE->top_branch : 0;
+
 		// Combination of all sub-patterns and end pattern matched 
-        // printf("combined patterns RE matched at %d\n", subPatternRE->startp[0] - *string);
         const char *startingStringPtr = stringPtr;
 
 		/* Fill in the pattern style for the text that was skipped over before
@@ -511,7 +511,7 @@ bool Highlight::parseString(const HighlightData *pattern, const char *first, con
                 fillStyleString(stringPtr, stylePtr, subPatternRE->endp[0], pattern->style, prevChar);
 				subExecuted = false;
 
-				for (int i = 0; i < pattern->nSubPatterns; i++) {
+				for (size_t i = 0; i < pattern->nSubPatterns; i++) {
                     HighlightData *const subPat = pattern->subPatterns[i];
 					if (subPat->colorOnly) {
 						if (!subExecuted) {
@@ -557,7 +557,7 @@ bool Highlight::parseString(const HighlightData *pattern, const char *first, con
 		}
 
         HighlightData *subPat = nullptr;
-		int i;
+		size_t i;
 
 		// Figure out which sub-pattern matched 
 		for (i = 0; i < pattern->nSubPatterns; i++) {
@@ -898,12 +898,14 @@ int Highlight::findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<Wi
 	** (unfortunately, abutting styles can produce false runs so we're not
 	** really ensuring it, just making it likely).
 	*/
+	const TextCursor begin = buf->BufStartOfBuffer();
+
     if (patternIsParsable(patternOfStyle(pass1Patterns, startStyle))) {
         safeParseStart = backwardOneContext(buf, context, *pos);
         checkBackTo    = backwardOneContext(buf, context, safeParseStart);
 	} else {
-        safeParseStart = TextCursor();
-        checkBackTo    = TextCursor();
+		safeParseStart = begin;
+		checkBackTo    = begin;
 	}
 
 	int runningStyle = startStyle;
@@ -911,7 +913,7 @@ int Highlight::findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<Wi
 
 		// The start of the buffer is certainly a safe place to parse from 
 		if (i == 0) {
-            *pos = TextCursor();
+			*pos = begin;
 			return PLAIN_STYLE;
 		}
 

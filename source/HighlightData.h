@@ -18,9 +18,9 @@ public:
 	std::vector<size_t>                endSubexprs;
 	std::unique_ptr<HighlightData *[]> subPatterns;
 	size_t                             userStyleIndex;
+	size_t                             nSubPatterns;
+	size_t                             nSubBranches; // Number of top-level branches of subPatternRE
 	int                                flags;
-	int                                nSubPatterns;
-	int                                nSubBranches; // Number of top-level branches of subPatternRE
 	bool                               colorOnly;
 	uint8_t                            style;
 };
