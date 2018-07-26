@@ -37,6 +37,7 @@
 #include "Util/Input.h"
 #include "Util/fileUtils.h"
 #include "Util/utils.h"
+#include "Util/regex.h"
 
 #include <QClipboard>
 #include <QFile>
@@ -1297,8 +1298,7 @@ QString DocumentWidget::getWindowsMenuEntry() const {
     auto fullTitle = tr("%1%2").arg(filename_, fileChanged_ ? tr("*") : QString());
 
     if (Preferences::GetPrefShowPathInWindowsMenu() && filenameSet_) {
-        fullTitle.append(tr(" - "));
-        fullTitle.append(path_);
+		fullTitle.append(tr(" - %1").arg(path_));
     }
 
     return fullTitle;
@@ -1346,10 +1346,11 @@ TextArea *DocumentWidget::firstPane() const {
 ** to supply delimiters for RE searching.
 */
 QString DocumentWidget::GetWindowDelimiters() const {
-    if (languageMode_ == PLAIN_LANGUAGE_MODE)
+	if (languageMode_ == PLAIN_LANGUAGE_MODE) {
         return QString();
-    else
+	} else {
         return Preferences::LanguageModes[languageMode_].delimiters;
+	}
 }
 
 /*
@@ -5787,10 +5788,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     int contextLines = patSet->lineContext;
     int contextChars = patSet->charContext;
 
-    HighlightData *pass1Pats;
-    HighlightData *pass2Pats;
-
-    // The highlighting code can't handle empty pattern sets, quietly say no
+	// The highlighting code can't handle empty pattern sets, quietly say no
     if (patterns.empty()) {
         return nullptr;
     }
@@ -5847,23 +5845,13 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
         ++i;
     }
 
-    /* Sort patterns into those to be used in pass 1 parsing, and those to
-       be used in pass 2, and add default pattern (0) to each list */
-    int nPass1Patterns = 1;
-    int nPass2Patterns = 1;
-    for(const HighlightPattern &pattern : patterns) {
-        if (pattern.flags & DEFER_PARSING) {
-            nPass2Patterns++;
-        } else {
-            nPass1Patterns++;
-        }
-    }
+	/* Sort patterns into those to be used in pass 1 parsing, and those to
+	   be used in pass 2, and add default pattern (0) to each list */
+	std::vector<HighlightPattern> pass1PatternSrc;
+	std::vector<HighlightPattern> pass2PatternSrc;
 
-    auto pass1PatternSrc = new HighlightPattern[static_cast<size_t>(nPass1Patterns)];
-    auto pass2PatternSrc = new HighlightPattern[static_cast<size_t>(nPass2Patterns)];
-
-    HighlightPattern *p1Ptr = pass1PatternSrc;
-    HighlightPattern *p2Ptr = pass2PatternSrc;
+	auto p1Ptr = std::back_inserter(pass1PatternSrc);
+	auto p2Ptr = std::back_inserter(pass2PatternSrc);
 
     *p1Ptr++ = HighlightPattern(QLatin1String("Plain"));
     *p2Ptr++ = HighlightPattern(QLatin1String("Plain"));
@@ -5876,32 +5864,30 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
         }
     }
 
-    /* If a particular pass is empty except for the default pattern, don't
-       bother compiling it or setting up styles */
-    if (nPass1Patterns == 1) {
-        nPass1Patterns = 0;
-    }
+	/* If a particular pass is empty except for the default pattern, don't
+	   bother compiling it or setting up styles */
+	if (pass1PatternSrc.size() == 1) {
+		pass1PatternSrc.clear();
+	}
 
-    if (nPass2Patterns == 1) {
-        nPass2Patterns = 0;
-    }
+	if (pass2PatternSrc.size() == 1) {
+		pass2PatternSrc.clear();
+	}
+
+	HighlightData *pass1Pats = nullptr;
+	HighlightData *pass2Pats = nullptr;
 
     // Compile patterns
-    if (nPass1Patterns == 0) {
-        pass1Pats = nullptr;
-    } else {
-        pass1Pats = compilePatternsEx({pass1PatternSrc, nPass1Patterns});
+	if (!pass1PatternSrc.empty()) {
+		pass1Pats = compilePatternsEx(pass1PatternSrc);
         if (!pass1Pats) {
             return nullptr;
         }
     }
 
-    if (nPass2Patterns == 0) {
-        pass2Pats = nullptr;
-    } else {
-        pass2Pats = compilePatternsEx({pass2PatternSrc, nPass2Patterns});
+	if (!pass2PatternSrc.empty()) {
+		pass2Pats = compilePatternsEx(pass2PatternSrc);
         if (!pass2Pats) {
-            delete [] pass1Pats;
             return nullptr;
         }
     }
@@ -5910,13 +5896,13 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
        0 should have a default style of UNFINISHED_STYLE.  With no pass 2
        patterns, unstyled areas of pass 1 patterns should be PLAIN_STYLE
        to avoid triggering re-parsing every time they are encountered */
-    const bool noPass1 = (nPass1Patterns == 0);
-    const bool noPass2 = (nPass2Patterns == 0);
+	const bool zeroPass1 = (pass1PatternSrc.empty());
+	const bool zeroPass2 = (pass2PatternSrc.empty());
 
-    if (noPass2) {
+	if (zeroPass2) {
         Q_ASSERT(pass1Pats);
         pass1Pats[0].style = PLAIN_STYLE;
-    } else if (noPass1) {
+	} else if (zeroPass1) {
         Q_ASSERT(pass2Pats);
         pass2Pats[0].style = PLAIN_STYLE;
     } else {
@@ -5926,42 +5912,46 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
         pass2Pats[0].style = PLAIN_STYLE;
     }
 
-    for (int i = 1; i < nPass1Patterns; i++) {
+	for (size_t i = 1; i < pass1PatternSrc.size(); i++) {
         pass1Pats[i].style = gsl::narrow<uint8_t>(PLAIN_STYLE + i);
     }
 
-    for (int i = 1; i < nPass2Patterns; i++) {
-        pass2Pats[i].style = gsl::narrow<uint8_t>(PLAIN_STYLE + (noPass1 ? 0 : nPass1Patterns - 1) + i);
+	for (size_t i = 1; i < pass2PatternSrc.size(); i++) {
+		pass2Pats[i].style = gsl::narrow<uint8_t>(PLAIN_STYLE + (zeroPass1 ? 0 : pass1PatternSrc.size() - 1) + i);
     }
 
     // Create table for finding parent styles
     std::vector<uint8_t> parentStyles;
-    parentStyles.reserve(static_cast<size_t>(nPass1Patterns + nPass2Patterns + 2));
+	parentStyles.reserve(pass1PatternSrc.size() + pass2PatternSrc.size() + 2);
 
     auto parentStylesPtr = std::back_inserter(parentStyles);
 
     *parentStylesPtr++ = '\0';
     *parentStylesPtr++ = '\0';
 
-    for (int i = 1; i < nPass1Patterns; i++) {
-        if(pass1PatternSrc[i].subPatternOf.isNull()) {
+	for (size_t i = 1; i < pass1PatternSrc.size(); i++) {
+		const HighlightPattern &pattern = pass1PatternSrc[i];
+
+		if(pattern.subPatternOf.isNull()) {
             *parentStylesPtr++ = PLAIN_STYLE;
         } else {
-            *parentStylesPtr++ = pass1Pats[Highlight::indexOfNamedPattern({pass1PatternSrc, nPass1Patterns}, pass1PatternSrc[i].subPatternOf)].style;
+			*parentStylesPtr++ = pass1Pats[Highlight::indexOfNamedPattern(pass1PatternSrc, pattern.subPatternOf)].style;
         }
     }
 
-    for (int i = 1; i < nPass2Patterns; i++) {
-        if(pass2PatternSrc[i].subPatternOf.isNull()) {
+	for (size_t i = 1; i < pass2PatternSrc.size(); i++) {
+		const HighlightPattern &pattern = pass2PatternSrc[i];
+
+		if(pattern.subPatternOf.isNull()) {
             *parentStylesPtr++ = PLAIN_STYLE;
         } else {
-            *parentStylesPtr++ = pass2Pats[Highlight::indexOfNamedPattern({pass2PatternSrc, nPass2Patterns}, pass2PatternSrc[i].subPatternOf)].style;
+			*parentStylesPtr++ = pass2Pats[Highlight::indexOfNamedPattern(pass2PatternSrc, pattern.subPatternOf)].style;
         }
     }
 
     // Set up table for mapping colors and fonts to syntax
     std::vector<StyleTableEntry> styleTable;
-    styleTable.reserve(static_cast<size_t>(nPass1Patterns + nPass2Patterns));
+	styleTable.reserve(pass1PatternSrc.size() + pass2PatternSrc.size());
 
     auto it = std::back_inserter(styleTable);
 
@@ -5969,11 +5959,11 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
 
         StyleTableEntry p;
 
-        p.underline     = false;
+		p.isUnderlined     = false;
         p.highlightName = pat->name;
         p.styleName     = pat->style;
-        p.colorName     = Highlight::FgColorOfNamedStyle   (pat->style);
-        p.bgColorName   = Highlight::BgColorOfNamedStyle   (pat->style);
+		p.colorName     = Highlight::FgColorOfNamedStyle     (pat->style);
+		p.bgColorName   = Highlight::BgColorOfNamedStyle     (pat->style);
         p.isBold        = Highlight::FontOfNamedStyleIsBold  (pat->style);
         p.isItalic      = Highlight::FontOfNamedStyleIsItalic(pat->style);
 
@@ -5990,26 +5980,22 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     };
 
     // PLAIN_STYLE (pass 1)
-    it++ = createStyleTableEntry(noPass1 ? &pass2PatternSrc[0] : &pass1PatternSrc[0]);
+	it++ = createStyleTableEntry(zeroPass1 ? &pass2PatternSrc[0] : &pass1PatternSrc[0]);
 
     // PLAIN_STYLE (pass 2)
-    it++ = createStyleTableEntry(noPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
+	it++ = createStyleTableEntry(zeroPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
 
     // explicit styles (pass 1)
-    for (int i = 1; i < nPass1Patterns; i++) {
+	for (size_t i = 1; i < pass1PatternSrc.size(); i++) {
         it++ = createStyleTableEntry(&pass1PatternSrc[i]);
     }
 
     // explicit styles (pass 2)
-    for (int i = 1; i < nPass2Patterns; i++) {
+	for (size_t i = 1; i < pass2PatternSrc.size(); i++) {
         it++ = createStyleTableEntry(&pass2PatternSrc[i]);
-    }
+	}
 
-    // Free the temporary sorted pattern source list
-    delete[] pass1PatternSrc;
-    delete[] pass2PatternSrc;
-
-    // Create the style buffer
+	// Create the style buffer
     auto styleBuf = std::make_shared<TextBuffer>();
     styleBuf->BufSetSyncXSelection(false);
 
@@ -6034,50 +6020,48 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
 */
 HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPattern> &patternSrc) {
 
-    int parentIndex;
-
     /* Allocate memory for the compiled patterns.  The list is terminated
        by a record with style == 0. */
-    auto compiledPats = new HighlightData[static_cast<size_t>(patternSrc.size() + 1)];
+	auto compiledPats = new HighlightData[static_cast<size_t>(patternSrc.size() + 1)];
 
     compiledPats[patternSrc.size()].style = 0;
 
     // Build the tree of parse expressions
-    for (int i = 0; i < patternSrc.size(); i++) {
+	for (int i = 0; i < patternSrc.size(); i++) {
         compiledPats[i].nSubPatterns = 0;
         compiledPats[i].nSubBranches = 0;
     }
 
-    for (int i = 1; i < patternSrc.size(); i++) {
+	for (int i = 1; i < patternSrc.size(); i++) {
         if (patternSrc[i].subPatternOf.isNull()) {
             compiledPats[0].nSubPatterns++;
         } else {
-            compiledPats[Highlight::indexOfNamedPattern(patternSrc, patternSrc[i].subPatternOf)].nSubPatterns++;
+			compiledPats[Highlight::indexOfNamedPattern(patternSrc, patternSrc[i].subPatternOf)].nSubPatterns++;
         }
     }
 
-    for (int i = 0; i < patternSrc.size(); i++) {
+	for (int i = 0; i < patternSrc.size(); i++) {
         compiledPats[i].subPatterns = (compiledPats[i].nSubPatterns == 0) ?
                     nullptr :
                     new HighlightData *[static_cast<size_t>(compiledPats[i].nSubPatterns)];
     }
 
-    for (int i = 0; i < patternSrc.size(); i++) {
+	for (int i = 0; i < patternSrc.size(); i++) {
         compiledPats[i].nSubPatterns = 0;
     }
 
-    for (int i = 1; i < patternSrc.size(); i++) {
+	for (int i = 1; i < patternSrc.size(); i++) {
         if (patternSrc[i].subPatternOf.isNull()) {
             compiledPats[0].subPatterns[compiledPats[0].nSubPatterns++] = &compiledPats[i];
         } else {
-            parentIndex = Highlight::indexOfNamedPattern(patternSrc, patternSrc[i].subPatternOf);
+			int parentIndex = Highlight::indexOfNamedPattern(patternSrc, patternSrc[i].subPatternOf);
             compiledPats[parentIndex].subPatterns[compiledPats[parentIndex].nSubPatterns++] = &compiledPats[i];
         }
     }
 
     /* Process color-only sub patterns (no regular expressions to match,
        just colors and fonts for sub-expressions of the parent pattern */
-    for (int i = 0; i < patternSrc.size(); i++) {
+	for (int i = 0; i < patternSrc.size(); i++) {
         compiledPats[i].colorOnly      = (patternSrc[i].flags & COLOR_ONLY) != 0;
         compiledPats[i].userStyleIndex = Highlight::IndexOfNamedStyle(patternSrc[i].style);
 
@@ -6086,7 +6070,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
                         this,
                         tr("Color-only Pattern"),
                         tr("Color-only pattern \"%1\" may not have subpatterns").arg(patternSrc[i].name));
-            delete [] compiledPats;
+			delete [] compiledPats;
             return nullptr;
         }
 
@@ -6136,14 +6120,14 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
     }
 
     // Compile regular expressions for all highlight patterns
-    for (int i = 0; i < patternSrc.size(); i++) {
+	for (int i = 0; i < patternSrc.size(); i++) {
 
         if (patternSrc[i].startRE.isNull() || compiledPats[i].colorOnly) {
             compiledPats[i].startRE = nullptr;
         } else {
             compiledPats[i].startRE = compileREAndWarnEx(patternSrc[i].startRE);
             if (!compiledPats[i].startRE) {
-                delete [] compiledPats;
+				delete [] compiledPats;
                 return nullptr;
             }
         }
@@ -6153,7 +6137,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
         } else {
             compiledPats[i].endRE = compileREAndWarnEx(patternSrc[i].endRE);
             if (!compiledPats[i].endRE) {
-                delete [] compiledPats;
+				delete [] compiledPats;
                 return nullptr;
             }
         }
@@ -6163,7 +6147,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
         } else {
             compiledPats[i].errorRE = compileREAndWarnEx(patternSrc[i].errorRE);
             if (!compiledPats[i].errorRE) {
-                delete [] compiledPats;
+				delete [] compiledPats;
                 return nullptr;
             }
         }
@@ -6172,7 +6156,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
     /* Construct and compile the great hairy pattern to match the OR of the
        end pattern, the error pattern, and all of the start patterns of the
        sub-patterns */
-    for (int patternNum = 0; patternNum < patternSrc.size(); patternNum++) {
+	for (int patternNum = 0; patternNum < patternSrc.size(); patternNum++) {
         if (patternSrc[patternNum].endRE.isNull() && patternSrc[patternNum].errorRE.isNull() && compiledPats[patternNum].nSubPatterns == 0) {
             compiledPats[patternNum].subPatternRE = nullptr;
             continue;
@@ -6183,7 +6167,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
         length += (compiledPats[patternNum].colorOnly || patternSrc[patternNum].errorRE.isNull()) ? 0 : patternSrc[patternNum].errorRE.size() + 5;
 
         for (int i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
-            long subPatIndex = compiledPats[patternNum].subPatterns[i] - compiledPats;
+			long subPatIndex = compiledPats[patternNum].subPatterns[i] - compiledPats;
             length += compiledPats[subPatIndex].colorOnly ? 0 : patternSrc[subPatIndex].startRE.size() + 5;
         }
 
@@ -6216,7 +6200,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
         }
 
         for (int i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
-            long subPatIndex = compiledPats[patternNum].subPatterns[i] - compiledPats;
+			long subPatIndex = compiledPats[patternNum].subPatterns[i] - compiledPats;
 
             if (compiledPats[subPatIndex].colorOnly) {
                 continue;
@@ -6234,29 +6218,29 @@ HighlightData *DocumentWidget::compilePatternsEx(const gsl::span<HighlightPatter
         bigPattern.pop_back(); // remove last '|' character
 
         try {
-            compiledPats[patternNum].subPatternRE = std::make_shared<Regex>(bigPattern, REDFLT_STANDARD);
+			compiledPats[patternNum].subPatternRE = std::make_unique<Regex>(bigPattern, REDFLT_STANDARD);
         } catch(const RegexError &e) {
             qWarning("NEdit: Error compiling syntax highlight patterns:\n%s", e.what());
-            delete [] compiledPats;
+			delete [] compiledPats;
             return nullptr;
         }
     }
 
     // Copy remaining parameters from pattern template to compiled tree
-    for (int i = 0; i < patternSrc.size(); i++) {
+	for (int i = 0; i < patternSrc.size(); i++) {
         compiledPats[i].flags = patternSrc[i].flags;
     }
 
-    return compiledPats;
+	return compiledPats;
 }
 
 /*
 ** compile a regular expression and present a user friendly dialog on failure.
 */
-std::shared_ptr<Regex> DocumentWidget::compileREAndWarnEx(const QString &re) {
+std::unique_ptr<Regex> DocumentWidget::compileREAndWarnEx(const QString &re) {
 
     try {
-        return std::make_shared<Regex>(re.toStdString(), REDFLT_STANDARD);
+		return make_regex(re, REDFLT_STANDARD);
     } catch(const RegexError &e) {
 
         constexpr int MaxLength = 4096;

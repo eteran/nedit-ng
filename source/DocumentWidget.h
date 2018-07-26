@@ -200,7 +200,7 @@ private:
     boost::optional<TextCursor> findMatchingCharEx(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit);
     bool includeFile(const QString &name);
     bool writeBckVersion();
-    HighlightData *compilePatternsEx(const gsl::span<HighlightPattern> &patternSrc);
+	HighlightData *compilePatternsEx(const gsl::span<HighlightPattern> &patternSrc);
     bool CloseFileAndWindow(CloseMode preResponse);
     bool cmpWinAgainstFile(const QString &fileName) const;
     bool fileWasModifiedExternally() const;
@@ -213,7 +213,7 @@ private:
     PatternSet *findPatternsForWindowEx(bool warn);
     QString backupFileNameEx() const;
     QString getWindowsMenuEntry() const;
-    std::shared_ptr<Regex> compileREAndWarnEx(const QString &re);
+	std::unique_ptr<Regex> compileREAndWarnEx(const QString &re);
     Style GetHighlightInfoEx(TextCursor pos);
     StyleTableEntry *styleTableEntryOfCodeEx(size_t hCode) const;
     TextArea *createTextArea(TextBuffer *buffer);

@@ -15,7 +15,7 @@ public:
     QColor       bgColor;
     bool         isBold;
     bool         isItalic;
-    bool         underline;
+	bool         isUnderlined;
 };
 
 #endif

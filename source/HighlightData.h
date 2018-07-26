@@ -10,19 +10,19 @@
 // "Compiled" version of pattern specification 
 class HighlightData {
 public:
-    std::shared_ptr<Regex> startRE;
-    std::shared_ptr<Regex> endRE;
-    std::shared_ptr<Regex> errorRE;
-    std::shared_ptr<Regex> subPatternRE;
-    uint8_t style;
-    bool colorOnly;
-    std::vector<size_t> startSubexprs;
-    std::vector<size_t> endSubexprs;
-	int flags;
-	int nSubPatterns;
-	int nSubBranches; // Number of top-level branches of subPatternRE 
-    size_t userStyleIndex;
-	HighlightData **subPatterns;
+	std::unique_ptr<Regex> startRE;
+	std::unique_ptr<Regex> endRE;
+	std::unique_ptr<Regex> errorRE;
+	std::unique_ptr<Regex> subPatternRE;
+	std::vector<size_t>    startSubexprs;
+	std::vector<size_t>    endSubexprs;
+	HighlightData **       subPatterns;
+	size_t                 userStyleIndex;
+	int                    flags;
+	int                    nSubPatterns;
+	int                    nSubBranches; // Number of top-level branches of subPatternRE
+	bool                   colorOnly;
+	uint8_t                style;
 };
 
 #endif

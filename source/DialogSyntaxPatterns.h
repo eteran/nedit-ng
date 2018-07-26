@@ -55,7 +55,7 @@ private Q_SLOTS:
 private:
     bool validateFields(Verbosity verbosity);
     bool checkHighlightDialogData();
-    bool TestHighlightPatterns(const std::unique_ptr<PatternSet> &patSet);
+	bool TestHighlightPatterns(const std::unique_ptr<PatternSet> &patSet);
     bool updateCurrentItem();
     bool updateCurrentItem(const QModelIndex &index);
     bool updatePatternSet();

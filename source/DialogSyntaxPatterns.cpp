@@ -90,7 +90,7 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 		/* Get the current information displayed by the dialog.  If it's bad,
 		   give the user the chance to throw it out or go back and fix it.  If
 		   it has changed, give the user the chance to apply discard or cancel. */
-        std::unique_ptr<PatternSet> currentPatternSet = getDialogPatternSet();
+		std::unique_ptr<PatternSet> currentPatternSet = getDialogPatternSet();
 
         if(!currentPatternSet) {
 			QMessageBox messageBox(this);
@@ -956,11 +956,6 @@ bool DialogSyntaxPatterns::validateFields(Verbosity verbosity) {
 /*
 ** Do a test compile of patterns in "patSet" and report problems to the
 ** user via dialog.  Returns true if patterns are ok.
-**
-** This is somewhat kludgy in that it uses createHighlightData, which
-** requires a window to find the fonts to use, and just uses a random
-** window from the window list.  Since the window is used to get the
-** dialog parent as well, these dialogs will appear in odd places on the screen.
 */
 bool DialogSyntaxPatterns::TestHighlightPatterns(const std::unique_ptr<PatternSet> &patSet) {
 

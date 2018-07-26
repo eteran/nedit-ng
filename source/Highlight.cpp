@@ -473,7 +473,7 @@ bool Highlight::parseString(const HighlightData *pattern, const char *first, con
     const char *stringPtr = string;
     char *stylePtr        = styleString;
 
-    const std::shared_ptr<Regex> &subPatternRE = pattern->subPatternRE;
+	const std::unique_ptr<Regex> &subPatternRE = pattern->subPatternRE;
 
     const QByteArray delimitersString = delimiters.toLatin1();
     const char * delimitersPtr = delimiters.isNull() ? nullptr : delimitersString.data();
@@ -1040,7 +1040,7 @@ TextCursor Highlight::forwardOneContext(TextBuffer *buf, const ReparseContext &c
 ** sub-expression, "subExpr", of regular expression "re" applies to the
 ** corresponding portion of "string".
 */
-void Highlight::recolorSubexpr(const std::shared_ptr<Regex> &re, size_t subexpr, int style, const char *string, char *styleString) {
+void Highlight::recolorSubexpr(const std::unique_ptr<Regex> &re, size_t subexpr, int style, const char *string, char *styleString) {
 
     const char *stringPtr = re->startp[subexpr];
 	char *stylePtr        = &styleString[stringPtr - string];

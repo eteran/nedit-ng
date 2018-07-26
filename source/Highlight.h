@@ -70,7 +70,7 @@ public:
     static int findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlightData> &highlightData, TextCursor *pos);
     static int findTopLevelParentIndex(const gsl::span<HighlightPattern> &patterns, int index);
     static int getPrevChar(TextBuffer *buf, TextCursor pos);
-    static int indexOfNamedPattern(const gsl::span<HighlightPattern> &patterns, const QString &name);
+	static int indexOfNamedPattern(const gsl::span<HighlightPattern> &patterns, const QString &name);
     static PatternSet *FindPatternSet(const QString &languageMode);
 	static QString BgColorOfNamedStyle(const QString &styleName);
     static QString createPatternsString(const PatternSet *patternSet, const QString &indentString);
@@ -89,7 +89,7 @@ public:
     static void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, TextCursor pos, int64_t nInserted, const QString &delimiters);
     static void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleString, TextCursor startPos, TextCursor endPos, int firstPass2Style);
 	static void passTwoParseString(const HighlightData *pattern, const char *first, const char *last, const char *string, char *styleString, int64_t length, int *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_to);
-    static void recolorSubexpr(const std::shared_ptr<Regex> &re, size_t subexpr, int style, const char *string, char *styleString);
+	static void recolorSubexpr(const std::unique_ptr<Regex> &re, size_t subexpr, int style, const char *string, char *styleString);
     static void RenameHighlightPattern(const QString &oldName, const QString &newName);
 	
 public:

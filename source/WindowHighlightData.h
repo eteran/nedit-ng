@@ -19,7 +19,7 @@ public:
 public:
     std::vector<uint8_t>             parentStyles;
     std::vector<StyleTableEntry>     styleTable;
-    std::shared_ptr<TextBuffer>      styleBuffer;
+	std::shared_ptr<TextBuffer>      styleBuffer;
     HighlightData*                   pass1Patterns       = nullptr;
     HighlightData*                   pass2Patterns       = nullptr;    
     PatternSet*                      patternSetForWindow = nullptr;    

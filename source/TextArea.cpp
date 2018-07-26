@@ -3004,7 +3004,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int64_t x, int y, i
                configured here, on the fly. */
             if (style & STYLE_LOOKUP_MASK) {
                 styleRec = &styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A];
-                underlineStyle = styleRec->underline;
+				underlineStyle = styleRec->isUnderlined;
 
 
                 renderFont.setBold(styleRec->isBold);
