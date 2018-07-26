@@ -974,10 +974,10 @@ void MainWindow::on_action_Delete_triggered() {
  * @return
  */
 DocumentWidget *MainWindow::CreateDocument(const QString &name) {
-    auto document = new DocumentWidget(name, this);
-    int i = ui.tabWidget->addTab(document, name);
-    ui.tabWidget->setCurrentIndex(i);
-    return document;
+	auto document = new DocumentWidget(name, this);
+	int i = ui.tabWidget->addTab(document, name);
+	ui.tabWidget->setCurrentIndex(i);
+	return document;
 }
 
 /**
@@ -4646,10 +4646,10 @@ DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geome
 
     // create new window/document
     if (window) {
-        document = window->CreateDocument(name);
+		document = window->CreateDocument(name);
     } else {
         window   = new MainWindow();
-        document = window->CreateDocument(name);
+		document = window->CreateDocument(name);
 
         window->parseGeometry(geometry);
 

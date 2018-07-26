@@ -48,7 +48,7 @@ private:
     void setupDocumentPrefernceDefaults();
     void setupPrevOpenMenuActions();
     QMenu *createUserMenu(DocumentWidget *document, const gsl::span<MenuData> &data, CommandTypes type);
-    QTabWidget *tabWidget() const;
+	QTabWidget *tabWidget() const;
 
 private:
     void keyPressEvent(QKeyEvent *event) override;
@@ -73,7 +73,7 @@ public:
     bool SearchAndSelectSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
     bool searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, TextCursor *left, TextCursor *right, TextCursor *extentBW, TextCursor *extentFW);
     bool SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, Search::Result *searchResult);
-    DocumentWidget *CreateDocument(const QString &name);
+	DocumentWidget *CreateDocument(const QString &name);
     DocumentWidget *currentDocument() const;
     DocumentWidget *documentAt(size_t index) const;
     int updateGutterWidth();

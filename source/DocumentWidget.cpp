@@ -298,6 +298,8 @@ QLatin1String createRepeatMacro(int how) {
 */
 DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, bool iconic, const QString &languageMode, bool tabbed, bool bgOpen) {
 
+	// TODO(eteran): make bgOpen more effective ...
+
     // first look to see if file is already displayed in a window
     if(DocumentWidget *document = MainWindow::FindWindowWithFile(name, path)) {
         if (!bgOpen) {
@@ -311,9 +313,9 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
     }
 
     // helper local function to reduce code duplication
-    auto createInNewWindow = [&name, &geometry, iconic]() {
+	auto createInNewWindow = [&name, &geometry, iconic]() {
         auto win = new MainWindow();
-        DocumentWidget *document = win->CreateDocument(name);
+		DocumentWidget *document = win->CreateDocument(name);
         if(iconic) {
             win->showMinimized();
         } else {
@@ -333,7 +335,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 	} else if (inDocument->filenameSet_ || inDocument->fileChanged_ || inDocument->macroCmdData_) {
         if (tabbed) {
             if(auto win = MainWindow::fromDocument(inDocument)) {
-                document = win->CreateDocument(name);
+				document = win->CreateDocument(name);
             } else {
 				return nullptr;
 			}

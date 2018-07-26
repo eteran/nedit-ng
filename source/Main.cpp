@@ -301,17 +301,17 @@ Main::Main(const QStringList &args) {
 
                 QPointer<DocumentWidget> document;
 
-                if(MainWindow *window = MainWindow::firstWindow()) {
-                    document = DocumentWidget::EditExistingFileEx(
-                                window->currentDocument(),
-                                filename,
-                                pathname,
-                                editFlags,
-                                geometry,
-                                iconic,
-                                langMode,
-                                isTabbed,
-                                true);
+				if(MainWindow *window = MainWindow::firstWindow()) {
+					document = DocumentWidget::EditExistingFileEx(
+					            window->currentDocument(),
+					            filename,
+					            pathname,
+					            editFlags,
+					            geometry,
+					            iconic,
+					            langMode,
+					            isTabbed,
+					            true);
                 } else {
                     document = DocumentWidget::EditExistingFileEx(
                                 nullptr,
