@@ -5607,8 +5607,8 @@ void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &sty
     TextBuffer *buf = buffer_;
     const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
 
-    const ReparseContext &context = highlightData->contextRequirements;
-    HighlightData *pass2Patterns  = highlightData->pass2Patterns;
+	const ReparseContext &context                         = highlightData->contextRequirements;
+	const std::unique_ptr<HighlightData[]> &pass2Patterns = highlightData->pass2Patterns;
 
     if (!pass2Patterns) {
         return;
@@ -5673,7 +5673,7 @@ void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &sty
     int prevChar = Highlight::getPrevChar(buf, beginSafety);
 
     Highlight::parseString(
-        pass2Patterns,
+	    &pass2Patterns[0],
         string,
         string + str.size(),
         string,
@@ -5734,7 +5734,7 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
         const char *const match_to  = bufString.data() + bufString.size();
 
         Highlight::parseString(
-            highlightData->pass1Patterns,
+		    &highlightData->pass1Patterns[0],
             bufString.data(),
             bufString.data() + bufString.size(),
             stringPtr,
@@ -5798,7 +5798,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
     }
 
     for(const HighlightPattern &pattern : patterns) {
-		if (!pattern.subPatternOf.isNull() && Highlight::indexOfNamedPattern(patterns, pattern.subPatternOf) == InvalidIndex) {
+		if (!pattern.subPatternOf.isNull() && Highlight::indexOfNamedPattern(patterns, pattern.subPatternOf) == PATTERN_NOT_FOUND) {
             QMessageBox::warning(
                         this,
                         tr("Parent Pattern"),
@@ -5826,7 +5826,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
 
 			if (!pattern.subPatternOf.isNull()) {
 				const size_t parentindex = Highlight::findTopLevelParentIndex(patterns, i);
-				if (parentindex == InvalidIndex) {
+				if (parentindex == PATTERN_NOT_FOUND) {
 					QMessageBox::warning(
 					            this,
 					            tr("Parent Pattern"),
@@ -5874,8 +5874,8 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
 		pass2PatternSrc.clear();
 	}
 
-	HighlightData *pass1Pats = nullptr;
-	HighlightData *pass2Pats = nullptr;
+	std::unique_ptr<HighlightData[]> pass1Pats;
+	std::unique_ptr<HighlightData[]> pass2Pats;
 
     // Compile patterns
 	if (!pass1PatternSrc.empty()) {
@@ -6001,8 +6001,8 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
 
     // Collect all of the highlighting information in a single structure
     auto highlightData = std::make_unique<WindowHighlightData>();
-    highlightData->pass1Patterns              = pass1Pats;
-    highlightData->pass2Patterns              = pass2Pats;
+	highlightData->pass1Patterns              = std::move(pass1Pats);
+	highlightData->pass2Patterns              = std::move(pass2Pats);
     highlightData->parentStyles               = std::move(parentStyles);
     highlightData->styleTable                 = std::move(styleTable);
     highlightData->styleBuffer                = styleBuf;
@@ -6018,11 +6018,11 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
 ** actually used by the code.  Output is a tree of HighlightData structures
 ** containing compiled regular expressions and style information.
 */
-HighlightData *DocumentWidget::compilePatternsEx(const std::vector<HighlightPattern> &patternSrc) {
+std::unique_ptr<HighlightData[]> DocumentWidget::compilePatternsEx(const std::vector<HighlightPattern> &patternSrc) {
 
     /* Allocate memory for the compiled patterns.  The list is terminated
        by a record with style == 0. */
-	auto compiledPats = new HighlightData[static_cast<size_t>(patternSrc.size() + 1)];
+	auto compiledPats = std::make_unique<HighlightData[]>(patternSrc.size() + 1);
 
     compiledPats[patternSrc.size()].style = 0;
 
@@ -6041,9 +6041,9 @@ HighlightData *DocumentWidget::compilePatternsEx(const std::vector<HighlightPatt
     }
 
 	for (size_t i = 0; i < patternSrc.size(); i++) {
-        compiledPats[i].subPatterns = (compiledPats[i].nSubPatterns == 0) ?
-                    nullptr :
-                    new HighlightData *[static_cast<size_t>(compiledPats[i].nSubPatterns)];
+		if(compiledPats[i].nSubPatterns != 0) {
+			compiledPats[i].subPatterns = std::make_unique<HighlightData *[]>(static_cast<size_t>(compiledPats[i].nSubPatterns));
+		}
     }
 
 	for (size_t i = 0; i < patternSrc.size(); i++) {
@@ -6070,7 +6070,6 @@ HighlightData *DocumentWidget::compilePatternsEx(const std::vector<HighlightPatt
                         this,
                         tr("Color-only Pattern"),
                         tr("Color-only pattern \"%1\" may not have subpatterns").arg(patternSrc[i].name));
-			delete [] compiledPats;
             return nullptr;
         }
 
@@ -6127,7 +6126,6 @@ HighlightData *DocumentWidget::compilePatternsEx(const std::vector<HighlightPatt
         } else {
             compiledPats[i].startRE = compileREAndWarnEx(patternSrc[i].startRE);
             if (!compiledPats[i].startRE) {
-				delete [] compiledPats;
                 return nullptr;
             }
         }
@@ -6137,7 +6135,6 @@ HighlightData *DocumentWidget::compilePatternsEx(const std::vector<HighlightPatt
         } else {
             compiledPats[i].endRE = compileREAndWarnEx(patternSrc[i].endRE);
             if (!compiledPats[i].endRE) {
-				delete [] compiledPats;
                 return nullptr;
             }
         }
@@ -6147,7 +6144,6 @@ HighlightData *DocumentWidget::compilePatternsEx(const std::vector<HighlightPatt
         } else {
             compiledPats[i].errorRE = compileREAndWarnEx(patternSrc[i].errorRE);
             if (!compiledPats[i].errorRE) {
-				delete [] compiledPats;
                 return nullptr;
             }
         }
@@ -6167,7 +6163,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const std::vector<HighlightPatt
         length += (compiledPats[patternNum].colorOnly || patternSrc[patternNum].errorRE.isNull()) ? 0 : patternSrc[patternNum].errorRE.size() + 5;
 
         for (int i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
-			long subPatIndex = compiledPats[patternNum].subPatterns[i] - compiledPats;
+			long subPatIndex = compiledPats[patternNum].subPatterns[i] - &compiledPats[0];
             length += compiledPats[subPatIndex].colorOnly ? 0 : patternSrc[subPatIndex].startRE.size() + 5;
         }
 
@@ -6200,7 +6196,7 @@ HighlightData *DocumentWidget::compilePatternsEx(const std::vector<HighlightPatt
         }
 
         for (int i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
-			long subPatIndex = compiledPats[patternNum].subPatterns[i] - compiledPats;
+			long subPatIndex = compiledPats[patternNum].subPatterns[i] - &compiledPats[0];
 
             if (compiledPats[subPatIndex].colorOnly) {
                 continue;
@@ -6221,7 +6217,6 @@ HighlightData *DocumentWidget::compilePatternsEx(const std::vector<HighlightPatt
 			compiledPats[patternNum].subPatternRE = std::make_unique<Regex>(bigPattern, REDFLT_STANDARD);
         } catch(const RegexError &e) {
             qWarning("NEdit: Error compiling syntax highlight patterns:\n%s", e.what());
-			delete [] compiledPats;
             return nullptr;
         }
     }

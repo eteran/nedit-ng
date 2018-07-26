@@ -262,7 +262,6 @@ add_executable(nedit-ng
 	UndoInfo.cpp
 	UndoInfo.h
 	Verbosity.h
-	WindowHighlightData.cpp
 	WindowHighlightData.h
 	WindowMenuEvent.cpp
 	WindowMenuEvent.h

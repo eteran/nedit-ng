@@ -19,7 +19,6 @@
 #include "Regex.h"
 #include "Util/utils.h"
 
-#include <gsl/gsl_util>
 
 #include <QSettings>
 #include <QMessageBox>
@@ -168,10 +167,10 @@ void SyntaxHighlightModifyCBEx(TextCursor pos, int64_t nInserted, int64_t nDelet
 */
 void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, TextCursor pos, int64_t nInserted, const QString &delimiters) {
 
-    const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer;
-    HighlightData *pass1Patterns  = highlightData->pass1Patterns;
-    HighlightData *pass2Patterns  = highlightData->pass2Patterns;
-    const ReparseContext &context = highlightData->contextRequirements;
+	const std::shared_ptr<TextBuffer> &styleBuf           = highlightData->styleBuffer;
+	const std::unique_ptr<HighlightData[]> &pass1Patterns = highlightData->pass1Patterns;
+	const std::unique_ptr<HighlightData[]> &pass2Patterns = highlightData->pass2Patterns;
+	const ReparseContext &context                         = highlightData->contextRequirements;
 		
     const std::vector<uint8_t> &parentStyles = highlightData->parentStyles;
 
@@ -198,7 +197,7 @@ void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &h
 
 		/* Parse forward from beginParse to one context beyond the end
 		   of the last modification */
-        const HighlightData *startPattern = patternOfStyle(pass1Patterns, parseInStyle);
+		const HighlightData *startPattern = patternOfStyle(pass1Patterns, parseInStyle);
 		/* If there is no pattern matching the style, it must be a pass-2
 		   style. It that case, it is (probably) safe to start parsing with
 		   the root pass-1 pattern again. Anyway, passing a nullptr-pointer to
@@ -206,7 +205,7 @@ void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &h
 		   patterns is certainly preferable, even if there is a slight chance
 		   of a faulty coloring. */
 		if (!startPattern) {
-			startPattern = pass1Patterns;
+			startPattern = &pass1Patterns[0];
 		}
 
         TextCursor endAt = parseBufferRange(startPattern, pass2Patterns, buf, styleBuf, context, beginParse, endParse, delimiters);
@@ -251,7 +250,7 @@ void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &h
 ** finished (this will normally be endParse, unless the pass1Patterns is a
 ** pattern which does end and the end is reached).
 */
-TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const HighlightData *pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, TextCursor beginParse, TextCursor endParse, const QString &delimiters) {
+TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const std::unique_ptr<HighlightData[]> &pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, TextCursor beginParse, TextCursor endParse, const QString &delimiters) {
 
     TextCursor endSafety;
     TextCursor endPass2Safety;
@@ -315,7 +314,7 @@ TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const
 	char *stylePtr        = &styleString[beginParse - beginSafety];
 	
     parseString(
-		pass1Patterns, 
+	    &pass1Patterns[0],
         string,
         string + str.size(),
         stringPtr,
@@ -366,7 +365,7 @@ TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const
 
 		if (endPass2Safety == endSafety) {
             passTwoParseString(
-                        pass2Patterns,
+			            &pass2Patterns[0],
                         string,
                         string + str.size(),
                         string,
@@ -379,7 +378,7 @@ TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const
 			goto parseDone;
 		} else {
             passTwoParseString(
-                        pass2Patterns,
+			            &pass2Patterns[0],
                         string,
                         string + str.size(),
                         string,
@@ -399,7 +398,7 @@ TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const
 		if (beginSafety > modEnd) {
 			prevChar = getPrevChar(buf, beginSafety);
             passTwoParseString(
-                        pass2Patterns,
+			            &pass2Patterns[0],
                         string,
                         string + str.size(),
                         string,
@@ -414,7 +413,7 @@ TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const
 
 			prevChar = getPrevChar(buf, startPass2Safety);
             passTwoParseString(
-                        pass2Patterns,
+			            &pass2Patterns[0],
                         string,
                         string + str.size(),
                         &string[startPass2Safety - beginSafety],
@@ -866,9 +865,9 @@ int Highlight::findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<Wi
     TextCursor checkBackTo;
     TextCursor safeParseStart;
 
-    std::vector<uint8_t> &parentStyles = highlightData->parentStyles;
-    HighlightData *pass1Patterns       = highlightData->pass1Patterns;
-    const ReparseContext &context      = highlightData->contextRequirements;
+	std::vector<uint8_t> &parentStyles                    = highlightData->parentStyles;
+	const std::unique_ptr<HighlightData[]> &pass1Patterns = highlightData->pass1Patterns;
+	const ReparseContext &context                         = highlightData->contextRequirements;
 
 	// We must begin at least one context distance back from the change 
     *pos = backwardOneContext(buf, context, *pos);
@@ -1051,7 +1050,7 @@ void Highlight::recolorSubexpr(const std::unique_ptr<Regex> &re, size_t subexpr,
 /*
 ** Search for a pattern in pattern list "patterns" with style "style"
 */
-HighlightData *Highlight::patternOfStyle(HighlightData *patterns, int style) {
+HighlightData *Highlight::patternOfStyle(const std::unique_ptr<HighlightData[]> &patterns, int style) {
 
     for (int i = 0; patterns[i].style != 0; ++i) {
         if (patterns[i].style == style) {
@@ -1075,7 +1074,7 @@ HighlightData *Highlight::patternOfStyle(HighlightData *patterns, int style) {
 size_t Highlight::indexOfNamedPattern(const std::vector<HighlightPattern> &patterns, const QString &name) {
 
     if(name.isNull()) {
-		return InvalidIndex;
+		return PATTERN_NOT_FOUND;
 	}
 	
 	for (size_t i = 0; i < patterns.size(); ++i) {
@@ -1084,7 +1083,7 @@ size_t Highlight::indexOfNamedPattern(const std::vector<HighlightPattern> &patte
 		}
 	}
 	
-	return InvalidIndex;
+	return PATTERN_NOT_FOUND;
 }
 
 /**
@@ -1099,7 +1098,7 @@ size_t Highlight::findTopLevelParentIndex(const std::vector<HighlightPattern> &p
     while (!patterns[topIndex].subPatternOf.isNull()) {
         topIndex = indexOfNamedPattern(patterns, patterns[topIndex].subPatternOf);
         if (index == topIndex) {
-			return InvalidIndex; // amai: circular dependency ?!
+			return PATTERN_NOT_FOUND; // amai: circular dependency ?!
         }
     }
     return topIndex;

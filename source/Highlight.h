@@ -6,22 +6,22 @@
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
 
-#include <gsl/span>
 #include <boost/optional.hpp>
 #include <vector>
+#include <memory>
 
 #include <QCoreApplication>
 
 class HighlightData;
 class HighlightPattern;
+class Input;
 class PatternSet;
+class Regex;
+class Style;
 class TextArea;
-class WindowHighlightData;
 struct HighlightStyle;
 struct ReparseContext;
-class Style;
-class Input;
-class Regex;
+struct WindowHighlightData;
 
 class QColor;
 class QString;
@@ -34,23 +34,18 @@ enum {
 	COLOR_ONLY               = 4
 };
 
-constexpr auto InvalidIndex = static_cast<size_t>(-1);
-
 // How much re-parsing to do when an unfinished style is encountered
 constexpr int PASS_2_REPARSE_CHUNK_SIZE = 1000;
 
-// Don't use plain 'A' or 'B' for style indices, it causes problems
-// with EBCDIC coding (possibly negative offsets when subtracting 'A').
 constexpr auto ASCII_A = static_cast<char>(65);
 
-/* Meanings of style buffer characters (styles). Don't use plain 'A' or 'B';
-   it causes problems with EBCDIC coding (possibly negative offsets when
-   subtracting 'A'). */
+// Meanings of style buffer characters (styles)
 constexpr uint8_t UNFINISHED_STYLE = ASCII_A;
 
 constexpr uint8_t PLAIN_STYLE = (ASCII_A + 1);
 
-constexpr auto STYLE_NOT_FOUND = static_cast<size_t>(-1);
+constexpr auto STYLE_NOT_FOUND   = static_cast<size_t>(-1);
+constexpr auto PATTERN_NOT_FOUND = static_cast<size_t>(-1);
 
 class Highlight {
     Q_DECLARE_TR_FUNCTIONS(Highlight)
@@ -65,10 +60,10 @@ public:
     static bool isDefaultPatternSet(const PatternSet &patternSet);
     static bool LoadHighlightString(const QString &string);
     static bool NamedStyleExists(const QString &styleName);
-    static bool parseString(const HighlightData *pattern, const char *first, const char *last, const char *&string, char *&styleString, int64_t length, int *prevChar, const QString &delimiters, const char *look_behind_to, const char *match_to);
+	static bool parseString(const HighlightData *pattern, const char *first, const char *last, const char *&string, char *&styleString, int64_t length, int *prevChar, const QString &delimiters, const char *look_behind_to, const char *match_to);
     static bool patternIsParsable(HighlightData *pattern);
     static bool readHighlightPattern(Input &in, QString *errMsg, HighlightPattern *pattern);
-    static HighlightData *patternOfStyle(HighlightData *patterns, int style);
+	static HighlightData *patternOfStyle(const std::unique_ptr<HighlightData[]> &patterns, int style);
     static int findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlightData> &highlightData, TextCursor *pos);
 	static size_t findTopLevelParentIndex(const std::vector<HighlightPattern> &patterns, size_t index);
 	static size_t indexOfNamedPattern(const std::vector<HighlightPattern> &patterns, const QString &name);
@@ -86,7 +81,7 @@ public:
     static TextCursor backwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos);
     static TextCursor forwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos);
     static TextCursor lastModified(const std::shared_ptr<TextBuffer> &buffer);
-    static TextCursor parseBufferRange(const HighlightData *pass1Patterns, const HighlightData *pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, TextCursor beginParse, TextCursor endParse, const QString &delimiters);
+	static TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::unique_ptr<HighlightData[]> &pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, TextCursor beginParse, TextCursor endParse, const QString &delimiters);
     static void fillStyleString(const char *&stringPtr, char *&stylePtr, const char *toPtr, uint8_t style, int *prevChar);
     static void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, TextCursor pos, int64_t nInserted, const QString &delimiters);
     static void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleString, TextCursor startPos, TextCursor endPos, int firstPass2Style);

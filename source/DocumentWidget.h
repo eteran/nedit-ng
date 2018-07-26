@@ -40,13 +40,13 @@ class Style;
 class StyleTableEntry;
 class TextArea;
 class UndoInfo;
-class WindowHighlightData;
 struct DragEndEvent;
 struct MacroCommandData;
 struct Program;
 struct ShellCommandData;
 struct SmartIndentData;
 struct SmartIndentEvent;
+struct WindowHighlightData;
 
 class QFrame;
 class QLabel;
@@ -200,7 +200,7 @@ private:
     boost::optional<TextCursor> findMatchingCharEx(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit);
     bool includeFile(const QString &name);
     bool writeBckVersion();
-	HighlightData *compilePatternsEx(const std::vector<HighlightPattern> &patternSrc);
+	std::unique_ptr<HighlightData[]> compilePatternsEx(const std::vector<HighlightPattern> &patternSrc);
     bool CloseFileAndWindow(CloseMode preResponse);
     bool cmpWinAgainstFile(const QString &fileName) const;
     bool fileWasModifiedExternally() const;
