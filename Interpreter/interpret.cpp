@@ -39,7 +39,8 @@ constexpr const char StackUnderflowMsg[]         = "macro stack underflow";
 constexpr const char StringToNumberMsg[]         = "string could not be converted to number";
 constexpr const char CantConvertArrayToInteger[] = "can't convert array to integer";
 constexpr const char CantConvertArrayToString[]  = "can't convert array to string";
-constexpr const char MacroTooLarge[]             = "macro too large";
+
+constexpr auto MacroTooLarge = QLatin1String("macro too large");
 
 // Global symbols and function definitions
 std::deque<Symbol *> GlobalSymList;
@@ -54,7 +55,7 @@ Inst **LoopStackPtr = LoopStack;       //  to fill at the end of a loop
 // Global data for the interpreter
 MacroContext Context;
 
-char *ErrMsg;                           // global for returning error messages from executing functions
+const char *ErrMsg;                           // global for returning error messages from executing functions
 bool PreemptRequest;                    // passes preemption requests from called routines back up to the interpreter
 
 // Stack-> symN-sym0(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
@@ -316,7 +317,7 @@ Program *FinishCreatingProgram() {
 /*
 ** Add an operator (instruction) to the end of the current program
 */
-bool AddOp(int op, const char **msg) {
+bool AddOp(int op, QString *msg) {
     if (ProgP >= &Prog[PROGRAM_SIZE]) {
         *msg = MacroTooLarge;
         return false;
@@ -329,7 +330,7 @@ bool AddOp(int op, const char **msg) {
 /*
 ** Add a symbol operand to the current program
 */
-bool AddSym(Symbol *sym, const char **msg) {
+bool AddSym(Symbol *sym, QString *msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
         *msg = MacroTooLarge;
         return false;
@@ -342,7 +343,7 @@ bool AddSym(Symbol *sym, const char **msg) {
 /*
 ** Add an immediate value operand to the current program
 */
-bool AddImmediate(int value, const char **msg) {
+bool AddImmediate(int value, QString *msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
         *msg = MacroTooLarge;
         return false;
@@ -355,7 +356,7 @@ bool AddImmediate(int value, const char **msg) {
 /*
 ** Add a branch offset operand to the current program
 */
-bool AddBranchOffset(Inst *to, const char **msg) {
+bool AddBranchOffset(Inst *to, QString *msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
         *msg = MacroTooLarge;
         return false;
@@ -769,33 +770,33 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 
 #define POP(dataVal)                                                           \
     do {                                                                       \
-        if (Context.StackP == Context.Stack.get())                                 \
+	    if (Context.StackP == Context.Stack.get())                             \
             return execError(StackUnderflowMsg);                               \
-        dataVal = *--Context.StackP;                                          \
+	    dataVal = *--Context.StackP;                                           \
     } while(0)
 
 #define PUSH(dataVal)                                                          \
     do {                                                                       \
-        if (Context.StackP >= &Context.Stack.get()[STACK_SIZE])                    \
+	    if (Context.StackP >= &Context.Stack.get()[STACK_SIZE])                \
             return execError(StackOverflowMsg);                                \
-        *Context.StackP++ = dataVal;                                          \
+	    *Context.StackP++ = dataVal;                                           \
     } while(0)
 
 #define PEEK(dataVal, peekIndex)                                               \
     do {                                                                       \
-        dataVal = *(Context.StackP - peekIndex - 1);                          \
+	    dataVal = *(Context.StackP - peekIndex - 1);                           \
     } while(0)
 
 #define POP_INT(number)                                                        \
     do {                                                                       \
-        if (Context.StackP == Context.Stack.get())                                 \
+	    if (Context.StackP == Context.Stack.get())                             \
             return execError(StackUnderflowMsg);                               \
-        --Context.StackP;                                                     \
-        if (is_string(*Context.StackP)) {                                     \
-            if (!StringToNum(to_string(*Context.StackP), &number))            \
+	    --Context.StackP;                                                      \
+	    if (is_string(*Context.StackP)) {                                      \
+	        if (!StringToNum(to_string(*Context.StackP), &number))             \
                 return execError(StringToNumberMsg);                           \
-        } else if (is_integer(*Context.StackP))                               \
-            number = to_integer(*Context.StackP);                             \
+	    } else if (is_integer(*Context.StackP))                                \
+	        number = to_integer(*Context.StackP);                              \
         else                                                                   \
             return execError(CantConvertArrayToInteger);                       \
     } while(0)
@@ -803,13 +804,13 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 
 #define POP_STRING(string_ref)                                                 \
     do {                                                                       \
-        if (Context.StackP == Context.Stack.get())                                 \
+	    if (Context.StackP == Context.Stack.get())                             \
             return execError(StackUnderflowMsg);                               \
-        --Context.StackP;                                                     \
-        if (is_integer(*Context.StackP)) {                                    \
-            string_ref = std::to_string(to_integer(*Context.StackP));         \
-        } else if (is_string(*Context.StackP)) {                              \
-            string_ref = to_string(*Context.StackP);                          \
+	    --Context.StackP;                                                      \
+	    if (is_integer(*Context.StackP)) {                                     \
+	        string_ref = std::to_string(to_integer(*Context.StackP));          \
+	    } else if (is_string(*Context.StackP)) {                               \
+	        string_ref = to_string(*Context.StackP);                           \
         } else {                                                               \
             return execError(CantConvertArrayToString);                        \
         }                                                                      \
@@ -817,17 +818,17 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 
 #define PUSH_INT(number)                                                       \
     do {                                                                       \
-        if (Context.StackP >= &Context.Stack.get()[STACK_SIZE])                    \
+	    if (Context.StackP >= &Context.Stack.get()[STACK_SIZE])                \
             return execError(StackOverflowMsg);                                \
-        *Context.StackP++ = make_value(number);                               \
+	    *Context.StackP++ = make_value(number);                                \
     } while(0)
 
 
 #define PUSH_STRING(string)                                                    \
     do {                                                                       \
-        if (Context.StackP >= &Context.Stack.get()[STACK_SIZE])                    \
+	    if (Context.StackP >= &Context.Stack.get()[STACK_SIZE])                \
             return execError(StackOverflowMsg);                                \
-        *Context.StackP++ = make_value(string);                               \
+	    *Context.StackP++ = make_value(string);                                \
     } while(0)
 
 #define BINARY_NUMERIC_OPERATION(op)                                           \

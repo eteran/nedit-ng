@@ -26,7 +26,7 @@ static int follow(char expect, int yes, int no);
 static int follow2(char expect1, int yes1, char expect2, int yes2, int no);
 static int follow_non_whitespace(char expect, int yes, int no);
 
-static const char *ErrMsg;
+static QString ErrMsg;
 static QString::const_iterator InPtr;
 static QString::const_iterator EndPtr;
 extern Inst *LoopStack[]; /* addresses of break, cont stmts */
@@ -443,7 +443,7 @@ Program *ParseMacro(const QString &expr, QString *msg, int *stoppedAt) {
     EndPtr = start + expr.size();
 
     if (yyparse()) {
-        *msg       = QString::fromLatin1(ErrMsg);
+		*msg       = ErrMsg;
         *stoppedAt = gsl::narrow<int>(InPtr - start);
         Program *prog = FinishCreatingProgram();
         delete prog;
@@ -735,6 +735,6 @@ static int follow_non_whitespace(char expect, int yes, int no) {
 ** of ParseExpr)
 */
 static int yyerror(const char *s) {
-    ErrMsg = s;
+	ErrMsg = QString::fromLatin1(s);
     return 0;
 }

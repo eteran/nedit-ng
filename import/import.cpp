@@ -18,7 +18,7 @@
 #include <string>
 
 // Placing these before X11 includes because that header does defines some
-// invonvinient macros :-(
+// inconvinient macros :-(
 namespace {
 
 struct Style {
@@ -36,7 +36,7 @@ struct MenuItem {
     QString flags;
 };
 
-QString writeMenuItemStringEx(const std::vector<MenuItem> &menuItems, bool isShellCommand) {
+QString writeMenuItemString(const std::vector<MenuItem> &menuItems, bool isShellCommand) {
 
     QString outStr;
     auto outPtr = std::back_inserter(outStr);
@@ -551,9 +551,9 @@ int main(int argc, char *argv[]) {
     std::vector<MenuItem> macroCommands  = loadMenuItemString(Settings::macroCommands, false);
     std::vector<MenuItem> bgMenuCommands = loadMenuItemString(Settings::bgMenuCommands, false);
 
-    Settings::shellCommands           = writeMenuItemStringEx(shellCommands, true);
-    Settings::macroCommands           = writeMenuItemStringEx(macroCommands, false);
-    Settings::bgMenuCommands          = writeMenuItemStringEx(bgMenuCommands, false);
+	Settings::shellCommands           = writeMenuItemString(shellCommands, true);
+	Settings::macroCommands           = writeMenuItemString(macroCommands, false);
+	Settings::bgMenuCommands          = writeMenuItemString(bgMenuCommands, false);
 
     Settings::highlightPatterns       = readResource<QString>(prefDB, "nedit.highlightPatterns");
     Settings::languageModes           = readResource<QString>(prefDB, "nedit.languageModes");

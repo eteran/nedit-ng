@@ -141,12 +141,12 @@ int ArrayCopy(DataValue *dstArray, DataValue *srcArray);
 
 /* Routines for creating a program, (accumulated beginning with
    BeginCreatingProgram and returned via FinishCreatingProgram) */
-bool AddBranchOffset(Inst *to, const char **msg);
+bool AddBranchOffset(Inst *to, QString *msg);
 bool AddBreakAddr(Inst *addr);
 bool AddContinueAddr(Inst *addr);
-bool AddImmediate(int value, const char **msg);
-bool AddOp(int op, const char **msg);
-bool AddSym(Symbol *sym, const char **msg);
+bool AddImmediate(int value, QString *msg);
+bool AddOp(int op, QString *msg);
+bool AddSym(Symbol *sym, QString *msg);
 Inst *GetPC();
 Program *FinishCreatingProgram();
 Symbol *InstallIteratorSymbol();

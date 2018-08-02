@@ -107,7 +107,7 @@ QString copyMacroToEnd(Input &in) {
     return retStr;
 }
 
-QString writeMenuItemStringEx(const std::vector<MenuData> &menuItems, CommandTypes listType) {
+QString writeMenuItemString(const std::vector<MenuData> &menuItems, CommandTypes listType) {
 
     QString outStr;
     auto outPtr = std::back_inserter(outStr);
@@ -461,15 +461,15 @@ MenuData *findMenuItem(const QString &name, CommandTypes type) {
 ** of the shell cmd list, macro menu and background menus.
 */
 QString WriteShellCmdsStringEx() {
-    return writeMenuItemStringEx(ShellMenuData, CommandTypes::SHELL_CMDS);
+    return writeMenuItemString(ShellMenuData, CommandTypes::SHELL_CMDS);
 }
 
 QString WriteMacroCmdsStringEx() {
-    return writeMenuItemStringEx(MacroMenuData, CommandTypes::MACRO_CMDS);
+    return writeMenuItemString(MacroMenuData, CommandTypes::MACRO_CMDS);
 }
 
 QString WriteBGMenuCmdsStringEx() {
-    return writeMenuItemStringEx(BGMenuData, CommandTypes::BG_MENU_CMDS);
+    return writeMenuItemString(BGMenuData, CommandTypes::BG_MENU_CMDS);
 }
 
 /*
