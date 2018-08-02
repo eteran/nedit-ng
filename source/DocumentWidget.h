@@ -128,7 +128,7 @@ public:
     std::unique_ptr<WindowHighlightData> createHighlightDataEx(PatternSet *patSet);
     std::vector<TextArea *> textPanes() const;
     TextArea *firstPane() const;
-    void AbortShellCommandEx();
+    void AbortShellCommand();
     void AddMarkEx(TextArea *area, QChar label);
     void BeginSmartIndent(bool warn);
     void CancelMacroOrLearnEx();
@@ -142,7 +142,7 @@ public:
     void FindDefCalltip(TextArea *area, const QString &tipName);
     void findDefinitionHelper(TextArea *area, const QString &arg, Tags::SearchMode search_type);
     void FindDefinition(TextArea *area, const QString &tagName);
-    void finishMacroCmdExecutionEx();
+    void finishMacroCmdExecution();
     void gotoAP(TextArea *area, int64_t lineNum, int64_t column);
     void gotoMark(TextArea *area, QChar label, bool extendSel);
     void GotoMatchingCharacter(TextArea *area);
@@ -217,7 +217,7 @@ private:
     Style GetHighlightInfoEx(TextCursor pos);
     StyleTableEntry *styleTableEntryOfCodeEx(size_t hCode) const;
     TextArea *createTextArea(TextBuffer *buffer);
-    void AbortMacroCommandEx();
+    void AbortMacroCommand();
     void actionClose(CloseMode mode);
     void addRedoItem(UndoInfo &&redo);
     void addUndoItem(UndoInfo &&undo);

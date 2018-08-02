@@ -38,7 +38,7 @@
 #include "userCmds.h"
 #include "Util/algorithm.h"
 #include "Util/ClearCase.h"
-#include "Util/fileUtils.h"
+#include "Util/FileSystem.h"
 #include "Util/utils.h"
 #include "Util/regex.h"
 #include "WindowMenuEvent.h"
@@ -5198,7 +5198,7 @@ void MainWindow::on_action_Execute_Command_Line_triggered() {
  */
 void MainWindow::on_action_Cancel_Shell_Command_triggered() {
     if(DocumentWidget *document = currentDocument()) {
-        document->AbortShellCommandEx();
+		document->AbortShellCommand();
     }
 }
 

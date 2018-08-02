@@ -5,19 +5,19 @@
 #include "HighlightData.h"
 #include "HighlightPattern.h"
 #include "HighlightStyle.h"
-#include "Util/Input.h"
 #include "MainWindow.h"
 #include "PatternSet.h"
+#include "Regex.h"
 #include "ReparseContext.h"
-#include "StyleTableEntry.h"
 #include "Settings.h"
+#include "StyleTableEntry.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
+#include "Util/Input.h"
+#include "Util/Resource.h"
 #include "WindowHighlightData.h"
 #include "X11Colors.h"
 #include "preferences.h"
-#include "Regex.h"
-#include "Util/utils.h"
 
 
 #include <QSettings>

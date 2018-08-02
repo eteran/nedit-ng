@@ -12,7 +12,7 @@
 #include <QThread>
 
 #include "Util/version.h"
-#include "Util/fileUtils.h"
+#include "Util/FileSystem.h"
 #include "Util/ClearCase.h"
 #include "Util/ServerCommon.h"
 

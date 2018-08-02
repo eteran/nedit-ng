@@ -1,6 +1,6 @@
 
-#ifndef RAISE_H_
-#define RAISE_H_
+#ifndef UTIL_RAISE_H_
+#define UTIL_RAISE_H_
 
 #include <utility>
 

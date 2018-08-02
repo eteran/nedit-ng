@@ -6,20 +6,25 @@ find_package(Qt5 5.5.0 REQUIRED Core Network)
 
 add_library (Util
 	ClearCase.cpp
-	fileUtils.cpp
-	ServerCommon.cpp
-	utils.cpp
+	FileSystem.cpp
+	Host.cpp
 	Input.cpp
 	regex.cpp
-	include/Util/regex.h
-	include/Util/Input.h
+	Resource.cpp
+	ServerCommon.cpp
+	User.cpp
 	include/Util/algorithm.h
 	include/Util/ClearCase.h
 	include/Util/FileFormats.h
-	include/Util/fileUtils.h
-	include/Util/raise.h
+	include/Util/FileSystem.h
+	include/Util/Host.h
+	include/Util/Input.h
+	include/Util/Resource.h
+	include/Util/Raise.h
+	include/Util/regex.h
 	include/Util/ServerCommon.h
 	include/Util/string_view.h
+	include/Util/User.h
 	include/Util/utils.h
 	include/Util/version.h
 )

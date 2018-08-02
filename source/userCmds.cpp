@@ -7,7 +7,7 @@
 #include "Util/Input.h"
 #include "preferences.h"
 #include "LanguageMode.h"
-#include "Util/raise.h"
+#include "Util/Raise.h"
 #include <QTextStream>
 #include <memory>
 
@@ -20,7 +20,7 @@ std::vector<MenuData> BGMenuData;
 namespace {
 
 /*
-** Scan text from "*in" to the end of macro input (matching brace),
+** Scan text from "in" to the end of macro input (matching brace),
 ** advancing in, and return macro text as function return value.
 **
 ** This is kind of wastefull in that it throws away the compiled macro,

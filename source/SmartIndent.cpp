@@ -6,7 +6,7 @@
 #include "preferences.h"
 #include "shift.h"
 #include "Util/Input.h"
-#include "Util/utils.h"
+#include "Util/Resource.h"
 
 #include <QMessageBox>
 #include <QPointer>

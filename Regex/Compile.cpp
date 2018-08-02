@@ -6,7 +6,7 @@
 #include "Opcodes.h"
 #include "RegexError.h"
 #include "Regex.h"
-#include "Util/raise.h"
+#include "Util/Raise.h"
 #include "Util/utils.h"
 #include <cstring>
 #include <algorithm>

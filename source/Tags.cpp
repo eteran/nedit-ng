@@ -7,8 +7,8 @@
 #include "preferences.h"
 #include "Search.h"
 #include "LanguageMode.h"
-#include "Util/fileUtils.h"
-#include "Util/utils.h"
+#include "Util/User.h"
+#include "Util/FileSystem.h"
 #include "Util/Input.h"
 
 #include <gsl/gsl_util>
@@ -165,7 +165,7 @@ int Tags::addTag(const QString &name, const QString &file, size_t lang, const QS
         newFile = tr("%1%2").arg(path, file);
 	}
 
-    newFile = NormalizePathnameEx(newFile);
+    newFile = NormalizePathname(newFile);
 
     QList<Tag> tags = table->values(name);
     for(const Tag &t : tags) {
@@ -190,7 +190,7 @@ int Tags::addTag(const QString &name, const QString &file, size_t lang, const QS
 
             auto tmpFile = tr("%1%2").arg(t.path, t.file);
 
-            tmpFile = NormalizePathnameEx(tmpFile);
+            tmpFile = NormalizePathname(tmpFile);
 
             if(newFile != tmpFile) {
                 continue;
@@ -235,7 +235,7 @@ bool Tags::AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, S
             pathName = tr("%1/%2").arg(GetCurrentDirEx(), filename);
         }
 
-        pathName = NormalizePathnameEx(pathName);
+        pathName = NormalizePathname(pathName);
 
         auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](const File &tag) {
             return tag.filename == pathName;
@@ -300,7 +300,7 @@ bool Tags::AddTagsFileEx(const QString &tagSpec, SearchMode mode) {
 			pathName = filename;
         }
 
-		pathName = NormalizePathnameEx(pathName);
+		pathName = NormalizePathname(pathName);
 
         auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](const File &tag) {
 			return tag.filename == pathName;
@@ -369,7 +369,7 @@ bool Tags::DeleteTagsFileEx(const QString &tagSpec, SearchMode mode, bool force_
             pathName = filename;
         }
 
-        pathName = NormalizePathnameEx(pathName);
+        pathName = NormalizePathname(pathName);
 
         auto it = FileList->begin();
         while(it != FileList->end()) {
@@ -549,7 +549,7 @@ int Tags::scanETagsLine(const QString &line, const QString &tagPath, int index, 
             if (!QFileInfo(file).isAbsolute()) {
 
                 auto incPath = tr("%1%2").arg(tagPath, file);
-                incPath = CompressPathnameEx(incPath);
+                incPath = CompressPathname(incPath);
                 return loadTagsFile(incPath, index, recLevel + 1);
 			} else {
                 return loadTagsFile(file, index, recLevel + 1);
@@ -838,7 +838,7 @@ void Tags::showMatchingCalltipEx(QWidget *parent, TextArea *area, int id) {
         int64_t endPos   = 0;
 
         // 1. Open the target file
-        NormalizePathnameEx(tagFiles[id]);
+        NormalizePathname(tagFiles[id]);
 
         std::ifstream file(tagFiles[id].toStdString());
         if(!file) {
@@ -1163,7 +1163,7 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
 	// find the tips file 
     // Allow ~ in Unix filenames
-    QString tipPath = ExpandTildeEx(tipsFile);
+    QString tipPath = ExpandTilde(tipsFile);
     if(tipPath.isNull()) {
         return 0;
     }

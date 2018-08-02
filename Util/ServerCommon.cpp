@@ -1,6 +1,7 @@
 
 #include "Util/ServerCommon.h"
-#include "Util/utils.h"
+#include "Util/User.h"
+#include "Util/Host.h"
 #include <QString>
 #include <QStringList>
 #include <QStandardPaths>
@@ -39,7 +40,7 @@ QString LocalSocketName(const QString &server_name) {
     } else {
 #ifdef Q_OS_LINUX
         QByteArray display = qgetenv("DISPLAY");
-        return QString(QLatin1String("nedit-ng_%1_%2_%3_%4")).arg(GetUserNameEx(), hostname, server_name, QString::fromLocal8Bit(display));
+        return QString(QLatin1String("nedit-ng_%1_%2_%3_%4")).arg(GetUserName(), hostname, server_name, QString::fromLocal8Bit(display));
 #else
         return QString(QLatin1String("nedit-ng_%1_%2_%3")).arg(GetUserNameEx(), hostname, server_name);
 #endif

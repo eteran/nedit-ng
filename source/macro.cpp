@@ -21,7 +21,7 @@
 #include "preferences.h"
 #include "Search.h"
 #include "SmartIndent.h"
-#include "Util/fileUtils.h"
+#include "Util/FileSystem.h"
 #include "Util/utils.h"
 #include "Util/version.h"
 
@@ -2371,7 +2371,7 @@ static std::error_code focusWindowMS(DocumentWidget *document, Arguments argumen
         // didn't work? try normalizing the string passed in
         if(it == documents.end()) {
 
-            const QString normalizedString = NormalizePathnameEx(string);
+            const QString normalizedString = NormalizePathname(string);
             if(normalizedString.isNull()) {
                 //  Something is broken with the input pathname.
                 return MacroErrorCode::PathnameTooLong;

@@ -6,7 +6,7 @@
 #include "preferences.h"
 
 #include "Util/ServerCommon.h"
-#include "Util/fileUtils.h"
+#include "Util/FileSystem.h"
 
 #include <QApplication>
 #include <QDesktopWidget>

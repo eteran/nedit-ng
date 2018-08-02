@@ -3,7 +3,6 @@
 #include "DocumentWidget.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
-#include "Util/utils.h"
 #include <gsl/gsl_util>
 
 namespace {

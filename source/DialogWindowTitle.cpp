@@ -6,8 +6,9 @@
 #include "preferences.h"
 #include "SignalBlocker.h"
 #include "Util/ClearCase.h"
-#include "Util/fileUtils.h"
-#include "Util/utils.h"
+#include "Util/User.h"
+#include "Util/Host.h"
+#include "Util/FileSystem.h"
 #include <QRegularExpressionValidator>
 
 namespace {
@@ -702,7 +703,7 @@ QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, co
 
             case 'u': // user name
                 userNamePresent = true;
-                title.append(GetUserNameEx());
+                title.append(GetUserName());
                 break;
 
             case '%': // escaped %

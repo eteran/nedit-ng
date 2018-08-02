@@ -1,27 +1,16 @@
 
-#include "Util/fileUtils.h"
-#include "Util/FileFormats.h"
-#include "Util/utils.h"
+#include "Util/FileSystem.h"
 #include "Util/ClearCase.h"
-#include <gsl/gsl_util>
+#include "Util/FileFormats.h"
 
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#include <cerrno>
-#include <algorithm>
-#include <memory>
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <iterator>
 #include <string>
 
-#ifdef Q_OS_UNIX
-#include <unistd.h>
-#include <pwd.h>
-#endif
-
-#include <QString>
+#include <QDir>
 #include <QFileInfo>
+#include <QString>
 
 namespace {
 
@@ -137,55 +126,15 @@ bool ParseFilenameEx(const QString &fullname, QString *filename, QString *pathna
 	}
 
 	if (pathname) {
-		*pathname = NormalizePathnameEx(*pathname);
+		*pathname = NormalizePathname(*pathname);
 	}
 
 	return true;
 }
 
-/*
-** Expand tilde characters which begin file names as done by the shell
-** If it doesn't work just return the pathname originally passed pathname
-*/
-QString ExpandTildeEx(const QString &pathname) {
-#ifdef Q_OS_UNIX
-    struct passwd *passwdEntry;
 
-    if (!pathname.startsWith(QLatin1Char('~'))) {
-        return pathname;
-    }
 
-    int end = pathname.indexOf(QLatin1Char('/'));
-    if(end == -1) {
-        end = pathname.size();
-    }
-
-    QString username = pathname.mid(1, end - 1);
-
-    /* We might consider to re-use the GetHomeDirEx() function,
-       but to keep the code more similar for both cases ... */
-    if (username.isEmpty()) {
-        passwdEntry = getpwuid(getuid());
-        if ((passwdEntry == nullptr) || (*(passwdEntry->pw_dir) == '\0')) {
-            /* This is really serious, so just exit. */
-            qFatal("getpwuid() failed ");
-        }
-    } else {
-        passwdEntry = getpwnam(username.toLatin1().data());
-        if ((passwdEntry == nullptr) || (*(passwdEntry->pw_dir) == '\0')) {
-            /* username was just an input by the user, this is no indication
-             * for some (serious) problems */
-            return QString();
-        }
-    }
-
-    return QString(QLatin1String("%1/%2")).arg(QString::fromUtf8(passwdEntry->pw_dir), pathname.mid(end));
-#else
-    return pathname;
-#endif
-}
-
-QString NormalizePathnameEx(const QString &pathname) {
+QString NormalizePathname(const QString &pathname) {
 
     QString path = pathname;
 
@@ -209,7 +158,7 @@ QString NormalizePathnameEx(const QString &pathname) {
     }
 
     /* compress out .. and . */
-    return CompressPathnameEx(path);
+	return CompressPathname(path);
 }
 
 /**
@@ -220,7 +169,7 @@ QString NormalizePathnameEx(const QString &pathname) {
  * Returns a pathname without symbolic links or redundant "." or ".." elements.
  *
  */
-QString CompressPathnameEx(const QString &path) {
+QString CompressPathname(const QString &path) {
 
     // NOTE(eteran): Things like QFileInfo::canonicalFilePath return an empty
     // string if a path represents a file that doesn't exist yet. So we may not
@@ -444,3 +393,11 @@ QString ReadAnyTextFileEx(const QString &fileName, bool forceNL) {
 	
 	return QString::fromStdString(contents);
 }
+
+/* return non-nullptr value for the current working directory.
+   If system call fails, provide a fallback value */
+QString GetCurrentDirEx() {
+	return QDir::currentPath();
+}
+
+

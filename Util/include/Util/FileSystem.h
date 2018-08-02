@@ -1,6 +1,6 @@
 
-#ifndef FILEUTILS_H_
-#define FILEUTILS_H_
+#ifndef UTIL_FILESYSTEM_H_
+#define UTIL_FILESYSTEM_H_
 
 #include <string>
 #include "string_view.h"
@@ -10,17 +10,17 @@ class QString;
 
 enum class FileFormats : int;
 
+
 FileFormats FormatOfFileEx(view::string_view fileString);
-bool ParseFilenameEx(const QString &fullname, QString *filename, QString *pathname);
-QString ExpandTildeEx(const QString &pathname);
+QString CompressPathname(const QString &pathname);
+QString GetCurrentDirEx();
 QString GetTrailingPathComponentsEx(const QString &path, int noOfComponents);
+QString NormalizePathname(const QString &pathname);
 QString ReadAnyTextFileEx(const QString &fileName, bool forceNL);
+bool ParseFilenameEx(const QString &fullname, QString *filename, QString *pathname);
 
 void ConvertToDos(std::string &text);
 void ConvertToMac(std::string &text);
-
-QString NormalizePathnameEx(const QString &pathname);
-QString CompressPathnameEx(const QString &pathname);
 
 template <class Integer>
 using IsInteger = typename std::enable_if<std::is_integral<Integer>::value>::type;

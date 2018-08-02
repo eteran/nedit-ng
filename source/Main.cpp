@@ -13,7 +13,7 @@
 #include "DialogAbout.h"
 #include "CommandRecorder.h"
 #include "NeditServer.h"
-#include "Util/fileUtils.h"
+#include "Util/FileSystem.h"
 
 #include <QString>
 #include <QFile>

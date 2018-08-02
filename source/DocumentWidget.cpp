@@ -35,7 +35,8 @@
 #include "userCmds.h"
 #include "Util/ClearCase.h"
 #include "Util/Input.h"
-#include "Util/fileUtils.h"
+#include "Util/FileSystem.h"
+#include "Util/User.h"
 #include "Util/utils.h"
 #include "Util/regex.h"
 
@@ -137,6 +138,16 @@ constexpr CharMatchTable FlashingChars[] = {
    interval is only to prevent checking on every keystroke in case of a file
    system which is slow to process stat requests (which I'm not sure exists) */
 constexpr int MOD_CHECK_INTERVAL = 3000;
+
+/**
+ * @brief ErrorString
+ * @param error
+ * @return The result of strerror(error), but as a QString
+ */
+QString ErrorString(int error) {
+	return QString::fromLatin1(strerror(error));
+}
+
 
 void modifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
     if(auto document = static_cast<DocumentWidget *>(user)) {
@@ -1793,7 +1804,7 @@ QString DocumentWidget::backupFileNameEx() const {
     if (filenameSet_) {
         return tr("%1~%2").arg(path_, filename_);
     } else {
-        return PrependHomeEx(tr("~%1").arg(filename_));
+        return PrependHome(tr("~%1").arg(filename_));
     }
 }
 
@@ -2668,12 +2679,7 @@ bool DocumentWidget::fileWasModifiedExternally() const {
 
 bool DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
 
-    // Make sure that the window is not in iconified state
-    if (fileChanged_) {
-        RaiseDocumentWindow();
-    }
-
-    /* If the window is a normal & unmodified file or an empty new file,
+	/* If the window is a normal & unmodified file or an empty new file,
        or if the user wants to ignore external modifications then
        just close it.  Otherwise ask for confirmation first. */
     if (!fileChanged_ &&
@@ -2741,14 +2747,14 @@ void DocumentWidget::CloseDocument() {
     const bool keepWindow = !MacroWindowCloseActionsEx();
 
     // Kill shell sub-process
-    AbortShellCommandEx();
+	AbortShellCommand();
 
     // Unload the default tips files for this language mode if necessary
     UnloadLanguageModeTipsFileEx();
 
     /* if this is the last window, or must be kept alive temporarily because
        it's running the macro calling us, don't close it, make it Untitled */
-    const size_t windowCount   = MainWindow::allWindows().size();
+	const size_t windowCount   = MainWindow::allWindows().size();
     const size_t documentCount = DocumentWidget::allDocuments().size();
 
     Q_EMIT documentClosed();
@@ -4591,7 +4597,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 /*
 ** Cancel the shell command in progress
 */
-void DocumentWidget::AbortShellCommandEx() {
+void DocumentWidget::AbortShellCommand() {
     if(const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_) {
         if(QProcess *process = cmdData->process) {
             process->kill();
@@ -5062,11 +5068,11 @@ void DocumentWidget::runMacroEx(Program *prog) {
 
     switch(stat) {
     case MACRO_ERROR:
-        finishMacroCmdExecutionEx();
+		finishMacroCmdExecution();
         QMessageBox::critical(this, tr("Macro Error"), tr("Error executing macro: %1").arg(errMsg));
         break;
     case MACRO_DONE:
-        finishMacroCmdExecutionEx();
+		finishMacroCmdExecution();
         break;
     case MACRO_TIME_LIMIT:
         ResumeMacroExecutionEx();
@@ -5080,7 +5086,7 @@ void DocumentWidget::runMacroEx(Program *prog) {
 ** Clean up after the execution of a macro command: free memory, and restore
 ** the user interface state.
 */
-void DocumentWidget::finishMacroCmdExecutionEx() {
+void DocumentWidget::finishMacroCmdExecution() {
 
     const bool closeOnCompletion = macroCmdData_->closeOnCompletion;
 
@@ -5131,11 +5137,11 @@ DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProcEx() {
 
     switch(stat) {
     case MACRO_ERROR:
-        finishMacroCmdExecutionEx();
+		finishMacroCmdExecution();
         QMessageBox::critical(this, tr("Macro Error"), tr("Error executing macro: %1").arg(errMsg));
         return MacroContinuationCode::Stop;
     case MACRO_DONE:
-        finishMacroCmdExecutionEx();
+		finishMacroCmdExecution();
         return MacroContinuationCode::Stop;
     case MACRO_PREEMPT:
         return MacroContinuationCode::Stop;
@@ -6306,14 +6312,14 @@ bool DocumentWidget::MacroWindowCloseActionsEx() {
     }
 
     // Kill the macro command
-    finishMacroCmdExecutionEx();
+	finishMacroCmdExecution();
     return true;
 }
 
 /*
 ** Cancel the macro command in progress (user cancellation via GUI)
 */
-void DocumentWidget::AbortMacroCommandEx() {
+void DocumentWidget::AbortMacroCommand() {
     if (!macroCmdData_)
         return;
 
@@ -6322,11 +6328,11 @@ void DocumentWidget::AbortMacroCommandEx() {
        commands don't put up cancellation controls of their own, but rely
        instead on the macro cancellation mechanism (here) */
     if (shellCmdData_) {
-        AbortShellCommandEx();
+		AbortShellCommand();
     }
 
     // Kill the macro command
-    finishMacroCmdExecutionEx();
+	finishMacroCmdExecution();
 }
 
 /*
@@ -6336,7 +6342,7 @@ void DocumentWidget::CancelMacroOrLearnEx() {
     if(CommandRecorder::instance()->isRecording()) {
         cancelLearnEx();
     } else if (macroCmdData_) {
-        AbortMacroCommandEx();
+		AbortMacroCommand();
     }
 }
 
