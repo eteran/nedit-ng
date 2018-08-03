@@ -19,7 +19,7 @@ enum RepeatMethod {
 };
 
 bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos);
-bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runDocument, const QString &errIn, int *errPos);
+bool readCheckMacroString(QWidget *dialogParent, const QString &string, DocumentWidget *runDocument, const QString &errIn, int *errPos);
 
 void RegisterMacroSubroutines();
 void ReturnShellCommandOutputEx(DocumentWidget *document, const QString &outText, int status);

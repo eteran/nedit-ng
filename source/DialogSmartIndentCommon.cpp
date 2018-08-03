@@ -138,7 +138,7 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	   probably won't be referenced in a smart indent initialization) */
     std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
     if(!documents.empty()) {
-        if (!documents[0]->ReadMacroStringEx(SmartIndent::CommonMacros, tr("common macros"))) {
+		if (!documents[0]->ReadMacroString(SmartIndent::CommonMacros, tr("common macros"))) {
 			return false;
 		}
 	}

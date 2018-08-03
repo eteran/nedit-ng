@@ -982,10 +982,10 @@ void DocumentWidget::smartIndentCallback(TextArea *area, SmartIndentEvent *data)
 
 	switch(data->reason) {
 	case CHAR_TYPED:
-        executeModMacroEx(data);
+		executeModMacro(data);
 		break;
 	case NEWLINE_INDENT_NEEDED:
-        executeNewlineMacroEx(data);
+		executeNewlineMacro(data);
         break;
 	}
 }
@@ -3201,7 +3201,7 @@ void DocumentWidget::RefreshMenuToggleStates() {
 ** Run the newline macro with information from the smart-indent callback
 ** structure passed by the widget
 */
-void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
+void DocumentWidget::executeNewlineMacro(SmartIndentEvent *event) {
 
     if(const std::unique_ptr<SmartIndentData> &winData = smartIndentData_) {
 
@@ -3218,12 +3218,12 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
 
         // Call newline macro with the position at which to add newline/indent
         std::array<DataValue, 1> args;
-        args[0] = make_value(to_integer(cbInfo->pos));
+		args[0] = make_value(to_integer(event->pos));
 
         ++(winData->inNewLineMacro);
 
         std::shared_ptr<MacroContext> continuation;
-        int stat = ExecuteMacroEx(this, winData->newlineMacro, args, &result, continuation, &errMsg);
+		int stat = ExecuteMacro(this, winData->newlineMacro, args, &result, continuation, &errMsg);
 
         // Don't allow preemption or time limit.  Must get return value
         while (stat == MACRO_TIME_LIMIT) {
@@ -3249,7 +3249,7 @@ void DocumentWidget::executeNewlineMacroEx(SmartIndentEvent *cbInfo) {
             return;
         }
 
-        cbInfo->indentRequest = to_integer(result);
+		event->indentRequest = to_integer(result);
     }
 }
 
@@ -3283,7 +3283,7 @@ void DocumentWidget::SetShowMatching(ShowMatchingStyle state) {
 ** Run the modification macro with information from the smart-indent callback
 ** structure passed by the widget
 */
-void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
+void DocumentWidget::executeModMacro(SmartIndentEvent *event) {
 
     if(const std::unique_ptr<SmartIndentData> &winData = smartIndentData_) {
 
@@ -3292,21 +3292,21 @@ void DocumentWidget::executeModMacroEx(SmartIndentEvent *cbInfo) {
 
         /* Check for inappropriate calls and prevent re-entering if the macro
            makes a buffer modification */
-        if (winData->modMacro == nullptr || winData->inModMacro > 0) {
+		if (!winData->modMacro || winData->inModMacro > 0) {
             return;
         }
 
         /* Call modification macro with the position of the modification,
            and the character(s) inserted.  Don't allow
            preemption or time limit.  Execution must not overlap or re-enter */
-        std::array<DataValue, 2> args;
-        args[0] = make_value(to_integer(cbInfo->pos));
-        args[1] = make_value(cbInfo->charsTyped);
+		std::array<DataValue, 2> args;
+		args[0] = make_value(to_integer(event->pos));
+		args[1] = make_value(event->charsTyped);
 
         ++(winData->inModMacro);
 
         std::shared_ptr<MacroContext> continuation;
-        int stat = ExecuteMacroEx(this, winData->modMacro, args, &result, continuation, &errMsg);
+		int stat = ExecuteMacro(this, winData->modMacro, args, &result, continuation, &errMsg);
 
         while (stat == MACRO_TIME_LIMIT) {
             stat = ContinueMacroEx(continuation, &result, &errMsg);
@@ -3593,7 +3593,12 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
     }
 
     // Search for it in the buffer
-    boost::optional<TextCursor> matchPos = findMatchingCharEx(buffer_->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer());
+	boost::optional<TextCursor> matchPos = findMatchingCharEx(
+	                                           buffer_->BufGetCharacter(selStart),
+	                                           GetHighlightInfoEx(selStart),
+	                                           selStart,
+	                                           buffer_->BufStartOfBuffer(),
+	                                           buffer_->BufEndOfBuffer());
     if (!matchPos) {
         QApplication::beep();
         return;
@@ -3640,7 +3645,7 @@ void DocumentWidget::findDefinitionHelper(TextArea *area, const QString &arg, Ta
 	} else {
         Tags::searchMode = search_type;
 
-        QString selected = GetAnySelection(/*beep_on_error=*/false);
+		QString selected = GetAnySelection(/*beep_on_error=*/false);
         if(selected.isEmpty()) {
 			return;
 		}
@@ -3691,11 +3696,11 @@ int DocumentWidget::findDef(TextArea *area, const QString &value, Tags::SearchMo
 }
 
 /**
- * @brief DocumentWidget::FindDefinition
+ * @brief DocumentWidget::findDefinition
  * @param area
  * @param tagName
  */
-void DocumentWidget::FindDefinition(TextArea *area, const QString &tagName) {
+void DocumentWidget::findDefinition(TextArea *area, const QString &tagName) {
     findDefinitionHelper(area, tagName, Tags::SearchMode::TAG);
 }
 
@@ -3710,7 +3715,7 @@ void DocumentWidget::execAP(TextArea *area, const QString &command) {
         return;
     }
 
-    ExecShellCommandEx(area, command, CommandSource::User);
+	executeShellCommand(area, command, CommandSource::User);
 }
 
 /*
@@ -3718,7 +3723,7 @@ void DocumentWidget::execAP(TextArea *area, const QString &command) {
 ** insert position or in the current selection if the window has a
 ** selection.
 */
-void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, CommandSource source) {
+void DocumentWidget::executeShellCommand(TextArea *area, const QString &command, CommandSource source) {
     if(auto win = MainWindow::fromDocument(this)) {
         int flags = 0;
 
@@ -3773,11 +3778,11 @@ void DocumentWidget::ExecShellCommandEx(TextArea *area, const QString &command, 
 }
 
 /**
- * @brief DocumentWidget::PrintWindow
+ * @brief DocumentWidget::printWindow
  * @param area
  * @param selectedOnly
  */
-void DocumentWidget::PrintWindow(TextArea *area, bool selectedOnly) {
+void DocumentWidget::printWindow(TextArea *area, bool selectedOnly) {
 
     std::string fileString;
 
@@ -3791,6 +3796,7 @@ void DocumentWidget::PrintWindow(TextArea *area, bool selectedOnly) {
             QApplication::beep();
             return;
         }
+
         if (sel->rectangular) {
             fileString = buffer_->BufGetSelectionTextEx();
         } else {
@@ -3806,17 +3812,17 @@ void DocumentWidget::PrintWindow(TextArea *area, bool selectedOnly) {
     }
 
     // Print the string
-    PrintStringEx(fileString, filename_);
+	printString(fileString, filename_);
 }
 
 /**
  * Print a string
  *
- * @brief DocumentWidget::PrintStringEx
+ * @brief DocumentWidget::printString
  * @param string
  * @param jobname
  */
-void DocumentWidget::PrintStringEx(const std::string &string, const QString &jobname) {
+void DocumentWidget::printString(const std::string &string, const QString &jobname) {
 
     auto dialog = std::make_unique<DialogPrint>(
                 QString::fromStdString(string),
@@ -3918,13 +3924,13 @@ void DocumentWidget::BeginSmartIndent(bool warn) {
     /* Make sure that the initial macro file is loaded before we execute
        any of the smart-indent macros. Smart-indent macros may reference
        routines defined in that file. */
-    ReadMacroInitFileEx();
+	readMacroInitFile();
 
     /* Compile and run the common and language-specific initialization macros
        (Note that when these return, the immediate commands in the file have not
        necessarily been executed yet.  They are only SCHEDULED for execution) */
     if (!initialized) {
-        if (!ReadMacroStringEx(SmartIndent::CommonMacros, tr("smart indent common initialization macros"))) {
+		if (!ReadMacroString(SmartIndent::CommonMacros, tr("smart indent common initialization macros"))) {
             return;
         }
 
@@ -3932,7 +3938,7 @@ void DocumentWidget::BeginSmartIndent(bool warn) {
     }
 
     if (!indentMacros->initMacro.isNull()) {
-        if (!ReadMacroStringEx(indentMacros->initMacro, tr("smart indent initialization macro"))) {
+		if (!ReadMacroString(indentMacros->initMacro, tr("smart indent initialization macro"))) {
             return;
         }
     }
@@ -5019,7 +5025,7 @@ bool DocumentWidget::ReadMacroFileEx(const QString &fileName, bool warnNotExist)
 
 
 	// Parse fileString
-	return readCheckMacroStringEx(this, fileString, this, fileName, nullptr);
+	return readCheckMacroString(this, fileString, this, fileName, nullptr);
 }
 
 /*
@@ -5064,7 +5070,7 @@ void DocumentWidget::runMacroEx(Program *prog) {
     // Begin macro execution
     DataValue result;
     QString errMsg;
-    const int stat = ExecuteMacroEx(this, prog, {}, &result, macroCmdData_->context, &errMsg);
+	const int stat = ExecuteMacro(this, prog, {}, &result, macroCmdData_->context, &errMsg);
 
     switch(stat) {
     case MACRO_ERROR:
@@ -5560,9 +5566,14 @@ size_t DocumentWidget::HighlightCodeOfPosEx(TextCursor pos) {
 ** at pos. If the initial code value *checkCode is zero, the highlight code of
 ** pos is used.
 */
+int64_t DocumentWidget::HighlightLengthOfCodeFromPosEx(TextCursor pos) {
+	size_t checkCode = 0;
+	return HighlightLengthOfCodeFromPosEx(pos, checkCode);
+}
+
 /* YOO: This is called from only one other function, which uses a constant
-    for checkCode and never evaluates it after the call. */
-int64_t DocumentWidget::HighlightLengthOfCodeFromPosEx(TextCursor pos, size_t *checkCode) {
+	for checkCode */
+int64_t DocumentWidget::HighlightLengthOfCodeFromPosEx(TextCursor pos, size_t checkCode) {
 
     const TextCursor oldPos = pos;
 
@@ -5581,11 +5592,11 @@ int64_t DocumentWidget::HighlightLengthOfCodeFromPosEx(TextCursor pos, size_t *c
                 hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
             }
 
-            if (*checkCode == 0) {
-                *checkCode = hCode;
+			if (checkCode == 0) {
+				checkCode = hCode;
             }
 
-            while (hCode == *checkCode || hCode == UNFINISHED_STYLE) {
+			while (hCode == checkCode || hCode == UNFINISHED_STYLE) {
                 if (hCode == UNFINISHED_STYLE) {
                     // encountered "unfinished" style, trigger parsing, then loop
                     handleUnparsedRegion(highlightData->styleBuffer, pos);
@@ -5666,9 +5677,6 @@ void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &sty
     }
 
     // Copy the buffer range into a string
-    /* printf("callback pass2 parsing from %d thru %d w/ safety from %d thru %d\n",
-            beginParse, endParse, beginSafety, endSafety); */
-
     std::string str             = buf->BufGetRangeEx(beginSafety, endSafety);
     const char *string          = &str[0];
     const char *const match_to  = string + str.size();
@@ -5967,7 +5975,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(Patte
 
         StyleTableEntry p;
 
-		p.isUnderlined     = false;
+		p.isUnderlined  = false;
         p.highlightName = pat->name;
         p.styleName     = pat->style;
 		p.colorName     = Highlight::FgColorOfNamedStyle     (pat->style);
@@ -6132,7 +6140,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatternsEx(const std::ve
         if (patternSrc[i].startRE.isNull() || compiledPats[i].colorOnly) {
             compiledPats[i].startRE = nullptr;
         } else {
-            compiledPats[i].startRE = compileREAndWarnEx(patternSrc[i].startRE);
+			compiledPats[i].startRE = compileRegexAndWarn(patternSrc[i].startRE);
             if (!compiledPats[i].startRE) {
                 return nullptr;
             }
@@ -6141,7 +6149,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatternsEx(const std::ve
         if (patternSrc[i].endRE.isNull() || compiledPats[i].colorOnly) {
             compiledPats[i].endRE = nullptr;
         } else {
-            compiledPats[i].endRE = compileREAndWarnEx(patternSrc[i].endRE);
+			compiledPats[i].endRE = compileRegexAndWarn(patternSrc[i].endRE);
             if (!compiledPats[i].endRE) {
                 return nullptr;
             }
@@ -6150,7 +6158,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatternsEx(const std::ve
         if (patternSrc[i].errorRE.isNull()) {
             compiledPats[i].errorRE = nullptr;
         } else {
-            compiledPats[i].errorRE = compileREAndWarnEx(patternSrc[i].errorRE);
+			compiledPats[i].errorRE = compileRegexAndWarn(patternSrc[i].errorRE);
             if (!compiledPats[i].errorRE) {
                 return nullptr;
             }
@@ -6240,7 +6248,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatternsEx(const std::ve
 /*
 ** compile a regular expression and present a user friendly dialog on failure.
 */
-std::unique_ptr<Regex> DocumentWidget::compileREAndWarnEx(const QString &re) {
+std::unique_ptr<Regex> DocumentWidget::compileRegexAndWarn(const QString &re) {
 
     try {
 		return make_regex(re, REDFLT_STANDARD);
@@ -6281,7 +6289,7 @@ bool DocumentWidget::MacroWindowCloseActionsEx() {
     CommandRecorder *recorder = CommandRecorder::instance();
 
     if (recorder->isRecording() && recorder->macroRecordDocument() == this) {
-        FinishLearning();
+		finishLearning();
     }
 
     /* If no macro is executing in the window, allow the close, but check
@@ -6320,8 +6328,9 @@ bool DocumentWidget::MacroWindowCloseActionsEx() {
 ** Cancel the macro command in progress (user cancellation via GUI)
 */
 void DocumentWidget::AbortMacroCommand() {
-    if (!macroCmdData_)
+	if (!macroCmdData_) {
         return;
+	}
 
     /* If there's both a macro and a shell command executing, the shell command
        must have been called from the macro.  When called from a macro, shell
@@ -6340,14 +6349,14 @@ void DocumentWidget::AbortMacroCommand() {
 */
 void DocumentWidget::CancelMacroOrLearnEx() {
     if(CommandRecorder::instance()->isRecording()) {
-        cancelLearnEx();
+		cancelLearning();
     } else if (macroCmdData_) {
 		AbortMacroCommand();
     }
 }
 
 /*
-** Execute the learn/replay sequence stored in "window"
+** Execute the learn/replay sequence
 */
 void DocumentWidget::ReplayEx() {
 
@@ -6370,7 +6379,7 @@ void DocumentWidget::ReplayEx() {
     }
 }
 
-void DocumentWidget::cancelLearnEx() {
+void DocumentWidget::cancelLearning() {
 
     if(!CommandRecorder::instance()->isRecording()) {
         return;
@@ -6392,7 +6401,7 @@ void DocumentWidget::cancelLearnEx() {
     document->ClearModeMessage();
 }
 
-void DocumentWidget::FinishLearning() {
+void DocumentWidget::finishLearning() {
 
     if(!CommandRecorder::instance()->isRecording()) {
         return;
@@ -6405,6 +6414,7 @@ void DocumentWidget::FinishLearning() {
 
     for(MainWindow *window : MainWindow::allWindows()) {
         window->ui.action_Learn_Keystrokes->setEnabled(true);
+		window->ui.action_Replay_Keystrokes->setEnabled(true);
     }
 
     if (document->IsTopDocument()) {
@@ -6412,10 +6422,6 @@ void DocumentWidget::FinishLearning() {
             window->ui.action_Finish_Learn->setEnabled(false);
             window->ui.action_Cancel_Learn->setEnabled(false);
         }
-    }
-
-    for(MainWindow *window : MainWindow::allWindows()) {
-        window->ui.action_Replay_Keystrokes->setEnabled(true);
     }
 
     document->ClearModeMessage();
@@ -6448,16 +6454,17 @@ void DocumentWidget::DoMacro(const QString &macro, const QString &errInName) {
 /*
 **  Read the initial NEdit macro file if one exists.
 */
-void DocumentWidget::ReadMacroInitFileEx() {
-
-    const QString autoloadName = Settings::autoLoadMacroFile();
-    if(autoloadName.isNull()) {
-        return;
-    }
+void DocumentWidget::readMacroInitFile() {
 
     static bool initFileLoaded = false;
 
     if (!initFileLoaded) {
+
+		const QString autoloadName = Settings::autoLoadMacroFile();
+		if(autoloadName.isNull()) {
+			return;
+		}
+
         ReadMacroFileEx(autoloadName, false);
         initFileLoaded = true;
     }
@@ -6465,64 +6472,69 @@ void DocumentWidget::ReadMacroInitFileEx() {
 
 /*
 ** Parse and execute a macro string including macro definitions.  Report
-** parsing errors in a dialog posted over window->shell_.
+** parsing errors in a dialog.
 */
-int DocumentWidget::ReadMacroStringEx(const QString &string, const QString &errIn) {
-    return readCheckMacroStringEx(this, string, this, errIn, nullptr);
+bool DocumentWidget::ReadMacroString(const QString &string, const QString &errIn) {
+	return readCheckMacroString(this, string, this, errIn, nullptr);
 }
 
 /**
- * @brief DocumentWidget::EndSmartIndentEx
+ * @brief DocumentWidget::EndSmartIndent
  */
 void DocumentWidget::EndSmartIndent() {
-    const std::unique_ptr<SmartIndentData> &winData = smartIndentData_;
 
-    if(!winData) {
+	if(!smartIndentData_) {
         return;
     }
 
     // Free programs and allocated data
-    if (winData->modMacro) {
-        delete winData->modMacro;
-    }
-
-    delete winData->newlineMacro;
+	delete smartIndentData_->modMacro;
+	delete smartIndentData_->newlineMacro;
 
     smartIndentData_ = nullptr;
 }
 
 /**
- * @brief DocumentWidget::InSmartIndentMacrosEx
+ * @brief DocumentWidget::InSmartIndentMacros
  * @return
  */
-bool DocumentWidget::InSmartIndentMacrosEx() const {
-    const std::unique_ptr<SmartIndentData> &winData = smartIndentData_;
-    return winData && (winData->inModMacro || winData->inNewLineMacro);
+bool DocumentWidget::InSmartIndentMacros() const {
+	return smartIndentData_ &&
+	        (smartIndentData_->inModMacro || smartIndentData_->inNewLineMacro);
 }
 
 /**
- * @brief DocumentWidget::GetAnySelectionEx
+ * @brief DocumentWidget::GetAnySelection
+ * @return
+ */
+QString DocumentWidget::GetAnySelection() {
+	return GetAnySelection(/*beep_on_error=*/false);
+}
+
+/**
+ * @brief DocumentWidget::GetAnySelection
+ * @param beep_on_error
  * @return
  */
 QString DocumentWidget::GetAnySelection(bool beep_on_error) {
 
-    // If the selection is in the window's own buffer get it from there
-    if (buffer_->primary.selected) {
-        return QString::fromStdString(buffer_->BufGetSelectionTextEx());
-    }
+	// If the selection is in the window's own buffer get it from there
+	if (buffer_->primary.selected) {
+		return QString::fromStdString(buffer_->BufGetSelectionTextEx());
+	}
 
-    if(QApplication::clipboard()->supportsSelection()) {
-        const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
-        if(mimeData->hasText()) {
-            return mimeData->text();
-        }
-    }
+	if(QApplication::clipboard()->supportsSelection()) {
+		const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
+		if(mimeData->hasText()) {
+			return mimeData->text();
+		}
+	}
 
-    if(beep_on_error) {
-        QApplication::beep();
-    }
+	if(beep_on_error) {
+		QApplication::beep();
+	}
 
-    return QString();
+	return QString();
 }
 
 /*

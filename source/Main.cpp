@@ -335,7 +335,7 @@ Main::Main(const QStringList &args) {
                     }
 
                     if (!macroFileReadEx) {
-                        document->ReadMacroInitFileEx();
+                        document->readMacroInitFile();
                         macroFileReadEx = true;
                     }
                     if (gotoLine) {
@@ -373,7 +373,7 @@ Main::Main(const QStringList &args) {
     if (!fileSpecified) {
         DocumentWidget *document = MainWindow::EditNewFile(nullptr, geometry, iconic, langMode, QString());
 
-        document->ReadMacroInitFileEx();
+        document->readMacroInitFile();
         MainWindow::CheckCloseEnableState();
 
         if (!toDoCommand.isNull()) {

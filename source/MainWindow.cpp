@@ -1981,7 +1981,7 @@ void MainWindow::action_Open_Selected(DocumentWidget *document) {
     emit_event("open_selected");
 
     // Get the selected text, if there's no selection, do nothing
-    const QString selected = document->GetAnySelection(/*beep_on_error=*/false);
+	const QString selected = document->GetAnySelection();
     if(!selected.isEmpty()) {
         openFile(document, selected);
     } else {
@@ -2399,7 +2399,7 @@ void MainWindow::action_Goto_Selected(DocumentWidget *document) {
 
     emit_event("goto_selected");
 
-    const QString selected = document->GetAnySelection(/*beep_on_error=*/false);
+	const QString selected = document->GetAnySelection();
     if(selected.isEmpty()) {
         QApplication::beep();
         return;
@@ -3492,7 +3492,7 @@ void MainWindow::action_Print(DocumentWidget *document) {
 
     emit_event("print");
     if(QPointer<TextArea> area = lastFocus_) {
-        document->PrintWindow(area, /*selectedOnly=*/false);
+		document->printWindow(area, /*selectedOnly=*/false);
     }
 }
 
@@ -3514,7 +3514,7 @@ void MainWindow::action_Print_Selection(DocumentWidget *document) {
 
     emit_event("print_selection");
     if(QPointer<TextArea> area = lastFocus_) {
-        document->PrintWindow(area, /*selectedOnly=*/true);
+		document->printWindow(area, /*selectedOnly=*/true);
     }
 }
 
@@ -5216,7 +5216,7 @@ void MainWindow::on_action_Learn_Keystrokes_triggered() {
  */
 void MainWindow::on_action_Finish_Learn_triggered() {
     if(DocumentWidget *document = currentDocument()) {
-        document->FinishLearning();
+		document->finishLearning();
     }
 }
 
@@ -5568,7 +5568,7 @@ void MainWindow::action_Find_Definition(DocumentWidget *document, const QString 
     }
 
     if(QPointer<TextArea> area = lastFocus_) {
-        document->FindDefinition(area, argument);
+		document->findDefinition(area, argument);
     }
 }
 
@@ -6498,7 +6498,7 @@ void MainWindow::action_Replace_Find(DocumentWidget *document, const QString &se
  */
 void MainWindow::SearchForSelectedEx(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap) {
 
-    const QString selected = document->GetAnySelection(/*beep_on_error=*/false);
+	const QString selected = document->GetAnySelection();
     if(selected.isEmpty()) {
         if (Preferences::GetPrefSearchDlogs()) {
             QMessageBox::warning(document, tr("Wrong Selection"), tr("Selection not appropriate for searching"));

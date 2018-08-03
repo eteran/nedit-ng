@@ -458,7 +458,7 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 ** (if any) can be read from "result".  If MACRO_PREEMPT is returned, the
 ** macro exceeded its alotted time-slice and scheduled...
 */
-int ExecuteMacroEx(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg) {
+int ExecuteMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg) {
 
     /* Create an execution context (a stack, a stack pointer, a frame pointer,
        and a program counter) which will retain the program state across

@@ -2105,10 +2105,10 @@ void RegisterMacroSubroutines() {
 ** a dialog explaining if macro did not compile successfully.
 */
 bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos) {
-    return readCheckMacroStringEx(dialogParent, string, nullptr, errIn, errPos);
+    return readCheckMacroString(dialogParent, string, nullptr, errIn, errPos);
 }
 
-bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, DocumentWidget *runDocument, const QString &errIn, int *errPos) {
+bool readCheckMacroString(QWidget *dialogParent, const QString &string, DocumentWidget *runDocument, const QString &errIn, int *errPos) {
 
     Input in(&string);
 
@@ -2186,6 +2186,7 @@ bool readCheckMacroStringEx(QWidget *dialogParent, const QString &string, Docume
 
             if (runDocument) {
                 if(Symbol *sym = LookupSymbolEx(subrName)) {
+
                     if (sym->type == MACRO_FUNCTION_SYM) {
                         delete to_program(sym->value);
                     } else {
@@ -2537,7 +2538,7 @@ static std::error_code getSelectionMS(DocumentWidget *document, Arguments argume
             return MacroErrorCode::UnrecognizedArgument;
         }
 
-        QString text = document->GetAnySelection(true);
+		QString text = document->GetAnySelection(/*beep_on_error=*/true);
         if (text.isNull()) {
             text = QLatin1String("");
         }
@@ -5280,8 +5281,7 @@ std::error_code fillPatternResultEx(DataValue *result, DocumentWidget *document,
 
     if (bufferPos >= 0) {
         // insert extent
-        size_t checkCode = 0;
-        DV = make_value(document->HighlightLengthOfCodeFromPosEx(bufferPos, &checkCode));
+		DV = make_value(document->HighlightLengthOfCodeFromPosEx(bufferPos));
         if (!ArrayInsert(result, "extent", &DV)) {
             return MacroErrorCode::InsertFailed;
         }
