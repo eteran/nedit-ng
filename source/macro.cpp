@@ -803,8 +803,8 @@ static WrapMode searchWrap(Arguments arguments, int index) {
 
 /*
 ** Parses a search type description string. If the string contains a valid
-** search type description, returns TRUE and writes the corresponding
-** SearchType in searchType. Returns FALSE and leaves searchType untouched
+** search type description, returns true and writes the corresponding
+** SearchType in searchType. Returns false and leaves searchType untouched
 ** otherwise. (Originally written by Markus Schwarzenberg; slightly adapted).
 */
 bool StringToSearchType(const QString &string, SearchType *searchType) {

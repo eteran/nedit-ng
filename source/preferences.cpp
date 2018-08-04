@@ -562,7 +562,7 @@ void Preferences::SetPrefAutoScroll(bool state) {
 
 	Settings::autoScroll = state;
 
-	// TODO(eteran): should this update be done at this level?
+	// TODO(eteran): should this be done at this level? maybe a signal/slot update?
 	for(DocumentWidget *document : DocumentWidget::allDocuments()) {
 		document->SetAutoScroll(margin);
 	}

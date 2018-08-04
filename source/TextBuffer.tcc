@@ -601,7 +601,7 @@ bool BasicTextBuffer<Ch, Tr>::BufGetSelectionPos(TextCursor *start, TextCursor *
     return primary.getSelectionPos(start, end, isRect, rectStart, rectEnd);
 }
 
-// Same as above, but also returns TRUE for empty selections
+// Same as above, but also returns true for empty selections
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::BufGetEmptySelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept {
     return primary.getSelectionPos(start, end, isRect, rectStart, rectEnd) || primary.zeroWidth;
@@ -1564,7 +1564,7 @@ bool BasicTextBuffer<Ch, Tr>::BufIsEmpty() const noexcept {
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::GetSimpleSelection(TextCursor *left, TextCursor *right) const noexcept {
 
-	// TODO(eteran): return optional range
+	// TODO(eteran): return optional "range"
 
     TextCursor selStart;
     TextCursor selEnd;

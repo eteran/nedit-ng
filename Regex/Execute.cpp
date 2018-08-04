@@ -943,7 +943,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 		case LOOK_AHEAD_CLOSE:
 		case LOOK_BEHIND_CLOSE:
 			/* We have reached the end of the look-ahead or look-behind which
-			 * implies that we matched it, so return TRUE. */
+			 * implies that we matched it, so return true. */
 			MATCH_RETURN(true);
 
 		default:

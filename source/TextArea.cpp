@@ -4463,7 +4463,7 @@ void TextArea::TextDInsertEx(view::string_view text) {
 */
 bool TextArea::wrapLine(TextBuffer *buf, int64_t bufOffset, TextCursor lineStartPos, TextCursor lineEndPos, TextCursor limitPos, TextCursor *breakAt, int64_t *charsAdded) {
 
-	// TODO(eteran): return an optional structure
+	// TODO(eteran): return optional structure
 	TextCursor p;
 	int column;
 

@@ -625,7 +625,7 @@ QString Rangeset::RangesetGetName() const {
  */
 bool Rangeset::RangesetFindRangeNo(int64_t index, TextCursor *start, TextCursor *end) const {
 
-	// TODO(eteran): return an optional "range"
+	// TODO(eteran): return optional "range"
 
 	if (index < 0 || n_ranges_ <= index || !ranges_) {
 		return false;
