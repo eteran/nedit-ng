@@ -3,16 +3,17 @@
 #include "TextBuffer.h"
 #include <gsl/gsl_util>
 #include <string>
+#include <array>
 
 namespace {
 
 // --------------------------------------------------------------------------
 
-const uint8_t rangeset_labels[N_RANGESETS + 1] = {
+const std::array<uint8_t, N_RANGESETS> rangeset_labels = {
 	58, 10, 15,  1, 27, 52, 14,  3, 61, 13, 31, 30, 45, 28, 41, 55,
 	33, 20, 62, 34, 42, 18, 57, 47, 24, 49, 19, 50, 25, 38, 40,  2,
 	21, 39, 59, 22, 60,  4,  6, 16, 29, 37, 48, 46, 54, 43, 32, 56,
-	51,  7,  9, 63,  5,  8, 36, 44, 26, 11, 23, 17, 53, 35, 12, '\0'
+    51,  7,  9, 63,  5,  8, 36, 44, 26, 11, 23, 17, 53, 35, 12
 };
 
 
@@ -92,11 +93,11 @@ RangesetTable::RangesetTable(TextBuffer *buffer) : buf_(buffer) {
 		set_[i].RangesetInit(rangeset_labels[i]);
 
 		order_[i]  = static_cast<uint8_t>(i);
-		active_[i] = false;
 		depth_[i]  = static_cast<uint8_t>(i);
+		active_[i] = false;
 	}
 
-	n_set_   = 0;
+	n_set_ = 0;
 
 	/* Range sets must be updated before the text display callbacks are
 	   called to avoid highlighted ranges getting out of sync. */
@@ -164,9 +165,9 @@ int RangesetTable::RangesetFindIndex(int label, bool must_be_active) const {
 	   return -1;
 	}
 
-	auto p_label = reinterpret_cast<const uint8_t *>(::strchr(reinterpret_cast<const char *>(rangeset_labels), label));
-	if (p_label) {
-		auto i = static_cast<int>(p_label - rangeset_labels);
+	auto it = std::find(rangeset_labels.begin(), rangeset_labels.end(), label);
+	if(it != rangeset_labels.end()) {
+		const int i = (it - rangeset_labels.begin());
 		if (!must_be_active || active_[i])
 		return i;
 	}
@@ -250,22 +251,21 @@ void RangesetTable::RangesetTableUpdatePos(TextCursor pos, int64_t ins, int64_t 
 */
 int RangesetTable::RangesetCreate() {
 
-	std::vector<uint8_t> list = RangesetGetList();
+	const std::vector<uint8_t> list = RangesetGetList();
 
 	// find the first label not used
-	auto it = std::find_if(std::begin(rangeset_labels), std::end(rangeset_labels), [&list](char ch) {
+	const auto it = std::find_if(rangeset_labels.begin(), rangeset_labels.end(), [&list](char ch) {
 		return std::find(list.begin(), list.end(), ch) == list.end();
 	});
 
-	auto firstAvailableIndex = static_cast<size_t>(it - std::begin(rangeset_labels));
-
-	if(firstAvailableIndex >= sizeof(rangeset_labels)) {
+	if(it == rangeset_labels.end()) {
 		return 0;
 	}
 
-	int label = rangeset_labels[firstAvailableIndex];
+	const int firstAvailableIndex = (it - rangeset_labels.begin());
 
-	int setIndex = RangesetFindIndex(label, false);
+	const int label    = rangeset_labels[firstAvailableIndex];
+	const int setIndex = RangesetFindIndex(label, /*must_be_active=*/false);
 
 	if (setIndex < 0) {
 		return 0;
@@ -285,6 +285,6 @@ int RangesetTable::RangesetCreate() {
 /*
 ** Return true if label is a valid identifier for a range set.
 */
-int RangesetTable::RangesetLabelOK(int label) {
-	return ::strchr(reinterpret_cast<const char *>(rangeset_labels), label) != nullptr;
+bool RangesetTable::RangesetLabelOK(int label) {
+	return std::find(rangeset_labels.begin(), rangeset_labels.end(), label) != rangeset_labels.end();
 }

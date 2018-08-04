@@ -65,7 +65,6 @@ std::string to_lower(view::string_view s) {
  * @param searchString
  * @param wrap
  * @param beginPos
- * @param result
  * @param delimiters
  * @param defaultFlags
  * @return
@@ -118,7 +117,6 @@ boost::optional<Search::Result> forwardRegexSearch(view::string_view string, vie
  * @param searchString
  * @param wrap
  * @param beginPos
- * @param result
  * @param delimiters
  * @param defaultFlags
  * @return
@@ -178,7 +176,6 @@ boost::optional<Search::Result> backwardRegexSearch(view::string_view string, vi
  * @param direction
  * @param wrap
  * @param beginPos
- * @param result
  * @param delimiters
  * @param defaultFlags
  * @return
@@ -199,21 +196,20 @@ boost::optional<Search::Result> searchRegex(view::string_view string, view::stri
  * @brief searchLiteral
  * @param string
  * @param searchString
- * @param caseSense
+ * @param caseSensitivity
  * @param direction
  * @param wrap
  * @param beginPos
- * @param result
  * @return
  */
-boost::optional<Search::Result> searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos) {
+boost::optional<Search::Result> searchLiteral(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, Qt::CaseSensitivity caseSensitivity) {
 
 	// TODO(eteran): investigate if we can rework this in terms of std::search
 
 	std::string lcString;
 	std::string ucString;
 
-	if (caseSense) {
+	if (caseSensitivity == Qt::CaseSensitive) {
 		lcString = searchString.to_string();
 		ucString = searchString.to_string();
 	} else {
@@ -274,7 +270,7 @@ boost::optional<Search::Result> searchLiteral(view::string_view string, view::st
 
 		return boost::none;
 	} else {
-		// Direction::BACKWARD
+		// Direction::Backward
 		// search from beginPos to start of file.  A negative begin pos
 		// says begin searching from the far end of the file
 
@@ -315,7 +311,7 @@ boost::optional<Search::Result> searchLiteral(view::string_view string, view::st
 **  will suffice in that case.
 **
 */
-boost::optional<Search::Result> searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos, const char *delimiters) {
+boost::optional<Search::Result> searchLiteralWord(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, const char *delimiters, Qt::CaseSensitivity caseSensitivity) {
 
 	// TODO(eteran): investigate if we can rework this in terms of std::search
 
@@ -379,7 +375,7 @@ boost::optional<Search::Result> searchLiteralWord(view::string_view string, view
 		cignore_R = true;
 	}
 
-	if (caseSense) {
+	if (caseSensitivity == Qt::CaseSensitive) {
 		ucString = searchString.to_string();
 		lcString = searchString.to_string();
 	} else {
@@ -408,7 +404,7 @@ boost::optional<Search::Result> searchLiteralWord(view::string_view string, view
 		}
 		return boost::none;
 	} else {
-		// Direction::BACKWARD
+		// Direction::Backward
 		// search from beginPos to start of file. A negative begin pos
 		// says begin searching from the far end of the file
 
@@ -435,25 +431,21 @@ boost::optional<Search::Result> searchLiteralWord(view::string_view string, view
 }
 
 /*
-** Search the null terminated string "string" for "searchString", beginning at
-** "beginPos".  Returns the boundaries of the match in "startPos" and "endPos".
-** extentBW and extentFW return the backwardmost and forwardmost
-** positions used to make the match, which are usually startPos and endPos,
-** but may extend further if positive lookahead or lookbehind was used in
-** a regular expression match.  "delimiters" may be used to provide an
-** alternative set of word delimiters for regular expression "<" and ">"
-** characters, or simply passed as null for the default delimiter set.
+** Search the string "string" for "searchString", beginning at "beginPos".
+** "delimiters" may be used to provide an alternative set of word delimiters
+** for regular expression "<" and ">" characters, or simply passed as nullptr
+** for the default delimiter set.
 */
 boost::optional<Search::Result> SearchStringEx(view::string_view string, view::string_view searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, const char *delimiters) {
 	switch (searchType) {
 	case SearchType::CaseSenseWord:
-		return searchLiteralWord(string, searchString, /*caseSense=*/true, direction, wrap, beginPos, delimiters);
+		return searchLiteralWord(string, searchString, direction, wrap, beginPos, delimiters, Qt::CaseSensitive);
 	case SearchType::LiteralWord:
-		return searchLiteralWord(string, searchString, /*caseSense=*/false, direction, wrap, beginPos, delimiters);
+		return searchLiteralWord(string, searchString, direction, wrap, beginPos, delimiters, Qt::CaseInsensitive);
 	case SearchType::CaseSense:
-		return searchLiteral(string, searchString, /*caseSense=*/true, direction, wrap, beginPos);
+		return searchLiteral(string, searchString, direction, wrap, beginPos, Qt::CaseSensitive);
 	case SearchType::Literal:
-		return searchLiteral(string, searchString, /*caseSense=*/false, direction, wrap, beginPos);
+		return searchLiteral(string, searchString, direction, wrap, beginPos, Qt::CaseInsensitive);
 	case SearchType::Regex:
 		return searchRegex(string, searchString, direction, wrap, beginPos, delimiters, REDFLT_STANDARD);
 	case SearchType::RegexNoCase:
@@ -491,7 +483,7 @@ bool replaceUsingRegex(view::string_view searchStr, view::string_view replaceStr
 ** first replacement (returned in "copyStart", and the end of the last
 ** replacement (returned in "copyEnd")
 */
-boost::optional<std::string> Search::ReplaceAllInStringEx(view::string_view inString, const QString &searchString, const QString &replaceString, SearchType searchType, int64_t *copyStart, int64_t *copyEnd, const QString &delimiters) {
+boost::optional<std::string> Search::ReplaceAllInString(view::string_view inString, const QString &searchString, const QString &replaceString, SearchType searchType, int64_t *copyStart, int64_t *copyEnd, const QString &delimiters) {
 
 	Result searchResult;
 	int64_t lastEndPos;

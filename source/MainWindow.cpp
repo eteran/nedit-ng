@@ -2100,7 +2100,7 @@ void MainWindow::action_Shift_Left(DocumentWidget *document) {
 	}
 
 	if(QPointer<TextArea> area = lastFocus_) {
-		ShiftSelectionEx(document, area, SHIFT_LEFT, /*byTab=*/false);
+		ShiftSelectionEx(document, area, ShiftDirection::Left, /*byTab=*/false);
 	}
 }
 
@@ -2127,7 +2127,7 @@ void MainWindow::action_Shift_Right(DocumentWidget *document) {
 	}
 
 	if(QPointer<TextArea> area = lastFocus_) {
-		ShiftSelectionEx(document, area, SHIFT_RIGHT, /*byTab=*/false);
+		ShiftSelectionEx(document, area, ShiftDirection::Right, /*byTab=*/false);
 	}
 }
 
@@ -2154,7 +2154,7 @@ void MainWindow::action_Shift_Left_Tabs(DocumentWidget *document) {
 	}
 
 	if(QPointer<TextArea> area = lastFocus_) {
-		ShiftSelectionEx(document, area, SHIFT_LEFT, /*byTab=*/true);
+		ShiftSelectionEx(document, area, ShiftDirection::Left, /*byTab=*/true);
 	}
 }
 
@@ -2180,7 +2180,7 @@ void MainWindow::action_Shift_Right_Tabs(DocumentWidget *document) {
 	}
 
 	if(QPointer<TextArea> area = lastFocus_) {
-		ShiftSelectionEx(document, area, SHIFT_RIGHT, /*byTab=*/true);
+		ShiftSelectionEx(document, area, ShiftDirection::Right, /*byTab=*/true);
 	}
 }
 
@@ -6818,7 +6818,7 @@ bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QS
 
 	QString delimieters = document->GetWindowDelimitersEx();
 
-	boost::optional<std::string> newFileString = Search::ReplaceAllInStringEx(
+	boost::optional<std::string> newFileString = Search::ReplaceAllInString(
 				fileString,
 				searchString,
 				replaceString,

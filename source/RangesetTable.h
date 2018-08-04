@@ -28,7 +28,7 @@ public:
 	void RangesetTableUpdatePos(TextCursor pos, int64_t ins, int64_t del);
 
 public:
-	static int RangesetLabelOK(int label);
+	static bool RangesetLabelOK(int label);
 
 public:
 	int n_set_;                   /* how many sets are active */

@@ -25,7 +25,7 @@ public:
 	static bool LoadSmartIndentCommonStringEx(const QString &string);
 	static bool LoadSmartIndentStringEx(const QString &string);
 	static bool SmartIndentMacrosAvailable(const QString &languageModeName);
-	static QString  WriteSmartIndentCommonStringEx();
+	static QString WriteSmartIndentCommonStringEx();
 	static QString WriteSmartIndentStringEx();
 	static void EditCommonSmartIndentMacro();
 	static void RenameSmartIndentMacros(const QString &oldName, const QString &newName);

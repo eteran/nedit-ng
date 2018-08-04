@@ -2970,7 +2970,7 @@ static std::error_code replaceInStringMS(DocumentWidget *document, Arguments arg
 	}
 
 	// Do the replace
-	boost::optional<std::string> replacedStr = Search::ReplaceAllInStringEx(
+	boost::optional<std::string> replacedStr = Search::ReplaceAllInString(
 				string,
 				searchStr,
 				replaceStr,

@@ -3,6 +3,8 @@
 #include "DocumentWidget.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
+#include "Util/string_view.h"
+
 #include <gsl/gsl_util>
 
 namespace {
@@ -544,7 +546,7 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 	** (remove one tab, add tabDist-1 spaces). Shift right adds a maximum of
 	** nChars character per line.
 	*/
-	if (direction == SHIFT_RIGHT) {
+	if (direction == ShiftDirection::Right) {
 		bufLen = text.size() + static_cast<size_t>(countLinesEx(text) * nChars);
 	} else {
 		bufLen = text.size() + static_cast<size_t>(countLinesEx(text) * tabDist);
@@ -566,7 +568,7 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 
 			auto segment = substr(lineStartPtr, text.end());
 
-			std::string shiftedLineString = (direction == SHIFT_RIGHT) ?
+			std::string shiftedLineString = (direction == ShiftDirection::Right) ?
 				shiftLineRightEx(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars):
 				shiftLineLeftEx (segment, textPtr - lineStartPtr,              tabDist, nChars);
 
@@ -595,7 +597,7 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 ** if "byTab" is true.  (The length of a tab stop is the size of an emulated
 ** tab if emulated tabs are turned on, or a hardware tab if not).
 */
-void shiftRectEx(DocumentWidget *document, TextArea *area, int direction, bool byTab, TextCursor selStart, TextCursor selEnd, int64_t rectStart, int64_t rectEnd) {
+void shiftRectEx(DocumentWidget *document, TextArea *area, ShiftDirection direction, bool byTab, TextCursor selStart, TextCursor selEnd, int64_t rectStart, int64_t rectEnd) {
 	int64_t offset;
 	TextBuffer *buf = document->buffer_;
 
@@ -611,7 +613,7 @@ void shiftRectEx(DocumentWidget *document, TextArea *area, int direction, bool b
 		offset = 1;
 	}
 
-	offset *= (direction == SHIFT_LEFT) ? -1 : 1;
+	offset *= (direction == ShiftDirection::Left) ? -1 : 1;
 
 	if (rectStart + offset < 0) {
 		offset = -rectStart;
@@ -799,7 +801,7 @@ QString ShiftTextEx(const QString &text, ShiftDirection direction, bool tabsAllo
 	** (remove one tab, add tabDist-1 spaces). Shift right adds a maximum of
 	** nChars character per line.
 	*/
-	if (direction == SHIFT_RIGHT) {
+	if (direction == ShiftDirection::Right) {
 		bufLen = text.size() + countLinesEx(text) * nChars;
 	} else {
 		bufLen = text.size() + countLinesEx(text) * tabDist;
@@ -822,7 +824,7 @@ QString ShiftTextEx(const QString &text, ShiftDirection direction, bool tabsAllo
 
 			auto segment = text.mid(gsl::narrow<int>(lineStartPtr - text.data()));
 
-			QString shiftedLineString = (direction == SHIFT_RIGHT) ?
+			QString shiftedLineString = (direction == ShiftDirection::Right) ?
 				shiftLineRightEx(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars):
 				shiftLineLeftEx (segment, textPtr - lineStartPtr,              tabDist, nChars);
 

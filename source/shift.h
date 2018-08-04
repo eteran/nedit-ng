@@ -3,7 +3,6 @@
 #define SHIFT_H_
 
 #include "ShiftDirection.h"
-#include "Util/string_view.h"
 
 class DocumentWidget;
 class TextArea;
