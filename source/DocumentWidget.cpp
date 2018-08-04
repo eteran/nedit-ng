@@ -2927,38 +2927,45 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 			if (!(flags & EditFlags::SUPPRESS_CREATE_WARN)) {
 
                 QMessageBox msgbox(this);
-                QAbstractButton  *exitButton;
+				QAbstractButton *exitButton;
+				QAbstractButton *cancelButton;
+				QAbstractButton *newButton;
 
                 // ask user for next action if file not found
                 std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
-                int resp;
 
                 if (documents.size() == 1 && documents.front() == this) {
 
                     msgbox.setIcon(QMessageBox::Warning);
                     msgbox.setWindowTitle(tr("New File"));
                     msgbox.setText(tr("Can't open %1:\n%2").arg(fullname, ErrorString(errno)));
-                    msgbox.addButton(tr("New File"), QMessageBox::AcceptRole);
-                    msgbox.addButton(QMessageBox::Cancel);
-                    exitButton = msgbox.addButton(tr("Exit NEdit"), QMessageBox::RejectRole);
-                    resp = msgbox.exec();
+					newButton    = msgbox.addButton(tr("New File"), QMessageBox::AcceptRole);
+					cancelButton = msgbox.addButton(QMessageBox::Cancel);
+					exitButton   = msgbox.addButton(tr("Exit NEdit"), QMessageBox::RejectRole);
 
                 } else {
 
                     msgbox.setIcon(QMessageBox::Warning);
                     msgbox.setWindowTitle(tr("New File"));
                     msgbox.setText(tr("Can't open %1:\n%2").arg(fullname, ErrorString(errno)));
-                    msgbox.addButton(tr("New File"), QMessageBox::AcceptRole);
-                    msgbox.addButton(QMessageBox::Cancel);
-                    exitButton = nullptr;
-                    resp = msgbox.exec();
+					newButton    = msgbox.addButton(tr("New File"), QMessageBox::AcceptRole);
+					cancelButton = msgbox.addButton(QMessageBox::Cancel);
+					exitButton   = nullptr;
                 }
 
-                if (resp == QMessageBox::Cancel) {
-                    return false;
-                } else if (msgbox.clickedButton() == exitButton) {
-                    QApplication::quit();
-                }
+				Q_UNUSED(newButton);
+
+				msgbox.exec();
+
+				if (msgbox.clickedButton() == cancelButton) {
+					return false;
+				} else if (msgbox.clickedButton() == exitButton) {
+					// NOTE(eteran): we use ::exit here because if we got here
+					// it's because we failed to open the initial documents on
+					// launch and the user has opted to no longer continue
+					// running nedit-ng
+					::exit(0);
+				}
             }
 
             // Test if new file can be created
