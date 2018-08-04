@@ -413,7 +413,7 @@ bool Tags::DeleteTagsFileEx(const QString &tagSpec, SearchMode mode, bool force_
 */
 int Tags::scanCTagsLine(const QString &line, const QString &tagPath, int index) {
 
-	QRegExp regex(QLatin1String("^([^\\t]+)\\t([^\\t]+)\\t([^\\n]+)\\n$"));
+	QRegExp regex(QLatin1String(R"(^([^\t]+)\t([^\t]+)\t([^\n]+)\n$)"));
 	if(!regex.exactMatch(line)) {
 		return 0;
 	}
@@ -883,7 +883,7 @@ void Tags::showMatchingCalltipEx(QWidget *parent, TextArea *area, int id) {
 
 			bool found = Search::SearchString(
 						fileString,
-						QLatin1String("\\n\\s*\\n"),
+			            QLatin1String(R"(\n\s*\n)"),
 						Direction::Forward,
 						SearchType::Regex,
 						WrapMode::NoWrap,
@@ -970,11 +970,11 @@ bool Tags::searchLine(const std::string &line, const std::string &regex) {
 int Tags::nextTFBlock(std::istream &is, QString &header, QString &body, int *blkLine, int *currLine) {
 
 	// These are the different kinds of tokens
-	const char *commenTF_regex = "^\\s*\\* comment \\*\\s*$";
-	const char *version_regex  = "^\\s*\\* version \\*\\s*$";
-	const char *include_regex  = "^\\s*\\* include \\*\\s*$";
-	const char *language_regex = "^\\s*\\* language \\*\\s*$";
-	const char *alias_regex    = "^\\s*\\* alias \\*\\s*$";
+	const char *commenTF_regex = R"(^\s*\* comment \*\s*$)";
+	const char *version_regex  = R"(^\s*\* version \*\s*$)";
+	const char *include_regex  = R"(^\s*\* include \*\s*$)";
+	const char *language_regex = R"(^\s*\* language \*\s*$)";
+	const char *alias_regex    = R"(^\s*\* alias \*\s*$)";
 	std::string line;
 	int dummy1;
 	int code;

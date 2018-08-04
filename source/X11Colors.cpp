@@ -808,7 +808,7 @@ QColor X11Colors::fromString(const QString &s) {
 
 	for(X11Color color : colors) {
 		if(color.name == s) {
-			return QColor(color.r, color.g, color.b);
+			return { color.r, color.g, color.b };
 		}
 	}
 

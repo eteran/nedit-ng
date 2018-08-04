@@ -11,8 +11,8 @@
    UNDO_OP_TRIMTO in length (when the list reaches UNDO_OP_LIMIT, it is
    trimmed to UNDO_OP_TRIMTO then allowed to grow back to UNDO_OP_LIMIT). */
 
-constexpr auto UNDO_OP_LIMIT     = 400u;      // normal limit for length of undo list
-constexpr auto UNDO_OP_TRIMTO    = 200u;      // size undo list is normally trimmed to when it exceeds UNDO_OP_TRIMTO in length
+constexpr auto UNDO_OP_LIMIT     = 400u; // normal limit for length of undo list
+constexpr auto UNDO_OP_TRIMTO    = 200u; // size undo list is normally trimmed to when it exceeds UNDO_OP_TRIMTO in length
 
 enum UndoTypes {
 	UNDO_NOOP,
@@ -35,10 +35,10 @@ public:
 	~UndoInfo() noexcept                  = default;
 
 public:
+	std::string oldText;
 	UndoTypes type;
 	TextCursor startPos;
-	TextCursor endPos;
-	std::string oldText;
+	TextCursor endPos;	
 	bool inUndo          = false; // flag to indicate undo command on this record in progress. Redirects SaveUndoInfo to save the next modifications on the redo list instead of the undo list.
 	bool restoresToSaved = false; // flag to indicate undoing this operation will restore file to last saved (unmodified) state
 };

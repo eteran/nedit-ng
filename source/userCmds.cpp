@@ -39,11 +39,11 @@ QString copyMacroToEnd(Input &in) {
 
 	if (!code.startsWith(QLatin1Char('{'))) {
 		Preferences::reportError(
-					nullptr,
-					code,
-					input.index() - in.index(),
-					QLatin1String("macro menu item"),
-					QLatin1String("expecting '{'"));
+		            nullptr,
+		            code,
+		            input.index() - in.index(),
+		            QLatin1String("macro menu item"),
+		            QLatin1String("expecting '{'"));
 
 		return QString();
 	}
@@ -55,11 +55,11 @@ QString copyMacroToEnd(Input &in) {
 	Program *const prog = ParseMacro(code, &errMsg, &stoppedAt);
 	if(!prog) {
 		Preferences::reportError(
-					nullptr,
-					code,
-					stoppedAt,
-					QLatin1String("macro menu item"),
-					errMsg);
+		            nullptr,
+		            code,
+		            stoppedAt,
+		            QLatin1String("macro menu item"),
+		            errMsg);
 
 		return QString();
 	}

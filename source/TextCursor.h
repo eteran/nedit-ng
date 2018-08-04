@@ -20,12 +20,12 @@ public:
 	constexpr explicit BasicTextCursor(Integer index) noexcept : index_(index) { }
 
 public:
-	BasicTextCursor()                                   = default;
-	BasicTextCursor(const BasicTextCursor &)            = default;
-	BasicTextCursor& operator=(const BasicTextCursor &) = default;
-	BasicTextCursor(BasicTextCursor &&)                 = default;
-	BasicTextCursor& operator=(BasicTextCursor &&)      = default;
-	~BasicTextCursor() noexcept                         = default;
+	BasicTextCursor()                                       = default;
+	BasicTextCursor(const BasicTextCursor &)                = default;
+	BasicTextCursor& operator=(const BasicTextCursor &)     = default;
+	BasicTextCursor(BasicTextCursor &&) noexcept            = default;
+	BasicTextCursor& operator=(BasicTextCursor &&) noexcept = default;
+	~BasicTextCursor() noexcept                             = default;
 
 public:
 	constexpr BasicTextCursor& operator++() noexcept   { ++index_; return *this; }
