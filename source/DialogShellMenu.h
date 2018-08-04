@@ -15,15 +15,15 @@ class DialogShellMenu final : public Dialog {
 	Q_OBJECT
 
 public:
-    DialogShellMenu(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogShellMenu() noexcept override = default;
+	DialogShellMenu(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	~DialogShellMenu() noexcept override = default;
 
 Q_SIGNALS:
-    void restore(const QModelIndex &selection);
+	void restore(const QModelIndex &selection);
 
 private Q_SLOTS:
-    void currentChanged(const QModelIndex &current, const QModelIndex &previous);
-    void restoreSlot(const QModelIndex &index);
+	void currentChanged(const QModelIndex &current, const QModelIndex &previous);
+	void restoreSlot(const QModelIndex &index);
 
 private Q_SLOTS:
 	void on_buttonNew_clicked();
@@ -34,20 +34,20 @@ private Q_SLOTS:
 	void on_buttonBox_clicked(QAbstractButton *button);
 	void on_buttonBox_accepted();
 	void on_radioToSameDocument_toggled(bool checked);
-	
+
 private:
-    bool applyDialogChanges();
-    bool validateFields(Verbosity verbosity);
-    bool updateCurrentItem();
-    bool updateCurrentItem(const QModelIndex &index);
+	bool applyDialogChanges();
+	bool validateFields(Verbosity verbosity);
+	bool updateCurrentItem();
+	bool updateCurrentItem(const QModelIndex &index);
 	boost::optional<MenuItem> readFields(Verbosity verbosity);
-    void updateButtonStates();
-    void updateButtonStates(const QModelIndex &current);
+	void updateButtonStates();
+	void updateButtonStates(const QModelIndex &current);
 
 private:
 	Ui::DialogShellMenu ui;
-    MenuItemModel *model_;
-    QModelIndex deleted_;
+	MenuItemModel *model_;
+	QModelIndex deleted_;
 };
 
 #endif

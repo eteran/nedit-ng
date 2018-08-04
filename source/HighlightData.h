@@ -7,7 +7,7 @@
 #include <vector>
 #include <cstdint>
 
-// "Compiled" version of pattern specification 
+// "Compiled" version of pattern specification
 class HighlightData {
 public:
 	std::unique_ptr<Regex>             startRE;

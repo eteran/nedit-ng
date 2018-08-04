@@ -26,8 +26,8 @@ void DialogDuplicateTags::setTag(const QString &tag) {
  * @param id
  */
 void DialogDuplicateTags::addListItem(const QString &text, int id) {
-    auto item = new QListWidgetItem(text, ui.listWidget);
-    item->setData(Qt::UserRole, id);
+	auto item = new QListWidgetItem(text, ui.listWidget);
+	item->setData(Qt::UserRole, id);
 }
 
 /**
@@ -60,15 +60,15 @@ bool DialogDuplicateTags::applySelection() {
 		return false;
 	}
 
-    const int id = item->data(Qt::UserRole).toInt();
+	const int id = item->data(Qt::UserRole).toInt();
 
-    if (Tags::searchMode == Tags::SearchMode::TAG) {
+	if (Tags::searchMode == Tags::SearchMode::TAG) {
 		document_->editTaggedLocation(area_, id); // Open the file with the definition
-    } else {
-        Tags::showMatchingCalltipEx(this, area_, id);
-    }
+	} else {
+		Tags::showMatchingCalltipEx(this, area_, id);
+	}
 
-    return true;
+	return true;
 
 
 }

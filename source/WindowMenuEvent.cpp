@@ -15,13 +15,13 @@ WindowMenuEvent::WindowMenuEvent(QString macroString, QStringList arguments) : Q
  * @return
  */
 QString WindowMenuEvent::argumentString() const {
-    QStringList args;
+	QStringList args;
 
-    std::transform(arguments_.begin(), arguments_.end(), std::back_inserter(args), [](const QString &arg) {
-        return CommandRecorder::quoteString(CommandRecorder::escapeString(arg));
-    });
+	std::transform(arguments_.begin(), arguments_.end(), std::back_inserter(args), [](const QString &arg) {
+		return CommandRecorder::quoteString(CommandRecorder::escapeString(arg));
+	});
 
-    return args.join(QLatin1Char(','));
+	return args.join(QLatin1Char(','));
 }
 
 /**
@@ -29,7 +29,7 @@ QString WindowMenuEvent::argumentString() const {
  * @return
  */
 QString WindowMenuEvent::toString() const {
-    return QString(QLatin1String("%1(%2)")).arg(macroString_, argumentString());
+	return QString(QLatin1String("%1(%2)")).arg(macroString_, argumentString());
 }
 
 /**
@@ -37,7 +37,7 @@ QString WindowMenuEvent::toString() const {
  * @return
  */
 QString WindowMenuEvent::actionString() const {
-    return macroString_;
+	return macroString_;
 }
 
 

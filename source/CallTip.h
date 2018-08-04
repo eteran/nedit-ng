@@ -13,12 +13,12 @@ enum class TipAlignMode  { Sloppy, Strict };
 using CallTipPosition = boost::variant<int, TextCursor>;
 
 struct CallTip {
-    int ID;                 //  ID of displayed calltip.  Equals zero if none is displayed.
-    CallTipPosition pos;    //  Position tip is anchored to
-    bool anchored;          //  Is it anchored to a position
-    TipHAlignMode hAlign;   //  horizontal alignment
-    TipVAlignMode vAlign;   //  vertical alignment
-    TipAlignMode alignMode; //  Strict or sloppy alignment
+	int ID;                 //  ID of displayed calltip.  Equals zero if none is displayed.
+	CallTipPosition pos;    //  Position tip is anchored to
+	bool anchored;          //  Is it anchored to a position
+	TipHAlignMode hAlign;   //  horizontal alignment
+	TipVAlignMode vAlign;   //  vertical alignment
+	TipAlignMode alignMode; //  Strict or sloppy alignment
 };
 
 #endif

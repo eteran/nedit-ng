@@ -5,23 +5,23 @@
 #include <QLatin1String>
 
 enum class FileFormats : int {
-    Unix,
-    Dos,
-    Mac
+	Unix,
+	Dos,
+	Mac
 };
 
 inline QLatin1String to_string(FileFormats format) {
 
-    switch(format) {
-    case FileFormats::Unix:
-        return QLatin1String("unix");
-    case FileFormats::Dos:
-        return QLatin1String("dos");
-    case FileFormats::Mac:
-        return QLatin1String("macintosh");
-    }
+	switch(format) {
+	case FileFormats::Unix:
+		return QLatin1String("unix");
+	case FileFormats::Dos:
+		return QLatin1String("dos");
+	case FileFormats::Mac:
+		return QLatin1String("macintosh");
+	}
 
-    Q_UNREACHABLE();
+	Q_UNREACHABLE();
 }
 
 #endif

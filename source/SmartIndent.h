@@ -15,36 +15,36 @@ class QString;
 class QByteArray;
 
 class SmartIndent {
-    Q_DECLARE_TR_FUNCTIONS(SmartIndent)
+	Q_DECLARE_TR_FUNCTIONS(SmartIndent)
 
 public:
-    SmartIndent() = delete;
+	SmartIndent() = delete;
 
 public:
-    static bool LMHasSmartIndentMacros(const QString &languageMode);
-    static bool LoadSmartIndentCommonStringEx(const QString &string);
-    static bool LoadSmartIndentStringEx(const QString &string);
-    static bool SmartIndentMacrosAvailable(const QString &languageModeName);
-    static QString  WriteSmartIndentCommonStringEx();
-    static QString WriteSmartIndentStringEx();
-    static void EditCommonSmartIndentMacro();
-    static void RenameSmartIndentMacros(const QString &oldName, const QString &newName);
-    static void UpdateLangModeMenuSmartIndent();
-    static QByteArray defaultCommonMacros();
-    static const SmartIndentEntry *findIndentSpec(const QString &name);
-    static const SmartIndentEntry *findDefaultIndentSpec(const QString &name);
+	static bool LMHasSmartIndentMacros(const QString &languageMode);
+	static bool LoadSmartIndentCommonStringEx(const QString &string);
+	static bool LoadSmartIndentStringEx(const QString &string);
+	static bool SmartIndentMacrosAvailable(const QString &languageModeName);
+	static QString  WriteSmartIndentCommonStringEx();
+	static QString WriteSmartIndentStringEx();
+	static void EditCommonSmartIndentMacro();
+	static void RenameSmartIndentMacros(const QString &oldName, const QString &newName);
+	static void UpdateLangModeMenuSmartIndent();
+	static QByteArray defaultCommonMacros();
+	static const SmartIndentEntry *findIndentSpec(const QString &name);
+	static const SmartIndentEntry *findDefaultIndentSpec(const QString &name);
 
 public:
-    static QString                       CommonMacros;
-    static std::vector<SmartIndentEntry> SmartIndentSpecs;
-    static QPointer<DialogSmartIndent>   SmartIndentDlg;
+	static QString                       CommonMacros;
+	static std::vector<SmartIndentEntry> SmartIndentSpecs;
+	static QPointer<DialogSmartIndent>   SmartIndentDlg;
 };
 
 struct SmartIndentData {
-    Program *newlineMacro = nullptr;
-    Program *modMacro     = nullptr;
-    int inNewLineMacro    = 0;
-    int inModMacro        = 0;
+	Program *newlineMacro = nullptr;
+	Program *modMacro     = nullptr;
+	int inNewLineMacro    = 0;
+	int inModMacro        = 0;
 };
 
-#endif 
+#endif

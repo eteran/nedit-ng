@@ -15,32 +15,32 @@ constexpr auto UNDO_OP_LIMIT     = 400u;      // normal limit for length of undo
 constexpr auto UNDO_OP_TRIMTO    = 200u;      // size undo list is normally trimmed to when it exceeds UNDO_OP_TRIMTO in length
 
 enum UndoTypes {
-	UNDO_NOOP, 
-	ONE_CHAR_INSERT, 
-	ONE_CHAR_REPLACE, 
-	ONE_CHAR_DELETE, 
-	BLOCK_INSERT, 
-	BLOCK_REPLACE, 
+	UNDO_NOOP,
+	ONE_CHAR_INSERT,
+	ONE_CHAR_REPLACE,
+	ONE_CHAR_DELETE,
+	BLOCK_INSERT,
+	BLOCK_REPLACE,
 	BLOCK_DELETE
 };
 
 /* Record on undo list */
 class UndoInfo {
 public:
-    explicit UndoInfo(UndoTypes undoType, TextCursor start, TextCursor end);
-    UndoInfo(const UndoInfo &)            = default;
-    UndoInfo(UndoInfo &&)                 = default;
+	explicit UndoInfo(UndoTypes undoType, TextCursor start, TextCursor end);
+	UndoInfo(const UndoInfo &)            = default;
+	UndoInfo(UndoInfo &&)                 = default;
 	UndoInfo &operator=(const UndoInfo &) = default;
-    UndoInfo &operator=(UndoInfo &&)      = default;
-    ~UndoInfo() noexcept                  = default;
-	
+	UndoInfo &operator=(UndoInfo &&)      = default;
+	~UndoInfo() noexcept                  = default;
+
 public:
 	UndoTypes type;
-    TextCursor startPos;
-    TextCursor endPos;
+	TextCursor startPos;
+	TextCursor endPos;
 	std::string oldText;
-    bool inUndo          = false; // flag to indicate undo command on this record in progress. Redirects SaveUndoInfo to save the next modifications on the redo list instead of the undo list.
-    bool restoresToSaved = false; // flag to indicate undoing this operation will restore file to last saved (unmodified) state
+	bool inUndo          = false; // flag to indicate undo command on this record in progress. Redirects SaveUndoInfo to save the next modifications on the redo list instead of the undo list.
+	bool restoresToSaved = false; // flag to indicate undoing this operation will restore file to last saved (unmodified) state
 };
 
 #endif

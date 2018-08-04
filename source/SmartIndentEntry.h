@@ -6,11 +6,11 @@
 
 class SmartIndentEntry {
 public:
-    bool operator==(const SmartIndentEntry &rhs) const;
-    bool operator!=(const SmartIndentEntry &rhs) const;
+	bool operator==(const SmartIndentEntry &rhs) const;
+	bool operator!=(const SmartIndentEntry &rhs) const;
 
 public:
-    QString languageMode;
+	QString languageMode;
 	QString initMacro;
 	QString newlineMacro;
 	QString modMacro;

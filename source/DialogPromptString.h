@@ -8,17 +8,17 @@
 class DialogPromptString final : public Dialog {
 	Q_OBJECT
 public:
-    DialogPromptString(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogPromptString() noexcept override = default;
+	DialogPromptString(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	~DialogPromptString() noexcept override = default;
 
 private:
-    void showEvent(QShowEvent *event) override;
+	void showEvent(QShowEvent *event) override;
 
 public:
 	int result() const {
 		return result_;
 	}
-	
+
 	QString text() const {
 		return text_;
 	}
@@ -27,14 +27,14 @@ public:
 	void addButton(const QString &text);
 	void addButton(QDialogButtonBox::StandardButton button);
 	void setMessage(const QString &text);
-	
+
 private Q_SLOTS:
 	void on_buttonBox_clicked(QAbstractButton *button);
-	
+
 private:
 	Ui::DialogPromptString ui;
 	QString text_;
-    int result_ = 0;	
+	int result_ = 0;
 };
 
 #endif

@@ -10,7 +10,7 @@ constexpr void
 __attribute__(( noinline, cold, noreturn ))
 #endif
 Raise(Args && ...args) {
-    throw E{std::forward<Args>(args)...};
+	throw E{std::forward<Args>(args)...};
 }
 
 #endif

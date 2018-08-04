@@ -28,12 +28,12 @@ constexpr int MACRO_EVENT_MARKER = 2;
 constexpr const char ARRAY_DIM_SEP[] = "\034";
 
 enum SymTypes {
-    CONST_SYM,
-    GLOBAL_SYM,
-    LOCAL_SYM,
-    ARG_SYM,
-    PROC_VALUE_SYM,
-    C_FUNCTION_SYM,
+	CONST_SYM,
+	GLOBAL_SYM,
+	LOCAL_SYM,
+	ARG_SYM,
+	PROC_VALUE_SYM,
+	C_FUNCTION_SYM,
 	MACRO_FUNCTION_SYM
 };
 
@@ -85,15 +85,15 @@ enum Operations {
 };
 
 enum ExecReturnCodes {
-	MACRO_TIME_LIMIT, 
-	MACRO_PREEMPT, 
-	MACRO_DONE, 
+	MACRO_TIME_LIMIT,
+	MACRO_PREEMPT,
+	MACRO_DONE,
 	MACRO_ERROR
 };
 
 union Inst {
 	int (*func)();
-    int64_t value;
+	int64_t value;
 	Symbol *sym;
 };
 
@@ -108,25 +108,25 @@ struct Symbol {
 
 struct Program {
 
-    ~Program() {
-        qDeleteAll(localSymList);
-    }
+	~Program() {
+		qDeleteAll(localSymList);
+	}
 
-    std::deque<Symbol *> localSymList;
-    std::vector<Inst>    code;
+	std::deque<Symbol *> localSymList;
+	std::vector<Inst>    code;
 };
 
 /* Information needed to re-start a preempted macro */
 struct MacroContext {
 
-    using stack_type = std::shared_ptr<DataValue>;
+	using stack_type = std::shared_ptr<DataValue>;
 
-    stack_type Stack;                        // the stack
-    DataValue *StackP             = nullptr; // next free spot on stack
-    DataValue *FrameP             = nullptr; // frame pointer (start of local variables for the current subroutine invocation)
-    Inst *PC                      = nullptr; // program counter during execution
-    DocumentWidget *RunDocument   = nullptr; // document from which macro was run
-    DocumentWidget *FocusDocument = nullptr; // document on which macro commands operate
+	stack_type Stack;                        // the stack
+	DataValue *StackP             = nullptr; // next free spot on stack
+	DataValue *FrameP             = nullptr; // frame pointer (start of local variables for the current subroutine invocation)
+	Inst *PC                      = nullptr; // program counter during execution
+	DocumentWidget *RunDocument   = nullptr; // document from which macro was run
+	DocumentWidget *FocusDocument = nullptr; // document on which macro commands operate
 };
 
 void InitMacroGlobals();

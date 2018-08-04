@@ -8,11 +8,11 @@
 class DialogAbout : public Dialog {
 	Q_OBJECT
 public:
-    DialogAbout(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogAbout() noexcept override = default;
+	DialogAbout(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	~DialogAbout() noexcept override = default;
 
 public:
-    static QString createInfoString();
+	static QString createInfoString();
 
 private:
 	Ui::DialogAbout ui;

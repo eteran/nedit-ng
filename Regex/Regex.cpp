@@ -158,8 +158,8 @@ bool Regex::execute(view::string_view string, size_t offset, size_t end_offset, 
 		string,
 		offset,
 		end_offset,
-        (offset     == 0            ) ? -1 : string[offset - 1],
-        (end_offset == string.size()) ? -1 : string[end_offset],
+		(offset     == 0            ) ? -1 : string[offset - 1],
+		(end_offset == string.size()) ? -1 : string[end_offset],
 		delimiters,
 		reverse);
 }
@@ -186,8 +186,8 @@ bool Regex::execute(view::string_view string, size_t offset, size_t end_offset, 
 		succ,
 		delimiters,
 		&string[0],
-        &string[string.size()],
-        &string[string.size()]);
+		&string[string.size()],
+		&string[string.size()]);
 }
 
 
@@ -210,16 +210,16 @@ void Regex::SetDefaultWordDelimiters(view::string_view delimiters) {
  *----------------------------------------------------------------------*/
 std::bitset<256> Regex::makeDelimiterTable(view::string_view delimiters) {
 
-    std::bitset<256> table;
+	std::bitset<256> table;
 
-    for(char ch : delimiters) {
-        table[static_cast<size_t>(ch)] = true;
-    }
+	for(char ch : delimiters) {
+		table[static_cast<size_t>(ch)] = true;
+	}
 
-    table['\0'] = true; // These
-    table['\t'] = true; // characters
-    table['\n'] = true; // are always
-    table[' ']  = true; // delimiters.
+	table['\0'] = true; // These
+	table['\t'] = true; // characters
+	table['\n'] = true; // are always
+	table[' ']  = true; // delimiters.
 
-    return table;
+	return table;
 }

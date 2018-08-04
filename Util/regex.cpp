@@ -10,5 +10,5 @@
  * @return
  */
 std::unique_ptr<Regex> make_regex(const QString &re, int flags) {
-    return std::make_unique<Regex>(re.toStdString(), flags);
+	return std::make_unique<Regex>(re.toStdString(), flags);
 }

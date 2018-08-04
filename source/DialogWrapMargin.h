@@ -10,8 +10,8 @@ class DocumentWidget;
 class DialogWrapMargin final : public Dialog {
 	Q_OBJECT
 public:
-    DialogWrapMargin(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogWrapMargin() noexcept override = default;
+	DialogWrapMargin(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	~DialogWrapMargin() noexcept override = default;
 
 private Q_SLOTS:
 	void on_checkWrapAndFill_toggled(bool checked);
@@ -19,7 +19,7 @@ private Q_SLOTS:
 
 private:
 	Ui::DialogWrapMargin ui;
-    DocumentWidget *document_;
+	DocumentWidget *document_;
 };
 
 #endif

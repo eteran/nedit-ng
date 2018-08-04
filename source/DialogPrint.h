@@ -11,24 +11,24 @@ class QPrinter;
 class DialogPrint final : public Dialog {
 	Q_OBJECT
 public:
-    DialogPrint(QString contents, QString jobname, DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogPrint() noexcept override = default;
+	DialogPrint(QString contents, QString jobname, DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	~DialogPrint() noexcept override = default;
 
 private Q_SLOTS:
 	void on_buttonPrint_clicked();
-    void on_printers_currentIndexChanged(int index);
+	void on_printers_currentIndexChanged(int index);
 
 private:
-    void print(QPrinter *printer);
+	void print(QPrinter *printer);
 
 protected:
-    void showEvent(QShowEvent *event) override;
+	void showEvent(QShowEvent *event) override;
 
 public:
 	Ui::DialogPrint ui;
-    DocumentWidget *document_;
-    QString         contents_;
-    QString         jobname_;
+	DocumentWidget *document_;
+	QString         contents_;
+	QString         jobname_;
 };
 
 #endif

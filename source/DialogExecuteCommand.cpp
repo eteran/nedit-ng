@@ -52,7 +52,7 @@ void DialogExecuteCommand::keyPressEvent(QKeyEvent *event) {
 void DialogExecuteCommand::showEvent(QShowEvent *event) {
 	historyIndex_ = 0;
 	ui.textCommand->setText(QString());
-    Dialog::showEvent(event);
+	Dialog::showEvent(event);
 }
 
 /**
@@ -71,5 +71,5 @@ void DialogExecuteCommand::on_buttonBox_accepted() {
  * @return
  */
 QString DialogExecuteCommand::currentText() const {
-    return ui.textCommand->text();
+	return ui.textCommand->text();
 }

@@ -13,50 +13,50 @@ class KeySequenceEdit : public QWidget {
 	Q_OBJECT
 	Q_PROPERTY(QKeySequence keySequence READ keySequence WRITE setKeySequence NOTIFY keySequenceChanged USER true)
 	Q_PROPERTY(int maximumSequenceLength READ maximumSequenceLength WRITE setMaximumSequenceLength NOTIFY maximumSequenceLengthChanged)
-    Q_PROPERTY(bool modifierRequired READ modifierRequired WRITE setModifierRequired NOTIFY modifierRequiredChanged)
+	Q_PROPERTY(bool modifierRequired READ modifierRequired WRITE setModifierRequired NOTIFY modifierRequiredChanged)
 	Q_DISABLE_COPY(KeySequenceEdit)
 
 public:
-    explicit KeySequenceEdit(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    explicit KeySequenceEdit(const QKeySequence &keySequence, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~KeySequenceEdit() noexcept override = default;
+	explicit KeySequenceEdit(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit KeySequenceEdit(const QKeySequence &keySequence, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	~KeySequenceEdit() noexcept override = default;
 
 public:
-    QKeySequence keySequence() const;
+	QKeySequence keySequence() const;
 	int maximumSequenceLength() const;
 	bool modifierRequired() const;
 
 public Q_SLOTS:
-    void setKeySequence(const QKeySequence &keySequence);
+	void setKeySequence(const QKeySequence &keySequence);
 	void setMaximumSequenceLength(int maximum);
 	void setModifierRequired(bool required);
-    void clear();
-	
+	void clear();
+
 Q_SIGNALS:
-    void editingFinished();
-    void keySequenceChanged(const QKeySequence &keySequence);
+	void editingFinished();
+	void keySequenceChanged(const QKeySequence &keySequence);
 	void maximumSequenceLengthChanged(int maximum);
-    void modifierRequiredChanged(bool newValue);
+	void modifierRequiredChanged(bool newValue);
 
 protected:
-    bool event(QEvent *) override;
-    void keyPressEvent(QKeyEvent *) override;
-    void keyReleaseEvent(QKeyEvent *) override;
-    void timerEvent(QTimerEvent *) override;
+	bool event(QEvent *) override;
+	void keyPressEvent(QKeyEvent *) override;
+	void keyReleaseEvent(QKeyEvent *) override;
+	void timerEvent(QTimerEvent *) override;
 
 private:
-    void resetState();
-    void finishEditing();
+	void resetState();
+	void finishEditing();
 
 private:
-    QLineEdit *  lineEdit_;
-    QKeySequence keySequence_;
-    QVector<int> keys_;
-    int          prevKey_               = -1;
-    int          releaseTimer_          = 0;
-    int          maximumSequenceLength_ = 4;
-    bool         modifierRequired_      = false;
-	
+	QLineEdit *  lineEdit_;
+	QKeySequence keySequence_;
+	QVector<int> keys_;
+	int          prevKey_               = -1;
+	int          releaseTimer_          = 0;
+	int          maximumSequenceLength_ = 4;
+	bool         modifierRequired_      = false;
+
 };
 
 #endif

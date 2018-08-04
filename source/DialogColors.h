@@ -11,8 +11,8 @@ class QLabel;
 class DialogColors final : public Dialog {
 	Q_OBJECT
 public:
-    DialogColors(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogColors() noexcept override = default;
+	DialogColors(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	~DialogColors() noexcept override = default;
 
 private Q_SLOTS:
 	void on_buttonFG_clicked();
@@ -35,8 +35,8 @@ private Q_SLOTS:
 
 	void on_buttonBox_clicked(QAbstractButton *button);
 	void on_buttonBox_accepted();
-  
-private:	
+
+private:
 	void chooseColor(QLineEdit *edit);
 	bool verifyAllColors();
 	void updateColors();

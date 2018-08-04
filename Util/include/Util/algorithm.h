@@ -17,19 +17,19 @@
 #endif
 template <class Cont>
 void moveItem(Cont &cont, int from, int to) {
-	
-    Q_ASSERT(from >= 0 && from < cont.size());
-    Q_ASSERT(to >= 0 && to < cont.size());
 
-    if (from == to) // don't detach when no-op
-        return;
+	Q_ASSERT(from >= 0 && from < cont.size());
+	Q_ASSERT(to >= 0 && to < cont.size());
 
-    auto b = cont.begin();
-    if (from < to) {
-        std::rotate(b + from, b + from + 1, b + to + 1);
-    } else {
-        std::rotate(b + to, b + from, b + from + 1);
-    }
+	if (from == to) // don't detach when no-op
+		return;
+
+	auto b = cont.begin();
+	if (from < to) {
+		std::rotate(b + from, b + from + 1, b + to + 1);
+	} else {
+		std::rotate(b + to, b + from, b + from + 1);
+	}
 }
 #ifdef __GNUC__
 #pragma GCC diagnostic push
@@ -40,24 +40,24 @@ void moveItem(Cont &cont, int from, int to) {
 
 template <class Ch, class Tr>
 constexpr view::basic_string_view<Ch, Tr> substr(view::basic_string_view<Ch, Tr> str, typename view::basic_string_view<Ch, Tr>::size_type pos, typename view::basic_string_view<Ch, Tr>::size_type count = view::basic_string_view<Ch, Tr>::npos) {
-    return str.substr(pos, count);
+	return str.substr(pos, count);
 }
 
 template <class Ch, class Tr, class A>
 constexpr view::basic_string_view<Ch, Tr> substr(typename std::basic_string<Ch, Tr, A>::const_iterator first, typename std::basic_string<Ch, Tr, A>::const_iterator last) {
 
-    Ch *data = &*first;
-    typename view::basic_string_view<Ch, Tr>::size_type size = std::distance(first, last);
+	Ch *data = &*first;
+	typename view::basic_string_view<Ch, Tr>::size_type size = std::distance(first, last);
 
-    return view::basic_string_view<Ch, Tr>(data, size);
+	return view::basic_string_view<Ch, Tr>(data, size);
 }
 
 template <class Ch, class Tr = std::char_traits<Ch>>
 constexpr view::basic_string_view<Ch, Tr> substr(const Ch *first, const Ch *last) {
 
-    const Ch *data = first;
-    auto size = std::distance(first, last);
-    return view::basic_string_view<Ch, Tr>(data, static_cast<size_t>(size));
+	const Ch *data = first;
+	auto size = std::distance(first, last);
+	return view::basic_string_view<Ch, Tr>(data, static_cast<size_t>(size));
 }
 
 #endif

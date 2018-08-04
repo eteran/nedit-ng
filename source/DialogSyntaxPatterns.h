@@ -18,8 +18,8 @@ class DialogSyntaxPatterns final : public Dialog {
 	Q_OBJECT
 
 public:
-    DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogSyntaxPatterns() noexcept override = default;
+	DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f = Qt::WindowFlags());
+	~DialogSyntaxPatterns() noexcept override = default;
 
 public:
 	void setLanguageName(const QString &name);
@@ -30,11 +30,11 @@ public:
 	bool LMHasHighlightPatterns(const QString &languageMode);
 
 Q_SIGNALS:
-    void restore(const QModelIndex &selection);
+	void restore(const QModelIndex &selection);
 
 private Q_SLOTS:
-    void currentChanged(const QModelIndex &current, const QModelIndex &previous);
-    void restoreSlot(const QModelIndex &index);
+	void currentChanged(const QModelIndex &current, const QModelIndex &previous);
+	void restoreSlot(const QModelIndex &index);
 
 private Q_SLOTS:
 	void on_buttonLanguageMode_clicked();
@@ -50,28 +50,28 @@ private Q_SLOTS:
 	void on_buttonDeletePattern_clicked();
 	void on_buttonRestore_clicked();
 	void on_buttonHelp_clicked();
-    void on_comboLanguageMode_currentIndexChanged(const QString &text);
+	void on_comboLanguageMode_currentIndexChanged(const QString &text);
 
 private:
-    bool validateFields(Verbosity verbosity);
-    bool checkHighlightDialogData();
+	bool validateFields(Verbosity verbosity);
+	bool checkHighlightDialogData();
 	bool TestHighlightPatterns(const std::unique_ptr<PatternSet> &patSet);
-    bool updateCurrentItem();
-    bool updateCurrentItem(const QModelIndex &index);
-    bool updatePatternSet();
+	bool updateCurrentItem();
+	bool updateCurrentItem(const QModelIndex &index);
+	bool updatePatternSet();
 	boost::optional<HighlightPattern> readFields(Verbosity verbosity);
 	std::unique_ptr<PatternSet> getDialogPatternSet();
-    void setStyleMenu(const QString &name);
-    void updateLabels();
-    void updateButtonStates(const QModelIndex &current);
-    void updateButtonStates();
+	void setStyleMenu(const QString &name);
+	void updateLabels();
+	void updateButtonStates(const QModelIndex &current);
+	void updateButtonStates();
 
 private:
 	Ui::DialogSyntaxPatterns ui;
-    HighlightPatternModel *model_;
-    QModelIndex deleted_;
+	HighlightPatternModel *model_;
+	QModelIndex deleted_;
 	QString previousLanguage_;
-    MainWindow *window_;
+	MainWindow *window_;
 };
 
 #endif

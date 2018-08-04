@@ -6,21 +6,21 @@
 
 class HighlightPattern {
 public:
-    HighlightPattern() = default;
-    explicit HighlightPattern(QString styleName);
+	HighlightPattern() = default;
+	explicit HighlightPattern(QString styleName);
 
 public:
-    bool operator==(const HighlightPattern &rhs) const;
-    bool operator!=(const HighlightPattern &rhs) const;
+	bool operator==(const HighlightPattern &rhs) const;
+	bool operator!=(const HighlightPattern &rhs) const;
 
 public:
-    QString name;
+	QString name;
 	QString startRE;
 	QString endRE;
 	QString errorRE;
 	QString style;
 	QString subPatternOf;
-    int flags = 0;
+	int flags = 0;
 };
 
 #endif

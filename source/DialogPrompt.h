@@ -8,8 +8,8 @@
 class DialogPrompt final : public Dialog {
 	Q_OBJECT
 public:
-    DialogPrompt(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogPrompt() noexcept override = default;
+	DialogPrompt(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	~DialogPrompt() noexcept override = default;
 
 public:
 	int result() const {
@@ -20,16 +20,16 @@ public:
 	void addButton(const QString &text);
 	void addButton(QDialogButtonBox::StandardButton button);
 	void setMessage(const QString &text);
-	
+
 private Q_SLOTS:
 	void on_buttonBox_clicked(QAbstractButton *button);
-	
+
 private:
 	void showEvent(QShowEvent *event) override;
 
 private:
 	Ui::DialogPrompt ui;
-    int result_ = 0;
+	int result_ = 0;
 };
 
 #endif

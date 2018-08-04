@@ -17,38 +17,38 @@ class MainWindow;
 
 class DialogReplace : public Dialog {
 	Q_OBJECT
-    friend class DialogMultiReplace;
+	friend class DialogMultiReplace;
 
 public:
-    struct Fields {
-        Direction  direction;
-        QString    searchString;
-        QString    replaceString;
-        SearchType searchType;
-    };
+	struct Fields {
+		Direction  direction;
+		QString    searchString;
+		QString    replaceString;
+		SearchType searchType;
+	};
 
 public:
-    DialogReplace(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogReplace() noexcept override = default;
-	
+	DialogReplace(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f = Qt::WindowFlags());
+	~DialogReplace() noexcept override = default;
+
 protected:
 	void keyPressEvent(QKeyEvent *event) override;
 	void showEvent(QShowEvent *event) override;
-	
+
 public:
-    bool keepDialog() const;
-    void UpdateReplaceActionButtons();
-    void initToggleButtons(SearchType searchType);
-    void setActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceInWinBtn, bool replaceInSelBtn, bool replaceAllBtn);
-    void setDirection(Direction direction);
-    void setDocument(DocumentWidget *document);
-    void setKeepDialog(bool keep);
-    void setReplaceText(const QString &text);
-    void setTextFieldFromDocument(DocumentWidget *document);
-    void updateFindButton();
+	bool keepDialog() const;
+	void UpdateReplaceActionButtons();
+	void initToggleButtons(SearchType searchType);
+	void setActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceInWinBtn, bool replaceInSelBtn, bool replaceAllBtn);
+	void setDirection(Direction direction);
+	void setDocument(DocumentWidget *document);
+	void setKeepDialog(bool keep);
+	void setReplaceText(const QString &text);
+	void setTextFieldFromDocument(DocumentWidget *document);
+	void updateFindButton();
 
 private:
-    boost::optional<Fields> readFields();
+	boost::optional<Fields> readFields();
 
 private Q_SLOTS:
 	void on_checkRegex_toggled(bool checked);
@@ -61,13 +61,13 @@ private Q_SLOTS:
 	void on_buttonWindow_clicked();
 	void on_buttonSelection_clicked();
 	void on_buttonMulti_clicked();
-	
+
 private:
-    Ui::DialogReplace ui;
-    MainWindow *window_;
-    DocumentWidget *document_;
-    bool lastRegexCase_   = true;  // idem, for regex mode in replace dialog
-    bool lastLiteralCase_ = false; // idem, for literal mode
+	Ui::DialogReplace ui;
+	MainWindow *window_;
+	DocumentWidget *document_;
+	bool lastRegexCase_   = true;  // idem, for regex mode in replace dialog
+	bool lastLiteralCase_ = false; // idem, for literal mode
 };
 
 #endif

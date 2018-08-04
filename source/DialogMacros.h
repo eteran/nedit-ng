@@ -15,15 +15,15 @@ class DialogMacros final : public Dialog {
 	Q_OBJECT
 
 public:
-    DialogMacros(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogMacros() noexcept override = default;
+	DialogMacros(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	~DialogMacros() noexcept override = default;
 
 Q_SIGNALS:
-    void restore(const QModelIndex &selection);
+	void restore(const QModelIndex &selection);
 
 private Q_SLOTS:
-    void currentChanged(const QModelIndex &current, const QModelIndex &previous);
-    void restoreSlot(const QModelIndex &index);
+	void currentChanged(const QModelIndex &current, const QModelIndex &previous);
+	void restoreSlot(const QModelIndex &index);
 
 private Q_SLOTS:
 	void on_buttonNew_clicked();
@@ -35,21 +35,21 @@ private Q_SLOTS:
 	void on_buttonCheck_clicked();
 	void on_buttonApply_clicked();
 	void on_buttonOK_clicked();
-	
+
 private:
-    bool applyDialogChanges();
-    bool validateFields(Verbosity verbosity);
-    bool checkMacroText(const QString &macro, Verbosity verbosity);
-    bool updateCurrentItem();
-    bool updateCurrentItem(const QModelIndex &index);
+	bool applyDialogChanges();
+	bool validateFields(Verbosity verbosity);
+	bool checkMacroText(const QString &macro, Verbosity verbosity);
+	bool updateCurrentItem();
+	bool updateCurrentItem(const QModelIndex &index);
 	boost::optional<MenuItem> readFields(Verbosity verbosity);
-    void updateButtonStates();
-    void updateButtonStates(const QModelIndex &current);
+	void updateButtonStates();
+	void updateButtonStates(const QModelIndex &current);
 
 private:
 	Ui::DialogMacros ui;
-    MenuItemModel *model_;
-    QModelIndex deleted_;
+	MenuItemModel *model_;
+	QModelIndex deleted_;
 };
 
 #endif

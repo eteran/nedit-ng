@@ -25,15 +25,15 @@ namespace {
 */
 QString ensureNewline(const QString &string) {
 
-    if(string.isNull()) {
-        return QString();
-    }
+	if(string.isNull()) {
+		return QString();
+	}
 
-    if(string.endsWith(QLatin1Char('\n'))) {
-        return string;
-    }
+	if(string.endsWith(QLatin1Char('\n'))) {
+		return string;
+	}
 
-    return string + QLatin1Char('\n');
+	return string + QLatin1Char('\n');
 }
 
 }
@@ -45,26 +45,26 @@ QString ensureNewline(const QString &string) {
  */
 DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
-    ui.editAccelerator->setMaximumSequenceLength(1);
+	ui.editAccelerator->setMaximumSequenceLength(1);
 
 	ui.buttonPasteLRMacro->setEnabled(!CommandRecorder::instance()->replayMacro().isEmpty());
 
-    model_ = new MenuItemModel(this);
-    ui.listItems->setModel(model_);
+	model_ = new MenuItemModel(this);
+	ui.listItems->setModel(model_);
 
-    // Copy the list of menu information to one that the user can freely edit
-    for(MenuData &data : BGMenuData) {
-        model_->addItem(data.item);
-    }
+	// Copy the list of menu information to one that the user can freely edit
+	for(MenuData &data : BGMenuData) {
+		model_->addItem(data.item);
+	}
 
-    connect(ui.listItems->selectionModel(), &QItemSelectionModel::currentChanged, this, &DialogWindowBackgroundMenu::currentChanged, Qt::QueuedConnection);
-    connect(this, &DialogWindowBackgroundMenu::restore, this, &DialogWindowBackgroundMenu::restoreSlot, Qt::QueuedConnection);
+	connect(ui.listItems->selectionModel(), &QItemSelectionModel::currentChanged, this, &DialogWindowBackgroundMenu::currentChanged, Qt::QueuedConnection);
+	connect(this, &DialogWindowBackgroundMenu::restore, this, &DialogWindowBackgroundMenu::restoreSlot, Qt::QueuedConnection);
 
-    // default to selecting the first item
-    if(model_->rowCount() != 0) {
-        QModelIndex index = model_->index(0, 0);
-        ui.listItems->setCurrentIndex(index);
-    }
+	// default to selecting the first item
+	if(model_->rowCount() != 0) {
+		QModelIndex index = model_->index(0, 0);
+		ui.listItems->setCurrentIndex(index);
+	}
 }
 
 /**
@@ -72,20 +72,20 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
  */
 void DialogWindowBackgroundMenu::on_buttonNew_clicked() {
 
-    if(!updateCurrentItem()) {
-        return;
-    }
+	if(!updateCurrentItem()) {
+		return;
+	}
 
-    MenuItem item;
-    // some sensible defaults...
-    item.name  = tr("New Item");
-    model_->addItem(item);
+	MenuItem item;
+	// some sensible defaults...
+	item.name  = tr("New Item");
+	model_->addItem(item);
 
-    QModelIndex index = model_->index(model_->rowCount() - 1, 0);
-    ui.listItems->setCurrentIndex(index);
+	QModelIndex index = model_->index(model_->rowCount() - 1, 0);
+	ui.listItems->setCurrentIndex(index);
 
-    ui.listItems->scrollTo(ui.listItems->currentIndex());
-    updateButtonStates();
+	ui.listItems->scrollTo(ui.listItems->currentIndex());
+	updateButtonStates();
 }
 
 /**
@@ -93,21 +93,21 @@ void DialogWindowBackgroundMenu::on_buttonNew_clicked() {
  */
 void DialogWindowBackgroundMenu::on_buttonCopy_clicked() {
 
-    if(!updateCurrentItem()) {
-        return;
-    }
+	if(!updateCurrentItem()) {
+		return;
+	}
 
-    QModelIndex index = ui.listItems->currentIndex();
-    if(index.isValid()) {
-        auto ptr = model_->itemFromIndex(index);
-        model_->addItem(*ptr);
+	QModelIndex index = ui.listItems->currentIndex();
+	if(index.isValid()) {
+		auto ptr = model_->itemFromIndex(index);
+		model_->addItem(*ptr);
 
-        QModelIndex newIndex = model_->index(model_->rowCount() - 1, 0);
-        ui.listItems->setCurrentIndex(newIndex);
-    }
+		QModelIndex newIndex = model_->index(model_->rowCount() - 1, 0);
+		ui.listItems->setCurrentIndex(newIndex);
+	}
 
-    ui.listItems->scrollTo(ui.listItems->currentIndex());
-    updateButtonStates();
+	ui.listItems->scrollTo(ui.listItems->currentIndex());
+	updateButtonStates();
 }
 
 /**
@@ -115,14 +115,14 @@ void DialogWindowBackgroundMenu::on_buttonCopy_clicked() {
  */
 void DialogWindowBackgroundMenu::on_buttonDelete_clicked() {
 
-    QModelIndex index = ui.listItems->currentIndex();
-    if(index.isValid()) {
-        deleted_ = index;
-        model_->deleteItem(index);
-    }
+	QModelIndex index = ui.listItems->currentIndex();
+	if(index.isValid()) {
+		deleted_ = index;
+		model_->deleteItem(index);
+	}
 
-    ui.listItems->scrollTo(ui.listItems->currentIndex());
-    updateButtonStates();
+	ui.listItems->scrollTo(ui.listItems->currentIndex());
+	updateButtonStates();
 }
 
 /**
@@ -131,11 +131,11 @@ void DialogWindowBackgroundMenu::on_buttonDelete_clicked() {
 void DialogWindowBackgroundMenu::on_buttonPasteLRMacro_clicked() {
 
 	QString replayMacro = CommandRecorder::instance()->replayMacro();
-    if (replayMacro.isEmpty()) {
+	if (replayMacro.isEmpty()) {
 		return;
 	}
 
-    ui.editMacro->insertPlainText(replayMacro);
+	ui.editMacro->insertPlainText(replayMacro);
 }
 
 /**
@@ -143,13 +143,13 @@ void DialogWindowBackgroundMenu::on_buttonPasteLRMacro_clicked() {
  */
 void DialogWindowBackgroundMenu::on_buttonUp_clicked() {
 
-    QModelIndex index = ui.listItems->currentIndex();
-    if(index.isValid()) {
-        model_->moveItemUp(index);
-    }
+	QModelIndex index = ui.listItems->currentIndex();
+	if(index.isValid()) {
+		model_->moveItemUp(index);
+	}
 
-    ui.listItems->scrollTo(ui.listItems->currentIndex());
-    updateButtonStates();
+	ui.listItems->scrollTo(ui.listItems->currentIndex());
+	updateButtonStates();
 }
 
 /**
@@ -157,50 +157,50 @@ void DialogWindowBackgroundMenu::on_buttonUp_clicked() {
  */
 void DialogWindowBackgroundMenu::on_buttonDown_clicked() {
 
-    QModelIndex index = ui.listItems->currentIndex();
-    if(index.isValid()) {
-        model_->moveItemDown(index);
-    }
+	QModelIndex index = ui.listItems->currentIndex();
+	if(index.isValid()) {
+		model_->moveItemDown(index);
+	}
 
-    ui.listItems->scrollTo(ui.listItems->currentIndex());
-    updateButtonStates();
+	ui.listItems->scrollTo(ui.listItems->currentIndex());
+	updateButtonStates();
 }
 
 /**
  * @brief DialogWindowBackgroundMenu::updateButtonStates
  */
 void DialogWindowBackgroundMenu::updateButtonStates() {
-    QModelIndex index = ui.listItems->currentIndex();
-    updateButtonStates(index);
+	QModelIndex index = ui.listItems->currentIndex();
+	updateButtonStates(index);
 }
 
 /**
  * @brief DialogWindowBackgroundMenu::updateButtonStates
  */
 void DialogWindowBackgroundMenu::updateButtonStates(const QModelIndex &current) {
-    if(current.isValid()) {
-        if(current.row() == 0) {
-            ui.buttonUp    ->setEnabled(false);
-            ui.buttonDown  ->setEnabled(model_->rowCount() > 1);
-            ui.buttonDelete->setEnabled(true);
-            ui.buttonCopy  ->setEnabled(true);
-        } else if(current.row() == model_->rowCount() - 1) {
-            ui.buttonUp    ->setEnabled(true);
-            ui.buttonDown  ->setEnabled(false);
-            ui.buttonDelete->setEnabled(true);
-            ui.buttonCopy  ->setEnabled(true);
-        } else {
-            ui.buttonUp    ->setEnabled(true);
-            ui.buttonDown  ->setEnabled(true);
-            ui.buttonDelete->setEnabled(true);
-            ui.buttonCopy  ->setEnabled(true);
-        }
-    } else {
-        ui.buttonUp    ->setEnabled(false);
-        ui.buttonDown  ->setEnabled(false);
-        ui.buttonDelete->setEnabled(false);
-        ui.buttonCopy  ->setEnabled(false);
-    }
+	if(current.isValid()) {
+		if(current.row() == 0) {
+			ui.buttonUp    ->setEnabled(false);
+			ui.buttonDown  ->setEnabled(model_->rowCount() > 1);
+			ui.buttonDelete->setEnabled(true);
+			ui.buttonCopy  ->setEnabled(true);
+		} else if(current.row() == model_->rowCount() - 1) {
+			ui.buttonUp    ->setEnabled(true);
+			ui.buttonDown  ->setEnabled(false);
+			ui.buttonDelete->setEnabled(true);
+			ui.buttonCopy  ->setEnabled(true);
+		} else {
+			ui.buttonUp    ->setEnabled(true);
+			ui.buttonDown  ->setEnabled(true);
+			ui.buttonDelete->setEnabled(true);
+			ui.buttonCopy  ->setEnabled(true);
+		}
+	} else {
+		ui.buttonUp    ->setEnabled(false);
+		ui.buttonDown  ->setEnabled(false);
+		ui.buttonDelete->setEnabled(false);
+		ui.buttonCopy  ->setEnabled(false);
+	}
 }
 
 /**
@@ -208,7 +208,7 @@ void DialogWindowBackgroundMenu::updateButtonStates(const QModelIndex &current) 
  * @param index
  */
 void DialogWindowBackgroundMenu::restoreSlot(const QModelIndex &index) {
-    ui.listItems->setCurrentIndex(index);
+	ui.listItems->setCurrentIndex(index);
 }
 
 /**
@@ -217,72 +217,72 @@ void DialogWindowBackgroundMenu::restoreSlot(const QModelIndex &index) {
  * @param previous
  */
 void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
-    static bool canceled = false;
+	static bool canceled = false;
 
-    if (canceled) {
-        canceled = false;
-        return;
-    }
+	if (canceled) {
+		canceled = false;
+		return;
+	}
 
-    // if we are actually switching items, check that the previous one was valid
-    // so we can optionally cancel
-    if(previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
-        QMessageBox messageBox(this);
-        messageBox.setWindowTitle(tr("Discard Entry"));
-        messageBox.setIcon(QMessageBox::Warning);
-        messageBox.setText(tr("Discard incomplete entry for current menu item?"));
-        QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
-        QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
-        Q_UNUSED(buttonDiscard);
+	// if we are actually switching items, check that the previous one was valid
+	// so we can optionally cancel
+	if(previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
+		QMessageBox messageBox(this);
+		messageBox.setWindowTitle(tr("Discard Entry"));
+		messageBox.setIcon(QMessageBox::Warning);
+		messageBox.setText(tr("Discard incomplete entry for current menu item?"));
+		QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
+		QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
+		Q_UNUSED(buttonDiscard);
 
-        messageBox.exec();
-        if (messageBox.clickedButton() == buttonKeep) {
+		messageBox.exec();
+		if (messageBox.clickedButton() == buttonKeep) {
 
-            // again to cause messagebox to pop up
-            validateFields(Verbosity::Verbose);
+			// again to cause messagebox to pop up
+			validateFields(Verbosity::Verbose);
 
-            // reselect the old item
-            canceled = true;
-            Q_EMIT restore(previous);
-            return;
-        }
-    }
+			// reselect the old item
+			canceled = true;
+			Q_EMIT restore(previous);
+			return;
+		}
+	}
 
 	// this is only safe if we aren't moving due to a delete operation
-    if(previous.isValid() && previous != deleted_) {
-        if(!updateCurrentItem(previous)) {
-            // reselect the old item
-            canceled = true;
-            Q_EMIT restore(previous);
-            return;
-        }
-    }
+	if(previous.isValid() && previous != deleted_) {
+		if(!updateCurrentItem(previous)) {
+			// reselect the old item
+			canceled = true;
+			Q_EMIT restore(previous);
+			return;
+		}
+	}
 
-    // previous was OK, so let's update the contents of the dialog
-    if(const auto ptr = model_->itemFromIndex(current)) {
-        ui.editName->setText(ptr->name);
-        ui.editAccelerator->setKeySequence(ptr->shortcut);
-        ui.checkRequiresSelection->setChecked(ptr->input == FROM_SELECTION);
-        ui.editMacro->setPlainText(ptr->cmd);
-    } else {
-        ui.editName->setText(QString());
-        ui.editAccelerator->setKeySequence(QKeySequence());
-        ui.checkRequiresSelection->setChecked(false);
-        ui.editMacro->setPlainText(QString());
-    }
+	// previous was OK, so let's update the contents of the dialog
+	if(const auto ptr = model_->itemFromIndex(current)) {
+		ui.editName->setText(ptr->name);
+		ui.editAccelerator->setKeySequence(ptr->shortcut);
+		ui.checkRequiresSelection->setChecked(ptr->input == FROM_SELECTION);
+		ui.editMacro->setPlainText(ptr->cmd);
+	} else {
+		ui.editName->setText(QString());
+		ui.editAccelerator->setKeySequence(QKeySequence());
+		ui.checkRequiresSelection->setChecked(false);
+		ui.editMacro->setPlainText(QString());
+	}
 
-    // ensure that the appropriate buttons are enabled
-    updateButtonStates(current);
+	// ensure that the appropriate buttons are enabled
+	updateButtonStates(current);
 }
 
 /**
  * @brief DialogWindowBackgroundMenu::on_buttonCheck_clicked
  */
 void DialogWindowBackgroundMenu::on_buttonCheck_clicked() {
-    if (validateFields(Verbosity::Verbose)) {
-        QMessageBox::information(this,
-                                 tr("Macro"),
-                                 tr("Macro compiled without error"));
+	if (validateFields(Verbosity::Verbose)) {
+		QMessageBox::information(this,
+								 tr("Macro"),
+								 tr("Macro compiled without error"));
 	}
 }
 
@@ -313,11 +313,11 @@ void DialogWindowBackgroundMenu::on_buttonOK_clicked() {
  */
 bool DialogWindowBackgroundMenu::validateFields(Verbosity verbosity) {
 
-    if(auto f = readFields(verbosity)) {
-        return checkMacroText(f->cmd, verbosity);
-    }
+	if(auto f = readFields(verbosity)) {
+		return checkMacroText(f->cmd, verbosity);
+	}
 
-    return false;
+	return false;
 }
 
 /*
@@ -328,7 +328,7 @@ boost::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbo
 	QString nameText = ui.editName->text();
 
 	if (nameText.isEmpty()) {
-        if (verbosity == Verbosity::Verbose) {
+		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Please specify a name for the menu item"));
 		}
 		return boost::none;
@@ -336,7 +336,7 @@ boost::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbo
 
 
 	if (nameText.indexOf(QLatin1Char(':')) != -1) {
-        if (verbosity == Verbosity::Verbose) {
+		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Menu item names may not contain colon (:) characters"));
 		}
 		return boost::none;
@@ -344,14 +344,14 @@ boost::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbo
 
 	QString cmdText = ui.editMacro->toPlainText();
 	if (cmdText.isEmpty()) {
-        if (verbosity == Verbosity::Verbose) {
+		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Command to Execute"), tr("Please specify macro command(s) to execute"));
 		}
 		return boost::none;
 	}
 
 	cmdText = ensureNewline(cmdText);
-    if (!checkMacroText(cmdText, verbosity)) {
+	if (!checkMacroText(cmdText, verbosity)) {
 		return boost::none;
 	}
 
@@ -379,10 +379,10 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 	QString errMsg;
 	int stoppedAt;
 
-    Program *prog = ParseMacro(macro, &errMsg, &stoppedAt);
+	Program *prog = ParseMacro(macro, &errMsg, &stoppedAt);
 	if(!prog) {
-        if(verbosity == Verbosity::Verbose) {
-            Preferences::reportError(this, macro, stoppedAt, tr("macro"), errMsg);
+		if(verbosity == Verbosity::Verbose) {
+			Preferences::reportError(this, macro, stoppedAt, tr("macro"), errMsg);
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
 		cursor.setPosition(stoppedAt);
@@ -390,11 +390,11 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 		ui.editMacro->setFocus();
 		return false;
 	}
-    delete prog;
+	delete prog;
 
 	if(stoppedAt != macro.size()) {
-        if(verbosity == Verbosity::Verbose) {
-            Preferences::reportError(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
+		if(verbosity == Verbosity::Verbose) {
+			Preferences::reportError(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
 		}
 
 		QTextCursor cursor = ui.editMacro->textCursor();
@@ -412,43 +412,43 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
  */
 bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
-    if(model_->rowCount() != 0) {
-        auto dialogFields = readFields(Verbosity::Verbose);
-        if(!dialogFields) {
-            return false;
-        }
+	if(model_->rowCount() != 0) {
+		auto dialogFields = readFields(Verbosity::Verbose);
+		if(!dialogFields) {
+			return false;
+		}
 
-        // Get the current selected item
-        QModelIndex index = ui.listItems->currentIndex();
-        if(!index.isValid()) {
-            return false;
-        }
+		// Get the current selected item
+		QModelIndex index = ui.listItems->currentIndex();
+		if(!index.isValid()) {
+			return false;
+		}
 
-        // update the currently selected item's associated data
-        // and make sure it has the text updated as well
-        model_->updateItem(index, *dialogFields);
-    }
+		// update the currently selected item's associated data
+		// and make sure it has the text updated as well
+		model_->updateItem(index, *dialogFields);
+	}
 
-    std::vector<MenuData> newItems;
+	std::vector<MenuData> newItems;
 
-    for(int i = 0; i < model_->rowCount(); ++i) {
-        QModelIndex index = model_->index(i, 0);
-        auto item = model_->itemFromIndex(index);
-        newItems.push_back({ *item, nullptr });
-    }
+	for(int i = 0; i < model_->rowCount(); ++i) {
+		QModelIndex index = model_->index(i, 0);
+		auto item = model_->itemFromIndex(index);
+		newItems.push_back({ *item, nullptr });
+	}
 
-    BGMenuData = newItems;
+	BGMenuData = newItems;
 
-    parseMenuItemList(BGMenuData);
+	parseMenuItemList(BGMenuData);
 
-    // Update the menus themselves in all of the NEdit windows
-    for(MainWindow *window : MainWindow::allWindows()) {
-        window->UpdateUserMenus();
-    }
+	// Update the menus themselves in all of the NEdit windows
+	for(MainWindow *window : MainWindow::allWindows()) {
+		window->UpdateUserMenus();
+	}
 
-    // Note that preferences have been changed
-    Preferences::MarkPrefsChanged();
-    return true;
+	// Note that preferences have been changed
+	Preferences::MarkPrefsChanged();
+	return true;
 }
 
 /**
@@ -465,19 +465,19 @@ void DialogWindowBackgroundMenu::setPasteReplayEnabled(bool enabled) {
  * @return
  */
 bool DialogWindowBackgroundMenu::updateCurrentItem(const QModelIndex &index) {
-    // Get the current contents of the "patterns" dialog fields
-    auto dialogFields = readFields(Verbosity::Verbose);
-    if(!dialogFields) {
-        return false;
-    }
+	// Get the current contents of the "patterns" dialog fields
+	auto dialogFields = readFields(Verbosity::Verbose);
+	if(!dialogFields) {
+		return false;
+	}
 
-    // Get the current contents of the dialog fields
-    if(!index.isValid()) {
-        return false;
-    }
+	// Get the current contents of the dialog fields
+	if(!index.isValid()) {
+		return false;
+	}
 
-    model_->updateItem(index, *dialogFields);
-    return true;
+	model_->updateItem(index, *dialogFields);
+	return true;
 }
 
 /**
@@ -485,10 +485,10 @@ bool DialogWindowBackgroundMenu::updateCurrentItem(const QModelIndex &index) {
  * @return
  */
 bool DialogWindowBackgroundMenu::updateCurrentItem() {
-    QModelIndex index = ui.listItems->currentIndex();
-    if(index.isValid()) {
-        return updateCurrentItem(index);
-    }
+	QModelIndex index = ui.listItems->currentIndex();
+	if(index.isValid()) {
+		return updateCurrentItem(index);
+	}
 
-    return true;
+	return true;
 }

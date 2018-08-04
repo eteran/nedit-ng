@@ -12,12 +12,12 @@ DialogPromptList::DialogPromptList(QWidget *parent, Qt::WindowFlags f) : Dialog(
 
 void DialogPromptList::addButton(const QString &text) {
 	QPushButton *btn = ui.buttonBox->addButton(text, QDialogButtonBox::AcceptRole);
-    connect(btn, &QPushButton::clicked, this, &DialogPromptList::accept);
+	connect(btn, &QPushButton::clicked, this, &DialogPromptList::accept);
 }
 
 void DialogPromptList::addButton(QDialogButtonBox::StandardButton button) {
 	QPushButton *btn = ui.buttonBox->addButton(button);
-    connect(btn, &QPushButton::clicked, this, &DialogPromptList::accept);
+	connect(btn, &QPushButton::clicked, this, &DialogPromptList::accept);
 }
 
 void DialogPromptList::setMessage(const QString &text) {
@@ -25,7 +25,7 @@ void DialogPromptList::setMessage(const QString &text) {
 }
 
 void DialogPromptList::setList(const QString &string) {
-    QStringList items = string.split(QLatin1Char('\n'));
+	QStringList items = string.split(QLatin1Char('\n'));
 	ui.listWidget->clear();
 	ui.listWidget->addItems(items);
 }
@@ -34,17 +34,17 @@ void DialogPromptList::showEvent(QShowEvent *event) {
 	resize(minimumSize());
 	result_ = 0;
 	text_ = QString();
-    Dialog::showEvent(event);
+	Dialog::showEvent(event);
 }
 
 void DialogPromptList::on_buttonBox_clicked(QAbstractButton *button) {
 
-    QList<QAbstractButton *> buttons = ui.buttonBox->buttons();
+	QList<QAbstractButton *> buttons = ui.buttonBox->buttons();
 
-    for(int i = 0; i < buttons.size(); ++i) {
-        if(button == buttons[i]) {
+	for(int i = 0; i < buttons.size(); ++i) {
+		if(button == buttons[i]) {
 			result_ = (i + 1);
-			
+
 			QList<QListWidgetItem *> items = ui.listWidget->selectedItems();
 			if(items.size() == 1) {
 				QListWidgetItem *item = items[0];

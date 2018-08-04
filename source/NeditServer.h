@@ -8,17 +8,17 @@ class QLocalServer;
 class QString;
 
 class NeditServer final : public QObject {
-    Q_OBJECT
+	Q_OBJECT
 
 public:
-    explicit NeditServer(QObject *parent = nullptr);
-    ~NeditServer() noexcept override = default;
+	explicit NeditServer(QObject *parent = nullptr);
+	~NeditServer() noexcept override = default;
 
 public Q_SLOTS:
-    void newConnection();
+	void newConnection();
 
 private:
-    QLocalServer *server_;
+	QLocalServer *server_;
 
 
 };

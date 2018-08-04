@@ -10,22 +10,22 @@ class DocumentWidget;
 class DialogRepeat final : public Dialog {
 	Q_OBJECT
 public:
-    DialogRepeat(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogRepeat() noexcept override = default;
+	DialogRepeat(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	~DialogRepeat() noexcept override = default;
 
 public:
 	bool setCommand(const QString &command);
 
 private Q_SLOTS:
 	void on_buttonBox_accepted();
-	
+
 private:
 	bool doRepeatDialogAction();
 
 private:
 	Ui::DialogRepeat ui;
 	QString lastCommand_;
-    DocumentWidget *document_;
+	DocumentWidget *document_;
 };
 
 #endif

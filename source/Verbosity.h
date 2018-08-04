@@ -3,8 +3,8 @@
 #define VERBOSITY_H_
 
 enum class Verbosity {
-    Silent,
-    Verbose
+	Silent,
+	Verbose
 };
 
 #endif

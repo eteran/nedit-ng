@@ -33,11 +33,11 @@ constexpr int FORMAT_SAMPLE_CHARS = 2000;
  */
 int prevSlash(const QString &str, int index) {
 
-    for (index -= 2; index >= 0 && str[index] != QLatin1Char('/'); index--) {
-        ;
-    }
+	for (index -= 2; index >= 0 && str[index] != QLatin1Char('/'); index--) {
+		;
+	}
 
-    return index + 1;
+	return index + 1;
 }
 
 template <class In>
@@ -49,43 +49,43 @@ In nextSlash(In first, In last) {
 template <class In>
 bool compareThruSlash(In first, In last, const QString &str) {
 
-    auto first2 = str.begin();
-    auto last2  = str.end();
+	auto first2 = str.begin();
+	auto last2  = str.end();
 
-    while (true) {
+	while (true) {
 
-        if (first2 == last2 || *first != *first2) {
-            return false;
-        }
+		if (first2 == last2 || *first != *first2) {
+			return false;
+		}
 
-        if (first == last || *first == QLatin1Char('/')) {
-            return true;
-        }
+		if (first == last || *first == QLatin1Char('/')) {
+			return true;
+		}
 
-        ++first;
-        ++first2;
-    }
+		++first;
+		++first2;
+	}
 }
 
 template <class Out, class In>
 void copyThruSlash(In &first, In last, Out &dest) {
 
-    while (true) {
+	while (true) {
 		*dest = *first;
 
 		if (first == last) {
-            return;
-        }
+			return;
+		}
 
 		if (*first == QLatin1Char('/')) {
 			++first;
 			++dest;
-            return;
-        }
+			return;
+		}
 
 		++first;
 		++dest;
-    }
+	}
 }
 
 }
@@ -97,20 +97,20 @@ void copyThruSlash(In &first, In last, Out &dest) {
 bool ParseFilenameEx(const QString &fullname, QString *filename, QString *pathname) {
 
 	const int fullLen = fullname.size();
-    int scanStart = -1;
+	int scanStart = -1;
 
-    /* For clearcase version extended paths, slash characters after the "@@/"
-       should be considered part of the file name, rather than the path */
-    const int viewExtendPath = ClearCase::GetVersionExtendedPathIndex(fullname);
-    if (viewExtendPath != -1) {
-        scanStart = viewExtendPath - 1;
-    }
+	/* For clearcase version extended paths, slash characters after the "@@/"
+	   should be considered part of the file name, rather than the path */
+	const int viewExtendPath = ClearCase::GetVersionExtendedPathIndex(fullname);
+	if (viewExtendPath != -1) {
+		scanStart = viewExtendPath - 1;
+	}
 
 	// find the last slash
-    const int i = fullname.lastIndexOf(QLatin1Char('/'), scanStart);
+	const int i = fullname.lastIndexOf(QLatin1Char('/'), scanStart);
 
 	// move chars before / (or ] or :) into pathname,& after into filename
-    int pathLen = i + 1;
+	int pathLen = i + 1;
 	int fileLen = fullLen - pathLen;
 
 	if (pathname) {
@@ -132,28 +132,28 @@ bool ParseFilenameEx(const QString &fullname, QString *filename, QString *pathna
 
 QString NormalizePathname(const QString &pathname) {
 
-    QString path = pathname;
+	QString path = pathname;
 
-    QFileInfo fi(path);
+	QFileInfo fi(path);
 
-    // TODO(eteran): investigate if we can just use QFileInfo::makeAbsolute
-    // here...
+	// TODO(eteran): investigate if we can just use QFileInfo::makeAbsolute
+	// here...
 
-    // if this is a relative pathname, prepend current directory
-    if (fi.isRelative()) {
+	// if this is a relative pathname, prepend current directory
+	if (fi.isRelative()) {
 
-        // make a copy of pathname to work from and get the working directory
-        // and prepend to the path
+		// make a copy of pathname to work from and get the working directory
+		// and prepend to the path
 		QString oldPathname = std::exchange(path, QDir::currentPath());
 
-        if(!path.endsWith(QLatin1Char('/'))) {
-            path.append(QLatin1Char('/'));
-        }
+		if(!path.endsWith(QLatin1Char('/'))) {
+			path.append(QLatin1Char('/'));
+		}
 
-        path.append(oldPathname);
-    }
+		path.append(oldPathname);
+	}
 
-    /* compress out .. and . */
+	/* compress out .. and . */
 	return CompressPathname(path);
 }
 
@@ -167,95 +167,95 @@ QString NormalizePathname(const QString &pathname) {
  */
 QString CompressPathname(const QString &path) {
 
-    // NOTE(eteran): Things like QFileInfo::canonicalFilePath return an empty
-    // string if a path represents a file that doesn't exist yet. So we may not
-    // be able to use those in all cases!
+	// NOTE(eteran): Things like QFileInfo::canonicalFilePath return an empty
+	// string if a path represents a file that doesn't exist yet. So we may not
+	// be able to use those in all cases!
 
-    /* (Added by schwarzenberg)
-    ** replace multiple slashes by a single slash
-    **  (added by yooden)
-    **  Except for the first slash. From the Single UNIX Spec: "A pathname
-    **  that begins with two successive slashes may be interpreted in an
-    **  implementation-dependent manner"
-    */
+	/* (Added by schwarzenberg)
+	** replace multiple slashes by a single slash
+	**  (added by yooden)
+	**  Except for the first slash. From the Single UNIX Spec: "A pathname
+	**  that begins with two successive slashes may be interpreted in an
+	**  implementation-dependent manner"
+	*/
 
-    QString pathname;
-    pathname.reserve(path.size());
-    auto out = std::back_inserter(pathname);
-    auto in  = path.begin();
+	QString pathname;
+	pathname.reserve(path.size());
+	auto out = std::back_inserter(pathname);
+	auto in  = path.begin();
 
-    *out++ = *in++;
-    while(in != path.end()) {
-        const QChar ch = *in++;
-        *out++ = ch;
-        if (ch == QLatin1Char('/')) {
-            while(*in == QLatin1Char('/')) {
-                ++in;
-            }
-        }
-    }
+	*out++ = *in++;
+	while(in != path.end()) {
+		const QChar ch = *in++;
+		*out++ = ch;
+		if (ch == QLatin1Char('/')) {
+			while(*in == QLatin1Char('/')) {
+				++in;
+			}
+		}
+	}
 
 	// compress out . and ..
-    QString buffer;
-    buffer.reserve(path.size());
+	QString buffer;
+	buffer.reserve(path.size());
 
-    auto inPtr = pathname.begin();
-    auto outPtr = std::back_inserter(buffer);
+	auto inPtr = pathname.begin();
+	auto outPtr = std::back_inserter(buffer);
 
 	// copy initial "/"
 	copyThruSlash(inPtr, pathname.end(), outPtr);
 
-    while (inPtr != pathname.end()) {
-        /* if the next component is "../", remove previous component */
-        if (compareThruSlash(inPtr, pathname.end(), QLatin1String("../"))) {
+	while (inPtr != pathname.end()) {
+		/* if the next component is "../", remove previous component */
+		if (compareThruSlash(inPtr, pathname.end(), QLatin1String("../"))) {
 
-            /* If the ../ is at the beginning, or if the previous component is
-             * a symbolic link, preserve the ../
-             * It is not valid to compress ../ when the previous component is
-             * a symbolic link because ../ is relative to where the link
-             * points. */
+			/* If the ../ is at the beginning, or if the previous component is
+			 * a symbolic link, preserve the ../
+			 * It is not valid to compress ../ when the previous component is
+			 * a symbolic link because ../ is relative to where the link
+			 * points. */
 
-            // NOTE(eteran): in the original NEdit, this code was broken!
-            // lstat/QFileInfo ALWAYS returns a non-symlink mode for paths
-            // ending in '/'
-            // so we need to chop that off for the test!
-            QFileInfo fi(buffer.left(buffer.size() - 1));
+			// NOTE(eteran): in the original NEdit, this code was broken!
+			// lstat/QFileInfo ALWAYS returns a non-symlink mode for paths
+			// ending in '/'
+			// so we need to chop that off for the test!
+			QFileInfo fi(buffer.left(buffer.size() - 1));
 
-            // NOTE(eteran): UNIX assumption here...
-            if (buffer == QLatin1String("/") || fi.isSymLink()) {
+			// NOTE(eteran): UNIX assumption here...
+			if (buffer == QLatin1String("/") || fi.isSymLink()) {
 				copyThruSlash(inPtr, pathname.end(), outPtr);
-            } else {
+			} else {
 				/* back up to remove last path name component */
-                int index = prevSlash(buffer, buffer.size());
-                if(index != -1) {
-                    buffer = buffer.left(index);
-                }
+				int index = prevSlash(buffer, buffer.size());
+				if(index != -1) {
+					buffer = buffer.left(index);
+				}
 
-                inPtr = nextSlash(inPtr, pathname.end());
-            }
-        } else if (compareThruSlash(inPtr, pathname.end(), QLatin1String("./"))) {
-            /* don't copy the component if it's the redundant "./" */
-            inPtr = nextSlash(inPtr, pathname.end());
-        } else {
-            /* copy the component to outPtr */
+				inPtr = nextSlash(inPtr, pathname.end());
+			}
+		} else if (compareThruSlash(inPtr, pathname.end(), QLatin1String("./"))) {
+			/* don't copy the component if it's the redundant "./" */
+			inPtr = nextSlash(inPtr, pathname.end());
+		} else {
+			/* copy the component to outPtr */
 			copyThruSlash(inPtr, pathname.end(), outPtr);
-        }
-    }
+		}
+	}
 
-    return buffer;
+	return buffer;
 }
 
 /*
 ** Return the trailing 'n' no. of path components
 */
 QString GetTrailingPathComponents(const QString &path, int noOfComponents) {
-	
+
 	/* Start from the rear */
-    int index = path.size();
+	int index = path.size();
 	int count = 0;
 
-    while (--index > 0) {
-        if (path[index] == QLatin1Char('/')) {
+	while (--index > 0) {
+		if (path[index] == QLatin1Char('/')) {
 			if (count++ == noOfComponents) {
 				break;
 			}
@@ -274,33 +274,33 @@ QString GetTrailingPathComponents(const QString &path, int noOfComponents) {
 */
 FileFormats FormatOfFile(view::string_view fileString) {
 
-    size_t nNewlines = 0;
-    size_t nReturns = 0;
+	size_t nNewlines = 0;
+	size_t nReturns = 0;
 
-    for (auto it = fileString.begin(); it != fileString.end() && it < fileString.begin() + FORMAT_SAMPLE_CHARS; ++it) {
-        if (*it == '\n') {
+	for (auto it = fileString.begin(); it != fileString.end() && it < fileString.begin() + FORMAT_SAMPLE_CHARS; ++it) {
+		if (*it == '\n') {
 			nNewlines++;
-            if (it == fileString.begin() || *std::prev(it) != '\r') {
-                return FileFormats::Unix;
-            }
+			if (it == fileString.begin() || *std::prev(it) != '\r') {
+				return FileFormats::Unix;
+			}
 
-            if (nNewlines >= FORMAT_SAMPLE_LINES) {
-                return FileFormats::Dos;
-            }
-        } else if (*it == '\r') {
+			if (nNewlines >= FORMAT_SAMPLE_LINES) {
+				return FileFormats::Dos;
+			}
+		} else if (*it == '\r') {
 			nReturns++;
-        }
-    }
+		}
+	}
 
-    if (nNewlines > 0) {
-        return FileFormats::Dos;
-    }
+	if (nNewlines > 0) {
+		return FileFormats::Dos;
+	}
 
-    if (nReturns > 0) {
-        return FileFormats::Mac;
-    }
+	if (nReturns > 0) {
+		return FileFormats::Mac;
+	}
 
-    return FileFormats::Unix;
+	return FileFormats::Unix;
 
 }
 
@@ -312,7 +312,7 @@ FileFormats FormatOfFile(view::string_view fileString) {
 */
 void ConvertToDos(std::string &text) {
 
-    // How long a string will we need?
+	// How long a string will we need?
 	size_t outLength = 0;
 	for (char ch : text) {
 		if (ch == '\n') {
@@ -326,7 +326,7 @@ void ConvertToDos(std::string &text) {
 
 	auto outPtr = std::back_inserter(outString);
 
-    // Do the conversion, free the old string
+	// Do the conversion, free the old string
 	for (char ch : text) {
 		if (ch == '\n') {
 			*outPtr++ = '\r';
@@ -367,14 +367,14 @@ QString ReadAnyTextFileEx(const QString &fileName, bool forceNL) {
 
 	auto contents = std::string(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
 
-    switch(FormatOfFile(contents)) {
-    case FileFormats::Dos:
+	switch(FormatOfFile(contents)) {
+	case FileFormats::Dos:
 		ConvertFromDos(&contents);
 		break;
-    case FileFormats::Mac:
+	case FileFormats::Mac:
 		ConvertFromMac(&contents);
 		break;
-    case FileFormats::Unix:
+	case FileFormats::Unix:
 		break;
 	}
 
@@ -386,6 +386,6 @@ QString ReadAnyTextFileEx(const QString &fileName, bool forceNL) {
 	if (forceNL && contents.back() != '\n') {
 		contents.push_back('\n');
 	}
-	
+
 	return QString::fromStdString(contents);
 }

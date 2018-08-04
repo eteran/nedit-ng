@@ -13,8 +13,8 @@ struct UpdateState;
 class DialogWindowTitle final : public Dialog {
 	Q_OBJECT
 public:
-    DialogWindowTitle(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogWindowTitle() noexcept override = default;
+	DialogWindowTitle(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	~DialogWindowTitle() noexcept override = default;
 
 private Q_SLOTS:
 	void on_checkFileName_toggled(bool checked);
@@ -44,14 +44,14 @@ private:
 
 private:
 	void setToggleButtons();
-    void formatChangedCB();
+	void formatChangedCB();
 	QString FormatWindowTitleEx(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat);
 	void removeFromFormat(const QString &string);
 	void appendToFormat(const QString &string);
 
 private:
 	Ui::DialogWindowTitle ui;
-	
+
 	QString filename_;
 	QString path_;
 	QString viewTag_;

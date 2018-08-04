@@ -14,8 +14,8 @@ class QString;
 class QWidget;
 
 enum RepeatMethod {
-    REPEAT_TO_END = -1,
-    REPEAT_IN_SEL = -2,
+	REPEAT_TO_END = -1,
+	REPEAT_IN_SEL = -2,
 };
 
 bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos);
@@ -27,12 +27,12 @@ void ReturnShellCommandOutputEx(DocumentWidget *document, const QString &outText
 /* Data attached to window during shell command execution with
    information for controling and communicating with the process */
 struct MacroCommandData {
-    QTimer                        bannerTimer;
-    QTimer                        continuationTimer;
-    Program *                     program           = nullptr;
-    bool                          bannerIsUp        = false;
-    bool                          closeOnCompletion = false;
-    std::shared_ptr<MacroContext> context;
+	QTimer                        bannerTimer;
+	QTimer                        continuationTimer;
+	Program *                     program           = nullptr;
+	bool                          bannerIsUp        = false;
+	bool                          closeOnCompletion = false;
+	std::shared_ptr<MacroContext> context;
 };
 
 

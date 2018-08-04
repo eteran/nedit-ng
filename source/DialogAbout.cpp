@@ -84,16 +84,16 @@ QString buildPlatform() {
  */
 QString buildCompiler() {
 #if defined(Q_CC_CLANG) // must be before GNU, because clang claims to be GNU too
-    QString isAppleString;
+	QString isAppleString;
 #if defined(__apple_build_version__) // Apple clang has other version numbers
-    isAppleString = QLatin1String(" (Apple)");
+	isAppleString = QLatin1String(" (Apple)");
 #endif
-    return QLatin1String("Clang " ) + QString::number(__clang_major__) + QLatin1Char('.') + QString::number(__clang_minor__) + isAppleString;
+	return QLatin1String("Clang " ) + QString::number(__clang_major__) + QLatin1Char('.') + QString::number(__clang_minor__) + isAppleString;
 #elif defined(Q_CC_GNU)
-    return QLatin1String("GCC " ) + QLatin1String(__VERSION__);
+	return QLatin1String("GCC " ) + QLatin1String(__VERSION__);
 #elif defined(Q_CC_MSVC)
-    if (_MSC_VER >= 1500) { // 1500: MSVC 2008, 1600: MSVC 2010, ...
-        return QLatin1String("MSVC ") + QString::number(2008 + 2 * ((_MSC_VER / 100) - 15));
+	if (_MSC_VER >= 1500) { // 1500: MSVC 2008, 1600: MSVC 2010, ...
+		return QLatin1String("MSVC ") + QString::number(2008 + 2 * ((_MSC_VER / 100) - 15));
 	}
 #else
 	return QLatin1String("<Unknown Compiler>");
@@ -110,16 +110,16 @@ QString buildCompiler() {
 DialogAbout::DialogAbout(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 
-    ui.textAbout->setText(tr("%1"
+	ui.textAbout->setText(tr("%1"
 		"\n"
-        "nedit-ng was written by Evan Teran. It is intended to be a modern replacement for the Nirvana Editor (aka NEdit). The author has been using NEdit as his primary code editor for many years, and while it continues to be a superior editor in many ways, it is unfortunately showing its age. So nedit-ng was born out of a desire to have an editor that functions as close to the original as possible, but utilizing a modern toolkit (Qt). This will allow nedit-ng to enjoy the benefit of modern features such as:\n"
+		"nedit-ng was written by Evan Teran. It is intended to be a modern replacement for the Nirvana Editor (aka NEdit). The author has been using NEdit as his primary code editor for many years, and while it continues to be a superior editor in many ways, it is unfortunately showing its age. So nedit-ng was born out of a desire to have an editor that functions as close to the original as possible, but utilizing a modern toolkit (Qt). This will allow nedit-ng to enjoy the benefit of modern features such as:\n"
 		"\n"
-        "* Anti-aliased font rendering.\n"
-        "* Support for internationalization.\n"
-        "* Modern look and feel.\n"
-        "* Internally, counted strings are used instead of NUL terminated strings.\n"
-        "* Use of C++ containers means many internal size limits are no longer present.\n"
-        "* Code as been reworked using modern C++ techniques using a toolkit with an active developer community, making it significantly easier for contributions to be made by the open source community.\n"
+		"* Anti-aliased font rendering.\n"
+		"* Support for internationalization.\n"
+		"* Modern look and feel.\n"
+		"* Internally, counted strings are used instead of NUL terminated strings.\n"
+		"* Use of C++ containers means many internal size limits are no longer present.\n"
+		"* Code as been reworked using modern C++ techniques using a toolkit with an active developer community, making it significantly easier for contributions to be made by the open source community.\n"
 	).arg(createInfoString()));
 }
 
@@ -129,24 +129,24 @@ DialogAbout::DialogAbout(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f)
  */
 QString DialogAbout::createInfoString() {
 
-    auto versionString   = tr("%1.%2").arg(NEDIT_VERSION_MAJ).arg(NEDIT_VERSION_REV);
-    auto platformBits    = tr("%1 bit").arg(QSysInfo::WordSize);
-    QString localeString = QLocale::system().bcp47Name();
+	auto versionString   = tr("%1.%2").arg(NEDIT_VERSION_MAJ).arg(NEDIT_VERSION_REV);
+	auto platformBits    = tr("%1 bit").arg(QSysInfo::WordSize);
+	QString localeString = QLocale::system().bcp47Name();
 
-    return tr("nedit-ng version %1\n"
-              "\n"
-              "     Built on: %2, %3, %4\n"
-              "     Built at: %5, %6\n"
-              "      With Qt: %7\n"
-              "   Running Qt: %8\n"
-              "       Locale: %9\n").arg(versionString, 
-			                             buildPlatform(), 
-										 platformBits, 
-										 buildCompiler(), 
-										 QLatin1String(__DATE__), 
-										 QLatin1String(__TIME__), 
-										 QLatin1String(QT_VERSION_STR), 
-										 QString::fromLatin1(qVersion()), 
+	return tr("nedit-ng version %1\n"
+			  "\n"
+			  "     Built on: %2, %3, %4\n"
+			  "     Built at: %5, %6\n"
+			  "      With Qt: %7\n"
+			  "   Running Qt: %8\n"
+			  "       Locale: %9\n").arg(versionString,
+										 buildPlatform(),
+										 platformBits,
+										 buildCompiler(),
+										 QLatin1String(__DATE__),
+										 QLatin1String(__TIME__),
+										 QLatin1String(QT_VERSION_STR),
+										 QString::fromLatin1(qVersion()),
 										 localeString);
 }
 

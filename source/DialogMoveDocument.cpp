@@ -16,15 +16,15 @@ DialogMoveDocument::DialogMoveDocument(QWidget *parent, Qt::WindowFlags f) : Dia
  * @param window
  */
 void DialogMoveDocument::addItem(MainWindow *window) {
-    windows_.push_back(window);
-    ui.listWindows->addItem(window->windowTitle());
+	windows_.push_back(window);
+	ui.listWindows->addItem(window->windowTitle());
 }
 
 /**
  * @brief DialogMoveDocument::resetSelection
  */
 void DialogMoveDocument::resetSelection() {
-    ui.listWindows->setCurrentRow(0);
+	ui.listWindows->setCurrentRow(0);
 }
 
 /**
@@ -48,7 +48,7 @@ void DialogMoveDocument::setMultipleDocuments(bool value) {
  * @return
  */
 int DialogMoveDocument::selectionIndex() const {
-    return ui.listWindows->currentRow();
+	return ui.listWindows->currentRow();
 }
 
 /**

@@ -5,20 +5,20 @@
 #include <QLatin1String>
 
 enum class WrapMode {
-    NoWrap,
+	NoWrap,
 	Wrap
 };
 
 inline QLatin1String to_string(WrapMode wrap) {
 
-    switch(wrap) {
-    case WrapMode::NoWrap:
-        return QLatin1String("nowrap");
-    case WrapMode::Wrap:
-        return QLatin1String("wrap");
-    }
+	switch(wrap) {
+	case WrapMode::NoWrap:
+		return QLatin1String("nowrap");
+	case WrapMode::Wrap:
+		return QLatin1String("wrap");
+	}
 
-    Q_UNREACHABLE();
+	Q_UNREACHABLE();
 }
 
 #endif

@@ -18,15 +18,15 @@ LanguageModeModel::LanguageModeModel(QObject *parent) : QAbstractItemModel(paren
  */
 QModelIndex LanguageModeModel::index(int row, int column, const QModelIndex &parent) const {
 
-    if(row >= rowCount(parent) || column >= columnCount(parent)) {
-        return {};
-    }
+	if(row >= rowCount(parent) || column >= columnCount(parent)) {
+		return {};
+	}
 
-    if(row < 0) {
-        return {};
-    }
+	if(row < 0) {
+		return {};
+	}
 
-    return createIndex(row, column);
+	return createIndex(row, column);
 }
 
 /**
@@ -35,8 +35,8 @@ QModelIndex LanguageModeModel::index(int row, int column, const QModelIndex &par
  * @return
  */
 QModelIndex LanguageModeModel::parent(const QModelIndex &index) const {
-    Q_UNUSED(index);
-    return {};
+	Q_UNUSED(index);
+	return {};
 }
 
 /**
@@ -46,21 +46,21 @@ QModelIndex LanguageModeModel::parent(const QModelIndex &index) const {
  * @return
  */
 QVariant LanguageModeModel::data(const QModelIndex &index, int role) const {
-    if(index.isValid()) {
+	if(index.isValid()) {
 
-        const LanguageMode &item = items_[index.row()];
+		const LanguageMode &item = items_[index.row()];
 
-        if(role == Qt::DisplayRole) {
-            switch(index.column()) {
-            case 0:
-                return item.name;
-            }
-        } else if(role == Qt::UserRole) {
-            return QVariant();
-        }
-    }
+		if(role == Qt::DisplayRole) {
+			switch(index.column()) {
+			case 0:
+				return item.name;
+			}
+		} else if(role == Qt::UserRole) {
+			return QVariant();
+		}
+	}
 
-    return QVariant();
+	return QVariant();
 }
 
 /**
@@ -71,14 +71,14 @@ QVariant LanguageModeModel::data(const QModelIndex &index, int role) const {
  * @return
  */
 QVariant LanguageModeModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    if(role == Qt::DisplayRole && orientation == Qt::Horizontal) {
-        switch(section) {
-        case 0:
-            return tr("Name");
-        }
-    }
+	if(role == Qt::DisplayRole && orientation == Qt::Horizontal) {
+		switch(section) {
+		case 0:
+			return tr("Name");
+		}
+	}
 
-    return QVariant();
+	return QVariant();
 }
 
 /**
@@ -87,8 +87,8 @@ QVariant LanguageModeModel::headerData(int section, Qt::Orientation orientation,
  * @return
  */
 int LanguageModeModel::columnCount(const QModelIndex &parent) const {
-    Q_UNUSED(parent);
-    return 1;
+	Q_UNUSED(parent);
+	return 1;
 }
 
 /**
@@ -97,8 +97,8 @@ int LanguageModeModel::columnCount(const QModelIndex &parent) const {
  * @return
  */
 int LanguageModeModel::rowCount(const QModelIndex &parent) const {
-    Q_UNUSED(parent);
-    return items_.size();
+	Q_UNUSED(parent);
+	return items_.size();
 }
 
 /**
@@ -106,18 +106,18 @@ int LanguageModeModel::rowCount(const QModelIndex &parent) const {
  * @param style
  */
 void LanguageModeModel::addItem(const LanguageMode &languageMode) {
-    beginInsertRows(QModelIndex(), rowCount(), rowCount());
-    items_.push_back(languageMode);
-    endInsertRows();
+	beginInsertRows(QModelIndex(), rowCount(), rowCount());
+	items_.push_back(languageMode);
+	endInsertRows();
 }
 
 /**
  * @brief LanguageModeModel::clear
  */
 void LanguageModeModel::clear() {
-    beginResetModel();
-    items_.clear();
-    endResetModel();
+	beginResetModel();
+	items_.clear();
+	endResetModel();
 }
 
 /**
@@ -125,14 +125,14 @@ void LanguageModeModel::clear() {
  * @param index
  */
 void LanguageModeModel::moveItemUp(const QModelIndex &index) {
-    if(index.isValid()) {
-        int row = index.row();
-        if(row > 0) {
-            beginMoveRows(QModelIndex(), row, row, QModelIndex(), row - 1);
-            moveItem(items_, row, row - 1);
-            endMoveRows();
-        }
-    }
+	if(index.isValid()) {
+		int row = index.row();
+		if(row > 0) {
+			beginMoveRows(QModelIndex(), row, row, QModelIndex(), row - 1);
+			moveItem(items_, row, row - 1);
+			endMoveRows();
+		}
+	}
 }
 
 /**
@@ -140,14 +140,14 @@ void LanguageModeModel::moveItemUp(const QModelIndex &index) {
  * @param index
  */
 void LanguageModeModel::moveItemDown(const QModelIndex &index) {
-    if(index.isValid()) {
-        int row = index.row();
-        if(row < rowCount() - 1) {
-            beginMoveRows(QModelIndex(), row, row, QModelIndex(), row + 2);
-            moveItem(items_, row, row + 1);
-            endMoveRows();
-        }
-    }
+	if(index.isValid()) {
+		int row = index.row();
+		if(row < rowCount() - 1) {
+			beginMoveRows(QModelIndex(), row, row, QModelIndex(), row + 2);
+			moveItem(items_, row, row + 1);
+			endMoveRows();
+		}
+	}
 }
 
 /**
@@ -155,28 +155,28 @@ void LanguageModeModel::moveItemDown(const QModelIndex &index) {
  * @param index
  */
 void LanguageModeModel::deleteItem(const QModelIndex &index) {
-    if(index.isValid()) {
-        int row = index.row();
-        if(row < rowCount()) {
-            beginRemoveRows(QModelIndex(), row, row);
-            items_.remove(row);
-            endRemoveRows();
-        }
-    }
+	if(index.isValid()) {
+		int row = index.row();
+		if(row < rowCount()) {
+			beginRemoveRows(QModelIndex(), row, row);
+			items_.remove(row);
+			endRemoveRows();
+		}
+	}
 }
 
 bool LanguageModeModel::updateItem(const QModelIndex &index, const LanguageMode &item) {
-    if(index.isValid()) {
-        int row = index.row();
-        if(row < rowCount()) {
-            items_[row] = item;
-            static const QVector<int> roles = {Qt::DisplayRole};
-            Q_EMIT dataChanged(index, index, roles);
-            return true;
-        }
-    }
+	if(index.isValid()) {
+		int row = index.row();
+		if(row < rowCount()) {
+			items_[row] = item;
+			static const QVector<int> roles = {Qt::DisplayRole};
+			Q_EMIT dataChanged(index, index, roles);
+			return true;
+		}
+	}
 
-    return false;
+	return false;
 }
 
 /**
@@ -185,13 +185,13 @@ bool LanguageModeModel::updateItem(const QModelIndex &index, const LanguageMode 
  * @return
  */
 const LanguageMode *LanguageModeModel::itemFromIndex(const QModelIndex &index) const {
-    if(index.isValid()) {
-        int row = index.row();
-        if(row < rowCount()) {
-            return &items_[row];
-        }
-    }
+	if(index.isValid()) {
+		int row = index.row();
+		if(row < rowCount()) {
+			return &items_[row];
+		}
+	}
 
-    return nullptr;
+	return nullptr;
 }
 

@@ -7,11 +7,11 @@
 
 class RegexError final : public std::exception {
 public:
-    RegexError(const char *fmt, ...);
-	
+	RegexError(const char *fmt, ...);
+
 public:
-    const char *what() const noexcept override;
-	
+	const char *what() const noexcept override;
+
 private:
 	std::string error_;
 };

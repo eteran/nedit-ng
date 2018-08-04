@@ -14,26 +14,26 @@
 DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
 	ui.setupUi(this);
 
-    for(int size : QFontDatabase::standardSizes()) {
-        ui.fontSize->addItem(tr("%1").arg(size), size);
-    }
+	for(int size : QFontDatabase::standardSizes()) {
+		ui.fontSize->addItem(tr("%1").arg(size), size);
+	}
 
-    if(!document_) {
+	if(!document_) {
 		ui.buttonBox->removeButton(ui.buttonBox->button(QDialogButtonBox::Apply));
 		ui.buttonBox->removeButton(ui.buttonBox->button(QDialogButtonBox::Close));
 		ui.buttonBox->addButton(QDialogButtonBox::Cancel);
 	}
 
 	// Set initial values
-    const QFont font = document ?
-                Font::fromString(document->fontName_) :
-                Font::fromString(Preferences::GetPrefFontName());
+	const QFont font = document ?
+				Font::fromString(document->fontName_) :
+				Font::fromString(Preferences::GetPrefFontName());
 
-    ui.fontCombo->setCurrentFont(font);
-    const int n = ui.fontSize->findData(font.pointSize());
-    if(n != -1) {
-        ui.fontSize->setCurrentIndex(n);
-    }
+	ui.fontCombo->setCurrentFont(font);
+	const int n = ui.fontSize->findData(font.pointSize());
+	if(n != -1) {
+		ui.fontSize->setCurrentIndex(n);
+	}
 }
 
 /**
@@ -42,18 +42,18 @@ DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFl
  */
 void DialogFonts::on_buttonBox_clicked(QAbstractButton *button) {
 
-    switch(ui.buttonBox->standardButton(button)) {
-    case QDialogButtonBox::Ok:
-        updateFont();
-        accept();
-        break;
-    case QDialogButtonBox::Apply:
-        updateFont();
-        break;
-    default:
-        reject();
-        break;
-    }
+	switch(ui.buttonBox->standardButton(button)) {
+	case QDialogButtonBox::Ok:
+		updateFont();
+		accept();
+		break;
+	case QDialogButtonBox::Apply:
+		updateFont();
+		break;
+	default:
+		reject();
+		break;
+	}
 }
 
 
@@ -64,13 +64,13 @@ void DialogFonts::on_buttonBox_clicked(QAbstractButton *button) {
  */
 void DialogFonts::updateFont() {
 
-    QFont font = ui.fontCombo->currentFont();
-    font.setPointSize(ui.fontSize->currentData().toInt());
-    QString fontName = font.toString();
+	QFont font = ui.fontCombo->currentFont();
+	font.setPointSize(ui.fontSize->currentData().toInt());
+	QString fontName = font.toString();
 
-    if (document_) {
-        document_->action_Set_Fonts(fontName);
+	if (document_) {
+		document_->action_Set_Fonts(fontName);
 	} else {
-        Preferences::SetPrefFont(fontName);
+		Preferences::SetPrefFont(fontName);
 	}
 }

@@ -13,11 +13,11 @@ class DialogMoveDocument final : public Dialog {
 public:
 	Q_OBJECT
 public:
-    DialogMoveDocument(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogMoveDocument() noexcept override = default;
-	
+	DialogMoveDocument(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	~DialogMoveDocument() noexcept override = default;
+
 public:
-    void addItem(MainWindow *window);
+	void addItem(MainWindow *window);
 	void resetSelection();
 	void setLabel(const QString &label);
 	void setMultipleDocuments(bool value);
@@ -25,9 +25,9 @@ public:
 	bool moveAllSelected() const;
 
 private:
-    Ui::DialogMoveDocument    ui;
-    std::vector<MainWindow *> windows_;
-	
+	Ui::DialogMoveDocument    ui;
+	std::vector<MainWindow *> windows_;
+
 };
 
 #endif

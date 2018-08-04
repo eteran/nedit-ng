@@ -9,7 +9,7 @@
  */
 DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
-	
+
 	// seed the history with a blank string, makes later logic simpler
 	history_ << QLatin1String("");
 }
@@ -22,16 +22,16 @@ void DialogFilter::keyPressEvent(QKeyEvent *event) {
 	if(ui.textFilter->hasFocus()) {
 		int index = historyIndex_;
 
-		// only process up and down arrow keys 
+		// only process up and down arrow keys
 		if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
 			QDialog::keyPressEvent(event);
 			return;
 		}
 
-		// increment or decrement the index depending on which arrow was pressed 
+		// increment or decrement the index depending on which arrow was pressed
 		index += (event->key() == Qt::Key_Up) ? 1 : -1;
 
-		// if the index is out of range, beep and return 
+		// if the index is out of range, beep and return
 		if (index < 0 || index >= history_.size()) {
 			QApplication::beep();
 			return;
@@ -51,7 +51,7 @@ void DialogFilter::keyPressEvent(QKeyEvent *event) {
 void DialogFilter::showEvent(QShowEvent *event) {
 	historyIndex_ = 0;
 	ui.textFilter->setText(QString());
-    Dialog::showEvent(event);
+	Dialog::showEvent(event);
 }
 
 /**
@@ -70,5 +70,5 @@ void DialogFilter::on_buttonBox_accepted() {
  * @return
  */
 QString DialogFilter::currentText() const {
-    return ui.textFilter->text();
+	return ui.textFilter->text();
 }

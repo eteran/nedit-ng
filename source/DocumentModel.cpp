@@ -18,15 +18,15 @@ DocumentModel::DocumentModel(QObject *parent) : QAbstractItemModel(parent) {
  */
 QModelIndex DocumentModel::index(int row, int column, const QModelIndex &parent) const {
 
-    if(row >= rowCount(parent) || column >= columnCount(parent)) {
-        return {};
-    }
+	if(row >= rowCount(parent) || column >= columnCount(parent)) {
+		return {};
+	}
 
-    if(row < 0) {
-        return {};
-    }
+	if(row < 0) {
+		return {};
+	}
 
-    return createIndex(row, column);
+	return createIndex(row, column);
 }
 
 /**
@@ -35,8 +35,8 @@ QModelIndex DocumentModel::index(int row, int column, const QModelIndex &parent)
  * @return
  */
 QModelIndex DocumentModel::parent(const QModelIndex &index) const {
-    Q_UNUSED(index);
-    return {};
+	Q_UNUSED(index);
+	return {};
 }
 
 /**
@@ -46,21 +46,21 @@ QModelIndex DocumentModel::parent(const QModelIndex &index) const {
  * @return
  */
 QVariant DocumentModel::data(const QModelIndex &index, int role) const {
-    if(index.isValid()) {
+	if(index.isValid()) {
 
-        const DocumentWidget *document = items_[index.row()];
+		const DocumentWidget *document = items_[index.row()];
 
-        if(role == Qt::DisplayRole) {
-            switch(index.column()) {
-            case 0:
-                return showFullPath_ ? document->FullPath() : document->filename();
-            }
-        } else if(role == Qt::UserRole) {
-            return QVariant();
-        }
-    }
+		if(role == Qt::DisplayRole) {
+			switch(index.column()) {
+			case 0:
+				return showFullPath_ ? document->FullPath() : document->filename();
+			}
+		} else if(role == Qt::UserRole) {
+			return QVariant();
+		}
+	}
 
-    return QVariant();
+	return QVariant();
 }
 
 /**
@@ -71,14 +71,14 @@ QVariant DocumentModel::data(const QModelIndex &index, int role) const {
  * @return
  */
 QVariant DocumentModel::headerData(int section, Qt::Orientation orientation, int role) const {
-    if(role == Qt::DisplayRole && orientation == Qt::Horizontal) {
-        switch(section) {
-        case 0:
-            return tr("Name");
-        }
-    }
+	if(role == Qt::DisplayRole && orientation == Qt::Horizontal) {
+		switch(section) {
+		case 0:
+			return tr("Name");
+		}
+	}
 
-    return QVariant();
+	return QVariant();
 }
 
 /**
@@ -87,8 +87,8 @@ QVariant DocumentModel::headerData(int section, Qt::Orientation orientation, int
  * @return
  */
 int DocumentModel::columnCount(const QModelIndex &parent) const {
-    Q_UNUSED(parent);
-    return 1;
+	Q_UNUSED(parent);
+	return 1;
 }
 
 /**
@@ -97,8 +97,8 @@ int DocumentModel::columnCount(const QModelIndex &parent) const {
  * @return
  */
 int DocumentModel::rowCount(const QModelIndex &parent) const {
-    Q_UNUSED(parent);
-    return items_.size();
+	Q_UNUSED(parent);
+	return items_.size();
 }
 
 /**
@@ -106,9 +106,9 @@ int DocumentModel::rowCount(const QModelIndex &parent) const {
  * @param style
  */
 void DocumentModel::addItem(DocumentWidget *languageMode) {
-    beginInsertRows(QModelIndex(), rowCount(), rowCount());
-    items_.push_back(languageMode);
-    endInsertRows();
+	beginInsertRows(QModelIndex(), rowCount(), rowCount());
+	items_.push_back(languageMode);
+	endInsertRows();
 }
 
 /**
@@ -116,19 +116,19 @@ void DocumentModel::addItem(DocumentWidget *languageMode) {
  * @param showFullPath
  */
 void DocumentModel::setShowFullPath(bool showFullPath) {
-    showFullPath_ = showFullPath;
+	showFullPath_ = showFullPath;
 
-    static const QVector<int> roles = {Qt::DisplayRole};
-    Q_EMIT dataChanged(index(0, 0), index(rowCount(), 0), roles);
+	static const QVector<int> roles = {Qt::DisplayRole};
+	Q_EMIT dataChanged(index(0, 0), index(rowCount(), 0), roles);
 }
 
 /**
  * @brief DocumentModel::clear
  */
 void DocumentModel::clear() {
-    beginResetModel();
-    items_.clear();
-    endResetModel();
+	beginResetModel();
+	items_.clear();
+	endResetModel();
 }
 
 /**
@@ -136,14 +136,14 @@ void DocumentModel::clear() {
  * @param index
  */
 void DocumentModel::moveItemUp(const QModelIndex &index) {
-    if(index.isValid()) {
-        int row = index.row();
-        if(row > 0) {
-            beginMoveRows(QModelIndex(), row, row, QModelIndex(), row - 1);
-            moveItem(items_, row, row - 1);
-            endMoveRows();
-        }
-    }
+	if(index.isValid()) {
+		int row = index.row();
+		if(row > 0) {
+			beginMoveRows(QModelIndex(), row, row, QModelIndex(), row - 1);
+			moveItem(items_, row, row - 1);
+			endMoveRows();
+		}
+	}
 }
 
 /**
@@ -151,14 +151,14 @@ void DocumentModel::moveItemUp(const QModelIndex &index) {
  * @param index
  */
 void DocumentModel::moveItemDown(const QModelIndex &index) {
-    if(index.isValid()) {
-        int row = index.row();
-        if(row < rowCount() - 1) {
-            beginMoveRows(QModelIndex(), row, row, QModelIndex(), row + 2);
-            moveItem(items_, row, row + 1);
-            endMoveRows();
-        }
-    }
+	if(index.isValid()) {
+		int row = index.row();
+		if(row < rowCount() - 1) {
+			beginMoveRows(QModelIndex(), row, row, QModelIndex(), row + 2);
+			moveItem(items_, row, row + 1);
+			endMoveRows();
+		}
+	}
 }
 
 /**
@@ -166,14 +166,14 @@ void DocumentModel::moveItemDown(const QModelIndex &index) {
  * @param index
  */
 void DocumentModel::deleteItem(const QModelIndex &index) {
-    if(index.isValid()) {
-        int row = index.row();
-        if(row < rowCount()) {
-            beginRemoveRows(QModelIndex(), row, row);
-            items_.remove(row);
-            endRemoveRows();
-        }
-    }
+	if(index.isValid()) {
+		int row = index.row();
+		if(row < rowCount()) {
+			beginRemoveRows(QModelIndex(), row, row);
+			items_.remove(row);
+			endRemoveRows();
+		}
+	}
 }
 
 
@@ -183,13 +183,13 @@ void DocumentModel::deleteItem(const QModelIndex &index) {
  * @return
  */
 DocumentWidget *DocumentModel::itemFromIndex(const QModelIndex &index) {
-    if(index.isValid()) {
-        int row = index.row();
-        if(row < rowCount()) {
-            return items_[row];
-        }
-    }
+	if(index.isValid()) {
+		int row = index.row();
+		if(row < rowCount()) {
+			return items_[row];
+		}
+	}
 
-    return nullptr;
+	return nullptr;
 }
 

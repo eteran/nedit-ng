@@ -11,9 +11,9 @@ class QString;
 
 // types of current dialog and/or menu
 enum class CommandTypes {
-    SHELL_CMDS,
-    MACRO_CMDS,
-    BG_MENU_CMDS
+	SHELL_CMDS,
+	MACRO_CMDS,
+	BG_MENU_CMDS
 };
 
 bool LoadBGMenuCmdsStringEx(const QString &inString);

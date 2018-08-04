@@ -11,118 +11,118 @@
 */
 bool Regex::SubstituteRE(view::string_view source, std::string &dest) const noexcept {
 
-    constexpr auto InvalidParenNumber = static_cast<size_t>(-1);
+	constexpr auto InvalidParenNumber = static_cast<size_t>(-1);
 
-    const Regex *re = this;
+	const Regex *re = this;
 
-    char test;
+	char test;
 
-    if (U_CHAR_AT(&re->program[0]) != MAGIC) {
-        reg_error("damaged Regex passed to 'SubstituteRE'");
-        return false;
-    }
+	if (U_CHAR_AT(&re->program[0]) != MAGIC) {
+		reg_error("damaged Regex passed to 'SubstituteRE'");
+		return false;
+	}
 
-    auto out = std::back_inserter(dest);
-    for (auto in = source.begin(); in != source.end();) {
+	auto out = std::back_inserter(dest);
+	for (auto in = source.begin(); in != source.end();) {
 
-        char ch = *in++;
+		char ch = *in++;
 
-        char chgcase = '\0';
-        size_t paren_no = InvalidParenNumber;
+		char chgcase = '\0';
+		size_t paren_no = InvalidParenNumber;
 
-        if (ch == '\\') {
-            // Process any case altering tokens, i.e \u, \U, \l, \L.
+		if (ch == '\\') {
+			// Process any case altering tokens, i.e \u, \U, \l, \L.
 
-            if (*in == 'u' || *in == 'U' || *in == 'l' || *in == 'L') {
-                chgcase = *in++;
+			if (*in == 'u' || *in == 'U' || *in == 'l' || *in == 'L') {
+				chgcase = *in++;
 
-                if (in == source.end()) {
-                    break;
-                }
+				if (in == source.end()) {
+					break;
+				}
 
-                ch = *in++;
-            }
-        }
+				ch = *in++;
+			}
+		}
 
-        if (ch == '&') {
-            paren_no = 0;
-        } else if (ch == '\\') {
-            /* Can not pass register variable '&src' to function 'numeric_escape'
-               so make a non-register copy that we can take the address of. */
+		if (ch == '&') {
+			paren_no = 0;
+		} else if (ch == '\\') {
+			/* Can not pass register variable '&src' to function 'numeric_escape'
+			   so make a non-register copy that we can take the address of. */
 
-            decltype(in) src_alias = in;
+			decltype(in) src_alias = in;
 
-            if ('1' <= *in && *in <= '9') {
-                paren_no = static_cast<size_t>(*in++ - '0');
+			if ('1' <= *in && *in <= '9') {
+				paren_no = static_cast<size_t>(*in++ - '0');
 
-            } else if ((test = literal_escape<char>(*in)) != '\0') {
-                ch = test;
-                in++;
+			} else if ((test = literal_escape<char>(*in)) != '\0') {
+				ch = test;
+				in++;
 
-            } else if ((test = numeric_escape<char>(*in, &src_alias)) != '\0') {
-                ch = test;
-                in = src_alias;
-                in++;
+			} else if ((test = numeric_escape<char>(*in, &src_alias)) != '\0') {
+				ch = test;
+				in = src_alias;
+				in++;
 
-                /* NOTE: if an octal escape for zero is attempted (e.g. \000), it
-                   will be treated as a literal string. */
-            } else if (in == source.end()) {
-                /* If '\' is the last character of the replacement string, it is
-                   interpreted as a literal backslash. */
+				/* NOTE: if an octal escape for zero is attempted (e.g. \000), it
+				   will be treated as a literal string. */
+			} else if (in == source.end()) {
+				/* If '\' is the last character of the replacement string, it is
+				   interpreted as a literal backslash. */
 
-                ch = '\\';
-            } else {
-                ch = *in++; // Allow any escape sequence (This is
-            }               // INCONSISTENT with the 'CompileRE'
-        }                   // mind set of issuing an error!
+				ch = '\\';
+			} else {
+				ch = *in++; // Allow any escape sequence (This is
+			}               // INCONSISTENT with the 'CompileRE'
+		}                   // mind set of issuing an error!
 
-        if (paren_no == InvalidParenNumber) { // Ordinary character.
-            *out++ = ch;
-        } else if (re->startp[paren_no] != nullptr && re->endp[paren_no]) {
+		if (paren_no == InvalidParenNumber) { // Ordinary character.
+			*out++ = ch;
+		} else if (re->startp[paren_no] != nullptr && re->endp[paren_no]) {
 
-            /* The tokens \u and \l only modify the first character while the
-             * tokens \U and \L modify the entire string. */
-            switch(chgcase) {
-            case 'u':
-                {
-                    int count = 0;
-                    std::transform(re->startp[paren_no], re->endp[paren_no], out, [&count](char ch) -> int {
-                        if(count++ == 0) {
-                            return safe_ctype<toupper>(ch);
-                        } else {
-                            return ch;
-                        }
-                    });
-                }
-                break;
-            case 'U':
-                std::transform(re->startp[paren_no], re->endp[paren_no], out, [](char ch) {
-                    return safe_ctype<toupper>(ch);
-                });
-                break;
-            case 'l':
-                {
-                    int count = 0;
-                    std::transform(re->startp[paren_no], re->endp[paren_no], out, [&count](char ch) -> int {
-                        if(count++ == 0) {
-                            return safe_ctype<tolower>(ch);
-                        } else {
-                            return ch;
-                        }
-                    });
-                }
-                break;
-            case 'L':
-                std::transform(re->startp[paren_no], re->endp[paren_no], out, [](char ch) {
-                    return safe_ctype<tolower>(ch);
-                });
-                break;
-            default:
-                std::copy(re->startp[paren_no], re->endp[paren_no], out);
-                break;
-            }
-        }
-    }
+			/* The tokens \u and \l only modify the first character while the
+			 * tokens \U and \L modify the entire string. */
+			switch(chgcase) {
+			case 'u':
+				{
+					int count = 0;
+					std::transform(re->startp[paren_no], re->endp[paren_no], out, [&count](char ch) -> int {
+						if(count++ == 0) {
+							return safe_ctype<toupper>(ch);
+						} else {
+							return ch;
+						}
+					});
+				}
+				break;
+			case 'U':
+				std::transform(re->startp[paren_no], re->endp[paren_no], out, [](char ch) {
+					return safe_ctype<toupper>(ch);
+				});
+				break;
+			case 'l':
+				{
+					int count = 0;
+					std::transform(re->startp[paren_no], re->endp[paren_no], out, [&count](char ch) -> int {
+						if(count++ == 0) {
+							return safe_ctype<tolower>(ch);
+						} else {
+							return ch;
+						}
+					});
+				}
+				break;
+			case 'L':
+				std::transform(re->startp[paren_no], re->endp[paren_no], out, [](char ch) {
+					return safe_ctype<tolower>(ch);
+				});
+				break;
+			default:
+				std::copy(re->startp[paren_no], re->endp[paren_no], out);
+				break;
+			}
+		}
+	}
 
-    return true;
+	return true;
 }

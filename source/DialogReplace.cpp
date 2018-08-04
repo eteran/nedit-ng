@@ -20,43 +20,43 @@ namespace {
 */
 int countWritableWindows() {
 
-    int nWritable = 0;
+	int nWritable = 0;
 
-    std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
-    size_t nBefore = documents.size();
+	std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+	size_t nBefore = documents.size();
 
-    auto first = documents.begin();
-    auto last  = documents.end();
+	auto first = documents.begin();
+	auto last  = documents.end();
 
-    for(auto it = first; it != last; ++it) {
-        DocumentWidget *document = *it;
+	for(auto it = first; it != last; ++it) {
+		DocumentWidget *document = *it;
 
-        /* We must be very careful! The status check may trigger a pop-up
-           dialog when the file has changed on disk, and the user may destroy
-           arbitrary windows in response. */
-        document->CheckForChangesToFile();
+		/* We must be very careful! The status check may trigger a pop-up
+		   dialog when the file has changed on disk, and the user may destroy
+		   arbitrary windows in response. */
+		document->CheckForChangesToFile();
 
-        const std::vector<DocumentWidget *> afterDocuments = DocumentWidget::allDocuments();
-        size_t nAfter = afterDocuments.size();
+		const std::vector<DocumentWidget *> afterDocuments = DocumentWidget::allDocuments();
+		size_t nAfter = afterDocuments.size();
 
-        if (nAfter != nBefore) {
-            // The user has destroyed a file; start counting all over again
-            nBefore = nAfter;
+		if (nAfter != nBefore) {
+			// The user has destroyed a file; start counting all over again
+			nBefore = nAfter;
 
-            documents = afterDocuments;
-            first     = documents.begin();
-            last      = documents.end();
-            it        = first;
-            nWritable = 0;
-            continue;
-        }
+			documents = afterDocuments;
+			first     = documents.begin();
+			last      = documents.end();
+			it        = first;
+			nWritable = 0;
+			continue;
+		}
 
-        if (!document->lockReasons_.isAnyLocked()) {
-            ++nWritable;
-        }
-    }
+		if (!document->lockReasons_.isAnyLocked()) {
+			++nWritable;
+		}
+	}
 
-    return nWritable;
+	return nWritable;
 }
 
 /*
@@ -64,19 +64,19 @@ int countWritableWindows() {
 **/
 std::vector<DocumentWidget *> collectWritableWindows() {
 
-    std::vector<DocumentWidget *> documents;
+	std::vector<DocumentWidget *> documents;
 
-    for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-        if (!document->lockReasons().isAnyLocked()) {
-            documents.push_back(document);
-        }
-    }
+	for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+		if (!document->lockReasons().isAnyLocked()) {
+			documents.push_back(document);
+		}
+	}
 
-    std::sort(documents.begin(), documents.end(), [](const DocumentWidget *lhs, const DocumentWidget *rhs) {
-        return lhs->filename() < rhs->filename();
-    });
+	std::sort(documents.begin(), documents.end(), [](const DocumentWidget *lhs, const DocumentWidget *rhs) {
+		return lhs->filename() < rhs->filename();
+	});
 
-    return documents;
+	return documents;
 }
 
 }
@@ -96,8 +96,8 @@ DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, Qt::W
  * @param event
  */
 void DialogReplace::showEvent(QShowEvent *event) {
-    Dialog::showEvent(event);
-    ui.textFind->setFocus();
+	Dialog::showEvent(event);
+	ui.textFind->setFocus();
 }
 
 /**
@@ -107,80 +107,80 @@ void DialogReplace::showEvent(QShowEvent *event) {
 void DialogReplace::keyPressEvent(QKeyEvent *event) {
 
 	if(ui.textFind->hasFocus()) {
-        int index = window_->rHistIndex_;
+		int index = window_->rHistIndex_;
 
-		// only process up and down arrow keys 
+		// only process up and down arrow keys
 		if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
-            QDialog::keyPressEvent(event);
+			QDialog::keyPressEvent(event);
 			return;
 		}
 
-		// increment or decrement the index depending on which arrow was pressed 
+		// increment or decrement the index depending on which arrow was pressed
 		index += (event->key() == Qt::Key_Up) ? 1 : -1;
 
-		// if the index is out of range, beep and return 
-        if (index != 0 && Search::historyIndex(index) == -1) {
+		// if the index is out of range, beep and return
+		if (index != 0 && Search::historyIndex(index) == -1) {
 			QApplication::beep();
 			return;
 		}
 
-		// determine the strings and button settings to use 
+		// determine the strings and button settings to use
 		QString searchStr;
-        QString replaceStr;
+		QString replaceStr;
 		SearchType searchType;
 		if (index == 0) {
-            searchStr  = QString();
-            replaceStr = QString();
-            searchType = Preferences::GetPrefSearch();
-        } else {
-            const Search::HistoryEntry *entry = Search::HistoryByIndex(index);
-            Q_ASSERT(entry);
+			searchStr  = QString();
+			replaceStr = QString();
+			searchType = Preferences::GetPrefSearch();
+		} else {
+			const Search::HistoryEntry *entry = Search::HistoryByIndex(index);
+			Q_ASSERT(entry);
 
-            searchStr  = entry->search;
-            replaceStr = entry->replace;
-            searchType = entry->type;
+			searchStr  = entry->search;
+			replaceStr = entry->replace;
+			searchType = entry->type;
 		}
 
-		// Set the buttons and fields with the selected search type 
+		// Set the buttons and fields with the selected search type
 		initToggleButtons(searchType);
 
 		ui.textFind->setText(searchStr);
-        ui.textReplace->setText(replaceStr);
+		ui.textReplace->setText(replaceStr);
 
-		// Set the state of the Find ... button 
-        updateFindButton();
+		// Set the state of the Find ... button
+		updateFindButton();
 
-        window_->rHistIndex_ = index;
+		window_->rHistIndex_ = index;
 	}
 
 	if(ui.textReplace->hasFocus()) {
 		int index = window_->rHistIndex_;
 
-		// only process up and down arrow keys 
+		// only process up and down arrow keys
 		if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
-            QDialog::keyPressEvent(event);
+			QDialog::keyPressEvent(event);
 			return;
 		}
 
-		// increment or decrement the index depending on which arrow was pressed 
+		// increment or decrement the index depending on which arrow was pressed
 		index += (event->key() == Qt::Key_Up) ? 1 : -1;
 
-		// if the index is out of range, beep and return 
-        if (index != 0 && Search::historyIndex(index) == -1) {
+		// if the index is out of range, beep and return
+		if (index != 0 && Search::historyIndex(index) == -1) {
 			QApplication::beep();
 			return;
 		}
 
-		// change only the replace field information 
+		// change only the replace field information
 		if (index == 0) {
 			ui.textReplace->setText(QString());
 		} else {
-            ui.textReplace->setText(Search::HistoryByIndex(index)->replace);
+			ui.textReplace->setText(Search::HistoryByIndex(index)->replace);
 		}
 
 		window_->rHistIndex_ = index;
 	}
-	
+
 	QDialog::keyPressEvent(event);
 }
 
@@ -190,7 +190,7 @@ void DialogReplace::keyPressEvent(QKeyEvent *event) {
  */
 void DialogReplace::on_checkKeep_toggled(bool checked) {
 	if (checked) {
-        setWindowTitle(tr("Find/Replace (in %1)").arg(document_->filename_));
+		setWindowTitle(tr("Find/Replace (in %1)").arg(document_->filename_));
 	} else {
 		setWindowTitle(tr("Find/Replace"));
 	}
@@ -202,36 +202,36 @@ void DialogReplace::on_checkKeep_toggled(bool checked) {
  */
 void DialogReplace::on_textFind_textChanged(const QString &text) {
 	Q_UNUSED(text);
-    UpdateReplaceActionButtons();
+	UpdateReplaceActionButtons();
 }
 
 /**
  * @brief DialogReplace::on_buttonFind_clicked
  */
 void DialogReplace::on_buttonFind_clicked() {
-	
-    // Validate and fetch the find and replace strings from the dialog
-    boost::optional<Fields> fields = readFields();
-    if (!fields) {
-		return;
-    }
 
-	// Set the initial focus of the dialog back to the search string	
+	// Validate and fetch the find and replace strings from the dialog
+	boost::optional<Fields> fields = readFields();
+	if (!fields) {
+		return;
+	}
+
+	// Set the initial focus of the dialog back to the search string
 	ui.textFind->setFocus();
 
-	// Find the text and mark it 
-    window_->action_Find(
-                document_,
-                fields->searchString,
-                fields->direction,
-                fields->searchType,
-                Preferences::GetPrefSearchWraps());
+	// Find the text and mark it
+	window_->action_Find(
+				document_,
+				fields->searchString,
+				fields->direction,
+				fields->searchType,
+				Preferences::GetPrefSearchWraps());
 
 	/* Doctor the search history generated by the action to include the
 	   replace string (if any), so the replace string can be used on
 	   subsequent replaces, even though no actual replacement was done. */
-    if (Search::historyIndex(1) != -1 && Search::HistoryByIndex(1)->search == fields->searchString) {
-        Search::HistoryByIndex(1)->replace = fields->replaceString;
+	if (Search::historyIndex(1) != -1 && Search::HistoryByIndex(1)->search == fields->searchString) {
+		Search::HistoryByIndex(1)->replace = fields->replaceString;
 	}
 
 	if (!keepDialog()) {
@@ -244,23 +244,23 @@ void DialogReplace::on_buttonFind_clicked() {
  */
 void DialogReplace::on_buttonReplace_clicked() {
 
-    // Validate and fetch the find and replace strings from the dialog
-    boost::optional<Fields> fields = readFields();
-    if (!fields) {
+	// Validate and fetch the find and replace strings from the dialog
+	boost::optional<Fields> fields = readFields();
+	if (!fields) {
 		return;
-    }
+	}
 
-	// Set the initial focus of the dialog back to the search string 
+	// Set the initial focus of the dialog back to the search string
 	ui.textFind->setFocus();
 
-	// Find the text and replace it 
-    window_->action_Replace(
-                document_,
-                fields->searchString,
-                fields->replaceString,
-                fields->direction,
-                fields->searchType,
-                Preferences::GetPrefSearchWraps());
+	// Find the text and replace it
+	window_->action_Replace(
+				document_,
+				fields->searchString,
+				fields->replaceString,
+				fields->direction,
+				fields->searchType,
+				Preferences::GetPrefSearchWraps());
 
 	if (!keepDialog()) {
 		hide();
@@ -272,23 +272,23 @@ void DialogReplace::on_buttonReplace_clicked() {
  */
 void DialogReplace::on_buttonReplaceFind_clicked() {
 
-    // Validate and fetch the find and replace strings from the dialog
-    boost::optional<Fields> fields = readFields();
-    if (!fields) {
+	// Validate and fetch the find and replace strings from the dialog
+	boost::optional<Fields> fields = readFields();
+	if (!fields) {
 		return;
-    }
+	}
 
-	// Set the initial focus of the dialog back to the search string 
+	// Set the initial focus of the dialog back to the search string
 	ui.textFind->setFocus();
 
-	// Find the text and replace it 
-    window_->action_Replace_Find(
-                document_,
-                fields->searchString,
-                fields->replaceString,
-                fields->direction,
-                fields->searchType,
-                Preferences::GetPrefSearchWraps());
+	// Find the text and replace it
+	window_->action_Replace_Find(
+				document_,
+				fields->searchString,
+				fields->replaceString,
+				fields->direction,
+				fields->searchType,
+				Preferences::GetPrefSearchWraps());
 
 	if (!keepDialog()) {
 		hide();
@@ -300,21 +300,21 @@ void DialogReplace::on_buttonReplaceFind_clicked() {
  */
 void DialogReplace::on_buttonWindow_clicked() {
 
-    // Validate and fetch the find and replace strings from the dialog
-    boost::optional<Fields> fields = readFields();
-    if (!fields) {
+	// Validate and fetch the find and replace strings from the dialog
+	boost::optional<Fields> fields = readFields();
+	if (!fields) {
 		return;
-    }
+	}
 
-	// Set the initial focus of the dialog back to the search string	
+	// Set the initial focus of the dialog back to the search string
 	ui.textFind->setFocus();
 
-	// do replacement 
-    window_->action_Replace_All(
-                document_,
-                fields->searchString,
-                fields->replaceString,
-                fields->searchType);
+	// do replacement
+	window_->action_Replace_All(
+				document_,
+				fields->searchString,
+				fields->replaceString,
+				fields->searchType);
 
 	if (!keepDialog()) {
 		hide();
@@ -326,21 +326,21 @@ void DialogReplace::on_buttonWindow_clicked() {
  */
 void DialogReplace::on_buttonSelection_clicked() {
 
-    // Validate and fetch the find and replace strings from the dialog
-    boost::optional<Fields> fields = readFields();
-    if (!fields) {
+	// Validate and fetch the find and replace strings from the dialog
+	boost::optional<Fields> fields = readFields();
+	if (!fields) {
 		return;
-    }
+	}
 
-	// Set the initial focus of the dialog back to the search string 
+	// Set the initial focus of the dialog back to the search string
 	ui.textFind->setFocus();
 
-	// do replacement 
-    window_->action_Replace_In_Selection(
-                document_,
-                fields->searchString,
-                fields->replaceString,
-                fields->searchType);
+	// do replacement
+	window_->action_Replace_In_Selection(
+				document_,
+				fields->searchString,
+				fields->replaceString,
+				fields->searchType);
 
 	if (!keepDialog()) {
 		hide();
@@ -352,38 +352,38 @@ void DialogReplace::on_buttonSelection_clicked() {
  */
 void DialogReplace::on_buttonMulti_clicked() {
 
-    // Validate and fetch the find and replace strings from the dialog
-    boost::optional<Fields> fields = readFields();
-    if (!fields) {
+	// Validate and fetch the find and replace strings from the dialog
+	boost::optional<Fields> fields = readFields();
+	if (!fields) {
 		return;
-    }
+	}
 
-	// Don't let the user select files when no replacement can be made 
-    if (fields->searchString.isEmpty()) {
-		// Set the initial focus of the dialog back to the search string 
+	// Don't let the user select files when no replacement can be made
+	if (fields->searchString.isEmpty()) {
+		// Set the initial focus of the dialog back to the search string
 		ui.textFind->setFocus();
-		
+
 		if(!keepDialog()) {
-            hide();
+			hide();
 		}
 		return;
 	}
 
-    static QPointer<DialogMultiReplace> dialogMultiReplace;
+	static QPointer<DialogMultiReplace> dialogMultiReplace;
 
-	// Create the dialog if it doesn't already exist 
-    if (!dialogMultiReplace) {
-        dialogMultiReplace = new DialogMultiReplace(this);
+	// Create the dialog if it doesn't already exist
+	if (!dialogMultiReplace) {
+		dialogMultiReplace = new DialogMultiReplace(this);
 	}
 
-    // temporary list of writable documents, used during multi-file replacements
-    std::vector<DocumentWidget *> writeableDocuments = collectWritableWindows();
+	// temporary list of writable documents, used during multi-file replacements
+	std::vector<DocumentWidget *> writeableDocuments = collectWritableWindows();
 
-	// Initialize/update the list of files. 
-    dialogMultiReplace->uploadFileListItems(writeableDocuments);
+	// Initialize/update the list of files.
+	dialogMultiReplace->uploadFileListItems(writeableDocuments);
 
-	// Display the dialog 
-    dialogMultiReplace->exec();
+	// Display the dialog
+	dialogMultiReplace->exec();
 }
 
 /**
@@ -392,11 +392,11 @@ void DialogReplace::on_buttonMulti_clicked() {
  */
 void DialogReplace::on_checkRegex_toggled(bool checked) {
 
-    const bool searchRegex = checked;
-    const bool searchCaseSense = ui.checkCase->isChecked();
+	const bool searchRegex = checked;
+	const bool searchCaseSense = ui.checkCase->isChecked();
 
-	// In sticky mode, restore the state of the Case Sensitive button 
-    if (Preferences::GetPrefStickyCaseSenseBtn()) {
+	// In sticky mode, restore the state of the Case Sensitive button
+	if (Preferences::GetPrefStickyCaseSenseBtn()) {
 		if (searchRegex) {
 			lastLiteralCase_ = searchCaseSense;
 			ui.checkCase->setChecked(lastRegexCase_);
@@ -406,7 +406,7 @@ void DialogReplace::on_checkRegex_toggled(bool checked) {
 		}
 	}
 
-	// make the Whole Word button insensitive for regex searches 
+	// make the Whole Word button insensitive for regex searches
 	ui.checkWord->setEnabled(!searchRegex);
 }
 
@@ -416,7 +416,7 @@ void DialogReplace::on_checkRegex_toggled(bool checked) {
  */
 void DialogReplace::on_checkCase_toggled(bool checked) {
 
-    const bool searchCaseSense = checked;
+	const bool searchCaseSense = checked;
 
 	/* Save the state of the Case Sensitive button
 	   depending on the state of the Regex button*/
@@ -433,14 +433,14 @@ void DialogReplace::on_checkCase_toggled(bool checked) {
  */
 void DialogReplace::setTextFieldFromDocument(DocumentWidget *document) {
 
-    QString initialText;
+	QString initialText;
 
-    if (Preferences::GetPrefFindReplaceUsesSelection()) {
+	if (Preferences::GetPrefFindReplaceUsesSelection()) {
 		initialText = document->GetAnySelection();
 	}
 
-	// Update the field 
-    ui.textFind->setText(initialText);
+	// Update the field
+	ui.textFind->setText(initialText);
 }
 
 /*
@@ -452,54 +452,54 @@ void DialogReplace::initToggleButtons(SearchType searchType) {
 	/* Set the initial search type and remember the corresponding case
 	   sensitivity states in case sticky case sensitivity is required. */
 	switch (searchType) {
-    case SearchType::Literal:
-        lastLiteralCase_ = false;
-        lastRegexCase_   = true;
-        ui.checkRegex->setChecked(false);
-        ui.checkCase->setChecked(false);
-        ui.checkWord->setChecked(false);
-        ui.checkWord->setEnabled(true);
+	case SearchType::Literal:
+		lastLiteralCase_ = false;
+		lastRegexCase_   = true;
+		ui.checkRegex->setChecked(false);
+		ui.checkCase->setChecked(false);
+		ui.checkWord->setChecked(false);
+		ui.checkWord->setEnabled(true);
 		break;
-    case SearchType::CaseSense:
-        lastLiteralCase_ = true;
-        lastRegexCase_   = true;
-        ui.checkRegex->setChecked(false);
-        ui.checkCase->setChecked(true);
-        ui.checkWord->setChecked(false);
-        ui.checkWord->setEnabled(true);
-        break;
-    case SearchType::LiteralWord:
-        lastLiteralCase_ = false;
-        lastRegexCase_   = true;
-        ui.checkRegex->setChecked(false);
-        ui.checkCase->setChecked(false);
-        ui.checkWord->setChecked(true);
-        ui.checkWord->setEnabled(true);
-        break;
-    case SearchType::CaseSenseWord:
-        lastLiteralCase_ = true;
-        lastRegexCase_   = true;
-        ui.checkRegex->setChecked(false);
-        ui.checkCase->setChecked(true);
-        ui.checkWord->setChecked(true);
-        ui.checkWord->setEnabled(true);
-        break;
-    case SearchType::Regex:
-        lastLiteralCase_ = false;
-        lastRegexCase_   = true;
-        ui.checkRegex->setChecked(true);
-        ui.checkCase->setChecked(true);
-        ui.checkWord->setChecked(false);
-        ui.checkWord->setEnabled(false);
-        break;
-    case SearchType::RegexNoCase:
-        lastLiteralCase_ = false;
-        lastRegexCase_   = false;
-        ui.checkRegex->setChecked(true);
-        ui.checkCase->setChecked(false);
-        ui.checkWord->setChecked(false);
-        ui.checkWord->setEnabled(false);
-        break;
+	case SearchType::CaseSense:
+		lastLiteralCase_ = true;
+		lastRegexCase_   = true;
+		ui.checkRegex->setChecked(false);
+		ui.checkCase->setChecked(true);
+		ui.checkWord->setChecked(false);
+		ui.checkWord->setEnabled(true);
+		break;
+	case SearchType::LiteralWord:
+		lastLiteralCase_ = false;
+		lastRegexCase_   = true;
+		ui.checkRegex->setChecked(false);
+		ui.checkCase->setChecked(false);
+		ui.checkWord->setChecked(true);
+		ui.checkWord->setEnabled(true);
+		break;
+	case SearchType::CaseSenseWord:
+		lastLiteralCase_ = true;
+		lastRegexCase_   = true;
+		ui.checkRegex->setChecked(false);
+		ui.checkCase->setChecked(true);
+		ui.checkWord->setChecked(true);
+		ui.checkWord->setEnabled(true);
+		break;
+	case SearchType::Regex:
+		lastLiteralCase_ = false;
+		lastRegexCase_   = true;
+		ui.checkRegex->setChecked(true);
+		ui.checkCase->setChecked(true);
+		ui.checkWord->setChecked(false);
+		ui.checkWord->setEnabled(false);
+		break;
+	case SearchType::RegexNoCase:
+		lastLiteralCase_ = false;
+		lastRegexCase_   = false;
+		ui.checkRegex->setChecked(true);
+		ui.checkCase->setChecked(false);
+		ui.checkWord->setChecked(false);
+		ui.checkWord->setEnabled(false);
+		break;
 	}
 }
 
@@ -507,7 +507,7 @@ void DialogReplace::initToggleButtons(SearchType searchType) {
  * @brief DialogReplace::updateFindButton
  */
 void DialogReplace::updateFindButton() {
-    const bool buttonState = !ui.textFind->text().isEmpty();
+	const bool buttonState = !ui.textFind->text().isEmpty();
 	ui.buttonFind->setEnabled(buttonState);
 }
 
@@ -516,9 +516,9 @@ void DialogReplace::updateFindButton() {
  */
 void DialogReplace::UpdateReplaceActionButtons() {
 
-	// Is there any text in the search for field 
-    const bool searchText = !ui.textFind->text().isEmpty();
-    setActionButtons(searchText, searchText, searchText, searchText, searchText && window_->wasSelected_, searchText && (countWritableWindows() > 1));
+	// Is there any text in the search for field
+	const bool searchText = !ui.textFind->text().isEmpty();
+	setActionButtons(searchText, searchText, searchText, searchText, searchText && window_->wasSelected_, searchText && (countWritableWindows() > 1));
 }
 
 /**
@@ -548,7 +548,7 @@ void DialogReplace::setActionButtons(bool replaceBtn, bool replaceFindBtn, bool 
 */
 boost::optional<DialogReplace::Fields> DialogReplace::readFields() {
 
-    Fields fields;
+	Fields fields;
 
 	/* Get the search and replace strings, search type, and direction
 	   from the dialog */
@@ -558,41 +558,41 @@ boost::optional<DialogReplace::Fields> DialogReplace::readFields() {
 	if (ui.checkRegex->isChecked()) {
 		int regexDefault;
 		if (ui.checkCase->isChecked()) {
-            fields.searchType = SearchType::Regex;
-            regexDefault      = REDFLT_STANDARD;
+			fields.searchType = SearchType::Regex;
+			regexDefault      = REDFLT_STANDARD;
 		} else {
-            fields.searchType = SearchType::RegexNoCase;
-            regexDefault      = REDFLT_CASE_INSENSITIVE;
+			fields.searchType = SearchType::RegexNoCase;
+			regexDefault      = REDFLT_CASE_INSENSITIVE;
 		}
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
 		try {
-            auto compiledRE = make_regex(replaceText, regexDefault);
+			auto compiledRE = make_regex(replaceText, regexDefault);
 		} catch(const RegexError &e) {
-            QMessageBox::warning(this, tr("Search String"), tr("Please respecify the search string:\n%1").arg(QString::fromLatin1(e.what())));
-            return boost::none;
+			QMessageBox::warning(this, tr("Search String"), tr("Please respecify the search string:\n%1").arg(QString::fromLatin1(e.what())));
+			return boost::none;
 		}
 	} else {
 		if (ui.checkCase->isChecked()) {
-            if (ui.checkWord->isChecked()) {
-                fields.searchType = SearchType::CaseSenseWord;
-            } else {
-                fields.searchType = SearchType::CaseSense;
-            }
+			if (ui.checkWord->isChecked()) {
+				fields.searchType = SearchType::CaseSenseWord;
+			} else {
+				fields.searchType = SearchType::CaseSense;
+			}
 		} else {
-            if (ui.checkWord->isChecked()) {
-                fields.searchType = SearchType::LiteralWord;
-            } else {
-                fields.searchType = SearchType::Literal;
-            }
+			if (ui.checkWord->isChecked()) {
+				fields.searchType = SearchType::LiteralWord;
+			} else {
+				fields.searchType = SearchType::Literal;
+			}
 		}
 	}
 
-    fields.direction = ui.checkBackward->isChecked() ? Direction::Backward : Direction::Forward;
+	fields.direction = ui.checkBackward->isChecked() ? Direction::Backward : Direction::Forward;
 
-    fields.searchString  = replaceText;
-    fields.replaceString = replaceWithText;
-    return fields;
+	fields.searchString  = replaceText;
+	fields.replaceString = replaceWithText;
+	return fields;
 }
 
 
@@ -609,10 +609,10 @@ bool DialogReplace::keepDialog() const {
  * @param document
  */
 void DialogReplace::setDocument(DocumentWidget *document) {
-    document_ = document;
-    if(keepDialog()) {
-        setWindowTitle(tr("Replace (in %1)").arg(document_->filename_));
-    }
+	document_ = document;
+	if(keepDialog()) {
+		setWindowTitle(tr("Replace (in %1)").arg(document_->filename_));
+	}
 }
 
 /**
@@ -620,7 +620,7 @@ void DialogReplace::setDocument(DocumentWidget *document) {
  * @param direction
  */
 void DialogReplace::setDirection(Direction direction) {
-    ui.checkBackward->setChecked(direction == Direction::Backward);
+	ui.checkBackward->setChecked(direction == Direction::Backward);
 }
 
 /**
@@ -628,7 +628,7 @@ void DialogReplace::setDirection(Direction direction) {
  * @param keep
  */
 void DialogReplace::setKeepDialog(bool keep) {
-    ui.checkKeep->setChecked(keep);
+	ui.checkKeep->setChecked(keep);
 }
 
 /**
@@ -636,5 +636,5 @@ void DialogReplace::setKeepDialog(bool keep) {
  * @param text
  */
 void DialogReplace::setReplaceText(const QString &text) {
-    ui.textReplace->setText(text);
+	ui.textReplace->setText(text);
 }

@@ -9,25 +9,25 @@
 
 class WindowMenuEvent : public QEvent {
 public:
-    static constexpr auto eventType = static_cast<QEvent::Type>(QEvent::User + 2);
+	static constexpr auto eventType = static_cast<QEvent::Type>(QEvent::User + 2);
 
 public:
-    WindowMenuEvent(QString macroString, QStringList arguments);
+	WindowMenuEvent(QString macroString, QStringList arguments);
 
 public:
-    QString argumentString() const;
-    QString toString() const;
-    QString actionString() const;
+	QString argumentString() const;
+	QString toString() const;
+	QString actionString() const;
 
 private:
-    QString macroString_;
-    QStringList arguments_;
+	QString macroString_;
+	QStringList arguments_;
 };
 
 template<class ... Types>
 void emit_event(const char *name, Types ... args) {
-    WindowMenuEvent menuEvent(QString::fromLatin1(name), {args...});
-    QApplication::sendEvent(qApp, &menuEvent);
+	WindowMenuEvent menuEvent(QString::fromLatin1(name), {args...});
+	QApplication::sendEvent(qApp, &menuEvent);
 }
 
 #endif

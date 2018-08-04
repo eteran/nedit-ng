@@ -1376,10 +1376,11 @@ void BasicTextBuffer<Ch, Tr>::insertColEx(int64_t column, TextCursor startPos, v
         len = static_cast<int64_t>(temp.size());
 
 #if 0
-        /* Earlier comments claimed that trailing whitespace could multiply on                                                                                                                                                                   \
-           the ends of lines, but insertColInLine looks like it should never                                                                                                                                                                        \
-           add space unnecessarily, and this trimming interfered with                                                                                                                                                                               \
-           paragraph filling, so lets see if it works without it. MWE */
+		/* Earlier comments claimed that trailing whitespace could multiply on
+		 * the ends of lines, but insertColInLine looks like it should never
+		 * add space unnecessarily, and this trimming interfered with
+		 * paragraph filling, so lets see if it works without it. MWE */
+
         for(auto it = temp.rbegin(); it != temp.rend() && (*it == Ch(' ') || *it == Ch('\t')); ++it) {
             --len;
         }

@@ -14,7 +14,7 @@ DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::Window
 }
 
 bool DialogRepeat::setCommand(const QString &command) {
-	
+
 	/* make a label for the Last command item of the dialog, which includes
 	   the last executed action name */
 	int index = command.indexOf(QLatin1Char('('));
@@ -31,55 +31,55 @@ void DialogRepeat::on_buttonBox_accepted() {
 	if(!doRepeatDialogAction()) {
 		return;
 	}
-	
+
 	accept();
 }
 
 bool DialogRepeat::doRepeatDialogAction() {
 
-    int how;
+	int how;
 
-	// Find out from the dialog how to repeat the command 
+	// Find out from the dialog how to repeat the command
 	if (ui.radioInSelection->isChecked()) {
-        if (!document_->buffer_->primary.selected) {
+		if (!document_->buffer_->primary.selected) {
 			QMessageBox::warning(this, tr("Repeat Macro"), tr("No selection in window to repeat within"));
-            return false;
-		}
-        how = REPEAT_IN_SEL;
-	} else if (ui.radioToEnd->isChecked()) {
-        how = REPEAT_TO_END;
-	} else {
-	
-        const QString strTimes = ui.lineEdit->text();
-		if(strTimes.isEmpty()) {
-            QMessageBox::warning(this, tr("Warning"), tr("Please supply a value for number of times"));
 			return false;
 		}
-		
+		how = REPEAT_IN_SEL;
+	} else if (ui.radioToEnd->isChecked()) {
+		how = REPEAT_TO_END;
+	} else {
+
+		const QString strTimes = ui.lineEdit->text();
+		if(strTimes.isEmpty()) {
+			QMessageBox::warning(this, tr("Warning"), tr("Please supply a value for number of times"));
+			return false;
+		}
+
 		bool ok;
-        const int nTimes = strTimes.toInt(&ok);
+		const int nTimes = strTimes.toInt(&ok);
 		if(!ok) {
 			QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in number of times").arg(strTimes));
 			return false;
 		}
-	
-        how = nTimes;
+
+		how = nTimes;
 	}
 
-    QString macro;
+	QString macro;
 	const QString replayMacro = CommandRecorder::instance()->replayMacro();
 
-	// Figure out which command user wants to repeat 
+	// Figure out which command user wants to repeat
 	if (ui.radioLastCommand->isChecked()) {
-        macro = lastCommand_;
+		macro = lastCommand_;
 	} else {
-        if (replayMacro.isEmpty()) {
+		if (replayMacro.isEmpty()) {
 			return false;
 		}
-        macro = replayMacro;
+		macro = replayMacro;
 	}
 
-    // call the action routine repeat_macro to do the work
-    document_->repeatMacro(macro, how);
+	// call the action routine repeat_macro to do the work
+	document_->repeatMacro(macro, how);
 	return true;
 }

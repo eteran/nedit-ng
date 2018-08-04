@@ -39,16 +39,16 @@ QString GetVersionExtendedPath(const QString &fullname) {
 */
 QString GetViewTag() {
 
-    static bool ClearCaseViewTagFound = false;
-    static QString ClearCaseViewRoot;
-    static QString ClearCaseViewTag;
+	static bool ClearCaseViewTagFound = false;
+	static QString ClearCaseViewRoot;
+	static QString ClearCaseViewTag;
 
 	if (!ClearCaseViewTagFound) {
 		/* Extract the view name from the CLEARCASE_ROOT environment variable */
-        QByteArray envPtr = qgetenv("CLEARCASE_ROOT");
-        if (!envPtr.isNull()) {
+		QByteArray envPtr = qgetenv("CLEARCASE_ROOT");
+		if (!envPtr.isNull()) {
 
-            ClearCaseViewRoot = QString::fromLocal8Bit(envPtr);
+			ClearCaseViewRoot = QString::fromLocal8Bit(envPtr);
 
 			const int tagPtr = ClearCaseViewRoot.lastIndexOf(QLatin1Char('/'));
 			if (tagPtr != -1) {

@@ -10,11 +10,11 @@ public:
 	QString      highlightName;
 	QString      styleName;
 	QString      colorName;
-    QString      bgColorName;
+	QString      bgColorName;
 	QColor       color;
-    QColor       bgColor;
-    bool         isBold;
-    bool         isItalic;
+	QColor       bgColor;
+	bool         isBold;
+	bool         isItalic;
 	bool         isUnderlined;
 };
 

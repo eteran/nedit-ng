@@ -8,20 +8,20 @@
 class CallTipWidget : public QWidget {
 	Q_OBJECT
 public:
-    CallTipWidget(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~CallTipWidget() noexcept override = default;
-	
+	CallTipWidget(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	~CallTipWidget() noexcept override = default;
+
 public:
 	void setText(const QString &text);
 
 private Q_SLOTS:
-    void on_buttonCopy_clicked();
+	void on_buttonCopy_clicked();
 
 public:
-    void showEvent(QShowEvent *event) override;
+	void showEvent(QShowEvent *event) override;
 
 private:
-    Ui::CallTipWidget ui;
+	Ui::CallTipWidget ui;
 };
 
 #endif

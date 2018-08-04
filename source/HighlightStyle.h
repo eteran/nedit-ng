@@ -9,7 +9,7 @@ struct HighlightStyle {
 	QString name;
 	QString color;
 	QString bgColor;
-    int     font = PLAIN_FONT;
+	int     font = PLAIN_FONT;
 };
 
 #endif

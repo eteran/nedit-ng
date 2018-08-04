@@ -3,9 +3,9 @@
 #define MULTI_CLICK_STATES_H_
 
 enum MultiClickStates {
-	NO_CLICKS, 
-	ONE_CLICK, 
-	TWO_CLICKS, 
+	NO_CLICKS,
+	ONE_CLICK,
+	TWO_CLICKS,
 	THREE_CLICKS
 };
 

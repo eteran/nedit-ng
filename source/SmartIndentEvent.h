@@ -6,13 +6,13 @@
 #include "Util/string_view.h"
 
 enum SmartIndentCallbackReasons {
-	NEWLINE_INDENT_NEEDED, 
+	NEWLINE_INDENT_NEEDED,
 	CHAR_TYPED
 };
 
 struct SmartIndentEvent {
 	SmartIndentCallbackReasons reason;
-    TextCursor                 pos;
+	TextCursor                 pos;
 	int                        indentRequest;
 	view::string_view          charsTyped;
 };

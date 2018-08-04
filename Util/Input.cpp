@@ -33,12 +33,12 @@ Input &Input::operator+=(int n) {
 }
 
 Input &Input::operator-=(int n) {
-    index_ -= n;
-    if(index_ < 0) {
-        index_ = 0;
-    }
+	index_ -= n;
+	if(index_ < 0) {
+		index_ = 0;
+	}
 
-    return *this;
+	return *this;
 }
 
 /**
@@ -46,7 +46,7 @@ Input &Input::operator-=(int n) {
  * @return
  */
 QChar Input::operator*() const {
-    return peek();
+	return peek();
 }
 
 /**
@@ -54,28 +54,28 @@ QChar Input::operator*() const {
  * @return
  */
 QChar Input::peek() const {
-    if(atEnd()) {
-        return {};
-    }
+	if(atEnd()) {
+		return {};
+	}
 
-    return string_->at(index_);
+	return string_->at(index_);
 }
 
 QChar Input::read() {
-    if(atEnd()) {
-        return {};
-    }
+	if(atEnd()) {
+		return {};
+	}
 
-    QChar ch = string_->at(index_);
+	QChar ch = string_->at(index_);
 
-    ++index_;
+	++index_;
 
-    return ch;
+	return ch;
 }
 
 QChar Input::operator[](int index) const {
 	if((index_ + index) >= string_->size()) {
-        return {};
+		return {};
 	}
 
 	return string_->at(index_ + index);
@@ -182,9 +182,9 @@ Input Input::operator+(int rhs) const {
  * @return
  */
 Input Input::operator-(int rhs) const {
-    Input next = *this;
-    next -= rhs;
-    return next;
+	Input next = *this;
+	next -= rhs;
+	return next;
 }
 
 /**
@@ -211,15 +211,15 @@ bool Input::operator!=(const Input &rhs) const {
  */
 void Input::consume(const QString &chars) {
 
-    while (!atEnd()) {
-        QChar ch = peek();
+	while (!atEnd()) {
+		QChar ch = peek();
 
-        if (chars.indexOf(ch) == -1) {
-            break;
-        }
+		if (chars.indexOf(ch) == -1) {
+			break;
+		}
 
-        read();
-    }
+		read();
+	}
 }
 
 /**
@@ -227,11 +227,11 @@ void Input::consume(const QString &chars) {
  * @param re
  */
 void Input::consume(const QRegularExpression &re) {
-    QRegularExpressionMatch match = re.match(string_, index_, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
-    if(match.hasMatch()) {
-        QString cap = match.captured(0);
-        index_ += cap.size();
-    }
+	QRegularExpressionMatch match = re.match(string_, index_, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
+	if(match.hasMatch()) {
+		QString cap = match.captured(0);
+		index_ += cap.size();
+	}
 }
 
 /**
@@ -241,20 +241,20 @@ void Input::consume(const QRegularExpression &re) {
  * @return
  */
 bool Input::match(const QRegularExpression &re, QString *m) {
-    QRegularExpressionMatch match = re.match(string_, index_, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
-    if(match.hasMatch()) {
+	QRegularExpressionMatch match = re.match(string_, index_, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
+	if(match.hasMatch()) {
 
-        QString cap = match.captured(0);
+		QString cap = match.captured(0);
 
-        if(m) {
-            *m = cap;
-        }
+		if(m) {
+			*m = cap;
+		}
 
-        index_ += cap.size();
-        return true;
-    }
+		index_ += cap.size();
+		return true;
+	}
 
-    return false;
+	return false;
 }
 
 /**
@@ -267,12 +267,12 @@ bool Input::match(const QString &s) {
 		return false;
 	}
 
-    if(string_->midRef(index_, s.size()) == s) {
-        index_ += s.size();
-        return true;
-    }
+	if(string_->midRef(index_, s.size()) == s) {
+		index_ += s.size();
+		return true;
+	}
 
-    return false;
+	return false;
 }
 
 /**
@@ -281,16 +281,16 @@ bool Input::match(const QString &s) {
  * @return
  */
 bool Input::match(QChar ch) {
-    if(index_ >= string_->size()) {
-        return false;
-    }
+	if(index_ >= string_->size()) {
+		return false;
+	}
 
-    if(string_->at(index_) == ch) {
-        ++index_;
-        return true;
-    }
+	if(string_->at(index_) == ch) {
+		++index_;
+		return true;
+	}
 
-    return false;
+	return false;
 }
 
 /**
@@ -350,17 +350,17 @@ const QString *Input::string() const {
  * @return
  */
 QString Input::readUntil(QChar ch) {
-    QString result;
+	QString result;
 
-    while(!atEnd()) {
-        QChar c = string_->at(index_);
-        if(c == ch) {
-            break;
-        }
+	while(!atEnd()) {
+		QChar c = string_->at(index_);
+		if(c == ch) {
+			break;
+		}
 
-        result.append(c);
-        ++index_;
-    }
+		result.append(c);
+		++index_;
+	}
 
-    return result;
+	return result;
 }

@@ -15,7 +15,7 @@ CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f) : QWidget(paren
 
 	ui.labelTip->setPalette(QToolTip::palette());
 
-    connect(ui.buttonClose, &QAbstractButton::clicked, this, &CallTipWidget::close);
+	connect(ui.buttonClose, &QAbstractButton::clicked, this, &CallTipWidget::close);
 }
 
 /**
@@ -24,14 +24,14 @@ CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f) : QWidget(paren
  */
 void CallTipWidget::setText(const QString &text) {
 	ui.labelTip->setText(text);
-	ui.labelTip->adjustSize();    
+	ui.labelTip->adjustSize();
 }
 
 /**
  * @brief CallTipWidget::on_buttonCopy_clicked
  */
 void CallTipWidget::on_buttonCopy_clicked() {
-    QApplication::clipboard()->setText(ui.labelTip->text());
+	QApplication::clipboard()->setText(ui.labelTip->text());
 }
 
 /**
@@ -39,6 +39,6 @@ void CallTipWidget::on_buttonCopy_clicked() {
  * @param event
  */
 void CallTipWidget::showEvent(QShowEvent *event) {
-    Q_UNUSED(event);
-    resize(minimumSize());
+	Q_UNUSED(event);
+	resize(minimumSize());
 }

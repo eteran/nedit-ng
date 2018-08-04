@@ -9,8 +9,8 @@ class DialogOutput : public Dialog {
 	Q_OBJECT
 
 public:
-    DialogOutput(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    ~DialogOutput() noexcept override = default;
+	DialogOutput(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	~DialogOutput() noexcept override = default;
 
 public:
 	void setText(const QString &text);

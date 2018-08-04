@@ -8,13 +8,13 @@
 #include <QStyle>
 
 /*!
-    \class KeySequenceEdit
-    \brief The KeySequenceEdit widget allows to input a QKeySequence.
+	\class KeySequenceEdit
+	\brief The KeySequenceEdit widget allows to input a QKeySequence.
 
 
-    This widget lets the user choose a QKeySequence, which is usually used as
-    a shortcut. The recording is initiated when the widget receives the focus
-    and ends one second after the user releases the last key_.
+	This widget lets the user choose a QKeySequence, which is usually used as
+	a shortcut. The recording is initiated when the widget receives the focus
+	and ends one second after the user releases the last key_.
 */
 
 namespace {
@@ -26,26 +26,26 @@ namespace {
  * @return
  */
 int translateModifiers(Qt::KeyboardModifiers state, const QString &text) {
-    int result = 0;
-    // The shift modifier only counts when it is not used to type a symbol
-    // that is only reachable using the shift key_ anyway
-    if ((state & Qt::ShiftModifier) && (text.isEmpty() || !text.at(0).isPrint() || text.at(0).isLetterOrNumber() || text.at(0).isSpace())) {
-        result |= Qt::SHIFT;
+	int result = 0;
+	// The shift modifier only counts when it is not used to type a symbol
+	// that is only reachable using the shift key_ anyway
+	if ((state & Qt::ShiftModifier) && (text.isEmpty() || !text.at(0).isPrint() || text.at(0).isLetterOrNumber() || text.at(0).isSpace())) {
+		result |= Qt::SHIFT;
 	}
 
-    if (state & Qt::ControlModifier) {
-        result |= Qt::CTRL;
-	}
-	
-    if (state & Qt::MetaModifier) {
-        result |= Qt::META;
-	}
-	
-    if (state & Qt::AltModifier) {
-        result |= Qt::ALT;
+	if (state & Qt::ControlModifier) {
+		result |= Qt::CTRL;
 	}
 
-    return result;
+	if (state & Qt::MetaModifier) {
+		result |= Qt::META;
+	}
+
+	if (state & Qt::AltModifier) {
+		result |= Qt::ALT;
+	}
+
+	return result;
 }
 
 }
@@ -54,21 +54,21 @@ int translateModifiers(Qt::KeyboardModifiers state, const QString &text) {
  * @brief KeySequenceEdit::resetState
  */
 void KeySequenceEdit::resetState() {
-    if (releaseTimer_) {
-        killTimer(releaseTimer_);
-        releaseTimer_ = 0;
-    }
-	
-    prevKey_ = -1;
-    lineEdit_->setText(keySequence_.toString(QKeySequence::NativeText));
-    lineEdit_->setPlaceholderText(tr("Press shortcut"));
+	if (releaseTimer_) {
+		killTimer(releaseTimer_);
+		releaseTimer_ = 0;
+	}
 
-    // hook the clear button...
-    if(auto action = lineEdit_->findChild<QAction *>()) {
-        connect(action, &QAction::triggered, this, [this]() {
-            setKeySequence(QKeySequence());
-        }, Qt::QueuedConnection);
-    }
+	prevKey_ = -1;
+	lineEdit_->setText(keySequence_.toString(QKeySequence::NativeText));
+	lineEdit_->setPlaceholderText(tr("Press shortcut"));
+
+	// hook the clear button...
+	if(auto action = lineEdit_->findChild<QAction *>()) {
+		connect(action, &QAction::triggered, this, [this]() {
+			setKeySequence(QKeySequence());
+		}, Qt::QueuedConnection);
+	}
 }
 
 
@@ -77,9 +77,9 @@ void KeySequenceEdit::resetState() {
  * @brief KeySequenceEdit::finishEditing
  */
 void KeySequenceEdit::finishEditing() {
-    resetState();
-    Q_EMIT keySequenceChanged(keySequence_);
-    Q_EMIT editingFinished();
+	resetState();
+	Q_EMIT keySequenceChanged(keySequence_);
+	Q_EMIT editingFinished();
 }
 
 /**
@@ -88,23 +88,23 @@ void KeySequenceEdit::finishEditing() {
  * @param f
  */
 KeySequenceEdit::KeySequenceEdit(QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f) {
-	
-    lineEdit_ = new QLineEdit(this);	
+
+	lineEdit_ = new QLineEdit(this);
 	lineEdit_->setContextMenuPolicy(Qt::PreventContextMenu);
-    lineEdit_->setClearButtonEnabled(true);
+	lineEdit_->setClearButtonEnabled(true);
 
-    auto layout = new QVBoxLayout(this);
-    layout->setContentsMargins(0, 0, 0, 0);
-    layout->addWidget(lineEdit_);
+	auto layout = new QVBoxLayout(this);
+	layout->setContentsMargins(0, 0, 0, 0);
+	layout->addWidget(lineEdit_);
 
-    lineEdit_->setFocusProxy(this);
-    lineEdit_->installEventFilter(this);
-    resetState();
+	lineEdit_->setFocusProxy(this);
+	lineEdit_->installEventFilter(this);
+	resetState();
 
-    setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    setFocusPolicy(Qt::StrongFocus);
-    setAttribute(Qt::WA_MacShowFocusRect, true);
-    setAttribute(Qt::WA_InputMethodEnabled, false);
+	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+	setFocusPolicy(Qt::StrongFocus);
+	setAttribute(Qt::WA_MacShowFocusRect, true);
+	setAttribute(Qt::WA_InputMethodEnabled, false);
 }
 
 /**
@@ -114,7 +114,7 @@ KeySequenceEdit::KeySequenceEdit(QWidget *parent, Qt::WindowFlags f) : QWidget(p
  * @param f
  */
 KeySequenceEdit::KeySequenceEdit(const QKeySequence &keySequence, QWidget *parent, Qt::WindowFlags f) : KeySequenceEdit(parent, f) {
-    setKeySequence(keySequence);
+	setKeySequence(keySequence);
 }
 
 /**
@@ -138,7 +138,7 @@ void KeySequenceEdit::setMaximumSequenceLength(int maximum) {
 
 	maximumSequenceLength_ = maximum;
 
-    Q_EMIT maximumSequenceLengthChanged(maximum);
+	Q_EMIT maximumSequenceLengthChanged(maximum);
 }
 
 
@@ -150,7 +150,7 @@ void KeySequenceEdit::setMaximumSequenceLength(int maximum) {
  * @return
  */
 QKeySequence KeySequenceEdit::keySequence() const {
-    return keySequence_;
+	return keySequence_;
 }
 
 /**
@@ -158,23 +158,23 @@ QKeySequence KeySequenceEdit::keySequence() const {
  * @param keySequence
  */
 void KeySequenceEdit::setKeySequence(const QKeySequence &keySequence) {
-    resetState();
+	resetState();
 
-    if (keySequence_ == keySequence) {
-        return;
+	if (keySequence_ == keySequence) {
+		return;
 	}
 
-    keySequence_ = keySequence;
+	keySequence_ = keySequence;
 
 	keys_.clear();
 
-    for (int i = 0; i < keySequence_.count(); ++i) {
-        keys_.push_back(keySequence[static_cast<uint>(i)]);
+	for (int i = 0; i < keySequence_.count(); ++i) {
+		keys_.push_back(keySequence[static_cast<uint>(i)]);
 	}
 
-    lineEdit_->setText(keySequence_.toString(QKeySequence::NativeText));
+	lineEdit_->setText(keySequence_.toString(QKeySequence::NativeText));
 
-    Q_EMIT keySequenceChanged(keySequence);
+	Q_EMIT keySequenceChanged(keySequence);
 }
 
 
@@ -184,7 +184,7 @@ void KeySequenceEdit::setKeySequence(const QKeySequence &keySequence) {
  * @brief KeySequenceEdit::clear
  */
 void KeySequenceEdit::clear() {
-    setKeySequence(QKeySequence());
+	setKeySequence(QKeySequence());
 }
 
 /**
@@ -193,17 +193,17 @@ void KeySequenceEdit::clear() {
  * @return
  */
 bool KeySequenceEdit::event(QEvent *e) {
-    switch (e->type()) {
-    case QEvent::Shortcut:
-        return true;
-    case QEvent::ShortcutOverride:
-        e->accept();
-        return true;
-    default :
-        break;
-    }
+	switch (e->type()) {
+	case QEvent::Shortcut:
+		return true;
+	case QEvent::ShortcutOverride:
+		e->accept();
+		return true;
+	default :
+		break;
+	}
 
-    return QWidget::event(e);
+	return QWidget::event(e);
 }
 
 /**
@@ -211,35 +211,35 @@ bool KeySequenceEdit::event(QEvent *e) {
  * @param e
  */
 void KeySequenceEdit::keyPressEvent(QKeyEvent *e) {
-    int nextKey = e->key();
+	int nextKey = e->key();
 
-    if (prevKey_ == -1) {
-        clear();
-        prevKey_ = nextKey;
-    }
+	if (prevKey_ == -1) {
+		clear();
+		prevKey_ = nextKey;
+	}
 
-    lineEdit_->setPlaceholderText(QString());
-    if (nextKey == Qt::Key_Control || nextKey == Qt::Key_Shift || nextKey == Qt::Key_Meta || nextKey == Qt::Key_Alt) {
-        return;
-    }
-	
+	lineEdit_->setPlaceholderText(QString());
+	if (nextKey == Qt::Key_Control || nextKey == Qt::Key_Shift || nextKey == Qt::Key_Meta || nextKey == Qt::Key_Alt) {
+		return;
+	}
+
 	if(modifierRequired_ && e->modifiers() == Qt::NoModifier) {
 		return;
 	}
 
-    QString selectedText = lineEdit_->selectedText();
-    if (!selectedText.isEmpty() && selectedText == lineEdit_->text()) {
-        clear();
-        if (nextKey == Qt::Key_Backspace)
-            return;
-    }
+	QString selectedText = lineEdit_->selectedText();
+	if (!selectedText.isEmpty() && selectedText == lineEdit_->text()) {
+		clear();
+		if (nextKey == Qt::Key_Backspace)
+			return;
+	}
 
-    if (keys_.size() >= maximumSequenceLength_)
-        return;
+	if (keys_.size() >= maximumSequenceLength_)
+		return;
 
-    nextKey |= translateModifiers(e->modifiers(), e->text());
+	nextKey |= translateModifiers(e->modifiers(), e->text());
 
-    keys_.push_back(nextKey);
+	keys_.push_back(nextKey);
 
 	switch(keys_.size()) {
 	case 1:
@@ -250,23 +250,23 @@ void KeySequenceEdit::keyPressEvent(QKeyEvent *e) {
 		break;
 	case 3:
 		keySequence_ = QKeySequence(keys_[0], keys_[1], keys_[2]);
-		break;	
+		break;
 	case 4:
 		keySequence_ = QKeySequence(keys_[0], keys_[1], keys_[2], keys_[3]);
 		break;
 	default:
 		keySequence_ = QKeySequence();
-		break;	
+		break;
 	}
 
-    QString text = keySequence_.toString(QKeySequence::NativeText);
-    if (keys_.size() < maximumSequenceLength_) {
-        //: This text is an "unfinished" shortcut, expands like "Ctrl+A, ..."
-        text = tr("%1, ...").arg(text);
-    }
-	
-    lineEdit_->setText(text);
-    e->accept();
+	QString text = keySequence_.toString(QKeySequence::NativeText);
+	if (keys_.size() < maximumSequenceLength_) {
+		//: This text is an "unfinished" shortcut, expands like "Ctrl+A, ..."
+		text = tr("%1, ...").arg(text);
+	}
+
+	lineEdit_->setText(text);
+	e->accept();
 }
 
 /**
@@ -274,14 +274,14 @@ void KeySequenceEdit::keyPressEvent(QKeyEvent *e) {
  * @param e
  */
 void KeySequenceEdit::keyReleaseEvent(QKeyEvent *e) {
-    if (prevKey_ == e->key()) {
-        if (keys_.size() < maximumSequenceLength_) {
-            releaseTimer_ = startTimer(1000);
-        } else {
-            finishEditing();
+	if (prevKey_ == e->key()) {
+		if (keys_.size() < maximumSequenceLength_) {
+			releaseTimer_ = startTimer(1000);
+		} else {
+			finishEditing();
 		}
-    }
-    e->accept();
+	}
+	e->accept();
 }
 
 /**
@@ -289,12 +289,12 @@ void KeySequenceEdit::keyReleaseEvent(QKeyEvent *e) {
  * @param e
  */
 void KeySequenceEdit::timerEvent(QTimerEvent *e) {
-    if (e->timerId() == releaseTimer_) {
-        finishEditing();
-        return;
-    }
+	if (e->timerId() == releaseTimer_) {
+		finishEditing();
+		return;
+	}
 
-    QWidget::timerEvent(e);
+	QWidget::timerEvent(e);
 }
 
 /**
@@ -311,7 +311,7 @@ bool KeySequenceEdit::modifierRequired() const {
  */
 void KeySequenceEdit::setModifierRequired(bool required) {
 	modifierRequired_ = required;
-    Q_EMIT modifierRequiredChanged(required);
+	Q_EMIT modifierRequiredChanged(required);
 }
 
 
