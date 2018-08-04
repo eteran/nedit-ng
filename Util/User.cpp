@@ -53,15 +53,16 @@ QString ExpandTilde(const QString &pathname) {
 #endif
 }
 
-/* return a non-nullptr value for the user's home directory,
-   without trailing slash.
-   We try the  environment var and the system user database. */
+/**
+ * @brief GetHomeDir
+ * @return
+ */
 QString GetHomeDir() {
 	return QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
 }
 
 /**
- * @brief PrependHomeEx
+ * @brief PrependHome
  * @param filename
  * @return $HOME/filename
  */
@@ -70,19 +71,10 @@ QString PrependHome(const QString &filename) {
 }
 
 /*
-** Return a pointer to the username of the current user in a statically
-** allocated string.
+** Return the username of the current user
 */
 QString GetUserName() {
-
 #ifdef Q_OS_UNIX
-	/* cuserid has apparently been dropped from the ansi C standard, and if
-	   strict ansi compliance is turned on (on Sun anyhow, maybe others), calls
-	   to cuserid fail to compile.  Older versions of nedit try to use the
-	   getlogin call first, then if that fails, use getpwuid and getuid.  This
-	   results in the user-name of the original terminal being used, which is
-	   not correct when the user uses the su command.  Now, getpwuid only: */
-
 	static QString user_name;
 
 	if (!user_name.isNull()) {
