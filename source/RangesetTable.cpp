@@ -54,7 +54,6 @@ bool activateRangeset(RangesetTable *table, int active) {
     /* and finally... */
     table->active_[active] = true;
     table->n_set_++;
-
     return true;
 }
 
@@ -82,7 +81,6 @@ bool deactivateRangeset(RangesetTable *table, int active) {
     /* and finally... */
     table->active_[active] = false;
     table->n_set_--;
-
     return true;
 }
 

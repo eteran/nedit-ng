@@ -1562,6 +1562,9 @@ bool BasicTextBuffer<Ch, Tr>::BufIsEmpty() const noexcept {
 */
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::GetSimpleSelection(TextCursor *left, TextCursor *right) const noexcept {
+
+	// TODO(eteran): return optional range
+
     TextCursor selStart;
     TextCursor selEnd;
     int64_t rectStart;

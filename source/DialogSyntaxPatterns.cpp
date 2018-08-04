@@ -963,7 +963,7 @@ bool DialogSyntaxPatterns::TestHighlightPatterns(const std::unique_ptr<PatternSe
 	   parent for dialogs, since we really don't care what fonts are used) */
 	if(PatternSet *const patternSet = patSet.get()) {
 		for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-			if(std::shared_ptr<WindowHighlightData> highlightData = document->createHighlightDataEx(patternSet)) {
+			if(document->createHighlightDataEx(patternSet)) {
 				return true;
 			}
 		}

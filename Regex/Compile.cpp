@@ -112,7 +112,7 @@ bool init_ansi_classes() noexcept {
             }
 
             /* Make sure arrays are big enough.  ("- 2" because of zero array
-               origin and we need to leave room for the nullptr terminator.) */
+			   origin and we need to leave room for the '\0' terminator.) */
 
             if (word_count > (ALNUM_CHAR_SIZE - 2) || space_count > (WHITE_SPACE_SIZE - 2) || letter_count > (ALNUM_CHAR_SIZE - 2)) {
                 reg_error("internal error #9 'init_ansi_classes'");

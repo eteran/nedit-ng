@@ -42,12 +42,8 @@ int prevSlash(const QString &str, int index) {
 
 template <class In>
 In nextSlash(In first, In last) {
-
-    while(first != last && *first != QLatin1Char('/')) {
-        ++first;
-    }
-
-    return std::next(first);
+	auto it = std::find(first, last, QLatin1Char('/'));
+	return std::next(it);
 }
 
 template <class In>
@@ -72,23 +68,23 @@ bool compareThruSlash(In first, In last, const QString &str) {
 }
 
 template <class Out, class In>
-void copyThruSlash(Out &to, In &from, In end) {
+void copyThruSlash(In &first, In last, Out &dest) {
 
     while (true) {
-        *to = *from;
+		*dest = *first;
 
-        if (from == end) {
+		if (first == last) {
             return;
         }
 
-        if (*from == QLatin1Char('/')) {
-            ++from;
-            ++to;
+		if (*first == QLatin1Char('/')) {
+			++first;
+			++dest;
             return;
         }
 
-        ++from;
-        ++to;
+		++first;
+		++dest;
     }
 }
 
@@ -110,10 +106,10 @@ bool ParseFilenameEx(const QString &fullname, QString *filename, QString *pathna
         scanStart = viewExtendPath - 1;
     }
 
-    /* find the last slash */
+	// find the last slash
     const int i = fullname.lastIndexOf(QLatin1Char('/'), scanStart);
 
-    /* move chars before / (or ] or :) into pathname,& after into filename */
+	// move chars before / (or ] or :) into pathname,& after into filename
     int pathLen = i + 1;
 	int fileLen = fullLen - pathLen;
 
@@ -148,7 +144,7 @@ QString NormalizePathname(const QString &pathname) {
 
         // make a copy of pathname to work from and get the working directory
         // and prepend to the path
-        QString oldPathname = std::exchange(path, GetCurrentDirEx());
+		QString oldPathname = std::exchange(path, QDir::currentPath());
 
         if(!path.endsWith(QLatin1Char('/'))) {
             path.append(QLatin1Char('/'));
@@ -199,15 +195,15 @@ QString CompressPathname(const QString &path) {
         }
     }
 
-    /* compress out . and .. */
+	// compress out . and ..
     QString buffer;
     buffer.reserve(path.size());
 
     auto inPtr = pathname.begin();
     auto outPtr = std::back_inserter(buffer);
 
-    /* copy initial / */
-    copyThruSlash(outPtr, inPtr, pathname.end());
+	// copy initial "/"
+	copyThruSlash(inPtr, pathname.end(), outPtr);
 
     while (inPtr != pathname.end()) {
         /* if the next component is "../", remove previous component */
@@ -227,9 +223,9 @@ QString CompressPathname(const QString &path) {
 
             // NOTE(eteran): UNIX assumption here...
             if (buffer == QLatin1String("/") || fi.isSymLink()) {
-                copyThruSlash(outPtr, inPtr, pathname.end());
+				copyThruSlash(inPtr, pathname.end(), outPtr);
             } else {
-                /* back up outPtr to remove last path name component */
+				/* back up to remove last path name component */
                 int index = prevSlash(buffer, buffer.size());
                 if(index != -1) {
                     buffer = buffer.left(index);
@@ -242,7 +238,7 @@ QString CompressPathname(const QString &path) {
             inPtr = nextSlash(inPtr, pathname.end());
         } else {
             /* copy the component to outPtr */
-            copyThruSlash(outPtr, inPtr, pathname.end());
+			copyThruSlash(inPtr, pathname.end(), outPtr);
         }
     }
 
@@ -252,7 +248,7 @@ QString CompressPathname(const QString &path) {
 /*
 ** Return the trailing 'n' no. of path components
 */
-QString GetTrailingPathComponentsEx(const QString &path, int noOfComponents) {
+QString GetTrailingPathComponents(const QString &path, int noOfComponents) {
 	
 	/* Start from the rear */
     int index = path.size();
@@ -276,7 +272,7 @@ QString GetTrailingPathComponentsEx(const QString &path, int noOfComponents) {
 ** the sampled portion of a Macintosh looking file), the file is judged to be
 ** Unix format.
 */
-FileFormats FormatOfFileEx(view::string_view fileString) {
+FileFormats FormatOfFile(view::string_view fileString) {
 
     size_t nNewlines = 0;
     size_t nReturns = 0;
@@ -371,7 +367,7 @@ QString ReadAnyTextFileEx(const QString &fileName, bool forceNL) {
 
 	auto contents = std::string(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
 
-    switch(FormatOfFileEx(contents)) {
+    switch(FormatOfFile(contents)) {
     case FileFormats::Dos:
 		ConvertFromDos(&contents);
 		break;
@@ -393,11 +389,3 @@ QString ReadAnyTextFileEx(const QString &fileName, bool forceNL) {
 	
 	return QString::fromStdString(contents);
 }
-
-/* return non-nullptr value for the current working directory.
-   If system call fails, provide a fallback value */
-QString GetCurrentDirEx() {
-	return QDir::currentPath();
-}
-
-

@@ -228,6 +228,7 @@ private:
 	void CloseDocument();
 	void DetermineLanguageMode(bool forceNewDefaults);
 	void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, CommandSource source);
+	void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const MenuItem &item, CommandSource source);
 	void ExecCursorLineEx(TextArea *area, CommandSource source);
 	void finishLearning();
 	void FlashMatchingEx(TextArea *area);

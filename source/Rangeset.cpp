@@ -625,13 +625,14 @@ QString Rangeset::RangesetGetName() const {
  */
 bool Rangeset::RangesetFindRangeNo(int64_t index, TextCursor *start, TextCursor *end) const {
 
+	// TODO(eteran): return an optional "range"
+
     if (index < 0 || n_ranges_ <= index || !ranges_) {
         return false;
     }
 
     *start = ranges_[index].start;
     *end   = ranges_[index].end;
-
     return true;
 }
 
@@ -922,7 +923,6 @@ bool Rangeset::RangesetAssignColorName(TextBuffer *buffer, const QString &color_
 ** Assign a name to a rangeset via the rangeset table.
 */
 bool Rangeset::RangesetAssignName(const QString &name) {
-    /* store new name value */
     name_ = name.isEmpty() ? QString() : name;
     return true;
 }

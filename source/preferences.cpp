@@ -823,6 +823,8 @@ QString Preferences::ReadSymbolicField(Input &input) {
 */
 bool Preferences::ReadQuotedString(Input &in, QString *errMsg, QString *string) {
 
+	// TODO(eteran): return optional QString
+
     constexpr auto Quote = QLatin1Char('"');
 
 	// skip over blank space

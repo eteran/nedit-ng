@@ -708,16 +708,16 @@ size_t DocumentWidget::matchLanguageMode() const {
     for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
         if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {
 
-            Search::Result searchResult;
+			Search::Result searchResult;
 
-            const bool result = Search::SearchString(
+			const bool result = Search::SearchString(
                         first200,
                         Preferences::LanguageModes[i].recognitionExpr,
                         Direction::Forward,
                         SearchType::Regex,
                         WrapMode::NoWrap,
                         0,
-                        &searchResult,
+			            &searchResult,
                         QString());
 
             if (result) {
@@ -2065,7 +2065,7 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
         nRead   += offset;
 
         // check for on-disk file format changes, but only for the first chunk
-        if (bufPos == 0 && fileFormat_ != FormatOfFileEx(view::string_view(fileString, static_cast<size_t>(nRead)))) {
+        if (bufPos == 0 && fileFormat_ != FormatOfFile(view::string_view(fileString, static_cast<size_t>(nRead)))) {
 			MainWindow::AllWindowsUnbusy();
             return true;
         }
@@ -3042,7 +3042,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
         // Detect and convert DOS and Macintosh format files
         if (Preferences::GetPrefForceOSConversion()) {
-			fileFormat_ = FormatOfFileEx(view::string_view(&fileString[0], readLen));
+			fileFormat_ = FormatOfFile(view::string_view(&fileString[0], readLen));
 			switch (fileFormat_) {
             case FileFormats::Dos:
 				ConvertFromDos(&fileString[0], &readLen);
@@ -3402,7 +3402,7 @@ bool DocumentWidget::includeFile(const QString &name) {
     file.unmap(memory);
 
     // Detect and convert DOS and Macintosh format files
-    switch (FormatOfFileEx(fileString)) {
+    switch (FormatOfFile(fileString)) {
     case FileFormats::Dos:
 		ConvertFromDos(&fileString);
         break;
@@ -4734,6 +4734,19 @@ void DocumentWidget::filterSelection(const QString &command, CommandSource sourc
 ** output destination, save first and load after) in the shell commands
 ** menu.
 */
+void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const MenuItem &item, CommandSource source) {
+	DoShellMenuCmd(
+	    inWindow,
+	    area,
+	    item.cmd,
+	    item.input,
+	    item.output,
+	    item.repInput,
+	    item.saveFirst,
+	    item.loadAfter,
+	    source);
+}
+
 void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, CommandSource source) {
 
     int flags = 0;

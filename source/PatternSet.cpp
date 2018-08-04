@@ -10,15 +10,15 @@
  */
 bool PatternSet::operator!=(const PatternSet &rhs) const {
 
-	if (this->lineContext != rhs.lineContext) {
+	if (lineContext != rhs.lineContext) {
 		return true;
 	}
 
-	if (this->charContext != rhs.charContext) {
+	if (charContext != rhs.charContext) {
 		return true;
 	}
 
-	if(this->patterns != rhs.patterns) {
+	if(patterns != rhs.patterns) {
 		return true;
 	}
 

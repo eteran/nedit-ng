@@ -70,43 +70,45 @@ std::string to_lower(view::string_view s) {
  * @param defaultFlags
  * @return
  */
-bool forwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int64_t beginPos, Search::Result *result, const char *delimiters, int defaultFlags) {
+boost::optional<Search::Result> forwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int64_t beginPos, const char *delimiters, int defaultFlags) {
 
-    try {
+	try {
         Regex compiledRE(searchString, defaultFlags);
 
         // search from beginPos to end of string
         if (compiledRE.execute(string, static_cast<size_t>(beginPos), delimiters, false)) {
 
-            result->start    = compiledRE.startp[0] - &string[0];
-            result->end      = compiledRE.endp[0]   - &string[0];
-            result->extentFW = compiledRE.extentpFW - &string[0];
-            result->extentBW = compiledRE.extentpBW - &string[0];
-            return true;
+			Search::Result result;
+			result.start    = compiledRE.startp[0] - &string[0];
+			result.end      = compiledRE.endp[0]   - &string[0];
+			result.extentFW = compiledRE.extentpFW - &string[0];
+			result.extentBW = compiledRE.extentpBW - &string[0];
+			return result;
         }
 
         // if wrap turned off, we're done
         if (wrap == WrapMode::NoWrap) {
-            return false;
+			return boost::none;
         }
 
         // search from the beginning of the string to beginPos
         if (compiledRE.execute(string, 0, static_cast<size_t>(beginPos), delimiters, false)) {
 
-            result->start    = compiledRE.startp[0] - &string[0];
-            result->end      = compiledRE.endp[0]   - &string[0];
-            result->extentFW = compiledRE.extentpFW - &string[0];
-            result->extentBW = compiledRE.extentpBW - &string[0];
-            return true;
+			Search::Result result;
+			result.start    = compiledRE.startp[0] - &string[0];
+			result.end      = compiledRE.endp[0]   - &string[0];
+			result.extentFW = compiledRE.extentpFW - &string[0];
+			result.extentBW = compiledRE.extentpBW - &string[0];
+			return result;
         }
 
-        return false;
+		return boost::none;
     } catch(const RegexError &e) {
         Q_UNUSED(e);
         /* Note that this does not process errors from compiling the expression.
          * It assumes that the expression was checked earlier.
          */
-        return false;
+		return boost::none;
     }
 }
 
@@ -121,9 +123,9 @@ bool forwardRegexSearch(view::string_view string, view::string_view searchString
  * @param defaultFlags
  * @return
  */
-bool backwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int64_t beginPos, Search::Result *result, const char *delimiters, int defaultFlags) {
+boost::optional<Search::Result> backwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int64_t beginPos, const char *delimiters, int defaultFlags) {
 
-    try {
+	try {
         Regex compiledRE(searchString, defaultFlags);
 
         // search from beginPos to start of file.  A negative begin pos
@@ -131,17 +133,18 @@ bool backwardRegexSearch(view::string_view string, view::string_view searchStrin
         if (beginPos >= 0) {
             if (compiledRE.execute(string, 0, static_cast<size_t>(beginPos), -1, -1, delimiters, true)) {
 
-                result->start    = compiledRE.startp[0] - &string[0];
-                result->end      = compiledRE.endp[0]   - &string[0];
-                result->extentFW = compiledRE.extentpFW - &string[0];
-                result->extentBW = compiledRE.extentpBW - &string[0];
-                return true;
+				Search::Result result;
+				result.start    = compiledRE.startp[0] - &string[0];
+				result.end      = compiledRE.endp[0]   - &string[0];
+				result.extentFW = compiledRE.extentpFW - &string[0];
+				result.extentBW = compiledRE.extentpBW - &string[0];
+				return result;
             }
         }
 
         // if wrap turned off, we're done
         if (wrap == WrapMode::NoWrap) {
-            return false;
+			return boost::none;
         }
 
         // search from the end of the string to beginPos
@@ -150,21 +153,21 @@ bool backwardRegexSearch(view::string_view string, view::string_view searchStrin
         }
 
         if (compiledRE.execute(string, static_cast<size_t>(beginPos), delimiters, true)) {
-
-            result->start    = compiledRE.startp[0] - &string[0];
-            result->end      = compiledRE.endp[0]   - &string[0];
-            result->extentFW = compiledRE.extentpFW - &string[0];
-            result->extentBW = compiledRE.extentpBW - &string[0];
-            return true;
+			Search::Result result;
+			result.start    = compiledRE.startp[0] - &string[0];
+			result.end      = compiledRE.endp[0]   - &string[0];
+			result.extentFW = compiledRE.extentpFW - &string[0];
+			result.extentBW = compiledRE.extentpBW - &string[0];
+			return result;
         }
 
-        return false;
+		return boost::none;
     } catch(const RegexError &e) {
         Q_UNUSED(e);
         /* Note that this does not process errors from compiling the expression.
          * It assumes that the expression was checked earlier.
          */
-        return false;
+		return boost::none;
     }
 }
 
@@ -180,13 +183,13 @@ bool backwardRegexSearch(view::string_view string, view::string_view searchStrin
  * @param defaultFlags
  * @return
  */
-bool searchRegex(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, Search::Result *result, const char *delimiters, int defaultFlags) {
+boost::optional<Search::Result> searchRegex(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, const char *delimiters, int defaultFlags) {
 
     switch(direction) {
     case Direction::Forward:
-        return forwardRegexSearch(string, searchString, wrap, beginPos, result, delimiters, defaultFlags);
+		return forwardRegexSearch(string, searchString, wrap, beginPos, delimiters, defaultFlags);
     case Direction::Backward:
-        return backwardRegexSearch(string, searchString, wrap, beginPos, result, delimiters, defaultFlags);
+		return backwardRegexSearch(string, searchString, wrap, beginPos, delimiters, defaultFlags);
     }
 
     Q_UNREACHABLE();
@@ -203,9 +206,9 @@ bool searchRegex(view::string_view string, view::string_view searchString, Direc
  * @param result
  * @return
  */
-bool searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos, Search::Result *result) {
+boost::optional<Search::Result> searchLiteral(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos) {
 
-    // TODO(eteran): investigate if we can rework this in terms of std::search
+	// TODO(eteran): investigate if we can rework this in terms of std::search
 
     std::string lcString;
     std::string ucString;
@@ -222,7 +225,7 @@ bool searchLiteral(view::string_view string, view::string_view searchString, boo
     const auto mid   = first + beginPos;
     const auto last  = string.end();
 
-    auto do_search = [&](view::string_view::iterator it) {
+	auto do_search = [&](view::string_view::iterator it) -> boost::optional<Search::Result> {
         if (*it == ucString[0] || *it == lcString[0]) {
             // matched first character
             auto ucPtr   = ucString.begin();
@@ -235,40 +238,41 @@ bool searchLiteral(view::string_view string, view::string_view searchString, boo
                 ++lcPtr;
 
                 if (ucPtr == ucString.end()) {
-                    // matched whole string
-                    result->start    = it - string.begin();
-                    result->end      = tempPtr - string.begin();
-                    result->extentBW = result->start;
-                    result->extentFW = result->end;
-                    return true;
+					// matched whole string
+					Search::Result result;
+					result.start    = it - string.begin();
+					result.end      = tempPtr - string.begin();
+					result.extentBW = result.start;
+					result.extentFW = result.end;
+					return result;
                 }
             }
         }
 
-        return false;
+		return boost::none;
     };
 
     if (direction == Direction::Forward) {
 
         // search from beginPos to end of string
         for (auto it = mid; it != last; ++it) {
-            if(do_search(it)) {
-                return true;
+			if(boost::optional<Search::Result> result = do_search(it)) {
+				return result;
             }
         }
 
         if (wrap == WrapMode::NoWrap) {
-            return false;
+			return boost::none;
         }
 
         // search from start of file to beginPos
         for (auto it = first; it != mid; ++it) {
-            if(do_search(it)) {
-                return true;
+			if(boost::optional<Search::Result> result = do_search(it)) {
+				return result;
             }
         }
 
-        return false;
+		return boost::none;
     } else {
         // Direction::BACKWARD
         // search from beginPos to start of file.  A negative begin pos
@@ -276,24 +280,24 @@ bool searchLiteral(view::string_view string, view::string_view searchString, boo
 
         if (beginPos >= 0) {
             for (auto it = mid; it >= first; --it) {
-                if(do_search(it)) {
-                    return true;
+				if(boost::optional<Search::Result> result = do_search(it)) {
+					return result;
                 }
             }
         }
 
         if (wrap == WrapMode::NoWrap) {
-            return false;
+			return boost::none;
         }
 
         // search from end of file to beginPos
         for (auto it = last; it >= mid; --it) {
-            if(do_search(it)) {
-                return true;
+			if(boost::optional<Search::Result> result = do_search(it)) {
+				return result;
             }
         }
 
-        return false;
+		return boost::none;
     }
 }
 
@@ -311,9 +315,9 @@ bool searchLiteral(view::string_view string, view::string_view searchString, boo
 **  will suffice in that case.
 **
 */
-bool searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos, Search::Result *result, const char *delimiters) {
+boost::optional<Search::Result> searchLiteralWord(view::string_view string, view::string_view searchString, bool caseSense, Direction direction, WrapMode wrap, int64_t beginPos, const char *delimiters) {
 
-    // TODO(eteran): investigate if we can rework this in terms of std::search
+	// TODO(eteran): investigate if we can rework this in terms of std::search
 
     std::string lcString;
     std::string ucString;
@@ -324,7 +328,7 @@ bool searchLiteralWord(view::string_view string, view::string_view searchString,
     const auto mid   = first + beginPos;
     const auto last  = string.end();
 
-    auto do_search_word = [&](const view::string_view::iterator it) {
+	auto do_search_word = [&](const view::string_view::iterator it) -> boost::optional<Search::Result> {
         if (*it == ucString[0] || *it == lcString[0]) {
 
             // matched first character
@@ -342,11 +346,12 @@ bool searchLiteralWord(view::string_view string, view::string_view searchString,
                     (cignore_L || it == string.begin() ||                                              // border case
                      safe_ctype<isspace>(it[-1]) || ::strchr(delimiters, it[-1]))) {                   // next char left delimits word ?
 
-                    result->start    = it - string.begin();
-                    result->end      = tempPtr - string.begin();
-                    result->extentBW = result->start;
-                    result->extentFW = result->end;
-                    return true;
+					Search::Result result;
+					result.start    = it - string.begin();
+					result.end      = tempPtr - string.begin();
+					result.extentBW = result.start;
+					result.extentFW = result.end;
+					return result;
                 }
 
                 // NOTE(eteran): this doesn't seem possible, but just being careful
@@ -356,7 +361,7 @@ bool searchLiteralWord(view::string_view string, view::string_view searchString,
             }
         }
 
-        return false;
+		return boost::none;
     };
 
 
@@ -386,22 +391,22 @@ bool searchLiteralWord(view::string_view string, view::string_view searchString,
 
         // search from beginPos to end of string
         for (auto it = mid; it != last; ++it) {
-            if(do_search_word(it)) {
-                return true;
+			if(boost::optional<Search::Result> result = do_search_word(it)) {
+				return result;
             }
         }
 
         if (wrap == WrapMode::NoWrap) {
-            return false;
+			return boost::none;
         }
 
         // search from start of file to beginPos
         for (auto it = first; it != mid; ++it) {
-            if(do_search_word(it)) {
-                return true;
+			if(boost::optional<Search::Result> result = do_search_word(it)) {
+				return result;
             }
         }
-        return false;
+		return boost::none;
     } else {
         // Direction::BACKWARD
         // search from beginPos to start of file. A negative begin pos
@@ -409,23 +414,23 @@ bool searchLiteralWord(view::string_view string, view::string_view searchString,
 
         if (beginPos >= 0) {
             for (auto it = mid; it >= first; --it) {
-                if(do_search_word(it)) {
-                    return true;
+				if(boost::optional<Search::Result> result = do_search_word(it)) {
+					return result;
                 }
             }
         }
 
         if (wrap == WrapMode::NoWrap) {
-            return false;
+			return boost::none;
         }
 
         // search from end of file to beginPos
         for (auto it = last; it >= mid; --it) {
-            if(do_search_word(it)) {
-                return true;
+			if(boost::optional<Search::Result> result = do_search_word(it)) {
+				return result;
             }
         }
-        return false;
+		return boost::none;
     }
 }
 
@@ -439,20 +444,20 @@ bool searchLiteralWord(view::string_view string, view::string_view searchString,
 ** alternative set of word delimiters for regular expression "<" and ">"
 ** characters, or simply passed as null for the default delimiter set.
 */
-bool SearchStringEx(view::string_view string, view::string_view searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, Search::Result *result, const char *delimiters) {
+boost::optional<Search::Result> SearchStringEx(view::string_view string, view::string_view searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, const char *delimiters) {
     switch (searchType) {
     case SearchType::CaseSenseWord:
-        return searchLiteralWord(string, searchString, /*caseSense=*/true, direction, wrap, beginPos, result, delimiters);
+		return searchLiteralWord(string, searchString, /*caseSense=*/true, direction, wrap, beginPos, delimiters);
     case SearchType::LiteralWord:
-        return searchLiteralWord(string, searchString, /*caseSense=*/false, direction, wrap, beginPos, result, delimiters);
+		return searchLiteralWord(string, searchString, /*caseSense=*/false, direction, wrap, beginPos, delimiters);
     case SearchType::CaseSense:
-        return searchLiteral(string, searchString, /*caseSense=*/true, direction, wrap, beginPos, result);
+		return searchLiteral(string, searchString, /*caseSense=*/true, direction, wrap, beginPos);
     case SearchType::Literal:
-        return searchLiteral(string, searchString, /*caseSense=*/false, direction, wrap, beginPos, result);
+		return searchLiteral(string, searchString, /*caseSense=*/false, direction, wrap, beginPos);
     case SearchType::Regex:
-        return searchRegex(string, searchString, direction, wrap, beginPos, result, delimiters, REDFLT_STANDARD);
+		return searchRegex(string, searchString, direction, wrap, beginPos, delimiters, REDFLT_STANDARD);
     case SearchType::RegexNoCase:
-        return searchRegex(string, searchString, direction, wrap, beginPos, result, delimiters, REDFLT_CASE_INSENSITIVE);
+		return searchRegex(string, searchString, direction, wrap, beginPos, delimiters, REDFLT_CASE_INSENSITIVE);
     }
 
     Q_UNREACHABLE();
@@ -488,7 +493,7 @@ bool replaceUsingRegex(view::string_view searchStr, view::string_view replaceStr
 */
 boost::optional<std::string> Search::ReplaceAllInStringEx(view::string_view inString, const QString &searchString, const QString &replaceString, SearchType searchType, int64_t *copyStart, int64_t *copyEnd, const QString &delimiters) {
 
-    Result searchResult;
+	Result searchResult;
     int64_t lastEndPos;    
 
     // reject empty string
@@ -508,36 +513,36 @@ boost::optional<std::string> Search::ReplaceAllInStringEx(view::string_view inSt
     *copyStart = -1;
 
     while (found) {
-        found = SearchString(
+		found = SearchString(
                     inString,
                     searchString,
                     Direction::Forward,
                     searchType,
                     WrapMode::NoWrap,
                     beginPos,
-                    &searchResult,
-                    delimiters);
+		            &searchResult,
+		            delimiters);
 
         if (found) {
             if (*copyStart < 0) {
-                *copyStart = searchResult.start;
+				*copyStart = searchResult.start;
             }
 
-            *copyEnd = searchResult.end;
+			*copyEnd = searchResult.end;
             // start next after match unless match was empty, then endPos+1
-            beginPos = (searchResult.start == searchResult.end) ? searchResult.end + 1 : searchResult.end;
+			beginPos = (searchResult.start == searchResult.end) ? searchResult.end + 1 : searchResult.end;
             ++nFound;
-            removeLen += searchResult.end - searchResult.start;
+			removeLen += searchResult.end - searchResult.start;
             if (isRegexType(searchType)) {
                 std::string replaceResult;
 
                 replaceUsingRE(
                     searchString,
                     replaceString,
-                    substr(inString, static_cast<size_t>(searchResult.extentBW)),
-                    searchResult.start - searchResult.extentBW,
+				    substr(inString, static_cast<size_t>(searchResult.extentBW)),
+				    searchResult.start - searchResult.extentBW,
                     replaceResult,
-                    searchResult.start == 0 ? -1 : inString[static_cast<size_t>(searchResult.start) - 1],
+				    searchResult.start == 0 ? -1 : inString[static_cast<size_t>(searchResult.start) - 1],
                     delimiters,
                     defaultRegexFlags(searchType));
 
@@ -546,7 +551,7 @@ boost::optional<std::string> Search::ReplaceAllInStringEx(view::string_view inSt
                 addLen += replaceLen;
             }
 
-            if (searchResult.end == gsl::narrow<int64_t>(inString.size())) {
+			if (searchResult.end == gsl::narrow<int64_t>(inString.size())) {
                 break;
             }
         }
@@ -568,21 +573,21 @@ boost::optional<std::string> Search::ReplaceAllInStringEx(view::string_view inSt
     lastEndPos = {};
 
     while (found) {
-        found = SearchString(
+		found = SearchString(
                     inString,
                     searchString,
                     Direction::Forward,
                     searchType,
                     WrapMode::NoWrap,
-                    beginPos,
-                    &searchResult,
-                    delimiters);
+		            beginPos,
+		            &searchResult,
+		            delimiters);
 
         if (found) {
             if (beginPos != 0) {
                 outString.append(
                             &inString[static_cast<size_t>(lastEndPos)],
-                            &inString[static_cast<size_t>(lastEndPos + (searchResult.start - lastEndPos))]);
+				            &inString[static_cast<size_t>(lastEndPos + (searchResult.start - lastEndPos))]);
             }
 
             if (isRegexType(searchType)) {
@@ -591,10 +596,10 @@ boost::optional<std::string> Search::ReplaceAllInStringEx(view::string_view inSt
                 replaceUsingRE(
                     searchString,
                     replaceString,
-                    substr(inString, static_cast<size_t>(searchResult.extentBW)),
-                    searchResult.start - searchResult.extentBW,
+				    substr(inString, static_cast<size_t>(searchResult.extentBW)),
+				    searchResult.start - searchResult.extentBW,
                     replaceResult,
-                    searchResult.start == 0 ? -1 : inString[static_cast<size_t>(searchResult.start) - 1],
+				    searchResult.start == 0 ? -1 : inString[static_cast<size_t>(searchResult.start) - 1],
                     delimiters,
                     defaultRegexFlags(searchType));
 
@@ -603,11 +608,11 @@ boost::optional<std::string> Search::ReplaceAllInStringEx(view::string_view inSt
                 outString.append(replaceString.toStdString());
             }
 
-            lastEndPos = searchResult.end;
+			lastEndPos = searchResult.end;
 
             // start next after match unless match was empty, then endPos+1
-            beginPos = (searchResult.start == searchResult.end) ? searchResult.end + 1 : searchResult.end;
-            if (searchResult.end == gsl::narrow<int64_t>(inString.size())) {
+			beginPos = (searchResult.start == searchResult.end) ? searchResult.end + 1 : searchResult.end;
+			if (searchResult.end == gsl::narrow<int64_t>(inString.size())) {
                 break;
             }
         }
@@ -630,17 +635,14 @@ boost::optional<std::string> Search::ReplaceAllInStringEx(view::string_view inSt
  */
 bool Search::SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, Result *result, const QString &delimiters) {
 
-    assert(result);
+	assert(result);
 
-    return SearchStringEx(
-                string,
-                searchString.toStdString(),
-                direction,
-                searchType,
-                wrap,
-                beginPos,
-                result,
-                delimiters.isNull() ? nullptr : delimiters.toLatin1().data());
+	if(boost::optional<Search::Result> r = SearchStringEx(string, searchString.toStdString(), direction, searchType, wrap, beginPos, delimiters.isNull() ? nullptr : delimiters.toLatin1().data())) {
+		*result = *r;
+		return true;
+	}
+
+	return false;
 
 }
 

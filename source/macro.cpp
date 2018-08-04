@@ -276,6 +276,9 @@ namespace std {
  * @return true if all arguments were valid flags, false otherwise
  */
 bool flagsFromArguments(Arguments arguments, int firstFlag, TextArea::EventFlags *flags) {
+
+	// TODO(eteran): return optional flags
+
     TextArea::EventFlags f = TextArea::NoneFlag;
     for(int i = firstFlag; i < arguments.size(); ++i) {
         if(to_string(arguments[i]) == "absolute") {
@@ -805,6 +808,8 @@ static WrapMode searchWrap(Arguments arguments, int index) {
 ** otherwise. (Originally written by Markus Schwarzenberg; slightly adapted).
 */
 bool StringToSearchType(const QString &string, SearchType *searchType) {
+
+	// TODO(eteran): return optional searchType
 
     static const struct {
         QLatin1String name;
@@ -2897,16 +2902,16 @@ static std::error_code searchStringMS(DocumentWidget *document, Arguments argume
 
     Search::Result searchResult = { -1, 0, 0, 0 };
 
-    if (!skipSearch) {
-        found = Search::SearchString(
+	if (!skipSearch) {
+		found = Search::SearchString(
                     string,
                     searchStr,
                     direction,
                     type,
                     wrap,
                     beginPos,
-                    &searchResult,
-                    document->GetWindowDelimitersEx());
+		            &searchResult,
+		            document->GetWindowDelimitersEx());
     }
 
     // Return the results
@@ -3788,23 +3793,23 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
     auto strLength   = static_cast<int64_t>(sourceStr.size());
     bool found       = true;
 
-    Search::Result searchResult;
+	Search::Result searchResult;
 
     while (found && beginPos < strLength) {
 
         auto indexStr = std::to_string(indexNum);
 
-        found = Search::SearchString(
+		found = Search::SearchString(
                     sourceStr,
                     splitStr,
                     Direction::Forward,
                     searchType,
                     WrapMode::NoWrap,
                     beginPos,
-                    &searchResult,
-                    document->GetWindowDelimitersEx());
+		            &searchResult,
+		            document->GetWindowDelimitersEx());
 
-        int64_t elementEnd = found ? searchResult.start : strLength;
+		int64_t elementEnd = found ? searchResult.start : strLength;
         int64_t elementLen = elementEnd - lastEnd;
 
         view::string_view str(
@@ -3817,16 +3822,16 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
         }
 
         if (found) {
-            if (searchResult.start == searchResult.end) {
-                beginPos = searchResult.end + 1; // Avoid endless loop for 0-width match
+			if (searchResult.start == searchResult.end) {
+				beginPos = searchResult.end + 1; // Avoid endless loop for 0-width match
             } else {
-                beginPos = searchResult.end;
+				beginPos = searchResult.end;
             }
         } else {
             beginPos = strLength; // Break the loop
         }
 
-        lastEnd = searchResult.end;
+		lastEnd = searchResult.end;
         ++indexNum;
     }
 
@@ -3860,15 +3865,15 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
                The '\n' gets added in the lines above, but we still have to
                verify whether the pattern also matches the end of the string,
                and add an empty chunk in case it does. */
-            found = Search::SearchString(
+			found = Search::SearchString(
                         sourceStr,
                         splitStr,
                         Direction::Forward,
                         searchType,
                         WrapMode::NoWrap,
-                        strLength,
-                        &searchResult,
-                        document->GetWindowDelimitersEx());
+			            strLength,
+			            &searchResult,
+			            document->GetWindowDelimitersEx());
 
             if (found) {
                 ++indexNum;

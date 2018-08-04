@@ -49,30 +49,6 @@ int nextArg(const QStringList &args, int argIndex) {
     return ++argIndex;
 }
 
-/*
-** Return true if -do macro is valid, otherwise write an error on stderr
-*/
-bool checkDoMacroArg(const QString &macro) {
-
-    QString errMsg;
-    int stoppedAt;
-
-    /* Add a terminating newline (which command line users are likely to omit
-       since they are typically invoking a single routine) */
-    QString macroString = macro + QLatin1Char('\n');
-
-    // Do a test parse
-    Program *const prog = ParseMacro(macroString, &errMsg, &stoppedAt);
-
-    if(!prog) {
-        Preferences::reportError(nullptr, macroString, stoppedAt, QLatin1String("argument to -do"), errMsg);
-        return false;
-    }
-
-    delete prog;
-    return true;
-}
-
 }
 
 /**
@@ -386,7 +362,30 @@ Main::Main(const QStringList &args) {
 
     // Set up communication server!
     if (IsServer) {
-        server = std::make_unique<NeditServer>();
+		server_ = std::make_unique<NeditServer>();
     }
 }
 
+/*
+** Return true if -do macro is valid, otherwise write an error on stderr
+*/
+bool Main::checkDoMacroArg(const QString &macro) const {
+
+	QString errMsg;
+	int stoppedAt;
+
+	/* Add a terminating newline (which command line users are likely to omit
+	   since they are typically invoking a single routine) */
+	QString macroString = macro + QLatin1Char('\n');
+
+	// Do a test parse
+	Program *const prog = ParseMacro(macroString, &errMsg, &stoppedAt);
+
+	if(!prog) {
+		Preferences::reportError(nullptr, macroString, stoppedAt, tr("argument to -do"), errMsg);
+		return false;
+	}
+
+	delete prog;
+	return true;
+}

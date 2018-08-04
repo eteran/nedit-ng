@@ -60,24 +60,4 @@ constexpr view::basic_string_view<Ch, Tr> substr(const Ch *first, const Ch *last
     return view::basic_string_view<Ch, Tr>(data, static_cast<size_t>(size));
 }
 
-template <class Ch, class Tr = std::char_traits<Ch>>
-constexpr bool starts_with(view::basic_string_view<Ch, Tr> str, Ch ch) noexcept {
-    return !str.empty() && Tr::eq(ch, str.front());
-}
-
-template <class Ch, class Tr = std::char_traits<Ch>>
-constexpr bool starts_with(view::basic_string_view<Ch, Tr> str, view::basic_string_view<Ch, Tr> other) noexcept {
-    return str.size() >= other.size() && Tr::compare(str.data(), other.data(), other.size()) == 0;
-}
-
-template <class Ch, class Tr = std::char_traits<Ch>>
-constexpr bool ends_with(view::basic_string_view<Ch, Tr> str, Ch ch) noexcept {
-    return !str.empty() && Tr::eq(ch, str.back());
-}
-
-template <class Ch, class Tr = std::char_traits<Ch>>
-constexpr bool ends_with(view::basic_string_view<Ch, Tr> str, view::basic_string_view<Ch, Tr> other) noexcept {
-    return str.size() >= other.size() && Tr::compare(str.data() + str.size() - other.size(), other.data(), other.size()) == 0;
-}
-
 #endif

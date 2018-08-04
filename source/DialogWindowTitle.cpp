@@ -666,7 +666,7 @@ QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, co
                     format_it++; // delete the argument
 
                     if (filenameSet) {
-                        QString trailingPath = GetTrailingPathComponentsEx(path, noOfComponents);
+                        QString trailingPath = GetTrailingPathComponents(path, noOfComponents);
 
                         // prefix with ellipsis if components were skipped
                         if (trailingPath != path) {

@@ -6,7 +6,6 @@
 #include <QString>
 #include <vector>
 
-// Header for a set of patterns
 class PatternSet {
 public:
     static constexpr int DefaultLineContext = 1;

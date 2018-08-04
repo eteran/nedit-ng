@@ -2404,6 +2404,8 @@ bool TextArea::emptyLinesVisible() const {
  */
 bool TextArea::posToVisibleLineNum(TextCursor pos, int *lineNum) const {
 
+	// TODO(eteran): return optional int
+
 	if (pos < firstChar_) {
         return false;
 	}
@@ -3715,6 +3717,8 @@ bool TextArea::TextDPositionToXY(TextCursor pos, QPoint *coord) const {
 
 bool TextArea::TextDPositionToXY(TextCursor pos, int *x, int *y) const {
 
+	// TODO(eteran): return optional pair
+
     char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
     int visLineNum;
 
@@ -4457,8 +4461,9 @@ void TextArea::TextDInsertEx(view::string_view text) {
 ** used to decide whether auto-indent should be skipped because the indent
 ** string itself would exceed the wrap margin.
 */
-int TextArea::wrapLine(TextBuffer *buf, int64_t bufOffset, TextCursor lineStartPos, TextCursor lineEndPos, TextCursor limitPos, TextCursor *breakAt, int64_t *charsAdded) {
+bool TextArea::wrapLine(TextBuffer *buf, int64_t bufOffset, TextCursor lineStartPos, TextCursor lineEndPos, TextCursor limitPos, TextCursor *breakAt, int64_t *charsAdded) {
 
+	// TODO(eteran): return an optional structure
     TextCursor p;
 	int column;
 

@@ -434,7 +434,6 @@ bool SmartIndent::LMHasSmartIndentMacros(const QString &languageMode) {
 		return true;
 	}
 	
-	
     return SmartIndentDlg && SmartIndentDlg->languageMode() == languageMode;
 }
 
