@@ -1,6 +1,6 @@
 
-#ifndef CALLTIP_H_
-#define CALLTIP_H_
+#ifndef CALLTIP_WIDGET_H_
+#define CALLTIP_WIDGET_H_
 
 #include <QWidget>
 #include "ui_CallTipWidget.h"

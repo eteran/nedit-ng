@@ -239,7 +239,10 @@ boost::optional<DialogFind::Fields> DialogFind::readFields() {
 		try {
 			auto compiledRE = make_regex(findText, regexDefault);
 		} catch(const RegexError &e) {
-			QMessageBox::warning(this, tr("Regex Error"), tr("Please respecify the search string:\n%1").arg(QString::fromLatin1(e.what())));
+			QMessageBox::warning(
+			            this,
+			            tr("Regex Error"),
+			            tr("Please respecify the search string:\n%1").arg(QString::fromLatin1(e.what())));
 			return boost::none;
 		}
 	} else {

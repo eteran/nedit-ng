@@ -266,21 +266,21 @@ QString GetTrailingPathComponents(const QString &path, int noOfComponents) {
 
 /*
 ** Samples up to a maximum of FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS
-** characters, to determine whether fileString represents a MS DOS or Macintosh
+** characters, to determine whether text represents a MS DOS or Macintosh
 ** format file.  If there's ANY ambiguity (a newline in the sample not paired
 ** with a return in an otherwise DOS looking file, or a newline appearing in
 ** the sampled portion of a Macintosh looking file), the file is judged to be
 ** Unix format.
 */
-FileFormats FormatOfFile(view::string_view fileString) {
+FileFormats FormatOfFile(view::string_view text) {
 
 	size_t nNewlines = 0;
 	size_t nReturns = 0;
 
-	for (auto it = fileString.begin(); it != fileString.end() && it < fileString.begin() + FORMAT_SAMPLE_CHARS; ++it) {
+	for (auto it = text.begin(); it != text.end() && it < text.begin() + FORMAT_SAMPLE_CHARS; ++it) {
 		if (*it == '\n') {
 			nNewlines++;
-			if (it == fileString.begin() || *std::prev(it) != '\r') {
+			if (it == text.begin() || *std::prev(it) != '\r') {
 				return FileFormats::Unix;
 			}
 
@@ -304,8 +304,6 @@ FileFormats FormatOfFile(view::string_view fileString) {
 
 }
 
-
-
 /*
 ** Converts a string (which may represent the entire contents of the file) from
 ** Unix to DOS format.
@@ -323,10 +321,8 @@ void ConvertToDos(std::string &text) {
 
 	std::string outString;
 	outString.reserve(outLength);
-
 	auto outPtr = std::back_inserter(outString);
 
-	// Do the conversion, free the old string
 	for (char ch : text) {
 		if (ch == '\n') {
 			*outPtr++ = '\r';
@@ -334,7 +330,7 @@ void ConvertToDos(std::string &text) {
 		*outPtr++ = ch;
 	}
 
-	text = outString;
+	text = std::move(outString);
 }
 
 /*
@@ -352,13 +348,70 @@ void ConvertToMac(std::string &text) {
 	});
 }
 
+/**
+ * @brief ConvertFromMac
+ * @param text
+ */
+void ConvertFromMac(std::string &text) {
+
+	std::transform(text.begin(), text.end(), text.begin(), [](char ch) {
+		if(ch == '\r') {
+			return '\n';
+		}
+
+		return ch;
+	});
+}
+
+/**
+ * @brief ConvertFromDos
+ * @param text
+ */
+void ConvertFromDos(std::string &text) {
+	ConvertFromDos(text, nullptr);
+}
+
+/**
+ * @brief ConvertFromDos
+ * @param text
+ * @param pendingCR
+ */
+void ConvertFromDos(std::string &text, char *pendingCR) {
+
+	if (pendingCR) {
+		*pendingCR = '\0';
+	}
+
+	auto out = text.begin();
+	auto it  = text.begin();
+
+	while (it != text.end()) {
+		if (*it == '\r') {
+			auto next = std::next(it);
+			if (next != text.end()) {
+				if (*next == '\n') {
+					++it;
+				}
+			} else {
+				if (pendingCR) {
+					*pendingCR = *it;
+					break;
+				}
+			}
+		}
+		*out++ = *it++;
+	}
+
+	text.erase(out, text.end());
+}
+
 /*
 ** Reads a text file into a string buffer, converting line breaks to
 ** unix-style if appropriate.
 **
 ** Force a terminating \n, if this is requested
 */
-QString ReadAnyTextFileEx(const QString &fileName, bool forceNL) {
+QString ReadAnyTextFile(const QString &fileName, bool forceNL) {
 
 	std::ifstream file(fileName.toStdString());
 	if(!file) {
@@ -369,10 +422,10 @@ QString ReadAnyTextFileEx(const QString &fileName, bool forceNL) {
 
 	switch(FormatOfFile(contents)) {
 	case FileFormats::Dos:
-		ConvertFromDos(&contents);
+		ConvertFromDos(contents);
 		break;
 	case FileFormats::Mac:
-		ConvertFromMac(&contents);
+		ConvertFromMac(contents);
 		break;
 	case FileFormats::Unix:
 		break;

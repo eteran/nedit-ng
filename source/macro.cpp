@@ -2175,7 +2175,7 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 
 			int stoppedAt;
 			QString errMsg;
-			Program *const prog = ParseMacro(code, &errMsg, &stoppedAt);
+			Program *const prog = CompileMacro(code, &errMsg, &stoppedAt);
 			if(!prog) {
 				if (errPos) {
 					*errPos = in.index() + stoppedAt;
@@ -2217,7 +2217,7 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 			QString code = in.mid();
 			int stoppedAt;
 			QString errMsg;
-			Program *const prog = ParseMacro(code, &errMsg, &stoppedAt);
+			Program *const prog = CompileMacro(code, &errMsg, &stoppedAt);
 			if(!prog) {
 				if (errPos) {
 					*errPos = in.index() + stoppedAt;
@@ -2234,7 +2234,7 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 			if (runDocument) {
 
 				if (!runDocument->macroCmdData_) {
-					runDocument->runMacroEx(prog);
+					runDocument->runMacro(prog);
 				} else {
 					/*  If we come here this means that the string was parsed
 						from within another macro via load_macro_file(). In

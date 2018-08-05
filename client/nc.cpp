@@ -123,10 +123,10 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 	int lineNum   = 0;
 	int read      = 0;
 	int create    = 0;
-	int iconic    = 0;
-	int tabbed    = -1;
+	int iconic    = 0;	
 	int fileCount = 0;
 	int group     = 0;
+	int tabbed    = -1;
 	bool opts     = true;
 
 	QVariantList commandData;
@@ -214,7 +214,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			fprintf(stderr, "nc: Unrecognized option %s\n%s", qPrintable(args[i]), cmdLineHelp);
 			exit(EXIT_FAILURE);
 		} else {
-			if (!ParseFilenameEx(args[i], &name, &path) != 0) {
+			if (!ParseFilenameEx(args[i], &name, &path)) {
 				// An Error, most likely too long paths/strings given
 				return boost::none;
 			}
@@ -226,7 +226,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			/* determine if file is to be openned in new tab, by
 			   factoring the options -group, -tabbed & -untabbed */
 			if (group == 2) {
-				isTabbed = false; // start a new window for new group
+				isTabbed = 0; // start a new window for new group
 				group = 1;    // next file will be within group
 			} else if (group == 1) {
 				isTabbed = 1; // new tab for file in group
@@ -389,7 +389,7 @@ int main(int argc, char *argv[]) {
 	ServerPreferences.serverName    = settings.value(QLatin1String("nc.serverName"),    QString()).toString();
 	ServerPreferences.waitForClose  = settings.value(QLatin1String("nc.waitForClose"),  false).toBool();
 	ServerPreferences.timeOut       = settings.value(QLatin1String("nc.timeOut"),       10).toInt();
-	CommandLine commandLine         = processCommandLine(app.arguments());
+	CommandLine commandLine         = processCommandLine(QCoreApplication::arguments());
 
 	/* Make sure that the time out unit is at least 1 second and not too
 	   large either (overflow!). */

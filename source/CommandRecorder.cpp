@@ -7,12 +7,6 @@
 
 namespace {
 
-// List of actions not useful when learning a macro sequence (also see below)
-const QLatin1String IgnoredActions[] = {
-	QLatin1String("focusIn"),
-	QLatin1String("focusOut")
-};
-
 /* List of actions intended to be attached to mouse buttons, which the user
    must be warned can't be recorded in a learn/replay sequence */
 const QLatin1String MouseActions[] = {
@@ -89,23 +83,6 @@ bool isRedundantAction(const Event *ev) {
 	return false;
 }
 
-/**
- * @brief isIgnoredAction
- * @param ev
- * @return
- */
-template <class Event>
-bool isIgnoredAction(const Event *ev) {
-
-	for(const QLatin1String &action : IgnoredActions) {
-		if (action == ev->actionString()) {
-			return true;
-		}
-	}
-
-	return false;
-}
-
 /*
 ** Create a macro string to represent an invocation of an action routine.
 ** Returns nullptr for non-operational or un-recordable actions.
@@ -113,7 +90,7 @@ bool isIgnoredAction(const Event *ev) {
 template <class Event>
 QString actionToString(const Event *ev) {
 
-	if (isIgnoredAction(ev) || isRedundantAction(ev) || isMouseAction(ev)) {
+	if (isRedundantAction(ev) || isMouseAction(ev)) {
 		return QString();
 	}
 
@@ -163,7 +140,6 @@ CommandRecorder::CommandRecorder(QObject *parent) : QObject(parent) {
  * @return global unique instance
  */
 CommandRecorder *CommandRecorder::instance() {
-
 	static CommandRecorder instance;
 	return &instance;
 }

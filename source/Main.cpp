@@ -64,14 +64,14 @@ Main::~Main() {
  */
 Main::Main(const QStringList &args) {
 
-	int lineNum = 0;
-	int editFlags = EditFlags::CREATE;
-	bool gotoLine = false;
+	int lineNum          = 0;
+	int editFlags        = EditFlags::CREATE;
+	bool gotoLine        = false;
 	bool macroFileReadEx = false;
-	bool opts = true;
-	bool iconic = false;
-	int tabbed = -1;
-	int group = 0;
+	bool iconic          = false;
+	bool opts            = true;
+	int tabbed           = -1;
+	int group            = 0;
 	int isTabbed;
 	QString geometry;
 	QString langMode;
@@ -253,7 +253,7 @@ Main::Main(const QStringList &args) {
 			exit(EXIT_FAILURE);
 		} else {
 
-			if (!ParseFilenameEx(args[i], &filename, &pathname) == 0) {
+			if (ParseFilenameEx(args[i], &filename, &pathname)) {
 				/* determine if file is to be openned in new tab, by
 				   factoring the options -group, -tabbed & -untabbed */
 				switch(group) {
@@ -379,13 +379,10 @@ bool Main::checkDoMacroArg(const QString &macro) const {
 	QString macroString = macro + QLatin1Char('\n');
 
 	// Do a test parse
-	Program *const prog = ParseMacro(macroString, &errMsg, &stoppedAt);
-
-	if(!prog) {
+	if(!isMacroValid(macroString, &errMsg, &stoppedAt)) {
 		Preferences::reportError(nullptr, macroString, stoppedAt, tr("argument to -do"), errMsg);
 		return false;
 	}
 
-	delete prog;
 	return true;
 }

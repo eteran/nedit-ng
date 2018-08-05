@@ -54,8 +54,8 @@ private:
 	Ui::DialogFind ui;
 	MainWindow *window_;
 	DocumentWidget *document_;
-	bool lastRegexCase_   = true;  // idem, for regex mode in find dialog
-	bool lastLiteralCase_ = false; // idem, for literal mode
+	bool lastRegexCase_   = true;
+	bool lastLiteralCase_ = false;
 };
 
 #endif

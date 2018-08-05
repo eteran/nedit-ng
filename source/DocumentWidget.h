@@ -188,7 +188,7 @@ public:
 	void macroBannerTimeoutProc();
 	void moveDocument(MainWindow *fromWindow);
 	void repeatMacro(const QString &macro, int how);
-	void runMacroEx(Program *prog);
+	void runMacro(Program *prog);
 	void setWrapMargin(int margin);
 	void shellBannerTimeoutProc();
 	void splitPane();

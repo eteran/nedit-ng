@@ -49,7 +49,7 @@ private:
 	QString macroRecordBuffer_;
 	bool isRecording_ = false;
 
-	// Window where macro recording is taking place
+	// Document where macro recording is taking place
 	QPointer<DocumentWidget> macroRecordDocument_;
 };
 

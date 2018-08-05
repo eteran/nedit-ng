@@ -3404,17 +3404,17 @@ bool DocumentWidget::includeFile(const QString &name) {
 		return false;
 	}
 
-	auto fileString = std::string{reinterpret_cast<char *>(memory), static_cast<size_t>(file.size())};
+	auto text = std::string{reinterpret_cast<char *>(memory), static_cast<size_t>(file.size())};
 
 	file.unmap(memory);
 
 	// Detect and convert DOS and Macintosh format files
-	switch (FormatOfFile(fileString)) {
+	switch (FormatOfFile(text)) {
 	case FileFormats::Dos:
-		ConvertFromDos(&fileString);
+		ConvertFromDos(text);
 		break;
 	case FileFormats::Mac:
-		ConvertFromMac(&fileString);
+		ConvertFromMac(text);
 		break;
 	case FileFormats::Unix:
 		//  Default is Unix, no conversion necessary.
@@ -3424,10 +3424,10 @@ bool DocumentWidget::includeFile(const QString &name) {
 	/* insert the contents of the file in the selection or at the insert
 	   position in the window if no selection exists */
 	if (buffer_->primary.selected) {
-		buffer_->BufReplaceSelectedEx(fileString);
+		buffer_->BufReplaceSelectedEx(text);
 	} else {
 		if(auto win = MainWindow::fromDocument(this)) {
-			buffer_->BufInsertEx(win->lastFocus()->TextGetCursorPos(), fileString);
+			buffer_->BufInsertEx(win->lastFocus()->TextGetCursorPos(), text);
 		}
 	}
 
@@ -3955,7 +3955,7 @@ void DocumentWidget::BeginSmartIndent(bool warn) {
 	QString errMsg;
 
 	auto winData = std::make_unique<SmartIndentData>();
-	winData->newlineMacro = ParseMacro(indentMacros->newlineMacro, &errMsg, &stoppedAt);
+	winData->newlineMacro = CompileMacro(indentMacros->newlineMacro, &errMsg, &stoppedAt);
 
 	if (!winData->newlineMacro) {
 		Preferences::reportError(this, indentMacros->newlineMacro, stoppedAt, tr("newline macro"), errMsg);
@@ -3965,7 +3965,7 @@ void DocumentWidget::BeginSmartIndent(bool warn) {
 	if (indentMacros->modMacro.isNull()) {
 		winData->modMacro = nullptr;
 	} else {
-		winData->modMacro = ParseMacro(indentMacros->modMacro, &errMsg, &stoppedAt);
+		winData->modMacro = CompileMacro(indentMacros->modMacro, &errMsg, &stoppedAt);
 		if (!winData->modMacro) {
 
 			delete winData->newlineMacro;
@@ -4949,14 +4949,14 @@ void DocumentWidget::repeatMacro(const QString &macro, int how) {
 	// Parse the resulting macro into an executable program "prog"
 	QString errMsg;
 	int stoppedAt;
-	Program *const prog = ParseMacro(loopedCmd, &errMsg, &stoppedAt);
+	Program *const prog = CompileMacro(loopedCmd, &errMsg, &stoppedAt);
 	if(!prog) {
 		qWarning("NEdit: internal error, repeat macro syntax wrong: %s", qPrintable(errMsg));
 		return;
 	}
 
 	// run the executable program
-	runMacroEx(prog);
+	runMacro(prog);
 }
 
 /**
@@ -5033,7 +5033,7 @@ bool DocumentWidget::ReadMacroFileEx(const QString &fileName, bool warnNotExist)
 	/* read-in macro file and force a terminating \n, to prevent syntax
 	** errors with statements on the last line
 	*/
-	QString fileString = ReadAnyTextFileEx(fileName, /*forceNL=*/true);
+	QString fileString = ReadAnyTextFile(fileName, /*forceNL=*/true);
 	if (fileString.isNull()) {
 		if (warnNotExist) {
 			QMessageBox::critical(this,
@@ -5053,7 +5053,7 @@ bool DocumentWidget::ReadMacroFileEx(const QString &fileName, bool warnNotExist)
 ** a macro is running, and handling preemption, resumption, and cancellation.
 ** frees prog when macro execution is complete;
 */
-void DocumentWidget::runMacroEx(Program *prog) {
+void DocumentWidget::runMacro(Program *prog) {
 
 	/* If a macro is already running, just call the program as a subroutine,
 	   instead of starting a new one, so we don't have to keep a separate
@@ -6389,13 +6389,13 @@ void DocumentWidget::ReplayEx() {
 		QString errMsg;
 		int stoppedAt;
 
-		Program *prog = ParseMacro(replayMacro, &errMsg, &stoppedAt);
+		Program *prog = CompileMacro(replayMacro, &errMsg, &stoppedAt);
 		if(!prog) {
 			qWarning("NEdit: internal error, learn/replay macro syntax error: %s", qPrintable(errMsg));
 			return;
 		}
 
-		runMacroEx(prog);
+		runMacro(prog);
 	}
 }
 
@@ -6448,9 +6448,9 @@ void DocumentWidget::finishLearning() {
 }
 
 /*
-** Executes macro string "macro" using the lastFocus pane in "window".
-** Reports errors via a dialog posted over "window", integrating the name
-** "errInName" into the message to help identify the source of the error.
+** Executes macro string "macro" using the lastFocus pane in this document.
+** Reports errors via a dialog, integrating the name "errInName" into the
+** message to help identify the source of the error.
 */
 void DocumentWidget::DoMacro(const QString &macro, const QString &errInName) {
 
@@ -6461,14 +6461,14 @@ void DocumentWidget::DoMacro(const QString &macro, const QString &errInName) {
 
 	// Parse the macro and report errors if it fails
 	int stoppedAt;
-	Program *const prog = ParseMacro(qMacro, &errMsg, &stoppedAt);
+	Program *const prog = CompileMacro(qMacro, &errMsg, &stoppedAt);
 	if(!prog) {
 		Preferences::reportError(this, qMacro, stoppedAt, errInName, errMsg);
 		return;
 	}
 
 	// run the executable program (prog is freed upon completion)
-	runMacroEx(prog);
+	runMacro(prog);
 }
 
 /*

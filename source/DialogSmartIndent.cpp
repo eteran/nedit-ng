@@ -324,8 +324,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 	QString errMsg;
 	int stoppedAt = 0;
 
-	Program *prog = ParseMacro(widgetText, &errMsg, &stoppedAt);
-	if(!prog) {
+	if(!isMacroValid(widgetText, &errMsg, &stoppedAt)) {
 		Preferences::reportError(this, widgetText, stoppedAt, tr("newline macro"), errMsg);
 		QTextCursor cursor = ui.editNewline->textCursor();
 		cursor.setPosition(stoppedAt);
@@ -334,7 +333,6 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 		return false;
 	}
 
-	delete prog;
 
 	// Test compile the modify macro
 	QString modMacroText = ui.editModMacro->toPlainText();
@@ -342,9 +340,8 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 		QString widgetText = ensureNewline(modMacroText);
 		QString errMsg;
 		int stoppedAt = 0;
-		Program *prog = ParseMacro(widgetText, &errMsg, &stoppedAt);
 
-		if(!prog) {
+		if(!isMacroValid(widgetText, &errMsg, &stoppedAt)) {
 			Preferences::reportError(this, widgetText, stoppedAt, tr("modify macro"), errMsg);
 			QTextCursor cursor = ui.editModMacro->textCursor();
 			cursor.setPosition(stoppedAt);
@@ -352,8 +349,6 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 			ui.editModMacro->setFocus();
 			return false;
 		}
-
-		delete prog;
 	}
 
 	return true;

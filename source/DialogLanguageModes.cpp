@@ -6,12 +6,12 @@
 #include "LanguageMode.h"
 #include "LanguageModeModel.h"
 #include "MainWindow.h"
-#include "preferences.h"
 #include "Regex.h"
-#include "Util/regex.h"
 #include "Search.h"
 #include "SmartIndent.h"
 #include "TextArea.h"
+#include "Util/regex.h"
+#include "preferences.h"
 #include "userCmds.h"
 
 #include <QMessageBox>
@@ -238,8 +238,7 @@ void DialogLanguageModes::on_buttonBox_clicked(QAbstractButton *button) {
 /*
 ** Read the fields in the language modes dialog and create a LanguageMode data
 ** structure reflecting the current state of the selected language mode in the dialog.
-** If any of the information is incorrect or missing, display a warning dialog and
-** return nullptr.
+** If any of the information is incorrect or missing, display a warning dialog.
 */
 boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity) {
 

@@ -5,6 +5,8 @@
 struct Program;
 class QString;
 
-Program *ParseMacro(const QString &expr, QString *message, int *stoppedAt);
+Program *CompileMacro(const QString &expr, QString *message, int *stoppedAt);
+bool isMacroValid(const QString &expr, QString *message, int *stoppedAt);
+
 
 #endif

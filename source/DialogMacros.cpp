@@ -386,9 +386,7 @@ bool DialogMacros::checkMacroText(const QString &macro, Verbosity verbosity) {
 
 	QString errMsg;
 	int stoppedAt;
-
-	Program *prog = ParseMacro(macro, &errMsg, &stoppedAt);
-	if(!prog) {
+	if(!isMacroValid(macro, &errMsg, &stoppedAt)) {
 		if(verbosity == Verbosity::Verbose) {
 			Preferences::reportError(this, macro, stoppedAt, tr("macro"), errMsg);
 		}
@@ -398,7 +396,6 @@ bool DialogMacros::checkMacroText(const QString &macro, Verbosity verbosity) {
 		ui.editMacro->setFocus();
 		return false;
 	}
-	delete prog;
 
 	if(stoppedAt != macro.size()) {
 		if(verbosity == Verbosity::Verbose) {

@@ -11,7 +11,7 @@ namespace {
  * @brief buildPlatform
  * @return
  */
-QString buildPlatform() {
+QLatin1String buildPlatform() {
 #if defined(Q_OS_AIX)
 	return QLatin1String("AIX");
 #elif defined(Q_OS_BSD4)

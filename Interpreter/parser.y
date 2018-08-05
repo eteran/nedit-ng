@@ -425,14 +425,13 @@ blank:  /* nothing */
 
 
 /*
-** Parse a null terminated string and create a program from it (this is the
-** parser entry point).  The program created by this routine can be
-** executed using ExecuteProgram.  Returns program on success, or nullptr
-** on failure.  If the command failed, the error message is returned
-** as a pointer to a static string in msg, and the length of the string up
+** Parse a string and create a program from it (this is the parser entry point).
+** The program created by this routine can be executed using ExecuteProgram.
+** Returns program on success, or nullptr on failure.  If the command failed,
+** the error message is returned in msg, and the length of the string up
 ** to where parsing failed in stoppedAt.
 */
-Program *ParseMacro(const QString &expr, QString *msg, int *stoppedAt) {
+Program *CompileMacro(const QString &expr, QString *msg, int *stoppedAt) {
     BeginCreatingProgram();
 
     /* call yyparse to parse the string and check for success.  If the parse

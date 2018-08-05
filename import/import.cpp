@@ -128,13 +128,10 @@ QString copyMacroToEnd(Input &in) {
 	// Parse the input
 	int stoppedAt;
 	QString errMsg;
-
-	Program *const prog = ParseMacro(code, &errMsg, &stoppedAt);
-	if(!prog) {
+	if(!isMacroValid(code, &errMsg, &stoppedAt)) {
 		qWarning("Error In Macro/Command String");
 		return QString();
 	}
-	delete prog;
 
 	// Copy and return the body of the macro, stripping outer braces and
 	// extra leading tabs added by the writer routine
