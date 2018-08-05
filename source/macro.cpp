@@ -4511,7 +4511,6 @@ static std::error_code rangesetDestroyMS(DocumentWidget *document, Arguments arg
 */
 static std::error_code rangesetGetByNameMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	Rangeset *rangeset;
 	QString name;
 	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 	int insertIndex = 0;
@@ -4531,9 +4530,8 @@ static std::error_code rangesetGetByNameMS(DocumentWidget *document, Arguments a
 	size_t nRangesets = rangesetList.size();
 	for (size_t i = 0; i < nRangesets; ++i) {
 		int label = rangesetList[i];
-		rangeset = rangesetTable->RangesetFetch(label);
-		if (rangeset) {
-			QString rangeset_name = rangeset->RangesetGetName();
+		if (Rangeset *rangeset = rangesetTable->RangesetFetch(label)) {
+			QString rangeset_name = rangeset->name();
 
 			if(rangeset_name == name) {
 
@@ -4582,7 +4580,6 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
 	}
 
 	Rangeset *targetRangeset = rangesetTable->RangesetFetch(label);
-
 	if(!targetRangeset) {
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
@@ -4595,7 +4592,7 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
 		if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
 			return MacroErrorCode::SelectionMissing;
 		}
-		if (!targetRangeset->RangesetAddBetween(buffer, start, end)) {
+		if (!targetRangeset->RangesetAddBetween(start, end)) {
 			return MacroErrorCode::FailedToAddSelection;
 		}
 	}
@@ -4612,7 +4609,7 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
 			return MacroErrorCode::Rangeset2DoesNotExist;
 		}
 
-		targetRangeset->RangesetAdd(buffer, sourceRangeset);
+		targetRangeset->RangesetAdd(sourceRangeset);
 	}
 
 	if (arguments.size() == 3) {
@@ -4635,7 +4632,7 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
 			std::swap(start, end);
 		}
 
-		if ((start != end) && !targetRangeset->RangesetAddBetween(buffer, start, end)) {
+		if ((start != end) && !targetRangeset->RangesetAddBetween(start, end)) {
 			return MacroErrorCode::FailedToAddRange;
 		}
 	}
@@ -4643,7 +4640,7 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
 	// (to) which range did we just add?
 	if (arguments.size() != 2 && start >= 0) {
 		start = (start + to_integer(end)) / 2; // "middle" of added range
-		index = 1 + targetRangeset->RangesetFindRangeOfPos(start, false);
+		index = 1 + targetRangeset->RangesetFindRangeOfPos(start, /*incl_end=*/false);
 	} else {
 		index = 0;
 	}
@@ -4698,7 +4695,7 @@ static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments ar
 		start = to_integer(tmp_start);
 		end   = to_integer(tmp_end);
 
-		targetRangeset->RangesetRemoveBetween(buffer, TextCursor(start), TextCursor(end));
+		targetRangeset->RangesetRemoveBetween(TextCursor(start), TextCursor(end));
 	}
 
 	if (arguments.size() == 2) {
@@ -4711,7 +4708,7 @@ static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments ar
 		if(!sourceRangeset) {
 			return MacroErrorCode::Rangeset2DoesNotExist;
 		}
-		targetRangeset->RangesetRemove(buffer, sourceRangeset);
+		targetRangeset->RangesetRemove(sourceRangeset);
 	}
 
 	if (arguments.size() == 3) {
@@ -4733,7 +4730,7 @@ static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments ar
 			std::swap(start, end);
 		}
 
-		targetRangeset->RangesetRemoveBetween(buffer, TextCursor(start), TextCursor(end));
+		targetRangeset->RangesetRemoveBetween(TextCursor(start), TextCursor(end));
 	}
 
 	// set up result
@@ -4748,7 +4745,6 @@ static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments ar
 */
 static std::error_code rangesetInvertMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	TextBuffer *buffer = document->buffer_;
 	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 	int label;
 
@@ -4769,7 +4765,7 @@ static std::error_code rangesetInvertMS(DocumentWidget *document, Arguments argu
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
 
-	if (rangeset->RangesetInverse(buffer) < 0) {
+	if (rangeset->RangesetInverse() < 0) {
 		return MacroErrorCode::FailedToInvertRangeset;
 	}
 
@@ -4785,7 +4781,6 @@ static std::error_code rangesetInvertMS(DocumentWidget *document, Arguments argu
 */
 static std::error_code rangesetInfoMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-	Rangeset *rangeset = nullptr;
 	DataValue element;
 	int label;
 
@@ -4797,15 +4792,14 @@ static std::error_code rangesetInfoMS(DocumentWidget *document, Arguments argume
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
-	if (rangesetTable) {
-		rangeset = rangesetTable->RangesetFetch(label);
-	}
-
 	RangesetInfo rangeset_info;
 
-	if(rangeset) {
-		rangeset_info = rangeset->RangesetGetInfo();
+	if (rangesetTable) {
+		if(Rangeset *rangeset = rangesetTable->RangesetFetch(label)) {
+			rangeset_info = rangeset->RangesetGetInfo();
+		}
 	}
+
 
 	// set up result
 	*result = make_value(std::make_shared<Array>());
@@ -4847,11 +4841,6 @@ static std::error_code rangesetInfoMS(DocumentWidget *document, Arguments argume
 static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-	Rangeset *rangeset;
-	TextCursor start = {};
-	TextCursor end   = {};
-	TextCursor dummy;
-	int64_t rangeIndex;
 	DataValue element;
 	int label = 0;
 
@@ -4869,33 +4858,49 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 	}
 
 	bool ok = false;
-	rangeset = rangesetTable->RangesetFetch(label);
-	if (rangeset) {
+
+	Range range;
+
+	if (Rangeset *rangeset = rangesetTable->RangesetFetch(label)) {
 		if (arguments.size() == 1) {
-			rangeIndex = rangeset->RangesetGetNRanges() - 1;
-			ok  = rangeset->RangesetFindRangeNo(0, &start, &dummy);
-			ok &= rangeset->RangesetFindRangeNo(rangeIndex, &dummy, &end);
-			rangeIndex = -1;
+			const int rangeIndex = rangeset->size() - 1;
+
+			boost::optional<Range> r1 = rangeset->RangesetFindRangeNo(0);
+			boost::optional<Range> r2 = rangeset->RangesetFindRangeNo(rangeIndex);
+
+			if(r1 && r2) {
+				ok = true;
+				range.start = r1->start;
+				range.end   = r2->end;
+			}
 		} else if (arguments.size() == 2) {
+			int rangeIndex;
 			if (std::error_code ec = readArgument(arguments[1], &rangeIndex)) {
 				return ec;
 			}
-			ok = rangeset->RangesetFindRangeNo(rangeIndex - 1, &start, &end);
+
+			if(boost::optional<Range> r = rangeset->RangesetFindRangeNo(rangeIndex - 1)) {
+				ok = true;
+				range = *r;
+			}
 		}
 	}
 
 	*result = make_value(std::make_shared<Array>());
 
-	if (!ok)
+	if (!ok) {
 		return MacroErrorCode::Success;
+	}
 
-	element = make_value(to_integer(start));
-	if (!ArrayInsert(result, "start", &element))
+	element = make_value(to_integer(range.start));
+	if (!ArrayInsert(result, "start", &element)) {
 		return MacroErrorCode::InsertFailed;
+	}
 
-	element = make_value(to_integer(end));
-	if (!ArrayInsert(result, "end", &element))
+	element = make_value(to_integer(range.end));
+	if (!ArrayInsert(result, "end", &element)) {
 		return MacroErrorCode::InsertFailed;
+	}
 
 	return MacroErrorCode::Success;
 }
@@ -4909,7 +4914,7 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 static std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	TextBuffer *buffer = document->buffer_;
 	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-	int64_t rangeIndex;
+	int rangeIndex;
 	int label = 0;
 
 	if (arguments.size() < 1 || arguments.size() > 2) {
@@ -4944,7 +4949,7 @@ static std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments
 	if (pos < 0 || pos > maxpos) {
 		rangeIndex = 0;
 	} else {
-		rangeIndex = rangeset->RangesetFindRangeOfPos(TextCursor(pos), false) + 1;
+		rangeIndex = rangeset->RangesetFindRangeOfPos(TextCursor(pos), /*incl_end=*/false) + 1;
 	}
 
 	// set up result
@@ -4986,7 +4991,7 @@ static std::error_code rangesetSetColorMS(DocumentWidget *document, Arguments ar
 		return MacroErrorCode::Param2NotAString;
 	}
 
-	rangeset->RangesetAssignColorName(buffer, color_name);
+	rangeset->setColor(buffer, color_name);
 
 	// set up result
 	*result = make_value();
@@ -5025,7 +5030,7 @@ static std::error_code rangesetSetNameMS(DocumentWidget *document, Arguments arg
 		return MacroErrorCode::Param2NotAString;
 	}
 
-	rangeset->RangesetAssignName(name);
+	rangeset->setName(name);
 
 	// set up result
 	*result = make_value();
@@ -5039,7 +5044,6 @@ static std::error_code rangesetSetNameMS(DocumentWidget *document, Arguments arg
 static std::error_code rangesetSetModeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-	Rangeset *rangeset;
 	int label = 0;
 
 	if (arguments.size() < 1 || arguments.size() > 2) {
@@ -5055,7 +5059,7 @@ static std::error_code rangesetSetModeMS(DocumentWidget *document, Arguments arg
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
 
-	rangeset = rangesetTable->RangesetFetch(label);
+	Rangeset *rangeset = rangesetTable->RangesetFetch(label);
 	if(!rangeset) {
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
@@ -5067,7 +5071,7 @@ static std::error_code rangesetSetModeMS(DocumentWidget *document, Arguments arg
 		}
 	}
 
-	bool ok = rangeset->RangesetChangeModifyResponse(update_fn_name);
+	bool ok = rangeset->setMode(update_fn_name);
 	if (!ok) {
 		return MacroErrorCode::InvalidMode;
 	}

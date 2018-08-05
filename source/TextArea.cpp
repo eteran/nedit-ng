@@ -3196,13 +3196,13 @@ QColor TextArea::getRangesetColor(int ind, QColor bground) const {
 		const std::shared_ptr<RangesetTable> &tab = document_->rangesetTable_;
 
 		QColor color;
-		bool valid = tab->RangesetTableGetColorValid(ind, &color);
-		if (!valid) {
+		int valid = tab->RangesetTableGetColorValid(ind, &color);
+		if (valid == 0) {
 			const QString color_name = tab->RangesetTableGetColorName(ind);
 			if (!color_name.isNull()) {
 				color = X11Colors::fromString(color_name);
 			}
-			tab->RangesetTableAssignColorPixel(ind, color);
+			tab->RangesetTableAssignColor(ind, color);
 		}
 
 		if (color.isValid()) {

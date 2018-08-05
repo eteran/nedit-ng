@@ -23,171 +23,83 @@ void RangesetBufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, 
 	Q_UNUSED(nRestyled);
 
 	if(auto *table = static_cast<RangesetTable *>(user)) {
-		if ((nInserted != nDeleted) || table->buf_->BufCmpEx(pos, deletedText) != 0) {
+		if ((nInserted != nDeleted) || table->buffer_->BufCmpEx(pos, deletedText) != 0) {
 			table->RangesetTableUpdatePos(pos, nInserted, nDeleted);
 		}
 	}
 }
 
-/*
-** Helper routines for managing the order and depth tables.
-*/
-bool activateRangeset(RangesetTable *table, int active) {
-
-	if (table->active_[active]) {
-		return false; /* already active */
-	}
-
-	int depth = table->depth_[active];
-
-	/* we want to make the "active" set the most recent (lowest depth value):
-	   shuffle table->order[0..depth-1] to table->order[1..depth]
-	   readjust the entries in table->depth[] accordingly */
-	for (int i = depth; i > 0; i--) {
-		int j = table->order_[i] = table->order_[i - 1];
-		table->depth_[j] = i;
-	}
-
-	/* insert the new one: first in order, of depth 0 */
-	table->order_[0] = active;
-	table->depth_[active] = 0;
-
-	/* and finally... */
-	table->active_[active] = true;
-	table->n_set_++;
-	return true;
 }
 
-bool deactivateRangeset(RangesetTable *table, int active) {
-
-	if (!table->active_[active]) {
-		return false; /* already inactive */
-	}
-
-	/* we want to start by swapping the deepest entry in order with active
-	   shuffle table->order[depth+1..n_set-1] to table->order[depth..n_set-2]
-	   readjust the entries in table->depth[] accordingly */
-	int depth = table->depth_[active];
-	int n = table->n_set_ - 1;
-
-	for (int i = depth; i < n; i++) {
-		int j = table->order_[i] = table->order_[i + 1];
-		table->depth_[j] = i;
-	}
-
-	/* reinsert the old one: at max (active) depth */
-	table->order_[n] = active;
-	table->depth_[active] = n;
-
-	/* and finally... */
-	table->active_[active] = false;
-	table->n_set_--;
-	return true;
-}
-
-}
-
-RangesetTable::RangesetTable(TextBuffer *buffer) : buf_(buffer) {
-
-	for (int i = 0; i < N_RANGESETS; i++) {
-		set_[i].RangesetInit(rangeset_labels[i]);
-
-		order_[i]  = static_cast<uint8_t>(i);
-		depth_[i]  = static_cast<uint8_t>(i);
-		active_[i] = false;
-	}
-
-	n_set_ = 0;
-
+/**
+ * @brief RangesetTable::RangesetTable
+ * @param buffer
+ */
+RangesetTable::RangesetTable(TextBuffer *buffer) : buffer_(buffer) {
 	/* Range sets must be updated before the text display callbacks are
 	   called to avoid highlighted ranges getting out of sync. */
 	buffer->BufAddHighPriorityModifyCB(RangesetBufModifiedCB, this);
 }
 
+/**
+ * @brief RangesetTable::~RangesetTable
+ */
 RangesetTable::~RangesetTable() {
-
-	buf_->BufRemoveModifyCB(RangesetBufModifiedCB, this);
-	for (Rangeset &value : set_) {
-		value.RangesetEmpty(buf_);
-	}
+	buffer_->BufRemoveModifyCB(RangesetBufModifiedCB, this);
 }
 
 
 /*
-** Fetch the rangeset identified by label - initialise it if not active and
-** make_active is true, and make it the most visible.
+** Fetch the rangeset identified by label
 */
 Rangeset *RangesetTable::RangesetFetch(int label) {
-	int rangesetIndex = RangesetFindIndex(label, false);
+	auto it = std::find_if(sets_.begin(), sets_.end(), [label](const Rangeset &set) {
+		return set.label_ == label;
+	});
 
-	if (rangesetIndex < 0) {
+	if(it == sets_.end()) {
 		return nullptr;
 	}
 
-	if (!active_[rangesetIndex]) {
-		return nullptr;
-	}
-
-	return &set_[rangesetIndex];
+	return &*it;
 }
 
 /*
-** Forget the rangeset identified by label - clears it, renders it inactive.
+** Forget the rangeset identified by label
 */
-Rangeset *RangesetTable::RangesetForget(int label) {
-	int set_ind = RangesetFindIndex(label, true);
+void RangesetTable::RangesetForget(int label) {
+	auto it = std::find_if(sets_.begin(), sets_.end(), [label](const Rangeset set) {
+		return set.label_ == label;
+	});
 
-	if (set_ind < 0) {
-		return nullptr;
+	if(it != sets_.end()) {
+		sets_.erase(it);
 	}
-
-	if (deactivateRangeset(this, set_ind)) {
-		set_[set_ind].RangesetEmpty(buf_);
-	}
-
-	return &set_[set_ind];
 }
 
 /*
 ** Return the color name, if any.
 */
 QString RangesetTable::RangesetTableGetColorName(int index) const {
-	const Rangeset *rangeset = &set_[index];
-	return rangeset->color_name_;
+	Q_ASSERT(static_cast<size_t>(index) <= sets_.size());
+
+	const Rangeset &set = sets_[index];
+	return set.color_name_;
 }
 
 /*
-** Find a range set given its label in the table.
-*/
-int RangesetTable::RangesetFindIndex(int label, bool must_be_active) const {
-
-	if(label == 0) {
-	   return -1;
-	}
-
-	auto it = std::find(rangeset_labels.begin(), rangeset_labels.end(), label);
-	if(it != rangeset_labels.end()) {
-		const int i = (it - rangeset_labels.begin());
-		if (!must_be_active || active_[i])
-		return i;
-	}
-
-	return -1;
-}
-
-/*
-** Find the index of the first range in depth order which includes the position.
+** Find the index of the first range which includes the position.
 ** Returns the index of the rangeset in the rangeset table + 1 if an including
 ** rangeset was found, 0 otherwise. If needs_color is true, "colorless" ranges
 ** will be skipped.
 */
 int RangesetTable::RangesetIndex1ofPos(TextCursor pos, bool needs_color) {
 
-	for (int i = 0; i < n_set_; i++) {
-		Rangeset *rangeset = &set_[static_cast<int>(order_[i])];
-		if (rangeset->RangesetCheckRangeOfPos(pos) >= 0) {
-			if (needs_color && rangeset->color_set_ >= 0 && !rangeset->color_name_.isNull()) {
-				return order_[i] + 1;
+	for(size_t i = 0; i < sets_.size(); ++i) {
+		Rangeset &set = sets_[i];
+		if (set.RangesetCheckRangeOfPos(pos) >= 0) {
+			if (needs_color && set.color_set_ >= 0 && !set.color_name_.isNull()) {
+				return static_cast<int>(i + 1);
 			}
 		}
 	}
@@ -199,36 +111,41 @@ int RangesetTable::RangesetIndex1ofPos(TextCursor pos, bool needs_color) {
 ** Assign a color pixel value to a rangeset via the rangeset table. If ok is
 ** false, the color_set flag is set to an invalid (negative) value.
 */
-void RangesetTable::RangesetTableAssignColorPixel(int index, const QColor &color) {
-	Rangeset *rangeset = &set_[index];
-	rangeset->color_set_ = color.isValid() ? 1 : -1;
-	rangeset->color_ = color;
+void RangesetTable::RangesetTableAssignColor(int index, const QColor &color) {
+	Q_ASSERT(static_cast<size_t>(index) <= sets_.size());
+
+	Rangeset &set = sets_[index];
+
+	set.color_set_ = color.isValid() ? 1 : -1;
+	set.color_     = color;
 }
 
 /*
 ** Return the color color validity, if any, and the value in *color.
 */
 int RangesetTable::RangesetTableGetColorValid(int index, QColor *color) const {
-	const Rangeset *rangeset = &set_[index];
-	*color = rangeset->color_;
-	return rangeset->color_set_;
+	Q_ASSERT(static_cast<size_t>(index) <= sets_.size());
+
+	const Rangeset &set = sets_[index];
+
+	*color = set.color_;
+	return set.color_set_;
 }
 
 /*
-** Return the number of rangesets that are inactive
+** Return the number of rangesets that are available to create
 */
 int RangesetTable::nRangesetsAvailable() const {
-	return N_RANGESETS - n_set_;
+	return N_RANGESETS - sets_.size();
 }
 
 
 std::vector<uint8_t> RangesetTable::RangesetGetList() const {
-
 	std::vector<uint8_t> list;
-	list.reserve(n_set_);
+	list.reserve(sets_.size());
 
-	for (int i = 0; i < n_set_; i++) {
-		list.push_back(rangeset_labels[static_cast<int>(order_[i])]);
+	for(const Rangeset &set : sets_) {
+		list.push_back(set.label_);
 	}
 
 	return list;
@@ -240,9 +157,8 @@ void RangesetTable::RangesetTableUpdatePos(TextCursor pos, int64_t ins, int64_t 
 		return;
 	}
 
-	for (int i = 0; i < n_set_; i++) {
-		Rangeset *p = &set_[static_cast<int>(order_[i])];
-		p->update_fn_(p, pos, ins, del);
+	for(Rangeset &set : sets_)  {
+		set.update_(&set, pos, ins, del);
 	}
 }
 
@@ -262,23 +178,10 @@ int RangesetTable::RangesetCreate() {
 		return 0;
 	}
 
-	const int firstAvailableIndex = (it - rangeset_labels.begin());
+	const int labelIndex = (it - rangeset_labels.begin());
+	const uint8_t label  = rangeset_labels[labelIndex];
 
-	const int label    = rangeset_labels[firstAvailableIndex];
-	const int setIndex = RangesetFindIndex(label, /*must_be_active=*/false);
-
-	if (setIndex < 0) {
-		return 0;
-	}
-
-	if (active_[setIndex]) {
-		return label;
-	}
-
-	if (activateRangeset(this, setIndex)) {
-		set_[setIndex].RangesetInit(rangeset_labels[setIndex]);
-	}
-
+	sets_.insert(sets_.begin(), Rangeset(buffer_, label));
 	return label;
 }
 
