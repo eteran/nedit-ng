@@ -42,7 +42,7 @@ QString LocalSocketName(const QString &server_name) {
 		QByteArray display = qgetenv("DISPLAY");
 		return QString(QLatin1String("nedit-ng_%1_%2_%3_%4")).arg(GetUserName(), hostname, server_name, QString::fromLocal8Bit(display));
 #else
-		return QString(QLatin1String("nedit-ng_%1_%2_%3")).arg(GetUserNameEx(), hostname, server_name);
+		return QString(QLatin1String("nedit-ng_%1_%2_%3")).arg(GetUserName(), hostname, server_name);
 #endif
 	}
 }
