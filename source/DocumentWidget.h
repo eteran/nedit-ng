@@ -119,7 +119,7 @@ public:
 	bool GetUserLocked() const;
 	bool InSmartIndentMacros() const;
 	bool IsTopDocument() const;
-	bool ReadMacroFileEx(const QString &fileName, bool warnNotExist);
+	bool ReadMacroFile(const QString &fileName, bool warnNotExist);
 	bool modeMessageDisplayed() const;
 	bool ReadMacroString(const QString &string, const QString &errIn);
 	int ShowTipStringEx(const QString &text, bool anchored, int pos, bool lookup, Tags::SearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode);

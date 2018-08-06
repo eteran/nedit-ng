@@ -2560,20 +2560,16 @@ bool DocumentWidget::writeBckVersion() {
 
 		/* open the file being edited.  If there are problems with the
 		 * old file, don't bother the user, just skip the backup */
-		int in_fd = ::open(fullname.toUtf8().data(), O_RDONLY);
-		if (in_fd < 0) {
+		QFile inputFile(fullname);
+		if(!inputFile.open(QIODevice::ReadOnly)) {
 			return false;
 		}
-
-		auto _1 = gsl::finally([in_fd]() {
-			::close(in_fd);
-		});
 
 		/* Get permissions of the file.
 		 * We preserve the normal permissions but not ownership, extended
 		 * attributes, et cetera. */
 		struct stat statbuf;
-		if (::fstat(in_fd, &statbuf) != 0) {
+		if (::fstat(inputFile.handle(), &statbuf) != 0) {
 			return false;
 		}
 
@@ -2595,11 +2591,11 @@ bool DocumentWidget::writeBckVersion() {
 
 		// Allocate I/O buffer
 		constexpr size_t IO_BUFFER_SIZE = (1024 * 1024);
-		std::vector<char> io_buffer(IO_BUFFER_SIZE);
+		auto io_buffer = std::make_unique<char[]>(IO_BUFFER_SIZE);
 
 		// copy loop
 		for (;;) {
-			ssize_t bytes_read = ::read(in_fd, io_buffer.data(), io_buffer.size());
+			ssize_t bytes_read = inputFile.read(&io_buffer[0], IO_BUFFER_SIZE);
 
 			if (bytes_read < 0) {
 				QFile::remove(bckname);
@@ -2611,7 +2607,7 @@ bool DocumentWidget::writeBckVersion() {
 			}
 
 			// write to the file
-			ssize_t bytes_written = ::write(out_fd, io_buffer.data(), static_cast<size_t>(bytes_read));
+			ssize_t bytes_written = ::write(out_fd, &io_buffer[0], static_cast<size_t>(bytes_read));
 			if (bytes_written != bytes_read) {
 				QFile::remove(bckname);
 				Raise<BackupError>(bckname, ErrorString(errno));
@@ -5028,13 +5024,13 @@ void DocumentWidget::BeginLearnEx() {
 ** Read an NEdit macro file.  Extends the syntax of the macro parser with
 ** define keyword, and allows intermixing of defines with immediate actions.
 */
-bool DocumentWidget::ReadMacroFileEx(const QString &fileName, bool warnNotExist) {
+bool DocumentWidget::ReadMacroFile(const QString &fileName, bool warnNotExist) {
 
 	/* read-in macro file and force a terminating \n, to prevent syntax
 	** errors with statements on the last line
 	*/
-	QString fileString = ReadAnyTextFile(fileName, /*forceNL=*/true);
-	if (fileString.isNull()) {
+	QString text = ReadAnyTextFile(fileName, /*forceNL=*/true);
+	if (text.isNull()) {
 		if (warnNotExist) {
 			QMessageBox::critical(this,
 								  tr("Read Macro"),
@@ -5044,8 +5040,8 @@ bool DocumentWidget::ReadMacroFileEx(const QString &fileName, bool warnNotExist)
 	}
 
 
-	// Parse fileString
-	return readCheckMacroString(this, fileString, this, fileName, nullptr);
+	// Parse text
+	return readCheckMacroString(this, text, this, fileName, nullptr);
 }
 
 /*
@@ -6485,7 +6481,7 @@ void DocumentWidget::readMacroInitFile() {
 			return;
 		}
 
-		ReadMacroFileEx(autoloadName, false);
+		ReadMacroFile(autoloadName, false);
 		initFileLoaded = true;
 	}
 }

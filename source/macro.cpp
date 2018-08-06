@@ -269,15 +269,14 @@ namespace std {
 
 /**
  * @brief flagsFromArguments
- * @param argList
- * @param nArgs
+ * @param arguments
  * @param firstFlag
  * @param flags
  * @return true if all arguments were valid flags, false otherwise
  */
 bool flagsFromArguments(Arguments arguments, int firstFlag, TextArea::EventFlags *flags) {
 
-	// TODO(eteran): return optional flags
+	// TODO(eteran): return optional flags?
 
 	TextArea::EventFlags f = TextArea::NoneFlag;
 	for(int i = firstFlag; i < arguments.size(); ++i) {
@@ -809,7 +808,7 @@ static WrapMode searchWrap(Arguments arguments, int index) {
 */
 bool StringToSearchType(const QString &string, SearchType *searchType) {
 
-	// TODO(eteran): return optional searchType
+	// TODO(eteran): return optional searchType?
 
 	static const struct {
 		QLatin1String name;

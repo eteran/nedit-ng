@@ -3459,7 +3459,7 @@ void MainWindow::on_action_Load_Tags_File_triggered() {
 void MainWindow::action_Load_Macro_File(DocumentWidget *document, const QString &filename) {
 
 	emit_event("load_macro_file", filename);
-	document->ReadMacroFileEx(filename, true);
+	document->ReadMacroFile(filename, true);
 }
 
 /**

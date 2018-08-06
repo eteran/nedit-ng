@@ -144,7 +144,6 @@ static int beginArrayIter();
 static int arrayIter();
 static int inArray();
 static int deleteArrayElement();
-static int errCheck(const char *s);
 
 static ArrayIterator arrayIterateFirst(DataValue *theArray);
 static ArrayIterator arrayIterateNext(ArrayIterator iterator);
@@ -171,7 +170,9 @@ static void stackdump(int n, int extra);
 
 /* Array for mapping operations to functions for performing the operations
    Must correspond to the enum called "operations" in interpret.h */
-static int (*OpFns[N_OPS])() = {
+
+using operation_type = int (*)();
+static const operation_type OpFns[N_OPS] = {
 	returnNoVal,
 	returnVal,
 	pushSymVal,
@@ -242,6 +243,21 @@ int execError(const char *s1, T ... args) {
 	qsnprintf(msg, sizeof(msg), s1, args...);
 	ErrMsg = msg;
 	return STAT_ERROR;
+}
+
+/*
+** checks errno after operations which can set it.  If an error occured,
+** creates appropriate error messages and returns false
+*/
+int errCheck(const char *s) {
+	switch(errno) {
+	case EDOM:
+		return execError("%s argument out of domain", s);
+	case ERANGE:
+		return execError("%s result out of range", s);
+	default:
+		return STAT_OK;
+	}
 }
 
 /*
@@ -2219,19 +2235,6 @@ static int deleteArrayElement() {
 		return execError("attempt to delete from non-array");
 	}
 	return STAT_OK;
-}
-
-/*
-** checks errno after operations which can set it.  If an error occured,
-** creates appropriate error messages and returns false
-*/
-static int errCheck(const char *s) {
-	if (errno == EDOM)
-		return execError("%s argument out of domain", s);
-	else if (errno == ERANGE)
-		return execError("%s result out of range", s);
-	else
-		return STAT_OK;
 }
 
 bool StringToNum(const std::string &string, int *number) {

@@ -2404,7 +2404,7 @@ bool TextArea::emptyLinesVisible() const {
  */
 bool TextArea::posToVisibleLineNum(TextCursor pos, int *lineNum) const {
 
-	// TODO(eteran): return optional int
+	// TODO(eteran): return optional int?
 
 	if (pos < firstChar_) {
 		return false;
@@ -3717,7 +3717,7 @@ bool TextArea::TextDPositionToXY(TextCursor pos, QPoint *coord) const {
 
 bool TextArea::TextDPositionToXY(TextCursor pos, int *x, int *y) const {
 
-	// TODO(eteran): return optional pair
+	// TODO(eteran): return optional pair?
 
 	char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 	int visLineNum;
@@ -4463,7 +4463,7 @@ void TextArea::TextDInsertEx(view::string_view text) {
 */
 bool TextArea::wrapLine(TextBuffer *buf, int64_t bufOffset, TextCursor lineStartPos, TextCursor lineEndPos, TextCursor limitPos, TextCursor *breakAt, int64_t *charsAdded) {
 
-	// TODO(eteran): return optional structure
+	// TODO(eteran): return optional structure?
 	TextCursor p;
 	int column;
 
