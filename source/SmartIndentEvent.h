@@ -5,16 +5,16 @@
 #include "TextCursor.h"
 #include "Util/string_view.h"
 
-enum SmartIndentCallbackReasons {
+enum SmartIndentReason {
 	NEWLINE_INDENT_NEEDED,
 	CHAR_TYPED
 };
 
 struct SmartIndentEvent {
-	SmartIndentCallbackReasons reason;
-	TextCursor                 pos;
-	int                        indentRequest;
-	view::string_view          charsTyped;
+	SmartIndentReason reason;
+	TextCursor        pos;
+	int               request;
+	view::string_view charsTyped;
 };
 
 #endif

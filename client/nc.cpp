@@ -1,6 +1,6 @@
 
 #include "Settings.h"
-#include "system.h"
+#include "Util/System.h"
 
 #include <QCoreApplication>
 #include <QSettings>
@@ -92,16 +92,16 @@ void copyCommandLineArg(CommandLine *commandLine, const QString &arg) {
  */
 void printNcVersion() {
 	static const char ncHelpText[] = "nc (nedit-ng) Version %d.%d\n\n"
-									 "Built on: %s, %s, %s\n"
-									 "Built at: %s, %s\n";
+	                                 "Built on: %s, %s, %s\n"
+	                                 "Built at: %s, %s\n";
 	printf(ncHelpText,
-		   NEDIT_VERSION_MAJ,
-		   NEDIT_VERSION_REV,
-		   COMPILE_OS,
-		   COMPILE_MACHINE,
-		   COMPILE_COMPILER,
-		   __DATE__,
-		   __TIME__);
+	       NEDIT_VERSION_MAJ,
+	       NEDIT_VERSION_REV,
+	       buildOperatingSystem().latin1(),
+	       buildArchitecture().latin1(),
+	       buildCompiler().toLatin1().data(),
+	       __DATE__,
+	       __TIME__);
 }
 
 /**

@@ -3252,7 +3252,7 @@ void DocumentWidget::executeNewlineMacro(SmartIndentEvent *event) {
 			return;
 		}
 
-		event->indentRequest = to_integer(result);
+		event->request = to_integer(result);
 	}
 }
 
