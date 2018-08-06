@@ -54,11 +54,16 @@ public:
 	int64_t RangesetFindRangeOfPos(TextCursor pos, bool incl_end) const;
 
 public:
-	int64_t RangesetAddBetween(TextCursor start, TextCursor end);
-	int64_t RangesetAdd(Rangeset *other);
 	int64_t RangesetInverse();
-	int64_t RangesetRemoveBetween(TextCursor start, TextCursor end);
-	int64_t RangesetRemove(Rangeset *other);
+	int64_t RangesetAdd(Range r);
+	int64_t RangesetAdd(const Rangeset &other);
+	int64_t RangesetRemove(Range r);
+	int64_t RangesetRemove(const Rangeset &other);
+
+public:
+	Rangeset &operator+=(const Rangeset &rhs);
+	Rangeset &operator-=(const Rangeset &rhs);
+	Rangeset operator~() const;
 
 public:
 	QString name() const;

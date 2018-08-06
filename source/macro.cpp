@@ -4591,7 +4591,7 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
 		if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
 			return MacroErrorCode::SelectionMissing;
 		}
-		if (!targetRangeset->RangesetAddBetween(start, end)) {
+		if (!targetRangeset->RangesetAdd({ start, end })) {
 			return MacroErrorCode::FailedToAddSelection;
 		}
 	}
@@ -4608,7 +4608,7 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
 			return MacroErrorCode::Rangeset2DoesNotExist;
 		}
 
-		targetRangeset->RangesetAdd(sourceRangeset);
+		targetRangeset->RangesetAdd(*sourceRangeset);
 	}
 
 	if (arguments.size() == 3) {
@@ -4631,7 +4631,7 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
 			std::swap(start, end);
 		}
 
-		if ((start != end) && !targetRangeset->RangesetAddBetween(start, end)) {
+		if ((start != end) && !targetRangeset->RangesetAdd({ start, end })) {
 			return MacroErrorCode::FailedToAddRange;
 		}
 	}
@@ -4651,9 +4651,8 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
 
 /*
 ** Built-in macro subroutine for removing from a range set. Almost identical to
-** rangesetAddMS() - only changes are from RangesetAdd()/RangesetAddBetween()
-** to RangesetSubtract()/RangesetSubtractBetween(), the handling of an
-** undefined destination range, and that it returns no value.
+** rangesetAddMS() - only changes are from RangesetAdd() to RangesetSubtract(),
+** the handling of an undefined destination range, and that it returns no value.
 */
 static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	TextBuffer *buffer = document->buffer_;
@@ -4694,7 +4693,7 @@ static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments ar
 		start = to_integer(tmp_start);
 		end   = to_integer(tmp_end);
 
-		targetRangeset->RangesetRemoveBetween(TextCursor(start), TextCursor(end));
+		targetRangeset->RangesetRemove({ tmp_start, tmp_end });
 	}
 
 	if (arguments.size() == 2) {
@@ -4707,7 +4706,7 @@ static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments ar
 		if(!sourceRangeset) {
 			return MacroErrorCode::Rangeset2DoesNotExist;
 		}
-		targetRangeset->RangesetRemove(sourceRangeset);
+		targetRangeset->RangesetRemove(*sourceRangeset);
 	}
 
 	if (arguments.size() == 3) {
@@ -4721,7 +4720,7 @@ static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments ar
 		}
 
 		// make sure range is in order and fits buffer size
-		int64_t maxpos = buffer->BufGetLength();
+		const int64_t maxpos = buffer->BufGetLength();
 		start = qBound<int64_t>(0, start, maxpos);
 		end   = qBound<int64_t>(0, end, maxpos);
 
@@ -4729,7 +4728,7 @@ static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments ar
 			std::swap(start, end);
 		}
 
-		targetRangeset->RangesetRemoveBetween(TextCursor(start), TextCursor(end));
+		targetRangeset->RangesetRemove({ TextCursor(start), TextCursor(end) });
 	}
 
 	// set up result

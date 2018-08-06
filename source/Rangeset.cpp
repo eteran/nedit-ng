@@ -201,7 +201,7 @@ int64_t rangesetWeightedAtOrBefore(Rangeset *rangeset, TextCursor pos) {
 ** Adjusts values in tab[] by an amount delta, perhaps moving them meanwhile.
 */
 template <class T>
-int64_t rangesetShuffleToFrom(T *rangeTable, int64_t to, int64_t from, int64_t n, int64_t delta) {
+int64_t rangesetShuffleToFrom(T *table, int64_t to, int64_t from, int64_t n, int64_t delta) {
 	int64_t end;
 	int64_t diff = from - to;
 
@@ -212,25 +212,25 @@ int64_t rangesetShuffleToFrom(T *rangeTable, int64_t to, int64_t from, int64_t n
 	if (delta != 0) {
 		if (diff > 0) { /* shuffle entries down */
 			for (end = to + n; to < end; to++) {
-				rangeTable[to] = rangeTable[to + diff] + delta;
+				table[to] = table[to + diff] + delta;
 			}
 		} else if (diff < 0) { /* shuffle entries up */
 			for (end = to, to += n; --to >= end;) {
-				rangeTable[to] = rangeTable[to + diff] + delta;
+				table[to] = table[to + diff] + delta;
 			}
 		} else { /* diff == 0: just run through */
 			for (end = n; end--;) {
-				rangeTable[to++] += delta;
+				table[to++] += delta;
 			}
 		}
 	} else {
 		if (diff > 0) { /* shuffle entries down */
 			for (end = to + n; to < end; to++) {
-				rangeTable[to] = rangeTable[to + diff];
+				table[to] = table[to + diff];
 			}
 		} else if (diff < 0) { /* shuffle entries up */
 			for (end = to, to += n; --to >= end;) {
-				rangeTable[to] = rangeTable[to + diff];
+				table[to] = table[to + diff];
 			}
 		}
 		/* else diff == 0: nothing to do */
@@ -606,66 +606,6 @@ int64_t Rangeset::size() const {
 }
 
 /*
-** Add the range indicated by the positions start and end. Returns the
-** new number of ranges in the set.
-*/
-int64_t Rangeset::RangesetAddBetween(TextCursor start, TextCursor end) {
-
-	if (start > end) {
-		// quietly sort the positions
-		std::swap(start, end);
-	} else if (start == end) {
-		// no-op - empty range == no range
-		return ranges_.size();
-	}
-
-	const Range r = { start, end };
-
-	// if it's the first range, just insert it
-	if(ranges_.empty()) {
-		ranges_.push_back(r);
-		RangesetRefreshRange(buffer_, start, end);
-		return ranges_.size();
-	}
-
-	auto next = std::lower_bound(ranges_.begin(), ranges_.end(), r);
-	if(next != ranges_.end()) {
-		auto prev = (next != ranges_.begin()) ? std::prev(next) : next;
-
-		if(r.start <= next->end && next->start <= r.end) {
-			// new range overlaps with one to its right
-			next->start = r.start;
-
-			if(prev->start <= next->end && next->start <= prev->end) {
-				// adjusted range now overlaps with one to its left
-				prev->end = next->end;
-				ranges_.erase(next);
-			}
-		} else if(prev->start <= r.end && r.start <= prev->end) {
-			// new range overlaps with the one to its left
-			prev->end = r.end;
-		} else {
-			// no overlap, just insert it in the right place
-			ranges_.insert(next, r);
-		}
-	} else {
-
-		auto prev = std::prev(ranges_.end());
-
-		if(prev->start <= r.end && r.start <= prev->end) {
-			// new range overlaps with the one to its left
-			prev->end = r.end;
-		} else {
-			// no overlap, just insert it at the end
-			ranges_.push_back(r);
-		}
-	}
-
-	RangesetRefreshRange(buffer_, start, end);
-	return ranges_.size();
-}
-
-/*
 ** Invert the rangeset (replace it with its complement in the range 0-maxpos).
 ** Returns the new number of ranges. Never adds more than one range.
 */
@@ -709,89 +649,6 @@ int64_t Rangeset::RangesetInverse() {
 	RangesetRefreshRange(buffer_, first, last);
 	return ranges_.size();
 }
-
-/*
-** Merge the ranges in rangeset other into this rangeset.
-*/
-int64_t Rangeset::RangesetAdd(Rangeset *other) {
-
-	if (other->ranges_.empty()) {
-		// no ranges in plusSet - nothing to do
-		return ranges_.size();
-	}
-
-	if (ranges_.empty()) {
-		// no ranges in destination: just copy the ranges from the other set
-		ranges_ = other->ranges_;
-
-		for(Range &range: ranges_) {
-			RangesetRefreshRange(buffer_, range.start, range.end);
-		}
-
-		return ranges_.size();
-	}
-
-
-	auto origRanges     = ranges_.begin();
-	int64_t nOrigRanges = ranges_.size();
-
-	auto plusRanges     = other->ranges_.begin();
-	int64_t nPlusRanges = other->ranges_.size();
-
-	std::vector<Range> newRanges(nOrigRanges + nPlusRanges);
-
-
-	/* in the following we merrily swap the pointers/counters of the two input
-	   ranges (from origSet and plusSet) - don't worry, they're both considered
-	   read-only - building the merged set in newRanges */
-
-	bool isOld = true; /* true if origRanges points to a range in oldRanges[] */
-
-	while (nOrigRanges > 0 || nPlusRanges > 0) {
-
-		/* make the range with the lowest start value the origRanges range */
-		if (nOrigRanges == 0 || (nPlusRanges > 0 && origRanges->start > plusRanges->start)) {
-			std::swap(origRanges, plusRanges);
-			std::swap(nOrigRanges, nPlusRanges);
-			isOld = !isOld;
-		}
-
-		auto newRange = newRanges.insert(newRanges.end(), *origRanges++);
-
-		--nOrigRanges;
-
-		if (!isOld) {
-			RangesetRefreshRange(buffer_, newRange->start, newRange->end);
-		}
-
-		/* now we must cycle over plusRanges, merging in the overlapped ranges */
-		while (nPlusRanges > 0 && newRange->end >= plusRanges->start) {
-			do {
-				if (newRange->end < plusRanges->end) {
-					if (isOld) {
-						RangesetRefreshRange(buffer_, newRange->end, plusRanges->end);
-					}
-					newRange->end = plusRanges->end;
-				}
-
-				++plusRanges;
-				--nPlusRanges;
-			} while (nPlusRanges > 0 && newRange->end >= plusRanges->start);
-
-			/* by now, newRangeIt->end may have extended to overlap more ranges
-			 * in origRanges, so swap and start again */
-			std::swap(origRanges, plusRanges);
-			std::swap(nOrigRanges, nPlusRanges);
-			isOld = !isOld;
-		}
-	}
-
-	/* finally, forget the old rangeset values, and reallocate the new ones */
-	ranges_ = std::move(newRanges);
-	return ranges_.size();
-}
-
-
 
 /*
 ** Assign a color name to a rangeset via the rangeset table.
@@ -903,13 +760,94 @@ int64_t Rangeset::RangesetCheckRangeOfPos(TextCursor pos) {
 	return -1; /* not in any range */
 }
 
+/*
+** Merge the ranges in rangeset other into this rangeset.
+*/
+int64_t Rangeset::RangesetAdd(const Rangeset &other) {
+
+	if (other.ranges_.empty()) {
+		// no ranges in plusSet - nothing to do
+		return ranges_.size();
+	}
+
+	if (ranges_.empty()) {
+		// no ranges in destination: just copy the ranges from the other set
+		ranges_ = other.ranges_;
+
+		for(Range &range: ranges_) {
+			RangesetRefreshRange(buffer_, range.start, range.end);
+		}
+
+		return ranges_.size();
+	}
+
+
+	auto origRanges     = ranges_.cbegin();
+	int64_t nOrigRanges = ranges_.size();
+
+	auto plusRanges     = other.ranges_.cbegin();
+	int64_t nPlusRanges = other.ranges_.size();
+
+	std::vector<Range> newRanges;
+	newRanges.reserve(nOrigRanges + nPlusRanges);
+
+
+	/* in the following we merrily swap the pointers/counters of the two input
+	   ranges (from origSet and plusSet) - don't worry, they're both considered
+	   read-only - building the merged set in newRanges */
+
+	bool isOld = true; /* true if origRanges points to a range in oldRanges[] */
+
+	while (nOrigRanges > 0 || nPlusRanges > 0) {
+
+		/* make the range with the lowest start value the origRanges range */
+		if (nOrigRanges == 0 || (nPlusRanges > 0 && origRanges->start > plusRanges->start)) {
+			std::swap(origRanges, plusRanges);
+			std::swap(nOrigRanges, nPlusRanges);
+			isOld = !isOld;
+		}
+
+		auto newRange = newRanges.insert(newRanges.end(), *origRanges++);
+
+		--nOrigRanges;
+
+		if (!isOld) {
+			RangesetRefreshRange(buffer_, newRange->start, newRange->end);
+		}
+
+		/* now we must cycle over plusRanges, merging in the overlapped ranges */
+		while (nPlusRanges > 0 && newRange->end >= plusRanges->start) {
+			do {
+				if (newRange->end < plusRanges->end) {
+					if (isOld) {
+						RangesetRefreshRange(buffer_, newRange->end, plusRanges->end);
+					}
+					newRange->end = plusRanges->end;
+				}
+
+				++plusRanges;
+				--nPlusRanges;
+			} while (nPlusRanges > 0 && newRange->end >= plusRanges->start);
+
+			/* by now, newRangeIt->end may have extended to overlap more ranges
+			 * in origRanges, so swap and start again */
+			std::swap(origRanges, plusRanges);
+			std::swap(nOrigRanges, nPlusRanges);
+			isOld = !isOld;
+		}
+	}
+
+	/* finally, forget the old rangeset values, and reallocate the new ones */
+	ranges_ = std::move(newRanges);
+	return ranges_.size();
+}
 
 /*
 ** Subtract the ranges of other from this rangeset.
 */
-int64_t Rangeset::RangesetRemove(Rangeset *other) {
+int64_t Rangeset::RangesetRemove(const Rangeset &other) {
 
-	if (ranges_.empty() || other->ranges_.empty()) {
+	if (ranges_.empty() || other.ranges_.empty()) {
 		// no ranges in origSet or minusSet - nothing to do
 		return 0;
 	}
@@ -917,14 +855,14 @@ int64_t Rangeset::RangesetRemove(Rangeset *other) {
 	auto origRanges     = ranges_.begin();
 	size_t nOrigRanges  = ranges_.size();
 
-	auto minusRanges    = other->ranges_.begin();
-	size_t nMinusRanges = other->ranges_.size();
+	auto minusRanges    = other.ranges_.cbegin();
+	size_t nMinusRanges = other.ranges_.size();
 
-	/* we must provide more space: each range in minusSet might split a range in origSet */
-	std::vector<Range> newRanges(ranges_.size() + other->ranges_.size());
-	auto newRangeOut = newRanges.begin();
+	// we must provide more space: each range in minusSet might split a range in origSet
+	std::vector<Range> newRanges;
+	newRanges.reserve(ranges_.size() + other.ranges_.size());
 
-	size_t newRangeCount = 0;
+	auto newRangeOut = std::back_inserter(newRanges);
 
 	/* consider each range in origRanges - we do not change any of
 	 * minusRanges's data, but we may change origRanges's - it will be
@@ -944,14 +882,12 @@ int64_t Rangeset::RangesetRemove(Rangeset *other) {
 				while (nOrigRanges > 0 && origRanges->end <= minusRanges->start) {
 					*newRangeOut++ = *origRanges++;   /* *minusRanges beyond *origRanges: save *origRanges in *newRangeOut */
 					--nOrigRanges;
-					++newRangeCount;
 				}
 			} else {
 				// no more minusRanges ranges to remove - save the rest of origRanges
 				while (nOrigRanges > 0) {
 					*newRangeOut++ = *origRanges++;
 					--nOrigRanges;
-					++newRangeCount;
 				}
 			}
 		} while (nMinusRanges > 0 && minusRanges->end <= origRanges->start); /* any more non-overlaps */
@@ -973,10 +909,7 @@ int64_t Rangeset::RangesetRemove(Rangeset *other) {
 				}
 			} else {
 				/* minusRanges->start inside *origRanges: save front, adjust or skip rest */
-				newRangeOut->start = origRanges->start;   /* save front of *origRanges in *newRanges */
-				newRangeOut->end = minusRanges->start;
-				newRangeOut++;
-				newRangeCount++;
+				*newRangeOut++ = { origRanges->start, minusRanges->start }; /* save front of *origRanges in *newRanges */
 
 				if (minusRanges->end < origRanges->end) {
 					/* all *minusRanges inside *origRanges */
@@ -994,10 +927,65 @@ int64_t Rangeset::RangesetRemove(Rangeset *other) {
 		}
 	}
 
-	/* finally, forget the old rangeset values, and reallocate the new ones */
+	// finally, forget the old rangeset values, and reallocate the new ones
 	ranges_ = std::move(newRanges);
-	ranges_.resize(newRangeCount);
+	return ranges_.size();
+}
 
+/*
+** Add the range indicated by the positions start and end. Returns the
+** new number of ranges in the set.
+*/
+int64_t Rangeset::RangesetAdd(Range r) {
+
+	if (r.start > r.end) {
+		// quietly sort the positions
+		std::swap(r.start, r.end);
+	} else if (r.start == r.end) {
+		// no-op - empty range == no range
+		return ranges_.size();
+	}
+
+	// if it's the first range, just insert it
+	if(ranges_.empty()) {
+		ranges_.push_back(r);
+		RangesetRefreshRange(buffer_, r.start, r.end);
+		return ranges_.size();
+	}
+
+	auto next = std::lower_bound(ranges_.begin(), ranges_.end(), r);
+	if(next != ranges_.end()) {
+		auto prev = (next != ranges_.begin()) ? std::prev(next) : next;
+
+		if(r.start <= next->end && next->start <= r.end) {
+			// new range overlaps with one to its right
+			next->start = r.start;
+
+			if(prev->start <= next->end && next->start <= prev->end) {
+				// adjusted range now overlaps with one to its left
+				prev->end = next->end;
+				ranges_.erase(next);
+			}
+		} else if(prev->start <= r.end && r.start <= prev->end) {
+			// new range overlaps with the one to its left
+			prev->end = r.end;
+		} else {
+			// no overlap, just insert it in the right place
+			ranges_.insert(next, r);
+		}
+	} else {
+		auto prev = std::prev(ranges_.end());
+
+		if(prev->start <= r.end && r.start <= prev->end) {
+			// new range overlaps with the one to its left (last element)
+			prev->end = r.end;
+		} else {
+			// no overlap, just insert it at the end
+			ranges_.push_back(r);
+		}
+	}
+
+	RangesetRefreshRange(buffer_, r.start, r.end);
 	return ranges_.size();
 }
 
@@ -1005,18 +993,15 @@ int64_t Rangeset::RangesetRemove(Rangeset *other) {
 ** Remove the range indicated by the positions start and end. Returns the
 ** new number of ranges in the set.
 */
+int64_t Rangeset::RangesetRemove(Range r) {
 
-int64_t Rangeset::RangesetRemoveBetween(TextCursor start, TextCursor end) {
-
-	if (start > end) {
-		/* quietly sort the positions */
-		std::swap(start, end);
-	} else if (start == end) {
-		/* no-op - empty range == no range */
+	if (r.start > r.end) {
+		// quietly sort the positions
+		std::swap(r.start, r.end);
+	} else if (r.start == r.end) {
+		// no-op - empty range == no range
 		return ranges_.size();
 	}
-
-	const Range r = { start, end };
 
 	if(ranges_.empty()) {
 		return ranges_.size();
@@ -1038,14 +1023,45 @@ int64_t Rangeset::RangesetRemoveBetween(TextCursor start, TextCursor end) {
 		}
 	} else {
 		auto prev = std::prev(ranges_.end());
+
 		if(prev->start <= r.end && r.start <= prev->end) {
-			// range overlaps with the one to its left
+			// range overlaps with the one to its left (last element)
 			prev->end = r.start;
 		}
 	}
 
-	RangesetRefreshRange(buffer_, start, end);
+	RangesetRefreshRange(buffer_, r.start, r.end);
 	return ranges_.size();
+}
+
+/**
+ * @brief Rangeset::operator +=
+ * @param rhs
+ * @return
+ */
+Rangeset &Rangeset::operator+=(const Rangeset &rhs) {
+	RangesetAdd(rhs);
+	return *this;
+}
+
+/**
+ * @brief Rangeset::operator -=
+ * @param rhs
+ * @return
+ */
+Rangeset &Rangeset::operator-=(const Rangeset &rhs) {
+	RangesetRemove(rhs);
+	return *this;
+}
+
+/**
+ * @brief Rangeset::operator ~
+ * @return
+ */
+Rangeset Rangeset::operator~() const {
+	Rangeset ret(*this);
+	ret.RangesetInverse();
+	return ret;
 }
 
 /**
@@ -1076,7 +1092,6 @@ Rangeset::Rangeset(TextBuffer *buffer, uint8_t label) : buffer_(buffer), label_(
  * @brief Rangeset::~Rangeset
  */
 Rangeset::~Rangeset() {
-
 	for(const Range &range : ranges_) {
 		RangesetRefreshRange(buffer_, range.start, range.end);
 	}
