@@ -339,13 +339,11 @@ void ConvertToDos(std::string &text) {
 */
 void ConvertToMac(std::string &text) {
 
-	std::transform(text.begin(), text.end(), text.begin(), [](char ch) {
+	for(char &ch : text) {
 		if (ch == '\n') {
-			return '\r';
+			ch = '\r';
 		}
-
-		return ch;
-	});
+	}
 }
 
 /**
@@ -353,14 +351,11 @@ void ConvertToMac(std::string &text) {
  * @param text
  */
 void ConvertFromMac(std::string &text) {
-
-	std::transform(text.begin(), text.end(), text.begin(), [](char ch) {
-		if(ch == '\r') {
-			return '\n';
+	for(char &ch : text) {
+		if (ch == '\r') {
+			ch = '\n';
 		}
-
-		return ch;
-	});
+	}
 }
 
 /**

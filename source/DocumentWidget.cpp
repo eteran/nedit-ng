@@ -53,6 +53,7 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 #include <unistd.h>
 
 
@@ -3016,21 +3017,22 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 	}
 #endif
 
-	const int64_t fileLength = statbuf.st_size;
-
 	// Allocate space for the whole contents of the file (unfortunately)
 	try {
+		QFile file;
+		file.open(fp, QIODevice::ReadOnly);
 
-		auto fileString = std::make_unique<char[]>(static_cast<size_t>(fileLength));
-
-		// Read the file into fileString and terminate with a null
-		size_t readLen = ::fread(&fileString[0], 1, static_cast<size_t>(fileLength), fp);
-		if (::ferror(fp)) {
+		uchar *memory = file.map(0, file.size());
+		if (!memory) {
 			filenameSet_ = false; // Temp. prevent check for changes.
-			QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1:\n%2").arg(name, ErrorString(errno)));
+			QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1\n%2").arg(name, file.errorString()));
 			filenameSet_ = true;
 			return false;
 		}
+
+		auto text = std::string{reinterpret_cast<char *>(memory), static_cast<size_t>(file.size())};
+		file.unmap(memory);
+
 
 		/* Any errors that happen after this point leave the window in a
 		   "broken" state, and thus RevertToSaved will abandon the window if
@@ -3045,24 +3047,22 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 		// Detect and convert DOS and Macintosh format files
 		if (Preferences::GetPrefForceOSConversion()) {
-			fileFormat_ = FormatOfFile(view::string_view(&fileString[0], readLen));
+			fileFormat_ = FormatOfFile(text);
 			switch (fileFormat_) {
 			case FileFormats::Dos:
-				ConvertFromDos(&fileString[0], &readLen);
+				ConvertFromDos(text);
 				break;
 			case FileFormats::Mac:
-				ConvertFromMac(&fileString[0], readLen);
+				ConvertFromMac(text);
 				break;
 			case FileFormats::Unix:
 				break;
 			}
 		}
 
-		auto contents = view::string_view(&fileString[0], readLen);
-
 		// Display the file contents in the text widget
 		ignoreModify_ = true;
-		buffer_->BufSetAll(contents);
+		buffer_->BufSetAll(text);
 		ignoreModify_ = false;
 
 		// Set window title and file changed flag

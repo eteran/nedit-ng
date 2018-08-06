@@ -42,13 +42,11 @@ template <class Length, class = IsInteger<Length>>
 void ConvertFromMac(char *text, Length length) {
 
 	Q_ASSERT(text);
-	std::transform(text, text + length, text, [](char ch) {
-		if(ch == '\r') {
-			return '\n';
+	for(Length i = 0; i < length; ++i) {
+		if(text[i] == '\r') {
+			text[i] = '\n';
 		}
-
-		return ch;
-	});
+	}
 }
 
 /**
@@ -63,14 +61,15 @@ void ConvertFromDos(char *text, Length *length, char *pendingCR) {
 	Q_ASSERT(text);
 	char *out       = text;
 	const char *in  = text;
+	const char *end = text + *length;
 
 	if (pendingCR) {
 		*pendingCR = '\0';
 	}
 
-	while (in < text + *length) {
+	while (in < end) {
 		if (*in == '\r') {
-			if (in < text + *length - 1) {
+			if (in < end - 1) {
 				if (in[1] == '\n') {
 					++in;
 				}
@@ -85,16 +84,6 @@ void ConvertFromDos(char *text, Length *length, char *pendingCR) {
 	}
 
 	*length = static_cast<Length>(out - text);
-}
-
-/**
- * @brief ConvertFromDos
- * @param text
- * @param length
- */
-template <class Length, class = IsInteger<Length>>
-void ConvertFromDos(char *text, Length *length) {
-	ConvertFromDos(text, length, nullptr);
 }
 
 #endif
