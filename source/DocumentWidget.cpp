@@ -53,7 +53,6 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <sys/mman.h>
 #include <unistd.h>
 
 
@@ -1928,10 +1927,9 @@ void DocumentWidget::CheckForChangesToFile() {
 			gid_  = statbuf.st_gid;
 
 			QFile fp(fullname);
-			if(fp.open(QIODevice::ReadOnly)) {
+			if(fp.open(QIODevice::ReadWrite) || fp.open(QIODevice::ReadOnly)) {
+				const bool readOnly = !fp.isWritable();
 				fp.close();
-
-				const bool readOnly = ::access(fullname.toUtf8().data(), W_OK) != 0;
 
 				if (lockReasons_.isPermLocked() != readOnly) {
 					lockReasons_.setPermLocked(readOnly);
@@ -2067,7 +2065,6 @@ bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
 
 		// check for on-disk file format changes, but only for the first chunk
 		if (bufPos == 0 && fileFormat_ != FormatOfFile(view::string_view(fileString, static_cast<size_t>(nRead)))) {
-			MainWindow::AllWindowsUnbusy();
 			return true;
 		}
 
