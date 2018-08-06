@@ -209,7 +209,7 @@ private:
 	bool CloseFileAndWindow(CloseMode preResponse);
 	bool MacroWindowCloseActionsEx();
 	bool WriteBackupFile();
-	bool cmpWinAgainstFile(const QString &fileName) const;
+	bool compareDocumentToFile(const QString &fileName) const;
 	bool doOpen(const QString &name, const QString &path, int flags);
 	bool doSave();
 	bool fileWasModifiedExternally() const;

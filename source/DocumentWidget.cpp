@@ -1948,7 +1948,7 @@ void DocumentWidget::CheckForChangesToFile() {
 				return;
 			}
 
-			if (Preferences::GetPrefWarnRealFileMods() && !cmpWinAgainstFile(fullname)) {
+			if (Preferences::GetPrefWarnRealFileMods() && !compareDocumentToFile(fullname)) {
 				// Contents hasn't changed. Update the modification time.
 				lastModTime_ = statbuf.st_mtime;
 				return;
@@ -2001,7 +2001,7 @@ QString DocumentWidget::filename() const {
  * false: no difference found
  * true : difference found or could not compare contents.
  */
-bool DocumentWidget::cmpWinAgainstFile(const QString &fileName) const {
+bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 
 	// Number of bytes read at once
 	constexpr auto PREFERRED_CMPBUF_LEN = static_cast<int64_t>(0x8000);
@@ -2663,7 +2663,7 @@ bool DocumentWidget::fileWasModifiedExternally() const {
 		return false;
 	}
 
-	if (Preferences::GetPrefWarnRealFileMods() && !cmpWinAgainstFile(fullname)) {
+	if (Preferences::GetPrefWarnRealFileMods() && !compareDocumentToFile(fullname)) {
 		return false;
 	}
 
@@ -3033,8 +3033,8 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 
 		/* Any errors that happen after this point leave the window in a
-		   "broken" state, and thus RevertToSaved will abandon the window if
-		   window->fileMissing_ is false and doOpen fails. */
+		 * "broken" state, and thus RevertToSaved will abandon the window if
+		 * fileMissing_ is false and doOpen fails. */
 		mode_        = statbuf.st_mode;
 		uid_         = statbuf.st_uid;
 		gid_         = statbuf.st_gid;
