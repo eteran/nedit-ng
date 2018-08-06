@@ -53,7 +53,6 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
 
 // NOTE(eteran): generally, this class reaches out to MainWindow FAR too much
@@ -2912,8 +2911,10 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 	{
 		if ((fp = ::fopen(fullname.toUtf8().data(), "r"))) {
 
-			if (::access(fullname.toUtf8().data(), W_OK) != 0) {
-				lockReasons_.setPermLocked(true);
+			// detect if the file is readable, but not writable
+			QFile fp(fullname);
+			if(fp.open(QIODevice::ReadWrite) || fp.open(QIODevice::ReadOnly)) {
+				lockReasons_.setPermLocked(!fp.isWritable());
 			}
 
 		} else if (flags & EditFlags::CREATE && errno == ENOENT) {
