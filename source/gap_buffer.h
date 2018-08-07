@@ -42,26 +42,26 @@ public:
 	~gap_buffer() noexcept                   = default;
 
 public:
-	iterator begin()              { return iterator(this, 0); }
-	iterator end()                { return iterator(this, size()); }
-	const_iterator begin() const  { return const_iterator(this, 0); }
-	const_iterator end() const    { return const_iterator(this, size()); }
-	const_iterator cbegin() const { return const_iterator(this, 0); }
-	const_iterator cend() const   { return const_iterator(this, size()); }
+	iterator begin() noexcept              { return iterator(this, 0); }
+	iterator end() noexcept                { return iterator(this, size()); }
+	const_iterator begin() const noexcept  { return const_iterator(this, 0); }
+	const_iterator end() const noexcept    { return const_iterator(this, size()); }
+	const_iterator cbegin() const noexcept { return const_iterator(this, 0); }
+	const_iterator cend() const noexcept   { return const_iterator(this, size()); }
 
-	reverse_iterator rbegin()              { return reverse_iterator(end()); }
-	reverse_iterator rend()                { return reverse_iterator(begin()); }
-	const_reverse_iterator rbegin() const  { return const_reverse_iterator(end()); }
-	const_reverse_iterator rend() const    { return const_reverse_iterator(begin()); }
-	const_reverse_iterator crbegin() const { return const_reverse_iterator(end()); }
-	const_reverse_iterator crend() const   { return const_reverse_iterator(begin()); }
+	reverse_iterator rbegin() noexcept              { return reverse_iterator(end()); }
+	reverse_iterator rend() noexcept                { return reverse_iterator(begin()); }
+	const_reverse_iterator rbegin() const noexcept  { return const_reverse_iterator(end()); }
+	const_reverse_iterator rend() const noexcept    { return const_reverse_iterator(begin()); }
+	const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(end()); }
+	const_reverse_iterator crend() const noexcept   { return const_reverse_iterator(begin()); }
 
 public:
 	size_type gap_size() const noexcept { return gap_end_ - gap_start_; }
 	size_type size() const noexcept     { return size_; }
 	size_type capacity() const noexcept { return size_ + gap_end_ - gap_start_; }
 	bool empty() const noexcept         { return size() == 0; }
-	void swap(gap_buffer &other);
+	void swap(gap_buffer &other) noexcept;
 
 public:
 	Ch operator[](size_type n) const noexcept;
@@ -70,30 +70,30 @@ public:
 	Ch& at(size_type n);
 
 public:
-	int compare(size_type pos, view_type str) const;
-	int compare(size_type pos, Ch ch) const;
+	int compare(size_type pos, view_type str) const noexcept;
+	int compare(size_type pos, Ch ch) const noexcept;
 
 public:
 	string_type to_string() const;
 	string_type to_string(size_type start, size_type end) const;
-	view_type to_view();
-	view_type to_view(size_type start, size_type end);
+	view_type to_view() noexcept;
+	view_type to_view(size_type start, size_type end) noexcept;
 
 public:
 	void append(view_type str);
 	void append(Ch ch);
 	void insert(size_type pos, view_type str);
 	void insert(size_type pos, Ch ch);
-	void erase(size_type start, size_type end);
+	void erase(size_type start, size_type end) noexcept;
 	void replace(size_type start, size_type end, view_type str);
 	void replace(size_type start, size_type end, Ch ch);
 	void assign(view_type str);
-	void clear();
+	void clear() noexcept;
 
 private:
-	void move_gap(size_type pos);
+	void move_gap(size_type pos) noexcept;
 	void reallocate_buffer(size_type new_gap_start, size_type new_gap_size);
-	void delete_range(size_type start, size_type end);
+	void delete_range(size_type start, size_type end) noexcept;
 
 private:
 	std::unique_ptr<Ch[]> buf_;        // points to the internal buffer
@@ -186,7 +186,7 @@ Ch& gap_buffer<Ch, Tr>::at(size_type n) {
  *
  */
 template <class Ch, class Tr>
-int gap_buffer<Ch, Tr>::compare(size_type pos, view_type str) const {
+int gap_buffer<Ch, Tr>::compare(size_type pos, view_type str) const noexcept {
 
 	// NOTE(eteran): could just be:
 	// return to_view(pos, pos + str.size()).compare(str);
@@ -221,7 +221,7 @@ int gap_buffer<Ch, Tr>::compare(size_type pos, view_type str) const {
  *
  */
 template <class Ch, class Tr>
-int gap_buffer<Ch, Tr>::compare(size_type pos, Ch ch) const {
+int gap_buffer<Ch, Tr>::compare(size_type pos, Ch ch) const noexcept {
 	if (pos >= size()) {
 		return 1;
 	}
@@ -281,7 +281,7 @@ auto gap_buffer<Ch, Tr>::to_string(size_type start, size_type end) const -> stri
  *
  */
 template <class Ch, class Tr>
-auto gap_buffer<Ch, Tr>::to_view() -> view_type {
+auto gap_buffer<Ch, Tr>::to_view() noexcept -> view_type {
 
 	const size_type bufLen   = size();
 	size_type leftLen        = gap_start_;
@@ -303,7 +303,7 @@ auto gap_buffer<Ch, Tr>::to_view() -> view_type {
  *
  */
 template <class Ch, class Tr>
-auto gap_buffer<Ch, Tr>::to_view(size_type start, size_type end) -> view_type {
+auto gap_buffer<Ch, Tr>::to_view(size_type start, size_type end) noexcept -> view_type {
 
 	assert(start <= size() && start >= 0);
 	assert(end   <= size() && end   >= 0);
@@ -401,7 +401,7 @@ void gap_buffer<Ch, Tr>::insert(size_type pos, Ch ch) {
  *
  */
 template <class Ch, class Tr>
-void gap_buffer<Ch, Tr>::erase(size_type start, size_type end) {
+void gap_buffer<Ch, Tr>::erase(size_type start, size_type end) noexcept {
 
 	assert(start <= size() && start >= 0);
 	assert(end   <= size() && end   >= 0);
@@ -463,7 +463,7 @@ void gap_buffer<Ch, Tr>::assign(view_type str) {
  *
  */
 template <class Ch, class Tr>
-void gap_buffer<Ch, Tr>::clear() {
+void gap_buffer<Ch, Tr>::clear() noexcept {
 	erase(0, size());
 }
 
@@ -471,7 +471,7 @@ void gap_buffer<Ch, Tr>::clear() {
  *
  */
 template <class Ch, class Tr>
-void gap_buffer<Ch, Tr>::move_gap(size_type pos) {
+void gap_buffer<Ch, Tr>::move_gap(size_type pos) noexcept {
 
 	const size_type gap_length = gap_size();
 
@@ -520,7 +520,7 @@ void gap_buffer<Ch, Tr>::reallocate_buffer(size_type new_gap_start, size_type ne
 ** to the site of the delete).
 */
 template <class Ch, class Tr>
-void gap_buffer<Ch, Tr>::delete_range(size_type start, size_type end) {
+void gap_buffer<Ch, Tr>::delete_range(size_type start, size_type end) noexcept {
 
 	// if the gap is not contiguous to the area to remove, move it there
 	if (start > gap_start_) {
@@ -538,7 +538,7 @@ void gap_buffer<Ch, Tr>::delete_range(size_type start, size_type end) {
 }
 
 template <class Ch, class Tr>
-void gap_buffer<Ch, Tr>::swap(gap_buffer &other) {
+void gap_buffer<Ch, Tr>::swap(gap_buffer &other) noexcept {
 	using std::swap;
 
 	swap(buf_,       other.buf_);
