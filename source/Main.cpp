@@ -279,26 +279,26 @@ Main::Main(const QStringList &args) {
 
 				if(MainWindow *window = MainWindow::firstWindow()) {
 					document = DocumentWidget::EditExistingFileEx(
-								window->currentDocument(),
-								filename,
-								pathname,
-								editFlags,
-								geometry,
-								iconic,
-								langMode,
-								isTabbed,
-								true);
+					               window->currentDocument(),
+					               filename,
+					               pathname,
+					               editFlags,
+					               geometry,
+					               iconic,
+					               langMode,
+					               isTabbed,
+					               /*bgOpen=*/true);
 				} else {
 					document = DocumentWidget::EditExistingFileEx(
-								nullptr,
-								filename,
-								pathname,
-								editFlags,
-								geometry,
-								iconic,
-								langMode,
-								isTabbed,
-								true);
+					               nullptr,
+					               filename,
+					               pathname,
+					               editFlags,
+					               geometry,
+					               iconic,
+					               langMode,
+					               isTabbed,
+					               /*bgOpen=*/true);
 				}
 
 				fileSpecified = true;

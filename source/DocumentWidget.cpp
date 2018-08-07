@@ -2858,15 +2858,15 @@ DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 	}
 
 	DocumentWidget *document = DocumentWidget::EditExistingFileEx(
-				this,
-				filename,
-				pathname,
-				0,
-				QString(),
-				false,
-				QString(),
-				Preferences::GetPrefOpenInTab(),
-				false);
+	                               this,
+	                               filename,
+	                               pathname,
+	                               0,
+	                               QString(),
+	                               /*iconic=*/false,
+	                               QString(),
+	                               Preferences::GetPrefOpenInTab(),
+	                               /*bgOpen=*/false);
 
 	MainWindow::CheckCloseEnableState();
 
@@ -4071,7 +4071,7 @@ void DocumentWidget::action_Set_Fonts(const QString &fontName) {
 		return;
 	}
 
-	fontName_   = fontName;
+	fontName_ = fontName;
 	font_ = Font::fromString(fontName);
 
 	// Change the primary font in all the widgets
@@ -7004,15 +7004,15 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 
 	// open the file containing the definition
 	DocumentWidget::EditExistingFileEx(
-				this,
-				filename,
-				pathname,
-				0,
-				QString(),
-				false,
-				QString(),
-				Preferences::GetPrefOpenInTab(),
-				false);
+	            this,
+	            filename,
+	            pathname,
+	            0,
+	            QString(),
+	            /*iconic=*/false,
+	            QString(),
+	            Preferences::GetPrefOpenInTab(),
+	            /*bgOpen=*/false);
 
 	DocumentWidget *documentToSearch = MainWindow::FindWindowWithFile(filename, pathname);
 	if(!documentToSearch) {
@@ -7053,7 +7053,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 
 	int rows = area->getRows();
 
-	area->TextDSetScroll(lineNum - rows / 4, 0);
+	area->TextDSetScroll(lineNum - (rows / 4), 0);
 	area->TextSetCursorPos(TextCursor(endPos));
 }
 

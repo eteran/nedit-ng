@@ -137,7 +137,11 @@ public:
 
 protected:
 	bool focusNextPrevChild(bool next) override;
+	virtual void mouseQuadrupleClickEvent(QMouseEvent *event);
+	virtual void mouseTripleClickEvent(QMouseEvent *event);
 	void contextMenuEvent(QContextMenuEvent *event) override;
+	void focusInEvent(QFocusEvent *event) override;
+	void focusOutEvent(QFocusEvent *event) override;
 	void keyPressEvent(QKeyEvent *event) override;
 	void mouseDoubleClickEvent(QMouseEvent *event) override;
 	void mouseMoveEvent(QMouseEvent *event) override;
@@ -145,10 +149,7 @@ protected:
 	void mouseReleaseEvent(QMouseEvent *event) override;
 	void paintEvent(QPaintEvent *event) override;
 	void resizeEvent(QResizeEvent *event) override;
-	void focusInEvent(QFocusEvent *event) override;
-	void focusOutEvent(QFocusEvent *event) override;
-	virtual void mouseTripleClickEvent(QMouseEvent *event);
-	virtual void mouseQuadrupleClickEvent(QMouseEvent *event);
+	void wheelEvent(QWheelEvent *event) override;
 
 private Q_SLOTS:
 	void cursorBlinkTimerTimeout();
@@ -161,6 +162,8 @@ private:
 	bool clickTracker(QMouseEvent *event, bool inDoubleClickHandler);
 
 public Q_SLOTS:
+	void ZoomOutAP(TextArea::EventFlags flags = NoneFlag);
+	void ZoomInAP(TextArea::EventFlags flags = NoneFlag);
 	void previousDocumentAP(TextArea::EventFlags flags = NoneFlag);
 	void nextDocumentAP(TextArea::EventFlags flags = NoneFlag);
 	void beginningOfSelectionAP(TextArea::EventFlags flags = NoneFlag);

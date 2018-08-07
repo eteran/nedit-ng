@@ -2072,15 +2072,15 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 			QApplication::beep();
 		} else {
 			DocumentWidget::EditExistingFileEx(
-						openInTab ? document : nullptr,
-						filename,
-						pathname,
-						0,
-						QString(),
-						false,
-						QString(),
-						openInTab,
-						false);
+			            openInTab ? document : nullptr,
+			            filename,
+			            pathname,
+			            0,
+			            QString(),
+			            /*iconic*/false,
+			            QString(),
+			            openInTab,
+			            /*bgOpen=*/false);
 		}
 	}
 

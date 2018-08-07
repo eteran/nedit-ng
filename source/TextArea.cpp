@@ -20,6 +20,7 @@
 #include <QClipboard>
 #include <QDesktopWidget>
 #include <QFocusEvent>
+#include <QFontDatabase>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
@@ -7936,5 +7937,55 @@ void TextArea::TextDMakeSelectionVisible() {
 		}
 
 		TextDSetScroll(topLineNum, horizOffset);
+	}
+}
+
+/**
+ * @brief TextArea::ZoomOutAP
+ * @param flags
+ */
+void TextArea::ZoomOutAP(TextArea::EventFlags flags) {
+	Q_UNUSED(flags);
+	QList<int> sizes = QFontDatabase::standardSizes();
+	QFontInfo fi(font_);
+
+	int currentSize = fi.pointSize();
+	int index = sizes.indexOf(currentSize);
+	if(index != 0) {
+		font_.setPointSize(sizes[index - 1]);
+		document_->action_Set_Fonts(font_.toString());
+	}
+}
+
+/**
+ * @brief TextArea::ZoomInAP
+ * @param flags
+ */
+void TextArea::ZoomInAP(TextArea::EventFlags flags) {
+	Q_UNUSED(flags);
+	QList<int> sizes = QFontDatabase::standardSizes();
+	QFontInfo fi(font_);
+
+	int currentSize = fi.pointSize();
+	int index = sizes.indexOf(currentSize);
+	if(index != sizes.size() - 1) {
+		font_.setPointSize(sizes[index + 1]);
+		document_->action_Set_Fonts(font_.toString());
+	}
+}
+
+/**
+ * @brief TextArea::wheelEvent
+ * @param event
+ */
+void TextArea::wheelEvent(QWheelEvent *event) {
+	if(event->modifiers() == Qt::ControlModifier) {
+		if(event->delta() > 0) {
+			ZoomInAP();
+		} else {
+			ZoomOutAP();
+		}
+	} else {
+		QAbstractScrollArea::wheelEvent(event);
 	}
 }

@@ -231,15 +231,15 @@ void NeditServer::newConnection() {
 			MainWindow *window = findWindowOnDesktopEx(tabbed, currentDesktop);
 
 			document = DocumentWidget::EditExistingFileEx(
-						window ? window->currentDocument() : nullptr,
-						filename,
-						pathname,
-						editFlags,
-						geometry,
-						iconicFlag,
-						langMode.isEmpty() ? QString() : langMode,
-						tabbed == -1 ? Preferences::GetPrefOpenInTab() : tabbed,
-						true);
+			               window ? window->currentDocument() : nullptr,
+			               filename,
+			               pathname,
+			               editFlags,
+			               geometry,
+			               iconicFlag,
+			               langMode.isEmpty() ? QString() : langMode,
+			               tabbed == -1 ? Preferences::GetPrefOpenInTab() : tabbed,
+			               /*bgOpen=*/true);
 
 			if (document) {
 				if (lastFile && MainWindow::fromDocument(document) != MainWindow::fromDocument(lastFile)) {
