@@ -462,8 +462,8 @@ private:
 
 private:
 	std::vector<std::pair<cursorMovedCBEx, void *>> movedCallbacks_;
-	std::vector<std::pair<dragStartCBEx, void *>>   dragStartCallbacks_;
-	std::vector<std::pair<dragEndCBEx, void *>>     dragEndCallbacks_;
+	std::vector<std::pair<dragStartCBEx,   void *>> dragStartCallbacks_;
+	std::vector<std::pair<dragEndCBEx,     void *>> dragEndCallbacks_;
 	std::vector<std::pair<smartIndentCBEx, void *>> smartIndentCallbacks_;
 };
 
