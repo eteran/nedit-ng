@@ -163,6 +163,7 @@ private:
 	void removeSelected(const Selection *sel) noexcept;
 	void replaceSelectedEx(Selection *sel, view_type text) noexcept;
 	void updateSelections(TextCursor pos, int64_t nDeleted, int64_t nInserted) noexcept;
+	void sanitizeRange(TextCursor &start, TextCursor &end) const noexcept;
 
 private:
 	static string_type unexpandTabsEx(view_type text, int64_t startIndent, int tabDist);

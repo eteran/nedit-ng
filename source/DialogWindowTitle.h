@@ -62,7 +62,6 @@ private:
 	bool fileChanged_;
 
 	bool suppressFormatUpdate_;
-	bool inConstructor_;
 };
 
 #endif

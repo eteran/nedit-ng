@@ -15,6 +15,11 @@
 #include <algorithm>
 
 #include <QtGlobal>
+#ifdef Q_FALLTHROUGH
+#define NEDIT_FALLTHROUGH() Q_FALLTHROUGH()
+#else
+#define NEDIT_FALLTHROUGH() (void)0
+#endif
 
 namespace {
 
@@ -658,9 +663,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			switch (GET_OP_CODE(scan)) {
 			case LAZY_STAR:
 				lazy = true;
-			#ifdef Q_FALLTHROUGH
-				Q_FALLTHROUGH();
-			#endif
+				NEDIT_FALLTHROUGH();
 			case STAR:
 				min = REG_ZERO;
 				max = ULONG_MAX;
@@ -668,9 +671,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 
 			case LAZY_PLUS:
 				lazy = true;
-			#ifdef Q_FALLTHROUGH
-				Q_FALLTHROUGH();
-			#endif
+				NEDIT_FALLTHROUGH();
 			case PLUS:
 				min = REG_ONE;
 				max = ULONG_MAX;
@@ -678,9 +679,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 
 			case LAZY_QUESTION:
 				lazy = true;
-			#ifdef Q_FALLTHROUGH
-				Q_FALLTHROUGH();
-			#endif
+				NEDIT_FALLTHROUGH();
 			case QUESTION:
 				min = REG_ZERO;
 				max = REG_ONE;
@@ -688,9 +687,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 
 			case LAZY_BRACE:
 				lazy = true;
-			#ifdef Q_FALLTHROUGH
-				Q_FALLTHROUGH();
-			#endif
+				NEDIT_FALLTHROUGH();
 			case BRACE:
 				min = static_cast<unsigned long>(GET_OFFSET(scan + NEXT_PTR_SIZE));
 				max = static_cast<unsigned long>(GET_OFFSET(scan + (2 * NEXT_PTR_SIZE)));

@@ -10,6 +10,7 @@
 #include "Util/Host.h"
 #include "Util/FileSystem.h"
 #include <QRegularExpressionValidator>
+#include <QRegularExpression>
 
 namespace {
 
@@ -28,8 +29,9 @@ QString compressWindowTitle(const QString &title) {
 	result.replace(QLatin1String("[]"), QString());
 
 	// remove leading/trailing whitspace/dashes
-	result.replace(QRegExp(QLatin1String("^[\\s-]+")), QString());
-	result.replace(QRegExp(QLatin1String("[\\s-]+$")), QString());
+	static const QRegularExpression regex(QLatin1String("((^[\\s-]+)|([\\s-]+$))"));
+	result.replace(regex, QString());
+
 	return result.simplified();
 }
 
@@ -56,8 +58,6 @@ struct UpdateState {
 DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 
-	inConstructor_ = true;
-
 	static const QRegularExpression rx(QLatin1String("[0-9]"));
 	ui.editDirectory->setValidator(new QRegularExpressionValidator(rx, this));
 
@@ -81,16 +81,12 @@ DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, 
 
 	suppressFormatUpdate_ = false;
 
-	// set initial value of format field
 	ui.editFormat->setText(Preferences::GetPrefTitleFormat());
 
 	// force update of the dialog
 	setToggleButtons();
 
 	formatChangedCB();
-
-	inConstructor_ = false;
-
 }
 
 // a utility that sets the values of all toggle buttons
@@ -257,11 +253,6 @@ QString DialogWindowTitle::FormatWindowTitleEx(const QString &filename, const QS
  * @param checked
  */
 void DialogWindowTitle::on_checkFileName_toggled(bool checked) {
-
-	if(inConstructor_) {
-		return;
-	}
-
 	if (checked) {
 		appendToFormat(QLatin1String(" %f"));
 	} else {
@@ -274,11 +265,6 @@ void DialogWindowTitle::on_checkFileName_toggled(bool checked) {
  * @param checked
  */
 void DialogWindowTitle::on_checkHostName_toggled(bool checked) {
-
-	if(inConstructor_) {
-		return;
-	}
-
 	if (checked) {
 		appendToFormat(QLatin1String(" [%h]"));
 	} else {
@@ -291,11 +277,6 @@ void DialogWindowTitle::on_checkHostName_toggled(bool checked) {
  * @param checked
  */
 void DialogWindowTitle::on_checkFileStatus_toggled(bool checked) {
-
-	if(inConstructor_) {
-		return;
-	}
-
 	ui.checkBrief->setEnabled(checked);
 
 	if (checked) {
@@ -316,10 +297,6 @@ void DialogWindowTitle::on_checkFileStatus_toggled(bool checked) {
  * @param checked
  */
 void DialogWindowTitle::on_checkBrief_toggled(bool checked) {
-
-	if(inConstructor_) {
-		return;
-	}
 
 	if (suppressFormatUpdate_) {
 		return;
@@ -343,11 +320,6 @@ void DialogWindowTitle::on_checkBrief_toggled(bool checked) {
  * @param checked
  */
 void DialogWindowTitle::on_checkUserName_toggled(bool checked) {
-
-	if(inConstructor_) {
-		return;
-	}
-
 	if (checked) {
 		appendToFormat(QLatin1String(" %u"));
 	} else {
@@ -360,11 +332,6 @@ void DialogWindowTitle::on_checkUserName_toggled(bool checked) {
  * @param checked
  */
 void DialogWindowTitle::on_checkClearCase_toggled(bool checked) {
-
-	if(inConstructor_) {
-		return;
-	}
-
 	if (checked) {
 		appendToFormat(QLatin1String(" {%c}"));
 	} else {
@@ -377,11 +344,6 @@ void DialogWindowTitle::on_checkClearCase_toggled(bool checked) {
  * @param checked
  */
 void DialogWindowTitle::on_checkServerName_toggled(bool checked) {
-
-	if(inConstructor_) {
-		return;
-	}
-
 	if (checked) {
 		appendToFormat(QLatin1String(" [%s]"));
 	} else {
@@ -394,10 +356,6 @@ void DialogWindowTitle::on_checkServerName_toggled(bool checked) {
  * @param checked
  */
 void DialogWindowTitle::on_checkDirectory_toggled(bool checked) {
-
-	if(inConstructor_) {
-		return;
-	}
 
 	ui.editDirectory->setEnabled(checked);
 	ui.labelDirectory->setEnabled(checked);
@@ -508,13 +466,8 @@ void DialogWindowTitle::on_checkServerEqualsCC_toggled(bool checked) {
  * @param string
  */
 void DialogWindowTitle::appendToFormat(const QString &string) {
-
 	QString format = ui.editFormat->text();
-	QString buf;
-	buf.reserve(string.size() + format.size());
-	buf.append(format);
-	buf.append(string);
-	ui.editFormat->setText(buf);
+	ui.editFormat->setText(format + string);
 }
 
 /**
@@ -569,7 +522,7 @@ void DialogWindowTitle::on_editDirectory_textChanged(const QString &text) {
 	QString format = ui.editFormat->text();
 	bool ok;
 	int maxComp = text.toInt(&ok);
-	if(ok && maxComp >= 0) {
+	if(ok && maxComp > 0) {
 		format.replace(QRegExp(QLatin1String("%[0-9]?d")), tr("%%1d").arg(maxComp));
 	} else {
 		format.replace(QRegExp(QLatin1String("%[0-9]?d")), tr("%d"));
@@ -727,9 +680,8 @@ QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, co
 						title.append(tr("*"));
 					break;
 				}
-			#ifdef Q_FALLTHROUGH
-				Q_FALLTHROUGH();
-			#endif
+				title.append(c);
+				break;
 			default:
 				title.append(c);
 				break;

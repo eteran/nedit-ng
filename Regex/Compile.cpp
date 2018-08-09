@@ -12,6 +12,12 @@
 #include <algorithm>
 #include <QtGlobal>
 
+#ifdef Q_FALLTHROUGH
+#define NEDIT_FALLTHROUGH() Q_FALLTHROUGH()
+#else
+#define NEDIT_FALLTHROUGH() (void)0
+#endif
+
 // Address of this used as flag.
 uint8_t Compute_Size;
 
@@ -217,14 +223,10 @@ uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept
 
 		case TEST_COUNT:
 			pContext.Reg_Size += NEXT_PTR_SIZE; // Make room for a test value.
-		#ifdef Q_FALLTHROUGH
-			Q_FALLTHROUGH();
-		#endif
+			NEDIT_FALLTHROUGH();
 		case INC_COUNT:
 			pContext.Reg_Size += INDEX_SIZE; // Make room for an index value.
-		#ifdef Q_FALLTHROUGH
-			Q_FALLTHROUGH();
-		#endif
+			NEDIT_FALLTHROUGH();
 		default:
 			pContext.Reg_Size += NODE_SIZE; // Make room for the node.
 		}
@@ -946,16 +948,13 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 		}
 		/* fallthrough */
 
-	/* At this point it is apparent that the escaped character is not a
-	   shortcut escape or back-reference.  Back up one character to allow
-	   the default code to include it as an ordinary character. */
+		/* At this point it is apparent that the escaped character is not a
+		   shortcut escape or back-reference.  Back up one character to allow
+		   the default code to include it as an ordinary character. */
 
-	/* Fall through to Default case to handle literal escapes and numeric
-	   escapes. */
-
-#ifdef Q_FALLTHROUGH
-	Q_FALLTHROUGH();
-#endif
+		/* Fall through to Default case to handle literal escapes and numeric
+		 * escapes. */
+		NEDIT_FALLTHROUGH();
 	default:
 		--pContext.Reg_Parse; /* If we fell through from the above code, we are now
 						pointing at the back slash (\) character. */

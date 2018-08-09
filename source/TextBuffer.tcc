@@ -57,25 +57,7 @@ void BasicTextBuffer<Ch, Tr>::BufSetAll(view_type text) {
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(TextCursor start, TextCursor end) const -> string_type {
 
-    // TODO(eteran): I beleive bad things happend if we pass something like BufGetRangeEx(10, -10)
-    // this will make the first check pass, then start/end will be swapped meaning that it will attempt
-    // to get the range [-10, 10).
-    // the result will be an assert due to the checks in gap_buffer<Ch, Tr>::to_string
-
-    /* Make sure start and end are ok.
-       If start is bad, return "", if end is bad, adjust it. */
-    if (start < BufStartOfBuffer() || start > BufEndOfBuffer()) {
-        return string_type();
-    }
-
-    if (end < start) {
-        std::swap(start, end);
-    }
-
-    if (end > BufEndOfBuffer()) {
-        end = BufEndOfBuffer();
-    }
-
+	sanitizeRange(start, end);
     return buffer_.to_string(to_integer(start), to_integer(end));
 }
 
@@ -144,7 +126,8 @@ void BasicTextBuffer<Ch, Tr>::BufInsertEx(TextCursor pos, Ch ch) noexcept {
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufReplaceEx(TextCursor start, TextCursor end, view_type text) noexcept {
 
-    // TODO(eteran): 2.0, do same type of parameter normalization as BufRemove does?
+	sanitizeRange(start, end);
+
     const auto nInserted = static_cast<int64_t>(text.size());
 
     callPreDeleteCBs(start, end - start);
@@ -163,7 +146,8 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceEx(TextCursor start, TextCursor end, vie
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufReplaceEx(TextCursor start, TextCursor end, Ch ch) noexcept {
 
-    // TODO(eteran): 2.0, do same type of parameter normalization as BufRemove does?
+	sanitizeRange(start, end);
+
     const auto nInserted = 1;
 
     callPreDeleteCBs(start, end - start);
@@ -178,26 +162,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceEx(TextCursor start, TextCursor end, Ch 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufRemove(TextCursor start, TextCursor end) noexcept {
 
-    // Make sure the arguments make sense
-    if (start > end) {
-        std::swap(start, end);
-    }
-
-    if (start > BufEndOfBuffer()) {
-        start = BufEndOfBuffer();
-    }
-
-    if (start < BufStartOfBuffer()) {
-        start = BufStartOfBuffer();
-    }
-
-    if (end > BufEndOfBuffer()) {
-        end = BufEndOfBuffer();
-    }
-
-    if (end < BufStartOfBuffer()) {
-        end = BufStartOfBuffer();
-    }
+	sanitizeRange(start, end);
 
     callPreDeleteCBs(start, end - start);
 
@@ -2196,5 +2161,13 @@ bool BasicTextBuffer<Ch, Tr>::Selection::rangeTouchesRectSel(TextCursor rangeSta
     return selected && rectangular && end >= rangeStart && start <= rangeEnd;
 }
 
+template <class Ch, class Tr>
+void BasicTextBuffer<Ch, Tr>::sanitizeRange(TextCursor &start, TextCursor &end) const noexcept {
+	if (start > end) {
+		std::swap(start, end);
+	}
+	start = qBound(BufStartOfBuffer(), start, BufEndOfBuffer());
+	end   = qBound(BufStartOfBuffer(), end,   BufEndOfBuffer());
+}
 
 #endif
