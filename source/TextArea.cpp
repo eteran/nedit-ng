@@ -1247,7 +1247,7 @@ void TextArea::paintEvent(QPaintEvent *event) {
 	QPainter painter(viewport());
 	{
 		painter.save();
-		painter.setClipRect(QRect(rect_.left(), rect_.top(), rect_.width(), rect_.height() - rect_.height() % (ascent_ + descent_)));
+		painter.setClipRect(rect_);
 
 		// draw the lines of text
 		for (int line = firstLine; line <= lastLine; line++) {
@@ -3067,9 +3067,9 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int64_t x, int y, i
 		if (toX >= rect_.left()) {
 			painter->fillRect(
 						QRect(
-							static_cast<int>(std::max<int64_t>(x, rect_.left())),
+			                static_cast<int>(std::max<int64_t>(x, rect_.left())),
 							y,
-							static_cast<int>(toX - std::max<int64_t>(x, rect_.left())),
+			                static_cast<int>(toX - std::max<int64_t>(x, rect_.left())),
 							ascent_ + descent_
 							),
 						bground);
@@ -3222,7 +3222,6 @@ void TextArea::TextDResize(int width, int height) {
 	const int oldVisibleLines = nVisibleLines_;
 	const int newVisibleLines = height / (ascent_ + descent_);
 	const int oldWidth        = rect_.width();
-	const int exactHeight     = height - height % (ascent_ + descent_);
 	bool canRedraw            = true;
 	int redrawAll             = false;
 
@@ -3250,12 +3249,6 @@ void TextArea::TextDResize(int width, int height) {
 	nVisibleLines_ = newVisibleLines;
 	calcLineStarts(0, newVisibleLines);
 	calcLastChar();
-
-	/* if the window became shorter, there may be partially drawn
-	   text left at the bottom edge, which must be cleaned up */
-	if (canRedraw && oldVisibleLines > newVisibleLines && exactHeight != height) {
-		viewport()->update(QRect(rect_.left(), rect_.top() + exactHeight, rect_.width(), height - exactHeight));
-	}
 
 	/* if the window became taller, there may be an opportunity to display
 	   more text by scrolling down */
@@ -6864,10 +6857,6 @@ void TextArea::setFont(const QFont &font) {
 	}
 }
 
-QRect TextArea::getRect() const {
-	return rect_;
-}
-
 int TextArea::getLineNumCols() const {
 	return lineNumCols_;
 }
@@ -7193,6 +7182,8 @@ TextCursor TextArea::TextGetCursorPos() const {
 ** ABSOLUTE LINE NUMBER IS BEING MAINTAINED.  Otherwise, it returns false.
 */
 bool TextArea::TextDPosToLineAndCol(TextCursor pos, int64_t *lineNum, int64_t *column) {
+
+	// TODO(eteran): return optional struct?
 
 	/* In continuous wrap mode, the absolute (non-wrapped) line count is
 	   maintained separately, as needed.  Only return it if we're actually
