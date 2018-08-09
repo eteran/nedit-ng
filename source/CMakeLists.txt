@@ -29,7 +29,6 @@ endforeach()
 file(APPEND ${TRANSLATIONS_QRC} "\n\t</qresource>\n</RCC>")
 list(APPEND QRC_FILES ${TRANSLATIONS_QRC})
 
-
 qt5_add_resources(QRC_SOURCES
 	nedit.qrc
 	${TRANSLATIONS_QRC}
@@ -38,7 +37,6 @@ qt5_add_resources(QRC_SOURCES
 qt5_wrap_cpp(MOC_SOURCES
 	CallTipWidget.h
 	CommandRecorder.h
-	Dialog.h
 	DialogAbout.h
 	DialogColors.h
 	DialogDrawingStyles.h
@@ -47,6 +45,7 @@ qt5_wrap_cpp(MOC_SOURCES
 	DialogFilter.h
 	DialogFind.h
 	DialogFonts.h
+	Dialog.h
 	DialogLanguageModes.h
 	DialogMacros.h
 	DialogMoveDocument.h
@@ -59,8 +58,8 @@ qt5_wrap_cpp(MOC_SOURCES
 	DialogRepeat.h
 	DialogReplace.h
 	DialogShellMenu.h
-	DialogSmartIndent.h
 	DialogSmartIndentCommon.h
+	DialogSmartIndent.h
 	DialogSyntaxPatterns.h
 	DialogTabs.h
 	DialogWindowBackgroundMenu.h
@@ -74,6 +73,7 @@ qt5_wrap_cpp(MOC_SOURCES
 	HighlightStyleModel.h
 	KeySequenceEdit.h
 	LanguageModeModel.h
+	LineNumberArea.h
 	MainWindow.h
 	MenuItemModel.h
 	NeditServer.h
@@ -117,10 +117,10 @@ qt5_wrap_ui(UIC_SOURCES
 
 add_executable(nedit-ng
 
-	${MOC_SOURCES}
 	${QRC_SOURCES}
+	${MOC_SOURCES}
 	${UIC_SOURCES}
-
+	
 	BlockDragTypes.h
 	Bookmark.h
 	CallTip.h
@@ -131,12 +131,11 @@ add_executable(nedit-ng
 	CommandRecorder.h
 	CommandSource.h
 	CursorStyles.h
-	Dialog.cpp
-	Dialog.h
 	DialogAbout.cpp
 	DialogAbout.h
 	DialogColors.cpp
 	DialogColors.h
+	Dialog.cpp
 	DialogDrawingStyles.cpp
 	DialogDrawingStyles.h
 	DialogDuplicateTags.cpp
@@ -149,6 +148,7 @@ add_executable(nedit-ng
 	DialogFind.h
 	DialogFonts.cpp
 	DialogFonts.h
+	Dialog.h
 	DialogLanguageModes.cpp
 	DialogLanguageModes.h
 	DialogMacros.cpp
@@ -173,10 +173,10 @@ add_executable(nedit-ng
 	DialogReplace.h
 	DialogShellMenu.cpp
 	DialogShellMenu.h
-	DialogSmartIndent.cpp
-	DialogSmartIndent.h
 	DialogSmartIndentCommon.cpp
 	DialogSmartIndentCommon.h
+	DialogSmartIndent.cpp
+	DialogSmartIndent.h
 	DialogSyntaxPatterns.cpp
 	DialogSyntaxPatterns.h
 	DialogTabs.cpp
@@ -202,9 +202,14 @@ add_executable(nedit-ng
 	Font.cpp
 	Font.h
 	FontType.h
+	gap_buffer_fwd.h
+	gap_buffer.h
+	gap_buffer_iterator.h
 	Help.cpp
 	Help.h
+	Highlight.cpp
 	HighlightData.h
+	Highlight.h
 	HighlightPattern.cpp
 	HighlightPattern.h
 	HighlightPatternModel.cpp
@@ -217,7 +222,11 @@ add_executable(nedit-ng
 	LanguageMode.h
 	LanguageModeModel.cpp
 	LanguageModeModel.h
+	LineNumberArea.cpp
+	LineNumberArea.h
 	LockReasons.h
+	macro.cpp
+	macro.h
 	Main.cpp
 	Main.h
 	MainWindow.cpp
@@ -227,23 +236,31 @@ add_executable(nedit-ng
 	MenuItemModel.cpp
 	MenuItemModel.h
 	MultiClickStates.h
+	nedit.cpp
+	nedit.h
 	NeditServer.cpp
 	NeditServer.h
 	NewMode.h
 	PatternSet.cpp
 	PatternSet.h
+	preferences.cpp
+	preferences.h
 	Rangeset.cpp
 	Rangeset.h
 	RangesetTable.cpp
 	RangesetTable.h
 	ReparseContext.h
+	Search.cpp
+	Search.h
+	shift.cpp
 	ShiftDirection.h
+	shift.h
 	SignalBlocker.h
 	SmartIndent.cpp
-	SmartIndent.h
 	SmartIndentEntry.cpp
 	SmartIndentEntry.h
 	SmartIndentEvent.h
+	SmartIndent.h
 	Style.h
 	StyleTableEntry.h
 	TabWidget.cpp
@@ -253,14 +270,16 @@ add_executable(nedit-ng
 	TextArea.cpp
 	TextArea.h
 	TextBuffer.cpp
+	TextBufferFwd.h
 	TextBuffer.h
 	TextBuffer.tcc
-	TextBufferFwd.h
 	TextCursor.h
 	TextEditEvent.cpp
 	TextEditEvent.h
 	UndoInfo.cpp
 	UndoInfo.h
+	userCmds.cpp
+	userCmds.h	
 	Verbosity.h
 	WindowHighlightData.h
 	WindowMenuEvent.cpp
@@ -268,23 +287,6 @@ add_executable(nedit-ng
 	WrapMode.h
 	X11Colors.cpp
 	X11Colors.h
-	gap_buffer.h
-	gap_buffer_fwd.h
-	gap_buffer_iterator.h
-	Highlight.cpp
-	Highlight.h
-	macro.cpp
-	macro.h
-	nedit.cpp
-	nedit.h
-	preferences.cpp
-	preferences.h
-	Search.cpp
-	Search.h
-	shift.cpp
-	shift.h
-	userCmds.cpp
-	userCmds.h	
 )
 
 target_include_directories (nedit-ng PRIVATE

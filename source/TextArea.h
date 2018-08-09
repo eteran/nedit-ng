@@ -46,6 +46,10 @@ using smartIndentCBEx         = void (*)(TextArea *, SmartIndentEvent *, void *)
 
 class TextArea final : public QAbstractScrollArea {
 	Q_OBJECT
+
+private:
+	friend class LineNumberArea;
+
 public:
 	enum EventFlag {
 		NoneFlag         = 0x0000,
@@ -248,7 +252,7 @@ public:
 	void bufPreDeleteCallback(TextCursor pos, int64_t nDeleted);
 	void bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText);
 
-private:
+private:	
 	CursorStyles getCursorStyle() const;
 	QColor getRangesetColor(int ind, QColor bground) const;
 	QFont getFont() const;
@@ -282,10 +286,10 @@ private:
 	bool wrapUsesCharacter(TextCursor lineEndPos) const;
 	boost::optional<TextCursor> spanBackward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const;
 	boost::optional<TextCursor> spanForward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const;
-	int getLineNumLeft() const;
 	int getLineNumWidth() const;
 	int getMarginHeight() const;
 	int getMarginWidth() const;
+	int lineNumberAreaWidth() const;
 	int stringWidth(int length) const;
 	int64_t TextDCountLines(TextCursor startPos, TextCursor endPos, bool startPosIsLineStart);
 	int64_t TextDOffsetWrappedColumn(int64_t row, int64_t column) const;
@@ -320,7 +324,7 @@ private:
 	void TextDSetCursorStyle(CursorStyles style);
 	void TextDSetFont(const QFont &font);
 	void TextDSetInsertPosition(TextCursor newPos);
-	void TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int textLeft);
+	void TextDSetLineNumberArea(int lineNumWidth);
 	void TextDSetWrapMode(bool wrap, int wrapMargin);
 	void TextDSetupBGClassesEx(const QString &str);
 	void TextDUnblankCursor();
@@ -350,8 +354,7 @@ private:
 	void offsetLineStarts(int64_t newTopLineNum);
 	void redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip);
 	void redisplayLineEx(int visLineNum, int64_t leftCharIndex, int64_t rightCharIndex);
-	void redrawLineNumbers(QPainter *painter);
-	void redrawLineNumbersEx();
+	void repaintLineNumbers();
 	void resetAbsLineNum();
 	void selectLine();
 	void selectWord(int pointerX);
@@ -367,7 +370,7 @@ private:
 	void xyToUnconstrainedPos(const QPoint &pos, int64_t *row, int64_t *column, PositionTypes posType) const;
 	void xyToUnconstrainedPos(int x, int y, int64_t *row, int64_t *column, PositionTypes posType) const;
 
-private:
+private:	
 	CursorStyles cursorStyle_       = CursorStyles::Normal;
 	DragStates dragState_           = NOT_CLICKED;    // Why is the mouse being dragged and what is being acquired
 	QColor cursorFGColor_           = Qt::black;
@@ -380,6 +383,7 @@ private:
 	QTimer *clickTimer_             = nullptr;
 	QTimer *cursorBlinkTimer_       = nullptr;
 	QTimer *resizeTimer_            = nullptr;
+	QWidget *lineNumberArea_        = nullptr;
 	QPoint cursor_                  = { -100, -100 }; // X pos. of last drawn cursor Note: these are used for *drawing* and are not generally reliable for finding the insert position's x/y coordinates!
 	QVector<TextCursor> lineStarts_ = { TextCursor() };
 	TextCursor cursorToHint_        = NO_HINT;        // Tells the buffer modified callback where to move the cursor, to reduce the number of redraw calls
@@ -389,10 +393,8 @@ private:
 	int64_t nBufferLines_           = 0;              // # of newlines in the buffer
 	int clickCount_                 = 0;
 	int emTabsBeforeCursor_         = 0;              // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
-	int horizOffset_                = 0;              // Horizontal scroll pos. in pixels
+	int horizOffset_                = 0;              // Horizontal scroll pos. in pixels	
 	int lineNumCols_                = 0;
-	int lineNumLeft_                = 0;
-	int lineNumWidth_               = 0;
 	int dragXOffset_                = 0;              // offsets between cursor location and actual insertion point in drag
 	int dragYOffset_                = 0;              // offsets between cursor location and actual insertion point in drag
 	int nLinesDeleted_              = 0;              // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)

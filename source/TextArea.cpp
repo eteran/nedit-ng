@@ -8,6 +8,7 @@
 #include "Font.h"
 #include "Highlight.h"
 #include "LanguageMode.h"
+#include "LineNumberArea.h"
 #include "MultiClickStates.h"
 #include "RangesetTable.h"
 #include "SmartIndentEvent.h"
@@ -472,6 +473,7 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
 	autoScrollTimer_  = new QTimer(this);
 	cursorBlinkTimer_ = new QTimer(this);
 	clickTimer_       = new QTimer(this);
+	lineNumberArea_   = new LineNumberArea(this);
 
 	autoScrollTimer_->setSingleShot(true);
 	connect(autoScrollTimer_,  &QTimer::timeout, this, &TextArea::autoScrollTimerTimeout);
@@ -522,6 +524,7 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
 
 	// Decide if the horizontal scroll bar needs to be visible
 	hideOrShowHScrollBar();
+
 
 	// track when we lose ownership of the selection
 	if(QApplication::clipboard()->supportsSelection()) {
@@ -1256,19 +1259,6 @@ void TextArea::paintEvent(QPaintEvent *event) {
 
 		painter.restore();
 	}
-
-	{
-		// Make sure we reset the clipping range for the line numbers
-		painter.save();
-		painter.setClipRect(QRect(lineNumLeft_, rect_.top(), lineNumWidth_, rect_.height()));
-
-		// draw the line numbers if exposed area includes them
-		if (lineNumWidth_ != 0 && left <= lineNumLeft_ + lineNumWidth_) {
-			redrawLineNumbers(&painter);
-		}
-
-		painter.restore();
-	}
 }
 
 /**
@@ -1277,19 +1267,19 @@ void TextArea::paintEvent(QPaintEvent *event) {
  */
 void TextArea::resizeEvent(QResizeEvent *event) {
 
-	int height           = event->size().height();
-	int width            = event->size().width();
-	int marginWidth      = marginWidth_;
-	int marginHeight     = marginHeight_;
-	int lineNumAreaWidth = (lineNumCols_ == 0) ? 0 : marginWidth_ + fixedFontWidth_ * lineNumCols_;
+	const int height       = event->size().height();
+	const int width        = event->size().width();
 
-	columns_ = (width - marginWidth * 2 - lineNumAreaWidth) / fixedFontWidth_;
-	rows_    = (height - marginHeight * 1) / (ascent_ + descent_);
+	columns_ = (width  - marginWidth_  * 2) / fixedFontWidth_;
+	rows_    = (height - marginHeight_ * 1) / (ascent_ + descent_);
 
 	// Resize the text display that the widget uses to render text
-	TextDResize(width - marginWidth * 2 - lineNumAreaWidth, height - marginHeight * 1);
+	TextDResize(width - marginWidth_ * 2, height - marginHeight_ * 1);
 
 	showResizeNotification();
+
+	const QRect cr = contentsRect();
+	lineNumberArea_->setGeometry(QRect(cr.left(), cr.top(), lineNumberAreaWidth(), cr.height()));
 }
 
 /**
@@ -1420,11 +1410,11 @@ void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nD
 		   be affected (the insertion or removal of a line break always
 		   results in at least two lines being redrawn). */
 		if (linesInserted > 1) {
-			redrawLineNumbersEx();
+			repaintLineNumbers();
 		}
 	} else { // linesInserted != linesDeleted
 		endDispPos = lastChar_ + 1;
-		redrawLineNumbersEx();
+		repaintLineNumbers();
 	}
 
 	/* If there is a style buffer, check if the modification caused additional
@@ -2195,7 +2185,7 @@ TextCursor TextArea::TextDCountBackwardNLines(TextCursor startPos, int64_t nLine
 ** (for displaying line numbers or showing in the statistics line).
 */
 bool TextArea::maintainingAbsTopLineNum() const {
-	return continuousWrap_ && (lineNumWidth_ != 0 || needAbsTopLineNum_);
+	return continuousWrap_ && (lineNumCols_ != 0 || needAbsTopLineNum_);
 }
 
 /*
@@ -2623,51 +2613,8 @@ void TextArea::textDRedisplayRange(TextCursor start, TextCursor end) {
 /**
  * @brief TextArea::redrawLineNumbersEx
  */
-void TextArea::redrawLineNumbersEx() {
-	viewport()->repaint(QRect(lineNumLeft_, rect_.top(), lineNumWidth_, rect_.height()));
-}
-
-
-/**
- * Refresh the line number area.  If clearAll is false, writes only over
- * the character cell areas.  Setting clearAll to true will clear out any
- * stray marks outside of the character cell area, which might have been
- * left from before a resize or font change.
- *
- * @brief TextArea::redrawLineNumbers
- * @param painter
- */
-void TextArea::redrawLineNumbers(QPainter *painter) {
-
-	const int lineHeight = ascent_ + descent_;
-
-	// Don't draw if lineNumWidth == 0 (line numbers are hidden)
-	if (lineNumWidth_ == 0) {
-		return;
-	}
-
-	painter->setPen(lineNumFGColor_);
-	painter->setFont(font_);
-
-	// Draw the line numbers, aligned to the text
-	int y        = rect_.top();
-	int64_t line = getAbsTopLineNum();
-
-	for (int visLine = 0; visLine < nVisibleLines_; visLine++) {
-
-		const TextCursor lineStart = lineStarts_[visLine];
-		if (lineStart != -1 && (lineStart == 0 || buffer_->BufGetCharacter(lineStart - 1) == '\n')) {
-			const auto s = QString::number(line);
-			QRect rect(lineNumLeft_, y, lineNumWidth_, ascent_ + descent_);
-			painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignRight, s);
-			++line;
-		} else {
-			if (visLine == 0) {
-				++line;
-			}
-		}
-		y += lineHeight;
-	}
+void TextArea::repaintLineNumbers() {
+	lineNumberArea_->update();
 }
 
 /*
@@ -3272,10 +3219,6 @@ void TextArea::TextDResize(int width, int height) {
 	// Decide if the horizontal scroll bar needs to be visible
 	hideOrShowHScrollBar();
 
-	/* Refresh the line number display to draw more line numbers, or
-	   erase extras */
-	redrawLineNumbersEx();
-
 	// Redraw the calltip
 	TextDRedrawCalltip(0);
 }
@@ -3316,6 +3259,8 @@ void TextArea::setScroll(int64_t topLineNum, int horizOffset, bool updateVScroll
 		return;
 	}
 
+	const int64_t lineDelta = topLineNum_ - topLineNum;
+
 	/* If the vertical scroll position has changed, update the line
 	   starts array and related counters in the text display */
 	offsetLineStarts(topLineNum);
@@ -3338,13 +3283,11 @@ void TextArea::setScroll(int64_t topLineNum, int horizOffset, bool updateVScroll
 	//               involving copying the parts that were "moved"
 	//               to avoid doing some work. For now, we'll just repaint
 	//               the whole thing. It's not as fast/clever, but it'll work
-	viewport()->update();
-
-	const int64_t lineDelta = topLineNum_ - topLineNum;
+	viewport()->update();	
 
 	// Refresh line number/calltip display if its up and we've scrolled vertically
 	if (lineDelta != 0) {
-		redrawLineNumbersEx();
+		repaintLineNumbers();
 		TextDRedrawCalltip(0);
 	}
 }
@@ -3764,7 +3707,7 @@ void TextArea::TextDSetColors(const QColor &textFgP, const QColor &textBgP, cons
 
 	// Redisplay
 	TextDRedisplayRect(rect_);
-	redrawLineNumbersEx();
+	repaintLineNumbers();
 }
 
 /*
@@ -6483,33 +6426,17 @@ void TextArea::setWrapMargin(int value) {
 void TextArea::setLineNumCols(int value) {
 
 	lineNumCols_ = value;
-
-	const int marginWidth = marginWidth_;
-	const int charWidth   = fixedFontWidth_;
-	const int lineNumCols = lineNumCols_;
-
-	if (lineNumCols == 0) {
-		TextDSetLineNumberArea(0, 0, marginWidth);
-		columns_ = (viewport()->width() - marginWidth * 2) / charWidth;
-	} else {
-		TextDSetLineNumberArea(marginWidth, charWidth * lineNumCols, 2 * marginWidth + charWidth * lineNumCols);
-		columns_ = (viewport()->width() - marginWidth * 3 - charWidth * lineNumCols) / charWidth;
-	}
+	TextDSetLineNumberArea(fixedFontWidth_ * lineNumCols_);
+	columns_ = (viewport()->width() - marginWidth_ * 2) / fixedFontWidth_;
 }
 
 /*
 ** Define area for drawing line numbers.  A width of 0 disables line
 ** number drawing.
 */
-void TextArea::TextDSetLineNumberArea(int lineNumLeft, int lineNumWidth, int textLeft) {
-	int newWidth = rect_.width() + rect_.left() - textLeft;
-	lineNumLeft_ = lineNumLeft;
-	lineNumWidth_ = lineNumWidth;
-	rect_.setLeft(textLeft);
-
-	resetAbsLineNum();
-	TextDResize(newWidth, rect_.height());
-	TextDRedisplayRect(0, rect_.top(), INT_MAX, rect_.height());
+void TextArea::TextDSetLineNumberArea(int lineNumWidth) {
+	lineNumberArea_->resize(lineNumWidth, lineNumberArea_->height());
+	setViewportMargins(lineNumberArea_->width(), 0, 0, 0);
 }
 
 void TextArea::TextDSetWrapMode(bool wrap, int wrapMargin) {
@@ -6841,20 +6768,7 @@ QFont TextArea::getFont() const {
 }
 
 void TextArea::setFont(const QFont &font) {
-
-	// if we are displaying line numbers, then we'll need to recalculate
-	// the details of it too
-	const bool reconfigure = (lineNumCols_ != 0);
-
 	TextDSetFont(font);
-
-	/* Setting the lineNumCols resource tells the text widget to hide or
-	   show, or change the number of columns of the line number display,
-	   which requires re-organizing the x coordinates of both the line
-	   number display and the main text display */
-	if(reconfigure) {
-		setLineNumCols(getLineNumCols());
-	}
 }
 
 int TextArea::getLineNumCols() const {
@@ -7340,15 +7254,14 @@ void TextArea::TextDSetFont(const QFont &font) {
 
 	TextDResize(width, height);
 
+	// force a recalc of the line numbers
+	setLineNumCols(getLineNumCols());
+
 	viewport()->update();
 }
 
 int TextArea::getLineNumWidth() const {
-	return lineNumWidth_;
-}
-
-int TextArea::getLineNumLeft() const {
-	return lineNumLeft_;
+	return lineNumberAreaWidth();
 }
 
 int TextArea::getRows() const {
@@ -7918,11 +7831,9 @@ void TextArea::TextDMakeSelectionVisible() {
 
 		const int margin    = getMarginWidth();
 		const int areaWidth = width();
-		const int numWidth  = getLineNumWidth();
-		const int numLeft   = getLineNumLeft();
 
-		if (leftX < margin + numLeft + numWidth) {
-			horizOffset -= margin + numLeft + numWidth - leftX;
+		if (leftX < margin) {
+			horizOffset -= margin - leftX;
 		} else if (rightX > areaWidth - margin) {
 			horizOffset += rightX - (areaWidth - margin);
 		}
@@ -7979,4 +7890,12 @@ void TextArea::wheelEvent(QWheelEvent *event) {
 	} else {
 		QAbstractScrollArea::wheelEvent(event);
 	}
+}
+
+/**
+ * @brief TextArea::lineNumberAreaWidth
+ * @return
+ */
+int TextArea::lineNumberAreaWidth() const {
+	return lineNumCols_ * fixedFontWidth_;
 }
