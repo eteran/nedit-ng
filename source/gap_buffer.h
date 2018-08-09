@@ -435,26 +435,7 @@ void gap_buffer<Ch, Tr>::replace(size_type start, size_type end, Ch ch) {
  */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::assign(view_type str) {
-
-	const auto length = static_cast<size_type>(str.size());
-
-	// Start a new buffer with a gap of GapSize in the center
-	auto new_buffer = std::make_unique<Ch[]>(length + PreferredGapSize);
-	size_type new_size      = length;
-	size_type new_gap_start = length / 2;
-	size_type new_gap_end   = new_gap_start + PreferredGapSize;
-
-	Tr::copy(&new_buffer[0],           &str[0],                                  static_cast<size_t>(new_gap_start));
-	Tr::copy(&new_buffer[new_gap_end], &str[static_cast<size_t>(new_gap_start)], static_cast<size_t>(length - new_gap_start));
-
-#ifdef PURIFY
-	std::fill(&new_buffer[new_gap_start], &new_buffer[new_gap_end], Ch('.'));
-#endif
-
-	buf_       = std::move(new_buffer);
-	size_      = new_size;
-	gap_start_ = new_gap_start;
-	gap_end_   = new_gap_end;
+	replace(0, size(), str);
 }
 
 /**
