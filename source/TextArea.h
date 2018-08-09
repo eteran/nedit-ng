@@ -5,11 +5,12 @@
 #include "BlockDragTypes.h"
 #include "CallTip.h"
 #include "CursorStyles.h"
-#include "TextBufferFwd.h"
 #include "DragStates.h"
 #include "StyleTableEntry.h"
-#include "Util/string_view.h"
+#include "TextBufferFwd.h"
 #include "TextCursor.h"
+#include "Util/string_view.h"
+
 #include <QAbstractScrollArea>
 #include <QColor>
 #include <QFlags>
@@ -18,17 +19,17 @@
 #include <QRect>
 #include <QTime>
 #include <QVector>
+
 #include <memory>
 #include <vector>
+
 #include <boost/optional.hpp>
-#include <boost/variant.hpp>
 
 class CallTipWidget;
 class TextArea;
 class DocumentWidget;
 struct DragEndEvent;
 struct SmartIndentEvent;
-
 
 class QMenu;
 class QShortcut;
@@ -74,8 +75,8 @@ public:
 	};
 
 	enum class PositionTypes {
-		CURSOR_POS,
-		CHARACTER_POS
+		Cursor,
+		Character
 	};
 
 public:

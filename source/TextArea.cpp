@@ -5080,7 +5080,7 @@ void TextArea::InsertPrimarySelection(bool isColumnar) {
 ** positioning the cursor.
 */
 void TextArea::TextDXYToUnconstrainedPosition(const QPoint &coord, int64_t *row, int64_t *column) const {
-	xyToUnconstrainedPos(coord.x(), coord.y(), row, column, PositionTypes::CURSOR_POS);
+	xyToUnconstrainedPos(coord.x(), coord.y(), row, column, PositionTypes::Cursor);
 }
 
 /*
@@ -5112,7 +5112,7 @@ void TextArea::xyToUnconstrainedPos(int x, int y, int64_t *row, int64_t *column,
 		*row = nVisibleLines_ - 1;
 	}
 
-	*column = ((x - rect_.left()) + horizOffset_ + (posType == PositionTypes::CURSOR_POS ? fontWidth / 2 : 0)) / fontWidth;
+	*column = ((x - rect_.left()) + horizOffset_ + (posType == PositionTypes::Cursor ? fontWidth / 2 : 0)) / fontWidth;
 
 	if (*column < 0) {
 		*column = 0;
@@ -5406,7 +5406,7 @@ void TextArea::moveDestinationAP(QMouseEvent *event) {
 ** Translate window coordinates to the nearest text cursor position.
 */
 TextCursor TextArea::TextDXYToPosition(const QPoint &coord) const {
-	return xyToPos(coord, PositionTypes::CURSOR_POS);
+	return xyToPos(coord, PositionTypes::Cursor);
 }
 
 /*
@@ -5457,7 +5457,7 @@ TextCursor TextArea::xyToPos(int x, int y, PositionTypes posType) const {
 		const int charLen        = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->BufGetTabDist());
 		const int64_t charWidth  = stringWidth(charLen);
 
-		if (x < xStep + (posType == PositionTypes::CURSOR_POS ? charWidth / 2 : charWidth)) {
+		if (x < xStep + (posType == PositionTypes::Cursor ? charWidth / 2 : charWidth)) {
 			return lineStart + charIndex;
 		}
 		xStep += charWidth;
@@ -5944,11 +5944,11 @@ void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 */
 bool TextArea::TextDInSelection(const QPoint &p) const {
 
-	TextCursor pos = xyToPos(p, PositionTypes::CHARACTER_POS);
+	TextCursor pos = xyToPos(p, PositionTypes::Character);
 
 	int64_t row;
 	int64_t column;
-	xyToUnconstrainedPos(p, &row, &column, PositionTypes::CHARACTER_POS);
+	xyToUnconstrainedPos(p, &row, &column, PositionTypes::Character);
 
 	if (buffer_->primary.rangeTouchesRectSel(firstChar_, lastChar_)) {
 		column = TextDOffsetWrappedColumn(row, column);
