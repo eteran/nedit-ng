@@ -301,7 +301,7 @@ private:
 	gid_t gid_             = 0;                         // last recorded group id of the file
 	ino_t ino_             = 0;                         // file's inode
 	int autoSaveCharCount_ = 0;                         // count of single characters typed since last backup file generated
-	int autoSaveOpCount_   = 0;                         // count of editing operations ""
+	int autoSaveOpCount_   = 0;                         // count of editing operations
 	size_t nMarks_         = 0;                         // number of active bookmarks
 	mode_t mode_           = 0;                         // permissions of file being edited
 	time_t lastModTime_    = 0;                         // time of last modification to file

@@ -2774,7 +2774,7 @@ void DocumentWidget::CloseDocument() {
 
 		// clear the buffer, but ignore changes
 		ignoreModify_ = true;
-		buffer_->BufSetAll("");
+		buffer_->BufSetAll(view::string_view());
 		ignoreModify_ = false;
 
 		filenameSet_  = false;

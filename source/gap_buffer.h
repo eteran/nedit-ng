@@ -436,8 +436,6 @@ void gap_buffer<Ch, Tr>::replace(size_type start, size_type end, Ch ch) {
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::assign(view_type str) {
 
-	// TODO(eteran): this might be more efficient as: replace(0, size(), str);
-
 	const auto length = static_cast<size_type>(str.size());
 
 	// Start a new buffer with a gap of GapSize in the center

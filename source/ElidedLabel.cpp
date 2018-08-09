@@ -199,7 +199,7 @@ void ElidedLabel::keyPressEvent(QKeyEvent *event)  {
 
 			// Strip markup tags
 			if (textFormat() == Qt::RichText || (textFormat() == Qt::AutoText && Qt::mightBeRichText(txt))) {
-				txt.replace(QRegExp(QLatin1String("<[^>]*>")), QLatin1String(""));
+				txt.replace(QRegExp(QLatin1String("<[^>]*>")), QString());
 				// account for stripped characters
 				charsAfterSelection -= fullText_.length() - txt.length();
 			}
@@ -235,7 +235,7 @@ void ElidedLabel::mouseReleaseEvent(QMouseEvent *event) {
 
 			// Strip markup tags
 			if (textFormat() == Qt::RichText || (textFormat() == Qt::AutoText && Qt::mightBeRichText(txt))) {
-				txt.replace(QRegExp(QLatin1String("<[^>]*>")), QLatin1String(""));
+				txt.replace(QRegExp(QLatin1String("<[^>]*>")), QString());
 				// account for stripped characters
 				charsAfterSelection -= fullText_.length() - txt.length();
 			}
