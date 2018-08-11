@@ -10,8 +10,6 @@
 #include <cstdint>
 #include <cstring>
 
-extern uint8_t Compute_Size;
-
 template <class T>
 unsigned int U_CHAR_AT(T *p) noexcept {
 	return static_cast<unsigned int>(*p);
@@ -164,32 +162,6 @@ template <class T>
 uint16_t GET_OFFSET(T *p) noexcept {
 	auto ptr = reinterpret_cast<uint8_t *>(p);
 	return static_cast<uint16_t>(((ptr[1] & 0xff) << 8) + (ptr[2] & 0xff));
-}
-
-/*----------------------------------------------------------------------*
- * next_ptr - compute the address of a node's "NEXT" pointer.
- * Note: a simplified inline version is available via the NEXT_PTR() macro,
- *       but that one is only to be used at time-critical places (see the
- *       description of the macro).
- *----------------------------------------------------------------------*/
-template <class T>
-uint8_t *next_ptr(T *ptr) noexcept {
-
-	if (ptr == &Compute_Size) {
-		return nullptr;
-	}
-
-	const int offset = GET_OFFSET(ptr);
-
-	if (offset == 0) {
-		return nullptr;
-	}
-
-	if (GET_OP_CODE(ptr) == BACK) {
-		return (ptr - offset);
-	} else {
-		return (ptr + offset);
-	}
 }
 
 #endif

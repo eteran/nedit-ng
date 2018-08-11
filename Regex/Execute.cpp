@@ -26,6 +26,33 @@ namespace {
 bool match(uint8_t *prog, size_t *branch_index_param);
 bool attempt(Regex *prog, const char *string);
 
+/* The next_ptr () function can consume up to 30% of the time during matching
+   because it is called an immense number of times (an average of 25
+   next_ptr() calls per match() call was witnessed for Perl syntax
+   highlighting). Therefore it is well worth removing some of the function
+   call overhead by selectively inlining the next_ptr() calls. Moreover,
+   the inlined code can be simplified for matching because one of the tests,
+   only necessary during compilation, can be left out.
+   The net result of using this inlined version at two critical places is
+   a 25% speedup (again, witnesses on Perl syntax highlighting). */
+inline uint8_t *NEXT_PTR(uint8_t *ptr) {
+
+	// NOTE(eteran): like next_ptr, but is inline
+	// doesn't do "is this a first pass compile" check
+
+	const uint16_t offset = GET_OFFSET(ptr);
+
+	if (offset == 0) {
+		return nullptr;
+	}
+
+	if (GET_OP_CODE(ptr) == BACK) {
+		return (ptr - offset);
+	} else {
+		return (ptr + offset);
+	}
+}
+
 /**
  * @brief AT_END_OF_STRING
  * @param ptr
@@ -279,30 +306,6 @@ unsigned long greedy(uint8_t *p, unsigned long max) {
 	eContext.Reg_Input = input_str;
 
 	return count;
-}
-
-/* The next_ptr () function can consume up to 30% of the time during matching
-   because it is called an immense number of times (an average of 25
-   next_ptr() calls per match() call was witnessed for Perl syntax
-   highlighting). Therefore it is well worth removing some of the function
-   call overhead by selectively inlining the next_ptr() calls. Moreover,
-   the inlined code can be simplified for matching because one of the tests,
-   only necessary during compilation, can be left out.
-   The net result of using this inlined version at two critical places is
-   a 25% speedup (again, witnesses on Perl syntax highlighting). */
-uint8_t *NEXT_PTR(uint8_t *ptr) {
-
-	const uint16_t offset = GET_OFFSET(ptr);
-
-	if (offset == 0) {
-		return nullptr;
-	}
-
-	if (GET_OP_CODE(ptr) == BACK) {
-		return (ptr - offset);
-	} else {
-		return (ptr + offset);
-	}
 }
 
 /*----------------------------------------------------------------------*
@@ -846,11 +849,11 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				/* Jump to the node just after the (?=...) or (?!...)
 				   Construct. */
 
-				next = next_ptr(OPERAND(scan)); // Skip 1st branch
+				next = NEXT_PTR(OPERAND(scan)); // Skip 1st branch
 				// Skip the chain of branches inside the look-ahead
 				while (GET_OP_CODE(next) == BRANCH)
-					next = next_ptr(next);
-				next = next_ptr(next); // Skip the LOOK_AHEAD_CLOSE
+					next = NEXT_PTR(next);
+				next = NEXT_PTR(next); // Skip the LOOK_AHEAD_CLOSE
 			} else {
 				eContext.Reg_Input = save;          // Backtrack to look-ahead start.
 				eContext.End_Of_String = saved_end; // Restore logical end.
@@ -926,11 +929,11 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				   node. The look-behind node is followed by a chain of
 				   branches (contents of the look-behind expression), and
 				   terminated by a look-behind-close node. */
-				next = next_ptr(OPERAND(scan) + LENGTH_SIZE); // 1st branch
+				next = NEXT_PTR(OPERAND(scan) + LENGTH_SIZE); // 1st branch
 				// Skip the chained branches inside the look-ahead
 				while (GET_OP_CODE(next) == BRANCH)
-					next = next_ptr(next);
-				next = next_ptr(next); // Skip LOOK_BEHIND_CLOSE
+					next = NEXT_PTR(next);
+				next = NEXT_PTR(next); // Skip LOOK_BEHIND_CLOSE
 			} else {
 				// Not a match
 				MATCH_RETURN(false);

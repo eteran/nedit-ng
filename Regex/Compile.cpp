@@ -19,10 +19,10 @@
 #define NEDIT_FALLTHROUGH() (void)0
 #endif
 
+namespace {
+
 // Address of this used as flag.
 uint8_t Compute_Size;
-
-namespace {
 
 // Flags for function shortcut_escape()
 enum ShortcutEscapeFlags {
@@ -54,6 +54,33 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param);
 
 const char Default_Meta_Char[] = "{.*+?[(|)^<>$";
 const char ASCII_Digits[] = "0123456789"; // Same for all locales.
+
+
+/*----------------------------------------------------------------------*
+ * next_ptr - compute the address of a node's "NEXT" pointer.
+ * Note: a simplified inline version is available via the NEXT_PTR() macro,
+ *       but that one is only to be used at time-critical places (see the
+ *       description of the macro).
+ *----------------------------------------------------------------------*/
+template <class T>
+uint8_t *next_ptr(T *ptr) noexcept {
+
+	if (ptr == &Compute_Size) {
+		return nullptr;
+	}
+
+	const int offset = GET_OFFSET(ptr);
+
+	if (offset == 0) {
+		return nullptr;
+	}
+
+	if (GET_OP_CODE(ptr) == BACK) {
+		return (ptr - offset);
+	} else {
+		return (ptr + offset);
+	}
+}
 
 /**
  *
