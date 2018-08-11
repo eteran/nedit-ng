@@ -66,6 +66,7 @@ template <class T>
 uint8_t *next_ptr(T *ptr) noexcept {
 
 	if (ptr == &Compute_Size) {
+		assert(pContext.FirstPass);
 		return nullptr;
 	}
 
@@ -177,6 +178,7 @@ uint8_t *emit_node(T op_code) noexcept {
 	uint8_t *ret_val = pContext.Code_Emit_Ptr; // Return address of start of node
 
 	if (ret_val == &Compute_Size) {
+		assert(pContext.FirstPass);
 		pContext.Reg_Size += NODE_SIZE;
 	} else {
 		*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(op_code);
@@ -209,6 +211,7 @@ template <class T>
 void emit_byte(T ch) noexcept {
 
 	if (pContext.Code_Emit_Ptr == &Compute_Size) {
+		assert(pContext.FirstPass);
 		pContext.Reg_Size++;
 	} else {
 		*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(ch);
@@ -231,6 +234,7 @@ template <class T>
 void emit_class_byte(T ch) noexcept {
 
 	if (pContext.Code_Emit_Ptr == &Compute_Size) {
+		assert(pContext.FirstPass);
 		pContext.Reg_Size++;
 
 		if (pContext.Is_Case_Insensitive && safe_ctype<isalpha>(ch)) {
@@ -266,7 +270,9 @@ template <class Ch>
 uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept {
 
 	uint8_t *ret_val = &Compute_Size;
+
 	if (pContext.Code_Emit_Ptr == &Compute_Size) {
+		assert(pContext.FirstPass);
 		switch (op_code) {
 		case POS_BEHIND_OPEN:
 		case NEG_BEHIND_OPEN:
@@ -327,6 +333,7 @@ uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept
 void tail(uint8_t *search_from, uint8_t *point_to) {
 
 	if (search_from == &Compute_Size) {
+		assert(pContext.FirstPass);
 		return;
 	}
 
@@ -400,8 +407,15 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
  * Perform a tail operation on (ptr + offset).
  *--------------------------------------------------------------------*/
 void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
-	if (ptr == &Compute_Size || !ptr)
+
+	if(ptr == &Compute_Size) {
+		assert(pContext.FirstPass);
 		return;
+	}
+
+	if (!ptr) {
+		return;
+	}
 
 	tail(ptr + offset, val);
 }
@@ -427,6 +441,7 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
 	}
 
 	if (pContext.Code_Emit_Ptr == &Compute_Size) {
+		assert(pContext.FirstPass);
 		pContext.Reg_Size += insert_size;
 		return &Compute_Size;
 	}
@@ -656,7 +671,12 @@ uint8_t *shortcut_escape(T ch, int *flag_param, ShortcutEscapeFlags flags) {
  *--------------------------------------------------------------------*/
 void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
 
-	if (ptr == &Compute_Size || !ptr || GET_OP_CODE(ptr) != BRANCH) {
+	if(ptr == &Compute_Size) {
+		assert(pContext.FirstPass);
+		return;
+	}
+
+	if (!ptr || GET_OP_CODE(ptr) != BRANCH) {
 		return;
 	}
 
@@ -1157,6 +1177,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 					pContext.Reg_Parse = parse_save; // Point to previous regex token.
 
 					if (pContext.Code_Emit_Ptr == &Compute_Size) {
+						assert(pContext.FirstPass);
 						pContext.Reg_Size--;
 					} else {
 						pContext.Code_Emit_Ptr--; // Write over previously emitted byte.
@@ -1835,28 +1856,19 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 #ifdef EXPERIMENTAL_STORAGE_RET
 		if (pContext.Code_Emit_Ptr != &Compute_Size) {
 			emit_look_behind_bounds = pContext.CodePtr + (ret_val - pContext.Code.data()) + NODE_SIZE;
-		} else {
-			emit_look_behind_bounds = ret_val + NODE_SIZE;
 		}
 #else
 		emit_look_behind_bounds = ret_val + NODE_SIZE;
 #endif
 
 #ifdef EXPERIMENTAL_STORAGE
+		if (pContext.Code_Emit_Ptr != &Compute_Size) {
 #ifdef EXPERIMENTAL_STORAGE_RET
-		if (pContext.Code_Emit_Ptr != &Compute_Size) {
 			emit_look_behind_bounds2 = (ret_val - pContext.Code.data()) + NODE_SIZE;
-		} else {
-			emit_look_behind_bounds2 = (ret_val - &Compute_Size) + NODE_SIZE;
-		}
 #else
-		if (pContext.Code_Emit_Ptr != &Compute_Size) {
 			emit_look_behind_bounds2 = (ret_val - pContext.CodePtr) + NODE_SIZE;
-		} else {
-			emit_look_behind_bounds2 = (ret_val - &Compute_Size) + NODE_SIZE;
-
-		}
 #endif
+		}
 #endif
 	} else if (paren == INSENSITIVE) {
 		pContext.Is_Case_Insensitive = true;
@@ -1946,33 +1958,33 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		}
 	}
 
-	// Check whether look behind has a fixed size
-	if (emit_look_behind_bounds) {
-		if (range_param.lower < 0) {
-			Raise<RegexError>("look-behind does not have a bounded size");
-		}
 
-		if (range_param.upper > 65535L) {
-			Raise<RegexError>("max. look-behind size is too large (>65535)");
-		}
+	if (pContext.Code_Emit_Ptr != &Compute_Size) {
 
-		if (pContext.Code_Emit_Ptr != &Compute_Size) {
+		// Check whether look behind has a fixed size
+		if (emit_look_behind_bounds) {
+			if (range_param.lower < 0) {
+				Raise<RegexError>("look-behind does not have a bounded size");
+			}
+
+			if (range_param.upper > 65535L) {
+				Raise<RegexError>("max. look-behind size is too large (>65535)");
+			}
+
 			*emit_look_behind_bounds++ = PUT_OFFSET_L(range_param.lower);
 			*emit_look_behind_bounds++ = PUT_OFFSET_R(range_param.lower);
 			*emit_look_behind_bounds++ = PUT_OFFSET_L(range_param.upper);
 			*emit_look_behind_bounds   = PUT_OFFSET_R(range_param.upper);
-		}
 #ifdef EXPERIMENTAL_STORAGE
-		assert(emit_look_behind_bounds2 != SIZE_MAX);
+			assert(emit_look_behind_bounds2 != SIZE_MAX);
 
-		if (pContext.Code_Emit_Ptr != &Compute_Size) {
 			pContext.Code[emit_look_behind_bounds2++] = PUT_OFFSET_L(range_param.lower);
 			pContext.Code[emit_look_behind_bounds2++] = PUT_OFFSET_R(range_param.lower);
 			pContext.Code[emit_look_behind_bounds2++] = PUT_OFFSET_L(range_param.upper);
 			pContext.Code[emit_look_behind_bounds2]   = PUT_OFFSET_R(range_param.upper);
 			assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
-		}
 #endif
+		}
 	}
 
 	// For look ahead/behind, the length must be set to zero again
@@ -2064,6 +2076,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 	}
 
 	pContext.Code_Emit_Ptr = &Compute_Size;
+	pContext.FirstPass = true;
 	pContext.Reg_Size = 0UL;
 #ifdef EXPERIMENTAL_STORAGE
 	pContext.Code.clear();
@@ -2129,6 +2142,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 
 			// NOTE(eteran): For now, we NEED this to avoid issues regarding holding pointers to reallocated space
 			pContext.Code.reserve(pContext.Reg_Size);
+			pContext.FirstPass = false;
 #endif
 		}
 	}
