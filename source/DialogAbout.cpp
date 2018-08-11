@@ -3,8 +3,6 @@
 #include "Util/version.h"
 #include "Util/System.h"
 #include <QLocale>
-#include <QSysInfo>
-#include <QtGlobal>
 
 /**
  * @brief DialogAbout::DialogAbout
