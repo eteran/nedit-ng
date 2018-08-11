@@ -10,6 +10,7 @@
 #include "Util/utils.h"
 #include <cstring>
 #include <algorithm>
+#include <cassert>
 #include <QtGlobal>
 
 #ifdef Q_FALLTHROUGH
@@ -45,8 +46,8 @@ constexpr int NEWLINE     = 5; // Construct to match newlines in most cases
 constexpr int NO_NEWLINE  = 6; // Construct to match newlines normally
 
 struct len_range {
-	long lower;
-	long upper;
+	int32_t lower;
+	int32_t upper;
 };
 
 uint8_t *chunk(int paren, int *flag_param, len_range &range_param);
@@ -151,12 +152,22 @@ uint8_t *emit_node(T op_code) noexcept {
 	if (ret_val == &Compute_Size) {
 		pContext.Reg_Size += NODE_SIZE;
 	} else {
-		uint8_t *ptr = ret_val;
-		*ptr++ = static_cast<uint8_t>(op_code);
-		*ptr++ = '\0'; // Null "NEXT" pointer.
-		*ptr++ = '\0';
+		*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(op_code);
+		*pContext.Code_Emit_Ptr++ = 0; // Null "NEXT" pointer.
+		*pContext.Code_Emit_Ptr++ = 0;
 
-		pContext.Code_Emit_Ptr = ptr;
+#ifdef EXPERIMENTAL_STORAGE
+#ifdef EXPERIMENTAL_STORAGE_RET
+		size_t end_offset = pContext.Code.size();
+#endif
+		pContext.Code.push_back(static_cast<uint8_t>(op_code));
+		pContext.Code.push_back(0);
+		pContext.Code.push_back(0);
+		assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
+#ifdef EXPERIMENTAL_STORAGE_RET
+		ret_val = &pContext.Code[end_offset];
+#endif
+#endif
 	}
 
 	return ret_val;
@@ -174,6 +185,12 @@ void emit_byte(T ch) noexcept {
 		pContext.Reg_Size++;
 	} else {
 		*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(ch);
+
+#ifdef EXPERIMENTAL_STORAGE
+		pContext.Code.push_back(static_cast<uint8_t>(ch));
+		assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
+#endif
+
 	}
 }
 
@@ -189,16 +206,27 @@ void emit_class_byte(T ch) noexcept {
 	if (pContext.Code_Emit_Ptr == &Compute_Size) {
 		pContext.Reg_Size++;
 
-		if (pContext.Is_Case_Insensitive && safe_ctype<isalpha>(ch))
+		if (pContext.Is_Case_Insensitive && safe_ctype<isalpha>(ch)) {
 			pContext.Reg_Size++;
+		}
+
 	} else if (pContext.Is_Case_Insensitive && safe_ctype<isalpha>(ch)) {
-		/* For case insensitive character classes, emit both upper and lower case
-		   versions of alphabetical characters. */
+		/* For case insensitive character classes, emit both upper and lower
+		 * case versions of alphabetical characters. */
 
 		*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(safe_ctype<tolower>(ch));
 		*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(safe_ctype<toupper>(ch));
+#ifdef EXPERIMENTAL_STORAGE
+		pContext.Code.push_back(static_cast<uint8_t>(safe_ctype<tolower>(ch)));
+		pContext.Code.push_back(static_cast<uint8_t>(safe_ctype<toupper>(ch)));
+		assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
+#endif
 	} else {
 		*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(ch);
+#ifdef EXPERIMENTAL_STORAGE
+		pContext.Code.push_back(static_cast<uint8_t>(ch));
+		assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
+#endif
 	}
 }
 
@@ -211,8 +239,6 @@ template <class Ch>
 uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept {
 
 	uint8_t *ret_val = &Compute_Size;
-	uint8_t *ptr;
-
 	if (pContext.Code_Emit_Ptr == &Compute_Size) {
 		switch (op_code) {
 		case POS_BEHIND_OPEN:
@@ -232,23 +258,37 @@ uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept
 		}
 	} else {
 		ret_val = emit_node(op_code); // Return the address for start of node.
-		ptr = pContext.Code_Emit_Ptr;
 
 		if (op_code == INC_COUNT || op_code == TEST_COUNT) {
-			*ptr++ = static_cast<uint8_t>(index);
+			*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(index);
 
 			if (op_code == TEST_COUNT) {
-				*ptr++ = PUT_OFFSET_L(test_val);
-				*ptr++ = PUT_OFFSET_R(test_val);
+				*pContext.Code_Emit_Ptr++ = PUT_OFFSET_L(test_val);
+				*pContext.Code_Emit_Ptr++ = PUT_OFFSET_R(test_val);
 			}
 		} else if (op_code == POS_BEHIND_OPEN || op_code == NEG_BEHIND_OPEN) {
-			*ptr++ = PUT_OFFSET_L(test_val);
-			*ptr++ = PUT_OFFSET_R(test_val);
-			*ptr++ = PUT_OFFSET_L(test_val);
-			*ptr++ = PUT_OFFSET_R(test_val);
+			*pContext.Code_Emit_Ptr++ = PUT_OFFSET_L(test_val);
+			*pContext.Code_Emit_Ptr++ = PUT_OFFSET_R(test_val);
+			*pContext.Code_Emit_Ptr++ = PUT_OFFSET_L(test_val);
+			*pContext.Code_Emit_Ptr++ = PUT_OFFSET_R(test_val);
 		}
 
-		pContext.Code_Emit_Ptr = ptr;
+#ifdef EXPERIMENTAL_STORAGE
+		if (op_code == INC_COUNT || op_code == TEST_COUNT) {
+			pContext.Code.push_back(static_cast<uint8_t>(index));
+
+			if (op_code == TEST_COUNT) {
+				pContext.Code.push_back(PUT_OFFSET_L(test_val));
+				pContext.Code.push_back(PUT_OFFSET_R(test_val));
+			}
+		} else if (op_code == POS_BEHIND_OPEN || op_code == NEG_BEHIND_OPEN) {
+			pContext.Code.push_back(PUT_OFFSET_L(test_val));
+			pContext.Code.push_back(PUT_OFFSET_R(test_val));
+			pContext.Code.push_back(PUT_OFFSET_L(test_val));
+			pContext.Code.push_back(PUT_OFFSET_R(test_val));
+		}
+		assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
+#endif
 	}
 
 	return ret_val;
@@ -263,8 +303,42 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 		return;
 	}
 
-	// Find the last node in the chain (node with a null NEXT pointer)
+#ifdef EXPERIMENTAL_STORAGE_RET
+	search_from = pContext.CodePtr + (search_from - pContext.Code.data());
+	point_to    = pContext.CodePtr + (point_to    - pContext.Code.data());
+#endif
 
+#ifdef EXPERIMENTAL_STORAGE
+	uint8_t *from = pContext.Code.data() + (search_from - pContext.CodePtr);
+	uint8_t *to   = pContext.Code.data() + (point_to    - pContext.CodePtr);
+
+
+	// Find the last node in the chain (node with a null NEXT pointer)
+	uint8_t *scan2 = from;
+
+	for (;;) {
+		uint8_t *next = next_ptr(scan2);
+
+		if (!next) {
+			break;
+		}
+
+		scan2 = next;
+	}
+
+	long offset2;
+	if (GET_OP_CODE(scan2) == BACK) {
+		offset2 = scan2 - to;
+	} else {
+		offset2 = to - scan2;
+	}
+
+	// Set NEXT pointer
+	scan2[1] = PUT_OFFSET_L(offset2);
+	scan2[2] = PUT_OFFSET_R(offset2);
+#endif
+
+	// Find the last node in the chain (node with a null NEXT pointer)
 	uint8_t *scan = search_from;
 
 	for (;;) {
@@ -285,9 +359,12 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 	}
 
 	// Set NEXT pointer
+	scan[1] = PUT_OFFSET_L(offset);
+	scan[2] = PUT_OFFSET_R(offset);
 
-	*(scan + 1) = PUT_OFFSET_L(offset);
-	*(scan + 2) = PUT_OFFSET_R(offset);
+#ifdef EXPERIMENTAL_STORAGE
+	assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
+#endif
 }
 
 /*--------------------------------------------------------------------*
@@ -296,7 +373,7 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
  * Perform a tail operation on (ptr + offset).
  *--------------------------------------------------------------------*/
 void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
-	if (ptr == &Compute_Size || ptr == nullptr)
+	if (ptr == &Compute_Size || !ptr)
 		return;
 
 	tail(ptr + offset, val);
@@ -333,13 +410,18 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
 
 	// Relocate the existing emitted code to make room for the new node.
 
-	while (src > insert_pos)
+#ifdef EXPERIMENTAL_STORAGE_RET
+	insert_pos = pContext.CodePtr + (insert_pos - pContext.Code.data());
+#endif
+
+	while (src > insert_pos) {
 		*--dst = *--src;
+	}
 
 	uint8_t *place = insert_pos; // Where operand used to be.
 	*place++ = op;      // Inserted operand.
-	*place++ = '\0';    // NEXT pointer for inserted operand.
-	*place++ = '\0';
+	*place++ = 0;    // NEXT pointer for inserted operand.
+	*place++ = 0;
 
 	if (op == BRACE || op == LAZY_BRACE) {
 		*place++ = PUT_OFFSET_L(min);
@@ -350,6 +432,26 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
 	} else if (op == INIT_COUNT) {
 		*place++ = static_cast<uint8_t>(index);
 	}
+
+#ifdef EXPERIMENTAL_STORAGE
+	size_t offset = insert_pos - pContext.CodePtr;
+	pContext.Code.insert(pContext.Code.begin() + offset++, op);
+	pContext.Code.insert(pContext.Code.begin() + offset++, 0);
+	pContext.Code.insert(pContext.Code.begin() + offset++, 0);
+
+	if (op == BRACE || op == LAZY_BRACE) {
+		pContext.Code.insert(pContext.Code.begin() + offset++, PUT_OFFSET_L(min));
+		pContext.Code.insert(pContext.Code.begin() + offset++, PUT_OFFSET_R(min));
+
+		pContext.Code.insert(pContext.Code.begin() + offset++, PUT_OFFSET_L(max));
+		pContext.Code.insert(pContext.Code.begin() + offset++, PUT_OFFSET_R(max));
+
+	} else if (op == INIT_COUNT) {
+		pContext.Code.insert(pContext.Code.begin() + offset++, index);
+	}
+
+	assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
+#endif
 
 	return place; // Return a pointer to the start of the code moved.
 }
@@ -527,7 +629,7 @@ uint8_t *shortcut_escape(T ch, int *flag_param, ShortcutEscapeFlags flags) {
  *--------------------------------------------------------------------*/
 void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
 
-	if (ptr == &Compute_Size || ptr == nullptr || GET_OP_CODE(ptr) != BRANCH) {
+	if (ptr == &Compute_Size || !ptr || GET_OP_CODE(ptr) != BRANCH) {
 		return;
 	}
 
@@ -652,7 +754,6 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 			 error. */
 
 			ret_val = emit_node(NOTHING);
-
 			return ret_val;
 		}
 	}
@@ -736,7 +837,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 			ret_val = chunk(PAREN, &flags_local, range_local);
 		}
 
-		if (ret_val == nullptr)
+		if (!ret_val)
 			return nullptr; // Something went wrong.
 
 		// Add HAS_WIDTH flag if it was set by call to chunk.
@@ -946,18 +1047,16 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 			range_param.upper = -1;
 			break;
 		}
-		/* fallthrough */
-
 		/* At this point it is apparent that the escaped character is not a
-		   shortcut escape or back-reference.  Back up one character to allow
-		   the default code to include it as an ordinary character. */
+		 * shortcut escape or back-reference.  Back up one character to allow
+		 * the default code to include it as an ordinary character. */
 
 		/* Fall through to Default case to handle literal escapes and numeric
 		 * escapes. */
 		NEDIT_FALLTHROUGH();
 	default:
 		--pContext.Reg_Parse; /* If we fell through from the above code, we are now
-						pointing at the back slash (\) character. */
+							   * pointing at the back slash (\) character. */
 		{
 			const char *parse_save;
 			int len = 0;
@@ -969,7 +1068,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 			}
 
 			/* Loop until we find a meta character, shortcut escape, back
-			   reference, or end of regex string. */
+			 * reference, or end of regex string. */
 
 			for (; pContext.Reg_Parse != pContext.Reg_Parse_End && !::strchr(pContext.Meta_Char, static_cast<int>(*pContext.Reg_Parse)); len++) {
 
@@ -1034,6 +1133,10 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 						pContext.Reg_Size--;
 					} else {
 						pContext.Code_Emit_Ptr--; // Write over previously emitted byte.
+#ifdef EXPERIMENTAL_STORAGE
+						pContext.Code.pop_back();
+						assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
+#endif
 					}
 
 					break;
@@ -1070,7 +1173,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 uint8_t *piece(int *flag_param, len_range &range_param) {
 
 	uint8_t *next;
-	unsigned long min_max[2] = {REG_ZERO, REG_INFINITY};
+	uint32_t min_max[2] = {REG_ZERO, REG_INFINITY};
 	int flags_local;
 	int i;
 	int brace_present = 0;
@@ -1081,7 +1184,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 	uint8_t *ret_val = atom(&flags_local, range_local);
 
-	if (ret_val == nullptr)
+	if (!ret_val)
 		return nullptr; // Something went wrong.
 
 	char op_code = *pContext.Reg_Parse;
@@ -1115,6 +1218,10 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			while (safe_ctype<isdigit>(*pContext.Reg_Parse)) {
 				// (6553 * 10 + 6) > 65535 (16 bit max)
+
+				// TODO(eteran): we're storing this into a 32-bit variable... so would be simpler
+				// to just convert the number using strtoul and just check if it's too large when
+				// we're done
 
 				if ((min_max[i] == 6553UL && (*pContext.Reg_Parse - '0') <= 5) || (min_max[i] <= 6552UL)) {
 
@@ -1671,7 +1778,9 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 	len_range range_local;
 	bool look_only = false;
 	uint8_t *emit_look_behind_bounds = nullptr;
-
+#ifdef EXPERIMENTAL_STORAGE
+	size_t emit_look_behind_bounds2 = SIZE_MAX;
+#endif
 	*flag_param = HAS_WIDTH; // Tentatively.
 	range_param.lower = 0;   // Idem
 	range_param.upper = 0;
@@ -1695,7 +1804,33 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		look_only = true;
 		// We'll overwrite the zero length later on, so we save the ptr
 		ret_val = emit_special(paren, 0, 0);
+
+#ifdef EXPERIMENTAL_STORAGE_RET
+		if (pContext.Code_Emit_Ptr != &Compute_Size) {
+			emit_look_behind_bounds = pContext.CodePtr + (ret_val - pContext.Code.data()) + NODE_SIZE;
+		} else {
+			emit_look_behind_bounds = ret_val + NODE_SIZE;
+		}
+#else
 		emit_look_behind_bounds = ret_val + NODE_SIZE;
+#endif
+
+#ifdef EXPERIMENTAL_STORAGE
+#ifdef EXPERIMENTAL_STORAGE_RET
+		if (pContext.Code_Emit_Ptr != &Compute_Size) {
+			emit_look_behind_bounds2 = (ret_val - pContext.Code.data()) + NODE_SIZE;
+		} else {
+			emit_look_behind_bounds2 = (ret_val - &Compute_Size) + NODE_SIZE;
+		}
+#else
+		if (pContext.Code_Emit_Ptr != &Compute_Size) {
+			emit_look_behind_bounds2 = (ret_val - pContext.CodePtr) + NODE_SIZE;
+		} else {
+			emit_look_behind_bounds2 = (ret_val - &Compute_Size) + NODE_SIZE;
+
+		}
+#endif
+#endif
 	} else if (paren == INSENSITIVE) {
 		pContext.Is_Case_Insensitive = true;
 	} else if (paren == SENSITIVE) {
@@ -1707,18 +1842,18 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 	}
 
 	// Pick up the branches, linking them together.
-
 	do {
 		this_branch = alternative(&flags_local, range_local);
-
-		if (this_branch == nullptr)
+		if (!this_branch) {
 			return nullptr;
+		}
 
 		if (first) {
 			first = false;
 			range_param = range_local;
-			if (ret_val == nullptr)
+			if (!ret_val) {
 				ret_val = this_branch;
+			}
 		} else if (range_param.lower >= 0) {
 			if (range_local.lower >= 0) {
 				if (range_local.lower < range_param.lower) {
@@ -1753,16 +1888,12 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
 	if (paren == PAREN) {
 		ender = emit_node(CLOSE + this_paren);
-
 	} else if (paren == NO_PAREN) {
 		ender = emit_node(END);
-
 	} else if (paren == POS_AHEAD_OPEN || paren == NEG_AHEAD_OPEN) {
 		ender = emit_node(LOOK_AHEAD_CLOSE);
-
 	} else if (paren == POS_BEHIND_OPEN || paren == NEG_BEHIND_OPEN) {
 		ender = emit_node(LOOK_BEHIND_CLOSE);
-
 	} else {
 		ender = emit_node(NOTHING);
 	}
@@ -1789,20 +1920,32 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 	}
 
 	// Check whether look behind has a fixed size
-
 	if (emit_look_behind_bounds) {
 		if (range_param.lower < 0) {
 			Raise<RegexError>("look-behind does not have a bounded size");
 		}
+
 		if (range_param.upper > 65535L) {
 			Raise<RegexError>("max. look-behind size is too large (>65535)");
 		}
+
 		if (pContext.Code_Emit_Ptr != &Compute_Size) {
 			*emit_look_behind_bounds++ = PUT_OFFSET_L(range_param.lower);
 			*emit_look_behind_bounds++ = PUT_OFFSET_R(range_param.lower);
 			*emit_look_behind_bounds++ = PUT_OFFSET_L(range_param.upper);
 			*emit_look_behind_bounds   = PUT_OFFSET_R(range_param.upper);
 		}
+#ifdef EXPERIMENTAL_STORAGE
+		assert(emit_look_behind_bounds2 != SIZE_MAX);
+
+		if (pContext.Code_Emit_Ptr != &Compute_Size) {
+			pContext.Code[emit_look_behind_bounds2++] = PUT_OFFSET_L(range_param.lower);
+			pContext.Code[emit_look_behind_bounds2++] = PUT_OFFSET_R(range_param.lower);
+			pContext.Code[emit_look_behind_bounds2++] = PUT_OFFSET_L(range_param.upper);
+			pContext.Code[emit_look_behind_bounds2]   = PUT_OFFSET_R(range_param.upper);
+			assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
+		}
+#endif
 	}
 
 	// For look ahead/behind, the length must be set to zero again
@@ -1848,12 +1991,11 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 	   refers to this set of parentheses. */
 
 	if ((*flag_param & HAS_WIDTH) && paren == PAREN && !zero_width && this_paren <= pContext.Paren_Has_Width.size()) {
-
 		pContext.Paren_Has_Width[this_paren] = true;
 	}
 
 	pContext.Is_Case_Insensitive = old_sensitive;
-	pContext.Match_Newline = old_newline;
+	pContext.Match_Newline       = old_newline;
 
 	return ret_val;
 }
@@ -1896,6 +2038,9 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 
 	pContext.Code_Emit_Ptr = &Compute_Size;
 	pContext.Reg_Size = 0UL;
+#ifdef EXPERIMENTAL_STORAGE
+	pContext.Code.clear();
+#endif
 
 	/* We can't allocate space until we know how big the compiled form will be,
 	   but we can't compile it (and thus know how big it is) until we've got a
@@ -1936,7 +2081,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 		emit_byte('%'); // Placeholder for num of capturing parentheses.
 		emit_byte('%'); // Placeholder for num of general {m,n} constructs.
 
-		if (chunk(NO_PAREN, &flags_local, range_local) == nullptr) {
+		if (!chunk(NO_PAREN, &flags_local, range_local)) {
 			Raise<RegexError>("internal error #10, 'CompileRE'");
 		}
 
@@ -1950,14 +2095,26 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 			}
 
 			// Allocate memory.
-
 			re->program = std::make_unique<uint8_t[]>(pContext.Reg_Size);
 			pContext.Code_Emit_Ptr = &re->program[0];
+#ifdef EXPERIMENTAL_STORAGE
+			pContext.CodePtr       = &re->program[0];
+
+			// NOTE(eteran): For now, we NEED this to avoid issues regarding holding pointers to reallocated space
+			pContext.Code.reserve(pContext.Reg_Size);
+#endif
 		}
 	}
 
 	re->program[1] = static_cast<uint8_t>(pContext.Total_Paren - 1);
 	re->program[2] = static_cast<uint8_t>(pContext.Num_Braces);
+
+#ifdef EXPERIMENTAL_STORAGE
+	pContext.Code[1] = static_cast<uint8_t>(pContext.Total_Paren - 1);
+	pContext.Code[2] = static_cast<uint8_t>(pContext.Num_Braces);
+	assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
+#endif
+
 
 	/*----------------------------------------*
 	 * Dig out information for optimizations. *

@@ -5,6 +5,10 @@
 #include "RegexError.h"
 #include "Util/string_view.h"
 #include <bitset>
+#include <vector>
+
+#define EXPERIMENTAL_STORAGE
+#define EXPERIMENTAL_STORAGE_RET
 
 class Regex;
 
@@ -17,6 +21,10 @@ struct ParseContext {
 	view::string_view::iterator Reg_Parse;     // Input scan ptr (scans user's regex)
 	view::string_view::iterator Reg_Parse_End;
 	uint8_t *Code_Emit_Ptr;                    // When Code_Emit_Ptr is set to &Compute_Size no code is emitted. Instead, the size of code that WOULD have been generated is accumulated in Reg_Size.  Otherwise, Code_Emit_Ptr points to where compiled regex code is to be written.
+#ifdef EXPERIMENTAL_STORAGE
+	uint8_t *CodePtr;
+	std::vector<uint8_t> Code;
+#endif
 	const char *Meta_Char;
 	size_t Reg_Size;                           // Size of compiled regex code.
 	size_t Total_Paren;                        // Parentheses, (),  counter.
