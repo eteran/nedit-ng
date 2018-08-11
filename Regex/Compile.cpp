@@ -2133,8 +2133,8 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 
 			// NOTE(eteran): For now, we NEED this to avoid issues regarding holding pointers to reallocated space
 			pContext.Code.reserve(pContext.Reg_Size);
-			pContext.FirstPass = false;
 #endif
+			pContext.FirstPass = false;
 		}
 	}
 
