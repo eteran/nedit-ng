@@ -63,7 +63,6 @@ template <class T>
 uint8_t *next_ptr(T *ptr) noexcept {
 
 	if (pContext.FirstPass) {
-		assert(pContext.FirstPass);
 		return nullptr;
 	}
 
@@ -173,7 +172,6 @@ template <class T>
 uint8_t *emit_node(T op_code) noexcept {
 
 	if (pContext.FirstPass) {
-		assert(pContext.FirstPass);
 		pContext.Reg_Size += NODE_SIZE;
 		return reinterpret_cast<uint8_t *>(1);
 	} else {
@@ -186,7 +184,6 @@ uint8_t *emit_node(T op_code) noexcept {
 		pContext.Code.push_back(static_cast<uint8_t>(op_code));
 		pContext.Code.push_back(0);
 		pContext.Code.push_back(0);
-		assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
 		return &pContext.Code[end_offset];
 #endif
 	}
@@ -201,14 +198,12 @@ template <class T>
 void emit_byte(T ch) noexcept {
 
 	if (pContext.FirstPass) {
-		assert(pContext.FirstPass);
 		pContext.Reg_Size++;
 	} else {
 		*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(ch);
 
 #ifdef EXPERIMENTAL_STORAGE
 		pContext.Code.push_back(static_cast<uint8_t>(ch));
-		assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
 #endif
 
 	}
@@ -224,7 +219,6 @@ template <class T>
 void emit_class_byte(T ch) noexcept {
 
 	if (pContext.FirstPass) {
-		assert(pContext.FirstPass);
 		pContext.Reg_Size++;
 
 		if (pContext.Is_Case_Insensitive && safe_ctype<isalpha>(ch)) {
@@ -240,13 +234,11 @@ void emit_class_byte(T ch) noexcept {
 #ifdef EXPERIMENTAL_STORAGE
 		pContext.Code.push_back(static_cast<uint8_t>(safe_ctype<tolower>(ch)));
 		pContext.Code.push_back(static_cast<uint8_t>(safe_ctype<toupper>(ch)));
-		assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
 #endif
 	} else {
 		*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(ch);
 #ifdef EXPERIMENTAL_STORAGE
 		pContext.Code.push_back(static_cast<uint8_t>(ch));
-		assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
 #endif
 	}
 }
@@ -260,7 +252,6 @@ template <class Ch>
 uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept {
 
 	if (pContext.FirstPass) {
-		assert(pContext.FirstPass);
 		switch (op_code) {
 		case POS_BEHIND_OPEN:
 		case NEG_BEHIND_OPEN:
@@ -310,7 +301,6 @@ uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept
 			pContext.Code.push_back(PUT_OFFSET_L(test_val));
 			pContext.Code.push_back(PUT_OFFSET_R(test_val));
 		}
-		assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
 #endif
 		return ret_val;
 	}
@@ -322,7 +312,6 @@ uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept
 void tail(uint8_t *search_from, uint8_t *point_to) {
 
 	if (pContext.FirstPass) {
-		assert(pContext.FirstPass);
 		return;
 	}
 
@@ -384,10 +373,6 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 	// Set NEXT pointer
 	scan[1] = PUT_OFFSET_L(offset);
 	scan[2] = PUT_OFFSET_R(offset);
-
-#ifdef EXPERIMENTAL_STORAGE
-	assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
-#endif
 }
 
 /*--------------------------------------------------------------------*
@@ -398,7 +383,6 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
 
 	if (pContext.FirstPass) {
-		assert(pContext.FirstPass);
 		return;
 	}
 
@@ -430,7 +414,6 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
 	}
 
 	if (pContext.FirstPass) {
-		assert(pContext.FirstPass);
 		pContext.Reg_Size += insert_size;
 		return reinterpret_cast<uint8_t *>(1);
 	}
@@ -479,8 +462,6 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
 	} else if (op == INIT_COUNT) {
 		pContext.Code.insert(pContext.Code.begin() + offset++, index);
 	}
-
-	assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
 #endif
 
 	return place; // Return a pointer to the start of the code moved.
@@ -660,7 +641,6 @@ uint8_t *shortcut_escape(T ch, int *flag_param, ShortcutEscapeFlags flags) {
 void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
 
 	if (pContext.FirstPass) {
-		assert(pContext.FirstPass);
 		return;
 	}
 
@@ -1165,13 +1145,11 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 					pContext.Reg_Parse = parse_save; // Point to previous regex token.
 
 					if (pContext.FirstPass) {
-						assert(pContext.FirstPass);
 						pContext.Reg_Size--;
 					} else {
 						pContext.Code_Emit_Ptr--; // Write over previously emitted byte.
 #ifdef EXPERIMENTAL_STORAGE
 						pContext.Code.pop_back();
-						assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
 #endif
 					}
 
@@ -1959,7 +1937,6 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 			pContext.Code[emit_look_behind_bounds2++] = PUT_OFFSET_R(range_param.lower);
 			pContext.Code[emit_look_behind_bounds2++] = PUT_OFFSET_L(range_param.upper);
 			pContext.Code[emit_look_behind_bounds2]   = PUT_OFFSET_R(range_param.upper);
-			assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
 #endif
 		}
 	}
