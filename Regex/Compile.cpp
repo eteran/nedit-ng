@@ -175,12 +175,13 @@ bool init_ansi_classes() noexcept {
 template <class T>
 uint8_t *emit_node(T op_code) noexcept {
 
-	uint8_t *ret_val = pContext.Code_Emit_Ptr; // Return address of start of node
-
-	if (ret_val == &Compute_Size) {
+	if (pContext.Code_Emit_Ptr == &Compute_Size) {
 		assert(pContext.FirstPass);
 		pContext.Reg_Size += NODE_SIZE;
+		return &Compute_Size;
 	} else {
+		uint8_t *ret_val = pContext.Code_Emit_Ptr; // Return address of start of node
+
 		*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(op_code);
 		*pContext.Code_Emit_Ptr++ = 0; // Null "NEXT" pointer.
 		*pContext.Code_Emit_Ptr++ = 0;
@@ -197,9 +198,8 @@ uint8_t *emit_node(T op_code) noexcept {
 		ret_val = &pContext.Code[end_offset];
 #endif
 #endif
+		return ret_val;
 	}
-
-	return ret_val;
 }
 
 /*----------------------------------------------------------------------*
@@ -269,8 +269,6 @@ void emit_class_byte(T ch) noexcept {
 template <class Ch>
 uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept {
 
-	uint8_t *ret_val = &Compute_Size;
-
 	if (pContext.Code_Emit_Ptr == &Compute_Size) {
 		assert(pContext.FirstPass);
 		switch (op_code) {
@@ -289,8 +287,10 @@ uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept
 		default:
 			pContext.Reg_Size += NODE_SIZE; // Make room for the node.
 		}
+
+		return &Compute_Size;
 	} else {
-		ret_val = emit_node(op_code); // Return the address for start of node.
+		uint8_t *ret_val = emit_node(op_code); // Return the address for start of node.
 
 		if (op_code == INC_COUNT || op_code == TEST_COUNT) {
 			*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(index);
@@ -322,9 +322,8 @@ uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept
 		}
 		assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
 #endif
+		return ret_val;
 	}
-
-	return ret_val;
 }
 
 /*----------------------------------------------------------------------*
@@ -1853,23 +1852,18 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		// We'll overwrite the zero length later on, so we save the ptr
 		ret_val = emit_special(paren, 0, 0);
 
+		if (pContext.Code_Emit_Ptr != &Compute_Size) {
 #ifdef EXPERIMENTAL_STORAGE_RET
-		if (pContext.Code_Emit_Ptr != &Compute_Size) {
 			emit_look_behind_bounds = pContext.CodePtr + (ret_val - pContext.Code.data()) + NODE_SIZE;
-		}
-#else
-		emit_look_behind_bounds = ret_val + NODE_SIZE;
 #endif
-
 #ifdef EXPERIMENTAL_STORAGE
-		if (pContext.Code_Emit_Ptr != &Compute_Size) {
 #ifdef EXPERIMENTAL_STORAGE_RET
 			emit_look_behind_bounds2 = (ret_val - pContext.Code.data()) + NODE_SIZE;
 #else
 			emit_look_behind_bounds2 = (ret_val - pContext.CodePtr) + NODE_SIZE;
 #endif
-		}
 #endif
+		}
 	} else if (paren == INSENSITIVE) {
 		pContext.Is_Case_Insensitive = true;
 	} else if (paren == SENSITIVE) {
