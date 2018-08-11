@@ -21,9 +21,6 @@
 
 namespace {
 
-// Address of this used as flag.
-uint8_t Compute_Size;
-
 // Flags for function shortcut_escape()
 enum ShortcutEscapeFlags {
 	CHECK_ESCAPE       = 0, // Check an escape sequence for validity only.
@@ -65,7 +62,7 @@ const char ASCII_Digits[] = "0123456789"; // Same for all locales.
 template <class T>
 uint8_t *next_ptr(T *ptr) noexcept {
 
-	if (ptr == &Compute_Size) {
+	if (pContext.FirstPass) {
 		assert(pContext.FirstPass);
 		return nullptr;
 	}
@@ -175,10 +172,10 @@ bool init_ansi_classes() noexcept {
 template <class T>
 uint8_t *emit_node(T op_code) noexcept {
 
-	if (pContext.Code_Emit_Ptr == &Compute_Size) {
+	if (pContext.FirstPass) {
 		assert(pContext.FirstPass);
 		pContext.Reg_Size += NODE_SIZE;
-		return &Compute_Size;
+		return reinterpret_cast<uint8_t *>(1);
 	} else {
 		uint8_t *ret_val = pContext.Code_Emit_Ptr; // Return address of start of node
 
@@ -210,7 +207,7 @@ uint8_t *emit_node(T op_code) noexcept {
 template <class T>
 void emit_byte(T ch) noexcept {
 
-	if (pContext.Code_Emit_Ptr == &Compute_Size) {
+	if (pContext.FirstPass) {
 		assert(pContext.FirstPass);
 		pContext.Reg_Size++;
 	} else {
@@ -233,7 +230,7 @@ void emit_byte(T ch) noexcept {
 template <class T>
 void emit_class_byte(T ch) noexcept {
 
-	if (pContext.Code_Emit_Ptr == &Compute_Size) {
+	if (pContext.FirstPass) {
 		assert(pContext.FirstPass);
 		pContext.Reg_Size++;
 
@@ -269,7 +266,7 @@ void emit_class_byte(T ch) noexcept {
 template <class Ch>
 uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept {
 
-	if (pContext.Code_Emit_Ptr == &Compute_Size) {
+	if (pContext.FirstPass) {
 		assert(pContext.FirstPass);
 		switch (op_code) {
 		case POS_BEHIND_OPEN:
@@ -288,7 +285,7 @@ uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept
 			pContext.Reg_Size += NODE_SIZE; // Make room for the node.
 		}
 
-		return &Compute_Size;
+		return reinterpret_cast<uint8_t *>(1);
 	} else {
 		uint8_t *ret_val = emit_node(op_code); // Return the address for start of node.
 
@@ -331,7 +328,7 @@ uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept
  *----------------------------------------------------------------------*/
 void tail(uint8_t *search_from, uint8_t *point_to) {
 
-	if (search_from == &Compute_Size) {
+	if (pContext.FirstPass) {
 		assert(pContext.FirstPass);
 		return;
 	}
@@ -407,7 +404,7 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
  *--------------------------------------------------------------------*/
 void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
 
-	if(ptr == &Compute_Size) {
+	if (pContext.FirstPass) {
 		assert(pContext.FirstPass);
 		return;
 	}
@@ -439,10 +436,10 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
 		insert_size += INDEX_SIZE;
 	}
 
-	if (pContext.Code_Emit_Ptr == &Compute_Size) {
+	if (pContext.FirstPass) {
 		assert(pContext.FirstPass);
 		pContext.Reg_Size += insert_size;
-		return &Compute_Size;
+		return reinterpret_cast<uint8_t *>(1);
 	}
 
 	uint8_t *src = pContext.Code_Emit_Ptr;
@@ -670,7 +667,7 @@ uint8_t *shortcut_escape(T ch, int *flag_param, ShortcutEscapeFlags flags) {
  *--------------------------------------------------------------------*/
 void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
 
-	if(ptr == &Compute_Size) {
+	if (pContext.FirstPass) {
 		assert(pContext.FirstPass);
 		return;
 	}
@@ -1175,7 +1172,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 				if (isQuantifier(*pContext.Reg_Parse) && len > 0) {
 					pContext.Reg_Parse = parse_save; // Point to previous regex token.
 
-					if (pContext.Code_Emit_Ptr == &Compute_Size) {
+					if (pContext.FirstPass) {
 						assert(pContext.FirstPass);
 						pContext.Reg_Size--;
 					} else {
@@ -1852,7 +1849,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		// We'll overwrite the zero length later on, so we save the ptr
 		ret_val = emit_special(paren, 0, 0);
 
-		if (pContext.Code_Emit_Ptr != &Compute_Size) {
+		if (!pContext.FirstPass) {
 #ifdef EXPERIMENTAL_STORAGE_RET
 			emit_look_behind_bounds = pContext.CodePtr + (ret_val - pContext.Code.data()) + NODE_SIZE;
 #endif
@@ -1953,7 +1950,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 	}
 
 
-	if (pContext.Code_Emit_Ptr != &Compute_Size) {
+	if (!pContext.FirstPass) {
 
 		// Check whether look behind has a fixed size
 		if (emit_look_behind_bounds) {
@@ -2069,7 +2066,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 		Raise<RegexError>("internal error #1, 'CompileRE'");
 	}
 
-	pContext.Code_Emit_Ptr = &Compute_Size;
+	pContext.Code_Emit_Ptr = nullptr;
 	pContext.FirstPass = true;
 	pContext.Reg_Size = 0UL;
 #ifdef EXPERIMENTAL_STORAGE
