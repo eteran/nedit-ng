@@ -7,8 +7,6 @@
 #include <bitset>
 #include <vector>
 
-#define EXPERIMENTAL_STORAGE
-
 class Regex;
 
 // Array sizes for arrays used by function init_ansi_classes.
@@ -20,9 +18,7 @@ struct ParseContext {
 	view::string_view::iterator Reg_Parse;     // Input scan ptr (scans user's regex)
 	view::string_view::iterator Reg_Parse_End;
 	bool FirstPass;
-#ifdef EXPERIMENTAL_STORAGE	
 	std::vector<uint8_t> Code;
-#endif
 	const char *Meta_Char;
 	size_t Reg_Size;                           // Size of compiled regex code.
 	size_t Total_Paren;                        // Parentheses, (),  counter.

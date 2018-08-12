@@ -175,14 +175,11 @@ uint8_t *emit_node(T op_code) noexcept {
 		pContext.Reg_Size += NODE_SIZE;
 		return reinterpret_cast<uint8_t *>(1);
 	} else {
-
-#ifdef EXPERIMENTAL_STORAGE
 		size_t end_offset = pContext.Code.size();
 		pContext.Code.push_back(static_cast<uint8_t>(op_code));
 		pContext.Code.push_back(0);
 		pContext.Code.push_back(0);
 		return &pContext.Code[end_offset];
-#endif
 	}
 }
 
@@ -197,10 +194,7 @@ void emit_byte(T ch) noexcept {
 	if (pContext.FirstPass) {
 		pContext.Reg_Size++;
 	} else {
-#ifdef EXPERIMENTAL_STORAGE
 		pContext.Code.push_back(static_cast<uint8_t>(ch));
-#endif
-
 	}
 }
 
@@ -223,14 +217,10 @@ void emit_class_byte(T ch) noexcept {
 	} else if (pContext.Is_Case_Insensitive && safe_ctype<isalpha>(ch)) {
 		/* For case insensitive character classes, emit both upper and lower
 		 * case versions of alphabetical characters. */
-#ifdef EXPERIMENTAL_STORAGE
 		pContext.Code.push_back(static_cast<uint8_t>(safe_ctype<tolower>(ch)));
 		pContext.Code.push_back(static_cast<uint8_t>(safe_ctype<toupper>(ch)));
-#endif
 	} else {
-#ifdef EXPERIMENTAL_STORAGE
 		pContext.Code.push_back(static_cast<uint8_t>(ch));
-#endif
 	}
 }
 
@@ -263,7 +253,6 @@ uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept
 		return reinterpret_cast<uint8_t *>(1);
 	} else {
 		uint8_t *ret_val = emit_node(op_code); // Return the address for start of node.
-#ifdef EXPERIMENTAL_STORAGE
 		if (op_code == INC_COUNT || op_code == TEST_COUNT) {
 			pContext.Code.push_back(static_cast<uint8_t>(index));
 
@@ -277,7 +266,6 @@ uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept
 			pContext.Code.push_back(PUT_OFFSET_L(test_val));
 			pContext.Code.push_back(PUT_OFFSET_R(test_val));
 		}
-#endif
 		return ret_val;
 	}
 }
@@ -362,10 +350,9 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
 		return reinterpret_cast<uint8_t *>(1);
 	}
 
-	size_t place = insert_pos - pContext.Code.data(); // Where operand used to be.
+	const ptrdiff_t place  = insert_pos - pContext.Code.data(); // Where operand used to be.
+	ptrdiff_t offset = place;
 
-#ifdef EXPERIMENTAL_STORAGE
-	size_t offset = insert_pos - pContext.Code.data();
 	pContext.Code.insert(pContext.Code.begin() + offset++, op);
 	pContext.Code.insert(pContext.Code.begin() + offset++, 0);
 	pContext.Code.insert(pContext.Code.begin() + offset++, 0);
@@ -380,7 +367,6 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
 	} else if (op == INIT_COUNT) {
 		pContext.Code.insert(pContext.Code.begin() + offset++, index);
 	}
-#endif
 
 	return &pContext.Code[place]; // Return a pointer to the start of the code moved.
 }
@@ -1065,11 +1051,8 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 					if (pContext.FirstPass) {
 						pContext.Reg_Size--;
 					} else {
-#ifdef EXPERIMENTAL_STORAGE
 						pContext.Code.pop_back();
-#endif
 					}
-
 					break;
 				}
 			}
@@ -1708,9 +1691,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
 	len_range range_local;
 	bool look_only = false;
-#ifdef EXPERIMENTAL_STORAGE
-	size_t emit_look_behind_bounds2 = SIZE_MAX;
-#endif
+	uint8_t *emit_look_behind_bounds = nullptr;
 	*flag_param = HAS_WIDTH; // Tentatively.
 	range_param.lower = 0;   // Idem
 	range_param.upper = 0;
@@ -1736,9 +1717,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		ret_val = emit_special(paren, 0, 0);
 
 		if (!pContext.FirstPass) {
-#ifdef EXPERIMENTAL_STORAGE
-			emit_look_behind_bounds2 = (ret_val - pContext.Code.data()) + NODE_SIZE;
-#endif
+			emit_look_behind_bounds = ret_val + NODE_SIZE;
 		}
 	} else if (paren == INSENSITIVE) {
 		pContext.Is_Case_Insensitive = true;
@@ -1832,7 +1811,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 	if (!pContext.FirstPass) {
 
 		// Check whether look behind has a fixed size
-		if (emit_look_behind_bounds2 != SIZE_MAX) {
+		if (emit_look_behind_bounds) {
 			if (range_param.lower < 0) {
 				Raise<RegexError>("look-behind does not have a bounded size");
 			}
@@ -1841,12 +1820,10 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 				Raise<RegexError>("max. look-behind size is too large (>65535)");
 			}
 
-#ifdef EXPERIMENTAL_STORAGE
-			pContext.Code[emit_look_behind_bounds2++] = PUT_OFFSET_L(range_param.lower);
-			pContext.Code[emit_look_behind_bounds2++] = PUT_OFFSET_R(range_param.lower);
-			pContext.Code[emit_look_behind_bounds2++] = PUT_OFFSET_L(range_param.upper);
-			pContext.Code[emit_look_behind_bounds2]   = PUT_OFFSET_R(range_param.upper);
-#endif
+			*emit_look_behind_bounds++ = PUT_OFFSET_L(range_param.lower);
+			*emit_look_behind_bounds++ = PUT_OFFSET_R(range_param.lower);
+			*emit_look_behind_bounds++ = PUT_OFFSET_L(range_param.upper);
+			*emit_look_behind_bounds   = PUT_OFFSET_R(range_param.upper);
 		}
 	}
 
@@ -1940,9 +1917,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 
 	pContext.FirstPass = true;
 	pContext.Reg_Size = 0UL;
-#ifdef EXPERIMENTAL_STORAGE
 	pContext.Code.clear();
-#endif
 
 	/* We can't allocate space until we know how big the compiled form will be,
 	   but we can't compile it (and thus know how big it is) until we've got a
@@ -1996,35 +1971,23 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 				Raise<RegexError>("Regex > %lu bytes", MAX_COMPILED_SIZE);
 			}
 
-			// Allocate memory.
-			re->program = std::make_unique<uint8_t[]>(pContext.Reg_Size);
-#ifdef EXPERIMENTAL_STORAGE
-
 			// NOTE(eteran): For now, we NEED this to avoid issues regarding holding pointers to reallocated space
 			pContext.Code.reserve(pContext.Reg_Size);
-#endif
 			pContext.FirstPass = false;
 		}
 	}
 
-	re->program[1] = static_cast<uint8_t>(pContext.Total_Paren - 1);
-	re->program[2] = static_cast<uint8_t>(pContext.Num_Braces);
-
-#ifdef EXPERIMENTAL_STORAGE
 	pContext.Code[1] = static_cast<uint8_t>(pContext.Total_Paren - 1);
 	pContext.Code[2] = static_cast<uint8_t>(pContext.Num_Braces);
-#endif
 
-	// copy what we compiled
-	std::copy(pContext.Code.begin(),pContext.Code.end(), &re->program[0]);
-
+	// move over what we compiled
+	re->program = std::move(pContext.Code);
 
 	/*----------------------------------------*
 	 * Dig out information for optimizations. *
 	 *----------------------------------------*/
 
 	// First BRANCH.
-
 	uint8_t *scan = (&re->program[0] + REGEX_START_OFFSET);
 
 	if (GET_OP_CODE(next_ptr(scan)) == END) { // Only one top-level choice.

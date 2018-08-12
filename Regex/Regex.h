@@ -10,6 +10,7 @@
 #include <cstdint>
 #include <bitset>
 #include <memory>
+#include <vector>
 
 
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */
@@ -120,7 +121,7 @@ public:
 	size_t top_branch           = 0;               /* Zero-based index of the top branch that matches. Used by syntax highlighting only. */
 	char match_start            = '\0';            /* Internal use only. */
 	char anchor                 = '\0';            /* Internal use only. */
-	std::unique_ptr<uint8_t[]> program;
+	std::vector<uint8_t> program;
 
 public:
 	static std::bitset<256> Default_Delimiters;
