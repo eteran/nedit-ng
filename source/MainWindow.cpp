@@ -225,12 +225,12 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 	}
 #endif
 
-	setupMenuGroups();
 	setupTabBar();
 	setupMenuStrings();
 	setupMenuAlternativeMenus();
 	CreateLanguageModeSubMenu();
 	setupMenuDefaults();
+	setupMenuGroups();
 
 	setupPrevOpenMenuActions();
 	updatePrevOpenMenu();
