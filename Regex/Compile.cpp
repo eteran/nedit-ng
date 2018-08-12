@@ -1667,7 +1667,6 @@ uint8_t *alternative(int *flag_param, len_range &range_param) {
 uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
 	uint8_t *ret_val = nullptr;
-	uint8_t *this_branch;
 	uint8_t *ender = nullptr;
 	size_t this_paren = 0;
 	int flags_local;
@@ -1715,7 +1714,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
 	// Pick up the branches, linking them together.
 	do {
-		this_branch = alternative(&flags_local, range_local);
+		uint8_t *const this_branch = alternative(&flags_local, range_local);
 		if (!this_branch) {
 			return nullptr;
 		}
@@ -1773,10 +1772,8 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 	tail(ret_val, ender);
 
 	// Hook the tails of the branch alternatives to the closing node.
-
-	for (this_branch = ret_val; this_branch != nullptr;) {
+	for (uint8_t *this_branch = ret_val; this_branch != nullptr; this_branch = next_ptr(this_branch)) {
 		branch_tail(this_branch, NODE_SIZE, ender);
-		this_branch = next_ptr(this_branch);
 	}
 
 	// Check for proper termination.
