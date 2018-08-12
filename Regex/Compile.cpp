@@ -59,8 +59,7 @@ const char ASCII_Digits[] = "0123456789"; // Same for all locales.
  *       but that one is only to be used at time-critical places (see the
  *       description of the macro).
  *----------------------------------------------------------------------*/
-template <class T>
-uint8_t *next_ptr(T *ptr) noexcept {
+uint8_t *next_ptr(uint8_t *ptr) noexcept {
 
 	if (pContext.FirstPass) {
 		return nullptr;
@@ -96,12 +95,11 @@ constexpr uint8_t PUT_OFFSET_R(T v) noexcept {
 }
 
 /**
- * @brief IS_QUANTIFIER
+ * @brief isQuantifier
  * @param c
  * @return
  */
-template <class Ch>
-bool isQuantifier(Ch ch) noexcept {
+bool isQuantifier(char ch) noexcept {
 	return ch == '*' || ch == '+' || ch == '?' || ch == pContext.Brace_Char;
 }
 
