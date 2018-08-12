@@ -321,15 +321,8 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 	}
 
 #ifdef EXPERIMENTAL_STORAGE
-
-	// new -> old
-	search_from = pContext.CodePtr + (search_from - pContext.Code.data());
-	point_to    = pContext.CodePtr + (point_to    - pContext.Code.data());
-
-	// old -> new
-	uint8_t *from = pContext.Code.data() + (search_from - pContext.CodePtr);
-	uint8_t *to   = pContext.Code.data() + (point_to    - pContext.CodePtr);
-
+	uint8_t *from = search_from;
+	uint8_t *to   = point_to;
 
 	// Find the last node in the chain (node with a null NEXT pointer)
 	uint8_t *scan2 = from;
@@ -354,6 +347,12 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 	// Set NEXT pointer
 	scan2[1] = PUT_OFFSET_L(offset2);
 	scan2[2] = PUT_OFFSET_R(offset2);
+#endif
+
+#ifdef EXPERIMENTAL_STORAGE
+	// new -> old
+	search_from = pContext.CodePtr + (search_from - pContext.Code.data());
+	point_to    = pContext.CodePtr + (point_to    - pContext.Code.data());
 #endif
 
 	// Find the last node in the chain (node with a null NEXT pointer)
