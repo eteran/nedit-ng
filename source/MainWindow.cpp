@@ -341,13 +341,13 @@ void MainWindow::setupGlobalPrefenceDefaults() {
 	// Default Indent
 	switch(Preferences::GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
 	case IndentStyle::None:
-		no_signals(ui.action_Default_Indent_Off)->setChecked(true);
+		ui.action_Default_Indent_Off->setChecked(true);
 		break;
 	case IndentStyle::Auto:
-		no_signals(ui.action_Default_Indent_On)->setChecked(true);
+		ui.action_Default_Indent_On->setChecked(true);
 		break;
 	case IndentStyle::Smart:
-		no_signals(ui.action_Default_Indent_Smart)->setChecked(true);
+		ui.action_Default_Indent_Smart->setChecked(true);
 		break;
 	default:
 		break;
@@ -356,13 +356,13 @@ void MainWindow::setupGlobalPrefenceDefaults() {
 	// Default Wrap
 	switch(Preferences::GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
 	case WrapStyle::None:
-		no_signals(ui.action_Default_Wrap_None)->setChecked(true);
+		ui.action_Default_Wrap_None->setChecked(true);
 		break;
 	case WrapStyle::Newline:
-		no_signals(ui.action_Default_Wrap_Auto_Newline)->setChecked(true);
+		ui.action_Default_Wrap_Auto_Newline->setChecked(true);
 		break;
 	case WrapStyle::Continuous:
-		no_signals(ui.action_Default_Wrap_Continuous)->setChecked(true);
+		ui.action_Default_Wrap_Continuous->setChecked(true);
 		break;
 	default:
 		break;
@@ -376,30 +376,30 @@ void MainWindow::setupGlobalPrefenceDefaults() {
 
 	switch(Preferences::GetPrefSearch()) {
 	case SearchType::Literal:
-		no_signals(ui.action_Default_Search_Literal)->setChecked(true);
+		ui.action_Default_Search_Literal->setChecked(true);
 		break;
 	case SearchType::CaseSense:
-		no_signals(ui.action_Default_Search_Literal_Case_Sensitive)->setChecked(true);
+		ui.action_Default_Search_Literal_Case_Sensitive->setChecked(true);
 		break;
 	case SearchType::LiteralWord:
-		no_signals(ui.action_Default_Search_Literal_Whole_Word)->setChecked(true);
+		ui.action_Default_Search_Literal_Whole_Word->setChecked(true);
 		break;
 	case SearchType::CaseSenseWord:
-		no_signals(ui.action_Default_Search_Literal_Case_Sensitive_Whole_Word)->setChecked(true);
+		ui.action_Default_Search_Literal_Case_Sensitive_Whole_Word->setChecked(true);
 		break;
 	case SearchType::Regex:
-		no_signals(ui.action_Default_Search_Regular_Expression)->setChecked(true);
+		ui.action_Default_Search_Regular_Expression->setChecked(true);
 		break;
 	case SearchType::RegexNoCase:
-		no_signals(ui.action_Default_Search_Regular_Expresison_Case_Insensitive)->setChecked(true);
+		ui.action_Default_Search_Regular_Expresison_Case_Insensitive->setChecked(true);
 		break;
 	}
 
 	// Default syntax
 	if(Preferences::GetPrefHighlightSyntax()) {
-		no_signals(ui.action_Default_Syntax_On)->setChecked(true);
+		ui.action_Default_Syntax_On->setChecked(true);
 	} else {
-		no_signals(ui.action_Default_Syntax_Off)->setChecked(true);
+		ui.action_Default_Syntax_Off->setChecked(true);
 	}
 
 	no_signals(ui.action_Default_Apply_Backlighting)->setChecked(Preferences::GetPrefBacklightChars());
@@ -426,13 +426,13 @@ void MainWindow::setupGlobalPrefenceDefaults() {
 
 	switch(Preferences::GetPrefShowMatching()) {
 	case ShowMatchingStyle::None:
-		no_signals(ui.action_Default_Matching_Off)->setChecked(true);
+		ui.action_Default_Matching_Off->setChecked(true);
 		break;
 	case ShowMatchingStyle::Delimiter:
-		no_signals(ui.action_Default_Matching_Delimiter)->setChecked(true);
+		ui.action_Default_Matching_Delimiter->setChecked(true);
 		break;
 	case ShowMatchingStyle::Range:
-		no_signals(ui.action_Default_Matching_Range)->setChecked(true);
+		ui.action_Default_Matching_Range->setChecked(true);
 		break;
 	}
 
@@ -457,13 +457,13 @@ void MainWindow::setupDocumentPreferenceDefaults() {
 	// based on document, which defaults to this
 	switch(Preferences::GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
 	case IndentStyle::None:
-		no_signals(ui.action_Indent_Off)->setChecked(true);
+		ui.action_Indent_Off->setChecked(true);
 		break;
 	case IndentStyle::Auto:
-		no_signals(ui.action_Indent_On)->setChecked(true);
+		ui.action_Indent_On->setChecked(true);
 		break;
 	case IndentStyle::Smart:
-		no_signals(ui.action_Indent_Smart)->setChecked(true);
+		ui.action_Indent_Smart->setChecked(true);
 		break;
 	default:
 		break;
@@ -472,13 +472,13 @@ void MainWindow::setupDocumentPreferenceDefaults() {
 	// based on document, which defaults to this
 	switch(Preferences::GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
 	case WrapStyle::None:
-		no_signals(ui.action_Wrap_None)->setChecked(true);
+		ui.action_Wrap_None->setChecked(true);
 		break;
 	case WrapStyle::Newline:
-		no_signals(ui.action_Wrap_Auto_Newline)->setChecked(true);
+		ui.action_Wrap_Auto_Newline->setChecked(true);
 		break;
 	case WrapStyle::Continuous:
-		no_signals(ui.action_Wrap_Continuous)->setChecked(true);
+		ui.action_Wrap_Continuous->setChecked(true);
 		break;
 	default:
 		break;
@@ -486,20 +486,20 @@ void MainWindow::setupDocumentPreferenceDefaults() {
 
 	switch(Preferences::GetPrefShowMatching()) {
 	case ShowMatchingStyle::None:
-		no_signals(ui.action_Matching_Off)->setChecked(true);
+		ui.action_Matching_Off->setChecked(true);
 		break;
 	case ShowMatchingStyle::Delimiter:
-		no_signals(ui.action_Matching_Delimiter)->setChecked(true);
+		ui.action_Matching_Delimiter->setChecked(true);
 		break;
 	case ShowMatchingStyle::Range:
-		no_signals(ui.action_Matching_Range)->setChecked(true);
+		ui.action_Matching_Range->setChecked(true);
 		break;
 	}
 
 	if(Preferences::GetPrefSmartTags()) {
-		no_signals(ui.action_Default_Tag_Smart)->setChecked(true);
+		ui.action_Default_Tag_Smart->setChecked(true);
 	} else {
-		no_signals(ui.action_Default_Tag_Show_All)->setChecked(true);
+		ui.action_Default_Tag_Show_All->setChecked(true);
 	}
 }
 
