@@ -1149,13 +1149,20 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 	std::fill_n(re->startp.begin(), 9, start);
 	std::fill_n(re->endp.begin(),   9, start);
 
+	auto checked_return = [](bool value) {
+		if (eContext.Recursion_Limit_Exceeded) {
+			return false;
+		}
+
+		return value;
+	};
+
 	if (!reverse) { // Forward Search
 		if (re->anchor) {
 			// Search is anchored at BOL
-
 			if (attempt(re, start)) {
 				ret_val = true;
-				goto SINGLE_RETURN;
+				return checked_return(ret_val);
 			}
 
 			for (str = start; !AT_END_OF_STRING(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
@@ -1168,11 +1175,10 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 				}
 			}
 
-			goto SINGLE_RETURN;
+			return checked_return(ret_val);
 
 		} else if (re->match_start != '\0') {
 			// We know what char match must start with.
-
 			for (str = start; !AT_END_OF_STRING(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
 
 				if (*str == static_cast<uint8_t>(re->match_start)) {
@@ -1183,10 +1189,9 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 				}
 			}
 
-			goto SINGLE_RETURN;
+			return checked_return(ret_val);
 		} else {
 			// General case
-
 			for (str = start; !AT_END_OF_STRING(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
 
 				if (attempt(re, str)) {
@@ -1202,7 +1207,7 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 				}
 			}
 
-			goto SINGLE_RETURN;
+			return checked_return(ret_val);
 		}
 	} else { // Search reverse, same as forward, but loops run backward
 
@@ -1213,28 +1218,24 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 
 		if (re->anchor) {
 			// Search is anchored at BOL
-
 			for (str = (end - 1); str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
-
 				if (*str == '\n') {
 					if (attempt(re, str + 1)) {
 						ret_val = true;
-						goto SINGLE_RETURN;
+						return checked_return(ret_val);
 					}
 				}
 			}
 
 			if (!eContext.Recursion_Limit_Exceeded && attempt(re, start)) {
 				ret_val = true;
-				goto SINGLE_RETURN;
+				return checked_return(ret_val);
 			}
 
-			goto SINGLE_RETURN;
+			return checked_return(ret_val);
 		} else if (re->match_start != '\0') {
 			// We know what char match must start with.
-
 			for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
-
 				if (*str == static_cast<uint8_t>(re->match_start)) {
 					if (attempt(re, str)) {
 						ret_val = true;
@@ -1243,12 +1244,10 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 				}
 			}
 
-			goto SINGLE_RETURN;
+			return checked_return(ret_val);
 		} else {
 			// General case
-
 			for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
-
 				if (attempt(re, str)) {
 					ret_val = true;
 					break;
@@ -1257,10 +1256,5 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 		}
 	}
 
-SINGLE_RETURN:
-	if (eContext.Recursion_Limit_Exceeded) {
-		return false;
-	}
-
-	return ret_val;
+	return checked_return(ret_val);
 }
