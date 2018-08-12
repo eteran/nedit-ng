@@ -175,12 +175,6 @@ uint8_t *emit_node(T op_code) noexcept {
 		pContext.Reg_Size += NODE_SIZE;
 		return reinterpret_cast<uint8_t *>(1);
 	} else {
-#ifndef EXPERIMENTAL_STORAGE
-		uint8_t *ret_val = pContext.Code_Emit_Ptr;
-#endif
-		*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(op_code);
-		*pContext.Code_Emit_Ptr++ = 0; // Null "NEXT" pointer.
-		*pContext.Code_Emit_Ptr++ = 0;
 
 #ifdef EXPERIMENTAL_STORAGE
 		size_t end_offset = pContext.Code.size();
@@ -188,8 +182,6 @@ uint8_t *emit_node(T op_code) noexcept {
 		pContext.Code.push_back(0);
 		pContext.Code.push_back(0);
 		return &pContext.Code[end_offset];
-#else
-		return ret_val;
 #endif
 	}
 }
@@ -205,8 +197,6 @@ void emit_byte(T ch) noexcept {
 	if (pContext.FirstPass) {
 		pContext.Reg_Size++;
 	} else {
-		*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(ch);
-
 #ifdef EXPERIMENTAL_STORAGE
 		pContext.Code.push_back(static_cast<uint8_t>(ch));
 #endif
@@ -233,15 +223,11 @@ void emit_class_byte(T ch) noexcept {
 	} else if (pContext.Is_Case_Insensitive && safe_ctype<isalpha>(ch)) {
 		/* For case insensitive character classes, emit both upper and lower
 		 * case versions of alphabetical characters. */
-
-		*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(safe_ctype<tolower>(ch));
-		*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(safe_ctype<toupper>(ch));
 #ifdef EXPERIMENTAL_STORAGE
 		pContext.Code.push_back(static_cast<uint8_t>(safe_ctype<tolower>(ch)));
 		pContext.Code.push_back(static_cast<uint8_t>(safe_ctype<toupper>(ch)));
 #endif
 	} else {
-		*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(ch);
 #ifdef EXPERIMENTAL_STORAGE
 		pContext.Code.push_back(static_cast<uint8_t>(ch));
 #endif
@@ -277,21 +263,6 @@ uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept
 		return reinterpret_cast<uint8_t *>(1);
 	} else {
 		uint8_t *ret_val = emit_node(op_code); // Return the address for start of node.
-
-		if (op_code == INC_COUNT || op_code == TEST_COUNT) {
-			*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(index);
-
-			if (op_code == TEST_COUNT) {
-				*pContext.Code_Emit_Ptr++ = PUT_OFFSET_L(test_val);
-				*pContext.Code_Emit_Ptr++ = PUT_OFFSET_R(test_val);
-			}
-		} else if (op_code == POS_BEHIND_OPEN || op_code == NEG_BEHIND_OPEN) {
-			*pContext.Code_Emit_Ptr++ = PUT_OFFSET_L(test_val);
-			*pContext.Code_Emit_Ptr++ = PUT_OFFSET_R(test_val);
-			*pContext.Code_Emit_Ptr++ = PUT_OFFSET_L(test_val);
-			*pContext.Code_Emit_Ptr++ = PUT_OFFSET_R(test_val);
-		}
-
 #ifdef EXPERIMENTAL_STORAGE
 		if (op_code == INC_COUNT || op_code == TEST_COUNT) {
 			pContext.Code.push_back(static_cast<uint8_t>(index));
@@ -320,7 +291,6 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 		return;
 	}
 
-#ifdef EXPERIMENTAL_STORAGE
 	uint8_t *from = search_from;
 	uint8_t *to   = point_to;
 
@@ -347,37 +317,6 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 	// Set NEXT pointer
 	scan2[1] = PUT_OFFSET_L(offset2);
 	scan2[2] = PUT_OFFSET_R(offset2);
-#endif
-
-#ifdef EXPERIMENTAL_STORAGE
-	// new -> old
-	search_from = pContext.CodePtr + (search_from - pContext.Code.data());
-	point_to    = pContext.CodePtr + (point_to    - pContext.Code.data());
-#endif
-
-	// Find the last node in the chain (node with a null NEXT pointer)
-	uint8_t *scan = search_from;
-
-	for (;;) {
-		uint8_t *next = next_ptr(scan);
-
-		if (!next) {
-			break;
-		}
-
-		scan = next;
-	}
-
-	long offset;
-	if (GET_OP_CODE(scan) == BACK) {
-		offset = scan - point_to;
-	} else {
-		offset = point_to - scan;
-	}
-
-	// Set NEXT pointer
-	scan[1] = PUT_OFFSET_L(offset);
-	scan[2] = PUT_OFFSET_R(offset);
 }
 
 /*--------------------------------------------------------------------*
@@ -423,36 +362,10 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
 		return reinterpret_cast<uint8_t *>(1);
 	}
 
-	uint8_t *src = pContext.Code_Emit_Ptr;
-	pContext.Code_Emit_Ptr += insert_size;
-	uint8_t *dst = pContext.Code_Emit_Ptr;
-
-	// Relocate the existing emitted code to make room for the new node.
-#ifdef EXPERIMENTAL_STORAGE
-	// new -> old
-	insert_pos = pContext.CodePtr + (insert_pos - pContext.Code.data());
-#endif
-	while (src > insert_pos) {
-		*--dst = *--src;
-	}
-
-	uint8_t *place = insert_pos; // Where operand used to be.
-	*place++ = op;      // Inserted operand.
-	*place++ = 0;    // NEXT pointer for inserted operand.
-	*place++ = 0;
-
-	if (op == BRACE || op == LAZY_BRACE) {
-		*place++ = PUT_OFFSET_L(min);
-		*place++ = PUT_OFFSET_R(min);
-
-		*place++ = PUT_OFFSET_L(max);
-		*place++ = PUT_OFFSET_R(max);
-	} else if (op == INIT_COUNT) {
-		*place++ = static_cast<uint8_t>(index);
-	}
+	size_t place = insert_pos - pContext.Code.data(); // Where operand used to be.
 
 #ifdef EXPERIMENTAL_STORAGE
-	size_t offset = insert_pos - pContext.CodePtr;
+	size_t offset = insert_pos - pContext.Code.data();
 	pContext.Code.insert(pContext.Code.begin() + offset++, op);
 	pContext.Code.insert(pContext.Code.begin() + offset++, 0);
 	pContext.Code.insert(pContext.Code.begin() + offset++, 0);
@@ -469,7 +382,7 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
 	}
 #endif
 
-	return place; // Return a pointer to the start of the code moved.
+	return &pContext.Code[place]; // Return a pointer to the start of the code moved.
 }
 
 /*--------------------------------------------------------------------*
@@ -1152,7 +1065,6 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 					if (pContext.FirstPass) {
 						pContext.Reg_Size--;
 					} else {
-						pContext.Code_Emit_Ptr--; // Write over previously emitted byte.
 #ifdef EXPERIMENTAL_STORAGE
 						pContext.Code.pop_back();
 #endif
@@ -1796,7 +1708,6 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
 	len_range range_local;
 	bool look_only = false;
-	uint8_t *emit_look_behind_bounds = nullptr;
 #ifdef EXPERIMENTAL_STORAGE
 	size_t emit_look_behind_bounds2 = SIZE_MAX;
 #endif
@@ -1826,10 +1737,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
 		if (!pContext.FirstPass) {
 #ifdef EXPERIMENTAL_STORAGE
-			emit_look_behind_bounds = pContext.CodePtr + (ret_val - pContext.Code.data()) + NODE_SIZE;
 			emit_look_behind_bounds2 = (ret_val - pContext.Code.data()) + NODE_SIZE;
-#else
-			emit_look_behind_bounds = ret_val + NODE_SIZE;
 #endif
 		}
 	} else if (paren == INSENSITIVE) {
@@ -1924,7 +1832,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 	if (!pContext.FirstPass) {
 
 		// Check whether look behind has a fixed size
-		if (emit_look_behind_bounds) {
+		if (emit_look_behind_bounds2 != SIZE_MAX) {
 			if (range_param.lower < 0) {
 				Raise<RegexError>("look-behind does not have a bounded size");
 			}
@@ -1933,13 +1841,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 				Raise<RegexError>("max. look-behind size is too large (>65535)");
 			}
 
-			*emit_look_behind_bounds++ = PUT_OFFSET_L(range_param.lower);
-			*emit_look_behind_bounds++ = PUT_OFFSET_R(range_param.lower);
-			*emit_look_behind_bounds++ = PUT_OFFSET_L(range_param.upper);
-			*emit_look_behind_bounds   = PUT_OFFSET_R(range_param.upper);
 #ifdef EXPERIMENTAL_STORAGE
-			assert(emit_look_behind_bounds2 != SIZE_MAX);
-
 			pContext.Code[emit_look_behind_bounds2++] = PUT_OFFSET_L(range_param.lower);
 			pContext.Code[emit_look_behind_bounds2++] = PUT_OFFSET_R(range_param.lower);
 			pContext.Code[emit_look_behind_bounds2++] = PUT_OFFSET_L(range_param.upper);
@@ -2036,7 +1938,6 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 		Raise<RegexError>("internal error #1, 'CompileRE'");
 	}
 
-	pContext.Code_Emit_Ptr = nullptr;
 	pContext.FirstPass = true;
 	pContext.Reg_Size = 0UL;
 #ifdef EXPERIMENTAL_STORAGE
@@ -2097,9 +1998,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 
 			// Allocate memory.
 			re->program = std::make_unique<uint8_t[]>(pContext.Reg_Size);
-			pContext.Code_Emit_Ptr = &re->program[0];
 #ifdef EXPERIMENTAL_STORAGE
-			pContext.CodePtr       = &re->program[0];
 
 			// NOTE(eteran): For now, we NEED this to avoid issues regarding holding pointers to reallocated space
 			pContext.Code.reserve(pContext.Reg_Size);
@@ -2114,8 +2013,10 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 #ifdef EXPERIMENTAL_STORAGE
 	pContext.Code[1] = static_cast<uint8_t>(pContext.Total_Paren - 1);
 	pContext.Code[2] = static_cast<uint8_t>(pContext.Num_Braces);
-	assert(pContext.Code == std::vector<uint8_t>(pContext.CodePtr, pContext.Code_Emit_Ptr));
 #endif
+
+	// copy what we compiled
+	std::copy(pContext.Code.begin(),pContext.Code.end(), &re->program[0]);
 
 
 	/*----------------------------------------*
