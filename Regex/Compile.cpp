@@ -175,6 +175,9 @@ uint8_t *emit_node(T op_code) noexcept {
 		pContext.Reg_Size += NODE_SIZE;
 		return reinterpret_cast<uint8_t *>(1);
 	} else {
+#ifndef EXPERIMENTAL_STORAGE
+		uint8_t *ret_val = pContext.Code_Emit_Ptr;
+#endif
 		*pContext.Code_Emit_Ptr++ = static_cast<uint8_t>(op_code);
 		*pContext.Code_Emit_Ptr++ = 0; // Null "NEXT" pointer.
 		*pContext.Code_Emit_Ptr++ = 0;
@@ -185,6 +188,8 @@ uint8_t *emit_node(T op_code) noexcept {
 		pContext.Code.push_back(0);
 		pContext.Code.push_back(0);
 		return &pContext.Code[end_offset];
+#else
+		return ret_val;
 #endif
 	}
 }
@@ -315,11 +320,12 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 		return;
 	}
 
+#ifdef EXPERIMENTAL_STORAGE
+
 	// new -> old
 	search_from = pContext.CodePtr + (search_from - pContext.Code.data());
 	point_to    = pContext.CodePtr + (point_to    - pContext.Code.data());
 
-#ifdef EXPERIMENTAL_STORAGE
 	// old -> new
 	uint8_t *from = pContext.Code.data() + (search_from - pContext.CodePtr);
 	uint8_t *to   = pContext.Code.data() + (point_to    - pContext.CodePtr);
@@ -423,10 +429,10 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
 	uint8_t *dst = pContext.Code_Emit_Ptr;
 
 	// Relocate the existing emitted code to make room for the new node.
-
+#ifdef EXPERIMENTAL_STORAGE
 	// new -> old
 	insert_pos = pContext.CodePtr + (insert_pos - pContext.Code.data());
-
+#endif
 	while (src > insert_pos) {
 		*--dst = *--src;
 	}
@@ -1820,9 +1826,11 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		ret_val = emit_special(paren, 0, 0);
 
 		if (!pContext.FirstPass) {
-			emit_look_behind_bounds = pContext.CodePtr + (ret_val - pContext.Code.data()) + NODE_SIZE;
 #ifdef EXPERIMENTAL_STORAGE
+			emit_look_behind_bounds = pContext.CodePtr + (ret_val - pContext.Code.data()) + NODE_SIZE;
 			emit_look_behind_bounds2 = (ret_val - pContext.Code.data()) + NODE_SIZE;
+#else
+			emit_look_behind_bounds = ret_val + NODE_SIZE;
 #endif
 		}
 	} else if (paren == INSENSITIVE) {
@@ -2123,7 +2131,6 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 		scan = OPERAND(scan);
 
 		// Starting-point info.
-
 		if (GET_OP_CODE(scan) == EXACTLY) {
 			re->match_start = static_cast<char>(*OPERAND(scan));
 

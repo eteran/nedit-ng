@@ -7,7 +7,7 @@
 #include <bitset>
 #include <vector>
 
-#define EXPERIMENTAL_STORAGE
+//#define EXPERIMENTAL_STORAGE
 
 class Regex;
 
