@@ -1249,7 +1249,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 	 *---------------------------------------------------------------------*/
 
 	if (op_code == '*' && (flags_local & SIMPLE)) {
-		insert((lazy ? LAZY_STAR : STAR), ret_val, 0UL, 0UL, 0);
+		insert(lazy ? LAZY_STAR : STAR, ret_val, 0UL, 0UL, 0);
 
 	} else if (op_code == '+' && (flags_local & SIMPLE)) {
 		insert(lazy ? LAZY_PLUS : PLUS, ret_val, 0UL, 0UL, 0);
