@@ -45,7 +45,7 @@ private:
 	void CreateLanguageModeSubMenu();
 	void setupMenuDefaults();
 	void setupGlobalPrefenceDefaults();
-	void setupDocumentPrefernceDefaults();
+	void setupDocumentPreferenceDefaults();
 	void setupPrevOpenMenuActions();
 	QMenu *createUserMenu(DocumentWidget *document, const gsl::span<MenuData> &data, CommandTypes type);
 	QTabWidget *tabWidget() const;

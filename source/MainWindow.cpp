@@ -450,9 +450,9 @@ void MainWindow::setupGlobalPrefenceDefaults() {
 }
 
 /**
- * @brief MainWindow::setupDocumentPrefernceDefaults
+ * @brief MainWindow::setupDocumentPreferenceDefaults
  */
-void MainWindow::setupDocumentPrefernceDefaults() {
+void MainWindow::setupDocumentPreferenceDefaults() {
 
 	// based on document, which defaults to this
 	switch(Preferences::GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
@@ -519,7 +519,7 @@ void MainWindow::setupMenuDefaults() {
 	no_signals(ui.action_Matching_Syntax)->setChecked(Preferences::GetPrefMatchSyntaxBased());
 
 	setupGlobalPrefenceDefaults();
-	setupDocumentPrefernceDefaults();
+	setupDocumentPreferenceDefaults();
 
 	updateWindowSizeMenu();
 	updateTipsFileMenuEx();
