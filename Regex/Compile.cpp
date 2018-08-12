@@ -277,11 +277,8 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 		return;
 	}
 
-	uint8_t *from = search_from;
-	uint8_t *to   = point_to;
-
 	// Find the last node in the chain (node with a null NEXT pointer)
-	uint8_t *scan = from;
+	uint8_t *scan = search_from;
 
 	for (;;) {
 		uint8_t *next = next_ptr(scan);
@@ -293,16 +290,16 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 		scan = next;
 	}
 
-	long offset2;
+	long offset;
 	if (GET_OP_CODE(scan) == BACK) {
-		offset2 = scan - to;
+		offset = scan - point_to;
 	} else {
-		offset2 = to - scan;
+		offset = point_to - scan;
 	}
 
 	// Set NEXT pointer
-	scan[1] = PUT_OFFSET_L(offset2);
-	scan[2] = PUT_OFFSET_R(offset2);
+	scan[1] = PUT_OFFSET_L(offset);
+	scan[2] = PUT_OFFSET_R(offset);
 }
 
 /*--------------------------------------------------------------------*
