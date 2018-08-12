@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.0)
 
 project (nedit CXX)
 
+enable_testing()
+
 option(ENABLE_PROFILING "Enable profiling")
 option(ENABLE_ASAN      "Enable address santiziers")
 option(ENABLE_USAN      "Enable undefined santiziers")
