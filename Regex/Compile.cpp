@@ -283,28 +283,28 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 	uint8_t *to   = point_to;
 
 	// Find the last node in the chain (node with a null NEXT pointer)
-	uint8_t *scan2 = from;
+	uint8_t *scan = from;
 
 	for (;;) {
-		uint8_t *next = next_ptr(scan2);
+		uint8_t *next = next_ptr(scan);
 
 		if (!next) {
 			break;
 		}
 
-		scan2 = next;
+		scan = next;
 	}
 
 	long offset2;
-	if (GET_OP_CODE(scan2) == BACK) {
-		offset2 = scan2 - to;
+	if (GET_OP_CODE(scan) == BACK) {
+		offset2 = scan - to;
 	} else {
-		offset2 = to - scan2;
+		offset2 = to - scan;
 	}
 
 	// Set NEXT pointer
-	scan2[1] = PUT_OFFSET_L(offset2);
-	scan2[2] = PUT_OFFSET_R(offset2);
+	scan[1] = PUT_OFFSET_L(offset2);
+	scan[2] = PUT_OFFSET_R(offset2);
 }
 
 /*--------------------------------------------------------------------*
@@ -314,11 +314,7 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
  *--------------------------------------------------------------------*/
 void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
 
-	if (pContext.FirstPass) {
-		return;
-	}
-
-	if (!ptr) {
+	if (pContext.FirstPass || !ptr) {
 		return;
 	}
 
@@ -544,11 +540,7 @@ uint8_t *shortcut_escape(T ch, int *flag_param, ShortcutEscapeFlags flags) {
  *--------------------------------------------------------------------*/
 void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
 
-	if (pContext.FirstPass) {
-		return;
-	}
-
-	if (!ptr || GET_OP_CODE(ptr) != BRANCH) {
+	if (pContext.FirstPass || !ptr || GET_OP_CODE(ptr) != BRANCH) {
 		return;
 	}
 
@@ -659,7 +651,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 
 		pContext.Reg_Parse += 3;
 
-		while (*pContext.Reg_Parse != ')' && pContext.Reg_Parse != pContext.Reg_Parse_End) {
+		while (*pContext.Reg_Parse != ')' && pContext.Reg_Parse != pContext.InputString.end()) {
 			++pContext.Reg_Parse;
 		}
 
@@ -667,7 +659,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 			++pContext.Reg_Parse;
 		}
 
-		if (*pContext.Reg_Parse == ')' || *pContext.Reg_Parse == '|' || pContext.Reg_Parse == pContext.Reg_Parse_End) {
+		if (*pContext.Reg_Parse == ')' || *pContext.Reg_Parse == '|' || pContext.Reg_Parse == pContext.InputString.end()) {
 			/* Hit end of regex string or end of parenthesized regex; have to
 			 return "something" (i.e. a NOTHING node) to avoid generating an
 			 error. */
@@ -677,7 +669,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 		}
 	}
 
-	if(pContext.Reg_Parse == pContext.Reg_Parse_End) {
+	if(pContext.Reg_Parse == pContext.InputString.end()) {
 		// Supposed to be caught earlier.
 		Raise<RegexError>("internal error #3, 'atom'");
 	}
@@ -817,11 +809,11 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 
 		// Handle the rest of the class characters.
 
-		while (pContext.Reg_Parse != pContext.Reg_Parse_End && *pContext.Reg_Parse != ']') {
+		while (pContext.Reg_Parse != pContext.InputString.end() && *pContext.Reg_Parse != ']') {
 			if (*pContext.Reg_Parse == '-') { // Process a range, e.g [a-z].
 				++pContext.Reg_Parse;
 
-				if (*pContext.Reg_Parse == ']' || pContext.Reg_Parse == pContext.Reg_Parse_End) {
+				if (*pContext.Reg_Parse == ']' || pContext.Reg_Parse == pContext.InputString.end()) {
 					/* If '-' is the last character in a class it is a literal
 					   character.  If 'Reg_Parse' points to the end of the
 					   regex string, an error will be generated later. */
@@ -989,7 +981,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 			/* Loop until we find a meta character, shortcut escape, back
 			 * reference, or end of regex string. */
 
-			for (; pContext.Reg_Parse != pContext.Reg_Parse_End && !::strchr(pContext.Meta_Char, static_cast<int>(*pContext.Reg_Parse)); len++) {
+			for (; pContext.Reg_Parse != pContext.InputString.end() && !::strchr(pContext.Meta_Char, static_cast<int>(*pContext.Reg_Parse)); len++) {
 
 				/* Save where we are in case we have to back
 				   this character out. */
@@ -1636,7 +1628,7 @@ uint8_t *alternative(int *flag_param, len_range &range_param) {
 	/* Loop until we hit the start of the next alternative, the end of this set
 	   of alternatives (end of parentheses), or the end of the regex. */
 
-	while (*pContext.Reg_Parse != '|' && *pContext.Reg_Parse != ')' && pContext.Reg_Parse != pContext.Reg_Parse_End) {
+	while (*pContext.Reg_Parse != '|' && *pContext.Reg_Parse != ')' && pContext.Reg_Parse != pContext.InputString.end()) {
 		latest = piece(&flags_local, range_local);
 
 		if(!latest)
@@ -1796,7 +1788,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
 	if (paren != NO_PAREN && *pContext.Reg_Parse++ != ')') {
 		Raise<RegexError>("missing right parenthesis ')'");
-	} else if (paren == NO_PAREN && pContext.Reg_Parse != pContext.Reg_Parse_End) {
+	} else if (paren == NO_PAREN && pContext.Reg_Parse != pContext.InputString.end()) {
 		if (*pContext.Reg_Parse == ')') {
 			Raise<RegexError>("missing left parenthesis '('");
 		} else {
@@ -1943,7 +1935,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 #endif
 
 		pContext.Reg_Parse       = exp.begin();
-		pContext.Reg_Parse_End   = exp.end();
+		pContext.InputString     = exp;
 		pContext.Total_Paren     = 1;
 		pContext.Num_Braces      = 0;
 		pContext.Closed_Parens   = 0;
@@ -1974,6 +1966,8 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 
 	pContext.Code[1] = static_cast<uint8_t>(pContext.Total_Paren - 1);
 	pContext.Code[2] = static_cast<uint8_t>(pContext.Num_Braces);
+
+	assert(pContext.Code.size() == pContext.Reg_Size);
 
 	// move over what we compiled
 	re->program = std::move(pContext.Code);
