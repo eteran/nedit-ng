@@ -1276,10 +1276,10 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 		 */
 
 		tail(ret_val, emit_node(BACK));              // 1
-		insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 2,4
-		insert(NOTHING, ret_val, 0UL, 0UL, 0); // 3
+		insert(BRANCH, ret_val, 0UL, 0UL, 0);        // 2,4
+		insert(NOTHING, ret_val, 0UL, 0UL, 0);       // 3
 
-		next = emit_node(NOTHING); // 2,3
+		next = emit_node(NOTHING);                   // 2,3
 
 		offset_tail(ret_val, NODE_SIZE, next);        // 2
 		tail(ret_val, next);                          // 3
@@ -1370,10 +1370,10 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 		tail(ret_val, emit_special(INC_COUNT, 0UL, pContext.Num_Braces));         // 1
 		tail(ret_val, emit_special(TEST_COUNT, min_max[0], pContext.Num_Braces)); // 2
-		tail(emit_node(BACK), ret_val);                                  // 3
-		tail(ret_val, emit_node(NOTHING));                               // 4
+		tail(emit_node(BACK), ret_val);                                           // 3
+		tail(ret_val, emit_node(NOTHING));                                        // 4
 
-		next = insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 5
+		next = insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces);        // 5
 
 		tail(ret_val, next); // 5
 
@@ -1394,12 +1394,12 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			next = emit_special(TEST_COUNT, min_max[0], pContext.Num_Braces); // 2,7
 
-			tail(ret_val, next);                                  // 2
+			tail(ret_val, next);                                       // 2
 			insert(BRANCH,  ret_val, 0UL, 0UL, pContext.Num_Braces);   // 4,6
 			insert(NOTHING, ret_val, 0UL, 0UL, pContext.Num_Braces);   // 5
 			insert(BRANCH,  ret_val, 0UL, 0UL, pContext.Num_Braces);   // 3,4,8
-			tail(emit_node(BACK), ret_val);                       // 3
-			tail(ret_val, ret_val + (2 * NODE_SIZE));             // 4
+			tail(emit_node(BACK), ret_val);                            // 3
+			tail(ret_val, ret_val + (2 * NODE_SIZE));                  // 4
 
 			next = emit_node(NOTHING); // 5,6,7
 
@@ -1427,21 +1427,21 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			next = emit_special(TEST_COUNT, min_max[0], pContext.Num_Braces); // 2,4
 
-			tail(ret_val, next);                         // 2
-			tail(emit_node(BACK), ret_val);              // 3
-			tail(ret_val, emit_node(BACK));              // 4
-			insert(BRANCH,  ret_val, 0UL, 0UL, 0);  // 5,7
+			tail(ret_val, next);                   // 2
+			tail(emit_node(BACK), ret_val);        // 3
+			tail(ret_val, emit_node(BACK));        // 4
+			insert(BRANCH,  ret_val, 0UL, 0UL, 0); // 5,7
 			insert(NOTHING, ret_val, 0UL, 0UL, 0); // 6
 
 			next = emit_node(NOTHING); // 5,6
 
-			offset_tail(ret_val, NODE_SIZE, next);                   // 5
-			tail(ret_val, next);                                     // 6
-			insert(BRANCH, ret_val, 0UL, 0UL, 0);              // 7,8
-			tail(ret_val, ret_val + (2 * NODE_SIZE));                // 7
-			offset_tail(ret_val, 3 * NODE_SIZE, ret_val);            // 8
+			offset_tail(ret_val, NODE_SIZE, next);                      // 5
+			tail(ret_val, next);                                        // 6
+			insert(BRANCH, ret_val, 0UL, 0UL, 0);                       // 7,8
+			tail(ret_val, ret_val + (2 * NODE_SIZE));                   // 7
+			offset_tail(ret_val, 3 * NODE_SIZE, ret_val);               // 8
 			insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 9
-			tail(ret_val, ret_val + INDEX_SIZE + (4 * NODE_SIZE));   // 9
+			tail(ret_val, ret_val + INDEX_SIZE + (4 * NODE_SIZE));      // 9
 
 		} else {
 			/* Node structure for (x){m,n}? construct.
@@ -1464,21 +1464,21 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			next = emit_special(TEST_COUNT, min_max[0], pContext.Num_Braces); // 4
 
-			tail(emit_node(BACK), ret_val);              // 3
-			tail(next, emit_node(BACK));                 // 4
+			tail(emit_node(BACK), ret_val);        // 3
+			tail(next, emit_node(BACK));           // 4
 			insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 6,8
 			insert(NOTHING, ret_val, 0UL, 0UL, 0); // 5
 			insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 8,9
 
 			next = emit_node(NOTHING); // 5,6,7
 
-			offset_tail(ret_val, NODE_SIZE, next);                 // 5
-			offset_tail(ret_val, 2 * NODE_SIZE, next);             // 6
-			offset_tail(ret_val, 3 * NODE_SIZE, next);             // 7
-			tail(ret_val, ret_val + (2 * NODE_SIZE));              // 8
-			offset_tail(next, -NODE_SIZE, ret_val);                // 9
-			insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces);     // 10
-			tail(ret_val, ret_val + INDEX_SIZE + (4 * NODE_SIZE)); // 10
+			offset_tail(ret_val, NODE_SIZE, next);                      // 5
+			offset_tail(ret_val, 2 * NODE_SIZE, next);                  // 6
+			offset_tail(ret_val, 3 * NODE_SIZE, next);                  // 7
+			tail(ret_val, ret_val + (2 * NODE_SIZE));                   // 8
+			offset_tail(next, -NODE_SIZE, ret_val);                     // 9
+			insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 10
+			tail(ret_val, ret_val + INDEX_SIZE + (4 * NODE_SIZE));      // 10
 		}
 
 		pContext.Num_Braces++;
@@ -1498,9 +1498,9 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			next = emit_special(TEST_COUNT, min_max[1], pContext.Num_Braces); // 2,6
 
-			tail(ret_val, next);                        // 2
+			tail(ret_val, next);                  // 2
 			insert(BRANCH, ret_val, 0UL, 0UL, 0); // 3,4,7
-			tail(emit_node(BACK), ret_val);             // 3
+			tail(emit_node(BACK), ret_val);       // 3
 
 			next = emit_node(BRANCH); // 4,5
 
@@ -1527,8 +1527,8 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			next = emit_special(TEST_COUNT, min_max[0], pContext.Num_Braces); // 2
 
-			tail(ret_val, next);                        // 2
-			tail(emit_node(BACK), ret_val);             // 3
+			tail(ret_val, next);                  // 2
+			tail(emit_node(BACK), ret_val);       // 3
 			insert(BRANCH, ret_val, 0UL, 0UL, 0); // 4,6
 
 			next = emit_node(BACK); // 4
@@ -1562,8 +1562,8 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			next = emit_special(TEST_COUNT, min_max[0], pContext.Num_Braces); // 4
 
-			tail(emit_node(BACK), ret_val);             // 3
-			tail(next, emit_node(BACK));                // 4
+			tail(emit_node(BACK), ret_val);       // 3
+			tail(next, emit_node(BACK));          // 4
 			insert(BRANCH, ret_val, 0UL, 0UL, 0); // 5,6
 
 			next = emit_node(BRANCH); // 5,8
@@ -1575,9 +1575,9 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			offset_tail(ret_val, NODE_SIZE, next); // 7
 
-			offset_tail(next, -NODE_SIZE, next);                     // 8
+			offset_tail(next, -NODE_SIZE, next);                        // 8
 			insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 9
-			tail(ret_val, ret_val + INDEX_SIZE + (2 * NODE_SIZE));   // 9
+			tail(ret_val, ret_val + INDEX_SIZE + (2 * NODE_SIZE));      // 9
 		}
 
 		pContext.Num_Braces++;
