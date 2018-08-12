@@ -562,12 +562,12 @@ uint8_t *back_ref(const char *ch, int *flag_param, ShortcutEscapeFlags flags) {
 
 	uint8_t *ret_val;
 
-	// Implement cross regex backreferences later.
-
-	/* if (*c == (uint8_t) ('~')) {
-	   c_offset++;
-	   is_cross_regex++;
-	} */
+#if 0 // Implement cross regex backreferences later.
+	if (*ch == '~') {
+		c_offset++;
+		is_cross_regex++;
+	}
+#endif
 
 	auto paren_no = static_cast<size_t>(ch[c_offset] - '0');
 
