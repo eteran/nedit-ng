@@ -22,8 +22,8 @@ struct ParseContext {
 	size_t                      Reg_Size;                          // Size of compiled regex code.
 	size_t                      Total_Paren;                       // Parentheses, (),  counter.
 	size_t                      Num_Braces;                        // Number of general {m,n} constructs. {m,n} quantifiers of SIMPLE atoms are not included in this count.
-	std::bitset<32>             Closed_Parens;                     // Bit flags indicating () closure.
-	std::bitset<32>             Paren_Has_Width;                   // Bit flags indicating ()'s that are known to not match the empty string
+	std::bitset<64>             Closed_Parens;                     // Bit flags indicating () closure.
+	std::bitset<64>             Paren_Has_Width;                   // Bit flags indicating ()'s that are known to not match the empty string
 	bool                        FirstPass;
 	bool                        Is_Case_Insensitive;
 	bool                        Match_Newline;

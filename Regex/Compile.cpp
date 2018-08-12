@@ -1820,7 +1820,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 	/* Set a bit in Closed_Parens to let future calls to function 'back_ref'
 	   know that we have closed this set of parentheses. */
 
-	if (paren == PAREN && this_paren <= pContext.Closed_Parens.size()) {
+	if (paren == PAREN && this_paren < pContext.Closed_Parens.size()) {
 		pContext.Closed_Parens[this_paren] = true;
 
 		/* Determine if a parenthesized expression is modified by a quantifier
@@ -1851,7 +1851,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 	   (*) or question (?) quantifiers to be aplied to a back-reference that
 	   refers to this set of parentheses. */
 
-	if ((*flag_param & HAS_WIDTH) && paren == PAREN && !zero_width && this_paren <= pContext.Paren_Has_Width.size()) {
+	if ((*flag_param & HAS_WIDTH) && paren == PAREN && !zero_width && this_paren < pContext.Paren_Has_Width.size()) {
 		pContext.Paren_Has_Width[this_paren] = true;
 	}
 
