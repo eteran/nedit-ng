@@ -1715,10 +1715,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		look_only = true;
 		// We'll overwrite the zero length later on, so we save the ptr
 		ret_val = emit_special(paren, 0, 0);
-
-		if (!pContext.FirstPass) {
-			emit_look_behind_bounds = ret_val + NODE_SIZE;
-		}
+		emit_look_behind_bounds = ret_val + NODE_SIZE;
 	} else if (paren == INSENSITIVE) {
 		pContext.Is_Case_Insensitive = true;
 	} else if (paren == SENSITIVE) {
@@ -1807,19 +1804,17 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		}
 	}
 
+	// Check whether look behind has a fixed size
+	if (emit_look_behind_bounds) {
+		if (range_param.lower < 0) {
+			Raise<RegexError>("look-behind does not have a bounded size");
+		}
 
-	if (!pContext.FirstPass) {
+		if (range_param.upper > 65535L) {
+			Raise<RegexError>("max. look-behind size is too large (>65535)");
+		}
 
-		// Check whether look behind has a fixed size
-		if (emit_look_behind_bounds) {
-			if (range_param.lower < 0) {
-				Raise<RegexError>("look-behind does not have a bounded size");
-			}
-
-			if (range_param.upper > 65535L) {
-				Raise<RegexError>("max. look-behind size is too large (>65535)");
-			}
-
+		if (!pContext.FirstPass) {
 			*emit_look_behind_bounds++ = PUT_OFFSET_L(range_param.lower);
 			*emit_look_behind_bounds++ = PUT_OFFSET_R(range_param.lower);
 			*emit_look_behind_bounds++ = PUT_OFFSET_L(range_param.upper);
