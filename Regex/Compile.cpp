@@ -52,12 +52,9 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param);
 const char Default_Meta_Char[] = "{.*+?[(|)^<>$";
 const char ASCII_Digits[] = "0123456789"; // Same for all locales.
 
-
 /*----------------------------------------------------------------------*
  * next_ptr - compute the address of a node's "NEXT" pointer.
- * Note: a simplified inline version is available via the NEXT_PTR() macro,
- *       but that one is only to be used at time-critical places (see the
- *       description of the macro).
+ * Note: a simplified inline version is available via NEXT_PTR(),
  *----------------------------------------------------------------------*/
 uint8_t *next_ptr(uint8_t *ptr) noexcept {
 
@@ -162,7 +159,7 @@ bool init_ansi_classes() noexcept {
  *
  * Emit (if appropriate) the op code for a regex node atom.
  *
- * The NEXT pointer is initialized to nullptr.
+ * The NEXT pointer is initialized to 0x0000.
  *
  * Returns a pointer to the START of the emitted node.
  *----------------------------------------------------------------------*/
@@ -280,13 +277,7 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 	// Find the last node in the chain (node with a null NEXT pointer)
 	uint8_t *scan = search_from;
 
-	for (;;) {
-		uint8_t *next = next_ptr(scan);
-
-		if (!next) {
-			break;
-		}
-
+	while(uint8_t *next = next_ptr(scan)) {
 		scan = next;
 	}
 
@@ -302,26 +293,11 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 	scan[2] = PUT_OFFSET_R(offset);
 }
 
-/*--------------------------------------------------------------------*
- * offset_tail
- *
- * Perform a tail operation on (ptr + offset).
- *--------------------------------------------------------------------*/
-void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
-
-	if (pContext.FirstPass || !ptr) {
-		return;
-	}
-
-	tail(ptr + offset, val);
-}
-
 /*----------------------------------------------------------------------*
  * insert
  *
  * Insert a node in front of already emitted node(s).  Means relocating
- * the operand.  Code_Emit_Ptr points one byte past the just emitted
- * node and operand.  The parameter 'insert_pos' points to the location
+ * the operand. The parameter 'insert_pos' points to the location
  * where the new node is to be inserted.
  *----------------------------------------------------------------------*/
 uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned long max, size_t index) {
@@ -341,25 +317,30 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
 		return reinterpret_cast<uint8_t *>(1);
 	}
 
-	const ptrdiff_t place  = insert_pos - pContext.Code.data(); // Where operand used to be.
-	ptrdiff_t offset = place;
+	// Where operand used to be.
+	const ptrdiff_t offset = insert_pos - pContext.Code.data();
 
-	pContext.Code.insert(pContext.Code.begin() + offset++, op);
-	pContext.Code.insert(pContext.Code.begin() + offset++, 0);
-	pContext.Code.insert(pContext.Code.begin() + offset++, 0);
+	// assemble the new node in place, then insert it
+	uint8_t new_node[32];
+	uint8_t *ptr = new_node;
+
+	*ptr++ = op;
+	*ptr++ = 0;
+	*ptr++ = 0;
 
 	if (op == BRACE || op == LAZY_BRACE) {
-		pContext.Code.insert(pContext.Code.begin() + offset++, PUT_OFFSET_L(min));
-		pContext.Code.insert(pContext.Code.begin() + offset++, PUT_OFFSET_R(min));
+		*ptr++ = PUT_OFFSET_L(min);
+		*ptr++ = PUT_OFFSET_R(min);
 
-		pContext.Code.insert(pContext.Code.begin() + offset++, PUT_OFFSET_L(max));
-		pContext.Code.insert(pContext.Code.begin() + offset++, PUT_OFFSET_R(max));
+		*ptr++ = PUT_OFFSET_L(max);
+		*ptr++ = PUT_OFFSET_R(max);
 
 	} else if (op == INIT_COUNT) {
-		pContext.Code.insert(pContext.Code.begin() + offset++, index);
+		*ptr++ = index;
 	}
 
-	return &pContext.Code[place]; // Return a pointer to the start of the code moved.
+	pContext.Code.insert(pContext.Code.begin() + offset, new_node, ptr);
+	return &pContext.Code[offset]; // Return a pointer to the start of the code moved.
 }
 
 /*--------------------------------------------------------------------*
@@ -400,8 +381,8 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
  *       a class.
  *
  *--------------------------------------------------------------------*/
-template <class T>
-uint8_t *shortcut_escape(T ch, int *flag_param, ShortcutEscapeFlags flags) {
+template <ShortcutEscapeFlags Flags, class Ch>
+uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 
 	static const char codes[] = "ByYdDlLsSwW";
 
@@ -409,7 +390,7 @@ uint8_t *shortcut_escape(T ch, int *flag_param, ShortcutEscapeFlags flags) {
 	auto ret_val = reinterpret_cast<uint8_t *>(1); // Assume success.
 	const char *valid_codes;
 
-	if (flags == EMIT_CLASS_BYTES || flags == CHECK_CLASS_ESCAPE) {
+	if (Flags == EMIT_CLASS_BYTES || Flags == CHECK_CLASS_ESCAPE) {
 		valid_codes = codes + 3; // \B, \y and \Y are not allowed in classes
 	} else {
 		valid_codes = codes;
@@ -417,100 +398,84 @@ uint8_t *shortcut_escape(T ch, int *flag_param, ShortcutEscapeFlags flags) {
 
 	if (!::strchr(valid_codes, static_cast<int>(ch))) {
 		return nullptr; // Not a valid shortcut escape sequence
-	} else if (flags == CHECK_ESCAPE || flags == CHECK_CLASS_ESCAPE) {
+	} else if (Flags == CHECK_ESCAPE || Flags == CHECK_CLASS_ESCAPE) {
 		return ret_val; // Just checking if this is a valid shortcut escape.
 	}
 
 	switch (ch) {
 	case 'd':
 	case 'D':
-		if (flags == EMIT_CLASS_BYTES) {
+		if (Flags == EMIT_CLASS_BYTES) {
 			clazz = ASCII_Digits;
-		} else if (flags == EMIT_NODE) {
+		} else if (Flags == EMIT_NODE) {
 			ret_val = (safe_ctype<islower>(ch) ? emit_node(DIGIT) : emit_node(NOT_DIGIT));
 		}
-
 		break;
-
 	case 'l':
 	case 'L':
-		if (flags == EMIT_CLASS_BYTES) {
+		if (Flags == EMIT_CLASS_BYTES) {
 			clazz = pContext.Letter_Char;
-		} else if (flags == EMIT_NODE) {
+		} else if (Flags == EMIT_NODE) {
 			ret_val = (safe_ctype<islower>(ch) ? emit_node(LETTER) : emit_node(NOT_LETTER));
 		}
-
 		break;
-
 	case 's':
 	case 'S':
-		if (flags == EMIT_CLASS_BYTES) {
-			if (pContext.Match_Newline)
+		if (Flags == EMIT_CLASS_BYTES) {
+			if (pContext.Match_Newline) {
 				emit_byte('\n');
+			}
 
 			clazz = pContext.White_Space;
-		} else if (flags == EMIT_NODE) {
+		} else if (Flags == EMIT_NODE) {
 			if (pContext.Match_Newline) {
 				ret_val = (safe_ctype<islower>(ch) ? emit_node(SPACE_NL) : emit_node(NOT_SPACE_NL));
 			} else {
 				ret_val = (safe_ctype<islower>(ch) ? emit_node(SPACE) : emit_node(NOT_SPACE));
 			}
 		}
-
 		break;
-
 	case 'w':
 	case 'W':
-		if (flags == EMIT_CLASS_BYTES) {
+		if (Flags == EMIT_CLASS_BYTES) {
 			clazz = pContext.Word_Char;
-		} else if (flags == EMIT_NODE) {
+		} else if (Flags == EMIT_NODE) {
 			ret_val = (safe_ctype<islower>(ch) ? emit_node(WORD_CHAR) : emit_node(NOT_WORD_CHAR));
 		}
-
 		break;
 
-	/* Since the delimiter table is not available at regex compile time \B,
-	   \Y and \Y can only generate a node.  At run time, the delimiter table
-	   will be available for these nodes to use. */
-
+		/* Since the delimiter table is not available at regex compile time
+		 * \B, \Y and \Y can only generate a node.  At run time, the delimiter
+		 * table will be available for these nodes to use. */
 	case 'y':
-
-		if (flags == EMIT_NODE) {
+		if (Flags == EMIT_NODE) {
 			ret_val = emit_node(IS_DELIM);
 		} else {
 			Raise<RegexError>("internal error #5 'shortcut_escape'");
 		}
-
 		break;
 
 	case 'Y':
-
-		if (flags == EMIT_NODE) {
+		if (Flags == EMIT_NODE) {
 			ret_val = emit_node(NOT_DELIM);
 		} else {
 			Raise<RegexError>("internal error #6 'shortcut_escape'");
 		}
-
 		break;
-
 	case 'B':
-
-		if (flags == EMIT_NODE) {
+		if (Flags == EMIT_NODE) {
 			ret_val = emit_node(NOT_BOUNDARY);
 		} else {
 			Raise<RegexError>("internal error #7 'shortcut_escape'");
 		}
-
 		break;
-
 	default:
 		/* We get here if there isn't a case for every character in
 		   the string "codes" */
-
 		Raise<RegexError>("internal error #8 'shortcut_escape'");
 	}
 
-	if (flags == EMIT_NODE && ch != 'B') {
+	if (Flags == EMIT_NODE && ch != 'B') {
 		*flag_param |= (HAS_WIDTH | SIMPLE);
 	}
 
@@ -525,6 +490,20 @@ uint8_t *shortcut_escape(T ch, int *flag_param, ShortcutEscapeFlags flags) {
 	}
 
 	return ret_val;
+}
+
+/*--------------------------------------------------------------------*
+ * offset_tail
+ *
+ * Perform a tail operation on (ptr + offset).
+ *--------------------------------------------------------------------*/
+void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
+
+	if (pContext.FirstPass || !ptr) {
+		return;
+	}
+
+	tail(ptr + offset, val);
 }
 
 /*--------------------------------------------------------------------*
@@ -555,38 +534,42 @@ void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
  * references and are used in syntax highlighting patterns to match
  * text previously matched by another regex. *** IMPLEMENT LATER ***
  *--------------------------------------------------------------------*/
-uint8_t *back_ref(const char *ch, int *flag_param, ShortcutEscapeFlags flags) {
+template <ShortcutEscapeFlags Flags>
+uint8_t *back_ref(const char *ch, int *flag_param) {
 
 	size_t c_offset = 0;
-	const int is_cross_regex = 0;
+	const bool is_cross_regex = false;
 
 	uint8_t *ret_val;
 
 #if 0 // Implement cross regex backreferences later.
 	if (*ch == '~') {
 		c_offset++;
-		is_cross_regex++;
+		is_cross_regex = true;
 	}
 #endif
 
-	auto paren_no = static_cast<size_t>(ch[c_offset] - '0');
+	// Only \1, \2, ... \9 are supported.
+	if (!safe_ctype<isdigit>(ch[c_offset])) {
+		return nullptr;
+	}
 
-	if (!safe_ctype<isdigit>(ch[c_offset]) || /* Only \1, \2, ... \9 are supported. */
-			paren_no == 0) {                  /* Should be caught by numeric_escape. */
+	auto paren_no = static_cast<uint8_t>(ch[c_offset] - '0');
 
+	// Should be caught by numeric_escape.
+	if (paren_no == 0) {
 		return nullptr;
 	}
 
 	// Make sure parentheses for requested back-reference are complete.
-
 	if (!is_cross_regex && !pContext.Closed_Parens[paren_no]) {
 		Raise<RegexError>("\\%d is an illegal back reference", paren_no);
 	}
 
-	if (flags == EMIT_NODE) {
+	if (Flags == EMIT_NODE) {
 		if (is_cross_regex) {
-			++pContext.Reg_Parse; /* Skip past the '~' in a cross regex back reference.
-							We only do this if we are emitting code. */
+			++pContext.Reg_Parse; /* Skip past the '~' in a cross regex back
+								   * reference. We only do this if we are emitting code. */
 
 			if (pContext.Is_Case_Insensitive) {
 				ret_val = emit_node(X_REGEX_BR_CI);
@@ -601,12 +584,12 @@ uint8_t *back_ref(const char *ch, int *flag_param, ShortcutEscapeFlags flags) {
 			}
 		}
 
-		emit_byte(static_cast<uint8_t>(paren_no));
+		emit_byte(paren_no);
 
 		if (is_cross_regex || pContext.Paren_Has_Width[paren_no]) {
 			*flag_param |= HAS_WIDTH;
 		}
-	} else if (flags == CHECK_ESCAPE) {
+	} else if (Flags == CHECK_ESCAPE) {
 		ret_val = reinterpret_cast<uint8_t *>(1);
 	} else {
 		ret_val = nullptr;
@@ -646,7 +629,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 
 		pContext.Reg_Parse += 3;
 
-		while (*pContext.Reg_Parse != ')' && pContext.Reg_Parse != pContext.InputString.end()) {
+		while (pContext.Reg_Parse != pContext.InputString.end() && *pContext.Reg_Parse != ')') {
 			++pContext.Reg_Parse;
 		}
 
@@ -654,7 +637,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 			++pContext.Reg_Parse;
 		}
 
-		if (*pContext.Reg_Parse == ')' || *pContext.Reg_Parse == '|' || pContext.Reg_Parse == pContext.InputString.end()) {
+		if (pContext.Reg_Parse == pContext.InputString.end() || *pContext.Reg_Parse == ')' || *pContext.Reg_Parse == '|') {
 			/* Hit end of regex string or end of parenthesized regex; have to
 			 return "something" (i.e. a NOTHING node) to avoid generating an
 			 error. */
@@ -673,19 +656,15 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 	case '^':
 		ret_val = emit_node(BOL);
 		break;
-
 	case '$':
 		ret_val = emit_node(EOL);
 		break;
-
 	case '<':
 		ret_val = emit_node(BOWORD);
 		break;
-
 	case '>':
 		ret_val = emit_node(EOWORD);
 		break;
-
 	case '.':
 		if (pContext.Match_Newline) {
 			ret_val = emit_node(EVERY);
@@ -697,7 +676,6 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 		range_param.lower = 1;
 		range_param.upper = 1;
 		break;
-
 	case '(':
 		if (*pContext.Reg_Parse == '?') { // Special parenthetical expression
 			++pContext.Reg_Parse;
@@ -750,9 +728,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 
 		*flag_param |= flags_local & HAS_WIDTH;
 		range_param = range_local;
-
 		break;
-
 	case '|':
 	case ')':
 		Raise<RegexError>("internal error #3, 'atom'"); // Supposed to be
@@ -842,7 +818,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 							last_value = test;
 						} else if ((test = literal_escape<uint8_t>(*pContext.Reg_Parse))) {
 							last_value = test;
-						} else if (shortcut_escape(*pContext.Reg_Parse, nullptr, CHECK_CLASS_ESCAPE)) {
+						} else if (shortcut_escape<CHECK_CLASS_ESCAPE>(*pContext.Reg_Parse, nullptr)) {
 							Raise<RegexError>("\\%c is not allowed as range operand", *pContext.Reg_Parse);
 						} else {
 							Raise<RegexError>("\\%c is an invalid char class escape sequence", *pContext.Reg_Parse);
@@ -887,7 +863,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 				} else if ((test = literal_escape<uint8_t>(*pContext.Reg_Parse)) != '\0') {
 					emit_byte(test);
 					last_emit = test;
-				} else if (shortcut_escape(*pContext.Reg_Parse, nullptr, CHECK_CLASS_ESCAPE)) {
+				} else if (shortcut_escape<CHECK_CLASS_ESCAPE>(*pContext.Reg_Parse, nullptr)) {
 
 					if (pContext.Reg_Parse[1] == '-') {
 						/* Specifically disallow shortcut escapes as the start
@@ -898,7 +874,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 						/* Emit the bytes that are part of the shortcut
 						   escape sequence's range (e.g. \d = 0123456789) */
 
-						shortcut_escape(*pContext.Reg_Parse, nullptr, EMIT_CLASS_BYTES);
+						shortcut_escape<EMIT_CLASS_BYTES>(*pContext.Reg_Parse, nullptr);
 					}
 				} else {
 					Raise<RegexError>("\\%c is an invalid char class escape sequence", *pContext.Reg_Parse);
@@ -935,14 +911,14 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 	break; // End of character class code.
 
 	case '\\':
-		if ((ret_val = shortcut_escape(*pContext.Reg_Parse, flag_param, EMIT_NODE))) {
+		if ((ret_val = shortcut_escape<EMIT_NODE>(*pContext.Reg_Parse, flag_param))) {
 
 			++pContext.Reg_Parse;
 			range_param.lower = 1;
 			range_param.upper = 1;
 			break;
 
-		} else if ((ret_val = back_ref(pContext.Reg_Parse, flag_param, EMIT_NODE))) {
+		} else if ((ret_val = back_ref<EMIT_NODE>(pContext.Reg_Parse, flag_param))) {
 			/* Can't make any assumptions about a back-reference as to SIMPLE
 			   or HAS_WIDTH.  For example (^|<) is neither simple nor has
 			   width.  So we don't flip bits in flag_param here. */
@@ -977,7 +953,6 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 			 * reference, or end of regex string. */
 
 			for (; pContext.Reg_Parse != pContext.InputString.end() && !::strchr(pContext.Meta_Char, static_cast<int>(*pContext.Reg_Parse)); len++) {
-
 				/* Save where we are in case we have to back
 				   this character out. */
 
@@ -994,14 +969,12 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 						}
 					} else if ((test = literal_escape<uint8_t>(*pContext.Reg_Parse))) {
 						emit_byte(test);
-					} else if (back_ref(pContext.Reg_Parse, nullptr, CHECK_ESCAPE)) {
+					} else if (back_ref<CHECK_ESCAPE>(pContext.Reg_Parse, nullptr)) {
 						// Leave back reference for next 'atom' call
-
 						--pContext.Reg_Parse;
 						break;
-					} else if (shortcut_escape(*pContext.Reg_Parse, nullptr, CHECK_ESCAPE)) {
+					} else if (shortcut_escape<CHECK_ESCAPE>(*pContext.Reg_Parse, nullptr)) {
 						// Leave shortcut escape for next 'atom' call
-
 						--pContext.Reg_Parse;
 						break;
 					} else {
@@ -1015,7 +988,6 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 					++pContext.Reg_Parse;
 				} else {
 					// Ordinary character
-
 					if (pContext.Is_Case_Insensitive) {
 						emit_byte(tolower(*pContext.Reg_Parse));
 					} else {
@@ -1672,8 +1644,8 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 	int flags_local;
 	bool first = true;
 	int zero_width;
-	bool old_sensitive = pContext.Is_Case_Insensitive;
-	bool old_newline   = pContext.Match_Newline;
+	const bool old_sensitive = pContext.Is_Case_Insensitive;
+	const bool old_newline   = pContext.Match_Newline;
 
 	len_range range_local;
 	bool look_only = false;

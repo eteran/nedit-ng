@@ -116,7 +116,7 @@ bool isDelimiter(int ch) noexcept {
  * greedy
  *
  * Repeatedly match something simple up to "max" times. If max <= 0
- * then match as much as possible (max = infinity).  Uses unsigned long
+ * then match as much as possible (max = infinity).  Uses uint32_t
  * variables to maximize the amount of text matchable for unbounded
  * qualifiers like '*' and '+'.  This will allow at least 4,294,967,295
  * matches (4 Gig!) for an ANSI C compliant compiler.  If you are
@@ -125,13 +125,13 @@ bool isDelimiter(int ch) noexcept {
  *
  * Returns the actual number of matches.
  *----------------------------------------------------------------------*/
-unsigned long greedy(uint8_t *p, unsigned long max) {
+uint32_t greedy(uint8_t *p, uint32_t max) {
 
-	unsigned long count = REG_ZERO;
+	uint32_t count = REG_ZERO;
 
 	const char *input_str = eContext.Reg_Input;
 	uint8_t *operand = OPERAND(p); // Literal char or start of class characters.
-	unsigned long max_cmp = (max > 0) ? max : ULONG_MAX;
+	uint32_t max_cmp = (max > 0) ? max : std::numeric_limits<uint32_t>::max();
 
 	switch (GET_OP_CODE(p)) {
 	case ANY:
@@ -653,9 +653,9 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 		case LAZY_PLUS:
 		case LAZY_QUESTION:
 		case LAZY_BRACE: {
-			unsigned long num_matched = REG_ZERO;
-			unsigned long min = ULONG_MAX;
-			unsigned long max = REG_ZERO;
+			uint32_t num_matched = REG_ZERO;
+			uint32_t min = std::numeric_limits<uint32_t>::max();
+			uint32_t max = REG_ZERO;
 			const char *save;
 			uint8_t next_char;
 			uint8_t *next_op;
@@ -678,7 +678,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				NEDIT_FALLTHROUGH();
 			case STAR:
 				min = REG_ZERO;
-				max = ULONG_MAX;
+				max = std::numeric_limits<uint32_t>::max();
 				break;
 
 			case LAZY_PLUS:
@@ -686,7 +686,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				NEDIT_FALLTHROUGH();
 			case PLUS:
 				min = REG_ONE;
-				max = ULONG_MAX;
+				max = std::numeric_limits<uint32_t>::max();
 				break;
 
 			case LAZY_QUESTION:
@@ -701,11 +701,11 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				lazy = true;
 				NEDIT_FALLTHROUGH();
 			case BRACE:
-				min = static_cast<unsigned long>(GET_OFFSET(scan + NEXT_PTR_SIZE));
-				max = static_cast<unsigned long>(GET_OFFSET(scan + (2 * NEXT_PTR_SIZE)));
+				min = static_cast<uint32_t>(GET_OFFSET(scan + NEXT_PTR_SIZE));
+				max = static_cast<uint32_t>(GET_OFFSET(scan + (2 * NEXT_PTR_SIZE)));
 
 				if (max <= REG_INFINITY) {
-					max = ULONG_MAX;
+					max = std::numeric_limits<uint32_t>::max();
 				}
 
 				next_op = OPERAND(scan + (2 * NEXT_PTR_SIZE));
@@ -767,7 +767,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			break;
 
 		case TEST_COUNT:
-			if (eContext.BraceCounts[*OPERAND(scan)] < static_cast<unsigned long>(GET_OFFSET(scan + NEXT_PTR_SIZE + INDEX_SIZE))) {
+			if (eContext.BraceCounts[*OPERAND(scan)] < static_cast<uint32_t>(GET_OFFSET(scan + NEXT_PTR_SIZE + INDEX_SIZE))) {
 				next = scan + NODE_SIZE + INDEX_SIZE + NEXT_PTR_SIZE;
 			}
 			break;
