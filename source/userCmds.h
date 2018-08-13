@@ -16,12 +16,12 @@ enum class CommandTypes {
 	BG_MENU_CMDS
 };
 
-bool LoadBGMenuCmdsStringEx(const QString &inString);
-bool LoadMacroCmdsStringEx(const QString &inString);
-bool LoadShellCmdsStringEx(const QString &inString);
-QString WriteBGMenuCmdsStringEx();
-QString WriteMacroCmdsStringEx();
-QString WriteShellCmdsStringEx();
+bool LoadBGMenuCmdsString(const QString &inString);
+bool LoadMacroCmdsString(const QString &inString);
+bool LoadShellCmdsString(const QString &inString);
+QString WriteBGMenuCmdsString();
+QString WriteMacroCmdsString();
+QString WriteShellCmdsString();
 void SetupUserMenuInfo();
 void UpdateUserMenuInfo();
 void parseMenuItemList(std::vector<MenuData> &itemList);

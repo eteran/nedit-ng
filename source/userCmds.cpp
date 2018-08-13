@@ -181,7 +181,7 @@ QString writeMenuItemString(const std::vector<MenuData> &menuItems, CommandTypes
 	return outStr;
 }
 
-bool loadMenuItemStringEx(const QString &inString, std::vector<MenuData> &menuItems, CommandTypes listType) {
+bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItems, CommandTypes listType) {
 
 	struct ParseError {
 		std::string message;
@@ -395,7 +395,7 @@ void parseMenuItemName(const QString &menuItemName, const std::shared_ptr<userMe
 ** Returns the menuItemName stripped of language mode parts
 ** (i.e. parts starting with "@").
 */
-QString stripLanguageModeEx(const QString &menuItemName) {
+QString stripLanguageMode(const QString &menuItemName) {
 
 	int index = menuItemName.indexOf(QLatin1Char('@'));
 	if(index != -1) {
@@ -414,7 +414,7 @@ std::shared_ptr<userMenuInfo> parseMenuItemRec(const MenuItem &item) {
 
 	auto newInfo = std::make_shared<userMenuInfo>();
 
-	newInfo->umiName = stripLanguageModeEx(item.name);
+	newInfo->umiName = stripLanguageMode(item.name);
 
 	// init. remaining parts of user menu info element
 	newInfo->umiIsDefault    = false;
@@ -457,15 +457,15 @@ MenuData *findMenuItem(const QString &name, CommandTypes type) {
 ** Generate a text string for the preferences file describing the contents
 ** of the shell cmd list, macro menu and background menus.
 */
-QString WriteShellCmdsStringEx() {
+QString WriteShellCmdsString() {
 	return writeMenuItemString(ShellMenuData, CommandTypes::SHELL_CMDS);
 }
 
-QString WriteMacroCmdsStringEx() {
+QString WriteMacroCmdsString() {
 	return writeMenuItemString(MacroMenuData, CommandTypes::MACRO_CMDS);
 }
 
-QString WriteBGMenuCmdsStringEx() {
+QString WriteBGMenuCmdsString() {
 	return writeMenuItemString(BGMenuData, CommandTypes::BG_MENU_CMDS);
 }
 
@@ -474,16 +474,16 @@ QString WriteBGMenuCmdsStringEx() {
 ** background menu and add them to the internal list used for constructing
 ** menus
 */
-bool LoadShellCmdsStringEx(const QString &inString) {
-	return loadMenuItemStringEx(inString, ShellMenuData, CommandTypes::SHELL_CMDS);
+bool LoadShellCmdsString(const QString &inString) {
+	return loadMenuItemString(inString, ShellMenuData, CommandTypes::SHELL_CMDS);
 }
 
-bool LoadMacroCmdsStringEx(const QString &inString) {
-	return loadMenuItemStringEx(inString, MacroMenuData, CommandTypes::MACRO_CMDS);
+bool LoadMacroCmdsString(const QString &inString) {
+	return loadMenuItemString(inString, MacroMenuData, CommandTypes::MACRO_CMDS);
 }
 
-bool LoadBGMenuCmdsStringEx(const QString &inString) {
-	return loadMenuItemStringEx(inString, BGMenuData, CommandTypes::BG_MENU_CMDS);
+bool LoadBGMenuCmdsString(const QString &inString) {
+	return loadMenuItemString(inString, BGMenuData, CommandTypes::BG_MENU_CMDS);
 }
 
 /*

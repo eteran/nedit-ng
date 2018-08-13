@@ -97,9 +97,9 @@ void Preferences::SaveNEditPrefs(QWidget *parent, bool quietly) {
 	}
 
 	Settings::fileVersion           = ConfigFileVersion;
-	Settings::shellCommands         = WriteShellCmdsStringEx();
-	Settings::macroCommands         = WriteMacroCmdsStringEx();
-	Settings::bgMenuCommands        = WriteBGMenuCmdsStringEx();
+	Settings::shellCommands         = WriteShellCmdsString();
+	Settings::macroCommands         = WriteMacroCmdsString();
+	Settings::bgMenuCommands        = WriteBGMenuCmdsString();
 	Settings::highlightPatterns     = Highlight::WriteHighlightString();
 	Settings::languageModes         = WriteLanguageModesString();
 	Settings::smartIndentInit       = SmartIndent::WriteSmartIndentStringEx();
@@ -1205,13 +1205,13 @@ void Preferences::translatePrefFormats(uint32_t fileVer) {
 	   the standard resource manager routines */
 
 	if (!Settings::shellCommands.isNull()) {
-		LoadShellCmdsStringEx(Settings::shellCommands);
+		LoadShellCmdsString(Settings::shellCommands);
 	}
 	if (!Settings::macroCommands.isNull()) {
-		LoadMacroCmdsStringEx(Settings::macroCommands);
+		LoadMacroCmdsString(Settings::macroCommands);
 	}
 	if (!Settings::bgMenuCommands.isNull()) {
-		LoadBGMenuCmdsStringEx(Settings::bgMenuCommands);
+		LoadBGMenuCmdsString(Settings::bgMenuCommands);
 	}
 	if (!Settings::highlightPatterns.isNull()) {
 		Highlight::LoadHighlightString(Settings::highlightPatterns);
