@@ -7908,3 +7908,22 @@ void TextArea::wheelEvent(QWheelEvent *event) {
 int TextArea::lineNumberAreaWidth() const {
 	return lineNumCols_ * fixedFontWidth_;
 }
+
+/**
+ * @brief TextArea::visibleLineContainsCursor
+ * @param visLine
+ * @param cursor
+ * @return
+ */
+bool TextArea::visibleLineContainsCursor(int visLine, TextCursor cursor) const {
+	const TextCursor lineStart = lineStarts_[visLine];
+	const TextCursor lineEnd   = TextDEndOfLine(lineStart, true);
+
+	if(lineStart != TextCursor(-1)) {
+		if(cursor >= lineStart && cursor <= lineEnd) {
+			return true;
+		}
+	}
+
+	return false;
+}

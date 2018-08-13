@@ -38,10 +38,17 @@ void LineNumberArea::paintEvent(QPaintEvent *event) {
 	int y = area_->viewport()->contentsRect().top();
 	int64_t line = area_->getAbsTopLineNum();
 
+#if 0
+	const TextCursor cursor = area_->cursorPos_;
+#endif
 	for (int visLine = 0; visLine < area_->nVisibleLines_; visLine++) {
 
 		const TextCursor lineStart = area_->lineStarts_[visLine];
-
+#if 0
+		if(area_->visibleLineContainsCursor(visLine, cursor)) {
+			painter.fillRect(0, y, width(), lineHeight, Qt::darkCyan);
+		}
+#endif
 		if (lineStart != -1 && (lineStart == 0 || area_->buffer_->BufGetCharacter(lineStart - 1) == '\n')) {
 			const auto number = QString::number(line);
 			QRect rect(0, y, width(), lineHeight);

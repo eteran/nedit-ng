@@ -268,6 +268,7 @@ private:
 	TextCursor startOfWord(TextCursor pos) const;
 	TextCursor xyToPos(const QPoint &pos, PositionTypes posType) const;
 	TextCursor xyToPos(int x, int y, PositionTypes posType) const;
+	bool visibleLineContainsCursor(int visLine, TextCursor cursor) const;
 	bool TextDInSelection(const QPoint &p) const;
 	bool TextDMoveDown(bool absolute);
 	bool TextDMoveLeft();
