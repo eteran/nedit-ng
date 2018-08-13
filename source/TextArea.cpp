@@ -7917,9 +7917,9 @@ int TextArea::lineNumberAreaWidth() const {
  */
 bool TextArea::visibleLineContainsCursor(int visLine, TextCursor cursor) const {
 	const TextCursor lineStart = lineStarts_[visLine];
-	const TextCursor lineEnd   = TextDEndOfLine(lineStart, true);
 
 	if(lineStart != TextCursor(-1)) {
+		const TextCursor lineEnd = TextDEndOfLine(lineStart, true);
 		if(cursor >= lineStart && cursor <= lineEnd) {
 			return true;
 		}
