@@ -2627,7 +2627,7 @@ void TextArea::repaintLineNumbers() {
  */
 void TextArea::redisplayLineEx(int visLineNum, int64_t leftCharIndex, int64_t rightCharIndex) {
 
-	// NOTE(eteran): we could do like the original NEdit and onluy update the
+	// NOTE(eteran): we could do like the original NEdit and only update the
 	// characters from leftCharIndex --> rightCharIndex, but we don't yet.
 	// Instead we just unconditionally redisplay the whole line...
 	Q_UNUSED(leftCharIndex);
@@ -2643,6 +2643,10 @@ void TextArea::redisplayLineEx(int visLineNum, int64_t leftCharIndex, int64_t ri
 	// Calculate y coordinate of the string to draw
 	const int fontHeight = ascent_ + descent_;
 	const int y = viewRect.top() + visLineNum * fontHeight;
+
+	// NOTE(eteran): it seems unecessary, but using 0/INT_MAX for the left/right
+	// bounds ensures that the edges of the cursor get cleared if any part of
+	// it was draw outside the contents rect
 	viewport()->update(QRect(0, y, INT_MAX, fontHeight));
 }
 
@@ -4472,10 +4476,6 @@ std::string TextArea::createIndentStringEx(TextBuffer *buf, int64_t bufOffset, T
 			c.first(this, &smartIndent, c.second);
 		}
 
-		// NOTE(eteran): this will effectively use the result of the last
-		// callback if there is more than one if that's the desired design, then
-		// I think a stack of callbacks where only the top is called makes the
-		// most sense.
 		indent = smartIndent.request;
 	}
 
