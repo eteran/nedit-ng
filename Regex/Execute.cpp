@@ -15,10 +15,19 @@
 #include <algorithm>
 
 #include <QtGlobal>
+
 #ifdef Q_FALLTHROUGH
 #define NEDIT_FALLTHROUGH() Q_FALLTHROUGH()
 #else
 #define NEDIT_FALLTHROUGH() (void)0
+#endif
+
+#ifdef Q_CC_MSVC
+#define FORCE_INLINE __forceinline
+#elif defined Q_CC_GNU
+#define FORCE_INLINE inline __attribute__((always_inline))
+#else
+#define FORCE_INLINE
 #endif
 
 namespace {
@@ -26,12 +35,39 @@ namespace {
 bool match(uint8_t *prog, size_t *branch_index_param);
 bool attempt(Regex *prog, const char *string);
 
+/* The next_ptr () function can consume up to 30% of the time during matching
+   because it is called an immense number of times (an average of 25
+   next_ptr() calls per match() call was witnessed for Perl syntax
+   highlighting). Therefore it is well worth removing some of the function
+   call overhead by selectively inlining the next_ptr() calls. Moreover,
+   the inlined code can be simplified for matching because one of the tests,
+   only necessary during compilation, can be left out.
+   The net result of using this inlined version at two critical places is
+   a 25% speedup (again, witnesses on Perl syntax highlighting). */
+FORCE_INLINE uint8_t *NEXT_PTR(uint8_t *ptr) {
+
+	// NOTE(eteran): like next_ptr, but is inline
+	// doesn't do "is this a first pass compile" check
+
+	const uint16_t offset = GET_OFFSET(ptr);
+
+	if (offset == 0) {
+		return nullptr;
+	}
+
+	if (GET_OP_CODE(ptr) == BACK) {
+		return (ptr - offset);
+	} else {
+		return (ptr + offset);
+	}
+}
+
 /**
  * @brief AT_END_OF_STRING
  * @param ptr
  * @return
  */
-bool AT_END_OF_STRING(const char *ptr) noexcept {
+FORCE_INLINE bool AT_END_OF_STRING(const char *ptr) noexcept {
 
 	if(eContext.End_Of_String != nullptr && ptr >= eContext.End_Of_String) {
 		return true;
@@ -49,7 +85,7 @@ bool AT_END_OF_STRING(const char *ptr) noexcept {
  * @param p
  * @return
  */
-uint16_t getLower(uint8_t *p) noexcept {
+FORCE_INLINE uint16_t getLower(uint8_t *p) noexcept {
 	return static_cast<uint8_t>(((p[NODE_SIZE + 0] & 0xff) << 8) + ((p[NODE_SIZE + 1]) & 0xff));
 }
 
@@ -58,7 +94,7 @@ uint16_t getLower(uint8_t *p) noexcept {
  * @param p
  * @return
  */
-uint16_t getUpper(uint8_t *p) noexcept {
+FORCE_INLINE uint16_t getUpper(uint8_t *p) noexcept {
 	return static_cast<uint8_t>(((p[NODE_SIZE + 2] & 0xff) << 8) + ((p[NODE_SIZE + 3]) & 0xff));
 }
 
@@ -80,7 +116,7 @@ bool isDelimiter(int ch) noexcept {
  * greedy
  *
  * Repeatedly match something simple up to "max" times. If max <= 0
- * then match as much as possible (max = infinity).  Uses unsigned long
+ * then match as much as possible (max = infinity).  Uses uint32_t
  * variables to maximize the amount of text matchable for unbounded
  * qualifiers like '*' and '+'.  This will allow at least 4,294,967,295
  * matches (4 Gig!) for an ANSI C compliant compiler.  If you are
@@ -89,13 +125,13 @@ bool isDelimiter(int ch) noexcept {
  *
  * Returns the actual number of matches.
  *----------------------------------------------------------------------*/
-unsigned long greedy(uint8_t *p, unsigned long max) {
+uint32_t greedy(uint8_t *p, uint32_t max) {
 
-	unsigned long count = REG_ZERO;
+	uint32_t count = REG_ZERO;
 
 	const char *input_str = eContext.Reg_Input;
 	uint8_t *operand = OPERAND(p); // Literal char or start of class characters.
-	unsigned long max_cmp = (max > 0) ? max : ULONG_MAX;
+	uint32_t max_cmp = (max > 0) ? max : std::numeric_limits<uint32_t>::max();
 
 	switch (GET_OP_CODE(p)) {
 	case ANY:
@@ -279,30 +315,6 @@ unsigned long greedy(uint8_t *p, unsigned long max) {
 	eContext.Reg_Input = input_str;
 
 	return count;
-}
-
-/* The next_ptr () function can consume up to 30% of the time during matching
-   because it is called an immense number of times (an average of 25
-   next_ptr() calls per match() call was witnessed for Perl syntax
-   highlighting). Therefore it is well worth removing some of the function
-   call overhead by selectively inlining the next_ptr() calls. Moreover,
-   the inlined code can be simplified for matching because one of the tests,
-   only necessary during compilation, can be left out.
-   The net result of using this inlined version at two critical places is
-   a 25% speedup (again, witnesses on Perl syntax highlighting). */
-uint8_t *NEXT_PTR(uint8_t *ptr) {
-
-	const uint16_t offset = GET_OFFSET(ptr);
-
-	if (offset == 0) {
-		return nullptr;
-	}
-
-	if (GET_OP_CODE(ptr) == BACK) {
-		return (ptr - offset);
-	} else {
-		return (ptr + offset);
-	}
 }
 
 /*----------------------------------------------------------------------*
@@ -641,9 +653,9 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 		case LAZY_PLUS:
 		case LAZY_QUESTION:
 		case LAZY_BRACE: {
-			unsigned long num_matched = REG_ZERO;
-			unsigned long min = ULONG_MAX;
-			unsigned long max = REG_ZERO;
+			uint32_t num_matched = REG_ZERO;
+			uint32_t min = std::numeric_limits<uint32_t>::max();
+			uint32_t max = REG_ZERO;
 			const char *save;
 			uint8_t next_char;
 			uint8_t *next_op;
@@ -666,7 +678,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				NEDIT_FALLTHROUGH();
 			case STAR:
 				min = REG_ZERO;
-				max = ULONG_MAX;
+				max = std::numeric_limits<uint32_t>::max();
 				break;
 
 			case LAZY_PLUS:
@@ -674,7 +686,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				NEDIT_FALLTHROUGH();
 			case PLUS:
 				min = REG_ONE;
-				max = ULONG_MAX;
+				max = std::numeric_limits<uint32_t>::max();
 				break;
 
 			case LAZY_QUESTION:
@@ -689,11 +701,11 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				lazy = true;
 				NEDIT_FALLTHROUGH();
 			case BRACE:
-				min = static_cast<unsigned long>(GET_OFFSET(scan + NEXT_PTR_SIZE));
-				max = static_cast<unsigned long>(GET_OFFSET(scan + (2 * NEXT_PTR_SIZE)));
+				min = static_cast<uint32_t>(GET_OFFSET(scan + NEXT_PTR_SIZE));
+				max = static_cast<uint32_t>(GET_OFFSET(scan + (2 * NEXT_PTR_SIZE)));
 
 				if (max <= REG_INFINITY) {
-					max = ULONG_MAX;
+					max = std::numeric_limits<uint32_t>::max();
 				}
 
 				next_op = OPERAND(scan + (2 * NEXT_PTR_SIZE));
@@ -755,7 +767,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			break;
 
 		case TEST_COUNT:
-			if (eContext.BraceCounts[*OPERAND(scan)] < static_cast<unsigned long>(GET_OFFSET(scan + NEXT_PTR_SIZE + INDEX_SIZE))) {
+			if (eContext.BraceCounts[*OPERAND(scan)] < static_cast<uint32_t>(GET_OFFSET(scan + NEXT_PTR_SIZE + INDEX_SIZE))) {
 				next = scan + NODE_SIZE + INDEX_SIZE + NEXT_PTR_SIZE;
 			}
 			break;
@@ -846,11 +858,11 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				/* Jump to the node just after the (?=...) or (?!...)
 				   Construct. */
 
-				next = next_ptr(OPERAND(scan)); // Skip 1st branch
+				next = NEXT_PTR(OPERAND(scan)); // Skip 1st branch
 				// Skip the chain of branches inside the look-ahead
 				while (GET_OP_CODE(next) == BRANCH)
-					next = next_ptr(next);
-				next = next_ptr(next); // Skip the LOOK_AHEAD_CLOSE
+					next = NEXT_PTR(next);
+				next = NEXT_PTR(next); // Skip the LOOK_AHEAD_CLOSE
 			} else {
 				eContext.Reg_Input = save;          // Backtrack to look-ahead start.
 				eContext.End_Of_String = saved_end; // Restore logical end.
@@ -926,11 +938,11 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				   node. The look-behind node is followed by a chain of
 				   branches (contents of the look-behind expression), and
 				   terminated by a look-behind-close node. */
-				next = next_ptr(OPERAND(scan) + LENGTH_SIZE); // 1st branch
+				next = NEXT_PTR(OPERAND(scan) + LENGTH_SIZE); // 1st branch
 				// Skip the chained branches inside the look-ahead
 				while (GET_OP_CODE(next) == BRANCH)
-					next = next_ptr(next);
-				next = next_ptr(next); // Skip LOOK_BEHIND_CLOSE
+					next = NEXT_PTR(next);
+				next = NEXT_PTR(next); // Skip LOOK_BEHIND_CLOSE
 			} else {
 				// Not a match
 				MATCH_RETURN(false);
@@ -1146,13 +1158,20 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 	std::fill_n(re->startp.begin(), 9, start);
 	std::fill_n(re->endp.begin(),   9, start);
 
+	auto checked_return = [](bool value) {
+		if (eContext.Recursion_Limit_Exceeded) {
+			return false;
+		}
+
+		return value;
+	};
+
 	if (!reverse) { // Forward Search
 		if (re->anchor) {
 			// Search is anchored at BOL
-
 			if (attempt(re, start)) {
 				ret_val = true;
-				goto SINGLE_RETURN;
+				return checked_return(ret_val);
 			}
 
 			for (str = start; !AT_END_OF_STRING(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
@@ -1165,11 +1184,10 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 				}
 			}
 
-			goto SINGLE_RETURN;
+			return checked_return(ret_val);
 
 		} else if (re->match_start != '\0') {
 			// We know what char match must start with.
-
 			for (str = start; !AT_END_OF_STRING(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
 
 				if (*str == static_cast<uint8_t>(re->match_start)) {
@@ -1180,10 +1198,9 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 				}
 			}
 
-			goto SINGLE_RETURN;
+			return checked_return(ret_val);
 		} else {
 			// General case
-
 			for (str = start; !AT_END_OF_STRING(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
 
 				if (attempt(re, str)) {
@@ -1199,7 +1216,7 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 				}
 			}
 
-			goto SINGLE_RETURN;
+			return checked_return(ret_val);
 		}
 	} else { // Search reverse, same as forward, but loops run backward
 
@@ -1210,28 +1227,24 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 
 		if (re->anchor) {
 			// Search is anchored at BOL
-
 			for (str = (end - 1); str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
-
 				if (*str == '\n') {
 					if (attempt(re, str + 1)) {
 						ret_val = true;
-						goto SINGLE_RETURN;
+						return checked_return(ret_val);
 					}
 				}
 			}
 
 			if (!eContext.Recursion_Limit_Exceeded && attempt(re, start)) {
 				ret_val = true;
-				goto SINGLE_RETURN;
+				return checked_return(ret_val);
 			}
 
-			goto SINGLE_RETURN;
+			return checked_return(ret_val);
 		} else if (re->match_start != '\0') {
 			// We know what char match must start with.
-
 			for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
-
 				if (*str == static_cast<uint8_t>(re->match_start)) {
 					if (attempt(re, str)) {
 						ret_val = true;
@@ -1240,12 +1253,10 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 				}
 			}
 
-			goto SINGLE_RETURN;
+			return checked_return(ret_val);
 		} else {
 			// General case
-
 			for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
-
 				if (attempt(re, str)) {
 					ret_val = true;
 					break;
@@ -1254,10 +1265,5 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 		}
 	}
 
-SINGLE_RETURN:
-	if (eContext.Recursion_Limit_Exceeded) {
-		return false;
-	}
-
-	return ret_val;
+	return checked_return(ret_val);
 }

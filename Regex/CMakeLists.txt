@@ -30,3 +30,4 @@ set_property(TARGET Regex PROPERTY CXX_STANDARD 14)
 set_property(TARGET Regex PROPERTY CXX_EXTENSIONS OFF)
 
 
+add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/test")
