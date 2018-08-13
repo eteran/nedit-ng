@@ -255,7 +255,7 @@ public:
 
 private:	
 	CursorStyles getCursorStyle() const;
-	QColor getRangesetColor(int ind, QColor bground) const;
+	QColor getRangesetColor(size_t ind, QColor bground) const;
 	QFont getFont() const;
 	QShortcut *createShortcut(const QString &name, const QKeySequence &keySequence, const char *member);
 	TextCursor TextDCountBackwardNLines(TextCursor startPos, int64_t nLines) const;

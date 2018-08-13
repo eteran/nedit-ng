@@ -8,6 +8,7 @@
 #include <vector>
 #include <boost/optional.hpp>
 
+// NOTE(eteran): a bit of an artificial limit, but we'll keep it for now
 constexpr int N_RANGESETS = 63;
 
 class Rangeset;

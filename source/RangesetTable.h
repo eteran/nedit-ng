@@ -14,15 +14,15 @@ public:
 	~RangesetTable();
 
 public:
-	QString RangesetTableGetColorName(int index) const;
+	QString RangesetTableGetColorName(size_t index) const;
 	Rangeset *RangesetFetch(int label);
 	int RangesetCreate();
-	int RangesetIndex1ofPos(TextCursor pos, bool needs_color);
-	int RangesetTableGetColorValid(int index, QColor *color) const;
+	int RangesetTableGetColorValid(size_t index, QColor *color) const;
 	int nRangesetsAvailable() const;
+	size_t RangesetIndex1ofPos(TextCursor pos, bool needs_color);
 	std::vector<uint8_t> RangesetGetList() const;
 	void RangesetForget(int label);
-	void RangesetTableAssignColor(int index, const QColor &color);
+	void RangesetTableAssignColor(size_t index, const QColor &color);
 	void RangesetTableUpdatePos(TextCursor pos, int64_t ins, int64_t del);
 
 public:

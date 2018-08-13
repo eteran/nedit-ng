@@ -80,8 +80,8 @@ void RangesetTable::RangesetForget(int label) {
 /*
 ** Return the color name, if any.
 */
-QString RangesetTable::RangesetTableGetColorName(int index) const {
-	Q_ASSERT(static_cast<size_t>(index) <= sets_.size());
+QString RangesetTable::RangesetTableGetColorName(size_t index) const {
+	Q_ASSERT(index <= sets_.size());
 
 	const Rangeset &set = sets_[index];
 	return set.color_name_;
@@ -93,13 +93,13 @@ QString RangesetTable::RangesetTableGetColorName(int index) const {
 ** rangeset was found, 0 otherwise. If needs_color is true, "colorless" ranges
 ** will be skipped.
 */
-int RangesetTable::RangesetIndex1ofPos(TextCursor pos, bool needs_color) {
+size_t RangesetTable::RangesetIndex1ofPos(TextCursor pos, bool needs_color) {
 
 	for(size_t i = 0; i < sets_.size(); ++i) {
 		Rangeset &set = sets_[i];
 		if (set.RangesetCheckRangeOfPos(pos) >= 0) {
 			if (needs_color && set.color_set_ >= 0 && !set.color_name_.isNull()) {
-				return static_cast<int>(i + 1);
+				return i + 1;
 			}
 		}
 	}
@@ -111,8 +111,8 @@ int RangesetTable::RangesetIndex1ofPos(TextCursor pos, bool needs_color) {
 ** Assign a color pixel value to a rangeset via the rangeset table. If ok is
 ** false, the color_set flag is set to an invalid (negative) value.
 */
-void RangesetTable::RangesetTableAssignColor(int index, const QColor &color) {
-	Q_ASSERT(static_cast<size_t>(index) <= sets_.size());
+void RangesetTable::RangesetTableAssignColor(size_t index, const QColor &color) {
+	Q_ASSERT(index <= sets_.size());
 
 	Rangeset &set = sets_[index];
 
@@ -123,8 +123,8 @@ void RangesetTable::RangesetTableAssignColor(int index, const QColor &color) {
 /*
 ** Return the color color validity, if any, and the value in *color.
 */
-int RangesetTable::RangesetTableGetColorValid(int index, QColor *color) const {
-	Q_ASSERT(static_cast<size_t>(index) <= sets_.size());
+int RangesetTable::RangesetTableGetColorValid(size_t index, QColor *color) const {
+	Q_ASSERT(index <= sets_.size());
 
 	const Rangeset &set = sets_[index];
 
@@ -136,7 +136,7 @@ int RangesetTable::RangesetTableGetColorValid(int index, QColor *color) const {
 ** Return the number of rangesets that are available to create
 */
 int RangesetTable::nRangesetsAvailable() const {
-	return N_RANGESETS - sets_.size();
+	return static_cast<int>(N_RANGESETS - sets_.size());
 }
 
 
@@ -178,7 +178,7 @@ int RangesetTable::RangesetCreate() {
 		return 0;
 	}
 
-	const int labelIndex = (it - rangeset_labels.begin());
+	const size_t labelIndex = (it - rangeset_labels.begin());
 	const uint8_t label  = rangeset_labels[labelIndex];
 
 	sets_.insert(sets_.begin(), Rangeset(buffer_, label));

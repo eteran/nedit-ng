@@ -2893,7 +2893,7 @@ uint32_t TextArea::styleOfPos(TextCursor lineStartPos, int64_t lineLen, int64_t 
 
 	/* store in the RANGESET_MASK portion of style the rangeset index for pos */
 	if (document_->rangesetTable_) {
-		int rangesetIndex = document_->rangesetTable_->RangesetIndex1ofPos(pos, true);
+		size_t rangesetIndex = document_->rangesetTable_->RangesetIndex1ofPos(pos, true);
 		style |= ((rangesetIndex << RANGESET_SHIFT) & RANGESET_MASK);
 	}
 
@@ -3144,7 +3144,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
  * @param bground
  * @return
  */
-QColor TextArea::getRangesetColor(int ind, QColor bground) const {
+QColor TextArea::getRangesetColor(size_t ind, QColor bground) const {
 
 	if (ind > 0) {
 		--ind;
