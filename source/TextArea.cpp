@@ -6410,7 +6410,7 @@ void TextArea::adjustSecondarySelection(const QPoint &coord) {
 ** newlines, rather than display wrapping, and anywhere a rectangular selection
 ** needs a row, it needs it in terms of un-wrapped lines.
 */
-int64_t TextArea::TextDOffsetWrappedRow(int row) const {
+int64_t TextArea::TextDOffsetWrappedRow(int64_t row) const {
 	if (!continuousWrap_ || row < 0 || row > nVisibleLines_) {
 		return row;
 	}
@@ -7197,7 +7197,7 @@ int64_t TextArea::getBufferLinesCount() const {
 **
 ** Style buffers, tables and their associated memory are managed by the caller.
 */
-void TextArea::TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user) {
+void TextArea::TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user) {
 	styleBuffer_           = styleBuffer;
 	styleTable_            = styleTable;
 	unfinishedStyle_       = unfinishedStyle;

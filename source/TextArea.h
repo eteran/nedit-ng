@@ -224,7 +224,7 @@ public:
 	int64_t getBufferLinesCount() const;
 	std::string TextGetWrapped(TextCursor startPos, TextCursor endPos);
 	void RemoveWidgetHighlightEx();
-	void TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, char unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user);
+	void TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user);
 	void TextDGetScroll(int64_t *topLineNum, int *horizOffset);
 	void TextDKillCalltip(int id);
 	void TextDMaintainAbsLineNum(bool state);
@@ -292,7 +292,7 @@ private:
 	int stringWidth(int length) const;
 	int64_t TextDCountLines(TextCursor startPos, TextCursor endPos, bool startPosIsLineStart);
 	int64_t TextDOffsetWrappedColumn(int64_t row, int64_t column) const;
-	int64_t TextDOffsetWrappedRow(int row) const;
+	int64_t TextDOffsetWrappedRow(int64_t row) const;
 	int64_t TextDPreferredColumn(int *visLineNum, TextCursor *lineStartPos);
 	int64_t getAbsTopLineNum() const;
 	int64_t measureVisLine(int visLineNum) const;
