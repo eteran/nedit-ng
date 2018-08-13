@@ -559,11 +559,12 @@ QString Rangeset::name() const {
  */
 boost::optional<Range> Rangeset::RangesetFindRangeNo(int index) const {
 
-	if (index < 0 || ranges_.size() <= static_cast<size_t>(index)) {
+	const auto n = static_cast<size_t>(index);
+	if (index < 0 || ranges_.size() <= n) {
 		return boost::none;
 	}
 
-	return ranges_[index];
+	return ranges_[n];
 }
 
 /*
@@ -783,10 +784,10 @@ int64_t Rangeset::RangesetAdd(const Rangeset &other) {
 
 
 	auto origRanges     = ranges_.cbegin();
-	int64_t nOrigRanges = ranges_.size();
+	size_t nOrigRanges = ranges_.size();
 
 	auto plusRanges     = other.ranges_.cbegin();
-	int64_t nPlusRanges = other.ranges_.size();
+	size_t nPlusRanges = other.ranges_.size();
 
 	std::vector<Range> newRanges;
 	newRanges.reserve(nOrigRanges + nPlusRanges);
@@ -1091,7 +1092,7 @@ Rangeset::Rangeset(TextBuffer *buffer, uint8_t label) : buffer_(buffer), label_(
 /**
  * @brief Rangeset::~Rangeset
  */
-Rangeset::~Rangeset() {
+Rangeset::~Rangeset() noexcept {
 	for(const Range &range : ranges_) {
 		RangesetRefreshRange(buffer_, range.start, range.end);
 	}
