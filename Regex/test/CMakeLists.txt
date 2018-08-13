@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 3.0)
-project(RegexTest CXX)
+project(nedit-regex-test CXX)
 
-add_executable(RegexTest
+add_executable(nedit-regex-test
 	Test.cpp
 )
 
-target_link_libraries(RegexTest
+target_link_libraries(nedit-regex-test
 	Regex
 )
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
 
-set_property(TARGET RegexTest PROPERTY CXX_STANDARD 14)
+set_property(TARGET nedit-regex-test PROPERTY CXX_STANDARD 14)
 
-add_test("RegexTest" "RegexTest")
+add_test("nedit-regex-test" "nedit-regex-test")

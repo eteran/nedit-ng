@@ -715,18 +715,20 @@ int main() {
 		std::string bytes;
 
 		for(uint8_t ch : re.program) {
-			char buf[16];
+			char buf[8];
 			snprintf(buf, sizeof(buf), "\\x%02x", ch & 0xff);
 			bytes.append(buf);
 		}
 		
 		if(bytes != t.output) {
-			std::cerr << "ERROR    : " << t.input.to_string() << std::endl;
-			std::cerr << "EXPECTED : " << t.output.to_string() << std::endl;
-			std::cerr << "GOT      : " << bytes << std::endl;
+			std::cerr << "ERROR    : " << t.input.to_string() << '\n';
+			std::cerr << "EXPECTED : " << t.output.to_string() << '\n';
+			std::cerr << "GOT      : " << bytes << '\n';
 			return -1;
 		}
 	}
+
+	std::cout << "SUCCESS\n";
 
 	return 0;
 }
