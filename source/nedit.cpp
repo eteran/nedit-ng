@@ -6,6 +6,7 @@
 #include <QStringList>
 #include <QApplication>
 #include <QTranslator>
+#include <QLibraryInfo>
 
 bool IsServer = false;
 
@@ -97,9 +98,16 @@ int main(int argc, char *argv[]) {
 	QApplication app(argc, argv);
 	QApplication::setWindowIcon(QIcon(QLatin1String(":/res/nedit.png")));
 
+    // NOTE: for issue #41, translate QMessageBox.
+    QTranslator qtTranslator;
+    if (qtTranslator.load(QLocale(), QLatin1String("qtbase"),  QLatin1String("_"),
+                          QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
+        app.installTranslator(&qtTranslator);
+    }
+
 	QTranslator translator;
 	// look up e.g. :/translations/nedit-ng_{lang}.qm
-	if (translator.load(QLocale(), QLatin1String("nedit-ng"), QLatin1String("_"), QLatin1String(":/translations"))) {
+    if (translator.load(QLocale(), QLatin1String("nedit-ng"), QLatin1String("_"), QLatin1String(":/translations"))) {
 		app.installTranslator(&translator);
 	}
 
