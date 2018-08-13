@@ -302,8 +302,10 @@ void MainWindow::parseGeometry(QString geometry) {
 		QFontMetrics fm(document->font_);
 
 		const int extent = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
-		const int w = extent + (fm.maxWidth() * cols) + (TextArea::DefaultHMargin * 2);
-		const int h = extent + (fm.ascent() + fm.descent()) * rows + (TextArea::DefaultVMargin * 2);
+
+		const QMargins m = document->firstPane()->getMargins();
+		const int w = extent + (fm.maxWidth() * cols) + m.left() + m.right();
+		const int h = extent + (fm.ascent() + fm.descent()) * rows + m.top() + m.bottom();
 
 		document->setMinimumSize(w, h);
 		adjustSize();

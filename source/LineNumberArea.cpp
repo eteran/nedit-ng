@@ -35,7 +35,7 @@ void LineNumberArea::paintEvent(QPaintEvent *event) {
 	painter.setFont(area_->font_);
 
 	// Draw the line numbers, aligned to the text
-	int y        = area_->rect_.top();
+	int y = area_->viewport()->contentsRect().top();
 	int64_t line = area_->getAbsTopLineNum();
 
 	for (int visLine = 0; visLine < area_->nVisibleLines_; visLine++) {

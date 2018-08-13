@@ -489,8 +489,6 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
 	colorizeHighlightedText_ = Preferences::GetPrefColorizeHighlightedText();
 	autoWrapPastedText_      = Preferences::GetPrefAutoWrapPastedText();
 	heavyCursor_             = Preferences::GetPrefHeavyCursor();
-	rows_                    = Preferences::GetPrefRows();
-	columns_                 = Preferences::GetPrefCols();
 	readOnly_                = document->lockReasons().isAnyLocked();
 	wrapMargin_              = Preferences::GetPrefWrapMargin();
 	autoIndent_              = document->indentStyle_ == IndentStyle::Auto;
@@ -507,8 +505,8 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
 	updateFontHeightMetrics(font);
 	updateFontWidthMetrics(font);
 
-	// this will set the rect_ correctly
-	rect_.setLeft(marginWidth_);
+	// set the default margins
+	viewport()->setContentsMargins(DefaultHMargin, DefaultVMargin, 0, 0);
 
 	/* Attach the callback to the text buffer for receiving modification
 	 * information */
@@ -886,6 +884,7 @@ void TextArea::cursorBlinkTimerTimeout() {
  */
 void TextArea::autoScrollTimerTimeout() {
 
+	const QRect viewRect = viewport()->contentsRect();
 	int64_t topLineNum;
 	int horizOffset;
 	int cursorX;
@@ -909,16 +908,16 @@ void TextArea::autoScrollTimerTimeout() {
 	   for each fontHeight distance from the mouse to the text (vertical) */
 	TextDGetScroll(&topLineNum, &horizOffset);
 
-	if (cursorX >= viewport()->width() - marginWidth_) {
+	if (cursorX >= viewRect.right()) {
 		horizOffset += fontWidth;
-	} else if (mouseCoord.x() < rect_.left()) {
+	} else if (mouseCoord.x() < viewRect.left()) {
 		horizOffset -= fontWidth;
 	}
 
-	if (mouseCoord.y() >= viewport()->height() - marginHeight_) {
-		topLineNum += 1 + ((mouseCoord.y() - viewport()->height() - marginHeight_) / fontHeight) + 1;
-	} else if (mouseCoord.y() < marginHeight_) {
-		topLineNum -= 1 + ((marginHeight_ - mouseCoord.y()) / fontHeight);
+	if (mouseCoord.y() >= viewRect.bottom()) {
+		topLineNum += 1 + ((mouseCoord.y() - viewRect.bottom()) / fontHeight) + 1;
+	} else if (mouseCoord.y() < viewRect.top()) {
+		topLineNum -= 1 + ((viewRect.top() - mouseCoord.y()) / fontHeight);
 	}
 
 	TextDSetScroll(topLineNum, horizOffset);
@@ -947,7 +946,7 @@ void TextArea::autoScrollTimerTimeout() {
 	}
 
 	// re-establish the timer proc (this routine) to continue processing
-	autoScrollTimer_->start(mouseCoord.y() >= marginHeight_ && mouseCoord.y() < viewport()->height() - marginHeight_
+	autoScrollTimer_->start(mouseCoord.y() >= viewRect.top() && mouseCoord.y() < viewRect.bottom()
 							? (VERTICAL_SCROLL_DELAY * fontWidth) / fontHeight
 							: (VERTICAL_SCROLL_DELAY));
 }
@@ -1236,6 +1235,7 @@ void TextArea::mouseReleaseEvent(QMouseEvent *event) {
  */
 void TextArea::paintEvent(QPaintEvent *event) {
 
+	const QRect viewRect = viewport()->contentsRect();
 	QRect rect = event->rect();
 	const int top    = rect.top();
 	const int left   = rect.left();
@@ -1244,13 +1244,13 @@ void TextArea::paintEvent(QPaintEvent *event) {
 
 	// find the line number range of the display
 	const int fontHeight = ascent_ + descent_;
-	const int firstLine  = (top - rect_.top() - fontHeight + 1) / fontHeight;
-	const int lastLine   = (top + height - rect_.top()) / fontHeight;
+	const int firstLine  = (top - viewRect.top() - fontHeight + 1) / fontHeight;
+	const int lastLine   = (top + height - viewRect.top()) / fontHeight;
 
 	QPainter painter(viewport());
 	{
 		painter.save();
-		painter.setClipRect(rect_);
+		painter.setClipRect(viewRect);
 
 		// draw the lines of text
 		for (int line = firstLine; line <= lastLine; line++) {
@@ -1267,14 +1267,12 @@ void TextArea::paintEvent(QPaintEvent *event) {
  */
 void TextArea::resizeEvent(QResizeEvent *event) {
 
-	const int height       = event->size().height();
-	const int width        = event->size().width();
+	Q_UNUSED(event);
 
-	columns_ = (width  - marginWidth_  * 2) / fixedFontWidth_;
-	rows_    = (height - marginHeight_ * 1) / (ascent_ + descent_);
+	const QRect viewRect = viewport()->contentsRect();
 
 	// Resize the text display that the widget uses to render text
-	TextDResize(width - marginWidth_ * 2, height - marginHeight_ * 1);
+	TextDResize(viewRect.width(), viewRect.height());
 
 	showResizeNotification();
 
@@ -1312,6 +1310,8 @@ void TextArea::bufPreDeleteCallback(TextCursor pos, int64_t nDeleted) {
  * @param deletedText
  */
 void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText) {
+
+	const QRect viewRect = viewport()->contentsRect();
 	int64_t linesInserted;
 	int64_t linesDeleted;
 	TextCursor endDispPos;
@@ -1382,7 +1382,7 @@ void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nD
 
 	// If the changes caused scrolling, re-paint everything and we're done.
 	if (scrolled) {
-		TextDRedisplayRect(0, rect_.top(), rect_.width() + rect_.left(), rect_.height());
+		TextDRedisplayRect(viewRect);
 		if (styleBuffer_) { // See comments in extendRangeForStyleMods
 			styleBuffer_->primary.selected  = false;
 			styleBuffer_->primary.zeroWidth = false;
@@ -1442,8 +1442,8 @@ void TextArea::setBacklightCharTypes(const QString &charTypes) {
  * @brief TextArea::hideOrShowHScrollBar
  */
 void TextArea::hideOrShowHScrollBar() {
-
-	if (continuousWrap_ && (wrapMargin_ == 0 || wrapMargin_ * fixedFontWidth_ < rect_.width())) {
+	const QRect viewRect = viewport()->contentsRect();
+	if (continuousWrap_ && (wrapMargin_ == 0 || wrapMargin_ * fixedFontWidth_ < viewRect.width())) {
 		setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	} else {
 		setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -1554,6 +1554,7 @@ void TextArea::measureDeletedLines(TextCursor pos, int64_t nDeleted) {
 **   retLineEnd:    End position of the last line traversed
 */
 void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, TextCursor maxPos, int64_t maxLines, bool startPosIsLineStart, TextCursor *retPos, int64_t *retLines, TextCursor *retLineStart, TextCursor *retLineEnd) const {
+	const QRect viewRect = viewport()->contentsRect();
 	TextCursor lineStart;
 	TextCursor newLineStart = {};
 	TextCursor b;
@@ -1572,12 +1573,12 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 	 * set the wrap target for either pixels or columns */
 	if (wrapMargin_ != 0) {
 		countPixels = false;
-		wrapMargin = wrapMargin_ != 0 ? wrapMargin_ : rect_.width() / fixedFontWidth_;
+		wrapMargin = wrapMargin_ != 0 ? wrapMargin_ : viewRect.width() / fixedFontWidth_;
 		maxWidth = INT_MAX;
 	} else {
 		countPixels = true;
 		wrapMargin = INT_MAX;
-		maxWidth = rect_.width();
+		maxWidth = viewRect.width();
 	}
 
 	/* Find the start of the line if the start pos is not marked as a
@@ -2339,6 +2340,8 @@ void TextArea::findLineEnd(TextCursor startPos, bool startPosIsLineStart, TextCu
  * @return
  */
 bool TextArea::updateHScrollBarRange() {
+
+	const QRect viewRect = viewport()->contentsRect();
 	int maxWidth = 0;
 	const int64_t origHOffset = horizOffset_;
 
@@ -2354,17 +2357,17 @@ bool TextArea::updateHScrollBarRange() {
 	/* If the scroll position is beyond what's necessary to keep all lines
 	   in view, scroll to the left to bring the end of the longest line to
 	   the right margin */
-	if (maxWidth < rect_.width() + horizOffset_ && horizOffset_ > 0) {
-		horizOffset_ = std::max(0, maxWidth - rect_.width());
+	if (maxWidth < viewRect.width() + horizOffset_ && horizOffset_ > 0) {
+		horizOffset_ = std::max(0, maxWidth - viewRect.width());
 	}
 
 	// Readjust the scroll bar
-	int sliderWidth   = rect_.width();
+	int sliderWidth   = viewRect.width();
 	int64_t sliderMax = std::max(maxWidth, sliderWidth + horizOffset_);
 
 	horizontalScrollBar()->setMinimum(0);
-	horizontalScrollBar()->setMaximum(gsl::narrow<int>(std::max<int64_t>(sliderMax - rect_.width(), 0)));
-	horizontalScrollBar()->setPageStep(std::max(rect_.width() - 100, 10));
+	horizontalScrollBar()->setMaximum(gsl::narrow<int>(std::max<int64_t>(sliderMax - viewRect.width(), 0)));
+	horizontalScrollBar()->setPageStep(std::max(viewRect.width() - 100, 10));
 	horizontalScrollBar()->setValue(horizOffset_);
 
 	// Return true if scroll position was changed
@@ -2630,6 +2633,8 @@ void TextArea::redisplayLineEx(int visLineNum, int64_t leftCharIndex, int64_t ri
 	Q_UNUSED(leftCharIndex);
 	Q_UNUSED(rightCharIndex);
 
+	const QRect viewRect = viewport()->contentsRect();
+
 	// If line is not displayed, skip it
 	if (visLineNum < 0 || visLineNum >= nVisibleLines_) {
 		return;
@@ -2637,8 +2642,7 @@ void TextArea::redisplayLineEx(int visLineNum, int64_t leftCharIndex, int64_t ri
 
 	// Calculate y coordinate of the string to draw
 	const int fontHeight = ascent_ + descent_;
-	const int y = rect_.top() + visLineNum * fontHeight;
-
+	const int y = viewRect.top() + visLineNum * fontHeight;
 	viewport()->update(QRect(0, y, INT_MAX, fontHeight));
 }
 
@@ -2651,6 +2655,7 @@ void TextArea::redisplayLineEx(int visLineNum, int64_t leftCharIndex, int64_t ri
 */
 void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip) {
 
+	const QRect viewRect = viewport()->contentsRect();
 	int i;
 	int startX;
 	int64_t charWidth;
@@ -2670,8 +2675,8 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	}
 
 	// Shrink the clipping range to the active display area
-	leftClip  = std::max(rect_.left(), leftClip);
-	rightClip = std::min(rightClip, rect_.left() + rect_.width());
+	leftClip  = std::max(viewRect.left(), leftClip);
+	rightClip = std::min(rightClip, viewRect.right());
 
 	if (leftClip > rightClip) {
 		return;
@@ -2679,7 +2684,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 
 	// Calculate y coordinate of the string to draw
 	const int fontHeight = ascent_ + descent_;
-	const int y = rect_.top() + visLineNum * fontHeight;
+	const int y = viewRect.top() + visLineNum * fontHeight;
 
 	// Get the text, length, and  buffer position of the line to display
 	const TextCursor lineStartPos = lineStarts_[visLineNum];
@@ -2718,7 +2723,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   that's off the left edge of the displayed area) to find the first
 	   character position that's not clipped, and the x coordinate for drawing
 	   that character */
-	int x = rect_.left() - horizOffset_;
+	int x = viewRect.left() - horizOffset_;
 	int outIndex = 0;
 
 	int64_t charIndex;
@@ -2906,6 +2911,7 @@ uint32_t TextArea::styleOfPos(TextCursor lineStartPos, int64_t lineLen, int64_t 
 */
 void TextArea::drawString(QPainter *painter, uint32_t style, int64_t x, int y, int64_t toX, const char *string, long nChars) {
 
+	const QRect viewRect = viewport()->contentsRect();
 	const QPalette &pal = palette();
 	QColor bground      = pal.color(QPalette::Base);
 	QColor fground      = pal.color(QPalette::Text);
@@ -3011,15 +3017,15 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int64_t x, int y, i
 	if (style & FILL_MASK) {
 
 		// wipes out to right hand edge of widget
-		if (toX >= rect_.left()) {
+		if (toX >= viewRect.left()) {
 			painter->fillRect(
-						QRect(
-			                static_cast<int>(std::max<int64_t>(x, rect_.left())),
-							y,
-			                static_cast<int>(toX - std::max<int64_t>(x, rect_.left())),
-							ascent_ + descent_
-							),
-						bground);
+			            QRect(
+			                static_cast<int>(std::max<int64_t>(x, viewRect.left())),
+			                y,
+			                static_cast<int>(toX - std::max<int64_t>(x, viewRect.left())),
+			                ascent_ + descent_
+			                ),
+			            bground);
 		}
 
 		return;
@@ -3056,6 +3062,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int64_t x, int y, i
  */
 void TextArea::drawCursor(QPainter *painter, int x, int y) {
 
+	const QRect viewRect = viewport()->contentsRect();
 	QPainterPath path;
 
 	const int fontWidth  = TextDMinFontWidth();
@@ -3070,7 +3077,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 
 	const int bot = y + fontHeight - 1;
 
-	if (x < rect_.left() - 1 || x > rect_.left() + rect_.width()) {
+	if (x < viewRect.left() - 1 || x > viewRect.right()) {
 		return;
 	}
 
@@ -3166,13 +3173,12 @@ QColor TextArea::getRangesetColor(int ind, QColor bground) const {
  */
 void TextArea::TextDResize(int width, int height) {
 
+	const QRect viewRect = viewport()->contentsRect();
 	const int oldVisibleLines = nVisibleLines_;
 	const int newVisibleLines = height / (ascent_ + descent_);
-	const int oldWidth        = rect_.width();
+	const int oldWidth        = viewRect.width();
 	bool canRedraw            = true;
 	int redrawAll             = false;
-
-	rect_.setSize({width, height});
 
 	/* In continuous wrap mode, a change in width affects the total number of
 	   lines in the buffer, and can leave the top line number incorrect, and
@@ -3213,7 +3219,7 @@ void TextArea::TextDResize(int width, int height) {
 
 	// If a full redraw is needed
 	if (redrawAll && canRedraw) {
-		TextDRedisplayRect(rect_);
+		TextDRedisplayRect(viewRect);
 	}
 
 	// Decide if the horizontal scroll bar needs to be visible
@@ -3411,6 +3417,8 @@ void TextArea::TextDSetScroll(int64_t topLineNum, int horizOffset) {
 */
 void TextArea::TextDRedrawCalltip(int calltipID) {
 
+	const QRect viewRect = viewport()->contentsRect();
+
 	if (calltip_.ID == 0) {
 		return;
 	}
@@ -3437,9 +3445,9 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 	} else {
 		if (boost::get<int>(calltip_.pos) < 0) {
 			// First display of tip with cursor offscreen (detected in ShowCalltip)
-			calltip_.pos = rect_.width() / 2;
+			calltip_.pos = viewRect.width() / 2;
 			calltip_.hAlign = TipHAlignMode::Center;
-			rel_y = rect_.height() / 3;
+			rel_y = viewRect.height() / 3;
 		} else if (!TextDPositionToXY(cursorPos_, &rel_x, &rel_y)) {
 			// Window has scrolled and tip is now offscreen
 			if (calltip_.alignMode == TipAlignMode::Strict) {
@@ -3646,7 +3654,7 @@ bool TextArea::TextDPositionToXY(TextCursor pos, QPoint *coord) const {
 bool TextArea::TextDPositionToXY(TextCursor pos, int *x, int *y) const {
 
 	// TODO(eteran): return optional pair?
-
+	const QRect viewRect = viewport()->contentsRect();
 	char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 	int visLineNum;
 
@@ -3661,14 +3669,14 @@ bool TextArea::TextDPositionToXY(TextCursor pos, int *x, int *y) const {
 	}
 
 	const int fontHeight = ascent_ + descent_;
-	*y = rect_.top() + visLineNum * fontHeight + fontHeight / 2;
+	*y = viewRect.top() + visLineNum * fontHeight + fontHeight / 2;
 
 	/* Get the text, length, and  buffer position of the line. If the position
 	   is beyond the end of the buffer and should be at the first position on
 	   the first empty line, don't try to get or scan the text  */
 	const TextCursor lineStartPos = lineStarts_[visLineNum];
 	if (lineStartPos == -1) {
-		*x = rect_.left() - horizOffset_;
+		*x = viewRect.left() - horizOffset_;
 		return true;
 	}
 
@@ -3677,7 +3685,7 @@ bool TextArea::TextDPositionToXY(TextCursor pos, int *x, int *y) const {
 
 	/* Step through character positions from the beginning of the line
 	   to "pos" to calculate the x coordinate */
-	int xStep = rect_.left() - horizOffset_;
+	int xStep = viewRect.left() - horizOffset_;
 	int outIndex = 0;
 	for (int charIndex = 0; charIndex < pos - lineStartPos; charIndex++) {
 		const int charLen = TextBuffer::BufExpandCharacter(lineStr[static_cast<size_t>(charIndex)], outIndex, expandedChar, buffer_->BufGetTabDist());
@@ -3689,10 +3697,10 @@ bool TextArea::TextDPositionToXY(TextCursor pos, int *x, int *y) const {
 	return true;
 }
 
-// Change the (non syntax-highlit) colors
+// Change the (non syntax-highlight) colors
 void TextArea::TextDSetColors(const QColor &textFgP, const QColor &textBgP, const QColor &selectFgP, const QColor &selectBgP, const QColor &hiliteFgP, const QColor &hiliteBgP, const QColor &lineNoFgP, const QColor &cursorFgP) {
 
-	// Update the stored pixels
+	const QRect viewRect = viewport()->contentsRect();
 	QPalette pal = palette();
 	pal.setColor(QPalette::Text, textFgP);              // foreground color
 	pal.setColor(QPalette::Base, textBgP);              // background
@@ -3706,7 +3714,7 @@ void TextArea::TextDSetColors(const QColor &textFgP, const QColor &textBgP, cons
 	cursorFGColor_    = cursorFgP;
 
 	// Redisplay
-	TextDRedisplayRect(rect_);
+	TextDRedisplayRect(viewRect);
 	repaintLineNumbers();
 }
 
@@ -3792,6 +3800,7 @@ void TextArea::checkAutoShowInsertPos() {
 */
 void TextArea::TextDMakeInsertPosVisible() {
 
+	const QRect viewRect = viewport()->contentsRect();
 	int x;
 	int y;
 	const int cursorVPadding = cursorVPadding_;
@@ -3848,10 +3857,10 @@ void TextArea::TextDMakeInsertPosVisible() {
 		}
 	}
 
-	if (x > rect_.left() + rect_.width()) {
-		hOffset += x - (rect_.left() + rect_.width());
-	} else if (x < rect_.left()) {
-		hOffset += x - rect_.left();
+	if (x > viewRect.right()) {
+		hOffset += x - (viewRect.right());
+	} else if (x < viewRect.left()) {
+		hOffset += x - viewRect.left();
 	}
 
 	// Do the scroll
@@ -4151,6 +4160,7 @@ bool TextArea::checkReadOnly() const {
 */
 void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDelete, bool allowWrap) {
 
+	const QRect viewRect = viewport()->contentsRect();
 	const int fontWidth = fixedFontWidth_;
 
 	// Don't wrap if auto-wrap is off or suppressed, or it's just a newline
@@ -4170,7 +4180,7 @@ void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDe
 	   it and be done (for efficiency only, this routine is called for each
 	   character typed). (Of course, it may not be significantly more efficient
 	   than the more general code below it, so it may be a waste of time!) */
-	const int wrapMargin       = wrapMargin_ != 0 ? wrapMargin_ : rect_.width() / fontWidth;
+	const int wrapMargin       = wrapMargin_ != 0 ? wrapMargin_ : viewRect.width() / fontWidth;
 	const TextCursor lineStartPos = buffer_->BufStartOfLine(cursorPos);
 
 	int64_t colNum = buffer_->BufCountDispChars(lineStartPos, cursorPos);
@@ -5041,11 +5051,12 @@ void TextArea::xyToUnconstrainedPos(const QPoint &pos, int64_t *row, int64_t *co
 
 void TextArea::xyToUnconstrainedPos(int x, int y, int64_t *row, int64_t *column, PositionTypes posType) const {
 
+	const QRect viewRect = viewport()->contentsRect();
 	const int fontHeight = ascent_ + descent_;
 	const int fontWidth = fixedFontWidth_;
 
 	// Find the visible line number corresponding to the y coordinate
-	*row = (y - rect_.top()) / fontHeight;
+	*row = (y - viewRect.top()) / fontHeight;
 
 	if (*row < 0) {
 		*row = 0;
@@ -5055,7 +5066,7 @@ void TextArea::xyToUnconstrainedPos(int x, int y, int64_t *row, int64_t *column,
 		*row = nVisibleLines_ - 1;
 	}
 
-	*column = ((x - rect_.left()) + horizOffset_ + (posType == PositionTypes::Cursor ? fontWidth / 2 : 0)) / fontWidth;
+	*column = ((x - viewRect.left()) + horizOffset_ + (posType == PositionTypes::Cursor ? fontWidth / 2 : 0)) / fontWidth;
 
 	if (*column < 0) {
 		*column = 0;
@@ -5366,8 +5377,9 @@ TextCursor TextArea::xyToPos(const QPoint &pos, PositionTypes posType) const {
 TextCursor TextArea::xyToPos(int x, int y, PositionTypes posType) const {
 
 	// Find the visible line number corresponding to the y coordinate
+	const QRect viewRect = viewport()->contentsRect();
 	int fontHeight = ascent_ + descent_;
-	int visLineNum = (y - rect_.top()) / fontHeight;
+	int visLineNum = (y - viewRect.top()) / fontHeight;
 
 	if (visLineNum < 0) {
 		return firstChar_;
@@ -5391,7 +5403,7 @@ TextCursor TextArea::xyToPos(int x, int y, PositionTypes posType) const {
 
 	/* Step through character positions from the beginning of the line
 	   to find the character position corresponding to the x coordinate */
-	int64_t xStep = rect_.left() - horizOffset_;
+	int64_t xStep = viewRect.left() - horizOffset_;
 	int outIndex = 0;
 	for (int64_t charIndex = 0; charIndex < lineLen; charIndex++) {
 
@@ -5674,7 +5686,8 @@ void TextArea::adjustSelection(const QPoint &coord) {
 void TextArea::checkAutoScroll(const QPoint &coord) {
 
 	// Is the pointer in or out of the window?
-	const bool inWindow = viewport()->rect().contains(coord);
+	const QRect viewRect = viewport()->contentsRect();
+	const bool inWindow = viewRect.contains(coord);
 
 	// If it's in the window, cancel the timer procedure
 	if (inWindow) {
@@ -6023,6 +6036,7 @@ void TextArea::secondaryAdjustAP(QMouseEvent *event, EventFlags flags) {
 */
 void TextArea::BeginBlockDrag() {
 
+	const QRect viewRect = viewport()->contentsRect();
 	const int fontHeight = ascent_ + descent_;
 	const int fontWidth  = fixedFontWidth_;
 	const TextBuffer::Selection *sel = &buffer_->primary;
@@ -6050,10 +6064,10 @@ void TextArea::BeginBlockDrag() {
 	   selection (the position where text will actually be inserted In dragging
 	   non-rectangular selections)  */
 	if (sel->rectangular) {
-		dragXOffset_ = btnDownCoord_.x() + horizOffset_ - rect_.left() - sel->rectStart * fontWidth;
+		dragXOffset_ = btnDownCoord_.x() + horizOffset_ - viewRect.left() - sel->rectStart * fontWidth;
 	} else {
 		if (!TextDPositionToXY(sel->start, &x, &y)) {
-			x = buffer_->BufCountDispChars(TextDStartOfLine(sel->start), sel->start) * fontWidth + rect_.left() - horizOffset_;
+			x = buffer_->BufCountDispChars(TextDStartOfLine(sel->start), sel->start) * fontWidth + viewRect.left() - horizOffset_;
 		}
 		dragXOffset_ = btnDownCoord_.x() - x;
 	}
@@ -6061,7 +6075,7 @@ void TextArea::BeginBlockDrag() {
 	mousePos = TextDXYToPosition(btnDownCoord_);
 	nLines = buffer_->BufCountLines(sel->start, mousePos);
 
-	dragYOffset_ = nLines * fontHeight + (((btnDownCoord_.y() - marginHeight_) % fontHeight) - fontHeight / 2);
+	dragYOffset_ = nLines * fontHeight + (((btnDownCoord_.y() - viewRect.top()) % fontHeight) - fontHeight / 2);
 	dragNLines_  = buffer_->BufCountLines(sel->start, sel->end);
 
 	/* Record the current drag insert position and the information for
@@ -6427,7 +6441,6 @@ void TextArea::setLineNumCols(int value) {
 
 	lineNumCols_ = value;
 	TextDSetLineNumberArea(fixedFontWidth_ * lineNumCols_);
-	columns_ = (viewport()->width() - marginWidth_ * 2) / fixedFontWidth_;
 }
 
 /*
@@ -6441,6 +6454,7 @@ void TextArea::TextDSetLineNumberArea(int lineNumWidth) {
 
 void TextArea::TextDSetWrapMode(bool wrap, int wrapMargin) {
 
+	const QRect viewRect = viewport()->contentsRect();
 	continuousWrap_ = wrap;
 	wrapMargin_     = wrapMargin;
 
@@ -6467,7 +6481,7 @@ void TextArea::TextDSetWrapMode(bool wrap, int wrapMargin) {
 	hideOrShowHScrollBar();
 
 	// Do a full redraw
-	TextDRedisplayRect(0, rect_.top(), rect_.width() + rect_.left(), rect_.height());
+	TextDRedisplayRect(viewRect);
 }
 
 
@@ -6795,6 +6809,7 @@ void TextArea::pageLeftAP(EventFlags flags) {
 
 	EMIT_EVENT_0("page_left");
 
+	const QRect viewRect = viewport()->contentsRect();
 	const TextCursor insertPos = cursorPos_;
 	const bool silent = flags & NoBellFlag;
 
@@ -6804,7 +6819,7 @@ void TextArea::pageLeftAP(EventFlags flags) {
 			ringIfNecessary(silent);
 			return;
 		}
-		int horizOffset = std::max(0, horizOffset_ - rect_.width());
+		int horizOffset = std::max(0, horizOffset_ - viewRect.width());
 		TextDSetScroll(topLineNum_, horizOffset);
 	} else {
 		TextCursor lineStartPos = buffer_->BufStartOfLine(insertPos);
@@ -6813,9 +6828,9 @@ void TextArea::pageLeftAP(EventFlags flags) {
 			return;
 		}
 		int64_t indent = buffer_->BufCountDispChars(lineStartPos, insertPos);
-		TextCursor pos = buffer_->BufCountForwardDispChars(lineStartPos, std::max<int64_t>(0, indent - rect_.width() / fixedFontWidth_));
+		TextCursor pos = buffer_->BufCountForwardDispChars(lineStartPos, std::max<int64_t>(0, indent - viewRect.width() / fixedFontWidth_));
 		TextDSetInsertPosition(pos);
-		TextDSetScroll(topLineNum_, std::max(0, horizOffset_ - rect_.width()));
+		TextDSetScroll(topLineNum_, std::max(0, horizOffset_ - viewRect.width()));
 		checkMoveSelectionChange(flags, insertPos);
 		checkAutoShowInsertPos();
 		callCursorMovementCBs();
@@ -6826,6 +6841,7 @@ void TextArea::pageRightAP(EventFlags flags) {
 
 	EMIT_EVENT_0("page_right");
 
+	const QRect viewRect = viewport()->contentsRect();
 	TextCursor insertPos   = cursorPos_;
 	int64_t oldHorizOffset = horizOffset_;
 	const bool silent = flags & NoBellFlag;
@@ -6833,7 +6849,7 @@ void TextArea::pageRightAP(EventFlags flags) {
 	cancelDrag();
 	if (flags & ScrollbarFlag) {
 		const int sliderMax    = horizontalScrollBar()->maximum();
-		const int horizOffset = std::min(horizOffset_ + rect_.width(), sliderMax);
+		const int horizOffset = std::min(horizOffset_ + viewRect.width(), sliderMax);
 
 		if (horizOffset_ == horizOffset) {
 			ringIfNecessary(silent);
@@ -6844,10 +6860,10 @@ void TextArea::pageRightAP(EventFlags flags) {
 	} else {
 		TextCursor lineStartPos = buffer_->BufStartOfLine(insertPos);
 		int64_t indent          = buffer_->BufCountDispChars(lineStartPos, insertPos);
-		TextCursor pos          = buffer_->BufCountForwardDispChars(lineStartPos, indent + rect_.width() / fixedFontWidth_);
+		TextCursor pos          = buffer_->BufCountForwardDispChars(lineStartPos, indent + viewRect.width() / fixedFontWidth_);
 
 		TextDSetInsertPosition(pos);
-		TextDSetScroll(topLineNum_, horizOffset_ + rect_.width());
+		TextDSetScroll(topLineNum_, horizOffset_ + viewRect.width());
 
 		if (horizOffset_ == oldHorizOffset && insertPos == pos) {
 			ringIfNecessary(silent);
@@ -7241,18 +7257,14 @@ void TextArea::updateFontWidthMetrics(const QFont &font) {
  */
 void TextArea::TextDSetFont(const QFont &font) {
 
+	const QRect viewRect = viewport()->contentsRect();
 	updateFontHeightMetrics(font);
 	updateFontWidthMetrics(font);
 
 	font_ = font;
 
-	// Do a full resize to force recalculation of font related parameters
-	const int width  = rect_.width();
-	const int height = rect_.height();
-
-	rect_.setSize({0, 0});
-
-	TextDResize(width, height);
+	// force recalculation of font related parameters
+	TextDResize(viewRect.width(), viewRect.height());
 
 	// force a recalc of the line numbers
 	setLineNumCols(getLineNumCols());
@@ -7265,15 +7277,12 @@ int TextArea::getLineNumWidth() const {
 }
 
 int TextArea::getRows() const {
-	return rows_;
+	const QRect viewRect = viewport()->contentsRect();
+	return viewRect.height() / (ascent_ + descent_);
 }
 
-int TextArea::getMarginHeight() const {
-	return marginHeight_;
-}
-
-int TextArea::getMarginWidth() const {
-	return marginWidth_;
+QMargins TextArea::getMargins() const {
+	return viewport()->contentsMargins();
 }
 
 /*
@@ -7328,7 +7337,8 @@ int TextArea::getWrapMargin() const {
 }
 
 int TextArea::getColumns() const {
-	return columns_;
+	const QRect viewRect = viewport()->contentsRect();
+	return viewRect.width()  / fixedFontWidth_;
 }
 
 /**
@@ -7551,7 +7561,8 @@ int64_t TextArea::TextFirstVisibleLine() const {
 }
 
 int TextArea::TextVisibleWidth() const {
-	return rect_.width();
+	const QRect viewRect = viewport()->contentsRect();
+	return viewRect.width();
 }
 
 void TextArea::beginningOfSelectionAP(EventFlags flags) {
@@ -7751,6 +7762,7 @@ void TextArea::showResizeNotification() {
 */
 void TextArea::TextDMakeSelectionVisible() {
 
+	const QRect viewRect = viewport()->contentsRect();
 	bool isRect;
 	int horizOffset;
 	TextCursor left;
@@ -7829,13 +7841,10 @@ void TextArea::TextDMakeSelectionVisible() {
 	if (TextDPositionToXY(left, &leftX, &y) && TextDPositionToXY(right, &rightX, &y) && leftX <= rightX) {
 		TextDGetScroll(&topLineNum, &horizOffset);
 
-		const int margin    = getMarginWidth();
-		const int areaWidth = width();
-
-		if (leftX < margin) {
-			horizOffset -= margin - leftX;
-		} else if (rightX > areaWidth - margin) {
-			horizOffset += rightX - (areaWidth - margin);
+		if (leftX < viewRect.left()) {
+			horizOffset -= viewRect.left() - leftX;
+		} else if (rightX > viewRect.right()) {
+			horizOffset += rightX - viewRect.right();
 		}
 
 		TextDSetScroll(topLineNum, horizOffset);

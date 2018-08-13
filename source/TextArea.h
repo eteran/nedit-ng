@@ -219,6 +219,7 @@ public:
 	int getLineNumCols() const;
 	int getRows() const;
 	int getWrapMargin() const;
+	QMargins getMargins() const;
 	int64_t TextFirstVisibleLine() const;
 	int64_t getBufferLinesCount() const;
 	std::string TextGetWrapped(TextCursor startPos, TextCursor endPos);
@@ -287,8 +288,6 @@ private:
 	boost::optional<TextCursor> spanBackward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const;
 	boost::optional<TextCursor> spanForward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const;
 	int getLineNumWidth() const;
-	int getMarginHeight() const;
-	int getMarginWidth() const;
 	int lineNumberAreaWidth() const;
 	int stringWidth(int length) const;
 	int64_t TextDCountLines(TextCursor startPos, TextCursor endPos, bool startPosIsLineStart);
@@ -398,17 +397,15 @@ private:
 	int dragXOffset_                = 0;              // offsets between cursor location and actual insertion point in drag
 	int dragYOffset_                = 0;              // offsets between cursor location and actual insertion point in drag
 	int nLinesDeleted_              = 0;              // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
-	int marginHeight_               = DefaultVMargin;
-	int marginWidth_                = DefaultHMargin;
 	int nVisibleLines_              = 1;              // # of visible (displayed) lines
 	bool cursorOn_                  = false;
 	bool modifyingTabDist_          = false;          // Whether tab distance is being modified
 	bool needAbsTopLineNum_         = false;          // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display
 	bool pointerHidden_             = false;          // true if the mouse pointer is hidden
 	bool suppressResync_            = false;          // Suppress resynchronization of line starts during buffer updates
+	bool showTerminalSizeHint_      = false;
 	bool autoShowInsertPos_         = true;
 	bool pendingDelete_             = true;
-	bool showTerminalSizeHint_      = true;
 
 private:
 	BlockDragTypes dragType_;                       // style of block drag operation
@@ -419,7 +416,6 @@ private:
 	QPoint clickPos_;
 	QPoint mouseCoord_;                             // Last known mouse position in drag operation (for autoscroll)
 	QPointer<CallTipWidget> calltipWidget_;
-	QRect rect_;                                    // TODO(eteran): maybe use QWidget::contentsMargins
 	TextBuffer *buffer_;                            // Contains text to be displayed
 	TextCursor anchor_;                             // Anchor for drag operations
 	TextCursor cursorPos_;
@@ -438,13 +434,11 @@ private:
 	bool readOnly_;
 	bool smartIndent_;
 	int ascent_;                                    // Composite ascent and descent for primary font
-	int columns_;
 	int cursorBlinkRate_;
 	int cursorVPadding_;
 	int descent_;
 	int emulateTabs_;
 	int fixedFontWidth_;                            // Font width if all current fonts are fixed and match in width
-	int rows_;
 	int wrapMargin_;
 	int64_t dragDeleted_;                           // # of characters deleted at drag destination in last drag position
 	int64_t dragInserted_;                          // # of characters inserted at drag destination in last drag position
