@@ -51,6 +51,8 @@
 #include <QTimer>
 #include <QButtonGroup>
 
+#include <chrono>
+
 #include <fcntl.h>
 #include <sys/stat.h>
 
@@ -136,7 +138,7 @@ constexpr CharMatchTable FlashingChars[] = {
    The periodic check is only performed on buffer modification, and the check
    interval is only to prevent checking on every keystroke in case of a file
    system which is slow to process stat requests (which I'm not sure exists) */
-constexpr int MOD_CHECK_INTERVAL = 3000;
+constexpr auto MOD_CHECK_INTERVAL = std::chrono::milliseconds(3000);
 
 /**
  * @brief ErrorString
@@ -1815,14 +1817,14 @@ void DocumentWidget::CheckForChangesToFile() {
 
 	// TODO(eteran): 2.0, this concept can probably be reworked in terms of QFileSystemWatcher
 	static QPointer<DocumentWidget> lastCheckWindow;
-	static qint64 lastCheckTime = 0;
+	static std::chrono::high_resolution_clock::time_point lastCheckTime;
 
 	if (!filenameSet_) {
 		return;
 	}
 
 	// If last check was very recent, don't impact performance
-	const qint64 timestamp = QDateTime::currentMSecsSinceEpoch();
+	auto timestamp = std::chrono::high_resolution_clock::now();
 	if (this == lastCheckWindow && (timestamp - lastCheckTime) < MOD_CHECK_INTERVAL) {
 		return;
 	}
