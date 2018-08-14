@@ -13,7 +13,6 @@
 #include "Highlight.h"
 #include "HighlightData.h"
 #include "HighlightStyle.h"
-#include "LanguageMode.h"
 #include "MainWindow.h"
 #include "PatternSet.h"
 #include "Search.h"
@@ -81,12 +80,6 @@ DocumentWidget *DocumentWidget::LastCreated;
 
 namespace {
 
-// number of distinct chars the user can typebefore NEdit gens. new backup file
-constexpr int AUTOSAVE_CHAR_LIMIT  = 80;
-
-// number of distinct editing operations user can do before NEdit gens. new backup file
-constexpr int AUTOSAVE_OP_LIMIT    = 8;
-
 // Max # of ADDITIONAL text editing panes  that can be added to a window
 constexpr int MAX_PANES  = 6;
 
@@ -133,12 +126,6 @@ constexpr CharMatchTable FlashingChars[] = {
 	{'[', ']',   Direction::Forward},
 	{']', '[',   Direction::Backward},
 };
-
-/* Maximum frequency of checking for external modifications. The periodic
- * check is only performed on buffer modification, and the check interval is
- * only to prevent checking on every keystroke in case of a file system which
- * is slow to process stat requests (which I'm not sure exists) */
-constexpr auto MOD_CHECK_INTERVAL = std::chrono::milliseconds(3000);
 
 /**
  * @brief ErrorString
@@ -417,7 +404,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
  * @param parent
  * @param f
  */
-DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f) {
+DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f), filename_(name) {
 
 	ui.setupUi(this);
 
@@ -440,8 +427,8 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 #else
 	ui.verticalLayout->setContentsMargins(0, 0, 0, 0);
 #endif
+
 	// initialize the members
-	filename_              = name;
 	indentStyle_           = Preferences::GetPrefAutoIndent(PLAIN_LANGUAGE_MODE);
 	autoSave_              = Preferences::GetPrefAutoSave();
 	saveOldVersion_        = Preferences::GetPrefSaveOldVersion();
@@ -458,14 +445,13 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 		}
 	}
 
-	flashTimer_   = new QTimer(this);
 	fontName_     = Preferences::GetPrefFontName();
-	font_   = Preferences::GetPrefDefaultFont();
-	languageMode_ = PLAIN_LANGUAGE_MODE;
+	font_         = Preferences::GetPrefDefaultFont();
 	showStats_    = Preferences::GetPrefStatsLine();
 
 	ShowStatsLine(showStats_);
 
+	flashTimer_ = new QTimer(this);
 	flashTimer_->setInterval(1500);
 	flashTimer_->setSingleShot(true);
 
@@ -879,6 +865,12 @@ void DocumentWidget::UpdateMarkTable(TextCursor pos, int64_t nInserted, int64_t 
 void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, TextArea *area) {
 	Q_UNUSED(nRestyled);
 
+	// number of distinct chars the user can typebefore NEdit gens. new backup file
+	constexpr int AutoSaveCharLimit = 80;
+
+	// number of distinct editing operations user can do before NEdit gens. new backup file
+	constexpr int AutoSaveOpLimit   = 8;
+
 	const bool selected = buffer_->primary.selected;
 
 	// update the table of bookmarks
@@ -918,7 +910,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 		SaveUndoInformation(pos, nInserted, nDeleted, deletedText);
 
 		// Trigger automatic backup if operation or character limits reached
-		if (autoSave_ && (autoSaveCharCount_ > AUTOSAVE_CHAR_LIMIT || autoSaveOpCount_ > AUTOSAVE_OP_LIMIT)) {
+		if (autoSave_ && (autoSaveCharCount_ > AutoSaveCharLimit || autoSaveOpCount_ > AutoSaveOpLimit)) {
 			WriteBackupFile();
 			autoSaveCharCount_ = 0;
 			autoSaveOpCount_   = 0;
@@ -1163,9 +1155,9 @@ void DocumentWidget::SetTabDist(int tabDist) {
 	emit_event("set_tab_dist", QString::number(tabDist));
 
 	if (buffer_->BufGetTabDist() != tabDist) {
-		TextCursor saveCursorPositions[MAX_PANES + 1];
-		int64_t saveVScrollPositions[MAX_PANES + 1];
-		int saveHScrollPositions[MAX_PANES + 1];
+		TextCursor saveCursorPositions[MAX_PANES];
+		int64_t saveVScrollPositions[MAX_PANES];
+		int saveHScrollPositions[MAX_PANES];
 
 		ignoreModify_ = true;
 
@@ -1815,6 +1807,12 @@ QString DocumentWidget::backupFileNameEx() const {
 */
 void DocumentWidget::CheckForChangesToFile() {
 
+	/* Maximum frequency of checking for external modifications. The periodic
+	 * check is only performed on buffer modification, and the check interval is
+	 * only to prevent checking on every keystroke in case of a file system which
+	 * is slow to process stat requests (which I'm not sure exists) */
+	constexpr auto CheckInterval = std::chrono::milliseconds(3000);
+
 	// TODO(eteran): 2.0, this concept can probably be reworked in terms of QFileSystemWatcher
 	static QPointer<DocumentWidget> lastCheckWindow;
 	static std::chrono::high_resolution_clock::time_point lastCheckTime;
@@ -1825,7 +1823,7 @@ void DocumentWidget::CheckForChangesToFile() {
 
 	// If last check was very recent, don't impact performance
 	auto timestamp = std::chrono::high_resolution_clock::now();
-	if (this == lastCheckWindow && (timestamp - lastCheckTime) < MOD_CHECK_INTERVAL) {
+	if (this == lastCheckWindow && (timestamp - lastCheckTime) < CheckInterval) {
 		return;
 	}
 
@@ -3022,17 +3020,20 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 		QFile file;
 		file.open(fp, QIODevice::ReadOnly);
 
-		uchar *memory = file.map(0, file.size());
-		if (!memory) {
-			filenameSet_ = false; // Temp. prevent check for changes.
-			QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1\n%2").arg(name, file.errorString()));
-			filenameSet_ = true;
-			return false;
+		std::string text;
+
+		if(file.size() != 0) {
+			uchar *memory = file.map(0, file.size());
+			if (!memory) {
+				filenameSet_ = false; // Temp. prevent check for changes.
+				QMessageBox::critical(this, tr("Error while opening File"), tr("Error reading %1\n%2").arg(name, file.errorString()));
+				filenameSet_ = true;
+				return false;
+			}
+
+			text = std::string{reinterpret_cast<char *>(memory), static_cast<size_t>(file.size())};
+			file.unmap(memory);
 		}
-
-		auto text = std::string{reinterpret_cast<char *>(memory), static_cast<size_t>(file.size())};
-		file.unmap(memory);
-
 
 		/* Any errors that happen after this point leave the window in a
 		 * "broken" state, and thus RevertToSaved will abandon the window if
@@ -3394,36 +3395,37 @@ bool DocumentWidget::includeFile(const QString &name) {
 		return false;
 	}
 
-	uchar *memory = file.map(0, file.size());
-	if (!memory) {
-		QMessageBox::critical(this, tr("Error opening File"), file.errorString());
-		return false;
-	}
+	if(file.size() != 0) {
+		uchar *memory = file.map(0, file.size());
+		if (!memory) {
+			QMessageBox::critical(this, tr("Error opening File"), file.errorString());
+			return false;
+		}
 
-	auto text = std::string{reinterpret_cast<char *>(memory), static_cast<size_t>(file.size())};
+		auto text = std::string{reinterpret_cast<char *>(memory), static_cast<size_t>(file.size())};
+		file.unmap(memory);
 
-	file.unmap(memory);
+		// Detect and convert DOS and Macintosh format files
+		switch (FormatOfFile(text)) {
+		case FileFormats::Dos:
+			ConvertFromDos(text);
+			break;
+		case FileFormats::Mac:
+			ConvertFromMac(text);
+			break;
+		case FileFormats::Unix:
+			//  Default is Unix, no conversion necessary.
+			break;
+		}
 
-	// Detect and convert DOS and Macintosh format files
-	switch (FormatOfFile(text)) {
-	case FileFormats::Dos:
-		ConvertFromDos(text);
-		break;
-	case FileFormats::Mac:
-		ConvertFromMac(text);
-		break;
-	case FileFormats::Unix:
-		//  Default is Unix, no conversion necessary.
-		break;
-	}
-
-	/* insert the contents of the file in the selection or at the insert
-	   position in the window if no selection exists */
-	if (buffer_->primary.selected) {
-		buffer_->BufReplaceSelectedEx(text);
-	} else {
-		if(auto win = MainWindow::fromDocument(this)) {
-			buffer_->BufInsertEx(win->lastFocus()->TextGetCursorPos(), text);
+		/* insert the contents of the file in the selection or at the insert
+		   position in the window if no selection exists */
+		if (buffer_->primary.selected) {
+			buffer_->BufReplaceSelectedEx(text);
+		} else {
+			if(auto win = MainWindow::fromDocument(this)) {
+				buffer_->BufInsertEx(win->lastFocus()->TextGetCursorPos(), text);
+			}
 		}
 	}
 

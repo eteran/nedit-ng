@@ -6,16 +6,17 @@
 #include "CallTip.h"
 #include "CloseMode.h"
 #include "CommandSource.h"
-#include "Util/FileFormats.h"
 #include "IndentStyle.h"
+#include "LanguageMode.h"
 #include "LockReasons.h"
+#include "MenuData.h"
 #include "MenuItem.h"
 #include "ShowMatchingStyle.h"
-#include "TextBufferFwd.h"
-#include "Util/string_view.h"
 #include "Tags.h"
+#include "TextBufferFwd.h"
 #include "UndoInfo.h"
-#include "MenuData.h"
+#include "Util/FileFormats.h"
+#include "Util/string_view.h"
 #include "WrapStyle.h"
 
 #include "ui_DocumentWidget.h"
@@ -267,12 +268,13 @@ private:
 	void updateSelectionSensitiveMenus(bool enabled);
 
 public:
-	bool replaceFailed_     = false;             // flags replacements failures during multi-file replacements
-	bool multiFileBusy_     = false;             // suppresses multiple beeps/dialogs during multi-file replacements
-	bool filenameSet_       = false;             // is the window still "Untitled"?
-	bool fileChanged_       = false;             // has window been modified?
-	bool overstrike_        = false;             // is overstrike mode turned on ?
-	FileFormats fileFormat_ = FileFormats::Unix; // whether to save the file straight (Unix format), or convert it to MS DOS style with \r\n line breaks
+	bool replaceFailed_     = false;               // flags replacements failures during multi-file replacements
+	bool multiFileBusy_     = false;               // suppresses multiple beeps/dialogs during multi-file replacements
+	bool filenameSet_       = false;               // is the window still "Untitled"?
+	bool fileChanged_       = false;               // has window been modified?
+	bool overstrike_        = false;               // is overstrike mode turned on ?
+	FileFormats fileFormat_ = FileFormats::Unix;   // whether to save the file straight (Unix format), or convert it to MS DOS style with \r\n line breaks
+	size_t languageMode_    = PLAIN_LANGUAGE_MODE; // identifies language mode currently selected in the window
 
 public:
 	IndentStyle indentStyle_;                              // whether/how to auto indent
@@ -287,8 +289,7 @@ public:
 	bool highlightSyntax_;                                 // is syntax highlighting turned on?
 	bool matchSyntaxBased_;                                // Use syntax info to show matching
 	bool saveOldVersion_;                                  // keep old version in filename.bc
-	bool showStats_;                                       // is stats line supposed to be shown
-	size_t languageMode_;                                  // identifies language mode currently selected in the window
+	bool showStats_;                                       // is stats line supposed to be shown	
 	std::shared_ptr<MacroCommandData>    macroCmdData_;    // same for macro commands
 	std::shared_ptr<RangesetTable>       rangesetTable_;   // current range sets
 	std::unique_ptr<WindowHighlightData> highlightData_;   // info for syntax highlighting
