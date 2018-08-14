@@ -1514,17 +1514,13 @@ void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int6
 void DocumentWidget::clearUndoList() {
 
 	undo_.clear();
-	if(auto window = MainWindow::fromDocument(this)) {
-		window->undoAvailable(false);
-	}
+	Q_EMIT canUndoChanged(!undo_.empty());
 }
 
 void DocumentWidget::clearRedoList() {
 
 	redo_.clear();
-	if(auto window = MainWindow::fromDocument(this)) {
-		window->redoAvailable(false);
-	}
+	Q_EMIT canRedoChanged(!redo_.empty());
 }
 
 /*
@@ -1567,9 +1563,7 @@ void DocumentWidget::addUndoItem(UndoInfo &&undo) {
 		trimUndoList(UNDO_OP_TRIMTO);
 	}
 
-	if(auto window = MainWindow::fromDocument(this)) {
-		window->undoAvailable(!undo_.empty());
-	}
+	Q_EMIT canUndoChanged(!undo_.empty());
 }
 
 /*
@@ -1578,10 +1572,7 @@ void DocumentWidget::addUndoItem(UndoInfo &&undo) {
 void DocumentWidget::addRedoItem(UndoInfo &&redo) {
 
 	redo_.emplace_front(std::move(redo));
-
-	if(auto window = MainWindow::fromDocument(this)) {
-		window->redoAvailable(!redo_.empty());
-	}
+	Q_EMIT canRedoChanged(!redo_.empty());
 }
 
 /*
@@ -1594,10 +1585,7 @@ void DocumentWidget::removeUndoItem() {
 	}
 
 	undo_.pop_front();
-
-	if(auto window = MainWindow::fromDocument(this)) {
-		window->undoAvailable(!undo_.empty());
-	}
+	Q_EMIT canUndoChanged(!undo_.empty());
 }
 
 /*
@@ -1610,10 +1598,7 @@ void DocumentWidget::removeRedoItem() {
 	}
 
 	redo_.pop_front();
-
-	if(auto window = MainWindow::fromDocument(this)) {
-		window->redoAvailable(!redo_.empty());
-	}
+	Q_EMIT canRedoChanged(!redo_.empty());
 }
 
 

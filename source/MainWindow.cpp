@@ -977,6 +977,10 @@ void MainWindow::on_action_Delete_triggered() {
  */
 DocumentWidget *MainWindow::CreateDocument(const QString &name) {
 	auto document = new DocumentWidget(name, this);
+
+	connect(document, &DocumentWidget::canUndoChanged, this, &MainWindow::undoAvailable);
+	connect(document, &DocumentWidget::canRedoChanged, this, &MainWindow::redoAvailable);
+
 	int i = ui.tabWidget->addTab(document, name);
 	ui.tabWidget->setCurrentIndex(i);
 	return document;

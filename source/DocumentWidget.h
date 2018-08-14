@@ -75,6 +75,8 @@ public:
 
 Q_SIGNALS:
 	void documentClosed();
+	void canUndoChanged(bool canUndo);
+	void canRedoChanged(bool canUndo);
 
 public:
 	void movedCallback(TextArea *area);
