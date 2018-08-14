@@ -8,8 +8,8 @@ class QString;
 
 class Input {
 public:
-	Input();
 	explicit Input(const QString *input);
+	Input()                            = default;
 	Input(const Input &other)          = default;
 	Input& operator=(const Input &rhs) = default;
 	Input(Input &&other)               = default;
@@ -60,8 +60,8 @@ public:
 	int index() const;
 
 private:
-	const QString *string_;
-	int            index_;
+	const QString *string_ = nullptr;
+	int            index_  = -1;
 };
 
 #endif

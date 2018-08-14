@@ -529,14 +529,14 @@ boost::optional<std::string> Search::ReplaceAllInString(view::string_view inStri
 				std::string replaceResult;
 
 				replaceUsingRE(
-					searchString,
-					replaceString,
-					substr(inString, static_cast<size_t>(searchResult.extentBW)),
-					searchResult.start - searchResult.extentBW,
-					replaceResult,
-					searchResult.start == 0 ? -1 : inString[static_cast<size_t>(searchResult.start) - 1],
-					delimiters,
-					defaultRegexFlags(searchType));
+				            searchString,
+				            replaceString,
+				            inString.substr(static_cast<size_t>(searchResult.extentBW)),
+				            searchResult.start - searchResult.extentBW,
+				            replaceResult,
+				            searchResult.start == 0 ? -1 : inString[static_cast<size_t>(searchResult.start) - 1],
+				            delimiters,
+				            defaultRegexFlags(searchType));
 
 				addLen += replaceResult.size();
 			} else {
@@ -586,14 +586,14 @@ boost::optional<std::string> Search::ReplaceAllInString(view::string_view inStri
 				std::string replaceResult;
 
 				replaceUsingRE(
-					searchString,
-					replaceString,
-					substr(inString, static_cast<size_t>(searchResult.extentBW)),
-					searchResult.start - searchResult.extentBW,
-					replaceResult,
-					searchResult.start == 0 ? -1 : inString[static_cast<size_t>(searchResult.start) - 1],
-					delimiters,
-					defaultRegexFlags(searchType));
+				            searchString,
+				            replaceString,
+				            inString.substr(static_cast<size_t>(searchResult.extentBW)),
+				            searchResult.start - searchResult.extentBW,
+				            replaceResult,
+				            searchResult.start == 0 ? -1 : inString[static_cast<size_t>(searchResult.start) - 1],
+				            delimiters,
+				            defaultRegexFlags(searchType));
 
 				outString.append(replaceResult);
 			} else {

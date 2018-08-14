@@ -41,18 +41,18 @@
 
 #define EMIT_EVENT_0(name)                                       \
 	do {                                                         \
-		if(!(flags & SupressRecording)) {                        \
-			TextEditEvent textEvent(QLatin1String(name), flags); \
-			QApplication::sendEvent(this, &textEvent);           \
-		}                                                        \
+	    if(!(flags & SupressRecording)) {                        \
+	        TextEditEvent textEvent(QLatin1String(name), flags); \
+	        QApplication::sendEvent(this, &textEvent);           \
+	    }                                                        \
 	} while(0)
 
 #define EMIT_EVENT_1(name, arg)                                       \
 	do {                                                              \
-		if(!(flags & SupressRecording)) {                             \
-			TextEditEvent textEvent(QLatin1String(name), arg, flags); \
-			QApplication::sendEvent(this, &textEvent);                \
-		}                                                             \
+	    if(!(flags & SupressRecording)) {                             \
+	        TextEditEvent textEvent(QLatin1String(name), arg, flags); \
+	        QApplication::sendEvent(this, &textEvent);                \
+	    }                                                             \
 	} while(0)
 
 
@@ -885,8 +885,6 @@ void TextArea::cursorBlinkTimerTimeout() {
 void TextArea::autoScrollTimerTimeout() {
 
 	const QRect viewRect = viewport()->contentsRect();
-	int64_t topLineNum;
-	int horizOffset;
 	int cursorX;
 	int y;
 	const int fontWidth  = fixedFontWidth_;
@@ -906,6 +904,8 @@ void TextArea::autoScrollTimerTimeout() {
 
 	/* Scroll away from the pointer, 1 character (horizontal), or 1 character
 	   for each fontHeight distance from the mouse to the text (vertical) */
+	int64_t topLineNum;
+	int horizOffset;
 	TextDGetScroll(&topLineNum, &horizOffset);
 
 	if (cursorX >= viewRect.right()) {

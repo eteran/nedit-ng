@@ -6,12 +6,6 @@
 
 /**
  * @brief Input::Input
- */
-Input::Input() : string_(nullptr), index_(-1) {
-}
-
-/**
- * @brief Input::Input
  * @param input
  */
 Input::Input(const QString *input) : string_(input), index_(0) {
