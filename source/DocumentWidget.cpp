@@ -437,6 +437,9 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	matchSyntaxBased_      = Preferences::GetPrefMatchSyntaxBased();
 	highlightSyntax_       = Preferences::GetPrefHighlightSyntax();
 	backlightChars_        = Preferences::GetPrefBacklightChars();
+	fontName_              = Preferences::GetPrefFontName();
+	font_                  = Preferences::GetPrefDefaultFont();
+	showStats_             = Preferences::GetPrefStatsLine();
 
 	if (backlightChars_) {
 		QString cTypes = Preferences::GetPrefBacklightCharTypes();
@@ -444,10 +447,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 			backlightCharTypes_ = cTypes;
 		}
 	}
-
-	fontName_     = Preferences::GetPrefFontName();
-	font_         = Preferences::GetPrefDefaultFont();
-	showStats_    = Preferences::GetPrefStatsLine();
 
 	ShowStatsLine(showStats_);
 
