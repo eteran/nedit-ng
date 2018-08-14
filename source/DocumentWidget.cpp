@@ -134,10 +134,10 @@ constexpr CharMatchTable FlashingChars[] = {
 	{']', '[',   Direction::Backward},
 };
 
-/* Maximum frequency in miliseconds of checking for external modifications.
-   The periodic check is only performed on buffer modification, and the check
-   interval is only to prevent checking on every keystroke in case of a file
-   system which is slow to process stat requests (which I'm not sure exists) */
+/* Maximum frequency of checking for external modifications. The periodic
+ * check is only performed on buffer modification, and the check interval is
+ * only to prevent checking on every keystroke in case of a file system which
+ * is slow to process stat requests (which I'm not sure exists) */
 constexpr auto MOD_CHECK_INTERVAL = std::chrono::milliseconds(3000);
 
 /**
