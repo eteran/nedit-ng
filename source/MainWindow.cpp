@@ -1097,7 +1097,7 @@ void MainWindow::updateWindowMenu() {
 
 		QAction *action = ui.menu_Windows->addAction(title);
 		connect(action, &QAction::triggered, document, [document]() {
-			document->RaiseFocusDocumentWindow(true);
+			document->raiseFocusDocumentWindow(true);
 		});
 	}
 }
@@ -1343,7 +1343,7 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 ** Update the Shell, Macro, and Window Background menus of window
 ** "window" from the currently loaded command descriptions.
 */
-void MainWindow::UpdateUserMenus(DocumentWidget *document) {
+void MainWindow::updateUserMenus(DocumentWidget *document) {
 
 	// update user menus, which are shared over all documents
 	auto shellMenu = createUserMenu(document, ShellMenuData, CommandTypes::SHELL_CMDS);
@@ -1413,9 +1413,9 @@ void MainWindow::UpdateUserMenus(DocumentWidget *document) {
 /**
  * @brief MainWindow::UpdateUserMenus
  */
-void MainWindow::UpdateUserMenus() {
+void MainWindow::updateUserMenus() {
 	if(DocumentWidget *document = currentDocument()) {
-		UpdateUserMenus(document);
+		updateUserMenus(document);
 	}
 }
 
@@ -3625,8 +3625,8 @@ void MainWindow::on_action_Statistics_Line_toggled(bool state) {
 	for(DocumentWidget *document : openDocuments()) {
 		document->ShowStatsLine(state);
 
-		if(document->IsTopDocument()) {
-			document->UpdateStatsLine(nullptr);
+		if(document->isTopDocument()) {
+			document->updateStatsLine(nullptr);
 		}
 	}
 }
@@ -3655,7 +3655,7 @@ void MainWindow::on_action_Show_Line_Numbers_toggled(bool state) {
  */
 void MainWindow::action_Set_Auto_Indent(DocumentWidget *document, IndentStyle state) {
 	emit_event("set_auto_indent", to_string(state));
-	document->SetAutoIndent(state);
+	document->setAutoIndent(state);
 }
 
 /**
@@ -3692,11 +3692,11 @@ void MainWindow::indentGroupTriggered(QAction *action) {
 void MainWindow::wrapGroupTriggered(QAction *action) {
 	if(DocumentWidget *document = currentDocument()) {
 		if(action == ui.action_Wrap_None) {
-			document->SetAutoWrap(WrapStyle::None);
+			document->setAutoWrap(WrapStyle::None);
 		} else if(action == ui.action_Wrap_Auto_Newline) {
-			document->SetAutoWrap(WrapStyle::Newline);
+			document->setAutoWrap(WrapStyle::Newline);
 		} else if(action == ui.action_Wrap_Continuous) {
-			document->SetAutoWrap(WrapStyle::Continuous);
+			document->setAutoWrap(WrapStyle::Continuous);
 		} else {
 			qWarning("NEdit: set_wrap_text invalid argument");
 		}
@@ -3745,7 +3745,7 @@ void MainWindow::on_action_Highlight_Syntax_toggled(bool state) {
 		if (document->highlightSyntax_) {
 			document->StartHighlightingEx(/*warn=*/true);
 		} else {
-			document->StopHighlightingEx();
+			document->stopHighlighting();
 		}
 	}
 }
@@ -4562,7 +4562,7 @@ void MainWindow::action_Next_Document() {
 			Q_ASSERT(firstWidget);
 
 			if(auto document = firstWidget) {
-				document->RaiseFocusDocumentWindow(true);
+				document->raiseFocusDocumentWindow(true);
 				nextWindow->tabWidget()->setCurrentWidget(document);
 			}
 
@@ -4608,7 +4608,7 @@ void MainWindow::action_Prev_Document() {
 			Q_ASSERT(lastWidget);
 
 			if(auto document = lastWidget) {
-				document->RaiseFocusDocumentWindow(true);
+				document->raiseFocusDocumentWindow(true);
 				nextWindow->tabWidget()->setCurrentWidget(document);
 			}
 
@@ -4626,7 +4626,7 @@ void MainWindow::action_Last_Document() {
 	emit_event("last_document");
 
 	if(lastFocusDocument) {
-		lastFocusDocument->RaiseFocusDocumentWindow(/*focus=*/true);
+		lastFocusDocument->raiseFocusDocumentWindow(/*focus=*/true);
 	}
 }
 
@@ -4675,7 +4675,7 @@ DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geome
 	document->SetWindowModified(false);
 	document->lockReasons_.clear();
 	window->UpdateWindowReadOnly(document);
-	document->UpdateStatsLine(nullptr);
+	document->updateStatsLine(nullptr);
 	window->UpdateWindowTitle(document);
 	document->RefreshTabState();
 
@@ -4686,9 +4686,9 @@ DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geome
 	}
 
 	if (iconic && window->isMinimized()) {
-		document->RaiseDocument();
+		document->raiseDocument();
 	} else {
-		document->RaiseDocumentWindow();
+		document->raiseDocumentWindow();
 	}
 
 	window->SortTabBar();
@@ -5309,13 +5309,13 @@ void MainWindow::focusChanged(QWidget *from, QWidget *to) {
 			}
 
 			// update line number statistic to reflect current focus pane
-			document->UpdateStatsLine(area);
+			document->updateStatsLine(area);
 
 			// finish off the current incremental search
 			EndISearchEx();
 
 			// Check for changes to read-only status and/or file modifications
-			document->CheckForChangesToFile();
+			document->checkForChangesToFile();
 		}
 	}
 }

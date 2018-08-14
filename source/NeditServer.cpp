@@ -126,7 +126,7 @@ void NeditServer::newConnection() {
 
 			MainWindow::CheckCloseEnableState();
 		} else {
-			(*it)->RaiseDocument();
+			(*it)->raiseDocument();
 		}
 		return;
 	}
@@ -174,9 +174,9 @@ void NeditServer::newConnection() {
 								QString());
 				} else {
 					if (iconicFlag) {
-						(*it)->RaiseDocument();
+						(*it)->raiseDocument();
 					} else {
-						(*it)->RaiseDocumentWindow();
+						(*it)->raiseDocumentWindow();
 					}
 				}
 			} else {
@@ -192,9 +192,9 @@ void NeditServer::newConnection() {
 				} else {
 					// Raise before -do (macro could close window).
 					if (iconicFlag) {
-						(*win)->RaiseDocument();
+						(*win)->raiseDocument();
 					} else {
-						(*win)->RaiseDocumentWindow();
+						(*win)->raiseDocumentWindow();
 					}
 					(*win)->DoMacro(doCommand, QLatin1String("-do macro"));
 				}
@@ -242,7 +242,7 @@ void NeditServer::newConnection() {
 
 			if (document) {
 				if (lastFile && MainWindow::fromDocument(document) != MainWindow::fromDocument(lastFile)) {
-					lastFile->RaiseDocument();
+					lastFile->raiseDocument();
 				}
 			}
 		}
@@ -259,7 +259,7 @@ void NeditServer::newConnection() {
 			}
 
 			if (!doCommand.isEmpty()) {
-				document->RaiseDocument();
+				document->raiseDocument();
 
 				/* Starting a new command while another one is still running
 				   in the same window is not possible (crashes). */
@@ -295,9 +295,9 @@ void NeditServer::newConnection() {
 	// Raise the last file opened
 	if (lastFile) {
 		if (lastIconic) {
-			lastFile->RaiseDocument();
+			lastFile->raiseDocument();
 		} else {
-			lastFile->RaiseDocumentWindow();
+			lastFile->raiseDocumentWindow();
 		}
 		MainWindow::CheckCloseEnableState();
 	}

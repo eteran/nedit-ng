@@ -274,8 +274,8 @@ bool DialogSmartIndent::updateSmartIndentData() {
 				}
 
 				if (document->indentStyle_ == IndentStyle::Smart && document->GetLanguageMode() != PLAIN_LANGUAGE_MODE) {
-					document->EndSmartIndent();
-					document->BeginSmartIndent(/*warn=*/false);
+					document->endSmartIndent();
+					document->beginSmartIndent(/*warn=*/false);
 				}
 			}
 		}

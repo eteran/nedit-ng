@@ -307,7 +307,7 @@ Main::Main(const QStringList &args) {
 
 					// raise the last tab of previous window
 					if (lastFile && MainWindow::fromDocument(lastFile) != MainWindow::fromDocument(document)) {
-						lastFile->RaiseDocument();
+						lastFile->raiseDocument();
 					}
 
 					if (!macroFileReadEx) {
@@ -340,7 +340,7 @@ Main::Main(const QStringList &args) {
 
 	// Raise the last file opened
 	if (lastFile) {
-		lastFile->RaiseDocument();
+		lastFile->raiseDocument();
 	}
 
 	MainWindow::CheckCloseEnableState();

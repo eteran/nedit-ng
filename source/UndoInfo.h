@@ -11,8 +11,8 @@
    UNDO_OP_TRIMTO in length (when the list reaches UNDO_OP_LIMIT, it is
    trimmed to UNDO_OP_TRIMTO then allowed to grow back to UNDO_OP_LIMIT). */
 
-constexpr auto UNDO_OP_LIMIT     = 400u; // normal limit for length of undo list
-constexpr auto UNDO_OP_TRIMTO    = 200u; // size undo list is normally trimmed to when it exceeds UNDO_OP_TRIMTO in length
+constexpr auto UNDO_OP_LIMIT  = 400u;
+constexpr auto UNDO_OP_TRIMTO = 200u;
 
 enum UndoTypes {
 	UNDO_NOOP,

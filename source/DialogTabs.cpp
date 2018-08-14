@@ -112,8 +112,8 @@ void DialogTabs::on_buttonBox_accepted() {
 		Preferences::SetPrefEmTabDist(emTabDist);
 		Preferences::SetPrefInsertTabs(useTabs);
 	} else {
-		document_->SetTabDist(tabDist);
-		document_->SetEmTabDist(emTabDist);
+		document_->setTabDistance(tabDist);
+		document_->setEmTabDistance(emTabDist);
 		document_->SetUseTabs(useTabs);
 	}
 

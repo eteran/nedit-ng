@@ -303,9 +303,9 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 	if(DocumentWidget *document = MainWindow::FindWindowWithFile(name, path)) {
 		if (!bgOpen) {
 			if (iconic) {
-				document->RaiseDocument();
+				document->raiseDocument();
 			} else {
-				document->RaiseDocumentWindow();
+				document->raiseDocumentWindow();
 			}
 		}
 		return document;
@@ -348,7 +348,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 		document->filename_ = name;
 
 		if (!iconic && !bgOpen) {
-			document->RaiseDocumentWindow();
+			document->raiseDocumentWindow();
 		}
 	}
 
@@ -377,7 +377,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 	win->SortTabBar();
 
 	if (!bgOpen) {
-		document->RaiseDocument();
+		document->raiseDocument();
 	}
 
 	/* Bring the title bar and statistics line up to date, doOpen does
@@ -385,7 +385,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 	win->UpdateWindowTitle(document);
 	win->UpdateWindowReadOnly(document);
 
-	document->UpdateStatsLine(nullptr);
+	document->updateStatsLine(nullptr);
 
 	// Add the name to the convenience menu of previously opened files
 	auto fullname = tr("%1%2").arg(path, name);
@@ -644,7 +644,7 @@ void DocumentWidget::SetLanguageMode(size_t mode, bool forceNewDefaults) {
 	reapplyLanguageMode(mode, forceNewDefaults);
 
 	// Select the correct language mode in the sub-menu
-	if (IsTopDocument()) {
+	if (isTopDocument()) {
 		if(auto win = MainWindow::fromDocument(this)) {
 			QList<QAction *> languages = win->ui.action_Language_Mode->menu()->actions();
 
@@ -737,9 +737,9 @@ size_t DocumentWidget::matchLanguageMode() const {
 /*
 ** Update the optional statistics line.
 */
-void DocumentWidget::UpdateStatsLine(TextArea *area) {
+void DocumentWidget::updateStatsLine(TextArea *area) {
 
-	if (!IsTopDocument()) {
+	if (!isTopDocument()) {
 		return;
 	}
 
@@ -812,13 +812,13 @@ void DocumentWidget::movedCallback(TextArea *area) {
 	}
 
 	// update line and column nubers in statistics line
-	UpdateStatsLine(area);
+	updateStatsLine(area);
 
 	// Check the character before the cursor for matchable characters
-	FlashMatchingEx(area);
+	flashMatchingChar(area);
 
 	// Check for changes to read-only status and/or file modifications
-	CheckForChangesToFile();
+	checkForChangesToFile();
 
 	if(QTimer *const blinkTimer = area->cursorBlinkTimer()) {
 		if(!blinkTimer->isActive()) {
@@ -882,7 +882,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 
 			/* do not refresh shell-level items (window, menu-bar etc)
 			   when motifying non-top document */
-			if (IsTopDocument()) {
+			if (isTopDocument()) {
 				win->selectionChanged(selected);
 
 				updateSelectionSensitiveMenus(selected);
@@ -904,7 +904,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 
 		/* Save information for undoing this operation (this call also counts
 		   characters and editing operations for triggering autosave */
-		SaveUndoInformation(pos, nInserted, nDeleted, deletedText);
+		saveUndoInformation(pos, nInserted, nDeleted, deletedText);
 
 		// Trigger automatic backup if operation or character limits reached
 		if (autoSave_ && (autoSaveCharCount_ > AutoSaveCharLimit || autoSaveOpCount_ > AutoSaveOpLimit)) {
@@ -917,10 +917,10 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 		SetWindowModified(true);
 
 		// Update # of bytes, and line and col statistics
-		UpdateStatsLine(area);
+		updateStatsLine(area);
 
 		// Check if external changes have been made to file and warn user
-		CheckForChangesToFile();
+		checkForChangesToFile();
 	}
 }
 
@@ -981,10 +981,10 @@ void DocumentWidget::smartIndentCallback(TextArea *area, SmartIndentEvent *data)
 }
 
 /*
-** raise the document and its shell window and optionally focus.
+** raise the document and its window and optionally focus.
 */
-void DocumentWidget::RaiseFocusDocumentWindow(bool focus) {
-	RaiseDocument();
+void DocumentWidget::raiseFocusDocumentWindow(bool focus) {
+	raiseDocument();
 	if(auto win = MainWindow::fromDocument(this)) {
 
 		if(!win->isMaximized()) {
@@ -1003,8 +1003,8 @@ void DocumentWidget::RaiseFocusDocumentWindow(bool focus) {
  *
  * @brief DocumentWidget::RaiseDocumentWindow
  */
-void DocumentWidget::RaiseDocumentWindow() {
-	RaiseFocusDocumentWindow(Preferences::GetPrefFocusOnRaise());
+void DocumentWidget::raiseDocumentWindow() {
+	raiseFocusDocumentWindow(Preferences::GetPrefFocusOnRaise());
 }
 
 /**
@@ -1019,7 +1019,7 @@ void DocumentWidget::documentRaised() {
 	/* now refresh this state/info. RefreshWindowStates()
 	   has a lot of work to do, so we update the screen first so
 	   the document appears to switch swiftly. */
-	RefreshWindowStates();
+	refreshWindowStates();
 
 	/* Make sure that the "In Selection" button tracks the presence of a
 	   selection and that the this inherits the proper search scope. */
@@ -1030,7 +1030,7 @@ void DocumentWidget::documentRaised() {
 	}
 }
 
-void DocumentWidget::RaiseDocument() {
+void DocumentWidget::raiseDocument() {
 	if(auto win = MainWindow::fromDocument(this)) {
 		win->tabWidget()->setCurrentWidget(this);
 	}
@@ -1042,7 +1042,7 @@ void DocumentWidget::RaiseDocument() {
 */
 void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
-	const bool topDocument = IsTopDocument();
+	const bool topDocument = isTopDocument();
 
 	if(auto win = MainWindow::fromDocument(this)) {
 		const size_t oldMode = languageMode_;
@@ -1114,7 +1114,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
 		no_signals(win->ui.action_Highlight_Syntax)->setChecked(highlight);
 
-		StopHighlightingEx();
+		stopHighlighting();
 
 		// we defer highlighting to RaiseDocument() if doc is hidden
 		if (topDocument && highlight) {
@@ -1123,15 +1123,15 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
 		// Force a change of smart indent macros (SetAutoIndent will re-start)
 		if (indentStyle_ == IndentStyle::Smart) {
-			EndSmartIndent();
+			endSmartIndent();
 			indentStyle_ = IndentStyle::Auto;
 		}
 
 		// set requested wrap, indent, and tabs
-		SetAutoWrap(wrapMode);
-		SetAutoIndent(indentStyle);
-		SetTabDist(tabDist);
-		SetEmTabDist(emTabDist);
+		setAutoWrap(wrapMode);
+		setAutoIndent(indentStyle);
+		setTabDistance(tabDist);
+		setEmTabDistance(emTabDist);
 
 		// Load calltips files for new mode
 		if (mode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[mode].defTipsFile.isNull()) {
@@ -1139,44 +1139,46 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 		}
 
 		// Add/remove language specific menu items
-		win->UpdateUserMenus(this);
+		win->updateUserMenus(this);
 	}
 }
 
 /**
- * @brief DocumentWidget::SetTabDist
- * @param tabDist
+ * @brief DocumentWidget::setTabDistance
+ * @param distance
  */
-void DocumentWidget::SetTabDist(int tabDist) {
+void DocumentWidget::setTabDistance(int distance) {
 
-	emit_event("set_tab_dist", QString::number(tabDist));
+	emit_event("set_tab_dist", QString::number(distance));
 
-	if (buffer_->BufGetTabDist() != tabDist) {
+	if (buffer_->BufGetTabDist() != distance) {
 		TextCursor saveCursorPositions[MAX_PANES];
-		int64_t saveVScrollPositions[MAX_PANES];
-		int saveHScrollPositions[MAX_PANES];
+		int64_t    saveVScrollPositions[MAX_PANES];
+		int        saveHScrollPositions[MAX_PANES];
 
 		ignoreModify_ = true;
 
 		const std::vector<TextArea *> textAreas = textPanes();
 		const size_t paneCount = textAreas.size();
 
-		for(size_t paneIndex = 0; paneIndex < paneCount; ++paneIndex) {
-			TextArea *area = textAreas[paneIndex];
+		Q_ASSERT(paneCount <= MAX_PANES);
 
-			area->TextDGetScroll(&saveVScrollPositions[paneIndex], &saveHScrollPositions[paneIndex]);
-			saveCursorPositions[paneIndex] = area->TextGetCursorPos();
+		for(size_t index = 0; index < paneCount; ++index) {
+			TextArea *area = textAreas[index];
+
+			area->TextDGetScroll(&saveVScrollPositions[index], &saveHScrollPositions[index]);
+			saveCursorPositions[index] = area->TextGetCursorPos();
 			area->setModifyingTabDist(true);
 		}
 
-		buffer_->BufSetTabDistance(tabDist, true);
+		buffer_->BufSetTabDistance(distance, true);
 
-		for(size_t paneIndex = 0; paneIndex < paneCount; ++paneIndex) {
-			TextArea *area = textAreas[paneIndex];
+		for(size_t index = 0; index < paneCount; ++index) {
+			TextArea *area = textAreas[index];
 
 			area->setModifyingTabDist(false);
-			area->TextSetCursorPos(saveCursorPositions[paneIndex]);
-			area->TextDSetScroll(saveVScrollPositions[paneIndex], saveHScrollPositions[paneIndex]);
+			area->TextSetCursorPos(saveCursorPositions[index]);
+			area->TextDSetScroll(saveVScrollPositions[index], saveHScrollPositions[index]);
 		}
 
 		ignoreModify_ = false;
@@ -1184,44 +1186,44 @@ void DocumentWidget::SetTabDist(int tabDist) {
 }
 
 /**
- * @brief DocumentWidget::SetEmTabDist
- * @param emTabDist
+ * @brief DocumentWidget::setEmTabDistance
+ * @param distance
  */
-void DocumentWidget::SetEmTabDist(int emTabDist) {
+void DocumentWidget::setEmTabDistance(int distance) {
 
-	emit_event("set_em_tab_dist", QString::number(emTabDist));
+	emit_event("set_em_tab_dist", QString::number(distance));
 
 	for(TextArea *area : textPanes()) {
-		area->setEmulateTabs(emTabDist);
+		area->setEmulateTabs(distance);
 	}
 }
 
 /*
 ** Set autoindent state to one of  NO_AUTO_INDENT, AUTO_INDENT, or SMART_INDENT.
 */
-void DocumentWidget::SetAutoIndent(IndentStyle state) {
+void DocumentWidget::setAutoIndent(IndentStyle indentStyle) {
 
-	const bool autoIndent  = (state == IndentStyle::Auto);
-	const bool smartIndent = (state == IndentStyle::Smart);
+	const bool autoIndent  = (indentStyle == IndentStyle::Auto);
+	const bool smartIndent = (indentStyle == IndentStyle::Smart);
 
 	if (indentStyle_ == IndentStyle::Smart && !smartIndent) {
-		EndSmartIndent();
+		endSmartIndent();
 	} else if (smartIndent && indentStyle_ != IndentStyle::Smart) {
-		BeginSmartIndent(/*warn=*/true);
+		beginSmartIndent(/*warn=*/true);
 	}
 
-	indentStyle_ = state;
+	indentStyle_ = indentStyle;
 
 	for(TextArea *area : textPanes()) {
 		area->setAutoIndent(autoIndent);
 		area->setSmartIndent(smartIndent);
 	}
 
-	if (IsTopDocument()) {
+	if (isTopDocument()) {
 		if(auto win = MainWindow::fromDocument(this)) {
 			no_signals(win->ui.action_Indent_Smart)->setChecked(smartIndent);
 			no_signals(win->ui.action_Indent_On)->setChecked(autoIndent);
-			no_signals(win->ui.action_Indent_Off)->setChecked(state == IndentStyle::None);
+			no_signals(win->ui.action_Indent_Off)->setChecked(indentStyle == IndentStyle::None);
 		}
 	}
 }
@@ -1229,25 +1231,25 @@ void DocumentWidget::SetAutoIndent(IndentStyle state) {
 /*
 ** Select auto-wrap mode, one of None, Newline, or Continuous
 */
-void DocumentWidget::SetAutoWrap(WrapStyle state) {
+void DocumentWidget::setAutoWrap(WrapStyle wrapStyle) {
 
-	emit_event("set_wrap_text", to_string(state));
+	emit_event("set_wrap_text", to_string(wrapStyle));
 
-	const bool autoWrap = (state == WrapStyle::Newline);
-	const bool contWrap = (state == WrapStyle::Continuous);
+	const bool autoWrap = (wrapStyle == WrapStyle::Newline);
+	const bool contWrap = (wrapStyle == WrapStyle::Continuous);
 
 	for(TextArea *area : textPanes()) {
 		area->setAutoWrap(autoWrap);
 		area->setContinuousWrap(contWrap);
 	}
 
-	wrapMode_ = state;
+	wrapMode_ = wrapStyle;
 
-	if (IsTopDocument()) {
+	if (isTopDocument()) {
 		if(auto win = MainWindow::fromDocument(this)) {
 			no_signals(win->ui.action_Wrap_Auto_Newline)->setChecked(autoWrap);
 			no_signals(win->ui.action_Wrap_Continuous)->setChecked(contWrap);
-			no_signals(win->ui.action_Wrap_None)->setChecked(state == WrapStyle::None);
+			no_signals(win->ui.action_Wrap_None)->setChecked(wrapStyle == WrapStyle::None);
 		}
 	}
 }
@@ -1281,10 +1283,10 @@ std::vector<TextArea *> DocumentWidget::textPanes() const {
 }
 
 /**
- * @brief DocumentWidget::IsTopDocument
+ * @brief DocumentWidget::isTopDocument
  * @return
  */
-bool DocumentWidget::IsTopDocument() const {
+bool DocumentWidget::isTopDocument() const {
 	if(auto window = MainWindow::fromDocument(this)) {
 		return window->currentDocument() == this;
 	}
@@ -1311,7 +1313,7 @@ QString DocumentWidget::getWindowsMenuEntry() const {
 ** Turn off syntax highlighting and free style buffer, compiled patterns, and
 ** related data.
 */
-void DocumentWidget::StopHighlightingEx() {
+void DocumentWidget::stopHighlighting() {
 	if (!highlightData_) {
 		return;
 	}
@@ -1343,12 +1345,12 @@ TextArea *DocumentWidget::firstPane() const {
 
 /*
 ** Get the set of word delimiters for the language mode set in the current
-** window.  Returns QString() when no language mode is set (it would be easy to
-** return the default delimiter set when the current language mode is "Plain",
-** or the mode doesn't have its own delimiters, but this is usually used
-** to supply delimiters for RE searching.
+** document.  Returns QString() when no language mode is set (it would be easy
+** to return the default delimiter set when the current language mode is
+** "Plain", or the mode doesn't have its own delimiters, but this is usually
+** used to supply delimiters for RE searching.
 */
-QString DocumentWidget::GetWindowDelimiters() const {
+QString DocumentWidget::documentDelimiters() const {
 	if (languageMode_ == PLAIN_LANGUAGE_MODE) {
 		return QString();
 	} else {
@@ -1362,7 +1364,7 @@ QString DocumentWidget::GetWindowDelimiters() const {
 */
 void DocumentWidget::updateSelectionSensitiveMenus(bool enabled) {
 
-	if (!IsTopDocument()) {
+	if (!isTopDocument()) {
 		return;
 	}
 
@@ -1374,10 +1376,10 @@ void DocumentWidget::updateSelectionSensitiveMenus(bool enabled) {
 	}
 }
 
-void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menuPane, const gsl::span<MenuData> &menuList, bool enabled) {
+void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<MenuData> &menuList, bool enabled) {
 
-	if(menuPane) {
-		const QList<QAction *> actions = menuPane->actions();
+	if(menu) {
+		const QList<QAction *> actions = menu->actions();
 		for(QAction *action : actions) {
 			if(QMenu *subMenu = action->menu()) {
 				updateSelectionSensitiveMenu(subMenu, menuList, enabled);
@@ -1403,7 +1405,7 @@ void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menuPane, const gsl::sp
 ** Note: This routine must be kept efficient.  It is called for every
 **       character typed.
 */
-void DocumentWidget::SaveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, view::string_view deletedText) {
+void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, view::string_view deletedText) {
 
 	const int isUndo = (!undo_.empty() && undo_.front().inUndo);
 	const int isRedo = (!redo_.empty() && redo_.front().inUndo);
@@ -1412,7 +1414,7 @@ void DocumentWidget::SaveUndoInformation(TextCursor pos, int64_t nInserted, int6
 	   other editing.  If this is not a redo or undo operation and a redo
 	   list still exists, clear it and dim the redo menu item */
 	if (!(isUndo || isRedo) && !redo_.empty()) {
-		ClearRedoList();
+		clearRedoList();
 	}
 
 	/* figure out what kind of editing operation this is, and recall
@@ -1429,7 +1431,7 @@ void DocumentWidget::SaveUndoInformation(TextCursor pos, int64_t nInserted, int6
 	/*
 	** Check for continuations of single character operations.  These are
 	** accumulated so a whole insertion or deletion can be undone, rather
-	** than just the last character that the user typed.  If the this
+	** than just the last character that the user typed.  If the document
 	** is currently in an unmodified state, don't accumulate operations
 	** across the save, so the user can undo back to the unmodified state.
 	*/
@@ -1493,7 +1495,7 @@ void DocumentWidget::SaveUndoInformation(TextCursor pos, int64_t nInserted, int6
 		}
 	}
 
-	/* Add the new record to the undo list  unless SaveUndoInfo is
+	/* Add the new record to the undo list unless saveUndoInformation is
 	   saving information generated by an Undo operation itself, in
 	   which case, add the new record to the redo list. */
 	if (isUndo) {
@@ -1504,20 +1506,24 @@ void DocumentWidget::SaveUndoInformation(TextCursor pos, int64_t nInserted, int6
 }
 
 /*
-** ClearUndoList, ClearRedoList
+** clearUndoList, clearRedoList
 **
 ** Functions for clearing all of the information off of the undo or redo
 ** lists and adjusting the edit menu accordingly
 */
-void DocumentWidget::ClearUndoList() {
-	while (!undo_.empty()) {
-		removeUndoItem();
+void DocumentWidget::clearUndoList() {
+
+	undo_.clear();
+	if(auto window = MainWindow::fromDocument(this)) {
+		window->undoAvailable(false);
 	}
 }
 
-void DocumentWidget::ClearRedoList() {
-	while (!redo_.empty()) {
-		removeRedoItem();
+void DocumentWidget::clearRedoList() {
+
+	redo_.clear();
+	if(auto window = MainWindow::fromDocument(this)) {
+		window->redoAvailable(false);
 	}
 }
 
@@ -1769,7 +1775,7 @@ bool DocumentWidget::checkReadOnly() const {
 */
 void DocumentWidget::MakeSelectionVisible(TextArea *area) {
 	area->TextDMakeSelectionVisible();
-	UpdateStatsLine(area);
+	updateStatsLine(area);
 }
 
 /*
@@ -1802,7 +1808,7 @@ QString DocumentWidget::backupFileNameEx() const {
 ** Check if the file in the window was changed by an external source.
 ** and put up a warning dialog if it has.
 */
-void DocumentWidget::CheckForChangesToFile() {
+void DocumentWidget::checkForChangesToFile() {
 
 	/* Maximum frequency of checking for external modifications. The periodic
 	 * check is only performed on buffer modification, and the check interval is
@@ -1833,7 +1839,7 @@ void DocumentWidget::CheckForChangesToFile() {
 		 * place where the window might be iconic (e.g., from the replace dialog)
 		 * or on another desktop.
 		 */
-		const bool silent = (!IsTopDocument() || !win->isVisible());
+		const bool silent = (!isTopDocument() || !win->isVisible());
 
 		// Get the file mode and modification time
 		QString fullname = FullPath();
@@ -2130,7 +2136,7 @@ void DocumentWidget::RevertToSaved() {
 		QString path = path_;
 
 		RemoveBackupFile();
-		ClearUndoList();
+		clearUndoList();
 		openFlags |= lockReasons_.isUserLocked() ? EditFlags::PREF_READ_ONLY : 0;
 
 		if (!doOpen(name, path, openFlags)) {
@@ -2229,7 +2235,7 @@ bool DocumentWidget::WriteBackupFile() {
 bool DocumentWidget::saveDocument() {
 
 	// Try to ensure our information is up-to-date
-	CheckForChangesToFile();
+	checkForChangesToFile();
 
 	/* Return success if the file is normal & unchanged or is a
 		read-only file. */
@@ -2471,7 +2477,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 
 		// Update the stats line and window title with the new filename
 		win->UpdateWindowTitle(this);
-		UpdateStatsLine(nullptr);
+		updateStatsLine(nullptr);
 
 		win->SortTabBar();
 		return retVal;
@@ -2729,7 +2735,7 @@ bool DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
 void DocumentWidget::CloseDocument() {
 
 	// Free smart indent macro programs
-	EndSmartIndent();
+	endSmartIndent();
 
 	/* Clean up macro references to the doomed window.  If a macro is
 	   executing, stop it.  If macro is calling this (closing its own
@@ -2779,16 +2785,16 @@ void DocumentWidget::CloseDocument() {
 		fileMissing_  = true;
 		fileFormat_   = FileFormats::Unix;
 
-		StopHighlightingEx();
-		EndSmartIndent();
+		stopHighlighting();
+		endSmartIndent();
 		win->UpdateWindowTitle(this);
 		win->UpdateWindowReadOnly(this);
 		win->ui.action_Close->setEnabled(false);
 		win->ui.action_Read_Only->setEnabled(true);
 		win->ui.action_Read_Only->setChecked(false);
-		ClearUndoList();
-		ClearRedoList();
-		UpdateStatsLine(nullptr);
+		clearUndoList();
+		clearRedoList();
+		updateStatsLine(nullptr);
 		DetermineLanguageMode(true);
 		RefreshTabState();
 		win->updateLineNumDisp();
@@ -3091,9 +3097,9 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 /*
 ** refresh window state for this document
 */
-void DocumentWidget::RefreshWindowStates() {
+void DocumentWidget::refreshWindowStates() {
 
-	if (!IsTopDocument()) {
+	if (!isTopDocument()) {
 		return;
 	}
 
@@ -3102,7 +3108,7 @@ void DocumentWidget::RefreshWindowStates() {
 		if (modeMessageDisplayed()) {
 			ui.labelFileAndSize->setText(modeMessage_);
 		} else {
-			UpdateStatsLine(nullptr);
+			updateStatsLine(nullptr);
 		}
 
 		win->UpdateWindowReadOnly(this);
@@ -3141,7 +3147,7 @@ void DocumentWidget::refreshMenuBar() {
 		RefreshMenuToggleStates();
 
 		// Add/remove language specific menu items
-		win->UpdateUserMenus(this);
+		win->updateUserMenus(this);
 
 		// refresh selection-sensitive menus
 		updateSelectionSensitiveMenus(win->wasSelected_);
@@ -3154,7 +3160,7 @@ void DocumentWidget::refreshMenuBar() {
 */
 void DocumentWidget::RefreshMenuToggleStates() {
 
-	if (!IsTopDocument()) {
+	if (!isTopDocument()) {
 		return;
 	}
 
@@ -3184,8 +3190,8 @@ void DocumentWidget::RefreshMenuToggleStates() {
 		win->ui.action_Indent_Smart->setEnabled(SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(languageMode_)));
 		win->ui.action_Highlight_Syntax->setEnabled(languageMode_ != PLAIN_LANGUAGE_MODE);
 
-		SetAutoIndent(indentStyle_);
-		SetAutoWrap(wrapMode_);
+		setAutoIndent(indentStyle_);
+		setAutoWrap(wrapMode_);
 		SetShowMatching(showMatchingStyle_);
 		SetLanguageMode(languageMode_, /*forceNewDefaults=*/false);
 
@@ -3239,14 +3245,14 @@ void DocumentWidget::executeNewlineMacro(SmartIndentEvent *event) {
 						this,
 						tr("Smart Indent"),
 						tr("Error in smart indent macro:\n%1").arg(stat == MACRO_ERROR ? errMsg : tr("dialogs and shell commands not permitted")));
-			EndSmartIndent();
+			endSmartIndent();
 			return;
 		}
 
 		// Validate and return the result
 		if (!is_integer(result) || to_integer(result) < -1 || to_integer(result) > 1000) {
 			QMessageBox::critical(this, tr("Smart Indent"), tr("Smart indent macros must return integer indent distance"));
-			EndSmartIndent();
+			endSmartIndent();
 			return;
 		}
 
@@ -3263,7 +3269,7 @@ void DocumentWidget::SetShowMatching(ShowMatchingStyle state) {
 	emit_event("set_show_matching", to_string(state));
 
 	showMatchingStyle_ = state;
-	if (IsTopDocument()) {
+	if (isTopDocument()) {
 		if(auto win = MainWindow::fromDocument(this)) {
 			switch(state) {
 			case ShowMatchingStyle::None:
@@ -3322,7 +3328,7 @@ void DocumentWidget::executeModMacro(SmartIndentEvent *event) {
 						tr("Smart Indent"),
 						tr("Error in smart indent modification macro:\n%1").arg((stat == MACRO_ERROR) ? errMsg : tr("dialogs and shell commands not permitted")));
 
-			EndSmartIndent();
+			endSmartIndent();
 			return;
 		}
 	}
@@ -3894,7 +3900,7 @@ void DocumentWidget::closePane() {
 ** be repeated whenever a new text widget is created within this window
 ** (a split-window command).
 */
-void DocumentWidget::BeginSmartIndent(bool warn) {
+void DocumentWidget::beginSmartIndent(bool warn) {
 
 	static bool initialized = false;
 
@@ -4015,12 +4021,12 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 			for(DocumentWidget *document : fromWindow->openDocuments()) {
 
 				targetWin->tabWidget()->addTab(document, document->filename_);
-				RaiseFocusDocumentWindow(true);
+				raiseFocusDocumentWindow(true);
 				targetWin->show();
 			}
 		} else {
 			targetWin->tabWidget()->addTab(this, filename_);
-			RaiseFocusDocumentWindow(true);
+			raiseFocusDocumentWindow(true);
 			targetWin->show();
 		}
 
@@ -4141,7 +4147,7 @@ void DocumentWidget::SetMatchSyntaxBased(bool value) {
 
 	emit_event("set_match_syntax_based", value ? QLatin1String("1") : QLatin1String("0"));
 
-	if(IsTopDocument()) {
+	if(isTopDocument()) {
 		if(auto win = MainWindow::fromDocument(this)) {
 			no_signals(win->ui.action_Matching_Syntax)->setChecked(value);
 		}
@@ -4165,7 +4171,7 @@ void DocumentWidget::SetOverstrike(bool overstrike) {
 
 	emit_event("set_overtype_mode", overstrike ? QLatin1String("1") : QLatin1String("0"));
 
-	if(IsTopDocument()) {
+	if(isTopDocument()) {
 		if(auto win = MainWindow::fromDocument(this)) {
 			no_signals(win->ui.action_Overtype)->setChecked(overstrike);
 		}
@@ -4300,7 +4306,7 @@ void DocumentWidget::ClearModeMessage() {
 		ShowStatsLine(false);
 	}
 
-	UpdateStatsLine(nullptr);
+	updateStatsLine(nullptr);
 }
 
 // Decref the default calltips file(s) for this window
@@ -5204,7 +5210,7 @@ void DocumentWidget::ResumeMacroExecutionEx() {
 ** the matching character (a timer procedure is scheduled for removing the
 ** highlights)
 */
-void DocumentWidget::FlashMatchingEx(TextArea *area) {
+void DocumentWidget::flashMatchingChar(TextArea *area) {
 
 	// if a marker is already drawn, erase it and cancel the timeout
 	if (flashTimer_->isActive()) {
@@ -5367,14 +5373,14 @@ void DocumentWidget::UpdateHighlightStylesEx() {
 	// Find the pattern set for the window's current language mode
 	PatternSet *patterns = findPatternsForWindowEx(/*warn=*/false);
 	if(!patterns) {
-		StopHighlightingEx();
+		stopHighlighting();
 		return;
 	}
 
 	// Build new patterns
 	std::unique_ptr<WindowHighlightData> newHighlightData = createHighlightDataEx(patterns);
 	if(!newHighlightData) {
-		StopHighlightingEx();
+		stopHighlighting();
 		return;
 	}
 
@@ -5711,7 +5717,7 @@ void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &sty
 		stylePtr,
 		endParse - beginSafety,
 		&prevChar,
-		GetWindowDelimiters(),
+	    documentDelimiters(),
 		string,
 		match_to);
 
@@ -5772,7 +5778,7 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
 			stylePtr,
 			bufLength,
 			&prevChar,
-			GetWindowDelimiters(),
+		    documentDelimiters(),
 			stringPtr,
 			match_to);
 	}
@@ -6407,7 +6413,7 @@ void DocumentWidget::cancelLearning() {
 		window->ui.action_Learn_Keystrokes->setEnabled(true);
 	}
 
-	if (document->IsTopDocument()) {
+	if (document->isTopDocument()) {
 		auto window = MainWindow::fromDocument(document);
 		window->ui.action_Finish_Learn->setEnabled(false);
 		window->ui.action_Cancel_Learn->setEnabled(false);
@@ -6432,7 +6438,7 @@ void DocumentWidget::finishLearning() {
 		window->ui.action_Replay_Keystrokes->setEnabled(true);
 	}
 
-	if (document->IsTopDocument()) {
+	if (document->isTopDocument()) {
 		if(auto window = MainWindow::fromDocument(document)) {
 			window->ui.action_Finish_Learn->setEnabled(false);
 			window->ui.action_Cancel_Learn->setEnabled(false);
@@ -6496,7 +6502,7 @@ bool DocumentWidget::ReadMacroString(const QString &string, const QString &errIn
 /**
  * @brief DocumentWidget::EndSmartIndent
  */
-void DocumentWidget::EndSmartIndent() {
+void DocumentWidget::endSmartIndent() {
 
 	if(!smartIndentData_) {
 		return;
@@ -6604,7 +6610,7 @@ void DocumentWidget::SetHighlightSyntax(bool value) {
 
 	highlightSyntax_ = value;
 
-	if(IsTopDocument()) {
+	if(isTopDocument()) {
 		if(auto win = MainWindow::fromDocument(this)) {
 			no_signals(win->ui.action_Highlight_Syntax)->setChecked(value);
 		}
@@ -6613,7 +6619,7 @@ void DocumentWidget::SetHighlightSyntax(bool value) {
 	if (highlightSyntax_) {
 		StartHighlightingEx(/*warn=*/true);
 	} else {
-		StopHighlightingEx();
+		stopHighlighting();
 	}
 }
 
@@ -6625,7 +6631,7 @@ void DocumentWidget::SetMakeBackupCopy(bool value) {
 
 	emit_event("set_make_backup_copy", value ? QLatin1String("1") : QLatin1String("0"));
 
-	if (IsTopDocument()) {
+	if (isTopDocument()) {
 		if(auto win = MainWindow::fromDocument(this)) {
 			no_signals(win->ui.action_Make_Backup_Copy)->setChecked(value);
 		}
@@ -6645,7 +6651,7 @@ void DocumentWidget::SetIncrementalBackup(bool value) {
 
 	autoSave_ = value;
 
-	if(IsTopDocument()) {
+	if(isTopDocument()) {
 		if(auto win = MainWindow::fromDocument(this)) {
 			no_signals(win->ui.action_Highlight_Syntax)->setChecked(value);
 		}
@@ -6661,7 +6667,7 @@ void DocumentWidget::SetUserLocked(bool value) {
 
 	lockReasons_.setUserLocked(value);
 
-	if(IsTopDocument()) {
+	if(isTopDocument()) {
 		if(auto win = MainWindow::fromDocument(this)) {
 			no_signals(win->ui.action_Read_Only)->setChecked(lockReasons_.isAnyLocked());
 			win->UpdateWindowTitle(this);
@@ -7046,7 +7052,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 
 	// select the matched string
 	documentToSearch->buffer_->BufSelect(TextCursor(startPos), TextCursor(endPos));
-	documentToSearch->RaiseFocusDocumentWindow(true);
+	documentToSearch->raiseFocusDocumentWindow(true);
 
 	/* Position it nicely in the window,
 	   about 1/4 of the way down from the top */

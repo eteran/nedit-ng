@@ -390,7 +390,7 @@ bool DialogShellMenu::applyDialogChanges() {
 
 	// Update the menus themselves in all of the NEdit windows
 	for(MainWindow *window : MainWindow::allWindows()) {
-		window->UpdateUserMenus();
+		window->updateUserMenus();
 	}
 
 	// Note that preferences have been changed

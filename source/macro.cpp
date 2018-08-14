@@ -1246,11 +1246,11 @@ static std::error_code setAutoIndentMS(DocumentWidget *document, Arguments argum
 	document = MacroRunDocument();
 
 	if(string == QLatin1String("off")) {
-		document->SetAutoIndent(IndentStyle::None);
+		document->setAutoIndent(IndentStyle::None);
 	} else if(string == QLatin1String("on")) {
-		document->SetAutoIndent(IndentStyle::Auto);
+		document->setAutoIndent(IndentStyle::Auto);
 	} else if(string == QLatin1String("smart")) {
-		document->SetAutoIndent(IndentStyle::Smart);
+		document->setAutoIndent(IndentStyle::Smart);
 	} else {
 		qWarning("NEdit: set_auto_indent invalid argument");
 	}
@@ -1274,7 +1274,7 @@ static std::error_code setEmTabDistMS(DocumentWidget *document, Arguments argume
 		if (number < 0) {
 			number = 0;
 		}
-		document->SetEmTabDist(number);
+		document->setEmTabDistance(number);
 	} else {
 		qWarning("NEdit: set_em_tab_dist requires integer argument >= -1 and < 1000");
 	}
@@ -1529,7 +1529,7 @@ static std::error_code setTabDistMS(DocumentWidget *document, Arguments argument
 
 		std::error_code ec = readArguments(arguments, 0, &newTabDist);
 		if(ec && newTabDist > 0 && newTabDist <= TextBuffer::MAX_EXP_CHAR_LEN) {
-			document->SetTabDist(newTabDist);
+			document->setTabDistance(newTabDist);
 		} else {
 			qWarning("NEdit: set_tab_dist requires integer argument > 0 and <= %d", TextBuffer::MAX_EXP_CHAR_LEN);
 		}
@@ -1593,11 +1593,11 @@ static std::error_code setWrapTextMS(DocumentWidget *document, Arguments argumen
 		}
 
 		if (arg == QLatin1String("none")) {
-			document->SetAutoWrap(WrapStyle::None);
+			document->setAutoWrap(WrapStyle::None);
 		} else if (arg == QLatin1String("auto")) {
-			document->SetAutoWrap(WrapStyle::Newline);
+			document->setAutoWrap(WrapStyle::Newline);
 		} else if (arg == QLatin1String("continuous")) {
-		   document->SetAutoWrap(WrapStyle::Continuous);
+		   document->setAutoWrap(WrapStyle::Continuous);
 		} else {
 			qWarning("NEdit: set_wrap_text invalid argument");
 		}

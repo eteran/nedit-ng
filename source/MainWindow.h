@@ -105,8 +105,8 @@ public:
 	void updatePrevOpenMenu();
 	void updateTagsFileMenuEx();
 	void updateTipsFileMenuEx();
-	void UpdateUserMenus();
-	void UpdateUserMenus(DocumentWidget *document);
+	void updateUserMenus();
+	void updateUserMenus(DocumentWidget *document);
 	void updateWindowMenu();
 	void UpdateWindowReadOnly(DocumentWidget *document);
 	void updateWindowSizeMenu();

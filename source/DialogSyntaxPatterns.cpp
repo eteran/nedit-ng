@@ -727,7 +727,7 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 					/*  Highlighting (including menu entry) was deactivated in
 						this function or in preferences.c::reapplyLanguageMode()
 						if the old set had no patterns, so reactivate menu entry. */
-					if (document->IsTopDocument()) {
+					if (document->isTopDocument()) {
 						MainWindow::fromDocument(document)->ui.action_Highlight_Syntax->setEnabled(true);
 					}
 
@@ -736,9 +736,9 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 				}
 
 				if (document->highlightSyntax_) {
-					document->StopHighlightingEx();
+					document->stopHighlighting();
 
-					if (document->IsTopDocument()) {
+					if (document->isTopDocument()) {
 						MainWindow::fromDocument(document)->ui.action_Highlight_Syntax->setEnabled(true);
 						no_signals(MainWindow::fromDocument(document)->ui.action_Highlight_Syntax)->setChecked(true);
 					}
@@ -748,10 +748,10 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 		} else {
 			/*  No pattern in pattern set. This will probably not happen much,
 				but you never know.  */
-			document->StopHighlightingEx();
+			document->stopHighlighting();
 			document->highlightSyntax_ = false;
 
-			if (document->IsTopDocument()) {
+			if (document->isTopDocument()) {
 				MainWindow::fromDocument(document)->ui.action_Highlight_Syntax->setEnabled(false);
 				no_signals(MainWindow::fromDocument(document)->ui.action_Highlight_Syntax)->setChecked(false);
 			}
