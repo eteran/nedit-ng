@@ -5,7 +5,6 @@
 #include "CloseMode.h"
 #include "CommandSource.h"
 #include "Direction.h"
-#include "Util/FileFormats.h"
 #include "IndentStyle.h"
 #include "NewMode.h"
 #include "SearchType.h"
@@ -13,6 +12,7 @@
 #include "WrapMode.h"
 #include "userCmds.h"
 #include "TextCursor.h"
+#include "Util/FileFormats.h"
 
 #include <vector>
 #include <gsl/span>

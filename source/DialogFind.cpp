@@ -2,10 +2,10 @@
 #include "DialogFind.h"
 #include "DocumentWidget.h"
 #include "MainWindow.h"
+#include "Preferences.h"
 #include "Regex.h"
 #include "Search.h"
 #include "Util/regex.h"
-#include "preferences.h"
 
 #include <QClipboard>
 #include <QKeyEvent>

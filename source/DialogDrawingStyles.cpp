@@ -5,7 +5,7 @@
 #include "FontType.h"
 #include "Highlight.h"
 #include "HighlightStyleModel.h"
-#include "preferences.h"
+#include "Preferences.h"
 #include "X11Colors.h"
 
 #include <QMessageBox>

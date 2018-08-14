@@ -1,10 +1,9 @@
 
 #include "NeditServer.h"
 #include "DocumentWidget.h"
-#include "MainWindow.h"
 #include "EditFlags.h"
-#include "preferences.h"
-
+#include "MainWindow.h"
+#include "Preferences.h"
 #include "Util/ServerCommon.h"
 #include "Util/FileSystem.h"
 

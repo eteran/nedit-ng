@@ -1,18 +1,18 @@
 
-#include "preferences.h"
+#include "Preferences.h"
 #include "DocumentWidget.h"
 #include "Font.h"
 #include "Highlight.h"
-#include "Util/Input.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
-#include "search.h"
 #include "Settings.h"
 #include "SmartIndent.h"
 #include "Tags.h"
 #include "TextBuffer.h"
+#include "search.h"
 #include "userCmds.h"
 #include "Util/ClearCase.h"
+#include "Util/Input.h"
 #include "Util/version.h"
 
 #include <QInputDialog>

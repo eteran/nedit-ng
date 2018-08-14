@@ -7,18 +7,17 @@
 #include "HighlightStyle.h"
 #include "MainWindow.h"
 #include "PatternSet.h"
+#include "Preferences.h"
 #include "Regex.h"
 #include "ReparseContext.h"
 #include "Settings.h"
 #include "StyleTableEntry.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
-#include "Util/Input.h"
-#include "Util/Resource.h"
 #include "WindowHighlightData.h"
 #include "X11Colors.h"
-#include "preferences.h"
-
+#include "Util/Input.h"
+#include "Util/Resource.h"
 
 #include <QSettings>
 #include <QMessageBox>

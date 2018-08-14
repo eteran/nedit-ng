@@ -3,13 +3,13 @@
 #include "DocumentWidget.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
+#include "Preferences.h"
 #include "Search.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "Util/FileSystem.h"
 #include "Util/Input.h"
 #include "Util/User.h"
-#include "preferences.h"
 
 #include <gsl/gsl_util>
 

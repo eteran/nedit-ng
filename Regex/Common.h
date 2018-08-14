@@ -67,7 +67,7 @@ R literal_escape(Ch ch) noexcept {
  *                             than 377 octal.  Must have leading zero.
  *
  * Returns the actual character value or nullptr if not a valid hex or
- * octal escape.  raise<RegexError> is called if \x0, \x00, \0, \00, \000, or
+ * octal escape.  Raise<RegexError> is called if \x0, \x00, \0, \00, \000, or
  * \0000 is specified.
  *--------------------------------------------------------------------*/
 template <class R, class Ch>

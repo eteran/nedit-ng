@@ -15,9 +15,9 @@
 #include "Tags.h"
 #include "TextBufferFwd.h"
 #include "UndoInfo.h"
+#include "WrapStyle.h"
 #include "Util/FileFormats.h"
 #include "Util/string_view.h"
-#include "WrapStyle.h"
 
 #include "ui_DocumentWidget.h"
 
@@ -25,8 +25,10 @@
 #include <QProcess>
 #include <QWidget>
 
-#include <gsl/span>
 #include <array>
+
+#include <gsl/span>
+
 #include <boost/optional.hpp>
 
 #include <sys/stat.h>
@@ -233,7 +235,7 @@ private:
 	void ExecCursorLineEx(TextArea *area, CommandSource source);
 	void finishLearning();
 	void FlashMatchingEx(TextArea *area);
-	void FreeHighlightingDataEx();
+	void FreeHighlightingData();
 	void Redo();
 	void RefreshMenuToggleStates();
 	void RefreshTabState();

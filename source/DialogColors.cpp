@@ -1,7 +1,7 @@
 
 #include "DialogColors.h"
 #include "DocumentWidget.h"
-#include "preferences.h"
+#include "Preferences.h"
 #include "Settings.h"
 #include "X11Colors.h"
 

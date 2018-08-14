@@ -2,9 +2,9 @@
 #ifndef HIGHLIGHT_H_
 #define HIGHLIGHT_H_
 
-#include "Util/string_view.h"
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
+#include "Util/string_view.h"
 
 #include <boost/optional.hpp>
 #include <vector>

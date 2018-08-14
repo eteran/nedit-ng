@@ -1,13 +1,13 @@
 
 #include "DialogMacros.h"
 #include "CommandRecorder.h"
-#include "interpret.h"
-#include "parse.h"
 #include "MainWindow.h"
 #include "MenuData.h"
 #include "MenuItem.h"
-#include "preferences.h"
 #include "MenuItemModel.h"
+#include "Preferences.h"
+#include "interpret.h"
+#include "parse.h"
 #include "userCmds.h"
 
 #include <QMessageBox>

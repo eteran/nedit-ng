@@ -1,6 +1,6 @@
 
 #include "DialogWindowSize.h"
-#include "preferences.h"
+#include "Preferences.h"
 
 #include <QMessageBox>
 #include <QIntValidator>

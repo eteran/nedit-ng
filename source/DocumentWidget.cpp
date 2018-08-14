@@ -15,6 +15,7 @@
 #include "HighlightStyle.h"
 #include "MainWindow.h"
 #include "PatternSet.h"
+#include "Preferences.h"
 #include "Search.h"
 #include "Settings.h"
 #include "SignalBlocker.h"
@@ -30,14 +31,13 @@
 #include "interpret.h"
 #include "macro.h"
 #include "parse.h"
-#include "preferences.h"
 #include "userCmds.h"
 #include "Util/ClearCase.h"
-#include "Util/Input.h"
 #include "Util/FileSystem.h"
+#include "Util/Input.h"
 #include "Util/User.h"
-#include "Util/utils.h"
 #include "Util/regex.h"
+#include "Util/utils.h"
 
 #include <QClipboard>
 #include <QFile>
@@ -490,7 +490,7 @@ DocumentWidget::~DocumentWidget() noexcept {
 	rangesetTable_ = nullptr;
 
 	// Free syntax highlighting patterns, if any. w/o redisplaying
-	FreeHighlightingDataEx();
+	FreeHighlightingData();
 
 	buffer_->BufRemoveModifyCB(modifiedCB, this);
 	buffer_->BufRemoveModifyCB(SyntaxHighlightModifyCBEx, this);
@@ -5338,7 +5338,7 @@ PatternSet *DocumentWidget::findPatternsForWindowEx(bool warn) {
 ** Free highlighting data from a window destined for destruction, without
 ** redisplaying.
 */
-void DocumentWidget::FreeHighlightingDataEx() {
+void DocumentWidget::FreeHighlightingData() {
 
 	if (!highlightData_) {
 		return;

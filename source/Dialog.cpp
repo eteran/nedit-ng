@@ -1,6 +1,6 @@
 
 #include "Dialog.h"
-#include "preferences.h"
+#include "Preferences.h"
 
 /**
  * @brief Dialog::Dialog

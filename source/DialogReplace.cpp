@@ -3,10 +3,10 @@
 #include "DialogMultiReplace.h"
 #include "DocumentWidget.h"
 #include "MainWindow.h"
-#include "preferences.h"
+#include "Preferences.h"
 #include "Regex.h"
-#include "Util/regex.h"
 #include "Search.h"
+#include "Util/regex.h"
 
 #include <QClipboard>
 #include <QKeyEvent>

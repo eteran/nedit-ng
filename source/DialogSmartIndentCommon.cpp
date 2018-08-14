@@ -2,9 +2,9 @@
 #include "DialogSmartIndentCommon.h"
 #include "DocumentWidget.h"
 #include "LanguageMode.h"
-#include "macro.h"
-#include "preferences.h"
+#include "Preferences.h"
 #include "SmartIndent.h"
+#include "macro.h"
 
 #include <QMessageBox>
 

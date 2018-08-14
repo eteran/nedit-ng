@@ -2,13 +2,14 @@
 #include "DialogWindowTitle.h"
 #include "DocumentWidget.h"
 #include "Help.h"
-#include "nedit.h"
-#include "preferences.h"
+#include "Preferences.h"
 #include "SignalBlocker.h"
+#include "nedit.h"
 #include "Util/ClearCase.h"
-#include "Util/User.h"
-#include "Util/Host.h"
 #include "Util/FileSystem.h"
+#include "Util/Host.h"
+#include "Util/User.h"
+
 #include <QRegularExpressionValidator>
 #include <QRegularExpression>
 

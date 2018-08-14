@@ -3,7 +3,7 @@
 #include "DialogSmartIndent.h"
 #include "DialogSmartIndentCommon.h"
 #include "SmartIndentEntry.h"
-#include "preferences.h"
+#include "Preferences.h"
 #include "shift.h"
 #include "Util/Input.h"
 #include "Util/Resource.h"

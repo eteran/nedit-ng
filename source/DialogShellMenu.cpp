@@ -3,7 +3,7 @@
 #include "MainWindow.h"
 #include "MenuItem.h"
 #include "MenuItemModel.h"
-#include "preferences.h"
+#include "Preferences.h"
 #include "MenuData.h"
 #include "userCmds.h"
 

@@ -3,8 +3,8 @@
 #include "DocumentWidget.h"
 #include "Help.h"
 #include "LanguageMode.h"
+#include "Preferences.h"
 #include "TextArea.h"
-#include "preferences.h"
 #include "TextBuffer.h"
 
 #include <QMessageBox>

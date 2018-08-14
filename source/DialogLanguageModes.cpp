@@ -6,13 +6,13 @@
 #include "LanguageMode.h"
 #include "LanguageModeModel.h"
 #include "MainWindow.h"
+#include "Preferences.h"
 #include "Regex.h"
 #include "Search.h"
 #include "SmartIndent.h"
 #include "TextArea.h"
-#include "Util/regex.h"
-#include "preferences.h"
 #include "userCmds.h"
+#include "Util/regex.h"
 
 #include <QMessageBox>
 #include <QRegularExpressionValidator>

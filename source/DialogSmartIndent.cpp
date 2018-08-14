@@ -4,14 +4,14 @@
 #include "DialogSmartIndentCommon.h"
 #include "DocumentWidget.h"
 #include "Help.h"
-#include "interpret.h"
 #include "LanguageMode.h"
-#include "parse.h"
-#include "macro.h"
 #include "MainWindow.h"
-#include "preferences.h"
-#include "SmartIndentEntry.h"
+#include "Preferences.h"
 #include "SmartIndent.h"
+#include "SmartIndentEntry.h"
+#include "interpret.h"
+#include "macro.h"
+#include "parse.h"
 
 #include <QMessageBox>
 

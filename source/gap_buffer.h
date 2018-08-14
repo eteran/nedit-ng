@@ -4,12 +4,12 @@
 
 #include "gap_buffer_fwd.h"
 #include "gap_buffer_iterator.h"
+#include "Util/string_view.h"
 
 #include <string>
 #include <algorithm>
 #include <memory>
 #include <cassert>
-#include "Util/string_view.h"
 
 template <class Ch, class Tr>
 class gap_buffer {

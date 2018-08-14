@@ -1,13 +1,14 @@
 
 #include "userCmds.h"
+#include "LanguageMode.h"
 #include "MenuData.h"
 #include "MenuItem.h"
+#include "Preferences.h"
 #include "interpret.h"
 #include "parse.h"
 #include "Util/Input.h"
-#include "preferences.h"
-#include "LanguageMode.h"
 #include "Util/Raise.h"
+
 #include <QTextStream>
 #include <memory>
 

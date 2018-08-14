@@ -2,6 +2,7 @@
 #include "DialogAbout.h"
 #include "Util/version.h"
 #include "Util/System.h"
+
 #include <QLocale>
 
 /**

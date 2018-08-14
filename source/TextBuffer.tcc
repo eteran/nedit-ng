@@ -3,12 +3,14 @@
 #define TEXT_BUFFER_TCC_
 
 #include "TextBuffer.h"
+#include "Util/algorithm.h"
+
 #include <algorithm>
 #include <cassert>
+
 #include <QtDebug>
 #include <QApplication>
 #include <QClipboard>
-#include "Util/algorithm.h"
 
 /*
 ** Get the entire contents of a text buffer.

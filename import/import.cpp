@@ -1,10 +1,11 @@
 
-#include "interpret.h"
-#include "parse.h"
 #include "SearchType.h"
 #include "Settings.h"
-#include "Util/Input.h"
 #include "WrapStyle.h"
+#include "interpret.h"
+#include "parse.h"
+#include "Util/Input.h"
+
 #include <QRegularExpression>
 #include <QTextStream>
 #include <QVariant>
@@ -12,6 +13,7 @@
 #include <QDomDocument>
 #include <QDomElement>
 #include <QColor>
+
 #include <fstream>
 #include <iostream>
 #include <iterator>

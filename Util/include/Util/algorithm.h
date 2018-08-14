@@ -2,8 +2,9 @@
 #ifndef ALGORITHM_H_
 #define ALGORITHM_H_
 
-#include <algorithm>
 #include "string_view.h"
+#include <algorithm>
+#include <QtGlobal>
 
 // container algorithms
 

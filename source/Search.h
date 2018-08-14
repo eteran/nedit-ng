@@ -6,6 +6,7 @@
 #include "SearchType.h"
 #include "WrapMode.h"
 #include "Util/string_view.h"
+
 #include <QString>
 #include <boost/optional.hpp>
 

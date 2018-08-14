@@ -243,8 +243,8 @@ add_executable(nedit-ng
 	NewMode.h
 	PatternSet.cpp
 	PatternSet.h
-	preferences.cpp
-	preferences.h
+	Preferences.cpp
+	Preferences.h
 	Rangeset.cpp
 	Rangeset.h
 	RangesetTable.cpp

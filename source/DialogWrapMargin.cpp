@@ -1,8 +1,8 @@
 
 #include "DialogWrapMargin.h"
 #include "DocumentWidget.h"
+#include "Preferences.h"
 #include "TextArea.h"
-#include "preferences.h"
 
 #include <QMessageBox>
 

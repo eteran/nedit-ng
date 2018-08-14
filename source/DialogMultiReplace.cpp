@@ -4,7 +4,7 @@
 #include "DialogReplace.h"
 #include "DocumentWidget.h"
 #include "MainWindow.h"
-#include "preferences.h"
+#include "Preferences.h"
 
 #include <QMessageBox>
 

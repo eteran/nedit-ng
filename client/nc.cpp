@@ -1,6 +1,10 @@
 
 #include "Settings.h"
+#include "Util/ClearCase.h"
+#include "Util/FileSystem.h"
+#include "Util/ServerCommon.h"
 #include "Util/System.h"
+#include "Util/version.h"
 
 #include <QCoreApplication>
 #include <QSettings>
@@ -10,11 +14,6 @@
 #include <QLocalSocket>
 #include <QDataStream>
 #include <QThread>
-
-#include "Util/version.h"
-#include "Util/FileSystem.h"
-#include "Util/ClearCase.h"
-#include "Util/ServerCommon.h"
 
 #include <memory>
 #include <boost/optional.hpp>

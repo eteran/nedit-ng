@@ -171,6 +171,4 @@ public:
 	static std::vector<LanguageMode> LanguageModes;
 };
 
-
-
 #endif

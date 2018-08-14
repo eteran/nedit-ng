@@ -1,16 +1,17 @@
 
 #include "Search.h"
-#include "Util/utils.h"
 #include "DocumentWidget.h"
-#include "MainWindow.h"
-#include "TruncSubstitution.h"
-#include "TextBuffer.h"
-#include "WrapStyle.h"
 #include "Highlight.h"
-#include "preferences.h"
+#include "MainWindow.h"
+#include "Preferences.h"
 #include "Regex.h"
+#include "TextBuffer.h"
+#include "TruncSubstitution.h"
+#include "WrapStyle.h"
 #include "userCmds.h"
 #include "Util/algorithm.h"
+#include "Util/utils.h"
+
 #include <gsl/gsl_util>
 
 #include <algorithm>

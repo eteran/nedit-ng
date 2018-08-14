@@ -10,12 +10,12 @@
 #include "LanguageMode.h"
 #include "LineNumberArea.h"
 #include "MultiClickStates.h"
+#include "Preferences.h"
 #include "RangesetTable.h"
 #include "SmartIndentEvent.h"
 #include "TextBuffer.h"
 #include "TextEditEvent.h"
 #include "X11Colors.h"
-#include "preferences.h"
 
 #include <QApplication>
 #include <QClipboard>

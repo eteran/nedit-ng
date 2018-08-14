@@ -2,7 +2,7 @@
 #include "DialogFonts.h"
 #include "DocumentWidget.h"
 #include "Font.h"
-#include "preferences.h"
+#include "Preferences.h"
 #include <QPushButton>
 
 /**
