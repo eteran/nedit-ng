@@ -687,27 +687,25 @@ size_t DocumentWidget::matchLanguageMode() const {
 
 	// Do a regular expression search on for recognition pattern
 	const std::string first200 = buffer_->BufGetRangeEx(buffer_->BufStartOfBuffer(), buffer_->BufStartOfBuffer() + 200);
-	if(first200.empty()) {
-		return PLAIN_LANGUAGE_MODE;
-	}
+	if(!first200.empty()) {
+		for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
+			if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {
 
-	for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
-		if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {
+				Search::Result searchResult;
 
-			Search::Result searchResult;
+				const bool result = Search::SearchString(
+				            first200,
+				            Preferences::LanguageModes[i].recognitionExpr,
+				            Direction::Forward,
+				            SearchType::Regex,
+				            WrapMode::NoWrap,
+				            0,
+				            &searchResult,
+				            QString());
 
-			const bool result = Search::SearchString(
-						first200,
-						Preferences::LanguageModes[i].recognitionExpr,
-						Direction::Forward,
-						SearchType::Regex,
-						WrapMode::NoWrap,
-						0,
-						&searchResult,
-						QString());
-
-			if (result) {
-				return i;
+				if (result) {
+					return i;
+				}
 			}
 		}
 	}
