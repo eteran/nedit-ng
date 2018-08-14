@@ -880,8 +880,8 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 		if ((win->wasSelected_ && !selected) || (!win->wasSelected_ && selected)) {
 			win->wasSelected_ = selected;
 
-			/* do not refresh shell-level items (window, menu-bar etc)
-			   when motifying non-top document */
+			/* do not refresh window-level items (window, menu-bar etc) when
+			 * motifying non-top document */
 			if (isTopDocument()) {
 				win->selectionChanged(selected);
 
