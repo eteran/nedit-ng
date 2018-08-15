@@ -297,8 +297,6 @@ QLatin1String createRepeatMacro(int how) {
 */
 DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, bool iconic, const QString &languageMode, bool tabbed, bool background) {
 
-	// TODO(eteran): make bgOpen more effective ...
-
 	// first look to see if file is already displayed in a window
 	if(DocumentWidget *document = MainWindow::FindWindowWithFile(name, path)) {
 		if (!background) {
@@ -554,8 +552,8 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
 }
 
 /*
-** Change the window appearance and the window data structure to show
-** that the file it contains has been modified
+** Change the window appearance and the window to show that the file it
+** contains has been modified
 */
 void DocumentWidget::SetWindowModified(bool modified) {
 	if(auto win = MainWindow::fromDocument(this)) {

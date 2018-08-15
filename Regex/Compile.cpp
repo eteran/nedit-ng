@@ -1099,7 +1099,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 				if ((min_max[i] == 6553UL && (*pContext.Reg_Parse - '0') <= 5) || (min_max[i] <= 6552UL)) {
 
-					min_max[i] = (min_max[i] * 10UL) + static_cast<unsigned long>(*pContext.Reg_Parse - '0');
+					min_max[i] = (min_max[i] * 10UL) + static_cast<uint32_t>(*pContext.Reg_Parse - '0');
 					++pContext.Reg_Parse;
 
 					digit_present[i]++;
