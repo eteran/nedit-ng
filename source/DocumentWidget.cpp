@@ -295,13 +295,13 @@ QLatin1String createRepeatMacro(int how) {
 ** the syntax highlighting deferred, in order to speed up the file-
 ** opening operation when multiple files are being opened in succession.
 */
-DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, bool iconic, const QString &languageMode, bool tabbed, bool bgOpen) {
+DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, bool iconic, const QString &languageMode, bool tabbed, bool background) {
 
 	// TODO(eteran): make bgOpen more effective ...
 
 	// first look to see if file is already displayed in a window
 	if(DocumentWidget *document = MainWindow::FindWindowWithFile(name, path)) {
-		if (!bgOpen) {
+		if (!background) {
 			if (iconic) {
 				document->raiseDocument();
 			} else {
@@ -347,7 +347,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 		document->path_     = path;
 		document->filename_ = name;
 
-		if (!iconic && !bgOpen) {
+		if (!iconic && !background) {
 			document->raiseDocumentWindow();
 		}
 	}
@@ -376,7 +376,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 	document->RefreshTabState();
 	win->SortTabBar();
 
-	if (!bgOpen) {
+	if (!background) {
 		document->raiseDocument();
 	}
 

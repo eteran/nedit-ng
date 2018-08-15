@@ -88,7 +88,7 @@ public:
 
 public:
 	static DocumentWidget *fromArea(TextArea *area);
-	static DocumentWidget *EditExistingFileEx(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, bool iconic, const QString &languageMode, bool tabbed, bool bgOpen);
+	static DocumentWidget *EditExistingFileEx(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, bool iconic, const QString &languageMode, bool tabbed, bool background);
 	static std::vector<DocumentWidget *> allDocuments();
 
 public:
