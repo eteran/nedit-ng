@@ -256,7 +256,10 @@ std::string MacroErrorCategory::message(int ev) const {
 }
 
 std::error_code make_error_code(MacroErrorCode e) {
-	return { static_cast<int>(e), MacroErrorCategory() };
+	// NOTE(eteran): error_code uses the address of this,
+	// so it needs global lifetime
+	static MacroErrorCategory category;
+	return { static_cast<int>(e), category };
 }
 
 }
