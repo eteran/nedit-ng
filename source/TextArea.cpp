@@ -7625,34 +7625,25 @@ void TextArea::scrollUpAP(int count, ScrollUnits units, EventFlags flags) {
 
 	EMIT_EVENT_0("scroll_up");
 
-	int64_t topLineNum;
-	int horizOffset;
 	int nLines = count;
-
 	if(units == ScrollUnits::Pages) {
 		nLines *= lineStarts_.size();
 	}
 
-	TextDGetScroll(&topLineNum, &horizOffset);
-	TextDSetScroll(topLineNum - nLines, horizOffset);
+	verticalScrollBar()->setValue(verticalScrollBar()->value() - nLines);
 }
 
 void TextArea::scrollDownAP(int count, ScrollUnits units, EventFlags flags) {
 
 	EMIT_EVENT_0("scroll_down");
 
-	int64_t topLineNum;
-	int horizOffset;
 	int nLines = count;
-
 	if(units == ScrollUnits::Pages) {
 		nLines *= lineStarts_.size();
 	}
 
-	TextDGetScroll(&topLineNum, &horizOffset);
-	TextDSetScroll(topLineNum + nLines, horizOffset);
+	verticalScrollBar()->setValue(verticalScrollBar()->value() + nLines);
 }
-
 
 void TextArea::scrollLeftAP(int pixels, EventFlags flags) {
 	EMIT_EVENT_0("scroll_left");
