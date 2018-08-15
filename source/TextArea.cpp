@@ -2324,11 +2324,11 @@ void TextArea::findLineEnd(TextCursor startPos, bool startPosIsLineStart, TextCu
 }
 
 /**
- * Update the minimum, maximum, slider size, page increment, and value for the
- * horizontal scroll bar.  If scroll position is such that there is blank space
- * to the right of all lines of text, scroll back (adjust horizOffset but don't
- * redraw) to take up the slack and position the right edge of the text at the
- * right edge of the display.
+ * Update the minimum, maximum, page increment, and value for the horizontal
+ * scroll bar.  If scroll position is such that there is blank space to the
+ * right of all lines of text, scroll back (adjust horizOffset but don't redraw)
+ * to take up the slack and position the right edge of the text at the right
+ * edge of the display.
  *
  * Note, there is some cost to this routine, since it scans the whole range of
  * displayed text, particularly since it's usually called for each typed
@@ -2344,10 +2344,10 @@ bool TextArea::updateHScrollBarRange() {
 	}
 
 	const QRect viewRect = viewport()->contentsRect();
-	int maxWidth = 0;
 	const int64_t origHOffset = horizOffset_;
 
 	// Scan all the displayed lines to find the width of the longest line
+	int maxWidth = 0;
 	for (int i = 0; i < nVisibleLines_ && lineStarts_[i] != -1; i++) {
 		maxWidth = std::max<int64_t>(measureVisLine(i), maxWidth);
 	}
@@ -3203,7 +3203,7 @@ void TextArea::TextDResize(bool widthChanged) {
 	/* if the window became taller, there may be an opportunity to display
 	   more text by scrolling down */
 	if (oldVisibleLines < newVisibleLines && topLineNum_ + nVisibleLines_ > nBufferLines_) {
-		setScroll(std::max<int64_t>(1, nBufferLines_ - nVisibleLines_ + 2 + cursorVPadding_), horizOffset_, false, false);
+		setScroll(std::max<int64_t>(1, nBufferLines_ - nVisibleLines_ + 2 + cursorVPadding_), horizOffset_);
 	}
 
 	/* Update the scroll bar page increment size (as well as other scroll
@@ -3248,13 +3248,10 @@ int64_t TextArea::TextDCountLines(TextCursor startPos, TextCursor endPos, bool s
  * @brief TextArea::setScroll
  * @param topLineNum
  * @param horizOffset
- * @param updateVScrollBar
- * @param updateHScrollBar
  */
-void TextArea::setScroll(int64_t topLineNum, int horizOffset, bool updateVScrollBar, bool updateHScrollBar) {
+void TextArea::setScroll(int64_t topLineNum, int horizOffset) {
 
-	/* Do nothing if scroll position hasn't actually changed or there's no
-	   window to draw in yet */
+	/* Do nothing if scroll position hasn't actually changed */
 	if ((horizOffset_ == horizOffset && topLineNum_ == topLineNum)) {
 		return;
 	}
@@ -3268,16 +3265,11 @@ void TextArea::setScroll(int64_t topLineNum, int horizOffset, bool updateVScroll
 	// Just setting horizOffset_ is enough information for redisplay
 	horizOffset_ = horizOffset;
 
-	/* Update the scroll bar positions if requested, note: updating the
-	   horizontal scroll bars can have the further side-effect of changing
-	   the horizontal scroll position, horizOffset_ */
-	if (updateVScrollBar) {
-		updateVScrollBarRange();
-	}
-
-	if (updateHScrollBar) {
-		updateHScrollBarRange();
-	}
+	/* Update the scroll bar ranges, note: updating the horizontal scroll bars
+	 * can have the further side-effect of changing the horizontal scroll
+	 * position */
+	updateVScrollBarRange();
+	updateHScrollBarRange();
 
 	// NOTE(eteran): the original code seemed to do some cleverness
 	//               involving copying the parts that were "moved"
@@ -3389,7 +3381,7 @@ void TextArea::offsetLineStarts(int64_t newTopLineNum) {
 
 /*
 ** Set the scroll position of the text display vertically by line number and
-** horizontally by pixel offset from the left margin
+** horizontally by pixel offset
 */
 void TextArea::TextDSetScroll(int64_t topLineNum, int horizOffset) {
 
@@ -3402,7 +3394,7 @@ void TextArea::TextDSetScroll(int64_t topLineNum, int horizOffset) {
 		topLineNum = std::max(topLineNum_, nBufferLines_ + 2 - nVisibleLines_ + vPadding);
 	}
 
-	setScroll(topLineNum, horizOffset, true, true);
+	setScroll(topLineNum, horizOffset);
 }
 
 /*
@@ -3844,7 +3836,7 @@ void TextArea::TextDMakeInsertPosVisible() {
 	   to scroll to, otherwise, do the vertical scrolling first, then the
 	   horizontal */
 	if (!TextDPositionToXY(cursorPos, &x, &y)) {
-		setScroll(topLine, hOffset, true, true);
+		setScroll(topLine, hOffset);
 		if (!TextDPositionToXY(cursorPos, &x, &y)) {
 			return; // Give up, it's not worth it (but why does it fail?)
 		}
@@ -3857,7 +3849,7 @@ void TextArea::TextDMakeInsertPosVisible() {
 	}
 
 	// Do the scroll
-	setScroll(topLine, hOffset, true, true);
+	setScroll(topLine, hOffset);
 }
 
 /*

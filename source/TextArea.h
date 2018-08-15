@@ -358,7 +358,7 @@ private:
 	void resetAbsLineNum();
 	void selectLine();
 	void selectWord(int pointerX);
-	void setScroll(int64_t topLineNum, int horizOffset, bool updateVScrollBar, bool updateHScrollBar);
+	void setScroll(int64_t topLineNum, int horizOffset);
 	void showResizeNotification();
 	void simpleInsertAtCursorEx(view::string_view chars, bool allowPendingDelete);
 	void textDRedisplayRange(TextCursor start, TextCursor end);
