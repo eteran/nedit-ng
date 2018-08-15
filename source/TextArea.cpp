@@ -3402,7 +3402,6 @@ void TextArea::TextDSetScroll(int64_t topLineNum, int horizOffset) {
 		topLineNum = std::max(topLineNum_, nBufferLines_ + 2 - nVisibleLines_ + vPadding);
 	}
 
-	horizOffset = qBound(0, horizOffset, horizontalScrollBar()->maximum());
 	setScroll(topLineNum, horizOffset, true, true);
 }
 
