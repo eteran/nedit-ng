@@ -3299,12 +3299,10 @@ void TextArea::TextDSetCursorStyle(CursorStyles style) {
  * @brief TextArea::TextDBlankCursor
  */
 void TextArea::TextDBlankCursor() {
-	if (!cursorOn_) {
-		return;
+	if(cursorOn_) {
+		cursorOn_ = false;
+		textDRedisplayRange(cursorPos_ - 1, cursorPos_ + 1);
 	}
-
-	cursorOn_ = false;
-	textDRedisplayRange(cursorPos_ - 1, cursorPos_ + 1);
 }
 
 /**
