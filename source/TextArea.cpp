@@ -2339,13 +2339,13 @@ void TextArea::findLineEnd(TextCursor startPos, bool startPosIsLineStart, TextCu
  */
 bool TextArea::updateHScrollBarRange() {
 
-	const QRect viewRect = viewport()->contentsRect();
-	int maxWidth = 0;
-	const int64_t origHOffset = horizOffset_;
-
 	if(!horizontalScrollBar()->isVisible()) {
 		return false;
 	}
+
+	const QRect viewRect = viewport()->contentsRect();
+	int maxWidth = 0;
+	const int64_t origHOffset = horizOffset_;
 
 	// Scan all the displayed lines to find the width of the longest line
 	for (int i = 0; i < nVisibleLines_ && lineStarts_[i] != -1; i++) {
@@ -2360,7 +2360,7 @@ bool TextArea::updateHScrollBarRange() {
 	}
 
 	// Readjust the scroll bar
-	int sliderWidth   = viewRect.width();
+	const int sliderWidth   = viewRect.width();
 	int64_t sliderMax = std::max(maxWidth, sliderWidth + horizOffset_);
 
 	horizontalScrollBar()->setMinimum(0);
@@ -3167,19 +3167,15 @@ QColor TextArea::getRangesetColor(size_t ind, QColor bground) const {
 }
 
 /**
- * Change the size of the displayed text area
- *
  * @brief TextArea::TextDResize
- * @param width
- * @param height
+ * @param widthChanged
  */
 void TextArea::TextDResize(bool widthChanged) {
 
 	const QRect viewRect = viewport()->contentsRect();
 	const int oldVisibleLines = nVisibleLines_;
 	const int newVisibleLines = viewRect.height() / (ascent_ + descent_);
-	bool canRedraw            = true;
-	int redrawAll             = false;
+	bool redrawAll            = false;
 
 	/* In continuous wrap mode, a change in width affects the total number of
 	   lines in the buffer, and can leave the top line number incorrect, and
@@ -3206,7 +3202,7 @@ void TextArea::TextDResize(bool widthChanged) {
 
 	/* if the window became taller, there may be an opportunity to display
 	   more text by scrolling down */
-	if (canRedraw && oldVisibleLines < newVisibleLines && topLineNum_ + nVisibleLines_ > nBufferLines_) {
+	if (oldVisibleLines < newVisibleLines && topLineNum_ + nVisibleLines_ > nBufferLines_) {
 		setScroll(std::max<int64_t>(1, nBufferLines_ - nVisibleLines_ + 2 + cursorVPadding_), horizOffset_, false, false);
 	}
 
@@ -3218,15 +3214,12 @@ void TextArea::TextDResize(bool widthChanged) {
 		redrawAll = true;
 	}
 
-	// If a full redraw is needed
-	if (redrawAll && canRedraw) {
+	if (redrawAll) {
 		TextDRedisplayRect(viewRect);
 	}
 
-	// Decide if the horizontal scroll bar needs to be visible
 	hideOrShowHScrollBar();
 
-	// Redraw the calltip
 	TextDRedrawCalltip(0);
 }
 
