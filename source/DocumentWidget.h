@@ -230,7 +230,7 @@ private:
 	void BeginLearnEx();
 	void clearRedoList();
 	void clearUndoList();
-	void CloseDocument();
+	void closeDocument();
 	void DetermineLanguageMode(bool forceNewDefaults);
 	void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, CommandSource source);
 	void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const MenuItem &item, CommandSource source);

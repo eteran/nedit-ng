@@ -235,8 +235,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 	setupPrevOpenMenuActions();
 	updatePrevOpenMenu();
 
-	showISearchLine_       = Preferences::GetPrefISearchLine();
-	showLineNumbers_       = Preferences::GetPrefLineNums();
+	showISearchLine_ = Preferences::GetPrefISearchLine();
+	showLineNumbers_ = Preferences::GetPrefLineNums();
 
 	// make sure that the ifind button has an icon
 	ui.buttonIFind->setIcon(QIcon::fromTheme(tr("edit-find"), QIcon(QLatin1String("://res/edit-find.svg"))));

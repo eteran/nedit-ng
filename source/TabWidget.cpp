@@ -1,12 +1,19 @@
 
 #include "TabWidget.h"
 #include <QTabBar>
+#include <QToolButton>
 
 /**
  * @brief TabWidget::TabWidget
  * @param parent
  */
 TabWidget::TabWidget(QWidget *parent) : QTabWidget(parent) {
+
+	// NOTE(eteran): fix for issue #51
+	auto allToolButtons = findChildren<QToolButton*>();
+	for(QToolButton *button : allToolButtons) {
+		button->setFocusPolicy(Qt::NoFocus);
+	}
 }
 
 /**

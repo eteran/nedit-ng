@@ -359,7 +359,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 
 	// Open the file
 	if (!document->doOpen(name, path, flags)) {
-		document->CloseDocument();
+		document->closeDocument();
 		return nullptr;
 	}
 
@@ -559,7 +559,6 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
 */
 void DocumentWidget::SetWindowModified(bool modified) {
 	if(auto win = MainWindow::fromDocument(this)) {
-
 		if (!fileChanged_ && modified) {
 			win->ui.action_Close->setEnabled(true);
 			fileChanged_ = true;
@@ -2130,7 +2129,7 @@ void DocumentWidget::RevertToSaved() {
 			   pretty rare to be reverting something that was fine only to find
 			   that now it has too much binary data. */
 			if (!fileMissing_) {
-				CloseDocument();
+				closeDocument();
 			} else {
 				// Treat it like an externally modified file
 				lastModTime_ = 0;
@@ -2671,7 +2670,7 @@ bool DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
 			 /* File deleted/modified externally, ignored by user. */
 			 !Preferences::GetPrefWarnFileMods())) {
 
-		CloseDocument();
+		closeDocument();
 		// up-to-date windows don't have outstanding backup files to close
 	} else {
 
@@ -2696,7 +2695,7 @@ bool DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
 		case QMessageBox::Yes:
 			// Save
 			if (saveDocument()) {
-				CloseDocument();
+				closeDocument();
 			} else {
 				return false;
 			}
@@ -2704,7 +2703,7 @@ bool DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
 		case QMessageBox::No:
 			// Don't Save
 			RemoveBackupFile();
-			CloseDocument();
+			closeDocument();
 			break;
 		default:
 			return false;
@@ -2717,7 +2716,7 @@ bool DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
 /*
 ** Close a document, or an editor window
 */
-void DocumentWidget::CloseDocument() {
+void DocumentWidget::closeDocument() {
 
 	// Free smart indent macro programs
 	endSmartIndent();
@@ -2787,12 +2786,12 @@ void DocumentWidget::CloseDocument() {
 	}
 
 	// deallocate the document data structure
-	// NOTE(eteran): we re-parent the document so that it is no longer in
-	// MainWindow::openDocuments() and DocumentWidget::allDocuments()
-	this->setParent(nullptr);
+
+	// NOTE(eteran): removing the tab does not automatically delete the widget
+	// so we also schedule it for deletion later
+	win->ui.tabWidget->removeTab(win->ui.tabWidget->indexOf(this));
 	this->deleteLater();
 
-	// update window menus
 	MainWindow::UpdateWindowMenus();
 
 	// Close of window running a macro may have been disabled.
@@ -5127,7 +5126,7 @@ void DocumentWidget::finishMacroCmdExecution() {
 	   but close was deferred until completion.  This is completion, so if
 	   the window is still empty, do the close */
 	if (closeOnCompletion && !filenameSet_ && !fileChanged_) {
-		CloseDocument();
+		closeDocument();
 	}
 }
 
