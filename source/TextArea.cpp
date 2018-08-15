@@ -2360,11 +2360,8 @@ bool TextArea::updateHScrollBarRange() {
 	}
 
 	// Readjust the scroll bar
-	const int sliderWidth   = viewRect.width();
-	int64_t sliderMax = std::max(maxWidth, sliderWidth + horizOffset_);
-
 	horizontalScrollBar()->setMinimum(0);
-	horizontalScrollBar()->setMaximum(gsl::narrow<int>(std::max<int64_t>(sliderMax - viewRect.width(), 0)));
+	horizontalScrollBar()->setMaximum(gsl::narrow<int>(std::max<int64_t>(maxWidth - viewRect.width(), 0)));
 	horizontalScrollBar()->setPageStep(std::max(viewRect.width() - 100, 10));
 	horizontalScrollBar()->setValue(horizOffset_);
 
