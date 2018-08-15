@@ -2217,7 +2217,7 @@ void TextArea::TextDRedisplayRect(int left, int top, int width, int height) {
 }
 
 /**
- * Update the minimum, maximum, slider size, page increment, and value for
+ * Update the minimum, maximum, page increment, and value for
  * vertical scroll bar.
  *
  * @brief TextArea::updateVScrollBarRange
@@ -2231,20 +2231,18 @@ void TextArea::updateVScrollBarRange() {
 	// there is no need to use the approximation techniques
 	const int64_t sliderValue = topLineNum_;
 
-	/* The Vert. scroll bar value and slider size directly represent the top
-	   line number, and the number of visible lines respectively.  The scroll
-	   bar maximum value is chosen to generally represent the size of the whole
-	   buffer, with minor adjustments to keep the scroll bar widget happy */
+	/* The Vert. scroll bar value directly represents the top line number,
+	 * and the number of visible lines respectively.  The scroll bar maximum
+	 * value is chosen to generally represent the size of the whole buffer,
+	 * with minor adjustments to keep the scroll bar widget happy */
 	if(continuousWrap_) {
-		int sliderSize = std::max(nVisibleLines_, 1);
-		auto sliderMax = std::max<int64_t>(nBufferLines_ + 2 + cursorVPadding_, sliderSize + sliderValue);
+		int normalizedVisible = std::max(nVisibleLines_, 1);
+		auto sliderMax = std::max<int64_t>(nBufferLines_ + 2 + cursorVPadding_, normalizedVisible + sliderValue);
 
-		verticalScrollBar()->setMinimum(0);
 		verticalScrollBar()->setMaximum(gsl::narrow<int>(sliderMax));
 		verticalScrollBar()->setPageStep(std::max(1, nVisibleLines_ - 1));
 		verticalScrollBar()->setValue(gsl::narrow<int>(sliderValue));
 	} else {
-		verticalScrollBar()->setMinimum(0);
 		verticalScrollBar()->setMaximum(gsl::narrow<int>(std::max<int64_t>(0, nBufferLines_ - nVisibleLines_ + 2)));
 		verticalScrollBar()->setPageStep(std::max(1, nVisibleLines_ - 1));
 		verticalScrollBar()->setValue(gsl::narrow<int>(sliderValue));
@@ -2352,18 +2350,9 @@ bool TextArea::updateHScrollBarRange() {
 		maxWidth = std::max<int64_t>(measureVisLine(i), maxWidth);
 	}
 
-	/* If the scroll position is beyond what's necessary to keep all lines
-	   in view, scroll to the left to bring the end of the longest line to
-	   the right margin */
-	if (maxWidth < viewRect.width() + horizOffset_ && horizOffset_ > 0) {
-		horizOffset_ = std::max(0, maxWidth - viewRect.width());
-	}
-
 	// Readjust the scroll bar
-	horizontalScrollBar()->setMinimum(0);
-	horizontalScrollBar()->setMaximum(gsl::narrow<int>(std::max<int64_t>(maxWidth - viewRect.width(), 0)));
+	horizontalScrollBar()->setMaximum(gsl::narrow<int>(std::max<int64_t>(maxWidth - viewRect.width() + 1, 0)));
 	horizontalScrollBar()->setPageStep(std::max(viewRect.width() - 100, 10));
-	horizontalScrollBar()->setValue(horizOffset_);
 
 	// Return true if scroll position was changed
 	return origHOffset != horizOffset_;
