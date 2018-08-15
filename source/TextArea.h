@@ -224,13 +224,11 @@ public:
 	int64_t getBufferLinesCount() const;
 	std::string TextGetWrapped(TextCursor startPos, TextCursor endPos);
 	void RemoveWidgetHighlightEx();
-	void TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user);
-	void TextDGetScroll(int64_t *topLineNum, int *horizOffset);
+	void TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user);	
 	void TextDKillCalltip(int id);
 	void TextDMaintainAbsLineNum(bool state);
 	void TextDMakeSelectionVisible();
 	void TextDSetColors(const QColor &textFgP, const QColor &textBgP, const QColor &selectFgP, const QColor &selectBgP, const QColor &hiliteFgP, const QColor &hiliteBgP, const QColor &lineNoFgP, const QColor &cursorFgP);
-	void TextDSetScroll(int64_t topLineNum, int horizOffset);
 	void TextSetCursorPos(TextCursor pos);
 	void setAutoIndent(bool value);
 	void setAutoShowInsertPos(bool value);
@@ -253,7 +251,9 @@ public:
 	void bufPreDeleteCallback(TextCursor pos, int64_t nDeleted);
 	void bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText);
 
-private:	
+private:
+	void TextDSetScroll(int64_t topLineNum, int horizOffset);
+	void TextDGetScroll(int64_t *topLineNum, int *horizOffset);
 	CursorStyles getCursorStyle() const;
 	QColor getRangesetColor(size_t ind, QColor bground) const;
 	QFont getFont() const;
@@ -322,7 +322,6 @@ private:
 	void TextDRedrawCalltip(int calltipID);
 	void TextDResize(bool widthChanged);
 	void TextDSetCursorStyle(CursorStyles style);
-	void TextDSetFont(const QFont &font);
 	void TextDSetInsertPosition(TextCursor newPos);
 	void TextDSetLineNumberArea(int lineNumWidth);
 	void TextDSetWrapMode(bool wrap, int wrapMargin);
@@ -362,8 +361,7 @@ private:
 	void showResizeNotification();
 	void simpleInsertAtCursorEx(view::string_view chars, bool allowPendingDelete);
 	void textDRedisplayRange(TextCursor start, TextCursor end);
-	void updateFontHeightMetrics(const QFont &font);
-	void updateFontWidthMetrics(const QFont &font);
+	void updateFontMetrics(const QFont &font);
 	void updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t charsDeleted, int64_t linesInserted, int64_t linesDeleted, bool *scrolled);
 	void updateVScrollBarRange();
 	void wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, TextCursor maxPos, int64_t maxLines, bool startPosIsLineStart, TextCursor *retPos, int64_t *retLines, TextCursor *retLineStart, TextCursor *retLineEnd) const;

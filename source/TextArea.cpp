@@ -502,8 +502,7 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
 	buffer_     = buffer;
 	calltip_.ID = 0;
 
-	updateFontHeightMetrics(font);
-	updateFontWidthMetrics(font);
+	updateFontMetrics(font);
 
 	// set the default margins
 	viewport()->setContentsMargins(DefaultHMargin, DefaultVMargin, 0, 0);
@@ -6454,7 +6453,6 @@ void TextArea::TextDSetWrapMode(bool wrap, int wrapMargin) {
 	TextDRedisplayRect(viewRect);
 }
 
-
 void TextArea::deleteToEndOfLineAP(EventFlags flags) {
 
 	EMIT_EVENT_0("delete_to_end_of_line");
@@ -6752,7 +6750,17 @@ QFont TextArea::getFont() const {
 }
 
 void TextArea::setFont(const QFont &font) {
-	TextDSetFont(font);
+
+	font_ = font;
+	updateFontMetrics(font);
+
+	// force recalculation of font related parameters
+	TextDResize(false);
+
+	// force a recalc of the line numbers
+	setLineNumCols(getLineNumCols());
+
+	viewport()->update();
 }
 
 int TextArea::getLineNumCols() const {
@@ -6789,8 +6797,8 @@ void TextArea::pageLeftAP(EventFlags flags) {
 			ringIfNecessary(silent);
 			return;
 		}
-		int horizOffset = std::max(0, horizOffset_ - viewRect.width());
-		TextDSetScroll(topLineNum_, horizOffset);
+
+		horizontalScrollBar()->setValue(horizOffset_ - viewRect.width());
 	} else {
 		TextCursor lineStartPos = buffer_->BufStartOfLine(insertPos);
 		if (insertPos == lineStartPos && horizOffset_ == 0) {
@@ -6800,7 +6808,9 @@ void TextArea::pageLeftAP(EventFlags flags) {
 		int64_t indent = buffer_->BufCountDispChars(lineStartPos, insertPos);
 		TextCursor pos = buffer_->BufCountForwardDispChars(lineStartPos, std::max<int64_t>(0, indent - viewRect.width() / fixedFontWidth_));
 		TextDSetInsertPosition(pos);
-		TextDSetScroll(topLineNum_, std::max(0, horizOffset_ - viewRect.width()));
+
+		horizontalScrollBar()->setValue(horizOffset_ - viewRect.width());
+
 		checkMoveSelectionChange(flags, insertPos);
 		checkAutoShowInsertPos();
 		callCursorMovementCBs();
@@ -7110,19 +7120,19 @@ bool TextArea::TextDPosToLineAndCol(TextCursor pos, int64_t *lineNum, int64_t *c
 }
 
 void TextArea::addCursorMovementCallback(cursorMovedCBEx callback, void *arg) {
-	movedCallbacks_.push_back(std::make_pair(callback, arg));
+	movedCallbacks_.emplace_back(callback, arg);
 }
 
 void TextArea::addDragStartCallback(dragStartCBEx callback, void *arg) {
-	dragStartCallbacks_.push_back(std::make_pair(callback, arg));
+	dragStartCallbacks_.emplace_back(callback, arg);
 }
 
 void TextArea::addDragEndCallback(dragEndCBEx callback, void *arg) {
-	dragEndCallbacks_.push_back(std::make_pair(callback, arg));
+	dragEndCallbacks_.emplace_back(callback, arg);
 }
 
 void TextArea::addSmartIndentCallback(smartIndentCBEx callback, void *arg) {
-	smartIndentCallbacks_.push_back(std::make_pair(callback, arg));
+	smartIndentCallbacks_.emplace_back(callback, arg);
 }
 
 bool TextArea::focusNextPrevChild(bool next) {
@@ -7164,8 +7174,6 @@ int64_t TextArea::getBufferLinesCount() const {
 ** "unfinishedStyle".  Style buffer can trigger additional redisplay during
 ** a normal buffer modification if the buffer contains a primary selection
 ** (see extendRangeForStyleMods for more information on this protocol).
-**
-** Style buffers, tables and their associated memory are managed by the caller.
 */
 void TextArea::TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user) {
 	styleBuffer_           = styleBuffer;
@@ -7173,10 +7181,6 @@ void TextArea::TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &style
 	unfinishedStyle_       = unfinishedStyle;
 	unfinishedHighlightCB_ = unfinishedHighlightCB;
 	highlightCBArg_        = user;
-
-	/* Call TextDSetFont to combine font information from style table and
-	   primary font, adjust font-related parameters, and then redisplay */
-	TextDSetFont(font_);
 }
 
 QTimer *TextArea::cursorBlinkTimer() const {
@@ -7196,21 +7200,10 @@ const std::shared_ptr<TextBuffer> &TextArea::getStyleBuffer() const {
 }
 
 /**
- * @brief TextArea::updateFontHeightMetrics
+ * @brief TextArea::updateFontMetrics
  * @param font
  */
-void TextArea::updateFontHeightMetrics(const QFont &font) {
-	QFontMetrics fm(font);
-
-	ascent_  = fm.ascent();
-	descent_ = fm.descent();
-}
-
-/**
- * @brief TextArea::updateFontWidthMetrics
- * @param font
- */
-void TextArea::updateFontWidthMetrics(const QFont &font) {
+void TextArea::updateFontMetrics(const QFont &font) {
 	QFontMetrics fm(font);
 	QFontInfo    fi(font);
 
@@ -7218,27 +7211,9 @@ void TextArea::updateFontWidthMetrics(const QFont &font) {
 		qWarning("NEdit: a variable width font has been specified. This is not supported, and will result in unexpected results");
 	}
 
+	ascent_         = fm.ascent();
+	descent_        = fm.descent();
 	fixedFontWidth_ = fm.maxWidth();
-}
-
-/**
- * @brief TextArea::TextDSetFont
- * @param font
- */
-void TextArea::TextDSetFont(const QFont &font) {
-
-	updateFontHeightMetrics(font);
-	updateFontWidthMetrics(font);
-
-	font_ = font;
-
-	// force recalculation of font related parameters
-	TextDResize(false);
-
-	// force a recalc of the line numbers
-	setLineNumCols(getLineNumCols());
-
-	viewport()->update();
 }
 
 int TextArea::getLineNumWidth() const {
@@ -7332,10 +7307,10 @@ void TextArea::insertStringAP(const QString &string, EventFlags flags) {
 
 	if (smartIndent_) {
 		SmartIndentEvent smartIndent;
-		smartIndent.reason        = CHAR_TYPED;
-		smartIndent.pos           = cursorPos_;
-		smartIndent.request = 0;
-		smartIndent.charsTyped    = str;
+		smartIndent.reason     = CHAR_TYPED;
+		smartIndent.pos        = cursorPos_;
+		smartIndent.request    = 0;
+		smartIndent.charsTyped = str;
 
 		for(auto &c : smartIndentCallbacks_) {
 			c.first(this, &smartIndent, c.second);
@@ -7474,7 +7449,6 @@ int TextArea::TextDShowCalltip(const QString &text, bool anchored, CallTipPositi
 			calltip_.pos = rel_x;
 	}
 
-	// Should really bounds-check these enumerations...
 	calltip_.ID        = StaticCalltipID;
 	calltip_.anchored  = anchored;
 	calltip_.hAlign    = hAlign;
@@ -7658,12 +7632,7 @@ void TextArea::scrollRightAP(int pixels, EventFlags flags) {
 void TextArea::scrollToLineAP(int line, EventFlags flags) {
 
 	EMIT_EVENT_0("scroll_to_line");
-
-	int64_t topLineNum;
-	int horizOffset;
-
-	TextDGetScroll(&topLineNum, &horizOffset);
-	TextDSetScroll(line, horizOffset);
+	verticalScrollBar()->setValue(line);
 }
 
 void TextArea::previousDocumentAP(EventFlags flags) {

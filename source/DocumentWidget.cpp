@@ -49,6 +49,7 @@
 #include <QTemporaryFile>
 #include <QTimer>
 #include <QButtonGroup>
+#include <QScrollBar>
 
 #include <chrono>
 
@@ -1150,7 +1151,7 @@ void DocumentWidget::setTabDistance(int distance) {
 
 	if (buffer_->BufGetTabDist() != distance) {
 		TextCursor saveCursorPositions[MAX_PANES];
-		int64_t    saveVScrollPositions[MAX_PANES];
+		int        saveVScrollPositions[MAX_PANES];
 		int        saveHScrollPositions[MAX_PANES];
 
 		ignoreModify_ = true;
@@ -1163,8 +1164,9 @@ void DocumentWidget::setTabDistance(int distance) {
 		for(size_t index = 0; index < paneCount; ++index) {
 			TextArea *area = textAreas[index];
 
-			area->TextDGetScroll(&saveVScrollPositions[index], &saveHScrollPositions[index]);
-			saveCursorPositions[index] = area->TextGetCursorPos();
+			saveVScrollPositions[index] = area->verticalScrollBar()->value();
+			saveHScrollPositions[index] = area->horizontalScrollBar()->value();
+			saveCursorPositions[index]  = area->TextGetCursorPos();
 			area->setModifyingTabDist(true);
 		}
 
@@ -1175,7 +1177,8 @@ void DocumentWidget::setTabDistance(int distance) {
 
 			area->setModifyingTabDist(false);
 			area->TextSetCursorPos(saveCursorPositions[index]);
-			area->TextDSetScroll(saveVScrollPositions[index], saveHScrollPositions[index]);
+			area->verticalScrollBar()->setValue(saveVScrollPositions[index]);
+			area->horizontalScrollBar()->setValue(saveHScrollPositions[index]);
 		}
 
 		ignoreModify_ = false;
@@ -2090,9 +2093,8 @@ void DocumentWidget::RevertToSaved() {
 
 	if(auto win = MainWindow::fromDocument(this)) {
 		TextCursor insertPositions[MAX_PANES];
-		int64_t topLines[MAX_PANES];
-		int horizOffsets[MAX_PANES];
-		int openFlags = 0;
+		int        topLines[MAX_PANES];
+		int        horizOffsets[MAX_PANES];
 
 		// Can't revert untitled windows
 		if (!filenameSet_) {
@@ -2106,11 +2108,14 @@ void DocumentWidget::RevertToSaved() {
 		const std::vector<TextArea *> textAreas = textPanes();
 		const size_t panesCount = textAreas.size();
 
+		Q_ASSERT(panesCount <= MAX_PANES);
+
 		// save insert & scroll positions of all of the panes to restore later
 		for (size_t i = 0; i < panesCount; i++) {
 			TextArea *area = textAreas[i];
 			insertPositions[i] = area->TextGetCursorPos();
-			area->TextDGetScroll(&topLines[i], &horizOffsets[i]);
+			topLines[i]        = area->verticalScrollBar()->value();
+			horizOffsets[i]    = area->horizontalScrollBar()->value();
 		}
 
 		// re-read the file, update the window title if new file is different
@@ -2119,6 +2124,8 @@ void DocumentWidget::RevertToSaved() {
 
 		RemoveBackupFile();
 		clearUndoList();
+
+		int openFlags = 0;
 		openFlags |= lockReasons_.isUserLocked() ? EditFlags::PREF_READ_ONLY : 0;
 
 		if (!doOpen(name, path, openFlags)) {
@@ -2144,7 +2151,8 @@ void DocumentWidget::RevertToSaved() {
 		for (size_t i = 0; i < panesCount; i++) {
 			TextArea *area = textAreas[i];
 			area->TextSetCursorPos(insertPositions[i]);
-			area->TextDSetScroll(topLines[i], horizOffsets[i]);
+			area->verticalScrollBar()->setValue(topLines[i]);
+			area->horizontalScrollBar()->setValue(horizOffsets[i]);
 		}
 	}
 }
@@ -2476,17 +2484,18 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 void DocumentWidget::addWrapNewlines() {
 
 	TextCursor insertPositions[MAX_PANES];
-	int64_t topLines[MAX_PANES];
-	int horizOffset;
+	int topLines[MAX_PANES];
 
 	const std::vector<TextArea *> textAreas = textPanes();
 	const size_t paneCount = textAreas.size();
+
+	Q_ASSERT(paneCount <= MAX_PANES);
 
 	// save the insert and scroll positions of each pane
 	for(size_t i = 0; i < paneCount; ++i) {
 		TextArea *area = textAreas[i];
 		insertPositions[i] = area->TextGetCursorPos();
-		area->TextDGetScroll(&topLines[i], &horizOffset);
+		topLines[i]        = area->verticalScrollBar()->value();
 	}
 
 	// Modify the buffer to add wrapping
@@ -2499,7 +2508,8 @@ void DocumentWidget::addWrapNewlines() {
 	for(size_t i = 0; i < paneCount; ++i) {
 		TextArea *area = textAreas[i];
 		area->TextSetCursorPos(insertPositions[i]);
-		area->TextDSetScroll(topLines[i], 0);
+		area->verticalScrollBar()->setValue(topLines[i]);
+		area->horizontalScrollBar()->setValue(0);
 	}
 
 	/* Show the user that something has happened by turning off
@@ -7042,7 +7052,8 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 
 	int rows = area->getRows();
 
-	area->TextDSetScroll(lineNum - (rows / 4), 0);
+	area->verticalScrollBar()->setValue(lineNum - (rows / 4));
+	area->horizontalScrollBar()->setValue(0);
 	area->TextSetCursorPos(TextCursor(endPos));
 }
 
