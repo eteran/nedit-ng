@@ -887,9 +887,9 @@ void TextArea::autoScrollTimerTimeout() {
 	const QRect viewRect = viewport()->contentsRect();
 	int cursorX;
 	int y;
-	const int fontWidth  = fixedFontWidth_;
-	const int fontHeight = ascent_ + descent_;
-	QPoint mouseCoord    = mouseCoord_;
+	const int fontWidth     = fixedFontWidth_;
+	const int fontHeight    = ascent_ + descent_;
+	const QPoint mouseCoord = mouseCoord_;
 
 	/* For vertical autoscrolling just dragging the mouse outside of the top
 	   or bottom of the window is sufficient, for horizontal (non-rectangular)

@@ -378,7 +378,6 @@ private:
 	QColor highlightFGColor_        = Qt::white;      // Highlight colors are used when flashing matching parens
 	QColor lineNumFGColor_          = Qt::black;      // Color for drawing line numbers
 	QLabel *resizeWidget_           = nullptr;
-	QMenu *bgMenu_                  = nullptr;
 	QTimer *autoScrollTimer_        = nullptr;
 	QTimer *clickTimer_             = nullptr;
 	QTimer *cursorBlinkTimer_       = nullptr;
@@ -402,7 +401,6 @@ private:
 	bool cursorOn_                  = false;
 	bool modifyingTabDist_          = false;          // Whether tab distance is being modified
 	bool needAbsTopLineNum_         = false;          // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display
-	bool pointerHidden_             = false;          // true if the mouse pointer is hidden
 	bool suppressResync_            = false;          // Suppress resynchronization of line starts during buffer updates
 	bool showTerminalSizeHint_      = false;
 	bool autoShowInsertPos_         = true;
