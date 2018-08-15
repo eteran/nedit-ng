@@ -1269,10 +1269,8 @@ void TextArea::resizeEvent(QResizeEvent *event) {
 
 	Q_UNUSED(event);
 
-	const QRect viewRect = viewport()->contentsRect();
-
-	// Resize the text display that the widget uses to render text
-	TextDResize(viewRect.width(), viewRect.height());
+	// update the size sensitive variables
+	TextDResize(true);
 
 	showResizeNotification();
 
@@ -3175,19 +3173,18 @@ QColor TextArea::getRangesetColor(size_t ind, QColor bground) const {
  * @param width
  * @param height
  */
-void TextArea::TextDResize(int width, int height) {
+void TextArea::TextDResize(bool widthChanged) {
 
 	const QRect viewRect = viewport()->contentsRect();
 	const int oldVisibleLines = nVisibleLines_;
-	const int newVisibleLines = height / (ascent_ + descent_);
-	const int oldWidth        = viewRect.width();
+	const int newVisibleLines = viewRect.height() / (ascent_ + descent_);
 	bool canRedraw            = true;
 	int redrawAll             = false;
 
 	/* In continuous wrap mode, a change in width affects the total number of
 	   lines in the buffer, and can leave the top line number incorrect, and
 	   the top character no longer pointing at a valid line start */
-	if (continuousWrap_ && wrapMargin_ == 0 && width != oldWidth) {
+	if (continuousWrap_ && wrapMargin_ == 0 && widthChanged) {
 		const TextCursor oldFirstChar = firstChar_;
 		nBufferLines_ = TextDCountLines(buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer(), true);
 		firstChar_    = TextDStartOfLine(firstChar_);
@@ -7257,14 +7254,13 @@ void TextArea::updateFontWidthMetrics(const QFont &font) {
  */
 void TextArea::TextDSetFont(const QFont &font) {
 
-	const QRect viewRect = viewport()->contentsRect();
 	updateFontHeightMetrics(font);
 	updateFontWidthMetrics(font);
 
 	font_ = font;
 
 	// force recalculation of font related parameters
-	TextDResize(viewRect.width(), viewRect.height());
+	TextDResize(false);
 
 	// force a recalc of the line numbers
 	setLineNumCols(getLineNumCols());

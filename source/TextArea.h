@@ -320,7 +320,7 @@ private:
 	void TextDRedisplayRect(const QRect &rect);
 	void TextDRedisplayRect(int left, int top, int width, int height);
 	void TextDRedrawCalltip(int calltipID);
-	void TextDResize(int width, int height);
+	void TextDResize(bool widthChanged);
 	void TextDSetCursorStyle(CursorStyles style);
 	void TextDSetFont(const QFont &font);
 	void TextDSetInsertPosition(TextCursor newPos);
