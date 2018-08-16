@@ -2258,7 +2258,7 @@ static std::error_code minMS(DocumentWidget *document, Arguments arguments, Data
 
 	Q_UNUSED(document);
 
-	if (arguments.size() == 1) {
+	if (arguments.size() < 2) {
 		return MacroErrorCode::TooFewArguments;
 	}
 
@@ -2284,7 +2284,7 @@ static std::error_code maxMS(DocumentWidget *document, Arguments arguments, Data
 
 	Q_UNUSED(document);
 
-	if (arguments.size() == 1) {
+	if (arguments.size() < 2) {
 		return MacroErrorCode::TooFewArguments;
 	}
 
