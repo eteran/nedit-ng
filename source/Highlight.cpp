@@ -50,8 +50,9 @@ const auto NEDIT_DEFAULT_SEL_BG     = QLatin1String("#43ace8");
 const auto NEDIT_DEFAULT_HI_FG      = QLatin1String("white");        /* These are colors for flashing */
 const auto NEDIT_DEFAULT_HI_BG      = QLatin1String("red");          /* matching parens. */
 const auto NEDIT_DEFAULT_LINENO_FG  = QLatin1String("black");
+const auto NEDIT_DEFAULT_LINENO_BG  = QLatin1String("#d6d2d0");
 const auto NEDIT_DEFAULT_CURSOR_FG  = QLatin1String("black");
-const auto NEDIT_DEFAULT_CURSOR_BG  = QLatin1String("#d6d2d0");
+
 
 /* Initial forward expansion of parsing region in incremental reparsing,
    when style changes propagate forward beyond the original modification.
@@ -1222,10 +1223,10 @@ void Highlight::loadTheme() {
 		Settings::colors[ColorTypes::SELECT_BG_COLOR] = selection.attribute(QLatin1String("background"), NEDIT_DEFAULT_SEL_BG);
 		Settings::colors[ColorTypes::SELECT_FG_COLOR] = selection.attribute(QLatin1String("foreground"), NEDIT_DEFAULT_SEL_FG);
 		Settings::colors[ColorTypes::HILITE_BG_COLOR] = highlight.attribute(QLatin1String("background"), NEDIT_DEFAULT_HI_BG);
-		Settings::colors[ColorTypes::HILITE_FG_COLOR] = highlight.attribute(QLatin1String("foreground"), NEDIT_DEFAULT_HI_FG);
-		Settings::colors[ColorTypes::CURSOR_FG_COLOR] = cursor.attribute(QLatin1String("foreground"),    NEDIT_DEFAULT_LINENO_FG);
-		Settings::colors[ColorTypes::LINENO_FG_COLOR] = lineno.attribute(QLatin1String("foreground"),    NEDIT_DEFAULT_CURSOR_FG);
-		Settings::colors[ColorTypes::LINENO_BG_COLOR] = lineno.attribute(QLatin1String("background"),    NEDIT_DEFAULT_CURSOR_BG);
+		Settings::colors[ColorTypes::HILITE_FG_COLOR] = highlight.attribute(QLatin1String("foreground"), NEDIT_DEFAULT_HI_FG);		
+		Settings::colors[ColorTypes::LINENO_FG_COLOR] = lineno.attribute(QLatin1String("foreground"),    NEDIT_DEFAULT_LINENO_FG);
+		Settings::colors[ColorTypes::LINENO_BG_COLOR] = lineno.attribute(QLatin1String("background"),    NEDIT_DEFAULT_LINENO_BG);
+		Settings::colors[ColorTypes::CURSOR_FG_COLOR] = cursor.attribute(QLatin1String("foreground"),    NEDIT_DEFAULT_CURSOR_FG);
 
 		// load styles for syntax highlighting...
 		QDomElement style = root.firstChildElement(QLatin1String("style"));
