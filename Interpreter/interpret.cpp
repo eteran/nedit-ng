@@ -40,7 +40,7 @@ constexpr const char StringToNumberMsg[]         = "string could not be converte
 constexpr const char CantConvertArrayToInteger[] = "can't convert array to integer";
 constexpr const char CantConvertArrayToString[]  = "can't convert array to string";
 
-constexpr auto MacroTooLarge = QLatin1String("macro too large");
+const auto MacroTooLarge = QLatin1String("macro too large");
 
 // Global symbols and function definitions
 std::deque<Symbol *> GlobalSymList;
