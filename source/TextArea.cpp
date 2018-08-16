@@ -310,6 +310,11 @@ struct InputHandler {
 
 // NOTE(eteran): a nullptr handler just means "beep"
 constexpr InputHandler inputHandlers[] = {
+
+    // Keyboard zoom support
+    { Qt::Key_Equal,     Qt::ControlModifier,                                                               &TextArea::ZoomInAP,                         TextArea::NoneFlag }, // zoom-in()
+    { Qt::Key_Minus,     Qt::ControlModifier,                                                               &TextArea::ZoomOutAP,                        TextArea::NoneFlag }, // zoom-out()
+
 	{ Qt::Key_PageUp,    Qt::ControlModifier,                                                               &TextArea::previousDocumentAP,               TextArea::NoneFlag }, // previous-document()
 	{ Qt::Key_PageDown,  Qt::ControlModifier,                                                               &TextArea::nextDocumentAP,                   TextArea::NoneFlag }, // next-document()
 	{ Qt::Key_PageUp,    Qt::ShiftModifier | Qt::AltModifier,                                               &TextArea::previousPageAP,                   TextArea::ExtendFlag | TextArea::RectFlag },  // previous-page(extend, rect)
