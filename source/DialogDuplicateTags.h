@@ -1,6 +1,6 @@
 
-#ifndef DIALOG_ABOUT_H_
-#define DIALOG_ABOUT_H_
+#ifndef DIALOG_DUPLICATE_TAGS_H_
+#define DIALOG_DUPLICATE_TAGS_H_
 
 #include "Dialog.h"
 #include "ui_DialogDuplicateTags.h"
