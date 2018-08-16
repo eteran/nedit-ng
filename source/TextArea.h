@@ -246,6 +246,7 @@ public:
 	void setStyleBuffer(const std::shared_ptr<TextBuffer> &buffer);
 	void setWordDelimiters(const std::string &delimiters);
 	void setWrapMargin(int value);
+	int lineNumberAreaWidth() const;
 
 public:
 	void bufPreDeleteCallback(TextCursor pos, int64_t nDeleted);
@@ -286,8 +287,7 @@ private:
 	bool wrapUsesCharacter(TextCursor lineEndPos) const;
 	boost::optional<TextCursor> spanBackward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const;
 	boost::optional<TextCursor> spanForward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const;
-	int getLineNumWidth() const;
-	int lineNumberAreaWidth() const;
+	int getLineNumWidth() const;	
 	int stringWidth(int length) const;
 	int64_t TextDCountLines(TextCursor startPos, TextCursor endPos, bool startPosIsLineStart);
 	int64_t TextDOffsetWrappedColumn(int64_t row, int64_t column) const;
