@@ -6269,7 +6269,7 @@ std::unique_ptr<Regex> DocumentWidget::compileRegexAndWarn(const QString &re) {
 
 		constexpr int MaxLength = 4096;
 
-		/* Prevent buffer overflow. If the re is too long, truncate it and append ... */
+		/* If the regex is too long, truncate it and append ... */
 		QString boundedRe = re;
 
 		if (boundedRe.size() > MaxLength) {

@@ -4441,10 +4441,10 @@ std::string TextArea::createIndentStringEx(TextBuffer *buf, int64_t bufOffset, T
 	   indent more difficult for users and make everything more complicated */
 	if (smartIndent_ && (lineStartPos == 0 || buf == buffer_)) {
 		SmartIndentEvent smartIndent;
-		smartIndent.reason        = NEWLINE_INDENT_NEEDED;
-		smartIndent.pos           = lineEndPos + bufOffset;
-		smartIndent.request = 0;
-		smartIndent.charsTyped    = view::string_view();
+		smartIndent.reason     = NEWLINE_INDENT_NEEDED;
+		smartIndent.pos        = lineEndPos + bufOffset;
+		smartIndent.request    = 0;
+		smartIndent.charsTyped = view::string_view();
 
 		for(auto &c : smartIndentCallbacks_) {
 			c.first(this, &smartIndent, c.second);
