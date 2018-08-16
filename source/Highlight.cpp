@@ -1042,12 +1042,12 @@ TextCursor Highlight::forwardOneContext(TextBuffer *buf, const ReparseContext &c
 ** sub-expression, "subExpr", of regular expression "re" applies to the
 ** corresponding portion of "string".
 */
-void Highlight::recolorSubexpr(const std::unique_ptr<Regex> &re, size_t subexpr, int style, const char *string, char *styleString) {
+void Highlight::recolorSubexpr(const std::unique_ptr<Regex> &re, size_t subexpr, uint8_t style, const char *string, char *styleString) {
 
 	const char *stringPtr = re->startp[subexpr];
 	char *stylePtr        = &styleString[stringPtr - string];
 
-	fillStyleString(stringPtr, stylePtr, re->endp[subexpr], static_cast<uint8_t>(style), nullptr);
+	fillStyleString(stringPtr, stylePtr, re->endp[subexpr], style, nullptr);
 }
 
 /*
