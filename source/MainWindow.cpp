@@ -2040,7 +2040,7 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 		if(match.hasMatch()) {
 			// we need to do this because someone could write #include "path/to/file.h"
 			// which confuses QDir..
-			QFileInfo fullPath = tr("%1/%2").arg(searchPath, match.captured(1));
+			QFileInfo fullPath = tr("%1/%2").arg(document->path_, match.captured(1));
 			searchName = fullPath.fileName();
 			searchPath = fullPath.path();
 		} else {
