@@ -26,7 +26,7 @@ QSize LineNumberArea::sizeHint() const {
  */
 void LineNumberArea::paintEvent(QPaintEvent *event) {
 
-	const int lineHeight = area_->ascent_ + area_->descent_;
+	const int lineHeight = area_->fixedFontHeight_;
 
 	QPainter painter(this);
 

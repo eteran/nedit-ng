@@ -887,7 +887,7 @@ void TextArea::autoScrollTimerTimeout() {
 	int cursorX;
 	int y;
 	const int fontWidth     = fixedFontWidth_;
-	const int fontHeight    = ascent_ + descent_;
+	const int fontHeight    = fixedFontHeight_;
 	const QPoint mouseCoord = mouseCoord_;
 
 	/* For vertical autoscrolling just dragging the mouse outside of the top
@@ -1242,7 +1242,7 @@ void TextArea::paintEvent(QPaintEvent *event) {
 	const int height = rect.height();
 
 	// find the line number range of the display
-	const int fontHeight = ascent_ + descent_;
+	const int fontHeight = fixedFontHeight_;
 	const int firstLine  = (top - viewRect.top() - fontHeight + 1) / fontHeight;
 	const int lastLine   = (top + height - viewRect.top()) / fontHeight;
 
@@ -2624,7 +2624,7 @@ void TextArea::redisplayLineEx(int visLineNum, int64_t leftCharIndex, int64_t ri
 	}
 
 	// Calculate y coordinate of the string to draw
-	const int fontHeight = ascent_ + descent_;
+	const int fontHeight = fixedFontHeight_;
 	const int y = viewRect.top() + visLineNum * fontHeight;
 
 	// NOTE(eteran): it seems unecessary, but using 0/INT_MAX for the left/right
@@ -2670,7 +2670,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	}
 
 	// Calculate y coordinate of the string to draw
-	const int fontHeight = ascent_ + descent_;
+	const int fontHeight = fixedFontHeight_;
 	const int y = viewRect.top() + visLineNum * fontHeight;
 
 	// Get the text, length, and  buffer position of the line to display
@@ -3010,7 +3010,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int64_t x, int y, i
 			                static_cast<int>(std::max<int64_t>(x, viewRect.left())),
 			                y,
 			                static_cast<int>(toX - std::max<int64_t>(x, viewRect.left())),
-			                ascent_ + descent_
+			                fixedFontHeight_
 			                ),
 			            bground);
 		}
@@ -3025,11 +3025,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int64_t x, int y, i
 
 	const auto s = asciiToUnicode(string, nChars);
 
-	QRect rect(
-				static_cast<int>(x),
-				y,
-				static_cast<int>(toX - x),
-				ascent_ + descent_);
+	QRect rect(static_cast<int>(x), y, static_cast<int>(toX - x), fixedFontHeight_);
 
 	painter->save();
 	painter->setFont(renderFont);
@@ -3052,8 +3048,8 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 	const QRect viewRect = viewport()->contentsRect();
 	QPainterPath path;
 
-	const int fontWidth  = TextDMinFontWidth();
-	int fontHeight = ascent_ + descent_;
+	const int fontWidth = fixedFontWidth_;
+	int fontHeight      = fixedFontHeight_;
 
 	// NOTE(eteran): some minor adjustments to get things to align "just right"
 	// This wasn't needed when using bitmapped X11 fonts, so I assume there is
@@ -3159,7 +3155,7 @@ void TextArea::TextDResize(bool widthChanged) {
 
 	const QRect viewRect = viewport()->contentsRect();
 	const int oldVisibleLines = nVisibleLines_;
-	const int newVisibleLines = viewRect.height() / (ascent_ + descent_);
+	const int newVisibleLines = viewRect.height() / fixedFontHeight_;
 	bool redrawAll            = false;
 
 	/* In continuous wrap mode, a change in width affects the total number of
@@ -3431,7 +3427,7 @@ void TextArea::TextDRedrawCalltip(int calltipID) {
 		rel_x = boost::get<int>(calltip_.pos);
 	}
 
-	const int lineHeight  = ascent_ + descent_;
+	const int lineHeight  = fixedFontHeight_;
 	const int tipWidth    = calltipWidget_->width();
 	const int tipHeight   = calltipWidget_->height();
 
@@ -3641,7 +3637,7 @@ bool TextArea::TextDPositionToXY(TextCursor pos, int *x, int *y) const {
 		return false;
 	}
 
-	const int fontHeight = ascent_ + descent_;
+	const int fontHeight = fixedFontHeight_;
 	*y = viewRect.top() + visLineNum * fontHeight + fontHeight / 2;
 
 	/* Get the text, length, and  buffer position of the line. If the position
@@ -5025,8 +5021,8 @@ void TextArea::xyToUnconstrainedPos(const QPoint &pos, int64_t *row, int64_t *co
 void TextArea::xyToUnconstrainedPos(int x, int y, int64_t *row, int64_t *column, PositionTypes posType) const {
 
 	const QRect viewRect = viewport()->contentsRect();
-	const int fontHeight = ascent_ + descent_;
-	const int fontWidth = fixedFontWidth_;
+	const int fontHeight = fixedFontHeight_;
+	const int fontWidth  = fixedFontWidth_;
 
 	// Find the visible line number corresponding to the y coordinate
 	*row = (y - viewRect.top()) / fontHeight;
@@ -5351,7 +5347,7 @@ TextCursor TextArea::xyToPos(int x, int y, PositionTypes posType) const {
 
 	// Find the visible line number corresponding to the y coordinate
 	const QRect viewRect = viewport()->contentsRect();
-	int fontHeight = ascent_ + descent_;
+	int fontHeight = fixedFontHeight_;
 	int visLineNum = (y - viewRect.top()) / fontHeight;
 
 	if (visLineNum < 0) {
@@ -5716,7 +5712,7 @@ void TextArea::mousePanAP(QMouseEvent *event, EventFlags flags) {
 
 	EMIT_EVENT_0("mouse_pan");
 
-	int lineHeight = ascent_ + descent_;
+	const int lineHeight = fixedFontHeight_;
 	int64_t topLineNum;
 	int horizOffset;
 
@@ -6014,7 +6010,7 @@ void TextArea::secondaryAdjustAP(QMouseEvent *event, EventFlags flags) {
 void TextArea::BeginBlockDrag() {
 
 	const QRect viewRect = viewport()->contentsRect();
-	const int fontHeight = ascent_ + descent_;
+	const int fontHeight = fixedFontHeight_;
 	const int fontWidth  = fixedFontWidth_;
 	const TextBuffer::Selection *sel = &buffer_->primary;
 	int64_t nLines;
@@ -6109,7 +6105,7 @@ void TextArea::BeginBlockDrag() {
 */
 void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 
-	const int fontHeight         = ascent_ + descent_;
+	const int fontHeight         = fixedFontHeight_;
 	const int fontWidth          = fixedFontWidth_;
 	auto &origBuf                = dragOrigBuf_;
 	int dragXOffset              = dragXOffset_;
@@ -6206,8 +6202,8 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	   redo operation begun above */
 	if (dragType == DRAG_MOVE || dragType == DRAG_OVERLAY_MOVE) {
 		if (rectangular || overlay) {
-			int64_t prevLen = tempBuf.BufGetLength();
-			int64_t origSelLen = origSelLineEnd - origSelLineStart;
+			const int64_t prevLen    = tempBuf.BufGetLength();
+			const int64_t origSelLen = origSelLineEnd - origSelLineStart;
 
 			if (overlay) {
 				tempBuf.BufClearRect(TextCursor(origSelLineStart - tempStart), TextCursor(origSelLineEnd - tempStart), origSel->rectStart, origSel->rectEnd);
@@ -6415,16 +6411,17 @@ void TextArea::setWrapMargin(int value) {
 void TextArea::setLineNumCols(int value) {
 
 	lineNumCols_ = value;
-	TextDSetLineNumberArea(fixedFontWidth_ * lineNumCols_);
+	setLineNumberAreaWidth(fixedFontWidth_ * lineNumCols_);
 }
 
 /*
-** Define area for drawing line numbers.  A width of 0 disables line
+** Define area for drawing line numbers. A width of 0 disables line
 ** number drawing.
 */
-void TextArea::TextDSetLineNumberArea(int lineNumWidth) {
+void TextArea::setLineNumberAreaWidth(int lineNumWidth) {
 	lineNumberArea_->resize(lineNumWidth, lineNumberArea_->height());
 	setViewportMargins(lineNumberArea_->width(), 0, 0, 0);
+	lineNumberArea_->update();
 }
 
 void TextArea::TextDSetWrapMode(bool wrap, int wrapMargin) {
@@ -6496,7 +6493,7 @@ void TextArea::cutPrimaryAP(EventFlags flags) {
 
 	const TextBuffer::Selection &primary = buffer_->primary;
 
-	bool rectangular = flags & RectFlag;
+	const bool rectangular = flags & RectFlag;
 	TextCursor insertPos;
 
 	cancelDrag();
@@ -6505,16 +6502,16 @@ void TextArea::cutPrimaryAP(EventFlags flags) {
 	}
 
 	if (primary.selected && rectangular) {
-		std::string textToCopy = buffer_->BufGetSelectionTextEx();
+		const std::string textToCopy = buffer_->BufGetSelectionTextEx();
 		insertPos = cursorPos_;
-		int64_t col = buffer_->BufCountDispChars(buffer_->BufStartOfLine(insertPos), insertPos);
+		const int64_t col = buffer_->BufCountDispChars(buffer_->BufStartOfLine(insertPos), insertPos);
 		buffer_->BufInsertColEx(col, insertPos, textToCopy, nullptr, nullptr);
 		TextDSetInsertPosition(buffer_->BufCursorPosHint());
 
 		buffer_->BufRemoveSelected();
 		checkAutoShowInsertPos();
 	} else if (primary.selected) {
-		std::string textToCopy = buffer_->BufGetSelectionTextEx();
+		const std::string textToCopy = buffer_->BufGetSelectionTextEx();
 		insertPos = cursorPos_;
 		buffer_->BufInsertEx(insertPos, textToCopy);
 		TextDSetInsertPosition(insertPos + textToCopy.size());
@@ -6532,8 +6529,8 @@ void TextArea::cutPrimaryAP(EventFlags flags) {
 }
 
 /*
-** Insert the contents of the PRIMARY selection at the cursor position in
-** widget "w" and delete the contents of the selection in its current owner
+** Insert the contents of the PRIMARY selection at the cursor position and
+** deletes the contents of the selection in its current owner
 ** (if the selection owner supports DELETE targets).
 */
 void TextArea::MovePrimarySelection(bool isColumnar) {
@@ -6566,8 +6563,7 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 
 	const TextBuffer::Selection &secondary = buffer_->secondary;
 	const TextBuffer::Selection &primary   = buffer_->primary;
-
-	int rectangular = secondary.rectangular;
+	const bool rectangular                 = secondary.rectangular;
 
 	endDrag();
 
@@ -6715,13 +6711,11 @@ int64_t TextArea::getAbsTopLineNum() const {
 }
 
 QColor TextArea::getForegroundColor() const {
-	QPalette pal = palette();
-	return pal.color(QPalette::Text);
+	return palette().color(QPalette::Text);
 }
 
 QColor TextArea::getBackgroundColor() const {
-	QPalette pal = palette();
-	return pal.color(QPalette::Base);
+	return palette().color(QPalette::Base);
 }
 
 void TextArea::setReadOnly(bool value) {
@@ -6729,17 +6723,19 @@ void TextArea::setReadOnly(bool value) {
 }
 
 void TextArea::setOverstrike(bool value) {
-	overstrike_ = value;
+	if(overstrike_ != value) {
+		overstrike_ = value;
 
-	switch(cursorStyle_) {
-	case CursorStyles::Block:
-		setCursorStyle(CursorStyles::Normal);
-		break;
-	case CursorStyles::Normal:
-		setCursorStyle(CursorStyles::Block);
-		break;
-	default:
-		break;
+		switch(cursorStyle_) {
+		case CursorStyles::Block:
+			setCursorStyle(CursorStyles::Normal);
+			break;
+		case CursorStyles::Normal:
+			setCursorStyle(CursorStyles::Block);
+			break;
+		default:
+			break;
+		}
 	}
 }
 
@@ -7210,9 +7206,10 @@ void TextArea::updateFontMetrics(const QFont &font) {
 		qWarning("NEdit: a variable width font has been specified. This is not supported, and will result in unexpected results");
 	}
 
-	ascent_         = fm.ascent();
-	descent_        = fm.descent();
-	fixedFontWidth_ = fm.maxWidth();
+	ascent_          = fm.ascent();
+	descent_         = fm.descent();
+	fixedFontWidth_  = fm.maxWidth();
+	fixedFontHeight_ = ascent_ + descent_;
 }
 
 int TextArea::getLineNumWidth() const {
@@ -7221,7 +7218,7 @@ int TextArea::getLineNumWidth() const {
 
 int TextArea::getRows() const {
 	const QRect viewRect = viewport()->contentsRect();
-	return viewRect.height() / (ascent_ + descent_);
+	return viewRect.height() / fixedFontHeight_;
 }
 
 QMargins TextArea::getMargins() const {

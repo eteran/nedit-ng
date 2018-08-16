@@ -321,7 +321,7 @@ private:
 	void TextDResize(bool widthChanged);
 	void setCursorStyle(CursorStyles style);
 	void TextDSetInsertPosition(TextCursor newPos);
-	void TextDSetLineNumberArea(int lineNumWidth);
+	void setLineNumberAreaWidth(int lineNumWidth);
 	void TextDSetWrapMode(bool wrap, int wrapMargin);
 	void TextDSetupBGClassesEx(const QString &str);
 	void TextDUnblankCursor();
@@ -434,6 +434,7 @@ private:
 	int descent_;
 	int emulateTabs_;
 	int fixedFontWidth_;                            // Font width if all current fonts are fixed and match in width
+	int fixedFontHeight_;
 	int wrapMargin_;
 	int64_t dragDeleted_;                           // # of characters deleted at drag destination in last drag position
 	int64_t dragInserted_;                          // # of characters inserted at drag destination in last drag position
