@@ -1055,7 +1055,7 @@ void Highlight::recolorSubexpr(const std::unique_ptr<Regex> &re, size_t subexpr,
 */
 HighlightData *Highlight::patternOfStyle(const std::unique_ptr<HighlightData[]> &patterns, int style) {
 
-	for (int i = 0; patterns[i].style != 0; ++i) {
+	for (size_t i = 0; patterns[i].style != 0; ++i) {
 		if (patterns[i].style == style) {
 			return &patterns[i];
 		}
