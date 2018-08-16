@@ -560,11 +560,11 @@ void TextArea::toggleOverstrikeAP(EventFlags flags) {
 
 	if (overstrike_) {
 		overstrike_ = false;
-		TextDSetCursorStyle(CursorStyles::Normal);
+		setCursorStyle(CursorStyles::Normal);
 	} else {
 		overstrike_ = true;
 		if (cursorStyle_ == CursorStyles::Normal) {
-			TextDSetCursorStyle(CursorStyles::Block);
+			setCursorStyle(CursorStyles::Block);
 		}
 	}
 }
@@ -963,9 +963,9 @@ void TextArea::focusInEvent(QFocusEvent *event) {
 
 	// Change the cursor to active style
 	if (overstrike_) {
-		TextDSetCursorStyle(CursorStyles::Block);
+		setCursorStyle(CursorStyles::Block);
 	} else {
-		TextDSetCursorStyle(CursorStyles::Normal);
+		setCursorStyle(CursorStyles::Normal);
 	}
 
 	TextDUnblankCursor();
@@ -976,7 +976,7 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
 
 	cursorBlinkTimer_->stop();
 
-	TextDSetCursorStyle(CursorStyles::Caret);
+	setCursorStyle(CursorStyles::Caret);
 	TextDUnblankCursor();
 
 	// If there's a calltip displayed, kill it.
@@ -3270,10 +3270,10 @@ void TextArea::setScroll(int64_t topLineNum, int horizOffset) {
 }
 
 /**
- * @brief TextArea::TextDSetCursorStyle
+ * @brief TextArea::setCursorStyle
  * @param style
  */
-void TextArea::TextDSetCursorStyle(CursorStyles style) {
+void TextArea::setCursorStyle(CursorStyles style) {
 	cursorStyle_ = style;
 	if (cursorOn_) {
 		textDRedisplayRange(cursorPos_ - 1, cursorPos_ + 1);
@@ -3309,10 +3309,10 @@ void TextArea::TextDUnblankCursor() {
 */
 void TextArea::offsetLineStarts(int64_t newTopLineNum) {
 
-	const int64_t oldTopLineNum    = topLineNum_;
-	const TextCursor oldFirstChar  = firstChar_;
-	const int64_t lineDelta        = newTopLineNum - oldTopLineNum;
-	const int nVisLines            = nVisibleLines_;
+	const int64_t oldTopLineNum   = topLineNum_;
+	const TextCursor oldFirstChar = firstChar_;
+	const int64_t lineDelta       = newTopLineNum - oldTopLineNum;
+	const int nVisLines           = nVisibleLines_;
 
 	// If there was no offset, nothing needs to be changed
 	if (lineDelta == 0) {
@@ -3675,9 +3675,9 @@ void TextArea::TextDSetColors(const QColor &textFgP, const QColor &textBgP, cons
 
 	const QRect viewRect = viewport()->contentsRect();
 	QPalette pal = palette();
-	pal.setColor(QPalette::Text, textFgP);              // foreground color
-	pal.setColor(QPalette::Base, textBgP);              // background
-	pal.setColor(QPalette::Highlight, selectBgP);       // highlight background
+	pal.setColor(QPalette::Text,            textFgP);   // foreground color
+	pal.setColor(QPalette::Base,            textBgP);   // background
+	pal.setColor(QPalette::Highlight,       selectBgP); // highlight background
 	pal.setColor(QPalette::HighlightedText, selectFgP); // highlight foreground
 	setPalette(pal);
 
@@ -3947,7 +3947,7 @@ void TextArea::keyMoveExtendSelection(TextCursor origPos, bool rectangular) {
 		const int64_t newCol = buffer_->BufCountDispChars(buffer_->BufStartOfLine(newPos), newPos);
 		TextCursor anchor;
 
-		if (abs(newPos - sel->start) < abs(newPos - sel->end)) {
+		if (std::abs(newPos - sel->start) < std::abs(newPos - sel->end)) {
 			anchor = sel->end;
 		} else {
 			anchor = sel->start;
@@ -3958,7 +3958,11 @@ void TextArea::keyMoveExtendSelection(TextCursor origPos, bool rectangular) {
 		anchor_     = anchor;
 		rectAnchor_ = rectAnchor;
 
-		buffer_->BufRectSelect(buffer_->BufStartOfLine(std::min(anchor, newPos)), buffer_->BufEndOfLine(std::max(anchor, newPos)), std::min(rectAnchor, newCol), std::max(rectAnchor, newCol));
+		buffer_->BufRectSelect(
+		            buffer_->BufStartOfLine(std::min(anchor, newPos)),
+		            buffer_->BufEndOfLine(std::max(anchor, newPos)),
+		            std::min(rectAnchor, newCol),
+		            std::max(rectAnchor, newCol));
 
 	} else if (sel->selected && sel->rectangular) { // rect -> plain
 
@@ -3966,7 +3970,7 @@ void TextArea::keyMoveExtendSelection(TextCursor origPos, bool rectangular) {
 		const TextCursor endPos   = buffer_->BufCountForwardDispChars(buffer_->BufStartOfLine(sel->end),   sel->rectEnd);
 		TextCursor anchor;
 
-		if (abs(origPos - startPos) < abs(origPos - endPos)) {
+		if (std::abs(origPos - startPos) < std::abs(origPos - endPos)) {
 			anchor = endPos;
 		} else {
 			anchor = startPos;
@@ -3978,7 +3982,7 @@ void TextArea::keyMoveExtendSelection(TextCursor origPos, bool rectangular) {
 
 		TextCursor anchor;
 
-		if (abs(origPos - sel->start) < abs(origPos - sel->end)) {
+		if (std::abs(origPos - sel->start) < std::abs(origPos - sel->end)) {
 			anchor = sel->end;
 		} else {
 			anchor = sel->start;
@@ -4188,7 +4192,7 @@ void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDe
 		}
 	} else {
 		if (breakAt == 0) {
-			TextDInsertEx(wrappedText);
+			insertText(wrappedText);
 		} else {
 			buffer_->BufReplaceEx(cursorPos - breakAt, cursorPos, wrappedText);
 			TextDSetInsertPosition(buffer_->BufCursorPosHint());
@@ -4348,7 +4352,7 @@ void TextArea::TextDOverstrikeEx(view::string_view text) {
 ** then moving the insert position after the newly inserted text, except
 ** that it's optimized to do less redrawing.
 */
-void TextArea::TextDInsertEx(view::string_view text) {
+void TextArea::insertText(view::string_view text) {
 
 	const TextCursor pos = cursorPos_;
 
@@ -4908,12 +4912,12 @@ void TextArea::simpleInsertAtCursorEx(view::string_view chars, bool allowPending
 
 		const size_t index = chars.find('\n');
 		if(index != view::string_view::npos) {
-			TextDInsertEx(chars);
+			insertText(chars);
 		} else {
 			TextDOverstrikeEx(chars);
 		}
 	} else {
-		TextDInsertEx(chars);
+		insertText(chars);
 	}
 
 	checkAutoShowInsertPos();
@@ -5524,7 +5528,7 @@ void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
 			anchor          = buffer_->BufCountForwardDispChars(anchorLineStart, rectAnchor);
 
 		} else {
-			if (abs(newPos - sel->start) < abs(newPos - sel->end)) {
+			if (std::abs(newPos - sel->start) < std::abs(newPos - sel->end)) {
 				anchor = sel->end;
 			} else {
 				anchor = sel->start;
@@ -5543,9 +5547,13 @@ void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
 
 	// Make the new selection
 	if (flags & RectFlag) {
-		buffer_->BufRectSelect(buffer_->BufStartOfLine(std::min(anchor, newPos)), buffer_->BufEndOfLine(std::max(anchor, newPos)), std::min(rectAnchor, column), std::max(rectAnchor, column));
+		buffer_->BufRectSelect(
+		            buffer_->BufStartOfLine(std::min(anchor, newPos)),
+		            buffer_->BufEndOfLine(std::max(anchor, newPos)),
+		            std::min(rectAnchor, column),
+		            std::max(rectAnchor, column));
 	} else {
-		buffer_->BufSelect(std::min(anchor, newPos), std::max(anchor, newPos));
+		buffer_->BufSelect(std::minmax(anchor, newPos));
 	}
 
 	/* Never mind the motion threshold, go right to dragging since
@@ -5899,7 +5907,7 @@ void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
 	// Find the new anchor point and make the new selection
 	TextCursor pos = TextDXYToPosition(event->pos());
 	if (sel->selected) {
-		if (abs(pos - sel->start) < abs(pos - sel->end)) {
+		if (std::abs(pos - sel->start) < std::abs(pos - sel->end)) {
 			anchor = sel->end;
 		} else {
 			anchor = sel->start;
@@ -6166,7 +6174,7 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 		dragType = dragType_;
 	}
 
-	bool overlay = (dragType == DRAG_OVERLAY_MOVE) || (dragType == DRAG_OVERLAY_COPY);
+	const bool overlay = (dragType == DRAG_OVERLAY_MOVE) || (dragType == DRAG_OVERLAY_COPY);
 
 	/* Overlay mode uses rectangular selections whether or not the original
 	   was rectangular.  To use a plain selection as if it were rectangular,
@@ -6208,8 +6216,8 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 			}
 
 			sourceDeletePos = origSelLineStart;
-			sourceInserted = origSelLen - prevLen + tempBuf.BufGetLength();
-			sourceDeleted = origSelLen;
+			sourceInserted  = origSelLen - prevLen + tempBuf.BufGetLength();
+			sourceDeleted   = origSelLen;
 		} else {
 			tempBuf.BufRemove(TextCursor(origSel->start - tempStart), TextCursor(origSel->end - tempStart));
 			sourceDeletePos = origSel->start;
@@ -6237,24 +6245,24 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	int64_t row;
 	int64_t column;
 	TextDXYToUnconstrainedPosition(
-		QPoint(
-			std::max(0, pos.x() - dragXOffset),
-			std::max(0, pos.y() - (dragYOffset_ % fontHeight))
-		),
-		&row, &column);
+	            QPoint(
+	                std::max(0, pos.x() - dragXOffset),
+	                std::max(0, pos.y() - (dragYOffset_ % fontHeight))
+	            ),
+	            &row,
+	            &column);
 
-
-	column = TextDOffsetWrappedColumn(row, column);
-	row    = TextDOffsetWrappedRow(row);
+	column     = TextDOffsetWrappedColumn(row, column);
+	row        = TextDOffsetWrappedRow(row);
 	insLineNum = row + topLineNum_ - dragYOffset_ / fontHeight;
 
 	/* find a common point of reference between the two buffers, from which
 	   the insert position line number can be translated to a position */
 	if (firstChar_ > modRangeStart) {
 		referenceLine = topLineNum_ - buffer_->BufCountLines(modRangeStart, firstChar_);
-		referencePos = modRangeStart;
+		referencePos  = modRangeStart;
 	} else {
-		referencePos = firstChar_;
+		referencePos  = firstChar_;
 		referenceLine = topLineNum_;
 	}
 
@@ -6316,7 +6324,6 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	dragSourceDeleted_   = sourceDeleted;
 	dragType_            = dragType;
 
-
 	// NOTE(eteran): as an optimization, if we are moving a block
 	// but not combining it with the new location's content, then the selected
 	// text is functionally the same, so we don't need to constantly syncronize
@@ -6352,7 +6359,6 @@ void TextArea::callMovedCBs() {
 }
 
 void TextArea::adjustSecondarySelection(const QPoint &coord) {
-
 
 	TextCursor newPos = TextDXYToPosition(coord);
 
@@ -6725,28 +6731,20 @@ void TextArea::setReadOnly(bool value) {
 void TextArea::setOverstrike(bool value) {
 	overstrike_ = value;
 
-	switch(getCursorStyle()) {
+	switch(cursorStyle_) {
 	case CursorStyles::Block:
-		TextDSetCursorStyle(CursorStyles::Normal);
+		setCursorStyle(CursorStyles::Normal);
 		break;
 	case CursorStyles::Normal:
-		TextDSetCursorStyle(CursorStyles::Block);
+		setCursorStyle(CursorStyles::Block);
 		break;
 	default:
 		break;
 	}
 }
 
-CursorStyles TextArea::getCursorStyle() const {
-	return cursorStyle_;
-}
-
 void TextArea::setCursorVPadding(int value) {
 	cursorVPadding_ = value;
-}
-
-QFont TextArea::getFont() const {
-	return font_;
 }
 
 void TextArea::setFont(const QFont &font) {
@@ -7058,8 +7056,9 @@ int64_t TextArea::TextDPreferredColumn(int *visLineNum, TextCursor *lineStartPos
 	}
 
 	// Decide what column to move to, if there's a preferred column use that
-	int64_t column = (cursorPreferredCol_ >= 0) ? cursorPreferredCol_ : buffer_->BufCountDispChars(*lineStartPos, cursorPos_);
-	return column;
+	return (cursorPreferredCol_ >= 0) ?
+	            cursorPreferredCol_ :
+	            buffer_->BufCountDispChars(*lineStartPos, cursorPos_);
 }
 
 /*

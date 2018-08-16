@@ -254,9 +254,7 @@ public:
 private:
 	void TextDSetScroll(int64_t topLineNum, int horizOffset);
 	void TextDGetScroll(int64_t *topLineNum, int *horizOffset);
-	CursorStyles getCursorStyle() const;
 	QColor getRangesetColor(size_t ind, QColor bground) const;
-	QFont getFont() const;
 	QShortcut *createShortcut(const QString &name, const QKeySequence &keySequence, const char *member);
 	TextCursor TextDCountBackwardNLines(TextCursor startPos, int64_t nLines) const;
 	TextCursor TextDCountForwardNLines(TextCursor startPos, int64_t nLines, bool startPosIsLineStart) const;
@@ -314,14 +312,14 @@ private:
 	void TextColPasteClipboard();
 	void TextCutClipboard();
 	void TextDBlankCursor();
-	void TextDInsertEx(view::string_view text);
+	void insertText(view::string_view text);
 	void TextDMakeInsertPosVisible();
 	void TextDOverstrikeEx(view::string_view text);
 	void TextDRedisplayRect(const QRect &rect);
 	void TextDRedisplayRect(int left, int top, int width, int height);
 	void TextDRedrawCalltip(int calltipID);
 	void TextDResize(bool widthChanged);
-	void TextDSetCursorStyle(CursorStyles style);
+	void setCursorStyle(CursorStyles style);
 	void TextDSetInsertPosition(TextCursor newPos);
 	void TextDSetLineNumberArea(int lineNumWidth);
 	void TextDSetWrapMode(bool wrap, int wrapMargin);

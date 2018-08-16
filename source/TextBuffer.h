@@ -137,6 +137,7 @@ public:
 	void BufSecondaryUnselect() noexcept;
 	void BufSecRectSelect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept;
 	void BufSelect(TextCursor start, TextCursor end) noexcept;
+	void BufSelect(std::pair<TextCursor, TextCursor> range) noexcept;
 	void BufSetAll(view_type text);
 	void BufSetTabDistance(int distance, bool notify) noexcept;
 	void BufSetUseTabs(bool useTabs) noexcept;

@@ -516,6 +516,11 @@ void BasicTextBuffer<Ch, Tr>::BufCheckDisplay(TextCursor start, TextCursor end) 
 }
 
 template <class Ch, class Tr>
+void BasicTextBuffer<Ch, Tr>::BufSelect(std::pair<TextCursor, TextCursor> range) noexcept {
+	BufSelect(range.first, range.second);
+}
+
+template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSelect(TextCursor start, TextCursor end) noexcept {
     const Selection oldSelection = primary;
 
