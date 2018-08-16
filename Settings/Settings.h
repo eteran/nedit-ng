@@ -20,8 +20,9 @@ enum ColorTypes : int {
 	SELECT_BG_COLOR,
 	HILITE_FG_COLOR,
 	HILITE_BG_COLOR,
-	LINENO_FG_COLOR,
+	LINENO_FG_COLOR,	
 	CURSOR_FG_COLOR,
+	LINENO_BG_COLOR,
 };
 
 class Settings  {
@@ -84,7 +85,7 @@ public:
 	static int textRows;
 	static int wrapMargin;
 	static QString bgMenuCommands;
-	static QString colors[8];
+	static QString colors[9];
 	static QString geometry;
 	static QString highlightPatterns;
 	static QString languageModes;

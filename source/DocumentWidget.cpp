@@ -518,6 +518,7 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
 	const QColor hiliteFg = X11Colors::fromString(Preferences::GetPrefColorName(HILITE_FG_COLOR));
 	const QColor hiliteBg = X11Colors::fromString(Preferences::GetPrefColorName(HILITE_BG_COLOR));
 	const QColor lineNoFg = X11Colors::fromString(Preferences::GetPrefColorName(LINENO_FG_COLOR));
+	const QColor lineNoBg = X11Colors::fromString(Preferences::GetPrefColorName(LINENO_BG_COLOR));
 	const QColor cursorFg = X11Colors::fromString(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
 
 	area->TextDSetColors(
@@ -528,6 +529,7 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
 		hiliteFg,
 		hiliteBg,
 		lineNoFg,
+	    lineNoBg,
 		cursorFg);
 
 	// add focus, drag, cursor tracking, and smart indent callbacks
@@ -4217,29 +4219,32 @@ void DocumentWidget::gotoAP(TextArea *area, int64_t lineNum, int64_t column) {
  * @param hiliteFg
  * @param hiliteBg
  * @param lineNoFg
+ * @param lineNoBg
  * @param cursorFg
  */
-void DocumentWidget::SetColors(const QString &textFg, const QString &textBg, const QString &selectFg, const QString &selectBg, const QString &hiliteFg, const QString &hiliteBg, const QString &lineNoFg, const QString &cursorFg) {
+void DocumentWidget::SetColors(const QString &textFg, const QString &textBg, const QString &selectFg, const QString &selectBg, const QString &hiliteFg, const QString &hiliteBg, const QString &lineNoFg, const QString &lineNoBg, const QString &cursorFg) {
 
-	QColor textFgPix   = X11Colors::fromString(textFg);
-	QColor textBgPix   = X11Colors::fromString(textBg);
-	QColor selectFgPix = X11Colors::fromString(selectFg);
-	QColor selectBgPix = X11Colors::fromString(selectBg);
-	QColor hiliteFgPix = X11Colors::fromString(hiliteFg);
-	QColor hiliteBgPix = X11Colors::fromString(hiliteBg);
-	QColor lineNoFgPix = X11Colors::fromString(lineNoFg);
-	QColor cursorFgPix = X11Colors::fromString(cursorFg);
+	QColor textFgColor       = X11Colors::fromString(textFg);
+	QColor textBgColor       = X11Colors::fromString(textBg);
+	QColor selectFgColor     = X11Colors::fromString(selectFg);
+	QColor selectBgColor     = X11Colors::fromString(selectBg);
+	QColor highlightFgColor  = X11Colors::fromString(hiliteFg);
+	QColor highlightBgColor  = X11Colors::fromString(hiliteBg);
+	QColor lineNumberFgColor = X11Colors::fromString(lineNoFg);
+	QColor lineNumberBgColor = X11Colors::fromString(lineNoBg);
+	QColor cursorFgColor     = X11Colors::fromString(cursorFg);
 
 
 	for(TextArea *area : textPanes()) {
-		area->TextDSetColors(textFgPix,
-							 textBgPix,
-							 selectFgPix,
-							 selectBgPix,
-							 hiliteFgPix,
-							 hiliteBgPix,
-							 lineNoFgPix,
-							 cursorFgPix);
+		area->TextDSetColors(textFgColor,
+		                     textBgColor,
+		                     selectFgColor,
+		                     selectBgColor,
+		                     highlightFgColor,
+		                     highlightBgColor,
+		                     lineNumberFgColor,
+		                     lineNumberBgColor,
+		                     cursorFgColor);
 	}
 
 	// Redo any syntax highlighting

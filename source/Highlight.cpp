@@ -51,6 +51,7 @@ const auto NEDIT_DEFAULT_HI_FG      = QLatin1String("white");        /* These ar
 const auto NEDIT_DEFAULT_HI_BG      = QLatin1String("red");          /* matching parens. */
 const auto NEDIT_DEFAULT_LINENO_FG  = QLatin1String("black");
 const auto NEDIT_DEFAULT_CURSOR_FG  = QLatin1String("black");
+const auto NEDIT_DEFAULT_CURSOR_BG  = QLatin1String("#d6d2d0");
 
 /* Initial forward expansion of parsing region in incremental reparsing,
    when style changes propagate forward beyond the original modification.
@@ -1153,8 +1154,10 @@ void Highlight::saveTheme() {
 		{
 			QDomElement lineno = xml.createElement(QLatin1String("line-numbers"));
 			lineno.setAttribute(QLatin1String("foreground"), Settings::colors[ColorTypes::LINENO_FG_COLOR]);
+			lineno.setAttribute(QLatin1String("background"), Settings::colors[ColorTypes::LINENO_BG_COLOR]);
 			root.appendChild(lineno);
 		}
+
 
 		// save styles for syntax highlighting...
 		for(const HighlightStyle &hs : HighlightStyles) {
@@ -1222,6 +1225,7 @@ void Highlight::loadTheme() {
 		Settings::colors[ColorTypes::HILITE_FG_COLOR] = highlight.attribute(QLatin1String("foreground"), NEDIT_DEFAULT_HI_FG);
 		Settings::colors[ColorTypes::CURSOR_FG_COLOR] = cursor.attribute(QLatin1String("foreground"),    NEDIT_DEFAULT_LINENO_FG);
 		Settings::colors[ColorTypes::LINENO_FG_COLOR] = lineno.attribute(QLatin1String("foreground"),    NEDIT_DEFAULT_CURSOR_FG);
+		Settings::colors[ColorTypes::LINENO_BG_COLOR] = lineno.attribute(QLatin1String("background"),    NEDIT_DEFAULT_CURSOR_BG);
 
 		// load styles for syntax highlighting...
 		QDomElement style = root.firstChildElement(QLatin1String("style"));

@@ -21,7 +21,8 @@ private Q_SLOTS:
 	void on_buttonSelectionBG_clicked();
 	void on_buttonMatchFG_clicked();
 	void on_buttonMatchBG_clicked();
-	void on_buttonLineNumbers_clicked();
+	void on_buttonLineNumbersFG_clicked();
+	void on_buttonLineNumbersBG_clicked();
 	void on_buttonCursor_clicked();
 
 	void on_editFG_textChanged(const QString &text);
@@ -30,7 +31,8 @@ private Q_SLOTS:
 	void on_editSelectionBG_textChanged(const QString &text);
 	void on_editMatchFG_textChanged(const QString &text);
 	void on_editMatchBG_textChanged(const QString &text);
-	void on_editLineNumbers_textChanged(const QString &text);
+	void on_editLineNumbersFG_textChanged(const QString &text);
+	void on_editLineNumbersBG_textChanged(const QString &text);
 	void on_editCursor_textChanged(const QString &text);
 
 	void on_buttonBox_clicked(QAbstractButton *button);

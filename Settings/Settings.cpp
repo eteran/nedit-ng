@@ -84,7 +84,7 @@ int Settings::textCols;
 int Settings::textRows;
 int Settings::wrapMargin;
 QString Settings::bgMenuCommands;
-QString Settings::colors[8];
+QString Settings::colors[9];
 QString Settings::geometry;
 QString Settings::highlightPatterns;
 QString Settings::languageModes;

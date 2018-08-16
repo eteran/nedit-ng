@@ -228,7 +228,7 @@ public:
 	void TextDKillCalltip(int id);
 	void TextDMaintainAbsLineNum(bool state);
 	void TextDMakeSelectionVisible();
-	void TextDSetColors(const QColor &textFgP, const QColor &textBgP, const QColor &selectFgP, const QColor &selectBgP, const QColor &hiliteFgP, const QColor &hiliteBgP, const QColor &lineNoFgP, const QColor &cursorFgP);
+	void TextDSetColors(const QColor &textFgP, const QColor &textBgP, const QColor &selectFgP, const QColor &selectBgP, const QColor &hiliteFgP, const QColor &hiliteBgP, const QColor &lineNoFgP, const QColor &lineNoBgP, const QColor &cursorFgP);
 	void TextSetCursorPos(TextCursor pos);
 	void setAutoIndent(bool value);
 	void setAutoShowInsertPos(bool value);
@@ -373,6 +373,7 @@ private:
 	QColor highlightBGColor_        = Qt::red;
 	QColor highlightFGColor_        = Qt::white;      // Highlight colors are used when flashing matching parens
 	QColor lineNumFGColor_          = Qt::black;      // Color for drawing line numbers
+	QColor lineNumBGColor_          = Qt::white;      // Color for drawing line numbers
 	QLabel *resizeWidget_           = nullptr;
 	QTimer *autoScrollTimer_        = nullptr;
 	QTimer *clickTimer_             = nullptr;

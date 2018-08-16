@@ -30,7 +30,7 @@ void LineNumberArea::paintEvent(QPaintEvent *event) {
 
 	QPainter painter(this);
 
-	painter.fillRect(event->rect(), area_->getBackgroundColor());
+	painter.fillRect(event->rect(), area_->lineNumBGColor_);
 	painter.setPen(area_->lineNumFGColor_);
 	painter.setFont(area_->font_);
 

@@ -3672,7 +3672,7 @@ bool TextArea::TextDPositionToXY(TextCursor pos, int *x, int *y) const {
 }
 
 // Change the (non syntax-highlight) colors
-void TextArea::TextDSetColors(const QColor &textFgP, const QColor &textBgP, const QColor &selectFgP, const QColor &selectBgP, const QColor &hiliteFgP, const QColor &hiliteBgP, const QColor &lineNoFgP, const QColor &cursorFgP) {
+void TextArea::TextDSetColors(const QColor &textFgP, const QColor &textBgP, const QColor &selectFgP, const QColor &selectBgP, const QColor &hiliteFgP, const QColor &hiliteBgP, const QColor &lineNoFgP, const QColor &lineNoBgP, const QColor &cursorFgP) {
 
 	const QRect viewRect = viewport()->contentsRect();
 	QPalette pal = palette();
@@ -3685,6 +3685,7 @@ void TextArea::TextDSetColors(const QColor &textFgP, const QColor &textBgP, cons
 	highlightFGColor_ = hiliteFgP;
 	highlightBGColor_ = hiliteBgP;
 	lineNumFGColor_   = lineNoFgP;
+	lineNumBGColor_   = lineNoBgP;
 	cursorFGColor_    = cursorFgP;
 
 	// Redisplay

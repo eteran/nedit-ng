@@ -164,7 +164,7 @@ public:
 	void SetAutoScroll(int margin);
 	void setAutoWrap(WrapStyle wrapStyle);
 	void SetBacklightChars(const QString &applyBacklightTypes);
-	void SetColors(const QString &textFg, const QString &textBg, const QString &selectFg, const QString &selectBg, const QString &hiliteFg, const QString &hiliteBg, const QString &lineNoFg, const QString &cursorFg);
+	void SetColors(const QString &textFg, const QString &textBg, const QString &selectFg, const QString &selectBg, const QString &hiliteFg, const QString &hiliteBg, const QString &lineNoFg, const QString &lineNoBg, const QString &cursorFg);
 	void setEmTabDistance(int distance);
 	void SetHighlightSyntax(bool value);
 	void SetIncrementalBackup(bool value);
