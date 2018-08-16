@@ -205,4 +205,7 @@ public:
 
 #include "TextBuffer.tcc"
 
+extern template class BasicTextBuffer<char>;
+extern template class gap_buffer<char>;
+
 #endif

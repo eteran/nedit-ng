@@ -1,3 +1,4 @@
+
 #include "TextBuffer.h"
 
 // Force full intantiation
