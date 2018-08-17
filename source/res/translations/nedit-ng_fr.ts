@@ -4,7 +4,7 @@
 <context>
     <name>CallTipWidget</name>
     <message>
-        <location filename="../CallTipWidget.ui" line="164"/>
+        <location filename="../../CallTipWidget.ui" line="164"/>
         <source>int main(int argc, char *argv[])</source>
         <translation></translation>
     </message>
@@ -12,7 +12,7 @@
 <context>
     <name>CommandRecorder</name>
     <message>
-        <location filename="../CommandRecorder.cpp" line="66"/>
+        <location filename="../../CommandRecorder.cpp" line="108"/>
         <source>&quot;%1&quot;</source>
         <translation></translation>
     </message>
@@ -20,18 +20,18 @@
 <context>
     <name>DialogAbout</name>
     <message>
-        <location filename="../DialogAbout.ui" line="14"/>
-        <location filename="../DialogAbout.ui" line="34"/>
+        <location filename="../../DialogAbout.ui" line="14"/>
+        <location filename="../../DialogAbout.ui" line="34"/>
         <source>About</source>
         <translation>À propos</translation>
     </message>
     <message>
-        <location filename="../DialogAbout.ui" line="53"/>
+        <location filename="../../DialogAbout.ui" line="53"/>
         <source>Thanks</source>
         <translation>Remerciements</translation>
     </message>
     <message>
-        <location filename="../DialogAbout.ui" line="67"/>
+        <location filename="../../DialogAbout.ui" line="67"/>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
@@ -60,19 +60,33 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;Simon T. MacDonald,  Maurice Leysens, Matt Majka, Alfred Smeenk, Alain Fargues, Christopher Conrad, Scott Markinson, Konrad Bernloehr, Ivan Herman, Patrice Venant, Christian Denat, Philippe Couton, Max Vohlken, Markus Schwarzenberg, Himanshu Gohel, Steven C. Kapp, Michael Turomsha, John Fieber, Chris Ross, Nathaniel Gray, Joachim Lous, Mike Duigou, Seak Teng-Fong, Joor Loohuis, Mark Jones, and Niek van den Berg.&lt;br /&gt;&lt;br /&gt;Faites-moi savoir si j&apos;ai oublié quelqu&apos;un.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../DialogAbout.ui" line="87"/>
+        <location filename="../../DialogAbout.ui" line="87"/>
         <source>Translations</source>
         <translation>Traductions</translation>
     </message>
     <message>
-        <location filename="../DialogAbout.ui" line="101"/>
+        <location filename="../../DialogAbout.ui" line="101"/>
+        <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Monospace&apos;; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;Xuo &amp;lt;https://github.com/ericxuo&amp;gt; - French&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;&lt;br /&gt;Care to be the first? Email the author at &lt;/span&gt;&lt;a href=&quot;mailto:evan.teran@gmail.com&quot;&gt;&lt;span style=&quot; font-size:9pt; text-decoration: underline; color:#0057ae;&quot;&gt;evan.teran@gmail.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
+        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Monospace&apos;; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;Xuo &amp;lt;https://github.com/ericxuo&amp;gt; - Français&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;&lt;br /&gt;Vous souhaitez être le prochain ? Envoyer un mél à l&apos;auteur à &lt;/span&gt;&lt;a href=&quot;mailto:evan.teran@gmail.com&quot;&gt;&lt;span style=&quot; font-size:9pt; text-decoration: underline; color:#0057ae;&quot;&gt;evan.teran@gmail.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
+    </message>
+    <message>
         <source>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Monospace&apos;; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;No translations yet!&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;&lt;br /&gt;Care to be the first? Email the author at &lt;/span&gt;&lt;a href=&quot;mailto:evan.teran@gmail.com&quot;&gt;&lt;span style=&quot; font-size:9pt; text-decoration: underline; color:#0057ae;&quot;&gt;evan.teran@gmail.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+        <translation type="vanished">&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
 &lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
 p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Monospace&apos;; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
@@ -80,12 +94,12 @@ p, li { white-space: pre-wrap; }
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;&lt;br /&gt;Vous souhaitez être le premier ? Ecrivez à l&apos;auteur à : &lt;/span&gt;&lt;a href=&quot;mailto:evan.teran@gmail.com&quot;&gt;&lt;span style=&quot; font-size:9pt; text-decoration: underline; color:#0057ae;&quot;&gt;evan.teran@gmail.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
-        <location filename="../DialogAbout.ui" line="117"/>
+        <location filename="../../DialogAbout.ui" line="117"/>
         <source>License</source>
         <translation>Licence</translation>
     </message>
     <message>
-        <location filename="../DialogAbout.ui" line="134"/>
+        <location filename="../../DialogAbout.ui" line="134"/>
         <source>                    GNU GENERAL PUBLIC LICENSE
                        Version 2, June 1991
 
@@ -563,10 +577,11 @@ nedit-ng : éditeur de texte. Copyright (C) 2018 Evan Teran Ce programme est un 
 
 Vous pouvez contacter l&apos;auteur du programme à notifications AT github DOT com ou à partir du site https://github.com/eteran/nedit-ng
 
-La présente Licence Publique Générale n&apos;autorise pas l&apos;incorporation de votre programme dans des programmes propriétaires. Si votre programme est une bibliothèque de sous-programmes, vous pouvez considérer plus utile d&apos;autoriser l&apos;édition de liens d&apos;applications propriétaires avec la bibliothèque. Si c&apos;est ce que vous voulez faire, utilisez la GNU Lesser General Public License au lieu de la présente Licence.</translation>
+La présente Licence Publique Générale n&apos;autorise pas l&apos;incorporation de votre programme dans des programmes propriétaires. Si votre programme est une bibliothèque de sous-programmes, vous pouvez considérer plus utile d&apos;autoriser l&apos;édition de liens d&apos;applications propriétaires avec la bibliothèque. Si c&apos;est ce que vous voulez faire, utilisez la GNU Lesser General Public License au lieu de la présente Licence.
+</translation>
     </message>
     <message>
-        <location filename="../DialogAbout.cpp" line="113"/>
+        <location filename="../../DialogAbout.cpp" line="16"/>
         <source>%1
 nedit-ng was written by Evan Teran. It is intended to be a modern replacement for the Nirvana Editor (aka NEdit). The author has been using NEdit as his primary code editor for many years, and while it continues to be a superior editor in many ways, it is unfortunately showing its age. So nedit-ng was born out of a desire to have an editor that functions as close to the original as possible, but utilizing a modern toolkit (Qt). This will allow nedit-ng to enjoy the benefit of modern features such as:
 
@@ -589,17 +604,16 @@ nedit-ng a été écrit par Evan Teran. Il est destiné à être un remplacement
 </translation>
     </message>
     <message>
-        <location filename="../DialogAbout.cpp" line="132"/>
+        <location filename="../../DialogAbout.cpp" line="35"/>
         <source>%1.%2</source>
         <translation>%1.%2</translation>
     </message>
     <message>
-        <location filename="../DialogAbout.cpp" line="133"/>
         <source>%1 bit</source>
-        <translation>%1 bit</translation>
+        <translation type="vanished">%1 bit</translation>
     </message>
     <message>
-        <location filename="../DialogAbout.cpp" line="136"/>
+        <location filename="../../DialogAbout.cpp" line="38"/>
         <source>nedit-ng version %1
 
      Built on: %2, %3, %4
@@ -614,109 +628,109 @@ nedit-ng a été écrit par Evan Teran. Il est destiné à être un remplacement
       Compilé le : %5, %6
       Avec Qt : %7
       Tournant sur Qt : %8
-      Langue : %9</translation>
+      Langue : %9
+</translation>
     </message>
 </context>
 <context>
     <name>DialogColors</name>
     <message>
-        <location filename="../DialogColors.ui" line="14"/>
+        <location filename="../../DialogColors.ui" line="14"/>
         <source>Colors</source>
         <translation>Couleurs</translation>
     </message>
     <message>
-        <location filename="../DialogColors.ui" line="20"/>
+        <location filename="../../DialogColors.ui" line="20"/>
         <source>Colors can be entered as names (e.g. red, blue) or as RGB triples
 in the format #RRGGBB, where each digit is in the range 0-f.</source>
         <translation>Les couleurs peuvent être saisies comme des noms (par ex, rouge, bleu) ou comme des triplets RGB (Red/Green/Blue c-à-d Rouge/Vert/Bleu) avec le format #RRGGBB où chaque valeur est comprise entre 0 et F.</translation>
     </message>
     <message>
-        <location filename="../DialogColors.ui" line="35"/>
+        <location filename="../../DialogColors.ui" line="35"/>
         <source>Plain Text Foreground</source>
-        <translation>Texte brut </translation>
+        <translation>Texte Brut</translation>
     </message>
     <message>
-        <location filename="../DialogColors.ui" line="92"/>
-        <location filename="../DialogColors.ui" line="174"/>
-        <location filename="../DialogColors.ui" line="256"/>
-        <location filename="../DialogColors.ui" line="338"/>
-        <location filename="../DialogColors.ui" line="424"/>
-        <location filename="../DialogColors.ui" line="506"/>
-        <location filename="../DialogColors.ui" line="588"/>
-        <location filename="../DialogColors.ui" line="670"/>
+        <location filename="../../DialogColors.ui" line="92"/>
+        <location filename="../../DialogColors.ui" line="174"/>
+        <location filename="../../DialogColors.ui" line="256"/>
+        <location filename="../../DialogColors.ui" line="338"/>
+        <location filename="../../DialogColors.ui" line="424"/>
+        <location filename="../../DialogColors.ui" line="506"/>
+        <location filename="../../DialogColors.ui" line="588"/>
+        <location filename="../../DialogColors.ui" line="670"/>
         <source>(Invalid!)</source>
         <translation>(Non valide!)</translation>
     </message>
     <message>
-        <location filename="../DialogColors.ui" line="106"/>
-        <location filename="../DialogColors.ui" line="188"/>
-        <location filename="../DialogColors.ui" line="270"/>
-        <location filename="../DialogColors.ui" line="352"/>
-        <location filename="../DialogColors.ui" line="438"/>
-        <location filename="../DialogColors.ui" line="520"/>
-        <location filename="../DialogColors.ui" line="602"/>
-        <location filename="../DialogColors.ui" line="684"/>
+        <location filename="../../DialogColors.ui" line="106"/>
+        <location filename="../../DialogColors.ui" line="188"/>
+        <location filename="../../DialogColors.ui" line="270"/>
+        <location filename="../../DialogColors.ui" line="352"/>
+        <location filename="../../DialogColors.ui" line="438"/>
+        <location filename="../../DialogColors.ui" line="520"/>
+        <location filename="../../DialogColors.ui" line="602"/>
+        <location filename="../../DialogColors.ui" line="684"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../DialogColors.ui" line="117"/>
+        <location filename="../../DialogColors.ui" line="117"/>
         <source>Selection Foreground</source>
         <translation>Sélection</translation>
     </message>
     <message>
-        <location filename="../DialogColors.ui" line="199"/>
+        <location filename="../../DialogColors.ui" line="199"/>
         <source>Matching (..) Foreground</source>
         <translation>Zone de correspondance</translation>
     </message>
     <message>
-        <location filename="../DialogColors.ui" line="281"/>
+        <location filename="../../DialogColors.ui" line="281"/>
         <source>Line Numbers</source>
         <translation>Numéros de lignes</translation>
     </message>
     <message>
-        <location filename="../DialogColors.ui" line="367"/>
+        <location filename="../../DialogColors.ui" line="367"/>
         <source>Text Area Background</source>
         <translation>Fond de zone de texte</translation>
     </message>
     <message>
-        <location filename="../DialogColors.ui" line="449"/>
+        <location filename="../../DialogColors.ui" line="449"/>
         <source>Selection Background</source>
         <translation>Fond de sélection</translation>
     </message>
     <message>
-        <location filename="../DialogColors.ui" line="531"/>
+        <location filename="../../DialogColors.ui" line="531"/>
         <source>Matching (..) Background</source>
         <translation>Fond de zone de correspondance</translation>
     </message>
     <message>
-        <location filename="../DialogColors.ui" line="613"/>
+        <location filename="../../DialogColors.ui" line="613"/>
         <source>Cursor Color</source>
         <translation>Couleur du curseur</translation>
     </message>
     <message>
-        <location filename="../DialogColors.ui" line="695"/>
+        <location filename="../../DialogColors.ui" line="695"/>
         <source>NOTE: Foreground colors only apply when syntax highlighting is DISABLED.</source>
         <translation>NOTE : Les couleurs de fond ne s&apos;appliquent que quand la coloration syntaxique est DÉSACTIVÉE.</translation>
     </message>
     <message>
-        <location filename="../DialogColors.cpp" line="48"/>
         <source>#%1</source>
-        <translation>#%1</translation>
+        <translation type="vanished">#%1</translation>
     </message>
     <message>
-        <location filename="../DialogColors.cpp" line="193"/>
-        <location filename="../DialogColors.cpp" line="208"/>
+        <location filename="../../DialogColors.cpp" line="193"/>
+        <location filename="../../DialogColors.cpp" line="208"/>
         <source>Invalid Colors</source>
         <translation>Couleurs non valides</translation>
     </message>
     <message>
-        <location filename="../DialogColors.cpp" line="194"/>
+        <location filename="../../DialogColors.cpp" line="194"/>
         <source>All colors must be valid to be applied.</source>
         <translation>Toutes les couleurs doivent être valides pour pouvoir être appliquées.</translation>
     </message>
     <message>
-        <location filename="../DialogColors.cpp" line="209"/>
+        <location filename="../../DialogColors.cpp" line="209"/>
         <source>All colors must be valid to proceed.</source>
         <translation>Toutes les couleurs doivent être valides pour continuer.</translation>
     </message>
@@ -724,177 +738,190 @@ in the format #RRGGBB, where each digit is in the range 0-f.</source>
 <context>
     <name>DialogDrawingStyles</name>
     <message>
-        <location filename="../DialogDrawingStyles.ui" line="14"/>
+        <location filename="../../DialogDrawingStyles.ui" line="14"/>
         <source>Text Drawing Styles</source>
         <translation>Styles de texte</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.ui" line="20"/>
+        <location filename="../../DialogDrawingStyles.ui" line="20"/>
         <source>To modify the properties of an existing highlight style, select the name from the list on the left.  Select &quot;New&quot; to add a new style to the list.</source>
         <translation>Pour modifier les propriétés d&apos;un style de surbrillance existant, sélectionnez le nom dans la liste à gauche. Sélectionnez &quot;Nouveau&quot; pour ajouter un nouveau style à la liste.</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.ui" line="39"/>
+        <location filename="../../DialogDrawingStyles.ui" line="39"/>
         <source>New</source>
         <translation>Nouveau</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.ui" line="50"/>
+        <location filename="../../DialogDrawingStyles.ui" line="50"/>
         <source>Delete</source>
         <translation>Supprimer</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.ui" line="61"/>
+        <location filename="../../DialogDrawingStyles.ui" line="61"/>
         <source>Copy</source>
         <translation>Copier</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.ui" line="72"/>
-        <location filename="../DialogDrawingStyles.ui" line="83"/>
+        <location filename="../../DialogDrawingStyles.ui" line="72"/>
+        <location filename="../../DialogDrawingStyles.ui" line="83"/>
         <source>Move</source>
         <translation>Déplacer</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.ui" line="116"/>
+        <location filename="../../DialogDrawingStyles.ui" line="116"/>
         <source>Name:</source>
         <translation>Nom :</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.ui" line="126"/>
+        <location filename="../../DialogDrawingStyles.ui" line="126"/>
         <source>Foreground Color:</source>
         <translation>Couleur :</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.ui" line="136"/>
+        <location filename="../../DialogDrawingStyles.ui" line="138"/>
+        <location filename="../../DialogDrawingStyles.ui" line="159"/>
+        <source>...</source>
+        <translation>...</translation>
+    </message>
+    <message>
+        <location filename="../../DialogDrawingStyles.ui" line="147"/>
         <source>Background Color (optional)</source>
         <translation>Couleur de fond (optionnelle)</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.ui" line="146"/>
+        <location filename="../../DialogDrawingStyles.ui" line="168"/>
         <source>Font:</source>
         <translation>Police de caractère :</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.ui" line="159"/>
+        <location filename="../../DialogDrawingStyles.ui" line="181"/>
+        <source>Italic</source>
+        <translation>Italique</translation>
+    </message>
+    <message>
+        <location filename="../../DialogDrawingStyles.ui" line="188"/>
+        <source>Bold</source>
+        <translation>Gras</translation>
+    </message>
+    <message>
         <source>P&amp;lain</source>
-        <translation>&amp;Brut</translation>
+        <translation type="vanished">&amp;Brut</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.ui" line="169"/>
         <source>&amp;Italic</source>
-        <translation>&amp;Italique</translation>
+        <translation type="vanished">&amp;Italique</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.ui" line="176"/>
         <source>&amp;Bold</source>
-        <translation>&amp;Gras</translation>
+        <translation type="vanished">&amp;Gras</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.ui" line="183"/>
         <source>B&amp;old Italic</source>
-        <translation>G&amp;ras Italique</translation>
+        <translation type="vanished">G&amp;ras Italique</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.cpp" line="81"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="84"/>
         <source>New Item</source>
         <translation>Nouveau champ</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.cpp" line="82"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="85"/>
         <source>black</source>
         <translation>Noir</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.cpp" line="210"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="213"/>
         <source>Discard Entry</source>
         <translation>Rejeter</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.cpp" line="212"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="215"/>
         <source>Discard incomplete entry for current highlight style?</source>
         <translation>Supprimer l&apos;entrée incomplète pour le style de surbrillance actuel ?</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.cpp" line="213"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="216"/>
         <source>Keep</source>
         <translation>Conserver</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.cpp" line="265"/>
-        <location filename="../DialogDrawingStyles.cpp" line="413"/>
-        <location filename="../DialogDrawingStyles.cpp" line="472"/>
-        <location filename="../DialogDrawingStyles.cpp" line="506"/>
         <source>Plain</source>
-        <translation>Ordinaire</translation>
+        <translation type="vanished">Ordinaire</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.cpp" line="328"/>
-        <location filename="../DialogDrawingStyles.cpp" line="417"/>
-        <location filename="../DialogDrawingStyles.cpp" line="475"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="319"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="409"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="467"/>
         <source>Highlight Style</source>
         <translation>Style de surbrillance</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.cpp" line="329"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="320"/>
         <source>Please specify a name for the highlight style</source>
         <translation>Veuillez spécifier un nom pour le style de surbrillance</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.cpp" line="344"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="335"/>
         <source>Style Color</source>
         <translation>Couleur de style</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.cpp" line="344"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="335"/>
         <source>Please specify a color for the highlight style</source>
         <translation>Veuillez spécifier une couleur pour le style de surbrillance</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.cpp" line="353"/>
-        <location filename="../DialogDrawingStyles.cpp" line="371"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="344"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="363"/>
         <source>Invalid Color</source>
         <translation>Couleur non valide</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.cpp" line="353"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="344"/>
         <source>Invalid X color specification: %1</source>
         <translation>Spécification de couleur X non valide : %1</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.cpp" line="371"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="364"/>
         <source>Invalid X background color specification: %1</source>
         <translation>Spécification de couleur de fond X non valide : %1</translation>
     </message>
     <message>
-        <location filename="../DialogDrawingStyles.cpp" line="418"/>
-        <location filename="../DialogDrawingStyles.cpp" line="475"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="410"/>
+        <location filename="../../DialogDrawingStyles.cpp" line="467"/>
         <source>There must be at least one Plain entry. Cannot rename this entry.</source>
         <translation>Il doit y avoir au moins une entrée ordinaire. Impossible de renommer cette entrée.</translation>
+    </message>
+    <message>
+        <location filename="../../DialogDrawingStyles.cpp" line="515"/>
+        <source>#%1</source>
+        <translation>#%1</translation>
     </message>
 </context>
 <context>
     <name>DialogDuplicateTags</name>
     <message>
-        <location filename="../DialogDuplicateTags.ui" line="14"/>
+        <location filename="../../DialogDuplicateTags.ui" line="14"/>
         <source>Duplicate Tags_popup</source>
-        <translation>Popup de marqueurs dupliqués</translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../DialogDuplicateTags.ui" line="20"/>
-        <location filename="../DialogDuplicateTags.cpp" line="20"/>
+        <location filename="../../DialogDuplicateTags.ui" line="20"/>
+        <location filename="../../DialogDuplicateTags.cpp" line="20"/>
         <source>Select File With TAG: %1</source>
-        <translation>Sélectionner le fichier avec le TAG (marqueur) : %1</translation>
+        <translation>Sélectionner le fichier avec le TAG : %1</translation>
     </message>
 </context>
 <context>
     <name>DialogExecuteCommand</name>
     <message>
-        <location filename="../DialogExecuteCommand.ui" line="14"/>
+        <location filename="../../DialogExecuteCommand.ui" line="14"/>
         <source>Execute Command</source>
         <translation>Commande à exécuter</translation>
     </message>
     <message>
-        <location filename="../DialogExecuteCommand.ui" line="33"/>
+        <location filename="../../DialogExecuteCommand.ui" line="33"/>
         <source>Shell command:   (use up arrow key to recall previous;
 % expands to current filename, # to line number)</source>
         <translation>Commande du shell : (utilisez la flèche vers le haut pour rappeler la dernière commande; 
@@ -904,12 +931,12 @@ in the format #RRGGBB, where each digit is in the range 0-f.</source>
 <context>
     <name>DialogFilter</name>
     <message>
-        <location filename="../DialogFilter.ui" line="14"/>
+        <location filename="../../DialogFilter.ui" line="14"/>
         <source>Filter Selection</source>
         <translation>Filtrer la sélection</translation>
     </message>
     <message>
-        <location filename="../DialogFilter.ui" line="33"/>
+        <location filename="../../DialogFilter.ui" line="33"/>
         <source>Shell command:  (use up arrow key to recall previous)</source>
         <translation>Commande du shell : (utilisez la flèche vers le haut pour rappeler la dernière commande)</translation>
     </message>
@@ -917,75 +944,80 @@ in the format #RRGGBB, where each digit is in the range 0-f.</source>
 <context>
     <name>DialogFind</name>
     <message>
-        <location filename="../DialogFind.ui" line="14"/>
-        <location filename="../DialogFind.ui" line="142"/>
-        <location filename="../DialogFind.cpp" line="101"/>
+        <location filename="../../DialogFind.ui" line="14"/>
+        <location filename="../../DialogFind.ui" line="145"/>
+        <location filename="../../DialogFind.cpp" line="93"/>
         <source>Find</source>
         <translation>Recherche</translation>
     </message>
     <message>
-        <location filename="../DialogFind.ui" line="22"/>
+        <location filename="../../DialogFind.ui" line="22"/>
         <source>String to Find:</source>
         <translation>Chaîne à rechercher:</translation>
     </message>
     <message>
-        <location filename="../DialogFind.ui" line="42"/>
+        <location filename="../../DialogFind.ui" line="42"/>
         <source>(use up arrow key to recall previous)</source>
-        <translation>(Utilisez la flèche vers le haut pour rappeler la précédente)</translation>
+        <translation>(Utilisez la flèche vers le haut pour rappeler la chaîne précédente)</translation>
     </message>
     <message>
-        <location filename="../DialogFind.ui" line="60"/>
+        <location filename="../../DialogFind.ui" line="51"/>
+        <source>Search</source>
+        <translation>Rechercher</translation>
+    </message>
+    <message>
+        <location filename="../../DialogFind.ui" line="63"/>
         <source>&amp;Regular Expression</source>
-        <translation>&amp;Expression régulière</translation>
+        <translation>Expression &amp;régulière</translation>
     </message>
     <message>
-        <location filename="../DialogFind.ui" line="67"/>
+        <location filename="../../DialogFind.ui" line="70"/>
         <source>&amp;Case Sensitive</source>
-        <translation>&amp;Casse                              </translation>
+        <translation>&amp;Casse        </translation>
     </message>
     <message>
-        <location filename="../DialogFind.ui" line="74"/>
+        <location filename="../../DialogFind.ui" line="77"/>
         <source>W&amp;hole Word</source>
-        <translation>&amp;Mot complet</translation>
+        <translation>Mot &amp;complet</translation>
     </message>
     <message>
-        <location filename="../DialogFind.ui" line="98"/>
+        <location filename="../../DialogFind.ui" line="101"/>
         <source>Search &amp;Backward</source>
-        <translation>&amp;Recherche en arrière</translation>
+        <translation>Recherche en a&amp;rrière</translation>
     </message>
     <message>
-        <location filename="../DialogFind.ui" line="118"/>
+        <location filename="../../DialogFind.ui" line="121"/>
         <source>&amp;Keep Dialog</source>
-        <translation>Conserver la &amp;fenêtre</translation>
+        <translation>&amp;Conserver la fenêtre</translation>
     </message>
     <message>
-        <location filename="../DialogFind.ui" line="149"/>
+        <location filename="../../DialogFind.ui" line="152"/>
         <source>Return</source>
         <translation>Retour</translation>
     </message>
     <message>
-        <location filename="../DialogFind.ui" line="172"/>
+        <location filename="../../DialogFind.ui" line="175"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>
     <message>
-        <location filename="../DialogFind.ui" line="179"/>
+        <location filename="../../DialogFind.ui" line="182"/>
         <source>Esc</source>
         <translation>Echap</translation>
     </message>
     <message>
-        <location filename="../DialogFind.cpp" line="99"/>
-        <location filename="../DialogFind.cpp" line="353"/>
+        <location filename="../../DialogFind.cpp" line="91"/>
+        <location filename="../../DialogFind.cpp" line="325"/>
         <source>Find (in %1)</source>
         <translation>Chercher (dans %1)</translation>
     </message>
     <message>
-        <location filename="../DialogFind.cpp" line="268"/>
+        <location filename="../../DialogFind.cpp" line="244"/>
         <source>Regex Error</source>
         <translation>Erreur d&apos;expression régulière</translation>
     </message>
     <message>
-        <location filename="../DialogFind.cpp" line="268"/>
+        <location filename="../../DialogFind.cpp" line="245"/>
         <source>Please respecify the search string:
 %1</source>
         <translation>Veuillez spécifier de nouveau la chaîne de recherche :
@@ -995,426 +1027,423 @@ in the format #RRGGBB, where each digit is in the range 0-f.</source>
 <context>
     <name>DialogFonts</name>
     <message>
-        <location filename="../DialogFonts.ui" line="14"/>
+        <location filename="../../DialogFonts.ui" line="14"/>
         <source>Text Fonts</source>
         <translation>Police de caractères</translation>
     </message>
     <message>
-        <location filename="../DialogFonts.ui" line="20"/>
+        <location filename="../../DialogFonts.ui" line="20"/>
+        <source>Editor Font</source>
+        <translation>Fonte de l&apos;éditeur</translation>
+    </message>
+    <message>
         <source>&amp;Primary Font</source>
-        <translation>Police de caractères &amp;Principale</translation>
+        <translation type="vanished">Police de caractères &amp;Principale</translation>
     </message>
     <message>
-        <location filename="../DialogFonts.ui" line="26"/>
-        <location filename="../DialogFonts.ui" line="139"/>
-        <location filename="../DialogFonts.ui" line="221"/>
-        <location filename="../DialogFonts.ui" line="303"/>
         <source>...</source>
-        <translation>...</translation>
+        <translation type="vanished">...</translation>
     </message>
     <message>
-        <location filename="../DialogFonts.ui" line="39"/>
         <source>Fonts for Syntax Highlighting</source>
-        <translation>Polices de caractères pour la surbrillance de syntaxe</translation>
+        <translation type="vanished">Polices de caractères pour la surbrillance de syntaxe</translation>
     </message>
     <message>
-        <location filename="../DialogFonts.ui" line="47"/>
         <source>&amp;Fill Highlight Fonts from Primary</source>
-        <translation>Compléter les p&amp;olices de caractères à partir de la police principale</translation>
+        <translation type="vanished">Compléter les p&amp;olices de caractères à partir de la police principale</translation>
     </message>
     <message>
-        <location filename="../DialogFonts.ui" line="71"/>
         <source>Italic Font</source>
-        <translation>Police de caractères italique</translation>
+        <translation type="vanished">Police de caractères italique</translation>
     </message>
     <message>
-        <location filename="../DialogFonts.ui" line="153"/>
         <source>Bold Font</source>
-        <translation>Police de caractères grasse</translation>
+        <translation type="vanished">Police de caractères grasse</translation>
     </message>
     <message>
-        <location filename="../DialogFonts.ui" line="235"/>
         <source>Bold Italic Font</source>
-        <translation>Police de caractères grasse et italique</translation>
+        <translation type="vanished">Police de caractères grasse et italique</translation>
     </message>
     <message>
-        <location filename="../DialogFonts.cpp" line="186"/>
         <source>(font below may not match primary font)</source>
-        <translation>(La police de caractères ci-dessous ne correspond pas à police de caractères principale)</translation>
+        <translation type="vanished">(La police de caractères ci-dessous ne correspond pas à police de caractères principale)</translation>
     </message>
     <message>
-        <location filename="../DialogFonts.cpp" line="189"/>
         <source>(xxx font below is invalid xxx)</source>
-        <translation>(xxx La police de caractères ci-dessous n&apos;est pas valide xxx)</translation>
+        <translation type="vanished">(xxx La police de caractères ci-dessous n&apos;est pas valide xxx)</translation>
     </message>
     <message>
-        <location filename="../DialogFonts.cpp" line="192"/>
         <source>(height of font below does not match primary)</source>
-        <translation>(La taille de la police de caractères ci-dessous ne correspond pas à celle de la police de caractères principale)</translation>
+        <translation type="vanished">(La taille de la police de caractères ci-dessous ne correspond pas à celle de la police de caractères principale)</translation>
     </message>
     <message>
-        <location filename="../DialogFonts.cpp" line="195"/>
         <source>(spacing of font below does not match primary)</source>
-        <translation>(L&apos;écartement de la police de caractères ci-dessous ne correspond pas à celle de la police de caractères principale)</translation>
+        <translation type="vanished">(L&apos;écartement de la police de caractères ci-dessous ne correspond pas à celle de la police de caractères principale)</translation>
+    </message>
+    <message>
+        <location filename="../../DialogFonts.cpp" line="29"/>
+        <source>%1</source>
+        <translation>%1</translation>
     </message>
 </context>
 <context>
     <name>DialogLanguageModes</name>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="14"/>
+        <location filename="../../DialogLanguageModes.ui" line="14"/>
         <source>Language Modes</source>
         <translation>Langages</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="20"/>
+        <location filename="../../DialogLanguageModes.ui" line="20"/>
         <source>To modify the properties of an existing language mode, select the name from the list on the left.  To add a new language, select &quot;New&quot; from the list</source>
         <translation>Pour modifier les propriétés d&apos;un langage, sélectionnez le nom dans la liste sur la gauche. Pour ajouter un nouveau langage, sélectionnez &quot;Nouveau&quot; depuis la liste</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="37"/>
+        <location filename="../../DialogLanguageModes.ui" line="37"/>
         <source>New</source>
         <translation>Nouveau</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="48"/>
+        <location filename="../../DialogLanguageModes.ui" line="48"/>
         <source>Delete</source>
         <translation>Supprimer</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="59"/>
+        <location filename="../../DialogLanguageModes.ui" line="59"/>
         <source>Copy</source>
         <translation>Copier</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="70"/>
-        <location filename="../DialogLanguageModes.ui" line="81"/>
+        <location filename="../../DialogLanguageModes.ui" line="70"/>
+        <location filename="../../DialogLanguageModes.ui" line="81"/>
         <source>Move</source>
         <translation>Déplacer</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="112"/>
+        <location filename="../../DialogLanguageModes.ui" line="112"/>
         <source>Name</source>
         <translation>Nom</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="125"/>
+        <location filename="../../DialogLanguageModes.ui" line="125"/>
         <source>File extensions (separate w/ space)</source>
         <translation>Extensions de fichiers (séparées par un espace)</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="138"/>
+        <location filename="../../DialogLanguageModes.ui" line="138"/>
         <source>Recognition regular expression (applied to first 200 characters of file to determine type from content)</source>
-        <translation>Reconnaissance d&apos;expression régulière (appliquée aux 200 premiers caractères du fichier pour déterminer le type de fichier à partir de son contenu)</translation>
+        <translation>Reconnaissance d&apos;expresion régulière (appliquée aux 200 premiers caractères du fichier pour déterminer le type de fichier à partir de son contenu</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="151"/>
+        <location filename="../../DialogLanguageModes.ui" line="151"/>
         <source>Default calltips file(s) (separate w/ colons)</source>
-        <translation>Fichier(s) des calltips par défaut (séparés par :)</translation>
+        <translation>Fichier(s) des calltips par défaut (séparés par deux points)</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="181"/>
+        <location filename="../../DialogLanguageModes.ui" line="181"/>
         <source>Override Defaults</source>
         <translation>Remplacer les valeurs par défaut</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="189"/>
+        <location filename="../../DialogLanguageModes.ui" line="189"/>
         <source>Word delimiters</source>
-        <translation>Délimiteurs de mots      </translation>
+        <translation>Délimiteurs de mots</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="209"/>
+        <location filename="../../DialogLanguageModes.ui" line="209"/>
         <source>Alternative hardware tab spacing</source>
         <translation>Autre type de tabulation</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="232"/>
+        <location filename="../../DialogLanguageModes.ui" line="232"/>
         <source>Alternative emulated tab spacing</source>
         <translation>Autre type de tabulation émulée</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="253"/>
+        <location filename="../../DialogLanguageModes.ui" line="253"/>
         <source>&amp;Default indent style</source>
-        <translation>&amp;Indentation par défaut   </translation>
+        <translation>Style d&apos;in&amp;dentation par défaut</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="263"/>
+        <location filename="../../DialogLanguageModes.ui" line="263"/>
         <source>&amp;No automatic indent</source>
-        <translation>&amp;Pas d&apos;indentation automatique  </translation>
+        <translation>Pas d&apos;inde&amp;ntation automatic</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="270"/>
+        <location filename="../../DialogLanguageModes.ui" line="270"/>
         <source>A&amp;uto-indent</source>
-        <translation>&amp;Auto-indentation</translation>
+        <translation>A&amp;uto-indentation</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="277"/>
+        <location filename="../../DialogLanguageModes.ui" line="277"/>
         <source>S&amp;mart-indent</source>
         <translation>I&amp;ndentation intelligente</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="296"/>
+        <location filename="../../DialogLanguageModes.ui" line="296"/>
         <source>&amp;Default wrap style</source>
-        <translation>&amp;Enroulement par défaut</translation>
+        <translation>Style d&apos;enroulement de ligne par &amp;défaut</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="306"/>
+        <location filename="../../DialogLanguageModes.ui" line="306"/>
         <source>No &amp;wrapping</source>
-        <translation>Pas d&apos;enrou&amp;lement                      </translation>
+        <translation>Pas d&apos;enroulemen&amp;t</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="313"/>
+        <location filename="../../DialogLanguageModes.ui" line="313"/>
         <source>&amp;Auto newline wrap</source>
-        <translation>Avec &amp;nouvelle ligne</translation>
+        <translation>Enroulement &amp;avec nouvelle ligne</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.ui" line="320"/>
+        <location filename="../../DialogLanguageModes.ui" line="320"/>
         <source>&amp;Continuous wrap</source>
-        <translation>Enroulement &amp;continu   </translation>
+        <translation>Enroulement &amp;continu</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="113"/>
+        <location filename="../../DialogLanguageModes.cpp" line="116"/>
         <source>Discard Entry</source>
         <translation>Rejeter l&apos;entrée</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="115"/>
+        <location filename="../../DialogLanguageModes.cpp" line="118"/>
         <source>Discard incomplete entry for current menu item?</source>
         <translation>Ignorer l&apos;entrée incomplète pour l&apos;élément de menu actuel?</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="116"/>
+        <location filename="../../DialogLanguageModes.cpp" line="119"/>
         <source>Keep</source>
         <translation>Conserver</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="251"/>
+        <location filename="../../DialogLanguageModes.cpp" line="253"/>
         <source>Language Mode Name</source>
         <translation>Nom du langage</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="251"/>
+        <location filename="../../DialogLanguageModes.cpp" line="253"/>
         <source>Please specify a name for the language mode</source>
         <translation>Veuillez spécifier un nom pour le langage</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="270"/>
+        <location filename="../../DialogLanguageModes.cpp" line="272"/>
         <source>Regex</source>
         <translation>Expression régulière</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="270"/>
+        <location filename="../../DialogLanguageModes.cpp" line="272"/>
         <source>Recognition expression:
 %1</source>
         <translation>Expression de reconnaissance:
 %1</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="283"/>
+        <location filename="../../DialogLanguageModes.cpp" line="286"/>
         <source>Error reading Calltips</source>
         <translation>Erreur de lecture des calltips</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="283"/>
+        <location filename="../../DialogLanguageModes.cpp" line="286"/>
         <source>Can&apos;t read default calltips file(s):
   &quot;%1&quot;
 </source>
-        <translation>Impossible de lire le(s) fichier(s) de calltips par défaut:
-  &quot;%1&quot;</translation>
+        <translation>Impossible de lire le(s) fichier(s) des calltips par défaut:
+  &quot;%1&quot;
+</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="300"/>
-        <location filename="../DialogLanguageModes.cpp" line="315"/>
+        <location filename="../../DialogLanguageModes.cpp" line="303"/>
+        <location filename="../../DialogLanguageModes.cpp" line="318"/>
         <source>Warning</source>
         <translation>Avertissement</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="300"/>
+        <location filename="../../DialogLanguageModes.cpp" line="303"/>
         <source>Can&apos;t read integer value &quot;%1&quot; in tab spacing</source>
         <translation>Impossible de lire la valeur entière &quot;%1&quot; dans l&apos;espacement de tabulations</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="315"/>
+        <location filename="../../DialogLanguageModes.cpp" line="318"/>
         <source>Can&apos;t read integer value &quot;%1&quot; in emulated tab spacing</source>
         <translation>Impossible de lire la valeur entière &quot;%1&quot; dans l&apos;espacement de tabulations émulées</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="380"/>
+        <location filename="../../DialogLanguageModes.cpp" line="383"/>
         <source>%1:%2</source>
-        <translation>%1:%2</translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="529"/>
+        <location filename="../../DialogLanguageModes.cpp" line="532"/>
         <source>New Item</source>
-        <translation>Nouvel élément</translation>
+        <translation>Nouvel article</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="630"/>
+        <location filename="../../DialogLanguageModes.cpp" line="633"/>
         <source>Patterns exist</source>
         <translation>Les modèles existent</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="631"/>
+        <location filename="../../DialogLanguageModes.cpp" line="634"/>
         <source>This language mode has syntax highlighting patterns defined. Please delete the patterns first, in Preferences -&gt; Default Settings -&gt; Syntax Highlighting, before proceeding here.</source>
-        <translation>Ce langage a des motifs de coloration syntaxique définis. Veuillez d&apos;abord supprimer les motifs, dans Préférences -&gt; Paramètres par défaut -&gt; Coloration syntaxique, avant de continuer.</translation>
+        <translation>Ce langage a des motifs de coloration syntaxique définis. Veuillez d&apos;abord supprimer les motifs, dans Préférences -&gt; Paramètres par défaut -&gt; Coloration syntaxique, avant de continuer ici.</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="638"/>
+        <location filename="../../DialogLanguageModes.cpp" line="641"/>
         <source>Smart Indent Macros exist</source>
         <translation>Les macros d&apos;indentation intelligentes existent</translation>
     </message>
     <message>
-        <location filename="../DialogLanguageModes.cpp" line="639"/>
+        <location filename="../../DialogLanguageModes.cpp" line="642"/>
         <source>This language mode has smart indent macros defined. Please delete the macros first, in Preferences -&gt; Default Settings -&gt; Auto Indent -&gt; Program Smart Indent, before proceeding here.</source>
-        <translation>Ce langage comporte des macros d&apos;indentation intelligentes définies. Veuillez d&apos;abord supprimer les macros, dans Préférences -&gt; Paramètres par défaut -&gt; Indentation automatique -&gt; Programme d&apos;Indentation Intelligente, avant de continuer.</translation>
+        <translation>Ce langage comporte des macros d&apos;indentation intelligentes définies. Veuillez d&apos;abord supprimer les macros, dans Préférences -&gt; Paramètres par défaut -&gt; Indentation automatique -&gt; Programme Indentation Intelligente, avant de continuer ici.</translation>
     </message>
 </context>
 <context>
     <name>DialogMacros</name>
     <message>
-        <location filename="../DialogMacros.ui" line="14"/>
+        <location filename="../../DialogMacros.ui" line="14"/>
         <source>Macro Commands</source>
         <translation>Macros</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.ui" line="26"/>
+        <location filename="../../DialogMacros.ui" line="26"/>
         <source>New</source>
         <translation>Nouvelle</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.ui" line="37"/>
+        <location filename="../../DialogMacros.ui" line="37"/>
         <source>Delete</source>
         <translation>Supprimer</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.ui" line="48"/>
+        <location filename="../../DialogMacros.ui" line="48"/>
         <source>Copy</source>
         <translation>Copier</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.ui" line="59"/>
-        <location filename="../DialogMacros.ui" line="70"/>
+        <location filename="../../DialogMacros.ui" line="59"/>
+        <location filename="../../DialogMacros.ui" line="70"/>
         <source>Move</source>
         <translation>Déplacer</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.ui" line="103"/>
+        <location filename="../../DialogMacros.ui" line="103"/>
         <source>Select a macro menu item from the list at left.
 Select &quot;New&quot; to add a new command to the menu.</source>
         <translation>Sélectionnez un élément du menu macro depuis la liste sur la gauche.
-Sélectionnez &quot;Nouvelle&quot; pour ajouter une nouvelle commande au menu.</translation>
+Sélectionnez &quot;Nouveau&quot; pour ajouter une nouvelle command au menu.</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.ui" line="116"/>
-        <location filename="../DialogMacros.cpp" line="339"/>
-        <location filename="../DialogMacros.cpp" line="347"/>
+        <location filename="../../DialogMacros.ui" line="116"/>
+        <location filename="../../DialogMacros.cpp" line="340"/>
+        <location filename="../../DialogMacros.cpp" line="348"/>
         <source>Menu Entry</source>
-        <translation>Menu</translation>
+        <translation>Menu Entrée</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.ui" line="136"/>
+        <location filename="../../DialogMacros.ui" line="136"/>
         <source>(&gt; for sub-menu, @ language mode)</source>
         <translation>(&gt;pour un sous-menu, @language)</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.ui" line="153"/>
+        <location filename="../../DialogMacros.ui" line="153"/>
         <source>Accelerator</source>
         <translation>Accélérateur</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.ui" line="160"/>
+        <location filename="../../DialogMacros.ui" line="160"/>
         <source>&amp;Paste Learn/
 Replay Macro</source>
         <translation>&amp;Coller Apprendre/
-Rejouer la macro</translation>
+Rejouer la Macro</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.ui" line="170"/>
+        <location filename="../../DialogMacros.ui" line="170"/>
         <source>Requires Selection</source>
-        <translation>Nécessite une sélection</translation>
+        <translation>Nécessite une Sélection</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.ui" line="181"/>
+        <location filename="../../DialogMacros.ui" line="181"/>
         <source>Macro Command to Execute</source>
         <translation>Macro à exécuter</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.ui" line="199"/>
+        <location filename="../../DialogMacros.ui" line="199"/>
         <source>&amp;OK</source>
         <translation>&amp;OK</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.ui" line="210"/>
+        <location filename="../../DialogMacros.ui" line="210"/>
         <source>&amp;Apply</source>
         <translation>&amp;Appliquer</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.ui" line="221"/>
+        <location filename="../../DialogMacros.ui" line="221"/>
         <source>&amp;Check</source>
         <translation>&amp;Vérifier</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.ui" line="228"/>
+        <location filename="../../DialogMacros.ui" line="228"/>
         <source>&amp;Close</source>
         <translation>&amp;Fermer</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.cpp" line="124"/>
+        <location filename="../../DialogMacros.cpp" line="125"/>
         <source>New Item</source>
         <translation>Nouvel élément</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.cpp" line="229"/>
+        <location filename="../../DialogMacros.cpp" line="230"/>
         <source>Discard Entry</source>
         <translation>Annuler l&apos;entrée</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.cpp" line="231"/>
+        <location filename="../../DialogMacros.cpp" line="232"/>
         <source>Discard incomplete entry for current menu item?</source>
         <translation>Annuler l&apos;entrée incomplète pour l&apos;élément courant ?</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.cpp" line="232"/>
+        <location filename="../../DialogMacros.cpp" line="233"/>
         <source>Keep</source>
         <translation>Conserver</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.cpp" line="282"/>
+        <location filename="../../DialogMacros.cpp" line="283"/>
         <source>Macro</source>
         <translation>Macro</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.cpp" line="283"/>
+        <location filename="../../DialogMacros.cpp" line="284"/>
         <source>Macro compiled without error</source>
         <translation>Macro compilée sans erreur</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.cpp" line="339"/>
+        <location filename="../../DialogMacros.cpp" line="340"/>
         <source>Please specify a name for the menu item</source>
         <translation>Veuillez spécifier un nom pour l&apos;élément du menu</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.cpp" line="347"/>
+        <location filename="../../DialogMacros.cpp" line="348"/>
         <source>Menu item names may not contain colon (:) characters</source>
-        <translation>Les noms des éléments de menu ne peuvent pas comporter le caractère deux-points (:)</translation>
+        <translation>Les noms des éléments de menu ne peuvent pas comporter le caractère 2 points (:)</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.cpp" line="355"/>
+        <location filename="../../DialogMacros.cpp" line="356"/>
         <source>Command to Execute</source>
-        <translation>Commande à exécuter</translation>
+        <translation>Commande à éxécuter</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.cpp" line="355"/>
+        <location filename="../../DialogMacros.cpp" line="356"/>
         <source>Please specify macro command(s) to execute</source>
         <translation>Veuillez spécifier la(les) macro(s) à exécuter</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.cpp" line="395"/>
-        <location filename="../DialogMacros.cpp" line="407"/>
+        <location filename="../../DialogMacros.cpp" line="391"/>
+        <location filename="../../DialogMacros.cpp" line="402"/>
         <source>macro</source>
         <translation>macro</translation>
     </message>
     <message>
-        <location filename="../DialogMacros.cpp" line="407"/>
+        <location filename="../../DialogMacros.cpp" line="402"/>
         <source>syntax error</source>
         <translation>erreur de syntaxe</translation>
     </message>
@@ -1422,28 +1451,28 @@ Rejouer la macro</translation>
 <context>
     <name>DialogMoveDocument</name>
     <message>
-        <location filename="../DialogMoveDocument.ui" line="14"/>
+        <location filename="../../DialogMoveDocument.ui" line="14"/>
         <source>Move Document</source>
         <translation>Déplacer le document</translation>
     </message>
     <message>
-        <location filename="../DialogMoveDocument.ui" line="20"/>
-        <location filename="../DialogMoveDocument.cpp" line="35"/>
+        <location filename="../../DialogMoveDocument.ui" line="20"/>
+        <location filename="../../DialogMoveDocument.cpp" line="35"/>
         <source>Move %1 into window of</source>
         <translation>Déplacer %1 dans la fenêtre</translation>
     </message>
     <message>
-        <location filename="../DialogMoveDocument.ui" line="30"/>
+        <location filename="../../DialogMoveDocument.ui" line="30"/>
         <source>Move all documents in this window</source>
         <translation>Déplacer tous les documents dans cette fenêtre</translation>
     </message>
     <message>
-        <location filename="../DialogMoveDocument.ui" line="39"/>
+        <location filename="../../DialogMoveDocument.ui" line="39"/>
         <source>Move</source>
         <translation>Déplacer</translation>
     </message>
     <message>
-        <location filename="../DialogMoveDocument.ui" line="66"/>
+        <location filename="../../DialogMoveDocument.ui" line="66"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>
@@ -1451,77 +1480,81 @@ Rejouer la macro</translation>
 <context>
     <name>DialogMultiReplace</name>
     <message>
-        <location filename="../DialogMultiReplace.ui" line="14"/>
+        <location filename="../../DialogMultiReplace.ui" line="14"/>
         <source>Replace All in Multiple Documents</source>
         <translation>Tout Remplacer dans Plusieurs Documents</translation>
     </message>
     <message>
-        <location filename="../DialogMultiReplace.ui" line="22"/>
+        <location filename="../../DialogMultiReplace.ui" line="22"/>
         <source>Files in which to Replace All:</source>
         <translation>Fichiers dans lesquels tout remplacer:</translation>
     </message>
     <message>
-        <location filename="../DialogMultiReplace.ui" line="29"/>
+        <location filename="../../DialogMultiReplace.ui" line="29"/>
         <source>Show &amp;Path Names</source>
-        <translation>Afficher les &amp;Chemins</translation>
+        <translation>Afficher les noms des &amp;Chemins</translation>
     </message>
     <message>
-        <location filename="../DialogMultiReplace.ui" line="47"/>
+        <location filename="../../DialogMultiReplace.ui" line="47"/>
         <source>&amp;Replace</source>
-        <translation>&amp;Remplacer</translation>
+        <translation>Tout &amp;Remplacer</translation>
     </message>
     <message>
-        <location filename="../DialogMultiReplace.ui" line="58"/>
+        <location filename="../../DialogMultiReplace.ui" line="58"/>
         <source>&amp;Select All</source>
-        <translation>Tout &amp;sélectionner</translation>
+        <translation>Tout &amp;Sélectionner</translation>
     </message>
     <message>
-        <location filename="../DialogMultiReplace.ui" line="69"/>
+        <location filename="../../DialogMultiReplace.ui" line="69"/>
         <source>&amp;Deselect All</source>
         <translation>Tout &amp;désélectionner</translation>
     </message>
     <message>
-        <location filename="../DialogMultiReplace.ui" line="76"/>
+        <location filename="../../DialogMultiReplace.ui" line="76"/>
         <source>&amp;Cancel</source>
         <translation>&amp;Annuler</translation>
     </message>
     <message>
-        <location filename="../DialogMultiReplace.cpp" line="41"/>
+        <location filename="../../DialogMultiReplace.cpp" line="36"/>
         <source>No Files</source>
         <translation>Pas de fichier</translation>
     </message>
     <message>
-        <location filename="../DialogMultiReplace.cpp" line="41"/>
+        <location filename="../../DialogMultiReplace.cpp" line="36"/>
         <source>No files selected!</source>
         <translation>Pas de fichier sélectionné!</translation>
     </message>
     <message>
-        <location filename="../DialogMultiReplace.cpp" line="53"/>
+        <location filename="../../DialogMultiReplace.cpp" line="48"/>
         <source>Multi-File Replacement</source>
         <translation>Remplacement multi-fichier</translation>
     </message>
     <message>
-        <location filename="../DialogMultiReplace.cpp" line="54"/>
         <source>Multi-file replacements are difficult to undo. Proceed with the replacement ?</source>
+        <translation type="vanished">Les remplacements multi-fichiers sont difficiles à annuler. Procéder au remplacement ?</translation>
+    </message>
+    <message>
+        <location filename="../../DialogMultiReplace.cpp" line="49"/>
+        <source>Multi-file replacements are difficult to undo. Proceed with the replacement?</source>
         <translation>Les remplacements multi-fichiers sont difficiles à annuler. Procéder au remplacement ?</translation>
     </message>
     <message>
-        <location filename="../DialogMultiReplace.cpp" line="113"/>
+        <location filename="../../DialogMultiReplace.cpp" line="110"/>
         <source>Read-only Files</source>
         <translation>Fichiers en lecture seule</translation>
     </message>
     <message>
-        <location filename="../DialogMultiReplace.cpp" line="113"/>
+        <location filename="../../DialogMultiReplace.cpp" line="110"/>
         <source>All selected files have become read-only.</source>
-        <translation>Tous les fichiers sélectionnés sont devenus en lecture seule.</translation>
+        <translation>Tout les fichiers sélectionnés sont en lecture seule.</translation>
     </message>
     <message>
-        <location filename="../DialogMultiReplace.cpp" line="115"/>
+        <location filename="../../DialogMultiReplace.cpp" line="112"/>
         <source>String not found</source>
         <translation>Chaîne non trouvée</translation>
     </message>
     <message>
-        <location filename="../DialogMultiReplace.cpp" line="115"/>
+        <location filename="../../DialogMultiReplace.cpp" line="112"/>
         <source>String was not found</source>
         <translation>La chaîne n&apos;a pas été trouvée</translation>
     </message>
@@ -1529,7 +1562,7 @@ Rejouer la macro</translation>
 <context>
     <name>DialogOutput</name>
     <message>
-        <location filename="../DialogOutput.ui" line="14"/>
+        <location filename="../../DialogOutput.ui" line="14"/>
         <source>Output From Command</source>
         <translation>Sortie de la commande</translation>
     </message>
@@ -1537,197 +1570,198 @@ Rejouer la macro</translation>
 <context>
     <name>DialogPrint</name>
     <message>
-        <location filename="../DialogPrint.ui" line="14"/>
+        <location filename="../../DialogPrint.ui" line="14"/>
         <source>Print</source>
         <translation>Impression</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.ui" line="22"/>
         <source>Number of copies (1)</source>
-        <translation>Nombre de copies (1)</translation>
+        <translation type="vanished">Nombre de copies (1)</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.ui" line="55"/>
-        <location filename="../DialogPrint.cpp" line="138"/>
         <source>Queue</source>
-        <translation>Queue</translation>
+        <translation type="vanished">Queue</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.ui" line="65"/>
-        <location filename="../DialogPrint.cpp" line="151"/>
         <source>Host</source>
-        <translation>Hôte</translation>
+        <translation type="vanished">Hôte</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.ui" line="99"/>
+        <location filename="../../DialogPrint.ui" line="20"/>
+        <source>Number of copies</source>
+        <translation>Nombre de copies</translation>
+    </message>
+    <message>
+        <location filename="../../DialogPrint.ui" line="56"/>
+        <source>Printer</source>
+        <translation>Imprimante</translation>
+    </message>
+    <message>
+        <location filename="../../DialogPrint.ui" line="78"/>
         <source>&amp;Print</source>
         <translation>Im&amp;primer</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.ui" line="123"/>
+        <location filename="../../DialogPrint.ui" line="102"/>
         <source>&amp;Cancel</source>
         <translation>&amp;Annuler</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.cpp" line="116"/>
-        <source> </source>
-        <translation> </translation>
-    </message>
-    <message>
-        <location filename="../DialogPrint.cpp" line="136"/>
         <source>Queue (%1)</source>
-        <translation>Queue (%1)</translation>
+        <translation type="vanished">Queue (%1)</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.cpp" line="149"/>
         <source>Host (%1)</source>
-        <translation>Hôte (%1)</translation>
+        <translation type="vanished">Hôte (%1)</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.cpp" line="184"/>
-        <location filename="../DialogPrint.cpp" line="196"/>
         <source>printCommand</source>
-        <translation>printCommand</translation>
+        <translation type="vanished">printCommand</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.cpp" line="185"/>
-        <location filename="../DialogPrint.cpp" line="197"/>
         <source>printCopiesOption</source>
-        <translation>printCopiesOption</translation>
+        <translation type="vanished">printCopiesOption</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.cpp" line="186"/>
-        <location filename="../DialogPrint.cpp" line="198"/>
         <source>printQueueOption</source>
-        <translation>printQueueOption</translation>
+        <translation type="vanished">printQueueOption</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.cpp" line="187"/>
-        <location filename="../DialogPrint.cpp" line="199"/>
         <source>printNameOption</source>
-        <translation>printNameOption</translation>
+        <translation type="vanished">printNameOption</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.cpp" line="188"/>
-        <location filename="../DialogPrint.cpp" line="200"/>
         <source>printHostOption</source>
-        <translation>printHostOption</translation>
+        <translation type="vanished">printHostOption</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.cpp" line="189"/>
-        <location filename="../DialogPrint.cpp" line="201"/>
         <source>printDefaultQueue</source>
-        <translation>printDefaultQueue</translation>
+        <translation type="vanished">printDefaultQueue</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.cpp" line="190"/>
-        <location filename="../DialogPrint.cpp" line="202"/>
         <source>printDefaultHost</source>
-        <translation>printDefaultHost</translation>
+        <translation type="vanished">printDefaultHost</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.cpp" line="250"/>
-        <location filename="../DialogPrint.cpp" line="258"/>
-        <location filename="../DialogPrint.cpp" line="267"/>
         <source> %1%2</source>
-        <translation> %1%2</translation>
+        <translation type="vanished"> %1%2</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.cpp" line="272"/>
         <source> %1&quot;%2&quot;</source>
-        <translation> %1&quot;%2&quot;</translation>
+        <translation type="vanished"> %1&quot;%2&quot;</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.cpp" line="276"/>
         <source>%1%2%3%4%5</source>
-        <translation>%1%2%3%4%5</translation>
+        <translation type="vanished">%1%2%3%4%5</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.cpp" line="304"/>
         <source>cat %1 | %2 2&gt;&amp;1</source>
-        <translation>cat %1 | %2 2&gt;&amp;1</translation>
+        <translation type="vanished">cat %1 | %2 2&gt;&amp;1</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.cpp" line="314"/>
-        <location filename="../DialogPrint.cpp" line="320"/>
         <source>Print Error</source>
-        <translation>Erreur d&apos;impression</translation>
+        <translation type="vanished">Erreur d&apos;impression</translation>
     </message>
     <message>
-        <location filename="../DialogPrint.cpp" line="314"/>
-        <location filename="../DialogPrint.cpp" line="320"/>
         <source>Unable to Print:
 %1</source>
-        <translation>Impossible d&apos;imprimer:
+        <translation type="vanished">Impossible d&apos;imprimer:
 %1</translation>
     </message>
-</context>
-<context>
-    <name>DialogPromptList</name>
     <message>
-        <location filename="../DialogPromptList.cpp" line="28"/>
-        <source>
-</source>
-        <translation>
-</translation>
+        <location filename="../../DialogPrint.cpp" line="26"/>
+        <source>Print to File (PDF)</source>
+        <translation>Imprimer vers le fichier (PDF)</translation>
+    </message>
+    <message>
+        <location filename="../../DialogPrint.cpp" line="66"/>
+        <source>Print to File</source>
+        <translation>Imprimer vers le fichier</translation>
+    </message>
+    <message>
+        <location filename="../../DialogPrint.cpp" line="71"/>
+        <source>*.pdf</source>
+        <translation>*.pdf</translation>
+    </message>
+    <message>
+        <location filename="../../DialogPrint.cpp" line="86"/>
+        <location filename="../../DialogPrint.cpp" line="93"/>
+        <location filename="../../DialogPrint.cpp" line="108"/>
+        <source>Error Printing to File</source>
+        <translation>Erreur lors de l&apos;impression vers un fichier</translation>
+    </message>
+    <message>
+        <location filename="../../DialogPrint.cpp" line="87"/>
+        <source>Failed to print to file, is it writable?</source>
+        <translation>Impossible d&apos;imprimer vers le fichier, est-il accessible en écriture?</translation>
+    </message>
+    <message>
+        <location filename="../../DialogPrint.cpp" line="94"/>
+        <source>No file was specified, please provide a filename to print to.</source>
+        <translation>Aucun nom de fichier n&apos;a été spécifié, veuillez un nom de fichier vers lequel imprimer.</translation>
+    </message>
+    <message>
+        <location filename="../../DialogPrint.cpp" line="109"/>
+        <source>An error occured while printing.</source>
+        <translation>Une erreur est survenue lors de l&apos;impression.</translation>
     </message>
 </context>
 <context>
     <name>DialogRepeat</name>
     <message>
-        <location filename="../DialogRepeat.ui" line="14"/>
-        <location filename="../DialogRepeat.cpp" line="44"/>
+        <location filename="../../DialogRepeat.ui" line="14"/>
+        <location filename="../../DialogRepeat.cpp" line="45"/>
         <source>Repeat Macro</source>
-        <translation>Répéter la Macro</translation>
+        <translation>Répéter la macro</translation>
     </message>
     <message>
-        <location filename="../DialogRepeat.ui" line="26"/>
+        <location filename="../../DialogRepeat.ui" line="26"/>
         <source>Last Command (%&amp;1)</source>
-        <translation>Dernière commande (%&amp;1)              </translation>
+        <translation>Dernière commande (%&amp;1)</translation>
     </message>
     <message>
-        <location filename="../DialogRepeat.ui" line="39"/>
+        <location filename="../../DialogRepeat.ui" line="39"/>
         <source>&amp;Learn/Replay</source>
         <translation>A&amp;pprendre/Rejouer</translation>
     </message>
     <message>
-        <location filename="../DialogRepeat.ui" line="55"/>
+        <location filename="../../DialogRepeat.ui" line="55"/>
         <source>&amp;In Selection</source>
-        <translation>Dans la &amp;sélection</translation>
+        <translation>Dans la Select&amp;ion</translation>
     </message>
     <message>
-        <location filename="../DialogRepeat.ui" line="65"/>
+        <location filename="../../DialogRepeat.ui" line="65"/>
         <source>&amp;To End</source>
-        <translation>Jusqu&apos;à la &amp;fin</translation>
+        <translation>&amp;Vers la Fin</translation>
     </message>
     <message>
-        <location filename="../DialogRepeat.ui" line="72"/>
+        <location filename="../../DialogRepeat.ui" line="72"/>
         <source>&amp;N Times</source>
         <translation>&amp;N Fois</translation>
     </message>
     <message>
-        <location filename="../DialogRepeat.cpp" line="26"/>
+        <location filename="../../DialogRepeat.cpp" line="26"/>
         <source>Last &amp;Command (%1)</source>
-        <translation>Dernière &amp;commande (%1)</translation>
+        <translation>Dernière &amp;Commande (%1)</translation>
     </message>
     <message>
-        <location filename="../DialogRepeat.cpp" line="44"/>
+        <location filename="../../DialogRepeat.cpp" line="45"/>
         <source>No selection in window to repeat within</source>
         <translation>Aucune sélection dans la fenêtre pour y répéter quoi que ce soit</translation>
     </message>
     <message>
-        <location filename="../DialogRepeat.cpp" line="55"/>
-        <location filename="../DialogRepeat.cpp" line="62"/>
+        <location filename="../../DialogRepeat.cpp" line="55"/>
+        <location filename="../../DialogRepeat.cpp" line="62"/>
         <source>Warning</source>
         <translation>Avertissement</translation>
     </message>
     <message>
-        <location filename="../DialogRepeat.cpp" line="55"/>
+        <location filename="../../DialogRepeat.cpp" line="55"/>
         <source>Please supply a value for number of times</source>
         <translation>Veulillez fournir une valeur pour le nombre de fois</translation>
     </message>
     <message>
-        <location filename="../DialogRepeat.cpp" line="62"/>
+        <location filename="../../DialogRepeat.cpp" line="62"/>
         <source>Can&apos;t read integer value &quot;%1&quot; in number of times</source>
         <translation>Impossible de lire la valeur entière &quot;%1&quot; dans &quot;nombre de fois&quot;</translation>
     </message>
@@ -1735,124 +1769,130 @@ Rejouer la macro</translation>
 <context>
     <name>DialogReplace</name>
     <message>
-        <location filename="../DialogReplace.ui" line="14"/>
+        <location filename="../../DialogReplace.ui" line="14"/>
         <source>Replace/Find</source>
         <translation>Remplacer/Chercher</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="22"/>
+        <location filename="../../DialogReplace.ui" line="22"/>
         <source>String to Find:</source>
         <translation>Chaîne à rechercher:</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="42"/>
+        <location filename="../../DialogReplace.ui" line="42"/>
         <source>(use up arrow key to recall previous)</source>
-        <translation>(utiliser la flèche vers le haut pour rappeler la précédente)</translation>
+        <translation>(utilier la flêche vers le haut pour rappeler la chaîne précédente)</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="58"/>
+        <location filename="../../DialogReplace.ui" line="51"/>
+        <source>Search</source>
+        <translation>Rechercher</translation>
+    </message>
+    <message>
+        <location filename="../../DialogReplace.ui" line="61"/>
         <source>Replace With:</source>
         <translation>Remplacer par:</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="74"/>
+        <location filename="../../DialogReplace.ui" line="80"/>
         <source>&amp;Regular Expression</source>
-        <translation>&amp;Expression régulière</translation>
+        <translation>Expression &amp;régulière</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="81"/>
+        <location filename="../../DialogReplace.ui" line="87"/>
         <source>&amp;Case Sensitive</source>
-        <translation>Sensible à la &amp;casse                   </translation>
+        <translation>Sensible à la &amp;casse</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="88"/>
+        <location filename="../../DialogReplace.ui" line="94"/>
         <source>W&amp;hole Word</source>
-        <translation>&amp;Mot entier</translation>
+        <translation>Mot &amp;entier</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="112"/>
+        <location filename="../../DialogReplace.ui" line="118"/>
         <source>Search &amp;Backward</source>
-        <translation>Rechercher en &amp;arrière</translation>
+        <translation>Rechercher en &amp;Arrière</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="132"/>
+        <location filename="../../DialogReplace.ui" line="138"/>
         <source>&amp;Keep Dialog</source>
-        <translation>Conserver la &amp;fenêtre</translation>
+        <translation>&amp;Conserver la fenêtre</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="156"/>
+        <location filename="../../DialogReplace.ui" line="162"/>
         <source>Replace all in:</source>
-        <translation>Tout remplacer dans:</translation>
+        <translation>Tout Remplacer dans:</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="163"/>
+        <location filename="../../DialogReplace.ui" line="169"/>
         <source>W&amp;indow</source>
         <translation>&amp;Fenêtre</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="174"/>
+        <location filename="../../DialogReplace.ui" line="180"/>
         <source>&amp;Selection</source>
         <translation>&amp;Sélection</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="185"/>
+        <location filename="../../DialogReplace.ui" line="191"/>
         <source>&amp;Multiple Documents</source>
-        <translation>&amp;Plusieurs documents</translation>
+        <translation>&amp;Plusieurs Documents</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="200"/>
+        <location filename="../../DialogReplace.ui" line="68"/>
+        <location filename="../../DialogReplace.ui" line="206"/>
         <source>Replace</source>
         <translation>Remplacer</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="207"/>
+        <location filename="../../DialogReplace.ui" line="213"/>
         <source>Return</source>
         <translation>Retour</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="217"/>
+        <location filename="../../DialogReplace.ui" line="223"/>
         <source>&amp;Find</source>
         <translation>&amp;Rechercher</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="228"/>
+        <location filename="../../DialogReplace.ui" line="234"/>
         <source>Replace &amp;&amp; Fi&amp;nd</source>
-        <translation>Remplacer &amp;&amp; &amp;Rechercher</translation>
+        <translation>Remplacer puis &amp;Trouver</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="239"/>
+        <location filename="../../DialogReplace.ui" line="245"/>
         <source>Cancel</source>
         <translation>Annuler</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.ui" line="246"/>
+        <location filename="../../DialogReplace.ui" line="252"/>
         <source>Esc</source>
         <translation>Echappement</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.cpp" line="185"/>
+        <location filename="../../DialogReplace.cpp" line="193"/>
         <source>Find/Replace (in %1)</source>
         <translation>Trouver/Remplacer (dans %1)</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.cpp" line="187"/>
+        <location filename="../../DialogReplace.cpp" line="195"/>
         <source>Find/Replace</source>
         <translation>Trouver/Remplacer</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.cpp" line="724"/>
+        <location filename="../../DialogReplace.cpp" line="572"/>
         <source>Search String</source>
         <translation>Chaîne à rechercher</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.cpp" line="724"/>
+        <location filename="../../DialogReplace.cpp" line="572"/>
         <source>Please respecify the search string:
 %1</source>
         <translation>Veuillez spécifier de nouveau la chaîne à rechercher:
 %1</translation>
     </message>
     <message>
-        <location filename="../DialogReplace.cpp" line="785"/>
+        <location filename="../../DialogReplace.cpp" line="614"/>
         <source>Replace (in %1)</source>
         <translation>Remplacer (dans %1)</translation>
     </message>
@@ -1860,260 +1900,241 @@ Rejouer la macro</translation>
 <context>
     <name>DialogReplaceScope</name>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="14"/>
         <source>Replace/Find</source>
-        <translation>Remplacer/Trouver</translation>
+        <translation type="vanished">Remplacer/Trouver</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="22"/>
         <source>String to Find:</source>
-        <translation>Chaîne à chercher:</translation>
+        <translation type="vanished">Chaîne à chercher:</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="42"/>
         <source>(use up arrow key to recall previous)</source>
-        <translation>(utilier la flèche vers le haut pour rappeler la chaîne précédente)</translation>
+        <translation type="vanished">(utilier la flêche vers le haut pour rappeler la chaîne précédente)</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="58"/>
         <source>Replace With:</source>
-        <translation>Remplacer par:</translation>
+        <translation type="vanished">Remplacer Par:</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="74"/>
         <source>&amp;Regular Expression</source>
-        <translation>Expression &amp;régulière</translation>
+        <translation type="vanished">Expression &amp;Régulière</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="81"/>
         <source>&amp;Case Sensitive</source>
-        <translation>Sensible à la &amp;Casse</translation>
+        <translation type="vanished">Sensible à la &amp;Casse</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="88"/>
         <source>W&amp;hole Word</source>
-        <translation>Mot &amp;Entier</translation>
+        <translation type="vanished">Mot &amp;Entier</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="112"/>
         <source>Search &amp;Backward</source>
-        <translation>Rechercher en &amp;Arrière</translation>
+        <translation type="vanished">Rechercher en &amp;Arrière</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="132"/>
         <source>&amp;Keep Dialog</source>
-        <translation>&amp;Conserver la fenêtre</translation>
+        <translation type="vanished">&amp;Conserver la fenêtre</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="147"/>
         <source>In &amp;Window</source>
-        <translation>Dans la &amp;fenêtre</translation>
+        <translation type="vanished">Dans la &amp;Fenêtre</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="154"/>
         <source>In Se&amp;lection</source>
-        <translation>Dans la &amp;sélection</translation>
+        <translation type="vanished">Dans la &amp;Sélection</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="161"/>
         <source>In &amp;Multiple Documents</source>
-        <translation>Dans &amp;plusieurs documents</translation>
+        <translation type="vanished">Dans &amp;plusieurs documents</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="173"/>
         <source>Replace</source>
-        <translation>Remplacer</translation>
+        <translation type="vanished">Remplacer</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="180"/>
         <source>Return</source>
-        <translation>Retour</translation>
+        <translation type="vanished">Retour</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="190"/>
         <source>&amp;Find</source>
-        <translation>&amp;Trouver</translation>
+        <translation type="vanished">&amp;Trouver</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="201"/>
         <source>Replace &amp;&amp; Fi&amp;nd</source>
-        <translation>Remplacer &amp;&amp; &amp;Trouver</translation>
+        <translation type="vanished">Remplacer &amp;&amp; &amp;Trouver</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="212"/>
         <source>Replace &amp;All</source>
-        <translation>&amp;Tout remplacer</translation>
+        <translation type="vanished">&amp;Tout Remplacer</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="219"/>
         <source>Cancel</source>
-        <translation>Annuler</translation>
+        <translation type="vanished">Annuler</translation>
     </message>
     <message>
-        <location filename="../DialogReplaceScope.ui" line="226"/>
         <source>Esc</source>
-        <translation>Esc</translation>
+        <translation type="vanished">Echappement</translation>
     </message>
 </context>
 <context>
     <name>DialogShellMenu</name>
     <message>
-        <location filename="../DialogShellMenu.ui" line="14"/>
+        <location filename="../../DialogShellMenu.ui" line="14"/>
         <source>Shell Menu</source>
         <translation>Menu du Shell</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="26"/>
+        <location filename="../../DialogShellMenu.ui" line="26"/>
         <source>New</source>
         <translation>Nouveau</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="37"/>
+        <location filename="../../DialogShellMenu.ui" line="37"/>
         <source>Delete</source>
         <translation>Supprimer</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="48"/>
+        <location filename="../../DialogShellMenu.ui" line="48"/>
         <source>Copy</source>
         <translation>Copier</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="59"/>
-        <location filename="../DialogShellMenu.ui" line="70"/>
+        <location filename="../../DialogShellMenu.ui" line="59"/>
+        <location filename="../../DialogShellMenu.ui" line="70"/>
         <source>Move</source>
         <translation>Déplacer</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="103"/>
+        <location filename="../../DialogShellMenu.ui" line="103"/>
         <source>Select a shell menu item from the list at left.
 Select &quot;New&quot; to add a new command to the menu.</source>
         <translation>Sélectionner un élément du menu depuis la liste sur la gauche.
 Sélectionner &quot;Nouveau&quot; pour ajouter une nouvelle commande au menu.</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="116"/>
-        <location filename="../DialogShellMenu.cpp" line="306"/>
-        <location filename="../DialogShellMenu.cpp" line="313"/>
+        <location filename="../../DialogShellMenu.ui" line="116"/>
+        <location filename="../../DialogShellMenu.cpp" line="306"/>
+        <location filename="../../DialogShellMenu.cpp" line="313"/>
         <source>Menu Entry</source>
-        <translation>Entrée du menu</translation>
+        <translation>Entrée du Menu</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="136"/>
+        <location filename="../../DialogShellMenu.ui" line="136"/>
         <source>(&gt; for sub-menu, @ language mode)</source>
         <translation>(&gt;pour un sous-menu, @language)</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="156"/>
+        <location filename="../../DialogShellMenu.ui" line="156"/>
         <source>Accelerator</source>
         <translation>Accélérateur</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="183"/>
+        <location filename="../../DialogShellMenu.ui" line="183"/>
         <source>Command Input (stdin):</source>
-        <translation>Entrée de la commande (stdin):</translation>
+        <translation>Entrée de la Commande (stdin):</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="189"/>
+        <location filename="../../DialogShellMenu.ui" line="189"/>
         <source>&amp;selection</source>
-        <translation>&amp;Sélection            </translation>
+        <translation>&amp;Sélection</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="199"/>
+        <location filename="../../DialogShellMenu.ui" line="199"/>
         <source>document</source>
-        <translation>Document         </translation>
+        <translation>Document</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="206"/>
+        <location filename="../../DialogShellMenu.ui" line="206"/>
         <source>e&amp;ither</source>
-        <translation>Les &amp;deux</translation>
+        <translation>Les &amp;Deux</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="213"/>
+        <location filename="../../DialogShellMenu.ui" line="213"/>
         <source>n&amp;one</source>
         <translation>&amp;Aucun</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="223"/>
+        <location filename="../../DialogShellMenu.ui" line="223"/>
         <source>Command Output (stdout/stderr)</source>
         <translation>Sortie de la Commande (stdout/stderr)</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="229"/>
+        <location filename="../../DialogShellMenu.ui" line="229"/>
         <source>sa&amp;me document</source>
-        <translation>&amp;Même document</translation>
+        <translation>&amp;Même Document</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="239"/>
+        <location filename="../../DialogShellMenu.ui" line="239"/>
         <source>dialo&amp;g</source>
         <translation>&amp;Fenêtre</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="246"/>
+        <location filename="../../DialogShellMenu.ui" line="246"/>
         <source>&amp;new document</source>
-        <translation>&amp;Nouveau document </translation>
+        <translation>&amp;Nouveau Document</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="256"/>
+        <location filename="../../DialogShellMenu.ui" line="256"/>
         <source>Output replaces input</source>
         <translation>La sortie remplace l&apos;entrée</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="263"/>
+        <location filename="../../DialogShellMenu.ui" line="263"/>
         <source>Save &amp;file before executing command</source>
         <translation>Sauvegarder le &amp;fichier avant d&apos;exécuter la commande</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="270"/>
+        <location filename="../../DialogShellMenu.ui" line="270"/>
         <source>&amp;Re-load file after executing command</source>
         <translation>&amp;Recharger le fichier après l&apos;exécution de la commande</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="283"/>
+        <location filename="../../DialogShellMenu.ui" line="283"/>
         <source>Shell Command to Execute</source>
         <translation>Commande du shell à exécuter</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.ui" line="303"/>
+        <location filename="../../DialogShellMenu.ui" line="303"/>
         <source>(% expands to current filename, # to line number)</source>
         <translation>(% se rapporte au nom du fichier courant, # au numéro de ligne)</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.cpp" line="96"/>
+        <location filename="../../DialogShellMenu.cpp" line="96"/>
         <source>New Item</source>
         <translation>Nouvel élément</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.cpp" line="188"/>
+        <location filename="../../DialogShellMenu.cpp" line="188"/>
         <source>Discard Entry</source>
         <translation>Annuler l&apos;entrée</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.cpp" line="190"/>
+        <location filename="../../DialogShellMenu.cpp" line="190"/>
         <source>Discard incomplete entry for current menu item?</source>
         <translation>Annuler l&apos;entrée incomplète pour l&apos;élément du menu courant ?</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.cpp" line="191"/>
+        <location filename="../../DialogShellMenu.cpp" line="191"/>
         <source>Keep</source>
         <translation>Conserver</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.cpp" line="306"/>
+        <location filename="../../DialogShellMenu.cpp" line="306"/>
         <source>Please specify a name for the menu item</source>
         <translation>Veuillez spécifier un nom pour l&apos;élément du menu</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.cpp" line="313"/>
+        <location filename="../../DialogShellMenu.cpp" line="313"/>
         <source>Menu item names may not contain colon (:) characters</source>
-        <translation>Les noms de l&apos;élément du menu ne doivent pas contenir le caractère &apos;deux-points&apos; (:)</translation>
+        <translation>Les noms de l&apos;élément du menu ne doivent pas contenir le caractère &apos;2 points&apos; (:)</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.cpp" line="321"/>
+        <location filename="../../DialogShellMenu.cpp" line="321"/>
         <source>Command to Execute</source>
-        <translation>Commande à exécuter</translation>
+        <translation>Commande à Exécuter</translation>
     </message>
     <message>
-        <location filename="../DialogShellMenu.cpp" line="321"/>
+        <location filename="../../DialogShellMenu.cpp" line="321"/>
         <source>Please specify macro command(s) to execute</source>
         <translation>Veuillez spécifier la macro à exécuter</translation>
     </message>
@@ -2121,143 +2142,143 @@ Sélectionner &quot;Nouveau&quot; pour ajouter une nouvelle commande au menu.</t
 <context>
     <name>DialogSmartIndent</name>
     <message>
-        <location filename="../DialogSmartIndent.ui" line="14"/>
+        <location filename="../../DialogSmartIndent.ui" line="14"/>
         <source>Program Smart Indent Macros</source>
         <translation>Macros d&apos;indentation intelligente</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.ui" line="22"/>
+        <location filename="../../DialogSmartIndent.ui" line="22"/>
         <source>&amp;Common / Shared Initialization...</source>
         <translation>Initialisation &amp;commune/partagée ...</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.ui" line="42"/>
+        <location filename="../../DialogSmartIndent.ui" line="42"/>
         <source>Language Mode:</source>
         <translation>Langage:</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.ui" line="65"/>
+        <location filename="../../DialogSmartIndent.ui" line="65"/>
         <source>&amp;Add / Modify Language Mode...</source>
         <translation>&amp;Ajouter/Modifier le langage...</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.ui" line="84"/>
+        <location filename="../../DialogSmartIndent.ui" line="84"/>
         <source>Language Specific Initialization Macro Commands and Definitions</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.ui" line="106"/>
+        <location filename="../../DialogSmartIndent.ui" line="106"/>
         <source>Newline Macro</source>
         <translation>Macro de nouvelle ligne</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.ui" line="126"/>
+        <location filename="../../DialogSmartIndent.ui" line="126"/>
         <source>($1 is insert position, return indent request or -1)</source>
         <translation>($1 est la position d&apos;insertion, retourne la demande d&apos;indentation ou -1)</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.ui" line="150"/>
+        <location filename="../../DialogSmartIndent.ui" line="150"/>
         <source>Type-in Macro</source>
-        <translation>Zone d&apos;entrée de la macro</translation>
+        <translation>Zone d&apos;entrée de la Macro</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.ui" line="170"/>
+        <location filename="../../DialogSmartIndent.ui" line="170"/>
         <source>($1 is position, $2 is character to be inserted)</source>
         <translation>($1 est la position, $2 est le caractère à insérer)</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.ui" line="194"/>
+        <location filename="../../DialogSmartIndent.ui" line="194"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.ui" line="208"/>
+        <location filename="../../DialogSmartIndent.ui" line="208"/>
         <source>Appl&amp;y</source>
         <translation>&amp;Appliquer</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.ui" line="219"/>
+        <location filename="../../DialogSmartIndent.ui" line="219"/>
         <source>Chec&amp;k</source>
         <translation>&amp;Vérifier</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.ui" line="226"/>
+        <location filename="../../DialogSmartIndent.ui" line="226"/>
         <source>&amp;Delete</source>
         <translation>&amp;Supprimer</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.ui" line="237"/>
+        <location filename="../../DialogSmartIndent.ui" line="237"/>
         <source>Restore De&amp;faults</source>
-        <translation>Restaurer les valeurs par dé&amp;faut</translation>
+        <translation>Restaurer les valeurs par &amp;Défaut</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.ui" line="244"/>
+        <location filename="../../DialogSmartIndent.ui" line="244"/>
         <source>Close</source>
         <translation>Fermer</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.ui" line="255"/>
+        <location filename="../../DialogSmartIndent.ui" line="255"/>
         <source>&amp;Help</source>
         <translation>&amp;Aide</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.cpp" line="136"/>
+        <location filename="../../DialogSmartIndent.cpp" line="138"/>
         <source>Macro compiled</source>
         <translation>Macro compilée</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.cpp" line="137"/>
+        <location filename="../../DialogSmartIndent.cpp" line="139"/>
         <source>Macros compiled without error</source>
         <translation>Macros compilées sans erreur</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.cpp" line="149"/>
+        <location filename="../../DialogSmartIndent.cpp" line="150"/>
         <source>Delete Macros</source>
-        <translation>Supprimer les macros</translation>
+        <translation>Supprimer les Macros</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.cpp" line="150"/>
+        <location filename="../../DialogSmartIndent.cpp" line="151"/>
         <source>Are you sure you want to delete smart indent macros for language mode %1?</source>
         <translation>Etes-vous sûr de vouloir supprimer les macros d&apos;indentation intelligente pour le langage %1?</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.cpp" line="178"/>
-        <location filename="../DialogSmartIndent.cpp" line="318"/>
+        <location filename="../../DialogSmartIndent.cpp" line="179"/>
+        <location filename="../../DialogSmartIndent.cpp" line="319"/>
         <source>Smart Indent</source>
         <translation>Indentation Intelligente</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.cpp" line="179"/>
+        <location filename="../../DialogSmartIndent.cpp" line="180"/>
         <source>There are no default indent macros for language mode %1</source>
         <translation>Il n&apos;y a pas de macro d&apos;indentation par défaut pour le langage %1</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.cpp" line="185"/>
+        <location filename="../../DialogSmartIndent.cpp" line="186"/>
         <source>Discard Changes</source>
-        <translation>Annuler les changements</translation>
+        <translation>Annuler les Changements</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.cpp" line="186"/>
+        <location filename="../../DialogSmartIndent.cpp" line="187"/>
         <source>Are you sure you want to discard all changes to smart indent macros for language mode %1?</source>
         <translation>Etes-vous sûr de vouloir annuler tous les changements dans les macros d&apos;indentation intelligente pour le langage %1?</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.cpp" line="306"/>
+        <location filename="../../DialogSmartIndent.cpp" line="307"/>
         <source>initialization macro</source>
-        <translation>Macro d&apos;initialisation</translation>
+        <translation>macro d&apos;initialisation</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.cpp" line="318"/>
+        <location filename="../../DialogSmartIndent.cpp" line="319"/>
         <source>Newline macro required</source>
         <translation>Macro de nouvelle ligne exigée</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.cpp" line="328"/>
+        <location filename="../../DialogSmartIndent.cpp" line="328"/>
         <source>newline macro</source>
         <translation>macro de nouvelle ligne</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndent.cpp" line="347"/>
+        <location filename="../../DialogSmartIndent.cpp" line="345"/>
         <source>modify macro</source>
         <translation>modifier la macro</translation>
     </message>
@@ -2265,67 +2286,67 @@ Sélectionner &quot;Nouveau&quot; pour ajouter une nouvelle commande au menu.</t
 <context>
     <name>DialogSmartIndentCommon</name>
     <message>
-        <location filename="../DialogSmartIndentCommon.ui" line="14"/>
+        <location filename="../../DialogSmartIndentCommon.ui" line="14"/>
         <source>Common Smart Indent Macros</source>
-        <translation>Macros d&apos;Indentation Intelligente</translation>
+        <translation>Macros d&apos;Indentation Intelligente Communes</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndentCommon.ui" line="20"/>
+        <location filename="../../DialogSmartIndentCommon.ui" line="20"/>
         <source>Common Definitions for Smart Indent Macros</source>
         <translation>Définition Communes pour les Macros d&apos;Indentation Intelligente</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndentCommon.ui" line="44"/>
+        <location filename="../../DialogSmartIndentCommon.ui" line="44"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndentCommon.ui" line="56"/>
+        <location filename="../../DialogSmartIndentCommon.ui" line="56"/>
         <source>Apply</source>
         <translation>Appliquer</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndentCommon.ui" line="68"/>
+        <location filename="../../DialogSmartIndentCommon.ui" line="68"/>
         <source>Check</source>
         <translation>Vérifier</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndentCommon.ui" line="75"/>
+        <location filename="../../DialogSmartIndentCommon.ui" line="75"/>
         <source>Restore Defaults</source>
-        <translation>Défaut</translation>
+        <translation>Restaurer les valeurs par défaut</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndentCommon.ui" line="82"/>
+        <location filename="../../DialogSmartIndentCommon.ui" line="82"/>
         <source>Close</source>
         <translation>Fermer</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndentCommon.cpp" line="71"/>
+        <location filename="../../DialogSmartIndentCommon.cpp" line="72"/>
         <source>Macro compiled</source>
         <translation>Macro compilée</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndentCommon.cpp" line="71"/>
+        <location filename="../../DialogSmartIndentCommon.cpp" line="72"/>
         <source>Macros compiled without error</source>
         <translation>Macros compilées sans erreur</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndentCommon.cpp" line="81"/>
+        <location filename="../../DialogSmartIndentCommon.cpp" line="82"/>
         <source>Discard Changes</source>
         <translation>Annuler les changements</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndentCommon.cpp" line="82"/>
+        <location filename="../../DialogSmartIndentCommon.cpp" line="83"/>
         <source>Are you sure you want to discard all changes to common smart indent macros</source>
         <translation>Etes-vous sûr de vouloir annuler tous les changements dans les macros d&apos;indentation intelligente communes</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndentCommon.cpp" line="107"/>
+        <location filename="../../DialogSmartIndentCommon.cpp" line="108"/>
         <source>macros</source>
         <translation>macros</translation>
     </message>
     <message>
-        <location filename="../DialogSmartIndentCommon.cpp" line="140"/>
+        <location filename="../../DialogSmartIndentCommon.cpp" line="141"/>
         <source>common macros</source>
         <translation>macros communes</translation>
     </message>
@@ -2333,352 +2354,337 @@ Sélectionner &quot;Nouveau&quot; pour ajouter une nouvelle commande au menu.</t
 <context>
     <name>DialogSyntaxPatterns</name>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="14"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="14"/>
         <source>Syntax Highlighting Patterns</source>
         <translation>Modèles de Coloration Syntaxique</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="35"/>
-        <location filename="../DialogSyntaxPatterns.cpp" line="117"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="35"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="117"/>
         <source>Language Mode</source>
-        <translation>Langages</translation>
+        <translation>Langage</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="58"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="58"/>
         <source>&amp;Add/Modify Language Mode...</source>
         <translation>&amp;Ajouter/Modifier le langage...</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="67"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="67"/>
         <source>Patterns</source>
         <translation>Modèles</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="77"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="77"/>
         <source>New</source>
         <translation>Nouveau</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="88"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="88"/>
         <source>Delete</source>
         <translation>Supprimer</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="99"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="99"/>
         <source>Copy</source>
         <translation>Copier</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="110"/>
-        <location filename="../DialogSyntaxPatterns.ui" line="121"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="110"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="121"/>
         <source>Move</source>
         <translation>Déplacer</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="157"/>
-        <location filename="../DialogSyntaxPatterns.cpp" line="856"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="157"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="858"/>
         <source>Pattern Name</source>
         <translation>Nom du modèle</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="167"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="167"/>
         <source>Parent Pattern</source>
         <translation>Modèle parent</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="174"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="174"/>
         <source>Highlight Style</source>
-        <translation>Style de coloration</translation>
+        <translation>Style de surbrillance</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="202"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="202"/>
         <source>Add/Modify Style...</source>
         <translation>Ajouter/Modifier le style...</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="211"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="211"/>
         <source>Pattern Type</source>
         <translation>Type de modèle</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="220"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="220"/>
         <source>Pass-&amp;1 (applied to all text when loaded or modified)</source>
         <translation>Passe-&amp;1 (appliquée sur le texte entier quand chargée ou modifiée)</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="230"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="230"/>
         <source>Pass-&amp;2 (parsing is deferred until text is exposed)</source>
         <translation>Passe-&amp;2 (l&apos;analyse est retardée jusqu&apos;à ce que le texte soit exposé)</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="237"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="237"/>
         <source>S&amp;ub-pattern (processed within start &amp; end of parent)</source>
         <translation>So&amp;us-motif (appliqué entre le début et la fin du parent)</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="244"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="244"/>
         <source>Colorin&amp;g for sub-expressions of parent pattern</source>
         <translation>Coloratio&amp;n pour les sous-expressions du modèle parent</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="254"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="254"/>
         <source>Matching</source>
         <translation>Correspondance</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="263"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="263"/>
         <source>Highlight te&amp;xt matching regular expression</source>
         <translation>Colorie le te&amp;xte correspondant à l&apos;expression régulière</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="273"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="273"/>
         <source>H&amp;ighlight text between starting and ending REs</source>
         <translation>Color&amp;ie le texte compris entre le début et la fin des ERs</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="286"/>
-        <location filename="../DialogSyntaxPatterns.cpp" line="221"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="286"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="217"/>
         <source>Regular Expression to Match</source>
         <translation>Expression Régulière à reconnaître</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="305"/>
-        <location filename="../DialogSyntaxPatterns.cpp" line="216"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="305"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="212"/>
         <source>Ending Regular Expression</source>
         <translation>Expression régulière de fin</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="327"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="327"/>
         <source>Regular Expression Indicating Error in Match (Optional)</source>
         <translation>Expression régulière indiquant une erreur dans la correspondance (optionnel)</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="346"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="346"/>
         <source>Context requirements for incremental re-parsing after changes</source>
+        <translatorcomment>Je ne suis pas sûr de comprendre ce que cela veut dire ...</translatorcomment>
         <translation>Exigences pour la ré-analyse incrémentielle après les modifications</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="368"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="368"/>
         <source>lines</source>
         <translation>lignes</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="391"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="391"/>
         <source>characters</source>
         <translation>caractères</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="416"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="416"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="427"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="427"/>
         <source>Appl&amp;y</source>
-        <translation>&amp;Appliquer</translation>
+        <translation>A&amp;ppliquer</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="438"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="438"/>
         <source>Chec&amp;k</source>
         <translation>&amp;Vérifier</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="445"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="445"/>
         <source>&amp;Delete</source>
         <translation>&amp;Supprimer</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="456"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="456"/>
         <source>Restore De&amp;faults</source>
-        <translation>&amp;Défaut</translation>
+        <translation>Restaurer les valeurs par &amp;Défaut</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="463"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="463"/>
         <source>Close</source>
         <translation>Fermer</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.ui" line="474"/>
+        <location filename="../../DialogSyntaxPatterns.ui" line="474"/>
         <source>&amp;Help</source>
         <translation>&amp;Aide</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="97"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="97"/>
         <source>Incomplete Language Mode</source>
         <translation>Langage incomplet</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="99"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="99"/>
         <source>Discard incomplete entry for current language mode?</source>
-        <translation>Annuler l&apos;entrée incomplète pour le langage courant?</translation>
+        <translation>Annuler l&apos;entrée incomplète pour le langage courant ?</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="100"/>
-        <location filename="../DialogSyntaxPatterns.cpp" line="574"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="100"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="576"/>
         <source>Keep</source>
         <translation>Conserver</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="119"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="118"/>
         <source>Apply changes for language mode %1?</source>
         <translation>Appliquer les changements pour le langage %1?</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="120"/>
-        <source>Apply Changes</source>
-        <translation>Appliquer les changements</translation>
-    </message>
-    <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="121"/>
-        <location filename="../DialogSyntaxPatterns.cpp" line="473"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="475"/>
         <source>Discard Changes</source>
         <translation>Annuler les changements</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="209"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="205"/>
         <source>Sub-expressions to Highlight in Parent&apos;s Starting Regular Expression (\1, &amp;, etc.)</source>
-        <translation>Sous-expressions à mettre en évidence dans l&apos;expression régulière de départ du parent (\1, &amp;, etc.)</translation>
+        <translation>Sous-expressions à mettre en évidence dans l&apos;expression régulière de début du parent (\1, &amp;, etc.)</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="210"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="206"/>
         <source>Sub-expressions to Highlight in Parent Pattern&apos;s Ending Regular Expression</source>
-        <translation>Sub-expressions to Highlight in Parent Pattern&apos;s Ending Regular Expression</translation>
+        <translation>Sous-expressions à mettre en évidence dans l&apos;expression régulière de fin du parent</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="225"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="221"/>
         <source>Starting Regular Expression</source>
         <translation>Expression régulière de début</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="317"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="313"/>
         <source>New Item</source>
         <translation>Nouvel élément</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="414"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="410"/>
         <source>Pattern compiled</source>
         <translation>Modèle compilé</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="415"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="411"/>
         <source>Patterns compiled without error</source>
         <translation>Modèles compilés sans erreur</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="427"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="424"/>
         <source>Delete Pattern</source>
         <translation>Supprimer le modèle</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="429"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="425"/>
         <source>Are you sure you want to delete syntax highlighting patterns for language mode %1?</source>
         <translation>Etes-vous sûr de vouloir supprimer les modèles de coloration syntaxique pour le langage %1?</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="430"/>
-        <source>Yes, Delete</source>
-        <translation>Oui, Supprimer</translation>
-    </message>
-    <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="467"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="468"/>
         <source>No Default Pattern</source>
         <translation>Aucun modèle par défaut</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="467"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="469"/>
         <source>There is no default pattern set for language mode %1</source>
-        <translation>Il n&apos; y a aucun modèle par défaut pour le langage %1</translation>
+        <translation>Il n&apos;y a aucun modèle par défaut pour le langage %1</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="474"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="476"/>
         <source>Are you sure you want to discard all changes to syntax highlighting patterns for language mode %1?</source>
         <translation>Etes-vous sûr de vouloir annuler tous les changements apportés aux modèles de coloration syntaxique pour le langage %1?</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="571"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="573"/>
         <source>Discard Entry</source>
-        <translation>Annuler l&apos;entrée</translation>
+        <translation>Rejeter l&apos;entrée</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="573"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="575"/>
         <source>Discard incomplete entry for current menu item?</source>
-        <translation>Annuler l&apos;entrée incomplète pour l&apos;élément de menu courant?</translation>
+        <translation>Annuler l&apos;entrée incomplète pour l&apos;élément de menu courant ?</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="641"/>
-        <source>Plain</source>
-        <translation>Brut</translation>
-    </message>
-    <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="787"/>
-        <location filename="../DialogSyntaxPatterns.cpp" line="793"/>
-        <location filename="../DialogSyntaxPatterns.cpp" line="800"/>
-        <location filename="../DialogSyntaxPatterns.cpp" line="805"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="789"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="795"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="802"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="807"/>
         <source>Warning</source>
         <translation>Avertissement</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="787"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="789"/>
         <source>Please supply a value for context lines</source>
         <translation>Veuillez fournir une valeur pour les lignes contextuelles</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="793"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="795"/>
         <source>Can&apos;t read integer value &quot;%1&quot; in context lines</source>
         <translation>Impossible de lire la valeur entière &quot;%1&quot; dans les lignes contextuelles</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="800"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="802"/>
         <source>Please supply a value for context chars</source>
         <translation>Veuillez fournir une valeur pour les caractères contextuels</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="805"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="807"/>
         <source>Can&apos;t read integer value &quot;%1&quot; in context chars</source>
-        <translation>Impossible de lire la valeur entière &quot;%1&quot; dans les caractères contextuels</translation>
+        <translation>Impossible de lire la valeur entière &quot;%1&quot; dans le contexte de caractères</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="856"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="858"/>
         <source>Please specify a name for the pattern</source>
         <translation>Veuillez spécifier un nom pour le modèle</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="865"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="867"/>
         <source>Matching Regex</source>
         <translation>L&apos;expression régulière correspond</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="865"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="867"/>
         <source>Please specify a regular expression to match</source>
         <translation>Veuillez spécifier une expression régulière</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="894"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="896"/>
         <source>Pattern Error</source>
-        <translation>Erreur de motif</translation>
+        <translation>Erreur de modèle</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="895"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="897"/>
         <source>The expression field in patterns which specify highlighting for a parent, must contain only sub-expression references in regular expression replacement form (&amp;\1\2 etc.).  See Help -&gt; Regular Expressions and Help -&gt; Syntax Highlighting for more information</source>
         <translation>Le champ d&apos;expression dans les modèles qui spécifient la mise en évidence pour un parent, doit contenir uniquement des références de sous-expression dans le formulaire de remplacement d&apos;expressions régulières (&amp;\1\2 etc.).  Voir Aide -&gt; Expressions Régulières et Aide -&gt; Coloration Syntaxique pour de plus amples informations</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="906"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="908"/>
         <source>Specify Parent Pattern</source>
         <translation>Spécifiez un modèle parent</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="906"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="908"/>
         <source>Please specify a parent pattern</source>
         <translation>Veuillez spécifier un modèle parent</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="924"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="926"/>
         <source>Specify Regex</source>
         <translation>Spécifiez une expression régulière</translation>
     </message>
     <message>
-        <location filename="../DialogSyntaxPatterns.cpp" line="924"/>
+        <location filename="../../DialogSyntaxPatterns.cpp" line="926"/>
         <source>Please specify an ending regular expression</source>
         <translation>Veuillez spécifier une expression régulière de fin</translation>
     </message>
@@ -2686,71 +2692,71 @@ Sélectionner &quot;Nouveau&quot; pour ajouter une nouvelle commande au menu.</t
 <context>
     <name>DialogTabs</name>
     <message>
-        <location filename="../DialogTabs.ui" line="14"/>
+        <location filename="../../DialogTabs.ui" line="14"/>
         <source>Tabs</source>
         <translation>Tabulations</translation>
     </message>
     <message>
-        <location filename="../DialogTabs.ui" line="20"/>
+        <location filename="../../DialogTabs.ui" line="20"/>
         <source>Tab spacing (for hardware tab characters)</source>
         <translation>Taille des tabulations (du clavier)</translation>
     </message>
     <message>
-        <location filename="../DialogTabs.ui" line="30"/>
+        <location filename="../../DialogTabs.ui" line="30"/>
         <source>&amp;Emulate tabs</source>
         <translation>Tabulations émulé&amp;es</translation>
     </message>
     <message>
-        <location filename="../DialogTabs.ui" line="40"/>
+        <location filename="../../DialogTabs.ui" line="40"/>
         <source>Emulated tab spacing</source>
         <translation>Taille des tabulations émulées</translation>
     </message>
     <message>
-        <location filename="../DialogTabs.ui" line="54"/>
+        <location filename="../../DialogTabs.ui" line="54"/>
         <source>&amp;Use tab characters in padding and emulated tabs</source>
         <translation>&amp;Utiliser des tabulations dans les tabulations de remplissage et émulées</translation>
     </message>
     <message>
-        <location filename="../DialogTabs.cpp" line="76"/>
-        <location filename="../DialogTabs.cpp" line="80"/>
-        <location filename="../DialogTabs.cpp" line="91"/>
-        <location filename="../DialogTabs.cpp" line="96"/>
+        <location filename="../../DialogTabs.cpp" line="73"/>
+        <location filename="../../DialogTabs.cpp" line="79"/>
+        <location filename="../../DialogTabs.cpp" line="91"/>
+        <location filename="../../DialogTabs.cpp" line="97"/>
         <source>Warning</source>
         <translation>Avertissement</translation>
     </message>
     <message>
-        <location filename="../DialogTabs.cpp" line="76"/>
+        <location filename="../../DialogTabs.cpp" line="73"/>
         <source>Please supply a value for tab spacing</source>
         <translation>Veuillez fournir une valeur pour la taille des tabulations</translation>
     </message>
     <message>
-        <location filename="../DialogTabs.cpp" line="80"/>
+        <location filename="../../DialogTabs.cpp" line="79"/>
         <source>Can&apos;t read integer value &quot;%1&quot; in tab spacing</source>
-        <translation>Impossible de lire la valeur entière &quot;%1&quot; dans la taille des tabulations</translation>
+        <translation>Impossible de lire la valeur entière &quot;%1&quot; dans l&apos;espacement de tabulations</translation>
     </message>
     <message>
-        <location filename="../DialogTabs.cpp" line="85"/>
-        <location filename="../DialogTabs.cpp" line="102"/>
+        <location filename="../../DialogTabs.cpp" line="84"/>
+        <location filename="../../DialogTabs.cpp" line="103"/>
         <source>Tab Spacing</source>
         <translation>Taille des tabulations</translation>
     </message>
     <message>
-        <location filename="../DialogTabs.cpp" line="85"/>
+        <location filename="../../DialogTabs.cpp" line="84"/>
         <source>Tab spacing out of range</source>
         <translation>La taille des tabulations est en dehors des limites</translation>
     </message>
     <message>
-        <location filename="../DialogTabs.cpp" line="91"/>
+        <location filename="../../DialogTabs.cpp" line="91"/>
         <source>Please supply a value for emulated tab spacing</source>
         <translation>Veuillez fournir une valeur pour la taille des tabulations émulées</translation>
     </message>
     <message>
-        <location filename="../DialogTabs.cpp" line="96"/>
+        <location filename="../../DialogTabs.cpp" line="97"/>
         <source>Can&apos;t read integer value &quot;%1&quot; in emulated tab spacing</source>
-        <translation>Impossible de lire la valeur entière &quot;%1&quot; dans la taille des tabulations émulées</translation>
+        <translation>Impossible de lire la valeur entière &quot;%1&quot; dans l&apos;espacement de tabulations émulées</translation>
     </message>
     <message>
-        <location filename="../DialogTabs.cpp" line="102"/>
+        <location filename="../../DialogTabs.cpp" line="103"/>
         <source>Emulated tab spacing out of range</source>
         <translation>La taille des tabulations émulées est en dehors des limites</translation>
     </message>
@@ -2758,150 +2764,150 @@ Sélectionner &quot;Nouveau&quot; pour ajouter une nouvelle commande au menu.</t
 <context>
     <name>DialogWindowBackgroundMenu</name>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="14"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="14"/>
         <source>Window Background Menu</source>
         <translation>Menu de fond de fenêtre</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="26"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="26"/>
         <source>New</source>
         <translation>Nouveau</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="37"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="37"/>
         <source>Delete</source>
         <translation>Supprimer</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="48"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="48"/>
         <source>Copy</source>
         <translation>Copier</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="59"/>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="70"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="59"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="70"/>
         <source>Move</source>
         <translation>Déplacer</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="103"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="103"/>
         <source>Select a macro menu item from the list at left.
 Select &quot;New&quot; to add a new command to the menu.</source>
-        <translation>Sélectionner un élément du menu depuis la liste sur la gauche.
-Sélectionner &quot;Nouveau&quot; pour ajouter une nouvelle commande au menu.</translation>
+        <translation>Sélectionnez un élément du menu macro depuis la liste sur la gauche.
+Sélectionnez &quot;Nouveau&quot; pour ajouter une nouvelle command au menu.</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="116"/>
-        <location filename="../DialogWindowBackgroundMenu.cpp" line="335"/>
-        <location filename="../DialogWindowBackgroundMenu.cpp" line="343"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="116"/>
+        <location filename="../../DialogWindowBackgroundMenu.cpp" line="332"/>
+        <location filename="../../DialogWindowBackgroundMenu.cpp" line="340"/>
         <source>Menu Entry</source>
-        <translation>Entrée du menu</translation>
+        <translation>Entrée de Menu</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="136"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="136"/>
         <source>(&gt; for sub-menu, @ language mode)</source>
         <translation>(&gt;pour un sous-menu, @language)</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="150"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="150"/>
         <source>Accelerator</source>
         <translation>Accélérateur</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="160"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="160"/>
         <source>&amp;Paste Learn/
 Replay Macro</source>
         <translation>&amp;Coller Apprendre/
-Rejouer la macro</translation>
+Rejouer la Macro</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="170"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="170"/>
         <source>Requires Selection</source>
-        <translation>Nécessite une sélection</translation>
+        <translation>Nécessite une Sélection</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="181"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="181"/>
         <source>Macro Command to Execute</source>
         <translation>Macro à exécuter</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="199"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="199"/>
         <source>&amp;OK</source>
         <translation>&amp;OK</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="210"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="210"/>
         <source>&amp;Apply</source>
         <translation>&amp;Appliquer</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="221"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="221"/>
         <source>&amp;Check</source>
         <translation>&amp;Vérifier</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.ui" line="228"/>
+        <location filename="../../DialogWindowBackgroundMenu.ui" line="228"/>
         <source>&amp;Close</source>
         <translation>&amp;Fermer</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.cpp" line="80"/>
+        <location filename="../../DialogWindowBackgroundMenu.cpp" line="81"/>
         <source>New Item</source>
         <translation>Nouvel élément</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.cpp" line="231"/>
+        <location filename="../../DialogWindowBackgroundMenu.cpp" line="231"/>
         <source>Discard Entry</source>
-        <translation>Rejeter l&apos;entrée</translation>
+        <translation>Rejeter l&apos;Entrée</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.cpp" line="233"/>
+        <location filename="../../DialogWindowBackgroundMenu.cpp" line="233"/>
         <source>Discard incomplete entry for current menu item?</source>
-        <translation>Rejeter l&apos;entrée incomplète pour l&apos;élément courant ?</translation>
+        <translation>Ignorer l&apos;entrée incomplète pour l&apos;élément de menu actuel ?</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.cpp" line="234"/>
+        <location filename="../../DialogWindowBackgroundMenu.cpp" line="234"/>
         <source>Keep</source>
         <translation>Conserver</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.cpp" line="284"/>
+        <location filename="../../DialogWindowBackgroundMenu.cpp" line="284"/>
         <source>Macro</source>
         <translation>Macro</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.cpp" line="285"/>
+        <location filename="../../DialogWindowBackgroundMenu.cpp" line="285"/>
         <source>Macro compiled without error</source>
         <translation>Macro compilée sans erreur</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.cpp" line="335"/>
+        <location filename="../../DialogWindowBackgroundMenu.cpp" line="332"/>
         <source>Please specify a name for the menu item</source>
         <translation>Veuillez spécifier un nom pour l&apos;élément du menu</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.cpp" line="343"/>
+        <location filename="../../DialogWindowBackgroundMenu.cpp" line="340"/>
         <source>Menu item names may not contain colon (:) characters</source>
-        <translation>Les noms des éléments de menu ne doivent pas comporter le caractère &quot;deux-points&quot; (:)</translation>
+        <translation>Les noms des éléments de menu ne peuvent pas comporter le caractère deux-points (:)</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.cpp" line="351"/>
+        <location filename="../../DialogWindowBackgroundMenu.cpp" line="348"/>
         <source>Command to Execute</source>
         <translation>Commande à exécuter</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.cpp" line="351"/>
+        <location filename="../../DialogWindowBackgroundMenu.cpp" line="348"/>
         <source>Please specify macro command(s) to execute</source>
         <translation>Veuillez spécifier la(les) macro(s) à exécuter</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.cpp" line="388"/>
-        <location filename="../DialogWindowBackgroundMenu.cpp" line="400"/>
+        <location filename="../../DialogWindowBackgroundMenu.cpp" line="383"/>
+        <location filename="../../DialogWindowBackgroundMenu.cpp" line="394"/>
         <source>macro</source>
         <translation>macro</translation>
     </message>
     <message>
-        <location filename="../DialogWindowBackgroundMenu.cpp" line="400"/>
+        <location filename="../../DialogWindowBackgroundMenu.cpp" line="394"/>
         <source>syntax error</source>
         <translation>erreur de syntaxe</translation>
     </message>
@@ -2909,45 +2915,45 @@ Rejouer la macro</translation>
 <context>
     <name>DialogWindowSize</name>
     <message>
-        <location filename="../DialogWindowSize.ui" line="14"/>
+        <location filename="../../DialogWindowSize.ui" line="14"/>
         <source>Initial Window Size</source>
         <translation>Taille initiale de la fenêtre</translation>
     </message>
     <message>
-        <location filename="../DialogWindowSize.ui" line="20"/>
+        <location filename="../../DialogWindowSize.ui" line="20"/>
         <source>Enter desired size in rows and columns of characters:</source>
-        <translation>Entrer la taille souhaitée de rangées et de colonnes de caractères:</translation>
+        <translation>Entrer la taille souhaitée de rangées et de colonnes de caractères :</translation>
     </message>
     <message>
-        <location filename="../DialogWindowSize.ui" line="32"/>
+        <location filename="../../DialogWindowSize.ui" line="32"/>
         <source>x</source>
         <translation>x</translation>
     </message>
     <message>
-        <location filename="../DialogWindowSize.cpp" line="21"/>
-        <location filename="../DialogWindowSize.cpp" line="27"/>
-        <location filename="../DialogWindowSize.cpp" line="32"/>
-        <location filename="../DialogWindowSize.cpp" line="38"/>
+        <location filename="../../DialogWindowSize.cpp" line="22"/>
+        <location filename="../../DialogWindowSize.cpp" line="28"/>
+        <location filename="../../DialogWindowSize.cpp" line="33"/>
+        <location filename="../../DialogWindowSize.cpp" line="39"/>
         <source>Warning</source>
         <translation>Avertissement</translation>
     </message>
     <message>
-        <location filename="../DialogWindowSize.cpp" line="21"/>
+        <location filename="../../DialogWindowSize.cpp" line="22"/>
         <source>Please supply a value for number of rows</source>
-        <translation>Veulillez fournir une valeur pour le nombre de rangées</translation>
+        <translation>Veuillez fournir une valeur pour le nombre de rangées</translation>
     </message>
     <message>
-        <location filename="../DialogWindowSize.cpp" line="27"/>
+        <location filename="../../DialogWindowSize.cpp" line="28"/>
         <source>Can&apos;t read integer value &quot;%1&quot; in number of rows</source>
         <translation>Impossible de lire la valeur entière &quot;%1&quot; dans &quot;nombre de rangées&quot;</translation>
     </message>
     <message>
-        <location filename="../DialogWindowSize.cpp" line="32"/>
+        <location filename="../../DialogWindowSize.cpp" line="33"/>
         <source>Please supply a value for number of columns</source>
-        <translation>Veulillez fournir une valeur pour le nombre de colonnes</translation>
+        <translation>Veuillez fournir une valeur pour le nombre de colonnes</translation>
     </message>
     <message>
-        <location filename="../DialogWindowSize.cpp" line="38"/>
+        <location filename="../../DialogWindowSize.cpp" line="39"/>
         <source>Can&apos;t read integer value &quot;%1&quot; in number of columns</source>
         <translation>Impossible de lire la valeur entière &quot;%1&quot; dans &quot;nombre de colonnes&quot;</translation>
     </message>
@@ -2955,209 +2961,209 @@ Rejouer la macro</translation>
 <context>
     <name>DialogWindowTitle</name>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="14"/>
+        <location filename="../../DialogWindowTitle.ui" line="14"/>
         <source>Customize Window Title</source>
         <translation>Personnalisation des Titres des Fenêtres</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="20"/>
+        <location filename="../../DialogWindowTitle.ui" line="20"/>
         <source>Title Definition</source>
         <translation>Définition du Titre</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="26"/>
+        <location filename="../../DialogWindowTitle.ui" line="26"/>
         <source>Select title components to include:</source>
         <translation>Sélectionner les champs du titre à inclure:</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="35"/>
+        <location filename="../../DialogWindowTitle.ui" line="35"/>
         <source>&amp;File Name (%f)</source>
         <translation>Nom du &amp;Fichier (%f)</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="42"/>
+        <location filename="../../DialogWindowTitle.ui" line="42"/>
         <source>&amp;Host name (%h)</source>
-        <translation>Nom de l&apos;&amp;Hôte (%h)</translation>
+        <translation>Nom de l&apos;&amp;hôte (%h)</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="51"/>
+        <location filename="../../DialogWindowTitle.ui" line="51"/>
         <source>File &amp;status (%S)</source>
-        <translation>&amp;Statut du Fichier (%S)</translation>
+        <translation>&amp;Status du fichier (%S)</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="58"/>
+        <location filename="../../DialogWindowTitle.ui" line="58"/>
         <source>&amp;brief</source>
-        <translation>&amp;Bref</translation>
+        <translation>&amp;Court</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="67"/>
+        <location filename="../../DialogWindowTitle.ui" line="67"/>
         <source>&amp;User name (%u)</source>
         <translation>Nom d&apos;&amp;Utilisateur (%u)</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="74"/>
+        <location filename="../../DialogWindowTitle.ui" line="74"/>
         <source>&amp;Clearcase view tag (%c)</source>
         <translation>Marqueur de &amp;Clearcase (%c)</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="81"/>
+        <location filename="../../DialogWindowTitle.ui" line="81"/>
         <source>NEdit &amp;server name (%s)</source>
         <translation>Nom du &amp;Serveur NEdit (%s)</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="93"/>
+        <location filename="../../DialogWindowTitle.ui" line="93"/>
         <source>&amp;Directory (%d)</source>
         <translation>&amp;Répertoire (%d)</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="100"/>
+        <location filename="../../DialogWindowTitle.ui" line="100"/>
         <source>, max components</source>
         <translation>, champs max</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="129"/>
+        <location filename="../../DialogWindowTitle.ui" line="129"/>
         <source>Format:</source>
         <translation>Format:</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="148"/>
+        <location filename="../../DialogWindowTitle.ui" line="148"/>
         <source>Preview</source>
         <translation>Prévisualisation</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="157"/>
+        <location filename="../../DialogWindowTitle.ui" line="157"/>
         <source>Test settings:</source>
         <translation>Réglages de test:</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="166"/>
+        <location filename="../../DialogWindowTitle.ui" line="166"/>
         <source>File m&amp;odified</source>
-        <translation>Fichier &amp;modifié</translation>
+        <translation>Fichier m&amp;odifié</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="173"/>
+        <location filename="../../DialogWindowTitle.ui" line="173"/>
         <source>File read o&amp;nly</source>
         <translation>Fichier e&amp;n lecture seule</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="180"/>
+        <location filename="../../DialogWindowTitle.ui" line="180"/>
         <source>Fi&amp;le locked</source>
-        <translation>Fichier véroui&amp;llé</translation>
+        <translation>Fichier &amp;vérouillé</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="204"/>
+        <location filename="../../DialogWindowTitle.ui" line="204"/>
         <source>Ser&amp;ver name present</source>
         <translation>Nom du ser&amp;veur présent</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="228"/>
+        <location filename="../../DialogWindowTitle.ui" line="228"/>
         <source>CC vie&amp;w tag present</source>
         <translation>Marqueur CC &amp;présent</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="235"/>
+        <location filename="../../DialogWindowTitle.ui" line="235"/>
         <source>Server name e&amp;quals CC view tag</source>
         <translation>Nom du serveur é&amp;quivalent au marqueur CC</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.ui" line="259"/>
+        <location filename="../../DialogWindowTitle.ui" line="259"/>
         <source>D&amp;irectory present</source>
-        <translation>Réperto&amp;ire présent</translation>
+        <translation>Ré&amp;pertoire présent</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="70"/>
+        <location filename="../../DialogWindowTitle.cpp" line="74"/>
         <source>viewtag</source>
         <translation>marqueur</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="71"/>
+        <location filename="../../DialogWindowTitle.cpp" line="75"/>
         <source>servername</source>
-        <translation>nomDuServeur</translation>
+        <translation>nom du serveur</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="145"/>
+        <location filename="../../DialogWindowTitle.cpp" line="145"/>
         <source>/a/very/long/path/used/as/example/</source>
         <translation>/un/très/long/chemin/utilisé/comme/exemple</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="411"/>
+        <location filename="../../DialogWindowTitle.cpp" line="373"/>
         <source> %%1d </source>
         <translation> %%1d </translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="413"/>
-        <location filename="../DialogWindowTitle.cpp" line="416"/>
+        <location filename="../../DialogWindowTitle.cpp" line="375"/>
+        <location filename="../../DialogWindowTitle.cpp" line="378"/>
         <source> %d </source>
         <translation> %d </translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="422"/>
-        <location filename="../DialogWindowTitle.cpp" line="571"/>
+        <location filename="../../DialogWindowTitle.cpp" line="384"/>
+        <location filename="../../DialogWindowTitle.cpp" line="527"/>
         <source>%%1d</source>
         <translation>%%1d</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="527"/>
+        <location filename="../../DialogWindowTitle.cpp" line="484"/>
         <source>[\{\(\[\&lt;]?%1[\}\)\]\&gt;]?</source>
         <translation>[\{\(\[\&lt;]?%1[\}\)\]\&gt;]?</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="573"/>
+        <location filename="../../DialogWindowTitle.cpp" line="529"/>
         <source>%d</source>
         <translation>%d</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="691"/>
+        <location filename="../../DialogWindowTitle.cpp" line="647"/>
         <source>read only, modified</source>
-        <translation>en lecture seule, modifié</translation>
+        <translation>lecture seule, modifié</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="693"/>
+        <location filename="../../DialogWindowTitle.cpp" line="649"/>
         <source>read only</source>
-        <translation>en lecture seule</translation>
+        <translation>lecture seule</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="695"/>
+        <location filename="../../DialogWindowTitle.cpp" line="651"/>
         <source>locked, modified</source>
         <translation>vérouillé, modifié</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="697"/>
+        <location filename="../../DialogWindowTitle.cpp" line="653"/>
         <source>locked</source>
-        <translation>vérouillé</translation>
+        <translation>locké</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="699"/>
+        <location filename="../../DialogWindowTitle.cpp" line="655"/>
         <source>modified</source>
         <translation>modifié</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="717"/>
+        <location filename="../../DialogWindowTitle.cpp" line="673"/>
         <source>RO*</source>
-        <translation>LS*</translation>
+        <translation>RO*</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="719"/>
+        <location filename="../../DialogWindowTitle.cpp" line="675"/>
         <source>RO</source>
-        <translation>LS</translation>
+        <translation>RO</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="721"/>
+        <location filename="../../DialogWindowTitle.cpp" line="677"/>
         <source>LO*</source>
-        <translation>VE*</translation>
+        <translation>LO*</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="723"/>
+        <location filename="../../DialogWindowTitle.cpp" line="679"/>
         <source>LO</source>
-        <translation>VE</translation>
+        <translation>LO</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="725"/>
+        <location filename="../../DialogWindowTitle.cpp" line="681"/>
         <source>*</source>
         <translation>*</translation>
     </message>
     <message>
-        <location filename="../DialogWindowTitle.cpp" line="743"/>
+        <location filename="../../DialogWindowTitle.cpp" line="698"/>
         <source>&lt;empty&gt;</source>
         <translation>&lt;vide&gt;</translation>
     </message>
@@ -3165,17 +3171,17 @@ Rejouer la macro</translation>
 <context>
     <name>DialogWrapMargin</name>
     <message>
-        <location filename="../DialogWrapMargin.ui" line="14"/>
+        <location filename="../../DialogWrapMargin.ui" line="14"/>
         <source>Wrap Margin</source>
         <translation>Marge d&apos;enroulement</translation>
     </message>
     <message>
-        <location filename="../DialogWrapMargin.ui" line="22"/>
+        <location filename="../../DialogWrapMargin.ui" line="22"/>
         <source>&amp;Wrap and Fill at widget of window</source>
         <translation>&amp;Enrouler et remplir jusqu&apos;au bord de la fenètre</translation>
     </message>
     <message>
-        <location filename="../DialogWrapMargin.ui" line="65"/>
+        <location filename="../../DialogWrapMargin.ui" line="65"/>
         <source>Margin for Wrap and Fill</source>
         <translation>Marge d&apos;enroulement et de remplissage</translation>
     </message>
@@ -3183,7 +3189,7 @@ Rejouer la macro</translation>
 <context>
     <name>DocumentModel</name>
     <message>
-        <location filename="../DocumentModel.cpp" line="77"/>
+        <location filename="../../DocumentModel.cpp" line="77"/>
         <source>Name</source>
         <translation>Nom</translation>
     </message>
@@ -3191,135 +3197,135 @@ Rejouer la macro</translation>
 <context>
     <name>DocumentWidget</name>
     <message>
-        <location filename="../DocumentWidget.ui" line="66"/>
-        <location filename="../DocumentWidget.cpp" line="778"/>
+        <location filename="../../DocumentWidget.ui" line="66"/>
+        <location filename="../../DocumentWidget.cpp" line="781"/>
         <source>L: ---  C: ---</source>
         <translation>L: ---  C: ---</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="387"/>
-        <location filename="../DocumentWidget.cpp" line="599"/>
-        <location filename="../DocumentWidget.cpp" line="1281"/>
-        <location filename="../DocumentWidget.cpp" line="2052"/>
-        <location filename="../DocumentWidget.cpp" line="4819"/>
-        <location filename="../DocumentWidget.cpp" line="4920"/>
-        <location filename="../DocumentWidget.cpp" line="7087"/>
+        <location filename="../../DocumentWidget.cpp" line="389"/>
+        <location filename="../../DocumentWidget.cpp" line="594"/>
+        <location filename="../../DocumentWidget.cpp" line="1300"/>
+        <location filename="../../DocumentWidget.cpp" line="1969"/>
+        <location filename="../../DocumentWidget.cpp" line="4647"/>
+        <location filename="../../DocumentWidget.cpp" line="4756"/>
+        <location filename="../../DocumentWidget.cpp" line="6832"/>
         <source>%1%2</source>
         <translation>%1%2</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="469"/>
+        <location filename="../../DocumentWidget.cpp" line="468"/>
         <source>TextArea_%1</source>
         <translation>ZoneDeTexte_%1</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="599"/>
-        <location filename="../DocumentWidget.cpp" line="601"/>
-        <location filename="../DocumentWidget.cpp" line="1281"/>
+        <location filename="../../DocumentWidget.cpp" line="594"/>
+        <location filename="../../DocumentWidget.cpp" line="596"/>
+        <location filename="../../DocumentWidget.cpp" line="1300"/>
         <source>*</source>
         <translation>*</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="601"/>
+        <location filename="../../DocumentWidget.cpp" line="596"/>
         <source>%2%1</source>
         <translation>%2%1</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="607"/>
+        <location filename="../../DocumentWidget.cpp" line="602"/>
         <source>%1 - %2</source>
         <translation>%1 - %2</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="760"/>
+        <location filename="../../DocumentWidget.cpp" line="763"/>
         <source> DOS</source>
         <translation> DOS</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="763"/>
+        <location filename="../../DocumentWidget.cpp" line="766"/>
         <source> Mac</source>
         <translation> Mac</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="777"/>
-        <location filename="../DocumentWidget.cpp" line="784"/>
+        <location filename="../../DocumentWidget.cpp" line="780"/>
+        <location filename="../../DocumentWidget.cpp" line="787"/>
         <source>%1%2%3 %4 bytes</source>
         <translation>%1%2%3 %4 octets</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="780"/>
+        <location filename="../../DocumentWidget.cpp" line="783"/>
         <source>L: %1  C: %2</source>
         <translation>L: %1  C: %2</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="782"/>
+        <location filename="../../DocumentWidget.cpp" line="785"/>
         <source>%1%2%3 byte %4 of %5</source>
-        <translation>%1%2%3 octet %4 parmi %5</translation>
+        <translation>%1%2%3 octet %4 de %5</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="1284"/>
-        <source> - </source>
-        <translation> - </translation>
+        <location filename="../../DocumentWidget.cpp" line="1303"/>
+        <source> - %1</source>
+        <translation> - %1</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="1864"/>
+        <location filename="../../DocumentWidget.cpp" line="1783"/>
         <source>%1~%2</source>
         <translation>%1~%2</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="1866"/>
+        <location filename="../../DocumentWidget.cpp" line="1785"/>
         <source>~%1</source>
         <translation>~%1</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="1939"/>
+        <location filename="../../DocumentWidget.cpp" line="1857"/>
         <source>File not Found</source>
-        <translation>Fichier non Trouvé</translation>
+        <translation>Fichier non trouvé</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="1940"/>
+        <location filename="../../DocumentWidget.cpp" line="1858"/>
         <source>File &apos;%1&apos; (or directory in its path) no longer exists.
 Another program may have deleted or moved it.</source>
         <translation>Le fichier &apos;%1&apos; (ou un répertoire dans son chemin) n&apos;existe plus.
 Une autre application a dû le supprimer ou le déplacer.</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="1951"/>
+        <location filename="../../DocumentWidget.cpp" line="1869"/>
         <source>Permission Denied</source>
-        <translation>Permission non accordée</translation>
+        <translation>Permission refusée</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="1952"/>
+        <location filename="../../DocumentWidget.cpp" line="1870"/>
         <source>You no longer have access to file &apos;%1&apos;.
 Another program may have changed the permissions of one of its parent directories.</source>
         <translation>Vous n&apos;avez plus accès au fichier .&apos;%1&apos;.
 Une autre application a dû modifier les droits d&apos;accès d&apos;un des ses répertoires parents.</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="1963"/>
+        <location filename="../../DocumentWidget.cpp" line="1881"/>
         <source>File not Accessible</source>
         <translation>Fichier non Accessible</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="1964"/>
+        <location filename="../../DocumentWidget.cpp" line="1882"/>
         <source>Error while checking the status of file &apos;%1&apos;:
     &apos;%2&apos;
 Please make sure that no data is lost before closing this window.</source>
-        <translation>Erreur lors de la vérification du statut du fichier &apos;%1&apos;:
+        <translation>Erreur lors de la vérification du statut du fichier &apos;%1&apos; :
     &apos;%2&apos;
 Assurez-vous qu&apos;aucune donnée ne sera perdue avant de fermer cette fenêtre.</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2027"/>
+        <location filename="../../DocumentWidget.cpp" line="1944"/>
         <source>File modified externally</source>
-        <translation>Fichier modifier par une application externe</translation>
+        <translation>Fichier modifié par une application externe</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2028"/>
+        <location filename="../../DocumentWidget.cpp" line="1945"/>
         <source>Reload</source>
         <translation>Recharger</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2034"/>
+        <location filename="../../DocumentWidget.cpp" line="1951"/>
         <source>%1 has been modified by another program.  Reload?
 
 WARNING: Reloading will discard changes made in this editing session!</source>
@@ -3328,62 +3334,62 @@ WARNING: Reloading will discard changes made in this editing session!</source>
 AVERTISSEMENT: Le rechargement va supprimer les modifications de cette session!</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2036"/>
+        <location filename="../../DocumentWidget.cpp" line="1953"/>
         <source>%1 has been modified by another program.  Reload?</source>
         <translation>%1 a été modifié par une autre application. Recharger ?</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2107"/>
+        <location filename="../../DocumentWidget.cpp" line="2027"/>
         <source>Comparing externally modified %1 ...</source>
         <translation>Comparaison du fichier %1 modifié en externe ...</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2180"/>
+        <location filename="../../DocumentWidget.cpp" line="2101"/>
         <source>Error</source>
         <translation>Erreur</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2181"/>
+        <location filename="../../DocumentWidget.cpp" line="2102"/>
         <source>Window &apos;%1&apos; was never saved, can&apos;t re-read</source>
-        <translation>La fenêtre &apos;%1&apos; n&apos;a jamais été sauvegardée, impossible de relire</translation>
+        <translation>La fenêtre &apos;%1&apos; n&apos;a jamais été sauvegardée, impossible de la relire</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2253"/>
-        <location filename="../DocumentWidget.cpp" line="2764"/>
+        <location filename="../../DocumentWidget.cpp" line="2174"/>
+        <location filename="../../DocumentWidget.cpp" line="2602"/>
         <source>Error writing Backup</source>
-        <translation>Erreur pendant l&apos;écriture du fichier de sauvegarde</translation>
+        <translation>Erreur lors de l&apos;écriture du fichier de sauvegarde</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2254"/>
+        <location filename="../../DocumentWidget.cpp" line="2175"/>
         <source>Unable to save backup for %1:
 %2
 Automatic backup is now off</source>
         <translation>Impossible d&apos;enregistrer le fichier de sauvegarde pour %1:
 %2
-Les sauvegardes automatiques sont désactivées</translation>
+Les sauvegardes automatiques sont maintenant désactivées</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2279"/>
+        <location filename="../../DocumentWidget.cpp" line="2202"/>
         <source>Error saving Backup</source>
         <translation>Erreur d&apos;enregistrement de la sauvegarde</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2280"/>
+        <location filename="../../DocumentWidget.cpp" line="2203"/>
         <source>Error while saving backup for %1:
 %2
 Automatic backup is now off</source>
-        <translation>Erreur lors de l&apos;enregistrement du fichier de sauvegarde pour %1:
+        <translation>Erreur lors de l&apos;enregistrement du fichier de sauvegarde pour %1 :
 %2
-Les sauvegardes automatiques sont désactivées</translation>
+Les sauvegardes automatiques sont maintenant désactivées</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2310"/>
-        <location filename="../DocumentWidget.cpp" line="2846"/>
+        <location filename="../../DocumentWidget.cpp" line="2238"/>
+        <location filename="../../DocumentWidget.cpp" line="2680"/>
         <source>Save File</source>
         <translation>Sauvegarde du fichier</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2312"/>
+        <location filename="../../DocumentWidget.cpp" line="2240"/>
         <source>%1 has been modified by another program.
 
 Continuing this operation will overwrite any external
@@ -3396,39 +3402,39 @@ or Revert to Saved to revert to the modified version.</source>
         <translation>%1 a été modifié par un autre programme.
 
 Poursuivre cette opération va écraser toutes les 
-modifications externes apportées au fichier depuis son ouverture dans NEdit,
+modifications apportées au fichier depuis son ouverture dans NEdit,
 et votre travail ou celui de quelqu&apos;un d&apos;autre risque d&apos;être perdu.
 
 Pour conserver le fichier modifié, annulez cette opération et
-utilisez Enregistrer sous ... pour sauvegarder ce fichier sous un nom différent,
+utilisez &quot;Enregistrer sous ...&quot; pour sauvegarder ce fichier sous un nom différent,
 ou &quot;Revenir à la dernière version&quot; pour revenir à la version modifiée.</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2320"/>
-        <location filename="../DocumentWidget.cpp" line="2770"/>
+        <location filename="../../DocumentWidget.cpp" line="2248"/>
+        <location filename="../../DocumentWidget.cpp" line="2608"/>
         <source>Continue</source>
-        <translation>Continuer</translation>
+        <translation>Poursuivre</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2355"/>
+        <location filename="../../DocumentWidget.cpp" line="2283"/>
         <source>Writing Read-only File</source>
-        <translation>Ecriture d&quot;un fichier accessible en lecture seule</translation>
+        <translation>criture d&apos;un fichier accessible en lecture seule</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2356"/>
+        <location filename="../../DocumentWidget.cpp" line="2284"/>
         <source>File &apos;%1&apos; is marked as read-only.
 Do you want to save anyway?</source>
         <translation>Le fichier &apos;%1&apos; est marqué comme étant en lecture seule.
 Voulez-vous le sauvegarder malgré tout ?</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2379"/>
-        <location filename="../DocumentWidget.cpp" line="2416"/>
+        <location filename="../../DocumentWidget.cpp" line="2307"/>
+        <location filename="../../DocumentWidget.cpp" line="2341"/>
         <source>Error saving File</source>
         <translation>Erreur lors de l&apos;enregistrement du fichier</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2381"/>
+        <location filename="../../DocumentWidget.cpp" line="2309"/>
         <source>Unable to save %1:
 %2
 
@@ -3436,297 +3442,249 @@ Save as a new file?</source>
         <translation>Impossible de sauvegarder %1:
 %2
 
-Sauvegarder sous un autre nom?</translation>
+Sauvegarder sous un autre nom ?</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2383"/>
+        <location filename="../../DocumentWidget.cpp" line="2311"/>
         <source>Save As...</source>
         <translation>Enregistrer Sous...</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2416"/>
+        <location filename="../../DocumentWidget.cpp" line="2341"/>
         <source>%1 not saved:
 %2</source>
         <translation>%1 non enregistré:
 %2</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2456"/>
-        <source>Save File As</source>
-        <translation>Enregistrer le Fichier Sous</translation>
+        <location filename="../../DocumentWidget.cpp" line="3014"/>
+        <source>Error reading %1
+%2</source>
+        <translation>Erreur de lecture du fichier %1 :
+%2</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2466"/>
-        <source>&amp;Unix</source>
-        <translation>&amp;Unix</translation>
-    </message>
-    <message>
-        <location filename="../DocumentWidget.cpp" line="2467"/>
-        <source>D&amp;OS</source>
-        <translation>D&amp;OS</translation>
-    </message>
-    <message>
-        <location filename="../DocumentWidget.cpp" line="2468"/>
-        <source>&amp;Macintosh</source>
-        <translation>&amp;Macintosh</translation>
-    </message>
-    <message>
-        <location filename="../DocumentWidget.cpp" line="2493"/>
-        <source>Format: </source>
-        <translation>Format: </translation>
-    </message>
-    <message>
-        <location filename="../DocumentWidget.cpp" line="2498"/>
-        <source>&amp;Add line breaks where wrapped</source>
-        <translation>L&apos;&amp;ajout d&apos;une ligne casse l&apos;enroulement</translation>
-    </message>
-    <message>
-        <location filename="../DocumentWidget.cpp" line="2507"/>
-        <source>Add Wrap</source>
-        <translation>Ajout d&apos;un enroulement</translation>
-    </message>
-    <message>
-        <location filename="../DocumentWidget.cpp" line="2508"/>
-        <source>This operation adds permanent line breaks to match the automatic wrapping done by the Continuous Wrap mode Preferences Option.
-
-*** This Option is Irreversable ***
-
-Once newlines are inserted, continuous wrapping will no longer work automatically on these lines</source>
-        <translation>Cette opération ajoute des sauts de ligne permanents pour correspondre à l&apos;enroulement automatique effectué par l&apos;option Préférences -&gt; Enroulement -&gt; Continu.
-
-*** Cette option est irréversible ***
-
-Une fois les nouvelles lignes insérées, l&apos;enroulement continue ne fonctionnera plus automatiquement sur ces lignes</translation>
-    </message>
-    <message>
-        <location filename="../DocumentWidget.cpp" line="2574"/>
+        <location filename="../../DocumentWidget.cpp" line="2413"/>
         <source>File open</source>
         <translation>Fichier ouvert</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2576"/>
+        <location filename="../../DocumentWidget.cpp" line="2415"/>
         <source>%1 is open in another NEdit window</source>
         <translation>%1 est ouvert dans une autre fenêtre NEdit</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2577"/>
+        <location filename="../../DocumentWidget.cpp" line="2416"/>
         <source>Close Other Window</source>
         <translation>Fermer l&apos;autre fenêtre</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2688"/>
+        <location filename="../../DocumentWidget.cpp" line="2537"/>
         <source>%1.bck</source>
         <translation>%1.bck</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2716"/>
+        <location filename="../../DocumentWidget.cpp" line="2561"/>
         <source>Error open backup file</source>
         <translation>Erreur d&apos;ouverture du fichier de sauvegarde</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2726"/>
+        <location filename="../../DocumentWidget.cpp" line="2571"/>
         <source>fchmod() failed</source>
         <translation>fchmod() a échoué</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2739"/>
+        <location filename="../../DocumentWidget.cpp" line="2584"/>
         <source>read() error</source>
         <translation>erreur lors de read()</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2766"/>
+        <location filename="../../DocumentWidget.cpp" line="2604"/>
         <source>Couldn&apos;t write .bck (last version) file.
 %1: %2</source>
-        <translation>Impossible d&apos;écrire la dernière version du fichier .bck.
+        <translation>Impossible d&apos;écrire la (dernière) version du fichier .bck.
 %1: %2</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2768"/>
+        <location filename="../../DocumentWidget.cpp" line="2606"/>
         <source>Cancel Save</source>
         <translation>Annuler l&apos;Enregistrerment</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2769"/>
+        <location filename="../../DocumentWidget.cpp" line="2607"/>
         <source>Turn off Backups</source>
         <translation>Désactiver les Sauvegardes</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="2847"/>
+        <location filename="../../DocumentWidget.cpp" line="2681"/>
         <source>Save %1 before closing?</source>
         <translation>Enregistrer %1 avant de le fermer ?</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3074"/>
-        <location filename="../DocumentWidget.cpp" line="3076"/>
-        <location filename="../DocumentWidget.cpp" line="3084"/>
-        <location filename="../DocumentWidget.cpp" line="3086"/>
+        <location filename="../../DocumentWidget.cpp" line="2920"/>
+        <location filename="../../DocumentWidget.cpp" line="2922"/>
+        <location filename="../../DocumentWidget.cpp" line="2929"/>
+        <location filename="../../DocumentWidget.cpp" line="2931"/>
         <source>New File</source>
         <translation>Nouveau Fichier</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3075"/>
-        <location filename="../DocumentWidget.cpp" line="3085"/>
+        <location filename="../../DocumentWidget.cpp" line="2921"/>
+        <location filename="../../DocumentWidget.cpp" line="2930"/>
         <source>Can&apos;t open %1:
 %2</source>
         <translation>Impossible d&apos;ouvrir %1:
 %2</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3078"/>
+        <location filename="../../DocumentWidget.cpp" line="2924"/>
         <source>Exit NEdit</source>
         <translation>Sortir de NEdit</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3102"/>
+        <location filename="../../DocumentWidget.cpp" line="2954"/>
         <source>Error creating File</source>
         <translation>Erreur lors de la création du fichier</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3102"/>
+        <location filename="../../DocumentWidget.cpp" line="2954"/>
         <source>Can&apos;t create %1:
 %2</source>
         <translation>Impossible de créer %1:
 %2</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3118"/>
-        <location filename="../DocumentWidget.cpp" line="3130"/>
-        <location filename="../DocumentWidget.cpp" line="3137"/>
-        <location filename="../DocumentWidget.cpp" line="3145"/>
-        <location filename="../DocumentWidget.cpp" line="3528"/>
+        <location filename="../../DocumentWidget.cpp" line="2970"/>
+        <location filename="../../DocumentWidget.cpp" line="2982"/>
+        <location filename="../../DocumentWidget.cpp" line="2989"/>
+        <location filename="../../DocumentWidget.cpp" line="2997"/>
+        <location filename="../../DocumentWidget.cpp" line="3379"/>
+        <location filename="../../DocumentWidget.cpp" line="3386"/>
         <source>Error opening File</source>
         <translation>Erreur d&apos;ouverture du fichier</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3118"/>
+        <location filename="../../DocumentWidget.cpp" line="2970"/>
         <source>Could not open %1%2:
 %3</source>
         <translation>Impossible d&apos;ouvrir %1%2:
 %3</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3130"/>
+        <location filename="../../DocumentWidget.cpp" line="2982"/>
         <source>Error opening %1</source>
-        <translation>Erreur d&apos;ouverture de %1</translation>
+        <translation>Erreur d&apos;ouverture du fichier %1</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3137"/>
+        <location filename="../../DocumentWidget.cpp" line="2989"/>
         <source>Can&apos;t open directory %1</source>
-        <translation>Impossible d&apos;accéder au répertoire %1</translation>
+        <translation>Impossible d&apos;ouvrir le répertoire %1</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3145"/>
+        <location filename="../../DocumentWidget.cpp" line="2997"/>
         <source>Can&apos;t open block device %1</source>
-        <translation>Impossible d&apos;accéder au block device %1</translation>
+        <translation>Imossible d&apos;ouvrir le &quot;block device&quot; %1</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3161"/>
-        <location filename="../DocumentWidget.cpp" line="3220"/>
+        <location filename="../../DocumentWidget.cpp" line="3014"/>
+        <location filename="../../DocumentWidget.cpp" line="3073"/>
         <source>Error while opening File</source>
-        <translation>Erreur d&apos;ouverture du fichier</translation>
+        <translation>Erreur lors de l&apos;ouverture du fichier</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3161"/>
-        <source>Error reading %1:
-%2</source>
-        <translation>Erreur de lecture du fichier %1:
-%2</translation>
-    </message>
-    <message>
-        <location filename="../DocumentWidget.cpp" line="3220"/>
+        <location filename="../../DocumentWidget.cpp" line="3073"/>
         <source>File is too large to edit</source>
         <translation>Le fichier est trop gros pour être édité</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3375"/>
-        <location filename="../DocumentWidget.cpp" line="3383"/>
-        <location filename="../DocumentWidget.cpp" line="3457"/>
-        <location filename="../DocumentWidget.cpp" line="4038"/>
-        <location filename="../DocumentWidget.cpp" line="4050"/>
+        <location filename="../../DocumentWidget.cpp" line="3228"/>
+        <location filename="../../DocumentWidget.cpp" line="3236"/>
+        <location filename="../../DocumentWidget.cpp" line="3310"/>
+        <location filename="../../DocumentWidget.cpp" line="3895"/>
+        <location filename="../../DocumentWidget.cpp" line="3907"/>
         <source>Smart Indent</source>
-        <translation>Indentation intelligente</translation>
+        <translation>Indentation Intelligente</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3376"/>
+        <location filename="../../DocumentWidget.cpp" line="3229"/>
         <source>Error in smart indent macro:
 %1</source>
         <translation>Erreur dans la macro d&apos;indentation intelligente:
 %1</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3376"/>
-        <location filename="../DocumentWidget.cpp" line="3458"/>
+        <location filename="../../DocumentWidget.cpp" line="3229"/>
+        <location filename="../../DocumentWidget.cpp" line="3311"/>
         <source>dialogs and shell commands not permitted</source>
         <translation>Les commandes du shell ne sont pas autorisées</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3383"/>
+        <location filename="../../DocumentWidget.cpp" line="3236"/>
         <source>Smart indent macros must return integer indent distance</source>
         <translation>Les macros d&apos;indentation doivent retourner une distance d&apos;indentation entière</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3458"/>
+        <location filename="../../DocumentWidget.cpp" line="3311"/>
         <source>Error in smart indent modification macro:
 %1</source>
         <translation>Erreur dans la macro de modification d&apos;indentation :
 %1</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3483"/>
+        <location filename="../../DocumentWidget.cpp" line="3336"/>
         <source>Macro Command in Progress</source>
         <translation>Macro en cours d&apos;exécution</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3485"/>
+        <location filename="../../DocumentWidget.cpp" line="3338"/>
         <source>Macro Command in Progress -- Press %1 to Cancel</source>
         <translation>Macro en cours d&apos;exécution -- Appuyer sur %1 pour Annuler</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3506"/>
+        <location filename="../../DocumentWidget.cpp" line="3359"/>
         <source>Shell Command in Progress</source>
         <translation>Commande du shell en cours d&apos;exécution</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3508"/>
+        <location filename="../../DocumentWidget.cpp" line="3361"/>
         <source>Shell Command in Progress -- Press %1 to Cancel</source>
         <translation>Commande du shell en cours d&apos;exécution -- Appuyer sur %1 pour Annuler</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3812"/>
+        <location filename="../../DocumentWidget.cpp" line="3675"/>
         <source>No match for &quot;%1&quot; in calltips or tags.</source>
         <translation>Aucune correspondance pour &quot;%1&quot; dans les infobulles ou les marqueurs.</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3814"/>
-        <location filename="../DocumentWidget.cpp" line="7114"/>
+        <location filename="../../DocumentWidget.cpp" line="3677"/>
+        <location filename="../../DocumentWidget.cpp" line="6859"/>
         <source>Tags</source>
         <translation>Marqueurs</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3814"/>
+        <location filename="../../DocumentWidget.cpp" line="3677"/>
         <source>&quot;%1&quot; not found in tags %2</source>
         <translation>&quot;%1&quot; non trouvé dans les marqueurs %2</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3814"/>
+        <location filename="../../DocumentWidget.cpp" line="3677"/>
         <source>files</source>
         <translation>fichiers</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3814"/>
+        <location filename="../../DocumentWidget.cpp" line="3677"/>
         <source>file</source>
         <translation>fichier</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3888"/>
-        <location filename="../DocumentWidget.cpp" line="4829"/>
-        <location filename="../DocumentWidget.cpp" line="4931"/>
+        <location filename="../../DocumentWidget.cpp" line="3751"/>
+        <location filename="../../DocumentWidget.cpp" line="4657"/>
         <source>Shell Command</source>
-        <translation>Commande du Shell</translation>
+        <translation>Commande du shell</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3888"/>
-        <location filename="../DocumentWidget.cpp" line="4830"/>
+        <location filename="../../DocumentWidget.cpp" line="3751"/>
+        <location filename="../../DocumentWidget.cpp" line="4658"/>
         <source>Shell command is too long due to
 filename substitutions with &apos;%%&apos; or
 line number substitutions with &apos;#&apos;</source>
@@ -3735,24 +3693,7 @@ substitutions de nom de fichier avec &apos;%%&apos; ou des
 substitutions de numéro de ligne avec &apos;#&apos;</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="3953"/>
-        <source>nedit-XXXXXX</source>
-        <translation>nedit-XXXXXX</translation>
-    </message>
-    <message>
-        <location filename="../DocumentWidget.cpp" line="3955"/>
-        <source>Error while Printing</source>
-        <translation>Erreur lors de l&apos;Impression</translation>
-    </message>
-    <message>
-        <location filename="../DocumentWidget.cpp" line="3955"/>
-        <source>Unable to write file for printing:
-%1</source>
-        <translation>Impossible d&apos;écrire le fichier pour l&apos;impression :
-%1</translation>
-    </message>
-    <message>
-        <location filename="../DocumentWidget.cpp" line="4039"/>
+        <location filename="../../DocumentWidget.cpp" line="3896"/>
         <source>No language-specific mode has been set for this file.
 
 To use smart indent in this window, please select a language from the Preferences -&gt; Language Modes menu.</source>
@@ -3760,7 +3701,7 @@ To use smart indent in this window, please select a language from the Preference
 Pour utiliser l&apos;indentation intelligente dans cette fenêtre, veuillez sélectionner un langage dans Préférences -&gt; Langages.</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="4051"/>
+        <location filename="../../DocumentWidget.cpp" line="3908"/>
         <source>Smart indent is not available in languagemode
 %1.
 
@@ -3777,120 +3718,117 @@ ou choisissez un autre mode de langue parmi:
 Préférences -&gt; Langage.</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="4066"/>
+        <location filename="../../DocumentWidget.cpp" line="3923"/>
         <source>smart indent common initialization macros</source>
         <translation>macros d&apos;initialisation de l&apos;indentation intelligente</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="4074"/>
+        <location filename="../../DocumentWidget.cpp" line="3931"/>
         <source>smart indent initialization macro</source>
         <translation>macros d&apos;initialisation de l&apos;indentation intelligente</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="4087"/>
+        <location filename="../../DocumentWidget.cpp" line="3944"/>
         <source>newline macro</source>
-        <translation>Macro de nouvelle ligne</translation>
+        <translation>macro de nouvelle ligne</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="4098"/>
+        <location filename="../../DocumentWidget.cpp" line="3955"/>
         <source>smart indent modify macro</source>
         <translation>macro de modification de l&apos;indentation</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="4679"/>
+        <location filename="../../DocumentWidget.cpp" line="4507"/>
         <source>Warning</source>
         <translation>Avertissement</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="4683"/>
-        <location filename="../DocumentWidget.cpp" line="4696"/>
-        <location filename="../DocumentWidget.cpp" line="4711"/>
+        <location filename="../../DocumentWidget.cpp" line="4511"/>
+        <location filename="../../DocumentWidget.cpp" line="4524"/>
+        <location filename="../../DocumentWidget.cpp" line="4539"/>
         <source>Proceed</source>
         <translation>Faire</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="4692"/>
+        <location filename="../../DocumentWidget.cpp" line="4520"/>
         <source>Command Failure</source>
-        <translation>Echec de la commande</translation>
+        <translation>Échec de la commande</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="4693"/>
+        <location filename="../../DocumentWidget.cpp" line="4521"/>
         <source>Command reported failed exit status.
 Output from command:
 %1</source>
-        <translation>La commande a retourné un statut d&apos;erreur. Sortie de la commande : %1</translation>
+        <translation>La commande a retourné un statut d&apos;erreur.
+Sortie de la commande :
+%1</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="4707"/>
+        <location filename="../../DocumentWidget.cpp" line="4535"/>
         <source>Information</source>
         <translation>Information</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="4932"/>
-        <source>Shell command is too long due to filename substitutions with &apos;%%&apos; or line number substitutions with &apos;#&apos;</source>
-        <translation>La commande du shell est trop longue en raison des substitutions de nom de fichier avec &apos;%%&apos; ou des substitutions de numéro de ligne avec &apos;#&apos;</translation>
-    </message>
-    <message>
-        <location filename="../DocumentWidget.cpp" line="5157"/>
-        <location filename="../DocumentWidget.cpp" line="5281"/>
+        <location filename="../../DocumentWidget.cpp" line="4985"/>
+        <location filename="../../DocumentWidget.cpp" line="5111"/>
         <source>Cancel Learn</source>
         <translation>Annuler l&apos;apprentissage</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5169"/>
+        <location filename="../../DocumentWidget.cpp" line="4997"/>
         <source>Learn Mode -- Use menu to finish or cancel</source>
         <translation>Mode d&apos;Apprentissage -- Utilisez le menu pour terminer ou annuler</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5171"/>
+        <location filename="../../DocumentWidget.cpp" line="4999"/>
         <source>Learn Mode -- Use menu to finish, press %1 to cancel</source>
         <translation>Mode d&apos;Apprentissage -- Utilisez le menu pour terminer, appuyer sur %1 pour annuler</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5175"/>
+        <location filename="../../DocumentWidget.cpp" line="5003"/>
         <source>Learn Mode -- Press %1 to finish, use menu to cancel</source>
         <translation>Mode d&apos;Apprentissage -- Appuyer sur %1 pour terminer, utilisez le menu pour annuler</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5177"/>
+        <location filename="../../DocumentWidget.cpp" line="5005"/>
         <source>Learn Mode -- Press %1 to finish, %2 to cancel</source>
-        <translation>Mode d&apos;Apprentissage -- Appuyer sur %1 pour terminer, sur %2 pour annuler</translation>
+        <translation>Mode d&apos;Apprentissage -- Appuyer sur %1 pour terminer, %2 pour annuler</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5194"/>
+        <location filename="../../DocumentWidget.cpp" line="5023"/>
         <source>Read Macro</source>
         <translation>Lecture de la Macro</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5194"/>
+        <location filename="../../DocumentWidget.cpp" line="5024"/>
         <source>Error reading macro file %1: %2</source>
-        <translation>Erreur lors de la lecture du fichier de macros %1: %2</translation>
+        <translation>Erreur lors de la lecture du fichier de macros %1 : %2</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5224"/>
+        <location filename="../../DocumentWidget.cpp" line="5054"/>
         <source>Cancel Macro</source>
         <translation>Annuler la Macro</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5251"/>
-        <location filename="../DocumentWidget.cpp" line="5314"/>
+        <location filename="../../DocumentWidget.cpp" line="5081"/>
+        <location filename="../../DocumentWidget.cpp" line="5150"/>
         <source>Macro Error</source>
         <translation>Erreur de Macro</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5251"/>
-        <location filename="../DocumentWidget.cpp" line="5314"/>
+        <location filename="../../DocumentWidget.cpp" line="5081"/>
+        <location filename="../../DocumentWidget.cpp" line="5150"/>
         <source>Error executing macro: %1</source>
         <translation>Erreur lors de l&apos;exécution de la macro : %1</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5456"/>
-        <location filename="../DocumentWidget.cpp" line="5472"/>
+        <location filename="../../DocumentWidget.cpp" line="5293"/>
+        <location filename="../../DocumentWidget.cpp" line="5309"/>
         <source>Language Mode</source>
-        <translation>Langages</translation>
+        <translation>Langage</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5457"/>
+        <location filename="../../DocumentWidget.cpp" line="5294"/>
         <source>No language-specific mode has been set for this file.
 
 To use syntax highlighting in this window, please select a
@@ -3909,7 +3847,7 @@ ajoutés depuis Préférences -&gt; Paramètres par défaut -&gt; Langages,
 et Préférences -&gt; Paramètres par défaut -&gt; Coloration Syntaxique.</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5473"/>
+        <location filename="../../DocumentWidget.cpp" line="5310"/>
         <source>Syntax highlighting is not available in language
 mode %1.
 
@@ -3925,99 +3863,92 @@ ou choisir un autre langage parmi:
 Préférences -&gt; Langages.</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5978"/>
-        <location filename="../DocumentWidget.cpp" line="6046"/>
-        <location filename="../DocumentWidget.cpp" line="6047"/>
-        <source>Plain</source>
-        <translation>Brut</translation>
-    </message>
-    <message>
-        <location filename="../DocumentWidget.cpp" line="5979"/>
-        <location filename="../DocumentWidget.cpp" line="5997"/>
+        <location filename="../../DocumentWidget.cpp" line="5815"/>
+        <location filename="../../DocumentWidget.cpp" line="5833"/>
         <source>Highlight Style</source>
-        <translation>Style de Surbrillance</translation>
+        <translation>Style de surbrillance</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5979"/>
+        <location filename="../../DocumentWidget.cpp" line="5815"/>
         <source>Highlight style &quot;Plain&quot; is missing</source>
         <translation>Le style de surbrillance &quot;Brut&quot; n&apos;existe pas</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5987"/>
-        <location filename="../DocumentWidget.cpp" line="6015"/>
+        <location filename="../../DocumentWidget.cpp" line="5823"/>
+        <location filename="../../DocumentWidget.cpp" line="5851"/>
         <source>Parent Pattern</source>
         <translation>Modèle parent</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5988"/>
+        <location filename="../../DocumentWidget.cpp" line="5824"/>
         <source>Parent field &quot;%1&quot; in pattern &quot;%2&quot;
 does not match any highlight patterns in this set</source>
         <translation>Le champ parent &quot;%1&quot; dans le motif &quot;%2&quot;
 ne correspond à aucun motif de surbrillance</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="5998"/>
+        <location filename="../../DocumentWidget.cpp" line="5834"/>
         <source>Style &quot;%1&quot; named in pattern &quot;%2&quot;
 does not match any existing style</source>
         <translation>Le style &quot;%1&quot; dans le motif &quot;%2&quot;
 ne correspond à aucun style existant</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="6016"/>
+        <location filename="../../DocumentWidget.cpp" line="5852"/>
         <source>Pattern &quot;%1&quot; does not have valid parent</source>
         <translation>Le modèle &quot;%1&quot; n&apos;a pas de parent valide</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="6254"/>
+        <location filename="../../DocumentWidget.cpp" line="6090"/>
         <source>Color-only Pattern</source>
         <translation>Modèle de Couleur-Seule</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="6255"/>
+        <location filename="../../DocumentWidget.cpp" line="6091"/>
         <source>Color-only pattern &quot;%1&quot; may not have subpatterns</source>
-        <translation>Le modèle de Couleur-Seule &quot;%1&quot; ne peut pas avoir de sous-modèles.</translation>
+        <translation>Le modèle de Couleur-Seule &quot;%1&quot; ne peut pas avoir de sous-modèles</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="6431"/>
+        <location filename="../../DocumentWidget.cpp" line="6267"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="6436"/>
+        <location filename="../../DocumentWidget.cpp" line="6272"/>
         <source>Error in Regex</source>
         <translation>Erreur d&apos;expression régulière</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="6437"/>
+        <location filename="../../DocumentWidget.cpp" line="6273"/>
         <source>Error in syntax highlighting regular expression:
 %1
 %2</source>
-        <translation>Erreur dans l&apos;expression régulière de surbrillance de syntaxe:
+        <translation>Erreur dans l&apos;expression régulière de surbrillance de syntaxe :
 %1
 %2</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="7114"/>
+        <location filename="../../DocumentWidget.cpp" line="6859"/>
         <source>Too many duplicate tags, first %1 shown</source>
         <translation>Trop de marqueurs dupliqués, seul le premier %1 est affiché</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="7267"/>
+        <location filename="../../DocumentWidget.cpp" line="7010"/>
         <source>File not found</source>
         <translation>Fichier non trouvé</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="7268"/>
+        <location filename="../../DocumentWidget.cpp" line="7011"/>
         <source>File %1 not found</source>
         <translation>Fichier %1 non trouvé</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="7284"/>
+        <location filename="../../DocumentWidget.cpp" line="7030"/>
         <source>Tag Error</source>
         <translation>Erreur de marqueur</translation>
     </message>
     <message>
-        <location filename="../DocumentWidget.cpp" line="7285"/>
+        <location filename="../../DocumentWidget.cpp" line="7031"/>
         <source>Definition for %1
 not found in %2</source>
         <translation>La définition de %1
@@ -4027,28 +3958,89 @@ n&apos;a pas été trouvée dans %2</translation>
 <context>
     <name>ElidedLabel</name>
     <message>
-        <location filename="../ElidedLabel.cpp" line="168"/>
+        <location filename="../../ElidedLabel.cpp" line="168"/>
         <source>&amp;Copy Full Text</source>
-        <translation>&amp;Copie le texte complet </translation>
+        <translation>&amp;Copie le texte complet</translation>
+    </message>
+</context>
+<context>
+    <name>FixedFontSelector</name>
+    <message>
+        <location filename="../../FixedFontSelector.cpp" line="14"/>
+        <source>%1</source>
+        <translation>%1</translation>
     </message>
 </context>
 <context>
     <name>Help</name>
     <message>
-        <location filename="../Help.cpp" line="14"/>
+        <location filename="../../Help.cpp" line="14"/>
         <source>Not Implemented</source>
-        <translation>Non implanté</translation>
+        <translation>Non mis en oeuvre</translation>
     </message>
     <message>
-        <location filename="../Help.cpp" line="15"/>
+        <location filename="../../Help.cpp" line="15"/>
         <source>Sorry, but the help system is not yet implemented!</source>
-        <translation>Désolé, mais le système d&apos;aide n&apos;est pas encore implanté!</translation>
+        <translation>Désolé, mais le système d&apos;aide n&apos;est pas encore mis en oeuvre!</translation>
+    </message>
+</context>
+<context>
+    <name>Highlight</name>
+    <message>
+        <location filename="../../Highlight.cpp" line="1494"/>
+        <source>language mode must be specified</source>
+        <translation>le langage doit être spécifié</translation>
+    </message>
+    <message>
+        <location filename="../../Highlight.cpp" line="1506"/>
+        <source>No default pattern set</source>
+        <translation>Aucun modèle par défaut</translation>
+    </message>
+    <message>
+        <location filename="../../Highlight.cpp" line="1513"/>
+        <source>unreadable line context field</source>
+        <translation>champ de contexte de ligne illisible</translation>
+    </message>
+    <message>
+        <location filename="../../Highlight.cpp" line="1522"/>
+        <source>unreadable character context field</source>
+        <translation>champ de contexte de caractère illisible</translation>
+    </message>
+    <message>
+        <location filename="../../Highlight.cpp" line="1540"/>
+        <source>highlight pattern</source>
+        <translation>modèles de coloration syntaxique</translation>
+    </message>
+    <message>
+        <location filename="../../Highlight.cpp" line="1558"/>
+        <source>pattern list must begin with &quot;{&quot;</source>
+        <translation>La liste de modèles doit commencer par &quot;{&quot;</translation>
+    </message>
+    <message>
+        <location filename="../../Highlight.cpp" line="1569"/>
+        <source>end of pattern list not found</source>
+        <translation>Fin de liste de modèles non trouvée</translation>
+    </message>
+    <message>
+        <location filename="../../Highlight.cpp" line="1600"/>
+        <source>pattern name is required</source>
+        <translation>Le nom du modèle est nécessaire</translation>
+    </message>
+    <message>
+        <location filename="../../Highlight.cpp" line="1644"/>
+        <source>style field required in pattern</source>
+        <translation>Le champ de style de modèle est nécessaire</translation>
+    </message>
+    <message>
+        <location filename="../../Highlight.cpp" line="1670"/>
+        <source>unreadable flag field</source>
+        <translation>champ de drapeau illisible</translation>
     </message>
 </context>
 <context>
     <name>HighlightPatternModel</name>
     <message>
-        <location filename="../HighlightPatternModel.cpp" line="77"/>
+        <location filename="../../HighlightPatternModel.cpp" line="77"/>
         <source>Name</source>
         <translation>Nom</translation>
     </message>
@@ -4056,7 +4048,7 @@ n&apos;a pas été trouvée dans %2</translation>
 <context>
     <name>HighlightStyleModel</name>
     <message>
-        <location filename="../HighlightStyleModel.cpp" line="77"/>
+        <location filename="../../HighlightStyleModel.cpp" line="77"/>
         <source>Name</source>
         <translation>Nom</translation>
     </message>
@@ -4064,12 +4056,12 @@ n&apos;a pas été trouvée dans %2</translation>
 <context>
     <name>KeySequenceEdit</name>
     <message>
-        <location filename="../KeySequenceEdit.cpp" line="64"/>
+        <location filename="../../KeySequenceEdit.cpp" line="64"/>
         <source>Press shortcut</source>
         <translation>Appuyez sur le raccourci</translation>
     </message>
     <message>
-        <location filename="../KeySequenceEdit.cpp" line="265"/>
+        <location filename="../../KeySequenceEdit.cpp" line="265"/>
         <source>%1, ...</source>
         <extracomment>This text is an &quot;unfinished&quot; shortcut, expands like &quot;Ctrl+A, ...&quot;</extracomment>
         <translatorcomment>Ce texte est un raccourci &quot;inachevé&quot;, se développe comme &quot;Ctrl + A, ...&quot;</translatorcomment>
@@ -4079,1618 +4071,1882 @@ n&apos;a pas été trouvée dans %2</translation>
 <context>
     <name>LanguageModeModel</name>
     <message>
-        <location filename="../LanguageModeModel.cpp" line="77"/>
+        <location filename="../../LanguageModeModel.cpp" line="77"/>
         <source>Name</source>
         <translation>Nom</translation>
     </message>
 </context>
 <context>
+    <name>Main</name>
+    <message>
+        <location filename="../../Main.cpp" line="383"/>
+        <source>argument to -do</source>
+        <translation>argument pour -do</translation>
+    </message>
+</context>
+<context>
     <name>MainWindow</name>
     <message>
-        <location filename="../MainWindow.ui" line="14"/>
+        <location filename="../../MainWindow.ui" line="14"/>
         <source>NEdit-ng</source>
         <translation>NEdit-ng</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="54"/>
-        <location filename="../MainWindow.cpp" line="4997"/>
+        <location filename="../../MainWindow.ui" line="54"/>
+        <location filename="../../MainWindow.cpp" line="5021"/>
         <source>...</source>
         <translation>...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="74"/>
+        <location filename="../../MainWindow.ui" line="74"/>
         <source>Incremental Search</source>
-        <translation>Recherche incrémentale</translation>
+        <translation>Recherche Incrémentale</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="87"/>
+        <location filename="../../MainWindow.ui" line="87"/>
         <source>Rev</source>
         <translation>Arrière</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="97"/>
+        <location filename="../../MainWindow.ui" line="97"/>
         <source>RegExp</source>
         <translation>Exp Rég</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="107"/>
+        <location filename="../../MainWindow.ui" line="107"/>
         <source>Case</source>
         <translation>Casse</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="146"/>
+        <location filename="../../MainWindow.ui" line="146"/>
         <source>&amp;File</source>
-        <translation>&amp;Fichier</translation>
+        <translation>&amp;Ficher</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="176"/>
+        <location filename="../../MainWindow.ui" line="176"/>
         <source>&amp;Edit</source>
         <translation>&amp;Edition</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="202"/>
+        <location filename="../../MainWindow.ui" line="202"/>
         <source>&amp;Search</source>
         <translation>&amp;Rechercher</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="227"/>
         <source>P&amp;references</source>
-        <translation>&amp;Préférences</translation>
+        <translation type="vanished">P&amp;références</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="231"/>
-        <location filename="../MainWindow.ui" line="328"/>
+        <location filename="../../MainWindow.ui" line="231"/>
+        <location filename="../../MainWindow.ui" line="328"/>
         <source>Show &amp;Matching (..)</source>
-        <translation>&amp;Montrer les correspondances (..)</translation>
+        <translation>&amp;Montrer les Correspondances (..)</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="241"/>
+        <location filename="../../MainWindow.ui" line="241"/>
         <source>&amp;Default Settings</source>
-        <translation>Réglages par &amp;défaut</translation>
+        <translation>Réglages par &amp;Défaut</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="245"/>
-        <location filename="../MainWindow.ui" line="397"/>
+        <location filename="../../MainWindow.ui" line="245"/>
+        <location filename="../../MainWindow.ui" line="397"/>
         <source>&amp;Auto Indent</source>
-        <translation>&amp;Indentation automatique</translation>
+        <translation>Indentation &amp;Automatique</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="255"/>
-        <location filename="../MainWindow.ui" line="383"/>
+        <location filename="../../MainWindow.ui" line="255"/>
+        <location filename="../../MainWindow.ui" line="383"/>
         <source>&amp;Wrap</source>
         <translation>&amp;Enroulement</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="269"/>
+        <location filename="../../MainWindow.ui" line="269"/>
         <source>Tag Co&amp;llisions</source>
-        <translation>&amp;Collisions de tags</translation>
+        <translation>Co&amp;llisions de tags</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="276"/>
+        <location filename="../../MainWindow.ui" line="276"/>
         <source>C&amp;ustomize Menus</source>
-        <translation>Personnaliser les men&amp;us</translation>
+        <translation>Personnaliser les Men&amp;us</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="287"/>
+        <location filename="../../MainWindow.ui" line="287"/>
         <source>Searchin&amp;g</source>
-        <translation>&amp;Recherche</translation>
+        <translation>Recherc&amp;he</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="291"/>
+        <location filename="../../MainWindow.ui" line="291"/>
         <source>&amp;Default Search Style</source>
-        <translation>Style de recherche par &amp;défaut</translation>
+        <translation>Style de Recherche par &amp;Défaut</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="308"/>
+        <location filename="../../MainWindow.ui" line="308"/>
         <source>Syntax &amp;Highlighting</source>
-        <translation>&amp;Coloration Syntaxique</translation>
+        <translation>&amp;Surbrillance de la syntaxe</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="318"/>
+        <location filename="../../MainWindow.ui" line="318"/>
         <source>Tabbed Editing</source>
         <translation>Edition des onglets</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="338"/>
+        <location filename="../../MainWindow.ui" line="338"/>
         <source>Wa&amp;rnings</source>
         <translation>Ave&amp;rtissements</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="346"/>
+        <location filename="../../MainWindow.ui" line="346"/>
         <source>Initial Window Si&amp;ze</source>
         <translation>Taille initiale de la fenê&amp;tre</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="428"/>
+        <location filename="../../MainWindow.ui" line="428"/>
         <source>She&amp;ll</source>
-        <translation>&amp;Shell</translation>
+        <translation>She&amp;ll</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="441"/>
         <source>&amp;Macro</source>
-        <translation>&amp;Macro</translation>
+        <translation type="vanished">&amp;Macro</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="455"/>
+        <location filename="../../MainWindow.ui" line="227"/>
+        <source>&amp;Preferences</source>
+        <translation>&amp;Préférences</translation>
+    </message>
+    <message>
+        <location filename="../../MainWindow.ui" line="441"/>
+        <source>Ma&amp;cro</source>
+        <translation>Ma&amp;cro</translation>
+    </message>
+    <message>
+        <location filename="../../MainWindow.ui" line="455"/>
         <source>&amp;Windows</source>
         <translation>&amp;Fenêtres</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="469"/>
-        <location filename="../MainWindow.ui" line="1797"/>
+        <location filename="../../MainWindow.ui" line="469"/>
+        <location filename="../../MainWindow.ui" line="1797"/>
         <source>&amp;Help</source>
         <translation>&amp;Aide</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="492"/>
+        <location filename="../../MainWindow.ui" line="492"/>
         <source>&amp;New</source>
         <translation>&amp;Nouveau</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="495"/>
+        <location filename="../../MainWindow.ui" line="495"/>
         <source>Ctrl+N</source>
         <translation>Ctrl+N</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="504"/>
-        <location filename="../MainWindow.cpp" line="533"/>
-        <location filename="../MainWindow.cpp" line="4196"/>
+        <location filename="../../MainWindow.ui" line="504"/>
+        <location filename="../../MainWindow.cpp" line="635"/>
+        <location filename="../../MainWindow.cpp" line="4202"/>
         <source>New &amp;Window</source>
-        <translation>No&amp;uvelle fenêtre</translation>
+        <translation>Nouvelle &amp;fenêtre</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="507"/>
+        <location filename="../../MainWindow.ui" line="507"/>
         <source>Ctrl+Shift+N</source>
         <translation>Ctrl+Shift+N</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="516"/>
+        <location filename="../../MainWindow.ui" line="516"/>
         <source>&amp;Open...</source>
         <translation>&amp;Ouvrir...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="519"/>
+        <location filename="../../MainWindow.ui" line="519"/>
         <source>Ctrl+O</source>
         <translation>Ctrl+O</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="524"/>
+        <location filename="../../MainWindow.ui" line="524"/>
         <source>Open Selecte&amp;d</source>
-        <translation>Ouvrir le fichier &amp;sélectionné</translation>
+        <translation>Ouvrir le fichier sélectio&amp;nné</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="527"/>
+        <location filename="../../MainWindow.ui" line="527"/>
         <source>Ctrl+Y</source>
         <translation>Ctrl+Y</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="536"/>
+        <location filename="../../MainWindow.ui" line="536"/>
         <source>Open Pre&amp;vious</source>
-        <translation>&amp;Récemment ouverts</translation>
+        <translation>Récemment ou&amp;verts</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="548"/>
+        <location filename="../../MainWindow.ui" line="548"/>
         <source>&amp;Close</source>
         <translation>&amp;Fermer</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="551"/>
+        <location filename="../../MainWindow.ui" line="551"/>
         <source>Ctrl+W</source>
         <translation>Ctrl+W</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="560"/>
+        <location filename="../../MainWindow.ui" line="560"/>
         <source>&amp;Save</source>
         <translation>&amp;Enregistrer</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="563"/>
+        <location filename="../../MainWindow.ui" line="563"/>
         <source>Ctrl+S</source>
         <translation>Ctrl+S</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="572"/>
+        <location filename="../../MainWindow.ui" line="572"/>
         <source>Save &amp;As...</source>
-        <translation>Enre&amp;gistrer sous ...</translation>
+        <translation>Enregistrer &amp;Sous ...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="581"/>
+        <location filename="../../MainWindow.ui" line="581"/>
         <source>&amp;Revert to Saved</source>
-        <translation>Revenir à la &amp;dernière version</translation>
+        <translation>&amp;Revenir à la dernière version</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="586"/>
+        <location filename="../../MainWindow.ui" line="586"/>
         <source>&amp;Include File...</source>
         <translation>&amp;Inclure le fichier...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="589"/>
+        <location filename="../../MainWindow.ui" line="589"/>
         <source>Alt+I</source>
         <translation>Alt+I</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="594"/>
+        <location filename="../../MainWindow.ui" line="594"/>
         <source>Load &amp;Macro File...</source>
         <translation>Charger le fichier de &amp;macros...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="599"/>
+        <location filename="../../MainWindow.ui" line="599"/>
         <source>Load Ta&amp;gs File...</source>
-        <translation>Charger le fichier de mar&amp;queurs...</translation>
+        <translation>Charger le fichier de ta&amp;gs...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="607"/>
+        <location filename="../../MainWindow.ui" line="607"/>
         <source>&amp;Unload Tags File</source>
-        <translation>&amp;Décharger le fichier de marqueurs</translation>
+        <translation>&amp;Décharger le fichier de tags</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="612"/>
+        <location filename="../../MainWindow.ui" line="612"/>
         <source>Load Calltips &amp;File...</source>
-        <translation>Charger le fichier d&apos;info&amp;bulles...</translation>
+        <translation>Charger le &amp;fichier d&apos;infobulles...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="620"/>
+        <location filename="../../MainWindow.ui" line="620"/>
         <source>Unload Calltips Fil&amp;e</source>
-        <translation>Décharger le fichier d&apos;infobu&amp;lles</translation>
+        <translation>Décharger le fichi&amp;er d&apos;infobulles</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="629"/>
+        <location filename="../../MainWindow.ui" line="629"/>
         <source>&amp;Print...</source>
         <translation>Im&amp;primer...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="632"/>
+        <location filename="../../MainWindow.ui" line="632"/>
         <source>Ctrl+P</source>
         <translation>Ctrl+P</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="640"/>
+        <location filename="../../MainWindow.ui" line="640"/>
         <source>Print Se&amp;lection...</source>
         <translation>Imprimer la sé&amp;lection...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="649"/>
+        <location filename="../../MainWindow.ui" line="649"/>
         <source>E&amp;xit</source>
         <translation>&amp;Sortir</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="652"/>
+        <location filename="../../MainWindow.ui" line="652"/>
         <source>Ctrl+Q</source>
         <translation>Ctrl+Q</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="664"/>
+        <location filename="../../MainWindow.ui" line="664"/>
         <source>&amp;Undo</source>
-        <translation>&amp;Annuler</translation>
+        <translation>Ann&amp;uler</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="667"/>
+        <location filename="../../MainWindow.ui" line="667"/>
         <source>Ctrl+Z</source>
         <translation>Ctrl+Z</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="679"/>
+        <location filename="../../MainWindow.ui" line="679"/>
         <source>&amp;Redo</source>
         <translation>&amp;Rétablir</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="682"/>
+        <location filename="../../MainWindow.ui" line="682"/>
         <source>Ctrl+Shift+Z</source>
         <translation>Ctrl+Shift+Z</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="691"/>
+        <location filename="../../MainWindow.ui" line="691"/>
         <source>Cu&amp;t</source>
         <translation>Cou&amp;per</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="694"/>
+        <location filename="../../MainWindow.ui" line="694"/>
         <source>Ctrl+X</source>
         <translation>Ctrl+X</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="703"/>
+        <location filename="../../MainWindow.ui" line="703"/>
         <source>&amp;Copy</source>
         <translation>&amp;Copier</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="706"/>
+        <location filename="../../MainWindow.ui" line="706"/>
         <source>Ctrl+C</source>
         <translation>Ctrl+C</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="715"/>
+        <location filename="../../MainWindow.ui" line="715"/>
         <source>&amp;Paste</source>
         <translation>Co&amp;ller</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="718"/>
+        <location filename="../../MainWindow.ui" line="718"/>
         <source>Ctrl+V</source>
         <translation>Ctrl+V</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="723"/>
+        <location filename="../../MainWindow.ui" line="723"/>
         <source>Pa&amp;ste Column</source>
         <translation>Coller comme colo&amp;nne</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="726"/>
+        <location filename="../../MainWindow.ui" line="726"/>
         <source>Ctrl+Shift+V</source>
         <translation>Ctrl+Shift+V</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="738"/>
+        <location filename="../../MainWindow.ui" line="738"/>
         <source>&amp;Delete</source>
-        <translation>&amp;Supprimer</translation>
+        <translation>Su&amp;pprimer</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="741"/>
+        <location filename="../../MainWindow.ui" line="741"/>
         <source>Del</source>
         <translation>Del</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="750"/>
+        <location filename="../../MainWindow.ui" line="750"/>
         <source>Select &amp;All</source>
         <translation>&amp;Tout sélectionner</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="753"/>
+        <location filename="../../MainWindow.ui" line="753"/>
         <source>Ctrl+A</source>
         <translation>Ctrl+A</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="762"/>
+        <location filename="../../MainWindow.ui" line="762"/>
         <source>Shift &amp;Left</source>
         <translation>Décalage à &amp;gauche</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="765"/>
+        <location filename="../../MainWindow.ui" line="765"/>
         <source>Ctrl+9</source>
         <translation>Ctrl+9</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="774"/>
+        <location filename="../../MainWindow.ui" line="774"/>
         <source>Shift Ri&amp;ght</source>
         <translation>Décalalge à &amp;droite</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="777"/>
+        <location filename="../../MainWindow.ui" line="777"/>
         <source>Ctrl+0</source>
         <translation>Ctrl+0</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="786"/>
+        <location filename="../../MainWindow.ui" line="786"/>
         <source>Lo&amp;wer-case</source>
         <translation>&amp;minuscules</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="789"/>
+        <location filename="../../MainWindow.ui" line="789"/>
         <source>Ctrl+Shift+6</source>
         <translation>Ctrl+Shift+6</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="798"/>
+        <location filename="../../MainWindow.ui" line="798"/>
         <source>Upp&amp;er-case</source>
-        <translation>MA&amp;JUSCULES</translation>
+        <translation>M&amp;AJUSCULES</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="801"/>
+        <location filename="../../MainWindow.ui" line="801"/>
         <source>Ctrl+6</source>
         <translation>Ctrl+6</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="806"/>
+        <location filename="../../MainWindow.ui" line="806"/>
         <source>&amp;Fill Paragraph</source>
-        <translation>Supprimer les ret&amp;ours chariots</translation>
+        <translation>&amp;Supprimer les retours chariots</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="809"/>
+        <location filename="../../MainWindow.ui" line="809"/>
         <source>Ctrl+J</source>
         <translation>Ctrl+J</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="814"/>
+        <location filename="../../MainWindow.ui" line="814"/>
         <source>&amp;Insert Form Feed</source>
-        <translation>Insér&amp;er un saut de page</translation>
+        <translation>&amp;Insérer un saut de page</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="817"/>
+        <location filename="../../MainWindow.ui" line="817"/>
         <source>Ctrl+Alt+L</source>
         <translation>Ctrl+Alt+L</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="822"/>
+        <location filename="../../MainWindow.ui" line="822"/>
         <source>I&amp;nsert Ctrl Code...</source>
-        <translation>Insérer un co&amp;de de contrôle...</translation>
+        <translation>I&amp;nsérer un code de contrôle...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="825"/>
+        <location filename="../../MainWindow.ui" line="825"/>
         <source>Ctrl+Alt+I</source>
         <translation>Ctrl+Alt+I</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="834"/>
+        <location filename="../../MainWindow.ui" line="834"/>
         <source>&amp;Find...</source>
         <translation>&amp;Rechercher...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="837"/>
+        <location filename="../../MainWindow.ui" line="837"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="842"/>
+        <location filename="../../MainWindow.ui" line="842"/>
         <source>F&amp;ind Again</source>
-        <translation>Rechercher à &amp;nouveau</translation>
+        <translation>Reche&amp;rcher à nouveau</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="845"/>
+        <location filename="../../MainWindow.ui" line="845"/>
         <source>Ctrl+G</source>
         <translation>Ctrl+G</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="850"/>
+        <location filename="../../MainWindow.ui" line="850"/>
         <source>Find &amp;Selection</source>
         <translation>Rechercher la &amp;sélection</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="853"/>
+        <location filename="../../MainWindow.ui" line="853"/>
         <source>Ctrl+H</source>
         <translation>Ctrl+H</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="858"/>
+        <location filename="../../MainWindow.ui" line="858"/>
         <source>Fi&amp;nd Incremental</source>
         <translation>Recherche i&amp;ncrémentale</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="861"/>
+        <location filename="../../MainWindow.ui" line="861"/>
         <source>Ctrl+I</source>
         <translation>Ctrl+I</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="870"/>
+        <location filename="../../MainWindow.ui" line="870"/>
         <source>&amp;Replace...</source>
         <translation>&amp;Remplacer...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="873"/>
+        <location filename="../../MainWindow.ui" line="873"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="878"/>
+        <location filename="../../MainWindow.ui" line="878"/>
         <source>Replace Find &amp;Again</source>
-        <translation>Rempl&amp;acer puis chercher de nouveau</translation>
+        <translation>Rechercher et rempl&amp;acer</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="881"/>
+        <location filename="../../MainWindow.ui" line="881"/>
         <source>Ctrl+T</source>
         <translation>Ctrl+T</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="886"/>
+        <location filename="../../MainWindow.ui" line="886"/>
         <source>Re&amp;place Again</source>
         <translation>Rem&amp;placer à nouveau</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="889"/>
+        <location filename="../../MainWindow.ui" line="889"/>
         <source>Alt+T</source>
         <translation>Alt+T</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="898"/>
+        <location filename="../../MainWindow.ui" line="898"/>
         <source>Goto &amp;Line Number...</source>
         <translation>Aller à la &amp;ligne numéro...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="901"/>
+        <location filename="../../MainWindow.ui" line="901"/>
         <source>Ctrl+L</source>
         <translation>Ctrl+L</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="906"/>
+        <location filename="../../MainWindow.ui" line="906"/>
         <source>&amp;Goto Selected</source>
-        <translation>All&amp;er à la sélection</translation>
+        <translation>A&amp;ller à la sélection</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="909"/>
+        <location filename="../../MainWindow.ui" line="909"/>
         <source>Ctrl+E</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="918"/>
+        <location filename="../../MainWindow.ui" line="918"/>
         <source>Mar&amp;k</source>
         <translation>Mar&amp;quer</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="923"/>
+        <location filename="../../MainWindow.ui" line="923"/>
         <source>G&amp;oto Mark</source>
-        <translation>Aller à la marq&amp;ue</translation>
+        <translation>A&amp;ller à la marque</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="928"/>
+        <location filename="../../MainWindow.ui" line="928"/>
         <source>Goto &amp;Matching (..)</source>
-        <translation>Aller à la &amp;correspondance (..)</translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="931"/>
+        <location filename="../../MainWindow.ui" line="931"/>
         <source>Ctrl+M</source>
         <translation>Ctrl+M</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="939"/>
+        <location filename="../../MainWindow.ui" line="939"/>
         <source>Find &amp;Definition</source>
-        <translation>Chercher la &amp;définition</translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="942"/>
+        <location filename="../../MainWindow.ui" line="942"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="950"/>
+        <location filename="../../MainWindow.ui" line="950"/>
         <source>Show &amp;Calltip</source>
-        <translation>Affic&amp;her les infobulles</translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="953"/>
+        <location filename="../../MainWindow.ui" line="953"/>
         <source>Ctrl+&apos;</source>
         <translation>Ctrl+&apos;</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="962"/>
+        <location filename="../../MainWindow.ui" line="962"/>
         <source>&amp;Execute Command</source>
         <translation>&amp;Exécuter la commande</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="965"/>
+        <location filename="../../MainWindow.ui" line="965"/>
         <source>Alt+X</source>
         <translation>Alt+X</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="970"/>
+        <location filename="../../MainWindow.ui" line="970"/>
         <source>E&amp;xecute Command Line</source>
-        <translation>E&amp;xécuter la ligne de commande</translation>
+        <translation>E&amp;xécuter la Ligne de Commande</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="973"/>
+        <location filename="../../MainWindow.ui" line="973"/>
         <source>Ctrl+Enter</source>
         <translation>Ctrl+Enter</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="985"/>
+        <location filename="../../MainWindow.ui" line="985"/>
         <source>&amp;Filter Selection...</source>
-        <translation>&amp;Filtrer la sélection...</translation>
+        <translation>&amp;Filtrer la Sélection...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="988"/>
+        <location filename="../../MainWindow.ui" line="988"/>
         <source>Alt+R</source>
         <translation>Alt+R</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="996"/>
+        <location filename="../../MainWindow.ui" line="996"/>
         <source>&amp;Cancel Shell Command</source>
         <translation>Annuler la &amp;commande du shell</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="999"/>
-        <location filename="../MainWindow.ui" line="1291"/>
+        <location filename="../../MainWindow.ui" line="999"/>
+        <location filename="../../MainWindow.ui" line="1291"/>
         <source>Ctrl+.</source>
         <translation>Ctrl+.</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1008"/>
+        <location filename="../../MainWindow.ui" line="1008"/>
         <source>&amp;Split Pane</source>
         <translation>Partager le &amp;volet</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1011"/>
+        <location filename="../../MainWindow.ui" line="1011"/>
         <source>Ctrl+2</source>
         <translation>Ctrl+2</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1023"/>
+        <location filename="../../MainWindow.ui" line="1023"/>
         <source>&amp;Close Pane</source>
         <translation>&amp;Fermer le volet</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1026"/>
+        <location filename="../../MainWindow.ui" line="1026"/>
         <source>Ctrl+1</source>
         <translation>Ctrl+1</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1035"/>
+        <location filename="../../MainWindow.ui" line="1035"/>
         <source>&amp;Detach Tab</source>
         <translation>&amp;Détacher l&apos;onglet</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1043"/>
+        <location filename="../../MainWindow.ui" line="1043"/>
         <source>&amp;Move Tab To...</source>
-        <translation>Déplacer l&apos;&amp;onglet vers...</translation>
+        <translation>&amp;Déplacer l&apos;onglet vers...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1048"/>
+        <location filename="../../MainWindow.ui" line="1048"/>
         <source>About &amp;Qt</source>
         <translation>À propos de &amp;Qt</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1053"/>
+        <location filename="../../MainWindow.ui" line="1053"/>
         <source>Indent</source>
         <translation>Indenter</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1058"/>
+        <location filename="../../MainWindow.ui" line="1058"/>
         <source>Unindent</source>
         <translation>Désindenter</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1067"/>
+        <location filename="../../MainWindow.ui" line="1067"/>
         <source>Sa&amp;ve Defaults...</source>
         <translation>Sau&amp;vegarder les valeurs par défaut...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1075"/>
-        <location filename="../MainWindow.ui" line="1385"/>
+        <location filename="../../MainWindow.ui" line="1075"/>
+        <location filename="../../MainWindow.ui" line="1385"/>
         <source>&amp;Statistics Line</source>
         <translation>Ligne d&apos;&amp;informations</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1078"/>
+        <location filename="../../MainWindow.ui" line="1078"/>
         <source>Alt+A</source>
         <translation>Alt+A</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1086"/>
+        <location filename="../../MainWindow.ui" line="1086"/>
         <source>&amp;Incremental Search Line</source>
         <translation>Ligne de recherche &amp;incrémentale</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1094"/>
-        <location filename="../MainWindow.ui" line="1692"/>
+        <location filename="../../MainWindow.ui" line="1094"/>
+        <location filename="../../MainWindow.ui" line="1692"/>
         <source>Show Line &amp;Numbers</source>
-        <translation>Afficher les &amp;numéros de lignes </translation>
+        <translation>Afficher les &amp;numéros de lignes</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1103"/>
+        <location filename="../../MainWindow.ui" line="1103"/>
         <source>&amp;Language Mode</source>
-        <translation>&amp;Langages</translation>
+        <translation>&amp;Langage</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1108"/>
-        <location filename="../MainWindow.ui" line="1342"/>
+        <location filename="../../MainWindow.ui" line="1108"/>
+        <location filename="../../MainWindow.ui" line="1342"/>
         <source>&amp;Tab Stops...</source>
         <translation>Fins de &amp;tabulation...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1117"/>
-        <location filename="../MainWindow.ui" line="1351"/>
+        <location filename="../../MainWindow.ui" line="1117"/>
+        <location filename="../../MainWindow.ui" line="1351"/>
         <source>Text &amp;Fonts...</source>
         <translation>&amp;Police de caractères...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1125"/>
+        <location filename="../../MainWindow.ui" line="1125"/>
         <source>&amp;Highlight Syntax</source>
-        <translation>&amp;Coloration syntaxique</translation>
+        <translation>&amp;Surbrillance de la syntaxe</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1133"/>
+        <location filename="../../MainWindow.ui" line="1133"/>
         <source>Apply Backli&amp;ghting</source>
         <translation>Appliquer le &amp;rétro-éclairage</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1141"/>
-        <location filename="../MainWindow.ui" line="1401"/>
+        <location filename="../../MainWindow.ui" line="1141"/>
+        <location filename="../../MainWindow.ui" line="1401"/>
         <source>Mak&amp;e Backup Copy (*.bck)</source>
         <translation>Fair&amp;e une sauvegarde (*.bck)</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1149"/>
-        <location filename="../MainWindow.ui" line="1409"/>
+        <location filename="../../MainWindow.ui" line="1149"/>
+        <location filename="../../MainWindow.ui" line="1409"/>
         <source>Incremental &amp;Backup</source>
         <translation>Sauvegarde &amp;incrémentale</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1157"/>
+        <location filename="../../MainWindow.ui" line="1157"/>
         <source>&amp;Overtype</source>
         <translation>&amp;Insérer</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1160"/>
+        <location filename="../../MainWindow.ui" line="1160"/>
         <source>Ins</source>
         <translation>Ins</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1168"/>
+        <location filename="../../MainWindow.ui" line="1168"/>
         <source>Read Onl&amp;y</source>
         <translation>Lecture seu&amp;le</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1176"/>
-        <location filename="../MainWindow.ui" line="1237"/>
-        <location filename="../MainWindow.ui" line="1441"/>
-        <location filename="../MainWindow.ui" line="1626"/>
-        <location filename="../MainWindow.ui" line="1700"/>
+        <location filename="../../MainWindow.ui" line="1176"/>
+        <location filename="../../MainWindow.ui" line="1237"/>
+        <location filename="../../MainWindow.ui" line="1441"/>
+        <location filename="../../MainWindow.ui" line="1626"/>
+        <location filename="../../MainWindow.ui" line="1700"/>
         <source>&amp;Off</source>
         <translation>&amp;Désactivé</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1184"/>
-        <location filename="../MainWindow.ui" line="1708"/>
+        <location filename="../../MainWindow.ui" line="1184"/>
+        <location filename="../../MainWindow.ui" line="1708"/>
         <source>&amp;Delimiter</source>
         <translation>&amp;Délimiteur</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1192"/>
-        <location filename="../MainWindow.ui" line="1716"/>
+        <location filename="../../MainWindow.ui" line="1192"/>
+        <location filename="../../MainWindow.ui" line="1716"/>
         <source>&amp;Range</source>
         <translation>&amp;Zone</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1200"/>
-        <location filename="../MainWindow.ui" line="1724"/>
+        <location filename="../../MainWindow.ui" line="1200"/>
+        <location filename="../../MainWindow.ui" line="1724"/>
         <source>&amp;Syntax Based</source>
         <translation>Basé sur la &amp;syntaxe</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1208"/>
-        <location filename="../MainWindow.ui" line="1470"/>
+        <location filename="../../MainWindow.ui" line="1208"/>
+        <location filename="../../MainWindow.ui" line="1470"/>
         <source>&amp;None</source>
         <translation>Aucu&amp;n</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1216"/>
-        <location filename="../MainWindow.ui" line="1478"/>
+        <location filename="../../MainWindow.ui" line="1216"/>
+        <location filename="../../MainWindow.ui" line="1478"/>
         <source>&amp;Auto Newline</source>
         <translation>&amp;Aller à la ligne automatique</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1224"/>
-        <location filename="../MainWindow.ui" line="1486"/>
+        <location filename="../../MainWindow.ui" line="1224"/>
+        <location filename="../../MainWindow.ui" line="1486"/>
         <source>&amp;Continuous</source>
         <translation>&amp;Continu</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1229"/>
-        <location filename="../MainWindow.ui" line="1491"/>
+        <location filename="../../MainWindow.ui" line="1229"/>
+        <location filename="../../MainWindow.ui" line="1491"/>
         <source>&amp;Wrap Margin...</source>
-        <translation>Marge d&apos;&amp;enroulement...</translation>
+        <translation>Marge d&apos;&amp;Enroulement...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1245"/>
-        <location filename="../MainWindow.ui" line="1449"/>
-        <location filename="../MainWindow.ui" line="1634"/>
+        <location filename="../../MainWindow.ui" line="1245"/>
+        <location filename="../../MainWindow.ui" line="1449"/>
+        <location filename="../../MainWindow.ui" line="1634"/>
         <source>O&amp;n</source>
         <translation>&amp;Activé</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1253"/>
-        <location filename="../MainWindow.ui" line="1457"/>
-        <location filename="../MainWindow.ui" line="1507"/>
+        <location filename="../../MainWindow.ui" line="1253"/>
+        <location filename="../../MainWindow.ui" line="1457"/>
+        <location filename="../../MainWindow.ui" line="1507"/>
         <source>&amp;Smart</source>
         <translation>&amp;Intelligent</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1262"/>
+        <location filename="../../MainWindow.ui" line="1262"/>
         <source>&amp;Learn Keystrokes</source>
         <translation>&amp;Apprentissage</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1265"/>
-        <location filename="../MainWindow.ui" line="1280"/>
+        <location filename="../../MainWindow.ui" line="1265"/>
+        <location filename="../../MainWindow.ui" line="1280"/>
         <source>Alt+K</source>
         <translation>Alt+K</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1277"/>
+        <location filename="../../MainWindow.ui" line="1277"/>
         <source>&amp;Finish Learn</source>
         <translation>&amp;Fin d&apos;apprentissage</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1288"/>
+        <location filename="../../MainWindow.ui" line="1288"/>
         <source>&amp;Cancel Learn</source>
         <translation>&amp;Annulation de l&apos;apprentissage</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1299"/>
+        <location filename="../../MainWindow.ui" line="1299"/>
         <source>Replay &amp;Keystrokes</source>
         <translation>&amp;Rejouer</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1302"/>
+        <location filename="../../MainWindow.ui" line="1302"/>
         <source>Ctrl+K</source>
         <translation>Ctrl+K</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1311"/>
+        <location filename="../../MainWindow.ui" line="1311"/>
         <source>&amp;Repeat...</source>
         <translation>Ré&amp;péter...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1314"/>
+        <location filename="../../MainWindow.ui" line="1314"/>
         <source>Ctrl+,</source>
         <translation>Ctrl+,</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1323"/>
+        <location filename="../../MainWindow.ui" line="1323"/>
         <source>&amp;About NEdit-ng</source>
         <translation>À p&amp;ropos de NEdit-ng</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1332"/>
+        <location filename="../../MainWindow.ui" line="1332"/>
         <source>&amp;Language Modes...</source>
         <translation>&amp;Langages...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1337"/>
+        <location filename="../../MainWindow.ui" line="1337"/>
         <source>C&amp;ommand Shell...</source>
-        <translation>C&amp;ommande du shell...</translation>
+        <translation>C&amp;ommandes du shell...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1356"/>
+        <location filename="../../MainWindow.ui" line="1356"/>
         <source>&amp;Colors...</source>
         <translation>&amp;Couleurs...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1361"/>
+        <location filename="../../MainWindow.ui" line="1361"/>
         <source>Customize Win&amp;dow Title...</source>
         <translation>Personnaliser le titre de la &amp;fenêtre...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1369"/>
+        <location filename="../../MainWindow.ui" line="1369"/>
         <source>Apply Bac&amp;klighting</source>
         <translation>Appliquer le &amp;rétro-éclairage</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1377"/>
+        <location filename="../../MainWindow.ui" line="1377"/>
         <source>Show Tooltips</source>
-        <translation>Afficher les infosbulles</translation>
+        <translation>Afficher les infos-bulles</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1393"/>
+        <location filename="../../MainWindow.ui" line="1393"/>
         <source>Incremental Search L&amp;ine</source>
-        <translation>Ligne de recherche &amp;incrémentale</translation>
+        <translation>Zone de recherche &amp;incrémentale</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1417"/>
+        <location filename="../../MainWindow.ui" line="1417"/>
         <source>Terminate with Line Break on Sa&amp;ve</source>
         <translation>Terminer avec un saut de ligne lors de la sau&amp;vegarde</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1425"/>
+        <location filename="../../MainWindow.ui" line="1425"/>
         <source>&amp;Popups Under Pointer</source>
         <translation>&amp;Popups sous la souris</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1433"/>
+        <location filename="../../MainWindow.ui" line="1433"/>
         <source>Auto Scroll Near Window Top/Bottom</source>
         <translation>Défilement automatique près du haut/bas de la fenêtre</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1462"/>
+        <location filename="../../MainWindow.ui" line="1462"/>
         <source>&amp;Program Smart Indent...</source>
         <translation>&amp;Program d&apos;indentation intelligente...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1499"/>
+        <location filename="../../MainWindow.ui" line="1499"/>
         <source>Show &amp;All</source>
         <translation>&amp;Tout montrer</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1512"/>
+        <location filename="../../MainWindow.ui" line="1512"/>
         <source>&amp;Shell Menu...</source>
         <translation>Menu du &amp;shell...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1517"/>
+        <location filename="../../MainWindow.ui" line="1517"/>
         <source>&amp;Macro Menu...</source>
         <translation>&amp;Menu des macros...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1522"/>
+        <location filename="../../MainWindow.ui" line="1522"/>
         <source>&amp;Window Background Menu...</source>
         <translation>Menu du fond de &amp;fenêtre...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1530"/>
+        <location filename="../../MainWindow.ui" line="1530"/>
         <source>S&amp;ort Open Prev. Menu</source>
-        <translation>&amp;Trier les fichiers ouverts précédemment</translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1538"/>
+        <location filename="../../MainWindow.ui" line="1538"/>
         <source>Show &amp;Path In Windows Menu</source>
         <translation>Montrer le che&amp;min dans le menu des fenêtres</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1546"/>
+        <location filename="../../MainWindow.ui" line="1546"/>
         <source>&amp;Verbose</source>
         <translation>&amp;Verbeux</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1554"/>
+        <location filename="../../MainWindow.ui" line="1554"/>
         <source>&amp;Wrap Around</source>
         <translation>&amp;Complet</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1562"/>
+        <location filename="../../MainWindow.ui" line="1562"/>
         <source>&amp;Beep On Search Wrap</source>
-        <translation>&amp;Bip sonore à la fin d&apos;une recherche sur tout le fichier</translation>
+        <translation>&amp;Bip sonore à la fin d&apos;une Recherche sur tout le Fichier</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1570"/>
+        <location filename="../../MainWindow.ui" line="1570"/>
         <source>&amp;Keep Dialogs Up</source>
-        <translation>Conserve les &amp;fenêtres de dialogue</translation>
+        <translation>&amp;Conserve les Fenêtres de Dialogues</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1578"/>
+        <location filename="../../MainWindow.ui" line="1578"/>
         <source>&amp;Literal</source>
         <translation>&amp;Literal</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1586"/>
+        <location filename="../../MainWindow.ui" line="1586"/>
         <source>Literal, &amp;Case Sensitive</source>
-        <translation>Literal, sensible à la &amp;casse</translation>
+        <translation>Literal, Sensible à la &amp;Casse</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1594"/>
+        <location filename="../../MainWindow.ui" line="1594"/>
         <source>Literal, &amp;Whole Word</source>
-        <translation>Literal, &amp;mot complet</translation>
+        <translation>Literal, Mot &amp;Complet</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1602"/>
+        <location filename="../../MainWindow.ui" line="1602"/>
         <source>Literal, Case &amp;Sensitive, Whole Word</source>
-        <translation>Literal, &amp;sensible à la casse, mot complet</translation>
+        <translation>Literal, &amp;Sensible à la Casse, Mot Complet</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1610"/>
+        <location filename="../../MainWindow.ui" line="1610"/>
         <source>&amp;Regular Expression</source>
-        <translation>&amp;Expression régulière</translation>
+        <translation>Expression &amp;Régulière</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1618"/>
+        <location filename="../../MainWindow.ui" line="1618"/>
         <source>Regular Expresison, Case &amp;Insensitive</source>
-        <translation>Expression régulière, &amp;insensible à la casse</translation>
+        <translation>Expression Régulière, &amp;Insensible à la Casse</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1639"/>
+        <location filename="../../MainWindow.ui" line="1639"/>
         <source>&amp;Recognition Patterns...</source>
-        <translation>&amp;Modèles de reconnaissance...</translation>
+        <translation>&amp;Reconnaissance des Motifs...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1644"/>
+        <location filename="../../MainWindow.ui" line="1644"/>
         <source>&amp;Text Drawing Styles...</source>
-        <translation>Styles de &amp;texte...</translation>
+        <translation>Styles de &amp;Texte...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1652"/>
+        <location filename="../../MainWindow.ui" line="1652"/>
         <source>Open File In New &amp;Tab</source>
-        <translation>Ouvrir le fichier dans un nouvel &amp;onglet</translation>
+        <translation>Ouvrir le Fichier dans un Nouvel &amp;Onglet</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1660"/>
+        <location filename="../../MainWindow.ui" line="1660"/>
         <source>Show Tab &amp;Bar</source>
         <translation>Montrer la &amp;barre des onglets</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1668"/>
+        <location filename="../../MainWindow.ui" line="1668"/>
         <source>&amp;Hide Tab Bar When Only One Document is Open</source>
-        <translation>Cac&amp;her la barre des onglets lorsqu&apos;un seul document est ouvert</translation>
+        <translation>Cac&amp;her la Barre des Onglets lorsqu&apos;un seul Document est Ouvert</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1676"/>
+        <location filename="../../MainWindow.ui" line="1676"/>
         <source>Next/Prev Tabs Across &amp;Windows</source>
-        <translation>Onglet suivant/précéde&amp;nt</translation>
+        <translation>Onglet Précéde&amp;nt/Suivant</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1684"/>
+        <location filename="../../MainWindow.ui" line="1684"/>
         <source>&amp;Sort Tabs Alphabetically</source>
-        <translation>&amp;Trier les onglets par ordre alphabétique</translation>
+        <translation>&amp;Trier les Onglets par ordre Alphabétique</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1732"/>
+        <location filename="../../MainWindow.ui" line="1732"/>
         <source>&amp;Files Modified Externally</source>
-        <translation>&amp;Fichiers modifiés en externe</translation>
+        <translation>&amp;Fichiers Modifiés en Externe</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1740"/>
+        <location filename="../../MainWindow.ui" line="1740"/>
         <source>&amp;Check Modified File Contents</source>
-        <translation>Vérifier le &amp;contenu des fichiers modifiés</translation>
+        <translation>Vérifier le &amp;Contenu des Fichiers Modifiés</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1748"/>
+        <location filename="../../MainWindow.ui" line="1748"/>
         <source>&amp;On Exit</source>
-        <translation>En &amp;quittant</translation>
+        <translation>En &amp;Quittant</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1756"/>
+        <location filename="../../MainWindow.ui" line="1756"/>
         <source>&amp;24 x 80</source>
         <translation>&amp;24 x 80</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1764"/>
+        <location filename="../../MainWindow.ui" line="1764"/>
         <source>&amp;40 x 80</source>
         <translation>&amp;40 x 80</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1772"/>
+        <location filename="../../MainWindow.ui" line="1772"/>
         <source>&amp;60 x 80</source>
         <translation>&amp;60 x 80</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1780"/>
+        <location filename="../../MainWindow.ui" line="1780"/>
         <source>&amp;80 x 80</source>
         <translation>&amp;80 x 80</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1788"/>
+        <location filename="../../MainWindow.ui" line="1788"/>
         <source>&amp;Custom...</source>
         <translation>&amp;Personnalisé...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.ui" line="1800"/>
+        <location filename="../../MainWindow.ui" line="1800"/>
         <source>F1</source>
         <translation>F1</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="167"/>
+        <location filename="../../MainWindow.cpp" line="242"/>
         <source>edit-find</source>
-        <translation>éditer-trouver</translation>
+        <translation>editer-trouver</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="240"/>
-        <location filename="../MainWindow.cpp" line="243"/>
+        <location filename="../../MainWindow.cpp" line="328"/>
+        <location filename="../../MainWindow.cpp" line="331"/>
         <source>tab-close</source>
         <translation>onglet-fermer</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="449"/>
+        <location filename="../../MainWindow.cpp" line="540"/>
         <source>Shift &amp;Left	[Shift] Ctrl+9</source>
-        <translation>Décalage à &amp;gauche	[Shift] Ctrl+9</translation>
+        <translation>Décalage à &amp;Gauche	[Shift] Ctrl+9</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="450"/>
+        <location filename="../../MainWindow.cpp" line="541"/>
         <source>Shift Ri&amp;ght	[Shift] Ctrl+0</source>
-        <translation>Décalage à &amp;droite	[Shift] Ctrl+0</translation>
+        <translation>Décalage à &amp;Droite	[Shift] Ctrl+0</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="451"/>
+        <location filename="../../MainWindow.cpp" line="542"/>
         <source>&amp;Find...	[Shift] Ctrl+F</source>
-        <translation>&amp;Rechercher...	[Shift] Ctrl+F</translation>
+        <translation>&amp;Trouver...	[Shift] Ctrl+F</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="452"/>
+        <location filename="../../MainWindow.cpp" line="543"/>
         <source>F&amp;ind Again	[Shift] Ctrl+G</source>
-        <translation>Rechercher à &amp;nouveau	[Shift] Ctrl+G</translation>
+        <translation>Trouver à &amp;Nouveau	[Shift] Ctrl+G</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="453"/>
+        <location filename="../../MainWindow.cpp" line="544"/>
         <source>Find &amp;Selection	[Shift] Ctrl+H</source>
-        <translation>Rechercher la &amp;sélection	[Shift] Ctrl+H</translation>
+        <translation>Trouver la &amp;Sélection	[Shift] Ctrl+H</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="454"/>
+        <location filename="../../MainWindow.cpp" line="545"/>
         <source>Fi&amp;nd Incremental	[Shift] Ctrl+I</source>
-        <translation>Recherche &amp;Incrementale	[Shift] Ctrl+I</translation>
+        <translation>Recherche I&amp;ncrementale	[Shift] Ctrl+I</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="455"/>
+        <location filename="../../MainWindow.cpp" line="546"/>
         <source>&amp;Replace...	[Shift] Ctrl+R</source>
-        <translation>Re&amp;mplacer...	[Shift] Ctrl+R</translation>
+        <translation>&amp;Remplacer...	[Shift] Ctrl+R</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="456"/>
+        <location filename="../../MainWindow.cpp" line="547"/>
         <source>Replace Find &amp;Again	[Shift] Ctrl+T</source>
-        <translation>Rempl&amp;acer puis chercher de nouveau	[Shift] Ctrl+T</translation>
+        <translation>Remplace puis Trouver de &amp;Nouveau	[Shift] Ctrl+T</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="457"/>
+        <location filename="../../MainWindow.cpp" line="548"/>
         <source>Re&amp;place Again	[Shift] Alt+T</source>
-        <translation>Rem&amp;placer de nouveau	[Shift] Alt+T</translation>
+        <translation>Rem&amp;placer de Nouveau	[Shift] Alt+T</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="458"/>
+        <location filename="../../MainWindow.cpp" line="549"/>
         <source>Mar&amp;k	Alt+M a-z</source>
         <translation>Mar&amp;quer	Alt+M a-z</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="459"/>
+        <location filename="../../MainWindow.cpp" line="550"/>
         <source>G&amp;oto Mark	[Shift] Alt+G a-z</source>
-        <translation>Aller à la marq&amp;ue	[Shift] Alt+G a-z</translation>
+        <translation>A&amp;ller à la Marque	[Shift] Alt+G a-z</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="460"/>
+        <location filename="../../MainWindow.cpp" line="551"/>
         <source>Goto &amp;Matching (..)	[Shift] Ctrl+M</source>
-        <translation>Aller à la &amp;correspondance (..)	[Shift] Ctrl+M</translation>
+        <translation>Aller à la &amp;Correspondance (..)	[Shift] Ctrl+M</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="531"/>
-        <location filename="../MainWindow.cpp" line="4194"/>
+        <location filename="../../MainWindow.cpp" line="633"/>
+        <location filename="../../MainWindow.cpp" line="4200"/>
         <source>New &amp;Tab</source>
-        <translation>Nouvel &amp;onglet</translation>
+        <translation>Nouvel &amp;Onglet</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="538"/>
         <source>Default &amp;Replace Scope</source>
-        <translation>&amp;Remplacement par défaut</translation>
+        <translation type="vanished">&amp;Remplacement par Défaut</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="540"/>
         <source>In &amp;Window</source>
-        <translation>Dans la &amp;fenêtre</translation>
+        <translation type="vanished">Dans la &amp;Fenêtre</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="541"/>
         <source>In &amp;Selection</source>
-        <translation>Dans la &amp;sélection</translation>
+        <translation type="vanished">Dans la &amp;Sélection</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="542"/>
         <source>Smart</source>
-        <translation>Intelligent</translation>
+        <translation type="vanished">Intelligent</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="724"/>
+        <location filename="../../MainWindow.cpp" line="793"/>
         <source>Open File</source>
-        <translation>Ouvrir le fichier</translation>
+        <translation>Ouvrir le Fichier</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="824"/>
+        <location filename="../../MainWindow.cpp" line="893"/>
         <source>Include File</source>
         <translation>Inclure le Fichier</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="975"/>
-        <location filename="../MainWindow.cpp" line="4992"/>
+        <location filename="../../MainWindow.cpp" line="5016"/>
         <source>*</source>
         <translation>*</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1358"/>
         <source>Plain</source>
-        <translation>Brut</translation>
+        <translation type="vanished">Brut</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1483"/>
+        <location filename="../../MainWindow.cpp" line="1557"/>
         <source>Untitled</source>
-        <translation>Sans titre</translation>
+        <translation>Sans Titre</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1485"/>
+        <location filename="../../MainWindow.cpp" line="1559"/>
         <source>Untitled_%1</source>
-        <translation>Sans titre_%1</translation>
+        <translation>Sans Titre_%1</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1560"/>
-        <location filename="../MainWindow.cpp" line="1984"/>
-        <location filename="../MainWindow.cpp" line="1998"/>
-        <location filename="../MainWindow.cpp" line="4992"/>
+        <location filename="../../MainWindow.cpp" line="1634"/>
+        <location filename="../../MainWindow.cpp" line="5016"/>
         <source>%1%2</source>
         <translation>%1%2</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1810"/>
+        <location filename="../../MainWindow.cpp" line="1858"/>
         <source># File name database for NEdit Open Previous command</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1811"/>
-        <location filename="../MainWindow.cpp" line="1816"/>
         <source>
 </source>
-        <translation>
+        <translation type="vanished">
 </translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1883"/>
+        <location filename="../../MainWindow.cpp" line="1942"/>
         <source>New Tab</source>
-        <translation>Nouvel onglet</translation>
+        <translation>Nouvel Onglet</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1884"/>
+        <location filename="../../MainWindow.cpp" line="1943"/>
         <source>Close Tab</source>
-        <translation>Fermer l&apos;onglet</translation>
+        <translation>Fermer l&apos;Onglet</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1886"/>
-        <location filename="../MainWindow.cpp" line="5783"/>
+        <location filename="../../MainWindow.cpp" line="1945"/>
+        <location filename="../../MainWindow.cpp" line="5837"/>
         <source>Detach Tab</source>
-        <translation>Détacher l&apos;onglet</translation>
+        <translation>Détacher l&apos;Onglet</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="1887"/>
+        <location filename="../../MainWindow.cpp" line="1946"/>
         <source>Move Tab To...</source>
-        <translation>Déplacer l&apos;onglet vers...</translation>
+        <translation>Déplacer l&apos;Onglet Vers...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2275"/>
+        <location filename="../../MainWindow.cpp" line="2321"/>
         <source>Insert Ctrl Code</source>
-        <translation>Insérer un code de contrôle</translation>
+        <translation>Insérer un Code de Contrôle</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2276"/>
+        <location filename="../../MainWindow.cpp" line="2322"/>
         <source>ASCII Character Code:</source>
-        <translation>Code ASCII du caractère:</translation>
+        <translation>Code Ascii du Caractère:</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2332"/>
+        <location filename="../../MainWindow.cpp" line="2376"/>
         <source>Goto Line Number</source>
-        <translation>Aller à la ligne numéro</translation>
+        <translation>Aller à la Ligne Numéro</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="2333"/>
         <source>Goto Line (and/or Column)  Number:</source>
-        <translation>Aller à la ligne (et/ou la colonne) numéro:</translation>
+        <translation type="vanished">Aller à la Ligne (et/ou la Colonne) Numéro:</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3004"/>
+        <location filename="../../MainWindow.cpp" line="3042"/>
         <source>Mark</source>
         <translation>Marque</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3005"/>
+        <location filename="../../MainWindow.cpp" line="3043"/>
         <source>Enter a single letter label to use for recalling
 the current selection and cursor position.
 
 (To skip this dialog, use the accelerator key,
 followed immediately by a letter key (a-z))</source>
-        <translation>Entrez une étiquette de lettre unique à utiliser pour rappeler
-la sélection actuelle et la position du curseur.
-
-(Pour ignorer cette boîte de dialogue, utilisez la touche d&apos;accélération,
-suivi immédiatement d&apos;une touche alphabétique (a-z))</translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3097"/>
+        <location filename="../../MainWindow.cpp" line="3135"/>
         <source>Goto Mark</source>
-        <translation>Aller à la marque</translation>
+        <translation>Aller à la Marque</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3098"/>
+        <location filename="../../MainWindow.cpp" line="3136"/>
         <source>Enter the single letter label used to mark
 the selection and/or cursor position.
 
 (To skip this dialog, use the accelerator
 key, followed immediately by the letter)</source>
-        <translation>Entrez l&apos;étiquette de lettre unique utilisée pour marquer
-la sélection et/ou la position du curseur.
-
-(Pour ignorer cette boîte de dialogue, utilisez la touche d&apos;accélération,
-suivi immédiatement de la lettre)</translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3347"/>
-        <location filename="../MainWindow.cpp" line="3387"/>
+        <location filename="../../MainWindow.cpp" line="3389"/>
+        <location filename="../../MainWindow.cpp" line="3430"/>
         <source>Error Reading File</source>
-        <translation>Erreur de lecture du fichier</translation>
+        <translation>Erreur de Lecture du Fichier</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3347"/>
+        <location filename="../../MainWindow.cpp" line="3390"/>
         <source>Error reading tips file:
 &apos;%1&apos;
 tips not loaded</source>
-        <translation>Erreur de lecture du fichier d&apos;info-bulles:
+        <translation>Erreur de Lecture du Fichier de Suggestions:
 &apos;%1&apos;
 Suggestions non chargées</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3356"/>
+        <location filename="../../MainWindow.cpp" line="3399"/>
         <source>Load Calltips File</source>
-        <translation>Charger le fichier d&apos;infobulles</translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3388"/>
+        <location filename="../../MainWindow.cpp" line="3431"/>
         <source>Error reading ctags file:
 &apos;%1&apos;
 tags not loaded</source>
-        <translation>Erreur de lecture du fichier de tags:
-&apos;%1&apos;
-tags non chargés</translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3397"/>
+        <location filename="../../MainWindow.cpp" line="3440"/>
         <source>Load Tags File</source>
-        <translation>Charger le fichier de tags</translation>
+        <translation>Charger le Fichier de Tags</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3432"/>
+        <location filename="../../MainWindow.cpp" line="3475"/>
         <source>Load Macro File</source>
-        <translation>Charger le fichier de macros</translation>
+        <translation>Charger le Fichier de Macros</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3847"/>
+        <location filename="../../MainWindow.cpp" line="3884"/>
         <source>Language Mode</source>
-        <translation>Langages</translation>
+        <translation>Langage</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3848"/>
+        <location filename="../../MainWindow.cpp" line="3885"/>
         <source>No Language Modes defined</source>
-        <translation>Aucun langage défini</translation>
+        <translation>Aucun Langage Défini</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3901"/>
-        <location filename="../MainWindow.cpp" line="3912"/>
+        <location filename="../../MainWindow.cpp" line="3937"/>
+        <location filename="../../MainWindow.cpp" line="3948"/>
         <source>Command Shell</source>
-        <translation>Commande du shell</translation>
+        <translation>Commande du Shell</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3902"/>
+        <location filename="../../MainWindow.cpp" line="3938"/>
         <source>Enter shell path:</source>
-        <translation>Entrer le chemin du shell:</translation>
+        <translation>Entrer le Chemin du Shell:</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="3913"/>
+        <location filename="../../MainWindow.cpp" line="3949"/>
         <source>The selected shell is not available.
 Do you want to use it anyway?</source>
-        <translation>Le shell sélectionné n&apos;est pas disponible.
-Souhaitez-vous l&apos;utiliser tout de même ?</translation>
+        <translation></translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="4500"/>
+        <location filename="../../MainWindow.cpp" line="4526"/>
         <source>Custom... (%1 x %2)</source>
         <translation>Personnaliser... (%1 x %2)</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="4502"/>
+        <location filename="../../MainWindow.cpp" line="4528"/>
         <source>Custom...</source>
         <translation>Personnaliser...</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="4775"/>
+        <location filename="../../MainWindow.cpp" line="4801"/>
         <source>&amp;Unix</source>
         <translation>&amp;Unix</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="4776"/>
+        <location filename="../../MainWindow.cpp" line="4802"/>
         <source>D&amp;OS</source>
         <translation>D&amp;OS</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="4777"/>
+        <location filename="../../MainWindow.cpp" line="4803"/>
         <source>&amp;Macintosh</source>
         <translation>&amp;Macintosh</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="4802"/>
+        <location filename="../../MainWindow.cpp" line="4828"/>
         <source>Format: </source>
         <translation>Format: </translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="4807"/>
+        <location filename="../../MainWindow.cpp" line="4833"/>
         <source>&amp;Add line breaks where wrapped</source>
-        <translation>&amp;Ajouter un saut de ligne lors de l&apos;enroulement</translation>
+        <translation>&amp;Ajouter un saut de Ligne au niveau de l&apos;enroulement</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="4814"/>
+        <location filename="../../MainWindow.cpp" line="4840"/>
         <source>Add Wrap</source>
-        <translation>Ajouter un enroulement</translation>
+        <translation>Ajouter un Enroulement</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="4815"/>
+        <location filename="../../MainWindow.cpp" line="4841"/>
         <source>This operation adds permanent line breaks to match the automatic wrapping done by the Continuous Wrap mode Preferences Option.
 
 *** This Option is Irreversable ***
 
 Once newlines are inserted, continuous wrapping will no longer work automatically on these lines</source>
-        <translation>Cette opération ajoute des sauts de ligne permanents pour correspondre à l&apos;enrouleent automatique effectué par l&apos;option &quot;Enroulement Continu&quot; des Préférences.
+        <translation>Cette opération ajoute des sauts de ligne permanents pour correspondre à l&apos;enroulement automatique effectué par l&apos;option Préférences -&gt; Enroulement -&gt; Continu.
 
 *** Cette option est irréversible ***
 
 Une fois les nouvelles lignes insérées, l&apos;enroulement continue ne fonctionnera plus automatiquement sur ces lignes</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="4876"/>
+        <location filename="../../MainWindow.cpp" line="4790"/>
         <source>Save File As</source>
-        <translation>Enregistrer le fichier sous</translation>
+        <translation>Enregistrer le Fichier Sous</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="4913"/>
+        <location filename="../../MainWindow.cpp" line="608"/>
+        <source>Error Opening File</source>
+        <translation>Erreur lors de l&apos;ouverture du Fichier</translation>
+    </message>
+    <message>
+        <location filename="../../MainWindow.cpp" line="609"/>
+        <source>File could not be opened, would you like to remove it from the &apos;Open Previous&apos; list?</source>
+        <translation>Le fichier ne peut pas être ouvert, souhaitez-vous le supprimer de la liste &apos;Récemment ouverts&apos; ?</translation>
+    </message>
+    <message>
+        <location filename="../../MainWindow.cpp" line="2046"/>
+        <source>%1/%2</source>
+        <translation>%1/%2</translation>
+    </message>
+    <message>
+        <location filename="../../MainWindow.cpp" line="2066"/>
+        <source>Error opening File</source>
+        <translation>Erreur lors de l&apos;ouverture du Fichier</translation>
+    </message>
+    <message>
+        <location filename="../../MainWindow.cpp" line="2067"/>
+        <source>Could not open %1%2:
+%3</source>
+        <translation>Impossible d&apos;ouvrir %1%2:
+%3</translation>
+    </message>
+    <message>
+        <location filename="../../MainWindow.cpp" line="2067"/>
+        <source>No such file or directory</source>
+        <translation>Aucun fichier ou dossier de ce type</translation>
+    </message>
+    <message>
+        <location filename="../../MainWindow.cpp" line="2377"/>
+        <source>Goto Line (and/or Column) Number:</source>
+        <translation>Aller à la ligne (et/ou à la colonne) Numéro :</translation>
+    </message>
+    <message>
+        <location filename="../../MainWindow.cpp" line="4941"/>
         <source>Discard Changes</source>
-        <translation>Annuler les changements</translation>
+        <translation>Annuler les Changements</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="4914"/>
+        <location filename="../../MainWindow.cpp" line="4942"/>
         <source>Discard changes to
 %1%2?</source>
         <translation>Annuler les Changements sur
 %1%2?</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="4923"/>
+        <location filename="../../MainWindow.cpp" line="4951"/>
         <source>Reload File</source>
-        <translation>Recharger le fichier</translation>
+        <translation>Recharger le Fichier</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="4925"/>
+        <location filename="../../MainWindow.cpp" line="4953"/>
         <source>Re-load file
 %1%2?</source>
-        <translation>Recharger le fichier
+        <translation>Recharger le Fichier
 %1%2?</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="4926"/>
+        <location filename="../../MainWindow.cpp" line="4954"/>
         <source>Re-read</source>
         <translation>Relire</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="4984"/>
+        <location filename="../../MainWindow.cpp" line="5008"/>
         <source>Editing: </source>
-        <translation>Editer:</translation>
+        <translation>Editer: </translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5003"/>
+        <location filename="../../MainWindow.cpp" line="5027"/>
         <source>and %1.</source>
         <translation>et %1.</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5005"/>
+        <location filename="../../MainWindow.cpp" line="5029"/>
         <source>%1, </source>
         <translation>%1, </translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5009"/>
+        <location filename="../../MainWindow.cpp" line="5033"/>
         <source>
 
 Exit NEdit?</source>
-        <translation>Sortir de NEdit?</translation>
+        <translation>
+
+Sortir de NEdit ?</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5012"/>
-        <location filename="../MainWindow.cpp" line="5015"/>
+        <location filename="../../MainWindow.cpp" line="5036"/>
+        <location filename="../../MainWindow.cpp" line="5039"/>
         <source>Exit</source>
         <translation>Sortir</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5055"/>
+        <location filename="../../MainWindow.cpp" line="5079"/>
         <source>Default Preferences</source>
         <translation>Préférences par défaut</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5059"/>
+        <location filename="../../MainWindow.cpp" line="5083"/>
         <source>Default Preferences have changed.
 Save changes to NEdit preference file?</source>
         <translation>Les préférences par défaut ont changé.
 Sauvegarder les modifications dans le fichier de préférences de NEdit?</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5060"/>
+        <location filename="../../MainWindow.cpp" line="5084"/>
         <source>Default Preferences have changed.
 SAVING CHANGES WILL INCORPORATE ADDITIONAL SETTINGS FROM FILE: %s</source>
         <translation>Les préférences par défaut ont changé.
-SAUVEGARDER LES MODIFICATIONS VA AJOUTER DES CONFIGURATIONS DEPUIS LE FICHIER: %s</translation>
+Sauvegarder les modifications va impliquer des changements dans le fichier: %s</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5063"/>
+        <location filename="../../MainWindow.cpp" line="5087"/>
         <source>Don&apos;t Save</source>
         <translation>Ne pas sauvegarder</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5136"/>
+        <location filename="../../MainWindow.cpp" line="5160"/>
         <source>Close Window</source>
         <translation>Fermer la fenêtre</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5137"/>
+        <location filename="../../MainWindow.cpp" line="5161"/>
         <source>Close ALL documents in this window?</source>
         <translation>Fermer TOUS les documents de cette fenêtre?</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5267"/>
+        <location filename="../../MainWindow.cpp" line="5272"/>
         <source>Repeat Macro</source>
         <translation>Répéter la macro</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5268"/>
+        <location filename="../../MainWindow.cpp" line="5273"/>
         <source>No previous commands or learn/replay sequences to repeat</source>
         <translation>Aucune commande ou séquence d&apos;apprentissage à répéter</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5784"/>
+        <location filename="../../MainWindow.cpp" line="5838"/>
         <source>Detach %1?</source>
         <translation>Détacher %1?</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5824"/>
+        <location filename="../../MainWindow.cpp" line="5878"/>
         <source>No Language Modes</source>
         <translation>Pas de langage</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5825"/>
+        <location filename="../../MainWindow.cpp" line="5879"/>
         <source>No Language Modes available for syntax highlighting
 Add language modes under Preferenses-&gt;Language Modes</source>
-        <translation>Pas de langage disponible pour la coloration syntaxique
-Ajouter un langage depuis Préférences-&gt;Langages</translation>
+        <translation>Pas de langage disponible pour la surbrillance de la syntaxe
+Ajouter un langage sous Préférences-&gt;Langages</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5951"/>
-        <location filename="../MainWindow.cpp" line="5983"/>
+        <location filename="../../MainWindow.cpp" line="5996"/>
+        <location filename="../../MainWindow.cpp" line="6025"/>
         <source>Wrap Search</source>
-        <translation></translation>
+        <translation>Recherche complète</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5953"/>
+        <location filename="../../MainWindow.cpp" line="5998"/>
         <source>Continue search from beginning of file?</source>
         <translation>Poursuivre la recherche depuis le début du fichier?</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5954"/>
-        <location filename="../MainWindow.cpp" line="5986"/>
+        <location filename="../../MainWindow.cpp" line="5999"/>
+        <location filename="../../MainWindow.cpp" line="6028"/>
         <source>Continue</source>
         <translation>Poursuivre</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="5985"/>
+        <location filename="../../MainWindow.cpp" line="6027"/>
         <source>Continue search from end of file?</source>
         <translation>Poursuivre la recherche depuis la fin du fichier?</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="6011"/>
-        <location filename="../MainWindow.cpp" line="6712"/>
-        <location filename="../MainWindow.cpp" line="6832"/>
+        <location filename="../../MainWindow.cpp" line="6052"/>
+        <location filename="../../MainWindow.cpp" line="6735"/>
+        <location filename="../../MainWindow.cpp" line="6853"/>
         <source>String not found</source>
         <translation>Chaîne non trouvée</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="6011"/>
-        <location filename="../MainWindow.cpp" line="6712"/>
-        <location filename="../MainWindow.cpp" line="6832"/>
+        <location filename="../../MainWindow.cpp" line="6052"/>
+        <location filename="../../MainWindow.cpp" line="6735"/>
+        <location filename="../../MainWindow.cpp" line="6853"/>
         <source>String was not found</source>
         <translation>La chaîne n&apos;a pas été trouvée</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="6474"/>
+        <location filename="../../MainWindow.cpp" line="6508"/>
         <source>Wrong Selection</source>
         <translation>Mauvaise sélection</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="6474"/>
+        <location filename="../../MainWindow.cpp" line="6508"/>
         <source>Selection not appropriate for searching</source>
         <translation>Sélection non valide pour la recherche</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="6750"/>
-        <location filename="../MainWindow.cpp" line="6763"/>
+        <location filename="../../MainWindow.cpp" line="6773"/>
+        <location filename="../../MainWindow.cpp" line="6786"/>
         <source>Substitution Failed</source>
         <translation>Echec de la substitution</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="6751"/>
+        <location filename="../../MainWindow.cpp" line="6774"/>
         <source>The result length of the substitution exceeded an internal limit.
 The substitution is canceled.</source>
         <translation>La longueur de la substitution a dépassé unelimite interne.
 La substitution est annulée.</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="6765"/>
+        <location filename="../../MainWindow.cpp" line="6788"/>
         <source>The result length of the substitution exceeded an internal limit.
 Executing the substitution will result in loss of data.</source>
-        <translation>La longueur de la substitution a dépassé une limite interne.
+        <translation>La longueur de la substitution a dépassé unelimite interne.
 L&apos;exécution de la substitution va produire une perte de données.</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="7119"/>
+        <location filename="../../MainWindow.cpp" line="7053"/>
         <source>macro menu command</source>
         <translation>Commande du menu de macros</translation>
     </message>
     <message>
-        <location filename="../MainWindow.cpp" line="7143"/>
+        <location filename="../../MainWindow.cpp" line="7077"/>
         <source>background menu macro</source>
-        <translation></translation>
+        <translation>menu d&apos;arrière-plan de macro</translation>
     </message>
 </context>
 <context>
     <name>MenuItemModel</name>
     <message>
-        <location filename="../MenuItemModel.cpp" line="75"/>
+        <location filename="../../MenuItemModel.cpp" line="75"/>
         <source>Name</source>
         <translation>Nom</translation>
     </message>
 </context>
 <context>
+    <name>Preferences</name>
+    <message>
+        <location filename="../../preferences.cpp" line="83"/>
+        <location filename="../../Preferences.cpp" line="82"/>
+        <source>Error saving Preferences</source>
+        <translation>Erreur lors de la sauvegarde des Préférences</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="83"/>
+        <location filename="../../Preferences.cpp" line="82"/>
+        <source>Unable to save preferences: Cannot determine filename.</source>
+        <translation>Impossible de sauvegarder les préférences : impossible de déterminer le nom du fichier.</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="88"/>
+        <location filename="../../preferences.cpp" line="112"/>
+        <location filename="../../Preferences.cpp" line="87"/>
+        <location filename="../../Preferences.cpp" line="111"/>
+        <source>Save Preferences</source>
+        <translation>Sauvegarde des Préférences</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="89"/>
+        <location filename="../../Preferences.cpp" line="88"/>
+        <source>Default preferences will be saved in the file:
+%1
+NEdit automatically loads this file each time it is started.</source>
+        <translation>Les préférences par défaut vont être sauvegardées dans le fichier :
+%1
+NEdit charges automatiquement ce fichier à chaque démarrage.</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="90"/>
+        <location filename="../../Preferences.cpp" line="89"/>
+        <source>Default preferences will be saved in the file:
+%1
+SAVING WILL INCORPORATE SETTINGS FROM FILE: %2</source>
+        <translation>Les préférences par défaut vont être sauvegardées dans le fichier :
+%1
+LA SAUVEGARDE VA AJOUTER LES PARAMÈTRES DU FICHER : %2</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="113"/>
+        <location filename="../../Preferences.cpp" line="112"/>
+        <source>Unable to save preferences in %1</source>
+        <translation>Impossible de sauvegarder les préférences dans %1</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="877"/>
+        <location filename="../../Preferences.cpp" line="835"/>
+        <source>expecting quoted string</source>
+        <translation>une chaîne de caractères entre quotes est attendue</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="887"/>
+        <location filename="../../Preferences.cpp" line="845"/>
+        <source>string not terminated</source>
+        <translation>chaîne de caractères non terminée</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="970"/>
+        <location filename="../../Preferences.cpp" line="928"/>
+        <source>syntax error</source>
+        <translation>erreur de syntaxe</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="1006"/>
+        <location filename="../../Preferences.cpp" line="964"/>
+        <source>%1&lt;==</source>
+        <translation>%1&lt;==</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="1011"/>
+        <location filename="../../Preferences.cpp" line="969"/>
+        <source>Parse Error</source>
+        <translation>Erreur d&apos;analyse</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="1011"/>
+        <location filename="../../Preferences.cpp" line="969"/>
+        <source>%1 in %2:
+%3</source>
+        <translation>%1 dans %2:
+%3</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="1032"/>
+        <location filename="../../Preferences.cpp" line="995"/>
+        <source>language mode name required</source>
+        <translation>nom du langage nécessaire</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="1066"/>
+        <location filename="../../Preferences.cpp" line="1031"/>
+        <source>unrecognized indent style</source>
+        <translation>style d&apos;indentation non reconnu</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="1083"/>
+        <location filename="../../Preferences.cpp" line="1048"/>
+        <source>unrecognized wrap style</source>
+        <translation>type d&apos;enroulement non reconnu</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="1097"/>
+        <location filename="../../Preferences.cpp" line="1062"/>
+        <source>bad tab spacing</source>
+        <translation>mauvaise définition d&apos;espacement dans les tabulations</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="1109"/>
+        <location filename="../../Preferences.cpp" line="1073"/>
+        <source>bad emulated tab spacing</source>
+        <translation>mauvaise définition d&apos;espacement dans les tabulations émulées</translation>
+    </message>
+    <message>
+        <location filename="../../preferences.cpp" line="1320"/>
+        <location filename="../../Preferences.cpp" line="1128"/>
+        <source>language mode specification</source>
+        <translation>spécification du langage</translation>
+    </message>
+</context>
+<context>
+    <name>SmartIndent</name>
+    <message>
+        <location filename="../../SmartIndent.cpp" line="263"/>
+        <source>language mode name required</source>
+        <translation>nom du langage nécessaire</translation>
+    </message>
+    <message>
+        <location filename="../../SmartIndent.cpp" line="274"/>
+        <source>no default smart indent macros</source>
+        <translation>pas de macros d&apos;indentation intelligente par défaut</translation>
+    </message>
+    <message>
+        <location filename="../../SmartIndent.cpp" line="283"/>
+        <source>no end boundary to initialization macro</source>
+        <translation>pas de bordure de fin pour la macro d&apos;initialisation</translation>
+    </message>
+    <message>
+        <location filename="../../SmartIndent.cpp" line="289"/>
+        <source>no end boundary to newline macro</source>
+        <translation>pas de bordure de fin pour la macro de nouvelle ligne</translation>
+    </message>
+    <message>
+        <location filename="../../SmartIndent.cpp" line="295"/>
+        <source>no end boundary to modify macro</source>
+        <translation>pas de bordure de fin pour modifier la macro</translation>
+    </message>
+    <message>
+        <location filename="../../SmartIndent.cpp" line="318"/>
+        <source>smart indent specification</source>
+        <translation>specification de l&apos;indentation intelligente</translation>
+    </message>
+</context>
+<context>
+    <name>Tags</name>
+    <message>
+        <location filename="../../Tags.cpp" line="166"/>
+        <location filename="../../Tags.cpp" line="192"/>
+        <location filename="../../Tags.cpp" line="552"/>
+        <source>%1%2</source>
+        <translation>%1%2</translation>
+    </message>
+    <message>
+        <location filename="../../Tags.cpp" line="234"/>
+        <location filename="../../Tags.cpp" line="236"/>
+        <location filename="../../Tags.cpp" line="299"/>
+        <location filename="../../Tags.cpp" line="368"/>
+        <source>%1/%2</source>
+        <translation>%1/%2</translation>
+    </message>
+    <message>
+        <location filename="../../Tags.cpp" line="598"/>
+        <source>Loading tags file...</source>
+        <translation>Chargement du fichier de marqueurs ...</translation>
+    </message>
+    <message>
+        <location filename="../../Tags.cpp" line="848"/>
+        <source>Error opening File</source>
+        <translation>Erreur d&apos;ouverture du fichier</translation>
+    </message>
+    <message>
+        <location filename="../../Tags.cpp" line="849"/>
+        <source>Error opening %1</source>
+        <translation>Erreur d&apos;ouverture de %1</translation>
+    </message>
+    <message>
+        <location filename="../../Tags.cpp" line="862"/>
+        <source>Tags Error</source>
+        <translation>Erreur de marqueur</translation>
+    </message>
+    <message>
+        <location filename="../../Tags.cpp" line="863"/>
+        <source>%1
+ not long enough for definition to be on line %2</source>
+        <translation>%1
+ definition pas suffisamment longue pour être sur la ligne %2</translation>
+    </message>
+    <message>
+        <location filename="../../Tags.cpp" line="871"/>
+        <source>Tag not found</source>
+        <translation>Marqueur non trouvé</translation>
+    </message>
+    <message>
+        <location filename="../../Tags.cpp" line="872"/>
+        <source>Definition for %1 not found in %2</source>
+        <translation>La définition pour %1 non trouvée dans %2</translation>
+    </message>
+    <message>
+        <location filename="../../Tags.cpp" line="923"/>
+        <source>Out of Memory</source>
+        <translation>Mémoire insuffisante</translation>
+    </message>
+    <message>
+        <location filename="../../Tags.cpp" line="924"/>
+        <source>Can&apos;t allocate memory</source>
+        <translation>Allocation de mémoire impossible</translation>
+    </message>
+</context>
+<context>
     <name>TextArea</name>
     <message>
-        <location filename="../TextArea.cpp" line="382"/>
         <source>Ctrl+K</source>
-        <translation>Ctrl+K</translation>
+        <translation type="vanished">Ctrl+K</translation>
+    </message>
+    <message>
+        <location filename="../../TextArea.cpp" line="7698"/>
+        <location filename="../../TextArea.cpp" line="7699"/>
+        <source>Size: XXX x XXX</source>
+        <translation>Taille: XXX x XXX</translation>
+    </message>
+    <message>
+        <location filename="../../TextArea.cpp" line="7711"/>
+        <source>Size: %1 x %2</source>
+        <translation>Taille: %1 x %2</translation>
     </message>
 </context>
 </TS>
