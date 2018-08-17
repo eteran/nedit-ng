@@ -553,6 +553,21 @@ QString Rangeset::name() const {
 }
 
 /**
+ * @brief Rangeset::RangesetSpan
+ * @return
+ */
+boost::optional<Range> Rangeset::RangesetSpan() const {
+	if(ranges_.empty()) {
+		return boost::none;
+	}
+
+	Range r;
+	r.start = ranges_.front().start;
+	r.end   = ranges_.back().end;
+	return r;
+}
+
+/**
  * @brief Rangeset::RangesetFindRangeNo
  * @param index
  * @return

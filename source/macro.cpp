@@ -4826,47 +4826,33 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
 
-	bool ok = false;
-
-	Range range;
+	boost::optional<Range> range;
 
 	if (Rangeset *rangeset = rangesetTable->RangesetFetch(label)) {
 		if (arguments.size() == 1) {
-			const int rangeIndex = rangeset->size() - 1;
-
-			boost::optional<Range> r1 = rangeset->RangesetFindRangeNo(0);
-			boost::optional<Range> r2 = rangeset->RangesetFindRangeNo(rangeIndex);
-
-			if(r1 && r2) {
-				ok = true;
-				range.start = r1->start;
-				range.end   = r2->end;
-			}
+			range = rangeset->RangesetSpan();
 		} else if (arguments.size() == 2) {
 			int rangeIndex;
 			if (std::error_code ec = readArgument(arguments[1], &rangeIndex)) {
 				return ec;
 			}
 
-			if(boost::optional<Range> r = rangeset->RangesetFindRangeNo(rangeIndex - 1)) {
-				ok = true;
-				range = *r;
-			}
+			range = rangeset->RangesetFindRangeNo(rangeIndex - 1);
 		}
 	}
 
 	*result = make_value(std::make_shared<Array>());
 
-	if (!ok) {
+	if (!range) {
 		return MacroErrorCode::Success;
 	}
 
-	element = make_value(to_integer(range.start));
+	element = make_value(to_integer(range->start));
 	if (!ArrayInsert(result, "start", &element)) {
 		return MacroErrorCode::InsertFailed;
 	}
 
-	element = make_value(to_integer(range.end));
+	element = make_value(to_integer(range->end));
 	if (!ArrayInsert(result, "end", &element)) {
 		return MacroErrorCode::InsertFailed;
 	}

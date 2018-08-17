@@ -49,6 +49,7 @@ public:
 
 public:
 	boost::optional<Range> RangesetFindRangeNo(int index) const;
+	boost::optional<Range> RangesetSpan() const;
 
 public:
 	int64_t RangesetCheckRangeOfPos(TextCursor pos);

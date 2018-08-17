@@ -207,6 +207,10 @@ boost::optional<Search::Result> searchLiteral(view::string_view string, view::st
 
 	// TODO(eteran): investigate if we can rework this in terms of std::search
 
+	if(searchString.empty()) {
+		return boost::none;
+	}
+
 	std::string lcString;
 	std::string ucString;
 
@@ -315,6 +319,10 @@ boost::optional<Search::Result> searchLiteral(view::string_view string, view::st
 boost::optional<Search::Result> searchLiteralWord(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, const char *delimiters, Qt::CaseSensitivity caseSensitivity) {
 
 	// TODO(eteran): investigate if we can rework this in terms of std::search
+
+	if(searchString.empty()) {
+		return boost::none;
+	}
 
 	std::string lcString;
 	std::string ucString;
