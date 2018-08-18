@@ -27,6 +27,7 @@ foreach(QM_FILE ${QM_FILES})
 endforeach()
 
 file(APPEND ${TRANSLATIONS_QRC} "\n\t</qresource>\n</RCC>")
+list(APPEND QRC_FILES ${TRANSLATIONS_QRC})
 
 add_executable(nedit-ng
 	
