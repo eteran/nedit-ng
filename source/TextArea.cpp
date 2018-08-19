@@ -2242,15 +2242,14 @@ void TextArea::updateVScrollBarRange() {
 	if(continuousWrap_) {
 		int normalizedVisible = std::max(nVisibleLines_, 1);
 		auto sliderMax = std::max<int64_t>(nBufferLines_ + 2 + cursorVPadding_, normalizedVisible + sliderValue);
-
 		verticalScrollBar()->setMaximum(gsl::narrow<int>(sliderMax));
-		verticalScrollBar()->setPageStep(std::max(1, nVisibleLines_ - 1));
-		verticalScrollBar()->setValue(gsl::narrow<int>(sliderValue));
 	} else {
 		verticalScrollBar()->setMaximum(gsl::narrow<int>(std::max<int64_t>(0, nBufferLines_ - nVisibleLines_ + 2)));
-		verticalScrollBar()->setPageStep(std::max(1, nVisibleLines_ - 1));
-		verticalScrollBar()->setValue(gsl::narrow<int>(sliderValue));
 	}
+
+	verticalScrollBar()->setMinimum(1);
+	verticalScrollBar()->setPageStep(std::max(1, nVisibleLines_ - 1));
+	verticalScrollBar()->setValue(gsl::narrow<int>(sliderValue));
 }
 
 /**
