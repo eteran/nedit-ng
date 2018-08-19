@@ -316,7 +316,6 @@ private:
 	void TextDMakeInsertPosVisible();
 	void TextDOverstrikeEx(view::string_view text);
 	void TextDRedisplayRect(const QRect &rect);
-	void TextDRedisplayRect(int left, int top, int width, int height);
 	void TextDRedrawCalltip(int calltipID);
 	void TextDResize(bool widthChanged);
 	void setCursorStyle(CursorStyles style);

@@ -2210,17 +2210,6 @@ void TextArea::TextDRedisplayRect(const QRect &rect) {
 }
 
 /**
- * @brief TextArea::TextDRedisplayRect
- * @param left
- * @param top
- * @param width
- * @param height
- */
-void TextArea::TextDRedisplayRect(int left, int top, int width, int height) {
-	TextDRedisplayRect(QRect(left, top, width, height));
-}
-
-/**
  * Update the minimum, maximum, page increment, and value for
  * vertical scroll bar.
  *
@@ -7847,7 +7836,7 @@ bool TextArea::visibleLineContainsCursor(int visLine, TextCursor cursor) const {
 	const TextCursor lineStart = lineStarts_[visLine];
 
 	if(lineStart != TextCursor(-1)) {
-		const TextCursor lineEnd = TextDEndOfLine(lineStart, true);
+		const TextCursor lineEnd = TextDEndOfLine(lineStart, /*startPosIsLineStart=*/true);
 		if(cursor >= lineStart && cursor <= lineEnd) {
 			return true;
 		}
