@@ -312,8 +312,8 @@ struct InputHandler {
 constexpr InputHandler inputHandlers[] = {
 
     // Keyboard zoom support
-    { Qt::Key_Equal,     Qt::ControlModifier,                                                               &TextArea::ZoomInAP,                         TextArea::NoneFlag }, // zoom-in()
-    { Qt::Key_Minus,     Qt::ControlModifier,                                                               &TextArea::ZoomOutAP,                        TextArea::NoneFlag }, // zoom-out()
+    { Qt::Key_Equal,     Qt::ControlModifier,                                                               &TextArea::zoomInAP,                         TextArea::NoneFlag }, // zoom-in()
+    { Qt::Key_Minus,     Qt::ControlModifier,                                                               &TextArea::zoomOutAP,                        TextArea::NoneFlag }, // zoom-out()
 
 	{ Qt::Key_PageUp,    Qt::ControlModifier,                                                               &TextArea::previousDocumentAP,               TextArea::NoneFlag }, // previous-document()
 	{ Qt::Key_PageDown,  Qt::ControlModifier,                                                               &TextArea::nextDocumentAP,                   TextArea::NoneFlag }, // next-document()
@@ -5341,8 +5341,7 @@ TextCursor TextArea::xyToPos(int x, int y, PositionTypes posType) const {
 
 	// Find the visible line number corresponding to the y coordinate
 	const QRect viewRect = viewport()->contentsRect();
-	int fontHeight = fixedFontHeight_;
-	int visLineNum = (y - viewRect.top()) / fontHeight;
+	int visLineNum = (y - viewRect.top()) / fixedFontHeight_;
 
 	if (visLineNum < 0) {
 		return firstChar_;
@@ -5368,11 +5367,12 @@ TextCursor TextArea::xyToPos(int x, int y, PositionTypes posType) const {
 	   to find the character position corresponding to the x coordinate */
 	int64_t xStep = viewRect.left() - horizOffset_;
 	int outIndex = 0;
+	const int tabDistance = buffer_->BufGetTabDist();
 	for (int64_t charIndex = 0; charIndex < lineLen; charIndex++) {
 
 		char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 
-		const int charLen        = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, buffer_->BufGetTabDist());
+		const int charLen        = TextBuffer::BufExpandCharacter(lineStr[charIndex], outIndex, expandedChar, tabDistance);
 		const int64_t charWidth  = stringWidth(charLen);
 
 		if (x < xStep + (posType == PositionTypes::Cursor ? charWidth / 2 : charWidth)) {
@@ -5846,7 +5846,7 @@ void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 
 	/* If the click was outside of the primary selection, this is not
 	   a drag, start a secondary selection */
-	if (!buffer_->primary.selected || !TextDInSelection(event->pos())) {
+	if (!buffer_->primary.selected || !inSelection(event->pos())) {
 		secondaryStartAP(event, flags | SupressRecording);
 		return;
 	}
@@ -5865,7 +5865,7 @@ void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 /*
 ** Return true if position (x, y) is inside of the primary selection
 */
-bool TextArea::TextDInSelection(const QPoint &p) const {
+bool TextArea::inSelection(const QPoint &p) const {
 
 	TextCursor pos = xyToPos(p, PositionTypes::Character);
 
@@ -6006,9 +6006,7 @@ void TextArea::BeginBlockDrag() {
 	const QRect viewRect = viewport()->contentsRect();
 	const int fontHeight = fixedFontHeight_;
 	const int fontWidth  = fixedFontWidth_;
-	const TextBuffer::Selection *sel = &buffer_->primary;
-	int64_t nLines;
-	TextCursor mousePos;
+	const TextBuffer::Selection &sel = buffer_->primary;
 	int x;
 	int y;
 
@@ -6021,65 +6019,65 @@ void TextArea::BeginBlockDrag() {
 
 	dragOrigBuf_->BufSetAll(buffer_->BufGetAllEx());
 
-	if (sel->rectangular) {
-		dragOrigBuf_->BufRectSelect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
+	if (sel.rectangular) {
+		dragOrigBuf_->BufRectSelect(sel.start, sel.end, sel.rectStart, sel.rectEnd);
 	} else {
-		dragOrigBuf_->BufSelect(sel->start, sel->end);
+		dragOrigBuf_->BufSelect(sel.start, sel.end);
 	}
 
 	/* Record the mouse pointer offsets from the top left corner of the
 	   selection (the position where text will actually be inserted In dragging
 	   non-rectangular selections)  */
-	if (sel->rectangular) {
-		dragXOffset_ = btnDownCoord_.x() + horizOffset_ - viewRect.left() - sel->rectStart * fontWidth;
+	if (sel.rectangular) {
+		dragXOffset_ = btnDownCoord_.x() + horizOffset_ - viewRect.left() - sel.rectStart * fontWidth;
 	} else {
-		if (!TextDPositionToXY(sel->start, &x, &y)) {
-			x = buffer_->BufCountDispChars(TextDStartOfLine(sel->start), sel->start) * fontWidth + viewRect.left() - horizOffset_;
+		if (!TextDPositionToXY(sel.start, &x, &y)) {
+			x = buffer_->BufCountDispChars(TextDStartOfLine(sel.start), sel.start) * fontWidth + viewRect.left() - horizOffset_;
 		}
 		dragXOffset_ = btnDownCoord_.x() - x;
 	}
 
-	mousePos = TextDXYToPosition(btnDownCoord_);
-	nLines = buffer_->BufCountLines(sel->start, mousePos);
+	const TextCursor mousePos = TextDXYToPosition(btnDownCoord_);
+	const int64_t nLines = buffer_->BufCountLines(sel.start, mousePos);
 
 	dragYOffset_ = nLines * fontHeight + (((btnDownCoord_.y() - viewRect.top()) % fontHeight) - fontHeight / 2);
-	dragNLines_  = buffer_->BufCountLines(sel->start, sel->end);
+	dragNLines_  = buffer_->BufCountLines(sel.start, sel.end);
 
 	/* Record the current drag insert position and the information for
 	   undoing the fictional insert of the selection in its new position */
-	dragInsertPos_ = sel->start;
-	dragInserted_ = sel->end - sel->start;
-	if (sel->rectangular) {
+	dragInsertPos_ = sel.start;
+	dragInserted_  = sel.end - sel.start;
+	if (sel.rectangular) {
 		TextBuffer testBuf;
 		testBuf.BufSetSyncXSelection(false);
 
-		std::string testText = buffer_->BufGetRangeEx(sel->start, sel->end);
+		std::string testText = buffer_->BufGetRangeEx(sel.start, sel.end);
 		testBuf.BufSetTabDistance(buffer_->BufGetTabDist(), true);
 		testBuf.BufSetUseTabs(buffer_->BufGetUseTabs());
 		testBuf.BufSetAll(testText);
 
-		testBuf.BufRemoveRect(buffer_->BufStartOfBuffer(), buffer_->BufStartOfBuffer() + (sel->end - sel->start), sel->rectStart, sel->rectEnd);
+		testBuf.BufRemoveRect(buffer_->BufStartOfBuffer(), buffer_->BufStartOfBuffer() + (sel.end - sel.start), sel.rectStart, sel.rectEnd);
 		dragDeleted_ = testBuf.BufGetLength();
-		dragRectStart_ = sel->rectStart;
+		dragRectStart_ = sel.rectStart;
 	} else {
-		dragDeleted_ = 0;
+		dragDeleted_   = 0;
 		dragRectStart_ = 0;
 	}
 
 	dragType_            = DRAG_MOVE;
-	dragSourceDeletePos_ = sel->start;
+	dragSourceDeletePos_ = sel.start;
 	dragSourceInserted_  = dragDeleted_;
 	dragSourceDeleted_   = dragInserted_;
 
 	/* For non-rectangular selections, fill in the rectangular information in
 	   the selection for overlay mode drags which are done rectangularly */
-	if (!sel->rectangular) {
-		TextCursor lineStart = buffer_->BufStartOfLine(sel->start);
+	if (!sel.rectangular) {
+		TextCursor lineStart = buffer_->BufStartOfLine(sel.start);
 		if (dragNLines_ == 0) {
-			dragOrigBuf_->primary.rectStart = buffer_->BufCountDispChars(lineStart, sel->start);
-			dragOrigBuf_->primary.rectEnd   = buffer_->BufCountDispChars(lineStart, sel->end);
+			dragOrigBuf_->primary.rectStart = buffer_->BufCountDispChars(lineStart, sel.start);
+			dragOrigBuf_->primary.rectEnd   = buffer_->BufCountDispChars(lineStart, sel.end);
 		} else {
-			TextCursor lineEnd = buffer_->BufGetCharacter(sel->end - 1) == '\n' ? sel->end - 1 : sel->end;
+			TextCursor lineEnd = buffer_->BufGetCharacter(sel.end - 1) == '\n' ? sel.end - 1 : sel.end;
 			findTextMargins(buffer_, lineStart, lineEnd, &dragOrigBuf_->primary.rectStart, &dragOrigBuf_->primary.rectEnd);
 		}
 	}
@@ -7343,7 +7341,7 @@ TextCursor TextArea::TextDLineAndColToPos(int64_t lineNum, int64_t column) {
 		int charLen = 0;
 
 		// Count columns, expanding each character
-		std::string lineStr = buffer_->BufGetRangeEx(lineStart, lineEnd);
+		const std::string lineStr = buffer_->BufGetRangeEx(lineStart, lineEnd);
 		int outIndex = 0;
 		for (TextCursor i = lineStart; i < lineEnd; ++i, ++charIndex) {
 
@@ -7769,10 +7767,10 @@ void TextArea::TextDMakeSelectionVisible() {
 }
 
 /**
- * @brief TextArea::ZoomOutAP
+ * @brief TextArea::zoomOutAP
  * @param flags
  */
-void TextArea::ZoomOutAP(TextArea::EventFlags flags) {
+void TextArea::zoomOutAP(TextArea::EventFlags flags) {
 	Q_UNUSED(flags);
 	QList<int> sizes = QFontDatabase::standardSizes();
 	QFontInfo fi(font_);
@@ -7786,10 +7784,10 @@ void TextArea::ZoomOutAP(TextArea::EventFlags flags) {
 }
 
 /**
- * @brief TextArea::ZoomInAP
+ * @brief TextArea::zoomInAP
  * @param flags
  */
-void TextArea::ZoomInAP(TextArea::EventFlags flags) {
+void TextArea::zoomInAP(TextArea::EventFlags flags) {
 	Q_UNUSED(flags);
 	QList<int> sizes = QFontDatabase::standardSizes();
 	QFontInfo fi(font_);
@@ -7809,9 +7807,9 @@ void TextArea::ZoomInAP(TextArea::EventFlags flags) {
 void TextArea::wheelEvent(QWheelEvent *event) {
 	if(event->modifiers() == Qt::ControlModifier) {
 		if(event->delta() > 0) {
-			ZoomInAP();
+			zoomInAP();
 		} else {
-			ZoomOutAP();
+			zoomOutAP();
 		}
 	} else {
 		QAbstractScrollArea::wheelEvent(event);

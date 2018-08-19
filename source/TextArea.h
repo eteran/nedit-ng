@@ -128,8 +128,8 @@ private:
 	bool clickTracker(QMouseEvent *event, bool inDoubleClickHandler);
 
 public Q_SLOTS:
-	void ZoomOutAP(TextArea::EventFlags flags = NoneFlag);
-	void ZoomInAP(TextArea::EventFlags flags = NoneFlag);
+	void zoomOutAP(TextArea::EventFlags flags = NoneFlag);
+	void zoomInAP(TextArea::EventFlags flags = NoneFlag);
 	void previousDocumentAP(TextArea::EventFlags flags = NoneFlag);
 	void nextDocumentAP(TextArea::EventFlags flags = NoneFlag);
 	void beginningOfSelectionAP(TextArea::EventFlags flags = NoneFlag);
@@ -268,7 +268,7 @@ private:
 	TextCursor xyToPos(const QPoint &pos, PositionTypes posType) const;
 	TextCursor xyToPos(int x, int y, PositionTypes posType) const;
 	bool visibleLineContainsCursor(int visLine, TextCursor cursor) const;
-	bool TextDInSelection(const QPoint &p) const;
+	bool inSelection(const QPoint &p) const;
 	bool TextDMoveDown(bool absolute);
 	bool TextDMoveLeft();
 	bool TextDMoveRight();
