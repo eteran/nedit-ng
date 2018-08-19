@@ -429,10 +429,8 @@ private:
 	bool overstrike_;
 	bool readOnly_;
 	bool smartIndent_;
-	int ascent_;                                    // Composite ascent and descent for primary font
 	int cursorBlinkRate_;
 	int cursorVPadding_;
-	int descent_;
 	int emulateTabs_;
 	int fixedFontWidth_;                            // Font width if all current fonts are fixed and match in width
 	int fixedFontHeight_;

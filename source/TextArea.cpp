@@ -7212,10 +7212,8 @@ void TextArea::updateFontMetrics(const QFont &font) {
 		qWarning("NEdit: a variable width font has been specified. This is not supported, and will result in unexpected results");
 	}
 
-	ascent_          = fm.ascent();
-	descent_         = fm.descent();
 	fixedFontWidth_  = fm.maxWidth();
-	fixedFontHeight_ = ascent_ + descent_;
+	fixedFontHeight_ = fm.ascent() + fm.descent();
 }
 
 int TextArea::getLineNumWidth() const {
