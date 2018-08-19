@@ -7168,6 +7168,7 @@ void TextArea::TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &style
 	unfinishedStyle_       = unfinishedStyle;
 	unfinishedHighlightCB_ = unfinishedHighlightCB;
 	highlightCBArg_        = user;
+	viewport()->update();
 }
 
 QTimer *TextArea::cursorBlinkTimer() const {
