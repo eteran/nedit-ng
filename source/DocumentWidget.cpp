@@ -775,8 +775,8 @@ void DocumentWidget::updateStatsLine(TextArea *area) {
 
 		QString string;
 		QString slinecol;
-		int64_t line;
-		int64_t colNum;
+		int line;
+		int colNum;
 		const int64_t length = buffer_->BufGetLength();
 
 		if (!area->TextDPosToLineAndCol(pos, &line, &colNum)) {
@@ -3751,8 +3751,8 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 		   for # in the shell command */
 		QString fullName = FullPath();
 
-		int64_t line;
-		int64_t column;
+		int line;
+		int column;
 		area->TextDPosToLineAndCol(pos, &line, &column);
 
 		QString substitutedCommand = command;
@@ -4184,7 +4184,7 @@ void DocumentWidget::SetOverstrike(bool overstrike) {
  * @param lineNum
  * @param column
  */
-void DocumentWidget::gotoAP(TextArea *area, int64_t lineNum, int64_t column) {
+void DocumentWidget::gotoAP(TextArea *area, int lineNum, int column) {
 
 	TextCursor position;
 
@@ -4192,7 +4192,7 @@ void DocumentWidget::gotoAP(TextArea *area, int64_t lineNum, int64_t column) {
 	if (lineNum == -1) {
 		position = area->TextGetCursorPos();
 
-		int64_t curCol;
+		int curCol;
 		if (!area->TextDPosToLineAndCol(position, &lineNum, &curCol)) {
 			return;
 		}
@@ -4630,8 +4630,8 @@ void DocumentWidget::ExecCursorLineEx(TextArea *area, CommandSource source) {
 	TextCursor left;
 	TextCursor right;
 	TextCursor insertPos;
-	int64_t line;
-	int64_t column;
+	int line;
+	int column;
 
 	// Can't do two shell commands at once in the same window
 	if (shellCmdData_) {
@@ -4757,8 +4757,8 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 	int flags = 0;
 	TextCursor left  = {};
 	TextCursor right = {};
-	int64_t line;
-	int64_t column;
+	int line;
+	int column;
 
 	// Can't do two shell commands at once in the same window
 	if (shellCmdData_) {

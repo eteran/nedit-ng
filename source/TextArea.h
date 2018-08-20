@@ -120,7 +120,6 @@ protected:
 private Q_SLOTS:
 	void cursorBlinkTimerTimeout();
 	void autoScrollTimerTimeout();
-	void clickTimeout();
 	void verticalScrollBar_valueChanged(int value);
 	void horizontalScrollBar_valueChanged(int value);
 
@@ -202,11 +201,11 @@ public:
 	QColor getForegroundColor() const;
 	QTimer *cursorBlinkTimer() const;
 	TextBuffer *TextGetBuffer() const;
-	TextCursor TextDLineAndColToPos(int64_t lineNum, int64_t column);
+	TextCursor TextDLineAndColToPos(int line, int column);
 	TextCursor TextFirstVisiblePos() const;
 	TextCursor TextGetCursorPos() const;
 	TextCursor TextLastVisiblePos() const;
-	bool TextDPosToLineAndCol(TextCursor pos, int64_t *lineNum, int64_t *column);
+	bool TextDPosToLineAndCol(TextCursor pos, int *line, int *column);
 	const std::shared_ptr<TextBuffer> &getStyleBuffer() const;
 	int TextDGetCalltipID(int id) const;
 	int TextDMaxFontWidth() const;
@@ -253,14 +252,14 @@ public:
 	void bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText);
 
 private:
-	void TextDSetScroll(int64_t topLineNum, int horizOffset);
-	void TextDGetScroll(int64_t *topLineNum, int *horizOffset);
+	void TextDSetScroll(int topLineNum, int horizOffset);
+	void TextDGetScroll(int *topLineNum, int *horizOffset);
 	QColor getRangesetColor(size_t ind, QColor bground) const;
 	QShortcut *createShortcut(const QString &name, const QKeySequence &keySequence, const char *member);
-	TextCursor TextDCountBackwardNLines(TextCursor startPos, int64_t nLines) const;
-	TextCursor TextDCountForwardNLines(TextCursor startPos, int64_t nLines, bool startPosIsLineStart) const;
+	TextCursor TextDCountBackwardNLines(TextCursor startPos, int nLines) const;
+	TextCursor TextDCountForwardNLines(TextCursor startPos, int nLines, bool startPosIsLineStart) const;
 	TextCursor TextDEndOfLine(TextCursor pos, bool startPosIsLineStart) const;
-	TextCursor TextDPosOfPreferredCol(int64_t column, TextCursor lineStartPos);
+	TextCursor TextDPosOfPreferredCol(int column, TextCursor lineStartPos);
 	TextCursor TextDStartOfLine(TextCursor pos) const;
 	TextCursor TextDXYToPosition(const QPoint &coord) const;
 	TextCursor endOfWord(TextCursor pos) const;
@@ -289,14 +288,14 @@ private:
 	boost::optional<TextCursor> spanForward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const;
 	int getLineNumWidth() const;	
 	int stringWidth(int length) const;
-	int64_t TextDCountLines(TextCursor startPos, TextCursor endPos, bool startPosIsLineStart);
-	int64_t TextDOffsetWrappedColumn(int64_t row, int64_t column) const;
-	int64_t TextDOffsetWrappedRow(int64_t row) const;
-	int64_t TextDPreferredColumn(int *visLineNum, TextCursor *lineStartPos);
-	int64_t getAbsTopLineNum() const;
-	int64_t measureVisLine(int visLineNum) const;
-	int64_t visLineLength(int visLineNum) const;
-	int64_t widthInPixels(char ch, int64_t colNum) const;
+	int TextDCountLines(TextCursor startPos, TextCursor endPos, bool startPosIsLineStart);
+	int TextDOffsetWrappedColumn(int row, int column) const;
+	int TextDOffsetWrappedRow(int row) const;
+	int TextDPreferredColumn(int *visLineNum, TextCursor *lineStartPos);
+	int getAbsTopLineNum() const;
+	int measureVisLine(int visLineNum) const;
+	int visLineLength(int visLineNum) const;
+	int widthInPixels(char ch, int column) const;
 	std::string createIndentStringEx(TextBuffer *buf, int64_t bufOffset, TextCursor lineStartPos, TextCursor lineEndPos, int *column);
 	std::string wrapTextEx(view::string_view startLine, view::string_view text, int64_t bufOffset, int wrapMargin, int64_t *breakBefore);
 	uint32_t styleOfPos(TextCursor lineStartPos, int64_t lineLen, int64_t lineIndex, int64_t dispIndex, int thisChar) const;
@@ -322,9 +321,9 @@ private:
 	void TextDSetInsertPosition(TextCursor newPos);
 	void setLineNumberAreaWidth(int lineNumWidth);
 	void TextDSetWrapMode(bool wrap, int wrapMargin);
-	void TextDSetupBGClassesEx(const QString &str);
+	void setupBGClasses(const QString &str);
 	void TextDUnblankCursor();
-	void TextDXYToUnconstrainedPosition(const QPoint &coord, int64_t *row, int64_t *column) const;
+	void TextDXYToUnconstrainedPosition(const QPoint &coord, int *row, int *column) const;
 	void TextInsertAtCursorEx(view::string_view chars, bool allowPendingDelete, bool allowWrap);
 	void TextPasteClipboard();
 	void adjustSecondarySelection(const QPoint &coord);
@@ -338,7 +337,7 @@ private:
 	void checkAutoShowInsertPos();
 	void checkMoveSelectionChange(EventFlags flags, TextCursor startPos);
 	void drawCursor(QPainter *painter, int x, int y);
-	void drawString(QPainter *painter, uint32_t style, int64_t x, int y, int64_t toX, const char *string, long nChars);
+	void drawString(QPainter *painter, uint32_t style, int x, int y, int toX, const char *string, int nChars);
 	void endDrag();
 	void extendRangeForStyleMods(TextCursor *start, TextCursor *end);
 	void findLineEnd(TextCursor startPos, bool startPosIsLineStart, TextCursor *lineEnd, TextCursor *nextLineStart);
@@ -347,23 +346,23 @@ private:
 	void keyMoveExtendSelection(TextCursor origPos, bool rectangular);
 	void measureDeletedLines(TextCursor pos, int64_t nDeleted);
 	void offsetAbsLineNum(TextCursor oldFirstChar);
-	void offsetLineStarts(int64_t newTopLineNum);
+	void offsetLineStarts(int newTopLineNum);
 	void redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip);
-	void redisplayLineEx(int visLineNum, int64_t leftCharIndex, int64_t rightCharIndex);
+	void redisplayLineEx(int visLineNum, int leftCharIndex, int rightCharIndex);
 	void repaintLineNumbers();
 	void resetAbsLineNum();
 	void selectLine();
 	void selectWord(int pointerX);
-	void setScroll(int64_t topLineNum, int horizOffset);
+	void setScroll(int topLineNum, int horizOffset);
 	void showResizeNotification();
 	void simpleInsertAtCursorEx(view::string_view chars, bool allowPendingDelete);
-	void textDRedisplayRange(TextCursor start, TextCursor end);
+	void redisplayRange(TextCursor start, TextCursor end);
 	void updateFontMetrics(const QFont &font);
 	void updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t charsDeleted, int64_t linesInserted, int64_t linesDeleted, bool *scrolled);
 	void updateVScrollBarRange();
-	void wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, TextCursor maxPos, int64_t maxLines, bool startPosIsLineStart, TextCursor *retPos, int64_t *retLines, TextCursor *retLineStart, TextCursor *retLineEnd) const;
-	void xyToUnconstrainedPos(const QPoint &pos, int64_t *row, int64_t *column, PositionTypes posType) const;
-	void xyToUnconstrainedPos(int x, int y, int64_t *row, int64_t *column, PositionTypes posType) const;
+	void wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, TextCursor maxPos, int maxLines, bool startPosIsLineStart, TextCursor *retPos, int *retLines, TextCursor *retLineStart, TextCursor *retLineEnd) const;
+	void xyToUnconstrainedPos(const QPoint &pos, int *row, int *column, PositionTypes posType) const;
+	void xyToUnconstrainedPos(int x, int y, int *row, int *column, PositionTypes posType) const;
 
 private:	
 	CursorStyles cursorStyle_       = CursorStyles::Normal;
@@ -382,10 +381,7 @@ private:
 	QPoint cursor_                  = { -100, -100 }; // X pos. of last drawn cursor Note: these are used for *drawing* and are not generally reliable for finding the insert position's x/y coordinates!
 	QVector<TextCursor> lineStarts_ = { TextCursor() };
 	TextCursor cursorToHint_        = NO_HINT;        // Tells the buffer modified callback where to move the cursor, to reduce the number of redraw calls
-	int64_t absTopLineNum_          = 1;              // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
-	int64_t cursorPreferredCol_     = -1;             // Column for vert. cursor movement
-	int64_t topLineNum_             = 1;              // Line number of top displayed line of file (first line of file is 1)
-	int64_t nBufferLines_           = 0;              // # of newlines in the buffer
+	int nBufferLines_               = 0;              // # of newlines in the buffer
 	int clickCount_                 = 0;
 	int emTabsBeforeCursor_         = 0;              // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
 	int horizOffset_                = 0;              // Horizontal scroll pos. in pixels	
@@ -394,6 +390,9 @@ private:
 	int dragYOffset_                = 0;              // offsets between cursor location and actual insertion point in drag
 	int nLinesDeleted_              = 0;              // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
 	int nVisibleLines_              = 1;              // # of visible (displayed) lines
+	int absTopLineNum_              = 1;              // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
+	int topLineNum_                 = 1;              // Line number of top displayed line of file (first line of file is 1)
+	int cursorPreferredCol_         = -1;             // Column for vert. cursor movement
 	bool cursorOn_                  = false;
 	bool modifyingTabDist_          = false;          // Whether tab distance is being modified
 	bool needAbsTopLineNum_         = false;          // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display
@@ -434,13 +433,13 @@ private:
 	int fixedFontWidth_;                            // Font width if all current fonts are fixed and match in width
 	int fixedFontHeight_;
 	int wrapMargin_;
+	int rectAnchor_;                                // Anchor for rectangular drag operations
 	int64_t dragDeleted_;                           // # of characters deleted at drag destination in last drag position
 	int64_t dragInserted_;                          // # of characters inserted at drag destination in last drag position
 	int64_t dragNLines_;                            // # of newlines in text being drag'd
 	int64_t dragRectStart_;
 	int64_t dragSourceDeleted_;                     // # of chars. deleted when move source text was deleted
-	int64_t dragSourceInserted_;                    // # of chars. inserted when move source text was inserted
-	int64_t rectAnchor_;                            // Anchor for rectangular drag operations
+	int64_t dragSourceInserted_;                    // # of chars. inserted when move source text was inserted	
 	std::shared_ptr<TextBuffer> styleBuffer_;       // Optional parallel buffer containing color and font information
 	std::string delimiters_;
 	std::unique_ptr<TextBuffer> dragOrigBuf_;       // backup buffer copy used during block dragging of selections

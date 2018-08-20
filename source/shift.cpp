@@ -303,7 +303,7 @@ TextCursor findParagraphStart(TextBuffer *buf, TextCursor startPos) {
 	return parStart > buf->BufStartOfBuffer() ? parStart : buf->BufStartOfBuffer();
 }
 
-int countLinesEx(view::string_view text) {
+int countLines(view::string_view text) {
 	int count = 1;
 
 	for(char ch: text) {
@@ -314,7 +314,7 @@ int countLinesEx(view::string_view text) {
 	return count;
 }
 
-int countLinesEx(const QString &text) {
+int countLines(const QString &text) {
 	int count = 1;
 
 	for(QChar ch: text) {
@@ -547,9 +547,9 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 	** nChars character per line.
 	*/
 	if (direction == ShiftDirection::Right) {
-		bufLen = text.size() + static_cast<size_t>(countLinesEx(text) * nChars);
+		bufLen = text.size() + static_cast<size_t>(countLines(text) * nChars);
 	} else {
-		bufLen = text.size() + static_cast<size_t>(countLinesEx(text) * tabDist);
+		bufLen = text.size() + static_cast<size_t>(countLines(text) * tabDist);
 	}
 
 	std::string shiftedText;
@@ -772,7 +772,7 @@ void FillSelectionEx(DocumentWidget *document, TextArea *area) {
 	// Replace the text in the window
 	if (hasSelection && isRect) {
 		buf->BufReplaceRectEx(left, right, rectStart, INT_MAX, filledText);
-		buf->BufRectSelect(left, buf->BufEndOfLine(buf->BufCountForwardNLines(left, countLinesEx(filledText) - 1)), rectStart, rectEnd);
+		buf->BufRectSelect(left, buf->BufEndOfLine(buf->BufCountForwardNLines(left, countLines(filledText) - 1)), rectStart, rectEnd);
 	} else {
 		buf->BufReplaceEx(left, right, filledText);
 		if (hasSelection) {
@@ -802,9 +802,9 @@ QString ShiftTextEx(const QString &text, ShiftDirection direction, bool tabsAllo
 	** nChars character per line.
 	*/
 	if (direction == ShiftDirection::Right) {
-		bufLen = text.size() + countLinesEx(text) * nChars;
+		bufLen = text.size() + countLines(text) * nChars;
 	} else {
-		bufLen = text.size() + countLinesEx(text) * tabDist;
+		bufLen = text.size() + countLines(text) * tabDist;
 	}
 
 

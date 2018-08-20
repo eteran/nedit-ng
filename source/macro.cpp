@@ -3913,8 +3913,8 @@ static std::error_code lineMV(DocumentWidget *document, Arguments arguments, Dat
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	int64_t line;
-	int64_t colNum;
+	int line;
+	int colNum;
 
 	TextBuffer *buf      = document->buffer_;
 	TextArea *area       = MainWindow::fromDocument(document)->lastFocus();

@@ -187,7 +187,7 @@ public:
 	void execAP(TextArea *area, const QString &command);
 	void findDefinitionHelper(TextArea *area, const QString &arg, Tags::SearchMode search_type);
 	void finishMacroCmdExecution();
-	void gotoAP(TextArea *area, int64_t lineNum, int64_t column);
+	void gotoAP(TextArea *area, int lineNum, int column);
 	void gotoMark(TextArea *area, QChar label, bool extendSel);
 	void handleUnparsedRegion(const std::shared_ptr<TextBuffer> &styleBuf, TextCursor pos) const;
 	void macroBannerTimeoutProc();
