@@ -25,8 +25,11 @@
 
 #include <cctype>
 #include <memory>
+
+#ifdef Q_OS_UNIX
 #include <pwd.h>
 #include <unistd.h>
+#endif
 
 // list of available language modes and language specific preferences
 std::vector<LanguageMode> Preferences::LanguageModes;
@@ -1276,6 +1279,7 @@ QStringList Preferences::readExtensionList(Input &in) {
 **  In case of errors, the fallback of "sh" will be returned.
 */
 QString Preferences::getDefaultShell() {
+#ifdef Q_OS_UNIX
 	struct passwd *passwdEntry = getpwuid(getuid()); //  getuid() never fails.
 
 	if (!passwdEntry) {
@@ -1285,4 +1289,7 @@ QString Preferences::getDefaultShell() {
 	}
 
 	return QString::fromUtf8(passwdEntry->pw_shell);
+#else
+	return QString();
+#endif
 }
