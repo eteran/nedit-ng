@@ -128,6 +128,14 @@ constexpr CharMatchTable FlashingChars[] = {
 };
 
 /**
+ * @brief isAdministrator
+ * @return
+ */
+bool isAdministrator() {
+	return getuid() == 0;
+}
+
+/**
  * @brief ErrorString
  * @param error
  * @return The result of strerror(error), but as a QString
@@ -2286,15 +2294,17 @@ bool DocumentWidget::doSave() {
 
 	/*  Check for root and warn him if he wants to write to a file with
 		none of the write bits set.  */
-	if ((getuid() == 0) && (::stat(fullname.toUtf8().data(), &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
-		int result = QMessageBox::warning(
-					this,
-					tr("Writing Read-only File"),
-					tr("File '%1' is marked as read-only.\nDo you want to save anyway?").arg(filename_),
-					QMessageBox::Save | QMessageBox::Cancel);
+	if (isAdministrator()) {
+		if ((::stat(fullname.toUtf8().data(), &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
+			int result = QMessageBox::warning(
+			            this,
+			            tr("Writing Read-only File"),
+			            tr("File '%1' is marked as read-only.\nDo you want to save anyway?").arg(filename_),
+			            QMessageBox::Save | QMessageBox::Cancel);
 
-		if (result != QMessageBox::Save) {
-			return true;
+			if (result != QMessageBox::Save) {
+				return true;
+			}
 		}
 	}
 
