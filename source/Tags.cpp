@@ -32,7 +32,9 @@
 #include <sstream>
 #include <unordered_map>
 
+#ifdef Q_OS_UNIX
 #include <sys/param.h>
+#endif
 
 namespace {
 

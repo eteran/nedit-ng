@@ -1,0 +1,32 @@
+{
+  "configurations": [
+    {
+      "name": "x64-Debug",
+      "generator": "Ninja",
+      "configurationType": "Debug",
+      "inheritEnvironments": [
+        "msvc_x64_x64"
+      ],
+      "buildRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\build\\${name}",
+      "installRoot": "${env.USERPROFILE}\\CMakeBuilds\\${workspaceHash}\\install\\${name}",
+      "cmakeCommandArgs": "",
+      "buildCommandArgs": "-v",
+      "ctestCommandArgs": "",
+      "variables": [
+        {
+          "name": "BISON_EXECUTABLE",
+          "value": "C:\\Libraries\\GnuWin32\\bin\\bison.exe"
+        },
+        {
+          "name": "BOOST_INCLUDEDIR",
+          "value": "C:\\Libraries\\boost_1_67_0"
+        },
+        {
+          "name": "CMAKE_PREFIX_PATH",
+          "value": "C:\\Qt\\5.9.6\\msvc2017_64"
+        }
+      ],
+      "environments": [ { "Path": "${env.Path};C:\\Libraries\\GnuWin32\\bin" } ]
+    }
+  ]
+}
