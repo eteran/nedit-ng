@@ -5238,7 +5238,7 @@ void MainWindow::on_action_Finish_Learn_triggered() {
  */
 void MainWindow::on_action_Replay_Keystrokes_triggered() {
 	if(DocumentWidget *document = currentDocument()) {
-		document->ReplayEx();
+		document->replay();
 	}
 }
 
@@ -5247,7 +5247,7 @@ void MainWindow::on_action_Replay_Keystrokes_triggered() {
  */
 void MainWindow::on_action_Cancel_Learn_triggered() {
 	if(DocumentWidget *document = currentDocument()) {
-		document->CancelMacroOrLearnEx();
+		document->cancelMacroOrLearn();
 	}
 }
 

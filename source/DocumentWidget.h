@@ -141,7 +141,7 @@ public:
 	void AbortShellCommand();
 	void AddMarkEx(TextArea *area, QChar label);
 	void beginSmartIndent(bool warn);
-	void CancelMacroOrLearnEx();
+	void cancelMacroOrLearn();
 	void checkForChangesToFile();
 	void ClearModeMessage();
 	void DoMacro(const QString &macro, const QString &errInName);
@@ -243,7 +243,7 @@ private:
 	void RefreshTabState();
 	void refreshWindowStates();
 	void RemoveBackupFile() const;
-	void ReplayEx();
+	void replay();
 	void RevertToSaved();
 	void saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, view::string_view deletedText);
 	void SetWindowModified(bool modified);

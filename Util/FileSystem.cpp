@@ -132,12 +132,13 @@ bool ParseFilenameEx(const QString &fullname, QString *filename, QString *pathna
 
 QString NormalizePathname(const QString &pathname) {
 
+	// TODO(eteran): or maybe this is effectively QDir::cleanPath?
+
 	QString path = pathname;
 
 	QFileInfo fi(path);
 
-	// TODO(eteran): investigate if we can just use QFileInfo::makeAbsolute
-	// here...
+	// TODO(eteran): investigate if we can just use QFileInfo::makeAbsolute here...
 
 	// if this is a relative pathname, prepend current directory
 	if (fi.isRelative()) {

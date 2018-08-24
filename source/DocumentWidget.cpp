@@ -2169,7 +2169,7 @@ void DocumentWidget::RevertToSaved() {
 /*
 ** Create a backup file for the current window.  The name for the backup file
 ** is generated using the name and path stored in the window and adding a
-** tilde (~) on UNIX and underscore (_) on VMS to the beginning of the name.
+** tilde (~) on UNIX.
 */
 bool DocumentWidget::WriteBackupFile() {
 	FILE *fp;
@@ -2288,14 +2288,14 @@ bool DocumentWidget::saveDocument() {
 }
 
 bool DocumentWidget::doSave() {
-	struct stat statbuf;
 
 	QString fullname = FullPath();
 
 	/*  Check for root and warn him if he wants to write to a file with
 		none of the write bits set.  */
 	if (isAdministrator()) {
-		if ((::stat(fullname.toUtf8().data(), &statbuf) == 0) && !(statbuf.st_mode & (S_IWUSR | S_IWGRP | S_IWOTH))) {
+		QFileInfo fi(fullname);
+		if(!fi.permission(QFileDevice::WriteOwner | QFileDevice::WriteUser | QFileDevice::WriteGroup)) {
 			int result = QMessageBox::warning(
 			            this,
 			            tr("Writing Read-only File"),
@@ -2367,6 +2367,7 @@ bool DocumentWidget::doSave() {
 	SetWindowModified(false);
 
 	// update the modification time
+	struct stat statbuf;
 	if (::stat(fullname.toUtf8().data(), &statbuf) == 0) {
 		lastModTime_ = statbuf.st_mtime;
 		fileMissing_ = false;
@@ -6374,7 +6375,7 @@ void DocumentWidget::AbortMacroCommand() {
 /*
 ** Cancel Learn mode, or macro execution (they're bound to the same menu item)
 */
-void DocumentWidget::CancelMacroOrLearnEx() {
+void DocumentWidget::cancelMacroOrLearn() {
 	if(CommandRecorder::instance()->isRecording()) {
 		cancelLearning();
 	} else if (macroCmdData_) {
@@ -6385,7 +6386,7 @@ void DocumentWidget::CancelMacroOrLearnEx() {
 /*
 ** Execute the learn/replay sequence
 */
-void DocumentWidget::ReplayEx() {
+void DocumentWidget::replay() {
 
 	QString replayMacro = CommandRecorder::instance()->replayMacro();
 
