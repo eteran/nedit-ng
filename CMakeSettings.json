@@ -14,10 +14,6 @@
       "ctestCommandArgs": "",
       "variables": [
         {
-          "name": "BISON_EXECUTABLE",
-          "value": "C:\\Libraries\\GnuWin32\\bin\\bison.exe"
-        },
-        {
           "name": "BOOST_INCLUDEDIR",
           "value": "C:\\Libraries\\boost_1_67_0"
         },
