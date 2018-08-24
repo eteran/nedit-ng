@@ -252,8 +252,6 @@ public:
 	void bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText);
 
 private:
-	void TextDSetScroll(int topLineNum, int horizOffset);
-	void TextDGetScroll(int *topLineNum, int *horizOffset);
 	QColor getRangesetColor(size_t ind, QColor bground) const;
 	QShortcut *createShortcut(const QString &name, const QKeySequence &keySequence, const char *member);
 	TextCursor TextDCountBackwardNLines(TextCursor startPos, int nLines) const;
@@ -353,7 +351,6 @@ private:
 	void resetAbsLineNum();
 	void selectLine();
 	void selectWord(int pointerX);
-	void setScroll(int topLineNum, int horizOffset);
 	void showResizeNotification();
 	void simpleInsertAtCursorEx(view::string_view chars, bool allowPendingDelete);
 	void redisplayRange(TextCursor start, TextCursor end);
@@ -384,14 +381,13 @@ private:
 	int nBufferLines_               = 0;              // # of newlines in the buffer
 	int clickCount_                 = 0;
 	int emTabsBeforeCursor_         = 0;              // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
-	int horizOffset_                = 0;              // Horizontal scroll pos. in pixels	
+	int absTopLineNum_              = 1;              // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
+	int topLineNum_                 = 1;              // Line number of top displayed line of file (first line of file is 1)
 	int lineNumCols_                = 0;
 	int dragXOffset_                = 0;              // offsets between cursor location and actual insertion point in drag
 	int dragYOffset_                = 0;              // offsets between cursor location and actual insertion point in drag
 	int nLinesDeleted_              = 0;              // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
 	int nVisibleLines_              = 1;              // # of visible (displayed) lines
-	int absTopLineNum_              = 1;              // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
-	int topLineNum_                 = 1;              // Line number of top displayed line of file (first line of file is 1)
 	int cursorPreferredCol_         = -1;             // Column for vert. cursor movement
 	bool cursorOn_                  = false;
 	bool modifyingTabDist_          = false;          // Whether tab distance is being modified

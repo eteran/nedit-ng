@@ -862,7 +862,37 @@ TextArea::~TextArea() noexcept {
  * @param value
  */
 void TextArea::verticalScrollBar_valueChanged(int value) {
-	TextDSetScroll(value, horizOffset_);
+
+	// Limit the requested scroll position to allowable values
+	if(continuousWrap_) {
+		if ((value > topLineNum_) && (value > (nBufferLines_ + 2 + cursorVPadding_ - nVisibleLines_))) {
+			value = std::max(topLineNum_, nBufferLines_ + 2 + cursorVPadding_ - nVisibleLines_);
+		}
+	}
+
+	const int lineDelta = topLineNum_ - value;
+
+	/* If the vertical scroll position has changed, update the line
+	   starts array and related counters in the text display */
+	offsetLineStarts(value);
+
+	/* Update the scroll bar ranges, note: updating the horizontal scroll bars
+	 * can have the further side-effect of changing the horizontal scroll
+	 * position */
+	updateVScrollBarRange();
+	updateHScrollBarRange();
+
+	// NOTE(eteran): the original code seemed to do some cleverness
+	//               involving copying the parts that were "moved"
+	//               to avoid doing some work. For now, we'll just repaint
+	//               the whole thing. It's not as fast/clever, but it'll work
+	viewport()->update();
+
+	// Refresh line number/calltip display if its up and we've scrolled vertically
+	if (lineDelta != 0) {
+		repaintLineNumbers();
+		TextDRedrawCalltip(0);
+	}
 }
 
 /**
@@ -870,7 +900,13 @@ void TextArea::verticalScrollBar_valueChanged(int value) {
  * @param value
  */
 void TextArea::horizontalScrollBar_valueChanged(int value) {
-	TextDSetScroll(topLineNum_, value);
+	Q_UNUSED(value);
+
+	// NOTE(eteran): the original code seemed to do some cleverness
+	//               involving copying the parts that were "moved"
+	//               to avoid doing some work. For now, we'll just repaint
+	//               the whole thing. It's not as fast/clever, but it'll work
+	viewport()->update();
 }
 
 /**
@@ -911,9 +947,8 @@ void TextArea::autoScrollTimerTimeout() {
 
 	/* Scroll away from the pointer, 1 character (horizontal), or 1 character
 	 * for each fontHeight distance from the mouse to the text (vertical) */
-	int topLineNum;
-	int horizOffset;
-	TextDGetScroll(&topLineNum, &horizOffset);
+	int topLineNum  = verticalScrollBar()->value();
+	int horizOffset = horizontalScrollBar()->value();
 
 	if (cursorX >= viewRect.right()) {
 		horizOffset += fontWidth;
@@ -927,7 +962,8 @@ void TextArea::autoScrollTimerTimeout() {
 		topLineNum -= 1 + ((viewRect.top() - mouseCoord.y()) / fontHeight);
 	}
 
-	TextDSetScroll(topLineNum, horizOffset);
+	verticalScrollBar()->setValue(topLineNum);
+	horizontalScrollBar()->setValue(horizOffset);
 
 	/* Continue the drag operation in progress.  If none is in progress
 	 * (safety check) don't continue to re-establish the timer proc */
@@ -1580,7 +1616,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 	 * set the wrap target for either pixels or columns */
 	if (wrapMargin_ != 0) {
 		countPixels = false;
-		wrapMargin  = wrapMargin_ != 0 ? wrapMargin_ : viewRect.width() / fixedFontWidth_;
+		wrapMargin  = viewRect.width() / fixedFontWidth_;
 		maxWidth    = INT_MAX;
 	} else {
 		countPixels = true;
@@ -1603,7 +1639,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 	*/
 	int colNum = 0;
 	int width  = 0;
-	for (TextCursor p = lineStart; p < buf->BufGetLength(); ++p) {
+	for (TextCursor p = lineStart; p < buf->BufEndOfBuffer(); ++p) {
 		const char ch = buf->BufGetCharacter(p);
 
 		/* If the character was a newline, count the line and start over,
@@ -2248,15 +2284,12 @@ void TextArea::updateVScrollBarRange() {
 	 * with minor adjustments to keep the scroll bar widget happy */
 	if(continuousWrap_) {
 		int normalizedVisible = std::max(nVisibleLines_, 1);
-		auto sliderMax = std::max(nBufferLines_ + 2 + cursorVPadding_, normalizedVisible + sliderValue);
-		verticalScrollBar()->setMaximum(sliderMax);
+		verticalScrollBar()->setRange(1, std::max(nBufferLines_ + 2 + cursorVPadding_ - nVisibleLines_, normalizedVisible + sliderValue));
 	} else {
-		verticalScrollBar()->setMaximum(std::max(0, nBufferLines_ - nVisibleLines_ + 2));
+		verticalScrollBar()->setRange(1, std::max(1, nBufferLines_ - nVisibleLines_ + 2));
 	}
 
-	verticalScrollBar()->setMinimum(1);
 	verticalScrollBar()->setPageStep(std::max(1, nVisibleLines_ - 1));
-	verticalScrollBar()->setValue(sliderValue);
 }
 
 /**
@@ -2359,7 +2392,7 @@ bool TextArea::updateHScrollBarRange() {
 	}
 
 	const QRect viewRect = viewport()->contentsRect();
-	const int origHOffset = horizOffset_;
+	const int origHOffset = horizontalScrollBar()->value();
 
 	// Scan all the displayed lines to find the width of the longest line
 	int maxWidth = 0;
@@ -2368,11 +2401,11 @@ bool TextArea::updateHScrollBarRange() {
 	}
 
 	// Readjust the scroll bar
-	horizontalScrollBar()->setMaximum(std::max(maxWidth - viewRect.width() + 1, 0));
+	horizontalScrollBar()->setRange(0, std::max(maxWidth - viewRect.width() + 1, 0));
 	horizontalScrollBar()->setPageStep(std::max(viewRect.width() - 100, 10));
 
 	// Return true if scroll position was changed
-	return origHOffset != horizOffset_;
+	return origHOffset != horizontalScrollBar()->value();
 }
 
 /**
@@ -2728,7 +2761,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   that's off the left edge of the displayed area) to find the first
 	   character position that's not clipped, and the x coordinate for drawing
 	   that character */
-	int x = viewRect.left() - horizOffset_;
+	int x = viewRect.left() - horizontalScrollBar()->value();
 	int outIndex = 0;
 
 	int charIndex;
@@ -3173,9 +3206,9 @@ void TextArea::TextDResize(bool widthChanged) {
 	   the top character no longer pointing at a valid line start */
 	if (continuousWrap_ && wrapMargin_ == 0 && widthChanged) {
 		const TextCursor oldFirstChar = firstChar_;
-		nBufferLines_ = TextDCountLines(buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer(), true);
+		nBufferLines_ = TextDCountLines(buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer(), /*startPosIsLineStart=*/true);
 		firstChar_    = TextDStartOfLine(firstChar_);
-		topLineNum_   = TextDCountLines(buffer_->BufStartOfBuffer(), firstChar_, true) + 1;
+		topLineNum_   = TextDCountLines(buffer_->BufStartOfBuffer(), firstChar_, /*startPosIsLineStart=*/true) + 1;
 		redrawAll     = true;
 		offsetAbsLineNum(oldFirstChar);
 	}
@@ -3194,7 +3227,7 @@ void TextArea::TextDResize(bool widthChanged) {
 	/* if the window became taller, there may be an opportunity to display
 	   more text by scrolling down */
 	if (oldVisibleLines < newVisibleLines && topLineNum_ + nVisibleLines_ > nBufferLines_) {
-		setScroll(std::max(1, nBufferLines_ - nVisibleLines_ + 2 + cursorVPadding_), horizOffset_);
+		verticalScrollBar()->setValue(std::max(1, nBufferLines_ - nVisibleLines_ + 2 + cursorVPadding_));
 	}
 
 	/* Update the scroll bar page increment size (as well as other scroll
@@ -3244,46 +3277,6 @@ int TextArea::TextDCountLines(TextCursor startPos, TextCursor endPos, bool start
 	            &retLineEnd);
 
 	return retLines;
-}
-
-/**
- * @brief TextArea::setScroll
- * @param topLineNum
- * @param horizOffset
- */
-void TextArea::setScroll(int topLineNum, int horizOffset) {
-
-	/* Do nothing if scroll position hasn't actually changed */
-	if ((horizOffset_ == horizOffset && topLineNum_ == topLineNum)) {
-		return;
-	}
-
-	const int lineDelta = topLineNum_ - topLineNum;
-
-	/* If the vertical scroll position has changed, update the line
-	   starts array and related counters in the text display */
-	offsetLineStarts(topLineNum);
-
-	// Just setting horizOffset_ is enough information for redisplay
-	horizOffset_ = horizOffset;
-
-	/* Update the scroll bar ranges, note: updating the horizontal scroll bars
-	 * can have the further side-effect of changing the horizontal scroll
-	 * position */
-	updateVScrollBarRange();
-	updateHScrollBarRange();
-
-	// NOTE(eteran): the original code seemed to do some cleverness
-	//               involving copying the parts that were "moved"
-	//               to avoid doing some work. For now, we'll just repaint
-	//               the whole thing. It's not as fast/clever, but it'll work
-	viewport()->update();	
-
-	// Refresh line number/calltip display if its up and we've scrolled vertically
-	if (lineDelta != 0) {
-		repaintLineNumbers();
-		TextDRedrawCalltip(0);
-	}
 }
 
 /**
@@ -3377,29 +3370,6 @@ void TextArea::offsetLineStarts(int newTopLineNum) {
 	/* If we're numbering lines or being asked to maintain an absolute line
 	   number, re-calculate the absolute line number */
 	offsetAbsLineNum(oldFirstChar);
-}
-
-/*
-** Set the scroll position of the text display vertically by line number and
-** horizontally by pixel offset
-*/
-void TextArea::TextDSetScroll(int topLineNum, int horizOffset) {
-
-	const int vPadding = cursorVPadding_;
-
-	// Limit the requested scroll position to allowable values
-	if (topLineNum < 1) {
-		topLineNum = 1;
-	} else if ((topLineNum > topLineNum_) && (topLineNum > (nBufferLines_ + 2 - nVisibleLines_ + vPadding))) {
-		topLineNum = std::max(topLineNum_, nBufferLines_ + 2 - nVisibleLines_ + vPadding);
-	}
-
-	// NOTE(eteran): this check ensures that the horizOffset variable doesn't go
-	// way out of bounds. Probalby won't be needed if we switch to using the
-	// scrollbar directly.
-	horizOffset = qBound(0, horizOffset, horizontalScrollBar()->maximum());
-
-	setScroll(topLineNum, horizOffset);
 }
 
 /*
@@ -3668,7 +3638,7 @@ bool TextArea::TextDPositionToXY(TextCursor pos, int *x, int *y) const {
 	   the first empty line, don't try to get or scan the text  */
 	const TextCursor lineStartPos = lineStarts_[visLineNum];
 	if (lineStartPos == -1) {
-		*x = viewRect.left() - horizOffset_;
+		*x = viewRect.left() - horizontalScrollBar()->value();
 		return true;
 	}
 
@@ -3677,7 +3647,7 @@ bool TextArea::TextDPositionToXY(TextCursor pos, int *x, int *y) const {
 
 	/* Step through character positions from the beginning of the line
 	   to "pos" to calculate the x coordinate */
-	int xStep = viewRect.left() - horizOffset_;
+	int xStep = viewRect.left() - horizontalScrollBar()->value();
 	int outIndex = 0;
 	for (int charIndex = 0; charIndex < pos - lineStartPos; charIndex++) {
 		const int charLen = TextBuffer::BufExpandCharacter(lineStr[static_cast<size_t>(charIndex)], outIndex, expandedChar, buffer_->BufGetTabDist());
@@ -3787,7 +3757,7 @@ void TextArea::checkAutoShowInsertPos() {
 ** Scroll the display to bring insertion cursor into view.
 **
 ** Note: it would be nice to be able to do this without counting lines twice
-** (setScroll counts them too) and/or to count from the most efficient
+** (scrolling counts them too) and/or to count from the most efficient
 ** starting point, but the efficiency of this routine is not as important to
 ** the overall performance of the text display.
 */
@@ -3795,8 +3765,7 @@ void TextArea::TextDMakeInsertPosVisible() {
 
 	const QRect viewRect = viewport()->contentsRect();
 	const TextCursor cursorPos = cursorPos_;
-	const int cursorVPadding   = cursorVPadding_;
-	int hOffset                = horizOffset_;
+	const int cursorVPadding   = cursorVPadding_;	
 	int linesFromTop           = 0;
 	int topLine                = topLineNum_;
 	int x;
@@ -3807,10 +3776,10 @@ void TextArea::TextDMakeInsertPosVisible() {
 
 	// Find the new top line number
 	if (cursorPos < firstChar_) {
-		topLine -= TextDCountLines(cursorPos, firstChar_, false);
+		topLine -= TextDCountLines(cursorPos, firstChar_, /*startPosIsLineStart=*/false);
 		// linesFromTop = 0;
 	} else if (cursorPos > lastChar_ && !emptyLinesVisible()) {
-		topLine += TextDCountLines(lastChar_ - (wrapUsesCharacter(lastChar_) ? 0 : 1), cursorPos, false);
+		topLine += TextDCountLines(lastChar_ - (wrapUsesCharacter(lastChar_) ? 0 : 1), cursorPos, /*startPosIsLineStart=*/false);
 		linesFromTop = nVisibleLines_ - 1;
 	} else if (cursorPos == lastChar_ && !emptyLinesVisible() && !wrapUsesCharacter(lastChar_)) {
 		++topLine;
@@ -3818,7 +3787,7 @@ void TextArea::TextDMakeInsertPosVisible() {
 	} else {
 		// Avoid extra counting if cursorVPadding is disabled
 		if (do_padding) {
-			linesFromTop = TextDCountLines(firstChar_, cursorPos, true);
+			linesFromTop = TextDCountLines(firstChar_, cursorPos, /*startPosIsLineStart=*/true);
 		}
 	}
 	if (topLine < 1) {
@@ -3844,20 +3813,24 @@ void TextArea::TextDMakeInsertPosVisible() {
 	   to scroll to, otherwise, do the vertical scrolling first, then the
 	   horizontal */
 	if (!TextDPositionToXY(cursorPos, &x, &y)) {
-		setScroll(topLine, hOffset);
+		verticalScrollBar()->setValue(topLine);
+
 		if (!TextDPositionToXY(cursorPos, &x, &y)) {
 			return; // Give up, it's not worth it (but why does it fail?)
 		}
 	}
 
+	int horizOffset = horizontalScrollBar()->value();
+
 	if (x > viewRect.right()) {
-		hOffset += x - (viewRect.right());
+		horizOffset += x - (viewRect.right());
 	} else if (x < viewRect.left()) {
-		hOffset += x - viewRect.left();
+		horizOffset += x - viewRect.left();
 	}
 
 	// Do the scroll
-	setScroll(topLine, hOffset);
+	verticalScrollBar()->setValue(topLine);
+	horizontalScrollBar()->setValue(horizOffset);
 }
 
 /*
@@ -5059,7 +5032,7 @@ void TextArea::xyToUnconstrainedPos(int x, int y, int *row, int *column, Positio
 		*row = nVisibleLines_ - 1;
 	}
 
-	*column = ((x - viewRect.left()) + horizOffset_ + (posType == PositionTypes::Cursor ? fontWidth / 2 : 0)) / fontWidth;
+	*column = ((x - viewRect.left()) + horizontalScrollBar()->value() + (posType == PositionTypes::Cursor ? fontWidth / 2 : 0)) / fontWidth;
 
 	if (*column < 0) {
 		*column = 0;
@@ -5075,7 +5048,7 @@ void TextArea::beginningOfFileAP(EventFlags flags) {
 	cancelDrag();
 	if (flags & ScrollbarFlag) {
 		if (topLineNum_ != 1) {
-			TextDSetScroll(1, horizOffset_);
+			verticalScrollBar()->setValue(1);
 		}
 	} else {
 		TextDSetInsertPosition(buffer_->BufStartOfBuffer());
@@ -5095,7 +5068,7 @@ void TextArea::endOfFileAP(EventFlags flags) {
 	if (flags & ScrollbarFlag) {
 		const int lastTopLine = std::max(1, nBufferLines_ - (nVisibleLines_ - 2) + cursorVPadding_);
 		if (lastTopLine != topLineNum_) {
-			TextDSetScroll(lastTopLine, horizOffset_);
+			verticalScrollBar()->setValue(lastTopLine);
 		}
 	} else {
 		TextDSetInsertPosition(buffer_->BufEndOfBuffer());
@@ -5395,7 +5368,7 @@ TextCursor TextArea::xyToPos(int x, int y, PositionTypes posType) const {
 
 	/* Step through character positions from the beginning of the line
 	   to find the character position corresponding to the x coordinate */
-	int64_t xStep = viewRect.left() - horizOffset_;
+	int64_t xStep = viewRect.left() - horizontalScrollBar()->value();
 	int outIndex = 0;
 	const int tabDistance = buffer_->BufGetTabDist();
 	for (int64_t charIndex = 0; charIndex < lineLen; charIndex++) {
@@ -5723,33 +5696,26 @@ void TextArea::mousePanAP(QMouseEvent *event, EventFlags flags) {
 	EMIT_EVENT_0("mouse_pan");
 
 	const int lineHeight = fixedFontHeight_;
-	int topLineNum;
-	int horizOffset;
 
 	switch(dragState_) {
 	case MOUSE_PAN:
-		TextDSetScroll((btnDownCoord_.y() - event->y() + lineHeight / 2) / lineHeight, btnDownCoord_.x() - event->x());
+		verticalScrollBar()->setValue((btnDownCoord_.y() - event->y() + lineHeight / 2) / lineHeight);
+		horizontalScrollBar()->setValue(btnDownCoord_.x() - event->x());
 		break;
-	case NOT_CLICKED:
-		TextDGetScroll(&topLineNum, &horizOffset);
+	case NOT_CLICKED: {
+		const int topLineNum  = verticalScrollBar()->value();
+		const int horizOffset = horizontalScrollBar()->value();
+
 		btnDownCoord_ = QPoint(event->x() + horizOffset, event->y() + topLineNum * lineHeight);
 		dragState_    = MOUSE_PAN;
 
 		viewport()->setCursor(Qt::SizeAllCursor);
 		break;
+	}
 	default:
 		cancelDrag();
 		break;
 	}
-}
-
-/*
-** Get the current scroll position for the text display, in terms of line
-** number of the top line and horizontal pixel offset from the left margin
-*/
-void TextArea::TextDGetScroll(int *topLineNum, int *horizOffset) {
-	*topLineNum  = topLineNum_;
-	*horizOffset = horizOffset_;
 }
 
 void TextArea::copyToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
@@ -6046,10 +6012,10 @@ void TextArea::BeginBlockDrag() {
 	   selection (the position where text will actually be inserted In dragging
 	   non-rectangular selections)  */
 	if (sel.rectangular) {
-		dragXOffset_ = btnDownCoord_.x() + horizOffset_ - viewRect.left() - sel.rectStart * fontWidth;
+		dragXOffset_ = btnDownCoord_.x() + horizontalScrollBar()->value() - viewRect.left() - sel.rectStart * fontWidth;
 	} else {
 		if (!TextDPositionToXY(sel.start, &x, &y)) {
-			x = buffer_->BufCountDispChars(TextDStartOfLine(sel.start), sel.start) * fontWidth + viewRect.left() - horizOffset_;
+			x = buffer_->BufCountDispChars(TextDStartOfLine(sel.start), sel.start) * fontWidth + viewRect.left() - horizontalScrollBar()->value();
 		}
 		dragXOffset_ = btnDownCoord_.x() - x;
 	}
@@ -6419,6 +6385,7 @@ void TextArea::setWrapMargin(int value) {
 
 void TextArea::setLineNumCols(int value) {
 	lineNumCols_ = value;
+	resetAbsLineNum();
 	setLineNumberAreaWidth(fixedFontWidth_ * lineNumCols_);
 }
 
@@ -6438,13 +6405,13 @@ void TextArea::TextDSetWrapMode(bool wrap, int wrapMargin) {
 	wrapMargin_     = wrapMargin;
 
 	// wrapping can change change the total number of lines, re-count
-	nBufferLines_ = TextDCountLines(buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer(), true);
+	nBufferLines_ = TextDCountLines(buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer(), /*startPosIsLineStart=*/true);
 
 	/* changing wrap margins wrap or changing from wrapped mode to non-wrapped
 	 * can leave the character at the top no longer at a line start, and/or
 	 * change the line number */
 	firstChar_  = TextDStartOfLine(firstChar_);
-	topLineNum_ = TextDCountLines(buffer_->BufStartOfBuffer(), firstChar_, true) + 1;
+	topLineNum_ = TextDCountLines(buffer_->BufStartOfBuffer(), firstChar_, /*startPosIsLineStart=*/true) + 1;
 	resetAbsLineNum();
 
 	// update the line starts array
@@ -6801,15 +6768,15 @@ void TextArea::pageLeftAP(EventFlags flags) {
 
 	cancelDrag();
 	if (flags & ScrollbarFlag) {
-		if (horizOffset_ == 0) {
+		if (horizontalScrollBar()->value() == 0) {
 			ringIfNecessary(silent);
 			return;
 		}
 
-		horizontalScrollBar()->setValue(horizOffset_ - viewRect.width());
+		horizontalScrollBar()->triggerAction(QAbstractSlider::SliderPageStepSub);
 	} else {
 		TextCursor lineStartPos = buffer_->BufStartOfLine(insertPos);
-		if (insertPos == lineStartPos && horizOffset_ == 0) {
+		if (insertPos == lineStartPos && horizontalScrollBar()->value() == 0) {
 			ringIfNecessary(silent);
 			return;
 		}
@@ -6817,7 +6784,7 @@ void TextArea::pageLeftAP(EventFlags flags) {
 		TextCursor pos   = buffer_->BufCountForwardDispChars(lineStartPos, std::max(0, indent - viewRect.width() / fixedFontWidth_));
 		TextDSetInsertPosition(pos);
 
-		horizontalScrollBar()->setValue(horizOffset_ - viewRect.width());
+		horizontalScrollBar()->triggerAction(QAbstractSlider::SliderPageStepSub);
 
 		checkMoveSelectionChange(flags, insertPos);
 		checkAutoShowInsertPos();
@@ -6831,29 +6798,28 @@ void TextArea::pageRightAP(EventFlags flags) {
 
 	const QRect viewRect     = viewport()->contentsRect();
 	TextCursor insertPos     = cursorPos_;
-	const int oldHorizOffset = horizOffset_;
+	const int oldHorizOffset = horizontalScrollBar()->value();
 	const bool silent        = flags & NoBellFlag;
 
 	cancelDrag();
 	if (flags & ScrollbarFlag) {
-		const int sliderMax    = horizontalScrollBar()->maximum();
-		const int horizOffset = std::min(horizOffset_ + viewRect.width(), sliderMax);
 
-		if (horizOffset_ == horizOffset) {
+		horizontalScrollBar()->triggerAction(QAbstractSlider::SliderPageStepAdd);
+
+		if (horizontalScrollBar()->value() == oldHorizOffset) {
 			ringIfNecessary(silent);
-			return;
 		}
 
-		TextDSetScroll(topLineNum_, horizOffset);
 	} else {
 		TextCursor lineStartPos = buffer_->BufStartOfLine(insertPos);
 		int64_t indent          = buffer_->BufCountDispChars(lineStartPos, insertPos);
 		TextCursor pos          = buffer_->BufCountForwardDispChars(lineStartPos, indent + viewRect.width() / fixedFontWidth_);
 
 		TextDSetInsertPosition(pos);
-		TextDSetScroll(topLineNum_, horizOffset_ + viewRect.width());
 
-		if (horizOffset_ == oldHorizOffset && insertPos == pos) {
+		horizontalScrollBar()->triggerAction(QAbstractSlider::SliderPageStepAdd);
+
+		if (horizontalScrollBar()->value() == oldHorizOffset && insertPos == pos) {
 			ringIfNecessary(silent);
 		}
 
@@ -6886,7 +6852,9 @@ void TextArea::nextPageAP(EventFlags flags) {
 			ringIfNecessary(silent);
 			return;
 		}
-		TextDSetScroll(targetLine, horizOffset_);
+
+		verticalScrollBar()->setValue(targetLine);
+
 	} else if (flags & StutterFlag) { // Mac style
 		// move to bottom line of visible area
 		// if already there, page down maintaining preferrred column
@@ -6906,7 +6874,8 @@ void TextArea::nextPageAP(EventFlags flags) {
 			}
 
 			TextDSetInsertPosition(pos);
-			TextDSetScroll(targetLine, horizOffset_);
+
+			verticalScrollBar()->setValue(targetLine);
 		} else {
 			TextCursor pos = lineStarts_[targetLine];
 
@@ -6955,7 +6924,9 @@ void TextArea::nextPageAP(EventFlags flags) {
 		}
 
 		TextDSetInsertPosition(pos);
-		TextDSetScroll(targetLine, horizOffset_);
+
+		verticalScrollBar()->setValue(targetLine);
+
 		checkMoveSelectionChange(flags, insertPos);
 		checkAutoShowInsertPos();
 		callCursorMovementCBs();
@@ -6987,7 +6958,9 @@ void TextArea::previousPageAP(EventFlags flags) {
 			ringIfNecessary(silent);
 			return;
 		}
-		TextDSetScroll(targetLine, horizOffset_);
+
+		verticalScrollBar()->setValue(targetLine);
+
 	} else if (flags & StutterFlag) { // Mac style
 		// move to top line of visible area
 		// if already there, page up maintaining preferrred column if required
@@ -7006,7 +6979,8 @@ void TextArea::previousPageAP(EventFlags flags) {
 			}
 
 			TextDSetInsertPosition(pos);
-			TextDSetScroll(targetLine, horizOffset_);
+
+			verticalScrollBar()->setValue(targetLine);
 		} else {
 			TextCursor pos = lineStarts_[targetLine];
 			if (maintainColumn) {
@@ -7045,7 +7019,9 @@ void TextArea::previousPageAP(EventFlags flags) {
 		}
 
 		TextDSetInsertPosition(pos);
-		TextDSetScroll(targetLine, horizOffset_);
+
+		verticalScrollBar()->setValue(targetLine);
+
 		checkMoveSelectionChange(flags, insertPos);
 		checkAutoShowInsertPos();
 		callCursorMovementCBs();
@@ -7707,13 +7683,11 @@ void TextArea::showResizeNotification() {
 void TextArea::TextDMakeSelectionVisible() {
 
 	const QRect viewRect = viewport()->contentsRect();
-	bool isRect;
-	int horizOffset;
+	bool isRect;	
 	TextCursor left;
 	int64_t rectEnd;
 	int64_t rectStart;
 	TextCursor right;
-	int topLineNum;
 	int leftX;
 	int rightX;
 	int y;
@@ -7739,37 +7713,38 @@ void TextArea::TextDMakeSelectionVisible() {
 		const int rows = getRows();
 		const int scrollOffset = rows / 3;
 
-		TextDGetScroll(&topLineNum, &horizOffset);
+		const int topLineNum  = verticalScrollBar()->value();
+
 		if (right > lastChar) {
 			// End of sel. is below bottom of screen
-			const int64_t leftLineNum   = topLineNum + TextDCountLines(topChar, left, false);
+			const int64_t leftLineNum   = topLineNum + TextDCountLines(topChar, left, /*startPosIsLineStart=*/false);
 			const int64_t targetLineNum = topLineNum + scrollOffset;
 
 			if (leftLineNum >= targetLineNum) {
 				// Start of sel. is not between top & target
-				int64_t linesToScroll = TextDCountLines(lastChar, right, false) + scrollOffset;
+				int64_t linesToScroll = TextDCountLines(lastChar, right, /*startPosIsLineStart=*/false) + scrollOffset;
 				if (leftLineNum - linesToScroll < targetLineNum) {
 					linesToScroll = leftLineNum - targetLineNum;
 				}
 
 				// Scroll start of selection to the target line
-				TextDSetScroll(topLineNum + linesToScroll, horizOffset);
+				verticalScrollBar()->setValue(topLineNum + linesToScroll);
 			}
 		} else if (left < topChar) {
 			// Start of sel. is above top of screen
 			const int64_t lastLineNum   = topLineNum + rows;
-			const int64_t rightLineNum  = lastLineNum - TextDCountLines(right, lastChar, false);
+			const int64_t rightLineNum  = lastLineNum - TextDCountLines(right, lastChar, /*startPosIsLineStart=*/false);
 			const int64_t targetLineNum = lastLineNum - scrollOffset;
 
 			if (rightLineNum <= targetLineNum) {
 				// End of sel. is not between bottom & target
-				int64_t linesToScroll = TextDCountLines(left, topChar, false) + scrollOffset;
+				int64_t linesToScroll = TextDCountLines(left, topChar, /*startPosIsLineStart=*/false) + scrollOffset;
 				if (rightLineNum + linesToScroll > targetLineNum) {
 					linesToScroll = targetLineNum - rightLineNum;
 				}
 
 				// Scroll end of selection to the target line
-				TextDSetScroll(topLineNum - linesToScroll, horizOffset);
+				verticalScrollBar()->setValue(topLineNum - linesToScroll);
 			}
 		}
 	}
@@ -7783,7 +7758,8 @@ void TextArea::TextDMakeSelectionVisible() {
 	   vertical scrolling to take advantage of TextDPosToXY which requires it's
 	   reqested position to be vertically on screen) */
 	if (TextDPositionToXY(left, &leftX, &y) && TextDPositionToXY(right, &rightX, &y) && leftX <= rightX) {
-		TextDGetScroll(&topLineNum, &horizOffset);
+
+		int horizOffset = horizontalScrollBar()->value();
 
 		if (leftX < viewRect.left()) {
 			horizOffset -= viewRect.left() - leftX;
@@ -7791,7 +7767,7 @@ void TextArea::TextDMakeSelectionVisible() {
 			horizOffset += rightX - viewRect.right();
 		}
 
-		TextDSetScroll(topLineNum, horizOffset);
+		horizontalScrollBar()->setValue(horizOffset);
 	}
 }
 
