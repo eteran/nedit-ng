@@ -303,14 +303,22 @@ private:
 	bool fileMissing_      = true;                      // is the window's file gone?
 	bool ignoreModify_     = false;                     // ignore modifications to text area
 	dev_t dev_             = 0;                         // device where the file resides
-	gid_t gid_             = 0;                         // last recorded group id of the file
 	ino_t ino_             = 0;                         // file's inode
 	int autoSaveCharCount_ = 0;                         // count of single characters typed since last backup file generated
 	int autoSaveOpCount_   = 0;                         // count of editing operations
 	size_t nMarks_         = 0;                         // number of active bookmarks
-	mode_t mode_           = 0;                         // permissions of file being edited
 	time_t lastModTime_    = 0;                         // time of last modification to file
+#ifdef Q_OS_UNIX
 	uid_t uid_             = 0;                         // last recorded user id of the file
+	gid_t gid_             = 0;                         // last recorded group id of the file
+	mode_t mode_           = 0;                         // permissions of file being edited
+#elif defined(Q_OS_WIN)
+	// copied from the Windows version of the struct stat
+	unsigned short mode_   = 0;
+	short          uid_    = 0;
+	short          gid_    = 0;
+#endif
+
 
 private:
 	QSplitter *splitter_;

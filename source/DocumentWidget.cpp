@@ -56,7 +56,6 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
-
 // NOTE(eteran): generally, this class reaches out to MainWindow FAR too much
 // it would be better to create some fundamental signals that MainWindow could
 // listen on and update itself as needed. This would reduce a lot fo the heavy

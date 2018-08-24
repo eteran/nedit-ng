@@ -6,9 +6,14 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt5 5.5.0 REQUIRED Core Network)
+find_package(Boost 1.35 REQUIRED)
 
 add_executable(nc-ng
 	nc.cpp
+)
+
+target_include_directories (nc-ng PRIVATE
+	${Boost_INCLUDE_DIR}
 )
 
 target_link_libraries(nc-ng LINK_PUBLIC

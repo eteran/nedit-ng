@@ -53,7 +53,10 @@
 
 #include <cmath>
 
+#ifdef Q_OS_UNIX
 #include <sys/param.h>
+#endif
+
 #include <sys/stat.h>
 
 #ifdef Q_OS_LINUX
