@@ -370,7 +370,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceRectEx(TextCursor start, TextCursor end,
 
 	if (nInsertedLines < nDeletedLines) {
 
-		insText.reserve(text.size() + static_cast<size_t>(nDeletedLines) - static_cast<size_t>(nInsertedLines));
+		insText.reserve(text.size() + static_cast<size_t>(nDeletedLines - nInsertedLines));
 		insText.assign(text.begin(), text.end());
 		insText.append(static_cast<size_t>(nDeletedLines - nInsertedLines), Ch('\n'));
 
