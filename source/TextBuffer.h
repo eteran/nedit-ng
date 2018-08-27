@@ -168,22 +168,22 @@ private:
 	void sanitizeRange(TextCursor &start, TextCursor &end) const noexcept;
 
 private:
-	static string_type unexpandTabsEx(view_type text, int64_t startIndent, int tabDist);
-	static string_type expandTabsEx(view_type text, int64_t startIndent, int tabDist);
-	static string_type realignTabsEx(view_type text, int64_t origIndent, int64_t newIndent, int tabDist, bool useTabs) noexcept;
-	static void insertColInLineEx(view_type line, view_type insLine, int64_t column, int insWidth, int tabDist, bool useTabs, string_type *outStr, int64_t *endOffset) noexcept;
+	static string_type unexpandTabs(view_type text, int64_t startIndent, int tabDist);
+	static string_type expandTabs(view_type text, int64_t startIndent, int tabDist);
+	static string_type realignTabs(view_type text, int64_t origIndent, int64_t newIndent, int tabDist, bool useTabs) noexcept;
+	static void insertColInLine(view_type line, view_type insLine, int64_t column, int insWidth, int tabDist, bool useTabs, string_type *outStr, int64_t *endOffset) noexcept;
 	static void deleteRectFromLine(view_type line, int64_t rectStart, int64_t rectEnd, int tabDist, bool useTabs, string_type *outStr, int64_t *endOffset) noexcept;
-	static int textWidthEx(view_type text, int tabDist) noexcept;
-	static int64_t countLinesEx(view_type string) noexcept;
-	static void overlayRectInLineEx(view_type line, view_type insLine, int64_t rectStart, int64_t rectEnd, int tabDist, bool useTabs, string_type *outStr, int64_t *endOffset) noexcept;
+	static int textWidth(view_type text, int tabDist) noexcept;
+	static int64_t countLines(view_type string) noexcept;
+	static void overlayRectInLine(view_type line, view_type insLine, int64_t rectStart, int64_t rectEnd, int tabDist, bool useTabs, string_type *outStr, int64_t *endOffset) noexcept;
 	static const Ch *controlCharacter(size_t index) noexcept;
 
 private:
 	template <class Out>
-	static int addPaddingEx(Out out, int64_t startIndent, int64_t toIndent, int tabDist, bool useTabs) noexcept;
+	static int addPadding(Out out, int64_t startIndent, int64_t toIndent, int tabDist, bool useTabs) noexcept;
 
 	template <class Ran>
-	static string_type copyLineEx(Ran first, Ran last);
+	static string_type copyLine(Ran first, Ran last);
 
 private:
 	TextCursor cursorPosHint_ = {};               // hint for reasonable cursor position after a buffer modification operation
