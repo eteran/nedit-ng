@@ -65,9 +65,6 @@
 
 namespace {
 
-// Min. # of columns in line number display
-constexpr int MIN_LINE_NUM_COLS = 4;
-
 bool currentlyBusy   = false;
 bool modeMessageSet  = false;
 qint64 busyStartTime = 0;
@@ -1495,6 +1492,9 @@ int MainWindow::updateLineNumDisp() {
 */
 int MainWindow::updateGutterWidth() {
 
+	// Min. # of columns in line number display
+	constexpr int MIN_LINE_NUM_COLS = 4;
+
 	int reqCols = MIN_LINE_NUM_COLS;
 	int maxCols = 0;
 
@@ -1510,7 +1510,7 @@ int MainWindow::updateGutterWidth() {
 			   this width. */
 			maxCols = std::max(maxCols, lineNumCols);
 
-			const int tmpReqCols = (area->getBufferLinesCount() < 1) ? 1 : static_cast<int>(log10(static_cast<double>(area->getBufferLinesCount()) + 1)) + 1;
+			const int tmpReqCols = (area->getBufferLinesCount() < 1) ? 1 : static_cast<int>(::log10(static_cast<double>(area->getBufferLinesCount()) + 1)) + 1;
 
 			reqCols = std::max(reqCols, tmpReqCols);
 		}
@@ -1550,7 +1550,7 @@ void MainWindow::TempShowISearch(bool state) {
 ** files in this session, i.e. Untitled or Untitled_nn, and write it into
 ** the string "name".
 */
-QString MainWindow::UniqueUntitledNameEx() {
+QString MainWindow::uniqueUntitledName() {
 
 	const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
@@ -2019,9 +2019,8 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 
 	const QStringList includeDirs = Preferences::GetPrefIncludePaths();
 
-	/* get the string, or skip if we can't get the selection data, or it's
-	   obviously not a file name */
-	if (text.size() > MAXPATHLEN || text.isEmpty()) {
+	// get the string, or skip if we can't get the selection data
+	if (text.isEmpty()) {
 		QApplication::beep();
 		return;
 	}
@@ -4655,7 +4654,7 @@ DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geome
 	DocumentWidget *document;
 
 	// Find a (relatively) unique name for the new file
-	QString name = MainWindow::UniqueUntitledNameEx();
+	QString name = MainWindow::uniqueUntitledName();
 
 	// create new window/document
 	if (window) {

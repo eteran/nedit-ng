@@ -120,7 +120,7 @@ public:
 	static QString PromptForNewFile(DocumentWidget *document, FileFormats *format, bool *addWrap);
 	static MainWindow *firstWindow();
 	static MainWindow *fromDocument(const DocumentWidget *document);
-	static QString UniqueUntitledNameEx();
+	static QString uniqueUntitledName();
 	static std::vector<MainWindow *> allWindows();
 	static void AddToPrevOpenMenu(const QString &filename);
 	static void AllWindowsBusy(const QString &message);

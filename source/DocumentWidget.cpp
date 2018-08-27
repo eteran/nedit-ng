@@ -2766,7 +2766,7 @@ void DocumentWidget::closeDocument() {
 
 	if (keepWindow || (windowCount == 1 && documentCount == 1)) {
 
-		QString name = MainWindow::UniqueUntitledNameEx();
+		QString name = MainWindow::uniqueUntitledName();
 		lockReasons_.clear();
 
 		mode_         = 0;
