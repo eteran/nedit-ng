@@ -213,7 +213,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			fprintf(stderr, "nc: Unrecognized option %s\n%s", qPrintable(args[i]), cmdLineHelp);
 			exit(EXIT_FAILURE);
 		} else {
-			if (!ParseFilenameEx(args[i], &name, &path)) {
+			if (!parseFilename(args[i], &name, &path)) {
 				// An Error, most likely too long paths/strings given
 				return boost::none;
 			}

@@ -227,7 +227,7 @@ private:
 	size_t matchLanguageMode() const;
 	void AbortMacroCommand();
 	void AttachHighlightToWidgetEx(TextArea *area);
-	void BeginLearnEx();
+	void beginLearn();
 	void clearRedoList();
 	void clearUndoList();
 	void closeDocument();

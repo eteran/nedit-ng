@@ -11,11 +11,10 @@ class QString;
 enum class FileFormats : int;
 
 FileFormats FormatOfFile(view::string_view text);
-QString CompressPathname(const QString &pathname);
 QString GetTrailingPathComponents(const QString &path, int noOfComponents);
 QString NormalizePathname(const QString &pathname);
 QString ReadAnyTextFile(const QString &fileName, bool forceNL);
-bool ParseFilenameEx(const QString &fullname, QString *filename, QString *pathname);
+bool parseFilename(const QString &fullname, QString *filename, QString *pathname);
 
 // std::string based convesions
 void ConvertToMac(std::string &text);

@@ -6,7 +6,6 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <string>
 
 #include <QDir>
 #include <QFileInfo>
@@ -22,79 +21,13 @@ namespace {
 constexpr int FORMAT_SAMPLE_LINES = 5;
 constexpr int FORMAT_SAMPLE_CHARS = 2000;
 
-/**
- * @brief prevSlash
- * @param str
- * @param index
- * @return
- *
- * Requires that index be an offset one past a given slash and will return the
- * index of the previous slash
- */
-int prevSlash(const QString &str, int index) {
-
-	for (index -= 2; index >= 0 && str[index] != QLatin1Char('/'); index--) {
-		;
-	}
-
-	return index + 1;
-}
-
-template <class In>
-In nextSlash(In first, In last) {
-	auto it = std::find(first, last, QLatin1Char('/'));
-	return std::next(it);
-}
-
-template <class In>
-bool compareThruSlash(In first, In last, const QString &str) {
-
-	auto first2 = str.begin();
-	auto last2  = str.end();
-
-	while (true) {
-
-		if (first2 == last2 || *first != *first2) {
-			return false;
-		}
-
-		if (first == last || *first == QLatin1Char('/')) {
-			return true;
-		}
-
-		++first;
-		++first2;
-	}
-}
-
-template <class Out, class In>
-void copyThruSlash(In &first, In last, Out &dest) {
-
-	while (true) {
-		*dest = *first;
-
-		if (first == last) {
-			return;
-		}
-
-		if (*first == QLatin1Char('/')) {
-			++first;
-			++dest;
-			return;
-		}
-
-		++first;
-		++dest;
-	}
-}
-
 }
 
 /*
 ** Decompose a Unix file name into a file name and a path.
 ** returns false if an error occured (currently, there is no error case).
 */
-bool ParseFilenameEx(const QString &fullname, QString *filename, QString *pathname) {
+bool parseFilename(const QString &fullname, QString *filename, QString *pathname) {
 
 	const int fullLen = fullname.size();
 	int scanStart = -1;
@@ -128,24 +61,20 @@ bool ParseFilenameEx(const QString &fullname, QString *filename, QString *pathna
 	return true;
 }
 
-
-
+/**
+ * @brief NormalizePathname
+ * @param pathname
+ * @return
+ */
 QString NormalizePathname(const QString &pathname) {
 
-	// TODO(eteran): or maybe this is effectively QDir::cleanPath?
-
 	QString path = pathname;
-
 	QFileInfo fi(path);
-
-	// TODO(eteran): investigate if we can just use QFileInfo::makeAbsolute here...
 
 	// if this is a relative pathname, prepend current directory
 	if (fi.isRelative()) {
 
-		// make a copy of pathname to work from and get the working directory
-		// and prepend to the path
-		QString oldPathname = std::exchange(path, QDir::currentPath());
+		const QString oldPathname = std::exchange(path, QDir::currentPath());
 
 		if(!path.endsWith(QLatin1Char('/'))) {
 			path.append(QLatin1Char('/'));
@@ -154,96 +83,12 @@ QString NormalizePathname(const QString &pathname) {
 		path.append(oldPathname);
 	}
 
-	/* compress out .. and . */
-	return CompressPathname(path);
-}
-
-/**
- * @brief CompressPathnameEx
- * @param pathname
- * @return
- *
- * Returns a pathname without symbolic links or redundant "." or ".." elements.
- *
- */
-QString CompressPathname(const QString &path) {
-
-	// NOTE(eteran): Things like QFileInfo::canonicalFilePath return an empty
-	// string if a path represents a file that doesn't exist yet. So we may not
-	// be able to use those in all cases!
-
-	/* (Added by schwarzenberg)
-	** replace multiple slashes by a single slash
-	**  (added by yooden)
-	**  Except for the first slash. From the Single UNIX Spec: "A pathname
-	**  that begins with two successive slashes may be interpreted in an
-	**  implementation-dependent manner"
-	*/
-
-	QString pathname;
-	pathname.reserve(path.size());
-	auto out = std::back_inserter(pathname);
-	auto in  = path.begin();
-
-	*out++ = *in++;
-	while(in != path.end()) {
-		const QChar ch = *in++;
-		*out++ = ch;
-		if (ch == QLatin1Char('/')) {
-			while(*in == QLatin1Char('/')) {
-				++in;
-			}
-		}
+	QString cleanedPath = QDir::cleanPath(path);
+	if(!cleanedPath.endsWith(QLatin1Char('/'))) {
+		cleanedPath.append(QLatin1Char('/'));
 	}
 
-	// compress out . and ..
-	QString buffer;
-	buffer.reserve(path.size());
-
-	auto inPtr = pathname.begin();
-	auto outPtr = std::back_inserter(buffer);
-
-	// copy initial "/"
-	copyThruSlash(inPtr, pathname.end(), outPtr);
-
-	while (inPtr != pathname.end()) {
-		/* if the next component is "../", remove previous component */
-		if (compareThruSlash(inPtr, pathname.end(), QLatin1String("../"))) {
-
-			/* If the ../ is at the beginning, or if the previous component is
-			 * a symbolic link, preserve the ../
-			 * It is not valid to compress ../ when the previous component is
-			 * a symbolic link because ../ is relative to where the link
-			 * points. */
-
-			// NOTE(eteran): in the original NEdit, this code was broken!
-			// lstat/QFileInfo ALWAYS returns a non-symlink mode for paths
-			// ending in '/'
-			// so we need to chop that off for the test!
-			QFileInfo fi(buffer.left(buffer.size() - 1));
-
-			// NOTE(eteran): UNIX assumption here...
-			if (buffer == QLatin1String("/") || fi.isSymLink()) {
-				copyThruSlash(inPtr, pathname.end(), outPtr);
-			} else {
-				/* back up to remove last path name component */
-				int index = prevSlash(buffer, buffer.size());
-				if(index != -1) {
-					buffer = buffer.left(index);
-				}
-
-				inPtr = nextSlash(inPtr, pathname.end());
-			}
-		} else if (compareThruSlash(inPtr, pathname.end(), QLatin1String("./"))) {
-			/* don't copy the component if it's the redundant "./" */
-			inPtr = nextSlash(inPtr, pathname.end());
-		} else {
-			/* copy the component to outPtr */
-			copyThruSlash(inPtr, pathname.end(), outPtr);
-		}
-	}
-
-	return buffer;
+	return cleanedPath;
 }
 
 /*

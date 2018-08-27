@@ -54,7 +54,7 @@
 #include <chrono>
 
 #include <fcntl.h>
-#include <sys/stat.h>
+#include <sys/stat.h> // TODO(eteran): consider qplatformdefs.h...
 
 // NOTE(eteran): generally, this class reaches out to MainWindow FAR too much
 // it would be better to create some fundamental signals that MainWindow could
@@ -81,7 +81,7 @@ DocumentWidget *DocumentWidget::LastCreated;
 namespace {
 
 // Max # of ADDITIONAL text editing panes  that can be added to a window
-constexpr int MAX_PANES  = 6;
+constexpr int MAX_PANES = 6;
 
 // how long to wait (msec) before putting up Shell Command Executing... banner
 constexpr int BANNER_WAIT_TIME = 6000;
@@ -2413,7 +2413,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 		QString filename;
 		QString pathname;
 
-		if (!ParseFilenameEx(fullname, &filename, &pathname) != 0) {
+		if (!parseFilename(fullname, &filename, &pathname) != 0) {
 			return false;
 		}
 
@@ -2859,7 +2859,7 @@ DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 	QString filename;
 	QString pathname;
 
-	if (!ParseFilenameEx(fullpath, &filename, &pathname) != 0) {
+	if (!parseFilename(fullpath, &filename, &pathname) != 0) {
 		qWarning("NEdit: invalid file name for open action: %s", qPrintable(fullpath));
 		return nullptr;
 	}
@@ -4987,9 +4987,9 @@ std::vector<DocumentWidget *> DocumentWidget::allDocuments() {
 }
 
 /**
- * @brief DocumentWidget::BeginLearnEx
+ * @brief DocumentWidget::BeginLearn
  */
-void DocumentWidget::BeginLearnEx() {
+void DocumentWidget::beginLearn() {
 
 	// If we're already in learn mode, return
 	if(CommandRecorder::instance()->isRecording()) {
@@ -6861,7 +6861,7 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
 		Tags::tagPosInf[nMatches] = startPos;
 
 		// NOTE(eteran): no error checking...
-		ParseFilenameEx(Tags::tagFiles[nMatches], &filename, &pathname);
+		parseFilename(Tags::tagFiles[nMatches], &filename, &pathname);
 
 		// Is this match in the current file?  If so, use it!
 		if (Preferences::GetPrefSmartTags() && filename_ == filename && path_ == pathname) {
@@ -6920,7 +6920,7 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
 			QString temp;
 
 			// NOTE(eteran): no error checking...
-			ParseFilenameEx(Tags::tagFiles[i], &filename, &pathname);
+			parseFilename(Tags::tagFiles[i], &filename, &pathname);
 			if ((i < nMatches - 1 && (Tags::tagFiles[i] == Tags::tagFiles[i + 1])) || (i > 0 && (Tags::tagFiles[i] == Tags::tagFiles[i - 1]))) {
 
 				if (!Tags::tagSearch[i].isEmpty() && (Tags::tagPosInf[i] != -1)) {
@@ -7014,7 +7014,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 	QString pathname;
 
 	// NOTE(eteran): no error checking...
-	ParseFilenameEx(Tags::tagFiles[i], &filename, &pathname);
+	parseFilename(Tags::tagFiles[i], &filename, &pathname);
 
 	// open the file containing the definition
 	DocumentWidget::EditExistingFileEx(

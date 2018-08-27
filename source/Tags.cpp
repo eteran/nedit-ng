@@ -551,8 +551,7 @@ int Tags::scanETagsLine(const QString &line, const QString &tagPath, int index, 
 
 			if (!QFileInfo(file).isAbsolute()) {
 
-				auto incPath = tr("%1%2").arg(tagPath, file);
-				incPath = CompressPathname(incPath);
+				QString incPath = NormalizePathname(tr("%1%2").arg(tagPath, file));
 				return loadTagsFile(incPath, index, recLevel + 1);
 			} else {
 				return loadTagsFile(file, index, recLevel + 1);
@@ -592,7 +591,7 @@ int Tags::loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 	}
 
 	// NOTE(eteran): no error checking...
-	ParseFilenameEx(resolvedTagsFile, nullptr, &tagPath);
+	parseFilename(resolvedTagsFile, nullptr, &tagPath);
 
 	/* This might take a while if you have a huge tags file (like I do)..
 	   keep the windows up to date and post a busy cursor so the user
@@ -1179,7 +1178,7 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
 	// Get the path to the tips file
 	// NOTE(eteran): no error checking...
-	ParseFilenameEx(resolvedTipsFile, nullptr, &tipPath);
+	parseFilename(resolvedTipsFile, nullptr, &tipPath);
 
 	// Open the file
 	std::ifstream is(resolvedTipsFile.toStdString());

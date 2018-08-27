@@ -253,7 +253,7 @@ Main::Main(const QStringList &args) {
 			exit(EXIT_FAILURE);
 		} else {
 
-			if (ParseFilenameEx(args[i], &filename, &pathname)) {
+			if (parseFilename(args[i], &filename, &pathname)) {
 				/* determine if file is to be openned in new tab, by
 				   factoring the options -group, -tabbed & -untabbed */
 				switch(group) {

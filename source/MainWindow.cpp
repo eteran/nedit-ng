@@ -2081,7 +2081,7 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 
 		QString pathname;
 		QString filename;
-		if (!ParseFilenameEx(file.absoluteFilePath(), &filename, &pathname) != 0) {
+		if (!parseFilename(file.absoluteFilePath(), &filename, &pathname) != 0) {
 			QApplication::beep();
 		} else {
 			DocumentWidget::EditExistingFileEx(
@@ -5220,7 +5220,7 @@ void MainWindow::on_action_Cancel_Shell_Command_triggered() {
  */
 void MainWindow::on_action_Learn_Keystrokes_triggered() {
 	if(DocumentWidget *document = currentDocument()) {
-		document->BeginLearnEx();
+		document->beginLearn();
 	}
 }
 

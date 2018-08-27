@@ -213,7 +213,7 @@ void NeditServer::newConnection() {
 
 		QString filename;
 		QString pathname;
-		if (!ParseFilenameEx(fullname, &filename, &pathname) != 0) {
+		if (!parseFilename(fullname, &filename, &pathname) != 0) {
 			qWarning("NEdit: invalid file name");
 			break;
 		}
