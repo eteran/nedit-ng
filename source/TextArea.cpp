@@ -1379,9 +1379,9 @@ void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nD
 	// Update the line starts and topLineNum
 	if (nInserted != 0 || nDeleted != 0) {
 		if (continuousWrap_) {
-			updateLineStarts(wrapModStart, wrapModEnd - wrapModStart, nDeleted + pos - wrapModStart + (wrapModEnd - (pos + nInserted)), linesInserted, linesDeleted, &scrolled);
+			scrolled = updateLineStarts(wrapModStart, wrapModEnd - wrapModStart, nDeleted + pos - wrapModStart + (wrapModEnd - (pos + nInserted)), linesInserted, linesDeleted);
 		} else {
-			updateLineStarts(pos, nInserted, nDeleted, linesInserted, linesDeleted, &scrolled);
+			scrolled = updateLineStarts(pos, nInserted, nDeleted, linesInserted, linesDeleted);
 		}
 	} else {
 		scrolled = false;
@@ -2016,9 +2016,7 @@ TextCursor TextArea::TextDEndOfLine(TextCursor pos, bool startPosIsLineStart) co
 ** modification to the text buffer, given by the position where the change
 ** began "pos", and the nmubers of characters and lines inserted and deleted.
 */
-void TextArea::updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t charsDeleted, int64_t linesInserted, int64_t linesDeleted, bool *scrolled) {
-
-	// TODO(eteran): return scrolled instead of having an out parameter
+bool TextArea::updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t charsDeleted, int64_t linesInserted, int64_t linesDeleted) {
 
 	int lineOfPos;
 	int lineOfEnd;
@@ -2037,8 +2035,7 @@ void TextArea::updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t c
 
 		firstChar_ += charDelta;
 		lastChar_  += charDelta;
-		*scrolled = false;
-		return;
+		return false;
 	}
 
 	/* The change began before the beginning of the displayed text, but
@@ -2060,8 +2057,8 @@ void TextArea::updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t c
 
 		// calculate lastChar by finding the end of the last displayed line
 		calcLastChar();
-		*scrolled = true;
-		return;
+
+		return true;
 	}
 
 	/* If the change was in the middle of the displayed text (it usually is),
@@ -2098,8 +2095,8 @@ void TextArea::updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t c
 
 		// calculate lastChar by finding the end of the last displayed line
 		calcLastChar();
-		*scrolled = false;
-		return;
+
+		return false;
 	}
 
 	/* Change was past the end of the displayed text, but displayable by virtue
@@ -2109,12 +2106,11 @@ void TextArea::updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t c
 		calcLineStarts(lineOfPos, lineOfPos + linesInserted);
 		calcLastChar();
 
-		*scrolled = false;
-		return;
+		return false;
 	}
 
 	// Change was beyond the end of the buffer and not visible, do nothing
-	*scrolled = false;
+	return false;
 }
 
 /*

@@ -355,7 +355,7 @@ private:
 	void simpleInsertAtCursorEx(view::string_view chars, bool allowPendingDelete);
 	void redisplayRange(TextCursor start, TextCursor end);
 	void updateFontMetrics(const QFont &font);
-	void updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t charsDeleted, int64_t linesInserted, int64_t linesDeleted, bool *scrolled);
+	bool updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t charsDeleted, int64_t linesInserted, int64_t linesDeleted);
 	void updateVScrollBarRange();
 	void wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, TextCursor maxPos, int maxLines, bool startPosIsLineStart, TextCursor *retPos, int *retLines, TextCursor *retLineStart, TextCursor *retLineEnd) const;
 	void xyToUnconstrainedPos(const QPoint &pos, int *row, int *column, PositionTypes posType) const;
