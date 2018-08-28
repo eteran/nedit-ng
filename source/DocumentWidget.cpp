@@ -1021,9 +1021,6 @@ void DocumentWidget::documentRaised() {
 		StartHighlightingEx(/*warn=*/false);
 	}
 
-	/* now refresh this state/info. RefreshWindowStates()
-	   has a lot of work to do, so we update the screen first so
-	   the document appears to switch swiftly. */
 	refreshWindowStates();
 
 	/* Make sure that the "In Selection" button tracks the presence of a
@@ -2819,8 +2816,6 @@ void DocumentWidget::closeDocument() {
 	// so we also schedule it for deletion later
 	win->ui.tabWidget->removeTab(win->ui.tabWidget->indexOf(this));
 	this->deleteLater();
-
-	MainWindow::UpdateWindowMenus();
 
 	// Close of window running a macro may have been disabled.
 	// NOTE(eteran): this may be redundant...

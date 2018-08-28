@@ -2178,7 +2178,7 @@ void TextArea::calcLineStarts(int startLine, int endLine) {
 		lineStarts_[line] = startPos;
 	}
 
-	// Set any entries beyond the end of the text to -1
+	// Set any entries beyond the end of the text to invalid
 	for (; line <= endLine; line++) {
 		lineStarts_[line] = TextCursor(-1);
 	}
@@ -2267,19 +2267,16 @@ void TextArea::TextDRedisplayRect(const QRect &rect) {
  */
 void TextArea::updateVScrollBarRange() {
 
-	// NOTE(eteran): so Qt's scrollbars are a little more straightforward than
-	// Motif's so we've had to make some minor changes here to avoid having to
-	// special case everywhere else.
-	// Additionally, as an optimization, if we aren't in continuous wrap mode,
+	// NOTE(eteran): As an optimization, if we aren't in continuous wrap mode,
 	// there is no need to use the approximation techniques
 	const int sliderValue = topLineNum_;
 
 	/* The Vert. scroll bar value directly represents the top line number,
-	 * and the number of visible lines respectively.  The scroll bar maximum
-	 * value is chosen to generally represent the size of the whole buffer,
-	 * with minor adjustments to keep the scroll bar widget happy */
+	 * The scroll bar maximum value is chosen to generally represent the size
+	 * of the whole buffer, with minor adjustments to keep the scroll bar
+	 * widget happy */
 	if(continuousWrap_) {
-		int normalizedVisible = std::max(nVisibleLines_, 1);
+		const int normalizedVisible = std::max(nVisibleLines_, 1);
 		verticalScrollBar()->setRange(1, std::max(nBufferLines_ + 2 + cursorVPadding_ - nVisibleLines_, normalizedVisible + sliderValue));
 	} else {
 		verticalScrollBar()->setRange(1, std::max(1, nBufferLines_ - nVisibleLines_ + 2));
@@ -3087,15 +3084,11 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 	const QRect viewRect = viewport()->contentsRect();
 	QPainterPath path;
 
-	const int fontWidth = fixedFontWidth_;
-	int fontHeight      = fixedFontHeight_;
+	const int fontWidth  = fixedFontWidth_;
+	const int fontHeight = fixedFontHeight_ - 1;
 
-	// NOTE(eteran): some minor adjustments to get things to align "just right"
-	// This wasn't needed when using bitmapped X11 fonts, so I assume there is
-	// a slight discrepancy between that and Qt's high quality rendering.
 	x += 1;
 	y += 1;
-	fontHeight -= 1;
 
 	const int bot = y + fontHeight - 1;
 

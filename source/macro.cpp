@@ -2324,9 +2324,6 @@ static std::error_code focusWindowMS(DocumentWidget *document, Arguments argumen
 
 	if (string == QLatin1String("last")) {
 
-		// NOTE(eteran): the original code just used the first element, but that
-		// assumes we always use push_front. allDocuments() is in a relatively
-		// undefined order
 		it = std::find(documents.begin(), documents.end(), DocumentWidget::LastCreated);
 
 	} else if (string == QLatin1String("next")) {

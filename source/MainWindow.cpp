@@ -4679,6 +4679,8 @@ DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geome
 		document->path_.append(QLatin1Char('/'));
 	}
 
+	// TODO(eteran): I'd like basically all of this to be done with signals
+	// on an as needed basis
 	document->SetWindowModified(false);
 	document->lockReasons_.clear();
 	window->UpdateWindowReadOnly(document);
