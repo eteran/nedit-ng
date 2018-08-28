@@ -834,7 +834,7 @@ bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchStri
 ** This reads from either a source code file (if searchMode == TIP_FROM_TAG)
 ** or a calltips file (if searchMode == TIP).
 */
-void Tags::showMatchingCalltipEx(QWidget *parent, TextArea *area, int id) {
+void Tags::showMatchingCalltip(QWidget *parent, TextArea *area, int id) {
 	try {
 		int64_t startPos = 0;
 		int64_t endPos   = 0;

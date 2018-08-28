@@ -6952,7 +6952,7 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
 	if (Tags::searchMode == Tags::SearchMode::TAG) {
 		editTaggedLocation(area, 0);
 	} else {
-		Tags::showMatchingCalltipEx(this, area, 0);
+		Tags::showMatchingCalltip(this, area, 0);
 	}
 
 	return 1;

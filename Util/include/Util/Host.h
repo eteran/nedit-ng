@@ -4,6 +4,6 @@
 
 class QString;
 
-QString GetNameOfHostEx();
+QString GetNameOfHost();
 
 #endif

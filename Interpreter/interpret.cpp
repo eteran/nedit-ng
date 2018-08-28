@@ -623,7 +623,7 @@ void ModifyReturnedValueEx(const std::shared_ptr<MacroContext> &context, const D
 }
 
 /*
-** Called within a routine invoked from a macro, returns the window in
+** Called within a routine invoked from a macro, returns the document in
 ** which the macro is executing (where the banner is, not where it is focused)
 */
 DocumentWidget *MacroRunDocument() {
@@ -631,7 +631,7 @@ DocumentWidget *MacroRunDocument() {
 }
 
 /*
-** Called within a routine invoked from a macro, returns the window to which
+** Called within a routine invoked from a macro, returns the document to which
 ** the currently executing macro is focused (the window which macro commands
 ** modify, not the window from which the macro is being run)
 */

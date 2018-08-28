@@ -638,7 +638,7 @@ QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, co
 
 			case 'h': // host name
 				hostNamePresent = true;
-				title.append(GetNameOfHostEx());
+				title.append(GetNameOfHost());
 				break;
 
 			case 'S': // file status

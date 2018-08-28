@@ -5,9 +5,9 @@
 #include <QString>
 
 /**
- * @brief GetNameOfHostEx
+ * @brief GetNameOfHost
  * @return the hostname of the system
  */
-QString GetNameOfHostEx() {
+QString GetNameOfHost() {
 	return QHostInfo::localHostName();
 }
