@@ -53,7 +53,7 @@ QVariant DocumentModel::data(const QModelIndex &index, int role) const {
 		if(role == Qt::DisplayRole) {
 			switch(index.column()) {
 			case 0:
-				return showFullPath_ ? document->FullPath() : document->filename();
+				return showFullPath_ ? document->fullPath() : document->filename();
 			}
 		} else if(role == Qt::UserRole) {
 			return QVariant();

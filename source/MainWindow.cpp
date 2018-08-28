@@ -4727,7 +4727,7 @@ void MainWindow::AllWindowsBusy(const QString &message) {
 
 		// Show the mode message when we've been busy for more than a second
 		for(DocumentWidget *document : documents) {
-			document->SetModeMessage(message);
+			document->setModeMessage(message);
 		}
 		modeMessageSet = true;
 	}
@@ -4741,7 +4741,7 @@ void MainWindow::AllWindowsBusy(const QString &message) {
 void MainWindow::AllWindowsUnbusy() {
 
 	for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-		document->ClearModeMessage();
+		document->clearModeMessage();
 		document->setCursor(Qt::ArrowCursor);
 	}
 
@@ -5187,7 +5187,7 @@ void MainWindow::action_Execute_Command_Line(DocumentWidget *document) {
 	}
 
 	if(QPointer<TextArea> area = lastFocus_) {
-		document->ExecCursorLineEx(area, CommandSource::User);
+		document->execCursorLine(area, CommandSource::User);
 	}
 }
 
@@ -5205,7 +5205,7 @@ void MainWindow::on_action_Execute_Command_Line_triggered() {
  */
 void MainWindow::on_action_Cancel_Shell_Command_triggered() {
 	if(DocumentWidget *document = currentDocument()) {
-		document->AbortShellCommand();
+		document->abortShellCommand();
 	}
 }
 
@@ -7027,7 +7027,7 @@ bool MainWindow::DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, c
 			return false;
 		}
 
-		document->DoShellMenuCmd(
+		document->doShellMenuCmd(
 			this,
 			area,
 			p->item,

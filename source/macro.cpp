@@ -2341,7 +2341,7 @@ static std::error_code focusWindowMS(DocumentWidget *document, Arguments argumen
 	} else {
 		// just use the plain name as supplied
 		it = std::find_if(documents.begin(), documents.end(), [&string](DocumentWidget *doc) {
-			return doc->FullPath() == string;
+			return doc->fullPath() == string;
 		});
 
 		// didn't work? try normalizing the string passed in
@@ -2354,7 +2354,7 @@ static std::error_code focusWindowMS(DocumentWidget *document, Arguments argumen
 			}
 
 			it = std::find_if(documents.begin(), documents.end(), [&normalizedString](DocumentWidget *doc) {
-				return doc->FullPath() == normalizedString;
+				return doc->fullPath() == normalizedString;
 			});
 		}
 	}
@@ -3127,7 +3127,7 @@ static std::error_code shellCmdMS(DocumentWidget *document, Arguments arguments,
 		return MacroErrorCode::InvalidContext;
 	}
 
-	document->ShellCmdToMacroStringEx(cmdString, inputString);
+	document->shellCmdToMacroString(cmdString, inputString);
 	*result = make_value(0);
 	return MacroErrorCode::Success;
 }
@@ -3139,7 +3139,7 @@ static std::error_code shellCmdMS(DocumentWidget *document, Arguments arguments,
 ** teaching other modules about macro return globals, since other than this,
 ** they're not used outside of macro.c)
 */
-void ReturnShellCommandOutputEx(DocumentWidget *document, const QString &outText, int status) {
+void returnShellCommandOutput(DocumentWidget *document, const QString &outText, int status) {
 
 	if(const std::shared_ptr<MacroCommandData> &cmdData = document->macroCmdData_) {
 
@@ -3186,7 +3186,7 @@ static std::error_code dialogMS(DocumentWidget *document, Arguments arguments, D
 	}
 
 	// Stop macro execution until the dialog is complete
-	PreemptMacro();
+	preemptMacro();
 
 	// Return placeholder result. Value will be changed by button callback
 	*result = make_value(0);
@@ -3252,7 +3252,7 @@ static std::error_code stringDialogMS(DocumentWidget *document, Arguments argume
 	}
 
 	// Stop macro execution until the dialog is complete
-	PreemptMacro();
+	preemptMacro();
 
 	// Return placeholder result.  Value will be changed by button callback
 	*result = make_value(0);
@@ -3638,7 +3638,7 @@ static std::error_code listDialogMS(DocumentWidget *document, Arguments argument
 	}
 
 	// Stop macro execution until the dialog is complete
-	PreemptMacro();
+	preemptMacro();
 
 	// Return placeholder result.  Value will be changed by button callback
 	*result = make_value(0);
@@ -4244,7 +4244,7 @@ static std::error_code activePaneMV(DocumentWidget *document, Arguments argument
 
 	Q_UNUSED(arguments);
 
-	*result = make_value(document->WidgetToPaneIndex(MainWindow::fromDocument(document)->lastFocus()));
+	*result = make_value(document->widgetToPaneIndex(MainWindow::fromDocument(document)->lastFocus()));
 	return MacroErrorCode::Success;
 }
 

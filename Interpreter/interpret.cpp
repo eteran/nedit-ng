@@ -474,7 +474,7 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 ** (if any) can be read from "result".  If MACRO_PREEMPT is returned, the
 ** macro exceeded its alotted time-slice and scheduled...
 */
-int ExecuteMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg) {
+int executeMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg) {
 
 	/* Create an execution context (a stack, a stack pointer, a frame pointer,
 	   and a program counter) which will retain the program state across
@@ -512,14 +512,14 @@ int ExecuteMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> a
 	}
 
 	// Begin execution, return on error or preemption
-	return ContinueMacroEx(context, result, msg);
+	return continueMacro(context, result, msg);
 }
 
 /*
 ** Continue the execution of a suspended macro whose state is described in
 ** "continuation"
 */
-int ContinueMacroEx(const std::shared_ptr<MacroContext> &continuation, DataValue *result, QString *msg) {
+int continueMacro(const std::shared_ptr<MacroContext> &continuation, DataValue *result, QString *msg) {
 
 	int instCount = 0;
 
@@ -607,7 +607,7 @@ void RunMacroAsSubrCall(Program *prog) {
 ** a long time, or want to return to the event loop.  Call ResumeMacroExecution
 ** to resume.
 */
-void PreemptMacro() {
+void preemptMacro() {
 	PreemptRequest = true;
 }
 
@@ -1974,7 +1974,6 @@ static int arrayAssign() {
 
 		POP(dstArray);
 
-		// TODO(eteran): do we still want to test for unset here?
 		if (!is_array(dstArray) && is_unset(dstArray)) {
 			return execError("cannot assign array element of non-array");
 		}

@@ -105,7 +105,7 @@ public:
 	QColor GetHighlightBGColorOfCodeEx(size_t hCode) const;
 	QColor HighlightColorValueOfCodeEx(size_t hCode) const;
 	QFont defaultFont() const;
-	QString FullPath() const;
+	QString fullPath() const;
 	QString GetAnySelection(bool beep_on_error);
 	QString GetAnySelection();
 	QString documentDelimiters() const;
@@ -128,7 +128,7 @@ public:
 	bool modeMessageDisplayed() const;
 	bool ReadMacroString(const QString &string, const QString &errIn);
 	int ShowTipStringEx(const QString &text, bool anchored, int pos, bool lookup, Tags::SearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode);
-	int WidgetToPaneIndex(TextArea *area) const;
+	int widgetToPaneIndex(TextArea *area) const;
 	int findDef(TextArea *area, const QString &value, Tags::SearchMode search_type);
 	int textPanesCount() const;
 	int64_t HighlightLengthOfCodeFromPosEx(TextCursor pos, size_t checkCode);
@@ -138,12 +138,12 @@ public:
 	size_t HighlightCodeOfPosEx(TextCursor pos);
 	std::unique_ptr<WindowHighlightData> createHighlightDataEx(PatternSet *patSet);
 	std::vector<TextArea *> textPanes() const;
-	void AbortShellCommand();
+	void abortShellCommand();
 	void AddMarkEx(TextArea *area, QChar label);
 	void beginSmartIndent(bool warn);
 	void cancelMacroOrLearn();
 	void checkForChangesToFile();
-	void ClearModeMessage();
+	void clearModeMessage();
 	void DoMacro(const QString &macro, const QString &errInName);
 	void endSmartIndent();
 	void executeShellCommand(TextArea *area, const QString &command, CommandSource source);
@@ -161,7 +161,7 @@ public:
 	void SelectNumberedLineEx(TextArea *area, int64_t lineNum);
 	void SelectToMatchingCharacter(TextArea *area);
 	void setAutoIndent(IndentStyle indentStyle);
-	void SetAutoScroll(int margin);
+	void setAutoScroll(int margin);
 	void setAutoWrap(WrapStyle wrapStyle);
 	void SetBacklightChars(const QString &applyBacklightTypes);
 	void SetColors(const QString &textFg, const QString &textBg, const QString &selectFg, const QString &selectBg, const QString &hiliteFg, const QString &hiliteBg, const QString &lineNoFg, const QString &lineNoBg, const QString &cursorFg);
@@ -177,7 +177,7 @@ public:
 	void setTabDistance(int distance);
 	void SetUseTabs(bool value);
 	void SetUserLocked(bool value);
-	void ShellCmdToMacroStringEx(const QString &command, const QString &input);
+	void shellCmdToMacroString(const QString &command, const QString &input);
 	void ShowStatsLine(bool state);
 	void StartHighlightingEx(bool warn);
 	void stopHighlighting();
@@ -201,7 +201,7 @@ public:
 private:
 	std::unique_ptr<HighlightData[]> compilePatternsEx(const std::vector<HighlightPattern> &patternSrc);
 	std::unique_ptr<Regex> compileRegexAndWarn(const QString &re);
-	void SetModeMessage(const QString &message);
+	void setModeMessage(const QString &message);
 	void executeModMacro(SmartIndentEvent *event);
 	void executeNewlineMacro(SmartIndentEvent *event);
 	MacroContinuationCode continueWorkProcEx();
@@ -232,9 +232,9 @@ private:
 	void clearUndoList();
 	void closeDocument();
 	void DetermineLanguageMode(bool forceNewDefaults);
-	void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, CommandSource source);
-	void DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const MenuItem &item, CommandSource source);
-	void ExecCursorLineEx(TextArea *area, CommandSource source);
+	void doShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, CommandSource source);
+	void doShellMenuCmd(MainWindow *inWindow, TextArea *area, const MenuItem &item, CommandSource source);
+	void execCursorLine(TextArea *area, CommandSource source);
 	void finishLearning();
 	void flashMatchingChar(TextArea *area);
 	void FreeHighlightingData();
@@ -248,7 +248,7 @@ private:
 	void saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, view::string_view deletedText);
 	void SetWindowModified(bool modified);
 	void Undo();
-	void UnloadLanguageModeTipsFileEx();
+	void unloadLanguageModeTipsFile();
 	void UpdateMarkTable(TextCursor pos, int64_t nInserted, int64_t nDeleted);
 	void updateStatsLine(TextArea *area);
 	void actionClose(CloseMode mode);
@@ -259,9 +259,9 @@ private:
 	void cancelLearning();
 	void createSelectMenuEx(TextArea *area, const QStringList &args);
 	void documentRaised();
-	void eraseFlashEx();
+	void eraseFlash();
 	void filterSelection(const QString &command, CommandSource source);
-	void issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, TextCursor replaceLeft, TextCursor replaceRight, CommandSource source);
+	void issueCommand(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, TextCursor replaceLeft, TextCursor replaceRight, CommandSource source);
 	void processFinished(int exitCode, QProcess::ExitStatus exitStatus);
 	void reapplyLanguageMode(size_t mode, bool forceDefaults);
 	void refreshMenuBar();

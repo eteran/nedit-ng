@@ -22,7 +22,7 @@ bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QStr
 bool readCheckMacroString(QWidget *dialogParent, const QString &string, DocumentWidget *runDocument, const QString &errIn, int *errPos);
 
 void RegisterMacroSubroutines();
-void ReturnShellCommandOutputEx(DocumentWidget *document, const QString &outText, int status);
+void returnShellCommandOutput(DocumentWidget *document, const QString &outText, int status);
 
 /* Data attached to window during shell command execution with
    information for controling and communicating with the process */

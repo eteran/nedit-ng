@@ -54,9 +54,6 @@
 
 #include <chrono>
 
-#include <fcntl.h>
-#include <sys/stat.h> // TODO(eteran): consider qplatformdefs.h...
-
 // NOTE(eteran): generally, this class reaches out to MainWindow FAR too much
 // it would be better to create some fundamental signals that MainWindow could
 // listen on and update itself as needed. This would reduce a lot fo the heavy
@@ -133,7 +130,11 @@ constexpr CharMatchTable FlashingChars[] = {
  * @return
  */
 bool isAdministrator() {
+#ifdef Q_OS_UNIX
 	return getuid() == 0;
+#else
+	return false;
+#endif
 }
 
 /**
@@ -462,7 +463,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	flashTimer_->setSingleShot(true);
 
 	connect(flashTimer_, &QTimer::timeout, this, [this]() {
-		eraseFlashEx();
+		eraseFlash();
 	});
 
 	auto area = createTextArea(buffer_);
@@ -483,10 +484,6 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
  * @brief DocumentWidget::~DocumentWidget
  */
 DocumentWidget::~DocumentWidget() noexcept {
-
-	// NOTE(eteran): we probably don't need to be doing so much work here
-	// a lot (almost all?) of this will get cleaned up as a side effect of
-	// deletion anyway. But we'll save that refactor for another day
 
 	// first delete all of the text area's so that they can properly
 	// remove themselves from the buffer's callbacks
@@ -513,8 +510,8 @@ DocumentWidget::~DocumentWidget() noexcept {
 TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
 
 	auto area = new TextArea(this,
-							 buffer,
-							 Preferences::GetPrefDefaultFont());
+	                         buffer,
+	                         Preferences::GetPrefDefaultFont());
 
 	area->setCursorVPadding(Preferences::GetVerticalAutoScroll());
 	area->setEmulateTabs(Preferences::GetPrefEmTabDist(PLAIN_LANGUAGE_MODE));
@@ -596,8 +593,8 @@ void DocumentWidget::RefreshTabState() {
 			tabWidget->setTabIcon(index, fileChanged_ ? saveIcon : QIcon());
 			labelString = filename_;
 		} else {
-			/* Set tab label to document's filename. Position of
-			"*" (modified) will change per label alignment setting */
+			/* Set tab label to document's filename. Position of "*" (modified)
+			 * will change per label alignment setting */
 			QStyle *const style = tabWidget->tabBar()->style();
 			const int alignment = style->styleHint(QStyle::SH_TabBar_Alignment);
 
@@ -1837,7 +1834,7 @@ void DocumentWidget::checkForChangesToFile() {
 		const bool silent = (!isTopDocument() || !win->isVisible());
 
 		// Get the file mode and modification time
-		QString fullname = FullPath();
+		QString fullname = fullPath();
 
 		QT_STATBUF statbuf;
 		if (QT_STAT(fullname.toUtf8().data(), &statbuf) != 0) {
@@ -1975,10 +1972,10 @@ void DocumentWidget::checkForChangesToFile() {
 }
 
 /**
- * @brief DocumentWidget::FullPath
+ * @brief DocumentWidget::fullPath
  * @return
  */
-QString DocumentWidget::FullPath() const {
+QString DocumentWidget::fullPath() const {
 	return tr("%1%2").arg(path_, filename_);
 }
 
@@ -2168,7 +2165,7 @@ void DocumentWidget::RevertToSaved() {
 }
 
 /*
-** Create a backup file for the current window.  The name for the backup file
+** Create a backup file for the current document.  The name for the backup file
 ** is generated using the name and path stored in the window and adding a
 ** tilde (~) on UNIX.
 */
@@ -2290,7 +2287,7 @@ bool DocumentWidget::saveDocument() {
 
 bool DocumentWidget::doSave() {
 
-	QString fullname = FullPath();
+	QString fullname = fullPath();
 
 	/*  Check for root and warn him if he wants to write to a file with
 		none of the write bits set.  */
@@ -2490,7 +2487,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 }
 
 /*
-** Change a window created in NEdit's continuous wrap mode to the more
+** Change a document created in NEdit's continuous wrap mode to the more
 ** conventional Unix format of embedded newlines.  Indicate to the user
 ** by turning off Continuous Wrap mode.
 */
@@ -2554,7 +2551,7 @@ bool DocumentWidget::writeBckVersion() {
 		}
 
 		// Get the full name of the file
-		QString fullname = FullPath();
+		QString fullname = fullPath();
 
 		// Generate name for old version
 		auto bckname = tr("%1.bck").arg(fullname);
@@ -2660,7 +2657,7 @@ bool DocumentWidget::fileWasModifiedExternally() const {
 		return false;
 	}
 
-	QString fullname = FullPath();
+	QString fullname = fullPath();
 
 	QT_STATBUF statbuf;
 	if (QT_STAT(fullname.toLocal8Bit().data(), &statbuf) != 0) {
@@ -2748,10 +2745,10 @@ void DocumentWidget::closeDocument() {
 	const bool keepWindow = !MacroWindowCloseActionsEx();
 
 	// Kill shell sub-process
-	AbortShellCommand();
+	abortShellCommand();
 
 	// Unload the default tips files for this language mode if necessary
-	UnloadLanguageModeTipsFileEx();
+	unloadLanguageModeTipsFile();
 
 	/* if this is the last window, or must be kept alive temporarily because
 	   it's running the macro calling us, don't close it, make it Untitled */
@@ -2907,7 +2904,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 	FILE *fp = nullptr;
 
 	// Get the full name of the file
-	const QString fullname = FullPath();
+	const QString fullname = fullPath();
 
 	// Open the file
 	/* The only advantage of this is if you use clearcase,
@@ -3235,11 +3232,11 @@ void DocumentWidget::executeNewlineMacro(SmartIndentEvent *event) {
 		++(winData->inNewLineMacro);
 
 		std::shared_ptr<MacroContext> continuation;
-		int stat = ExecuteMacro(this, winData->newlineMacro, args, &result, continuation, &errMsg);
+		int stat = executeMacro(this, winData->newlineMacro, args, &result, continuation, &errMsg);
 
 		// Don't allow preemption or time limit.  Must get return value
 		while (stat == MACRO_TIME_LIMIT) {
-			stat = ContinueMacroEx(continuation, &result, &errMsg);
+			stat = continueMacro(continuation, &result, &errMsg);
 		}
 
 		--(winData->inNewLineMacro);
@@ -3318,10 +3315,10 @@ void DocumentWidget::executeModMacro(SmartIndentEvent *event) {
 		++(winData->inModMacro);
 
 		std::shared_ptr<MacroContext> continuation;
-		int stat = ExecuteMacro(this, winData->modMacro, args, &result, continuation, &errMsg);
+		int stat = executeMacro(this, winData->modMacro, args, &result, continuation, &errMsg);
 
 		while (stat == MACRO_TIME_LIMIT) {
-			stat = ContinueMacroEx(continuation, &result, &errMsg);
+			stat = continueMacro(continuation, &result, &errMsg);
 		}
 
 		--(winData->inModMacro);
@@ -3356,9 +3353,9 @@ void DocumentWidget::macroBannerTimeoutProc() {
 
 	// Create message
 	if (cCancel.isEmpty()) {
-		SetModeMessage(tr("Macro Command in Progress"));
+		setModeMessage(tr("Macro Command in Progress"));
 	} else {
-		SetModeMessage(tr("Macro Command in Progress -- Press %1 to Cancel").arg(cCancel));
+		setModeMessage(tr("Macro Command in Progress -- Press %1 to Cancel").arg(cCancel));
 	}
 }
 
@@ -3379,9 +3376,9 @@ void DocumentWidget::shellBannerTimeoutProc() {
 
 	// Create message
 	if (cCancel.isEmpty()) {
-		SetModeMessage(tr("Shell Command in Progress"));
+		setModeMessage(tr("Shell Command in Progress"));
 	} else {
-		SetModeMessage(tr("Shell Command in Progress -- Press %1 to Cancel").arg(cCancel));
+		setModeMessage(tr("Shell Command in Progress -- Press %1 to Cancel").arg(cCancel));
 	}
 }
 
@@ -3760,7 +3757,7 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 
 		/* Substitute the current file name for % and the current line number
 		   for # in the shell command */
-		QString fullName = FullPath();
+		QString fullName = fullPath();
 
 		int line;
 		int column;
@@ -3777,7 +3774,7 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 			return;
 		}
 
-		issueCommandEx(
+		issueCommand(
 					win,
 					area,
 					substitutedCommand,
@@ -4276,7 +4273,7 @@ bool DocumentWidget::modeMessageDisplayed() const {
 ** Display a special message in the stats line (show the stats line if it
 ** is not currently shown).
 */
-void DocumentWidget::SetModeMessage(const QString &message) {
+void DocumentWidget::setModeMessage(const QString &message) {
 
 	if(message.isNull()) {
 		return;
@@ -4296,10 +4293,10 @@ void DocumentWidget::SetModeMessage(const QString &message) {
 }
 
 /*
-** Clear special statistics line message set in SetModeMessage, returns
-** the statistics line to its original state as set in window->showStats_
+** Clear special statistics line message set in setModeMessage, returns
+** the statistics line to its original state as set in showStats_
 */
-void DocumentWidget::ClearModeMessage() {
+void DocumentWidget::clearModeMessage() {
 
 	if (!modeMessageDisplayed()) {
 		return;
@@ -4318,7 +4315,7 @@ void DocumentWidget::ClearModeMessage() {
 }
 
 // Decref the default calltips file(s) for this window
-void DocumentWidget::UnloadLanguageModeTipsFileEx() {
+void DocumentWidget::unloadLanguageModeTipsFile() {
 
 	const size_t mode = languageMode_;
 	if (mode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[mode].defTipsFile.isNull()) {
@@ -4349,7 +4346,7 @@ void DocumentWidget::UnloadLanguageModeTipsFileEx() {
 ** REPLACE_SELECTION, ERROR_DIALOGS, and OUTPUT_TO_STRING can only be used
 ** along with ACCUMULATE (these operations can't be done incrementally).
 */
-void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, TextCursor replaceLeft, TextCursor replaceRight, CommandSource source) {
+void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, TextCursor replaceLeft, TextCursor replaceRight, CommandSource source) {
 
 	// verify consistency of input parameters
 	if ((flags & ERROR_DIALOGS || flags & REPLACE_SELECTION || flags & OUTPUT_TO_STRING) && !(flags & ACCUMULATE)) {
@@ -4365,19 +4362,15 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
 		document = MacroRunDocument();
 	}
 
-	// put up a watch cursor over the waiting window
 	if (source == CommandSource::User) {
 		setCursor(Qt::WaitCursor);
 	}
 
-	// enable the cancel menu item
 	if (source == CommandSource::User) {
 		window->ui.action_Cancel_Shell_Command->setEnabled(true);
 	}
 
-	// create the process and connect the output streams to the readyRead events
 	auto process = new QProcess(this);
-
 	connect(process,
 			static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
 			document,
@@ -4440,7 +4433,7 @@ void DocumentWidget::issueCommandEx(MainWindow *window, TextArea *area, const QS
 	/* If this was called from a macro, preempt the macro until shell
 	   command completes */
 	if (source == CommandSource::Macro) {
-		PreemptMacro();
+		preemptMacro();
 	}
 }
 
@@ -4469,7 +4462,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 		setCursor(Qt::ArrowCursor);
 		window->ui.action_Cancel_Shell_Command->setEnabled(false);
 		if (cmdData->bannerIsUp) {
-			ClearModeMessage();
+			clearModeMessage();
 		}
 	}
 
@@ -4586,7 +4579,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 				dialog->show();
 			}
 		} else if (cmdData->flags & OUTPUT_TO_STRING) {
-			ReturnShellCommandOutputEx(this, outText, exitCode);
+			returnShellCommandOutput(this, outText, exitCode);
 		} else {
 
 			std::string output_string = outText.toStdString();
@@ -4619,7 +4612,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 /*
 ** Cancel the shell command in progress
 */
-void DocumentWidget::AbortShellCommand() {
+void DocumentWidget::abortShellCommand() {
 	if(const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_) {
 		if(QProcess *process = cmdData->process) {
 			process->kill();
@@ -4631,7 +4624,7 @@ void DocumentWidget::AbortShellCommand() {
 ** Execute the line of text where the the insertion cursor is positioned
 ** as a shell command.
 */
-void DocumentWidget::ExecCursorLineEx(TextArea *area, CommandSource source) {
+void DocumentWidget::execCursorLine(TextArea *area, CommandSource source) {
 
 	auto window = MainWindow::fromDocument(this);
 	if(!window) {
@@ -4687,8 +4680,7 @@ void DocumentWidget::ExecCursorLineEx(TextArea *area, CommandSource source) {
 		return;
 	}
 
-	// issue the command
-	issueCommandEx(
+	issueCommand(
 				window,
 				area,
 				substitutedCommand,
@@ -4733,8 +4725,7 @@ void DocumentWidget::filterSelection(const QString &command, CommandSource sourc
 	const TextCursor left  = buffer_->primary.start;
 	const TextCursor right = buffer_->primary.end;
 
-	// Issue the command and collect its output
-	issueCommandEx(
+	issueCommand(
 				window,
 				window->lastFocus_,
 				command,
@@ -4750,8 +4741,8 @@ void DocumentWidget::filterSelection(const QString &command, CommandSource sourc
 ** output destination, save first and load after) in the shell commands
 ** menu.
 */
-void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const MenuItem &item, CommandSource source) {
-	DoShellMenuCmd(
+void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const MenuItem &item, CommandSource source) {
+	doShellMenuCmd(
 		inWindow,
 		area,
 		item.cmd,
@@ -4763,7 +4754,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 		source);
 }
 
-void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, CommandSource source) {
+void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, CommandSource source) {
 
 	int flags = 0;
 	TextCursor left  = {};
@@ -4883,7 +4874,7 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 	}
 
 	// issue the command
-	issueCommandEx(
+	issueCommand(
 				inWindow,
 				outWidget,
 				substitutedCommand,
@@ -4895,11 +4886,11 @@ void DocumentWidget::DoShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 }
 
 /**
- * @brief DocumentWidget::WidgetToPaneIndex
+ * @brief DocumentWidget::widgetToPaneIndex
  * @param area
  * @return
  */
-int DocumentWidget::WidgetToPaneIndex(TextArea *area) const {
+int DocumentWidget::widgetToPaneIndex(TextArea *area) const {
 	return splitter_->indexOf(area);
 }
 
@@ -4907,10 +4898,10 @@ int DocumentWidget::WidgetToPaneIndex(TextArea *area) const {
 ** Execute shell command "command", on input string "input", depositing the
 ** in a macro string (via a call back to ReturnShellCommandOutput).
 */
-void DocumentWidget::ShellCmdToMacroStringEx(const QString &command, const QString &input) {
+void DocumentWidget::shellCmdToMacroString(const QString &command, const QString &input) {
 
 	// fork the command and begin processing input/output
-	issueCommandEx(
+	issueCommand(
 				MainWindow::fromDocument(this),
 				nullptr,
 				command,
@@ -4924,7 +4915,7 @@ void DocumentWidget::ShellCmdToMacroStringEx(const QString &command, const QStri
 /*
 ** Set the auto-scroll margin
 */
-void DocumentWidget::SetAutoScroll(int margin) {
+void DocumentWidget::setAutoScroll(int margin) {
 
 	for(TextArea *area : textPanes()) {
 		area->setCursorVPadding(margin);
@@ -4939,7 +4930,7 @@ void DocumentWidget::SetAutoScroll(int margin) {
  * Dispatches a macro to which repeats macro command in "command", either
  * an integer number of times ("how" == positive integer), or within a
  * selected range ("how" == REPEAT_IN_SEL), or to the end of the window
- * ("how == REPEAT_TO_END).
+ * ("how" == REPEAT_TO_END).
  *
  * Note that as with most macro routines, this returns BEFORE the macro is
  * finished executing
@@ -4988,7 +4979,7 @@ std::vector<DocumentWidget *> DocumentWidget::allDocuments() {
 }
 
 /**
- * @brief DocumentWidget::BeginLearn
+ * @brief DocumentWidget::beginLearn
  */
 void DocumentWidget::beginLearn() {
 
@@ -5020,15 +5011,15 @@ void DocumentWidget::beginLearn() {
 
 	if (cFinish.isEmpty()) {
 		if (cCancel.isEmpty()) {
-			SetModeMessage(tr("Learn Mode -- Use menu to finish or cancel"));
+			setModeMessage(tr("Learn Mode -- Use menu to finish or cancel"));
 		} else {
-			SetModeMessage(tr("Learn Mode -- Use menu to finish, press %1 to cancel").arg(cCancel));
+			setModeMessage(tr("Learn Mode -- Use menu to finish, press %1 to cancel").arg(cCancel));
 		}
 	} else {
 		if (cCancel.isEmpty()) {
-			SetModeMessage(tr("Learn Mode -- Press %1 to finish, use menu to cancel").arg(cFinish));
+			setModeMessage(tr("Learn Mode -- Press %1 to finish, use menu to cancel").arg(cFinish));
 		} else {
-			SetModeMessage(tr("Learn Mode -- Press %1 to finish, %2 to cancel").arg(cFinish, cCancel));
+			setModeMessage(tr("Learn Mode -- Press %1 to finish, %2 to cancel").arg(cFinish, cCancel));
 		}
 	}
 }
@@ -5099,7 +5090,7 @@ void DocumentWidget::runMacro(Program *prog) {
 	// Begin macro execution
 	DataValue result;
 	QString errMsg;
-	const int stat = ExecuteMacro(this, prog, {}, &result, macroCmdData_->context, &errMsg);
+	const int stat = executeMacro(this, prog, {}, &result, macroCmdData_->context, &errMsg);
 
 	switch(stat) {
 	case MACRO_ERROR:
@@ -5139,7 +5130,7 @@ void DocumentWidget::finishMacroCmdExecution() {
 	}
 
 	if (macroCmdData_->bannerIsUp) {
-		ClearModeMessage();
+		clearModeMessage();
 	}
 
 	// Free execution information
@@ -5168,7 +5159,7 @@ DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProcEx() {
 
 	QString errMsg;
 	DataValue result;
-	const int stat = ContinueMacroEx(macroCmdData_->context, &result, &errMsg);
+	const int stat = continueMacro(macroCmdData_->context, &result, &errMsg);
 
 	switch(stat) {
 	case MACRO_ERROR:
@@ -5222,7 +5213,7 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 
 	// if a marker is already drawn, erase it and cancel the timeout
 	if (flashTimer_->isActive()) {
-		eraseFlashEx();
+		eraseFlash();
 		flashTimer_->stop();
 	}
 
@@ -5247,7 +5238,6 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 	const char ch = buffer_->BufGetCharacter(pos);
 
 	Style style = GetHighlightInfoEx(pos);
-
 
 	// is the character one we want to flash?
 	auto matchIt = std::find_if(std::begin(FlashingChars), std::end(FlashingChars), [ch](const CharMatchTable &entry) {
@@ -5301,7 +5291,7 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 ** Erase the marker drawn on a matching parenthesis bracket or brace
 ** character.
 */
-void DocumentWidget::eraseFlashEx() {
+void DocumentWidget::eraseFlash() {
 	buffer_->BufUnhighlight();
 }
 
@@ -6366,7 +6356,7 @@ void DocumentWidget::AbortMacroCommand() {
 	   commands don't put up cancellation controls of their own, but rely
 	   instead on the macro cancellation mechanism (here) */
 	if (shellCmdData_) {
-		AbortShellCommand();
+		abortShellCommand();
 	}
 
 	// Kill the macro command
@@ -6427,7 +6417,7 @@ void DocumentWidget::cancelLearning() {
 		window->ui.action_Cancel_Learn->setEnabled(false);
 	}
 
-	document->ClearModeMessage();
+	document->clearModeMessage();
 }
 
 void DocumentWidget::finishLearning() {
@@ -6453,7 +6443,7 @@ void DocumentWidget::finishLearning() {
 		}
 	}
 
-	document->ClearModeMessage();
+	document->clearModeMessage();
 }
 
 /*
