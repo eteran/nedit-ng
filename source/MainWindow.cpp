@@ -50,14 +50,9 @@
 #include <QMimeData>
 #include <QShortcut>
 #include <QButtonGroup>
+#include <qplatformdefs.h>
 
 #include <cmath>
-
-#ifdef Q_OS_UNIX
-#include <sys/param.h>
-#endif
-
-#include <sys/stat.h>
 
 #ifdef Q_OS_LINUX
 #include <QLibrary>
@@ -1637,8 +1632,8 @@ DocumentWidget *MainWindow::FindWindowWithFile(const QString &filename, const QS
 
 		QString fullname = tr("%1%2").arg(path, filename);
 
-		struct stat attribute;
-		if (::stat(fullname.toUtf8().data(), &attribute) == 0) {
+		QT_STATBUF attribute;
+		if (QT_STAT(fullname.toUtf8().data(), &attribute) == 0) {
 
 			auto it = std::find_if(documents.begin(), documents.end(), [attribute](DocumentWidget *document){
 				return (attribute.st_dev == document->dev_) && (attribute.st_ino == document->ino_);

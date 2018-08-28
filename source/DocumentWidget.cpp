@@ -50,6 +50,7 @@
 #include <QTimer>
 #include <QButtonGroup>
 #include <QScrollBar>
+#include <qplatformdefs.h>
 
 #include <chrono>
 
@@ -1838,8 +1839,8 @@ void DocumentWidget::checkForChangesToFile() {
 		// Get the file mode and modification time
 		QString fullname = FullPath();
 
-		struct stat statbuf;
-		if (::stat(fullname.toUtf8().data(), &statbuf) != 0) {
+		QT_STATBUF statbuf;
+		if (QT_STAT(fullname.toUtf8().data(), &statbuf) != 0) {
 
 			// Return if we've already warned the user or we can't warn him now
 			if (fileMissing_ || silent) {
@@ -2367,8 +2368,8 @@ bool DocumentWidget::doSave() {
 	SetWindowModified(false);
 
 	// update the modification time
-	struct stat statbuf;
-	if (::stat(fullname.toUtf8().data(), &statbuf) == 0) {
+	QT_STATBUF statbuf;
+	if (QT_STAT(fullname.toUtf8().data(), &statbuf) == 0) {
 		lastModTime_ = statbuf.st_mtime;
 		fileMissing_ = false;
 		dev_         = statbuf.st_dev;
@@ -2572,8 +2573,8 @@ bool DocumentWidget::writeBckVersion() {
 		/* Get permissions of the file.
 		 * We preserve the normal permissions but not ownership, extended
 		 * attributes, et cetera. */
-		struct stat statbuf;
-		if (::fstat(inputFile.handle(), &statbuf) != 0) {
+		QT_STATBUF statbuf;
+		if (QT_FSTAT(inputFile.handle(), &statbuf) != 0) {
 			return false;
 		}
 
@@ -2661,8 +2662,8 @@ bool DocumentWidget::fileWasModifiedExternally() const {
 
 	QString fullname = FullPath();
 
-	struct stat statbuf;
-	if (::stat(fullname.toLocal8Bit().data(), &statbuf) != 0) {
+	QT_STATBUF statbuf;
+	if (QT_STAT(fullname.toLocal8Bit().data(), &statbuf) != 0) {
 		return false;
 	}
 
@@ -2919,9 +2920,9 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 		if ((fp = ::fopen(fullname.toUtf8().data(), "r"))) {
 
 			// detect if the file is readable, but not writable
-			QFile fp(fullname);
-			if(fp.open(QIODevice::ReadWrite) || fp.open(QIODevice::ReadOnly)) {
-				lockReasons_.setPermLocked(!fp.isWritable());
+			QFile file(fullname);
+			if(file.open(QIODevice::ReadWrite) || file.open(QIODevice::ReadOnly)) {
+				lockReasons_.setPermLocked(!file.isWritable());
 			}
 
 		} else if (flags & EditFlags::CREATE && errno == ENOENT) {
@@ -2971,12 +2972,12 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 			}
 
 			// Test if new file can be created
-			int fd = ::creat(fullname.toUtf8().data(), 0666);
+			const int fd = QT_OPEN(fullname.toUtf8().data(), QT_OPEN_CREAT | QT_OPEN_WRONLY | QT_OPEN_TRUNC, 0666);
 			if (fd == -1) {
 				QMessageBox::critical(this, tr("Error creating File"), tr("Can't create %1:\n%2").arg(fullname, ErrorString(errno)));
 				return false;
 			} else {
-				::close(fd);
+				QT_CLOSE(fd);
 				QFile::remove(fullname);
 			}
 
@@ -2998,8 +2999,8 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 	/* Get the length of the file, the protection mode, and the time of the
 	   last modification to the file */
-	struct stat statbuf;
-	if (::fstat(fileno(fp), &statbuf) != 0) {
+	QT_STATBUF statbuf;
+	if (QT_FSTAT(QT_FILENO(fp), &statbuf) != 0) {
 		filenameSet_ = false; // Temp. prevent check for changes.
 		QMessageBox::critical(this, tr("Error opening File"), tr("Error opening %1").arg(name));
 		filenameSet_ = true;
