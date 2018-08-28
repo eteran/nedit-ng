@@ -300,7 +300,9 @@ void MainWindow::parseGeometry(QString geometry) {
 
 		TextArea *area = document->firstPane();
 		const QMargins m = area->getMargins();
-		const int w = extent + (fm.maxWidth() * cols) + m.left() + m.right() + area->lineNumberAreaWidth();
+
+		// NOTE(eteran): maxWidth()
+		const int w = extent + (fm.width(QLatin1Char('X')) * cols) + m.left() + m.right() + area->lineNumberAreaWidth();
 		const int h = extent + (fm.ascent() + fm.descent()) * rows + m.top() + m.bottom();
 
 		document->setMinimumSize(w, h);

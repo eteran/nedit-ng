@@ -7202,7 +7202,7 @@ void TextArea::updateFontMetrics(const QFont &font) {
 		qWarning("NEdit: a variable width font has been specified. This is not supported, and will result in unexpected results");
 	}
 
-	fixedFontWidth_  = fm.maxWidth();
+	fixedFontWidth_  = fm.width(QLatin1Char('X')); // NOTE(eteran): maxWidth()
 	fixedFontHeight_ = fm.ascent() + fm.descent();
 }
 
