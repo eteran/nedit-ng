@@ -2184,7 +2184,7 @@ bool DocumentWidget::WriteBackupFile() {
 	/* open the file, set more restrictive permissions (using default
 	   permissions was somewhat of a security hole, because permissions were
 	   independent of those of the original file being edited */
-	int fd = ::open(name.toUtf8().data(), O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR);
+	int fd = QT_OPEN(name.toUtf8().data(), QT_OPEN_CREAT | O_EXCL | QT_OPEN_WRONLY, S_IRUSR | S_IWUSR);
 	if (fd < 0 || (fp = fdopen(fd, "w")) == nullptr) {
 
 		QMessageBox::warning(
@@ -2579,13 +2579,13 @@ bool DocumentWidget::writeBckVersion() {
 		}
 
 		// open the destination file exclusive and with restrictive permissions.
-		int out_fd = ::open(bckname.toUtf8().data(), O_CREAT | O_EXCL | O_TRUNC | O_WRONLY, S_IRUSR | S_IWUSR);
+		int out_fd = QT_OPEN(bckname.toUtf8().data(), QT_OPEN_CREAT | O_EXCL | QT_OPEN_TRUNC | QT_OPEN_WRONLY, S_IRUSR | S_IWUSR);
 		if (out_fd < 0) {
 			Raise<BackupError>(bckname, tr("Error open backup file"));
 		}
 
 		auto _2 = gsl::finally([out_fd]() {
-			::close(out_fd);
+			QT_CLOSE(out_fd);
 		});
 
 		// Set permissions on new file
@@ -2612,7 +2612,7 @@ bool DocumentWidget::writeBckVersion() {
 			}
 
 			// write to the file
-			ssize_t bytes_written = ::write(out_fd, &io_buffer[0], static_cast<size_t>(bytes_read));
+			ssize_t bytes_written = QT_WRITE(out_fd, &io_buffer[0], static_cast<size_t>(bytes_read));
 			if (bytes_written != bytes_read) {
 				QFile::remove(bckname);
 				Raise<BackupError>(bckname, ErrorString(errno));
