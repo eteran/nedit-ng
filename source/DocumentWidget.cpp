@@ -2181,7 +2181,11 @@ bool DocumentWidget::WriteBackupFile() {
 	/* open the file, set more restrictive permissions (using default
 	   permissions was somewhat of a security hole, because permissions were
 	   independent of those of the original file being edited */
+#ifdef Q_OS_WIN
+	int fd = QT_OPEN(name.toUtf8().data(), QT_OPEN_CREAT | O_EXCL | QT_OPEN_WRONLY, _S_IREAD | _S_IWRITE);
+#else
 	int fd = QT_OPEN(name.toUtf8().data(), QT_OPEN_CREAT | O_EXCL | QT_OPEN_WRONLY, S_IRUSR | S_IWUSR);
+#endif
 	if (fd < 0 || (fp = fdopen(fd, "w")) == nullptr) {
 
 		QMessageBox::warning(
@@ -2576,7 +2580,11 @@ bool DocumentWidget::writeBckVersion() {
 		}
 
 		// open the destination file exclusive and with restrictive permissions.
+#ifdef Q_OS_WIN
+		int out_fd = QT_OPEN(bckname.toUtf8().data(), QT_OPEN_CREAT | O_EXCL | QT_OPEN_TRUNC | QT_OPEN_WRONLY, _S_IREAD | _S_IWRITE);
+#else
 		int out_fd = QT_OPEN(bckname.toUtf8().data(), QT_OPEN_CREAT | O_EXCL | QT_OPEN_TRUNC | QT_OPEN_WRONLY, S_IRUSR | S_IWUSR);
+#endif
 		if (out_fd < 0) {
 			Raise<BackupError>(bckname, tr("Error open backup file"));
 		}
@@ -2585,11 +2593,13 @@ bool DocumentWidget::writeBckVersion() {
 			QT_CLOSE(out_fd);
 		});
 
+#ifdef Q_OS_UNIX
 		// Set permissions on new file
 		if (::fchmod(out_fd, statbuf.st_mode) != 0) {
 			QFile::remove(bckname);
 			Raise<BackupError>(bckname, tr("fchmod() failed"));
 		}
+#endif
 
 		// Allocate I/O buffer
 		constexpr size_t IO_BUFFER_SIZE = (1024 * 1024);
@@ -2597,7 +2607,7 @@ bool DocumentWidget::writeBckVersion() {
 
 		// copy loop
 		for (;;) {
-			ssize_t bytes_read = inputFile.read(&io_buffer[0], IO_BUFFER_SIZE);
+			qint64 bytes_read = inputFile.read(&io_buffer[0], IO_BUFFER_SIZE);
 
 			if (bytes_read < 0) {
 				QFile::remove(bckname);
@@ -2609,7 +2619,7 @@ bool DocumentWidget::writeBckVersion() {
 			}
 
 			// write to the file
-			ssize_t bytes_written = QT_WRITE(out_fd, &io_buffer[0], static_cast<size_t>(bytes_read));
+			qint64 bytes_written = QT_WRITE(out_fd, &io_buffer[0], static_cast<size_t>(bytes_read));
 			if (bytes_written != bytes_read) {
 				QFile::remove(bckname);
 				Raise<BackupError>(bckname, ErrorString(errno));
@@ -3003,6 +3013,12 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 		filenameSet_ = true;
 		return false;
 	}
+
+#ifdef Q_OS_WIN
+	// Copied from linux libc sys/stat.h:
+    #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+    #define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#endif
 
 	if (S_ISDIR(statbuf.st_mode)) {
 		filenameSet_ = false; // Temp. prevent check for changes.
