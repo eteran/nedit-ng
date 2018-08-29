@@ -84,7 +84,7 @@ endif()
 # 
 
 add_subdirectory (Util)
-add_subdirectory (source)
+add_subdirectory (src)
 add_subdirectory (client)
 add_subdirectory (Regex)
 add_subdirectory (Settings)
