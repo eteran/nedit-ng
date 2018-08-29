@@ -111,7 +111,7 @@ R numeric_escape(Ch ch, const char **parse) noexcept {
 	const char *pos_ptr = ::strchr(digit_str, static_cast<int>(*scan));
 
 	for (int i = 0; pos_ptr != nullptr && (i < width); i++) {
-		const long pos = (pos_ptr - digit_str) + pos_delta;
+		const ptrdiff_t pos = (pos_ptr - digit_str) + pos_delta;
 		value = (value * radix) + digit_val[pos];
 
 		/* If this digit makes the value over 255, treat this digit as a literal
