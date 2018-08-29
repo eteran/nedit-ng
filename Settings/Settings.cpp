@@ -176,6 +176,7 @@ void Settings::loadPreferences() {
 	QSettings settings(filename, QSettings::IniFormat);
 
 	fileVersion           = settings.value(tr("nedit.fileVersion"),           1).toInt();
+
 	shellCommands         = settings.value(tr("nedit.shellCommands"),         loadResource(shellCommandsResource)).toString();
 	macroCommands         = settings.value(tr("nedit.macroCommands"),         loadResource(QLatin1String("res/DefaultMacroCommands.txt"))).toString();
 	bgMenuCommands        = settings.value(tr("nedit.bgMenuCommands"),        loadResource(QLatin1String("res/DefaultBackgroundMenuCommands.txt"))).toString();
@@ -184,6 +185,15 @@ void Settings::loadPreferences() {
 	smartIndentInit       = settings.value(tr("nedit.smartIndentInit"),       loadResource(QLatin1String("res/DefaultSmartIndentInit.txt"))).toString();
 	smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), loadResource(QLatin1String("res/DefaultSmartIndentInitCommon.txt"))).toString();
 
+#ifdef Q_OS_WIN
+	shellCommands.replace(QLatin1String("\r\n"), QLatin1String("\n"));
+	macroCommands.replace(QLatin1String("\r\n"), QLatin1String("\n"));
+	bgMenuCommands.replace(QLatin1String("\r\n"), QLatin1String("\n"));
+	highlightPatterns.replace(QLatin1String("\r\n"), QLatin1String("\n"));
+	languageModes.replace(QLatin1String("\r\n"), QLatin1String("\n"));
+	smartIndentInit.replace(QLatin1String("\r\n"), QLatin1String("\n"));
+	smartIndentInitCommon.replace(QLatin1String("\r\n"), QLatin1String("\n"));
+#endif
 	autoWrap              = readEnum(settings, tr("nedit.autoWrap"),          WrapStyle::Continuous);
 	autoIndent            = readEnum(settings, tr("nedit.autoIndent"),        IndentStyle::Auto);
 	showMatching          = readEnum(settings, tr("nedit.showMatching"),      ShowMatchingStyle::Delimiter);
