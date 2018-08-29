@@ -69,7 +69,7 @@ add_definitions(-DQT_NO_CAST_FROM_ASCII)
 add_definitions(-DQT_NO_CAST_TO_ASCII)
 
 if(MSVC)
-
+	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 else()
 	add_compile_options(-W -Wall -pedantic -Wunused -Wno-unused-macros -Wno-shadow -Wno-switch-enum -Wno-unknown-pragmas)
 	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
