@@ -1690,10 +1690,6 @@ boost::optional<PatternSet> Highlight::readDefaultPatternSet(QByteArray &pattern
 	auto defaultPattern = QString::fromLatin1(patternData);
 	auto compare        = QString(QLatin1String("%1:")).arg(langModeName);
 
-#ifdef Q_OS_WIN
-	    defaultPattern.replace(QLatin1String("\r\n"), QLatin1String("\n"));
-#endif
-
 	if(defaultPattern.startsWith(compare)) {
 		Input in(&defaultPattern);
 		return readPatternSet(in);
