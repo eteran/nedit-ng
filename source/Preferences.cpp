@@ -749,9 +749,10 @@ size_t Preferences::FindLanguageMode(const QString &languageName) {
 ** if the current mode is "Plain".
 */
 QString Preferences::LanguageModeName(size_t mode) {
-	if (mode == PLAIN_LANGUAGE_MODE) {
+	if (mode == PLAIN_LANGUAGE_MODE || LanguageModes.empty()) {
 		return QString();
 	} else {
+		Q_ASSERT(mode < LanguageModes.size());
 		return LanguageModes[mode].name;
 	}
 }
