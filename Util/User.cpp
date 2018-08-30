@@ -30,7 +30,7 @@ QString ExpandTilde(const QString &pathname) {
 
 	QString username = pathname.mid(1, end - 1);
 
-	/* We might consider to re-use the GetHomeDirEx() function,
+	/* We might consider to re-use the GetHomeDir() function,
 	   but to keep the code more similar for both cases ... */
 	if (username.isEmpty()) {
 		passwdEntry = getpwuid(getuid());
