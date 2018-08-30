@@ -6375,7 +6375,21 @@ void TextArea::setWrapMargin(int value) {
 void TextArea::setLineNumCols(int value) {
 	lineNumCols_ = value;
 	resetAbsLineNum();
-	setLineNumberAreaWidth(fixedFontWidth_ * lineNumCols_);
+
+	if(value == 0) {
+		setLineNumberAreaWidth(0);
+	} else {
+		setLineNumberAreaWidth((fixedFontWidth_ * lineNumCols_) + (LineNumberArea::Padding * 2));
+	}
+
+}
+
+/**
+ * @brief TextArea::lineNumberAreaWidth
+ * @return
+ */
+int TextArea::lineNumberAreaWidth() const {
+	return lineNumberArea_->width();
 }
 
 /*
@@ -7808,14 +7822,6 @@ void TextArea::wheelEvent(QWheelEvent *event) {
 	} else {
 		QAbstractScrollArea::wheelEvent(event);
 	}
-}
-
-/**
- * @brief TextArea::lineNumberAreaWidth
- * @return
- */
-int TextArea::lineNumberAreaWidth() const {
-	return lineNumCols_ * fixedFontWidth_;
 }
 
 /**

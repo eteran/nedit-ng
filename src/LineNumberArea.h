@@ -9,6 +9,8 @@ class TextArea;
 class LineNumberArea : public QWidget {
 	Q_OBJECT
 public:
+	static constexpr int Padding = 5;
+public:
 	LineNumberArea(TextArea *area);
 	~LineNumberArea() noexcept override = default;
 

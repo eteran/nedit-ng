@@ -10,6 +10,7 @@
  * @param editor
  */
 LineNumberArea::LineNumberArea(TextArea *area) : QWidget(area), area_(area) {
+	resize(0, 0);
 }
 
 /**
@@ -51,7 +52,7 @@ void LineNumberArea::paintEvent(QPaintEvent *event) {
 #endif
 		if (lineStart != -1 && (lineStart == 0 || area_->buffer_->BufGetCharacter(lineStart - 1) == '\n')) {
 			const auto number = QString::number(line);
-			QRect rect(0, y, width(), lineHeight);
+			QRect rect(Padding, y, width() - (Padding * 2), lineHeight);
 			painter.drawText(rect, Qt::TextSingleLine | Qt::AlignVCenter | Qt::AlignRight, number);
 			++line;
 		} else {
