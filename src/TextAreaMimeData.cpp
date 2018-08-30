@@ -34,7 +34,11 @@ QVariant TextAreaMimeData::retrieveData(const QString &mimeType, QVariant::Type 
 QStringList TextAreaMimeData::formats() const {
 
 	if(buffer_->primary.selected) {
-		return QStringList() << QLatin1String("text/plain");
+		static const QStringList f = {
+		    QLatin1String("text/plain")
+		};
+
+		return f;
 	}
 
 	return QMimeData::formats();
