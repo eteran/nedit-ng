@@ -79,6 +79,7 @@ qt5_wrap_cpp(MOC_SOURCES
 	NeditServer.h
 	TabWidget.h
 	TextArea.h
+	TextAreaMimeData.h
 )
 
 qt5_wrap_ui(UIC_SOURCES
@@ -269,6 +270,8 @@ add_executable(nedit-ng
 	Tags.h
 	TextArea.cpp
 	TextArea.h
+	TextAreaMimeData.cpp
+	TextAreaMimeData.h
 	TextBuffer.cpp
 	TextBuffer.tcc
 	TextBufferFwd.h

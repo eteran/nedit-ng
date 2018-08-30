@@ -3,6 +3,7 @@
 #define TEXT_BUFFER_TCC_
 
 #include "TextBuffer.h"
+#include "TextAreaMimeData.h"
 #include "Util/algorithm.h"
 
 #include <algorithm>
@@ -524,6 +525,37 @@ void BasicTextBuffer<Ch, Tr>::BufSelect(std::pair<TextCursor, TextCursor> range)
 	BufSelect(range.first, range.second);
 }
 
+
+template <class Ch, class Tr>
+void BasicTextBuffer<Ch, Tr>::updatePrimarySelection() noexcept {
+#ifdef Q_OS_UNIX
+	if(syncXSelection_ && QApplication::clipboard()->supportsSelection()) {
+#if 0
+		std::string text = BufGetSelectionTextEx();
+		QApplication::clipboard()->setText(QString::fromStdString(text), QClipboard::Selection);
+#else
+		bool selected = primary.selected;
+		bool isOwner = false;
+		if(auto mime = qobject_cast<const TextAreaMimeData *>(QApplication::clipboard()->mimeData(QClipboard::Selection))) {
+			if(mime->buffer() == this) {
+				isOwner = true;
+			}
+		}
+
+		// if we already own the selection, then we don't need to do anything
+		// things are lazily evaluated in TextAreaMimeData::retrieveData
+		if ((isOwner && selected) || (!isOwner && !selected)) {
+			return;
+		}
+
+		auto data = new TextAreaMimeData(this);
+		QApplication::clipboard()->setMimeData(data, QClipboard::Selection);
+#endif
+	}
+#endif
+}
+
+
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSelect(TextCursor start, TextCursor end) noexcept {
 	const Selection oldSelection = primary;
@@ -532,10 +564,7 @@ void BasicTextBuffer<Ch, Tr>::BufSelect(TextCursor start, TextCursor end) noexce
 	redisplaySelection(&oldSelection, &primary);
 
 #ifdef Q_OS_UNIX
-	if(syncXSelection_ && QApplication::clipboard()->supportsSelection()) {
-		std::string text = BufGetSelectionTextEx();
-		QApplication::clipboard()->setText(QString::fromStdString(text), QClipboard::Selection);
-	}
+	updatePrimarySelection();
 #endif
 }
 
@@ -551,9 +580,7 @@ void BasicTextBuffer<Ch, Tr>::BufUnselect() noexcept {
 	// having a selection and then clicking in one of our windows. Which results
 	// in us taking ownership of the selection but setting it to nothing :-/
 #if defined(Q_OS_UNIX) && 0
-	if(syncXSelection_ && QApplication::clipboard()->supportsSelection()) {
-		QApplication::clipboard()->setText(QString(), QClipboard::Selection);
-	}
+	updatePrimarySelection();
 #endif
 }
 
@@ -565,10 +592,7 @@ void BasicTextBuffer<Ch, Tr>::BufRectSelect(TextCursor start, TextCursor end, in
 	redisplaySelection(&oldSelection, &primary);
 
 #ifdef Q_OS_UNIX
-	if(syncXSelection_ && QApplication::clipboard()->supportsSelection()) {
-		std::string text = BufGetSelectionTextEx();
-		QApplication::clipboard()->setText(QString::fromStdString(text), QClipboard::Selection);
-	}
+	updatePrimarySelection();
 #endif
 }
 
