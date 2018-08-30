@@ -1093,7 +1093,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 			while (safe_ctype<isdigit>(*pContext.Reg_Parse)) {
 				// (6553 * 10 + 6) > 65535 (16 bit max)
 
-				// TODO(eteran): we're storing this into a 32-bit variable... so would be simpler
+				// NOTE(eteran): we're storing this into a 32-bit variable... so would be simpler
 				// to just convert the number using strtoul and just check if it's too large when
 				// we're done
 
