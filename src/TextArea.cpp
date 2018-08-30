@@ -668,9 +668,6 @@ void TextArea::deletePreviousWordAP(EventFlags flags) {
 
 void TextArea::beginningOfLineAP(EventFlags flags) {
 
-	// TODO(eteran): if we are already at the begining of the line
-	// jump to the end of the leading whitespace
-
 	EMIT_EVENT_0("beginning_of_line");
 
 	const TextCursor insertPos = cursorPos_;
@@ -680,7 +677,19 @@ void TextArea::beginningOfLineAP(EventFlags flags) {
 	if (flags & AbsoluteFlag) {
 		TextDSetInsertPosition(buffer_->BufStartOfLine(insertPos));
 	} else {
-		TextDSetInsertPosition(TextDStartOfLine(insertPos));
+
+		TextCursor lineStart = TextDStartOfLine(insertPos);
+
+		// TODO(eteran): if we are already at the begining of the line
+		// jump to the end of the leading whitespace
+#if 0
+		if(lineStart == insertPos) {
+			if(boost::optional<TextCursor> p = spanForward(buffer_, lineStart, " \t", false)) {
+				lineStart = *p;
+			}
+		}
+#endif
+		TextDSetInsertPosition(lineStart);
 	}
 
 	checkMoveSelectionChange(flags, insertPos);
