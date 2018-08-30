@@ -162,7 +162,7 @@ QString Settings::autoLoadMacroFile() {
  * @return
  */
 QString Settings::styleFile() {
-	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
 	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("style.qss"));
 	return configFile;
 }
