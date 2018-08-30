@@ -560,16 +560,7 @@ void TextArea::cutClipboardAP(EventFlags flags) {
 void TextArea::toggleOverstrikeAP(EventFlags flags) {
 
 	EMIT_EVENT_0("toggle_overstrike");
-
-	if (overstrike_) {
-		overstrike_ = false;
-		setCursorStyle(CursorStyles::Normal);
-	} else {
-		overstrike_ = true;
-		if (cursorStyle_ == CursorStyles::Normal) {
-			setCursorStyle(CursorStyles::Block);
-		}
-	}
+	setOverstrike(!overstrike_);
 }
 
 void TextArea::endOfLineAP(EventFlags flags) {
