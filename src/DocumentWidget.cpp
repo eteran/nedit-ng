@@ -432,6 +432,8 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	// NOTE(eteran): I'm not sure why this is necessary to make things look right :-/
 #ifdef Q_OS_MACOS
 	ui.verticalLayout->setContentsMargins(0, 5, 0, 0);
+#elif defined(Q_OS_WIN)
+	ui.verticalLayout->setContentsMargins(2, 2, 2, 2);
 #else
 	ui.verticalLayout->setContentsMargins(0, 0, 0, 0);
 #endif
