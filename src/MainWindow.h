@@ -393,6 +393,7 @@ private Q_SLOTS:
 	void selectionChanged(bool selected);
 	void undoAvailable(bool available);
 	void redoAvailable(bool available);
+	void updateStatus(DocumentWidget *document, TextArea *area);
 
 public:
 	QPointer<TextArea> lastFocus() const { return lastFocus_; }

@@ -392,8 +392,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 	   not necessarily set the window title or read-only status */
 	win->UpdateWindowTitle(document);
 	win->UpdateWindowReadOnly(document);
-
-	document->updateStatsLine(nullptr);
+	Q_EMIT document->updateStatus(document, nullptr);
 
 	// Add the name to the convenience menu of previously opened files
 	auto fullname = tr("%1%2").arg(path, name);
@@ -741,73 +740,6 @@ size_t DocumentWidget::matchLanguageMode() const {
 	return PLAIN_LANGUAGE_MODE;
 }
 
-/*
-** Update the optional statistics line.
-*/
-void DocumentWidget::updateStatsLine(TextArea *area) {
-
-	if (!isTopDocument()) {
-		return;
-	}
-
-	/* This routine is called for each character typed, so its performance
-	   affects overall editor perfomance.  Only update if the line is on. */
-	if (!showStats_) {
-		return;
-	}
-
-	if(auto win = MainWindow::fromDocument(this)) {
-		if(!area) {
-			area = win->lastFocus_;
-			if(!area) {
-				area = firstPane();
-			}
-		}
-
-		// Compose the string to display. If line # isn't available, leave it off
-		const TextCursor pos = area->TextGetCursorPos();
-
-		QString format;
-		switch(fileFormat_) {
-		case FileFormats::Dos:
-			format = tr(" DOS");
-			break;
-		case FileFormats::Mac:
-			format = tr(" Mac");
-			break;
-		default:
-			format = QString();
-			break;
-		}
-
-		QString string;
-		QString slinecol;
-		int line;
-		int colNum;
-		const int64_t length = buffer_->BufGetLength();
-
-		if (!area->TextDPosToLineAndCol(pos, &line, &colNum)) {
-			string   = tr("%1%2%3 %4 bytes").arg(path_, filename_, format).arg(length);
-			slinecol = tr("L: ---  C: ---");
-		} else {
-			slinecol = tr("L: %1  C: %2").arg(line).arg(colNum);
-			if (win->showLineNumbers_) {
-				string = tr("%1%2%3 byte %4 of %5").arg(path_, filename_, format).arg(to_integer(pos)).arg(length);
-			} else {
-				string = tr("%1%2%3 %4 bytes").arg(path_, filename_, format).arg(length);
-			}
-		}
-
-		// Update the line/column number
-		ui.labelStats->setText(slinecol);
-
-		// Don't clobber the line if there's a special message being displayed
-		if(!modeMessageDisplayed()) {
-			ui.labelFileAndSize->setText(string);
-		}
-	}
-}
-
 /**
  * @brief DocumentWidget::movedCallback
  * @param area
@@ -819,7 +751,7 @@ void DocumentWidget::movedCallback(TextArea *area) {
 	}
 
 	// update line and column nubers in statistics line
-	updateStatsLine(area);
+	Q_EMIT updateStatus(this, area);
 
 	// Check the character before the cursor for matchable characters
 	flashMatchingChar(area);
@@ -924,7 +856,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 		SetWindowModified(true);
 
 		// Update # of bytes, and line and col statistics
-		updateStatsLine(area);
+		Q_EMIT updateStatus(this, area);
 
 		// Check if external changes have been made to file and warn user
 		checkForChangesToFile();
@@ -1766,7 +1698,7 @@ bool DocumentWidget::checkReadOnly() const {
 */
 void DocumentWidget::MakeSelectionVisible(TextArea *area) {
 	area->TextDMakeSelectionVisible();
-	updateStatsLine(area);
+	Q_EMIT updateStatus(this, area);
 }
 
 /*
@@ -2480,7 +2412,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 
 		// Update the stats line and window title with the new filename
 		win->UpdateWindowTitle(this);
-		updateStatsLine(nullptr);
+		Q_EMIT updateStatus(this, nullptr);
 
 		win->SortTabBar();
 		return retVal;
@@ -2805,7 +2737,7 @@ void DocumentWidget::closeDocument() {
 		win->ui.action_Read_Only->setChecked(false);
 		clearUndoList();
 		clearRedoList();
-		updateStatsLine(nullptr);
+		Q_EMIT updateStatus(this, nullptr);
 		DetermineLanguageMode(true);
 		RefreshTabState();
 		win->updateLineNumDisp();
@@ -3123,7 +3055,7 @@ void DocumentWidget::refreshWindowStates() {
 		if (modeMessageDisplayed()) {
 			ui.labelFileAndSize->setText(modeMessage_);
 		} else {
-			updateStatsLine(nullptr);
+			Q_EMIT updateStatus(this, nullptr);
 		}
 
 		win->UpdateWindowReadOnly(this);
@@ -3993,12 +3925,18 @@ void DocumentWidget::beginSmartIndent(bool warn) {
 	smartIndentData_ = std::move(winData);
 }
 
+/**
+ * @brief DocumentWidget::updateSignals
+ * @param from
+ * @param to
+ */
 void DocumentWidget::updateSignals(MainWindow *from, MainWindow *to) {
-	disconnect(this, &DocumentWidget::canUndoChanged, from, &MainWindow::undoAvailable);
-	disconnect(this, &DocumentWidget::canRedoChanged, from, &MainWindow::redoAvailable);
+
+	disconnect(from);
 
 	connect(this, &DocumentWidget::canUndoChanged, to, &MainWindow::undoAvailable);
 	connect(this, &DocumentWidget::canRedoChanged, to, &MainWindow::redoAvailable);
+	connect(this, &DocumentWidget::updateStatus,   to, &MainWindow::updateStatus);
 }
 
 /*
@@ -4338,7 +4276,7 @@ void DocumentWidget::clearModeMessage() {
 		ShowStatsLine(false);
 	}
 
-	updateStatsLine(nullptr);
+	Q_EMIT updateStatus(this, nullptr);
 }
 
 // Decref the default calltips file(s) for this window

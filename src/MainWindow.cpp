@@ -978,6 +978,7 @@ DocumentWidget *MainWindow::CreateDocument(const QString &name) {
 
 	connect(document, &DocumentWidget::canUndoChanged, this, &MainWindow::undoAvailable);
 	connect(document, &DocumentWidget::canRedoChanged, this, &MainWindow::redoAvailable);
+	connect(document, &DocumentWidget::updateStatus,   this, &MainWindow::updateStatus);
 
 	ui.tabWidget->addTab(document, name);
 	return document;
@@ -3628,7 +3629,7 @@ void MainWindow::on_action_Statistics_Line_toggled(bool state) {
 		document->ShowStatsLine(state);
 
 		if(document->isTopDocument()) {
-			document->updateStatsLine(nullptr);
+			updateStatus(document, nullptr);
 		}
 	}
 }
@@ -4679,7 +4680,7 @@ DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geome
 	document->SetWindowModified(false);
 	document->lockReasons_.clear();
 	window->UpdateWindowReadOnly(document);
-	document->updateStatsLine(nullptr);
+	window->updateStatus(document, document->firstPane());
 	window->UpdateWindowTitle(document);
 	document->RefreshTabState();
 
@@ -5313,7 +5314,7 @@ void MainWindow::focusChanged(QWidget *from, QWidget *to) {
 			}
 
 			// update line number statistic to reflect current focus pane
-			document->updateStatsLine(area);
+			updateStatus(document, area);
 
 			// finish off the current incremental search
 			EndISearchEx();
@@ -7112,4 +7113,68 @@ bool MainWindow::GetShowLineNumbers() const {
  */
 QTabWidget *MainWindow::tabWidget() const {
 	return ui.tabWidget;
+}
+
+/**
+ * @brief MainWindow::updateStatus
+ * @param area
+ */
+void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
+	if (!document->isTopDocument()) {
+		return;
+	}
+
+	/* This routine is called for each character typed, so its performance
+	   affects overall editor perfomance.  Only update if the line is on. */
+	if (!document->showStats_) {
+		return;
+	}
+
+	if(!area) {
+		area = lastFocus_;
+		if(!area) {
+			area = document->firstPane();
+			Q_ASSERT(area);
+		}
+	}
+
+	// Compose the string to display. If line # isn't available, leave it off
+	const TextCursor pos = area->TextGetCursorPos();
+
+	const QString format = [document]() {
+		switch(document->fileFormat_) {
+		case FileFormats::Dos:
+			return tr(" DOS");
+		case FileFormats::Mac:
+			return tr(" Mac");
+		default:
+			return QString();
+		}
+	}();
+
+	QString string;
+	QString slinecol;
+	int line;
+	int column;
+	const int64_t length = document->buffer_->BufGetLength();
+
+	if (!area->TextDPosToLineAndCol(pos, &line, &column)) {
+		string   = tr("%1%2%3 %4 bytes").arg(document->path_, document->filename_, format).arg(length);
+		slinecol = tr("L: ---  C: ---");
+	} else {
+		slinecol = tr("L: %1  C: %2").arg(line).arg(column);
+		if (showLineNumbers_) {
+			string = tr("%1%2%3 byte %4 of %5").arg(document->path_, document->filename_, format).arg(to_integer(pos)).arg(length);
+		} else {
+			string = tr("%1%2%3 %4 bytes").arg(document->path_, document->filename_, format).arg(length);
+		}
+	}
+
+	// Update the line/column number
+	document->ui.labelStats->setText(slinecol);
+
+	// Don't clobber the line if there's a special message being displayed
+	if(!document->modeMessageDisplayed()) {
+		document->ui.labelFileAndSize->setText(string);
+	}
 }

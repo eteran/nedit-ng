@@ -77,6 +77,7 @@ Q_SIGNALS:
 	void documentClosed();
 	void canUndoChanged(bool canUndo);
 	void canRedoChanged(bool canUndo);
+	void updateStatus(DocumentWidget *document, TextArea *area);
 
 public:
 	void movedCallback(TextArea *area);
@@ -251,7 +252,6 @@ private:
 	void Undo();
 	void unloadLanguageModeTipsFile();
 	void UpdateMarkTable(TextCursor pos, int64_t nInserted, int64_t nDeleted);
-	void updateStatsLine(TextArea *area);
 	void actionClose(CloseMode mode);
 	void addRedoItem(UndoInfo &&redo);
 	void addUndoItem(UndoInfo &&undo);
