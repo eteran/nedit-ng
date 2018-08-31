@@ -6550,16 +6550,16 @@ QString DocumentWidget::GetAnySelection() {
  */
 QString DocumentWidget::GetAnySelection(bool beep_on_error) {
 
-	// If the selection is in the window's own buffer get it from there
-	if (buffer_->primary.selected) {
-		return QString::fromStdString(buffer_->BufGetSelectionTextEx());
-	}
-
 	if(QApplication::clipboard()->supportsSelection()) {
 		const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
 		if(mimeData->hasText()) {
 			return mimeData->text();
 		}
+	}
+
+	// If the selection is in the window's own buffer get it from there
+	if (buffer_->primary.selected) {
+		return QString::fromStdString(buffer_->BufGetSelectionTextEx());
 	}
 
 	if(beep_on_error) {
