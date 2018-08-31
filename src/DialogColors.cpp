@@ -58,18 +58,6 @@ DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
 	lineNumbersBG_ = X11Colors::fromString(Preferences::GetPrefColorName(LINENO_BG_COLOR));
 	cursorFG_      = X11Colors::fromString(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
 
-	// so things line up in a pleasing way...
-	auto style = QLatin1String("text-align:left;padding:4px 4px 4px 20px;");
-	ui.pushButtonFG->setStyleSheet(style);
-	ui.pushButtonBG->setStyleSheet(style);
-	ui.pushButtonSelectionFG->setStyleSheet(style);
-	ui.pushButtonSelectionBG->setStyleSheet(style);
-	ui.pushButtonMatchFG->setStyleSheet(style);
-	ui.pushButtonMatchBG->setStyleSheet(style);
-	ui.pushButtonLineNumbersFG->setStyleSheet(style);
-	ui.pushButtonLineNumbersBG->setStyleSheet(style);
-	ui.pushButtonCursor->setStyleSheet(style);
-
 	ui.pushButtonFG->setText(Preferences::GetPrefColorName(TEXT_FG_COLOR));
 	ui.pushButtonBG->setText(Preferences::GetPrefColorName(TEXT_BG_COLOR));
 	ui.pushButtonSelectionFG->setText(Preferences::GetPrefColorName(SELECT_FG_COLOR));
