@@ -4196,6 +4196,39 @@ void DocumentWidget::gotoAP(TextArea *area, int lineNum, int column) {
  * @param lineNoBg
  * @param cursorFg
  */
+void DocumentWidget::SetColors(const QColor &textFg, const QColor &textBg, const QColor &selectFg, const QColor &selectBg, const QColor &hiliteFg, const QColor &hiliteBg, const QColor &lineNoFg, const QColor &lineNoBg, const QColor &cursorFg) {
+
+
+	for(TextArea *area : textPanes()) {
+		area->TextDSetColors(textFg,
+		                     textBg,
+		                     selectFg,
+		                     selectBg,
+		                     hiliteFg,
+		                     hiliteBg,
+		                     lineNoFg,
+		                     lineNoBg,
+		                     cursorFg);
+	}
+
+	// Redo any syntax highlighting
+	if (highlightData_) {
+		UpdateHighlightStylesEx();
+   }
+}
+
+/**
+ * @brief DocumentWidget::SetColors
+ * @param textFg
+ * @param textBg
+ * @param selectFg
+ * @param selectBg
+ * @param hiliteFg
+ * @param hiliteBg
+ * @param lineNoFg
+ * @param lineNoBg
+ * @param cursorFg
+ */
 void DocumentWidget::SetColors(const QString &textFg, const QString &textBg, const QString &selectFg, const QString &selectBg, const QString &hiliteFg, const QString &hiliteBg, const QString &lineNoFg, const QString &lineNoBg, const QString &cursorFg) {
 
 	QColor textFgColor       = X11Colors::fromString(textFg);
@@ -4208,23 +4241,15 @@ void DocumentWidget::SetColors(const QString &textFg, const QString &textBg, con
 	QColor lineNumberBgColor = X11Colors::fromString(lineNoBg);
 	QColor cursorFgColor     = X11Colors::fromString(cursorFg);
 
-
-	for(TextArea *area : textPanes()) {
-		area->TextDSetColors(textFgColor,
-		                     textBgColor,
-		                     selectFgColor,
-		                     selectBgColor,
-		                     highlightFgColor,
-		                     highlightBgColor,
-		                     lineNumberFgColor,
-		                     lineNumberBgColor,
-		                     cursorFgColor);
-	}
-
-	// Redo any syntax highlighting
-	if (highlightData_) {
-		UpdateHighlightStylesEx();
-   }
+	SetColors(textFgColor,
+	          textBgColor,
+	          selectFgColor,
+	          selectBgColor,
+	          highlightFgColor,
+	          highlightBgColor,
+	          lineNumberFgColor,
+	          lineNumberBgColor,
+	          cursorFgColor);
 }
 
 /**
