@@ -2054,9 +2054,7 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 			}
 		}
 
-		if(!searchPath.endsWith(QLatin1Char('/'))) {
-			searchPath.append(QLatin1Char('/'));
-		}
+		searchPath = NormalizePathname(searchPath);
 
 		QDir dir(searchPath);
 		QStringList name_filters = { searchName };
