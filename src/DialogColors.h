@@ -4,9 +4,11 @@
 
 #include "Dialog.h"
 #include "ui_DialogColors.h"
+#include <QColor>
 
 class DocumentWidget;
 class QLabel;
+class QToolButton;
 
 class DialogColors final : public Dialog {
 	Q_OBJECT
@@ -15,36 +17,34 @@ public:
 	~DialogColors() noexcept override = default;
 
 private Q_SLOTS:
-	void on_buttonFG_clicked();
-	void on_buttonBG_clicked();
-	void on_buttonSelectionFG_clicked();
-	void on_buttonSelectionBG_clicked();
-	void on_buttonMatchFG_clicked();
-	void on_buttonMatchBG_clicked();
-	void on_buttonLineNumbersFG_clicked();
-	void on_buttonLineNumbersBG_clicked();
-	void on_buttonCursor_clicked();
-
-	void on_editFG_textChanged(const QString &text);
-	void on_editBG_textChanged(const QString &text);
-	void on_editSelectionFG_textChanged(const QString &text);
-	void on_editSelectionBG_textChanged(const QString &text);
-	void on_editMatchFG_textChanged(const QString &text);
-	void on_editMatchBG_textChanged(const QString &text);
-	void on_editLineNumbersFG_textChanged(const QString &text);
-	void on_editLineNumbersBG_textChanged(const QString &text);
-	void on_editCursor_textChanged(const QString &text);
+	void on_pushButtonFG_clicked();
+	void on_pushButtonBG_clicked();
+	void on_pushButtonSelectionFG_clicked();
+	void on_pushButtonSelectionBG_clicked();
+	void on_pushButtonMatchFG_clicked();
+	void on_pushButtonMatchBG_clicked();
+	void on_pushButtonLineNumbersFG_clicked();
+	void on_pushButtonLineNumbersBG_clicked();
+	void on_pushButtonCursor_clicked();
 
 	void on_buttonBox_clicked(QAbstractButton *button);
 	void on_buttonBox_accepted();
 
 private:
-	void chooseColor(QLineEdit *edit);
-	bool verifyAllColors();
+	QColor chooseColor(QPushButton *edit, const QColor &currentColor);
 	void updateColors();
 
 private:
 	Ui::DialogColors ui;
+	QColor textFG_;
+	QColor textBG_;
+	QColor selectionFG_;
+	QColor selectionBG_;
+	QColor matchFG_;
+	QColor matchBG_;
+	QColor lineNumbersFG_;
+	QColor lineNumbersBG_;
+	QColor cursorFG_;
 };
 
 #endif

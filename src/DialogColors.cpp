@@ -7,15 +7,35 @@
 
 #include <QColorDialog>
 #include <QMessageBox>
+#include <QPixmap>
+#include <QPainter>
 
-namespace  {
+namespace {
+
 /**
- * @brief showColorStatus
- * @param text
- * @param label
+ * @brief toString
+ * @param color
+ * @return
  */
-void showColorStatus(const QString &text, QLabel *label) {
-	label->setVisible(!QColor::isValidColor(text));
+QString toString(const QColor &color) {
+	return QString(QLatin1String("#%1")).arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0'));
+}
+
+/**
+ * @brief toIcon
+ * @param color
+ * @return
+ */
+QIcon toIcon(const QColor &color) {
+	QPixmap pixmap(16, 16);
+	QPainter painter(&pixmap);
+
+	painter.fillRect(1, 1, 30, 30, color);
+
+	painter.setPen(Qt::black);
+	painter.drawRect(0, 0, 32, 32);
+
+	return QIcon(pixmap);
 }
 
 }
@@ -28,174 +48,127 @@ void showColorStatus(const QString &text, QLabel *label) {
 DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 
-	ui.labelErrorFG->setVisible(false);
-	ui.labelErrorSelectionFG->setVisible(false);
-	ui.labelErrorMatchFG->setVisible(false);
-	ui.labelErrorLineNumbersFG->setVisible(false);
-	ui.labelErrorLineNumbersBG->setVisible(false);
-	ui.labelErrorBG->setVisible(false);
-	ui.labelErrorSelectionBG->setVisible(false);
-	ui.labelErrorMatchBG->setVisible(false);
-	ui.labelErrorCursor->setVisible(false);
+	textFG_        = X11Colors::fromString(Preferences::GetPrefColorName(TEXT_FG_COLOR));
+	textBG_        = X11Colors::fromString(Preferences::GetPrefColorName(TEXT_BG_COLOR));
+	selectionFG_   = X11Colors::fromString(Preferences::GetPrefColorName(SELECT_FG_COLOR));
+	selectionBG_   = X11Colors::fromString(Preferences::GetPrefColorName(SELECT_BG_COLOR));
+	matchFG_       = X11Colors::fromString(Preferences::GetPrefColorName(HILITE_FG_COLOR));
+	matchBG_       = X11Colors::fromString(Preferences::GetPrefColorName(HILITE_BG_COLOR));
+	lineNumbersFG_ = X11Colors::fromString(Preferences::GetPrefColorName(LINENO_FG_COLOR));
+	lineNumbersBG_ = X11Colors::fromString(Preferences::GetPrefColorName(LINENO_BG_COLOR));
+	cursorFG_      = X11Colors::fromString(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
 
-	ui.editFG->setText(Preferences::GetPrefColorName(TEXT_FG_COLOR));
-	ui.editBG->setText(Preferences::GetPrefColorName(TEXT_BG_COLOR));
-	ui.editSelectionFG->setText(Preferences::GetPrefColorName(SELECT_FG_COLOR));
-	ui.editSelectionBG->setText(Preferences::GetPrefColorName(SELECT_BG_COLOR));
-	ui.editMatchFG->setText(Preferences::GetPrefColorName(HILITE_FG_COLOR));
-	ui.editMatchBG->setText(Preferences::GetPrefColorName(HILITE_BG_COLOR));
-	ui.editLineNumbersFG->setText(Preferences::GetPrefColorName(LINENO_FG_COLOR));
-	ui.editLineNumbersBG->setText(Preferences::GetPrefColorName(LINENO_BG_COLOR));
-	ui.editCursor->setText(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
+	// so things line up in a pleasing way...
+	auto style = QLatin1String("text-align:left;padding:4px 4px 4px 20px;");
+	ui.pushButtonFG->setStyleSheet(style);
+	ui.pushButtonBG->setStyleSheet(style);
+	ui.pushButtonSelectionFG->setStyleSheet(style);
+	ui.pushButtonSelectionBG->setStyleSheet(style);
+	ui.pushButtonMatchFG->setStyleSheet(style);
+	ui.pushButtonMatchBG->setStyleSheet(style);
+	ui.pushButtonLineNumbersFG->setStyleSheet(style);
+	ui.pushButtonLineNumbersBG->setStyleSheet(style);
+	ui.pushButtonCursor->setStyleSheet(style);
+
+	ui.pushButtonFG->setText(Preferences::GetPrefColorName(TEXT_FG_COLOR));
+	ui.pushButtonBG->setText(Preferences::GetPrefColorName(TEXT_BG_COLOR));
+	ui.pushButtonSelectionFG->setText(Preferences::GetPrefColorName(SELECT_FG_COLOR));
+	ui.pushButtonSelectionBG->setText(Preferences::GetPrefColorName(SELECT_BG_COLOR));
+	ui.pushButtonMatchFG->setText(Preferences::GetPrefColorName(HILITE_FG_COLOR));
+	ui.pushButtonMatchBG->setText(Preferences::GetPrefColorName(HILITE_BG_COLOR));
+	ui.pushButtonLineNumbersFG->setText(Preferences::GetPrefColorName(LINENO_FG_COLOR));
+	ui.pushButtonLineNumbersBG->setText(Preferences::GetPrefColorName(LINENO_BG_COLOR));
+	ui.pushButtonCursor->setText(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
+
+	ui.pushButtonFG->setIcon(toIcon(textFG_));
+	ui.pushButtonBG->setIcon(toIcon(textBG_));
+	ui.pushButtonSelectionFG->setIcon(toIcon(selectionFG_));
+	ui.pushButtonSelectionBG->setIcon(toIcon(selectionBG_));
+	ui.pushButtonMatchFG->setIcon(toIcon(matchFG_));
+	ui.pushButtonMatchBG->setIcon(toIcon(matchBG_));
+	ui.pushButtonLineNumbersFG->setIcon(toIcon(lineNumbersFG_));
+	ui.pushButtonLineNumbersBG->setIcon(toIcon(lineNumbersBG_));
+	ui.pushButtonCursor->setIcon(toIcon(cursorFG_));
+}
+
+/**
+ * @brief DialogColors::on_pushButtonFG_clicked
+ */
+void DialogColors::on_pushButtonFG_clicked() {
+	textFG_ = chooseColor(ui.pushButtonFG, textFG_);
+}
+
+/**
+ * @brief DialogColors::on_pushButtonBG_clicked
+ */
+void DialogColors::on_pushButtonBG_clicked() {
+	textBG_ = chooseColor(ui.pushButtonBG, textBG_);
+}
+
+/**
+ * @brief DialogColors::on_pushButtonSelectionFG_clicked
+ */
+void DialogColors::on_pushButtonSelectionFG_clicked() {
+	selectionFG_ = chooseColor(ui.pushButtonSelectionFG, selectionFG_);
+}
+
+/**
+ * @brief DialogColors::on_pushButtonSelectionBG_clicked
+ */
+void DialogColors::on_pushButtonSelectionBG_clicked() {
+	selectionBG_ = chooseColor(ui.pushButtonSelectionBG, selectionBG_);
+}
+
+/**
+ * @brief DialogColors::on_pushButtonMatchFG_clicked
+ */
+void DialogColors::on_pushButtonMatchFG_clicked() {
+	matchFG_ = chooseColor(ui.pushButtonMatchFG, matchFG_);
+}
+
+/**
+ * @brief DialogColors::on_pushButtonMatchBG_clicked
+ */
+void DialogColors::on_pushButtonMatchBG_clicked() {
+	matchBG_ = chooseColor(ui.pushButtonMatchBG, matchBG_);
+}
+
+/**
+ * @brief DialogColors::on_pushButtonLineNumbersFG_clicked
+ */
+void DialogColors::on_pushButtonLineNumbersFG_clicked() {
+	lineNumbersFG_ = chooseColor(ui.pushButtonLineNumbersFG, lineNumbersFG_);
+}
+
+/**
+ * @brief DialogColors::on_pushButtonLineNumbersBG_clicked
+ */
+void DialogColors::on_pushButtonLineNumbersBG_clicked() {
+	lineNumbersBG_ = chooseColor(ui.pushButtonLineNumbersBG, lineNumbersBG_);
+}
+
+/**
+ * @brief DialogColors::on_pushButtonCursor_clicked
+ */
+void DialogColors::on_pushButtonCursor_clicked() {
+	cursorFG_ = chooseColor(ui.pushButtonCursor, cursorFG_);
 }
 
 /**
  * @brief DialogColors::chooseColor
  * @param edit
  */
-void DialogColors::chooseColor(QLineEdit *edit) {
+QColor DialogColors::chooseColor(QPushButton *button, const QColor &currentColor) {
 
-	QString name = edit->text();
-
-	QColor color = QColorDialog::getColor(X11Colors::fromString(name), this);
+	QColor color = QColorDialog::getColor(currentColor, this);
 	if(color.isValid()) {
-		edit->setText(QString(QLatin1String("#%1")).arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0')));
+		QPixmap pixmap(16, 16);
+		pixmap.fill(color);
+		button->setIcon(QIcon(pixmap));
+		button->setText(toString(color));
 	}
-}
 
-/**
- * @brief DialogColors::on_buttonFG_clicked
- */
-void DialogColors::on_buttonFG_clicked() {
-	chooseColor(ui.editFG);
-}
-
-/**
- * @brief DialogColors::on_buttonBG_clicked
- */
-void DialogColors::on_buttonBG_clicked() {
-	chooseColor(ui.editBG);
-}
-
-/**
- * @brief DialogColors::on_buttonSelectionFG_clicked
- */
-void DialogColors::on_buttonSelectionFG_clicked() {
-	chooseColor(ui.editSelectionFG);
-}
-
-/**
- * @brief DialogColors::on_buttonSelectionBG_clicked
- */
-void DialogColors::on_buttonSelectionBG_clicked() {
-	chooseColor(ui.editSelectionBG);
-}
-
-/**
- * @brief DialogColors::on_buttonMatchFG_clicked
- */
-void DialogColors::on_buttonMatchFG_clicked() {
-	chooseColor(ui.editMatchFG);
-}
-
-/**
- * @brief DialogColors::on_buttonMatchBG_clicked
- */
-void DialogColors::on_buttonMatchBG_clicked() {
-	 chooseColor(ui.editMatchBG);
-}
-
-/**
- * @brief DialogColors::on_buttonLineNumbersFG_clicked
- */
-void DialogColors::on_buttonLineNumbersFG_clicked() {
-	chooseColor(ui.editLineNumbersFG);
-}
-
-/**
- * @brief DialogColors::on_buttonLineNumbersBG_clicked
- */
-void DialogColors::on_buttonLineNumbersBG_clicked() {
-	chooseColor(ui.editLineNumbersBG);
-}
-
-/**
- * @brief DialogColors::on_buttonCursor_clicked
- */
-void DialogColors::on_buttonCursor_clicked() {
-	chooseColor(ui.editCursor);
-}
-
-/**
- * @brief DialogColors::on_editFG_textChanged
- * @param text
- */
-void DialogColors::on_editFG_textChanged(const QString &text) {
-	showColorStatus(text, ui.labelErrorFG);
-}
-
-/**
- * @brief DialogColors::on_editBG_textChanged
- * @param text
- */
-void DialogColors::on_editBG_textChanged(const QString &text) {
-	showColorStatus(text, ui.labelErrorBG);
-}
-
-/**
- * @brief DialogColors::on_editSelectionFG_textChanged
- * @param text
- */
-void DialogColors::on_editSelectionFG_textChanged(const QString &text) {
-	showColorStatus(text, ui.labelErrorSelectionFG);
-}
-
-/**
- * @brief DialogColors::on_editSelectionBG_textChanged
- * @param text
- */
-void DialogColors::on_editSelectionBG_textChanged(const QString &text) {
-	showColorStatus(text, ui.labelErrorSelectionBG);
-}
-
-/**
- * @brief DialogColors::on_editMatchFG_textChanged
- * @param text
- */
-void DialogColors::on_editMatchFG_textChanged(const QString &text) {
-	showColorStatus(text, ui.labelErrorMatchFG);
-}
-
-/**
- * @brief DialogColors::on_editMatchBG_textChanged
- * @param text
- */
-void DialogColors::on_editMatchBG_textChanged(const QString &text) {
-	showColorStatus(text, ui.labelErrorMatchBG);
-}
-
-/**
- * @brief DialogColors::on_editLineNumbersFG_textChanged
- * @param text
- */
-void DialogColors::on_editLineNumbersFG_textChanged(const QString &text) {
-	showColorStatus(text, ui.labelErrorLineNumbersFG);
-}
-
-/**
- * @brief DialogColors::on_editLineNumbersBG_textChanged
- * @param text
- */
-void DialogColors::on_editLineNumbersBG_textChanged(const QString &text) {
-	showColorStatus(text, ui.labelErrorLineNumbersBG);
-}
-
-/**
- * @brief DialogColors::on_editCursor_textChanged
- * @param text
- */
-void DialogColors::on_editCursor_textChanged(const QString &text) {
-	showColorStatus(text, ui.labelErrorCursor);
+	return color;
 }
 
 /**
@@ -204,13 +177,6 @@ void DialogColors::on_editCursor_textChanged(const QString &text) {
  */
 void DialogColors::on_buttonBox_clicked(QAbstractButton *button) {
 	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
-		if (!verifyAllColors()) {
-			QMessageBox::critical(
-						this,
-						tr("Invalid Colors"),
-						tr("All colors must be valid to be applied."));
-			return;
-		}
 		updateColors();
 	}
 }
@@ -219,36 +185,10 @@ void DialogColors::on_buttonBox_clicked(QAbstractButton *button) {
  * @brief DialogColors::on_buttonBox_accepted
  */
 void DialogColors::on_buttonBox_accepted() {
-	if (!verifyAllColors()) {
-		QMessageBox::critical(
-					this,
-					tr("Invalid Colors"),
-					tr("All colors must be valid to proceed."));
-		return;
-	}
 	updateColors();
 	accept();
 }
 
-
-/**
- * @brief DialogColors::verifyAllColors
- * @return
- *
- * Helper functions for validating colors
- */
-bool DialogColors::verifyAllColors() {
-
-	return  QColor::isValidColor(ui.editFG->text())            &&
-	        QColor::isValidColor(ui.editBG->text())            &&
-	        QColor::isValidColor(ui.editSelectionFG->text())   &&
-	        QColor::isValidColor(ui.editSelectionBG->text())   &&
-	        QColor::isValidColor(ui.editMatchFG->text())       &&
-	        QColor::isValidColor(ui.editMatchBG->text())       &&
-	        QColor::isValidColor(ui.editLineNumbersFG->text()) &&
-	        QColor::isValidColor(ui.editLineNumbersBG->text()) &&
-	        QColor::isValidColor(ui.editCursor->text());
-}
 
 /**
  * @brief DialogColors::updateColors
@@ -257,36 +197,26 @@ bool DialogColors::verifyAllColors() {
  */
 void DialogColors::updateColors() {
 
-	QString textFg   = ui.editFG->text();
-	QString textBg   = ui.editBG->text();
-	QString selectFg = ui.editSelectionFG->text();
-	QString selectBg = ui.editSelectionBG->text();
-	QString hiliteFg = ui.editMatchFG->text();
-	QString hiliteBg = ui.editMatchBG->text();
-	QString lineNoFg = ui.editLineNumbersFG->text();
-	QString lineNoBg = ui.editLineNumbersBG->text();
-	QString cursorFg = ui.editCursor->text();
-
 	for(DocumentWidget *document : DocumentWidget::allDocuments()) {
 		document->SetColors(
-			textFg,
-			textBg,
-			selectFg,
-			selectBg,
-			hiliteFg,
-			hiliteBg,
-			lineNoFg,
-		    lineNoBg,
-			cursorFg);
+		    textFG_,
+		    textBG_,
+		    selectionFG_,
+		    selectionBG_,
+		    matchFG_,
+		    matchBG_,
+		    lineNumbersFG_,
+		    lineNumbersBG_,
+		    cursorFG_);
 	}
 
-	Preferences::SetPrefColorName(TEXT_FG_COLOR, textFg);
-	Preferences::SetPrefColorName(TEXT_BG_COLOR, textBg);
-	Preferences::SetPrefColorName(SELECT_FG_COLOR, selectFg);
-	Preferences::SetPrefColorName(SELECT_BG_COLOR, selectBg);
-	Preferences::SetPrefColorName(HILITE_FG_COLOR, hiliteFg);
-	Preferences::SetPrefColorName(HILITE_BG_COLOR, hiliteBg);
-	Preferences::SetPrefColorName(LINENO_FG_COLOR, lineNoFg);
-	Preferences::SetPrefColorName(LINENO_BG_COLOR, lineNoBg);
-	Preferences::SetPrefColorName(CURSOR_FG_COLOR, cursorFg);
+	Preferences::SetPrefColorName(TEXT_FG_COLOR,   toString(textFG_));
+	Preferences::SetPrefColorName(TEXT_BG_COLOR,   toString(textBG_));
+	Preferences::SetPrefColorName(SELECT_FG_COLOR, toString(selectionFG_));
+	Preferences::SetPrefColorName(SELECT_BG_COLOR, toString(selectionBG_));
+	Preferences::SetPrefColorName(HILITE_FG_COLOR, toString(matchFG_));
+	Preferences::SetPrefColorName(HILITE_BG_COLOR, toString(matchBG_));
+	Preferences::SetPrefColorName(LINENO_FG_COLOR, toString(lineNumbersFG_));
+	Preferences::SetPrefColorName(LINENO_BG_COLOR, toString(lineNumbersBG_));
+	Preferences::SetPrefColorName(CURSOR_FG_COLOR, toString(cursorFG_));
 }
