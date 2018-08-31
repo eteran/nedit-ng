@@ -78,6 +78,7 @@ Q_SIGNALS:
 	void canUndoChanged(bool canUndo);
 	void canRedoChanged(bool canUndo);
 	void updateStatus(DocumentWidget *document, TextArea *area);
+	void updateWindowReadOnly(DocumentWidget *document);
 
 public:
 	void movedCallback(TextArea *area);

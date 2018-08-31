@@ -108,7 +108,6 @@ public:
 	void updateUserMenus();
 	void updateUserMenus(DocumentWidget *document);
 	void updateWindowMenu();
-	void UpdateWindowReadOnly(DocumentWidget *document);
 	void updateWindowSizeMenu();
 	void updateWindowSizeMenus();
 	void UpdateWindowTitle(DocumentWidget *document);
@@ -394,6 +393,7 @@ private Q_SLOTS:
 	void undoAvailable(bool available);
 	void redoAvailable(bool available);
 	void updateStatus(DocumentWidget *document, TextArea *area);
+	void updateWindowReadOnly(DocumentWidget *document);
 
 public:
 	QPointer<TextArea> lastFocus() const { return lastFocus_; }

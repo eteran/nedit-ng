@@ -976,9 +976,10 @@ void MainWindow::on_action_Delete_triggered() {
 DocumentWidget *MainWindow::CreateDocument(const QString &name) {
 	auto document = new DocumentWidget(name, this);
 
-	connect(document, &DocumentWidget::canUndoChanged, this, &MainWindow::undoAvailable);
-	connect(document, &DocumentWidget::canRedoChanged, this, &MainWindow::redoAvailable);
-	connect(document, &DocumentWidget::updateStatus,   this, &MainWindow::updateStatus);
+	connect(document, &DocumentWidget::canUndoChanged,       this, &MainWindow::undoAvailable);
+	connect(document, &DocumentWidget::canRedoChanged,       this, &MainWindow::redoAvailable);
+	connect(document, &DocumentWidget::updateStatus,         this, &MainWindow::updateStatus);
+	connect(document, &DocumentWidget::updateWindowReadOnly, this, &MainWindow::updateWindowReadOnly);
 
 	ui.tabWidget->addTab(document, name);
 	return document;
@@ -1102,23 +1103,6 @@ void MainWindow::updateWindowMenu() {
 			document->raiseFocusDocumentWindow(true);
 		});
 	}
-}
-
-/*
-** Update the read-only state of the text area(s) in the window, and
-** the ReadOnly toggle button in the File menu to agree with the state in
-** the window data structure.
-*/
-void MainWindow::UpdateWindowReadOnly(DocumentWidget *document) {
-
-	bool state = document->lockReasons_.isAnyLocked();
-
-	for(TextArea *area : document->textPanes()) {
-		area->setReadOnly(state);
-	}
-
-	ui.action_Read_Only->setChecked(state);
-	ui.action_Read_Only->setEnabled(!document->lockReasons_.isAnyLockedIgnoringUser());
 }
 
 /**
@@ -3830,7 +3814,7 @@ void MainWindow::on_action_Read_Only_toggled(bool state) {
 	if(DocumentWidget *document = currentDocument()) {
 		document->lockReasons_.setUserLocked(state);
 		UpdateWindowTitle(document);
-		UpdateWindowReadOnly(document);
+		updateWindowReadOnly(document);
 	}
 }
 
@@ -4679,7 +4663,7 @@ DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geome
 	// on an as needed basis
 	document->SetWindowModified(false);
 	document->lockReasons_.clear();
-	window->UpdateWindowReadOnly(document);
+	window->updateWindowReadOnly(document);
 	window->updateStatus(document, document->firstPane());
 	window->UpdateWindowTitle(document);
 	document->RefreshTabState();
@@ -7177,4 +7161,20 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
 	if(!document->modeMessageDisplayed()) {
 		document->ui.labelFileAndSize->setText(string);
 	}
+}
+
+/*
+** Update the read-only state of the text area(s) in the document, and
+** the ReadOnly toggle button in the File menu to agree with the state in
+** the window data structure.
+*/
+void MainWindow::updateWindowReadOnly(DocumentWidget *document) {
+	bool state = document->lockReasons_.isAnyLocked();
+
+	for(TextArea *area : document->textPanes()) {
+		area->setReadOnly(state);
+	}
+
+	ui.action_Read_Only->setChecked(state);
+	ui.action_Read_Only->setEnabled(!document->lockReasons_.isAnyLockedIgnoringUser());
 }
