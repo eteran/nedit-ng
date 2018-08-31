@@ -24,8 +24,10 @@ auto DEFAULT_TEXT_FONT        = QLatin1String("Courier New,10,-1,5,50,0,0,0,0,0"
 	auto shellCommandsResource = QLatin1String("res/DefaultShellCommandsLinux.txt");
 #elif defined(Q_OS_FREEBSD)
 	auto shellCommandsResource = QLatin1String("res/DefaultShellCommandsFreeBSD.txt");
-#else
-	auto shellCommandsResource = QLatin1String("res/DefaultShellCommands.txt");
+#elif defined(Q_OS_UNIX)
+    auto shellCommandsResource = QLatin1String("res/DefaultShellCommandsUnix.txt");
+#elif defined(Q_OS_WIN)
+    auto shellCommandsResource = QLatin1String("res/DefaultShellCommandsWindows.txt");
 #endif
 
 template <class T>

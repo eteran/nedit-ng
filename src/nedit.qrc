@@ -32,7 +32,6 @@
         <file>res/nedit.png</file>
         <file>res/DefaultBackgroundMenuCommands.txt</file>
         <file>res/DefaultStyles.xml</file>
-        <file>res/DefaultShellCommands.txt</file>
         <file>res/DefaultShellCommandsFreeBSD.txt</file>
         <file>res/DefaultShellCommandsLinux.txt</file>
         <file>res/DefaultHighlightPatterns.txt</file>
@@ -47,5 +46,7 @@
         <file>res/edit-delete.svg</file>
         <file>res/go-down.svg</file>
         <file>res/go-up.svg</file>
+        <file>res/DefaultShellCommandsUnix.txt</file>
+        <file>res/DefaultShellCommandsWindows.txt</file>
     </qresource>
 </RCC>
