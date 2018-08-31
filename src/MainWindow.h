@@ -121,7 +121,7 @@ public:
 	static MainWindow *firstWindow();
 	static MainWindow *fromDocument(const DocumentWidget *document);
 	static QString uniqueUntitledName();
-	static std::vector<MainWindow *> allWindows();
+	static std::vector<MainWindow *> allWindows(bool includeInvisible = false);
 	static void AddToPrevOpenMenu(const QString &filename);
 	static void AllWindowsBusy(const QString &message);
 	static void AllWindowsUnbusy();

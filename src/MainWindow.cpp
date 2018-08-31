@@ -243,7 +243,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 
 	MainWindow::CheckCloseEnableState();
 
-	const std::vector<MainWindow *> windows = MainWindow::allWindows();
+	const std::vector<MainWindow *> windows = MainWindow::allWindows(/*includeInvisible=*/true);
 	const bool enabled = windows.size() > 1;
 	for(MainWindow *window : windows) {
 		window->ui.action_Move_Tab_To->setEnabled(enabled);
@@ -1158,7 +1158,7 @@ void MainWindow::SortTabBar() {
  * @brief MainWindow::allWindows
  * @return
  */
-std::vector<MainWindow *> MainWindow::allWindows() {
+std::vector<MainWindow *> MainWindow::allWindows(bool includeInvisible) {
 
 	const QWidgetList widgets = QApplication::topLevelWidgets();
 
@@ -1170,7 +1170,7 @@ std::vector<MainWindow *> MainWindow::allWindows() {
 
 			// only include visible windows, since we make windows scheduled for
 			// delete inVisible
-			if(window->isVisible()) {
+			if(window->isVisible() || includeInvisible) {
 				windows.push_back(window);
 			}
 		}
@@ -1178,6 +1178,7 @@ std::vector<MainWindow *> MainWindow::allWindows() {
 
 	return windows;
 }
+
 
 /**
  * @brief MainWindow::firstWindow

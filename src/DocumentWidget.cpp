@@ -3214,7 +3214,7 @@ void DocumentWidget::RefreshMenuToggleStates() {
 		win->ui.action_Split_Pane->setEnabled(textPanesCount() < MAX_PANES);
 		win->ui.action_Close_Pane->setEnabled(textPanesCount() > 1);
 
-		std::vector<MainWindow *> windows = MainWindow::allWindows();
+		std::vector<MainWindow *> windows = MainWindow::allWindows(/*includeInvisible=*/true);
 		win->ui.action_Move_Tab_To->setEnabled(windows.size() > 1);
 	}
 }
