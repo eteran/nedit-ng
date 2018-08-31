@@ -3993,6 +3993,14 @@ void DocumentWidget::beginSmartIndent(bool warn) {
 	smartIndentData_ = std::move(winData);
 }
 
+void DocumentWidget::updateSignals(MainWindow *from, MainWindow *to) {
+	disconnect(this, &DocumentWidget::canUndoChanged, from, &MainWindow::undoAvailable);
+	disconnect(this, &DocumentWidget::canRedoChanged, from, &MainWindow::redoAvailable);
+
+	connect(this, &DocumentWidget::canUndoChanged, to, &MainWindow::undoAvailable);
+	connect(this, &DocumentWidget::canRedoChanged, to, &MainWindow::redoAvailable);
+}
+
 /*
 ** present dialog for selecting a target window to move this document
 ** into. Do nothing if there is only one shell window opened.
@@ -4028,21 +4036,27 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 		int selection = dialog->selectionIndex();
 
 		// get the this to move document into
-		MainWindow *targetWin = allWindows[static_cast<size_t>(selection)];
+		MainWindow *targetWindow = allWindows[static_cast<size_t>(selection)];
 
 		// move top document
 		if (dialog->moveAllSelected()) {
 			// move all documents
 			for(DocumentWidget *document : fromWindow->openDocuments()) {
 
-				targetWin->tabWidget()->addTab(document, document->filename_);
+				targetWindow->tabWidget()->addTab(document, document->filename_);
+
+				document->updateSignals(fromWindow, targetWindow);
+
 				raiseFocusDocumentWindow(true);
-				targetWin->show();
+				targetWindow->show();
 			}
 		} else {
-			targetWin->tabWidget()->addTab(this, filename_);
+			targetWindow->tabWidget()->addTab(this, filename_);
+
+			updateSignals(fromWindow, targetWindow);
+
 			raiseFocusDocumentWindow(true);
-			targetWin->show();
+			targetWindow->show();
 		}
 
 		// if we just emptied the window, then delete it

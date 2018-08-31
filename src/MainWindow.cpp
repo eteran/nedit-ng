@@ -1966,13 +1966,9 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
 				} else if(selected == closeTab) {
 					document->actionClose(CloseMode::Prompt);
 				} else if(selected == detachTab) {
-					if(TabCount() > 1) {
-						auto new_window = new MainWindow(nullptr);
-						new_window->tabWidget()->addTab(document, document->filename_);
-						new_window->show();
-					}
+					action_Detach_Document(document);
 				} else if(selected == moveTab) {
-					document->moveDocument(this);
+					action_Move_Tab_To(document);
 				}
 			}
 		}
@@ -5824,6 +5820,9 @@ void MainWindow::action_Detach_Document(DocumentWidget *document) {
 	emit_event("detach_document");
 	if(TabCount() > 1) {
 		auto new_window = new MainWindow();
+
+		document->updateSignals(this, new_window);
+
 		new_window->tabWidget()->addTab(document, document->filename_);
 		new_window->show();
 	}

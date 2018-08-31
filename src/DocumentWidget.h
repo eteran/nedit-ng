@@ -197,6 +197,7 @@ public:
 	void setWrapMargin(int margin);
 	void shellBannerTimeoutProc();
 	void splitPane();
+	void updateSignals(MainWindow *from, MainWindow *to);
 
 private:
 	std::unique_ptr<HighlightData[]> compilePatternsEx(const std::vector<HighlightPattern> &patternSrc);
