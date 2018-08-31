@@ -42,5 +42,10 @@
         <file>res/DefaultLanguageModes.txt</file>
         <file>res/tab-close.svg</file>
         <file>res/edit-find.svg</file>
+        <file>res/document-new.svg</file>
+        <file>res/edit-copy.svg</file>
+        <file>res/edit-delete.svg</file>
+        <file>res/go-down.svg</file>
+        <file>res/go-up.svg</file>
     </qresource>
 </RCC>
