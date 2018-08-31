@@ -4823,6 +4823,11 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
 
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // NOTE(eteran): GCC 7+ false positive
+#endif
+
 	boost::optional<Range> range;
 
 	if (Rangeset *rangeset = rangesetTable->RangesetFetch(label)) {
@@ -4853,6 +4858,10 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 	if (!ArrayInsert(result, "end", &element)) {
 		return MacroErrorCode::InsertFailed;
 	}
+
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#endif
 
 	return MacroErrorCode::Success;
 }
