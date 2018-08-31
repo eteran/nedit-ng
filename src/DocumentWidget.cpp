@@ -2228,7 +2228,7 @@ bool DocumentWidget::doSave() {
 		none of the write bits set.  */
 	if (isAdministrator()) {
 		QFileInfo fi(fullname);
-		if(!fi.permission(QFileDevice::WriteOwner | QFileDevice::WriteUser | QFileDevice::WriteGroup)) {
+		if((fi.permissions() & (QFile::WriteOwner | QFile::WriteUser | QFile::WriteGroup)) == 0) {
 			int result = QMessageBox::warning(
 			            this,
 			            tr("Writing Read-only File"),
