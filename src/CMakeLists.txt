@@ -186,7 +186,6 @@ add_executable(nedit-ng
 	MultiClickStates.h
 	nedit.cpp
 	nedit.h
-	nedit.qrc
 	NeditServer.cpp
 	NeditServer.h
 	NewMode.h
