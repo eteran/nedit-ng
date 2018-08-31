@@ -647,7 +647,7 @@ void TextArea::deletePreviousWordAP(EventFlags flags) {
 
 	TextCursor pos = std::max(insertPos - 1, buffer_->BufStartOfBuffer());
 
-	while (delimiters_.find(buffer_->BufGetCharacter(pos)) != std::string::npos && pos != lineStart) {
+	while (isDelimeter(buffer_->BufGetCharacter(pos)) && pos != lineStart) {
 		--pos;
 	}
 
@@ -4626,7 +4626,7 @@ TextCursor TextArea::startOfWord(TextCursor pos) const {
 
 	if (ch == ' ' || ch == '\t') {
 		startPos = spanBackward(buffer_, pos, view::string_view(" \t", 2), false);
-	} else if (delimiters_.find(ch) != std::string::npos) {
+	} else if (isDelimeter(ch)) {
 		startPos = spanBackward(buffer_, pos, delimiters_, true);
 	} else {
 		startPos = buffer_->BufSearchBackwardEx(pos, delimiters_);
@@ -4651,7 +4651,7 @@ TextCursor TextArea::endOfWord(TextCursor pos) const {
 
 	if (ch == ' ' || ch == '\t') {
 		endPos = spanForward(buffer_, pos, view::string_view(" \t", 2), false);
-	} else if (delimiters_.find(ch) != std::string::npos) {
+	} else if (isDelimeter(ch)) {
 		endPos = spanForward(buffer_, pos, delimiters_, true);
 	} else {
 		endPos = buffer_->BufSearchForwardEx(pos, delimiters_);
@@ -5081,7 +5081,7 @@ void TextArea::backwardWordAP(EventFlags flags) {
 	}
 
 	TextCursor pos = std::max(insertPos - 1, buffer_->BufStartOfBuffer());
-	while (delimiters_.find(buffer_->BufGetCharacter(pos)) != std::string::npos && pos > 0) {
+	while (isDelimeter(buffer_->BufGetCharacter(pos)) && pos > 0) {
 		--pos;
 	}
 
@@ -5110,19 +5110,19 @@ void TextArea::forwardWordAP(EventFlags flags) {
 
 	if (flags & TailFlag) {
 		for (; pos < buffer_->BufGetLength(); ++pos) {
-			if (delimiters_.find(buffer_->BufGetCharacter(pos)) == std::string::npos) {
+			if (!isDelimeter(buffer_->BufGetCharacter(pos))) {
 				break;
 			}
 		}
-		if (delimiters_.find(buffer_->BufGetCharacter(pos)) == std::string::npos) {
+		if (!isDelimeter(buffer_->BufGetCharacter(pos))) {
 			pos = endOfWord(pos);
 		}
 	} else {
-		if (delimiters_.find(buffer_->BufGetCharacter(pos)) == std::string::npos) {
+		if (!isDelimeter(buffer_->BufGetCharacter(pos))) {
 			pos = endOfWord(pos);
 		}
 		for (; pos < buffer_->BufGetLength(); ++pos) {
-			if (delimiters_.find(buffer_->BufGetCharacter(pos)) == std::string::npos) {
+			if (!isDelimeter(buffer_->BufGetCharacter(pos))) {
 				break;
 			}
 		}
@@ -7536,6 +7536,15 @@ void TextArea::deleteSelectionAP(EventFlags flags) {
 	deletePendingSelection();
 }
 
+/**
+ * @brief TextArea::isDelimeter
+ * @param ch
+ * @return
+ */
+bool TextArea::isDelimeter(char ch) const {
+	return delimiters_.find(ch) != std::string::npos;
+}
+
 void TextArea::deleteNextWordAP(EventFlags flags) {
 
 	EMIT_EVENT_0("delete_next_word");	
@@ -7559,7 +7568,7 @@ void TextArea::deleteNextWordAP(EventFlags flags) {
 	}
 
 	TextCursor pos = insertPos;
-	while (delimiters_.find(buffer_->BufGetCharacter(pos)) != std::string::npos && pos != lineEnd) {
+	while (isDelimeter(buffer_->BufGetCharacter(pos)) && pos != lineEnd) {
 		++pos;
 	}
 
@@ -7649,7 +7658,7 @@ void TextArea::RemoveWidgetHighlightEx() {
 /**
  * @brief TextArea::showResizeNotification
  * Shows the size of the widget in rows/columns.
- * Lifted from TerminalDisplay::showResizeNotification
+ * Lifted from Konsole's TerminalDisplay::showResizeNotification
  */
 void TextArea::showResizeNotification() {
 	if (showTerminalSizeHint_ && isVisible()) {
@@ -7683,7 +7692,7 @@ void TextArea::showResizeNotification() {
 ** of the horizontal scrolling part would be quite easy to make it work
 ** well with rectangular selections.
 */
-void TextArea::TextDMakeSelectionVisible() {
+void TextArea::makeSelectionVisible() {
 
 	const QRect viewRect = viewport()->contentsRect();
 	bool isRect;	
@@ -7691,9 +7700,6 @@ void TextArea::TextDMakeSelectionVisible() {
 	int64_t rectEnd;
 	int64_t rectStart;
 	TextCursor right;
-	int leftX;
-	int rightX;
-	int y;
 
 	const TextCursor topChar  = TextFirstVisiblePos();
 	const TextCursor lastChar = TextLastVisiblePos();
@@ -7720,12 +7726,12 @@ void TextArea::TextDMakeSelectionVisible() {
 
 		if (right > lastChar) {
 			// End of sel. is below bottom of screen
-			const int64_t leftLineNum   = topLineNum + TextDCountLines(topChar, left, /*startPosIsLineStart=*/false);
-			const int64_t targetLineNum = topLineNum + scrollOffset;
+			const int leftLineNum   = topLineNum + TextDCountLines(topChar, left, /*startPosIsLineStart=*/false);
+			const int targetLineNum = topLineNum + scrollOffset;
 
 			if (leftLineNum >= targetLineNum) {
 				// Start of sel. is not between top & target
-				int64_t linesToScroll = TextDCountLines(lastChar, right, /*startPosIsLineStart=*/false) + scrollOffset;
+				int linesToScroll = TextDCountLines(lastChar, right, /*startPosIsLineStart=*/false) + scrollOffset;
 				if (leftLineNum - linesToScroll < targetLineNum) {
 					linesToScroll = leftLineNum - targetLineNum;
 				}
@@ -7735,13 +7741,13 @@ void TextArea::TextDMakeSelectionVisible() {
 			}
 		} else if (left < topChar) {
 			// Start of sel. is above top of screen
-			const int64_t lastLineNum   = topLineNum + rows;
-			const int64_t rightLineNum  = lastLineNum - TextDCountLines(right, lastChar, /*startPosIsLineStart=*/false);
-			const int64_t targetLineNum = lastLineNum - scrollOffset;
+			const int lastLineNum   = topLineNum + rows;
+			const int rightLineNum  = lastLineNum - TextDCountLines(right, lastChar, /*startPosIsLineStart=*/false);
+			const int targetLineNum = lastLineNum - scrollOffset;
 
 			if (rightLineNum <= targetLineNum) {
 				// End of sel. is not between bottom & target
-				int64_t linesToScroll = TextDCountLines(left, topChar, /*startPosIsLineStart=*/false) + scrollOffset;
+				int linesToScroll = TextDCountLines(left, topChar, /*startPosIsLineStart=*/false) + scrollOffset;
 				if (rightLineNum + linesToScroll > targetLineNum) {
 					linesToScroll = targetLineNum - rightLineNum;
 				}
@@ -7760,6 +7766,9 @@ void TextArea::TextDMakeSelectionVisible() {
 	   scrolling operation, causing the display to jump twice.  It's done after
 	   vertical scrolling to take advantage of TextDPosToXY which requires it's
 	   reqested position to be vertically on screen) */
+	int leftX;
+	int rightX;
+	int y;
 	if (TextDPositionToXY(left, &leftX, &y) && TextDPositionToXY(right, &rightX, &y) && leftX <= rightX) {
 
 		int horizOffset = horizontalScrollBar()->value();

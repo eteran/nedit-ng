@@ -226,7 +226,7 @@ public:
 	void TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user);	
 	void TextDKillCalltip(int id);
 	void TextDMaintainAbsLineNum(bool state);
-	void TextDMakeSelectionVisible();
+	void makeSelectionVisible();
 	void TextDSetColors(const QColor &textFgP, const QColor &textBgP, const QColor &selectFgP, const QColor &selectBgP, const QColor &hiliteFgP, const QColor &hiliteBgP, const QColor &lineNoFgP, const QColor &lineNoBgP, const QColor &cursorFgP);
 	void TextSetCursorPos(TextCursor pos);
 	void setAutoIndent(bool value);
@@ -264,6 +264,7 @@ private:
 	TextCursor startOfWord(TextCursor pos) const;
 	TextCursor xyToPos(const QPoint &pos, PositionTypes posType) const;
 	TextCursor xyToPos(int x, int y, PositionTypes posType) const;
+	bool isDelimeter(char ch) const;
 	bool visibleLineContainsCursor(int visLine, TextCursor cursor) const;
 	bool inSelection(const QPoint &p) const;
 	bool TextDMoveDown(bool absolute);

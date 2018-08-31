@@ -1697,7 +1697,7 @@ bool DocumentWidget::checkReadOnly() const {
 ** fully shown, scroll to bring it in to view.
 */
 void DocumentWidget::MakeSelectionVisible(TextArea *area) {
-	area->TextDMakeSelectionVisible();
+	area->makeSelectionVisible();
 	Q_EMIT updateStatus(this, area);
 }
 
