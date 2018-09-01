@@ -304,7 +304,7 @@ private:
 	void CopyToClipboard();
 	void ExchangeSelections();
 	void FinishBlockDrag();
-	void InsertClipboard(bool isColumnar);
+	void insertClipboard(bool isColumnar);
 	void InsertPrimarySelection(bool isColumnar);
 	void MovePrimarySelection(bool isColumnar);
 	void TextColPasteClipboard();
@@ -353,7 +353,7 @@ private:
 	void selectLine();
 	void selectWord(int pointerX);
 	void showResizeNotification();
-	void simpleInsertAtCursorEx(view::string_view chars, bool allowPendingDelete);
+	void simpleInsertAtCursor(view::string_view chars, bool allowPendingDelete);
 	void redisplayRange(TextCursor start, TextCursor end);
 	void updateFontMetrics(const QFont &font);
 	bool updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t charsDeleted, int64_t linesInserted, int64_t linesDeleted);
