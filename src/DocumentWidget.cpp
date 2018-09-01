@@ -527,7 +527,7 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
 	const QColor lineNoBg = X11Colors::fromString(Preferences::GetPrefColorName(LINENO_BG_COLOR));
 	const QColor cursorFg = X11Colors::fromString(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
 
-	area->TextDSetColors(
+	area->setColors(
 		textFg,
 		textBg,
 		selectFg,
@@ -4200,7 +4200,7 @@ void DocumentWidget::SetColors(const QColor &textFg, const QColor &textBg, const
 
 
 	for(TextArea *area : textPanes()) {
-		area->TextDSetColors(textFg,
+		area->setColors(textFg,
 		                     textBg,
 		                     selectFg,
 		                     selectBg,

@@ -534,13 +534,8 @@ void BasicTextBuffer<Ch, Tr>::updatePrimarySelection() noexcept {
 		std::string text = BufGetSelectionTextEx();
 		QApplication::clipboard()->setText(QString::fromStdString(text), QClipboard::Selection);
 #else
-		bool selected = primary.selected;
-		bool isOwner = false;
-		if(auto mime = qobject_cast<const TextAreaMimeData *>(QApplication::clipboard()->mimeData(QClipboard::Selection))) {
-			if(mime->buffer() == this) {
-				isOwner = true;
-			}
-		}
+		const bool selected = primary.selected;
+		const bool isOwner  = TextAreaMimeData::isOwner(QApplication::clipboard()->mimeData(QClipboard::Selection), this);
 
 		// if we already own the selection, then we don't need to do anything
 		// things are lazily evaluated in TextAreaMimeData::retrieveData
@@ -575,13 +570,6 @@ void BasicTextBuffer<Ch, Tr>::BufUnselect() noexcept {
 	primary.selected = false;
 	primary.zeroWidth = false;
 	redisplaySelection(&oldSelection, &primary);
-
-	// NOTE(eteran): I think this breaks some things involving another app
-	// having a selection and then clicking in one of our windows. Which results
-	// in us taking ownership of the selection but setting it to nothing :-/
-#if defined(Q_OS_UNIX) && 0
-	updatePrimarySelection();
-#endif
 }
 
 template <class Ch, class Tr>

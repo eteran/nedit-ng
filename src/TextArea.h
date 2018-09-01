@@ -227,7 +227,7 @@ public:
 	void TextDKillCalltip(int id);
 	void TextDMaintainAbsLineNum(bool state);
 	void makeSelectionVisible();
-	void TextDSetColors(const QColor &textFgP, const QColor &textBgP, const QColor &selectFgP, const QColor &selectBgP, const QColor &hiliteFgP, const QColor &hiliteBgP, const QColor &lineNoFgP, const QColor &lineNoBgP, const QColor &cursorFgP);
+	void setColors(const QColor &textFG, const QColor &textBG, const QColor &selectionFG, const QColor &selectionBG, const QColor &matchFG, const QColor &matchBG, const QColor &lineNumberFG, const QColor &lineNumberBG, const QColor &cursorFG);
 	void TextSetCursorPos(TextCursor pos);
 	void setAutoIndent(bool value);
 	void setAutoShowInsertPos(bool value);
@@ -271,8 +271,8 @@ private:
 	bool TextDMoveLeft();
 	bool TextDMoveRight();
 	bool TextDMoveUp(bool absolute);
-	bool TextDPositionToXY(TextCursor pos, QPoint *coord) const;
-	bool TextDPositionToXY(TextCursor pos, int *x, int *y) const;
+	bool positionToXY(TextCursor pos, QPoint *coord) const;
+	bool positionToXY(TextCursor pos, int *x, int *y) const;
 	bool checkReadOnly() const;
 	bool deleteEmulatedTab();
 	bool deletePendingSelection();
@@ -300,7 +300,7 @@ private:
 	uint32_t styleOfPos(TextCursor lineStartPos, int64_t lineLen, int64_t lineIndex, int64_t dispIndex, int thisChar) const;
 	void BeginBlockDrag();
 	void BlockDragSelection(const QPoint &pos, BlockDragTypes dragType);
-	void CancelBlockDrag();
+	void cancelBlockDrag();
 	void CopyToClipboard();
 	void ExchangeSelections();
 	void FinishBlockDrag();
@@ -314,10 +314,10 @@ private:
 	void TextDMakeInsertPosVisible();
 	void TextDOverstrikeEx(view::string_view text);
 	void TextDRedisplayRect(const QRect &rect);
-	void TextDRedrawCalltip(int calltipID);
+	void updateCalltip(int calltipID);
 	void TextDResize(bool widthChanged);
 	void setCursorStyle(CursorStyles style);
-	void TextDSetInsertPosition(TextCursor newPos);
+	void setInsertPosition(TextCursor newPos);
 	void setLineNumberAreaWidth(int lineNumWidth);
 	void TextDSetWrapMode(bool wrap, int wrapMargin);
 	void setupBGClasses(const QString &str);
@@ -366,8 +366,8 @@ private:
 	CursorStyles cursorStyle_       = CursorStyles::Normal;
 	DragStates dragState_           = NOT_CLICKED;    // Why is the mouse being dragged and what is being acquired
 	QColor cursorFGColor_           = Qt::black;
-	QColor highlightBGColor_        = Qt::red;
-	QColor highlightFGColor_        = Qt::white;      // Highlight colors are used when flashing matching parens
+	QColor matchBGColor_        = Qt::red;
+	QColor matchFGColor_        = Qt::white;      // Highlight colors are used when flashing matching parens
 	QColor lineNumFGColor_          = Qt::black;      // Color for drawing line numbers
 	QColor lineNumBGColor_          = Qt::white;      // Color for drawing line numbers
 	QLabel *resizeWidget_           = nullptr;

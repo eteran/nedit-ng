@@ -22,6 +22,9 @@ protected:
 public:
 	TextBuffer *buffer() const;
 
+public:
+	static bool isOwner(const QMimeData *mimeData, const TextBuffer *buffer);
+
 private:
 	TextBuffer *buffer_;
 };

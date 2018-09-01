@@ -60,3 +60,21 @@ bool TextAreaMimeData::hasFormat(const QString &mimeType) const {
 TextBuffer *TextAreaMimeData::buffer() const {
 	return buffer_;
 }
+
+
+/**
+ * @brief TextAreaMimeData::isOwner
+ * @param mimeData
+ * @param buffer
+ * @return
+ */
+bool TextAreaMimeData::isOwner(const QMimeData *mimeData, const TextBuffer *buffer) {
+
+	if(auto mime = qobject_cast<const TextAreaMimeData *>(mimeData)) {
+		if(mime->buffer() == buffer) {
+			return true;
+		}
+	}
+
+	return false;
+}
