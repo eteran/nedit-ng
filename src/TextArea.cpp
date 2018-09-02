@@ -2792,7 +2792,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	for (charIndex = startIndex; ; ++charIndex) {
 
 		if (lineStartPos + charIndex == cursorPos_) {
-			if (charIndex < static_cast<int>(currentLine.size()) || (charIndex == static_cast<int>(currentLine.size()) && cursorPos_ >= buffer_->BufGetLength())) {
+			if (charIndex < static_cast<int>(currentLine.size()) || (charIndex == static_cast<int>(currentLine.size()) && cursorPos_ >= buffer_->BufEndOfBuffer())) {
 				hasCursor = true;
 				cursorX = x - 1;
 			} else if (charIndex == static_cast<int>(currentLine.size())) {
@@ -2805,7 +2805,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 
 		char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 		char baseChar;
-		int charLen;
+		int  charLen;
 		if (charIndex >= static_cast<int>(currentLine.size())) {
 			baseChar = '\0';
 			charLen  = 1;
@@ -2828,17 +2828,13 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 				style = charStyle;
 			}
 
-			int charWidth;
 			if (charIndex < static_cast<int>(currentLine.size())) {
 				*outPtr = expandedChar[i];
-				charWidth = stringWidth(1);
-			} else {
-				charWidth = fixedFontWidth_;
 			}
 
-			outPtr++;
-			x += charWidth;
-			outIndex++;
+			++outPtr;
+			++outIndex;
+			x += fixedFontWidth_;
 		}
 
 		if (outPtr - outStr + TextBuffer::MAX_EXP_CHAR_LEN >= MAX_DISP_LINE_LEN || x >= rightClip) {
@@ -2869,7 +2865,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 		}
 	}
 
-	// If the y position of the cursor has changed, redraw the calltip
+	// If the y position of the cursor has changed, update the calltip location
 	if (hasCursor && (y_orig != cursor_.y() || y_orig != y)) {
 		updateCalltip(0);
 	}
@@ -3145,10 +3141,8 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 	}
 
 	painter->save();
-	painter->setClipping(false);
 	painter->setPen(pen);
 	painter->drawPath(path);
-	painter->setClipping(true);
 	painter->restore();
 
 	// Save the last position drawn
