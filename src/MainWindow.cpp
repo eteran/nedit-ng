@@ -980,6 +980,7 @@ DocumentWidget *MainWindow::CreateDocument(const QString &name) {
 	connect(document, &DocumentWidget::canRedoChanged,       this, &MainWindow::redoAvailable);
 	connect(document, &DocumentWidget::updateStatus,         this, &MainWindow::updateStatus);
 	connect(document, &DocumentWidget::updateWindowReadOnly, this, &MainWindow::updateWindowReadOnly);
+	connect(document, &DocumentWidget::updateWindowTitle,    this, &MainWindow::updateWindowTitle);
 
 	ui.tabWidget->addTab(document, name);
 	return document;
@@ -1018,49 +1019,6 @@ void MainWindow::selectionChanged(bool selected) {
 	 * applications. Disabling it if there's no NEdit selection disables
 	 * this feature. */
 	ui.action_Filter_Selection->setEnabled(selected);
-}
-
-/**
- * @brief MainWindow::UpdateWindowTitle
- * @param doc
- */
-void MainWindow::UpdateWindowTitle(DocumentWidget *document) {
-
-	QString clearCaseTag = ClearCase::GetViewTag();
-
-	QString title = DialogWindowTitle::FormatWindowTitle(
-		document->filename_,
-		document->path_,
-		clearCaseTag,
-		Preferences::GetPrefServerName(),
-		IsServer,
-		document->filenameSet_,
-		document->lockReasons_,
-		document->fileChanged_,
-		Preferences::GetPrefTitleFormat());
-
-	setWindowTitle(title);
-
-	QString iconTitle = document->filename_;
-
-	if (document->fileChanged_) {
-		iconTitle.append(QLatin1Char('*'));
-	}
-
-	setWindowIconText(iconTitle);
-
-	/* If there's a find or replace dialog up in "Keep Up" mode, with a
-	   file name in the title, update it too */
-	if (dialogFind_) {
-		dialogFind_->setDocument(document);
-	}
-
-	if(dialogReplace_) {
-		dialogReplace_->setDocument(document);
-	}
-
-	// Update the Windows menus with the new name
-	MainWindow::UpdateWindowMenus();
 }
 
 /**
@@ -3813,7 +3771,7 @@ void MainWindow::on_action_Overtype_toggled(bool state) {
 void MainWindow::on_action_Read_Only_toggled(bool state) {
 	if(DocumentWidget *document = currentDocument()) {
 		document->lockReasons_.setUserLocked(state);
-		UpdateWindowTitle(document);
+		updateWindowTitle(document);
 		updateWindowReadOnly(document);
 	}
 }
@@ -4665,7 +4623,7 @@ DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geome
 	document->lockReasons_.clear();
 	window->updateWindowReadOnly(document);
 	window->updateStatus(document, document->firstPane());
-	window->UpdateWindowTitle(document);
+	window->updateWindowTitle(document);
 	document->RefreshTabState();
 
 	if(languageMode.isNull()) {
@@ -7177,4 +7135,47 @@ void MainWindow::updateWindowReadOnly(DocumentWidget *document) {
 
 	ui.action_Read_Only->setChecked(state);
 	ui.action_Read_Only->setEnabled(!document->lockReasons_.isAnyLockedIgnoringUser());
+}
+
+/**
+ * @brief MainWindow::UpdateWindowTitle
+ * @param doc
+ */
+void MainWindow::updateWindowTitle(DocumentWidget *document) {
+
+	QString clearCaseTag = ClearCase::GetViewTag();
+
+	QString title = DialogWindowTitle::FormatWindowTitle(
+	    document->filename_,
+	    document->path_,
+	    clearCaseTag,
+	    Preferences::GetPrefServerName(),
+	    IsServer,
+	    document->filenameSet_,
+	    document->lockReasons_,
+	    document->fileChanged_,
+	    Preferences::GetPrefTitleFormat());
+
+	setWindowTitle(title);
+
+	QString iconTitle = document->filename_;
+
+	if (document->fileChanged_) {
+		iconTitle.append(QLatin1Char('*'));
+	}
+
+	setWindowIconText(iconTitle);
+
+	/* If there's a find or replace dialog up in "Keep Up" mode, with a
+	   file name in the title, update it too */
+	if (dialogFind_) {
+		dialogFind_->setDocument(document);
+	}
+
+	if(dialogReplace_) {
+		dialogReplace_->setDocument(document);
+	}
+
+	// Update the Windows menus with the new name
+	MainWindow::UpdateWindowMenus();
 }

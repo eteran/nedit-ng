@@ -110,7 +110,6 @@ public:
 	void updateWindowMenu();
 	void updateWindowSizeMenu();
 	void updateWindowSizeMenus();
-	void UpdateWindowTitle(DocumentWidget *document);
 
 public:
 	static bool CloseAllFilesAndWindows();
@@ -389,11 +388,14 @@ public Q_SLOTS:
 
 private Q_SLOTS:
 	void focusChanged(QWidget *from, QWidget *to);
+
+public Q_SLOTS:
 	void selectionChanged(bool selected);
 	void undoAvailable(bool available);
 	void redoAvailable(bool available);
 	void updateStatus(DocumentWidget *document, TextArea *area);
 	void updateWindowReadOnly(DocumentWidget *document);
+	void updateWindowTitle(DocumentWidget *document);
 
 public:
 	QPointer<TextArea> lastFocus() const { return lastFocus_; }

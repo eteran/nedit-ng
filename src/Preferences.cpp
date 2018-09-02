@@ -689,7 +689,8 @@ void Preferences::SetPrefTitleFormat(const QString &format) {
 	// update all windows
 	// TODO(eteran): should this be done at this level? maybe a signal/slot update?
 	for(MainWindow *window : MainWindow::allWindows()) {
-		window->UpdateWindowTitle(window->currentDocument());
+		DocumentWidget *document = window->currentDocument();
+		window->updateWindowTitle(document);
 	}
 }
 

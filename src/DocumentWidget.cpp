@@ -390,7 +390,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 
 	/* Bring the title bar and statistics line up to date, doOpen does
 	   not necessarily set the window title or read-only status */
-	win->UpdateWindowTitle(document);
+	Q_EMIT document->updateWindowTitle(document);
 	Q_EMIT document->updateWindowReadOnly(document);
 	Q_EMIT document->updateStatus(document, nullptr);
 
@@ -573,7 +573,7 @@ void DocumentWidget::SetWindowModified(bool modified) {
 			fileChanged_ = false;
 		}
 
-		win->UpdateWindowTitle(this);
+		Q_EMIT updateWindowTitle(this);
 		RefreshTabState();
 	}
 }
@@ -1838,7 +1838,7 @@ void DocumentWidget::checkForChangesToFile() {
 			// NOTE: A document without a file can be locked though.
 			// Make sure that the window was not destroyed behind our back!
 			lockReasons_.setPermLocked(false);
-			win->UpdateWindowTitle(this);
+			Q_EMIT updateWindowTitle(this);
 			Q_EMIT updateWindowReadOnly(this);
 			return;
 		}
@@ -1858,7 +1858,7 @@ void DocumentWidget::checkForChangesToFile() {
 
 				if (lockReasons_.isPermLocked() != readOnly) {
 					lockReasons_.setPermLocked(readOnly);
-					win->UpdateWindowTitle(this);
+					Q_EMIT updateWindowTitle(this);
 					Q_EMIT updateWindowReadOnly(this);
 				}
 			}
@@ -2082,7 +2082,7 @@ void DocumentWidget::RevertToSaved() {
 		}
 
 		win->forceShowLineNumbers();
-		win->UpdateWindowTitle(this);
+		Q_EMIT updateWindowTitle(this);
 		Q_EMIT updateWindowReadOnly(this);
 
 		// restore the insert and scroll positions of each pane
@@ -2411,7 +2411,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 		filenameSet_ = true;
 
 		// Update the stats line and window title with the new filename
-		win->UpdateWindowTitle(this);
+		Q_EMIT updateWindowTitle(this);
 		Q_EMIT updateStatus(this, nullptr);
 
 		win->SortTabBar();
@@ -2730,7 +2730,7 @@ void DocumentWidget::closeDocument() {
 
 		stopHighlighting();
 		endSmartIndent();
-		win->UpdateWindowTitle(this);
+		Q_EMIT updateWindowTitle(this);
 		Q_EMIT updateWindowReadOnly(this);
 		win->ui.action_Close->setEnabled(false);
 		win->ui.action_Read_Only->setEnabled(true);
@@ -3023,11 +3023,11 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 		if (lockReasons_.isPermLocked()) {
 			fileChanged_ = false;
-			window->UpdateWindowTitle(this);
+			Q_EMIT updateWindowTitle(this);
 		} else {
 			SetWindowModified(false);
 			if (lockReasons_.isAnyLocked()) {
-				window->UpdateWindowTitle(this);
+				Q_EMIT updateWindowTitle(this);
 			}
 		}
 
@@ -3059,7 +3059,7 @@ void DocumentWidget::refreshWindowStates() {
 		}
 
 		Q_EMIT updateWindowReadOnly(this);
-		win->UpdateWindowTitle(this);
+		Q_EMIT updateWindowTitle(this);
 
 		// show/hide statsline as needed
 		if (modeMessageDisplayed() && !ui.statusFrame->isVisible()) {
@@ -3938,6 +3938,7 @@ void DocumentWidget::updateSignals(MainWindow *from, MainWindow *to) {
 	connect(this, &DocumentWidget::canRedoChanged,       to, &MainWindow::redoAvailable);
 	connect(this, &DocumentWidget::updateStatus,         to, &MainWindow::updateStatus);
 	connect(this, &DocumentWidget::updateWindowReadOnly, to, &MainWindow::updateWindowReadOnly);
+	connect(this, &DocumentWidget::updateWindowTitle,    to, &MainWindow::updateWindowTitle);
 }
 
 /*
@@ -6659,7 +6660,7 @@ void DocumentWidget::SetUserLocked(bool value) {
 	if(isTopDocument()) {
 		if(auto win = MainWindow::fromDocument(this)) {
 			no_signals(win->ui.action_Read_Only)->setChecked(lockReasons_.isAnyLocked());
-			win->UpdateWindowTitle(this);
+			Q_EMIT updateWindowTitle(this);
 			Q_EMIT updateWindowReadOnly(this);
 		}
 	}
