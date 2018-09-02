@@ -1292,9 +1292,8 @@ void TextArea::paintEvent(QPaintEvent *event) {
 	const int height = rect.height();
 
 	// find the line number range of the display
-	const int fontHeight = fixedFontHeight_;
-	const int firstLine  = (top - viewRect.top() - fontHeight + 1) / fontHeight;
-	const int lastLine   = (top + height - viewRect.top()) / fontHeight;
+	const int firstLine  = (top - viewRect.top() - fixedFontHeight_ + 1) / fixedFontHeight_;
+	const int lastLine   = (top + height - viewRect.top()) / fixedFontHeight_;
 
 	QPainter painter(viewport());
 	{
@@ -2657,9 +2656,9 @@ void TextArea::repaintLineNumbers() {
  */
 void TextArea::redisplayLineEx(int visLineNum, int leftCharIndex, int rightCharIndex) {
 
-	// NOTE(eteran): we could do like the original NEdit and only update the
-	// characters from leftCharIndex --> rightCharIndex, but we don't yet.
-	// Instead we just unconditionally redisplay the whole line...
+	// NOTE(eteran): the original code would only update **exactly** what was
+	// needed. I haven't been able to get this quite right in the Qt port.
+	// So we update the whole line (the visible portion).
 	Q_UNUSED(leftCharIndex);
 	Q_UNUSED(rightCharIndex);
 
@@ -2671,13 +2670,9 @@ void TextArea::redisplayLineEx(int visLineNum, int leftCharIndex, int rightCharI
 	}
 
 	// Calculate y coordinate of the string to draw
-	const int fontHeight = fixedFontHeight_;
-	const int y = viewRect.top() + visLineNum * fontHeight;
+	const int y = viewRect.top() + visLineNum * fixedFontHeight_;
 
-	// NOTE(eteran): it seems unecessary, but using 0/INT_MAX for the left/right
-	// bounds ensures that the edges of the cursor get cleared if any part of
-	// it was draw outside the contents rect
-	viewport()->update(QRect(0, y, INT_MAX, fontHeight));
+	viewport()->update(QRect(viewRect.left(), y, viewRect.width(), fixedFontHeight_));
 }
 
 /*
@@ -3105,6 +3100,8 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 	const int left  = x - cursorWidth / 2;
 	const int right = left + cursorWidth;
 
+	painter->save();
+
 	// Create segments and draw cursor
 	switch(cursorStyle_) {
 	case CursorStyles::Caret: {
@@ -3140,7 +3137,6 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 		pen.setWidth(2);
 	}
 
-	painter->save();
 	painter->setPen(pen);
 	painter->drawPath(path);
 	painter->restore();
