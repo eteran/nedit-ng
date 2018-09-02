@@ -4275,7 +4275,7 @@ static std::error_code tabDistMV(DocumentWidget *document, Arguments arguments, 
 
 	Q_UNUSED(arguments);
 
-	*result = make_value(document->buffer_->BufGetTabDist());
+	*result = make_value(document->buffer_->BufGetTabDistance());
 	return MacroErrorCode::Success;
 }
 

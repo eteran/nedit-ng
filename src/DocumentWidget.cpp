@@ -1087,7 +1087,7 @@ void DocumentWidget::setTabDistance(int distance) {
 
 	emit_event("set_tab_dist", QString::number(distance));
 
-	if (buffer_->BufGetTabDist() != distance) {
+	if (buffer_->BufGetTabDistance() != distance) {
 		TextCursor saveCursorPositions[MAX_PANES];
 		int        saveVScrollPositions[MAX_PANES];
 		int        saveHScrollPositions[MAX_PANES];

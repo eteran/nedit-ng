@@ -191,7 +191,7 @@ void findTextMargins(TextBuffer *buf, TextCursor start, TextCursor end, int64_t 
 			width = 0;
 			inWhite = true;
 		} else {
-			width += TextBuffer::BufCharWidth(ch, width, buf->BufGetTabDist());
+			width += TextBuffer::BufCharWidth(ch, width, buf->BufGetTabDistance());
 		}
 	}
 
@@ -1616,7 +1616,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 	int wrapMargin;
 	int maxWidth;
 	int nLines = 0;
-	const int tabDist = buffer_->BufGetTabDist();
+	const int tabDist = buffer_->BufGetTabDistance();
 
 	/* If there's a wrap margin set, it's more efficient to measure in columns,
 	 * than to count pixels.  Determine if we can count in columns
@@ -1746,7 +1746,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 ** "colNum".
 */
 int TextArea::widthInPixels(char ch, int column) const {
-	return stringWidth(TextBuffer::BufCharWidth(ch, column, buffer_->BufGetTabDist()));
+	return stringWidth(TextBuffer::BufCharWidth(ch, column, buffer_->BufGetTabDistance()));
 }
 
 /*
@@ -2690,18 +2690,6 @@ void TextArea::redisplayLineEx(int visLineNum, int leftCharIndex, int rightCharI
 void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip) {
 
 	const QRect viewRect = viewport()->contentsRect();
-	TextCursor cursorPos = cursorPos_;
-	bool hasCursor       = false;
-	int cursorX          = 0;
-	int charLen;
-	int i;
-	int outStartIndex;
-	int startIndex;
-	int startX;
-	char baseChar;
-	int64_t charWidth;
-	int64_t dispIndexOffset;
-	uint32_t style;
 
 	// If line is not displayed, skip it
 	if (visLineNum < 0 || visLineNum >= nVisibleLines_) {
@@ -2717,27 +2705,26 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	}
 
 	// Calculate y coordinate of the string to draw
-	const int fontHeight = fixedFontHeight_;
-	const int y = viewRect.top() + visLineNum * fontHeight;
+	const int y = viewRect.top() + visLineNum * fixedFontHeight_;
 
-	// Get the text, length, and  buffer position of the line to display
+	// Get the text, and buffer position of the line to display
 	const TextCursor lineStartPos = lineStarts_[visLineNum];
-	std::string lineStr;
-	int lineLen;
-	if (lineStartPos == -1) {
-		lineLen = 0;
-	} else {
-		lineLen = visLineLength(visLineNum);
-		lineStr = buffer_->BufGetRangeEx(lineStartPos, lineStartPos + lineLen);
-	}
+
+	const std::string currentLine = [&]() {
+		std::string ret;
+		if(lineStartPos != -1) {
+			const int lineLen = visLineLength(visLineNum);
+			ret = buffer_->BufGetRangeEx(lineStartPos, lineStartPos + lineLen);
+		}
+		return ret;
+	}();
 
 	/* Space beyond the end of the line is still counted in units of characters
 	   of a standardized character width (this is done mostly because style
 	   changes based on character position can still occur in this region due
-	   to rectangular selections).  stdCharWidth must be non-zero to prevent a
+	   to rectangular selections).  fixedFontWidth_ must be non-zero to prevent a
 	   potential infinite loop if x does not advance */
-	const int stdCharWidth = fixedFontWidth_;
-	if (stdCharWidth <= 0) {
+	if (fixedFontWidth_ <= 0) {
 		qWarning("NEdit: Internal Error, bad font measurement");
 		return;
 	}
@@ -2747,59 +2734,69 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   position and the line start we're using.  Since scanning back to find a
 	   newline is expensive, only do so if there's actually a rectangular
 	   selection which needs it */
-	if (continuousWrap_ && (buffer_->primary.rangeTouchesRectSel(lineStartPos, lineStartPos + lineLen) || buffer_->secondary.rangeTouchesRectSel(lineStartPos, lineStartPos + lineLen) || buffer_->highlight.rangeTouchesRectSel(lineStartPos, lineStartPos + lineLen))) {
+	int64_t dispIndexOffset;
+	if (continuousWrap_ && (
+	        buffer_->primary.rangeTouchesRectSel  (lineStartPos, lineStartPos + currentLine.size()) ||
+	        buffer_->secondary.rangeTouchesRectSel(lineStartPos, lineStartPos + currentLine.size()) ||
+	        buffer_->highlight.rangeTouchesRectSel(lineStartPos, lineStartPos + currentLine.size()))) {
+
 		dispIndexOffset = buffer_->BufCountDispChars(buffer_->BufStartOfLine(lineStartPos), lineStartPos);
 	} else {
 		dispIndexOffset = 0;
 	}
 
 	/* Step through character positions from the beginning of the line (even if
-	   that's off the left edge of the displayed area) to find the first
-	   character position that's not clipped, and the x coordinate for drawing
-	   that character */
-	int x = viewRect.left() - horizontalScrollBar()->value();
-	int outIndex = 0;
+	 * that's off the left edge of the displayed area) to find the first
+	 * character position that's not clipped, and the x coordinate for drawing
+	 * that character */
+	const int tabDist = buffer_->BufGetTabDistance();
+	int startX     = viewRect.left() - horizontalScrollBar()->value();
+	int outIndex   = 0;
+	int startIndex = 0;
+	uint32_t style;
 
-	int charIndex;
-	for (charIndex = 0;; charIndex++) {
+	for (;;) {
+		int  charLen;
+		char baseChar;
+		if(startIndex >= static_cast<int>(currentLine.size())) {
+			baseChar = '\0';
+			charLen  = 1;
+		} else {
+			baseChar = currentLine[static_cast<size_t>(startIndex)];
+			charLen  = TextBuffer::BufCharWidth(baseChar, outIndex, tabDist);
+		}
 
-		char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
-		baseChar = '\0';
-		charLen = (charIndex >= lineLen) ?
-					1 :
-					TextBuffer::BufExpandCharacter(baseChar = lineStr[static_cast<size_t>(charIndex)], outIndex, expandedChar, buffer_->BufGetTabDist());
+		style = styleOfPos(lineStartPos, static_cast<int>(currentLine.size()), startIndex, outIndex + dispIndexOffset, baseChar);
+		const int charWidth = (startIndex >= static_cast<int>(currentLine.size())) ? fixedFontWidth_ : stringWidth(charLen);
 
-		style = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
-		charWidth = charIndex >= lineLen ? stdCharWidth : stringWidth(charLen);
-
-		if (x + charWidth >= leftClip) {
-			startIndex = charIndex;
-			outStartIndex = outIndex;
-			startX = x;
+		if (startX + charWidth >= leftClip) {
 			break;
 		}
 
-		x        += charWidth;
+		startX   += charWidth;
 		outIndex += charLen;
+		++startIndex;
 	}
 
 	/* Scan character positions from the beginning of the clipping range, and
-	   draw parts whenever the style changes (also note if the cursor is on
-	   this line, and where it should be drawn to take advantage of the x
-	   position which we've gone to so much trouble to calculate) */
+	 * draw parts whenever the style changes (also note if the cursor is on
+	 * this line, and where it should be drawn to take advantage of the x
+	 * position which we've gone to so much trouble to calculate) */
 	char outStr[MAX_DISP_LINE_LEN];
-	char *outPtr = outStr;
+	char *outPtr   = outStr;
+	bool hasCursor = false;
+	int cursorX    = 0;
+	int x          = startX;
 
-	outIndex = outStartIndex;
-	x = startX;
+	int charIndex;
 	for (charIndex = startIndex; ; ++charIndex) {
 
-		if (lineStartPos + charIndex == cursorPos) {
-			if (charIndex < lineLen || (charIndex == lineLen && cursorPos >= buffer_->BufGetLength())) {
+		if (lineStartPos + charIndex == cursorPos_) {
+			if (charIndex < static_cast<int>(currentLine.size()) || (charIndex == static_cast<int>(currentLine.size()) && cursorPos_ >= buffer_->BufGetLength())) {
 				hasCursor = true;
 				cursorX = x - 1;
-			} else if (charIndex == lineLen) {
-				if (wrapUsesCharacter(cursorPos)) {
+			} else if (charIndex == static_cast<int>(currentLine.size())) {
+				if (wrapUsesCharacter(cursorPos_)) {
 					hasCursor = true;
 					cursorX = x - 1;
 				}
@@ -2807,16 +2804,21 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 		}
 
 		char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
-		baseChar = '\0';
-		charLen = (charIndex >= lineLen) ?
-					1 :
-					TextBuffer::BufExpandCharacter(baseChar = lineStr[static_cast<size_t>(charIndex)], outIndex, expandedChar, buffer_->BufGetTabDist());
+		char baseChar;
+		int charLen;
+		if (charIndex >= static_cast<int>(currentLine.size())) {
+			baseChar = '\0';
+			charLen  = 1;
+		} else {
+			baseChar = currentLine[static_cast<size_t>(charIndex)];
+			charLen  = TextBuffer::BufExpandCharacter(baseChar, outIndex, expandedChar, tabDist);
+		}
 
-		uint32_t charStyle = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, baseChar);
+		uint32_t charStyle = styleOfPos(lineStartPos, static_cast<int>(currentLine.size()), charIndex, outIndex + dispIndexOffset, baseChar);
 
-		for (i = 0; i < charLen; i++) {
-			if (i != 0 && charIndex < lineLen && lineStr[static_cast<size_t>(charIndex)] == '\t') {
-				charStyle = styleOfPos(lineStartPos, lineLen, charIndex, outIndex + dispIndexOffset, '\t');
+		for (int i = 0; i < charLen; ++i) {
+			if (i != 0 && charIndex < static_cast<int>(currentLine.size()) && currentLine[static_cast<size_t>(charIndex)] == '\t') {
+				charStyle = styleOfPos(lineStartPos, static_cast<int>(currentLine.size()), charIndex, outIndex + dispIndexOffset, '\t');
 			}
 
 			if (charStyle != style) {
@@ -2826,11 +2828,12 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 				style = charStyle;
 			}
 
-			if (charIndex < lineLen) {
+			int charWidth;
+			if (charIndex < static_cast<int>(currentLine.size())) {
 				*outPtr = expandedChar[i];
 				charWidth = stringWidth(1);
 			} else {
-				charWidth = stdCharWidth;
+				charWidth = fixedFontWidth_;
 			}
 
 			outPtr++;
@@ -2855,11 +2858,11 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	if (cursorOn_) {
 		if (hasCursor) {
 			drawCursor(painter, cursorX, y);
-		} else if (charIndex < lineLen && (lineStartPos + charIndex + 1 == cursorPos) && x == rightClip) {
-			if (cursorPos >= buffer_->BufGetLength()) {
+		} else if (charIndex < static_cast<int>(currentLine.size()) && (lineStartPos + charIndex + 1 == cursorPos_) && x == rightClip) {
+			if (cursorPos_ >= buffer_->BufGetLength()) {
 				drawCursor(painter, x - 1, y);
 			} else {
-				if (wrapUsesCharacter(cursorPos)) {
+				if (wrapUsesCharacter(cursorPos_)) {
 					drawCursor(painter, x - 1, y);
 				}
 			}
@@ -3630,7 +3633,7 @@ bool TextArea::positionToXY(TextCursor pos, int *x, int *y) const {
 	   to "pos" to calculate the x coordinate */
 	int xStep = viewRect.left() - horizontalScrollBar()->value();
 	int outIndex = 0;
-	const int tabDistance = buffer_->BufGetTabDist();
+	const int tabDistance = buffer_->BufGetTabDistance();
 	for (int charIndex = 0; charIndex < pos - lineStartPos; charIndex++) {
 
 		const int charLen = TextBuffer::BufCharWidth(
@@ -4161,7 +4164,7 @@ void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDe
 
 	auto it = chars.begin();
 	for (; it != chars.end() && *it != '\n'; it++) {
-		colNum += TextBuffer::BufCharWidth(*it, colNum, buffer_->BufGetTabDist());
+		colNum += TextBuffer::BufCharWidth(*it, colNum, buffer_->BufGetTabDistance());
 	}
 
 	const bool singleLine = (it == chars.end());
@@ -4234,7 +4237,7 @@ std::string TextArea::wrapTextEx(view::string_view startLine, view::string_view 
 	wrapBuf.BufAppendEx(text);
 
 	const TextCursor startLineEnd = TextCursor(startLine.size());
-	const int tabDist             = buffer_->BufGetTabDist();
+	const int tabDist             = buffer_->BufGetTabDistance();
 
 	/* Scan the buffer for long lines and apply wrapLine when wrapMargin is
 	   exceeded.  limitPos enforces no breaks in the "startLine" part of the
@@ -4303,7 +4306,7 @@ void TextArea::TextDOverstrikeEx(view::string_view text) {
 	const int64_t startIndent = buffer_->BufCountDispChars(lineStart, startPos);
 	int64_t indent = startIndent;
 	for (char ch : text) {
-		indent += TextBuffer::BufCharWidth(ch, indent, buffer_->BufGetTabDist());
+		indent += TextBuffer::BufCharWidth(ch, indent, buffer_->BufGetTabDistance());
 	}
 	const int64_t endIndent = indent;
 
@@ -4320,7 +4323,7 @@ void TextArea::TextDOverstrikeEx(view::string_view text) {
 			break;
 		}
 
-		indent += TextBuffer::BufCharWidth(ch, indent, buffer_->BufGetTabDist());
+		indent += TextBuffer::BufCharWidth(ch, indent, buffer_->BufGetTabDistance());
 		if (indent == endIndent) {
 			++p;
 			break;
@@ -4428,7 +4431,7 @@ bool TextArea::wrapLine(TextBuffer *buf, int64_t bufOffset, TextCursor lineStart
 std::string TextArea::createIndentStringEx(TextBuffer *buf, int64_t bufOffset, TextCursor lineStartPos, TextCursor lineEndPos, int *column) {
 
 	int indent = -1;
-	const int tabDist  = buffer_->BufGetTabDist();
+	const int tabDist  = buffer_->BufGetTabDistance();
 	const bool useTabs = buffer_->BufGetUseTabs();
 
 	/* If smart indent is on, call the smart indent callback.  It is not
@@ -4570,7 +4573,7 @@ bool TextArea::deleteEmulatedTab() {
 
 	for (TextCursor pos = lineStart; pos < insertPos; ++pos) {
 		const char ch = buffer_->BufGetCharacter(pos);
-		indent += TextBuffer::BufCharWidth(ch, indent, buffer_->BufGetTabDist());
+		indent += TextBuffer::BufCharWidth(ch, indent, buffer_->BufGetTabDistance());
 		if (indent > toIndent) {
 			break;
 		}
@@ -5263,7 +5266,7 @@ void TextArea::processTabAP(EventFlags flags) {
 	auto outPtr = std::back_inserter(outStr);
 	indent = startIndent;
 	while (indent < toIndent) {
-		const int tabWidth = TextBuffer::BufCharWidth('\t', indent, buffer_->BufGetTabDist());
+		const int tabWidth = TextBuffer::BufCharWidth('\t', indent, buffer_->BufGetTabDistance());
 		if (buffer_->BufGetUseTabs() && tabWidth > 1 && indent + tabWidth <= toIndent) {
 			*outPtr++ = '\t';
 			indent += tabWidth;
@@ -5375,7 +5378,7 @@ TextCursor TextArea::xyToPos(int x, int y, PositionTypes posType) const {
 	   to find the character position corresponding to the x coordinate */
 	int64_t xStep = viewRect.left() - horizontalScrollBar()->value();
 	int outIndex = 0;
-	const int tabDistance = buffer_->BufGetTabDist();
+	const int tabDistance = buffer_->BufGetTabDistance();
 	for (int64_t charIndex = 0; charIndex < lineLen; charIndex++) {
 
 		const int charLen        = TextBuffer::BufCharWidth(lineStr[charIndex], outIndex, tabDistance);
@@ -6000,7 +6003,7 @@ void TextArea::BeginBlockDrag() {
 	   deriving changes */
 	dragOrigBuf_ = std::make_unique<TextBuffer>();
 	dragOrigBuf_->BufSetSyncXSelection(false);
-	dragOrigBuf_->BufSetTabDistance(buffer_->BufGetTabDist(), true);
+	dragOrigBuf_->BufSetTabDistance(buffer_->BufGetTabDistance(), true);
 	dragOrigBuf_->BufSetUseTabs(buffer_->BufGetUseTabs());
 
 	dragOrigBuf_->BufSetAll(buffer_->BufGetAllEx());
@@ -6038,7 +6041,7 @@ void TextArea::BeginBlockDrag() {
 		testBuf.BufSetSyncXSelection(false);
 
 		std::string testText = buffer_->BufGetRangeEx(sel.start, sel.end);
-		testBuf.BufSetTabDistance(buffer_->BufGetTabDist(), true);
+		testBuf.BufSetTabDistance(buffer_->BufGetTabDistance(), true);
 		testBuf.BufSetUseTabs(buffer_->BufGetUseTabs());
 		testBuf.BufSetAll(testText);
 
@@ -6134,7 +6137,7 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	   (this could be tighter, but hopefully it's not too slow) */
 	TextBuffer tempBuf;
 	tempBuf.BufSetSyncXSelection(false);
-	tempBuf.BufSetTabDistance(buffer_->BufGetTabDist(), false);
+	tempBuf.BufSetTabDistance(buffer_->BufGetTabDistance(), false);
 	tempBuf.BufSetUseTabs(buffer_->BufGetUseTabs());
 
 	const TextCursor tempStart = std::min({ dragInsertPos_, origSel.start, buffer_->BufCountBackwardNLines(firstChar_, nLines + 2) });
@@ -7370,7 +7373,7 @@ TextCursor TextArea::TextDLineAndColToPos(int line, int column) {
 		int outIndex = 0;
 		for (TextCursor i = lineStart; i < lineEnd; ++i, ++charIndex) {
 
-			charLen = TextBuffer::BufCharWidth(lineStr[charIndex], outIndex, buffer_->BufGetTabDist());
+			charLen = TextBuffer::BufCharWidth(lineStr[charIndex], outIndex, buffer_->BufGetTabDistance());
 
 			if (outIndex + charLen >= column) {
 				break;

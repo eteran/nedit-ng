@@ -92,7 +92,6 @@ public:
 	int BufCmpEx(TextCursor pos, view_type cmpText) const noexcept;
 	int BufGetExpandedChar(TextCursor pos, int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN]) const noexcept;
 	int BufGetTabDistance() const noexcept;
-	int BufGetTabDist() const noexcept;
 	string_type BufGetAllEx() const;
 	string_type BufGetRangeEx(TextCursor start, TextCursor end) const;
 	string_type BufGetSecSelectTextEx() const;

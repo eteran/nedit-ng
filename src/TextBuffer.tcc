@@ -477,14 +477,7 @@ auto BasicTextBuffer<Ch, Tr>::BufGetTextInRectEx(TextCursor start, TextCursor en
 	return realignTabs(textOut, rectStart, 0, tabDist_, useTabs_);
 }
 
-/*
-** Get the hardware tab distance used by all displays for this buffer,
-** and used in computing offsets for rectangular selection operations.
-*/
-template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufGetTabDistance() const noexcept {
-	return tabDist_;
-}
+
 
 /*
 ** Set the hardware tab distance used by all displays for this buffer,
@@ -2062,8 +2055,12 @@ bool BasicTextBuffer<Ch, Tr>::BufGetUseTabs() const noexcept {
 	return useTabs_;
 }
 
+/*
+** Get the hardware tab distance used by all displays for this buffer,
+** and used in computing offsets for rectangular selection operations.
+*/
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufGetTabDist() const noexcept {
+int BasicTextBuffer<Ch, Tr>::BufGetTabDistance() const noexcept {
 	return tabDist_;
 }
 

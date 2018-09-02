@@ -608,7 +608,7 @@ void shiftRectEx(DocumentWidget *document, TextArea *area, ShiftDirection direct
 	// Calculate the the left/right offset for the new rectangle
 	if (byTab) {
 		int emTabDist = area->getEmulateTabs();
-		offset = (emTabDist == 0) ? buf->BufGetTabDist() : emTabDist;
+		offset = (emTabDist == 0) ? buf->BufGetTabDistance() : emTabDist;
 	} else {
 		offset = 1;
 	}
@@ -623,7 +623,7 @@ void shiftRectEx(DocumentWidget *document, TextArea *area, ShiftDirection direct
 	   hide the intermediate steps from the display update routines */
 	TextBuffer tempBuf;
 	tempBuf.BufSetSyncXSelection(false);
-	tempBuf.BufSetTabDistance(buf->BufGetTabDist(), false);
+	tempBuf.BufSetTabDistance(buf->BufGetTabDistance(), false);
 	tempBuf.BufSetUseTabs(buf->BufGetUseTabs());
 
 	std::string text = buf->BufGetRangeEx(selStart, selEnd);
@@ -693,12 +693,12 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
 	// shift the text by the appropriate distance
 	if (byTab) {
 		int emTabDist = area->getEmulateTabs();
-		shiftDist = emTabDist == 0 ? buf->BufGetTabDist() : emTabDist;
+		shiftDist = emTabDist == 0 ? buf->BufGetTabDistance() : emTabDist;
 	} else {
 		shiftDist = 1;
 	}
 
-	std::string shiftedText = ShiftTextEx(text, direction, buf->BufGetUseTabs(), buf->BufGetTabDist(), shiftDist);
+	std::string shiftedText = ShiftTextEx(text, direction, buf->BufGetUseTabs(), buf->BufGetTabDistance(), shiftDist);
 
 	buf->BufReplaceSelectedEx(shiftedText);
 
@@ -765,7 +765,7 @@ void FillSelectionEx(DocumentWidget *document, TextArea *area) {
 	std::string filledText = fillParagraphsEx(
 				text,
 				rightMargin,
-				buf->BufGetTabDist(),
+	            buf->BufGetTabDistance(),
 				buf->BufGetUseTabs(),
 				false);
 
