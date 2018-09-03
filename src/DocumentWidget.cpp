@@ -1776,15 +1776,14 @@ void DocumentWidget::checkForChangesToFile() {
 			}
 
 			/* Can't stat the file --
-			 * maybe it's been deleted. The filename is now invalid
-			 */
+			 * maybe it's been deleted. The filename is now invalid */
 			fileMissing_ = true;
 			lastModTime_ = 1;
 			dev_         = 0;
 			ino_         = 0;
 
-			/* Warn the user, if they like to be warned (Maybe this should be its
-				own preference setting: GetPrefWarnFileDeleted()) */
+			/* Warn the user, if they like to be warned (Maybe this should be
+			 * its own preference setting: GetPrefWarnFileDeleted()) */
 			if (Preferences::GetPrefWarnFileMods()) {
 				bool save = false;
 
