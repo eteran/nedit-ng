@@ -1990,6 +1990,10 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 				QFileInfo fullPath = tr("%1/%2").arg(includeDir, match.captured(1));
 				searchName = fullPath.fileName();
 				searchPath = fullPath.path();
+			} else {
+				QFileInfo fullPath = tr("%1/%2").arg(document->path_, searchName);
+				searchName = fullPath.fileName();
+				searchPath = fullPath.path();
 			}
 		}
 
