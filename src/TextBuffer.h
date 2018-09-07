@@ -75,6 +75,10 @@ public:
 	static int BufExpandTab(int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist) noexcept;
 
 public:
+	Ch front() const noexcept;
+	Ch back() const noexcept;
+
+public:
 	bool BufGetEmptySelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
 	bool BufGetSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
 	bool BufGetSyncXSelection() const;

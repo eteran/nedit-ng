@@ -2227,7 +2227,7 @@ bool DocumentWidget::doSave() {
 		none of the write bits set.  */
 	if (isAdministrator()) {
 		QFileInfo fi(fullname);
-		if(fi.exists() && (fi.permissions() & (QFile::WriteOwner | QFile::WriteUser | QFile::WriteGroup)) == 0) {
+		if(fi.exists() && ((fi.permissions() & (QFile::WriteOwner | QFile::WriteUser | QFile::WriteGroup)) == 0)) {
 			int result = QMessageBox::warning(
 			            this,
 			            tr("Writing Read-only File"),
@@ -2247,7 +2247,7 @@ bool DocumentWidget::doSave() {
 			 changes. If the file is created for the first time, it has
 			 zero size on disk, and the check would falsely conclude that the
 			 file has changed on disk, and would pop up a warning dialog */
-	if (Preferences::GetPrefAppendLF() && !buffer_->BufIsEmpty() && buffer_->BufGetCharacter(buffer_->BufEndOfBuffer() - 1) != '\n') {
+	if (Preferences::GetPrefAppendLF() && !buffer_->BufIsEmpty() && buffer_->back() != '\n') {
 		buffer_->BufAppendEx('\n');
 	}
 

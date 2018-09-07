@@ -64,6 +64,22 @@ auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(TextCursor start, TextCursor end) co
 	return buffer_.to_string(to_integer(start), to_integer(end));
 }
 
+/**
+ *
+ */
+template <class Ch, class Tr>
+Ch BasicTextBuffer<Ch, Tr>::front() const noexcept {
+	return BufGetCharacter(BufStartOfBuffer());
+}
+
+/**
+ *
+ */
+template <class Ch, class Tr>
+Ch BasicTextBuffer<Ch, Tr>::back() const noexcept {
+	return BufGetCharacter(BufEndOfBuffer() - 1);
+}
+
 /*
 ** Return the character at buffer position "pos".  Positions start at 0.
 */
@@ -84,13 +100,7 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufInsertEx(TextCursor pos, view_type text) noexcept {
 
 	// if pos is not contiguous to existing text, make it
-	if (pos > BufEndOfBuffer()) {
-		pos = BufEndOfBuffer();
-	}
-
-	if (pos < BufStartOfBuffer()) {
-		pos = BufStartOfBuffer();
-	}
+	pos = qBound(BufStartOfBuffer(), pos, BufEndOfBuffer());
 
 	// Even if nothing is deleted, we must call these callbacks
 	callPreDeleteCBs(pos, 0);
@@ -105,13 +115,7 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufInsertEx(TextCursor pos, Ch ch) noexcept {
 
 	// if pos is not contiguous to existing text, make it
-	if (pos > BufEndOfBuffer()) {
-		pos = BufEndOfBuffer();
-	}
-
-	if (pos < BufStartOfBuffer()) {
-		pos = BufStartOfBuffer();
-	}
+	pos = qBound(BufStartOfBuffer(), pos, BufEndOfBuffer());
 
 	// Even if nothing is deleted, we must call these callbacks
 	callPreDeleteCBs(pos, 0);
@@ -1449,9 +1453,9 @@ void BasicTextBuffer<Ch, Tr>::redisplaySelection(const Selection *oldSelection, 
 	   changed areas), and the unchanged area of their intersection,
 	   and update only the changed area(s) */
 	const TextCursor ch1Start = std::min(oldStart, newStart);
-	const TextCursor ch2End   = std::max(oldEnd, newEnd);
+	const TextCursor ch2End   = std::max(oldEnd,   newEnd);
 	const TextCursor ch1End   = std::max(oldStart, newStart);
-	const TextCursor ch2Start = std::min(oldEnd, newEnd);
+	const TextCursor ch2Start = std::min(oldEnd,   newEnd);
 
 	if (ch1Start != ch1End) {
 		callModifyCBs(ch1Start, 0, 0, ch1End - ch1Start, {});
