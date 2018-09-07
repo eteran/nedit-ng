@@ -164,7 +164,7 @@ private:
 	void findRectSelBoundariesForCopy(TextCursor lineStartPos, int64_t rectStart, int64_t rectEnd, TextCursor *selStart, TextCursor *selEnd) const noexcept;
 	void insertColEx(int64_t column, TextCursor startPos, view_type insText, int64_t *nDeleted, int64_t *nInserted, TextCursor *endPos);
 	void overlayRectEx(TextCursor startPos, int64_t rectStart, int64_t rectEnd, view_type insText, int64_t *nDeleted, int64_t *nInserted, TextCursor *endPos);
-	void redisplaySelection(const Selection *oldSelection, Selection *newSelection) const noexcept;
+	void redisplaySelection(const Selection &oldSelection, Selection *newSelection) const noexcept;
 	void removeSelected(const Selection *sel) noexcept;
 	void replaceSelectedEx(Selection *sel, view_type text) noexcept;
 	void updateSelections(TextCursor pos, int64_t nDeleted, int64_t nInserted) noexcept;

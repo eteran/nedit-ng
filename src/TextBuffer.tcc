@@ -553,7 +553,7 @@ void BasicTextBuffer<Ch, Tr>::BufSelect(TextCursor start, TextCursor end) noexce
 	const Selection oldSelection = primary;
 
 	primary.setSelection(start, end);
-	redisplaySelection(&oldSelection, &primary);
+	redisplaySelection(oldSelection, &primary);
 
 #ifdef Q_OS_UNIX
 	updatePrimarySelection();
@@ -566,7 +566,7 @@ void BasicTextBuffer<Ch, Tr>::BufUnselect() noexcept {
 
 	primary.selected = false;
 	primary.zeroWidth = false;
-	redisplaySelection(&oldSelection, &primary);
+	redisplaySelection(oldSelection, &primary);
 }
 
 template <class Ch, class Tr>
@@ -574,7 +574,7 @@ void BasicTextBuffer<Ch, Tr>::BufRectSelect(TextCursor start, TextCursor end, in
 	const Selection oldSelection = primary;
 
 	primary.setRectSelect(start, end, rectStart, rectEnd);
-	redisplaySelection(&oldSelection, &primary);
+	redisplaySelection(oldSelection, &primary);
 
 #ifdef Q_OS_UNIX
 	updatePrimarySelection();
@@ -612,7 +612,7 @@ void BasicTextBuffer<Ch, Tr>::BufSecondarySelect(TextCursor start, TextCursor en
 	const Selection oldSelection = secondary;
 
 	secondary.setSelection(start, end);
-	redisplaySelection(&oldSelection, &secondary);
+	redisplaySelection(oldSelection, &secondary);
 }
 
 template <class Ch, class Tr>
@@ -621,7 +621,7 @@ void BasicTextBuffer<Ch, Tr>::BufSecondaryUnselect() noexcept {
 
 	secondary.selected = false;
 	secondary.zeroWidth = false;
-	redisplaySelection(&oldSelection, &secondary);
+	redisplaySelection(oldSelection, &secondary);
 }
 
 template <class Ch, class Tr>
@@ -629,7 +629,7 @@ void BasicTextBuffer<Ch, Tr>::BufSecRectSelect(TextCursor start, TextCursor end,
 	const Selection oldSelection = secondary;
 
 	secondary.setRectSelect(start, end, rectStart, rectEnd);
-	redisplaySelection(&oldSelection, &secondary);
+	redisplaySelection(oldSelection, &secondary);
 }
 
 template <class Ch, class Tr>
@@ -652,7 +652,7 @@ void BasicTextBuffer<Ch, Tr>::BufHighlight(TextCursor start, TextCursor end) noe
 	const Selection oldSelection = highlight;
 
 	highlight.setSelection(start, end);
-	redisplaySelection(&oldSelection, &highlight);
+	redisplaySelection(oldSelection, &highlight);
 }
 
 template <class Ch, class Tr>
@@ -661,7 +661,7 @@ void BasicTextBuffer<Ch, Tr>::BufUnhighlight() noexcept {
 
 	highlight.selected = false;
 	highlight.zeroWidth = false;
-	redisplaySelection(&oldSelection, &highlight);
+	redisplaySelection(oldSelection, &highlight);
 }
 
 template <class Ch, class Tr>
@@ -669,7 +669,7 @@ void BasicTextBuffer<Ch, Tr>::BufRectHighlight(TextCursor start, TextCursor end,
 	const Selection oldSelection = highlight;
 
 	highlight.setRectSelect(start, end, rectStart, rectEnd);
-	redisplaySelection(&oldSelection, &highlight);
+	redisplaySelection(oldSelection, &highlight);
 }
 
 /*
@@ -1399,17 +1399,17 @@ void BasicTextBuffer<Ch, Tr>::insertColEx(int64_t column, TextCursor startPos, v
 ** screen for a change in a selection.
 */
 template <class Ch, class Tr>
-void BasicTextBuffer<Ch, Tr>::redisplaySelection(const Selection *oldSelection, Selection *newSelection) const noexcept {
+void BasicTextBuffer<Ch, Tr>::redisplaySelection(const Selection &oldSelection, Selection *newSelection) const noexcept {
 
 	/* If either selection is rectangular, add an additional character to
 	   the end of the selection to request the redraw routines to wipe out
 	   the parts of the selection beyond the end of the line */
-	TextCursor oldStart = oldSelection->start;
+	TextCursor oldStart = oldSelection.start;
 	TextCursor newStart = newSelection->start;
-	TextCursor oldEnd   = oldSelection->end;
+	TextCursor oldEnd   = oldSelection.end;
 	TextCursor newEnd   = newSelection->end;
 
-	if (oldSelection->rectangular) {
+	if (oldSelection.rectangular) {
 		++oldEnd;
 	}
 
@@ -1419,11 +1419,11 @@ void BasicTextBuffer<Ch, Tr>::redisplaySelection(const Selection *oldSelection, 
 
 	/* If the old or new selection is unselected, just redisplay the
 	   single area that is (was) selected and return */
-	if (!oldSelection->selected && !newSelection->selected) {
+	if (!oldSelection.selected && !newSelection->selected) {
 		return;
 	}
 
-	if (!oldSelection->selected) {
+	if (!oldSelection.selected) {
 		callModifyCBs(newStart, 0, 0, newEnd - newStart, {});
 		return;
 	}
@@ -1435,8 +1435,8 @@ void BasicTextBuffer<Ch, Tr>::redisplaySelection(const Selection *oldSelection, 
 
 	/* If the selection changed from normal to rectangular or visa versa, or
 	   if a rectangular selection changed boundaries, redisplay everything */
-	if ((oldSelection->rectangular && !newSelection->rectangular) || (!oldSelection->rectangular && newSelection->rectangular) ||
-		(oldSelection->rectangular && ((oldSelection->rectStart != newSelection->rectStart) || (oldSelection->rectEnd != newSelection->rectEnd)))) {
+	if ((oldSelection.rectangular && !newSelection->rectangular) || (!oldSelection.rectangular && newSelection->rectangular) ||
+	    (oldSelection.rectangular && ((oldSelection.rectStart != newSelection->rectStart) || (oldSelection.rectEnd != newSelection->rectEnd)))) {
 		callModifyCBs(std::min(oldStart, newStart), 0, 0, std::max(oldEnd, newEnd) - std::min(oldStart, newStart), {});
 		return;
 	}
@@ -1505,7 +1505,7 @@ void BasicTextBuffer<Ch, Tr>::replaceSelectedEx(Selection *sel, view_type text) 
 	/* Unselect (happens automatically in BufReplaceEx, but BufReplaceRectEx
 	   can't detect when the contents of a selection goes away) */
 	sel->selected = false;
-	redisplaySelection(&oldSelection, sel);
+	redisplaySelection(oldSelection, sel);
 }
 
 /*
