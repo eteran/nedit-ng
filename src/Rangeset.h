@@ -4,6 +4,7 @@
 
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
+#include "Range.h"
 #include <QColor>
 #include <vector>
 #include <boost/optional.hpp>
@@ -12,11 +13,6 @@
 constexpr int N_RANGESETS = 63;
 
 class Rangeset;
-
-struct Range {
-	TextCursor start;
-	TextCursor end; /* range from [start-]end */
-};
 
 struct RangesetInfo {
 	bool        defined = false;

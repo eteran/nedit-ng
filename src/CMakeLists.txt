@@ -193,6 +193,7 @@ add_executable(nedit-ng
 	PatternSet.h
 	Preferences.cpp
 	Preferences.h
+	Range.h
 	Rangeset.cpp
 	Rangeset.h
 	RangesetTable.cpp
