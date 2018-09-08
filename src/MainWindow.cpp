@@ -6045,8 +6045,7 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, con
 	TextCursor startPos;
 	TextCursor endPos;
 	TextCursor beginPos;
-	TextCursor selStart;
-	TextCursor selEnd;
+	TextRange selectionRange;
 	bool movedFwd = false;
 
 	// Save a copy of searchString in the search history
@@ -6054,17 +6053,17 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, con
 
 	/* set the position to start the search so we don't find the same
 	   string that was found on the last search */
-	if (searchMatchesSelectionEx(document, searchString, searchType, &selStart, &selEnd, nullptr, nullptr)) {
+	if (searchMatchesSelectionEx(document, searchString, searchType, &selectionRange, nullptr, nullptr)) {
 		// selection matches search string, start before or after sel.
 		if (direction == Direction::Backward) {
-			beginPos = selStart - 1;
+			beginPos = selectionRange.start - 1;
 		} else {
-			beginPos = selStart + 1;
+			beginPos = selectionRange.start + 1;
 			movedFwd = true;
 		}
 	} else {
-		selStart = TextCursor(-1);
-		selEnd   = TextCursor(-1);
+		selectionRange.start = TextCursor(-1);
+		selectionRange.end   = TextCursor(-1);
 		// no selection, or no match, search relative cursor
 
 		TextCursor cursorPos = area->TextGetCursorPos();
@@ -6109,7 +6108,7 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, con
 	}
 
 	// if matched text is already selected, just beep
-	if (selStart == startPos && selEnd == endPos) {
+	if (selectionRange.start == startPos && selectionRange.end == endPos) {
 		QApplication::beep();
 		return false;
 	}
@@ -6211,8 +6210,8 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
 ** in window "window", using algorithm "searchType" and direction "direction"
 */
 bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap) {
-	TextCursor startPos = {};
-	TextCursor endPos   = {};
+
+	TextRange selectionRange;
 	TextCursor extentBW;
 	TextCursor extentFW;
 
@@ -6222,7 +6221,7 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, co
 	bool replaced = false;
 
 	// Replace the selected text only if it matches the search string
-	if (searchMatchesSelectionEx(document, searchString, searchType, &startPos, &endPos, &extentBW, &extentFW)) {
+	if (searchMatchesSelectionEx(document, searchString, searchType, &selectionRange, &extentBW, &extentFW)) {
 
 		int64_t replaceLen = 0;
 
@@ -6235,22 +6234,22 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, co
 				searchString,
 				replaceString,
 				foundString,
-				startPos - extentBW,
+			    selectionRange.start - extentBW,
 				replaceResult,
-				startPos == 0 ? -1 : document->buffer_->BufGetCharacter(startPos - 1),
+			    selectionRange.start == 0 ? -1 : document->buffer_->BufGetCharacter(selectionRange.start - 1),
 				document->GetWindowDelimitersEx(),
 				Search::defaultRegexFlags(searchType));
 
-			document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
+			document->buffer_->BufReplaceEx(selectionRange, replaceResult);
 			replaceLen = static_cast<int64_t>(replaceResult.size());
 		} else {
-			document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toStdString());
+			document->buffer_->BufReplaceEx(selectionRange, replaceString.toStdString());
 			replaceLen = replaceString.size();
 		}
 
 		// Position the cursor so the next search will work correctly based
 		// on the direction of the search
-		area->TextSetCursorPos(startPos + ((direction == Direction::Forward) ? replaceLen : 0));
+		area->TextSetCursorPos(selectionRange.start + ((direction == Direction::Forward) ? replaceLen : 0));
 		replaced = true;
 	}
 
@@ -6290,8 +6289,6 @@ bool MainWindow::SearchAndSelectSameEx(DocumentWidget *document, TextArea *area,
 */
 bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap) {
 
-	TextCursor startPos;
-	TextCursor endPos;
 	int64_t replaceLen;
 
 	/* NOTE(eteran): OK, the whole point of extentBW, and extentFW
@@ -6319,7 +6316,8 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
 	// the user is probably using search then replace method, so
 	// replace the selected text regardless of where the cursor is.
 	// Otherwise, search for the string.
-	if (!searchMatchesSelectionEx(document, searchString, searchType, &startPos, &endPos, &extentBW, &extentFW)) {
+	TextRange selectionRange;
+	if (!searchMatchesSelectionEx(document, searchString, searchType, &selectionRange, &extentBW, &extentFW)) {
 		// get the position to start the search
 
 		TextCursor beginPos;
@@ -6344,8 +6342,8 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
 					to_integer(beginPos),
 					&searchResult);
 
-		startPos = TextCursor(searchResult.start);
-		endPos   = TextCursor(searchResult.end);
+		selectionRange.start = TextCursor(searchResult.start);
+		selectionRange.end   = TextCursor(searchResult.end);
 		extentBW = TextCursor(searchResult.extentBW);
 		extentFW = TextCursor(searchResult.extentFW);
 
@@ -6363,16 +6361,16 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
 			searchString,
 			replaceString,
 			foundString,
-			startPos - extentBW,
+		    selectionRange.start - extentBW,
 			replaceResult,
-			startPos == 0 ? -1 : document->buffer_->BufGetCharacter(startPos - 1),
+		    selectionRange.start == 0 ? -1 : document->buffer_->BufGetCharacter(selectionRange.start - 1),
 			document->GetWindowDelimitersEx(),
 			Search::defaultRegexFlags(searchType));
 
-		document->buffer_->BufReplaceEx(startPos, endPos, replaceResult);
+		document->buffer_->BufReplaceEx(selectionRange, replaceResult);
 		replaceLen = static_cast<int64_t>(replaceResult.size());
 	} else {
-		document->buffer_->BufReplaceEx(startPos, endPos, replaceString.toStdString());
+		document->buffer_->BufReplaceEx(selectionRange, replaceString.toStdString());
 		replaceLen = replaceString.size();
 	}
 
@@ -6388,7 +6386,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
 	   nothing) */
 	area->setAutoShowInsertPos(false);
 
-	area->TextSetCursorPos(startPos + ((direction == Direction::Forward) ? replaceLen : 0));
+	area->TextSetCursorPos(selectionRange.start + ((direction == Direction::Forward) ? replaceLen : 0));
 	document->MakeSelectionVisible(area);
 	area->setAutoShowInsertPos(true);
 	return true;
@@ -6852,7 +6850,7 @@ void MainWindow::iSearchTryBeepOnWrapEx(Direction direction, TextCursor beginPos
 ** current primary selection using search algorithm "searchType".  If true,
 ** also return the position of the selection in "left" and "right".
 */
-bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, TextCursor *left, TextCursor *right, TextCursor *extentBW, TextCursor *extentFW) {
+bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, TextRange *textRange, TextCursor *extentBW, TextCursor *extentFW) {
 
 	const int regexLookContext = Search::isRegexType(searchType) ? 1000 : 0;
 
@@ -6930,19 +6928,19 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
 
 	// return the start and end of the selection
 	if (isRect) {
-		bool ret = document->buffer_->GetSimpleSelection(left, right);
+		bool ret = document->buffer_->GetSimpleSelection(textRange);
 		Q_ASSERT(ret);
 	} else {
-		*left  = selStart;
-		*right = selEnd;
+		textRange->start = selStart;
+		textRange->end   = selEnd;
 	}
 
 	if(extentBW) {
-		*extentBW = *left - (searchResult.start - searchResult.extentBW);
+		*extentBW = textRange->start - (searchResult.start - searchResult.extentBW);
 	}
 
 	if(extentFW) {
-		*extentFW = *right + (searchResult.extentFW - searchResult.end);
+		*extentFW = textRange->end + (searchResult.extentFW - searchResult.end);
 	}
 
 	return true;

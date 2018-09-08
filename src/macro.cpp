@@ -4828,7 +4828,7 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // NOTE(eteran): GCC 7+ false positive
 #endif
 
-	boost::optional<Range> range;
+	boost::optional<TextRange> range;
 
 	if (Rangeset *rangeset = rangesetTable->RangesetFetch(label)) {
 		if (arguments.size() == 1) {

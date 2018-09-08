@@ -58,6 +58,13 @@ void BasicTextBuffer<Ch, Tr>::BufSetAll(view_type text) {
 ** include the character pointed to by "end"
 */
 template <class Ch, class Tr>
+auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(TextRange range) const -> string_type {
+
+	sanitizeRange(range.start, range.end);
+	return buffer_.to_string(to_integer(range.start), to_integer(range.end));
+}
+
+template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(TextCursor start, TextCursor end) const -> string_type {
 
 	sanitizeRange(start, end);
@@ -130,6 +137,16 @@ void BasicTextBuffer<Ch, Tr>::BufInsertEx(TextCursor pos, Ch ch) noexcept {
 ** Delete the characters between "start" and "end", and insert the
 ** string "text" in their place in in "buf"
 */
+template <class Ch, class Tr>
+void BasicTextBuffer<Ch, Tr>::BufReplaceEx(TextRange range, view_type text) noexcept {
+	BufReplaceEx(range.start, range.end, text);
+}
+
+template <class Ch, class Tr>
+void BasicTextBuffer<Ch, Tr>::BufReplaceEx(TextRange range, Ch ch) noexcept {
+	BufReplaceEx(range.start, range.end, ch);
+}
+
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufReplaceEx(TextCursor start, TextCursor end, view_type text) noexcept {
 
@@ -1545,7 +1562,7 @@ bool BasicTextBuffer<Ch, Tr>::BufIsEmpty() const noexcept {
 ** span lines.
 */
 template <class Ch, class Tr>
-bool BasicTextBuffer<Ch, Tr>::GetSimpleSelection(TextCursor *left, TextCursor *right) const noexcept {
+bool BasicTextBuffer<Ch, Tr>::GetSimpleSelection(TextRange *range) const noexcept {
 
 	// TODO(eteran): return optional "range"?
 
@@ -1568,8 +1585,8 @@ bool BasicTextBuffer<Ch, Tr>::GetSimpleSelection(TextCursor *left, TextCursor *r
 		selEnd    = TextCursor(BufCountForwardDispChars(lineStart, rectEnd));
 	}
 
-	*left  = selStart;
-	*right = selEnd;
+	range->start = selStart;
+	range->end   = selEnd;
 	return true;
 }
 

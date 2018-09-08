@@ -7,11 +7,11 @@
 #include <cstdlib>
 #include <cstring>
 
-bool operator==(const Range &lhs, const Range &rhs) {
+bool operator==(const TextRange &lhs, const TextRange &rhs) {
 	return lhs.start == rhs.start && lhs.end == rhs.end;
 }
 
-bool operator<(const Range &lhs, const Range &rhs) {
+bool operator<(const TextRange &lhs, const TextRange &rhs) {
 	return lhs.start < rhs.start;
 }
 
@@ -60,7 +60,7 @@ bool is_end(int64_t i) {
 
 void rangesetRefreshAllRanges(TextBuffer *buffer, Rangeset *rangeset) {
 
-	for(Range &range : rangeset->ranges_) {
+	for(TextRange &range : rangeset->ranges_) {
 		RangesetRefreshRange(buffer, range.start, range.end);
 	}
 }
@@ -556,12 +556,12 @@ QString Rangeset::name() const {
  * @brief Rangeset::RangesetSpan
  * @return
  */
-boost::optional<Range> Rangeset::RangesetSpan() const {
+boost::optional<TextRange> Rangeset::RangesetSpan() const {
 	if(ranges_.empty()) {
 		return boost::none;
 	}
 
-	Range r;
+	TextRange r;
 	r.start = ranges_.front().start;
 	r.end   = ranges_.back().end;
 	return r;
@@ -572,7 +572,7 @@ boost::optional<Range> Rangeset::RangesetSpan() const {
  * @param index
  * @return
  */
-boost::optional<Range> Rangeset::RangesetFindRangeNo(int index) const {
+boost::optional<TextRange> Rangeset::RangesetFindRangeNo(int index) const {
 
 	const auto n = static_cast<size_t>(index);
 	if (index < 0 || ranges_.size() <= n) {
@@ -638,7 +638,7 @@ int64_t Rangeset::RangesetInverse() {
 		const bool has_zero = (ranges_.front().start == first);
 		const bool has_end  = (ranges_.back().end    == last);
 
-		std::vector<Range> newRanges;
+		std::vector<TextRange> newRanges;
 		newRanges.reserve(ranges_.size() + 1);
 
 		if(!has_zero) {
@@ -790,7 +790,7 @@ int64_t Rangeset::RangesetAdd(const Rangeset &other) {
 		// no ranges in destination: just copy the ranges from the other set
 		ranges_ = other.ranges_;
 
-		for(Range &range: ranges_) {
+		for(TextRange &range: ranges_) {
 			RangesetRefreshRange(buffer_, range.start, range.end);
 		}
 
@@ -804,7 +804,7 @@ int64_t Rangeset::RangesetAdd(const Rangeset &other) {
 	auto plusRanges     = other.ranges_.cbegin();
 	size_t nPlusRanges = other.ranges_.size();
 
-	std::vector<Range> newRanges;
+	std::vector<TextRange> newRanges;
 	newRanges.reserve(nOrigRanges + nPlusRanges);
 
 
@@ -875,7 +875,7 @@ int64_t Rangeset::RangesetRemove(const Rangeset &other) {
 	size_t nMinusRanges = other.ranges_.size();
 
 	// we must provide more space: each range in minusSet might split a range in origSet
-	std::vector<Range> newRanges;
+	std::vector<TextRange> newRanges;
 	newRanges.reserve(ranges_.size() + other.ranges_.size());
 
 	auto newRangeOut = std::back_inserter(newRanges);
@@ -952,7 +952,7 @@ int64_t Rangeset::RangesetRemove(const Rangeset &other) {
 ** Add the range indicated by the positions start and end. Returns the
 ** new number of ranges in the set.
 */
-int64_t Rangeset::RangesetAdd(Range r) {
+int64_t Rangeset::RangesetAdd(TextRange r) {
 
 	if (r.start > r.end) {
 		// quietly sort the positions
@@ -1009,7 +1009,7 @@ int64_t Rangeset::RangesetAdd(Range r) {
 ** Remove the range indicated by the positions start and end. Returns the
 ** new number of ranges in the set.
 */
-int64_t Rangeset::RangesetRemove(Range r) {
+int64_t Rangeset::RangesetRemove(TextRange r) {
 
 	if (r.start > r.end) {
 		// quietly sort the positions
@@ -1108,7 +1108,7 @@ Rangeset::Rangeset(TextBuffer *buffer, uint8_t label) : buffer_(buffer), label_(
  * @brief Rangeset::~Rangeset
  */
 Rangeset::~Rangeset() noexcept {
-	for(const Range &range : ranges_) {
+	for(const TextRange &range : ranges_) {
 		RangesetRefreshRange(buffer_, range.start, range.end);
 	}
 }

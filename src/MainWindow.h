@@ -23,6 +23,7 @@
 #include "ui_MainWindow.h"
 
 class TextArea;
+class TextRange;
 class DocumentWidget;
 class DialogReplace;
 class DialogFind;
@@ -71,7 +72,7 @@ public:
 	bool SearchAndSelectEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap);
 	bool SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, bool continued);
 	bool SearchAndSelectSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
-	bool searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, TextCursor *left, TextCursor *right, TextCursor *extentBW, TextCursor *extentFW);
+	bool searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, TextRange *textRange, TextCursor *extentBW, TextCursor *extentFW);
 	bool SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, Search::Result *searchResult);
 	DocumentWidget *CreateDocument(const QString &name);
 	DocumentWidget *currentDocument() const;

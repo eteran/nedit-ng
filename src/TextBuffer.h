@@ -5,6 +5,7 @@
 #include "gap_buffer.h"
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
+#include "TextRange.h"
 #include "Util/string_view.h"
 
 #include <gsl/gsl_util>
@@ -98,6 +99,7 @@ public:
 	int BufGetTabDistance() const noexcept;
 	string_type BufGetAllEx() const;
 	string_type BufGetRangeEx(TextCursor start, TextCursor end) const;
+	string_type BufGetRangeEx(TextRange range) const;
 	string_type BufGetSecSelectTextEx() const;
 	string_type BufGetSelectionTextEx() const;
 	string_type BufGetTextInRectEx(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) const;
@@ -133,6 +135,8 @@ public:
 	void BufRemove(TextCursor start, TextCursor end) noexcept;
 	void BufReplaceEx(TextCursor start, TextCursor end, Ch ch) noexcept;
 	void BufReplaceEx(TextCursor start, TextCursor end, view_type text) noexcept;
+	void BufReplaceEx(TextRange range, view_type text) noexcept;
+	void BufReplaceEx(TextRange range, Ch ch) noexcept;
 	void BufReplaceRectEx(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd, view_type text);
 	void BufReplaceSecSelectEx(view_type text) noexcept;
 	void BufReplaceSelectedEx(view_type text) noexcept;
@@ -149,7 +153,7 @@ public:
 	void BufUnselect() noexcept;
 
 public:
-	bool GetSimpleSelection(TextCursor *left, TextCursor *right) const noexcept;
+	bool GetSimpleSelection(TextRange *range) const noexcept;
 
 private:
 	boost::optional<TextCursor> searchBackward(TextCursor startPos, Ch searchChar) const noexcept;

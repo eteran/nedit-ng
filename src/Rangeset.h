@@ -4,7 +4,7 @@
 
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
-#include "Range.h"
+#include "TextRange.h"
 #include <QColor>
 #include <vector>
 #include <boost/optional.hpp>
@@ -44,8 +44,8 @@ public:
 	RangesetInfo RangesetGetInfo() const;
 
 public:
-	boost::optional<Range> RangesetFindRangeNo(int index) const;
-	boost::optional<Range> RangesetSpan() const;
+	boost::optional<TextRange> RangesetFindRangeNo(int index) const;
+	boost::optional<TextRange> RangesetSpan() const;
 
 public:
 	int64_t RangesetCheckRangeOfPos(TextCursor pos);
@@ -53,9 +53,9 @@ public:
 
 public:
 	int64_t RangesetInverse();
-	int64_t RangesetAdd(Range r);
+	int64_t RangesetAdd(TextRange r);
 	int64_t RangesetAdd(const Rangeset &other);
-	int64_t RangesetRemove(Range r);
+	int64_t RangesetRemove(TextRange r);
 	int64_t RangesetRemove(const Rangeset &other);
 
 public:
@@ -70,7 +70,7 @@ public:
 public:
 	TextBuffer *buffer_;
 	RangesetUpdateFn *update_;  // modification update function
-	std::vector<Range> ranges_; // the ranges table (sorted array of ranges)
+	std::vector<TextRange> ranges_; // the ranges table (sorted array of ranges)
 
 	QColor color_;              // the value of a particular color
 	QString color_name_;        // the name of an assigned color

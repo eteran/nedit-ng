@@ -3383,35 +3383,39 @@ bool DocumentWidget::includeFile(const QString &name) {
 
 void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
 
-	TextCursor selStart;
-	TextCursor selEnd;
+	TextRange selectionRange;
 
 	/* get the character to match and its position from the selection, or
 	   the character before the insert point if nothing is selected.
 	   Give up if too many characters are selected */
-	if (!buffer_->GetSimpleSelection(&selStart, &selEnd)) {
+	if (!buffer_->GetSimpleSelection(&selectionRange)) {
 
-		selEnd = area->TextGetCursorPos();
+		selectionRange.end = area->TextGetCursorPos();
 
 		if (overstrike_) {
-			selEnd += 1;
+			selectionRange.end += 1;
 		}
 
-		if(selEnd == 0) {
+		if(selectionRange.end == 0) {
 			QApplication::beep();
 			return;
 		}
 
-		selStart = selEnd - 1;
+		selectionRange.start = selectionRange.end - 1;
 	}
 
-	if ((selEnd - selStart) != 1) {
+	if ((selectionRange.end - selectionRange.start) != 1) {
 		QApplication::beep();
 		return;
 	}
 
 	// Search for it in the buffer
-	boost::optional<TextCursor> matchPos = findMatchingCharEx(buffer_->BufGetCharacter(selStart), GetHighlightInfoEx(selStart), selStart, buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer());
+	boost::optional<TextCursor> matchPos = findMatchingCharEx(
+	                                           buffer_->BufGetCharacter(selectionRange.start),
+	                                           GetHighlightInfoEx(selectionRange.start),
+	                                           selectionRange.start,
+	                                           buffer_->BufStartOfBuffer(),
+	                                           buffer_->BufEndOfBuffer());
 	if (!matchPos) {
 		QApplication::beep();
 		return;
@@ -3520,37 +3524,36 @@ boost::optional<TextCursor> DocumentWidget::findMatchingCharEx(char toMatch, Sty
 
 void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
 
-	TextCursor selStart;
-	TextCursor selEnd;
 
 	/* get the character to match and its position from the selection, or
 	   the character before the insert point if nothing is selected.
 	   Give up if too many characters are selected */
-	if (!buffer_->GetSimpleSelection(&selStart, &selEnd)) {
+	TextRange range;
+	if (!buffer_->GetSimpleSelection(&range)) {
 
-		selEnd = area->TextGetCursorPos();
+		range.end = area->TextGetCursorPos();
 		if (overstrike_) {
-			selEnd += 1;
+			range.end += 1;
 		}
 
-		if(selEnd == 0) {
+		if(range.end == 0) {
 			QApplication::beep();
 			return;
 		}
 
-		selStart = selEnd - 1;
+		range.start = range.end - 1;
 	}
 
-	if ((selEnd - selStart) != 1) {
+	if ((range.end - range.start) != 1) {
 		QApplication::beep();
 		return;
 	}
 
 	// Search for it in the buffer
 	boost::optional<TextCursor> matchPos = findMatchingCharEx(
-											   buffer_->BufGetCharacter(selStart),
-											   GetHighlightInfoEx(selStart),
-											   selStart,
+	                                           buffer_->BufGetCharacter(range.start),
+	                                           GetHighlightInfoEx(range.start),
+	                                           range.start,
 											   buffer_->BufStartOfBuffer(),
 											   buffer_->BufEndOfBuffer());
 	if (!matchPos) {
@@ -3558,8 +3561,8 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
 		return;
 	}
 
-	const TextCursor startPos = (*matchPos > selStart) ? selStart : *matchPos;
-	const TextCursor endPos   = (*matchPos > selStart) ? *matchPos : selStart;
+	const TextCursor startPos = (*matchPos > range.start) ? range.start : *matchPos;
+	const TextCursor endPos   = (*matchPos > range.start) ? *matchPos : range.start;
 
 	/* temporarily shut off autoShowInsertPos before setting the cursor
 	   position so MakeSelectionVisible gets a chance to place the cursor
@@ -3690,13 +3693,12 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 		// get the selection or the insert position
 		const TextCursor pos = area->TextGetCursorPos();
 
-		TextCursor left;
-		TextCursor right;
-		if (buffer_->GetSimpleSelection(&left, &right)) {
+		TextRange range;
+		if (buffer_->GetSimpleSelection(&range)) {
 			flags = ACCUMULATE | REPLACE_SELECTION;
 		} else {
-			left  = pos;
-			right = pos;
+			range.start = pos;
+			range.end   = pos;
 		}
 
 		/* Substitute the current file name for % and the current line number
@@ -3724,8 +3726,8 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 					substitutedCommand,
 					QString(),
 					flags,
-					left,
-					right,
+		            range.start,
+		            range.end,
 					source);
 
 	}
@@ -4622,8 +4624,6 @@ void DocumentWidget::execCursorLine(TextArea *area, CommandSource source) {
 		return;
 	}
 
-	TextCursor left;
-	TextCursor right;
 	TextCursor insertPos;
 	int line;
 	int column;
@@ -4637,17 +4637,16 @@ void DocumentWidget::execCursorLine(TextArea *area, CommandSource source) {
 	// get all of the text on the line with the insert position
 	TextCursor pos = area->TextGetCursorPos();
 
-	if (!buffer_->GetSimpleSelection(&left, &right)) {
-		left  = pos;
-		right = pos;
-		left  = buffer_->BufStartOfLine(left);
-		right = buffer_->BufEndOfLine(right);
-		insertPos = right;
+	TextRange range;
+	if (!buffer_->GetSimpleSelection(&range)) {
+		range.start = buffer_->BufStartOfLine(pos);
+		range.end   = buffer_->BufEndOfLine(pos);
+		insertPos   = range.end;
 	} else {
-		insertPos = buffer_->BufEndOfLine(right);
+		insertPos = buffer_->BufEndOfLine(range.end);
 	}
 
-	std::string cmdText = buffer_->BufGetRangeEx(left, right);
+	std::string cmdText = buffer_->BufGetRangeEx(range);
 
 	// insert a newline after the entire line
 	buffer_->BufInsertEx(insertPos, '\n');
@@ -4748,8 +4747,6 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, CommandSource source) {
 
 	int flags = 0;
-	TextCursor left  = {};
-	TextCursor right = {};
 	int line;
 	int column;
 
@@ -4801,11 +4798,12 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 	   create it, and run the command from it instead of the current
 	   one, to free the current one from waiting for lengthy execution */
 	TextArea *outWidget = nullptr;
+	TextRange range;
 	switch(output) {
 	case TO_DIALOG:
 		flags |= OUTPUT_TO_DIALOG;
-		left  = TextCursor();
-		right = TextCursor();
+		range.start = TextCursor();
+		range.end   = TextCursor();
 		break;
 	case TO_NEW_WINDOW:
 		if(DocumentWidget *document = MainWindow::EditNewFile(
@@ -4817,8 +4815,8 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 
 			inWindow  = MainWindow::fromDocument(document);
 			outWidget = document->firstPane();
-			left      = TextCursor();
-			right     = TextCursor();
+			range.start = TextCursor();
+			range.end   = TextCursor();
 			MainWindow::CheckCloseEnableState();
 		}
 		break;
@@ -4826,24 +4824,24 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 		outWidget = area;
 		if (outputReplacesInput && input != FROM_NONE) {
 			if (input == FROM_WINDOW) {
-				left  = TextCursor();
-				right = buffer_->BufEndOfBuffer();
+				range.start = TextCursor();
+				range.end   = buffer_->BufEndOfBuffer();
 			} else if (input == FROM_SELECTION) {
-				buffer_->GetSimpleSelection(&left, &right);
+				buffer_->GetSimpleSelection(&range);
 				flags |= ACCUMULATE | REPLACE_SELECTION;
 			} else if (input == FROM_EITHER) {
-				if (buffer_->GetSimpleSelection(&left, &right)) {
+				if (buffer_->GetSimpleSelection(&range)) {
 					flags |= ACCUMULATE | REPLACE_SELECTION;
 				} else {
-					left  = TextCursor();
-					right = buffer_->BufEndOfBuffer();
+					range.start = TextCursor();
+					range.end   = buffer_->BufEndOfBuffer();
 				}
 			}
 		} else {
-			if (buffer_->GetSimpleSelection(&left, &right)) {
+			if (buffer_->GetSimpleSelection(&range)) {
 				flags |= ACCUMULATE | REPLACE_SELECTION;
 			} else {
-				left = right = area->TextGetCursorPos();
+				range.start = range.end = area->TextGetCursorPos();
 			}
 		}
 		break;
@@ -4871,8 +4869,8 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 				substitutedCommand,
 				QString::fromStdString(text),
 				flags,
-				left,
-				right,
+	            range.start,
+	            range.end,
 				source);
 }
 
