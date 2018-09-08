@@ -3383,37 +3383,37 @@ bool DocumentWidget::includeFile(const QString &name) {
 
 void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
 
-	TextRange selectionRange;
+	TextRange range;
 
 	/* get the character to match and its position from the selection, or
 	   the character before the insert point if nothing is selected.
 	   Give up if too many characters are selected */
-	if (!buffer_->GetSimpleSelection(&selectionRange)) {
+	if (!buffer_->GetSimpleSelection(&range)) {
 
-		selectionRange.end = area->TextGetCursorPos();
+		range.end = area->TextGetCursorPos();
 
 		if (overstrike_) {
-			selectionRange.end += 1;
+			range.end += 1;
 		}
 
-		if(selectionRange.end == 0) {
+		if(range.end == 0) {
 			QApplication::beep();
 			return;
 		}
 
-		selectionRange.start = selectionRange.end - 1;
+		range.start = range.end - 1;
 	}
 
-	if ((selectionRange.end - selectionRange.start) != 1) {
+	if ((range.end - range.start) != 1) {
 		QApplication::beep();
 		return;
 	}
 
 	// Search for it in the buffer
 	boost::optional<TextCursor> matchPos = findMatchingCharEx(
-	                                           buffer_->BufGetCharacter(selectionRange.start),
-	                                           GetHighlightInfoEx(selectionRange.start),
-	                                           selectionRange.start,
+	                                           buffer_->BufGetCharacter(range.start),
+	                                           GetHighlightInfoEx(range.start),
+	                                           range.start,
 	                                           buffer_->BufStartOfBuffer(),
 	                                           buffer_->BufEndOfBuffer());
 	if (!matchPos) {
