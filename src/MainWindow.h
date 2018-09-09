@@ -23,11 +23,11 @@
 #include "ui_MainWindow.h"
 
 class TextArea;
-class TextRange;
 class DocumentWidget;
 class DialogReplace;
 class DialogFind;
 struct MenuData;
+struct TextRange;
 
 class MainWindow : public QMainWindow {
 	Q_OBJECT
