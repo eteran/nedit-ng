@@ -59,13 +59,13 @@ const auto NEDIT_DEFAULT_CURSOR_FG  = QLatin1String("black");
    This distance is increased by a factor of two for each subsequent step. */
 constexpr int REPARSE_CHUNK_SIZE = 80;
 
-constexpr bool is_plain(int style) {
+constexpr bool isPlain(int style) {
 	return (style == PLAIN_STYLE || style == UNFINISHED_STYLE);
 }
 
 /* Compare two styles where one of the styles may not yet have been processed
    with pass2 patterns */
-constexpr bool equivalent_style(int style1, int style2, int firstPass2Style) {
+constexpr bool equivalentStyle(int style1, int style2, int firstPass2Style) {
 	return (style1 == style2) ||
 		   (style1 == UNFINISHED_STYLE && (style2 == PLAIN_STYLE || static_cast<uint8_t>(style2) >= firstPass2Style)) ||
 		   (style2 == UNFINISHED_STYLE && (style1 == PLAIN_STYLE || static_cast<uint8_t>(style1) >= firstPass2Style));
@@ -74,7 +74,7 @@ constexpr bool equivalent_style(int style1, int style2, int firstPass2Style) {
 /* Scanning context can be reduced (with big efficiency gains) if we
    know that patterns can't cross line boundaries, which is implied
    by a context requirement of 1 line and 0 characters */
-bool can_cross_line_boundaries(const ReparseContext &contextRequirements) {
+bool canCrossLineBoundaries(const ReparseContext &contextRequirements) {
 	return (contextRequirements.nLines != 1 || contextRequirements.nChars != 0);
 }
 
@@ -216,7 +216,7 @@ void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &h
 		if (endAt < endParse) {
 			beginParse = endAt;
 			endParse = forwardOneContext(buf, context, std::max(endAt, std::max(lastModified(styleBuf), lastMod)));
-			if (is_plain(parseInStyle)) {
+			if (isPlain(parseInStyle)) {
 				qCritical("NEdit: internal error: incr. reparse fell short");
 				return;
 			}
@@ -265,11 +265,11 @@ TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const
 
 	// Begin parsing one context distance back (or to the last style change)
 	int beginStyle = pass1Patterns->style;
-	if (can_cross_line_boundaries(contextRequirements)) {
+	if (canCrossLineBoundaries(contextRequirements)) {
 		beginSafety = backwardOneContext(buf, contextRequirements, beginParse);
 		for (p = beginParse; p >= beginSafety; --p) {
 			style = styleBuf->BufGetCharacter(p - 1);
-			if (!equivalent_style(style, beginStyle, firstPass2Style)) {
+			if (!equivalentStyle(style, beginStyle, firstPass2Style)) {
 				beginSafety = p;
 				break;
 			}
@@ -277,7 +277,7 @@ TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const
 	} else {
 		for (beginSafety = std::max(TextCursor(), beginParse - 1); beginSafety > 0; --beginSafety) {
 			style = styleBuf->BufGetCharacter(beginSafety);
-			if (!equivalent_style(style, beginStyle, firstPass2Style) || buf->BufGetCharacter(beginSafety) == '\n') {
+			if (!equivalentStyle(style, beginStyle, firstPass2Style) || buf->BufGetCharacter(beginSafety) == '\n') {
 				++beginSafety;
 				break;
 			}
@@ -291,7 +291,7 @@ TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const
 		return TextCursor();
 	}
 
-	if (can_cross_line_boundaries(contextRequirements)) {
+	if (canCrossLineBoundaries(contextRequirements)) {
 		endSafety = forwardOneContext(buf, contextRequirements, endParse);
 	} else if (endParse >= buf->BufGetLength() || (buf->BufGetCharacter(endParse - 1) == '\n')) {
 		endSafety = endParse;
@@ -881,7 +881,7 @@ int Highlight::findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<Wi
 
 	int startStyle = highlightData->styleBuffer->BufGetCharacter(*pos);
 
-	if (is_plain(startStyle)) {
+	if (isPlain(startStyle)) {
 		return PLAIN_STYLE;
 	}
 

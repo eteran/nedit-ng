@@ -952,7 +952,7 @@ void DocumentWidget::raiseDocumentWindow() {
 void DocumentWidget::documentRaised() {
 	// Turn on syntax highlight that might have been deferred.
 	if (highlightSyntax_ && !highlightData_) {
-		StartHighlightingEx(/*warn=*/false);
+		startHighlighting(/*warn=*/false);
 	}
 
 	refreshWindowStates();
@@ -1054,7 +1054,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
 		// we defer highlighting to RaiseDocument() if doc is hidden
 		if (topDocument && highlight) {
-			StartHighlightingEx(/*warn=*/false);
+			startHighlighting(/*warn=*/false);
 		}
 
 		// Force a change of smart indent macros (SetAutoIndent will re-start)
@@ -3412,7 +3412,7 @@ void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
 	// Search for it in the buffer
 	boost::optional<TextCursor> matchPos = findMatchingCharEx(
 	                                           buffer_->BufGetCharacter(range.start),
-	                                           GetHighlightInfoEx(range.start),
+	                                           getHighlightInfo(range.start),
 	                                           range.start,
 	                                           buffer_->BufStartOfBuffer(),
 	                                           buffer_->BufEndOfBuffer());
@@ -3467,7 +3467,7 @@ boost::optional<TextCursor> DocumentWidget::findMatchingCharEx(char toMatch, Sty
 			const char ch = buffer_->BufGetCharacter(pos);
 			if (ch == matchChar) {
 				if (matchSyntaxBased) {
-					style = GetHighlightInfoEx(pos);
+					style = getHighlightInfo(pos);
 				}
 
 				if (style == styleToMatch) {
@@ -3478,7 +3478,7 @@ boost::optional<TextCursor> DocumentWidget::findMatchingCharEx(char toMatch, Sty
 				}
 			} else if (ch == toMatch) {
 				if (matchSyntaxBased) {
-					style = GetHighlightInfoEx(pos);
+					style = getHighlightInfo(pos);
 				}
 
 				if (style == styleToMatch) {
@@ -3496,7 +3496,7 @@ boost::optional<TextCursor> DocumentWidget::findMatchingCharEx(char toMatch, Sty
 				const char ch = buffer_->BufGetCharacter(pos);
 				if (ch == matchChar) {
 					if (matchSyntaxBased) {
-						style = GetHighlightInfoEx(pos);
+						style = getHighlightInfo(pos);
 					}
 
 					if (style == styleToMatch) {
@@ -3507,7 +3507,7 @@ boost::optional<TextCursor> DocumentWidget::findMatchingCharEx(char toMatch, Sty
 					}
 				} else if (ch == toMatch) {
 					if (matchSyntaxBased) {
-						style = GetHighlightInfoEx(pos);
+						style = getHighlightInfo(pos);
 					}
 
 					if (style == styleToMatch) {
@@ -3552,7 +3552,7 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
 	// Search for it in the buffer
 	boost::optional<TextCursor> matchPos = findMatchingCharEx(
 	                                           buffer_->BufGetCharacter(range.start),
-	                                           GetHighlightInfoEx(range.start),
+	                                           getHighlightInfo(range.start),
 	                                           range.start,
 											   buffer_->BufStartOfBuffer(),
 											   buffer_->BufEndOfBuffer());
@@ -3806,7 +3806,7 @@ void DocumentWidget::splitPane() {
 		area->setFont(font_);
 	}
 
-	AttachHighlightToWidgetEx(area);
+	attachHighlightToWidget(area);
 
 	splitter_->addWidget(area);
 	area->setFocus();
@@ -4055,12 +4055,6 @@ void DocumentWidget::action_Set_Fonts(const QString &fontName) {
 	for(TextArea *area : textPanes()) {
 		area->setFont(font_);
 	}
-
-	/* Change the highlight fonts, even if they didn't change, because
-	   primary font is read through the style table for syntax highlighting */
-	if (highlightData_) {
-		UpdateHighlightStylesEx();
-	}
 }
 
 /*
@@ -4200,7 +4194,6 @@ void DocumentWidget::gotoAP(TextArea *area, int lineNum, int column) {
  */
 void DocumentWidget::SetColors(const QColor &textFg, const QColor &textBg, const QColor &selectFg, const QColor &selectBg, const QColor &hiliteFg, const QColor &hiliteBg, const QColor &lineNoFg, const QColor &lineNoBg, const QColor &cursorFg) {
 
-
 	for(TextArea *area : textPanes()) {
 		area->setColors(textFg,
 		                     textBg,
@@ -4212,46 +4205,6 @@ void DocumentWidget::SetColors(const QColor &textFg, const QColor &textBg, const
 		                     lineNoBg,
 		                     cursorFg);
 	}
-
-	// Redo any syntax highlighting
-	if (highlightData_) {
-		UpdateHighlightStylesEx();
-   }
-}
-
-/**
- * @brief DocumentWidget::SetColors
- * @param textFg
- * @param textBg
- * @param selectFg
- * @param selectBg
- * @param hiliteFg
- * @param hiliteBg
- * @param lineNoFg
- * @param lineNoBg
- * @param cursorFg
- */
-void DocumentWidget::SetColors(const QString &textFg, const QString &textBg, const QString &selectFg, const QString &selectBg, const QString &hiliteFg, const QString &hiliteBg, const QString &lineNoFg, const QString &lineNoBg, const QString &cursorFg) {
-
-	QColor textFgColor       = X11Colors::fromString(textFg);
-	QColor textBgColor       = X11Colors::fromString(textBg);
-	QColor selectFgColor     = X11Colors::fromString(selectFg);
-	QColor selectBgColor     = X11Colors::fromString(selectBg);
-	QColor highlightFgColor  = X11Colors::fromString(hiliteFg);
-	QColor highlightBgColor  = X11Colors::fromString(hiliteBg);
-	QColor lineNumberFgColor = X11Colors::fromString(lineNoFg);
-	QColor lineNumberBgColor = X11Colors::fromString(lineNoBg);
-	QColor cursorFgColor     = X11Colors::fromString(cursorFg);
-
-	SetColors(textFgColor,
-	          textBgColor,
-	          selectFgColor,
-	          selectBgColor,
-	          highlightFgColor,
-	          highlightBgColor,
-	          lineNumberFgColor,
-	          lineNumberBgColor,
-	          cursorFgColor);
 }
 
 /**
@@ -5226,7 +5179,7 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 
 	const char ch = buffer_->BufGetCharacter(pos);
 
-	Style style = GetHighlightInfoEx(pos);
+	Style style = getHighlightInfo(pos);
 
 	// is the character one we want to flash?
 	auto matchIt = std::find_if(std::begin(FlashingChars), std::end(FlashingChars), [ch](const CharMatchTable &entry) {
@@ -5288,7 +5241,7 @@ void DocumentWidget::eraseFlash() {
 ** Find the pattern set matching the window's current language mode, or
 ** tell the user if it can't be done (if warn is true) and return nullptr.
 */
-PatternSet *DocumentWidget::findPatternsForWindowEx(bool warn) {
+PatternSet *DocumentWidget::findPatternsForWindow(bool warn) {
 
 	// Find the window's language mode.  If none is set, warn user
 	QString modeName = Preferences::LanguageModeName(languageMode_);
@@ -5348,7 +5301,7 @@ void DocumentWidget::FreeHighlightingData() {
 ** Change highlight fonts and/or styles in a highlighted window, without
 ** re-parsing.
 */
-void DocumentWidget::UpdateHighlightStylesEx() {
+void DocumentWidget::updateHighlightStyles() {
 
 	std::unique_ptr<WindowHighlightData> &oldHighlightData = highlightData_;
 
@@ -5358,14 +5311,14 @@ void DocumentWidget::UpdateHighlightStylesEx() {
 	}
 
 	// Find the pattern set for the window's current language mode
-	PatternSet *patterns = findPatternsForWindowEx(/*warn=*/false);
+	PatternSet *patterns = findPatternsForWindow(/*warn=*/false);
 	if(!patterns) {
 		stopHighlighting();
 		return;
 	}
 
 	// Build new patterns
-	std::unique_ptr<WindowHighlightData> newHighlightData = createHighlightDataEx(patterns);
+	std::unique_ptr<WindowHighlightData> newHighlightData = createHighlightData(patterns);
 	if(!newHighlightData) {
 		stopHighlighting();
 		return;
@@ -5381,14 +5334,14 @@ void DocumentWidget::UpdateHighlightStylesEx() {
 	/* Attach new highlight information to text widgets in each pane
 	   (and redraw) */
 	for(TextArea *area : textPanes()) {
-		AttachHighlightToWidgetEx(area);
+		attachHighlightToWidget(area);
 	}
 }
 
 /*
 ** Find the HighlightPattern structure with a given name in the window.
 */
-HighlightPattern *DocumentWidget::FindPatternOfWindowEx(const QString &name) const {
+HighlightPattern *DocumentWidget::findPatternOfWindow(const QString &name) const {
 
 	if(const std::unique_ptr<WindowHighlightData> &hData = highlightData_) {
 		if (PatternSet *set = hData->patternSetForWindow) {
@@ -5424,7 +5377,7 @@ QColor DocumentWidget::GetHighlightBGColorOfCodeEx(size_t hCode) const {
 ** value is returned for two positions, the corresponding characters have
 ** the same highlight style.
 **/
-Style DocumentWidget::GetHighlightInfoEx(TextCursor pos) {
+Style DocumentWidget::getHighlightInfo(TextCursor pos) {
 
 	HighlightData *pattern = nullptr;
 	const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
@@ -5550,7 +5503,7 @@ StyleTableEntry *DocumentWidget::styleTableEntryOfCodeEx(size_t hCode) const {
 ** Picks up the entry in the style buffer for the position (if any).
 ** Returns the style code or zero.
 */
-size_t DocumentWidget::HighlightCodeOfPosEx(TextCursor pos) {
+size_t DocumentWidget::highlightCodeOfPos(TextCursor pos) {
 
 	size_t hCode = 0;
 	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
@@ -5571,19 +5524,12 @@ size_t DocumentWidget::HighlightCodeOfPosEx(TextCursor pos) {
 
 /*
 ** Returns the length over which a particular highlight code applies, starting
-** at pos. If the initial code value *checkCode is zero, the highlight code of
-** pos is used.
+** at pos.
 */
-int64_t DocumentWidget::HighlightLengthOfCodeFromPosEx(TextCursor pos) {
-	size_t checkCode = 0;
-	return HighlightLengthOfCodeFromPosEx(pos, checkCode);
-}
-
-/* YOO: This is called from only one other function, which uses a constant
-	for checkCode */
-int64_t DocumentWidget::HighlightLengthOfCodeFromPosEx(TextCursor pos, size_t checkCode) {
+int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) {
 
 	const TextCursor oldPos = pos;
+	size_t checkCode = 0;
 
 	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 
@@ -5718,19 +5664,19 @@ void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &sty
 ** Turn on syntax highlighting.  If "warn" is true, warn the user when it
 ** can't be done, otherwise, just return.
 */
-void DocumentWidget::StartHighlightingEx(bool warn) {
+void DocumentWidget::startHighlighting(bool warn) {
 
 	int prevChar = -1;
 
 	/* Find the pattern set matching the window's current
 	   language mode, tell the user if it can't be done */
-	PatternSet *patterns = findPatternsForWindowEx(warn);
+	PatternSet *patterns = findPatternsForWindow(warn);
 	if(!patterns) {
 		return;
 	}
 
 	// Compile the patterns
-	std::unique_ptr<WindowHighlightData> highlightData = createHighlightDataEx(patterns);
+	std::unique_ptr<WindowHighlightData> highlightData = createHighlightData(patterns);
 	if(!highlightData) {
 		return;
 	}
@@ -5777,7 +5723,7 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
 
 	// Attach highlight information to text widgets in each pane
 	for(TextArea *area : textPanes()) {
-		AttachHighlightToWidgetEx(area);
+		attachHighlightToWidget(area);
 	}
 
 	setCursor(prevCursor);
@@ -5787,7 +5733,7 @@ void DocumentWidget::StartHighlightingEx(bool warn) {
 ** Attach style information from a window's highlight data to a
 ** text widget and redisplay.
 */
-void DocumentWidget::AttachHighlightToWidgetEx(TextArea *area) {
+void DocumentWidget::attachHighlightToWidget(TextArea *area) {
 	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 		area->TextDAttachHighlightData(
 					highlightData->styleBuffer,
@@ -5803,7 +5749,7 @@ void DocumentWidget::AttachHighlightToWidgetEx(TextArea *area) {
 ** highlighting fonts from "window", includes pattern compilation.  If errors
 ** are encountered, warns user with a dialog and returns nullptr.
 */
-std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightDataEx(PatternSet *patSet) {
+std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(PatternSet *patSet) {
 
 	std::vector<HighlightPattern> &patterns = patSet->patterns;
 
@@ -6604,7 +6550,7 @@ void DocumentWidget::SetHighlightSyntax(bool value) {
 	}
 
 	if (highlightSyntax_) {
-		StartHighlightingEx(/*warn=*/true);
+		startHighlighting(/*warn=*/true);
 	} else {
 		stopHighlighting();
 	}

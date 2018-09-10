@@ -103,7 +103,7 @@ public:
 	bool checkReadOnly() const;
 	bool isReadOnly() const;
 	DocumentWidget *open(const QString &fullpath);
-	HighlightPattern *FindPatternOfWindowEx(const QString &name) const;
+	HighlightPattern *findPatternOfWindow(const QString &name) const;
 	LockReasons lockReasons() const;
 	QColor GetHighlightBGColorOfCodeEx(size_t hCode) const;
 	QColor HighlightColorValueOfCodeEx(size_t hCode) const;
@@ -134,12 +134,11 @@ public:
 	int widgetToPaneIndex(TextArea *area) const;
 	int findDef(TextArea *area, const QString &value, Tags::SearchMode search_type);
 	int textPanesCount() const;
-	int64_t HighlightLengthOfCodeFromPosEx(TextCursor pos, size_t checkCode);
-	int64_t HighlightLengthOfCodeFromPosEx(TextCursor pos);
+	int64_t highlightLengthOfCodeFromPos(TextCursor pos);
 	int64_t StyleLengthOfCodeFromPosEx(TextCursor pos);
 	size_t GetLanguageMode() const;
-	size_t HighlightCodeOfPosEx(TextCursor pos);
-	std::unique_ptr<WindowHighlightData> createHighlightDataEx(PatternSet *patSet);
+	size_t highlightCodeOfPos(TextCursor pos);
+	std::unique_ptr<WindowHighlightData> createHighlightData(PatternSet *patSet);
 	std::vector<TextArea *> textPanes() const;
 	void abortShellCommand();
 	void AddMarkEx(TextArea *area, QChar label);
@@ -167,7 +166,6 @@ public:
 	void setAutoScroll(int margin);
 	void setAutoWrap(WrapStyle wrapStyle);
 	void SetBacklightChars(const QString &applyBacklightTypes);
-	void SetColors(const QString &textFg, const QString &textBg, const QString &selectFg, const QString &selectBg, const QString &hiliteFg, const QString &hiliteBg, const QString &lineNoFg, const QString &lineNoBg, const QString &cursorFg);
 	void SetColors(const QColor &textFg, const QColor &textBg, const QColor &selectFg, const QColor &selectBg, const QColor &hiliteFg, const QColor &hiliteBg, const QColor &lineNoFg, const QColor &lineNoBg, const QColor &cursorFg);
 	void setEmTabDistance(int distance);
 	void SetHighlightSyntax(bool value);
@@ -183,9 +181,9 @@ public:
 	void SetUserLocked(bool value);
 	void shellCmdToMacroString(const QString &command, const QString &input);
 	void ShowStatsLine(bool state);
-	void StartHighlightingEx(bool warn);
+	void startHighlighting(bool warn);
 	void stopHighlighting();
-	void UpdateHighlightStylesEx();
+	void updateHighlightStyles();
 	void closePane();
 	void editTaggedLocation(TextArea *area, int i);
 	void execAP(TextArea *area, const QString &command);
@@ -210,10 +208,10 @@ private:
 	void executeModMacro(SmartIndentEvent *event);
 	void executeNewlineMacro(SmartIndentEvent *event);
 	MacroContinuationCode continueWorkProcEx();
-	PatternSet *findPatternsForWindowEx(bool warn);
+	PatternSet *findPatternsForWindow(bool warn);
 	QString backupFileNameEx() const;
 	QString getWindowsMenuEntry() const;
-	Style GetHighlightInfoEx(TextCursor pos);
+	Style getHighlightInfo(TextCursor pos);
 	StyleTableEntry *styleTableEntryOfCodeEx(size_t hCode) const;
 	TextArea *createTextArea(TextBuffer *buffer);
 	bool CloseFileAndWindow(CloseMode preResponse);
@@ -231,7 +229,7 @@ private:
 	int findAllMatchesEx(TextArea *area, const QString &string);
 	size_t matchLanguageMode() const;
 	void AbortMacroCommand();
-	void AttachHighlightToWidgetEx(TextArea *area);
+	void attachHighlightToWidget(TextArea *area);
 	void beginLearn();
 	void clearRedoList();
 	void clearUndoList();

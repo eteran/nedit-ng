@@ -2369,7 +2369,7 @@ static std::error_code focusWindowMS(DocumentWidget *document, Arguments argumen
 
 	// turn on syntax highlight that might have been deferred
 	if (target->highlightSyntax_ && !target->highlightData_) {
-		target->StartHighlightingEx(/*warn=*/false);
+		target->startHighlighting(/*warn=*/false);
 	}
 
 	// Return the name of the window
@@ -5202,7 +5202,7 @@ static std::error_code getStyleAtPosMS(DocumentWidget *document, Arguments argum
 	}
 
 	// Determine pattern code
-	size_t patCode = document->HighlightCodeOfPosEx(TextCursor(bufferPos));
+	size_t patCode = document->highlightCodeOfPos(TextCursor(bufferPos));
 	if (patCode == 0) {
 		// if there is no pattern we just return an empty array.
 		return MacroErrorCode::Success;
@@ -5251,7 +5251,7 @@ std::error_code fillPatternResultEx(DataValue *result, DocumentWidget *document,
 
 	if (bufferPos >= 0) {
 		// insert extent
-		DV = make_value(document->HighlightLengthOfCodeFromPosEx(bufferPos));
+		DV = make_value(document->highlightLengthOfCodeFromPos(bufferPos));
 		if (!ArrayInsert(result, "extent", &DV)) {
 			return MacroErrorCode::InsertFailed;
 		}
@@ -5278,7 +5278,7 @@ static std::error_code getPatternByNameMS(DocumentWidget *document, Arguments ar
 		return MacroErrorCode::Param1NotAString;
 	}
 
-	HighlightPattern *pattern = document->FindPatternOfWindowEx(patternName);
+	HighlightPattern *pattern = document->findPatternOfWindow(patternName);
 	if(!pattern) {
 		// The pattern's name is unknown.
 		return MacroErrorCode::Success;
@@ -5325,7 +5325,7 @@ static std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arg
 	}
 
 	// Determine the highlighting pattern used
-	size_t patCode = document->HighlightCodeOfPosEx(TextCursor(bufferPos));
+	size_t patCode = document->highlightCodeOfPos(TextCursor(bufferPos));
 	if (patCode == 0) {
 		// if there is no highlighting pattern we just return an empty array.
 		return MacroErrorCode::Success;
