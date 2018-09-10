@@ -544,10 +544,6 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::updatePrimarySelection() noexcept {
 #ifdef Q_OS_UNIX
 	if(syncXSelection_ && QApplication::clipboard()->supportsSelection()) {
-#if 0
-		std::string text = BufGetSelectionTextEx();
-		QApplication::clipboard()->setText(QString::fromStdString(text), QClipboard::Selection);
-#else
 		const bool selected = primary.selected;
 		const bool isOwner  = TextAreaMimeData::isOwner(QApplication::clipboard()->mimeData(QClipboard::Selection), this);
 
@@ -559,7 +555,6 @@ void BasicTextBuffer<Ch, Tr>::updatePrimarySelection() noexcept {
 
 		auto data = new TextAreaMimeData(this);
 		QApplication::clipboard()->setMimeData(data, QClipboard::Selection);
-#endif
 	}
 #endif
 }
