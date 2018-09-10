@@ -4845,6 +4845,8 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 
 	*result = make_value(std::make_shared<Array>());
 
+	// NOTE(eteran): this test here prevents uninitialized usage, I'm not sure
+	// why GCC's code flow analysis can't see this
 	if (!range) {
 		return MacroErrorCode::Success;
 	}
