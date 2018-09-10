@@ -646,7 +646,7 @@ void shiftRectEx(DocumentWidget *document, TextArea *area, ShiftDirection direct
 ** if "byTab" is true.  (The length of a tab stop is the size of an emulated
 ** tab if emulated tabs are turned on, or a hardware tab if not).
 */
-void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection direction, bool byTab) {
+void ShiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection direction, bool byTab) {
 	TextCursor selStart;
 	TextCursor selEnd;
 	bool isRect;
@@ -707,7 +707,7 @@ void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection d
 }
 
 
-void FillSelectionEx(DocumentWidget *document, TextArea *area) {
+void FillSelection(DocumentWidget *document, TextArea *area) {
 	TextBuffer *buf = document->buffer_;
 	TextCursor left;
 	TextCursor right;
@@ -725,7 +725,7 @@ void FillSelectionEx(DocumentWidget *document, TextArea *area) {
 	   whole lines.  If there is no selection, find the paragraph containing
 	   the insertion cursor */
 	if (!buf->BufGetSelectionPos(&left, &right, &isRect, &rectStart, &rectEnd)) {
-		left = findParagraphStart(buf, insertPos);
+		left  = findParagraphStart(buf, insertPos);
 		right = findParagraphEnd(buf, insertPos);
 		if (left == right) {
 			QApplication::beep();
@@ -754,10 +754,8 @@ void FillSelectionEx(DocumentWidget *document, TextArea *area) {
 	if (hasSelection && isRect) {
 		rightMargin = rectEnd - rectStart;
 	} else {
-
-		int wrapMargin = area->getWrapMargin();
-		int nCols      = area->getColumns();
-
+		const int wrapMargin = area->getWrapMargin();
+		const int nCols      = area->getColumns();
 		rightMargin = (wrapMargin == 0) ? nCols : wrapMargin;
 	}
 

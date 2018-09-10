@@ -248,8 +248,6 @@ void DialogLanguageModes::on_buttonBox_clicked(QAbstractButton *button) {
 */
 boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity) {
 
-	/* Allocate a language mode structure to return, set unread fields to
-	   empty so everything can be freed on errors by freeLanguageModeRec */
 	LanguageMode lm;
 
 	// read the name field

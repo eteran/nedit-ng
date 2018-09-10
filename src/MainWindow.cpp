@@ -2051,7 +2051,7 @@ void MainWindow::action_Shift_Left(DocumentWidget *document) {
 	}
 
 	if(QPointer<TextArea> area = lastFocus_) {
-		ShiftSelectionEx(document, area, ShiftDirection::Left, /*byTab=*/false);
+		ShiftSelection(document, area, ShiftDirection::Left, /*byTab=*/false);
 	}
 }
 
@@ -2078,7 +2078,7 @@ void MainWindow::action_Shift_Right(DocumentWidget *document) {
 	}
 
 	if(QPointer<TextArea> area = lastFocus_) {
-		ShiftSelectionEx(document, area, ShiftDirection::Right, /*byTab=*/false);
+		ShiftSelection(document, area, ShiftDirection::Right, /*byTab=*/false);
 	}
 }
 
@@ -2105,7 +2105,7 @@ void MainWindow::action_Shift_Left_Tabs(DocumentWidget *document) {
 	}
 
 	if(QPointer<TextArea> area = lastFocus_) {
-		ShiftSelectionEx(document, area, ShiftDirection::Left, /*byTab=*/true);
+		ShiftSelection(document, area, ShiftDirection::Left, /*byTab=*/true);
 	}
 }
 
@@ -2131,7 +2131,7 @@ void MainWindow::action_Shift_Right_Tabs(DocumentWidget *document) {
 	}
 
 	if(QPointer<TextArea> area = lastFocus_) {
-		ShiftSelectionEx(document, area, ShiftDirection::Right, /*byTab=*/true);
+		ShiftSelection(document, area, ShiftDirection::Right, /*byTab=*/true);
 	}
 }
 
@@ -2211,7 +2211,7 @@ void MainWindow::action_Fill_Paragraph(DocumentWidget *document) {
 	}
 
 	if(QPointer<TextArea> area = lastFocus_) {
-		FillSelectionEx(document, area);
+		FillSelection(document, area);
 	}
 }
 

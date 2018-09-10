@@ -995,7 +995,7 @@ int Preferences::loadLanguageModesString(const QString &string) {
 			LanguageMode lm;
 
 			// read language mode name
-			QString name = ReadSymbolicField(in);
+			const QString name = ReadSymbolicField(in);
 			if (name.isNull()) {
 				Raise<ModeError>(tr("language mode name required"));
 			}
@@ -1027,7 +1027,7 @@ int Preferences::loadLanguageModesString(const QString &string) {
 			}
 
 			// read the indent style
-			QString styleName = ReadSymbolicField(in);
+			const QString styleName = ReadSymbolicField(in);
 			if(styleName.isNull()) {
 				lm.indentStyle = IndentStyle::Default;
 			} else {
@@ -1044,11 +1044,11 @@ int Preferences::loadLanguageModesString(const QString &string) {
 			}
 
 			// read the wrap style
-			styleName = ReadSymbolicField(in);
-			if(styleName.isNull()) {
+			const QString wrapStyle = ReadSymbolicField(in);
+			if(wrapStyle.isNull()) {
 				lm.wrapStyle = WrapStyle::Default;
 			} else {
-				auto it = std::find(std::begin(AutoWrapTypes), std::end(AutoWrapTypes), styleName);
+				auto it = std::find(std::begin(AutoWrapTypes), std::end(AutoWrapTypes), wrapStyle);
 				if(it == std::end(AutoWrapTypes)) {
 					Raise<ModeError>(tr("unrecognized wrap style"));
 				}

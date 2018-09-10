@@ -8,8 +8,8 @@ class DocumentWidget;
 class TextArea;
 class QString;
 
-void ShiftSelectionEx(DocumentWidget *document, TextArea *area, ShiftDirection direction, bool byTab);
-void FillSelectionEx(DocumentWidget *document, TextArea *area);
+void ShiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection direction, bool byTab);
+void FillSelection(DocumentWidget *document, TextArea *area);
 QString ShiftTextEx(const QString &text, ShiftDirection direction, bool tabsAllowed, int tabDist, int nChars);
 
 #endif
