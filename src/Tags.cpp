@@ -50,17 +50,6 @@ enum TFT {
 	TFT_CTAGS
 };
 
-enum CalltipToken {
-	TF_EOF,
-	TF_BLOCK,
-	TF_VERSION,
-	TF_INCLUDE,
-	TF_LANGUAGE,
-	TF_ALIAS,
-	TF_ERROR,
-	TF_ERROR_EOF
-};
-
 constexpr int MAX_LINE                        = 2048;
 constexpr int MAX_TAG_INCLUDE_RECURSION_LEVEL = 5;
 
@@ -956,7 +945,7 @@ bool Tags::searchLine(const QString &line, const QRegularExpression &re) {
 **                  after the "* xxxx *" line.
 **      currLine:   Used to keep track of the current line in the file.
 */
-int Tags::nextTFBlock(QTextStream &stream, QString &header, QString &body, int *blkLine, int *currLine) {
+Tags::CalltipToken Tags::nextTFBlock(QTextStream &stream, QString &header, QString &body, int *blkLine, int *currLine) {
 
 	// These are the different kinds of tokens
 	static const auto commenTF_regex = QRegularExpression(QLatin1String(R"(^\s*\* comment \*\s*$)"));
@@ -966,7 +955,7 @@ int Tags::nextTFBlock(QTextStream &stream, QString &header, QString &body, int *
 	static const auto alias_regex    = QRegularExpression(QLatin1String(R"(^\s*\* alias \*\s*$)"));
 
 	QString line;
-	int code;
+	CalltipToken code;
 
 	// Skip blank lines and comments
 	Q_FOREVER {
@@ -1189,7 +1178,7 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 		int blkLine = 0;
 		QString body;
 
-		int code = nextTFBlock(stream, header, body, &blkLine, &currLine);
+		CalltipToken code = nextTFBlock(stream, header, body, &blkLine, &currLine);
 
 		if (code == TF_ERROR_EOF) {
 			qWarning("NEdit: Warning: unexpected EOF in calltips file.");

@@ -51,6 +51,17 @@ public:
 		int     index;
 	};
 
+	enum CalltipToken {
+		TF_EOF,
+		TF_BLOCK,
+		TF_VERSION,
+		TF_INCLUDE,
+		TF_LANGUAGE,
+		TF_ALIAS,
+		TF_ERROR,
+		TF_ERROR_EOF
+	};
+
 public:
 	static QList<Tag> LookupTag(const QString &name, SearchMode mode);
 	static bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, SearchMode mode);
@@ -70,7 +81,7 @@ private:
 	static QMultiHash<QString, Tag> *hashTableByType(SearchMode mode);
 	static int loadTagsFile(const QString &tagSpec, int index, int recLevel);
 	static int loadTipsFile(const QString &tipsFile, int index, int recLevel);
-	static int nextTFBlock(QTextStream &is, QString &header, QString &body, int *blkLine, int *currLine);
+	static CalltipToken nextTFBlock(QTextStream &is, QString &header, QString &body, int *blkLine, int *currLine);
 	static int scanETagsLine(const QString &line, const QString &tagPath, int index, QString &file, int recLevel);
 	static std::deque<File> *tagListByType(SearchMode mode);
 	static int scanCTagsLine(const QString &line, const QString &tagPath, int index);
