@@ -50,7 +50,7 @@ enum TFT {
 	TFT_CTAGS
 };
 
-enum tftoken_types {
+enum CalltipToken {
 	TF_EOF,
 	TF_BLOCK,
 	TF_VERSION,
@@ -75,14 +75,14 @@ QMultiHash<QString, Tags::Tag> LoadedTags;
 QMultiHash<QString, Tags::Tag> LoadedTips;
 
 // Check if a line has non-ws characters
-bool lineEmpty(view::string_view line) {
+bool lineEmpty(const QString &line) {
 
-	for(char ch : line) {
-		if(ch == '\n') {
+	for(QChar ch : line) {
+		if(ch == QLatin1Char('\n')) {
 			break;
 		}
 
-		if (ch != ' ' && ch != '\t') {
+		if (ch != QLatin1Char(' ') && ch != QLatin1Char('\t')) {
 			return false;
 		}
 	}
@@ -934,27 +934,15 @@ void Tags::showMatchingCalltip(QWidget *parent, TextArea *area, int id) {
  ********************************************************************/
 
 /**
- * @brief A wrapper for SearchString
+ * @brief Tags::searchLine
  * @param line
  * @param regex
  * @return
  */
-bool Tags::searchLine(const std::string &line, const std::string &regex) {
-
-	Search::Result searchResult;
-
-	return Search::SearchString(
-				line,
-				QString::fromStdString(regex),
-				Direction::Forward,
-				SearchType::Regex,
-				WrapMode::NoWrap,
-				0,
-				&searchResult,
-				QString());
+bool Tags::searchLine(const QString &line, const QRegularExpression &re) {
+	QRegularExpressionMatch match = re.match(line);
+	return match.hasMatch();
 }
-
-
 
 /*
 ** Get the next block from a tips file.  A block is a \n\n+ delimited set of
@@ -968,32 +956,33 @@ bool Tags::searchLine(const std::string &line, const std::string &regex) {
 **                  after the "* xxxx *" line.
 **      currLine:   Used to keep track of the current line in the file.
 */
-int Tags::nextTFBlock(std::istream &is, QString &header, QString &body, int *blkLine, int *currLine) {
+int Tags::nextTFBlock(QTextStream &stream, QString &header, QString &body, int *blkLine, int *currLine) {
 
 	// These are the different kinds of tokens
-	static const char *commenTF_regex = R"(^\s*\* comment \*\s*$)";
-	static const char *version_regex  = R"(^\s*\* version \*\s*$)";
-	static const char *include_regex  = R"(^\s*\* include \*\s*$)";
-	static const char *language_regex = R"(^\s*\* language \*\s*$)";
-	static const char *alias_regex    = R"(^\s*\* alias \*\s*$)";
+	static const auto commenTF_regex = QRegularExpression(QLatin1String(R"(^\s*\* comment \*\s*$)"));
+	static const auto version_regex  = QRegularExpression(QLatin1String(R"(^\s*\* version \*\s*$)"));
+	static const auto include_regex  = QRegularExpression(QLatin1String(R"(^\s*\* include \*\s*$)"));
+	static const auto language_regex = QRegularExpression(QLatin1String(R"(^\s*\* language \*\s*$)"));
+	static const auto alias_regex    = QRegularExpression(QLatin1String(R"(^\s*\* alias \*\s*$)"));
 
-	std::string line;
-	int dummy1;
+	QString line;
 	int code;
 
 	// Skip blank lines and comments
 	Q_FOREVER {
 
 		// Skip blank lines
-		while(std::getline(is, line)) {
+		while (stream.readLineInto(&line)) {
 			++(*currLine);
-			if (!lineEmpty(line))
+			if (!lineEmpty(line)) {
 				break;
+			}
 		}
 
 		// Check for error or EOF
-		if (!is)
+		if (stream.status() != QTextStream::Ok) {
 			return TF_EOF;
+		}
 
 		// We've got a non-blank line -- is it a comment block?
 		if (!searchLine(line, commenTF_regex)) {
@@ -1001,23 +990,24 @@ int Tags::nextTFBlock(std::istream &is, QString &header, QString &body, int *blk
 		}
 
 		// Skip the comment (non-blank lines)
-		while (std::getline(is, line)) {
+		while (stream.readLineInto(&line)) {
 			++(*currLine);
-			if (lineEmpty(line))
+			if (lineEmpty(line)) {
 				break;
+			}
 		}
 
-		if (!is) {
+		if (stream.status() != QTextStream::Ok) {
 			return TF_EOF;
 		}
 	}
 
 	// Now we know it's a meaningful block
-	dummy1 = searchLine(line, include_regex);
+	bool dummy1 = searchLine(line, include_regex);
 	if (dummy1 || searchLine(line, alias_regex)) {
 		// INCLUDE or ALIAS block
 
-		long incPos;
+		qint64 incPos;
 		int i;
 		int incLines;
 
@@ -1028,9 +1018,9 @@ int Tags::nextTFBlock(std::istream &is, QString &header, QString &body, int *blk
 			code = TF_ALIAS;
 			// Need to read the header line for an alias
 
-			std::getline(is, line);
+			const bool eof = !stream.readLineInto(&line);
 			++(*currLine);
-			if (!is) {
+			if (eof) {
 				return TF_ERROR_EOF;
 			}
 
@@ -1038,10 +1028,10 @@ int Tags::nextTFBlock(std::istream &is, QString &header, QString &body, int *blk
 				qWarning("NEdit: Warning: empty '* alias *' block in calltips file.");
 				return TF_ERROR;
 			}
-			header = rstrip(QString::fromStdString(line));
+			header = rstrip(line);
 		}
 
-		incPos = is.tellg();
+		incPos = stream.pos();
 		*blkLine = *currLine + 1; // Line of first actual filename/alias
 
 		if (incPos < 0) {
@@ -1049,9 +1039,9 @@ int Tags::nextTFBlock(std::istream &is, QString &header, QString &body, int *blk
 		}
 
 		// Figure out how long the block is
-		while (std::getline(is, line) || is.eof()) {
+		while (stream.readLineInto(&line) || stream.atEnd()) {
 			++(*currLine);
-			if (is.eof() || lineEmpty(line)) {
+			if (stream.atEnd() || lineEmpty(line)) {
 				break;
 			}
 		}
@@ -1065,17 +1055,17 @@ int Tags::nextTFBlock(std::istream &is, QString &header, QString &body, int *blk
 		}
 
 		// Make space for the filenames/alias sources
-		if (is.seekg(incPos, std::ios::beg)) {
+		if (!stream.seek(incPos)) {
 			return TF_ERROR;
 		}
 
 		// Read all the lines in the block
 		for (i = 0; i < incLines; i++) {
-			if(!std::getline(is, line)) {
+			if(!stream.readLineInto(&line)) {
 				return TF_ERROR_EOF;
 			}
 
-			QString currentLine = rstrip(QString::fromStdString((line)));
+			QString currentLine = rstrip((line));
 
 			if (i != 0) {
 				body.push_back(QLatin1Char(':'));
@@ -1086,10 +1076,10 @@ int Tags::nextTFBlock(std::istream &is, QString &header, QString &body, int *blk
 		// qDebug("Finished include/alias at line %i", *currLine);
 	} else if (searchLine(line, language_regex)) {
 		// LANGUAGE block
-		std::getline(is, line);
+		const bool eof = !stream.readLineInto(&line);
 		++(*currLine);
 
-		if (!is) {
+		if (eof) {
 			return TF_ERROR_EOF;
 		}
 
@@ -1098,50 +1088,52 @@ int Tags::nextTFBlock(std::istream &is, QString &header, QString &body, int *blk
 			return TF_ERROR;
 		}
 		*blkLine = *currLine;
-		header = rstrip(QString::fromStdString(line));
+		header = rstrip(line);
 		code = TF_LANGUAGE;
 	} else if (searchLine(line, version_regex)) {
 		// VERSION block
-		std::getline(is, line);
+		const bool eof = !stream.readLineInto(&line);
 		++(*currLine);
-		if (!is)
+		if (eof)
 			return TF_ERROR_EOF;
 		if (lineEmpty(line)) {
 			qWarning("NEdit: Warning: empty '* version *' block in calltips file.");
 			return TF_ERROR;
 		}
 		*blkLine = *currLine;
-		header = rstrip(QString::fromStdString(line));
+		header = rstrip(line);
 		code = TF_VERSION;
 	} else {
 		// Calltip block
 		/*  The first line is the key, the rest is the tip.
 			Strip trailing whitespace. */
-		header = rstrip(QString::fromStdString(line));
+		header = rstrip(line);
 
-		std::getline(is, line);
+		const bool eof = !stream.readLineInto(&line);
 		++(*currLine);
-		if (!is)
+		if (eof) {
 			return TF_ERROR_EOF;
+		}
 		if (lineEmpty(line)) {
 			qWarning("NEdit: Warning: empty calltip block:\n   \"%s\"", qPrintable(header));
 			return TF_ERROR;
 		}
 		*blkLine = *currLine;
-		body = QString::fromStdString(line);
+		body = line;
 		code = TF_BLOCK;
 	}
 
 	// Skip the rest of the block
-	dummy1 = *currLine;
-	while (std::getline(is, line)) {
+	const int dummy2 = *currLine;
+	while (stream.readLineInto(&line)) {
 		++(*currLine);
-		if (lineEmpty(line))
+		if (lineEmpty(line)) {
 			break;
+		}
 	}
 
 	// Warn about any unneeded extra lines (which are ignored).
-	if (dummy1 + 1 < *currLine && code != TF_BLOCK) {
+	if (dummy2 + 1 < *currLine && code != TF_BLOCK) {
 		qWarning("NEdit: Warning: extra lines in language or version block ignored.");
 	}
 
@@ -1186,16 +1178,18 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 	// NOTE(eteran): no error checking...
 	parseFilename(resolvedTipsFile, nullptr, &tipPath);
 
-	// Open the file
-	std::ifstream is(resolvedTipsFile.toStdString());
-	if(!is) {
+	QFile file(resolvedTipsFile);
+	if(!file.open(QIODevice::ReadOnly)) {
 		return 0;
 	}
+
+	QTextStream stream(&file);
 
 	Q_FOREVER {
 		int blkLine = 0;
 		QString body;
-		int code = nextTFBlock(is, header, body, &blkLine, &currLine);
+
+		int code = nextTFBlock(stream, header, body, &blkLine, &currLine);
 
 		if (code == TF_ERROR_EOF) {
 			qWarning("NEdit: Warning: unexpected EOF in calltips file.");

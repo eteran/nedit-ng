@@ -13,6 +13,7 @@
 #include <QCoreApplication>
 
 class TextArea;
+class QTextStream;
 
 class Tags {
 	Q_DECLARE_TR_FUNCTIONS(Tags)
@@ -62,14 +63,14 @@ public:
 public:
 	static QList<Tag> LookupTagFromList(std::deque<File> *FileList, const QString &name, SearchMode mode);
 	static QList<Tag> getTag(const QString &name, SearchMode mode);
-	static int addTag(const QString &name, const QString &file, size_t lang, const QString &search, int64_t posInf, const QString &path, int index);
-	static bool searchLine(const std::string &line, const std::string &regex);
+	static int addTag(const QString &name, const QString &file, size_t lang, const QString &search, int64_t posInf, const QString &path, int index);	
+	static bool searchLine(const QString &line, const QRegularExpression &re);
 
 private:
 	static QMultiHash<QString, Tag> *hashTableByType(SearchMode mode);
 	static int loadTagsFile(const QString &tagSpec, int index, int recLevel);
 	static int loadTipsFile(const QString &tipsFile, int index, int recLevel);
-	static int nextTFBlock(std::istream &is, QString &header, QString &body, int *blkLine, int *currLine);
+	static int nextTFBlock(QTextStream &is, QString &header, QString &body, int *blkLine, int *currLine);
 	static int scanETagsLine(const QString &line, const QString &tagPath, int index, QString &file, int recLevel);
 	static std::deque<File> *tagListByType(SearchMode mode);
 	static int scanCTagsLine(const QString &line, const QString &tagPath, int index);
