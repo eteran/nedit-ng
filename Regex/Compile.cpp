@@ -43,6 +43,9 @@ constexpr int SENSITIVE   = 4; // Case sensitive parenthetical construct
 constexpr int NEWLINE     = 5; // Construct to match newlines in most cases
 constexpr int NO_NEWLINE  = 6; // Construct to match newlines normally
 
+// Largest size a compiled regex can be. Probably could be 65535UL.
+constexpr auto MAX_COMPILED_SIZE  = 32767UL;
+
 struct len_range {
 	int32_t lower;
 	int32_t upper;

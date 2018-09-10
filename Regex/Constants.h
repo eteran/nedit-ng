@@ -38,7 +38,4 @@ constexpr auto REG_ONE      = 1UL;
    the two counters at the front.  */
 constexpr int REGEX_START_OFFSET = 3;
 
-// Largest size a compiled regex can be. Probably could be 65535UL.
-constexpr auto MAX_COMPILED_SIZE  = 32767UL;
-
 #endif
