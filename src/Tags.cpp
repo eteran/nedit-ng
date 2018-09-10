@@ -392,7 +392,7 @@ bool Tags::DeleteTagsFileEx(const QString &tagSpec, SearchMode mode, bool force_
 				delTag(t.index);
 			}
 
-			FileList->erase(it);
+			it = FileList->erase(it);
 
 			MainWindow::updateMenuItems();
 			break;
@@ -971,11 +971,12 @@ bool Tags::searchLine(const std::string &line, const std::string &regex) {
 int Tags::nextTFBlock(std::istream &is, QString &header, QString &body, int *blkLine, int *currLine) {
 
 	// These are the different kinds of tokens
-	const char *commenTF_regex = R"(^\s*\* comment \*\s*$)";
-	const char *version_regex  = R"(^\s*\* version \*\s*$)";
-	const char *include_regex  = R"(^\s*\* include \*\s*$)";
-	const char *language_regex = R"(^\s*\* language \*\s*$)";
-	const char *alias_regex    = R"(^\s*\* alias \*\s*$)";
+	static const char *commenTF_regex = R"(^\s*\* comment \*\s*$)";
+	static const char *version_regex  = R"(^\s*\* version \*\s*$)";
+	static const char *include_regex  = R"(^\s*\* include \*\s*$)";
+	static const char *language_regex = R"(^\s*\* language \*\s*$)";
+	static const char *alias_regex    = R"(^\s*\* alias \*\s*$)";
+
 	std::string line;
 	int dummy1;
 	int code;
@@ -995,8 +996,9 @@ int Tags::nextTFBlock(std::istream &is, QString &header, QString &body, int *blk
 			return TF_EOF;
 
 		// We've got a non-blank line -- is it a comment block?
-		if (!searchLine(line, commenTF_regex))
+		if (!searchLine(line, commenTF_regex)) {
 			break;
+		}
 
 		// Skip the comment (non-blank lines)
 		while (std::getline(is, line)) {
@@ -1028,8 +1030,10 @@ int Tags::nextTFBlock(std::istream &is, QString &header, QString &body, int *blk
 
 			std::getline(is, line);
 			++(*currLine);
-			if (!is)
+			if (!is) {
 				return TF_ERROR_EOF;
+			}
+
 			if (lineEmpty(line)) {
 				qWarning("NEdit: Warning: empty '* alias *' block in calltips file.");
 				return TF_ERROR;
@@ -1039,14 +1043,17 @@ int Tags::nextTFBlock(std::istream &is, QString &header, QString &body, int *blk
 
 		incPos = is.tellg();
 		*blkLine = *currLine + 1; // Line of first actual filename/alias
-		if (incPos < 0)
+
+		if (incPos < 0) {
 			return TF_ERROR;
+		}
 
 		// Figure out how long the block is
 		while (std::getline(is, line) || is.eof()) {
 			++(*currLine);
-			if (is.eof() || lineEmpty(line))
+			if (is.eof() || lineEmpty(line)) {
 				break;
+			}
 		}
 
 		incLines = *currLine - *blkLine;
@@ -1063,7 +1070,6 @@ int Tags::nextTFBlock(std::istream &is, QString &header, QString &body, int *blk
 		}
 
 		// Read all the lines in the block
-		// qDebug("Copying lines");
 		for (i = 0; i < incLines; i++) {
 			if(!std::getline(is, line)) {
 				return TF_ERROR_EOF;

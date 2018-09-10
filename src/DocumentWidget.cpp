@@ -6971,7 +6971,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 		return;
 	}
 
-	int64_t startPos;
+	int64_t startPos = tagLineNumber;
 	int64_t endPos;
 
 	// search for the tags file search string in the newly opened file

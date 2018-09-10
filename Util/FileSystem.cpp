@@ -83,9 +83,14 @@ QString NormalizePathname(const QString &pathname) {
 		path.append(oldPathname);
 	}
 
+
 	QString cleanedPath = QDir::cleanPath(path);
-	if(!cleanedPath.endsWith(QLatin1Char('/'))) {
-		cleanedPath.append(QLatin1Char('/'));
+
+	// IFF it is a directory, insist that it ends in a slash
+	if(fi.isDir()) {
+		if(!cleanedPath.endsWith(QLatin1Char('/'))) {
+			cleanedPath.append(QLatin1Char('/'));
+		}
 	}
 
 	return cleanedPath;
