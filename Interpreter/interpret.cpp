@@ -2272,14 +2272,39 @@ bool StringToNum(const std::string &string, int *number) {
 #if defined(DEBUG_DISASSEMBLER) // dumping values in disassembly or stack dump
 static void dumpVal(DataValue dv) {
 
+
+	auto escape_string = [](const std::string &s) -> std::string {
+
+		std::string r;
+
+		for(char ch : s) {
+			switch(ch) {
+			case '\n':
+				r.append("\\n");
+				break;
+			case '\t':
+				r.append("\\t");
+				break;
+			case '\"':
+				r.append("\\\"");
+				break;
+			default:
+				r.push_back(ch);
+				break;
+			}
+		}
+
+		return r;
+	};
+
 	if(is_integer(dv)) {
 		printf("i=%d", to_integer(dv));
 	} else if(is_string(dv)) {
 		auto str = to_string(dv);
 		if(str.size() > 20) {
-			printf("s=%.*s...[%lu]", 20, str.data(), str.size());
+			printf("<%lu> \"%s\"...", str.size(), escape_string(str.substr(0, 20)).c_str());
 		} else {
-			printf("s=%.*s[%lu]", static_cast<int>(str.size()), str.data(), str.size());
+			printf("<%lu> \"%s\"", str.size(), escape_string(str.substr(0, 20)).c_str());
 		}
 	} else if(is_array(dv)) {
 		printf("<array>");
@@ -2354,7 +2379,7 @@ static void disasm(Inst *inst, size_t nInstr) {
 					}
 					++i;
 				} else if (j == OP_BRANCH || j == OP_BRANCH_FALSE || j == OP_BRANCH_NEVER || j == OP_BRANCH_TRUE) {
-					printf("to=(%ld) %p", inst[i + 1].value, static_cast<void *>(&inst[i + 1] + inst[i + 1].value));
+					printf("to=(%+ld) %p", inst[i + 1].value, static_cast<void *>(&inst[i + 1] + inst[i + 1].value));
 					++i;
 				} else if (j == OP_SUBR_CALL) {
 					printf("%s (%ld arg)", inst[i + 1].sym->name.c_str(), inst[i + 2].value);
