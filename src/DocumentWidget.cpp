@@ -5749,12 +5749,9 @@ void DocumentWidget::attachHighlightToWidget(TextArea *area) {
 ** highlighting fonts from "window", includes pattern compilation.  If errors
 ** are encountered, warns user with a dialog and returns nullptr.
 */
-std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(PatternSet *patSet) {
+std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(PatternSet *patternSet) {
 
-	std::vector<HighlightPattern> &patterns = patSet->patterns;
-
-	int contextLines = patSet->lineContext;
-	int contextChars = patSet->charContext;
+	std::vector<HighlightPattern> &patterns = patternSet->patterns;
 
 	// The highlighting code can't handle empty pattern sets, quietly say no
 	if (patterns.empty()) {
@@ -5969,6 +5966,9 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	auto styleBuf = std::make_shared<TextBuffer>();
 	styleBuf->BufSetSyncXSelection(false);
 
+	const int contextLines = patternSet->lineContext;
+	const int contextChars = patternSet->charContext;
+
 	// Collect all of the highlighting information in a single structure
 	auto highlightData = std::make_unique<WindowHighlightData>();
 	highlightData->pass1Patterns              = std::move(pass1Pats);
@@ -5978,7 +5978,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	highlightData->styleBuffer                = styleBuf;
 	highlightData->contextRequirements.nLines = contextLines;
 	highlightData->contextRequirements.nChars = contextChars;
-	highlightData->patternSetForWindow        = patSet;
+	highlightData->patternSetForWindow        = patternSet;
 
 	return highlightData;
 }

@@ -138,7 +138,7 @@ public:
 	int64_t StyleLengthOfCodeFromPosEx(TextCursor pos);
 	size_t GetLanguageMode() const;
 	size_t highlightCodeOfPos(TextCursor pos);
-	std::unique_ptr<WindowHighlightData> createHighlightData(PatternSet *patSet);
+	std::unique_ptr<WindowHighlightData> createHighlightData(PatternSet *patternSet);
 	std::vector<TextArea *> textPanes() const;
 	void abortShellCommand();
 	void AddMarkEx(TextArea *area, QChar label);
