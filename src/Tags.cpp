@@ -1137,12 +1137,10 @@ Tags::CalltipToken Tags::nextTFBlock(QTextStream &stream, QString &header, QStri
 */
 int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
-	QString header;
-	size_t oldLangMode;
 	int currLine    = 0;
 	int nTipsAdded  = 0;
 	size_t langMode = PLAIN_LANGUAGE_MODE;
-	std::deque<CalltipAlias> aliases;
+	std::vector<CalltipAlias> aliases;
 
 	if (recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {
 		qWarning("NEdit: Warning: Reached recursion limit before loading calltips file:\n\t%s",
@@ -1176,6 +1174,7 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
 	Q_FOREVER {
 		int blkLine = 0;
+		QString header;
 		QString body;
 
 		CalltipToken code = nextTFBlock(stream, header, body, &blkLine, &currLine);
@@ -1200,18 +1199,18 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 		case TF_INCLUDE:
 		{
 			// nextTFBlock returns a colon-separated list of tips files in body
-			const QString &ss = body;
-			QStringList segments = ss.split(QLatin1Char(':'));
+			const QStringList segments = body.split(QLatin1Char(':'));
+
 			for(const QString &tipIncFile : segments) {
-				//qDebug("NEdit: including tips file '%s'", qPrintable(tipIncFile));
 				nTipsAdded += loadTipsFile(tipIncFile, index, recLevel + 1);
 			}
 			break;
 		}
 		case TF_LANGUAGE:
+		{
 			// Switch to the new language mode if it's valid, else ignore it.
-			oldLangMode = langMode;
-			langMode = Preferences::FindLanguageMode(header);
+			const size_t oldLangMode = std::exchange(langMode, Preferences::FindLanguageMode(header));
+
 			if (langMode == PLAIN_LANGUAGE_MODE && header != QLatin1String("Plain")) {
 
 				qWarning("NEdit: Error reading calltips file:\n\t%s\nUnknown language mode: \"%s\"",
@@ -1221,34 +1220,34 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 				langMode = oldLangMode;
 			}
 			break;
+		}
 		case TF_ERROR:
 			qWarning("NEdit: Warning: Recoverable error while reading calltips file:\n   \"%s\"",
 					 qPrintable(resolvedTipsFile));
 			break;
 		case TF_ALIAS:
-			// Allocate a new alias struct
-			aliases.push_front(CalltipAlias{ header, body });
+			aliases.push_back({ header, body });
 			break;
 		default:
-			; // Ignore TF_VERSION for now
+			break; // Ignore TF_VERSION for now
 		}
 	}
 
 	// Now resolve any aliases
-	for(const CalltipAlias &tmp_alias : aliases) {
+	for(const CalltipAlias &alias : aliases) {
 
-		QList<Tag> tags = getTag(tmp_alias.dest, SearchMode::TIP);
+		QList<Tag> tags = getTag(alias.dest, SearchMode::TIP);
 
 		if (tags.isEmpty()) {
 			qWarning("NEdit: Can't find destination of alias \"%s\"\n"
 					 "in calltips file:\n   \"%s\"\n",
-					 qPrintable(tmp_alias.dest),
+			         qPrintable(alias.dest),
 					 qPrintable(resolvedTipsFile));
 		} else {
 
 			const Tag &first_tag = tags[0];
 
-			QStringList segments = tmp_alias.sources.split(QLatin1Char(':'));
+			QStringList segments = alias.sources.split(QLatin1Char(':'));
 			for(const QString &src : segments) {
 				addTag(src, resolvedTipsFile, first_tag.language, QString(), first_tag.posInf, tipPath, index);
 			}
