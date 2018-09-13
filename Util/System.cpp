@@ -136,6 +136,7 @@ QString buildCompiler() {
 	if (_MSC_VER > 1999)  return QLatin1String("MSVC <unknown>");
 	if (_MSC_VER >= 1910) return QLatin1String("MSVC 2017");
 	if (_MSC_VER >= 1900) return QLatin1String("MSVC 2015");
-#endif
+#else
 	return QLatin1String("<unknown compiler>");
+#endif
 }

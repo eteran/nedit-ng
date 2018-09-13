@@ -12,8 +12,6 @@ public:
 	Input()                            = default;
 	Input(const Input &other)          = default;
 	Input& operator=(const Input &rhs) = default;
-	Input(Input &&other)               = default;
-	Input& operator=(Input &&rhs)      = default;
 
 public:
 	QChar operator[](int index) const;
