@@ -4614,12 +4614,8 @@ DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geome
 	Q_ASSERT(window);
 
 	document->filename_ = name;
-	document->path_     = !defaultPath.isEmpty() ? defaultPath : QDir::currentPath();
+	document->setPath(!defaultPath.isEmpty() ? defaultPath : QDir::currentPath());
 
-	// do we have a "/" at the end? if not, add one
-	if (!document->path_.isEmpty() && !document->path_.endsWith(QLatin1Char('/'))) {
-		document->path_.append(QLatin1Char('/'));
-	}
 
 	// TODO(eteran): I'd like basically all of this to be done with signals
 	// on an as needed basis

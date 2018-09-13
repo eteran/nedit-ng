@@ -351,8 +351,8 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 		}
 	} else {
 		// open file in untitled document
-		document            = inDocument;
-		document->path_     = path;
+		document = inDocument;
+		document->setPath(path);
 		document->filename_ = name;
 
 		if (!iconic && !background) {
@@ -1906,6 +1906,7 @@ void DocumentWidget::checkForChangesToFile() {
  * @return
  */
 QString DocumentWidget::fullPath() const {
+	Q_ASSERT(path_.endsWith(QLatin1Char('/')));
 	return tr("%1%2").arg(path_, filename_);
 }
 
@@ -2387,8 +2388,8 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 
 		// Change the name of the file and save it under the new name
 		RemoveBackupFile();
+		setPath(pathname);
 		filename_ = filename;
-		path_     = pathname;
 		mode_     = 0;
 		uid_      = 0;
 		gid_      = 0;
@@ -2715,7 +2716,7 @@ void DocumentWidget::closeDocument() {
 		ino_          = 0;
 		nMarks_       = 0;
 		filename_     = name;
-		path_         = QString();
+		setPath(QString());
 
 		// clear the buffer, but ignore changes
 		ignoreModify_ = true;
@@ -2834,8 +2835,8 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 	lockReasons_.clear();
 
 	// Update the window data structure
-	filename_    = name;
-	path_        = path;
+	setPath(path);
+	filename_    = name;	
 	filenameSet_ = true;
 	fileMissing_ = true;
 
@@ -4606,11 +4607,10 @@ void DocumentWidget::execCursorLine(TextArea *area, CommandSource source) {
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	auto fullName = tr("%1%2").arg(path_, filename_);
 	area->TextDPosToLineAndCol(pos, &line, &column);
 
 	auto substitutedCommand = QString::fromStdString(cmdText);
-	substitutedCommand.replace(QLatin1Char('%'), fullName);
+	substitutedCommand.replace(QLatin1Char('%'), fullPath());
 	substitutedCommand.replace(QLatin1Char('#'), QString::number(line));
 
 	if(substitutedCommand.isNull()) {
@@ -4711,12 +4711,11 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	auto fullName = tr("%1%2").arg(path_, filename_);
 	TextCursor pos = area->TextGetCursorPos();
 	area->TextDPosToLineAndCol(pos, &line, &column);
 
 	QString substitutedCommand = command;
-	substitutedCommand.replace(QLatin1Char('%'), fullName);
+	substitutedCommand.replace(QLatin1Char('%'), fullPath());
 	substitutedCommand.replace(QLatin1Char('#'), QString::number(line));
 
 	/* Get the command input as a text string.  If there is input, errors
@@ -7004,4 +7003,17 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
  */
 QFont DocumentWidget::defaultFont() const {
 	return font_;
+}
+
+/**
+ * @brief DocumentWidget::setPath
+ * @param pathname
+ */
+void DocumentWidget::setPath(const QString &pathname) {
+	path_ = pathname;
+
+	// do we have a "/" at the end? if not, add one
+	if (!path_.isEmpty() && !path_.endsWith(QLatin1Char('/'))) {
+		path_.append(QLatin1Char('/'));
+	}
 }

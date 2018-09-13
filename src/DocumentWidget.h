@@ -100,6 +100,7 @@ public:
 	void action_Set_Language_Mode(const QString &languageMode, bool forceNewDefaults);
 
 public:
+	void setPath(const QString &pathname);
 	bool checkReadOnly() const;
 	bool isReadOnly() const;
 	DocumentWidget *open(const QString &fullpath);
