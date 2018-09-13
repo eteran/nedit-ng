@@ -122,8 +122,8 @@ public:
 	static QString uniqueUntitledName();
 	static std::vector<MainWindow *> allWindows(bool includeInvisible = false);
 	static void AddToPrevOpenMenu(const QString &filename);
-	static void AllWindowsBusy(const QString &message);
-	static void AllWindowsUnbusy();
+	static void AllDocumentsBusy(const QString &message);
+	static void AllDocumentsUnbusy();
 	static void CheckCloseEnableState();
 	static void invalidatePrevOpenMenus();
 	static void ReadNEditDB();

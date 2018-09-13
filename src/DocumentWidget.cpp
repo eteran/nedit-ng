@@ -1964,11 +1964,11 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 
 	/* For large files, the comparison can take a while. If it takes too long,
 	   the user should be given a clue about what is happening. */
-	MainWindow::AllWindowsBusy(tr("Comparing externally modified %1 ...").arg(filename_));
+	MainWindow::AllDocumentsBusy(tr("Comparing externally modified %1 ...").arg(filename_));
 
 	// make sure that we unbusy the windows when we're done
 	auto _ = gsl::finally([]() {
-		MainWindow::AllWindowsUnbusy();
+		MainWindow::AllDocumentsUnbusy();
 	});
 
 	while (restLen > 0) {

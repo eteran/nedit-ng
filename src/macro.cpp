@@ -2086,8 +2086,6 @@ bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QStr
 bool readCheckMacroString(QWidget *dialogParent, const QString &string, DocumentWidget *runDocument, const QString &errIn, int *errPos) {
 
 	Input in(&string);
-
-	DataValue subrPtr;
 	std::stack<Program *> progStack;
 
 	while (!in.atEnd()) {
@@ -2112,9 +2110,9 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 		if (in.match(defineRE)) {
 			in.skipWhitespace();
 
-			QString subrName;
+			QString routineName;
 			static const QRegularExpression identRE(QLatin1String("[A-Za-z0-9_]+"));
-			if(!in.match(identRE, &subrName)) {
+			if(!in.match(identRE, &routineName)) {
 				if(errPos) {
 					*errPos = in.index();
 				}
@@ -2125,7 +2123,6 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 							errIn,
 							QLatin1String("expected identifier"));
 			}
-
 
 			in.skipWhitespaceNL();
 
@@ -2160,7 +2157,7 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 			}
 
 			if (runDocument) {
-				if(Symbol *sym = LookupSymbolEx(subrName)) {
+				if(Symbol *const sym = LookupSymbolEx(routineName)) {
 
 					if (sym->type == MACRO_FUNCTION_SYM) {
 						delete to_program(sym->value);
@@ -2170,9 +2167,8 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 
 					sym->value = make_value(prog);
 				} else {
-					subrPtr = make_value(prog);
-					sym = InstallSymbolEx(subrName, MACRO_FUNCTION_SYM, subrPtr);
-					Q_UNUSED(sym);
+					DataValue subrPtr = make_value(prog);
+					InstallSymbolEx(routineName, MACRO_FUNCTION_SYM, subrPtr);
 				}
 			}
 
@@ -2230,6 +2226,8 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 		progStack.pop();
 
 		RunMacroAsSubrCall(prog);
+
+		// TODO(eteran): should we delete prog here? it looks like it to me
 	}
 
 	return true;
@@ -4877,7 +4875,6 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 static std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	TextBuffer *buffer = document->buffer_;
 	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-	int rangeIndex;
 	int label = 0;
 
 	if (arguments.size() < 1 || arguments.size() > 2) {
@@ -4909,6 +4906,7 @@ static std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments
 	}
 
 	int64_t maxpos = buffer->BufGetLength();
+	int rangeIndex;
 	if (pos < 0 || pos > maxpos) {
 		rangeIndex = 0;
 	} else {

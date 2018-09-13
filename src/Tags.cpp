@@ -585,7 +585,7 @@ int Tags::loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 	/* This might take a while if you have a huge tags file (like I do)..
 	   keep the windows up to date and post a busy cursor so the user
 	   doesn't think we died. */
-	MainWindow::AllWindowsBusy(tr("Loading tags file..."));
+	MainWindow::AllDocumentsBusy(tr("Loading tags file..."));
 
 	QString filename;
 
@@ -612,7 +612,7 @@ int Tags::loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 		}
 	}
 
-	MainWindow::AllWindowsUnbusy();
+	MainWindow::AllDocumentsUnbusy();
 	return nTagsAdded;
 }
 

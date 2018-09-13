@@ -4647,10 +4647,10 @@ DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geome
 }
 
 /**
- * @brief MainWindow::AllWindowsBusy
+ * @brief MainWindow::AllDocumentsBusy
  * @param message
  */
-void MainWindow::AllWindowsBusy(const QString &message) {
+void MainWindow::AllDocumentsBusy(const QString &message) {
 
 	std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
@@ -4658,16 +4658,14 @@ void MainWindow::AllWindowsBusy(const QString &message) {
 		busyStartTime = QDateTime::currentDateTimeUtc().toMSecsSinceEpoch();
 		modeMessageSet = false;
 
-		for(DocumentWidget *document : documents) {
-			/*
-			 * We don't the display message here yet, but defer it for a while.
-			 * If the wait is short, we don't want to have it flash on and off
-			 * the screen. However, we can't use a time since in generally we
-			 * are in a tight loop, so it's up to the caller to make sure that
-			 * this routine is called at regular intervals.
-			 */
-			document->setCursor(Qt::WaitCursor);
-		}
+		/*
+		 * We don't the display message here yet, but defer it for a while.
+		 * If the wait is short, we don't want to have it flash on and off
+		 * the screen. However, we can't use a time since in generally we
+		 * are in a tight loop, so it's up to the caller to make sure that
+		 * this routine is called at regular intervals.
+		 */
+		QApplication::setOverrideCursor(Qt::WaitCursor);
 
 	} else if (!modeMessageSet && !message.isNull() && (QDateTime::currentDateTimeUtc().toMSecsSinceEpoch() - busyStartTime) > 1000) {
 
@@ -4682,18 +4680,19 @@ void MainWindow::AllWindowsBusy(const QString &message) {
 }
 
 /**
- * @brief MainWindow::AllWindowsUnbusy
+ * @brief MainWindow::AllDocumentsUnbusy
  */
-void MainWindow::AllWindowsUnbusy() {
+void MainWindow::AllDocumentsUnbusy() {
 
 	for(DocumentWidget *document : DocumentWidget::allDocuments()) {
 		document->clearModeMessage();
-		document->setCursor(Qt::ArrowCursor);
 	}
 
 	currentlyBusy  = false;
 	modeMessageSet = false;
 	busyStartTime  = 0;
+
+	QApplication::restoreOverrideCursor();
 }
 
 /**
@@ -7141,21 +7140,15 @@ void MainWindow::updateWindowReadOnly(DocumentWidget *document) {
 
 /**
  * @brief MainWindow::UpdateWindowTitle
- * @param doc
+ * @param document
  */
 void MainWindow::updateWindowTitle(DocumentWidget *document) {
 
-	QString clearCaseTag = ClearCase::GetViewTag();
-
 	QString title = DialogWindowTitle::FormatWindowTitle(
-	    document->filename_,
-	    document->path_,
-	    clearCaseTag,
+	    document,
+	    ClearCase::GetViewTag(),
 	    Preferences::GetPrefServerName(),
 	    IsServer,
-	    document->filenameSet_,
-	    document->lockReasons_,
-	    document->fileChanged_,
 	    Preferences::GetPrefTitleFormat());
 
 	setWindowTitle(title);

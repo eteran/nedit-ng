@@ -36,11 +36,11 @@ private Q_SLOTS:
 	void on_editDirectory_textChanged(const QString &text);
 	void on_editFormat_textChanged(const QString &text);
 
-public:
-	static QString FormatWindowTitle(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat);
+public:	
+	static QString FormatWindowTitle(DocumentWidget *document, const QString &clearCaseViewTag, const QString &serverName, bool isServer, const QString &format);
 
 private:
-	static QString FormatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat, UpdateState *state);
+	static QString FormatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &format, UpdateState *state);
 
 private:
 	void setToggleButtons();
@@ -56,11 +56,10 @@ private:
 	QString path_;
 	QString viewTag_;
 	QString serverName_;
+	LockReasons lockReasons_;
 	bool isServer_;
 	bool filenameSet_;
-	LockReasons lockReasons_;
 	bool fileChanged_;
-
 	bool suppressFormatUpdate_;
 };
 

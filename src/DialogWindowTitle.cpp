@@ -156,20 +156,25 @@ void DialogWindowTitle::formatChangedCB() {
 
 /**
  * @brief DialogWindowTitle::FormatWindowTitle
- * @param filename
- * @param path
+ * @param document
  * @param clearCaseViewTag
  * @param serverName
  * @param isServer
- * @param filenameSet
- * @param lockReasons
- * @param fileChanged
  * @param titleFormat
  * @return
  */
-QString DialogWindowTitle::FormatWindowTitle(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat) {
-	return FormatWindowTitleInternal(filename, path, clearCaseViewTag, serverName, isServer, filenameSet, lockReasons, fileChanged, titleFormat, nullptr);
-
+QString DialogWindowTitle::FormatWindowTitle(DocumentWidget *document, const QString &clearCaseViewTag, const QString &serverName, bool isServer, const QString &format) {
+	return FormatWindowTitleInternal(
+	            document->filename_,
+	            document->path_,
+	            clearCaseViewTag,
+	            serverName,
+	            isServer,
+	            document->filenameSet_,
+	            document->lockReasons_,
+	            document->fileChanged_,
+	            format,
+	            nullptr);
 }
 
 /*
@@ -190,7 +195,6 @@ QString DialogWindowTitle::FormatWindowTitle(const QString &filename, const QStr
 */
 QString DialogWindowTitle::FormatWindowTitleEx(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat) {
 
-
 	UpdateState state;
 	QString title = FormatWindowTitleInternal(filename, path, clearCaseViewTag, serverName, isServer, filenameSet, lockReasons, fileChanged, titleFormat, &state);
 
@@ -209,7 +213,6 @@ QString DialogWindowTitle::FormatWindowTitleEx(const QString &filename, const QS
 	no_signals(ui.checkUserName)->setChecked(state.userNamePresent);
 
 	ui.checkBrief->setEnabled(state.fileStatusPresent);
-
 
 	if (state.fileStatusPresent) {
 		no_signals(ui.checkBrief)->setChecked(state.shortStatus);
@@ -546,11 +549,11 @@ void DialogWindowTitle::on_editDirectory_textChanged(const QString &text) {
  * @param state
  * @return
  */
-QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat, UpdateState *state) {
+QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &format, UpdateState *state) {
 	QString title;
 
 	// Flags to supress one of these if both are specified and they are identical
-	bool serverNameSeen = false;
+	bool serverNameSeen       = false;
 	bool clearCaseViewTagSeen = false;
 
 	bool fileNamePresent   = false;
@@ -560,16 +563,16 @@ QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, co
 	bool clearCasePresent  = false;
 	bool fileStatusPresent = false;
 	bool dirNamePresent    = false;
-	int noOfComponents     = -1;
 	bool shortStatus       = false;
+	int noOfComponents     = -1;
 
-	auto format_it = titleFormat.begin();
+	auto format_it = format.begin();
 
-	while (format_it != titleFormat.end()) {
+	while (format_it != format.end()) {
 		QChar c = *format_it++;
 		if (c == QLatin1Char('%')) {
 
-			if (format_it == titleFormat.end()) {
+			if (format_it == format.end()) {
 				title.push_back(QLatin1Char('%'));
 				break;
 			}
@@ -666,7 +669,7 @@ QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, co
 
 			case '*': // short file status ?
 				fileStatusPresent = true;
-				if (format_it != titleFormat.end() && *format_it == QLatin1Char('S')) {
+				if (format_it != format.end() && *format_it == QLatin1Char('S')) {
 					++format_it;
 					shortStatus = true;
 					if (lockReasons.isAnyLockedIgnoringUser() && fileChanged)
