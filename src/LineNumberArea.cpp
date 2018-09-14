@@ -80,3 +80,39 @@ void LineNumberArea::contextMenuEvent(QContextMenuEvent *event) {
 void LineNumberArea::wheelEvent(QWheelEvent *event) {
 	area_->wheelEvent(event);
 }
+
+/**
+ * @brief LineNumberArea::mouseDoubleClickEvent
+ * @param event
+ */
+void LineNumberArea::mouseDoubleClickEvent(QMouseEvent *event) {
+	event->setLocalPos(QPoint(std::max(0, event->x() - width()), event->y()));
+	area_->mouseDoubleClickEvent(event);
+}
+
+/**
+ * @brief LineNumberArea::mouseMoveEvent
+ * @param event
+ */
+void LineNumberArea::mouseMoveEvent(QMouseEvent *event) {
+	event->setLocalPos(QPoint(std::max(0, event->x() - width()), event->y()));
+	area_->mouseMoveEvent(event);
+}
+
+/**
+ * @brief LineNumberArea::mousePressEvent
+ * @param event
+ */
+void LineNumberArea::mousePressEvent(QMouseEvent *event) {
+	event->setLocalPos(QPoint(std::max(0, event->x() - width()), event->y()));
+	area_->mousePressEvent(event);
+}
+
+/**
+ * @brief LineNumberArea::mouseReleaseEvent
+ * @param event
+ */
+void LineNumberArea::mouseReleaseEvent(QMouseEvent *event) {
+	event->setLocalPos(QPoint(std::max(0, event->x() - width()), event->y()));
+	area_->mouseReleaseEvent(event);
+}
