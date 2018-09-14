@@ -9,7 +9,6 @@
 #include "Highlight.h"
 #include "LanguageMode.h"
 #include "LineNumberArea.h"
-#include "MultiClickStates.h"
 #include "Preferences.h"
 #include "RangesetTable.h"
 #include "SmartIndentEvent.h"

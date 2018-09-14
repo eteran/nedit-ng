@@ -183,7 +183,6 @@ add_executable(nedit-ng
 	MenuItem.h
 	MenuItemModel.cpp
 	MenuItemModel.h
-	MultiClickStates.h
 	nedit.cpp
 	nedit.h
 	NeditServer.cpp
