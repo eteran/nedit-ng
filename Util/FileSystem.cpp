@@ -29,6 +29,8 @@ constexpr int FORMAT_SAMPLE_CHARS = 2000;
 */
 bool parseFilename(const QString &fullname, QString *filename, QString *pathname) {
 
+	// TODO(eteran): replace the output parameters with a struct to avoid incorrect usage
+
 	const int fullLen = fullname.size();
 	int scanStart = -1;
 
