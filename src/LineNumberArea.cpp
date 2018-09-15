@@ -108,7 +108,7 @@ void LineNumberArea::mouseMoveEvent(QMouseEvent *event) {
 	              event->buttons(),
 	              event->modifiers()
 	              );
-	area_->mouseMoveEvent(event);
+	area_->mouseMoveEvent(&e);
 }
 
 /**
@@ -122,7 +122,7 @@ void LineNumberArea::mousePressEvent(QMouseEvent *event) {
 	              event->buttons(),
 	              event->modifiers()
 	              );
-	area_->mousePressEvent(event);
+	area_->mousePressEvent(&e);
 }
 
 /**
@@ -136,5 +136,5 @@ void LineNumberArea::mouseReleaseEvent(QMouseEvent *event) {
 	              event->buttons(),
 	              event->modifiers()
 	              );
-	area_->mouseReleaseEvent(event);
+	area_->mouseReleaseEvent(&e);
 }
