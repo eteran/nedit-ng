@@ -86,8 +86,15 @@ void LineNumberArea::wheelEvent(QWheelEvent *event) {
  * @param event
  */
 void LineNumberArea::mouseDoubleClickEvent(QMouseEvent *event) {
-	event->setLocalPos(QPoint(std::max(0, event->x() - width()), event->y()));
-	area_->mouseDoubleClickEvent(event);
+
+	QMouseEvent e(event->type(),
+	              QPoint(std::max(0, event->x() - width()), event->y()),
+	              event->button(),
+	              event->buttons(),
+	              event->modifiers()
+	              );
+
+	area_->mouseDoubleClickEvent(&e);
 }
 
 /**
@@ -95,7 +102,12 @@ void LineNumberArea::mouseDoubleClickEvent(QMouseEvent *event) {
  * @param event
  */
 void LineNumberArea::mouseMoveEvent(QMouseEvent *event) {
-	event->setLocalPos(QPoint(std::max(0, event->x() - width()), event->y()));
+	QMouseEvent e(event->type(),
+	              QPoint(std::max(0, event->x() - width()), event->y()),
+	              event->button(),
+	              event->buttons(),
+	              event->modifiers()
+	              );
 	area_->mouseMoveEvent(event);
 }
 
@@ -104,7 +116,12 @@ void LineNumberArea::mouseMoveEvent(QMouseEvent *event) {
  * @param event
  */
 void LineNumberArea::mousePressEvent(QMouseEvent *event) {
-	event->setLocalPos(QPoint(std::max(0, event->x() - width()), event->y()));
+	QMouseEvent e(event->type(),
+	              QPoint(std::max(0, event->x() - width()), event->y()),
+	              event->button(),
+	              event->buttons(),
+	              event->modifiers()
+	              );
 	area_->mousePressEvent(event);
 }
 
@@ -113,6 +130,11 @@ void LineNumberArea::mousePressEvent(QMouseEvent *event) {
  * @param event
  */
 void LineNumberArea::mouseReleaseEvent(QMouseEvent *event) {
-	event->setLocalPos(QPoint(std::max(0, event->x() - width()), event->y()));
+	QMouseEvent e(event->type(),
+	              QPoint(std::max(0, event->x() - width()), event->y()),
+	              event->button(),
+	              event->buttons(),
+	              event->modifiers()
+	              );
 	area_->mouseReleaseEvent(event);
 }
