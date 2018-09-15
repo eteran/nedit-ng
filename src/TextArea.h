@@ -390,6 +390,7 @@ private:
 	int nLinesDeleted_              = 0;              // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
 	int nVisibleLines_              = 1;              // # of visible (displayed) lines
 	int cursorPreferredCol_         = -1;             // Column for vert. cursor movement
+	bool clickTimerExpired_         = false;
 	bool cursorOn_                  = false;
 	bool modifyingTabDist_          = false;          // Whether tab distance is being modified
 	bool needAbsTopLineNum_         = false;          // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display

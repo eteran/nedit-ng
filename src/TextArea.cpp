@@ -483,7 +483,7 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
 
 	clickTimer_->setSingleShot(true);
 	connect(clickTimer_, &QTimer::timeout, this, [this]() {
-		clickCount_ = 0;
+		clickTimerExpired_ = true;
 	});
 
 	setWordDelimiters(Preferences::GetPrefDelimiters().toStdString());
@@ -1115,6 +1115,11 @@ void TextArea::mouseDoubleClickEvent(QMouseEvent *event) {
 		if (!clickTracker(event, /*inDoubleClickHandler=*/true)) {
 			return;
 		}
+
+		/* Indicate state for future events, PRIMARY_CLICKED indicates that
+		   the proper initialization has been done for primary dragging and/or
+		   multi-clicking.  Also record the timestamp for multi-click processing */
+		dragState_ = PRIMARY_CLICKED;
 
 		selectWord(event->x());
 		callCursorMovementCBs();
@@ -5425,10 +5430,8 @@ void TextArea::endDrag() {
 }
 
 bool TextArea::clickTracker(QMouseEvent *event, bool inDoubleClickHandler) {
-	// track mouse click count
-	clickTimer_->start(QApplication::doubleClickInterval());
 
-	if (clickCount_ < 4 && clickPos_ == event->pos()) {
+	if (clickCount_ < 3 && clickPos_ == event->pos() && !clickTimerExpired_) {
 		clickCount_++;
 	} else {
 		clickCount_ = 0;
@@ -5436,20 +5439,23 @@ bool TextArea::clickTracker(QMouseEvent *event, bool inDoubleClickHandler) {
 
 	clickPos_ = event->pos();
 
+	clickTimerExpired_ = false;
+	clickTimer_->start(QApplication::doubleClickInterval());
+
 	switch (clickCount_) {
-	case 1:
+	case 0:
 		return true;
-	case 2:
+	case 1:
 		if (inDoubleClickHandler) {
 			return true;
 		} else {
 			mouseDoubleClickEvent(event);
 			return false;
 		}
-	case 3:
+	case 2:
 		mouseTripleClickEvent(event);
 		return false;
-	case 4:
+	case 3:
 		mouseQuadrupleClickEvent(event);
 		return false;
 	}
