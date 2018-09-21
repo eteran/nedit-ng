@@ -253,6 +253,10 @@ void Settings::loadPreferences() {
 	forceOSConversion                 = settings.value(tr("nedit.forceOSConversion"),             true).toBool();
 	honorSymlinks                     = settings.value(tr("nedit.honorSymlinks"),                 true).toBool();
 
+	if(includePaths.isEmpty()) {
+		includePaths.append(DEFAULT_INCLUDE_PATHS[0]);
+	}
+
 	settingsLoaded_ = true;
 }
 
