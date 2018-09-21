@@ -7197,8 +7197,10 @@ void MainWindow::updateWindowReadOnly(DocumentWidget *document) {
 		area->setReadOnly(state);
 	}
 
-	ui.action_Read_Only->setChecked(state);
-	ui.action_Read_Only->setEnabled(!document->lockReasons_.isAnyLockedIgnoringUser());
+	if(document->isTopDocument()) {
+		no_signals(ui.action_Read_Only)->setChecked(state);
+		ui.action_Read_Only->setEnabled(!document->lockReasons_.isAnyLockedIgnoringUser());
+	}
 }
 
 /**
