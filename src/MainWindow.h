@@ -19,6 +19,7 @@
 
 #include <QMainWindow>
 #include <QPointer>
+#include <QFileInfoList>
 
 #include "ui_MainWindow.h"
 
@@ -111,6 +112,12 @@ public:
 	void updateWindowMenu();
 	void updateWindowSizeMenu();
 	void updateWindowSizeMenus();
+
+private:
+	QFileInfoList openFileHelper(DocumentWidget *document, const QString &text, QString *searchPath, QString *searchName) const;
+	QFileInfoList openFileHelperSystem(DocumentWidget *document, const QRegularExpressionMatch &match, QString *searchPath, QString *searchName) const;
+	QFileInfoList openFileHelperLocal(DocumentWidget *document, const QRegularExpressionMatch &match, QString *searchPath, QString *searchName) const;
+	QFileInfoList openFileHelperString(DocumentWidget *document, const QString &text, QString *searchPath, QString *searchName) const;
 
 public:
 	static bool CloseAllFilesAndWindows();

@@ -1947,14 +1947,113 @@ void MainWindow::on_action_Open_Selected_triggered() {
 	}
 }
 
+QFileInfoList MainWindow::openFileHelperSystem(DocumentWidget *document, const QRegularExpressionMatch &match, QString *searchPath, QString *searchName) const {
+	const QStringList includeDirs = Preferences::GetPrefIncludePaths();
+
+	QString text = match.captured(1);
+	if(QFileInfo(text).isAbsolute()) {
+		return openFileHelperString(document, text, searchPath, searchName);
+	}
+
+	QFileInfoList results;
+
+	for(const QString &includeDir : includeDirs) {
+		// we need to do this because someone could write #include <path/to/file.h>
+		// which confuses QDir..
+		QFileInfo fullPath = tr("%1/%2").arg(includeDir, match.captured(1));
+		QString filename = fullPath.fileName();
+		QString filepath = fullPath.path();
+
+		filepath = NormalizePathname(filepath);
+
+		if(searchPath->isNull()) {
+			*searchPath = filepath;
+		}
+
+		if(searchName->isNull()) {
+			*searchName = filename;
+		}
+
+		QDir dir(filepath);
+		QStringList name_filters = { filename };
+		QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Files);
+		results.append(localFileList);
+	}
+
+	return results;
+}
+
+QFileInfoList MainWindow::openFileHelperLocal(DocumentWidget *document, const QRegularExpressionMatch &match, QString *searchPath, QString *searchName) const {
+	return openFileHelperString(document, match.captured(1), searchPath, searchName);
+}
+
+QFileInfoList MainWindow::openFileHelperString(DocumentWidget *document, const QString &text, QString *searchPath, QString *searchName) const {
+
+	QFileInfoList results;
+
+	if(QFileInfo(text).isAbsolute()) {
+		QFileInfo fullPath = text;
+		QString filename = fullPath.fileName();
+		QString filepath = fullPath.path();
+
+		filepath = NormalizePathname(filepath);
+
+		*searchPath = filepath;
+		*searchName = filename;
+
+		QDir dir(filepath);
+		QStringList name_filters = { filename };
+		QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Files);
+		results.append(localFileList);
+	} else {
+		// we need to do this because someone could write #include "path/to/file.h"
+		// which confuses QDir..
+		QFileInfo fullPath = tr("%1/%2").arg(document->path_, text);
+		QString filename = fullPath.fileName();
+		QString filepath = fullPath.path();
+
+		filepath = NormalizePathname(filepath);
+
+		*searchPath = filepath;
+		*searchName = filename;
+
+		QDir dir(filepath);
+		QStringList name_filters = { filename };
+		QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Files);
+		results.append(localFileList);
+	}
+
+	return results;
+}
+
+QFileInfoList MainWindow::openFileHelper(DocumentWidget *document, const QString &text, QString *searchPath, QString *searchName) const {
+
+	static const QRegularExpression reSystem(QLatin1String("#include\\s*<([^>]+)>"));
+	static const QRegularExpression reLocal(QLatin1String("#include\\s*\"([^\"]+)\""));
+
+	{
+		QRegularExpressionMatch match = reSystem.match(text);
+		if(match.hasMatch()) {
+			return openFileHelperSystem(document, match, searchPath, searchName);
+		}
+	}
+
+	{
+		QRegularExpressionMatch match = reLocal.match(text);
+		if(match.hasMatch()) {
+			return openFileHelperLocal(document, match, searchPath, searchName);
+		}
+	}
+
+	return openFileHelperString(document, text, searchPath, searchName);
+}
+
 /**
  * @brief MainWindow::openFile
  * @param document
  * @param text
  */
 void MainWindow::openFile(DocumentWidget *document, const QString &text) {
-
-	const QStringList includeDirs = Preferences::GetPrefIncludePaths();
 
 	// get the string, or skip if we can't get the selection data
 	if (text.isEmpty()) {
@@ -1964,45 +2063,13 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 
 	const bool openInTab = Preferences::GetPrefOpenInTab();
 
-	QFileInfoList fileList;
-	QString searchName = text;
-	QString searchPath = document->path_;
+	QString searchName;
+	QString searchPath;
 
-	for(const QString &includeDir : includeDirs) {
+	QFileInfoList fileList = openFileHelper(document, text, &searchPath, &searchName);
 
-		// extract name from #include syntax
-		// TODO(eteran): 2.0, support import/include syntax from multiple languages
-		static const QRegularExpression reSystem(QLatin1String("#include\\s*<([^>]+)>"));
-		static const QRegularExpression reLocal(QLatin1String("#include\\s*\"([^\"]+)\""));
-
-		QRegularExpressionMatch match = reLocal.match(text);
-		if(match.hasMatch()) {
-			// we need to do this because someone could write #include "path/to/file.h"
-			// which confuses QDir..
-			QFileInfo fullPath = tr("%1/%2").arg(document->path_, match.captured(1));
-			searchName = fullPath.fileName();
-			searchPath = fullPath.path();
-		} else {
-			match = reSystem.match(text);
-			if(match.hasMatch()) {
-				// we need to do this because someone could write #include <path/to/file.h>
-				// which confuses QDir..
-				QFileInfo fullPath = tr("%1/%2").arg(includeDir, match.captured(1));
-				searchName = fullPath.fileName();
-				searchPath = fullPath.path();
-			} else {
-				QFileInfo fullPath = tr("%1/%2").arg(document->path_, searchName);
-				searchName = fullPath.fileName();
-				searchPath = fullPath.path();
-			}
-		}
-
-		searchPath = NormalizePathname(searchPath);
-
-		QDir dir(searchPath);
-		QStringList name_filters = { searchName };
-		QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Files);
-		fileList.append(localFileList);
+	if(!searchPath.endsWith(QLatin1Char('/'))) {
+		searchPath.append(QLatin1Char('/'));
 	}
 
 	// No match in any of the search directories, just tell the user the file wasn't found
