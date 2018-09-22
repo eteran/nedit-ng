@@ -1495,7 +1495,7 @@ void TextArea::setBacklightCharTypes(const QString &charTypes) {
  */
 void TextArea::hideOrShowHScrollBar() {
 	const QRect viewRect = viewport()->contentsRect();
-	if (continuousWrap_ && (wrapMargin_ == 0 || wrapMargin_ * fixedFontWidth_ < viewRect.width())) {
+	if (continuousWrap_ && (wrapMargin_ == 0 || (wrapMargin_ * fixedFontWidth_) < viewRect.width())) {
 		setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	} else {
 		setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -1627,7 +1627,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 	 * set the wrap target for either pixels or columns */
 	if (wrapMargin_ != 0) {
 		countPixels = false;
-		wrapMargin  = viewRect.width() / fixedFontWidth_;
+		wrapMargin  = wrapMargin_;
 		maxWidth    = INT_MAX;
 	} else {
 		countPixels = true;
