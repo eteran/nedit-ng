@@ -2273,22 +2273,12 @@ void TextArea::TextDRedisplayRect(const QRect &rect) {
  * @brief TextArea::updateVScrollBarRange
  */
 void TextArea::updateVScrollBarRange() {
-
-	// NOTE(eteran): As an optimization, if we aren't in continuous wrap mode,
-	// there is no need to use the approximation techniques
-	const int sliderValue = topLineNum_;
-
-	/* The Vert. scroll bar value directly represents the top line number,
-	 * The scroll bar maximum value is chosen to generally represent the size
-	 * of the whole buffer, with minor adjustments to keep the scroll bar
-	 * widget happy */
-	if(continuousWrap_) {
-		const int normalizedVisible = std::max(nVisibleLines_, 1);
-		verticalScrollBar()->setRange(1, std::max(nBufferLines_ + 2 + cursorVPadding_ - nVisibleLines_, normalizedVisible + sliderValue));
-	} else {
-		verticalScrollBar()->setRange(1, std::max(1, nBufferLines_ - nVisibleLines_ + 2));
-	}
-
+	/* NOTE(eteran) Originally, it seemed that some special handling was needed
+	 * to handle continuous wrap mode. Upong further inspection, it looks like
+	 * nBufferLines_ properly tracks the number of conceptual lines in the
+	 * buffer, including those that are due to wrapping. So we can just use that
+	 * value regardless */
+	verticalScrollBar()->setRange(1, std::max(1, nBufferLines_ - nVisibleLines_ + 2));
 	verticalScrollBar()->setPageStep(std::max(1, nVisibleLines_ - 1));
 }
 
