@@ -6,10 +6,10 @@
 
 class LockReasons {
 private:
-	// This handles all the different reasons files can be locked
-	static constexpr uint32_t USER_LOCKED_BIT                 = 1;
-	static constexpr uint32_t PERM_LOCKED_BIT                 = 2;
-	static constexpr uint32_t TOO_MUCH_BINARY_DATA_LOCKED_BIT = 4;
+	enum Reason : uint32_t {
+		USER_LOCKED_BIT = 1,
+		PERM_LOCKED_BIT = 2,
+	};
 
 public:
 	bool isUserLocked() const {
@@ -18,10 +18,6 @@ public:
 
 	bool isPermLocked() const {
 		return (reasons_ & PERM_LOCKED_BIT) != 0;
-	}
-
-	bool isTMBDLocked() const {
-		return (reasons_ & TOO_MUCH_BINARY_DATA_LOCKED_BIT) != 0;
 	}
 
 	bool isAnyLockedIgnoringUser() const {
@@ -48,16 +44,12 @@ public:
 		setLockedByReason(enabled, PERM_LOCKED_BIT);
 	}
 
-	void setTMBDLocked(bool enabled) {
-		setLockedByReason(enabled, TOO_MUCH_BINARY_DATA_LOCKED_BIT);
-	}
-
 private:
-	void setLockedByReason(bool enabled, uint32_t reasonBit) {
+	void setLockedByReason(bool enabled, Reason reason) {
 		if(enabled) {
-			reasons_ |= reasonBit;
+			reasons_ |= reason;
 		} else {
-			reasons_ &= ~reasonBit;
+			reasons_ &= ~reason;
 		}
 	}
 
