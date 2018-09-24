@@ -230,6 +230,9 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 	setupPrevOpenMenuActions();
 	updatePrevOpenMenu();
 
+	// determine the strings and button settings to use
+	initToggleButtonsiSearch(Preferences::GetPrefSearch());
+
 	showISearchLine_ = Preferences::GetPrefISearchLine();
 	showLineNumbers_ = Preferences::GetPrefLineNums();
 
