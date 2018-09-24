@@ -83,6 +83,9 @@
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
          </property>
+         <property name="toolTip">
+          <string>Search Backward</string>
+         </property>
          <property name="text">
           <string>Rev</string>
          </property>
@@ -93,6 +96,9 @@
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
          </property>
+         <property name="toolTip">
+          <string>Regular Expression</string>
+         </property>
          <property name="text">
           <string>RegExp</string>
          </property>
@@ -102,6 +108,9 @@
         <widget class="QCheckBox" name="checkIFindCase">
          <property name="focusPolicy">
           <enum>Qt::NoFocus</enum>
+         </property>
+         <property name="toolTip">
+          <string>Case Sensitive</string>
          </property>
          <property name="text">
           <string>Case</string>
