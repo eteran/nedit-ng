@@ -1,6 +1,6 @@
 # nedit-ng
 
-[![Gitter](https://badges.gitter.im/eteran/nedit-ng.svg)](https://gitter.im/eteran/nedit-ng?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+[![Gitter](https://badges.gitter.im/eteran/nedit-ng.svg)](https://gitter.im/nedit-ng/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 [![Build Status](https://travis-ci.org/eteran/nedit-ng.svg?branch=master)](https://travis-ci.org/eteran/nedit-ng)
 [![License](https://img.shields.io/badge/license-GPL2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 
