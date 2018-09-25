@@ -2705,6 +2705,10 @@ void DocumentWidget::closeDocument() {
 
 	if (keepWindow || (windowCount == 1 && documentCount == 1)) {
 
+		// clearing the existing name first ensures that uniqueUntitledName()
+		// will find the actual first available untitled name
+		filename_.clear();
+
 		QString name = MainWindow::uniqueUntitledName();
 		lockReasons_.clear();
 
