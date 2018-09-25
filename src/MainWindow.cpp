@@ -1896,6 +1896,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
 		// make sure that these are always in sync with the primary UI
 		detachTab->setEnabled(ui.action_Detach_Tab->isEnabled());
 		moveTab  ->setEnabled(ui.action_Move_Tab_To->isEnabled());
+		closeTab ->setEnabled(ui.action_Close->isEnabled());
 
 		// make the icons the same too :-P
 		newTab   ->setIcon(ui.action_New->icon());
@@ -1908,9 +1909,9 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
 			if(DocumentWidget *document = documentAt(static_cast<size_t>(index))) {
 
 				if(selected == newTab) {
-					MainWindow::EditNewFile(this, QString(), /*iconic=*/false, QString(), document->path_);
+					action_New(document, NewMode::Prefs);
 				} else if(selected == closeTab) {
-					document->actionClose(CloseMode::Prompt);
+					action_Close(document, CloseMode::Prompt);
 				} else if(selected == detachTab) {
 					action_Detach_Document(document);
 				} else if(selected == moveTab) {
