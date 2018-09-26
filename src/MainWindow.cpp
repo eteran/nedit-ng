@@ -1873,7 +1873,8 @@ void MainWindow::on_tabWidget_tabCountChanged(int count) {
  */
 void MainWindow::on_tabWidget_currentChanged(int index) {
 	if(index != -1) {
-		if(auto document = documentAt(static_cast<size_t>(index))) {
+		if(DocumentWidget *document = documentAt(static_cast<size_t>(index))) {
+			EndISearchEx();
 			document->documentRaised();
 		}
 	}
