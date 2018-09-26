@@ -286,7 +286,7 @@ private:
 	boost::optional<TextCursor> spanBackward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const;
 	boost::optional<TextCursor> spanForward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const;
 	int getLineNumWidth() const;	
-	int stringWidth(int length) const;
+	int lengthToWidth(int length) const noexcept;
 	int TextDCountLines(TextCursor startPos, TextCursor endPos, bool startPosIsLineStart);
 	int TextDOffsetWrappedColumn(int row, int column) const;
 	int TextDOffsetWrappedRow(int row) const;

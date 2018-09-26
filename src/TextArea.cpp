@@ -1749,13 +1749,13 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 ** "colNum".
 */
 int TextArea::widthInPixels(char ch, int column) const {
-	return stringWidth(TextBuffer::BufCharWidth(ch, column, buffer_->BufGetTabDistance()));
+	return lengthToWidth(TextBuffer::BufCharWidth(ch, column, buffer_->BufGetTabDistance()));
 }
 
 /*
 ** Find the width of a string in the font
 */
-int TextArea::stringWidth(int length) const {
+int TextArea::lengthToWidth(int length) const noexcept {
 	return fixedFontWidth_ * length;
 }
 
@@ -2702,8 +2702,8 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	const std::string currentLine = [&]() {
 		std::string ret;
 		if(lineStartPos != -1) {
-			const int lineLen = visLineLength(visLineNum);
-			ret = buffer_->BufGetRangeEx(lineStartPos, lineStartPos + lineLen);
+			const int length = visLineLength(visLineNum);
+			ret = buffer_->BufGetRangeEx(lineStartPos, lineStartPos + length);
 		}
 		return ret;
 	}();
@@ -2723,15 +2723,13 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   position and the line start we're using.  Since scanning back to find a
 	   newline is expensive, only do so if there's actually a rectangular
 	   selection which needs it */
-	int64_t dispIndexOffset;
+	int64_t dispIndexOffset = 0;
 	if (continuousWrap_ && (
 	        buffer_->primary.rangeTouchesRectSel  (lineStartPos, lineStartPos + currentLine.size()) ||
 	        buffer_->secondary.rangeTouchesRectSel(lineStartPos, lineStartPos + currentLine.size()) ||
 	        buffer_->highlight.rangeTouchesRectSel(lineStartPos, lineStartPos + currentLine.size()))) {
 
 		dispIndexOffset = buffer_->BufCountDispChars(buffer_->BufStartOfLine(lineStartPos), lineStartPos);
-	} else {
-		dispIndexOffset = 0;
 	}
 
 	/* Step through character positions from the beginning of the line (even if
@@ -2745,18 +2743,15 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	uint32_t style;
 
 	for (;;) {
-		int  charLen;
-		char baseChar;
-		if(startIndex >= static_cast<int>(currentLine.size())) {
-			baseChar = '\0';
-			charLen  = 1;
-		} else {
+		int  charLen  = 1;
+		char baseChar = '\0';
+		if(startIndex < static_cast<int>(currentLine.size())) {
 			baseChar = currentLine[static_cast<size_t>(startIndex)];
 			charLen  = TextBuffer::BufCharWidth(baseChar, outIndex, tabDist);
 		}
 
-		style = styleOfPos(lineStartPos, static_cast<int>(currentLine.size()), startIndex, outIndex + dispIndexOffset, baseChar);
-		const int charWidth = (startIndex >= static_cast<int>(currentLine.size())) ? fixedFontWidth_ : stringWidth(charLen);
+		style = styleOfPos(lineStartPos, static_cast<int>(currentLine.size()), startIndex, dispIndexOffset + outIndex, baseChar);
+		const int charWidth = (startIndex >= static_cast<int>(currentLine.size())) ? fixedFontWidth_ : lengthToWidth(charLen);
 
 		if (startX + charWidth >= leftClip) {
 			break;
@@ -2772,42 +2767,41 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	 * this line, and where it should be drawn to take advantage of the x
 	 * position which we've gone to so much trouble to calculate) */
 	char outStr[MAX_DISP_LINE_LEN];
-	char *outPtr   = outStr;
-	bool hasCursor = false;
-	int cursorX    = 0;
-	int x          = startX;
-
+	char *outPtr = outStr;
+	int x        = startX;
 	int charIndex;
+	boost::optional<int> cursorX;
+
 	for (charIndex = startIndex; ; ++charIndex) {
 
+		// take note of where the cursor is if it's on this line...
 		if (lineStartPos + charIndex == cursorPos_) {
 			if (charIndex < static_cast<int>(currentLine.size()) || (charIndex == static_cast<int>(currentLine.size()) && cursorPos_ >= buffer_->BufEndOfBuffer())) {
-				hasCursor = true;
 				cursorX = x - 1;
 			} else if (charIndex == static_cast<int>(currentLine.size())) {
 				if (wrapUsesCharacter(cursorPos_)) {
-					hasCursor = true;
 					cursorX = x - 1;
 				}
 			}
 		}
 
 		char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
-		char baseChar;
-		int  charLen;
-		if (charIndex >= static_cast<int>(currentLine.size())) {
-			baseChar = '\0';
-			charLen  = 1;
-		} else {
+		char baseChar = '\0';
+		int  charLen  = 1;
+		if (charIndex < static_cast<int>(currentLine.size())) {
 			baseChar = currentLine[static_cast<size_t>(charIndex)];
 			charLen  = TextBuffer::BufExpandCharacter(baseChar, outIndex, expandedChar, tabDist);
 		}
 
-		uint32_t charStyle = styleOfPos(lineStartPos, static_cast<int>(currentLine.size()), charIndex, outIndex + dispIndexOffset, baseChar);
+		uint32_t charStyle = styleOfPos(lineStartPos, static_cast<int>(currentLine.size()), charIndex, dispIndexOffset + outIndex, baseChar);
 
 		for (int i = 0; i < charLen; ++i) {
+
+			/* NOTE(eteran): this double check of the style is necessary to make
+			 * certain types of selections work correctly
+			 */
 			if (i != 0 && charIndex < static_cast<int>(currentLine.size()) && currentLine[static_cast<size_t>(charIndex)] == '\t') {
-				charStyle = styleOfPos(lineStartPos, static_cast<int>(currentLine.size()), charIndex, outIndex + dispIndexOffset, '\t');
+				charStyle = styleOfPos(lineStartPos, static_cast<int>(currentLine.size()), charIndex, dispIndexOffset + outIndex, '\t');
 			}
 
 			if (charStyle != style) {
@@ -2841,8 +2835,8 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	   of the redisplayed section. */
 	const int y_orig = cursor_.y();
 	if (cursorOn_) {
-		if (hasCursor) {
-			drawCursor(painter, cursorX, y);
+		if (cursorX) {
+			drawCursor(painter, *cursorX, y);
 		} else if (charIndex < static_cast<int>(currentLine.size()) && (lineStartPos + charIndex + 1 == cursorPos_) && x == rightClip) {
 			if (cursorPos_ >= buffer_->BufGetLength()) {
 				drawCursor(painter, x - 1, y);
@@ -2855,7 +2849,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	}
 
 	// If the y position of the cursor has changed, update the calltip location
-	if (hasCursor && (y_orig != cursor_.y() || y_orig != y)) {
+	if (cursorX && (y_orig != cursor_.y() || y_orig != y)) {
 		updateCalltip(0);
 	}
 }
@@ -3625,7 +3619,7 @@ bool TextArea::positionToXY(TextCursor pos, int *x, int *y) const {
 		                        outIndex,
 		                        tabDistance);
 
-		xStep    += stringWidth(charLen);
+		xStep    += lengthToWidth(charLen);
 		outIndex += charLen;
 	}
 
@@ -5366,7 +5360,7 @@ TextCursor TextArea::xyToPos(int x, int y, PositionTypes posType) const {
 	for (int64_t charIndex = 0; charIndex < lineLen; charIndex++) {
 
 		const int charLen        = TextBuffer::BufCharWidth(lineStr[charIndex], outIndex, tabDistance);
-		const int64_t charWidth  = stringWidth(charLen);
+		const int64_t charWidth  = lengthToWidth(charLen);
 
 		if (x < xStep + (posType == PositionTypes::Cursor ? charWidth / 2 : charWidth)) {
 			return lineStart + charIndex;
