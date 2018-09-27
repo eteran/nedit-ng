@@ -30,7 +30,7 @@ const char cmdLineHelp[] = "Usage:  nc [-read] [-create]\n"
 						   "           [--] [file...]\n";
 
 struct CommandLine {
-	QString shell;
+	QStringList arguments;
 	QByteArray jsonRequest;
 };
 
@@ -57,33 +57,74 @@ int nextArg(const QStringList &args, int argIndex) {
 	return argIndex;
 }
 
-/* Copies a given nc command line argument to the server startup command
-** line (-icon, -geometry, ...) Special characters are protected from
-** the shell by escaping EVERYTHING with '\'
-*/
-void copyCommandLineArg(CommandLine *commandLine, const QString &arg) {
+/**
+ *
+ * @brief parseCommandString
+ * @param program
+ * @return
+ */
+QStringList parseCommandString(const QString &program) {
 
-	constexpr auto Quote = QLatin1Char('"');
+	QStringList args;
+	QString arg;
 
-	auto outPtr = std::back_inserter(commandLine->shell);
+	int bcount = 0;
+	bool in_quotes = false;
 
-	*outPtr++ = Quote;
-	for(QChar ch : arg) {
+	auto s = program.begin();
 
-		if (ch == Quote) {
-			*outPtr++ = Quote;
-			*outPtr++ = QLatin1Char('\\');
-		}
+	while(s != program.end()) {
+		if(!in_quotes && s->isSpace()) {
 
-		*outPtr++ = ch;
+			// Close the argument and copy it
+			args << arg;
+			arg.clear();
 
-		if (ch == Quote) {
-			*outPtr++ = Quote;
+			// skip the remaining spaces
+			do {
+				++s;
+			} while(s->isSpace());
+
+			// Start with a new argument
+			bcount = 0;
+		} else if(*s == QLatin1Char('\\')) {
+
+			// '\\'
+			arg += *s++;
+			++bcount;
+
+		} else if(*s == QLatin1Char('"')) {
+
+			// '"'
+			if((bcount & 1) == 0) {
+				/* Preceded by an even number of '\', this is half that
+				 * number of '\', plus a quote which we erase.
+				 */
+
+				arg.chop(bcount / 2);
+				in_quotes = !in_quotes;
+			} else {
+				/* Preceded by an odd number of '\', this is half that
+				 * number of '\' followed by a '"'
+				 */
+
+				arg.chop(bcount / 2 + 1);
+				arg += QLatin1Char('"');
+			}
+
+			++s;
+			bcount = 0;
+		} else {
+			arg += *s++;
+			bcount = 0;
 		}
 	}
 
-	*outPtr++ = Quote;
-	*outPtr++ = QLatin1Char(' ');
+	if(!arg.isEmpty()) {
+		args << arg;
+	}
+
+	return args;
 }
 
 /**
@@ -157,15 +198,15 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			i = nextArg(args, i);
 			toDoCommand = args[i];
 		} else if (opts && args[i] == QLatin1String("-lm")) {
-			copyCommandLineArg(&commandLine, args[i]);
+			commandLine.arguments.push_back(args[i]);
 			i = nextArg(args, i);
 			langMode = args[i];
-			copyCommandLineArg(&commandLine, args[i]);
+			commandLine.arguments.push_back(args[i]);
 		} else if (opts && (args[i] == QLatin1String("-g") || args[i] == QLatin1String("-geometry"))) {
-			copyCommandLineArg(&commandLine, args[i]);
+			commandLine.arguments.push_back(args[i]);
 			i = nextArg(args, i);
 			geometry = args[i];
-			copyCommandLineArg(&commandLine, args[i]);
+			commandLine.arguments.push_back(args[i]);
 		} else if (opts && args[i] == QLatin1String("-read")) {
 			read = 1;
 		} else if (opts && args[i] == QLatin1String("-create")) {
@@ -180,7 +221,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			group = 2; // 2: start new group, 1: in group
 		} else if (opts && (args[i] == QLatin1String("-iconic") || args[i] == QLatin1String("-icon"))) {
 			iconic = 1;
-			copyCommandLineArg(&commandLine, args[i]);
+			commandLine.arguments.push_back(args[i]);
 		} else if (opts && args[i] == QLatin1String("-line")) {
 			i = nextArg(args, i);
 
@@ -200,8 +241,10 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			} else {
 				lineNum = lineArg;
 			}
-		} else if (opts && (args[i] == QLatin1String("-ask") || args[i] == QLatin1String("-noask"))) {
-			; // Ignore resource-based arguments which are processed later
+		} else if (opts && (args[i] == QLatin1String("-ask"))) {
+			ServerPreferences.autoStart = false;
+		} else if (opts && (args[i] == QLatin1String("-noask"))) {
+			ServerPreferences.autoStart = true;
 		} else if (opts && (args[i] == QLatin1String("-version") || args[i] == QLatin1String("-V"))) {
 			printNcVersion();
 			exit(EXIT_SUCCESS);
@@ -309,7 +352,7 @@ CommandLine processCommandLine(const QStringList &args) {
  *
  * Prompt the user about starting a server, with "message", then start server
  */
-int startServer(const char *message, const QString &commandLineArgs) {
+int startServer(const char *message, const QStringList &commandLineArgs) {
 
 	// prompt user whether to start server
 	if (!ServerPreferences.autoStart) {
@@ -324,12 +367,20 @@ int startServer(const char *message, const QString &commandLineArgs) {
 		}
 	}
 
+	// make sure we get any arguments out of the server command
+	// (typically -server is in there, but there could be more)
+	QStringList arguments = parseCommandString(ServerPreferences.serverCmd);
+
+	// add on the arguments that were on the command line
+	arguments.append(commandLineArgs);
+
+	const QString command = arguments.takeFirst();
+
 	// start the server
 	auto process = new QProcess;
-	auto command = QString(QLatin1String("%1 %2")).arg(ServerPreferences.serverCmd, commandLineArgs);
-	process->start(command);
-	bool sysrc = process->waitForStarted();
+	process->start(command, arguments);
 
+	const bool sysrc = process->waitForStarted();
 	if(!sysrc) {
 		switch(process->error()) {
 		case QProcess::FailedToStart:
@@ -354,16 +405,6 @@ int startServer(const char *message, const QString &commandLineArgs) {
 	}
 
 	return (sysrc) ? 0 : -1;
-}
-
-void startNewServer(const QString &commandLine) {
-
-	switch (startServer("No servers available, start one? (y|n) [y]: ", commandLine)) {
-	case -1: // Start failed
-		exit(EXIT_FAILURE);
-	case -2: // Start canceled by user
-		exit(EXIT_SUCCESS);
-	}
 }
 
 }
@@ -413,8 +454,13 @@ int main(int argc, char *argv[]) {
 		socket->connectToServer(socketName, QIODevice::WriteOnly);
 		if(!socket->waitForConnected(ServerPreferences.timeOut * 1000)) {
 			if(i == 0) {
-				// if we failed to connect, try starting the server and try again
-				startNewServer(commandLine.shell);
+				switch (startServer("No servers available, start one? (y|n) [y]: ", commandLine.arguments)) {
+				case -1: // Start failed
+					exit(EXIT_FAILURE);
+				case -2: // Start canceled by user
+					exit(EXIT_SUCCESS);
+				}
+
 			}
 
 			// give just a little bit of time for things to get going...
