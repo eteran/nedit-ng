@@ -21,14 +21,14 @@
 
 namespace {
 
-const char cmdLineHelp[] = "Usage:  nc [-read] [-create]\n"
-						   "           [-line n | +n] [-do command] [-lm languagemode]\n"
-						   "           [-svrname name] [-svrcmd command]\n"
-						   "           [-ask] [-noask] [-timeout seconds]\n"
-						   "           [-geometry geometry | -g geometry] [-icon | -iconic]\n"
-						   "           [-tabbed] [-untabbed] [-group] [-wait]\n"
-						   "           [-V | -version] [-h|-help]\n"
-						   "           [--] [file...]\n";
+const char cmdLineHelp[] = "Usage: nc-ng [-read] [-create]\n"
+                           "             [-line n | +n] [-do command] [-lm languagemode]\n"
+                           "             [-svrname name] [-svrcmd command]\n"
+                           "             [-ask] [-noask] [-timeout seconds]\n"
+                           "             [-geometry geometry | -g geometry] [-icon | -iconic]\n"
+                           "             [-tabbed] [-untabbed] [-group] [-wait]\n"
+                           "             [-V | -version] [-h|-help]\n"
+                           "             [--] [file...]\n";
 
 struct CommandLine {
 	QStringList arguments;
@@ -50,7 +50,7 @@ struct {
  */
 int nextArg(const QStringList &args, int argIndex) {
 	if (argIndex + 1 >= args.size()) {
-		fprintf(stderr, "nc: %s requires an argument\n%s", qPrintable(args[argIndex]), cmdLineHelp);
+		fprintf(stderr, "nc-ng: %s requires an argument\n%s", qPrintable(args[argIndex]), cmdLineHelp);
 		exit(EXIT_FAILURE);
 	}
 
@@ -132,7 +132,7 @@ QStringList parseCommandString(const QString &program) {
  * @brief printNcVersion
  */
 void printNcVersion() {
-	static const char ncHelpText[] = "nc (nedit-ng) Version %d.%d\n\n"
+	static const char ncHelpText[] = "nc-ng (nedit-ng) Version %d.%d\n\n"
 	                                 "Built on: %s, %s, %s\n"
 	                                 "Built at: %s, %s\n";
 	printf(ncHelpText,
@@ -194,7 +194,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			bool ok;
 			int n = args[i].toInt(&ok);
 			if(!ok) {
-				fprintf(stderr, "nc: argument to timeout should be a number\n");
+				fprintf(stderr, "nc-ng: argument to timeout should be a number\n");
 			} else {
 				ServerPreferences.timeOut = n;
 			}
@@ -232,7 +232,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			bool ok;
 			int lineArg = args[i].toInt(&ok);
 			if(!ok) {
-				fprintf(stderr, "nc: argument to line should be a number\n");
+				fprintf(stderr, "nc-ng: argument to line should be a number\n");
 			} else {
 				lineNum = lineArg;
 			}
@@ -241,7 +241,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			bool ok;
 			int lineArg = args[i].toInt(&ok);
 			if(!ok) {
-				fprintf(stderr, "nc: argument to + should be a number\n");
+				fprintf(stderr, "nc-ng: argument to + should be a number\n");
 			} else {
 				lineNum = lineArg;
 			}
@@ -257,7 +257,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			exit(EXIT_SUCCESS);
 		} else if (opts && (args[i][0] == QLatin1Char('-'))) {
 
-			fprintf(stderr, "nc: Unrecognized option %s\n%s", qPrintable(args[i]), cmdLineHelp);
+			fprintf(stderr, "nc-ng: Unrecognized option %s\n%s", qPrintable(args[i]), cmdLineHelp);
 			exit(EXIT_FAILURE);
 		} else {
 			if (!parseFilename(args[i], &name, &path)) {
@@ -349,7 +349,7 @@ CommandLine processCommandLine(const QStringList &args) {
 		return *commandLine;
 	}
 
-	fprintf(stderr, "nc: Invalid commandline argument\n");
+	fprintf(stderr, "nc-ng: Invalid commandline argument\n");
 	exit(EXIT_FAILURE);
 }
 
@@ -393,22 +393,22 @@ int startServer(const char *message, const QStringList &commandLineArgs) {
 	if(!sysrc) {
 		switch(process->error()) {
 		case QProcess::FailedToStart:
-			fprintf(stderr, "nc: The server process failed to start. Either the invoked program is missing, or you may have insufficient permissions to invoke the program.\n");
+			fprintf(stderr, "nc-ng: The server process failed to start. Either the invoked program is missing, or you may have insufficient permissions to invoke the program.\n");
 			break;
 		case QProcess::Crashed:
-			fprintf(stderr, "nc: The server process crashed some time after starting successfully.\n");
+			fprintf(stderr, "nc-ng: The server process crashed some time after starting successfully.\n");
 			break;
 		case QProcess::Timedout:
-			fprintf(stderr, "nc: Timeout while waiting for the server process\n");
+			fprintf(stderr, "nc-ng: Timeout while waiting for the server process\n");
 			break;
 		case QProcess::WriteError:
-			fprintf(stderr, "nc: An error occurred when attempting to write to the server process.\n");
+			fprintf(stderr, "nc-ng: An error occurred when attempting to write to the server process.\n");
 			break;
 		case QProcess::ReadError:
-			fprintf(stderr, "nc: An error occurred when attempting to read from the server process.\n");
+			fprintf(stderr, "nc-ng: An error occurred when attempting to read from the server process.\n");
 			break;
 		case QProcess::UnknownError:
-			fprintf(stderr, "nc: An unknown error occurred.\n");
+			fprintf(stderr, "nc-ng: An unknown error occurred.\n");
 			break;
 		}
 	}
