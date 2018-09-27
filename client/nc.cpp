@@ -160,14 +160,15 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 	QString toDoCommand;
 	QString langMode;
 	QString geometry;
-	int lineNum   = 0;
-	int read      = 0;
-	int create    = 0;
-	int iconic    = 0;	
-	int fileCount = 0;
-	int group     = 0;
-	int tabbed    = -1;
-	bool opts     = true;
+	int lineNum      = 0;
+	int read         = 0;
+	int create       = 0;
+	int iconic       = 0;
+	int fileCount    = 0;
+	int group        = 0;
+	int tabbed       = -1;
+	bool opts        = true;
+	bool debug_proto = false;
 
 	QVariantList commandData;
 
@@ -176,6 +177,8 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 		if (opts && args[i] == QLatin1String("--")) {
 			opts = false; // treat all remaining arguments as filenames
 			continue;
+		} else if (opts && args[i] == QLatin1String("-debug-proto")) {
+			debug_proto = true;
 		} else if (opts && args[i] == QLatin1String("-wait")) {
 			ServerPreferences.waitForClose = true;
 		} else if (opts && args[i] == QLatin1String("-svrname")) {
@@ -320,6 +323,11 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 
 	auto doc = QJsonDocument::fromVariant(commandData);
 	commandLine.jsonRequest = doc.toJson(QJsonDocument::Compact);
+
+	if(debug_proto) {
+		qDebug() << doc.toJson(QJsonDocument::Compact);
+	}
+
 	return commandLine;
 }
 
