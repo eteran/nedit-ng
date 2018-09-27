@@ -15,6 +15,7 @@
 #include <QDataStream>
 #include <QThread>
 
+#include <iostream>
 #include <memory>
 #include <boost/optional.hpp>
 
@@ -325,7 +326,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 	commandLine.jsonRequest = doc.toJson(QJsonDocument::Compact);
 
 	if(debug_proto) {
-		qDebug() << doc.toJson(QJsonDocument::Compact);
+		std::cout << doc.toJson(QJsonDocument::Compact).constData() << std::endl;
 	}
 
 	return commandLine;
