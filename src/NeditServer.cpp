@@ -30,7 +30,9 @@ MainWindow *findWindowOnDesktopEx(int tabbed, long currentDesktop) {
 	if (tabbed == 0 || (tabbed == -1 && !Preferences::GetPrefOpenInTab())) {
 		/* A new window is requested, unless we find an untitled unmodified
 			document on the current desktop */
-		for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+
+		const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+		for(DocumentWidget *document : documents) {
 			if (document->filenameSet_ || document->fileChanged_ || document->macroCmdData_) {
 				continue;
 			}
@@ -44,7 +46,8 @@ MainWindow *findWindowOnDesktopEx(int tabbed, long currentDesktop) {
 		}
 	} else {
 		// Find a window on the current desktop to hold the new document
-		for(MainWindow *window : MainWindow::allWindows()) {
+		const std::vector<MainWindow *> windows = MainWindow::allWindows();
+		for(MainWindow *window : windows) {
 			if (isLocatedOnDesktopEx(window, currentDesktop)) {
 				return window;
 			}
