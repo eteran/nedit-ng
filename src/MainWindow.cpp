@@ -847,7 +847,7 @@ void MainWindow::action_Select_All(DocumentWidget *document) {
 	emit_event("select_all");
 
 	Q_UNUSED(document);
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		area->selectAllAP();
 	}
 }
@@ -914,7 +914,7 @@ void MainWindow::on_action_Include_File_triggered() {
  * @brief MainWindow::on_action_Cut_triggered
  */
 void MainWindow::on_action_Cut_triggered() {
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		area->cutClipboardAP();
 	}
 }
@@ -923,7 +923,7 @@ void MainWindow::on_action_Cut_triggered() {
  * @brief MainWindow::on_action_Copy_triggered
  */
 void MainWindow::on_action_Copy_triggered() {
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		area->copyClipboardAP();
 	}
 }
@@ -932,7 +932,7 @@ void MainWindow::on_action_Copy_triggered() {
  * @brief MainWindow::on_action_Paste_triggered
  */
 void MainWindow::on_action_Paste_triggered() {
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		area->pasteClipboardAP();
 	}
 }
@@ -941,7 +941,7 @@ void MainWindow::on_action_Paste_triggered() {
  * @brief MainWindow::on_action_Paste_Column_triggered
  */
 void MainWindow::on_action_Paste_Column_triggered() {
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		area->pasteClipboardAP(TextArea::RectFlag);
 	}
 }
@@ -1350,7 +1350,7 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 
 				const auto index = data.toUInt();
 				const QString name = BGMenuData[index].item.name;
-				if(QPointer<TextArea> area = lastFocus_) {
+				if(QPointer<TextArea> area = lastFocus()) {
 					DoNamedBGMenuCmd(document, area, name, CommandSource::User);
 				}
 			}
@@ -2122,7 +2122,7 @@ void MainWindow::action_Shift_Left(DocumentWidget *document) {
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		ShiftSelection(document, area, ShiftDirection::Left, /*byTab=*/false);
 	}
 }
@@ -2149,7 +2149,7 @@ void MainWindow::action_Shift_Right(DocumentWidget *document) {
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		ShiftSelection(document, area, ShiftDirection::Right, /*byTab=*/false);
 	}
 }
@@ -2176,7 +2176,7 @@ void MainWindow::action_Shift_Left_Tabs(DocumentWidget *document) {
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		ShiftSelection(document, area, ShiftDirection::Left, /*byTab=*/true);
 	}
 }
@@ -2202,7 +2202,7 @@ void MainWindow::action_Shift_Right_Tabs(DocumentWidget *document) {
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		ShiftSelection(document, area, ShiftDirection::Right, /*byTab=*/true);
 	}
 }
@@ -2228,7 +2228,7 @@ void MainWindow::action_Lower_case(DocumentWidget *document) {
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		DowncaseSelectionEx(document, area);
 	}
 }
@@ -2255,7 +2255,7 @@ void MainWindow::action_Upper_case(DocumentWidget *document) {
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		UpcaseSelectionEx(document, area);
 	}
 }
@@ -2282,7 +2282,7 @@ void MainWindow::action_Fill_Paragraph(DocumentWidget *document) {
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		FillSelection(document, area);
 	}
 }
@@ -2302,7 +2302,7 @@ void MainWindow::on_action_Fill_Paragraph_triggered() {
  */
 void MainWindow::on_action_Insert_Form_Feed_triggered() {
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		area->insertStringAP(QLatin1String("\f"));
 	}
 }
@@ -2320,7 +2320,7 @@ void MainWindow::action_Insert_Ctrl_Code(DocumentWidget *document, const QString
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		area->insertStringAP(str);
 	}
 }
@@ -2377,7 +2377,7 @@ void MainWindow::action_Goto_Line_Number(DocumentWidget *document, const QString
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->gotoAP(area, loc->line, loc->column);
 	}
 }
@@ -2512,7 +2512,7 @@ void MainWindow::action_Find_Again(DocumentWidget *document, Direction direction
 
 	emit_event("find_again", to_string(direction), to_string(wrap));
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		SearchAndSelectSameEx(
 			document,
 			area,
@@ -2553,7 +2553,7 @@ void MainWindow::action_Find_Selection(DocumentWidget *document, Direction direc
 
 	emit_event("find_selection", to_string(direction), to_string(type), to_string(wrap));
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		SearchForSelectedEx(
 			document,
 			area,
@@ -2662,7 +2662,7 @@ void MainWindow::action_Shift_Find_Incremental() {
  */
 void MainWindow::action_Find_Incremental(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps, bool isContinue) {
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		SearchAndSelectIncrementalEx(document,
 									 area,
 									 searchString,
@@ -2946,7 +2946,7 @@ void MainWindow::action_Replace_Find_Again(DocumentWidget *document, Direction d
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 
 		const Search::HistoryEntry *entry = Search::HistoryByIndex(1);
 		if(!entry) {
@@ -2997,7 +2997,7 @@ void MainWindow::action_Replace_Again(DocumentWidget *document, Direction direct
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		ReplaceSameEx(document,
 					  area,
 					  direction,
@@ -3044,7 +3044,7 @@ void MainWindow::action_Mark(DocumentWidget *document, const QString &mark) {
 	emit_event("mark", mark);
 
 	const QChar ch = mark[0];
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->AddMarkEx(area, ch);
 	}
 }
@@ -3137,7 +3137,7 @@ void MainWindow::action_Goto_Mark(DocumentWidget *document, const QString &mark,
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->gotoMark(area, mark[0], extend);
 	}
 }
@@ -3272,7 +3272,7 @@ void MainWindow::action_Goto_Mark_Shortcut() {
 void MainWindow::action_Goto_Matching(DocumentWidget *document) {
 
 	emit_event("goto_matching");
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->GotoMatchingCharacter(area);
 	}
 }
@@ -3293,7 +3293,7 @@ void MainWindow::on_action_Goto_Matching_triggered() {
 void MainWindow::action_Shift_Goto_Matching(DocumentWidget *document) {
 
 	emit_event("select_to_matching");
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->SelectToMatchingCharacter(area);
 	}
 }
@@ -3514,7 +3514,7 @@ void MainWindow::on_action_Load_Macro_File_triggered() {
 void MainWindow::action_Print(DocumentWidget *document) {
 
 	emit_event("print");
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->printWindow(area, /*selectedOnly=*/false);
 	}
 }
@@ -3536,7 +3536,7 @@ void MainWindow::on_action_Print_triggered() {
 void MainWindow::action_Print_Selection(DocumentWidget *document) {
 
 	emit_event("print_selection");
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->printWindow(area, /*selectedOnly=*/true);
 	}
 }
@@ -5199,7 +5199,7 @@ void MainWindow::action_Execute_Command_Line(DocumentWidget *document) {
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->execCursorLine(area, CommandSource::User);
 	}
 }
@@ -5375,7 +5375,7 @@ void MainWindow::action_Find(DocumentWidget *document, const QString &string, Di
 
 	emit_event("find", string, to_string(direction), to_string(type), to_string(searchWrap));
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		SearchAndSelectEx(
 					document,
 					area,
@@ -5443,7 +5443,7 @@ void MainWindow::action_Replace(DocumentWidget *document, const QString &searchS
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		SearchAndReplaceEx(
 					document,
 					area,
@@ -5550,7 +5550,7 @@ void MainWindow::action_Replace_All(DocumentWidget *document, const QString &sea
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		ReplaceAllEx(document,
 					 area,
 					 searchString,
@@ -5571,7 +5571,7 @@ void MainWindow::action_Show_Tip(DocumentWidget *document, const QString &argume
 		emit_event("show_tip");
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->FindDefCalltip(area, argument);
 	}
 }
@@ -5587,7 +5587,7 @@ void MainWindow::action_Find_Definition(DocumentWidget *document, const QString 
 		emit_event("find_definition");
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->findDefinition(area, argument);
 	}
 }
@@ -5697,7 +5697,7 @@ void MainWindow::action_Execute_Command(DocumentWidget *document, const QString 
 	}
 
 	if(!command.isEmpty()) {
-		if(QPointer<TextArea> area = lastFocus_) {
+		if(QPointer<TextArea> area = lastFocus()) {
 			document->execAP(area, command);
 		}
 	}
@@ -5757,7 +5757,7 @@ void MainWindow::shellTriggered(QAction *action) {
  */
 void MainWindow::action_Shell_Menu_Command(DocumentWidget *document, const QString &name) {
 	emit_event("shell_menu_command", name);
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		DoNamedShellMenuCmd(document, area, name, CommandSource::User);
 	}
 }
@@ -5799,7 +5799,7 @@ void MainWindow::macroTriggered(QAction *action) {
  */
 void MainWindow::action_Macro_Menu_Command(DocumentWidget *document, const QString &name) {
 	emit_event("macro_menu_command", name);
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		DoNamedMacroMenuCmd(document, area, name, CommandSource::User);
 	}
 }
@@ -6496,7 +6496,7 @@ void MainWindow::action_Replace_Find(DocumentWidget *document, const QString &se
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		ReplaceAndSearchEx(
 					document,
 					area,
@@ -6566,7 +6566,7 @@ void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QSt
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		ReplaceInSelectionEx(
 					document,
 					area,
@@ -7142,7 +7142,7 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
 	}
 
 	if(!area) {
-		area = lastFocus_;
+		area = lastFocus();
 		if(!area) {
 			area = document->firstPane();
 			Q_ASSERT(area);

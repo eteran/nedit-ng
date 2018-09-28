@@ -1587,7 +1587,7 @@ void DocumentWidget::Undo() {
 		if (!buffer_->primary.selected || Preferences::GetPrefUndoModifiesSelection()) {
 			/* position the cursor in the focus pane after the changed text
 			   to show the user where the undo was done */
-			if(QPointer<TextArea> area = win->lastFocus_) {
+			if(QPointer<TextArea> area = win->lastFocus()) {
 				area->TextSetCursorPos(undo.startPos + restoredTextLength);
 			}
 		}
@@ -1600,7 +1600,7 @@ void DocumentWidget::Undo() {
 			}
 		}
 
-		if(QPointer<TextArea> area = win->lastFocus_) {
+		if(QPointer<TextArea> area = win->lastFocus()) {
 			MakeSelectionVisible(area);
 		}
 
@@ -1640,7 +1640,7 @@ void DocumentWidget::Redo() {
 		if (!buffer_->primary.selected || Preferences::GetPrefUndoModifiesSelection()) {
 			/* position the cursor in the focus pane after the changed text
 			   to show the user where the undo was done */
-			if(QPointer<TextArea> area = win->lastFocus_) {
+			if(QPointer<TextArea> area = win->lastFocus()) {
 				area->TextSetCursorPos(redo.startPos + restoredTextLength);
 			}
 		}
@@ -1654,8 +1654,8 @@ void DocumentWidget::Redo() {
 			}
 		}
 
-		if(QPointer<TextArea> area = win->lastFocus_) {
-			MakeSelectionVisible(win->lastFocus_);
+		if(QPointer<TextArea> area = win->lastFocus()) {
+			MakeSelectionVisible(area);
 		}
 
 		/* restore the file's unmodified status if the file was unmodified
@@ -4673,14 +4673,14 @@ void DocumentWidget::filterSelection(const QString &command, CommandSource sourc
 	const TextCursor right = buffer_->primary.end;
 
 	issueCommand(
-				window,
-				window->lastFocus_,
-				command,
-				QString::fromStdString(text),
-				ACCUMULATE | ERROR_DIALOGS | REPLACE_SELECTION,
-				left,
-				right,
-				source);
+	            window,
+	            window->lastFocus(),
+	            command,
+	            QString::fromStdString(text),
+	            ACCUMULATE | ERROR_DIALOGS | REPLACE_SELECTION,
+	            left,
+	            right,
+	            source);
 }
 
 /*
