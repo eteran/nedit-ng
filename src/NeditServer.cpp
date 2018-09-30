@@ -39,8 +39,6 @@ bool isLocatedOnDesktop(MainWindow *window, long currentDesktop) {
  */
 MainWindow *findWindowOnDesktop(int tabbed, long currentDesktop) {
 
-	const std::vector<MainWindow *> windows = MainWindow::allWindows();
-
 	if (tabbed == 0 || (tabbed == -1 && !Preferences::GetPrefOpenInTab())) {
 		/* A new window is requested, unless we find an untitled unmodified
 			document on the current desktop */
@@ -51,27 +49,27 @@ MainWindow *findWindowOnDesktop(int tabbed, long currentDesktop) {
 				continue;
 			}
 
-			auto window = MainWindow::fromDocument(document);
-
-			// No check for top document here!
-			if (isLocatedOnDesktop(window, currentDesktop)) {
-				return window;
-			}
+			return MainWindow::fromDocument(document);
 		}
 	} else {
+
+		const std::vector<MainWindow *> windows = MainWindow::allWindows();
+
 		// Find a window on the current desktop to hold the new document
 		for(MainWindow *window : windows) {
 			if (isLocatedOnDesktop(window, currentDesktop)) {
 				return window;
 			}
 		}
+
+		// if no window/document was found on the current desktop, then if there
+		// is one available on ANY desktop, we'll use it.
+		if(!windows.empty()) {
+			return windows.front();
+		}
 	}
 
-	// if no window/document was found on the current desktop, then if there
-	// is one available on ANY desktop, we'll use it.
-	if(!windows.empty()) {
-		return windows.front();
-	}
+
 
 	// No window found on current desktop -> create new window
 	return nullptr;
