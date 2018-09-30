@@ -21,11 +21,25 @@
 
 namespace {
 
-bool isLocatedOnDesktopEx(MainWindow *window, long currentDesktop) {
+/**
+ * @brief isLocatedOnDesktop
+ * @param window
+ * @param currentDesktop
+ * @return
+ */
+bool isLocatedOnDesktop(MainWindow *window, long currentDesktop) {
 	return QApplication::desktop()->screenNumber(window) == currentDesktop;
 }
 
-MainWindow *findWindowOnDesktopEx(int tabbed, long currentDesktop) {
+/**
+ * @brief findWindowOnDesktop
+ * @param tabbed
+ * @param currentDesktop
+ * @return
+ */
+MainWindow *findWindowOnDesktop(int tabbed, long currentDesktop) {
+
+	const std::vector<MainWindow *> windows = MainWindow::allWindows();
 
 	if (tabbed == 0 || (tabbed == -1 && !Preferences::GetPrefOpenInTab())) {
 		/* A new window is requested, unless we find an untitled unmodified
@@ -40,18 +54,23 @@ MainWindow *findWindowOnDesktopEx(int tabbed, long currentDesktop) {
 			auto window = MainWindow::fromDocument(document);
 
 			// No check for top document here!
-			if (isLocatedOnDesktopEx(window, currentDesktop)) {
+			if (isLocatedOnDesktop(window, currentDesktop)) {
 				return window;
 			}
 		}
 	} else {
 		// Find a window on the current desktop to hold the new document
-		const std::vector<MainWindow *> windows = MainWindow::allWindows();
 		for(MainWindow *window : windows) {
-			if (isLocatedOnDesktopEx(window, currentDesktop)) {
+			if (isLocatedOnDesktop(window, currentDesktop)) {
 				return window;
 			}
 		}
+	}
+
+	// if no window/document was found on the current desktop, then if there
+	// is one available on ANY desktop, we'll use it.
+	if(!windows.empty()) {
+		return windows.front();
 	}
 
 	// No window found on current desktop -> create new window
@@ -113,7 +132,7 @@ void NeditServer::newConnection() {
 		std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 		auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *document) {
-		    return (!document->filenameSet_ && !document->fileChanged_ && isLocatedOnDesktopEx(MainWindow::fromDocument(document), currentDesktop));
+		    return (!document->filenameSet_ && !document->fileChanged_ && isLocatedOnDesktop(MainWindow::fromDocument(document), currentDesktop));
 		});
 
 		if (it == documents.end()) {
@@ -121,7 +140,7 @@ void NeditServer::newConnection() {
 			const int tabbed = -1;
 
 			MainWindow::EditNewFile(
-						findWindowOnDesktopEx(tabbed, currentDesktop),
+			            findWindowOnDesktop(tabbed, currentDesktop),
 						QString(),
 						false,
 						QString(),
@@ -163,14 +182,14 @@ void NeditServer::newConnection() {
 			std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 			auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *w) {
-				return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktopEx(MainWindow::fromDocument(w), currentDesktop));
+			    return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktop(MainWindow::fromDocument(w), currentDesktop));
 			});
 
 			if (doCommand.isEmpty()) {
 				if (it == documents.end()) {
 
 					MainWindow::EditNewFile(
-								findWindowOnDesktopEx(tabbed, currentDesktop),
+					            findWindowOnDesktop(tabbed, currentDesktop),
 								QString(),
 								iconicFlag,
 								langMode.isEmpty() ? QString() : langMode,
@@ -230,7 +249,7 @@ void NeditServer::newConnection() {
 			   items. The current file may also be raised if there're
 			   macros to execute on. */
 
-			MainWindow *window = findWindowOnDesktopEx(tabbed, currentDesktop);
+			MainWindow *window = findWindowOnDesktop(tabbed, currentDesktop);
 
 			document = DocumentWidget::EditExistingFileEx(
 			               window ? window->currentDocument() : nullptr,
