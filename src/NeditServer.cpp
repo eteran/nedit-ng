@@ -49,7 +49,10 @@ MainWindow *findWindowOnDesktop(int tabbed, long currentDesktop) {
 				continue;
 			}
 
-			return MainWindow::fromDocument(document);
+			MainWindow *window = MainWindow::fromDocument(document);
+			if (isLocatedOnDesktop(window, currentDesktop)) {
+				return window;
+			}
 		}
 	} else {
 
@@ -68,8 +71,6 @@ MainWindow *findWindowOnDesktop(int tabbed, long currentDesktop) {
 			return windows.front();
 		}
 	}
-
-
 
 	// No window found on current desktop -> create new window
 	return nullptr;
