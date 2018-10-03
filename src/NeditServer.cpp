@@ -23,21 +23,21 @@ namespace {
 
 /**
  * @brief isLocatedOnDesktop
- * @param window
+ * @param widget
  * @param currentDesktop
  * @return
  */
-bool isLocatedOnDesktop(MainWindow *window, long currentDesktop) {
-	return QApplication::desktop()->screenNumber(window) == currentDesktop;
+bool isLocatedOnDesktop(QWidget *widget, long currentDesktop) {
+	return QApplication::desktop()->screenNumber(widget) == currentDesktop;
 }
 
 /**
- * @brief findWindowOnDesktop
+ * @brief findDocumentOnDesktop
  * @param tabbed
  * @param currentDesktop
  * @return
  */
-MainWindow *findWindowOnDesktop(int tabbed, long currentDesktop) {
+DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
 
 	if (tabbed == 0 || (tabbed == -1 && !Preferences::GetPrefOpenInTab())) {
 		/* A new window is requested, unless we find an untitled unmodified
@@ -49,9 +49,8 @@ MainWindow *findWindowOnDesktop(int tabbed, long currentDesktop) {
 				continue;
 			}
 
-			MainWindow *window = MainWindow::fromDocument(document);
-			if (isLocatedOnDesktop(window, currentDesktop)) {
-				return window;
+			if (isLocatedOnDesktop(document, currentDesktop)) {
+				return document;
 			}
 		}
 	} else {
@@ -61,14 +60,8 @@ MainWindow *findWindowOnDesktop(int tabbed, long currentDesktop) {
 		// Find a window on the current desktop to hold the new document
 		for(MainWindow *window : windows) {
 			if (isLocatedOnDesktop(window, currentDesktop)) {
-				return window;
+				return window->currentDocument();
 			}
-		}
-
-		// if no window/document was found on the current desktop, then if there
-		// is one available on ANY desktop, we'll use it.
-		if(!windows.empty()) {
-			return windows.front();
 		}
 	}
 
@@ -139,11 +132,11 @@ void NeditServer::newConnection() {
 			const int tabbed = -1;
 
 			MainWindow::EditNewFile(
-			            findWindowOnDesktop(tabbed, currentDesktop),
-						QString(),
-						false,
-						QString(),
-						QString());
+			            MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop)),
+			            QString(),
+			            false,
+			            QString(),
+			            QString());
 
 			MainWindow::CheckCloseEnableState();
 		} else {
@@ -161,16 +154,16 @@ void NeditServer::newConnection() {
 
 		auto file = entry.toObject();
 
-		const bool wait          = file[QLatin1String("wait")].toBool();
-		const int lineNum        = file[QLatin1String("line_number")].toInt();
-		const int readFlag       = file[QLatin1String("read")].toInt();
-		const int createFlag     = file[QLatin1String("create")].toInt();
-		const int iconicFlag     = file[QLatin1String("iconic")].toInt();
-		const int tabbed         = file[QLatin1String("is_tabbed")].toInt();
-		const QString fullname   = file[QLatin1String("path")].toString();
-		const QString doCommand  = file[QLatin1String("toDoCommand")].toString();
-		const QString langMode   = file[QLatin1String("langMode")].toString();
-		const QString geometry   = file[QLatin1String("geometry")].toString();
+		const bool wait            = file[QLatin1String("wait")].toBool();
+		const int lineNum          = file[QLatin1String("line_number")].toInt();
+		const int readFlag         = file[QLatin1String("read")].toInt();
+		const int createFlag       = file[QLatin1String("create")].toInt();
+		const int iconicFlag       = file[QLatin1String("iconic")].toInt();
+		const int tabbed           = file[QLatin1String("is_tabbed")].toInt();
+		const QString fullname     = file[QLatin1String("path")].toString();
+		const QString doCommand    = file[QLatin1String("toDoCommand")].toString();
+		const QString languageMode = file[QLatin1String("langMode")].toString();
+		const QString geometry     = file[QLatin1String("geometry")].toString();
 
 		/* An empty file name means:
 		 *   put up an empty, Untitled window, or use an existing one
@@ -188,11 +181,11 @@ void NeditServer::newConnection() {
 				if (it == documents.end()) {
 
 					MainWindow::EditNewFile(
-					            findWindowOnDesktop(tabbed, currentDesktop),
-								QString(),
-								iconicFlag,
-								langMode.isEmpty() ? QString() : langMode,
-								QString());
+					            MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop)),
+					            QString(),
+					            iconicFlag,
+					            languageMode.isEmpty() ? QString() : languageMode,
+					            QString());
 				} else {
 					if (iconicFlag) {
 						(*it)->raiseDocument();
@@ -248,16 +241,14 @@ void NeditServer::newConnection() {
 			   items. The current file may also be raised if there're
 			   macros to execute on. */
 
-			MainWindow *window = findWindowOnDesktop(tabbed, currentDesktop);
-
 			document = DocumentWidget::EditExistingFileEx(
-			               window ? window->currentDocument() : nullptr,
+			               findDocumentOnDesktop(tabbed, currentDesktop),
 			               filename,
 			               pathname,
 			               editFlags,
 			               geometry,
 			               iconicFlag,
-			               langMode.isEmpty() ? QString() : langMode,
+			               languageMode.isEmpty() ? QString() : languageMode,
 			               tabbed == -1 ? Preferences::GetPrefOpenInTab() : tabbed,
 			               /*bgOpen=*/true);
 
