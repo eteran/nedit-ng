@@ -4684,6 +4684,7 @@ DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geome
 	}
 
 	Q_ASSERT(window);
+	Q_ASSERT(document);
 
 	document->filename_ = name;
 	document->setPath(!defaultPath.isEmpty() ? defaultPath : QDir::currentPath());

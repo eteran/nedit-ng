@@ -180,8 +180,8 @@ void NeditServer::newConnection() {
 
 			std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
-			auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *w) {
-			    return (!w->filenameSet_ && !w->fileChanged_ && isLocatedOnDesktop(MainWindow::fromDocument(w), currentDesktop));
+			auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *doc) {
+			    return (!doc->filenameSet_ && !doc->fileChanged_ && isLocatedOnDesktop(MainWindow::fromDocument(doc), currentDesktop));
 			});
 
 			if (doCommand.isEmpty()) {
