@@ -4,15 +4,16 @@ project (nedit CXX)
 
 enable_testing()
 
-option(ENABLE_PROFILING "Enable profiling")
-option(ENABLE_ASAN      "Enable address santiziers")
-option(ENABLE_USAN      "Enable undefined santiziers")
-option(ENABLE_MSAN      "Enable memory santiziers")
-option(ENABLE_TSAN      "Enable thread santiziers")
-option(ENABLE_LTO       "Enable Link Time Optimization")
-option(ENABLE_STL_DEBUG "Enable STL container debugging")
-option(PURIFY           "Fill Unused TextBuffer space")
+option(ENABLE_PROFILING     "Enable profiling")
+option(ENABLE_ASAN          "Enable address santiziers")
+option(ENABLE_USAN          "Enable undefined santiziers")
+option(ENABLE_MSAN          "Enable memory santiziers")
+option(ENABLE_TSAN          "Enable thread santiziers")
+option(ENABLE_LTO           "Enable Link Time Optimization")
+option(ENABLE_STL_DEBUG     "Enable STL container debugging")
+option(PURIFY               "Fill Unused TextBuffer space")
 
+set(PER_TAB_CLOSE    OFF CACHE BOOL "Per Tab Close Buttons")
 set(VISUAL_CTRL_CHARS ON CACHE BOOL "Visualize ASCII Control Characters")
 
 if(ENABLE_STL_DEBUG)
@@ -63,6 +64,10 @@ endif()
 
 if(VISUAL_CTRL_CHARS)
 	add_definitions(-DVISUAL_CTRL_CHARS)
+endif()
+
+if(PER_TAB_CLOSE)
+	add_definitions(-DPER_TAB_CLOSE)
 endif()
 
 add_definitions(-DQT_NO_CAST_FROM_ASCII)

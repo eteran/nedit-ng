@@ -323,6 +323,7 @@ void MainWindow::parseGeometry(QString geometry) {
  * @brief MainWindow::setupTabBar
  */
 void MainWindow::setupTabBar() {
+#ifndef PER_TAB_CLOSE
 	// create and hook up the tab close button
 	auto deleteTabButton = new QToolButton(ui.tabWidget);
 	deleteTabButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
@@ -333,6 +334,9 @@ void MainWindow::setupTabBar() {
 	ui.tabWidget->setCornerWidget(deleteTabButton);
 
 	connect(deleteTabButton, &QToolButton::clicked, this, &MainWindow::on_action_Close_triggered);
+#else
+	ui.tabWidget->setTabsClosable(true);
+#endif
 	ui.tabWidget->tabBar()->installEventFilter(this);
 }
 
@@ -1155,7 +1159,7 @@ std::vector<DocumentWidget *> MainWindow::openDocuments() const {
 	documents.reserve(count);
 
 	for(size_t i = 0; i < count; ++i) {
-		if(auto document = documentAt(i)) {
+		if(auto document = documentAt(gsl::narrow<int>(i))) {
 			documents.push_back(document);
 		}
 	}
@@ -1907,7 +1911,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
 
 		if(QAction *const selected = menu->exec(ui.tabWidget->tabBar()->mapToGlobal(pos))) {
 
-			if(DocumentWidget *document = documentAt(static_cast<size_t>(index))) {
+			if(DocumentWidget *document = documentAt(index)) {
 
 				if(selected == newTab) {
 					action_New(document, NewMode::Prefs);
@@ -3633,8 +3637,8 @@ DocumentWidget *MainWindow::currentDocument() const {
  * @param index
  * @return
  */
-DocumentWidget *MainWindow::documentAt(size_t index) const {
-	return qobject_cast<DocumentWidget *>(ui.tabWidget->widget(gsl::narrow<int>(index)));
+DocumentWidget *MainWindow::documentAt(int index) const {
+	return qobject_cast<DocumentWidget *>(ui.tabWidget->widget(index));
 }
 
 /**
@@ -4624,7 +4628,7 @@ void MainWindow::action_Prev_Document() {
 
 			// raise the window set the focus to the first document in it
 			MainWindow *nextWindow = *nextIndex;
-			DocumentWidget *lastWidget = nextWindow->documentAt(static_cast<size_t>(nextWindow->tabWidget()->count() - 1));
+			DocumentWidget *lastWidget = nextWindow->documentAt(nextWindow->tabWidget()->count() - 1);
 
 			Q_ASSERT(lastWidget);
 
@@ -7245,3 +7249,11 @@ void MainWindow::updateWindowTitle(DocumentWidget *document) {
 	// Update the Windows menus with the new name
 	MainWindow::UpdateWindowMenus();
 }
+
+#ifdef PER_TAB_CLOSE
+void MainWindow::on_tabWidget_tabCloseRequested(int index) {
+	if(DocumentWidget *document = documentAt(index)) {
+		action_Close(document, CloseMode::Prompt);
+	}
+}
+#endif
