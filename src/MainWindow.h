@@ -132,6 +132,7 @@ public:
 	static void AllDocumentsBusy(const QString &message);
 	static void AllDocumentsUnbusy();
 	static void CheckCloseEnableState();
+	static void CheckCloseEnableState(const std::vector<MainWindow *> &windows);
 	static void invalidatePrevOpenMenus();
 	static void ReadNEditDB();
 	static void RenameHighlightPattern(const QString &oldName, const QString &newName);

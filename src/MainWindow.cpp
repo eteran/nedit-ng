@@ -244,9 +244,14 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 
 	ui.action_Statistics_Line->setChecked(Preferences::GetPrefStatsLine());
 
-	MainWindow::CheckCloseEnableState();
+	// make sure we include this windows which is in the middle of being created
+	std::vector<MainWindow *> windows = MainWindow::allWindows();
+	auto it = std::find(windows.begin(), windows.end(), this);
+	if(it == windows.end()) {
+		windows.push_back(this);
+	}
 
-	const std::vector<MainWindow *> windows = MainWindow::allWindows(/*includeInvisible=*/true);
+	MainWindow::CheckCloseEnableState(windows);
 	const bool enabled = windows.size() > 1;
 	for(MainWindow *window : windows) {
 		window->ui.action_Move_Tab_To->setEnabled(enabled);
@@ -1171,10 +1176,7 @@ std::vector<DocumentWidget *> MainWindow::openDocuments() const {
 ** current set of windows.  It should be disabled only for the last Untitled,
 ** unmodified, editor window, and enabled otherwise.
 */
-void MainWindow::CheckCloseEnableState() {
-
-	const std::vector<MainWindow *> windows = MainWindow::allWindows();
-
+void MainWindow::CheckCloseEnableState(const std::vector<MainWindow *> &windows) {
 	if(windows.empty()) {
 		return;
 	}
@@ -1196,6 +1198,11 @@ void MainWindow::CheckCloseEnableState() {
 			window->ui.action_Close->setEnabled(true);
 		}
 	}
+}
+
+void MainWindow::CheckCloseEnableState() {
+	const std::vector<MainWindow *> windows = MainWindow::allWindows();
+	CheckCloseEnableState(windows);
 }
 
 /*
