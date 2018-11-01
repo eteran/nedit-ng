@@ -593,12 +593,16 @@ void DocumentWidget::RefreshTabState() {
 
 			const int absTruncate = std::abs(Settings::truncateLongNamesInTabs);
 
-			if(filename.size() > absTruncate) {
-				if(Settings::truncateLongNamesInTabs > 0) {
-					filename = tr("%1%2").arg(QLatin1String("..."), filename.right(absTruncate - 3));
-				} else {
-					filename = tr("%1%2").arg(filename.left(absTruncate - 3), QLatin1String("..."));
+			if(absTruncate > 3) {
+				if(filename.size() > absTruncate) {
+					if(Settings::truncateLongNamesInTabs > 0) {
+						filename = tr("%1%2").arg(QLatin1String("..."), filename.right(absTruncate - 3));
+					} else {
+						filename = tr("%1%2").arg(filename.left(absTruncate - 3), QLatin1String("..."));
+					}
 				}
+			} else {
+				qDebug("NEdit: tab truncation is set to an unreasonably short value, try a value with a magnitude greater than 3");
 			}
 		}
 
