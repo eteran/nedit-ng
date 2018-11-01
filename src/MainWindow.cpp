@@ -50,6 +50,7 @@
 #include <QMimeData>
 #include <QShortcut>
 #include <QButtonGroup>
+#include <QToolTip>
 #include <qplatformdefs.h>
 
 #include <cmath>
@@ -5365,11 +5366,44 @@ void MainWindow::on_action_Help_triggered() {
  */
 bool MainWindow::eventFilter(QObject *object, QEvent *event) {
 
-	if(qobject_cast<QTabBar*>(object)) {
+	if(auto tabBar = qobject_cast<QTabBar *>(object)) {
 		if(event->type() == QEvent::ToolTip) {
-			if(!Preferences::GetPrefToolTips()) {
-				return true;
+			if(Preferences::GetPrefToolTips()) {
+
+				int index = tabBar->tabAt(static_cast<QHelpEvent*>(event)->pos());
+				if(index != -1) {
+
+					if(DocumentWidget *document = documentAt(index)) {
+
+						QString labelString;
+						QString filename = document->filename_;
+
+						/* Set tab label to document's filename. Position of "*" (modified)
+						 * will change per label alignment setting */
+						QStyle *const style = ui.tabWidget->tabBar()->style();
+						const int alignment = style->styleHint(QStyle::SH_TabBar_Alignment);
+
+						if (alignment != Qt::AlignRight) {
+							labelString = tr("%1%2").arg(document->fileChanged_ ? tr("*") : QString(), filename);
+						} else {
+							labelString = tr("%2%1").arg(document->fileChanged_ ? tr("*") : QString(), filename);
+						}
+
+
+						QString tipString;
+						if (Preferences::GetPrefShowPathInWindowsMenu() && document->filenameSet_) {
+							tipString = tr("%1 - %2").arg(labelString, document->path_);
+						} else {
+							tipString = labelString;
+						}
+
+						QToolTip::showText(static_cast<QHelpEvent*>(event)->globalPos(), tipString, this);
+					}
+				}
+
+
 			}
+			return true;
 		}
 	}
 

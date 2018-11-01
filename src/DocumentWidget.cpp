@@ -588,11 +588,24 @@ void DocumentWidget::RefreshTabState() {
 		int index = tabWidget->indexOf(this);
 
 		QString labelString;
+		QString filename = filename_;
+		if(Settings::truncateLongNamesInTabs != 0) {
+
+			const int absTruncate = std::abs(Settings::truncateLongNamesInTabs);
+
+			if(filename.size() > absTruncate) {
+				if(Settings::truncateLongNamesInTabs > 0) {
+					filename = tr("%1%2").arg(QLatin1String("..."), filename.right(absTruncate - 3));
+				} else {
+					filename = tr("%1%2").arg(filename.left(absTruncate - 3), QLatin1String("..."));
+				}
+			}
+		}
 
 		static const auto saveIcon = QIcon::fromTheme(QLatin1String("document-save"));
 		if(!saveIcon.isNull()) {
 			tabWidget->setTabIcon(index, fileChanged_ ? saveIcon : QIcon());
-			labelString = filename_;
+			labelString = filename;
 		} else {
 			/* Set tab label to document's filename. Position of "*" (modified)
 			 * will change per label alignment setting */
@@ -600,21 +613,13 @@ void DocumentWidget::RefreshTabState() {
 			const int alignment = style->styleHint(QStyle::SH_TabBar_Alignment);
 
 			if (alignment != Qt::AlignRight) {
-				labelString = tr("%1%2").arg(fileChanged_ ? tr("*") : QString(), filename_);
+				labelString = tr("%1%2").arg(fileChanged_ ? tr("*") : QString(), filename);
 			} else {
-				labelString = tr("%2%1").arg(fileChanged_ ? tr("*") : QString(), filename_);
+				labelString = tr("%2%1").arg(fileChanged_ ? tr("*") : QString(), filename);
 			}
 		}
 
-		QString tipString;
-		if (Preferences::GetPrefShowPathInWindowsMenu() && filenameSet_) {
-			tipString = tr("%1 - %2").arg(labelString, path_);
-		} else {
-			tipString = labelString;
-		}
-
 		tabWidget->setTabText(index, labelString);
-		tabWidget->setTabToolTip(index, tipString);
 	}
 }
 

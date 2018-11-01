@@ -110,6 +110,7 @@ bool Settings::honorSymlinks;
 bool Settings::stickyCaseSenseButton;
 bool Settings::typingHidesPointer;
 bool Settings::undoModifiesSelection;
+int Settings::truncateLongNamesInTabs;
 int Settings::autoScrollVPadding;
 int Settings::maxPrevOpenFiles;
 TruncSubstitution Settings::truncSubstitution;
@@ -249,6 +250,7 @@ void Settings::loadPreferences() {
 	findReplaceUsesSelection          = settings.value(tr("nedit.findReplaceUsesSelection"),      false).toBool();
 	titleFormat                       = settings.value(tr("nedit.titleFormat"),                   QLatin1String("{%c} [%s] %f (%S) - %d")).toString();
 	undoModifiesSelection             = settings.value(tr("nedit.undoModifiesSelection"),         true).toBool();
+	truncateLongNamesInTabs           = settings.value(tr("nedit.truncateLongNamesInTabs"),       0).toInt();
 	focusOnRaise                      = settings.value(tr("nedit.focusOnRaise"),                  false).toBool();
 	forceOSConversion                 = settings.value(tr("nedit.forceOSConversion"),             true).toBool();
 	honorSymlinks                     = settings.value(tr("nedit.honorSymlinks"),                 true).toBool();
@@ -340,6 +342,7 @@ void Settings::importSettings(const QString &filename) {
 	findReplaceUsesSelection          = settings.value(tr("nedit.findReplaceUsesSelection"),      findReplaceUsesSelection).toBool();
 	titleFormat                       = settings.value(tr("nedit.titleFormat"),                   titleFormat).toString();
 	undoModifiesSelection             = settings.value(tr("nedit.undoModifiesSelection"),         undoModifiesSelection).toBool();
+	truncateLongNamesInTabs           = settings.value(tr("nedit.truncateLongNamesInTabs"),       truncateLongNamesInTabs).toInt();
 	focusOnRaise                      = settings.value(tr("nedit.focusOnRaise"),                  focusOnRaise).toBool();
 	forceOSConversion                 = settings.value(tr("nedit.forceOSConversion"),             forceOSConversion).toBool();
 	honorSymlinks                     = settings.value(tr("nedit.honorSymlinks"),                 honorSymlinks).toBool();
@@ -422,6 +425,7 @@ bool Settings::savePreferences() {
 	settings.setValue(tr("nedit.findReplaceUsesSelection"), findReplaceUsesSelection);
 	settings.setValue(tr("nedit.titleFormat"), titleFormat);
 	settings.setValue(tr("nedit.undoModifiesSelection"), undoModifiesSelection);
+	settings.setValue(tr("nedit.truncateLongNamesInTabs"), truncateLongNamesInTabs);
 	settings.setValue(tr("nedit.focusOnRaise"), focusOnRaise);
 	settings.setValue(tr("nedit.forceOSConversion"), forceOSConversion);
 	settings.setValue(tr("nedit.honorSymlinks"), honorSymlinks);
