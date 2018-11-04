@@ -58,3 +58,14 @@ int DialogMoveDocument::selectionIndex() const {
 bool DialogMoveDocument::moveAllSelected() const {
 	return ui.checkMoveAll->isChecked();
 }
+
+/**
+ * @brief DialogMoveDocument::on_listWindows_itemDoubleClicked
+ * @param item
+ */
+void DialogMoveDocument::on_listWindows_itemDoubleClicked(QListWidgetItem *item) {
+
+	Q_UNUSED(item);
+	accept();
+
+}
