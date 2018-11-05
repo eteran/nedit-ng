@@ -41,11 +41,7 @@ template <class Length, class = IsInteger<Length>>
 void ConvertFromMac(char *text, Length length) {
 
 	Q_ASSERT(text);
-	for(Length i = 0; i < length; ++i) {
-		if(text[i] == '\r') {
-			text[i] = '\n';
-		}
-	}
+	std::replace(text, text + length, '\r', '\n');
 }
 
 /**

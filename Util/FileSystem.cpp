@@ -192,12 +192,7 @@ void ConvertToDos(std::string &text) {
 ** from Unix to Macintosh format.
 */
 void ConvertToMac(std::string &text) {
-
-	for(char &ch : text) {
-		if (ch == '\n') {
-			ch = '\r';
-		}
-	}
+	std::replace(text.begin(), text.end(), '\n', '\r');
 }
 
 /**
@@ -205,11 +200,7 @@ void ConvertToMac(std::string &text) {
  * @param text
  */
 void ConvertFromMac(std::string &text) {
-	for(char &ch : text) {
-		if (ch == '\r') {
-			ch = '\n';
-		}
-	}
+	std::replace(text.begin(), text.end(), '\r', '\n');
 }
 
 /**
