@@ -2069,8 +2069,9 @@ void RegisterMacroSubroutines() {
 
 	/* Define global variables used for return values, remember their
 	   locations so they can be set without a LookupSymbol call */
-	for (unsigned int i = 0; i < N_RETURN_GLOBALS; i++)
+	for (unsigned int i = 0; i < N_RETURN_GLOBALS; i++) {
 		ReturnGlobals[i] = InstallSymbol(ReturnGlobalNames[i], GLOBAL_SYM, make_value());
+	}
 }
 
 

@@ -501,6 +501,7 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
 	continuousWrap_          = document->wrapMode_ == WrapStyle::Continuous;
 	overstrike_              = document->overstrike_;
 	hidePointer_             = Preferences::GetPrefTypingHidesPointer();
+	smartHome_               = Preferences::GetPrefSmartHome();
 
 	calltip_.ID = 0;
 
@@ -671,15 +672,15 @@ void TextArea::beginningOfLineAP(EventFlags flags) {
 
 		TextCursor lineStart = TextDStartOfLine(insertPos);
 
-		// TODO(eteran): if we are already at the begining of the line
-		// jump to the end of the leading whitespace
-#if 0
-		if(lineStart == insertPos) {
+		if(smartHome_) {
+			// if the user presses home, go to the first non-whitespace character
+			// if they are already there, go to the actual begining of the line
 			if(boost::optional<TextCursor> p = spanForward(buffer_, lineStart, " \t", false)) {
-				lineStart = *p;
+				if(p != insertPos) {
+					lineStart = *p;
+				}
 			}
 		}
-#endif
 		setInsertPosition(lineStart);
 	}
 

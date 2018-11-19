@@ -5,16 +5,20 @@
 #include <string>
 #include "string_view.h"
 #include <QtGlobal>
-
-class QString;
+#include <QString>
 
 enum class FileFormats : int;
+
+struct PathInfo {
+	QString pathname;
+	QString filename;
+};
 
 FileFormats FormatOfFile(view::string_view text);
 QString GetTrailingPathComponents(const QString &path, int noOfComponents);
 QString NormalizePathname(const QString &pathname);
 QString ReadAnyTextFile(const QString &fileName, bool forceNL);
-bool parseFilename(const QString &fullname, QString *filename, QString *pathname);
+bool parseFilename(const QString &fullname, PathInfo *fileInfo);
 
 // std::string based convesions
 void ConvertToMac(std::string &text);

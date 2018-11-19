@@ -75,6 +75,7 @@ bool Settings::toolTips;
 bool Settings::warnExit;
 bool Settings::warnFileMods;
 bool Settings::warnRealFileMods;
+bool Settings::smartHome;
 int Settings::fileVersion;
 IndentStyle Settings::autoIndent;
 WrapStyle Settings::autoWrap;
@@ -226,6 +227,7 @@ void Settings::loadPreferences() {
 	warnRealFileMods       = settings.value(tr("nedit.warnRealFileMods"),       true).toBool();
 	warnExit               = settings.value(tr("nedit.warnExit"),               true).toBool();
 	showResizeNotification = settings.value(tr("nedit.showResizeNotification"), false).toBool();
+	smartHome              = settings.value(tr("nedit.smartHome"),              false).toBool();
 
 	textRows                          = settings.value(tr("nedit.textRows"),                      24).toInt();
 	textCols                          = settings.value(tr("nedit.textCols"),                      80).toInt();
@@ -318,6 +320,7 @@ void Settings::importSettings(const QString &filename) {
 	warnFileMods          = settings.value(tr("nedit.warnFileMods"),          warnFileMods).toBool();
 	warnRealFileMods      = settings.value(tr("nedit.warnRealFileMods"),      warnRealFileMods).toBool();
 	warnExit              = settings.value(tr("nedit.warnExit"),              warnExit).toBool();
+	smartHome             = settings.value(tr("nedit.smartHome"),             smartHome).toBool();
 
 	textRows                          = settings.value(tr("nedit.textRows"),                      textRows).toInt();
 	textCols                          = settings.value(tr("nedit.textCols"),                      textCols).toInt();
@@ -401,6 +404,7 @@ bool Settings::savePreferences() {
 	settings.setValue(tr("nedit.warnFileMods"), warnFileMods);
 	settings.setValue(tr("nedit.warnRealFileMods"), warnRealFileMods);
 	settings.setValue(tr("nedit.warnExit"), warnExit);
+	settings.setValue(tr("nedit.smartHome"), smartHome);
 
 	settings.setValue(tr("nedit.textRows"), textRows);
 	settings.setValue(tr("nedit.textCols"), textCols);

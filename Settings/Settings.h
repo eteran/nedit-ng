@@ -74,6 +74,7 @@ public:
 	static bool warnExit;
 	static bool warnFileMods;
 	static bool warnRealFileMods;
+	static bool smartHome;
 	static int fileVersion;
 	static IndentStyle autoIndent;
 	static WrapStyle autoWrap;

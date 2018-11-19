@@ -156,8 +156,6 @@ void printNcVersion() {
 boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 
 	CommandLine commandLine;
-	QString name;
-	QString path;
 	QString toDoCommand;
 	QString langMode;
 	QString geometry;
@@ -260,12 +258,16 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			fprintf(stderr, "nc-ng: Unrecognized option %s\n%s", qPrintable(args[i]), cmdLineHelp);
 			exit(EXIT_FAILURE);
 		} else {
-			if (!parseFilename(args[i], &name, &path)) {
+
+			PathInfo fi;
+
+			// this just essentially checks that the path is sane
+			if (!parseFilename(args[i], &fi)) {
 				// An Error, most likely too long paths/strings given
 				return boost::none;
 			}
 
-			path.append(name);
+			const QString path = fi.pathname + fi.filename;
 
 			int isTabbed;
 

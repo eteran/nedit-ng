@@ -75,8 +75,6 @@ Main::Main(const QStringList &args) {
 	int isTabbed;
 	QString geometry;
 	QString langMode;
-	QString filename;
-	QString pathname;
 	QString toDoCommand;
 	QPointer<DocumentWidget> lastFile;
 
@@ -253,7 +251,9 @@ Main::Main(const QStringList &args) {
 			exit(EXIT_FAILURE);
 		} else {
 
-			if (parseFilename(args[i], &filename, &pathname)) {
+			PathInfo fi;
+
+			if (parseFilename(args[i], &fi)) {
 				/* determine if file is to be openned in new tab, by
 				   factoring the options -group, -tabbed & -untabbed */
 				switch(group) {
@@ -280,8 +280,8 @@ Main::Main(const QStringList &args) {
 				if(MainWindow *window = MainWindow::firstWindow()) {
 					document = DocumentWidget::EditExistingFileEx(
 					               window->currentDocument(),
-					               filename,
-					               pathname,
+					               fi.filename,
+					               fi.pathname,
 					               editFlags,
 					               geometry,
 					               iconic,
@@ -291,8 +291,8 @@ Main::Main(const QStringList &args) {
 				} else {
 					document = DocumentWidget::EditExistingFileEx(
 					               nullptr,
-					               filename,
-					               pathname,
+					               fi.filename,
+					               fi.pathname,
 					               editFlags,
 					               geometry,
 					               iconic,

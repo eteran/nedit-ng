@@ -56,6 +56,7 @@ public:
 	static bool GetPrefTabBar();
 	static bool GetPrefUndoModifiesSelection();
 	static bool GetPrefWarnExit();
+	static bool GetPrefSmartHome();
 	static IndentStyle GetPrefAutoIndent(size_t langMode);
 	static int GetPrefCols();
 	static int GetPrefEmTabDist(size_t langMode);

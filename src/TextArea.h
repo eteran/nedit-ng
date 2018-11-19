@@ -425,6 +425,7 @@ private:
 	bool overstrike_;
 	bool readOnly_;
 	bool smartIndent_;
+	bool smartHome_;
 	int cursorBlinkRate_;
 	int cursorVPadding_;
 	int emulateTabs_;
