@@ -1408,16 +1408,22 @@ bool Highlight::NamedStyleExists(const QString &styleName) {
 	return IndexOfNamedStyle(styleName) != STYLE_NOT_FOUND;
 }
 
-/*
-** Look through the list of pattern sets, and find the one for a particular
-** language.  Returns nullptr if not found.
-*/
+/**
+ * Look through the list of pattern sets, and find the one for a particular
+ * language.
+ *
+ * @brief Highlight::FindPatternSet
+ * @param languageMode
+ * @return nullptr if not found.
+ */
 PatternSet *Highlight::FindPatternSet(const QString &languageMode) {
 
-	for(PatternSet &patternSet : PatternSets) {
-		if (patternSet.languageMode == languageMode) {
-			return &patternSet;
-		}
+	auto it = std::find_if(PatternSets.begin(), PatternSets.end(), [&languageMode](PatternSet &patternSet) {
+	    return (patternSet.languageMode == languageMode);
+    });
+
+	if(it != PatternSets.end()) {
+		return &*it;
 	}
 
 	return nullptr;
