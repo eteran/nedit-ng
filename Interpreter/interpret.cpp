@@ -664,11 +664,14 @@ Symbol *InstallIteratorSymbol() {
 */
 Symbol *LookupStringConstSymbol(view::string_view value) {
 
-	for(Symbol *s : GlobalSymList) {
-		if (s->type == CONST_SYM && is_string(s->value) && to_string(s->value) == value) {
-			return s;
-		}
+	auto it = std::find_if(GlobalSymList.begin(), GlobalSymList.end(), [value](Symbol *s) {
+	    return (s->type == CONST_SYM && is_string(s->value) && to_string(s->value) == value);
+    });
+
+	if(it != GlobalSymList.end()) {
+		return *it;
 	}
+
 	return nullptr;
 }
 
@@ -702,16 +705,22 @@ Symbol *LookupSymbolEx(const QString &name) {
 
 Symbol *LookupSymbol(view::string_view name) {
 
-	for(Symbol *s : LocalSymList) {
-		if (s->name == name) {
-			return s;
-		}
+	// first look for a local symbol
+	auto local = std::find_if(LocalSymList.begin(), LocalSymList.end(), [name](Symbol *s) {
+	    return (s->name == name);
+    });
+
+	if(local != LocalSymList.end()) {
+		return *local;
 	}
 
-	for(Symbol *s : GlobalSymList) {
-		if (s->name == name) {
-			return s;
-		}
+	// then a global symbol
+	auto global = std::find_if(GlobalSymList.begin(), GlobalSymList.end(), [name](Symbol *s) {
+	    return (s->name == name);
+    });
+
+	if(global != GlobalSymList.end()) {
+		return *global;
 	}
 
 	return nullptr;

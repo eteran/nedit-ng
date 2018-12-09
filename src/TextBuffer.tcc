@@ -881,7 +881,8 @@ int64_t BasicTextBuffer<Ch, Tr>::BufCountDispChars(TextCursor lineStartPos, Text
 
 	TextCursor pos = lineStartPos;
 	while (pos < targetPos && pos < BufEndOfBuffer()) {
-		charCount += BufGetExpandedChar(pos++, charCount, expandedChar);
+		charCount += BufGetExpandedChar(pos, charCount, expandedChar);
+		++pos;
 	}
 
 	return charCount;
@@ -1029,9 +1030,11 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(TextCur
 				return pos;
 			}
 		}
+
 		if(pos == BufStartOfBuffer()) {
 			break;
 		}
+
 		--pos;
 	}
 

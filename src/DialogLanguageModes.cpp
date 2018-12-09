@@ -153,9 +153,9 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 	// previous was OK, so let's update the contents of the dialog
 	if(auto ptr = model_->itemFromIndex(current)) {
 		QStringList extensions;
-		for(const QString &extension : ptr->extensions) {
-			extensions.push_back(extension);
-		}
+		extensions.reserve(ptr->extensions.size());
+
+		std::copy(ptr->extensions.begin(), ptr->extensions.end(), std::back_inserter(extensions));
 
 		ui.editName      ->setText(ptr->name);
 		ui.editExtensions->setText(extensions.join(QLatin1Char(' ')));

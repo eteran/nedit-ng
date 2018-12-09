@@ -1915,6 +1915,11 @@ void DocumentWidget::checkForChangesToFile() {
  * @return
  */
 QString DocumentWidget::fullPath() const {
+
+	if(path_.isEmpty()) {
+		return QString();
+	}
+
 	Q_ASSERT(path_.endsWith(QLatin1Char('/')));
 	return tr("%1%2").arg(path_, filename_);
 }
