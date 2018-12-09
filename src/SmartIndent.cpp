@@ -220,7 +220,7 @@ bool loadDefaultIndentSpec(const QString &lmName) {
  * @return
  */
 QByteArray SmartIndent::defaultCommonMacros() {
-	static QByteArray defaultMacros = loadResource(QLatin1String("res/DefaultCommonMacros.txt"));
+	static QByteArray defaultMacros = loadResource(QLatin1String("DefaultCommonMacros.txt"));
 	return defaultMacros;
 }
 

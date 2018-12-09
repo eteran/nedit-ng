@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	QApplication app(argc, argv);
-	QApplication::setWindowIcon(QIcon(QLatin1String(":/res/nedit.png")));
+	QApplication::setWindowIcon(QIcon(QLatin1String(":/nedit.png")));
 
 	// NOTE: for issue #41, translate QMessageBox.
 	QTranslator qtTranslator;

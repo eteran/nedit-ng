@@ -1201,7 +1201,7 @@ void Highlight::loadTheme() {
 
 	QFile file(filename);
 	if(!file.open(QIODevice::ReadOnly)) {
-		file.setFileName(QLatin1String(":/res/DefaultStyles.xml"));
+		file.setFileName(QLatin1String(":/DefaultStyles.xml"));
 		if(!file.open(QIODevice::ReadOnly)) {
 			qFatal("NEdit: failed to open theme file!");
 		}
@@ -1705,7 +1705,7 @@ boost::optional<PatternSet> Highlight::readDefaultPatternSet(QByteArray &pattern
 boost::optional<PatternSet> Highlight::readDefaultPatternSet(const QString &langModeName) {
 	for(int i = 0; i < 28; ++i) {
 
-		auto name = QString(QLatin1String("res/DefaultPatternSet%1.txt")).arg(i, 2, 10, QLatin1Char('0'));
+		auto name = QString(QLatin1String("DefaultPatternSet%1.txt")).arg(i, 2, 10, QLatin1Char('0'));
 
 		QByteArray data = loadResource(name);
 
