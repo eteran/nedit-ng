@@ -9,7 +9,6 @@
 
 #include <QDir>
 #include <QFileInfo>
-#include <QString>
 
 namespace {
 
@@ -23,13 +22,17 @@ constexpr int FORMAT_SAMPLE_CHARS = 2000;
 
 }
 
-/*
-** Decompose a Unix file name into a file name and a path.
-** returns false if an error occured (currently, there is no error case).
-*/
-bool parseFilename(const QString &fullname, QString *filename, QString *pathname) {
+/**
+ * Decompose a Unix file name into a file name and a path.
+ *
+ * @brief parseFilename
+ * @param fullname
+ * @param fileInfo
+ * @return returns false if an error occured (currently, there is no error case).
+ */
+bool parseFilename(const QString &fullname, PathInfo *fileInfo) {
 
-	// TODO(eteran): replace the output parameters with a struct to avoid incorrect usage
+	Q_ASSERT(fileInfo);
 
 	const int fullLen = fullname.size();
 	int scanStart = -1;
@@ -48,20 +51,13 @@ bool parseFilename(const QString &fullname, QString *filename, QString *pathname
 	int pathLen = i + 1;
 	int fileLen = fullLen - pathLen;
 
-	if (pathname) {
-		*pathname = fullname.left(pathLen);
-	}
-
-	if (filename) {
-		*filename = fullname.mid(pathLen, fileLen);
-	}
-
-	if (pathname) {
-		*pathname = NormalizePathname(*pathname);
-	}
-
+	fileInfo->pathname = fullname.left(pathLen);
+	fileInfo->filename = fullname.mid(pathLen, fileLen);
+	fileInfo->pathname = NormalizePathname(fileInfo->pathname);
 	return true;
 }
+
+
 
 /**
  * @brief NormalizePathname
@@ -192,12 +188,7 @@ void ConvertToDos(std::string &text) {
 ** from Unix to Macintosh format.
 */
 void ConvertToMac(std::string &text) {
-
-	for(char &ch : text) {
-		if (ch == '\n') {
-			ch = '\r';
-		}
-	}
+	std::replace(text.begin(), text.end(), '\n', '\r');
 }
 
 /**
@@ -205,11 +196,7 @@ void ConvertToMac(std::string &text) {
  * @param text
  */
 void ConvertFromMac(std::string &text) {
-	for(char &ch : text) {
-		if (ch == '\r') {
-			ch = '\n';
-		}
-	}
+	std::replace(text.begin(), text.end(), '\r', '\n');
 }
 
 /**

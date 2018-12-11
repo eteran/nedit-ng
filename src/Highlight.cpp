@@ -1201,7 +1201,7 @@ void Highlight::loadTheme() {
 
 	QFile file(filename);
 	if(!file.open(QIODevice::ReadOnly)) {
-		file.setFileName(QLatin1String(":/res/DefaultStyles.xml"));
+		file.setFileName(QLatin1String(":/DefaultStyles.xml"));
 		if(!file.open(QIODevice::ReadOnly)) {
 			qFatal("NEdit: failed to open theme file!");
 		}
@@ -1408,16 +1408,22 @@ bool Highlight::NamedStyleExists(const QString &styleName) {
 	return IndexOfNamedStyle(styleName) != STYLE_NOT_FOUND;
 }
 
-/*
-** Look through the list of pattern sets, and find the one for a particular
-** language.  Returns nullptr if not found.
-*/
+/**
+ * Look through the list of pattern sets, and find the one for a particular
+ * language.
+ *
+ * @brief Highlight::FindPatternSet
+ * @param languageMode
+ * @return nullptr if not found.
+ */
 PatternSet *Highlight::FindPatternSet(const QString &languageMode) {
 
-	for(PatternSet &patternSet : PatternSets) {
-		if (patternSet.languageMode == languageMode) {
-			return &patternSet;
-		}
+	auto it = std::find_if(PatternSets.begin(), PatternSets.end(), [&languageMode](PatternSet &patternSet) {
+	    return (patternSet.languageMode == languageMode);
+    });
+
+	if(it != PatternSets.end()) {
+		return &*it;
 	}
 
 	return nullptr;
@@ -1705,7 +1711,7 @@ boost::optional<PatternSet> Highlight::readDefaultPatternSet(QByteArray &pattern
 boost::optional<PatternSet> Highlight::readDefaultPatternSet(const QString &langModeName) {
 	for(int i = 0; i < 28; ++i) {
 
-		auto name = QString(QLatin1String("res/DefaultPatternSet%1.txt")).arg(i, 2, 10, QLatin1Char('0'));
+		auto name = QString(QLatin1String("DefaultPatternSet%1.txt")).arg(i, 2, 10, QLatin1Char('0'));
 
 		QByteArray data = loadResource(name);
 

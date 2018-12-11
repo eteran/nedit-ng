@@ -557,7 +557,6 @@ int Tags::scanETagsLine(const QString &line, const QString &tagPath, int index, 
 */
 int Tags::loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 
-	QString tagPath;
 	int nTagsAdded = 0;
 	int tagFileType = TFT_CHECK;
 
@@ -580,7 +579,8 @@ int Tags::loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 	}
 
 	// NOTE(eteran): no error checking...
-	parseFilename(resolvedTagsFile, nullptr, &tagPath);
+	PathInfo tagPathInfo;
+	parseFilename(resolvedTagsFile, &tagPathInfo);
 
 	/* This might take a while if you have a huge tags file (like I do)..
 	   keep the windows up to date and post a busy cursor so the user
@@ -606,9 +606,9 @@ int Tags::loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 		}
 
 		if (tagFileType == TFT_CTAGS) {
-			nTagsAdded += scanCTagsLine(line, tagPath, index);
+			nTagsAdded += scanCTagsLine(line, tagPathInfo.pathname, index);
 		} else {
-			nTagsAdded += scanETagsLine(line, tagPath, index, filename, recLevel);
+			nTagsAdded += scanETagsLine(line, tagPathInfo.pathname, index, filename, recLevel);
 		}
 	}
 
@@ -1150,12 +1150,12 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
 	// find the tips file
 	// Allow ~ in Unix filenames
-	QString tipPath = ExpandTilde(tipsFile);
-	if(tipPath.isNull()) {
+	const QString tipFullPath = ExpandTilde(tipsFile);
+	if(tipFullPath.isNull()) {
 		return 0;
 	}
 
-	QFileInfo fi(tipPath);
+	QFileInfo fi(tipFullPath);
 	QString resolvedTipsFile = fi.canonicalFilePath();
 	if(resolvedTipsFile.isEmpty()) {
 		return 0;
@@ -1163,7 +1163,8 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
 	// Get the path to the tips file
 	// NOTE(eteran): no error checking...
-	parseFilename(resolvedTipsFile, nullptr, &tipPath);
+	PathInfo tipPathInfo;
+	parseFilename(resolvedTipsFile, &tipPathInfo);
 
 	QFile file(resolvedTipsFile);
 	if(!file.open(QIODevice::ReadOnly)) {
@@ -1194,7 +1195,7 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 				For the moment I'm just using line numbers because I don't
 				want to have to deal with adding escape characters for
 				regex metacharacters that might appear in the string */
-			nTipsAdded += addTag(header, resolvedTipsFile, langMode, QString(), blkLine, tipPath, index);
+			nTipsAdded += addTag(header, resolvedTipsFile, langMode, QString(), blkLine, tipPathInfo.pathname, index);
 			break;
 		case TF_INCLUDE:
 		{
@@ -1249,7 +1250,7 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
 			QStringList segments = alias.sources.split(QLatin1Char(':'));
 			for(const QString &src : segments) {
-				addTag(src, resolvedTipsFile, first_tag.language, QString(), first_tag.posInf, tipPath, index);
+				addTag(src, resolvedTipsFile, first_tag.language, QString(), first_tag.posInf, tipPathInfo.pathname, index);
 			}
 		}
 	}

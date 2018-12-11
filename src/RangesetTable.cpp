@@ -144,9 +144,9 @@ std::vector<uint8_t> RangesetTable::RangesetGetList() const {
 	std::vector<uint8_t> list;
 	list.reserve(sets_.size());
 
-	for(const Rangeset &set : sets_) {
-		list.push_back(set.label_);
-	}
+	std::transform(sets_.begin(), sets_.end(), std::back_inserter(list), [](const Rangeset &set) {
+		return set.label_;
+	});
 
 	return list;
 }

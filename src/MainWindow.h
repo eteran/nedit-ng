@@ -77,7 +77,7 @@ public:
 	bool SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, Search::Result *searchResult);
 	DocumentWidget *CreateDocument(const QString &name);
 	DocumentWidget *currentDocument() const;
-	DocumentWidget *documentAt(size_t index) const;
+	DocumentWidget *documentAt(int index) const;
 	int updateGutterWidth();
 	int updateLineNumDisp();
 	QString PromptForExistingFileEx(const QString &path, const QString &prompt);
@@ -132,6 +132,7 @@ public:
 	static void AllDocumentsBusy(const QString &message);
 	static void AllDocumentsUnbusy();
 	static void CheckCloseEnableState();
+	static void CheckCloseEnableState(const std::vector<MainWindow *> &windows);
 	static void invalidatePrevOpenMenus();
 	static void ReadNEditDB();
 	static void RenameHighlightPattern(const QString &oldName, const QString &newName);
@@ -262,6 +263,9 @@ public:
 	void shellTriggered(QAction *action);
 
 public Q_SLOTS:
+#ifdef PER_TAB_CLOSE
+	void on_tabWidget_tabCloseRequested(int index);
+#endif
 	void on_tabWidget_tabCountChanged(int count);
 	void on_tabWidget_currentChanged(int index);
 	void on_tabWidget_customContextMenuRequested(const QPoint &pos);

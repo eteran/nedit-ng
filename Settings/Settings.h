@@ -74,6 +74,7 @@ public:
 	static bool warnExit;
 	static bool warnFileMods;
 	static bool warnRealFileMods;
+	static bool smartHome;
 	static int fileVersion;
 	static IndentStyle autoIndent;
 	static WrapStyle autoWrap;
@@ -111,6 +112,7 @@ public:
 	static bool stickyCaseSenseButton;
 	static bool typingHidesPointer;
 	static bool undoModifiesSelection;
+	static int truncateLongNamesInTabs;
 	static int autoScrollVPadding;
 	static int maxPrevOpenFiles;
 	static TruncSubstitution truncSubstitution;

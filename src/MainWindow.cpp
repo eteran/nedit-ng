@@ -50,6 +50,7 @@
 #include <QMimeData>
 #include <QShortcut>
 #include <QButtonGroup>
+#include <QToolTip>
 #include <qplatformdefs.h>
 
 #include <cmath>
@@ -230,20 +231,28 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(par
 	setupPrevOpenMenuActions();
 	updatePrevOpenMenu();
 
+	// determine the strings and button settings to use
+	initToggleButtonsiSearch(Preferences::GetPrefSearch());
+
 	showISearchLine_ = Preferences::GetPrefISearchLine();
 	showLineNumbers_ = Preferences::GetPrefLineNums();
 
 	// make sure that the ifind button has an icon
-	ui.buttonIFind->setIcon(QIcon::fromTheme(tr("edit-find"), QIcon(QLatin1String("://res/edit-find.svg"))));
+	ui.buttonIFind->setIcon(QIcon::fromTheme(tr("edit-find"), QIcon(QLatin1String(":/edit-find.svg"))));
 
 	// default to hiding the optional panels
 	ui.incrementalSearchFrame->setVisible(showISearchLine_);
 
 	ui.action_Statistics_Line->setChecked(Preferences::GetPrefStatsLine());
 
-	MainWindow::CheckCloseEnableState();
+	// make sure we include this windows which is in the middle of being created
+	std::vector<MainWindow *> windows = MainWindow::allWindows();
+	auto it = std::find(windows.begin(), windows.end(), this);
+	if(it == windows.end()) {
+		windows.push_back(this);
+	}
 
-	const std::vector<MainWindow *> windows = MainWindow::allWindows(/*includeInvisible=*/true);
+	MainWindow::CheckCloseEnableState(windows);
 	const bool enabled = windows.size() > 1;
 	for(MainWindow *window : windows) {
 		window->ui.action_Move_Tab_To->setEnabled(enabled);
@@ -320,16 +329,20 @@ void MainWindow::parseGeometry(QString geometry) {
  * @brief MainWindow::setupTabBar
  */
 void MainWindow::setupTabBar() {
+#ifndef PER_TAB_CLOSE
 	// create and hook up the tab close button
 	auto deleteTabButton = new QToolButton(ui.tabWidget);
 	deleteTabButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
-	deleteTabButton->setIcon(QIcon::fromTheme(tr("tab-close"), QIcon(QLatin1String("://res/tab-close.svg"))));
+	deleteTabButton->setIcon(QIcon::fromTheme(tr("tab-close"), QIcon(QLatin1String(":/tab-close.svg"))));
 	deleteTabButton->setAutoRaise(true);
 	deleteTabButton->setFocusPolicy(Qt::NoFocus);
 	deleteTabButton->setObjectName(tr("tab-close"));
 	ui.tabWidget->setCornerWidget(deleteTabButton);
 
 	connect(deleteTabButton, &QToolButton::clicked, this, &MainWindow::on_action_Close_triggered);
+#else
+	ui.tabWidget->setTabsClosable(true);
+#endif
 	ui.tabWidget->tabBar()->installEventFilter(this);
 }
 
@@ -844,7 +857,7 @@ void MainWindow::action_Select_All(DocumentWidget *document) {
 	emit_event("select_all");
 
 	Q_UNUSED(document);
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		area->selectAllAP();
 	}
 }
@@ -911,7 +924,7 @@ void MainWindow::on_action_Include_File_triggered() {
  * @brief MainWindow::on_action_Cut_triggered
  */
 void MainWindow::on_action_Cut_triggered() {
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		area->cutClipboardAP();
 	}
 }
@@ -920,7 +933,7 @@ void MainWindow::on_action_Cut_triggered() {
  * @brief MainWindow::on_action_Copy_triggered
  */
 void MainWindow::on_action_Copy_triggered() {
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		area->copyClipboardAP();
 	}
 }
@@ -929,7 +942,7 @@ void MainWindow::on_action_Copy_triggered() {
  * @brief MainWindow::on_action_Paste_triggered
  */
 void MainWindow::on_action_Paste_triggered() {
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		area->pasteClipboardAP();
 	}
 }
@@ -938,7 +951,7 @@ void MainWindow::on_action_Paste_triggered() {
  * @brief MainWindow::on_action_Paste_Column_triggered
  */
 void MainWindow::on_action_Paste_Column_triggered() {
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		area->pasteClipboardAP(TextArea::RectFlag);
 	}
 }
@@ -1152,7 +1165,7 @@ std::vector<DocumentWidget *> MainWindow::openDocuments() const {
 	documents.reserve(count);
 
 	for(size_t i = 0; i < count; ++i) {
-		if(auto document = documentAt(i)) {
+		if(auto document = documentAt(gsl::narrow<int>(i))) {
 			documents.push_back(document);
 		}
 	}
@@ -1164,10 +1177,7 @@ std::vector<DocumentWidget *> MainWindow::openDocuments() const {
 ** current set of windows.  It should be disabled only for the last Untitled,
 ** unmodified, editor window, and enabled otherwise.
 */
-void MainWindow::CheckCloseEnableState() {
-
-	const std::vector<MainWindow *> windows = MainWindow::allWindows();
-
+void MainWindow::CheckCloseEnableState(const std::vector<MainWindow *> &windows) {
 	if(windows.empty()) {
 		return;
 	}
@@ -1189,6 +1199,11 @@ void MainWindow::CheckCloseEnableState() {
 			window->ui.action_Close->setEnabled(true);
 		}
 	}
+}
+
+void MainWindow::CheckCloseEnableState() {
+	const std::vector<MainWindow *> windows = MainWindow::allWindows();
+	CheckCloseEnableState(windows);
 }
 
 /*
@@ -1347,7 +1362,7 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 
 				const auto index = data.toUInt();
 				const QString name = BGMenuData[index].item.name;
-				if(QPointer<TextArea> area = lastFocus_) {
+				if(QPointer<TextArea> area = lastFocus()) {
 					DoNamedBGMenuCmd(document, area, name, CommandSource::User);
 				}
 			}
@@ -1870,7 +1885,8 @@ void MainWindow::on_tabWidget_tabCountChanged(int count) {
  */
 void MainWindow::on_tabWidget_currentChanged(int index) {
 	if(index != -1) {
-		if(auto document = documentAt(static_cast<size_t>(index))) {
+		if(DocumentWidget *document = documentAt(static_cast<size_t>(index))) {
+			EndISearchEx();
 			document->documentRaised();
 		}
 	}
@@ -1893,6 +1909,7 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
 		// make sure that these are always in sync with the primary UI
 		detachTab->setEnabled(ui.action_Detach_Tab->isEnabled());
 		moveTab  ->setEnabled(ui.action_Move_Tab_To->isEnabled());
+		closeTab ->setEnabled(ui.action_Close->isEnabled());
 
 		// make the icons the same too :-P
 		newTab   ->setIcon(ui.action_New->icon());
@@ -1902,12 +1919,12 @@ void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
 
 		if(QAction *const selected = menu->exec(ui.tabWidget->tabBar()->mapToGlobal(pos))) {
 
-			if(DocumentWidget *document = documentAt(static_cast<size_t>(index))) {
+			if(DocumentWidget *document = documentAt(index)) {
 
 				if(selected == newTab) {
-					MainWindow::EditNewFile(this, QString(), /*iconic=*/false, QString(), document->path_);
+					action_New(document, NewMode::Prefs);
 				} else if(selected == closeTab) {
-					document->actionClose(CloseMode::Prompt);
+					action_Close(document, CloseMode::Prompt);
 				} else if(selected == detachTab) {
 					action_Detach_Document(document);
 				} else if(selected == moveTab) {
@@ -2084,15 +2101,15 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 	// OK, we've got some things to try to open, let's go for it!
 	for (const QFileInfo &file : fileList) {
 
-		QString pathname;
-		QString filename;
-		if (!parseFilename(file.absoluteFilePath(), &filename, &pathname) != 0) {
+		PathInfo fi;
+
+		if (!parseFilename(file.absoluteFilePath(), &fi) != 0) {
 			QApplication::beep();
 		} else {
 			DocumentWidget::EditExistingFileEx(
 			            openInTab ? document : nullptr,
-			            filename,
-			            pathname,
+			            fi.filename,
+			            fi.pathname,
 			            0,
 			            QString(),
 			            /*iconic*/false,
@@ -2117,7 +2134,7 @@ void MainWindow::action_Shift_Left(DocumentWidget *document) {
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		ShiftSelection(document, area, ShiftDirection::Left, /*byTab=*/false);
 	}
 }
@@ -2144,7 +2161,7 @@ void MainWindow::action_Shift_Right(DocumentWidget *document) {
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		ShiftSelection(document, area, ShiftDirection::Right, /*byTab=*/false);
 	}
 }
@@ -2171,7 +2188,7 @@ void MainWindow::action_Shift_Left_Tabs(DocumentWidget *document) {
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		ShiftSelection(document, area, ShiftDirection::Left, /*byTab=*/true);
 	}
 }
@@ -2197,7 +2214,7 @@ void MainWindow::action_Shift_Right_Tabs(DocumentWidget *document) {
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		ShiftSelection(document, area, ShiftDirection::Right, /*byTab=*/true);
 	}
 }
@@ -2223,7 +2240,7 @@ void MainWindow::action_Lower_case(DocumentWidget *document) {
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		DowncaseSelectionEx(document, area);
 	}
 }
@@ -2250,7 +2267,7 @@ void MainWindow::action_Upper_case(DocumentWidget *document) {
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		UpcaseSelectionEx(document, area);
 	}
 }
@@ -2277,7 +2294,7 @@ void MainWindow::action_Fill_Paragraph(DocumentWidget *document) {
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		FillSelection(document, area);
 	}
 }
@@ -2297,7 +2314,7 @@ void MainWindow::on_action_Fill_Paragraph_triggered() {
  */
 void MainWindow::on_action_Insert_Form_Feed_triggered() {
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		area->insertStringAP(QLatin1String("\f"));
 	}
 }
@@ -2315,7 +2332,7 @@ void MainWindow::action_Insert_Ctrl_Code(DocumentWidget *document, const QString
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		area->insertStringAP(str);
 	}
 }
@@ -2372,7 +2389,7 @@ void MainWindow::action_Goto_Line_Number(DocumentWidget *document, const QString
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->gotoAP(area, loc->line, loc->column);
 	}
 }
@@ -2507,7 +2524,7 @@ void MainWindow::action_Find_Again(DocumentWidget *document, Direction direction
 
 	emit_event("find_again", to_string(direction), to_string(wrap));
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		SearchAndSelectSameEx(
 			document,
 			area,
@@ -2548,7 +2565,7 @@ void MainWindow::action_Find_Selection(DocumentWidget *document, Direction direc
 
 	emit_event("find_selection", to_string(direction), to_string(type), to_string(wrap));
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		SearchForSelectedEx(
 			document,
 			area,
@@ -2657,7 +2674,7 @@ void MainWindow::action_Shift_Find_Incremental() {
  */
 void MainWindow::action_Find_Incremental(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps, bool isContinue) {
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		SearchAndSelectIncrementalEx(document,
 									 area,
 									 searchString,
@@ -2941,7 +2958,7 @@ void MainWindow::action_Replace_Find_Again(DocumentWidget *document, Direction d
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 
 		const Search::HistoryEntry *entry = Search::HistoryByIndex(1);
 		if(!entry) {
@@ -2992,7 +3009,7 @@ void MainWindow::action_Replace_Again(DocumentWidget *document, Direction direct
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		ReplaceSameEx(document,
 					  area,
 					  direction,
@@ -3039,7 +3056,7 @@ void MainWindow::action_Mark(DocumentWidget *document, const QString &mark) {
 	emit_event("mark", mark);
 
 	const QChar ch = mark[0];
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->AddMarkEx(area, ch);
 	}
 }
@@ -3132,7 +3149,7 @@ void MainWindow::action_Goto_Mark(DocumentWidget *document, const QString &mark,
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->gotoMark(area, mark[0], extend);
 	}
 }
@@ -3267,7 +3284,7 @@ void MainWindow::action_Goto_Mark_Shortcut() {
 void MainWindow::action_Goto_Matching(DocumentWidget *document) {
 
 	emit_event("goto_matching");
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->GotoMatchingCharacter(area);
 	}
 }
@@ -3288,7 +3305,7 @@ void MainWindow::on_action_Goto_Matching_triggered() {
 void MainWindow::action_Shift_Goto_Matching(DocumentWidget *document) {
 
 	emit_event("select_to_matching");
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->SelectToMatchingCharacter(area);
 	}
 }
@@ -3509,7 +3526,7 @@ void MainWindow::on_action_Load_Macro_File_triggered() {
 void MainWindow::action_Print(DocumentWidget *document) {
 
 	emit_event("print");
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->printWindow(area, /*selectedOnly=*/false);
 	}
 }
@@ -3531,7 +3548,7 @@ void MainWindow::on_action_Print_triggered() {
 void MainWindow::action_Print_Selection(DocumentWidget *document) {
 
 	emit_event("print_selection");
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->printWindow(area, /*selectedOnly=*/true);
 	}
 }
@@ -3628,8 +3645,8 @@ DocumentWidget *MainWindow::currentDocument() const {
  * @param index
  * @return
  */
-DocumentWidget *MainWindow::documentAt(size_t index) const {
-	return qobject_cast<DocumentWidget *>(ui.tabWidget->widget(gsl::narrow<int>(index)));
+DocumentWidget *MainWindow::documentAt(int index) const {
+	return qobject_cast<DocumentWidget *>(ui.tabWidget->widget(index));
 }
 
 /**
@@ -4619,7 +4636,7 @@ void MainWindow::action_Prev_Document() {
 
 			// raise the window set the focus to the first document in it
 			MainWindow *nextWindow = *nextIndex;
-			DocumentWidget *lastWidget = nextWindow->documentAt(static_cast<size_t>(nextWindow->tabWidget()->count() - 1));
+			DocumentWidget *lastWidget = nextWindow->documentAt(nextWindow->tabWidget()->count() - 1);
 
 			Q_ASSERT(lastWidget);
 
@@ -4679,6 +4696,7 @@ DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geome
 	}
 
 	Q_ASSERT(window);
+	Q_ASSERT(document);
 
 	document->filename_ = name;
 	document->setPath(!defaultPath.isEmpty() ? defaultPath : QDir::currentPath());
@@ -5194,7 +5212,7 @@ void MainWindow::action_Execute_Command_Line(DocumentWidget *document) {
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->execCursorLine(area, CommandSource::User);
 	}
 }
@@ -5348,11 +5366,44 @@ void MainWindow::on_action_Help_triggered() {
  */
 bool MainWindow::eventFilter(QObject *object, QEvent *event) {
 
-	if(qobject_cast<QTabBar*>(object)) {
+	if(auto tabBar = qobject_cast<QTabBar *>(object)) {
 		if(event->type() == QEvent::ToolTip) {
-			if(!Preferences::GetPrefToolTips()) {
-				return true;
+			if(Preferences::GetPrefToolTips()) {
+
+				int index = tabBar->tabAt(static_cast<QHelpEvent*>(event)->pos());
+				if(index != -1) {
+
+					if(DocumentWidget *document = documentAt(index)) {
+
+						QString labelString;
+						QString filename = document->filename_;
+
+						/* Set tab label to document's filename. Position of "*" (modified)
+						 * will change per label alignment setting */
+						QStyle *const style = ui.tabWidget->tabBar()->style();
+						const int alignment = style->styleHint(QStyle::SH_TabBar_Alignment);
+
+						if (alignment != Qt::AlignRight) {
+							labelString = tr("%1%2").arg(document->fileChanged_ ? tr("*") : QString(), filename);
+						} else {
+							labelString = tr("%2%1").arg(document->fileChanged_ ? tr("*") : QString(), filename);
+						}
+
+
+						QString tipString;
+						if (Preferences::GetPrefShowPathInWindowsMenu() && document->filenameSet_) {
+							tipString = tr("%1 - %2").arg(labelString, document->path_);
+						} else {
+							tipString = labelString;
+						}
+
+						QToolTip::showText(static_cast<QHelpEvent*>(event)->globalPos(), tipString, this);
+					}
+				}
+
+
 			}
+			return true;
 		}
 	}
 
@@ -5370,7 +5421,7 @@ void MainWindow::action_Find(DocumentWidget *document, const QString &string, Di
 
 	emit_event("find", string, to_string(direction), to_string(type), to_string(searchWrap));
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		SearchAndSelectEx(
 					document,
 					area,
@@ -5438,7 +5489,7 @@ void MainWindow::action_Replace(DocumentWidget *document, const QString &searchS
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		SearchAndReplaceEx(
 					document,
 					area,
@@ -5545,7 +5596,7 @@ void MainWindow::action_Replace_All(DocumentWidget *document, const QString &sea
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		ReplaceAllEx(document,
 					 area,
 					 searchString,
@@ -5566,7 +5617,7 @@ void MainWindow::action_Show_Tip(DocumentWidget *document, const QString &argume
 		emit_event("show_tip");
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->FindDefCalltip(area, argument);
 	}
 }
@@ -5582,7 +5633,7 @@ void MainWindow::action_Find_Definition(DocumentWidget *document, const QString 
 		emit_event("find_definition");
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		document->findDefinition(area, argument);
 	}
 }
@@ -5692,7 +5743,7 @@ void MainWindow::action_Execute_Command(DocumentWidget *document, const QString 
 	}
 
 	if(!command.isEmpty()) {
-		if(QPointer<TextArea> area = lastFocus_) {
+		if(QPointer<TextArea> area = lastFocus()) {
 			document->execAP(area, command);
 		}
 	}
@@ -5752,7 +5803,7 @@ void MainWindow::shellTriggered(QAction *action) {
  */
 void MainWindow::action_Shell_Menu_Command(DocumentWidget *document, const QString &name) {
 	emit_event("shell_menu_command", name);
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		DoNamedShellMenuCmd(document, area, name, CommandSource::User);
 	}
 }
@@ -5794,7 +5845,7 @@ void MainWindow::macroTriggered(QAction *action) {
  */
 void MainWindow::action_Macro_Menu_Command(DocumentWidget *document, const QString &name) {
 	emit_event("macro_menu_command", name);
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		DoNamedMacroMenuCmd(document, area, name, CommandSource::User);
 	}
 }
@@ -5833,6 +5884,8 @@ void MainWindow::action_Detach_Document(DocumentWidget *document) {
 		document->updateSignals(this, new_window);
 
 		new_window->tabWidget()->addTab(document, document->filename_);
+
+		new_window->parseGeometry(QString());
 		new_window->show();
 	}
 }
@@ -6491,7 +6544,7 @@ void MainWindow::action_Replace_Find(DocumentWidget *document, const QString &se
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		ReplaceAndSearchEx(
 					document,
 					area,
@@ -6561,7 +6614,7 @@ void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QSt
 		return;
 	}
 
-	if(QPointer<TextArea> area = lastFocus_) {
+	if(QPointer<TextArea> area = lastFocus()) {
 		ReplaceInSelectionEx(
 					document,
 					area,
@@ -7137,7 +7190,7 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
 	}
 
 	if(!area) {
-		area = lastFocus_;
+		area = lastFocus();
 		if(!area) {
 			area = document->firstPane();
 			Q_ASSERT(area);
@@ -7239,3 +7292,11 @@ void MainWindow::updateWindowTitle(DocumentWidget *document) {
 	// Update the Windows menus with the new name
 	MainWindow::UpdateWindowMenus();
 }
+
+#ifdef PER_TAB_CLOSE
+void MainWindow::on_tabWidget_tabCloseRequested(int index) {
+	if(DocumentWidget *document = documentAt(index)) {
+		action_Close(document, CloseMode::Prompt);
+	}
+}
+#endif

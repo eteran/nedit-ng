@@ -21,13 +21,13 @@ auto DEFAULT_BACKLIGHT_CHARS  = QLatin1String("0-8,10-31,127:red;9:#dedede;32,16
 auto DEFAULT_TEXT_FONT        = QLatin1String("Courier New,10,-1,5,50,0,0,0,0,0");
 
 #if defined(Q_OS_LINUX)
-	auto shellCommandsResource = QLatin1String("res/DefaultShellCommandsLinux.txt");
+    auto shellCommandsResource = QLatin1String("DefaultShellCommandsLinux.txt");
 #elif defined(Q_OS_FREEBSD)
-	auto shellCommandsResource = QLatin1String("res/DefaultShellCommandsFreeBSD.txt");
+    auto shellCommandsResource = QLatin1String("DefaultShellCommandsFreeBSD.txt");
 #elif defined(Q_OS_UNIX)
-    auto shellCommandsResource = QLatin1String("res/DefaultShellCommandsUnix.txt");
+    auto shellCommandsResource = QLatin1String("DefaultShellCommandsUnix.txt");
 #elif defined(Q_OS_WIN)
-    auto shellCommandsResource = QLatin1String("res/DefaultShellCommandsWindows.txt");
+    auto shellCommandsResource = QLatin1String("DefaultShellCommandsWindows.txt");
 #endif
 
 template <class T>
@@ -75,6 +75,7 @@ bool Settings::toolTips;
 bool Settings::warnExit;
 bool Settings::warnFileMods;
 bool Settings::warnRealFileMods;
+bool Settings::smartHome;
 int Settings::fileVersion;
 IndentStyle Settings::autoIndent;
 WrapStyle Settings::autoWrap;
@@ -110,6 +111,7 @@ bool Settings::honorSymlinks;
 bool Settings::stickyCaseSenseButton;
 bool Settings::typingHidesPointer;
 bool Settings::undoModifiesSelection;
+int Settings::truncateLongNamesInTabs;
 int Settings::autoScrollVPadding;
 int Settings::maxPrevOpenFiles;
 TruncSubstitution Settings::truncSubstitution;
@@ -180,12 +182,12 @@ void Settings::loadPreferences() {
 	fileVersion           = settings.value(tr("nedit.fileVersion"),           1).toInt();
 
 	shellCommands         = settings.value(tr("nedit.shellCommands"),         loadResource(shellCommandsResource)).toString();
-	macroCommands         = settings.value(tr("nedit.macroCommands"),         loadResource(QLatin1String("res/DefaultMacroCommands.txt"))).toString();
-	bgMenuCommands        = settings.value(tr("nedit.bgMenuCommands"),        loadResource(QLatin1String("res/DefaultBackgroundMenuCommands.txt"))).toString();
-	highlightPatterns     = settings.value(tr("nedit.highlightPatterns"),     loadResource(QLatin1String("res/DefaultHighlightPatterns.txt"))).toString();
-	languageModes         = settings.value(tr("nedit.languageModes"),         loadResource(QLatin1String("res/DefaultLanguageModes.txt"))).toString();
-	smartIndentInit       = settings.value(tr("nedit.smartIndentInit"),       loadResource(QLatin1String("res/DefaultSmartIndentInit.txt"))).toString();
-	smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), loadResource(QLatin1String("res/DefaultSmartIndentInitCommon.txt"))).toString();
+	macroCommands         = settings.value(tr("nedit.macroCommands"),         loadResource(QLatin1String("DefaultMacroCommands.txt"))).toString();
+	bgMenuCommands        = settings.value(tr("nedit.bgMenuCommands"),        loadResource(QLatin1String("DefaultBackgroundMenuCommands.txt"))).toString();
+	highlightPatterns     = settings.value(tr("nedit.highlightPatterns"),     loadResource(QLatin1String("DefaultHighlightPatterns.txt"))).toString();
+	languageModes         = settings.value(tr("nedit.languageModes"),         loadResource(QLatin1String("DefaultLanguageModes.txt"))).toString();
+	smartIndentInit       = settings.value(tr("nedit.smartIndentInit"),       loadResource(QLatin1String("DefaultSmartIndentInit.txt"))).toString();
+	smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), loadResource(QLatin1String("DefaultSmartIndentInitCommon.txt"))).toString();
 
 
 	autoWrap              = readEnum(settings, tr("nedit.autoWrap"),          WrapStyle::Continuous);
@@ -225,6 +227,7 @@ void Settings::loadPreferences() {
 	warnRealFileMods       = settings.value(tr("nedit.warnRealFileMods"),       true).toBool();
 	warnExit               = settings.value(tr("nedit.warnExit"),               true).toBool();
 	showResizeNotification = settings.value(tr("nedit.showResizeNotification"), false).toBool();
+	smartHome              = settings.value(tr("nedit.smartHome"),              false).toBool();
 
 	textRows                          = settings.value(tr("nedit.textRows"),                      24).toInt();
 	textCols                          = settings.value(tr("nedit.textCols"),                      80).toInt();
@@ -249,6 +252,7 @@ void Settings::loadPreferences() {
 	findReplaceUsesSelection          = settings.value(tr("nedit.findReplaceUsesSelection"),      false).toBool();
 	titleFormat                       = settings.value(tr("nedit.titleFormat"),                   QLatin1String("{%c} [%s] %f (%S) - %d")).toString();
 	undoModifiesSelection             = settings.value(tr("nedit.undoModifiesSelection"),         true).toBool();
+	truncateLongNamesInTabs           = settings.value(tr("nedit.truncateLongNamesInTabs"),       0).toInt();
 	focusOnRaise                      = settings.value(tr("nedit.focusOnRaise"),                  false).toBool();
 	forceOSConversion                 = settings.value(tr("nedit.forceOSConversion"),             true).toBool();
 	honorSymlinks                     = settings.value(tr("nedit.honorSymlinks"),                 true).toBool();
@@ -316,6 +320,7 @@ void Settings::importSettings(const QString &filename) {
 	warnFileMods          = settings.value(tr("nedit.warnFileMods"),          warnFileMods).toBool();
 	warnRealFileMods      = settings.value(tr("nedit.warnRealFileMods"),      warnRealFileMods).toBool();
 	warnExit              = settings.value(tr("nedit.warnExit"),              warnExit).toBool();
+	smartHome             = settings.value(tr("nedit.smartHome"),             smartHome).toBool();
 
 	textRows                          = settings.value(tr("nedit.textRows"),                      textRows).toInt();
 	textCols                          = settings.value(tr("nedit.textCols"),                      textCols).toInt();
@@ -340,6 +345,7 @@ void Settings::importSettings(const QString &filename) {
 	findReplaceUsesSelection          = settings.value(tr("nedit.findReplaceUsesSelection"),      findReplaceUsesSelection).toBool();
 	titleFormat                       = settings.value(tr("nedit.titleFormat"),                   titleFormat).toString();
 	undoModifiesSelection             = settings.value(tr("nedit.undoModifiesSelection"),         undoModifiesSelection).toBool();
+	truncateLongNamesInTabs           = settings.value(tr("nedit.truncateLongNamesInTabs"),       truncateLongNamesInTabs).toInt();
 	focusOnRaise                      = settings.value(tr("nedit.focusOnRaise"),                  focusOnRaise).toBool();
 	forceOSConversion                 = settings.value(tr("nedit.forceOSConversion"),             forceOSConversion).toBool();
 	honorSymlinks                     = settings.value(tr("nedit.honorSymlinks"),                 honorSymlinks).toBool();
@@ -398,6 +404,7 @@ bool Settings::savePreferences() {
 	settings.setValue(tr("nedit.warnFileMods"), warnFileMods);
 	settings.setValue(tr("nedit.warnRealFileMods"), warnRealFileMods);
 	settings.setValue(tr("nedit.warnExit"), warnExit);
+	settings.setValue(tr("nedit.smartHome"), smartHome);
 
 	settings.setValue(tr("nedit.textRows"), textRows);
 	settings.setValue(tr("nedit.textCols"), textCols);
@@ -422,6 +429,7 @@ bool Settings::savePreferences() {
 	settings.setValue(tr("nedit.findReplaceUsesSelection"), findReplaceUsesSelection);
 	settings.setValue(tr("nedit.titleFormat"), titleFormat);
 	settings.setValue(tr("nedit.undoModifiesSelection"), undoModifiesSelection);
+	settings.setValue(tr("nedit.truncateLongNamesInTabs"), truncateLongNamesInTabs);
 	settings.setValue(tr("nedit.focusOnRaise"), focusOnRaise);
 	settings.setValue(tr("nedit.forceOSConversion"), forceOSConversion);
 	settings.setValue(tr("nedit.honorSymlinks"), honorSymlinks);

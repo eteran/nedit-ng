@@ -17,11 +17,11 @@
 DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
 
-	ui.buttonNew   ->setIcon(QIcon::fromTheme(tr("document-new"), QIcon(QLatin1String("://res/document-new.svg"))));
-	ui.buttonDelete->setIcon(QIcon::fromTheme(tr("edit-delete"),  QIcon(QLatin1String("://res/edit-delete.svg"))));
-	ui.buttonCopy  ->setIcon(QIcon::fromTheme(tr("edit-copy"),    QIcon(QLatin1String("://res/edit-copy.svg"))));
-	ui.buttonUp    ->setIcon(QIcon::fromTheme(tr("go-up"),        QIcon(QLatin1String("://res/go-up.svg"))));
-	ui.buttonDown  ->setIcon(QIcon::fromTheme(tr("go-down"),      QIcon(QLatin1String("://res/go-down.svg"))));
+	ui.buttonNew   ->setIcon(QIcon::fromTheme(tr("document-new"), QIcon(QLatin1String(":/document-new.svg"))));
+	ui.buttonDelete->setIcon(QIcon::fromTheme(tr("edit-delete"),  QIcon(QLatin1String(":/edit-delete.svg"))));
+	ui.buttonCopy  ->setIcon(QIcon::fromTheme(tr("edit-copy"),    QIcon(QLatin1String(":/edit-copy.svg"))));
+	ui.buttonUp    ->setIcon(QIcon::fromTheme(tr("go-up"),        QIcon(QLatin1String(":/go-up.svg"))));
+	ui.buttonDown  ->setIcon(QIcon::fromTheme(tr("go-down"),      QIcon(QLatin1String(":/go-down.svg"))));
 
 	ui.editAccelerator->setMaximumSequenceLength(1);
 

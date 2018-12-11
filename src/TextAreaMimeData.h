@@ -9,7 +9,7 @@ class TextArea;
 class TextAreaMimeData : public QMimeData {
 	Q_OBJECT
 public:
-	TextAreaMimeData(TextBuffer *buffer);
+	explicit TextAreaMimeData(TextBuffer *buffer);
 	~TextAreaMimeData() override = default;
 
 public:

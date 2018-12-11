@@ -679,6 +679,10 @@ bool Preferences::GetPrefTypingHidesPointer() {
 	return Settings::typingHidesPointer;
 }
 
+bool Preferences::GetPrefSmartHome() {
+	return Settings::smartHome;
+}
+
 void Preferences::SetPrefTitleFormat(const QString &format) {
 	if(Settings::titleFormat != format) {
 		PrefsHaveChanged = true;

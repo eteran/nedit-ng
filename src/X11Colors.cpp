@@ -806,10 +806,12 @@ const X11Color colors[] = {
  */
 QColor X11Colors::fromString(const QString &s) {
 
-	for(X11Color color : colors) {
-		if(color.name == s) {
-			return { color.r, color.g, color.b };
-		}
+	auto it = std::find_if(std::begin(colors), std::end(colors), [&s](const X11Color &color) {
+		return color.name == s;
+	});
+
+	if(it != std::end(colors)) {
+		return { it->r, it->g, it->b };
 	}
 
 	return QColor(s);

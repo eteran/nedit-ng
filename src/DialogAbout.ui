@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="pixmap">
-      <pixmap resource="nedit.qrc">:/res/nedit.png</pixmap>
+      <pixmap resource="res/nedit.qrc">:/nedit.png</pixmap>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -491,7 +491,7 @@ Public License instead of this License.
   </layout>
  </widget>
  <resources>
-  <include location="nedit.qrc"/>
+  <include location="res/nedit.qrc"/>
  </resources>
  <connections>
   <connection>

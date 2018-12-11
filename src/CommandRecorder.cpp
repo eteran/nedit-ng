@@ -57,13 +57,9 @@ const QLatin1String RedundantActions[] = {
 template <class Event>
 bool isMouseAction(const Event *ev) {
 
-	for(const QLatin1String &action : MouseActions) {
-		if (action == ev->actionString()) {
-			return true;
-		}
-	}
-
-	return false;
+	return std::any_of(std::begin(MouseActions), std::end(MouseActions), [ev](const QLatin1String &action) {
+		return action == ev->actionString();
+	});
 }
 
 /**
@@ -74,13 +70,9 @@ bool isMouseAction(const Event *ev) {
 template <class Event>
 bool isRedundantAction(const Event *ev) {
 
-	for(const QLatin1String &action : RedundantActions) {
-		if (action == ev->actionString()) {
-			return true;
-		}
-	}
-
-	return false;
+	return std::any_of(std::begin(RedundantActions), std::end(RedundantActions), [ev](const QLatin1String &action) {
+		return action == ev->actionString();
+	});
 }
 
 /*
