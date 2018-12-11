@@ -14,12 +14,12 @@
       "ctestCommandArgs": "",
       "variables": [
         {
-          "name": "BOOST_INCLUDEDIR",
-          "value": "C:\\Libraries\\boost_1_67_0"
+          "name": "BOOST_ROOT",
+          "value": "C:\\Libraries\\boost_1_68_0"
         },
         {
           "name": "CMAKE_PREFIX_PATH",
-          "value": "C:\\Qt\\5.9.6\\msvc2017_64"
+          "value": "C:\\Qt\\5.9.7\\msvc2017_64"
         }
       ],
       "environments": [ { "Path": "${env.Path};C:\\Libraries\\GnuWin32\\bin" } ]
