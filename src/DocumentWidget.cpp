@@ -4021,6 +4021,8 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 		if(fromWindow->TabCount() == 0) {
 			fromWindow->deleteLater();
 		}
+
+		RefreshTabState();
 	}
 }
 

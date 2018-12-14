@@ -5884,6 +5884,7 @@ void MainWindow::action_Detach_Document(DocumentWidget *document) {
 		document->updateSignals(this, new_window);
 
 		new_window->tabWidget()->addTab(document, document->filename_);
+		document->RefreshTabState();
 
 		new_window->parseGeometry(QString());
 		new_window->show();
