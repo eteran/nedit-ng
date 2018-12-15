@@ -7,7 +7,7 @@
 template <class T>
 class SignalBlocker {
 public:
-	explicit SignalBlocker(T *blocked_) : blocked_(blocked_), previous_(blocked_->blockSignals(true)) {
+	explicit SignalBlocker(T *blocked) : blocked_(blocked), previous_(blocked->blockSignals(true)) {
 	}
 
 	~SignalBlocker() {
