@@ -111,8 +111,8 @@ else()
     elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 		add_compile_options(
 			#-Wuseless-cast
-			-Wduplicated-cond 
-			-Wduplicated-branches
+                        #-Wduplicated-cond
+                        #-Wduplicated-branches
 			-Wlogical-op
 		)
 	endif()
