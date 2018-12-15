@@ -84,8 +84,8 @@ Q_SIGNALS:
 public:
 	void movedCallback(TextArea *area);
 	void dragStartCallback(TextArea *area);
-	void dragEndCallback(TextArea *area, const DragEndEvent *data);
-	void smartIndentCallback(TextArea *area, SmartIndentEvent *data);
+	void dragEndCallback(TextArea *area, const DragEndEvent *event);
+	void smartIndentCallback(TextArea *area, SmartIndentEvent *event);
 	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText);
 	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, TextArea *area);
 

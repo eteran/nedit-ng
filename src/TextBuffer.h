@@ -42,6 +42,10 @@ public:
 
 public:
 	class Selection {
+
+		template <class CharT, class Traits>
+		friend class BasicTextBuffer;
+
 	public:
 		bool getSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const;
 		bool inSelection(TextCursor pos, TextCursor lineStartPos, int64_t dispIndex) const;
@@ -51,16 +55,23 @@ public:
 		void updateSelection(TextCursor pos, int64_t nDeleted, int64_t nInserted);
 
 	public:
-		explicit operator bool() const { return selected; }
+		explicit operator bool() const { return selected_; }
+		bool selected() const          { return selected_; }
+		bool rectangular() const       { return rectangular_; }
+		bool zeroWidth() const         { return zeroWidth_; }
+		TextCursor start() const       { return start_; }
+		TextCursor end() const         { return end_; }
+		int64_t rectStart() const      { return rectStart_; }
+		int64_t rectEnd() const        { return rectEnd_; }
 
 	public:
-		bool selected     = false; // true if the selection is active
-		bool rectangular  = false; // true if the selection is rectangular
-		bool zeroWidth    = false; // Width 0 selections aren't "real" selections, but they can be useful when creating rectangular selections from the keyboard.
-		TextCursor start  = {};    // Pos. of start of selection, or if rectangular start of line containing it.
-		TextCursor end    = {};    // Pos. of end of selection, or if rectangular end of line containing it.
-		int64_t rectStart = 0;     // Indent of left edge of rect. selection
-		int64_t rectEnd   = 0;     // Indent of right edge of rect. selection
+		bool selected_     = false; // true if the selection is active
+		bool rectangular_  = false; // true if the selection is rectangular
+		bool zeroWidth_    = false; // Width 0 selections aren't "real" selections, but they can be useful when creating rectangular selections from the keyboard.
+		TextCursor start_  = {};    // Pos. of start of selection, or if rectangular start of line containing it.
+		TextCursor end_    = {};    // Pos. of end of selection, or if rectangular end of line containing it.
+		int64_t rectStart_ = 0;     // Indent of left edge of rect. selection
+		int64_t rectEnd_   = 0;     // Indent of right edge of rect. selection
 	};
 
 public:

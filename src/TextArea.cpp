@@ -615,7 +615,7 @@ void TextArea::copyClipboardAP(EventFlags flags) {
 	EMIT_EVENT_0("copy_clipboard");
 
 	cancelDrag();
-	if (!buffer_->primary.selected) {
+	if (!buffer_->primary.selected()) {
 		QApplication::beep();
 		return;
 	}
@@ -1435,8 +1435,8 @@ void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nD
 	if (scrolled) {
 		TextDRedisplayRect(viewRect);
 		if (styleBuffer_) { // See comments in extendRangeForStyleMods
-			styleBuffer_->primary.selected  = false;
-			styleBuffer_->primary.zeroWidth = false;
+			styleBuffer_->primary.selected_  = false;
+			styleBuffer_->primary.zeroWidth_ = false;
 		}
 		return;
 	}
@@ -2552,13 +2552,13 @@ void TextArea::extendRangeForStyleMods(TextCursor *start, TextCursor *end) {
 	   avoid the complexity of scheduling redraws later, this simple protocol
 	   tells the text display's buffer modify callback to extend it's redraw
 	   range to show the text color/and font changes as well. */
-	if (sel->selected) {
-		if (sel->start < *start) {
-			*start = sel->start;
+	if (sel->selected()) {
+		if (sel->start() < *start) {
+			*start = sel->start();
 		}
 
-		if (sel->end > *end) {
-			*end = sel->end;
+		if (sel->end() > *end) {
+			*end = sel->end();
 		}
 	}
 }
@@ -2942,7 +2942,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 		DrawPlain
 	};
 
-	const DrawType drawType = [](uint32_t style) {
+	const DrawType drawType = [style]() {
 		// select a GC
 		if (style & (STYLE_LOOKUP_MASK | BACKLIGHT_MASK | RANGESET_MASK)) {
 			return DrawStyle;
@@ -2953,7 +2953,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 		} else {
 			return DrawPlain;
 		}
-	}(style);
+	}();
 
 	switch(drawType) {
 	case DrawHighlight:
@@ -3829,10 +3829,10 @@ void TextArea::cancelBlockDrag() {
 	buffer_->BufReplaceEx(modRangeStart, bufModRangeEnd, repText);
 
 	// Reset the selection and cursor position
-	if (origSel->rectangular) {
-		buffer_->BufRectSelect(origSel->start, origSel->end, origSel->rectStart, origSel->rectEnd);
+	if (origSel->rectangular()) {
+		buffer_->BufRectSelect(origSel->start(), origSel->end(), origSel->rectStart(), origSel->rectEnd());
 	} else {
-		buffer_->BufSelect(origSel->start, origSel->end);
+		buffer_->BufSelect(origSel->start(), origSel->end());
 	}
 
 	setInsertPosition(buffer_->BufCursorPosHint());
@@ -3891,7 +3891,7 @@ void TextArea::keyMoveExtendSelection(TextCursor origPos, bool rectangular) {
 	const TextBuffer::Selection *sel = &buffer_->primary;
 	const TextCursor newPos          = cursorPos_;
 
-	if ((sel->selected || sel->zeroWidth) && sel->rectangular && rectangular) {
+	if ((sel->selected() || sel->zeroWidth()) && sel->rectangular() && rectangular) {
 
 		// rect -> rect
 		const int newCol          = buffer_->BufCountDispChars(buffer_->BufStartOfLine(newPos), newPos);
@@ -3902,15 +3902,15 @@ void TextArea::keyMoveExtendSelection(TextCursor origPos, bool rectangular) {
 
 		buffer_->BufRectSelect(startPos, endPos, startCol, endCol);
 
-	} else if (sel->selected && rectangular) { // plain -> rect
+	} else if (sel->selected() && rectangular) { // plain -> rect
 
 		const int newCol = buffer_->BufCountDispChars(buffer_->BufStartOfLine(newPos), newPos);
 		TextCursor anchor;
 
-		if (std::abs(newPos - sel->start) < std::abs(newPos - sel->end)) {
-			anchor = sel->end;
+		if (std::abs(newPos - sel->start()) < std::abs(newPos - sel->end())) {
+			anchor = sel->end();
 		} else {
-			anchor = sel->start;
+			anchor = sel->start();
 		}
 
 		const TextCursor anchorLineStart = buffer_->BufStartOfLine(anchor);
@@ -3925,10 +3925,10 @@ void TextArea::keyMoveExtendSelection(TextCursor origPos, bool rectangular) {
 		            std::min(rectAnchor, newCol),
 		            std::max(rectAnchor, newCol));
 
-	} else if (sel->selected && sel->rectangular) { // rect -> plain
+	} else if (sel->selected() && sel->rectangular()) { // rect -> plain
 
-		const TextCursor startPos = buffer_->BufCountForwardDispChars(buffer_->BufStartOfLine(sel->start), sel->rectStart);
-		const TextCursor endPos   = buffer_->BufCountForwardDispChars(buffer_->BufStartOfLine(sel->end),   sel->rectEnd);
+		const TextCursor startPos = buffer_->BufCountForwardDispChars(buffer_->BufStartOfLine(sel->start()), sel->rectStart());
+		const TextCursor endPos   = buffer_->BufCountForwardDispChars(buffer_->BufStartOfLine(sel->end()),   sel->rectEnd());
 		TextCursor anchor;
 
 		if (std::abs(origPos - startPos) < std::abs(origPos - endPos)) {
@@ -3939,14 +3939,14 @@ void TextArea::keyMoveExtendSelection(TextCursor origPos, bool rectangular) {
 
 		buffer_->BufSelect(anchor, newPos);
 
-	} else if (sel->selected) { // plain -> plain
+	} else if (sel->selected()) { // plain -> plain
 
 		TextCursor anchor;
 
-		if (std::abs(origPos - sel->start) < std::abs(origPos - sel->end)) {
-			anchor = sel->end;
+		if (std::abs(origPos - sel->start()) < std::abs(origPos - sel->end())) {
+			anchor = sel->end();
 		} else {
-			anchor = sel->start;
+			anchor = sel->start();
 		}
 
 		buffer_->BufSelect(anchor, newPos);
@@ -4130,7 +4130,7 @@ void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDe
 	   selections wrap strangely, but this routine should rarely be used for
 	   them, and even more rarely when they need to be wrapped. */
 	const bool replaceSel   = allowPendingDelete && pendingSelection();
-	const TextCursor cursorPos = replaceSel ? buffer_->primary.start : cursorPos_;
+	const TextCursor cursorPos = replaceSel ? buffer_->primary.start() : cursorPos_;
 
 	/* If the text is only one line and doesn't need to be wrapped, just insert
 	   it and be done (for efficiency only, this routine is called for each
@@ -4192,7 +4192,7 @@ bool TextArea::pendingSelection() const {
 	const TextBuffer::Selection *sel = &buffer_->primary;
 	const TextCursor pos = cursorPos_;
 
-	return pendingDelete_ && sel->selected && pos >= sel->start && pos <= sel->end;
+	return pendingDelete_ && sel->selected() && pos >= sel->start() && pos <= sel->end();
 }
 
 /*
@@ -4601,7 +4601,7 @@ bool TextArea::deleteEmulatedTab() {
 */
 bool TextArea::deletePendingSelection() {
 
-	if (buffer_->primary.selected) {
+	if (buffer_->primary.selected()) {
 		buffer_->BufRemoveSelected();
 		setInsertPosition(buffer_->BufCursorPosHint());
 		checkAutoShowInsertPos();
@@ -4799,7 +4799,7 @@ void TextArea::TextCutClipboard() {
 		return;
 	}
 
-	if (!buffer_->primary.selected) {
+	if (!buffer_->primary.selected()) {
 		QApplication::beep();
 		return;
 	}
@@ -4858,7 +4858,7 @@ void TextArea::insertClipboard(bool isColumnar) {
 	const std::string contents = mimeData->text().toStdString();
 
 	// Insert it in the text widget
-	if (isColumnar && !buffer_->primary.selected) {
+	if (isColumnar && !buffer_->primary.selected()) {
 		const TextCursor cursorPos       = cursorPos_;
 		const TextCursor cursorLineStart = buffer_->BufStartOfLine(cursorPos);
 		const int64_t column             = buffer_->BufCountDispChars(cursorLineStart, cursorPos);
@@ -4916,7 +4916,7 @@ void TextArea::copyPrimaryAP(EventFlags flags) {
 		return;
 	}
 
-	if (primary.selected && rectangular) {
+	if (primary.selected() && rectangular) {
 		const std::string textToCopy = buffer_->BufGetSelectionTextEx();
 		const TextCursor insertPos   = cursorPos_;
 		const int64_t column         = buffer_->BufCountDispChars(buffer_->BufStartOfLine(insertPos), insertPos);
@@ -4925,7 +4925,7 @@ void TextArea::copyPrimaryAP(EventFlags flags) {
 		setInsertPosition(buffer_->BufCursorPosHint());
 
 		checkAutoShowInsertPos();
-	} else if (primary.selected) {
+	} else if (primary.selected()) {
 		const std::string textToCopy = buffer_->BufGetSelectionTextEx();
 		const TextCursor insertPos   = cursorPos_;
 
@@ -5223,16 +5223,16 @@ void TextArea::processTabAP(EventFlags flags) {
 	   instead of the cursor position as the indent.  When replacing
 	   rectangular selections, tabs are automatically recalculated as
 	   if the inserted text began at the start of the line */
-	TextCursor insertPos = pendingSelection() ? sel.start : cursorPos_;
+	TextCursor insertPos = pendingSelection() ? sel.start() : cursorPos_;
 	TextCursor lineStart = buffer_->BufStartOfLine(insertPos);
 
-	if (pendingSelection() && sel.rectangular) {
-		insertPos = buffer_->BufCountForwardDispChars(lineStart, sel.rectStart);
+	if (pendingSelection() && sel.rectangular()) {
+		insertPos = buffer_->BufCountForwardDispChars(lineStart, sel.rectStart());
 	}
 
 	int64_t startIndent = buffer_->BufCountDispChars(lineStart, insertPos);
 	int64_t toIndent = startIndent + emTabDist - (startIndent % emTabDist);
-	if (pendingSelection() && sel.rectangular) {
+	if (pendingSelection() && sel.rectangular()) {
 		toIndent -= startIndent;
 		startIndent = 0;
 	}
@@ -5492,18 +5492,18 @@ void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
 	TextCursor newPos = TextDXYToPosition(event->pos());
 	TextDXYToUnconstrainedPosition(event->pos(), &row, &column);
 	column = TextDOffsetWrappedColumn(row, column);
-	if (sel->selected) {
-		if (sel->rectangular) {
+	if (sel->selected()) {
+		if (sel->rectangular()) {
 
-			rectAnchor = column < (sel->rectEnd + sel->rectStart) / 2 ? sel->rectEnd : sel->rectStart;
-			anchorLineStart = buffer_->BufStartOfLine(newPos < (sel->end + to_integer(sel->start)) / 2 ? sel->end : sel->start);
+			rectAnchor = column < (sel->rectEnd() + sel->rectStart()) / 2 ? sel->rectEnd() : sel->rectStart();
+			anchorLineStart = buffer_->BufStartOfLine(newPos < (sel->end() + to_integer(sel->start())) / 2 ? sel->end() : sel->start());
 			anchor          = buffer_->BufCountForwardDispChars(anchorLineStart, rectAnchor);
 
 		} else {
-			if (std::abs(newPos - sel->start) < std::abs(newPos - sel->end)) {
-				anchor = sel->end;
+			if (std::abs(newPos - sel->start()) < std::abs(newPos - sel->end())) {
+				anchor = sel->end();
 			} else {
-				anchor = sel->start;
+				anchor = sel->start();
 			}
 
 			anchorLineStart = buffer_->BufStartOfLine(anchor);
@@ -5725,10 +5725,10 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 	DragStates dragState                   = dragState_;
 	const TextBuffer::Selection &secondary = buffer_->secondary;
 	const TextBuffer::Selection &primary   = buffer_->primary;
-	bool rectangular                       = secondary.rectangular;
+	bool rectangular                       = secondary.rectangular();
 
 	endDrag();
-	if (!((dragState == SECONDARY_DRAG && secondary.selected) || (dragState == SECONDARY_RECT_DRAG && secondary.selected) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED)) {
+	if (!((dragState == SECONDARY_DRAG && secondary.selected()) || (dragState == SECONDARY_RECT_DRAG && secondary.selected()) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED)) {
 		return;
 	}
 
@@ -5737,11 +5737,11 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 		return;
 	}
 
-	if (secondary.selected) {
+	if (secondary.selected()) {
 
 		TextDBlankCursor();
 		std::string textToCopy = buffer_->BufGetSecSelectTextEx();
-		if (primary.selected && rectangular) {
+		if (primary.selected() && rectangular) {
 			buffer_->BufReplaceSelectedEx(textToCopy);
 			setInsertPosition(buffer_->BufCursorPosHint());
 		} else if (rectangular) {
@@ -5757,7 +5757,7 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 		buffer_->BufSecondaryUnselect();
 		TextDUnblankCursor();
 
-	} else if (primary.selected) {
+	} else if (primary.selected()) {
 		std::string textToCopy = buffer_->BufGetSelectionTextEx();
 		setInsertPosition(TextDXYToPosition(event->pos()));
 		TextInsertAtCursorEx(textToCopy, false, autoWrapPastedText_);
@@ -5814,7 +5814,7 @@ void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 
 	/* If the click was outside of the primary selection, this is not
 	   a drag, start a secondary selection */
-	if (!buffer_->primary.selected || !inSelection(event->pos())) {
+	if (!buffer_->primary.selected() || !inSelection(event->pos())) {
 		secondaryStartAP(event, flags | SupressRecording);
 		return;
 	}
@@ -5861,12 +5861,12 @@ void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
 
 	// Find the new anchor point and make the new selection
 	TextCursor pos = TextDXYToPosition(event->pos());
-	if (sel.selected) {
+	if (sel.selected()) {
 		TextCursor anchor;
-		if (std::abs(pos - sel.start) < std::abs(pos - sel.end)) {
-			anchor = sel.end;
+		if (std::abs(pos - sel.start()) < std::abs(pos - sel.end())) {
+			anchor = sel.end();
 		} else {
-			anchor = sel.start;
+			anchor = sel.start();
 		}
 		buffer_->BufSecondarySelect(anchor, pos);
 	} else {
@@ -5988,66 +5988,66 @@ void TextArea::BeginBlockDrag() {
 
 	dragOrigBuf_->BufSetAll(buffer_->BufGetAllEx());
 
-	if (sel.rectangular) {
-		dragOrigBuf_->BufRectSelect(sel.start, sel.end, sel.rectStart, sel.rectEnd);
+	if (sel.rectangular()) {
+		dragOrigBuf_->BufRectSelect(sel.start(), sel.end(), sel.rectStart(), sel.rectEnd());
 	} else {
-		dragOrigBuf_->BufSelect(sel.start, sel.end);
+		dragOrigBuf_->BufSelect(sel.start(), sel.end());
 	}
 
 	/* Record the mouse pointer offsets from the top left corner of the
 	   selection (the position where text will actually be inserted In dragging
 	   non-rectangular selections)  */
-	if (sel.rectangular) {
-		dragXOffset_ = btnDownCoord_.x() + horizontalScrollBar()->value() - viewRect.left() - sel.rectStart * fontWidth;
+	if (sel.rectangular()) {
+		dragXOffset_ = btnDownCoord_.x() + horizontalScrollBar()->value() - viewRect.left() - sel.rectStart() * fontWidth;
 	} else {
-		if (!positionToXY(sel.start, &x, &y)) {
-			x = buffer_->BufCountDispChars(TextDStartOfLine(sel.start), sel.start) * fontWidth + viewRect.left() - horizontalScrollBar()->value();
+		if (!positionToXY(sel.start(), &x, &y)) {
+			x = buffer_->BufCountDispChars(TextDStartOfLine(sel.start()), sel.start()) * fontWidth + viewRect.left() - horizontalScrollBar()->value();
 		}
 		dragXOffset_ = btnDownCoord_.x() - x;
 	}
 
 	const TextCursor mousePos = TextDXYToPosition(btnDownCoord_);
-	const int64_t nLines = buffer_->BufCountLines(sel.start, mousePos);
+	const int64_t nLines = buffer_->BufCountLines(sel.start(), mousePos);
 
 	dragYOffset_ = nLines * fontHeight + (((btnDownCoord_.y() - viewRect.top()) % fontHeight) - fontHeight / 2);
-	dragNLines_  = buffer_->BufCountLines(sel.start, sel.end);
+	dragNLines_  = buffer_->BufCountLines(sel.start(), sel.end());
 
 	/* Record the current drag insert position and the information for
 	   undoing the fictional insert of the selection in its new position */
-	dragInsertPos_ = sel.start;
-	dragInserted_  = sel.end - sel.start;
-	if (sel.rectangular) {
+	dragInsertPos_ = sel.start();
+	dragInserted_  = sel.end() - sel.start();
+	if (sel.rectangular()) {
 		TextBuffer testBuf;
 		testBuf.BufSetSyncXSelection(false);
 
-		std::string testText = buffer_->BufGetRangeEx(sel.start, sel.end);
+		std::string testText = buffer_->BufGetRangeEx(sel.start(), sel.end());
 		testBuf.BufSetTabDistance(buffer_->BufGetTabDistance(), true);
 		testBuf.BufSetUseTabs(buffer_->BufGetUseTabs());
 		testBuf.BufSetAll(testText);
 
-		testBuf.BufRemoveRect(buffer_->BufStartOfBuffer(), buffer_->BufStartOfBuffer() + (sel.end - sel.start), sel.rectStart, sel.rectEnd);
+		testBuf.BufRemoveRect(buffer_->BufStartOfBuffer(), buffer_->BufStartOfBuffer() + (sel.end() - sel.start()), sel.rectStart(), sel.rectEnd());
 		dragDeleted_ = testBuf.BufGetLength();
-		dragRectStart_ = sel.rectStart;
+		dragRectStart_ = sel.rectStart();
 	} else {
 		dragDeleted_   = 0;
 		dragRectStart_ = 0;
 	}
 
 	dragType_            = DRAG_MOVE;
-	dragSourceDeletePos_ = sel.start;
+	dragSourceDeletePos_ = sel.start();
 	dragSourceInserted_  = dragDeleted_;
 	dragSourceDeleted_   = dragInserted_;
 
 	/* For non-rectangular selections, fill in the rectangular information in
 	   the selection for overlay mode drags which are done rectangularly */
-	if (!sel.rectangular) {
-		TextCursor lineStart = buffer_->BufStartOfLine(sel.start);
+	if (!sel.rectangular()) {
+		TextCursor lineStart = buffer_->BufStartOfLine(sel.start());
 		if (dragNLines_ == 0) {
-			dragOrigBuf_->primary.rectStart = buffer_->BufCountDispChars(lineStart, sel.start);
-			dragOrigBuf_->primary.rectEnd   = buffer_->BufCountDispChars(lineStart, sel.end);
+			dragOrigBuf_->primary.rectStart_ = buffer_->BufCountDispChars(lineStart, sel.start());
+			dragOrigBuf_->primary.rectEnd_   = buffer_->BufCountDispChars(lineStart, sel.end());
 		} else {
-			TextCursor lineEnd = buffer_->BufGetCharacter(sel.end - 1) == '\n' ? sel.end - 1 : sel.end;
-			findTextMargins(buffer_, lineStart, lineEnd, &dragOrigBuf_->primary.rectStart, &dragOrigBuf_->primary.rectEnd);
+			TextCursor lineEnd = buffer_->BufGetCharacter(sel.end() - 1) == '\n' ? sel.end() - 1 : sel.end();
+			findTextMargins(buffer_, lineStart, lineEnd, &dragOrigBuf_->primary.rectStart_, &dragOrigBuf_->primary.rectEnd_);
 		}
 	}
 
@@ -6071,7 +6071,7 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	auto &origBuf                = dragOrigBuf_;
 	int dragXOffset              = dragXOffset_;
 	const TextBuffer::Selection &origSel = origBuf->primary;
-	bool rectangular             = origSel.rectangular;
+	bool rectangular             = origSel.rectangular();
 	BlockDragTypes oldDragType   = dragType_;
 	int64_t nLines               = dragNLines_;	
 	TextCursor modRangeStart     = TextCursor(-1);
@@ -6120,8 +6120,8 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	tempBuf.BufSetTabDistance(buffer_->BufGetTabDistance(), false);
 	tempBuf.BufSetUseTabs(buffer_->BufGetUseTabs());
 
-	const TextCursor tempStart = std::min({ dragInsertPos_, origSel.start, buffer_->BufCountBackwardNLines(firstChar_, nLines + 2) });
-	const TextCursor tempEnd   = buffer_->BufCountForwardNLines(std::max({dragInsertPos_, origSel.start, lastChar_}), nLines + 2) + (origSel.end - origSel.start);
+	const TextCursor tempStart = std::min({ dragInsertPos_, origSel.start(), buffer_->BufCountBackwardNLines(firstChar_, nLines + 2) });
+	const TextCursor tempEnd   = buffer_->BufCountForwardNLines(std::max({dragInsertPos_, origSel.start(), lastChar_}), nLines + 2) + (origSel.end() - origSel.start());
 
 	const std::string text = origBuf->BufGetRangeEx(tempStart, tempEnd);
 	tempBuf.BufSetAll(text);
@@ -6137,16 +6137,16 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	   was rectangular.  To use a plain selection as if it were rectangular,
 	   the start and end positions need to be moved to the line boundaries
 	   and trailing newlines must be excluded */
-	TextCursor origSelLineStart = origBuf->BufStartOfLine(origSel.start);
+	TextCursor origSelLineStart = origBuf->BufStartOfLine(origSel.start());
 
-	if (!rectangular && origBuf->BufGetCharacter(origSel.end - 1) == '\n') {
-		origSelLineEnd = origSel.end - 1;
+	if (!rectangular && origBuf->BufGetCharacter(origSel.end() - 1) == '\n') {
+		origSelLineEnd = origSel.end() - 1;
 	} else {
-		origSelLineEnd = origBuf->BufEndOfLine(origSel.end);
+		origSelLineEnd = origBuf->BufEndOfLine(origSel.end());
 	}
 
 	if (!rectangular && overlay && nLines != 0) {
-		dragXOffset -= fontWidth * (origSel.rectStart - (origSel.start - origSelLineStart));
+		dragXOffset -= fontWidth * (origSel.rectStart() - (origSel.start() - origSelLineStart));
 	}
 
 	/* If the drag operation is of a different type than the last one, and the
@@ -6167,19 +6167,19 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 			const int64_t origSelLen = origSelLineEnd - origSelLineStart;
 
 			if (overlay) {
-				tempBuf.BufClearRect(TextCursor(origSelLineStart - tempStart), TextCursor(origSelLineEnd - tempStart), origSel.rectStart, origSel.rectEnd);
+				tempBuf.BufClearRect(TextCursor(origSelLineStart - tempStart), TextCursor(origSelLineEnd - tempStart), origSel.rectStart(), origSel.rectEnd());
 			} else {
-				tempBuf.BufRemoveRect(TextCursor(origSelLineStart - tempStart), TextCursor(origSelLineEnd - tempStart), origSel.rectStart, origSel.rectEnd);
+				tempBuf.BufRemoveRect(TextCursor(origSelLineStart - tempStart), TextCursor(origSelLineEnd - tempStart), origSel.rectStart(), origSel.rectEnd());
 			}
 
 			sourceDeletePos = origSelLineStart;
 			sourceInserted  = origSelLen - prevLen + tempBuf.BufGetLength();
 			sourceDeleted   = origSelLen;
 		} else {
-			tempBuf.BufRemove(TextCursor(origSel.start - tempStart), TextCursor(origSel.end - tempStart));
-			sourceDeletePos = origSel.start;
+			tempBuf.BufRemove(TextCursor(origSel.start() - tempStart), TextCursor(origSel.end() - tempStart));
+			sourceDeletePos = origSel.start();
 			sourceInserted  = 0;
-			sourceDeleted   = origSel.end - origSel.start;
+			sourceDeleted   = origSel.end() - origSel.start();
 		}
 
 		if (dragType != oldDragType) {
@@ -6249,9 +6249,9 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	// Do the insert in the temporary buffer
 	if (rectangular || overlay) {
 
-		std::string insText = origBuf->BufGetTextInRectEx(origSelLineStart, origSelLineEnd, origSel.rectStart, origSel.rectEnd);
+		std::string insText = origBuf->BufGetTextInRectEx(origSelLineStart, origSelLineEnd, origSel.rectStart(), origSel.rectEnd());
 		if (overlay) {
-			tempBuf.BufOverlayRectEx(TextCursor(insStart - tempStart), insRectStart, insRectStart + origSel.rectEnd - origSel.rectStart, insText, &insertInserted, &insertDeleted);
+			tempBuf.BufOverlayRectEx(TextCursor(insStart - tempStart), insRectStart, insRectStart + origSel.rectEnd() - origSel.rectStart(), insText, &insertInserted, &insertDeleted);
 		} else {
 			tempBuf.BufInsertColEx(insRectStart, TextCursor(insStart - tempStart), insText, &insertInserted, &insertDeleted);
 		}
@@ -6260,8 +6260,8 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	} else {
 		std::string insText = origBuf->BufGetSelectionTextEx();
 		tempBuf.BufInsertEx(TextCursor(insStart - tempStart), insText);
-		trackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd, insStart, origSel.end - origSel.start, 0);
-		insertInserted = origSel.end - origSel.start;
+		trackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd, insStart, origSel.end() - origSel.start(), 0);
+		insertInserted = origSel.end() - origSel.start();
 		insertDeleted  = 0;
 	}
 
@@ -6292,12 +6292,12 @@ void TextArea::BlockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 
 	// Reset the selection and cursor position
 	if (rectangular || overlay) {
-		int64_t insRectEnd = insRectStart + origSel.rectEnd - origSel.rectStart;
+		int64_t insRectEnd = insRectStart + origSel.rectEnd() - origSel.rectStart();
 		buffer_->BufRectSelect(insStart, insStart + insertInserted, insRectStart, insRectEnd);
 		setInsertPosition(buffer_->BufCountForwardDispChars(buffer_->BufCountForwardNLines(insStart, dragNLines_), insRectEnd));
 	} else {
-		buffer_->BufSelect(insStart, insStart + (origSel.end - origSel.start));
-		setInsertPosition(insStart + (origSel.end - origSel.start));
+		buffer_->BufSelect(insStart, insStart + (origSel.end() - origSel.start()));
+		setInsertPosition(insStart + (origSel.end() - origSel.start()));
 	}
 
 	if(dragType == DRAG_OVERLAY_MOVE) {
@@ -6476,7 +6476,7 @@ void TextArea::cutPrimaryAP(EventFlags flags) {
 		return;
 	}
 
-	if (primary.selected && rectangular) {
+	if (primary.selected() && rectangular) {
 		const std::string textToCopy = buffer_->BufGetSelectionTextEx();
 		insertPos = cursorPos_;
 		const int64_t col = buffer_->BufCountDispChars(buffer_->BufStartOfLine(insertPos), insertPos);
@@ -6485,7 +6485,7 @@ void TextArea::cutPrimaryAP(EventFlags flags) {
 
 		buffer_->BufRemoveSelected();
 		checkAutoShowInsertPos();
-	} else if (primary.selected) {
+	} else if (primary.selected()) {
 		const std::string textToCopy = buffer_->BufGetSelectionTextEx();
 		insertPos = cursorPos_;
 		buffer_->BufInsertEx(insertPos, textToCopy);
@@ -6538,11 +6538,11 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 
 	const TextBuffer::Selection &secondary = buffer_->secondary;
 	const TextBuffer::Selection &primary   = buffer_->primary;
-	const bool rectangular                 = secondary.rectangular;
+	const bool rectangular                 = secondary.rectangular();
 
 	endDrag();
 
-	if (!((dragState == SECONDARY_DRAG && secondary.selected) || (dragState == SECONDARY_RECT_DRAG && secondary.selected) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED)) {
+	if (!((dragState == SECONDARY_DRAG && secondary.selected()) || (dragState == SECONDARY_RECT_DRAG && secondary.selected()) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED)) {
 		return;
 	}
 
@@ -6551,10 +6551,10 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 		return;
 	}
 
-	if (secondary.selected) {
+	if (secondary.selected()) {
 
 		const std::string textToCopy = buffer_->BufGetSecSelectTextEx();
-		if (primary.selected && rectangular) {
+		if (primary.selected() && rectangular) {
 			buffer_->BufReplaceSelectedEx(textToCopy);
 			setInsertPosition(buffer_->BufCursorPosHint());
 		} else if (rectangular) {
@@ -6571,8 +6571,8 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 		buffer_->BufRemoveSecSelect();
 		buffer_->BufSecondaryUnselect();
 
-	} else if (primary.selected) {
-		const std::string textToCopy = buffer_->BufGetRangeEx(primary.start, primary.end);
+	} else if (primary.selected()) {
+		const std::string textToCopy = buffer_->BufGetRangeEx(primary.start(), primary.end());
 		setInsertPosition(TextDXYToPosition(event->pos()));
 		TextInsertAtCursorEx(textToCopy, false, autoWrapPastedText_);
 
@@ -6601,7 +6601,7 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 
 	/* If there's no secondary selection here, or the primary and secondary
 	   selection overlap, just beep and return */
-	if (!secondary.selected || (primary.selected && ((primary.start <= secondary.start && primary.end > secondary.start) || (secondary.start <= primary.start && secondary.end > primary.start)))) {
+	if (!secondary.selected() || (primary.selected() && ((primary.start() <= secondary.start() && primary.end() > secondary.start()) || (secondary.start() <= primary.start() && secondary.end() > primary.start())))) {
 		buffer_->BufSecondaryUnselect();
 		ringIfNecessary(silent);
 		/* If there's no secondary selection, but the primary selection is
@@ -6614,7 +6614,7 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 	}
 
 	// if the primary selection is in another widget, use selection routines
-	if (!primary.selected) {
+	if (!primary.selected()) {
 		ExchangeSelections();
 		return;
 	}
@@ -6623,10 +6623,10 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 	std::string primaryText = buffer_->BufGetSelectionTextEx();
 	std::string secText     = buffer_->BufGetSecSelectTextEx();
 
-	const bool secWasRect = secondary.rectangular;
+	const bool secWasRect = secondary.rectangular();
 	buffer_->BufReplaceSecSelectEx(primaryText);
 
-	const TextCursor newPrimaryStart = primary.start;
+	const TextCursor newPrimaryStart = primary.start();
 	buffer_->BufReplaceSelectedEx(secText);
 
 	const TextCursor newPrimaryEnd = newPrimaryStart + secText.size();
@@ -6647,7 +6647,7 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 */
 void TextArea::ExchangeSelections() {
 
-	if (!buffer_->secondary.selected) {
+	if (!buffer_->secondary.selected()) {
 		return;
 	}
 

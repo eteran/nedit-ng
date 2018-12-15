@@ -37,7 +37,7 @@ public:
 public:
 	static QString                       CommonMacros;
 	static std::vector<SmartIndentEntry> SmartIndentSpecs;
-	static QPointer<DialogSmartIndent>   SmartIndentDlg;
+	static QPointer<DialogSmartIndent>   SmartIndentDialog;
 };
 
 struct SmartIndentData {

@@ -381,8 +381,8 @@ bool DialogLanguageModes::updateLanguageList(Verbosity verbosity) {
 			if (oldLM->name != newLM->name) {
 				int count = countLanguageModes(oldLM->name);
 				if (count <= 1) {
-					int index = oldLM->name.indexOf(QLatin1Char(':'));
-					int oldLen = (index == -1) ? oldLM->name.size() : index;
+					int colon  = oldLM->name.indexOf(QLatin1Char(':'));
+					int oldLen = (colon == -1) ? oldLM->name.size() : colon;
 
 					auto tempName = tr("%1:%2").arg(oldLM->name.mid(0, oldLen), newLM->name);
 					newLM->name = tempName;
@@ -500,10 +500,10 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 		}
 
 		// and load any needed calltips files ...
-		for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-			const size_t languageMode = document->GetLanguageMode();
-			if (languageMode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[languageMode].defTipsFile.isNull()) {
-				Tags::AddTagsFileEx(Preferences::LanguageModes[languageMode].defTipsFile, Tags::SearchMode::TIP);
+		for(DocumentWidget *currentDocument : DocumentWidget::allDocuments()) {
+			const size_t currentLanguageMode = currentDocument->GetLanguageMode();
+			if (currentLanguageMode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[currentLanguageMode].defTipsFile.isNull()) {
+				Tags::AddTagsFileEx(Preferences::LanguageModes[currentLanguageMode].defTipsFile, Tags::SearchMode::TIP);
 			}
 		}
 

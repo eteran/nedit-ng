@@ -220,15 +220,15 @@ void maintainPosition(TextCursor &position, TextCursor modPos, int64_t nInserted
 ** "pos", "nDeleted", and "nInserted".
 */
 void maintainSelection(TextBuffer::Selection &sel, TextCursor pos, int64_t nInserted, int64_t nDeleted) {
-	if (!sel.selected || pos > sel.end) {
+	if (!sel.selected() || pos > sel.end()) {
 		return;
 	}
 
-	maintainPosition(sel.start, pos, nInserted, nDeleted);
-	maintainPosition(sel.end,   pos, nInserted, nDeleted);
+	maintainPosition(sel.start_, pos, nInserted, nDeleted);
+	maintainPosition(sel.end_,   pos, nInserted, nDeleted);
 
-	if (sel.end <= sel.start) {
-		sel.selected = false;
+	if (sel.end() <= sel.start()) {
+		sel.selected_ = false;
 	}
 }
 
@@ -816,7 +816,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 	// number of distinct editing operations user can do before NEdit gens. new backup file
 	constexpr int AutoSaveOpLimit   = 8;
 
-	const bool selected = buffer_->primary.selected;
+	const bool selected = buffer_->primary.selected();
 
 	// update the table of bookmarks
 	if (!ignoreModify_) {
@@ -890,19 +890,19 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
  * @param area
  * @param data
  */
-void DocumentWidget::dragEndCallback(TextArea *area, const DragEndEvent *data) {
+void DocumentWidget::dragEndCallback(TextArea *area, const DragEndEvent *event) {
 
 	// restore recording of undo information
 	ignoreModify_ = false;
 
 	// Do nothing if drag operation was canceled
-	if (data->nCharsInserted == 0) {
+	if (event->nCharsInserted == 0) {
 		return;
 	}
 
 	/* Save information for undoing this operation not saved while undo
 	 * recording was off */
-	modifiedCallback(data->startPos, data->nCharsInserted, data->nCharsDeleted, 0, data->deletedText, area);
+	modifiedCallback(event->startPos, event->nCharsInserted, event->nCharsDeleted, 0, event->deletedText, area);
 }
 
 /**
@@ -910,7 +910,7 @@ void DocumentWidget::dragEndCallback(TextArea *area, const DragEndEvent *data) {
  * @param area
  * @param data
  */
-void DocumentWidget::smartIndentCallback(TextArea *area, SmartIndentEvent *data) {
+void DocumentWidget::smartIndentCallback(TextArea *area, SmartIndentEvent *event) {
 
 	Q_UNUSED(area);
 
@@ -918,12 +918,12 @@ void DocumentWidget::smartIndentCallback(TextArea *area, SmartIndentEvent *data)
 		return;
 	}
 
-	switch(data->reason) {
+	switch(event->reason) {
 	case CHAR_TYPED:
-		executeModMacro(data);
+		executeModMacro(event);
 		break;
 	case NEWLINE_INDENT_NEEDED:
-		executeNewlineMacro(data);
+		executeNewlineMacro(event);
 		break;
 	}
 }
@@ -1593,7 +1593,7 @@ void DocumentWidget::Undo() {
 		buffer_->BufReplaceEx(undo.startPos, undo.endPos, undo.oldText);
 
 		const auto restoredTextLength = static_cast<int64_t>(undo.oldText.size());
-		if (!buffer_->primary.selected || Preferences::GetPrefUndoModifiesSelection()) {
+		if (!buffer_->primary.selected() || Preferences::GetPrefUndoModifiesSelection()) {
 			/* position the cursor in the focus pane after the changed text
 			   to show the user where the undo was done */
 			if(QPointer<TextArea> area = win->lastFocus()) {
@@ -1646,7 +1646,7 @@ void DocumentWidget::Redo() {
 		buffer_->BufReplaceEx(redo.startPos, redo.endPos, redo.oldText);
 
 		const auto restoredTextLength = static_cast<int64_t>(redo.oldText.size());
-		if (!buffer_->primary.selected || Preferences::GetPrefUndoModifiesSelection()) {
+		if (!buffer_->primary.selected() || Preferences::GetPrefUndoModifiesSelection()) {
 			/* position the cursor in the focus pane after the changed text
 			   to show the user where the undo was done */
 			if(QPointer<TextArea> area = win->lastFocus()) {
@@ -3386,7 +3386,7 @@ bool DocumentWidget::includeFile(const QString &name) {
 
 		/* insert the contents of the file in the selection or at the insert
 		   position in the window if no selection exists */
-		if (buffer_->primary.selected) {
+		if (buffer_->primary.selected()) {
 			buffer_->BufReplaceSelectedEx(text);
 		} else {
 			if(auto win = MainWindow::fromDocument(this)) {
@@ -3765,15 +3765,15 @@ void DocumentWidget::printWindow(TextArea *area, bool selectedOnly) {
 
 		const TextBuffer::Selection *sel = &buffer_->primary;
 
-		if (!sel->selected) {
+		if (!sel->selected()) {
 			QApplication::beep();
 			return;
 		}
 
-		if (sel->rectangular) {
+		if (sel->rectangular()) {
 			fileString = buffer_->BufGetSelectionTextEx();
 		} else {
-			fileString = area->TextGetWrapped(sel->start, sel->end);
+			fileString = area->TextGetWrapped(sel->start(), sel->end());
 		}
 	} else {
 		fileString = area->TextGetWrapped(buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer());
@@ -4344,20 +4344,20 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 	// support for merged output if we are not using ERROR_DIALOGS
 	if (flags & ERROR_DIALOGS) {
 		connect(process, &QProcess::readyReadStandardError, this, [this]() {
-			QByteArray data = shellCmdData_->process->readAllStandardError();
-			shellCmdData_->standardError.append(data);
+			QByteArray dataErr = shellCmdData_->process->readAllStandardError();
+			shellCmdData_->standardError.append(dataErr);
 		});
 
 		connect(process, &QProcess::readyReadStandardOutput, this, [this]() {
-			QByteArray data = shellCmdData_->process->readAllStandardOutput();
-			shellCmdData_->standardOutput.append(data);
+			QByteArray dataOut = shellCmdData_->process->readAllStandardOutput();
+			shellCmdData_->standardOutput.append(dataOut);
 		});
 	} else {
 		process->setProcessChannelMode(QProcess::MergedChannels);
 
 		connect(process, &QProcess::readyRead, this, [this]() {
-			QByteArray data = shellCmdData_->process->readAll();
-			shellCmdData_->standardOutput.append(data);
+			QByteArray dataAll = shellCmdData_->process->readAll();
+			shellCmdData_->standardOutput.append(dataAll);
 		});
 	}
 
@@ -4465,8 +4465,8 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 		outText = QString::fromLocal8Bit(cmdData->standardOutput);
 	} else {
 
-		QByteArray data = cmdData->process->readAll();
-		cmdData->standardOutput.append(data);
+		QByteArray dataAll = cmdData->process->readAll();
+		cmdData->standardOutput.append(dataAll);
 		outText = QString::fromLocal8Bit(cmdData->standardOutput);
 	}
 
@@ -4553,7 +4553,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 			TextBuffer *buf = area->TextGetBuffer();
 
 			if (cmdData->flags & REPLACE_SELECTION) {
-				TextCursor reselectStart = buf->primary.rectangular ? TextCursor(-1) : buf->primary.start;
+				TextCursor reselectStart = buf->primary.rectangular() ? TextCursor(-1) : buf->primary.start();
 				buf->BufReplaceSelectedEx(output_string);
 
 				area->TextSetCursorPos(buf->BufCursorPosHint());
@@ -4683,8 +4683,8 @@ void DocumentWidget::filterSelection(const QString &command, CommandSource sourc
 		return;
 	}
 
-	const TextCursor left  = buffer_->primary.start;
-	const TextCursor right = buffer_->primary.end;
+	const TextCursor left  = buffer_->primary.start();
+	const TextCursor right = buffer_->primary.end();
 
 	issueCommand(
 	            window,
@@ -5182,7 +5182,7 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 	}
 
 	// don't flash matching characters if there's a selection
-	if (buffer_->primary.selected) {
+	if (buffer_->primary.selected()) {
 		return;
 	}
 
@@ -6497,7 +6497,7 @@ QString DocumentWidget::GetAnySelection(bool beep_on_error) {
 	}
 
 	// If the selection is in the window's own buffer get it from there
-	if (buffer_->primary.selected) {
+	if (buffer_->primary.selected()) {
 		return QString::fromStdString(buffer_->BufGetSelectionTextEx());
 	}
 
@@ -6715,18 +6715,18 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
 	TextCursor cursorPos = markTable_[index].cursorPos;
 	if (extendSel) {
 
-		const TextCursor oldStart = oldSel.selected ? oldSel.start : area->TextGetCursorPos();
-		const TextCursor oldEnd   = oldSel.selected ? oldSel.end   : area->TextGetCursorPos();
-		const TextCursor newStart = sel.selected    ? sel.start    : cursorPos;
-		const TextCursor newEnd   = sel.selected    ? sel.end      : cursorPos;
+		const TextCursor oldStart = oldSel.selected() ? oldSel.start() : area->TextGetCursorPos();
+		const TextCursor oldEnd   = oldSel.selected() ? oldSel.end()   : area->TextGetCursorPos();
+		const TextCursor newStart = sel.selected()    ? sel.start()    : cursorPos;
+		const TextCursor newEnd   = sel.selected()    ? sel.end()      : cursorPos;
 
 		buffer_->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
 	} else {
-		if (sel.selected) {
-			if (sel.rectangular) {
-				buffer_->BufRectSelect(sel.start, sel.end, sel.rectStart, sel.rectEnd);
+		if (sel.selected()) {
+			if (sel.rectangular()) {
+				buffer_->BufRectSelect(sel.start(), sel.end(), sel.rectStart(), sel.rectEnd());
 			} else {
-				buffer_->BufSelect(sel.start, sel.end);
+				buffer_->BufSelect(sel.start(), sel.end());
 			}
 		} else {
 			buffer_->BufUnselect();

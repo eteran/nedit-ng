@@ -59,8 +59,8 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
 	ui.listItems->setModel(model_);
 
 	// Copy the list of menu information to one that the user can freely edit
-	for(MenuData &data : MacroMenuData) {
-		model_->addItem(data.item);
+	for(MenuData &menuData : MacroMenuData) {
+		model_->addItem(menuData.item);
 	}
 
 	connect(ui.listItems->selectionModel(), &QItemSelectionModel::currentChanged, this, &DialogMacros::currentChanged, Qt::QueuedConnection);

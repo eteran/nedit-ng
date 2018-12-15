@@ -544,7 +544,7 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::updatePrimarySelection() noexcept {
 #ifdef Q_OS_UNIX
 	if(syncXSelection_ && QApplication::clipboard()->supportsSelection()) {
-		const bool selected = primary.selected;
+		const bool selected = primary.selected_;
 		const bool isOwner  = TextAreaMimeData::isOwner(QApplication::clipboard()->mimeData(QClipboard::Selection), this);
 
 		// if we already own the selection, then we don't need to do anything
@@ -576,8 +576,8 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufUnselect() noexcept {
 	const Selection oldSelection = primary;
 
-	primary.selected = false;
-	primary.zeroWidth = false;
+	primary.selected_  = false;
+	primary.zeroWidth_ = false;
 	redisplaySelection(oldSelection, &primary);
 }
 
@@ -601,7 +601,7 @@ bool BasicTextBuffer<Ch, Tr>::BufGetSelectionPos(TextCursor *start, TextCursor *
 // Same as above, but also returns true for empty selections
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::BufGetEmptySelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept {
-	return primary.getSelectionPos(start, end, isRect, rectStart, rectEnd) || primary.zeroWidth;
+	return primary.getSelectionPos(start, end, isRect, rectStart, rectEnd) || primary.zeroWidth_;
 }
 
 template <class Ch, class Tr>
@@ -631,8 +631,8 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSecondaryUnselect() noexcept {
 	const Selection oldSelection = secondary;
 
-	secondary.selected = false;
-	secondary.zeroWidth = false;
+	secondary.selected_  = false;
+	secondary.zeroWidth_ = false;
 	redisplaySelection(oldSelection, &secondary);
 }
 
@@ -671,8 +671,8 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufUnhighlight() noexcept {
 	const Selection oldSelection = highlight;
 
-	highlight.selected = false;
-	highlight.zeroWidth = false;
+	highlight.selected_  = false;
+	highlight.zeroWidth_ = false;
 	redisplaySelection(oldSelection, &highlight);
 }
 
@@ -1150,10 +1150,10 @@ auto BasicTextBuffer<Ch, Tr>::getSelectionTextEx(const Selection *sel) const -> 
 	}
 
 	// If the selection is not rectangular, return the selected range
-	if (sel->rectangular) {
-		return BufGetTextInRectEx(sel->start, sel->end, sel->rectStart, sel->rectEnd);
+	if (sel->rectangular_) {
+		return BufGetTextInRectEx(sel->start_, sel->end_, sel->rectStart_, sel->rectEnd_);
 	} else {
-		return BufGetRangeEx(sel->start, sel->end);
+		return BufGetRangeEx(sel->start_, sel->end_);
 	}
 }
 
@@ -1419,39 +1419,40 @@ void BasicTextBuffer<Ch, Tr>::redisplaySelection(const Selection &oldSelection, 
 	/* If either selection is rectangular, add an additional character to
 	   the end of the selection to request the redraw routines to wipe out
 	   the parts of the selection beyond the end of the line */
-	TextCursor oldStart = oldSelection.start;
-	TextCursor newStart = newSelection->start;
-	TextCursor oldEnd   = oldSelection.end;
-	TextCursor newEnd   = newSelection->end;
+	TextCursor oldStart = oldSelection.start_;
+	TextCursor newStart = newSelection->start_;
+	TextCursor oldEnd   = oldSelection.end_;
+	TextCursor newEnd   = newSelection->end_;
 
-	if (oldSelection.rectangular) {
+	if (oldSelection.rectangular_) {
 		++oldEnd;
 	}
 
-	if (newSelection->rectangular) {
+	if (newSelection->rectangular_) {
 		++newEnd;
 	}
 
 	/* If the old or new selection is unselected, just redisplay the
 	   single area that is (was) selected and return */
-	if (!oldSelection.selected && !newSelection->selected) {
+	if (!oldSelection.selected_ && !newSelection->selected_) {
 		return;
 	}
 
-	if (!oldSelection.selected) {
+	if (!oldSelection.selected_) {
 		callModifyCBs(newStart, 0, 0, newEnd - newStart, {});
 		return;
 	}
 
-	if (!newSelection->selected) {
+	if (!newSelection->selected_) {
 		callModifyCBs(oldStart, 0, 0, oldEnd - oldStart, {});
 		return;
 	}
 
 	/* If the selection changed from normal to rectangular or visa versa, or
 	   if a rectangular selection changed boundaries, redisplay everything */
-	if ((oldSelection.rectangular && !newSelection->rectangular) || (!oldSelection.rectangular && newSelection->rectangular) ||
-	    (oldSelection.rectangular && ((oldSelection.rectStart != newSelection->rectStart) || (oldSelection.rectEnd != newSelection->rectEnd)))) {
+	if ((oldSelection.rectangular_ && !newSelection->rectangular_) || (!oldSelection.rectangular_ && newSelection->rectangular_) ||
+	    (oldSelection.rectangular_ && ((oldSelection.rectStart_ != newSelection->rectStart_) || (oldSelection.rectEnd_ != newSelection->rectEnd_)))) {
+
 		callModifyCBs(std::min(oldStart, newStart), 0, 0, std::max(oldEnd, newEnd) - std::min(oldStart, newStart), {});
 		return;
 	}
@@ -1490,10 +1491,10 @@ void BasicTextBuffer<Ch, Tr>::removeSelected(const Selection *sel) noexcept {
 		return;
 	}
 
-	if (sel->rectangular) {
-		BufRemoveRect(sel->start, sel->end, sel->rectStart, sel->rectEnd);
+	if (sel->rectangular_) {
+		BufRemoveRect(sel->start_, sel->end_, sel->rectStart_, sel->rectEnd_);
 	} else {
-		BufRemove(sel->start, sel->end);
+		BufRemove(sel->start_, sel->end_);
 	}
 }
 
@@ -1510,16 +1511,16 @@ void BasicTextBuffer<Ch, Tr>::replaceSelectedEx(Selection *sel, view_type text) 
 	}
 
 	// Do the appropriate type of replace
-	if (sel->rectangular) {
-		BufReplaceRectEx(sel->start, sel->end, sel->rectStart, sel->rectEnd, text);
+	if (sel->rectangular_) {
+		BufReplaceRectEx(sel->start_, sel->end_, sel->rectStart_, sel->rectEnd_, text);
 	} else {
-		BufReplaceEx(sel->start, sel->end, text);
+		BufReplaceEx(sel->start_, sel->end_, text);
 	}
 
 
 	/* Unselect (happens automatically in BufReplaceEx, but BufReplaceRectEx
 	   can't detect when the contents of a selection goes away) */
-	sel->selected = false;
+	sel->selected_ = false;
 	redisplaySelection(oldSelection, sel);
 }
 
@@ -2100,11 +2101,11 @@ bool BasicTextBuffer<Ch, Tr>::BufSetSyncXSelection(bool sync) {
  */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::Selection::setSelection(TextCursor newStart, TextCursor newEnd) {
-	selected	= (newStart != newEnd);
-	zeroWidth	= (newStart == newEnd);
-	rectangular = false;
-	start		= std::min(newStart, newEnd);
-	end 		= std::max(newStart, newEnd);
+	selected_    = (newStart != newEnd);
+	zeroWidth_   = (newStart == newEnd);
+	rectangular_ = false;
+	start_       = std::min(newStart, newEnd);
+	end_         = std::max(newStart, newEnd);
 }
 
 /**
@@ -2116,13 +2117,13 @@ void BasicTextBuffer<Ch, Tr>::Selection::setSelection(TextCursor newStart, TextC
  */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::Selection::setRectSelect(TextCursor newStart, TextCursor newEnd, int64_t newRectStart, int64_t newRectEnd) {
-	selected	= (newRectStart < newRectEnd);
-	zeroWidth	= (newRectStart == newRectEnd);
-	rectangular = true;
-	start		= newStart;
-	end 		= newEnd;
-	rectStart	= newRectStart;
-	rectEnd 	= newRectEnd;
+	selected_    = (newRectStart < newRectEnd);
+	zeroWidth_   = (newRectStart == newRectEnd);
+	rectangular_ = true;
+	start_       = newStart;
+	end_         = newEnd;
+	rectStart_   = newRectStart;
+	rectEnd_     = newRectEnd;
 }
 
 /**
@@ -2137,14 +2138,14 @@ void BasicTextBuffer<Ch, Tr>::Selection::setRectSelect(TextCursor newStart, Text
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::Selection::getSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const {
 	// Always fill in the parameters (zero-width can be requested too).
-	*isRect = this->rectangular;
-	*start  = this->start;
-	*end    = this->end;
-	if (this->rectangular) {
-		*rectStart = this->rectStart;
-		*rectEnd   = this->rectEnd;
+	*isRect = rectangular_;
+	*start  = start_;
+	*end    = end_;
+	if (rectangular_) {
+		*rectStart = rectStart_;
+		*rectEnd   = rectEnd_;
 	}
-	return this->selected;
+	return selected_;
 }
 
 /**
@@ -2157,25 +2158,25 @@ bool BasicTextBuffer<Ch, Tr>::Selection::getSelectionPos(TextCursor *start, Text
  */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::Selection::updateSelection(TextCursor pos, int64_t nDeleted, int64_t nInserted) {
-	if ((!selected && !zeroWidth) || pos > end) {
+	if ((!selected_ && !zeroWidth_) || pos > end_) {
 		return;
 	}
 
-	if (pos + nDeleted <= start) {
-		start += nInserted - nDeleted;
-		end   += nInserted - nDeleted;
-	} else if (pos <= start && pos + nDeleted >= end) {
-		start     = pos;
-		end       = pos;
-		selected  = false;
-		zeroWidth = false;
-	} else if (pos <= start && pos + nDeleted < end) {
-		start = pos;
-		end   = nInserted + (end - nDeleted);
-	} else if (pos < end) {
-		end += nInserted - nDeleted;
-		if (end <= start) {
-			selected = false;
+	if (pos + nDeleted <= start_) {
+		start_ += nInserted - nDeleted;
+		end_   += nInserted - nDeleted;
+	} else if (pos <= start_ && pos + nDeleted >= end_) {
+		start_     = pos;
+		end_       = pos;
+		selected_  = false;
+		zeroWidth_ = false;
+	} else if (pos <= start_ && pos + nDeleted < end_) {
+		start_ = pos;
+		end_   = nInserted + (end_ - nDeleted);
+	} else if (pos < end_) {
+		end_ += nInserted - nDeleted;
+		if (end_ <= start_) {
+			selected_ = false;
 		}
 	}
 }
@@ -2186,7 +2187,7 @@ void BasicTextBuffer<Ch, Tr>::Selection::updateSelection(TextCursor pos, int64_t
 */
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::Selection::inSelection(TextCursor pos, TextCursor lineStartPos, int64_t dispIndex) const {
-	return this->selected && ((!rectangular && pos >= start && pos < end) || (rectangular && pos >= start && lineStartPos <= end && dispIndex >= rectStart && dispIndex < rectEnd));
+	return selected_ && ((!rectangular_ && pos >= start_ && pos < end_) || (rectangular_ && pos >= start_ && lineStartPos <= end_ && dispIndex >= rectStart_ && dispIndex < rectEnd_));
 }
 
 /*
@@ -2195,7 +2196,7 @@ bool BasicTextBuffer<Ch, Tr>::Selection::inSelection(TextCursor pos, TextCursor 
 */
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::Selection::rangeTouchesRectSel(TextCursor rangeStart, TextCursor rangeEnd) const {
-	return selected && rectangular && end >= rangeStart && start <= rangeEnd;
+	return selected_ && rectangular_ && end_ >= rangeStart && start_ <= rangeEnd;
 }
 
 template <class Ch, class Tr>

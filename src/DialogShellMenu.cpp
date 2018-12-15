@@ -29,8 +29,8 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(pa
 	ui.listItems->setModel(model_);
 
 	// Copy the list of menu information to one that the user can freely edit
-	for(MenuData &data : ShellMenuData) {
-		model_->addItem(data.item);
+	for(MenuData &menuData : ShellMenuData) {
+		model_->addItem(menuData.item);
 	}
 
 	connect(ui.listItems->selectionModel(), &QItemSelectionModel::currentChanged, this, &DialogShellMenu::currentChanged, Qt::QueuedConnection);

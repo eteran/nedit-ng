@@ -19,7 +19,7 @@ TextAreaMimeData::TextAreaMimeData(TextBuffer *buffer) : buffer_(buffer) {
 QVariant TextAreaMimeData::retrieveData(const QString &mimeType, QVariant::Type type) const {
 
 	auto that = const_cast<TextAreaMimeData *>(this);
-	if(buffer_->primary.selected) {
+	if(buffer_->primary.selected()) {
 		const std::string text = buffer_->BufGetSelectionTextEx();
 		that->setText(QString::fromStdString(text));
 	}
@@ -33,7 +33,7 @@ QVariant TextAreaMimeData::retrieveData(const QString &mimeType, QVariant::Type 
  */
 QStringList TextAreaMimeData::formats() const {
 
-	if(buffer_->primary.selected) {
+	if(buffer_->primary.selected()) {
 		static const QStringList f = {
 		    QLatin1String("text/plain")
 		};

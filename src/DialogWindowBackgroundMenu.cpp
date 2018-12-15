@@ -60,8 +60,8 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 	ui.listItems->setModel(model_);
 
 	// Copy the list of menu information to one that the user can freely edit
-	for(MenuData &data : BGMenuData) {
-		model_->addItem(data.item);
+	for(MenuData &menuData : BGMenuData) {
+		model_->addItem(menuData.item);
 	}
 
 	connect(ui.listItems->selectionModel(), &QItemSelectionModel::currentChanged, this, &DialogWindowBackgroundMenu::currentChanged, Qt::QueuedConnection);

@@ -3901,12 +3901,16 @@ void MainWindow::defaultIndentGroupTriggered(QAction *action) {
  */
 void MainWindow::on_action_Default_Program_Smart_Indent_triggered() {
 
-	if (!SmartIndent::SmartIndentDlg) {
+	if (!SmartIndent::SmartIndentDialog) {
 		// We pass this document so that the dialog can show the information for the currently
 		// active language mode
-		if(DocumentWidget *document = currentDocument()) {
-			SmartIndent::SmartIndentDlg = new DialogSmartIndent(document, this);
+		DocumentWidget *document = currentDocument();
+		if(!document) {
+			qWarning("Nedit: no current document");
+			return;
 		}
+
+		SmartIndent::SmartIndentDialog = new DialogSmartIndent(document, this);
 	}
 
 	if (Preferences::LanguageModeName(0).isNull()) {
@@ -3916,7 +3920,17 @@ void MainWindow::on_action_Default_Program_Smart_Indent_triggered() {
 		return;
 	}
 
-	SmartIndent::SmartIndentDlg->exec();
+	// NOTE(eteran): false positive for this warning, it is impossible to get
+	// here and have the pointer be null.
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wnull-dereference"
+#endif
+	Q_ASSERT(SmartIndent::SmartIndentDialog);
+	SmartIndent::SmartIndentDialog->exec();
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#endif
 }
 
 /**
@@ -5682,7 +5696,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, CommandSource
 		return;
 	}
 
-	if (!document->buffer_->primary.selected) {
+	if (!document->buffer_->primary.selected()) {
 		QApplication::beep();
 		return;
 	}
@@ -5720,7 +5734,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, const QString
 		return;
 	}
 
-	if (!document->buffer_->primary.selected) {
+	if (!document->buffer_->primary.selected()) {
 		QApplication::beep();
 		return;
 	}
@@ -5814,8 +5828,8 @@ void MainWindow::action_Shell_Menu_Command(DocumentWidget *document, const QStri
  */
 void MainWindow::macroTriggered(QAction *action) {
 
-	QVariant data = action->data();
-	if(!data.isNull()) {
+	QVariant actionIndex = action->data();
+	if(!actionIndex.isNull()) {
 		/* Don't allow users to execute a macro command from the menu (or accel)
 		   if there's already a macro command executing, UNLESS the macro is
 		   directly called from another one.  NEdit can't handle
@@ -5832,7 +5846,7 @@ void MainWindow::macroTriggered(QAction *action) {
 				return;
 			}
 
-			const auto index = data.toUInt();
+			const auto index = actionIndex.toUInt();
 			const QString name = MacroMenuData[index].item.name;
 			action_Macro_Menu_Command(document, name);
 		}

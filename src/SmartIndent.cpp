@@ -16,7 +16,7 @@
 #include <cstdio>
 #include <cstring>
 
-QPointer<DialogSmartIndent>   SmartIndent::SmartIndentDlg;
+QPointer<DialogSmartIndent>   SmartIndent::SmartIndentDialog;
 std::vector<SmartIndentEntry> SmartIndent::SmartIndentSpecs;
 QString                       SmartIndent::CommonMacros;
 
@@ -435,7 +435,7 @@ bool SmartIndent::LMHasSmartIndentMacros(const QString &languageMode) {
 		return true;
 	}
 
-	return SmartIndentDlg && SmartIndentDlg->languageMode() == languageMode;
+	return SmartIndentDialog && SmartIndentDialog->languageMode() == languageMode;
 }
 
 /*
@@ -451,9 +451,9 @@ void SmartIndent::RenameSmartIndentMacros(const QString &oldName, const QString 
 		}
 	}
 
-	if (SmartIndentDlg) {
-		if(SmartIndentDlg->languageMode_ == oldName) {
-			SmartIndentDlg->setLanguageMode(newName);
+	if (SmartIndentDialog) {
+		if(SmartIndentDialog->languageMode_ == oldName) {
+			SmartIndentDialog->setLanguageMode(newName);
 		}
 	}
 }
@@ -464,7 +464,7 @@ void SmartIndent::RenameSmartIndentMacros(const QString &oldName, const QString 
 */
 void SmartIndent::UpdateLangModeMenuSmartIndent() {
 
-	if(SmartIndentDlg) {
-		SmartIndentDlg->updateLanguageModes();
+	if(SmartIndentDialog) {
+		SmartIndentDialog->updateLanguageModes();
 	}
 }

@@ -320,17 +320,19 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 		return false;
 	}
 
-	QString widgetText = ensureNewline(newlineText);
-	QString errMsg;
-	int stoppedAt = 0;
+	{
+		QString widgetText = ensureNewline(newlineText);
+		QString errMsg;
+		int stoppedAt = 0;
 
-	if(!isMacroValid(widgetText, &errMsg, &stoppedAt)) {
-		Preferences::reportError(this, widgetText, stoppedAt, tr("newline macro"), errMsg);
-		QTextCursor cursor = ui.editNewline->textCursor();
-		cursor.setPosition(stoppedAt);
-		ui.editNewline->setTextCursor(cursor);
-		ui.editNewline->setFocus();
-		return false;
+		if(!isMacroValid(widgetText, &errMsg, &stoppedAt)) {
+			Preferences::reportError(this, widgetText, stoppedAt, tr("newline macro"), errMsg);
+			QTextCursor cursor = ui.editNewline->textCursor();
+			cursor.setPosition(stoppedAt);
+			ui.editNewline->setTextCursor(cursor);
+			ui.editNewline->setFocus();
+			return false;
+		}
 	}
 
 
