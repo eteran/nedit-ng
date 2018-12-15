@@ -7,11 +7,11 @@
 #include <cstdlib>
 #include <cstring>
 
-bool operator==(const TextRange &lhs, const TextRange &rhs) {
+static bool operator==(const TextRange &lhs, const TextRange &rhs) {
 	return lhs.start == rhs.start && lhs.end == rhs.end;
 }
 
-bool operator<(const TextRange &lhs, const TextRange &rhs) {
+static bool operator<(const TextRange &lhs, const TextRange &rhs) {
 	return lhs.start < rhs.start;
 }
 

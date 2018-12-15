@@ -429,7 +429,7 @@ std::shared_ptr<userMenuInfo> parseMenuItemRec(const MenuItem &item) {
 
 }
 
-std::vector<MenuData> &selectMenu(CommandTypes type) {
+static std::vector<MenuData> &selectMenu(CommandTypes type) {
 	switch(type) {
 	case CommandTypes::SHELL_CMDS:
 		return ShellMenuData;

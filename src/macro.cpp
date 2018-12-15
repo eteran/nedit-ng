@@ -276,7 +276,7 @@ namespace std {
  * @param firstFlag
  * @return The flags if all arguments were valid, otherwise, nothing
  */
-boost::optional<TextArea::EventFlags> flagsFromArguments(Arguments arguments, int firstFlag) {
+static boost::optional<TextArea::EventFlags> flagsFromArguments(Arguments arguments, int firstFlag) {
 
 	TextArea::EventFlags f = TextArea::NoneFlag;
 	for(int i = firstFlag; i < arguments.size(); ++i) {
@@ -777,7 +777,7 @@ static WrapMode searchWrap(Arguments arguments, int index) {
 ** SearchType in searchType. Returns false and leaves searchType untouched
 ** otherwise. (Originally written by Markus Schwarzenberg; slightly adapted).
 */
-bool StringToSearchType(const QString &string, SearchType *searchType) {
+static bool StringToSearchType(const QString &string, SearchType *searchType) {
 
 	// TODO(eteran): return optional searchType?
 
@@ -1317,7 +1317,7 @@ static std::error_code setFontsMS(DocumentWidget *document, Arguments arguments,
 	return MacroErrorCode::Success;
 }
 
-boost::optional<int> toggle_or_bool(Arguments arguments, int previous, std::error_code *errMsg, const char *actionName) {
+static boost::optional<int> toggle_or_bool(Arguments arguments, int previous, std::error_code *errMsg, const char *actionName) {
 
 	int next;
 	switch(arguments.size()) {

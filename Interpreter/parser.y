@@ -15,7 +15,7 @@
 #define ADD_IMMED(val) if (!AddImmediate(val, &ErrMsg)) return 1
 #define ADD_BR_OFF(to) if (!AddBranchOffset(to, &ErrMsg)) return 1
 
-void SET_BR_OFF(Inst *from, Inst *to) {
+static void SET_BR_OFF(Inst *from, Inst *to) {
     from->value = to - from;
 }
 

@@ -3920,8 +3920,8 @@ void MainWindow::on_action_Default_Program_Smart_Indent_triggered() {
 		return;
 	}
 
-	// NOTE(eteran): false positive for this warning, it is impossible to get
-	// here and have the pointer be null.
+	// NOTE(eteran): GCC 7+ false positive
+	// it is impossible to get here and have the pointer be null.
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wnull-dereference"

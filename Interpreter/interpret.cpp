@@ -97,6 +97,46 @@ void restoreContext(Pointer context) {
 	Context.FocusDocument = context->FocusDocument;
 }
 
+/*
+** combine two strings in a static area and set ErrMsg to point to the
+** result.  Returns false so a single return execError() statement can
+** be used to both process the message and return.
+*/
+template <class ...T>
+int execError(const std::error_code &error_code, T ... args) {
+	static char msg[MAX_ERR_MSG_LEN];
+
+	std::string str = error_code.message();
+
+	qsnprintf(msg, sizeof(msg), str.c_str(), args...);
+	ErrMsg = msg;
+	return STAT_ERROR;
+}
+
+template <class ...T>
+int execError(const char *s1, T ... args) {
+	static char msg[MAX_ERR_MSG_LEN];
+
+	qsnprintf(msg, sizeof(msg), s1, args...);
+	ErrMsg = msg;
+	return STAT_ERROR;
+}
+
+/*
+** checks errno after operations which can set it.  If an error occured,
+** creates appropriate error messages and returns false
+*/
+int errCheck(const char *s) {
+	switch(errno) {
+	case EDOM:
+		return execError("%s argument out of domain", s);
+	case ERANGE:
+		return execError("%s result out of range", s);
+	default:
+		return STAT_OK;
+	}
+}
+
 }
 
 static void addLoopAddr(Inst *addr);
@@ -218,47 +258,6 @@ static const operation_type OpFns[N_OPS] = {
 	pushArgArray
 };
 
-
-
-/*
-** combine two strings in a static area and set ErrMsg to point to the
-** result.  Returns false so a single return execError() statement can
-** be used to both process the message and return.
-*/
-template <class ...T>
-int execError(const std::error_code &error_code, T ... args) {
-	static char msg[MAX_ERR_MSG_LEN];
-
-	std::string str = error_code.message();
-
-	qsnprintf(msg, sizeof(msg), str.c_str(), args...);
-	ErrMsg = msg;
-	return STAT_ERROR;
-}
-
-template <class ...T>
-int execError(const char *s1, T ... args) {
-	static char msg[MAX_ERR_MSG_LEN];
-
-	qsnprintf(msg, sizeof(msg), s1, args...);
-	ErrMsg = msg;
-	return STAT_ERROR;
-}
-
-/*
-** checks errno after operations which can set it.  If an error occured,
-** creates appropriate error messages and returns false
-*/
-int errCheck(const char *s) {
-	switch(errno) {
-	case EDOM:
-		return execError("%s argument out of domain", s);
-	case ERANGE:
-		return execError("%s result out of range", s);
-	default:
-		return STAT_OK;
-	}
-}
 
 /*
 ** Initialize macro language global variables.  Must be called before

@@ -76,17 +76,47 @@ add_definitions(-DQT_NO_CAST_TO_ASCII)
 if(MSVC)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 else()
-	add_compile_options(-W -Wall -pedantic -Wunused -Wno-unused-macros -Wno-shadow -Wno-switch-enum -Wno-unknown-pragmas)
+
+	add_compile_options(
+		-W 
+		-Wall 
+		#-Wshadow
+		-Wnon-virtual-dtor
+		#-Wold-style-cast
+		-Wcast-align
+		-Wunused
+		-Woverloaded-virtual
+		-pedantic 
+		#-Wconversion
+		#-Wsign-conversion
+		#-Wnull-dereference
+		-Wdouble-promotion
+		-Wformat=2
+		-Wno-unused-macros 
+		-Wno-switch-enum
+		-Wno-unknown-pragmas
+	)
+
 	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
-		add_compile_options(-Wshorten-64-to-32 -Wconditional-uninitialized -Wsign-conversion) # -Weverything -Wno-documentation -Wno-missing-prototypes -Wno-date-time -Wno-padded -Wno-documentation-unknown-command -Wno-exit-time-destructors -Wno-c++98-compat-pedantic -Wno-c++98-compat -Wno-global-constructors -Wno-weak-vtables -Wno-implicit-fallthrough)
-	else()
-#		add_compile_options(-Wuseless-cast)
+		add_compile_options(
+			#-Wshorten-64-to-32
+			-Wconditional-uninitialized
+			#-Wshadow-uncaptured-local
+			-Wmissing-prototypes
+			#-Wexit-time-destructors
+			#-Wglobal-constructors
+			-Wimplicit-fallthrough
+		)
+
+    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+		add_compile_options(
+			#-Wuseless-cast
+			-Wduplicated-cond 
+			-Wduplicated-branches
+			-Wlogical-op
+		)
 	endif()
 endif()
-
-# 
-# -Wno-gnu-zero-variadic-macro-arguments
-# 
 
 add_subdirectory (Util)
 add_subdirectory (src)
