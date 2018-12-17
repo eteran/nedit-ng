@@ -93,8 +93,8 @@ boost::optional<CharacterLocation> StringToLineAndCol(const QString &text) {
 
 	QRegularExpressionMatch match = re.match(text);
 	if (match.hasMatch()) {
-		QString row = match.captured(QLatin1String("row"));
-		QString col = match.captured(QLatin1String("col"));
+		const QString row = match.captured(QLatin1String("row"));
+		const QString col = match.captured(QLatin1String("col"));
 
 		bool row_ok;
 		int r = row.toInt(&row_ok);
@@ -116,9 +116,7 @@ boost::optional<CharacterLocation> StringToLineAndCol(const QString &text) {
 			return boost::none;
 		}
 
-		CharacterLocation loc;
-		loc.line   = r;
-		loc.column = c;
+		const CharacterLocation loc {r, c};
 		return loc;
 	}
 
@@ -141,10 +139,10 @@ void addToGroup(QActionGroup *group, QMenu *menu) {
 
 /*
 ** Capitalize or lowercase the contents of the selection (or of the character
-** before the cursor if there is no selection).  If "makeUpper" is true,
-** change to upper case, otherwise, change to lower case.
+** before the cursor if there is no selection).
 */
-void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUpper) {
+template <int (&F)(int)>
+void changeCase(DocumentWidget *document, TextArea *area) {
 
 	TextBuffer *buf = document->buffer_;
 	TextCursor start;
@@ -163,7 +161,7 @@ void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUpper) {
 
 		char ch = buf->BufGetCharacter(cursorPos - 1);
 
-		ch = makeUpper ? safe_ctype<toupper>(ch) : safe_ctype<tolower>(ch);
+		ch = safe_ctype<F>(ch);
 		buf->BufReplaceEx(cursorPos - 1, cursorPos, ch);
 	} else {
 		bool modified = false;
@@ -171,8 +169,8 @@ void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUpper) {
 		std::string text = buf->BufGetSelectionTextEx();
 
 		for(char &ch: text) {
-			char oldChar = ch;
-			ch = makeUpper ? safe_ctype<toupper>(ch) : safe_ctype<tolower>(ch);
+			const char oldChar = ch;
+			ch = safe_ctype<F>(ch);
 			if (ch != oldChar) {
 				modified = true;
 			}
@@ -190,12 +188,22 @@ void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUpper) {
 	}
 }
 
+/**
+ * @brief UpcaseSelectionEx
+ * @param document
+ * @param area
+ */
 void UpcaseSelectionEx(DocumentWidget *document, TextArea *area) {
-	changeCaseEx(document, area, true);
+	changeCase<::toupper>(document, area);
 }
 
+/**
+ * @brief DowncaseSelectionEx
+ * @param document
+ * @param area
+ */
 void DowncaseSelectionEx(DocumentWidget *document, TextArea *area) {
-	changeCaseEx(document, area, false);
+	changeCase<::tolower>(document, area);
 }
 
 }
@@ -754,19 +762,17 @@ void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
 		break;
 	}
 
-	QString path = document->path_;
-
-	MainWindow::EditNewFile(openInTab ? this : nullptr, QString(), /*iconic=*/false, QString(), path);
+	MainWindow::EditNewFile(openInTab ? this : nullptr, QString(), /*iconic=*/false, QString(), document->path_);
 	MainWindow::CheckCloseEnableState();
 }
 
 /**
- * @brief MainWindow::PromptForExistingFileEx
+ * @brief MainWindow::PromptForExistingFile
  * @param path
  * @param prompt
  * @return
  */
-QString MainWindow::PromptForExistingFileEx(const QString &path, const QString &prompt) {
+QString MainWindow::PromptForExistingFile(const QString &path, const QString &prompt) {
 
 	QFileDialog dialog(this, prompt);
 	dialog.setOptions(QFileDialog::DontUseNativeDialog | QFileDialog::DontUseCustomDirectoryIcons);
@@ -801,7 +807,7 @@ void MainWindow::action_Open(DocumentWidget *document, const QString &filename) 
  * @param document
  */
 void MainWindow::action_Open(DocumentWidget *document) {
-	QString filename = PromptForExistingFileEx(document->path_, tr("Open File"));
+	QString filename = PromptForExistingFile(document->path_, tr("Open File"));
 	if (filename.isNull()) {
 		return;
 	}
@@ -901,7 +907,7 @@ void MainWindow::action_Include_File(DocumentWidget *document) {
 		return;
 	}
 
-	QString filename = PromptForExistingFileEx(document->path_, tr("Include File"));
+	QString filename = PromptForExistingFile(document->path_, tr("Include File"));
 
 	if (filename.isNull()) {
 		return;
@@ -1077,17 +1083,17 @@ void MainWindow::updateWindowMenu() {
 }
 
 /**
- * @brief MainWindow::TabCount
+ * @brief MainWindow::tabCount
  * @return
  */
-size_t MainWindow::TabCount() const {
+size_t MainWindow::tabCount() const {
 	return static_cast<size_t>(ui.tabWidget->count());
 }
 
 /*
 ** Sort tabs in the tab bar alphabetically, if demanded so.
 */
-void MainWindow::SortTabBar() {
+void MainWindow::sortTabBar() {
 
 	if (!Preferences::GetPrefSortTabs()) {
 		return;
@@ -1187,7 +1193,7 @@ void MainWindow::CheckCloseEnableState(const std::vector<MainWindow *> &windows)
 
 		std::vector<DocumentWidget *> documents = window->openDocuments();
 
-		if(window->TabCount() == 1 && !documents.front()->filenameSet_ && !documents.front()->fileChanged_) {
+		if(window->tabCount() == 1 && !documents.front()->filenameSet_ && !documents.front()->fileChanged_) {
 			window->ui.action_Close->setEnabled(false);
 		} else {
 			window->ui.action_Close->setEnabled(true);
@@ -3426,7 +3432,7 @@ void MainWindow::action_Load_Tips_File(DocumentWidget *document, const QString &
  * @param document
  */
 void MainWindow::action_Load_Calltips_File(DocumentWidget *document) {
-	QString filename = PromptForExistingFileEx(document->path_, tr("Load Calltips File"));
+	QString filename = PromptForExistingFile(document->path_, tr("Load Calltips File"));
 	if (filename.isNull()) {
 		return;
 	}
@@ -3467,7 +3473,7 @@ void MainWindow::action_Load_Tags_File(DocumentWidget *document, const QString &
  * @param document
  */
 void MainWindow::action_Load_Tags_File(DocumentWidget *document) {
-	QString filename = PromptForExistingFileEx(document->path_, tr("Load Tags File"));
+	QString filename = PromptForExistingFile(document->path_, tr("Load Tags File"));
 	if (filename.isNull()) {
 		return;
 	}
@@ -3502,7 +3508,7 @@ void MainWindow::action_Load_Macro_File(DocumentWidget *document, const QString 
  * @param document
  */
 void MainWindow::action_Load_Macro_File(DocumentWidget *document) {
-	QString filename = PromptForExistingFileEx(document->path_, tr("Load Macro File"));
+	QString filename = PromptForExistingFile(document->path_, tr("Load Macro File"));
 	if (filename.isNull()) {
 		return;
 	}
@@ -4307,7 +4313,7 @@ void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool sta
 	// If we just enabled sorting, sort all tabs
 	if (state) {
 		for(MainWindow *window : windows) {
-			window->SortTabBar();
+			window->sortTabBar();
 			window->tabWidget()->tabBar()->setMovable(false);
 		}
 	} else {
@@ -4737,7 +4743,7 @@ DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geome
 		document->raiseDocumentWindow();
 	}
 
-	window->SortTabBar();
+	window->sortTabBar();
 	return document;
 }
 
@@ -5147,7 +5153,7 @@ bool MainWindow::CheckPrefsChangesSavedEx() {
 */
 bool MainWindow::CloseAllDocumentsInWindow() {
 
-	if (TabCount() == 1) {
+	if (tabCount() == 1) {
 		// only one document in the window
 		if(DocumentWidget *document = currentDocument()) {
 			return document->CloseFileAndWindow(CloseMode::Prompt);
@@ -5191,7 +5197,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
 	} else {
 
-		if (TabCount() == 1) {
+		if (tabCount() == 1) {
 			if(DocumentWidget *document = currentDocument()) {
 				document->CloseFileAndWindow(CloseMode::Prompt);
 			}
@@ -5696,7 +5702,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, CommandSource
 		return;
 	}
 
-	if (!document->buffer_->primary.selected()) {
+	if (!document->buffer_->primary.hasSelection()) {
 		QApplication::beep();
 		return;
 	}
@@ -5734,7 +5740,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, const QString
 		return;
 	}
 
-	if (!document->buffer_->primary.selected()) {
+	if (!document->buffer_->primary.hasSelection()) {
 		QApplication::beep();
 		return;
 	}
@@ -5892,7 +5898,7 @@ void MainWindow::on_action_Detach_Tab_triggered() {
 void MainWindow::action_Detach_Document(DocumentWidget *document) {
 
 	emit_event("detach_document");
-	if(TabCount() > 1) {
+	if(tabCount() > 1) {
 		auto new_window = new MainWindow();
 
 		document->updateSignals(this, new_window);
@@ -5911,7 +5917,7 @@ void MainWindow::action_Detach_Document(DocumentWidget *document) {
  */
 void MainWindow::action_Detach_Document_Dialog(DocumentWidget *document) {
 
-	if(TabCount() > 1) {
+	if(tabCount() > 1) {
 
 		int result = QMessageBox::question(
 					nullptr,

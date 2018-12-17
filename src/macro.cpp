@@ -34,7 +34,7 @@
 #include <QFileDialog>
 #include <QMimeData>
 
-// DISASBLED for 5.4
+// DISABLED for 5.4
 //#define ENABLE_BACKLIGHT_STRING
 
 static std::error_code lengthMS(DocumentWidget *document, Arguments arguments, DataValue *result);
@@ -164,7 +164,7 @@ template <class T>
 std::error_code readArguments(Arguments arguments, int index, T arg);
 
 struct SubRoutine {
-	const char   *name;
+	const char *name;
 	LibraryRoutine function;
 };
 
@@ -3974,7 +3974,7 @@ static std::error_code selectionStartMV(DocumentWidget *document, Arguments argu
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	*result = make_value(document->buffer_->primary.selected() ? to_integer(document->buffer_->primary.start()) : -1);
+	*result = make_value(document->buffer_->primary.hasSelection() ? to_integer(document->buffer_->primary.start()) : -1);
 	return MacroErrorCode::Success;
 }
 
@@ -3984,7 +3984,7 @@ static std::error_code selectionEndMV(DocumentWidget *document, Arguments argume
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	*result = make_value(document->buffer_->primary.selected() ? to_integer(document->buffer_->primary.end()) : -1);
+	*result = make_value(document->buffer_->primary.hasSelection() ? to_integer(document->buffer_->primary.end()) : -1);
 	return MacroErrorCode::Success;
 }
 
@@ -3996,7 +3996,7 @@ static std::error_code selectionLeftMV(DocumentWidget *document, Arguments argum
 
 	const TextBuffer::Selection *sel = &document->buffer_->primary;
 
-	*result = make_value(sel->selected() && sel->rectangular() ? sel->rectStart() : -1);
+	*result = make_value(sel->hasSelection() && sel->isRectangular() ? sel->rectStart() : -1);
 	return MacroErrorCode::Success;
 }
 
@@ -4008,7 +4008,7 @@ static std::error_code selectionRightMV(DocumentWidget *document, Arguments argu
 
 	const TextBuffer::Selection *sel = &document->buffer_->primary;
 
-	*result = make_value(sel->selected() && sel->rectangular() ? sel->rectEnd() : -1);
+	*result = make_value(sel->hasSelection() && sel->isRectangular() ? sel->rectEnd() : -1);
 	return MacroErrorCode::Success;
 }
 

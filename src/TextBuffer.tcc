@@ -1145,7 +1145,7 @@ template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::getSelectionTextEx(const Selection *sel) const -> string_type {
 
 	// If there's no selection, return an allocated empty string
-	if (!*sel) {
+	if (!sel->hasSelection()) {
 		return string_type();
 	}
 
@@ -1487,7 +1487,7 @@ void BasicTextBuffer<Ch, Tr>::removeSelected(const Selection *sel) noexcept {
 
 	assert(sel);
 
-	if(!*sel) {
+	if(!sel->hasSelection()) {
 		return;
 	}
 
@@ -1506,7 +1506,7 @@ void BasicTextBuffer<Ch, Tr>::replaceSelectedEx(Selection *sel, view_type text) 
 	const Selection oldSelection = *sel;
 
 	// If there's no selection, return
-	if (!*sel) {
+	if (!sel->hasSelection()) {
 		return;
 	}
 

@@ -220,7 +220,7 @@ void maintainPosition(TextCursor &position, TextCursor modPos, int64_t nInserted
 ** "pos", "nDeleted", and "nInserted".
 */
 void maintainSelection(TextBuffer::Selection &sel, TextCursor pos, int64_t nInserted, int64_t nDeleted) {
-	if (!sel.selected() || pos > sel.end()) {
+	if (!sel.hasSelection() || pos > sel.end()) {
 		return;
 	}
 
@@ -382,7 +382,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 
 	// update tab label and tooltip
 	document->RefreshTabState();
-	win->SortTabBar();
+	win->sortTabBar();
 
 	if (!background) {
 		document->raiseDocument();
@@ -816,7 +816,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 	// number of distinct editing operations user can do before NEdit gens. new backup file
 	constexpr int AutoSaveOpLimit   = 8;
 
-	const bool selected = buffer_->primary.selected();
+	const bool selected = buffer_->primary.hasSelection();
 
 	// update the table of bookmarks
 	if (!ignoreModify_) {
@@ -1593,7 +1593,7 @@ void DocumentWidget::Undo() {
 		buffer_->BufReplaceEx(undo.startPos, undo.endPos, undo.oldText);
 
 		const auto restoredTextLength = static_cast<int64_t>(undo.oldText.size());
-		if (!buffer_->primary.selected() || Preferences::GetPrefUndoModifiesSelection()) {
+		if (!buffer_->primary.hasSelection() || Preferences::GetPrefUndoModifiesSelection()) {
 			/* position the cursor in the focus pane after the changed text
 			   to show the user where the undo was done */
 			if(QPointer<TextArea> area = win->lastFocus()) {
@@ -1646,7 +1646,7 @@ void DocumentWidget::Redo() {
 		buffer_->BufReplaceEx(redo.startPos, redo.endPos, redo.oldText);
 
 		const auto restoredTextLength = static_cast<int64_t>(redo.oldText.size());
-		if (!buffer_->primary.selected() || Preferences::GetPrefUndoModifiesSelection()) {
+		if (!buffer_->primary.hasSelection() || Preferences::GetPrefUndoModifiesSelection()) {
 			/* position the cursor in the focus pane after the changed text
 			   to show the user where the undo was done */
 			if(QPointer<TextArea> area = win->lastFocus()) {
@@ -2427,7 +2427,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 		Q_EMIT updateWindowTitle(this);
 		Q_EMIT updateStatus(this, nullptr);
 
-		win->SortTabBar();
+		win->sortTabBar();
 		return retVal;
 	}
 
@@ -2773,7 +2773,7 @@ void DocumentWidget::closeDocument() {
 	MainWindow::CheckCloseEnableState();
 
 	// if we deleted the last tab, then we can close the window too
-	if(win->TabCount() == 0) {
+	if(win->tabCount() == 0) {
 		win->deleteLater();
 		win->setVisible(false);
 	}
@@ -3386,7 +3386,7 @@ bool DocumentWidget::includeFile(const QString &name) {
 
 		/* insert the contents of the file in the selection or at the insert
 		   position in the window if no selection exists */
-		if (buffer_->primary.selected()) {
+		if (buffer_->primary.hasSelection()) {
 			buffer_->BufReplaceSelectedEx(text);
 		} else {
 			if(auto win = MainWindow::fromDocument(this)) {
@@ -3765,12 +3765,12 @@ void DocumentWidget::printWindow(TextArea *area, bool selectedOnly) {
 
 		const TextBuffer::Selection *sel = &buffer_->primary;
 
-		if (!sel->selected()) {
+		if (!sel->hasSelection()) {
 			QApplication::beep();
 			return;
 		}
 
-		if (sel->rectangular()) {
+		if (sel->isRectangular()) {
 			fileString = buffer_->BufGetSelectionTextEx();
 		} else {
 			fileString = area->TextGetWrapped(sel->start(), sel->end());
@@ -3986,7 +3986,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 	// reset the dialog and display it
 	dialog->resetSelection();
 	dialog->setLabel(filename_);
-	dialog->setMultipleDocuments(fromWindow->TabCount() > 1);
+	dialog->setMultipleDocuments(fromWindow->tabCount() > 1);
 	int r = dialog->exec();
 
 	if(r == QDialog::Accepted) {
@@ -4018,7 +4018,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 		}
 
 		// if we just emptied the window, then delete it
-		if(fromWindow->TabCount() == 0) {
+		if(fromWindow->tabCount() == 0) {
 			fromWindow->deleteLater();
 		}
 
@@ -4553,7 +4553,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 			TextBuffer *buf = area->TextGetBuffer();
 
 			if (cmdData->flags & REPLACE_SELECTION) {
-				TextCursor reselectStart = buf->primary.rectangular() ? TextCursor(-1) : buf->primary.start();
+				TextCursor reselectStart = buf->primary.isRectangular() ? TextCursor(-1) : buf->primary.start();
 				buf->BufReplaceSelectedEx(output_string);
 
 				area->TextSetCursorPos(buf->BufCursorPosHint());
@@ -5182,7 +5182,7 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 	}
 
 	// don't flash matching characters if there's a selection
-	if (buffer_->primary.selected()) {
+	if (buffer_->primary.hasSelection()) {
 		return;
 	}
 
@@ -6497,7 +6497,7 @@ QString DocumentWidget::GetAnySelection(bool beep_on_error) {
 	}
 
 	// If the selection is in the window's own buffer get it from there
-	if (buffer_->primary.selected()) {
+	if (buffer_->primary.hasSelection()) {
 		return QString::fromStdString(buffer_->BufGetSelectionTextEx());
 	}
 
@@ -6715,15 +6715,15 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
 	TextCursor cursorPos = markTable_[index].cursorPos;
 	if (extendSel) {
 
-		const TextCursor oldStart = oldSel.selected() ? oldSel.start() : area->TextGetCursorPos();
-		const TextCursor oldEnd   = oldSel.selected() ? oldSel.end()   : area->TextGetCursorPos();
-		const TextCursor newStart = sel.selected()    ? sel.start()    : cursorPos;
-		const TextCursor newEnd   = sel.selected()    ? sel.end()      : cursorPos;
+		const TextCursor oldStart = oldSel.hasSelection() ? oldSel.start() : area->TextGetCursorPos();
+		const TextCursor oldEnd   = oldSel.hasSelection() ? oldSel.end()   : area->TextGetCursorPos();
+		const TextCursor newStart = sel.hasSelection()    ? sel.start()    : cursorPos;
+		const TextCursor newEnd   = sel.hasSelection()    ? sel.end()      : cursorPos;
 
 		buffer_->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
 	} else {
-		if (sel.selected()) {
-			if (sel.rectangular()) {
+		if (sel.hasSelection()) {
+			if (sel.isRectangular()) {
 				buffer_->BufRectSelect(sel.start(), sel.end(), sel.rectStart(), sel.rectEnd());
 			} else {
 				buffer_->BufSelect(sel.start(), sel.end());

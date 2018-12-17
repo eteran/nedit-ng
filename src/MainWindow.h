@@ -80,9 +80,9 @@ public:
 	DocumentWidget *documentAt(int index) const;
 	int updateGutterWidth();
 	int updateLineNumDisp();
-	QString PromptForExistingFileEx(const QString &path, const QString &prompt);
-	QString PromptForExistingFileEx(const QString &prompt);
-	size_t TabCount() const;
+	QString PromptForExistingFile(const QString &path, const QString &prompt);
+	QString PromptForExistingFile(const QString &prompt);
+	size_t tabCount() const;
 	std::vector<DocumentWidget *> openDocuments() const;
 	void BeginISearchEx(Direction direction);
 	void EditHighlightPatterns();
@@ -101,7 +101,7 @@ public:
 	void SetShowLineNumbers(bool show);
 	void setWindowSizeDefault(int rows, int cols);
 	void ShowLineNumbers(bool state);
-	void SortTabBar();
+	void sortTabBar();
 	void TempShowISearch(bool state);
 	void updateLanguageModeSubmenu();
 	void updatePrevOpenMenu();
@@ -423,6 +423,8 @@ private:
 	QPointer<DialogFind>    dialogFind_;
 	QPointer<DialogReplace> dialogReplace_;
 	QPointer<TextArea>      lastFocus_;
+
+private:
 	bool iSearchLastLiteralCase_    = false;          // idem, for literal mode
 	bool iSearchLastRegexCase_      = true;           // idem, for regex mode in incremental search bar
 	bool wasSelected_               = false;          // last selection state (for dim/undim of selection related menu items

@@ -336,7 +336,7 @@ TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const
 	/* Parsing of pass 2 patterns is done only as necessary for determining
 	   where styles have changed.  Find the area to avoid, which is already
 	   marked as changed (all inserted text and previously modified areas) */
-	if (styleBuf->primary.selected()) {
+	if (styleBuf->primary.hasSelection()) {
 		modStart = styleBuf->primary.start();
 		modEnd   = styleBuf->primary.end();
 	} else {
@@ -779,7 +779,7 @@ void Highlight::modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char
 	const TextBuffer::Selection *sel = &styleBuf->primary;
 
 	// Skip the range already marked for redraw
-	if (sel->selected()) {
+	if (sel->hasSelection()) {
 		modStart = sel->start();
 		modEnd   = sel->end();
 	} else {
@@ -822,7 +822,7 @@ void Highlight::modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char
 ** text widget, which is selecting the text)
 */
 TextCursor Highlight::lastModified(const std::shared_ptr<TextBuffer> &buffer) {
-	if (buffer->primary.selected()) {
+	if (buffer->primary.hasSelection()) {
 		return std::max(buffer->BufStartOfBuffer(), buffer->primary.end());
 	}
 
