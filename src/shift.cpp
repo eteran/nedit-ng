@@ -304,25 +304,11 @@ TextCursor findParagraphStart(TextBuffer *buf, TextCursor startPos) {
 }
 
 int countLines(view::string_view text) {
-	int count = 1;
-
-	for(char ch: text) {
-		if (ch == '\n') {
-			count++;
-		}
-	}
-	return count;
+	return std::count(text.begin(), text.end(), '\n') + 1;
 }
 
 int countLines(const QString &text) {
-	int count = 1;
-
-	for(QChar ch: text) {
-		if (ch == QLatin1Char('\n')) {
-			count++;
-		}
-	}
-	return count;
+	return std::count(text.begin(), text.end(), QLatin1Char('\n')) + 1;
 }
 
 bool atTabStop(int pos, int tabDist) {
