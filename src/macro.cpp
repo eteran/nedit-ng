@@ -2372,7 +2372,7 @@ static std::error_code focusWindowMS(DocumentWidget *document, Arguments argumen
 	}
 
 	// Return the name of the window
-	*result = make_value(QString(QLatin1String("%1%2")).arg(target->path_, target->filename_));
+	*result = make_value(QString(QLatin1String("%1%2")).arg(target->path(), target->filename()));
 	return MacroErrorCode::Success;
 }
 
@@ -2384,7 +2384,7 @@ static std::error_code getRangeMS(DocumentWidget *document, Arguments arguments,
 
 	int64_t from;
 	int64_t to;
-	TextBuffer *buf = document->buffer_;
+	TextBuffer *buf = document->buffer();
 
 	// Validate arguments and convert to int
 	if(std::error_code ec = readArguments(arguments, 0, &from, &to)) {
@@ -2412,7 +2412,7 @@ static std::error_code getCharacterMS(DocumentWidget *document, Arguments argume
 
 
 	int64_t pos;
-	TextBuffer *buf = document->buffer_;
+	TextBuffer *buf = document->buffer();
 
 	// Validate arguments and convert to int
 	if(std::error_code ec = readArguments(arguments, 0, &pos)) {
@@ -2438,7 +2438,7 @@ static std::error_code replaceRangeMS(DocumentWidget *document, Arguments argume
 
 	int64_t from;
 	int64_t to;
-	TextBuffer *buf = document->buffer_;
+	TextBuffer *buf = document->buffer();
 	std::string string;
 
 	// Validate arguments and convert to int
@@ -2454,7 +2454,7 @@ static std::error_code replaceRangeMS(DocumentWidget *document, Arguments argume
 	}
 
 	// Don't allow modifications if the window is read-only
-	if (document->lockReasons_.isAnyLocked()) {
+	if (document->lockReasons().isAnyLocked()) {
 		QApplication::beep();
 		*result = make_value();
 		return MacroErrorCode::Success;
@@ -2479,14 +2479,14 @@ static std::error_code replaceSelectionMS(DocumentWidget *document, Arguments ar
 	}
 
 	// Don't allow modifications if the window is read-only
-	if (document->lockReasons_.isAnyLocked()) {
+	if (document->lockReasons().isAnyLocked()) {
 		QApplication::beep();
 		*result = make_value();
 		return MacroErrorCode::Success;
 	}
 
 	// Do the replace
-	document->buffer_->BufReplaceSelectedEx(string);
+	document->buffer()->BufReplaceSelectedEx(string);
 	*result = make_value();
 	return MacroErrorCode::Success;
 }
@@ -2517,7 +2517,7 @@ static std::error_code getSelectionMS(DocumentWidget *document, Arguments argume
 		// Return the text as an allocated string
 		*result = make_value(text);
 	} else {
-		std::string selText = document->buffer_->BufGetSelectionTextEx();
+		std::string selText = document->buffer()->BufGetSelectionTextEx();
 
 		// Return the text as an allocated string
 		*result = make_value(selText);
@@ -2794,7 +2794,7 @@ static std::error_code searchMS(DocumentWidget *document, Arguments arguments, D
 	// we just make a copy here. If we duplicate the code in searchStringMS
 	// here and thus don't have to pass things in a DataValue, we can once again
 	// make it copy free
-	newArgList[0] = make_value(document->buffer_->BufAsStringEx());
+	newArgList[0] = make_value(document->buffer()->BufAsStringEx());
 
 	// copy other arguments to the new argument list
 	std::copy(arguments.begin(), arguments.end(), &newArgList[1]);
@@ -3022,11 +3022,11 @@ static std::error_code selectMS(DocumentWidget *document, Arguments arguments, D
 		std::swap(start, end);
 	}
 
-	start = qBound<int64_t>(0, start, document->buffer_->BufGetLength());
-	end   = qBound<int64_t>(0, end,   document->buffer_->BufGetLength());
+	start = qBound<int64_t>(0, start, document->buffer()->BufGetLength());
+	end   = qBound<int64_t>(0, end,   document->buffer()->BufGetLength());
 
 	// Make the selection
-	document->buffer_->BufSelect(TextCursor(start), TextCursor(end));
+	document->buffer()->BufSelect(TextCursor(start), TextCursor(end));
 	*result = make_value();
 	return MacroErrorCode::Success;
 }
@@ -3043,7 +3043,7 @@ static std::error_code selectRectangleMS(DocumentWidget *document, Arguments arg
 	}
 
 	// Make the selection
-	document->buffer_->BufRectSelect(TextCursor(start), TextCursor(end), left, right);
+	document->buffer()->BufRectSelect(TextCursor(start), TextCursor(end), left, right);
 	*result = make_value();
 	return MacroErrorCode::Success;
 }
@@ -3562,7 +3562,7 @@ static std::error_code filenameDialogMS(DocumentWidget *document, Arguments argu
 
 	//  Set default directory
 	if (defaultPath.isEmpty()) {
-		defaultPath = document->path_;
+		defaultPath = document->path();
 	}
 
 	//  Set default filter
@@ -3912,7 +3912,7 @@ static std::error_code lineMV(DocumentWidget *document, Arguments arguments, Dat
 	int line;
 	int colNum;
 
-	TextBuffer *buf      = document->buffer_;
+	TextBuffer *buf      = document->buffer();
 	TextArea *area       = MainWindow::fromDocument(document)->lastFocus();
 	TextCursor cursorPos = area->TextGetCursorPos();
 
@@ -3930,7 +3930,7 @@ static std::error_code columnMV(DocumentWidget *document, Arguments arguments, D
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	TextBuffer *buf      = document->buffer_;
+	TextBuffer *buf      = document->buffer();
 	TextArea *area       = MainWindow::fromDocument(document)->lastFocus();
 	TextCursor cursorPos = area->TextGetCursorPos();
 
@@ -3944,7 +3944,7 @@ static std::error_code fileNameMV(DocumentWidget *document, Arguments arguments,
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	*result = make_value(document->filename_);
+	*result = make_value(document->filename());
 	return MacroErrorCode::Success;
 }
 
@@ -3954,7 +3954,7 @@ static std::error_code filePathMV(DocumentWidget *document, Arguments arguments,
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	*result = make_value(document->path_);
+	*result = make_value(document->path());
 	return MacroErrorCode::Success;
 }
 
@@ -3964,7 +3964,7 @@ static std::error_code lengthMV(DocumentWidget *document, Arguments arguments, D
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	*result = make_value(document->buffer_->BufGetLength());
+	*result = make_value(document->buffer()->BufGetLength());
 	return MacroErrorCode::Success;
 }
 
@@ -3974,7 +3974,7 @@ static std::error_code selectionStartMV(DocumentWidget *document, Arguments argu
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	*result = make_value(document->buffer_->primary.hasSelection() ? to_integer(document->buffer_->primary.start()) : -1);
+	*result = make_value(document->buffer()->primary.hasSelection() ? to_integer(document->buffer()->primary.start()) : -1);
 	return MacroErrorCode::Success;
 }
 
@@ -3984,7 +3984,7 @@ static std::error_code selectionEndMV(DocumentWidget *document, Arguments argume
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	*result = make_value(document->buffer_->primary.hasSelection() ? to_integer(document->buffer_->primary.end()) : -1);
+	*result = make_value(document->buffer()->primary.hasSelection() ? to_integer(document->buffer()->primary.end()) : -1);
 	return MacroErrorCode::Success;
 }
 
@@ -3994,7 +3994,7 @@ static std::error_code selectionLeftMV(DocumentWidget *document, Arguments argum
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	const TextBuffer::Selection *sel = &document->buffer_->primary;
+	const TextBuffer::Selection *sel = &document->buffer()->primary;
 
 	*result = make_value(sel->hasSelection() && sel->isRectangular() ? sel->rectStart() : -1);
 	return MacroErrorCode::Success;
@@ -4006,7 +4006,7 @@ static std::error_code selectionRightMV(DocumentWidget *document, Arguments argu
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	const TextBuffer::Selection *sel = &document->buffer_->primary;
+	const TextBuffer::Selection *sel = &document->buffer()->primary;
 
 	*result = make_value(sel->hasSelection() && sel->isRectangular() ? sel->rectEnd() : -1);
 	return MacroErrorCode::Success;
@@ -4061,11 +4061,11 @@ static std::error_code autoIndentMV(DocumentWidget *document, Arguments argument
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	if(document->indentStyle_ == IndentStyle::Default) {
+	if(document->info_->indentStyle == IndentStyle::Default) {
 		return MacroErrorCode::InvalidIndentStyle;
 	}
 
-	QLatin1String res = to_string(document->indentStyle_);
+	QLatin1String res = to_string(document->info_->indentStyle);
 	*result = make_value(res);
 	return MacroErrorCode::Success;
 }
@@ -4076,11 +4076,11 @@ static std::error_code wrapTextMV(DocumentWidget *document, Arguments arguments,
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	if(document->wrapMode_ == WrapStyle::Default) {
+	if(document->info_->wrapMode == WrapStyle::Default) {
 		return MacroErrorCode::InvalidWrapStyle;
 	}
 
-	QLatin1String res = to_string(document->wrapMode_);
+	QLatin1String res = to_string(document->info_->wrapMode);
 	*result = make_value(res);
 	return MacroErrorCode::Success;
 }
@@ -4095,21 +4095,21 @@ static std::error_code highlightSyntaxMV(DocumentWidget *document, Arguments arg
 static std::error_code makeBackupCopyMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments);
 
-	*result = make_value(document->saveOldVersion_ ? 1 : 0);
+	*result = make_value(document->GetMakeBackupCopy() ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
 static std::error_code incBackupMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments);
 
-	*result = make_value(document->autoSave_ ? 1 : 0);
+	*result = make_value(document->GetIncrementalBackup() ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
 static std::error_code showMatchingMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments);
 
-	QLatin1String res = to_string(document->showMatchingStyle_);
+	QLatin1String res = to_string(document->showMatchingStyle());
 	*result = make_value(res);
 	return MacroErrorCode::Success;
 }
@@ -4117,35 +4117,35 @@ static std::error_code showMatchingMV(DocumentWidget *document, Arguments argume
 static std::error_code matchSyntaxBasedMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments);
 
-	*result = make_value(document->matchSyntaxBased_ ? 1 : 0);
+	*result = make_value(document->GetMatchSyntaxBased() ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
 static std::error_code overTypeModeMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments);
 
-	*result = make_value(document->overstrike_ ? 1 : 0);
+	*result = make_value(document->GetOverstrike() ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
 static std::error_code readOnlyMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments);
 
-	*result = make_value((document->lockReasons_.isAnyLocked()) ? 1 : 0);
+	*result = make_value((document->lockReasons().isAnyLocked()) ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
 static std::error_code lockedMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments);
 
-	*result = make_value((document->lockReasons_.isUserLocked()) ? 1 : 0);
+	*result = make_value((document->lockReasons().isUserLocked()) ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
 static std::error_code fileFormatMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments);
 
-	QLatin1String res = to_string(document->fileFormat_);
+	QLatin1String res = to_string(document->fileFormat());
 	*result = make_value(res);
 	return MacroErrorCode::Success;
 }
@@ -4274,7 +4274,7 @@ static std::error_code tabDistMV(DocumentWidget *document, Arguments arguments, 
 
 	Q_UNUSED(arguments);
 
-	*result = make_value(document->buffer_->BufGetTabDistance());
+	*result = make_value(document->buffer()->BufGetTabDistance());
 	return MacroErrorCode::Success;
 }
 
@@ -4292,7 +4292,7 @@ static std::error_code useTabsMV(DocumentWidget *document, Arguments arguments, 
 
 	Q_UNUSED(arguments);
 
-	*result = make_value(document->buffer_->BufGetUseTabs());
+	*result = make_value(document->buffer()->BufGetUseTabs());
 	return MacroErrorCode::Success;
 }
 
@@ -4300,7 +4300,7 @@ static std::error_code modifiedMV(DocumentWidget *document, Arguments arguments,
 
 	Q_UNUSED(arguments);
 
-	*result = make_value(document->fileChanged_);
+	*result = make_value(document->fileChanged());
 	return MacroErrorCode::Success;
 }
 
@@ -4385,7 +4385,7 @@ static std::error_code rangesetCreateMS(DocumentWidget *document, Arguments argu
 		return MacroErrorCode::WrongNumberOfArguments;
 
 	if(!rangesetTable) {
-		rangesetTable = std::make_shared<RangesetTable>(document->buffer_);
+		rangesetTable = std::make_shared<RangesetTable>(document->buffer());
 	}
 
 	if (arguments.empty()) {
@@ -4523,7 +4523,7 @@ static std::error_code rangesetGetByNameMS(DocumentWidget *document, Arguments a
 ** index of the newly added range (cases b and c), or 0 (case a).
 */
 static std::error_code rangesetAddMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	TextBuffer *buffer = document->buffer_;
+	TextBuffer *buffer = document->buffer();
 	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 	TextCursor start;
 	TextCursor end;
@@ -4622,7 +4622,7 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
 ** the handling of an undefined destination range, and that it returns no value.
 */
 static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	TextBuffer *buffer = document->buffer_;
+	TextBuffer *buffer = document->buffer();
 	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 	int64_t start;
 	int64_t end;
@@ -4874,7 +4874,7 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 ** fails if parameters were bad.
 */
 static std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	TextBuffer *buffer = document->buffer_;
+	TextBuffer *buffer = document->buffer();
 	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 	int label = 0;
 
@@ -4926,7 +4926,7 @@ static std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments
 */
 static std::error_code rangesetSetColorMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	TextBuffer *buffer = document->buffer_;
+	TextBuffer *buffer = document->buffer();
 	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 	int label = 0;
 
@@ -5186,7 +5186,7 @@ static std::error_code getStyleByNameMS(DocumentWidget *document, Arguments argu
 static std::error_code getStyleAtPosMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	int64_t bufferPos;
-	TextBuffer *buf = document->buffer_;
+	TextBuffer *buf = document->buffer();
 
 	// Validate number of arguments
 	if(std::error_code ec = readArguments(arguments, 0, &bufferPos)) {
@@ -5304,7 +5304,7 @@ static std::error_code getPatternByNameMS(DocumentWidget *document, Arguments ar
 */
 static std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	int64_t bufferPos;
-	TextBuffer *buffer = document->buffer_;
+	TextBuffer *buffer = document->buffer();
 
 	*result = make_value(ArrayPtr());
 

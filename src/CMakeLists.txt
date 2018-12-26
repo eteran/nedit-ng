@@ -138,6 +138,8 @@ add_executable(nedit-ng
 	Direction.h
 	DocumentModel.cpp
 	DocumentModel.h
+	DocumentInfo.cpp
+	DocumentInfo.h
 	DocumentWidget.cpp
 	DocumentWidget.h
 	DocumentWidget.ui

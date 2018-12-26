@@ -66,17 +66,17 @@ DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, 
 	 * 'real world' defaults as possible when testing the effect
 	 * of different formatting strings.
 	 */
-	path_        = document->path_;
-	filename_    = document->filename_;
+	path_        = document->path();
+	filename_    = document->filename();
 
 	QString clearCase = ClearCase::GetViewTag();
 
 	viewTag_     = !clearCase.isNull() ? clearCase : tr("viewtag");
 	serverName_  = IsServer ? Preferences::GetPrefServerName() : tr("servername");
 	isServer_    = IsServer;
-	filenameSet_ = document->filenameSet_;
-	lockReasons_ = document->lockReasons_;
-	fileChanged_ = document->fileChanged_;
+	filenameSet_ = document->filenameSet();
+	lockReasons_ = document->lockReasons();
+	fileChanged_ = document->fileChanged();
 
 	ui.checkClearCasePresent->setChecked(!clearCase.isNull());
 
@@ -165,14 +165,14 @@ void DialogWindowTitle::formatChangedCB() {
  */
 QString DialogWindowTitle::FormatWindowTitle(DocumentWidget *document, const QString &clearCaseViewTag, const QString &serverName, bool isServer, const QString &format) {
 	return FormatWindowTitleInternal(
-	            document->filename_,
-	            document->path_,
+	            document->filename(),
+	            document->path(),
 	            clearCaseViewTag,
 	            serverName,
 	            isServer,
-	            document->filenameSet_,
-	            document->lockReasons_,
-	            document->fileChanged_,
+	            document->filenameSet(),
+	            document->lockReasons(),
+	            document->fileChanged(),
 	            format,
 	            nullptr);
 }

@@ -154,7 +154,7 @@ void SyntaxHighlightModifyCBEx(TextCursor pos, int64_t nInserted, int64_t nDelet
 
 	// Re-parse around the changed region
 	if (highlightData->pass1Patterns) {
-		Highlight::incrementalReparse(highlightData, document->buffer_, pos, nInserted, document->documentDelimiters());
+		Highlight::incrementalReparse(highlightData, document->buffer(), pos, nInserted, document->documentDelimiters());
 	}
 }
 

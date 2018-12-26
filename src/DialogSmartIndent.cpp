@@ -273,7 +273,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 					window->ui.action_Indent_Smart->setEnabled(true);
 				}
 
-				if (document->indentStyle_ == IndentStyle::Smart && document->GetLanguageMode() != PLAIN_LANGUAGE_MODE) {
+				if (document->info_->indentStyle == IndentStyle::Smart && document->GetLanguageMode() != PLAIN_LANGUAGE_MODE) {
 					document->endSmartIndent();
 					document->beginSmartIndent(/*warn=*/false);
 				}

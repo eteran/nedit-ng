@@ -508,11 +508,11 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
 	heavyCursor_             = Preferences::GetPrefHeavyCursor();
 	readOnly_                = document->lockReasons().isAnyLocked();
 	wrapMargin_              = Preferences::GetPrefWrapMargin();
-	autoIndent_              = document->indentStyle_ == IndentStyle::Auto;
-	smartIndent_             = document->indentStyle_ == IndentStyle::Smart;
-	autoWrap_                = document->wrapMode_ == WrapStyle::Newline;
-	continuousWrap_          = document->wrapMode_ == WrapStyle::Continuous;
-	overstrike_              = document->overstrike_;
+	autoIndent_              = document->info_->indentStyle == IndentStyle::Auto;
+	smartIndent_             = document->info_->indentStyle == IndentStyle::Smart;
+	autoWrap_                = document->info_->wrapMode == WrapStyle::Newline;
+	continuousWrap_          = document->info_->wrapMode == WrapStyle::Continuous;
+	overstrike_              = document->GetOverstrike();
 	hidePointer_             = Preferences::GetPrefTypingHidesPointer();
 	smartHome_               = Preferences::GetPrefSmartHome();
 

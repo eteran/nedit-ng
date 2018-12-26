@@ -6,6 +6,7 @@
 #include "CallTip.h"
 #include "CloseMode.h"
 #include "CommandSource.h"
+#include "DocumentInfo.h"
 #include "IndentStyle.h"
 #include "LanguageMode.h"
 #include "LockReasons.h"
@@ -70,6 +71,7 @@ public:
 	};
 
 public:
+	DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	DocumentWidget(const QString &name, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DocumentWidget() noexcept override;
 
@@ -100,6 +102,13 @@ public:
 	void action_Set_Language_Mode(const QString &languageMode, bool forceNewDefaults);
 
 public:
+	ShowMatchingStyle showMatchingStyle() const;
+	bool filenameSet() const;
+	bool fileChanged() const;
+	TextBuffer *buffer() const;
+	dev_t device() const;
+	ino_t inode() const;
+	FileFormats fileFormat() const;
 	void setPath(const QString &pathname);
 	bool checkReadOnly() const;
 	bool isReadOnly() const;
@@ -117,6 +126,7 @@ public:
 	QString HighlightNameOfCodeEx(size_t hCode) const;
 	QString HighlightStyleOfCodeEx(size_t hCode) const;
 	QString filename() const;
+	QString path() const;
 	TextArea *firstPane() const;
 	bool GetHighlightSyntax() const;
 	bool GetIncrementalBackup() const;
@@ -275,53 +285,24 @@ private:
 	void updateSelectionSensitiveMenus(bool enabled);
 
 public:
+	std::shared_ptr<DocumentInfo> info_;
+
+public:
 	bool replaceFailed_     = false;               // flags replacements failures during multi-file replacements
 	bool multiFileBusy_     = false;               // suppresses multiple beeps/dialogs during multi-file replacements
-	bool filenameSet_       = false;               // is the window still "Untitled"?
-	bool fileChanged_       = false;               // has window been modified?
-	bool overstrike_        = false;               // is overstrike mode turned on ?
-	FileFormats fileFormat_ = FileFormats::Unix;   // whether to save the file straight (Unix format), or convert it to MS DOS style with \r\n line breaks
 	size_t languageMode_    = PLAIN_LANGUAGE_MODE; // identifies language mode currently selected in the window
 
 public:
-	IndentStyle indentStyle_;                              // whether/how to auto indent
-	LockReasons lockReasons_;                              // all ways a file can be locked
-	QString filename_;                                     // name component of file being edited
 	QString fontName_;                                     // names of the text fonts in use
-	QString path_;                                         // path component of file being edited
-	ShowMatchingStyle showMatchingStyle_;                  // How to show matching parens: None, Delimeter, or Range
-	TextBuffer *buffer_;                                   // holds the text being edited
-	WrapStyle wrapMode_;                                   // line wrap style: None, Newline or Continuous
-	bool autoSave_;                                        // is autosave turned on?
-	bool highlightSyntax_;                                 // is syntax highlighting turned on?
-	bool matchSyntaxBased_;                                // Use syntax info to show matching
-	bool saveOldVersion_;                                  // keep old version in filename.bc
+	bool highlightSyntax_;                                 // is syntax highlighting turned on?	
 	bool showStats_;                                       // is stats line supposed to be shown	
 	std::shared_ptr<MacroCommandData>    macroCmdData_;    // same for macro commands
 	std::shared_ptr<RangesetTable>       rangesetTable_;   // current range sets
 	std::unique_ptr<WindowHighlightData> highlightData_;   // info for syntax highlighting
 
 private:
-	QMenu *contextMenu_    = nullptr;
-	bool fileMissing_      = true;                      // is the window's file gone?
-	bool ignoreModify_     = false;                     // ignore modifications to text area
-	dev_t dev_             = 0;                         // device where the file resides
-	ino_t ino_             = 0;                         // file's inode
-	int autoSaveCharCount_ = 0;                         // count of single characters typed since last backup file generated
-	int autoSaveOpCount_   = 0;                         // count of editing operations
-	size_t nMarks_         = 0;                         // number of active bookmarks
-	time_t lastModTime_    = 0;                         // time of last modification to file
-#ifdef Q_OS_UNIX
-	uid_t uid_             = 0;                         // last recorded user id of the file
-	gid_t gid_             = 0;                         // last recorded group id of the file
-	mode_t mode_           = 0;                         // permissions of file being edited
-#elif defined(Q_OS_WIN)
-	// copied from the Windows version of the struct stat
-	unsigned short mode_   = 0;
-	short          uid_    = 0;
-	short          gid_    = 0;
-#endif
-
+	QMenu *contextMenu_    = nullptr;		
+	size_t nMarks_         = 0;                         // number of active bookmarks	
 
 private:
 	QSplitter *splitter_;
@@ -331,10 +312,7 @@ private:
 	QTimer *flashTimer_;                                // timer for getting rid of highlighted matching paren.
 	bool backlightChars_;                               // is char backlighting turned on?
 	std::array<Bookmark, MAX_MARKS> markTable_;         // marked locations in window
-	std::deque<UndoInfo> redo_;                         // info for redoing last undone op
-	std::deque<UndoInfo> undo_;                         // info for undoing last operation
-	std::unique_ptr<ShellCommandData> shellCmdData_;    // when a shell command is executing, info. about it, otherwise, nullptr
-	std::unique_ptr<SmartIndentData>  smartIndentData_; // compiled macros for smart indent
+	std::unique_ptr<ShellCommandData> shellCmdData_;    // when a shell command is executing, info. about it, otherwise, nullptr	
 	Ui::DocumentWidget ui;
 
 public:

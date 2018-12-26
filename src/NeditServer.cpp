@@ -45,7 +45,7 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
 
 		const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 		for(DocumentWidget *document : documents) {
-			if (document->filenameSet_ || document->fileChanged_ || document->macroCmdData_) {
+			if (document->filenameSet() || document->fileChanged() || document->macroCmdData_) {
 				continue;
 			}
 
@@ -124,7 +124,7 @@ void NeditServer::newConnection() {
 		std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 		auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *document) {
-		    return (!document->filenameSet_ && !document->fileChanged_ && isLocatedOnDesktop(MainWindow::fromDocument(document), currentDesktop));
+		    return (!document->filenameSet() && !document->fileChanged() && isLocatedOnDesktop(MainWindow::fromDocument(document), currentDesktop));
 		});
 
 		if (it == documents.end()) {
@@ -174,7 +174,7 @@ void NeditServer::newConnection() {
 			std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 			auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *doc) {
-			    return (!doc->filenameSet_ && !doc->fileChanged_ && isLocatedOnDesktop(MainWindow::fromDocument(doc), currentDesktop));
+			    return (!doc->filenameSet() && !doc->fileChanged() && isLocatedOnDesktop(MainWindow::fromDocument(doc), currentDesktop));
 			});
 
 			if (doCommand.isEmpty()) {
