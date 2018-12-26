@@ -58,10 +58,12 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
 		const std::vector<MainWindow *> windows = MainWindow::allWindows();
 
 		// Find a window on the current desktop to hold the new document
-		for(MainWindow *window : windows) {
-			if (isLocatedOnDesktop(window, currentDesktop)) {
-				return window->currentDocument();
-			}
+		auto it = std::find_if(windows.begin(), windows.end(), [currentDesktop](MainWindow *window) {
+		    return isLocatedOnDesktop(window, currentDesktop);
+	    });
+
+		if(it != windows.end()) {
+			return (*it)->currentDocument();
 		}
 	}
 

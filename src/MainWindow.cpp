@@ -1222,12 +1222,14 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 	for(int i = 0; i < data.size(); ++i) {
 		const MenuData &menuData = data[i];
 
-		bool found = menuData.info->umiLanguageModes.empty();
+		const std::vector<size_t> &modes = menuData.info->umiLanguageModes;
 
-		for(size_t languageMode : menuData.info->umiLanguageModes) {
-			if(languageMode == document->languageMode_) {
-				found = true;
-			}
+		bool found = modes.empty();
+
+		if(!found) {
+			found = std::any_of(modes.begin(), modes.end(), [document](size_t languageMode) {
+			    return languageMode == document->languageMode_;
+		    });
 		}
 
 		if(!found) {
@@ -1394,11 +1396,11 @@ void MainWindow::updateLanguageModeSubmenu() {
 
 	auto languageGroup = new QActionGroup(this);
 	auto languageMenu  = new QMenu(this);
-	QAction *action = languageMenu->addAction(QLatin1String("Plain"));
-	action->setData(static_cast<qulonglong>(PLAIN_LANGUAGE_MODE));
-	action->setCheckable(true);
-	action->setChecked(true);
-	languageGroup->addAction(action);
+	QAction *plainAction = languageMenu->addAction(QLatin1String("Plain"));
+	plainAction->setData(static_cast<qulonglong>(PLAIN_LANGUAGE_MODE));
+	plainAction->setCheckable(true);
+	plainAction->setChecked(true);
+	languageGroup->addAction(plainAction);
 
 	for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
 		QAction *action = languageMenu->addAction(Preferences::LanguageModes[i].name);
@@ -4602,15 +4604,15 @@ void MainWindow::action_Next_Document() {
 		if(nextIndex == tabCount) {
 
 			std::vector<MainWindow *> windows = MainWindow::allWindows();
-			auto thisIndex = std::find(windows.begin(), windows.end(), this);
-			auto nextIndex = std::next(thisIndex);
+			auto currentIter = std::find(windows.begin(), windows.end(), this);
+			auto nextIter    = std::next(currentIter);
 
-			if(nextIndex == windows.end()) {
-				nextIndex = windows.begin();
+			if(nextIter == windows.end()) {
+				nextIter = windows.begin();
 			}
 
 			// raise the window set the focus to the first document in it
-			MainWindow *nextWindow = *nextIndex;
+			MainWindow *nextWindow = *nextIter;
 			DocumentWidget *firstWidget = nextWindow->documentAt(0);
 
 			Q_ASSERT(firstWidget);
@@ -4648,15 +4650,15 @@ void MainWindow::action_Prev_Document() {
 		if(currentIndex == 0) {
 
 			std::vector<MainWindow *> windows = MainWindow::allWindows();
-			auto thisIndex = std::find(windows.rbegin(), windows.rend(), this);
-			auto nextIndex = std::next(thisIndex);
+			auto currentIter = std::find(windows.rbegin(), windows.rend(), this);
+			auto nextIter    = std::next(currentIter);
 
-			if(nextIndex == windows.rend()) {
-				nextIndex = windows.rbegin();
+			if(nextIter == windows.rend()) {
+				nextIter = windows.rbegin();
 			}
 
 			// raise the window set the focus to the first document in it
-			MainWindow *nextWindow = *nextIndex;
+			MainWindow *nextWindow = *nextIter;
 			DocumentWidget *lastWidget = nextWindow->documentAt(nextWindow->tabWidget()->count() - 1);
 
 			Q_ASSERT(lastWidget);
