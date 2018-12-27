@@ -102,6 +102,7 @@ public:
 	void action_Set_Language_Mode(const QString &languageMode, bool forceNewDefaults);
 
 public:
+	IndentStyle autoIndentStyle() const;
 	ShowMatchingStyle showMatchingStyle() const;
 	bool filenameSet() const;
 	bool fileChanged() const;

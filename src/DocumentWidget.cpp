@@ -4082,7 +4082,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 			// move all documents
 			for(DocumentWidget *document : fromWindow->openDocuments()) {
 
-				targetWindow->tabWidget()->addTab(document, document->info_->filename);
+				targetWindow->tabWidget()->addTab(document, document->filename());
 
 				document->updateSignals(fromWindow, targetWindow);
 
@@ -7090,7 +7090,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 	int64_t endPos;
 
 	// search for the tags file search string in the newly opened file
-	if (!Tags::fakeRegExSearchEx(documentToSearch->info_->buffer->BufAsStringEx(), Tags::tagSearch[i], &startPos, &endPos)) {
+	if (!Tags::fakeRegExSearchEx(documentToSearch->buffer()->BufAsStringEx(), Tags::tagSearch[i], &startPos, &endPos)) {
 		QMessageBox::warning(
 					this,
 					tr("Tag Error"),
@@ -7099,12 +7099,12 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 	}
 
 	// select the matched string
-	documentToSearch->info_->buffer->BufSelect(TextCursor(startPos), TextCursor(endPos));
+	documentToSearch->buffer()->BufSelect(TextCursor(startPos), TextCursor(endPos));
 	documentToSearch->raiseFocusDocumentWindow(true);
 
 	/* Position it nicely in the window,
 	   about 1/4 of the way down from the top */
-	const int64_t lineNum = documentToSearch->info_->buffer->BufCountLines(TextCursor(0), TextCursor(startPos));
+	const int64_t lineNum = documentToSearch->buffer()->BufCountLines(TextCursor(0), TextCursor(startPos));
 
 	int rows = area->getRows();
 
@@ -7188,4 +7188,12 @@ bool DocumentWidget::fileChanged() const {
  */
 ShowMatchingStyle DocumentWidget::showMatchingStyle() const {
 	return info_->showMatchingStyle;
+}
+
+/**
+ * @brief DocumentWidget::autoIndentStyle
+ * @return
+ */
+IndentStyle DocumentWidget::autoIndentStyle() const {
+	return info_->indentStyle;
 }

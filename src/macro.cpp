@@ -4061,11 +4061,11 @@ static std::error_code autoIndentMV(DocumentWidget *document, Arguments argument
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	if(document->info_->indentStyle == IndentStyle::Default) {
+	if(document->autoIndentStyle() == IndentStyle::Default) {
 		return MacroErrorCode::InvalidIndentStyle;
 	}
 
-	QLatin1String res = to_string(document->info_->indentStyle);
+	QLatin1String res = to_string(document->autoIndentStyle());
 	*result = make_value(res);
 	return MacroErrorCode::Success;
 }
