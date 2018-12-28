@@ -4076,11 +4076,11 @@ static std::error_code wrapTextMV(DocumentWidget *document, Arguments arguments,
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	if(document->info_->wrapMode == WrapStyle::Default) {
+	if(document->wrapMode() == WrapStyle::Default) {
 		return MacroErrorCode::InvalidWrapStyle;
 	}
 
-	QLatin1String res = to_string(document->info_->wrapMode);
+	QLatin1String res = to_string(document->wrapMode());
 	*result = make_value(res);
 	return MacroErrorCode::Success;
 }

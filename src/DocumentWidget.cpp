@@ -7197,3 +7197,19 @@ ShowMatchingStyle DocumentWidget::showMatchingStyle() const {
 IndentStyle DocumentWidget::autoIndentStyle() const {
 	return info_->indentStyle;
 }
+
+/**
+ * @brief DocumentWidget::wrapMode
+ * @return
+ */
+WrapStyle DocumentWidget::wrapMode() const {
+	return info_->wrapMode;
+}
+
+/**
+ * @brief DocumentWidget::setFileFormat
+ * @param format
+ */
+void DocumentWidget::setFileFormat(FileFormats fileFormat) {
+	info_->fileFormat = fileFormat;
+}

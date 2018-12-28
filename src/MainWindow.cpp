@@ -4901,17 +4901,17 @@ QString MainWindow::PromptForNewFile(DocumentWidget *document, FileFormats *form
 			});
 
 
-			if (document->info_->wrapMode == WrapStyle::Continuous) {
+			if (document->wrapMode() == WrapStyle::Continuous) {
 				layout->addWidget(wrapCheck, row, 1, 1, 1);
 			}
 
 			if(dialog.exec()) {
 				if(dosCheck->isChecked()) {
-					document->info_->fileFormat = FileFormats::Dos;
+					document->setFileFormat(FileFormats::Dos);
 				} else if(macCheck->isChecked()) {
-					document->info_->fileFormat = FileFormats::Mac;
+					document->setFileFormat(FileFormats::Mac);
 				} else if(unixCheck->isChecked()) {
-					document->info_->fileFormat = FileFormats::Unix;
+					document->setFileFormat(FileFormats::Unix);
 				}
 
 				*addWrap = wrapCheck->isChecked();
@@ -4957,7 +4957,7 @@ void MainWindow::action_Save_As(DocumentWidget *document) {
 		return;
 	}
 
-	document->info_->fileFormat = fileFormat;
+	document->setFileFormat(fileFormat);
 	action_Save_As(document, fullname, addWrap);
 }
 
