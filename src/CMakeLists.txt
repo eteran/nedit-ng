@@ -251,11 +251,12 @@ target_include_directories (nedit-ng PRIVATE
 	${Boost_INCLUDE_DIR}
 )
 
-if(${X11_FOUND})
+if(${X11_FOUND} AND ${Qt5X11Extras_FOUND})
 	target_compile_definitions(nedit-ng
 		PUBLIC -DQT_X11
 	)
 endif()
+
 
 target_link_libraries(nedit-ng LINK_PUBLIC
 	Util
