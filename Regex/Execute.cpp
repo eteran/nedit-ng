@@ -333,20 +333,24 @@ uint32_t greedy(uint8_t *p, uint32_t max) {
 	    return (X);                 \
 	} while(0)
 
-#define CHECK_RECURSION_LIMIT()                \
-	do {                                       \
-		if (eContext.Recursion_Limit_Exceeded) \
-	        MATCH_RETURN(false);               \
+#define CHECK_RECURSION_LIMIT()                   \
+	do {                                          \
+	    if (eContext.Recursion_Limit_Exceeded)  { \
+	        MATCH_RETURN(false);                  \
+        }                                         \
 	} while(0)
 
 
 bool match(uint8_t *prog, size_t *branch_index_param) {
 
-	uint8_t *next;          // Next node.
+	uint8_t *next;
 
 	if (++eContext.Recursion_Count > REGEX_RECURSION_LIMIT) {
-		if (!eContext.Recursion_Limit_Exceeded) // Prevent duplicate errors
+		// Prevent duplicate errors
+		if (!eContext.Recursion_Limit_Exceeded) {
 			reg_error("recursion limit exceeded, please respecify expression");
+		}
+
 		eContext.Recursion_Limit_Exceeded = true;
 		MATCH_RETURN(false);
 	}
@@ -358,20 +362,19 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 		next = NEXT_PTR(scan);
 
 		switch (GET_OP_CODE(scan)) {
-		case BRANCH: {
-			const char *save;
-
+		case BRANCH:
 			if (GET_OP_CODE(next) != BRANCH) { // No choice.
 				next = OPERAND(scan);          // Avoid recursion.
 			} else {
 				size_t branch_index_local = 0;
 
 				do {
-					save = eContext.Reg_Input;
+					const char *save = eContext.Reg_Input;
 
 					if (match(OPERAND(scan), nullptr)) {
-						if (branch_index_param)
+						if (branch_index_param) {
 							*branch_index_param = branch_index_local;
+						}
 						MATCH_RETURN(true);
 					}
 
@@ -385,53 +388,52 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 
 				MATCH_RETURN(false); // NOT REACHED
 			}
-		}
+			break;
 
-		break;
+		case EXACTLY:
+		    {
+			    uint8_t *opnd = OPERAND(scan);
 
-		case EXACTLY: {
-			uint8_t *opnd = OPERAND(scan);
-
-			// Inline the first character, for speed.
-			if (AT_END_OF_STRING(eContext.Reg_Input) || *opnd != *eContext.Reg_Input) {
-				MATCH_RETURN(false);
-			}
-
-			const auto str = reinterpret_cast<const char *>(opnd);
-			const size_t len = strlen(str);
-
-			if (eContext.End_Of_String != nullptr && eContext.Reg_Input + len > eContext.End_Of_String) {
-				MATCH_RETURN(false);
-			}
-
-			if (len > 1 && strncmp(str, eContext.Reg_Input, len) != 0) {
-				MATCH_RETURN(false);
-			}
-
-			eContext.Reg_Input += len;
-		}
-
-		break;
-
-		case SIMILAR: {
-			uint8_t test;
-			uint8_t *opnd = OPERAND(scan);
-
-			/* Note: the SIMILAR operand was converted to lower case during
-			   regex compile. */
-			while ((test = *opnd++) != '\0') {
-				if (AT_END_OF_STRING(eContext.Reg_Input) || tolower(*eContext.Reg_Input++) != test) {
+				// Inline the first character, for speed.
+				if (AT_END_OF_STRING(eContext.Reg_Input) || *opnd != *eContext.Reg_Input) {
 					MATCH_RETURN(false);
 				}
-			}
-		}
 
-		break;
+				const auto str = reinterpret_cast<const char *>(opnd);
+				const size_t len = strlen(str);
+
+				if (eContext.End_Of_String != nullptr && eContext.Reg_Input + len > eContext.End_Of_String) {
+					MATCH_RETURN(false);
+				}
+
+				if (len > 1 && strncmp(str, eContext.Reg_Input, len) != 0) {
+					MATCH_RETURN(false);
+				}
+
+				eContext.Reg_Input += len;
+		    }
+			break;
+
+		case SIMILAR:
+		    {
+			    uint8_t test;
+				uint8_t *opnd = OPERAND(scan);
+
+				/* Note: the SIMILAR operand was converted to lower case during
+				   regex compile. */
+				while ((test = *opnd++) != '\0') {
+					if (AT_END_OF_STRING(eContext.Reg_Input) || safe_ctype<tolower>(*eContext.Reg_Input++) != test) {
+						MATCH_RETURN(false);
+					}
+				}
+		    }
+			break;
 
 		case BOL: // '^' (beginning of line anchor)
 			if (eContext.Reg_Input == eContext.Start_Of_String) {
-				if (eContext.Prev_Is_BOL)
+				if (eContext.Prev_Is_BOL) {
 					break;
+				}
 			} else if (eContext.Reg_Input[-1] == '\n') {
 				break;
 			}
@@ -446,8 +448,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			MATCH_RETURN(false);
 
 		case BOWORD: // '<' (beginning of word anchor)
-					 /* Check to see if the current character is not a delimiter
-						and the preceding character is. */
+			         /* Check to see if the current character is not a delimiter and the preceding character is. */
 			{
 				bool prev_is_delim;
 				if (eContext.Reg_Input == eContext.Start_Of_String) {
@@ -455,23 +456,25 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				} else {
 					prev_is_delim = isDelimiter(eContext.Reg_Input[-1]);
 				}
+
 				if (prev_is_delim) {
-					int current_is_delim;
+					bool current_is_delim;
 					if (AT_END_OF_STRING(eContext.Reg_Input)) {
 						current_is_delim = eContext.Succ_Is_Delim;
 					} else {
 						current_is_delim = isDelimiter(*eContext.Reg_Input);
 					}
-					if (!current_is_delim)
+
+					if (!current_is_delim) {
 						break;
+					}
 				}
 			}
 
 			MATCH_RETURN(false);
 
 		case EOWORD: // '>' (end of word anchor)
-					 /* Check to see if the current character is a delimiter
-					and the preceding character is not. */
+			         /* Check to see if the current character is a delimiter and the preceding character is not. */
 			{
 				bool prev_is_delim;
 				if (eContext.Reg_Input == eContext.Start_Of_String) {
@@ -479,38 +482,44 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				} else {
 					prev_is_delim = isDelimiter(eContext.Reg_Input[-1]);
 				}
+
 				if (!prev_is_delim) {
-					int current_is_delim;
+					bool current_is_delim;
 					if (AT_END_OF_STRING(eContext.Reg_Input)) {
 						current_is_delim = eContext.Succ_Is_Delim;
 					} else {
 						current_is_delim = isDelimiter(*eContext.Reg_Input);
 					}
-					if (current_is_delim)
+
+					if (current_is_delim) {
 						break;
+					}
 				}
 			}
 
 			MATCH_RETURN(false);
 
 		case NOT_BOUNDARY: // \B (NOT a word boundary)
-		{
-			int prev_is_delim;
-			int current_is_delim;
-			if (eContext.Reg_Input == eContext.Start_Of_String) {
-				prev_is_delim = eContext.Prev_Is_Delim;
-			} else {
-				prev_is_delim = isDelimiter(eContext.Reg_Input[-1]);
-			}
-			if (AT_END_OF_STRING(eContext.Reg_Input)) {
-				current_is_delim = eContext.Succ_Is_Delim;
-			} else {
-				current_is_delim = isDelimiter(*eContext.Reg_Input);
-			}
-			if (!(prev_is_delim ^ current_is_delim))
-				break;
-		}
+		    {
+			    bool prev_is_delim;
+				bool current_is_delim;
 
+				if (eContext.Reg_Input == eContext.Start_Of_String) {
+					prev_is_delim = eContext.Prev_Is_Delim;
+				} else {
+					prev_is_delim = isDelimiter(eContext.Reg_Input[-1]);
+				}
+
+				if (AT_END_OF_STRING(eContext.Reg_Input)) {
+					current_is_delim = eContext.Succ_Is_Delim;
+				} else {
+					current_is_delim = isDelimiter(*eContext.Reg_Input);
+				}
+
+				if (!(prev_is_delim ^ current_is_delim)) {
+					break;
+				}
+		    }
 			MATCH_RETURN(false);
 
 		case IS_DELIM: // \y (A word delimiter character.)
@@ -538,86 +547,98 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			MATCH_RETURN(false);
 
 		case NOT_WORD_CHAR: // \W (NOT a word character)
-			if (AT_END_OF_STRING(eContext.Reg_Input) || safe_ctype<isalnum>(*eContext.Reg_Input) || *eContext.Reg_Input == '_' || *eContext.Reg_Input == '\n')
+			if (AT_END_OF_STRING(eContext.Reg_Input) || safe_ctype<isalnum>(*eContext.Reg_Input) || *eContext.Reg_Input == '_' || *eContext.Reg_Input == '\n') {
 				MATCH_RETURN(false);
+			}
 
 			eContext.Reg_Input++;
 			break;
 
 		case ANY: // '.' (matches any character EXCEPT newline)
-			if (AT_END_OF_STRING(eContext.Reg_Input) || *eContext.Reg_Input == '\n')
+			if (AT_END_OF_STRING(eContext.Reg_Input) || *eContext.Reg_Input == '\n') {
 				MATCH_RETURN(false);
+			}
 
 			eContext.Reg_Input++;
 			break;
 
 		case EVERY: // '.' (matches any character INCLUDING newline)
-			if (AT_END_OF_STRING(eContext.Reg_Input))
+			if (AT_END_OF_STRING(eContext.Reg_Input)) {
 				MATCH_RETURN(false);
+			}
 
 			eContext.Reg_Input++;
 			break;
 
 		case DIGIT: // \d, same as [0123456789]
-			if (AT_END_OF_STRING(eContext.Reg_Input) || !safe_ctype<isdigit>(*eContext.Reg_Input))
+			if (AT_END_OF_STRING(eContext.Reg_Input) || !safe_ctype<isdigit>(*eContext.Reg_Input)) {
 				MATCH_RETURN(false);
+			}
 
 			eContext.Reg_Input++;
 			break;
 
 		case NOT_DIGIT: // \D, same as [^0123456789]
-			if (AT_END_OF_STRING(eContext.Reg_Input) || safe_ctype<isdigit>(*eContext.Reg_Input) || *eContext.Reg_Input == '\n')
+			if (AT_END_OF_STRING(eContext.Reg_Input) || safe_ctype<isdigit>(*eContext.Reg_Input) || *eContext.Reg_Input == '\n') {
 				MATCH_RETURN(false);
+			}
 
 			eContext.Reg_Input++;
 			break;
 
 		case LETTER: // \l, same as [a-zA-Z]
-			if (AT_END_OF_STRING(eContext.Reg_Input) || !safe_ctype<isalpha>(*eContext.Reg_Input))
+			if (AT_END_OF_STRING(eContext.Reg_Input) || !safe_ctype<isalpha>(*eContext.Reg_Input)) {
 				MATCH_RETURN(false);
+			}
 
 			eContext.Reg_Input++;
 			break;
 
 		case NOT_LETTER: // \L, same as [^0123456789]
-			if (AT_END_OF_STRING(eContext.Reg_Input) || safe_ctype<isalpha>(*eContext.Reg_Input) || *eContext.Reg_Input == '\n')
+			if (AT_END_OF_STRING(eContext.Reg_Input) || safe_ctype<isalpha>(*eContext.Reg_Input) || *eContext.Reg_Input == '\n') {
 				MATCH_RETURN(false);
+			}
 
 			eContext.Reg_Input++;
 			break;
 
 		case SPACE: // \s, same as [ \t\r\f\v]
-			if (AT_END_OF_STRING(eContext.Reg_Input) || !safe_ctype<isspace>(*eContext.Reg_Input) || *eContext.Reg_Input == '\n')
+			if (AT_END_OF_STRING(eContext.Reg_Input) || !safe_ctype<isspace>(*eContext.Reg_Input) || *eContext.Reg_Input == '\n') {
 				MATCH_RETURN(false);
+			}
 
 			eContext.Reg_Input++;
 			break;
 
 		case SPACE_NL: // \s, same as [\n \t\r\f\v]
-			if (AT_END_OF_STRING(eContext.Reg_Input) || !safe_ctype<isspace>(*eContext.Reg_Input))
+			if (AT_END_OF_STRING(eContext.Reg_Input) || !safe_ctype<isspace>(*eContext.Reg_Input)) {
 				MATCH_RETURN(false);
+			}
 
 			eContext.Reg_Input++;
 			break;
 
 		case NOT_SPACE: // \S, same as [^\n \t\r\f\v]
-			if (AT_END_OF_STRING(eContext.Reg_Input) || safe_ctype<isspace>(*eContext.Reg_Input))
+			if (AT_END_OF_STRING(eContext.Reg_Input) || safe_ctype<isspace>(*eContext.Reg_Input)) {
 				MATCH_RETURN(false);
+			}
 
 			eContext.Reg_Input++;
 			break;
 
 		case NOT_SPACE_NL: // \S, same as [^ \t\r\f\v]
-			if (AT_END_OF_STRING(eContext.Reg_Input) || (safe_ctype<isspace>(*eContext.Reg_Input) && *eContext.Reg_Input != '\n'))
+			if (AT_END_OF_STRING(eContext.Reg_Input) || (safe_ctype<isspace>(*eContext.Reg_Input) && *eContext.Reg_Input != '\n')) {
 				MATCH_RETURN(false);
+			}
 
 			eContext.Reg_Input++;
 			break;
 
 		case ANY_OF: // [...] character class.
-			if (AT_END_OF_STRING(eContext.Reg_Input))
+			if (AT_END_OF_STRING(eContext.Reg_Input)) {
 				MATCH_RETURN(false); /* Needed because strchr () considers \0
 										as a member of the character set. */
+			}
 
 			if (::strchr(reinterpret_cast<char *>(OPERAND(scan)), *eContext.Reg_Input) == nullptr) {
 				MATCH_RETURN(false);
@@ -630,8 +651,9 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 					  match newline (\n added usually to operand at compile
 					  time.) */
 
-			if (AT_END_OF_STRING(eContext.Reg_Input))
+			if (AT_END_OF_STRING(eContext.Reg_Input)) {
 				MATCH_RETURN(false); // See comment for ANY_OF.
+			}
 
 			if (::strchr(reinterpret_cast<char *>(OPERAND(scan)), *eContext.Reg_Input) != nullptr) {
 				MATCH_RETURN(false);
@@ -723,8 +745,9 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 
 			while (min <= num_matched && num_matched <= max) {
 				if (next_char == '\0' || (!AT_END_OF_STRING(eContext.Reg_Input) && next_char == *eContext.Reg_Input)) {
-					if (match(next, nullptr))
+					if (match(next, nullptr)) {
 						MATCH_RETURN(true);
+					}
 
 					CHECK_RECURSION_LIMIT();
 				}
@@ -732,8 +755,9 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				// Couldn't or didn't match.
 
 				if (lazy) {
-					if (!greedy(next_op, 1))
+					if (!greedy(next_op, 1)) {
 						MATCH_RETURN(false);
+					}
 
 					num_matched++; // Inch forward.
 				} else if (num_matched > REG_ZERO) {
@@ -785,8 +809,9 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 
 #ifdef ENABLE_CROSS_REGEX_BACKREF
 				if (GET_OP_CODE (scan) == X_REGEX_BR || GET_OP_CODE (scan) == X_REGEX_BR_CI) {
-				   if (eContext.Cross_Regex_Backref == nullptr)
+				   if (eContext.Cross_Regex_Backref == nullptr) {
 					   MATCH_RETURN (0);
+				   }
 
 				   captured = eContext.Cross_Regex_Backref->startp [paren_no];
 				   finish   = eContext.Cross_Regex_Backref->endp   [paren_no];
@@ -799,8 +824,9 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 #endif
 
 				if ((captured != nullptr) && (finish != nullptr)) {
-					if (captured > finish)
+					if (captured > finish) {
 						MATCH_RETURN(false);
+					}
 
 #ifdef ENABLE_CROSS_REGEX_BACKREF
 					if (GET_OP_CODE(scan) == BACK_REF_CI || GET_OP_CODE (scan) == X_REGEX_BR_CI) {
@@ -808,14 +834,15 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 					if (GET_OP_CODE(scan) == BACK_REF_CI) {
 #endif
 						while (captured < finish) {
-							if (AT_END_OF_STRING(eContext.Reg_Input) || tolower(*captured++) != safe_ctype<tolower>(*eContext.Reg_Input++)) {
+							if (AT_END_OF_STRING(eContext.Reg_Input) || safe_ctype<tolower>(*captured++) != safe_ctype<tolower>(*eContext.Reg_Input++)) {
 								MATCH_RETURN(false);
 							}
 						}
 					} else {
 						while (captured < finish) {
-							if (AT_END_OF_STRING(eContext.Reg_Input) || *captured++ != *eContext.Reg_Input++)
+							if (AT_END_OF_STRING(eContext.Reg_Input) || *captured++ != *eContext.Reg_Input++) {
 								MATCH_RETURN(false);
+							}
 						}
 					}
 
@@ -835,7 +862,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			const char *saved_end = eContext.End_Of_String;
 			eContext.End_Of_String = nullptr;
 
-			bool answer = match(next, nullptr); // Does the look-ahead regex match?
+			const bool answer = match(next, nullptr); // Does the look-ahead regex match?
 
 			CHECK_RECURSION_LIMIT();
 
@@ -860,8 +887,10 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 
 				next = NEXT_PTR(OPERAND(scan)); // Skip 1st branch
 				// Skip the chain of branches inside the look-ahead
-				while (GET_OP_CODE(next) == BRANCH)
+				while (GET_OP_CODE(next) == BRANCH) {
 					next = NEXT_PTR(next);
+				}
+
 				next = NEXT_PTR(next); // Skip the LOOK_AHEAD_CLOSE
 			} else {
 				eContext.Reg_Input = save;          // Backtrack to look-ahead start.
@@ -887,8 +916,8 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			   Lookahead inside lookbehind can still cross that boundary. */
 			eContext.End_Of_String = eContext.Reg_Input;
 
-			uint16_t lower = getLower(scan);
-			uint16_t upper = getUpper(scan);
+			const uint16_t lower = getLower(scan);
+			const uint16_t upper = getUpper(scan);
 
 			/* Start with the shortest match first. This is the most
 			   efficient direction in general.
@@ -903,7 +932,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 					break;
 				}
 
-				int answer = match(next, nullptr); // Does the look-behind regex match?
+				const bool answer = match(next, nullptr); // Does the look-behind regex match?
 
 				CHECK_RECURSION_LIMIT();
 
@@ -939,9 +968,12 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				   branches (contents of the look-behind expression), and
 				   terminated by a look-behind-close node. */
 				next = NEXT_PTR(OPERAND(scan) + LENGTH_SIZE); // 1st branch
+
 				// Skip the chained branches inside the look-ahead
-				while (GET_OP_CODE(next) == BRANCH)
+				while (GET_OP_CODE(next) == BRANCH) {
 					next = NEXT_PTR(next);
+				}
+
 				next = NEXT_PTR(next); // Skip LOOK_BEHIND_CLOSE
 			} else {
 				// Not a match
@@ -983,8 +1015,9 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				uint8_t no       = GET_OP_CODE(scan) - CLOSE;
 				const char *save = eContext.Reg_Input;
 
-				if (no < 10)
+				if (no < 10) {
 					eContext.Back_Ref_End[no] = save;
+				}
 
 				if (match(next, nullptr)) {
 					/* Do not set 'End_Ptr_Ptr' if some later invocation of the
@@ -1000,7 +1033,6 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				}
 			} else {
 				reg_error("memory corruption, 'match'");
-
 				MATCH_RETURN(false);
 			}
 
@@ -1014,7 +1046,6 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 	   the terminating point. */
 
 	reg_error("corrupted pointers, 'match'");
-
 	MATCH_RETURN(false);
 }
 
