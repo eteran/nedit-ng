@@ -19,8 +19,6 @@ public Q_SLOTS:
 
 private:
 	QLocalServer *server_;
-
-
 };
 
 #endif

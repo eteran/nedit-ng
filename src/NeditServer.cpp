@@ -19,7 +19,88 @@
 
 #include <memory>
 
+#ifdef QT_X11
+#include <QX11Info>
+#include <X11/Xlib.h>
+#include <X11/Xatom.h>
+
 namespace {
+
+/**
+ * @brief queryDesktop
+ * @param display
+ * @param window
+ * @param deskTopAtom
+ * @return
+ */
+long queryDesktop(Display *display, Window window, Atom deskTopAtom) {
+
+	Atom actualType;
+	int actualFormat;
+	unsigned long nItems;
+	unsigned long bytesAfter;
+	unsigned char *prop;
+
+	if (XGetWindowProperty(display, window, deskTopAtom, 0, 1, False, AnyPropertyType, &actualType, &actualFormat, &nItems, &bytesAfter, &prop) != Success) {
+		return -1; // Property not found
+	}
+
+	if (actualType == None) {
+		return -1; // Property does not exist
+	}
+
+	auto _ = gsl::finally([prop]() {
+		XFree(prop);
+	});
+
+	if (actualFormat != 32 || nItems != 1) {
+		return -1; // Wrong format
+	}
+
+	return *reinterpret_cast<const long *>(prop);
+}
+
+/**
+ * @brief QueryCurrentDesktop
+ * @param display
+ * @param rootWindow
+ * @return
+ */
+long QueryCurrentDesktop(Display *display, Window rootWindow) {
+
+	static Atom currentDesktopAtom = static_cast<Atom>(-1);
+
+	if (currentDesktopAtom == static_cast<Atom>(-1)) {
+		currentDesktopAtom = XInternAtom(display, "_NET_CURRENT_DESKTOP", True);
+	}
+
+	if (currentDesktopAtom != None) {
+		return queryDesktop(display, rootWindow, currentDesktopAtom);
+	}
+
+	return -1; // No desktop information
+}
+
+/**
+ * @brief QueryDesktop
+ * @param display
+ * @param window
+ * @return
+ */
+long QueryDesktop(Display *display, Window window) {
+	static Atom wmDesktopAtom = static_cast<Atom>(-1);
+
+	if (wmDesktopAtom == static_cast<Atom>(-1)) {
+		wmDesktopAtom = XInternAtom(display, "_NET_WM_DESKTOP", True);
+	}
+
+	if (wmDesktopAtom != None) {
+		return queryDesktop(display, window, wmDesktopAtom);
+	}
+
+	return -1;  // No desktop information
+}
+#endif
 
 /**
  * @brief isLocatedOnDesktop
@@ -28,7 +109,23 @@ namespace {
  * @return
  */
 bool isLocatedOnDesktop(QWidget *widget, long currentDesktop) {
+#ifdef QT_X11
+	if (currentDesktop == -1) {
+		return true; /* No desktop information available */
+	}
+
+	Display *TheDisplay = QX11Info::display();
+	long windowDesktop = QueryDesktop(TheDisplay, widget->winId());
+
+	// Sticky windows have desktop 0xFFFFFFFF by convention
+	if (windowDesktop == currentDesktop || windowDesktop == 0xFFFFFFFFL) {
+		return true; // Desktop matches, or window is sticky
+	}
+
+	return false;
+#else
 	return QApplication::desktop()->screenNumber(widget) == currentDesktop;
+#endif
 }
 
 /**
@@ -38,7 +135,38 @@ bool isLocatedOnDesktop(QWidget *widget, long currentDesktop) {
  * @return
  */
 DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
+#if 1
+	if (tabbed == 0 || (tabbed == -1 && !Preferences::GetPrefOpenInTab())) {
 
+		/* A new window is requested, unless we find an untitled unmodified
+			document on the current desktop */
+
+		const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+		for(DocumentWidget *document : documents) {
+			if (document->filenameSet() || document->fileChanged() || document->macroCmdData_) {
+				continue;
+			}
+			/* No check for top document here! */
+			if (isLocatedOnDesktop(document, currentDesktop)) {
+				return document;
+			}
+		}
+	} else {
+
+		const std::vector<MainWindow *> windows = MainWindow::allWindows();
+
+		// Find a window on the current desktop to hold the new document
+		for(MainWindow *window : windows) {
+
+			if (isLocatedOnDesktop(window, currentDesktop)) {
+				return window->currentDocument();
+			}
+		}
+	}
+
+	// No window found on current desktop -> create new window
+	return nullptr;
+#else
 	if (tabbed == 0 || (tabbed == -1 && !Preferences::GetPrefOpenInTab())) {
 		/* A new window is requested, unless we find an untitled unmodified
 			document on the current desktop */
@@ -69,6 +197,7 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
 
 	// No window found on current desktop -> create new window
 	return nullptr;
+#endif
 }
 
 }
@@ -117,7 +246,12 @@ void NeditServer::newConnection() {
 	int lastIconic = 0;
 
 	QPointer<DocumentWidget> lastFile;
+#if QT_X11
+	Display *TheDisplay = QX11Info::display();
+	const long currentDesktop = QueryCurrentDesktop(TheDisplay,  RootWindow(TheDisplay, DefaultScreen(TheDisplay)));
+#else
 	const long currentDesktop = QApplication::desktop()->screenNumber(QApplication::activeWindow());
+#endif
 
 	auto array = jsonDocument.array();
 	/* If the command string is empty, put up an empty, Untitled window
