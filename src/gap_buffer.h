@@ -264,7 +264,7 @@ auto gap_buffer<Ch, Tr>::to_string(size_type start, size_type end) const -> stri
 
 	// Copy the text from the buffer to the returned string
 	if (end <= gap_start_) {
-		std::copy_n(&buf_[start], length, std::back_inserter(text));
+		text = string_type(&buf_[start], &buf_[end]);
 	} else if (start >= gap_start_) {
 		std::copy_n(&buf_[start + gap_size()], length, std::back_inserter(text));
 	} else {

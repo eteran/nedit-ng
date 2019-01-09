@@ -922,16 +922,18 @@ int64_t BasicTextBuffer<Ch, Tr>::BufCountLines(TextCursor startPos, TextCursor e
 	int64_t lineCount = 0;
 
 	TextCursor pos = startPos;
+	TextCursor end = BufEndOfBuffer();
 
-	while (pos < BufEndOfBuffer()) {
+	while (pos < end) {
 		if (pos == endPos) {
 			return lineCount;
 		}
 
 		if (buffer_[to_integer(pos++)] == Ch('\n')) {
-			lineCount++;
+			++lineCount;
 		}
 	}
+
 	return lineCount;
 }
 
@@ -949,10 +951,11 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountForwardNLines(TextCursor startPos, i
 	}
 
 	TextCursor pos = startPos;
+	TextCursor end = BufEndOfBuffer();
 
-	while (pos < BufEndOfBuffer()) {
+	while (pos < end) {
 		if (buffer_[to_integer(pos++)] == Ch('\n')) {
-			lineCount++;
+			++lineCount;
 			if (lineCount >= nLines) {
 				return pos;
 			}
@@ -969,8 +972,11 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountForwardNLines(TextCursor startPos, i
 */
 template <class Ch, class Tr>
 TextCursor BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(TextCursor startPos, int64_t nLines) const noexcept {
-	if(startPos == BufStartOfBuffer()) {
-		return BufStartOfBuffer();
+
+	const TextCursor start = BufStartOfBuffer();
+
+	if(startPos == start) {
+		return start;
 	}
 
 	TextCursor pos    = startPos - 1;
@@ -978,10 +984,12 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(TextCursor startPos, 
 
 	while (true) {
 		if (buffer_[to_integer(pos)] == Ch('\n')) {
-			if (++lineCount >= nLines)
+			if (++lineCount >= nLines) {
 				return (pos + 1);
+			}
 		}
-		if(pos == BufStartOfBuffer()) {
+
+		if(pos == start) {
 			break;
 		}
 		--pos;
@@ -998,8 +1006,9 @@ template <class Ch, class Tr>
 boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(TextCursor startPos, view_type searchChars) const noexcept {
 
 	TextCursor pos = startPos;
+	TextCursor end = BufEndOfBuffer();
 
-	while (pos < BufEndOfBuffer()) {
+	while (pos < end) {
 		for (Ch ch : searchChars) {
 			if (buffer_[to_integer(pos)] == ch) {
 				return pos;
@@ -1018,7 +1027,9 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(TextCurs
 template <class Ch, class Tr>
 boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(TextCursor startPos, view_type searchChars) const noexcept {
 
-	if (startPos == BufStartOfBuffer()) {
+	const TextCursor start = BufStartOfBuffer();
+
+	if (startPos == start) {
 		return boost::none;
 	}
 
@@ -1031,7 +1042,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(TextCur
 			}
 		}
 
-		if(pos == BufStartOfBuffer()) {
+		if(pos == start) {
 			break;
 		}
 
