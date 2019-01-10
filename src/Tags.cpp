@@ -1176,7 +1176,7 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 		QString header;
 		QString body;
 
-		CalltipToken code = nextTFBlock(stream, header, body, &blkLine, &currLine);
+		const CalltipToken code = nextTFBlock(stream, header, body, &blkLine, &currLine);
 
 		if (code == TF_ERROR_EOF) {
 			qWarning("NEdit: Warning: unexpected EOF in calltips file.");

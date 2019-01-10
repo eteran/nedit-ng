@@ -115,20 +115,13 @@ QString NormalizePathname(const QString &pathname) {
 /*
 ** Return the trailing 'n' no. of path components
 */
-QString GetTrailingPathComponents(const QString &path, int noOfComponents) {
+QString GetTrailingPathComponents(const QString &path, int components) {
 
-	/* Start from the rear */
-	int index = path.size();
-	int count = 0;
-
-	while (--index > 0) {
-		if (path[index] == QLatin1Char('/')) {
-			if (count++ == noOfComponents) {
-				break;
-			}
-		}
-	}
-	return path.mid(index);
+	return path.section(
+	            QLatin1Char('/'),
+	            -1 - components,
+	            -1,
+	            QString::SectionIncludeLeadingSep);
 }
 
 /*
