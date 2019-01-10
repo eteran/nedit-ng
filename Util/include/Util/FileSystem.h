@@ -6,6 +6,7 @@
 #include "string_view.h"
 #include <QtGlobal>
 #include <QString>
+#include <boost/optional.hpp>
 
 enum class FileFormats : int;
 
@@ -19,6 +20,7 @@ QString GetTrailingPathComponents(const QString &path, int noOfComponents);
 QString NormalizePathname(const QString &pathname);
 QString ReadAnyTextFile(const QString &fileName, bool forceNL);
 bool parseFilename(const QString &fullname, PathInfo *fileInfo);
+boost::optional<PathInfo> parseFilename(const QString &fullname);
 
 // std::string based convesions
 void ConvertToMac(std::string &text);

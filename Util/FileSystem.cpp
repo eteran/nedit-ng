@@ -27,6 +27,23 @@ constexpr int FORMAT_SAMPLE_CHARS = 2000;
  *
  * @brief parseFilename
  * @param fullname
+ * @return
+ */
+boost::optional<PathInfo> parseFilename(const QString &fullname) {
+	PathInfo fileInfo;
+
+	if(parseFilename(fullname, &fileInfo)) {
+		return fileInfo;
+	}
+
+	return boost::none;
+}
+
+/**
+ * Decompose a Unix file name into a file name and a path.
+ *
+ * @brief parseFilename
+ * @param fullname
  * @param fileInfo
  * @return returns false if an error occured (currently, there is no error case).
  */

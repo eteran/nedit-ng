@@ -2110,15 +2110,14 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 	// OK, we've got some things to try to open, let's go for it!
 	for (const QFileInfo &file : fileList) {
 
-		PathInfo fi;
-
-		if (!parseFilename(file.absoluteFilePath(), &fi) != 0) {
+		const boost::optional<PathInfo> fi = parseFilename(file.absoluteFilePath());
+		if (!fi) {
 			QApplication::beep();
 		} else {
 			DocumentWidget::EditExistingFileEx(
 			            openInTab ? document : nullptr,
-			            fi.filename,
-			            fi.pathname,
+			            fi->filename,
+			            fi->pathname,
 			            0,
 			            QString(),
 			            /*iconic*/false,

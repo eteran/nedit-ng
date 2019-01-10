@@ -578,9 +578,8 @@ int Tags::loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 		return 0;
 	}
 
-	// NOTE(eteran): no error checking...
-	PathInfo tagPathInfo;
-	parseFilename(resolvedTagsFile, &tagPathInfo);
+	const boost::optional<PathInfo> tagPathInfo = parseFilename(resolvedTagsFile);
+	Q_ASSERT(tagPathInfo);
 
 	/* This might take a while if you have a huge tags file (like I do)..
 	   keep the windows up to date and post a busy cursor so the user
@@ -606,9 +605,9 @@ int Tags::loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 		}
 
 		if (tagFileType == TFT_CTAGS) {
-			nTagsAdded += scanCTagsLine(line, tagPathInfo.pathname, index);
+			nTagsAdded += scanCTagsLine(line, tagPathInfo->pathname, index);
 		} else {
-			nTagsAdded += scanETagsLine(line, tagPathInfo.pathname, index, filename, recLevel);
+			nTagsAdded += scanETagsLine(line, tagPathInfo->pathname, index, filename, recLevel);
 		}
 	}
 
@@ -1162,9 +1161,8 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 	}
 
 	// Get the path to the tips file
-	// NOTE(eteran): no error checking...
-	PathInfo tipPathInfo;
-	parseFilename(resolvedTipsFile, &tipPathInfo);
+	const boost::optional<PathInfo> tipPathInfo = parseFilename(resolvedTipsFile);
+	Q_ASSERT(tipPathInfo);
 
 	QFile file(resolvedTipsFile);
 	if(!file.open(QIODevice::ReadOnly)) {
@@ -1195,7 +1193,7 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 				For the moment I'm just using line numbers because I don't
 				want to have to deal with adding escape characters for
 				regex metacharacters that might appear in the string */
-			nTipsAdded += addTag(header, resolvedTipsFile, langMode, QString(), blkLine, tipPathInfo.pathname, index);
+			nTipsAdded += addTag(header, resolvedTipsFile, langMode, QString(), blkLine, tipPathInfo->pathname, index);
 			break;
 		case TF_INCLUDE:
 		{
@@ -1250,7 +1248,7 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
 			QStringList segments = alias.sources.split(QLatin1Char(':'));
 			for(const QString &src : segments) {
-				addTag(src, resolvedTipsFile, first_tag.language, QString(), first_tag.posInf, tipPathInfo.pathname, index);
+				addTag(src, resolvedTipsFile, first_tag.language, QString(), first_tag.posInf, tipPathInfo->pathname, index);
 			}
 		}
 	}
