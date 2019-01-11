@@ -2,14 +2,21 @@ cmake_minimum_required(VERSION 3.0)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-find_package(BISON REQUIRED)
+find_package(BISON)
 find_package(Qt5 5.5.0 REQUIRED Core)
 find_package(Boost 1.35 REQUIRED)
 
 # using a different name from parse.cpp
 # because it will also output parse.h, which will conflict with the
 # in source copy of that file!
-bison_target(parser parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
+if(${BISON_FOUND})
+    bison_target(parser parser.y ${CMAKE_CURRENT_BINARY_DIR}/parser.cpp)
+else()
+    set(BISON_parser_OUTPUT_SOURCE
+        prebuilt/parser.cpp
+        prebuilt/parser.hpp
+    )
+endif()
 
 add_library (Interpreter
 	DataValue.h
