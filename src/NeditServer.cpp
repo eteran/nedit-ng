@@ -137,7 +137,6 @@ bool isLocatedOnDesktop(QWidget *widget, long currentDesktop) {
  * @return
  */
 DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
-#if 1
 	if (tabbed == 0 || (tabbed == -1 && !Preferences::GetPrefOpenInTab())) {
 
 		/* A new window is requested, unless we find an untitled unmodified
@@ -168,38 +167,6 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
 
 	// No window found on current desktop -> create new window
 	return nullptr;
-#else
-	if (tabbed == 0 || (tabbed == -1 && !Preferences::GetPrefOpenInTab())) {
-		/* A new window is requested, unless we find an untitled unmodified
-			document on the current desktop */
-
-		const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
-		for(DocumentWidget *document : documents) {
-			if (document->filenameSet() || document->fileChanged() || document->macroCmdData_) {
-				continue;
-			}
-
-			if (isLocatedOnDesktop(document, currentDesktop)) {
-				return document;
-			}
-		}
-	} else {
-
-		const std::vector<MainWindow *> windows = MainWindow::allWindows();
-
-		// Find a window on the current desktop to hold the new document
-		auto it = std::find_if(windows.begin(), windows.end(), [currentDesktop](MainWindow *window) {
-		    return isLocatedOnDesktop(window, currentDesktop);
-	    });
-
-		if(it != windows.end()) {
-			return (*it)->currentDocument();
-		}
-	}
-
-	// No window found on current desktop -> create new window
-	return nullptr;
-#endif
 }
 
 }
