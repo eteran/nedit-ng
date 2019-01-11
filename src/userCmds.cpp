@@ -400,7 +400,7 @@ QString stripLanguageMode(const QString &menuItemName) {
 
 	int index = menuItemName.indexOf(QLatin1Char('@'));
 	if(index != -1) {
-		return menuItemName.mid(0, index);
+		return menuItemName.left(index);
 	} else {
 		return menuItemName;
 	}

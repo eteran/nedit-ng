@@ -23,7 +23,7 @@ bool DialogRepeat::setCommand(const QString &command) {
 	}
 
 	lastCommand_ = command;
-	ui.radioLastCommand->setText(tr("Last &Command (%1)").arg(command.mid(0, index)));
+	ui.radioLastCommand->setText(tr("Last &Command (%1)").arg(command.left(index)));
 	return true;
 }
 

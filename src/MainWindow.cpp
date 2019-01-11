@@ -1269,7 +1269,7 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 			QString parentName = name.mid(index, subSep);
 			const int subSubSep = parentName.indexOf(QLatin1Char('>'));
 			if(subSubSep != -1) {
-				parentName = parentName.mid(0, subSubSep);
+				parentName = parentName.left(subSubSep);
 			}
 
 			QList<QAction*> actions = parentMenu->actions();

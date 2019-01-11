@@ -494,7 +494,7 @@ int Tags::scanETagsLine(const QString &line, const QString &tagPath, int index, 
 
 	if (!file.isEmpty() && posDEL != -1 && (posSOH > posDEL) && (posCOM > posSOH)) {
 		// exuberant ctags -e style
-		QString searchString = line.mid(0, posDEL);
+		QString searchString = line.left(posDEL);
 		QString name         = line.mid(posDEL + 1, (posSOH - posDEL) - 1);
 		int pos              = line.midRef(posCOM + 1).toInt();
 
@@ -504,7 +504,7 @@ int Tags::scanETagsLine(const QString &line, const QString &tagPath, int index, 
 
 	if (!file.isEmpty() && posDEL != -1 && (posCOM > posDEL)) {
 		// old etags style, part  name<soh>  is missing here!
-		QString searchString = line.mid(0, posDEL);
+		QString searchString = line.left(posDEL);
 
 		// guess name: take the last alnum (plus _) part of searchString
 		int len = posDEL;
@@ -533,7 +533,7 @@ int Tags::scanETagsLine(const QString &line, const QString &tagPath, int index, 
 	// check for destination file spec
 	if (!line.isEmpty() && posCOM != -1) {
 
-		file = line.mid(0, posCOM);
+		file = line.left(posCOM);
 
 		// check if that's an include file ...
 		if(line.midRef(posCOM + 1, 7) == QLatin1String("include")) {
