@@ -3426,6 +3426,7 @@ void DocumentWidget::actionClose(CloseMode mode) {
 
 	CloseFileAndWindow(mode);
 	MainWindow::CheckCloseEnableState();
+	MainWindow::UpdateWindowMenus();
 }
 
 bool DocumentWidget::includeFile(const QString &name) {
