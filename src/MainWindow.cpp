@@ -1464,7 +1464,7 @@ int MainWindow::updateGutterWidth() {
 			   this width. */
 			maxCols = std::max(maxCols, lineNumCols);
 
-			const int tmpReqCols = (area->getBufferLinesCount() < 1) ? 1 : static_cast<int>(::log10(static_cast<double>(lineCount) + 1)) + 1;
+			const int tmpReqCols = (lineCount < 1) ? 1 : static_cast<int>(::log10(static_cast<double>(lineCount) + 1)) + 1;
 
 			reqCols = std::max(reqCols, tmpReqCols);
 		}
