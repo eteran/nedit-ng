@@ -5,9 +5,7 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-if(NOT Boost_FOUND)
-	find_package(Boost 1.35 REQUIRED)
-endif()
+find_package(Boost 1.35 REQUIRED)
 find_package(Qt5 5.5.0 REQUIRED Widgets Network Xml PrintSupport LinguistTools)
 find_package(Qt5 5.5.0 OPTIONAL_COMPONENTS X11Extras)
 
@@ -251,10 +249,12 @@ target_include_directories (nedit-ng PRIVATE
 	${Boost_INCLUDE_DIR}
 )
 
-if(${X11_FOUND} AND ${Qt5X11Extras_FOUND})
+if(${X11_FOUND})
+    if(${Qt5X11Extras_FOUND})
 	target_compile_definitions(nedit-ng
 		PUBLIC -DQT_X11
 	)
+    endif()
 endif()
 
 
@@ -268,8 +268,8 @@ target_link_libraries(nedit-ng LINK_PUBLIC
 	Qt5::Network
 	Qt5::Xml
 	Qt5::PrintSupport
-	$<${Qt5X11Extras_FOUND}:Qt5::X11Extras>
-	$<${X11_FOUND}:X11>
+        $<$<BOOL:${Qt5X11Extras_FOUND}>:Qt5::X11Extras>
+        $<$<BOOL:${X11_FOUND}>:X11>
 )
 
 set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)

@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.0)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5 5.5.0 REQUIRED Core Network)
+find_package(Boost 1.35 REQUIRED)
 
 add_library (Util
 	ClearCase.cpp
@@ -33,6 +34,7 @@ add_library (Util
 
 target_include_directories (Util PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${Boost_INCLUDE_DIR}
 )
 
 target_link_libraries(Util LINK_PUBLIC
