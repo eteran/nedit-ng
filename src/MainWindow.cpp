@@ -91,7 +91,7 @@ boost::optional<CharacterLocation> StringToLineAndCol(const QString &text) {
 										   "$"
 										   ));
 
-	QRegularExpressionMatch match = re.match(text);
+	const QRegularExpressionMatch match = re.match(text);
 	if (match.hasMatch()) {
 		const QString row = match.captured(QLatin1String("row"));
 		const QString col = match.captured(QLatin1String("col"));
@@ -116,8 +116,7 @@ boost::optional<CharacterLocation> StringToLineAndCol(const QString &text) {
 			return boost::none;
 		}
 
-		const CharacterLocation loc {r, c};
-		return loc;
+		return CharacterLocation{r, c};
 	}
 
 	return boost::none;
@@ -154,7 +153,7 @@ void changeCase(DocumentWidget *document, TextArea *area) {
 	// Get the selection.  Use character before cursor if no selection
 	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
 		TextCursor cursorPos = area->TextGetCursorPos();
-		if (cursorPos == 0) {
+		if (cursorPos == buf->BufStartOfBuffer()) {
 			QApplication::beep();
 			return;
 		}
@@ -302,11 +301,11 @@ void MainWindow::parseGeometry(QString geometry) {
 		rows = Preferences::GetPrefRows();
 		cols = Preferences::GetPrefCols();
 	} else {
-
-		QRegExp regex(QLatin1String("(?:([0-9]+)(?:[xX]([0-9]+)(?:([\\+-][0-9]+)(?:([\\+-][0-9]+))?)?)?)?"));
-		if(regex.exactMatch(geometry)) {
-			cols = regex.cap(1).toInt();
-			rows = regex.cap(2).toInt();
+		static const QRegularExpression re(QLatin1String("(?:([0-9]+)(?:[xX]([0-9]+)(?:([\\+-][0-9]+)(?:([\\+-][0-9]+))?)?)?)?"));
+		const QRegularExpressionMatch match = re.match(geometry);
+		if (match.hasMatch()) {
+			cols = match.captured(1).toInt();
+			rows = match.captured(2).toInt();
 		}
 	}
 
