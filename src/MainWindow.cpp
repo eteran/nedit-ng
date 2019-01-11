@@ -744,22 +744,15 @@ void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
 
 	Q_ASSERT(document);
 
-	bool openInTab = true;
-
-	switch(mode) {
-	case NewMode::Prefs:
-		openInTab = Preferences::GetPrefOpenInTab();
-		break;
-	case NewMode::Tab:
-		openInTab = true;
-		break;
-	case NewMode::Window:
-		openInTab = false;
-		break;
-	case NewMode::Opposite:
-		openInTab = !Preferences::GetPrefOpenInTab();
-		break;
-	}
+	const bool openInTab = [mode]() {
+		switch(mode) {
+		case NewMode::Prefs:    return Preferences::GetPrefOpenInTab();
+		case NewMode::Tab:      return true;
+		case NewMode::Window:   return false;
+		case NewMode::Opposite: return !Preferences::GetPrefOpenInTab();
+		}
+		Q_UNREACHABLE();
+	}();
 
 	MainWindow::EditNewFile(openInTab ? this : nullptr, QString(), /*iconic=*/false, QString(), document->path());
 	MainWindow::CheckCloseEnableState();
@@ -860,11 +853,7 @@ void MainWindow::on_action_About_triggered() {
 void MainWindow::action_Select_All(DocumentWidget *document) {
 
 	emit_event("select_all");
-
-	Q_UNUSED(document);
-	if(QPointer<TextArea> area = lastFocus()) {
-		area->selectAllAP();
-	}
+	document->firstPane()->selectAllAP();
 }
 
 /**
