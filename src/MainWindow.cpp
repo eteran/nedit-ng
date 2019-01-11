@@ -1456,14 +1456,15 @@ int MainWindow::updateGutterWidth() {
 		//  We found ourselves a document from this window. Pick a TextArea
 		// (doesn't matter which), so we can probe some details...
 		if(TextArea *area = document->firstPane()) {
-			const int lineNumCols = area->getLineNumCols();
+			const int lineNumCols   = area->getLineNumCols();
+			const int64_t lineCount = area->getBufferLinesCount();
 
 			/* Is the width of the line number area sufficient to display all the
 			   line numbers in the file?  If not, expand line number field, and the
 			   this width. */
 			maxCols = std::max(maxCols, lineNumCols);
 
-			const int tmpReqCols = (area->getBufferLinesCount() < 1) ? 1 : static_cast<int>(::log10(static_cast<double>(area->getBufferLinesCount()) + 1)) + 1;
+			const int tmpReqCols = (area->getBufferLinesCount() < 1) ? 1 : static_cast<int>(::log10(static_cast<double>(lineCount) + 1)) + 1;
 
 			reqCols = std::max(reqCols, tmpReqCols);
 		}
@@ -1856,14 +1857,16 @@ void MainWindow::updatePrevOpenMenu() {
 		std::sort(prevOpenSorted.begin(), prevOpenSorted.end());
 	}
 
-	for(int i = 0; i < prevOpenSorted.size(); ++i) {
+	int count = prevOpenSorted.size();
+
+	for(int i = 0; i < count; ++i) {
 		QString filename = prevOpenSorted[i];
 		previousOpenFilesList_[i]->setText(filename);
 		previousOpenFilesList_[i]->setData(filename);
 		previousOpenFilesList_[i]->setVisible(true);
 	}
 
-	for(int i = prevOpenSorted.size(); i < previousOpenFilesList_.size(); ++i) {
+	for(int i = count; i < previousOpenFilesList_.size(); ++i) {
 		previousOpenFilesList_[i]->setVisible(false);
 	}
 }
@@ -1882,7 +1885,7 @@ void MainWindow::on_tabWidget_tabCountChanged(int count) {
  */
 void MainWindow::on_tabWidget_currentChanged(int index) {
 	if(index != -1) {
-		if(DocumentWidget *document = documentAt(static_cast<size_t>(index))) {
+		if(DocumentWidget *document = documentAt(index)) {
 			EndISearchEx();
 			document->documentRaised();
 		}
@@ -2101,6 +2104,7 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 		const boost::optional<PathInfo> fi = parseFilename(file.absoluteFilePath());
 		if (!fi) {
 			QApplication::beep();
+			break;
 		} else {
 			DocumentWidget::EditExistingFileEx(
 			            openInTab ? document : nullptr,
@@ -2472,16 +2476,10 @@ void MainWindow::action_Find_Dialog(DocumentWidget *document, Direction directio
 	// Set the initial search type
 	dialogFind_->initToggleButtons(type);
 
-	// Set the initial direction based on the direction argument
 	dialogFind_->setDirection(direction);
-
-	// Set the state of the Keep Dialog Up button
 	dialogFind_->setKeepDialog(keepDialog);
-
-	// Set the state of the Find button
 	dialogFind_->updateFindButton();
 
-	// start the search history mechanism at the current history item
 	fHistIndex_ = 0;
 
 	dialogFind_->show();
@@ -2598,21 +2596,21 @@ void MainWindow::action_Shift_Find_Selection() {
 */
 void MainWindow::on_editIFind_textChanged(const QString &text) {
 
-	SearchType searchType;
-
-	if(ui.checkIFindCase->isChecked()) {
-		if (ui.checkIFindRegex->isChecked()) {
-			searchType = SearchType::Regex;
+	const SearchType searchType = [this]() {
+		if(ui.checkIFindCase->isChecked()) {
+			if (ui.checkIFindRegex->isChecked()) {
+				return SearchType::Regex;
+			} else {
+				return SearchType::CaseSense;
+			}
 		} else {
-			searchType = SearchType::CaseSense;
+			if (ui.checkIFindRegex->isChecked()) {
+				return SearchType::RegexNoCase;
+			} else {
+				return SearchType::Literal;
+			}
 		}
-	} else {
-		if (ui.checkIFindRegex->isChecked()) {
-			searchType = SearchType::RegexNoCase;
-		} else {
-			searchType = SearchType::Literal;
-		}
-	}
+	}();
 
 	const Direction direction = ui.checkIFindReverse->isChecked() ?
 				Direction::Backward :
@@ -2698,25 +2696,26 @@ void MainWindow::on_buttonIFind_clicked() {
  */
 void MainWindow::on_editIFind_returnPressed() {
 
-	SearchType searchType;
-
 	/* Fetch the string, search type and direction from the incremental
 	   search bar widgets at the top of the window */
 	QString searchString = ui.editIFind->text();
 
-	if (ui.checkIFindCase->isChecked()) {
-		if (ui.checkIFindRegex->isChecked()) {
-			searchType = SearchType::Regex;
+	const SearchType searchType = [this]() {
+		if (ui.checkIFindCase->isChecked()) {
+			if (ui.checkIFindRegex->isChecked()) {
+				return SearchType::Regex;
+			} else {
+				return SearchType::CaseSense;
+			}
 		} else {
-			searchType = SearchType::CaseSense;
+			if (ui.checkIFindRegex->isChecked()) {
+				return SearchType::RegexNoCase;
+			} else {
+				return SearchType::Literal;
+			}
 		}
-	} else {
-		if (ui.checkIFindRegex->isChecked()) {
-			searchType = SearchType::RegexNoCase;
-		} else {
-			searchType = SearchType::Literal;
-		}
-	}
+	}();
+
 
 	Direction direction = ui.checkIFindReverse->isChecked() ? Direction::Backward : Direction::Forward;
 
