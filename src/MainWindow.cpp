@@ -1154,13 +1154,13 @@ MainWindow *MainWindow::firstWindow() {
  */
 std::vector<DocumentWidget *> MainWindow::openDocuments() const {
 
-	auto count = static_cast<size_t>(ui.tabWidget->count());
+	const int count = ui.tabWidget->count();
 
 	std::vector<DocumentWidget *> documents;
-	documents.reserve(count);
+	documents.reserve(static_cast<size_t>(count));
 
-	for(size_t i = 0; i < count; ++i) {
-		if(auto document = documentAt(gsl::narrow<int>(i))) {
+	for(int i = 0; i < count; ++i) {
+		if(auto document = documentAt(i)) {
 			documents.push_back(document);
 		}
 	}
