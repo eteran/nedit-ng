@@ -55,10 +55,9 @@ public:
 		void updateSelection(TextCursor pos, int64_t nDeleted, int64_t nInserted);
 
 	public:
-		explicit operator bool() const { return selected_; }
-		bool selected() const          { return selected_; }
-		bool rectangular() const       { return rectangular_; }
-		bool zeroWidth() const         { return zeroWidth_; }
+		bool hasSelection() const      { return selected_; }
+		bool isRectangular() const       { return rectangular_; }
+		bool isZeroWidth() const         { return zeroWidth_; }
 		TextCursor start() const       { return start_; }
 		TextCursor end() const         { return end_; }
 		int64_t rectStart() const      { return rectStart_; }

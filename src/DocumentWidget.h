@@ -6,6 +6,7 @@
 #include "CallTip.h"
 #include "CloseMode.h"
 #include "CommandSource.h"
+#include "DocumentInfo.h"
 #include "IndentStyle.h"
 #include "LanguageMode.h"
 #include "LockReasons.h"
@@ -70,6 +71,7 @@ public:
 	};
 
 public:
+	DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	DocumentWidget(const QString &name, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DocumentWidget() noexcept override;
 
@@ -100,24 +102,27 @@ public:
 	void action_Set_Language_Mode(const QString &languageMode, bool forceNewDefaults);
 
 public:
-	void setPath(const QString &pathname);
-	bool checkReadOnly() const;
-	bool isReadOnly() const;
 	DocumentWidget *open(const QString &fullpath);
+	FileFormats fileFormat() const;
 	HighlightPattern *findPatternOfWindow(const QString &name) const;
+	IndentStyle autoIndentStyle() const;
 	LockReasons lockReasons() const;
 	QColor GetHighlightBGColorOfCodeEx(size_t hCode) const;
 	QColor HighlightColorValueOfCodeEx(size_t hCode) const;
 	QFont defaultFont() const;
-	QString fullPath() const;
-	QString GetAnySelection(bool beep_on_error);
 	QString GetAnySelection();
-	QString documentDelimiters() const;
+	QString GetAnySelection(bool beep_on_error);
 	QString GetWindowDelimitersEx() const;
 	QString HighlightNameOfCodeEx(size_t hCode) const;
 	QString HighlightStyleOfCodeEx(size_t hCode) const;
+	QString documentDelimiters() const;
 	QString filename() const;
+	QString fullPath() const;
+	QString path() const;
+	ShowMatchingStyle showMatchingStyle() const;
 	TextArea *firstPane() const;
+	TextBuffer *buffer() const;
+	WrapStyle wrapMode() const;
 	bool GetHighlightSyntax() const;
 	bool GetIncrementalBackup() const;
 	bool GetMakeBackupCopy() const;
@@ -127,48 +132,36 @@ public:
 	bool GetUseTabs() const;
 	bool GetUserLocked() const;
 	bool InSmartIndentMacros() const;
-	bool isTopDocument() const;
 	bool ReadMacroFile(const QString &fileName, bool warnNotExist);
-	bool modeMessageDisplayed() const;
 	bool ReadMacroString(const QString &string, const QString &errIn);
+	bool checkReadOnly() const;
+	bool fileChanged() const;
+	bool filenameSet() const;
+	bool isReadOnly() const;
+	bool isTopDocument() const;
+	bool modeMessageDisplayed() const;
+	dev_t device() const;
+	ino_t inode() const;
 	int ShowTipStringEx(const QString &text, bool anchored, int pos, bool lookup, Tags::SearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode);
-	int widgetToPaneIndex(TextArea *area) const;
 	int findDef(TextArea *area, const QString &value, Tags::SearchMode search_type);
 	int textPanesCount() const;
-	int64_t highlightLengthOfCodeFromPos(TextCursor pos);
+	int widgetToPaneIndex(TextArea *area) const;
 	int64_t StyleLengthOfCodeFromPosEx(TextCursor pos);
+	int64_t highlightLengthOfCodeFromPos(TextCursor pos);
 	size_t GetLanguageMode() const;
 	size_t highlightCodeOfPos(TextCursor pos);
 	std::unique_ptr<WindowHighlightData> createHighlightData(PatternSet *patternSet);
 	std::vector<TextArea *> textPanes() const;
-	void abortShellCommand();
 	void AddMarkEx(TextArea *area, QChar label);
-	void beginSmartIndent(bool warn);
-	void cancelMacroOrLearn();
-	void checkForChangesToFile();
-	void clearModeMessage();
 	void DoMacro(const QString &macro, const QString &errInName);
-	void endSmartIndent();
-	void executeShellCommand(TextArea *area, const QString &command, CommandSource source);
 	void FindDefCalltip(TextArea *area, const QString &tipName);
-	void findDefinition(TextArea *area, const QString &tagName);
 	void GotoMatchingCharacter(TextArea *area);
 	void MakeSelectionVisible(TextArea *area);
-	void printString(const std::string &string, const QString &jobname);
-	void printWindow(TextArea *area, bool selectedOnly);
-	void raiseDocument();
-	void raiseDocumentWindow();
-	void raiseFocusDocumentWindow(bool focus);
-	void readMacroInitFile();
 	void ResumeMacroExecutionEx();
 	void SelectNumberedLineEx(TextArea *area, int64_t lineNum);
 	void SelectToMatchingCharacter(TextArea *area);
-	void setAutoIndent(IndentStyle indentStyle);
-	void setAutoScroll(int margin);
-	void setAutoWrap(WrapStyle wrapStyle);
 	void SetBacklightChars(const QString &applyBacklightTypes);
 	void SetColors(const QColor &textFg, const QColor &textBg, const QColor &selectFg, const QColor &selectBg, const QColor &hiliteFg, const QColor &hiliteBg, const QColor &lineNoFg, const QColor &lineNoBg, const QColor &cursorFg);
-	void setEmTabDistance(int distance);
 	void SetHighlightSyntax(bool value);
 	void SetIncrementalBackup(bool value);
 	void SetLanguageMode(size_t mode, bool forceNewDefaults);
@@ -177,17 +170,20 @@ public:
 	void SetOverstrike(bool overstrike);
 	void SetShowMatching(ShowMatchingStyle state);
 	void SetShowStatisticsLine(bool value);
-	void setTabDistance(int distance);
 	void SetUseTabs(bool value);
 	void SetUserLocked(bool value);
-	void shellCmdToMacroString(const QString &command, const QString &input);
 	void ShowStatsLine(bool state);
-	void startHighlighting(bool warn);
-	void stopHighlighting();
-	void updateHighlightStyles();
+	void abortShellCommand();
+	void beginSmartIndent(bool warn);
+	void cancelMacroOrLearn();
+	void checkForChangesToFile();
+	void clearModeMessage();
 	void closePane();
 	void editTaggedLocation(TextArea *area, int i);
+	void endSmartIndent();
 	void execAP(TextArea *area, const QString &command);
+	void executeShellCommand(TextArea *area, const QString &command, CommandSource source);
+	void findDefinition(TextArea *area, const QString &tagName);
 	void findDefinitionHelper(TextArea *area, const QString &arg, Tags::SearchMode search_type);
 	void finishMacroCmdExecution();
 	void gotoAP(TextArea *area, int lineNum, int column);
@@ -195,12 +191,30 @@ public:
 	void handleUnparsedRegion(const std::shared_ptr<TextBuffer> &styleBuf, TextCursor pos) const;
 	void macroBannerTimeoutProc();
 	void moveDocument(MainWindow *fromWindow);
+	void printString(const std::string &string, const QString &jobname);
+	void printWindow(TextArea *area, bool selectedOnly);
+	void raiseDocument();
+	void raiseDocumentWindow();
+	void raiseFocusDocumentWindow(bool focus);
+	void readMacroInitFile();
 	void repeatMacro(const QString &macro, int how);
 	void runMacro(Program *prog);
+	void setAutoIndent(IndentStyle indentStyle);
+	void setAutoScroll(int margin);
+	void setAutoWrap(WrapStyle wrapMode);
+	void setEmTabDistance(int distance);
+	void setFileFormat(FileFormats fileFormat);
+	void setPath(const QString &pathname);
+	void setTabDistance(int distance);
 	void setWrapMargin(int margin);
 	void shellBannerTimeoutProc();
+	void shellCmdToMacroString(const QString &command, const QString &input);
 	void splitPane();
+	void startHighlighting(bool warn);
+	void stopHighlighting();
+	void updateHighlightStyles();
 	void updateSignals(MainWindow *from, MainWindow *to);
+
 
 private:
 	std::unique_ptr<HighlightData[]> compilePatternsEx(const std::vector<HighlightPattern> &patternSrc);
@@ -274,54 +288,25 @@ private:
 	void updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<MenuData> &menuList, bool enabled);
 	void updateSelectionSensitiveMenus(bool enabled);
 
+private:
+	std::shared_ptr<DocumentInfo> info_;
+
 public:
 	bool replaceFailed_     = false;               // flags replacements failures during multi-file replacements
 	bool multiFileBusy_     = false;               // suppresses multiple beeps/dialogs during multi-file replacements
-	bool filenameSet_       = false;               // is the window still "Untitled"?
-	bool fileChanged_       = false;               // has window been modified?
-	bool overstrike_        = false;               // is overstrike mode turned on ?
-	FileFormats fileFormat_ = FileFormats::Unix;   // whether to save the file straight (Unix format), or convert it to MS DOS style with \r\n line breaks
 	size_t languageMode_    = PLAIN_LANGUAGE_MODE; // identifies language mode currently selected in the window
 
 public:
-	IndentStyle indentStyle_;                              // whether/how to auto indent
-	LockReasons lockReasons_;                              // all ways a file can be locked
-	QString filename_;                                     // name component of file being edited
 	QString fontName_;                                     // names of the text fonts in use
-	QString path_;                                         // path component of file being edited
-	ShowMatchingStyle showMatchingStyle_;                  // How to show matching parens: None, Delimeter, or Range
-	TextBuffer *buffer_;                                   // holds the text being edited
-	WrapStyle wrapMode_;                                   // line wrap style: None, Newline or Continuous
-	bool autoSave_;                                        // is autosave turned on?
-	bool highlightSyntax_;                                 // is syntax highlighting turned on?
-	bool matchSyntaxBased_;                                // Use syntax info to show matching
-	bool saveOldVersion_;                                  // keep old version in filename.bc
+	bool highlightSyntax_;                                 // is syntax highlighting turned on?	
 	bool showStats_;                                       // is stats line supposed to be shown	
 	std::shared_ptr<MacroCommandData>    macroCmdData_;    // same for macro commands
 	std::shared_ptr<RangesetTable>       rangesetTable_;   // current range sets
 	std::unique_ptr<WindowHighlightData> highlightData_;   // info for syntax highlighting
 
 private:
-	QMenu *contextMenu_    = nullptr;
-	bool fileMissing_      = true;                      // is the window's file gone?
-	bool ignoreModify_     = false;                     // ignore modifications to text area
-	dev_t dev_             = 0;                         // device where the file resides
-	ino_t ino_             = 0;                         // file's inode
-	int autoSaveCharCount_ = 0;                         // count of single characters typed since last backup file generated
-	int autoSaveOpCount_   = 0;                         // count of editing operations
-	size_t nMarks_         = 0;                         // number of active bookmarks
-	time_t lastModTime_    = 0;                         // time of last modification to file
-#ifdef Q_OS_UNIX
-	uid_t uid_             = 0;                         // last recorded user id of the file
-	gid_t gid_             = 0;                         // last recorded group id of the file
-	mode_t mode_           = 0;                         // permissions of file being edited
-#elif defined(Q_OS_WIN)
-	// copied from the Windows version of the struct stat
-	unsigned short mode_   = 0;
-	short          uid_    = 0;
-	short          gid_    = 0;
-#endif
-
+	QMenu *contextMenu_    = nullptr;		
+	size_t nMarks_         = 0;                         // number of active bookmarks	
 
 private:
 	QSplitter *splitter_;
@@ -331,10 +316,7 @@ private:
 	QTimer *flashTimer_;                                // timer for getting rid of highlighted matching paren.
 	bool backlightChars_;                               // is char backlighting turned on?
 	std::array<Bookmark, MAX_MARKS> markTable_;         // marked locations in window
-	std::deque<UndoInfo> redo_;                         // info for redoing last undone op
-	std::deque<UndoInfo> undo_;                         // info for undoing last operation
-	std::unique_ptr<ShellCommandData> shellCmdData_;    // when a shell command is executing, info. about it, otherwise, nullptr
-	std::unique_ptr<SmartIndentData>  smartIndentData_; // compiled macros for smart indent
+	std::unique_ptr<ShellCommandData> shellCmdData_;    // when a shell command is executing, info. about it, otherwise, nullptr	
 	Ui::DocumentWidget ui;
 
 public:

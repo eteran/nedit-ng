@@ -5,9 +5,15 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt5 5.5.0 REQUIRED Widgets Network Xml PrintSupport)
-find_package(Boost 1.35 REQUIRED)
-find_package(Qt5LinguistTools)
+if(NOT Boost_FOUND)
+	find_package(Boost 1.35 REQUIRED)
+endif()
+find_package(Qt5 5.5.0 REQUIRED Widgets Network Xml PrintSupport LinguistTools)
+find_package(Qt5 5.5.0 OPTIONAL_COMPONENTS X11Extras)
+
+if (UNIX)
+	find_package(X11)
+endif()
 
 set(TRANSLATIONS
 	res/translations/nedit-ng_fr.ts
@@ -138,6 +144,8 @@ add_executable(nedit-ng
 	Direction.h
 	DocumentModel.cpp
 	DocumentModel.h
+	DocumentInfo.cpp
+	DocumentInfo.h
 	DocumentWidget.cpp
 	DocumentWidget.h
 	DocumentWidget.ui
@@ -243,6 +251,13 @@ target_include_directories (nedit-ng PRIVATE
 	${Boost_INCLUDE_DIR}
 )
 
+if(${X11_FOUND} AND ${Qt5X11Extras_FOUND})
+	target_compile_definitions(nedit-ng
+		PUBLIC -DQT_X11
+	)
+endif()
+
+
 target_link_libraries(nedit-ng LINK_PUBLIC
 	Util
 	Regex
@@ -253,6 +268,8 @@ target_link_libraries(nedit-ng LINK_PUBLIC
 	Qt5::Network
 	Qt5::Xml
 	Qt5::PrintSupport
+	$<${Qt5X11Extras_FOUND}:Qt5::X11Extras>
+	$<${X11_FOUND}:X11>
 )
 
 set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)

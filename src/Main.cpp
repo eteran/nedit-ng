@@ -251,9 +251,8 @@ Main::Main(const QStringList &args) {
 			exit(EXIT_FAILURE);
 		} else {
 
-			PathInfo fi;
-
-			if (parseFilename(args[i], &fi)) {
+			const boost::optional<PathInfo> fi = parseFilename(args[i]);
+			if (fi) {
 				/* determine if file is to be openned in new tab, by
 				   factoring the options -group, -tabbed & -untabbed */
 				switch(group) {
@@ -280,8 +279,8 @@ Main::Main(const QStringList &args) {
 				if(MainWindow *window = MainWindow::firstWindow()) {
 					document = DocumentWidget::EditExistingFileEx(
 					               window->currentDocument(),
-					               fi.filename,
-					               fi.pathname,
+					               fi->filename,
+					               fi->pathname,
 					               editFlags,
 					               geometry,
 					               iconic,
@@ -291,8 +290,8 @@ Main::Main(const QStringList &args) {
 				} else {
 					document = DocumentWidget::EditExistingFileEx(
 					               nullptr,
-					               fi.filename,
-					               fi.pathname,
+					               fi->filename,
+					               fi->pathname,
 					               editFlags,
 					               geometry,
 					               iconic,

@@ -304,25 +304,11 @@ TextCursor findParagraphStart(TextBuffer *buf, TextCursor startPos) {
 }
 
 int countLines(view::string_view text) {
-	int count = 1;
-
-	for(char ch: text) {
-		if (ch == '\n') {
-			count++;
-		}
-	}
-	return count;
+	return std::count(text.begin(), text.end(), '\n') + 1;
 }
 
 int countLines(const QString &text) {
-	int count = 1;
-
-	for(QChar ch: text) {
-		if (ch == QLatin1Char('\n')) {
-			count++;
-		}
-	}
-	return count;
+	return std::count(text.begin(), text.end(), QLatin1Char('\n')) + 1;
 }
 
 bool atTabStop(int pos, int tabDist) {
@@ -599,7 +585,7 @@ std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int ta
 */
 void shiftRectEx(DocumentWidget *document, TextArea *area, ShiftDirection direction, bool byTab, TextCursor selStart, TextCursor selEnd, int64_t rectStart, int64_t rectEnd) {
 	int64_t offset;
-	TextBuffer *buf = document->buffer_;
+	TextBuffer *buf = document->buffer();
 
 	// Make sure selStart and SelEnd refer to whole lines
 	selStart = buf->BufStartOfLine(selStart);
@@ -653,7 +639,7 @@ void ShiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection dir
 	int64_t rectStart;
 	int64_t rectEnd;
 	int shiftDist;
-	TextBuffer *buf = document->buffer_;
+	TextBuffer *buf = document->buffer();
 	std::string text;
 
 	// get selection, if no text selected, use current insert position
@@ -708,7 +694,7 @@ void ShiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection dir
 
 
 void FillSelection(DocumentWidget *document, TextArea *area) {
-	TextBuffer *buf = document->buffer_;
+	TextBuffer *buf = document->buffer();
 	TextCursor left;
 	TextCursor right;
 	int64_t rectStart = 0;
@@ -717,7 +703,7 @@ void FillSelection(DocumentWidget *document, TextArea *area) {
 	int64_t rightMargin;
 
 	TextCursor insertPos = area->TextGetCursorPos();
-	int hasSelection = document->buffer_->primary.selected();
+	int hasSelection = document->buffer()->primary.hasSelection();
 	std::string text;
 
 	/* Find the range of characters and get the text to fill.  If there is a

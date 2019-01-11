@@ -31,8 +31,8 @@ DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlag
 		tabDist   = Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE);
 	} else {
 		emTabDist = document->firstPane()->getEmulateTabs();
-		useTabs   = document->buffer_->BufGetUseTabs();
-		tabDist   = document->buffer_->BufGetTabDistance();
+		useTabs   = document->buffer()->BufGetUseTabs();
+		tabDist   = document->buffer()->BufGetTabDistance();
 	}
 
 	const bool emulate = emTabDist != 0;

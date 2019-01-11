@@ -7,7 +7,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5 5.5.0 REQUIRED Core Xml)
 find_package(X11 REQUIRED)
-find_package(Boost 1.35 REQUIRED)
 
 link_directories(${X11_LIBRARY_DIR})
 
@@ -24,7 +23,6 @@ target_link_libraries(nedit-import LINK_PUBLIC
 )
 
 target_include_directories (nedit-import PRIVATE
-	${Boost_INCLUDE_DIR}
 	${X11_INCLUDE_DIR}
 )
 

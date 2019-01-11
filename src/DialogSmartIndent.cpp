@@ -246,7 +246,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	}
 
 	// Get the current data
-	auto newMacros = getSmartIndentDialogData();
+	SmartIndentEntry newMacros = getSmartIndentDialogData();
 
 	// Find the original macros
 	auto it = std::find_if(SmartIndent::SmartIndentSpecs.begin(), SmartIndent::SmartIndentSpecs.end(), [this](const SmartIndentEntry &entry) {
@@ -256,9 +256,9 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	/* If it's a new language, add it at the end, otherwise replace the
 	   existing macros */
 	if (it == SmartIndent::SmartIndentSpecs.end()) {
-		SmartIndent::SmartIndentSpecs.push_back(*newMacros);
+		SmartIndent::SmartIndentSpecs.push_back(newMacros);
 	} else {
-		*it = *newMacros;
+		*it = newMacros;
 	}
 
 	/* Find windows that are currently using this indent specification and
@@ -267,13 +267,13 @@ bool DialogSmartIndent::updateSmartIndentData() {
 
 		QString lmName = Preferences::LanguageModeName(document->GetLanguageMode());
 		if(!lmName.isNull()) {
-			if (lmName == newMacros->languageMode) {
+			if (lmName == newMacros.languageMode) {
 
 				if(auto window = MainWindow::fromDocument(document)) {
 					window->ui.action_Indent_Smart->setEnabled(true);
 				}
 
-				if (document->indentStyle_ == IndentStyle::Smart && document->GetLanguageMode() != PLAIN_LANGUAGE_MODE) {
+				if (document->autoIndentStyle() == IndentStyle::Smart && document->GetLanguageMode() != PLAIN_LANGUAGE_MODE) {
 					document->endSmartIndent();
 					document->beginSmartIndent(/*warn=*/false);
 				}
@@ -360,7 +360,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
  * @brief DialogSmartIndent::getSmartIndentDialogData
  * @return
  */
-boost::optional<SmartIndentEntry> DialogSmartIndent::getSmartIndentDialogData() const {
+SmartIndentEntry DialogSmartIndent::getSmartIndentDialogData() const {
 
 	SmartIndentEntry is;
 	is.languageMode = languageMode_;

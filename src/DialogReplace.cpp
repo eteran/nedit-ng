@@ -51,7 +51,7 @@ int countWritableWindows() {
 			continue;
 		}
 
-		if (!document->lockReasons_.isAnyLocked()) {
+		if (!document->lockReasons().isAnyLocked()) {
 			++nWritable;
 		}
 	}
@@ -190,7 +190,7 @@ void DialogReplace::keyPressEvent(QKeyEvent *event) {
  */
 void DialogReplace::on_checkKeep_toggled(bool checked) {
 	if (checked) {
-		setWindowTitle(tr("Find/Replace (in %1)").arg(document_->filename_));
+		setWindowTitle(tr("Find/Replace (in %1)").arg(document_->filename()));
 	} else {
 		setWindowTitle(tr("Find/Replace"));
 	}
@@ -611,7 +611,7 @@ bool DialogReplace::keepDialog() const {
 void DialogReplace::setDocument(DocumentWidget *document) {
 	document_ = document;
 	if(keepDialog()) {
-		setWindowTitle(tr("Replace (in %1)").arg(document_->filename_));
+		setWindowTitle(tr("Replace (in %1)").arg(document_->filename()));
 	}
 }
 

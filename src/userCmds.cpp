@@ -444,10 +444,13 @@ static std::vector<MenuData> &selectMenu(CommandTypes type) {
 
 MenuData *findMenuItem(const QString &name, CommandTypes type) {
 
-	for(MenuData &data: selectMenu(type)) {
-		if (data.item.name == name) {
-			return &data;
-		}
+	std::vector<MenuData> &menu = selectMenu(type);
+	auto it = std::find_if(menu.begin(), menu.end(), [&name](MenuData &entry) {
+	    return entry.item.name == name;
+    });
+
+	if(it != menu.end()) {
+		return &*it;
 	}
 
 	return nullptr;

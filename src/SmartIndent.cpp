@@ -194,22 +194,24 @@ void insertShiftedMacro(QTextStream &ts, const QString &macro) {
 
 bool isDefaultIndentSpec(const SmartIndentEntry *indentSpec) {
 
-	for(const SmartIndentEntry &entry : DefaultIndentSpecs) {
-		if (indentSpec->languageMode == entry.languageMode) {
-			return (*indentSpec == entry);
-		}
-	}
-	return false;
+	auto it = std::find_if(std::begin(DefaultIndentSpecs), std::end(DefaultIndentSpecs), [indentSpec](const SmartIndentEntry &entry) {
+		return (*indentSpec == entry);
+	});
+
+	return it != std::end(DefaultIndentSpecs);
 }
 
 bool loadDefaultIndentSpec(const QString &lmName) {
 
-	for(const SmartIndentEntry &entry : DefaultIndentSpecs) {
-		if (entry.languageMode == lmName) {
-			SmartIndent::SmartIndentSpecs.push_back(entry);
-			return true;
-		}
+	auto it = std::find_if(std::begin(DefaultIndentSpecs), std::end(DefaultIndentSpecs), [&lmName](const SmartIndentEntry &entry) {
+		return entry.languageMode == lmName;
+	});
+
+	if(it != std::end(DefaultIndentSpecs)) {
+		SmartIndent::SmartIndentSpecs.push_back(*it);
+		return true;
 	}
+
 	return false;
 }
 
@@ -403,10 +405,12 @@ const SmartIndentEntry *SmartIndent::findDefaultIndentSpec(const QString &name) 
 		return nullptr;
 	}
 
-	for(const SmartIndentEntry &entry : DefaultIndentSpecs) {
-		if (entry.languageMode == name) {
-			return &entry;
-		}
+	auto it = std::find_if(std::begin(DefaultIndentSpecs), std::end(DefaultIndentSpecs), [&name](const SmartIndentEntry &entry) {
+		return entry.languageMode == name;
+	});
+
+	if(it != std::end(DefaultIndentSpecs)) {
+		return &*it;
 	}
 
 	return nullptr;
@@ -418,11 +422,14 @@ const SmartIndentEntry *SmartIndent::findIndentSpec(const QString &name) {
 		return nullptr;
 	}
 
-	for(const SmartIndentEntry &entry : SmartIndentSpecs) {
-		if (entry.languageMode == name) {
-			return &entry;
-		}
+	auto it = std::find_if(std::begin(SmartIndentSpecs), std::end(SmartIndentSpecs), [&name](const SmartIndentEntry &entry) {
+		return entry.languageMode == name;
+	});
+
+	if(it != std::end(SmartIndentSpecs)) {
+		return &*it;
 	}
+
 	return nullptr;
 }
 

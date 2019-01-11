@@ -93,8 +93,8 @@ boost::optional<CharacterLocation> StringToLineAndCol(const QString &text) {
 
 	QRegularExpressionMatch match = re.match(text);
 	if (match.hasMatch()) {
-		QString row = match.captured(QLatin1String("row"));
-		QString col = match.captured(QLatin1String("col"));
+		const QString row = match.captured(QLatin1String("row"));
+		const QString col = match.captured(QLatin1String("col"));
 
 		bool row_ok;
 		int r = row.toInt(&row_ok);
@@ -116,9 +116,7 @@ boost::optional<CharacterLocation> StringToLineAndCol(const QString &text) {
 			return boost::none;
 		}
 
-		CharacterLocation loc;
-		loc.line   = r;
-		loc.column = c;
+		const CharacterLocation loc {r, c};
 		return loc;
 	}
 
@@ -141,12 +139,12 @@ void addToGroup(QActionGroup *group, QMenu *menu) {
 
 /*
 ** Capitalize or lowercase the contents of the selection (or of the character
-** before the cursor if there is no selection).  If "makeUpper" is true,
-** change to upper case, otherwise, change to lower case.
+** before the cursor if there is no selection).
 */
-void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUpper) {
+template <int (&F)(int)>
+void changeCase(DocumentWidget *document, TextArea *area) {
 
-	TextBuffer *buf = document->buffer_;
+	TextBuffer *buf = document->buffer();
 	TextCursor start;
 	TextCursor end;
 	int64_t rectStart = 0;
@@ -163,7 +161,7 @@ void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUpper) {
 
 		char ch = buf->BufGetCharacter(cursorPos - 1);
 
-		ch = makeUpper ? safe_ctype<toupper>(ch) : safe_ctype<tolower>(ch);
+		ch = safe_ctype<F>(ch);
 		buf->BufReplaceEx(cursorPos - 1, cursorPos, ch);
 	} else {
 		bool modified = false;
@@ -171,8 +169,8 @@ void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUpper) {
 		std::string text = buf->BufGetSelectionTextEx();
 
 		for(char &ch: text) {
-			char oldChar = ch;
-			ch = makeUpper ? safe_ctype<toupper>(ch) : safe_ctype<tolower>(ch);
+			const char oldChar = ch;
+			ch = safe_ctype<F>(ch);
 			if (ch != oldChar) {
 				modified = true;
 			}
@@ -190,12 +188,22 @@ void changeCaseEx(DocumentWidget *document, TextArea *area, bool makeUpper) {
 	}
 }
 
+/**
+ * @brief UpcaseSelectionEx
+ * @param document
+ * @param area
+ */
 void UpcaseSelectionEx(DocumentWidget *document, TextArea *area) {
-	changeCaseEx(document, area, true);
+	changeCase<::toupper>(document, area);
 }
 
+/**
+ * @brief DowncaseSelectionEx
+ * @param document
+ * @param area
+ */
 void DowncaseSelectionEx(DocumentWidget *document, TextArea *area) {
-	changeCaseEx(document, area, false);
+	changeCase<::tolower>(document, area);
 }
 
 }
@@ -754,19 +762,17 @@ void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
 		break;
 	}
 
-	QString path = document->path_;
-
-	MainWindow::EditNewFile(openInTab ? this : nullptr, QString(), /*iconic=*/false, QString(), path);
+	MainWindow::EditNewFile(openInTab ? this : nullptr, QString(), /*iconic=*/false, QString(), document->path());
 	MainWindow::CheckCloseEnableState();
 }
 
 /**
- * @brief MainWindow::PromptForExistingFileEx
+ * @brief MainWindow::PromptForExistingFile
  * @param path
  * @param prompt
  * @return
  */
-QString MainWindow::PromptForExistingFileEx(const QString &path, const QString &prompt) {
+QString MainWindow::PromptForExistingFile(const QString &path, const QString &prompt) {
 
 	QFileDialog dialog(this, prompt);
 	dialog.setOptions(QFileDialog::DontUseNativeDialog | QFileDialog::DontUseCustomDirectoryIcons);
@@ -801,7 +807,7 @@ void MainWindow::action_Open(DocumentWidget *document, const QString &filename) 
  * @param document
  */
 void MainWindow::action_Open(DocumentWidget *document) {
-	QString filename = PromptForExistingFileEx(document->path_, tr("Open File"));
+	QString filename = PromptForExistingFile(document->path(), tr("Open File"));
 	if (filename.isNull()) {
 		return;
 	}
@@ -901,7 +907,7 @@ void MainWindow::action_Include_File(DocumentWidget *document) {
 		return;
 	}
 
-	QString filename = PromptForExistingFileEx(document->path_, tr("Include File"));
+	QString filename = PromptForExistingFile(document->path(), tr("Include File"));
 
 	if (filename.isNull()) {
 		return;
@@ -968,7 +974,7 @@ void MainWindow::action_Delete(DocumentWidget *document) {
 		return;
 	}
 
-	document->buffer_->BufRemoveSelected();
+	document->buffer()->BufRemoveSelected();
 }
 
 /**
@@ -1055,7 +1061,8 @@ void MainWindow::updateWindowMenu() {
 
 	std::sort(documents.begin(), documents.end(), [](const DocumentWidget *a, const DocumentWidget *b) {
 		// Untitled first, then filename and path are considered
-		return std::tie(a->filenameSet_, a->filename_, a->path_) < std::tie(b->filenameSet_, b->filename_, b->path_);
+		return std::tie(a->info_->filenameSet, a->info_->filename, a->info_->path) <
+		       std::tie(b->info_->filenameSet, b->info_->filename, b->info_->path);
 	});
 
 	ui.menu_Windows->clear();
@@ -1077,17 +1084,17 @@ void MainWindow::updateWindowMenu() {
 }
 
 /**
- * @brief MainWindow::TabCount
+ * @brief MainWindow::tabCount
  * @return
  */
-size_t MainWindow::TabCount() const {
+size_t MainWindow::tabCount() const {
 	return static_cast<size_t>(ui.tabWidget->count());
 }
 
 /*
 ** Sort tabs in the tab bar alphabetically, if demanded so.
 */
-void MainWindow::SortTabBar() {
+void MainWindow::sortTabBar() {
 
 	if (!Preferences::GetPrefSortTabs()) {
 		return;
@@ -1098,7 +1105,7 @@ void MainWindow::SortTabBar() {
 
 	// sort them first by filename, then by path
 	std::sort(documents.begin(), documents.end(), [](const DocumentWidget *a, const DocumentWidget *b) {
-		return std::tie(a->filename_, a->path_) < std::tie(b->filename_, b->path_);
+		return std::tie(a->info_->filename, a->info_->path) < std::tie(b->info_->filename, b->info_->path);
 	});
 
 	// shuffle around the tabs to their new indexes
@@ -1187,7 +1194,7 @@ void MainWindow::CheckCloseEnableState(const std::vector<MainWindow *> &windows)
 
 		std::vector<DocumentWidget *> documents = window->openDocuments();
 
-		if(window->TabCount() == 1 && !documents.front()->filenameSet_ && !documents.front()->fileChanged_) {
+		if(window->tabCount() == 1 && !documents.front()->filenameSet() && !documents.front()->fileChanged()) {
 			window->ui.action_Close->setEnabled(false);
 		} else {
 			window->ui.action_Close->setEnabled(true);
@@ -1215,12 +1222,14 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 	for(int i = 0; i < data.size(); ++i) {
 		const MenuData &menuData = data[i];
 
-		bool found = menuData.info->umiLanguageModes.empty();
+		const std::vector<size_t> &modes = menuData.info->umiLanguageModes;
 
-		for(size_t languageMode : menuData.info->umiLanguageModes) {
-			if(languageMode == document->languageMode_) {
-				found = true;
-			}
+		bool found = modes.empty();
+
+		if(!found) {
+			found = std::any_of(modes.begin(), modes.end(), [document](size_t languageMode) {
+			    return languageMode == document->languageMode_;
+		    });
 		}
 
 		if(!found) {
@@ -1387,11 +1396,11 @@ void MainWindow::updateLanguageModeSubmenu() {
 
 	auto languageGroup = new QActionGroup(this);
 	auto languageMenu  = new QMenu(this);
-	QAction *action = languageMenu->addAction(QLatin1String("Plain"));
-	action->setData(static_cast<qulonglong>(PLAIN_LANGUAGE_MODE));
-	action->setCheckable(true);
-	action->setChecked(true);
-	languageGroup->addAction(action);
+	QAction *plainAction = languageMenu->addAction(QLatin1String("Plain"));
+	plainAction->setData(static_cast<qulonglong>(PLAIN_LANGUAGE_MODE));
+	plainAction->setCheckable(true);
+	plainAction->setChecked(true);
+	languageGroup->addAction(plainAction);
 
 	for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
 		QAction *action = languageMenu->addAction(Preferences::LanguageModes[i].name);
@@ -1520,7 +1529,7 @@ QString MainWindow::uniqueUntitledName() {
 		}
 
 		auto it = std::find_if(documents.begin(), documents.end(), [name](DocumentWidget *document) {
-			return document->filename_ == name;
+		    return document->filename() == name;
 		});
 
 		if(it == documents.end()) {
@@ -1597,7 +1606,7 @@ DocumentWidget *MainWindow::FindWindowWithFile(const QString &filename, const QS
 		if (QT_STAT(fullname.toUtf8().data(), &attribute) == 0) {
 
 			auto it = std::find_if(documents.begin(), documents.end(), [attribute](DocumentWidget *document){
-				return (attribute.st_dev == document->dev_) && (attribute.st_ino == document->ino_);
+			    return (attribute.st_dev == document->device()) && (attribute.st_ino == document->inode());
 			});
 
 			if(it != documents.end()) {
@@ -1610,7 +1619,7 @@ DocumentWidget *MainWindow::FindWindowWithFile(const QString &filename, const QS
 #endif
 
 	auto it = std::find_if(documents.begin(), documents.end(), [filename, path](DocumentWidget *document) {
-		return (document->filename_ == filename) && (document->path_ == path);
+		return (document->filename() == filename) && (document->path() == path);
 	});
 
 	if(it != documents.end()) {
@@ -2025,7 +2034,7 @@ QFileInfoList MainWindow::openFileHelperString(DocumentWidget *document, const Q
 	} else {
 		// we need to do this because someone could write #include "path/to/file.h"
 		// which confuses QDir..
-		QFileInfo fullPath = tr("%1/%2").arg(document->path_, text);
+		QFileInfo fullPath = tr("%1/%2").arg(document->path(), text);
 		QString filename = fullPath.fileName();
 		QString filepath = fullPath.path();
 
@@ -2101,15 +2110,14 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 	// OK, we've got some things to try to open, let's go for it!
 	for (const QFileInfo &file : fileList) {
 
-		PathInfo fi;
-
-		if (!parseFilename(file.absoluteFilePath(), &fi) != 0) {
+		const boost::optional<PathInfo> fi = parseFilename(file.absoluteFilePath());
+		if (!fi) {
 			QApplication::beep();
 		} else {
 			DocumentWidget::EditExistingFileEx(
 			            openInTab ? document : nullptr,
-			            fi.filename,
-			            fi.pathname,
+			            fi->filename,
+			            fi->pathname,
 			            0,
 			            QString(),
 			            /*iconic*/false,
@@ -3426,7 +3434,7 @@ void MainWindow::action_Load_Tips_File(DocumentWidget *document, const QString &
  * @param document
  */
 void MainWindow::action_Load_Calltips_File(DocumentWidget *document) {
-	QString filename = PromptForExistingFileEx(document->path_, tr("Load Calltips File"));
+	QString filename = PromptForExistingFile(document->path(), tr("Load Calltips File"));
 	if (filename.isNull()) {
 		return;
 	}
@@ -3467,7 +3475,7 @@ void MainWindow::action_Load_Tags_File(DocumentWidget *document, const QString &
  * @param document
  */
 void MainWindow::action_Load_Tags_File(DocumentWidget *document) {
-	QString filename = PromptForExistingFileEx(document->path_, tr("Load Tags File"));
+	QString filename = PromptForExistingFile(document->path(), tr("Load Tags File"));
 	if (filename.isNull()) {
 		return;
 	}
@@ -3502,7 +3510,7 @@ void MainWindow::action_Load_Macro_File(DocumentWidget *document, const QString 
  * @param document
  */
 void MainWindow::action_Load_Macro_File(DocumentWidget *document) {
-	QString filename = PromptForExistingFileEx(document->path_, tr("Load Macro File"));
+	QString filename = PromptForExistingFile(document->path(), tr("Load Macro File"));
 	if (filename.isNull()) {
 		return;
 	}
@@ -3799,7 +3807,7 @@ void MainWindow::on_action_Apply_Backlighting_toggled(bool state) {
  */
 void MainWindow::on_action_Make_Backup_Copy_toggled(bool state) {
 	if(DocumentWidget *document = currentDocument()) {
-		document->saveOldVersion_ = state;
+		document->info_->saveOldVersion = state;
 	}
 }
 
@@ -3809,7 +3817,7 @@ void MainWindow::on_action_Make_Backup_Copy_toggled(bool state) {
  */
 void MainWindow::on_action_Incremental_Backup_toggled(bool state) {
 	if(DocumentWidget *document = currentDocument()) {
-		document->autoSave_ = state;
+		document->info_->autoSave = state;
 	}
 }
 
@@ -3838,7 +3846,7 @@ void MainWindow::matchingGroupTriggered(QAction *action) {
  */
 void MainWindow::on_action_Matching_Syntax_toggled(bool state) {
 	if(DocumentWidget *document = currentDocument()) {
-		document->matchSyntaxBased_ = state;
+		document->info_->matchSyntaxBased = state;
 	}
 }
 
@@ -3858,7 +3866,7 @@ void MainWindow::on_action_Overtype_toggled(bool state) {
  */
 void MainWindow::on_action_Read_Only_toggled(bool state) {
 	if(DocumentWidget *document = currentDocument()) {
-		document->lockReasons_.setUserLocked(state);
+		document->info_->lockReasons.setUserLocked(state);
 		updateWindowTitle(document);
 		updateWindowReadOnly(document);
 	}
@@ -4307,7 +4315,7 @@ void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool sta
 	// If we just enabled sorting, sort all tabs
 	if (state) {
 		for(MainWindow *window : windows) {
-			window->SortTabBar();
+			window->sortTabBar();
 			window->tabWidget()->tabBar()->setMovable(false);
 		}
 	} else {
@@ -4595,15 +4603,15 @@ void MainWindow::action_Next_Document() {
 		if(nextIndex == tabCount) {
 
 			std::vector<MainWindow *> windows = MainWindow::allWindows();
-			auto thisIndex = std::find(windows.begin(), windows.end(), this);
-			auto nextIndex = std::next(thisIndex);
+			auto currentIter = std::find(windows.begin(), windows.end(), this);
+			auto nextIter    = std::next(currentIter);
 
-			if(nextIndex == windows.end()) {
-				nextIndex = windows.begin();
+			if(nextIter == windows.end()) {
+				nextIter = windows.begin();
 			}
 
 			// raise the window set the focus to the first document in it
-			MainWindow *nextWindow = *nextIndex;
+			MainWindow *nextWindow = *nextIter;
 			DocumentWidget *firstWidget = nextWindow->documentAt(0);
 
 			Q_ASSERT(firstWidget);
@@ -4641,15 +4649,15 @@ void MainWindow::action_Prev_Document() {
 		if(currentIndex == 0) {
 
 			std::vector<MainWindow *> windows = MainWindow::allWindows();
-			auto thisIndex = std::find(windows.rbegin(), windows.rend(), this);
-			auto nextIndex = std::next(thisIndex);
+			auto currentIter = std::find(windows.rbegin(), windows.rend(), this);
+			auto nextIter    = std::next(currentIter);
 
-			if(nextIndex == windows.rend()) {
-				nextIndex = windows.rbegin();
+			if(nextIter == windows.rend()) {
+				nextIter = windows.rbegin();
 			}
 
 			// raise the window set the focus to the first document in it
-			MainWindow *nextWindow = *nextIndex;
+			MainWindow *nextWindow = *nextIter;
 			DocumentWidget *lastWidget = nextWindow->documentAt(nextWindow->tabWidget()->count() - 1);
 
 			Q_ASSERT(lastWidget);
@@ -4712,14 +4720,14 @@ DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geome
 	Q_ASSERT(window);
 	Q_ASSERT(document);
 
-	document->filename_ = name;
+	document->filename() = name;
 	document->setPath(!defaultPath.isEmpty() ? defaultPath : QDir::currentPath());
 
 
 	// TODO(eteran): I'd like basically all of this to be done with signals
 	// on an as needed basis
 	document->SetWindowModified(false);
-	document->lockReasons_.clear();
+	document->info_->lockReasons.clear();
 	window->updateWindowReadOnly(document);
 	window->updateStatus(document, document->firstPane());
 	window->updateWindowTitle(document);
@@ -4737,7 +4745,7 @@ DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geome
 		document->raiseDocumentWindow();
 	}
 
-	window->SortTabBar();
+	window->sortTabBar();
 	return document;
 }
 
@@ -4833,7 +4841,7 @@ QString MainWindow::PromptForNewFile(DocumentWidget *document, FileFormats *form
 
 	dialog.setFileMode(QFileDialog::AnyFile);
 	dialog.setAcceptMode(QFileDialog::AcceptSave);
-	dialog.setDirectory(document->path_);
+	dialog.setDirectory(document->path());
 	dialog.setOptions(QFileDialog::DontUseNativeDialog | QFileDialog::DontUseCustomDirectoryIcons);
 
 	if(auto layout = qobject_cast<QGridLayout*>(dialog.layout())) {
@@ -4844,7 +4852,7 @@ QString MainWindow::PromptForNewFile(DocumentWidget *document, FileFormats *form
 			auto dosCheck  = new QRadioButton(tr("D&OS"));
 			auto macCheck  = new QRadioButton(tr("&Macintosh"));
 
-			switch(document->fileFormat_) {
+			switch(document->fileFormat()) {
 			case FileFormats::Dos:
 				dosCheck->setChecked(true);
 				break;
@@ -4892,21 +4900,21 @@ QString MainWindow::PromptForNewFile(DocumentWidget *document, FileFormats *form
 			});
 
 
-			if (document->wrapMode_ == WrapStyle::Continuous) {
+			if (document->wrapMode() == WrapStyle::Continuous) {
 				layout->addWidget(wrapCheck, row, 1, 1, 1);
 			}
 
 			if(dialog.exec()) {
 				if(dosCheck->isChecked()) {
-					document->fileFormat_ = FileFormats::Dos;
+					document->setFileFormat(FileFormats::Dos);
 				} else if(macCheck->isChecked()) {
-					document->fileFormat_ = FileFormats::Mac;
+					document->setFileFormat(FileFormats::Mac);
 				} else if(unixCheck->isChecked()) {
-					document->fileFormat_ = FileFormats::Unix;
+					document->setFileFormat(FileFormats::Unix);
 				}
 
-				*addWrap    = wrapCheck->isChecked();
-				*format = document->fileFormat_;
+				*addWrap = wrapCheck->isChecked();
+				*format  = document->fileFormat();
 
 				const QStringList files = dialog.selectedFiles();
 				filename = files[0];
@@ -4948,7 +4956,7 @@ void MainWindow::action_Save_As(DocumentWidget *document) {
 		return;
 	}
 
-	document->fileFormat_ = fileFormat;
+	document->setFileFormat(fileFormat);
 	action_Save_As(document, fullname, addWrap);
 }
 
@@ -4976,12 +4984,12 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
 
 	if(DocumentWidget *document = currentDocument()) {
 		// re-reading file is irreversible, prompt the user first
-		if (document->fileChanged_) {
+		if (document->fileChanged()) {
 
 			int result = QMessageBox::question(
 						this,
 						tr("Discard Changes"),
-						tr("Discard changes to\n%1%2?").arg(document->path_, document->filename_),
+			            tr("Discard changes to\n%1%2?").arg(document->path(), document->filename()),
 						QMessageBox::Ok | QMessageBox::Cancel
 						);
 			if(result == QMessageBox::Cancel) {
@@ -4992,7 +5000,7 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
 			QMessageBox messageBox(this);
 			messageBox.setWindowTitle(tr("Reload File"));
 			messageBox.setIcon(QMessageBox::Question);
-			messageBox.setText(tr("Re-load file\n%1%2?").arg(document->path_, document->filename_));
+			messageBox.setText(tr("Re-load file\n%1%2?").arg(document->path(), document->filename()));
 			QPushButton *buttonOk     = messageBox.addButton(tr("Re-read"), QMessageBox::AcceptRole);
 			QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
 			Q_UNUSED(buttonOk);
@@ -5013,7 +5021,7 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
  */
 void MainWindow::action_New_Window(DocumentWidget *document) {
 	emit_event("new_window");
-	MainWindow::EditNewFile(Preferences::GetPrefOpenInTab() ? nullptr : this, QString(), /*iconic=*/false, QString(), document->path_);
+	MainWindow::EditNewFile(Preferences::GetPrefOpenInTab() ? nullptr : this, QString(), /*iconic=*/false, QString(), document->path());
 	MainWindow::CheckCloseEnableState();
 }
 
@@ -5055,7 +5063,7 @@ void MainWindow::action_Exit(DocumentWidget *document) {
 		for(size_t i = 0; i < documents.size(); ++i) {
 			DocumentWidget *const document  = documents[i];
 
-			auto filename = tr("%1%2").arg(document->filename_, document->fileChanged_ ? tr("*") : QString());
+			auto filename = tr("%1%2").arg(document->filename(), document->fileChanged() ? tr("*") : QString());
 
 			constexpr int DF_MAX_MSG_LENGTH = 2048;
 
@@ -5147,7 +5155,7 @@ bool MainWindow::CheckPrefsChangesSavedEx() {
 */
 bool MainWindow::CloseAllDocumentsInWindow() {
 
-	if (TabCount() == 1) {
+	if (tabCount() == 1) {
 		// only one document in the window
 		if(DocumentWidget *document = currentDocument()) {
 			return document->CloseFileAndWindow(CloseMode::Prompt);
@@ -5156,7 +5164,7 @@ bool MainWindow::CloseAllDocumentsInWindow() {
 
 		// close all _modified_ documents belong to this window
 		for(DocumentWidget *document : openDocuments()) {
-			if (document->fileChanged_) {
+			if (document->fileChanged()) {
 				if (!document->CloseFileAndWindow(CloseMode::Prompt)) {
 					return false;
 				}
@@ -5191,7 +5199,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 
 	} else {
 
-		if (TabCount() == 1) {
+		if (tabCount() == 1) {
 			if(DocumentWidget *document = currentDocument()) {
 				document->CloseFileAndWindow(CloseMode::Prompt);
 			}
@@ -5390,7 +5398,7 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event) {
 					if(DocumentWidget *document = documentAt(index)) {
 
 						QString labelString;
-						QString filename = document->filename_;
+						QString filename = document->filename();
 
 						/* Set tab label to document's filename. Position of "*" (modified)
 						 * will change per label alignment setting */
@@ -5398,15 +5406,15 @@ bool MainWindow::eventFilter(QObject *object, QEvent *event) {
 						const int alignment = style->styleHint(QStyle::SH_TabBar_Alignment);
 
 						if (alignment != Qt::AlignRight) {
-							labelString = tr("%1%2").arg(document->fileChanged_ ? tr("*") : QString(), filename);
+							labelString = tr("%1%2").arg(document->fileChanged() ? tr("*") : QString(), filename);
 						} else {
-							labelString = tr("%2%1").arg(document->fileChanged_ ? tr("*") : QString(), filename);
+							labelString = tr("%2%1").arg(document->fileChanged() ? tr("*") : QString(), filename);
 						}
 
 
 						QString tipString;
-						if (Preferences::GetPrefShowPathInWindowsMenu() && document->filenameSet_) {
-							tipString = tr("%1 - %2").arg(labelString, document->path_);
+						if (Preferences::GetPrefShowPathInWindowsMenu() && document->filenameSet()) {
+							tipString = tr("%1 - %2").arg(labelString, document->path());
 						} else {
 							tipString = labelString;
 						}
@@ -5696,7 +5704,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, CommandSource
 		return;
 	}
 
-	if (!document->buffer_->primary.selected()) {
+	if (!document->buffer()->primary.hasSelection()) {
 		QApplication::beep();
 		return;
 	}
@@ -5734,7 +5742,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, const QString
 		return;
 	}
 
-	if (!document->buffer_->primary.selected()) {
+	if (!document->buffer()->primary.hasSelection()) {
 		QApplication::beep();
 		return;
 	}
@@ -5892,12 +5900,12 @@ void MainWindow::on_action_Detach_Tab_triggered() {
 void MainWindow::action_Detach_Document(DocumentWidget *document) {
 
 	emit_event("detach_document");
-	if(TabCount() > 1) {
+	if(tabCount() > 1) {
 		auto new_window = new MainWindow();
 
 		document->updateSignals(this, new_window);
 
-		new_window->tabWidget()->addTab(document, document->filename_);
+		new_window->tabWidget()->addTab(document, document->filename());
 		document->RefreshTabState();
 
 		new_window->parseGeometry(QString());
@@ -5911,12 +5919,12 @@ void MainWindow::action_Detach_Document(DocumentWidget *document) {
  */
 void MainWindow::action_Detach_Document_Dialog(DocumentWidget *document) {
 
-	if(TabCount() > 1) {
+	if(tabCount() > 1) {
 
 		int result = QMessageBox::question(
 					nullptr,
 					tr("Detach Tab"),
-					tr("Detach %1?").arg(document->filename_),
+		            tr("Detach %1?").arg(document->filename()),
 					QMessageBox::Yes | QMessageBox::No);
 
 		if(result == QMessageBox::Yes) {
@@ -6022,7 +6030,7 @@ void MainWindow::SetIncrementalSearchLineMS(bool value) {
 bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, Search::Result *searchResult) {
 
 	bool found;
-	const int64_t fileEnd = document->buffer_->BufGetLength() - 1;
+	const int64_t fileEnd = document->buffer()->BufGetLength() - 1;
 
 	// reject empty string
 	if (searchString.isEmpty()) {
@@ -6030,7 +6038,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
 	}
 
 	// get the entire text buffer from the text area widget
-	view::string_view fileString = document->buffer_->BufAsStringEx();
+	view::string_view fileString = document->buffer()->BufAsStringEx();
 
 	/* If we're already outside the boundaries, we must consider wrapping
 	   immediately (Note: fileEnd+1 is a valid starting position. Consider
@@ -6244,7 +6252,7 @@ bool MainWindow::SearchAndSelectEx(DocumentWidget *document, TextArea *area, con
 	}
 
 	// select the text found string
-	document->buffer_->BufSelect(startPos, endPos);
+	document->buffer()->BufSelect(startPos, endPos);
 	document->MakeSelectionVisible(area);
 	area->TextSetCursorPos(endPos);
 	return true;
@@ -6280,7 +6288,7 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
 		iSearchTryBeepOnWrapEx(direction, beepBeginPos, beepBeginPos);
 		iSearchRecordLastBeginPosEx(direction, iSearchStartPos_);
 
-		document->buffer_->BufUnselect();
+		document->buffer()->BufUnselect();
 		area->TextSetCursorPos(beginPos);
 		return true;
 	}
@@ -6329,7 +6337,7 @@ bool MainWindow::SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea
 	iSearchLastBeginPos_ = startPos;
 
 	// select the text found string
-	document->buffer_->BufSelect(startPos, endPos);
+	document->buffer()->BufSelect(startPos, endPos);
 	document->MakeSelectionVisible(area);
 	area->TextSetCursorPos(endPos);
 	return true;
@@ -6358,7 +6366,7 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, co
 		// replace the text
 		if (Search::isRegexType(searchType)) {
 			std::string replaceResult;
-			const std::string foundString = document->buffer_->BufGetRangeEx(extentBW, extentFW + 1);
+			const std::string foundString = document->buffer()->BufGetRangeEx(extentBW, extentFW + 1);
 
 			Search::replaceUsingRE(
 				searchString,
@@ -6366,14 +6374,14 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, co
 				foundString,
 			    selectionRange.start - extentBW,
 				replaceResult,
-			    selectionRange.start == 0 ? -1 : document->buffer_->BufGetCharacter(selectionRange.start - 1),
+			    selectionRange.start == 0 ? -1 : document->buffer()->BufGetCharacter(selectionRange.start - 1),
 				document->GetWindowDelimitersEx(),
 				Search::defaultRegexFlags(searchType));
 
-			document->buffer_->BufReplaceEx(selectionRange, replaceResult);
+			document->buffer()->BufReplaceEx(selectionRange, replaceResult);
 			replaceLen = static_cast<int64_t>(replaceResult.size());
 		} else {
-			document->buffer_->BufReplaceEx(selectionRange, replaceString.toStdString());
+			document->buffer()->BufReplaceEx(selectionRange, replaceString.toStdString());
 			replaceLen = replaceString.size();
 		}
 
@@ -6485,7 +6493,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
 	// replace the text
 	if (Search::isRegexType(searchType)) {
 		std::string replaceResult;
-		const std::string foundString = document->buffer_->BufGetRangeEx(extentBW, extentFW + 1);
+		const std::string foundString = document->buffer()->BufGetRangeEx(extentBW, extentFW + 1);
 
 		Search::replaceUsingRE(
 			searchString,
@@ -6493,21 +6501,21 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
 			foundString,
 		    selectionRange.start - extentBW,
 			replaceResult,
-		    selectionRange.start == 0 ? -1 : document->buffer_->BufGetCharacter(selectionRange.start - 1),
+		    selectionRange.start == 0 ? -1 : document->buffer()->BufGetCharacter(selectionRange.start - 1),
 			document->GetWindowDelimitersEx(),
 			Search::defaultRegexFlags(searchType));
 
-		document->buffer_->BufReplaceEx(selectionRange, replaceResult);
+		document->buffer()->BufReplaceEx(selectionRange, replaceResult);
 		replaceLen = static_cast<int64_t>(replaceResult.size());
 	} else {
-		document->buffer_->BufReplaceEx(selectionRange, replaceString.toStdString());
+		document->buffer()->BufReplaceEx(selectionRange, replaceString.toStdString());
 		replaceLen = replaceString.size();
 	}
 
 	/* after successfully completing a replace, selected text attracts
 	   attention away from the area of the replacement, particularly
 	   when the selection represents a previous search. so deselect */
-	document->buffer_->BufUnselect();
+	document->buffer()->BufUnselect();
 
 	/* temporarily shut off autoShowInsertPos before setting the cursor
 	   position so MakeSelectionVisible gets a chance to place the replaced
@@ -6662,17 +6670,17 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
 	Search::saveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
 
 	// find out where the selection is
-	if (!document->buffer_->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+	if (!document->buffer()->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
 		return;
 	}
 
 	// get the selected text
 	if (isRect) {
-		selStart   = document->buffer_->BufStartOfLine(selStart);
-		selEnd     = document->buffer_->BufEndOfLine(selEnd);
-		fileString = document->buffer_->BufGetRangeEx(selStart, selEnd);
+		selStart   = document->buffer()->BufStartOfLine(selStart);
+		selEnd     = document->buffer()->BufEndOfLine(selEnd);
+		fileString = document->buffer()->BufGetRangeEx(selStart, selEnd);
 	} else {
-		fileString = document->buffer_->BufGetSelectionTextEx();
+		fileString = document->buffer()->BufGetSelectionTextEx();
 	}
 
 	/* create a temporary buffer in which to do the replacements to hide the
@@ -6708,8 +6716,8 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
 		/* if the selection is rectangular, verify that the found
 		   string is in the rectangle */
 		if (isRect) {
-			lineStart = document->buffer_->BufStartOfLine(selStart + searchResult.start);
-			if (document->buffer_->BufCountDispChars(lineStart, selStart + searchResult.start) < rectStart || document->buffer_->BufCountDispChars(lineStart, selStart + searchResult.end) > rectEnd) {
+			lineStart = document->buffer()->BufStartOfLine(selStart + searchResult.start);
+			if (document->buffer()->BufCountDispChars(lineStart, selStart + searchResult.start) < rectStart || document->buffer()->BufCountDispChars(lineStart, selStart + searchResult.end) > rectEnd) {
 
 				if(static_cast<size_t>(searchResult.end) == fileString.size()) {
 					break;
@@ -6720,7 +6728,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
 				   search after the end of the (false) match, because we
 				   could miss a valid match starting between the left boundary
 				   and the end of the false match. */
-				if (document->buffer_->BufCountDispChars(lineStart, selStart + searchResult.start) < rectStart && document->buffer_->BufCountDispChars(lineStart, selStart + searchResult.end) > rectStart) {
+				if (document->buffer()->BufCountDispChars(lineStart, selStart + searchResult.start) < rectStart && document->buffer()->BufCountDispChars(lineStart, selStart + searchResult.end) > rectStart) {
 					beginPos += 1;
 				} else {
 					beginPos = (searchResult.start == searchResult.end) ? TextCursor(searchResult.end + 1) : TextCursor(searchResult.end);
@@ -6784,7 +6792,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
 				user does not care and wants to have a faulty replacement.  */
 
 			// replace the selected range in the real buffer
-			document->buffer_->BufReplaceEx(selStart, selEnd, tempBuf.BufAsStringEx());
+			document->buffer()->BufReplaceEx(selStart, selEnd, tempBuf.BufAsStringEx());
 
 			// set the insert point at the end of the last replacement
 			area->TextSetCursorPos(selStart + to_integer(cursorPos) + realOffset);
@@ -6792,7 +6800,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
 			/* leave non-rectangular selections selected (rect. ones after replacement
 			   are less useful since left/right positions are randomly adjusted) */
 			if (!isRect) {
-				document->buffer_->BufSelect(selStart, selEnd + realOffset);
+				document->buffer()->BufSelect(selStart, selEnd + realOffset);
 			}
 		}
 	} else {
@@ -6898,7 +6906,7 @@ bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QS
 	Search::saveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
 
 	// view the entire text buffer from the text area widget as a string
-	view::string_view fileString = document->buffer_->BufAsStringEx();
+	view::string_view fileString = document->buffer()->BufAsStringEx();
 
 	QString delimieters = document->GetWindowDelimitersEx();
 
@@ -6938,7 +6946,7 @@ bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QS
 	}
 
 	// replace the contents of the text widget with the substituted text
-	document->buffer_->BufReplaceEx(TextCursor(copyStart), TextCursor(copyEnd), *newFileString);
+	document->buffer()->BufReplaceEx(TextCursor(copyStart), TextCursor(copyEnd), *newFileString);
 
 	// Move the cursor to the end of the last replacement
 	area->TextSetCursorPos(TextCursor(copyStart + static_cast<int64_t>(newFileString->size())));
@@ -6996,14 +7004,14 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
 	bool isRect;
 
 	// find length of selection, give up on no selection or too long
-	if (!document->buffer_->BufGetEmptySelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+	if (!document->buffer()->BufGetEmptySelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
 		return false;
 	}
 
 	// if the selection is rectangular, don't match if it spans lines
 	if (isRect) {
-		lineStart = document->buffer_->BufStartOfLine(selStart);
-		if (lineStart != document->buffer_->BufStartOfLine(selEnd)) {
+		lineStart = document->buffer()->BufStartOfLine(selStart);
+		if (lineStart != document->buffer()->BufStartOfLine(selEnd)) {
 			return false;
 		}
 	}
@@ -7016,7 +7024,7 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
 			stringStart = TextCursor();
 		}
 
-		string   = document->buffer_->BufGetRangeEx(stringStart, lineStart + rectEnd + regexLookContext);
+		string   = document->buffer()->BufGetRangeEx(stringStart, lineStart + rectEnd + regexLookContext);
 		selLen   = rectEnd - rectStart;
 		beginPos = to_integer(lineStart) + (rectStart - to_integer(stringStart));
 	} else {
@@ -7025,7 +7033,7 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
 			stringStart = TextCursor();
 		}
 
-		string   = document->buffer_->BufGetRangeEx(stringStart, selEnd + regexLookContext);
+		string   = document->buffer()->BufGetRangeEx(stringStart, selEnd + regexLookContext);
 		selLen   = selEnd - selStart;
 		beginPos = selStart - stringStart;
 	}
@@ -7058,7 +7066,7 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
 
 	// return the start and end of the selection
 	if (isRect) {
-		bool ret = document->buffer_->GetSimpleSelection(textRange);
+		bool ret = document->buffer()->GetSimpleSelection(textRange);
 		Q_ASSERT(ret);
 	} else {
 		textRange->start = selStart;
@@ -7216,7 +7224,7 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
 	const TextCursor pos = area->TextGetCursorPos();
 
 	const QString format = [document]() {
-		switch(document->fileFormat_) {
+		switch(document->fileFormat()) {
 		case FileFormats::Dos:
 			return tr(" DOS");
 		case FileFormats::Mac:
@@ -7230,17 +7238,17 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
 	QString slinecol;
 	int line;
 	int column;
-	const int64_t length = document->buffer_->BufGetLength();
+	const int64_t length = document->buffer()->BufGetLength();
 
 	if (!area->TextDPosToLineAndCol(pos, &line, &column)) {
-		string   = tr("%1%2%3 %4 bytes").arg(document->path_, document->filename_, format).arg(length);
+		string   = tr("%1%2%3 %4 bytes").arg(document->path(), document->filename(), format).arg(length);
 		slinecol = tr("L: ---  C: ---");
 	} else {
 		slinecol = tr("L: %1  C: %2").arg(line).arg(column);
 		if (showLineNumbers_) {
-			string = tr("%1%2%3 byte %4 of %5").arg(document->path_, document->filename_, format).arg(to_integer(pos)).arg(length);
+			string = tr("%1%2%3 byte %4 of %5").arg(document->path(), document->filename(), format).arg(to_integer(pos)).arg(length);
 		} else {
-			string = tr("%1%2%3 %4 bytes").arg(document->path_, document->filename_, format).arg(length);
+			string = tr("%1%2%3 %4 bytes").arg(document->path(), document->filename(), format).arg(length);
 		}
 	}
 
@@ -7259,7 +7267,7 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
 ** the window data structure.
 */
 void MainWindow::updateWindowReadOnly(DocumentWidget *document) {
-	bool state = document->lockReasons_.isAnyLocked();
+	const bool state = document->lockReasons().isAnyLocked();
 
 	for(TextArea *area : document->textPanes()) {
 		area->setReadOnly(state);
@@ -7267,7 +7275,7 @@ void MainWindow::updateWindowReadOnly(DocumentWidget *document) {
 
 	if(document->isTopDocument()) {
 		no_signals(ui.action_Read_Only)->setChecked(state);
-		ui.action_Read_Only->setEnabled(!document->lockReasons_.isAnyLockedIgnoringUser());
+		ui.action_Read_Only->setEnabled(!document->lockReasons().isAnyLockedIgnoringUser());
 	}
 }
 
@@ -7286,9 +7294,9 @@ void MainWindow::updateWindowTitle(DocumentWidget *document) {
 
 	setWindowTitle(title);
 
-	QString iconTitle = document->filename_;
+	QString iconTitle = document->filename();
 
-	if (document->fileChanged_) {
+	if (document->fileChanged()) {
 		iconTitle.append(QLatin1Char('*'));
 	}
 

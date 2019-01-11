@@ -20,7 +20,7 @@ int GetVersionExtendedPathIndex(const QString &fullname) {
  * @return
  */
 QString GetVersionExtendedPath(const QString &fullname) {
-	int n = fullname.indexOf(QLatin1String("@@/"));
+	const int n = GetVersionExtendedPathIndex(fullname);
 	if(n == -1) {
 		return QString();
 	}
