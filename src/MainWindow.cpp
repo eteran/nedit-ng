@@ -1509,13 +1509,14 @@ QString MainWindow::uniqueUntitledName() {
 	const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 	for (int i = 0; i < INT_MAX; i++) {
-		QString name;
 
-		if (i == 0) {
-			name = tr("Untitled");
-		} else {
-			name = tr("Untitled_%1").arg(i);
-		}
+		const QString name = [i]() {
+			if (i == 0) {
+				return tr("Untitled");
+			} else {
+				return tr("Untitled_%1").arg(i);
+			}
+		}();
 
 		auto it = std::find_if(documents.begin(), documents.end(), [name](DocumentWidget *document) {
 		    return document->filename() == name;
