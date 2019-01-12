@@ -10,6 +10,7 @@
 #include "SearchType.h"
 #include "Search.h"
 #include "WrapMode.h"
+#include "WrapStyle.h"
 #include "userCmds.h"
 #include "TextCursor.h"
 #include "Util/FileFormats.h"
@@ -96,7 +97,6 @@ public:
 	void parseGeometry(QString geometry);
 	void ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
 	void SearchForSelectedEx(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap);
-	void setAutoIndent(IndentStyle state);
 	void SetIncrementalSearchLineMS(bool value);
 	void SetShowLineNumbers(bool show);
 	void setWindowSizeDefault(int rows, int cols);
@@ -145,6 +145,7 @@ public Q_SLOTS:
 	// internal variants of signals
 	void action_New_Window(DocumentWidget *document);
 	void action_Set_Auto_Indent(DocumentWidget *document, IndentStyle state);
+	void action_Set_Auto_Wrap(DocumentWidget *document, WrapStyle state);
 	void action_Close(DocumentWidget *document, CloseMode mode = CloseMode::Prompt);
 	void action_Close_Pane(DocumentWidget *document);
 	void action_Delete(DocumentWidget *document);

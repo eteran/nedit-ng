@@ -3661,30 +3661,31 @@ void MainWindow::action_Set_Auto_Indent(DocumentWidget *document, IndentStyle st
 }
 
 /**
- * @brief MainWindow::setAutoIndent
- * @param state
- */
-void MainWindow::setAutoIndent(IndentStyle state) {
-
-	if(DocumentWidget *document = currentDocument()) {
-		action_Set_Auto_Indent(document, state);
-	}
-}
-
-/**
  * @brief MainWindow::indentGroupTriggered
  * @param action
  */
 void MainWindow::indentGroupTriggered(QAction *action) {
-	if(action == ui.action_Indent_Off) {
-		setAutoIndent(IndentStyle::None);
-	} else if(action == ui.action_Indent_On) {
-		setAutoIndent(IndentStyle::Auto);
-	} else if(action == ui.action_Indent_Smart) {
-		setAutoIndent(IndentStyle::Smart);
-	} else {
-		qWarning("NEdit: set_auto_indent invalid argument");
+	if(DocumentWidget *document = currentDocument()) {
+		if(action == ui.action_Indent_Off) {
+			action_Set_Auto_Indent(document, IndentStyle::None);
+		} else if(action == ui.action_Indent_On) {
+			action_Set_Auto_Indent(document, IndentStyle::Auto);
+		} else if(action == ui.action_Indent_Smart) {
+			action_Set_Auto_Indent(document, IndentStyle::Smart);
+		} else {
+			qWarning("NEdit: set_auto_indent invalid argument");
+		}
 	}
+}
+
+/**
+ * @brief MainWindow::action_Set_Auto_Wrap
+ * @param document
+ * @param state
+ */
+void MainWindow::action_Set_Auto_Wrap(DocumentWidget *document, WrapStyle state) {
+	emit_event("set_wrap_text", to_string(state));
+	document->setAutoWrap(state);
 }
 
 /**
@@ -3694,11 +3695,11 @@ void MainWindow::indentGroupTriggered(QAction *action) {
 void MainWindow::wrapGroupTriggered(QAction *action) {
 	if(DocumentWidget *document = currentDocument()) {
 		if(action == ui.action_Wrap_None) {
-			document->setAutoWrap(WrapStyle::None);
+			action_Set_Auto_Wrap(document, WrapStyle::None);
 		} else if(action == ui.action_Wrap_Auto_Newline) {
-			document->setAutoWrap(WrapStyle::Newline);
+			action_Set_Auto_Wrap(document, WrapStyle::Newline);
 		} else if(action == ui.action_Wrap_Continuous) {
-			document->setAutoWrap(WrapStyle::Continuous);
+			action_Set_Auto_Wrap(document, WrapStyle::Continuous);
 		} else {
 			qWarning("NEdit: set_wrap_text invalid argument");
 		}
