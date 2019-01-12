@@ -235,6 +235,7 @@ public Q_SLOTS:
 	void action_Mark_Shortcut();
 	void action_Shift_Goto_Mark_Shortcut();
 	void action_Goto_Mark_Shortcut();
+	void action_Goto_Mark_Shortcut_Helper(bool shifted);
 
 	// Others...
 	void action_Shift_Replace_Again();

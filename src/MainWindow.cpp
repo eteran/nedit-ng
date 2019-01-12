@@ -2374,6 +2374,7 @@ void MainWindow::on_action_Insert_Ctrl_Code_triggered() {
 
 /**
  * @brief MainWindow::action_Goto_Line_Number
+ * @param document
  * @param s
  */
 void MainWindow::action_Goto_Line_Number(DocumentWidget *document, const QString &s) {
@@ -3187,41 +3188,41 @@ void MainWindow::on_action_Goto_Mark_triggered() {
 }
 
 /**
- * @brief MainWindow::action_Shift_Goto_Mark_Shortcut
+ * @brief MainWindow::action_Goto_Mark_Shortcut_Helper
+ * @param shifted
  */
-void MainWindow::action_Shift_Goto_Mark_Shortcut() {
-
+void MainWindow::action_Goto_Mark_Shortcut_Helper(bool shifted) {
 	if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
 		const QKeySequence sequence = shortcut->key();
 
 		if(DocumentWidget *document = currentDocument()) {
 			switch(sequence[1]) {
-			case Qt::Key_A: action_Goto_Mark(document, QLatin1String("A"), true); break;
-			case Qt::Key_B: action_Goto_Mark(document, QLatin1String("B"), true); break;
-			case Qt::Key_C: action_Goto_Mark(document, QLatin1String("C"), true); break;
-			case Qt::Key_D: action_Goto_Mark(document, QLatin1String("D"), true); break;
-			case Qt::Key_E: action_Goto_Mark(document, QLatin1String("E"), true); break;
-			case Qt::Key_F: action_Goto_Mark(document, QLatin1String("F"), true); break;
-			case Qt::Key_G: action_Goto_Mark(document, QLatin1String("G"), true); break;
-			case Qt::Key_H: action_Goto_Mark(document, QLatin1String("H"), true); break;
-			case Qt::Key_I: action_Goto_Mark(document, QLatin1String("I"), true); break;
-			case Qt::Key_J: action_Goto_Mark(document, QLatin1String("J"), true); break;
-			case Qt::Key_K: action_Goto_Mark(document, QLatin1String("K"), true); break;
-			case Qt::Key_L: action_Goto_Mark(document, QLatin1String("L"), true); break;
-			case Qt::Key_M: action_Goto_Mark(document, QLatin1String("M"), true); break;
-			case Qt::Key_N: action_Goto_Mark(document, QLatin1String("N"), true); break;
-			case Qt::Key_O: action_Goto_Mark(document, QLatin1String("O"), true); break;
-			case Qt::Key_P: action_Goto_Mark(document, QLatin1String("P"), true); break;
-			case Qt::Key_Q: action_Goto_Mark(document, QLatin1String("Q"), true); break;
-			case Qt::Key_R: action_Goto_Mark(document, QLatin1String("R"), true); break;
-			case Qt::Key_S: action_Goto_Mark(document, QLatin1String("S"), true); break;
-			case Qt::Key_T: action_Goto_Mark(document, QLatin1String("T"), true); break;
-			case Qt::Key_U: action_Goto_Mark(document, QLatin1String("U"), true); break;
-			case Qt::Key_V: action_Goto_Mark(document, QLatin1String("V"), true); break;
-			case Qt::Key_W: action_Goto_Mark(document, QLatin1String("W"), true); break;
-			case Qt::Key_X: action_Goto_Mark(document, QLatin1String("X"), true); break;
-			case Qt::Key_Y: action_Goto_Mark(document, QLatin1String("Y"), true); break;
-			case Qt::Key_Z: action_Goto_Mark(document, QLatin1String("Z"), true); break;
+			case Qt::Key_A: action_Goto_Mark(document, QLatin1String("A"), shifted); break;
+			case Qt::Key_B: action_Goto_Mark(document, QLatin1String("B"), shifted); break;
+			case Qt::Key_C: action_Goto_Mark(document, QLatin1String("C"), shifted); break;
+			case Qt::Key_D: action_Goto_Mark(document, QLatin1String("D"), shifted); break;
+			case Qt::Key_E: action_Goto_Mark(document, QLatin1String("E"), shifted); break;
+			case Qt::Key_F: action_Goto_Mark(document, QLatin1String("F"), shifted); break;
+			case Qt::Key_G: action_Goto_Mark(document, QLatin1String("G"), shifted); break;
+			case Qt::Key_H: action_Goto_Mark(document, QLatin1String("H"), shifted); break;
+			case Qt::Key_I: action_Goto_Mark(document, QLatin1String("I"), shifted); break;
+			case Qt::Key_J: action_Goto_Mark(document, QLatin1String("J"), shifted); break;
+			case Qt::Key_K: action_Goto_Mark(document, QLatin1String("K"), shifted); break;
+			case Qt::Key_L: action_Goto_Mark(document, QLatin1String("L"), shifted); break;
+			case Qt::Key_M: action_Goto_Mark(document, QLatin1String("M"), shifted); break;
+			case Qt::Key_N: action_Goto_Mark(document, QLatin1String("N"), shifted); break;
+			case Qt::Key_O: action_Goto_Mark(document, QLatin1String("O"), shifted); break;
+			case Qt::Key_P: action_Goto_Mark(document, QLatin1String("P"), shifted); break;
+			case Qt::Key_Q: action_Goto_Mark(document, QLatin1String("Q"), shifted); break;
+			case Qt::Key_R: action_Goto_Mark(document, QLatin1String("R"), shifted); break;
+			case Qt::Key_S: action_Goto_Mark(document, QLatin1String("S"), shifted); break;
+			case Qt::Key_T: action_Goto_Mark(document, QLatin1String("T"), shifted); break;
+			case Qt::Key_U: action_Goto_Mark(document, QLatin1String("U"), shifted); break;
+			case Qt::Key_V: action_Goto_Mark(document, QLatin1String("V"), shifted); break;
+			case Qt::Key_W: action_Goto_Mark(document, QLatin1String("W"), shifted); break;
+			case Qt::Key_X: action_Goto_Mark(document, QLatin1String("X"), shifted); break;
+			case Qt::Key_Y: action_Goto_Mark(document, QLatin1String("Y"), shifted); break;
+			case Qt::Key_Z: action_Goto_Mark(document, QLatin1String("Z"), shifted); break;
 			default:
 				QApplication::beep();
 				break;
@@ -3230,47 +3231,19 @@ void MainWindow::action_Shift_Goto_Mark_Shortcut() {
 	}
 }
 
+
+/**
+ * @brief MainWindow::action_Shift_Goto_Mark_Shortcut
+ */
+void MainWindow::action_Shift_Goto_Mark_Shortcut() {
+	action_Goto_Mark_Shortcut_Helper(/*shifted=*/true);
+}
+
 /**
  * @brief MainWindow::action_Goto_Mark_Shortcut
  */
 void MainWindow::action_Goto_Mark_Shortcut() {
-	if(auto shortcut = qobject_cast<QShortcut *>(sender())) {
-		const QKeySequence sequence = shortcut->key();
-
-		if(DocumentWidget *document = currentDocument()) {
-			switch(sequence[1]) {
-			case Qt::Key_A: action_Goto_Mark(document, QLatin1String("A"), false); break;
-			case Qt::Key_B: action_Goto_Mark(document, QLatin1String("B"), false); break;
-			case Qt::Key_C: action_Goto_Mark(document, QLatin1String("C"), false); break;
-			case Qt::Key_D: action_Goto_Mark(document, QLatin1String("D"), false); break;
-			case Qt::Key_E: action_Goto_Mark(document, QLatin1String("E"), false); break;
-			case Qt::Key_F: action_Goto_Mark(document, QLatin1String("F"), false); break;
-			case Qt::Key_G: action_Goto_Mark(document, QLatin1String("G"), false); break;
-			case Qt::Key_H: action_Goto_Mark(document, QLatin1String("H"), false); break;
-			case Qt::Key_I: action_Goto_Mark(document, QLatin1String("I"), false); break;
-			case Qt::Key_J: action_Goto_Mark(document, QLatin1String("J"), false); break;
-			case Qt::Key_K: action_Goto_Mark(document, QLatin1String("K"), false); break;
-			case Qt::Key_L: action_Goto_Mark(document, QLatin1String("L"), false); break;
-			case Qt::Key_M: action_Goto_Mark(document, QLatin1String("M"), false); break;
-			case Qt::Key_N: action_Goto_Mark(document, QLatin1String("N"), false); break;
-			case Qt::Key_O: action_Goto_Mark(document, QLatin1String("O"), false); break;
-			case Qt::Key_P: action_Goto_Mark(document, QLatin1String("P"), false); break;
-			case Qt::Key_Q: action_Goto_Mark(document, QLatin1String("Q"), false); break;
-			case Qt::Key_R: action_Goto_Mark(document, QLatin1String("R"), false); break;
-			case Qt::Key_S: action_Goto_Mark(document, QLatin1String("S"), false); break;
-			case Qt::Key_T: action_Goto_Mark(document, QLatin1String("T"), false); break;
-			case Qt::Key_U: action_Goto_Mark(document, QLatin1String("U"), false); break;
-			case Qt::Key_V: action_Goto_Mark(document, QLatin1String("V"), false); break;
-			case Qt::Key_W: action_Goto_Mark(document, QLatin1String("W"), false); break;
-			case Qt::Key_X: action_Goto_Mark(document, QLatin1String("X"), false); break;
-			case Qt::Key_Y: action_Goto_Mark(document, QLatin1String("Y"), false); break;
-			case Qt::Key_Z: action_Goto_Mark(document, QLatin1String("Z"), false); break;
-			default:
-				QApplication::beep();
-				break;
-			}
-		}
-	}
+	action_Goto_Mark_Shortcut_Helper(/*shifted=*/false);
 }
 
 /**
