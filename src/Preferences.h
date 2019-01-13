@@ -8,6 +8,7 @@
 #include "TruncSubstitution.h"
 #include "WrapMode.h"
 #include "WrapStyle.h"
+#include "Verbosity.h"
 
 #include <QCoreApplication>
 #include <vector>
@@ -157,7 +158,7 @@ public:
 	static void ImportPrefFile(const QString &filename);
 	static void MarkPrefsChanged();
 	static void RestoreNEditPrefs();
-	static void SaveNEditPrefs(QWidget *parent, bool quietly);
+	static void SaveNEditPrefs(QWidget *parent, Verbosity verbosity);
 	static bool PreferencesChanged();
 	static QString ImportedSettingsFile();
 

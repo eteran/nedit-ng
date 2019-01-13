@@ -78,7 +78,7 @@ void Preferences::RestoreNEditPrefs() {
 	translatePrefFormats(NEDIT_VERSION);
 }
 
-void Preferences::SaveNEditPrefs(QWidget *parent, bool quietly) {
+void Preferences::SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 
 	QString prefFileName = Settings::configFile();
 	if(prefFileName.isNull()) {
@@ -86,7 +86,7 @@ void Preferences::SaveNEditPrefs(QWidget *parent, bool quietly) {
 		return;
 	}
 
-	if (!quietly) {
+	if (verbosity == Verbosity::Verbose) {
 		int resp = QMessageBox::information(parent, tr("Save Preferences"),
 			ImportedFile.isNull() ? tr("Default preferences will be saved in the file:\n%1\nNEdit automatically loads this file each time it is started.").arg(prefFileName)
 								  : tr("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS FROM FILE: %2").arg(prefFileName, ImportedFile),
