@@ -2855,6 +2855,7 @@ void DocumentWidget::closeDocument() {
 	// Close of window running a macro may have been disabled.
 	// NOTE(eteran): this may be redundant...
 	MainWindow::CheckCloseEnableState();
+	MainWindow::UpdateWindowMenus();
 
 	// if we deleted the last tab, then we can close the window too
 	if(win->tabCount() == 0) {
