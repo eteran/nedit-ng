@@ -1636,10 +1636,6 @@ void DocumentWidget::removeRedoItem() {
 */
 void DocumentWidget::trimUndoList(size_t maxLength) {
 
-	if (info_->undo.empty()) {
-		return;
-	}
-
 	if(info_->undo.size() <= maxLength) {
 		return;
 	}
