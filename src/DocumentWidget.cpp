@@ -267,6 +267,11 @@ UndoTypes determineUndoType(int64_t nInserted, int64_t nDeleted) {
  * @return
  */
 QLatin1String createRepeatMacro(int how) {
+
+	/* TODO: move this to the interpreter library as it is specific
+	 * to the Nedit macro language
+	 */
+
 	switch(how) {
 	case REPEAT_TO_END:
 		return QLatin1String("lastCursor=-1\nstartPos=$cursor\n"
@@ -806,7 +811,7 @@ size_t DocumentWidget::matchLanguageMode() const {
 		fileNameLen = versionExtendedPathIndex;
 	}
 
-	const QStringRef file = info_->filename.midRef(0, fileNameLen);
+	const QString file = info_->filename.left(fileNameLen);
 
 	for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
 		Q_FOREACH(const QString &ext, Preferences::LanguageModes[i].extensions) {
@@ -896,8 +901,8 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 
 	if(auto win = MainWindow::fromDocument(this)) {
 		// Check and dim/undim selection related menu items
-		if ((win->wasSelected_ && !selected) || (!win->wasSelected_ && selected)) {
-			win->wasSelected_ = selected;
+		if (info_->wasSelected_ != selected) {
+			info_->wasSelected_ = selected;
 
 			/* do not refresh window-level items (window, menu-bar etc) when
 			 * motifying non-top document */
@@ -1058,8 +1063,6 @@ void DocumentWidget::raiseDocument() {
 */
 void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
-	const bool topDocument = isTopDocument();
-
 	if(auto win = MainWindow::fromDocument(this)) {
 		const size_t oldMode = languageMode_;
 
@@ -1099,20 +1102,22 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 		const int oldEmTabDist = textAreas[0]->getEmulateTabs();
 		const QString oldlanguageModeName = Preferences::LanguageModeName(oldMode);
 
-		const bool emTabDistIsDef     = oldEmTabDist == Preferences::GetPrefEmTabDist(oldMode);
-		const bool indentStyleIsDef   = info_->indentStyle == Preferences::GetPrefAutoIndent(oldMode)   || (Preferences::GetPrefAutoIndent(oldMode) == IndentStyle::Smart && info_->indentStyle == IndentStyle::Auto && !SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(oldMode)));
-		const bool highlightIsDef     = highlightSyntax_ == Preferences::GetPrefHighlightSyntax() || (Preferences::GetPrefHighlightSyntax() && Highlight::FindPatternSet(oldlanguageModeName) == nullptr);
-		const WrapStyle wrapMode      = wrapModeIsDef                                || forceDefaults ? Preferences::GetPrefWrap(mode)        : info_->wrapMode;
-		const int tabDist             = tabDistIsDef                                 || forceDefaults ? Preferences::GetPrefTabDist(mode)     : info_->buffer->BufGetTabDistance();
-		const int emTabDist           = emTabDistIsDef                               || forceDefaults ? Preferences::GetPrefEmTabDist(mode)   : oldEmTabDist;
-		IndentStyle indentStyle       = indentStyleIsDef                             || forceDefaults ? Preferences::GetPrefAutoIndent(mode)  : info_->indentStyle;
-		bool highlight                = highlightIsDef                               || forceDefaults ? Preferences::GetPrefHighlightSyntax() : highlightSyntax_;
+		const bool emTabDistIsDef   = oldEmTabDist == Preferences::GetPrefEmTabDist(oldMode);
+		const bool indentStyleIsDef = info_->indentStyle == Preferences::GetPrefAutoIndent(oldMode) || (Preferences::GetPrefAutoIndent(oldMode) == IndentStyle::Smart && info_->indentStyle == IndentStyle::Auto && !SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(oldMode)));
+		const bool highlightIsDef   = highlightSyntax_  == Preferences::GetPrefHighlightSyntax() || (Preferences::GetPrefHighlightSyntax() && Highlight::FindPatternSet(oldlanguageModeName) == nullptr);
+		const WrapStyle wrapMode    = wrapModeIsDef    || forceDefaults ? Preferences::GetPrefWrap(mode)        : info_->wrapMode;
+		const int tabDist           = tabDistIsDef     || forceDefaults ? Preferences::GetPrefTabDist(mode)     : info_->buffer->BufGetTabDistance();
+		const int emTabDist         = emTabDistIsDef   || forceDefaults ? Preferences::GetPrefEmTabDist(mode)   : oldEmTabDist;
+		IndentStyle indentStyle     = indentStyleIsDef || forceDefaults ? Preferences::GetPrefAutoIndent(mode)  : info_->indentStyle;
+		bool highlight              = highlightIsDef   || forceDefaults ? Preferences::GetPrefHighlightSyntax() : highlightSyntax_;
 
 		/* Dim/undim smart-indent and highlighting menu items depending on
 		   whether patterns/macros are available */
 		QString languageModeName   = Preferences::LanguageModeName(mode);
 		bool haveHighlightPatterns = Highlight::FindPatternSet(languageModeName);
 		bool haveSmartIndentMacros = SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(mode));
+
+		const bool topDocument = isTopDocument();
 
 		if (topDocument) {
 			win->ui.action_Highlight_Syntax->setEnabled(haveHighlightPatterns);
@@ -1501,6 +1506,11 @@ void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int6
 
 	/* if the this is currently unmodified, remove the previous
 	   restoresToSaved marker, and set it on this record */
+
+	// TODO(eteran): there probably is some data structure we could use
+	// to avoid having to loop here.
+	// as we have more entries in the undo/redo lists, the longer these loops
+	// get
 	if (!info_->fileChanged) {
 		undo.restoresToSaved = true;
 
@@ -1630,14 +1640,12 @@ void DocumentWidget::trimUndoList(size_t maxLength) {
 		return;
 	}
 
-	auto it = info_->undo.begin();
-	size_t i = 1;
-
-	// Find last item on the list to leave intact
-	while(it != info_->undo.end() && i < maxLength) {
-		++it;
-		++i;
+	if(info_->undo.size() <= maxLength) {
+		return;
 	}
+
+	auto it = info_->undo.begin();
+	std::advance(it, maxLength);
 
 	// Trim off all subsequent entries
 	info_->undo.erase(it, info_->undo.end());
@@ -3192,7 +3200,7 @@ void DocumentWidget::refreshMenuBar() {
 		win->updateUserMenus(this);
 
 		// refresh selection-sensitive menus
-		updateSelectionSensitiveMenus(win->wasSelected_);
+		updateSelectionSensitiveMenus(info_->wasSelected_);
 	}
 }
 
@@ -3208,14 +3216,14 @@ void DocumentWidget::RefreshMenuToggleStates() {
 
 	if(auto win = MainWindow::fromDocument(this)) {
 		// File menu
-		win->ui.action_Print_Selection->setEnabled(win->wasSelected_);
+		win->ui.action_Print_Selection->setEnabled(info_->wasSelected_);
 
 		// Edit menu
 		win->ui.action_Undo->setEnabled(!info_->undo.empty());
 		win->ui.action_Redo->setEnabled(!info_->redo.empty());
-		win->ui.action_Cut->setEnabled(win->wasSelected_);
-		win->ui.action_Copy->setEnabled(win->wasSelected_);
-		win->ui.action_Delete->setEnabled(win->wasSelected_);
+		win->ui.action_Cut->setEnabled(info_->wasSelected_);
+		win->ui.action_Copy->setEnabled(info_->wasSelected_);
+		win->ui.action_Delete->setEnabled(info_->wasSelected_);
 
 		// Preferences menu
 		no_signals(win->ui.action_Statistics_Line)->setChecked(showStats_);

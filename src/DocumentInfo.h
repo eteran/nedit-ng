@@ -48,6 +48,7 @@ struct DocumentInfo {
 	bool overstrike         = false;                    // is overstrike mode turned on ?
 	bool fileMissing        = true;                     // is the window's file gone?
 	bool matchSyntaxBased   = false;                    // Use syntax info to show matching
+	bool wasSelected_       = false;                    // last selection state (for dim/undim of selection related menu items
 	bool ignoreModify       = false;                    // ignore modifications to text area
 	WrapStyle wrapMode      = WrapStyle::Default;       // line wrap style: None, Newline or Continuous
 	IndentStyle indentStyle = IndentStyle::Default;     // whether/how to auto indent

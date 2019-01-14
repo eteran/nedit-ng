@@ -288,10 +288,10 @@ private:
 	void updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<MenuData> &menuList, bool enabled);
 	void updateSelectionSensitiveMenus(bool enabled);
 
-private:
+public:
 	std::shared_ptr<DocumentInfo> info_;
 
-public:
+public:	
 	bool replaceFailed_     = false;               // flags replacements failures during multi-file replacements
 	bool multiFileBusy_     = false;               // suppresses multiple beeps/dialogs during multi-file replacements
 	size_t languageMode_    = PLAIN_LANGUAGE_MODE; // identifies language mode currently selected in the window

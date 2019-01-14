@@ -429,7 +429,6 @@ private:
 private:
 	bool iSearchLastLiteralCase_    = false;          // idem, for literal mode
 	bool iSearchLastRegexCase_      = true;           // idem, for regex mode in incremental search bar
-	bool wasSelected_               = false;          // last selection state (for dim/undim of selection related menu items
 	int iSearchHistIndex_           = 0;              // find and replace dialogs
 	TextCursor iSearchLastBeginPos_ = {};              // beg. pos. last match of current i.s.
 	TextCursor iSearchStartPos_     = TextCursor(-1); // start pos. of current incr. search
