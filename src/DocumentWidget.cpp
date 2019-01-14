@@ -901,8 +901,8 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 
 	if(auto win = MainWindow::fromDocument(this)) {
 		// Check and dim/undim selection related menu items
-		if (info_->wasSelected_ != selected) {
-			info_->wasSelected_ = selected;
+		if (info_->wasSelected != selected) {
+			info_->wasSelected = selected;
 
 			/* do not refresh window-level items (window, menu-bar etc) when
 			 * motifying non-top document */
@@ -3196,7 +3196,7 @@ void DocumentWidget::refreshMenuBar() {
 		win->updateUserMenus(this);
 
 		// refresh selection-sensitive menus
-		updateSelectionSensitiveMenus(info_->wasSelected_);
+		updateSelectionSensitiveMenus(info_->wasSelected);
 	}
 }
 
@@ -3212,14 +3212,14 @@ void DocumentWidget::RefreshMenuToggleStates() {
 
 	if(auto win = MainWindow::fromDocument(this)) {
 		// File menu
-		win->ui.action_Print_Selection->setEnabled(info_->wasSelected_);
+		win->ui.action_Print_Selection->setEnabled(info_->wasSelected);
 
 		// Edit menu
 		win->ui.action_Undo->setEnabled(!info_->undo.empty());
 		win->ui.action_Redo->setEnabled(!info_->redo.empty());
-		win->ui.action_Cut->setEnabled(info_->wasSelected_);
-		win->ui.action_Copy->setEnabled(info_->wasSelected_);
-		win->ui.action_Delete->setEnabled(info_->wasSelected_);
+		win->ui.action_Cut->setEnabled(info_->wasSelected);
+		win->ui.action_Copy->setEnabled(info_->wasSelected);
+		win->ui.action_Delete->setEnabled(info_->wasSelected);
 
 		// Preferences menu
 		no_signals(win->ui.action_Statistics_Line)->setChecked(showStats_);

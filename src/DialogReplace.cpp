@@ -518,7 +518,7 @@ void DialogReplace::UpdateReplaceActionButtons() {
 
 	// Is there any text in the search for field
 	const bool searchText = !ui.textFind->text().isEmpty();
-	setActionButtons(searchText, searchText, searchText, searchText, searchText && document_->info_->wasSelected_, searchText && (countWritableWindows() > 1));
+	setActionButtons(searchText, searchText, searchText, searchText, searchText && document_->info_->wasSelected, searchText && (countWritableWindows() > 1));
 }
 
 /**
