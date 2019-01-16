@@ -12,4 +12,7 @@ target_link_libraries(nedit-regex-test
 set_property(TARGET nedit-regex-test PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 set_property(TARGET nedit-regex-test PROPERTY CXX_STANDARD 14)
 
-add_test("nedit-regex-test" "nedit-regex-test")
+add_test(
+	NAME nedit-regex-test
+	COMMAND $<TARGET_FILE:nedit-regex-test>
+)
