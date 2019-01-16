@@ -241,10 +241,8 @@ template <class Ch, class Tr>
 auto gap_buffer<Ch, Tr>::to_string() const -> string_type {
 	string_type text;
 	text.reserve(static_cast<size_t>(size()));
-
-	std::copy_n(&buf_[0],        gap_start_,          std::back_inserter(text));
-	std::copy_n(&buf_[gap_end_], size() - gap_start_, std::back_inserter(text));
-
+	text.append(&buf_[0], &buf_[gap_start_]);
+	text.append(&buf_[gap_end_], &buf_[gap_size() + size()]);
 	return text;
 }
 
@@ -264,14 +262,14 @@ auto gap_buffer<Ch, Tr>::to_string(size_type start, size_type end) const -> stri
 
 	// Copy the text from the buffer to the returned string
 	if (end <= gap_start_) {
-		text = string_type(&buf_[start], &buf_[end]);
+		text.append(&buf_[start], &buf_[end]);
 	} else if (start >= gap_start_) {
-		std::copy_n(&buf_[start + gap_size()], length, std::back_inserter(text));
+		text.append(&buf_[start + gap_size()], length);
 	} else {
 		const difference_type part1Length = gap_start_ - start;
 
-		std::copy_n(&buf_[start],    part1Length,          std::back_inserter(text));
-		std::copy_n(&buf_[gap_end_], length - part1Length, std::back_inserter(text));
+		text.append(&buf_[start],    part1Length);
+		text.append(&buf_[gap_end_], length - part1Length);
 	}
 
 	return text;
