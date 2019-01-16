@@ -9,7 +9,7 @@ find_package(Boost 1.35 REQUIRED)
 find_package(Qt5 5.5.0 REQUIRED Widgets Network Xml PrintSupport LinguistTools)
 find_package(Qt5 5.5.0 OPTIONAL_COMPONENTS X11Extras)
 
-if (UNIX)
+if(UNIX)
 	find_package(X11)
 endif()
 
@@ -19,7 +19,7 @@ set(TRANSLATIONS
 
 qt5_add_translation(QM_FILES ${TRANSLATIONS})
 set(QM_FILES ${QM_FILES} PARENT_SCOPE)
-add_custom_target (translations ALL DEPENDS ${QM_FILES})
+add_custom_target(translations ALL DEPENDS ${QM_FILES})
 
 # Create translations QRC file - translations.qrc
 set(TRANSLATIONS_QRC "${CMAKE_CURRENT_BINARY_DIR}/translations.qrc")
@@ -245,7 +245,7 @@ add_executable(nedit-ng
 	X11Colors.h
 )
 
-target_include_directories (nedit-ng PRIVATE
+target_include_directories(nedit-ng PRIVATE
 	${Boost_INCLUDE_DIR}
 )
 
@@ -268,16 +268,12 @@ target_link_libraries(nedit-ng LINK_PUBLIC
 	Qt5::Network
 	Qt5::Xml
 	Qt5::PrintSupport
-        $<$<BOOL:${Qt5X11Extras_FOUND}>:Qt5::X11Extras>
-        $<$<BOOL:${X11_FOUND}>:X11>
+	$<$<BOOL:${Qt5X11Extras_FOUND}>:Qt5::X11Extras>
+	$<$<BOOL:${X11_FOUND}>:X11>
 )
 
 set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET nedit-ng PROPERTY CXX_STANDARD 14)
+set_property(TARGET nedit-ng PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
-set_target_properties(nedit-ng
-	PROPERTIES
-	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-)
-
-install (TARGETS nedit-ng DESTINATION bin)
+install(TARGETS nedit-ng DESTINATION bin)

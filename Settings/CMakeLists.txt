@@ -4,8 +4,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 find_package(Qt5 5.5.0 REQUIRED Widgets)
 
-add_library (Settings 
-	${MOC_SOURCES}
+add_library(Settings 
 	IndentStyle.h
 	SearchType.h
 	Settings.cpp
@@ -15,7 +14,7 @@ add_library (Settings
 	WrapStyle.h
 )
 
-target_include_directories (Settings PUBLIC
+target_include_directories(Settings PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 

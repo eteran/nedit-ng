@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.0)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-add_library (Regex 
+add_library(Regex 
 	Common.h
 	Constants.h
 	Execute.cpp
@@ -18,7 +18,7 @@ add_library (Regex
 	Substitute.h
 )
 
-target_include_directories (Regex PUBLIC
+target_include_directories(Regex PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 

@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.0)
 
-project (nedit CXX)
+project(nedit CXX)
 
 enable_testing()
 
-if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"))
+if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") OR("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"))
     option(ENABLE_PROFILING     "Enable profiling")
     option(ENABLE_ASAN          "Enable address santiziers")
     option(ENABLE_USAN          "Enable undefined santiziers")
@@ -12,7 +12,7 @@ if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" S
     option(ENABLE_TSAN          "Enable thread santiziers")
     option(ENABLE_LTO           "Enable Link Time Optimization")
     option(ENABLE_STL_DEBUG     "Enable STL container debugging")
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     option(ENABLE_STL_DEBUG     "Enable STL container debugging")
 endif()
 
@@ -21,7 +21,7 @@ option(PURIFY "Fill Unused TextBuffer space")
 set(PER_TAB_CLOSE    OFF CACHE BOOL "Per Tab Close Buttons")
 set(VISUAL_CTRL_CHARS ON CACHE BOOL "Visualize ASCII Control Characters")
 
-if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"))
+if(("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") OR("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang"))
 	if(ENABLE_STL_DEBUG)
 		add_definitions(-D_GLIBCXX_DEBUG)
 		add_definitions(-D_GLIBCXX_DEBUG_PEDANTIC)
@@ -59,7 +59,7 @@ if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" S
 		set(CMAKE_AR               "gcc-ar")
 		set(CMAKE_RANLIB           "gcc-ranlib")
 	endif()
-elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
+elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     if(ENABLE_STL_DEBUG)
         add_definitions(-D_ITERATOR_DEBUG_LEVEL=1)
     endif()
@@ -109,7 +109,7 @@ else()
 		-Wno-unknown-pragmas
 	)
 
-	if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+	if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
 		add_compile_options(
 			#-Wshorten-64-to-32
 			-Wconditional-uninitialized
@@ -120,7 +120,7 @@ else()
 			-Wimplicit-fallthrough
 		)
 
-    elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 		add_compile_options(
 			#-Wuseless-cast
                         #-Wduplicated-cond
@@ -130,17 +130,17 @@ else()
 	endif()
 endif()
 
-add_subdirectory (Util)
-add_subdirectory (src)
-add_subdirectory (client)
-add_subdirectory (Regex)
-add_subdirectory (Settings)
-add_subdirectory (Interpreter)
-add_subdirectory (GSL EXCLUDE_FROM_ALL)
+add_subdirectory(Util)
+add_subdirectory(src)
+add_subdirectory(client)
+add_subdirectory(Regex)
+add_subdirectory(Settings)
+add_subdirectory(Interpreter)
+add_subdirectory(GSL EXCLUDE_FROM_ALL)
 
-if (UNIX)
+if(UNIX)
     find_package(X11)
     if(${X11_FOUND})
-        add_subdirectory (import)
+        add_subdirectory(import)
     endif()
 endif()

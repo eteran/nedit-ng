@@ -22,16 +22,12 @@ target_link_libraries(nedit-import LINK_PUBLIC
 	X11
 )
 
-target_include_directories (nedit-import PRIVATE
+target_include_directories(nedit-import PRIVATE
 	${X11_INCLUDE_DIR}
 )
 
 set_property(TARGET nedit-import PROPERTY CXX_STANDARD 14)
 set_property(TARGET nedit-import PROPERTY CXX_EXTENSIONS OFF)
+set_property(TARGET nedit-import PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
-set_target_properties(nedit-import
-	PROPERTIES
-	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-)
-
-install (TARGETS nedit-import DESTINATION bin)
+install(TARGETS nedit-import DESTINATION bin)

@@ -18,7 +18,7 @@ else()
     )
 endif()
 
-add_library (Interpreter
+add_library(Interpreter
 	DataValue.h
 	interpret.cpp
 	interpret.h
@@ -28,11 +28,11 @@ add_library (Interpreter
 	${BISON_parser_OUTPUT_SOURCE}
 )
 
-target_include_directories (Interpreter PUBLIC
+target_include_directories(Interpreter PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_include_directories (Interpreter PRIVATE
+target_include_directories(Interpreter PRIVATE
 	${Boost_INCLUDE_DIR}
 )
 
