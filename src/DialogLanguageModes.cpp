@@ -285,12 +285,12 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 	QString tipsFile = ui.editCallTips->text();
 	if(!tipsFile.isEmpty()) {
 		// Ensure that AddTagsFile will work
-		if (!Tags::AddTagsFileEx(tipsFile, Tags::SearchMode::TIP)) {
+		if (!Tags::addTagsFile(tipsFile, Tags::SearchMode::TIP)) {
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Error reading Calltips"), tr("Can't read default calltips file(s):\n  \"%1\"\n").arg(tipsFile));
 			}
 			return boost::none;
-		} else if (!Tags::DeleteTagsFileEx(tipsFile, Tags::SearchMode::TIP, false)) {
+		} else if (!Tags::deleteTagsFile(tipsFile, Tags::SearchMode::TIP, false)) {
 			qCritical("NEdit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"", qPrintable(tipsFile));
 		}
 	}
@@ -503,7 +503,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 		for(DocumentWidget *currentDocument : DocumentWidget::allDocuments()) {
 			const size_t currentLanguageMode = currentDocument->GetLanguageMode();
 			if (currentLanguageMode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[currentLanguageMode].defTipsFile.isNull()) {
-				Tags::AddTagsFileEx(Preferences::LanguageModes[currentLanguageMode].defTipsFile, Tags::SearchMode::TIP);
+				Tags::addTagsFile(Preferences::LanguageModes[currentLanguageMode].defTipsFile, Tags::SearchMode::TIP);
 			}
 		}
 

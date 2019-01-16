@@ -403,7 +403,7 @@ DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, c
 	auto fullname = tr("%1%2").arg(path, name);
 
 	if (Preferences::GetPrefAlwaysCheckRelTagsSpecs()) {
-		Tags::AddRelTagsFileEx(Preferences::GetPrefTagFile(), path, Tags::SearchMode::TAG);
+		Tags::addRelTagsFile(Preferences::GetPrefTagFile(), path, Tags::SearchMode::TAG);
 	}
 
 	MainWindow::AddToPrevOpenMenu(fullname);
@@ -1077,7 +1077,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
 		// Decref oldMode's default calltips file if needed
 		if (oldMode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[oldMode].defTipsFile.isNull()) {
-			Tags::DeleteTagsFileEx(Preferences::LanguageModes[oldMode].defTipsFile, Tags::SearchMode::TIP, false);
+			Tags::deleteTagsFile(Preferences::LanguageModes[oldMode].defTipsFile, Tags::SearchMode::TIP, false);
 		}
 
 		// Set delimiters for all text widgets
@@ -1156,7 +1156,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
 		// Load calltips files for new mode
 		if (mode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[mode].defTipsFile.isNull()) {
-			Tags::AddTagsFileEx(Preferences::LanguageModes[mode].defTipsFile, Tags::SearchMode::TIP);
+			Tags::addTagsFile(Preferences::LanguageModes[mode].defTipsFile, Tags::SearchMode::TIP);
 		}
 
 		// Add/remove language specific menu items
@@ -3741,7 +3741,7 @@ int DocumentWidget::findDef(TextArea *area, const QString &value, Tags::SearchMo
 		if (status == 0) {
 			// Didn't find any matches
 			if (Tags::searchMode == Tags::SearchMode::TIP_FROM_TAG || Tags::searchMode == Tags::SearchMode::TIP) {
-				Tags::tagsShowCalltipEx(area, tr("No match for \"%1\" in calltips or tags.").arg(Tags::tagName));
+				Tags::tagsShowCalltip(area, tr("No match for \"%1\" in calltips or tags.").arg(Tags::tagName));
 			} else {
 				QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags %2").arg(Tags::tagName, (Tags::TagsFileList.size() > 1) ? tr("files") : tr("file")));
 			}
@@ -4369,7 +4369,7 @@ void DocumentWidget::unloadLanguageModeTipsFile() {
 
 	const size_t mode = languageMode_;
 	if (mode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[mode].defTipsFile.isNull()) {
-		Tags::DeleteTagsFileEx(Preferences::LanguageModes[mode].defTipsFile, Tags::SearchMode::TIP, false);
+		Tags::deleteTagsFile(Preferences::LanguageModes[mode].defTipsFile, Tags::SearchMode::TIP, false);
 	}
 }
 
@@ -7044,7 +7044,7 @@ int DocumentWidget::ShowTipStringEx(const QString &text, bool anchored, int pos,
 
 	if(auto window = MainWindow::fromDocument(this)) {
 		if (!lookup) {
-			return Tags::tagsShowCalltipEx(window->lastFocus(), text);
+			return Tags::tagsShowCalltip(window->lastFocus(), text);
 		} else {
 			return findDef(window->lastFocus(), text, search_type);
 		}
@@ -7093,7 +7093,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 	int64_t endPos;
 
 	// search for the tags file search string in the newly opened file
-	if (!Tags::fakeRegExSearchEx(documentToSearch->buffer()->BufAsStringEx(), Tags::tagSearch[i], &startPos, &endPos)) {
+	if (!Tags::fakeRegExSearch(documentToSearch->buffer()->BufAsStringEx(), Tags::tagSearch[i], &startPos, &endPos)) {
 		QMessageBox::warning(
 					this,
 					tr("Tag Error"),

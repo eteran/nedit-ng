@@ -202,7 +202,7 @@ int Tags::addTag(const QString &name, const QString &file, size_t lang, const QS
 ** (not starting with [/~]) and extend the tag files list if in
 ** windowPath a tags file matching the relative spec has been found.
 */
-bool Tags::AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, SearchMode mode) {
+bool Tags::addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMode mode) {
 
 	bool added = false;
 
@@ -270,7 +270,7 @@ bool Tags::AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, S
 ** Returns true if all files were found in the FileList or loaded successfully,
 ** false otherwise.
 */
-bool Tags::AddTagsFileEx(const QString &tagSpec, SearchMode mode) {
+bool Tags::addTagsFile(const QString &tagSpec, SearchMode mode) {
 
 	bool added = true;
 
@@ -339,7 +339,7 @@ bool Tags::AddTagsFileEx(const QString &tagSpec, SearchMode mode) {
  * If "force_unload" is true, a calltips file will be deleted even if its
  * refcount is nonzero.
  */
-bool Tags::DeleteTagsFileEx(const QString &tagSpec, SearchMode mode, bool force_unload) {
+bool Tags::deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload) {
 
 	if(tagSpec.isEmpty()) {
 		return false;
@@ -700,7 +700,7 @@ QList<Tags::Tag> Tags::LookupTag(const QString &name, SearchMode mode) {
 ** into NEdit compatible regular expressions and does the search.
 ** Etags search expressions are plain literals strings, which
 */
-bool Tags::fakeRegExSearchEx(view::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos) {
+bool Tags::fakeRegExSearch(view::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos) {
 
 	if(searchString.isEmpty()) {
 		return false;
@@ -854,7 +854,7 @@ void Tags::showMatchingCalltip(QWidget *parent, TextArea *area, int id) {
 			}
 		} else {
 			startPos = tagPosInf[id];
-			if (!fakeRegExSearchEx(fileString, tagSearch[id], &startPos, &endPos)) {
+			if (!fakeRegExSearch(fileString, tagSearch[id], &startPos, &endPos)) {
 				QMessageBox::critical(
 							parent,
 							tr("Tag not found"),
@@ -905,7 +905,7 @@ void Tags::showMatchingCalltip(QWidget *parent, TextArea *area, int id) {
 		auto message = QString::fromLatin1(&fileString[static_cast<size_t>(startPos)], gsl::narrow<int>(tipLen));
 
 		// 6. Display it
-		tagsShowCalltipEx(area, message);
+		tagsShowCalltip(area, message);
 	} catch(const std::bad_alloc &) {
 		QMessageBox::critical(
 					parent,
@@ -1321,7 +1321,7 @@ QList<Tags::Tag> Tags::getTag(const QString &name, SearchMode mode) {
  * @param text
  * @return
  */
-int Tags::tagsShowCalltipEx(TextArea *area, const QString &text) {
+int Tags::tagsShowCalltip(TextArea *area, const QString &text) {
 	if (!text.isNull()) {
 		return area->TextDShowCalltip(text, globAnchored, globPos, globHAlign, globVAlign, globAlignMode);
 	} else {

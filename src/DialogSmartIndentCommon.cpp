@@ -105,7 +105,7 @@ bool DialogSmartIndentCommon::checkSmartIndentCommonDialogData() {
 	if(!code.isEmpty()) {
 		QString widgetText = ensureNewline(code);
 		int stoppedAt;
-		if (!CheckMacroStringEx(this, widgetText, tr("macros"), &stoppedAt)) {
+		if (!CheckMacroString(this, widgetText, tr("macros"), &stoppedAt)) {
 			QTextCursor cursor = ui.editCode->textCursor();
 			cursor.setPosition(stoppedAt);
 			ui.editCode->setTextCursor(cursor);

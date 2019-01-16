@@ -64,11 +64,11 @@ public:
 
 public:
 	static QList<Tag> LookupTag(const QString &name, SearchMode mode);
-	static bool AddRelTagsFileEx(const QString &tagSpec, const QString &windowPath, SearchMode mode);
-	static bool AddTagsFileEx(const QString &tagSpec, SearchMode mode);
-	static bool DeleteTagsFileEx(const QString &tagSpec, SearchMode mode, bool force_unload);
-	static bool fakeRegExSearchEx(view::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos);
-	static int tagsShowCalltipEx(TextArea *area, const QString &text);
+	static bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMode mode);
+	static bool addTagsFile(const QString &tagSpec, SearchMode mode);
+	static bool deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload);
+	static bool fakeRegExSearch(view::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos);
+	static int tagsShowCalltip(TextArea *area, const QString &text);
 	static void showMatchingCalltip(QWidget *parent, TextArea *area, int id);
 
 public:

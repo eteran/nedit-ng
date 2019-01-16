@@ -2080,7 +2080,7 @@ void RegisterMacroSubroutines() {
 ** if macro compiled successfully.  Returns false and puts up
 ** a dialog explaining if macro did not compile successfully.
 */
-bool CheckMacroStringEx(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos) {
+bool CheckMacroString(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos) {
 	return readCheckMacroString(dialogParent, string, nullptr, errIn, errPos);
 }
 
