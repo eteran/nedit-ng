@@ -2720,6 +2720,9 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 		return;
 	}
 
+	// Remember where the cursor was drawn
+	const int y_orig = cursor_.y();
+
 	// Calculate y coordinate of the string to draw
 	const int y = viewRect.top() + visLineNum * fixedFontHeight_;
 
@@ -2736,17 +2739,23 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 		return ret;
 	}();
 
+	const auto nLineSize = static_cast<int>(currentLine.size());
+
 	/* Rectangular selections are based on "real" line starts (after a newline
 	   or start of buffer).  Calculate the difference between the last newline
 	   position and the line start we're using.  Since scanning back to find a
 	   newline is expensive, only do so if there's actually a rectangular
 	   selection which needs it */
 	int64_t dispIndexOffset = 0;
-	if (continuousWrap_ && (
-	        buffer_->primary.rangeTouchesRectSel  (lineStartPos, lineStartPos + currentLine.size()) ||
-	        buffer_->secondary.rangeTouchesRectSel(lineStartPos, lineStartPos + currentLine.size()) ||
-	        buffer_->highlight.rangeTouchesRectSel(lineStartPos, lineStartPos + currentLine.size()))) {
 
+	// a helper lambda for this calculation
+	auto rangeTouchesRectSel = [this](TextCursor rangeStart, TextCursor rangeEnd) {
+		return buffer_->primary.rangeTouchesRectSel  (rangeStart, rangeEnd) ||
+		       buffer_->secondary.rangeTouchesRectSel(rangeStart, rangeEnd) ||
+		       buffer_->highlight.rangeTouchesRectSel(rangeStart, rangeEnd);
+	};
+
+	if (continuousWrap_ && rangeTouchesRectSel(lineStartPos, lineStartPos + currentLine.size())) {
 		dispIndexOffset = buffer_->BufCountDispChars(buffer_->BufStartOfLine(lineStartPos), lineStartPos);
 	}
 
@@ -2763,13 +2772,13 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	for (;;) {
 		int  charLen  = 1;
 		char baseChar = '\0';
-		if(startIndex < static_cast<int>(currentLine.size())) {
+		if(startIndex < nLineSize) {
 			baseChar = currentLine[static_cast<size_t>(startIndex)];
 			charLen  = TextBuffer::BufCharWidth(baseChar, outIndex, tabDist);
 		}
 
-		style = styleOfPos(lineStartPos, static_cast<int>(currentLine.size()), startIndex, dispIndexOffset + outIndex, baseChar);
-		const int charWidth = (startIndex >= static_cast<int>(currentLine.size())) ? fixedFontWidth_ : lengthToWidth(charLen);
+		style = styleOfPos(lineStartPos, nLineSize, startIndex, dispIndexOffset + outIndex, baseChar);
+		const int charWidth = (startIndex >= nLineSize) ? fixedFontWidth_ : lengthToWidth(charLen);
 
 		if (startX + charWidth >= leftClip) {
 			break;
@@ -2794,9 +2803,9 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 
 		// take note of where the cursor is if it's on this line...
 		if (lineStartPos + charIndex == cursorPos_) {
-			if (charIndex < static_cast<int>(currentLine.size()) || (charIndex == static_cast<int>(currentLine.size()) && cursorPos_ >= buffer_->BufEndOfBuffer())) {
+			if (charIndex < nLineSize || (charIndex == nLineSize && cursorPos_ >= buffer_->BufEndOfBuffer())) {
 				cursorX = x - 1;
-			} else if (charIndex == static_cast<int>(currentLine.size())) {
+			} else if (charIndex == nLineSize) {
 				if (wrapUsesCharacter(cursorPos_)) {
 					cursorX = x - 1;
 				}
@@ -2806,20 +2815,20 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 		char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 		char baseChar = '\0';
 		int  charLen  = 1;
-		if (charIndex < static_cast<int>(currentLine.size())) {
+		if (charIndex < nLineSize) {
 			baseChar = currentLine[static_cast<size_t>(charIndex)];
 			charLen  = TextBuffer::BufExpandCharacter(baseChar, outIndex, expandedChar, tabDist);
 		}
 
-		uint32_t charStyle = styleOfPos(lineStartPos, static_cast<int>(currentLine.size()), charIndex, dispIndexOffset + outIndex, baseChar);
+		uint32_t charStyle = styleOfPos(lineStartPos, nLineSize, charIndex, dispIndexOffset + outIndex, baseChar);
 
 		for (int i = 0; i < charLen; ++i) {
 
 			/* NOTE(eteran): this double check of the style is necessary to make
 			 * certain types of selections work correctly
 			 */
-			if (i != 0 && charIndex < static_cast<int>(currentLine.size()) && currentLine[static_cast<size_t>(charIndex)] == '\t') {
-				charStyle = styleOfPos(lineStartPos, static_cast<int>(currentLine.size()), charIndex, dispIndexOffset + outIndex, '\t');
+			if (i != 0 && charIndex < nLineSize && currentLine[static_cast<size_t>(charIndex)] == '\t') {
+				charStyle = styleOfPos(lineStartPos, nLineSize, charIndex, dispIndexOffset + outIndex, '\t');
 			}
 
 			if (charStyle != style) {
@@ -2829,7 +2838,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 				style = charStyle;
 			}
 
-			if (charIndex < static_cast<int>(currentLine.size())) {
+			if (charIndex < nLineSize) {
 				*outPtr = expandedChar[i];
 			}
 
@@ -2850,12 +2859,11 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	/* Draw the cursor if part of it appeared on the redisplayed part of
 	   this line.  Also check for the cases which are not caught as the
 	   line is scanned above: when the cursor appears at the very end
-	   of the redisplayed section. */
-	const int y_orig = cursor_.y();
+	   of the redisplayed section. */	
 	if (cursorOn_) {
 		if (cursorX) {
 			drawCursor(painter, *cursorX, y);
-		} else if (charIndex < static_cast<int>(currentLine.size()) && (lineStartPos + charIndex + 1 == cursorPos_) && x == rightClip) {
+		} else if (charIndex < nLineSize && (lineStartPos + charIndex + 1 == cursorPos_) && x == rightClip) {
 			if (cursorPos_ >= buffer_->BufGetLength()) {
 				drawCursor(painter, x - 1, y);
 			} else {
@@ -3069,6 +3077,12 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 	painter->save();
 	painter->setFont(renderFont);
 	painter->fillRect(rect, bground);
+
+	/* NOTE(eteran): if we want to support more cursor shapes such as block
+	 * cursors we need to figure out how to move at least some of the cursor
+	 * rendering to here. This is because this code actually clears the
+	 * background behind the rendered text */
+
 	painter->setPen(fground);
 	painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, s);
 	painter->restore();
