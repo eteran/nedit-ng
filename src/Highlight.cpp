@@ -12,7 +12,6 @@
 #include "ReparseContext.h"
 #include "Settings.h"
 #include "StyleTableEntry.h"
-#include "TextArea.h"
 #include "TextBuffer.h"
 #include "WindowHighlightData.h"
 #include "X11Colors.h"

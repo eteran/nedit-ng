@@ -84,10 +84,6 @@ public:
 	};
 
 public:
-	static constexpr int DefaultVMargin = 2;
-	static constexpr int DefaultHMargin = 2;
-
-public:
 	TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &font);
 	TextArea(const TextArea &other) = delete;
 	TextArea& operator=(const TextArea &) = delete;

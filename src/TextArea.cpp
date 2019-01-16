@@ -78,6 +78,9 @@ QString asciiToUnicode(const char *chars, int len) {
 	return s;
 }
 
+constexpr int DefaultVMargin = 2;
+constexpr int DefaultHMargin = 2;
+
 constexpr int SIZE_HINT_DURATION = 1000;
 
 constexpr int CALLTIP_EDGE_GUARD = 5;
