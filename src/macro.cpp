@@ -4822,7 +4822,7 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // NOTE(eteran): GCC 7+ false positive
 #endif
@@ -4860,7 +4860,7 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 		return MacroErrorCode::InsertFailed;
 	}
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__clang__)
 #pragma GCC diagnostic push
 #endif
 
