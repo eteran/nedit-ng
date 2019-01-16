@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.0)
 find_package(Qt5 5.5.0 REQUIRED Core Xml)
 find_package(X11 REQUIRED)
 
-link_directories(${X11_LIBRARY_DIR})
-
 add_executable(nedit-import
 	import.cpp
 )
