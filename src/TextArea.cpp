@@ -2695,6 +2695,16 @@ void TextArea::redisplayLineEx(int visLineNum, int leftCharIndex, int rightCharI
 */
 void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, int rightClip) {
 
+	/* Space beyond the end of the line is still counted in units of characters
+	 * of a standardized character width (this is done mostly because style
+	 * changes based on character position can still occur in this region due
+	 * to rectangular selections).  fixedFontWidth_ must be non-zero to prevent
+	 * a potential infinite loop if x does not advance */
+	if (fixedFontWidth_ <= 0) {
+		qWarning("NEdit: Internal Error, bad font measurement");
+		return;
+	}
+
 	const QRect viewRect = viewport()->contentsRect();
 
 	// If line is not displayed, skip it
@@ -2713,9 +2723,10 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	// Calculate y coordinate of the string to draw
 	const int y = viewRect.top() + visLineNum * fixedFontHeight_;
 
-	// Get the text, and buffer position of the line to display
+	// get buffer position of the line to display
 	const TextCursor lineStartPos = lineStarts_[visLineNum];
 
+	// get a copy of the current line (or an empty string)
 	const std::string currentLine = [&]() {
 		std::string ret;
 		if(lineStartPos != -1) {
@@ -2724,16 +2735,6 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 		}
 		return ret;
 	}();
-
-	/* Space beyond the end of the line is still counted in units of characters
-	   of a standardized character width (this is done mostly because style
-	   changes based on character position can still occur in this region due
-	   to rectangular selections).  fixedFontWidth_ must be non-zero to prevent a
-	   potential infinite loop if x does not advance */
-	if (fixedFontWidth_ <= 0) {
-		qWarning("NEdit: Internal Error, bad font measurement");
-		return;
-	}
 
 	/* Rectangular selections are based on "real" line starts (after a newline
 	   or start of buffer).  Calculate the difference between the last newline
