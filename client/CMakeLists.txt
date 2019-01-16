@@ -7,8 +7,8 @@ add_executable(nc-ng
 	nc.cpp
 )
 
-target_include_directories(nc-ng PRIVATE
-	${Boost_INCLUDE_DIR}
+target_include_directories(nc-ng SYSTEM
+	PRIVATE ${Boost_INCLUDE_DIR}
 )
 
 target_link_libraries(nc-ng LINK_PUBLIC

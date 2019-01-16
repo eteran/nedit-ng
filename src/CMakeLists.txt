@@ -244,8 +244,8 @@ add_executable(nedit-ng
 	X11Colors.h
 )
 
-target_include_directories(nedit-ng PRIVATE
-	${Boost_INCLUDE_DIR}
+target_include_directories(nedit-ng SYSTEM
+	PRIVATE ${Boost_INCLUDE_DIR}
 )
 
 if(${X11_FOUND})

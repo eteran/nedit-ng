@@ -30,9 +30,12 @@ add_library(Util
 	include/Util/version.h
 )
 
-target_include_directories(Util PUBLIC
-	${CMAKE_CURRENT_SOURCE_DIR}/include
-	${Boost_INCLUDE_DIR}
+target_include_directories(Util 
+	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_include_directories(Util SYSTEM
+	PUBLIC ${Boost_INCLUDE_DIR}
 )
 
 target_link_libraries(Util LINK_PUBLIC
