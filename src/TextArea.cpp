@@ -80,6 +80,7 @@ QString asciiToUnicode(const char *chars, int len) {
 
 constexpr int DefaultVMargin = 2;
 constexpr int DefaultHMargin = 2;
+constexpr int DefaultCursorWidth = 2;
 
 constexpr int SIZE_HINT_DURATION = 1000;
 
@@ -3137,25 +3138,17 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 		path.lineTo(right, bot);
 		break;
 	}
-	case CursorStyles::Normal: {
-		path.moveTo(left, y);
-		path.lineTo(right, y);
-		path.moveTo(x, y);
-		path.lineTo(x, bot);
-		path.moveTo(left, bot);
-		path.lineTo(right, bot);
+	case CursorStyles::Normal:
+		path.moveTo(x + 1, y);
+		path.lineTo(x + 1, y + fontHeight - 1);
 		break;
-	}
-	case CursorStyles::Block: {
+	case CursorStyles::Block:
 		path.addRect(x, y, fontWidth, fontHeight - 1);
 		break;
 	}
-	}
 
 	QPen pen(cursorFGColor_);
-	if(heavyCursor_) {
-		pen.setWidth(2);
-	}
+	pen.setWidth(heavyCursor_ ? DefaultCursorWidth * 2 : DefaultCursorWidth);
 
 	painter->setPen(pen);
 	painter->drawPath(path);
