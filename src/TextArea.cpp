@@ -3114,19 +3114,20 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 		return;
 	}
 
-	/* For cursors other than the block, make them around 2/3 of a character
-	   width, rounded to an even number of pixels so that X will draw an
-	   odd number centered on the stem at x. */
-	const int cursorWidth = (fontWidth / 3) * 2;
-	const int left  = x - cursorWidth / 2;
-	const int right = left + cursorWidth;
-
 	painter->save();
 
 	// Create segments and draw cursor
 	switch(cursorStyle_) {
 	case CursorStyles::Caret: {
-		const int midY = bot - fontHeight / 5;
+
+		/* For caret cursors , make them around 2/3 of a character width,
+		 * rounded to an even number of pixels so that X will draw an odd
+		 * number centered on the stem at x. */
+
+		const int midY        = bot - fontHeight / 5;
+		const int cursorWidth = (fontWidth / 3) * 2;
+		const int left        = x - cursorWidth / 2;
+		const int right       = left + cursorWidth;
 
 		path.moveTo(left, bot);
 		path.lineTo(x, midY);
@@ -3140,7 +3141,7 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 	}
 	case CursorStyles::Normal:
 		path.moveTo(x + 1, y);
-		path.lineTo(x + 1, y + fontHeight - 1);
+		path.lineTo(x + 1, bot);
 		break;
 	case CursorStyles::Block:
 		path.addRect(x, y, fontWidth, fontHeight - 1);
