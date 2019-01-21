@@ -35,14 +35,14 @@ uint8_t GET_OP_CODE(T *p) noexcept {
  * escape.
  *--------------------------------------------------------------------*/
 template <class R, class Ch>
-R literal_escape(Ch ch) noexcept {
+constexpr R literal_escape(Ch ch) noexcept {
 
-	static const char valid_escape[] = {
+	constexpr char valid_escape[] = {
 		'a', 'b', 'e', 'f', 'n', 'r', 't', 'v', '(', ')', '-', '[', ']', '<',
 		'>', '{', '}', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\0'
 	};
 
-	static const char value[] = {
+	constexpr char value[] = {
 		'\a', '\b', 0x1B, // Escape character in ASCII character set.
 		'\f', '\n', '\r', '\t', '\v', '(', ')', '-', '[', ']', '<', '>', '{',
 		'}', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\0'

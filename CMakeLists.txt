@@ -107,6 +107,7 @@ else()
 		-Wno-unused-macros 
 		-Wno-switch-enum
 		-Wno-unknown-pragmas
+		-Wsuggest-override
 	)
 
 	if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -126,6 +127,12 @@ else()
 			#-Wduplicated-cond
 			#-Wduplicated-branches
 			-Wlogical-op
+			
+			#-Wsuggest-attribute=pure
+			#-Wsuggest-attribute=const
+			#-Wsuggest-attribute=noreturn
+			-Wsuggest-final-types
+			-Wsuggest-final-methods
 		)
 	endif()
 endif()

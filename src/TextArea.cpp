@@ -3204,9 +3204,12 @@ void TextArea::TextDResize(bool widthChanged) {
 	   the top character no longer pointing at a valid line start */
 	if (continuousWrap_ && wrapMargin_ == 0 && widthChanged) {
 		const TextCursor oldFirstChar = firstChar_;
-		nBufferLines_ = TextDCountLines(buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer(), /*startPosIsLineStart=*/true);
+		const TextCursor start = buffer_->BufStartOfBuffer();
+		const TextCursor end   = buffer_->BufEndOfBuffer();
+
+		nBufferLines_ = TextDCountLines(start, end, /*startPosIsLineStart=*/true);
 		firstChar_    = TextDStartOfLine(firstChar_);
-		topLineNum_   = TextDCountLines(buffer_->BufStartOfBuffer(), firstChar_, /*startPosIsLineStart=*/true) + 1;
+		topLineNum_   = TextDCountLines(start, firstChar_, /*startPosIsLineStart=*/true) + 1;
 		offsetAbsLineNum(oldFirstChar);
 	}
 
