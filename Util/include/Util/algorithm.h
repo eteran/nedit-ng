@@ -12,10 +12,9 @@
 // function and notices that moveItem(c, row, row + 1) means that from will
 // ALWAYS be less than to, which is good... but it's dumb to warn about
 // because it's only true in that particular expansion, but not all
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-overflow"
-#endif
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wstrict-overflow")
+
 template <class Cont>
 void moveItem(Cont &cont, int from, int to) {
 
@@ -32,10 +31,8 @@ void moveItem(Cont &cont, int from, int to) {
 		std::rotate(b + to, b + from, b + from + 1);
 	}
 }
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#endif
 
+QT_WARNING_POP
 
 // string_view algorithms
 template <class Ch, class Tr = std::char_traits<Ch>>

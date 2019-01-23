@@ -4822,10 +4822,8 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized" // NOTE(eteran): GCC 7+ false positive
-#endif
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_GCC("-Wmaybe-uninitialized") // NOTE(eteran): GCC 7+ false positive
 
 	boost::optional<TextRange> range;
 
@@ -4860,9 +4858,7 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 		return MacroErrorCode::InsertFailed;
 	}
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#endif
+QT_WARNING_POP
 
 	return MacroErrorCode::Success;
 }

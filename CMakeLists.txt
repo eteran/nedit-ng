@@ -84,6 +84,7 @@ endif()
 
 add_definitions(-DQT_NO_CAST_FROM_ASCII)
 add_definitions(-DQT_NO_CAST_TO_ASCII)
+ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
 
 if(MSVC)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)
@@ -106,8 +107,7 @@ else()
 		-Wformat=2
 		-Wno-unused-macros 
 		-Wno-switch-enum
-		-Wno-unknown-pragmas
-		-Wsuggest-override
+		-Wno-unknown-pragmas		
 	)
 
 	if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
@@ -133,6 +133,7 @@ else()
 			#-Wsuggest-attribute=noreturn
 			-Wsuggest-final-types
 			-Wsuggest-final-methods
+			-Wsuggest-override
 		)
 	endif()
 endif()
