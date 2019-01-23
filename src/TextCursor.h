@@ -112,7 +112,7 @@ public:
 	friend constexpr BasicTextCursor operator+(Integer lhs, BasicTextCursor rhs)  noexcept { BasicTextCursor tmp(rhs); tmp += lhs; return tmp; }
 
 public:
-	friend T to_integer(BasicTextCursor cursor) {
+	friend constexpr T to_integer(BasicTextCursor cursor) {
 		return cursor.index_;
 	}
 

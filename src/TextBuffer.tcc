@@ -55,8 +55,7 @@ void BasicTextBuffer<Ch, Tr>::BufSetAll(view_type text) {
 
 /*
 ** Return a copy of the text between "start" and "end" character positions
-** from text buffer "buf".  Positions start at 0, and the range does not
-** include the character pointed to by "end"
+** Positions start at 0, and the range does not include the character pointed to by "end"
 */
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(TextRange range) const -> string_type {
@@ -133,8 +132,8 @@ void BasicTextBuffer<Ch, Tr>::BufInsertEx(TextCursor pos, Ch ch) noexcept {
 }
 
 /*
-** Delete the characters between "start" and "end", and insert the
-** string "text" in their place in in "buf"
+** Delete the characters in the range, and insert the
+** string "text" in their place in the buffer
 */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufReplaceEx(TextRange range, view_type text) noexcept {
@@ -164,14 +163,14 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceEx(TextCursor start, TextCursor end, vie
 
 /*
 ** Delete the characters between "start" and "end", and insert the
-** character "ch in their place in in "buf"
+** character "ch in their place in the buffer
 */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufReplaceEx(TextCursor start, TextCursor end, Ch ch) noexcept {
 
 	sanitizeRange(start, end);
 
-	const auto nInserted = 1;
+	constexpr auto nInserted = 1;
 
 	callPreDeleteCBs(start, end - start);
 	const string_type deletedText = BufGetRangeEx(start, end);
@@ -463,8 +462,6 @@ void BasicTextBuffer<Ch, Tr>::BufClearRect(TextCursor start, TextCursor end, int
 
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetTextInRectEx(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) const -> string_type {
-	TextCursor selLeft;
-	TextCursor selRight;
 
 	start = BufStartOfLine(start);
 	end   = BufEndOfLine(end);
@@ -478,6 +475,10 @@ auto BasicTextBuffer<Ch, Tr>::BufGetTextInRectEx(TextCursor start, TextCursor en
 	auto outPtr = std::back_inserter(textOut);
 
 	while (lineStart <= end) {
+
+		TextCursor selLeft;
+		TextCursor selRight;
+
 		findRectSelBoundariesForCopy(lineStart, rectStart, rectEnd, &selLeft, &selRight);
 		const string_type textIn = BufGetRangeEx(selLeft, selRight);
 		const int64_t len = selRight - selLeft;
@@ -496,8 +497,6 @@ auto BasicTextBuffer<Ch, Tr>::BufGetTextInRectEx(TextCursor start, TextCursor en
 	   positioned at the left margin */
 	return realignTabs(textOut, rectStart, 0, tabDist_, useTabs_);
 }
-
-
 
 /*
 ** Set the hardware tab distance used by all displays for this buffer,
@@ -754,7 +753,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufEndOfBuffer() const noexcept {
  */
 template <class Ch, class Tr>
 TextCursor BasicTextBuffer<Ch, Tr>::BufStartOfBuffer() const noexcept {
-	return TextCursor(0);
+	return {};
 }
 
 
@@ -812,7 +811,7 @@ template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::BufExpandTab(int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist) noexcept {
 	const int nSpaces = tabDist - (indent % tabDist);
 
-	for (int i = 0; i < nSpaces; i++) {
+	for (int i = 0; i < nSpaces; ++i) {
 		outStr[i] = Ch(' ');
 	}
 
