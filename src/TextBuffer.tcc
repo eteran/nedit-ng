@@ -36,20 +36,21 @@ auto BasicTextBuffer<Ch, Tr>::BufAsStringEx() noexcept -> view_type {
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSetAll(view_type text) {
 
-	const auto length = static_cast<int64_t>(text.size());
+	const auto insertLength = static_cast<int64_t>(text.size());
 
 	callPreDeleteCBs(BufStartOfBuffer(), buffer_.size());
 
 	// Save information for redisplay, and get rid of the old buffer
 	const string_type deletedText = BufGetAllEx();
+	const auto deleteLength       = static_cast<int64_t>(deletedText.size());
 
 	buffer_.assign(text);
 
 	// Zero all of the existing selections
-	updateSelections(BufStartOfBuffer(), static_cast<int64_t>(deletedText.size()), 0);
+	updateSelections(BufStartOfBuffer(), deleteLength, 0);
 
 	// Call the saved display routine(s) to update the screen
-	callModifyCBs(BufStartOfBuffer(), deletedText.size(), length, 0, deletedText);
+	callModifyCBs(BufStartOfBuffer(), deleteLength, insertLength, 0, deletedText);
 }
 
 /*
@@ -59,9 +60,7 @@ void BasicTextBuffer<Ch, Tr>::BufSetAll(view_type text) {
 */
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetRangeEx(TextRange range) const -> string_type {
-
-	sanitizeRange(range.start, range.end);
-	return buffer_.to_string(to_integer(range.start), to_integer(range.end));
+	return BufGetRangeEx(range.start, range.end);
 }
 
 template <class Ch, class Tr>
@@ -101,7 +100,7 @@ Ch BasicTextBuffer<Ch, Tr>::BufGetCharacter(TextCursor pos) const noexcept {
 }
 
 /*
-** Insert null-terminated string "text" at position "pos" in "buf"
+** Insert string "text" at position "pos"
 */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufInsertEx(TextCursor pos, view_type text) noexcept {
