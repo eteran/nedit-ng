@@ -106,7 +106,7 @@ extern Inst **LoopStackPtr;  /*  to fill at the end of a loop */
 
 
 /* Line 189 of yacc.c  */
-#line 110 "C:/Users/Evan Teran/Desktop/build-nedit-ng-Desktop_Qt_5_12_0_MSVC2017_64bit-Default/Interpreter/parser.cpp"
+#line 110 "Interpreter/parser.cpp"
 
 /* Enabling traces.  */
 #ifndef YYDEBUG
@@ -187,7 +187,7 @@ typedef union YYSTYPE
 
 
 /* Line 214 of yacc.c  */
-#line 191 "C:/Users/Evan Teran/Desktop/build-nedit-ng-Desktop_Qt_5_12_0_MSVC2017_64bit-Default/Interpreter/parser.cpp"
+#line 191 "Interpreter/parser.cpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
@@ -199,7 +199,7 @@ typedef union YYSTYPE
 
 
 /* Line 264 of yacc.c  */
-#line 203 "C:/Users/Evan Teran/Desktop/build-nedit-ng-Desktop_Qt_5_12_0_MSVC2017_64bit-Default/Interpreter/parser.cpp"
+#line 203 "Interpreter/parser.cpp"
 
 #ifdef short
 # undef short
@@ -2512,7 +2512,7 @@ yyreduce:
 
 
 /* Line 1455 of yacc.c  */
-#line 2516 "C:/Users/Evan Teran/Desktop/build-nedit-ng-Desktop_Qt_5_12_0_MSVC2017_64bit-Default/Interpreter/parser.cpp"
+#line 2516 "Interpreter/parser.cpp"
       default: break;
     }
   YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);

@@ -93,7 +93,7 @@ typedef union YYSTYPE
 
 
 /* Line 1676 of yacc.c  */
-#line 97 "C:/Users/Evan Teran/Desktop/build-nedit-ng-Desktop_Qt_5_12_0_MSVC2017_64bit-Default/Interpreter/parser.hpp"
+#line 97 "Interpreter/parser.hpp"
 } YYSTYPE;
 # define YYSTYPE_IS_TRIVIAL 1
 # define yystype YYSTYPE /* obsolescent; will be withdrawn */
