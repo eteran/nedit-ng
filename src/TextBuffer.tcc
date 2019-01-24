@@ -1000,7 +1000,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(TextCursor startPos, 
 
 /*
 ** Search forwards in buffer for characters in "searchChars", starting
-** with the character "startPos", and returning the result
+** with the character at "startPos", and returning the result
 */
 template <class Ch, class Tr>
 boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(TextCursor startPos, view_type searchChars) const noexcept {
@@ -1009,11 +1009,15 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(TextCurs
 	TextCursor end = BufEndOfBuffer();
 
 	while (pos < end) {
+
+		Ch comp = buffer_[to_integer(pos)];
+
 		for (Ch ch : searchChars) {
-			if (buffer_[to_integer(pos)] == ch) {
+			if (comp == ch) {
 				return pos;
 			}
 		}
+
 		++pos;
 	}
 
@@ -1021,8 +1025,8 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(TextCurs
 }
 
 /*
-** Search backwards in buffer "buf" for characters in "searchChars", starting
-** with the character BEFORE "startPos"
+** Search backwards in buffer for characters in "searchChars", starting
+** with the character BEFORE at "startPos"
 */
 template <class Ch, class Tr>
 boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(TextCursor startPos, view_type searchChars) const noexcept {
@@ -1036,8 +1040,11 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(TextCur
 	TextCursor pos = startPos - 1;
 
 	while (true) {
+
+		Ch comp = buffer_[to_integer(pos)];
+
 		for (Ch ch : searchChars) {
-			if (buffer_[to_integer(pos)] == ch) {
+			if (comp == ch) {
 				return pos;
 			}
 		}
