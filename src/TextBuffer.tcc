@@ -897,7 +897,9 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountForwardDispChars(TextCursor lineStar
 	int64_t charCount = 0;
 
 	TextCursor pos = lineStartPos;
-	while (charCount < nChars && pos < BufEndOfBuffer()) {
+	TextCursor end = BufEndOfBuffer();
+
+	while (charCount < nChars && pos < end) {
 		const Ch ch = BufGetCharacter(pos);
 		if (ch == Ch('\n')) {
 			return pos;
@@ -965,7 +967,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountForwardNLines(TextCursor startPos, i
 /*
 ** Find the position of the first character of the line "nLines" backwards
 ** from "startPos" (not counting the character pointed to by "startpos" if
-** that is a newline) in "buf".  nLines == 0 means find the beginning of
+** that is a newline).  nLines == 0 means find the beginning of
 ** the line
 */
 template <class Ch, class Tr>
@@ -993,11 +995,11 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(TextCursor startPos, 
 		--pos;
 	}
 
-	return BufStartOfBuffer();
+	return start;
 }
 
 /*
-** Search forwards in buffer "buf" for characters in "searchChars", starting
+** Search forwards in buffer for characters in "searchChars", starting
 ** with the character "startPos", and returning the result
 */
 template <class Ch, class Tr>
@@ -1057,7 +1059,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(TextCur
 */
 template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::BufCmpEx(TextCursor pos, Ch *cmpText, int64_t size) const noexcept {
-	return buffer_.compare(to_integer(pos), view_type(cmpText, static_cast<size_t>(size)));
+	return BufCmpEx(pos, view_type(cmpText, static_cast<size_t>(size)));
 }
 
 template <class Ch, class Tr>
@@ -1101,7 +1103,7 @@ int64_t BasicTextBuffer<Ch, Tr>::insertEx(TextCursor pos, Ch ch) noexcept {
 }
 
 /*
-** Search forwards in buffer "buf" for character "searchChar", starting
+** Search forwards in buffer for character "searchChar", starting
 ** with the character "startPos". (The difference between this and
 ** BufSearchForwardEx is that it's optimized for single characters.  The
 ** overall performance of the text widget is dependent on its ability to
@@ -1111,7 +1113,9 @@ template <class Ch, class Tr>
 boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor startPos, Ch searchChar) const noexcept {
 
 	TextCursor pos = startPos;
-	while (pos < BufEndOfBuffer()) {
+	TextCursor end = BufEndOfBuffer();
+
+	while (pos < end) {
 		if (buffer_[to_integer(pos)] == searchChar) {
 			return pos;
 		}
@@ -1122,7 +1126,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor st
 }
 
 /*
-** Search backwards in buffer "buf" for character "searchChar", starting
+** Search backwards in buffer for character "searchChar", starting
 ** with the character BEFORE "startPos". (The difference between this and
 ** BufSearchBackwardEx is that it's optimized for single characters.  The
 ** overall performance of the text widget is dependent on its ability to
@@ -1131,7 +1135,9 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor st
 template <class Ch, class Tr>
 boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor startPos, Ch searchChar) const noexcept {
 
-	if (startPos == BufStartOfBuffer()) {
+	TextCursor start = BufStartOfBuffer();
+
+	if (startPos == start) {
 		return boost::none;
 	}
 
@@ -1141,13 +1147,12 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor s
 			return pos;
 		}
 
-		if(pos == BufStartOfBuffer()) {
-			break;
+		if(pos == start) {
+			return boost::none;
 		}
+
 		--pos;
 	}
-
-	return boost::none;
 }
 
 template <class Ch, class Tr>
@@ -1282,10 +1287,11 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::findRectSelBoundariesForCopy(TextCursor lineStartPos, int64_t rectStart, int64_t rectEnd, TextCursor *selStart, TextCursor *selEnd) const noexcept {
 
 	TextCursor pos = lineStartPos;
+	TextCursor end = BufEndOfBuffer();
 	int indent     = 0;
 
 	// find the start of the selection
-	for (; pos < BufEndOfBuffer(); ++pos) {
+	for (; pos < end; ++pos) {
 		const Ch c = BufGetCharacter(pos);
 		if (c == Ch('\n')) {
 			break;
@@ -1305,7 +1311,7 @@ void BasicTextBuffer<Ch, Tr>::findRectSelBoundariesForCopy(TextCursor lineStartP
 	*selStart = pos;
 
 	// find the end
-	for (; pos < BufEndOfBuffer(); ++pos) {
+	for (; pos < end; ++pos) {
 		const Ch c = BufGetCharacter(pos);
 		if (c == Ch('\n')) {
 			break;
