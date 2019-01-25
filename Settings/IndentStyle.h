@@ -29,7 +29,7 @@ inline IndentStyle from_integer(int value) {
 	}
 }
 
-inline QLatin1String to_string(IndentStyle style) {
+inline constexpr QLatin1String to_string(IndentStyle style) {
 
 	switch(style) {
 	case IndentStyle::None:

@@ -27,7 +27,7 @@ inline ShowMatchingStyle from_integer(int value) {
 	}
 }
 
-inline QLatin1String to_string(ShowMatchingStyle style) {
+inline constexpr QLatin1String to_string(ShowMatchingStyle style) {
 
 	switch(style) {
 	case ShowMatchingStyle::None:
