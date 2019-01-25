@@ -11,6 +11,7 @@ add_library(Util
 	regex.cpp
 	Resource.cpp
 	ServerCommon.cpp
+	String.cpp
 	System.cpp
 	User.cpp
 	include/Util/algorithm.h
@@ -19,12 +20,13 @@ add_library(Util
 	include/Util/FileSystem.h
 	include/Util/Host.h
 	include/Util/Input.h
-	include/Util/Resource.h
 	include/Util/Raise.h
 	include/Util/regex.h
+	include/Util/Resource.h
 	include/Util/ServerCommon.h
-	include/Util/System.h
+	include/Util/String.h
 	include/Util/string_view.h
+	include/Util/System.h
 	include/Util/User.h
 	include/Util/utils.h
 	include/Util/version.h
