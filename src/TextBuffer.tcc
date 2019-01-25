@@ -752,7 +752,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufEndOfBuffer() const noexcept {
  * @return
  */
 template <class Ch, class Tr>
-TextCursor BasicTextBuffer<Ch, Tr>::BufStartOfBuffer() const noexcept {
+constexpr TextCursor BasicTextBuffer<Ch, Tr>::BufStartOfBuffer() const noexcept {
 	return {};
 }
 

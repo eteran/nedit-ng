@@ -31,7 +31,7 @@ private Q_SLOTS:
 	void on_buttonBox_accepted();
 
 private:
-	QColor chooseColor(QPushButton *edit, const QColor &currentColor);
+	QColor chooseColor(QPushButton *button, const QColor &currentColor);
 	void updateColors();
 
 private:

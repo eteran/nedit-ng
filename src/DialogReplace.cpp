@@ -65,12 +65,11 @@ int countWritableWindows() {
 std::vector<DocumentWidget *> collectWritableWindows() {
 
 	std::vector<DocumentWidget *> documents;
+	std::vector<DocumentWidget *> allDocuments = DocumentWidget::allDocuments();
 
-	for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-		if (!document->lockReasons().isAnyLocked()) {
-			documents.push_back(document);
-		}
-	}
+	std::copy_if(allDocuments.begin(), allDocuments.end(), std::back_inserter(documents), [](DocumentWidget *document) {
+		return (!document->lockReasons().isAnyLocked());
+	});
 
 	std::sort(documents.begin(), documents.end(), [](const DocumentWidget *lhs, const DocumentWidget *rhs) {
 		return lhs->filename() < rhs->filename();

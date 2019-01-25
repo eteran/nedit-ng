@@ -120,7 +120,7 @@ public:
 	TextCursor BufEndOfLine(TextCursor pos) const noexcept;
 	TextCursor BufStartOfLine(TextCursor pos) const noexcept;
 	TextCursor BufEndOfBuffer() const noexcept;
-	TextCursor BufStartOfBuffer() const noexcept;
+	constexpr TextCursor BufStartOfBuffer() const noexcept;
 	view_type BufAsStringEx() noexcept;
 	void BufAddHighPriorityModifyCB(modify_callback_type bufModifiedCB, void *user);
 	void BufAddModifyCB(modify_callback_type bufModifiedCB, void *user);

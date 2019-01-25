@@ -201,7 +201,7 @@ public:
 	void runMacro(Program *prog);
 	void setAutoIndent(IndentStyle indentStyle);
 	void setAutoScroll(int margin);
-	void setAutoWrap(WrapStyle wrapMode);
+	void setAutoWrap(WrapStyle wrapStyle);
 	void setEmTabDistance(int distance);
 	void setFileFormat(FileFormats fileFormat);
 	void setPath(const QString &pathname);
@@ -214,7 +214,6 @@ public:
 	void stopHighlighting();
 	void updateHighlightStyles();
 	void updateSignals(MainWindow *from, MainWindow *to);
-
 
 private:
 	std::unique_ptr<HighlightData[]> compilePatternsEx(const std::vector<HighlightPattern> &patternSrc);

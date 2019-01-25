@@ -84,7 +84,7 @@ public:
 	void append(Ch ch);
 	void insert(size_type pos, view_type str);
 	void insert(size_type pos, Ch ch);
-	void erase(size_type start, size_type end) noexcept;
+	size_type erase(size_type start, size_type end) noexcept;
 	void replace(size_type start, size_type end, view_type str);
 	void replace(size_type start, size_type end, Ch ch);
 	void assign(view_type str);
@@ -399,13 +399,14 @@ void gap_buffer<Ch, Tr>::insert(size_type pos, Ch ch) {
  *
  */
 template <class Ch, class Tr>
-void gap_buffer<Ch, Tr>::erase(size_type start, size_type end) noexcept {
+auto gap_buffer<Ch, Tr>::erase(size_type start, size_type end) noexcept -> size_type {
 
 	assert(start <= size() && start >= 0);
 	assert(end   <= size() && end   >= 0);
 	assert(start <= end);
 
 	delete_range(start, end);
+	return start;
 }
 
 /**
@@ -413,9 +414,7 @@ void gap_buffer<Ch, Tr>::erase(size_type start, size_type end) noexcept {
  */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::replace(size_type start, size_type end, view_type str) {
-
-	erase(start, end);
-	insert(start, str);
+	insert(erase(start, end), str);
 }
 
 /**
@@ -423,9 +422,7 @@ void gap_buffer<Ch, Tr>::replace(size_type start, size_type end, view_type str) 
  */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::replace(size_type start, size_type end, Ch ch) {
-
-	erase(start, end);
-	insert(start, ch);
+	insert(erase(start, end), ch);
 }
 
 /**
