@@ -792,6 +792,7 @@ void Highlight::modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char
 	for (ch = styleString, pos = startPos; pos < modStart && pos < endPos; ++ch, ++pos) {
 		char bufChar = styleBuf->BufGetCharacter(pos);
 		if (*ch != bufChar && !(bufChar == UNFINISHED_STYLE && (*ch == PLAIN_STYLE || static_cast<uint8_t>(*ch) >= firstPass2Style))) {
+
 			minPos = std::min(minPos, pos);
 			maxPos = std::max(maxPos, pos);
 		}
@@ -1008,12 +1009,13 @@ TextCursor Highlight::backwardOneContext(TextBuffer *buf, const ReparseContext &
 
 	const TextCursor begin = buf->BufStartOfBuffer();
 
-	if (context.nLines == 0)
+	if (context.nLines == 0) {
 		return std::max(begin, fromPos - context.nChars);
-	else if (context.nChars == 0)
+	} else if (context.nChars == 0) {
 		return std::max(begin, buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1);
-	else
+	} else {
 		return std::max(begin, std::min(std::max(begin, buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1), fromPos - context.nChars));
+	}
 }
 
 /*
@@ -1028,12 +1030,13 @@ TextCursor Highlight::forwardOneContext(TextBuffer *buf, const ReparseContext &c
 
 	const TextCursor end = buf->BufEndOfBuffer();
 
-	if (context.nLines == 0)
+	if (context.nLines == 0) {
 		return std::min(end, fromPos + context.nChars);
-	else if (context.nChars == 0)
+	} else if (context.nChars == 0) {
 		return std::min(end, buf->BufCountForwardNLines(fromPos, context.nLines));
-	else
+	} else {
 		return std::min(end, std::max(buf->BufCountForwardNLines(fromPos, context.nLines), fromPos + context.nChars));
+	}
 }
 
 /*

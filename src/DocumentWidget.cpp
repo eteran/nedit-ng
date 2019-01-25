@@ -2058,6 +2058,7 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 	}
 
 	int64_t restLen = std::min(PREFERRED_CMPBUF_LEN, fileLen);
+
 	TextCursor bufPos = {};
 	int filePos       = 0;
 	char fileString[PREFERRED_CMPBUF_LEN + 2];
@@ -2110,7 +2111,6 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 		bufPos += nRead;
 		restLen = std::min(fileLen - filePos, PREFERRED_CMPBUF_LEN);
 	}
-
 
 	if (pendingCR) {
 		if (int rv = info_->buffer->BufCmpEx(bufPos, pendingCR)) {

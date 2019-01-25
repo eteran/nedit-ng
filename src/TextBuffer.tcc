@@ -2126,8 +2126,8 @@ void BasicTextBuffer<Ch, Tr>::Selection::setSelection(TextCursor newStart, TextC
 	selected_    = (newStart != newEnd);
 	zeroWidth_   = (newStart == newEnd);
 	rectangular_ = false;
-	start_       = std::min(newStart, newEnd);
-	end_         = std::max(newStart, newEnd);
+
+	std::tie(start_, end_) = std::minmax(newStart, newEnd);
 }
 
 /**
@@ -2226,8 +2226,12 @@ void BasicTextBuffer<Ch, Tr>::sanitizeRange(TextCursor &start, TextCursor &end) 
 	if (start > end) {
 		std::swap(start, end);
 	}
-	start = qBound(BufStartOfBuffer(), start, BufEndOfBuffer());
-	end   = qBound(BufStartOfBuffer(), end,   BufEndOfBuffer());
+
+	TextCursor first = BufStartOfBuffer();
+	TextCursor last  = BufEndOfBuffer();
+
+	start = qBound(first, start, last);
+	end   = qBound(first, end,   last);
 }
 
 #endif

@@ -2358,10 +2358,12 @@ void TextArea::offsetAbsLineNum(TextCursor oldFirstChar) {
 */
 void TextArea::findLineEnd(TextCursor startPos, bool startPosIsLineStart, TextCursor *lineEnd, TextCursor *nextLineStart) {
 
+	TextCursor end = buffer_->BufEndOfBuffer();
+
 	// if we're not wrapping use more efficient BufEndOfLine
 	if (!continuousWrap_) {
 		*lineEnd       = buffer_->BufEndOfLine(startPos);
-		*nextLineStart = std::min(buffer_->BufEndOfBuffer(), *lineEnd + 1);
+		*nextLineStart = std::min(end, *lineEnd + 1);
 		return;
 	}
 
@@ -2371,7 +2373,7 @@ void TextArea::findLineEnd(TextCursor startPos, bool startPosIsLineStart, TextCu
 	wrappedLineCounter(
 	            buffer_,
 	            startPos,
-	            buffer_->BufEndOfBuffer(),
+	            end,
 	            1,
 	            startPosIsLineStart,
 	            nextLineStart,
