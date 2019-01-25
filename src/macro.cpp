@@ -280,35 +280,38 @@ static boost::optional<TextArea::EventFlags> flagsFromArguments(Arguments argume
 
 	TextArea::EventFlags f = TextArea::NoneFlag;
 	for(int i = firstFlag; i < arguments.size(); ++i) {
-		if(to_string(arguments[i]) == "absolute") {
+
+		const std::string s = to_string(arguments[i]);
+
+		if(s == "absolute") {
 			f |= TextArea::AbsoluteFlag;
-		} else if(to_string(arguments[i]) == "column") {
+		} else if(s == "column") {
 			f |= TextArea::ColumnFlag;
-		} else if(to_string(arguments[i]) == "copy") {
+		} else if(s == "copy") {
 			f |= TextArea::CopyFlag;
-		} else if(to_string(arguments[i]) == "down") {
+		} else if(s == "down") {
 			f |= TextArea::DownFlag;
-		} else if(to_string(arguments[i]) == "extend") {
+		} else if(s == "extend") {
 			f |= TextArea::ExtendFlag;
-		} else if(to_string(arguments[i]) == "left") {
+		} else if(s == "left") {
 			f |= TextArea::LeftFlag;
-		} else if(to_string(arguments[i]) == "overlay") {
+		} else if(s == "overlay") {
 			f |= TextArea::OverlayFlag;
-		} else if(to_string(arguments[i]) == "rect") {
+		} else if(s == "rect") {
 			f |= TextArea::RectFlag;
-		} else if(to_string(arguments[i]) == "right") {
+		} else if(s == "right") {
 			f |= TextArea::RightFlag;
-		} else if(to_string(arguments[i]) == "up") {
+		} else if(s == "up") {
 			f |= TextArea::UpFlag;
-		} else if(to_string(arguments[i]) == "wrap") {
+		} else if(s == "wrap") {
 			f |= TextArea::WrapFlag;
-		} else if(to_string(arguments[i]) == "tail") {
+		} else if(s == "tail") {
 			f |= TextArea::TailFlag;
-		} else if(to_string(arguments[i]) == "stutter") {
+		} else if(s == "stutter") {
 			f |= TextArea::StutterFlag;
-		} else if(to_string(arguments[i]) == "scrollbar") {
+		} else if(s == "scrollbar") {
 			f |= TextArea::ScrollbarFlag;
-		} else if(to_string(arguments[i]) == "nobell") {
+		} else if(s == "nobell") {
 			f |= TextArea::NoBellFlag;
 		} else {
 			return boost::none;
