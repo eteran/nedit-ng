@@ -747,16 +747,6 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufEndOfBuffer() const noexcept {
 	return TextCursor(buffer_.size());
 }
 
-/**
- * @brief BasicTextBuffer<Ch, Tr>::BufStartOfBuffer
- * @return
- */
-template <class Ch, class Tr>
-constexpr TextCursor BasicTextBuffer<Ch, Tr>::BufStartOfBuffer() const noexcept {
-	return {};
-}
-
-
 /*
 ** Find the position of the start of the line containing position "pos"
 */

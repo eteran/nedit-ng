@@ -4,6 +4,7 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "Util/string_view.h"
+#include "Util/algorithm.h"
 
 #include <gsl/gsl_util>
 

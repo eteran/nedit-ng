@@ -14,6 +14,7 @@
 #include "SmartIndentEvent.h"
 #include "TextBuffer.h"
 #include "TextEditEvent.h"
+#include "TextAreaMimeData.h"
 #include "X11Colors.h"
 
 #include <QApplication>
