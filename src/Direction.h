@@ -16,7 +16,7 @@ inline constexpr Direction operator!(Direction& direction) {
 				Direction::Forward;
 }
 
-inline constexpr QLatin1String to_string(Direction direction) {
+inline QLatin1String to_string(Direction direction) {
 
 	switch(direction) {
 	case Direction::Forward:

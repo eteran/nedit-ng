@@ -10,7 +10,7 @@ enum class FileFormats : int {
 	Mac
 };
 
-inline constexpr QLatin1String to_string(FileFormats format) {
+inline QLatin1String to_string(FileFormats format) {
 
 	switch(format) {
 	case FileFormats::Unix:

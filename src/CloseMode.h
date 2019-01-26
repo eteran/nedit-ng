@@ -10,7 +10,7 @@ enum class CloseMode {
 	NoSave
 };
 
-inline constexpr QLatin1String to_string(CloseMode mode) {
+inline QLatin1String to_string(CloseMode mode) {
 
 	switch(mode) {
 	case CloseMode::Prompt:

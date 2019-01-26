@@ -29,7 +29,7 @@ inline WrapStyle from_integer(int value) {
 	}
 }
 
-inline constexpr QLatin1String to_string(WrapStyle style) {
+inline QLatin1String to_string(WrapStyle style) {
 
 	switch(style) {
 	case WrapStyle::None:

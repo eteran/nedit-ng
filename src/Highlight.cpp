@@ -127,11 +127,13 @@ void SyntaxHighlightModifyCBEx(TextCursor pos, int64_t nInserted, int64_t nDelet
 		return;
 	}
 
+	const std::shared_ptr<TextBuffer> &styleBuffer = highlightData->styleBuffer;
+
 	/* Restyling-only modifications (usually a primary or secondary  selection)
 	   don't require any processing, but clear out the style buffer selection
 	   so the widget doesn't think it has to keep redrawing the old area */
 	if (nInserted == 0 && nDeleted == 0) {
-		highlightData->styleBuffer->BufUnselect();
+		styleBuffer->BufUnselect();
 		return;
 	}
 
@@ -139,9 +141,9 @@ void SyntaxHighlightModifyCBEx(TextCursor pos, int64_t nInserted, int64_t nDelet
 	   accurately and correctly */
 	if (nInserted > 0) {
 		std::string insStyle(static_cast<size_t>(nInserted), UNFINISHED_STYLE);
-		highlightData->styleBuffer->BufReplaceEx(pos, pos + nDeleted, insStyle);
+		styleBuffer->BufReplaceEx(pos, pos + nDeleted, insStyle);
 	} else {
-		highlightData->styleBuffer->BufRemove(pos, pos + nDeleted);
+		styleBuffer->BufRemove(pos, pos + nDeleted);
 	}
 
 	/* Mark the changed region in the style buffer as requiring redraw.  This
@@ -149,7 +151,7 @@ void SyntaxHighlightModifyCBEx(TextCursor pos, int64_t nInserted, int64_t nDelet
 	   the text display callback, but it clears the previous selection and
 	   saves the modifyStyleBuf routine from unnecessary work in tracking
 	   changes that are already scheduled for redraw */
-	highlightData->styleBuffer->BufSelect(pos, pos + nInserted);
+	styleBuffer->BufSelect(pos, pos + nInserted);
 
 	// Re-parse around the changed region
 	if (highlightData->pass1Patterns) {

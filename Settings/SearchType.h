@@ -36,7 +36,7 @@ inline SearchType from_integer(int value) {
 	}
 }
 
-inline constexpr QLatin1String to_string(SearchType style) {
+inline QLatin1String to_string(SearchType style) {
 
 	switch(style) {
 	case SearchType::Literal:
