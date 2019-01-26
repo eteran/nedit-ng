@@ -173,8 +173,7 @@ void Highlight::incrementalReparse(const std::unique_ptr<WindowHighlightData> &h
 	const std::unique_ptr<HighlightData[]> &pass1Patterns = highlightData->pass1Patterns;
 	const std::unique_ptr<HighlightData[]> &pass2Patterns = highlightData->pass2Patterns;
 	const ReparseContext &context                         = highlightData->contextRequirements;
-
-	const std::vector<uint8_t> &parentStyles = highlightData->parentStyles;
+	const std::vector<uint8_t> &parentStyles              = highlightData->parentStyles;
 
 	/* Find the position "beginParse" at which to begin reparsing.  This is
 	   far enough back in the buffer such that the guranteed number of
@@ -1338,10 +1337,7 @@ QString Highlight::WriteHighlightString() {
 		if (isDefaultPatternSet(patternSet)) {
 			out << QLatin1String("Default\n\t");
 		} else {
-			out << QString(QLatin1String("%1")).arg(patternSet.lineContext)
-				<< QLatin1Char(':')
-				<< QString(QLatin1String("%1")).arg(patternSet.charContext)
-				<< QLatin1String("{\n")
+			out << QString(QLatin1String("%1:%2{\n")).arg(patternSet.lineContext).arg(patternSet.charContext)
 				<< createPatternsString(&patternSet, QLatin1String("\t\t"))
 				<< QLatin1String("\t}\n\t");
 		}
