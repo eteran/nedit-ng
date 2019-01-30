@@ -255,7 +255,7 @@ void bufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t 
 /*
 ** Count the number of newlines in a text string
 */
-int countLines(view::string_view string) {
+int countNewlines(view::string_view string) {
 	return static_cast<int>(std::count(string.begin(), string.end(), '\n'));
 }
 
@@ -1401,7 +1401,7 @@ void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nD
 		findWrapRangeEx(deletedText, pos, nInserted, nDeleted, &wrapModStart, &wrapModEnd, &linesInserted, &linesDeleted);
 	} else {
 		linesInserted = (nInserted == 0) ? 0 : buffer_->BufCountLines(pos, pos + nInserted);
-		linesDeleted  = (nDeleted  == 0) ? 0 : countLines(deletedText);
+		linesDeleted  = (nDeleted  == 0) ? 0 : countNewlines(deletedText);
 	}
 
 	// Update the line starts and topLineNum
@@ -1419,7 +1419,7 @@ void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nD
 	   (non-wrapped) line number of the text displayed */
 	if (maintainingAbsTopLineNum() && (nInserted != 0 || nDeleted != 0)) {
 		if (pos + nDeleted < oldFirstChar) {
-			absTopLineNum_ = absTopLineNum_ + buffer_->BufCountLines(pos, pos + nInserted) - countLines(deletedText);
+			absTopLineNum_ = absTopLineNum_ + buffer_->BufCountLines(pos, pos + nInserted) - countNewlines(deletedText);
 		} else if (pos < oldFirstChar) {
 			resetAbsLineNum();
 		}
