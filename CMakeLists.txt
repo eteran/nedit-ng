@@ -65,6 +65,7 @@ elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
     endif()
 endif()
 
+find_package(Boost 1.35 REQUIRED)
 
 if(NOT CMAKE_BUILD_TYPE)
 	set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: Debug Release RelWithDebInfo MinSizeRel." FORCE)
@@ -84,7 +85,7 @@ endif()
 
 add_definitions(-DQT_NO_CAST_FROM_ASCII)
 add_definitions(-DQT_NO_CAST_TO_ASCII)
-ADD_DEFINITIONS(-DQT_NO_KEYWORDS)
+add_definitions(-DQT_NO_KEYWORDS)
 
 if(MSVC)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS)

@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
 find_package(Qt5 5.5.0 REQUIRED Core Network)
-find_package(Boost 1.35 REQUIRED)
 
 add_library(Util
 	ClearCase.cpp
