@@ -3659,8 +3659,8 @@ static std::error_code listDialogMS(DocumentWidget *document, Arguments argument
 	}
 
 	QObject::connect(prompt.get(), &QDialog::finished, [prompt, document, cmdData](int) {
-		// Return the button number in the global variable $string_dialog_button
-		ReturnGlobals[STRING_DIALOG_BUTTON]->value = make_value(prompt->result());
+		// Return the button number in the global variable $list_dialog_button
+		ReturnGlobals[LIST_DIALOG_BUTTON]->value = make_value(prompt->result());
 
 		auto result = make_value(prompt->text());
 		ModifyReturnedValueEx(cmdData->context, result);
