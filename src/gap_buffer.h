@@ -34,7 +34,7 @@ public:
 
 public:
 	gap_buffer();
-	explicit gap_buffer(size_type size);
+	explicit gap_buffer(size_type reserve_size);
 	gap_buffer(const gap_buffer&)            = delete;
 	gap_buffer& operator=(const gap_buffer&) = delete;
 	gap_buffer(gap_buffer&&)                 = delete;
@@ -113,9 +113,9 @@ gap_buffer<Ch, Tr>::gap_buffer() : gap_buffer(0){
  *
  */
 template <class Ch, class Tr>
-gap_buffer<Ch, Tr>::gap_buffer(size_type size) : gap_start_(0), gap_end_(PreferredGapSize), size_(0) {
+gap_buffer<Ch, Tr>::gap_buffer(size_type reserve_size) : gap_start_(0), gap_end_(PreferredGapSize), size_(0) {
 
-	buf_ = std::make_unique<Ch[]>(size + PreferredGapSize);
+	buf_ = std::make_unique<Ch[]>(reserve_size + PreferredGapSize);
 
 #ifdef PURIFY
 	std::fill(&buf_[gap_start_], &buf_[gap_end_], Ch('.'));
