@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-find_package(BISON)
+find_package(BISON QUIET)
 find_package(Qt5 5.5.0 REQUIRED Core)
 
 # using a different name from parse.cpp

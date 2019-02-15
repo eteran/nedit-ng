@@ -6,7 +6,7 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt5 5.5.0 REQUIRED Widgets Network Xml PrintSupport LinguistTools)
-find_package(Qt5 5.5.0 OPTIONAL_COMPONENTS X11Extras)
+find_package(Qt5 5.5.0 QUIET OPTIONAL_COMPONENTS X11Extras)
 
 if(UNIX)
 	find_package(X11)
@@ -273,5 +273,9 @@ target_link_libraries(nedit-ng LINK_PUBLIC
 set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET nedit-ng PROPERTY CXX_STANDARD 14)
 set_property(TARGET nedit-ng PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+	set_property(TARGET nedit-ng PROPERTY WIN32_EXECUTABLE ON)
+endif()
 
 install(TARGETS nedit-ng DESTINATION bin)
