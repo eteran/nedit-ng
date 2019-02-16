@@ -4,7 +4,10 @@ project(nedit CXX)
 
 enable_testing()
 
-if((CMAKE_CXX_COMPILER_ID MATCHES "GNU") OR(CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules/")
+include("DetectCompiler")
+
+if((TARGET_COMPILER_GCC) OR (TARGET_COMPILER_CLANG))
     option(ENABLE_PROFILING     "Enable profiling")
     option(ENABLE_ASAN          "Enable address santiziers")
     option(ENABLE_USAN          "Enable undefined santiziers")
@@ -12,7 +15,7 @@ if((CMAKE_CXX_COMPILER_ID MATCHES "GNU") OR(CMAKE_CXX_COMPILER_ID MATCHES "Clang
     option(ENABLE_TSAN          "Enable thread santiziers")
     option(ENABLE_LTO           "Enable Link Time Optimization")
     option(ENABLE_STL_DEBUG     "Enable STL container debugging")
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+elseif(TARGET_COMPILER_MSVC)
     option(ENABLE_STL_DEBUG     "Enable STL container debugging")
 endif()
 
@@ -21,7 +24,7 @@ option(PURIFY "Fill Unused TextBuffer space")
 set(PER_TAB_CLOSE    OFF CACHE BOOL "Per Tab Close Buttons")
 set(VISUAL_CTRL_CHARS ON CACHE BOOL "Visualize ASCII Control Characters")
 
-if((CMAKE_CXX_COMPILER_ID MATCHES "GNU") OR(CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
+if((TARGET_COMPILER_GCC) OR (TARGET_COMPILER_CLANG))
 	if(ENABLE_STL_DEBUG)
 		add_definitions(-D_GLIBCXX_DEBUG)
 		add_definitions(-D_GLIBCXX_DEBUG_PEDANTIC)
@@ -59,7 +62,7 @@ if((CMAKE_CXX_COMPILER_ID MATCHES "GNU") OR(CMAKE_CXX_COMPILER_ID MATCHES "Clang
 		set(CMAKE_AR               "gcc-ar")
 		set(CMAKE_RANLIB           "gcc-ranlib")
 	endif()
-elseif(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+elseif(TARGET_COMPILER_MSVC)
     if(ENABLE_STL_DEBUG)
         add_definitions(-D_ITERATOR_DEBUG_LEVEL=1)
     endif()
@@ -87,10 +90,9 @@ add_definitions(-DQT_NO_CAST_FROM_ASCII)
 add_definitions(-DQT_NO_CAST_TO_ASCII)
 add_definitions(-DQT_NO_KEYWORDS)
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+if(TARGET_COMPILER_MSVC)
 	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
 else()
-
 	add_compile_options(
 		-W 
 		-Wall 
@@ -111,7 +113,7 @@ else()
 		-Wno-unknown-pragmas		
 	)
 
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if(TARGET_COMPILER_CLANG)
 		add_compile_options(
 			#-Wshorten-64-to-32
 			-Wconditional-uninitialized
@@ -122,7 +124,7 @@ else()
 			-Wimplicit-fallthrough
 		)
 
-    elseif(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    elseif(TARGET_COMPILER_GCC)
 		add_compile_options(
 			#-Wuseless-cast
 			#-Wduplicated-cond

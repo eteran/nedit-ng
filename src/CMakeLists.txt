@@ -248,10 +248,10 @@ target_include_directories(nedit-ng SYSTEM
 )
 
 if(${X11_FOUND})
-    if(${Qt5X11Extras_FOUND})
-	target_compile_definitions(nedit-ng
-		PUBLIC -DQT_X11
-	)
+    if(Qt5X11Extras_FOUND)
+		target_compile_definitions(nedit-ng
+			PUBLIC -DQT_X11
+		)
     endif()
 endif()
 
@@ -274,7 +274,7 @@ set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET nedit-ng PROPERTY CXX_STANDARD 14)
 set_property(TARGET nedit-ng PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
-if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+if(TARGET_COMPILER_MSVC)
 	set_property(TARGET nedit-ng PROPERTY WIN32_EXECUTABLE ON)
 endif()
 
