@@ -14,15 +14,29 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <catch/catch.hpp>
+#ifdef _MSC_VER
+// blanket turn off warnings from CppCoreCheck from catch
+// so people aren't annoyed by them when running the tool.
+#pragma warning(disable : 26440 26426) // from catch
+#endif
 
-#include <gsl/gsl_algorithm>
+#include <catch/catch.hpp> // for AssertionHandler, StringRef, CHECK, CHE...
 
-#include <array>
+#include <gsl/gsl_algorithm> // for copy
+#include <gsl/span>          // for span
+
+#include <array>   // for array
+#include <cstddef> // for size_t
+
+namespace gsl {
+struct fail_fast;
+}  // namespace gsl
 
 using namespace std;
 using namespace gsl;
 
+GSL_SUPPRESS(bounds.4) // NO-FORMAT: attribute
+GSL_SUPPRESS(bounds.2) // NO-FORMAT: attribute
 TEST_CASE("same_type")
 {
     // dynamic source and destination span
@@ -30,8 +44,8 @@ TEST_CASE("same_type")
         std::array<int, 5> src{1, 2, 3, 4, 5};
         std::array<int, 10> dst{};
 
-        span<int> src_span(src);
-        span<int> dst_span(dst);
+        const span<int> src_span(src);
+        const span<int> dst_span(dst);
 
         copy(src_span, dst_span);
         copy(src_span, dst_span.subspan(src_span.size()));
@@ -47,8 +61,8 @@ TEST_CASE("same_type")
         std::array<int, 5> src{1, 2, 3, 4, 5};
         std::array<int, 10> dst{};
 
-        span<int, 5> src_span(src);
-        span<int> dst_span(dst);
+        const span<int, 5> src_span(src);
+        const span<int> dst_span(dst);
 
         copy(src_span, dst_span);
         copy(src_span, dst_span.subspan(src_span.size()));
@@ -64,8 +78,8 @@ TEST_CASE("same_type")
         std::array<int, 5> src{1, 2, 3, 4, 5};
         std::array<int, 10> dst{};
 
-        span<int> src_span(src);
-        span<int, 10> dst_span(dst);
+        const span<int> src_span(src);
+        const span<int, 10> dst_span(dst);
 
         copy(src_span, dst_span);
         copy(src_span, dst_span.subspan(src_span.size()));
@@ -81,8 +95,8 @@ TEST_CASE("same_type")
         std::array<int, 5> src{1, 2, 3, 4, 5};
         std::array<int, 10> dst{};
 
-        span<int, 5> src_span(src);
-        span<int, 10> dst_span(dst);
+        const span<int, 5> src_span(src);
+        const span<int, 10> dst_span(dst);
 
         copy(src_span, dst_span);
         copy(src_span, dst_span.subspan(src_span.size()));
@@ -94,6 +108,9 @@ TEST_CASE("same_type")
     }
 }
 
+
+GSL_SUPPRESS(bounds.4) // NO-FORMAT: attribute
+GSL_SUPPRESS(bounds.2) // NO-FORMAT: attribute
 TEST_CASE("compatible_type")
 {
     // dynamic source and destination span
@@ -101,8 +118,8 @@ TEST_CASE("compatible_type")
         std::array<short, 5> src{1, 2, 3, 4, 5};
         std::array<int, 10> dst{};
 
-        span<short> src_span(src);
-        span<int> dst_span(dst);
+        const span<short> src_span(src);
+        const span<int> dst_span(dst);
 
         copy(src_span, dst_span);
         copy(src_span, dst_span.subspan(src_span.size()));
@@ -118,8 +135,8 @@ TEST_CASE("compatible_type")
         std::array<short, 5> src{1, 2, 3, 4, 5};
         std::array<int, 10> dst{};
 
-        span<short, 5> src_span(src);
-        span<int> dst_span(dst);
+        const span<short, 5> src_span(src);
+        const span<int> dst_span(dst);
 
         copy(src_span, dst_span);
         copy(src_span, dst_span.subspan(src_span.size()));
@@ -135,8 +152,8 @@ TEST_CASE("compatible_type")
         std::array<short, 5> src{1, 2, 3, 4, 5};
         std::array<int, 10> dst{};
 
-        span<short> src_span(src);
-        span<int, 10> dst_span(dst);
+        const span<short> src_span(src);
+        const span<int, 10> dst_span(dst);
 
         copy(src_span, dst_span);
         copy(src_span, dst_span.subspan(src_span.size()));
@@ -152,8 +169,8 @@ TEST_CASE("compatible_type")
         std::array<short, 5> src{1, 2, 3, 4, 5};
         std::array<int, 10> dst{};
 
-        span<short, 5> src_span(src);
-        span<int, 10> dst_span(dst);
+        const span<short, 5> src_span(src);
+        const span<int, 10> dst_span(dst);
 
         copy(src_span, dst_span);
         copy(src_span, dst_span.subspan(src_span.size()));
@@ -189,10 +206,10 @@ TEST_CASE("small_destination_span")
     std::array<int, 12> src{1, 2, 3, 4};
     std::array<int, 4> dst{};
 
-    span<int> src_span_dyn(src);
-    span<int, 12> src_span_static(src);
-    span<int> dst_span_dyn(dst);
-    span<int, 4> dst_span_static(dst);
+    const span<int> src_span_dyn(src);
+    const span<int, 12> src_span_static(src);
+    const span<int> dst_span_dyn(dst);
+    const span<int, 4> dst_span_static(dst);
 
     CHECK_THROWS_AS(copy(src_span_dyn, dst_span_dyn), fail_fast);
     CHECK_THROWS_AS(copy(src_span_dyn, dst_span_static), fail_fast);

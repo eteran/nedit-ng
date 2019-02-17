@@ -14,15 +14,26 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-#include <catch/catch.hpp>
+#ifdef _MSC_VER
+// blanket turn off warnings from CppCoreCheck from catch
+// so people aren't annoyed by them when running the tool.
+#pragma warning(disable : 26440 26426) // from catch
 
-#include <gsl/gsl> //owner
-#include <gsl/string_span>
+#endif
 
-#include <algorithm>
-#include <cstdlib>
-#include <map>
-#include <vector>
+#include <catch/catch.hpp> // for AssertionHandler, StringRef, CHECK, TEST_...
+
+#include <gsl/gsl_assert>  // for Expects, fail_fast (ptr only)
+#include <gsl/pointers>    // for owner
+#include <gsl/span>        // for span, dynamic_extent
+#include <gsl/string_span> // for basic_string_span, operator==, ensure_z
+
+#include <algorithm>   // for move, find
+#include <cstddef>     // for size_t
+#include <map>         // for map
+#include <string>      // for basic_string, string, char_traits, operat...
+#include <type_traits> // for remove_reference<>::type
+#include <vector>      // for vector, allocator
 
 using namespace std;
 using namespace gsl;
@@ -33,6 +44,8 @@ namespace generic
 {
 
 template <typename CharT>
+GSL_SUPPRESS(bounds.1) // NO-FORMAT: attribute
+GSL_SUPPRESS(f.23) // NO-FORMAT: attribute
 auto strlen(const CharT* s)
 {
     auto p = s;
@@ -41,13 +54,15 @@ auto strlen(const CharT* s)
 }
 
 template <typename CharT>
+GSL_SUPPRESS(bounds.1) // NO-FORMAT: attribute
 auto strnlen(const CharT* s, std::size_t n)
 {
-    return std::find(s, s + n, CharT(0)) - s;
+    return std::find(s, s + n, CharT{0}) - s;
 }
 
 } // namespace generic
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
 TEST_CASE("TestLiteralConstruction")
 {
     cwstring_span<> v = ensure_z(L"Hello");
@@ -57,6 +72,7 @@ TEST_CASE("TestLiteralConstruction")
     wstring_span<> v2 = ensure0(L"Hello");
 #endif
 }
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
 
 TEST_CASE("TestConstructFromStdString")
 {
@@ -65,6 +81,7 @@ TEST_CASE("TestConstructFromStdString")
     CHECK(v.length() == static_cast<cstring_span<>::index_type>(s.length()));
 }
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
 TEST_CASE("TestConstructFromStdVector")
 {
     std::vector<char> vec(5, 'h');
@@ -72,6 +89,7 @@ TEST_CASE("TestConstructFromStdVector")
     CHECK(v.length() == static_cast<string_span<>::index_type>(vec.size()));
 }
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
 TEST_CASE("TestStackArrayConstruction")
 {
     wchar_t stack_string[] = L"Hello";
@@ -97,6 +115,7 @@ TEST_CASE("TestStackArrayConstruction")
     }
 }
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
 TEST_CASE("TestConstructFromConstCharPointer")
 {
     const char* s = "Hello";
@@ -104,6 +123,7 @@ TEST_CASE("TestConstructFromConstCharPointer")
     CHECK(v.length() == 5);
 }
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
 TEST_CASE("TestConversionToConst")
 {
     char stack_string[] = "Hello";
@@ -112,6 +132,7 @@ TEST_CASE("TestConversionToConst")
     CHECK(v.length() == v2.length());
 }
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
 TEST_CASE("TestConversionFromConst")
 {
     char stack_string[] = "Hello";
@@ -123,6 +144,7 @@ TEST_CASE("TestConversionFromConst")
 #endif
 }
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
 TEST_CASE("TestToString")
 {
     auto s = gsl::to_string(cstring_span<>{});
@@ -135,6 +157,7 @@ TEST_CASE("TestToString")
     CHECK(s2.length() == 5);
 }
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
 TEST_CASE("TestToBasicString")
 {
     auto s = gsl::to_basic_string<char, std::char_traits<char>, ::std::allocator<char>>(
@@ -148,6 +171,8 @@ TEST_CASE("TestToBasicString")
     CHECK(s2.length() == 5);
 }
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
+GSL_SUPPRESS(bounds.3) // NO-FORMAT: attribute
 TEST_CASE("EqualityAndImplicitConstructors")
 {
     {
@@ -374,6 +399,8 @@ TEST_CASE("EqualityAndImplicitConstructors")
     }
 }
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
+GSL_SUPPRESS(bounds.3) // NO-FORMAT: attribute
 TEST_CASE("ComparisonAndImplicitConstructors")
 {
     {
@@ -444,6 +471,12 @@ TEST_CASE("ComparisonAndImplicitConstructors")
         CHECK(span >= string_span<>(vec));
     }
 }
+
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
+GSL_SUPPRESS(r.11) // NO-FORMAT: attribute
+GSL_SUPPRESS(r.3) // NO-FORMAT: attribute
+GSL_SUPPRESS(r.5) // NO-FORMAT: attribute
+GSL_SUPPRESS(bounds.1) // NO-FORMAT: attribute
 TEST_CASE("ConstrutorsEnsureZ")
 {
     // remove z from literals
@@ -474,6 +507,8 @@ TEST_CASE("ConstrutorsEnsureZ")
     }
 }
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
+GSL_SUPPRESS(bounds.3) // NO-FORMAT: attribute
 TEST_CASE("Constructors")
 {
     // creating cstring_span
@@ -504,12 +539,6 @@ TEST_CASE("Constructors")
     // default
     {
         cstring_span<> span;
-        CHECK(span.length() == 0);
-    }
-
-    // from nullptr
-    {
-        cstring_span<> span(nullptr);
         CHECK(span.length() == 0);
     }
 
@@ -886,6 +915,8 @@ czstring_span<> CreateTempName(string_span<> span)
     return {ret};
 }
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
+GSL_SUPPRESS(bounds.1) // NO-FORMAT: attribute
 TEST_CASE("zstring")
 {
 
@@ -906,7 +937,7 @@ TEST_CASE("zstring")
         char buf[1];
         buf[0] = 'a';
 
-        auto workaround_macro = [&]() { zstring_span<> zspan({buf, 1}); };
+        auto workaround_macro = [&]() { const zstring_span<> zspan({buf, 1}); };
         CHECK_THROWS_AS(workaround_macro(), fail_fast);
     }
 
@@ -940,6 +971,8 @@ cwzstring_span<> CreateTempNameW(wstring_span<> span)
     return {ret};
 }
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
+GSL_SUPPRESS(bounds.1) // NO-FORMAT: attribute
 TEST_CASE("wzstring")
 {
 
@@ -960,7 +993,7 @@ TEST_CASE("wzstring")
         wchar_t buf[1];
         buf[0] = L'a';
 
-        const auto workaround_macro = [&]() { wzstring_span<> zspan({buf, 1}); };
+        const auto workaround_macro = [&]() { const wzstring_span<> zspan({buf, 1}); };
         CHECK_THROWS_AS(workaround_macro(), fail_fast);
     }
 
@@ -994,6 +1027,8 @@ cu16zstring_span<> CreateTempNameU16(u16string_span<> span)
     return {ret};
 }
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
+GSL_SUPPRESS(bounds.1) // NO-FORMAT: attribute
 TEST_CASE("u16zstring")
 {
 
@@ -1014,7 +1049,7 @@ TEST_CASE("u16zstring")
         char16_t buf[1];
         buf[0] = u'a';
 
-        const auto workaround_macro = [&]() { u16zstring_span<> zspan({buf, 1}); };
+        const auto workaround_macro = [&]() { const u16zstring_span<> zspan({buf, 1}); };
         CHECK_THROWS_AS(workaround_macro(), fail_fast);
     }
 
@@ -1048,6 +1083,8 @@ cu32zstring_span<> CreateTempNameU32(u32string_span<> span)
     return {ret};
 }
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
+GSL_SUPPRESS(bounds.1) // NO-FORMAT: attribute
 TEST_CASE("u32zstring")
 {
 
@@ -1068,7 +1105,7 @@ TEST_CASE("u32zstring")
         char32_t buf[1];
         buf[0] = u'a';
 
-        const auto workaround_macro = [&]() { u32zstring_span<> zspan({buf, 1}); };
+        const auto workaround_macro = [&]() { const u32zstring_span<> zspan({buf, 1}); };
         CHECK_THROWS_AS(workaround_macro(), fail_fast);
     }
 
@@ -1092,6 +1129,8 @@ TEST_CASE("Issue305")
     CHECK(foo["bar"] == 1);
 }
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
+GSL_SUPPRESS(bounds.3) // NO-FORMAT: attribute
 TEST_CASE("char16_t type")
 {
     gsl::cu16string_span<> ss1 = gsl::ensure_z(u"abc");
@@ -1133,6 +1172,8 @@ TEST_CASE("char16_t type")
     CHECK(ss8 != ss9);
 }
 
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
+GSL_SUPPRESS(bounds.3) // NO-FORMAT: attribute
 TEST_CASE("char32_t type")
 {
     gsl::cu32string_span<> ss1 = gsl::ensure_z(U"abc");
@@ -1168,4 +1209,25 @@ TEST_CASE("char32_t type")
     CHECK(ss8 < ss9);
     CHECK(ss8 <= ss9);
     CHECK(ss8 != ss9);
+}
+
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
+TEST_CASE("as_bytes")
+{
+    cwzstring_span<> v(L"qwerty");
+    const auto s = v.as_string_span();
+    const auto bs = as_bytes(s);
+    CHECK(static_cast<const void*>(bs.data()) == static_cast<const void*>(s.data()));
+    CHECK(bs.size() == s.size_bytes());
+}
+
+GSL_SUPPRESS(con.4) // NO-FORMAT: attribute
+TEST_CASE("as_writeable_bytes")
+{
+    wchar_t buf[]{L"qwerty"};
+    wzstring_span<> v(buf);
+    const auto s = v.as_string_span();
+    const auto bs = as_writeable_bytes(s);
+    CHECK(static_cast<const void*>(bs.data()) == static_cast<const void*>(s.data()));
+    CHECK(bs.size() == s.size_bytes());
 }

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8.7)
+cmake_minimum_required(VERSION 3.0.2)
 
 project(GSLTests CXX)
 
@@ -15,8 +15,8 @@ if(GIT_FOUND)
     ExternalProject_Add(
         catch
         PREFIX ${CMAKE_BINARY_DIR}/catch
-        GIT_REPOSITORY https://github.com/philsquared/Catch.git
-        GIT_TAG v1.9.6
+        GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+        GIT_TAG v2.0.1
         CMAKE_ARGS ${CATCH_CMAKE_ARGS}
         LOG_DOWNLOAD 1
         UPDATE_DISCONNECTED 1
@@ -26,16 +26,31 @@ else()
     add_custom_target(catch)
 endif()
 
+if (MSVC AND (GSL_CXX_STANDARD EQUAL 17))
+    set(GSL_CPLUSPLUS_OPT -Zc:__cplusplus -permissive-)
+endif()
+
 # this interface adds compile options to how the tests are run
 # please try to keep entries ordered =)
 add_library(gsl_tests_config INTERFACE)
-target_compile_options(gsl_tests_config INTERFACE
-    $<$<CXX_COMPILER_ID:MSVC>:
+if(MSVC) # MSVC or simulating MSVC
+    target_compile_options(gsl_tests_config INTERFACE
+        ${GSL_CPLUSPLUS_OPT}
         /EHsc
         /W4
         /WX
-    >
-    $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:
+        $<$<CXX_COMPILER_ID:Clang>:
+          -Weverything
+          -Wno-c++98-compat
+          -Wno-c++98-compat-pedantic
+          -Wno-missing-braces
+          -Wno-missing-prototypes
+          -Wno-unknown-attributes
+          $<$<EQUAL:${GSL_CXX_STANDARD},14>:-Wno-unused-member-function>
+        >
+    )
+else()
+    target_compile_options(gsl_tests_config INTERFACE
         -fno-strict-aliasing
         -Wall
         -Wcast-align
@@ -43,15 +58,25 @@ target_compile_options(gsl_tests_config INTERFACE
         -Wctor-dtor-privacy
         -Werror
         -Wextra
-        -Wno-missing-braces
-        -Wnon-virtual-dtor
-        -Wold-style-cast
-        -Woverloaded-virtual
         -Wpedantic
         -Wshadow
         -Wsign-conversion
-    >
-)
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+          -Weverything
+          -Wno-c++98-compat
+          -Wno-c++98-compat-pedantic
+          -Wno-missing-braces
+          -Wno-missing-prototypes
+          -Wno-padded
+          -Wno-unknown-attributes
+          $<$<EQUAL:${GSL_CXX_STANDARD},14>:-Wno-unused-member-function>
+          -Wno-weak-vtables
+        >
+        $<$<CXX_COMPILER_ID:Clang>:
+          $<$<CXX_COMPILER_VERSION:5.0.2>:-Wno-undefined-func-template>
+        >
+    )
+endif(MSVC)
 
 # for tests to find the catch header
 target_include_directories(gsl_tests_config INTERFACE
@@ -101,3 +126,82 @@ add_gsl_test(utils_tests)
 add_gsl_test(owner_tests)
 add_gsl_test(byte_tests)
 add_gsl_test(algorithm_tests)
+add_gsl_test(strict_notnull_tests)
+
+
+# No exception tests
+
+foreach(flag_var
+        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+    STRING (REGEX REPLACE "/EHsc" "" ${flag_var} "${${flag_var}}")
+endforeach(flag_var)
+
+# this interface adds compile options to how the tests are run
+# please try to keep entries ordered =)
+add_library(gsl_tests_config_noexcept INTERFACE)
+if(MSVC) # MSVC or simulating MSVC
+    target_compile_definitions(gsl_tests_config_noexcept INTERFACE
+        _HAS_EXCEPTIONS=0
+    )
+    target_compile_options(gsl_tests_config_noexcept INTERFACE
+        ${GSL_CPLUSPLUS_OPT}
+        /W4
+        /WX
+        $<$<CXX_COMPILER_ID:MSVC>:
+          /wd4577
+          /wd4702
+        >
+        $<$<CXX_COMPILER_ID:Clang>:
+          -Weverything
+          -Wno-c++98-compat
+          -Wno-c++98-compat-pedantic
+          -Wno-missing-prototypes
+          -Wno-unknown-attributes
+        >
+    )
+else()
+    target_compile_options(gsl_tests_config_noexcept INTERFACE
+        -fno-exceptions
+        -fno-strict-aliasing
+        -Wall
+        -Wcast-align
+        -Wconversion
+        -Wctor-dtor-privacy
+        -Werror
+        -Wextra
+        -Wpedantic
+        -Wshadow
+        -Wsign-conversion
+        $<$<OR:$<CXX_COMPILER_ID:Clang>,$<CXX_COMPILER_ID:AppleClang>>:
+          -Weverything
+          -Wno-c++98-compat
+          -Wno-c++98-compat-pedantic
+          -Wno-missing-prototypes
+          -Wno-unknown-attributes
+          -Wno-weak-vtables
+        >
+    )
+endif(MSVC)
+
+# set definitions for tests
+target_compile_definitions(gsl_tests_config_noexcept INTERFACE
+    GSL_TERMINATE_ON_CONTRACT_VIOLATION
+)
+
+function(add_gsl_test_noexcept name)
+    add_executable(${name} ${name}.cpp)
+    target_link_libraries(${name}
+        GSL
+        gsl_tests_config_noexcept
+    )
+    add_test(
+      ${name}
+      ${name}
+    )
+    # group all tests under GSL_tests_noexcept
+    set_property(TARGET ${name} PROPERTY FOLDER "GSL_tests_noexcept")
+endfunction()
+
+add_gsl_test_noexcept(no_exception_throw_tests)
+add_gsl_test_noexcept(no_exception_ensure_tests)
