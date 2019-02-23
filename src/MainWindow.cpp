@@ -1994,7 +1994,7 @@ QFileInfoList MainWindow::openFileHelperSystem(DocumentWidget *document, const Q
 
 		QDir dir(filepath);
 		QStringList name_filters = { filename };
-		QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Files);
+		QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Hidden | QDir::Files);
 		results.append(localFileList);
 	}
 
@@ -2021,7 +2021,7 @@ QFileInfoList MainWindow::openFileHelperString(DocumentWidget *document, const Q
 
 		QDir dir(filepath);
 		QStringList name_filters = { filename };
-		QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Files);
+		QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Hidden | QDir::Files);
 		results.append(localFileList);
 	} else {
 		// we need to do this because someone could write #include "path/to/file.h"
@@ -2037,7 +2037,7 @@ QFileInfoList MainWindow::openFileHelperString(DocumentWidget *document, const Q
 
 		QDir dir(filepath);
 		QStringList name_filters = { filename };
-		QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Files);
+		QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Hidden | QDir::Files);
 		results.append(localFileList);
 	}
 
