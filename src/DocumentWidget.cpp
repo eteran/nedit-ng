@@ -41,7 +41,6 @@
 
 #include <QClipboard>
 #include <QFile>
-#include <QFileDialog>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QRadioButton>

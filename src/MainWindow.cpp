@@ -769,6 +769,7 @@ QString MainWindow::PromptForExistingFile(const QString &path, const QString &pr
 	QFileDialog dialog(this, prompt);
 	dialog.setOptions(QFileDialog::DontUseNativeDialog | QFileDialog::DontUseCustomDirectoryIcons);
 	dialog.setFileMode(QFileDialog::ExistingFile);
+	dialog.setFilter(QDir::AllDirs | QDir::AllEntries | QDir::Hidden | QDir::System);
 
 	if(!path.isEmpty()) {
 		dialog.setDirectory(path);
@@ -4801,6 +4802,7 @@ QString MainWindow::PromptForNewFile(DocumentWidget *document, FileFormats *form
 	dialog.setAcceptMode(QFileDialog::AcceptSave);
 	dialog.setDirectory(document->path());
 	dialog.setOptions(QFileDialog::DontUseNativeDialog | QFileDialog::DontUseCustomDirectoryIcons);
+	dialog.setFilter(QDir::AllDirs | QDir::AllEntries | QDir::Hidden | QDir::System);
 
 	if(auto layout = qobject_cast<QGridLayout*>(dialog.layout())) {
 		if(layout->rowCount() == 4 && layout->columnCount() == 3) {

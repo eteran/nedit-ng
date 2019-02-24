@@ -68,6 +68,7 @@ void DialogPrint::on_buttonPrint_clicked() {
 		dialog.setAcceptMode(QFileDialog::AcceptSave);
 		dialog.setDirectory(QDir::currentPath());
 		dialog.setOptions(QFileDialog::DontUseNativeDialog | QFileDialog::DontUseCustomDirectoryIcons);
+		dialog.setFilter(QDir::AllDirs | QDir::AllEntries | QDir::Hidden | QDir::System);
 		dialog.setNameFilter(tr("*.pdf"));
 
 		if(dialog.exec()) {
