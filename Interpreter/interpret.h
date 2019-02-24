@@ -19,12 +19,6 @@ struct DataValue;
 struct Program;
 struct Symbol;
 
-// Maximum stack size
-constexpr int STACK_SIZE = 1024;
-
-// Special value for the send_event field of events passed to action routines.  Tells them that they were called from a macro
-constexpr int MACRO_EVENT_MARKER = 2;
-
 constexpr const char ARRAY_DIM_SEP[] = "\034";
 
 enum SymTypes {

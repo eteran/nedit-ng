@@ -12,6 +12,9 @@
 
 namespace {
 
+// Maximum stack size
+constexpr int STACK_SIZE = 1024;
+
 constexpr int PROGRAM_SIZE      = 4096; // Maximum program size
 constexpr int MAX_ERR_MSG_LEN   = 256;  // Max. length for error messages
 constexpr int LOOP_STACK_SIZE   = 200;  // (Approx.) Number of break/continue stmts allowed per program
