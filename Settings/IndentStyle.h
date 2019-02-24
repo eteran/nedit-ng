@@ -5,7 +5,7 @@
 #include <QLatin1String>
 #include <QtDebug>
 
-enum class IndentStyle : int {
+enum class IndentStyle {
 	Default = -1,
 	None    = 0,
 	Auto    = 1,
