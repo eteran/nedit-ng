@@ -9,7 +9,6 @@
 #include "Preferences.h"
 #include "SmartIndent.h"
 #include "SmartIndentEntry.h"
-#include "interpret.h"
 #include "macro.h"
 #include "parse.h"
 #include "Util/String.h"

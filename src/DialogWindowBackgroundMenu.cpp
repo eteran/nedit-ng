@@ -7,7 +7,6 @@
 #include "MenuItemModel.h"
 #include "Preferences.h"
 #include "SignalBlocker.h"
-#include "interpret.h"
 #include "parse.h"
 #include "userCmds.h"
 #include "Util/String.h"

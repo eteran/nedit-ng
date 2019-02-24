@@ -4,7 +4,6 @@
 #include "MenuData.h"
 #include "MenuItem.h"
 #include "Preferences.h"
-#include "interpret.h"
 #include "parse.h"
 #include "Util/Input.h"
 #include "Util/Raise.h"

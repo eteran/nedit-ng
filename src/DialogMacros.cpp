@@ -6,7 +6,6 @@
 #include "MenuItem.h"
 #include "MenuItemModel.h"
 #include "Preferences.h"
-#include "interpret.h"
 #include "parse.h"
 #include "userCmds.h"
 #include "Util/String.h"
