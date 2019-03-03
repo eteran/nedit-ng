@@ -3154,7 +3154,6 @@ static std::error_code dialogMS(DocumentWidget *document, Arguments arguments, D
 
 	QString btnLabel;
 	QString message;
-	int i;
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
@@ -3178,7 +3177,7 @@ static std::error_code dialogMS(DocumentWidget *document, Arguments arguments, D
 	}
 
 	// check that all button labels can be read
-	for (i = 1; i < arguments.size(); i++) {
+	for (int i = 1; i < arguments.size(); i++) {
 		if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 			return ec;
 		}
