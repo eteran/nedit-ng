@@ -4420,6 +4420,7 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 	}
 
 	auto process = new QProcess(this);
+    process->setWorkingDirectory(document->path());
 	connect(process,
 			static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
 			document,
