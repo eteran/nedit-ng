@@ -44,7 +44,7 @@ constexpr int NEWLINE     = 5; // Construct to match newlines in most cases
 constexpr int NO_NEWLINE  = 6; // Construct to match newlines normally
 
 // Largest size a compiled regex can be. Probably could be 65535UL.
-constexpr auto MAX_COMPILED_SIZE  = 32767UL;
+constexpr size_t MAX_COMPILED_SIZE  = std::numeric_limits<int16_t>::max();
 
 struct len_range {
 	int32_t lower;
