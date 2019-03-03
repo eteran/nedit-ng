@@ -7,7 +7,6 @@
 DialogPromptList::DialogPromptList(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowTitleHint);
 	ui.setupUi(this);
-	setWindowTitle(QLatin1String(" "));
 }
 
 void DialogPromptList::addButton(const QString &text) {

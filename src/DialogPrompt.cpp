@@ -5,7 +5,6 @@
 DialogPrompt::DialogPrompt(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowTitleHint);
 	ui.setupUi(this);
-	setWindowTitle(tr("Nedit-ng"));
 }
 
 void DialogPrompt::addButton(const QString &text) {

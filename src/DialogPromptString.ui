@@ -6,18 +6,18 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>200</width>
+    <width>300</width>
     <height>100</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>200</width>
+    <width>300</width>
     <height>0</height>
    </size>
   </property>
   <property name="windowTitle">
-   <string/>
+   <string>Nedit-ng</string>
   </property>
   <property name="modal">
    <bool>true</bool>
