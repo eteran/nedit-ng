@@ -5737,6 +5737,7 @@ void MainWindow::action_Execute_Command(DocumentWidget *document) {
 	}
 
 	QString commandText = dialog->currentText();
+	dialog->addHistoryItem(commandText);
 	action_Execute_Command(document, commandText);
 }
 

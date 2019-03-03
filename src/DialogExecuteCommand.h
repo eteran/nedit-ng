@@ -17,11 +17,9 @@ protected:
 	void keyPressEvent(QKeyEvent *event) override;
 	void showEvent(QShowEvent *event) override;
 
-private Q_SLOTS:
-	void on_buttonBox_accepted();
-
 public:
 	QString currentText() const;
+	void addHistoryItem(const QString &s);
 
 private:
 	Ui::DialogExecuteCommand ui;

@@ -50,17 +50,17 @@ void DialogExecuteCommand::keyPressEvent(QKeyEvent *event) {
  * @param event
  */
 void DialogExecuteCommand::showEvent(QShowEvent *event) {
+	Dialog::showEvent(event);
 	historyIndex_ = 0;
 	ui.textCommand->setText(QString());
-	Dialog::showEvent(event);
+	ui.textCommand->setFocus();
 }
 
 /**
- * @brief DialogExecuteCommand::on_buttonBox_accepted
+ * @brief DialogExecuteCommand::addHistoryItem
+ * @param string
  */
-void DialogExecuteCommand::on_buttonBox_accepted() {
-
-	QString s = ui.textCommand->text();
+void DialogExecuteCommand::addHistoryItem(const QString &s) {
 	if(!s.isEmpty()) {
 		history_ << s;
 	}
