@@ -748,11 +748,11 @@ void FillSelection(DocumentWidget *document, TextArea *area) {
 
 	// Fill the text
 	std::string filledText = fillParagraphsEx(
-				text,
-				rightMargin,
+	            text,
+	            rightMargin,
 	            buf->BufGetTabDistance(),
-				buf->BufGetUseTabs(),
-				false);
+	            buf->BufGetUseTabs(),
+	            false);
 
 	// Replace the text in the window
 	if (hasSelection && isRect) {

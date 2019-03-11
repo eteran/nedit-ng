@@ -41,18 +41,18 @@
 
 #define EMIT_EVENT_0(name)                                       \
 	do {                                                         \
-	    if(!(flags & SupressRecording)) {                        \
-	        TextEditEvent textEvent(QLatin1String(name), flags); \
-	        QApplication::sendEvent(this, &textEvent);           \
-	    }                                                        \
+		if(!(flags & SupressRecording)) {                        \
+			TextEditEvent textEvent(QLatin1String(name), flags); \
+			QApplication::sendEvent(this, &textEvent);           \
+		}                                                        \
 	} while(0)
 
 #define EMIT_EVENT_1(name, arg)                                         \
 	do {                                                                \
-	    if(!(flags & SupressRecording)) {                               \
-	        TextEditEvent textEvent(QLatin1String(name), flags, (arg)); \
-	        QApplication::sendEvent(this, &textEvent);                  \
-	    }                                                               \
+		if(!(flags & SupressRecording)) {                               \
+			TextEditEvent textEvent(QLatin1String(name), flags, (arg)); \
+			QApplication::sendEvent(this, &textEvent);                  \
+		}                                                               \
 	} while(0)
 
 
@@ -327,11 +327,11 @@ struct InputHandler {
 // NOTE(eteran): a nullptr handler just means "beep"
 constexpr InputHandler inputHandlers[] = {
 
-    // Keyboard zoom support
-    { Qt::Key_Equal,     Qt::ControlModifier,                                                               &TextArea::zoomInAP,                         TextArea::NoneFlag }, // zoom-in()
-    { Qt::Key_Minus,     Qt::ControlModifier,                                                               &TextArea::zoomOutAP,                        TextArea::NoneFlag }, // zoom-out()
-
-    { Qt::Key_PageUp,    Qt::ControlModifier,                                                               &TextArea::previousDocumentAP,               TextArea::NoneFlag }, // previous-document()
+	// Keyboard zoom support
+	{ Qt::Key_Equal,     Qt::ControlModifier,                                                               &TextArea::zoomInAP,                         TextArea::NoneFlag }, // zoom-in()
+	{ Qt::Key_Minus,     Qt::ControlModifier,                                                               &TextArea::zoomOutAP,                        TextArea::NoneFlag }, // zoom-out()
+	
+	{ Qt::Key_PageUp,    Qt::ControlModifier,                                                               &TextArea::previousDocumentAP,               TextArea::NoneFlag }, // previous-document()
 	{ Qt::Key_PageDown,  Qt::ControlModifier,                                                               &TextArea::nextDocumentAP,                   TextArea::NoneFlag }, // next-document()
 	{ Qt::Key_PageUp,    Qt::ShiftModifier | Qt::AltModifier,                                               &TextArea::previousPageAP,                   TextArea::ExtendFlag | TextArea::RectFlag },  // previous-page(extend, rect)
 	{ Qt::Key_PageUp,    Qt::ShiftModifier | Qt::MetaModifier,                                              &TextArea::previousPageAP,                   TextArea::ExtendFlag | TextArea::RectFlag },  // previous-page(extend, rect)
@@ -442,7 +442,7 @@ constexpr InputHandler inputHandlers[] = {
 	{ Qt::Key_Backspace, Qt::ControlModifier,                                                               &TextArea::deletePreviousWordAP,             TextArea::NoneFlag },  // delete-previous-word()
 	{ Qt::Key_End,       Qt::NoModifier,                                                                    &TextArea::endOfLineAP,                      TextArea::NoneFlag },  // end-of-line()
 	{ Qt::Key_Delete,    Qt::NoModifier,                                                                    &TextArea::deleteNextCharacterAP,            TextArea::NoneFlag },  // delete-next-character()
-    { Qt::Key_Insert,    Qt::NoModifier,                                                                    &TextArea::toggleOverstrikeAP,               TextArea::NoneFlag },  // toggle-overstrike()
+	{ Qt::Key_Insert,    Qt::NoModifier,                                                                    &TextArea::toggleOverstrikeAP,               TextArea::NoneFlag },  // toggle-overstrike()
 	{ Qt::Key_Up,        Qt::ShiftModifier,                                                                 &TextArea::processShiftUpAP,                 TextArea::NoneFlag },  // process-shift-up()
 	{ Qt::Key_Down,      Qt::ShiftModifier,                                                                 &TextArea::processShiftDownAP,               TextArea::NoneFlag },  // process-shift-down()
 	{ Qt::Key_Left,      Qt::ShiftModifier,                                                                 &TextArea::keySelectAP,                      TextArea::LeftFlag },  // key-select(left)

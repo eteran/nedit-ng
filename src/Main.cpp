@@ -22,13 +22,13 @@
 namespace {
 
 constexpr const char cmdLineHelp[] =
-    "Usage: nedit-ng [-read] [-create] [-line n | +n] [-server] [-do command]\n"
-    "                [-tags file] [-tabs n] [-wrap] [-nowrap] [-autowrap]\n"
-    "                [-autoindent] [-noautoindent] [-autosave] [-noautosave]\n"
+	"Usage: nedit-ng [-read] [-create] [-line n | +n] [-server] [-do command]\n"
+	"                [-tags file] [-tabs n] [-wrap] [-nowrap] [-autowrap]\n"
+	"                [-autoindent] [-noautoindent] [-autosave] [-noautosave]\n"
     "                [-lm languagemode] [-rows n] [-columns n] [-font font]\n"
-    "                [-geometry geometry] [-iconic] [-noiconic] [-svrname name]\n"
-    "                [-import file] [-tabbed] [-untabbed] [-group] [-V|-version]\n"
-    "                [-h|-help] [--] [file...]\n";
+	"                [-geometry geometry] [-iconic] [-noiconic] [-svrname name]\n"
+	"                [-import file] [-tabbed] [-untabbed] [-group] [-V|-version]\n"
+	"                [-h|-help] [--] [file...]\n";
 
 /**
  * @brief nextArg

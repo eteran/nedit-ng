@@ -1419,8 +1419,8 @@ bool Highlight::NamedStyleExists(const QString &styleName) {
 PatternSet *Highlight::FindPatternSet(const QString &languageMode) {
 
 	auto it = std::find_if(PatternSets.begin(), PatternSets.end(), [&languageMode](PatternSet &patternSet) {
-	    return (patternSet.languageMode == languageMode);
-    });
+		return (patternSet.languageMode == languageMode);
+	});
 
 	if(it != PatternSets.end()) {
 		return &*it;

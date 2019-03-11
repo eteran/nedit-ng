@@ -326,13 +326,13 @@ static std::error_code Name(DocumentWidget *document, Arguments arguments, DataV
 	                                                                                            \
 	boost::optional<TextArea::EventFlags> flags = flagsFromArguments(arguments, 0);             \
 	if(!flags) {                                                                                \
-	    return MacroErrorCode::InvalidArgument;                                                 \
+		return MacroErrorCode::InvalidArgument;                                                 \
 	}                                                                                           \
 	                                                                                            \
 	if(auto window = MainWindow::fromDocument(document)) {                                      \
-	    if(TextArea *area = window->lastFocus()) {                                              \
-	        area->Slot(*flags | TextArea::SupressRecording);                                    \
-	    }                                                                                       \
+		if(TextArea *area = window->lastFocus()) {                                              \
+			area->Slot(*flags | TextArea::SupressRecording);                                    \
+		}                                                                                       \
 	}                                                                                           \
 	                                                                                            \
 	*result = make_value();                                                                     \
@@ -343,23 +343,23 @@ static std::error_code Name(DocumentWidget *document, Arguments arguments, DataV
 static std::error_code Name(DocumentWidget *document, Arguments arguments, DataValue *result) { \
 	                                                                                            \
 	if(arguments.size() < 1) {                                                                  \
-	    return MacroErrorCode::WrongNumberOfArguments;                                          \
+		return MacroErrorCode::WrongNumberOfArguments;                                          \
 	}                                                                                           \
 	                                                                                            \
 	Type argument;                                                                              \
 	if(std::error_code ec = readArgument(arguments[0], &argument)) {                            \
-	    return ec;                                                                              \
+		return ec;                                                                              \
 	}                                                                                           \
 	                                                                                            \
 	boost::optional<TextArea::EventFlags> flags = flagsFromArguments(arguments, 1);             \
 	if(!flags) {                                                                                \
-	    return MacroErrorCode::InvalidArgument;                                                 \
+		return MacroErrorCode::InvalidArgument;                                                 \
 	}                                                                                           \
 	                                                                                            \
 	if(auto window = MainWindow::fromDocument(document)) {                                      \
-	    if(TextArea *area = window->lastFocus()) {                                              \
-	        area->Slot(argument, *flags | TextArea::SupressRecording);                          \
-	    }                                                                                       \
+		if(TextArea *area = window->lastFocus()) {                                              \
+			area->Slot(argument, *flags | TextArea::SupressRecording);                          \
+		}                                                                                       \
 	}                                                                                           \
 	                                                                                            \
 	*result = make_value();                                                                     \
@@ -572,76 +572,76 @@ static const SubRoutine TextAreaSubrNames[] = {
 
 #define WINDOW_MENU_EVENT_SM(Name, Slot)                                                                   \
 	static std::error_code Name(DocumentWidget *document, Arguments arguments, DataValue *result) {        \
-	                                                                                                       \
-	    /* ensure that we are dealing with the document which currently has the focus */                   \
-	    document = MacroRunDocument();                                                                     \
-	                                                                                                       \
-	    QString string;                                                                                    \
-	    if(std::error_code ec = readArguments(arguments, 0, &string)) {                                    \
-	        return ec;                                                                                     \
-	    }                                                                                                  \
-	                                                                                                       \
-	    if(auto window = MainWindow::fromDocument(document)) {                                             \
-	        window->Slot(document, string, CommandSource::Macro);                                          \
-	    }                                                                                                  \
-	                                                                                                       \
-	    *result = make_value();                                                                            \
-	    return MacroErrorCode::Success;                                                                    \
+		                                                                                                   \
+		/* ensure that we are dealing with the document which currently has the focus */                   \
+		document = MacroRunDocument();                                                                     \
+		                                                                                                   \
+		QString string;                                                                                    \
+		if(std::error_code ec = readArguments(arguments, 0, &string)) {                                    \
+			return ec;                                                                                     \
+		}                                                                                                  \
+		                                                                                                   \
+		if(auto window = MainWindow::fromDocument(document)) {                                             \
+			window->Slot(document, string, CommandSource::Macro);                                          \
+		}                                                                                                  \
+		                                                                                                   \
+		*result = make_value();                                                                            \
+		return MacroErrorCode::Success;                                                                    \
 	}
 
 #define WINDOW_MENU_EVENT_S(Name, Slot)                                                                    \
 	static std::error_code Name(DocumentWidget *document, Arguments arguments, DataValue *result) {        \
-	                                                                                                       \
-	    /* ensure that we are dealing with the document which currently has the focus */                   \
-	    document = MacroRunDocument();                                                                     \
-	                                                                                                       \
-	    QString string;                                                                                    \
-	    if(std::error_code ec = readArguments(arguments, 0, &string)) {                                    \
-	        return ec;                                                                                     \
-	    }                                                                                                  \
-	                                                                                                       \
-	    if(auto window = MainWindow::fromDocument(document)) {                                             \
-	        window->Slot(document, string);                                                                \
-	    }                                                                                                  \
-	                                                                                                       \
-	    *result = make_value();                                                                            \
-	    return MacroErrorCode::Success;                                                                    \
+		                                                                                                   \
+		/* ensure that we are dealing with the document which currently has the focus */                   \
+		document = MacroRunDocument();                                                                     \
+		                                                                                                   \
+		QString string;                                                                                    \
+		if(std::error_code ec = readArguments(arguments, 0, &string)) {                                    \
+			return ec;                                                                                     \
+		}                                                                                                  \
+		                                                                                                   \
+		if(auto window = MainWindow::fromDocument(document)) {                                             \
+			window->Slot(document, string);                                                                \
+		}                                                                                                  \
+		                                                                                                   \
+		*result = make_value();                                                                            \
+		return MacroErrorCode::Success;                                                                    \
 	}
 
 #define WINDOW_MENU_EVENT_M(Name, Slot)                                                                    \
 	static std::error_code Name(DocumentWidget *document, Arguments arguments, DataValue *result) {        \
-	                                                                                                       \
-	    /* ensure that we are dealing with the document which currently has the focus */                   \
-	    document = MacroRunDocument();                                                                     \
-	                                                                                                       \
-	    if(!arguments.empty()) {                                                                           \
-	        return MacroErrorCode::WrongNumberOfArguments;                                                 \
-	    }                                                                                                  \
-	                                                                                                       \
-	    if(auto window = MainWindow::fromDocument(document)) {                                             \
-	        window->Slot(document, CommandSource::Macro);                                                  \
-	    }                                                                                                  \
-	                                                                                                       \
-	    *result = make_value();                                                                            \
-	    return MacroErrorCode::Success;                                                                    \
+		                                                                                                   \
+		/* ensure that we are dealing with the document which currently has the focus */                   \
+		document = MacroRunDocument();                                                                     \
+		                                                                                                   \
+		if(!arguments.empty()) {                                                                           \
+			return MacroErrorCode::WrongNumberOfArguments;                                                 \
+		}                                                                                                  \
+		                                                                                                   \
+		if(auto window = MainWindow::fromDocument(document)) {                                             \
+			window->Slot(document, CommandSource::Macro);                                                  \
+		}                                                                                                  \
+		                                                                                                   \
+		*result = make_value();                                                                            \
+		return MacroErrorCode::Success;                                                                    \
 	}
 
 #define WINDOW_MENU_EVENT(routineName, Slot)                                                               \
 	static std::error_code routineName(DocumentWidget *document, Arguments arguments, DataValue *result) { \
-	                                                                                                       \
-	    /* ensure that we are dealing with the document which currently has the focus */                   \
-	    document = MacroRunDocument();                                                                     \
-	                                                                                                       \
-	    if(!arguments.empty()) {                                                                           \
-	        return MacroErrorCode::WrongNumberOfArguments;                                                 \
-	    }                                                                                                  \
-	                                                                                                       \
-	    if(auto window = MainWindow::fromDocument(document)) {                                             \
-	        window->Slot(document);                                                                        \
-	    }                                                                                                  \
-	                                                                                                       \
-	    *result = make_value();                                                                            \
-	    return MacroErrorCode::Success;                                                                    \
+		                                                                                                   \
+		/* ensure that we are dealing with the document which currently has the focus */                   \
+		document = MacroRunDocument();                                                                     \
+			                                                                                               \
+		if(!arguments.empty()) {                                                                           \
+			return MacroErrorCode::WrongNumberOfArguments;                                                 \
+		}                                                                                                  \
+		                                                                                                   \
+		if(auto window = MainWindow::fromDocument(document)) {                                             \
+			window->Slot(document);                                                                        \
+		}                                                                                                  \
+		                                                                                                   \
+		*result = make_value();                                                                            \
+		return MacroErrorCode::Success;                                                                    \
 	}
 
 // These emit functions to support calling them from macros, see WINDOW_MENU_EVENT for what

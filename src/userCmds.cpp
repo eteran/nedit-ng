@@ -445,8 +445,8 @@ MenuData *findMenuItem(const QString &name, CommandTypes type) {
 
 	std::vector<MenuData> &menu = selectMenu(type);
 	auto it = std::find_if(menu.begin(), menu.end(), [&name](MenuData &entry) {
-	    return entry.item.name == name;
-    });
+		return entry.item.name == name;
+	});
 
 	if(it != menu.end()) {
 		return &*it;

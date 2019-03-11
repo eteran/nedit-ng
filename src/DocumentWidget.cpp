@@ -603,15 +603,15 @@ TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
 	const QColor cursorFg = X11Colors::fromString(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
 
 	area->setColors(
-		textFg,
-		textBg,
-		selectFg,
-		selectBg,
-		hiliteFg,
-		hiliteBg,
-		lineNoFg,
+	    textFg,
+	    textBg,
+	    selectFg,
+	    selectBg,
+	    hiliteFg,
+	    hiliteBg,
+	    lineNoFg,
 	    lineNoBg,
-		cursorFg);
+	    cursorFg);
 
 	// add focus, drag, cursor tracking, and smart indent callbacks
 	area->addCursorMovementCallback(movedCB, this);
@@ -2718,12 +2718,12 @@ bool DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
 	   or if the user wants to ignore external modifications then
 	   just close it.  Otherwise ask for confirmation first. */
 	if (!info_->fileChanged &&
-			/* Normal File */
+	        /* Normal File */
 	        ((!info_->fileMissing && info_->lastModTime > 0) ||
-			 /* New File */
-	         (info_->fileMissing && info_->lastModTime == 0) ||
-			 /* File deleted/modified externally, ignored by user. */
-			 !Preferences::GetPrefWarnFileMods())) {
+	        /* New File */
+	        (info_->fileMissing && info_->lastModTime == 0) ||
+	        /* File deleted/modified externally, ignored by user. */
+	        !Preferences::GetPrefWarnFileMods())) {
 
 		closeDocument();
 		// up-to-date windows don't have outstanding backup files to close
@@ -2733,10 +2733,10 @@ bool DocumentWidget::CloseFileAndWindow(CloseMode preResponse) {
 		switch(preResponse) {
 		case CloseMode::Prompt:
 			response = QMessageBox::warning(
-						this,
-						tr("Save File"),
+			            this,
+			            tr("Save File"),
 			            tr("Save %1 before closing?").arg(info_->filename),
-						QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+			            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 			break;
 		case CloseMode::Save:
 			response = QMessageBox::Yes;
@@ -3044,8 +3044,8 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 #ifdef Q_OS_WIN
 	// Copied from linux libc sys/stat.h:
-    #define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
-    #define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+	#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+	#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
 	if (S_ISDIR(statbuf.st_mode)) {
@@ -3817,7 +3817,7 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 		if(substitutedCommand.isNull()) {
 			QMessageBox::critical(this, tr("Shell Command"), tr("Shell command is too long due to\n"
 			                                                    "filename substitutions with '%%' or\n"
-                                                                "line number substitutions with '#'"));
+			                                                    "line number substitutions with '#'"));
 			return;
 		}
 
@@ -3827,8 +3827,8 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 					substitutedCommand,
 					QString(),
 					flags,
-		            range.start,
-		            range.end,
+					range.start,
+					range.end,
 					source);
 
 	}
@@ -4420,7 +4420,7 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 	}
 
 	auto process = new QProcess(this);
-    process->setWorkingDirectory(document->path());
+	process->setWorkingDirectory(document->path());
 	connect(process,
 			static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
 			document,
@@ -4919,14 +4919,14 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 
 	// issue the command
 	issueCommand(
-				inWindow,
-				outWidget,
-				substitutedCommand,
-				QString::fromStdString(text),
-				flags,
+	            inWindow,
+	            outWidget,
+	            substitutedCommand,
+	            QString::fromStdString(text),
+	            flags,
 	            range.start,
 	            range.end,
-				source);
+	            source);
 }
 
 /**
@@ -5745,16 +5745,16 @@ void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &sty
 	int prevChar = Highlight::getPrevChar(buf, beginSafety);
 
 	Highlight::parseString(
-		&pass2Patterns[0],
-		string,
-		string + str.size(),
-		string,
-		stylePtr,
-		endParse - beginSafety,
-		&prevChar,
+	    &pass2Patterns[0],
+	    string,
+	    string + str.size(),
+	    string,
+	    stylePtr,
+	    endParse - beginSafety,
+	    &prevChar,
 	    documentDelimiters(),
-		string,
-		match_to);
+	    string,
+	    match_to);
 
 	/* Update the style buffer the new style information, but only between
 	   beginParse and endParse.  Skip the safety region */
@@ -6555,8 +6555,7 @@ void DocumentWidget::endSmartIndent() {
  * @return
  */
 bool DocumentWidget::InSmartIndentMacros() const {
-	return info_->smartIndentData &&
-	        (info_->smartIndentData->inModMacro || info_->smartIndentData->inNewLineMacro);
+	return info_->smartIndentData && (info_->smartIndentData->inModMacro || info_->smartIndentData->inNewLineMacro);
 }
 
 /**
