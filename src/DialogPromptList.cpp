@@ -30,7 +30,7 @@ void DialogPromptList::setList(const QString &string) {
 }
 
 void DialogPromptList::showEvent(QShowEvent *event) {
-	resize(minimumSize());
+    adjustSize();
 	result_ = 0;
 	text_ = QString();
 	Dialog::showEvent(event);

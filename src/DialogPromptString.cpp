@@ -22,7 +22,7 @@ void DialogPromptString::setMessage(const QString &text) {
 }
 
 void DialogPromptString::showEvent(QShowEvent *event) {
-	resize(minimumSize());
+    adjustSize();
 	result_ = 0;
 	text_ = QString();
 	Dialog::showEvent(event);
