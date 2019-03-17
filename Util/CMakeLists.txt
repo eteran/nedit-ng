@@ -35,15 +35,13 @@ target_include_directories(Util
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_include_directories(Util SYSTEM
-	PUBLIC ${Boost_INCLUDE_DIR}
-)
-
-target_link_libraries(Util LINK_PUBLIC
+target_link_libraries(Util
+PUBLIC
 	Regex
 	GSL
 	Qt5::Core
 	Qt5::Network
+	Boost::boost
 )
 
 set_property(TARGET Util PROPERTY CXX_STANDARD 14)

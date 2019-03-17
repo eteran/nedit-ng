@@ -6,15 +6,12 @@ add_executable(nc-ng
 	nc.cpp
 )
 
-target_include_directories(nc-ng SYSTEM
-	PRIVATE ${Boost_INCLUDE_DIR}
-)
-
-target_link_libraries(nc-ng LINK_PUBLIC
+target_link_libraries(nc-ng PUBLIC
 	Qt5::Core
 	Qt5::Network
 	Util
 	Settings
+	Boost::boost
 )
 
 set_property(TARGET nc-ng PROPERTY CXX_STANDARD 14)

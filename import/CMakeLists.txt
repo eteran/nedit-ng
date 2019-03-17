@@ -7,7 +7,7 @@ add_executable(nedit-import
 	import.cpp
 )
 
-target_link_libraries(nedit-import LINK_PUBLIC
+target_link_libraries(nedit-import PUBLIC
 	Qt5::Core
 	Qt5::Xml
 	Settings

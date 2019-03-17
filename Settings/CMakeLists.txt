@@ -16,7 +16,8 @@ target_include_directories(Settings PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(Settings LINK_PUBLIC
+target_link_libraries(Settings
+PUBLIC
 	Qt5::Core
 	Qt5::Widgets
 	Util

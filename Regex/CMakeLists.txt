@@ -20,7 +20,7 @@ target_include_directories(Regex PUBLIC
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(Regex LINK_PUBLIC
+target_link_libraries(Regex PUBLIC
 	Util
 )
 

@@ -243,10 +243,6 @@ add_executable(nedit-ng
 	X11Colors.h
 )
 
-target_include_directories(nedit-ng SYSTEM
-	PRIVATE ${Boost_INCLUDE_DIR}
-)
-
 if(${X11_FOUND})
     if(Qt5X11Extras_FOUND)
 		target_compile_definitions(nedit-ng
@@ -256,7 +252,8 @@ if(${X11_FOUND})
 endif()
 
 
-target_link_libraries(nedit-ng LINK_PUBLIC
+target_link_libraries(nedit-ng
+PUBLIC
 	Util
 	Regex
 	Settings
@@ -268,6 +265,8 @@ target_link_libraries(nedit-ng LINK_PUBLIC
 	Qt5::PrintSupport
 	$<$<BOOL:${Qt5X11Extras_FOUND}>:Qt5::X11Extras>
 	$<$<BOOL:${X11_FOUND}>:X11>
+PRIVATE
+	Boost::boost
 )
 
 set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)

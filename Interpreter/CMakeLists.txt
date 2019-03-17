@@ -29,14 +29,13 @@ target_include_directories(Interpreter
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_include_directories(Interpreter SYSTEM
-	PRIVATE ${Boost_INCLUDE_DIR}
-)
-
-target_link_libraries(Interpreter LINK_PUBLIC
+target_link_libraries(Interpreter
+PUBLIC
 	Qt5::Core
 	Util
 	GSL
+PRIVATE
+	Boost::boost
 )
 
 set_property(TARGET Interpreter PROPERTY CXX_STANDARD 14)
