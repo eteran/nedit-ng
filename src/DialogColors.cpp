@@ -77,69 +77,53 @@ DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
 	ui.pushButtonLineNumbersFG->setIcon(toIcon(lineNumbersFG_));
 	ui.pushButtonLineNumbersBG->setIcon(toIcon(lineNumbersBG_));
 	ui.pushButtonCursor->setIcon(toIcon(cursorFG_));
-}
 
-/**
- * @brief DialogColors::on_pushButtonFG_clicked
- */
-void DialogColors::on_pushButtonFG_clicked() {
-	textFG_ = chooseColor(ui.pushButtonFG, textFG_);
-}
+	connect(ui.pushButtonFG, &QPushButton::clicked, this, [this]() {
+		textFG_ = chooseColor(ui.pushButtonFG, textFG_);
+	});
 
-/**
- * @brief DialogColors::on_pushButtonBG_clicked
- */
-void DialogColors::on_pushButtonBG_clicked() {
-	textBG_ = chooseColor(ui.pushButtonBG, textBG_);
-}
+	connect(ui.pushButtonBG, &QPushButton::clicked, this, [this]() {
+		textBG_ = chooseColor(ui.pushButtonBG, textBG_);
+	});
 
-/**
- * @brief DialogColors::on_pushButtonSelectionFG_clicked
- */
-void DialogColors::on_pushButtonSelectionFG_clicked() {
-	selectionFG_ = chooseColor(ui.pushButtonSelectionFG, selectionFG_);
-}
+	connect(ui.pushButtonSelectionFG, &QPushButton::clicked, this, [this]() {
+		selectionFG_ = chooseColor(ui.pushButtonSelectionFG, selectionFG_);
+	});
 
-/**
- * @brief DialogColors::on_pushButtonSelectionBG_clicked
- */
-void DialogColors::on_pushButtonSelectionBG_clicked() {
-	selectionBG_ = chooseColor(ui.pushButtonSelectionBG, selectionBG_);
-}
+	connect(ui.pushButtonSelectionBG, &QPushButton::clicked, this, [this]() {
+		selectionBG_ = chooseColor(ui.pushButtonSelectionBG, selectionBG_);
+	});
 
-/**
- * @brief DialogColors::on_pushButtonMatchFG_clicked
- */
-void DialogColors::on_pushButtonMatchFG_clicked() {
-	matchFG_ = chooseColor(ui.pushButtonMatchFG, matchFG_);
-}
+	connect(ui.pushButtonMatchFG, &QPushButton::clicked, this, [this]() {
+		matchFG_ = chooseColor(ui.pushButtonMatchFG, matchFG_);
+	});
 
-/**
- * @brief DialogColors::on_pushButtonMatchBG_clicked
- */
-void DialogColors::on_pushButtonMatchBG_clicked() {
-	matchBG_ = chooseColor(ui.pushButtonMatchBG, matchBG_);
-}
+	connect(ui.pushButtonMatchBG, &QPushButton::clicked, this, [this]() {
+		matchBG_ = chooseColor(ui.pushButtonMatchBG, matchBG_);
+	});
 
-/**
- * @brief DialogColors::on_pushButtonLineNumbersFG_clicked
- */
-void DialogColors::on_pushButtonLineNumbersFG_clicked() {
-	lineNumbersFG_ = chooseColor(ui.pushButtonLineNumbersFG, lineNumbersFG_);
-}
+	connect(ui.pushButtonLineNumbersFG, &QPushButton::clicked, this, [this]() {
+		lineNumbersFG_ = chooseColor(ui.pushButtonLineNumbersFG, lineNumbersFG_);
+	});
 
-/**
- * @brief DialogColors::on_pushButtonLineNumbersBG_clicked
- */
-void DialogColors::on_pushButtonLineNumbersBG_clicked() {
-	lineNumbersBG_ = chooseColor(ui.pushButtonLineNumbersBG, lineNumbersBG_);
-}
+	connect(ui.pushButtonLineNumbersBG, &QPushButton::clicked, this, [this]() {
+		lineNumbersBG_ = chooseColor(ui.pushButtonLineNumbersBG, lineNumbersBG_);
+	});
 
-/**
- * @brief DialogColors::on_pushButtonCursor_clicked
- */
-void DialogColors::on_pushButtonCursor_clicked() {
-	cursorFG_ = chooseColor(ui.pushButtonCursor, cursorFG_);
+	connect(ui.pushButtonCursor, &QPushButton::clicked, this, [this]() {
+		cursorFG_ = chooseColor(ui.pushButtonCursor, cursorFG_);
+	});
+
+	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, [this](QAbstractButton *button) {
+		if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
+			updateColors();
+		}
+	});
+
+	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, [this]() {
+		updateColors();
+		accept();
+	});
 }
 
 /**
@@ -158,25 +142,6 @@ QColor DialogColors::chooseColor(QPushButton *button, const QColor &currentColor
 
 	return color;
 }
-
-/**
- * @brief DialogColors::on_buttonBox_clicked
- * @param button
- */
-void DialogColors::on_buttonBox_clicked(QAbstractButton *button) {
-	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
-		updateColors();
-	}
-}
-
-/**
- * @brief DialogColors::on_buttonBox_accepted
- */
-void DialogColors::on_buttonBox_accepted() {
-	updateColors();
-	accept();
-}
-
 
 /**
  * @brief DialogColors::updateColors
