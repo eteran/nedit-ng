@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>256</width>
-    <height>116</height>
+    <width>268</width>
+    <height>122</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <item>
       <widget class="QCheckBox" name="checkWrapAndFill">
        <property name="text">
-        <string>&amp;Wrap and Fill at widget of window</string>
+        <string>&amp;Wrap and Fill at width of window</string>
        </property>
        <property name="checked">
         <bool>true</bool>
