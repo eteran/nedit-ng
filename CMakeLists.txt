@@ -21,7 +21,7 @@ endif()
 
 option(PURIFY "Fill Unused TextBuffer space")
 
-set(PER_TAB_CLOSE    OFF CACHE BOOL "Per Tab Close Buttons")
+set(PER_TAB_CLOSE     ON CACHE BOOL "Per Tab Close Buttons")
 set(VISUAL_CTRL_CHARS ON CACHE BOOL "Visualize ASCII Control Characters")
 
 if((TARGET_COMPILER_GCC) OR (TARGET_COMPILER_CLANG))
