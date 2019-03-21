@@ -304,19 +304,20 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
  * the operand. The parameter 'insert_pos' points to the location
  * where the new node is to be inserted.
  *----------------------------------------------------------------------*/
-uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned long max, size_t index) {
-
-	size_t insert_size = NODE_SIZE;
-
-	if (op == BRACE || op == LAZY_BRACE) {
-		// Make room for the min and max values.
-		insert_size += (2 * NEXT_PTR_SIZE);
-	} else if (op == INIT_COUNT) {
-		// Make room for an index value.
-		insert_size += INDEX_SIZE;
-	}
+uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned long max, uint8_t index) {
 
 	if (pContext.FirstPass) {
+
+		size_t insert_size = NODE_SIZE;
+
+		if (op == BRACE || op == LAZY_BRACE) {
+			// Make room for the min and max values.
+			insert_size += (2 * NEXT_PTR_SIZE);
+		} else if (op == INIT_COUNT) {
+			// Make room for an index value.
+			insert_size += INDEX_SIZE;
+		}
+
 		pContext.Reg_Size += insert_size;
 		return reinterpret_cast<uint8_t *>(1);
 	}
@@ -325,21 +326,23 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
 	const ptrdiff_t offset = insert_pos - pContext.Code.data();
 
 	// assemble the new node in place, then insert it
-	uint8_t new_node[32];
+	uint8_t new_node[16];
 	uint8_t *ptr = new_node;
 
 	*ptr++ = op;
 	*ptr++ = 0;
 	*ptr++ = 0;
 
-	if (op == BRACE || op == LAZY_BRACE) {
+	switch(op) {
+	case BRACE:
+	case LAZY_BRACE:
 		*ptr++ = PUT_OFFSET_L(min);
 		*ptr++ = PUT_OFFSET_R(min);
 
 		*ptr++ = PUT_OFFSET_L(max);
 		*ptr++ = PUT_OFFSET_R(max);
-
-	} else if (op == INIT_COUNT) {
+		break;
+	case INIT_COUNT:
 		*ptr++ = index;
 	}
 

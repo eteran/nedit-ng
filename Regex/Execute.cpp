@@ -1067,8 +1067,8 @@ bool attempt(Regex *prog, const char *string) {
 	eContext.Extent_Ptr_BW = string;
 	eContext.Extent_Ptr_FW = nullptr;
 
-	std::fill_n(prog->startp.begin(), pContext.Total_Paren + 1, nullptr);
-	std::fill_n(prog->endp.begin(),   pContext.Total_Paren + 1, nullptr);
+	std::fill_n(prog->startp.begin(), eContext.Total_Paren + 1, nullptr);
+	std::fill_n(prog->endp.begin(),   eContext.Total_Paren + 1, nullptr);
 
 	if (match((&prog->program[0] + REGEX_START_OFFSET), &branch_index)) {
 		prog->startp[0]  = string;
@@ -1170,15 +1170,15 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 	eContext.Prev_Is_Delim = (prev_char == -1) || eContext.Current_Delimiters[static_cast<uint8_t>(prev_char)];
 	eContext.Succ_Is_Delim = (succ_char == -1) || eContext.Current_Delimiters[static_cast<uint8_t>(succ_char)];
 
-	pContext.Total_Paren = re->program[1];
-	pContext.Num_Braces  = re->program[2];
+	eContext.Total_Paren = re->program[1];
+	eContext.Num_Braces  = re->program[2];
 
 	// Reset the recursion detection flag
 	eContext.Recursion_Limit_Exceeded = false;
 
 	// Allocate memory for {m,n} construct counting variables if need be.
-	if (pContext.Num_Braces > 0) {
-		eContext.BraceCounts = std::make_unique<uint32_t[]>(pContext.Num_Braces);
+	if (eContext.Num_Braces > 0) {
+		eContext.BraceCounts = std::make_unique<uint32_t[]>(eContext.Num_Braces);
 	}
 
 	/* Initialize the first nine (9) capturing parentheses start and end

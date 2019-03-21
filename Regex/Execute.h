@@ -36,6 +36,8 @@ struct ExecuteContext {
 #ifdef ENABLE_CROSS_REGEX_BACKREF
 	Regex *Cross_Regex_Backref;
 #endif
+	uint8_t Num_Braces;                        // Number of general {m,n} constructs. {m,n} quantifiers of SIMPLE atoms are not included in this count.
+	uint8_t Total_Paren;                       // Parentheses, (),  counter.
 	bool Prev_Is_BOL;
 	bool Succ_Is_EOL;
 	bool Prev_Is_Delim;
