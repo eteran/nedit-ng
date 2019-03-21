@@ -27,7 +27,6 @@ Q_SIGNALS:
 
 private Q_SLOTS:
 	void currentChanged(const QModelIndex &current, const QModelIndex &previous);
-	void restoreSlot(const QModelIndex &index);
 
 private Q_SLOTS:
 	void on_buttonNew_clicked();

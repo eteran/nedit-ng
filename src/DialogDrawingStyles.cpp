@@ -35,7 +35,9 @@ DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatte
 	}
 
 	connect(ui.listItems->selectionModel(), &QItemSelectionModel::currentChanged, this, &DialogDrawingStyles::currentChanged, Qt::QueuedConnection);
-	connect(this, &DialogDrawingStyles::restore, this, &DialogDrawingStyles::restoreSlot, Qt::QueuedConnection);
+	connect(this, &DialogDrawingStyles::restore, this, [this](const QModelIndex &index){
+		ui.listItems->setCurrentIndex(index);
+	}, Qt::QueuedConnection);
 
 	// default to selecting the first item
 	if(model_->rowCount() != 0) {
@@ -47,14 +49,6 @@ DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatte
 	static const QRegularExpression rx(QLatin1String("[\\sA-Za-z0-9_+$#-]+"));
 	auto validator = new QRegularExpressionValidator(rx, this);
 	ui.editName->setValidator(validator);
-}
-
-/**
- * @brief DialogDrawingStyles::restoreSlot
- * @param index
- */
-void DialogDrawingStyles::restoreSlot(const QModelIndex &index) {
-	ui.listItems->setCurrentIndex(index);
 }
 
 /**
