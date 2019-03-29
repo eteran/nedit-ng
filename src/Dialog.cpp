@@ -17,7 +17,7 @@ Dialog::Dialog(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
  * reposition the dialog to be centered on the cursor if the setting is enabled
  */
 void Dialog::showEvent(QShowEvent *event) {
-	Q_UNUSED(event);
+	Q_UNUSED(event)
 
 	if(Preferences::GetPrefRepositionDialogs()) {
 		QPoint pos = QCursor::pos();

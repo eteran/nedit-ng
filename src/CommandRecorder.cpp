@@ -144,7 +144,7 @@ CommandRecorder *CommandRecorder::instance() {
  */
 bool CommandRecorder::eventFilter(QObject *obj, QEvent *event) {
 
-	Q_UNUSED(obj);
+	Q_UNUSED(obj)
 
 	if(event->type() == TextEditEvent::eventType) {
 		lastActionHook(static_cast<TextEditEvent *>(event));

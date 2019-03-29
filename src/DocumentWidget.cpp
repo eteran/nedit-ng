@@ -856,7 +856,7 @@ void DocumentWidget::movedCallback(TextArea *area) {
  * @param area
  */
 void DocumentWidget::dragStartCallback(TextArea *area) {
-	Q_UNUSED(area);
+	Q_UNUSED(area)
 	// don't record all of the intermediate drag steps for undo
 	info_->ignoreModify = true;
 }
@@ -883,7 +883,7 @@ void DocumentWidget::UpdateMarkTable(TextCursor pos, int64_t nInserted, int64_t 
  * @param deletedText
  */
 void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, TextArea *area) {
-	Q_UNUSED(nRestyled);
+	Q_UNUSED(nRestyled)
 
 	// number of distinct chars the user can typebefore NEdit gens. new backup file
 	constexpr int AutoSaveCharLimit = 80;
@@ -987,7 +987,7 @@ void DocumentWidget::dragEndCallback(TextArea *area, const DragEndEvent *event) 
  */
 void DocumentWidget::smartIndentCallback(TextArea *area, SmartIndentEvent *event) {
 
-	Q_UNUSED(area);
+	Q_UNUSED(area)
 
 	if (!info_->smartIndentData) {
 		return;
@@ -1970,7 +1970,7 @@ void DocumentWidget::checkForChangesToFile() {
 			QPushButton *buttonReload = messageBox.addButton(tr("Reload"), QMessageBox::AcceptRole);
 			QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
 
-			Q_UNUSED(buttonCancel);
+			Q_UNUSED(buttonCancel)
 
 			if (info_->fileChanged) {
 				messageBox.setText(tr("%1 has been modified by another program.  Reload?\n\nWARNING: Reloading will discard changes made in this editing session!").arg(info_->filename));
@@ -2295,7 +2295,7 @@ bool DocumentWidget::saveDocument() {
 
 		QPushButton *buttonContinue = messageBox.addButton(tr("Continue"), QMessageBox::AcceptRole);
 		QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
-		Q_UNUSED(buttonCancel);
+		Q_UNUSED(buttonCancel)
 
 		messageBox.exec();
 		if(messageBox.clickedButton() != buttonContinue) {
@@ -2360,7 +2360,7 @@ bool DocumentWidget::doSave() {
 
 		QPushButton *buttonSaveAs = messageBox.addButton(tr("Save As..."), QMessageBox::AcceptRole);
 		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
-		Q_UNUSED(buttonCancel);
+		Q_UNUSED(buttonCancel)
 
 		messageBox.exec();
 		if(messageBox.clickedButton() == buttonSaveAs) {
@@ -2464,7 +2464,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 			messageBox.setText(tr("%1 is open in another NEdit window").arg(fi->filename));
 			QPushButton *buttonCloseOther = messageBox.addButton(tr("Close Other Window"), QMessageBox::AcceptRole);
 			QPushButton *buttonCancel     = messageBox.addButton(QMessageBox::Cancel);
-			Q_UNUSED(buttonCloseOther);
+			Q_UNUSED(buttonCloseOther)
 
 			messageBox.exec();
 			if(messageBox.clickedButton() == buttonCancel) {
@@ -2664,7 +2664,7 @@ bool DocumentWidget::writeBckVersion() {
 		QPushButton *buttonTurnOff    = messageBox.addButton(tr("Turn off Backups"), QMessageBox::AcceptRole);
 		QPushButton *buttonContinue   = messageBox.addButton(tr("Continue"),         QMessageBox::AcceptRole);
 
-		Q_UNUSED(buttonContinue);
+		Q_UNUSED(buttonContinue)
 
 		messageBox.exec();
 		if(messageBox.clickedButton() == buttonCancelSave) {
@@ -2991,7 +2991,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 					exitButton   = nullptr;
 				}
 
-				Q_UNUSED(newButton);
+				Q_UNUSED(newButton)
 
 				msgbox.exec();
 

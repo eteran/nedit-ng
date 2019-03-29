@@ -35,7 +35,7 @@ QModelIndex DocumentModel::index(int row, int column, const QModelIndex &parent)
  * @return
  */
 QModelIndex DocumentModel::parent(const QModelIndex &index) const {
-	Q_UNUSED(index);
+	Q_UNUSED(index)
 	return {};
 }
 
@@ -87,7 +87,7 @@ QVariant DocumentModel::headerData(int section, Qt::Orientation orientation, int
  * @return
  */
 int DocumentModel::columnCount(const QModelIndex &parent) const {
-	Q_UNUSED(parent);
+	Q_UNUSED(parent)
 	return 1;
 }
 
@@ -97,7 +97,7 @@ int DocumentModel::columnCount(const QModelIndex &parent) const {
  * @return
  */
 int DocumentModel::rowCount(const QModelIndex &parent) const {
-	Q_UNUSED(parent);
+	Q_UNUSED(parent)
 	return items_.size();
 }
 

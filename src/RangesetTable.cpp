@@ -22,7 +22,7 @@ constexpr std::array<uint8_t, N_RANGESETS> rangeset_labels = {
 // --------------------------------------------------------------------------
 
 void RangesetBufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
-	Q_UNUSED(nRestyled);
+	Q_UNUSED(nRestyled)
 
 	if(auto *table = static_cast<RangesetTable *>(user)) {
 		if ((nInserted != nDeleted) || table->buffer_->BufCmpEx(pos, deletedText) != 0) {

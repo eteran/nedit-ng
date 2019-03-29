@@ -120,6 +120,6 @@ void DialogPrint::on_buttonPrint_clicked() {
  * @param event
  */
 void DialogPrint::showEvent(QShowEvent *event) {
-	Q_UNUSED(event);
+	Q_UNUSED(event)
 	resize(width(), minimumHeight());
 }

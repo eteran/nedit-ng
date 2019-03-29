@@ -35,7 +35,7 @@ QModelIndex HighlightPatternModel::index(int row, int column, const QModelIndex 
  * @return
  */
 QModelIndex HighlightPatternModel::parent(const QModelIndex &index) const {
-	Q_UNUSED(index);
+	Q_UNUSED(index)
 	return {};
 }
 
@@ -87,7 +87,7 @@ QVariant HighlightPatternModel::headerData(int section, Qt::Orientation orientat
  * @return
  */
 int HighlightPatternModel::columnCount(const QModelIndex &parent) const {
-	Q_UNUSED(parent);
+	Q_UNUSED(parent)
 	return 1;
 }
 
@@ -97,7 +97,7 @@ int HighlightPatternModel::columnCount(const QModelIndex &parent) const {
  * @return
  */
 int HighlightPatternModel::rowCount(const QModelIndex &parent) const {
-	Q_UNUSED(parent);
+	Q_UNUSED(parent)
 	return items_.size();
 }
 

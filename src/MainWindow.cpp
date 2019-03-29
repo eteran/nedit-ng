@@ -2848,7 +2848,7 @@ void MainWindow::on_checkIFindRegex_toggled(bool searchRegex) {
  */
 void MainWindow::on_checkIFindReverse_toggled(bool value) {
 
-	Q_UNUSED(value);
+	Q_UNUSED(value)
 
 	// When search parameters (direction or search type), redo the search
 	on_editIFind_textChanged(ui.editIFind->text());
@@ -3346,7 +3346,7 @@ void MainWindow::updateTagsFileMenuEx() {
  */
 void MainWindow::action_Unload_Tips_File(DocumentWidget *document, const QString &filename) {
 
-	Q_UNUSED(document);
+	Q_UNUSED(document)
 	emit_event("unload_tips_file", filename);
 
 	if (Tags::deleteTagsFile(filename, Tags::SearchMode::TIP, /*force_unload=*/true)) {
@@ -3363,7 +3363,7 @@ void MainWindow::action_Unload_Tips_File(DocumentWidget *document, const QString
  */
 void MainWindow::action_Unload_Tags_File(DocumentWidget *document, const QString &filename) {
 
-	Q_UNUSED(document);
+	Q_UNUSED(document)
 	emit_event("unload_tags_file", filename);
 
 	if (Tags::deleteTagsFile(filename, Tags::SearchMode::TAG, /*force_unload=*/true)) {
@@ -3380,7 +3380,7 @@ void MainWindow::action_Unload_Tags_File(DocumentWidget *document, const QString
  */
 void MainWindow::action_Load_Tips_File(DocumentWidget *document, const QString &filename) {
 
-	Q_UNUSED(document);
+	Q_UNUSED(document)
 	emit_event("load_tips_file", filename);
 
 	if (!Tags::addTagsFile(filename, Tags::SearchMode::TIP)) {
@@ -4963,7 +4963,7 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
 			messageBox.setText(tr("Re-load file\n%1%2?").arg(document->path(), document->filename()));
 			QPushButton *buttonOk     = messageBox.addButton(tr("Re-read"), QMessageBox::AcceptRole);
 			QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
-			Q_UNUSED(buttonOk);
+			Q_UNUSED(buttonOk)
 
 			messageBox.exec();
 			if(messageBox.clickedButton() == buttonCancel) {
@@ -5003,7 +5003,7 @@ void MainWindow::action_Exit(DocumentWidget *document) {
 
 	emit_event("exit");
 
-	Q_UNUSED(document);
+	Q_UNUSED(document)
 
 	std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
@@ -5048,7 +5048,7 @@ void MainWindow::action_Exit(DocumentWidget *document) {
 		messageBox.setText(exitMsg);
 		QPushButton *buttonExit   = messageBox.addButton(tr("Exit"), QMessageBox::AcceptRole);
 		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
-		Q_UNUSED(buttonExit);
+		Q_UNUSED(buttonExit)
 
 		messageBox.exec();
 		if(messageBox.clickedButton() == buttonCancel) {
@@ -5096,7 +5096,7 @@ bool MainWindow::CheckPrefsChangesSavedEx() {
 	QPushButton *buttonSave     = messageBox.addButton(QMessageBox::Save);
 	QPushButton *buttonDontSave = messageBox.addButton(tr("Don't Save"), QMessageBox::AcceptRole);
 	QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
-	Q_UNUSED(buttonCancel);
+	Q_UNUSED(buttonCancel)
 
 	messageBox.exec();
 	if(messageBox.clickedButton() == buttonSave) {
@@ -6037,7 +6037,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
 						messageBox.setText(tr("Continue search from beginning of file?"));
 						QPushButton *buttonContinue = messageBox.addButton(tr("Continue"), QMessageBox::AcceptRole);
 						QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
-						Q_UNUSED(buttonContinue);
+						Q_UNUSED(buttonContinue)
 
 						messageBox.exec();
 						if(messageBox.clickedButton() == buttonCancel) {
@@ -6066,7 +6066,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
 						messageBox.setText(tr("Continue search from end of file?"));
 						QPushButton *buttonContinue = messageBox.addButton(tr("Continue"), QMessageBox::AcceptRole);
 						QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
-						Q_UNUSED(buttonContinue);
+						Q_UNUSED(buttonContinue)
 
 						messageBox.exec();
 						if(messageBox.clickedButton() == buttonCancel) {
@@ -6828,7 +6828,7 @@ bool MainWindow::prefOrUserCancelsSubstEx(DocumentWidget *document) {
 
 			QPushButton *buttonLose   = messageBox.addButton(QLatin1String("Lose Data"), QMessageBox::AcceptRole);
 			QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
-			Q_UNUSED(buttonLose);
+			Q_UNUSED(buttonLose)
 
 			messageBox.exec();
 			cancel = (messageBox.clickedButton() == buttonCancel);
@@ -7086,8 +7086,8 @@ bool MainWindow::DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, c
 */
 bool MainWindow::DoNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source) {
 
-	Q_UNUSED(source);
-	Q_UNUSED(area);
+	Q_UNUSED(source)
+	Q_UNUSED(area)
 
 	if(MenuData *p = findMenuItem(name, CommandTypes::MACRO_CMDS)) {
 		document->DoMacro(
@@ -7110,8 +7110,8 @@ bool MainWindow::DoNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, c
  */
 bool MainWindow::DoNamedBGMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source) {
 
-	Q_UNUSED(source);
-	Q_UNUSED(area);
+	Q_UNUSED(source)
+	Q_UNUSED(area)
 
 	if(MenuData *p = findMenuItem(name, CommandTypes::BG_MENU_CMDS)) {
 		document->DoMacro(

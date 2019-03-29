@@ -107,7 +107,7 @@ void DialogFind::updateFindButton() {
  * @param text
  */
 void DialogFind::on_textFind_textChanged(const QString &text) {
-	Q_UNUSED(text);
+	Q_UNUSED(text)
 	updateFindButton();
 }
 

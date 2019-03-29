@@ -117,7 +117,7 @@ void DialogWindowTitle::setToggleButtons() {
  * @param text
  */
 void DialogWindowTitle::on_editFormat_textChanged(const QString &text) {
-	Q_UNUSED(text);
+	Q_UNUSED(text)
 	formatChangedCB();
 }
 
@@ -448,7 +448,7 @@ void DialogWindowTitle::on_checkClearCasePresent_toggled(bool checked) {
  * @param checked
  */
 void DialogWindowTitle::on_checkDirectoryPresent_toggled(bool checked) {
-	Q_UNUSED(checked);
+	Q_UNUSED(checked)
 	formatChangedCB();
 }
 

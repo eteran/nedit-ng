@@ -7,7 +7,7 @@
  * @param topic
  */
 void Help::displayTopic(QWidget *parent, Topic topic) {
-	Q_UNUSED(topic);
+	Q_UNUSED(topic)
 
 	QMessageBox::warning(
 				parent,

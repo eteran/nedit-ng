@@ -35,7 +35,7 @@ QModelIndex LanguageModeModel::index(int row, int column, const QModelIndex &par
  * @return
  */
 QModelIndex LanguageModeModel::parent(const QModelIndex &index) const {
-	Q_UNUSED(index);
+	Q_UNUSED(index)
 	return {};
 }
 
@@ -87,7 +87,7 @@ QVariant LanguageModeModel::headerData(int section, Qt::Orientation orientation,
  * @return
  */
 int LanguageModeModel::columnCount(const QModelIndex &parent) const {
-	Q_UNUSED(parent);
+	Q_UNUSED(parent)
 	return 1;
 }
 
@@ -97,7 +97,7 @@ int LanguageModeModel::columnCount(const QModelIndex &parent) const {
  * @return
  */
 int LanguageModeModel::rowCount(const QModelIndex &parent) const {
-	Q_UNUSED(parent);
+	Q_UNUSED(parent)
 	return items_.size();
 }
 

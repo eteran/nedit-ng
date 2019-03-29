@@ -919,7 +919,7 @@ void TextArea::verticalScrollBar_valueChanged(int value) {
  * @param value
  */
 void TextArea::horizontalScrollBar_valueChanged(int value) {
-	Q_UNUSED(value);
+	Q_UNUSED(value)
 
 	// NOTE(eteran): the original code seemed to do some cleverness
 	//               involving copying the parts that were "moved"
@@ -1338,7 +1338,7 @@ void TextArea::paintEvent(QPaintEvent *event) {
  */
 void TextArea::resizeEvent(QResizeEvent *event) {
 
-	Q_UNUSED(event);
+	Q_UNUSED(event)
 
 	// update the size sensitive variables
 	TextDResize(/*widthChanged=*/true);
@@ -2674,8 +2674,8 @@ void TextArea::redisplayLineEx(int visLineNum, int leftCharIndex, int rightCharI
 	// NOTE(eteran): the original code would only update **exactly** what was
 	// needed. I haven't been able to get this quite right in the Qt port.
 	// So we update the whole line (the visible portion).
-	Q_UNUSED(leftCharIndex);
-	Q_UNUSED(rightCharIndex);
+	Q_UNUSED(leftCharIndex)
+	Q_UNUSED(rightCharIndex)
 
 	const QRect viewRect = viewport()->contentsRect();
 
@@ -5902,7 +5902,7 @@ void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
 		buffer_->BufSecondarySelect(anchor, pos);
 	} else {
 		TextCursor anchor = pos;
-		Q_UNUSED(anchor);
+		Q_UNUSED(anchor)
 	}
 
 	/* Record the site of the initial button press and the initial character
@@ -6540,7 +6540,7 @@ void TextArea::cutPrimaryAP(EventFlags flags) {
 ** (if the selection owner supports DELETE targets).
 */
 void TextArea::MovePrimarySelection(bool isColumnar) {
-	Q_UNUSED(isColumnar);
+	Q_UNUSED(isColumnar)
 
 	// TODO(eteran): implement MovePrimarySelection
 	qWarning("MovePrimarySelection is not implemented");
@@ -6617,7 +6617,7 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 
 void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 
-	Q_UNUSED(event);
+	Q_UNUSED(event)
 	EMIT_EVENT_0("exchange");
 
 	const TextBuffer::Selection secondary = buffer_->secondary;
@@ -7163,7 +7163,7 @@ void TextArea::addSmartIndentCallback(smartIndentCBEx callback, void *arg) {
 bool TextArea::focusNextPrevChild(bool next) {
 
 	// Prevent tab from changing focus
-	Q_UNUSED(next);
+	Q_UNUSED(next)
 	return false;
 }
 
@@ -7816,7 +7816,7 @@ void TextArea::makeSelectionVisible() {
  * @param flags
  */
 void TextArea::zoomOutAP(TextArea::EventFlags flags) {
-	Q_UNUSED(flags);
+	Q_UNUSED(flags)
 	QList<int> sizes = QFontDatabase::standardSizes();
 	QFontInfo fi(font_);
 
@@ -7833,7 +7833,7 @@ void TextArea::zoomOutAP(TextArea::EventFlags flags) {
  * @param flags
  */
 void TextArea::zoomInAP(TextArea::EventFlags flags) {
-	Q_UNUSED(flags);
+	Q_UNUSED(flags)
 	QList<int> sizes = QFontDatabase::standardSizes();
 	QFontInfo fi(font_);
 

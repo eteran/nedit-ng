@@ -1208,7 +1208,7 @@ QString Preferences::WriteLanguageModesString() {
 */
 void Preferences::translatePrefFormats(uint32_t fileVer) {
 
-	Q_UNUSED(fileVer);
+	Q_UNUSED(fileVer)
 
 	/* Parse the strings which represent types which are not decoded by
 	   the standard resource manager routines */

@@ -200,7 +200,7 @@ void DialogReplace::on_checkKeep_toggled(bool checked) {
  * @param text
  */
 void DialogReplace::on_textFind_textChanged(const QString &text) {
-	Q_UNUSED(text);
+	Q_UNUSED(text)
 	UpdateReplaceActionButtons();
 }
 

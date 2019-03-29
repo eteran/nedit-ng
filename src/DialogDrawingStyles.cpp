@@ -215,7 +215,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 		messageBox.setText(tr("Discard incomplete entry for current highlight style?"));
 		QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
 		QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
-		Q_UNUSED(buttonDiscard);
+		Q_UNUSED(buttonDiscard)
 
 		messageBox.exec();
 		if (messageBox.clickedButton() == buttonKeep) {

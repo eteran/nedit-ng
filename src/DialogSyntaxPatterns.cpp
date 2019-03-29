@@ -105,7 +105,7 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 			messageBox.setText(tr("Discard incomplete entry for current language mode?"));
 			QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
 			QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
-			Q_UNUSED(buttonDiscard);
+			Q_UNUSED(buttonDiscard)
 
 			messageBox.exec();
 			if (messageBox.clickedButton() == buttonKeep) {
@@ -581,7 +581,7 @@ void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QMod
 		messageBox.setText(tr("Discard incomplete entry for current menu item?"));
 		QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
 		QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
-		Q_UNUSED(buttonDiscard);
+		Q_UNUSED(buttonDiscard)
 
 		messageBox.exec();
 		if (messageBox.clickedButton() == buttonKeep) {

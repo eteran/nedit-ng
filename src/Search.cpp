@@ -104,7 +104,7 @@ boost::optional<Search::Result> forwardRegexSearch(view::string_view string, vie
 
 		return boost::none;
 	} catch(const RegexError &e) {
-		Q_UNUSED(e);
+		Q_UNUSED(e)
 		/* Note that this does not process errors from compiling the expression.
 		 * It assumes that the expression was checked earlier.
 		 */
@@ -162,7 +162,7 @@ boost::optional<Search::Result> backwardRegexSearch(view::string_view string, vi
 
 		return boost::none;
 	} catch(const RegexError &e) {
-		Q_UNUSED(e);
+		Q_UNUSED(e)
 		/* Note that this does not process errors from compiling the expression.
 		 * It assumes that the expression was checked earlier.
 		 */
@@ -475,7 +475,7 @@ bool replaceUsingRegex(view::string_view searchStr, view::string_view replaceStr
 		compiledRE.execute(sourceStr, static_cast<size_t>(beginPos), sourceStr.size(), prevChar, -1, delimiters, false);
 		return compiledRE.SubstituteRE(replaceStr, dest);
 	} catch(const RegexError &e) {
-		Q_UNUSED(e);
+		Q_UNUSED(e)
 		return false;
 	}
 }

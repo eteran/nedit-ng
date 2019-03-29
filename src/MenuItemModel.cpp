@@ -35,7 +35,7 @@ QModelIndex MenuItemModel::index(int row, int column, const QModelIndex &parent)
  * @return
  */
 QModelIndex MenuItemModel::parent(const QModelIndex &index) const {
-	Q_UNUSED(index);
+	Q_UNUSED(index)
 	return {};
 }
 
@@ -85,7 +85,7 @@ QVariant MenuItemModel::headerData(int section, Qt::Orientation orientation, int
  * @return
  */
 int MenuItemModel::columnCount(const QModelIndex &parent) const {
-	Q_UNUSED(parent);
+	Q_UNUSED(parent)
 	return 1;
 }
 
@@ -95,7 +95,7 @@ int MenuItemModel::columnCount(const QModelIndex &parent) const {
  * @return
  */
 int MenuItemModel::rowCount(const QModelIndex &parent) const {
-	Q_UNUSED(parent);
+	Q_UNUSED(parent)
 	return items_.size();
 }
 

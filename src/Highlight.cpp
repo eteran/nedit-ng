@@ -117,8 +117,8 @@ bool isParentStyle(const std::vector<uint8_t> &parentStyles, int style1, int sty
 */
 void SyntaxHighlightModifyCBEx(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
 
-	Q_UNUSED(nRestyled);
-	Q_UNUSED(deletedText);
+	Q_UNUSED(nRestyled)
+	Q_UNUSED(deletedText)
 
 	auto document = static_cast<DocumentWidget *>(user);
 	const std::unique_ptr<WindowHighlightData> &highlightData = document->highlightData_;
