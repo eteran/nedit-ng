@@ -38,17 +38,14 @@ QString DialogAbout::createInfoString() {
 	return tr("nedit-ng version %1\n"
 	          "\n"
 	          "     Built on: %2, %3, %4\n"
-	          "     Built at: %5, %6\n"
 	          "      With Qt: %7\n"
 	          "   Running Qt: %8\n"
-	          "       Locale: %9\n").arg(versionString,
-	                                     buildOperatingSystem(),
-	                                     buildArchitecture(),
-	                                     buildCompiler(),
-	                                     QLatin1String(__DATE__),
-	                                     QLatin1String(__TIME__),
-	                                     QLatin1String(QT_VERSION_STR),
-	                                     QString::fromLatin1(qVersion()),
-	                                     localeString);
+			  "       Locale: %9\n").arg(versionString,
+										 buildOperatingSystem(),
+										 buildArchitecture(),
+										 buildCompiler(),
+										 QLatin1String(QT_VERSION_STR),
+										 QString::fromLatin1(qVersion()),
+										 localeString);
 }
 

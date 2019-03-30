@@ -133,16 +133,13 @@ QStringList parseCommandString(const QString &program) {
  */
 void printNcVersion() {
 	static const char ncHelpText[] = "nc-ng (nedit-ng) Version %d.%d\n\n"
-	                                 "Built on: %s, %s, %s\n"
-	                                 "Built at: %s, %s\n";
+									 "Built on: %s, %s, %s\n";
 	printf(ncHelpText,
-	       NEDIT_VERSION_MAJ,
-	       NEDIT_VERSION_REV,
-	       buildOperatingSystem().latin1(),
-	       buildArchitecture().latin1(),
-	       buildCompiler().toLatin1().data(),
-	       __DATE__,
-	       __TIME__);
+		   NEDIT_VERSION_MAJ,
+		   NEDIT_VERSION_REV,
+		   buildOperatingSystem().latin1(),
+		   buildArchitecture().latin1(),
+		   buildCompiler().toLatin1().data());
 }
 
 /**
