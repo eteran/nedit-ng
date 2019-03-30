@@ -34,21 +34,13 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(pa
 	}
 
 	connect(ui.listItems->selectionModel(), &QItemSelectionModel::currentChanged, this, &DialogShellMenu::currentChanged, Qt::QueuedConnection);
-	connect(this, &DialogShellMenu::restore, this, &DialogShellMenu::restoreSlot, Qt::QueuedConnection);
+	connect(this, &DialogShellMenu::restore, ui.listItems, &QListView::setCurrentIndex, Qt::QueuedConnection);
 
 	// default to selecting the first item
 	if(model_->rowCount() != 0) {
 		QModelIndex index = model_->index(0, 0);
 		ui.listItems->setCurrentIndex(index);
 	}
-}
-
-/**
- * @brief DialogShellMenu::restoreSlot
- * @param index
- */
-void DialogShellMenu::restoreSlot(const QModelIndex &index) {
-	ui.listItems->setCurrentIndex(index);
 }
 
 /**

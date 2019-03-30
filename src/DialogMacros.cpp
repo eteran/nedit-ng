@@ -40,21 +40,13 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
 	}
 
 	connect(ui.listItems->selectionModel(), &QItemSelectionModel::currentChanged, this, &DialogMacros::currentChanged, Qt::QueuedConnection);
-	connect(this, &DialogMacros::restore, this, &DialogMacros::restoreSlot, Qt::QueuedConnection);
+	connect(this, &DialogMacros::restore, ui.listItems, &QListView::setCurrentIndex, Qt::QueuedConnection);
 
 	// default to selecting the first item
 	if(model_->rowCount() != 0) {
 		QModelIndex index = model_->index(0, 0);
 		ui.listItems->setCurrentIndex(index);
 	}
-}
-
-/**
- * @brief DialogMacros::restoreSlot
- * @param index
- */
-void DialogMacros::restoreSlot(const QModelIndex &index) {
-	ui.listItems->setCurrentIndex(index);
 }
 
 /**

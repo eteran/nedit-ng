@@ -40,7 +40,7 @@ DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatte
 	}
 
 	connect(ui.listItems->selectionModel(), &QItemSelectionModel::currentChanged, this, &DialogLanguageModes::currentChanged, Qt::QueuedConnection);
-	connect(this, &DialogLanguageModes::restore, this, &DialogLanguageModes::restoreSlot, Qt::QueuedConnection);
+	connect(this, &DialogLanguageModes::restore, ui.listItems, &QListView::setCurrentIndex, Qt::QueuedConnection);
 
 	// default to selecting the first item
 	if(model_->rowCount() != 0) {
@@ -92,14 +92,6 @@ void DialogLanguageModes::updateButtonStates(const QModelIndex &current) {
 		ui.buttonDelete->setEnabled(false);
 		ui.buttonCopy  ->setEnabled(false);
 	}
-}
-
-/**
- * @brief DialogLanguageModes::restoreSlot
- * @param index
- */
-void DialogLanguageModes::restoreSlot(const QModelIndex &index) {
-	ui.listItems->setCurrentIndex(index);
 }
 
 void DialogLanguageModes::currentChanged(const QModelIndex &current, const QModelIndex &previous) {

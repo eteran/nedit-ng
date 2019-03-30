@@ -59,15 +59,7 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f
 	}
 
 	connect(ui.listItems->selectionModel(), &QItemSelectionModel::currentChanged, this, &DialogSyntaxPatterns::currentChanged, Qt::QueuedConnection);
-	connect(this, &DialogSyntaxPatterns::restore, this, &DialogSyntaxPatterns::restoreSlot, Qt::QueuedConnection);
-}
-
-/**
- * @brief DialogSyntaxPatterns::restoreSlot
- * @param index
- */
-void DialogSyntaxPatterns::restoreSlot(const QModelIndex &index) {
-	ui.listItems->setCurrentIndex(index);
+	connect(this, &DialogSyntaxPatterns::restore, ui.listItems, &QListView::setCurrentIndex, Qt::QueuedConnection);
 }
 
 /**

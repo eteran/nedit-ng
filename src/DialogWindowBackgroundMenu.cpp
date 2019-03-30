@@ -40,7 +40,7 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 	}
 
 	connect(ui.listItems->selectionModel(), &QItemSelectionModel::currentChanged, this, &DialogWindowBackgroundMenu::currentChanged, Qt::QueuedConnection);
-	connect(this, &DialogWindowBackgroundMenu::restore, this, &DialogWindowBackgroundMenu::restoreSlot, Qt::QueuedConnection);
+	connect(this, &DialogWindowBackgroundMenu::restore, ui.listItems, &QListView::setCurrentIndex, Qt::QueuedConnection);
 
 	// default to selecting the first item
 	if(model_->rowCount() != 0) {
@@ -183,14 +183,6 @@ void DialogWindowBackgroundMenu::updateButtonStates(const QModelIndex &current) 
 		ui.buttonDelete->setEnabled(false);
 		ui.buttonCopy  ->setEnabled(false);
 	}
-}
-
-/**
- * @brief DialogWindowBackgroundMenu::restoreSlot
- * @param index
- */
-void DialogWindowBackgroundMenu::restoreSlot(const QModelIndex &index) {
-	ui.listItems->setCurrentIndex(index);
 }
 
 /**
