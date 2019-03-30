@@ -92,27 +92,27 @@ add_definitions(-DQT_NO_CAST_TO_ASCII)
 add_definitions(-DQT_NO_KEYWORDS)
 
 if(TARGET_COMPILER_MSVC)
-	add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -DUNICODE -D_UNICODE)
 else()
-	add_compile_options(
-		-W 
-		-Wall 
-		#-Wshadow
-		-Wnon-virtual-dtor
-		#-Wold-style-cast
-		-Wcast-align
-		-Wunused
-		-Woverloaded-virtual
-		-pedantic 
-		#-Wconversion
-		#-Wsign-conversion
-		#-Wnull-dereference
-		-Wdouble-promotion
-		-Wformat=2
-		-Wno-unused-macros 
-		-Wno-switch-enum
-		-Wno-unknown-pragmas		
-	)
+    add_compile_options(
+        -W
+        -Wall
+        #-Wshadow
+        -Wnon-virtual-dtor
+        #-Wold-style-cast
+        -Wcast-align
+        -Wunused
+        -Woverloaded-virtual
+        -pedantic
+        #-Wconversion
+        #-Wsign-conversion
+        #-Wnull-dereference
+        -Wdouble-promotion
+        -Wformat=2
+        -Wno-unused-macros
+        -Wno-switch-enum
+        -Wno-unknown-pragmas
+    )
 
     if(TARGET_COMPILER_CLANG)
 		add_compile_options(

@@ -92,6 +92,7 @@ QString GetUserName() {
 	perror("nedit: getpwuid() failed - reverting to $USER");
 	return QString::fromLocal8Bit(qgetenv("USER"));
 #else
+	// TODO(eteran): use GetUserNameW on Win32
 	return QString();
 #endif
 }
