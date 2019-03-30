@@ -5,7 +5,7 @@
 #include <exception>
 #include <string>
 
-class RegexError final : public std::exception {
+class RegexError : public std::exception {
 public:
 	RegexError(const char *fmt, ...);
 

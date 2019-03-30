@@ -7,7 +7,7 @@
 class QLocalServer;
 class QString;
 
-class NeditServer final : public QObject {
+class NeditServer : public QObject {
 	Q_OBJECT
 
 public:

@@ -7,7 +7,7 @@
 
 class DocumentWidget;
 
-class DialogFonts final : public Dialog {
+class DialogFonts : public Dialog {
 	Q_OBJECT
 
 public:

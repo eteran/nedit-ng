@@ -6,7 +6,7 @@
 #include "ui_DialogColors.h"
 #include <QColor>
 
-class DialogColors final : public Dialog {
+class DialogColors : public Dialog {
 	Q_OBJECT
 public:
 	DialogColors(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());

@@ -5,7 +5,7 @@
 #include "HighlightStyle.h"
 #include <QAbstractItemModel>
 
-class HighlightStyleModel final : public QAbstractItemModel {
+class HighlightStyleModel : public QAbstractItemModel {
 	Q_OBJECT
 
 public:

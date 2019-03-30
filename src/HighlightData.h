@@ -8,8 +8,7 @@
 #include <cstdint>
 
 // "Compiled" version of pattern specification
-class HighlightData {
-public:
+struct HighlightData {
 	std::unique_ptr<Regex>             startRE;
 	std::unique_ptr<Regex>             endRE;
 	std::unique_ptr<Regex>             errorRE;

@@ -8,7 +8,7 @@
 class DocumentWidget;
 class QPrinter;
 
-class DialogPrint final : public Dialog {
+class DialogPrint : public Dialog {
 	Q_OBJECT
 public:
 	DialogPrint(QString contents, QString jobname, DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());

@@ -5,7 +5,7 @@
 #include "MenuItem.h"
 #include <QAbstractItemModel>
 
-class MenuItemModel final : public QAbstractItemModel {
+class MenuItemModel : public QAbstractItemModel {
 	Q_OBJECT
 
 public:

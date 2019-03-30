@@ -44,7 +44,7 @@ using dragStartCBEx           = void (*)(TextArea *, void *);
 using dragEndCBEx             = void (*)(TextArea *, const DragEndEvent *, void *);
 using smartIndentCBEx         = void (*)(TextArea *, SmartIndentEvent *, void *);
 
-class TextArea final : public QAbstractScrollArea {
+class TextArea : public QAbstractScrollArea {
 	Q_OBJECT
 
 private:

@@ -14,7 +14,7 @@ class HighlightPatternModel;
 class MainWindow;
 class PatternSet;
 
-class DialogSyntaxPatterns final : public Dialog {
+class DialogSyntaxPatterns : public Dialog {
 	Q_OBJECT
 
 public:

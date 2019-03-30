@@ -5,7 +5,7 @@
 #include "DocumentWidget.h"
 #include <QAbstractItemModel>
 
-class DocumentModel final : public QAbstractItemModel {
+class DocumentModel : public QAbstractItemModel {
 	Q_OBJECT
 
 public:

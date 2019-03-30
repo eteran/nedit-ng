@@ -34,7 +34,6 @@
 
 #include <sys/stat.h>
 
-class HighlightData;
 class HighlightPattern;
 class MainWindow;
 class PatternSet;
@@ -44,6 +43,7 @@ class Style;
 class StyleTableEntry;
 class TextArea;
 class UndoInfo;
+struct HighlightData;
 struct DragEndEvent;
 struct MacroCommandData;
 struct Program;

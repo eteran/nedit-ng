@@ -5,7 +5,7 @@
 #include "LanguageMode.h"
 #include <QAbstractItemModel>
 
-class LanguageModeModel final : public QAbstractItemModel {
+class LanguageModeModel : public QAbstractItemModel {
 	Q_OBJECT
 
 public:

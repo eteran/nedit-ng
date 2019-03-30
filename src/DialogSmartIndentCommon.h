@@ -5,7 +5,7 @@
 #include "Dialog.h"
 #include "ui_DialogSmartIndentCommon.h"
 
-class DialogSmartIndentCommon final : public Dialog {
+class DialogSmartIndentCommon : public Dialog {
 	Q_OBJECT
 public:
 	DialogSmartIndentCommon(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());

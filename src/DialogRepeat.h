@@ -7,7 +7,7 @@
 
 class DocumentWidget;
 
-class DialogRepeat final : public Dialog {
+class DialogRepeat : public Dialog {
 	Q_OBJECT
 public:
 	DialogRepeat(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());

@@ -9,7 +9,7 @@
 
 class MainWindow;
 
-class DialogMoveDocument final : public Dialog {
+class DialogMoveDocument : public Dialog {
 public:
 	Q_OBJECT
 public:

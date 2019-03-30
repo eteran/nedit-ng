@@ -12,7 +12,7 @@ class DialogSyntaxPatterns;
 class LanguageMode;
 class LanguageModeModel;
 
-class DialogLanguageModes final : public Dialog {
+class DialogLanguageModes : public Dialog {
 public:
 	Q_OBJECT
 
