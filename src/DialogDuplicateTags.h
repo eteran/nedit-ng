@@ -8,7 +8,7 @@
 class DocumentWidget;
 class TextArea;
 
-class DialogDuplicateTags : public Dialog {
+class DialogDuplicateTags final : public Dialog {
 	Q_OBJECT
 public:
 	DialogDuplicateTags(DocumentWidget *document, TextArea *area, Qt::WindowFlags f = Qt::WindowFlags());

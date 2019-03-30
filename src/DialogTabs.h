@@ -7,7 +7,7 @@
 
 class DocumentWidget;
 
-class DialogTabs : public Dialog {
+class DialogTabs final : public Dialog {
 public:
 	Q_OBJECT
 public:

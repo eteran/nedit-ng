@@ -5,7 +5,7 @@
 #include "HighlightPattern.h"
 #include <QAbstractItemModel>
 
-class HighlightPatternModel : public QAbstractItemModel {
+class HighlightPatternModel final : public QAbstractItemModel {
 	Q_OBJECT
 
 public:

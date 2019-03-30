@@ -10,7 +10,7 @@ class DocumentWidget;
 class MainWindow;
 struct UpdateState;
 
-class DialogWindowTitle : public Dialog {
+class DialogWindowTitle final : public Dialog {
 	Q_OBJECT
 public:
 	DialogWindowTitle(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
