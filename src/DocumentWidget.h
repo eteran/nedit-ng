@@ -34,7 +34,6 @@
 
 #include <sys/stat.h>
 
-class HighlightData;
 class HighlightPattern;
 class MainWindow;
 class PatternSet;
@@ -51,6 +50,7 @@ struct ShellCommandData;
 struct SmartIndentData;
 struct SmartIndentEvent;
 struct WindowHighlightData;
+struct HighlightData;
 
 class QFrame;
 class QLabel;

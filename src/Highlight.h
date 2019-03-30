@@ -12,13 +12,13 @@
 
 #include <QCoreApplication>
 
-class HighlightData;
 class HighlightPattern;
 class Input;
 class PatternSet;
 class Regex;
 class Style;
 class TextArea;
+struct HighlightData;
 struct HighlightStyle;
 struct ReparseContext;
 struct WindowHighlightData;
