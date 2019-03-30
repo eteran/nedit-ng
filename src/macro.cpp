@@ -4338,7 +4338,7 @@ static std::error_code rangesetListMV(DocumentWidget *document, Arguments argume
 		return MacroErrorCode::Success;
 	}
 
-	std::vector<uint8_t> rangesetList = rangesetTable->RangesetGetList();
+	std::vector<uint8_t> rangesetList = rangesetTable->labels();
 	size_t nRangesets = rangesetList.size();
 	for (size_t i = 0; i < nRangesets; i++) {
 
@@ -4403,7 +4403,7 @@ static std::error_code rangesetCreateMS(DocumentWidget *document, Arguments argu
 
 		*result = make_value(std::make_shared<Array>());
 
-		if (nRangesetsRequired > rangesetTable->nRangesetsAvailable())
+		if (nRangesetsRequired > rangesetTable->rangesetsAvailable())
 			return MacroErrorCode::Success;
 
 		for (int i = 0; i < nRangesetsRequired; i++) {
@@ -4446,7 +4446,7 @@ static std::error_code rangesetDestroyMS(DocumentWidget *document, Arguments arg
 			}
 
 			std::error_code ec;
-			if ((ec = readArgument(element, &label)) || !RangesetTable::RangesetLabelOK(label)) {
+			if ((ec = readArgument(element, &label)) || !RangesetTable::LabelOK(label)) {
 				return MacroErrorCode::InvalidRangesetLabelInArray;
 			}
 
@@ -4454,16 +4454,16 @@ static std::error_code rangesetDestroyMS(DocumentWidget *document, Arguments arg
 		}
 
 		for (int i = 0; i < arraySize; i++) {
-			rangesetTable->RangesetForget(deleteLabels[i]);
+			rangesetTable->forgetLabel(deleteLabels[i]);
 		}
 	} else {
 		std::error_code ec;
-		if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::RangesetLabelOK(label)) {
+		if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
 			return MacroErrorCode::InvalidRangesetLabel;
 		}
 
 		if (rangesetTable) {
-			rangesetTable->RangesetForget(label);
+			rangesetTable->forgetLabel(label);
 		}
 	}
 
@@ -4494,7 +4494,7 @@ static std::error_code rangesetGetByNameMS(DocumentWidget *document, Arguments a
 		return MacroErrorCode::Success;
 	}
 
-	std::vector<uint8_t> rangesetList = rangesetTable->RangesetGetList();
+	std::vector<uint8_t> rangesetList = rangesetTable->labels();
 	size_t nRangesets = rangesetList.size();
 	for (size_t i = 0; i < nRangesets; ++i) {
 		int label = rangesetList[i];
@@ -4539,7 +4539,7 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
 		return MacroErrorCode::WrongNumberOfArguments;
 
 	std::error_code ec;
-	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::RangesetLabelOK(label)) {
+	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
@@ -4568,7 +4568,7 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
 	if (arguments.size() == 2) {
 		// add ranges taken from a second set
 		std::error_code ec;
-		if ((ec = readArgument(arguments[1], &label)) || !RangesetTable::RangesetLabelOK(label)) {
+		if ((ec = readArgument(arguments[1], &label)) || !RangesetTable::LabelOK(label)) {
 			return MacroErrorCode::Param2InvalidRangesetLabel;
 		}
 
@@ -4638,7 +4638,7 @@ static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments ar
 	}
 
 	std::error_code ec;
-	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::RangesetLabelOK(label)) {
+	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
@@ -4667,7 +4667,7 @@ static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments ar
 
 	if (arguments.size() == 2) {
 		// remove ranges taken from a second set
-		if ((ec = readArgument(arguments[1], &label)) || !RangesetTable::RangesetLabelOK(label)) {
+		if ((ec = readArgument(arguments[1], &label)) || !RangesetTable::LabelOK(label)) {
 			return MacroErrorCode::Param2InvalidRangesetLabel;
 		}
 
@@ -4719,7 +4719,7 @@ static std::error_code rangesetInvertMS(DocumentWidget *document, Arguments argu
 		return ec;
 	}
 
-	if (!RangesetTable::RangesetLabelOK(label)) {
+	if (!RangesetTable::LabelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
@@ -4755,7 +4755,7 @@ static std::error_code rangesetInfoMS(DocumentWidget *document, Arguments argume
 		return ec;
 	}
 
-	if (!RangesetTable::RangesetLabelOK(label)) {
+	if (!RangesetTable::LabelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
@@ -4816,7 +4816,7 @@ static std::error_code rangesetRangeMS(DocumentWidget *document, Arguments argum
 	}
 
 	std::error_code ec;
-	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::RangesetLabelOK(label)) {
+	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
@@ -4881,7 +4881,7 @@ static std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments
 	}
 
 	std::error_code ec;
-	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::RangesetLabelOK(label)) {
+	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
@@ -4933,7 +4933,7 @@ static std::error_code rangesetSetColorMS(DocumentWidget *document, Arguments ar
 	}
 
 	std::error_code ec;
-	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::RangesetLabelOK(label)) {
+	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
@@ -4972,7 +4972,7 @@ static std::error_code rangesetSetNameMS(DocumentWidget *document, Arguments arg
 	}
 
 	std::error_code ec;
-	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::RangesetLabelOK(label)) {
+	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
@@ -5011,7 +5011,7 @@ static std::error_code rangesetSetModeMS(DocumentWidget *document, Arguments arg
 	}
 
 	std::error_code ec;
-	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::RangesetLabelOK(label)) {
+	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 

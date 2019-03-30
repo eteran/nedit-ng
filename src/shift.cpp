@@ -525,7 +525,7 @@ std::string shiftLineRightEx(view::string_view line, int64_t lineLen, int tabsAl
 	}
 }
 
-std::string ShiftTextEx(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars) {
+std::string ShiftText(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars) {
 	size_t bufLen;
 
 	/*
@@ -685,7 +685,7 @@ void ShiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection dir
 		shiftDist = 1;
 	}
 
-	std::string shiftedText = ShiftTextEx(text, direction, buf->BufGetUseTabs(), buf->BufGetTabDistance(), shiftDist);
+	std::string shiftedText = ShiftText(text, direction, buf->BufGetUseTabs(), buf->BufGetTabDistance(), shiftDist);
 
 	buf->BufReplaceSelectedEx(shiftedText);
 
@@ -778,7 +778,7 @@ void FillSelection(DocumentWidget *document, TextArea *area) {
 /*
 ** shift lines left and right in a multi-line text string.
 */
-QString ShiftTextEx(const QString &text, ShiftDirection direction, bool tabsAllowed, int tabDist, int nChars) {
+QString ShiftText(const QString &text, ShiftDirection direction, bool tabsAllowed, int tabDist, int nChars) {
 	int bufLen;
 
 	/*

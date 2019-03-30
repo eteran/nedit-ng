@@ -14,19 +14,19 @@ public:
 	~RangesetTable();
 
 public:
-	QString RangesetTableGetColorName(size_t index) const;
+	QString getColorName(size_t index) const;
 	Rangeset *RangesetFetch(int label);
 	int RangesetCreate();
-	int RangesetTableGetColorValid(size_t index, QColor *color) const;
-	int nRangesetsAvailable() const;
-	size_t RangesetIndex1ofPos(TextCursor pos, bool needs_color);
-	std::vector<uint8_t> RangesetGetList() const;
-	void RangesetForget(int label);
-	void RangesetTableAssignColor(size_t index, const QColor &color);
-	void RangesetTableUpdatePos(TextCursor pos, int64_t ins, int64_t del);
+	int getColorValid(size_t index, QColor *color) const;
+	int rangesetsAvailable() const;
+	size_t index1ofPos(TextCursor pos, bool needs_color);
+	std::vector<uint8_t> labels() const;
+	void forgetLabel(int label);
+	void assignColor(size_t index, const QColor &color);
+	void updatePos(TextCursor pos, int64_t ins, int64_t del);
 
 public:
-	static bool RangesetLabelOK(int label);
+	static bool LabelOK(int label);
 
 public:
 	TextBuffer *buffer_;

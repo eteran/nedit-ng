@@ -9,4 +9,13 @@ struct TextRange {
 	TextCursor end; /* range from [start-]end */
 };
 
+inline bool operator<(const TextRange &lhs, const TextRange &rhs) {
+	return lhs.start < rhs.start;
+}
+
+inline bool operator==(const TextRange &lhs, const TextRange &rhs) {
+	return lhs.start == rhs.start && lhs.end == rhs.end;
+}
+
+
 #endif

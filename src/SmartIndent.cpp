@@ -173,7 +173,7 @@ QString readSIMacroEx(Input &in) {
 	in += macroEnd - in.index();
 	in += MacroEndBoundary.size();
 
-	return ShiftTextEx(macroStr, ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars=*/8);
+	return ShiftText(macroStr, ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars=*/8);
 }
 
 /*
@@ -184,7 +184,7 @@ QString readSIMacroEx(Input &in) {
 void insertShiftedMacro(QTextStream &ts, const QString &macro) {
 
 	if (!macro.isNull()) {
-		ts << ShiftTextEx(macro, ShiftDirection::Right, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/8);
+		ts << ShiftText(macro, ShiftDirection::Right, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/8);
 	}
 
 	ts << QLatin1String("\t");
@@ -340,7 +340,7 @@ bool SmartIndent::LoadSmartIndentCommonStringEx(const QString &string) {
 	}
 
 	// Remove leading tabs added by writer routine
-	CommonMacros = ShiftTextEx(in.mid(), ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/8);
+	CommonMacros = ShiftText(in.mid(), ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/8);
 	return true;
 }
 
@@ -386,7 +386,7 @@ QString SmartIndent::WriteSmartIndentCommonStringEx() {
 	}
 
 	// Shift the macro over by a tab to keep .nedit file bright and clean
-	QString outStr = ShiftTextEx(CommonMacros, ShiftDirection::Right, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/8);
+	QString outStr = ShiftText(CommonMacros, ShiftDirection::Right, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/8);
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */

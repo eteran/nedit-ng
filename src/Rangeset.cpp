@@ -7,14 +7,6 @@
 #include <cstdlib>
 #include <cstring>
 
-static bool operator==(const TextRange &lhs, const TextRange &rhs) {
-	return lhs.start == rhs.start && lhs.end == rhs.end;
-}
-
-static bool operator<(const TextRange &lhs, const TextRange &rhs) {
-	return lhs.start < rhs.start;
-}
-
 namespace {
 
 RangesetUpdateFn rangesetInsDelMaintain;

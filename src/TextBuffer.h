@@ -42,7 +42,6 @@ public:
 
 public:
 	class Selection {
-
 		template <class CharT, class Traits>
 		friend class BasicTextBuffer;
 
@@ -56,8 +55,8 @@ public:
 
 	public:
 		bool hasSelection() const      { return selected_; }
-		bool isRectangular() const       { return rectangular_; }
-		bool isZeroWidth() const         { return zeroWidth_; }
+		bool isRectangular() const     { return rectangular_; }
+		bool isZeroWidth() const       { return zeroWidth_; }
 		TextCursor start() const       { return start_; }
 		TextCursor end() const         { return end_; }
 		int64_t rectStart() const      { return rectStart_; }

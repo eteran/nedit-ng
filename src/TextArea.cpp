@@ -2934,7 +2934,7 @@ uint32_t TextArea::styleOfPos(TextCursor lineStartPos, int64_t lineLen, int64_t 
 
 	/* store in the RANGESET_MASK portion of style the rangeset index for pos */
 	if (document_->rangesetTable_) {
-		size_t rangesetIndex = document_->rangesetTable_->RangesetIndex1ofPos(pos, true);
+		size_t rangesetIndex = document_->rangesetTable_->index1ofPos(pos, true);
 		style |= ((rangesetIndex << RANGESET_SHIFT) & RANGESET_MASK);
 	}
 
@@ -3175,13 +3175,13 @@ QColor TextArea::getRangesetColor(size_t ind, QColor bground) const {
 		const std::shared_ptr<RangesetTable> &tab = document_->rangesetTable_;
 
 		QColor color;
-		int valid = tab->RangesetTableGetColorValid(ind, &color);
+		int valid = tab->getColorValid(ind, &color);
 		if (valid == 0) {
-			const QString color_name = tab->RangesetTableGetColorName(ind);
+			const QString color_name = tab->getColorName(ind);
 			if (!color_name.isNull()) {
 				color = X11Colors::fromString(color_name);
 			}
-			tab->RangesetTableAssignColor(ind, color);
+			tab->assignColor(ind, color);
 		}
 
 		if (color.isValid()) {

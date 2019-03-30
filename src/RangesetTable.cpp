@@ -26,7 +26,7 @@ void RangesetBufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, 
 
 	if(auto *table = static_cast<RangesetTable *>(user)) {
 		if ((nInserted != nDeleted) || table->buffer_->BufCmpEx(pos, deletedText) != 0) {
-			table->RangesetTableUpdatePos(pos, nInserted, nDeleted);
+			table->updatePos(pos, nInserted, nDeleted);
 		}
 	}
 }
@@ -69,7 +69,7 @@ Rangeset *RangesetTable::RangesetFetch(int label) {
 /*
 ** Forget the rangeset identified by label
 */
-void RangesetTable::RangesetForget(int label) {
+void RangesetTable::forgetLabel(int label) {
 	auto it = std::find_if(sets_.begin(), sets_.end(), [label](const Rangeset set) {
 		return set.label_ == label;
 	});
@@ -82,7 +82,7 @@ void RangesetTable::RangesetForget(int label) {
 /*
 ** Return the color name, if any.
 */
-QString RangesetTable::RangesetTableGetColorName(size_t index) const {
+QString RangesetTable::getColorName(size_t index) const {
 	Q_ASSERT(index <= sets_.size());
 
 	const Rangeset &set = sets_[index];
@@ -95,7 +95,7 @@ QString RangesetTable::RangesetTableGetColorName(size_t index) const {
 ** rangeset was found, 0 otherwise. If needs_color is true, "colorless" ranges
 ** will be skipped.
 */
-size_t RangesetTable::RangesetIndex1ofPos(TextCursor pos, bool needs_color) {
+size_t RangesetTable::index1ofPos(TextCursor pos, bool needs_color) {
 
 	for(size_t i = 0; i < sets_.size(); ++i) {
 		Rangeset &set = sets_[i];
@@ -113,7 +113,7 @@ size_t RangesetTable::RangesetIndex1ofPos(TextCursor pos, bool needs_color) {
 ** Assign a color pixel value to a rangeset via the rangeset table. If ok is
 ** false, the color_set flag is set to an invalid (negative) value.
 */
-void RangesetTable::RangesetTableAssignColor(size_t index, const QColor &color) {
+void RangesetTable::assignColor(size_t index, const QColor &color) {
 	Q_ASSERT(index <= sets_.size());
 
 	Rangeset &set = sets_[index];
@@ -125,7 +125,7 @@ void RangesetTable::RangesetTableAssignColor(size_t index, const QColor &color) 
 /*
 ** Return the color color validity, if any, and the value in *color.
 */
-int RangesetTable::RangesetTableGetColorValid(size_t index, QColor *color) const {
+int RangesetTable::getColorValid(size_t index, QColor *color) const {
 	Q_ASSERT(index <= sets_.size());
 
 	const Rangeset &set = sets_[index];
@@ -137,12 +137,12 @@ int RangesetTable::RangesetTableGetColorValid(size_t index, QColor *color) const
 /*
 ** Return the number of rangesets that are available to create
 */
-int RangesetTable::nRangesetsAvailable() const {
+int RangesetTable::rangesetsAvailable() const {
 	return static_cast<int>(N_RANGESETS - sets_.size());
 }
 
 
-std::vector<uint8_t> RangesetTable::RangesetGetList() const {
+std::vector<uint8_t> RangesetTable::labels() const {
 	std::vector<uint8_t> list;
 	list.reserve(sets_.size());
 
@@ -153,7 +153,7 @@ std::vector<uint8_t> RangesetTable::RangesetGetList() const {
 	return list;
 }
 
-void RangesetTable::RangesetTableUpdatePos(TextCursor pos, int64_t ins, int64_t del) {
+void RangesetTable::updatePos(TextCursor pos, int64_t ins, int64_t del) {
 
 	if (ins == 0 && del == 0) {
 		return;
@@ -169,7 +169,7 @@ void RangesetTable::RangesetTableUpdatePos(TextCursor pos, int64_t ins, int64_t 
 */
 int RangesetTable::RangesetCreate() {
 
-	const std::vector<uint8_t> list = RangesetGetList();
+	const std::vector<uint8_t> list = labels();
 
 	// find the first label not used
 	const auto it = std::find_if(rangeset_labels.begin(), rangeset_labels.end(), [&list](char ch) {
@@ -190,6 +190,6 @@ int RangesetTable::RangesetCreate() {
 /*
 ** Return true if label is a valid identifier for a range set.
 */
-bool RangesetTable::RangesetLabelOK(int label) {
+bool RangesetTable::LabelOK(int label) {
 	return std::find(rangeset_labels.begin(), rangeset_labels.end(), label) != rangeset_labels.end();
 }

@@ -10,6 +10,6 @@ class QString;
 
 void ShiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection direction, bool byTab);
 void FillSelection(DocumentWidget *document, TextArea *area);
-QString ShiftTextEx(const QString &text, ShiftDirection direction, bool tabsAllowed, int tabDist, int nChars);
+QString ShiftText(const QString &text, ShiftDirection direction, bool tabsAllowed, int tabDist, int nChars);
 
 #endif
