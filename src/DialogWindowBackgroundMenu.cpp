@@ -54,15 +54,15 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
  * @brief DialogWindowBackgroundMenu::connectSlots
  */
 void DialogWindowBackgroundMenu::connectSlots() {
-		connect(ui.buttonNew           , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonNew_clicked);
-		connect(ui.buttonCopy          , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonCopy_clicked);
-		connect(ui.buttonDelete        , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonDelete_clicked);
-		connect(ui.buttonUp            , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonUp_clicked);
-		connect(ui.buttonDown          , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonDown_clicked);
-		connect(ui.buttonPasteLRMacro  , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonPasteLRMacro_clicked);
-		connect(ui.buttonCheck         , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonCheck_clicked);
-		connect(ui.buttonApply         , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonApply_clicked);
-		connect(ui.buttonOK            , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonOK_clicked);
+	connect(ui.buttonNew, &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonNew_clicked);
+	connect(ui.buttonCopy, &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonCopy_clicked);
+	connect(ui.buttonDelete, &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonDelete_clicked);
+	connect(ui.buttonUp, &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonUp_clicked);
+	connect(ui.buttonDown, &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonDown_clicked);
+	connect(ui.buttonPasteLRMacro, &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonPasteLRMacro_clicked);
+	connect(ui.buttonCheck, &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonCheck_clicked);
+	connect(ui.buttonApply, &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonApply_clicked);
+	connect(ui.buttonOK, &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonOK_clicked);
 }
 
 

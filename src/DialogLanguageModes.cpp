@@ -62,11 +62,13 @@ DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatte
  * @brief DialogLanguageModes::connectSlots
  */
 void DialogLanguageModes::connectSlots() {
-	connect(ui.buttonUp    , &QPushButton::clicked, this, &DialogLanguageModes::buttonUp_clicked);
-	connect(ui.buttonDown  , &QPushButton::clicked, this, &DialogLanguageModes::buttonDown_clicked);
+	connect(ui.buttonUp, &QPushButton::clicked, this, &DialogLanguageModes::buttonUp_clicked);
+	connect(ui.buttonDown, &QPushButton::clicked, this, &DialogLanguageModes::buttonDown_clicked);
 	connect(ui.buttonDelete, &QPushButton::clicked, this, &DialogLanguageModes::buttonDelete_clicked);
-	connect(ui.buttonCopy  , &QPushButton::clicked, this, &DialogLanguageModes::buttonCopy_clicked);
-	connect(ui.buttonNew   , &QPushButton::clicked, this, &DialogLanguageModes::buttonNew_clicked);
+	connect(ui.buttonCopy, &QPushButton::clicked, this, &DialogLanguageModes::buttonCopy_clicked);
+	connect(ui.buttonNew, &QPushButton::clicked, this, &DialogLanguageModes::buttonNew_clicked);
+	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogLanguageModes::buttonBox_accepted);
+	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogLanguageModes::buttonBox_clicked);
 }
 
 
@@ -226,9 +228,9 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 }
 
 /**
- * @brief DialogLanguageModes::on_buttonBox_accepted
+ * @brief DialogLanguageModes::buttonBox_accepted
  */
-void DialogLanguageModes::on_buttonBox_accepted() {
+void DialogLanguageModes::buttonBox_accepted() {
 	if (!updateLMList(Verbosity::Verbose)) {
 		return;
 	}
@@ -237,10 +239,10 @@ void DialogLanguageModes::on_buttonBox_accepted() {
 }
 
 /**
- * @brief DialogLanguageModes::on_buttonBox_clicked
+ * @brief DialogLanguageModes::buttonBox_clicked
  * @param button
  */
-void DialogLanguageModes::on_buttonBox_clicked(QAbstractButton *button) {
+void DialogLanguageModes::buttonBox_clicked(QAbstractButton *button) {
 	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 		updateLMList(Verbosity::Verbose);
 	}

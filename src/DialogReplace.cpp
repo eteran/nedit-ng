@@ -95,12 +95,12 @@ DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, Qt::W
  * @brief DialogReplace::connectSlots
  */
 void DialogReplace::connectSlots() {
-	connect(ui.buttonFind       , &QPushButton::clicked, this, &DialogReplace::buttonFind_clicked);
-	connect(ui.buttonReplace    , &QPushButton::clicked, this, &DialogReplace::buttonReplace_clicked);
+	connect(ui.buttonFind, &QPushButton::clicked, this, &DialogReplace::buttonFind_clicked);
+	connect(ui.buttonReplace, &QPushButton::clicked, this, &DialogReplace::buttonReplace_clicked);
 	connect(ui.buttonReplaceFind, &QPushButton::clicked, this, &DialogReplace::buttonReplaceFind_clicked);
-	connect(ui.buttonWindow     , &QPushButton::clicked, this, &DialogReplace::buttonWindow_clicked);
-	connect(ui.buttonSelection  , &QPushButton::clicked, this, &DialogReplace::buttonSelection_clicked);
-	connect(ui.buttonMulti      , &QPushButton::clicked, this, &DialogReplace::buttonMulti_clicked);
+	connect(ui.buttonWindow, &QPushButton::clicked, this, &DialogReplace::buttonWindow_clicked);
+	connect(ui.buttonSelection, &QPushButton::clicked, this, &DialogReplace::buttonSelection_clicked);
+	connect(ui.buttonMulti, &QPushButton::clicked, this, &DialogReplace::buttonMulti_clicked);
 }
 
 

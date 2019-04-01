@@ -26,8 +26,8 @@ DialogMultiReplace::DialogMultiReplace(DialogReplace *replace, Qt::WindowFlags f
  */
 void DialogMultiReplace::connectSlots() {
 	connect(ui.buttonDeselectAll, &QPushButton::clicked, this, &DialogMultiReplace::buttonDeselectAll_clicked);
-	connect(ui.buttonSelectAll  , &QPushButton::clicked, this, &DialogMultiReplace::buttonSelectAll_clicked);
-	connect(ui.buttonReplace    , &QPushButton::clicked, this, &DialogMultiReplace::buttonReplace_clicked);
+	connect(ui.buttonSelectAll, &QPushButton::clicked, this, &DialogMultiReplace::buttonSelectAll_clicked);
+	connect(ui.buttonReplace, &QPushButton::clicked, this, &DialogMultiReplace::buttonReplace_clicked);
 }
 
 /**

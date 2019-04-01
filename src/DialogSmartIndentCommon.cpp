@@ -25,9 +25,9 @@ DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlag
  * @brief DialogSmartIndentCommon::connectSlots
  */
 void DialogSmartIndentCommon::connectSlots() {
-	connect(ui.buttonOK     , &QPushButton::clicked, this, &DialogSmartIndentCommon::buttonOK_clicked);
-	connect(ui.buttonApply  , &QPushButton::clicked, this, &DialogSmartIndentCommon::buttonApply_clicked);
-	connect(ui.buttonCheck  , &QPushButton::clicked, this, &DialogSmartIndentCommon::buttonCheck_clicked);
+	connect(ui.buttonOK, &QPushButton::clicked, this, &DialogSmartIndentCommon::buttonOK_clicked);
+	connect(ui.buttonApply, &QPushButton::clicked, this, &DialogSmartIndentCommon::buttonApply_clicked);
+	connect(ui.buttonCheck, &QPushButton::clicked, this, &DialogSmartIndentCommon::buttonCheck_clicked);
 	connect(ui.buttonRestore, &QPushButton::clicked, this, &DialogSmartIndentCommon::buttonRestore_clicked);
 }
 

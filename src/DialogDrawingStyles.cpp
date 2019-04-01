@@ -56,13 +56,15 @@ DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatte
  * @brief DialogDrawingStyles::connectSlots
  */
 void DialogDrawingStyles::connectSlots() {
-		connect(ui.buttonNew       , &QPushButton::clicked, this, &DialogDrawingStyles::buttonNew_clicked);
-		connect(ui.buttonCopy      , &QPushButton::clicked, this, &DialogDrawingStyles::buttonCopy_clicked);
-		connect(ui.buttonDelete    , &QPushButton::clicked, this, &DialogDrawingStyles::buttonDelete_clicked);
-		connect(ui.buttonUp        , &QPushButton::clicked, this, &DialogDrawingStyles::buttonUp_clicked);
-		connect(ui.buttonDown      , &QPushButton::clicked, this, &DialogDrawingStyles::buttonDown_clicked);
-		connect(ui.buttonForeground, &QPushButton::clicked, this, &DialogDrawingStyles::buttonForeground_clicked);
-		connect(ui.buttonBackground, &QPushButton::clicked, this, &DialogDrawingStyles::buttonBackground_clicked);
+	connect(ui.buttonNew, &QPushButton::clicked, this, &DialogDrawingStyles::buttonNew_clicked);
+	connect(ui.buttonCopy, &QPushButton::clicked, this, &DialogDrawingStyles::buttonCopy_clicked);
+	connect(ui.buttonDelete, &QPushButton::clicked, this, &DialogDrawingStyles::buttonDelete_clicked);
+	connect(ui.buttonUp, &QPushButton::clicked, this, &DialogDrawingStyles::buttonUp_clicked);
+	connect(ui.buttonDown, &QPushButton::clicked, this, &DialogDrawingStyles::buttonDown_clicked);
+	connect(ui.buttonForeground, &QPushButton::clicked, this, &DialogDrawingStyles::buttonForeground_clicked);
+	connect(ui.buttonBackground, &QPushButton::clicked, this, &DialogDrawingStyles::buttonBackground_clicked);
+	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogDrawingStyles::buttonBox_accepted);
+	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogDrawingStyles::buttonBox_clicked);
 }
 
 
@@ -279,9 +281,9 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 }
 
 /**
- * @brief DialogDrawingStyles::on_buttonBox_accepted
+ * @brief DialogDrawingStyles::buttonBox_accepted
  */
-void DialogDrawingStyles::on_buttonBox_accepted() {
+void DialogDrawingStyles::buttonBox_accepted() {
 
 	if (!applyDialogChanges()) {
 		return;
@@ -292,10 +294,10 @@ void DialogDrawingStyles::on_buttonBox_accepted() {
 
 
 /**
- * @brief DialogDrawingStyles::on_buttonBox_clicked
+ * @brief DialogDrawingStyles::buttonBox_clicked
  * @param button
  */
-void DialogDrawingStyles::on_buttonBox_clicked(QAbstractButton *button) {
+void DialogDrawingStyles::buttonBox_clicked(QAbstractButton *button) {
 	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 		applyDialogChanges();
 	}

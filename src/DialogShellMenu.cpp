@@ -48,11 +48,13 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(pa
  * @brief DialogShellMenu::connectSlots
  */
 void DialogShellMenu::connectSlots() {
-		connect(ui.buttonNew   , &QPushButton::clicked, this, &DialogShellMenu::buttonNew_clicked);
-		connect(ui.buttonCopy  , &QPushButton::clicked, this, &DialogShellMenu::buttonCopy_clicked);
-		connect(ui.buttonDelete, &QPushButton::clicked, this, &DialogShellMenu::buttonDelete_clicked);
-		connect(ui.buttonUp    , &QPushButton::clicked, this, &DialogShellMenu::buttonUp_clicked);
-		connect(ui.buttonDown  , &QPushButton::clicked, this, &DialogShellMenu::buttonDown_clicked);
+	connect(ui.buttonNew, &QPushButton::clicked, this, &DialogShellMenu::buttonNew_clicked);
+	connect(ui.buttonCopy, &QPushButton::clicked, this, &DialogShellMenu::buttonCopy_clicked);
+	connect(ui.buttonDelete, &QPushButton::clicked, this, &DialogShellMenu::buttonDelete_clicked);
+	connect(ui.buttonUp, &QPushButton::clicked, this, &DialogShellMenu::buttonUp_clicked);
+	connect(ui.buttonDown, &QPushButton::clicked, this, &DialogShellMenu::buttonDown_clicked);
+	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogShellMenu::buttonBox_accepted);
+	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogShellMenu::buttonBox_clicked);
 }
 
 
@@ -283,19 +285,19 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
 }
 
 /**
- * @brief DialogShellMenu::on_buttonBox_clicked
+ * @brief DialogShellMenu::buttonBox_clicked
  * @param button
  */
-void DialogShellMenu::on_buttonBox_clicked(QAbstractButton *button) {
+void DialogShellMenu::buttonBox_clicked(QAbstractButton *button) {
 	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 		applyDialogChanges();
 	}
 }
 
 /**
- * @brief DialogShellMenu::on_buttonBox_accepted
+ * @brief DialogShellMenu::buttonBox_accepted
  */
-void DialogShellMenu::on_buttonBox_accepted() {
+void DialogShellMenu::buttonBox_accepted() {
 	// Read the dialog fields, and update the menus
 	if (!applyDialogChanges()) {
 		return;

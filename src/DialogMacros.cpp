@@ -54,15 +54,15 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
  * @brief DialogMacros::connectSlots
  */
 void DialogMacros::connectSlots() {
-	connect(ui.buttonNew           , &QPushButton::clicked, this, &DialogMacros::buttonNew_clicked);
-	connect(ui.buttonCopy          , &QPushButton::clicked, this, &DialogMacros::buttonCopy_clicked);
-	connect(ui.buttonDelete        , &QPushButton::clicked, this, &DialogMacros::buttonDelete_clicked);
-	connect(ui.buttonUp            , &QPushButton::clicked, this, &DialogMacros::buttonUp_clicked);
-	connect(ui.buttonDown          , &QPushButton::clicked, this, &DialogMacros::buttonDown_clicked);
-	connect(ui.buttonPasteLRMacro  , &QPushButton::clicked, this, &DialogMacros::buttonPasteLRMacro_clicked);
-	connect(ui.buttonCheck         , &QPushButton::clicked, this, &DialogMacros::buttonCheck_clicked);
-	connect(ui.buttonApply         , &QPushButton::clicked, this, &DialogMacros::buttonApply_clicked);
-	connect(ui.buttonOK            , &QPushButton::clicked, this, &DialogMacros::buttonOK_clicked);
+	connect(ui.buttonNew, &QPushButton::clicked, this, &DialogMacros::buttonNew_clicked);
+	connect(ui.buttonCopy, &QPushButton::clicked, this, &DialogMacros::buttonCopy_clicked);
+	connect(ui.buttonDelete, &QPushButton::clicked, this, &DialogMacros::buttonDelete_clicked);
+	connect(ui.buttonUp, &QPushButton::clicked, this, &DialogMacros::buttonUp_clicked);
+	connect(ui.buttonDown, &QPushButton::clicked, this, &DialogMacros::buttonDown_clicked);
+	connect(ui.buttonPasteLRMacro, &QPushButton::clicked, this, &DialogMacros::buttonPasteLRMacro_clicked);
+	connect(ui.buttonCheck, &QPushButton::clicked, this, &DialogMacros::buttonCheck_clicked);
+	connect(ui.buttonApply, &QPushButton::clicked, this, &DialogMacros::buttonApply_clicked);
+	connect(ui.buttonOK, &QPushButton::clicked, this, &DialogMacros::buttonOK_clicked);
 }
 
 

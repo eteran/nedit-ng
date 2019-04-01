@@ -67,19 +67,19 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f
  * @brief DialogSyntaxPatterns::connectSlots
  */
 void DialogSyntaxPatterns::connectSlots() {
-		connect(ui.buttonLanguageMode  , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonLanguageMode_clicked);
-		connect(ui.buttonHighlightStyle, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonHighlightStyle_clicked);
-		connect(ui.buttonNew           , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonNew_clicked);
-		connect(ui.buttonDelete        , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonDelete_clicked);
-		connect(ui.buttonCopy          , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonCopy_clicked);
-		connect(ui.buttonUp            , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonUp_clicked);
-		connect(ui.buttonDown          , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonDown_clicked);
-		connect(ui.buttonOK            , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonOK_clicked);
-		connect(ui.buttonApply         , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonApply_clicked);
-		connect(ui.buttonCheck         , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonCheck_clicked);
-		connect(ui.buttonDeletePattern , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonDeletePattern_clicked);
-		connect(ui.buttonRestore       , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonRestore_clicked);
-		connect(ui.buttonHelp          , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonHelp_clicked);
+	connect(ui.buttonLanguageMode, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonLanguageMode_clicked);
+	connect(ui.buttonHighlightStyle, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonHighlightStyle_clicked);
+	connect(ui.buttonNew, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonNew_clicked);
+	connect(ui.buttonDelete, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonDelete_clicked);
+	connect(ui.buttonCopy, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonCopy_clicked);
+	connect(ui.buttonUp, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonUp_clicked);
+	connect(ui.buttonDown, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonDown_clicked);
+	connect(ui.buttonOK, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonOK_clicked);
+	connect(ui.buttonApply, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonApply_clicked);
+	connect(ui.buttonCheck, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonCheck_clicked);
+	connect(ui.buttonDeletePattern, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonDeletePattern_clicked);
+	connect(ui.buttonRestore, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonRestore_clicked);
+	connect(ui.buttonHelp, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonHelp_clicked);
 }
 
 /**

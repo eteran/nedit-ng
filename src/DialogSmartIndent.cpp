@@ -38,14 +38,14 @@ DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, 
  * @brief DialogSmartIndent::connectSlots
  */
 void DialogSmartIndent::connectSlots() {
-		connect(ui.buttonCommon      , &QPushButton::clicked, this, &DialogSmartIndent::buttonCommon_clicked);
-		connect(ui.buttonLanguageMode, &QPushButton::clicked, this, &DialogSmartIndent::buttonLanguageMode_clicked);
-		connect(ui.buttonOK          , &QPushButton::clicked, this, &DialogSmartIndent::buttonOK_clicked);
-		connect(ui.buttonApply       , &QPushButton::clicked, this, &DialogSmartIndent::buttonApply_clicked);
-		connect(ui.buttonCheck       , &QPushButton::clicked, this, &DialogSmartIndent::buttonCheck_clicked);
-		connect(ui.buttonDelete      , &QPushButton::clicked, this, &DialogSmartIndent::buttonDelete_clicked);
-		connect(ui.buttonRestore     , &QPushButton::clicked, this, &DialogSmartIndent::buttonRestore_clicked);
-		connect(ui.buttonHelp        , &QPushButton::clicked, this, &DialogSmartIndent::buttonHelp_clicked);
+	connect(ui.buttonCommon, &QPushButton::clicked, this, &DialogSmartIndent::buttonCommon_clicked);
+	connect(ui.buttonLanguageMode, &QPushButton::clicked, this, &DialogSmartIndent::buttonLanguageMode_clicked);
+	connect(ui.buttonOK, &QPushButton::clicked, this, &DialogSmartIndent::buttonOK_clicked);
+	connect(ui.buttonApply, &QPushButton::clicked, this, &DialogSmartIndent::buttonApply_clicked);
+	connect(ui.buttonCheck, &QPushButton::clicked, this, &DialogSmartIndent::buttonCheck_clicked);
+	connect(ui.buttonDelete, &QPushButton::clicked, this, &DialogSmartIndent::buttonDelete_clicked);
+	connect(ui.buttonRestore, &QPushButton::clicked, this, &DialogSmartIndent::buttonRestore_clicked);
+	connect(ui.buttonHelp, &QPushButton::clicked, this, &DialogSmartIndent::buttonHelp_clicked);
 }
 
 

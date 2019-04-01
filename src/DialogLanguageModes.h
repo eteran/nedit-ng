@@ -26,11 +26,9 @@ Q_SIGNALS:
 private Q_SLOTS:
 	void currentChanged(const QModelIndex &current, const QModelIndex &previous);
 
-private Q_SLOTS:
-	void on_buttonBox_accepted();
-	void on_buttonBox_clicked(QAbstractButton *button);
-
 private:
+	void buttonBox_clicked(QAbstractButton *button);
+	void buttonBox_accepted();
 	void buttonUp_clicked();
 	void buttonDown_clicked();
 	void buttonDelete_clicked();
