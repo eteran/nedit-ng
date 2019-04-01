@@ -15,8 +15,11 @@ public:
 	~DialogPrint() noexcept override = default;
 
 private Q_SLOTS:
-	void on_buttonPrint_clicked();
 	void on_printers_currentIndexChanged(int index);
+
+private:
+	void buttonPrint_clicked();
+	void connectSlots();
 
 private:
 	void print(QPrinter *printer);

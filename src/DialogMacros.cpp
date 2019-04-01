@@ -20,6 +20,7 @@
  */
 DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
+	connectSlots();
 
 	ui.buttonNew   ->setIcon(QIcon::fromTheme(QLatin1String("document-new"), QIcon(QLatin1String(":/document-new.svg"))));
 	ui.buttonDelete->setIcon(QIcon::fromTheme(QLatin1String("edit-delete"),  QIcon(QLatin1String(":/edit-delete.svg"))));
@@ -48,6 +49,22 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
 		ui.listItems->setCurrentIndex(index);
 	}
 }
+
+/**
+ * @brief DialogMacros::connectSlots
+ */
+void DialogMacros::connectSlots() {
+	connect(ui.buttonNew           , &QPushButton::clicked, this, &DialogMacros::buttonNew_clicked);
+	connect(ui.buttonCopy          , &QPushButton::clicked, this, &DialogMacros::buttonCopy_clicked);
+	connect(ui.buttonDelete        , &QPushButton::clicked, this, &DialogMacros::buttonDelete_clicked);
+	connect(ui.buttonUp            , &QPushButton::clicked, this, &DialogMacros::buttonUp_clicked);
+	connect(ui.buttonDown          , &QPushButton::clicked, this, &DialogMacros::buttonDown_clicked);
+	connect(ui.buttonPasteLRMacro  , &QPushButton::clicked, this, &DialogMacros::buttonPasteLRMacro_clicked);
+	connect(ui.buttonCheck         , &QPushButton::clicked, this, &DialogMacros::buttonCheck_clicked);
+	connect(ui.buttonApply         , &QPushButton::clicked, this, &DialogMacros::buttonApply_clicked);
+	connect(ui.buttonOK            , &QPushButton::clicked, this, &DialogMacros::buttonOK_clicked);
+}
+
 
 /**
  * @brief DialogMacros::updateButtonStates
@@ -87,9 +104,9 @@ void DialogMacros::updateButtonStates(const QModelIndex &current) {
 }
 
 /**
- * @brief DialogMacros::on_buttonNew_clicked
+ * @brief DialogMacros::buttonNew_clicked
  */
-void DialogMacros::on_buttonNew_clicked() {
+void DialogMacros::buttonNew_clicked() {
 
 	if(!updateCurrentItem()) {
 		return;
@@ -108,9 +125,9 @@ void DialogMacros::on_buttonNew_clicked() {
 }
 
 /**
- * @brief DialogMacros::on_buttonCopy_clicked
+ * @brief DialogMacros::buttonCopy_clicked
  */
-void DialogMacros::on_buttonCopy_clicked() {
+void DialogMacros::buttonCopy_clicked() {
 
 	if(!updateCurrentItem()) {
 		return;
@@ -130,9 +147,9 @@ void DialogMacros::on_buttonCopy_clicked() {
 }
 
 /**
- * @brief DialogMacros::on_buttonDelete_clicked
+ * @brief DialogMacros::buttonDelete_clicked
  */
-void DialogMacros::on_buttonDelete_clicked() {
+void DialogMacros::buttonDelete_clicked() {
 
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {
@@ -145,9 +162,9 @@ void DialogMacros::on_buttonDelete_clicked() {
 }
 
 /**
- * @brief DialogMacros::on_buttonPasteLRMacro_clicked
+ * @brief DialogMacros::buttonPasteLRMacro_clicked
  */
-void DialogMacros::on_buttonPasteLRMacro_clicked() {
+void DialogMacros::buttonPasteLRMacro_clicked() {
 
 	QString replayMacro = CommandRecorder::instance()->replayMacro();
 	if (replayMacro.isEmpty()) {
@@ -158,9 +175,9 @@ void DialogMacros::on_buttonPasteLRMacro_clicked() {
 }
 
 /**
- * @brief DialogMacros::on_buttonUp_clicked
+ * @brief DialogMacros::buttonUp_clicked
  */
-void DialogMacros::on_buttonUp_clicked() {
+void DialogMacros::buttonUp_clicked() {
 
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {
@@ -172,9 +189,9 @@ void DialogMacros::on_buttonUp_clicked() {
 }
 
 /**
- * @brief DialogMacros::on_buttonDown_clicked
+ * @brief DialogMacros::buttonDown_clicked
  */
-void DialogMacros::on_buttonDown_clicked() {
+void DialogMacros::buttonDown_clicked() {
 
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {
@@ -250,9 +267,9 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
 }
 
 /**
- * @brief DialogMacros::on_buttonCheck_clicked
+ * @brief DialogMacros::buttonCheck_clicked
  */
-void DialogMacros::on_buttonCheck_clicked() {
+void DialogMacros::buttonCheck_clicked() {
 	if (validateFields(Verbosity::Verbose)) {
 		QMessageBox::information(this,
 								 tr("Macro"),
@@ -261,16 +278,16 @@ void DialogMacros::on_buttonCheck_clicked() {
 }
 
 /**
- * @brief DialogMacros::on_buttonApply_clicked
+ * @brief DialogMacros::buttonApply_clicked
  */
-void DialogMacros::on_buttonApply_clicked() {
+void DialogMacros::buttonApply_clicked() {
 	applyDialogChanges();
 }
 
 /**
- * @brief DialogMacros::on_buttonOK_clicked
+ * @brief DialogMacros::buttonOK_clicked
  */
-void DialogMacros::on_buttonOK_clicked() {
+void DialogMacros::buttonOK_clicked() {
 
 	// Read the dialog fields, and update the menus
 	if (!applyDialogChanges()) {

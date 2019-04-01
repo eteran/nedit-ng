@@ -8,26 +8,54 @@
 
 #include <QMessageBox>
 
+/**
+ * @brief DialogMultiReplace::DialogMultiReplace
+ * @param replace
+ * @param f
+ */
 DialogMultiReplace::DialogMultiReplace(DialogReplace *replace, Qt::WindowFlags f) : Dialog(replace, f), replace_(replace) {
 	ui.setupUi(this);
+	connectSlots();
 
 	model_ = new DocumentModel(this);
 	ui.listFiles->setModel(model_);
 }
 
+/**
+ * @brief DialogMultiReplace::connectSlots
+ */
+void DialogMultiReplace::connectSlots() {
+	connect(ui.buttonDeselectAll, &QPushButton::clicked, this, &DialogMultiReplace::buttonDeselectAll_clicked);
+	connect(ui.buttonSelectAll  , &QPushButton::clicked, this, &DialogMultiReplace::buttonSelectAll_clicked);
+	connect(ui.buttonReplace    , &QPushButton::clicked, this, &DialogMultiReplace::buttonReplace_clicked);
+}
+
+/**
+ * @brief DialogMultiReplace::on_checkShowPaths_toggled
+ * @param checked
+ */
 void DialogMultiReplace::on_checkShowPaths_toggled(bool checked) {
 	model_->setShowFullPath(checked);
 }
 
-void DialogMultiReplace::on_buttonDeselectAll_clicked() {
+/**
+ * @brief DialogMultiReplace::buttonDeselectAll_clicked
+ */
+void DialogMultiReplace::buttonDeselectAll_clicked() {
 	ui.listFiles->clearSelection();
 }
 
-void DialogMultiReplace::on_buttonSelectAll_clicked() {
+/**
+ * @brief DialogMultiReplace::buttonSelectAll_clicked
+ */
+void DialogMultiReplace::buttonSelectAll_clicked() {
 	ui.listFiles->selectAll();
 }
 
-void DialogMultiReplace::on_buttonReplace_clicked() {
+/**
+ * @brief DialogMultiReplace::buttonReplace_clicked
+ */
+void DialogMultiReplace::buttonReplace_clicked() {
 
 	QModelIndexList selections = ui.listFiles->selectionModel()->selectedRows();
 	const int nSelected = selections.size();

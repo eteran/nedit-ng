@@ -25,14 +25,17 @@ private Q_SLOTS:
 	void currentChanged(const QModelIndex &current, const QModelIndex &previous);
 
 private Q_SLOTS:
-	void on_buttonNew_clicked();
-	void on_buttonCopy_clicked();
-	void on_buttonDelete_clicked();
-	void on_buttonUp_clicked();
-	void on_buttonDown_clicked();
 	void on_buttonBox_clicked(QAbstractButton *button);
 	void on_buttonBox_accepted();
 	void on_radioToSameDocument_toggled(bool checked);
+
+private:
+	void buttonNew_clicked();
+	void buttonCopy_clicked();
+	void buttonDelete_clicked();
+	void buttonUp_clicked();
+	void buttonDown_clicked();
+	void connectSlots();
 
 private:
 	bool applyDialogChanges();

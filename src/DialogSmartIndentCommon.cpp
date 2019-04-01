@@ -16,14 +16,26 @@
  */
 DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
+	connectSlots();
 
 	ui.editCode->setPlainText(SmartIndent::CommonMacros);
 }
 
 /**
- * @brief DialogSmartIndentCommon::on_buttonOK_clicked
+ * @brief DialogSmartIndentCommon::connectSlots
  */
-void DialogSmartIndentCommon::on_buttonOK_clicked() {
+void DialogSmartIndentCommon::connectSlots() {
+	connect(ui.buttonOK     , &QPushButton::clicked, this, &DialogSmartIndentCommon::buttonOK_clicked);
+	connect(ui.buttonApply  , &QPushButton::clicked, this, &DialogSmartIndentCommon::buttonApply_clicked);
+	connect(ui.buttonCheck  , &QPushButton::clicked, this, &DialogSmartIndentCommon::buttonCheck_clicked);
+	connect(ui.buttonRestore, &QPushButton::clicked, this, &DialogSmartIndentCommon::buttonRestore_clicked);
+}
+
+
+/**
+ * @brief DialogSmartIndentCommon::buttonOK_clicked
+ */
+void DialogSmartIndentCommon::buttonOK_clicked() {
 	// change the macro
 	if(updateSmartIndentCommonData()) {
 		accept();
@@ -31,26 +43,26 @@ void DialogSmartIndentCommon::on_buttonOK_clicked() {
 }
 
 /**
- * @brief DialogSmartIndentCommon::on_buttonApply_clicked
+ * @brief DialogSmartIndentCommon::buttonApply_clicked
  */
-void DialogSmartIndentCommon::on_buttonApply_clicked() {
+void DialogSmartIndentCommon::buttonApply_clicked() {
 	// change the macro
 	updateSmartIndentCommonData();
 }
 
 /**
- * @brief DialogSmartIndentCommon::on_buttonCheck_clicked
+ * @brief DialogSmartIndentCommon::buttonCheck_clicked
  */
-void DialogSmartIndentCommon::on_buttonCheck_clicked() {
+void DialogSmartIndentCommon::buttonCheck_clicked() {
 	if (checkSmartIndentCommonDialogData()) {
 		QMessageBox::information(this, tr("Macro compiled"), tr("Macros compiled without error"));
 	}
 }
 
 /**
- * @brief DialogSmartIndentCommon::on_buttonRestore_clicked
+ * @brief DialogSmartIndentCommon::buttonRestore_clicked
  */
-void DialogSmartIndentCommon::on_buttonRestore_clicked() {
+void DialogSmartIndentCommon::buttonRestore_clicked() {
 	int resp = QMessageBox::question(
 				this,
 				tr("Discard Changes"),

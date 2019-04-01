@@ -141,6 +141,10 @@ public:
 	static void WriteNEditDB();
 	static void removeFromPrevOpenMenu(const QString &filename);
 
+private:
+	void buttonIFind_clicked();
+	void connectSlots();
+
 public Q_SLOTS:
 	// internal variants of signals
 	void action_New_Window(DocumentWidget *document);
@@ -273,7 +277,6 @@ public Q_SLOTS:
 	void on_tabWidget_customContextMenuRequested(const QPoint &pos);
 	void on_editIFind_textChanged(const QString &text);
 	void on_editIFind_returnPressed();
-	void on_buttonIFind_clicked();
 	void on_checkIFindCase_toggled(bool searchCaseSense);
 	void on_checkIFindRegex_toggled(bool searchRegex);
 	void on_checkIFindReverse_toggled(bool value);

@@ -20,6 +20,7 @@
  */
 DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
+	connectSlots();
 
 	ui.buttonNew   ->setIcon(QIcon::fromTheme(QLatin1String("document-new"), QIcon(QLatin1String(":/document-new.svg"))));
 	ui.buttonDelete->setIcon(QIcon::fromTheme(QLatin1String("edit-delete"),  QIcon(QLatin1String(":/edit-delete.svg"))));
@@ -50,9 +51,25 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::on_buttonNew_clicked
+ * @brief DialogWindowBackgroundMenu::connectSlots
  */
-void DialogWindowBackgroundMenu::on_buttonNew_clicked() {
+void DialogWindowBackgroundMenu::connectSlots() {
+		connect(ui.buttonNew           , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonNew_clicked);
+		connect(ui.buttonCopy          , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonCopy_clicked);
+		connect(ui.buttonDelete        , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonDelete_clicked);
+		connect(ui.buttonUp            , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonUp_clicked);
+		connect(ui.buttonDown          , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonDown_clicked);
+		connect(ui.buttonPasteLRMacro  , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonPasteLRMacro_clicked);
+		connect(ui.buttonCheck         , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonCheck_clicked);
+		connect(ui.buttonApply         , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonApply_clicked);
+		connect(ui.buttonOK            , &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonOK_clicked);
+}
+
+
+/**
+ * @brief DialogWindowBackgroundMenu::buttonNew_clicked
+ */
+void DialogWindowBackgroundMenu::buttonNew_clicked() {
 
 	if(!updateCurrentItem()) {
 		return;
@@ -71,9 +88,9 @@ void DialogWindowBackgroundMenu::on_buttonNew_clicked() {
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::on_buttonCopy_clicked
+ * @brief DialogWindowBackgroundMenu::buttonCopy_clicked
  */
-void DialogWindowBackgroundMenu::on_buttonCopy_clicked() {
+void DialogWindowBackgroundMenu::buttonCopy_clicked() {
 
 	if(!updateCurrentItem()) {
 		return;
@@ -93,9 +110,9 @@ void DialogWindowBackgroundMenu::on_buttonCopy_clicked() {
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::on_buttonDelete_clicked
+ * @brief DialogWindowBackgroundMenu::buttonDelete_clicked
  */
-void DialogWindowBackgroundMenu::on_buttonDelete_clicked() {
+void DialogWindowBackgroundMenu::buttonDelete_clicked() {
 
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {
@@ -108,9 +125,9 @@ void DialogWindowBackgroundMenu::on_buttonDelete_clicked() {
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::on_buttonPasteLRMacro_clicked
+ * @brief DialogWindowBackgroundMenu::buttonPasteLRMacro_clicked
  */
-void DialogWindowBackgroundMenu::on_buttonPasteLRMacro_clicked() {
+void DialogWindowBackgroundMenu::buttonPasteLRMacro_clicked() {
 
 	QString replayMacro = CommandRecorder::instance()->replayMacro();
 	if (replayMacro.isEmpty()) {
@@ -121,9 +138,9 @@ void DialogWindowBackgroundMenu::on_buttonPasteLRMacro_clicked() {
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::on_buttonUp_clicked
+ * @brief DialogWindowBackgroundMenu::buttonUp_clicked
  */
-void DialogWindowBackgroundMenu::on_buttonUp_clicked() {
+void DialogWindowBackgroundMenu::buttonUp_clicked() {
 
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {
@@ -135,9 +152,9 @@ void DialogWindowBackgroundMenu::on_buttonUp_clicked() {
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::on_buttonDown_clicked
+ * @brief DialogWindowBackgroundMenu::buttonDown_clicked
  */
-void DialogWindowBackgroundMenu::on_buttonDown_clicked() {
+void DialogWindowBackgroundMenu::buttonDown_clicked() {
 
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {
@@ -250,9 +267,9 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::on_buttonCheck_clicked
+ * @brief DialogWindowBackgroundMenu::buttonCheck_clicked
  */
-void DialogWindowBackgroundMenu::on_buttonCheck_clicked() {
+void DialogWindowBackgroundMenu::buttonCheck_clicked() {
 	if (validateFields(Verbosity::Verbose)) {
 		QMessageBox::information(this,
 								 tr("Macro"),
@@ -261,16 +278,16 @@ void DialogWindowBackgroundMenu::on_buttonCheck_clicked() {
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::on_buttonApply_clicked
+ * @brief DialogWindowBackgroundMenu::buttonApply_clicked
  */
-void DialogWindowBackgroundMenu::on_buttonApply_clicked() {
+void DialogWindowBackgroundMenu::buttonApply_clicked() {
 	applyDialogChanges();
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::on_buttonOK_clicked
+ * @brief DialogWindowBackgroundMenu::buttonOK_clicked
  */
-void DialogWindowBackgroundMenu::on_buttonOK_clicked() {
+void DialogWindowBackgroundMenu::buttonOK_clicked() {
 
 	// Read the dialog fields, and update the menus
 	if (!applyDialogChanges()) {

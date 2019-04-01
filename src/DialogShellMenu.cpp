@@ -16,6 +16,7 @@
  */
 DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
+	connectSlots();
 
 	ui.buttonNew   ->setIcon(QIcon::fromTheme(QLatin1String("document-new"), QIcon(QLatin1String(":/document-new.svg"))));
 	ui.buttonDelete->setIcon(QIcon::fromTheme(QLatin1String("edit-delete"),  QIcon(QLatin1String(":/edit-delete.svg"))));
@@ -42,6 +43,18 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(pa
 		ui.listItems->setCurrentIndex(index);
 	}
 }
+
+/**
+ * @brief DialogShellMenu::connectSlots
+ */
+void DialogShellMenu::connectSlots() {
+		connect(ui.buttonNew   , &QPushButton::clicked, this, &DialogShellMenu::buttonNew_clicked);
+		connect(ui.buttonCopy  , &QPushButton::clicked, this, &DialogShellMenu::buttonCopy_clicked);
+		connect(ui.buttonDelete, &QPushButton::clicked, this, &DialogShellMenu::buttonDelete_clicked);
+		connect(ui.buttonUp    , &QPushButton::clicked, this, &DialogShellMenu::buttonUp_clicked);
+		connect(ui.buttonDown  , &QPushButton::clicked, this, &DialogShellMenu::buttonDown_clicked);
+}
+
 
 /**
  * @brief DialogShellMenu::updateButtonStates
@@ -82,9 +95,9 @@ void DialogShellMenu::updateButtonStates(const QModelIndex &current) {
 
 
 /**
- * @brief DialogShellMenu::on_buttonNew_clicked
+ * @brief DialogShellMenu::buttonNew_clicked
  */
-void DialogShellMenu::on_buttonNew_clicked() {
+void DialogShellMenu::buttonNew_clicked() {
 
 	if(!updateCurrentItem()) {
 		return;
@@ -103,9 +116,9 @@ void DialogShellMenu::on_buttonNew_clicked() {
 }
 
 /**
- * @brief DialogShellMenu::on_buttonCopy_clicked
+ * @brief DialogShellMenu::buttonCopy_clicked
  */
-void DialogShellMenu::on_buttonCopy_clicked() {
+void DialogShellMenu::buttonCopy_clicked() {
 
 	if(!updateCurrentItem()) {
 		return;
@@ -125,9 +138,9 @@ void DialogShellMenu::on_buttonCopy_clicked() {
 }
 
 /**
- * @brief DialogShellMenu::on_buttonDelete_clicked
+ * @brief DialogShellMenu::buttonDelete_clicked
  */
-void DialogShellMenu::on_buttonDelete_clicked() {
+void DialogShellMenu::buttonDelete_clicked() {
 
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {
@@ -140,9 +153,9 @@ void DialogShellMenu::on_buttonDelete_clicked() {
 }
 
 /**
- * @brief DialogShellMenu::on_buttonUp_clicked
+ * @brief DialogShellMenu::buttonUp_clicked
  */
-void DialogShellMenu::on_buttonUp_clicked() {
+void DialogShellMenu::buttonUp_clicked() {
 
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {
@@ -154,9 +167,9 @@ void DialogShellMenu::on_buttonUp_clicked() {
 }
 
 /**
- * @brief DialogShellMenu::on_buttonDown_clicked
+ * @brief DialogShellMenu::buttonDown_clicked
  */
-void DialogShellMenu::on_buttonDown_clicked() {
+void DialogShellMenu::buttonDown_clicked() {
 
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {

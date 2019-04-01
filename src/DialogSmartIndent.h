@@ -28,15 +28,19 @@ private:
 	SmartIndentEntry getSmartIndentDialogData() const;
 
 private Q_SLOTS:
-	void on_buttonCommon_clicked();
-	void on_buttonLanguageMode_clicked();
-	void on_buttonOK_clicked();
-	void on_buttonApply_clicked();
-	void on_buttonCheck_clicked();
-	void on_buttonDelete_clicked();
-	void on_buttonRestore_clicked();
-	void on_buttonHelp_clicked();
 	void on_comboLanguageMode_currentIndexChanged(const QString &text);
+
+private:
+	void buttonCommon_clicked();
+	void buttonLanguageMode_clicked();
+	void buttonOK_clicked();
+	void buttonApply_clicked();
+	void buttonCheck_clicked();
+	void buttonDelete_clicked();
+	void buttonRestore_clicked();
+	void buttonHelp_clicked();
+
+	void connectSlots();
 
 public:
 	Ui::DialogSmartIndent ui;

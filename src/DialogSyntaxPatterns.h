@@ -36,20 +36,23 @@ private Q_SLOTS:
 	void currentChanged(const QModelIndex &current, const QModelIndex &previous);
 
 private Q_SLOTS:
-	void on_buttonLanguageMode_clicked();
-	void on_buttonHighlightStyle_clicked();
-	void on_buttonNew_clicked();
-	void on_buttonDelete_clicked();
-	void on_buttonCopy_clicked();
-	void on_buttonUp_clicked();
-	void on_buttonDown_clicked();
-	void on_buttonOK_clicked();
-	void on_buttonApply_clicked();
-	void on_buttonCheck_clicked();
-	void on_buttonDeletePattern_clicked();
-	void on_buttonRestore_clicked();
-	void on_buttonHelp_clicked();
 	void on_comboLanguageMode_currentIndexChanged(const QString &text);
+
+private:
+	void buttonLanguageMode_clicked();
+	void buttonHighlightStyle_clicked();
+	void buttonNew_clicked();
+	void buttonDelete_clicked();
+	void buttonCopy_clicked();
+	void buttonUp_clicked();
+	void buttonDown_clicked();
+	void buttonOK_clicked();
+	void buttonApply_clicked();
+	void buttonCheck_clicked();
+	void buttonDeletePattern_clicked();
+	void buttonRestore_clicked();
+	void buttonHelp_clicked();
+	void connectSlots();
 
 private:
 	bool validateFields(Verbosity verbosity);

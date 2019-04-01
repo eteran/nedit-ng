@@ -214,6 +214,7 @@ void DowncaseSelectionEx(DocumentWidget *document, TextArea *area) {
  */
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags) : QMainWindow(parent, flags) {
 	ui.setupUi(this);
+	connectSlots();
 
 	connect(qApp, &QApplication::focusChanged, this, &MainWindow::focusChanged);
 
@@ -275,6 +276,14 @@ MainWindow::~MainWindow() {
 	// destruction
 	disconnect(qApp, &QApplication::focusChanged, this, &MainWindow::focusChanged);
 }
+
+/**
+ * @brief MainWindow::connectSlots
+ */
+void MainWindow::connectSlots() {
+	connect(ui.buttonIFind, &QPushButton::clicked, this, &MainWindow::buttonIFind_clicked);
+}
+
 
 /**
  * @brief MainWindow::parseGeometry
@@ -2683,9 +2692,9 @@ void MainWindow::action_Find_Incremental(DocumentWidget *document, const QString
 }
 
 /**
- * @brief MainWindow::on_buttonIFind_clicked
+ * @brief MainWindow::buttonIFind_clicked
  */
-void MainWindow::on_buttonIFind_clicked() {
+void MainWindow::buttonIFind_clicked() {
 	// same as pressing return
 	on_editIFind_returnPressed();
 }

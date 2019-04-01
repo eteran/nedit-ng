@@ -20,6 +20,7 @@
  */
 DialogPrint::DialogPrint(QString contents, QString jobname, DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document), contents_(std::move(contents)), jobname_(std::move(jobname)) {
 	ui.setupUi(this);
+	connectSlots();
 
 	QStringList printers = QPrinterInfo::availablePrinterNames();
 	QString defaultPrinter = QPrinterInfo::defaultPrinterName();
@@ -28,6 +29,14 @@ DialogPrint::DialogPrint(QString contents, QString jobname, DocumentWidget *docu
 	ui.printers->addItems(printers);
 	ui.printers->setCurrentText(defaultPrinter);
 }
+
+/**
+ * @brief DialogPrint::connectSlots
+ */
+void DialogPrint::connectSlots() {
+	connect(ui.buttonPrint, &QPushButton::clicked, this, &DialogPrint::buttonPrint_clicked);
+}
+
 
 /**
  * @brief DialogPrint::on_printers_currentIndexChanged
@@ -55,9 +64,9 @@ void DialogPrint::print(QPrinter *printer) {
 }
 
 /**
- * @brief DialogPrint::on_buttonPrint_clicked
+ * @brief DialogPrint::buttonPrint_clicked
  */
-void DialogPrint::on_buttonPrint_clicked() {
+void DialogPrint::buttonPrint_clicked() {
 
 	setCursor(Qt::WaitCursor);
 

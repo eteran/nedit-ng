@@ -55,12 +55,15 @@ private Q_SLOTS:
 	void on_checkCase_toggled(bool checked);
 	void on_checkKeep_toggled(bool checked);
 	void on_textFind_textChanged(const QString &text);
-	void on_buttonFind_clicked();
-	void on_buttonReplace_clicked();
-	void on_buttonReplaceFind_clicked();
-	void on_buttonWindow_clicked();
-	void on_buttonSelection_clicked();
-	void on_buttonMulti_clicked();
+
+private:
+	void buttonFind_clicked();
+	void buttonReplace_clicked();
+	void buttonReplaceFind_clicked();
+	void buttonWindow_clicked();
+	void buttonSelection_clicked();
+	void buttonMulti_clicked();
+	void connectSlots();
 
 private:
 	Ui::DialogReplace ui;

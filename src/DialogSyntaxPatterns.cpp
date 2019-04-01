@@ -24,6 +24,7 @@
  */
 DialogSyntaxPatterns::DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f) : Dialog(window, f), window_(window) {
 	ui.setupUi(this);
+	connectSlots();
 
 	ui.buttonNew   ->setIcon(QIcon::fromTheme(QLatin1String("document-new"), QIcon(QLatin1String(":/document-new.svg"))));
 	ui.buttonDelete->setIcon(QIcon::fromTheme(QLatin1String("edit-delete"),  QIcon(QLatin1String(":/edit-delete.svg"))));
@@ -60,6 +61,25 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f
 
 	connect(ui.listItems->selectionModel(), &QItemSelectionModel::currentChanged, this, &DialogSyntaxPatterns::currentChanged, Qt::QueuedConnection);
 	connect(this, &DialogSyntaxPatterns::restore, ui.listItems, &QListView::setCurrentIndex, Qt::QueuedConnection);
+}
+
+/**
+ * @brief DialogSyntaxPatterns::connectSlots
+ */
+void DialogSyntaxPatterns::connectSlots() {
+		connect(ui.buttonLanguageMode  , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonLanguageMode_clicked);
+		connect(ui.buttonHighlightStyle, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonHighlightStyle_clicked);
+		connect(ui.buttonNew           , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonNew_clicked);
+		connect(ui.buttonDelete        , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonDelete_clicked);
+		connect(ui.buttonCopy          , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonCopy_clicked);
+		connect(ui.buttonUp            , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonUp_clicked);
+		connect(ui.buttonDown          , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonDown_clicked);
+		connect(ui.buttonOK            , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonOK_clicked);
+		connect(ui.buttonApply         , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonApply_clicked);
+		connect(ui.buttonCheck         , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonCheck_clicked);
+		connect(ui.buttonDeletePattern , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonDeletePattern_clicked);
+		connect(ui.buttonRestore       , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonRestore_clicked);
+		connect(ui.buttonHelp          , &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonHelp_clicked);
 }
 
 /**
@@ -244,17 +264,17 @@ void DialogSyntaxPatterns::on_comboLanguageMode_currentIndexChanged(const QStrin
 }
 
 /**
- * @brief DialogSyntaxPatterns::on_buttonLanguageMode_clicked
+ * @brief DialogSyntaxPatterns::buttonLanguageMode_clicked
  */
-void DialogSyntaxPatterns::on_buttonLanguageMode_clicked() {
+void DialogSyntaxPatterns::buttonLanguageMode_clicked() {
 	auto dialog = std::make_unique<DialogLanguageModes>(this, this);
 	dialog->exec();
 }
 
 /**
- * @brief DialogSyntaxPatterns::on_buttonHighlightStyle_clicked
+ * @brief DialogSyntaxPatterns::buttonHighlightStyle_clicked
  */
-void DialogSyntaxPatterns::on_buttonHighlightStyle_clicked() {
+void DialogSyntaxPatterns::buttonHighlightStyle_clicked() {
 	QString style = ui.comboHighlightStyle->currentText();
 	if(!style.isEmpty()) {
 		auto DrawingStyles = std::make_unique<DialogDrawingStyles>(this, Highlight::HighlightStyles, this);
@@ -298,9 +318,9 @@ bool DialogSyntaxPatterns::updateCurrentItem() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::on_buttonNew_clicked
+ * @brief DialogSyntaxPatterns::buttonNew_clicked
  */
-void DialogSyntaxPatterns::on_buttonNew_clicked() {
+void DialogSyntaxPatterns::buttonNew_clicked() {
 
 	if(!updateCurrentItem()) {
 		return;
@@ -319,9 +339,9 @@ void DialogSyntaxPatterns::on_buttonNew_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::on_buttonDelete_clicked
+ * @brief DialogSyntaxPatterns::buttonDelete_clicked
  */
-void DialogSyntaxPatterns::on_buttonDelete_clicked() {
+void DialogSyntaxPatterns::buttonDelete_clicked() {
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {
 		deleted_ = index;
@@ -333,9 +353,9 @@ void DialogSyntaxPatterns::on_buttonDelete_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::on_buttonCopy_clicked
+ * @brief DialogSyntaxPatterns::buttonCopy_clicked
  */
-void DialogSyntaxPatterns::on_buttonCopy_clicked() {
+void DialogSyntaxPatterns::buttonCopy_clicked() {
 
 	if(!updateCurrentItem()) {
 		return;
@@ -355,9 +375,9 @@ void DialogSyntaxPatterns::on_buttonCopy_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::on_buttonUp_clicked
+ * @brief DialogSyntaxPatterns::buttonUp_clicked
  */
-void DialogSyntaxPatterns::on_buttonUp_clicked() {
+void DialogSyntaxPatterns::buttonUp_clicked() {
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {
 		model_->moveItemUp(index);
@@ -368,9 +388,9 @@ void DialogSyntaxPatterns::on_buttonUp_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::on_buttonDown_clicked
+ * @brief DialogSyntaxPatterns::buttonDown_clicked
  */
-void DialogSyntaxPatterns::on_buttonDown_clicked() {
+void DialogSyntaxPatterns::buttonDown_clicked() {
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {
 		model_->moveItemDown(index);
@@ -381,9 +401,9 @@ void DialogSyntaxPatterns::on_buttonDown_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::on_buttonOK_clicked
+ * @brief DialogSyntaxPatterns::buttonOK_clicked
  */
-void DialogSyntaxPatterns::on_buttonOK_clicked() {
+void DialogSyntaxPatterns::buttonOK_clicked() {
 	// change the patterns
 	if (!updatePatternSet()) {
 		return;
@@ -393,16 +413,16 @@ void DialogSyntaxPatterns::on_buttonOK_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::on_buttonApply_clicked
+ * @brief DialogSyntaxPatterns::buttonApply_clicked
  */
-void DialogSyntaxPatterns::on_buttonApply_clicked() {
+void DialogSyntaxPatterns::buttonApply_clicked() {
 	updatePatternSet();
 }
 
 /**
- * @brief DialogSyntaxPatterns::on_buttonCheck_clicked
+ * @brief DialogSyntaxPatterns::buttonCheck_clicked
  */
-void DialogSyntaxPatterns::on_buttonCheck_clicked() {
+void DialogSyntaxPatterns::buttonCheck_clicked() {
 	if (checkHighlightDialogData()) {
 		QMessageBox::information(this,
 								 tr("Pattern compiled"),
@@ -411,9 +431,9 @@ void DialogSyntaxPatterns::on_buttonCheck_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::on_buttonDeletePattern_clicked
+ * @brief DialogSyntaxPatterns::buttonDeletePattern_clicked
  */
-void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
+void DialogSyntaxPatterns::buttonDeletePattern_clicked() {
 
 	const QString languageMode = ui.comboLanguageMode->currentText();
 
@@ -453,9 +473,9 @@ void DialogSyntaxPatterns::on_buttonDeletePattern_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::on_buttonRestore_clicked
+ * @brief DialogSyntaxPatterns::buttonRestore_clicked
  */
-void DialogSyntaxPatterns::on_buttonRestore_clicked() {
+void DialogSyntaxPatterns::buttonRestore_clicked() {
 
 	const QString languageMode = ui.comboLanguageMode->currentText();
 
@@ -508,9 +528,9 @@ void DialogSyntaxPatterns::on_buttonRestore_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::on_buttonHelp_clicked
+ * @brief DialogSyntaxPatterns::buttonHelp_clicked
  */
-void DialogSyntaxPatterns::on_buttonHelp_clicked() {
+void DialogSyntaxPatterns::buttonHelp_clicked() {
 	Help::displayTopic(this, Help::Topic::Syntax);
 }
 

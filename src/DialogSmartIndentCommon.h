@@ -15,11 +15,12 @@ private:
 	bool checkSmartIndentCommonDialogData();
 	bool updateSmartIndentCommonData();
 
-private Q_SLOTS:
-	void on_buttonOK_clicked();
-	void on_buttonApply_clicked();
-	void on_buttonCheck_clicked();
-	void on_buttonRestore_clicked();
+private:
+	void buttonOK_clicked();
+	void buttonApply_clicked();
+	void buttonCheck_clicked();
+	void buttonRestore_clicked();
+	void connectSlots();
 
 public:
 	Ui::DialogSmartIndentCommon ui;

@@ -18,9 +18,12 @@ public:
 
 private Q_SLOTS:
 	void on_checkShowPaths_toggled(bool checked);
-	void on_buttonDeselectAll_clicked();
-	void on_buttonSelectAll_clicked();
-	void on_buttonReplace_clicked();
+
+private:
+	void buttonDeselectAll_clicked();
+	void buttonSelectAll_clicked();
+	void buttonReplace_clicked();
+	void connectSlots();
 
 public:
 	void uploadFileListItems(const std::vector<DocumentWidget *> &writeableDocuments);

@@ -48,7 +48,10 @@ private Q_SLOTS:
 	void on_checkCase_toggled(bool checked);
 	void on_checkKeep_toggled(bool checked);
 	void on_textFind_textChanged(const QString &text);
-	void on_buttonFind_clicked();
+
+private:
+	void buttonFind_clicked();
+	void connectSlots();
 
 private:
 	Ui::DialogFind ui;

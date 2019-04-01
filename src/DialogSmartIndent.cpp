@@ -23,6 +23,7 @@
  */
 DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
+	connectSlots();
 
 	QString languageMode = Preferences::LanguageModeName((document->GetLanguageMode() == PLAIN_LANGUAGE_MODE) ? 0 : document->GetLanguageMode());
 
@@ -32,6 +33,21 @@ DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, 
 	// Fill in the dialog information for the selected language mode
 	setSmartIndentDialogData(SmartIndent::findIndentSpec(languageMode_));
 }
+
+/**
+ * @brief DialogSmartIndent::connectSlots
+ */
+void DialogSmartIndent::connectSlots() {
+		connect(ui.buttonCommon      , &QPushButton::clicked, this, &DialogSmartIndent::buttonCommon_clicked);
+		connect(ui.buttonLanguageMode, &QPushButton::clicked, this, &DialogSmartIndent::buttonLanguageMode_clicked);
+		connect(ui.buttonOK          , &QPushButton::clicked, this, &DialogSmartIndent::buttonOK_clicked);
+		connect(ui.buttonApply       , &QPushButton::clicked, this, &DialogSmartIndent::buttonApply_clicked);
+		connect(ui.buttonCheck       , &QPushButton::clicked, this, &DialogSmartIndent::buttonCheck_clicked);
+		connect(ui.buttonDelete      , &QPushButton::clicked, this, &DialogSmartIndent::buttonDelete_clicked);
+		connect(ui.buttonRestore     , &QPushButton::clicked, this, &DialogSmartIndent::buttonRestore_clicked);
+		connect(ui.buttonHelp        , &QPushButton::clicked, this, &DialogSmartIndent::buttonHelp_clicked);
+}
+
 
 /**
  * @brief DialogSmartIndent::updateLanguageModes
@@ -69,25 +85,25 @@ void DialogSmartIndent::on_comboLanguageMode_currentIndexChanged(const QString &
 }
 
 /**
- * @brief DialogSmartIndent::on_buttonCommon_clicked
+ * @brief DialogSmartIndent::buttonCommon_clicked
  */
-void DialogSmartIndent::on_buttonCommon_clicked() {
+void DialogSmartIndent::buttonCommon_clicked() {
 	auto dialog = std::make_unique<DialogSmartIndentCommon>(this);
 	dialog->exec();
 }
 
 /**
- * @brief DialogSmartIndent::on_buttonLanguageMode_clicked
+ * @brief DialogSmartIndent::buttonLanguageMode_clicked
  */
-void DialogSmartIndent::on_buttonLanguageMode_clicked() {
+void DialogSmartIndent::buttonLanguageMode_clicked() {
 	auto dialog = std::make_unique<DialogLanguageModes>(nullptr, this);
 	dialog->exec();
 }
 
 /**
- * @brief DialogSmartIndent::on_buttonOK_clicked
+ * @brief DialogSmartIndent::buttonOK_clicked
  */
-void DialogSmartIndent::on_buttonOK_clicked() {
+void DialogSmartIndent::buttonOK_clicked() {
 	// change the macro
 	if (!updateSmartIndentData()) {
 		return;
@@ -97,16 +113,16 @@ void DialogSmartIndent::on_buttonOK_clicked() {
 }
 
 /**
- * @brief DialogSmartIndent::on_buttonApply_clicked
+ * @brief DialogSmartIndent::buttonApply_clicked
  */
-void DialogSmartIndent::on_buttonApply_clicked() {
+void DialogSmartIndent::buttonApply_clicked() {
 	updateSmartIndentData();
 }
 
 /**
- * @brief DialogSmartIndent::on_buttonCheck_clicked
+ * @brief DialogSmartIndent::buttonCheck_clicked
  */
-void DialogSmartIndent::on_buttonCheck_clicked() {
+void DialogSmartIndent::buttonCheck_clicked() {
 	if (checkSmartIndentDialogData()) {
 		QMessageBox::information(this,
 								 tr("Macro compiled"),
@@ -115,9 +131,9 @@ void DialogSmartIndent::on_buttonCheck_clicked() {
 }
 
 /**
- * @brief DialogSmartIndent::on_buttonDelete_clicked
+ * @brief DialogSmartIndent::buttonDelete_clicked
  */
-void DialogSmartIndent::on_buttonDelete_clicked() {
+void DialogSmartIndent::buttonDelete_clicked() {
 
 	int resp = QMessageBox::question(
 				this,
@@ -142,9 +158,9 @@ void DialogSmartIndent::on_buttonDelete_clicked() {
 }
 
 /**
- * @brief DialogSmartIndent::on_buttonRestore_clicked
+ * @brief DialogSmartIndent::buttonRestore_clicked
  */
-void DialogSmartIndent::on_buttonRestore_clicked() {
+void DialogSmartIndent::buttonRestore_clicked() {
 
 	const SmartIndentEntry *defaultIS = SmartIndent::findDefaultIndentSpec(languageMode_);
 	if(!defaultIS) {
@@ -184,9 +200,9 @@ void DialogSmartIndent::on_buttonRestore_clicked() {
 }
 
 /**
- * @brief DialogSmartIndent::on_buttonHelp_clicked
+ * @brief DialogSmartIndent::buttonHelp_clicked
  */
-void DialogSmartIndent::on_buttonHelp_clicked() {
+void DialogSmartIndent::buttonHelp_clicked() {
 	Help::displayTopic(this, Help::Topic::SmartIndent);
 }
 

@@ -19,6 +19,7 @@
  */
 DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatterns, std::vector<HighlightStyle> &highlightStyles, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) , highlightStyles_(highlightStyles), dialogSyntaxPatterns_(dialogSyntaxPatterns) {
 	ui.setupUi(this);
+	connectSlots();
 
 	ui.buttonNew   ->setIcon(QIcon::fromTheme(QLatin1String("document-new"), QIcon(QLatin1String(":/document-new.svg"))));
 	ui.buttonDelete->setIcon(QIcon::fromTheme(QLatin1String("edit-delete"),  QIcon(QLatin1String(":/edit-delete.svg"))));
@@ -52,6 +53,20 @@ DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatte
 }
 
 /**
+ * @brief DialogDrawingStyles::connectSlots
+ */
+void DialogDrawingStyles::connectSlots() {
+		connect(ui.buttonNew       , &QPushButton::clicked, this, &DialogDrawingStyles::buttonNew_clicked);
+		connect(ui.buttonCopy      , &QPushButton::clicked, this, &DialogDrawingStyles::buttonCopy_clicked);
+		connect(ui.buttonDelete    , &QPushButton::clicked, this, &DialogDrawingStyles::buttonDelete_clicked);
+		connect(ui.buttonUp        , &QPushButton::clicked, this, &DialogDrawingStyles::buttonUp_clicked);
+		connect(ui.buttonDown      , &QPushButton::clicked, this, &DialogDrawingStyles::buttonDown_clicked);
+		connect(ui.buttonForeground, &QPushButton::clicked, this, &DialogDrawingStyles::buttonForeground_clicked);
+		connect(ui.buttonBackground, &QPushButton::clicked, this, &DialogDrawingStyles::buttonBackground_clicked);
+}
+
+
+/**
  * @brief DialogDrawingStyles::setStyleByName
  * @param name
  */
@@ -71,9 +86,9 @@ void DialogDrawingStyles::setStyleByName(const QString &name) {
 }
 
 /**
- * @brief DialogDrawingStyles::on_buttonNew_clicked
+ * @brief DialogDrawingStyles::buttonNew_clicked
  */
-void DialogDrawingStyles::on_buttonNew_clicked() {
+void DialogDrawingStyles::buttonNew_clicked() {
 
 	if(!updateCurrentItem()) {
 		return;
@@ -93,9 +108,9 @@ void DialogDrawingStyles::on_buttonNew_clicked() {
 }
 
 /**
- * @brief DialogDrawingStyles::on_buttonCopy_clicked
+ * @brief DialogDrawingStyles::buttonCopy_clicked
  */
-void DialogDrawingStyles::on_buttonCopy_clicked() {
+void DialogDrawingStyles::buttonCopy_clicked() {
 
 	if(!updateCurrentItem()) {
 		return;
@@ -115,9 +130,9 @@ void DialogDrawingStyles::on_buttonCopy_clicked() {
 }
 
 /**
- * @brief DialogDrawingStyles::on_buttonDelete_clicked
+ * @brief DialogDrawingStyles::buttonDelete_clicked
  */
-void DialogDrawingStyles::on_buttonDelete_clicked() {
+void DialogDrawingStyles::buttonDelete_clicked() {
 
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {
@@ -130,9 +145,9 @@ void DialogDrawingStyles::on_buttonDelete_clicked() {
 }
 
 /**
- * @brief DialogDrawingStyles::on_buttonUp_clicked
+ * @brief DialogDrawingStyles::buttonUp_clicked
  */
-void DialogDrawingStyles::on_buttonUp_clicked() {
+void DialogDrawingStyles::buttonUp_clicked() {
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {
 		model_->moveItemUp(index);
@@ -143,9 +158,9 @@ void DialogDrawingStyles::on_buttonUp_clicked() {
 }
 
 /**
- * @brief DialogDrawingStyles::on_buttonDown_clicked
+ * @brief DialogDrawingStyles::buttonDown_clicked
  */
-void DialogDrawingStyles::on_buttonDown_clicked() {
+void DialogDrawingStyles::buttonDown_clicked() {
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {
 		model_->moveItemDown(index);
@@ -517,15 +532,15 @@ void DialogDrawingStyles::chooseColor(QLineEdit *edit) {
 }
 
 /**
- * @brief DialogDrawingStyles::on_buttonForeground_clicked
+ * @brief DialogDrawingStyles::buttonForeground_clicked
  */
-void DialogDrawingStyles::on_buttonForeground_clicked() {
+void DialogDrawingStyles::buttonForeground_clicked() {
 	chooseColor(ui.editColorFG);
 }
 
 /**
- * @brief DialogDrawingStyles::on_buttonBackground_clicked
+ * @brief DialogDrawingStyles::buttonBackground_clicked
  */
-void DialogDrawingStyles::on_buttonBackground_clicked() {
+void DialogDrawingStyles::buttonBackground_clicked() {
 	chooseColor(ui.editColorBG);
 }

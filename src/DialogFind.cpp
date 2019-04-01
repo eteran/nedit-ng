@@ -20,7 +20,16 @@
  */
 DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f) : Dialog(window, f), window_(window), document_(document) {
 	ui.setupUi(this);
+	connectSlots();
 }
+
+/**
+ * @brief DialogFind::connectSlots
+ */
+void DialogFind::connectSlots() {
+	connect(ui.buttonFind, &QPushButton::clicked, this, &DialogFind::buttonFind_clicked);
+}
+
 
 /**
  * @brief DialogFind::showEvent
@@ -187,9 +196,9 @@ void DialogFind::setTextFieldFromDocument(DocumentWidget *document) {
 }
 
 /**
- * @brief DialogFind::on_buttonFind_clicked
+ * @brief DialogFind::buttonFind_clicked
  */
-void DialogFind::on_buttonFind_clicked() {
+void DialogFind::buttonFind_clicked() {
 
 	// fetch find string, direction and type from the dialog
 	boost::optional<Fields> fields = readFields();

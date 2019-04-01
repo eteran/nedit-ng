@@ -88,7 +88,21 @@ std::vector<DocumentWidget *> collectWritableWindows() {
  */
 DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f) : Dialog(window, f), window_(window), document_(document) {
 	ui.setupUi(this);
+	connectSlots();
 }
+
+/**
+ * @brief DialogReplace::connectSlots
+ */
+void DialogReplace::connectSlots() {
+	connect(ui.buttonFind       , &QPushButton::clicked, this, &DialogReplace::buttonFind_clicked);
+	connect(ui.buttonReplace    , &QPushButton::clicked, this, &DialogReplace::buttonReplace_clicked);
+	connect(ui.buttonReplaceFind, &QPushButton::clicked, this, &DialogReplace::buttonReplaceFind_clicked);
+	connect(ui.buttonWindow     , &QPushButton::clicked, this, &DialogReplace::buttonWindow_clicked);
+	connect(ui.buttonSelection  , &QPushButton::clicked, this, &DialogReplace::buttonSelection_clicked);
+	connect(ui.buttonMulti      , &QPushButton::clicked, this, &DialogReplace::buttonMulti_clicked);
+}
+
 
 /**
  * @brief DialogReplace::showEvent
@@ -205,9 +219,9 @@ void DialogReplace::on_textFind_textChanged(const QString &text) {
 }
 
 /**
- * @brief DialogReplace::on_buttonFind_clicked
+ * @brief DialogReplace::buttonFind_clicked
  */
-void DialogReplace::on_buttonFind_clicked() {
+void DialogReplace::buttonFind_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
 	boost::optional<Fields> fields = readFields();
@@ -239,9 +253,9 @@ void DialogReplace::on_buttonFind_clicked() {
 }
 
 /**
- * @brief DialogReplace::on_buttonReplace_clicked
+ * @brief DialogReplace::buttonReplace_clicked
  */
-void DialogReplace::on_buttonReplace_clicked() {
+void DialogReplace::buttonReplace_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
 	boost::optional<Fields> fields = readFields();
@@ -267,9 +281,9 @@ void DialogReplace::on_buttonReplace_clicked() {
 }
 
 /**
- * @brief DialogReplace::on_buttonReplaceFind_clicked
+ * @brief DialogReplace::buttonReplaceFind_clicked
  */
-void DialogReplace::on_buttonReplaceFind_clicked() {
+void DialogReplace::buttonReplaceFind_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
 	boost::optional<Fields> fields = readFields();
@@ -295,9 +309,9 @@ void DialogReplace::on_buttonReplaceFind_clicked() {
 }
 
 /**
- * @brief DialogReplace::on_buttonWindow_clicked
+ * @brief DialogReplace::buttonWindow_clicked
  */
-void DialogReplace::on_buttonWindow_clicked() {
+void DialogReplace::buttonWindow_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
 	boost::optional<Fields> fields = readFields();
@@ -321,9 +335,9 @@ void DialogReplace::on_buttonWindow_clicked() {
 }
 
 /**
- * @brief DialogReplace::on_buttonSelection_clicked
+ * @brief DialogReplace::buttonSelection_clicked
  */
-void DialogReplace::on_buttonSelection_clicked() {
+void DialogReplace::buttonSelection_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
 	boost::optional<Fields> fields = readFields();
@@ -347,9 +361,9 @@ void DialogReplace::on_buttonSelection_clicked() {
 }
 
 /**
- * @brief DialogReplace::on_buttonMulti_clicked
+ * @brief DialogReplace::buttonMulti_clicked
  */
-void DialogReplace::on_buttonMulti_clicked() {
+void DialogReplace::buttonMulti_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
 	boost::optional<Fields> fields = readFields();

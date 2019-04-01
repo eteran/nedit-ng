@@ -27,16 +27,17 @@ Q_SIGNALS:
 private Q_SLOTS:
 	void currentChanged(const QModelIndex &current, const QModelIndex &previous);
 
-private Q_SLOTS:
-	void on_buttonNew_clicked();
-	void on_buttonCopy_clicked();
-	void on_buttonDelete_clicked();
-	void on_buttonUp_clicked();
-	void on_buttonDown_clicked();
-	void on_buttonPasteLRMacro_clicked();
-	void on_buttonCheck_clicked();
-	void on_buttonApply_clicked();
-	void on_buttonOK_clicked();
+private:
+	void buttonNew_clicked();
+	void buttonCopy_clicked();
+	void buttonDelete_clicked();
+	void buttonUp_clicked();
+	void buttonDown_clicked();
+	void buttonPasteLRMacro_clicked();
+	void buttonCheck_clicked();
+	void buttonApply_clicked();
+	void buttonOK_clicked();
+	void connectSlots();
 
 private:
 	bool applyDialogChanges();

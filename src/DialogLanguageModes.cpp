@@ -24,6 +24,7 @@
  */
 DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatterns, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), dialogSyntaxPatterns_(dialogSyntaxPatterns) {
 	ui.setupUi(this);
+	connectSlots();
 
 	ui.buttonNew   ->setIcon(QIcon::fromTheme(QLatin1String("document-new"), QIcon(QLatin1String(":/document-new.svg"))));
 	ui.buttonDelete->setIcon(QIcon::fromTheme(QLatin1String("edit-delete"),  QIcon(QLatin1String(":/edit-delete.svg"))));
@@ -56,6 +57,18 @@ DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatte
 	ui.editTabSpacing->setValidator(new QIntValidator(0, 100, this));
 	ui.editEmulatedTabSpacing->setValidator(new QIntValidator(-1, 100, this));
 }
+
+/**
+ * @brief DialogLanguageModes::connectSlots
+ */
+void DialogLanguageModes::connectSlots() {
+	connect(ui.buttonUp    , &QPushButton::clicked, this, &DialogLanguageModes::buttonUp_clicked);
+	connect(ui.buttonDown  , &QPushButton::clicked, this, &DialogLanguageModes::buttonDown_clicked);
+	connect(ui.buttonDelete, &QPushButton::clicked, this, &DialogLanguageModes::buttonDelete_clicked);
+	connect(ui.buttonCopy  , &QPushButton::clicked, this, &DialogLanguageModes::buttonCopy_clicked);
+	connect(ui.buttonNew   , &QPushButton::clicked, this, &DialogLanguageModes::buttonNew_clicked);
+}
+
 
 /**
  * @brief DialogLanguageModes::updateButtonStates
@@ -515,9 +528,9 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 }
 
 /**
- * @brief DialogLanguageModes::on_buttonNew_clicked
+ * @brief DialogLanguageModes::buttonNew_clicked
  */
-void DialogLanguageModes::on_buttonNew_clicked() {
+void DialogLanguageModes::buttonNew_clicked() {
 
 	if(!updateCurrentItem()) {
 		return;
@@ -536,9 +549,9 @@ void DialogLanguageModes::on_buttonNew_clicked() {
 }
 
 /**
- * @brief DialogLanguageModes::on_buttonCopy_clicked
+ * @brief DialogLanguageModes::buttonCopy_clicked
  */
-void DialogLanguageModes::on_buttonCopy_clicked() {
+void DialogLanguageModes::buttonCopy_clicked() {
 
 	if(!updateCurrentItem()) {
 		return;
@@ -558,9 +571,9 @@ void DialogLanguageModes::on_buttonCopy_clicked() {
 }
 
 /**
- * @brief DialogLanguageModes::on_buttonUp_clicked
+ * @brief DialogLanguageModes::buttonUp_clicked
  */
-void DialogLanguageModes::on_buttonUp_clicked() {
+void DialogLanguageModes::buttonUp_clicked() {
 
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {
@@ -572,9 +585,9 @@ void DialogLanguageModes::on_buttonUp_clicked() {
 }
 
 /**
- * @brief DialogLanguageModes::on_buttonDown_clicked
+ * @brief DialogLanguageModes::buttonDown_clicked
  */
-void DialogLanguageModes::on_buttonDown_clicked() {
+void DialogLanguageModes::buttonDown_clicked() {
 
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {
@@ -611,9 +624,9 @@ bool DialogLanguageModes::LMHasHighlightPatterns(const QString &name) const {
 }
 
 /**
- * @brief DialogLanguageModes::on_buttonDelete_clicked
+ * @brief DialogLanguageModes::buttonDelete_clicked
  */
-void DialogLanguageModes::on_buttonDelete_clicked() {
+void DialogLanguageModes::buttonDelete_clicked() {
 
 	QModelIndex index = ui.listItems->currentIndex();
 	if(index.isValid()) {

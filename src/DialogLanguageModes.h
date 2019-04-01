@@ -29,11 +29,14 @@ private Q_SLOTS:
 private Q_SLOTS:
 	void on_buttonBox_accepted();
 	void on_buttonBox_clicked(QAbstractButton *button);
-	void on_buttonUp_clicked();
-	void on_buttonDown_clicked();
-	void on_buttonDelete_clicked();
-	void on_buttonCopy_clicked();
-	void on_buttonNew_clicked();
+
+private:
+	void buttonUp_clicked();
+	void buttonDown_clicked();
+	void buttonDelete_clicked();
+	void buttonCopy_clicked();
+	void buttonNew_clicked();
+	void connectSlots();
 
 private:
 	bool validateFields(Verbosity verbosity);
