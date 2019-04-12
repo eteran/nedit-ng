@@ -16,9 +16,6 @@ qt5_add_translation(QM_FILES
 	res/translations/nedit-ng_fr.ts
 )
 
-set(QM_FILES ${QM_FILES} PARENT_SCOPE)
-add_custom_target(translations ALL DEPENDS ${QM_FILES})
-
 # Create translations QRC file - translations.qrc
 set(TRANSLATIONS_QRC "${CMAKE_CURRENT_BINARY_DIR}/translations.qrc")
 
