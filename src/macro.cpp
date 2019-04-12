@@ -2146,7 +2146,7 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 
 			int stoppedAt;
 			QString errMsg;
-			Program *const prog = CompileMacro(code, &errMsg, &stoppedAt);
+			Program *const prog = compileMacro(code, &errMsg, &stoppedAt);
 			if(!prog) {
 				if (errPos) {
 					*errPos = in.index() + stoppedAt;
@@ -2187,7 +2187,7 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 			QString code = in.mid();
 			int stoppedAt;
 			QString errMsg;
-			Program *const prog = CompileMacro(code, &errMsg, &stoppedAt);
+			Program *const prog = compileMacro(code, &errMsg, &stoppedAt);
 			if(!prog) {
 				if (errPos) {
 					*errPos = in.index() + stoppedAt;

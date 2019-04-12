@@ -4005,7 +4005,7 @@ void DocumentWidget::beginSmartIndent(bool warn) {
 	QString errMsg;
 
 	auto winData = std::make_unique<SmartIndentData>();
-	winData->newlineMacro = CompileMacro(indentMacros->newlineMacro, &errMsg, &stoppedAt);
+	winData->newlineMacro = compileMacro(indentMacros->newlineMacro, &errMsg, &stoppedAt);
 
 	if (!winData->newlineMacro) {
 		Preferences::reportError(this, indentMacros->newlineMacro, stoppedAt, tr("newline macro"), errMsg);
@@ -4015,7 +4015,7 @@ void DocumentWidget::beginSmartIndent(bool warn) {
 	if (indentMacros->modMacro.isNull()) {
 		winData->modMacro = nullptr;
 	} else {
-		winData->modMacro = CompileMacro(indentMacros->modMacro, &errMsg, &stoppedAt);
+		winData->modMacro = compileMacro(indentMacros->modMacro, &errMsg, &stoppedAt);
 		if (!winData->modMacro) {
 
 			delete winData->newlineMacro;
@@ -4993,7 +4993,7 @@ void DocumentWidget::repeatMacro(const QString &macro, int how) {
 	// Parse the resulting macro into an executable program "prog"
 	QString errMsg;
 	int stoppedAt;
-	Program *const prog = CompileMacro(loopedCmd, &errMsg, &stoppedAt);
+	Program *const prog = compileMacro(loopedCmd, &errMsg, &stoppedAt);
 	if(!prog) {
 		qWarning("NEdit: internal error, repeat macro syntax wrong: %s", qPrintable(errMsg));
 		return;
@@ -6425,7 +6425,7 @@ void DocumentWidget::replay() {
 		QString errMsg;
 		int stoppedAt;
 
-		Program *prog = CompileMacro(replayMacro, &errMsg, &stoppedAt);
+		Program *prog = compileMacro(replayMacro, &errMsg, &stoppedAt);
 		if(!prog) {
 			qWarning("NEdit: internal error, learn/replay macro syntax error: %s", qPrintable(errMsg));
 			return;
@@ -6497,7 +6497,7 @@ void DocumentWidget::DoMacro(const QString &macro, const QString &errInName) {
 
 	// Parse the macro and report errors if it fails
 	int stoppedAt;
-	Program *const prog = CompileMacro(qMacro, &errMsg, &stoppedAt);
+	Program *const prog = compileMacro(qMacro, &errMsg, &stoppedAt);
 	if(!prog) {
 		Preferences::reportError(this, qMacro, stoppedAt, errInName, errMsg);
 		return;

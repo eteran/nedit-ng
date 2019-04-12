@@ -25,10 +25,8 @@ public:
 Q_SIGNALS:
 	void restore(const QModelIndex &selection);
 
-private Q_SLOTS:
-	void currentChanged(const QModelIndex &current, const QModelIndex &previous);
-
 private:
+	void currentChanged(const QModelIndex &current, const QModelIndex &previous);
 	void buttonBox_clicked(QAbstractButton *button);
 	void buttonBox_accepted();
 	void buttonNew_clicked();

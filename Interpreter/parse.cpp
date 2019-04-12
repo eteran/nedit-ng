@@ -10,7 +10,7 @@
  * @return
  */
 bool isMacroValid(const QString &expr, QString *message, int *stoppedAt) {
-	if(Program *prog = CompileMacro(expr, message, stoppedAt)) {
+	if(Program *prog = compileMacro(expr, message, stoppedAt)) {
 		delete prog;
 		return true;
 	}

@@ -16,18 +16,18 @@ const QStringList DEFAULT_INCLUDE_PATHS = {
 	QLatin1String("/usr/local/include/")
 };
 
-auto DEFAULT_DELIMETERS       = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
-auto DEFAULT_BACKLIGHT_CHARS  = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
-auto DEFAULT_TEXT_FONT        = QLatin1String("Courier New,10,-1,5,50,0,0,0,0,0");
+const auto DEFAULT_DELIMETERS       = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
+const auto DEFAULT_BACKLIGHT_CHARS  = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
+const auto DEFAULT_TEXT_FONT        = QLatin1String("Courier New,10,-1,5,50,0,0,0,0,0");
 
 #if defined(Q_OS_LINUX)
-    auto shellCommandsResource = QLatin1String("DefaultShellCommandsLinux.txt");
+	const auto shellCommandsResource = QLatin1String("DefaultShellCommandsLinux.txt");
 #elif defined(Q_OS_FREEBSD)
-    auto shellCommandsResource = QLatin1String("DefaultShellCommandsFreeBSD.txt");
+	const auto shellCommandsResource = QLatin1String("DefaultShellCommandsFreeBSD.txt");
 #elif defined(Q_OS_UNIX)
-    auto shellCommandsResource = QLatin1String("DefaultShellCommandsUnix.txt");
+	const auto shellCommandsResource = QLatin1String("DefaultShellCommandsUnix.txt");
 #elif defined(Q_OS_WIN)
-    auto shellCommandsResource = QLatin1String("DefaultShellCommandsWindows.txt");
+	const auto shellCommandsResource = QLatin1String("DefaultShellCommandsWindows.txt");
 #endif
 
 template <class T>

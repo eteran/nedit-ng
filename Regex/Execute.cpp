@@ -44,7 +44,7 @@ bool attempt(Regex *prog, const char *string);
    only necessary during compilation, can be left out.
    The net result of using this inlined version at two critical places is
    a 25% speedup (again, witnesses on Perl syntax highlighting). */
-FORCE_INLINE uint8_t *NEXT_PTR(uint8_t *ptr) {
+FORCE_INLINE uint8_t *NEXT_PTR(uint8_t *ptr) noexcept {
 
 	// NOTE(eteran): like next_ptr, but is inline
 	// doesn't do "is this a first pass compile" check

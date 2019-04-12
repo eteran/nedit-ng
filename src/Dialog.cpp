@@ -12,7 +12,7 @@ Dialog::Dialog(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
 
 /**
  * @brief Dialog::showEvent
- * @param event unused
+ * @param event
  *
  * reposition the dialog to be centered on the cursor if the setting is enabled
  */

@@ -66,12 +66,12 @@ constexpr R literal_escape(Ch ch) noexcept {
  * Octal Escape:       \0###   Max of three digits and not greater
  *                             than 377 octal.  Must have leading zero.
  *
- * Returns the actual character value or nullptr if not a valid hex or
- * octal escape.  Raise<RegexError> is called if \x0, \x00, \0, \00, \000, or
+ * Returns the actual character value or '\0' if not a valid hex or
+ * octal escape.  RegexError is thrown if \x0, \x00, \0, \00, \000, or
  * \0000 is specified.
  *--------------------------------------------------------------------*/
 template <class R, class Ch>
-R numeric_escape(Ch ch, const char **parse) noexcept {
+R numeric_escape(Ch ch, const char **parse) {
 
 	static const char digits[] = "fedcbaFEDCBA9876543210";
 
@@ -158,9 +158,8 @@ R numeric_escape(Ch ch, const char **parse) noexcept {
  * @param p
  * @return
  */
-template <class T>
-uint16_t GET_OFFSET(T *p) noexcept {
-	auto ptr = reinterpret_cast<uint8_t *>(p);
+inline uint16_t GET_OFFSET(const void *p) noexcept {
+	auto ptr = reinterpret_cast<const uint8_t *>(p);
 	return static_cast<uint16_t>(((ptr[1] & 0xff) << 8) + (ptr[2] & 0xff));
 }
 

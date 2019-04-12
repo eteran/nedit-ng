@@ -36,9 +36,7 @@ DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatte
 	}
 
 	connect(ui.listItems->selectionModel(), &QItemSelectionModel::currentChanged, this, &DialogDrawingStyles::currentChanged, Qt::QueuedConnection);
-	connect(this, &DialogDrawingStyles::restore, this, [this](const QModelIndex &index){
-		ui.listItems->setCurrentIndex(index);
-	}, Qt::QueuedConnection);
+	connect(this, &DialogDrawingStyles::restore, ui.listItems, &QListView::setCurrentIndex, Qt::QueuedConnection);
 
 	// default to selecting the first item
 	if(model_->rowCount() != 0) {
