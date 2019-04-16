@@ -4,9 +4,14 @@
 
 #include <QMessageBox>
 #include <QIntValidator>
+#include <QTimer>
 
 DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
+
+	QTimer::singleShot(0, this, [this]() {
+		resize(0, 0);
+	});
 
 	ui.editWidth->setValidator(new QIntValidator(0, INT_MAX, this));
 	ui.editHeight->setValidator(new QIntValidator(0, INT_MAX, this));

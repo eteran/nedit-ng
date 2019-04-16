@@ -11,6 +11,7 @@
 #include <QKeyEvent>
 #include <QMessageBox>
 #include <QMimeData>
+#include <QTimer>
 
 /**
  * @brief DialogFind::DialogFind
@@ -21,6 +22,10 @@
 DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f) : Dialog(window, f), window_(window), document_(document) {
 	ui.setupUi(this);
 	connectSlots();
+
+	QTimer::singleShot(0, this, [this]() {
+		resize(0, 0);
+	});
 }
 
 /**

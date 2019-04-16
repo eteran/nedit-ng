@@ -9,6 +9,7 @@
 #include <QMessageBox>
 #include <QPixmap>
 #include <QPainter>
+#include <QTimer>
 
 namespace {
 
@@ -47,6 +48,10 @@ QIcon toIcon(const QColor &color) {
  */
 DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
+
+	QTimer::singleShot(0, this, [this]() {
+		resize(0, 0);
+	});
 
 	textFG_        = X11Colors::fromString(Preferences::GetPrefColorName(TEXT_FG_COLOR));
 	textBG_        = X11Colors::fromString(Preferences::GetPrefColorName(TEXT_BG_COLOR));

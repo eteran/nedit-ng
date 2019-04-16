@@ -4,6 +4,7 @@
 #include "Font.h"
 #include "Preferences.h"
 #include <QPushButton>
+#include <QTimer>
 
 /**
  * @brief DialogFonts::DialogFonts
@@ -13,6 +14,10 @@
  */
 DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
 	ui.setupUi(this);
+
+	QTimer::singleShot(0, this, [this]() {
+		resize(0, 0);
+	});
 
 	if(!document_) {
 		ui.buttonBox->removeButton(ui.buttonBox->button(QDialogButtonBox::Apply));
