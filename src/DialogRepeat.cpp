@@ -7,9 +7,15 @@
 
 #include <QMessageBox>
 #include <QIntValidator>
+#include <QTimer>
 
 DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
 	ui.setupUi(this);
+
+	QTimer::singleShot(0, this, [this]() {
+		resize(0, 0);
+	});
+
 	ui.lineEdit->setValidator(new QIntValidator(0, INT_MAX, this));
 }
 

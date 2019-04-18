@@ -1,6 +1,7 @@
 
 #include "DialogFilter.h"
 #include <QKeyEvent>
+#include <QTimer>
 
 /**
  * @brief DialogFilter::DialogFilter
@@ -9,6 +10,10 @@
  */
 DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
+
+	QTimer::singleShot(0, this, [this]() {
+		resize(0, 0);
+	});
 
 	// seed the history with a blank string, makes later logic simpler
 	history_ << QLatin1String("");

@@ -12,6 +12,7 @@
 
 #include <QRegularExpressionValidator>
 #include <QRegularExpression>
+#include <QTimer>
 
 namespace {
 
@@ -58,6 +59,10 @@ struct UpdateState {
  */
 DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
+
+	QTimer::singleShot(0, this, [this]() {
+		resize(0, 0);
+	});
 
 	static const QRegularExpression rx(QLatin1String("[0-9]"));
 	ui.editDirectory->setValidator(new QRegularExpressionValidator(rx, this));
