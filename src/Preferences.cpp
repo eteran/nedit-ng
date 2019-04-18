@@ -1229,10 +1229,10 @@ void Preferences::translatePrefFormats(uint32_t fileVer) {
 		loadLanguageModesString(Settings::languageModes);
 	}
 	if (!Settings::smartIndentInit.isNull()) {
-		SmartIndent::LoadSmartIndentStringEx(Settings::smartIndentInit);
+		SmartIndent::LoadSmartIndentString(Settings::smartIndentInit);
 	}
 	if (!Settings::smartIndentInitCommon.isNull()) {
-		SmartIndent::LoadSmartIndentCommonStringEx(Settings::smartIndentInitCommon);
+		SmartIndent::LoadSmartIndentCommonString(Settings::smartIndentInitCommon);
 	}
 
 	Highlight::loadTheme();

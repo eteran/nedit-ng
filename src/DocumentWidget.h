@@ -93,7 +93,7 @@ public:
 
 public:
 	static DocumentWidget *fromArea(TextArea *area);
-	static DocumentWidget *EditExistingFileEx(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, bool iconic, const QString &languageMode, bool tabbed, bool background);
+	static DocumentWidget *editExistingFile(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, bool iconic, const QString &languageMode, bool tabbed, bool background);
 	static std::vector<DocumentWidget *> allDocuments();
 
 public:
@@ -158,7 +158,7 @@ public:
 	void GotoMatchingCharacter(TextArea *area);
 	void MakeSelectionVisible(TextArea *area);
 	void ResumeMacroExecutionEx();
-	void SelectNumberedLineEx(TextArea *area, int64_t lineNum);
+	void selectNumberedLine(TextArea *area, int64_t lineNum);
 	void SelectToMatchingCharacter(TextArea *area);
 	void SetBacklightChars(const QString &applyBacklightTypes);
 	void SetColors(const QColor &textFg, const QColor &textBg, const QColor &selectFg, const QColor &selectBg, const QColor &hiliteFg, const QColor &hiliteBg, const QColor &lineNoFg, const QColor &lineNoBg, const QColor &cursorFg);
@@ -304,8 +304,8 @@ public:
 	std::unique_ptr<WindowHighlightData> highlightData_;   // info for syntax highlighting
 
 private:
-	QMenu *contextMenu_    = nullptr;		
-	size_t nMarks_         = 0;                         // number of active bookmarks	
+	QMenu *contextMenu_ = nullptr;
+	size_t nMarks_      = 0;                            // number of active bookmarks
 
 private:
 	QSplitter *splitter_;

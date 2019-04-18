@@ -293,7 +293,7 @@ TextCursor Highlight::parseBufferRange(const HighlightData *pass1Patterns, const
 
 	if (canCrossLineBoundaries(contextRequirements)) {
 		endSafety = forwardOneContext(buf, contextRequirements, endParse);
-	} else if (endParse >= buf->BufGetLength() || (buf->BufGetCharacter(endParse - 1) == '\n')) {
+	} else if (endParse >= buf->length() || (buf->BufGetCharacter(endParse - 1) == '\n')) {
 		endSafety = endParse;
 	} else {
 		endSafety = std::min(buf->BufEndOfBuffer(), buf->BufEndOfLine(endParse) + 1);

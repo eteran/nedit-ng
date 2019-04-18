@@ -309,7 +309,7 @@ QLatin1String createRepeatMacro(int how) {
 ** the syntax highlighting deferred, in order to speed up the file-
 ** opening operation when multiple files are being opened in succession.
 */
-DocumentWidget *DocumentWidget::EditExistingFileEx(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, bool iconic, const QString &languageMode, bool tabbed, bool background) {
+DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, bool iconic, const QString &languageMode, bool tabbed, bool background) {
 
 	// first look to see if file is already displayed in a window
 	if(DocumentWidget *document = MainWindow::FindWindowWithFile(name, path)) {
@@ -2044,13 +2044,13 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 	switch(info_->fileFormat) {
 	case FileFormats::Unix:
 	case FileFormats::Mac:
-		if (fileLen != info_->buffer->BufGetLength()) {
+		if (fileLen != info_->buffer->length()) {
 			return true;
 		}
 		break;
 	case FileFormats::Dos:
 		// However, if a DOS file is smaller on disk, it's certainly different
-		if (fileLen < info_->buffer->BufGetLength()) {
+		if (fileLen < info_->buffer->length()) {
 			return true;
 		}
 		break;
@@ -2103,7 +2103,7 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 			break;
 		}
 
-		if (int rv = info_->buffer->BufCmpEx(bufPos, fileString, nRead)) {
+		if (int rv = info_->buffer->compare(bufPos, fileString, nRead)) {
 			return rv;
 		}
 
@@ -2112,13 +2112,13 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 	}
 
 	if (pendingCR) {
-		if (int rv = info_->buffer->BufCmpEx(bufPos, pendingCR)) {
+		if (int rv = info_->buffer->compare(bufPos, pendingCR)) {
 			return rv;
 		}
 		bufPos += 1;
 	}
 
-	if (bufPos != info_->buffer->BufGetLength()) {
+	if (bufPos != info_->buffer->length()) {
 		return true;
 	}
 
@@ -2900,7 +2900,7 @@ DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 		return nullptr;
 	}
 
-	DocumentWidget *document = DocumentWidget::EditExistingFileEx(
+	DocumentWidget *document = DocumentWidget::editExistingFile(
 	                               this,
 	                               fi->filename,
 	                               fi->pathname,
@@ -4271,7 +4271,7 @@ void DocumentWidget::gotoAP(TextArea *area, int lineNum, int column) {
 		}
 	} else if (column == -1) {
 		// User didn't specify a column
-		SelectNumberedLineEx(area, lineNum);
+		selectNumberedLine(area, lineNum);
 		return;
 	}
 
@@ -5787,7 +5787,7 @@ void DocumentWidget::startHighlighting(bool warn) {
 	const QCursor prevCursor = cursor();
 	setCursor(Qt::WaitCursor);
 
-	const int64_t bufLength = info_->buffer->BufGetLength();
+	const int64_t bufLength = info_->buffer->length();
 
 	/* Parse the buffer with pass 1 patterns.  If there are none, initialize
 	   the style buffer to all UNFINISHED_STYLE to trigger parsing later */
@@ -6758,7 +6758,7 @@ void DocumentWidget::AddMarkEx(TextArea *area, QChar label) {
 	markTable_[index].cursorPos = area->TextGetCursorPos();
 }
 
-void DocumentWidget::SelectNumberedLineEx(TextArea *area, int64_t lineNum) {
+void DocumentWidget::selectNumberedLine(TextArea *area, int64_t lineNum) {
 	int i;
 	TextCursor lineStart = {};
 
@@ -6769,7 +6769,7 @@ void DocumentWidget::SelectNumberedLineEx(TextArea *area, int64_t lineNum) {
 
 	TextCursor lineEnd = TextCursor(-1);
 
-	for (i = 1; i <= lineNum && lineEnd < info_->buffer->BufGetLength(); i++) {
+	for (i = 1; i <= lineNum && lineEnd < info_->buffer->length(); i++) {
 		lineStart = lineEnd + 1;
 		lineEnd = info_->buffer->BufEndOfLine(lineStart);
 	}
@@ -6777,7 +6777,7 @@ void DocumentWidget::SelectNumberedLineEx(TextArea *area, int64_t lineNum) {
 	// highlight the line
 	if (i > lineNum) {
 		// Line was found
-		if (lineEnd < info_->buffer->BufGetLength()) {
+		if (lineEnd < info_->buffer->length()) {
 			info_->buffer->BufSelect(lineStart, lineEnd + 1);
 		} else {
 			// Don't select past the end of the buffer !
@@ -6876,7 +6876,7 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
 
 	Tags::tagName = string;
 
-	QList<Tags::Tag> tags = Tags::LookupTag(string, Tags::searchMode);
+	QList<Tags::Tag> tags = Tags::lookupTag(string, Tags::searchMode);
 
 	// First look up all of the matching tags
 	for(const Tags::Tag &tag : tags) {
@@ -7060,7 +7060,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 	Q_ASSERT(fi);
 
 	// open the file containing the definition
-	DocumentWidget::EditExistingFileEx(
+	DocumentWidget::editExistingFile(
 	            this,
 	            fi->filename,
 	            fi->pathname,
@@ -7084,7 +7084,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 
 	if (Tags::tagSearch[i].isEmpty()) {
 		// if the search string is empty, select the numbered line
-		SelectNumberedLineEx(area, tagLineNumber);
+		selectNumberedLine(area, tagLineNumber);
 		return;
 	}
 

@@ -36,7 +36,12 @@
 #include <sys/param.h>
 #endif
 
+
+namespace Tags {
+
 namespace {
+
+int loadTagsFile(const QString &tagSpec, int index, int recLevel);
 
 struct CalltipAlias {
 	QString dest;
@@ -60,8 +65,8 @@ constexpr int TIP_DEFAULT_LINES = 4;
 // used  in AddRelTagsFile and AddTagsFile
 int16_t tagFileIndex = 0;
 
-QMultiHash<QString, Tags::Tag> LoadedTags;
-QMultiHash<QString, Tags::Tag> LoadedTips;
+QMultiHash<QString, Tag> LoadedTags;
+QMultiHash<QString, Tag> LoadedTips;
 
 // Check if a line has non-ws characters
 bool lineEmpty(const QString &line) {
@@ -83,7 +88,7 @@ QString rstrip(QString s) {
 	return s.replace(re, QString());
 }
 
-QList<Tags::Tag> getTagFromTable(QMultiHash<QString, Tags::Tag> &table, const QString &name) {
+QList<Tag> getTagFromTable(QMultiHash<QString, Tag> &table, const QString &name) {
 	return table.values(name);
 }
 
@@ -92,7 +97,7 @@ QList<Tags::Tag> getTagFromTable(QMultiHash<QString, Tags::Tag> &table, const QS
  * separators (for now) are \n.  If the end of string is reached before n
  * lines, return the number of lines advanced, else normally return -1.
  */
-int64_t moveAheadNLinesEx(view::string_view str, int64_t &pos, int64_t n) {
+int64_t moveAheadNLines(view::string_view str, int64_t &pos, int64_t n) {
 
 	int64_t i = n;
 	while (static_cast<size_t>(pos) != str.size() && n > 0) {
@@ -109,300 +114,65 @@ int64_t moveAheadNLinesEx(view::string_view str, int64_t &pos, int64_t n) {
 	}
 }
 
-}
-
-/*
-**  contents of                   tag->searchString   | tag->posInf
-**    ctags, line num specified:  ""                  | line num
-**    ctags, search expr specfd:  ctags search expr   | -1
-**    etags  (emacs tags)         etags search string | search start pos
-*/
-
-
-// list of loaded tags/tips files
-std::deque<Tags::File> Tags::TagsFileList;
-std::deque<Tags::File> Tags::TipsFileList;
-
-/* These are all transient global variables -- they don't hold any state
-	between tag/tip lookups */
-Tags::SearchMode Tags::searchMode = Tags::SearchMode::TAG;
-QString          Tags::tagName;
-
-
-QString Tags::tagFiles[MAXDUPTAGS];
-QString Tags::tagSearch[MAXDUPTAGS];
-int64_t Tags::tagPosInf[MAXDUPTAGS];
-
-bool            Tags::globAnchored;
-CallTipPosition Tags::globPos;
-TipHAlignMode   Tags::globHAlign;
-TipVAlignMode   Tags::globVAlign;
-TipAlignMode    Tags::globAlignMode;
-
-
-/* Add a tag specification to the hash table
-**   Return Value:  false ... tag already existing, spec not added
-**                  true  ... tag spec is new, added.
-**   (We don't return boolean as the return value is used as counter increment!)
-**
-*/
-int Tags::addTag(const QString &name, const QString &file, size_t lang, const QString &search, int64_t posInf, const QString &path, int index) {
-
-	QMultiHash<QString, Tag> *const table = hashTableByType(searchMode);
-
-	QString newFile;
-	if (QFileInfo(file).isAbsolute()) {
-		newFile = file;
-	} else {
-		newFile = tr("%1%2").arg(path, file);
-	}
-
-	newFile = NormalizePathname(newFile);
-
-	QList<Tag> tags = table->values(name);
-	for(const Tag &t : tags) {
-
-		if (lang != t.language) {
-			continue;
-		}
-
-		if (search != t.searchString) {
-			continue;
-		}
-
-		if (posInf != t.posInf) {
-			continue;
-		}
-
-		if (QFileInfo(t.file).isAbsolute() && (newFile != t.file)) {
-			continue;
-		}
-
-		if (QFileInfo(t.file).isAbsolute()) {
-
-			auto tmpFile = tr("%1%2").arg(t.path, t.file);
-
-			tmpFile = NormalizePathname(tmpFile);
-
-			if(newFile != tmpFile) {
-				continue;
-			}
-		}
-		return 0;
-	}
-
-	Tag t = { name, file, search, path, lang, posInf, index };
-
-	table->insert(name, t);
-	return 1;
-}
-
-/*
-** AddRelTagsFile():  Rescan tagSpec for relative tag file specs
-** (not starting with [/~]) and extend the tag files list if in
-** windowPath a tags file matching the relative spec has been found.
-*/
-bool Tags::addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMode mode) {
-
-	bool added = false;
-
-	searchMode = mode;
-	std::deque<File> *FileList = tagListByType(searchMode);
-
-	if(tagSpec.isEmpty()) {
-		return false;
-	}
-
-	QStringList filenames = tagSpec.split(QLatin1Char(':'));
-
-	for(const QString &filename : filenames) {
-		if(QFileInfo(filename).isAbsolute() || filename.startsWith(QLatin1Char('~'))) {
-			continue;
-		}
-
-		QString pathName;
-		if(!windowPath.isEmpty()) {
-			pathName = tr("%1/%2").arg(windowPath, filename);
-		} else {
-			pathName = tr("%1/%2").arg(QDir::currentPath(), filename);
-		}
-
-		pathName = NormalizePathname(pathName);
-
-		auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](const File &tag) {
-			return tag.filename == pathName;
-		});
-
-		// if we found an entry with the same pathname, we're done..
-		if (it != FileList->end()) {
-			added = true;
-			continue;
-		}
-
-		// or if the file isn't found...
-		QFileInfo fileInfo(pathName);
-		QDateTime timestamp = fileInfo.lastModified();
-		if (timestamp.isNull()) {
-			continue;
-		}
-
-		File tag = {
-			pathName,
-			timestamp,
-			false,
-			++tagFileIndex,
-			1 // NOTE(eteran): added just so there aren't any uninitialized members
-		};
-
-		FileList->push_front(tag);
-		added = true;
-	}
-
-	MainWindow::updateMenuItems();
-	return added;
-}
-
-/*
-** AddTagsFile():  Set up the the list of tag files to manage from a file spec.
-** It can list multiple tags files, specified by separating them with colons.
-** The config entry would look like this:
-**      Nedit.tags: <tagfile1>:<tagfile2>
-** Returns true if all files were found in the FileList or loaded successfully,
-** false otherwise.
-*/
-bool Tags::addTagsFile(const QString &tagSpec, SearchMode mode) {
-
-	bool added = true;
-
-	searchMode = mode;
-	std::deque<File> *FileList = tagListByType(searchMode);
-
-	if(tagSpec.isEmpty()) {
-		return false;
-	}
-
-	QStringList filenames = tagSpec.split(QLatin1Char(':'));
-
-	for(const QString &filename : filenames) {
-
-		QString pathName;
-		if(!QFileInfo(filename).isAbsolute()) {
-			pathName = tr("%1/%2").arg(QDir::currentPath(), filename);
-		} else {
-			pathName = filename;
-		}
-
-		pathName = NormalizePathname(pathName);
-
-		auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](const File &tag) {
-			return tag.filename == pathName;
-		});
-
-		if (it != FileList->end()) {
-			/* This file is already in the list.  It's easiest to just
-			 * refcount all tag/tip files even though we only actually care
-			 * about tip files. */
-
-			++(it->refcount);
-			added = true;
-			continue;
-		}
-
-		QFileInfo fileInfo(pathName);
-		QDateTime timestamp = fileInfo.lastModified();
-
-		if (timestamp.isNull()) {
-			// Problem reading this tags file. Return false
-			added = false;
-			continue;
-		}
-
-		File tag = {
-			pathName,
-			timestamp,
-			false,
-			++tagFileIndex,
-			1
-		};
-
-		FileList->push_front(tag);
-	}
-
-	MainWindow::updateMenuItems();
-	return added;
-}
-
-/* Un-manage a colon-delimited set of tags files
- * Return true if all files were found in the FileList and unloaded, false
- * if any file was not found in the FileList.
- * "mode" is either TAG or TIP
- * If "force_unload" is true, a calltips file will be deleted even if its
- * refcount is nonzero.
+/**
+ * @brief hashTableByType
+ * @param mode
+ * @return
  */
-bool Tags::deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload) {
+QMultiHash<QString, Tag> *hashTableByType(SearchMode mode) {
+	if (mode == SearchMode::TIP) {
+		return &LoadedTips;
+	} else {
+		return &LoadedTags;
+	}
+}
 
-	if(tagSpec.isEmpty()) {
+/**
+ * @brief tagListByType
+ * @param mode
+ * @return
+ */
+std::deque<File> *tagListByType(SearchMode mode) {
+	if (mode == SearchMode::TAG) {
+		return &TagsFileList;
+	} else {
+		return &TipsFileList;
+	}
+}
+
+/*  Delete a tag from the cache.
+ *  Search is limited to valid matches of 'name','file', 'search', posInf, and 'index'.
+ *  EX: delete all tags matching index 2 ==>
+ *                      delTag(tagname,nullptr,-2,nullptr,-2,2);
+ *  (posInf = -2 is an invalid match, posInf range: -1 .. +MAXINT,
+	 lang = -2 is also an invalid match)
+ */
+bool delTag(int index) {
+	int del = 0;
+
+	QMultiHash<QString, Tag> *table = hashTableByType(searchMode);
+
+	if(table->isEmpty()) {
 		return false;
 	}
 
-	searchMode = mode;
-	std::deque<File> *const FileList = tagListByType(searchMode);
-
-	bool removed = true;
-
-	QStringList filenames = tagSpec.split(QLatin1Char(':'));
-
-	for(const QString &filename : filenames) {
-
-		QString pathName;
-		if(!QFileInfo(filename).isAbsolute()) {
-			pathName = tr("%1/%2").arg(QDir::currentPath(), filename);
+	for(auto it = table->begin(); it != table->end(); ) {
+		if(it->index == index) {
+			it = table->erase(it);
+			++del;
 		} else {
-			pathName = filename;
-		}
-
-		pathName = NormalizePathname(pathName);
-
-		auto it = FileList->begin();
-		while(it != FileList->end()) {
-			File &t = *it;
-
-			if (t.filename != pathName) {
-				++it;
-				continue;
-			}
-
-			// Don't unload tips files with nonzero refcounts unless forced
-			if (searchMode == SearchMode::TIP && !force_unload && --t.refcount > 0) {
-				break;
-			}
-
-			if (t.loaded) {
-				delTag(t.index);
-			}
-
-			it = FileList->erase(it);
-
-			MainWindow::updateMenuItems();
-			break;
-		}
-
-		// If any file can't be removed, return false
-		if (it == FileList->end()) {
-			removed = false;
+			++it;
 		}
 	}
 
-	return removed != 0;
+	return del > 0;
 }
-
-
 
 /*
 ** Scans one <line> from a ctags tags file (<index>) in tagPath.
 ** Return value: Number of tag specs added.
 */
-int Tags::scanCTagsLine(const QString &line, const QString &tagPath, int index) {
+int scanCTagsLine(const QString &line, const QString &tagPath, int index) {
 
 	QRegExp regex(QLatin1String(R"(^([^\t]+)\t([^\t]+)\t([^\n]+)\n$)"));
 	if(!regex.exactMatch(line)) {
@@ -479,7 +249,7 @@ int Tags::scanCTagsLine(const QString &line, const QString &tagPath, int index) 
  * file = destination definition file. possibly modified. len=MAXPATHLEN!
  * Return value: Number of tag specs added.
  */
-int Tags::scanETagsLine(const QString &line, const QString &tagPath, int index, QString &file, int recLevel) {
+int scanETagsLine(const QString &line, const QString &tagPath, int index, QString &file, int recLevel) {
 
 	// check for destination file separator
 	if (line.startsWith(QLatin1Char('\014'))) { // <np>
@@ -555,7 +325,7 @@ int Tags::scanETagsLine(const QString &line, const QString &tagPath, int index, 
 ** Loads tagsFile into the hash table.
 ** Returns the number of added tag specifications.
 */
-int Tags::loadTagsFile(const QString &tagSpec, int index, int recLevel) {
+int loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 
 	int nTagsAdded = 0;
 	int tagFileType = TFT_CHECK;
@@ -615,323 +385,6 @@ int Tags::loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 	return nTagsAdded;
 }
 
-QList<Tags::Tag> Tags::LookupTagFromList(std::deque<File> *FileList, const QString &name, SearchMode mode) {
-
-	/*
-	** Go through the list of all tags Files:
-	**   - load them (if not already loaded)
-	**   - check for update of the tags file and reload it in that case
-	**   - save the modification date of the tags file
-	**
-	** Do this only as long as name != nullptr, not for sucessive calls
-	** to find multiple tags specs.
-	**
-	*/
-	if (!name.isNull()) {
-		for(File &tf : *FileList) {
-
-			int load_status;
-
-			if (tf.loaded) {
-
-				QFileInfo fileInfo(tf.filename);
-				QDateTime timestamp = fileInfo.lastModified();
-
-				if (timestamp.isNull()) {
-					qWarning("NEdit: Error getting status for tag file %s", qPrintable(tf.filename));
-				} else {
-					if (tf.date == timestamp) {
-						// current tags file tf is already loaded and up to date
-						continue;
-					}
-				}
-
-				// tags file has been modified, delete it's entries and reload it
-				delTag(tf.index);
-			}
-
-			// If we get here we have to try to (re-) load the tags file
-			if (FileList == &TipsFileList) {
-				load_status = loadTipsFile(tf.filename, tf.index, 0);
-			} else {
-				load_status = loadTagsFile(tf.filename, tf.index, 0);
-			}
-
-			if (load_status) {
-
-				QFileInfo fileInfo(tf.filename);
-				QDateTime timestamp = fileInfo.lastModified();
-
-				if (timestamp.isNull()) {
-					if (!tf.loaded) {
-						// if tf->loaded == true we already have seen the error msg
-						qWarning("NEdit: Error getting status for tag file %s", qPrintable(tf.filename));
-					}
-				} else {
-					tf.date = timestamp;
-				}
-				tf.loaded = true;
-			} else {
-				tf.loaded = false;
-			}
-		}
-	}
-
-	return getTag(name, mode);
-}
-
-/*
-** Given a tag name, lookup the file and path of the definition
-** and the proper search string.
-*/
-QList<Tags::Tag> Tags::LookupTag(const QString &name, SearchMode mode) {
-
-	searchMode = mode;
-	if (searchMode == SearchMode::TIP) {
-		return LookupTagFromList(&TipsFileList, name, mode);
-	} else {
-		return LookupTagFromList(&TagsFileList, name, mode);
-	}
-}
-
-/*
-** ctags search expressions are literal strings with a search direction flag,
-** line starting "^" and ending "$" delimiters. This routine translates them
-** into NEdit compatible regular expressions and does the search.
-** Etags search expressions are plain literals strings, which
-*/
-bool Tags::fakeRegExSearch(view::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos) {
-
-	if(searchString.isEmpty()) {
-		return false;
-	}
-
-	int64_t searchStartPos;
-	Direction dir;
-	bool ctagsMode;
-
-	view::string_view fileString = buffer;
-
-	// determine search direction and start position
-	if (*startPos != -1) { // etags mode!
-		dir            = Direction::Forward;
-		searchStartPos = *startPos;
-		ctagsMode      = false;
-	} else if (searchString.size() > 1 && searchString[0] == QLatin1Char('/')) {
-		dir            = Direction::Forward;
-		searchStartPos = 0;
-		ctagsMode      = true;
-	} else if (searchString.size() > 1 && searchString[0] == QLatin1Char('?')) {
-		dir            = Direction::Backward;
-		searchStartPos = static_cast<int64_t>(fileString.size());
-		ctagsMode      = true;
-	} else {
-		qWarning("NEdit: Error parsing tag file search string");
-		return false;
-	}
-
-	// Build the search regex.
-	QString searchSubs;
-	searchSubs.reserve(3 * MAX_LINE + 3);
-	auto outPtr = std::back_inserter(searchSubs);
-
-	{
-		Input inPtr(&searchString);
-
-	if (ctagsMode) {
-		// searchString[0] is / or ? --> search dir
-		++inPtr;
-
-		if (*inPtr == QLatin1Char('^')) {
-			// If the first char is a caret then it's a RE line start delim
-			*outPtr++ = *inPtr++;
-		}
-	}
-
-	while (!inPtr.atEnd()) {
-
-		if ((inPtr[0] == QLatin1Char('\\') && inPtr[1] == QLatin1Char('/')) || (inPtr[0] == QLatin1Char('\r') && inPtr[1] == QLatin1Char('$') && inPtr[2] != QChar())) {
-			/* Remove:
-			   - escapes (added by standard and exuberant ctags) from slashes
-			   - literal CRs generated by standard ctags for DOSified sources
-			*/
-			++inPtr;
-		} else if (::strchr("()-[]<>{}.|^*+?&\\", inPtr[0].toLatin1()) || (inPtr[0] == QLatin1Char('$') && (inPtr[1] != QChar() || !ctagsMode))) {
-			/* Escape RE Meta Characters to match them literally.
-			   Don't escape $ if it's the last charcter of the search expr
-			   in ctags mode; always escape $ in etags mode.
-			 */
-			*outPtr++ = QLatin1Char('\\');
-			*outPtr++ = *inPtr++;
-		} else if (inPtr[0].isSpace()) { // col. multiple spaces
-			*outPtr++ = QLatin1Char('\\');
-			*outPtr++ = QLatin1Char('s');
-			*outPtr++ = QLatin1Char('+');
-			do {
-				++inPtr;
-			} while (inPtr[0].isSpace());
-		} else { // simply copy all other characters
-			*outPtr++ = *inPtr++;
-		}
-	}
-	}
-
-	Search::Result searchResult;
-
-	bool found = Search::SearchString(
-				fileString,
-				searchSubs,
-				dir,
-				SearchType::Regex,
-				WrapMode::NoWrap,
-				searchStartPos,
-				&searchResult,
-				QString());
-
-	if (!found && !ctagsMode) {
-		/* position of the target definition could have been drifted before
-		   startPos, if nothing has been found by now try searching backward
-		   again from startPos.
-		*/
-		found = Search::SearchString(
-					fileString,
-					searchSubs,
-					Direction::Backward,
-					SearchType::Regex,
-					WrapMode::NoWrap,
-					searchStartPos,
-					&searchResult,
-					QString());
-	}
-
-	// return the result
-	if (found) {
-		*startPos = searchResult.start;
-		*endPos   = searchResult.end;
-		return true;
-	} else {
-		// startPos, endPos left untouched by SearchString if search failed.
-		QApplication::beep();
-		return false;
-	}
-}
-
-
-/*
-** Show the calltip specified by tagFiles[i], tagSearch[i], tagPosInf[i]
-** This reads from either a source code file (if searchMode == TIP_FROM_TAG)
-** or a calltips file (if searchMode == TIP).
-*/
-void Tags::showMatchingCalltip(QWidget *parent, TextArea *area, int id) {
-	try {
-		int64_t startPos = 0;
-		int64_t endPos   = 0;
-
-		// 1. Open the target file
-		NormalizePathname(tagFiles[id]);
-
-		std::ifstream file(tagFiles[id].toStdString());
-		if(!file) {
-			QMessageBox::critical(
-						parent,
-						tr("Error opening File"),
-						tr("Error opening %1").arg(tagFiles[id]));
-			return;
-		}
-
-		// 2. Read the target file
-		std::string fileString(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
-
-		// 3. Search for the tagged location (set startPos)
-		if (tagSearch[id].isEmpty()) {
-			// It's a line number, just go for it
-			if ((moveAheadNLinesEx(fileString, startPos, tagPosInf[id] - 1)) >= 0) {
-				QMessageBox::critical(
-							parent,
-							tr("Tags Error"),
-							tr("%1\n not long enough for definition to be on line %2").arg(tagFiles[id]).arg(tagPosInf[id]));
-				return;
-			}
-		} else {
-			startPos = tagPosInf[id];
-			if (!fakeRegExSearch(fileString, tagSearch[id], &startPos, &endPos)) {
-				QMessageBox::critical(
-							parent,
-							tr("Tag not found"),
-							tr("Definition for %1 not found in %2").arg(tagName, tagFiles[id]));
-				return;
-			}
-		}
-
-		if (searchMode == SearchMode::TIP) {
-
-			// 4. Find the end of the calltip (delimited by an empty line)
-			endPos = startPos;
-
-			Search::Result searchResult;
-
-			bool found = Search::SearchString(
-						fileString,
-			            QLatin1String(R"(\n\s*\n)"),
-						Direction::Forward,
-						SearchType::Regex,
-						WrapMode::NoWrap,
-						startPos,
-						&searchResult,
-						QString());
-
-			if (!found) {
-				// Just take 4 lines
-				moveAheadNLinesEx(fileString, endPos, TIP_DEFAULT_LINES);
-				--endPos; // Lose the last \n
-			} else {
-				endPos = searchResult.start;
-			}
-
-		} else { // Mode = TIP_FROM_TAG
-			// 4. Copy TIP_DEFAULT_LINES lines of text to the calltip string
-			endPos = startPos;
-			moveAheadNLinesEx(fileString, endPos, TIP_DEFAULT_LINES);
-
-			// Make sure not to overrun the fileString with ". . ."
-			if (static_cast<size_t>(endPos) <= (fileString.size() - 5)) {
-				fileString.replace(static_cast<size_t>(endPos), 5, ". . .");
-				endPos += 5;
-			}
-		}
-
-		// 5. Copy the calltip to a string
-		int64_t tipLen = endPos - startPos;
-		auto message = QString::fromLatin1(&fileString[static_cast<size_t>(startPos)], gsl::narrow<int>(tipLen));
-
-		// 6. Display it
-		tagsShowCalltip(area, message);
-	} catch(const std::bad_alloc &) {
-		QMessageBox::critical(
-					parent,
-					tr("Out of Memory"),
-					tr("Can't allocate memory"));
-	}
-}
-
-
-
-
-/********************************************************************
- *           Functions for loading Calltips files                   *
- ********************************************************************/
-
-/**
- * @brief Tags::searchLine
- * @param line
- * @param regex
- * @return
- */
-bool Tags::searchLine(const QString &line, const QRegularExpression &re) {
-	QRegularExpressionMatch match = re.match(line);
-	return match.hasMatch();
-}
-
 /*
 ** Get the next block from a tips file.  A block is a \n\n+ delimited set of
 ** lines in a calltips file.  All of the parameters except <fp> are return
@@ -944,7 +397,7 @@ bool Tags::searchLine(const QString &line, const QRegularExpression &re) {
 **                  after the "* xxxx *" line.
 **      currLine:   Used to keep track of the current line in the file.
 */
-Tags::CalltipToken Tags::nextTFBlock(QTextStream &stream, QString &header, QString &body, int *blkLine, int *currLine) {
+CalltipToken nextTFBlock(QTextStream &stream, QString &header, QString &body, int *blkLine, int *currLine) {
 
 	// These are the different kinds of tokens
 	static const auto commenTF_regex = QRegularExpression(QLatin1String(R"(^\s*\* comment \*\s*$)"));
@@ -1134,7 +587,7 @@ Tags::CalltipToken Tags::nextTFBlock(QTextStream &stream, QString &header, QStri
 ** at which it appears--the exact same way ctags indexes source-code.  That's
 ** why calltips and tags share so much code.
 */
-int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
+int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
 	int currLine    = 0;
 	int nTipsAdded  = 0;
@@ -1240,7 +693,7 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 		if (tags.isEmpty()) {
 			qWarning("NEdit: Can't find destination of alias \"%s\"\n"
 					 "in calltips file:\n   \"%s\"\n",
-			         qPrintable(alias.dest),
+					 qPrintable(alias.dest),
 					 qPrintable(resolvedTipsFile));
 		} else {
 
@@ -1256,49 +709,606 @@ int Tags::loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 	return nTipsAdded;
 }
 
-/*  Delete a tag from the cache.
- *  Search is limited to valid matches of 'name','file', 'search', posInf, and 'index'.
- *  EX: delete all tags matching index 2 ==>
- *                      delTag(tagname,nullptr,-2,nullptr,-2,2);
- *  (posInf = -2 is an invalid match, posInf range: -1 .. +MAXINT,
-	 lang = -2 is also an invalid match)
- */
-bool Tags::delTag(int index) {
-	int del = 0;
+}
 
-	QMultiHash<QString, Tag> *table = hashTableByType(searchMode);
+/*
+**  contents of                   tag->searchString   | tag->posInf
+**    ctags, line num specified:  ""                  | line num
+**    ctags, search expr specfd:  ctags search expr   | -1
+**    etags  (emacs tags)         etags search string | search start pos
+*/
 
-	if(table->isEmpty()) {
+
+// list of loaded tags/tips files
+std::deque<File> TagsFileList;
+std::deque<File> TipsFileList;
+
+/* These are all transient global variables -- they don't hold any state
+	between tag/tip lookups */
+SearchMode searchMode = SearchMode::TAG;
+QString          tagName;
+
+
+QString tagFiles[MAXDUPTAGS];
+QString tagSearch[MAXDUPTAGS];
+int64_t tagPosInf[MAXDUPTAGS];
+
+bool            globAnchored;
+CallTipPosition globPos;
+TipHAlignMode   globHAlign;
+TipVAlignMode   globVAlign;
+TipAlignMode    globAlignMode;
+
+
+/* Add a tag specification to the hash table
+**   Return Value:  false ... tag already existing, spec not added
+**                  true  ... tag spec is new, added.
+**   (We don't return boolean as the return value is used as counter increment!)
+**
+*/
+int addTag(const QString &name, const QString &file, size_t lang, const QString &search, int64_t posInf, const QString &path, int index) {
+
+	QMultiHash<QString, Tag> *const table = hashTableByType(searchMode);
+
+	QString newFile;
+	if (QFileInfo(file).isAbsolute()) {
+		newFile = file;
+	} else {
+		newFile = tr("%1%2").arg(path, file);
+	}
+
+	newFile = NormalizePathname(newFile);
+
+	QList<Tag> tags = table->values(name);
+	for(const Tag &t : tags) {
+
+		if (lang != t.language) {
+			continue;
+		}
+
+		if (search != t.searchString) {
+			continue;
+		}
+
+		if (posInf != t.posInf) {
+			continue;
+		}
+
+		if (QFileInfo(t.file).isAbsolute() && (newFile != t.file)) {
+			continue;
+		}
+
+		if (QFileInfo(t.file).isAbsolute()) {
+
+			auto tmpFile = tr("%1%2").arg(t.path, t.file);
+
+			tmpFile = NormalizePathname(tmpFile);
+
+			if(newFile != tmpFile) {
+				continue;
+			}
+		}
+		return 0;
+	}
+
+	Tag t = { name, file, search, path, lang, posInf, index };
+
+	table->insert(name, t);
+	return 1;
+}
+
+/*
+** AddRelTagsFile():  Rescan tagSpec for relative tag file specs
+** (not starting with [/~]) and extend the tag files list if in
+** windowPath a tags file matching the relative spec has been found.
+*/
+bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMode mode) {
+
+	bool added = false;
+
+	searchMode = mode;
+	std::deque<File> *FileList = tagListByType(searchMode);
+
+	if(tagSpec.isEmpty()) {
 		return false;
 	}
 
-	for(auto it = table->begin(); it != table->end(); ) {
-		if(it->index == index) {
-			it = table->erase(it);
-			++del;
+	QStringList filenames = tagSpec.split(QLatin1Char(':'));
+
+	for(const QString &filename : filenames) {
+		if(QFileInfo(filename).isAbsolute() || filename.startsWith(QLatin1Char('~'))) {
+			continue;
+		}
+
+		QString pathName;
+		if(!windowPath.isEmpty()) {
+			pathName = tr("%1/%2").arg(windowPath, filename);
 		} else {
-			++it;
+			pathName = tr("%1/%2").arg(QDir::currentPath(), filename);
+		}
+
+		pathName = NormalizePathname(pathName);
+
+		auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](const File &tag) {
+			return tag.filename == pathName;
+		});
+
+		// if we found an entry with the same pathname, we're done..
+		if (it != FileList->end()) {
+			added = true;
+			continue;
+		}
+
+		// or if the file isn't found...
+		QFileInfo fileInfo(pathName);
+		QDateTime timestamp = fileInfo.lastModified();
+		if (timestamp.isNull()) {
+			continue;
+		}
+
+		File tag = {
+			pathName,
+			timestamp,
+			false,
+			++tagFileIndex,
+			1 // NOTE(eteran): added just so there aren't any uninitialized members
+		};
+
+		FileList->push_front(tag);
+		added = true;
+	}
+
+	MainWindow::updateMenuItems();
+	return added;
+}
+
+/*
+** AddTagsFile():  Set up the the list of tag files to manage from a file spec.
+** It can list multiple tags files, specified by separating them with colons.
+** The config entry would look like this:
+**      Nedit.tags: <tagfile1>:<tagfile2>
+** Returns true if all files were found in the FileList or loaded successfully,
+** false otherwise.
+*/
+bool addTagsFile(const QString &tagSpec, SearchMode mode) {
+
+	bool added = true;
+
+	searchMode = mode;
+	std::deque<File> *FileList = tagListByType(searchMode);
+
+	if(tagSpec.isEmpty()) {
+		return false;
+	}
+
+	QStringList filenames = tagSpec.split(QLatin1Char(':'));
+
+	for(const QString &filename : filenames) {
+
+		QString pathName;
+		if(!QFileInfo(filename).isAbsolute()) {
+			pathName = tr("%1/%2").arg(QDir::currentPath(), filename);
+		} else {
+			pathName = filename;
+		}
+
+		pathName = NormalizePathname(pathName);
+
+		auto it = std::find_if(FileList->begin(), FileList->end(), [pathName](const File &tag) {
+			return tag.filename == pathName;
+		});
+
+		if (it != FileList->end()) {
+			/* This file is already in the list.  It's easiest to just
+			 * refcount all tag/tip files even though we only actually care
+			 * about tip files. */
+
+			++(it->refcount);
+			added = true;
+			continue;
+		}
+
+		QFileInfo fileInfo(pathName);
+		QDateTime timestamp = fileInfo.lastModified();
+
+		if (timestamp.isNull()) {
+			// Problem reading this tags file. Return false
+			added = false;
+			continue;
+		}
+
+		File tag = {
+			pathName,
+			timestamp,
+			false,
+			++tagFileIndex,
+			1
+		};
+
+		FileList->push_front(tag);
+	}
+
+	MainWindow::updateMenuItems();
+	return added;
+}
+
+/* Un-manage a colon-delimited set of tags files
+ * Return true if all files were found in the FileList and unloaded, false
+ * if any file was not found in the FileList.
+ * "mode" is either TAG or TIP
+ * If "force_unload" is true, a calltips file will be deleted even if its
+ * refcount is nonzero.
+ */
+bool deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload) {
+
+	if(tagSpec.isEmpty()) {
+		return false;
+	}
+
+	searchMode = mode;
+	std::deque<File> *const FileList = tagListByType(searchMode);
+
+	bool removed = true;
+
+	QStringList filenames = tagSpec.split(QLatin1Char(':'));
+
+	for(const QString &filename : filenames) {
+
+		QString pathName;
+		if(!QFileInfo(filename).isAbsolute()) {
+			pathName = tr("%1/%2").arg(QDir::currentPath(), filename);
+		} else {
+			pathName = filename;
+		}
+
+		pathName = NormalizePathname(pathName);
+
+		auto it = FileList->begin();
+		while(it != FileList->end()) {
+			File &t = *it;
+
+			if (t.filename != pathName) {
+				++it;
+				continue;
+			}
+
+			// Don't unload tips files with nonzero refcounts unless forced
+			if (searchMode == SearchMode::TIP && !force_unload && --t.refcount > 0) {
+				break;
+			}
+
+			if (t.loaded) {
+				delTag(t.index);
+			}
+
+			it = FileList->erase(it);
+
+			MainWindow::updateMenuItems();
+			break;
+		}
+
+		// If any file can't be removed, return false
+		if (it == FileList->end()) {
+			removed = false;
 		}
 	}
 
-	return del > 0;
+	return removed != 0;
 }
 
-QMultiHash<QString, Tags::Tag> *Tags::hashTableByType(SearchMode mode) {
-	if (mode == SearchMode::TIP) {
-		return &LoadedTips;
+
+QList<Tag> lookupTagFromList(std::deque<File> *FileList, const QString &name, SearchMode mode) {
+
+	/*
+	** Go through the list of all tags Files:
+	**   - load them (if not already loaded)
+	**   - check for update of the tags file and reload it in that case
+	**   - save the modification date of the tags file
+	**
+	** Do this only as long as name != nullptr, not for sucessive calls
+	** to find multiple tags specs.
+	**
+	*/
+	if (!name.isNull()) {
+		for(File &tf : *FileList) {
+
+			int load_status;
+
+			if (tf.loaded) {
+
+				QFileInfo fileInfo(tf.filename);
+				QDateTime timestamp = fileInfo.lastModified();
+
+				if (timestamp.isNull()) {
+					qWarning("NEdit: Error getting status for tag file %s", qPrintable(tf.filename));
+				} else {
+					if (tf.date == timestamp) {
+						// current tags file tf is already loaded and up to date
+						continue;
+					}
+				}
+
+				// tags file has been modified, delete it's entries and reload it
+				delTag(tf.index);
+			}
+
+			// If we get here we have to try to (re-) load the tags file
+			if (FileList == &TipsFileList) {
+				load_status = loadTipsFile(tf.filename, tf.index, 0);
+			} else {
+				load_status = loadTagsFile(tf.filename, tf.index, 0);
+			}
+
+			if (load_status) {
+
+				QFileInfo fileInfo(tf.filename);
+				QDateTime timestamp = fileInfo.lastModified();
+
+				if (timestamp.isNull()) {
+					if (!tf.loaded) {
+						// if tf->loaded == true we already have seen the error msg
+						qWarning("NEdit: Error getting status for tag file %s", qPrintable(tf.filename));
+					}
+				} else {
+					tf.date = timestamp;
+				}
+				tf.loaded = true;
+			} else {
+				tf.loaded = false;
+			}
+		}
+	}
+
+	return getTag(name, mode);
+}
+
+/*
+** Given a tag name, lookup the file and path of the definition
+** and the proper search string.
+*/
+QList<Tag> lookupTag(const QString &name, SearchMode mode) {
+
+	searchMode = mode;
+	if (searchMode == SearchMode::TIP) {
+		return lookupTagFromList(&TipsFileList, name, mode);
 	} else {
-		return &LoadedTags;
+		return lookupTagFromList(&TagsFileList, name, mode);
 	}
 }
 
-std::deque<Tags::File> *Tags::tagListByType(SearchMode mode) {
-	if (mode == SearchMode::TAG) {
-		return &TagsFileList;
+/*
+** ctags search expressions are literal strings with a search direction flag,
+** line starting "^" and ending "$" delimiters. This routine translates them
+** into NEdit compatible regular expressions and does the search.
+** Etags search expressions are plain literals strings, which
+*/
+bool fakeRegExSearch(view::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos) {
+
+	if(searchString.isEmpty()) {
+		return false;
+	}
+
+	int64_t searchStartPos;
+	Direction dir;
+	bool ctagsMode;
+
+	view::string_view fileString = buffer;
+
+	// determine search direction and start position
+	if (*startPos != -1) { // etags mode!
+		dir            = Direction::Forward;
+		searchStartPos = *startPos;
+		ctagsMode      = false;
+	} else if (searchString.size() > 1 && searchString[0] == QLatin1Char('/')) {
+		dir            = Direction::Forward;
+		searchStartPos = 0;
+		ctagsMode      = true;
+	} else if (searchString.size() > 1 && searchString[0] == QLatin1Char('?')) {
+		dir            = Direction::Backward;
+		searchStartPos = static_cast<int64_t>(fileString.size());
+		ctagsMode      = true;
 	} else {
-		return &TipsFileList;
+		qWarning("NEdit: Error parsing tag file search string");
+		return false;
+	}
+
+	// Build the search regex.
+	QString searchSubs;
+	searchSubs.reserve(3 * MAX_LINE + 3);
+	auto outPtr = std::back_inserter(searchSubs);
+
+	{
+		Input inPtr(&searchString);
+
+	if (ctagsMode) {
+		// searchString[0] is / or ? --> search dir
+		++inPtr;
+
+		if (*inPtr == QLatin1Char('^')) {
+			// If the first char is a caret then it's a RE line start delim
+			*outPtr++ = *inPtr++;
+		}
+	}
+
+	while (!inPtr.atEnd()) {
+
+		if ((inPtr[0] == QLatin1Char('\\') && inPtr[1] == QLatin1Char('/')) || (inPtr[0] == QLatin1Char('\r') && inPtr[1] == QLatin1Char('$') && inPtr[2] != QChar())) {
+			/* Remove:
+			   - escapes (added by standard and exuberant ctags) from slashes
+			   - literal CRs generated by standard ctags for DOSified sources
+			*/
+			++inPtr;
+		} else if (::strchr("()-[]<>{}.|^*+?&\\", inPtr[0].toLatin1()) || (inPtr[0] == QLatin1Char('$') && (inPtr[1] != QChar() || !ctagsMode))) {
+			/* Escape RE Meta Characters to match them literally.
+			   Don't escape $ if it's the last charcter of the search expr
+			   in ctags mode; always escape $ in etags mode.
+			 */
+			*outPtr++ = QLatin1Char('\\');
+			*outPtr++ = *inPtr++;
+		} else if (inPtr[0].isSpace()) { // col. multiple spaces
+			*outPtr++ = QLatin1Char('\\');
+			*outPtr++ = QLatin1Char('s');
+			*outPtr++ = QLatin1Char('+');
+			do {
+				++inPtr;
+			} while (inPtr[0].isSpace());
+		} else { // simply copy all other characters
+			*outPtr++ = *inPtr++;
+		}
+	}
+	}
+
+	Search::Result searchResult;
+
+	bool found = Search::SearchString(
+				fileString,
+				searchSubs,
+				dir,
+				SearchType::Regex,
+				WrapMode::NoWrap,
+				searchStartPos,
+				&searchResult,
+				QString());
+
+	if (!found && !ctagsMode) {
+		/* position of the target definition could have been drifted before
+		   startPos, if nothing has been found by now try searching backward
+		   again from startPos.
+		*/
+		found = Search::SearchString(
+					fileString,
+					searchSubs,
+					Direction::Backward,
+					SearchType::Regex,
+					WrapMode::NoWrap,
+					searchStartPos,
+					&searchResult,
+					QString());
+	}
+
+	// return the result
+	if (found) {
+		*startPos = searchResult.start;
+		*endPos   = searchResult.end;
+		return true;
+	} else {
+		// startPos, endPos left untouched by SearchString if search failed.
+		QApplication::beep();
+		return false;
 	}
 }
+
+
+/*
+** Show the calltip specified by tagFiles[i], tagSearch[i], tagPosInf[i]
+** This reads from either a source code file (if searchMode == TIP_FROM_TAG)
+** or a calltips file (if searchMode == TIP).
+*/
+void showMatchingCalltip(QWidget *parent, TextArea *area, int id) {
+	try {
+		int64_t startPos = 0;
+		int64_t endPos   = 0;
+
+		// 1. Open the target file
+		NormalizePathname(tagFiles[id]);
+
+		std::ifstream file(tagFiles[id].toStdString());
+		if(!file) {
+			QMessageBox::critical(
+						parent,
+						tr("Error opening File"),
+						tr("Error opening %1").arg(tagFiles[id]));
+			return;
+		}
+
+		// 2. Read the target file
+		std::string fileString(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
+
+		// 3. Search for the tagged location (set startPos)
+		if (tagSearch[id].isEmpty()) {
+			// It's a line number, just go for it
+			if ((moveAheadNLines(fileString, startPos, tagPosInf[id] - 1)) >= 0) {
+				QMessageBox::critical(
+							parent,
+							tr("Tags Error"),
+							tr("%1\n not long enough for definition to be on line %2").arg(tagFiles[id]).arg(tagPosInf[id]));
+				return;
+			}
+		} else {
+			startPos = tagPosInf[id];
+			if (!fakeRegExSearch(fileString, tagSearch[id], &startPos, &endPos)) {
+				QMessageBox::critical(
+							parent,
+							tr("Tag not found"),
+							tr("Definition for %1 not found in %2").arg(tagName, tagFiles[id]));
+				return;
+			}
+		}
+
+		if (searchMode == SearchMode::TIP) {
+
+			// 4. Find the end of the calltip (delimited by an empty line)
+			endPos = startPos;
+
+			Search::Result searchResult;
+
+			bool found = Search::SearchString(
+						fileString,
+			            QLatin1String(R"(\n\s*\n)"),
+						Direction::Forward,
+						SearchType::Regex,
+						WrapMode::NoWrap,
+						startPos,
+						&searchResult,
+						QString());
+
+			if (!found) {
+				// Just take 4 lines
+				moveAheadNLines(fileString, endPos, TIP_DEFAULT_LINES);
+				--endPos; // Lose the last \n
+			} else {
+				endPos = searchResult.start;
+			}
+
+		} else { // Mode = TIP_FROM_TAG
+			// 4. Copy TIP_DEFAULT_LINES lines of text to the calltip string
+			endPos = startPos;
+			moveAheadNLines(fileString, endPos, TIP_DEFAULT_LINES);
+
+			// Make sure not to overrun the fileString with ". . ."
+			if (static_cast<size_t>(endPos) <= (fileString.size() - 5)) {
+				fileString.replace(static_cast<size_t>(endPos), 5, ". . .");
+				endPos += 5;
+			}
+		}
+
+		// 5. Copy the calltip to a string
+		int64_t tipLen = endPos - startPos;
+		auto message = QString::fromLatin1(&fileString[static_cast<size_t>(startPos)], gsl::narrow<int>(tipLen));
+
+		// 6. Display it
+		tagsShowCalltip(area, message);
+	} catch(const std::bad_alloc &) {
+		QMessageBox::critical(
+					parent,
+					tr("Out of Memory"),
+					tr("Can't allocate memory"));
+	}
+}
+
+
+/**
+ * @brief searchLine
+ * @param line
+ * @param regex
+ * @return
+ */
+bool searchLine(const QString &line, const QRegularExpression &re) {
+	QRegularExpressionMatch match = re.match(line);
+	return match.hasMatch();
+}
+
+
 
 /**
  * @brief Retrieve a Tag structure from the hash table
@@ -1306,7 +1316,7 @@ std::deque<Tags::File> *Tags::tagListByType(SearchMode mode) {
  * @param search_type
  * @return
  */
-QList<Tags::Tag> Tags::getTag(const QString &name, SearchMode mode) {
+QList<Tag> getTag(const QString &name, SearchMode mode) {
 
 	if (mode == SearchMode::TIP) {
 		return getTagFromTable(LoadedTips, name);
@@ -1321,10 +1331,12 @@ QList<Tags::Tag> Tags::getTag(const QString &name, SearchMode mode) {
  * @param text
  * @return
  */
-int Tags::tagsShowCalltip(TextArea *area, const QString &text) {
+int tagsShowCalltip(TextArea *area, const QString &text) {
 	if (!text.isNull()) {
 		return area->TextDShowCalltip(text, globAnchored, globPos, globHAlign, globVAlign, globAlignMode);
 	} else {
 		return 0;
 	}
+}
+
 }

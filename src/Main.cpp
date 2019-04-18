@@ -277,7 +277,7 @@ Main::Main(const QStringList &args) {
 				QPointer<DocumentWidget> document;
 
 				if(MainWindow *window = MainWindow::firstWindow()) {
-					document = DocumentWidget::EditExistingFileEx(
+					document = DocumentWidget::editExistingFile(
 					               window->currentDocument(),
 					               fi->filename,
 					               fi->pathname,
@@ -288,7 +288,7 @@ Main::Main(const QStringList &args) {
 					               isTabbed,
 					               /*bgOpen=*/true);
 				} else {
-					document = DocumentWidget::EditExistingFileEx(
+					document = DocumentWidget::editExistingFile(
 					               nullptr,
 					               fi->filename,
 					               fi->pathname,
@@ -314,7 +314,7 @@ Main::Main(const QStringList &args) {
 						macroFileReadEx = true;
 					}
 					if (gotoLine) {
-						document->SelectNumberedLineEx(document->firstPane(), lineNum);
+						document->selectNumberedLine(document->firstPane(), lineNum);
 					}
 
 					if (!toDoCommand.isNull()) {

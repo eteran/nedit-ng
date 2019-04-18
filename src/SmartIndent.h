@@ -22,8 +22,8 @@ public:
 
 public:
 	static bool LMHasSmartIndentMacros(const QString &languageMode);
-	static bool LoadSmartIndentCommonStringEx(const QString &string);
-	static bool LoadSmartIndentStringEx(const QString &string);
+	static bool LoadSmartIndentCommonString(const QString &string);
+	static bool LoadSmartIndentString(const QString &string);
 	static bool SmartIndentMacrosAvailable(const QString &languageModeName);
 	static QString WriteSmartIndentCommonStringEx();
 	static QString WriteSmartIndentStringEx();

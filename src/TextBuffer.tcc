@@ -993,7 +993,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(TextCursor startPos, 
 ** with the character at "startPos", and returning the result
 */
 template <class Ch, class Tr>
-boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(TextCursor startPos, view_type searchChars) const noexcept {
+boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor startPos, view_type searchChars) const noexcept {
 
 	TextCursor pos = startPos;
 	TextCursor end = BufEndOfBuffer();
@@ -1019,7 +1019,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchForwardEx(TextCurs
 ** with the character BEFORE at "startPos"
 */
 template <class Ch, class Tr>
-boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(TextCursor startPos, view_type searchChars) const noexcept {
+boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor startPos, view_type searchChars) const noexcept {
 
 	const TextCursor start = BufStartOfBuffer();
 
@@ -1055,17 +1055,17 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::BufSearchBackwardEx(TextCur
 ** != 0 otherwise.
 */
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufCmpEx(TextCursor pos, Ch *cmpText, int64_t size) const noexcept {
-	return BufCmpEx(pos, view_type(cmpText, static_cast<size_t>(size)));
+int BasicTextBuffer<Ch, Tr>::compare(TextCursor pos, Ch *cmpText, int64_t size) const noexcept {
+	return compare(pos, view_type(cmpText, static_cast<size_t>(size)));
 }
 
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufCmpEx(TextCursor pos, view_type cmpText) const noexcept {
+int BasicTextBuffer<Ch, Tr>::compare(TextCursor pos, view_type cmpText) const noexcept {
 	return buffer_.compare(to_integer(pos), cmpText);
 }
 
 template <class Ch, class Tr>
-int BasicTextBuffer<Ch, Tr>::BufCmpEx(TextCursor pos, Ch ch) const noexcept {
+int BasicTextBuffer<Ch, Tr>::compare(TextCursor pos, Ch ch) const noexcept {
 	return buffer_.compare(to_integer(pos), ch);
 }
 
@@ -1548,23 +1548,23 @@ void BasicTextBuffer<Ch, Tr>::updateSelections(TextCursor pos, int64_t nDeleted,
 
 
 template <class Ch, class Tr>
-int64_t BasicTextBuffer<Ch, Tr>::BufGetLength() const noexcept {
+int64_t BasicTextBuffer<Ch, Tr>::length() const noexcept {
 	return buffer_.size();
 }
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufAppendEx(view_type text) noexcept {
-	BufInsertEx(TextCursor(BufGetLength()), text);
+	BufInsertEx(TextCursor(length()), text);
 }
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufAppendEx(Ch ch) noexcept {
-	BufInsertEx(TextCursor(BufGetLength()), ch);
+	BufInsertEx(TextCursor(length()), ch);
 }
 
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::BufIsEmpty() const noexcept {
-	return BufGetLength() == 0;
+	return length() == 0;
 }
 
 /*

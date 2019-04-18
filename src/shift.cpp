@@ -145,7 +145,7 @@ TextCursor findParagraphEnd(TextBuffer *buf, TextCursor startPos) {
 	static const char whiteChars[] = " \t";
 
 	TextCursor pos = buf->BufEndOfLine(startPos) + 1;
-	while (pos < buf->BufGetLength()) {
+	while (pos < buf->length()) {
 		char c = buf->BufGetCharacter(pos);
 		if (c == '\n') {
 			break;
@@ -158,7 +158,7 @@ TextCursor findParagraphEnd(TextBuffer *buf, TextCursor startPos) {
 		}
 	}
 
-	return pos < buf->BufGetLength() ? pos : buf->BufEndOfBuffer();
+	return pos < buf->length() ? pos : buf->BufEndOfBuffer();
 }
 
 /*
@@ -227,7 +227,7 @@ std::string fillParagraphsEx(view::string_view text, int64_t rightMargin, int ta
 	for (;;) {
 
 		// Skip over white space
-		while (paraStart < buf.BufGetLength()) {
+		while (paraStart < buf.length()) {
 			char ch = buf.BufGetCharacter(paraStart);
 			if (ch != ' ' && ch != '\t' && ch != '\n') {
 				break;
@@ -236,7 +236,7 @@ std::string fillParagraphsEx(view::string_view text, int64_t rightMargin, int ta
 			++paraStart;
 		}
 
-		if (paraStart >= buf.BufGetLength()) {
+		if (paraStart >= buf.length()) {
 			break;
 		}
 
@@ -248,7 +248,7 @@ std::string fillParagraphsEx(view::string_view text, int64_t rightMargin, int ta
 		/* Operate on either the one paragraph, or to make them all identical,
 		   do all of them together (fill paragraph can format all the paragraphs
 		   it finds with identical specs if it gets passed more than one) */
-		TextCursor fillEnd = alignWithFirst ? TextCursor(buf.BufGetLength()) : paraEnd;
+		TextCursor fillEnd = alignWithFirst ? TextCursor(buf.length()) : paraEnd;
 
 		/* Get the paragraph in a text string (or all of the paragraphs if
 		   we're making them all the same) */
@@ -623,7 +623,7 @@ void shiftRectEx(DocumentWidget *document, TextArea *area, ShiftDirection direct
 
 	// Make the change in the real buffer
 	buf->BufReplaceEx(selStart, selEnd, tempBuf.BufAsStringEx());
-	buf->BufRectSelect(selStart, selStart + tempBuf.BufGetLength(), rectStart + offset, rectEnd + offset);
+	buf->BufRectSelect(selStart, selStart + tempBuf.length(), rectStart + offset, rectEnd + offset);
 }
 
 }
@@ -650,7 +650,7 @@ void ShiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection dir
 		selStart = buf->BufStartOfLine(cursorPos);
 		selEnd = buf->BufEndOfLine(cursorPos);
 
-		if (selEnd < buf->BufGetLength()) {
+		if (selEnd < buf->length()) {
 			++selEnd;
 		}
 
@@ -660,16 +660,16 @@ void ShiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection dir
 
 	} else if (isRect) {
 		const TextCursor cursorPos = area->TextGetCursorPos();
-		int64_t origLength = buf->BufGetLength();
+		int64_t origLength = buf->length();
 		shiftRectEx(document, area, direction, byTab, selStart, selEnd, rectStart, rectEnd);
 
-		area->TextSetCursorPos((cursorPos < (selEnd + to_integer(selStart)) / 2) ? selStart : cursorPos + (buf->BufGetLength() - origLength));
+		area->TextSetCursorPos((cursorPos < (selEnd + to_integer(selStart)) / 2) ? selStart : cursorPos + (buf->length() - origLength));
 		return;
 	} else {
 		selStart = buf->BufStartOfLine(selStart);
 		if (selEnd != 0 && buf->BufGetCharacter(selEnd - 1) != '\n') {
 			selEnd = buf->BufEndOfLine(selEnd);
-			if (selEnd < buf->BufGetLength()) {
+			if (selEnd < buf->length()) {
 				++selEnd;
 			}
 		}
@@ -727,7 +727,7 @@ void FillSelection(DocumentWidget *document, TextArea *area) {
 		left = buf->BufStartOfLine(left);
 		if (right != 0 && buf->BufGetCharacter(right - 1) != '\n') {
 			right = buf->BufEndOfLine(right);
-			if (right < buf->BufGetLength()) {
+			if (right < buf->length()) {
 				++right;
 			}
 		}

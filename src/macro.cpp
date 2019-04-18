@@ -2394,8 +2394,8 @@ static std::error_code getRangeMS(DocumentWidget *document, Arguments arguments,
 		return ec;
 	}
 
-	from = qBound<int64_t>(0, from, buf->BufGetLength());
-	to   = qBound<int64_t>(0, to,   buf->BufGetLength());
+	from = qBound<int64_t>(0, from, buf->length());
+	to   = qBound<int64_t>(0, to,   buf->length());
 
 	if (from > to) {
 		std::swap(from, to);
@@ -2422,7 +2422,7 @@ static std::error_code getCharacterMS(DocumentWidget *document, Arguments argume
 		return ec;
 	}
 
-	pos = qBound<int64_t>(0, pos, buf->BufGetLength());
+	pos = qBound<int64_t>(0, pos, buf->length());
 
 	// Return the character in a pre-allocated string)
 	std::string str(1, buf->BufGetCharacter(TextCursor(pos)));
@@ -2449,8 +2449,8 @@ static std::error_code replaceRangeMS(DocumentWidget *document, Arguments argume
 		return ec;
 	}
 
-	from = qBound<int64_t>(0, from, buf->BufGetLength());
-	to   = qBound<int64_t>(0, to,   buf->BufGetLength());
+	from = qBound<int64_t>(0, from, buf->length());
+	to   = qBound<int64_t>(0, to,   buf->length());
 
 	if (from > to) {
 		std::swap(from, to);
@@ -3025,8 +3025,8 @@ static std::error_code selectMS(DocumentWidget *document, Arguments arguments, D
 		std::swap(start, end);
 	}
 
-	start = qBound<int64_t>(0, start, document->buffer()->BufGetLength());
-	end   = qBound<int64_t>(0, end,   document->buffer()->BufGetLength());
+	start = qBound<int64_t>(0, start, document->buffer()->length());
+	end   = qBound<int64_t>(0, end,   document->buffer()->length());
 
 	// Make the selection
 	document->buffer()->BufSelect(TextCursor(start), TextCursor(end));
@@ -3966,7 +3966,7 @@ static std::error_code lengthMV(DocumentWidget *document, Arguments arguments, D
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	*result = make_value(document->buffer()->BufGetLength());
+	*result = make_value(document->buffer()->length());
 	return MacroErrorCode::Success;
 }
 
@@ -4592,7 +4592,7 @@ static std::error_code rangesetAddMS(DocumentWidget *document, Arguments argumen
 		end   = TextCursor(tmp_end);
 
 		// make sure range is in order and fits buffer size
-		const TextCursor maxpos = TextCursor(buffer->BufGetLength());
+		const TextCursor maxpos = TextCursor(buffer->length());
 		start = qBound(TextCursor(), start, maxpos);
 		end   = qBound(TextCursor(), end,   maxpos);
 
@@ -4689,7 +4689,7 @@ static std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments ar
 		}
 
 		// make sure range is in order and fits buffer size
-		const int64_t maxpos = buffer->BufGetLength();
+		const int64_t maxpos = buffer->length();
 		start = qBound<int64_t>(0, start, maxpos);
 		end   = qBound<int64_t>(0, end, maxpos);
 
@@ -4904,7 +4904,7 @@ static std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments
 		}
 	}
 
-	int64_t maxpos = buffer->BufGetLength();
+	int64_t maxpos = buffer->length();
 	int rangeIndex;
 	if (pos < 0 || pos > maxpos) {
 		rangeIndex = 0;
@@ -5194,7 +5194,7 @@ static std::error_code getStyleAtPosMS(DocumentWidget *document, Arguments argum
 	*result = make_value(ArrayPtr());
 
 	//  Verify sane buffer position
-	if ((bufferPos < 0) || (bufferPos >= buf->BufGetLength())) {
+	if ((bufferPos < 0) || (bufferPos >= buf->length())) {
 		/*  If the position is not legal, we cannot guess anything about
 			the style, so we return an empty array. */
 		return MacroErrorCode::Success;
@@ -5317,7 +5317,7 @@ static std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arg
 	/*  Verify sane buffer position
 	 *  You would expect that buffer->length would be among the sane
 	 *  positions, but we have n characters and n+1 buffer positions. */
-	if ((bufferPos < 0) || (bufferPos >= buffer->BufGetLength())) {
+	if ((bufferPos < 0) || (bufferPos >= buffer->length())) {
 		/*  If the position is not legal, we cannot guess anything about
 			the highlighting pattern, so we return an empty array. */
 		return MacroErrorCode::Success;

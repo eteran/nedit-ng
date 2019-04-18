@@ -25,7 +25,7 @@ void RangesetBufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, 
 	Q_UNUSED(nRestyled)
 
 	if(auto *table = static_cast<RangesetTable *>(user)) {
-		if ((nInserted != nDeleted) || table->buffer_->BufCmpEx(pos, deletedText) != 0) {
+		if ((nInserted != nDeleted) || table->buffer_->compare(pos, deletedText) != 0) {
 			table->updatePos(pos, nInserted, nDeleted);
 		}
 	}

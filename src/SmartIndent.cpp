@@ -150,11 +150,11 @@ const SmartIndentEntry DefaultIndentSpecs[] = {
  * trim off added tabs and return the string. Returns QString() if the macro
  * end boundary string is not found.
  *
- * @brief readSIMacroEx
+ * @brief readSmartIndentMacro
  * @param in
  * @return
  */
-QString readSIMacroEx(Input &in) {
+QString readSmartIndentMacro(Input &in) {
 	// Strip leading newline
 	if (*in == QLatin1Char('\n')) {
 		++in;
@@ -238,7 +238,7 @@ bool SmartIndent::SmartIndentMacrosAvailable(const QString &languageModeName) {
  * @param string
  * @return
  */
-bool SmartIndent::LoadSmartIndentStringEx(const QString &string) {
+bool SmartIndent::LoadSmartIndentString(const QString &string) {
 
 	Input in(&string);
 	QString errMsg;
@@ -280,19 +280,19 @@ bool SmartIndent::LoadSmartIndentStringEx(const QString &string) {
 
 			/* read the initialization macro (arbitrary text terminated by the
 			   macro end boundary string) */
-			is.initMacro = readSIMacroEx(in);
+			is.initMacro = readSmartIndentMacro(in);
 			if(is.initMacro.isNull()) {
 				Raise<ParseError>(tr("no end boundary to initialization macro"));
 			}
 
 			// read the newline macro
-			is.newlineMacro = readSIMacroEx(in);
+			is.newlineMacro = readSmartIndentMacro(in);
 			if(is.newlineMacro.isNull()) {
 				Raise<ParseError>(tr("no end boundary to newline macro"));
 			}
 
 			// read the modify macro
-			is.modMacro = readSIMacroEx(in);
+			is.modMacro = readSmartIndentMacro(in);
 			if(is.modMacro.isNull()) {
 				Raise<ParseError>(tr("no end boundary to modify macro"));
 			}
@@ -322,7 +322,7 @@ bool SmartIndent::LoadSmartIndentStringEx(const QString &string) {
 	}
 }
 
-bool SmartIndent::LoadSmartIndentCommonStringEx(const QString &string) {
+bool SmartIndent::LoadSmartIndentCommonString(const QString &string) {
 
 	Input in(&string);
 

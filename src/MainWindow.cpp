@@ -2117,7 +2117,7 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 			QApplication::beep();
 			break;
 		} else {
-			DocumentWidget::EditExistingFileEx(
+			DocumentWidget::editExistingFile(
 			            openInTab ? document : nullptr,
 			            fi->filename,
 			            fi->pathname,
@@ -5988,7 +5988,7 @@ void MainWindow::SetIncrementalSearchLineMS(bool value) {
 bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, Search::Result *searchResult) {
 
 	TextBuffer *buffer = document->buffer();
-	const int64_t fileEnd = buffer->BufGetLength() - 1;
+	const int64_t fileEnd = buffer->length() - 1;
 
 	// reject empty string
 	if (searchString.isEmpty()) {
@@ -7202,7 +7202,7 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
 	QString slinecol;
 	int line;
 	int column;
-	const int64_t length = document->buffer()->BufGetLength();
+	const int64_t length = document->buffer()->length();
 
 	if (!area->TextDPosToLineAndCol(pos, &line, &column)) {
 		string   = tr("%1%2%3 %4 bytes").arg(document->path(), document->filename(), format).arg(length);

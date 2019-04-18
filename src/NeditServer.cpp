@@ -345,7 +345,7 @@ void NeditServer::newConnection() {
 			   items. The current file may also be raised if there're
 			   macros to execute on. */
 
-			document = DocumentWidget::EditExistingFileEx(
+			document = DocumentWidget::editExistingFile(
 			               findDocumentOnDesktop(tabbed, currentDesktop),
 			               fi->filename,
 			               fi->pathname,
@@ -371,7 +371,7 @@ void NeditServer::newConnection() {
 				// NOTE(eteran): this was previously window->lastFocus, but that
 				// is very inconvinient to get at this point in the code (now)
 				// firstPane() seems practical for now
-				document->SelectNumberedLineEx(document->firstPane(), lineNum);
+				document->selectNumberedLine(document->firstPane(), lineNum);
 			}
 
 			if (!doCommand.isEmpty()) {
