@@ -16,7 +16,7 @@ class DialogMacros final : public Dialog {
 
 public:
 	DialogMacros(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-	~DialogMacros() noexcept override = default;
+	~DialogMacros() override = default;
 
 Q_SIGNALS:
 	void restore(const QModelIndex &selection);

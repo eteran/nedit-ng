@@ -10,7 +10,7 @@ class DialogOutput : public Dialog {
 
 public:
 	DialogOutput(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-	~DialogOutput() noexcept override = default;
+	~DialogOutput() override = default;
 
 public:
 	void setText(const QString &text);

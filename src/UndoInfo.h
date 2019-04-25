@@ -32,7 +32,7 @@ public:
 	UndoInfo(UndoInfo &&)                 = default;
 	UndoInfo &operator=(const UndoInfo &) = default;
 	UndoInfo &operator=(UndoInfo &&)      = default;
-	~UndoInfo() noexcept                  = default;
+	~UndoInfo()                           = default;
 
 public:
 	std::string oldText;

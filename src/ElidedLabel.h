@@ -15,7 +15,7 @@ public:
 	explicit ElidedLabel(QWidget *parent = nullptr);
 	explicit ElidedLabel(const QString &text, QWidget *parent = nullptr);
 
-	~ElidedLabel() noexcept override = default;
+	~ElidedLabel() override = default;
 
 public:
 	QSize minimumSizeHint() const override;

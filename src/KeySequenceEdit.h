@@ -19,7 +19,7 @@ class KeySequenceEdit : public QWidget {
 public:
 	explicit KeySequenceEdit(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	explicit KeySequenceEdit(const QKeySequence &keySequence, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-	~KeySequenceEdit() noexcept override = default;
+	~KeySequenceEdit() override = default;
 
 public:
 	QKeySequence keySequence() const;

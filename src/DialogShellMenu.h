@@ -16,7 +16,7 @@ class DialogShellMenu final : public Dialog {
 
 public:
 	DialogShellMenu(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-	~DialogShellMenu() noexcept override = default;
+	~DialogShellMenu() override = default;
 
 Q_SIGNALS:
 	void restore(const QModelIndex &selection);

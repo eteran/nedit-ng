@@ -33,7 +33,7 @@ public:
 	Rangeset& operator=(const Rangeset &) = default;
 	Rangeset(Rangeset &&)                 = default;
 	Rangeset& operator=(Rangeset &&)      = default;
-	~Rangeset() noexcept;
+	~Rangeset();
 
 public:
 	bool setColor(TextBuffer *buffer, const QString &color_name);

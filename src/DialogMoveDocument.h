@@ -14,7 +14,7 @@ public:
 	Q_OBJECT
 public:
 	DialogMoveDocument(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-	~DialogMoveDocument() noexcept override = default;
+	~DialogMoveDocument() override = default;
 
 public:
 	void addItem(MainWindow *window);

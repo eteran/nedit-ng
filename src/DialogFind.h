@@ -25,7 +25,7 @@ public:
 
 public:
 	DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f = Qt::WindowFlags());
-	~DialogFind() noexcept override = default;
+	~DialogFind() override = default;
 
 protected:
 	void keyPressEvent(QKeyEvent *event) override;

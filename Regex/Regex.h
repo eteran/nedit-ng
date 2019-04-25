@@ -26,7 +26,7 @@ public:
 	Regex(view::string_view exp, int defaultFlags);
 	Regex(const Regex &)            = delete;
 	Regex& operator=(const Regex &) = delete;
-	~Regex() noexcept               = default;
+	~Regex()                        = default;
 
 public:
 	/**

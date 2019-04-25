@@ -19,7 +19,7 @@ class DialogSyntaxPatterns final : public Dialog {
 
 public:
 	DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f = Qt::WindowFlags());
-	~DialogSyntaxPatterns() noexcept override = default;
+	~DialogSyntaxPatterns() override = default;
 
 public:
 	void setLanguageName(const QString &name);

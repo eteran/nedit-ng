@@ -18,7 +18,7 @@ public:
 
 public:
 	DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatterns, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-	~DialogLanguageModes() noexcept override = default;
+	~DialogLanguageModes() override = default;
 
 Q_SIGNALS:
 	void restore(const QModelIndex &selection);

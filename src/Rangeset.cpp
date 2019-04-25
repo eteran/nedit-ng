@@ -1099,7 +1099,7 @@ Rangeset::Rangeset(TextBuffer *buffer, uint8_t label) : buffer_(buffer), label_(
 /**
  * @brief Rangeset::~Rangeset
  */
-Rangeset::~Rangeset() noexcept {
+Rangeset::~Rangeset() {
 	for(const TextRange &range : ranges_) {
 		RangesetRefreshRange(buffer_, range.start, range.end);
 	}

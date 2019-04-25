@@ -16,7 +16,7 @@ class DialogWindowBackgroundMenu final : public Dialog {
 
 public:
 	DialogWindowBackgroundMenu(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-	~DialogWindowBackgroundMenu() noexcept override = default;
+	~DialogWindowBackgroundMenu() override = default;
 
 public:
 	void setPasteReplayEnabled(bool enabled);

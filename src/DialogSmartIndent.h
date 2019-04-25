@@ -14,7 +14,7 @@ class DialogSmartIndent final : public Dialog {
 	Q_OBJECT
 public:
 	DialogSmartIndent(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-	~DialogSmartIndent() noexcept override = default;
+	~DialogSmartIndent() override = default;
 
 public:
 	void updateLanguageModes();

@@ -10,7 +10,7 @@ class MenuItemModel final : public QAbstractItemModel {
 
 public:
 	explicit MenuItemModel(QObject *parent = nullptr) ;
-	~MenuItemModel() noexcept override = default;
+	~MenuItemModel() override = default;
 
 public:
 	QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex()) const override;

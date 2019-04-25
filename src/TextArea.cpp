@@ -869,7 +869,7 @@ void TextArea::backwardCharacterAP(EventFlags flags) {
 /**
  * @brief TextArea::~TextArea
  */
-TextArea::~TextArea() noexcept {
+TextArea::~TextArea() {
 	if(buffer_) {
 		buffer_->BufRemoveModifyCB(bufModifiedCB, this);
 		buffer_->BufRemovePreDeleteCB(bufPreDeleteCB, this);

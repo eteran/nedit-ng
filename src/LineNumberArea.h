@@ -12,7 +12,7 @@ public:
 	static constexpr int Padding = 5;
 public:
 	explicit LineNumberArea(TextArea *area);
-	~LineNumberArea() noexcept override = default;
+	~LineNumberArea() override = default;
 
 public:
 	QSize sizeHint() const override;

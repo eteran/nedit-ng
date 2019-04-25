@@ -39,7 +39,7 @@ public:
 	gap_buffer& operator=(const gap_buffer&) = delete;
 	gap_buffer(gap_buffer&&)                 = delete;
 	gap_buffer& operator=(gap_buffer&&)      = delete;
-	~gap_buffer() noexcept                   = default;
+	~gap_buffer()                            = default;
 
 public:
 	iterator begin() noexcept              { return iterator(this, 0); }
