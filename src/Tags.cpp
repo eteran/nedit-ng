@@ -31,6 +31,7 @@
 #include <memory>
 #include <sstream>
 #include <unordered_map>
+#include <array>
 
 #ifdef Q_OS_UNIX
 #include <sys/param.h>

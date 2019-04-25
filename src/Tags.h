@@ -7,11 +7,9 @@
 #include "Util/string_view.h"
 
 #include <deque>
-#include <array>
 
 #include <QString>
 #include <QDateTime>
-#include <QCoreApplication>
 
 class TextArea;
 class QTextStream;
