@@ -803,7 +803,7 @@ static bool StringToSearchType(const QString &string, SearchType *searchType) {
 		}
 	}
 
-	*searchType = Preferences::GetPrefSearch();
+	// NOTE(eteran): leave searchType unchanged (issue #97)
 	return false;
 }
 
