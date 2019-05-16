@@ -21,6 +21,7 @@
 #include <QMainWindow>
 #include <QPointer>
 #include <QFileInfoList>
+#include <QFileDialog>
 
 #include "ui_MainWindow.h"
 
@@ -81,8 +82,7 @@ public:
 	DocumentWidget *documentAt(int index) const;
 	int updateGutterWidth();
 	int updateLineNumDisp();
-	QString PromptForExistingFile(const QString &path, const QString &prompt);
-	QString PromptForExistingFile(const QString &prompt);
+	QStringList PromptForExistingFiles(const QString &path, const QString &prompt, QFileDialog::FileMode mode);
 	size_t tabCount() const;
 	std::vector<DocumentWidget *> openDocuments() const;
 	void BeginISearchEx(Direction direction);

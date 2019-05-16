@@ -44,7 +44,6 @@
 #include "Util/utils.h"
 
 #include <QClipboard>
-#include <QFileDialog>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QMimeData>
@@ -768,16 +767,17 @@ void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
 }
 
 /**
- * @brief MainWindow::PromptForExistingFile
+ * @brief MainWindow::PromptForExistingFiles
  * @param path
  * @param prompt
+ * @param filemode
  * @return
  */
-QString MainWindow::PromptForExistingFile(const QString &path, const QString &prompt) {
+QStringList MainWindow::PromptForExistingFiles(const QString &path, const QString &prompt, QFileDialog::FileMode mode) {
 
 	QFileDialog dialog(this, prompt);
 	dialog.setOptions(QFileDialog::DontUseNativeDialog | QFileDialog::DontUseCustomDirectoryIcons);
-	dialog.setFileMode(QFileDialog::ExistingFile);
+	dialog.setFileMode(mode);
 	dialog.setFilter(QDir::AllDirs | QDir::AllEntries | QDir::Hidden | QDir::System);
 
 	if(!path.isEmpty()) {
@@ -785,11 +785,10 @@ QString MainWindow::PromptForExistingFile(const QString &path, const QString &pr
 	}
 
 	if(dialog.exec()) {
-		const QStringList files = dialog.selectedFiles();
-		return files[0];
+		return dialog.selectedFiles();
 	}
 
-	return QString();
+	return QStringList();
 }
 
 /**
@@ -809,12 +808,14 @@ void MainWindow::action_Open(DocumentWidget *document, const QString &filename) 
  * @param document
  */
 void MainWindow::action_Open(DocumentWidget *document) {
-	QString filename = PromptForExistingFile(document->path(), tr("Open File"));
-	if (filename.isNull()) {
+	QStringList filenames = PromptForExistingFiles(document->path(), tr("Open File"), QFileDialog::ExistingFiles);
+	if (filenames.isEmpty()) {
 		return;
 	}
 
-	action_Open(document, filename);
+	for(const QString &filename: filenames) {
+		action_Open(document, filename);
+	}
 }
 
 /**
@@ -905,13 +906,13 @@ void MainWindow::action_Include_File(DocumentWidget *document) {
 		return;
 	}
 
-	QString filename = PromptForExistingFile(document->path(), tr("Include File"));
+	QStringList filenames = PromptForExistingFiles(document->path(), tr("Include File"), QFileDialog::ExistingFile);
 
-	if (filename.isNull()) {
+	if (filenames.isEmpty()) {
 		return;
 	}
 
-	document->includeFile(filename);
+	document->includeFile(filenames[0]);
 }
 
 /**
@@ -3405,12 +3406,12 @@ void MainWindow::action_Load_Tips_File(DocumentWidget *document, const QString &
  * @param document
  */
 void MainWindow::action_Load_Calltips_File(DocumentWidget *document) {
-	QString filename = PromptForExistingFile(document->path(), tr("Load Calltips File"));
-	if (filename.isNull()) {
+	QStringList filenames = PromptForExistingFiles(document->path(), tr("Load Calltips File"), QFileDialog::ExistingFile);
+	if (filenames.isEmpty()) {
 		return;
 	}
 
-	action_Load_Tips_File(document, filename);
+	action_Load_Tips_File(document, filenames[0]);
 	updateTipsFileMenuEx();
 }
 
@@ -3446,12 +3447,12 @@ void MainWindow::action_Load_Tags_File(DocumentWidget *document, const QString &
  * @param document
  */
 void MainWindow::action_Load_Tags_File(DocumentWidget *document) {
-	QString filename = PromptForExistingFile(document->path(), tr("Load Tags File"));
-	if (filename.isNull()) {
+	QStringList filenames = PromptForExistingFiles(document->path(), tr("Load Tags File"), QFileDialog::ExistingFile);
+	if (filenames.isEmpty()) {
 		return;
 	}
 
-	action_Load_Tags_File(document, filename);
+	action_Load_Tags_File(document, filenames[0]);
 	updateTagsFileMenuEx();
 }
 
@@ -3481,12 +3482,12 @@ void MainWindow::action_Load_Macro_File(DocumentWidget *document, const QString 
  * @param document
  */
 void MainWindow::action_Load_Macro_File(DocumentWidget *document) {
-	QString filename = PromptForExistingFile(document->path(), tr("Load Macro File"));
-	if (filename.isNull()) {
+	QStringList filenames = PromptForExistingFiles(document->path(), tr("Load Macro File"), QFileDialog::ExistingFile);
+	if (filenames.isEmpty()) {
 		return;
 	}
 
-	action_Load_Macro_File(document, filename);
+	action_Load_Macro_File(document, filenames[0]);
 }
 
 /**
