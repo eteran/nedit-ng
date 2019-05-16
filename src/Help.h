@@ -2,15 +2,13 @@
 #ifndef HELP_H_
 #define HELP_H_
 
+#include "Util/QtHelper.h"
+
 #include <QCoreApplication>
 
-class Help {
-	Q_DECLARE_TR_FUNCTIONS(Help)
+namespace Help {
+	Q_DECLARE_NAMESPACE_TR(Help)
 
-public:
-	Help() = delete;
-
-public:
 	enum class Topic {
 		Start,
 		Select,
@@ -56,8 +54,7 @@ public:
 		CustomTitleDialog,
 	};
 
-	static void displayTopic(QWidget *parent, Topic topic);
-
-};
+	void displayTopic(QWidget *parent, Topic topic);
+}
 
 #endif

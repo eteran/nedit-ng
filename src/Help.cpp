@@ -2,11 +2,13 @@
 #include "Help.h"
 #include <QMessageBox>
 
+namespace Help {
+
 /**
  * @brief displayTopic
  * @param topic
  */
-void Help::displayTopic(QWidget *parent, Topic topic) {
+void displayTopic(QWidget *parent, Topic topic) {
 	Q_UNUSED(topic)
 
 	QMessageBox::warning(
@@ -15,3 +17,4 @@ void Help::displayTopic(QWidget *parent, Topic topic) {
 				tr("Sorry, but the help system is not yet implemented!"));
 }
 
+}

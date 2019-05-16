@@ -53,6 +53,7 @@ public:
 	Highlight() = delete;
 
 public:
+	// TODO(eteran): does ALL of this need to be public?
 	static void loadTheme();
 	static void saveTheme();
 	static bool FontOfNamedStyleIsBold(const QString &styleName);

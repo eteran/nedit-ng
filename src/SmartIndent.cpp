@@ -16,9 +16,11 @@
 #include <cstdio>
 #include <cstring>
 
-QPointer<DialogSmartIndent>   SmartIndent::SmartIndentDialog;
-std::vector<SmartIndentEntry> SmartIndent::SmartIndentSpecs;
-QString                       SmartIndent::CommonMacros;
+namespace SmartIndent {
+
+QPointer<DialogSmartIndent>   SmartIndentDialog;
+std::vector<SmartIndentEntry> SmartIndentSpecs;
+QString                       CommonMacros;
 
 namespace {
 
@@ -208,7 +210,7 @@ bool loadDefaultIndentSpec(const QString &lmName) {
 	});
 
 	if(it != std::end(DefaultIndentSpecs)) {
-		SmartIndent::SmartIndentSpecs.push_back(*it);
+		SmartIndentSpecs.push_back(*it);
 		return true;
 	}
 
@@ -221,7 +223,7 @@ bool loadDefaultIndentSpec(const QString &lmName) {
  * @brief defaultCommonMacros
  * @return
  */
-QByteArray SmartIndent::defaultCommonMacros() {
+QByteArray defaultCommonMacros() {
 	static QByteArray defaultMacros = loadResource(QLatin1String("DefaultCommonMacros.txt"));
 	return defaultMacros;
 }
@@ -229,16 +231,16 @@ QByteArray SmartIndent::defaultCommonMacros() {
 /*
 ** Returns true if there are smart indent macros for a named language
 */
-bool SmartIndent::SmartIndentMacrosAvailable(const QString &languageModeName) {
+bool SmartIndentMacrosAvailable(const QString &languageModeName) {
 	return findIndentSpec(languageModeName) != nullptr;
 }
 
 /**
- * @brief SmartIndent::LoadSmartIndentStringEx
+ * @brief LoadSmartIndentStringEx
  * @param string
  * @return
  */
-bool SmartIndent::LoadSmartIndentString(const QString &string) {
+bool LoadSmartIndentString(const QString &string) {
 
 	Input in(&string);
 	QString errMsg;
@@ -322,7 +324,7 @@ bool SmartIndent::LoadSmartIndentString(const QString &string) {
 	}
 }
 
-bool SmartIndent::LoadSmartIndentCommonString(const QString &string) {
+bool LoadSmartIndentCommonString(const QString &string) {
 
 	Input in(&string);
 
@@ -345,7 +347,7 @@ bool SmartIndent::LoadSmartIndentCommonString(const QString &string) {
 }
 
 
-QString SmartIndent::WriteSmartIndentStringEx() {
+QString WriteSmartIndentStringEx() {
 
 	QString s;
 	QTextStream ts(&s);
@@ -374,7 +376,7 @@ QString SmartIndent::WriteSmartIndentStringEx() {
 	return s;
 }
 
-QString SmartIndent::WriteSmartIndentCommonStringEx() {
+QString WriteSmartIndentCommonStringEx() {
 
 	QByteArray defaults = defaultCommonMacros();
 	if (CommonMacros == QString::fromLatin1(defaults)) {
@@ -399,7 +401,7 @@ QString SmartIndent::WriteSmartIndentCommonStringEx() {
 	return outStr;
 }
 
-const SmartIndentEntry *SmartIndent::findDefaultIndentSpec(const QString &name) {
+const SmartIndentEntry *findDefaultIndentSpec(const QString &name) {
 
 	if(name.isNull()) {
 		return nullptr;
@@ -416,7 +418,7 @@ const SmartIndentEntry *SmartIndent::findDefaultIndentSpec(const QString &name) 
 	return nullptr;
 }
 
-const SmartIndentEntry *SmartIndent::findIndentSpec(const QString &name) {
+const SmartIndentEntry *findIndentSpec(const QString &name) {
 
 	if(name.isNull()) {
 		return nullptr;
@@ -437,7 +439,7 @@ const SmartIndentEntry *SmartIndent::findIndentSpec(const QString &name) {
 ** Returns true if there are smart indent macros, or potential macros
 ** not yet committed in the smart indent dialog for a language mode,
 */
-bool SmartIndent::LMHasSmartIndentMacros(const QString &languageMode) {
+bool LMHasSmartIndentMacros(const QString &languageMode) {
 	if (findIndentSpec(languageMode) != nullptr) {
 		return true;
 	}
@@ -450,7 +452,7 @@ bool SmartIndent::LMHasSmartIndentMacros(const QString &languageMode) {
 ** "oldName" to "newName" in both the stored macro sets, and the pattern set
 ** currently being edited in the dialog.
 */
-void SmartIndent::RenameSmartIndentMacros(const QString &oldName, const QString &newName) {
+void RenameSmartIndentMacros(const QString &oldName, const QString &newName) {
 
 	for(SmartIndentEntry &sis : SmartIndentSpecs) {
 		if (sis.languageMode == oldName) {
@@ -469,9 +471,11 @@ void SmartIndent::RenameSmartIndentMacros(const QString &oldName, const QString 
 ** If a smart indent dialog is up, ask to have the option menu for
 ** chosing language mode updated (via a call to CreateLanguageModeMenu)
 */
-void SmartIndent::UpdateLangModeMenuSmartIndent() {
+void UpdateLangModeMenuSmartIndent() {
 
 	if(SmartIndentDialog) {
 		SmartIndentDialog->updateLanguageModes();
 	}
+}
+
 }

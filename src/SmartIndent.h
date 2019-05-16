@@ -4,7 +4,7 @@
 
 #include <vector>
 #include <QPointer>
-#include <QCoreApplication>
+#include "Util/QtHelper.h"
 
 class SmartIndentEntry;
 class DialogSmartIndent;
@@ -14,31 +14,26 @@ struct Program;
 class QString;
 class QByteArray;
 
-class SmartIndent {
-	Q_DECLARE_TR_FUNCTIONS(SmartIndent)
+namespace SmartIndent {
+	Q_DECLARE_NAMESPACE_TR(SmartIndent)
 
-public:
-	SmartIndent() = delete;
+	bool LMHasSmartIndentMacros(const QString &languageMode);
+	bool LoadSmartIndentCommonString(const QString &string);
+	bool LoadSmartIndentString(const QString &string);
+	bool SmartIndentMacrosAvailable(const QString &languageModeName);
+	QString WriteSmartIndentCommonStringEx();
+	QString WriteSmartIndentStringEx();
+	void EditCommonSmartIndentMacro();
+	void RenameSmartIndentMacros(const QString &oldName, const QString &newName);
+	void UpdateLangModeMenuSmartIndent();
+	QByteArray defaultCommonMacros();
+	const SmartIndentEntry *findIndentSpec(const QString &name);
+	const SmartIndentEntry *findDefaultIndentSpec(const QString &name);
 
-public:
-	static bool LMHasSmartIndentMacros(const QString &languageMode);
-	static bool LoadSmartIndentCommonString(const QString &string);
-	static bool LoadSmartIndentString(const QString &string);
-	static bool SmartIndentMacrosAvailable(const QString &languageModeName);
-	static QString WriteSmartIndentCommonStringEx();
-	static QString WriteSmartIndentStringEx();
-	static void EditCommonSmartIndentMacro();
-	static void RenameSmartIndentMacros(const QString &oldName, const QString &newName);
-	static void UpdateLangModeMenuSmartIndent();
-	static QByteArray defaultCommonMacros();
-	static const SmartIndentEntry *findIndentSpec(const QString &name);
-	static const SmartIndentEntry *findDefaultIndentSpec(const QString &name);
-
-public:
-	static QString                       CommonMacros;
-	static std::vector<SmartIndentEntry> SmartIndentSpecs;
-	static QPointer<DialogSmartIndent>   SmartIndentDialog;
-};
+	extern QString                       CommonMacros;
+	extern std::vector<SmartIndentEntry> SmartIndentSpecs;
+	extern QPointer<DialogSmartIndent>   SmartIndentDialog;
+}
 
 struct SmartIndentData {
 	Program *newlineMacro = nullptr;
