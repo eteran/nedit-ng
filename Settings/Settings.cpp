@@ -6,7 +6,8 @@
 #include <QSettings>
 #include <QStandardPaths>
 
-// Some default colors
+namespace Settings {
+
 namespace {
 
 bool settingsLoaded_ = false;
@@ -45,137 +46,137 @@ void writeEnum(QSettings &settings, const QString &key, const T &value) {
 
 }
 
-bool Settings::showResizeNotification;
-bool Settings::appendLF;
-bool Settings::autoSave;
-bool Settings::autoScroll;
-bool Settings::backlightChars;
-bool Settings::beepOnSearchWrap;
-bool Settings::globalTabNavigate;
-bool Settings::highlightSyntax;
-bool Settings::insertTabs;
-bool Settings::iSearchLine;
-bool Settings::lineNumbers;
-bool Settings::matchSyntaxBased;
-bool Settings::openInTab;
-bool Settings::pathInWindowsMenu;
-bool Settings::prefFileRead;
-bool Settings::repositionDialogs;
-bool Settings::retainSearchDialogs;
-bool Settings::saveOldVersion;
-bool Settings::searchDialogs;
-bool Settings::searchWraps;
-bool Settings::smartTags;
-bool Settings::sortOpenPrevMenu;
-bool Settings::sortTabs;
-bool Settings::statisticsLine;
-bool Settings::tabBar;
-bool Settings::tabBarHideOne;
-bool Settings::toolTips;
-bool Settings::warnExit;
-bool Settings::warnFileMods;
-bool Settings::warnRealFileMods;
-bool Settings::smartHome;
-int Settings::fileVersion;
-IndentStyle Settings::autoIndent;
-WrapStyle Settings::autoWrap;
-int Settings::emulateTabs;
-SearchType Settings::searchMethod;
-ShowMatchingStyle Settings::showMatching;
-int Settings::tabDistance;
-int Settings::textCols;
-int Settings::textRows;
-int Settings::wrapMargin;
-QString Settings::bgMenuCommands;
-QString Settings::colors[9];
-QString Settings::geometry;
-QString Settings::highlightPatterns;
-QString Settings::languageModes;
-QString Settings::macroCommands;
-QString Settings::serverName;
-QString Settings::shell;
-QString Settings::shellCommands;
-QString Settings::smartIndentInit;
-QString Settings::smartIndentInitCommon;
-QString Settings::fontName;
-QString Settings::titleFormat;
+bool showResizeNotification;
+bool appendLF;
+bool autoSave;
+bool autoScroll;
+bool backlightChars;
+bool beepOnSearchWrap;
+bool globalTabNavigate;
+bool highlightSyntax;
+bool insertTabs;
+bool iSearchLine;
+bool lineNumbers;
+bool matchSyntaxBased;
+bool openInTab;
+bool pathInWindowsMenu;
+bool prefFileRead;
+bool repositionDialogs;
+bool retainSearchDialogs;
+bool saveOldVersion;
+bool searchDialogs;
+bool searchWraps;
+bool smartTags;
+bool sortOpenPrevMenu;
+bool sortTabs;
+bool statisticsLine;
+bool tabBar;
+bool tabBarHideOne;
+bool toolTips;
+bool warnExit;
+bool warnFileMods;
+bool warnRealFileMods;
+bool smartHome;
+int fileVersion;
+IndentStyle autoIndent;
+WrapStyle autoWrap;
+int emulateTabs;
+SearchType searchMethod;
+ShowMatchingStyle showMatching;
+int tabDistance;
+int textCols;
+int textRows;
+int wrapMargin;
+QString bgMenuCommands;
+QString colors[9];
+QString geometry;
+QString highlightPatterns;
+QString languageModes;
+QString macroCommands;
+QString serverName;
+QString shell;
+QString shellCommands;
+QString smartIndentInit;
+QString smartIndentInitCommon;
+QString fontName;
+QString titleFormat;
 
-bool Settings::autoWrapPastedText;
-bool Settings::colorizeHighlightedText;
-bool Settings::heavyCursor;
-bool Settings::alwaysCheckRelativeTagsSpecs;
-bool Settings::findReplaceUsesSelection;
-bool Settings::focusOnRaise;
-bool Settings::forceOSConversion;
-bool Settings::honorSymlinks;
-bool Settings::stickyCaseSenseButton;
-bool Settings::typingHidesPointer;
-bool Settings::undoModifiesSelection;
-bool Settings::splitHorizontally;
-int Settings::truncateLongNamesInTabs;
-int Settings::autoScrollVPadding;
-int Settings::maxPrevOpenFiles;
-TruncSubstitution Settings::truncSubstitution;
-QString Settings::backlightCharTypes;
-QString Settings::tagFile;
-QString Settings::wordDelimiters;
-QStringList Settings::includePaths;
-QFont Settings::font;
+bool autoWrapPastedText;
+bool colorizeHighlightedText;
+bool heavyCursor;
+bool alwaysCheckRelativeTagsSpecs;
+bool findReplaceUsesSelection;
+bool focusOnRaise;
+bool forceOSConversion;
+bool honorSymlinks;
+bool stickyCaseSenseButton;
+bool typingHidesPointer;
+bool undoModifiesSelection;
+bool splitHorizontally;
+int truncateLongNamesInTabs;
+int autoScrollVPadding;
+int maxPrevOpenFiles;
+TruncSubstitution truncSubstitution;
+QString backlightCharTypes;
+QString tagFile;
+QString wordDelimiters;
+QStringList includePaths;
+QFont font;
 
 /**
- * @brief Settings::themeFile
+ * @brief themeFile
  * @return
  */
-QString Settings::themeFile() {
+QString themeFile() {
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
 	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("theme.xml"));
 	return configFile;
 }
 
 /**
- * @brief Settings::configFile
+ * @brief configFile
  * @return
  */
-QString Settings::configFile() {
+QString configFile() {
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
 	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("config.ini"));
 	return configFile;
 }
 
 /**
- * @brief Settings::historyFile
+ * @brief historyFile
  * @return
  */
-QString Settings::historyFile() {
+QString historyFile() {
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
 	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("history"));
 	return configFile;
 }
 
 /**
- * @brief Settings::autoLoadMacroFile
+ * @brief autoLoadMacroFile
  * @return
  */
-QString Settings::autoLoadMacroFile() {
+QString autoLoadMacroFile() {
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
 	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("autoload.nm"));
 	return configFile;
 }
 
 /**
- * @brief Settings::styleFile
+ * @brief styleFile
  * @return
  */
-QString Settings::styleFile() {
+QString styleFile() {
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
 	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("style.qss"));
 	return configFile;
 }
 
 /**
- * @brief Settings::loadPreferences
+ * @brief loadPreferences
  */
-void Settings::loadPreferences() {
+void loadPreferences() {
 
 	QString filename = configFile();
 	QSettings settings(filename, QSettings::IniFormat);
@@ -267,10 +268,10 @@ void Settings::loadPreferences() {
 }
 
 /**
- * @brief Settings::importSettings
+ * @brief importSettings
  * @param filename
  */
-void Settings::importSettings(const QString &filename) {
+void importSettings(const QString &filename) {
 	if(!settingsLoaded_) {
 		qWarning("NEdit: Warning, importing while no previous settings loaded!");
 	}
@@ -355,10 +356,10 @@ void Settings::importSettings(const QString &filename) {
 }
 
 /**
- * @brief Settings::savePreferences
+ * @brief savePreferences
  * @return
  */
-bool Settings::savePreferences() {
+bool savePreferences() {
 	QString filename = configFile();
 	QSettings settings(filename, QSettings::IniFormat);
 
@@ -440,4 +441,6 @@ bool Settings::savePreferences() {
 
 	settings.sync();
 	return settings.status() == QSettings::NoError;
+}
+
 }

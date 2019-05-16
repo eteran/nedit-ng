@@ -7,6 +7,7 @@
 #include "ShowMatchingStyle.h"
 #include "TruncSubstitution.h"
 #include "SearchType.h"
+#include "Util/QtHelper.h"
 
 #include <QFont>
 #include <QString>
@@ -25,106 +26,100 @@ enum ColorTypes : int {
 	LINENO_BG_COLOR,
 };
 
-class Settings  {
-	Q_DECLARE_TR_FUNCTIONS(Settings)
+namespace Settings  {
+	Q_DECLARE_NAMESPACE_TR(Settings)
 
-public:
-	Settings() = delete;
+	void loadPreferences();
+	bool savePreferences();
+	void importSettings(const QString &filename);
 
-public:
-	static void loadPreferences();
-	static bool savePreferences();
-	static void importSettings(const QString &filename);
+	// Paths
+	QString configFile();
+	QString historyFile();
+	QString autoLoadMacroFile();
+	QString styleFile();
+	QString themeFile();
 
-public:
-	static QString configFile();
-	static QString historyFile();
-	static QString autoLoadMacroFile();
-	static QString styleFile();
-	static QString themeFile();
+	// Standard
+	extern bool showResizeNotification;
+	extern bool appendLF;
+	extern bool autoSave;
+	extern bool autoScroll;
+	extern bool backlightChars;
+	extern bool beepOnSearchWrap;
+	extern bool globalTabNavigate;
+	extern bool highlightSyntax;
+	extern bool insertTabs;
+	extern bool iSearchLine;
+	extern bool lineNumbers;
+	extern bool matchSyntaxBased;
+	extern bool openInTab;
+	extern bool pathInWindowsMenu;
+	extern bool prefFileRead;
+	extern bool repositionDialogs;
+	extern bool retainSearchDialogs;
+	extern bool saveOldVersion;
+	extern bool searchDialogs;
+	extern bool searchWraps;
+	extern bool smartTags;
+	extern bool sortOpenPrevMenu;
+	extern bool sortTabs;
+	extern bool statisticsLine;
+	extern bool tabBar;
+	extern bool tabBarHideOne;
+	extern bool toolTips;
+	extern bool warnExit;
+	extern bool warnFileMods;
+	extern bool warnRealFileMods;
+	extern bool smartHome;
+	extern int fileVersion;
+	extern IndentStyle autoIndent;
+	extern WrapStyle autoWrap;
+	extern int emulateTabs;
+	extern SearchType searchMethod;
+	extern ShowMatchingStyle showMatching;
+	extern int tabDistance;
+	extern int textCols;
+	extern int textRows;
+	extern int wrapMargin;
+	extern QString bgMenuCommands;
+	extern QString colors[9];
+	extern QString geometry;
+	extern QString highlightPatterns;
+	extern QString languageModes;
+	extern QString macroCommands;
+	extern QString serverName;
+	extern QString shell;
+	extern QString shellCommands;
+	extern QString smartIndentInit;
+	extern QString smartIndentInitCommon;
+	extern QString fontName;
+	extern QString titleFormat;
 
-public:
-	static bool showResizeNotification;
-	static bool appendLF;
-	static bool autoSave;
-	static bool autoScroll;
-	static bool backlightChars;
-	static bool beepOnSearchWrap;
-	static bool globalTabNavigate;
-	static bool highlightSyntax;
-	static bool insertTabs;
-	static bool iSearchLine;
-	static bool lineNumbers;
-	static bool matchSyntaxBased;
-	static bool openInTab;
-	static bool pathInWindowsMenu;
-	static bool prefFileRead;
-	static bool repositionDialogs;
-	static bool retainSearchDialogs;
-	static bool saveOldVersion;
-	static bool searchDialogs;
-	static bool searchWraps;
-	static bool smartTags;
-	static bool sortOpenPrevMenu;
-	static bool sortTabs;
-	static bool statisticsLine;
-	static bool tabBar;
-	static bool tabBarHideOne;
-	static bool toolTips;
-	static bool warnExit;
-	static bool warnFileMods;
-	static bool warnRealFileMods;
-	static bool smartHome;
-	static int fileVersion;
-	static IndentStyle autoIndent;
-	static WrapStyle autoWrap;
-	static int emulateTabs;
-	static SearchType searchMethod;
-	static ShowMatchingStyle showMatching;
-	static int tabDistance;
-	static int textCols;
-	static int textRows;
-	static int wrapMargin;
-	static QString bgMenuCommands;
-	static QString colors[9];
-	static QString geometry;
-	static QString highlightPatterns;
-	static QString languageModes;
-	static QString macroCommands;
-	static QString serverName;
-	static QString shell;
-	static QString shellCommands;
-	static QString smartIndentInit;
-	static QString smartIndentInitCommon;
-	static QString fontName;
-	static QString titleFormat;
-
-public:
 	// Advanced
-	static bool autoWrapPastedText;
-	static bool colorizeHighlightedText;
-	static bool heavyCursor;
-	static bool alwaysCheckRelativeTagsSpecs;
-	static bool findReplaceUsesSelection;
-	static bool focusOnRaise;
-	static bool forceOSConversion;
-	static bool honorSymlinks;
-	static bool stickyCaseSenseButton;
-	static bool typingHidesPointer;
-	static bool undoModifiesSelection;
-	static bool splitHorizontally;
-	static int truncateLongNamesInTabs;
-	static int autoScrollVPadding;
-	static int maxPrevOpenFiles;
-	static TruncSubstitution truncSubstitution;
-	static QString backlightCharTypes;
-	static QString tagFile;
-	static QString wordDelimiters;
-	static QStringList includePaths;
+	extern bool autoWrapPastedText;
+	extern bool colorizeHighlightedText;
+	extern bool heavyCursor;
+	extern bool alwaysCheckRelativeTagsSpecs;
+	extern bool findReplaceUsesSelection;
+	extern bool focusOnRaise;
+	extern bool forceOSConversion;
+	extern bool honorSymlinks;
+	extern bool stickyCaseSenseButton;
+	extern bool typingHidesPointer;
+	extern bool undoModifiesSelection;
+	extern bool splitHorizontally;
+	extern int truncateLongNamesInTabs;
+	extern int autoScrollVPadding;
+	extern int maxPrevOpenFiles;
+	extern TruncSubstitution truncSubstitution;
+	extern QString backlightCharTypes;
+	extern QString tagFile;
+	extern QString wordDelimiters;
+	extern QStringList includePaths;
 
-public:
 	// Created implicitly from other "real" settings
-	static QFont font;
-};
+	extern QFont font;
+}
 
 #endif
