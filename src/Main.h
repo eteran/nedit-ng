@@ -17,7 +17,7 @@ public:
 	~Main();
 
 private:
-	bool checkDoMacroArg(const QString &macro) const;
+	static bool checkDoMacroArg(const QString &macro);
 
 private:
 	std::unique_ptr<NeditServer> server_;

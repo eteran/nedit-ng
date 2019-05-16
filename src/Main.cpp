@@ -368,7 +368,7 @@ Main::Main(const QStringList &args) {
 /*
 ** Return true if -do macro is valid, otherwise write an error on stderr
 */
-bool Main::checkDoMacroArg(const QString &macro) const {
+bool Main::checkDoMacroArg(const QString &macro) {
 
 	QString errMsg;
 	int stoppedAt;
