@@ -430,7 +430,11 @@ DocumentWidget::DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget 
 	LastCreated = this;
 
 	// create the text widget
-	splitter_ = new QSplitter(Qt::Vertical, this);
+	if(Settings::splitHorizontally) {
+		splitter_ = new QSplitter(Qt::Horizontal, this);
+	} else {
+		splitter_ = new QSplitter(Qt::Vertical, this);
+	}
 	splitter_->setChildrenCollapsible(false);
 	ui.verticalLayout->addWidget(splitter_);
 
@@ -499,7 +503,11 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	info_->buffer->BufAddModifyCB(SyntaxHighlightModifyCBEx, this);
 
 	// create the text widget
-	splitter_ = new QSplitter(Qt::Vertical, this);
+	if(Settings::splitHorizontally) {
+		splitter_ = new QSplitter(Qt::Horizontal, this);
+	} else {
+		splitter_ = new QSplitter(Qt::Vertical, this);
+	}
 	splitter_->setChildrenCollapsible(false);
 	ui.verticalLayout->addWidget(splitter_);
 

@@ -112,6 +112,7 @@ public:
 	static bool stickyCaseSenseButton;
 	static bool typingHidesPointer;
 	static bool undoModifiesSelection;
+	static bool splitHorizontally;
 	static int truncateLongNamesInTabs;
 	static int autoScrollVPadding;
 	static int maxPrevOpenFiles;
