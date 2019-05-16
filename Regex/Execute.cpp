@@ -7,6 +7,7 @@
 #include "RegexError.h"
 #include "Regex.h"
 #include "Util/utils.h"
+#include "Util/Compiler.h"
 
 #include <cassert>
 #include <cstdio>
@@ -20,14 +21,6 @@
 #define NEDIT_FALLTHROUGH() Q_FALLTHROUGH()
 #else
 #define NEDIT_FALLTHROUGH() (void)0
-#endif
-
-#ifdef Q_CC_MSVC
-#define FORCE_INLINE __forceinline
-#elif defined Q_CC_GNU
-#define FORCE_INLINE inline __attribute__((always_inline))
-#else
-#define FORCE_INLINE
 #endif
 
 namespace {
@@ -44,7 +37,7 @@ bool attempt(Regex *prog, const char *string);
    only necessary during compilation, can be left out.
    The net result of using this inlined version at two critical places is
    a 25% speedup (again, witnesses on Perl syntax highlighting). */
-FORCE_INLINE uint8_t *NEXT_PTR(uint8_t *ptr) noexcept {
+FORCE_INLINE inline uint8_t *NEXT_PTR(uint8_t *ptr) noexcept {
 
 	// NOTE(eteran): like next_ptr, but is inline
 	// doesn't do "is this a first pass compile" check
@@ -67,7 +60,7 @@ FORCE_INLINE uint8_t *NEXT_PTR(uint8_t *ptr) noexcept {
  * @param ptr
  * @return
  */
-FORCE_INLINE bool AT_END_OF_STRING(const char *ptr) noexcept {
+FORCE_INLINE inline bool AT_END_OF_STRING(const char *ptr) noexcept {
 
 	if(eContext.End_Of_String != nullptr && ptr >= eContext.End_Of_String) {
 		return true;
@@ -85,7 +78,7 @@ FORCE_INLINE bool AT_END_OF_STRING(const char *ptr) noexcept {
  * @param p
  * @return
  */
-FORCE_INLINE uint16_t getLower(uint8_t *p) noexcept {
+FORCE_INLINE inline uint16_t getLower(uint8_t *p) noexcept {
 	return static_cast<uint8_t>(((p[NODE_SIZE + 0] & 0xff) << 8) + ((p[NODE_SIZE + 1]) & 0xff));
 }
 
@@ -94,7 +87,7 @@ FORCE_INLINE uint16_t getLower(uint8_t *p) noexcept {
  * @param p
  * @return
  */
-FORCE_INLINE uint16_t getUpper(uint8_t *p) noexcept {
+FORCE_INLINE inline uint16_t getUpper(uint8_t *p) noexcept {
 	return static_cast<uint8_t>(((p[NODE_SIZE + 2] & 0xff) << 8) + ((p[NODE_SIZE + 3]) & 0xff));
 }
 

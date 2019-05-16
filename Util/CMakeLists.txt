@@ -30,6 +30,7 @@ add_library(Util
 	include/Util/utils.h
 	include/Util/version.h
 	include/Util/QtHelper.h
+        include/Util/Compiler.h
 )
 
 target_include_directories(Util 
