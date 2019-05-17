@@ -1,6 +1,7 @@
 
 #include "DialogDuplicateTags.h"
 #include "DocumentWidget.h"
+#include <QAbstractButton>
 
 /**
  * @brief DialogDuplicateTags::DialogDuplicateTags
@@ -10,6 +11,14 @@
  */
 DialogDuplicateTags::DialogDuplicateTags(DocumentWidget *document, TextArea *area, Qt::WindowFlags f) : Dialog(document, f), document_(document), area_(area) {
 	ui.setupUi(this);
+	connectSlots();
+}
+
+/**
+ * @brief DialogDuplicateTags::connectSlots
+ */
+void DialogDuplicateTags::connectSlots() {
+	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogDuplicateTags::buttonBox_clicked);
 }
 
 /**
@@ -40,10 +49,10 @@ void DialogDuplicateTags::on_buttonBox_accepted() {
 }
 
 /**
- * @brief DialogDuplicateTags::on_buttonBox_clicked
+ * @brief DialogDuplicateTags::buttonBox_clicked
  * @param button
  */
-void DialogDuplicateTags::on_buttonBox_clicked(QAbstractButton *button) {
+void DialogDuplicateTags::buttonBox_clicked(QAbstractButton *button) {
 	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 		applySelection();
 	}

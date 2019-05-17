@@ -20,10 +20,11 @@ public:
 
 private Q_SLOTS:
 	void on_buttonBox_accepted();
-	void on_buttonBox_clicked(QAbstractButton *button);
 
 private:
+	void buttonBox_clicked(QAbstractButton *button);
 	bool applySelection();
+	void connectSlots();
 
 private:
 	Ui::DialogDuplicateTags ui;

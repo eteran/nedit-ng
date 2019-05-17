@@ -14,10 +14,9 @@ public:
 	DialogFonts(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogFonts() override = default;
 
-private Q_SLOTS:
-	void on_buttonBox_clicked(QAbstractButton *button);
-
 private:
+	void buttonBox_clicked(QAbstractButton *button);
+	void connectSlots();
 	void updateFont();
 
 private:

@@ -21,8 +21,9 @@ public:
 	void addButton(QDialogButtonBox::StandardButton button);
 	void setMessage(const QString &text);
 
-private Q_SLOTS:
-	void on_buttonBox_clicked(QAbstractButton *button);
+private:
+	void connectSlots();
+	void buttonBox_clicked(QAbstractButton *button);
 
 private:
 	void showEvent(QShowEvent *event) override;

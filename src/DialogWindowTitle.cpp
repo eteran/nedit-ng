@@ -59,6 +59,7 @@ struct UpdateState {
  */
 DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
+	connectSlots();
 
 	QTimer::singleShot(0, this, [this]() {
 		resize(0, 0);
@@ -94,6 +95,14 @@ DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, 
 
 	formatChangedCB();
 }
+
+/**
+ * @brief DialogWindowTitle::connectSlots
+ */
+void DialogWindowTitle::connectSlots() {
+	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogWindowTitle::buttonBox_clicked);
+}
+
 
 // a utility that sets the values of all toggle buttons
 void DialogWindowTitle::setToggleButtons() {
@@ -489,7 +498,7 @@ void DialogWindowTitle::removeFromFormat(const QString &string) {
 
 	// If the string is preceded or followed by a brace, include
 	// the brace(s) for removal
-	format.replace(QRegExp(tr("[\\{\\(\\[\\<]?%1[\\}\\)\\]\\>]?").arg(QRegExp::escape(string))), QString());
+	format.replace(QRegExp(tr(R"([\{\(\[\<]?%1[\}\)\]\>]?)").arg(QRegExp::escape(string))), QString());
 
 	// remove leading/trailing whitspace/dashes
 	format.replace(QRegExp(QLatin1String("^[\\s]+")), QString());
@@ -502,7 +511,7 @@ void DialogWindowTitle::removeFromFormat(const QString &string) {
  * @brief DialogWindowTitle::on_buttonBox_clicked
  * @param button
  */
-void DialogWindowTitle::on_buttonBox_clicked(QAbstractButton *button) {
+void DialogWindowTitle::buttonBox_clicked(QAbstractButton *button) {
 	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 
 		QString format = ui.editFormat->text();

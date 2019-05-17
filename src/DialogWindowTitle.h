@@ -31,8 +31,7 @@ private Q_SLOTS:
 	void on_checkServerNamePresent_toggled(bool checked);
 	void on_checkClearCasePresent_toggled(bool checked);
 	void on_checkServerEqualsCC_toggled(bool checked);
-	void on_checkDirectoryPresent_toggled(bool checked);
-	void on_buttonBox_clicked(QAbstractButton *button);
+	void on_checkDirectoryPresent_toggled(bool checked);	
 	void on_editDirectory_textChanged(const QString &text);
 	void on_editFormat_textChanged(const QString &text);
 
@@ -41,6 +40,10 @@ public:
 
 private:
 	static QString FormatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &format, UpdateState *state);
+
+private:
+	void connectSlots();
+	void buttonBox_clicked(QAbstractButton *button);
 
 private:
 	void setToggleButtons();

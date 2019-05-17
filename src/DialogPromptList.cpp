@@ -7,7 +7,13 @@
 DialogPromptList::DialogPromptList(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowTitleHint);
 	ui.setupUi(this);
+	connectSlots();
 }
+
+void DialogPromptList::connectSlots() {
+	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogPromptList::buttonBox_clicked);
+}
+
 
 void DialogPromptList::addButton(const QString &text) {
 	QPushButton *btn = ui.buttonBox->addButton(text, QDialogButtonBox::AcceptRole);
@@ -36,7 +42,7 @@ void DialogPromptList::showEvent(QShowEvent *event) {
 	Dialog::showEvent(event);
 }
 
-void DialogPromptList::on_buttonBox_clicked(QAbstractButton *button) {
+void DialogPromptList::buttonBox_clicked(QAbstractButton *button) {
 
 	QList<QAbstractButton *> buttons = ui.buttonBox->buttons();
 

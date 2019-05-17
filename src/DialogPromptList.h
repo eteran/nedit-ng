@@ -26,8 +26,9 @@ public:
 	void setMessage(const QString &text);
 	void setList(const QString &string);
 
-private Q_SLOTS:
-	void on_buttonBox_clicked(QAbstractButton *button);
+private:
+	void connectSlots();
+	void buttonBox_clicked(QAbstractButton *button);
 
 private:
 	void showEvent(QShowEvent *event) override;

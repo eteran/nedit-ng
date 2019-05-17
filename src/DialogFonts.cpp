@@ -14,6 +14,7 @@
  */
 DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
 	ui.setupUi(this);
+	connectSlots();
 
 	QTimer::singleShot(0, this, [this]() {
 		resize(0, 0);
@@ -42,11 +43,16 @@ DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFl
 	}
 }
 
+void DialogFonts::connectSlots() {
+	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogFonts::buttonBox_clicked);
+}
+
+
 /**
- * @brief DialogFonts::on_buttonBox_clicked
+ * @brief DialogFonts::buttonBox_clicked
  * @param button
  */
-void DialogFonts::on_buttonBox_clicked(QAbstractButton *button) {
+void DialogFonts::buttonBox_clicked(QAbstractButton *button) {
 
 	switch(ui.buttonBox->standardButton(button)) {
 	case QDialogButtonBox::Ok:
