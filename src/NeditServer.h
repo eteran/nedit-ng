@@ -14,7 +14,7 @@ public:
 	explicit NeditServer(QObject *parent = nullptr);
 	~NeditServer() override = default;
 
-public Q_SLOTS:
+private:
 	void newConnection();
 
 private:

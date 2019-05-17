@@ -65,9 +65,7 @@ void KeySequenceEdit::resetState() {
 
 	// hook the clear button...
 	if(auto action = lineEdit_->findChild<QAction *>()) {
-		connect(action, &QAction::triggered, this, [this]() {
-			setKeySequence(QKeySequence());
-		}, Qt::QueuedConnection);
+		connect(action, &QAction::triggered, this, &KeySequenceEdit::clear, Qt::QueuedConnection);
 	}
 }
 
