@@ -19,10 +19,10 @@ elseif(TARGET_COMPILER_MSVC)
     option(ENABLE_STL_DEBUG     "Enable STL container debugging")
 endif()
 
-option(PURIFY "Fill Unused TextBuffer space")
+option(NEDIT_PURIFY "Fill Unused TextBuffer space")
 
-set(PER_TAB_CLOSE     ON CACHE BOOL "Per Tab Close Buttons")
-set(VISUAL_CTRL_CHARS ON CACHE BOOL "Visualize ASCII Control Characters")
+set(NEDIT_PER_TAB_CLOSE     ON CACHE BOOL "Per Tab Close Buttons")
+set(NEDIT_VISUAL_CTRL_CHARS ON CACHE BOOL "Visualize ASCII Control Characters")
 
 if((TARGET_COMPILER_GCC) OR (TARGET_COMPILER_CLANG))
 	if(ENABLE_STL_DEBUG)
@@ -75,15 +75,15 @@ if(NOT CMAKE_BUILD_TYPE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
 endif()
 
-if(PURIFY)
+if(NEDIT_PURIFY)
 	add_definitions(-DPURIFY)
 endif()
 
-if(VISUAL_CTRL_CHARS)
+if(NEDIT_VISUAL_CTRL_CHARS)
 	add_definitions(-DVISUAL_CTRL_CHARS)
 endif()
 
-if(PER_TAB_CLOSE)
+if(NEDIT_PER_TAB_CLOSE)
 	add_definitions(-DPER_TAB_CLOSE)
 endif()
 

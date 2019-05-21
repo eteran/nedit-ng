@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
+option(NEDIT_BUILD_TESTS "Build Tests")
+
 add_library(Regex 
 	Common.h
 	Constants.h
@@ -27,6 +29,8 @@ target_link_libraries(Regex PUBLIC
 set_property(TARGET Regex PROPERTY CXX_STANDARD 14)
 set_property(TARGET Regex PROPERTY CXX_EXTENSIONS OFF)
 
-if(NOT MSVC)
-	add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/test")
+if(NEDIT_BUILD_TESTS)
+	if(NOT MSVC)
+		add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/test")
+	endif()
 endif()
