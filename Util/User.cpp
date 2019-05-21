@@ -1,14 +1,14 @@
 
 #include "Util/User.h"
 
-#include <QtGlobal>
-#include <QString>
 #include <QDir>
 #include <QStandardPaths>
+#include <QString>
+#include <QtGlobal>
 
 #ifdef Q_OS_UNIX
-#include <unistd.h>
 #include <pwd.h>
+#include <unistd.h>
 #endif
 
 /*
@@ -24,7 +24,7 @@ QString ExpandTilde(const QString &pathname) {
 	}
 
 	int end = pathname.indexOf(QLatin1Char('/'));
-	if(end == -1) {
+	if (end == -1) {
 		end = pathname.size();
 	}
 
@@ -81,7 +81,7 @@ QString GetUserName() {
 		return user_name;
 	}
 
-	if(const struct passwd *passwdEntry = getpwuid(getuid())) {
+	if (const struct passwd *passwdEntry = getpwuid(getuid())) {
 		user_name = QString::fromLatin1(passwdEntry->pw_name);
 		return user_name;
 	}

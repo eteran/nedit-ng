@@ -7,6 +7,6 @@
 
 QLatin1String buildOperatingSystem();
 QLatin1String buildArchitecture();
-QString buildCompiler();
+QString       buildCompiler();
 
 #endif

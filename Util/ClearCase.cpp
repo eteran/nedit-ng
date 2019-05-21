@@ -13,7 +13,6 @@ int GetVersionExtendedPathIndex(const QString &fullname) {
 	return fullname.indexOf(QLatin1String("@@/"));
 }
 
-
 /**
  * @brief GetVersionExtendedPath
  * @param fullname
@@ -21,12 +20,11 @@ int GetVersionExtendedPathIndex(const QString &fullname) {
  */
 QString GetVersionExtendedPath(const QString &fullname) {
 	const int n = GetVersionExtendedPathIndex(fullname);
-	if(n == -1) {
+	if (n == -1) {
 		return QString();
 	}
 	return fullname.mid(n);
 }
-
 
 /*
 ** Return a string showing the ClearCase view tag.  If ClearCase is not in
@@ -39,7 +37,7 @@ QString GetVersionExtendedPath(const QString &fullname) {
 */
 QString GetViewTag() {
 
-	static bool ClearCaseViewTagFound = false;
+	static bool    ClearCaseViewTagFound = false;
 	static QString ClearCaseViewRoot;
 	static QString ClearCaseViewTag;
 

@@ -29,7 +29,7 @@ file(APPEND ${TRANSLATIONS_QRC} "\n\t</qresource>\n</RCC>")
 list(APPEND QRC_FILES ${TRANSLATIONS_QRC})
 
 qt5_add_resources(QRC_SOURCES
-	res/nedit.qrc
+	res/nedit-ng.qrc
 	${TRANSLATIONS_QRC}
 )
 

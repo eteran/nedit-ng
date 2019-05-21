@@ -32,7 +32,7 @@ constexpr int FORMAT_SAMPLE_CHARS = 2000;
 boost::optional<PathInfo> parseFilename(const QString &fullname) {
 	PathInfo fileInfo;
 
-	if(parseFilename(fullname, &fileInfo)) {
+	if (parseFilename(fullname, &fileInfo)) {
 		return fileInfo;
 	}
 
@@ -51,8 +51,8 @@ bool parseFilename(const QString &fullname, PathInfo *fileInfo) {
 
 	Q_ASSERT(fileInfo);
 
-	const int fullLen = fullname.size();
-	int scanStart = -1;
+	const int fullLen   = fullname.size();
+	int       scanStart = -1;
 
 	/* For clearcase version extended paths, slash characters after the "@@/"
 	   should be considered part of the file name, rather than the path */
@@ -74,8 +74,6 @@ bool parseFilename(const QString &fullname, PathInfo *fileInfo) {
 	return true;
 }
 
-
-
 /**
  * @brief NormalizePathname
  * @param pathname
@@ -83,7 +81,7 @@ bool parseFilename(const QString &fullname, PathInfo *fileInfo) {
  */
 QString NormalizePathname(const QString &pathname) {
 
-	QString path = pathname;
+	QString   path = pathname;
 	QFileInfo fi(path);
 
 	// if this is a relative pathname, prepend current directory
@@ -91,20 +89,19 @@ QString NormalizePathname(const QString &pathname) {
 
 		const QString oldPathname = std::exchange(path, QDir::currentPath());
 
-		if(!path.endsWith(QLatin1Char('/'))) {
+		if (!path.endsWith(QLatin1Char('/'))) {
 			path.append(QLatin1Char('/'));
 		}
 
 		path.append(oldPathname);
 	}
 
-
-	QString cleanedPath = QDir::cleanPath(path);
+	QString   cleanedPath = QDir::cleanPath(path);
 	QFileInfo cleanedFi(cleanedPath);
 
 	// IFF it is a directory, insist that it ends in a slash
-	if(cleanedFi.isDir()) {
-		if(!cleanedPath.endsWith(QLatin1Char('/'))) {
+	if (cleanedFi.isDir()) {
+		if (!cleanedPath.endsWith(QLatin1Char('/'))) {
 			cleanedPath.append(QLatin1Char('/'));
 		}
 	}
@@ -118,10 +115,10 @@ QString NormalizePathname(const QString &pathname) {
 QString GetTrailingPathComponents(const QString &path, int components) {
 
 	return path.section(
-	            QLatin1Char('/'),
-	            -1 - components,
-	            -1,
-	            QString::SectionIncludeLeadingSep);
+		QLatin1Char('/'),
+		-1 - components,
+		-1,
+		QString::SectionIncludeLeadingSep);
 }
 
 /*
@@ -135,7 +132,7 @@ QString GetTrailingPathComponents(const QString &path, int components) {
 FileFormats FormatOfFile(view::string_view text) {
 
 	size_t nNewlines = 0;
-	size_t nReturns = 0;
+	size_t nReturns  = 0;
 
 	for (auto it = text.begin(); it != text.end() && it < text.begin() + FORMAT_SAMPLE_CHARS; ++it) {
 		if (*it == '\n') {
@@ -161,7 +158,6 @@ FileFormats FormatOfFile(view::string_view text) {
 	}
 
 	return FileFormats::Unix;
-
 }
 
 /*
@@ -260,13 +256,13 @@ void ConvertFromDos(std::string &text, char *pendingCR) {
 QString ReadAnyTextFile(const QString &fileName, bool forceNL) {
 
 	std::ifstream file(fileName.toStdString());
-	if(!file) {
+	if (!file) {
 		return {};
 	}
 
 	auto contents = std::string(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
 
-	switch(FormatOfFile(contents)) {
+	switch (FormatOfFile(contents)) {
 	case FileFormats::Dos:
 		ConvertFromDos(contents);
 		break;
@@ -277,7 +273,7 @@ QString ReadAnyTextFile(const QString &fileName, bool forceNL) {
 		break;
 	}
 
-	if(contents.empty()) {
+	if (contents.empty()) {
 		return {};
 	}
 

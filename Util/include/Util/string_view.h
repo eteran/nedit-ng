@@ -6,10 +6,10 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstring>
+#include <functional>
 #include <iosfwd>
 #include <iterator>
 #include <stdexcept>
-#include <functional>
 #include <string>
 
 namespace view {
@@ -34,33 +34,37 @@ public:
 	static constexpr auto npos = size_type(-1);
 
 public:
-	constexpr basic_string_view() noexcept : data_(nullptr) {
+	constexpr basic_string_view() noexcept
+		: data_(nullptr) {
 	}
 
 	constexpr basic_string_view(const basic_string_view &other) noexcept = default;
 
 	template <class A>
-	basic_string_view(const std::basic_string<Ch, Tr, A> &str) noexcept : data_(str.data()), size_(str.size()) {
+	basic_string_view(const std::basic_string<Ch, Tr, A> &str) noexcept
+		: data_(str.data()), size_(str.size()) {
 	}
 
-	constexpr basic_string_view(const Ch *str, size_type len) : data_(str), size_(len) {
+	constexpr basic_string_view(const Ch *str, size_type len)
+		: data_(str), size_(len) {
 	}
 
-	constexpr basic_string_view(const Ch *str) : data_(str), size_(Tr::length(str)) {
+	constexpr basic_string_view(const Ch *str)
+		: data_(str), size_(Tr::length(str)) {
 	}
 
 	basic_string_view &operator=(const basic_string_view &rhs) noexcept = default;
 
 public:
-	constexpr const_iterator begin() const noexcept  { return data_;         }
-	constexpr const_iterator cbegin() const noexcept { return data_;         }
-	constexpr const_iterator end() const noexcept    { return data_ + size_; }
-	constexpr const_iterator cend() const noexcept   { return data_ + size_; }
+	constexpr const_iterator begin() const noexcept { return data_; }
+	constexpr const_iterator cbegin() const noexcept { return data_; }
+	constexpr const_iterator end() const noexcept { return data_ + size_; }
+	constexpr const_iterator cend() const noexcept { return data_ + size_; }
 
-	const_reverse_iterator rbegin() const noexcept  { return const_reverse_iterator(end());   }
-	const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(end());   }
-	const_reverse_iterator rend() const noexcept    { return const_reverse_iterator(begin()); }
-	const_reverse_iterator crend() const noexcept   { return const_reverse_iterator(begin()); }
+	const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
+	const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(end()); }
+	const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
+	const_reverse_iterator crend() const noexcept { return const_reverse_iterator(begin()); }
 
 public:
 	constexpr const_reference operator[](size_type pos) const noexcept {
@@ -335,7 +339,7 @@ public:
 			return pos;
 		}
 
-		pos = size_ - (pos + 1);
+		pos     = size_ - (pos + 1);
 		auto it = find_not_of(crbegin() + pos, crend(), s);
 		return it == crend() ? npos : reverse_distance(crbegin(), it);
 	}
@@ -546,20 +550,20 @@ template <class T>
 struct hash_constants;
 
 template <>
-struct hash_constants<uint64_t>{
+struct hash_constants<uint64_t> {
 	static constexpr uint64_t FNV_offset_basis = 0xcbf29ce484222325ull;
 	static constexpr uint64_t FNV_prime        = 1099511628211ull;
 };
 
 template <>
-struct hash_constants<uint32_t>{
+struct hash_constants<uint32_t> {
 	static constexpr uint32_t FNV_offset_basis = 0x811c9dc5;
 	static constexpr uint32_t FNV_prime        = 16777619;
 };
 
 #ifdef __APPLE__
 template <>
-struct hash_constants<unsigned long>{
+struct hash_constants<unsigned long> {
 	static constexpr uint32_t FNV_offset_basis = 0x811c9dc5;
 	static constexpr uint32_t FNV_prime        = 16777619;
 };
@@ -577,7 +581,7 @@ struct hash<view::string_view> {
 	result_type operator()(argument_type key) const {
 
 		result_type h = detail::hash_constants<result_type>::FNV_offset_basis;
-		for(char ch : key) {
+		for (char ch : key) {
 			h = (h * detail::hash_constants<result_type>::FNV_prime) ^ static_cast<unsigned char>(ch);
 		}
 		return h;
@@ -594,7 +598,7 @@ struct hash<view::wstring_view> {
 		auto last = reinterpret_cast<const char *>(&*key.end());
 
 		result_type h = detail::hash_constants<result_type>::FNV_offset_basis;
-		while(p != last) {
+		while (p != last) {
 			h = (h * detail::hash_constants<result_type>::FNV_prime) ^ static_cast<unsigned char>(*p++);
 		}
 		return h;
@@ -611,7 +615,7 @@ struct hash<view::u16string_view> {
 		auto last = reinterpret_cast<const char *>(&*key.end());
 
 		result_type h = detail::hash_constants<result_type>::FNV_offset_basis;
-		while(p != last) {
+		while (p != last) {
 			h = (h * detail::hash_constants<result_type>::FNV_prime) ^ static_cast<unsigned char>(*p++);
 		}
 		return h;
@@ -628,7 +632,7 @@ struct hash<view::u32string_view> {
 		auto last = reinterpret_cast<const char *>(&*key.end());
 
 		result_type h = detail::hash_constants<result_type>::FNV_offset_basis;
-		while(p != last) {
+		while (p != last) {
 			h = (h * detail::hash_constants<result_type>::FNV_prime) ^ static_cast<unsigned char>(*p++);
 		}
 		return h;

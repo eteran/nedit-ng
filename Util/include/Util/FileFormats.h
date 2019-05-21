@@ -12,7 +12,7 @@ enum class FileFormats : int {
 
 inline QLatin1String to_string(FileFormats format) {
 
-	switch(format) {
+	switch (format) {
 	case FileFormats::Unix:
 		return QLatin1String("unix");
 	case FileFormats::Dos:

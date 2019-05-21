@@ -111,7 +111,6 @@ QLatin1String buildArchitecture() {
 #else
 	return QLatin1String("unknown");
 #endif
-
 }
 
 /**
@@ -125,15 +124,15 @@ QString buildCompiler() {
 #if defined(__apple_build_version__) // Apple clang has other version numbers
 	isAppleString = QLatin1String(" (Apple)");
 #endif
-	return QLatin1String("Clang " ) +
-	        QString::number(__clang_major__) +
-	        QLatin1Char('.') +
-	        QString::number(__clang_minor__) +
-	        isAppleString;
+	return QLatin1String("Clang ") +
+		   QString::number(__clang_major__) +
+		   QLatin1Char('.') +
+		   QString::number(__clang_minor__) +
+		   isAppleString;
 #elif defined(Q_CC_GNU)
-	return QLatin1String("GCC " ) + QLatin1String(__VERSION__);
+	return QLatin1String("GCC ") + QLatin1String(__VERSION__);
 #elif defined(Q_CC_MSVC)
-	if (_MSC_VER > 1999)  return QLatin1String("MSVC <unknown>");
+	if (_MSC_VER > 1999) return QLatin1String("MSVC <unknown>");
 	if (_MSC_VER >= 1910) return QLatin1String("MSVC 2017");
 	if (_MSC_VER >= 1900) return QLatin1String("MSVC 2015");
 #else

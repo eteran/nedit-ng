@@ -1,14 +1,15 @@
 
 #include "Util/Input.h"
-#include <QRegularExpressionMatch>
 #include <QRegularExpression>
+#include <QRegularExpressionMatch>
 #include <QString>
 
 /**
  * @brief Input::Input
  * @param input
  */
-Input::Input(const QString *input) : string_(input), index_(0) {
+Input::Input(const QString *input)
+	: string_(input), index_(0) {
 	Q_ASSERT(input);
 }
 
@@ -19,7 +20,7 @@ Input::Input(const QString *input) : string_(input), index_(0) {
  */
 Input &Input::operator+=(int n) {
 	index_ += n;
-	if(index_ > string_->size()) {
+	if (index_ > string_->size()) {
 		index_ = string_->size();
 	}
 
@@ -28,7 +29,7 @@ Input &Input::operator+=(int n) {
 
 Input &Input::operator-=(int n) {
 	index_ -= n;
-	if(index_ < 0) {
+	if (index_ < 0) {
 		index_ = 0;
 	}
 
@@ -48,7 +49,7 @@ QChar Input::operator*() const {
  * @return
  */
 QChar Input::peek() const {
-	if(atEnd()) {
+	if (atEnd()) {
 		return {};
 	}
 
@@ -56,7 +57,7 @@ QChar Input::peek() const {
 }
 
 QChar Input::read() {
-	if(atEnd()) {
+	if (atEnd()) {
 		return {};
 	}
 
@@ -68,7 +69,7 @@ QChar Input::read() {
 }
 
 QChar Input::operator[](int index) const {
-	if((index_ + index) >= string_->size()) {
+	if ((index_ + index) >= string_->size()) {
 		return {};
 	}
 
@@ -79,8 +80,8 @@ QChar Input::operator[](int index) const {
  * @brief Input::operator ++
  * @return
  */
-Input& Input::operator++() {
-	if(!atEnd()) {
+Input &Input::operator++() {
+	if (!atEnd()) {
 		++index_;
 	}
 
@@ -93,7 +94,7 @@ Input& Input::operator++() {
  */
 Input Input::operator++(int) {
 	Input copy(*this);
-	if(!atEnd()) {
+	if (!atEnd()) {
 		++index_;
 	}
 	return copy;
@@ -103,8 +104,8 @@ Input Input::operator++(int) {
  * @brief Input::operator --
  * @return
  */
-Input& Input::operator--() {
-	if(index_ > 0) {
+Input &Input::operator--() {
+	if (index_ > 0) {
 		--index_;
 	}
 
@@ -117,7 +118,7 @@ Input& Input::operator--() {
  */
 Input Input::operator--(int) {
 	Input copy(*this);
-	if(index_ > 0) {
+	if (index_ > 0) {
 		--index_;
 	}
 	return copy;
@@ -135,7 +136,7 @@ bool Input::atEnd() const {
  * @brief Input::consumeWhitespace
  */
 void Input::skipWhitespace() {
-	while(!atEnd() && (string_->at(index_) == QLatin1Char(' ') || string_->at(index_) == QLatin1Char('\t'))) {
+	while (!atEnd() && (string_->at(index_) == QLatin1Char(' ') || string_->at(index_) == QLatin1Char('\t'))) {
 		++index_;
 	}
 }
@@ -144,7 +145,7 @@ void Input::skipWhitespace() {
  * @brief Input::skipWhitespaceNL
  */
 void Input::skipWhitespaceNL() {
-	while(!atEnd() && (string_->at(index_) == QLatin1Char(' ') || string_->at(index_) == QLatin1Char('\t') || string_->at(index_) == QLatin1Char('\n'))) {
+	while (!atEnd() && (string_->at(index_) == QLatin1Char(' ') || string_->at(index_) == QLatin1Char('\t') || string_->at(index_) == QLatin1Char('\n'))) {
 		++index_;
 	}
 }
@@ -222,7 +223,7 @@ void Input::consume(const QString &chars) {
  */
 void Input::consume(const QRegularExpression &re) {
 	QRegularExpressionMatch match = re.match(string_, index_, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
-	if(match.hasMatch()) {
+	if (match.hasMatch()) {
 		QString cap = match.captured(0);
 		index_ += cap.size();
 	}
@@ -236,11 +237,11 @@ void Input::consume(const QRegularExpression &re) {
  */
 bool Input::match(const QRegularExpression &re, QString *m) {
 	QRegularExpressionMatch match = re.match(string_, index_, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
-	if(match.hasMatch()) {
+	if (match.hasMatch()) {
 
 		QString cap = match.captured(0);
 
-		if(m) {
+		if (m) {
 			*m = cap;
 		}
 
@@ -257,11 +258,11 @@ bool Input::match(const QRegularExpression &re, QString *m) {
  * @return
  */
 bool Input::match(const QString &s) {
-	if(index_ + s.size() > string_->size()) {
+	if (index_ + s.size() > string_->size()) {
 		return false;
 	}
 
-	if(string_->midRef(index_, s.size()) == s) {
+	if (string_->midRef(index_, s.size()) == s) {
 		index_ += s.size();
 		return true;
 	}
@@ -275,11 +276,11 @@ bool Input::match(const QString &s) {
  * @return
  */
 bool Input::match(QChar ch) {
-	if(index_ >= string_->size()) {
+	if (index_ >= string_->size()) {
 		return false;
 	}
 
-	if(string_->at(index_) == ch) {
+	if (string_->at(index_) == ch) {
 		++index_;
 		return true;
 	}
@@ -346,9 +347,9 @@ const QString *Input::string() const {
 QString Input::readUntil(QChar ch) {
 	QString result;
 
-	while(!atEnd()) {
+	while (!atEnd()) {
 		QChar c = string_->at(index_);
-		if(c == ch) {
+		if (c == ch) {
 			break;
 		}
 

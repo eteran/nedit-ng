@@ -12,11 +12,11 @@
 */
 QString ensureNewline(const QString &string) {
 
-	if(string.isNull()) {
+	if (string.isNull()) {
 		return QString();
 	}
 
-	if(string.endsWith(QLatin1Char('\n'))) {
+	if (string.endsWith(QLatin1Char('\n'))) {
 		return string;
 	}
 

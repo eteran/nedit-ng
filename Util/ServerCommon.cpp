@@ -1,11 +1,11 @@
 
 #include "Util/ServerCommon.h"
-#include "Util/User.h"
 #include "Util/Host.h"
+#include "Util/User.h"
+#include <QDir>
+#include <QStandardPaths>
 #include <QString>
 #include <QStringList>
-#include <QStandardPaths>
-#include <QDir>
 
 /*
  * Create the server socket name for the server with serverName.
@@ -27,9 +27,9 @@
 QString LocalSocketName(const QString &server_name) {
 
 	QString runtimePath = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
-	QString hostname = GetNameOfHost();
+	QString hostname    = GetNameOfHost();
 
-	if(!runtimePath.isEmpty()) {
+	if (!runtimePath.isEmpty()) {
 		QDir().mkpath(runtimePath);
 #ifdef Q_OS_LINUX
 		QByteArray display = qgetenv("DISPLAY");
