@@ -373,7 +373,7 @@ private:
 	}
 
 private:
-	const Ch *  data_;
+	const Ch *data_;
 	std::size_t size_ = 0;
 };
 

@@ -8,7 +8,7 @@ namespace ClearCase {
 
 QString GetVersionExtendedPath(const QString &fullname);
 QString GetViewTag();
-int     GetVersionExtendedPathIndex(const QString &fullname);
+int GetVersionExtendedPathIndex(const QString &fullname);
 
 }
 

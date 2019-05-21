@@ -1,5 +1,6 @@
 
 #include "Settings.h"
+
 #include "Util/ClearCase.h"
 #include "Util/FileSystem.h"
 #include "Util/ServerCommon.h"
@@ -7,28 +8,28 @@
 #include "Util/version.h"
 
 #include <QCoreApplication>
-#include <QSettings>
-#include <QString>
-#include <QProcess>
+#include <QDataStream>
 #include <QJsonDocument>
 #include <QLocalSocket>
-#include <QDataStream>
+#include <QProcess>
+#include <QSettings>
+#include <QString>
 #include <QThread>
 
+#include <boost/optional.hpp>
 #include <iostream>
 #include <memory>
-#include <boost/optional.hpp>
 
 namespace {
 
 const char cmdLineHelp[] = "Usage: nc-ng [-read] [-create]\n"
-                           "             [-line n | +n] [-do command] [-lm languagemode]\n"
-                           "             [-svrname name] [-svrcmd command]\n"
-                           "             [-ask] [-noask] [-timeout seconds]\n"
-                           "             [-geometry geometry | -g geometry] [-icon | -iconic]\n"
-                           "             [-tabbed] [-untabbed] [-group] [-wait]\n"
-                           "             [-V | -version] [-h|-help]\n"
-                           "             [--] [file...]\n";
+						   "             [-line n | +n] [-do command] [-lm languagemode]\n"
+						   "             [-svrname name] [-svrcmd command]\n"
+						   "             [-ask] [-noask] [-timeout seconds]\n"
+						   "             [-geometry geometry | -g geometry] [-icon | -iconic]\n"
+						   "             [-tabbed] [-untabbed] [-group] [-wait]\n"
+						   "             [-V | -version] [-h|-help]\n"
+						   "             [--] [file...]\n";
 
 struct CommandLine {
 	QStringList arguments;
@@ -69,13 +70,13 @@ QStringList parseCommandString(const QString &program) {
 	QStringList args;
 	QString arg;
 
-	int bcount = 0;
+	int bcount     = 0;
 	bool in_quotes = false;
 
 	auto s = program.begin();
 
-	while(s != program.end()) {
-		if(!in_quotes && s->isSpace()) {
+	while (s != program.end()) {
+		if (!in_quotes && s->isSpace()) {
 
 			// Close the argument and copy it
 			args << arg;
@@ -84,20 +85,20 @@ QStringList parseCommandString(const QString &program) {
 			// skip the remaining spaces
 			do {
 				++s;
-			} while(s->isSpace());
+			} while (s->isSpace());
 
 			// Start with a new argument
 			bcount = 0;
-		} else if(*s == QLatin1Char('\\')) {
+		} else if (*s == QLatin1Char('\\')) {
 
 			// '\\'
 			arg += *s++;
 			++bcount;
 
-		} else if(*s == QLatin1Char('"')) {
+		} else if (*s == QLatin1Char('"')) {
 
 			// '"'
-			if((bcount & 1) == 0) {
+			if ((bcount & 1) == 0) {
 				/* Preceded by an even number of '\', this is half that
 				 * number of '\', plus a quote which we erase.
 				 */
@@ -121,7 +122,7 @@ QStringList parseCommandString(const QString &program) {
 		}
 	}
 
-	if(!arg.isEmpty()) {
+	if (!arg.isEmpty()) {
 		args << arg;
 	}
 
@@ -179,31 +180,36 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			ServerPreferences.waitForClose = true;
 		} else if (opts && args[i] == QLatin1String("-svrname")) {
 			i = nextArg(args, i);
+
 			ServerPreferences.serverName = args[i];
 		} else if (opts && args[i] == QLatin1String("-svrcmd")) {
 			i = nextArg(args, i);
+
 			ServerPreferences.serverCmd = args[i];
 		} else if (opts && args[i] == QLatin1String("-timeout")) {
 			i = nextArg(args, i);
 
 			bool ok;
 			int n = args[i].toInt(&ok);
-			if(!ok) {
+			if (!ok) {
 				fprintf(stderr, "nc-ng: argument to timeout should be a number\n");
 			} else {
 				ServerPreferences.timeOut = n;
 			}
 		} else if (opts && args[i] == QLatin1String("-do")) {
 			i = nextArg(args, i);
+
 			toDoCommand = args[i];
 		} else if (opts && args[i] == QLatin1String("-lm")) {
 			commandLine.arguments.push_back(args[i]);
 			i = nextArg(args, i);
+
 			langMode = args[i];
 			commandLine.arguments.push_back(args[i]);
 		} else if (opts && (args[i] == QLatin1String("-g") || args[i] == QLatin1String("-geometry"))) {
 			commandLine.arguments.push_back(args[i]);
 			i = nextArg(args, i);
+
 			geometry = args[i];
 			commandLine.arguments.push_back(args[i]);
 		} else if (opts && args[i] == QLatin1String("-read")) {
@@ -212,10 +218,10 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			create = 1;
 		} else if (opts && args[i] == QLatin1String("-tabbed")) {
 			tabbed = 1;
-			group = 0; // override -group option
+			group  = 0; // override -group option
 		} else if (opts && args[i] == QLatin1String("-untabbed")) {
 			tabbed = 0;
-			group = 0; // override -group option
+			group  = 0; // override -group option
 		} else if (opts && args[i] == QLatin1String("-group")) {
 			group = 2; // 2: start new group, 1: in group
 		} else if (opts && (args[i] == QLatin1String("-iconic") || args[i] == QLatin1String("-icon"))) {
@@ -226,7 +232,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 
 			bool ok;
 			int lineArg = args[i].toInt(&ok);
-			if(!ok) {
+			if (!ok) {
 				fprintf(stderr, "nc-ng: argument to line should be a number\n");
 			} else {
 				lineNum = lineArg;
@@ -235,7 +241,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 
 			bool ok;
 			int lineArg = args[i].toInt(&ok);
-			if(!ok) {
+			if (!ok) {
 				fprintf(stderr, "nc-ng: argument to + should be a number\n");
 			} else {
 				lineNum = lineArg;
@@ -271,7 +277,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			   factoring the options -group, -tabbed & -untabbed */
 			if (group == 2) {
 				isTabbed = 0; // start a new window for new group
-				group = 1;    // next file will be within group
+				group    = 1; // next file will be within group
 			} else if (group == 1) {
 				isTabbed = 1; // new tab for file in group
 			} else {
@@ -295,7 +301,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 
 			// These switches only affect the next filename argument, not all
 			toDoCommand = QString();
-			lineNum = 0;
+			lineNum     = 0;
 		}
 	}
 
@@ -320,10 +326,10 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 		commandData.append(file);
 	}
 
-	auto doc = QJsonDocument::fromVariant(commandData);
+	auto doc                = QJsonDocument::fromVariant(commandData);
 	commandLine.jsonRequest = doc.toJson(QJsonDocument::Compact);
 
-	if(debug_proto) {
+	if (debug_proto) {
 		std::cout << doc.toJson(QJsonDocument::Compact).constData() << std::endl;
 	}
 
@@ -343,7 +349,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 CommandLine processCommandLine(const QStringList &args) {
 
 	// Convert command line arguments into a command string for the server
-	if(boost::optional<CommandLine> commandLine = parseCommandLine(args)) {
+	if (boost::optional<CommandLine> commandLine = parseCommandLine(args)) {
 		return *commandLine;
 	}
 
@@ -388,8 +394,8 @@ int startServer(const char *message, const QStringList &commandLineArgs) {
 	process->start(command, arguments);
 
 	const bool sysrc = process->waitForStarted();
-	if(!sysrc) {
-		switch(process->error()) {
+	if (!sysrc) {
+		switch (process->error()) {
 		case QProcess::FailedToStart:
 			fprintf(stderr, "nc-ng: The server process failed to start. Either the invoked program is missing, or you may have insufficient permissions to invoke the program.\n");
 			break;
@@ -431,12 +437,12 @@ int main(int argc, char *argv[]) {
 	QSettings settings(filename, QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("Server"));
 
-	ServerPreferences.autoStart     = settings.value(QLatin1String("nc.autoStart"),     true).toBool();
-	ServerPreferences.serverCmd     = settings.value(QLatin1String("nc.serverCommand"), QLatin1String("nedit-ng -server")).toString();
-	ServerPreferences.serverName    = settings.value(QLatin1String("nc.serverName"),    QString()).toString();
-	ServerPreferences.waitForClose  = settings.value(QLatin1String("nc.waitForClose"),  false).toBool();
-	ServerPreferences.timeOut       = settings.value(QLatin1String("nc.timeOut"),       10).toInt();
-	CommandLine commandLine         = processCommandLine(QCoreApplication::arguments());
+	ServerPreferences.autoStart    = settings.value(QLatin1String("nc.autoStart"), true).toBool();
+	ServerPreferences.serverCmd    = settings.value(QLatin1String("nc.serverCommand"), QLatin1String("nedit-ng -server")).toString();
+	ServerPreferences.serverName   = settings.value(QLatin1String("nc.serverName"), QString()).toString();
+	ServerPreferences.waitForClose = settings.value(QLatin1String("nc.waitForClose"), false).toBool();
+	ServerPreferences.timeOut      = settings.value(QLatin1String("nc.timeOut"), 10).toInt();
+	CommandLine commandLine        = processCommandLine(QCoreApplication::arguments());
 
 	/* Make sure that the time out unit is at least 1 second and not too
 	   large either (overflow!). */
@@ -449,25 +455,24 @@ int main(int argc, char *argv[]) {
 	if (ServerPreferences.serverName.isEmpty()) {
 		const QString viewTag = ClearCase::GetViewTag();
 		if (!viewTag.isEmpty()) {
-			ServerPreferences.serverName =  viewTag;
+			ServerPreferences.serverName = viewTag;
 		}
 	}
 
 	QString socketName = LocalSocketName(ServerPreferences.serverName);
 
-	for(int i = 0; i < 10; ++i) {
+	for (int i = 0; i < 10; ++i) {
 
 		auto socket = std::make_unique<QLocalSocket>();
 		socket->connectToServer(socketName, QIODevice::WriteOnly);
-		if(!socket->waitForConnected(ServerPreferences.timeOut * 1000)) {
-			if(i == 0) {
+		if (!socket->waitForConnected(ServerPreferences.timeOut * 1000)) {
+			if (i == 0) {
 				switch (startServer("No servers available, start one? (y|n) [y]: ", commandLine.arguments)) {
 				case -1: // Start failed
 					exit(EXIT_FAILURE);
 				case -2: // Start canceled by user
 					exit(EXIT_SUCCESS);
 				}
-
 			}
 
 			// give just a little bit of time for things to get going...
@@ -487,7 +492,7 @@ int main(int argc, char *argv[]) {
 		// if we are enabling wait mode, we simply wait for the server
 		// to close the socket. We'll leave it to the server to track
 		// when everything is all done. Otherwise, just disconnect.
-		if(ServerPreferences.waitForClose) {
+		if (ServerPreferences.waitForClose) {
 			socket->waitForDisconnected();
 		} else {
 			socket->disconnectFromServer();

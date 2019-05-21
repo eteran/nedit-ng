@@ -16,7 +16,7 @@ inline T from_integer(int value);
 
 template <>
 inline TruncSubstitution from_integer(int value) {
-	switch(value) {
+	switch (value) {
 	case static_cast<int>(TruncSubstitution::Silent):
 	case static_cast<int>(TruncSubstitution::Fail):
 	case static_cast<int>(TruncSubstitution::Warn):

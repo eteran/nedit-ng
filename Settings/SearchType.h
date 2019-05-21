@@ -22,7 +22,7 @@ inline T from_integer(int value);
 
 template <>
 inline SearchType from_integer(int value) {
-	switch(value) {
+	switch (value) {
 	case static_cast<int>(SearchType::Literal):
 	case static_cast<int>(SearchType::CaseSense):
 	case static_cast<int>(SearchType::Regex):
@@ -38,7 +38,7 @@ inline SearchType from_integer(int value) {
 
 inline QLatin1String to_string(SearchType style) {
 
-	switch(style) {
+	switch (style) {
 	case SearchType::Literal:
 		return QLatin1String("literal");
 	case SearchType::CaseSense:

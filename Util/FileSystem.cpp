@@ -51,8 +51,8 @@ bool parseFilename(const QString &fullname, PathInfo *fileInfo) {
 
 	Q_ASSERT(fileInfo);
 
-	const int fullLen   = fullname.size();
-	int       scanStart = -1;
+	const int fullLen = fullname.size();
+	int scanStart     = -1;
 
 	/* For clearcase version extended paths, slash characters after the "@@/"
 	   should be considered part of the file name, rather than the path */
@@ -81,7 +81,7 @@ bool parseFilename(const QString &fullname, PathInfo *fileInfo) {
  */
 QString NormalizePathname(const QString &pathname) {
 
-	QString   path = pathname;
+	QString path = pathname;
 	QFileInfo fi(path);
 
 	// if this is a relative pathname, prepend current directory
@@ -96,7 +96,7 @@ QString NormalizePathname(const QString &pathname) {
 		path.append(oldPathname);
 	}
 
-	QString   cleanedPath = QDir::cleanPath(path);
+	QString cleanedPath = QDir::cleanPath(path);
 	QFileInfo cleanedFi(cleanedPath);
 
 	// IFF it is a directory, insist that it ends in a slash

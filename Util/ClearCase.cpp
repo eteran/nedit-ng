@@ -37,7 +37,7 @@ QString GetVersionExtendedPath(const QString &fullname) {
 */
 QString GetViewTag() {
 
-	static bool    ClearCaseViewTagFound = false;
+	static bool ClearCaseViewTagFound = false;
 	static QString ClearCaseViewRoot;
 	static QString ClearCaseViewTag;
 

@@ -8,7 +8,7 @@
 enum class ShowMatchingStyle {
 	None,
 	Delimiter,
-	Range
+	Range,
 };
 
 template <class T>
@@ -16,7 +16,7 @@ inline T from_integer(int value);
 
 template <>
 inline ShowMatchingStyle from_integer(int value) {
-	switch(value) {
+	switch (value) {
 	case static_cast<int>(ShowMatchingStyle::None):
 	case static_cast<int>(ShowMatchingStyle::Delimiter):
 	case static_cast<int>(ShowMatchingStyle::Range):
@@ -29,7 +29,7 @@ inline ShowMatchingStyle from_integer(int value) {
 
 inline QLatin1String to_string(ShowMatchingStyle style) {
 
-	switch(style) {
+	switch (style) {
 	case ShowMatchingStyle::None:
 		return QLatin1String("none");
 	case ShowMatchingStyle::Delimiter:

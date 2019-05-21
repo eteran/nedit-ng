@@ -26,8 +26,8 @@
  */
 QString LocalSocketName(const QString &server_name) {
 
-	QString runtimePath = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
-	QString hostname    = GetNameOfHost();
+	const QString runtimePath = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
+	const QString hostname    = GetNameOfHost();
 
 	if (!runtimePath.isEmpty()) {
 		QDir().mkpath(runtimePath);

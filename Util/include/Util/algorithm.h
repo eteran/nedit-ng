@@ -39,7 +39,7 @@ template <class Ch, class Tr = std::char_traits<Ch>>
 constexpr view::basic_string_view<Ch, Tr> substr(const Ch *first, const Ch *last) {
 
 	const Ch *data = first;
-	auto      size = std::distance(first, last);
+	auto size      = std::distance(first, last);
 	return view::basic_string_view<Ch, Tr>(data, static_cast<size_t>(size));
 }
 

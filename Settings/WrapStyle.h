@@ -17,7 +17,7 @@ inline T from_integer(int value);
 
 template <>
 inline WrapStyle from_integer(int value) {
-	switch(value) {
+	switch (value) {
 	case static_cast<int>(WrapStyle::Default):
 	case static_cast<int>(WrapStyle::None):
 	case static_cast<int>(WrapStyle::Newline):
@@ -31,7 +31,7 @@ inline WrapStyle from_integer(int value) {
 
 inline QLatin1String to_string(WrapStyle style) {
 
-	switch(style) {
+	switch (style) {
 	case WrapStyle::None:
 		return QLatin1String("none");
 	case WrapStyle::Newline:

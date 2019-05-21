@@ -15,11 +15,11 @@ struct PathInfo {
 	QString filename;
 };
 
-FileFormats               FormatOfFile(view::string_view text);
-QString                   GetTrailingPathComponents(const QString &path, int components);
-QString                   NormalizePathname(const QString &pathname);
-QString                   ReadAnyTextFile(const QString &fileName, bool forceNL);
-bool                      parseFilename(const QString &fullname, PathInfo *fileInfo);
+FileFormats FormatOfFile(view::string_view text);
+QString GetTrailingPathComponents(const QString &path, int components);
+QString NormalizePathname(const QString &pathname);
+QString ReadAnyTextFile(const QString &fileName, bool forceNL);
+bool parseFilename(const QString &fullname, PathInfo *fileInfo);
 boost::optional<PathInfo> parseFilename(const QString &fullname);
 
 // std::string based convesions
@@ -60,7 +60,7 @@ template <class Length, class = IsInteger<Length>>
 void ConvertFromDos(char *text, Length *length, char *pendingCR) {
 
 	Q_ASSERT(text);
-	char *      out = text;
+	char *out       = text;
 	const char *in  = text;
 	const char *end = text + *length;
 

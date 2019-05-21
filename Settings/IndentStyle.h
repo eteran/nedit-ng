@@ -9,7 +9,7 @@ enum class IndentStyle {
 	Default = -1,
 	None    = 0,
 	Auto    = 1,
-	Smart   = 2
+	Smart   = 2,
 };
 
 template <class T>
@@ -17,7 +17,7 @@ inline T from_integer(int value);
 
 template <>
 inline IndentStyle from_integer(int value) {
-	switch(value) {
+	switch (value) {
 	case static_cast<int>(IndentStyle::Default):
 	case static_cast<int>(IndentStyle::None):
 	case static_cast<int>(IndentStyle::Auto):
@@ -31,7 +31,7 @@ inline IndentStyle from_integer(int value) {
 
 inline QLatin1String to_string(IndentStyle style) {
 
-	switch(style) {
+	switch (style) {
 	case IndentStyle::None:
 		return QLatin1String("off");
 	case IndentStyle::Auto:
