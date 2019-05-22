@@ -6,9 +6,9 @@
 
 #include <gsl/span>
 
-#include <string>
-#include <memory>
 #include <map>
+#include <memory>
+#include <string>
 #include <system_error>
 
 #include <boost/variant.hpp>
@@ -29,22 +29,23 @@ using ArrayPtr       = std::shared_ptr<Array>;
 // needs to know if the iterator is at the end of the map. This requirement
 // means that we need a reference to the map to compare against
 struct ArrayIterator {
-	ArrayPtr        m;
+	ArrayPtr m;
 	Array::iterator it;
 };
 
+using Data = boost::variant<
+	boost::blank,
+	int32_t,
+	std::string,
+	ArrayPtr,
+	ArrayIterator,
+	LibraryRoutine,
+	Program *,
+	Inst *,
+	DataValue *>;
+
 struct DataValue {
-	boost::variant<
-		boost::blank,
-		int32_t,
-		std::string,
-		ArrayPtr,
-		ArrayIterator,
-		LibraryRoutine,
-		Program*,
-		Inst*,
-		DataValue*
-	> value;
+	Data value;
 };
 
 // accessors
@@ -73,7 +74,7 @@ inline DataValue make_value(int32_t n) {
 
 inline DataValue make_value(int64_t n) {
 	DataValue DV;
-	if(n > std::numeric_limits<int32_t>::max() || n < std::numeric_limits<int32_t>::min()) {
+	if (n > std::numeric_limits<int32_t>::max() || n < std::numeric_limits<int32_t>::min()) {
 		qWarning("A value being stored in a macro variable will be truncated");
 	}
 	DV.value = static_cast<int32_t>(n);
@@ -147,7 +148,7 @@ inline int to_integer(const DataValue &dv) {
 }
 
 inline Program *to_program(const DataValue &dv) {
-	return boost::get<Program*>(dv.value);
+	return boost::get<Program *>(dv.value);
 }
 
 inline LibraryRoutine to_subroutine(const DataValue &dv) {
@@ -155,11 +156,11 @@ inline LibraryRoutine to_subroutine(const DataValue &dv) {
 }
 
 inline DataValue *to_data_value(const DataValue &dv) {
-	return boost::get<DataValue*>(dv.value);
+	return boost::get<DataValue *>(dv.value);
 }
 
 inline Inst *to_instruction(const DataValue &dv) {
-	return boost::get<Inst*>(dv.value);
+	return boost::get<Inst *>(dv.value);
 }
 
 inline ArrayPtr to_array(const DataValue &dv) {

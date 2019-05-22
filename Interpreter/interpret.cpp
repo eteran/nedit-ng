@@ -1,8 +1,8 @@
 
 #include "interpret.h"
 #include "Util/utils.h"
-#include <cmath>
 #include <cassert>
+#include <cmath>
 
 // This enables preemption, useful to disable it for debugging things
 #define ENABLE_PREEMPTION
@@ -49,17 +49,17 @@ const auto MacroTooLarge = QLatin1String("macro too large");
 std::deque<Symbol *> GlobalSymList;
 
 // Temporary global data for use while accumulating programs
-std::deque<Symbol *> LocalSymList;     // symbols local to the program
-Inst Prog[PROGRAM_SIZE];               // the program
-Inst *ProgP;                           // next free spot for code gen.
-Inst *LoopStack[LOOP_STACK_SIZE];      // addresses of break, cont stmts
-Inst **LoopStackPtr = LoopStack;       //  to fill at the end of a loop
+std::deque<Symbol *> LocalSymList; // symbols local to the program
+Inst Prog[PROGRAM_SIZE];           // the program
+Inst *ProgP;                       // next free spot for code gen.
+Inst *LoopStack[LOOP_STACK_SIZE];  // addresses of break, cont stmts
+Inst **LoopStackPtr = LoopStack;   //  to fill at the end of a loop
 
 // Global data for the interpreter
 MacroContext Context;
 
-const char *ErrMsg;                           // global for returning error messages from executing functions
-bool PreemptRequest;                    // passes preemption requests from called routines back up to the interpreter
+const char *ErrMsg;  // global for returning error messages from executing functions
+bool PreemptRequest; // passes preemption requests from called routines back up to the interpreter
 
 // Stack-> symN-sym0(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
 constexpr int FP_ARG_ARRAY_CACHE_INDEX = -1;
@@ -68,14 +68,37 @@ constexpr int FP_OLD_FP_INDEX          = -3;
 constexpr int FP_RET_PC_INDEX          = -4;
 constexpr int FP_TO_ARGS_DIST          = 4; // should be 0 - (above index)
 
-DataValue&       FP_GET_ARG_ARRAY_CACHE(DataValue *FrameP)      { return FrameP[FP_ARG_ARRAY_CACHE_INDEX];              }
-int              FP_GET_ARG_COUNT(const DataValue *FrameP)      { return to_integer(FrameP[FP_ARG_COUNT_INDEX]);        }
-DataValue*       FP_GET_OLD_FP(const DataValue *FrameP)         { return to_data_value(FrameP[FP_OLD_FP_INDEX]);        }
-Inst*            FP_GET_RET_PC(const DataValue *FrameP)         { return to_instruction(FrameP[FP_RET_PC_INDEX]);       }
-int              FP_ARG_START_INDEX(const DataValue *FrameP)    { return -(FP_GET_ARG_COUNT(FrameP) + FP_TO_ARGS_DIST); }
-const DataValue& FP_GET_ARG_N(const DataValue *FrameP, int n)   { return FrameP[n + FP_ARG_START_INDEX(FrameP)];        }
-DataValue&       FP_GET_SYM_N(DataValue *FrameP, int n)         { return FrameP[n];                                     }
-DataValue&       FP_GET_SYM_VAL(DataValue *FrameP, Symbol *sym) { return FP_GET_SYM_N(FrameP, to_integer(sym->value));  }
+DataValue &FP_GET_ARG_ARRAY_CACHE(DataValue *FrameP) {
+	return FrameP[FP_ARG_ARRAY_CACHE_INDEX];
+}
+
+int FP_GET_ARG_COUNT(const DataValue *FrameP) {
+	return to_integer(FrameP[FP_ARG_COUNT_INDEX]);
+}
+
+DataValue *FP_GET_OLD_FP(const DataValue *FrameP) {
+	return to_data_value(FrameP[FP_OLD_FP_INDEX]);
+}
+
+Inst *FP_GET_RET_PC(const DataValue *FrameP) {
+	return to_instruction(FrameP[FP_RET_PC_INDEX]);
+}
+
+int FP_ARG_START_INDEX(const DataValue *FrameP) {
+	return -(FP_GET_ARG_COUNT(FrameP) + FP_TO_ARGS_DIST);
+}
+
+const DataValue &FP_GET_ARG_N(const DataValue *FrameP, int n) {
+	return FrameP[n + FP_ARG_START_INDEX(FrameP)];
+}
+
+DataValue &FP_GET_SYM_N(DataValue *FrameP, int n) {
+	return FrameP[n];
+}
+
+DataValue &FP_GET_SYM_VAL(DataValue *FrameP, Symbol *sym) {
+	return FP_GET_SYM_N(FrameP, to_integer(sym->value));
+}
 
 /*
 ** Save and restore execution context to data structure "context"
@@ -105,8 +128,8 @@ void restoreContext(Pointer context) {
 ** result.  Returns false so a single return execError() statement can
 ** be used to both process the message and return.
 */
-template <class ...T>
-int execError(const std::error_code &error_code, T ... args) {
+template <class... T>
+int execError(const std::error_code &error_code, T... args) {
 	static char msg[MAX_ERR_MSG_LEN];
 
 	std::string str = error_code.message();
@@ -116,8 +139,8 @@ int execError(const std::error_code &error_code, T ... args) {
 	return STAT_ERROR;
 }
 
-template <class ...T>
-int execError(const char *s1, T ... args) {
+template <class... T>
+int execError(const char *s1, T... args) {
 	static char msg[MAX_ERR_MSG_LEN];
 
 	qsnprintf(msg, sizeof(msg), s1, args...);
@@ -130,7 +153,7 @@ int execError(const char *s1, T ... args) {
 ** creates appropriate error messages and returns false
 */
 int errCheck(const char *s) {
-	switch(errno) {
+	switch (errno) {
 	case EDOM:
 		return execError("%s argument out of domain", s);
 	case ERANGE:
@@ -215,6 +238,7 @@ static void stackdump(int n, int extra);
    Must correspond to the enum called "operations" in interpret.h */
 
 using operation_type = int (*)();
+
 static const operation_type OpFns[N_OPS] = {
 	returnNoVal,
 	returnVal,
@@ -258,9 +282,8 @@ static const operation_type OpFns[N_OPS] = {
 	arrayRefAndAssignSetup,
 	pushArgVal,
 	pushArgCount,
-	pushArgArray
+	pushArgArray,
 };
-
 
 /*
 ** Initialize macro language global variables.  Must be called before
@@ -272,7 +295,7 @@ void InitMacroGlobals() {
 	// Add subroutine argument symbols ($1, $2, ..., $9)
 	for (int i = 0; i < 9; i++) {
 		static char argName[3] = "$x";
-		argName[1] = static_cast<char>('1' + i);
+		argName[1]             = static_cast<char>('1' + i);
 		InstallSymbol(argName, ARG_SYM, make_value(i));
 	}
 
@@ -284,7 +307,7 @@ void InitMacroGlobals() {
  * @brief CleanupMacroGlobals
  */
 void CleanupMacroGlobals() {
-	for(Symbol *sym: GlobalSymList) {
+	for (Symbol *sym : GlobalSymList) {
 		delete sym;
 	}
 }
@@ -324,7 +347,7 @@ Program *FinishCreatingProgram() {
 
 	/* Local variables' values are stored on the stack.  Here we assign
 	   frame pointer offsets to them. */
-	for(Symbol *s : newProg->localSymList) {
+	for (Symbol *s : newProg->localSymList) {
 		s->value = make_value(fpOffset++);
 	}
 
@@ -424,16 +447,20 @@ void StartLoopAddrList() {
 }
 
 bool AddBreakAddr(Inst *addr) {
-	if (LoopStackPtr == LoopStack)
+	if (LoopStackPtr == LoopStack) {
 		return true;
+	}
+
 	addLoopAddr(addr);
 	addr->value = NEEDS_BREAK;
 	return false;
 }
 
 bool AddContinueAddr(Inst *addr) {
-	if (LoopStackPtr == LoopStack)
+	if (LoopStackPtr == LoopStack) {
 		return true;
+	}
+
 	addLoopAddr(addr);
 	addr->value = NEEDS_CONTINUE;
 	return false;
@@ -483,32 +510,32 @@ int executeMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> a
 	   preemption and resumption of execution */
 
 	auto deleter = [](DataValue *ptr) {
-		delete [] ptr;
+		delete[] ptr;
 	};
 
-	auto context = std::make_shared<MacroContext>();
+	auto context           = std::make_shared<MacroContext>();
 	context->Stack         = std::shared_ptr<DataValue>(new DataValue[STACK_SIZE], deleter);
 	context->StackP        = context->Stack.get();
 	context->PC            = prog->code.data();
 	context->RunDocument   = document;
 	context->FocusDocument = document;
 
-	continuation         = context;
+	continuation = context;
 
 	// Push arguments and call information onto the stack
-	for(const DataValue &dv : arguments) {
+	for (const DataValue &dv : arguments) {
 		*(context->StackP++) = dv;
 	}
 
-	*(context->StackP++) = make_value(static_cast<Inst*>(nullptr));        // return PC
-	*(context->StackP++) = make_value(static_cast<DataValue*>(nullptr));   // old FrameP
+	*(context->StackP++) = make_value(static_cast<Inst *>(nullptr));       // return PC
+	*(context->StackP++) = make_value(static_cast<DataValue *>(nullptr));  // old FrameP
 	*(context->StackP++) = make_value(static_cast<int>(arguments.size())); // nArgs
 	*(context->StackP++) = make_value();                                   // cached arg array
 
 	context->FrameP = context->StackP;
 
 	// Initialize and make room on the stack for local variables
-	for(Symbol *s : prog->localSymList) {
+	for (Symbol *s : prog->localSymList) {
 		FP_GET_SYM_VAL(context->FrameP, s) = make_value();
 		context->StackP++;
 	}
@@ -547,7 +574,7 @@ int continueMacro(const std::shared_ptr<MacroContext> &continuation, DataValue *
 		auto status = static_cast<OpStatusCodes>(inst->func());
 
 		// If error return was not STAT_OK, return to caller
-		switch(status) {
+		switch (status) {
 		case STAT_PREEMPT:
 			saveContext(continuation);
 			restoreContext(&oldContext);
@@ -557,7 +584,7 @@ int continueMacro(const std::shared_ptr<MacroContext> &continuation, DataValue *
 			restoreContext(&oldContext);
 			return MACRO_ERROR;
 		case STAT_DONE:
-			*msg = QString();
+			*msg    = QString();
 			*result = *--Context.StackP;
 			restoreContext(&oldContext);
 			return MACRO_DONE;
@@ -592,13 +619,13 @@ void RunMacroAsSubrCall(Program *prog) {
 	   for a subroutine call */
 	*Context.StackP++ = make_value(Context.PC);     // return PC
 	*Context.StackP++ = make_value(Context.FrameP); // old FrameP
-	*Context.StackP++ = make_value(0);               // nArgs
-	*Context.StackP++ = make_value();                // cached arg array
+	*Context.StackP++ = make_value(0);              // nArgs
+	*Context.StackP++ = make_value();               // cached arg array
 
 	Context.FrameP = Context.StackP;
-	Context.PC = prog->code.data();
+	Context.PC     = prog->code.data();
 
-	for(Symbol *s : prog->localSymList) {
+	for (Symbol *s : prog->localSymList) {
 		FP_GET_SYM_VAL(Context.FrameP, s) = make_value();
 		Context.StackP++;
 	}
@@ -667,10 +694,10 @@ Symbol *InstallIteratorSymbol() {
 Symbol *LookupStringConstSymbol(view::string_view value) {
 
 	auto it = std::find_if(GlobalSymList.begin(), GlobalSymList.end(), [value](Symbol *s) {
-	    return (s->type == CONST_SYM && is_string(s->value) && to_string(s->value) == value);
-    });
+		return (s->type == CONST_SYM && is_string(s->value) && to_string(s->value) == value);
+	});
 
-	if(it != GlobalSymList.end()) {
+	if (it != GlobalSymList.end()) {
 		return *it;
 	}
 
@@ -709,19 +736,19 @@ Symbol *LookupSymbol(view::string_view name) {
 
 	// first look for a local symbol
 	auto local = std::find_if(LocalSymList.begin(), LocalSymList.end(), [name](Symbol *s) {
-	    return (s->name == name);
-    });
+		return (s->name == name);
+	});
 
-	if(local != LocalSymList.end()) {
+	if (local != LocalSymList.end()) {
 		return *local;
 	}
 
 	// then a global symbol
 	auto global = std::find_if(GlobalSymList.begin(), GlobalSymList.end(), [name](Symbol *s) {
-	    return (s->name == name);
-    });
+		return (s->name == name);
+	});
 
-	if(global != GlobalSymList.end()) {
+	if (global != GlobalSymList.end()) {
 		return *global;
 	}
 
@@ -737,7 +764,7 @@ Symbol *InstallSymbolEx(const QString &name, SymTypes type, const DataValue &val
 
 Symbol *InstallSymbol(const std::string &name, SymTypes type, const DataValue &value) {
 
-	auto s = new Symbol { name, type, value };
+	auto s = new Symbol{name, type, value};
 
 	if (type == LOCAL_SYM) {
 		LocalSymList.push_front(s);
@@ -795,90 +822,88 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 	return sym;
 }
 
-#define POP(dataVal)                                                           \
-	do {                                                                       \
-		if (Context.StackP == Context.Stack.get())                             \
-			return execError(StackUnderflowMsg);                               \
-		dataVal = *--Context.StackP;                                           \
-	} while(0)
+#define POP(dataVal)                               \
+	do {                                           \
+		if (Context.StackP == Context.Stack.get()) \
+			return execError(StackUnderflowMsg);   \
+		dataVal = *--Context.StackP;               \
+	} while (0)
 
-#define PUSH(dataVal)                                                          \
-	do {                                                                       \
-		if (Context.StackP >= &Context.Stack.get()[STACK_SIZE])                \
-			return execError(StackOverflowMsg);                                \
-		*Context.StackP++ = dataVal;                                           \
-	} while(0)
+#define PUSH(dataVal)                                           \
+	do {                                                        \
+		if (Context.StackP >= &Context.Stack.get()[STACK_SIZE]) \
+			return execError(StackOverflowMsg);                 \
+		*Context.StackP++ = dataVal;                            \
+	} while (0)
 
-#define PEEK(dataVal, peekIndex)                                               \
-	do {                                                                       \
-		dataVal = *(Context.StackP - peekIndex - 1);                           \
-	} while(0)
+#define PEEK(dataVal, peekIndex)                     \
+	do {                                             \
+		dataVal = *(Context.StackP - peekIndex - 1); \
+	} while (0)
 
-#define POP_INT(number)                                                        \
-	do {                                                                       \
-		if (Context.StackP == Context.Stack.get())                             \
-			return execError(StackUnderflowMsg);                               \
-		--Context.StackP;                                                      \
-		if (is_string(*Context.StackP)) {                                      \
-			if (!StringToNum(to_string(*Context.StackP), &number))             \
-				return execError(StringToNumberMsg);                           \
-		} else if (is_integer(*Context.StackP))                                \
-			number = to_integer(*Context.StackP);                              \
-		else                                                                   \
-			return execError(CantConvertArrayToInteger);                       \
-	} while(0)
+#define POP_INT(number)                                            \
+	do {                                                           \
+		if (Context.StackP == Context.Stack.get())                 \
+			return execError(StackUnderflowMsg);                   \
+		--Context.StackP;                                          \
+		if (is_string(*Context.StackP)) {                          \
+			if (!StringToNum(to_string(*Context.StackP), &number)) \
+				return execError(StringToNumberMsg);               \
+		} else if (is_integer(*Context.StackP))                    \
+			number = to_integer(*Context.StackP);                  \
+		else                                                       \
+			return execError(CantConvertArrayToInteger);           \
+	} while (0)
 
+#define POP_STRING(string_ref)                                        \
+	do {                                                              \
+		if (Context.StackP == Context.Stack.get())                    \
+			return execError(StackUnderflowMsg);                      \
+		--Context.StackP;                                             \
+		if (is_integer(*Context.StackP)) {                            \
+			string_ref = std::to_string(to_integer(*Context.StackP)); \
+		} else if (is_string(*Context.StackP)) {                      \
+			string_ref = to_string(*Context.StackP);                  \
+		} else {                                                      \
+			return execError(CantConvertArrayToString);               \
+		}                                                             \
+	} while (0)
 
-#define POP_STRING(string_ref)                                                 \
-	do {                                                                       \
-		if (Context.StackP == Context.Stack.get())                             \
-			return execError(StackUnderflowMsg);                               \
-		--Context.StackP;                                                      \
-		if (is_integer(*Context.StackP)) {                                     \
-			string_ref = std::to_string(to_integer(*Context.StackP));          \
-		} else if (is_string(*Context.StackP)) {                               \
-			string_ref = to_string(*Context.StackP);                           \
-		} else {                                                               \
-			return execError(CantConvertArrayToString);                        \
-		}                                                                      \
-	} while(0)
+#define PUSH_INT(number)                                        \
+	do {                                                        \
+		if (Context.StackP >= &Context.Stack.get()[STACK_SIZE]) \
+			return execError(StackOverflowMsg);                 \
+		*Context.StackP++ = make_value(number);                 \
+	} while (0)
 
-#define PUSH_INT(number)                                                       \
-	do {                                                                       \
-		if (Context.StackP >= &Context.Stack.get()[STACK_SIZE])                \
-			return execError(StackOverflowMsg);                                \
-		*Context.StackP++ = make_value(number);                                \
-	} while(0)
+#define PUSH_STRING(string)                                     \
+	do {                                                        \
+		if (Context.StackP >= &Context.Stack.get()[STACK_SIZE]) \
+			return execError(StackOverflowMsg);                 \
+		*Context.StackP++ = make_value(string);                 \
+	} while (0)
 
+#define BINARY_NUMERIC_OPERATION(op) \
+	do {                             \
+		int n1;                      \
+		int n2;                      \
+		DISASM_RT(PC - 1, 1);        \
+		STACKDUMP(2, 3);             \
+		POP_INT(n2);                 \
+		POP_INT(n1);                 \
+		PUSH_INT(n1 op n2);          \
+		return STAT_OK;              \
+	} while (0)
 
-#define PUSH_STRING(string)                                                    \
-	do {                                                                       \
-		if (Context.StackP >= &Context.Stack.get()[STACK_SIZE])                \
-			return execError(StackOverflowMsg);                                \
-		*Context.StackP++ = make_value(string);                                \
-	} while(0)
-
-#define BINARY_NUMERIC_OPERATION(op)                                           \
-	do {                                                                       \
-		int n1;                                                                \
-		int n2;                                                                \
-		DISASM_RT(PC - 1, 1);                                                  \
-		STACKDUMP(2, 3);                                                       \
-		POP_INT(n2);                                                           \
-		POP_INT(n1);                                                           \
-		PUSH_INT(n1 op n2);                                                    \
-		return STAT_OK;                                                        \
-	} while(0)
-
-#define UNARY_NUMERIC_OPERATION(op)                                            \
-	do {                                                                       \
-		int n;                                                                 \
-		DISASM_RT(PC - 1, 1);                                                  \
-		STACKDUMP(1, 3);                                                       \
-		POP_INT(n);                                                            \
-		PUSH_INT(op n);                                                        \
-		return STAT_OK;                                                        \
-	} while(0)
+#define UNARY_NUMERIC_OPERATION(op) \
+	do {                            \
+		int n;                      \
+		DISASM_RT(PC - 1, 1);       \
+		STACKDUMP(1, 3);            \
+		POP_INT(n);                 \
+		PUSH_INT(op n);             \
+		return STAT_OK;             \
+	} while (0)
 
 /*
 ** copy a symbol's value onto the stack
@@ -901,7 +926,7 @@ static int pushSymVal() {
 	} else if (s->type == GLOBAL_SYM || s->type == CONST_SYM) {
 		symVal = s->value;
 	} else if (s->type == ARG_SYM) {
-		int nArgs = FP_GET_ARG_COUNT(Context.FrameP);
+		int nArgs  = FP_GET_ARG_COUNT(Context.FrameP);
 		int argNum = to_integer(s->value);
 		if (argNum >= nArgs) {
 			return execError("referenced undefined argument: %s", s->name.c_str());
@@ -961,7 +986,7 @@ static int pushArgArray() {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(0, 3);
 
-	int nArgs = FP_GET_ARG_COUNT(Context.FrameP);
+	int nArgs              = FP_GET_ARG_COUNT(Context.FrameP);
 	DataValue *resultArray = &FP_GET_ARG_ARRAY_CACHE(Context.FrameP);
 
 	if (!is_array(*resultArray)) {
@@ -1041,7 +1066,7 @@ static int assign() {
 
 	Symbol *sym = Context.PC++->sym;
 
-	switch(sym->type) {
+	switch (sym->type) {
 	case LOCAL_SYM:
 		dataPtr = &FP_GET_SYM_VAL(Context.FrameP, sym);
 		break;
@@ -1112,7 +1137,7 @@ static int add() {
 			const ArrayPtr &leftMap  = to_array(leftVal);
 			const ArrayPtr &rightMap = to_array(rightVal);
 
-			auto leftIter = leftMap->begin();
+			auto leftIter  = leftMap->begin();
 			auto rightIter = rightMap->begin();
 
 			while (leftIter != leftMap->end() || rightIter != rightMap->end()) {
@@ -1174,9 +1199,9 @@ static int subtract() {
 	STACKDUMP(2, 3);
 
 	PEEK(rightVal, 0);
-	if(is_array(rightVal)) {
+	if (is_array(rightVal)) {
 		PEEK(leftVal, 1);
-		if(is_array(leftVal)) {
+		if (is_array(leftVal)) {
 
 			DataValue resultArray = make_value(std::make_shared<Array>());
 
@@ -1186,7 +1211,7 @@ static int subtract() {
 			const ArrayPtr &leftMap  = to_array(leftVal);
 			const ArrayPtr &rightMap = to_array(rightVal);
 
-			auto leftIter = leftMap->begin();
+			auto leftIter  = leftMap->begin();
 			auto rightIter = rightMap->begin();
 
 			while (leftIter != leftMap->end()) {
@@ -1316,11 +1341,11 @@ static int eq() {
 	if (is_integer(v1) && is_integer(v2)) {
 		auto n1 = to_integer(v1);
 		auto n2 = to_integer(v2);
-		v1 = make_value(n1 == n2);
+		v1      = make_value(n1 == n2);
 	} else if (is_string(v1) && is_string(v2)) {
 		auto s1 = to_string(v1);
 		auto s2 = to_string(v2);
-		v1 = make_value(s1 == s2);
+		v1      = make_value(s1 == s2);
 	} else if (is_string(v1) && is_integer(v2)) {
 		int number;
 		if (!StringToNum(to_string(v1), &number)) {
@@ -1366,9 +1391,9 @@ static int bitAnd() {
 	STACKDUMP(2, 3);
 
 	PEEK(rightVal, 0);
-	if(is_array(rightVal)) {
+	if (is_array(rightVal)) {
 		PEEK(leftVal, 1);
-		if(is_array(leftVal)) {
+		if (is_array(leftVal)) {
 
 			DataValue resultArray = make_value(std::make_shared<Array>());
 
@@ -1429,9 +1454,9 @@ static int bitOr() {
 	STACKDUMP(2, 3);
 
 	PEEK(rightVal, 0);
-	if(is_array(rightVal)) {
+	if (is_array(rightVal)) {
 		PEEK(leftVal, 1);
-		if(is_array(leftVal)) {
+		if (is_array(leftVal)) {
 
 			DataValue resultArray = make_value(std::make_shared<Array>());
 
@@ -1489,7 +1514,7 @@ static int logicalAnd() {
 }
 
 static int logicalOr() {
-	BINARY_NUMERIC_OPERATION(|| );
+	BINARY_NUMERIC_OPERATION(||);
 }
 
 static int logicalNot() {
@@ -1579,8 +1604,8 @@ static int concat() {
 */
 static int callSubroutine() {
 
-	Symbol *sym = Context.PC++->sym;
-	int64_t nArgs   = Context.PC++->value;
+	Symbol *sym   = Context.PC++->sym;
+	int64_t nArgs = Context.PC++->value;
 
 	DISASM_RT(PC - 3, 3);
 	STACKDUMP(nArgs, 3);
@@ -1629,10 +1654,10 @@ static int callSubroutine() {
 		*Context.StackP++ = make_value();               // cached arg array
 
 		Context.FrameP = Context.StackP;
-		Program* prog  = to_program(sym->value);
+		Program *prog  = to_program(sym->value);
 		Context.PC     = prog->code.data();
 
-		for(Symbol *s : prog->localSymList) {
+		for (Symbol *s : prog->localSymList) {
 			FP_GET_SYM_VAL(Context.FrameP, s) = make_value();
 			Context.StackP++;
 		}
@@ -1682,7 +1707,7 @@ static int returnValOrNone(bool valOnStack) {
 	// get stored return information
 	int nArgs            = FP_GET_ARG_COUNT(Context.FrameP);
 	DataValue *newFrameP = FP_GET_OLD_FP(Context.FrameP);
-	Context.PC          = FP_GET_RET_PC(Context.FrameP);
+	Context.PC           = FP_GET_RET_PC(Context.FrameP);
 
 	// pop past local variables
 	Context.StackP = Context.FrameP;
@@ -1691,7 +1716,7 @@ static int returnValOrNone(bool valOnStack) {
 	Context.FrameP = newFrameP;
 
 	// push returned value, if requsted
-	if(!Context.PC) {
+	if (!Context.PC) {
 		if (valOnStack) {
 			PUSH(retVal);
 		} else {
@@ -1756,7 +1781,7 @@ static int branchFalse() {
 	STACKDUMP(1, 3);
 
 	POP_INT(value);
-	Inst * addr = Context.PC + Context.PC->value;
+	Inst *addr = Context.PC + Context.PC->value;
 	Context.PC++;
 
 	if (!value) {
@@ -1835,8 +1860,8 @@ static int makeArrayKeyFromArgs(int64_t nArgs, std::string *keyString, bool leav
 bool ArrayInsert(DataValue *theArray, const std::string &keyStr, DataValue *theValue) {
 
 	const ArrayPtr &m = to_array(*theArray);
-	auto p = m->insert(std::make_pair(keyStr, *theValue));
-	if(p.second) {
+	auto p            = m->insert(std::make_pair(keyStr, *theValue));
+	if (p.second) {
 		return true;
 	}
 
@@ -1852,7 +1877,7 @@ void ArrayDelete(DataValue *theArray, const std::string &keyStr) {
 	const ArrayPtr &m = to_array(*theArray);
 
 	auto it = m->find(keyStr);
-	if(it != m->end()) {
+	if (it != m->end()) {
 		m->erase(it);
 	}
 }
@@ -1881,8 +1906,8 @@ int ArraySize(DataValue *theArray) {
 bool ArrayGet(DataValue *theArray, const std::string &keyStr, DataValue *theValue) {
 
 	const ArrayPtr &m = to_array(*theArray);
-	auto it = m->find(keyStr);
-	if(it != m->end()) {
+	auto it           = m->find(keyStr);
+	if (it != m->end()) {
 		*theValue = it->second;
 		return true;
 	}
@@ -1896,7 +1921,7 @@ bool ArrayGet(DataValue *theArray, const std::string &keyStr, DataValue *theValu
 ArrayIterator arrayIterateFirst(DataValue *theArray) {
 
 	const ArrayPtr &m = to_array(*theArray);
-	ArrayIterator it { m, m->begin() };
+	ArrayIterator it{m, m->begin()};
 
 	return it;
 }
@@ -1992,7 +2017,7 @@ static int arrayAssign() {
 		if (is_array(srcValue)) {
 			DataValue arrayCopyValue;
 
-			errNum = ArrayCopy(&arrayCopyValue, &srcValue);
+			errNum   = ArrayCopy(&arrayCopyValue, &srcValue);
 			srcValue = arrayCopyValue;
 			if (errNum != STAT_OK) {
 				return errNum;
@@ -2124,9 +2149,10 @@ static int arrayIter() {
 
 	Symbol *const item     = Context.PC++->sym;
 	Symbol *const iterator = Context.PC++->sym;
-	Inst *const branchAddr = Context.PC + Context.PC->value; ++Context.PC;
+	Inst *const branchAddr = Context.PC + Context.PC->value;
+	++Context.PC;
 
-	switch(item->type) {
+	switch (item->type) {
 	case LOCAL_SYM:
 		itemValPtr = &FP_GET_SYM_VAL(Context.FrameP, item);
 		break;
@@ -2191,7 +2217,7 @@ static int inArray() {
 
 		const ArrayPtr &m = to_array(leftArray);
 
-		inResult = 1;
+		inResult  = 1;
 		auto iter = m->begin();
 		while (inResult && iter != m->end()) {
 			inResult = inResult && ArrayGet(&theArray, iter->first, &theValue);
@@ -2283,13 +2309,11 @@ bool StringToNum(const std::string &string, int *number) {
 #if defined(DEBUG_DISASSEMBLER) // dumping values in disassembly or stack dump
 static void dumpVal(DataValue dv) {
 
-
 	auto escape_string = [](const std::string &s) -> std::string {
-
 		std::string r;
 
-		for(char ch : s) {
-			switch(ch) {
+		for (char ch : s) {
+			switch (ch) {
 			case '\n':
 				r.append("\\n");
 				break;
@@ -2308,18 +2332,18 @@ static void dumpVal(DataValue dv) {
 		return r;
 	};
 
-	if(is_integer(dv)) {
+	if (is_integer(dv)) {
 		printf("i=%d", to_integer(dv));
-	} else if(is_string(dv)) {
+	} else if (is_string(dv)) {
 		auto str = to_string(dv);
-		if(str.size() > 20) {
+		if (str.size() > 20) {
 			printf("<%lu> \"%s\"...", str.size(), escape_string(str.substr(0, 20)).c_str());
 		} else {
 			printf("<%lu> \"%s\"", str.size(), escape_string(str.substr(0, 20)).c_str());
 		}
-	} else if(is_array(dv)) {
+	} else if (is_array(dv)) {
 		printf("<array>");
-	} else if(is_unset(dv)) {
+	} else if (is_unset(dv)) {
 		printf("<no value>");
 	} else {
 		printf("<value>");
@@ -2435,7 +2459,7 @@ static void stackdump(int n, int extra) {
 	printf("Stack ----->\n");
 	for (i = 0; i < n + extra; i++) {
 		const char *pos = "";
-		DataValue *dv = &StackP[-i - 1];
+		DataValue *dv   = &StackP[-i - 1];
 		if (dv < TheStack) {
 			printf("--------------Stack base--------------\n");
 			break;

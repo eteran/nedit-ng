@@ -96,8 +96,8 @@ union Inst {
 /* symbol table entry */
 struct Symbol {
 	std::string name;
-	SymTypes    type;
-	DataValue   value;
+	SymTypes type;
+	DataValue value;
 };
 
 struct Program {
@@ -107,7 +107,7 @@ struct Program {
 	}
 
 	std::deque<Symbol *> localSymList;
-	std::vector<Inst>    code;
+	std::vector<Inst> code;
 };
 
 /* Information needed to re-start a preempted macro */
