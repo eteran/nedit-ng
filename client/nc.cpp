@@ -459,6 +459,11 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	if (!ServerPreferences.serverName.isEmpty()) {
+		commandLine.arguments.append(QLatin1String("-svrname"));
+		commandLine.arguments.append(ServerPreferences.serverName);
+	}
+
 	QString socketName = LocalSocketName(ServerPreferences.serverName);
 
 	for (int i = 0; i < 10; ++i) {

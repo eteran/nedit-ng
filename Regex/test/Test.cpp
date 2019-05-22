@@ -2,10 +2,24 @@
 #include "Regex.h"
 #include <iostream>
 
+namespace {
+
 struct Test {
 	view::string_view input;
 	view::string_view output;
 };
+
+int test_regex_match(view::string_view regex, view::string_view input) {
+	Regex re(regex, REDFLT_STANDARD);
+
+	if(re.execute(input)) {
+		return 0;
+	}
+
+	return -1;
+}
+
+}
 
 int main() {
 
@@ -724,7 +738,7 @@ int main() {
 			if(bytes != t.output) {
 				std::cerr << "ERROR    : " << t.input.to_string() << '\n';
 				std::cerr << "EXPECTED : " << t.output.to_string() << '\n';
-				std::cerr << "GOT      : " << bytes << '\n';
+				std::cerr << "GOT      : " << bytes << std::endl;
 				return -1;
 			}
 		} catch(...) {
@@ -733,5 +747,30 @@ int main() {
 		}
 	}
 
+	if(test_regex_match("^A", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != 0) {
+		std::cerr << "ERROR    : Failed to match buffer start (with text)" << std::endl;
+		return -1;
+	}
+
+	if(test_regex_match("Z$", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != 0) {
+		std::cerr << "ERROR    : Failed to match buffer end (with text)" << std::endl;
+		return -1;
+	}
+	
+	if(test_regex_match("^ABCDEFGHIJKLMNOPQRSTUVWXYZ$", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != 0) {
+		std::cerr << "ERROR    : Failed to match whole line" << std::endl;
+		return -1;
+	}
+	
+	if(test_regex_match("^", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != 0) {
+		std::cerr << "ERROR    : Failed to match buffer start" << std::endl;
+		return -1;
+	}
+
+	if(test_regex_match("$", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != 0) {
+		std::cerr << "ERROR    : Failed to match buffer end" << std::endl;
+		return -1;
+	}
+	
 	std::cout << "SUCCESS\n";
 }
