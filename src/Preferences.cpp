@@ -455,6 +455,9 @@ void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 */
 void ImportPrefFile(const QString &filename) {
 	Settings::importSettings(filename);
+
+	// NOTE(eteran): fix for issue #106
+	translatePrefFormats(NEDIT_VERSION);
 }
 
 void SetPrefOpenInTab(bool state) {
