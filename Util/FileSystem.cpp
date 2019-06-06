@@ -260,27 +260,32 @@ QString ReadAnyTextFile(const QString &fileName, bool forceNL) {
 		return {};
 	}
 
-	auto contents = std::string(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
+	try {
+		auto contents = std::string(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
 
-	switch (FormatOfFile(contents)) {
-	case FileFormats::Dos:
-		ConvertFromDos(contents);
-		break;
-	case FileFormats::Mac:
-		ConvertFromMac(contents);
-		break;
-	case FileFormats::Unix:
-		break;
-	}
+		switch (FormatOfFile(contents)) {
+		case FileFormats::Dos:
+			ConvertFromDos(contents);
+			break;
+		case FileFormats::Mac:
+			ConvertFromMac(contents);
+			break;
+		case FileFormats::Unix:
+			break;
+		}
 
-	if (contents.empty()) {
+		if (contents.empty()) {
+			return {};
+		}
+
+		// now, that the string is in Unix format, check for terminating \n
+		if (forceNL && contents.back() != '\n') {
+			contents.push_back('\n');
+		}
+
+		return QString::fromStdString(contents);
+	} catch(const std::ios_base::failure &ex) {
+		qWarning("NEdit: Error while reading file. %s", ex.what());
 		return {};
 	}
-
-	// now, that the string is in Unix format, check for terminating \n
-	if (forceNL && contents.back() != '\n') {
-		contents.push_back('\n');
-	}
-
-	return QString::fromStdString(contents);
 }

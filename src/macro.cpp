@@ -255,6 +255,7 @@ std::string MacroErrorCategory::message(int ev) const {
 	Q_UNREACHABLE();
 }
 
+
 std::error_code make_error_code(MacroErrorCode e) {
 	// NOTE(eteran): error_code uses the address of this,
 	// so it needs global lifetime
@@ -2714,15 +2715,19 @@ static std::error_code readFileMS(DocumentWidget *document, Arguments arguments,
 	}
 
 	// Read the whole file into an allocated string
-	std::ifstream file(name, std::ios::binary);
-	if(file) {
-		std::string contents(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
+	try {
+		std::ifstream file(name, std::ios::binary);
+		if(file) {
+			std::string contents(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
 
-		*result = make_value(contents);
+			*result = make_value(contents);
 
-		// Return the results
-		ReturnGlobals[READ_STATUS]->value = make_value(true);
-		return MacroErrorCode::Success;
+			// Return the results
+			ReturnGlobals[READ_STATUS]->value = make_value(true);
+			return MacroErrorCode::Success;
+		}
+	} catch(const std::ios_base::failure &ex) {
+		qWarning("NEdit: Error while reading file. %s", ex.what());
 	}
 
 	ReturnGlobals[READ_STATUS]->value = make_value(false);

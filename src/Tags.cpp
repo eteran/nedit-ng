@@ -1294,6 +1294,8 @@ void showMatchingCalltip(QWidget *parent, TextArea *area, int id) {
 					parent,
 					tr("Out of Memory"),
 					tr("Can't allocate memory"));
+	} catch(const std::ios_base::failure &ex) {
+		qWarning("NEdit: Error while reading file. %s", ex.what());
 	}
 }
 
