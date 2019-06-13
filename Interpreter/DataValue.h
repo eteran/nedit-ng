@@ -140,7 +140,12 @@ inline bool is_array(const DataValue &dv) {
 }
 
 inline std::string to_string(const DataValue &dv) {
-	return boost::get<std::string>(dv.value);
+
+	if (auto n = boost::get<int>(&dv.value)) {
+		return std::to_string(*n);
+	} else {
+		return boost::get<std::string>(dv.value);
+	}
 }
 
 inline int to_integer(const DataValue &dv) {
