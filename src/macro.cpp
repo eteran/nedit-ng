@@ -575,7 +575,7 @@ static const SubRoutine TextAreaSubrNames[] = {
 	static std::error_code Name(DocumentWidget *document, Arguments arguments, DataValue *result) {        \
 		                                                                                                   \
 		/* ensure that we are dealing with the document which currently has the focus */                   \
-		document = MacroRunDocument();                                                                     \
+		document = MacroFocusDocument();                                                                   \
 		                                                                                                   \
 		QString string;                                                                                    \
 		if(std::error_code ec = readArguments(arguments, 0, &string)) {                                    \
@@ -594,7 +594,7 @@ static const SubRoutine TextAreaSubrNames[] = {
 	static std::error_code Name(DocumentWidget *document, Arguments arguments, DataValue *result) {        \
 		                                                                                                   \
 		/* ensure that we are dealing with the document which currently has the focus */                   \
-		document = MacroRunDocument();                                                                     \
+		document = MacroFocusDocument();                                                                   \
 		                                                                                                   \
 		QString string;                                                                                    \
 		if(std::error_code ec = readArguments(arguments, 0, &string)) {                                    \
@@ -613,7 +613,7 @@ static const SubRoutine TextAreaSubrNames[] = {
 	static std::error_code Name(DocumentWidget *document, Arguments arguments, DataValue *result) {        \
 		                                                                                                   \
 		/* ensure that we are dealing with the document which currently has the focus */                   \
-		document = MacroRunDocument();                                                                     \
+		document = MacroFocusDocument();                                                                   \
 		                                                                                                   \
 		if(!arguments.empty()) {                                                                           \
 			return MacroErrorCode::WrongNumberOfArguments;                                                 \
@@ -631,7 +631,7 @@ static const SubRoutine TextAreaSubrNames[] = {
 	static std::error_code routineName(DocumentWidget *document, Arguments arguments, DataValue *result) { \
 		                                                                                                   \
 		/* ensure that we are dealing with the document which currently has the focus */                   \
-		document = MacroRunDocument();                                                                     \
+		document = MacroFocusDocument();                                                                   \
 			                                                                                               \
 		if(!arguments.empty()) {                                                                           \
 			return MacroErrorCode::WrongNumberOfArguments;                                                 \
