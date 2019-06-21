@@ -722,7 +722,7 @@ void Highlight::passTwoParseString(const HighlightData *pattern, const char *fir
 				last,
 				stringPtr,
 				stylePtr,
-				std::min(parseEnd - parseStart, length - (parseStart - string)),
+				std::min<int64_t>(parseEnd - parseStart, length - (parseStart - string)),
 				prevChar,
 				delimiters,
 				lookBehindTo,
