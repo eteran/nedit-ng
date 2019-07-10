@@ -112,6 +112,7 @@ public:
 	void updateWindowMenu();
 	void updateWindowSizeMenu();
 	void updateWindowSizeMenus();
+	QPointer<TextArea> lastFocus();
 
 private:
 	QFileInfoList openFileHelper(DocumentWidget *document, const QString &text, QString *searchPath, QString *searchName) const;
@@ -413,9 +414,6 @@ public Q_SLOTS:
 	void updateStatus(DocumentWidget *document, TextArea *area);
 	void updateWindowReadOnly(DocumentWidget *document);
 	void updateWindowTitle(DocumentWidget *document);
-
-public:
-	QPointer<TextArea> lastFocus() const { return lastFocus_; }
 
 public:
 	int  fHistIndex_;

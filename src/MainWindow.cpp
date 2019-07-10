@@ -7288,3 +7288,18 @@ void MainWindow::on_tabWidget_tabCloseRequested(int index) {
 	}
 }
 #endif
+
+/**
+ * @brief MainWindow::lastFocus
+ * @return
+ */
+QPointer<TextArea> MainWindow::lastFocus() {
+
+	if(!lastFocus_) {
+		if(auto document = documentAt(0)) {
+			lastFocus_ = document->firstPane();
+		}
+	}
+
+	return lastFocus_;
+}
