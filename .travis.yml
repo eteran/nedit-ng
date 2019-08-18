@@ -30,3 +30,4 @@ addons:
             - cmake
             - qt5-default
             - qtbase5-dev-tools
+            - qttools5-dev-tools
