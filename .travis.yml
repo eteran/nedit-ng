@@ -29,4 +29,4 @@ addons:
             - g++-5
             - cmake
             - qt5-default
-			- qtbase5-dev-tools
+            - qtbase5-dev-tools
