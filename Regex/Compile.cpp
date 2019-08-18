@@ -1853,7 +1853,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
  * Beware that the optimization and preparation code in here knows about
  * some of the structure of the compiled Regex.
  *----------------------------------------------------------------------*/
-Regex::Regex(view::string_view exp, int defaultFlags) {
+Regex::Regex(boost::string_view exp, int defaultFlags) {
 
 	Regex *const re = this;
 

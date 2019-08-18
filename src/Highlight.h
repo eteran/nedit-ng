@@ -4,11 +4,12 @@
 
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
-#include "Util/string_view.h"
 
-#include <boost/optional.hpp>
 #include <vector>
 #include <memory>
+
+#include <boost/optional.hpp>
+#include <boost/utility/string_view.hpp>
 
 #include <QCoreApplication>
 
@@ -95,7 +96,7 @@ public:
 	static std::vector<PatternSet>     PatternSets;
 };
 
-void SyntaxHighlightModifyCBEx(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user);
+void SyntaxHighlightModifyCBEx(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, boost::string_view deletedText, void *user);
 
 
 #endif

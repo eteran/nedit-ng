@@ -128,8 +128,8 @@ QFont font;
  */
 QString themeFile() {
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("theme.xml"));
-	return configFile;
+	static const auto configPath   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("theme.xml"));
+	return configPath;
 }
 
 /**
@@ -138,8 +138,8 @@ QString themeFile() {
  */
 QString configFile() {
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("config.ini"));
-	return configFile;
+	static const auto configPath   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("config.ini"));
+	return configPath;
 }
 
 /**
@@ -148,8 +148,8 @@ QString configFile() {
  */
 QString historyFile() {
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("history"));
-	return configFile;
+	static const auto configPath   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("history"));
+	return configPath;
 }
 
 /**
@@ -158,8 +158,8 @@ QString historyFile() {
  */
 QString autoLoadMacroFile() {
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("autoload.nm"));
-	return configFile;
+	static const auto configPath   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("autoload.nm"));
+	return configPath;
 }
 
 /**
@@ -168,8 +168,8 @@ QString autoLoadMacroFile() {
  */
 QString styleFile() {
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("style.qss"));
-	return configFile;
+	static const auto configPath   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("style.qss"));
+	return configPath;
 }
 
 /**

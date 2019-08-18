@@ -4,19 +4,20 @@
 
 #include "gap_buffer_fwd.h"
 #include "gap_buffer_iterator.h"
-#include "Util/string_view.h"
+#include "Util/Raise.h"
 
 #include <string>
 #include <algorithm>
 #include <memory>
 #include <cassert>
+#include <boost/utility/string_view.hpp>
 
 template <class Ch, class Tr>
 class gap_buffer {
 public:
 	static constexpr int PreferredGapSize = 80;
 	using string_type = std::basic_string<Ch, Tr>;
-	using view_type   = view::basic_string_view<Ch, Tr>;
+	using view_type   = boost::basic_string_view<Ch, Tr>;
 
 public:
 	using value_type             = typename std::allocator<Ch>::value_type;

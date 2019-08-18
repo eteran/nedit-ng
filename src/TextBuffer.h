@@ -6,7 +6,6 @@
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
 #include "TextRange.h"
-#include "Util/string_view.h"
 
 #include <gsl/gsl_util>
 
@@ -15,12 +14,13 @@
 #include <cstdint>
 
 #include <boost/optional.hpp>
+#include <boost/utility/string_view.hpp>
 
 template <class Ch, class Tr>
 class BasicTextBuffer {
 public:
 	using string_type = std::basic_string<Ch, Tr>;
-	using view_type   = view::basic_string_view<Ch, Tr>;
+	using view_type   = boost::basic_string_view<Ch, Tr>;
 
 public:
 	using modify_callback_type     = void (*)(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view_type deletedText, void *user);

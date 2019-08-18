@@ -18,7 +18,7 @@ class DialogSyntaxPatterns final : public Dialog {
 	Q_OBJECT
 
 public:
-	DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogSyntaxPatterns() override = default;
 
 public:

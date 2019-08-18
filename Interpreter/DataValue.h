@@ -2,8 +2,6 @@
 #ifndef DATA_VALUE_H_
 #define DATA_VALUE_H_
 
-#include "Util/string_view.h"
-
 #include <gsl/span>
 
 #include <map>
@@ -12,6 +10,7 @@
 #include <system_error>
 
 #include <boost/variant.hpp>
+#include <boost/utility/string_view.hpp>
 
 #include <QString>
 
@@ -87,7 +86,7 @@ inline DataValue make_value(bool n) {
 	return DV;
 }
 
-inline DataValue make_value(view::string_view str) {
+inline DataValue make_value(boost::string_view str) {
 	DataValue DV;
 	DV.value = str.to_string();
 	return DV;

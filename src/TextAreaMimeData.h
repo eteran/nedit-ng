@@ -2,8 +2,10 @@
 #ifndef TEXT_AREA_MIME_DATA_H_
 #define TEXT_AREA_MIME_DATA_H_
 
-#include <QMimeData>
 #include "TextBufferFwd.h"
+
+#include <QMimeData>
+
 class TextArea;
 
 class TextAreaMimeData : public QMimeData {

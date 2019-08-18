@@ -146,7 +146,7 @@ QString ErrorString(int error) {
 }
 
 
-void modifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
+void modifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, boost::string_view deletedText, void *user) {
 	if(auto document = static_cast<DocumentWidget *>(user)) {
 		document->modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText);
 	}
@@ -188,7 +188,7 @@ void handleUnparsedRegionCB(const TextArea *area, TextCursor pos, const void *us
 ** have been shrunken by the user (eg, by Undo). If necessary, the starting
 ** and ending positions (part of the state of the command) are corrected.
 */
-void safeBufReplace(TextBuffer *buf, TextCursor *start, TextCursor *end, view::string_view text) {
+void safeBufReplace(TextBuffer *buf, TextCursor *start, TextCursor *end, boost::string_view text) {
 
 	const TextCursor last = buf->BufEndOfBuffer();
 
@@ -890,7 +890,7 @@ void DocumentWidget::UpdateMarkTable(TextCursor pos, int64_t nInserted, int64_t 
  * @param nRestyled
  * @param deletedText
  */
-void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, TextArea *area) {
+void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, boost::string_view deletedText, TextArea *area) {
 	Q_UNUSED(nRestyled)
 
 	// number of distinct chars the user can typebefore NEdit gens. new backup file
@@ -963,7 +963,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
  * @param nRestyled
  * @param deletedText
  */
-void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText) {
+void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, boost::string_view deletedText) {
 	modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText, nullptr);
 
 }
@@ -1435,7 +1435,7 @@ void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<M
 ** Note: This routine must be kept efficient.  It is called for every
 **       character typed.
 */
-void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, view::string_view deletedText) {
+void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, boost::string_view deletedText) {
 
 	const int isUndo = (!info_->undo.empty() && info_->undo.front().inUndo);
 	const int isRedo = (!info_->redo.empty() && info_->redo.front().inUndo);
@@ -1564,7 +1564,7 @@ void DocumentWidget::clearRedoList() {
 ** for continuing of a string of one character deletes or replaces, but will
 ** work with more than one character.
 */
-void DocumentWidget::appendDeletedText(view::string_view deletedText, int64_t deletedLen, Direction direction) {
+void DocumentWidget::appendDeletedText(boost::string_view deletedText, int64_t deletedLen, Direction direction) {
 	UndoInfo &undo = info_->undo.front();
 
 	// re-allocate, adding space for the new character(s)
@@ -2096,7 +2096,7 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 		nRead   += offset;
 
 		// check for on-disk file format changes, but only for the first chunk
-		if (bufPos == 0 && info_->fileFormat != FormatOfFile(view::string_view(fileString, static_cast<size_t>(nRead)))) {
+		if (bufPos == 0 && info_->fileFormat != FormatOfFile(boost::string_view(fileString, static_cast<size_t>(nRead)))) {
 			return true;
 		}
 
@@ -2548,8 +2548,8 @@ void DocumentWidget::addWrapNewlines() {
 	}
 
 	// Modify the buffer to add wrapping
-	TextArea *area = textAreas[0];
-	std::string fileString = area->TextGetWrapped(info_->buffer->BufStartOfBuffer(), info_->buffer->BufEndOfBuffer());
+	TextArea *firstArea = textAreas[0];
+	std::string fileString = firstArea->TextGetWrapped(info_->buffer->BufStartOfBuffer(), info_->buffer->BufEndOfBuffer());
 
 	info_->buffer->BufSetAll(fileString);
 
@@ -2828,7 +2828,7 @@ void DocumentWidget::closeDocument() {
 
 		// clear the buffer, but ignore changes
 		info_->ignoreModify = true;
-		info_->buffer->BufSetAll(view::string_view());
+		info_->buffer->BufSetAll(boost::string_view());
 		info_->ignoreModify = false;
 
 		info_->filenameSet  = false;
@@ -5455,11 +5455,12 @@ HighlightPattern *DocumentWidget::findPatternOfWindow(const QString &name) const
 
 	if(const std::unique_ptr<WindowHighlightData> &hData = highlightData_) {
 		if (PatternSet *set = hData->patternSetForWindow) {
+			auto it = std::find_if(set->patterns.begin(), set->patterns.end(), [&name](const HighlightPattern &pattern) {
+				return pattern.name == name;
+			});
 
-			for(HighlightPattern &pattern : set->patterns) {
-				if (pattern.name == name) {
-					return &pattern;
-				}
+			if(it != set->patterns.end()) {
+				return &*it;
 			}
 		}
 	}
@@ -5639,10 +5640,7 @@ size_t DocumentWidget::highlightCodeOfPos(TextCursor pos) {
 int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) {
 
 	const TextCursor oldPos = pos;
-	size_t checkCode = 0;
-
 	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
-
 		if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
 
 			auto hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
@@ -5656,10 +5654,7 @@ int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) {
 				hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
 			}
 
-			if (checkCode == 0) {
-				checkCode = hCode;
-			}
-
+			const size_t checkCode = hCode;
 			while (hCode == checkCode || hCode == UNFINISHED_STYLE) {
 				if (hCode == UNFINISHED_STYLE) {
 					// encountered "unfinished" style, trigger parsing, then loop
@@ -5766,7 +5761,7 @@ void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &sty
 
 	/* Update the style buffer the new style information, but only between
 	   beginParse and endParse.  Skip the safety region */
-	auto view = view::string_view(&styleString[beginParse - beginSafety], static_cast<size_t>(endParse - beginParse));
+	auto view = boost::string_view(&styleString[beginParse - beginSafety], static_cast<size_t>(endParse - beginParse));
 	styleBuf->BufReplaceEx(beginParse, endParse, view);
 }
 
@@ -5809,7 +5804,7 @@ void DocumentWidget::startHighlighting(bool warn) {
 		}
 	} else {
 
-		view::string_view bufString = info_->buffer->BufAsStringEx();
+		boost::string_view bufString = info_->buffer->BufAsStringEx();
 		const char *stringPtr       = bufString.data();
 		const char *const match_to  = bufString.data() + bufString.size();
 
@@ -5826,7 +5821,7 @@ void DocumentWidget::startHighlighting(bool warn) {
 			match_to);
 	}
 
-	highlightData->styleBuffer->BufSetAll(view::string_view(styleBegin, static_cast<size_t>(stylePtr - styleBegin)));
+	highlightData->styleBuffer->BufSetAll(boost::string_view(styleBegin, static_cast<size_t>(stylePtr - styleBegin)));
 
 	// install highlight pattern data in the window data structure
 	highlightData_ = std::move(highlightData);

@@ -4,9 +4,10 @@
 
 #include "CallTip.h"
 #include "Util/QtHelper.h"
-#include "Util/string_view.h"
 
 #include <deque>
+
+#include <boost/utility/string_view.hpp>
 
 #include <QString>
 #include <QDateTime>
@@ -63,7 +64,7 @@ QList<Tag> lookupTag(const QString &name, SearchMode mode);
 bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMode mode);
 bool addTagsFile(const QString &tagSpec, SearchMode mode);
 bool deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload);
-bool fakeRegExSearch(view::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos);
+bool fakeRegExSearch(boost::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos);
 int tagsShowCalltip(TextArea *area, const QString &text);
 void showMatchingCalltip(QWidget *parent, TextArea *area, int id);
 

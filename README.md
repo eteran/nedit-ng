@@ -19,7 +19,7 @@ aspects have been improved simply by the fact that it is now a Qt application.
 Dependency                                  | Version Required
 ------------------------------------------- | ----------------
 [Qt](http://www.qt.io/)                     | >= 5.5
-[Boost](http://boost.org) (Headers Only)    | >= 1.35
+[Boost](http://boost.org) (Headers Only)    | >= 1.61
 [Bison](https://www.gnu.org/software/bison/)| >= 3.0
 [CMake](https://cmake.org)                  | >= 3.0
 

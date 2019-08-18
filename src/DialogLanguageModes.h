@@ -17,7 +17,7 @@ public:
 	Q_OBJECT
 
 public:
-	DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatterns, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatterns, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogLanguageModes() override = default;
 
 Q_SIGNALS:

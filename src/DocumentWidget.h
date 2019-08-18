@@ -18,7 +18,6 @@
 #include "UndoInfo.h"
 #include "WrapStyle.h"
 #include "Util/FileFormats.h"
-#include "Util/string_view.h"
 
 #include "ui_DocumentWidget.h"
 
@@ -31,6 +30,7 @@
 #include <gsl/span>
 
 #include <boost/optional.hpp>
+#include <boost/utility/string_view.hpp>
 
 #include <sys/stat.h>
 
@@ -71,8 +71,8 @@ public:
 	};
 
 public:
-	DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-	DocumentWidget(const QString &name, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DocumentWidget(const QString &name, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DocumentWidget() override;
 
 Q_SIGNALS:
@@ -88,8 +88,8 @@ public:
 	void dragStartCallback(TextArea *area);
 	void dragEndCallback(TextArea *area, const DragEndEvent *event);
 	void smartIndentCallback(TextArea *area, SmartIndentEvent *event);
-	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText);
-	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, TextArea *area);
+	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, boost::string_view deletedText);
+	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, boost::string_view deletedText, TextArea *area);
 
 public:
 	static DocumentWidget *fromArea(TextArea *area);
@@ -262,7 +262,7 @@ private:
 	void RemoveBackupFile() const;
 	void replay();
 	void RevertToSaved();
-	void saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, view::string_view deletedText);
+	void saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, boost::string_view deletedText);
 	void SetWindowModified(bool modified);
 	void Undo();
 	void unloadLanguageModeTipsFile();
@@ -271,7 +271,7 @@ private:
 	void addRedoItem(UndoInfo &&redo);
 	void addUndoItem(UndoInfo &&undo);
 	void addWrapNewlines();
-	void appendDeletedText(view::string_view deletedText, int64_t deletedLen, Direction direction);
+	void appendDeletedText(boost::string_view deletedText, int64_t deletedLen, Direction direction);
 	void cancelLearning();
 	void createSelectMenuEx(TextArea *area, const QStringList &args);
 	void documentRaised();

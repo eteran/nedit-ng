@@ -35,7 +35,7 @@ int HistStart = 0;
  * @param s
  * @return
  */
-std::string to_upper(view::string_view s) {
+std::string to_upper(boost::string_view s) {
 
 	std::string str;
 	str.reserve(s.size());
@@ -50,7 +50,7 @@ std::string to_upper(view::string_view s) {
  * @param s
  * @return
  */
-std::string to_lower(view::string_view s) {
+std::string to_lower(boost::string_view s) {
 
 	std::string str;
 	str.reserve(s.size());
@@ -70,7 +70,7 @@ std::string to_lower(view::string_view s) {
  * @param defaultFlags
  * @return
  */
-boost::optional<Search::Result> forwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int64_t beginPos, const char *delimiters, int defaultFlags) {
+boost::optional<Search::Result> forwardRegexSearch(boost::string_view string, boost::string_view searchString, WrapMode wrap, int64_t beginPos, const char *delimiters, int defaultFlags) {
 
 	try {
 		Regex compiledRE(searchString, defaultFlags);
@@ -122,7 +122,7 @@ boost::optional<Search::Result> forwardRegexSearch(view::string_view string, vie
  * @param defaultFlags
  * @return
  */
-boost::optional<Search::Result> backwardRegexSearch(view::string_view string, view::string_view searchString, WrapMode wrap, int64_t beginPos, const char *delimiters, int defaultFlags) {
+boost::optional<Search::Result> backwardRegexSearch(boost::string_view string, boost::string_view searchString, WrapMode wrap, int64_t beginPos, const char *delimiters, int defaultFlags) {
 
 	try {
 		Regex compiledRE(searchString, defaultFlags);
@@ -181,7 +181,7 @@ boost::optional<Search::Result> backwardRegexSearch(view::string_view string, vi
  * @param defaultFlags
  * @return
  */
-boost::optional<Search::Result> searchRegex(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, const char *delimiters, int defaultFlags) {
+boost::optional<Search::Result> searchRegex(boost::string_view string, boost::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, const char *delimiters, int defaultFlags) {
 
 	switch(direction) {
 	case Direction::Forward:
@@ -203,7 +203,7 @@ boost::optional<Search::Result> searchRegex(view::string_view string, view::stri
  * @param beginPos
  * @return
  */
-boost::optional<Search::Result> searchLiteral(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, Qt::CaseSensitivity caseSensitivity) {
+boost::optional<Search::Result> searchLiteral(boost::string_view string, boost::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, Qt::CaseSensitivity caseSensitivity) {
 
 	if(searchString.empty()) {
 		return boost::none;
@@ -224,7 +224,7 @@ boost::optional<Search::Result> searchLiteral(view::string_view string, view::st
 	const auto mid   = first + beginPos;
 	const auto last  = string.end();
 
-	auto do_search = [&](view::string_view::iterator it) -> boost::optional<Search::Result> {
+	auto do_search = [&](boost::string_view::iterator it) -> boost::optional<Search::Result> {
 		if (*it == ucString[0] || *it == lcString[0]) {
 			// matched first character
 			auto ucPtr   = ucString.begin();
@@ -314,7 +314,7 @@ boost::optional<Search::Result> searchLiteral(view::string_view string, view::st
 **  will suffice in that case.
 **
 */
-boost::optional<Search::Result> searchLiteralWord(view::string_view string, view::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, const char *delimiters, Qt::CaseSensitivity caseSensitivity) {
+boost::optional<Search::Result> searchLiteralWord(boost::string_view string, boost::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, const char *delimiters, Qt::CaseSensitivity caseSensitivity) {
 
 	if(searchString.empty()) {
 		return boost::none;
@@ -329,7 +329,7 @@ boost::optional<Search::Result> searchLiteralWord(view::string_view string, view
 	const auto mid   = first + beginPos;
 	const auto last  = string.end();
 
-	auto do_search_word = [&](const view::string_view::iterator it) -> boost::optional<Search::Result> {
+	auto do_search_word = [&](const boost::string_view::iterator it) -> boost::optional<Search::Result> {
 		if (*it == ucString[0] || *it == lcString[0]) {
 
 			// matched first character
@@ -441,7 +441,7 @@ boost::optional<Search::Result> searchLiteralWord(view::string_view string, view
 ** for regular expression "<" and ">" characters, or simply passed as nullptr
 ** for the default delimiter set.
 */
-boost::optional<Search::Result> SearchStringEx(view::string_view string, view::string_view searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, const char *delimiters) {
+boost::optional<Search::Result> SearchStringEx(boost::string_view string, boost::string_view searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, const char *delimiters) {
 	switch (searchType) {
 	case SearchType::CaseSenseWord:
 		return searchLiteralWord(string, searchString, direction, wrap, beginPos, delimiters, Qt::CaseSensitive);
@@ -469,7 +469,7 @@ boost::optional<Search::Result> SearchStringEx(view::string_view string, view::s
 ** code to continue using strings to represent the search and replace
 ** items.
 */
-bool replaceUsingRegex(view::string_view searchStr, view::string_view replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
+bool replaceUsingRegex(boost::string_view searchStr, boost::string_view replaceStr, boost::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
 	try {
 		Regex compiledRE(searchStr, defaultFlags);
 		compiledRE.execute(sourceStr, static_cast<size_t>(beginPos), sourceStr.size(), prevChar, -1, delimiters, false);
@@ -488,7 +488,7 @@ bool replaceUsingRegex(view::string_view searchStr, view::string_view replaceStr
 ** first replacement (returned in "copyStart", and the end of the last
 ** replacement (returned in "copyEnd")
 */
-boost::optional<std::string> Search::ReplaceAllInString(view::string_view inString, const QString &searchString, const QString &replaceString, SearchType searchType, int64_t *copyStart, int64_t *copyEnd, const QString &delimiters) {
+boost::optional<std::string> Search::ReplaceAllInString(boost::string_view inString, const QString &searchString, const QString &replaceString, SearchType searchType, int64_t *copyStart, int64_t *copyEnd, const QString &delimiters) {
 
 	Result searchResult;
 	int64_t lastEndPos;
@@ -630,7 +630,7 @@ boost::optional<std::string> Search::ReplaceAllInString(view::string_view inStri
  * @param delimiters
  * @return
  */
-bool Search::SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, Result *result, const QString &delimiters) {
+bool Search::SearchString(boost::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, Result *result, const QString &delimiters) {
 
 	assert(result);
 
@@ -643,7 +643,7 @@ bool Search::SearchString(view::string_view string, const QString &searchString,
 
 }
 
-bool Search::replaceUsingRE(const QString &searchStr, const QString &replaceStr, view::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags) {
+bool Search::replaceUsingRE(const QString &searchStr, const QString &replaceStr, boost::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags) {
 	return replaceUsingRegex(
 				searchStr.toStdString(),
 				replaceStr.toStdString(),
