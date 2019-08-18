@@ -3785,7 +3785,7 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
 		int64_t elementEnd = found ? searchResult.start : strLength;
 		int64_t elementLen = elementEnd - lastEnd;
 
-		boost::string_view str(
+		view::string_view str(
 					&sourceStr[static_cast<size_t>(lastEnd)],
 					static_cast<size_t>(elementLen));
 
@@ -3823,7 +3823,7 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
 			/* We skipped the last character to prevent an endless loop.
 			   Add it to the list. */
 			int64_t elementLen = strLength - lastEnd;
-			boost::string_view str(&sourceStr[static_cast<size_t>(lastEnd)], static_cast<size_t>(elementLen));
+			view::string_view str(&sourceStr[static_cast<size_t>(lastEnd)], static_cast<size_t>(elementLen));
 
 			element = make_value(str);
 			if (!ArrayInsert(result, indexStr, &element)) {
@@ -4198,7 +4198,7 @@ static std::error_code subscriptSepMV(DocumentWidget *document, Arguments argume
 	Q_UNUSED(document)
 	Q_UNUSED(arguments)
 
-	*result = make_value(boost::string_view(ARRAY_DIM_SEP, 1));
+	*result = make_value(view::string_view(ARRAY_DIM_SEP, 1));
 	return MacroErrorCode::Success;
 }
 

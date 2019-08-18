@@ -24,12 +24,13 @@ add_library(Util
 	include/Util/Resource.h
 	include/Util/ServerCommon.h
 	include/Util/String.h
+	include/Util/string_view.h
 	include/Util/System.h
 	include/Util/User.h
 	include/Util/utils.h
 	include/Util/version.h
 	include/Util/QtHelper.h
-    include/Util/Compiler.h
+        include/Util/Compiler.h
 )
 
 target_include_directories(Util 

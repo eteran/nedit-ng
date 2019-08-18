@@ -3,12 +3,11 @@
 #define EXECUTE_H_
 
 #include "Constants.h"
+#include "Util/string_view.h"
 #include <cstdint>
 #include <array>
 #include <bitset>
 #include <memory>
-
-#include <boost/utility/string_view.hpp>
 
 // #define ENABLE_CROSS_REGEX_BACKREF
 

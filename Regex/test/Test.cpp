@@ -5,11 +5,11 @@
 namespace {
 
 struct Test {
-	boost::string_view input;
-	boost::string_view output;
+	view::string_view input;
+	view::string_view output;
 };
 
-int test_regex_match(boost::string_view regex, boost::string_view input) {
+int test_regex_match(view::string_view regex, view::string_view input) {
 	Regex re(regex, REDFLT_STANDARD);
 
 	if(re.execute(input)) {

@@ -115,7 +115,7 @@ bool isParentStyle(const std::vector<uint8_t> &parentStyles, int style1, int sty
 ** Note: This routine must be kept efficient.  It is called for every
 ** character typed.
 */
-void SyntaxHighlightModifyCBEx(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, boost::string_view deletedText, void *user) {
+void SyntaxHighlightModifyCBEx(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
 
 	Q_UNUSED(nRestyled)
 	Q_UNUSED(deletedText)

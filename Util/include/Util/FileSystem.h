@@ -2,13 +2,11 @@
 #ifndef UTIL_FILESYSTEM_H_
 #define UTIL_FILESYSTEM_H_
 
+#include "string_view.h"
 #include <QString>
 #include <QtGlobal>
-
-#include <string>
-
 #include <boost/optional.hpp>
-#include <boost/utility/string_view.hpp>
+#include <string>
 
 enum class FileFormats : int;
 
@@ -17,7 +15,7 @@ struct PathInfo {
 	QString filename;
 };
 
-FileFormats FormatOfFile(boost::string_view text);
+FileFormats FormatOfFile(view::string_view text);
 QString GetTrailingPathComponents(const QString &path, int components);
 QString NormalizePathname(const QString &pathname);
 QString ReadAnyTextFile(const QString &fileName, bool forceNL);

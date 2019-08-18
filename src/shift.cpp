@@ -3,10 +3,10 @@
 #include "DocumentWidget.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
+#include "Util/string_view.h"
 #include "Util/algorithm.h"
 
 #include <gsl/gsl_util>
-#include <boost/utility/string_view.hpp>
 
 namespace {
 
@@ -40,7 +40,7 @@ std::string makeIndentString(int64_t indent, int tabDist, bool allowTabs) {
 ** re-creating whitespace to the left of the text using tabs (if allowTabs is
 ** true) calculated using tabDist, and spaces.
 */
-std::string fillParagraphEx(boost::string_view text, int64_t leftMargin, int64_t firstLineIndent, int64_t rightMargin, int tabDist, bool allowTabs) {
+std::string fillParagraphEx(view::string_view text, int64_t leftMargin, int64_t firstLineIndent, int64_t rightMargin, int tabDist, bool allowTabs) {
 
 	size_t nLines = 1;
 
@@ -212,7 +212,7 @@ int findLeftMarginEx(In first, In last, Size length, int tabDist) {
 ** capability not currently used in NEdit, but carried over from code for
 ** previous versions which did all paragraphs together).
 */
-std::string fillParagraphsEx(boost::string_view text, int64_t rightMargin, int tabDist, int useTabs, bool alignWithFirst) {
+std::string fillParagraphsEx(view::string_view text, int64_t rightMargin, int tabDist, int useTabs, bool alignWithFirst) {
 
 	// Create a buffer to accumulate the filled paragraphs
 	TextBuffer buf;
@@ -304,7 +304,7 @@ TextCursor findParagraphStart(TextBuffer *buf, TextCursor startPos) {
 	return parStart > buf->BufStartOfBuffer() ? parStart : buf->BufStartOfBuffer();
 }
 
-int countLines(boost::string_view text) {
+int countLines(view::string_view text) {
 	return std::count(text.begin(), text.end(), '\n') + 1;
 }
 
@@ -376,7 +376,7 @@ QString shiftLineLeftEx(const QString &line, int64_t lineLen, int tabDist, int n
 	}
 }
 
-std::string shiftLineLeftEx(boost::string_view line, int64_t lineLen, int tabDist, int nChars) {
+std::string shiftLineLeftEx(view::string_view line, int64_t lineLen, int tabDist, int nChars) {
 
 	auto lineInPtr = line.begin();
 
@@ -479,7 +479,7 @@ QString shiftLineRightEx(const QString &line, int64_t lineLen, int tabsAllowed, 
 	}
 }
 
-std::string shiftLineRightEx(boost::string_view line, int64_t lineLen, int tabsAllowed, int tabDist, int nChars) {
+std::string shiftLineRightEx(view::string_view line, int64_t lineLen, int tabsAllowed, int tabDist, int nChars) {
 	int whiteWidth;
 
 	auto lineInPtr = line.begin();
@@ -525,7 +525,7 @@ std::string shiftLineRightEx(boost::string_view line, int64_t lineLen, int tabsA
 	}
 }
 
-std::string ShiftText(boost::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars) {
+std::string ShiftText(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars) {
 	size_t bufLen;
 
 	/*

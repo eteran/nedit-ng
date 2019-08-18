@@ -247,7 +247,7 @@ void bufPreDeleteCB(TextCursor pos, int64_t nDeleted, void *arg) {
 /*
 ** Callback attached to the text buffer to receive modification information
 */
-void bufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, boost::string_view deletedText, void *arg) {
+void bufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *arg) {
 	auto area = static_cast<TextArea *>(arg);
 	area->bufModifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText);
 }
@@ -255,7 +255,7 @@ void bufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t 
 /*
 ** Count the number of newlines in a text string
 */
-int countNewlines(boost::string_view string) {
+int countNewlines(view::string_view string) {
 	return static_cast<int>(std::count(string.begin(), string.end(), '\n'));
 }
 
@@ -1378,7 +1378,7 @@ void TextArea::bufPreDeleteCallback(TextCursor pos, int64_t nDeleted) {
  * @param nRestyled
  * @param deletedText
  */
-void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, boost::string_view deletedText) {
+void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText) {
 
 	const QRect viewRect = viewport()->contentsRect();
 	int64_t linesInserted;
@@ -1826,7 +1826,7 @@ TextCursor TextArea::TextDStartOfLine(TextCursor pos) const {
  * @param linesInserted
  * @param linesDeleted
  */
-void TextArea::findWrapRangeEx(boost::string_view deletedText, TextCursor pos, int64_t nInserted, int64_t nDeleted, TextCursor *modRangeStart, TextCursor *modRangeEnd, int64_t *linesInserted, int64_t *linesDeleted) {
+void TextArea::findWrapRangeEx(view::string_view deletedText, TextCursor pos, int64_t nInserted, int64_t nDeleted, TextCursor *modRangeStart, TextCursor *modRangeEnd, int64_t *linesInserted, int64_t *linesDeleted) {
 
 	TextCursor retPos;	
 	TextCursor retLineStart;
@@ -4145,7 +4145,7 @@ bool TextArea::checkReadOnly() const {
 ** treated as pending delete selections (true), or ignored (false). "event"
 ** is optional and is just passed on to the cursor movement callbacks.
 */
-void TextArea::TextInsertAtCursorEx(boost::string_view chars, bool allowPendingDelete, bool allowWrap) {
+void TextArea::TextInsertAtCursorEx(view::string_view chars, bool allowPendingDelete, bool allowWrap) {
 
 	const QRect viewRect = viewport()->contentsRect();
 	const int fontWidth = fixedFontWidth_;
@@ -4238,7 +4238,7 @@ bool TextArea::pendingSelection() const {
 ** smart indent (which can be triggered by wrapping) can search back farther
 ** in the buffer than just the text in startLine.
 */
-std::string TextArea::wrapTextEx(boost::string_view startLine, boost::string_view text, int64_t bufOffset, int wrapMargin, int64_t *breakBefore) {
+std::string TextArea::wrapTextEx(view::string_view startLine, view::string_view text, int64_t bufOffset, int wrapMargin, int64_t *breakBefore) {
 
 	// Create a temporary text buffer and load it with the strings
 	TextBuffer wrapBuf;
@@ -4302,7 +4302,7 @@ std::string TextArea::wrapTextEx(boost::string_view startLine, boost::string_vie
 ** Insert "text" (which must not contain newlines), overstriking the current
 ** cursor location.
 */
-void TextArea::TextDOverstrikeEx(boost::string_view text) {
+void TextArea::TextDOverstrikeEx(view::string_view text) {
 
 	const TextCursor startPos  = cursorPos_;
 	const TextCursor lineStart = buffer_->BufStartOfLine(startPos);
@@ -4365,7 +4365,7 @@ void TextArea::TextDOverstrikeEx(boost::string_view text) {
 ** then moving the insert position after the newly inserted text, except
 ** that it's optimized to do less redrawing.
 */
-void TextArea::insertText(boost::string_view text) {
+void TextArea::insertText(view::string_view text) {
 
 	const TextCursor pos = cursorPos_;
 
@@ -4455,7 +4455,7 @@ std::string TextArea::createIndentStringEx(TextBuffer *buf, int64_t bufOffset, T
 		smartIndent.reason     = NEWLINE_INDENT_NEEDED;
 		smartIndent.pos        = lineEndPos + bufOffset;
 		smartIndent.request    = 0;
-		smartIndent.charsTyped = boost::string_view();
+		smartIndent.charsTyped = view::string_view();
 
 		for(auto &c : smartIndentCallbacks_) {
 			c.first(this, &smartIndent, c.second);
@@ -4654,7 +4654,7 @@ TextCursor TextArea::startOfWord(TextCursor pos) const {
 	boost::optional<TextCursor> startPos;
 
 	if (ch == ' ' || ch == '\t') {
-		startPos = spanBackward(buffer_, pos, boost::string_view(" \t", 2), false);
+		startPos = spanBackward(buffer_, pos, view::string_view(" \t", 2), false);
 	} else if (isDelimeter(ch)) {
 		startPos = spanBackward(buffer_, pos, delimiters_, true);
 	} else {
@@ -4679,7 +4679,7 @@ TextCursor TextArea::endOfWord(TextCursor pos) const {
 	boost::optional<TextCursor> endPos;
 
 	if (ch == ' ' || ch == '\t') {
-		endPos = spanForward(buffer_, pos, boost::string_view(" \t", 2), false);
+		endPos = spanForward(buffer_, pos, view::string_view(" \t", 2), false);
 	} else if (isDelimeter(ch)) {
 		endPos = spanForward(buffer_, pos, delimiters_, true);
 	} else {
@@ -4698,7 +4698,7 @@ TextCursor TextArea::endOfWord(TextCursor pos) const {
 ** "searchChars",  starting with the character BEFORE "startPos". If
 ** ignoreSpace is set, then Space, Tab, and Newlines are ignored in searchChars.
 */
-boost::optional<TextCursor> TextArea::spanBackward(TextBuffer *buf, TextCursor startPos, boost::string_view searchChars, bool ignoreSpace) const {
+boost::optional<TextCursor> TextArea::spanBackward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const {
 
 	if (startPos == 0) {
 		return boost::none;
@@ -4732,7 +4732,7 @@ boost::optional<TextCursor> TextArea::spanBackward(TextBuffer *buf, TextCursor s
 ** "searchChars",  starting with the character "startPos". If ignoreSpace
 ** is set, then Space, Tab, and Newlines are ignored in searchChars.
 */
-boost::optional<TextCursor> TextArea::spanForward(TextBuffer *buf, TextCursor startPos, boost::string_view searchChars, bool ignoreSpace) const {
+boost::optional<TextCursor> TextArea::spanForward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const {
 
 	TextCursor pos = startPos;
 	while (pos < buf->length()) {
@@ -4914,7 +4914,7 @@ void TextArea::insertClipboard(bool isColumnar) {
 ** typed.  Same as TextInsertAtCursorEx, but without the complicated auto-wrap
 ** scanning and re-formatting.
 */
-void TextArea::simpleInsertAtCursor(boost::string_view chars, bool allowPendingDelete) {
+void TextArea::simpleInsertAtCursor(view::string_view chars, bool allowPendingDelete) {
 
 	if (allowPendingDelete && pendingSelection()) {
 		buffer_->BufReplaceSelectedEx(chars);
@@ -4922,7 +4922,7 @@ void TextArea::simpleInsertAtCursor(boost::string_view chars, bool allowPendingD
 	} else if (overstrike_) {
 
 		const size_t index = chars.find('\n');
-		if(index != boost::string_view::npos) {
+		if(index != view::string_view::npos) {
 			insertText(chars);
 		} else {
 			TextDOverstrikeEx(chars);

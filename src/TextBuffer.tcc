@@ -1000,10 +1000,12 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor st
 
 	while (pos < end) {
 
-		const Ch comp = buffer_[to_integer(pos)];
+		Ch comp = buffer_[to_integer(pos)];
 
-		if(std::any_of(searchChars.begin(), searchChars.end(), [comp](Ch ch) { return ch == comp; })) {
-			return pos;
+		for (Ch ch : searchChars) {
+			if (comp == ch) {
+				return pos;
+			}
 		}
 
 		++pos;
@@ -1029,9 +1031,12 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor s
 
 	while (true) {
 
-		const Ch comp = buffer_[to_integer(pos)];
-		if(std::any_of(searchChars.begin(), searchChars.end(), [comp](Ch ch) { return ch == comp; })) {
-			return pos;
+		Ch comp = buffer_[to_integer(pos)];
+
+		for (Ch ch : searchChars) {
+			if (comp == ch) {
+				return pos;
+			}
 		}
 
 		if(pos == start) {

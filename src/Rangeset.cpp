@@ -17,18 +17,16 @@ RangesetUpdateFn rangesetBreakMaintain;
 
 auto DEFAULT_UPDATE_FN_NAME = QLatin1String("maintain");
 
-struct RangesetMapEntry {
+struct {
 	QLatin1String name;
 	RangesetUpdateFn *update_fn;
-};
-
-RangesetMapEntry RangesetUpdateMap[] = {
+} RangesetUpdateMap[] = {
 	{DEFAULT_UPDATE_FN_NAME,   rangesetInsDelMaintain},
 	{QLatin1String("ins_del"), rangesetInsDelMaintain},
 	{QLatin1String("include"), rangesetInclMaintain},
 	{QLatin1String("del_ins"), rangesetDelInsMaintain},
 	{QLatin1String("exclude"), rangesetExclMaintain},
-	{QLatin1String("break"),   rangesetBreakMaintain},
+	{QLatin1String("break"),   rangesetBreakMaintain}
 };
 
 
@@ -691,14 +689,12 @@ bool Rangeset::setMode(const QString &mode) {
 		return setMode(DEFAULT_UPDATE_FN_NAME);
 	}
 
-	auto it = std::find_if(std::begin(RangesetUpdateMap), std::end(RangesetUpdateMap), [&mode](const RangesetMapEntry &entry) {
-		return entry.name == mode;
-	});
-
-	if(it != std::end(RangesetUpdateMap)) {
-		update_      = it->update_fn;
-		update_name_ = it->name;
-		return true;
+	for(auto &entry : RangesetUpdateMap) {
+		if (entry.name == mode) {
+			update_   = entry.update_fn;
+			update_name_ = entry.name;
+			return true;
+		}
 	}
 
 	return false;

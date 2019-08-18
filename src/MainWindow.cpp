@@ -5997,7 +5997,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
 	}
 
 	// get the entire text buffer from the text area widget
-	boost::string_view fileString = buffer->BufAsStringEx();
+	view::string_view fileString = buffer->BufAsStringEx();
 
 	/* If we're already outside the boundaries, we must consider wrapping
 	   immediately (Note: fileEnd+1 is a valid starting position. Consider
@@ -6869,7 +6869,7 @@ bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QS
 	TextBuffer *buffer = document->buffer();
 
 	// view the entire text buffer from the text area widget as a string
-	boost::string_view fileString = buffer->BufAsStringEx();
+	view::string_view fileString = buffer->BufAsStringEx();
 
 	QString delimieters = document->GetWindowDelimitersEx();
 
