@@ -525,6 +525,8 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
 
 	updateFontMetrics(font);
 
+	horizontalScrollBar()->setSingleStep(fixedFontWidth_);
+
 	// set the default margins
 	viewport()->setContentsMargins(DefaultHMargin, DefaultVMargin, 0, 0);
 
@@ -6765,6 +6767,8 @@ void TextArea::setFont(const QFont &font) {
 
 	// force a recalc of the line numbers
 	setLineNumCols(getLineNumCols());
+
+	horizontalScrollBar()->setSingleStep(fixedFontWidth_);
 
 	viewport()->update();
 }
