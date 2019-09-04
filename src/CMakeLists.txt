@@ -33,6 +33,10 @@ qt5_add_resources(QRC_SOURCES
 	${TRANSLATIONS_QRC}
 )
 
+if(${X11_FOUND} AND (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
+    link_directories(/usr/X11/lib)
+endif()
+
 add_executable(nedit-ng
 
 	${QRC_SOURCES}
