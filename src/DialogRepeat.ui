@@ -23,7 +23,7 @@
       <item>
        <widget class="QRadioButton" name="radioLastCommand">
         <property name="text">
-         <string>Last Command (%&amp;1)</string>
+         <string>Last Command (%1)</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -36,7 +36,7 @@
          <bool>false</bool>
         </property>
         <property name="text">
-         <string>&amp;Learn/Replay</string>
+         <string>Learn/Replay</string>
         </property>
        </widget>
       </item>
@@ -52,7 +52,7 @@
       <item>
        <widget class="QRadioButton" name="radioInSelection">
         <property name="text">
-         <string>&amp;In Selection</string>
+         <string>In Selection</string>
         </property>
         <property name="checked">
          <bool>false</bool>
@@ -62,14 +62,14 @@
       <item>
        <widget class="QRadioButton" name="radioToEnd">
         <property name="text">
-         <string>&amp;To End</string>
+         <string>To End</string>
         </property>
        </widget>
       </item>
       <item>
        <widget class="QRadioButton" name="radioNTimes">
         <property name="text">
-         <string>&amp;N Times</string>
+         <string>N Times</string>
         </property>
         <property name="checked">
          <bool>true</bool>

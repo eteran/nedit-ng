@@ -75,7 +75,7 @@
      <item>
       <widget class="QPushButton" name="buttonPrint">
        <property name="text">
-        <string>&amp;Print</string>
+        <string>Print</string>
        </property>
        <property name="icon">
         <iconset theme="document-print">
@@ -99,7 +99,7 @@
      <item>
       <widget class="QPushButton" name="buttonCancel">
        <property name="text">
-        <string>&amp;Cancel</string>
+        <string>Cancel</string>
        </property>
        <property name="icon">
         <iconset theme="dialog-cancel">

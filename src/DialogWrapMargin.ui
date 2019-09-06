@@ -19,7 +19,7 @@
      <item>
       <widget class="QCheckBox" name="checkWrapAndFill">
        <property name="text">
-        <string>&amp;Wrap and Fill at width of window</string>
+        <string>Wrap and Fill at width of window</string>
        </property>
        <property name="checked">
         <bool>true</bool>

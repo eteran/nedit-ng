@@ -77,21 +77,21 @@
      <item>
       <widget class="QCheckBox" name="checkRegex">
        <property name="text">
-        <string>&amp;Regular Expression</string>
+        <string>Regular Expression</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QCheckBox" name="checkCase">
        <property name="text">
-        <string>&amp;Case Sensitive</string>
+        <string>Case Sensitive</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QCheckBox" name="checkWord">
        <property name="text">
-        <string>W&amp;hole Word</string>
+        <string>Whole Word</string>
        </property>
       </widget>
      </item>
@@ -115,7 +115,7 @@
      <item>
       <widget class="QCheckBox" name="checkBackward">
        <property name="text">
-        <string>Search &amp;Backward</string>
+        <string>Search Backward</string>
        </property>
       </widget>
      </item>
@@ -135,7 +135,7 @@
      <item>
       <widget class="QCheckBox" name="checkKeep">
        <property name="text">
-        <string>&amp;Keep Dialog</string>
+        <string>Keep Dialog</string>
        </property>
       </widget>
      </item>
@@ -166,7 +166,7 @@
      <item>
       <widget class="QPushButton" name="buttonWindow">
        <property name="text">
-        <string>W&amp;indow</string>
+        <string>Window</string>
        </property>
        <property name="icon">
         <iconset theme="window">
@@ -177,7 +177,7 @@
      <item>
       <widget class="QPushButton" name="buttonSelection">
        <property name="text">
-        <string>&amp;Selection</string>
+        <string>Selection</string>
        </property>
        <property name="icon">
         <iconset theme="edit-select">
@@ -188,7 +188,7 @@
      <item>
       <widget class="QPushButton" name="buttonMulti">
        <property name="text">
-        <string>&amp;Multiple Documents</string>
+        <string>Multiple Documents</string>
        </property>
        <property name="icon">
         <iconset theme="folder-documents">
@@ -220,7 +220,7 @@
      <item>
       <widget class="QPushButton" name="buttonFind">
        <property name="text">
-        <string>&amp;Find</string>
+        <string>Find</string>
        </property>
        <property name="icon">
         <iconset theme="edit-find">
@@ -231,7 +231,7 @@
      <item>
       <widget class="QPushButton" name="buttonReplaceFind">
        <property name="text">
-        <string>Replace &amp;&amp; Fi&amp;nd</string>
+        <string>Replace  Find</string>
        </property>
        <property name="icon">
         <iconset theme="edit-find-replace">

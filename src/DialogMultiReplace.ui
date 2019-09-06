@@ -26,7 +26,7 @@
      <item>
       <widget class="QCheckBox" name="checkShowPaths">
        <property name="text">
-        <string>Show &amp;Path Names</string>
+        <string>Show Path Names</string>
        </property>
       </widget>
      </item>
@@ -44,7 +44,7 @@
      <item>
       <widget class="QPushButton" name="buttonReplace">
        <property name="text">
-        <string>&amp;Replace</string>
+        <string>Replace</string>
        </property>
        <property name="icon">
         <iconset theme="edit-find-replace">
@@ -55,7 +55,7 @@
      <item>
       <widget class="QPushButton" name="buttonSelectAll">
        <property name="text">
-        <string>&amp;Select All</string>
+        <string>Select All</string>
        </property>
        <property name="icon">
         <iconset theme="edit-select-all">
@@ -66,14 +66,14 @@
      <item>
       <widget class="QPushButton" name="buttonDeselectAll">
        <property name="text">
-        <string>&amp;Deselect All</string>
+        <string>Deselect All</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="buttonCancel">
        <property name="text">
-        <string>&amp;Cancel</string>
+        <string>Cancel</string>
        </property>
        <property name="icon">
         <iconset theme="dialog-cancel">

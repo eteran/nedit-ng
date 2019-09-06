@@ -32,14 +32,14 @@
         <item row="0" column="0">
          <widget class="QCheckBox" name="checkFileName">
           <property name="text">
-           <string>&amp;File Name (%f)</string>
+           <string>File Name (%f)</string>
           </property>
          </widget>
         </item>
         <item row="0" column="1">
          <widget class="QCheckBox" name="checkHostName">
           <property name="text">
-           <string>&amp;Host name (%h)</string>
+           <string>Host name (%h)</string>
           </property>
          </widget>
         </item>
@@ -48,14 +48,14 @@
           <item>
            <widget class="QCheckBox" name="checkFileStatus">
             <property name="text">
-             <string>File &amp;status (%S)</string>
+             <string>File status (%S)</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="checkBrief">
             <property name="text">
-             <string>&amp;brief</string>
+             <string>brief</string>
             </property>
            </widget>
           </item>
@@ -64,21 +64,21 @@
         <item row="1" column="1">
          <widget class="QCheckBox" name="checkUserName">
           <property name="text">
-           <string>&amp;User name (%u)</string>
+           <string>User name (%u)</string>
           </property>
          </widget>
         </item>
         <item row="2" column="0">
          <widget class="QCheckBox" name="checkClearCase">
           <property name="text">
-           <string>&amp;Clearcase view tag (%c)</string>
+           <string>Clearcase view tag (%c)</string>
           </property>
          </widget>
         </item>
         <item row="2" column="1">
          <widget class="QCheckBox" name="checkServerName">
           <property name="text">
-           <string>NEdit &amp;server name (%s)</string>
+           <string>NEdit server name (%s)</string>
           </property>
          </widget>
         </item>
@@ -90,7 +90,7 @@
           <item>
            <widget class="QCheckBox" name="checkDirectory">
             <property name="text">
-             <string>&amp;Directory (%d)</string>
+             <string>Directory (%d)</string>
             </property>
            </widget>
           </item>
@@ -163,21 +163,21 @@
         <item>
          <widget class="QCheckBox" name="checkFileModified">
           <property name="text">
-           <string>File m&amp;odified</string>
+           <string>File modified</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="checkFileReadOnly">
           <property name="text">
-           <string>File read o&amp;nly</string>
+           <string>File read only</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="checkFileLocked">
           <property name="text">
-           <string>Fi&amp;le locked</string>
+           <string>File locked</string>
           </property>
          </widget>
         </item>
@@ -201,7 +201,7 @@
         <item>
          <widget class="QCheckBox" name="checkServerNamePresent">
           <property name="text">
-           <string>Ser&amp;ver name present</string>
+           <string>Server name present</string>
           </property>
          </widget>
         </item>
@@ -225,14 +225,14 @@
         <item>
          <widget class="QCheckBox" name="checkClearCasePresent">
           <property name="text">
-           <string>CC vie&amp;w tag present</string>
+           <string>CC view tag present</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QCheckBox" name="checkServerEqualsCC">
           <property name="text">
-           <string>Server name e&amp;quals CC view tag</string>
+           <string>Server name equals CC view tag</string>
           </property>
          </widget>
         </item>
@@ -256,7 +256,7 @@
         <item>
          <widget class="QCheckBox" name="checkDirectoryPresent">
           <property name="text">
-           <string>D&amp;irectory present</string>
+           <string>Directory present</string>
           </property>
          </widget>
         </item>

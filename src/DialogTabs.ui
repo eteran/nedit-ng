@@ -27,7 +27,7 @@
    <item row="1" column="0">
     <widget class="QCheckBox" name="checkEmulateTabs">
      <property name="text">
-      <string>&amp;Emulate tabs</string>
+      <string>Emulate tabs</string>
      </property>
     </widget>
    </item>
@@ -51,7 +51,7 @@
    <item row="2" column="0" colspan="3">
     <widget class="QCheckBox" name="checkUseTabsInPadding">
      <property name="text">
-      <string>&amp;Use tab characters in padding and emulated tabs</string>
+      <string>Use tab characters in padding and emulated tabs</string>
      </property>
      <property name="checked">
       <bool>true</bool>

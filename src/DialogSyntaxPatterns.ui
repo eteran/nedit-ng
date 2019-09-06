@@ -55,7 +55,7 @@
      <item>
       <widget class="QPushButton" name="buttonLanguageMode">
        <property name="text">
-        <string>&amp;Add/Modify Language Mode...</string>
+        <string>Add/Modify Language Mode...</string>
        </property>
       </widget>
      </item>
@@ -217,7 +217,7 @@
          <item>
           <widget class="QRadioButton" name="radioPass1">
            <property name="text">
-            <string>Pass-&amp;1 (applied to all text when loaded or modified)</string>
+            <string>Pass-1 (applied to all text when loaded or modified)</string>
            </property>
            <property name="checked">
             <bool>true</bool>
@@ -227,21 +227,21 @@
          <item>
           <widget class="QRadioButton" name="radioPass2">
            <property name="text">
-            <string>Pass-&amp;2 (parsing is deferred until text is exposed)</string>
+            <string>Pass-2 (parsing is deferred until text is exposed)</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QRadioButton" name="radioSubPattern">
            <property name="text">
-            <string>S&amp;ub-pattern (processed within start &amp; end of parent)</string>
+            <string>Sub-pattern (processed within start  end of parent)</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QRadioButton" name="radioColoring">
            <property name="text">
-            <string>Colorin&amp;g for sub-expressions of parent pattern</string>
+            <string>Coloring for sub-expressions of parent pattern</string>
            </property>
           </widget>
          </item>
@@ -260,7 +260,7 @@
          <item>
           <widget class="QRadioButton" name="radioSimpleRegex">
            <property name="text">
-            <string>Highlight te&amp;xt matching regular expression</string>
+            <string>Highlight text matching regular expression</string>
            </property>
            <property name="checked">
             <bool>true</bool>
@@ -270,7 +270,7 @@
          <item>
           <widget class="QRadioButton" name="radioRangeRegex">
            <property name="text">
-            <string>H&amp;ighlight text between starting and ending REs</string>
+            <string>Highlight text between starting and ending REs</string>
            </property>
           </widget>
          </item>
@@ -424,7 +424,7 @@
      <item>
       <widget class="QPushButton" name="buttonApply">
        <property name="text">
-        <string>Appl&amp;y</string>
+        <string>Apply</string>
        </property>
        <property name="icon">
         <iconset theme="dialog-ok-apply">
@@ -435,14 +435,14 @@
      <item>
       <widget class="QPushButton" name="buttonCheck">
        <property name="text">
-        <string>Chec&amp;k</string>
+        <string>Check</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="buttonDeletePattern">
        <property name="text">
-        <string>&amp;Delete</string>
+        <string>Delete</string>
        </property>
        <property name="icon">
         <iconset theme="edit-delete">
@@ -453,7 +453,7 @@
      <item>
       <widget class="QPushButton" name="buttonRestore">
        <property name="text">
-        <string>Restore De&amp;faults</string>
+        <string>Restore Defaults</string>
        </property>
       </widget>
      </item>
@@ -471,7 +471,7 @@
      <item>
       <widget class="QPushButton" name="buttonHelp">
        <property name="text">
-        <string>&amp;Help</string>
+        <string>Help</string>
        </property>
        <property name="icon">
         <iconset theme="help-contents">

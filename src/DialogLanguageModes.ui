@@ -250,7 +250,7 @@
          <item>
           <widget class="QRadioButton" name="radioIndentDefault">
            <property name="text">
-            <string>&amp;Default indent style</string>
+            <string>Default indent style</string>
            </property>
            <property name="checked">
             <bool>true</bool>
@@ -260,21 +260,21 @@
          <item>
           <widget class="QRadioButton" name="radioIndentNone">
            <property name="text">
-            <string>&amp;No automatic indent</string>
+            <string>No automatic indent</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QRadioButton" name="radioIndentAuto">
            <property name="text">
-            <string>A&amp;uto-indent</string>
+            <string>Auto-indent</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QRadioButton" name="radioIndentSmart">
            <property name="text">
-            <string>S&amp;mart-indent</string>
+            <string>Smart-indent</string>
            </property>
           </widget>
          </item>
@@ -293,7 +293,7 @@
          <item>
           <widget class="QRadioButton" name="radioWrapDefault">
            <property name="text">
-            <string>&amp;Default wrap style</string>
+            <string>Default wrap style</string>
            </property>
            <property name="checked">
             <bool>true</bool>
@@ -303,21 +303,21 @@
          <item>
           <widget class="QRadioButton" name="radioWrapNone">
            <property name="text">
-            <string>No &amp;wrapping</string>
+            <string>No wrapping</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QRadioButton" name="radioWrapAuto">
            <property name="text">
-            <string>&amp;Auto newline wrap</string>
+            <string>Auto newline wrap</string>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QRadioButton" name="radioWrapContinuous">
            <property name="text">
-            <string>&amp;Continuous wrap</string>
+            <string>Continuous wrap</string>
            </property>
           </widget>
          </item>

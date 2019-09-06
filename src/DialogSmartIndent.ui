@@ -19,7 +19,7 @@
      <item>
       <widget class="QPushButton" name="buttonCommon">
        <property name="text">
-        <string>&amp;Common / Shared Initialization...</string>
+        <string>Common / Shared Initialization...</string>
        </property>
       </widget>
      </item>
@@ -62,7 +62,7 @@
      <item>
       <widget class="QPushButton" name="buttonLanguageMode">
        <property name="text">
-        <string>&amp;Add / Modify Language Mode...</string>
+        <string>Add / Modify Language Mode...</string>
        </property>
       </widget>
      </item>
@@ -205,7 +205,7 @@
      <item>
       <widget class="QPushButton" name="buttonApply">
        <property name="text">
-        <string>Appl&amp;y</string>
+        <string>Apply</string>
        </property>
        <property name="icon">
         <iconset theme="dialog-ok-apply">
@@ -216,14 +216,14 @@
      <item>
       <widget class="QPushButton" name="buttonCheck">
        <property name="text">
-        <string>Chec&amp;k</string>
+        <string>Check</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="buttonDelete">
        <property name="text">
-        <string>&amp;Delete</string>
+        <string>Delete</string>
        </property>
        <property name="icon">
         <iconset theme="edit-delete">
@@ -234,7 +234,7 @@
      <item>
       <widget class="QPushButton" name="buttonRestore">
        <property name="text">
-        <string>Restore De&amp;faults</string>
+        <string>Restore Defaults</string>
        </property>
       </widget>
      </item>
@@ -252,7 +252,7 @@
      <item>
       <widget class="QPushButton" name="buttonHelp">
        <property name="text">
-        <string>&amp;Help</string>
+        <string>Help</string>
        </property>
        <property name="icon">
         <iconset theme="help-contents">

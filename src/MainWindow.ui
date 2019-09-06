@@ -152,7 +152,7 @@
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>&amp;File</string>
+     <string>File</string>
     </property>
     <addaction name="action_New"/>
     <addaction name="action_New_Window"/>
@@ -182,7 +182,7 @@
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>&amp;Edit</string>
+     <string>Edit</string>
     </property>
     <addaction name="action_Undo"/>
     <addaction name="action_Redo"/>
@@ -208,7 +208,7 @@
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>&amp;Search</string>
+     <string>Search</string>
     </property>
     <addaction name="action_Find"/>
     <addaction name="action_Find_Again"/>
@@ -233,11 +233,11 @@
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>&amp;Preferences</string>
+     <string>Preferences</string>
     </property>
     <widget class="QMenu" name="menu_Show_Matching">
      <property name="title">
-      <string>Show &amp;Matching (..)</string>
+      <string>Show Matching (..)</string>
      </property>
      <addaction name="action_Matching_Off"/>
      <addaction name="action_Matching_Delimiter"/>
@@ -247,11 +247,11 @@
     </widget>
     <widget class="QMenu" name="menu_Default_Settings">
      <property name="title">
-      <string>&amp;Default Settings</string>
+      <string>Default Settings</string>
      </property>
      <widget class="QMenu" name="menu_Default_Auto_Indent">
       <property name="title">
-       <string>&amp;Auto Indent</string>
+       <string>Auto Indent</string>
       </property>
       <addaction name="action_Default_Indent_Off"/>
       <addaction name="action_Default_Indent_On"/>
@@ -261,7 +261,7 @@
      </widget>
      <widget class="QMenu" name="menu_Default_Wrap">
       <property name="title">
-       <string>&amp;Wrap</string>
+       <string>Wrap</string>
       </property>
       <property name="icon">
        <iconset theme="text-wrap">
@@ -275,14 +275,14 @@
      </widget>
      <widget class="QMenu" name="menu_Default_Tag_Collisions">
       <property name="title">
-       <string>Tag Co&amp;llisions</string>
+       <string>Tag Collisions</string>
       </property>
       <addaction name="action_Default_Tag_Show_All"/>
       <addaction name="action_Default_Tag_Smart"/>
      </widget>
      <widget class="QMenu" name="menu_Default_Customize_Menus">
       <property name="title">
-       <string>C&amp;ustomize Menus</string>
+       <string>Customize Menus</string>
       </property>
       <addaction name="action_Default_Shell_Menu"/>
       <addaction name="action_Default_Macro_Menu"/>
@@ -293,11 +293,11 @@
      </widget>
      <widget class="QMenu" name="menu_Default_Searching">
       <property name="title">
-       <string>Searchin&amp;g</string>
+       <string>Searching</string>
       </property>
       <widget class="QMenu" name="menu_Default_Search_Style">
        <property name="title">
-        <string>&amp;Default Search Style</string>
+        <string>Default Search Style</string>
        </property>
        <addaction name="action_Default_Search_Literal"/>
        <addaction name="action_Default_Search_Literal_Case_Sensitive"/>
@@ -314,7 +314,7 @@
      </widget>
      <widget class="QMenu" name="menu_Default_Syntax_Highlighting">
       <property name="title">
-       <string>Syntax &amp;Highlighting</string>
+       <string>Syntax Highlighting</string>
       </property>
       <addaction name="action_Default_Syntax_Off"/>
       <addaction name="action_Default_Syntax_On"/>
@@ -334,7 +334,7 @@
      </widget>
      <widget class="QMenu" name="menu_Default_Show_Matching">
       <property name="title">
-       <string>Show &amp;Matching (..)</string>
+       <string>Show Matching (..)</string>
       </property>
       <addaction name="action_Default_Matching_Off"/>
       <addaction name="action_Default_Matching_Delimiter"/>
@@ -344,7 +344,7 @@
      </widget>
      <widget class="QMenu" name="menu_Default_Warnings">
       <property name="title">
-       <string>Wa&amp;rnings</string>
+       <string>Warnings</string>
       </property>
       <addaction name="action_Default_Warnings_Files_Modified_Externally"/>
       <addaction name="action_Default_Warnings_Check_Modified_File_Contents"/>
@@ -352,7 +352,7 @@
      </widget>
      <widget class="QMenu" name="menu_Default_Initial_Window_Size">
       <property name="title">
-       <string>Initial Window Si&amp;ze</string>
+       <string>Initial Window Size</string>
       </property>
       <addaction name="action_Default_Size_24_x_80"/>
       <addaction name="action_Default_Size_40_x_80"/>
@@ -389,7 +389,7 @@
     </widget>
     <widget class="QMenu" name="menu_Wrap">
      <property name="title">
-      <string>&amp;Wrap</string>
+      <string>Wrap</string>
      </property>
      <property name="icon">
       <iconset theme="text-wrap">
@@ -403,7 +403,7 @@
     </widget>
     <widget class="QMenu" name="menu_Auto_Indent">
      <property name="title">
-      <string>&amp;Auto Indent</string>
+      <string>Auto Indent</string>
      </property>
      <addaction name="action_Indent_Off"/>
      <addaction name="action_Indent_On"/>
@@ -434,7 +434,7 @@
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>She&amp;ll</string>
+     <string>Shell</string>
     </property>
     <addaction name="action_Execute_Command"/>
     <addaction name="action_Execute_Command_Line"/>
@@ -447,7 +447,7 @@
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>Ma&amp;cro</string>
+     <string>Macro</string>
     </property>
     <addaction name="action_Learn_Keystrokes"/>
     <addaction name="action_Finish_Learn"/>
@@ -461,7 +461,7 @@
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>&amp;Windows</string>
+     <string>Windows</string>
     </property>
     <addaction name="action_Split_Pane"/>
     <addaction name="action_Close_Pane"/>
@@ -475,7 +475,7 @@
      <bool>true</bool>
     </property>
     <property name="title">
-     <string>&amp;Help</string>
+     <string>Help</string>
     </property>
     <addaction name="action_Help"/>
     <addaction name="separator"/>
@@ -498,7 +498,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;New</string>
+    <string>New</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
@@ -510,7 +510,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>New &amp;Window</string>
+    <string>New Window</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+N</string>
@@ -522,7 +522,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Open...</string>
+    <string>Open...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+O</string>
@@ -530,7 +530,7 @@
   </action>
   <action name="action_Open_Selected">
    <property name="text">
-    <string>Open Selecte&amp;d</string>
+    <string>Open Selected</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Y</string>
@@ -542,7 +542,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Open Pre&amp;vious</string>
+    <string>Open Previous</string>
    </property>
   </action>
   <action name="action_Close">
@@ -554,7 +554,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Close</string>
+    <string>Close</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
@@ -566,7 +566,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Save</string>
+    <string>Save</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
@@ -578,7 +578,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Save &amp;As...</string>
+    <string>Save As...</string>
    </property>
   </action>
   <action name="action_Revert_to_Saved">
@@ -587,12 +587,12 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Revert to Saved</string>
+    <string>Revert to Saved</string>
    </property>
   </action>
   <action name="action_Include_File">
    <property name="text">
-    <string>&amp;Include File...</string>
+    <string>Include File...</string>
    </property>
    <property name="shortcut">
     <string>Alt+I</string>
@@ -600,12 +600,12 @@
   </action>
   <action name="action_Load_Macro_File">
    <property name="text">
-    <string>Load &amp;Macro File...</string>
+    <string>Load Macro File...</string>
    </property>
   </action>
   <action name="action_Load_Tags_File">
    <property name="text">
-    <string>Load Ta&amp;gs File...</string>
+    <string>Load Tags File...</string>
    </property>
   </action>
   <action name="action_Unload_Tags_File">
@@ -613,12 +613,12 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>&amp;Unload Tags File</string>
+    <string>Unload Tags File</string>
    </property>
   </action>
   <action name="action_Load_Calltips_File">
    <property name="text">
-    <string>Load Calltips &amp;File...</string>
+    <string>Load Calltips File...</string>
    </property>
   </action>
   <action name="action_Unload_Calltips_File">
@@ -626,7 +626,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Unload Calltips Fil&amp;e</string>
+    <string>Unload Calltips File</string>
    </property>
   </action>
   <action name="action_Print">
@@ -635,7 +635,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Print...</string>
+    <string>Print...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
@@ -646,7 +646,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Print Se&amp;lection...</string>
+    <string>Print Selection...</string>
    </property>
   </action>
   <action name="action_Exit">
@@ -655,7 +655,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>E&amp;xit</string>
+    <string>Exit</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
@@ -670,7 +670,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Undo</string>
+    <string>Undo</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Z</string>
@@ -685,7 +685,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Redo</string>
+    <string>Redo</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+Z</string>
@@ -697,7 +697,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Cu&amp;t</string>
+    <string>Cut</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+X</string>
@@ -709,7 +709,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Copy</string>
+    <string>Copy</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+C</string>
@@ -721,7 +721,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Paste</string>
+    <string>Paste</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+V</string>
@@ -729,7 +729,7 @@
   </action>
   <action name="action_Paste_Column">
    <property name="text">
-    <string>Pa&amp;ste Column</string>
+    <string>Paste Column</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+V</string>
@@ -744,7 +744,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Delete</string>
+    <string>Delete</string>
    </property>
    <property name="shortcut">
     <string>Del</string>
@@ -756,7 +756,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Select &amp;All</string>
+    <string>Select All</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+A</string>
@@ -768,7 +768,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Shift &amp;Left</string>
+    <string>Shift Left</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+9</string>
@@ -780,7 +780,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Shift Ri&amp;ght</string>
+    <string>Shift Right</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+0</string>
@@ -792,7 +792,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Lo&amp;wer-case</string>
+    <string>Lower-case</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+6</string>
@@ -804,7 +804,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Upp&amp;er-case</string>
+    <string>Upper-case</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+6</string>
@@ -812,7 +812,7 @@
   </action>
   <action name="action_Fill_Paragraph">
    <property name="text">
-    <string>&amp;Fill Paragraph</string>
+    <string>Fill Paragraph</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+J</string>
@@ -820,7 +820,7 @@
   </action>
   <action name="action_Insert_Form_Feed">
    <property name="text">
-    <string>&amp;Insert Form Feed</string>
+    <string>Insert Form Feed</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+L</string>
@@ -828,7 +828,7 @@
   </action>
   <action name="action_Insert_Ctrl_Code">
    <property name="text">
-    <string>I&amp;nsert Ctrl Code...</string>
+    <string>Insert Ctrl Code...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Alt+I</string>
@@ -840,7 +840,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Find...</string>
+    <string>Find...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
@@ -848,7 +848,7 @@
   </action>
   <action name="action_Find_Again">
    <property name="text">
-    <string>F&amp;ind Again</string>
+    <string>Find Again</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+G</string>
@@ -856,7 +856,7 @@
   </action>
   <action name="action_Find_Selection">
    <property name="text">
-    <string>Find &amp;Selection</string>
+    <string>Find Selection</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+H</string>
@@ -864,7 +864,7 @@
   </action>
   <action name="action_Find_Incremental">
    <property name="text">
-    <string>Fi&amp;nd Incremental</string>
+    <string>Find Incremental</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>
@@ -876,7 +876,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Replace...</string>
+    <string>Replace...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
@@ -884,7 +884,7 @@
   </action>
   <action name="action_Replace_Find_Again">
    <property name="text">
-    <string>Replace Find &amp;Again</string>
+    <string>Replace Find Again</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+T</string>
@@ -892,7 +892,7 @@
   </action>
   <action name="action_Replace_Again">
    <property name="text">
-    <string>Re&amp;place Again</string>
+    <string>Replace Again</string>
    </property>
    <property name="shortcut">
     <string>Alt+T</string>
@@ -904,7 +904,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Goto &amp;Line Number...</string>
+    <string>Goto Line Number...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+L</string>
@@ -912,7 +912,7 @@
   </action>
   <action name="action_Goto_Selected">
    <property name="text">
-    <string>&amp;Goto Selected</string>
+    <string>Goto Selected</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+E</string>
@@ -924,17 +924,17 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Mar&amp;k</string>
+    <string>Mark</string>
    </property>
   </action>
   <action name="action_Goto_Mark">
    <property name="text">
-    <string>G&amp;oto Mark</string>
+    <string>Goto Mark</string>
    </property>
   </action>
   <action name="action_Goto_Matching">
    <property name="text">
-    <string>Goto &amp;Matching (..)</string>
+    <string>Goto Matching (..)</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+M</string>
@@ -945,7 +945,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Find &amp;Definition</string>
+    <string>Find Definition</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+D</string>
@@ -956,7 +956,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Show &amp;Calltip</string>
+    <string>Show Calltip</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+'</string>
@@ -968,7 +968,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Execute Command</string>
+    <string>Execute Command</string>
    </property>
    <property name="shortcut">
     <string>Alt+X</string>
@@ -976,7 +976,7 @@
   </action>
   <action name="action_Execute_Command_Line">
    <property name="text">
-    <string>E&amp;xecute Command Line</string>
+    <string>Execute Command Line</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Enter</string>
@@ -991,7 +991,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Filter Selection...</string>
+    <string>Filter Selection...</string>
    </property>
    <property name="shortcut">
     <string>Alt+R</string>
@@ -1002,7 +1002,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>&amp;Cancel Shell Command</string>
+    <string>Cancel Shell Command</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+.</string>
@@ -1014,7 +1014,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Split Pane</string>
+    <string>Split Pane</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+2</string>
@@ -1029,7 +1029,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Close Pane</string>
+    <string>Close Pane</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+1</string>
@@ -1041,7 +1041,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Detach Tab</string>
+    <string>Detach Tab</string>
    </property>
   </action>
   <action name="action_Move_Tab_To">
@@ -1049,12 +1049,12 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>&amp;Move Tab To...</string>
+    <string>Move Tab To...</string>
    </property>
   </action>
   <action name="action_About_Qt">
    <property name="text">
-    <string>About &amp;Qt</string>
+    <string>About Qt</string>
    </property>
   </action>
   <action name="action_Indent">
@@ -1073,7 +1073,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Sa&amp;ve Defaults...</string>
+    <string>Save Defaults...</string>
    </property>
   </action>
   <action name="action_Statistics_Line">
@@ -1081,7 +1081,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Statistics Line</string>
+    <string>Statistics Line</string>
    </property>
    <property name="shortcut">
     <string>Alt+A</string>
@@ -1092,7 +1092,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Incremental Search Line</string>
+    <string>Incremental Search Line</string>
    </property>
   </action>
   <action name="action_Show_Line_Numbers">
@@ -1100,7 +1100,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show Line &amp;Numbers</string>
+    <string>Show Line Numbers</string>
    </property>
   </action>
   <action name="action_Language_Mode">
@@ -1109,12 +1109,12 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Language Mode</string>
+    <string>Language Mode</string>
    </property>
   </action>
   <action name="action_Tab_Stops">
    <property name="text">
-    <string>&amp;Tab Stops...</string>
+    <string>Tab Stops...</string>
    </property>
   </action>
   <action name="action_Text_Fonts">
@@ -1123,7 +1123,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Text &amp;Fonts...</string>
+    <string>Text Fonts...</string>
    </property>
   </action>
   <action name="action_Highlight_Syntax">
@@ -1131,7 +1131,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Highlight Syntax</string>
+    <string>Highlight Syntax</string>
    </property>
   </action>
   <action name="action_Apply_Backlighting">
@@ -1139,7 +1139,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Apply Backli&amp;ghting</string>
+    <string>Apply Backlighting</string>
    </property>
   </action>
   <action name="action_Make_Backup_Copy">
@@ -1147,7 +1147,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Mak&amp;e Backup Copy (*.bck)</string>
+    <string>Make Backup Copy (*.bck)</string>
    </property>
   </action>
   <action name="action_Incremental_Backup">
@@ -1155,7 +1155,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Incremental &amp;Backup</string>
+    <string>Incremental Backup</string>
    </property>
   </action>
   <action name="action_Overtype">
@@ -1163,7 +1163,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Overtype</string>
+    <string>Overtype</string>
    </property>
    <property name="shortcut">
     <string>Ins</string>
@@ -1174,7 +1174,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Read Onl&amp;y</string>
+    <string>Read Only</string>
    </property>
   </action>
   <action name="action_Matching_Off">
@@ -1182,7 +1182,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Off</string>
+    <string>Off</string>
    </property>
   </action>
   <action name="action_Matching_Delimiter">
@@ -1190,7 +1190,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Delimiter</string>
+    <string>Delimiter</string>
    </property>
   </action>
   <action name="action_Matching_Range">
@@ -1198,7 +1198,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Range</string>
+    <string>Range</string>
    </property>
   </action>
   <action name="action_Matching_Syntax">
@@ -1206,7 +1206,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Syntax Based</string>
+    <string>Syntax Based</string>
    </property>
   </action>
   <action name="action_Wrap_None">
@@ -1214,7 +1214,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;None</string>
+    <string>None</string>
    </property>
   </action>
   <action name="action_Wrap_Auto_Newline">
@@ -1222,7 +1222,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Auto Newline</string>
+    <string>Auto Newline</string>
    </property>
   </action>
   <action name="action_Wrap_Continuous">
@@ -1230,12 +1230,12 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Continuous</string>
+    <string>Continuous</string>
    </property>
   </action>
   <action name="action_Wrap_Margin">
    <property name="text">
-    <string>&amp;Wrap Margin...</string>
+    <string>Wrap Margin...</string>
    </property>
   </action>
   <action name="action_Indent_Off">
@@ -1243,7 +1243,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Off</string>
+    <string>Off</string>
    </property>
   </action>
   <action name="action_Indent_On">
@@ -1251,7 +1251,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>O&amp;n</string>
+    <string>On</string>
    </property>
   </action>
   <action name="action_Indent_Smart">
@@ -1259,7 +1259,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Smart</string>
+    <string>Smart</string>
    </property>
   </action>
   <action name="action_Learn_Keystrokes">
@@ -1268,7 +1268,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Learn Keystrokes</string>
+    <string>Learn Keystrokes</string>
    </property>
    <property name="shortcut">
     <string>Alt+K</string>
@@ -1283,7 +1283,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Finish Learn</string>
+    <string>Finish Learn</string>
    </property>
    <property name="shortcut">
     <string>Alt+K</string>
@@ -1294,7 +1294,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>&amp;Cancel Learn</string>
+    <string>Cancel Learn</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+.</string>
@@ -1305,7 +1305,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Replay &amp;Keystrokes</string>
+    <string>Replay Keystrokes</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+K</string>
@@ -1317,7 +1317,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Repeat...</string>
+    <string>Repeat...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+,</string>
@@ -1329,7 +1329,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;About NEdit-ng</string>
+    <string>About NEdit-ng</string>
    </property>
   </action>
   <action name="action_Default_Language_Modes">
@@ -1338,17 +1338,17 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Language Modes...</string>
+    <string>Language Modes...</string>
    </property>
   </action>
   <action name="action_Default_Command_Shell">
    <property name="text">
-    <string>C&amp;ommand Shell...</string>
+    <string>Command Shell...</string>
    </property>
   </action>
   <action name="action_Default_Tab_Stops">
    <property name="text">
-    <string>&amp;Tab Stops...</string>
+    <string>Tab Stops...</string>
    </property>
   </action>
   <action name="action_Default_Text_Fonts">
@@ -1357,17 +1357,17 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>Text &amp;Fonts...</string>
+    <string>Text Fonts...</string>
    </property>
   </action>
   <action name="action_Default_Colors">
    <property name="text">
-    <string>&amp;Colors...</string>
+    <string>Colors...</string>
    </property>
   </action>
   <action name="action_Default_Customize_Window_Title">
    <property name="text">
-    <string>Customize Win&amp;dow Title...</string>
+    <string>Customize Window Title...</string>
    </property>
   </action>
   <action name="action_Default_Apply_Backlighting">
@@ -1375,7 +1375,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Apply Bac&amp;klighting</string>
+    <string>Apply Backlighting</string>
    </property>
   </action>
   <action name="action_Default_Show_Tooltips">
@@ -1391,7 +1391,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Statistics Line</string>
+    <string>Statistics Line</string>
    </property>
   </action>
   <action name="action_Default_Incremental_Search_Line">
@@ -1399,7 +1399,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Incremental Search L&amp;ine</string>
+    <string>Incremental Search Line</string>
    </property>
   </action>
   <action name="action_Default_Make_Backup_Copy">
@@ -1407,7 +1407,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Mak&amp;e Backup Copy (*.bck)</string>
+    <string>Make Backup Copy (*.bck)</string>
    </property>
   </action>
   <action name="action_Default_Incremental_Backup">
@@ -1415,7 +1415,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Incremental &amp;Backup</string>
+    <string>Incremental Backup</string>
    </property>
   </action>
   <action name="action_Default_Terminate_with_Line_Break_on_Save">
@@ -1423,7 +1423,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Terminate with Line Break on Sa&amp;ve</string>
+    <string>Terminate with Line Break on Save</string>
    </property>
   </action>
   <action name="action_Default_Popups_Under_Pointer">
@@ -1431,7 +1431,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Popups Under Pointer</string>
+    <string>Popups Under Pointer</string>
    </property>
   </action>
   <action name="action_Default_Auto_Scroll_Near_Window_Top_Bottom">
@@ -1447,7 +1447,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Off</string>
+    <string>Off</string>
    </property>
   </action>
   <action name="action_Default_Indent_On">
@@ -1455,7 +1455,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>O&amp;n</string>
+    <string>On</string>
    </property>
   </action>
   <action name="action_Default_Indent_Smart">
@@ -1463,12 +1463,12 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Smart</string>
+    <string>Smart</string>
    </property>
   </action>
   <action name="action_Default_Program_Smart_Indent">
    <property name="text">
-    <string>&amp;Program Smart Indent...</string>
+    <string>Program Smart Indent...</string>
    </property>
   </action>
   <action name="action_Default_Wrap_None">
@@ -1476,7 +1476,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;None</string>
+    <string>None</string>
    </property>
   </action>
   <action name="action_Default_Wrap_Auto_Newline">
@@ -1484,7 +1484,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Auto Newline</string>
+    <string>Auto Newline</string>
    </property>
   </action>
   <action name="action_Default_Wrap_Continuous">
@@ -1492,12 +1492,12 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Continuous</string>
+    <string>Continuous</string>
    </property>
   </action>
   <action name="action_Default_Wrap_Margin">
    <property name="text">
-    <string>&amp;Wrap Margin...</string>
+    <string>Wrap Margin...</string>
    </property>
   </action>
   <action name="action_Default_Tag_Show_All">
@@ -1505,7 +1505,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show &amp;All</string>
+    <string>Show All</string>
    </property>
   </action>
   <action name="action_Default_Tag_Smart">
@@ -1513,22 +1513,22 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Smart</string>
+    <string>Smart</string>
    </property>
   </action>
   <action name="action_Default_Shell_Menu">
    <property name="text">
-    <string>&amp;Shell Menu...</string>
+    <string>Shell Menu...</string>
    </property>
   </action>
   <action name="action_Default_Macro_Menu">
    <property name="text">
-    <string>&amp;Macro Menu...</string>
+    <string>Macro Menu...</string>
    </property>
   </action>
   <action name="action_Default_Window_Background_Menu">
    <property name="text">
-    <string>&amp;Window Background Menu...</string>
+    <string>Window Background Menu...</string>
    </property>
   </action>
   <action name="action_Default_Sort_Open_Prev_Menu">
@@ -1536,7 +1536,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>S&amp;ort Open Prev. Menu</string>
+    <string>Sort Open Prev. Menu</string>
    </property>
   </action>
   <action name="action_Default_Show_Path_In_Windows_Menu">
@@ -1544,7 +1544,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show &amp;Path In Windows Menu</string>
+    <string>Show Path In Windows Menu</string>
    </property>
   </action>
   <action name="action_Default_Search_Verbose">
@@ -1552,7 +1552,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Verbose</string>
+    <string>Verbose</string>
    </property>
   </action>
   <action name="action_Default_Search_Wrap_Around">
@@ -1560,7 +1560,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Wrap Around</string>
+    <string>Wrap Around</string>
    </property>
   </action>
   <action name="action_Default_Search_Beep_On_Search_Wrap">
@@ -1568,7 +1568,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Beep On Search Wrap</string>
+    <string>Beep On Search Wrap</string>
    </property>
   </action>
   <action name="action_Default_Search_Keep_Dialogs_Up">
@@ -1576,7 +1576,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Keep Dialogs Up</string>
+    <string>Keep Dialogs Up</string>
    </property>
   </action>
   <action name="action_Default_Search_Literal">
@@ -1584,7 +1584,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Literal</string>
+    <string>Literal</string>
    </property>
   </action>
   <action name="action_Default_Search_Literal_Case_Sensitive">
@@ -1592,7 +1592,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Literal, &amp;Case Sensitive</string>
+    <string>Literal, Case Sensitive</string>
    </property>
   </action>
   <action name="action_Default_Search_Literal_Whole_Word">
@@ -1600,7 +1600,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Literal, &amp;Whole Word</string>
+    <string>Literal, Whole Word</string>
    </property>
   </action>
   <action name="action_Default_Search_Literal_Case_Sensitive_Whole_Word">
@@ -1608,7 +1608,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Literal, Case &amp;Sensitive, Whole Word</string>
+    <string>Literal, Case Sensitive, Whole Word</string>
    </property>
   </action>
   <action name="action_Default_Search_Regular_Expression">
@@ -1616,7 +1616,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Regular Expression</string>
+    <string>Regular Expression</string>
    </property>
   </action>
   <action name="action_Default_Search_Regular_Expresison_Case_Insensitive">
@@ -1624,7 +1624,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Regular Expresison, Case &amp;Insensitive</string>
+    <string>Regular Expresison, Case Insensitive</string>
    </property>
   </action>
   <action name="action_Default_Syntax_Off">
@@ -1632,7 +1632,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Off</string>
+    <string>Off</string>
    </property>
   </action>
   <action name="action_Default_Syntax_On">
@@ -1640,17 +1640,17 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>O&amp;n</string>
+    <string>On</string>
    </property>
   </action>
   <action name="action_Default_Syntax_Recognition_Patterns">
    <property name="text">
-    <string>&amp;Recognition Patterns...</string>
+    <string>Recognition Patterns...</string>
    </property>
   </action>
   <action name="action_Default_Syntax_Text_Drawing_Styles">
    <property name="text">
-    <string>&amp;Text Drawing Styles...</string>
+    <string>Text Drawing Styles...</string>
    </property>
   </action>
   <action name="action_Default_Tab_Open_File_In_New_Tab">
@@ -1658,7 +1658,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Open File In New &amp;Tab</string>
+    <string>Open File In New Tab</string>
    </property>
   </action>
   <action name="action_Default_Tab_Show_Tab_Bar">
@@ -1666,7 +1666,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show Tab &amp;Bar</string>
+    <string>Show Tab Bar</string>
    </property>
   </action>
   <action name="action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open">
@@ -1674,7 +1674,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Hide Tab Bar When Only One Document is Open</string>
+    <string>Hide Tab Bar When Only One Document is Open</string>
    </property>
   </action>
   <action name="action_Default_Tab_Next_Prev_Tabs_Across_Windows">
@@ -1682,7 +1682,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Next/Prev Tabs Across &amp;Windows</string>
+    <string>Next/Prev Tabs Across Windows</string>
    </property>
   </action>
   <action name="action_Default_Tab_Sort_Tabs_Alphabetically">
@@ -1690,7 +1690,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Sort Tabs Alphabetically</string>
+    <string>Sort Tabs Alphabetically</string>
    </property>
   </action>
   <action name="action_Default_Show_Line_Numbers">
@@ -1698,7 +1698,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Show Line &amp;Numbers</string>
+    <string>Show Line Numbers</string>
    </property>
   </action>
   <action name="action_Default_Matching_Off">
@@ -1706,7 +1706,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Off</string>
+    <string>Off</string>
    </property>
   </action>
   <action name="action_Default_Matching_Delimiter">
@@ -1714,7 +1714,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Delimiter</string>
+    <string>Delimiter</string>
    </property>
   </action>
   <action name="action_Default_Matching_Range">
@@ -1722,7 +1722,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Range</string>
+    <string>Range</string>
    </property>
   </action>
   <action name="action_Default_Matching_Syntax_Based">
@@ -1730,7 +1730,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Syntax Based</string>
+    <string>Syntax Based</string>
    </property>
   </action>
   <action name="action_Default_Warnings_Files_Modified_Externally">
@@ -1738,7 +1738,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Files Modified Externally</string>
+    <string>Files Modified Externally</string>
    </property>
   </action>
   <action name="action_Default_Warnings_Check_Modified_File_Contents">
@@ -1746,7 +1746,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Check Modified File Contents</string>
+    <string>Check Modified File Contents</string>
    </property>
   </action>
   <action name="action_Default_Warnings_On_Exit">
@@ -1754,7 +1754,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;On Exit</string>
+    <string>On Exit</string>
    </property>
   </action>
   <action name="action_Default_Size_24_x_80">
@@ -1762,7 +1762,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;24 x 80</string>
+    <string>24 x 80</string>
    </property>
   </action>
   <action name="action_Default_Size_40_x_80">
@@ -1770,7 +1770,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;40 x 80</string>
+    <string>40 x 80</string>
    </property>
   </action>
   <action name="action_Default_Size_60_x_80">
@@ -1778,7 +1778,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;60 x 80</string>
+    <string>60 x 80</string>
    </property>
   </action>
   <action name="action_Default_Size_80_x_80">
@@ -1786,7 +1786,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;80 x 80</string>
+    <string>80 x 80</string>
    </property>
   </action>
   <action name="action_Default_Size_Custom">
@@ -1794,7 +1794,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>&amp;Custom...</string>
+    <string>Custom...</string>
    </property>
   </action>
   <action name="action_Help">
@@ -1803,7 +1803,7 @@
      <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
-    <string>&amp;Help</string>
+    <string>Help</string>
    </property>
    <property name="shortcut">
     <string>F1</string>

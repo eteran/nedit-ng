@@ -186,7 +186,7 @@ Select &quot;New&quot; to add a new command to the menu.</string>
           <item>
            <widget class="QRadioButton" name="radioFromSelection">
             <property name="text">
-             <string>&amp;selection</string>
+             <string>selection</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -203,14 +203,14 @@ Select &quot;New&quot; to add a new command to the menu.</string>
           <item>
            <widget class="QRadioButton" name="radioFromEither">
             <property name="text">
-             <string>e&amp;ither</string>
+             <string>either</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QRadioButton" name="radioFromNone">
             <property name="text">
-             <string>n&amp;one</string>
+             <string>none</string>
             </property>
            </widget>
           </item>
@@ -226,7 +226,7 @@ Select &quot;New&quot; to add a new command to the menu.</string>
           <item>
            <widget class="QRadioButton" name="radioToSameDocument">
             <property name="text">
-             <string>sa&amp;me document</string>
+             <string>same document</string>
             </property>
             <property name="checked">
              <bool>true</bool>
@@ -236,14 +236,14 @@ Select &quot;New&quot; to add a new command to the menu.</string>
           <item>
            <widget class="QRadioButton" name="radioToDialog">
             <property name="text">
-             <string>dialo&amp;g</string>
+             <string>dialog</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QRadioButton" name="radioToNewDocument">
             <property name="text">
-             <string>&amp;new document</string>
+             <string>new document</string>
             </property>
            </widget>
           </item>
@@ -260,14 +260,14 @@ Select &quot;New&quot; to add a new command to the menu.</string>
        <item>
         <widget class="QCheckBox" name="checkSaveBeforeExec">
          <property name="text">
-          <string>Save &amp;file before executing command</string>
+          <string>Save file before executing command</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QCheckBox" name="checkReloadAfterExec">
          <property name="text">
-          <string>&amp;Re-load file after executing command</string>
+          <string>Re-load file after executing command</string>
          </property>
         </widget>
        </item>
