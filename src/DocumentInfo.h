@@ -15,6 +15,11 @@
 #include <deque>
 #include <memory>
 
+#ifdef Q_OS_MACOS
+#include <unistd.h>
+#include <sys/stat.h>
+#endif
+
 struct DocumentInfo {
 	QString filename;                                  // name component of file being edited
 	QString path;                                      // path component of file being edited
