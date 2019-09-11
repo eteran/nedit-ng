@@ -1,7 +1,6 @@
 
 #include "Highlight.h"
 #include "DocumentWidget.h"
-#include "FontType.h"
 #include "HighlightData.h"
 #include "HighlightPattern.h"
 #include "HighlightStyle.h"
@@ -1174,16 +1173,16 @@ void Highlight::saveTheme() {
 
 			// map the font to it's associated value
 			switch(hs.font) {
-			case PLAIN_FONT:
+			case Font::Plain:
 				style.setAttribute(QLatin1String("font"), QLatin1String("Plain"));
 				break;
-			case ITALIC_FONT:
+			case Font::Italic:
 				style.setAttribute(QLatin1String("font"), QLatin1String("Italic"));
 				break;
-			case BOLD_FONT:
+			case Font::Bold:
 				style.setAttribute(QLatin1String("font"), QLatin1String("Bold"));
 				break;
-			case ITALIC_FONT | BOLD_FONT:
+			case Font::Italic | Font::Bold:
 				style.setAttribute(QLatin1String("font"), QLatin1String("Bold Italic"));
 				break;
 			}
@@ -1253,13 +1252,13 @@ void Highlight::loadTheme() {
 
 			// map the font to it's associated value
 			if(font == QLatin1String("Plain")) {
-				hs.font = PLAIN_FONT;
+				hs.font = Font::Plain;
 			} else if(font == QLatin1String("Italic")) {
-				hs.font = ITALIC_FONT;
+				hs.font = Font::Italic;
 			} else if(font == QLatin1String("Bold")) {
-				hs.font = BOLD_FONT;
+				hs.font = Font::Bold;
 			} else if(font == QLatin1String("Bold Italic")) {
-				hs.font = ITALIC_FONT | BOLD_FONT;
+				hs.font = Font::Italic | Font::Bold;
 			} else {
 				qWarning("NEdit: unrecognized font type %s in %s", qPrintable(font), qPrintable(hs.name));
 				continue;
@@ -1358,7 +1357,7 @@ bool Highlight::FontOfNamedStyleIsBold(const QString &styleName) {
 	}
 
 	const int fontNum = HighlightStyles[styleNo].font;
-	return (fontNum & BOLD_FONT);
+	return (fontNum & Font::Bold);
 }
 
 bool Highlight::FontOfNamedStyleIsItalic(const QString &styleName) {
@@ -1369,7 +1368,7 @@ bool Highlight::FontOfNamedStyleIsItalic(const QString &styleName) {
 	}
 
 	const int fontNum = HighlightStyles[styleNo].font;
-	return (fontNum & ITALIC_FONT);
+	return (fontNum & Font::Italic);
 }
 
 /*

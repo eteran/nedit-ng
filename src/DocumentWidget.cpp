@@ -9,7 +9,6 @@
 #include "DragEndEvent.h"
 #include "EditFlags.h"
 #include "Font.h"
-#include "FontType.h"
 #include "Highlight.h"
 #include "HighlightData.h"
 #include "HighlightStyle.h"
@@ -1802,14 +1801,14 @@ void DocumentWidget::RemoveBackupFile() const {
 		return;
 	}
 
-	QFile::remove(backupFileNameEx());
+	QFile::remove(backupFileName());
 }
 
 /*
 ** Generate the name of the backup file for this window from the filename
 ** and path in the window data structure & write into name
 */
-QString DocumentWidget::backupFileNameEx() const {
+QString DocumentWidget::backupFileName() const {
 
 	if (info_->filenameSet) {
 		return tr("%1~%2").arg(info_->path, info_->filename);
@@ -2017,6 +2016,14 @@ QString DocumentWidget::filename() const {
 }
 
 /**
+ * @brief DocumentWidget::setFilename
+ * @param filename
+ */
+void DocumentWidget::setFilename(const QString &filename) {
+	info_->filename = filename;
+}
+
+/**
  * @brief DocumentWidget::path
  * @return
  */
@@ -2210,7 +2217,7 @@ bool DocumentWidget::WriteBackupFile() {
 	FILE *fp;
 
 	// Generate a name for the autoSave file
-	QString name = backupFileNameEx();
+	QString name = backupFileName();
 
 	// remove the old backup file. Well, this might fail - we'll notice later however.
 	QFile::remove(name);
@@ -2787,7 +2794,7 @@ void DocumentWidget::closeDocument() {
 	/* Clean up macro references to the doomed window.  If a macro is
 	   executing, stop it.  If macro is calling this (closing its own
 	   window), leave the window alive until the macro completes */
-	const bool keepWindow = !MacroWindowCloseActionsEx();
+	const bool keepWindow = !MacroWindowCloseActions();
 
 	// Kill shell sub-process
 	abortShellCommand();
@@ -2833,7 +2840,7 @@ void DocumentWidget::closeDocument() {
 
 		info_->filenameSet  = false;
 		info_->fileChanged  = false;
-		info_->fileMissing        = true;
+		info_->fileMissing  = true;
 		info_->fileFormat   = FileFormats::Unix;
 
 		stopHighlighting();
@@ -3519,7 +3526,7 @@ void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
 	}
 
 	// Search for it in the buffer
-	boost::optional<TextCursor> matchPos = findMatchingCharEx(
+	boost::optional<TextCursor> matchPos = findMatchingChar(
 	                                           info_->buffer->BufGetCharacter(range.start),
 	                                           getHighlightInfo(range.start),
 	                                           range.start,
@@ -3541,7 +3548,7 @@ void DocumentWidget::GotoMatchingCharacter(TextArea *area) {
 	area->setAutoShowInsertPos(true);
 }
 
-boost::optional<TextCursor> DocumentWidget::findMatchingCharEx(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit) {
+boost::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit) {
 
 	Style style;
 	bool matchSyntaxBased = info_->matchSyntaxBased;
@@ -3659,7 +3666,7 @@ void DocumentWidget::SelectToMatchingCharacter(TextArea *area) {
 	}
 
 	// Search for it in the buffer
-	boost::optional<TextCursor> matchPos = findMatchingCharEx(
+	boost::optional<TextCursor> matchPos = findMatchingChar(
 	                                           info_->buffer->BufGetCharacter(range.start),
 	                                           getHighlightInfo(range.start),
 	                                           range.start,
@@ -3737,12 +3744,12 @@ int DocumentWidget::findDef(TextArea *area, const QString &value, Tags::SearchMo
 	if (p == value.end()) {
 
 		// See if we can find the tip/tag
-		status = findAllMatchesEx(area, value);
+		status = findAllMatches(area, value);
 
 		// If we didn't find a requested calltip, see if we can use a tag
 		if (status == 0 && search_type == Tags::SearchMode::TIP && !Tags::TagsFileList.empty()) {
 			Tags::searchMode = Tags::SearchMode::TIP_FROM_TAG;
-			status = findAllMatchesEx(area, value);
+			status = findAllMatches(area, value);
 		}
 
 		if (status == 0) {
@@ -4530,7 +4537,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 		shellCmdData_ = nullptr;
 
 		if (fromMacro) {
-			ResumeMacroExecutionEx();
+			ResumeMacroExecution();
 		}
 	});
 
@@ -4874,7 +4881,7 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 					QString(),
 					false,
 					QString(),
-		            info_->path)) {
+					QDir(info_->path))) {
 
 			inWindow  = MainWindow::fromDocument(document);
 			outWidget = document->firstPane();
@@ -5153,7 +5160,7 @@ void DocumentWidget::runMacro(Program *prog) {
 		finishMacroCmdExecution();
 		break;
 	case MACRO_TIME_LIMIT:
-		ResumeMacroExecutionEx();
+		ResumeMacroExecution();
 		break;
 	case MACRO_PREEMPT:
 		break;
@@ -5201,7 +5208,7 @@ void DocumentWidget::finishMacroCmdExecution() {
  * @brief DocumentWidget::continueWorkProcEx
  * @return
  */
-DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProcEx() {
+DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProc() {
 
 
 	// on the last loop, it may have been set to nullptr!
@@ -5236,13 +5243,13 @@ DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProcEx() {
 ** whose actions cause preemption when they have completed their lengthy tasks.
 ** Re-establishes macro execution work proc.
 */
-void DocumentWidget::ResumeMacroExecutionEx() {
+void DocumentWidget::ResumeMacroExecution() {
 
 	if(const std::shared_ptr<MacroCommandData> &cmdData = macroCmdData_) {
 
 		// create a background task that will run so long as the function returns false
 		connect(&cmdData->continuationTimer, &QTimer::timeout, this, [cmdData, this]() {
-			if(continueWorkProcEx() == MacroContinuationCode::Stop) {
+			if(continueWorkProc() == MacroContinuationCode::Stop) {
 				cmdData->continuationTimer.stop();
 				cmdData->continuationTimer.disconnect();
 			} else {
@@ -5319,7 +5326,7 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 	}
 
 	// do the search
-	boost::optional<TextCursor> matchPos = findMatchingCharEx(ch, style, searchPos, startPos, endPos);
+	boost::optional<TextCursor> matchPos = findMatchingChar(ch, style, searchPos, startPos, endPos);
 	if (!matchPos) {
 		return;
 	}
@@ -5466,8 +5473,8 @@ HighlightPattern *DocumentWidget::findPatternOfWindow(const QString &name) const
 	return nullptr;
 }
 
-QColor DocumentWidget::GetHighlightBGColorOfCodeEx(size_t hCode) const {
-	StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode);
+QColor DocumentWidget::GetHighlightBGColorOfCode(size_t hCode) const {
+	StyleTableEntry *entry = styleTableEntryOfCode(hCode);
 
 	if (entry && !entry->bgColorName.isNull()) {
 		return entry->bgColor;
@@ -5524,7 +5531,7 @@ Style DocumentWidget::getHighlightInfo(TextCursor pos) {
 ** If the initial code value *checkCode is zero, the highlight code of pos
 ** is used.
 */
-int64_t DocumentWidget::StyleLengthOfCodeFromPosEx(TextCursor pos) {
+int64_t DocumentWidget::StyleLengthOfCodeFromPos(TextCursor pos) {
 
 	const TextCursor oldPos = pos;
 
@@ -5542,14 +5549,14 @@ int64_t DocumentWidget::StyleLengthOfCodeFromPosEx(TextCursor pos) {
 				hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
 			}
 
-			StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode);
+			StyleTableEntry *entry = styleTableEntryOfCode(hCode);
 			if(!entry) {
 				return 0;
 			}
 
 			QString checkStyleName = entry->styleName;
 
-			while (hCode == UNFINISHED_STYLE || ((entry = styleTableEntryOfCodeEx(hCode)) && entry->styleName == checkStyleName)) {
+			while (hCode == UNFINISHED_STYLE || ((entry = styleTableEntryOfCode(hCode)) && entry->styleName == checkStyleName)) {
 				if (hCode == UNFINISHED_STYLE) {
 					// encountered "unfinished" style, trigger parsing, then loop
 					handleUnparsedRegion(highlightData->styleBuffer, pos);
@@ -5568,24 +5575,24 @@ int64_t DocumentWidget::StyleLengthOfCodeFromPosEx(TextCursor pos) {
 /*
 ** Functions to return style information from the highlighting style table.
 */
-QString DocumentWidget::HighlightNameOfCodeEx(size_t hCode) const {
-	if(StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode)) {
+QString DocumentWidget::HighlightNameOfCode(size_t hCode) const {
+	if(StyleTableEntry *entry = styleTableEntryOfCode(hCode)) {
 		return entry->highlightName;
 	}
 
 	return QString();
 }
 
-QString DocumentWidget::HighlightStyleOfCodeEx(size_t hCode) const {
-	if(StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode)) {
+QString DocumentWidget::HighlightStyleOfCode(size_t hCode) const {
+	if(StyleTableEntry *entry = styleTableEntryOfCode(hCode)) {
 		return entry->styleName;
 	}
 
 	return QString();
 }
 
-QColor DocumentWidget::HighlightColorValueOfCodeEx(size_t hCode) const {
-	if (StyleTableEntry *entry = styleTableEntryOfCodeEx(hCode)) {
+QColor DocumentWidget::HighlightColorValueOfCode(size_t hCode) const {
+	if (StyleTableEntry *entry = styleTableEntryOfCode(hCode)) {
 		return entry->color;
 	}
 
@@ -5597,7 +5604,7 @@ QColor DocumentWidget::HighlightColorValueOfCodeEx(size_t hCode) const {
 ** Returns a pointer to the entry in the style table for the entry of code
 ** hCode (if any).
 */
-StyleTableEntry *DocumentWidget::styleTableEntryOfCodeEx(size_t hCode) const {
+StyleTableEntry *DocumentWidget::styleTableEntryOfCode(size_t hCode) const {
 	const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
 
 	hCode -= UNFINISHED_STYLE; // get the correct index value
@@ -5956,14 +5963,14 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 
 	// Compile patterns
 	if (!pass1PatternSrc.empty()) {
-		pass1Pats = compilePatternsEx(pass1PatternSrc);
+		pass1Pats = compilePatterns(pass1PatternSrc);
 		if (!pass1Pats) {
 			return nullptr;
 		}
 	}
 
 	if (!pass2PatternSrc.empty()) {
-		pass2Pats = compilePatternsEx(pass2PatternSrc);
+		pass2Pats = compilePatterns(pass2PatternSrc);
 		if (!pass2Pats) {
 			return nullptr;
 		}
@@ -6098,7 +6105,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 ** actually used by the code.  Output is a tree of HighlightData structures
 ** containing compiled regular expressions and style information.
 */
-std::unique_ptr<HighlightData[]> DocumentWidget::compilePatternsEx(const std::vector<HighlightPattern> &patternSrc) {
+std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vector<HighlightPattern> &patternSrc) {
 
 	/* Allocate memory for the compiled patterns.  The list is terminated
 	   by a record with style == 0. */
@@ -6347,7 +6354,7 @@ std::unique_ptr<Regex> DocumentWidget::compileRegexAndWarn(const QString &re) {
 ** Instead, empty it and make it Untitled, and let the macro completion
 ** process close the window when the macro is finished executing.
 */
-bool DocumentWidget::MacroWindowCloseActionsEx() {
+bool DocumentWidget::MacroWindowCloseActions() {
 	const std::shared_ptr<MacroCommandData> &cmdData = macroCmdData_;
 
 	CommandRecorder *recorder = CommandRecorder::instance();
@@ -6608,7 +6615,7 @@ QString DocumentWidget::GetAnySelection(bool beep_on_error) {
 ** to supply delimiters for RE searching, and ExecRE can skip compiling a
 ** delimiter table when delimiters is nullptr).
 */
-QString DocumentWidget::GetWindowDelimitersEx() const {
+QString DocumentWidget::GetWindowDelimiters() const {
 	if (languageMode_ == PLAIN_LANGUAGE_MODE) {
 		return QString();
 	} else {
@@ -6737,8 +6744,7 @@ void DocumentWidget::SetUserLocked(bool value) {
 	}
 }
 
-void DocumentWidget::AddMarkEx(TextArea *area, QChar label) {
-
+void DocumentWidget::AddMark(TextArea *area, QChar label) {
 
 	/* look for a matching mark to re-use, or advance
 	   nMarks to create a new one */
@@ -6867,7 +6873,7 @@ LockReasons DocumentWidget::lockReasons() const {
 /*      Finds all matches and handles tag "collisions". Prompts user with a
 		list of collided tags in the hash table and allows the user to select
 		the correct one. */
-int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
+int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 
 	PathInfo fi;
 
@@ -6994,7 +7000,7 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
 			dupTagsList.push_back(temp);
 		}
 
-		createSelectMenuEx(area, dupTagsList);
+		createSelectMenu(area, dupTagsList);
 		return 1;
 	}
 
@@ -7018,7 +7024,7 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
  *
  * Create a Menu for user to select from the collided tags
  */
-void DocumentWidget::createSelectMenuEx(TextArea *area, const QStringList &args) {
+void DocumentWidget::createSelectMenu(TextArea *area, const QStringList &args) {
 
 	auto dialog = std::make_unique<DialogDuplicateTags>(this, area);
 	dialog->setTag(Tags::tagName);
@@ -7035,7 +7041,7 @@ void DocumentWidget::createSelectMenuEx(TextArea *area, const QStringList &args)
 **                  tip and/or tag database depending on search_type
 **  search_type:    Either TIP or TIP_FROM_TAG
 */
-int DocumentWidget::ShowTipStringEx(const QString &text, bool anchored, int pos, bool lookup, Tags::SearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode) {
+int DocumentWidget::ShowTipString(const QString &text, bool anchored, int pos, bool lookup, Tags::SearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode) {
 	if (search_type == Tags::SearchMode::TAG) {
 		return 0;
 	}
@@ -7150,6 +7156,14 @@ void DocumentWidget::setPath(const QString &pathname) {
 	if (!info_->path.isEmpty() && !info_->path.endsWith(QLatin1Char('/'))) {
 		info_->path.append(QLatin1Char('/'));
 	}
+}
+
+/**
+ * @brief DocumentWidget::setPath
+ * @param pathname
+ */
+void DocumentWidget::setPath(const QDir &pathname) {
+	setPath(pathname.path());
 }
 
 /**

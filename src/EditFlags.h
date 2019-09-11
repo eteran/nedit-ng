@@ -2,7 +2,7 @@
 #ifndef EDITFLAGS_H
 #define EDITFLAGS_H
 
-/* flags for EditExistingFile */
+// flags for EditExistingFile
 enum EditFlags {
 	CREATE               = 1,
 	SUPPRESS_CREATE_WARN = 2,

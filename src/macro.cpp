@@ -2885,7 +2885,7 @@ static std::error_code searchStringMS(DocumentWidget *document, Arguments argume
 					wrap,
 					beginPos,
 					&searchResult,
-					document->GetWindowDelimitersEx());
+					document->GetWindowDelimiters());
 	}
 
 	// Return the results
@@ -2951,7 +2951,7 @@ static std::error_code replaceInStringMS(DocumentWidget *document, Arguments arg
 				searchType,
 				&copyStart,
 				&copyEnd,
-				document->GetWindowDelimitersEx());
+				document->GetWindowDelimiters());
 
 	// Return the results
 
@@ -3212,7 +3212,7 @@ static std::error_code dialogMS(DocumentWidget *document, Arguments arguments, D
 		auto result = make_value(prompt->result());
 		ModifyReturnedValueEx(cmdData->context, result);
 
-		document->ResumeMacroExecutionEx();
+		document->ResumeMacroExecution();
 	});
 
 	prompt->setWindowModality(Qt::NonModal);
@@ -3281,7 +3281,7 @@ static std::error_code stringDialogMS(DocumentWidget *document, Arguments argume
 		auto result = make_value(prompt->text());
 		ModifyReturnedValueEx(cmdData->context, result);
 
-		document->ResumeMacroExecutionEx();
+		document->ResumeMacroExecution();
 	});
 
 	prompt->setWindowModality(Qt::NonModal);
@@ -3398,7 +3398,7 @@ static std::error_code calltipMS(DocumentWidget *document, Arguments arguments, 
 	}
 
 	// Look up (maybe) a calltip and display it
-	*result = make_value(document->ShowTipStringEx(
+	*result = make_value(document->ShowTipString(
 						   tipText,
 						   anchored,
 						   anchorPos,
@@ -3669,7 +3669,7 @@ static std::error_code listDialogMS(DocumentWidget *document, Arguments argument
 		auto result = make_value(prompt->text());
 		ModifyReturnedValueEx(cmdData->context, result);
 
-		document->ResumeMacroExecutionEx();
+		document->ResumeMacroExecution();
 	});
 
 	prompt->setWindowModality(Qt::NonModal);
@@ -3780,7 +3780,7 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
 					WrapMode::NoWrap,
 					beginPos,
 					&searchResult,
-					document->GetWindowDelimitersEx());
+					document->GetWindowDelimiters());
 
 		int64_t elementEnd = found ? searchResult.start : strLength;
 		int64_t elementLen = elementEnd - lastEnd;
@@ -3846,7 +3846,7 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
 						WrapMode::NoWrap,
 						strLength,
 						&searchResult,
-						document->GetWindowDelimitersEx());
+						document->GetWindowDelimiters());
 
 			if (found) {
 				++indexNum;
@@ -5094,7 +5094,7 @@ static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *docu
 	   (only possible if we pass through the dynamic highlight pattern tables
 	   in other words, only if we have a pattern code) */
 	if (patCode) {
-		QColor color = document->HighlightColorValueOfCodeEx(patCode);
+		QColor color = document->HighlightColorValueOfCode(patCode);
 		DV = make_value(color.name());
 
 		if (!ArrayInsert(result, "rgb", &DV)) {
@@ -5112,7 +5112,7 @@ static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *docu
 	   (only possible if we pass through the dynamic highlight pattern tables
 	   in other words, only if we have a pattern code) */
 	if (patCode) {
-		QColor color = document->GetHighlightBGColorOfCodeEx(patCode);
+		QColor color = document->GetHighlightBGColorOfCode(patCode);
 		DV = make_value(color.name());
 
 		if (!ArrayInsert(result, "back_rgb", &DV)) {
@@ -5134,7 +5134,7 @@ static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *docu
 
 	if (bufferPos >= 0) {
 		// insert extent
-		DV = make_value(document->StyleLengthOfCodeFromPosEx(bufferPos));
+		DV = make_value(document->StyleLengthOfCodeFromPos(bufferPos));
 		if (!ArrayInsert(result, "extent", &DV)) {
 			return MacroErrorCode::InsertFailed;
 		}
@@ -5215,7 +5215,7 @@ static std::error_code getStyleAtPosMS(DocumentWidget *document, Arguments argum
 	return fillStyleResultEx(
 		result,
 		document,
-		document->HighlightStyleOfCodeEx(patCode),
+		document->HighlightStyleOfCode(patCode),
 		true,
 		patCode,
 		TextCursor(bufferPos));
@@ -5338,9 +5338,9 @@ static std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arg
 	return fillPatternResultEx(
 		result,
 		document,
-		document->HighlightNameOfCodeEx(patCode),
+		document->HighlightNameOfCode(patCode),
 		true,
-		document->HighlightStyleOfCodeEx(patCode),
+		document->HighlightStyleOfCode(patCode),
 		TextCursor(bufferPos));
 }
 

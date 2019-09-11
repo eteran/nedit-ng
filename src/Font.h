@@ -7,6 +7,12 @@ class QFont;
 
 namespace Font {
 
+enum Type {
+	Plain  = 0,
+	Italic = 1,
+	Bold   = 2,
+};
+
 QFont fromString(const QString &fontName);
 
 }

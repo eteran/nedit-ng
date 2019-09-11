@@ -24,7 +24,7 @@ public:
 	using value_type        = typename traits_type::value_type;
 
 public:
-	gap_buffer_iterator()                                : gap_buffer_iterator(nullptr, 0) {}
+	gap_buffer_iterator() = default;
 	gap_buffer_iterator(buffer_type *buf, size_type pos) : buf_(buf), pos_(pos) {}
 
 public:
@@ -77,8 +77,8 @@ public:
 	template <class CharT, class Traits, bool Const> bool operator<=(const gap_buffer_iterator<CharT, Traits, Const> &rhs) const { assert(buf_ == rhs.buf_); return pos_ <= rhs.pos_; }
 
 private:
-	buffer_type *buf_;
-	size_type    pos_;
+	buffer_type *buf_ = nullptr;
+	size_type    pos_ = 0;
 };
 
 #endif

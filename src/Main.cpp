@@ -346,7 +346,7 @@ Main::Main(const QStringList &args) {
 
 	// If no file to edit was specified, open a window to edit "Untitled"
 	if (!fileSpecified) {
-		DocumentWidget *document = MainWindow::EditNewFile(nullptr, geometry, iconic, langMode, QString());
+		DocumentWidget *document = MainWindow::EditNewFile(nullptr, geometry, iconic, langMode);
 
 		document->readMacroInitFile();
 		MainWindow::CheckCloseEnableState();

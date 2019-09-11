@@ -153,7 +153,6 @@ add_executable(nedit-ng
 	ElidedLabel.h
 	Font.cpp
 	Font.h
-	FontType.h
 	gap_buffer_fwd.h
 	gap_buffer.h
 	gap_buffer_iterator.h

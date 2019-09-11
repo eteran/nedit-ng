@@ -762,7 +762,7 @@ void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
 		Q_UNREACHABLE();
 	}();
 
-	MainWindow::EditNewFile(openInTab ? this : nullptr, QString(), /*iconic=*/false, QString(), document->path());
+	MainWindow::EditNewFile(openInTab ? this : nullptr, QString(), /*iconic=*/false, QString(), QDir(document->path()));
 	MainWindow::CheckCloseEnableState();
 }
 
@@ -3065,7 +3065,7 @@ void MainWindow::action_Mark(DocumentWidget *document, const QString &mark) {
 
 	const QChar ch = mark[0];
 	if(QPointer<TextArea> area = lastFocus()) {
-		document->AddMarkEx(area, ch);
+		document->AddMark(area, ch);
 	}
 }
 
@@ -4654,17 +4654,11 @@ void MainWindow::action_Last_Document() {
 	}
 }
 
-/**
- * @brief MainWindow::EditNewFile
- * @param window
- * @param geometry
- * @param iconic
- * @param languageMode
- * @param defaultPath
- * @return
- */
-DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode, const QString &defaultPath) {
+DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode) {
+	return EditNewFile(window, geometry, iconic, languageMode, QDir::currentPath());
+}
 
+DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode, const QDir &defaultPath) {
 	DocumentWidget *document;
 
 	// Find a (relatively) unique name for the new file
@@ -4689,8 +4683,8 @@ DocumentWidget *MainWindow::EditNewFile(MainWindow *window, const QString &geome
 	Q_ASSERT(window);
 	Q_ASSERT(document);
 
-	document->filename() = name;
-	document->setPath(!defaultPath.isEmpty() ? defaultPath : QDir::currentPath());
+	document->setFilename(name);
+	document->setPath(defaultPath);
 
 
 	// TODO(eteran): I'd like basically all of this to be done with signals
@@ -4991,7 +4985,7 @@ void MainWindow::on_action_Revert_to_Saved_triggered() {
  */
 void MainWindow::action_New_Window(DocumentWidget *document) {
 	emit_event("new_window");
-	MainWindow::EditNewFile(Preferences::GetPrefOpenInTab() ? nullptr : this, QString(), /*iconic=*/false, QString(), document->path());
+	MainWindow::EditNewFile(Preferences::GetPrefOpenInTab() ? nullptr : this, QString(), /*iconic=*/false, QString(), QDir(document->path()));
 	MainWindow::CheckCloseEnableState();
 }
 
@@ -6019,7 +6013,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
 					WrapMode::NoWrap,
 					beginPos,
 					searchResult,
-					document->GetWindowDelimitersEx());
+					document->GetWindowDelimiters());
 
 
 		if (dialogFind_) {
@@ -6063,7 +6057,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
 								WrapMode::NoWrap,
 								0,
 								searchResult,
-								document->GetWindowDelimitersEx());
+								document->GetWindowDelimiters());
 
 				} else if (direction == Direction::Backward && beginPos != fileEnd) {
 					if (Preferences::GetPrefBeepOnSearchWrap()) {
@@ -6092,7 +6086,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
 								WrapMode::NoWrap,
 								fileEnd + 1,
 								searchResult,
-								document->GetWindowDelimitersEx());
+								document->GetWindowDelimiters());
 				}
 			}
 
@@ -6118,7 +6112,7 @@ bool MainWindow::SearchWindowEx(DocumentWidget *document, const QString &searchS
 					searchWrap,
 					beginPos,
 					searchResult,
-					document->GetWindowDelimitersEx());
+					document->GetWindowDelimiters());
 
 		if (found) {
 			iSearchTryBeepOnWrapEx(direction, TextCursor(beginPos), TextCursor(searchResult->start));
@@ -6332,7 +6326,7 @@ bool MainWindow::ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, co
 			    selectionRange.start - extentBW,
 				replaceResult,
 			    selectionRange.start == 0 ? -1 : buffer->BufGetCharacter(selectionRange.start - 1),
-				document->GetWindowDelimitersEx(),
+				document->GetWindowDelimiters(),
 				Search::defaultRegexFlags(searchType));
 
 			buffer->BufReplaceEx(selectionRange, replaceResult);
@@ -6461,7 +6455,7 @@ bool MainWindow::SearchAndReplaceEx(DocumentWidget *document, TextArea *area, co
 		    selectionRange.start - extentBW,
 			replaceResult,
 		    selectionRange.start == 0 ? -1 : buffer->BufGetCharacter(selectionRange.start - 1),
-			document->GetWindowDelimitersEx(),
+			document->GetWindowDelimiters(),
 			Search::defaultRegexFlags(searchType));
 
 		buffer->BufReplaceEx(selectionRange, replaceResult);
@@ -6667,7 +6661,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
 					WrapMode::NoWrap,
 					to_integer(beginPos),
 					&searchResult,
-					document->GetWindowDelimitersEx());
+					document->GetWindowDelimiters());
 
 		if (!found) {
 			break;
@@ -6717,7 +6711,7 @@ void MainWindow::ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, 
 							searchResult.start - searchResult.extentBW,
 							replaceResult,
 							(searchResult.start + realOffset) == 0 ? -1 : tempBuf.BufGetCharacter(TextCursor(searchResult.start + realOffset - 1)),
-							document->GetWindowDelimitersEx(),
+							document->GetWindowDelimiters(),
 							Search::defaultRegexFlags(searchType));
 
 			if (!substSuccess) {
@@ -6871,7 +6865,7 @@ bool MainWindow::ReplaceAllEx(DocumentWidget *document, TextArea *area, const QS
 	// view the entire text buffer from the text area widget as a string
 	view::string_view fileString = buffer->BufAsStringEx();
 
-	QString delimieters = document->GetWindowDelimitersEx();
+	QString delimieters = document->GetWindowDelimiters();
 
 	boost::optional<std::string> newFileString = Search::ReplaceAllInString(
 				fileString,
@@ -7018,7 +7012,7 @@ bool MainWindow::searchMatchesSelectionEx(DocumentWidget *document, const QStrin
 				WrapMode::NoWrap,
 				beginPos,
 				&searchResult,
-				document->GetWindowDelimitersEx());
+				document->GetWindowDelimiters());
 
 	// decide if it is an exact match
 	if (!found) {

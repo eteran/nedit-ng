@@ -122,7 +122,8 @@ private:
 
 public:
 	static bool CloseAllFilesAndWindows();
-	static DocumentWidget *EditNewFile(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode, const QString &defaultPath);
+	static DocumentWidget *EditNewFile(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode);
+	static DocumentWidget *EditNewFile(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode, const QDir &defaultPath);
 	static DocumentWidget *FindWindowWithFile(const QString &filename, const QString &path);
 	static QString PromptForNewFile(DocumentWidget *document, FileFormats *format, bool *addWrap);
 	static MainWindow *firstWindow();

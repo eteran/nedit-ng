@@ -2,7 +2,6 @@
 #include "DialogDrawingStyles.h"
 #include "DialogSyntaxPatterns.h"
 #include "DocumentWidget.h"
-#include "FontType.h"
 #include "Highlight.h"
 #include "HighlightStyleModel.h"
 #include "Preferences.h"
@@ -261,8 +260,8 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 		ui.editColorFG->setText(style->color);
 		ui.editColorBG->setText(style->bgColor);
 
-		ui.checkBold->setChecked((style->font & BOLD_FONT) != 0);
-		ui.checkItalic->setChecked((style->font & ITALIC_FONT) != 0);
+		ui.checkBold->setChecked((style->font & Font::Bold) != 0);
+		ui.checkItalic->setChecked((style->font & Font::Italic) != 0);
 
 		// ensure that the appropriate buttons are enabled
 		updateButtonStates(current);
@@ -384,13 +383,13 @@ boost::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbos
 	}
 
 	// read the font buttons
-	hs.font = PLAIN_FONT;
+	hs.font = Font::Plain;
 	if (ui.checkBold->isChecked()) {
-		hs.font |= BOLD_FONT;
+		hs.font |= Font::Bold;
 	}
 
 	if (ui.checkItalic->isChecked()) {
-		hs.font |= ITALIC_FONT;
+		hs.font |= Font::Italic;
 	}
 
 	return hs;

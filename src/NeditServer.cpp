@@ -240,8 +240,7 @@ void NeditServer::newConnection() {
 			            MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop)),
 			            QString(),
 			            false,
-			            QString(),
-			            QString());
+						QString());
 
 			MainWindow::CheckCloseEnableState();
 		} else {
@@ -289,8 +288,7 @@ void NeditServer::newConnection() {
 					            MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop)),
 					            QString(),
 					            iconicFlag,
-					            languageMode.isEmpty() ? QString() : languageMode,
-					            QString());
+								languageMode.isEmpty() ? QString() : languageMode);
 				} else {
 					if (iconicFlag) {
 						(*it)->raiseDocument();
