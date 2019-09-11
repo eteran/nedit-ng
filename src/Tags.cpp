@@ -730,9 +730,9 @@ SearchMode searchMode = SearchMode::TAG;
 QString          tagName;
 
 
-QString tagFiles[MAXDUPTAGS];
-QString tagSearch[MAXDUPTAGS];
-int64_t tagPosInf[MAXDUPTAGS];
+QString tagFiles[MaxDupTags];
+QString tagSearch[MaxDupTags];
+int64_t tagPosInf[MaxDupTags];
 
 bool            globAnchored;
 CallTipPosition globPos;

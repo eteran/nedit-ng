@@ -6933,8 +6933,8 @@ int DocumentWidget::findAllMatchesEx(TextArea *area, const QString &string) {
 			pathMatch = nMatches;
 		}
 
-		if (++nMatches >= Tags::MAXDUPTAGS) {
-			QMessageBox::warning(this, tr("Tags"), tr("Too many duplicate tags, first %1 shown").arg(Tags::MAXDUPTAGS));
+		if (++nMatches >= Tags::MaxDupTags) {
+			QMessageBox::warning(this, tr("Tags"), tr("Too many duplicate tags, first %1 shown").arg(Tags::MaxDupTags));
 			break;
 		}
 	}

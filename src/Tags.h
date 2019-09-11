@@ -18,7 +18,7 @@ namespace Tags {
 
 Q_DECLARE_NAMESPACE_TR(Tags)
 
-constexpr int MAXDUPTAGS = 100;
+constexpr int MaxDupTags = 100;
 
 // file_type and search_type arguments are to select between tips and tags,
 // and should be one of TAG or TIP.  TIP_FROM_TAG is for ShowTipString.
@@ -78,9 +78,9 @@ extern std::deque<File> TipsFileList; // list of loaded calltips tag files
 extern SearchMode searchMode;
 extern QString    tagName;
 
-extern QString tagFiles[MAXDUPTAGS];
-extern QString tagSearch[MAXDUPTAGS];
-extern int64_t tagPosInf[MAXDUPTAGS];
+extern QString tagFiles[MaxDupTags];
+extern QString tagSearch[MaxDupTags];
+extern int64_t tagPosInf[MaxDupTags];
 
 extern bool            globAnchored;
 extern CallTipPosition globPos;
