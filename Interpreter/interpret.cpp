@@ -337,7 +337,7 @@ void BeginCreatingProgram() {
 */
 Program *FinishCreatingProgram() {
 
-	auto newProg = new Program();
+	auto newProg = std::make_unique<Program>();
 	std::copy(Prog, ProgP, std::back_inserter(newProg->code));
 
 	newProg->localSymList = LocalSymList;
@@ -352,7 +352,7 @@ Program *FinishCreatingProgram() {
 	}
 
 	DISASM(newProg->code.data(), newProg->code.size());
-	return newProg;
+	return newProg.release();
 }
 
 /*
@@ -509,12 +509,8 @@ int executeMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> a
 	   and a program counter) which will retain the program state across
 	   preemption and resumption of execution */
 
-	auto deleter = [](DataValue *ptr) {
-		delete[] ptr;
-	};
-
 	auto context           = std::make_shared<MacroContext>();
-	context->Stack         = std::shared_ptr<DataValue>(new DataValue[STACK_SIZE], deleter);
+	context->Stack         = std::shared_ptr<DataValue>(new DataValue[STACK_SIZE], std::default_delete<DataValue[]>());
 	context->StackP        = context->Stack.get();
 	context->PC            = prog->code.data();
 	context->RunDocument   = document;
@@ -548,7 +544,7 @@ int executeMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> a
 ** Continue the execution of a suspended macro whose state is described in
 ** "continuation"
 */
-int continueMacro(const std::shared_ptr<MacroContext> &continuation, DataValue *result, QString *msg) {
+ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation, DataValue *result, QString *msg) {
 
 	int instCount = 0;
 

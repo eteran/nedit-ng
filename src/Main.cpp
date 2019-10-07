@@ -318,7 +318,7 @@ Main::Main(const QStringList &args) {
 					}
 
 					if (!toDoCommand.isNull()) {
-						document->DoMacro(toDoCommand, QLatin1String("-do macro"));
+						document->doMacro(toDoCommand, QLatin1String("-do macro"));
 						toDoCommand = QString();
 					}
 				}
@@ -352,7 +352,7 @@ Main::Main(const QStringList &args) {
 		MainWindow::CheckCloseEnableState();
 
 		if (!toDoCommand.isNull()) {
-			document->DoMacro(toDoCommand, QLatin1String("-do macro"));
+			document->doMacro(toDoCommand, QLatin1String("-do macro"));
 		}
 	}
 

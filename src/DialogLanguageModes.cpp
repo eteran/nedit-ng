@@ -421,7 +421,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 	   and update word delimiters */
 	for(DocumentWidget *document : DocumentWidget::allDocuments()) {
 
-		const size_t languageMode = document->GetLanguageMode();
+		const size_t languageMode = document->getLanguageMode();
 
 		if (languageMode != PLAIN_LANGUAGE_MODE) {
 
@@ -508,7 +508,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 
 		// and load any needed calltips files ...
 		for(DocumentWidget *currentDocument : DocumentWidget::allDocuments()) {
-			const size_t currentLanguageMode = currentDocument->GetLanguageMode();
+			const size_t currentLanguageMode = currentDocument->getLanguageMode();
 			if (currentLanguageMode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[currentLanguageMode].defTipsFile.isNull()) {
 				Tags::addTagsFile(Preferences::LanguageModes[currentLanguageMode].defTipsFile, Tags::SearchMode::TIP);
 			}

@@ -1348,8 +1348,8 @@ static std::error_code setHighlightSyntaxMS(DocumentWidget *document, Arguments 
 	document = MacroRunDocument();
 
 	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, document->GetHighlightSyntax(), &ec, "set_highlight_syntax")) {
-		document->SetHighlightSyntax(*next);
+	if(boost::optional<int> next = toggle_or_bool(arguments, document->highlightSyntax(), &ec, "set_highlight_syntax")) {
+		document->setHighlightSyntax(*next);
 		*result = make_value();
 		return MacroErrorCode::Success;
 	}
@@ -1362,8 +1362,8 @@ static std::error_code setIncrementalBackupMS(DocumentWidget *document, Argument
 	document = MacroRunDocument();
 
 	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, document->GetIncrementalBackup(), &ec, "set_incremental_backup")) {
-		document->SetIncrementalBackup(*next);
+	if(boost::optional<int> next = toggle_or_bool(arguments, document->incrementalBackup(), &ec, "set_incremental_backup")) {
+		document->setIncrementalBackup(*next);
 		*result = make_value();
 		return MacroErrorCode::Success;
 	}
@@ -1392,8 +1392,8 @@ static std::error_code setMakeBackupCopyMS(DocumentWidget *document, Arguments a
 	document = MacroRunDocument();
 
 	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, document->GetMakeBackupCopy(), &ec, "set_make_backup_copy")) {
-		document->SetMakeBackupCopy(*next);
+	if(boost::optional<int> next = toggle_or_bool(arguments, document->makeBackupCopy(), &ec, "set_make_backup_copy")) {
+		document->setMakeBackupCopy(*next);
 		*result = make_value();
 		return MacroErrorCode::Success;
 	}
@@ -1406,8 +1406,8 @@ static std::error_code setLockedMS(DocumentWidget *document, Arguments arguments
 	document = MacroRunDocument();
 
 	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, document->GetUserLocked(), &ec, "set_locked")) {
-		document->SetUserLocked(*next);
+	if(boost::optional<int> next = toggle_or_bool(arguments, document->userLocked(), &ec, "set_locked")) {
+		document->setUserLocked(*next);
 		*result = make_value();
 		return MacroErrorCode::Success;
 	}
@@ -1435,8 +1435,8 @@ static std::error_code setOvertypeModeMS(DocumentWidget *document, Arguments arg
 	document = MacroRunDocument();
 
 	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, document->GetOverstrike(), &ec, "set_overtype_mode")) {
-		document->SetOverstrike(*next);
+	if(boost::optional<int> next = toggle_or_bool(arguments, document->overstrike(), &ec, "set_overtype_mode")) {
+		document->setOverstrike(*next);
 		*result = make_value();
 		return MacroErrorCode::Success;
 	}
@@ -1472,11 +1472,11 @@ static std::error_code setShowMatchingMS(DocumentWidget *document, Arguments arg
 		}
 
 		if (arg == QLatin1String("off")) {
-			document->SetShowMatching(ShowMatchingStyle::None);
+			document->setShowMatching(ShowMatchingStyle::None);
 		} else if (arg == QLatin1String("delimiter")) {
-			document->SetShowMatching(ShowMatchingStyle::Delimiter);
+			document->setShowMatching(ShowMatchingStyle::Delimiter);
 		} else if (arg == QLatin1String("range")) {
-			document->SetShowMatching(ShowMatchingStyle::Range);
+			document->setShowMatching(ShowMatchingStyle::Range);
 		}
 		/* For backward compatibility with pre-5.2 versions, we also
 		   accept 0 and 1 as aliases for None and Delimeter.
@@ -1484,9 +1484,9 @@ static std::error_code setShowMatchingMS(DocumentWidget *document, Arguments arg
 		   action procedure via the macro language or a key binding,
 		   so this can probably be left out safely. */
 		else if (arg == QLatin1String("0")) {
-		   document->SetShowMatching(ShowMatchingStyle::None);
+		   document->setShowMatching(ShowMatchingStyle::None);
 		} else if (arg == QLatin1String("1")) {
-		   document->SetShowMatching(ShowMatchingStyle::Delimiter);
+		   document->setShowMatching(ShowMatchingStyle::Delimiter);
 		} else {
 			qWarning("NEdit: Invalid argument for set_show_matching");
 		}
@@ -1504,8 +1504,8 @@ static std::error_code setMatchSyntaxBasedMS(DocumentWidget *document, Arguments
 	document = MacroRunDocument();
 
 	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, document->GetMatchSyntaxBased(), &ec, "set_match_syntax_based")) {
-		document->SetMatchSyntaxBased(*next);
+	if(boost::optional<int> next = toggle_or_bool(arguments, document->matchSyntaxBased(), &ec, "set_match_syntax_based")) {
+		document->setMatchSyntaxBased(*next);
 		*result = make_value();
 		return MacroErrorCode::Success;
 	}
@@ -1518,8 +1518,8 @@ static std::error_code setStatisticsLineMS(DocumentWidget *document, Arguments a
 	document = MacroRunDocument();
 
 	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, document->GetShowStatisticsLine(), &ec, "set_statistics_line")) {
-		document->SetShowStatisticsLine(*next);
+	if(boost::optional<int> next = toggle_or_bool(arguments, document->showStatisticsLine(), &ec, "set_statistics_line")) {
+		document->setShowStatisticsLine(*next);
 		*result = make_value();
 		return MacroErrorCode::Success;
 	}
@@ -1553,8 +1553,8 @@ static std::error_code setUseTabsMS(DocumentWidget *document, Arguments argument
 	document = MacroRunDocument();
 
 	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, document->GetUseTabs(), &ec, "set_use_tabs")) {
-		document->SetUseTabs(*next);
+	if(boost::optional<int> next = toggle_or_bool(arguments, document->useTabs(), &ec, "set_use_tabs")) {
+		document->setUseTabs(*next);
 		*result = make_value();
 		return MacroErrorCode::Success;
 	}
@@ -2513,7 +2513,7 @@ static std::error_code getSelectionMS(DocumentWidget *document, Arguments argume
 			return MacroErrorCode::UnrecognizedArgument;
 		}
 
-		QString text = document->GetAnySelection(/*beep_on_error=*/true);
+		QString text = document->getAnySelection(/*beep_on_error=*/true);
 		if (text.isNull()) {
 			text = QLatin1String("");
 		}
@@ -2885,7 +2885,7 @@ static std::error_code searchStringMS(DocumentWidget *document, Arguments argume
 					wrap,
 					beginPos,
 					&searchResult,
-					document->GetWindowDelimiters());
+					document->getWindowDelimiters());
 	}
 
 	// Return the results
@@ -2951,7 +2951,7 @@ static std::error_code replaceInStringMS(DocumentWidget *document, Arguments arg
 				searchType,
 				&copyStart,
 				&copyEnd,
-				document->GetWindowDelimiters());
+				document->getWindowDelimiters());
 
 	// Return the results
 
@@ -3212,7 +3212,7 @@ static std::error_code dialogMS(DocumentWidget *document, Arguments arguments, D
 		auto result = make_value(prompt->result());
 		ModifyReturnedValueEx(cmdData->context, result);
 
-		document->ResumeMacroExecution();
+		document->resumeMacroExecution();
 	});
 
 	prompt->setWindowModality(Qt::NonModal);
@@ -3281,7 +3281,7 @@ static std::error_code stringDialogMS(DocumentWidget *document, Arguments argume
 		auto result = make_value(prompt->text());
 		ModifyReturnedValueEx(cmdData->context, result);
 
-		document->ResumeMacroExecution();
+		document->resumeMacroExecution();
 	});
 
 	prompt->setWindowModality(Qt::NonModal);
@@ -3398,7 +3398,7 @@ static std::error_code calltipMS(DocumentWidget *document, Arguments arguments, 
 	}
 
 	// Look up (maybe) a calltip and display it
-	*result = make_value(document->ShowTipString(
+	*result = make_value(document->showTipString(
 						   tipText,
 						   anchored,
 						   anchorPos,
@@ -3669,7 +3669,7 @@ static std::error_code listDialogMS(DocumentWidget *document, Arguments argument
 		auto result = make_value(prompt->text());
 		ModifyReturnedValueEx(cmdData->context, result);
 
-		document->ResumeMacroExecution();
+		document->resumeMacroExecution();
 	});
 
 	prompt->setWindowModality(Qt::NonModal);
@@ -3780,7 +3780,7 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
 					WrapMode::NoWrap,
 					beginPos,
 					&searchResult,
-					document->GetWindowDelimiters());
+					document->getWindowDelimiters());
 
 		int64_t elementEnd = found ? searchResult.start : strLength;
 		int64_t elementLen = elementEnd - lastEnd;
@@ -3846,7 +3846,7 @@ static std::error_code splitMS(DocumentWidget *document, Arguments arguments, Da
 						WrapMode::NoWrap,
 						strLength,
 						&searchResult,
-						document->GetWindowDelimiters());
+						document->getWindowDelimiters());
 
 			if (found) {
 				++indexNum;
@@ -4102,14 +4102,14 @@ static std::error_code highlightSyntaxMV(DocumentWidget *document, Arguments arg
 static std::error_code makeBackupCopyMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	*result = make_value(document->GetMakeBackupCopy() ? 1 : 0);
+	*result = make_value(document->makeBackupCopy() ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
 static std::error_code incBackupMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	*result = make_value(document->GetIncrementalBackup() ? 1 : 0);
+	*result = make_value(document->incrementalBackup() ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
@@ -4124,14 +4124,14 @@ static std::error_code showMatchingMV(DocumentWidget *document, Arguments argume
 static std::error_code matchSyntaxBasedMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	*result = make_value(document->GetMatchSyntaxBased() ? 1 : 0);
+	*result = make_value(document->matchSyntaxBased() ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
 static std::error_code overTypeModeMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	*result = make_value(document->GetOverstrike() ? 1 : 0);
+	*result = make_value(document->overstrike() ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
@@ -4315,7 +4315,7 @@ static std::error_code languageModeMV(DocumentWidget *document, Arguments argume
 
 	Q_UNUSED(arguments)
 
-	QString lmName = Preferences::LanguageModeName(document->GetLanguageMode());
+	QString lmName = Preferences::LanguageModeName(document->getLanguageMode());
 
 	if(lmName.isNull()) {
 		lmName = QLatin1String("Plain");
@@ -5094,7 +5094,7 @@ static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *docu
 	   (only possible if we pass through the dynamic highlight pattern tables
 	   in other words, only if we have a pattern code) */
 	if (patCode) {
-		QColor color = document->HighlightColorValueOfCode(patCode);
+		QColor color = document->highlightColorValueOfCode(patCode);
 		DV = make_value(color.name());
 
 		if (!ArrayInsert(result, "rgb", &DV)) {
@@ -5112,7 +5112,7 @@ static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *docu
 	   (only possible if we pass through the dynamic highlight pattern tables
 	   in other words, only if we have a pattern code) */
 	if (patCode) {
-		QColor color = document->GetHighlightBGColorOfCode(patCode);
+		QColor color = document->highlightBGColorOfCode(patCode);
 		DV = make_value(color.name());
 
 		if (!ArrayInsert(result, "back_rgb", &DV)) {
@@ -5134,7 +5134,7 @@ static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *docu
 
 	if (bufferPos >= 0) {
 		// insert extent
-		DV = make_value(document->StyleLengthOfCodeFromPos(bufferPos));
+		DV = make_value(document->styleLengthOfCodeFromPos(bufferPos));
 		if (!ArrayInsert(result, "extent", &DV)) {
 			return MacroErrorCode::InsertFailed;
 		}
@@ -5215,7 +5215,7 @@ static std::error_code getStyleAtPosMS(DocumentWidget *document, Arguments argum
 	return fillStyleResultEx(
 		result,
 		document,
-		document->HighlightStyleOfCode(patCode),
+		document->highlightStyleOfCode(patCode),
 		true,
 		patCode,
 		TextCursor(bufferPos));
@@ -5338,9 +5338,9 @@ static std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arg
 	return fillPatternResultEx(
 		result,
 		document,
-		document->HighlightNameOfCode(patCode),
+		document->highlightNameOfCode(patCode),
 		true,
-		document->HighlightStyleOfCode(patCode),
+		document->highlightStyleOfCode(patCode),
 		TextCursor(bufferPos));
 }
 

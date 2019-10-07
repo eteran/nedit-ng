@@ -517,7 +517,7 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
 	smartIndent_             = document->autoIndentStyle() == IndentStyle::Smart;
 	autoWrap_                = document->wrapMode() == WrapStyle::Newline;
 	continuousWrap_          = document->wrapMode() == WrapStyle::Continuous;
-	overstrike_              = document->GetOverstrike();
+	overstrike_              = document->overstrike();
 	hidePointer_             = Preferences::GetPrefTypingHidesPointer();
 	smartHome_               = Preferences::GetPrefSmartHome();
 

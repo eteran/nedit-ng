@@ -16,17 +16,15 @@
 #include "Tags.h"
 #include "TextBufferFwd.h"
 #include "UndoInfo.h"
-#include "WrapStyle.h"
 #include "Util/FileFormats.h"
 #include "Util/string_view.h"
+#include "WrapStyle.h"
 
 #include "ui_DocumentWidget.h"
 
 #include <QPointer>
 #include <QProcess>
 #include <QWidget>
-
-#include <array>
 
 #include <gsl/span>
 
@@ -108,14 +106,14 @@ public:
 	HighlightPattern *findPatternOfWindow(const QString &name) const;
 	IndentStyle autoIndentStyle() const;
 	LockReasons lockReasons() const;
-	QColor GetHighlightBGColorOfCode(size_t hCode) const;
-	QColor HighlightColorValueOfCode(size_t hCode) const;
+	QColor highlightBGColorOfCode(size_t hCode) const;
+	QColor highlightColorValueOfCode(size_t hCode) const;
 	QFont defaultFont() const;
-	QString GetAnySelection();
-	QString GetAnySelection(bool beep_on_error);
-	QString GetWindowDelimiters() const;
-	QString HighlightNameOfCode(size_t hCode) const;
-	QString HighlightStyleOfCode(size_t hCode) const;
+	QString getAnySelection();
+	QString getAnySelection(bool beep_on_error);
+	QString getWindowDelimiters() const;
+	QString highlightNameOfCode(size_t hCode) const;
+	QString highlightStyleOfCode(size_t hCode) const;
 	QString documentDelimiters() const;
 	QString filename() const;
 	QString fullPath() const;
@@ -125,17 +123,17 @@ public:
 	TextArea *firstPane() const;
 	TextBuffer *buffer() const;
 	WrapStyle wrapMode() const;
-	bool GetHighlightSyntax() const;
-	bool GetIncrementalBackup() const;
-	bool GetMakeBackupCopy() const;
-	bool GetMatchSyntaxBased() const;
-	bool GetOverstrike() const;
-	bool GetShowStatisticsLine() const;
-	bool GetUseTabs() const;
-	bool GetUserLocked() const;
-	bool InSmartIndentMacros() const;
-	bool ReadMacroFile(const QString &fileName, bool warnNotExist);
-	bool ReadMacroString(const QString &string, const QString &errIn);
+	bool highlightSyntax() const;
+	bool incrementalBackup() const;
+	bool makeBackupCopy() const;
+	bool matchSyntaxBased() const;
+	bool overstrike() const;
+	bool showStatisticsLine() const;
+	bool useTabs() const;
+	bool userLocked() const;
+	bool inSmartIndentMacros() const;
+	bool readMacroFile(const QString &fileName, bool warnNotExist);
+	bool readMacroString(const QString &string, const QString &errIn);
 	bool checkReadOnly() const;
 	bool fileChanged() const;
 	bool filenameSet() const;
@@ -144,37 +142,37 @@ public:
 	bool modeMessageDisplayed() const;
 	dev_t device() const;
 	ino_t inode() const;
-	int ShowTipString(const QString &text, bool anchored, int pos, bool lookup, Tags::SearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode);
-	int findDef(TextArea *area, const QString &value, Tags::SearchMode search_type);
+	int showTipString(const QString &text, bool anchored, int pos, bool lookup, Tags::SearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode);
+	int findDefinitionHelperCommon(TextArea *area, const QString &value, Tags::SearchMode search_type);
 	int textPanesCount() const;
 	int widgetToPaneIndex(TextArea *area) const;
-	int64_t StyleLengthOfCodeFromPos(TextCursor pos);
+	int64_t styleLengthOfCodeFromPos(TextCursor pos);
 	int64_t highlightLengthOfCodeFromPos(TextCursor pos);
-	size_t GetLanguageMode() const;
+	size_t getLanguageMode() const;
 	size_t highlightCodeOfPos(TextCursor pos);
 	std::unique_ptr<WindowHighlightData> createHighlightData(PatternSet *patternSet);
 	std::vector<TextArea *> textPanes() const;
-	void AddMark(TextArea *area, QChar label);
-	void DoMacro(const QString &macro, const QString &errInName);
-	void FindDefCalltip(TextArea *area, const QString &tipName);
-	void GotoMatchingCharacter(TextArea *area);
-	void MakeSelectionVisible(TextArea *area);
-	void ResumeMacroExecution();
+	void addMark(TextArea *area, QChar label);
+	void doMacro(const QString &macro, const QString &errInName);
+	void findDefinitionCalltip(TextArea *area, const QString &tipName);
+	void gotoMatchingCharacter(TextArea *area);
+	void makeSelectionVisible(TextArea *area);
+	void resumeMacroExecution();
 	void selectNumberedLine(TextArea *area, int64_t lineNum);
-	void SelectToMatchingCharacter(TextArea *area);
-	void SetBacklightChars(const QString &applyBacklightTypes);
-	void SetColors(const QColor &textFg, const QColor &textBg, const QColor &selectFg, const QColor &selectBg, const QColor &hiliteFg, const QColor &hiliteBg, const QColor &lineNoFg, const QColor &lineNoBg, const QColor &cursorFg);
-	void SetHighlightSyntax(bool value);
-	void SetIncrementalBackup(bool value);
-	void SetLanguageMode(size_t mode, bool forceNewDefaults);
-	void SetMakeBackupCopy(bool value);
-	void SetMatchSyntaxBased(bool value);
-	void SetOverstrike(bool overstrike);
-	void SetShowMatching(ShowMatchingStyle state);
-	void SetShowStatisticsLine(bool value);
-	void SetUseTabs(bool value);
-	void SetUserLocked(bool value);
-	void ShowStatsLine(bool state);
+	void selectToMatchingCharacter(TextArea *area);
+	void setBacklightChars(const QString &applyBacklightTypes);
+	void setColors(const QColor &textFg, const QColor &textBg, const QColor &selectFg, const QColor &selectBg, const QColor &hiliteFg, const QColor &hiliteBg, const QColor &lineNoFg, const QColor &lineNoBg, const QColor &cursorFg);
+	void setHighlightSyntax(bool value);
+	void setIncrementalBackup(bool value);
+	void setLanguageMode(size_t mode, bool forceNewDefaults);
+	void setMakeBackupCopy(bool value);
+	void setMatchSyntaxBased(bool value);
+	void setOverstrike(bool overstrike);
+	void setShowMatching(ShowMatchingStyle state);
+	void setShowStatisticsLine(bool value);
+	void setUseTabs(bool value);
+	void setUserLocked(bool value);
+	void showStatsLine(bool state);
 	void abortShellCommand();
 	void beginSmartIndent(bool warn);
 	void cancelMacroOrLearn();
@@ -231,9 +229,9 @@ private:
 	Style getHighlightInfo(TextCursor pos);
 	StyleTableEntry *styleTableEntryOfCode(size_t hCode) const;
 	TextArea *createTextArea(TextBuffer *buffer);
-	bool CloseFileAndWindow(CloseMode preResponse);
-	bool MacroWindowCloseActions();
-	bool WriteBackupFile();
+	bool closeFileAndWindow(CloseMode preResponse);
+	bool macroWindowCloseActions();
+	bool writeBackupFile();
 	bool compareDocumentToFile(const QString &fileName) const;
 	bool doOpen(const QString &name, const QString &path, int flags);
 	bool doSave();
@@ -245,31 +243,31 @@ private:
 	boost::optional<TextCursor> findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit);
 	int findAllMatches(TextArea *area, const QString &string);
 	size_t matchLanguageMode() const;
-	void AbortMacroCommand();
+	void abortMacroCommand();
 	void attachHighlightToWidget(TextArea *area);
 	void beginLearn();
 	void clearRedoList();
 	void clearUndoList();
 	void closeDocument();
-	void DetermineLanguageMode(bool forceNewDefaults);
+	void determineLanguageMode(bool forceNewDefaults);
 	void doShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, CommandSource source);
 	void doShellMenuCmd(MainWindow *inWindow, TextArea *area, const MenuItem &item, CommandSource source);
 	void execCursorLine(TextArea *area, CommandSource source);
 	void finishLearning();
 	void flashMatchingChar(TextArea *area);
-	void FreeHighlightingData();
-	void Redo();
-	void RefreshMenuToggleStates();
-	void RefreshTabState();
+	void freeHighlightingData();
+	void redo();
+	void refreshMenuToggleStates();
+	void refreshTabState();
 	void refreshWindowStates();
-	void RemoveBackupFile() const;
+	void removeBackupFile() const;
 	void replay();
-	void RevertToSaved();
+	void revertToSaved();
 	void saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, view::string_view deletedText);
-	void SetWindowModified(bool modified);
-	void Undo();
+	void setWindowModified(bool modified);
+	void undo();
 	void unloadLanguageModeTipsFile();
-	void UpdateMarkTable(TextCursor pos, int64_t nInserted, int64_t nDeleted);
+	void updateMarkTable(TextCursor pos, int64_t nInserted, int64_t nDeleted);
 	void actionClose(CloseMode mode);
 	void addRedoItem(UndoInfo &&redo);
 	void addUndoItem(UndoInfo &&undo);
@@ -293,32 +291,31 @@ private:
 public:
 	std::shared_ptr<DocumentInfo> info_;
 
-public:	
-	bool replaceFailed_     = false;               // flags replacements failures during multi-file replacements
-	bool multiFileBusy_     = false;               // suppresses multiple beeps/dialogs during multi-file replacements
-	size_t languageMode_    = PLAIN_LANGUAGE_MODE; // identifies language mode currently selected in the window
+public:
+	bool replaceFailed_  = false;               // flags replacements failures during multi-file replacements
+	bool multiFileBusy_  = false;               // suppresses multiple beeps/dialogs during multi-file replacements
+	size_t languageMode_ = PLAIN_LANGUAGE_MODE; // identifies language mode currently selected in the window
 
 public:
-	QString fontName_;                                     // names of the text fonts in use
-	bool highlightSyntax_;                                 // is syntax highlighting turned on?	
-	bool showStats_;                                       // is stats line supposed to be shown	
-	std::shared_ptr<MacroCommandData>    macroCmdData_;    // same for macro commands
-	std::shared_ptr<RangesetTable>       rangesetTable_;   // current range sets
-	std::unique_ptr<WindowHighlightData> highlightData_;   // info for syntax highlighting
+	QString fontName_;                                   // names of the text fonts in use
+	bool highlightSyntax_;                               // is syntax highlighting turned on?
+	bool showStats_;                                     // is stats line supposed to be shown
+	std::shared_ptr<MacroCommandData> macroCmdData_;     // same for macro commands
+	std::shared_ptr<RangesetTable> rangesetTable_;       // current range sets
+	std::unique_ptr<WindowHighlightData> highlightData_; // info for syntax highlighting
 
 private:
 	QMenu *contextMenu_ = nullptr;
-	size_t nMarks_      = 0;                            // number of active bookmarks
 
 private:
 	QSplitter *splitter_;
 	QFont font_;
-	QString backlightCharTypes_;                        // what backlighting to use
-	QString modeMessage_;                               // stats line banner content for learn and shell command executing modes
-	QTimer *flashTimer_;                                // timer for getting rid of highlighted matching paren.
-	bool backlightChars_;                               // is char backlighting turned on?
-	std::array<Bookmark, MAX_MARKS> markTable_;         // marked locations in window
-	std::unique_ptr<ShellCommandData> shellCmdData_;    // when a shell command is executing, info. about it, otherwise, nullptr	
+	QString backlightCharTypes_;                     // what backlighting to use
+	QString modeMessage_;                            // stats line banner content for learn and shell command executing modes
+	QTimer *flashTimer_;                             // timer for getting rid of highlighted matching paren.
+	bool backlightChars_;                            // is char backlighting turned on?
+	std::map<QChar, Bookmark> markTable_;
+	std::unique_ptr<ShellCommandData> shellCmdData_; // when a shell command is executing, info. about it, otherwise, nullptr
 	Ui::DocumentWidget ui;
 
 public:

@@ -156,7 +156,7 @@ QColor DialogColors::chooseColor(QPushButton *button, const QColor &currentColor
 void DialogColors::updateColors() {
 
 	for(DocumentWidget *document : DocumentWidget::allDocuments()) {
-		document->SetColors(
+		document->setColors(
 		    textFG_,
 		    textBG_,
 		    selectionFG_,

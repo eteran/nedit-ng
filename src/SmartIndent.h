@@ -3,6 +3,7 @@
 #define SMART_INDENT_H_
 
 #include <vector>
+#include <memory>
 #include <QPointer>
 #include "Util/QtHelper.h"
 
@@ -36,8 +37,8 @@ namespace SmartIndent {
 }
 
 struct SmartIndentData {
-	Program *newlineMacro = nullptr;
-	Program *modMacro     = nullptr;
+	std::unique_ptr<Program> newlineMacro;
+	std::unique_ptr<Program> modMacro;
 	int inNewLineMacro    = 0;
 	int inModMacro        = 0;
 };

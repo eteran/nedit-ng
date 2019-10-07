@@ -29,10 +29,10 @@ void returnShellCommandOutput(DocumentWidget *document, const QString &outText, 
 struct MacroCommandData {
 	QTimer                        bannerTimer;
 	QTimer                        continuationTimer;
-	Program *                     program           = nullptr;
 	bool                          bannerIsUp        = false;
 	bool                          closeOnCompletion = false;
 	std::shared_ptr<MacroContext> context;
+	std::unique_ptr<Program>      program;
 };
 
 

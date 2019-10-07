@@ -25,7 +25,7 @@ DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, 
 	ui.setupUi(this);
 	connectSlots();
 
-	QString languageMode = Preferences::LanguageModeName((document->GetLanguageMode() == PLAIN_LANGUAGE_MODE) ? 0 : document->GetLanguageMode());
+	QString languageMode = Preferences::LanguageModeName((document->getLanguageMode() == PLAIN_LANGUAGE_MODE) ? 0 : document->getLanguageMode());
 
 	updateLanguageModes();
 	setLanguageMode(languageMode);
@@ -255,7 +255,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	   re-do the smart indent macros */
 	for(DocumentWidget *document : DocumentWidget::allDocuments()) {
 
-		QString lmName = Preferences::LanguageModeName(document->GetLanguageMode());
+		QString lmName = Preferences::LanguageModeName(document->getLanguageMode());
 		if(!lmName.isNull()) {
 			if (lmName == newMacros.languageMode) {
 
@@ -263,7 +263,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 					window->ui.action_Indent_Smart->setEnabled(true);
 				}
 
-				if (document->autoIndentStyle() == IndentStyle::Smart && document->GetLanguageMode() != PLAIN_LANGUAGE_MODE) {
+				if (document->autoIndentStyle() == IndentStyle::Smart && document->getLanguageMode() != PLAIN_LANGUAGE_MODE) {
 					document->endSmartIndent();
 					document->beginSmartIndent(/*warn=*/false);
 				}

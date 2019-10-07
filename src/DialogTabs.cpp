@@ -119,7 +119,7 @@ void DialogTabs::on_buttonBox_accepted() {
 	} else {
 		document_->setTabDistance(tabDist);
 		document_->setEmTabDistance(emTabDist);
-		document_->SetUseTabs(useTabs);
+		document_->setUseTabs(useTabs);
 	}
 
 	accept();
