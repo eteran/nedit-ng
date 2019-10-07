@@ -265,7 +265,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 
 				if (document->autoIndentStyle() == IndentStyle::Smart && document->getLanguageMode() != PLAIN_LANGUAGE_MODE) {
 					document->endSmartIndent();
-					document->beginSmartIndent(/*warn=*/false);
+					document->beginSmartIndent(Verbosity::Silent);
 				}
 			}
 		}

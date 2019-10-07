@@ -52,13 +52,14 @@ add_executable(nedit-ng
 	CommandRecorder.h
 	CommandSource.h
 	CursorStyles.h
+	Dialog.cpp
+	Dialog.h
 	DialogAbout.cpp
 	DialogAbout.h
 	DialogAbout.ui
 	DialogColors.cpp
 	DialogColors.h
 	DialogColors.ui
-	Dialog.cpp
 	DialogDrawingStyles.cpp
 	DialogDrawingStyles.h
 	DialogDrawingStyles.ui
@@ -77,7 +78,6 @@ add_executable(nedit-ng
 	DialogFonts.cpp
 	DialogFonts.h
 	DialogFonts.ui
-	Dialog.h
 	DialogLanguageModes.cpp
 	DialogLanguageModes.h
 	DialogLanguageModes.ui
@@ -98,13 +98,13 @@ add_executable(nedit-ng
 	DialogPrint.ui
 	DialogPrompt.cpp
 	DialogPrompt.h
+	DialogPrompt.ui
 	DialogPromptList.cpp
 	DialogPromptList.h
 	DialogPromptList.ui
 	DialogPromptString.cpp
 	DialogPromptString.h
 	DialogPromptString.ui
-	DialogPrompt.ui
 	DialogRepeat.cpp
 	DialogRepeat.h
 	DialogRepeat.ui
@@ -114,12 +114,12 @@ add_executable(nedit-ng
 	DialogShellMenu.cpp
 	DialogShellMenu.h
 	DialogShellMenu.ui
-	DialogSmartIndentCommon.cpp
-	DialogSmartIndentCommon.h
-	DialogSmartIndentCommon.ui
 	DialogSmartIndent.cpp
 	DialogSmartIndent.h
 	DialogSmartIndent.ui
+	DialogSmartIndentCommon.cpp
+	DialogSmartIndentCommon.h
+	DialogSmartIndentCommon.ui
 	DialogSyntaxPatterns.cpp
 	DialogSyntaxPatterns.h
 	DialogSyntaxPatterns.ui
@@ -139,10 +139,10 @@ add_executable(nedit-ng
 	DialogWrapMargin.h
 	DialogWrapMargin.ui
 	Direction.h
-	DocumentModel.cpp
-	DocumentModel.h
 	DocumentInfo.cpp
 	DocumentInfo.h
+	DocumentModel.cpp
+	DocumentModel.h
 	DocumentWidget.cpp
 	DocumentWidget.h
 	DocumentWidget.ui
@@ -151,16 +151,14 @@ add_executable(nedit-ng
 	EditFlags.h
 	ElidedLabel.cpp
 	ElidedLabel.h
+	ErrorSound.h
 	Font.cpp
 	Font.h
-	gap_buffer_fwd.h
-	gap_buffer.h
-	gap_buffer_iterator.h
 	Help.cpp
 	Help.h
 	Highlight.cpp
-	HighlightData.h
 	Highlight.h
+	HighlightData.h
 	HighlightPattern.cpp
 	HighlightPattern.h
 	HighlightPatternModel.cpp
@@ -176,8 +174,6 @@ add_executable(nedit-ng
 	LineNumberArea.cpp
 	LineNumberArea.h
 	LockReasons.h
-	macro.cpp
-	macro.h
 	Main.cpp
 	Main.h
 	MainWindow.cpp
@@ -187,8 +183,6 @@ add_executable(nedit-ng
 	MenuItem.h
 	MenuItemModel.cpp
 	MenuItemModel.h
-	nedit.cpp
-	nedit.h
 	NeditServer.cpp
 	NeditServer.h
 	NewMode.h
@@ -196,7 +190,6 @@ add_executable(nedit-ng
 	PatternSet.h
 	Preferences.cpp
 	Preferences.h
-	TextRange.h
 	Rangeset.cpp
 	Rangeset.h
 	RangesetTable.cpp
@@ -204,15 +197,13 @@ add_executable(nedit-ng
 	ReparseContext.h
 	Search.cpp
 	Search.h
-	shift.cpp
 	ShiftDirection.h
-	shift.h
 	SignalBlocker.h
 	SmartIndent.cpp
+	SmartIndent.h
 	SmartIndentEntry.cpp
 	SmartIndentEntry.h
 	SmartIndentEvent.h
-	SmartIndent.h
 	Style.h
 	StyleTableEntry.h
 	TabWidget.cpp
@@ -224,16 +215,15 @@ add_executable(nedit-ng
 	TextAreaMimeData.cpp
 	TextAreaMimeData.h
 	TextBuffer.cpp
-	TextBufferFwd.h
 	TextBuffer.h
 	TextBuffer.tcc
+	TextBufferFwd.h
 	TextCursor.h
 	TextEditEvent.cpp
 	TextEditEvent.h
+	TextRange.h
 	UndoInfo.cpp
 	UndoInfo.h
-	userCmds.cpp
-	userCmds.h
 	Verbosity.h
 	WindowHighlightData.h
 	WindowMenuEvent.cpp
@@ -241,6 +231,17 @@ add_executable(nedit-ng
 	WrapMode.h
 	X11Colors.cpp
 	X11Colors.h
+	gap_buffer.h
+	gap_buffer_fwd.h
+	gap_buffer_iterator.h
+	macro.cpp
+	macro.h
+	nedit.cpp
+	nedit.h
+	shift.cpp
+	shift.h
+	userCmds.cpp
+	userCmds.h
 )
 
 if(${X11_FOUND})

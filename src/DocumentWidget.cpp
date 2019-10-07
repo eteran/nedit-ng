@@ -305,7 +305,7 @@ UndoTypes determineUndoType(int64_t nInserted, int64_t nDeleted) {
  */
 QLatin1String createRepeatMacro(int how) {
 
-	/* TODO: move this to the interpreter library as it is specific
+	/* TODO(eteran): move this to the interpreter library as it is specific
 	 * to the Nedit macro language
 	 */
 
@@ -1080,7 +1080,7 @@ void DocumentWidget::raiseDocumentWindow() {
 void DocumentWidget::documentRaised() {
 	// Turn on syntax highlight that might have been deferred.
 	if (highlightSyntax_ && !highlightData_) {
-		startHighlighting(/*warn=*/false);
+		startHighlighting(Verbosity::Silent);
 	}
 
 	refreshWindowStates();
@@ -1182,7 +1182,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
 		// we defer highlighting to RaiseDocument() if doc is hidden
 		if (topDocument && highlight) {
-			startHighlighting(/*warn=*/false);
+			startHighlighting(Verbosity::Silent);
 		}
 
 		// Force a change of smart indent macros (SetAutoIndent will re-start)
@@ -1275,7 +1275,7 @@ void DocumentWidget::setAutoIndent(IndentStyle indentStyle) {
 	if (info_->indentStyle == IndentStyle::Smart && !smartIndent) {
 		endSmartIndent();
 	} else if (smartIndent && info_->indentStyle != IndentStyle::Smart) {
-		beginSmartIndent(/*warn=*/true);
+		beginSmartIndent(Verbosity::Verbose);
 	}
 
 	info_->indentStyle = indentStyle;
@@ -3789,7 +3789,7 @@ void DocumentWidget::findDefinitionHelper(TextArea *area, const QString &arg, Ta
 	} else {
 		Tags::searchMode = search_type;
 
-		QString selected = getAnySelection(/*beep_on_error=*/false);
+		QString selected = getAnySelection(ErrorSound::Silent);
 		if(selected.isEmpty()) {
 			return;
 		}
@@ -4015,14 +4015,14 @@ void DocumentWidget::closePane() {
 ** be repeated whenever a new text widget is created within this window
 ** (a split-window command).
 */
-void DocumentWidget::beginSmartIndent(bool warn) {
+void DocumentWidget::beginSmartIndent(Verbosity verbosity) {
 
 	static bool initialized = false;
 
 	// Find the window's language mode.  If none is set, warn the user
 	QString modeName = Preferences::LanguageModeName(languageMode_);
 	if(modeName.isNull()) {
-		if (warn) {
+		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(
 						this,
 						tr("Smart Indent"),
@@ -4034,7 +4034,7 @@ void DocumentWidget::beginSmartIndent(bool warn) {
 	// Look up the appropriate smart-indent macros for the language
 	const SmartIndentEntry *indentMacros = SmartIndent::findIndentSpec(modeName);
 	if(!indentMacros) {
-		if (warn) {
+		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(
 						this,
 						tr("Smart Indent"),
@@ -5412,12 +5412,12 @@ void DocumentWidget::eraseFlash() {
 ** Find the pattern set matching the window's current language mode, or
 ** tell the user if it can't be done (if warn is true) and return nullptr.
 */
-PatternSet *DocumentWidget::findPatternsForWindow(bool warn) {
+PatternSet *DocumentWidget::findPatternsForWindow(Verbosity verbosity) {
 
 	// Find the window's language mode.  If none is set, warn user
 	QString modeName = Preferences::LanguageModeName(languageMode_);
 	if(modeName.isNull()) {
-		if (warn) {
+		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this,
 								 tr("Language Mode"),
 								 tr("No language-specific mode has been set for this file.\n\n"
@@ -5433,7 +5433,7 @@ PatternSet *DocumentWidget::findPatternsForWindow(bool warn) {
 	// Look up the appropriate pattern for the language
 	PatternSet *const patterns = Highlight::FindPatternSet(modeName);
 	if(!patterns) {
-		if (warn) {
+		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this,
 								 tr("Language Mode"),
 								 tr("Syntax highlighting is not available in language\n"
@@ -5482,7 +5482,7 @@ void DocumentWidget::updateHighlightStyles() {
 	}
 
 	// Find the pattern set for the window's current language mode
-	PatternSet *patterns = findPatternsForWindow(/*warn=*/false);
+	PatternSet *patterns = findPatternsForWindow(Verbosity::Silent);
 	if(!patterns) {
 		stopHighlighting();
 		return;
@@ -5590,7 +5590,7 @@ Style DocumentWidget::getHighlightInfo(TextCursor pos) {
 ** If the initial code value *checkCode is zero, the highlight code of pos
 ** is used.
 */
-int64_t DocumentWidget::styleLengthOfCodeFromPos(TextCursor pos) {
+int64_t DocumentWidget::styleLengthOfCodeFromPos(TextCursor pos) const {
 
 	const TextCursor oldPos = pos;
 
@@ -5679,7 +5679,7 @@ StyleTableEntry *DocumentWidget::styleTableEntryOfCode(size_t hCode) const {
 ** Picks up the entry in the style buffer for the position (if any).
 ** Returns the style code or zero.
 */
-size_t DocumentWidget::highlightCodeOfPos(TextCursor pos) {
+size_t DocumentWidget::highlightCodeOfPos(TextCursor pos) const {
 
 	size_t hCode = 0;
 	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
@@ -5702,7 +5702,7 @@ size_t DocumentWidget::highlightCodeOfPos(TextCursor pos) {
 ** Returns the length over which a particular highlight code applies, starting
 ** at pos.
 */
-int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) {
+int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
 
 	const TextCursor oldPos = pos;
 	size_t checkCode = 0;
@@ -5840,13 +5840,13 @@ void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &sty
 ** Turn on syntax highlighting.  If "warn" is true, warn the user when it
 ** can't be done, otherwise, just return.
 */
-void DocumentWidget::startHighlighting(bool warn) {
+void DocumentWidget::startHighlighting(Verbosity verbosity) {
 
 	int prevChar = -1;
 
 	/* Find the pattern set matching the window's current
 	   language mode, tell the user if it can't be done */
-	PatternSet *patterns = findPatternsForWindow(warn);
+	PatternSet *patterns = findPatternsForWindow(verbosity);
 	if(!patterns) {
 		return;
 	}
@@ -6632,16 +6632,16 @@ bool DocumentWidget::inSmartIndentMacros() const {
  * @brief DocumentWidget::getAnySelection
  * @return
  */
-QString DocumentWidget::getAnySelection() {
-	return getAnySelection(/*beep_on_error=*/false);
+QString DocumentWidget::getAnySelection() const {
+	return getAnySelection(ErrorSound::Silent);
 }
 
 /**
  * @brief DocumentWidget::GetAnySelection
- * @param beep_on_error
+ * @param errorSound
  * @return
  */
-QString DocumentWidget::getAnySelection(bool beep_on_error) {
+QString DocumentWidget::getAnySelection(ErrorSound errorSound) const {
 
 	if(QApplication::clipboard()->supportsSelection()) {
 		const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
@@ -6655,7 +6655,7 @@ QString DocumentWidget::getAnySelection(bool beep_on_error) {
 		return QString::fromStdString(info_->buffer->BufGetSelectionTextEx());
 	}
 
-	if(beep_on_error) {
+	if(errorSound == ErrorSound::Beep) {
 		QApplication::beep();
 	}
 
@@ -6721,7 +6721,7 @@ void DocumentWidget::setHighlightSyntax(bool value) {
 	}
 
 	if (highlightSyntax_) {
-		startHighlighting(/*warn=*/true);
+		startHighlighting(Verbosity::Verbose);
 	} else {
 		stopHighlighting();
 	}

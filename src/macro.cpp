@@ -2372,7 +2372,7 @@ static std::error_code focusWindowMS(DocumentWidget *document, Arguments argumen
 
 	// turn on syntax highlight that might have been deferred
 	if (target->highlightSyntax_ && !target->highlightData_) {
-		target->startHighlighting(/*warn=*/false);
+		target->startHighlighting(Verbosity::Silent);
 	}
 
 	// Return the name of the window
@@ -2513,7 +2513,7 @@ static std::error_code getSelectionMS(DocumentWidget *document, Arguments argume
 			return MacroErrorCode::UnrecognizedArgument;
 		}
 
-		QString text = document->getAnySelection(/*beep_on_error=*/true);
+		QString text = document->getAnySelection(ErrorSound::Beep);
 		if (text.isNull()) {
 			text = QLatin1String("");
 		}
