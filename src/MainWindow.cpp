@@ -853,7 +853,7 @@ void MainWindow::on_action_Close_triggered() {
  * @brief MainWindow::on_action_About_triggered
  */
 void MainWindow::on_action_About_triggered() {
-	static auto dialog = new DialogAbout(this);
+	auto dialog = std::make_unique<DialogAbout>(this);
 	dialog->exec();
 }
 
@@ -3990,24 +3990,29 @@ void MainWindow::on_action_Default_Tab_Stops_triggered() {
  * @brief MainWindow::on_action_Default_Text_Fonts_triggered
  */
 void MainWindow::on_action_Default_Text_Fonts_triggered() {
-	auto dialogFonts = std::make_unique<DialogFonts>(nullptr, this);
-	dialogFonts->exec();
+	auto dialog = std::make_unique<DialogFonts>(nullptr, this);
+	dialog->exec();
 }
 
 /**
  * @brief MainWindow::on_action_Default_Colors_triggered
  */
 void MainWindow::on_action_Default_Colors_triggered() {
-	auto dialogColors = std::make_unique<DialogColors>(this);
-	dialogColors->exec();
+	auto dialog = std::make_unique<DialogColors>(this);
+	dialog->exec();
 }
 
 /*
 ** Present a dialog for editing the user specified commands in the shell menu
 */
 void MainWindow::on_action_Default_Shell_Menu_triggered() {
-	static auto WindowShellMenu = new DialogShellMenu(this);
-	WindowShellMenu->show();
+	if(!dialogShellMenu_) {
+		dialogShellMenu_ = new DialogShellMenu(this);
+	}
+
+	// TODO(eteran): do we want to take any measures to prevent
+	// more than one of these being shown?
+	dialogShellMenu_->show();
 }
 
 /*
@@ -4015,16 +4020,26 @@ void MainWindow::on_action_Default_Shell_Menu_triggered() {
 ** and background menus
 */
 void MainWindow::on_action_Default_Macro_Menu_triggered() {
-	static auto WindowMacros = new DialogMacros(this);
-	WindowMacros->show();
+	if(!dialogMacros_) {
+		dialogMacros_ = new DialogMacros(this);
+	}
+
+	// TODO(eteran): do we want to take any measures to prevent
+	// more than one of these being shown?
+	dialogMacros_->show();
 }
 
 /**
  * @brief MainWindow::on_action_Default_Window_Background_Menu_triggered
  */
 void MainWindow::on_action_Default_Window_Background_Menu_triggered() {
-	static auto WindowBackgroundMenu = new DialogWindowBackgroundMenu(this);
-	WindowBackgroundMenu->show();
+	if(!dialogWindowBackgroundMenu_) {
+		dialogWindowBackgroundMenu_ = new DialogWindowBackgroundMenu(this);
+	}
+
+	// TODO(eteran): do we want to take any measures to prevent
+	// more than one of these being shown?
+	dialogWindowBackgroundMenu_->show();
 }
 
 /**
@@ -5661,8 +5676,7 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, CommandSource
 		return;
 	}
 
-	static auto dialog = new DialogFilter(this);
-
+	auto dialog = std::make_unique<DialogFilter>(this);
 	int r = dialog->exec();
 	if(!r) {
 		return;
@@ -5733,8 +5747,7 @@ void MainWindow::action_Execute_Command(DocumentWidget *document) {
 		return;
 	}
 
-	static auto dialog = new DialogExecuteCommand(this);
-
+	auto dialog = std::make_unique<DialogExecuteCommand>(this);
 	int r = dialog->exec();
 	if(!r) {
 		return;

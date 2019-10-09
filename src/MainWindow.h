@@ -29,6 +29,9 @@ class TextArea;
 class DocumentWidget;
 class DialogReplace;
 class DialogFind;
+class DialogShellMenu;
+class DialogMacros;
+class DialogWindowBackgroundMenu;
 struct MenuData;
 struct TextRange;
 
@@ -423,17 +426,23 @@ public:
 	bool showLineNumbers_;
 
 private:
-	QList<QAction *>        previousOpenFilesList_;
-	QPointer<DialogFind>    dialogFind_;
-	QPointer<DialogReplace> dialogReplace_;
-	QPointer<TextArea>      lastFocus_;
+	QList<QAction *>                     previousOpenFilesList_;
+	QPointer<DialogFind>                 dialogFind_;
+	QPointer<DialogReplace>              dialogReplace_;
+	QPointer<DialogShellMenu>            dialogShellMenu_;
+	QPointer<DialogMacros>               dialogMacros_;
+	QPointer<DialogWindowBackgroundMenu> dialogWindowBackgroundMenu_;
+	QPointer<TextArea>                   lastFocus_;
 
 private:
 	bool iSearchLastLiteralCase_    = false;          // idem, for literal mode
 	bool iSearchLastRegexCase_      = true;           // idem, for regex mode in incremental search bar
 	int iSearchHistIndex_           = 0;              // find and replace dialogs
-	TextCursor iSearchLastBeginPos_ = {};              // beg. pos. last match of current i.s.
+	TextCursor iSearchLastBeginPos_ = {};             // beg. pos. last match of current i.s.
 	TextCursor iSearchStartPos_     = TextCursor(-1); // start pos. of current incr. search
+
+private:
+
 
 public:
 	Ui::MainWindow ui;
