@@ -236,13 +236,13 @@ void NeditServer::newConnection() {
 
 			const int tabbed = -1;
 
-			MainWindow::EditNewFile(
+			MainWindow::editNewFile(
 			            MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop)),
 			            QString(),
 			            false,
 						QString());
 
-			MainWindow::CheckCloseEnableState();
+			MainWindow::checkCloseEnableState();
 		} else {
 			(*it)->raiseDocument();
 		}
@@ -284,7 +284,7 @@ void NeditServer::newConnection() {
 			if (doCommand.isEmpty()) {
 				if (it == documents.end()) {
 
-					MainWindow::EditNewFile(
+					MainWindow::editNewFile(
 					            MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop)),
 					            QString(),
 					            iconicFlag,
@@ -317,7 +317,7 @@ void NeditServer::newConnection() {
 				}
 			}
 
-			MainWindow::CheckCloseEnableState();
+			MainWindow::checkCloseEnableState();
 			return;
 		}
 
@@ -334,7 +334,7 @@ void NeditServer::newConnection() {
 			break;
 		}
 
-		DocumentWidget *document = MainWindow::FindWindowWithFile(fi->filename, fi->pathname);
+		DocumentWidget *document = MainWindow::findWindowWithFile(fi->filename, fi->pathname);
 		if (!document) {
 			/* Files are opened in background to improve opening speed
 			   by defering certain time  consuiming task such as syntax
@@ -413,6 +413,6 @@ void NeditServer::newConnection() {
 		} else {
 			lastFile->raiseDocumentWindow();
 		}
-		MainWindow::CheckCloseEnableState();
+		MainWindow::checkCloseEnableState();
 	}
 }

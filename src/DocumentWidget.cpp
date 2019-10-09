@@ -350,7 +350,7 @@ QLatin1String createRepeatMacro(int how) {
 DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, bool iconic, const QString &languageMode, bool tabbed, bool background) {
 
 	// first look to see if file is already displayed in a window
-	if(DocumentWidget *document = MainWindow::FindWindowWithFile(name, path)) {
+	if(DocumentWidget *document = MainWindow::findWindowWithFile(name, path)) {
 		if (!background) {
 			if (iconic) {
 				document->raiseDocument();
@@ -364,7 +364,7 @@ DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, con
 	// helper local function to reduce code duplication
 	auto createInNewWindow = [&name, &geometry, iconic]() {
 		auto win = new MainWindow();
-		DocumentWidget *document = win->CreateDocument(name);
+		DocumentWidget *document = win->createDocument(name);
 		if(iconic) {
 			win->showMinimized();
 		} else {
@@ -384,7 +384,7 @@ DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, con
 	} else if (inDocument->info_->filenameSet || inDocument->info_->fileChanged || inDocument->macroCmdData_) {
 		if (tabbed) {
 			if(auto win = MainWindow::fromDocument(inDocument)) {
-				document = win->CreateDocument(name);
+				document = win->createDocument(name);
 			} else {
 				return nullptr;
 			}
@@ -443,7 +443,7 @@ DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, con
 		Tags::addRelTagsFile(Preferences::GetPrefTagFile(), path, Tags::SearchMode::TAG);
 	}
 
-	MainWindow::AddToPrevOpenMenu(fullname);
+	MainWindow::addToPrevOpenMenu(fullname);
 	return document;
 }
 
@@ -2116,11 +2116,11 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 
 	/* For large files, the comparison can take a while. If it takes too long,
 	   the user should be given a clue about what is happening. */
-	MainWindow::AllDocumentsBusy(tr("Comparing externally modified %1 ...").arg(info_->filename));
+	MainWindow::allDocumentsBusy(tr("Comparing externally modified %1 ...").arg(info_->filename));
 
 	// make sure that we unbusy the windows when we're done
 	auto _ = gsl::finally([]() {
-		MainWindow::AllDocumentsUnbusy();
+		MainWindow::allDocumentsUnbusy();
 	});
 
 	while (restLen > 0) {
@@ -2479,7 +2479,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 		QString fullname;
 
 		if(newName.isNull()) {
-			fullname = MainWindow::PromptForNewFile(this, &info_->fileFormat, &addWrap);
+			fullname = MainWindow::promptForNewFile(this, &info_->fileFormat, &addWrap);
 			if(fullname.isNull()) {
 				return false;
 			}
@@ -2507,7 +2507,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 		}
 
 		// If the file is open in another window, make user close it.
-		if (DocumentWidget *otherWindow = MainWindow::FindWindowWithFile(fi->filename, fi->pathname)) {
+		if (DocumentWidget *otherWindow = MainWindow::findWindowWithFile(fi->filename, fi->pathname)) {
 
 			QMessageBox messageBox(this);
 			messageBox.setWindowTitle(tr("File open"));
@@ -2526,7 +2526,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 			 * after doing the dialog, check again whether the window still
 			 * exists in case the user somehow closed the window
 			 */
-			if (otherWindow == MainWindow::FindWindowWithFile(fi->filename, fi->pathname)) {
+			if (otherWindow == MainWindow::findWindowWithFile(fi->filename, fi->pathname)) {
 				if (!otherWindow->closeFileAndWindow(CloseMode::Prompt)) {
 					return false;
 				}
@@ -2547,7 +2547,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 		refreshTabState();
 
 		// Add the name to the convenience menu of previously opened files
-		MainWindow::AddToPrevOpenMenu(fullname);
+		MainWindow::addToPrevOpenMenu(fullname);
 
 		/*  If name has changed, language mode may have changed as well, unless
 			it's an Untitled window for which the user already set a language
@@ -2905,8 +2905,8 @@ void DocumentWidget::closeDocument() {
 
 	// Close of window running a macro may have been disabled.
 	// NOTE(eteran): this may be redundant...
-	MainWindow::CheckCloseEnableState();
-	MainWindow::UpdateWindowMenus();
+	MainWindow::checkCloseEnableState();
+	MainWindow::updateWindowMenus();
 
 	// if we deleted the last tab, then we can close the window too
 	if(win->tabCount() == 0) {
@@ -2968,7 +2968,7 @@ DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 	                               Preferences::GetPrefOpenInTab(),
 	                               /*bgOpen=*/false);
 
-	MainWindow::CheckCloseEnableState();
+	MainWindow::checkCloseEnableState();
 
 	return document;
 }
@@ -3478,8 +3478,8 @@ void DocumentWidget::shellBannerTimeoutProc() {
 void DocumentWidget::actionClose(CloseMode mode) {
 
 	closeFileAndWindow(mode);
-	MainWindow::CheckCloseEnableState();
-	MainWindow::UpdateWindowMenus();
+	MainWindow::checkCloseEnableState();
+	MainWindow::updateWindowMenus();
 }
 
 bool DocumentWidget::includeFile(const QString &name) {
@@ -4926,7 +4926,7 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 		range.end   = TextCursor();
 		break;
 	case TO_NEW_WINDOW:
-		if(DocumentWidget *document = MainWindow::EditNewFile(
+		if(DocumentWidget *document = MainWindow::editNewFile(
 					Preferences::GetPrefOpenInTab() ? inWindow : nullptr,
 					QString(),
 					false,
@@ -4937,7 +4937,7 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 			outWidget = document->firstPane();
 			range.start = TextCursor();
 			range.end   = TextCursor();
-			MainWindow::CheckCloseEnableState();
+			MainWindow::checkCloseEnableState();
 		}
 		break;
 	case TO_SAME_WINDOW:
@@ -7134,7 +7134,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 	            Preferences::GetPrefOpenInTab(),
 	            /*bgOpen=*/false);
 
-	DocumentWidget *documentToSearch = MainWindow::FindWindowWithFile(fi->filename, fi->pathname);
+	DocumentWidget *documentToSearch = MainWindow::findWindowWithFile(fi->filename, fi->pathname);
 	if(!documentToSearch) {
 		QMessageBox::warning(
 					this,

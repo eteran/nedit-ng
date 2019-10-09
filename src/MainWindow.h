@@ -49,7 +49,7 @@ private:
 	void setupMenuStrings();
 	void setupTabBar();
 	void setupMenuAlternativeMenus();
-	void CreateLanguageModeSubMenu();
+	void createLanguageModeSubMenu();
 	void setupMenuDefaults();
 	void setupGlobalPrefenceDefaults();
 	void setupDocumentPreferenceDefaults();
@@ -63,53 +63,53 @@ private:
 	bool eventFilter(QObject *object, QEvent *event) override;
 
 public:
-	bool CheckPrefsChangesSavedEx();
-	bool CloseAllDocumentsInWindow();
-	bool DoNamedBGMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source);
-	bool DoNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source);
-	bool DoNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source);
-	bool GetIncrementalSearchLineMS() const;
-	bool GetShowLineNumbers() const;
-	bool prefOrUserCancelsSubstEx(DocumentWidget *document);
-	bool ReplaceAllEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
-	bool ReplaceAndSearchEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap);
-	bool ReplaceSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
-	bool SearchAndReplaceEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap);
-	bool SearchAndSelectEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap);
-	bool SearchAndSelectIncrementalEx(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, bool continued);
-	bool SearchAndSelectSameEx(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
-	bool searchMatchesSelectionEx(DocumentWidget *document, const QString &searchString, SearchType searchType, TextRange *textRange, TextCursor *extentBW, TextCursor *extentFW);
-	bool SearchWindowEx(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, Search::Result *searchResult);
-	DocumentWidget *CreateDocument(const QString &name);
+	bool checkPrefsChangesSaved();
+	bool closeAllDocumentsInWindow();
+	bool execNamedBGMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source);
+	bool execNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source);
+	bool execNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source);
+	bool getIncrementalSearchLine() const;
+	bool getShowLineNumbers() const;
+	bool prefOrUserCancelsSubst(DocumentWidget *document);
+	bool replaceAll(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
+	bool replaceAndSearch(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap);
+	bool replaceSame(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
+	bool searchAndReplace(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap);
+	bool searchAndSelect(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap);
+	bool searchAndSelectIncremental(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, bool continued);
+	bool searchAndSelectSame(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
+	bool searchMatchesSelection(DocumentWidget *document, const QString &searchString, SearchType searchType, TextRange *textRange, TextCursor *extentBW, TextCursor *extentFW);
+	bool searchWindow(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, Search::Result *searchResult);
+	DocumentWidget *createDocument(const QString &name);
 	DocumentWidget *currentDocument() const;
 	DocumentWidget *documentAt(int index) const;
 	int updateGutterWidth();
 	int updateLineNumDisp();
-	QStringList PromptForExistingFiles(const QString &path, const QString &prompt, QFileDialog::FileMode mode);
+	QStringList promptForExistingFiles(const QString &path, const QString &prompt, QFileDialog::FileMode mode);
 	size_t tabCount() const;
 	std::vector<DocumentWidget *> openDocuments() const;
-	void BeginISearchEx(Direction direction);
-	void EditHighlightPatterns();
-	void EditHighlightStyles(const QString &initialStyle);
-	void EndISearchEx();
+	void beginISearch(Direction direction);
+	void editHighlightPatterns();
+	void editHighlightStyles(const QString &initialStyle);
+	void endISearch();
 	void forceShowLineNumbers();
 	void initToggleButtonsiSearch(SearchType searchType);
 	void iSearchRecordLastBeginPosEx(Direction direction, TextCursor initPos);
 	void iSearchTryBeepOnWrapEx(Direction direction, TextCursor beginPos, TextCursor startPos);
 	void openFile(DocumentWidget *document, const QString &text);
 	void parseGeometry(QString geometry);
-	void ReplaceInSelectionEx(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
-	void SearchForSelectedEx(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap);
-	void SetIncrementalSearchLineMS(bool value);
-	void SetShowLineNumbers(bool show);
+	void replaceInSelection(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
+	void searchForSelected(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap);
+	void setIncrementalSearchLine(bool value);
+	void setShowLineNumbers(bool show);
 	void setWindowSizeDefault(int rows, int cols);
-	void ShowLineNumbers(bool state);
+	void showLineNumbers(bool state);
 	void sortTabBar();
-	void TempShowISearch(bool state);
+	void tempShowISearch(bool state);
 	void updateLanguageModeSubmenu();
 	void updatePrevOpenMenu();
-	void updateTagsFileMenuEx();
-	void updateTipsFileMenuEx();
+	void updateTagsFileMenu();
+	void updateTipsFileMenu();
 	void updateUserMenus();
 	void updateUserMenus(DocumentWidget *document);
 	void updateWindowMenu();
@@ -124,26 +124,26 @@ private:
 	QFileInfoList openFileHelperString(DocumentWidget *document, const QString &text, QString *searchPath, QString *searchName) const;
 
 public:
-	static bool CloseAllFilesAndWindows();
-	static DocumentWidget *EditNewFile(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode);
-	static DocumentWidget *EditNewFile(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode, const QDir &defaultPath);
-	static DocumentWidget *FindWindowWithFile(const QString &filename, const QString &path);
-	static QString PromptForNewFile(DocumentWidget *document, FileFormats *format, bool *addWrap);
+	static bool closeAllFilesAndWindows();
+	static DocumentWidget *editNewFile(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode);
+	static DocumentWidget *editNewFile(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode, const QDir &defaultPath);
+	static DocumentWidget *findWindowWithFile(const QString &filename, const QString &path);
+	static QString promptForNewFile(DocumentWidget *document, FileFormats *format, bool *addWrap);
 	static MainWindow *firstWindow();
 	static MainWindow *fromDocument(const DocumentWidget *document);
 	static QString uniqueUntitledName();
 	static std::vector<MainWindow *> allWindows(bool includeInvisible = false);
-	static void AddToPrevOpenMenu(const QString &filename);
-	static void AllDocumentsBusy(const QString &message);
-	static void AllDocumentsUnbusy();
-	static void CheckCloseEnableState();
-	static void CheckCloseEnableState(const std::vector<MainWindow *> &windows);
+	static void addToPrevOpenMenu(const QString &filename);
+	static void allDocumentsBusy(const QString &message);
+	static void allDocumentsUnbusy();
+	static void checkCloseEnableState();
+	static void checkCloseEnableState(const std::vector<MainWindow *> &windows);
 	static void invalidatePrevOpenMenus();
-	static void ReadNEditDB();
-	static void RenameHighlightPattern(const QString &oldName, const QString &newName);
+	static void readNEditDB();
+	static void renameHighlightPattern(const QString &oldName, const QString &newName);
 	static void updateMenuItems();
-	static void UpdateWindowMenus();
-	static void WriteNEditDB();
+	static void updateWindowMenus();
+	static void writeNEditDB();
 	static void removeFromPrevOpenMenu(const QString &filename);
 
 private:
@@ -440,9 +440,6 @@ private:
 	int iSearchHistIndex_           = 0;              // find and replace dialogs
 	TextCursor iSearchLastBeginPos_ = {};             // beg. pos. last match of current i.s.
 	TextCursor iSearchStartPos_     = TextCursor(-1); // start pos. of current incr. search
-
-private:
-
 
 public:
 	Ui::MainWindow ui;

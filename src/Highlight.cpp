@@ -4,7 +4,6 @@
 #include "HighlightData.h"
 #include "HighlightPattern.h"
 #include "HighlightStyle.h"
-#include "MainWindow.h"
 #include "PatternSet.h"
 #include "Preferences.h"
 #include "Regex.h"

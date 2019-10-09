@@ -99,7 +99,7 @@ Main::Main(const QStringList &args) {
 
 	/* Read the nedit dynamic database of files for the Open Previous
 	command (and eventually other information as well) */
-	MainWindow::ReadNEditDB();
+	MainWindow::readNEditDB();
 
 	/* Process -import command line argument before others which might
 	   open windows (loading preferences doesn't update menu settings,
@@ -342,14 +342,14 @@ Main::Main(const QStringList &args) {
 		lastFile->raiseDocument();
 	}
 
-	MainWindow::CheckCloseEnableState();
+	MainWindow::checkCloseEnableState();
 
 	// If no file to edit was specified, open a window to edit "Untitled"
 	if (!fileSpecified) {
-		DocumentWidget *document = MainWindow::EditNewFile(nullptr, geometry, iconic, langMode);
+		DocumentWidget *document = MainWindow::editNewFile(nullptr, geometry, iconic, langMode);
 
 		document->readMacroInitFile();
-		MainWindow::CheckCloseEnableState();
+		MainWindow::checkCloseEnableState();
 
 		if (!toDoCommand.isNull()) {
 			document->doMacro(toDoCommand, QLatin1String("-do macro"));

@@ -1378,8 +1378,8 @@ static std::error_code setIncrementalSearchLineMS(DocumentWidget *document, Argu
 	Q_ASSERT(win);
 
 	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, win->GetIncrementalSearchLineMS(), &ec, "set_incremental_search_line")) {
-		win->SetIncrementalSearchLineMS(*next);
+	if(boost::optional<int> next = toggle_or_bool(arguments, win->getIncrementalSearchLine(), &ec, "set_incremental_search_line")) {
+		win->setIncrementalSearchLine(*next);
 		*result = make_value();
 		return MacroErrorCode::Success;
 	}
@@ -1452,8 +1452,8 @@ static std::error_code setShowLineNumbersMS(DocumentWidget *document, Arguments 
 	Q_ASSERT(win);
 
 	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, win->GetShowLineNumbers(), &ec, "set_show_line_numbers")) {
-		win->SetShowLineNumbers(*next);
+	if(boost::optional<int> next = toggle_or_bool(arguments, win->getShowLineNumbers(), &ec, "set_show_line_numbers")) {
+		win->setShowLineNumbers(*next);
 		*result = make_value();
 		return MacroErrorCode::Success;
 	}
@@ -1662,7 +1662,7 @@ static std::error_code startIncrFindMS(DocumentWidget *document, Arguments argum
 	auto win = MainWindow::fromDocument(document);
 	Q_ASSERT(win);
 
-	win->BeginISearchEx(searchDirection(arguments, 0));
+	win->beginISearch(searchDirection(arguments, 0));
 
 	*result = make_value();
 	return MacroErrorCode::Success;
@@ -1778,7 +1778,7 @@ static std::error_code backgroundMenuCommandMS(DocumentWidget *document, Argumen
 		return ec;
 	}
 
-	win->DoNamedBGMenuCmd(document, win->lastFocus(), name, CommandSource::Macro);
+	win->execNamedBGMenuCmd(document, win->lastFocus(), name, CommandSource::Macro);
 
 	*result = make_value();
 	return MacroErrorCode::Success;
@@ -4048,7 +4048,7 @@ static std::error_code incSearchLineMV(DocumentWidget *document, Arguments argum
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	*result = make_value(MainWindow::fromDocument(document)->GetIncrementalSearchLineMS() ? 1 : 0);
+	*result = make_value(MainWindow::fromDocument(document)->getIncrementalSearchLine() ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
@@ -4058,7 +4058,7 @@ static std::error_code showLineNumbersMV(DocumentWidget *document, Arguments arg
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	*result = make_value(MainWindow::fromDocument(document)->GetShowLineNumbers() ? 1 : 0);
+	*result = make_value(MainWindow::fromDocument(document)->getShowLineNumbers() ? 1 : 0);
 	return MacroErrorCode::Success;
 }
 
