@@ -930,7 +930,7 @@ void MainWindow::on_action_Include_File_triggered() {
  */
 void MainWindow::on_action_Cut_triggered() {
 	if(QPointer<TextArea> area = lastFocus()) {
-		area->cutClipboardAP();
+		area->cutClipboard();
 	}
 }
 
@@ -939,7 +939,7 @@ void MainWindow::on_action_Cut_triggered() {
  */
 void MainWindow::on_action_Copy_triggered() {
 	if(QPointer<TextArea> area = lastFocus()) {
-		area->copyClipboardAP();
+		area->copyClipboard();
 	}
 }
 
@@ -948,7 +948,7 @@ void MainWindow::on_action_Copy_triggered() {
  */
 void MainWindow::on_action_Paste_triggered() {
 	if(QPointer<TextArea> area = lastFocus()) {
-		area->pasteClipboardAP();
+		area->pasteClipboard();
 	}
 }
 
@@ -957,7 +957,7 @@ void MainWindow::on_action_Paste_triggered() {
  */
 void MainWindow::on_action_Paste_Column_triggered() {
 	if(QPointer<TextArea> area = lastFocus()) {
-		area->pasteClipboardAP(TextArea::RectFlag);
+		area->pasteClipboard(TextArea::RectFlag);
 	}
 }
 
