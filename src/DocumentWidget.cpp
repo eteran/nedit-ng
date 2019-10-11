@@ -233,7 +233,7 @@ void safeBufReplace(TextBuffer *buf, TextCursor *start, TextCursor *end, view::s
 	*start = std::min(last, *start);
 	*end   = std::min(last, *end);
 
-	buf->BufReplaceEx(*start, *end, text);
+	buf->BufReplace(*start, *end, text);
 }
 
 /*
@@ -537,7 +537,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 
 	// Every document has a backing buffer
 	info_->buffer = std::make_unique<TextBuffer>();
-	info_->buffer->BufAddModifyCB(SyntaxHighlightModifyCBEx, this);
+	info_->buffer->BufAddModifyCB(Highlight::SyntaxHighlightModifyCB, this);
 
 	// create the text widget
 	if(Settings::splitHorizontally) {
@@ -618,7 +618,7 @@ DocumentWidget::~DocumentWidget() {
 	freeHighlightingData();
 
 	info_->buffer->BufRemoveModifyCB(modifiedCB, this);
-	info_->buffer->BufRemoveModifyCB(SyntaxHighlightModifyCBEx, this);
+	info_->buffer->BufRemoveModifyCB(Highlight::SyntaxHighlightModifyCB, this);
 }
 
 /**
@@ -819,7 +819,7 @@ size_t DocumentWidget::matchLanguageMode() const {
 	/*... look for an explicit mode statement first */
 
 	// Do a regular expression search on for recognition pattern
-	const std::string first200 = info_->buffer->BufGetRangeEx(info_->buffer->BufStartOfBuffer(), info_->buffer->BufStartOfBuffer() + 200);
+	const std::string first200 = info_->buffer->BufGetRange(info_->buffer->BufStartOfBuffer(), info_->buffer->BufStartOfBuffer() + 200);
 	if(!first200.empty()) {
 		for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
 			if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {
@@ -1390,7 +1390,7 @@ void DocumentWidget::stopHighlighting() {
 	/* Remove and detach style buffer and style table from all text
 	   display(s) of window, and redisplay without highlighting */
 	for(TextArea *area : textPanes()) {
-		area->RemoveWidgetHighlightEx();
+		area->RemoveWidgetHighlight();
 	}
 }
 
@@ -1708,7 +1708,7 @@ void DocumentWidget::undo() {
 		undo.inUndo = true;
 
 		// use the saved undo information to reverse changes
-		info_->buffer->BufReplaceEx(undo.startPos, undo.endPos, undo.oldText);
+		info_->buffer->BufReplace(undo.startPos, undo.endPos, undo.oldText);
 
 		const auto restoredTextLength = static_cast<int64_t>(undo.oldText.size());
 		if (!info_->buffer->primary.hasSelection() || Preferences::GetPrefUndoModifiesSelection()) {
@@ -1761,7 +1761,7 @@ void DocumentWidget::redo() {
 		redo.inUndo = true;
 
 		// use the saved redo information to reverse changes
-		info_->buffer->BufReplaceEx(redo.startPos, redo.endPos, redo.oldText);
+		info_->buffer->BufReplace(redo.startPos, redo.endPos, redo.oldText);
 
 		const auto restoredTextLength = static_cast<int64_t>(redo.oldText.size());
 		if (!info_->buffer->primary.hasSelection() || Preferences::GetPrefUndoModifiesSelection()) {
@@ -2282,7 +2282,7 @@ bool DocumentWidget::writeBackupFile() {
 	}
 
 	// get the text buffer contents
-	std::string fileString = info_->buffer->BufGetAllEx();
+	std::string fileString = info_->buffer->BufGetAll();
 
 	// add a terminating newline if the file doesn't already have one
 	if(Preferences::GetPrefAppendLF()) {
@@ -2398,7 +2398,7 @@ bool DocumentWidget::doSave() {
 			 zero size on disk, and the check would falsely conclude that the
 			 file has changed on disk, and would pop up a warning dialog */
 	if (Preferences::GetPrefAppendLF() && !info_->buffer->BufIsEmpty() && info_->buffer->back() != '\n') {
-		info_->buffer->BufAppendEx('\n');
+		info_->buffer->BufAppend('\n');
 	}
 
 	// open the file
@@ -2423,7 +2423,7 @@ bool DocumentWidget::doSave() {
 	}
 
 	// get the text buffer contents and its length
-	std::string text = info_->buffer->BufGetAllEx();
+	std::string text = info_->buffer->BufGetAll();
 
 	// If the file is to be saved in DOS or Macintosh format, reconvert
 	switch(info_->fileFormat) {
@@ -3522,10 +3522,10 @@ bool DocumentWidget::includeFile(const QString &name) {
 		/* insert the contents of the file in the selection or at the insert
 		   position in the window if no selection exists */
 		if (info_->buffer->primary.hasSelection()) {
-			info_->buffer->BufReplaceSelectedEx(text);
+			info_->buffer->BufReplaceSelected(text);
 		} else {
 			if(auto win = MainWindow::fromDocument(this)) {
-				info_->buffer->BufInsertEx(win->lastFocus()->TextGetCursorPos(), text);
+				info_->buffer->BufInsert(win->lastFocus()->TextGetCursorPos(), text);
 			}
 		}
 	}
@@ -3921,7 +3921,7 @@ void DocumentWidget::printWindow(TextArea *area, bool selectedOnly) {
 		}
 
 		if (sel->isRectangular()) {
-			fileString = info_->buffer->BufGetSelectionTextEx();
+			fileString = info_->buffer->BufGetSelectionText();
 		} else {
 			fileString = area->TextGetWrapped(sel->start(), sel->end());
 		}
@@ -4704,7 +4704,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 
 			if (cmdData->flags & REPLACE_SELECTION) {
 				TextCursor reselectStart = buf->primary.isRectangular() ? TextCursor(-1) : buf->primary.start();
-				buf->BufReplaceSelectedEx(output_string);
+				buf->BufReplaceSelected(output_string);
 
 				area->TextSetCursorPos(buf->BufCursorPosHint());
 
@@ -4768,10 +4768,10 @@ void DocumentWidget::execCursorLine(TextArea *area, CommandSource source) {
 		insertPos = info_->buffer->BufEndOfLine(range.end);
 	}
 
-	std::string cmdText = info_->buffer->BufGetRangeEx(range);
+	std::string cmdText = info_->buffer->BufGetRange(range);
 
 	// insert a newline after the entire line
-	info_->buffer->BufInsertEx(insertPos, '\n');
+	info_->buffer->BufInsert(insertPos, '\n');
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
@@ -4827,7 +4827,7 @@ void DocumentWidget::filterSelection(const QString &command, CommandSource sourc
 
 	/* Get the selection and the range in character positions that it
 	   occupies.  Beep and return if no selection */
-	const std::string text = info_->buffer->BufGetSelectionTextEx();
+	const std::string text = info_->buffer->BufGetSelectionText();
 	if (text.empty()) {
 		QApplication::beep();
 		return;
@@ -4891,7 +4891,7 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 	std::string text;
 	switch(input) {
 	case FROM_SELECTION:
-		text = info_->buffer->BufGetSelectionTextEx();
+		text = info_->buffer->BufGetSelectionText();
 		if (text.empty()) {
 			QApplication::beep();
 			return;
@@ -4899,13 +4899,13 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 		flags |= ACCUMULATE | ERROR_DIALOGS;
 		break;
 	case FROM_WINDOW:
-		text = info_->buffer->BufGetAllEx();
+		text = info_->buffer->BufGetAll();
 		flags |= ACCUMULATE | ERROR_DIALOGS;
 		break;
 	case FROM_EITHER:
-		text = info_->buffer->BufGetSelectionTextEx();
+		text = info_->buffer->BufGetSelectionText();
 		if (text.empty()) {
-			text = info_->buffer->BufGetAllEx();
+			text = info_->buffer->BufGetAll();
 		}
 		flags |= ACCUMULATE | ERROR_DIALOGS;
 		break;
@@ -5807,11 +5807,11 @@ void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &sty
 	}
 
 	// Copy the buffer range into a string
-	std::string str             = buf->BufGetRangeEx(beginSafety, endSafety);
+	std::string str             = buf->BufGetRange(beginSafety, endSafety);
 	const char *string          = &str[0];
 	const char *const match_to  = string + str.size();
 
-	std::string styleStr  = styleBuf->BufGetRangeEx(beginSafety, endSafety);
+	std::string styleStr  = styleBuf->BufGetRange(beginSafety, endSafety);
 	char *styleString     = &styleStr[0];
 	char *stylePtr        = &styleStr[0];
 
@@ -5833,7 +5833,7 @@ void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &sty
 	/* Update the style buffer the new style information, but only between
 	   beginParse and endParse.  Skip the safety region */
 	auto view = view::string_view(&styleString[beginParse - beginSafety], static_cast<size_t>(endParse - beginParse));
-	styleBuf->BufReplaceEx(beginParse, endParse, view);
+	styleBuf->BufReplace(beginParse, endParse, view);
 }
 
 /*
@@ -5875,7 +5875,7 @@ void DocumentWidget::startHighlighting(Verbosity verbosity) {
 		}
 	} else {
 
-		view::string_view bufString = info_->buffer->BufAsStringEx();
+		view::string_view bufString = info_->buffer->BufAsString();
 		const char *stringPtr       = bufString.data();
 		const char *const match_to  = bufString.data() + bufString.size();
 
@@ -6652,7 +6652,7 @@ QString DocumentWidget::getAnySelection(ErrorSound errorSound) const {
 
 	// If the selection is in the window's own buffer get it from there
 	if (info_->buffer->primary.hasSelection()) {
-		return QString::fromStdString(info_->buffer->BufGetSelectionTextEx());
+		return QString::fromStdString(info_->buffer->BufGetSelectionText());
 	}
 
 	if(errorSound == ErrorSound::Beep) {
@@ -7155,7 +7155,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 	int64_t endPos;
 
 	// search for the tags file search string in the newly opened file
-	if (!Tags::fakeRegExSearch(documentToSearch->buffer()->BufAsStringEx(), Tags::tagSearch[i], &startPos, &endPos)) {
+	if (!Tags::fakeRegExSearch(documentToSearch->buffer()->BufAsString(), Tags::tagSearch[i], &startPos, &endPos)) {
 		QMessageBox::warning(
 					this,
 					tr("Tag Error"),

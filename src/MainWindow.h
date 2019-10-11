@@ -94,8 +94,8 @@ public:
 	void endISearch();
 	void forceShowLineNumbers();
 	void initToggleButtonsiSearch(SearchType searchType);
-	void iSearchRecordLastBeginPosEx(Direction direction, TextCursor initPos);
-	void iSearchTryBeepOnWrapEx(Direction direction, TextCursor beginPos, TextCursor startPos);
+	void iSearchRecordLastBeginPos(Direction direction, TextCursor initPos);
+	void iSearchTryBeepOnWrap(Direction direction, TextCursor beginPos, TextCursor startPos);
 	void openFile(DocumentWidget *document, const QString &text);
 	void parseGeometry(QString geometry);
 	void replaceInSelection(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);

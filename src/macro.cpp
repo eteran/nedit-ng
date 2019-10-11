@@ -2402,7 +2402,7 @@ static std::error_code getRangeMS(DocumentWidget *document, Arguments arguments,
 		std::swap(from, to);
 	}
 
-	std::string rangeText = buf->BufGetRangeEx(TextCursor(from), TextCursor(to));
+	std::string rangeText = buf->BufGetRange(TextCursor(from), TextCursor(to));
 
 	*result = make_value(rangeText);
 	return MacroErrorCode::Success;
@@ -2465,7 +2465,7 @@ static std::error_code replaceRangeMS(DocumentWidget *document, Arguments argume
 	}
 
 	// Do the replace
-	buf->BufReplaceEx(TextCursor(from), TextCursor(to), string);
+	buf->BufReplace(TextCursor(from), TextCursor(to), string);
 	*result = make_value();
 	return MacroErrorCode::Success;
 }
@@ -2490,7 +2490,7 @@ static std::error_code replaceSelectionMS(DocumentWidget *document, Arguments ar
 	}
 
 	// Do the replace
-	document->buffer()->BufReplaceSelectedEx(string);
+	document->buffer()->BufReplaceSelected(string);
 	*result = make_value();
 	return MacroErrorCode::Success;
 }
@@ -2521,7 +2521,7 @@ static std::error_code getSelectionMS(DocumentWidget *document, Arguments argume
 		// Return the text as an allocated string
 		*result = make_value(text);
 	} else {
-		std::string selText = document->buffer()->BufGetSelectionTextEx();
+		std::string selText = document->buffer()->BufGetSelectionText();
 
 		// Return the text as an allocated string
 		*result = make_value(selText);
@@ -2802,7 +2802,7 @@ static std::error_code searchMS(DocumentWidget *document, Arguments arguments, D
 	// we just make a copy here. If we duplicate the code in searchStringMS
 	// here and thus don't have to pass things in a DataValue, we can once again
 	// make it copy free
-	newArgList[0] = make_value(document->buffer()->BufAsStringEx());
+	newArgList[0] = make_value(document->buffer()->BufAsString());
 
 	// copy other arguments to the new argument list
 	std::copy(arguments.begin(), arguments.end(), &newArgList[1]);

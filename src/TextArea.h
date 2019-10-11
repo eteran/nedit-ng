@@ -219,7 +219,7 @@ public:
 	int64_t TextFirstVisibleLine() const;
 	int64_t getBufferLinesCount() const;
 	std::string TextGetWrapped(TextCursor startPos, TextCursor endPos);
-	void RemoveWidgetHighlightEx();
+	void RemoveWidgetHighlight();
 	void TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user);	
 	void TextDKillCalltip(int id);
 	void TextDMaintainAbsLineNum(bool state);
@@ -292,8 +292,8 @@ private:
 	int measureVisLine(int visLineNum) const;
 	int visLineLength(int visLineNum) const;
 	int widthInPixels(char ch, int column) const;
-	std::string createIndentStringEx(TextBuffer *buf, int64_t bufOffset, TextCursor lineStartPos, TextCursor lineEndPos, int *column);
-	std::string wrapTextEx(view::string_view startLine, view::string_view text, int64_t bufOffset, int wrapMargin, int64_t *breakBefore);
+	std::string createIndentString(TextBuffer *buf, int64_t bufOffset, TextCursor lineStartPos, TextCursor lineEndPos, int *column);
+	std::string wrapText(view::string_view startLine, view::string_view text, int64_t bufOffset, int wrapMargin, int64_t *breakBefore);
 	uint32_t styleOfPos(TextCursor lineStartPos, int64_t lineLen, int64_t lineIndex, int64_t dispIndex, int thisChar) const;
 	void beginBlockDrag();
 	void blockDragSelection(const QPoint &pos, BlockDragTypes dragType);
@@ -306,10 +306,10 @@ private:
 	void TextCutClipboard();
 	void TextDBlankCursor();
 	void TextDMakeInsertPosVisible();
-	void TextDOverstrikeEx(view::string_view text);
+	void TextDOverstrike(view::string_view text);
 	void setWrapMode(bool wrap, int wrapMargin);
 	void coordToUnconstrainedPosition(const QPoint &coord, int *row, int *column) const;
-	void TextInsertAtCursorEx(view::string_view chars, bool allowPendingDelete, bool allowWrap);
+	void TextInsertAtCursor(view::string_view chars, bool allowPendingDelete, bool allowWrap);
 	void TextPasteClipboard();
 	void adjustSecondarySelection(const QPoint &coord);
 	void adjustSelection(const QPoint &coord);

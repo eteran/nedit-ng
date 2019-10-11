@@ -7,7 +7,7 @@
 
 #include <QStringList>
 
-class DialogFilter : public Dialog {
+class DialogFilter final : public Dialog {
 	Q_OBJECT
 public:
 	DialogFilter(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());

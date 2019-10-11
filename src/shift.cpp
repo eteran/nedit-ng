@@ -252,7 +252,7 @@ std::string fillParagraphsEx(view::string_view text, int64_t rightMargin, int ta
 
 		/* Get the paragraph in a text string (or all of the paragraphs if
 		   we're making them all the same) */
-		std::string paraText = buf.BufGetRangeEx(paraStart, fillEnd);
+		std::string paraText = buf.BufGetRange(paraStart, fillEnd);
 
 		/* Find separate left margins for the first and for the first line of
 		   the paragraph, and for rest of the remainder of the paragraph */
@@ -267,14 +267,14 @@ std::string fillParagraphsEx(view::string_view text, int64_t rightMargin, int ta
 		std::string filledText = fillParagraphEx(paraText, leftMargin, firstLineIndent, rightMargin, tabDist, useTabs);
 
 		// Replace it in the buffer
-		buf.BufReplaceEx(paraStart, fillEnd, filledText);
+		buf.BufReplace(paraStart, fillEnd, filledText);
 
 		// move on to the next paragraph
 		paraStart += filledText.size();
 	}
 
 	// Free the buffer and return its contents
-	return buf.BufGetAllEx();
+	return buf.BufGetAll();
 }
 
 TextCursor findParagraphStart(TextBuffer *buf, TextCursor startPos) {
@@ -613,16 +613,16 @@ void shiftRectEx(DocumentWidget *document, TextArea *area, ShiftDirection direct
 	tempBuf.BufSetTabDistance(buf->BufGetTabDistance(), false);
 	tempBuf.BufSetUseTabs(buf->BufGetUseTabs());
 
-	std::string text = buf->BufGetRangeEx(selStart, selEnd);
+	std::string text = buf->BufGetRange(selStart, selEnd);
 	tempBuf.BufSetAll(text);
 
 	// Do the shift in the temporary buffer
-	text = buf->BufGetTextInRectEx(selStart, selEnd, rectStart, rectEnd);
+	text = buf->BufGetTextInRect(selStart, selEnd, rectStart, rectEnd);
 	tempBuf.BufRemoveRect(TextCursor(), TextCursor(selEnd - selStart), rectStart, rectEnd);
-	tempBuf.BufInsertColEx(rectStart + offset, TextCursor(), text, nullptr, nullptr);
+	tempBuf.BufInsertCol(rectStart + offset, TextCursor(), text, nullptr, nullptr);
 
 	// Make the change in the real buffer
-	buf->BufReplaceEx(selStart, selEnd, tempBuf.BufAsStringEx());
+	buf->BufReplace(selStart, selEnd, tempBuf.BufAsString());
 	buf->BufRectSelect(selStart, selStart + tempBuf.length(), rectStart + offset, rectEnd + offset);
 }
 
@@ -656,7 +656,7 @@ void ShiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection dir
 
 		buf->BufSelect(selStart, selEnd);
 		isRect = false;
-		text = buf->BufGetRangeEx(selStart, selEnd);
+		text = buf->BufGetRange(selStart, selEnd);
 
 	} else if (isRect) {
 		const TextCursor cursorPos = area->TextGetCursorPos();
@@ -674,7 +674,7 @@ void ShiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection dir
 			}
 		}
 		buf->BufSelect(selStart, selEnd);
-		text = buf->BufGetRangeEx(selStart, selEnd);
+		text = buf->BufGetRange(selStart, selEnd);
 	}
 
 	// shift the text by the appropriate distance
@@ -687,7 +687,7 @@ void ShiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection dir
 
 	std::string shiftedText = ShiftText(text, direction, buf->BufGetUseTabs(), buf->BufGetTabDistance(), shiftDist);
 
-	buf->BufReplaceSelectedEx(shiftedText);
+	buf->BufReplaceSelected(shiftedText);
 
 	const TextCursor newEndPos = selStart + static_cast<int64_t>(shiftedText.size());
 	buf->BufSelect(selStart, newEndPos);
@@ -718,11 +718,11 @@ void FillSelection(DocumentWidget *document, TextArea *area) {
 			QApplication::beep();
 			return;
 		}
-		text = buf->BufGetRangeEx(left, right);
+		text = buf->BufGetRange(left, right);
 	} else if (isRect) {
 		left  = buf->BufStartOfLine(left);
 		right = buf->BufEndOfLine(right);
-		text  = buf->BufGetTextInRectEx(left, right, rectStart, INT_MAX);
+		text  = buf->BufGetTextInRect(left, right, rectStart, INT_MAX);
 	} else {
 		left = buf->BufStartOfLine(left);
 		if (right != 0 && buf->BufGetCharacter(right - 1) != '\n') {
@@ -733,7 +733,7 @@ void FillSelection(DocumentWidget *document, TextArea *area) {
 		}
 
 		buf->BufSelect(left, right);
-		text = buf->BufGetRangeEx(left, right);
+		text = buf->BufGetRange(left, right);
 	}
 
 	/* Find right margin either as specified in the rectangular selection, or
@@ -756,10 +756,10 @@ void FillSelection(DocumentWidget *document, TextArea *area) {
 
 	// Replace the text in the window
 	if (hasSelection && isRect) {
-		buf->BufReplaceRectEx(left, right, rectStart, INT_MAX, filledText);
+		buf->BufReplaceRect(left, right, rectStart, INT_MAX, filledText);
 		buf->BufRectSelect(left, buf->BufEndOfLine(buf->BufCountForwardNLines(left, countLines(filledText) - 1)), rectStart, rectEnd);
 	} else {
-		buf->BufReplaceEx(left, right, filledText);
+		buf->BufReplace(left, right, filledText);
 		if (hasSelection) {
 			buf->BufSelect(left, left + static_cast<int64_t>(filledText.size()));
 		}

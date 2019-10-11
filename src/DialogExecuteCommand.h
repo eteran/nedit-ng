@@ -7,7 +7,7 @@
 
 #include <QStringList>
 
-class DialogExecuteCommand : public Dialog {
+class DialogExecuteCommand final : public Dialog {
 	Q_OBJECT
 public:
 	DialogExecuteCommand(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());

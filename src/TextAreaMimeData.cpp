@@ -20,7 +20,7 @@ QVariant TextAreaMimeData::retrieveData(const QString &mimeType, QVariant::Type 
 
 	auto that = const_cast<TextAreaMimeData *>(this);
 	if(buffer_->primary.hasSelection()) {
-		const std::string text = buffer_->BufGetSelectionTextEx();
+		const std::string text = buffer_->BufGetSelectionText();
 		that->setText(QString::fromStdString(text));
 	}
 
