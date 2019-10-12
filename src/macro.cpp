@@ -152,16 +152,6 @@ static std::error_code fillPatternResult(DataValue *result, DocumentWidget *docu
 static std::error_code fillStyleResult(DataValue *result, DocumentWidget *document, const QString &styleName, bool includeName, size_t patCode, TextCursor bufferPos);
 
 static std::error_code readSearchArgs(Arguments arguments, Direction *searchDirection, SearchType *searchType, WrapMode *wrap);
-static std::error_code readArgument(const DataValue &dv, int *result);
-static std::error_code readArgument(const DataValue &dv, int64_t *result);
-static std::error_code readArgument(const DataValue &dv, std::string *result);
-static std::error_code readArgument(const DataValue &dv, QString *result);
-
-template <class T, class ...Ts>
-std::error_code readArguments(Arguments arguments, int index, T arg, Ts...args);
-
-template <class T>
-std::error_code readArguments(Arguments arguments, int index, T arg);
 
 struct SubRoutine {
 	const char *name;
@@ -214,6 +204,11 @@ struct MacroErrorCategory : std::error_category {
 	std::string message(int ev) const override;
 };
 
+/**
+ * @brief MacroErrorCategory::message
+ * @param ev
+ * @return
+ */
 std::string MacroErrorCategory::message(int ev) const {
 	switch (static_cast<MacroErrorCode>(ev)) {
 	case MacroErrorCode::Success:                      return "";
@@ -256,24 +251,6 @@ std::string MacroErrorCategory::message(int ev) const {
 
 	Q_UNREACHABLE();
 }
-
-
-std::error_code make_error_code(MacroErrorCode e) {
-	// NOTE(eteran): error_code uses the address of this,
-	// so it needs global lifetime
-	static MacroErrorCategory category;
-	return { static_cast<int>(e), category };
-}
-
-}
-
-namespace std {
-
-template <>
-struct is_error_code_enum<MacroErrorCode> : true_type {};
-
-}
-
 
 /**
  * @brief flagsFromArguments
@@ -326,6 +303,228 @@ static boost::optional<TextArea::EventFlags> flagsFromArguments(Arguments argume
 	return f;
 }
 
+/**
+ * @brief make_error_code
+ * @param e
+ * @return
+ */
+std::error_code make_error_code(MacroErrorCode e) {
+	// NOTE(eteran): error_code uses the address of this,
+	// so it needs global lifetime
+	static MacroErrorCategory category;
+	return { static_cast<int>(e), category };
+}
+
+}
+
+namespace std {
+
+template <>
+struct is_error_code_enum<MacroErrorCode> : true_type {};
+
+}
+
+namespace {
+
+/**
+ * @brief readArgument - Get an integer value from a DataValue structure.
+ * @param dv
+ * @param result
+ * @return
+ */
+std::error_code readArgument(const DataValue &dv, int64_t *result) {
+
+	if(is_integer(dv)) {
+		*result = to_integer(dv);
+		return MacroErrorCode::Success;
+	}
+
+	if(is_string(dv)) {
+		auto s = QString::fromStdString(to_string(dv));
+		bool ok;
+		int64_t val = s.toLongLong(&ok);
+		if(!ok) {
+		   return MacroErrorCode::NotAnInteger;
+		}
+
+		*result = val;
+		return MacroErrorCode::Success;
+	}
+
+	return MacroErrorCode::UnknownObject;
+
+}
+
+/**
+ * @brief readArgument - Get an integer value from a DataValue structure.
+ * @param dv
+ * @param result
+ * @return
+ */
+std::error_code readArgument(const DataValue &dv, int *result) {
+
+	if(is_integer(dv)) {
+		*result = to_integer(dv);
+		return MacroErrorCode::Success;
+	}
+
+	if(is_string(dv)) {
+		auto s = QString::fromStdString(to_string(dv));
+		bool ok;
+		int val = s.toInt(&ok);
+		if(!ok) {
+		   return MacroErrorCode::NotAnInteger;
+		}
+
+		*result = val;
+		return MacroErrorCode::Success;
+	}
+
+	return MacroErrorCode::UnknownObject;
+
+}
+
+/**
+ * @brief readArgument - Get an string value from a DataValue structure.
+ * @param dv
+ * @param result
+ * @return
+ */
+std::error_code readArgument(const DataValue &dv, std::string *result) {
+
+	if(is_string(dv)) {
+		*result = to_string(dv);
+		return MacroErrorCode::Success;
+	}
+
+	if(is_integer(dv)) {
+		*result = std::to_string(to_integer(dv));
+		return MacroErrorCode::Success;
+	}
+
+	return MacroErrorCode::UnknownObject;
+}
+
+/**
+ * @brief readArgument - Get an string value from a DataValue structure.
+ * @param dv
+ * @param result
+ * @return
+ */
+std::error_code readArgument(const DataValue &dv, QString *result) {
+
+	if(is_string(dv)) {
+		*result = QString::fromStdString(to_string(dv));
+		return MacroErrorCode::Success;
+	}
+
+	if(is_integer(dv)) {
+		*result = QString::number(to_integer(dv));
+		return MacroErrorCode::Success;
+	}
+
+	return MacroErrorCode::UnknownObject;
+}
+
+/**
+ * @brief readArguments
+ * @param arguments
+ * @param index
+ * @param arg
+ * @return
+ */
+template <class T>
+std::error_code readArguments(Arguments arguments, int index, T arg) {
+
+	static_assert(std::is_pointer<T>::value, "Argument is not a pointer");
+
+	if(static_cast<size_t>(arguments.size() - index) < 1) {
+		return MacroErrorCode::WrongNumberOfArguments;
+	}
+
+	return readArgument(arguments[index], arg);
+}
+
+/**
+ * @brief readArguments
+ * @param arguments
+ * @param index
+ * @param arg
+ * @param args
+ * @return
+ */
+template <class T, class ...Ts>
+std::error_code readArguments(Arguments arguments, int index, T arg, Ts...args) {
+
+	static_assert(std::is_pointer<T>::value, "Argument is not a pointer");
+
+	if(static_cast<size_t>(arguments.size() - index) < (sizeof...(args)) + 1) {
+		return MacroErrorCode::WrongNumberOfArguments;
+	}
+
+	if(std::error_code ec = readArgument(arguments[index], arg)) {
+		return ec;
+	}
+
+	return readArguments(arguments, index + 1, args...);
+}
+
+/**
+ * @brief toggle_or_bool
+ * @param arguments
+ * @param previous
+ * @param error
+ * @return
+ */
+boost::optional<bool> toggle_or_bool(Arguments arguments, bool previous, std::error_code *error) {
+	switch(arguments.size()) {
+	case 1: {
+		int next;
+		if(std::error_code ec = readArguments(arguments, 0, &next)) {
+			*error = ec;
+			return boost::none;
+		}
+		return next;
+	}
+	case 0:
+		return !previous;
+	default:
+		*error = MacroErrorCode::WrongNumberOfToggleArguments;
+		return boost::none;
+	}
+}
+
+template <void(DocumentWidget::*Set)(bool), bool(DocumentWidget::*Get)() const>
+std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
+	document = MacroRunDocument();
+
+	std::error_code ec;
+	if(boost::optional<bool> next = toggle_or_bool(arguments, (document->*Get)(), &ec)) {
+		(document->*Set)(*next);
+		*result = make_value();
+		return MacroErrorCode::Success;
+	}
+
+	return ec;
+}
+
+template <void(MainWindow::*Set)(bool), bool(MainWindow::*Get)() const>
+std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
+	document = MacroRunDocument();
+
+	auto win = MainWindow::fromDocument(document);
+	Q_ASSERT(win);
+
+	std::error_code ec;
+	if(boost::optional<bool> next = toggle_or_bool(arguments, (win->*Get)(), &ec)) {
+		(win->*Set)(*next);
+		*result = make_value();
+		return MacroErrorCode::Success;
+	}
+
+	return ec;
+}
+
 template <void(TextArea::*Func)(TextArea::EventFlags)>
 std::error_code textEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
@@ -369,6 +568,99 @@ std::error_code textEventArg(DocumentWidget *document, Arguments arguments, Data
 
 	*result = make_value();
 	return MacroErrorCode::Success;
+}
+
+template <void(MainWindow::*Func)(DocumentWidget *, const QString &, CommandSource)>
+std::error_code menuEventSM(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	/* ensure that we are dealing with the document which currently has the focus */
+	document = MacroFocusDocument();
+
+	QString string;
+	if(std::error_code ec = readArguments(arguments, 0, &string)) {
+		return ec;
+	}
+
+	if(auto win = MainWindow::fromDocument(document)) {
+		(win->*Func)(document, string, CommandSource::Macro);
+	}
+
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
+
+template <void(MainWindow::*Func)(DocumentWidget *, const QString &)>
+std::error_code menuEventSU(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	/* ensure that we are dealing with the document which currently has the focus */
+	document = MacroFocusDocument();
+
+	QString string;
+	if(std::error_code ec = readArguments(arguments, 0, &string)) {
+		return ec;
+	}
+
+	if(auto win = MainWindow::fromDocument(document)) {
+		(win->*Func)(document, string);
+	}
+
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
+
+template <void(MainWindow::*Func)(DocumentWidget *, CommandSource)>
+std::error_code menuEventM(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	/* ensure that we are dealing with the document which currently has the focus */
+	document = MacroFocusDocument();
+
+	if(!arguments.empty()) {
+		return MacroErrorCode::WrongNumberOfArguments;
+	}
+
+	if(auto win = MainWindow::fromDocument(document)) {
+		(win->*Func)(document, CommandSource::Macro);
+	}
+
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
+
+template <void(MainWindow::*Func)(DocumentWidget *)>
+std::error_code menuEventU(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	/* ensure that we are dealing with the document which currently has the focus */
+	document = MacroFocusDocument();
+
+	if(!arguments.empty()) {
+		return MacroErrorCode::WrongNumberOfArguments;
+	}
+
+	if(auto win = MainWindow::fromDocument(document)) {
+		(win->*Func)(document);
+	}
+
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
+
+
+template <void(MainWindow::*Func)()>
+std::error_code menuEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	(void)arguments;
+
+	document = MacroRunDocument();
+
+	MainWindow *win = MainWindow::fromDocument(document);
+	Q_ASSERT(win);
+
+	(win->*Func)();
+
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
+
 }
 
 static std::error_code scrollDownMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
@@ -529,80 +821,6 @@ static const SubRoutine TextAreaSubrNames[] = {
 	{"toggle_overstrike",         toggleOverstrikeMS},
 #endif
 };
-
-template <void(MainWindow::*Func)(DocumentWidget *, const QString &, CommandSource)>
-std::error_code menuEventSM(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	/* ensure that we are dealing with the document which currently has the focus */
-	document = MacroFocusDocument();
-
-	QString string;
-	if(std::error_code ec = readArguments(arguments, 0, &string)) {
-		return ec;
-	}
-
-	if(auto win = MainWindow::fromDocument(document)) {
-		(win->*Func)(document, string, CommandSource::Macro);
-	}
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
-
-template <void(MainWindow::*Func)(DocumentWidget *, const QString &)>
-std::error_code menuEventSU(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	/* ensure that we are dealing with the document which currently has the focus */
-	document = MacroFocusDocument();
-
-	QString string;
-	if(std::error_code ec = readArguments(arguments, 0, &string)) {
-		return ec;
-	}
-
-	if(auto win = MainWindow::fromDocument(document)) {
-		(win->*Func)(document, string);
-	}
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
-
-template <void(MainWindow::*Func)(DocumentWidget *, CommandSource)>
-std::error_code menuEventM(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	/* ensure that we are dealing with the document which currently has the focus */
-	document = MacroFocusDocument();
-
-	if(!arguments.empty()) {
-		return MacroErrorCode::WrongNumberOfArguments;
-	}
-
-	if(auto win = MainWindow::fromDocument(document)) {
-		(win->*Func)(document, CommandSource::Macro);
-	}
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
-
-template <void(MainWindow::*Func)(DocumentWidget *)>
-std::error_code menuEventU(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	/* ensure that we are dealing with the document which currently has the focus */
-	document = MacroFocusDocument();
-
-	if(!arguments.empty()) {
-		return MacroErrorCode::WrongNumberOfArguments;
-	}
-
-	if(auto win = MainWindow::fromDocument(document)) {
-		(win->*Func)(document);
-	}
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
 
 /*
 ** Scans action argument list for arguments "forward" or "backward" to
@@ -964,7 +1182,7 @@ static std::error_code replaceMS(DocumentWidget *document, Arguments arguments, 
 
 	Direction direction = searchDirection(arguments, 2);
 	SearchType type     = searchType(arguments, 2);
-	WrapMode   wrap     = searchWrap(arguments, 2);
+	WrapMode wrap       = searchWrap(arguments, 2);
 
 	if(auto window = MainWindow::fromDocument(document)) {
 		window->action_Replace(document, searchString, replaceString, direction, type, wrap);
@@ -980,8 +1198,8 @@ static std::error_code replaceDialogMS(DocumentWidget *document, Arguments argum
 	document = MacroRunDocument();
 
 	Direction direction = searchDirection(arguments, 0);
-	SearchType      type      = searchType(arguments, 0);
-	bool            keep      = searchKeepDialogs(arguments, 0);
+	SearchType type     = searchType(arguments, 0);
+	bool keep           = searchKeepDialogs(arguments, 0);
 
 	if(auto window = MainWindow::fromDocument(document)) {
 		window->action_Replace_Dialog(document, direction, type, keep);
@@ -1232,55 +1450,6 @@ static std::error_code setFontsMS(DocumentWidget *document, Arguments arguments,
 	return MacroErrorCode::Success;
 }
 
-static boost::optional<bool> toggle_or_bool(Arguments arguments, bool previous, std::error_code *error) {
-	switch(arguments.size()) {
-	case 1: {
-		int next;
-		if(std::error_code ec = readArguments(arguments, 0, &next)) {
-			*error = ec;
-			return boost::none;
-		}
-		return next;
-	}
-	case 0:
-		return !previous;
-	default:
-		*error = MacroErrorCode::WrongNumberOfToggleArguments;
-		return boost::none;
-	}
-}
-
-template <void(DocumentWidget::*Set)(bool), bool(DocumentWidget::*Get)() const>
-std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	document = MacroRunDocument();
-
-	std::error_code ec;
-	if(boost::optional<bool> next = toggle_or_bool(arguments, (document->*Get)(), &ec)) {
-		(document->*Set)(*next);
-		*result = make_value();
-		return MacroErrorCode::Success;
-	}
-
-	return ec;
-}
-
-template <void(MainWindow::*Set)(bool), bool(MainWindow::*Get)() const>
-std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	document = MacroRunDocument();
-
-	auto win = MainWindow::fromDocument(document);
-	Q_ASSERT(win);
-
-	std::error_code ec;
-	if(boost::optional<bool> next = toggle_or_bool(arguments, (win->*Get)(), &ec)) {
-		(win->*Set)(*next);
-		*result = make_value();
-		return MacroErrorCode::Success;
-	}
-
-	return ec;
-}
-
 static std::error_code setLanguageModeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	document = MacroRunDocument();
@@ -1512,51 +1681,6 @@ static std::error_code replaceFindSameMS(DocumentWidget *document, Arguments arg
 	return MacroErrorCode::Success;
 }
 
-static std::error_code nextDocumentMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(arguments)
-
-	document = MacroRunDocument();
-
-	auto win = MainWindow::fromDocument(document);
-	Q_ASSERT(win);
-
-	win->action_Next_Document();
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
-
-static std::error_code prevDocumentMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(arguments)
-
-	document = MacroRunDocument();
-
-	auto win = MainWindow::fromDocument(document);
-	Q_ASSERT(win);
-
-	win->action_Prev_Document();
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
-
-static std::error_code lastDocumentMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	Q_UNUSED(arguments)
-
-	document = MacroRunDocument();
-
-	auto win = MainWindow::fromDocument(document);
-	Q_ASSERT(win);
-
-	win->action_Last_Document();
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
-
 static std::error_code backgroundMenuCommandMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	document = MacroRunDocument();
@@ -1688,9 +1812,9 @@ static const SubRoutine MenuMacroSubrNames[] = {
 	{ "replace_find",                 replaceFindMS },
 	{ "replace_find_same",            replaceFindSameMS },
 	{ "replace_find_again",           replaceFindSameMS },
-	{ "next_document",                nextDocumentMS },
-	{ "previous_document",            prevDocumentMS },
-	{ "last_document",                lastDocumentMS },
+	{ "next_document",                menuEvent<&MainWindow::action_Next_Document> },
+	{ "previous_document",            menuEvent<&MainWindow::action_Prev_Document> },
+	{ "last_document",                menuEvent<&MainWindow::action_Last_Document> },
 	{ "bg_menu_command",              backgroundMenuCommandMS },
 #if 0 // NOTE(eteran): what are these for? are they needed?
 	{ "post_window_bg_menu",          nullptr },
@@ -5135,115 +5259,4 @@ static std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arg
 		true,
 		document->highlightStyleOfCode(patCode),
 		TextCursor(bufferPos));
-}
-
-/*
-** Get an integer value from a tagged DataValue structure.
-*/
-static std::error_code readArgument(const DataValue &dv, int64_t *result) {
-
-	if(is_integer(dv)) {
-		*result = to_integer(dv);
-		return MacroErrorCode::Success;
-	}
-
-	if(is_string(dv)) {
-		auto s = QString::fromStdString(to_string(dv));
-		bool ok;
-		int64_t val = s.toLongLong(&ok);
-		if(!ok) {
-		   return MacroErrorCode::NotAnInteger;
-		}
-
-		*result = val;
-		return MacroErrorCode::Success;
-	}
-
-	return MacroErrorCode::UnknownObject;
-
-}
-
-static std::error_code readArgument(const DataValue &dv, int *result) {
-
-	if(is_integer(dv)) {
-		*result = to_integer(dv);
-		return MacroErrorCode::Success;
-	}
-
-	if(is_string(dv)) {
-		auto s = QString::fromStdString(to_string(dv));
-		bool ok;
-		int val = s.toInt(&ok);
-		if(!ok) {
-		   return MacroErrorCode::NotAnInteger;
-		}
-
-		*result = val;
-		return MacroErrorCode::Success;
-	}
-
-	return MacroErrorCode::UnknownObject;
-
-}
-
-/*
-** Get an string value from a tagged DataValue structure.
-*/
-static std::error_code readArgument(const DataValue &dv, std::string *result) {
-
-	if(is_string(dv)) {
-		*result = to_string(dv);
-		return MacroErrorCode::Success;
-	}
-
-	if(is_integer(dv)) {
-		*result = std::to_string(to_integer(dv));
-		return MacroErrorCode::Success;
-	}
-
-	return MacroErrorCode::UnknownObject;
-}
-
-static std::error_code readArgument(const DataValue &dv, QString *result) {
-
-	if(is_string(dv)) {
-		*result = QString::fromStdString(to_string(dv));
-		return MacroErrorCode::Success;
-	}
-
-	if(is_integer(dv)) {
-		*result = QString::number(to_integer(dv));
-		return MacroErrorCode::Success;
-	}
-
-	return MacroErrorCode::UnknownObject;
-}
-
-
-template <class T, class ...Ts>
-std::error_code readArguments(Arguments arguments, int index, T arg, Ts...args) {
-
-	static_assert(std::is_pointer<T>::value, "Argument is not a pointer");
-
-	if(static_cast<size_t>(arguments.size() - index) < (sizeof...(args)) + 1) {
-		return MacroErrorCode::WrongNumberOfArguments;
-	}
-
-	if(std::error_code ec = readArgument(arguments[index], arg)) {
-		return ec;
-	}
-
-	return readArguments(arguments, index + 1, args...);
-}
-
-template <class T>
-std::error_code readArguments(Arguments arguments, int index, T arg) {
-
-	static_assert(std::is_pointer<T>::value, "Argument is not a pointer");
-
-	if(static_cast<size_t>(arguments.size() - index) < 1) {
-		return MacroErrorCode::WrongNumberOfArguments;
-	}
-
-	return readArgument(arguments[index], arg);
 }
