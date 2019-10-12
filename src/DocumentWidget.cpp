@@ -1927,149 +1927,151 @@ void DocumentWidget::checkForChangesToFile() {
 	lastCheckWindow = this;
 	lastCheckTime   = timestamp;
 
-	if(auto win = MainWindow::fromDocument(this)) {
+	MainWindow *win = MainWindow::fromDocument(this);
+	if(!win) {
+		return;
+	}
 
-		/* Update the status, but don't pop up a dialog if we're called from a
-		 * place where the window might be iconic (e.g., from the replace dialog)
-		 * or on another desktop.
-		 */
-		const bool silent = (!isTopDocument() || !win->isVisible());
+	/* Update the status, but don't pop up a dialog if we're called from a
+	 * place where the window might be iconic (e.g., from the replace dialog)
+	 * or on another desktop.
+	 */
+	const bool silent = (!isTopDocument() || !win->isVisible());
 
-		// Get the file mode and modification time
-		QString fullname = fullPath();
+	// Get the file mode and modification time
+	QString fullname = fullPath();
 
-		QT_STATBUF statbuf;
-		if (QT_STAT(fullname.toUtf8().data(), &statbuf) != 0) {
+	QT_STATBUF statbuf;
+	if (QT_STAT(fullname.toUtf8().data(), &statbuf) != 0) {
 
-			const int error = errno;
+		const int error = errno;
 
-			// Return if we've already warned the user or we can't warn them now
-			if (info_->fileMissing || silent) {
-				return;
-			}
-
-			/* Can't stat the file --
-			 * maybe it's been deleted. The filename is now invalid */
-			info_->fileMissing = true;
-			info_->lastModTime = 1;
-			info_->dev         = 0;
-			info_->ino         = 0;
-
-			/* Warn the user, if they like to be warned (Maybe this should be
-			 * its own preference setting: GetPrefWarnFileDeleted()) */
-			if (Preferences::GetPrefWarnFileMods()) {
-				bool save = false;
-
-				//  Set title, message body and button to match stat()'s error.
-				switch (error) {
-				case ENOENT:
-					{
-						// A component of the path file_name does not exist.
-						int resp = QMessageBox::critical(
-									this,
-									tr("File not Found"),
-									tr("File '%1' (or directory in its path) no longer exists.\n"
-						               "Another program may have deleted or moved it.").arg(info_->filename),
-									QMessageBox::Save | QMessageBox::Cancel);
-						save = (resp == QMessageBox::Save);
-					}
-					break;
-				case EACCES:
-					{
-						// Search permission denied for a path component. We add one to the response because Re-Save wouldn't really make sense here.
-						int resp = QMessageBox::critical(
-									this,
-									tr("Permission Denied"),
-									tr("You no longer have access to file '%1'.\n"
-						               "Another program may have changed the permissions of one of its parent directories.").arg(info_->filename),
-									QMessageBox::Save | QMessageBox::Cancel);
-						save = (resp == QMessageBox::Save);
-					}
-					break;
-				default:
-					{
-						// Everything else. This hints at an internal error (eg. ENOTDIR) or at some bad state at the host.
-						int resp = QMessageBox::critical(
-									this,
-									tr("File not Accessible"),
-									tr("Error while checking the status of file '%1':\n"
-									   "    '%2'\n"
-									   "Please make sure that no data is lost before closing this window.").arg(info_->filename, errorString(error)),
-									QMessageBox::Save | QMessageBox::Cancel);
-						save = (resp == QMessageBox::Save);
-					}
-					break;
-				}
-
-				if(save) {
-					saveDocument();
-				}
-			}
-
-			// A missing or (re-)saved file can't be read-only.
-			// NOTE: A document without a file can be locked though.
-			// Make sure that the window was not destroyed behind our back!
-			info_->lockReasons.setPermLocked(false);
-			Q_EMIT updateWindowTitle(this);
-			Q_EMIT updateWindowReadOnly(this);
+		// Return if we've already warned the user or we can't warn them now
+		if (info_->fileMissing || silent) {
 			return;
 		}
 
-		/* Check that the file's read-only status is still correct (but
-		   only if the file can still be opened successfully in read mode) */
-		if (info_->mode != statbuf.st_mode || info_->uid != statbuf.st_uid || info_->gid != statbuf.st_gid) {
+		/* Can't stat the file --
+		 * maybe it's been deleted. The filename is now invalid */
+		info_->fileMissing = true;
+		info_->lastModTime = 1;
+		info_->dev         = 0;
+		info_->ino         = 0;
 
-			info_->mode = statbuf.st_mode;
-			info_->uid  = statbuf.st_uid;
-			info_->gid  = statbuf.st_gid;
+		/* Warn the user, if they like to be warned (Maybe this should be
+		 * its own preference setting: GetPrefWarnFileDeleted()) */
+		if (Preferences::GetPrefWarnFileMods()) {
+			bool save = false;
 
-			QFile fp(fullname);
-			if(fp.open(QIODevice::ReadWrite) || fp.open(QIODevice::ReadOnly)) {
-				const bool readOnly = !fp.isWritable();
-				fp.close();
-
-				if (info_->lockReasons.isPermLocked() != readOnly) {
-					info_->lockReasons.setPermLocked(readOnly);
-					Q_EMIT updateWindowTitle(this);
-					Q_EMIT updateWindowReadOnly(this);
+			//  Set title, message body and button to match stat()'s error.
+			switch (error) {
+			case ENOENT:
+				{
+					// A component of the path file_name does not exist.
+					int resp = QMessageBox::critical(
+								this,
+								tr("File not Found"),
+								tr("File '%1' (or directory in its path) no longer exists.\n"
+								   "Another program may have deleted or moved it.").arg(info_->filename),
+								QMessageBox::Save | QMessageBox::Cancel);
+					save = (resp == QMessageBox::Save);
 				}
+				break;
+			case EACCES:
+				{
+					// Search permission denied for a path component. We add one to the response because Re-Save wouldn't really make sense here.
+					int resp = QMessageBox::critical(
+								this,
+								tr("Permission Denied"),
+								tr("You no longer have access to file '%1'.\n"
+								   "Another program may have changed the permissions of one of its parent directories.").arg(info_->filename),
+								QMessageBox::Save | QMessageBox::Cancel);
+					save = (resp == QMessageBox::Save);
+				}
+				break;
+			default:
+				{
+					// Everything else. This hints at an internal error (eg. ENOTDIR) or at some bad state at the host.
+					int resp = QMessageBox::critical(
+								this,
+								tr("File not Accessible"),
+								tr("Error while checking the status of file '%1':\n"
+								   "    '%2'\n"
+								   "Please make sure that no data is lost before closing this window.").arg(info_->filename, errorString(error)),
+								QMessageBox::Save | QMessageBox::Cancel);
+					save = (resp == QMessageBox::Save);
+				}
+				break;
+			}
+
+			if(save) {
+				saveDocument();
 			}
 		}
 
-		/* Warn the user if the file has been modified, unless checking is
-		 * turned off or the user has already been warned. */
-		if (!silent && ((info_->lastModTime != 0 && info_->lastModTime != statbuf.st_mtime) || info_->fileMissing)) {
+		// A missing or (re-)saved file can't be read-only.
+		// NOTE: A document without a file can be locked though.
+		// Make sure that the window was not destroyed behind our back!
+		info_->lockReasons.setPermLocked(false);
+		Q_EMIT updateWindowTitle(this);
+		Q_EMIT updateWindowReadOnly(this);
+		return;
+	}
 
-			info_->lastModTime = 0; // Inhibit further warnings
-			info_->fileMissing = false;
-			if (!Preferences::GetPrefWarnFileMods()) {
-				return;
+	/* Check that the file's read-only status is still correct (but
+	   only if the file can still be opened successfully in read mode) */
+	if (info_->mode != statbuf.st_mode || info_->uid != statbuf.st_uid || info_->gid != statbuf.st_gid) {
+
+		info_->mode = statbuf.st_mode;
+		info_->uid  = statbuf.st_uid;
+		info_->gid  = statbuf.st_gid;
+
+		QFile fp(fullname);
+		if(fp.open(QIODevice::ReadWrite) || fp.open(QIODevice::ReadOnly)) {
+			const bool readOnly = !fp.isWritable();
+			fp.close();
+
+			if (info_->lockReasons.isPermLocked() != readOnly) {
+				info_->lockReasons.setPermLocked(readOnly);
+				Q_EMIT updateWindowTitle(this);
+				Q_EMIT updateWindowReadOnly(this);
 			}
+		}
+	}
 
-			if (Preferences::GetPrefWarnRealFileMods() && !compareDocumentToFile(fullname)) {
-				// Contents hasn't changed. Update the modification time.
-				info_->lastModTime = statbuf.st_mtime;
-				return;
-			}
+	/* Warn the user if the file has been modified, unless checking is
+	 * turned off or the user has already been warned. */
+	if (!silent && ((info_->lastModTime != 0 && info_->lastModTime != statbuf.st_mtime) || info_->fileMissing)) {
 
-			QMessageBox messageBox(this);
-			messageBox.setIcon(QMessageBox::Warning);
-			messageBox.setWindowTitle(tr("File modified externally"));
-			QPushButton *buttonReload = messageBox.addButton(tr("Reload"), QMessageBox::AcceptRole);
-			QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
+		info_->lastModTime = 0; // Inhibit further warnings
+		info_->fileMissing = false;
+		if (!Preferences::GetPrefWarnFileMods()) {
+			return;
+		}
 
-			Q_UNUSED(buttonCancel)
+		if (Preferences::GetPrefWarnRealFileMods() && !compareDocumentToFile(fullname)) {
+			// Contents hasn't changed. Update the modification time.
+			info_->lastModTime = statbuf.st_mtime;
+			return;
+		}
 
-			if (info_->fileChanged) {
-				messageBox.setText(tr("%1 has been modified by another program.  Reload?\n\nWARNING: Reloading will discard changes made in this editing session!").arg(info_->filename));
-			} else {
-				messageBox.setText(tr("%1 has been modified by another program.  Reload?").arg(info_->filename));
-			}
+		QMessageBox messageBox(this);
+		messageBox.setIcon(QMessageBox::Warning);
+		messageBox.setWindowTitle(tr("File modified externally"));
+		QPushButton *buttonReload = messageBox.addButton(tr("Reload"), QMessageBox::AcceptRole);
+		QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
 
-			messageBox.exec();
-			if(messageBox.clickedButton() == buttonReload) {
-				revertToSaved();
-			}
+		Q_UNUSED(buttonCancel)
+
+		if (info_->fileChanged) {
+			messageBox.setText(tr("%1 has been modified by another program.  Reload?\n\nWARNING: Reloading will discard changes made in this editing session!").arg(info_->filename));
+		} else {
+			messageBox.setText(tr("%1 has been modified by another program.  Reload?").arg(info_->filename));
+		}
+
+		messageBox.exec();
+		if(messageBox.clickedButton() == buttonReload) {
+			revertToSaved();
 		}
 	}
 }
@@ -4000,26 +4002,33 @@ void DocumentWidget::splitPane() {
 */
 void DocumentWidget::closePane() {
 
-	if(splitter_->count() > 1) {
+	if(splitter_->count() <= 1) {
+		return;
+	}
 
-		TextArea *lastFocus = MainWindow::fromDocument(this)->lastFocus();
+	MainWindow *win = MainWindow::fromDocument(this);
+	if(!win) {
+		return;
+	}
 
-		for(int i = 0; i < splitter_->count(); ++i) {
-			if(auto area = qobject_cast<TextArea *>(splitter_->widget(i))) {
-				if(area == lastFocus) {
-					area->deleteLater();
-					return;
-				}
+	TextArea *lastFocus = win->lastFocus();
+	Q_ASSERT(lastFocus);
+
+	for(int i = 0; i < splitter_->count(); ++i) {
+		if(auto area = qobject_cast<TextArea *>(splitter_->widget(i))) {
+			if(area == lastFocus) {
+				area->deleteLater();
+				return;
 			}
 		}
-
-		// if we got here, that means that the last focus isn't even in this
-		// document, so we'll just nominate the last one
-		std::vector<TextArea *> panes = textPanes();
-
-		Q_ASSERT(!panes.empty());
-		delete panes.back();
 	}
+
+	// if we got here, that means that the last focus isn't even in this
+	// document, so we'll just nominate the last one
+	std::vector<TextArea *> panes = textPanes();
+
+	Q_ASSERT(!panes.empty());
+	delete panes.back();
 }
 
 /*
@@ -6539,9 +6548,10 @@ void DocumentWidget::cancelLearning() {
 	}
 
 	if (document->isTopDocument()) {
-		auto window = MainWindow::fromDocument(document);
-		window->ui.action_Finish_Learn->setEnabled(false);
-		window->ui.action_Cancel_Learn->setEnabled(false);
+		auto win = MainWindow::fromDocument(document);
+		Q_ASSERT(win);
+		win->ui.action_Finish_Learn->setEnabled(false);
+		win->ui.action_Cancel_Learn->setEnabled(false);
 	}
 
 	document->clearModeMessage();
@@ -7128,17 +7138,17 @@ int DocumentWidget::showTipString(const QString &text, bool anchored, int pos, b
 	Tags::globVAlign    = vAlign;
 	Tags::globAlignMode = alignMode;
 
-	// If this isn't a lookup request, just display it.
-
-	if(auto window = MainWindow::fromDocument(this)) {
-		if (!lookup) {
-			return Tags::tagsShowCalltip(window->lastFocus(), text);
-		} else {
-			return findDefinitionHelperCommon(window->lastFocus(), text, search_type);
-		}
+	MainWindow *win = MainWindow::fromDocument(this);
+	if(!win) {
+		return 0;
 	}
 
-	return 0;
+	// If this isn't a lookup request, just display it.
+	if (!lookup) {
+		return Tags::tagsShowCalltip(win->lastFocus(), text);
+	} else {
+		return findDefinitionHelperCommon(win->lastFocus(), text, search_type);
+	}
 }
 
 /*  Open a new (or existing) editor window to the location specified in
