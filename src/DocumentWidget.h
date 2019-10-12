@@ -44,20 +44,20 @@ class StyleTableEntry;
 class TextArea;
 class UndoInfo;
 struct DragEndEvent;
+struct HighlightData;
 struct MacroCommandData;
 struct Program;
 struct ShellCommandData;
 struct SmartIndentData;
 struct SmartIndentEvent;
 struct WindowHighlightData;
-struct HighlightData;
 
+class QDir;
 class QFrame;
 class QLabel;
 class QMenu;
 class QSplitter;
 class QTimer;
-class QDir;
 
 enum class Direction : uint8_t;
 
@@ -111,6 +111,7 @@ public:
 	QColor highlightBGColorOfCode(size_t hCode) const;
 	QColor highlightColorValueOfCode(size_t hCode) const;
 	QFont defaultFont() const;
+	QString backlightCharTypes() const;
 	QString documentDelimiters() const;
 	QString filename() const;
 	QString fullPath() const;
@@ -124,6 +125,7 @@ public:
 	TextArea *firstPane() const;
 	TextBuffer *buffer() const;
 	WrapStyle wrapMode() const;
+	bool backlightChars() const;
 	bool checkReadOnly() const;
 	bool fileChanged() const;
 	bool filenameSet() const;

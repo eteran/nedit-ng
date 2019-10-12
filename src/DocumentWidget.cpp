@@ -4264,6 +4264,22 @@ void DocumentWidget::setBacklightChars(const QString &applyBacklightTypes) {
 }
 
 /**
+ * @brief DocumentWidget::backlightCharTypes
+ * @return
+ */
+QString DocumentWidget::backlightCharTypes() const {
+	return backlightCharTypes_;
+}
+
+/**
+ * @brief DocumentWidget::backlightChars
+ * @return
+ */
+bool DocumentWidget::backlightChars() const {
+	return backlightChars_;
+}
+
+/**
  * @brief DocumentWidget::setShowStatisticsLine
  * @param value
  */

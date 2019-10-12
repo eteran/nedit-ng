@@ -3139,7 +3139,7 @@ std::error_code setBacklightStringMS(DocumentWidget *document, Arguments argumen
 	QString backlightString;
 
 	if (arguments.empty()) {
-		backlightString = GetPrefBacklightCharTypes();
+		backlightString = Preferences::GetPrefBacklightCharTypes();
 	} else if (arguments.size() == 1) {
 		if (!is_string(arguments[0])) {
 			return MacroErrorCode::NotAString;
@@ -3150,15 +3150,29 @@ std::error_code setBacklightStringMS(DocumentWidget *document, Arguments argumen
 	}
 
 	if (backlightString == QLatin1String("default")) {
-		backlightString = GetPrefBacklightCharTypes();
+		backlightString = Preferences::GetPrefBacklightCharTypes();
 	}
 
 	if (backlightString.isEmpty()) {
 		backlightString = QString();  /* turns off backlighting */
 	}
 
-	document->SetBacklightChars(backlightString);
-	*result = to_value();
+	document->setBacklightChars(backlightString);
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
+
+
+std::error_code backlightStringMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
+	Q_UNUSED(arguments)
+
+	QString backlightString = document->backlightCharTypes();
+
+	if (backlightString.isNull() || !document->backlightChars()) {
+		backlightString = QLatin1String("");
+	}
+
+	*result = make_value(backlightString);
 	return MacroErrorCode::Success;
 }
 #endif
