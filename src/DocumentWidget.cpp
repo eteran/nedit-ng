@@ -6574,9 +6574,9 @@ void DocumentWidget::finishLearning() {
 	}
 
 	if (document->isTopDocument()) {
-		if(auto window = MainWindow::fromDocument(document)) {
-			window->ui.action_Finish_Learn->setEnabled(false);
-			window->ui.action_Cancel_Learn->setEnabled(false);
+		if(auto win = MainWindow::fromDocument(document)) {
+			win->ui.action_Finish_Learn->setEnabled(false);
+			win->ui.action_Cancel_Learn->setEnabled(false);
 		}
 	}
 

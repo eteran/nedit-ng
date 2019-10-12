@@ -266,8 +266,10 @@ std::error_code make_error_code(MacroErrorCode e) {
 }
 
 namespace std {
-	template <>
-	struct is_error_code_enum<MacroErrorCode> : true_type {};
+
+template <>
+struct is_error_code_enum<MacroErrorCode> : true_type {};
+
 }
 
 
@@ -322,95 +324,50 @@ static boost::optional<TextArea::EventFlags> flagsFromArguments(Arguments argume
 	return f;
 }
 
-#define TEXT_EVENT(Name, Slot)                                                                  \
-static std::error_code Name(DocumentWidget *document, Arguments arguments, DataValue *result) { \
-	                                                                                            \
-	boost::optional<TextArea::EventFlags> flags = flagsFromArguments(arguments, 0);             \
-	if(!flags) {                                                                                \
-		return MacroErrorCode::InvalidArgument;                                                 \
-	}                                                                                           \
-	                                                                                            \
-	if(auto window = MainWindow::fromDocument(document)) {                                      \
-		if(TextArea *area = window->lastFocus()) {                                              \
-			area->Slot(*flags | TextArea::SupressRecording);                                    \
-		}                                                                                       \
-	}                                                                                           \
-	                                                                                            \
-	*result = make_value();                                                                     \
-	return MacroErrorCode::Success;                                                             \
+template <void(TextArea::*Func)(TextArea::EventFlags)>
+std::error_code textEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	boost::optional<TextArea::EventFlags> flags = flagsFromArguments(arguments, 0);
+	if(!flags) {
+		return MacroErrorCode::InvalidArgument;
+	}
+
+	if(auto window = MainWindow::fromDocument(document)) {
+		if(TextArea *area = window->lastFocus()) {
+			(area->*Func)(*flags | TextArea::SupressRecording);
+		}
+	}
+
+	*result = make_value();
+	return MacroErrorCode::Success;
 }
 
-#define TEXT_EVENT_ARG(Name, Slot, Type)                                                        \
-static std::error_code Name(DocumentWidget *document, Arguments arguments, DataValue *result) { \
-	                                                                                            \
-	if(arguments.size() < 1) {                                                                  \
-		return MacroErrorCode::WrongNumberOfArguments;                                          \
-	}                                                                                           \
-	                                                                                            \
-	Type argument;                                                                              \
-	if(std::error_code ec = readArgument(arguments[0], &argument)) {                            \
-		return ec;                                                                              \
-	}                                                                                           \
-	                                                                                            \
-	boost::optional<TextArea::EventFlags> flags = flagsFromArguments(arguments, 1);             \
-	if(!flags) {                                                                                \
-		return MacroErrorCode::InvalidArgument;                                                 \
-	}                                                                                           \
-	                                                                                            \
-	if(auto window = MainWindow::fromDocument(document)) {                                      \
-		if(TextArea *area = window->lastFocus()) {                                              \
-			area->Slot(argument, *flags | TextArea::SupressRecording);                          \
-		}                                                                                       \
-	}                                                                                           \
-	                                                                                            \
-	*result = make_value();                                                                     \
-	return MacroErrorCode::Success;                                                             \
+template <class T, void(TextArea::*Func)(T, TextArea::EventFlags)>
+std::error_code textEventArg(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	if(arguments.size() < 1) {
+		return MacroErrorCode::WrongNumberOfArguments;
+	}
+
+	typename std::decay<T>::type argument;
+	if(std::error_code ec = readArgument(arguments[0], &argument)) {
+		return ec;
+	}
+
+	boost::optional<TextArea::EventFlags> flags = flagsFromArguments(arguments, 1);
+	if(!flags) {
+		return MacroErrorCode::InvalidArgument;
+	}
+
+	if(auto window = MainWindow::fromDocument(document)) {
+		if(TextArea *area = window->lastFocus()) {
+			(area->*Func)(argument, *flags | TextArea::SupressRecording);
+		}
+	}
+
+	*result = make_value();
+	return MacroErrorCode::Success;
 }
-
-TEXT_EVENT_ARG(scrollToLineMS,        scrollToLineAP, int)
-TEXT_EVENT_ARG(scrollLeftMS,          scrollLeftAP, int)
-TEXT_EVENT_ARG(scrollRightMS,         scrollRightAP, int)
-TEXT_EVENT_ARG(insertStringMS,        insertStringAP, QString)
-
-TEXT_EVENT(backwardWordMS,            backwardWordAP)
-TEXT_EVENT(backwardCharacterMS,       backwardCharacter)
-TEXT_EVENT(copyClipboardMS,           copyClipboard)
-TEXT_EVENT(copyPrimaryMS,             copyPrimaryAP)
-TEXT_EVENT(cutClipboardMS,            cutClipboard)
-TEXT_EVENT(cutPrimaryMS,              cutPrimaryAP)
-TEXT_EVENT(deleteNextCharacterMS,     deleteNextCharacter)
-TEXT_EVENT(deletePreviousCharacterMS, deletePreviousCharacter)
-TEXT_EVENT(deletePreviousWordMS,      deletePreviousWord)
-TEXT_EVENT(deselectAllMS,             deselectAllAP)
-TEXT_EVENT(forwardWordMS,             forwardWordAP)
-TEXT_EVENT(keySelectMS,               keySelectAP)
-TEXT_EVENT(newlineAndIndentMS,        newlineAndIndentAP)
-TEXT_EVENT(newlineMS,                 newline)
-TEXT_EVENT(newlineNoIndentMS,         newlineNoIndentAP)
-TEXT_EVENT(pasteClipboardMS,          pasteClipboard)
-TEXT_EVENT(processCancelMS,           processCancel)
-TEXT_EVENT(processDownMS,             processDown)
-TEXT_EVENT(processShiftDownMS,        processShiftDownAP)
-TEXT_EVENT(processShiftUpMS,          processShiftUpAP)
-TEXT_EVENT(processTabMS,              processTabAP)
-TEXT_EVENT(processUpMS,               processUp)
-TEXT_EVENT(beginingOfLineMS,          beginningOfLine)
-TEXT_EVENT(backwardParagraphMS,       backwardParagraphAP)
-TEXT_EVENT(beginningOfFileMS,         beginningOfFileAP)
-TEXT_EVENT(endOfFileMS,               endOfFileAP)
-TEXT_EVENT(endOfLineMS,               endOfLine)
-TEXT_EVENT(forwardParagraphMS,        forwardParagraphAP)
-TEXT_EVENT(forwardCharacterMS,        forwardCharacter)
-TEXT_EVENT(nextPageMS,                nextPageAP)
-TEXT_EVENT(previousPageMS,            previousPageAP)
-TEXT_EVENT(beginningOfSelectionMS,    beginningOfSelectionAP)
-TEXT_EVENT(deleteSelectionMS,         deleteSelectionAP)
-TEXT_EVENT(deleteNextWordMS,          deleteNextWordAP)
-TEXT_EVENT(deleteToEndOfLineMS,       deleteToEndOfLineAP)
-TEXT_EVENT(deleteToStartOfLineMS,     deleteToStartOfLineAP)
-TEXT_EVENT(endOfSelectionMS,          endOfSelectionAP)
-TEXT_EVENT(pageLeftMS,                pageLeftAP)
-TEXT_EVENT(pageRightMS,               pageRightAP)
 
 static std::error_code scrollDownMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
@@ -492,53 +449,53 @@ static std::error_code scrollUpMS(DocumentWidget *document, Arguments arguments,
 
 static const SubRoutine TextAreaSubrNames[] = {
 	// Keyboard
-	{"backward_character",        backwardCharacterMS},
-	{"backward_paragraph",        backwardParagraphMS},
-	{"backward_word",             backwardWordMS},
-	{"beginning_of_file",         beginningOfFileMS},
-	{"beginning_of_line",         beginingOfLineMS},
-	{"beginning_of_selection",    beginningOfSelectionMS},
-	{"copy_clipboard",            copyClipboardMS},
-	{"copy_primary",              copyPrimaryMS},
-	{"cut_clipboard",             cutClipboardMS},
-	{"cut_primary",               cutPrimaryMS},
-	{"delete_selection",          deleteSelectionMS},
-	{"delete_next_character",     deleteNextCharacterMS},
-	{"delete_previous_character", deletePreviousCharacterMS},
-	{"delete_next_word",          deleteNextWordMS},
-	{"delete_previous_word",      deletePreviousWordMS},
-	{"delete_to_start_of_line",   deleteToStartOfLineMS},
-	{"delete_to_end_of_line",     deleteToEndOfLineMS},
-	{"deselect_all",              deselectAllMS},
-	{"end_of_file",               endOfFileMS},
-	{"end_of_line",               endOfLineMS},
-	{"end_of_selection",          endOfSelectionMS},
-	{"forward_character",         forwardCharacterMS},
-	{"forward_paragraph",         forwardParagraphMS},
-	{"forward_word",              forwardWordMS},
-	{"insert_string",             insertStringMS},
-	{"key_select",                keySelectMS},
-	{"newline",                   newlineMS},
-	{"newline_and_indent",        newlineAndIndentMS},
-	{"newline_no_indent",         newlineNoIndentMS},
-	{"next_page",                 nextPageMS},
-	{"page_left",                 pageLeftMS},
-	{"page_right",                pageRightMS},
-	{"paste_clipboard",           pasteClipboardMS},
-	{"previous_page",             previousPageMS},
-	{"process_cancel",            processCancelMS},
-	{"process_down",              processDownMS},
-	{"process_return",            newlineMS},
-	{"process_shift_down",        processShiftDownMS},
-	{"process_shift_up",          processShiftUpMS},
-	{"process_tab",               processTabMS},
-	{"process_up",                processUpMS},
+	{"backward_character",        textEvent<&TextArea::backwardCharacter> },
+	{"backward_paragraph",        textEvent<&TextArea::backwardParagraphAP> },
+	{"backward_word",             textEvent<&TextArea::backwardWordAP> },
+	{"beginning_of_file",         textEvent<&TextArea::beginningOfFileAP> },
+	{"beginning_of_line",         textEvent<&TextArea::beginningOfLine> },
+	{"beginning_of_selection",    textEvent<&TextArea::beginningOfSelectionAP> },
+	{"copy_clipboard",            textEvent<&TextArea::copyClipboard> },
+	{"copy_primary",              textEvent<&TextArea::copyPrimaryAP> },
+	{"cut_clipboard",             textEvent<&TextArea::cutClipboard> },
+	{"cut_primary",               textEvent<&TextArea::cutPrimaryAP> },
+	{"delete_selection",          textEvent<&TextArea::deleteSelectionAP> },
+	{"delete_next_character",     textEvent<&TextArea::deleteNextCharacter> },
+	{"delete_previous_character", textEvent<&TextArea::deletePreviousCharacter> },
+	{"delete_next_word",          textEvent<&TextArea::deleteNextWordAP> },
+	{"delete_previous_word",      textEvent<&TextArea::deletePreviousWord> },
+	{"delete_to_start_of_line",   textEvent<&TextArea::deleteToStartOfLineAP> },
+	{"delete_to_end_of_line",     textEvent<&TextArea::deleteToEndOfLineAP> },
+	{"deselect_all",              textEvent<&TextArea::deselectAllAP> },
+	{"end_of_file",               textEvent<&TextArea::endOfFileAP> },
+	{"end_of_line",               textEvent<&TextArea::endOfLine> },
+	{"end_of_selection",          textEvent<&TextArea::endOfSelectionAP> },
+	{"forward_character",         textEvent<&TextArea::forwardCharacter> },
+	{"forward_paragraph",         textEvent<&TextArea::forwardParagraphAP> },
+	{"forward_word",              textEvent<&TextArea::forwardWordAP> },
+	{"insert_string",             textEventArg<const QString &, &TextArea::insertStringAP> },
+	{"key_select",                textEvent<&TextArea::keySelectAP> },
+	{"newline",                   textEvent<&TextArea::newline> },
+	{"newline_and_indent",        textEvent<&TextArea::newlineAndIndentAP> },
+	{"newline_no_indent",         textEvent<&TextArea::newlineNoIndentAP> },
+	{"next_page",                 textEvent<&TextArea::nextPageAP> },
+	{"page_left",                 textEvent<&TextArea::pageLeftAP> },
+	{"page_right",                textEvent<&TextArea::pageRightAP> },
+	{"paste_clipboard",           textEvent<&TextArea::pasteClipboard> },
+	{"previous_page",             textEvent<&TextArea::previousPageAP> },
+	{"process_cancel",            textEvent<&TextArea::processCancel> },
+	{"process_down",              textEvent<&TextArea::processDown> },
+	{"process_return",            textEvent<&TextArea::newline> },
+	{"process_shift_down",        textEvent<&TextArea::processShiftDownAP> },
+	{"process_shift_up",          textEvent<&TextArea::processShiftUpAP> },
+	{"process_tab",               textEvent<&TextArea::processTabAP> },
+	{"process_up",                textEvent<&TextArea::processUp> },
 	{"scroll_down",               scrollDownMS},
-	{"scroll_left",               scrollLeftMS},
-	{"scroll_right",              scrollRightMS},
+	{"scroll_left",               textEventArg<int, &TextArea::scrollLeftAP> },
+	{"scroll_right",              textEventArg<int, &TextArea::scrollRightAP> },
 	{"scroll_up",                 scrollUpMS},
-	{"scroll_to_line",            scrollToLineMS},
-	{"self_insert",               insertStringMS},
+	{"scroll_to_line",            textEventArg<int, &TextArea::scrollToLineAP> },
+	{"self_insert",               textEventArg<const QString &, &TextArea::insertStringAP> },
 
 #if 0 // NOTE(eteran): do these make sense to support
 	{"focus_pane",                nullptr}, // NOTE(eteran): was from MainWindow in my code...
@@ -571,138 +528,79 @@ static const SubRoutine TextAreaSubrNames[] = {
 #endif
 };
 
-#define WINDOW_MENU_EVENT_SM(Name, Slot)                                                                   \
-	static std::error_code Name(DocumentWidget *document, Arguments arguments, DataValue *result) {        \
-		                                                                                                   \
-		/* ensure that we are dealing with the document which currently has the focus */                   \
-		document = MacroFocusDocument();                                                                   \
-		                                                                                                   \
-		QString string;                                                                                    \
-		if(std::error_code ec = readArguments(arguments, 0, &string)) {                                    \
-			return ec;                                                                                     \
-		}                                                                                                  \
-		                                                                                                   \
-		if(auto window = MainWindow::fromDocument(document)) {                                             \
-			window->Slot(document, string, CommandSource::Macro);                                          \
-		}                                                                                                  \
-		                                                                                                   \
-		*result = make_value();                                                                            \
-		return MacroErrorCode::Success;                                                                    \
+template <void(MainWindow::*Func)(DocumentWidget *, const QString &, CommandSource)>
+std::error_code menuEventSM(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	/* ensure that we are dealing with the document which currently has the focus */
+	document = MacroFocusDocument();
+
+	QString string;
+	if(std::error_code ec = readArguments(arguments, 0, &string)) {
+		return ec;
 	}
 
-#define WINDOW_MENU_EVENT_S(Name, Slot)                                                                    \
-	static std::error_code Name(DocumentWidget *document, Arguments arguments, DataValue *result) {        \
-		                                                                                                   \
-		/* ensure that we are dealing with the document which currently has the focus */                   \
-		document = MacroFocusDocument();                                                                   \
-		                                                                                                   \
-		QString string;                                                                                    \
-		if(std::error_code ec = readArguments(arguments, 0, &string)) {                                    \
-			return ec;                                                                                     \
-		}                                                                                                  \
-		                                                                                                   \
-		if(auto window = MainWindow::fromDocument(document)) {                                             \
-			window->Slot(document, string);                                                                \
-		}                                                                                                  \
-		                                                                                                   \
-		*result = make_value();                                                                            \
-		return MacroErrorCode::Success;                                                                    \
+	if(auto win = MainWindow::fromDocument(document)) {
+		(win->*Func)(document, string, CommandSource::Macro);
 	}
 
-#define WINDOW_MENU_EVENT_M(Name, Slot)                                                                    \
-	static std::error_code Name(DocumentWidget *document, Arguments arguments, DataValue *result) {        \
-		                                                                                                   \
-		/* ensure that we are dealing with the document which currently has the focus */                   \
-		document = MacroFocusDocument();                                                                   \
-		                                                                                                   \
-		if(!arguments.empty()) {                                                                           \
-			return MacroErrorCode::WrongNumberOfArguments;                                                 \
-		}                                                                                                  \
-		                                                                                                   \
-		if(auto window = MainWindow::fromDocument(document)) {                                             \
-			window->Slot(document, CommandSource::Macro);                                                  \
-		}                                                                                                  \
-		                                                                                                   \
-		*result = make_value();                                                                            \
-		return MacroErrorCode::Success;                                                                    \
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
+
+template <void(MainWindow::*Func)(DocumentWidget *, const QString &)>
+std::error_code menuEventSU(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	/* ensure that we are dealing with the document which currently has the focus */
+	document = MacroFocusDocument();
+
+	QString string;
+	if(std::error_code ec = readArguments(arguments, 0, &string)) {
+		return ec;
 	}
 
-#define WINDOW_MENU_EVENT(routineName, Slot)                                                               \
-	static std::error_code routineName(DocumentWidget *document, Arguments arguments, DataValue *result) { \
-		                                                                                                   \
-		/* ensure that we are dealing with the document which currently has the focus */                   \
-		document = MacroFocusDocument();                                                                   \
-			                                                                                               \
-		if(!arguments.empty()) {                                                                           \
-			return MacroErrorCode::WrongNumberOfArguments;                                                 \
-		}                                                                                                  \
-		                                                                                                   \
-		if(auto window = MainWindow::fromDocument(document)) {                                             \
-			window->Slot(document);                                                                        \
-		}                                                                                                  \
-		                                                                                                   \
-		*result = make_value();                                                                            \
-		return MacroErrorCode::Success;                                                                    \
+	if(auto win = MainWindow::fromDocument(document)) {
+		(win->*Func)(document, string);
 	}
 
-// These emit functions to support calling them from macros, see WINDOW_MENU_EVENT for what
-// these functions will look like
-WINDOW_MENU_EVENT_SM(filterSelectionMS,              action_Filter_Selection)
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
 
-WINDOW_MENU_EVENT_M(filterSelectionDialogMS,         action_Filter_Selection)
+template <void(MainWindow::*Func)(DocumentWidget *, CommandSource)>
+std::error_code menuEventM(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-WINDOW_MENU_EVENT_S(includeFileMS,                   action_Include_File)
-WINDOW_MENU_EVENT_S(gotoLineNumberMS,                action_Goto_Line_Number)
-WINDOW_MENU_EVENT_S(openMS,                          action_Open)
-WINDOW_MENU_EVENT_S(loadMacroFileMS,                 action_Load_Macro_File)
-WINDOW_MENU_EVENT_S(loadTagsFileMS,                  action_Load_Tags_File)
-WINDOW_MENU_EVENT_S(unloadTagsFileMS,                action_Unload_Tags_File)
-WINDOW_MENU_EVENT_S(loadTipsFileMS,                  action_Load_Tips_File)
-WINDOW_MENU_EVENT_S(unloadTipsFileMS,                action_Unload_Tips_File)
-WINDOW_MENU_EVENT_S(markMS,                          action_Mark)
-WINDOW_MENU_EVENT_S(executeCommandMS,                action_Execute_Command)
-WINDOW_MENU_EVENT_S(shellMenuCommandMS,              action_Shell_Menu_Command)
-WINDOW_MENU_EVENT_S(macroMenuCommandMS,              action_Macro_Menu_Command)
+	/* ensure that we are dealing with the document which currently has the focus */
+	document = MacroFocusDocument();
 
-WINDOW_MENU_EVENT(closePaneMS,                       action_Close_Pane)
-WINDOW_MENU_EVENT(deleteMS,                          action_Delete)
-WINDOW_MENU_EVENT(exitMS,                            action_Exit)
-WINDOW_MENU_EVENT(fillParagraphMS,                   action_Fill_Paragraph)
-WINDOW_MENU_EVENT(gotoLineNumberDialogMS,            action_Goto_Line_Number)
-WINDOW_MENU_EVENT(gotoSelectedMS,                    action_Goto_Selected)
-WINDOW_MENU_EVENT(gotoMatchingMS,                    action_Goto_Matching)
-WINDOW_MENU_EVENT(includeFileDialogMS,               action_Include_File)
-WINDOW_MENU_EVENT(insertControlCodeDialogMS,         action_Insert_Ctrl_Code)
-WINDOW_MENU_EVENT(loadMacroFileDialogMS,             action_Load_Macro_File)
-WINDOW_MENU_EVENT(loadTagsFileDialogMS,              action_Load_Tags_File)
-WINDOW_MENU_EVENT(loadTipsFileDialogMS,              action_Load_Calltips_File)
-WINDOW_MENU_EVENT(lowercaseMS,                       action_Lower_case)
-WINDOW_MENU_EVENT(openSelectedMS,                    action_Open_Selected)
-WINDOW_MENU_EVENT(printMS,                           action_Print)
-WINDOW_MENU_EVENT(printSelectionMS,                  action_Print_Selection)
-WINDOW_MENU_EVENT(redoMS,                            action_Redo)
-WINDOW_MENU_EVENT(saveAsDialogMS,                    action_Save_As)
-WINDOW_MENU_EVENT(saveMS,                            action_Save)
-WINDOW_MENU_EVENT(selectAllMS,                       action_Select_All)
-WINDOW_MENU_EVENT(shiftLeftMS,                       action_Shift_Left)
-WINDOW_MENU_EVENT(shiftLeftTabMS,                    action_Shift_Left_Tabs)
-WINDOW_MENU_EVENT(shiftRightMS,                      action_Shift_Right)
-WINDOW_MENU_EVENT(shiftRightTabMS,                   action_Shift_Right_Tabs)
-WINDOW_MENU_EVENT(splitPaneMS,                       action_Split_Pane)
-WINDOW_MENU_EVENT(undoMS,                            action_Undo)
-WINDOW_MENU_EVENT(uppercaseMS,                       action_Upper_case)
-WINDOW_MENU_EVENT(openDialogMS,                      action_Open)
-WINDOW_MENU_EVENT(revertToSavedDialogMS,             action_Revert_to_Saved)
-WINDOW_MENU_EVENT(revertToSavedMS,                   action_Revert_to_Saved)
-WINDOW_MENU_EVENT(markDialogMS,                      action_Mark)
-WINDOW_MENU_EVENT(showTipMS,                         action_Show_Calltip)
-WINDOW_MENU_EVENT(selectToMatchingMS,                action_Shift_Goto_Matching)
-WINDOW_MENU_EVENT(executeCommandDialogMS,            action_Execute_Command)
-WINDOW_MENU_EVENT(executeCommandLineMS,              action_Execute_Command_Line)
-WINDOW_MENU_EVENT(repeatMacroDialogMS,               action_Repeat)
-WINDOW_MENU_EVENT(detachDocumentMS,                  action_Detach_Document)
-WINDOW_MENU_EVENT(moveDocumentMS,                    action_Move_Tab_To)
-WINDOW_MENU_EVENT(newOppositeMS,                     action_Close_Pane)
+	if(!arguments.empty()) {
+		return MacroErrorCode::WrongNumberOfArguments;
+	}
+
+	if(auto win = MainWindow::fromDocument(document)) {
+		(win->*Func)(document, CommandSource::Macro);
+	}
+
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
+
+template <void(MainWindow::*Func)(DocumentWidget *)>
+std::error_code menuEventU(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	/* ensure that we are dealing with the document which currently has the focus */
+	document = MacroFocusDocument();
+
+	if(!arguments.empty()) {
+		return MacroErrorCode::WrongNumberOfArguments;
+	}
+
+	if(auto win = MainWindow::fromDocument(document)) {
+		(win->*Func)(document);
+	}
+
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
 
 /*
 ** Scans action argument list for arguments "forward" or "backward" to
@@ -910,6 +808,23 @@ static std::error_code newMS(DocumentWidget *document, Arguments arguments, Data
 
 	if(auto window = MainWindow::fromDocument(document)) {
 		window->action_New(document, mode);
+	}
+
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
+
+static std::error_code newOppositeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	// ensure that we are dealing with the document which currently has the focus
+	document = MacroRunDocument();
+
+	if(arguments.size() > 0) {
+		return MacroErrorCode::WrongNumberOfArguments;
+	}
+
+	if(auto window = MainWindow::fromDocument(document)) {
+		window->action_New(document, NewMode::Opposite);
 	}
 
 	*result = make_value();
@@ -1786,42 +1701,42 @@ static const SubRoutine MenuMacroSubrNames[] = {
 	// File
 	{ "new",                          newMS },
 	{ "new_opposite",                 newOppositeMS },
-	{ "open",                         openMS },
-	{ "open_dialog",                  openDialogMS },
-	{ "open_selected",                openSelectedMS },
+	{ "open",                         menuEventSU<&MainWindow::action_Open> },
+	{ "open_dialog",                  menuEventU<&MainWindow::action_Open> },
+	{ "open_selected",                menuEventU<&MainWindow::action_Open_Selected> },
 	{ "close",                        closeMS },
-	{ "save",                         saveMS },
+	{ "save",                         menuEventU<&MainWindow::action_Save> },
 	{ "save_as",                      saveAsMS },
-	{ "save_as_dialog",               saveAsDialogMS },
-	{ "revert_to_saved_dialog",       revertToSavedDialogMS },
-	{ "revert_to_saved",              revertToSavedMS },
-	{ "include_file",                 includeFileMS },
-	{ "include_file_dialog",          includeFileDialogMS },
-	{ "load_macro_file",              loadMacroFileMS },
-	{ "load_macro_file_dialog",       loadMacroFileDialogMS },
-	{ "load_tags_file",               loadTagsFileMS },
-	{ "load_tags_file_dialog",        loadTagsFileDialogMS },
-	{ "unload_tags_file",             unloadTagsFileMS },
-	{ "load_tips_file",               loadTipsFileMS },
-	{ "load_tips_file_dialog",        loadTipsFileDialogMS },
-	{ "unload_tips_file",             unloadTipsFileMS },
-	{ "print",                        printMS },
-	{ "print_selection",              printSelectionMS },
-	{ "exit",                         exitMS },
+	{ "save_as_dialog",               menuEventU<&MainWindow::action_Save_As> },
+	{ "revert_to_saved_dialog",       menuEventU<&MainWindow::action_Revert_to_Saved> },
+	{ "revert_to_saved",              menuEventU<&MainWindow::action_Revert_to_Saved> },
+	{ "include_file",                 menuEventSU<&MainWindow::action_Include_File> },
+	{ "include_file_dialog",          menuEventU<&MainWindow::action_Include_File> },
+	{ "load_macro_file",              menuEventSU<&MainWindow::action_Load_Macro_File> },
+	{ "load_macro_file_dialog",       menuEventU<&MainWindow::action_Load_Macro_File> },
+	{ "load_tags_file",               menuEventSU<&MainWindow::action_Load_Tags_File> },
+	{ "load_tags_file_dialog",        menuEventU<&MainWindow::action_Load_Tags_File> },
+	{ "unload_tags_file",             menuEventSU<&MainWindow::action_Unload_Tags_File> },
+	{ "load_tips_file",               menuEventSU<&MainWindow::action_Load_Tips_File> },
+	{ "load_tips_file_dialog",        menuEventU<&MainWindow::action_Load_Calltips_File> },
+	{ "unload_tips_file",             menuEventSU<&MainWindow::action_Unload_Tips_File> },
+	{ "print",                        menuEventU<&MainWindow::action_Print> },
+	{ "print_selection",              menuEventU<&MainWindow::action_Print_Selection> },
+	{ "exit",                         menuEventU<&MainWindow::action_Exit> },
 
 	// Edit
-	{ "undo",                         undoMS },
-	{ "redo",                         redoMS },
-	{ "delete",                       deleteMS },
-	{ "select_all",                   selectAllMS },
-	{ "shift_left",                   shiftLeftMS },
-	{ "shift_left_by_tab",            shiftLeftTabMS },
-	{ "shift_right",                  shiftRightMS },
-	{ "shift_right_by_tab",           shiftRightTabMS },
-	{ "uppercase",                    uppercaseMS },
-	{ "lowercase",                    lowercaseMS },
-	{ "fill_paragraph",               fillParagraphMS },
-	{ "control_code_dialog",          insertControlCodeDialogMS },
+	{ "undo",                         menuEventU<&MainWindow::action_Undo> },
+	{ "redo",                         menuEventU<&MainWindow::action_Redo> },
+	{ "delete",                       menuEventU<&MainWindow::action_Delete> },
+	{ "select_all",                   menuEventU<&MainWindow::action_Select_All> },
+	{ "shift_left",                   menuEventU<&MainWindow::action_Shift_Left> },
+	{ "shift_left_by_tab",            menuEventU<&MainWindow::action_Shift_Left_Tabs> },
+	{ "shift_right",                  menuEventU<&MainWindow::action_Shift_Right> },
+	{ "shift_right_by_tab",           menuEventU<&MainWindow::action_Shift_Right_Tabs> },
+	{ "uppercase",                    menuEventU<&MainWindow::action_Upper_case> },
+	{ "lowercase",                    menuEventU<&MainWindow::action_Lower_case> },
+	{ "fill_paragraph",               menuEventU<&MainWindow::action_Fill_Paragraph> },
+	{ "control_code_dialog",          menuEventU<&MainWindow::action_Insert_Ctrl_Code> },
 
 	// Search
 	{ "find",                         findMS },
@@ -1833,37 +1748,37 @@ static const SubRoutine MenuMacroSubrNames[] = {
 	{ "replace_all",                  replaceAllMS },
 	{ "replace_in_selection",         replaceAllInSelectionMS },
 	{ "replace_again",                replaceAgainMS },
-	{ "goto_line_number",             gotoLineNumberMS },
-	{ "goto_line_number_dialog",      gotoLineNumberDialogMS },
-	{ "goto_selected",                gotoSelectedMS },
-	{ "mark",                         markMS },
-	{ "mark_dialog",                  markDialogMS },
+	{ "goto_line_number",             menuEventSU<&MainWindow::action_Goto_Line_Number> },
+	{ "goto_line_number_dialog",      menuEventU<&MainWindow::action_Goto_Line_Number> },
+	{ "goto_selected",                menuEventU<&MainWindow::action_Goto_Selected> },
+	{ "mark",                         menuEventSU<&MainWindow::action_Mark> },
+	{ "mark_dialog",                  menuEventU<&MainWindow::action_Mark> },
 	{ "goto_mark",                    gotoMarkMS },
 	{ "goto_mark_dialog",             gotoMarkDialogMS },
-	{ "goto_matching",                gotoMatchingMS },
-	{ "select_to_matching",           selectToMatchingMS },
+	{ "goto_matching",                menuEventU<&MainWindow::action_Goto_Matching> },
+	{ "select_to_matching",           menuEventU<&MainWindow::action_Shift_Goto_Matching> },
 	{ "find_definition",              findDefinitionMS },
-	{ "show_tip",                     showTipMS },
+	{ "show_tip",                     menuEventU<&MainWindow::action_Show_Calltip> },
 
 	// Shell
-	{ "filter_selection_dialog",      filterSelectionDialogMS },
-	{ "filter_selection",             filterSelectionMS },
-	{ "execute_command",              executeCommandMS },
-	{ "execute_command_dialog",       executeCommandDialogMS },
-	{ "execute_command_line",         executeCommandLineMS },
-	{ "shell_menu_command",           shellMenuCommandMS },
+	{ "filter_selection_dialog",      menuEventM<&MainWindow::action_Filter_Selection> },
+	{ "filter_selection",             menuEventSM<&MainWindow::action_Filter_Selection> },
+	{ "execute_command",              menuEventSU<&MainWindow::action_Execute_Command> },
+	{ "execute_command_dialog",       menuEventU<&MainWindow::action_Execute_Command> },
+	{ "execute_command_line",         menuEventU<&MainWindow::action_Execute_Command_Line> },
+	{ "shell_menu_command",           menuEventSU<&MainWindow::action_Shell_Menu_Command> },
 
 	// Macro
-	{ "macro_menu_command",           macroMenuCommandMS },
+	{ "macro_menu_command",           menuEventSU<&MainWindow::action_Macro_Menu_Command> },
 	{ "repeat_macro",                 repeatMacroMS },
-	{ "repeat_dialog",                repeatMacroDialogMS },
+	{ "repeat_dialog",                menuEventU<&MainWindow::action_Repeat> },
 
 	// Windows
-	{ "split_pane",                   splitPaneMS },
-	{ "close_pane",                   closePaneMS },
-	{ "detach_document",              detachDocumentMS },
+	{ "split_pane",                   menuEventU<&MainWindow::action_Split_Pane> },
+	{ "close_pane",                   menuEventU<&MainWindow::action_Close_Pane> },
+	{ "detach_document",              menuEventU<&MainWindow::action_Detach_Document> },
 	{ "detach_document_dialog",       detachDocumentDialogMS },
-	{ "move_document_dialog",         moveDocumentMS },
+	{ "move_document_dialog",         menuEventU<&MainWindow::action_Move_Tab_To> },
 
 	// Preferences
 	{ "set_auto_indent",              setAutoIndentMS },
@@ -1886,7 +1801,7 @@ static const SubRoutine MenuMacroSubrNames[] = {
 	{ "set_wrap_text",                setWrapTextMS },
 
 	// Deprecated
-	{ "match",                        selectToMatchingMS },
+	{ "match",                        menuEventU<&MainWindow::action_Shift_Goto_Matching> },
 
 	// These aren't mentioned in the documentation...
 	{ "find_incremental",             findIncrMS },
@@ -2022,7 +1937,8 @@ static SubRoutine SpecialVars[] = {
 
 
 // Global symbols for returning values from built-in functions
-#define N_RETURN_GLOBALS 5
+constexpr int N_RETURN_GLOBALS = 5;
+
 enum retGlobalSyms {
 	STRING_DIALOG_BUTTON,
 	SEARCH_END,
