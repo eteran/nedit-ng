@@ -24,6 +24,7 @@
 #include "Help.h"
 #include "Highlight.h"
 #include "LanguageMode.h"
+#include "Location.h"
 #include "PatternSet.h"
 #include "Preferences.h"
 #include "Regex.h"
@@ -68,15 +69,11 @@ QPointer<DocumentWidget> lastFocusDocument;
 
 QVector<QString> PrevOpen;
 
-struct CharacterLocation {
-	int line;
-	int column;
-};
 
 /*
 ** Extract the line and column number from the text string.
 */
-boost::optional<CharacterLocation> StringToLineAndCol(const QString &text) {
+boost::optional<Location> StringToLineAndCol(const QString &text) {
 
 	static const QRegularExpression re(QLatin1String(
 										   "^"
@@ -115,7 +112,7 @@ boost::optional<CharacterLocation> StringToLineAndCol(const QString &text) {
 			return boost::none;
 		}
 
-		return CharacterLocation{r, c};
+		return Location{r, c};
 	}
 
 	return boost::none;
@@ -2397,7 +2394,7 @@ void MainWindow::action_Goto_Line_Number(DocumentWidget *document, const QString
 		  [line]:[column]   (menu action)
 		  line              (macro call)
 		  line, column      (macro call) */
-	boost::optional<CharacterLocation> loc = StringToLineAndCol(s);
+	boost::optional<Location> loc = StringToLineAndCol(s);
 	if(!loc) {
 		QApplication::beep();
 		return;
@@ -3266,7 +3263,7 @@ void MainWindow::action_Goto_Matching(DocumentWidget *document) {
 
 	emit_event("goto_matching");
 	if(QPointer<TextArea> area = lastFocus()) {
-		document->gotoMatchingCharacter(area);
+		document->gotoMatchingCharacter(area, /*select=*/false);
 	}
 }
 
@@ -3287,7 +3284,7 @@ void MainWindow::action_Shift_Goto_Matching(DocumentWidget *document) {
 
 	emit_event("select_to_matching");
 	if(QPointer<TextArea> area = lastFocus()) {
-		document->selectToMatchingCharacter(area);
+		document->gotoMatchingCharacter(area, /*select=*/true);
 	}
 }
 
@@ -7209,20 +7206,18 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
 
 	QString string;
 	QString slinecol;
-	int line;
-	int column;
 	const int64_t length = document->buffer()->length();
 
-	if (!area->TextDPosToLineAndCol(pos, &line, &column)) {
-		string   = tr("%1%2%3 %4 bytes").arg(document->path(), document->filename(), format).arg(length);
-		slinecol = tr("L: ---  C: ---");
-	} else {
-		slinecol = tr("L: %1  C: %2").arg(line).arg(column);
+	if(boost::optional<Location> loc = area->TextDPosToLineAndCol(pos)) {
+		slinecol = tr("L: %1  C: %2").arg(loc->line).arg(loc->column);
 		if (showLineNumbers_) {
 			string = tr("%1%2%3 byte %4 of %5").arg(document->path(), document->filename(), format).arg(to_integer(pos)).arg(length);
 		} else {
 			string = tr("%1%2%3 %4 bytes").arg(document->path(), document->filename(), format).arg(length);
 		}
+	} else {
+		string   = tr("%1%2%3 %4 bytes").arg(document->path(), document->filename(), format).arg(length);
+		slinecol = tr("L: ---  C: ---");
 	}
 
 	// Update the line/column number

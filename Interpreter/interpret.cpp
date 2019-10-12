@@ -611,7 +611,7 @@ ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation,
 */
 void RunMacroAsSubrCall(Program *prog) {
 
-	/* See subroutine "callSubroutine" for a description of the stack frame
+	/* See "callSubroutine" for a description of the stack frame
 	   for a subroutine call */
 	*Context.StackP++ = make_value(Context.PC);     // return PC
 	*Context.StackP++ = make_value(Context.FrameP); // old FrameP
@@ -641,7 +641,7 @@ void preemptMacro() {
 ** how to return a value from a routine which preempts instead of returning
 ** a value directly).
 */
-void ModifyReturnedValueEx(const std::shared_ptr<MacroContext> &context, const DataValue &dv) {
+void modifyReturnedValue(const std::shared_ptr<MacroContext> &context, const DataValue &dv) {
 	if ((context->PC - 1)->func == fetchRetVal) {
 		*(context->StackP - 1) = dv;
 	}

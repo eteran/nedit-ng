@@ -9,6 +9,7 @@
 #include "StyleTableEntry.h"
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
+#include "Location.h"
 #include "Util/string_view.h"
 
 #include <QAbstractScrollArea>
@@ -202,7 +203,8 @@ public:
 	TextCursor TextFirstVisiblePos() const;
 	TextCursor TextGetCursorPos() const;
 	TextCursor TextLastVisiblePos() const;
-	bool TextDPosToLineAndCol(TextCursor pos, int *line, int *column);
+	boost::optional<Location> TextDPosToLineAndCol(TextCursor pos);
+	TextCursor TextDLineAndColToPos(Location loc);
 	const std::shared_ptr<TextBuffer> &getStyleBuffer() const;
 	int TextDGetCalltipID(int id) const;
 	int TextDMaxFontWidth() const;

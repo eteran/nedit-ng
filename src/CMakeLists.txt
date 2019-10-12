@@ -173,6 +173,7 @@ add_executable(nedit-ng
 	LanguageModeModel.h
 	LineNumberArea.cpp
 	LineNumberArea.h
+	Location.h
 	LockReasons.h
 	Main.cpp
 	Main.h

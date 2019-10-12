@@ -7160,32 +7160,31 @@ TextCursor TextArea::TextGetCursorPos() const {
 ** WORKS FOR DISPLAYED LINES AND, IN CONTINUOUS WRAP MODE, ONLY WHEN THE
 ** ABSOLUTE LINE NUMBER IS BEING MAINTAINED.  Otherwise, it returns false.
 */
-bool TextArea::TextDPosToLineAndCol(TextCursor pos, int *line, int *column) {
-
-	// TODO(eteran): return optional struct?
-
+boost::optional<Location> TextArea::TextDPosToLineAndCol(TextCursor pos) {
 	/* In continuous wrap mode, the absolute (non-wrapped) line count is
 	   maintained separately, as needed.  Only return it if we're actually
 	   keeping track of it and pos is in the displayed text */
 	if (continuousWrap_) {
 		if (!maintainingAbsTopLineNum() || pos < firstChar_ || pos > lastChar_) {
-			return false;
+			return boost::none;
 		}
 
-		*line    = absTopLineNum_ + buffer_->BufCountLines(firstChar_, pos);
-		*column  = buffer_->BufCountDispChars(buffer_->BufStartOfLine(pos), pos);
-		return true;
+		Location loc;
+		loc.line   = absTopLineNum_ + buffer_->BufCountLines(firstChar_, pos);
+		loc.column = buffer_->BufCountDispChars(buffer_->BufStartOfLine(pos), pos);
+		return loc;
 	}
 
 	// Only return the data if pos is within the displayed text
 	int visLineNum;
 	if (!posToVisibleLineNum(pos, &visLineNum)) {
-		return false;
+		return boost::none;
 	}
 
-	*column = buffer_->BufCountDispChars(lineStarts_[visLineNum], pos);
-	*line = visLineNum + topLineNum_;
-	return true;
+	Location loc;
+	loc.column = buffer_->BufCountDispChars(lineStarts_[visLineNum], pos);
+	loc.line   = visLineNum + topLineNum_;
+	return loc;
 }
 
 void TextArea::addCursorMovementCallback(cursorMovedCBEx callback, void *arg) {
@@ -7394,6 +7393,66 @@ void TextArea::insertStringAP(const QString &string, EventFlags flags) {
 ** Translate line and column to the nearest row and column number for
 ** positioning the cursor.
 */
+TextCursor TextArea::TextDLineAndColToPos(Location loc) {
+	int i;
+	TextCursor lineStart = {};
+
+	// Count lines
+	if (loc.line < 1) {
+		loc.line = 1;
+	}
+
+	TextCursor lineEnd = TextCursor(-1);
+	for (i = 1; i <= loc.line && lineEnd < buffer_->length(); i++) {
+		lineStart = lineEnd + 1;
+		lineEnd   = buffer_->BufEndOfLine(lineStart);
+	}
+
+	// If line is beyond end of buffer, position at last character in buffer
+	if (loc.line >= i) {
+		return lineEnd;
+	}
+
+	// Start character index at zero
+	int charIndex = 0;
+
+	// Only have to count columns if column isn't zero (or negative)
+	if (loc.column > 0) {
+
+		int charLen = 0;
+
+		// Count columns, expanding each character
+		const std::string lineStr = buffer_->BufGetRange(lineStart, lineEnd);
+		int outIndex = 0;
+		for (TextCursor i = lineStart; i < lineEnd; ++i, ++charIndex) {
+
+			charLen = TextBuffer::BufCharWidth(lineStr[charIndex], outIndex, buffer_->BufGetTabDistance());
+
+			if (outIndex + charLen >= loc.column) {
+				break;
+			}
+
+			outIndex += charLen;
+		}
+
+		/* If the column is in the middle of an expanded character, put cursor
+		 * in front of character if in first half of character, and behind
+		 * character if in last half of character
+		 */
+		if (loc.column >= outIndex + (charLen / 2)) {
+			++charIndex;
+		}
+
+		// If we are beyond the end of the line, back up one space
+		if ((i >= lineEnd) && (charIndex > 0)) {
+			--charIndex;
+		}
+	}
+
+	// Position is the start of the line plus the index into line buffer
+	return lineStart + charIndex;
+}
+
 TextCursor TextArea::TextDLineAndColToPos(int line, int column) {
 
 	int i;

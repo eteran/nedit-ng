@@ -108,7 +108,7 @@ void DialogMultiReplace::buttonReplace_clicked() {
 				writeableDocument->multiFileBusy_ = true; // Avoid multi-beep/dialog
 				writeableDocument->replaceFailed_ = false;
 
-				if(auto win = MainWindow::fromDocument(writeableDocument)) {
+				if(MainWindow *win = MainWindow::fromDocument(writeableDocument)) {
 					win->action_Replace_All(
 								writeableDocument,
 								fields->searchString,

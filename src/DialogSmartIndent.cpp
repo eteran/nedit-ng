@@ -259,7 +259,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 		if(!lmName.isNull()) {
 			if (lmName == newMacros.languageMode) {
 
-				if(auto window = MainWindow::fromDocument(document)) {
+				if(MainWindow *window = MainWindow::fromDocument(document)) {
 					window->ui.action_Indent_Smart->setEnabled(true);
 				}
 

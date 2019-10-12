@@ -171,7 +171,7 @@ public:
 	void finishMacroCmdExecution();
 	void gotoAP(TextArea *area, int lineNum, int column);
 	void gotoMark(TextArea *area, QChar label, bool extendSel);
-	void gotoMatchingCharacter(TextArea *area);
+	void gotoMatchingCharacter(TextArea *area, bool select);
 	void handleUnparsedRegion(const std::shared_ptr<TextBuffer> &styleBuf, TextCursor pos) const;
 	void macroBannerTimeoutProc();
 	void makeSelectionVisible(TextArea *area);
@@ -186,7 +186,6 @@ public:
 	void resumeMacroExecution();
 	void runMacro(Program *prog);
 	void selectNumberedLine(TextArea *area, int64_t lineNum);
-	void selectToMatchingCharacter(TextArea *area);
 	void setAutoIndent(IndentStyle indentStyle);
 	void setAutoScroll(int margin);
 	void setAutoWrap(WrapStyle wrapStyle);

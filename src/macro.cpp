@@ -783,8 +783,6 @@ static WrapMode searchWrap(Arguments arguments, int index) {
 */
 static bool StringToSearchType(const QString &string, SearchType *searchType) {
 
-	// TODO(eteran): return optional searchType?
-
 	static const struct {
 		QLatin1String name;
 		SearchType type;
@@ -2232,7 +2230,9 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 
 		RunMacroAsSubrCall(prog);
 
-		// TODO(eteran): should we delete prog here? it looks like it to me
+		// TODO(eteran): OK, I'm pretty sure this is a memory leak. We CAN'T delete prog quite yet,
+		// because despite the name, "RunMacroAsSubrCall" doesn't run anything, it just sets up the
+		// code for execution... but no one is tracking this pointer anymore :-/.
 	}
 
 	return true;
@@ -3149,7 +3149,7 @@ void returnShellCommandOutput(DocumentWidget *document, const QString &outText, 
 
 		DataValue retVal = make_value(outText);
 
-		ModifyReturnedValueEx(cmdData->context, retVal);
+		modifyReturnedValue(cmdData->context, retVal);
 
 		ReturnGlobals[SHELL_CMD_STATUS]->value = make_value(status);
 	}
@@ -3210,7 +3210,7 @@ static std::error_code dialogMS(DocumentWidget *document, Arguments arguments, D
 
 	QObject::connect(prompt.get(), &QDialog::finished, [prompt, document, cmdData](int) {
 		auto result = make_value(prompt->result());
-		ModifyReturnedValueEx(cmdData->context, result);
+		modifyReturnedValue(cmdData->context, result);
 
 		document->resumeMacroExecution();
 	});
@@ -3279,7 +3279,7 @@ static std::error_code stringDialogMS(DocumentWidget *document, Arguments argume
 		ReturnGlobals[STRING_DIALOG_BUTTON]->value = make_value(prompt->result());
 
 		auto result = make_value(prompt->text());
-		ModifyReturnedValueEx(cmdData->context, result);
+		modifyReturnedValue(cmdData->context, result);
 
 		document->resumeMacroExecution();
 	});
@@ -3667,7 +3667,7 @@ static std::error_code listDialogMS(DocumentWidget *document, Arguments argument
 		ReturnGlobals[LIST_DIALOG_BUTTON]->value = make_value(prompt->result());
 
 		auto result = make_value(prompt->text());
-		ModifyReturnedValueEx(cmdData->context, result);
+		modifyReturnedValue(cmdData->context, result);
 
 		document->resumeMacroExecution();
 	});
@@ -3916,18 +3916,16 @@ static std::error_code lineMV(DocumentWidget *document, Arguments arguments, Dat
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	int line;
-	int colNum;
-
 	TextBuffer *buf      = document->buffer();
 	TextArea *area       = MainWindow::fromDocument(document)->lastFocus();
 	TextCursor cursorPos = area->TextGetCursorPos();
 
-	if (!area->TextDPosToLineAndCol(cursorPos, &line, &colNum)) {
-		line = buf->BufCountLines(TextCursor(), cursorPos) + 1;
+	if(const boost::optional<Location> loc = area->TextDPosToLineAndCol(cursorPos)) {
+		*result = make_value(loc->line);
+	} else {
+		*result = make_value(buf->BufCountLines(buf->BufStartOfBuffer(), cursorPos) + 1);
 	}
 
-	*result = make_value(line);
 	return MacroErrorCode::Success;
 }
 
