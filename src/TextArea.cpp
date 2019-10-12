@@ -2261,7 +2261,6 @@ void TextArea::calcLastChar() {
 	int i;
 
 	for (i = nVisibleLines_ - 1; i > 0 && lineStarts_[i] == -1; i--) {
-		;
 	}
 
 	lastChar_ = (i < 0) ? buffer_->BufStartOfBuffer() : endOfLine(lineStarts_[i], /*startPosIsLineStart=*/true);

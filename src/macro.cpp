@@ -148,8 +148,8 @@ static std::error_code filenameDialogMS(DocumentWidget *document, Arguments argu
 static std::error_code replaceAllInSelectionMS(DocumentWidget *document, Arguments arguments, DataValue *result);
 static std::error_code replaceAllMS(DocumentWidget *document, Arguments arguments, DataValue *result);
 
-static std::error_code fillPatternResultEx(DataValue *result, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, TextCursor bufferPos);
-static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *document, const QString &styleName, bool includeName, size_t patCode, TextCursor bufferPos);
+static std::error_code fillPatternResult(DataValue *result, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, TextCursor bufferPos);
+static std::error_code fillStyleResult(DataValue *result, DocumentWidget *document, const QString &styleName, bool includeName, size_t patCode, TextCursor bufferPos);
 
 static std::error_code readSearchArgs(Arguments arguments, Direction *searchDirection, SearchType *searchType, WrapMode *wrap);
 static std::error_code readArgument(const DataValue &dv, int *result);
@@ -5069,7 +5069,7 @@ static std::error_code rangesetSetModeMS(DocumentWidget *document, Arguments arg
 **      ["style"]       Name of style
 **
 */
-static std::error_code fillStyleResultEx(DataValue *result, DocumentWidget *document, const QString &styleName, bool includeName, size_t patCode, TextCursor bufferPos) {
+static std::error_code fillStyleResult(DataValue *result, DocumentWidget *document, const QString &styleName, bool includeName, size_t patCode, TextCursor bufferPos) {
 	DataValue DV;
 
 	*result = make_value(std::make_shared<Array>());
@@ -5165,7 +5165,7 @@ static std::error_code getStyleByNameMS(DocumentWidget *document, Arguments argu
 		return MacroErrorCode::Success;
 	}
 
-	return fillStyleResultEx(
+	return fillStyleResult(
 				result,
 				document,
 				styleName,
@@ -5212,7 +5212,7 @@ static std::error_code getStyleAtPosMS(DocumentWidget *document, Arguments argum
 		return MacroErrorCode::Success;
 	}
 
-	return fillStyleResultEx(
+	return fillStyleResult(
 		result,
 		document,
 		document->highlightStyleOfCode(patCode),
@@ -5231,7 +5231,7 @@ static std::error_code getStyleAtPosMS(DocumentWidget *document, Arguments argum
 **      ["pattern"]     Name of pattern
 **
 */
-std::error_code fillPatternResultEx(DataValue *result, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, TextCursor bufferPos) {
+std::error_code fillPatternResult(DataValue *result, DocumentWidget *document, const QString &patternName, bool includeName, const QString &styleName, TextCursor bufferPos) {
 
 	DataValue DV;
 
@@ -5288,7 +5288,7 @@ static std::error_code getPatternByNameMS(DocumentWidget *document, Arguments ar
 		return MacroErrorCode::Success;
 	}
 
-	return fillPatternResultEx(
+	return fillPatternResult(
 				result,
 				document,
 				patternName,
@@ -5335,7 +5335,7 @@ static std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arg
 		return MacroErrorCode::Success;
 	}
 
-	return fillPatternResultEx(
+	return fillPatternResult(
 		result,
 		document,
 		document->highlightNameOfCode(patCode),

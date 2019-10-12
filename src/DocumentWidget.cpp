@@ -1146,7 +1146,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 		const QString oldlanguageModeName = Preferences::LanguageModeName(oldMode);
 
 		const bool emTabDistIsDef   = oldEmTabDist == Preferences::GetPrefEmTabDist(oldMode);
-		const bool indentStyleIsDef = info_->indentStyle == Preferences::GetPrefAutoIndent(oldMode) || (Preferences::GetPrefAutoIndent(oldMode) == IndentStyle::Smart && info_->indentStyle == IndentStyle::Auto && !SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(oldMode)));
+		const bool indentStyleIsDef = info_->indentStyle == Preferences::GetPrefAutoIndent(oldMode) || (Preferences::GetPrefAutoIndent(oldMode) == IndentStyle::Smart && info_->indentStyle == IndentStyle::Auto && !SmartIndent::smartIndentMacrosAvailable(Preferences::LanguageModeName(oldMode)));
 		const bool highlightIsDef   = highlightSyntax_  == Preferences::GetPrefHighlightSyntax() || (Preferences::GetPrefHighlightSyntax() && Highlight::FindPatternSet(oldlanguageModeName) == nullptr);
 		const WrapStyle wrapMode    = wrapModeIsDef    || forceDefaults ? Preferences::GetPrefWrap(mode)        : info_->wrapMode;
 		const int tabDist           = tabDistIsDef     || forceDefaults ? Preferences::GetPrefTabDist(mode)     : info_->buffer->BufGetTabDistance();
@@ -1158,7 +1158,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 		   whether patterns/macros are available */
 		QString languageModeName   = Preferences::LanguageModeName(mode);
 		bool haveHighlightPatterns = Highlight::FindPatternSet(languageModeName);
-		bool haveSmartIndentMacros = SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(mode));
+		bool haveSmartIndentMacros = SmartIndent::smartIndentMacrosAvailable(Preferences::LanguageModeName(mode));
 
 		const bool topDocument = isTopDocument();
 
@@ -3280,7 +3280,7 @@ void DocumentWidget::refreshMenuToggleStates() {
 		no_signals(win->ui.action_Matching_Syntax)->setChecked(info_->matchSyntaxBased);
 		no_signals(win->ui.action_Read_Only)->setChecked(info_->lockReasons.isUserLocked());
 
-		win->ui.action_Indent_Smart->setEnabled(SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(languageMode_)));
+		win->ui.action_Indent_Smart->setEnabled(SmartIndent::smartIndentMacrosAvailable(Preferences::LanguageModeName(languageMode_)));
 		win->ui.action_Highlight_Syntax->setEnabled(languageMode_ != PLAIN_LANGUAGE_MODE);
 
 		setAutoIndent(info_->indentStyle);

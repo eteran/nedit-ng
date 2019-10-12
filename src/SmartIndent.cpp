@@ -175,7 +175,7 @@ QString readSmartIndentMacro(Input &in) {
 	in += macroEnd - in.index();
 	in += MacroEndBoundary.size();
 
-	return ShiftText(macroStr, ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars=*/8);
+	return shiftText(macroStr, ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars=*/8);
 }
 
 /*
@@ -186,7 +186,7 @@ QString readSmartIndentMacro(Input &in) {
 void insertShiftedMacro(QTextStream &ts, const QString &macro) {
 
 	if (!macro.isNull()) {
-		ts << ShiftText(macro, ShiftDirection::Right, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/8);
+		ts << shiftText(macro, ShiftDirection::Right, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/8);
 	}
 
 	ts << QLatin1String("\t");
@@ -231,7 +231,7 @@ QByteArray defaultCommonMacros() {
 /*
 ** Returns true if there are smart indent macros for a named language
 */
-bool SmartIndentMacrosAvailable(const QString &languageModeName) {
+bool smartIndentMacrosAvailable(const QString &languageModeName) {
 	return findIndentSpec(languageModeName) != nullptr;
 }
 
@@ -240,7 +240,7 @@ bool SmartIndentMacrosAvailable(const QString &languageModeName) {
  * @param string
  * @return
  */
-bool LoadSmartIndentString(const QString &string) {
+bool loadSmartIndentString(const QString &string) {
 
 	Input in(&string);
 	QString errMsg;
@@ -324,7 +324,7 @@ bool LoadSmartIndentString(const QString &string) {
 	}
 }
 
-bool LoadSmartIndentCommonString(const QString &string) {
+bool loadSmartIndentCommonString(const QString &string) {
 
 	Input in(&string);
 
@@ -342,12 +342,12 @@ bool LoadSmartIndentCommonString(const QString &string) {
 	}
 
 	// Remove leading tabs added by writer routine
-	CommonMacros = ShiftText(in.mid(), ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/8);
+	CommonMacros = shiftText(in.mid(), ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/8);
 	return true;
 }
 
 
-QString WriteSmartIndentStringEx() {
+QString writeSmartIndentString() {
 
 	QString s;
 	QTextStream ts(&s);
@@ -376,7 +376,7 @@ QString WriteSmartIndentStringEx() {
 	return s;
 }
 
-QString WriteSmartIndentCommonStringEx() {
+QString writeSmartIndentCommonString() {
 
 	QByteArray defaults = defaultCommonMacros();
 	if (CommonMacros == QString::fromLatin1(defaults)) {
@@ -388,7 +388,7 @@ QString WriteSmartIndentCommonStringEx() {
 	}
 
 	// Shift the macro over by a tab to keep .nedit file bright and clean
-	QString outStr = ShiftText(CommonMacros, ShiftDirection::Right, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/8);
+	QString outStr = shiftText(CommonMacros, ShiftDirection::Right, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/8);
 
 	/* Protect newlines and backslashes from translation by the resource
 	   reader */
@@ -452,7 +452,7 @@ bool LMHasSmartIndentMacros(const QString &languageMode) {
 ** "oldName" to "newName" in both the stored macro sets, and the pattern set
 ** currently being edited in the dialog.
 */
-void RenameSmartIndentMacros(const QString &oldName, const QString &newName) {
+void renameSmartIndentMacros(const QString &oldName, const QString &newName) {
 
 	for(SmartIndentEntry &sis : SmartIndentSpecs) {
 		if (sis.languageMode == oldName) {
@@ -471,7 +471,7 @@ void RenameSmartIndentMacros(const QString &oldName, const QString &newName) {
 ** If a smart indent dialog is up, ask to have the option menu for
 ** chosing language mode updated (via a call to CreateLanguageModeMenu)
 */
-void UpdateLangModeMenuSmartIndent() {
+void updateLangModeMenuSmartIndent() {
 
 	if(SmartIndentDialog) {
 		SmartIndentDialog->updateLanguageModes();

@@ -154,7 +154,7 @@ void DialogWindowTitle::formatChangedCB() {
 		serverName = ui.checkServerNamePresent->isChecked() ? serverName_ : QString();
 	}
 
-	QString title = FormatWindowTitleEx(
+	QString title = formatWindowTitleAndUpdate(
 		filename_,
 		filenameSet_ ? path_ : tr("/a/very/long/path/used/as/example/"),
 		ui.checkClearCasePresent->isChecked() ? viewTag_ : QString(),
@@ -177,8 +177,8 @@ void DialogWindowTitle::formatChangedCB() {
  * @param titleFormat
  * @return
  */
-QString DialogWindowTitle::FormatWindowTitle(DocumentWidget *document, const QString &clearCaseViewTag, const QString &serverName, bool isServer, const QString &format) {
-	return FormatWindowTitleInternal(
+QString DialogWindowTitle::formatWindowTitle(DocumentWidget *document, const QString &clearCaseViewTag, const QString &serverName, bool isServer, const QString &format) {
+	return formatWindowTitleInternal(
 	            document->filename(),
 	            document->path(),
 	            clearCaseViewTag,
@@ -207,10 +207,20 @@ QString DialogWindowTitle::FormatWindowTitle(DocumentWidget *document, const QSt
 **  if the ClearCase view tag and server name are identical, only the first one
 **  specified in the formatting string will be displayed.
 */
-QString DialogWindowTitle::FormatWindowTitleEx(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat) {
+QString DialogWindowTitle::formatWindowTitleAndUpdate(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat) {
 
 	UpdateState state;
-	QString title = FormatWindowTitleInternal(filename, path, clearCaseViewTag, serverName, isServer, filenameSet, lockReasons, fileChanged, titleFormat, &state);
+	QString title = formatWindowTitleInternal(
+				filename,
+				path,
+				clearCaseViewTag,
+				serverName,
+				isServer,
+				filenameSet,
+				lockReasons,
+				fileChanged,
+				titleFormat,
+				&state);
 
 	// Prevent recursive callback loop
 	suppressFormatUpdate_ = true;
@@ -498,11 +508,16 @@ void DialogWindowTitle::removeFromFormat(const QString &string) {
 
 	// If the string is preceded or followed by a brace, include
 	// the brace(s) for removal
-	format.replace(QRegExp(tr(R"([\{\(\[\<]?%1[\}\)\]\>]?)").arg(QRegExp::escape(string))), QString());
+
+	// NOTE(eteran): this one can't be static because it is parameterized
+	const QRegularExpression re1(tr(R"([\{\(\[\<]?%1[\}\)\]\>]?)").arg(QRegularExpression::escape(string)));
+	format.replace(re1, QString());
 
 	// remove leading/trailing whitspace/dashes
-	format.replace(QRegExp(QLatin1String("^[\\s]+")), QString());
-	format.replace(QRegExp(QLatin1String("[\\s]+$")), QString());
+	static const QRegularExpression re2(QLatin1String("^[\\s]+"));
+	static const QRegularExpression re3(QLatin1String("[\\s]+$"));
+	format.replace(re2, QString());
+	format.replace(re3, QString());
 
 	ui.editFormat->setText(format);
 }
@@ -540,10 +555,13 @@ void DialogWindowTitle::on_editDirectory_textChanged(const QString &text) {
 	QString format = ui.editFormat->text();
 	bool ok;
 	int maxComp = text.toInt(&ok);
+
+	static const QRegularExpression re(QLatin1String("%[0-9]?d"));
+
 	if(ok && maxComp > 0) {
-		format.replace(QRegExp(QLatin1String("%[0-9]?d")), tr("%%1d").arg(maxComp));
+		format.replace(re, tr("%%1d").arg(maxComp));
 	} else {
-		format.replace(QRegExp(QLatin1String("%[0-9]?d")), tr("%d"));
+		format.replace(re, tr("%d"));
 	}
 
 	ui.editFormat->setText(format);
@@ -563,7 +581,7 @@ void DialogWindowTitle::on_editDirectory_textChanged(const QString &text) {
  * @param state
  * @return
  */
-QString DialogWindowTitle::FormatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &format, UpdateState *state) {
+QString DialogWindowTitle::formatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &format, UpdateState *state) {
 	QString title;
 
 	// Flags to supress one of these if both are specified and they are identical

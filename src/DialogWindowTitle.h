@@ -36,10 +36,10 @@ private Q_SLOTS:
 	void on_editFormat_textChanged(const QString &text);
 
 public:	
-	static QString FormatWindowTitle(DocumentWidget *document, const QString &clearCaseViewTag, const QString &serverName, bool isServer, const QString &format);
+	static QString formatWindowTitle(DocumentWidget *document, const QString &clearCaseViewTag, const QString &serverName, bool isServer, const QString &format);
 
 private:
-	static QString FormatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &format, UpdateState *state);
+	static QString formatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &format, UpdateState *state);
 
 private:
 	void connectSlots();
@@ -48,7 +48,7 @@ private:
 private:
 	void setToggleButtons();
 	void formatChangedCB();
-	QString FormatWindowTitleEx(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat);
+	QString formatWindowTitleAndUpdate(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat);
 	void removeFromFormat(const QString &string);
 	void appendToFormat(const QString &string);
 

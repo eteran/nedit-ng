@@ -478,7 +478,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 					dialogSyntaxPatterns_->RenameHighlightPattern(oldName, newName);
 				}
 
-				SmartIndent::RenameSmartIndentMacros(oldName, newName);
+				SmartIndent::renameSmartIndentMacros(oldName, newName);
 
 				// make a copy of the language mode, and set the new name
 				LanguageMode newLanguageMode = *lang;
@@ -520,7 +520,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 		}
 
 		// The same for the smart indent macro dialog
-		SmartIndent::UpdateLangModeMenuSmartIndent();
+		SmartIndent::updateLangModeMenuSmartIndent();
 
 		// Note that preferences have been changed
 		Preferences::MarkPrefsChanged();

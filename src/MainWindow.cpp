@@ -2148,7 +2148,7 @@ void MainWindow::action_Shift_Left(DocumentWidget *document) {
 	}
 
 	if(QPointer<TextArea> area = lastFocus()) {
-		ShiftSelection(document, area, ShiftDirection::Left, /*byTab=*/false);
+		shiftSelection(document, area, ShiftDirection::Left, /*byTab=*/false);
 	}
 }
 
@@ -2175,7 +2175,7 @@ void MainWindow::action_Shift_Right(DocumentWidget *document) {
 	}
 
 	if(QPointer<TextArea> area = lastFocus()) {
-		ShiftSelection(document, area, ShiftDirection::Right, /*byTab=*/false);
+		shiftSelection(document, area, ShiftDirection::Right, /*byTab=*/false);
 	}
 }
 
@@ -2202,7 +2202,7 @@ void MainWindow::action_Shift_Left_Tabs(DocumentWidget *document) {
 	}
 
 	if(QPointer<TextArea> area = lastFocus()) {
-		ShiftSelection(document, area, ShiftDirection::Left, /*byTab=*/true);
+		shiftSelection(document, area, ShiftDirection::Left, /*byTab=*/true);
 	}
 }
 
@@ -2228,7 +2228,7 @@ void MainWindow::action_Shift_Right_Tabs(DocumentWidget *document) {
 	}
 
 	if(QPointer<TextArea> area = lastFocus()) {
-		ShiftSelection(document, area, ShiftDirection::Right, /*byTab=*/true);
+		shiftSelection(document, area, ShiftDirection::Right, /*byTab=*/true);
 	}
 }
 
@@ -2308,7 +2308,7 @@ void MainWindow::action_Fill_Paragraph(DocumentWidget *document) {
 	}
 
 	if(QPointer<TextArea> area = lastFocus()) {
-		FillSelection(document, area);
+		fillSelection(document, area);
 	}
 }
 
@@ -7258,7 +7258,7 @@ void MainWindow::updateWindowReadOnly(DocumentWidget *document) {
  */
 void MainWindow::updateWindowTitle(DocumentWidget *document) {
 
-	QString title = DialogWindowTitle::FormatWindowTitle(
+	QString title = DialogWindowTitle::formatWindowTitle(
 	    document,
 	    ClearCase::GetViewTag(),
 	    Preferences::GetPrefServerName(),
