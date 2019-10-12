@@ -206,6 +206,7 @@ enum class MacroErrorCode {
 	InvalidSearchReplaceArgs,
 	InvalidRepeatArg,
 	ReadOnly,
+	WrongNumberOfToggleArguments,
 };
 
 struct MacroErrorCategory : std::error_category {
@@ -215,41 +216,42 @@ struct MacroErrorCategory : std::error_category {
 
 std::string MacroErrorCategory::message(int ev) const {
 	switch (static_cast<MacroErrorCode>(ev)) {
-	case MacroErrorCode::Success:                     return "";
-	case MacroErrorCode::ArrayFull:                   return "Too many elements in array in %s";
-	case MacroErrorCode::InvalidMode:                 return "Invalid value for mode in %s";
-	case MacroErrorCode::InvalidArgument:             return "%s called with invalid argument";
-	case MacroErrorCode::TooFewArguments:             return "%s subroutine called with too few arguments";
-	case MacroErrorCode::TooManyArguments:            return "%s subroutine called with too many arguments";
-	case MacroErrorCode::UnknownObject:               return "%s called with unknown object";
-	case MacroErrorCode::NotAnInteger:                return "%s called with non-integer argument";
-	case MacroErrorCode::NotAString:                  return "%s not called with a string parameter";
-	case MacroErrorCode::InvalidContext:              return "%s can't be called from non-suspendable context";
-	case MacroErrorCode::NeedsArguments:              return "%s subroutine called with no arguments";
-	case MacroErrorCode::WrongNumberOfArguments:      return "Wrong number of arguments to function %s";
-	case MacroErrorCode::UnrecognizedArgument:        return "Unrecognized argument to %s";
-	case MacroErrorCode::InsertFailed:                return "Array element failed to insert: %s";
-	case MacroErrorCode::RangesetDoesNotExist:        return "Rangeset does not exist in %s";
-	case MacroErrorCode::Rangeset2DoesNotExist:       return "Second rangeset does not exist in %s";
-	case MacroErrorCode::PathnameTooLong:             return "Pathname too long in %s";
-	case MacroErrorCode::InvalidArrayKey:             return "Invalid key in array in %s";
-	case MacroErrorCode::InvalidIndentStyle:          return "Invalid indent style value encountered in %s";
-	case MacroErrorCode::InvalidWrapStyle:            return "Invalid wrap style value encountered in %s";
-	case MacroErrorCode::EmptyList:                   return "%s subroutine called with empty list data";
-	case MacroErrorCode::Param1InvalidRangesetLabel:  return "First parameter is an invalid rangeset label in %s";
-	case MacroErrorCode::Param2InvalidRangesetLabel:  return "Second parameter is an invalid rangeset label in %s";
-	case MacroErrorCode::InvalidRangesetLabel:        return "Invalid rangeset label in %s";
-	case MacroErrorCode::InvalidRangesetLabelInArray: return "Invalid rangeset label in array in %s";
-	case MacroErrorCode::Param1NotAString:            return "First parameter is not a string in %s";
-	case MacroErrorCode::Param2NotAString:            return "Second parameter is not a string in %s";
-	case MacroErrorCode::SelectionMissing:            return "Selection missing or rectangular in call to %s";
-	case MacroErrorCode::FailedToAddRange:            return "Failed to add range in %s";
-	case MacroErrorCode::FailedToInvertRangeset:      return "Problem inverting rangeset in %s";
-	case MacroErrorCode::FailedToAddSelection:        return "Failure to add selection in %s";
-	case MacroErrorCode::Param2CannotBeEmptyString:   return "Second argument must be a non-empty string: %s";
-	case MacroErrorCode::InvalidSearchReplaceArgs:    return "%s action requires search and replace string arguments";
-	case MacroErrorCode::InvalidRepeatArg:            return "%s requires method/count";
-	case MacroErrorCode::ReadOnly:                    return "%s cannot alter a read-only document";
+	case MacroErrorCode::Success:                      return "";
+	case MacroErrorCode::ArrayFull:                    return "Too many elements in array in %s";
+	case MacroErrorCode::InvalidMode:                  return "Invalid value for mode in %s";
+	case MacroErrorCode::InvalidArgument:              return "%s called with invalid argument";
+	case MacroErrorCode::TooFewArguments:              return "%s subroutine called with too few arguments";
+	case MacroErrorCode::TooManyArguments:             return "%s subroutine called with too many arguments";
+	case MacroErrorCode::UnknownObject:                return "%s called with unknown object";
+	case MacroErrorCode::NotAnInteger:                 return "%s called with non-integer argument";
+	case MacroErrorCode::NotAString:                   return "%s not called with a string parameter";
+	case MacroErrorCode::InvalidContext:               return "%s can't be called from non-suspendable context";
+	case MacroErrorCode::NeedsArguments:               return "%s subroutine called with no arguments";
+	case MacroErrorCode::WrongNumberOfArguments:       return "Wrong number of arguments to function %s";
+	case MacroErrorCode::UnrecognizedArgument:         return "Unrecognized argument to %s";
+	case MacroErrorCode::InsertFailed:                 return "Array element failed to insert: %s";
+	case MacroErrorCode::RangesetDoesNotExist:         return "Rangeset does not exist in %s";
+	case MacroErrorCode::Rangeset2DoesNotExist:        return "Second rangeset does not exist in %s";
+	case MacroErrorCode::PathnameTooLong:              return "Pathname too long in %s";
+	case MacroErrorCode::InvalidArrayKey:              return "Invalid key in array in %s";
+	case MacroErrorCode::InvalidIndentStyle:           return "Invalid indent style value encountered in %s";
+	case MacroErrorCode::InvalidWrapStyle:             return "Invalid wrap style value encountered in %s";
+	case MacroErrorCode::EmptyList:                    return "%s subroutine called with empty list data";
+	case MacroErrorCode::Param1InvalidRangesetLabel:   return "First parameter is an invalid rangeset label in %s";
+	case MacroErrorCode::Param2InvalidRangesetLabel:   return "Second parameter is an invalid rangeset label in %s";
+	case MacroErrorCode::InvalidRangesetLabel:         return "Invalid rangeset label in %s";
+	case MacroErrorCode::InvalidRangesetLabelInArray:  return "Invalid rangeset label in array in %s";
+	case MacroErrorCode::Param1NotAString:             return "First parameter is not a string in %s";
+	case MacroErrorCode::Param2NotAString:             return "Second parameter is not a string in %s";
+	case MacroErrorCode::SelectionMissing:             return "Selection missing or rectangular in call to %s";
+	case MacroErrorCode::FailedToAddRange:             return "Failed to add range in %s";
+	case MacroErrorCode::FailedToInvertRangeset:       return "Problem inverting rangeset in %s";
+	case MacroErrorCode::FailedToAddSelection:         return "Failure to add selection in %s";
+	case MacroErrorCode::Param2CannotBeEmptyString:    return "Second argument must be a non-empty string: %s";
+	case MacroErrorCode::InvalidSearchReplaceArgs:     return "%s action requires search and replace string arguments";
+	case MacroErrorCode::InvalidRepeatArg:             return "%s requires method/count";
+	case MacroErrorCode::ReadOnly:                     return "%s cannot alter a read-only document";
+	case MacroErrorCode::WrongNumberOfToggleArguments: return "%s requires 0 or 1 arguments";
 	}
 
 	Q_UNREACHABLE();
@@ -1089,7 +1091,6 @@ static std::error_code findDefinitionMS(DocumentWidget *document, Arguments argu
 	}
 
 	QString argument;
-
 	if(arguments.size() == 1) {
 		if(std::error_code ec = readArgument(arguments[1], &argument)) {
 			return ec;
@@ -1158,7 +1159,6 @@ static std::error_code setAutoIndentMS(DocumentWidget *document, Arguments argum
 
 	QString string;
 	if(std::error_code ec = readArguments(arguments, 0, &string)) {
-		qWarning("NEdit: set_auto_indent requires argument");
 		return ec;
 	}
 
@@ -1183,7 +1183,6 @@ static std::error_code setEmTabDistMS(DocumentWidget *document, Arguments argume
 
 	int number;
 	if(std::error_code ec = readArguments(arguments, 0, &number)) {
-		qWarning("NEdit: set_em_tab_dist requires argument");
 		return ec;
 	}
 
@@ -1212,7 +1211,6 @@ static std::error_code setFontsMS(DocumentWidget *document, Arguments arguments,
 
 	if(arguments.size() == 1) {
 		if(std::error_code ec = readArguments(arguments, 0, &fontName)) {
-			qWarning("NEdit: set_fonts requires a string argument");
 			return ec;
 		}
 	} else {
@@ -1234,35 +1232,31 @@ static std::error_code setFontsMS(DocumentWidget *document, Arguments arguments,
 	return MacroErrorCode::Success;
 }
 
-static boost::optional<int> toggle_or_bool(Arguments arguments, int previous, std::error_code *errMsg, const char *actionName) {
-
-	int next;
+static boost::optional<bool> toggle_or_bool(Arguments arguments, bool previous, std::error_code *error) {
 	switch(arguments.size()) {
-	case 1:
+	case 1: {
+		int next;
 		if(std::error_code ec = readArguments(arguments, 0, &next)) {
-			*errMsg = ec;
+			*error = ec;
 			return boost::none;
 		}
-		break;
+		return next;
+	}
 	case 0:
-		next = !previous;
-		break;
+		return !previous;
 	default:
-		qWarning("NEdit: %s requires 0 or 1 arguments", actionName);
+		*error = MacroErrorCode::WrongNumberOfToggleArguments;
 		return boost::none;
 	}
-
-	return next;
 }
 
-
-static std::error_code setHighlightSyntaxMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
+template <void(DocumentWidget::*Set)(bool), bool(DocumentWidget::*Get)() const>
+std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	document = MacroRunDocument();
 
 	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, document->highlightSyntax(), &ec, "set_highlight_syntax")) {
-		document->setHighlightSyntax(*next);
+	if(boost::optional<bool> next = toggle_or_bool(arguments, (document->*Get)(), &ec)) {
+		(document->*Set)(*next);
 		*result = make_value();
 		return MacroErrorCode::Success;
 	}
@@ -1270,57 +1264,16 @@ static std::error_code setHighlightSyntaxMS(DocumentWidget *document, Arguments 
 	return ec;
 }
 
-static std::error_code setIncrementalBackupMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	document = MacroRunDocument();
-
-	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, document->incrementalBackup(), &ec, "set_incremental_backup")) {
-		document->setIncrementalBackup(*next);
-		*result = make_value();
-		return MacroErrorCode::Success;
-	}
-
-	return ec;
-}
-
-static std::error_code setIncrementalSearchLineMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
+template <void(MainWindow::*Set)(bool), bool(MainWindow::*Get)() const>
+std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	document = MacroRunDocument();
 
 	auto win = MainWindow::fromDocument(document);
 	Q_ASSERT(win);
 
 	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, win->getIncrementalSearchLine(), &ec, "set_incremental_search_line")) {
-		win->setIncrementalSearchLine(*next);
-		*result = make_value();
-		return MacroErrorCode::Success;
-	}
-
-	return ec;
-}
-
-static std::error_code setMakeBackupCopyMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	document = MacroRunDocument();
-
-	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, document->makeBackupCopy(), &ec, "set_make_backup_copy")) {
-		document->setMakeBackupCopy(*next);
-		*result = make_value();
-		return MacroErrorCode::Success;
-	}
-
-	return ec;
-}
-
-static std::error_code setLockedMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	document = MacroRunDocument();
-
-	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, document->userLocked(), &ec, "set_locked")) {
-		document->setUserLocked(*next);
+	if(boost::optional<bool> next = toggle_or_bool(arguments, (win->*Get)(), &ec)) {
+		(win->*Set)(*next);
 		*result = make_value();
 		return MacroErrorCode::Success;
 	}
@@ -1334,44 +1287,12 @@ static std::error_code setLanguageModeMS(DocumentWidget *document, Arguments arg
 
 	QString languageMode;
 	if(std::error_code ec = readArguments(arguments, 0, &languageMode)) {
-		qWarning("NEdit: set_language_mode requires argument");
 		return ec;
 	}
 
 	document->action_Set_Language_Mode(languageMode, false);
 	*result = make_value();
 	return MacroErrorCode::Success;
-}
-
-static std::error_code setOvertypeModeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	document = MacroRunDocument();
-
-	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, document->overstrike(), &ec, "set_overtype_mode")) {
-		document->setOverstrike(*next);
-		*result = make_value();
-		return MacroErrorCode::Success;
-	}
-
-	return ec;
-}
-
-static std::error_code setShowLineNumbersMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	document = MacroRunDocument();
-
-	auto win = MainWindow::fromDocument(document);
-	Q_ASSERT(win);
-
-	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, win->getShowLineNumbers(), &ec, "set_show_line_numbers")) {
-		win->setShowLineNumbers(*next);
-		*result = make_value();
-		return MacroErrorCode::Success;
-	}
-
-	return ec;
 }
 
 static std::error_code setShowMatchingMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
@@ -1412,34 +1333,6 @@ static std::error_code setShowMatchingMS(DocumentWidget *document, Arguments arg
 	return MacroErrorCode::Success;
 }
 
-static std::error_code setMatchSyntaxBasedMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	document = MacroRunDocument();
-
-	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, document->matchSyntaxBased(), &ec, "set_match_syntax_based")) {
-		document->setMatchSyntaxBased(*next);
-		*result = make_value();
-		return MacroErrorCode::Success;
-	}
-
-	return ec;
-}
-
-static std::error_code setStatisticsLineMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	document = MacroRunDocument();
-
-	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, document->showStatisticsLine(), &ec, "set_statistics_line")) {
-		document->setShowStatisticsLine(*next);
-		*result = make_value();
-		return MacroErrorCode::Success;
-	}
-
-	return ec;
-}
-
 static std::error_code setTabDistMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	document = MacroRunDocument();
@@ -1459,20 +1352,6 @@ static std::error_code setTabDistMS(DocumentWidget *document, Arguments argument
 
 	*result = make_value();
 	return MacroErrorCode::Success;
-}
-
-static std::error_code setUseTabsMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	document = MacroRunDocument();
-
-	std::error_code ec;
-	if(boost::optional<int> next = toggle_or_bool(arguments, document->useTabs(), &ec, "set_use_tabs")) {
-		document->setUseTabs(*next);
-		*result = make_value();
-		return MacroErrorCode::Success;
-	}
-
-	return ec;
 }
 
 static std::error_code setWrapMarginMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
@@ -1784,19 +1663,19 @@ static const SubRoutine MenuMacroSubrNames[] = {
 	{ "set_auto_indent",              setAutoIndentMS },
 	{ "set_em_tab_dist",              setEmTabDistMS },
 	{ "set_fonts",                    setFontsMS },
-	{ "set_highlight_syntax",         setHighlightSyntaxMS },
-	{ "set_incremental_backup",       setIncrementalBackupMS },
-	{ "set_incremental_search_line",  setIncrementalSearchLineMS },
+	{ "set_highlight_syntax",         menuToggleEvent<&DocumentWidget::setHighlightSyntax, &DocumentWidget::highlightSyntax> },
+	{ "set_incremental_backup",       menuToggleEvent<&DocumentWidget::setIncrementalBackup, &DocumentWidget::incrementalBackup> },
+	{ "set_incremental_search_line",  menuToggleEvent<&MainWindow::setIncrementalSearchLine, &MainWindow::getIncrementalSearchLine> },
 	{ "set_language_mode",            setLanguageModeMS },
-	{ "set_locked",                   setLockedMS },
-	{ "set_make_backup_copy",         setMakeBackupCopyMS },
-	{ "set_overtype_mode",            setOvertypeModeMS },
-	{ "set_show_line_numbers",        setShowLineNumbersMS },
+	{ "set_locked",                   menuToggleEvent<&DocumentWidget::setUserLocked, &DocumentWidget::userLocked> },
+	{ "set_make_backup_copy",         menuToggleEvent<&DocumentWidget::setMakeBackupCopy, &DocumentWidget::makeBackupCopy> },
+	{ "set_overtype_mode",            menuToggleEvent<&DocumentWidget::setOverstrike, &DocumentWidget::overstrike> },
+	{ "set_show_line_numbers",        menuToggleEvent<&MainWindow::setShowLineNumbers, &MainWindow::getShowLineNumbers> },
 	{ "set_show_matching",            setShowMatchingMS },
-	{ "set_match_syntax_based",       setMatchSyntaxBasedMS },
-	{ "set_statistics_line",          setStatisticsLineMS },
+	{ "set_match_syntax_based",       menuToggleEvent<&DocumentWidget::setMatchSyntaxBased, &DocumentWidget::matchSyntaxBased> },
+	{ "set_statistics_line",          menuToggleEvent<&DocumentWidget::setShowStatisticsLine, &DocumentWidget::showStatisticsLine> },
 	{ "set_tab_dist",                 setTabDistMS },
-	{ "set_use_tabs",                 setUseTabsMS },
+	{ "set_use_tabs",                 menuToggleEvent<&DocumentWidget::setUseTabs, &DocumentWidget::useTabs>},
 	{ "set_wrap_margin",              setWrapMarginMS },
 	{ "set_wrap_text",                setWrapTextMS },
 

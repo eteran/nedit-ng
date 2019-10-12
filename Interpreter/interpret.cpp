@@ -129,21 +129,21 @@ void restoreContext(Pointer context) {
 ** be used to both process the message and return.
 */
 template <class... T>
-int execError(const std::error_code &error_code, T... args) {
+int execError(const std::error_code &error_code, T&&... args) {
 	static char msg[MAX_ERR_MSG_LEN];
 
 	std::string str = error_code.message();
 
-	qsnprintf(msg, sizeof(msg), str.c_str(), args...);
+	qsnprintf(msg, sizeof(msg), str.c_str(), std::forward<T>(args)...);
 	ErrMsg = msg;
 	return STAT_ERROR;
 }
 
 template <class... T>
-int execError(const char *s1, T... args) {
+int execError(const char *s1, T&&... args) {
 	static char msg[MAX_ERR_MSG_LEN];
 
-	qsnprintf(msg, sizeof(msg), s1, args...);
+	qsnprintf(msg, sizeof(msg), s1, std::forward<T>(args)...);
 	ErrMsg = msg;
 	return STAT_ERROR;
 }
