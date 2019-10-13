@@ -11,7 +11,7 @@ class DialogFonts final : public Dialog {
 	Q_OBJECT
 
 public:
-	DialogFonts(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit DialogFonts(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogFonts() override = default;
 
 private:

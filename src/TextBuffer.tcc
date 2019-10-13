@@ -2199,6 +2199,7 @@ boost::optional<SelectionPos> BasicTextBuffer<Ch, Tr>::Selection::getSelectionPo
 		pos.rectStart = rectStart_;
 		pos.rectEnd   = rectEnd_;
 	}
+    return pos;
 }
 
 /**

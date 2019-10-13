@@ -13,7 +13,7 @@ struct UpdateState;
 class DialogWindowTitle final : public Dialog {
 	Q_OBJECT
 public:
-	DialogWindowTitle(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit DialogWindowTitle(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogWindowTitle() override = default;
 
 private Q_SLOTS:

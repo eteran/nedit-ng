@@ -13,7 +13,7 @@ class SmartIndentEntry;
 class DialogSmartIndent final : public Dialog {
 	Q_OBJECT
 public:
-	DialogSmartIndent(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit DialogSmartIndent(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogSmartIndent() override = default;
 
 public:

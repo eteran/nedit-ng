@@ -11,7 +11,7 @@ class DialogTabs final : public Dialog {
 public:
 	Q_OBJECT
 public:
-	DialogTabs(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit DialogTabs(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogTabs() override = default;
 
 private Q_SLOTS:
