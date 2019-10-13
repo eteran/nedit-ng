@@ -625,6 +625,11 @@ void BasicTextBuffer<Ch, Tr>::BufRectSelect(TextCursor start, TextCursor end, in
 }
 
 template <class Ch, class Tr>
+boost::optional<SelectionPos> BasicTextBuffer<Ch, Tr>::BufGetSelectionPos() const noexcept {
+	return primary.getSelectionPos();
+}
+
+template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::BufGetSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept {
 	return primary.getSelectionPos(start, end, isRect, rectStart, rectEnd);
 }
@@ -2178,6 +2183,22 @@ bool BasicTextBuffer<Ch, Tr>::Selection::getSelectionPos(TextCursor *start, Text
 		*rectEnd   = rectEnd_;
 	}
 	return selected_;
+}
+
+template <class Ch, class Tr>
+boost::optional<SelectionPos> BasicTextBuffer<Ch, Tr>::Selection::getSelectionPos() const {
+	if(!selected_) {
+		return boost::none;
+	}
+
+	SelectionPos pos;
+	pos.isRect = rectangular_;
+	pos.start  = start_;
+	pos.end    = end_;
+	if (rectangular_) {
+		pos.rectStart = rectStart_;
+		pos.rectEnd   = rectEnd_;
+	}
 }
 
 /**

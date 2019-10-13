@@ -74,12 +74,12 @@ public:
 
 	Q_DECLARE_FLAGS(EventFlags, EventFlag)
 
-	enum class ScrollUnits {
+	enum class ScrollUnit {
 		Lines,
 		Pages
 	};
 
-	enum class PositionTypes {
+	enum class PositionType {
 		Cursor,
 		Character
 	};
@@ -166,11 +166,11 @@ public Q_SLOTS:
 	void processShiftUpAP(TextArea::EventFlags flags = NoneFlag);
 	void processTabAP(TextArea::EventFlags flags = NoneFlag);
 	void processUp(TextArea::EventFlags flags = NoneFlag);
-	void scrollDownAP(int count, TextArea::ScrollUnits units = ScrollUnits::Lines, TextArea::EventFlags flags = NoneFlag);
+	void scrollDownAP(int count, TextArea::ScrollUnit units = ScrollUnit::Lines, TextArea::EventFlags flags = NoneFlag);
 	void scrollLeftAP(int pixels, TextArea::EventFlags flags = NoneFlag);
 	void scrollRightAP(int pixels, TextArea::EventFlags flags = NoneFlag);
 	void scrollToLineAP(int line, TextArea::EventFlags flags = NoneFlag);
-	void scrollUpAP(int count, TextArea::ScrollUnits units = ScrollUnits::Lines, TextArea::EventFlags flags = NoneFlag);
+	void scrollUpAP(int count, TextArea::ScrollUnit units = ScrollUnit::Lines, TextArea::EventFlags flags = NoneFlag);
 	void selectAllAP(TextArea::EventFlags flags = NoneFlag);
 	void selfInsertAP(const QString &string, TextArea::EventFlags flags = NoneFlag);
 	void toggleOverstrike(TextArea::EventFlags flags = NoneFlag);
@@ -198,14 +198,14 @@ public:
 	QColor getForegroundColor() const;
 	QMargins getMargins() const;
 	QTimer *cursorBlinkTimer() const;
-	TextBuffer *TextGetBuffer() const;
-	TextCursor TextDLineAndColToPos(int line, int column);
-	TextCursor TextFirstVisiblePos() const;
-	TextCursor TextGetCursorPos() const;
+	TextBuffer *buffer() const;
+	TextCursor lineAndColToPosition(int line, int column);
+	TextCursor firstVisiblePos() const;
+	TextCursor cursorPos() const;
 	TextCursor TextLastVisiblePos() const;
-	boost::optional<Location> TextDPosToLineAndCol(TextCursor pos);
-	TextCursor TextDLineAndColToPos(Location loc);
-	const std::shared_ptr<TextBuffer> &getStyleBuffer() const;
+	boost::optional<Location> positionToLineAndCol(TextCursor pos) const;
+	TextCursor lineAndColToPosition(Location loc) const;
+	const std::shared_ptr<TextBuffer> &styleBuffer() const;
 	int TextDGetCalltipID(int id) const;
 	int TextDMaxFontWidth() const;
 	int TextDMinFontWidth() const;
@@ -221,8 +221,8 @@ public:
 	int64_t TextFirstVisibleLine() const;
 	int64_t getBufferLinesCount() const;
 	std::string TextGetWrapped(TextCursor startPos, TextCursor endPos);
-	void RemoveWidgetHighlight();
-	void TextDAttachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user);	
+	void removeWidgetHighlight();
+	void attachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user);
 	void TextDKillCalltip(int id);
 	void TextDMaintainAbsLineNum(bool state);
 	void TextSetCursorPos(TextCursor pos);
@@ -260,8 +260,8 @@ private:
 	TextCursor forwardNLines(TextCursor startPos, int nLines, bool startPosIsLineStart) const;
 	TextCursor startOfLine(TextCursor pos) const;
 	TextCursor startOfWord(TextCursor pos) const;
-	TextCursor xyToPos(const QPoint &pos, PositionTypes posType) const;
-	TextCursor xyToPos(int x, int y, PositionTypes posType) const;
+	TextCursor xyToPos(const QPoint &pos, PositionType posType) const;
+	TextCursor xyToPos(int x, int y, PositionType posType) const;
 	bool moveDown(bool absolute);
 	bool moveLeft();
 	bool moveRight();
@@ -357,15 +357,15 @@ private:
 	void updateFontMetrics(const QFont &font);
 	void updateVScrollBarRange();
 	void wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, TextCursor maxPos, int maxLines, bool startPosIsLineStart, TextCursor *retPos, int *retLines, TextCursor *retLineStart, TextCursor *retLineEnd) const;
-	void xyToUnconstrainedPos(const QPoint &pos, int *row, int *column, PositionTypes posType) const;
-	void xyToUnconstrainedPos(int x, int y, int *row, int *column, PositionTypes posType) const;
+	void xyToUnconstrainedPos(const QPoint &pos, int *row, int *column, PositionType posType) const;
+	void xyToUnconstrainedPos(int x, int y, int *row, int *column, PositionType posType) const;
 
 private:	
 	CursorStyles cursorStyle_       = CursorStyles::Normal;
 	DragStates dragState_           = NOT_CLICKED;    // Why is the mouse being dragged and what is being acquired
 	QColor cursorFGColor_           = Qt::black;
-	QColor matchBGColor_        = Qt::red;
-	QColor matchFGColor_        = Qt::white;      // Highlight colors are used when flashing matching parens
+	QColor matchBGColor_            = Qt::red;
+	QColor matchFGColor_            = Qt::white;      // Highlight colors are used when flashing matching parens
 	QColor lineNumFGColor_          = Qt::black;      // Color for drawing line numbers
 	QColor lineNumBGColor_          = Qt::white;      // Color for drawing line numbers
 	QLabel *resizeWidget_           = nullptr;

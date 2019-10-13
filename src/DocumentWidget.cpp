@@ -214,7 +214,7 @@ void dragEndCB(TextArea *area, const DragEndEvent *data, void *user) {
  */
 void handleUnparsedRegionCB(const TextArea *area, TextCursor pos, const void *user) {
 	if(auto document = static_cast<const DocumentWidget *>(user)) {
-		document->handleUnparsedRegion(area->getStyleBuffer(), pos);
+		document->handleUnparsedRegion(area->styleBuffer(), pos);
 	}
 }
 
@@ -1258,7 +1258,7 @@ void DocumentWidget::setTabDistance(int distance) {
 
 			saveVScrollPositions[index] = area->verticalScrollBar()->value();
 			saveHScrollPositions[index] = area->horizontalScrollBar()->value();
-			saveCursorPositions[index]  = area->TextGetCursorPos();
+			saveCursorPositions[index]  = area->cursorPos();
 			area->setModifyingTabDist(true);
 		}
 
@@ -1428,7 +1428,7 @@ void DocumentWidget::stopHighlighting() {
 	/* Remove and detach style buffer and style table from all text
 	   display(s) of window, and redisplay without highlighting */
 	for(TextArea *area : textPanes()) {
-		area->RemoveWidgetHighlight();
+		area->removeWidgetHighlight();
 	}
 }
 
@@ -2251,7 +2251,7 @@ void DocumentWidget::revertToSaved() {
 	// save insert & scroll positions of all of the panes to restore later
 	for (size_t i = 0; i < panesCount; i++) {
 		TextArea *area = textAreas[i];
-		insertPositions[i] = area->TextGetCursorPos();
+		insertPositions[i] = area->cursorPos();
 		topLines[i]        = area->verticalScrollBar()->value();
 		horizOffsets[i]    = area->horizontalScrollBar()->value();
 	}
@@ -2634,7 +2634,7 @@ void DocumentWidget::addWrapNewlines() {
 	// save the insert and scroll positions of each pane
 	for(size_t i = 0; i < paneCount; ++i) {
 		TextArea *area = textAreas[i];
-		insertPositions[i] = area->TextGetCursorPos();
+		insertPositions[i] = area->cursorPos();
 		topLines[i]        = area->verticalScrollBar()->value();
 	}
 
@@ -3591,7 +3591,7 @@ bool DocumentWidget::includeFile(const QString &name) {
 			info_->buffer->BufReplaceSelected(text);
 		} else {
 			if(auto win = MainWindow::fromDocument(this)) {
-				info_->buffer->BufInsert(win->lastFocus()->TextGetCursorPos(), text);
+				info_->buffer->BufInsert(win->lastFocus()->cursorPos(), text);
 			}
 		}
 	}
@@ -3697,7 +3697,7 @@ void DocumentWidget::gotoMatchingCharacter(TextArea *area, bool select) {
 	TextRange range;
 	if (!info_->buffer->GetSimpleSelection(&range)) {
 
-		range.end = area->TextGetCursorPos();
+		range.end = area->cursorPos();
 		if (info_->overstrike) {
 			range.end += 1;
 		}
@@ -3879,7 +3879,7 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 	}
 
 	// get the selection or the insert position
-	const TextCursor pos = area->TextGetCursorPos();
+	const TextCursor pos = area->cursorPos();
 
 	TextRange range;
 	if (info_->buffer->GetSimpleSelection(&range)) {
@@ -3893,7 +3893,7 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 	   for # in the shell command */
 	QString fullName = fullPath();
 
-	const boost::optional<Location> loc = area->TextDPosToLineAndCol(pos);
+	const boost::optional<Location> loc = area->positionToLineAndCol(pos);
 
 	QString substitutedCommand = command;
 	substitutedCommand.replace(QLatin1Char('%'), fullName);
@@ -4369,10 +4369,10 @@ void DocumentWidget::gotoAP(TextArea *area, int line, int column) {
 
 	// User specified column, but not line number
 	if (line == -1) {
-		position = area->TextGetCursorPos();
+		position = area->cursorPos();
 
 
-		boost::optional<Location> loc = area->TextDPosToLineAndCol(position);
+		boost::optional<Location> loc = area->positionToLineAndCol(position);
 		if(!loc) {
 			return;
 		}
@@ -4384,7 +4384,7 @@ void DocumentWidget::gotoAP(TextArea *area, int line, int column) {
 		return;
 	}
 
-	position = area->TextDLineAndColToPos(line, column);
+	position = area->lineAndColToPosition(line, column);
 	if (position == -1) {
 		return;
 	}
@@ -4744,7 +4744,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 			std::string output_string = outText.toStdString();
 
 			auto area = cmdData->area;
-			TextBuffer *buf = area->TextGetBuffer();
+			TextBuffer *buf = area->buffer();
 
 			if (cmdData->flags & REPLACE_SELECTION) {
 				TextCursor reselectStart = buf->primary.isRectangular() ? TextCursor(-1) : buf->primary.start();
@@ -4799,7 +4799,7 @@ void DocumentWidget::execCursorLine(TextArea *area, CommandSource source) {
 	}
 
 	// get all of the text on the line with the insert position
-	TextCursor pos = area->TextGetCursorPos();
+	TextCursor pos = area->cursorPos();
 
 	TextRange range;
 	if (!info_->buffer->GetSimpleSelection(&range)) {
@@ -4817,7 +4817,7 @@ void DocumentWidget::execCursorLine(TextArea *area, CommandSource source) {
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	const boost::optional<Location> loc = area->TextDPosToLineAndCol(pos);
+	const boost::optional<Location> loc = area->positionToLineAndCol(pos);
 
 	auto substitutedCommand = QString::fromStdString(cmdText);
 	substitutedCommand.replace(QLatin1Char('%'), fullPath());
@@ -4919,9 +4919,9 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	TextCursor pos = area->TextGetCursorPos();
+	TextCursor pos = area->cursorPos();
 
-	const boost::optional<Location> loc = area->TextDPosToLineAndCol(pos);
+	const boost::optional<Location> loc = area->positionToLineAndCol(pos);
 
 	QString substitutedCommand = command;
 	substitutedCommand.replace(QLatin1Char('%'), fullPath());
@@ -5002,7 +5002,7 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 			if (info_->buffer->GetSimpleSelection(&range)) {
 				flags |= ACCUMULATE | REPLACE_SELECTION;
 			} else {
-				range.start = range.end = area->TextGetCursorPos();
+				range.start = range.end = area->cursorPos();
 			}
 		}
 		break;
@@ -5382,7 +5382,7 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 	}
 
 	// get the character to match and the position to start from
-	const TextCursor currentPos = area->TextGetCursorPos();
+	const TextCursor currentPos = area->cursorPos();
 	if(currentPos == 0) {
 		return;
 	}
@@ -5411,7 +5411,7 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 	TextCursor searchPos;
 
 	if (matchIt->direction == Direction::Backward) {
-		startPos  = constrain ? area->TextFirstVisiblePos() : info_->buffer->BufStartOfBuffer();
+		startPos  = constrain ? area->firstVisiblePos() : info_->buffer->BufStartOfBuffer();
 		endPos    = pos;
 		searchPos = endPos;
 	} else {
@@ -5952,7 +5952,7 @@ void DocumentWidget::startHighlighting(Verbosity verbosity) {
 */
 void DocumentWidget::attachHighlightToWidget(TextArea *area) {
 	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
-		area->TextDAttachHighlightData(
+		area->attachHighlightData(
 					highlightData->styleBuffer,
 					highlightData->styleTable,
 					UNFINISHED_STYLE,
@@ -6866,12 +6866,12 @@ void DocumentWidget::addMark(TextArea *area, QChar label) {
 	if(it != markTable_.end()) {
 		// store the cursor location and selection position in the table
 		it->second.label     = label;
-		it->second.cursorPos = area->TextGetCursorPos();
+		it->second.cursorPos = area->cursorPos();
 		it->second.sel       = info_->buffer->primary;
 	} else {
 		Bookmark bookmark;
 		bookmark.label     = label;
-		bookmark.cursorPos = area->TextGetCursorPos();
+		bookmark.cursorPos = area->cursorPos();
 		bookmark.sel       = info_->buffer->primary;
 		markTable_.emplace(label, std::move(bookmark));
 	}
@@ -6933,8 +6933,8 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
 	TextCursor cursorPos = bookmark.cursorPos;
 	if (extendSel) {
 
-		const TextCursor oldStart = oldSel.hasSelection() ? oldSel.start() : area->TextGetCursorPos();
-		const TextCursor oldEnd   = oldSel.hasSelection() ? oldSel.end()   : area->TextGetCursorPos();
+		const TextCursor oldStart = oldSel.hasSelection() ? oldSel.start() : area->cursorPos();
+		const TextCursor oldEnd   = oldSel.hasSelection() ? oldSel.end()   : area->cursorPos();
 		const TextCursor newStart = sel.hasSelection()    ? sel.start()    : cursorPos;
 		const TextCursor newEnd   = sel.hasSelection()    ? sel.end()      : cursorPos;
 

@@ -738,11 +738,11 @@ std::error_code scrollDownMS(DocumentWidget *document, Arguments arguments, Data
 	}
 
 
-	TextArea::ScrollUnits units;
+	TextArea::ScrollUnit units;
 	if(unitsString.startsWith(QLatin1String("page"))) {
-		units = TextArea::ScrollUnits::Pages;
+		units = TextArea::ScrollUnit::Pages;
 	} else if(unitsString.startsWith(QLatin1String("line"))) {
-		units = TextArea::ScrollUnits::Lines;
+		units = TextArea::ScrollUnit::Lines;
 	} else {
 		return MacroErrorCode::InvalidArgument;
 	}
@@ -777,11 +777,11 @@ std::error_code scrollUpMS(DocumentWidget *document, Arguments arguments, DataVa
 	}
 
 
-	TextArea::ScrollUnits units;
+	TextArea::ScrollUnit units;
 	if(unitsString.startsWith(QLatin1String("page"))) {
-		units = TextArea::ScrollUnits::Pages;
+		units = TextArea::ScrollUnit::Pages;
 	} else if(unitsString.startsWith(QLatin1String("line"))) {
-		units = TextArea::ScrollUnits::Lines;
+		units = TextArea::ScrollUnit::Lines;
 	} else {
 		return MacroErrorCode::InvalidArgument;
 	}
@@ -3184,7 +3184,7 @@ std::error_code cursorMV(DocumentWidget *document, Arguments arguments, DataValu
 	}
 
 	TextArea *area  = MainWindow::fromDocument(document)->lastFocus();
-	*result         = make_value(to_integer(area->TextGetCursorPos()));
+	*result         = make_value(to_integer(area->cursorPos()));
 	return MacroErrorCode::Success;
 }
 
@@ -3196,9 +3196,9 @@ std::error_code lineMV(DocumentWidget *document, Arguments arguments, DataValue 
 
 	TextBuffer *buf      = document->buffer();
 	TextArea *area       = MainWindow::fromDocument(document)->lastFocus();
-	TextCursor cursorPos = area->TextGetCursorPos();
+	TextCursor cursorPos = area->cursorPos();
 
-	if(const boost::optional<Location> loc = area->TextDPosToLineAndCol(cursorPos)) {
+	if(const boost::optional<Location> loc = area->positionToLineAndCol(cursorPos)) {
 		*result = make_value(loc->line);
 	} else {
 		*result = make_value(buf->BufCountLines(buf->BufStartOfBuffer(), cursorPos) + 1);
@@ -3215,7 +3215,7 @@ std::error_code columnMV(DocumentWidget *document, Arguments arguments, DataValu
 
 	TextBuffer *buf      = document->buffer();
 	TextArea *area       = MainWindow::fromDocument(document)->lastFocus();
-	TextCursor cursorPos = area->TextGetCursorPos();
+	TextCursor cursorPos = area->cursorPos();
 
 	*result = make_value(buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos));
 	return MacroErrorCode::Success;
@@ -4178,14 +4178,14 @@ std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments argume
 	int64_t pos = 0;
 	if (arguments.size() == 1) {
 		TextArea *area = MainWindow::fromDocument(document)->lastFocus();
-		pos = to_integer(area->TextGetCursorPos());
+		pos = to_integer(area->cursorPos());
 	} else if (arguments.size() == 2) {
 		if (std::error_code ec = readArgument(arguments[1], &pos)) {
 			return ec;
 		}
 	}
 
-	int64_t maxpos = buffer->length();
+	const int64_t maxpos = buffer->length();
 	int rangeIndex;
 	if (pos < 0 || pos > maxpos) {
 		rangeIndex = 0;

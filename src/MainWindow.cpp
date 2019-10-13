@@ -140,25 +140,9 @@ template <int (&F)(int)>
 void changeCase(DocumentWidget *document, TextArea *area) {
 
 	TextBuffer *buf = document->buffer();
-	TextCursor start;
-	TextCursor end;
-	int64_t rectStart = 0;
-	int64_t rectEnd   = 0;
-	bool isRect;
 
 	// Get the selection.  Use character before cursor if no selection
-	if (!buf->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd)) {
-		TextCursor cursorPos = area->TextGetCursorPos();
-		if (cursorPos == buf->BufStartOfBuffer()) {
-			QApplication::beep();
-			return;
-		}
-
-		char ch = buf->BufGetCharacter(cursorPos - 1);
-
-		ch = safe_ctype<F>(ch);
-		buf->BufReplace(cursorPos - 1, cursorPos, ch);
-	} else {
+	if(boost::optional<SelectionPos> pos = buf->BufGetSelectionPos()) {
 		bool modified = false;
 
 		std::string text = buf->BufGetSelectionText();
@@ -175,11 +159,22 @@ void changeCase(DocumentWidget *document, TextArea *area) {
 			buf->BufReplaceSelected(text);
 		}
 
-		if (isRect) {
-			buf->BufRectSelect(start, end, rectStart, rectEnd);
+		if (pos->isRect) {
+			buf->BufRectSelect(pos->start, pos->end, pos->rectStart, pos->rectEnd);
 		} else {
-			buf->BufSelect(start, end);
+			buf->BufSelect(pos->start, pos->end);
 		}
+	} else {
+		TextCursor cursorPos = area->cursorPos();
+		if (cursorPos == buf->BufStartOfBuffer()) {
+			QApplication::beep();
+			return;
+		}
+
+		char ch = buf->BufGetCharacter(cursorPos - 1);
+
+		ch = safe_ctype<F>(ch);
+		buf->BufReplace(cursorPos - 1, cursorPos, ch);
 	}
 }
 
@@ -6165,7 +6160,7 @@ bool MainWindow::searchAndSelect(DocumentWidget *document, TextArea *area, const
 		selectionRange.end   = TextCursor(-1);
 		// no selection, or no match, search relative cursor
 
-		TextCursor cursorPos = area->TextGetCursorPos();
+		TextCursor cursorPos = area->cursorPos();
 		if (direction == Direction::Backward) {
 			// use the insert position - 1 for backward searches
 			beginPos = cursorPos - 1;
@@ -6234,7 +6229,7 @@ bool MainWindow::searchAndSelectIncremental(DocumentWidget *document, TextArea *
 	/* If there's a search in progress, start the search from the original
 	   starting position, otherwise search from the cursor position. */
 	if (!continued || iSearchStartPos_ == -1) {
-		iSearchStartPos_ = area->TextGetCursorPos();
+		iSearchStartPos_ = area->cursorPos();
 		iSearchRecordLastBeginPos(direction, iSearchStartPos_);
 	}
 
@@ -6421,7 +6416,7 @@ bool MainWindow::searchAndReplace(DocumentWidget *document, TextArea *area, cons
 		// get the position to start the search
 
 		TextCursor beginPos;
-		TextCursor cursorPos = area->TextGetCursorPos();
+		TextCursor cursorPos = area->cursorPos();
 		if (direction == Direction::Backward) {
 			// use the insert position - 1 for backward searches
 			beginPos = cursorPos - 1;
@@ -6621,14 +6616,9 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 	std::string fileString;
 	Search::Result searchResult;
 	TextCursor lineStart;
-	TextCursor selEnd;
-	TextCursor selStart;
-	int64_t rectEnd   = 0;
-	int64_t rectStart = 0;
 	bool substSuccess = false;
 	bool anyFound     = false;
 	bool cancelSubst  = true;
-	bool isRect;
 
 	// save a copy of search and replace strings in the search history
 	Search::saveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
@@ -6636,15 +6626,16 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 	TextBuffer *buffer = document->buffer();
 
 	// find out where the selection is
-	if (!buffer->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
+	boost::optional<SelectionPos> pos = buffer->BufGetSelectionPos();
+	if (!pos) {
 		return;
 	}
 
 	// get the selected text
-	if (isRect) {
-		selStart   = buffer->BufStartOfLine(selStart);
-		selEnd     = buffer->BufEndOfLine(selEnd);
-		fileString = buffer->BufGetRange(selStart, selEnd);
+	if (pos->isRect) {
+		pos->start   = buffer->BufStartOfLine(pos->start);
+		pos->end     = buffer->BufEndOfLine(pos->end);
+		fileString = buffer->BufGetRange(pos->start, pos->end);
 	} else {
 		fileString = buffer->BufGetSelectionText();
 	}
@@ -6681,9 +6672,9 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 		anyFound = true;
 		/* if the selection is rectangular, verify that the found
 		   string is in the rectangle */
-		if (isRect) {
-			lineStart = buffer->BufStartOfLine(selStart + searchResult.start);
-			if (buffer->BufCountDispChars(lineStart, selStart + searchResult.start) < rectStart || buffer->BufCountDispChars(lineStart, selStart + searchResult.end) > rectEnd) {
+		if (pos->isRect) {
+			lineStart = buffer->BufStartOfLine(pos->start + searchResult.start);
+			if (buffer->BufCountDispChars(lineStart, pos->start + searchResult.start) < pos->rectStart || buffer->BufCountDispChars(lineStart, pos->start + searchResult.end) > pos->rectEnd) {
 
 				if(static_cast<size_t>(searchResult.end) == fileString.size()) {
 					break;
@@ -6694,7 +6685,7 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 				   search after the end of the (false) match, because we
 				   could miss a valid match starting between the left boundary
 				   and the end of the false match. */
-				if (buffer->BufCountDispChars(lineStart, selStart + searchResult.start) < rectStart && buffer->BufCountDispChars(lineStart, selStart + searchResult.end) > rectStart) {
+				if (buffer->BufCountDispChars(lineStart, pos->start + searchResult.start) < pos->rectStart && buffer->BufCountDispChars(lineStart, pos->start + searchResult.end) > pos->rectStart) {
 					beginPos += 1;
 				} else {
 					beginPos = (searchResult.start == searchResult.end) ? TextCursor(searchResult.end + 1) : TextCursor(searchResult.end);
@@ -6706,7 +6697,7 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 		/* Make sure the match did not start past the end (regular expressions
 		   can consider the artificial end of the range as the end of a line,
 		   and match a fictional whole line beginning there) */
-		if (searchResult.start == (selEnd - selStart)) {
+		if (searchResult.start == (pos->end - pos->start)) {
 			break;
 		}
 
@@ -6758,15 +6749,15 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 				user does not care and wants to have a faulty replacement.  */
 
 			// replace the selected range in the real buffer
-			buffer->BufReplace(selStart, selEnd, tempBuf.BufAsString());
+			buffer->BufReplace(pos->start, pos->end, tempBuf.BufAsString());
 
 			// set the insert point at the end of the last replacement
-			area->TextSetCursorPos(selStart + to_integer(cursorPos) + realOffset);
+			area->TextSetCursorPos(pos->start + to_integer(cursorPos) + realOffset);
 
 			/* leave non-rectangular selections selected (rect. ones after replacement
 			   are less useful since left/right positions are randomly adjusted) */
-			if (!isRect) {
-				buffer->BufSelect(selStart, selEnd + realOffset);
+			if (!pos->isRect) {
+				buffer->BufSelect(pos->start, pos->end + realOffset);
 			}
 		}
 	} else {
@@ -7191,7 +7182,7 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
 	}
 
 	// Compose the string to display. If line # isn't available, leave it off
-	const TextCursor pos = area->TextGetCursorPos();
+	const TextCursor pos = area->cursorPos();
 
 	const QString format = [document]() {
 		switch(document->fileFormat()) {
@@ -7208,7 +7199,7 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
 	QString slinecol;
 	const int64_t length = document->buffer()->length();
 
-	if(boost::optional<Location> loc = area->TextDPosToLineAndCol(pos)) {
+	if(boost::optional<Location> loc = area->positionToLineAndCol(pos)) {
 		slinecol = tr("L: %1  C: %2").arg(loc->line).arg(loc->column);
 		if (showLineNumbers_) {
 			string = tr("%1%2%3 byte %4 of %5").arg(document->path(), document->filename(), format).arg(to_integer(pos)).arg(length);

@@ -646,7 +646,7 @@ void shiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection dir
 	// get selection, if no text selected, use current insert position
 	if (!buf->BufGetSelectionPos(&selStart, &selEnd, &isRect, &rectStart, &rectEnd)) {
 
-		const TextCursor cursorPos = area->TextGetCursorPos();
+		const TextCursor cursorPos = area->cursorPos();
 		selStart = buf->BufStartOfLine(cursorPos);
 		selEnd = buf->BufEndOfLine(cursorPos);
 
@@ -659,7 +659,7 @@ void shiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection dir
 		text = buf->BufGetRange(selStart, selEnd);
 
 	} else if (isRect) {
-		const TextCursor cursorPos = area->TextGetCursorPos();
+		const TextCursor cursorPos = area->cursorPos();
 		int64_t origLength = buf->length();
 		shiftRect(document, area, direction, byTab, selStart, selEnd, rectStart, rectEnd);
 
@@ -703,7 +703,7 @@ void fillSelection(DocumentWidget *document, TextArea *area) {
 	bool isRect;
 	int64_t rightMargin;
 
-	TextCursor insertPos = area->TextGetCursorPos();
+	TextCursor insertPos = area->cursorPos();
 	int hasSelection = document->buffer()->primary.hasSelection();
 	std::string text;
 

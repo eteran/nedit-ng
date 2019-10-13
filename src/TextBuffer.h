@@ -16,6 +16,14 @@
 
 #include <boost/optional.hpp>
 
+struct SelectionPos {
+	TextCursor start;
+	TextCursor end;
+	bool isRect;
+	int64_t rectStart;
+	int64_t rectEnd;
+};
+
 template <class Ch, class Tr>
 class BasicTextBuffer {
 public:
@@ -46,6 +54,7 @@ public:
 		friend class BasicTextBuffer;
 
 	public:
+		boost::optional<SelectionPos> getSelectionPos() const;
 		bool getSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const;
 		bool inSelection(TextCursor pos, TextCursor lineStartPos, int64_t dispIndex) const;
 		bool rangeTouchesRectSel(TextCursor rangeStart, TextCursor rangeEnd) const;
@@ -91,6 +100,7 @@ public:
 public:
 	bool BufGetEmptySelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
 	bool BufGetSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
+	boost::optional<SelectionPos> BufGetSelectionPos() const noexcept;
 	bool BufGetSyncXSelection() const;
 	bool BufGetUseTabs() const noexcept;
 	bool BufIsEmpty() const noexcept;
