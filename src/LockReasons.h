@@ -46,7 +46,7 @@ public:
 
 private:
 	void setLockedByReason(bool enabled, Reason reason) {
-		if(enabled) {
+		if (enabled) {
 			reasons_ |= reason;
 		} else {
 			reasons_ &= ~reason;

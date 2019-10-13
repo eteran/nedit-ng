@@ -8,7 +8,7 @@
 class DialogAbout final : public Dialog {
 	Q_OBJECT
 public:
-	DialogAbout(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogAbout(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogAbout() override = default;
 
 public:

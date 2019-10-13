@@ -15,7 +15,7 @@ class DialogMacros final : public Dialog {
 	Q_OBJECT
 
 public:
-	DialogMacros(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogMacros(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogMacros() override = default;
 
 Q_SIGNALS:

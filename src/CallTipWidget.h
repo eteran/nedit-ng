@@ -5,10 +5,10 @@
 #include <QWidget>
 #include "ui_CallTipWidget.h"
 
-class CallTipWidget : public QWidget {
+class CallTipWidget final : public QWidget {
 	Q_OBJECT
 public:
-	CallTipWidget(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit CallTipWidget(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~CallTipWidget() override = default;
 
 public:

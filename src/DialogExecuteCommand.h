@@ -10,7 +10,7 @@
 class DialogExecuteCommand final : public Dialog {
 	Q_OBJECT
 public:
-	DialogExecuteCommand(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogExecuteCommand(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogExecuteCommand() override = default;
 
 protected:

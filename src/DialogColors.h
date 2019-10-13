@@ -9,7 +9,7 @@
 class DialogColors final : public Dialog {
 	Q_OBJECT
 public:
-	DialogColors(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogColors(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogColors() override = default;
 
 private:

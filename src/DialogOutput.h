@@ -9,7 +9,7 @@ class DialogOutput : public Dialog {
 	Q_OBJECT
 
 public:
-	DialogOutput(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogOutput(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogOutput() override = default;
 
 public:

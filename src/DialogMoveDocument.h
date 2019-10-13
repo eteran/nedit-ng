@@ -13,7 +13,7 @@ class DialogMoveDocument final : public Dialog {
 public:
 	Q_OBJECT
 public:
-	DialogMoveDocument(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogMoveDocument(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogMoveDocument() override = default;
 
 public:

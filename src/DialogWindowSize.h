@@ -8,7 +8,7 @@
 class DialogWindowSize final : public Dialog {
 	Q_OBJECT
 public:
-	DialogWindowSize(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogWindowSize(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogWindowSize() override = default;
 
 private:

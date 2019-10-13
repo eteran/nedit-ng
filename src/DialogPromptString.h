@@ -8,7 +8,7 @@
 class DialogPromptString final : public Dialog {
 	Q_OBJECT
 public:
-	DialogPromptString(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogPromptString(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogPromptString() override = default;
 
 private:

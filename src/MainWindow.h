@@ -35,13 +35,13 @@ class DialogWindowBackgroundMenu;
 struct MenuData;
 struct TextRange;
 
-class MainWindow : public QMainWindow {
+class MainWindow final : public QMainWindow {
 	Q_OBJECT
 	friend class DocumentWidget;
 	friend class DialogReplace;
 
 public:
-	MainWindow (QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
+	explicit MainWindow (QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
 	~MainWindow() override;
 
 private:

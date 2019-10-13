@@ -8,7 +8,7 @@
 class DialogPromptList final : public Dialog {
 	Q_OBJECT
 public:
-	DialogPromptList(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogPromptList(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogPromptList() override = default;
 
 public:

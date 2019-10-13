@@ -2,23 +2,21 @@
 #ifndef DIRECTION_H_
 #define DIRECTION_H_
 
-#include <cstdint>
 #include <QLatin1String>
+#include <cstdint>
 
 enum class Direction : uint8_t {
 	Forward  = 1,
 	Backward = 2,
 };
 
-inline constexpr Direction operator!(Direction& direction) {
-	return (direction == Direction::Forward) ?
-				Direction::Backward :
-				Direction::Forward;
+constexpr Direction operator!(Direction &direction) {
+	return (direction == Direction::Forward) ? Direction::Backward : Direction::Forward;
 }
 
 inline QLatin1String to_string(Direction direction) {
 
-	switch(direction) {
+	switch (direction) {
 	case Direction::Forward:
 		return QLatin1String("forward");
 	case Direction::Backward:

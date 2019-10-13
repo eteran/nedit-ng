@@ -4,8 +4,8 @@
 
 #include "Direction.h"
 #include "SearchType.h"
-#include "WrapMode.h"
 #include "Util/string_view.h"
+#include "WrapMode.h"
 
 #include <QString>
 #include <boost/optional.hpp>
@@ -18,8 +18,8 @@ class Regex;
 namespace Search {
 
 struct HistoryEntry {
-	QString    search;
-	QString    replace;
+	QString search;
+	QString replace;
 	SearchType type;
 };
 
