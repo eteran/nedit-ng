@@ -67,5 +67,4 @@ void DialogMoveDocument::on_listWindows_itemDoubleClicked(QListWidgetItem *item)
 
 	Q_UNUSED(item)
 	accept();
-
 }
