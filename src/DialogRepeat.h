@@ -16,8 +16,9 @@ public:
 public:
 	bool setCommand(const QString &command);
 
-private Q_SLOTS:
-	void on_buttonBox_accepted();
+private:
+	void buttonBox_accepted();
+	void connectSlots();
 
 private:
 	bool doRepeatDialogAction();

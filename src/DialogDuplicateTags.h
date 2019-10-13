@@ -18,10 +18,8 @@ public:
 	void setTag(const QString &tag);
 	void addListItem(const QString &text, int id);
 
-private Q_SLOTS:
-	void on_buttonBox_accepted();
-
 private:
+	void buttonBox_accepted();
 	void buttonBox_clicked(QAbstractButton *button);
 	bool applySelection();
 	void connectSlots();

@@ -55,6 +55,7 @@ void DialogShellMenu::connectSlots() {
 	connect(ui.buttonDown, &QPushButton::clicked, this, &DialogShellMenu::buttonDown_clicked);
 	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogShellMenu::buttonBox_accepted);
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogShellMenu::buttonBox_clicked);
+	connect(ui.radioToSameDocument, &QRadioButton::toggled, this, &DialogShellMenu::radioToSameDocument_toggled);
 }
 
 
@@ -413,10 +414,10 @@ bool DialogShellMenu::applyDialogChanges() {
 }
 
 /**
- * @brief DialogShellMenu::on_radioToSameDocument_toggled
+ * @brief DialogShellMenu::radioToSameDocument_toggled
  * @param checked
  */
-void DialogShellMenu::on_radioToSameDocument_toggled(bool checked) {
+void DialogShellMenu::radioToSameDocument_toggled(bool checked) {
 	ui.checkReplaceInput->setEnabled(checked);
 }
 

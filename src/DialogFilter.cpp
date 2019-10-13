@@ -10,6 +10,7 @@
  */
 DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
 	ui.setupUi(this);
+	connectSlots();
 
 	QTimer::singleShot(0, this, [this]() {
 		resize(0, 0);
@@ -18,6 +19,11 @@ DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
 	// seed the history with a blank string, makes later logic simpler
 	history_ << QLatin1String("");
 }
+
+void DialogFilter::connectSlots() {
+	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogFilter::buttonBox_accepted);
+}
+
 
 /**
  * @brief DialogFilter::keyPressEvent
@@ -60,9 +66,9 @@ void DialogFilter::showEvent(QShowEvent *event) {
 }
 
 /**
- * @brief DialogFilter::on_buttonBox_accepted
+ * @brief DialogFilter::buttonBox_accepted
  */
-void DialogFilter::on_buttonBox_accepted() {
+void DialogFilter::buttonBox_accepted() {
 
 	QString s = ui.textFilter->text();
 	if(!s.isEmpty()) {

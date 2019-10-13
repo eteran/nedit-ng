@@ -17,8 +17,9 @@ protected:
 	void keyPressEvent(QKeyEvent *event) override;
 	void showEvent(QShowEvent *event) override;
 
-private Q_SLOTS:
-	void on_buttonBox_accepted();
+private:
+	void buttonBox_accepted();
+	void connectSlots();
 
 public:
 	QString currentText() const;

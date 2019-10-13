@@ -114,7 +114,7 @@ protected:
 	void resizeEvent(QResizeEvent *event) override;
 	void wheelEvent(QWheelEvent *event) override;
 
-private Q_SLOTS:
+private:
 	void cursorBlinkTimerTimeout();
 	void autoScrollTimerTimeout();
 	void verticalScrollBar_valueChanged(int value);

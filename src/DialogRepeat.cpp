@@ -11,6 +11,7 @@
 
 DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
 	ui.setupUi(this);
+	connectSlots();
 
 	QTimer::singleShot(0, this, [this]() {
 		resize(0, 0);
@@ -18,6 +19,11 @@ DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::Window
 
 	ui.lineEdit->setValidator(new QIntValidator(0, INT_MAX, this));
 }
+
+void DialogRepeat::connectSlots() {
+	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogRepeat::buttonBox_accepted);
+}
+
 
 bool DialogRepeat::setCommand(const QString &command) {
 
@@ -33,7 +39,7 @@ bool DialogRepeat::setCommand(const QString &command) {
 	return true;
 }
 
-void DialogRepeat::on_buttonBox_accepted() {
+void DialogRepeat::buttonBox_accepted() {
 	if(!doRepeatDialogAction()) {
 		return;
 	}

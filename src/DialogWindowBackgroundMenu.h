@@ -24,7 +24,7 @@ public:
 Q_SIGNALS:
 	void restore(const QModelIndex &selection);
 
-private Q_SLOTS:
+private:
 	void currentChanged(const QModelIndex &current, const QModelIndex &previous);
 
 private:
@@ -56,4 +56,3 @@ private:
 };
 
 #endif
-

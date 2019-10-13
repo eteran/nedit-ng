@@ -2,12 +2,15 @@
 #include "DialogWindowSize.h"
 #include "Preferences.h"
 
-#include <QMessageBox>
 #include <QIntValidator>
+#include <QMessageBox>
 #include <QTimer>
 
-DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
+DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f) {
+
 	ui.setupUi(this);
+	connectSlots();
 
 	QTimer::singleShot(0, this, [this]() {
 		resize(0, 0);
@@ -17,30 +20,34 @@ DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f) : Dialog(
 	ui.editHeight->setValidator(new QIntValidator(0, INT_MAX, this));
 }
 
-void DialogWindowSize::on_buttonBox_accepted() {
+void DialogWindowSize::connectSlots() {
+	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogWindowSize::buttonBox_accepted);
+}
+
+void DialogWindowSize::buttonBox_accepted() {
 
 	bool ok;
 	const QString width  = ui.editWidth->text();
 	const QString height = ui.editHeight->text();
 
-	if(width.isEmpty()) {
+	if (width.isEmpty()) {
 		QMessageBox::warning(this, tr("Warning"), tr("Please supply a value for number of rows"));
 		return;
 	}
 
 	int rowValue = width.toInt(&ok);
-	if(!ok) {
+	if (!ok) {
 		QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in number of rows").arg(width));
 		return;
 	}
 
-	if(height.isEmpty()) {
+	if (height.isEmpty()) {
 		QMessageBox::warning(this, tr("Warning"), tr("Please supply a value for number of columns"));
 		return;
 	}
 
 	int colValue = height.toInt(&ok);
-	if(!ok) {
+	if (!ok) {
 		QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in number of columns").arg(height));
 		return;
 	}

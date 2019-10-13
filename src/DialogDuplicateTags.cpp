@@ -19,6 +19,7 @@ DialogDuplicateTags::DialogDuplicateTags(DocumentWidget *document, TextArea *are
  */
 void DialogDuplicateTags::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogDuplicateTags::buttonBox_clicked);
+	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogDuplicateTags::buttonBox_accepted);
 }
 
 /**
@@ -40,9 +41,9 @@ void DialogDuplicateTags::addListItem(const QString &text, int id) {
 }
 
 /**
- * @brief DialogDuplicateTags::on_buttonBox_accepted
+ * @brief DialogDuplicateTags::buttonBox_accepted
  */
-void DialogDuplicateTags::on_buttonBox_accepted() {
+void DialogDuplicateTags::buttonBox_accepted() {
 	if(applySelection()) {
 		accept();
 	}

@@ -14,11 +14,9 @@ public:
     explicit DialogTabs(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogTabs() override = default;
 
-private Q_SLOTS:
-	void on_buttonBox_accepted();
-	void on_buttonBox_helpRequested();
-
 private:
+	void buttonBox_accepted();
+	void buttonBox_helpRequested();
 	void checkEmulateTabs_toggled(bool checked);
 	void connectSlots();
 

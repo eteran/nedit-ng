@@ -39,7 +39,6 @@ private:
 	void buttonDelete_clicked();
 	void buttonRestore_clicked();
 	void buttonHelp_clicked();
-
 	void connectSlots();
 
 public:

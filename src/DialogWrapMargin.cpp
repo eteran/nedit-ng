@@ -9,6 +9,7 @@
 
 DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
 	ui.setupUi(this);
+	connectSlots();
 
 	QTimer::singleShot(0, this, [this]() {
 		resize(0, 0);
@@ -27,6 +28,7 @@ DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt
  */
 void DialogWrapMargin::connectSlots() {
 	connect(ui.checkWrapAndFill, &QCheckBox::toggled, this, &DialogWrapMargin::checkWrapAndFill_toggled);
+	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogWrapMargin::buttonBox_accepted);
 }
 
 
@@ -35,7 +37,7 @@ void DialogWrapMargin::checkWrapAndFill_toggled(bool checked) {
 	ui.spinWrapAndFill->setEnabled(!checked);
 }
 
-void DialogWrapMargin::on_buttonBox_accepted() {
+void DialogWrapMargin::buttonBox_accepted() {
 
 	int margin;
 	if (ui.checkWrapAndFill->isChecked()) {

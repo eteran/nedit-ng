@@ -11,8 +11,9 @@ public:
 	DialogWindowSize(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogWindowSize() override = default;
 
-private Q_SLOTS:
-	void on_buttonBox_accepted();
+private:
+	void buttonBox_accepted();
+	void connectSlots();
 
 private:
 	Ui::DialogWindowSize ui;

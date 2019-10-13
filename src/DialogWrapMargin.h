@@ -13,10 +13,8 @@ public:
     explicit DialogWrapMargin(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogWrapMargin() override = default;
 
-private Q_SLOTS:
-	void on_buttonBox_accepted();
-
 private:
+	void buttonBox_accepted();
 	void checkWrapAndFill_toggled(bool checked);
 	void connectSlots();
 

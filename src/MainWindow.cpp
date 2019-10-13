@@ -277,6 +277,7 @@ void MainWindow::connectSlots() {
 	connect(ui.checkIFindCase, &QCheckBox::toggled, this, &MainWindow::checkIFindCase_toggled);
 	connect(ui.checkIFindRegex, &QCheckBox::toggled, this, &MainWindow::checkIFindRegex_toggled);
 	connect(ui.checkIFindReverse, &QCheckBox::toggled, this, &MainWindow::checkIFindReverse_toggled);
+	connect(ui.editIFind, &QLineEdit::returnPressed, this, &MainWindow::editIFind_returnPressed);
 }
 
 
@@ -2694,7 +2695,7 @@ void MainWindow::action_Find_Incremental(DocumentWidget *document, const QString
  */
 void MainWindow::buttonIFind_clicked() {
 	// same as pressing return
-	on_editIFind_returnPressed();
+	editIFind_returnPressed();
 }
 
 /**
@@ -2702,9 +2703,9 @@ void MainWindow::buttonIFind_clicked() {
  * search string displayed.  The direction of the search is toggled if the Ctrl
  * key or the Shift key is pressed when the text field is activated.
  *
- * @brief MainWindow::on_editIFind_returnPressed
+ * @brief MainWindow::editIFind_returnPressed
  */
-void MainWindow::on_editIFind_returnPressed() {
+void MainWindow::editIFind_returnPressed() {
 
 	/* Fetch the string, search type and direction from the incremental
 	   search bar widgets at the top of the window */

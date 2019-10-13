@@ -63,6 +63,8 @@ DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlag
  */
 void DialogTabs::connectSlots() {
 	connect(ui.checkEmulateTabs, &QCheckBox::toggled, this, &DialogTabs::checkEmulateTabs_toggled);
+	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogTabs::buttonBox_accepted);
+	connect(ui.buttonBox, &QDialogButtonBox::helpRequested, this, &DialogTabs::buttonBox_helpRequested);
 }
 
 
@@ -76,9 +78,9 @@ void DialogTabs::checkEmulateTabs_toggled(bool checked) {
 }
 
 /**
- * @brief DialogTabs::on_buttonBox_accepted
+ * @brief DialogTabs::buttonBox_accepted
  */
-void DialogTabs::on_buttonBox_accepted() {
+void DialogTabs::buttonBox_accepted() {
 
 	const bool emulate = ui.checkEmulateTabs->isChecked();
 	const bool useTabs = ui.checkUseTabsInPadding->isChecked();
@@ -135,8 +137,8 @@ void DialogTabs::on_buttonBox_accepted() {
 }
 
 /**
- * @brief DialogTabs::on_buttonBox_helpRequested
+ * @brief DialogTabs::buttonBox_helpRequested
  */
-void DialogTabs::on_buttonBox_helpRequested() {
+void DialogTabs::buttonBox_helpRequested() {
 	Help::displayTopic(this, Help::Topic::TabsDialog);
 }

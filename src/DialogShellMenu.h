@@ -21,13 +21,11 @@ public:
 Q_SIGNALS:
 	void restore(const QModelIndex &selection);
 
-private Q_SLOTS:
-	void currentChanged(const QModelIndex &current, const QModelIndex &previous);
-
-private Q_SLOTS:
-	void on_radioToSameDocument_toggled(bool checked);
-
 private:
+	void currentChanged(const QModelIndex &current, const QModelIndex &previous);
+	
+private:
+	void radioToSameDocument_toggled(bool checked);
 	void buttonBox_clicked(QAbstractButton *button);
 	void buttonBox_accepted();
 	void buttonNew_clicked();

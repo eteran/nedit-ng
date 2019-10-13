@@ -152,6 +152,7 @@ private:
 	void checkIFindCase_toggled(bool searchCaseSense);
 	void checkIFindRegex_toggled(bool searchRegex);
 	void checkIFindReverse_toggled(bool value);
+	void editIFind_returnPressed();
 	void connectSlots();
 
 public:
@@ -284,7 +285,6 @@ public Q_SLOTS:
 	void on_tabWidget_tabCountChanged(int count);
 	void on_tabWidget_currentChanged(int index);
 	void on_tabWidget_customContextMenuRequested(const QPoint &pos);
-	void on_editIFind_returnPressed();
 
 public Q_SLOTS:
 	// File Menu
