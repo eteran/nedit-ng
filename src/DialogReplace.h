@@ -50,13 +50,11 @@ public:
 private:
 	boost::optional<Fields> readFields();
 
-private Q_SLOTS:
-	void on_checkRegex_toggled(bool checked);
-	void on_checkCase_toggled(bool checked);
-	void on_checkKeep_toggled(bool checked);
-	void on_textFind_textChanged(const QString &text);
-
 private:
+	void textFind_textChanged(const QString &text);
+	void checkRegex_toggled(bool checked);
+	void checkCase_toggled(bool checked);
+	void checkKeep_toggled(bool checked);
 	void buttonFind_clicked();
 	void buttonReplace_clicked();
 	void buttonReplaceFind_clicked();

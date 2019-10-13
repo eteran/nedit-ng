@@ -147,7 +147,11 @@ public:
 	static void removeFromPrevOpenMenu(const QString &filename);
 
 private:
+	void editIFind_textChanged(const QString &text);
 	void buttonIFind_clicked();
+	void checkIFindCase_toggled(bool searchCaseSense);
+	void checkIFindRegex_toggled(bool searchRegex);
+	void checkIFindReverse_toggled(bool value);
 	void connectSlots();
 
 public Q_SLOTS:
@@ -280,11 +284,7 @@ public Q_SLOTS:
 	void on_tabWidget_tabCountChanged(int count);
 	void on_tabWidget_currentChanged(int index);
 	void on_tabWidget_customContextMenuRequested(const QPoint &pos);
-	void on_editIFind_textChanged(const QString &text);
 	void on_editIFind_returnPressed();
-	void on_checkIFindCase_toggled(bool searchCaseSense);
-	void on_checkIFindRegex_toggled(bool searchRegex);
-	void on_checkIFindReverse_toggled(bool value);
 
 public Q_SLOTS:
 	// File Menu

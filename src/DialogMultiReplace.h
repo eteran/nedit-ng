@@ -16,10 +16,8 @@ public:
     explicit DialogMultiReplace(DialogReplace *replace, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogMultiReplace() override = default;
 
-private Q_SLOTS:
-	void on_checkShowPaths_toggled(bool checked);
-
 private:
+	void checkShowPaths_toggled(bool checked);
 	void buttonDeselectAll_clicked();
 	void buttonSelectAll_clicked();
 	void buttonReplace_clicked();

@@ -101,6 +101,24 @@ DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, 
  */
 void DialogWindowTitle::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogWindowTitle::buttonBox_clicked);
+	connect(ui.checkFileName, &QCheckBox::toggled, this, &DialogWindowTitle::checkFileName_toggled);
+	connect(ui.checkHostName, &QCheckBox::toggled, this, &DialogWindowTitle::checkHostName_toggled);
+	connect(ui.checkFileStatus, &QCheckBox::toggled, this, &DialogWindowTitle::checkFileStatus_toggled);
+	connect(ui.checkBrief, &QCheckBox::toggled, this, &DialogWindowTitle::checkBrief_toggled);
+	connect(ui.checkUserName, &QCheckBox::toggled, this, &DialogWindowTitle::checkUserName_toggled);
+	connect(ui.checkClearCase, &QCheckBox::toggled, this, &DialogWindowTitle::checkClearCase_toggled);
+	connect(ui.checkServerName, &QCheckBox::toggled, this, &DialogWindowTitle::checkServerName_toggled);
+	connect(ui.checkDirectory, &QCheckBox::toggled, this, &DialogWindowTitle::checkDirectory_toggled);
+	connect(ui.checkFileModified, &QCheckBox::toggled, this, &DialogWindowTitle::checkFileModified_toggled);
+	connect(ui.checkFileReadOnly, &QCheckBox::toggled, this, &DialogWindowTitle::checkFileReadOnly_toggled);
+	connect(ui.checkFileLocked, &QCheckBox::toggled, this, &DialogWindowTitle::checkFileLocked_toggled);
+	connect(ui.checkServerNamePresent, &QCheckBox::toggled, this, &DialogWindowTitle::checkServerNamePresent_toggled);
+	connect(ui.checkClearCasePresent, &QCheckBox::toggled, this, &DialogWindowTitle::checkClearCasePresent_toggled);
+	connect(ui.checkServerEqualsCC, &QCheckBox::toggled, this, &DialogWindowTitle::checkServerEqualsCC_toggled);
+	connect(ui.checkDirectoryPresent, &QCheckBox::toggled, this, &DialogWindowTitle::checkDirectoryPresent_toggled);
+	connect(ui.editDirectory, &QLineEdit::textChanged, this, &DialogWindowTitle::editDirectory_textChanged);
+	connect(ui.editFormat, &QLineEdit::textChanged, this, &DialogWindowTitle::editFormat_textChanged);
+
 }
 
 
@@ -127,10 +145,10 @@ void DialogWindowTitle::setToggleButtons() {
 }
 
 /**
- * @brief DialogWindowTitle::on_editFormat_textChanged
+ * @brief DialogWindowTitle::editFormat_textChanged
  * @param text
  */
-void DialogWindowTitle::on_editFormat_textChanged(const QString &text) {
+void DialogWindowTitle::editFormat_textChanged(const QString &text) {
 	Q_UNUSED(text)
 	formatChangedCB();
 }
@@ -277,10 +295,10 @@ QString DialogWindowTitle::formatWindowTitleAndUpdate(const QString &filename, c
 }
 
 /**
- * @brief DialogWindowTitle::on_checkFileName_toggled
+ * @brief DialogWindowTitle::checkFileName_toggled
  * @param checked
  */
-void DialogWindowTitle::on_checkFileName_toggled(bool checked) {
+void DialogWindowTitle::checkFileName_toggled(bool checked) {
 	if (checked) {
 		appendToFormat(QLatin1String(" %f"));
 	} else {
@@ -289,10 +307,10 @@ void DialogWindowTitle::on_checkFileName_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::on_checkHostName_toggled
+ * @brief DialogWindowTitle::checkHostName_toggled
  * @param checked
  */
-void DialogWindowTitle::on_checkHostName_toggled(bool checked) {
+void DialogWindowTitle::checkHostName_toggled(bool checked) {
 	if (checked) {
 		appendToFormat(QLatin1String(" [%h]"));
 	} else {
@@ -301,10 +319,10 @@ void DialogWindowTitle::on_checkHostName_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::on_checkFileStatus_toggled
+ * @brief DialogWindowTitle::checkFileStatus_toggled
  * @param checked
  */
-void DialogWindowTitle::on_checkFileStatus_toggled(bool checked) {
+void DialogWindowTitle::checkFileStatus_toggled(bool checked) {
 	ui.checkBrief->setEnabled(checked);
 
 	if (checked) {
@@ -321,10 +339,10 @@ void DialogWindowTitle::on_checkFileStatus_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::on_checkBrief_toggled
+ * @brief DialogWindowTitle::checkBrief_toggled
  * @param checked
  */
-void DialogWindowTitle::on_checkBrief_toggled(bool checked) {
+void DialogWindowTitle::checkBrief_toggled(bool checked) {
 
 	if (suppressFormatUpdate_) {
 		return;
@@ -344,10 +362,10 @@ void DialogWindowTitle::on_checkBrief_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::on_checkUserName_toggled
+ * @brief DialogWindowTitle::checkUserName_toggled
  * @param checked
  */
-void DialogWindowTitle::on_checkUserName_toggled(bool checked) {
+void DialogWindowTitle::checkUserName_toggled(bool checked) {
 	if (checked) {
 		appendToFormat(QLatin1String(" %u"));
 	} else {
@@ -356,10 +374,10 @@ void DialogWindowTitle::on_checkUserName_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::on_checkClearCase_toggled
+ * @brief DialogWindowTitle::checkClearCase_toggled
  * @param checked
  */
-void DialogWindowTitle::on_checkClearCase_toggled(bool checked) {
+void DialogWindowTitle::checkClearCase_toggled(bool checked) {
 	if (checked) {
 		appendToFormat(QLatin1String(" {%c}"));
 	} else {
@@ -368,10 +386,10 @@ void DialogWindowTitle::on_checkClearCase_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::on_checkServerName_toggled
+ * @brief DialogWindowTitle::checkServerName_toggled
  * @param checked
  */
-void DialogWindowTitle::on_checkServerName_toggled(bool checked) {
+void DialogWindowTitle::checkServerName_toggled(bool checked) {
 	if (checked) {
 		appendToFormat(QLatin1String(" [%s]"));
 	} else {
@@ -380,10 +398,10 @@ void DialogWindowTitle::on_checkServerName_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::on_checkDirectory_toggled
+ * @brief DialogWindowTitle::checkDirectory_toggled
  * @param checked
  */
-void DialogWindowTitle::on_checkDirectory_toggled(bool checked) {
+void DialogWindowTitle::checkDirectory_toggled(bool checked) {
 
 	ui.editDirectory->setEnabled(checked);
 	ui.labelDirectory->setEnabled(checked);
@@ -414,37 +432,37 @@ void DialogWindowTitle::on_checkDirectory_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::on_checkFileModified_toggled
+ * @brief DialogWindowTitle::checkFileModified_toggled
  * @param checked
  */
-void DialogWindowTitle::on_checkFileModified_toggled(bool checked) {
+void DialogWindowTitle::checkFileModified_toggled(bool checked) {
 	fileChanged_ = checked;
 	formatChangedCB();
 }
 
 /**
- * @brief DialogWindowTitle::on_checkFileReadOnly_toggled
+ * @brief DialogWindowTitle::checkFileReadOnly_toggled
  * @param checked
  */
-void DialogWindowTitle::on_checkFileReadOnly_toggled(bool checked) {
+void DialogWindowTitle::checkFileReadOnly_toggled(bool checked) {
 	lockReasons_.setPermLocked(checked);
 	formatChangedCB();
 }
 
 /**
- * @brief DialogWindowTitle::on_checkFileLocked_toggled
+ * @brief DialogWindowTitle::checkFileLocked_toggled
  * @param checked
  */
-void DialogWindowTitle::on_checkFileLocked_toggled(bool checked) {
+void DialogWindowTitle::checkFileLocked_toggled(bool checked) {
 	lockReasons_.setUserLocked(checked);
 	formatChangedCB();
 }
 
 /**
- * @brief DialogWindowTitle::on_checkServerNamePresent_toggled
+ * @brief DialogWindowTitle::checkServerNamePresent_toggled
  * @param checked
  */
-void DialogWindowTitle::on_checkServerNamePresent_toggled(bool checked) {
+void DialogWindowTitle::checkServerNamePresent_toggled(bool checked) {
 
 	if (!checked) {
 		ui.checkServerEqualsCC->setChecked(false);
@@ -456,10 +474,10 @@ void DialogWindowTitle::on_checkServerNamePresent_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::on_checkClearCasePresent_toggled
+ * @brief DialogWindowTitle::checkClearCasePresent_toggled
  * @param checked
  */
-void DialogWindowTitle::on_checkClearCasePresent_toggled(bool checked) {
+void DialogWindowTitle::checkClearCasePresent_toggled(bool checked) {
 	if (!checked) {
 		ui.checkServerEqualsCC->setChecked(false);
 	}
@@ -468,19 +486,19 @@ void DialogWindowTitle::on_checkClearCasePresent_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::on_checkDirectoryPresent_toggled
+ * @brief DialogWindowTitle::checkDirectoryPresent_toggled
  * @param checked
  */
-void DialogWindowTitle::on_checkDirectoryPresent_toggled(bool checked) {
+void DialogWindowTitle::checkDirectoryPresent_toggled(bool checked) {
 	Q_UNUSED(checked)
 	formatChangedCB();
 }
 
 /**
- * @brief DialogWindowTitle::on_checkServerEqualsCC_toggled
+ * @brief DialogWindowTitle::checkServerEqualsCC_toggled
  * @param checked
  */
-void DialogWindowTitle::on_checkServerEqualsCC_toggled(bool checked) {
+void DialogWindowTitle::checkServerEqualsCC_toggled(bool checked) {
 	if (checked) {
 		ui.checkClearCasePresent->setChecked(true);
 		ui.checkServerNamePresent->setChecked(true);
@@ -543,10 +561,10 @@ void DialogWindowTitle::buttonBox_clicked(QAbstractButton *button) {
 }
 
 /**
- * @brief DialogWindowTitle::on_editDirectory_textChanged
+ * @brief DialogWindowTitle::editDirectory_textChanged
  * @param text
  */
-void DialogWindowTitle::on_editDirectory_textChanged(const QString &text) {
+void DialogWindowTitle::editDirectory_textChanged(const QString &text) {
 
 	if (suppressFormatUpdate_) {
 		return;

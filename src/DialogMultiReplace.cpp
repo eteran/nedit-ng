@@ -28,13 +28,14 @@ void DialogMultiReplace::connectSlots() {
 	connect(ui.buttonDeselectAll, &QPushButton::clicked, this, &DialogMultiReplace::buttonDeselectAll_clicked);
 	connect(ui.buttonSelectAll, &QPushButton::clicked, this, &DialogMultiReplace::buttonSelectAll_clicked);
 	connect(ui.buttonReplace, &QPushButton::clicked, this, &DialogMultiReplace::buttonReplace_clicked);
+	connect(ui.checkShowPaths, &QCheckBox::toggled, this, &DialogMultiReplace::checkShowPaths_toggled);
 }
 
 /**
- * @brief DialogMultiReplace::on_checkShowPaths_toggled
+ * @brief DialogMultiReplace::checkShowPaths_toggled
  * @param checked
  */
-void DialogMultiReplace::on_checkShowPaths_toggled(bool checked) {
+void DialogMultiReplace::checkShowPaths_toggled(bool checked) {
 	model_->setShowFullPath(checked);
 }
 

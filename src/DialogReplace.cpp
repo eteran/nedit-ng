@@ -106,6 +106,10 @@ void DialogReplace::connectSlots() {
 	connect(ui.buttonWindow, &QPushButton::clicked, this, &DialogReplace::buttonWindow_clicked);
 	connect(ui.buttonSelection, &QPushButton::clicked, this, &DialogReplace::buttonSelection_clicked);
 	connect(ui.buttonMulti, &QPushButton::clicked, this, &DialogReplace::buttonMulti_clicked);
+	connect(ui.checkRegex, &QCheckBox::toggled, this, &DialogReplace::checkRegex_toggled);
+	connect(ui.checkCase, &QCheckBox::toggled, this, &DialogReplace::checkCase_toggled);
+	connect(ui.checkKeep, &QCheckBox::toggled, this, &DialogReplace::checkKeep_toggled);
+	connect(ui.textFind, &QLineEdit::textChanged, this, &DialogReplace::textFind_textChanged);
 }
 
 
@@ -203,10 +207,10 @@ void DialogReplace::keyPressEvent(QKeyEvent *event) {
 }
 
 /**
- * @brief DialogReplace::on_checkKeep_toggled
+ * @brief DialogReplace::checkKeep_toggled
  * @param checked
  */
-void DialogReplace::on_checkKeep_toggled(bool checked) {
+void DialogReplace::checkKeep_toggled(bool checked) {
 	if (checked) {
 		setWindowTitle(tr("Find/Replace (in %1)").arg(document_->filename()));
 	} else {
@@ -215,10 +219,10 @@ void DialogReplace::on_checkKeep_toggled(bool checked) {
 }
 
 /**
- * @brief DialogReplace::on_textFind_textChanged
+ * @brief DialogReplace::textFind_textChanged
  * @param text
  */
-void DialogReplace::on_textFind_textChanged(const QString &text) {
+void DialogReplace::textFind_textChanged(const QString &text) {
 	Q_UNUSED(text)
 	UpdateReplaceActionButtons();
 }
@@ -405,10 +409,10 @@ void DialogReplace::buttonMulti_clicked() {
 }
 
 /**
- * @brief DialogReplace::on_checkRegex_toggled
+ * @brief DialogReplace::checkRegex_toggled
  * @param checked
  */
-void DialogReplace::on_checkRegex_toggled(bool checked) {
+void DialogReplace::checkRegex_toggled(bool checked) {
 
 	const bool searchRegex = checked;
 	const bool searchCaseSense = ui.checkCase->isChecked();
@@ -429,10 +433,10 @@ void DialogReplace::on_checkRegex_toggled(bool checked) {
 }
 
 /**
- * @brief DialogReplace::on_checkCase_toggled
+ * @brief DialogReplace::checkCase_toggled
  * @param checked
  */
-void DialogReplace::on_checkCase_toggled(bool checked) {
+void DialogReplace::checkCase_toggled(bool checked) {
 
 	const bool searchCaseSense = checked;
 

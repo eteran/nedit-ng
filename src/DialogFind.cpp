@@ -33,6 +33,10 @@ DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowF
  */
 void DialogFind::connectSlots() {
 	connect(ui.buttonFind, &QPushButton::clicked, this, &DialogFind::buttonFind_clicked);
+	connect(ui.checkRegex, &QCheckBox::toggled, this, &DialogFind::checkRegex_toggled);
+	connect(ui.checkCase, &QCheckBox::toggled, this, &DialogFind::checkCase_toggled);
+	connect(ui.checkKeep, &QCheckBox::toggled, this, &DialogFind::checkKeep_toggled);
+	connect(ui.textFind, &QLineEdit::textChanged, this, &DialogFind::textFind_textChanged);
 }
 
 
@@ -97,10 +101,10 @@ void DialogFind::keyPressEvent(QKeyEvent *event) {
 }
 
 /**
- * @brief DialogFind::on_checkKeep_toggled
+ * @brief DialogFind::checkKeep_toggled
  * @param checked
  */
-void DialogFind::on_checkKeep_toggled(bool checked) {
+void DialogFind::checkKeep_toggled(bool checked) {
 	if (checked) {
 		setWindowTitle(tr("Find (in %1)").arg(document_->filename()));
 	} else {
@@ -117,10 +121,10 @@ void DialogFind::updateFindButton() {
 }
 
 /**
- * @brief DialogFind::on_textFind_textChanged
+ * @brief DialogFind::textFind_textChanged
  * @param text
  */
-void DialogFind::on_textFind_textChanged(const QString &text) {
+void DialogFind::textFind_textChanged(const QString &text) {
 	Q_UNUSED(text)
 	updateFindButton();
 }
@@ -281,10 +285,10 @@ boost::optional<DialogFind::Fields> DialogFind::readFields() {
 }
 
 /**
- * @brief DialogFind::on_checkRegex_toggled
+ * @brief DialogFind::checkRegex_toggled
  * @param checked
  */
-void DialogFind::on_checkRegex_toggled(bool checked) {
+void DialogFind::checkRegex_toggled(bool checked) {
 
 	bool searchRegex     = checked;
 	bool searchCaseSense = ui.checkCase->isChecked();
@@ -305,10 +309,10 @@ void DialogFind::on_checkRegex_toggled(bool checked) {
 }
 
 /**
- * @brief DialogFind::on_checkCase_toggled
+ * @brief DialogFind::checkCase_toggled
  * @param checked
  */
-void DialogFind::on_checkCase_toggled(bool checked) {
+void DialogFind::checkCase_toggled(bool checked) {
 
 	bool searchCaseSense = checked;
 

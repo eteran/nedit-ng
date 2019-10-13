@@ -15,9 +15,12 @@ public:
 	~DialogTabs() override = default;
 
 private Q_SLOTS:
-	void on_checkEmulateTabs_toggled(bool checked);
 	void on_buttonBox_accepted();
 	void on_buttonBox_helpRequested();
+
+private:
+	void checkEmulateTabs_toggled(bool checked);
+	void connectSlots();
 
 private:
 	Ui::DialogTabs ui;

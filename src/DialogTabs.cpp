@@ -20,6 +20,7 @@
 DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
 
 	ui.setupUi(this);
+	connectSlots();
 
 	QTimer::singleShot(0, this, [this]() {
 		resize(0, 0);
@@ -58,10 +59,18 @@ DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlag
 }
 
 /**
- * @brief DialogTabs::on_checkEmulateTabs_toggled
+ * @brief DialogTabs::connectSlots
+ */
+void DialogTabs::connectSlots() {
+	connect(ui.checkEmulateTabs, &QCheckBox::toggled, this, &DialogTabs::checkEmulateTabs_toggled);
+}
+
+
+/**
+ * @brief DialogTabs::checkEmulateTabs_toggled
  * @param checked
  */
-void DialogTabs::on_checkEmulateTabs_toggled(bool checked) {
+void DialogTabs::checkEmulateTabs_toggled(bool checked) {
 	ui.labelEmulatedTabSpacing->setEnabled(checked);
 	ui.editEmulatedTabSpacing->setEnabled(checked);
 }

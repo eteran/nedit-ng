@@ -22,7 +22,15 @@ DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt
 	ui.spinWrapAndFill->setValue(margin);
 }
 
-void DialogWrapMargin::on_checkWrapAndFill_toggled(bool checked) {
+/**
+ * @brief DialogWrapMargin::connectSlots
+ */
+void DialogWrapMargin::connectSlots() {
+	connect(ui.checkWrapAndFill, &QCheckBox::toggled, this, &DialogWrapMargin::checkWrapAndFill_toggled);
+}
+
+
+void DialogWrapMargin::checkWrapAndFill_toggled(bool checked) {
 	ui.label->setEnabled(!checked);
 	ui.spinWrapAndFill->setEnabled(!checked);
 }

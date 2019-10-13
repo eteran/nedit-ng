@@ -273,6 +273,10 @@ MainWindow::~MainWindow() {
  */
 void MainWindow::connectSlots() {
 	connect(ui.buttonIFind, &QPushButton::clicked, this, &MainWindow::buttonIFind_clicked);
+	connect(ui.editIFind, &QLineEdit::textChanged, this, &MainWindow::editIFind_textChanged);
+	connect(ui.checkIFindCase, &QCheckBox::toggled, this, &MainWindow::checkIFindCase_toggled);
+	connect(ui.checkIFindRegex, &QCheckBox::toggled, this, &MainWindow::checkIFindRegex_toggled);
+	connect(ui.checkIFindReverse, &QCheckBox::toggled, this, &MainWindow::checkIFindReverse_toggled);
 }
 
 
@@ -2600,7 +2604,7 @@ void MainWindow::action_Shift_Find_Selection() {
 ** Called when user types in the incremental search line. Redoes the
 ** search for the new search string.
 */
-void MainWindow::on_editIFind_textChanged(const QString &text) {
+void MainWindow::editIFind_textChanged(const QString &text) {
 
 	const SearchType searchType = [this]() {
 		if(ui.checkIFindCase->isChecked()) {
@@ -2807,7 +2811,7 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 ** default state when a dialog is popped up, and when the user returns
 ** from stepping through the search history.
 */
-void MainWindow::on_checkIFindCase_toggled(bool searchCaseSense) {
+void MainWindow::checkIFindCase_toggled(bool searchCaseSense) {
 
 	/* Save the state of the Case Sensitive button
 	   depending on the state of the Regex button*/
@@ -2818,14 +2822,14 @@ void MainWindow::on_checkIFindCase_toggled(bool searchCaseSense) {
 	}
 
 	// When search parameters (direction or search type), redo the search
-	on_editIFind_textChanged(ui.editIFind->text());
+	editIFind_textChanged(ui.editIFind->text());
 }
 
 /**
- * @brief MainWindow::on_checkIFindRegex_toggled
+ * @brief MainWindow::checkIFindRegex_toggled
  * @param searchRegex
  */
-void MainWindow::on_checkIFindRegex_toggled(bool searchRegex) {
+void MainWindow::checkIFindRegex_toggled(bool searchRegex) {
 
 	bool searchCaseSense = ui.checkIFindCase->isChecked();
 
@@ -2842,19 +2846,19 @@ void MainWindow::on_checkIFindRegex_toggled(bool searchRegex) {
 	// The iSearch bar has no Whole Word button to enable/disable.
 
 	// When search parameters (direction or search type), redo the search
-	on_editIFind_textChanged(ui.editIFind->text());
+	editIFind_textChanged(ui.editIFind->text());
 }
 
 /**
- * @brief MainWindow::on_checkIFindReverse_toggled
+ * @brief MainWindow::checkIFindReverse_toggled
  * @param value
  */
-void MainWindow::on_checkIFindReverse_toggled(bool value) {
+void MainWindow::checkIFindReverse_toggled(bool value) {
 
 	Q_UNUSED(value)
 
 	// When search parameters (direction or search type), redo the search
-	on_editIFind_textChanged(ui.editIFind->text());
+	editIFind_textChanged(ui.editIFind->text());
 }
 
 /*

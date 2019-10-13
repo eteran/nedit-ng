@@ -16,25 +16,6 @@ public:
     explicit DialogWindowTitle(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogWindowTitle() override = default;
 
-private Q_SLOTS:
-	void on_checkFileName_toggled(bool checked);
-	void on_checkHostName_toggled(bool checked);
-	void on_checkFileStatus_toggled(bool checked);
-	void on_checkBrief_toggled(bool checked);
-	void on_checkUserName_toggled(bool checked);
-	void on_checkClearCase_toggled(bool checked);
-	void on_checkServerName_toggled(bool checked);
-	void on_checkDirectory_toggled(bool checked);
-	void on_checkFileModified_toggled(bool checked);
-	void on_checkFileReadOnly_toggled(bool checked);
-	void on_checkFileLocked_toggled(bool checked);
-	void on_checkServerNamePresent_toggled(bool checked);
-	void on_checkClearCasePresent_toggled(bool checked);
-	void on_checkServerEqualsCC_toggled(bool checked);
-	void on_checkDirectoryPresent_toggled(bool checked);	
-	void on_editDirectory_textChanged(const QString &text);
-	void on_editFormat_textChanged(const QString &text);
-
 public:	
 	static QString formatWindowTitle(DocumentWidget *document, const QString &clearCaseViewTag, const QString &serverName, bool isServer, const QString &format);
 
@@ -43,7 +24,24 @@ private:
 
 private:
 	void connectSlots();
+	void editDirectory_textChanged(const QString &text);
+	void editFormat_textChanged(const QString &text);
 	void buttonBox_clicked(QAbstractButton *button);
+	void checkFileName_toggled(bool checked);
+	void checkHostName_toggled(bool checked);
+	void checkFileStatus_toggled(bool checked);
+	void checkBrief_toggled(bool checked);
+	void checkUserName_toggled(bool checked);
+	void checkClearCase_toggled(bool checked);
+	void checkServerName_toggled(bool checked);
+	void checkDirectory_toggled(bool checked);
+	void checkFileModified_toggled(bool checked);
+	void checkFileReadOnly_toggled(bool checked);
+	void checkFileLocked_toggled(bool checked);
+	void checkServerNamePresent_toggled(bool checked);
+	void checkClearCasePresent_toggled(bool checked);
+	void checkServerEqualsCC_toggled(bool checked);
+	void checkDirectoryPresent_toggled(bool checked);
 
 private:
 	void setToggleButtons();

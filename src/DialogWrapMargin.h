@@ -14,8 +14,11 @@ public:
 	~DialogWrapMargin() override = default;
 
 private Q_SLOTS:
-	void on_checkWrapAndFill_toggled(bool checked);
 	void on_buttonBox_accepted();
+
+private:
+	void checkWrapAndFill_toggled(bool checked);
+	void connectSlots();
 
 private:
 	Ui::DialogWrapMargin ui;
