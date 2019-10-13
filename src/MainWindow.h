@@ -154,7 +154,7 @@ private:
 	void checkIFindReverse_toggled(bool value);
 	void connectSlots();
 
-public Q_SLOTS:
+public:
 	// internal variants of signals
 	void action_New_Window(DocumentWidget *document);
 	void action_Set_Auto_Indent(DocumentWidget *document, IndentStyle state);
