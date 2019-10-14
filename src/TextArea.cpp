@@ -3211,7 +3211,7 @@ QColor TextArea::getRangesetColor(size_t ind, QColor bground) const {
 
 	if (ind > 0) {
 		--ind;
-		const std::shared_ptr<RangesetTable> &tab = document_->rangesetTable_;
+		const std::unique_ptr<RangesetTable> &tab = document_->rangesetTable_;
 
 		QColor color;
 		int valid = tab->getColorValid(ind, &color);

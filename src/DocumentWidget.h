@@ -13,6 +13,7 @@
 #include "MenuData.h"
 #include "ErrorSound.h"
 #include "MenuItem.h"
+#include "RangesetTable.h"
 #include "ShowMatchingStyle.h"
 #include "Tags.h"
 #include "TextBufferFwd.h"
@@ -37,7 +38,6 @@
 class HighlightPattern;
 class MainWindow;
 class PatternSet;
-class RangesetTable;
 class Regex;
 class Style;
 class StyleTableEntry;
@@ -305,7 +305,7 @@ public:
 	bool highlightSyntax_;                               // is syntax highlighting turned on?
 	bool showStats_;                                     // is stats line supposed to be shown
 	std::shared_ptr<MacroCommandData> macroCmdData_;     // same for macro commands
-	std::shared_ptr<RangesetTable> rangesetTable_;       // current range sets
+	std::unique_ptr<RangesetTable> rangesetTable_;       // current range sets
 	std::unique_ptr<WindowHighlightData> highlightData_; // info for syntax highlighting
 
 private:

@@ -3610,7 +3610,7 @@ std::error_code rangesetListMV(DocumentWidget *document, Arguments arguments, Da
 
 	Q_UNUSED(arguments)
 
-	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
+	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 	DataValue element;
 
 	*result = make_value(std::make_shared<Array>());
@@ -3662,17 +3662,18 @@ std::error_code versionMV(DocumentWidget *document, Arguments arguments, DataVal
 */
 std::error_code rangesetCreateMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
+	std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
-	if (arguments.size() > 1)
+	if (arguments.size() > 1) {
 		return MacroErrorCode::WrongNumberOfArguments;
+	}
 
 	if(!rangesetTable) {
-		rangesetTable = std::make_shared<RangesetTable>(document->buffer());
+		rangesetTable = std::make_unique<RangesetTable>(document->buffer());
 	}
 
 	if (arguments.empty()) {
-		int label = rangesetTable->RangesetCreate();
+		const int label = rangesetTable->RangesetCreate();
 		*result = make_value(label);
 		return MacroErrorCode::Success;
 	} else {
@@ -3684,12 +3685,13 @@ std::error_code rangesetCreateMS(DocumentWidget *document, Arguments arguments, 
 
 		*result = make_value(std::make_shared<Array>());
 
-		if (nRangesetsRequired > rangesetTable->rangesetsAvailable())
+		if (nRangesetsRequired > rangesetTable->rangesetsAvailable()) {
 			return MacroErrorCode::Success;
+		}
 
 		for (int i = 0; i < nRangesetsRequired; i++) {
 			DataValue element = make_value(rangesetTable->RangesetCreate());
-			(void)ArrayInsert(result, std::to_string(i), &element);
+			ArrayInsert(result, std::to_string(i), &element);
 		}
 
 		return MacroErrorCode::Success;
@@ -3700,9 +3702,7 @@ std::error_code rangesetCreateMS(DocumentWidget *document, Arguments arguments, 
 ** Built-in macro subroutine for forgetting a range set.
 */
 std::error_code rangesetDestroyMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-	DataValue element;
-	int label = 0;
+	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
 	if (arguments.size() != 1) {
 		return MacroErrorCode::WrongNumberOfArguments;
@@ -3712,33 +3712,33 @@ std::error_code rangesetDestroyMS(DocumentWidget *document, Arguments arguments,
 		DataValue *array = &arguments[0];
 		int arraySize = ArraySize(array);
 
-		if (arraySize > N_RANGESETS) {
-			return MacroErrorCode::ArrayFull;
-		}
-
-		int deleteLabels[N_RANGESETS];
+		std::vector<int> deleteLabels;
+		deleteLabels.reserve(static_cast<size_t>(arraySize));
 
 		for (int i = 0; i < arraySize; i++) {
 
 			auto keyString = std::to_string(i);
 
+			DataValue element;
 			if (!ArrayGet(array, keyString, &element)) {
 				return MacroErrorCode::InvalidArrayKey;
 			}
 
 			std::error_code ec;
+			int label;
 			if ((ec = readArgument(element, &label)) || !RangesetTable::LabelOK(label)) {
 				return MacroErrorCode::InvalidRangesetLabelInArray;
 			}
 
-			deleteLabels[i] = label;
+			deleteLabels.push_back(label);
 		}
 
-		for (int i = 0; i < arraySize; i++) {
-			rangesetTable->forgetLabel(deleteLabels[i]);
+		for (int label : deleteLabels) {
+			rangesetTable->forgetLabel(label);
 		}
 	} else {
 		std::error_code ec;
+		int label;
 		if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
 			return MacroErrorCode::InvalidRangesetLabel;
 		}
@@ -3761,7 +3761,7 @@ std::error_code rangesetDestroyMS(DocumentWidget *document, Arguments arguments,
 std::error_code rangesetGetByNameMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	QString name;
-	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
+	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 	int insertIndex = 0;
 	DataValue element;
 
@@ -3807,18 +3807,13 @@ std::error_code rangesetGetByNameMS(DocumentWidget *document, Arguments argument
 */
 std::error_code rangesetAddMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	TextBuffer *buffer = document->buffer();
-	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-	TextCursor start;
-	TextCursor end;
-	int64_t rectStart;
-	int64_t rectEnd;
-	int64_t index;
-	bool isRect;
-	int label = 0;
+	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
-	if (arguments.size() < 1 || arguments.size() > 3)
+	if (arguments.size() < 1 || arguments.size() > 3) {
 		return MacroErrorCode::WrongNumberOfArguments;
+	}
 
+	int label;
 	std::error_code ec;
 	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
@@ -3833,10 +3828,14 @@ std::error_code rangesetAddMS(DocumentWidget *document, Arguments arguments, Dat
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
 
-	start = TextCursor(-1);
-	end   = TextCursor(-1);
+	auto start = TextCursor(-1);
+	auto end   = TextCursor(-1);
 
 	if (arguments.size() == 1) {
+		int64_t rectStart;
+		int64_t rectEnd;
+		bool isRect;
+
 		// pick up current selection in this window
 		if (!buffer->BufGetSelectionPos(&start, &end, &isRect, &rectStart, &rectEnd) || isRect) {
 			return MacroErrorCode::SelectionMissing;
@@ -3887,6 +3886,7 @@ std::error_code rangesetAddMS(DocumentWidget *document, Arguments arguments, Dat
 	}
 
 	// (to) which range did we just add?
+	int64_t index;
 	if (arguments.size() != 2 && start >= 0) {
 		start = (start + to_integer(end)) / 2; // "middle" of added range
 		index = 1 + targetRangeset->RangesetFindRangeOfPos(start, /*incl_end=*/false);
@@ -3906,18 +3906,13 @@ std::error_code rangesetAddMS(DocumentWidget *document, Arguments arguments, Dat
 */
 std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	TextBuffer *buffer = document->buffer();
-	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-	int64_t start;
-	int64_t end;
-	int64_t rectStart;
-	int64_t rectEnd;
-	bool isRect;
-	int label = 0;
+	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
 	if (arguments.size() < 1 || arguments.size() > 3) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
+	int label;
 	std::error_code ec;
 	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
@@ -3932,10 +3927,16 @@ std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments arguments
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
 
+	int64_t start;
+	int64_t end;
+
 	if (arguments.size() == 1) {
 		// remove current selection in this window
 		TextCursor tmp_start;
 		TextCursor tmp_end;
+		int64_t rectStart;
+		int64_t rectEnd;
+		bool isRect;
 		if (!buffer->BufGetSelectionPos(&tmp_start, &tmp_end, &isRect, &rectStart, &rectEnd) || isRect) {
 			return MacroErrorCode::SelectionMissing;
 		}
@@ -3993,9 +3994,9 @@ std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments arguments
 */
 std::error_code rangesetInvertMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-	int label;
+	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
+	int label;
 	if(std::error_code ec = readArguments(arguments, 0, &label)) {
 		return ec;
 	}
@@ -4028,10 +4029,9 @@ std::error_code rangesetInvertMS(DocumentWidget *document, Arguments arguments, 
 **    defined, count, color, mode.
 */
 std::error_code rangesetInfoMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-	DataValue element;
-	int label;
+	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
+	int label;
 	if(std::error_code ec = readArguments(arguments, 0, &label)) {
 		return ec;
 	}
@@ -4052,7 +4052,7 @@ std::error_code rangesetInfoMS(DocumentWidget *document, Arguments arguments, Da
 	// set up result
 	*result = make_value(std::make_shared<Array>());
 
-	element = make_value(rangeset_info.defined);
+	DataValue element = make_value(rangeset_info.defined);
 	if (!ArrayInsert(result, "defined", &element)) {
 		return MacroErrorCode::InsertFailed;
 	}
@@ -4088,14 +4088,13 @@ std::error_code rangesetInfoMS(DocumentWidget *document, Arguments arguments, Da
 */
 std::error_code rangesetRangeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-	DataValue element;
-	int label = 0;
+	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
 	if (arguments.size() < 1 || arguments.size() > 2) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
+	int label;
 	std::error_code ec;
 	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
@@ -4131,7 +4130,7 @@ QT_WARNING_DISABLE_GCC("-Wmaybe-uninitialized") // NOTE(eteran): GCC 7+ false po
 		return MacroErrorCode::Success;
 	}
 
-	element = make_value(to_integer(range->start));
+	DataValue element = make_value(to_integer(range->start));
 	if (!ArrayInsert(result, "start", &element)) {
 		return MacroErrorCode::InsertFailed;
 	}
@@ -4154,13 +4153,13 @@ QT_WARNING_POP
 */
 std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	TextBuffer *buffer = document->buffer();
-	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-	int label = 0;
+	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
 	if (arguments.size() < 1 || arguments.size() > 2) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
+	int label;
 	std::error_code ec;
 	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
@@ -4206,13 +4205,13 @@ std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments argume
 std::error_code rangesetSetColorMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	TextBuffer *buffer = document->buffer();
-	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-	int label = 0;
+	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
 	if (arguments.size() != 2) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
+	int label;
 	std::error_code ec;
 	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
@@ -4245,13 +4244,13 @@ std::error_code rangesetSetColorMS(DocumentWidget *document, Arguments arguments
 */
 std::error_code rangesetSetNameMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-	int label = 0;
+	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
 	if (arguments.size() != 2) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
+	int label;
 	std::error_code ec;
 	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
@@ -4284,13 +4283,13 @@ std::error_code rangesetSetNameMS(DocumentWidget *document, Arguments arguments,
 */
 std::error_code rangesetSetModeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	const std::shared_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
-	int label = 0;
+	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
 	if (arguments.size() < 1 || arguments.size() > 2) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
+	int label;
 	std::error_code ec;
 	if ((ec = readArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
