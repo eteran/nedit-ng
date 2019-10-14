@@ -3879,7 +3879,7 @@ void TextArea::cancelBlockDrag() {
 
 	std::unique_ptr<TextBuffer> origBuf = std::move(dragOrigBuf_);
 	const TextBuffer::Selection *origSel = &origBuf->primary;
-	TextCursor modRangeStart = TextCursor(-1);
+	auto modRangeStart = TextCursor(-1);
 	TextCursor origModRangeEnd;
 	TextCursor bufModRangeEnd;
 
@@ -4284,8 +4284,8 @@ std::string TextArea::wrapText(view::string_view startLine, view::string_view te
 	wrapBuf.BufInsert(buffer_->BufStartOfBuffer(), startLine);
 	wrapBuf.BufAppend(text);
 
-	const TextCursor startLineEnd = TextCursor(startLine.size());
-	const int tabDist             = buffer_->BufGetTabDistance();
+	const auto startLineEnd = TextCursor(startLine.size());
+	const int tabDist       = buffer_->BufGetTabDistance();
 
 	/* Scan the buffer for long lines and apply wrapLine when wrapMargin is
 	   exceeded.  limitPos enforces no breaks in the "startLine" part of the
@@ -4295,7 +4295,7 @@ std::string TextArea::wrapText(view::string_view startLine, view::string_view te
 	TextCursor pos          = wrapBuf.BufStartOfBuffer();
 	TextCursor lineStartPos = {};
 	TextCursor limitPos     = (breakBefore == nullptr) ? startLineEnd : buffer_->BufStartOfBuffer();
-	TextCursor firstBreak   = TextCursor(-1);
+	auto firstBreak         = TextCursor(-1);
 
 	while (pos < wrapBuf.BufEndOfBuffer()) {
 		const char c = wrapBuf.BufGetCharacter(pos);
@@ -5840,7 +5840,7 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 */
 void TextArea::finishBlockDrag() {
 
-	TextCursor modRangeStart = TextCursor(-1);
+	auto modRangeStart = TextCursor(-1);
 	TextCursor origModRangeEnd;
 	TextCursor bufModRangeEnd;
 
@@ -6143,9 +6143,9 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	bool rectangular             = origSel.isRectangular();
 	BlockDragTypes oldDragType   = dragType_;
 	int64_t nLines               = dragNLines_;	
-	TextCursor modRangeStart     = TextCursor(-1);
-	TextCursor tempModRangeEnd   = TextCursor(-1);
-	TextCursor bufModRangeEnd    = TextCursor(-1);
+	auto modRangeStart           = TextCursor(-1);
+	auto tempModRangeEnd         = TextCursor(-1);
+	auto bufModRangeEnd          = TextCursor(-1);
 	TextCursor insStart;
 	TextCursor referencePos;
 	TextCursor origSelLineEnd;
@@ -7399,7 +7399,7 @@ TextCursor TextArea::lineAndColToPosition(Location loc) const {
 		loc.line = 1;
 	}
 
-	TextCursor lineEnd = TextCursor(-1);
+	auto lineEnd = TextCursor(-1);
 	for (i = 1; i <= loc.line && lineEnd < buffer_->length(); i++) {
 		lineStart = lineEnd + 1;
 		lineEnd   = buffer_->BufEndOfLine(lineStart);

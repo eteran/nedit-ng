@@ -3872,7 +3872,7 @@ std::error_code rangesetAddMS(DocumentWidget *document, Arguments arguments, Dat
 		end   = TextCursor(tmp_end);
 
 		// make sure range is in order and fits buffer size
-		const TextCursor maxpos = TextCursor(buffer->length());
+		const auto maxpos = TextCursor(buffer->length());
 		start = qBound(TextCursor(), start, maxpos);
 		end   = qBound(TextCursor(), end,   maxpos);
 

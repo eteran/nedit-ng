@@ -238,8 +238,8 @@ void modifyStyleBuf(const std::unique_ptr<TextBuffer> &styleBuf, char *styleStri
 	TextCursor pos;
 	TextCursor modStart;
 	TextCursor modEnd;
-	TextCursor minPos = TextCursor(INT_MAX);
-	TextCursor maxPos = TextCursor();
+	auto minPos = TextCursor(INT_MAX);
+	auto maxPos = TextCursor();
 	const TextBuffer::Selection *sel = &styleBuf->primary;
 
 	// Skip the range already marked for redraw
