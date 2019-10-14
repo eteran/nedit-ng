@@ -194,6 +194,8 @@ NeditServer::NeditServer(QObject *parent) : QObject(parent) {
  */
 void NeditServer::newConnection() {
 
+	// NOTE(eteran): shared because later a lambda will capture this
+	// and use it to keep this socket alive until it returns
 	std::shared_ptr<QLocalSocket> socket(server_->nextPendingConnection());
 
 	while (socket->bytesAvailable() < static_cast<int>(sizeof(qint32))) {
