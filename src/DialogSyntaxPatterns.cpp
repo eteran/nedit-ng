@@ -14,6 +14,7 @@
 #include "Preferences.h"
 #include "SignalBlocker.h"
 #include "WindowHighlightData.h"
+#include "CommonDialog.h"
 
 #include <QMessageBox>
 
@@ -26,11 +27,7 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f
 	ui.setupUi(this);
 	connectSlots();
 
-	ui.buttonNew   ->setIcon(QIcon::fromTheme(QLatin1String("document-new"), QIcon(QLatin1String(":/document-new.svg"))));
-	ui.buttonDelete->setIcon(QIcon::fromTheme(QLatin1String("edit-delete"),  QIcon(QLatin1String(":/edit-delete.svg"))));
-	ui.buttonCopy  ->setIcon(QIcon::fromTheme(QLatin1String("edit-copy"),    QIcon(QLatin1String(":/edit-copy.svg"))));
-	ui.buttonUp    ->setIcon(QIcon::fromTheme(QLatin1String("go-up"),        QIcon(QLatin1String(":/go-up.svg"))));
-	ui.buttonDown  ->setIcon(QIcon::fromTheme(QLatin1String("go-down"),      QIcon(QLatin1String(":/go-down.svg"))));
+	CommonDialog::setButtonIcons(&ui);
 
 	model_ = new HighlightPatternModel(this);
 	ui.listItems->setModel(model_);
@@ -326,30 +323,19 @@ void DialogSyntaxPatterns::buttonNew_clicked() {
 		return;
 	}
 
-	HighlightPattern style;
-	// some sensible defaults...
-	style.name  = tr("New Item");
-	model_->addItem(style);
-
-	QModelIndex index = model_->index(model_->rowCount() - 1, 0);
-	ui.listItems->setCurrentIndex(index);
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::addNewItem(&ui, model_, []() {
+		HighlightPattern style;
+		// some sensible defaults...
+		style.name  = tr("New Item");
+		return style;
+	});
 }
 
 /**
  * @brief DialogSyntaxPatterns::buttonDelete_clicked
  */
 void DialogSyntaxPatterns::buttonDelete_clicked() {
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		deleted_ = index;
-		model_->deleteItem(index);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::deleteItem(&ui, model_, &deleted_);
 }
 
 /**
@@ -361,43 +347,21 @@ void DialogSyntaxPatterns::buttonCopy_clicked() {
 		return;
 	}
 
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		auto ptr = model_->itemFromIndex(index);
-		model_->addItem(*ptr);
-
-		QModelIndex newIndex = model_->index(model_->rowCount() - 1, 0);
-		ui.listItems->setCurrentIndex(newIndex);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::copyItem(&ui, model_);
 }
 
 /**
  * @brief DialogSyntaxPatterns::buttonUp_clicked
  */
 void DialogSyntaxPatterns::buttonUp_clicked() {
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		model_->moveItemUp(index);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
  * @brief DialogSyntaxPatterns::buttonDown_clicked
  */
 void DialogSyntaxPatterns::buttonDown_clicked() {
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		model_->moveItemDown(index);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::moveItemDown(&ui, model_);
 }
 
 /**
@@ -535,43 +499,6 @@ void DialogSyntaxPatterns::buttonHelp_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::updateButtonStates
- */
-void DialogSyntaxPatterns::updateButtonStates(const QModelIndex &current) {
-	if(current.isValid()) {
-		if(current.row() == 0) {
-			ui.buttonUp    ->setEnabled(false);
-			ui.buttonDown  ->setEnabled(model_->rowCount() > 1);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		} else if(current.row() == model_->rowCount() - 1) {
-			ui.buttonUp    ->setEnabled(true);
-			ui.buttonDown  ->setEnabled(false);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		} else {
-			ui.buttonUp    ->setEnabled(true);
-			ui.buttonDown  ->setEnabled(true);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		}
-	} else {
-		ui.buttonUp    ->setEnabled(false);
-		ui.buttonDown  ->setEnabled(false);
-		ui.buttonDelete->setEnabled(false);
-		ui.buttonCopy  ->setEnabled(false);
-	}
-}
-
-/**
- * @brief DialogSyntaxPatterns::updateButtonStates
- */
-void DialogSyntaxPatterns::updateButtonStates() {
-	QModelIndex index = ui.listItems->currentIndex();
-	updateButtonStates(index);
-}
-
-/**
  * @brief PreferenceList::currentChanged
  * @param current
  * @param previous
@@ -661,7 +588,7 @@ void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QMod
 		setStyleMenu(QLatin1String("Plain"));
 	}
 
-	updateButtonStates(current);
+	CommonDialog::updateButtonStates(&ui, model_, current);
 	updateLabels();
 }
 

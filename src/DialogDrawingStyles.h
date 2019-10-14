@@ -39,8 +39,6 @@ private:
 	void connectSlots();
 
 private:
-	void updateButtonStates(const QModelIndex &current);
-	void updateButtonStates();
 	bool applyDialogChanges();
 	bool validateFields(Verbosity verbosity);
 	boost::optional<HighlightStyle> readFields(Verbosity verbosity);

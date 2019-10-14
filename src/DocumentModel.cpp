@@ -176,7 +176,6 @@ void DocumentModel::deleteItem(const QModelIndex &index) {
 	}
 }
 
-
 /**
  * @brief LanguageModeModel::itemFromIndex
  * @param index

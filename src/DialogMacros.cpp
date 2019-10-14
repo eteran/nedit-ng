@@ -9,6 +9,7 @@
 #include "parse.h"
 #include "userCmds.h"
 #include "Util/String.h"
+#include "CommonDialog.h"
 
 #include <QMessageBox>
 
@@ -22,11 +23,7 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
 	ui.setupUi(this);
 	connectSlots();
 
-	ui.buttonNew   ->setIcon(QIcon::fromTheme(QLatin1String("document-new"), QIcon(QLatin1String(":/document-new.svg"))));
-	ui.buttonDelete->setIcon(QIcon::fromTheme(QLatin1String("edit-delete"),  QIcon(QLatin1String(":/edit-delete.svg"))));
-	ui.buttonCopy  ->setIcon(QIcon::fromTheme(QLatin1String("edit-copy"),    QIcon(QLatin1String(":/edit-copy.svg"))));
-	ui.buttonUp    ->setIcon(QIcon::fromTheme(QLatin1String("go-up"),        QIcon(QLatin1String(":/go-up.svg"))));
-	ui.buttonDown  ->setIcon(QIcon::fromTheme(QLatin1String("go-down"),      QIcon(QLatin1String(":/go-down.svg"))));
+	CommonDialog::setButtonIcons(&ui);
 
 	ui.editAccelerator->setMaximumSequenceLength(1);
 
@@ -65,44 +62,6 @@ void DialogMacros::connectSlots() {
 	connect(ui.buttonOK, &QPushButton::clicked, this, &DialogMacros::buttonOK_clicked);
 }
 
-
-/**
- * @brief DialogMacros::updateButtonStates
- */
-void DialogMacros::updateButtonStates() {
-	QModelIndex index = ui.listItems->currentIndex();
-	updateButtonStates(index);
-}
-
-/**
- * @brief DialogMacros::updateButtonStates
- */
-void DialogMacros::updateButtonStates(const QModelIndex &current) {
-	if(current.isValid()) {
-		if(current.row() == 0) {
-			ui.buttonUp    ->setEnabled(false);
-			ui.buttonDown  ->setEnabled(model_->rowCount() > 1);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		} else if(current.row() == model_->rowCount() - 1) {
-			ui.buttonUp    ->setEnabled(true);
-			ui.buttonDown  ->setEnabled(false);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		} else {
-			ui.buttonUp    ->setEnabled(true);
-			ui.buttonDown  ->setEnabled(true);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		}
-	} else {
-		ui.buttonUp    ->setEnabled(false);
-		ui.buttonDown  ->setEnabled(false);
-		ui.buttonDelete->setEnabled(false);
-		ui.buttonCopy  ->setEnabled(false);
-	}
-}
-
 /**
  * @brief DialogMacros::buttonNew_clicked
  */
@@ -112,16 +71,12 @@ void DialogMacros::buttonNew_clicked() {
 		return;
 	}
 
-	MenuItem item;
-	// some sensible defaults...
-	item.name  = tr("New Item");
-	model_->addItem(item);
-
-	QModelIndex index = model_->index(model_->rowCount() - 1, 0);
-	ui.listItems->setCurrentIndex(index);
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::addNewItem(&ui, model_, []() {
+		MenuItem item;
+		// some sensible defaults...
+		item.name  = tr("New Item");
+		return item;
+	});
 }
 
 /**
@@ -133,32 +88,14 @@ void DialogMacros::buttonCopy_clicked() {
 		return;
 	}
 
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		auto ptr = model_->itemFromIndex(index);
-		model_->addItem(*ptr);
-
-		QModelIndex newIndex = model_->index(model_->rowCount() - 1, 0);
-		ui.listItems->setCurrentIndex(newIndex);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::copyItem(&ui, model_);
 }
 
 /**
  * @brief DialogMacros::buttonDelete_clicked
  */
 void DialogMacros::buttonDelete_clicked() {
-
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		deleted_ = index;
-		model_->deleteItem(index);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::deleteItem(&ui, model_, &deleted_);
 }
 
 /**
@@ -178,28 +115,14 @@ void DialogMacros::buttonPasteLRMacro_clicked() {
  * @brief DialogMacros::buttonUp_clicked
  */
 void DialogMacros::buttonUp_clicked() {
-
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		model_->moveItemUp(index);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
  * @brief DialogMacros::buttonDown_clicked
  */
 void DialogMacros::buttonDown_clicked() {
-
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		model_->moveItemDown(index);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::moveItemDown(&ui, model_);
 }
 
 /**
@@ -263,7 +186,7 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
 	}
 
 	// ensure that the appropriate buttons are enabled
-	updateButtonStates(current);
+	CommonDialog::updateButtonStates(&ui, model_, current);
 }
 
 /**

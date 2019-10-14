@@ -13,6 +13,7 @@
 #include "TextArea.h"
 #include "userCmds.h"
 #include "Util/regex.h"
+#include "CommonDialog.h"
 
 #include <QMessageBox>
 #include <QRegularExpressionValidator>
@@ -26,11 +27,7 @@ DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatte
 	ui.setupUi(this);
 	connectSlots();
 
-	ui.buttonNew   ->setIcon(QIcon::fromTheme(QLatin1String("document-new"), QIcon(QLatin1String(":/document-new.svg"))));
-	ui.buttonDelete->setIcon(QIcon::fromTheme(QLatin1String("edit-delete"),  QIcon(QLatin1String(":/edit-delete.svg"))));
-	ui.buttonCopy  ->setIcon(QIcon::fromTheme(QLatin1String("edit-copy"),    QIcon(QLatin1String(":/edit-copy.svg"))));
-	ui.buttonUp    ->setIcon(QIcon::fromTheme(QLatin1String("go-up"),        QIcon(QLatin1String(":/go-up.svg"))));
-	ui.buttonDown  ->setIcon(QIcon::fromTheme(QLatin1String("go-down"),      QIcon(QLatin1String(":/go-down.svg"))));
+	CommonDialog::setButtonIcons(&ui);
 
 	model_ = new LanguageModeModel(this);
 	ui.listItems->setModel(model_);
@@ -71,43 +68,6 @@ void DialogLanguageModes::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogLanguageModes::buttonBox_clicked);
 }
 
-
-/**
- * @brief DialogLanguageModes::updateButtonStates
- */
-void DialogLanguageModes::updateButtonStates() {
-	QModelIndex index = ui.listItems->currentIndex();
-	updateButtonStates(index);
-}
-
-/**
- * @brief DialogLanguageModes::updateButtonStates
- */
-void DialogLanguageModes::updateButtonStates(const QModelIndex &current) {
-	if(current.isValid()) {
-		if(current.row() == 0) {
-			ui.buttonUp    ->setEnabled(false);
-			ui.buttonDown  ->setEnabled(model_->rowCount() > 1);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		} else if(current.row() == model_->rowCount() - 1) {
-			ui.buttonUp    ->setEnabled(true);
-			ui.buttonDown  ->setEnabled(false);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		} else {
-			ui.buttonUp    ->setEnabled(true);
-			ui.buttonDown  ->setEnabled(true);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		}
-	} else {
-		ui.buttonUp    ->setEnabled(false);
-		ui.buttonDown  ->setEnabled(false);
-		ui.buttonDelete->setEnabled(false);
-		ui.buttonCopy  ->setEnabled(false);
-	}
-}
 
 void DialogLanguageModes::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
 	static bool canceled = false;
@@ -224,7 +184,7 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 	}
 
 	// ensure that the appropriate buttons are enabled
-	updateButtonStates(current);
+	CommonDialog::updateButtonStates(&ui, model_, current);
 }
 
 /**
@@ -538,16 +498,12 @@ void DialogLanguageModes::buttonNew_clicked() {
 		return;
 	}
 
-	LanguageMode item;
-	// some sensible defaults...
-	item.name  = tr("New Item");
-	model_->addItem(item);
-
-	QModelIndex index = model_->index(model_->rowCount() - 1, 0);
-	ui.listItems->setCurrentIndex(index);
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::addNewItem(&ui, model_, []() {
+		LanguageMode item;
+		// some sensible defaults...
+		item.name  = tr("New Item");
+		return item;
+	});
 }
 
 /**
@@ -559,45 +515,21 @@ void DialogLanguageModes::buttonCopy_clicked() {
 		return;
 	}
 
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		auto ptr = model_->itemFromIndex(index);
-		model_->addItem(*ptr);
-
-		QModelIndex newIndex = model_->index(model_->rowCount() - 1, 0);
-		ui.listItems->setCurrentIndex(newIndex);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::copyItem(&ui, model_);
 }
 
 /**
  * @brief DialogLanguageModes::buttonUp_clicked
  */
 void DialogLanguageModes::buttonUp_clicked() {
-
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		model_->moveItemUp(index);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
  * @brief DialogLanguageModes::buttonDown_clicked
  */
 void DialogLanguageModes::buttonDown_clicked() {
-
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		model_->moveItemDown(index);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::moveItemDown(&ui, model_);
 }
 
 int DialogLanguageModes::countLanguageModes(const QString &name) const {
@@ -659,7 +591,7 @@ void DialogLanguageModes::buttonDelete_clicked() {
 			deleted_ = index;
 			model_->deleteItem(index);
 			ui.listItems->scrollTo(ui.listItems->currentIndex());
-			updateButtonStates();
+			CommonDialog::updateButtonStates(&ui, model_);
 		}
 	}
 }

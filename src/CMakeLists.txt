@@ -51,6 +51,7 @@ add_executable(nedit-ng
 	CommandRecorder.cpp
 	CommandRecorder.h
 	CommandSource.h
+	CommonDialog.h
 	CursorStyles.h
 	Dialog.cpp
 	Dialog.h

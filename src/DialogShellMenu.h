@@ -41,8 +41,6 @@ private:
 	bool updateCurrentItem();
 	bool updateCurrentItem(const QModelIndex &index);
 	boost::optional<MenuItem> readFields(Verbosity verbosity);
-	void updateButtonStates();
-	void updateButtonStates(const QModelIndex &current);
 
 private:
 	Ui::DialogShellMenu ui;

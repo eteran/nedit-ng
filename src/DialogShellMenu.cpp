@@ -6,6 +6,7 @@
 #include "Preferences.h"
 #include "MenuData.h"
 #include "userCmds.h"
+#include "CommonDialog.h"
 
 #include <QMessageBox>
 
@@ -18,11 +19,7 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(pa
 	ui.setupUi(this);
 	connectSlots();
 
-	ui.buttonNew   ->setIcon(QIcon::fromTheme(QLatin1String("document-new"), QIcon(QLatin1String(":/document-new.svg"))));
-	ui.buttonDelete->setIcon(QIcon::fromTheme(QLatin1String("edit-delete"),  QIcon(QLatin1String(":/edit-delete.svg"))));
-	ui.buttonCopy  ->setIcon(QIcon::fromTheme(QLatin1String("edit-copy"),    QIcon(QLatin1String(":/edit-copy.svg"))));
-	ui.buttonUp    ->setIcon(QIcon::fromTheme(QLatin1String("go-up"),        QIcon(QLatin1String(":/go-up.svg"))));
-	ui.buttonDown  ->setIcon(QIcon::fromTheme(QLatin1String("go-down"),      QIcon(QLatin1String(":/go-down.svg"))));
+	CommonDialog::setButtonIcons(&ui);
 
 	ui.editAccelerator->setMaximumSequenceLength(1);
 
@@ -60,44 +57,6 @@ void DialogShellMenu::connectSlots() {
 
 
 /**
- * @brief DialogShellMenu::updateButtonStates
- */
-void DialogShellMenu::updateButtonStates() {
-	QModelIndex index = ui.listItems->currentIndex();
-	updateButtonStates(index);
-}
-
-/**
- * @brief DialogShellMenu::updateButtonStates
- */
-void DialogShellMenu::updateButtonStates(const QModelIndex &current) {
-	if(current.isValid()) {
-		if(current.row() == 0) {
-			ui.buttonUp    ->setEnabled(false);
-			ui.buttonDown  ->setEnabled(model_->rowCount() > 1);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		} else if(current.row() == model_->rowCount() - 1) {
-			ui.buttonUp    ->setEnabled(true);
-			ui.buttonDown  ->setEnabled(false);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		} else {
-			ui.buttonUp    ->setEnabled(true);
-			ui.buttonDown  ->setEnabled(true);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		}
-	} else {
-		ui.buttonUp    ->setEnabled(false);
-		ui.buttonDown  ->setEnabled(false);
-		ui.buttonDelete->setEnabled(false);
-		ui.buttonCopy  ->setEnabled(false);
-	}
-}
-
-
-/**
  * @brief DialogShellMenu::buttonNew_clicked
  */
 void DialogShellMenu::buttonNew_clicked() {
@@ -106,16 +65,12 @@ void DialogShellMenu::buttonNew_clicked() {
 		return;
 	}
 
-	MenuItem item;
-	// some sensible defaults...
-	item.name  = tr("New Item");
-	model_->addItem(item);
-
-	QModelIndex index = model_->index(model_->rowCount() - 1, 0);
-	ui.listItems->setCurrentIndex(index);
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::addNewItem(&ui, model_, []() {
+		MenuItem item;
+		// some sensible defaults...
+		item.name  = tr("New Item");
+		return item;
+	});
 }
 
 /**
@@ -127,60 +82,28 @@ void DialogShellMenu::buttonCopy_clicked() {
 		return;
 	}
 
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		auto ptr = model_->itemFromIndex(index);
-		model_->addItem(*ptr);
-
-		QModelIndex newIndex = model_->index(model_->rowCount() - 1, 0);
-		ui.listItems->setCurrentIndex(newIndex);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::copyItem(&ui, model_);
 }
 
 /**
  * @brief DialogShellMenu::buttonDelete_clicked
  */
 void DialogShellMenu::buttonDelete_clicked() {
-
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		deleted_ = index;
-		model_->deleteItem(index);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::deleteItem(&ui, model_, &deleted_);
 }
 
 /**
  * @brief DialogShellMenu::buttonUp_clicked
  */
 void DialogShellMenu::buttonUp_clicked() {
-
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		model_->moveItemUp(index);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
  * @brief DialogShellMenu::buttonDown_clicked
  */
 void DialogShellMenu::buttonDown_clicked() {
-
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		model_->moveItemDown(index);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::moveItemDown(&ui, model_);
 }
 
 /**
@@ -282,7 +205,7 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
 	}
 
 	// ensure that the appropriate buttons are enabled
-	updateButtonStates(current);
+	CommonDialog::updateButtonStates(&ui, model_, current);
 }
 
 /**

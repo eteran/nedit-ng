@@ -43,8 +43,6 @@ private:
 	bool updateLanguageList(Verbosity verbosity);
 	bool updateLMList(Verbosity verbosity);
 	boost::optional<LanguageMode> readFields(Verbosity verbosity);
-	void updateButtonStates();
-	void updateButtonStates(const QModelIndex &current);
 	int countLanguageModes(const QString &name) const;
 	bool LMHasHighlightPatterns(const QString &name) const;
 

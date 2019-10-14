@@ -6,6 +6,7 @@
 #include "HighlightStyleModel.h"
 #include "Preferences.h"
 #include "X11Colors.h"
+#include "CommonDialog.h"
 
 #include <QMessageBox>
 #include <QColorDialog>
@@ -20,11 +21,7 @@ DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatte
 	ui.setupUi(this);
 	connectSlots();
 
-	ui.buttonNew   ->setIcon(QIcon::fromTheme(QLatin1String("document-new"), QIcon(QLatin1String(":/document-new.svg"))));
-	ui.buttonDelete->setIcon(QIcon::fromTheme(QLatin1String("edit-delete"),  QIcon(QLatin1String(":/edit-delete.svg"))));
-	ui.buttonCopy  ->setIcon(QIcon::fromTheme(QLatin1String("edit-copy"),    QIcon(QLatin1String(":/edit-copy.svg"))));
-	ui.buttonUp    ->setIcon(QIcon::fromTheme(QLatin1String("go-up"),        QIcon(QLatin1String(":/go-up.svg"))));
-	ui.buttonDown  ->setIcon(QIcon::fromTheme(QLatin1String("go-down"),      QIcon(QLatin1String(":/go-down.svg"))));
+	CommonDialog::setButtonIcons(&ui);
 
 	model_ = new HighlightStyleModel(this);
 	ui.listItems->setModel(model_);
@@ -81,7 +78,7 @@ void DialogDrawingStyles::setStyleByName(const QString &name) {
 	}
 
 	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::updateButtonStates(&ui, model_);
 }
 
 /**
@@ -93,17 +90,13 @@ void DialogDrawingStyles::buttonNew_clicked() {
 		return;
 	}
 
-	HighlightStyle style;
-	// some sensible defaults...
-	style.name  = tr("New Item");
-	style.color = tr("black");
-	model_->addItem(style);
-
-	QModelIndex index = model_->index(model_->rowCount() - 1, 0);
-	ui.listItems->setCurrentIndex(index);
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::addNewItem(&ui, model_, []() {
+		HighlightStyle style;
+		// some sensible defaults...
+		style.name  = tr("New Item");
+		style.color = tr("black");
+		return style;
+	});
 }
 
 /**
@@ -115,95 +108,28 @@ void DialogDrawingStyles::buttonCopy_clicked() {
 		return;
 	}
 
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		auto ptr = model_->itemFromIndex(index);
-		model_->addItem(*ptr);
-
-		QModelIndex newIndex = model_->index(model_->rowCount() - 1, 0);
-		ui.listItems->setCurrentIndex(newIndex);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::copyItem(&ui, model_);
 }
 
 /**
  * @brief DialogDrawingStyles::buttonDelete_clicked
  */
 void DialogDrawingStyles::buttonDelete_clicked() {
-
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		deleted_ = index;
-		model_->deleteItem(index);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::deleteItem(&ui, model_, &deleted_);
 }
 
 /**
  * @brief DialogDrawingStyles::buttonUp_clicked
  */
 void DialogDrawingStyles::buttonUp_clicked() {
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		model_->moveItemUp(index);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
+	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
  * @brief DialogDrawingStyles::buttonDown_clicked
  */
 void DialogDrawingStyles::buttonDown_clicked() {
-	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		model_->moveItemDown(index);
-	}
-
-	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	updateButtonStates();
-}
-
-/**
- * @brief DialogDrawingStyles::updateButtonStates
- */
-void DialogDrawingStyles::updateButtonStates() {
-	QModelIndex index = ui.listItems->currentIndex();
-	updateButtonStates(index);
-}
-
-/**
- * @brief DialogDrawingStyles::updateButtonStates
- */
-void DialogDrawingStyles::updateButtonStates(const QModelIndex &current) {
-	if(current.isValid()) {
-		if(current.row() == 0) {
-			ui.buttonUp    ->setEnabled(false);
-			ui.buttonDown  ->setEnabled(model_->rowCount() > 1);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		} else if(current.row() == model_->rowCount() - 1) {
-			ui.buttonUp    ->setEnabled(true);
-			ui.buttonDown  ->setEnabled(false);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		} else {
-			ui.buttonUp    ->setEnabled(true);
-			ui.buttonDown  ->setEnabled(true);
-			ui.buttonDelete->setEnabled(true);
-			ui.buttonCopy  ->setEnabled(true);
-		}
-	} else {
-		ui.buttonUp    ->setEnabled(false);
-		ui.buttonDown  ->setEnabled(false);
-		ui.buttonDelete->setEnabled(false);
-		ui.buttonCopy  ->setEnabled(false);
-	}
+	CommonDialog::moveItemDown(&ui, model_);
 }
 
 /**
@@ -264,7 +190,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 		ui.checkItalic->setChecked((style->font & Font::Italic) != 0);
 
 		// ensure that the appropriate buttons are enabled
-		updateButtonStates(current);
+		CommonDialog::updateButtonStates(&ui, model_, current);
 
 		// don't allow deleteing the last "Plain" entry since it's reserved
 		if (style->name == QLatin1String("Plain")) {

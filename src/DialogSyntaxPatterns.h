@@ -65,8 +65,6 @@ private:
 	std::unique_ptr<PatternSet> getDialogPatternSet();
 	void setStyleMenu(const QString &name);
 	void updateLabels();
-	void updateButtonStates(const QModelIndex &current);
-	void updateButtonStates();
 
 private:
 	Ui::DialogSyntaxPatterns ui;
