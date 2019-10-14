@@ -322,7 +322,7 @@ bool DialogShellMenu::applyDialogChanges() {
 		newItems.push_back({ *item, nullptr });
 	}
 
-	ShellMenuData = newItems;
+	ShellMenuData = std::move(newItems);
 
 	parseMenuItemList(ShellMenuData);
 

@@ -286,7 +286,7 @@ boost::optional<MenuItem> DialogMacros::readFields(Verbosity verbosity) {
 	menuItem.repInput  = false;
 	menuItem.saveFirst = false;
 	menuItem.loadAfter = false;
-	menuItem.shortcut  = ui.editAccelerator->keySequence();;
+	menuItem.shortcut  = ui.editAccelerator->keySequence();
 
 	return menuItem;
 }
@@ -356,7 +356,7 @@ bool DialogMacros::applyDialogChanges() {
 		newItems.push_back({ *item, nullptr });
 	}
 
-	MacroMenuData = newItems;
+	MacroMenuData = std::move(newItems);
 
 	parseMenuItemList(MacroMenuData);
 

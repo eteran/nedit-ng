@@ -349,7 +349,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 		newItems.push_back({ *item, nullptr });
 	}
 
-	BGMenuData = newItems;
+	BGMenuData = std::move(newItems);
 
 	parseMenuItemList(BGMenuData);
 

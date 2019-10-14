@@ -24,7 +24,7 @@ struct UserMenuInfo {
 
 struct MenuData {
 	MenuItem                      item;
-	std::shared_ptr<UserMenuInfo> info;
+	std::unique_ptr<UserMenuInfo> info;
 };
 
 #endif

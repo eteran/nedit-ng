@@ -342,7 +342,7 @@ void setDefaultIndex(const std::vector<MenuData> &infoList, size_t index) {
 	   specified. If one is found, then set the default index to the
 	   index of the current default item. */
 	for (const MenuData &data: infoList) {
-		if(const std::shared_ptr<UserMenuInfo> &info = data.info) {
+		if(const std::unique_ptr<UserMenuInfo> &info = data.info) {
 			if (!info->umiIsDefault && info->umiName == defaultMenuName) {
 				info->umiDefaultIndex = index;
 			}
@@ -356,7 +356,7 @@ void setDefaultIndex(const std::vector<MenuData> &infoList, size_t index) {
 ** Extract language mode related info out of given menu item name string.
 ** Store this info in given user menu info structure.
 */
-void parseMenuItemName(const QString &menuItemName, const std::shared_ptr<UserMenuInfo> &info) {
+void parseMenuItemName(const QString &menuItemName, const std::unique_ptr<UserMenuInfo> &info) {
 
 	int index = menuItemName.indexOf(QLatin1Char('@'));
 	if(index != -1) {
@@ -410,9 +410,9 @@ QString stripLanguageMode(const QString &menuItemName) {
 ** Parse a single menu item. Allocate & setup a user menu info element
 ** holding extracted info.
 */
-std::shared_ptr<UserMenuInfo> parseMenuItemRec(const MenuItem &item) {
+std::unique_ptr<UserMenuInfo> parseMenuItemRec(const MenuItem &item) {
 
-	auto newInfo = std::make_shared<UserMenuInfo>();
+	auto newInfo = std::make_unique<UserMenuInfo>();
 
 	newInfo->umiName = stripLanguageMode(item.name);
 
@@ -539,7 +539,7 @@ void parseMenuItemList(std::vector<MenuData> &itemList) {
 
 	// 2nd pass: solve "default" dependencies
 	for (size_t i = 0; i < itemList.size(); i++) {
-		const std::shared_ptr<UserMenuInfo> &info = itemList[i].info;
+		const std::unique_ptr<UserMenuInfo> &info = itemList[i].info;
 
 		/* If the user menu item is a default one, then scan the list for
 		   items with the same name and a language mode specified.
