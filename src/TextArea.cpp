@@ -830,13 +830,14 @@ void TextArea::processUp(EventFlags flags) {
 
 	const bool silent   = flags & NoBellFlag;
 	const bool absolute = flags & AbsoluteFlag;
+	const TextCursor insertPos = cursorPos_;
 
 	cancelDrag();
 	if (!moveUp(absolute)) {
 		ringIfNecessary(silent);
 	}
 
-	checkMoveSelectionChange(flags, cursorPos_);
+	checkMoveSelectionChange(flags, insertPos);
 	checkAutoShowInsertPos();
 	callCursorMovementCBs();
 }
@@ -851,13 +852,14 @@ void TextArea::processDown(EventFlags flags) {
 
 	const bool silent   = flags & NoBellFlag;
 	const bool absolute = flags & AbsoluteFlag;
+	const TextCursor insertPos = cursorPos_;
 
 	cancelDrag();
 	if (!moveDown(absolute)) {
 		ringIfNecessary(silent);
 	}
 
-	checkMoveSelectionChange(flags, cursorPos_);
+	checkMoveSelectionChange(flags, insertPos);
 	checkAutoShowInsertPos();
 	callCursorMovementCBs();
 }
@@ -871,13 +873,14 @@ void TextArea::forwardCharacter(EventFlags flags) {
 	EMIT_EVENT_0("forward_character");
 
 	const bool silent = flags & NoBellFlag;
+	const TextCursor insertPos = cursorPos_;
 
 	cancelDrag();
 	if (!moveRight()) {
 		ringIfNecessary(silent);
 	}
 
-	checkMoveSelectionChange(flags, cursorPos_);
+	checkMoveSelectionChange(flags, insertPos);
 	checkAutoShowInsertPos();
 	callCursorMovementCBs();
 }
@@ -891,13 +894,14 @@ void TextArea::backwardCharacter(EventFlags flags) {
 	EMIT_EVENT_0("backward_character");
 
 	const bool silent = flags & NoBellFlag;
+	const TextCursor insertPos = cursorPos_;
 
 	cancelDrag();
 	if (!moveLeft()) {
 		ringIfNecessary(silent);
 	}
 
-	checkMoveSelectionChange(flags, cursorPos_);
+	checkMoveSelectionChange(flags, insertPos);
 	checkAutoShowInsertPos();
 	callCursorMovementCBs();
 }
