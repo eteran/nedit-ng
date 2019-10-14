@@ -155,7 +155,7 @@ private:
 	void editIFind_returnPressed();
 	void connectSlots();
 
-public:
+public Q_SLOTS:
 	// internal variants of signals
 	void action_New_Window(DocumentWidget *document);
 	void action_Set_Auto_Indent(DocumentWidget *document, IndentStyle state);

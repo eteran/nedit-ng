@@ -15,7 +15,7 @@
    d.) "menuItemB1" (hierarchical ID = {1, 2, 0})
    e.) "menuItemB2" (hierarchical ID = {1, 2, 1})
  */
-struct userMenuInfo {
+struct UserMenuInfo {
 	QString             umiName;          // hierarchical name of menu item (w.o. language mode info)
 	bool                umiIsDefault;     // menu item is default one ("@*")
 	std::vector<size_t> umiLanguageModes; // list of applicable lang. modes
@@ -24,7 +24,7 @@ struct userMenuInfo {
 
 struct MenuData {
 	MenuItem                      item;
-	std::shared_ptr<userMenuInfo> info;
+	std::shared_ptr<UserMenuInfo> info;
 };
 
 #endif
