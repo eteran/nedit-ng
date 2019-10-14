@@ -233,7 +233,7 @@ void passTwoParseString(const HighlightData *pattern, const char *first, const c
 ** for distinguishing pass 2 styles which compare as equal to the unfinished
 ** style in the original buffer, from pass1 styles which signal a change.
 */
-void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleString, TextCursor startPos, TextCursor endPos, int firstPass2Style) {
+void modifyStyleBuf(const std::unique_ptr<TextBuffer> &styleBuf, char *styleString, TextCursor startPos, TextCursor endPos, int firstPass2Style) {
 	char *ch;
 	TextCursor pos;
 	TextCursor modStart;
@@ -296,7 +296,7 @@ void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleStri
 ** finished (this will normally be endParse, unless the pass1Patterns is a
 ** pattern which does end and the end is reached).
 */
-TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::unique_ptr<HighlightData[]> &pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, TextCursor beginParse, TextCursor endParse, const QString &delimiters) {
+TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::unique_ptr<HighlightData[]> &pass2Patterns, TextBuffer *buf, const std::unique_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, TextCursor beginParse, TextCursor endParse, const QString &delimiters) {
 
 	TextCursor endSafety;
 	TextCursor endPass2Safety;
@@ -636,7 +636,7 @@ int findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlig
 */
 void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, TextCursor pos, int64_t nInserted, const QString &delimiters) {
 
-	const std::shared_ptr<TextBuffer> &styleBuf           = highlightData->styleBuffer;
+	const std::unique_ptr<TextBuffer> &styleBuf           = highlightData->styleBuffer;
 	const std::unique_ptr<HighlightData[]> &pass1Patterns = highlightData->pass1Patterns;
 	const std::unique_ptr<HighlightData[]> &pass2Patterns = highlightData->pass2Patterns;
 	const ReparseContext &context                         = highlightData->contextRequirements;
@@ -993,7 +993,7 @@ void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted
 		return;
 	}
 
-	const std::shared_ptr<TextBuffer> &styleBuffer = highlightData->styleBuffer;
+	const std::unique_ptr<TextBuffer> &styleBuffer = highlightData->styleBuffer;
 
 	/* Restyling-only modifications (usually a primary or secondary  selection)
 	   don't require any processing, but clear out the style buffer selection

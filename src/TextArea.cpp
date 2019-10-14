@@ -7240,7 +7240,7 @@ int64_t TextArea::getBufferLinesCount() const {
 ** a normal buffer modification if the buffer contains a primary selection
 ** (see extendRangeForStyleMods for more information on this protocol).
 */
-void TextArea::attachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user) {
+void TextArea::attachHighlightData(TextBuffer *styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user) {
 	styleBuffer_           = styleBuffer;
 	styleTable_            = styleTable;
 	unfinishedStyle_       = unfinishedStyle;
@@ -7261,7 +7261,7 @@ TextCursor TextArea::TextLastVisiblePos() const {
 	return lastChar_;
 }
 
-const std::shared_ptr<TextBuffer> &TextArea::styleBuffer() const {
+TextBuffer *TextArea::styleBuffer() const {
 	return styleBuffer_;
 }
 
@@ -7337,7 +7337,7 @@ std::string TextArea::TextGetWrapped(TextCursor startPos, TextCursor endPos) {
 	return outBuf.BufGetAll();
 }
 
-void TextArea::setStyleBuffer(const std::shared_ptr<TextBuffer> &buffer) {
+void TextArea::setStyleBuffer(TextBuffer *buffer) {
 	styleBuffer_ = buffer;
 }
 

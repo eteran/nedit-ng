@@ -205,7 +205,7 @@ public:
 	TextCursor TextLastVisiblePos() const;
 	boost::optional<Location> positionToLineAndCol(TextCursor pos) const;
 	TextCursor lineAndColToPosition(Location loc) const;
-	const std::shared_ptr<TextBuffer> &styleBuffer() const;
+	TextBuffer *styleBuffer() const;
 	int TextDGetCalltipID(int id) const;
 	int TextDMaxFontWidth() const;
 	int TextDMinFontWidth() const;
@@ -222,7 +222,7 @@ public:
 	int64_t getBufferLinesCount() const;
 	std::string TextGetWrapped(TextCursor startPos, TextCursor endPos);
 	void removeWidgetHighlight();
-	void attachHighlightData(const std::shared_ptr<TextBuffer> &styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user);
+	void attachHighlightData(TextBuffer *styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user);
 	void TextDKillCalltip(int id);
 	void TextDMaintainAbsLineNum(bool state);
 	void TextSetCursorPos(TextCursor pos);
@@ -241,7 +241,7 @@ public:
 	void setOverstrike(bool value);
 	void setReadOnly(bool value);
 	void setSmartIndent(bool value);
-	void setStyleBuffer(const std::shared_ptr<TextBuffer> &buffer);
+	void setStyleBuffer(TextBuffer *buffer);
 	void setWordDelimiters(const std::string &delimiters);
 	void setWrapMargin(int value);
 
@@ -437,7 +437,7 @@ private:
 	int64_t dragRectStart_;
 	int64_t dragSourceDeleted_;                     // # of chars. deleted when move source text was deleted
 	int64_t dragSourceInserted_;                    // # of chars. inserted when move source text was inserted	
-	std::shared_ptr<TextBuffer> styleBuffer_;       // Optional parallel buffer containing color and font information
+	TextBuffer *styleBuffer_ = nullptr;             // Optional parallel buffer containing color and font information
 	std::string delimiters_;
 	std::unique_ptr<TextBuffer> dragOrigBuf_;       // backup buffer copy used during block dragging of selections
 	std::vector<QColor> bgClassColors_;             // table of colors for each BG class

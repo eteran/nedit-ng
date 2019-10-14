@@ -5539,7 +5539,7 @@ void DocumentWidget::updateHighlightStyles() {
 	/* Update highlight pattern data in the window data structure, but
 	   preserve all of the effort that went in to parsing the buffer
 	   by swapping it with the empty one in highlightData */
-	newHighlightData->styleBuffer = oldHighlightData->styleBuffer;
+	newHighlightData->styleBuffer = std::move(oldHighlightData->styleBuffer);
 
 	highlightData_ = std::move(newHighlightData);
 
@@ -5636,7 +5636,7 @@ int64_t DocumentWidget::styleLengthOfCodeFromPos(TextCursor pos) const {
 	const TextCursor oldPos = pos;
 
 	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
-		if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
+		if (const std::unique_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
 
 			auto hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
 			if (!hCode) {
@@ -5725,7 +5725,7 @@ size_t DocumentWidget::highlightCodeOfPos(TextCursor pos) const {
 	size_t hCode = 0;
 	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 
-		if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
+		if (const std::unique_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
 
 			hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
 			if (hCode == UNFINISHED_STYLE) {
@@ -5750,7 +5750,7 @@ int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
 
 	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 
-		if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
+		if (const std::unique_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
 
 			auto hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
 			if (!hCode) {
@@ -5792,8 +5792,7 @@ int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
 ** needs re-parsing.  This routine applies pass 2 patterns to a chunk of
 ** the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
 */
-void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &styleBuf, TextCursor pos) const {
-
+void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) const {
 	TextBuffer *buf = info_->buffer.get();
 	const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
 
@@ -5860,21 +5859,30 @@ void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &sty
 	int prevChar = Highlight::getPrevChar(buf, beginSafety);
 
 	Highlight::parseString(
-	    &pass2Patterns[0],
-	    string,
-	    string + str.size(),
-	    string,
-	    stylePtr,
-	    endParse - beginSafety,
-	    &prevChar,
-	    documentDelimiters(),
-	    string,
-	    match_to);
+		&pass2Patterns[0],
+		string,
+		string + str.size(),
+		string,
+		stylePtr,
+		endParse - beginSafety,
+		&prevChar,
+		documentDelimiters(),
+		string,
+		match_to);
 
 	/* Update the style buffer the new style information, but only between
 	   beginParse and endParse.  Skip the safety region */
 	auto view = view::string_view(&styleString[beginParse - beginSafety], static_cast<size_t>(endParse - beginParse));
 	styleBuf->BufReplace(beginParse, endParse, view);
+}
+
+/**
+ * @brief DocumentWidget::handleUnparsedRegion
+ * @param styleBuf
+ * @param pos
+ */
+void DocumentWidget::handleUnparsedRegion(const std::unique_ptr<TextBuffer> &styleBuf, TextCursor pos) const {
+	handleUnparsedRegion(styleBuf.get(), pos);
 }
 
 /*
@@ -5953,7 +5961,7 @@ void DocumentWidget::startHighlighting(Verbosity verbosity) {
 void DocumentWidget::attachHighlightToWidget(TextArea *area) {
 	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 		area->attachHighlightData(
-					highlightData->styleBuffer,
+					highlightData->styleBuffer.get(),
 					highlightData->styleTable,
 					UNFINISHED_STYLE,
 					handleUnparsedRegionCB,
@@ -6180,7 +6188,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	}
 
 	// Create the style buffer
-	auto styleBuf = std::make_shared<TextBuffer>();
+	auto styleBuf = std::make_unique<TextBuffer>();
 	styleBuf->BufSetSyncXSelection(false);
 
 	const int contextLines = patternSet->lineContext;
@@ -6192,7 +6200,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	highlightData->pass2Patterns              = std::move(pass2Pats);
 	highlightData->parentStyles               = std::move(parentStyles);
 	highlightData->styleTable                 = std::move(styleTable);
-	highlightData->styleBuffer                = styleBuf;
+	highlightData->styleBuffer                = std::move(styleBuf);
 	highlightData->contextRequirements.nLines = contextLines;
 	highlightData->contextRequirements.nChars = contextChars;
 	highlightData->patternSetForWindow        = patternSet;
