@@ -703,6 +703,262 @@ void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightDat
 	}
 }
 
+/**
+ * @brief readHighlightPattern
+ * @param in
+ * @param errMsg
+ * @param pattern
+ * @return
+ */
+bool readHighlightPattern(Input &in, QString *errMsg, HighlightPattern *pattern) {
+
+	// read the name field
+	QString name = Preferences::ReadSymbolicField(in);
+	if (name.isNull()) {
+		*errMsg = tr("pattern name is required");
+		return false;
+	}
+	pattern->name = name;
+
+	if (!Preferences::SkipDelimiter(in, errMsg)) {
+		return false;
+	}
+
+	// read the start pattern
+	if (!Preferences::ReadQuotedString(in, errMsg, &pattern->startRE)) {
+		return false;
+	}
+
+	if (!Preferences::SkipDelimiter(in, errMsg)) {
+		return false;
+	}
+
+	// read the end pattern
+	if (*in == QLatin1Char(':')) {
+		pattern->endRE = QString();
+	} else if (!Preferences::ReadQuotedString(in, errMsg, &pattern->endRE)) {
+		return false;
+	}
+
+	if (!Preferences::SkipDelimiter(in, errMsg)) {
+		return false;
+	}
+
+	// read the error pattern
+	if (*in == QLatin1Char(':')) {
+		pattern->errorRE = QString();
+	} else if (!Preferences::ReadQuotedString(in, errMsg, &pattern->errorRE)) {
+		return false;
+	}
+
+	if (!Preferences::SkipDelimiter(in, errMsg)) {
+		return false;
+	}
+
+	// read the style field
+	pattern->style = Preferences::ReadSymbolicField(in);
+
+	if (pattern->style.isNull()) {
+		*errMsg = tr("style field required in pattern");
+		return false;
+	}
+
+	if (!Preferences::SkipDelimiter(in, errMsg)) {
+		return false;
+	}
+
+	// read the sub-pattern-of field
+	pattern->subPatternOf = Preferences::ReadSymbolicField(in);
+
+	if (!Preferences::SkipDelimiter(in, errMsg)) {
+		return false;
+	}
+
+	// read flags field
+	pattern->flags = 0;
+	for (; *in != QLatin1Char('\n') && *in != QLatin1Char('}'); ++in) {
+
+		if (*in == QLatin1Char('D')) {
+			pattern->flags |= DEFER_PARSING;
+		} else if (*in == QLatin1Char('R')) {
+			pattern->flags |= PARSE_SUBPATS_FROM_START;
+		} else if (*in == QLatin1Char('C')) {
+			pattern->flags |= COLOR_ONLY;
+		} else if (*in != QLatin1Char(' ') && *in != QLatin1Char('\t')) {
+			*errMsg = tr("unreadable flag field");
+			return false;
+		}
+	}
+	return true;
+}
+
+/*
+** Parse a set of highlight patterns into a vector of HighlightPattern
+** structures, and a language mode name.  If unsuccessful, returns an empty
+** vector message in "errMsg".
+*/
+boost::optional<std::vector<HighlightPattern>> readHighlightPatterns(Input &in, QString *errMsg) {
+	// skip over blank space
+	in.skipWhitespaceNL();
+
+	// look for initial brace
+	if (*in != QLatin1Char('{')) {
+		*errMsg = tr("pattern list must begin with \"{\"");
+		return boost::none;
+	}
+	++in;
+
+	// parse each pattern in the list
+	std::vector<HighlightPattern> ret;
+
+	while (true) {
+		in.skipWhitespaceNL();
+		if(in.atEnd()) {
+			*errMsg = tr("end of pattern list not found");
+			return boost::none;
+		} else if (*in == QLatin1Char('}')) {
+			++in;
+			break;
+		}
+
+
+		HighlightPattern pat;
+		if (!readHighlightPattern(in, errMsg, &pat)) {
+			return boost::none;
+		}
+
+		ret.push_back(pat);
+	}
+
+	return ret;
+}
+
+/*
+** Read in a pattern set character string, and advance *inPtr beyond it.
+** Returns nullptr and outputs an error to stderr on failure.
+*/
+boost::optional<PatternSet> readPatternSet(Input &in) {
+
+	struct HighlightError {
+		QString message;
+	};
+
+	try {
+		QString errMsg;
+
+		// remove leading whitespace
+		in.skipWhitespaceNL();
+
+		PatternSet patSet;
+
+		// read language mode field
+		patSet.languageMode = Preferences::ReadSymbolicField(in);
+
+		if (patSet.languageMode.isNull()) {
+			Raise<HighlightError>(tr("language mode must be specified"));
+		}
+
+		if (!Preferences::SkipDelimiter(in, &errMsg)) {
+			Raise<HighlightError>(errMsg);
+		}
+
+		/* look for "Default" keyword, and if it's there, return the default
+		   pattern set */
+		if (in.match(QLatin1String("Default"))) {
+			boost::optional<PatternSet> retPatSet = readDefaultPatternSet(patSet.languageMode);
+			if(!retPatSet) {
+				Raise<HighlightError>(tr("No default pattern set"));
+			}
+			return retPatSet;
+		}
+
+		// read line context field
+		if (!Preferences::ReadNumericField(in, &patSet.lineContext)) {
+			Raise<HighlightError>(tr("unreadable line context field"));
+		}
+
+		if (!Preferences::SkipDelimiter(in, &errMsg)) {
+			Raise<HighlightError>(errMsg);
+		}
+
+		// read character context field
+		if (!Preferences::ReadNumericField(in, &patSet.charContext)) {
+			Raise<HighlightError>(tr("unreadable character context field"));
+		}
+
+		// read pattern list
+		boost::optional<std::vector<HighlightPattern>> patterns = readHighlightPatterns(in, &errMsg);
+		if (!patterns) {
+			Raise<HighlightError>(errMsg);
+		}
+
+		patSet.patterns = std::move(*patterns);
+
+		// pattern set was read correctly, make an allocated copy to return
+		return patSet;
+	} catch(const HighlightError &error) {
+		Preferences::reportError(
+					nullptr,
+					*in.string(),
+					in.index(),
+					tr("highlight pattern"),
+					error.message);
+
+		return boost::none;
+	}
+}
+
+/**
+ * @brief createPatternsString
+ * @param patternSet
+ * @param indentString
+ * @return
+ */
+QString createPatternsString(const PatternSet *patternSet, const QString &indentString) {
+
+	QString str;
+	QTextStream out(&str);
+
+	const auto Colon = QLatin1Char(':');
+
+	for(const HighlightPattern &pat : patternSet->patterns) {
+
+		out << indentString
+			<< pat.name
+			<< Colon;
+
+		if (!pat.startRE.isNull()) {
+			out << Preferences::MakeQuotedString(pat.startRE);
+		}
+		out << Colon;
+
+		if (!pat.endRE.isNull()) {
+			out << Preferences::MakeQuotedString(pat.endRE);
+		}
+		out << Colon;
+
+		if (!pat.errorRE.isNull()) {
+			out << Preferences::MakeQuotedString(pat.errorRE);
+		}
+		out << Colon
+			<< pat.style
+			<< Colon;
+
+		if (!pat.subPatternOf.isNull()) {
+			out << pat.subPatternOf;
+		}
+
+		out << Colon;
+
+		if (pat.flags & DEFER_PARSING)            out << QLatin1Char('D');
+		if (pat.flags & PARSE_SUBPATS_FROM_START) out << QLatin1Char('R');
+		if (pat.flags & COLOR_ONLY)               out << QLatin1Char('C');
+		out << QLatin1Char('\n');
+	}
+
+	return str;
+}
+
 }
 
 /*
@@ -1294,211 +1550,6 @@ void loadTheme() {
 	}
 }
 
-/**
- * @brief readHighlightPattern
- * @param in
- * @param errMsg
- * @param pattern
- * @return
- */
-bool readHighlightPattern(Input &in, QString *errMsg, HighlightPattern *pattern) {
-
-	// read the name field
-	QString name = Preferences::ReadSymbolicField(in);
-	if (name.isNull()) {
-		*errMsg = tr("pattern name is required");
-		return false;
-	}
-	pattern->name = name;
-
-	if (!Preferences::SkipDelimiter(in, errMsg)) {
-		return false;
-	}
-
-	// read the start pattern
-	if (!Preferences::ReadQuotedString(in, errMsg, &pattern->startRE)) {
-		return false;
-	}
-
-	if (!Preferences::SkipDelimiter(in, errMsg)) {
-		return false;
-	}
-
-	// read the end pattern
-	if (*in == QLatin1Char(':')) {
-		pattern->endRE = QString();
-	} else if (!Preferences::ReadQuotedString(in, errMsg, &pattern->endRE)) {
-		return false;
-	}
-
-	if (!Preferences::SkipDelimiter(in, errMsg)) {
-		return false;
-	}
-
-	// read the error pattern
-	if (*in == QLatin1Char(':')) {
-		pattern->errorRE = QString();
-	} else if (!Preferences::ReadQuotedString(in, errMsg, &pattern->errorRE)) {
-		return false;
-	}
-
-	if (!Preferences::SkipDelimiter(in, errMsg)) {
-		return false;
-	}
-
-	// read the style field
-	pattern->style = Preferences::ReadSymbolicField(in);
-
-	if (pattern->style.isNull()) {
-		*errMsg = tr("style field required in pattern");
-		return false;
-	}
-
-	if (!Preferences::SkipDelimiter(in, errMsg)) {
-		return false;
-	}
-
-	// read the sub-pattern-of field
-	pattern->subPatternOf = Preferences::ReadSymbolicField(in);
-
-	if (!Preferences::SkipDelimiter(in, errMsg)) {
-		return false;
-	}
-
-	// read flags field
-	pattern->flags = 0;
-	for (; *in != QLatin1Char('\n') && *in != QLatin1Char('}'); ++in) {
-
-		if (*in == QLatin1Char('D')) {
-			pattern->flags |= DEFER_PARSING;
-		} else if (*in == QLatin1Char('R')) {
-			pattern->flags |= PARSE_SUBPATS_FROM_START;
-		} else if (*in == QLatin1Char('C')) {
-			pattern->flags |= COLOR_ONLY;
-		} else if (*in != QLatin1Char(' ') && *in != QLatin1Char('\t')) {
-			*errMsg = tr("unreadable flag field");
-			return false;
-		}
-	}
-	return true;
-}
-
-/*
-** Parse a set of highlight patterns into a vector of HighlightPattern
-** structures, and a language mode name.  If unsuccessful, returns an empty
-** vector message in "errMsg".
-*/
-boost::optional<std::vector<HighlightPattern>> readHighlightPatterns(Input &in, QString *errMsg) {
-	// skip over blank space
-	in.skipWhitespaceNL();
-
-	// look for initial brace
-	if (*in != QLatin1Char('{')) {
-		*errMsg = tr("pattern list must begin with \"{\"");
-		return boost::none;
-	}
-	++in;
-
-	// parse each pattern in the list
-	std::vector<HighlightPattern> ret;
-
-	while (true) {
-		in.skipWhitespaceNL();
-		if(in.atEnd()) {
-			*errMsg = tr("end of pattern list not found");
-			return boost::none;
-		} else if (*in == QLatin1Char('}')) {
-			++in;
-			break;
-		}
-
-
-		HighlightPattern pat;
-		if (!readHighlightPattern(in, errMsg, &pat)) {
-			return boost::none;
-		}
-
-		ret.push_back(pat);
-	}
-
-	return ret;
-}
-
-/*
-** Read in a pattern set character string, and advance *inPtr beyond it.
-** Returns nullptr and outputs an error to stderr on failure.
-*/
-boost::optional<PatternSet> readPatternSet(Input &in) {
-
-	struct HighlightError {
-		QString message;
-	};
-
-	try {
-		QString errMsg;
-
-		// remove leading whitespace
-		in.skipWhitespaceNL();
-
-		PatternSet patSet;
-
-		// read language mode field
-		patSet.languageMode = Preferences::ReadSymbolicField(in);
-
-		if (patSet.languageMode.isNull()) {
-			Raise<HighlightError>(tr("language mode must be specified"));
-		}
-
-		if (!Preferences::SkipDelimiter(in, &errMsg)) {
-			Raise<HighlightError>(errMsg);
-		}
-
-		/* look for "Default" keyword, and if it's there, return the default
-		   pattern set */
-		if (in.match(QLatin1String("Default"))) {
-			boost::optional<PatternSet> retPatSet = readDefaultPatternSet(patSet.languageMode);
-			if(!retPatSet) {
-				Raise<HighlightError>(tr("No default pattern set"));
-			}
-			return retPatSet;
-		}
-
-		// read line context field
-		if (!Preferences::ReadNumericField(in, &patSet.lineContext)) {
-			Raise<HighlightError>(tr("unreadable line context field"));
-		}
-
-		if (!Preferences::SkipDelimiter(in, &errMsg)) {
-			Raise<HighlightError>(errMsg);
-		}
-
-		// read character context field
-		if (!Preferences::ReadNumericField(in, &patSet.charContext)) {
-			Raise<HighlightError>(tr("unreadable character context field"));
-		}
-
-		// read pattern list
-		boost::optional<std::vector<HighlightPattern>> patterns = readHighlightPatterns(in, &errMsg);
-		if (!patterns) {
-			Raise<HighlightError>(errMsg);
-		}
-
-		patSet.patterns = std::move(*patterns);
-
-		// pattern set was read correctly, make an allocated copy to return
-		return patSet;
-	} catch(const HighlightError &error) {
-		Preferences::reportError(
-					nullptr,
-					*in.string(),
-					in.index(),
-					tr("highlight pattern"),
-					error.message);
-
-		return boost::none;
-	}
-}
-
 /*
 ** Read a string representing highlight pattern sets and add them
 ** to the PatternSets list of loaded highlight patterns.  Note that the
@@ -1533,57 +1584,6 @@ bool LoadHighlightString(const QString &string) {
 			return true;
 		}
 	}
-}
-
-/**
- * @brief createPatternsString
- * @param patternSet
- * @param indentString
- * @return
- */
-QString createPatternsString(const PatternSet *patternSet, const QString &indentString) {
-
-	QString str;
-	QTextStream out(&str);
-
-	const auto Colon = QLatin1Char(':');
-
-	for(const HighlightPattern &pat : patternSet->patterns) {
-
-		out << indentString
-			<< pat.name
-			<< Colon;
-
-		if (!pat.startRE.isNull()) {
-			out << Preferences::MakeQuotedString(pat.startRE);
-		}
-		out << Colon;
-
-		if (!pat.endRE.isNull()) {
-			out << Preferences::MakeQuotedString(pat.endRE);
-		}
-		out << Colon;
-
-		if (!pat.errorRE.isNull()) {
-			out << Preferences::MakeQuotedString(pat.errorRE);
-		}
-		out << Colon
-			<< pat.style
-			<< Colon;
-
-		if (!pat.subPatternOf.isNull()) {
-			out << pat.subPatternOf;
-		}
-
-		out << Colon;
-
-		if (pat.flags & DEFER_PARSING)            out << QLatin1Char('D');
-		if (pat.flags & PARSE_SUBPATS_FROM_START) out << QLatin1Char('R');
-		if (pat.flags & COLOR_ONLY)               out << QLatin1Char('C');
-		out << QLatin1Char('\n');
-	}
-
-	return str;
 }
 
 /*
