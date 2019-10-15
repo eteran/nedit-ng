@@ -15,14 +15,6 @@
 #include <cstring>
 #include <algorithm>
 
-#include <QtGlobal>
-
-#ifdef Q_FALLTHROUGH
-#define NEDIT_FALLTHROUGH() Q_FALLTHROUGH()
-#else
-#define NEDIT_FALLTHROUGH() (void)0
-#endif
-
 namespace {
 
 bool match(uint8_t *prog, size_t *branch_index_param);
@@ -1131,7 +1123,7 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 	Regex *const re = this;
 
 	// Check validity of program.
-	if (U_CHAR_AT(&re->program[0]) != MAGIC) {
+	if(!re->isValid()) {
 		reg_error("corrupted program");
 		return false;
 	}

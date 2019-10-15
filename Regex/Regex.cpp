@@ -80,6 +80,7 @@
 #include "Regex.h"
 #include "Compile.h"
 #include "Execute.h"
+#include "Common.h"
 
 #include <cassert>
 
@@ -222,4 +223,12 @@ std::bitset<256> Regex::makeDelimiterTable(view::string_view delimiters) {
 	table[' ']  = true; // delimiters.
 
 	return table;
+}
+
+bool Regex::isValid() const noexcept {
+	if(program.empty()) {
+		return false;
+	}
+
+	return (U_CHAR_AT(&program[0]) == MAGIC);
 }

@@ -8,17 +8,11 @@
 #include "Regex.h"
 #include "Util/Raise.h"
 #include "Util/utils.h"
+#include "Util/Compiler.h"
 
 #include <cstring>
 #include <algorithm>
 #include <cassert>
-#include <QtGlobal>
-
-#ifdef Q_FALLTHROUGH
-#define NEDIT_FALLTHROUGH() Q_FALLTHROUGH()
-#else
-#define NEDIT_FALLTHROUGH() (void)0
-#endif
 
 namespace {
 
@@ -44,7 +38,7 @@ constexpr int NEWLINE     = 5; // Construct to match newlines in most cases
 constexpr int NO_NEWLINE  = 6; // Construct to match newlines normally
 
 // Largest size a compiled regex can be. Probably could be 65535UL.
-constexpr size_t MAX_COMPILED_SIZE  = std::numeric_limits<int16_t>::max();
+constexpr size_t MaxCompiledSize  = std::numeric_limits<int16_t>::max();
 
 struct len_range {
 	int32_t lower;
@@ -104,6 +98,10 @@ bool isQuantifier(char ch) noexcept {
 	return ch == '*' || ch == '+' || ch == '?' || ch == pContext.Brace_Char;
 }
 
+char White_Space[WHITE_SPACE_SIZE];     // Arrays used by
+char Word_Char[ALNUM_CHAR_SIZE];        // functions
+char Letter_Char[ALNUM_CHAR_SIZE];      // init_ansi_classes () and shortcut_escape ().
+
 /*--------------------------------------------------------------------*
  * init_ansi_classes
  *
@@ -126,33 +124,31 @@ bool init_ansi_classes() noexcept {
 
 		for (int i = 1; i < UINT8_MAX; i++) {
 			if (safe_ctype<isalnum>(i) || i == Underscore) {
-				pContext.Word_Char[word_count++] = static_cast<char>(i);
+				Word_Char[word_count++] = static_cast<char>(i);
 			}
 
 			if (safe_ctype<isalpha>(i)) {
-				pContext.Letter_Char[letter_count++] = static_cast<char>(i);
+				Letter_Char[letter_count++] = static_cast<char>(i);
 			}
 
 			/* Note: Whether or not newline is considered to be whitespace is
 			   handled by switches within the original regex and is thus omitted
 			   here. */
-
 			if (safe_ctype<isspace>(i) && (i != Newline)) {
-				pContext.White_Space[space_count++] = static_cast<char>(i);
+				White_Space[space_count++] = static_cast<char>(i);
 			}
 
 			/* Make sure arrays are big enough.  ("- 2" because of zero array
 			   origin and we need to leave room for the '\0' terminator.) */
-
 			if (word_count > (ALNUM_CHAR_SIZE - 2) || space_count > (WHITE_SPACE_SIZE - 2) || letter_count > (ALNUM_CHAR_SIZE - 2)) {
 				reg_error("internal error #9 'init_ansi_classes'");
 				return false;
 			}
 		}
 
-		pContext.Word_Char[word_count]     = '\0';
-		pContext.Letter_Char[letter_count] = '\0';
-		pContext.White_Space[space_count]  = '\0';
+		Word_Char[word_count]     = '\0';
+		Letter_Char[letter_count] = '\0';
+		White_Space[space_count]  = '\0';
 	}
 
 	return true;
@@ -213,13 +209,15 @@ void emit_class_byte(T ch) noexcept {
 			pContext.Reg_Size++;
 		}
 
-	} else if (pContext.Is_Case_Insensitive && safe_ctype<isalpha>(ch)) {
-		/* For case insensitive character classes, emit both upper and lower
-		 * case versions of alphabetical characters. */
-		pContext.Code.push_back(static_cast<uint8_t>(safe_ctype<tolower>(ch)));
-		pContext.Code.push_back(static_cast<uint8_t>(safe_ctype<toupper>(ch)));
 	} else {
-		pContext.Code.push_back(static_cast<uint8_t>(ch));
+		if (pContext.Is_Case_Insensitive && safe_ctype<isalpha>(ch)) {
+			/* For case insensitive character classes, emit both upper and lower
+			 * case versions of alphabetical characters. */
+			pContext.Code.push_back(static_cast<uint8_t>(safe_ctype<tolower>(ch)));
+			pContext.Code.push_back(static_cast<uint8_t>(safe_ctype<toupper>(ch)));
+		} else {
+			pContext.Code.push_back(static_cast<uint8_t>(ch));
+		}
 	}
 }
 
@@ -253,7 +251,7 @@ uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept
 	} else {
 		uint8_t *ret_val = emit_node(op_code); // Return the address for start of node.
 		if (op_code == INC_COUNT || op_code == TEST_COUNT) {
-			pContext.Code.push_back(static_cast<uint8_t>(index));
+			pContext.Code.push_back(index & 0xff);
 
 			if (op_code == TEST_COUNT) {
 				pContext.Code.push_back(PUT_OFFSET_L(test_val));
@@ -285,7 +283,7 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 		scan = next;
 	}
 
-	long offset;
+	int64_t offset;
 	if (GET_OP_CODE(scan) == BACK) {
 		offset = scan - point_to;
 	} else {
@@ -304,7 +302,7 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
  * the operand. The parameter 'insert_pos' points to the location
  * where the new node is to be inserted.
  *----------------------------------------------------------------------*/
-uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned long max, uint8_t index) {
+uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned long max, uint16_t index) {
 
 	if (pContext.FirstPass) {
 
@@ -343,7 +341,7 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
 		*ptr++ = PUT_OFFSET_R(max);
 		break;
 	case INIT_COUNT:
-		*ptr++ = index;
+		*ptr++ = (index & 0xff);
 	}
 
 	pContext.Code.insert(pContext.Code.begin() + offset, new_node, ptr);
@@ -421,7 +419,7 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 	case 'l':
 	case 'L':
 		if (Flags == EMIT_CLASS_BYTES) {
-			clazz = pContext.Letter_Char;
+			clazz = Letter_Char;
 		} else if (Flags == EMIT_NODE) {
 			ret_val = (safe_ctype<islower>(ch) ? emit_node(LETTER) : emit_node(NOT_LETTER));
 		}
@@ -433,7 +431,7 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 				emit_byte('\n');
 			}
 
-			clazz = pContext.White_Space;
+			clazz = White_Space;
 		} else if (Flags == EMIT_NODE) {
 			if (pContext.Match_Newline) {
 				ret_val = (safe_ctype<islower>(ch) ? emit_node(SPACE_NL) : emit_node(NOT_SPACE_NL));
@@ -445,7 +443,7 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 	case 'w':
 	case 'W':
 		if (Flags == EMIT_CLASS_BYTES) {
-			clazz = pContext.Word_Char;
+			clazz = Word_Char;
 		} else if (Flags == EMIT_NODE) {
 			ret_val = (safe_ctype<islower>(ch) ? emit_node(WORD_CHAR) : emit_node(NOT_WORD_CHAR));
 		}
@@ -1665,11 +1663,11 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
 	if (paren == PAREN) {
 		if (pContext.Total_Paren >= NSUBEXP) {
-			Raise<RegexError>("number of ()'s > %d", static_cast<int>(NSUBEXP));
+			Raise<RegexError>("number of ()'s > %u", NSUBEXP);
 		}
 
 		this_paren = pContext.Total_Paren;
-		pContext.Total_Paren++;
+		++pContext.Total_Paren;
 		ret_val = emit_node(OPEN + this_paren);
 	} else if (paren == POS_AHEAD_OPEN || paren == NEG_AHEAD_OPEN) {
 		*flag_param = WORST; // Look ahead is zero width.
@@ -1921,12 +1919,12 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 		}
 
 		if (pass == 1) {
-			if (pContext.Reg_Size >= MAX_COMPILED_SIZE) {
+			if (pContext.Reg_Size >= MaxCompiledSize) {
 				/* Too big for NEXT pointers NEXT_PTR_SIZE bytes long to span.
 				   This is a real issue since the first BRANCH node usually points
 				   to the end of the compiled regex code. */
 
-				Raise<RegexError>("Regex > %lu bytes", MAX_COMPILED_SIZE);
+				Raise<RegexError>("Regex > %lu bytes", MaxCompiledSize);
 			}
 
 			// NOTE(eteran): For now, we NEED this to avoid issues regarding holding pointers to reallocated space

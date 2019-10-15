@@ -108,6 +108,12 @@ public:
 	 */
 	bool SubstituteRE(view::string_view source, std::string &dest) const noexcept;
 
+	/**
+	 * @brief isValid
+	 * @return
+	 */
+	bool isValid() const noexcept;
+
 public:
 	/* Builds a default delimiter table that persists across 'ExecRE' calls that
 	   is identical to 'delimiters'.*/

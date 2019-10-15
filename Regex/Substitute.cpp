@@ -17,7 +17,7 @@ bool Regex::SubstituteRE(view::string_view source, std::string &dest) const noex
 
 	char test;
 
-	if (U_CHAR_AT(&re->program[0]) != MAGIC) {
+	if(!re->isValid()) {
 		reg_error("damaged Regex passed to 'SubstituteRE'");
 		return false;
 	}

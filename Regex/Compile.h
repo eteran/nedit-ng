@@ -22,15 +22,12 @@ struct ParseContext {
 	size_t                      Reg_Size;                          // Size of compiled regex code.
 	std::bitset<64>             Closed_Parens;                     // Bit flags indicating () closure.
 	std::bitset<64>             Paren_Has_Width;                   // Bit flags indicating ()'s that are known to not match the empty string
-	uint8_t                     Num_Braces;                        // Number of general {m,n} constructs. {m,n} quantifiers of SIMPLE atoms are not included in this count.
-	uint8_t                     Total_Paren;                       // Parentheses, (),  counter.
+	uint16_t                    Num_Braces;                        // Number of general {m,n} constructs. {m,n} quantifiers of SIMPLE atoms are not included in this count.
+	uint16_t                    Total_Paren;                       // Parentheses, (),  counter.
 	bool                        FirstPass;
 	bool                        Is_Case_Insensitive;
 	bool                        Match_Newline;
 	bool                        Enable_Counting_Quantifier = true;
-	char                        White_Space[WHITE_SPACE_SIZE];     // Arrays used by
-	char                        Word_Char[ALNUM_CHAR_SIZE];        // functions
-	char                        Letter_Char[ALNUM_CHAR_SIZE];      // init_ansi_classes () and shortcut_escape ().
 	char                        Brace_Char;
 };
 

@@ -10,8 +10,8 @@
 #include <cstdint>
 #include <cstring>
 
-template <class T>
-unsigned int U_CHAR_AT(T *p) noexcept {
+template <class Ptr>
+unsigned int U_CHAR_AT(Ptr p) noexcept {
 	return static_cast<unsigned int>(*p);
 }
 
