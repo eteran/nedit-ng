@@ -50,6 +50,10 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param);
 const char Default_Meta_Char[] = "{.*+?[(|)^<>$";
 const char ASCII_Digits[] = "0123456789"; // Same for all locales.
 
+char White_Space[WHITE_SPACE_SIZE];       // Arrays used by
+char Word_Char[ALNUM_CHAR_SIZE];          // functions
+char Letter_Char[ALNUM_CHAR_SIZE];        // init_ansi_classes () and shortcut_escape ().
+
 /*----------------------------------------------------------------------*
  * next_ptr - compute the address of a node's "NEXT" pointer.
  * Note: a simplified inline version is available via NEXT_PTR(),
@@ -98,10 +102,6 @@ bool isQuantifier(char ch) noexcept {
 	return ch == '*' || ch == '+' || ch == '?' || ch == pContext.Brace_Char;
 }
 
-char White_Space[WHITE_SPACE_SIZE];     // Arrays used by
-char Word_Char[ALNUM_CHAR_SIZE];        // functions
-char Letter_Char[ALNUM_CHAR_SIZE];      // init_ansi_classes () and shortcut_escape ().
-
 /*--------------------------------------------------------------------*
  * init_ansi_classes
  *
@@ -115,27 +115,30 @@ bool init_ansi_classes() noexcept {
 	if (!initialized) {
 		initialized = true; // Only need to generate character sets once.
 
-		constexpr int Underscore = '_';
-		constexpr int Newline    = '\n';
+		constexpr char Underscore = '_';
+		constexpr char Newline    = '\n';
 
 		int word_count   = 0;
 		int letter_count = 0;
 		int space_count  = 0;
 
 		for (int i = 1; i < UINT8_MAX; i++) {
-			if (safe_ctype<isalnum>(i) || i == Underscore) {
-				Word_Char[word_count++] = static_cast<char>(i);
+
+			const auto ch = static_cast<char>(i);
+
+			if (safe_ctype<isalnum>(ch) || ch == Underscore) {
+				Word_Char[word_count++] = ch;
 			}
 
-			if (safe_ctype<isalpha>(i)) {
-				Letter_Char[letter_count++] = static_cast<char>(i);
+			if (safe_ctype<isalpha>(ch)) {
+				Letter_Char[letter_count++] = ch;
 			}
 
 			/* Note: Whether or not newline is considered to be whitespace is
 			   handled by switches within the original regex and is thus omitted
 			   here. */
-			if (safe_ctype<isspace>(i) && (i != Newline)) {
-				White_Space[space_count++] = static_cast<char>(i);
+			if (safe_ctype<isspace>(ch) && (ch != Newline)) {
+				White_Space[space_count++] = ch;
 			}
 
 			/* Make sure arrays are big enough.  ("- 2" because of zero array

@@ -17,11 +17,13 @@ unsigned int U_CHAR_AT(Ptr p) noexcept {
 
 template <class T>
 T *OPERAND(T *p) noexcept {
+	static_assert(sizeof(T) == 1, "Invalid Pointer Type");
 	return p + NODE_SIZE;
 }
 
 template <class T>
 uint8_t GET_OP_CODE(T *p) noexcept {
+	static_assert(sizeof(T) == 1, "Invalid Pointer Type");
 	return *reinterpret_cast<uint8_t *>(p);
 }
 

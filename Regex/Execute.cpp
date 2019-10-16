@@ -1226,7 +1226,7 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 			}
 
 			// Beware of a single $ matching \0
-#if 1
+#if 1 // NOTE(eteran): possible fix for issue #97
 			if (!eContext.Recursion_Limit_Exceeded && !ret_val && AT_END_OF_STRING(str)) {
 #else
 			if (!eContext.Recursion_Limit_Exceeded && !ret_val && AT_END_OF_STRING(str) && str != end) {
