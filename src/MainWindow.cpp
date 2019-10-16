@@ -7298,8 +7298,14 @@ void MainWindow::on_tabWidget_tabCloseRequested(int index) {
  */
 QPointer<TextArea> MainWindow::lastFocus() {
 
-	if(!lastFocus_) {
-		if(auto document = documentAt(0)) {
+	if(DocumentWidget *document = currentDocument()) {
+		if(!lastFocus_) {
+			lastFocus_ = document->firstPane();
+		}
+
+		// NOTE(eteran): fix for issue #114, fix up where the last focus is
+		// if pointing to a tab which is not longer the "top document"
+		if(lastFocus_->document() != document) {
 			lastFocus_ = document->firstPane();
 		}
 	}

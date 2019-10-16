@@ -7935,3 +7935,11 @@ bool TextArea::visibleLineContainsCursor(int visLine, TextCursor cursor) const {
 
 	return false;
 }
+
+/**
+ * @brief TextArea::document
+ * @return
+ */
+DocumentWidget *TextArea::document() const {
+	return document_;
+}

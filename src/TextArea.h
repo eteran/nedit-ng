@@ -194,6 +194,7 @@ private Q_SLOTS:
 	void secondaryStartAP(QMouseEvent *event, TextArea::EventFlags flags = NoneFlag);
 
 public:
+	DocumentWidget *document() const;
 	QColor getBackgroundColor() const;
 	QColor getForegroundColor() const;
 	QMargins getMargins() const;
