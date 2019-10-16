@@ -2984,16 +2984,7 @@ DocumentWidget *DocumentWidget::fromArea(TextArea *area) {
 		return nullptr;
 	}
 
-	QObject *p = area->parent();
-	while(p) {
-		if(auto document = qobject_cast<DocumentWidget *>(p)) {
-			return document;
-		}
-
-		p = p->parent();
-	}
-
-	return nullptr;
+	return area->document();
 }
 
 /**
