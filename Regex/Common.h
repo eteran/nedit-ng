@@ -41,22 +41,22 @@ constexpr R literal_escape(Ch ch) noexcept {
 
 	constexpr char valid_escape[] = {
 		'a', 'b', 'e', 'f', 'n', 'r', 't', 'v', '(', ')', '-', '[', ']', '<',
-		'>', '{', '}', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\0'
+		'>', '{', '}', '.', '\\', '|', '^', '$', '*', '+', '?', '&'
 	};
 
 	constexpr char value[] = {
 		'\a', '\b', 0x1B, // Escape character in ASCII character set.
 		'\f', '\n', '\r', '\t', '\v', '(', ')', '-', '[', ']', '<', '>', '{',
-		'}', '.', '\\', '|', '^', '$', '*', '+', '?', '&', '\0'
+		'}', '.', '\\', '|', '^', '$', '*', '+', '?', '&'
 	};
 
-	for (int i = 0; valid_escape[i] != '\0'; i++) {
-		if (static_cast<char>(ch) == valid_escape[i]) {
+	for (int i = 0; sizeof(valid_escape); ++i) {
+		if (ch == valid_escape[i]) {
 			return static_cast<R>(value[i]);
 		}
 	}
 
-	return 0;
+	return '\0';
 }
 
 /*--------------------------------------------------------------------*
@@ -138,7 +138,6 @@ R numeric_escape(Ch ch, const char **parse) {
 	}
 
 	// Handle the case of "\0" i.e. trying to specify a nullptr character.
-
 	if (value == 0) {
 		if (ch == '0') {
 			Raise<RegexError>("\\00 is an invalid octal escape");

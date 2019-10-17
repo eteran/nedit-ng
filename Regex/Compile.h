@@ -2,16 +2,11 @@
 #ifndef COMPILE_H_
 #define COMPILE_H_
 
-#include "RegexError.h"
 #include "Util/string_view.h"
 #include <bitset>
 #include <vector>
 
 class Regex;
-
-// Array sizes for arrays used by function init_ansi_classes.
-constexpr int WHITE_SPACE_SIZE = 16;
-constexpr int ALNUM_CHAR_SIZE  = 256;
 
 // Global work variables for 'CompileRE'.
 struct ParseContext {

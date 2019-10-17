@@ -17,7 +17,7 @@
 namespace {
 
 // Flags for function shortcut_escape()
-enum ShortcutEscapeFlags {
+enum ShortcutEscapeFlag {
 	CHECK_ESCAPE       = 0, // Check an escape sequence for validity only.
 	CHECK_CLASS_ESCAPE = 1, // Check the validity of an escape within a character class
 	EMIT_CLASS_BYTES   = 2, // Emit equivalent character class bytes, e.g \d=0123456789
@@ -50,6 +50,10 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param);
 const char Default_Meta_Char[] = "{.*+?[(|)^<>$";
 const char ASCII_Digits[] = "0123456789"; // Same for all locales.
 
+// Array sizes for arrays used by function init_ansi_classes.
+constexpr int WHITE_SPACE_SIZE = 16;
+constexpr int ALNUM_CHAR_SIZE  = 256;
+
 char White_Space[WHITE_SPACE_SIZE];       // Arrays used by
 char Word_Char[ALNUM_CHAR_SIZE];          // functions
 char Letter_Char[ALNUM_CHAR_SIZE];        // init_ansi_classes () and shortcut_escape ().
@@ -78,7 +82,9 @@ uint8_t *next_ptr(uint8_t *ptr) noexcept {
 }
 
 /**
- *
+ * @brief PUT_OFFSET_L
+ * @param v
+ * @return
  */
 template <class T>
 constexpr uint8_t PUT_OFFSET_L(T v) noexcept {
@@ -86,7 +92,9 @@ constexpr uint8_t PUT_OFFSET_L(T v) noexcept {
 }
 
 /**
- *
+ * @brief PUT_OFFSET_R
+ * @param v
+ * @return
  */
 template <class T>
 constexpr uint8_t PUT_OFFSET_R(T v) noexcept {
@@ -126,18 +134,18 @@ bool init_ansi_classes() noexcept {
 
 			const auto ch = static_cast<char>(i);
 
-			if (safe_ctype<isalnum>(ch) || ch == Underscore) {
+			if (safe_ctype<::isalnum>(ch) || ch == Underscore) {
 				Word_Char[word_count++] = ch;
 			}
 
-			if (safe_ctype<isalpha>(ch)) {
+			if (safe_ctype<::isalpha>(ch)) {
 				Letter_Char[letter_count++] = ch;
 			}
 
 			/* Note: Whether or not newline is considered to be whitespace is
 			   handled by switches within the original regex and is thus omitted
 			   here. */
-			if (safe_ctype<isspace>(ch) && (ch != Newline)) {
+			if (safe_ctype<::isspace>(ch) && (ch != Newline)) {
 				White_Space[space_count++] = ch;
 			}
 
@@ -173,7 +181,7 @@ uint8_t *emit_node(T op_code) noexcept {
 		pContext.Reg_Size += NODE_SIZE;
 		return reinterpret_cast<uint8_t *>(1);
 	} else {
-		size_t end_offset = pContext.Code.size();
+		const size_t end_offset = pContext.Code.size();
 		pContext.Code.push_back(static_cast<uint8_t>(op_code));
 		pContext.Code.push_back(0);
 		pContext.Code.push_back(0);
@@ -230,7 +238,7 @@ void emit_class_byte(T ch) noexcept {
  * Emit nodes that need special processing.
  *----------------------------------------------------------------------*/
 template <class Ch>
-uint8_t *emit_special(Ch op_code, unsigned long test_val, size_t index) noexcept {
+uint8_t *emit_special(Ch op_code, uint32_t test_val, size_t index) noexcept {
 
 	if (pContext.FirstPass) {
 		switch (op_code) {
@@ -305,7 +313,7 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
  * the operand. The parameter 'insert_pos' points to the location
  * where the new node is to be inserted.
  *----------------------------------------------------------------------*/
-uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned long max, uint16_t index) {
+uint8_t *insert(uint8_t op, uint8_t *insert_pos, uint32_t min, uint32_t max, uint16_t index) {
 
 	if (pContext.FirstPass) {
 
@@ -389,7 +397,7 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, unsigned long min, unsigned lon
  *       a class.
  *
  *--------------------------------------------------------------------*/
-template <ShortcutEscapeFlags Flags, class Ch>
+template <ShortcutEscapeFlag Flags, class Ch>
 uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 
 	static const char codes[] = "ByYdDlLsSwW";
@@ -542,7 +550,7 @@ void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
  * references and are used in syntax highlighting patterns to match
  * text previously matched by another regex. *** IMPLEMENT LATER ***
  *--------------------------------------------------------------------*/
-template <ShortcutEscapeFlags Flags>
+template <ShortcutEscapeFlag Flags>
 uint8_t *back_ref(const char *ch, int *flag_param) {
 
 	size_t c_offset = 0;
