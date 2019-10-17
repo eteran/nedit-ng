@@ -50,7 +50,7 @@ constexpr R literal_escape(Ch ch) noexcept {
 		'}', '.', '\\', '|', '^', '$', '*', '+', '?', '&'
 	};
 
-	for (int i = 0; sizeof(valid_escape); ++i) {
+	for (int i = 0; i != sizeof(valid_escape); ++i) {
 		if (ch == valid_escape[i]) {
 			return static_cast<R>(value[i]);
 		}
