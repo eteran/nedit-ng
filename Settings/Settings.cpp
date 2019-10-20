@@ -172,6 +172,19 @@ QString styleFile() {
 	return configFile;
 }
 
+QString randomString(int length) {
+   static const QString alphabet(QLatin1String("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"));
+
+   QString randomString;
+   randomString.reserve(length);
+   for(int i = 0; i < length; ++i) {
+	   int index = qrand() % alphabet.size();
+	   randomString.append(alphabet[index]);
+   }
+
+   return randomString;
+}
+
 /**
  * @brief loadPreferences
  */
@@ -257,6 +270,10 @@ void loadPreferences() {
 	focusOnRaise                 = settings.value(tr("nedit.focusOnRaise"), false).toBool();
 	forceOSConversion            = settings.value(tr("nedit.forceOSConversion"), true).toBool();
 	honorSymlinks                = settings.value(tr("nedit.honorSymlinks"), true).toBool();
+
+	if(serverName.isEmpty()) {
+		serverName = randomString(8);
+	}
 
 	if (includePaths.isEmpty()) {
 		includePaths.append(DEFAULT_INCLUDE_PATHS[0]);
