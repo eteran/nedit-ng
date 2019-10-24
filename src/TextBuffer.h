@@ -86,7 +86,7 @@ public:
 	explicit BasicTextBuffer(int64_t size);
 	BasicTextBuffer(const BasicTextBuffer &)            = delete;
 	BasicTextBuffer &operator=(const BasicTextBuffer &) = delete;
-	~BasicTextBuffer()                                  = default;
+	~BasicTextBuffer();
 
 public:
 	static int BufCharWidth(Ch ch, int64_t indent, int tabDist) noexcept;

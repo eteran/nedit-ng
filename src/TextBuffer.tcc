@@ -590,6 +590,22 @@ void BasicTextBuffer<Ch, Tr>::updatePrimarySelection() noexcept {
 #endif
 }
 
+template <class Ch, class Tr>
+BasicTextBuffer<Ch, Tr>::~BasicTextBuffer() {
+#ifdef Q_OS_UNIX
+	if(syncXSelection_ && QApplication::clipboard()->supportsSelection()) {
+		const bool selected = primary.selected_;
+		const bool isOwner  = TextAreaMimeData::isOwner(QApplication::clipboard()->mimeData(QClipboard::Selection), this);
+
+		if(!isOwner || !selected) {
+			return;
+		}
+
+		QApplication::clipboard()->clear(QClipboard::Selection);
+	}
+#endif
+}
+
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSelect(TextCursor start, TextCursor end) noexcept {
