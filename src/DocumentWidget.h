@@ -227,7 +227,7 @@ private:
 	QString getWindowsMenuEntry() const;
 	Style getHighlightInfo(TextCursor pos);
 	StyleTableEntry *styleTableEntryOfCode(size_t hCode) const;
-	TextArea *createTextArea(TextBuffer *buffer);
+	TextArea *createTextArea(const std::unique_ptr<TextBuffer> &buffer);
 	bool closeFileAndWindow(CloseMode preResponse);
 	bool compareDocumentToFile(const QString &fileName) const;
 	bool doOpen(const QString &name, const QString &path, int flags);

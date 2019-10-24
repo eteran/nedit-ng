@@ -29,7 +29,7 @@ enum ColorTypes : int {
 namespace Settings {
 Q_DECLARE_NAMESPACE_TR(Settings)
 
-void loadPreferences();
+void loadPreferences(bool isServer);
 bool savePreferences();
 void importSettings(const QString &filename);
 

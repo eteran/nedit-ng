@@ -188,7 +188,7 @@ QString randomString(int length) {
 /**
  * @brief loadPreferences
  */
-void loadPreferences() {
+void loadPreferences(bool isServer) {
 
 	QString filename = configFile();
 	QSettings settings(filename, QSettings::IniFormat);
@@ -271,7 +271,7 @@ void loadPreferences() {
 	forceOSConversion            = settings.value(tr("nedit.forceOSConversion"), true).toBool();
 	honorSymlinks                = settings.value(tr("nedit.honorSymlinks"), true).toBool();
 
-	if(serverName.isEmpty()) {
+	if(isServer && serverName.isEmpty()) {
 		serverName = randomString(8);
 	}
 

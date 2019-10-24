@@ -508,7 +508,7 @@ DocumentWidget::DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget 
 		eraseFlash();
 	});
 
-	auto area = createTextArea(info_->buffer.get());
+	auto area = createTextArea(info_->buffer);
 
 	info_->buffer->BufAddModifyCB(modifiedCB, this);
 
@@ -587,7 +587,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 		eraseFlash();
 	});
 
-	auto area = createTextArea(info_->buffer.get());
+	auto area = createTextArea(info_->buffer);
 
 	info_->buffer->BufAddModifyCB(modifiedCB, this);
 
@@ -626,10 +626,10 @@ DocumentWidget::~DocumentWidget() {
  * @param buffer
  * @return
  */
-TextArea *DocumentWidget::createTextArea(TextBuffer *buffer) {
+TextArea *DocumentWidget::createTextArea(const std::unique_ptr<TextBuffer> &buffer) {
 
 	auto area = new TextArea(this,
-	                         buffer,
+							 buffer.get(),
 	                         Preferences::GetPrefDefaultFont());
 
 	area->setCursorVPadding(Preferences::GetVerticalAutoScroll());
@@ -3974,7 +3974,7 @@ void DocumentWidget::splitPane() {
 		return;
 	}
 
-	auto area = createTextArea(info_->buffer.get());
+	auto area = createTextArea(info_->buffer);
 
 	if(auto activeArea = qobject_cast<TextArea *>(splitter_->widget(0))) {
 		area->setLineNumCols(activeArea->getLineNumCols());

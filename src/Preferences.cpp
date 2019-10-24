@@ -2,6 +2,7 @@
 #include "Preferences.h"
 #include "DocumentWidget.h"
 #include "Font.h"
+#include "nedit.h"
 #include "Highlight.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
@@ -400,7 +401,7 @@ bool PreferencesChanged() {
 
 void RestoreNEditPrefs() {
 
-	Settings::loadPreferences();
+	Settings::loadPreferences(IsServer);
 
 	/* Do further parsing on resource types which RestorePreferences does
 	 * not understand and reads as strings, to put them in the final form
