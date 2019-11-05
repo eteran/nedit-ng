@@ -89,7 +89,7 @@ bool DialogSmartIndentCommon::checkSmartIndentCommonDialogData() {
 	QString code = ui.editCode->toPlainText();
 
 	if(!code.isEmpty()) {
-		QString widgetText = ensureNewline(code);
+		QString widgetText = ensure_newline(code);
 		int stoppedAt;
 		if (!CheckMacroString(this, widgetText, tr("macros"), &stoppedAt)) {
 			QTextCursor cursor = ui.editCode->textCursor();
@@ -117,7 +117,7 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	QString code = ui.editCode->toPlainText();
 
 	// Get the current data
-	SmartIndent::CommonMacros = ensureNewline(code);
+	SmartIndent::CommonMacros = ensure_newline(code);
 
 	/* Re-execute initialization macros (macros require a window to function,
 	   since user could theoretically execute an action routine, but it

@@ -292,7 +292,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 	// Check the initialization macro
 	QString initText = ui.editInit->toPlainText();
 	if (!initText.isEmpty()) {
-		QString widgetText = ensureNewline(initText);
+		QString widgetText = ensure_newline(initText);
 		int stoppedAt = 0;
 		if (!CheckMacroString(this, widgetText, tr("initialization macro"), &stoppedAt)) {
 			QTextCursor cursor = ui.editInit->textCursor();
@@ -311,7 +311,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 	}
 
 	{
-		QString widgetText = ensureNewline(newlineText);
+		QString widgetText = ensure_newline(newlineText);
 		QString errMsg;
 		int stoppedAt = 0;
 
@@ -329,7 +329,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 	// Test compile the modify macro
 	QString modMacroText = ui.editModMacro->toPlainText();
 	if (!modMacroText.isEmpty()) {
-		QString widgetText = ensureNewline(modMacroText);
+		QString widgetText = ensure_newline(modMacroText);
 		QString errMsg;
 		int stoppedAt = 0;
 
@@ -354,9 +354,9 @@ SmartIndentEntry DialogSmartIndent::getSmartIndentDialogData() const {
 
 	SmartIndentEntry is;
 	is.languageMode = languageMode_;
-	is.initMacro    = ui.editInit->toPlainText().isEmpty()     ? QString() : ensureNewline(ui.editInit->toPlainText());
-	is.newlineMacro = ui.editNewline->toPlainText().isEmpty()  ? QString() : ensureNewline(ui.editNewline->toPlainText());
-	is.modMacro     = ui.editModMacro->toPlainText().isEmpty() ? QString() : ensureNewline(ui.editModMacro->toPlainText());
+	is.initMacro    = ui.editInit->toPlainText().isEmpty()     ? QString() : ensure_newline(ui.editInit->toPlainText());
+	is.newlineMacro = ui.editNewline->toPlainText().isEmpty()  ? QString() : ensure_newline(ui.editNewline->toPlainText());
+	is.modMacro     = ui.editModMacro->toPlainText().isEmpty() ? QString() : ensure_newline(ui.editModMacro->toPlainText());
 	return is;
 }
 

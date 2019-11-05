@@ -265,7 +265,7 @@ boost::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbo
 		return boost::none;
 	}
 
-	cmdText = ensureNewline(cmdText);
+	cmdText = ensure_newline(cmdText);
 	if (!checkMacroText(cmdText, verbosity)) {
 		return boost::none;
 	}

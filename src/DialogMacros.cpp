@@ -273,7 +273,7 @@ boost::optional<MenuItem> DialogMacros::readFields(Verbosity verbosity) {
 		return boost::none;
 	}
 
-	cmdText = ensureNewline(cmdText);
+	cmdText = ensure_newline(cmdText);
 	if (!checkMacroText(cmdText, verbosity)) {
 		return boost::none;
 	}

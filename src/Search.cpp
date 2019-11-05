@@ -11,6 +11,7 @@
 #include "userCmds.h"
 #include "Util/algorithm.h"
 #include "Util/utils.h"
+#include "Util/String.h"
 
 #include <gsl/gsl_util>
 
@@ -29,36 +30,6 @@ constexpr int MAX_SEARCH_HISTORY = 100;
 Search::HistoryEntry SearchReplaceHistory[MAX_SEARCH_HISTORY];
 int NHist = 0;
 int HistStart = 0;
-
-/**
- * @brief to_upper
- * @param s
- * @return
- */
-std::string to_upper(view::string_view s) {
-
-	std::string str;
-	str.reserve(s.size());
-	std::transform(s.begin(), s.end(), std::back_inserter(str), [](char ch) {
-		return safe_ctype<toupper>(ch);
-	});
-	return str;
-}
-
-/**
- * @brief to_lower
- * @param s
- * @return
- */
-std::string to_lower(view::string_view s) {
-
-	std::string str;
-	str.reserve(s.size());
-	std::transform(s.begin(), s.end(), std::back_inserter(str), [](char ch) {
-		return safe_ctype<tolower>(ch);
-	});
-	return str;
-}
 
 /**
  * @brief forwardRegexSearch
