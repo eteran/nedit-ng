@@ -440,7 +440,7 @@ private:
 	int64_t dragSourceInserted_;                    // # of chars. inserted when move source text was inserted	
 	TextBuffer *styleBuffer_ = nullptr;             // Optional parallel buffer containing color and font information
 	std::string delimiters_;
-	std::unique_ptr<TextBuffer> dragOrigBuf_;       // backup buffer copy used during block dragging of selections
+	std::shared_ptr<TextBuffer> dragOrigBuf_;       // backup buffer copy used during block dragging of selections
 	std::vector<QColor> bgClassColors_;             // table of colors for each BG class
 	std::vector<StyleTableEntry> styleTable_;       // Table of fonts and colors for coloring/syntax-highlighting
 	std::vector<uint8_t> bgClass_;                  // obtains index into bgClassColors_

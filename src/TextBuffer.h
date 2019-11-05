@@ -13,6 +13,7 @@
 #include <deque>
 #include <string>
 #include <cstdint>
+#include <memory>
 
 #include <boost/optional.hpp>
 
@@ -25,7 +26,7 @@ struct SelectionPos {
 };
 
 template <class Ch, class Tr>
-class BasicTextBuffer {
+class BasicTextBuffer : public std::enable_shared_from_this<BasicTextBuffer<Ch, Tr>> {
 public:
 	using string_type = std::basic_string<Ch, Tr>;
 	using view_type   = view::basic_string_view<Ch, Tr>;
@@ -86,7 +87,7 @@ public:
 	explicit BasicTextBuffer(int64_t size);
 	BasicTextBuffer(const BasicTextBuffer &)            = delete;
 	BasicTextBuffer &operator=(const BasicTextBuffer &) = delete;
-	~BasicTextBuffer();
+	~BasicTextBuffer() = default;
 
 public:
 	static int BufCharWidth(Ch ch, int64_t indent, int tabDist) noexcept;

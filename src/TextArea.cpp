@@ -3881,7 +3881,7 @@ void TextArea::TextDMakeInsertPosVisible() {
 */
 void TextArea::cancelBlockDrag() {
 
-	std::unique_ptr<TextBuffer> origBuf = std::move(dragOrigBuf_);
+	std::shared_ptr<TextBuffer> origBuf = std::move(dragOrigBuf_);
 	const TextBuffer::Selection *origSel = &origBuf->primary;
 	auto modRangeStart = TextCursor(-1);
 	TextCursor origModRangeEnd;

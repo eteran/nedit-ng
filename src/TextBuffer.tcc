@@ -427,7 +427,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplaceRect(TextCursor start, TextCursor end, i
 		insText.assign(text.begin(), text.end());
 		insText.append(static_cast<size_t>(nDeletedLines - nInsertedLines), Ch('\n'));
 
-		// NOTE(etreran): use insText instead of the passed in buffer
+		// NOTE(eteran): use insText instead of the passed in buffer
 		text = insText;
 
 	} else if (nDeletedLines < nInsertedLines) {
@@ -584,28 +584,11 @@ void BasicTextBuffer<Ch, Tr>::updatePrimarySelection() noexcept {
 			return;
 		}
 
-		auto data = new TextAreaMimeData(this);
+		auto data = new TextAreaMimeData(this->shared_from_this());
 		QApplication::clipboard()->setMimeData(data, QClipboard::Selection);
 	}
 #endif
 }
-
-template <class Ch, class Tr>
-BasicTextBuffer<Ch, Tr>::~BasicTextBuffer() {
-#ifdef Q_OS_UNIX
-	if(syncXSelection_ && QApplication::clipboard()->supportsSelection()) {
-		const bool selected = primary.selected_;
-		const bool isOwner  = TextAreaMimeData::isOwner(QApplication::clipboard()->mimeData(QClipboard::Selection), this);
-
-		if(!isOwner || !selected) {
-			return;
-		}
-
-		QApplication::clipboard()->clear(QClipboard::Selection);
-	}
-#endif
-}
-
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSelect(TextCursor start, TextCursor end) noexcept {

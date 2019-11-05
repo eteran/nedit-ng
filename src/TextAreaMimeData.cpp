@@ -7,7 +7,7 @@
  * @brief TextAreaMimeData::TextAreaMimeData
  * @param buffer
  */
-TextAreaMimeData::TextAreaMimeData(TextBuffer *buffer) : buffer_(buffer) {
+TextAreaMimeData::TextAreaMimeData(const std::shared_ptr<TextBuffer> &buffer) : buffer_(buffer) {
 }
 
 /**
@@ -58,7 +58,7 @@ bool TextAreaMimeData::hasFormat(const QString &mimeType) const {
  * @return
  */
 TextBuffer *TextAreaMimeData::buffer() const {
-	return buffer_;
+    return buffer_.get();
 }
 
 

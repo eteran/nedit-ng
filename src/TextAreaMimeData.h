@@ -2,14 +2,16 @@
 #ifndef TEXT_AREA_MIME_DATA_H_
 #define TEXT_AREA_MIME_DATA_H_
 
-#include <QMimeData>
 #include "TextBufferFwd.h"
+#include <QMimeData>
+#include <memory>
+
 class TextArea;
 
 class TextAreaMimeData : public QMimeData {
 	Q_OBJECT
 public:
-	explicit TextAreaMimeData(TextBuffer *buffer);
+	explicit TextAreaMimeData(const std::shared_ptr<TextBuffer> &buffer);
 	~TextAreaMimeData() override = default;
 
 public:
@@ -26,7 +28,7 @@ public:
 	static bool isOwner(const QMimeData *mimeData, const TextBuffer *buffer);
 
 private:
-	TextBuffer *buffer_;
+	std::shared_ptr<TextBuffer> buffer_;
 };
 
 #endif

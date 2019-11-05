@@ -43,7 +43,7 @@ struct DocumentInfo {
 	time_t lastModTime      = 0;                        // time of last modification to file
 	dev_t dev               = 0;                        // device where the file resides
 	ino_t ino               = 0;                        // file's inode
-	std::unique_ptr<TextBuffer> buffer;                 // holds the text being edited
+	std::shared_ptr<TextBuffer> buffer;                 // holds the text being edited
 	int autoSaveCharCount   = 0;                        // count of single characters typed since last backup file generated
 	int autoSaveOpCount     = 0;                        // count of editing operations
 	bool filenameSet        = false;                    // is the window still "Untitled"?

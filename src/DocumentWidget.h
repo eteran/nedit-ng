@@ -174,7 +174,7 @@ public:
 	void gotoAP(TextArea *area, int lineNum, int column);
 	void gotoMark(TextArea *area, QChar label, bool extendSel);
 	void gotoMatchingCharacter(TextArea *area, bool select);
-	void handleUnparsedRegion(const std::unique_ptr<TextBuffer> &styleBuf, TextCursor pos) const;
+	void handleUnparsedRegion(const std::shared_ptr<TextBuffer> &styleBuf, TextCursor pos) const;
 	void handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) const;
 	void macroBannerTimeoutProc();
 	void makeSelectionVisible(TextArea *area);
@@ -227,7 +227,7 @@ private:
 	QString getWindowsMenuEntry() const;
 	Style getHighlightInfo(TextCursor pos);
 	StyleTableEntry *styleTableEntryOfCode(size_t hCode) const;
-	TextArea *createTextArea(const std::unique_ptr<TextBuffer> &buffer);
+	TextArea *createTextArea(const std::shared_ptr<TextBuffer> &buffer);
 	bool closeFileAndWindow(CloseMode preResponse);
 	bool compareDocumentToFile(const QString &fileName) const;
 	bool doOpen(const QString &name, const QString &path, int flags);

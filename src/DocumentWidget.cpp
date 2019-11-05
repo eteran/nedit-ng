@@ -536,7 +536,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	LastCreated = this;
 
 	// Every document has a backing buffer
-	info_->buffer = std::make_unique<TextBuffer>();
+	info_->buffer = std::make_shared<TextBuffer>();
 	info_->buffer->BufAddModifyCB(Highlight::SyntaxHighlightModifyCB, this);
 
 	// create the text widget
@@ -626,7 +626,7 @@ DocumentWidget::~DocumentWidget() {
  * @param buffer
  * @return
  */
-TextArea *DocumentWidget::createTextArea(const std::unique_ptr<TextBuffer> &buffer) {
+TextArea *DocumentWidget::createTextArea(const std::shared_ptr<TextBuffer> &buffer) {
 
 	auto area = new TextArea(this,
 							 buffer.get(),
@@ -5627,7 +5627,7 @@ int64_t DocumentWidget::styleLengthOfCodeFromPos(TextCursor pos) const {
 	const TextCursor oldPos = pos;
 
 	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
-		if (const std::unique_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
+		if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
 
 			auto hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
 			if (!hCode) {
@@ -5716,7 +5716,7 @@ size_t DocumentWidget::highlightCodeOfPos(TextCursor pos) const {
 	size_t hCode = 0;
 	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 
-		if (const std::unique_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
+		if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
 
 			hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
 			if (hCode == UNFINISHED_STYLE) {
@@ -5741,7 +5741,7 @@ int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
 
 	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 
-		if (const std::unique_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
+		if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
 
 			auto hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
 			if (!hCode) {
@@ -5872,7 +5872,7 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
  * @param styleBuf
  * @param pos
  */
-void DocumentWidget::handleUnparsedRegion(const std::unique_ptr<TextBuffer> &styleBuf, TextCursor pos) const {
+void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &styleBuf, TextCursor pos) const {
 	handleUnparsedRegion(styleBuf.get(), pos);
 }
 
