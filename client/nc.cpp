@@ -22,7 +22,7 @@
 
 namespace {
 
-const char cmdLineHelp[] = "Usage: nc-ng [-read] [-create]\n"
+constexpr const char cmdLineHelp[] = "Usage: nc-ng [-read] [-create]\n"
 						   "             [-line n | +n] [-do command] [-lm languagemode]\n"
 						   "             [-svrname name] [-svrcmd command]\n"
 						   "             [-ask] [-noask] [-timeout seconds]\n"
@@ -133,8 +133,8 @@ QStringList parseCommandString(const QString &program) {
  * @brief printNcVersion
  */
 void printNcVersion() {
-	static const char ncHelpText[] = "nc-ng (nedit-ng) Version %d.%d\n\n"
-									 "Built on: %s, %s, %s\n";
+	static constexpr const char ncHelpText[] = "nc-ng (nedit-ng) Version %d.%d\n\n"
+											   "Built on: %s, %s, %s\n";
 	printf(ncHelpText,
 		   NEDIT_VERSION_MAJ,
 		   NEDIT_VERSION_REV,
