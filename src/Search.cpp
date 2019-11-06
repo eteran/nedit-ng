@@ -597,6 +597,21 @@ boost::optional<std::string> Search::ReplaceAllInString(view::string_view inStri
  * @param searchType
  * @param wrap
  * @param beginPos
+ * @param delimiters
+ * @return
+ */
+boost::optional<Search::Result> Search::SearchString(view::string_view string, const QString &searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, const QString &delimiters) {
+    return SearchStringEx(string, searchString.toStdString(), direction, searchType, wrap, beginPos, delimiters.isNull() ? nullptr : delimiters.toLatin1().data());
+}
+
+/**
+ * @brief Search::SearchString
+ * @param string
+ * @param searchString
+ * @param direction
+ * @param searchType
+ * @param wrap
+ * @param beginPos
  * @param result
  * @param delimiters
  * @return
@@ -605,7 +620,7 @@ bool Search::SearchString(view::string_view string, const QString &searchString,
 
 	assert(result);
 
-	if(boost::optional<Search::Result> r = SearchStringEx(string, searchString.toStdString(), direction, searchType, wrap, beginPos, delimiters.isNull() ? nullptr : delimiters.toLatin1().data())) {
+	if(boost::optional<Result> r = SearchString(string, searchString, direction, searchType, wrap, beginPos, delimiters)) {
 		*result = *r;
 		return true;
 	}

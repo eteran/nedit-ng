@@ -16,6 +16,8 @@ add_library(Regex
 	RegexError.h
 	Substitute.cpp
 	Substitute.h
+    Decompile.cpp
+    Decompile.h
 )
 
 target_include_directories(Regex PUBLIC

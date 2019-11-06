@@ -835,19 +835,16 @@ size_t DocumentWidget::matchLanguageMode() const {
 		for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
 			if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {
 
-				Search::Result searchResult;
-
-				const bool result = Search::SearchString(
+				boost::optional<Search::Result> searchResult = Search::SearchString(
 				            first200,
 				            Preferences::LanguageModes[i].recognitionExpr,
 				            Direction::Forward,
 				            SearchType::Regex,
 				            WrapMode::NoWrap,
 				            0,
-				            &searchResult,
 				            QString());
 
-				if (result) {
+				if (searchResult) {
 					return i;
 				}
 			}
@@ -6708,8 +6705,8 @@ QString DocumentWidget::getAnySelection(ErrorSound errorSound) const {
 ** window.  Returns nullptr when no language mode is set (it would be easy to
 ** return the default delimiter set when the current language mode is "Plain",
 ** or the mode doesn't have its own delimiters, but this is usually used
-** to supply delimiters for RE searching, and ExecRE can skip compiling a
-** delimiter table when delimiters is nullptr).
+** to supply delimiters for RE searching, and the regex engine can skip
+** compiling a delimiter table when delimiters is null).
 */
 QString DocumentWidget::getWindowDelimiters() const {
 	if (languageMode_ == PLAIN_LANGUAGE_MODE) {

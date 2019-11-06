@@ -1,5 +1,6 @@
 
 #include "Regex.h"
+#include "Decompile.h"
 #include <iostream>
 
 namespace {
@@ -771,6 +772,18 @@ int main() {
 		std::cerr << "ERROR    : Failed to match buffer end" << std::endl;
 		return -1;
 	}
-	
+
+#if 1
+	for(Test t : tests) {
+		try {
+			Regex re(t.input, REDFLT_STANDARD);
+			decompileRegex(re);
+		} catch(...) {
+			std::cerr << "EXCEPTION: " << t.input.to_string() << '\n';
+			return -1;
+		}
+	}
+
+#endif
 	std::cout << "SUCCESS\n";
 }
