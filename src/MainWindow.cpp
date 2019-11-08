@@ -5985,10 +5985,7 @@ void MainWindow::setIncrementalSearchLine(bool value) {
  * @param searchType
  * @param searchWrap
  * @param beginPos
- * @param startPos
- * @param endPos
- * @param extentBW
- * @param extentFW
+ * @param searchResult
  * @return
  */
 bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, Search::Result *searchResult) {
@@ -6010,7 +6007,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 	bool outsideBounds = ((direction == Direction::Forward && beginPos > fileEnd + 1) || (direction == Direction::Backward && beginPos < 0));
 
 	/* search the string and present dialogs, or just beep.
-	 * iSearchStartPos is not a perfect indicator that an incremental search
+	 * iSearchStartPos_ is not a perfect indicator that an incremental search
 	 * is in progress.  A parameter would be better. */
 
 	bool found;
@@ -6050,7 +6047,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 						messageBox.setWindowTitle(tr("Wrap Search"));
 						messageBox.setIcon(QMessageBox::Question);
 						messageBox.setText(tr("Continue search from beginning of file?"));
-						QPushButton *buttonContinue = messageBox.addButton(tr("Continue"), QMessageBox::AcceptRole);
+						QPushButton *buttonContinue = messageBox.addButton(tr("Continue"), QMessageBox::YesRole);
 						QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
 						Q_UNUSED(buttonContinue)
 
@@ -6079,7 +6076,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 						messageBox.setWindowTitle(tr("Wrap Search"));
 						messageBox.setIcon(QMessageBox::Question);
 						messageBox.setText(tr("Continue search from end of file?"));
-						QPushButton *buttonContinue = messageBox.addButton(tr("Continue"), QMessageBox::AcceptRole);
+						QPushButton *buttonContinue = messageBox.addButton(tr("Continue"), QMessageBox::YesRole);
 						QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
 						Q_UNUSED(buttonContinue)
 
@@ -6141,8 +6138,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 ** adds the search string to the global search history.
 */
 bool MainWindow::searchAndSelect(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap) {
-	TextCursor startPos;
-	TextCursor endPos;
+
 	TextCursor beginPos;
 	TextRange selectionRange;
 	bool movedFwd = false;
@@ -6191,8 +6187,8 @@ bool MainWindow::searchAndSelect(DocumentWidget *document, TextArea *area, const
 		return false;
 	}
 
-	startPos = TextCursor(searchResult.start);
-	endPos   = TextCursor(searchResult.end);
+	auto startPos = TextCursor(searchResult.start);
+	auto endPos   = TextCursor(searchResult.end);
 
 	/* if the search matched an empty string (possible with regular exps)
 	   beginning at the start of the search, go to the next occurrence,
@@ -6227,9 +6223,6 @@ bool MainWindow::searchAndSelect(DocumentWidget *document, TextArea *area, const
 ** current cursor position.
 */
 bool MainWindow::searchAndSelectIncremental(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, bool continued) {
-
-	TextCursor startPos;
-	TextCursor endPos;
 
 	/* If there's a search in progress, start the search from the original
 	   starting position, otherwise search from the cursor position. */
@@ -6276,8 +6269,8 @@ bool MainWindow::searchAndSelectIncremental(DocumentWidget *document, TextArea *
 		return false;
 	}
 
-	startPos = TextCursor(searchResult.start);
-	endPos   = TextCursor(searchResult.end);
+	auto startPos = TextCursor(searchResult.start);
+	auto endPos   = TextCursor(searchResult.end);
 
 
 	iSearchLastBeginPos_ = startPos;
@@ -6389,8 +6382,6 @@ bool MainWindow::searchAndSelectSame(DocumentWidget *document, TextArea *area, D
 */
 bool MainWindow::searchAndReplace(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap) {
 
-	int64_t replaceLen;
-
 	/* NOTE(eteran): OK, the whole point of extentBW, and extentFW
 	 * are to help with regex search/replace operations involving look-ahead and
 	 * look-behind. For example, if the buffer contains "ABCDEF-A" and we want
@@ -6453,6 +6444,8 @@ bool MainWindow::searchAndReplace(DocumentWidget *document, TextArea *area, cons
 	}
 
 	TextBuffer *buffer = document->buffer();
+
+	int64_t replaceLen;
 
 	// replace the text
 	if (Search::isRegexType(searchType)) {
@@ -6618,8 +6611,7 @@ void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QSt
 */
 void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType) {
 
-	std::string fileString;	
-	TextCursor lineStart;
+	std::string fileString;		
 	bool substSuccess = false;
 	bool anyFound     = false;
 	bool cancelSubst  = true;
@@ -6675,7 +6667,7 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 		/* if the selection is rectangular, verify that the found
 		   string is in the rectangle */
 		if (pos->isRect) {
-			lineStart = buffer->BufStartOfLine(pos->start + searchResult->start);
+			TextCursor lineStart = buffer->BufStartOfLine(pos->start + searchResult->start);
 			if (buffer->BufCountDispChars(lineStart, pos->start + searchResult->start) < pos->rectStart || buffer->BufCountDispChars(lineStart, pos->start + searchResult->end) > pos->rectEnd) {
 
 				if(static_cast<size_t>(searchResult->end) == fileString.size()) {
