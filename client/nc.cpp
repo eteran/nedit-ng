@@ -23,13 +23,13 @@
 namespace {
 
 constexpr const char cmdLineHelp[] = "Usage: nc-ng [-read] [-create]\n"
-						   "             [-line n | +n] [-do command] [-lm languagemode]\n"
-						   "             [-svrname name] [-svrcmd command]\n"
-						   "             [-ask] [-noask] [-timeout seconds]\n"
-						   "             [-geometry geometry | -g geometry] [-icon | -iconic]\n"
-						   "             [-tabbed] [-untabbed] [-group] [-wait]\n"
-						   "             [-V | -version] [-h|-help]\n"
-						   "             [--] [file...]\n";
+									 "             [-line n | +n] [-do command] [-lm languagemode]\n"
+									 "             [-svrname name] [-svrcmd command]\n"
+									 "             [-ask] [-noask] [-timeout seconds]\n"
+									 "             [-geometry geometry | -g geometry] [-icon | -iconic]\n"
+									 "             [-tabbed] [-untabbed] [-group] [-wait]\n"
+									 "             [-V | -version] [-h|-help]\n"
+									 "             [--] [file...]\n";
 
 struct CommandLine {
 	QStringList arguments;
