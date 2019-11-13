@@ -13,10 +13,10 @@ struct UpdateState;
 class DialogWindowTitle final : public Dialog {
 	Q_OBJECT
 public:
-    explicit DialogWindowTitle(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogWindowTitle(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogWindowTitle() override = default;
 
-public:	
+public:
 	static QString formatWindowTitle(DocumentWidget *document, const QString &clearCaseViewTag, const QString &serverName, bool isServer, const QString &format);
 
 private:

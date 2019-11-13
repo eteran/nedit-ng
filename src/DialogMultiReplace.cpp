@@ -1,7 +1,7 @@
 
 #include "DialogMultiReplace.h"
-#include "DocumentModel.h"
 #include "DialogReplace.h"
+#include "DocumentModel.h"
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "Preferences.h"
@@ -13,7 +13,8 @@
  * @param replace
  * @param f
  */
-DialogMultiReplace::DialogMultiReplace(DialogReplace *replace, Qt::WindowFlags f) : Dialog(replace, f), replace_(replace) {
+DialogMultiReplace::DialogMultiReplace(DialogReplace *replace, Qt::WindowFlags f)
+	: Dialog(replace, f), replace_(replace) {
 	ui.setupUi(this);
 	connectSlots();
 
@@ -59,7 +60,7 @@ void DialogMultiReplace::buttonSelectAll_clicked() {
 void DialogMultiReplace::buttonReplace_clicked() {
 
 	QModelIndexList selections = ui.listFiles->selectionModel()->selectedRows();
-	const int nSelected = selections.size();
+	const int nSelected        = selections.size();
 
 	if (!nSelected) {
 		QMessageBox::information(this, tr("No Files"), tr("No files selected!"));
@@ -73,12 +74,12 @@ void DialogMultiReplace::buttonReplace_clicked() {
 	 * Protect the user against him/herself; Maybe this is a bit too much?
 	 */
 	int res = QMessageBox::question(
-				this,
-				tr("Multi-File Replacement"),
-				tr("Multi-file replacements are difficult to undo. Proceed with the replacement?"),
-				QMessageBox::Yes | QMessageBox::Cancel);
+		this,
+		tr("Multi-File Replacement"),
+		tr("Multi-file replacements are difficult to undo. Proceed with the replacement?"),
+		QMessageBox::Yes | QMessageBox::Cancel);
 
-	if(res == QMessageBox::Cancel) {
+	if (res == QMessageBox::Cancel) {
 		hide();
 		return;
 	}
@@ -94,27 +95,27 @@ void DialogMultiReplace::buttonReplace_clicked() {
 	// Set the initial focus of the dialog back to the search string
 	replace_->ui.textFind->setFocus();
 
-	bool replaceFailed = true;
+	bool replaceFailed  = true;
 	bool noWritableLeft = true;
 
 	// Perform the replacements and mark the selected files (history)
-	for(QModelIndex index : selections) {
-		if(DocumentWidget *writeableDocument = model_->itemFromIndex(index)) {
+	for (QModelIndex index : selections) {
+		if (DocumentWidget *writeableDocument = model_->itemFromIndex(index)) {
 
 			/* First check again whether the file is still writable. If the
 			 * file status has changed or the file was locked in the mean time,
 			 * we just skip the window. */
 			if (!writeableDocument->lockReasons().isAnyLocked()) {
-				noWritableLeft = false;
+				noWritableLeft                    = false;
 				writeableDocument->multiFileBusy_ = true; // Avoid multi-beep/dialog
 				writeableDocument->replaceFailed_ = false;
 
-				if(MainWindow *win = MainWindow::fromDocument(writeableDocument)) {
+				if (MainWindow *win = MainWindow::fromDocument(writeableDocument)) {
 					win->action_Replace_All(
-								writeableDocument,
-								fields->searchString,
-								fields->replaceString,
-								fields->searchType);
+						writeableDocument,
+						fields->searchString,
+						fields->replaceString,
+						fields->searchType);
 				}
 
 				writeableDocument->multiFileBusy_ = false;
@@ -146,7 +147,6 @@ void DialogMultiReplace::buttonReplace_clicked() {
 	}
 }
 
-
 /**
  * @brief DialogMultiReplace::uploadFileListItems
  */
@@ -154,7 +154,7 @@ void DialogMultiReplace::uploadFileListItems(const std::vector<DocumentWidget *>
 
 	model_->clear();
 
-	for(DocumentWidget *document : writeableDocuments) {
+	for (DocumentWidget *document : writeableDocuments) {
 		model_->addItem(document);
 	}
 }

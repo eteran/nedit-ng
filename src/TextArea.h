@@ -6,10 +6,10 @@
 #include "CallTip.h"
 #include "CursorStyles.h"
 #include "DragStates.h"
+#include "Location.h"
 #include "StyleTableEntry.h"
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
-#include "Location.h"
 #include "Util/string_view.h"
 
 #include <QAbstractScrollArea>
@@ -87,7 +87,7 @@ public:
 public:
 	TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &font);
 	TextArea(const TextArea &other) = delete;
-	TextArea& operator=(const TextArea &) = delete;
+	TextArea &operator=(const TextArea &) = delete;
 	~TextArea() override;
 
 public:
@@ -290,7 +290,7 @@ private:
 	int preferredColumn(int *visLineNum, TextCursor *lineStartPos);
 	int countLines(TextCursor startPos, TextCursor endPos, bool startPosIsLineStart);
 	int getAbsTopLineNum() const;
-	int getLineNumWidth() const;	
+	int getLineNumWidth() const;
 	int lengthToWidth(int length) const noexcept;
 	int measureVisLine(int visLineNum) const;
 	int visLineLength(int visLineNum) const;
@@ -361,58 +361,58 @@ private:
 	void xyToUnconstrainedPos(const QPoint &pos, int *row, int *column, PositionType posType) const;
 	void xyToUnconstrainedPos(int x, int y, int *row, int *column, PositionType posType) const;
 
-private:	
+private:
 	CursorStyles cursorStyle_       = CursorStyles::Normal;
-	DragStates dragState_           = NOT_CLICKED;    // Why is the mouse being dragged and what is being acquired
+	DragStates dragState_           = NOT_CLICKED; // Why is the mouse being dragged and what is being acquired
 	QColor cursorFGColor_           = Qt::black;
 	QColor matchBGColor_            = Qt::red;
-	QColor matchFGColor_            = Qt::white;      // Highlight colors are used when flashing matching parens
-	QColor lineNumFGColor_          = Qt::black;      // Color for drawing line numbers
-	QColor lineNumBGColor_          = Qt::white;      // Color for drawing line numbers
+	QColor matchFGColor_            = Qt::white; // Highlight colors are used when flashing matching parens
+	QColor lineNumFGColor_          = Qt::black; // Color for drawing line numbers
+	QColor lineNumBGColor_          = Qt::white; // Color for drawing line numbers
 	QLabel *resizeWidget_           = nullptr;
 	QTimer *autoScrollTimer_        = nullptr;
 	QTimer *clickTimer_             = nullptr;
 	QTimer *cursorBlinkTimer_       = nullptr;
 	QTimer *resizeTimer_            = nullptr;
 	QWidget *lineNumberArea_        = nullptr;
-	QPoint cursor_                  = { -100, -100 }; // X pos. of last drawn cursor Note: these are used for *drawing* and are not generally reliable for finding the insert position's x/y coordinates!
-	QVector<TextCursor> lineStarts_ = { TextCursor() };
-	TextCursor cursorToHint_        = NO_HINT;        // Tells the buffer modified callback where to move the cursor, to reduce the number of redraw calls
-	int nBufferLines_               = 0;              // # of newlines in the buffer
+	QPoint cursor_                  = {-100, -100}; // X pos. of last drawn cursor Note: these are used for *drawing* and are not generally reliable for finding the insert position's x/y coordinates!
+	QVector<TextCursor> lineStarts_ = {TextCursor()};
+	TextCursor cursorToHint_        = NO_HINT; // Tells the buffer modified callback where to move the cursor, to reduce the number of redraw calls
+	int nBufferLines_               = 0;       // # of newlines in the buffer
 	int clickCount_                 = 0;
-	int emTabsBeforeCursor_         = 0;              // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
-	int absTopLineNum_              = 1;              // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
-	int topLineNum_                 = 1;              // Line number of top displayed line of file (first line of file is 1)
+	int emTabsBeforeCursor_         = 0; // If non-zero, number of consecutive emulated tabs just entered.  Saved so chars can be deleted as a unit
+	int absTopLineNum_              = 1; // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
+	int topLineNum_                 = 1; // Line number of top displayed line of file (first line of file is 1)
 	int lineNumCols_                = 0;
-	int dragXOffset_                = 0;              // offsets between cursor location and actual insertion point in drag
-	int dragYOffset_                = 0;              // offsets between cursor location and actual insertion point in drag
-	int nLinesDeleted_              = 0;              // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
-	int nVisibleLines_              = 1;              // # of visible (displayed) lines
-	int cursorPreferredCol_         = -1;             // Column for vert. cursor movement
+	int dragXOffset_                = 0;  // offsets between cursor location and actual insertion point in drag
+	int dragYOffset_                = 0;  // offsets between cursor location and actual insertion point in drag
+	int nLinesDeleted_              = 0;  // Number of lines deleted during buffer modification (only used when resynchronization is suppressed)
+	int nVisibleLines_              = 1;  // # of visible (displayed) lines
+	int cursorPreferredCol_         = -1; // Column for vert. cursor movement
 	bool clickTimerExpired_         = false;
 	bool cursorOn_                  = false;
-	bool modifyingTabDist_          = false;          // Whether tab distance is being modified
-	bool needAbsTopLineNum_         = false;          // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display
-	bool suppressResync_            = false;          // Suppress resynchronization of line starts during buffer updates
+	bool modifyingTabDist_          = false; // Whether tab distance is being modified
+	bool needAbsTopLineNum_         = false; // Externally settable flag to continue maintaining absTopLineNum even if it isn't needed for line # display
+	bool suppressResync_            = false; // Suppress resynchronization of line starts during buffer updates
 	bool showTerminalSizeHint_      = false;
 	bool autoShowInsertPos_         = true;
 	bool pendingDelete_             = true;
 
 private:
-	BlockDragTypes dragType_;                       // style of block drag operation
+	BlockDragTypes dragType_; // style of block drag operation
 	CallTip calltip_;
 	DocumentWidget *document_;
 	QFont font_;
-	QPoint btnDownCoord_;                           // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
+	QPoint btnDownCoord_; // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
 	QPoint clickPos_;
-	QPoint mouseCoord_;                             // Last known mouse position in drag operation (for autoscroll)
+	QPoint mouseCoord_; // Last known mouse position in drag operation (for autoscroll)
 	QPointer<CallTipWidget> calltipWidget_;
-	TextBuffer *buffer_;                            // Contains text to be displayed
-	TextCursor anchor_;                             // Anchor for drag operations
+	TextBuffer *buffer_; // Contains text to be displayed
+	TextCursor anchor_;  // Anchor for drag operations
 	TextCursor cursorPos_;
-	TextCursor dragInsertPos_;                      // location where text being block dragged was last inserted
-	TextCursor dragSourceDeletePos_;                // location from which move source text was removed at start of drag
-	TextCursor firstChar_;                          // Buffer positions of first and last displayed character (lastChar_ points either to a newline or one character beyond the end of the buffer)
+	TextCursor dragInsertPos_;       // location where text being block dragged was last inserted
+	TextCursor dragSourceDeletePos_; // location from which move source text was removed at start of drag
+	TextCursor firstChar_;           // Buffer positions of first and last displayed character (lastChar_ points either to a newline or one character beyond the end of the buffer)
 	TextCursor lastChar_;
 	bool autoIndent_;
 	bool autoWrapPastedText_;
@@ -428,17 +428,17 @@ private:
 	int cursorBlinkRate_;
 	int cursorVPadding_;
 	int emulateTabs_;
-	int fixedFontWidth_;                            // Font width if all current fonts are fixed and match in width
+	int fixedFontWidth_; // Font width if all current fonts are fixed and match in width
 	int fixedFontHeight_;
 	int wrapMargin_;
-	int rectAnchor_;                                // Anchor for rectangular drag operations
-	int64_t dragDeleted_;                           // # of characters deleted at drag destination in last drag position
-	int64_t dragInserted_;                          // # of characters inserted at drag destination in last drag position
-	int64_t dragNLines_;                            // # of newlines in text being drag'd
+	int rectAnchor_;       // Anchor for rectangular drag operations
+	int64_t dragDeleted_;  // # of characters deleted at drag destination in last drag position
+	int64_t dragInserted_; // # of characters inserted at drag destination in last drag position
+	int64_t dragNLines_;   // # of newlines in text being drag'd
 	int64_t dragRectStart_;
-	int64_t dragSourceDeleted_;                     // # of chars. deleted when move source text was deleted
-	int64_t dragSourceInserted_;                    // # of chars. inserted when move source text was inserted	
-	TextBuffer *styleBuffer_ = nullptr;             // Optional parallel buffer containing color and font information
+	int64_t dragSourceDeleted_;         // # of chars. deleted when move source text was deleted
+	int64_t dragSourceInserted_;        // # of chars. inserted when move source text was inserted
+	TextBuffer *styleBuffer_ = nullptr; // Optional parallel buffer containing color and font information
 	std::string delimiters_;
 	std::shared_ptr<TextBuffer> dragOrigBuf_;       // backup buffer copy used during block dragging of selections
 	std::vector<QColor> bgClassColors_;             // table of colors for each BG class
@@ -450,8 +450,8 @@ private:
 
 private:
 	std::vector<std::pair<cursorMovedCBEx, void *>> movedCallbacks_;
-	std::vector<std::pair<dragStartCBEx,   void *>> dragStartCallbacks_;
-	std::vector<std::pair<dragEndCBEx,     void *>> dragEndCallbacks_;
+	std::vector<std::pair<dragStartCBEx, void *>> dragStartCallbacks_;
+	std::vector<std::pair<dragEndCBEx, void *>> dragEndCallbacks_;
 	std::vector<std::pair<smartIndentCBEx, void *>> smartIndentCallbacks_;
 };
 

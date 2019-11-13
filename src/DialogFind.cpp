@@ -19,7 +19,8 @@
  * @param document
  * @param f
  */
-DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f) : Dialog(window, f), window_(window), document_(document) {
+DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f)
+	: Dialog(window, f), window_(window), document_(document) {
 	ui.setupUi(this);
 	connectSlots();
 
@@ -39,7 +40,6 @@ void DialogFind::connectSlots() {
 	connect(ui.textFind, &QLineEdit::textChanged, this, &DialogFind::textFind_textChanged);
 }
 
-
 /**
  * @brief DialogFind::showEvent
  * @param event
@@ -55,7 +55,7 @@ void DialogFind::showEvent(QShowEvent *event) {
  */
 void DialogFind::keyPressEvent(QKeyEvent *event) {
 
-	if(ui.textFind->hasFocus()) {
+	if (ui.textFind->hasFocus()) {
 		int index = window_->fHistIndex_;
 
 		// only process up and down arrow keys
@@ -220,11 +220,11 @@ void DialogFind::buttonFind_clicked() {
 
 	// find the text and mark it
 	window_->action_Find(
-				document_,
-				fields->searchString,
-				fields->direction,
-				fields->searchType,
-				Preferences::GetPrefSearchWraps());
+		document_,
+		fields->searchString,
+		fields->direction,
+		fields->searchType,
+		Preferences::GetPrefSearchWraps());
 
 	if (!keepDialog()) {
 		hide();
@@ -256,11 +256,11 @@ boost::optional<DialogFind::Fields> DialogFind::readFields() {
 		   immediately and present error messages */
 		try {
 			auto compiledRE = make_regex(findText, regexDefault);
-		} catch(const RegexError &e) {
+		} catch (const RegexError &e) {
 			QMessageBox::warning(
-			            this,
-			            tr("Regex Error"),
-			            tr("Please respecify the search string:\n%1").arg(QString::fromLatin1(e.what())));
+				this,
+				tr("Regex Error"),
+				tr("Please respecify the search string:\n%1").arg(QString::fromLatin1(e.what())));
 			return boost::none;
 		}
 	} else {
@@ -339,7 +339,7 @@ bool DialogFind::keepDialog() const {
  */
 void DialogFind::setDocument(DocumentWidget *document) {
 	document_ = document;
-	if(keepDialog()) {
+	if (keepDialog()) {
 		setWindowTitle(tr("Find (in %1)").arg(document_->filename()));
 	}
 }

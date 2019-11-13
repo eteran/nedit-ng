@@ -7,11 +7,12 @@
  * @brief TabWidget::TabWidget
  * @param parent
  */
-TabWidget::TabWidget(QWidget *parent) : QTabWidget(parent) {
+TabWidget::TabWidget(QWidget *parent)
+	: QTabWidget(parent) {
 
 	// NOTE(eteran): fix for issue #51
-	auto allToolButtons = findChildren<QToolButton*>();
-	for(QToolButton *button : allToolButtons) {
+	auto allToolButtons = findChildren<QToolButton *>();
+	for (QToolButton *button : allToolButtons) {
 		button->setFocusPolicy(Qt::NoFocus);
 	}
 }
@@ -31,5 +32,3 @@ void TabWidget::tabRemoved(int index) {
 	Q_EMIT tabCountChanged(count());
 	QTabWidget::tabRemoved(index);
 }
-
-

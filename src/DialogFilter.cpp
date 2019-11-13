@@ -8,7 +8,8 @@
  * @param parent
  * @param f
  */
-DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
+DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f) {
 	ui.setupUi(this);
 	connectSlots();
 
@@ -24,13 +25,12 @@ void DialogFilter::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogFilter::buttonBox_accepted);
 }
 
-
 /**
  * @brief DialogFilter::keyPressEvent
  * @param event
  */
 void DialogFilter::keyPressEvent(QKeyEvent *event) {
-	if(ui.textFilter->hasFocus()) {
+	if (ui.textFilter->hasFocus()) {
 		int index = historyIndex_;
 
 		// only process up and down arrow keys
@@ -71,7 +71,7 @@ void DialogFilter::showEvent(QShowEvent *event) {
 void DialogFilter::buttonBox_accepted() {
 
 	QString s = ui.textFilter->text();
-	if(!s.isEmpty()) {
+	if (!s.isEmpty()) {
 		history_ << s;
 	}
 }

@@ -32,7 +32,6 @@ constexpr auto REG_INFINITY = 0UL;
 constexpr auto REG_ZERO     = 0UL;
 constexpr auto REG_ONE      = 1UL;
 
-
 /* Number of bytes to offset from the beginning of the regex program to the start
    of the actual compiled regex code, i.e. skipping over the MAGIC number and
    the two counters at the front.  */

@@ -2,7 +2,6 @@
 #include "Preferences.h"
 #include "DocumentWidget.h"
 #include "Font.h"
-#include "nedit.h"
 #include "Highlight.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
@@ -10,19 +9,20 @@
 #include "SmartIndent.h"
 #include "Tags.h"
 #include "TextBuffer.h"
-#include "search.h"
-#include "userCmds.h"
 #include "Util/ClearCase.h"
 #include "Util/Input.h"
 #include "Util/version.h"
+#include "nedit.h"
+#include "search.h"
+#include "userCmds.h"
 
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QRegularExpression>
 #include <QSettings>
 #include <QString>
 #include <QtDebug>
-#include <QRegularExpression>
 
 #include <cctype>
 #include <memory>
@@ -40,14 +40,12 @@ constexpr int ConfigFileVersion = 1;
 const QLatin1String AutoWrapTypes[] = {
 	QLatin1String("None"),
 	QLatin1String("Newline"),
-	QLatin1String("Continuous")
-};
+	QLatin1String("Continuous")};
 
 const QLatin1String AutoIndentTypes[] = {
 	QLatin1String("None"),
 	QLatin1String("Auto"),
-	QLatin1String("Smart")
-};
+	QLatin1String("Smart")};
 
 /* Module-global variable set when any preference changes (for asking the
    user about re-saving on exit) */
@@ -56,7 +54,6 @@ bool PrefsHaveChanged = false;
 /* Module-global variable set when user uses -import to load additional
    preferences on top of the defaults.  Contains name of file loaded */
 QString ImportedFile;
-
 
 /**
  * @brief readExtensionList
@@ -69,7 +66,7 @@ QStringList readExtensionList(Input &in) {
 	// skip over blank space
 	in.skipWhitespace();
 
-	while(!in.atEnd() && *in != QLatin1Char(':')) {
+	while (!in.atEnd() && *in != QLatin1Char(':')) {
 
 		in.skipWhitespace();
 
@@ -79,7 +76,7 @@ QStringList readExtensionList(Input &in) {
 			++in;
 		}
 
-		int len = in - strStart;
+		int len     = in - strStart;
 		QString ext = strStart.mid(len);
 		extensionList.push_back(ext);
 	}
@@ -158,11 +155,11 @@ int loadLanguageModesString(const QString &string) {
 
 			// read the indent style
 			const QString styleName = ReadSymbolicField(in);
-			if(styleName.isNull()) {
+			if (styleName.isNull()) {
 				lm.indentStyle = IndentStyle::Default;
 			} else {
 				auto it = std::find(std::begin(AutoIndentTypes), std::end(AutoIndentTypes), styleName);
-				if(it == std::end(AutoIndentTypes)) {
+				if (it == std::end(AutoIndentTypes)) {
 					Raise<ModeError>(tr("unrecognized indent style"));
 				}
 
@@ -175,11 +172,11 @@ int loadLanguageModesString(const QString &string) {
 
 			// read the wrap style
 			const QString wrapStyle = ReadSymbolicField(in);
-			if(wrapStyle.isNull()) {
+			if (wrapStyle.isNull()) {
 				lm.wrapStyle = WrapStyle::Default;
 			} else {
 				auto it = std::find(std::begin(AutoWrapTypes), std::end(AutoWrapTypes), wrapStyle);
-				if(it == std::end(AutoWrapTypes)) {
+				if (it == std::end(AutoWrapTypes)) {
 					Raise<ModeError>(tr("unrecognized wrap style"));
 				}
 
@@ -242,7 +239,7 @@ int loadLanguageModesString(const QString &string) {
 				return languageMode.name == lm.name;
 			});
 
-			if(it != LanguageModes.end()) {
+			if (it != LanguageModes.end()) {
 				*it = lm;
 			} else {
 				LanguageModes.push_back(lm);
@@ -255,13 +252,13 @@ int loadLanguageModesString(const QString &string) {
 				return true;
 			}
 		}
-	} catch(const ModeError &error) {
+	} catch (const ModeError &error) {
 		return reportError(
-					nullptr,
-					*in.string(),
-					in.index(),
-					tr("language mode specification"),
-					error.message);
+			nullptr,
+			*in.string(),
+			in.index(),
+			tr("language mode specification"),
+			error.message);
 	}
 }
 
@@ -332,7 +329,7 @@ QString WriteLanguageModesString() {
 	QString str;
 	QTextStream out(&str);
 
-	for(const LanguageMode &language : LanguageModes) {
+	for (const LanguageMode &language : LanguageModes) {
 
 		out << QLatin1Char('\t')
 			<< language.name
@@ -379,7 +376,7 @@ QString WriteLanguageModesString() {
 		out << QLatin1Char('\n');
 	}
 
-	if(!str.isEmpty()) {
+	if (!str.isEmpty()) {
 		str.chop(1);
 	}
 
@@ -412,20 +409,18 @@ void RestoreNEditPrefs() {
 void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 
 	QString prefFileName = Settings::configFile();
-	if(prefFileName.isNull()) {
+	if (prefFileName.isNull()) {
 		QMessageBox::warning(parent, tr("Error saving Preferences"), tr("Unable to save preferences: Cannot determine filename."));
 		return;
 	}
 
 	if (verbosity == Verbosity::Verbose) {
 		int resp = QMessageBox::information(parent, tr("Save Preferences"),
-			ImportedFile.isNull() ? tr("Default preferences will be saved in the file:\n%1\nNEdit automatically loads this file each time it is started.").arg(prefFileName)
-								  : tr("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS FROM FILE: %2").arg(prefFileName, ImportedFile),
-				QMessageBox::Ok | QMessageBox::Cancel);
+											ImportedFile.isNull() ? tr("Default preferences will be saved in the file:\n%1\nNEdit automatically loads this file each time it is started.").arg(prefFileName)
+																  : tr("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS FROM FILE: %2").arg(prefFileName, ImportedFile),
+											QMessageBox::Ok | QMessageBox::Cancel);
 
-
-
-		if(resp == QMessageBox::Cancel) {
+		if (resp == QMessageBox::Cancel) {
 			return;
 		}
 	}
@@ -441,9 +436,9 @@ void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 
 	if (!Settings::savePreferences()) {
 		QMessageBox::warning(
-					parent,
-					tr("Save Preferences"),
-					tr("Unable to save preferences in %1").arg(prefFileName));
+			parent,
+			tr("Save Preferences"),
+			tr("Unable to save preferences in %1").arg(prefFileName));
 	}
 
 	Highlight::saveTheme();
@@ -462,7 +457,7 @@ void ImportPrefFile(const QString &filename) {
 }
 
 void SetPrefOpenInTab(bool state) {
-	if(Settings::openInTab != state) {
+	if (Settings::openInTab != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::openInTab = state;
@@ -473,7 +468,7 @@ bool GetPrefOpenInTab() {
 }
 
 void SetPrefWrap(WrapStyle state) {
-	if(Settings::autoWrap != state) {
+	if (Settings::autoWrap != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::autoWrap = state;
@@ -488,7 +483,7 @@ WrapStyle GetPrefWrap(size_t langMode) {
 }
 
 void SetPrefWrapMargin(int margin) {
-	if(Settings::wrapMargin != margin) {
+	if (Settings::wrapMargin != margin) {
 		PrefsHaveChanged = true;
 	}
 	Settings::wrapMargin = margin;
@@ -499,7 +494,7 @@ int GetPrefWrapMargin() {
 }
 
 void SetPrefSearch(SearchType searchType) {
-	if(Settings::searchMethod != searchType) {
+	if (Settings::searchMethod != searchType) {
 		PrefsHaveChanged = true;
 	}
 	Settings::searchMethod = searchType;
@@ -526,7 +521,7 @@ SearchType GetPrefSearch() {
 }
 
 void SetPrefAutoIndent(IndentStyle state) {
-	if(Settings::autoIndent != state) {
+	if (Settings::autoIndent != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::autoIndent = state;
@@ -541,7 +536,7 @@ IndentStyle GetPrefAutoIndent(size_t langMode) {
 }
 
 void SetPrefAutoSave(bool state) {
-	if(Settings::autoSave != state) {
+	if (Settings::autoSave != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::autoSave = state;
@@ -552,7 +547,7 @@ bool GetPrefAutoSave() {
 }
 
 void SetPrefSaveOldVersion(bool state) {
-	if(Settings::saveOldVersion != state) {
+	if (Settings::saveOldVersion != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::saveOldVersion = state;
@@ -563,7 +558,7 @@ bool GetPrefSaveOldVersion() {
 }
 
 void SetPrefSearchDlogs(bool state) {
-	if(Settings::searchDialogs != state) {
+	if (Settings::searchDialogs != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::searchDialogs = state;
@@ -574,7 +569,7 @@ bool GetPrefSearchDlogs() {
 }
 
 void SetPrefBeepOnSearchWrap(bool state) {
-	if(Settings::beepOnSearchWrap != state) {
+	if (Settings::beepOnSearchWrap != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::beepOnSearchWrap = state;
@@ -585,7 +580,7 @@ bool GetPrefBeepOnSearchWrap() {
 }
 
 void SetPrefKeepSearchDlogs(bool state) {
-	if(Settings::retainSearchDialogs != state) {
+	if (Settings::retainSearchDialogs != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::retainSearchDialogs = state;
@@ -596,7 +591,7 @@ bool GetPrefKeepSearchDlogs() {
 }
 
 void SetPrefSearchWraps(bool state) {
-	if(Settings::searchWraps != state) {
+	if (Settings::searchWraps != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::searchWraps = state;
@@ -611,7 +606,7 @@ int GetPrefStickyCaseSenseBtn() {
 }
 
 void SetPrefStatsLine(bool state) {
-	if(Settings::statisticsLine != state) {
+	if (Settings::statisticsLine != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::statisticsLine = state;
@@ -622,7 +617,7 @@ int GetPrefStatsLine() {
 }
 
 void SetPrefISearchLine(bool state) {
-	if(Settings::iSearchLine != state) {
+	if (Settings::iSearchLine != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::iSearchLine = state;
@@ -633,7 +628,7 @@ int GetPrefISearchLine() {
 }
 
 void SetPrefSortTabs(bool state) {
-	if(Settings::sortTabs != state) {
+	if (Settings::sortTabs != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::sortTabs = state;
@@ -644,7 +639,7 @@ bool GetPrefSortTabs() {
 }
 
 void SetPrefTabBar(bool state) {
-	if(Settings::tabBar != state) {
+	if (Settings::tabBar != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::tabBar = state;
@@ -655,7 +650,7 @@ bool GetPrefTabBar() {
 }
 
 void SetPrefTabBarHideOne(bool state) {
-	if(Settings::tabBarHideOne != state) {
+	if (Settings::tabBarHideOne != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::tabBarHideOne = state;
@@ -666,7 +661,7 @@ int GetPrefTabBarHideOne() {
 }
 
 void SetPrefGlobalTabNavigate(bool state) {
-	if(Settings::globalTabNavigate != state) {
+	if (Settings::globalTabNavigate != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::globalTabNavigate = state;
@@ -677,7 +672,7 @@ int GetPrefGlobalTabNavigate() {
 }
 
 void SetPrefToolTips(bool state) {
-	if(Settings::toolTips != state) {
+	if (Settings::toolTips != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::toolTips = state;
@@ -688,7 +683,7 @@ bool GetPrefToolTips() {
 }
 
 void SetPrefLineNums(bool state) {
-	if(Settings::lineNumbers != state) {
+	if (Settings::lineNumbers != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::lineNumbers = state;
@@ -699,7 +694,7 @@ int GetPrefLineNums() {
 }
 
 void SetPrefShowPathInWindowsMenu(bool state) {
-	if(Settings::pathInWindowsMenu != state) {
+	if (Settings::pathInWindowsMenu != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::pathInWindowsMenu = state;
@@ -710,7 +705,7 @@ int GetPrefShowPathInWindowsMenu() {
 }
 
 void SetPrefWarnFileMods(bool state) {
-	if(Settings::warnFileMods != state) {
+	if (Settings::warnFileMods != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::warnFileMods = state;
@@ -721,7 +716,7 @@ bool GetPrefWarnFileMods() {
 }
 
 void SetPrefWarnRealFileMods(bool state) {
-	if(Settings::warnRealFileMods != state) {
+	if (Settings::warnRealFileMods != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::warnRealFileMods = state;
@@ -732,7 +727,7 @@ bool GetPrefWarnRealFileMods() {
 }
 
 void SetPrefWarnExit(bool state) {
-	if(Settings::warnExit != state) {
+	if (Settings::warnExit != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::warnExit = state;
@@ -743,7 +738,7 @@ bool GetPrefWarnExit() {
 }
 
 void SetPrefFindReplaceUsesSelection(bool state) {
-	if(Settings::findReplaceUsesSelection != state) {
+	if (Settings::findReplaceUsesSelection != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::findReplaceUsesSelection = state;
@@ -754,7 +749,7 @@ bool GetPrefFindReplaceUsesSelection() {
 }
 
 void SetPrefRows(int nRows) {
-	if(Settings::textRows != nRows) {
+	if (Settings::textRows != nRows) {
 		PrefsHaveChanged = true;
 	}
 	Settings::textRows = nRows;
@@ -765,7 +760,7 @@ int GetPrefRows() {
 }
 
 void SetPrefCols(int nCols) {
-	if(Settings::textCols != nCols) {
+	if (Settings::textCols != nCols) {
 		PrefsHaveChanged = true;
 	}
 	Settings::textCols = nCols;
@@ -776,7 +771,7 @@ int GetPrefCols() {
 }
 
 void SetPrefTabDist(int tabDist) {
-	if(Settings::tabDistance != tabDist) {
+	if (Settings::tabDistance != tabDist) {
 		PrefsHaveChanged = true;
 	}
 	Settings::tabDistance = tabDist;
@@ -806,7 +801,7 @@ int GetPrefTabDist(size_t langMode) {
 }
 
 void SetPrefEmTabDist(int tabDist) {
-	if(Settings::emulateTabs != tabDist) {
+	if (Settings::emulateTabs != tabDist) {
 		PrefsHaveChanged = true;
 	}
 	Settings::emulateTabs = tabDist;
@@ -821,7 +816,7 @@ int GetPrefEmTabDist(size_t langMode) {
 }
 
 void SetPrefInsertTabs(bool state) {
-	if(Settings::insertTabs != state) {
+	if (Settings::insertTabs != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::insertTabs = state;
@@ -832,7 +827,7 @@ int GetPrefInsertTabs() {
 }
 
 void SetPrefShowMatching(ShowMatchingStyle state) {
-	if(Settings::showMatching != state) {
+	if (Settings::showMatching != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::showMatching = state;
@@ -843,7 +838,7 @@ ShowMatchingStyle GetPrefShowMatching() {
 }
 
 void SetPrefMatchSyntaxBased(bool state) {
-	if(Settings::matchSyntaxBased != state) {
+	if (Settings::matchSyntaxBased != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::matchSyntaxBased = state;
@@ -854,7 +849,7 @@ bool GetPrefMatchSyntaxBased() {
 }
 
 void SetPrefHighlightSyntax(bool state) {
-	if(Settings::highlightSyntax != state) {
+	if (Settings::highlightSyntax != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::highlightSyntax = state;
@@ -865,7 +860,7 @@ bool GetPrefHighlightSyntax() {
 }
 
 void SetPrefBacklightChars(bool state) {
-	if(Settings::backlightChars != state) {
+	if (Settings::backlightChars != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::backlightChars = state;
@@ -880,7 +875,7 @@ QString GetPrefBacklightCharTypes() {
 }
 
 void SetPrefRepositionDialogs(bool state) {
-	if(Settings::repositionDialogs != state) {
+	if (Settings::repositionDialogs != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::repositionDialogs = state;
@@ -891,7 +886,7 @@ bool GetPrefRepositionDialogs() {
 }
 
 void SetPrefAutoScroll(bool state) {
-	if(Settings::autoScroll != state) {
+	if (Settings::autoScroll != state) {
 		PrefsHaveChanged = true;
 	}
 
@@ -900,7 +895,7 @@ void SetPrefAutoScroll(bool state) {
 	Settings::autoScroll = state;
 
 	// TODO(eteran): should this be done at this level? maybe a signal/slot update?
-	for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+	for (DocumentWidget *document : DocumentWidget::allDocuments()) {
 		document->setAutoScroll(margin);
 	}
 }
@@ -914,7 +909,7 @@ int GetVerticalAutoScroll() {
 }
 
 void SetPrefAppendLF(bool state) {
-	if(Settings::appendLF != state) {
+	if (Settings::appendLF != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::appendLF = state;
@@ -925,7 +920,7 @@ bool GetPrefAppendLF() {
 }
 
 void SetPrefSortOpenPrevMenu(bool state) {
-	if(Settings::sortOpenPrevMenu != state) {
+	if (Settings::sortOpenPrevMenu != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::sortOpenPrevMenu = state;
@@ -940,7 +935,7 @@ QString GetPrefTagFile() {
 }
 
 void SetPrefSmartTags(bool state) {
-	if(Settings::smartTags != state) {
+	if (Settings::smartTags != state) {
 		PrefsHaveChanged = true;
 	}
 	Settings::smartTags = state;
@@ -964,14 +959,14 @@ QString GetPrefColorName(ColorTypes index) {
 }
 
 void SetPrefColorName(ColorTypes index, const QString &name) {
-	if(Settings::colors[index] != name) {
+	if (Settings::colors[index] != name) {
 		PrefsHaveChanged = true;
 	}
 	Settings::colors[index] = name;
 }
 
 void SetPrefFont(const QString &fontName) {
-	if(Settings::fontName != fontName) {
+	if (Settings::fontName != fontName) {
 		PrefsHaveChanged = true;
 	}
 	Settings::fontName = fontName;
@@ -987,7 +982,7 @@ QFont GetPrefDefaultFont() {
 }
 
 void SetPrefShell(const QString &shell) {
-	if(Settings::shell != shell) {
+	if (Settings::shell != shell) {
 		PrefsHaveChanged = true;
 	}
 	Settings::shell = shell;
@@ -1018,7 +1013,7 @@ bool GetPrefSmartHome() {
 }
 
 void SetPrefTitleFormat(const QString &format) {
-	if(Settings::titleFormat != format) {
+	if (Settings::titleFormat != format) {
 		PrefsHaveChanged = true;
 	}
 
@@ -1026,7 +1021,7 @@ void SetPrefTitleFormat(const QString &format) {
 
 	// update all windows
 	// TODO(eteran): should this be done at this level? maybe a signal/slot update?
-	for(MainWindow *window : MainWindow::allWindows()) {
+	for (MainWindow *window : MainWindow::allWindows()) {
 		DocumentWidget *document = window->currentDocument();
 		window->updateWindowTitle(document);
 	}
@@ -1103,7 +1098,7 @@ bool ReadNumericField(Input &in, int *value) {
 
 	static const QRegularExpression re(QLatin1String("(0|[-+]?[1-9][0-9]*)"));
 	QString number;
-	if(in.match(re, &number)) {
+	if (in.match(re, &number)) {
 		bool ok;
 		*value = number.toInt(&ok);
 		return ok;
@@ -1151,7 +1146,7 @@ QString ReadSymbolicField(Input &input) {
 	}
 
 	// If there's space on the end, take it back off
-	if(outStr.endsWith(QLatin1Char(' '))) {
+	if (outStr.endsWith(QLatin1Char(' '))) {
 		outStr.chop(1);
 	}
 
@@ -1183,7 +1178,7 @@ bool ReadQuotedString(Input &in, QString *errMsg, QString *string) {
 	// calculate max length
 	Input c = in;
 
-	for ( ;; ++c) {
+	for (;; ++c) {
 		if (c.atEnd()) {
 			*errMsg = tr("string not terminated");
 			return false;
@@ -1232,7 +1227,7 @@ QString MakeQuotedString(const QString &string) {
 	int length = 0;
 
 	// calculate length
-	for(QChar ch: string) {
+	for (QChar ch : string) {
 		if (ch == Quote) {
 			++length;
 		}
@@ -1247,7 +1242,7 @@ QString MakeQuotedString(const QString &string) {
 	*outPtr++ = Quote;
 
 	// copy string, escaping quotes with ""
-	for(QChar ch: string) {
+	for (QChar ch : string) {
 		if (ch == Quote) {
 			*outPtr++ = Quote;
 		}
@@ -1306,7 +1301,7 @@ bool reportError(QWidget *toDialog, const QString &string, int stoppedAt, const 
 
 	QString errorLine = tr("%1<==").arg(string.mid(c, len));
 
-	if(!toDialog) {
+	if (!toDialog) {
 		qWarning("NEdit: %s in %s:\n%s", qPrintable(message), qPrintable(errorIn), qPrintable(errorLine));
 	} else {
 		QMessageBox::warning(toDialog, tr("Parse Error"), tr("%1 in %2:\n%3").arg(message, errorIn, errorLine));

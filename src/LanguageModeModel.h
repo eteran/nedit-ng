@@ -9,7 +9,7 @@ class LanguageModeModel final : public QAbstractItemModel {
 	Q_OBJECT
 
 public:
-	explicit LanguageModeModel(QObject *parent = nullptr) ;
+	explicit LanguageModeModel(QObject *parent = nullptr);
 	~LanguageModeModel() override = default;
 
 public:
@@ -32,6 +32,5 @@ public:
 private:
 	QVector<LanguageMode> items_;
 };
-
 
 #endif

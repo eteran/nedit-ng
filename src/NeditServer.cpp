@@ -4,25 +4,25 @@
 #include "EditFlags.h"
 #include "MainWindow.h"
 #include "Preferences.h"
-#include "Util/ServerCommon.h"
 #include "Util/FileSystem.h"
+#include "Util/ServerCommon.h"
 
 #include <QApplication>
-#include <QDesktopWidget>
-#include <QLocalServer>
-#include <QLocalSocket>
 #include <QDataStream>
+#include <QDesktopWidget>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QLocalServer>
+#include <QLocalSocket>
 #include <QThread>
 
 #include <memory>
 
 #if defined(QT_X11)
 #include <QX11Info>
-#include <X11/Xlib.h>
 #include <X11/Xatom.h>
+#include <X11/Xlib.h>
 #endif
 
 namespace {
@@ -100,7 +100,7 @@ long QueryDesktop(Display *display, Window window) {
 		return queryDesktop(display, window, wmDesktopAtom);
 	}
 
-	return -1;  // No desktop information
+	return -1; // No desktop information
 }
 #endif
 
@@ -117,7 +117,7 @@ bool isLocatedOnDesktop(QWidget *widget, long currentDesktop) {
 	}
 
 	Display *TheDisplay = QX11Info::display();
-	long windowDesktop = QueryDesktop(TheDisplay, widget->winId());
+	long windowDesktop  = QueryDesktop(TheDisplay, widget->winId());
 
 	// Sticky windows have desktop 0xFFFFFFFF by convention
 	if (windowDesktop == currentDesktop || windowDesktop == 0xFFFFFFFFL) {
@@ -143,7 +143,7 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
 			document on the current desktop */
 
 		const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
-		for(DocumentWidget *document : documents) {
+		for (DocumentWidget *document : documents) {
 			if (document->filenameSet() || document->fileChanged() || document->macroCmdData_) {
 				continue;
 			}
@@ -157,7 +157,7 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
 		const std::vector<MainWindow *> windows = MainWindow::allWindows();
 
 		// Find a window on the current desktop to hold the new document
-		for(MainWindow *window : windows) {
+		for (MainWindow *window : windows) {
 
 			if (isLocatedOnDesktop(window, currentDesktop)) {
 				return window->currentDocument();
@@ -175,16 +175,17 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
  * @brief NeditServer::NeditServer
  * @param parent
  */
-NeditServer::NeditServer(QObject *parent) : QObject(parent) {
+NeditServer::NeditServer(QObject *parent)
+	: QObject(parent) {
 
 	QString socketName = LocalSocketName(Preferences::GetPrefServerName());
-	server_ = new QLocalServer(this);
+	server_            = new QLocalServer(this);
 	server_->setSocketOptions(QLocalServer::UserAccessOption);
 	connect(server_, &QLocalServer::newConnection, this, &NeditServer::newConnection);
 
 	QLocalServer::removeServer(socketName);
 
-	if(!server_->listen(socketName)) {
+	if (!server_->listen(socketName)) {
 		qWarning() << "NEdit: server failed to start: " << server_->errorString();
 	}
 }
@@ -218,8 +219,8 @@ void NeditServer::newConnection() {
 
 	QPointer<DocumentWidget> lastFile;
 #if QT_X11
-	Display *TheDisplay = QX11Info::display();
-	const long currentDesktop = QueryCurrentDesktop(TheDisplay,  RootWindow(TheDisplay, DefaultScreen(TheDisplay)));
+	Display *TheDisplay       = QX11Info::display();
+	const long currentDesktop = QueryCurrentDesktop(TheDisplay, RootWindow(TheDisplay, DefaultScreen(TheDisplay)));
 #else
 	const long currentDesktop = QApplication::desktop()->screenNumber(QApplication::activeWindow());
 #endif
@@ -231,7 +232,7 @@ void NeditServer::newConnection() {
 		std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 		auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *document) {
-		    return (!document->filenameSet() && !document->fileChanged() && isLocatedOnDesktop(MainWindow::fromDocument(document), currentDesktop));
+			return (!document->filenameSet() && !document->fileChanged() && isLocatedOnDesktop(MainWindow::fromDocument(document), currentDesktop));
 		});
 
 		if (it == documents.end()) {
@@ -239,10 +240,10 @@ void NeditServer::newConnection() {
 			const int tabbed = -1;
 
 			MainWindow::editNewFile(
-			            MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop)),
-			            QString(),
-			            false,
-						QString());
+				MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop)),
+				QString(),
+				false,
+				QString());
 
 			MainWindow::checkCloseEnableState();
 		} else {
@@ -280,17 +281,17 @@ void NeditServer::newConnection() {
 			std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 			auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *doc) {
-			    return (!doc->filenameSet() && !doc->fileChanged() && isLocatedOnDesktop(MainWindow::fromDocument(doc), currentDesktop));
+				return (!doc->filenameSet() && !doc->fileChanged() && isLocatedOnDesktop(MainWindow::fromDocument(doc), currentDesktop));
 			});
 
 			if (doCommand.isEmpty()) {
 				if (it == documents.end()) {
 
 					MainWindow::editNewFile(
-					            MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop)),
-					            QString(),
-					            iconicFlag,
-								languageMode.isEmpty() ? QString() : languageMode);
+						MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop)),
+						QString(),
+						iconicFlag,
+						languageMode.isEmpty() ? QString() : languageMode);
 				} else {
 					if (iconicFlag) {
 						(*it)->raiseDocument();
@@ -326,9 +327,9 @@ void NeditServer::newConnection() {
 		/* Process the filename by looking for the files in an
 		   existing window, or opening if they don't exist */
 		const int editFlags =
-				(readFlag ? EditFlags::PREF_READ_ONLY : 0) |
-				EditFlags::CREATE |
-				(createFlag ? EditFlags::SUPPRESS_CREATE_WARN : 0);
+			(readFlag ? EditFlags::PREF_READ_ONLY : 0) |
+			EditFlags::CREATE |
+			(createFlag ? EditFlags::SUPPRESS_CREATE_WARN : 0);
 
 		const boost::optional<PathInfo> fi = parseFilename(fullname);
 		if (!fi) {
@@ -346,15 +347,15 @@ void NeditServer::newConnection() {
 			   macros to execute on. */
 
 			document = DocumentWidget::editExistingFile(
-			               findDocumentOnDesktop(tabbed, currentDesktop),
-			               fi->filename,
-			               fi->pathname,
-			               editFlags,
-			               geometry,
-			               iconicFlag,
-			               languageMode.isEmpty() ? QString() : languageMode,
-			               tabbed == -1 ? Preferences::GetPrefOpenInTab() : tabbed,
-			               /*bgOpen=*/true);
+				findDocumentOnDesktop(tabbed, currentDesktop),
+				fi->filename,
+				fi->pathname,
+				editFlags,
+				geometry,
+				iconicFlag,
+				languageMode.isEmpty() ? QString() : languageMode,
+				tabbed == -1 ? Preferences::GetPrefOpenInTab() : tabbed,
+				/*bgOpen=*/true);
 
 			if (document) {
 				if (lastFile && MainWindow::fromDocument(document) != MainWindow::fromDocument(lastFile)) {
@@ -388,11 +389,11 @@ void NeditServer::newConnection() {
 
 			// register the last file opened for later use
 			if (document) {
-				lastFile = document;
+				lastFile   = document;
 				lastIconic = iconicFlag;
 			}
 
-			if(wait) {
+			if (wait) {
 				// by creating this lambda, we are incrmenting the reference
 				// count of the socket, so it won't be destroyed until all open
 				// documents are closed.

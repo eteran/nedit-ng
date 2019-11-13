@@ -14,31 +14,29 @@ constexpr uint16_t make_uint16(uint8_t hi, uint16_t lo) {
 
 }
 
-
-
 std::vector<Instruction> decompileRegex(const Regex &re) {
 	std::vector<Instruction> results;
 
-	if(!re.isValid()) {
+	if (!re.isValid()) {
 		return results;
 	}
 
-	if(re.program.size() < 3) {
+	if (re.program.size() < 3) {
 		return results;
 	}
 
 	auto it = re.program.begin();
 
-	++it; // skip magic byte
+	++it;                   // skip magic byte
 	uint8_t parens = *it++; // read paren count
 	uint8_t braces = *it++; // read the braces
 
 	(void)parens;
 	(void)braces;
 
-	while(it != re.program.end()) {
+	while (it != re.program.end()) {
 		uint8_t opcode = *it++;
-		switch(opcode) {
+		switch (opcode) {
 		case END: {
 			/* 01 */
 
@@ -99,7 +97,7 @@ std::vector<Instruction> decompileRegex(const Regex &re) {
 			uint8_t offset_hi = *it++;
 			uint8_t offset_lo = *it++;
 			std::string set;
-			while(*it != '\0') {
+			while (*it != '\0') {
 				set.push_back(static_cast<char>(*it));
 				++it;
 			}
@@ -114,7 +112,7 @@ std::vector<Instruction> decompileRegex(const Regex &re) {
 			uint8_t offset_hi = *it++;
 			uint8_t offset_lo = *it++;
 			std::string set;
-			while(*it != '\0') {
+			while (*it != '\0') {
 				set.push_back(static_cast<char>(*it));
 				++it;
 			}
@@ -129,7 +127,7 @@ std::vector<Instruction> decompileRegex(const Regex &re) {
 			uint8_t offset_hi = *it++;
 			uint8_t offset_lo = *it++;
 			std::string set;
-			while(*it != '\0') {
+			while (*it != '\0') {
 				set.push_back(static_cast<char>(*it));
 				++it;
 			}
@@ -144,7 +142,7 @@ std::vector<Instruction> decompileRegex(const Regex &re) {
 			uint8_t offset_hi = *it++;
 			uint8_t offset_lo = *it++;
 			std::string set;
-			while(*it != '\0') {
+			while (*it != '\0') {
 				set.push_back(static_cast<char>(*it));
 				++it;
 			}
@@ -345,7 +343,6 @@ std::vector<Instruction> decompileRegex(const Regex &re) {
 			int16_t max_hi = *it++;
 			int16_t max_lo = *it++;
 
-
 			results.emplace_back(Instruction3{static_cast<Opcode>(opcode), make_int16(offset_hi, offset_lo), make_uint16(min_hi, min_lo), make_uint16(max_hi, max_lo)});
 			break;
 		}
@@ -360,7 +357,6 @@ std::vector<Instruction> decompileRegex(const Regex &re) {
 
 			int16_t max_hi = *it++;
 			int16_t max_lo = *it++;
-
 
 			results.emplace_back(Instruction3{static_cast<Opcode>(opcode), make_int16(offset_hi, offset_lo), make_uint16(min_hi, min_lo), make_uint16(max_hi, max_lo)});
 			break;
@@ -481,11 +477,10 @@ std::vector<Instruction> decompileRegex(const Regex &re) {
 
 			uint8_t offset_hi = *it++;
 			uint8_t offset_lo = *it++;
-			uint8_t op1_hi   = *it++;
-			uint8_t op1_lo   = *it++;
-			uint8_t op2_hi   = *it++;
-			uint8_t op2_lo   = *it++;
-
+			uint8_t op1_hi    = *it++;
+			uint8_t op1_lo    = *it++;
+			uint8_t op2_hi    = *it++;
+			uint8_t op2_lo    = *it++;
 
 			results.emplace_back(Instruction6{static_cast<Opcode>(opcode), make_int16(offset_hi, offset_lo), make_uint16(op1_hi, op1_lo), make_uint16(op2_hi, op2_lo)});
 			break;
@@ -495,10 +490,10 @@ std::vector<Instruction> decompileRegex(const Regex &re) {
 
 			uint8_t offset_hi = *it++;
 			uint8_t offset_lo = *it++;
-			uint8_t op1_hi   = *it++;
-			uint8_t op1_lo   = *it++;
-			uint8_t op2_hi   = *it++;
-			uint8_t op2_lo   = *it++;
+			uint8_t op1_hi    = *it++;
+			uint8_t op1_lo    = *it++;
+			uint8_t op2_hi    = *it++;
+			uint8_t op2_lo    = *it++;
 
 			results.emplace_back(Instruction6{static_cast<Opcode>(opcode), make_int16(offset_hi, offset_lo), make_uint16(op1_hi, op1_lo), make_uint16(op2_hi, op2_lo)});
 			break;
@@ -561,8 +556,7 @@ std::vector<Instruction> decompileRegex(const Regex &re) {
 		case OPEN + 46:
 		case OPEN + 47:
 		case OPEN + 48:
-		case OPEN + 49:
-		{
+		case OPEN + 49: {
 			/* 49-98 */
 
 			uint8_t offset_hi = *it++;
@@ -620,8 +614,7 @@ std::vector<Instruction> decompileRegex(const Regex &re) {
 		case CLOSE + 46:
 		case CLOSE + 47:
 		case CLOSE + 48:
-		case CLOSE + 49:
-		{
+		case CLOSE + 49: {
 			/* 99-148 */
 
 			uint8_t offset_hi = *it++;
@@ -633,7 +626,6 @@ std::vector<Instruction> decompileRegex(const Regex &re) {
 		default:
 			assert(0);
 		}
-
 	}
 
 	return results;

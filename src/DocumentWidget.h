@@ -7,11 +7,11 @@
 #include "CloseMode.h"
 #include "CommandSource.h"
 #include "DocumentInfo.h"
+#include "ErrorSound.h"
 #include "IndentStyle.h"
 #include "LanguageMode.h"
 #include "LockReasons.h"
 #include "MenuData.h"
-#include "ErrorSound.h"
 #include "MenuItem.h"
 #include "RangesetTable.h"
 #include "ShowMatchingStyle.h"
@@ -20,8 +20,8 @@
 #include "UndoInfo.h"
 #include "Util/FileFormats.h"
 #include "Util/string_view.h"
-#include "WrapStyle.h"
 #include "Verbosity.h"
+#include "WrapStyle.h"
 
 #include "ui_DocumentWidget.h"
 
@@ -72,8 +72,8 @@ public:
 	};
 
 public:
-    explicit DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
-    explicit DocumentWidget(const QString &name, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DocumentWidget(const QString &name, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DocumentWidget() override;
 
 Q_SIGNALS:
@@ -314,10 +314,10 @@ private:
 private:
 	QSplitter *splitter_;
 	QFont font_;
-	QString backlightCharTypes_;                     // what backlighting to use
-	QString modeMessage_;                            // stats line banner content for learn and shell command executing modes
-	QTimer *flashTimer_;                             // timer for getting rid of highlighted matching paren.
-	bool backlightChars_;                            // is char backlighting turned on?
+	QString backlightCharTypes_; // what backlighting to use
+	QString modeMessage_;        // stats line banner content for learn and shell command executing modes
+	QTimer *flashTimer_;         // timer for getting rid of highlighted matching paren.
+	bool backlightChars_;        // is char backlighting turned on?
 	std::map<QChar, Bookmark> markTable_;
 	std::unique_ptr<ShellCommandData> shellCmdData_; // when a shell command is executing, info. about it, otherwise, nullptr
 	Ui::DocumentWidget ui;

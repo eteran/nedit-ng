@@ -21,8 +21,8 @@ public:
 	QString actionString() const;
 
 private:
-	QString              macroString_;
-	QString              argument_;
+	QString macroString_;
+	QString argument_;
 	TextArea::EventFlags flags_;
 };
 

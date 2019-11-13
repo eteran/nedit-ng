@@ -2,21 +2,21 @@
 #ifndef GAP_BUFFER_H_
 #define GAP_BUFFER_H_
 
+#include "Util/string_view.h"
 #include "gap_buffer_fwd.h"
 #include "gap_buffer_iterator.h"
-#include "Util/string_view.h"
 
-#include <string>
 #include <algorithm>
-#include <memory>
 #include <cassert>
+#include <memory>
+#include <string>
 
 template <class Ch, class Tr>
 class gap_buffer {
 public:
 	static constexpr int PreferredGapSize = 80;
-	using string_type = std::basic_string<Ch, Tr>;
-	using view_type   = view::basic_string_view<Ch, Tr>;
+	using string_type                     = std::basic_string<Ch, Tr>;
+	using view_type                       = view::basic_string_view<Ch, Tr>;
 
 public:
 	using value_type             = typename std::allocator<Ch>::value_type;
@@ -35,39 +35,39 @@ public:
 public:
 	gap_buffer();
 	explicit gap_buffer(size_type reserve_size);
-	gap_buffer(const gap_buffer&)            = delete;
-	gap_buffer& operator=(const gap_buffer&) = delete;
-	gap_buffer(gap_buffer&&)                 = delete;
-	gap_buffer& operator=(gap_buffer&&)      = delete;
-	~gap_buffer()                            = default;
+	gap_buffer(const gap_buffer &) = delete;
+	gap_buffer &operator=(const gap_buffer &) = delete;
+	gap_buffer(gap_buffer &&)                 = delete;
+	gap_buffer &operator=(gap_buffer &&) = delete;
+	~gap_buffer()                        = default;
 
 public:
-	iterator begin() noexcept              { return iterator(this, 0); }
-	iterator end() noexcept                { return iterator(this, size()); }
-	const_iterator begin() const noexcept  { return const_iterator(this, 0); }
-	const_iterator end() const noexcept    { return const_iterator(this, size()); }
+	iterator begin() noexcept { return iterator(this, 0); }
+	iterator end() noexcept { return iterator(this, size()); }
+	const_iterator begin() const noexcept { return const_iterator(this, 0); }
+	const_iterator end() const noexcept { return const_iterator(this, size()); }
 	const_iterator cbegin() const noexcept { return const_iterator(this, 0); }
-	const_iterator cend() const noexcept   { return const_iterator(this, size()); }
+	const_iterator cend() const noexcept { return const_iterator(this, size()); }
 
-	reverse_iterator rbegin() noexcept              { return reverse_iterator(end()); }
-	reverse_iterator rend() noexcept                { return reverse_iterator(begin()); }
-	const_reverse_iterator rbegin() const noexcept  { return const_reverse_iterator(end()); }
-	const_reverse_iterator rend() const noexcept    { return const_reverse_iterator(begin()); }
+	reverse_iterator rbegin() noexcept { return reverse_iterator(end()); }
+	reverse_iterator rend() noexcept { return reverse_iterator(begin()); }
+	const_reverse_iterator rbegin() const noexcept { return const_reverse_iterator(end()); }
+	const_reverse_iterator rend() const noexcept { return const_reverse_iterator(begin()); }
 	const_reverse_iterator crbegin() const noexcept { return const_reverse_iterator(end()); }
-	const_reverse_iterator crend() const noexcept   { return const_reverse_iterator(begin()); }
+	const_reverse_iterator crend() const noexcept { return const_reverse_iterator(begin()); }
 
 public:
 	size_type gap_size() const noexcept { return gap_end_ - gap_start_; }
-	size_type size() const noexcept     { return size_; }
+	size_type size() const noexcept { return size_; }
 	size_type capacity() const noexcept { return size_ + gap_end_ - gap_start_; }
-	bool empty() const noexcept         { return size() == 0; }
+	bool empty() const noexcept { return size() == 0; }
 	void swap(gap_buffer &other) noexcept;
 
 public:
 	Ch operator[](size_type n) const noexcept;
-	Ch& operator[](size_type n) noexcept;
+	Ch &operator[](size_type n) noexcept;
 	Ch at(size_type n) const;
-	Ch& at(size_type n);
+	Ch &at(size_type n);
 
 public:
 	int compare(size_type pos, view_type str) const noexcept;
@@ -96,24 +96,26 @@ private:
 	void delete_range(size_type start, size_type end) noexcept;
 
 private:
-	std::unique_ptr<Ch[]> buf_;        // points to the internal buffer
-	size_type             gap_start_;  // points to the first character of the gap
-	size_type             gap_end_;    // points to the first char after the gap
-	size_type             size_;       // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd - gapStart + length)
+	std::unique_ptr<Ch[]> buf_; // points to the internal buffer
+	size_type gap_start_;       // points to the first character of the gap
+	size_type gap_end_;         // points to the first char after the gap
+	size_type size_;            // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd - gapStart + length)
 };
 
 /**
  *
  */
 template <class Ch, class Tr>
-gap_buffer<Ch, Tr>::gap_buffer() : gap_buffer(0){
+gap_buffer<Ch, Tr>::gap_buffer()
+	: gap_buffer(0) {
 }
 
 /**
  *
  */
 template <class Ch, class Tr>
-gap_buffer<Ch, Tr>::gap_buffer(size_type reserve_size) : gap_start_(0), gap_end_(PreferredGapSize), size_(0) {
+gap_buffer<Ch, Tr>::gap_buffer(size_type reserve_size)
+	: gap_start_(0), gap_end_(PreferredGapSize), size_(0) {
 
 	buf_ = std::make_unique<Ch[]>(reserve_size + PreferredGapSize);
 
@@ -139,7 +141,7 @@ Ch gap_buffer<Ch, Tr>::operator[](size_type n) const noexcept {
  *
  */
 template <class Ch, class Tr>
-Ch& gap_buffer<Ch, Tr>::operator[](size_type n) noexcept {
+Ch &gap_buffer<Ch, Tr>::operator[](size_type n) noexcept {
 
 	if (n < gap_start_) {
 		return buf_[n];
@@ -169,7 +171,7 @@ Ch gap_buffer<Ch, Tr>::at(size_type n) const {
  *
  */
 template <class Ch, class Tr>
-Ch& gap_buffer<Ch, Tr>::at(size_type n) {
+Ch &gap_buffer<Ch, Tr>::at(size_type n) {
 
 	if (n >= size() || n < 0) {
 		Raise<std::out_of_range>("gap_buffer::at");
@@ -198,7 +200,7 @@ int gap_buffer<Ch, Tr>::compare(size_type pos, view_type str) const noexcept {
 		return 1;
 	}
 
-	if(pos < 0) {
+	if (pos < 0) {
 		return -1;
 	}
 
@@ -208,7 +210,7 @@ int gap_buffer<Ch, Tr>::compare(size_type pos, view_type str) const noexcept {
 		return Tr::compare(&buf_[pos + gap_size()], str.data(), str.size());
 	} else {
 		const auto part1Length = static_cast<size_t>(gap_start_ - pos);
-		const int result = Tr::compare(&buf_[pos], str.data(), part1Length);
+		const int result       = Tr::compare(&buf_[pos], str.data(), part1Length);
 		if (result != 0) {
 			return result;
 		}
@@ -226,7 +228,7 @@ int gap_buffer<Ch, Tr>::compare(size_type pos, Ch ch) const noexcept {
 		return 1;
 	}
 
-	if(pos < 0) {
+	if (pos < 0) {
 		return -1;
 	}
 
@@ -254,7 +256,7 @@ auto gap_buffer<Ch, Tr>::to_string(size_type start, size_type end) const -> stri
 	string_type text;
 
 	assert(start <= size() && start >= 0);
-	assert(end   <= size() && end   >= 0);
+	assert(end <= size() && end >= 0);
 	assert(start <= end);
 
 	const difference_type length = end - start;
@@ -268,7 +270,7 @@ auto gap_buffer<Ch, Tr>::to_string(size_type start, size_type end) const -> stri
 	} else {
 		const difference_type part1Length = gap_start_ - start;
 
-		text.append(&buf_[start],    part1Length);
+		text.append(&buf_[start], part1Length);
 		text.append(&buf_[gap_end_], length - part1Length);
 	}
 
@@ -304,7 +306,7 @@ template <class Ch, class Tr>
 auto gap_buffer<Ch, Tr>::to_view(size_type start, size_type end) noexcept -> view_type {
 
 	assert(start <= size() && start >= 0);
-	assert(end   <= size() && end   >= 0);
+	assert(end <= size() && end >= 0);
 	assert(start <= end);
 
 	const size_type bufLen   = size();
@@ -364,7 +366,7 @@ void gap_buffer<Ch, Tr>::insert(size_type pos, view_type str) {
 	std::copy(str.begin(), str.end(), &buf_[pos]);
 
 	gap_start_ += length;
-	size_      += length;
+	size_ += length;
 }
 
 /**
@@ -392,7 +394,7 @@ void gap_buffer<Ch, Tr>::insert(size_type pos, Ch ch) {
 	buf_[pos] = ch;
 
 	gap_start_ += length;
-	size_      += length;
+	size_ += length;
 }
 
 /**
@@ -402,7 +404,7 @@ template <class Ch, class Tr>
 auto gap_buffer<Ch, Tr>::erase(size_type start, size_type end) noexcept -> size_type {
 
 	assert(start <= size() && start >= 0);
-	assert(end   <= size() && end   >= 0);
+	assert(end <= size() && end >= 0);
 	assert(start <= end);
 
 	delete_range(start, end);
@@ -455,7 +457,7 @@ void gap_buffer<Ch, Tr>::move_gap(size_type pos) noexcept {
 		Tr::move(&buf_[pos + gap_length], &buf_[pos], static_cast<size_t>(gap_start_ - pos));
 	}
 
-	gap_end_   += (pos - gap_start_);
+	gap_end_ += (pos - gap_start_);
 	gap_start_ += (pos - gap_start_);
 }
 
@@ -471,13 +473,13 @@ void gap_buffer<Ch, Tr>::reallocate_buffer(size_type new_gap_start, size_type ne
 	const size_type new_gap_end = new_gap_start + new_gap_size;
 
 	if (new_gap_start <= gap_start_) {
-		Tr::copy(&new_buffer[0],                                        &buf_[0],             static_cast<size_t>(new_gap_start));
-		Tr::copy(&new_buffer[new_gap_end],                              &buf_[new_gap_start], static_cast<size_t>(gap_start_ - new_gap_start));
-		Tr::copy(&new_buffer[new_gap_end + gap_start_ - new_gap_start], &buf_[gap_end_],      static_cast<size_t>(size() - gap_start_));
+		Tr::copy(&new_buffer[0], &buf_[0], static_cast<size_t>(new_gap_start));
+		Tr::copy(&new_buffer[new_gap_end], &buf_[new_gap_start], static_cast<size_t>(gap_start_ - new_gap_start));
+		Tr::copy(&new_buffer[new_gap_end + gap_start_ - new_gap_start], &buf_[gap_end_], static_cast<size_t>(size() - gap_start_));
 	} else { // newGapStart > gap_start_
-		Tr::copy(&new_buffer[0],            &buf_[0],                                     static_cast<size_t>(gap_start_));
-		Tr::copy(&new_buffer[gap_start_],   &buf_[gap_end_],                              static_cast<size_t>(new_gap_start - gap_start_));
-		Tr::copy(&new_buffer[new_gap_end],  &buf_[gap_end_ + new_gap_start - gap_start_], static_cast<size_t>(size() - new_gap_start));
+		Tr::copy(&new_buffer[0], &buf_[0], static_cast<size_t>(gap_start_));
+		Tr::copy(&new_buffer[gap_start_], &buf_[gap_end_], static_cast<size_t>(new_gap_start - gap_start_));
+		Tr::copy(&new_buffer[new_gap_end], &buf_[gap_end_ + new_gap_start - gap_start_], static_cast<size_t>(size() - new_gap_start));
 	}
 
 	buf_       = std::move(new_buffer);
@@ -504,7 +506,7 @@ void gap_buffer<Ch, Tr>::delete_range(size_type start, size_type end) noexcept {
 	}
 
 	// expand the gap to encompass the deleted characters
-	gap_end_   += (end - gap_start_);
+	gap_end_ += (end - gap_start_);
 	gap_start_ -= (gap_start_ - start);
 
 	// update the length
@@ -515,10 +517,10 @@ template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::swap(gap_buffer &other) noexcept {
 	using std::swap;
 
-	swap(buf_,       other.buf_);
+	swap(buf_, other.buf_);
 	swap(gap_start_, other.gap_start_);
-	swap(gap_end_,   other.gap_end_);
-	swap(size_,      other.size_);
+	swap(gap_end_, other.gap_end_);
+	swap(size_, other.size_);
 }
 
 #endif

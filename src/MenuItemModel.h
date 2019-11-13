@@ -9,7 +9,7 @@ class MenuItemModel final : public QAbstractItemModel {
 	Q_OBJECT
 
 public:
-	explicit MenuItemModel(QObject *parent = nullptr) ;
+	explicit MenuItemModel(QObject *parent = nullptr);
 	~MenuItemModel() override = default;
 
 public:

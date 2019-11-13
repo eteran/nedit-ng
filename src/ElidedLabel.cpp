@@ -13,7 +13,8 @@
  * @param text
  * @param parent
  */
-ElidedLabel::ElidedLabel(const QString &text, QWidget *parent) : QLabel(parent) {
+ElidedLabel::ElidedLabel(const QString &text, QWidget *parent)
+	: QLabel(parent) {
 
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
 	fullText_  = text;
@@ -25,7 +26,8 @@ ElidedLabel::ElidedLabel(const QString &text, QWidget *parent) : QLabel(parent) 
  * @brief ElidedLabel::ElidedLabel
  * @param parent
  */
-ElidedLabel::ElidedLabel(QWidget *parent) : QLabel(parent) {
+ElidedLabel::ElidedLabel(QWidget *parent)
+	: QLabel(parent) {
 	setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed));
 	elideMode_ = Qt::ElideMiddle;
 }
@@ -91,7 +93,7 @@ void ElidedLabel::squeezeTextToLabel() {
 	QStringList squeezedLines;
 	bool squeezed = false;
 
-	for(const QString &line : fullText_.split(QLatin1Char('\n'))) {
+	for (const QString &line : fullText_.split(QLatin1Char('\n'))) {
 		int lineWidth = fm.width(line);
 		if (lineWidth > labelWidth) {
 			squeezed = true;
@@ -160,7 +162,7 @@ void ElidedLabel::contextMenuEvent(QContextMenuEvent *ev) {
 	// For now I chose to show it when the text is squeezed; when it's not, the
 	// standard popup menu can do the job (select all, copy).
 
-	const bool squeezed = text() != fullText_;
+	const bool squeezed        = text() != fullText_;
 	const bool showCustomPopup = squeezed;
 	if (showCustomPopup) {
 		QMenu menu(this);
@@ -182,7 +184,7 @@ void ElidedLabel::contextMenuEvent(QContextMenuEvent *ev) {
  * @brief ElidedLabel::keyPressEvent
  * @param event
  */
-void ElidedLabel::keyPressEvent(QKeyEvent *event)  {
+void ElidedLabel::keyPressEvent(QKeyEvent *event) {
 	if (event == QKeySequence::Copy) {
 		// Expand "..." when selecting with the mouse
 		QString txt = selectedText();
@@ -193,9 +195,9 @@ void ElidedLabel::keyPressEvent(QKeyEvent *event)  {
 			// charsBeforeSelection = selectionStart = 2 (ab)
 			// charsAfterSelection = 1 (z)
 			// final selection length= 26 - 2 - 1 = 23
-			const int start = selectionStart();
+			const int start         = selectionStart();
 			int charsAfterSelection = text().length() - start - selectedText().length();
-			txt = fullText_;
+			txt                     = fullText_;
 
 			// Strip markup tags
 			if (textFormat() == Qt::RichText || (textFormat() == Qt::AutoText && Qt::mightBeRichText(txt))) {
@@ -229,9 +231,9 @@ void ElidedLabel::mouseReleaseEvent(QMouseEvent *event) {
 			// charsBeforeSelection = selectionStart = 2 (ab)
 			// charsAfterSelection = 1 (z)
 			// final selection length= 26 - 2 - 1 = 23
-			const int start = selectionStart();
+			const int start         = selectionStart();
 			int charsAfterSelection = text().length() - start - selectedText().length();
-			txt = fullText_;
+			txt                     = fullText_;
 
 			// Strip markup tags
 			if (textFormat() == Qt::RichText || (textFormat() == Qt::AutoText && Qt::mightBeRichText(txt))) {

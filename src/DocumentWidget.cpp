@@ -24,6 +24,12 @@
 #include "Style.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
+#include "Util/ClearCase.h"
+#include "Util/FileSystem.h"
+#include "Util/Input.h"
+#include "Util/User.h"
+#include "Util/regex.h"
+#include "Util/utils.h"
 #include "WindowHighlightData.h"
 #include "WindowMenuEvent.h"
 #include "X11Colors.h"
@@ -31,23 +37,17 @@
 #include "macro.h"
 #include "parse.h"
 #include "userCmds.h"
-#include "Util/ClearCase.h"
-#include "Util/FileSystem.h"
-#include "Util/Input.h"
-#include "Util/User.h"
-#include "Util/regex.h"
-#include "Util/utils.h"
 
+#include <QButtonGroup>
 #include <QClipboard>
 #include <QFile>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QRadioButton>
+#include <QScrollBar>
 #include <QSplitter>
 #include <QTemporaryFile>
 #include <QTimer>
-#include <QButtonGroup>
-#include <QScrollBar>
 #include <qplatformdefs.h>
 
 #include <chrono>
@@ -60,16 +60,16 @@
 /* data attached to window during shell command execution with information for
  * controling and communicating with the process */
 struct ShellCommandData {
-	QTimer        bannerTimer;
-	QByteArray    standardError;
-	QByteArray    standardOutput;
-	QProcess *    process;
-	TextArea *    area;
-	TextCursor    leftPos;
-	TextCursor    rightPos;
+	QTimer bannerTimer;
+	QByteArray standardError;
+	QByteArray standardOutput;
+	QProcess *process;
+	TextArea *area;
+	TextCursor leftPos;
+	TextCursor rightPos;
 	CommandSource source;
-	int           flags;
-	bool          bannerIsUp;
+	int flags;
+	bool bannerIsUp;
 };
 
 DocumentWidget *DocumentWidget::LastCreated = nullptr;
@@ -94,34 +94,34 @@ enum : int {
 };
 
 struct CharMatchTable {
-	char      ch;
-	char      match;
+	char ch;
+	char match;
 	Direction direction;
 };
 
 constexpr CharMatchTable MatchingChars[] = {
-	{'{', '}',   Direction::Forward},
-	{'}', '{',   Direction::Backward},
-	{'(', ')',   Direction::Forward},
-	{')', '(',   Direction::Backward},
-	{'[', ']',   Direction::Forward},
-	{']', '[',   Direction::Backward},
-	{'<', '>',   Direction::Forward},
-	{'>', '<',   Direction::Backward},
-	{'/', '/',   Direction::Forward},
-	{'"', '"',   Direction::Forward},
+	{'{', '}', Direction::Forward},
+	{'}', '{', Direction::Backward},
+	{'(', ')', Direction::Forward},
+	{')', '(', Direction::Backward},
+	{'[', ']', Direction::Forward},
+	{']', '[', Direction::Backward},
+	{'<', '>', Direction::Forward},
+	{'>', '<', Direction::Backward},
+	{'/', '/', Direction::Forward},
+	{'"', '"', Direction::Forward},
 	{'\'', '\'', Direction::Forward},
-	{'`', '`',   Direction::Forward},
+	{'`', '`', Direction::Forward},
 	{'\\', '\\', Direction::Forward},
 };
 
 constexpr CharMatchTable FlashingChars[] = {
-	{'{', '}',   Direction::Forward},
-	{'}', '{',   Direction::Backward},
-	{'(', ')',   Direction::Forward},
-	{')', '(',   Direction::Backward},
-	{'[', ']',   Direction::Forward},
-	{']', '[',   Direction::Backward},
+	{'{', '}', Direction::Forward},
+	{'}', '{', Direction::Backward},
+	{'(', ')', Direction::Forward},
+	{')', '(', Direction::Backward},
+	{'[', ']', Direction::Forward},
+	{']', '[', Direction::Backward},
 };
 
 /**
@@ -155,7 +155,7 @@ QString errorString(int error) {
  * @param user
  */
 void modifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
-	if(auto document = static_cast<DocumentWidget *>(user)) {
+	if (auto document = static_cast<DocumentWidget *>(user)) {
 		document->modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText);
 	}
 }
@@ -167,7 +167,7 @@ void modifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRe
  * @param user
  */
 void smartIndentCB(TextArea *area, SmartIndentEvent *data, void *user) {
-	if(auto document = static_cast<DocumentWidget *>(user)) {
+	if (auto document = static_cast<DocumentWidget *>(user)) {
 		document->smartIndentCallback(area, data);
 	}
 }
@@ -178,7 +178,7 @@ void smartIndentCB(TextArea *area, SmartIndentEvent *data, void *user) {
  * @param user
  */
 void movedCB(TextArea *area, void *user) {
-	if(auto document = static_cast<DocumentWidget *>(user)) {
+	if (auto document = static_cast<DocumentWidget *>(user)) {
 		document->movedCallback(area);
 	}
 }
@@ -189,7 +189,7 @@ void movedCB(TextArea *area, void *user) {
  * @param user
  */
 void dragStartCB(TextArea *area, void *user) {
-	if(auto document = static_cast<DocumentWidget *>(user)) {
+	if (auto document = static_cast<DocumentWidget *>(user)) {
 		document->dragStartCallback(area);
 	}
 }
@@ -201,7 +201,7 @@ void dragStartCB(TextArea *area, void *user) {
  * @param user
  */
 void dragEndCB(TextArea *area, const DragEndEvent *data, void *user) {
-	if(auto document = static_cast<DocumentWidget *>(user)) {
+	if (auto document = static_cast<DocumentWidget *>(user)) {
 		document->dragEndCallback(area, data);
 	}
 }
@@ -213,7 +213,7 @@ void dragEndCB(TextArea *area, const DragEndEvent *data, void *user) {
  * @param user
  */
 void handleUnparsedRegionCB(const TextArea *area, TextCursor pos, const void *user) {
-	if(auto document = static_cast<const DocumentWidget *>(user)) {
+	if (auto document = static_cast<const DocumentWidget *>(user)) {
 		document->handleUnparsedRegion(area->styleBuffer(), pos);
 	}
 }
@@ -262,7 +262,7 @@ void maintainSelection(TextBuffer::Selection &sel, TextCursor pos, int64_t nInse
 	}
 
 	maintainPosition(sel.start_, pos, nInserted, nDeleted);
-	maintainPosition(sel.end_,   pos, nInserted, nDeleted);
+	maintainPosition(sel.end_, pos, nInserted, nDeleted);
 
 	if (sel.end() <= sel.start()) {
 		sel.selected_ = false;
@@ -277,21 +277,27 @@ void maintainSelection(TextBuffer::Selection &sel, TextCursor pos, int64_t nInse
  */
 UndoTypes determineUndoType(int64_t nInserted, int64_t nDeleted) {
 
-	const bool textDeleted  = (nDeleted  > 0);
+	const bool textDeleted  = (nDeleted > 0);
 	const bool textInserted = (nInserted > 0);
 
 	if (textInserted && !textDeleted) {
 		// Insert
-		if (nInserted == 1) return ONE_CHAR_INSERT;
-		else                return BLOCK_INSERT;
+		if (nInserted == 1)
+			return ONE_CHAR_INSERT;
+		else
+			return BLOCK_INSERT;
 	} else if (textInserted && textDeleted) {
 		// Replace
-		if (nInserted == 1) return ONE_CHAR_REPLACE;
-		else                return BLOCK_REPLACE;
+		if (nInserted == 1)
+			return ONE_CHAR_REPLACE;
+		else
+			return BLOCK_REPLACE;
 	} else if (!textInserted && textDeleted) {
 		// Delete
-		if (nDeleted == 1)  return ONE_CHAR_DELETE;
-		else                return BLOCK_DELETE;
+		if (nDeleted == 1)
+			return ONE_CHAR_DELETE;
+		else
+			return BLOCK_DELETE;
 	} else {
 		// Nothing deleted or inserted
 		return UNDO_NOOP;
@@ -309,7 +315,7 @@ QLatin1String createRepeatMacro(int how) {
 	 * to the Nedit macro language
 	 */
 
-	switch(how) {
+	switch (how) {
 	case REPEAT_TO_END:
 		return QLatin1String("lastCursor=-1\nstartPos=$cursor\n"
 							 "while($cursor>=startPos&&$cursor!=lastCursor){\nlastCursor=$cursor\n%1\n}\n");
@@ -350,7 +356,7 @@ QLatin1String createRepeatMacro(int how) {
 DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, bool iconic, const QString &languageMode, bool tabbed, bool background) {
 
 	// first look to see if file is already displayed in a window
-	if(DocumentWidget *document = MainWindow::findWindowWithFile(name, path)) {
+	if (DocumentWidget *document = MainWindow::findWindowWithFile(name, path)) {
 		if (!background) {
 			if (iconic) {
 				document->raiseDocument();
@@ -363,9 +369,9 @@ DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, con
 
 	// helper local function to reduce code duplication
 	auto createInNewWindow = [&name, &geometry, iconic]() {
-		auto win = new MainWindow();
+		auto win                 = new MainWindow();
 		DocumentWidget *document = win->createDocument(name);
-		if(iconic) {
+		if (iconic) {
 			win->showMinimized();
 		} else {
 			win->showNormal();
@@ -379,11 +385,11 @@ DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, con
 	 * use (not Untitled or Untitled and modified), or is currently busy
 	 * running a macro; create the document */
 	DocumentWidget *document = nullptr;
-	if(!inDocument) {
+	if (!inDocument) {
 		document = createInNewWindow();
 	} else if (inDocument->info_->filenameSet || inDocument->info_->fileChanged || inDocument->macroCmdData_) {
 		if (tabbed) {
-			if(MainWindow *win = MainWindow::fromDocument(inDocument)) {
+			if (MainWindow *win = MainWindow::fromDocument(inDocument)) {
 				document = win->createDocument(name);
 			} else {
 				return nullptr;
@@ -403,7 +409,7 @@ DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, con
 	}
 
 	MainWindow *win = MainWindow::fromDocument(document);
-	if(!win) {
+	if (!win) {
 		return nullptr;
 	}
 
@@ -416,7 +422,7 @@ DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, con
 	win->forceShowLineNumbers();
 
 	// Decide what language mode to use, trigger language specific actions
-	if(languageMode.isNull()) {
+	if (languageMode.isNull()) {
 		document->determineLanguageMode(/*forceNewDefaults=*/true);
 	} else {
 		document->action_Set_Language_Mode(languageMode, /*forceNewDefaults=*/true);
@@ -455,7 +461,8 @@ DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, con
  * @param parent
  * @param f
  */
-DocumentWidget::DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f), info_(info_ptr) {
+DocumentWidget::DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget *parent, Qt::WindowFlags f)
+	: QWidget(parent, f), info_(info_ptr) {
 
 	Q_ASSERT(info_ptr);
 
@@ -466,7 +473,7 @@ DocumentWidget::DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget 
 	LastCreated = this;
 
 	// create the text widget
-	if(Settings::splitHorizontally) {
+	if (Settings::splitHorizontally) {
 		splitter_ = new QSplitter(Qt::Horizontal, this);
 	} else {
 		splitter_ = new QSplitter(Qt::Vertical, this);
@@ -524,11 +531,12 @@ DocumentWidget::DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget 
  * @param parent
  * @param f
  */
-DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f) {
+DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowFlags f)
+	: QWidget(parent, f) {
 
 	ui.setupUi(this);
 
-	info_ = std::make_shared<DocumentInfo>();
+	info_           = std::make_shared<DocumentInfo>();
 	info_->filename = name;
 
 	// track what the last created document was so that focus_document("last")
@@ -540,7 +548,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	info_->buffer->BufAddModifyCB(Highlight::SyntaxHighlightModifyCB, this);
 
 	// create the text widget
-	if(Settings::splitHorizontally) {
+	if (Settings::splitHorizontally) {
 		splitter_ = new QSplitter(Qt::Horizontal, this);
 	} else {
 		splitter_ = new QSplitter(Qt::Vertical, this);
@@ -630,7 +638,7 @@ TextArea *DocumentWidget::createTextArea(const std::shared_ptr<TextBuffer> &buff
 
 	auto area = new TextArea(this,
 							 buffer.get(),
-	                         Preferences::GetPrefDefaultFont());
+							 Preferences::GetPrefDefaultFont());
 
 	area->setCursorVPadding(Preferences::GetVerticalAutoScroll());
 	area->setEmulateTabs(Preferences::GetPrefEmTabDist(PLAIN_LANGUAGE_MODE));
@@ -646,15 +654,15 @@ TextArea *DocumentWidget::createTextArea(const std::shared_ptr<TextBuffer> &buff
 	const QColor cursorFg = X11Colors::fromString(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
 
 	area->setColors(
-	    textFg,
-	    textBg,
-	    selectFg,
-	    selectBg,
-	    hiliteFg,
-	    hiliteBg,
-	    lineNoFg,
-	    lineNoBg,
-	    cursorFg);
+		textFg,
+		textBg,
+		selectFg,
+		selectBg,
+		hiliteFg,
+		hiliteBg,
+		lineNoFg,
+		lineNoBg,
+		cursorFg);
 
 	// add focus, drag, cursor tracking, and smart indent callbacks
 	area->addCursorMovementCallback(movedCB, this);
@@ -670,7 +678,7 @@ TextArea *DocumentWidget::createTextArea(const std::shared_ptr<TextBuffer> &buff
 	//area->setContextMenuPolicy(Qt::CustomContextMenu);
 
 	connect(area, &TextArea::customContextMenuRequested, this, [this](const QPoint &pos) {
-		if(contextMenu_) {
+		if (contextMenu_) {
 			contextMenu_->exec(pos);
 		}
 	});
@@ -684,7 +692,7 @@ TextArea *DocumentWidget::createTextArea(const std::shared_ptr<TextBuffer> &buff
 */
 void DocumentWidget::setWindowModified(bool modified) {
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -705,22 +713,22 @@ void DocumentWidget::setWindowModified(bool modified) {
 void DocumentWidget::refreshTabState() {
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
 	QTabWidget *tabWidget = win->tabWidget();
-	int index = tabWidget->indexOf(this);
+	int index             = tabWidget->indexOf(this);
 
 	QString labelString;
 	QString filename = info_->filename;
-	if(Settings::truncateLongNamesInTabs != 0) {
+	if (Settings::truncateLongNamesInTabs != 0) {
 
 		const int absTruncate = std::abs(Settings::truncateLongNamesInTabs);
 
-		if(absTruncate > 3) {
-			if(filename.size() > absTruncate) {
-				if(Settings::truncateLongNamesInTabs > 0) {
+		if (absTruncate > 3) {
+			if (filename.size() > absTruncate) {
+				if (Settings::truncateLongNamesInTabs > 0) {
 					filename = tr("%1%2").arg(QLatin1String("..."), filename.right(absTruncate - 3));
 				} else {
 					filename = tr("%1%2").arg(filename.left(absTruncate - 3), QLatin1String("..."));
@@ -732,7 +740,7 @@ void DocumentWidget::refreshTabState() {
 	}
 
 	static const auto saveIcon = QIcon::fromTheme(QLatin1String("document-save"));
-	if(!saveIcon.isNull()) {
+	if (!saveIcon.isNull()) {
 		tabWidget->setTabIcon(index, info_->fileChanged ? saveIcon : QIcon());
 		labelString = filename;
 	} else {
@@ -782,12 +790,12 @@ void DocumentWidget::setLanguageMode(size_t mode, bool forceNewDefaults) {
 	// Do mode-specific actions
 	reapplyLanguageMode(mode, forceNewDefaults);
 
-	if(!isTopDocument()) {
+	if (!isTopDocument()) {
 		return;
 	}
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -798,7 +806,7 @@ void DocumentWidget::setLanguageMode(size_t mode, bool forceNewDefaults) {
 		return action->data().value<qulonglong>() == mode;
 	});
 
-	if(it != languages.end()) {
+	if (it != languages.end()) {
 		(*it)->setChecked(true);
 	}
 }
@@ -831,18 +839,18 @@ size_t DocumentWidget::matchLanguageMode() const {
 
 	// Do a regular expression search on for recognition pattern
 	const std::string first200 = info_->buffer->BufGetRange(info_->buffer->BufStartOfBuffer(), info_->buffer->BufStartOfBuffer() + 200);
-	if(!first200.empty()) {
+	if (!first200.empty()) {
 		for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
 			if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {
 
 				boost::optional<Search::Result> searchResult = Search::SearchString(
-				            first200,
-				            Preferences::LanguageModes[i].recognitionExpr,
-				            Direction::Forward,
-				            SearchType::Regex,
-				            WrapMode::NoWrap,
-				            0,
-				            QString());
+					first200,
+					Preferences::LanguageModes[i].recognitionExpr,
+					Direction::Forward,
+					SearchType::Regex,
+					WrapMode::NoWrap,
+					0,
+					QString());
 
 				if (searchResult) {
 					return i;
@@ -864,8 +872,8 @@ size_t DocumentWidget::matchLanguageMode() const {
 	const QString file = info_->filename.left(fileNameLen);
 
 	for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
-		Q_FOREACH(const QString &ext, Preferences::LanguageModes[i].extensions) {
-			if(file.endsWith(ext)) {
+		Q_FOREACH (const QString &ext, Preferences::LanguageModes[i].extensions) {
+			if (file.endsWith(ext)) {
 				return i;
 			}
 		}
@@ -894,8 +902,8 @@ void DocumentWidget::movedCallback(TextArea *area) {
 	// Check for changes to read-only status and/or file modifications
 	checkForChangesToFile();
 
-	if(QTimer *const blinkTimer = area->cursorBlinkTimer()) {
-		if(!blinkTimer->isActive()) {
+	if (QTimer *const blinkTimer = area->cursorBlinkTimer()) {
+		if (!blinkTimer->isActive()) {
 			//  Start blinking the caret again.
 			blinkTimer->start();
 		}
@@ -918,10 +926,10 @@ void DocumentWidget::dragStartCallback(TextArea *area) {
 */
 void DocumentWidget::updateMarkTable(TextCursor pos, int64_t nInserted, int64_t nDeleted) {
 
-	for(auto &entry : markTable_) {
+	for (auto &entry : markTable_) {
 		Bookmark &bookmark = entry.second;
-		maintainSelection(bookmark.sel,       pos, nInserted, nDeleted);
-		maintainPosition (bookmark.cursorPos, pos, nInserted, nDeleted);
+		maintainSelection(bookmark.sel, pos, nInserted, nDeleted);
+		maintainPosition(bookmark.cursorPos, pos, nInserted, nDeleted);
 	}
 }
 
@@ -951,7 +959,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 	}
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -966,7 +974,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 
 			updateSelectionSensitiveMenus(selected);
 
-			if(auto dialog = win->dialogReplace_) {
+			if (auto dialog = win->dialogReplace_) {
 				dialog->UpdateReplaceActionButtons();
 			}
 		}
@@ -1012,7 +1020,6 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
  */
 void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText) {
 	modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText, nullptr);
-
 }
 
 /**
@@ -1048,7 +1055,7 @@ void DocumentWidget::smartIndentCallback(TextArea *area, SmartIndentEvent *event
 		return;
 	}
 
-	switch(event->reason) {
+	switch (event->reason) {
 	case CHAR_TYPED:
 		executeModMacro(event);
 		break;
@@ -1065,15 +1072,15 @@ void DocumentWidget::raiseFocusDocumentWindow(bool focus) {
 	raiseDocument();
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
-	if(!win->isMaximized()) {
+	if (!win->isMaximized()) {
 		win->showNormal();
 	}
 
-	if(focus) {
+	if (focus) {
 		win->raise();
 		win->activateWindow();
 	}
@@ -1102,18 +1109,18 @@ void DocumentWidget::documentRaised() {
 	/* Make sure that the "In Selection" button tracks the presence of a
 	   selection and that the this inherits the proper search scope. */
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
-	if(auto dialog = win->dialogReplace_) {
+	if (auto dialog = win->dialogReplace_) {
 		dialog->UpdateReplaceActionButtons();
 	}
 }
 
 void DocumentWidget::raiseDocument() {
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -1127,7 +1134,7 @@ void DocumentWidget::raiseDocument() {
 void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -1156,7 +1163,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 	}
 
 	const std::vector<TextArea *> textAreas = textPanes();
-	for(TextArea *area : textAreas) {
+	for (TextArea *area : textAreas) {
 		area->setWordDelimiters(delimiters.toStdString());
 	}
 
@@ -1166,17 +1173,17 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 	const bool wrapModeIsDef = (info_->wrapMode == Preferences::GetPrefWrap(oldMode));
 	const bool tabDistIsDef  = (info_->buffer->BufGetTabDistance() == Preferences::GetPrefTabDist(oldMode));
 
-	const int oldEmTabDist = textAreas[0]->getEmulateTabs();
+	const int oldEmTabDist            = textAreas[0]->getEmulateTabs();
 	const QString oldlanguageModeName = Preferences::LanguageModeName(oldMode);
 
 	const bool emTabDistIsDef   = oldEmTabDist == Preferences::GetPrefEmTabDist(oldMode);
 	const bool indentStyleIsDef = info_->indentStyle == Preferences::GetPrefAutoIndent(oldMode) || (Preferences::GetPrefAutoIndent(oldMode) == IndentStyle::Smart && info_->indentStyle == IndentStyle::Auto && !SmartIndent::smartIndentMacrosAvailable(Preferences::LanguageModeName(oldMode)));
-	const bool highlightIsDef   = highlightSyntax_  == Preferences::GetPrefHighlightSyntax() || (Preferences::GetPrefHighlightSyntax() && Highlight::FindPatternSet(oldlanguageModeName) == nullptr);
-	const WrapStyle wrapMode    = wrapModeIsDef    || forceDefaults ? Preferences::GetPrefWrap(mode)        : info_->wrapMode;
-	const int tabDist           = tabDistIsDef     || forceDefaults ? Preferences::GetPrefTabDist(mode)     : info_->buffer->BufGetTabDistance();
-	const int emTabDist         = emTabDistIsDef   || forceDefaults ? Preferences::GetPrefEmTabDist(mode)   : oldEmTabDist;
-	IndentStyle indentStyle     = indentStyleIsDef || forceDefaults ? Preferences::GetPrefAutoIndent(mode)  : info_->indentStyle;
-	bool highlight              = highlightIsDef   || forceDefaults ? Preferences::GetPrefHighlightSyntax() : highlightSyntax_;
+	const bool highlightIsDef   = highlightSyntax_ == Preferences::GetPrefHighlightSyntax() || (Preferences::GetPrefHighlightSyntax() && Highlight::FindPatternSet(oldlanguageModeName) == nullptr);
+	const WrapStyle wrapMode    = wrapModeIsDef || forceDefaults ? Preferences::GetPrefWrap(mode) : info_->wrapMode;
+	const int tabDist           = tabDistIsDef || forceDefaults ? Preferences::GetPrefTabDist(mode) : info_->buffer->BufGetTabDistance();
+	const int emTabDist         = emTabDistIsDef || forceDefaults ? Preferences::GetPrefEmTabDist(mode) : oldEmTabDist;
+	IndentStyle indentStyle     = indentStyleIsDef || forceDefaults ? Preferences::GetPrefAutoIndent(mode) : info_->indentStyle;
+	bool highlight              = highlightIsDef || forceDefaults ? Preferences::GetPrefHighlightSyntax() : highlightSyntax_;
 
 	/* Dim/undim smart-indent and highlighting menu items depending on
 	   whether patterns/macros are available */
@@ -1188,7 +1195,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
 	if (topDocument) {
 		win->ui.action_Highlight_Syntax->setEnabled(haveHighlightPatterns);
-		win->ui.action_Indent_Smart    ->setEnabled(haveSmartIndentMacros);
+		win->ui.action_Indent_Smart->setEnabled(haveSmartIndentMacros);
 	}
 
 	// Turn off requested options which are not available
@@ -1240,17 +1247,17 @@ void DocumentWidget::setTabDistance(int distance) {
 
 	if (info_->buffer->BufGetTabDistance() != distance) {
 		TextCursor saveCursorPositions[MaxPanes];
-		int        saveVScrollPositions[MaxPanes];
-		int        saveHScrollPositions[MaxPanes];
+		int saveVScrollPositions[MaxPanes];
+		int saveHScrollPositions[MaxPanes];
 
 		info_->ignoreModify = true;
 
 		const std::vector<TextArea *> textAreas = textPanes();
-		const size_t paneCount = textAreas.size();
+		const size_t paneCount                  = textAreas.size();
 
 		Q_ASSERT(paneCount <= MaxPanes);
 
-		for(size_t index = 0; index < paneCount; ++index) {
+		for (size_t index = 0; index < paneCount; ++index) {
 			TextArea *area = textAreas[index];
 
 			saveVScrollPositions[index] = area->verticalScrollBar()->value();
@@ -1261,7 +1268,7 @@ void DocumentWidget::setTabDistance(int distance) {
 
 		info_->buffer->BufSetTabDistance(distance, true);
 
-		for(size_t index = 0; index < paneCount; ++index) {
+		for (size_t index = 0; index < paneCount; ++index) {
 			TextArea *area = textAreas[index];
 
 			area->setModifyingTabDist(false);
@@ -1282,7 +1289,7 @@ void DocumentWidget::setEmTabDistance(int distance) {
 
 	emit_event("set_em_tab_dist", QString::number(distance));
 
-	for(TextArea *area : textPanes()) {
+	for (TextArea *area : textPanes()) {
 		area->setEmulateTabs(distance);
 	}
 }
@@ -1303,17 +1310,17 @@ void DocumentWidget::setAutoIndent(IndentStyle indentStyle) {
 
 	info_->indentStyle = indentStyle;
 
-	for(TextArea *area : textPanes()) {
+	for (TextArea *area : textPanes()) {
 		area->setAutoIndent(autoIndent);
 		area->setSmartIndent(smartIndent);
 	}
 
-	if(!isTopDocument()) {
+	if (!isTopDocument()) {
 		return;
 	}
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -1332,19 +1339,19 @@ void DocumentWidget::setAutoWrap(WrapStyle wrapStyle) {
 	const bool autoWrap = (wrapStyle == WrapStyle::Newline);
 	const bool contWrap = (wrapStyle == WrapStyle::Continuous);
 
-	for(TextArea *area : textPanes()) {
+	for (TextArea *area : textPanes()) {
 		area->setAutoWrap(autoWrap);
 		area->setContinuousWrap(contWrap);
 	}
 
 	info_->wrapMode = wrapStyle;
 
-	if(!isTopDocument()) {
+	if (!isTopDocument()) {
 		return;
 	}
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -1372,8 +1379,8 @@ std::vector<TextArea *> DocumentWidget::textPanes() const {
 	std::vector<TextArea *> list;
 	list.reserve(static_cast<size_t>(count));
 
-	for(int i = 0; i < count; ++i) {
-		if(auto area = qobject_cast<TextArea *>(splitter_->widget(i))) {
+	for (int i = 0; i < count; ++i) {
+		if (auto area = qobject_cast<TextArea *>(splitter_->widget(i))) {
 			list.push_back(area);
 		}
 	}
@@ -1388,7 +1395,7 @@ std::vector<TextArea *> DocumentWidget::textPanes() const {
 bool DocumentWidget::isTopDocument() const {
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return false;
 	}
 
@@ -1424,7 +1431,7 @@ void DocumentWidget::stopHighlighting() {
 
 	/* Remove and detach style buffer and style table from all text
 	   display(s) of window, and redisplay without highlighting */
-	for(TextArea *area : textPanes()) {
+	for (TextArea *area : textPanes()) {
 		area->removeWidgetHighlight();
 	}
 }
@@ -1435,8 +1442,8 @@ void DocumentWidget::stopHighlighting() {
  */
 TextArea *DocumentWidget::firstPane() const {
 
-	for(int i = 0; i < splitter_->count(); ++i) {
-		if(auto area = qobject_cast<TextArea *>(splitter_->widget(i))) {
+	for (int i = 0; i < splitter_->count(); ++i) {
+		if (auto area = qobject_cast<TextArea *>(splitter_->widget(i))) {
 			return area;
 		}
 	}
@@ -1470,21 +1477,21 @@ void DocumentWidget::updateSelectionSensitiveMenus(bool enabled) {
 	}
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
 	updateSelectionSensitiveMenu(win->ui.menu_Shell, ShellMenuData, enabled);
 	updateSelectionSensitiveMenu(win->ui.menu_Macro, MacroMenuData, enabled);
-	updateSelectionSensitiveMenu(contextMenu_,       BGMenuData,    enabled);
+	updateSelectionSensitiveMenu(contextMenu_, BGMenuData, enabled);
 }
 
 void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<MenuData> &menuList, bool enabled) {
 
-	if(menu) {
+	if (menu) {
 		const QList<QAction *> actions = menu->actions();
-		for(QAction *action : actions) {
-			if(QMenu *subMenu = action->menu()) {
+		for (QAction *action : actions) {
+			if (QMenu *subMenu = action->menu()) {
 				updateSelectionSensitiveMenu(subMenu, menuList, enabled);
 			} else {
 				int index = action->data().toInt();
@@ -1594,11 +1601,11 @@ void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int6
 	if (!info_->fileChanged) {
 		undo.restoresToSaved = true;
 
-		for(UndoInfo &u : info_->undo) {
+		for (UndoInfo &u : info_->undo) {
 			u.restoresToSaved = false;
 		}
 
-		for(UndoInfo &u : info_->redo) {
+		for (UndoInfo &u : info_->redo) {
 			u.restoresToSaved = false;
 		}
 	}
@@ -1709,14 +1716,13 @@ void DocumentWidget::removeRedoItem() {
 	Q_EMIT canRedoChanged(!info_->redo.empty());
 }
 
-
 /*
 ** Trim records off of the END of the undo list to reduce it to length
 ** maxLength
 */
 void DocumentWidget::trimUndoList(size_t maxLength) {
 
-	if(info_->undo.size() <= maxLength) {
+	if (info_->undo.size() <= maxLength) {
 		return;
 	}
 
@@ -1730,7 +1736,7 @@ void DocumentWidget::trimUndoList(size_t maxLength) {
 void DocumentWidget::undo() {
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -1754,7 +1760,7 @@ void DocumentWidget::undo() {
 	if (!info_->buffer->primary.hasSelection() || Preferences::GetPrefUndoModifiesSelection()) {
 		/* position the cursor in the focus pane after the changed text
 		   to show the user where the undo was done */
-		if(QPointer<TextArea> area = win->lastFocus()) {
+		if (QPointer<TextArea> area = win->lastFocus()) {
 			area->TextSetCursorPos(undo.startPos + restoredTextLength);
 		}
 	}
@@ -1767,7 +1773,7 @@ void DocumentWidget::undo() {
 		}
 	}
 
-	if(QPointer<TextArea> area = win->lastFocus()) {
+	if (QPointer<TextArea> area = win->lastFocus()) {
 		makeSelectionVisible(area);
 	}
 
@@ -1787,7 +1793,7 @@ void DocumentWidget::undo() {
 void DocumentWidget::redo() {
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -1809,7 +1815,7 @@ void DocumentWidget::redo() {
 	if (!info_->buffer->primary.hasSelection() || Preferences::GetPrefUndoModifiesSelection()) {
 		/* position the cursor in the focus pane after the changed text
 		   to show the user where the undo was done */
-		if(QPointer<TextArea> area = win->lastFocus()) {
+		if (QPointer<TextArea> area = win->lastFocus()) {
 			area->TextSetCursorPos(redo.startPos + restoredTextLength);
 		}
 	}
@@ -1823,7 +1829,7 @@ void DocumentWidget::redo() {
 		}
 	}
 
-	if(QPointer<TextArea> area = win->lastFocus()) {
+	if (QPointer<TextArea> area = win->lastFocus()) {
 		makeSelectionVisible(area);
 	}
 
@@ -1925,7 +1931,7 @@ void DocumentWidget::checkForChangesToFile() {
 	lastCheckTime   = timestamp;
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -1962,46 +1968,43 @@ void DocumentWidget::checkForChangesToFile() {
 
 			//  Set title, message body and button to match stat()'s error.
 			switch (error) {
-			case ENOENT:
-				{
-					// A component of the path file_name does not exist.
-					int resp = QMessageBox::critical(
-								this,
-								tr("File not Found"),
-								tr("File '%1' (or directory in its path) no longer exists.\n"
-								   "Another program may have deleted or moved it.").arg(info_->filename),
-								QMessageBox::Save | QMessageBox::Cancel);
-					save = (resp == QMessageBox::Save);
-				}
-				break;
-			case EACCES:
-				{
-					// Search permission denied for a path component. We add one to the response because Re-Save wouldn't really make sense here.
-					int resp = QMessageBox::critical(
-								this,
-								tr("Permission Denied"),
-								tr("You no longer have access to file '%1'.\n"
-								   "Another program may have changed the permissions of one of its parent directories.").arg(info_->filename),
-								QMessageBox::Save | QMessageBox::Cancel);
-					save = (resp == QMessageBox::Save);
-				}
-				break;
-			default:
-				{
-					// Everything else. This hints at an internal error (eg. ENOTDIR) or at some bad state at the host.
-					int resp = QMessageBox::critical(
-								this,
-								tr("File not Accessible"),
-								tr("Error while checking the status of file '%1':\n"
-								   "    '%2'\n"
-								   "Please make sure that no data is lost before closing this window.").arg(info_->filename, errorString(error)),
-								QMessageBox::Save | QMessageBox::Cancel);
-					save = (resp == QMessageBox::Save);
-				}
-				break;
+			case ENOENT: {
+				// A component of the path file_name does not exist.
+				int resp = QMessageBox::critical(
+					this,
+					tr("File not Found"),
+					tr("File '%1' (or directory in its path) no longer exists.\n"
+					   "Another program may have deleted or moved it.")
+						.arg(info_->filename),
+					QMessageBox::Save | QMessageBox::Cancel);
+				save = (resp == QMessageBox::Save);
+			} break;
+			case EACCES: {
+				// Search permission denied for a path component. We add one to the response because Re-Save wouldn't really make sense here.
+				int resp = QMessageBox::critical(
+					this,
+					tr("Permission Denied"),
+					tr("You no longer have access to file '%1'.\n"
+					   "Another program may have changed the permissions of one of its parent directories.")
+						.arg(info_->filename),
+					QMessageBox::Save | QMessageBox::Cancel);
+				save = (resp == QMessageBox::Save);
+			} break;
+			default: {
+				// Everything else. This hints at an internal error (eg. ENOTDIR) or at some bad state at the host.
+				int resp = QMessageBox::critical(
+					this,
+					tr("File not Accessible"),
+					tr("Error while checking the status of file '%1':\n"
+					   "    '%2'\n"
+					   "Please make sure that no data is lost before closing this window.")
+						.arg(info_->filename, errorString(error)),
+					QMessageBox::Save | QMessageBox::Cancel);
+				save = (resp == QMessageBox::Save);
+			} break;
 			}
 
-			if(save) {
+			if (save) {
 				saveDocument();
 			}
 		}
@@ -2024,7 +2027,7 @@ void DocumentWidget::checkForChangesToFile() {
 		info_->gid  = statbuf.st_gid;
 
 		QFile fp(fullname);
-		if(fp.open(QIODevice::ReadWrite) || fp.open(QIODevice::ReadOnly)) {
+		if (fp.open(QIODevice::ReadWrite) || fp.open(QIODevice::ReadOnly)) {
 			const bool readOnly = !fp.isWritable();
 			fp.close();
 
@@ -2067,7 +2070,7 @@ void DocumentWidget::checkForChangesToFile() {
 		}
 
 		messageBox.exec();
-		if(messageBox.clickedButton() == buttonReload) {
+		if (messageBox.clickedButton() == buttonReload) {
 			revertToSaved();
 		}
 	}
@@ -2079,7 +2082,7 @@ void DocumentWidget::checkForChangesToFile() {
  */
 QString DocumentWidget::fullPath() const {
 
-	if(info_->path.isEmpty()) {
+	if (info_->path.isEmpty()) {
 		return QString();
 	}
 
@@ -2128,7 +2131,7 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 	char pendingCR = '\0';
 
 	QFile file(fileName);
-	if(!file.open(QIODevice::ReadOnly)) {
+	if (!file.open(QIODevice::ReadOnly)) {
 		return true;
 	}
 
@@ -2136,7 +2139,7 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 
 	// For UNIX/macOS files, we can do a quick check to see if the on disk file
 	// has a different length, but for DOS files, it's not that simple...
-	switch(info_->fileFormat) {
+	switch (info_->fileFormat) {
 	case FileFormats::Unix:
 	case FileFormats::Mac:
 		if (fileLen != info_->buffer->length()) {
@@ -2180,14 +2183,14 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 		}
 
 		filePos += nRead;
-		nRead   += offset;
+		nRead += offset;
 
 		// check for on-disk file format changes, but only for the first chunk
 		if (bufPos == 0 && info_->fileFormat != FormatOfFile(view::string_view(fileString, static_cast<size_t>(nRead)))) {
 			return true;
 		}
 
-		switch(info_->fileFormat) {
+		switch (info_->fileFormat) {
 		case FileFormats::Mac:
 			ConvertFromMac(fileString, nRead);
 			break;
@@ -2223,31 +2226,31 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 void DocumentWidget::revertToSaved() {
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
 	// Can't revert untitled windows
 	if (!info_->filenameSet) {
 		QMessageBox::warning(
-					this,
-					tr("Error"),
-					tr("Window '%1' was never saved, can't re-read").arg(info_->filename));
+			this,
+			tr("Error"),
+			tr("Window '%1' was never saved, can't re-read").arg(info_->filename));
 		return;
 	}
 
 	const std::vector<TextArea *> textAreas = textPanes();
-	const size_t panesCount = textAreas.size();
+	const size_t panesCount                 = textAreas.size();
 
 	Q_ASSERT(panesCount <= MaxPanes);
 
 	TextCursor insertPositions[MaxPanes];
-	int        topLines[MaxPanes];
-	int        horizOffsets[MaxPanes];
+	int topLines[MaxPanes];
+	int horizOffsets[MaxPanes];
 
 	// save insert & scroll positions of all of the panes to restore later
 	for (size_t i = 0; i < panesCount; i++) {
-		TextArea *area = textAreas[i];
+		TextArea *area     = textAreas[i];
 		insertPositions[i] = area->cursorPos();
 		topLines[i]        = area->verticalScrollBar()->value();
 		horizOffsets[i]    = area->horizontalScrollBar()->value();
@@ -2314,13 +2317,13 @@ bool DocumentWidget::writeBackupFile() {
 	if (fd < 0 || (fp = fdopen(fd, "w")) == nullptr) {
 
 		QMessageBox::warning(
-					this,
-					tr("Error writing Backup"),
-					tr("Unable to save backup for %1:\n%2\nAutomatic backup is now off").arg(info_->filename, errorString(errno)));
+			this,
+			tr("Error writing Backup"),
+			tr("Unable to save backup for %1:\n%2\nAutomatic backup is now off").arg(info_->filename, errorString(errno)));
 
 		info_->autoSave = false;
 
-		if(auto win = MainWindow::fromDocument(this)) {
+		if (auto win = MainWindow::fromDocument(this)) {
 			no_signals(win->ui.action_Incremental_Backup)->setChecked(false);
 		}
 		return false;
@@ -2330,7 +2333,7 @@ bool DocumentWidget::writeBackupFile() {
 	std::string fileString = info_->buffer->BufGetAll();
 
 	// add a terminating newline if the file doesn't already have one
-	if(Preferences::GetPrefAppendLF()) {
+	if (Preferences::GetPrefAppendLF()) {
 		if (!fileString.empty() && fileString.back() != '\n') {
 			fileString.append("\n");
 		}
@@ -2342,9 +2345,9 @@ bool DocumentWidget::writeBackupFile() {
 	::fwrite(fileString.data(), 1, fileString.size(), fp);
 	if (::ferror(fp)) {
 		QMessageBox::critical(
-					this,
-					tr("Error saving Backup"),
-					tr("Error while saving backup for %1:\n%2\nAutomatic backup is now off").arg(info_->filename, errorString(errno)));
+			this,
+			tr("Error saving Backup"),
+			tr("Error while saving backup for %1:\n%2\nAutomatic backup is now off").arg(info_->filename, errorString(errno)));
 
 		QFile::remove(name);
 		info_->autoSave = false;
@@ -2387,14 +2390,15 @@ bool DocumentWidget::saveDocument() {
 							  "and your work or someone else's may potentially be lost.\n\n"
 							  "To preserve the modified file, cancel this operation and\n"
 							  "use Save As... to save this file under a different name,\n"
-		                      "or Revert to Saved to revert to the modified version.").arg(info_->filename));
+							  "or Revert to Saved to revert to the modified version.")
+							   .arg(info_->filename));
 
 		QPushButton *buttonContinue = messageBox.addButton(tr("Continue"), QMessageBox::AcceptRole);
 		QPushButton *buttonCancel   = messageBox.addButton(QMessageBox::Cancel);
 		Q_UNUSED(buttonCancel)
 
 		messageBox.exec();
-		if(messageBox.clickedButton() != buttonContinue) {
+		if (messageBox.clickedButton() != buttonContinue) {
 			// Cancel and mark file as externally modified
 			info_->lastModTime = 0;
 			info_->fileMissing = false;
@@ -2422,12 +2426,12 @@ bool DocumentWidget::doSave() {
 		none of the write bits set.  */
 	if (isAdministrator()) {
 		QFileInfo fi(fullname);
-		if(fi.exists() && ((fi.permissions() & (QFile::WriteOwner | QFile::WriteUser | QFile::WriteGroup)) == 0)) {
+		if (fi.exists() && ((fi.permissions() & (QFile::WriteOwner | QFile::WriteUser | QFile::WriteGroup)) == 0)) {
 			int result = QMessageBox::warning(
-			            this,
-			            tr("Writing Read-only File"),
-			            tr("File '%1' is marked as read-only.\nDo you want to save anyway?").arg(info_->filename),
-			            QMessageBox::Save | QMessageBox::Cancel);
+				this,
+				tr("Writing Read-only File"),
+				tr("File '%1' is marked as read-only.\nDo you want to save anyway?").arg(info_->filename),
+				QMessageBox::Save | QMessageBox::Cancel);
 
 			if (result != QMessageBox::Save) {
 				return true;
@@ -2448,7 +2452,7 @@ bool DocumentWidget::doSave() {
 
 	// open the file
 	QFile file(fullname);
-	if(!file.open(QIODevice::WriteOnly)) {
+	if (!file.open(QIODevice::WriteOnly)) {
 		QMessageBox messageBox(this);
 		messageBox.setWindowTitle(tr("Error saving File"));
 		messageBox.setIcon(QMessageBox::Warning);
@@ -2459,7 +2463,7 @@ bool DocumentWidget::doSave() {
 		Q_UNUSED(buttonCancel)
 
 		messageBox.exec();
-		if(messageBox.clickedButton() == buttonSaveAs) {
+		if (messageBox.clickedButton() == buttonSaveAs) {
 			// empty string signals a prompt for filename
 			return saveDocumentAs(QString(), /*addWrap=*/false);
 		}
@@ -2471,7 +2475,7 @@ bool DocumentWidget::doSave() {
 	std::string text = info_->buffer->BufGetAll();
 
 	// If the file is to be saved in DOS or Macintosh format, reconvert
-	switch(info_->fileFormat) {
+	switch (info_->fileFormat) {
 	case FileFormats::Dos:
 		ConvertToDos(text);
 		break;
@@ -2483,7 +2487,7 @@ bool DocumentWidget::doSave() {
 	}
 
 	// write to the file
-	if(file.write(text.data(), static_cast<int64_t>(text.size())) == -1) {
+	if (file.write(text.data(), static_cast<int64_t>(text.size())) == -1) {
 		QMessageBox::critical(this, tr("Error saving File"), tr("%1 not saved:\n%2").arg(info_->filename, file.errorString()));
 		file.close();
 		file.remove();
@@ -2520,15 +2524,15 @@ bool DocumentWidget::doSave() {
 bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return false;
 	}
 
 	QString fullname;
 
-	if(newName.isNull()) {
+	if (newName.isNull()) {
 		fullname = MainWindow::promptForNewFile(this, &info_->fileFormat, &addWrap);
-		if(fullname.isNull()) {
+		if (fullname.isNull()) {
 			return false;
 		}
 	} else {
@@ -2566,7 +2570,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 		Q_UNUSED(buttonCloseOther)
 
 		messageBox.exec();
-		if(messageBox.clickedButton() == buttonCancel) {
+		if (messageBox.clickedButton() == buttonCancel) {
 			return false;
 		}
 
@@ -2624,25 +2628,25 @@ void DocumentWidget::addWrapNewlines() {
 	int topLines[MaxPanes];
 
 	const std::vector<TextArea *> textAreas = textPanes();
-	const size_t paneCount = textAreas.size();
+	const size_t paneCount                  = textAreas.size();
 
 	Q_ASSERT(paneCount <= MaxPanes);
 
 	// save the insert and scroll positions of each pane
-	for(size_t i = 0; i < paneCount; ++i) {
-		TextArea *area = textAreas[i];
+	for (size_t i = 0; i < paneCount; ++i) {
+		TextArea *area     = textAreas[i];
 		insertPositions[i] = area->cursorPos();
 		topLines[i]        = area->verticalScrollBar()->value();
 	}
 
 	// Modify the buffer to add wrapping
-	TextArea *area = textAreas[0];
+	TextArea *area         = textAreas[0];
 	std::string fileString = area->TextGetWrapped(info_->buffer->BufStartOfBuffer(), info_->buffer->BufEndOfBuffer());
 
 	info_->buffer->BufSetAll(fileString);
 
 	// restore the insert and scroll positions of each pane
-	for(size_t i = 0; i < paneCount; ++i) {
+	for (size_t i = 0; i < paneCount; ++i) {
 		TextArea *area = textAreas[i];
 		area->TextSetCursorPos(insertPositions[i]);
 		area->verticalScrollBar()->setValue(topLines[i]);
@@ -2650,7 +2654,7 @@ void DocumentWidget::addWrapNewlines() {
 	}
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -2693,7 +2697,7 @@ bool DocumentWidget::writeBckVersion() {
 		/* open the file being edited.  If there are problems with the
 		 * old file, don't bother the user, just skip the backup */
 		QFile inputFile(fullname);
-		if(!inputFile.open(QIODevice::ReadOnly)) {
+		if (!inputFile.open(QIODevice::ReadOnly)) {
 			return false;
 		}
 
@@ -2729,7 +2733,7 @@ bool DocumentWidget::writeBckVersion() {
 
 		// Allocate I/O buffer
 		constexpr size_t IO_BUFFER_SIZE = (1024 * 1024);
-		auto io_buffer = std::make_unique<char[]>(IO_BUFFER_SIZE);
+		auto io_buffer                  = std::make_unique<char[]>(IO_BUFFER_SIZE);
 
 		// copy loop
 		for (;;) {
@@ -2753,27 +2757,27 @@ bool DocumentWidget::writeBckVersion() {
 		}
 
 		return false;
-	} catch(const BackupError &e) {
+	} catch (const BackupError &e) {
 		QMessageBox messageBox(this);
 		messageBox.setWindowTitle(tr("Error writing Backup"));
 		messageBox.setIcon(QMessageBox::Critical);
 		messageBox.setText(tr("Couldn't write .bck (last version) file.\n%1: %2").arg(e.filename, e.message));
 
-		QPushButton *buttonCancelSave = messageBox.addButton(tr("Cancel Save"),      QMessageBox::RejectRole);
+		QPushButton *buttonCancelSave = messageBox.addButton(tr("Cancel Save"), QMessageBox::RejectRole);
 		QPushButton *buttonTurnOff    = messageBox.addButton(tr("Turn off Backups"), QMessageBox::AcceptRole);
-		QPushButton *buttonContinue   = messageBox.addButton(tr("Continue"),         QMessageBox::AcceptRole);
+		QPushButton *buttonContinue   = messageBox.addButton(tr("Continue"), QMessageBox::AcceptRole);
 
 		Q_UNUSED(buttonContinue)
 
 		messageBox.exec();
-		if(messageBox.clickedButton() == buttonCancelSave) {
+		if (messageBox.clickedButton() == buttonCancelSave) {
 			return true;
 		}
 
-		if(messageBox.clickedButton() == buttonTurnOff) {
+		if (messageBox.clickedButton() == buttonTurnOff) {
 			info_->saveOldVersion = false;
 
-			if(auto win = MainWindow::fromDocument(this)) {
+			if (auto win = MainWindow::fromDocument(this)) {
 				no_signals(win->ui.action_Make_Backup_Copy)->setChecked(false);
 			}
 		}
@@ -2817,25 +2821,25 @@ bool DocumentWidget::closeFileAndWindow(CloseMode preResponse) {
 	   or if the user wants to ignore external modifications then
 	   just close it.  Otherwise ask for confirmation first. */
 	if (!info_->fileChanged &&
-	        /* Normal File */
-	        ((!info_->fileMissing && info_->lastModTime > 0) ||
-	        /* New File */
-	        (info_->fileMissing && info_->lastModTime == 0) ||
-	        /* File deleted/modified externally, ignored by user. */
-	        !Preferences::GetPrefWarnFileMods())) {
+		/* Normal File */
+		((!info_->fileMissing && info_->lastModTime > 0) ||
+		 /* New File */
+		 (info_->fileMissing && info_->lastModTime == 0) ||
+		 /* File deleted/modified externally, ignored by user. */
+		 !Preferences::GetPrefWarnFileMods())) {
 
 		closeDocument();
 		// up-to-date windows don't have outstanding backup files to close
 	} else {
 
 		int response = QMessageBox::Yes;
-		switch(preResponse) {
+		switch (preResponse) {
 		case CloseMode::Prompt:
 			response = QMessageBox::warning(
-			            this,
-			            tr("Save File"),
-			            tr("Save %1 before closing?").arg(info_->filename),
-			            QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+				this,
+				tr("Save File"),
+				tr("Save %1 before closing?").arg(info_->filename),
+				QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
 			break;
 		case CloseMode::Save:
 			response = QMessageBox::Yes;
@@ -2845,7 +2849,7 @@ bool DocumentWidget::closeFileAndWindow(CloseMode preResponse) {
 			break;
 		}
 
-		switch(response) {
+		switch (response) {
 		case QMessageBox::Yes:
 			// Save
 			if (saveDocument()) {
@@ -2894,7 +2898,7 @@ void DocumentWidget::closeDocument() {
 	Q_EMIT documentClosed();
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -2907,13 +2911,13 @@ void DocumentWidget::closeDocument() {
 		QString name = MainWindow::uniqueUntitledName();
 		info_->lockReasons.clear();
 
-		info_->mode         = 0;
-		info_->uid          = 0;
-		info_->gid          = 0;
-		info_->lastModTime  = 0;
-		info_->dev          = 0;
-		info_->ino          = 0;
-		info_->filename     = name;
+		info_->mode        = 0;
+		info_->uid         = 0;
+		info_->gid         = 0;
+		info_->lastModTime = 0;
+		info_->dev         = 0;
+		info_->ino         = 0;
+		info_->filename    = name;
 		setPath(QString());
 
 		markTable_.clear();
@@ -2923,10 +2927,10 @@ void DocumentWidget::closeDocument() {
 		info_->buffer->BufSetAll(view::string_view());
 		info_->ignoreModify = false;
 
-		info_->filenameSet  = false;
-		info_->fileChanged  = false;
-		info_->fileMissing  = true;
-		info_->fileFormat   = FileFormats::Unix;
+		info_->filenameSet = false;
+		info_->fileChanged = false;
+		info_->fileMissing = true;
+		info_->fileFormat  = FileFormats::Unix;
 
 		stopHighlighting();
 		endSmartIndent();
@@ -2957,15 +2961,15 @@ void DocumentWidget::closeDocument() {
 	MainWindow::updateWindowMenus();
 
 	// if we deleted the last tab, then we can close the window too
-	if(win->tabCount() == 0) {
+	if (win->tabCount() == 0) {
 		win->deleteLater();
 		win->setVisible(false);
 	}
 
 	// The number of open windows may have changed...
 	const std::vector<MainWindow *> windows = MainWindow::allWindows();
-	const bool enabled = windows.size() > 1;
-	for(MainWindow *window : windows) {
+	const bool enabled                      = windows.size() > 1;
+	for (MainWindow *window : windows) {
 		window->ui.action_Move_Tab_To->setEnabled(enabled);
 	}
 }
@@ -2977,7 +2981,7 @@ void DocumentWidget::closeDocument() {
  */
 DocumentWidget *DocumentWidget::fromArea(TextArea *area) {
 
-	if(!area) {
+	if (!area) {
 		return nullptr;
 	}
 
@@ -2997,15 +3001,15 @@ DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 	}
 
 	DocumentWidget *document = DocumentWidget::editExistingFile(
-	                               this,
-	                               fi->filename,
-	                               fi->pathname,
-	                               0,
-	                               QString(),
-	                               /*iconic=*/false,
-	                               QString(),
-	                               Preferences::GetPrefOpenInTab(),
-	                               /*bgOpen=*/false);
+		this,
+		fi->filename,
+		fi->pathname,
+		0,
+		QString(),
+		/*iconic=*/false,
+		QString(),
+		Preferences::GetPrefOpenInTab(),
+		/*bgOpen=*/false);
 
 	MainWindow::checkCloseEnableState();
 
@@ -3022,7 +3026,7 @@ DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags) {
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return false;
 	}
 
@@ -3052,7 +3056,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 			// detect if the file is readable, but not writable
 			QFile file(fullname);
-			if(file.open(QIODevice::ReadWrite) || file.open(QIODevice::ReadOnly)) {
+			if (file.open(QIODevice::ReadWrite) || file.open(QIODevice::ReadOnly)) {
 				info_->lockReasons.setPermLocked(!file.isWritable());
 			}
 
@@ -3128,9 +3132,9 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 	}
 
 #ifdef Q_OS_WIN
-	// Copied from linux libc sys/stat.h:
-	#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
-	#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+// Copied from linux libc sys/stat.h:
+#define S_ISREG(m) (((m)&S_IFMT) == S_IFREG)
+#define S_ISDIR(m) (((m)&S_IFMT) == S_IFDIR)
 #endif
 
 	if (S_ISDIR(statbuf.st_mode)) {
@@ -3157,7 +3161,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 		std::string text;
 
-		if(file.size() != 0) {
+		if (file.size() != 0) {
 			uchar *memory = file.map(0, file.size());
 			if (!memory) {
 				info_->filenameSet = false; // Temp. prevent check for changes.
@@ -3218,7 +3222,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 		Q_EMIT updateWindowReadOnly(this);
 		return true;
-	} catch(const std::bad_alloc &) {
+	} catch (const std::bad_alloc &) {
 		info_->filenameSet = false; // Temp. prevent check for changes.
 		QMessageBox::critical(this, tr("Error while opening File"), tr("File is too large to edit"));
 		info_->filenameSet = true;
@@ -3236,10 +3240,9 @@ void DocumentWidget::refreshWindowStates() {
 	}
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
-
 
 	if (modeMessageDisplayed()) {
 		ui.labelFileAndSize->setText(modeMessage_);
@@ -3279,7 +3282,7 @@ void DocumentWidget::refreshWindowStates() {
 */
 void DocumentWidget::refreshMenuBar() {
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -3303,7 +3306,7 @@ void DocumentWidget::refreshMenuToggleStates() {
 	}
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -3351,7 +3354,7 @@ void DocumentWidget::refreshMenuToggleStates() {
 */
 void DocumentWidget::executeNewlineMacro(SmartIndentEvent *event) {
 
-	if(const std::unique_ptr<SmartIndentData> &winData = info_->smartIndentData) {
+	if (const std::unique_ptr<SmartIndentData> &winData = info_->smartIndentData) {
 
 		DataValue result;
 		QString errMsg;
@@ -3366,8 +3369,7 @@ void DocumentWidget::executeNewlineMacro(SmartIndentEvent *event) {
 
 		// Call newline macro with the position at which to add newline/indent
 		std::array<DataValue, 1> args = {
-			make_value(to_integer(event->pos))
-		};
+			make_value(to_integer(event->pos))};
 
 		++(winData->inNewLineMacro);
 
@@ -3384,9 +3386,9 @@ void DocumentWidget::executeNewlineMacro(SmartIndentEvent *event) {
 		// Process errors in macro execution
 		if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
 			QMessageBox::critical(
-						this,
-						tr("Smart Indent"),
-						tr("Error in smart indent macro:\n%1").arg(stat == MACRO_ERROR ? errMsg : tr("dialogs and shell commands not permitted")));
+				this,
+				tr("Smart Indent"),
+				tr("Error in smart indent macro:\n%1").arg(stat == MACRO_ERROR ? errMsg : tr("dialogs and shell commands not permitted")));
 			endSmartIndent();
 			return;
 		}
@@ -3411,16 +3413,16 @@ void DocumentWidget::setShowMatching(ShowMatchingStyle state) {
 	emit_event("set_show_matching", to_string(state));
 
 	info_->showMatchingStyle = state;
-	if(!isTopDocument()) {
+	if (!isTopDocument()) {
 		return;
 	}
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
-	switch(state) {
+	switch (state) {
 	case ShowMatchingStyle::None:
 		no_signals(win->ui.action_Matching_Off)->setChecked(true);
 		break;
@@ -3431,7 +3433,6 @@ void DocumentWidget::setShowMatching(ShowMatchingStyle state) {
 		no_signals(win->ui.action_Matching_Range)->setChecked(true);
 		break;
 	}
-
 }
 
 /*
@@ -3440,7 +3441,7 @@ void DocumentWidget::setShowMatching(ShowMatchingStyle state) {
 */
 void DocumentWidget::executeModMacro(SmartIndentEvent *event) {
 
-	if(const std::unique_ptr<SmartIndentData> &winData = info_->smartIndentData) {
+	if (const std::unique_ptr<SmartIndentData> &winData = info_->smartIndentData) {
 
 		DataValue result;
 		QString errMsg;
@@ -3456,8 +3457,7 @@ void DocumentWidget::executeModMacro(SmartIndentEvent *event) {
 		   preemption or time limit.  Execution must not overlap or re-enter */
 		std::array<DataValue, 2> args = {
 			make_value(to_integer(event->pos)),
-			make_value(event->charsTyped)
-		};
+			make_value(event->charsTyped)};
 
 		++(winData->inModMacro);
 
@@ -3473,9 +3473,9 @@ void DocumentWidget::executeModMacro(SmartIndentEvent *event) {
 		// Process errors in macro execution
 		if (stat == MACRO_PREEMPT || stat == MACRO_ERROR) {
 			QMessageBox::critical(
-						this,
-						tr("Smart Indent"),
-						tr("Error in smart indent modification macro:\n%1").arg((stat == MACRO_ERROR) ? errMsg : tr("dialogs and shell commands not permitted")));
+				this,
+				tr("Smart Indent"),
+				tr("Error in smart indent modification macro:\n%1").arg((stat == MACRO_ERROR) ? errMsg : tr("dialogs and shell commands not permitted")));
 
 			endSmartIndent();
 			return;
@@ -3489,7 +3489,7 @@ void DocumentWidget::executeModMacro(SmartIndentEvent *event) {
 void DocumentWidget::macroBannerTimeoutProc() {
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -3512,7 +3512,7 @@ void DocumentWidget::macroBannerTimeoutProc() {
 void DocumentWidget::shellBannerTimeoutProc() {
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -3545,12 +3545,12 @@ bool DocumentWidget::includeFile(const QString &name) {
 	// TODO(eteran): this code is *almost* identical to a block of code in doOpen, we should
 	// abstract this out into a function and reuse it.
 	QFile file(name);
-	if(!file.open(QFile::ReadOnly)) {
+	if (!file.open(QFile::ReadOnly)) {
 		QMessageBox::critical(this, tr("Error opening File"), file.errorString());
 		return false;
 	}
 
-	if(file.size() != 0) {
+	if (file.size() != 0) {
 		uchar *memory = file.map(0, file.size());
 		if (!memory) {
 			QMessageBox::critical(this, tr("Error opening File"), file.errorString());
@@ -3578,7 +3578,7 @@ bool DocumentWidget::includeFile(const QString &name) {
 		if (info_->buffer->primary.hasSelection()) {
 			info_->buffer->BufReplaceSelected(text);
 		} else {
-			if(auto win = MainWindow::fromDocument(this)) {
+			if (auto win = MainWindow::fromDocument(this)) {
 				info_->buffer->BufInsert(win->lastFocus()->cursorPos(), text);
 			}
 		}
@@ -3602,7 +3602,7 @@ boost::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style
 		return entry.ch == toMatch;
 	});
 
-	if(matchIt == std::end(MatchingChars)) {
+	if (matchIt == std::end(MatchingChars)) {
 		return boost::none;
 	}
 
@@ -3613,9 +3613,8 @@ boost::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style
 
 	int nestDepth = 1;
 
-	switch(direction) {
-	case Direction::Forward:
-	{
+	switch (direction) {
+	case Direction::Forward: {
 		const TextCursor beginPos = charPos + 1;
 
 		for (TextCursor pos = beginPos; pos < endLimit; ++pos) {
@@ -3644,7 +3643,7 @@ boost::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style
 		break;
 	}
 	case Direction::Backward:
-		if(charPos != startLimit) {
+		if (charPos != startLimit) {
 			const TextCursor beginPos = charPos - 1;
 
 			for (TextCursor pos = beginPos; pos >= startLimit; --pos) {
@@ -3715,7 +3714,7 @@ void DocumentWidget::gotoMatchingCharacter(TextArea *area, bool select) {
 		return;
 	}
 
-	if(select) {
+	if (select) {
 		const TextCursor startPos = (*matchPos > range.start) ? range.start : *matchPos;
 		const TextCursor endPos   = (*matchPos > range.start) ? *matchPos : range.start;
 
@@ -3767,7 +3766,7 @@ int DocumentWidget::findDefinitionHelperCommon(TextArea *area, const QString &va
 		// If we didn't find a requested calltip, see if we can use a tag
 		if (status == 0 && search_type == Tags::SearchMode::TIP && !Tags::TagsFileList.empty()) {
 			Tags::searchMode = Tags::SearchMode::TIP_FROM_TAG;
-			status = findAllMatches(area, value);
+			status           = findAllMatches(area, value);
 		}
 
 		if (status == 0) {
@@ -3798,7 +3797,7 @@ void DocumentWidget::findDefinitionHelper(TextArea *area, const QString &arg, Ta
 		Tags::searchMode = search_type;
 
 		QString selected = getAnySelection(ErrorSound::Silent);
-		if(selected.isEmpty()) {
+		if (selected.isEmpty()) {
 			return;
 		}
 
@@ -3821,7 +3820,6 @@ void DocumentWidget::findDefinitionCalltip(TextArea *area, const QString &tipNam
 	Tags::globAlignMode = TipAlignMode::Sloppy;
 
 	findDefinitionHelper(area, tipName, Tags::SearchMode::TIP);
-
 }
 
 /**
@@ -3854,7 +3852,7 @@ void DocumentWidget::execAP(TextArea *area, const QString &command) {
 */
 void DocumentWidget::executeShellCommand(TextArea *area, const QString &command, CommandSource source) {
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -3887,7 +3885,7 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 	substitutedCommand.replace(QLatin1Char('%'), fullName);
 	substitutedCommand.replace(QLatin1Char('#'), QString::number(loc->line));
 
-	if(substitutedCommand.isNull()) {
+	if (substitutedCommand.isNull()) {
 		QMessageBox::critical(this, tr("Shell Command"), tr("Shell command is too long due to\n"
 															"filename substitutions with '%%' or\n"
 															"line number substitutions with '#'"));
@@ -3895,15 +3893,14 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 	}
 
 	issueCommand(
-				win,
-				area,
-				substitutedCommand,
-				QString(),
-				flags,
-				range.start,
-				range.end,
-				source);
-
+		win,
+		area,
+		substitutedCommand,
+		QString(),
+		flags,
+		range.start,
+		range.end,
+		source);
 }
 
 /**
@@ -3954,10 +3951,10 @@ void DocumentWidget::printWindow(TextArea *area, bool selectedOnly) {
 void DocumentWidget::printString(const std::string &string, const QString &jobname) {
 
 	auto dialog = std::make_unique<DialogPrint>(
-				QString::fromStdString(string),
-				jobname,
-				this,
-				this);
+		QString::fromStdString(string),
+		jobname,
+		this,
+		this);
 
 	dialog->exec();
 }
@@ -3967,13 +3964,13 @@ void DocumentWidget::printString(const std::string &string, const QString &jobna
  */
 void DocumentWidget::splitPane() {
 
-	if(splitter_->count() >= MaxPanes) {
+	if (splitter_->count() >= MaxPanes) {
 		return;
 	}
 
 	auto area = createTextArea(info_->buffer);
 
-	if(auto activeArea = qobject_cast<TextArea *>(splitter_->widget(0))) {
+	if (auto activeArea = qobject_cast<TextArea *>(splitter_->widget(0))) {
 		area->setLineNumCols(activeArea->getLineNumCols());
 		area->setBacklightCharTypes(backlightCharTypes_);
 		area->setFont(font_);
@@ -3990,21 +3987,21 @@ void DocumentWidget::splitPane() {
 */
 void DocumentWidget::closePane() {
 
-	if(splitter_->count() <= 1) {
+	if (splitter_->count() <= 1) {
 		return;
 	}
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
 	TextArea *lastFocus = win->lastFocus();
 	Q_ASSERT(lastFocus);
 
-	for(int i = 0; i < splitter_->count(); ++i) {
-		if(auto area = qobject_cast<TextArea *>(splitter_->widget(i))) {
-			if(area == lastFocus) {
+	for (int i = 0; i < splitter_->count(); ++i) {
+		if (auto area = qobject_cast<TextArea *>(splitter_->widget(i))) {
+			if (area == lastFocus) {
 				area->deleteLater();
 				return;
 			}
@@ -4034,28 +4031,27 @@ void DocumentWidget::beginSmartIndent(Verbosity verbosity) {
 
 	// Find the window's language mode.  If none is set, warn the user
 	QString modeName = Preferences::LanguageModeName(languageMode_);
-	if(modeName.isNull()) {
+	if (modeName.isNull()) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(
-						this,
-						tr("Smart Indent"),
-						tr("No language-specific mode has been set for this file.\n\nTo use smart indent in this window, please select a language from the Preferences -> Language Modes menu."));
+				this,
+				tr("Smart Indent"),
+				tr("No language-specific mode has been set for this file.\n\nTo use smart indent in this window, please select a language from the Preferences -> Language Modes menu."));
 		}
 		return;
 	}
 
 	// Look up the appropriate smart-indent macros for the language
 	const SmartIndentEntry *indentMacros = SmartIndent::findIndentSpec(modeName);
-	if(!indentMacros) {
+	if (!indentMacros) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(
-						this,
-						tr("Smart Indent"),
-						tr("Smart indent is not available in languagemode\n%1.\n\nYou can create new smart indent macros in the\nPreferences -> Default Settings -> Smart Indent\ndialog, or choose a different language mode from:\nPreferences -> Language Mode.").arg(modeName));
+				this,
+				tr("Smart Indent"),
+				tr("Smart indent is not available in languagemode\n%1.\n\nYou can create new smart indent macros in the\nPreferences -> Default Settings -> Smart Indent\ndialog, or choose a different language mode from:\nPreferences -> Language Mode.").arg(modeName));
 		}
 		return;
 	}
-
 
 	/* Make sure that the initial macro file is loaded before we execute
 	   any of the smart-indent macros. Smart-indent macros may reference
@@ -4083,7 +4079,7 @@ void DocumentWidget::beginSmartIndent(Verbosity verbosity) {
 	int stoppedAt;
 	QString errMsg;
 
-	auto siData = std::make_unique<SmartIndentData>();
+	auto siData          = std::make_unique<SmartIndentData>();
 	siData->newlineMacro = std::unique_ptr<Program>(compileMacro(indentMacros->newlineMacro, &errMsg, &stoppedAt));
 
 	if (!siData->newlineMacro) {
@@ -4115,11 +4111,11 @@ void DocumentWidget::updateSignals(MainWindow *from, MainWindow *to) {
 
 	disconnect(from);
 
-	connect(this, &DocumentWidget::canUndoChanged,       to, &MainWindow::undoAvailable);
-	connect(this, &DocumentWidget::canRedoChanged,       to, &MainWindow::redoAvailable);
-	connect(this, &DocumentWidget::updateStatus,         to, &MainWindow::updateStatus);
+	connect(this, &DocumentWidget::canUndoChanged, to, &MainWindow::undoAvailable);
+	connect(this, &DocumentWidget::canRedoChanged, to, &MainWindow::redoAvailable);
+	connect(this, &DocumentWidget::updateStatus, to, &MainWindow::updateStatus);
 	connect(this, &DocumentWidget::updateWindowReadOnly, to, &MainWindow::updateWindowReadOnly);
-	connect(this, &DocumentWidget::updateWindowTitle,    to, &MainWindow::updateWindowTitle);
+	connect(this, &DocumentWidget::updateWindowTitle, to, &MainWindow::updateWindowTitle);
 }
 
 /*
@@ -4142,7 +4138,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 	auto dialog = std::make_unique<DialogMoveDocument>(this);
 
 	// load them into the dialog
-	for(MainWindow *win : allWindows) {
+	for (MainWindow *win : allWindows) {
 		dialog->addItem(win);
 	}
 
@@ -4152,7 +4148,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 	dialog->setMultipleDocuments(fromWindow->tabCount() > 1);
 	int r = dialog->exec();
 
-	if(r == QDialog::Accepted) {
+	if (r == QDialog::Accepted) {
 
 		int selection = dialog->selectionIndex();
 
@@ -4162,7 +4158,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 		// move top document
 		if (dialog->moveAllSelected()) {
 			// move all documents
-			for(DocumentWidget *document : fromWindow->openDocuments()) {
+			for (DocumentWidget *document : fromWindow->openDocuments()) {
 
 				targetWindow->tabWidget()->addTab(document, document->filename());
 
@@ -4181,7 +4177,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 		}
 
 		// if we just emptied the window, then delete it
-		if(fromWindow->tabCount() == 0) {
+		if (fromWindow->tabCount() == 0) {
 			fromWindow->deleteLater();
 		}
 
@@ -4198,7 +4194,7 @@ void DocumentWidget::showStatsLine(bool state) {
 	   the top line number in absolute (non-wrapped) lines, because it can
 	   be a costly calculation, and is only needed for displaying line
 	   numbers, either in the stats line, or along the left margin */
-	for(TextArea *area : textPanes()) {
+	for (TextArea *area : textPanes()) {
 		area->TextDMaintainAbsLineNum(state);
 	}
 
@@ -4211,11 +4207,10 @@ void DocumentWidget::showStatsLine(bool state) {
  * @param margin
  */
 void DocumentWidget::setWrapMargin(int margin) {
-	for(TextArea *area : textPanes()) {
+	for (TextArea *area : textPanes()) {
 		area->setWrapMargin(margin);
 	}
 }
-
 
 /*
 ** Set the fonts for "window" from a font name, and updates the display.
@@ -4233,7 +4228,7 @@ void DocumentWidget::action_Set_Fonts(const QString &fontName) {
 	font_     = Font::fromString(fontName);
 
 	// Change the primary font in all the widgets
-	for(TextArea *area : textPanes()) {
+	for (TextArea *area : textPanes()) {
 		area->setFont(font_);
 	}
 }
@@ -4246,7 +4241,7 @@ void DocumentWidget::setBacklightChars(const QString &applyBacklightTypes) {
 	backlightChars_     = !applyBacklightTypes.isNull();
 	backlightCharTypes_ = applyBacklightTypes;
 
-	for(TextArea *area : textPanes()) {
+	for (TextArea *area : textPanes()) {
 		area->setBacklightCharTypes(backlightCharTypes_);
 	}
 }
@@ -4277,7 +4272,7 @@ void DocumentWidget::setShowStatisticsLine(bool value) {
 
 	// stats line is a shell-level item, so we toggle the button state
 	// regardless of it's 'topness'
-	if(auto win = MainWindow::fromDocument(this)) {
+	if (auto win = MainWindow::fromDocument(this)) {
 		no_signals(win->ui.action_Statistics_Line)->setChecked(value);
 	}
 
@@ -4308,8 +4303,8 @@ void DocumentWidget::setMatchSyntaxBased(bool value) {
 
 	emit_event("set_match_syntax_based", value ? QLatin1String("1") : QLatin1String("0"));
 
-	if(isTopDocument()) {
-		if(auto win = MainWindow::fromDocument(this)) {
+	if (isTopDocument()) {
+		if (auto win = MainWindow::fromDocument(this)) {
 			no_signals(win->ui.action_Matching_Syntax)->setChecked(value);
 		}
 	}
@@ -4332,13 +4327,13 @@ void DocumentWidget::setOverstrike(bool overstrike) {
 
 	emit_event("set_overtype_mode", overstrike ? QLatin1String("1") : QLatin1String("0"));
 
-	if(isTopDocument()) {
-		if(auto win = MainWindow::fromDocument(this)) {
+	if (isTopDocument()) {
+		if (auto win = MainWindow::fromDocument(this)) {
 			no_signals(win->ui.action_Overtype)->setChecked(overstrike);
 		}
 	}
 
-	for(TextArea *area : textPanes()) {
+	for (TextArea *area : textPanes()) {
 		area->setOverstrike(overstrike);
 	}
 
@@ -4359,9 +4354,8 @@ void DocumentWidget::gotoAP(TextArea *area, int line, int column) {
 	if (line == -1) {
 		position = area->cursorPos();
 
-
 		boost::optional<Location> loc = area->positionToLineAndCol(position);
-		if(!loc) {
+		if (!loc) {
 			return;
 		}
 
@@ -4394,16 +4388,16 @@ void DocumentWidget::gotoAP(TextArea *area, int line, int column) {
  */
 void DocumentWidget::setColors(const QColor &textFg, const QColor &textBg, const QColor &selectFg, const QColor &selectBg, const QColor &hiliteFg, const QColor &hiliteBg, const QColor &lineNoFg, const QColor &lineNoBg, const QColor &cursorFg) {
 
-	for(TextArea *area : textPanes()) {
+	for (TextArea *area : textPanes()) {
 		area->setColors(textFg,
-		                     textBg,
-		                     selectFg,
-		                     selectBg,
-		                     hiliteFg,
-		                     hiliteBg,
-		                     lineNoFg,
-		                     lineNoBg,
-		                     cursorFg);
+						textBg,
+						selectFg,
+						selectBg,
+						hiliteFg,
+						hiliteBg,
+						lineNoFg,
+						lineNoBg,
+						cursorFg);
 	}
 }
 
@@ -4421,7 +4415,7 @@ bool DocumentWidget::modeMessageDisplayed() const {
 */
 void DocumentWidget::setModeMessage(const QString &message) {
 
-	if(message.isNull()) {
+	if (message.isNull()) {
 		return;
 	}
 
@@ -4519,7 +4513,7 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 	auto process = new QProcess(this);
 	process->setWorkingDirectory(document->path());
 	connect(process,
-			static_cast<void(QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
+			static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished),
 			document,
 			&DocumentWidget::processFinished);
 
@@ -4551,7 +4545,7 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 
 	// if there's nothing to write to the process' stdin, close it now, otherwise
 	// write it to the process
-	if(!input.isEmpty()) {
+	if (!input.isEmpty()) {
 		process->write(input.toLocal8Bit());
 	}
 
@@ -4559,14 +4553,14 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 
 	/* Create a data structure for passing process information around
 	   amongst the callback routines which will process i/o and completion */
-	auto cmdData = std::make_unique<ShellCommandData>();
-	cmdData->process     = process;
-	cmdData->flags       = flags;
-	cmdData->area        = area;
-	cmdData->bannerIsUp  = false;
-	cmdData->source      = source;
-	cmdData->leftPos     = replaceLeft;
-	cmdData->rightPos    = replaceRight;
+	auto cmdData        = std::make_unique<ShellCommandData>();
+	cmdData->process    = process;
+	cmdData->flags      = flags;
+	cmdData->area       = area;
+	cmdData->bannerIsUp = false;
+	cmdData->source     = source;
+	cmdData->leftPos    = replaceLeft;
+	cmdData->rightPos   = replaceRight;
 
 	document->shellCmdData_ = std::move(cmdData);
 
@@ -4594,12 +4588,12 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStatus) {
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
 	const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_;
-	bool fromMacro = (cmdData->source == CommandSource::Macro);
+	bool fromMacro                                   = (cmdData->source == CommandSource::Macro);
 
 	// Cancel pending timeouts
 	cmdData->bannerTimer.stop();
@@ -4660,7 +4654,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 	if (cmdData->flags & ERROR_DIALOGS) {
 		bool cancel = false;
 		// NOTE(eteran): assumes UNIX return code style!
-		bool failure = exitCode != 0;
+		bool failure     = exitCode != 0;
 		bool errorReport = !errText.isEmpty();
 
 		static constexpr int DF_MAX_MSG_LENGTH = 4096;
@@ -4731,7 +4725,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 
 			std::string output_string = outText.toStdString();
 
-			auto area = cmdData->area;
+			auto area       = cmdData->area;
 			TextBuffer *buf = area->buffer();
 
 			if (cmdData->flags & REPLACE_SELECTION) {
@@ -4760,8 +4754,8 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 ** Cancel the shell command in progress
 */
 void DocumentWidget::abortShellCommand() {
-	if(const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_) {
-		if(QProcess *process = cmdData->process) {
+	if (const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_) {
+		if (QProcess *process = cmdData->process) {
 			process->kill();
 		}
 	}
@@ -4774,7 +4768,7 @@ void DocumentWidget::abortShellCommand() {
 void DocumentWidget::execCursorLine(TextArea *area, CommandSource source) {
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -4811,26 +4805,25 @@ void DocumentWidget::execCursorLine(TextArea *area, CommandSource source) {
 	substitutedCommand.replace(QLatin1Char('%'), fullPath());
 	substitutedCommand.replace(QLatin1Char('#'), QString::number(loc->line));
 
-	if(substitutedCommand.isNull()) {
+	if (substitutedCommand.isNull()) {
 		QMessageBox::critical(
-					this,
-					tr("Shell Command"),
-					tr("Shell command is too long due to\n"
-					   "filename substitutions with '%%' or\n"
-					   "line number substitutions with '#'"));
+			this,
+			tr("Shell Command"),
+			tr("Shell command is too long due to\n"
+			   "filename substitutions with '%%' or\n"
+			   "line number substitutions with '#'"));
 		return;
 	}
 
 	issueCommand(
-				win,
-				area,
-				substitutedCommand,
-				QString(),
-				0,
-				insertPos + 1,
-				insertPos + 1,
-				source);
-
+		win,
+		area,
+		substitutedCommand,
+		QString(),
+		0,
+		insertPos + 1,
+		insertPos + 1,
+		source);
 }
 
 /*
@@ -4845,7 +4838,7 @@ void DocumentWidget::filterSelection(const QString &command, CommandSource sourc
 	}
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -4867,14 +4860,14 @@ void DocumentWidget::filterSelection(const QString &command, CommandSource sourc
 	const TextCursor right = info_->buffer->primary.end();
 
 	issueCommand(
-				win,
-				win->lastFocus(),
-	            command,
-	            QString::fromStdString(text),
-	            ACCUMULATE | ERROR_DIALOGS | REPLACE_SELECTION,
-	            left,
-	            right,
-	            source);
+		win,
+		win->lastFocus(),
+		command,
+		QString::fromStdString(text),
+		ACCUMULATE | ERROR_DIALOGS | REPLACE_SELECTION,
+		left,
+		right,
+		source);
 }
 
 /*
@@ -4918,7 +4911,7 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 	/* Get the command input as a text string.  If there is input, errors
 	  shouldn't be mixed in with output, so set flags to ERROR_DIALOGS */
 	std::string text;
-	switch(input) {
+	switch (input) {
 	case FROM_SELECTION:
 		text = info_->buffer->BufGetSelectionText();
 		if (text.empty()) {
@@ -4948,22 +4941,22 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 	   one, to free the current one from waiting for lengthy execution */
 	TextArea *outWidget = nullptr;
 	TextRange range;
-	switch(output) {
+	switch (output) {
 	case TO_DIALOG:
 		flags |= OUTPUT_TO_DIALOG;
 		range.start = TextCursor();
 		range.end   = TextCursor();
 		break;
 	case TO_NEW_WINDOW:
-		if(DocumentWidget *document = MainWindow::editNewFile(
-					Preferences::GetPrefOpenInTab() ? inWindow : nullptr,
-					QString(),
-					false,
-					QString(),
-					QDir(info_->path))) {
+		if (DocumentWidget *document = MainWindow::editNewFile(
+				Preferences::GetPrefOpenInTab() ? inWindow : nullptr,
+				QString(),
+				false,
+				QString(),
+				QDir(info_->path))) {
 
-			inWindow  = MainWindow::fromDocument(document);
-			outWidget = document->firstPane();
+			inWindow    = MainWindow::fromDocument(document);
+			outWidget   = document->firstPane();
 			range.start = TextCursor();
 			range.end   = TextCursor();
 			MainWindow::checkCloseEnableState();
@@ -5013,14 +5006,14 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 
 	// issue the command
 	issueCommand(
-	            inWindow,
-	            outWidget,
-	            substitutedCommand,
-	            QString::fromStdString(text),
-	            flags,
-	            range.start,
-	            range.end,
-	            source);
+		inWindow,
+		outWidget,
+		substitutedCommand,
+		QString::fromStdString(text),
+		flags,
+		range.start,
+		range.end,
+		source);
 }
 
 /**
@@ -5039,20 +5032,20 @@ int DocumentWidget::widgetToPaneIndex(TextArea *area) const {
 void DocumentWidget::shellCmdToMacroString(const QString &command, const QString &input) {
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
 	// fork the command and begin processing input/output
 	issueCommand(
-				win,
-				nullptr,
-				command,
-				input,
-				ACCUMULATE | OUTPUT_TO_STRING,
-				TextCursor(),
-				TextCursor(),
-				CommandSource::Macro);
+		win,
+		nullptr,
+		command,
+		input,
+		ACCUMULATE | OUTPUT_TO_STRING,
+		TextCursor(),
+		TextCursor(),
+		CommandSource::Macro);
 }
 
 /*
@@ -5060,7 +5053,7 @@ void DocumentWidget::shellCmdToMacroString(const QString &command, const QString
 */
 void DocumentWidget::setAutoScroll(int margin) {
 
-	for(TextArea *area : textPanes()) {
+	for (TextArea *area : textPanes()) {
 		area->setCursorVPadding(margin);
 	}
 }
@@ -5093,7 +5086,7 @@ void DocumentWidget::repeatMacro(const QString &macro, int how) {
 	QString errMsg;
 	int stoppedAt;
 	Program *const prog = compileMacro(loopedCmd, &errMsg, &stoppedAt);
-	if(!prog) {
+	if (!prog) {
 		qWarning("NEdit: internal error, repeat macro syntax wrong: %s", qPrintable(errMsg));
 		return;
 	}
@@ -5110,7 +5103,7 @@ std::vector<DocumentWidget *> DocumentWidget::allDocuments() {
 	std::vector<MainWindow *> windows = MainWindow::allWindows();
 	std::vector<DocumentWidget *> documents;
 
-	for(MainWindow *window : windows) {
+	for (MainWindow *window : windows) {
 
 		std::vector<DocumentWidget *> openDocuments = window->openDocuments();
 
@@ -5127,17 +5120,17 @@ std::vector<DocumentWidget *> DocumentWidget::allDocuments() {
 void DocumentWidget::beginLearn() {
 
 	// If we're already in learn mode, return
-	if(CommandRecorder::instance()->isRecording()) {
+	if (CommandRecorder::instance()->isRecording()) {
 		return;
 	}
 
 	MainWindow *thisWindow = MainWindow::fromDocument(this);
-	if(!thisWindow) {
+	if (!thisWindow) {
 		return;
 	}
 
 	// dim the inappropriate menus and items, and undim finish and cancel
-	for(MainWindow *window : MainWindow::allWindows()) {
+	for (MainWindow *window : MainWindow::allWindows()) {
 		window->ui.action_Learn_Keystrokes->setEnabled(false);
 	}
 
@@ -5186,7 +5179,6 @@ bool DocumentWidget::readMacroFile(const QString &fileName, bool warnNotExist) {
 		return false;
 	}
 
-
 	// Parse text
 	return readCheckMacroString(this, text, this, fileName, nullptr);
 }
@@ -5210,18 +5202,18 @@ void DocumentWidget::runMacro(Program *prog) {
 	setCursor(Qt::BusyCursor);
 
 	// enable the cancel menu item
-	if(auto win = MainWindow::fromDocument(this)) {
+	if (auto win = MainWindow::fromDocument(this)) {
 		win->ui.action_Cancel_Learn->setText(tr("Cancel Macro"));
 		win->ui.action_Cancel_Learn->setEnabled(true);
 	}
 
 	/* Create a data structure for passing macro execution information around
 	   amongst the callback routines which will process i/o and completion */
-	auto cmdData = std::make_unique<MacroCommandData>();
-	cmdData->bannerIsUp         = false;
-	cmdData->closeOnCompletion  = false;
-	cmdData->program            = std::unique_ptr<Program>(prog);
-	cmdData->context            = nullptr;
+	auto cmdData               = std::make_unique<MacroCommandData>();
+	cmdData->bannerIsUp        = false;
+	cmdData->closeOnCompletion = false;
+	cmdData->program           = std::unique_ptr<Program>(prog);
+	cmdData->context           = nullptr;
 
 	macroCmdData_ = std::move(cmdData);
 
@@ -5235,7 +5227,7 @@ void DocumentWidget::runMacro(Program *prog) {
 	QString errMsg;
 	const int stat = executeMacro(this, prog, {}, &result, macroCmdData_->context, &errMsg);
 
-	switch(stat) {
+	switch (stat) {
 	case MACRO_ERROR:
 		finishMacroCmdExecution();
 		QMessageBox::critical(this, tr("Macro Error"), tr("Error executing macro: %1").arg(errMsg));
@@ -5267,7 +5259,7 @@ void DocumentWidget::finishMacroCmdExecution() {
 	setCursor(Qt::ArrowCursor);
 
 	// enable the cancel menu item
-	if(auto win = MainWindow::fromDocument(this)) {
+	if (auto win = MainWindow::fromDocument(this)) {
 		win->ui.action_Cancel_Learn->setText(tr("Cancel Learn"));
 		win->ui.action_Cancel_Learn->setEnabled(false);
 	}
@@ -5293,9 +5285,8 @@ void DocumentWidget::finishMacroCmdExecution() {
  */
 DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProc() {
 
-
 	// on the last loop, it may have been set to nullptr!
-	if(!macroCmdData_) {
+	if (!macroCmdData_) {
 		return MacroContinuationCode::Stop;
 	}
 
@@ -5303,7 +5294,7 @@ DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProc() {
 	DataValue result;
 	const ExecReturnCodes stat = continueMacro(macroCmdData_->context, &result, &errMsg);
 
-	switch(stat) {
+	switch (stat) {
 	case MACRO_ERROR:
 		finishMacroCmdExecution();
 		QMessageBox::critical(this, tr("Macro Error"), tr("Error executing macro: %1").arg(errMsg));
@@ -5328,11 +5319,11 @@ DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProc() {
 */
 void DocumentWidget::resumeMacroExecution() {
 
-	if(const std::shared_ptr<MacroCommandData> &cmdData = macroCmdData_) {
+	if (const std::shared_ptr<MacroCommandData> &cmdData = macroCmdData_) {
 
 		// create a background task that will run so long as the function returns false
 		connect(&cmdData->continuationTimer, &QTimer::timeout, this, [cmdData, this]() {
-			if(continueWorkProc() == MacroContinuationCode::Stop) {
+			if (continueWorkProc() == MacroContinuationCode::Stop) {
 				cmdData->continuationTimer.stop();
 				cmdData->continuationTimer.disconnect();
 			} else {
@@ -5341,7 +5332,6 @@ void DocumentWidget::resumeMacroExecution() {
 
 		// a timeout of 0 means "run whenever the event loop is idle"
 		cmdData->continuationTimer.start(0);
-
 	}
 }
 
@@ -5371,7 +5361,7 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 
 	// get the character to match and the position to start from
 	const TextCursor currentPos = area->cursorPos();
-	if(currentPos == 0) {
+	if (currentPos == 0) {
 		return;
 	}
 
@@ -5386,7 +5376,7 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 		return entry.ch == ch;
 	});
 
-	if(matchIt == std::end(FlashingChars)) {
+	if (matchIt == std::end(FlashingChars)) {
 		return;
 	}
 
@@ -5445,7 +5435,7 @@ PatternSet *DocumentWidget::findPatternsForWindow(Verbosity verbosity) {
 
 	// Find the window's language mode.  If none is set, warn user
 	QString modeName = Preferences::LanguageModeName(languageMode_);
-	if(modeName.isNull()) {
+	if (modeName.isNull()) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this,
 								 tr("Language Mode"),
@@ -5461,7 +5451,7 @@ PatternSet *DocumentWidget::findPatternsForWindow(Verbosity verbosity) {
 
 	// Look up the appropriate pattern for the language
 	PatternSet *const patterns = Highlight::FindPatternSet(modeName);
-	if(!patterns) {
+	if (!patterns) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this,
 								 tr("Language Mode"),
@@ -5470,7 +5460,8 @@ PatternSet *DocumentWidget::findPatternsForWindow(Verbosity verbosity) {
 									"You can create new syntax highlight patterns in the\n"
 									"Preferences -> Default Settings -> Syntax Highlighting\n"
 									"dialog, or choose a different language mode from:\n"
-									"Preferences -> Language Mode.").arg(modeName));
+									"Preferences -> Language Mode.")
+									 .arg(modeName));
 			return nullptr;
 		}
 	}
@@ -5492,7 +5483,7 @@ void DocumentWidget::freeHighlightingData() {
 
 	/* The text display may make a last desperate attempt to access highlight
 	   information when it is destroyed, which would be a disaster. */
-	for(TextArea *area : textPanes()) {
+	for (TextArea *area : textPanes()) {
 		area->setStyleBuffer(nullptr);
 	}
 }
@@ -5512,14 +5503,14 @@ void DocumentWidget::updateHighlightStyles() {
 
 	// Find the pattern set for the window's current language mode
 	PatternSet *patterns = findPatternsForWindow(Verbosity::Silent);
-	if(!patterns) {
+	if (!patterns) {
 		stopHighlighting();
 		return;
 	}
 
 	// Build new patterns
 	std::unique_ptr<WindowHighlightData> newHighlightData = createHighlightData(patterns);
-	if(!newHighlightData) {
+	if (!newHighlightData) {
 		stopHighlighting();
 		return;
 	}
@@ -5533,7 +5524,7 @@ void DocumentWidget::updateHighlightStyles() {
 
 	/* Attach new highlight information to text widgets in each pane
 	   (and redraw) */
-	for(TextArea *area : textPanes()) {
+	for (TextArea *area : textPanes()) {
 		attachHighlightToWidget(area);
 	}
 }
@@ -5543,10 +5534,10 @@ void DocumentWidget::updateHighlightStyles() {
 */
 HighlightPattern *DocumentWidget::findPatternOfWindow(const QString &name) const {
 
-	if(const std::unique_ptr<WindowHighlightData> &hData = highlightData_) {
+	if (const std::unique_ptr<WindowHighlightData> &hData = highlightData_) {
 		if (PatternSet *set = hData->patternSetForWindow) {
 
-			for(HighlightPattern &pattern : set->patterns) {
+			for (HighlightPattern &pattern : set->patterns) {
 				if (pattern.name == name) {
 					return &pattern;
 				}
@@ -5584,7 +5575,7 @@ QColor DocumentWidget::highlightBGColorOfCode(size_t hCode) const {
 **/
 Style DocumentWidget::getHighlightInfo(TextCursor pos) {
 
-	HighlightData *pattern = nullptr;
+	HighlightData *pattern                                    = nullptr;
 	const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
 	if (!highlightData) {
 		return Style();
@@ -5623,7 +5614,7 @@ int64_t DocumentWidget::styleLengthOfCodeFromPos(TextCursor pos) const {
 
 	const TextCursor oldPos = pos;
 
-	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
+	if (const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 		if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
 
 			auto hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
@@ -5638,7 +5629,7 @@ int64_t DocumentWidget::styleLengthOfCodeFromPos(TextCursor pos) const {
 			}
 
 			StyleTableEntry *entry = styleTableEntryOfCode(hCode);
-			if(!entry) {
+			if (!entry) {
 				return 0;
 			}
 
@@ -5664,7 +5655,7 @@ int64_t DocumentWidget::styleLengthOfCodeFromPos(TextCursor pos) const {
 ** Functions to return style information from the highlighting style table.
 */
 QString DocumentWidget::highlightNameOfCode(size_t hCode) const {
-	if(StyleTableEntry *entry = styleTableEntryOfCode(hCode)) {
+	if (StyleTableEntry *entry = styleTableEntryOfCode(hCode)) {
 		return entry->highlightName;
 	}
 
@@ -5672,7 +5663,7 @@ QString DocumentWidget::highlightNameOfCode(size_t hCode) const {
 }
 
 QString DocumentWidget::highlightStyleOfCode(size_t hCode) const {
-	if(StyleTableEntry *entry = styleTableEntryOfCode(hCode)) {
+	if (StyleTableEntry *entry = styleTableEntryOfCode(hCode)) {
 		return entry->styleName;
 	}
 
@@ -5703,7 +5694,6 @@ StyleTableEntry *DocumentWidget::styleTableEntryOfCode(size_t hCode) const {
 	return &highlightData->styleTable[hCode];
 }
 
-
 /*
 ** Picks up the entry in the style buffer for the position (if any).
 ** Returns the style code or zero.
@@ -5711,7 +5701,7 @@ StyleTableEntry *DocumentWidget::styleTableEntryOfCode(size_t hCode) const {
 size_t DocumentWidget::highlightCodeOfPos(TextCursor pos) const {
 
 	size_t hCode = 0;
-	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
+	if (const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 
 		if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
 
@@ -5734,9 +5724,9 @@ size_t DocumentWidget::highlightCodeOfPos(TextCursor pos) const {
 int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
 
 	const TextCursor oldPos = pos;
-	size_t checkCode = 0;
+	size_t checkCode        = 0;
 
-	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
+	if (const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 
 		if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
 
@@ -5781,7 +5771,7 @@ int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
 ** the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
 */
 void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) const {
-	TextBuffer *buf = info_->buffer.get();
+	TextBuffer *buf                                           = info_->buffer.get();
 	const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
 
 	const ReparseContext &context                         = highlightData->contextRequirements;
@@ -5835,13 +5825,13 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
 	}
 
 	// Copy the buffer range into a string
-	std::string str             = buf->BufGetRange(beginSafety, endSafety);
-	const char *string          = &str[0];
-	const char *const match_to  = string + str.size();
+	std::string str            = buf->BufGetRange(beginSafety, endSafety);
+	const char *string         = &str[0];
+	const char *const match_to = string + str.size();
 
-	std::string styleStr  = styleBuf->BufGetRange(beginSafety, endSafety);
-	char *styleString     = &styleStr[0];
-	char *stylePtr        = &styleStr[0];
+	std::string styleStr = styleBuf->BufGetRange(beginSafety, endSafety);
+	char *styleString    = &styleStr[0];
+	char *stylePtr       = &styleStr[0];
 
 	// Parse it with pass 2 patterns
 	int prevChar = Highlight::getPrevChar(buf, beginSafety);
@@ -5879,18 +5869,16 @@ void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &sty
 */
 void DocumentWidget::startHighlighting(Verbosity verbosity) {
 
-	int prevChar = -1;
-
 	/* Find the pattern set matching the window's current
 	   language mode, tell the user if it can't be done */
 	PatternSet *patterns = findPatternsForWindow(verbosity);
-	if(!patterns) {
+	if (!patterns) {
 		return;
 	}
 
 	// Compile the patterns
 	std::unique_ptr<WindowHighlightData> highlightData = createHighlightData(patterns);
-	if(!highlightData) {
+	if (!highlightData) {
 		return;
 	}
 
@@ -5902,15 +5890,16 @@ void DocumentWidget::startHighlighting(Verbosity verbosity) {
 
 	/* Parse the buffer with pass 1 patterns.  If there are none, initialize
 	   the style buffer to all UNFINISHED_STYLE to trigger parsing later */
-	std::vector<char> styleString(static_cast<size_t>(bufLength) + 1);
-	char *const styleBegin = &styleString[0];
-	char *stylePtr = styleBegin;
-
 	if (!highlightData->pass1Patterns) {
-		for (int i = 0; i < bufLength; ++i) {
-			*stylePtr++ = UNFINISHED_STYLE;
-		}
+		std::string style_buffer(static_cast<size_t>(bufLength), UNFINISHED_STYLE);
+		highlightData->styleBuffer->BufSetAll(style_buffer);
 	} else {
+
+		std::vector<char> styleString(static_cast<size_t>(bufLength) + 1);
+		char *const styleBegin = &styleString[0];
+		char *stylePtr         = styleBegin;
+
+		int prevChar = -1;
 
 		view::string_view bufString = info_->buffer->BufAsString();
 		const char *stringPtr       = bufString.data();
@@ -5924,18 +5913,18 @@ void DocumentWidget::startHighlighting(Verbosity verbosity) {
 			stylePtr,
 			bufLength,
 			&prevChar,
-		    documentDelimiters(),
+			documentDelimiters(),
 			stringPtr,
 			match_to);
-	}
 
-	highlightData->styleBuffer->BufSetAll(view::string_view(styleBegin, static_cast<size_t>(stylePtr - styleBegin)));
+		highlightData->styleBuffer->BufSetAll(view::string_view(styleBegin, static_cast<size_t>(stylePtr - styleBegin)));
+	}
 
 	// install highlight pattern data in the window data structure
 	highlightData_ = std::move(highlightData);
 
 	// Attach highlight information to text widgets in each pane
-	for(TextArea *area : textPanes()) {
+	for (TextArea *area : textPanes()) {
 		attachHighlightToWidget(area);
 	}
 
@@ -5947,13 +5936,13 @@ void DocumentWidget::startHighlighting(Verbosity verbosity) {
 ** text widget and redisplay.
 */
 void DocumentWidget::attachHighlightToWidget(TextArea *area) {
-	if(const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
+	if (const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 		area->attachHighlightData(
-					highlightData->styleBuffer.get(),
-					highlightData->styleTable,
-					UNFINISHED_STYLE,
-					handleUnparsedRegionCB,
-					this);
+			highlightData->styleBuffer.get(),
+			highlightData->styleTable,
+			UNFINISHED_STYLE,
+			handleUnparsedRegionCB,
+			this);
 	}
 }
 
@@ -5977,22 +5966,22 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 		return nullptr;
 	}
 
-	for(const HighlightPattern &pattern : patterns) {
+	for (const HighlightPattern &pattern : patterns) {
 		if (!pattern.subPatternOf.isNull() && Highlight::indexOfNamedPattern(patterns, pattern.subPatternOf) == PATTERN_NOT_FOUND) {
 			QMessageBox::warning(
-						this,
-						tr("Parent Pattern"),
-						tr("Parent field \"%1\" in pattern \"%2\"\ndoes not match any highlight patterns in this set").arg(pattern.subPatternOf, pattern.name));
+				this,
+				tr("Parent Pattern"),
+				tr("Parent field \"%1\" in pattern \"%2\"\ndoes not match any highlight patterns in this set").arg(pattern.subPatternOf, pattern.name));
 			return nullptr;
 		}
 	}
 
-	for(const HighlightPattern &pattern : patterns) {
+	for (const HighlightPattern &pattern : patterns) {
 		if (!Highlight::NamedStyleExists(pattern.style)) {
 			QMessageBox::warning(
-						this,
-						tr("Highlight Style"),
-						tr("Style \"%1\" named in pattern \"%2\"\ndoes not match any existing style").arg(pattern.style, pattern.name));
+				this,
+				tr("Highlight Style"),
+				tr("Style \"%1\" named in pattern \"%2\"\ndoes not match any existing style").arg(pattern.style, pattern.name));
 			return nullptr;
 		}
 	}
@@ -6002,15 +5991,15 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	   shows this setting only on top patterns which is much less confusing) */
 	{
 		size_t i = 0;
-		for(HighlightPattern &pattern : patterns) {
+		for (HighlightPattern &pattern : patterns) {
 
 			if (!pattern.subPatternOf.isNull()) {
 				const size_t parentindex = Highlight::findTopLevelParentIndex(patterns, i);
 				if (parentindex == PATTERN_NOT_FOUND) {
 					QMessageBox::warning(
-								this,
-								tr("Parent Pattern"),
-								tr("Pattern \"%1\" does not have valid parent").arg(pattern.name));
+						this,
+						tr("Parent Pattern"),
+						tr("Pattern \"%1\" does not have valid parent").arg(pattern.name));
 					return nullptr;
 				}
 
@@ -6036,7 +6025,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	*p1Ptr++ = HighlightPattern(QLatin1String("Plain"));
 	*p2Ptr++ = HighlightPattern(QLatin1String("Plain"));
 
-	for(const HighlightPattern &pattern : patterns) {
+	for (const HighlightPattern &pattern : patterns) {
 		if (pattern.flags & DEFER_PARSING) {
 			*p2Ptr++ = pattern;
 		} else {
@@ -6112,7 +6101,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	for (size_t i = 1; i < pass1PatternSrc.size(); i++) {
 		const HighlightPattern &pattern = pass1PatternSrc[i];
 
-		if(pattern.subPatternOf.isNull()) {
+		if (pattern.subPatternOf.isNull()) {
 			*parentStylesPtr++ = PLAIN_STYLE;
 		} else {
 			*parentStylesPtr++ = pass1Pats[Highlight::indexOfNamedPattern(pass1PatternSrc, pattern.subPatternOf)].style;
@@ -6122,7 +6111,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	for (size_t i = 1; i < pass2PatternSrc.size(); i++) {
 		const HighlightPattern &pattern = pass2PatternSrc[i];
 
-		if(pattern.subPatternOf.isNull()) {
+		if (pattern.subPatternOf.isNull()) {
 			*parentStylesPtr++ = PLAIN_STYLE;
 		} else {
 			*parentStylesPtr++ = pass2Pats[Highlight::indexOfNamedPattern(pass2PatternSrc, pattern.subPatternOf)].style;
@@ -6136,15 +6125,14 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	auto it = std::back_inserter(styleTable);
 
 	auto createStyleTableEntry = [](HighlightPattern *pat) {
-
 		StyleTableEntry p;
 
 		p.isUnderlined  = false;
 		p.highlightName = pat->name;
 		p.styleName     = pat->style;
-		p.colorName     = Highlight::FgColorOfNamedStyle     (pat->style);
-		p.bgColorName   = Highlight::BgColorOfNamedStyle     (pat->style);
-		p.isBold        = Highlight::FontOfNamedStyleIsBold  (pat->style);
+		p.colorName     = Highlight::FgColorOfNamedStyle(pat->style);
+		p.bgColorName   = Highlight::BgColorOfNamedStyle(pat->style);
+		p.isBold        = Highlight::FontOfNamedStyleIsBold(pat->style);
 		p.isItalic      = Highlight::FontOfNamedStyleIsItalic(pat->style);
 
 		// And now for the more physical stuff
@@ -6183,7 +6171,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	const int contextChars = patternSet->charContext;
 
 	// Collect all of the highlighting information in a single structure
-	auto highlightData = std::make_unique<WindowHighlightData>();
+	auto highlightData                        = std::make_unique<WindowHighlightData>();
 	highlightData->pass1Patterns              = std::move(pass1Pats);
 	highlightData->pass2Patterns              = std::move(pass2Pats);
 	highlightData->parentStyles               = std::move(parentStyles);
@@ -6224,7 +6212,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 	}
 
 	for (size_t i = 0; i < patternSrc.size(); i++) {
-		if(compiledPats[i].nSubPatterns != 0) {
+		if (compiledPats[i].nSubPatterns != 0) {
 			compiledPats[i].subPatterns = std::make_unique<HighlightData *[]>(compiledPats[i].nSubPatterns);
 		}
 	}
@@ -6237,7 +6225,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 		if (patternSrc[i].subPatternOf.isNull()) {
 			compiledPats[0].subPatterns[compiledPats[0].nSubPatterns++] = &compiledPats[i];
 		} else {
-			size_t parentIndex = Highlight::indexOfNamedPattern(patternSrc, patternSrc[i].subPatternOf);
+			size_t parentIndex                                                              = Highlight::indexOfNamedPattern(patternSrc, patternSrc[i].subPatternOf);
 			compiledPats[parentIndex].subPatterns[compiledPats[parentIndex].nSubPatterns++] = &compiledPats[i];
 		}
 	}
@@ -6250,9 +6238,9 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 
 		if (compiledPats[i].colorOnly && compiledPats[i].nSubPatterns != 0) {
 			QMessageBox::warning(
-						this,
-						tr("Color-only Pattern"),
-						tr("Color-only pattern \"%1\" may not have subpatterns").arg(patternSrc[i].name));
+				this,
+				tr("Color-only Pattern"),
+				tr("Color-only pattern \"%1\" may not have subpatterns").arg(patternSrc[i].name));
 			return nullptr;
 		}
 
@@ -6262,12 +6250,12 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 			if (!patternSrc[i].startRE.isNull()) {
 				Input in(&patternSrc[i].startRE);
 				Q_FOREVER {
-					if(in.match(QLatin1Char('&'))) {
+					if (in.match(QLatin1Char('&'))) {
 						compiledPats[i].startSubexprs.push_back(0);
-					} else if(in.match(QLatin1Char('\\'))) {
+					} else if (in.match(QLatin1Char('\\'))) {
 
 						QString number;
-						if(in.match(re, &number)) {
+						if (in.match(re, &number)) {
 							compiledPats[i].startSubexprs.push_back(number.toUInt());
 						} else {
 							break;
@@ -6283,12 +6271,12 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 			if (!patternSrc[i].endRE.isNull()) {
 				Input in(&patternSrc[i].endRE);
 				Q_FOREVER {
-					if(in.match(QLatin1Char('&'))) {
+					if (in.match(QLatin1Char('&'))) {
 						compiledPats[i].endSubexprs.push_back(0);
-					} else if(in.match(QLatin1Char('\\'))) {
+					} else if (in.match(QLatin1Char('\\'))) {
 
 						QString number;
-						if(in.match(re, &number)) {
+						if (in.match(re, &number)) {
 							compiledPats[i].endSubexprs.push_back(number.toUInt());
 						} else {
 							break;
@@ -6342,7 +6330,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 		}
 
 		int length;
-		length  = (compiledPats[patternNum].colorOnly || patternSrc[patternNum].endRE.isNull())   ? 0 : patternSrc[patternNum].endRE.size()   + 5;
+		length = (compiledPats[patternNum].colorOnly || patternSrc[patternNum].endRE.isNull()) ? 0 : patternSrc[patternNum].endRE.size() + 5;
 		length += (compiledPats[patternNum].colorOnly || patternSrc[patternNum].errorRE.isNull()) ? 0 : patternSrc[patternNum].errorRE.size() + 5;
 
 		for (size_t i = 0; i < compiledPats[patternNum].nSubPatterns; i++) {
@@ -6398,7 +6386,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 
 		try {
 			compiledPats[patternNum].subPatternRE = std::make_unique<Regex>(bigPattern, REDFLT_STANDARD);
-		} catch(const RegexError &e) {
+		} catch (const RegexError &e) {
 			qWarning("NEdit: Error compiling syntax highlight patterns:\n%s", e.what());
 			return nullptr;
 		}
@@ -6419,7 +6407,7 @@ std::unique_ptr<Regex> DocumentWidget::compileRegexAndWarn(const QString &re) {
 
 	try {
 		return make_regex(re, REDFLT_STANDARD);
-	} catch(const RegexError &e) {
+	} catch (const RegexError &e) {
 
 		constexpr int MaxLength = 4096;
 
@@ -6432,12 +6420,11 @@ std::unique_ptr<Regex> DocumentWidget::compileRegexAndWarn(const QString &re) {
 		}
 
 		QMessageBox::warning(
-					this,
-					tr("Error in Regex"),
-					tr("Error in syntax highlighting regular expression:\n%1\n%2").arg(boundedRe, QString::fromLatin1(e.what())));
+			this,
+			tr("Error in Regex"),
+			tr("Error in syntax highlighting regular expression:\n%1\n%2").arg(boundedRe, QString::fromLatin1(e.what())));
 		return nullptr;
 	}
-
 }
 
 /*
@@ -6462,8 +6449,8 @@ bool DocumentWidget::macroWindowCloseActions() {
 	/* If no macro is executing in the window, allow the close, but check
 	   if macros executing in other windows have it as focus.  If so, set
 	   their focus back to the window from which they were originally run */
-	if(!cmdData) {
-		for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+	if (!cmdData) {
+		for (DocumentWidget *document : DocumentWidget::allDocuments()) {
 
 			const std::shared_ptr<MacroCommandData> &mcd = document->macroCmdData_;
 
@@ -6515,7 +6502,7 @@ void DocumentWidget::abortMacroCommand() {
 ** Cancel Learn mode, or macro execution (they're bound to the same menu item)
 */
 void DocumentWidget::cancelMacroOrLearn() {
-	if(CommandRecorder::instance()->isRecording()) {
+	if (CommandRecorder::instance()->isRecording()) {
 		cancelLearning();
 	} else if (macroCmdData_) {
 		abortMacroCommand();
@@ -6537,7 +6524,7 @@ void DocumentWidget::replay() {
 		int stoppedAt;
 
 		Program *prog = compileMacro(replayMacro, &errMsg, &stoppedAt);
-		if(!prog) {
+		if (!prog) {
 			qWarning("NEdit: internal error, learn/replay macro syntax error: %s", qPrintable(errMsg));
 			return;
 		}
@@ -6548,14 +6535,14 @@ void DocumentWidget::replay() {
 
 void DocumentWidget::cancelLearning() {
 
-	if(!CommandRecorder::instance()->isRecording()) {
+	if (!CommandRecorder::instance()->isRecording()) {
 		return;
 	}
 
 	DocumentWidget *document = CommandRecorder::instance()->macroRecordDocument();
 	Q_ASSERT(document);
 
-	for(MainWindow *window : MainWindow::allWindows()) {
+	for (MainWindow *window : MainWindow::allWindows()) {
 		window->ui.action_Learn_Keystrokes->setEnabled(true);
 	}
 
@@ -6571,7 +6558,7 @@ void DocumentWidget::cancelLearning() {
 
 void DocumentWidget::finishLearning() {
 
-	if(!CommandRecorder::instance()->isRecording()) {
+	if (!CommandRecorder::instance()->isRecording()) {
 		return;
 	}
 
@@ -6580,13 +6567,13 @@ void DocumentWidget::finishLearning() {
 
 	CommandRecorder::instance()->stopRecording();
 
-	for(MainWindow *window : MainWindow::allWindows()) {
+	for (MainWindow *window : MainWindow::allWindows()) {
 		window->ui.action_Learn_Keystrokes->setEnabled(true);
 		window->ui.action_Replay_Keystrokes->setEnabled(true);
 	}
 
 	if (document->isTopDocument()) {
-		if(auto win = MainWindow::fromDocument(document)) {
+		if (auto win = MainWindow::fromDocument(document)) {
 			win->ui.action_Finish_Learn->setEnabled(false);
 			win->ui.action_Cancel_Learn->setEnabled(false);
 		}
@@ -6610,7 +6597,7 @@ void DocumentWidget::doMacro(const QString &macro, const QString &errInName) {
 	// Parse the macro and report errors if it fails
 	int stoppedAt;
 	Program *const prog = compileMacro(qMacro, &errMsg, &stoppedAt);
-	if(!prog) {
+	if (!prog) {
 		Preferences::reportError(this, qMacro, stoppedAt, errInName, errMsg);
 		return;
 	}
@@ -6629,7 +6616,7 @@ void DocumentWidget::readMacroInitFile() {
 	if (!initFileLoaded) {
 
 		const QString autoloadName = Settings::autoLoadMacroFile();
-		if(autoloadName.isNull()) {
+		if (autoloadName.isNull()) {
 			return;
 		}
 
@@ -6651,7 +6638,7 @@ bool DocumentWidget::readMacroString(const QString &string, const QString &errIn
  */
 void DocumentWidget::endSmartIndent() {
 
-	if(!info_->smartIndentData) {
+	if (!info_->smartIndentData) {
 		return;
 	}
 
@@ -6681,9 +6668,9 @@ QString DocumentWidget::getAnySelection() const {
  */
 QString DocumentWidget::getAnySelection(ErrorSound errorSound) const {
 
-	if(QApplication::clipboard()->supportsSelection()) {
+	if (QApplication::clipboard()->supportsSelection()) {
 		const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Selection);
-		if(mimeData->hasText()) {
+		if (mimeData->hasText()) {
 			return mimeData->text();
 		}
 	}
@@ -6693,7 +6680,7 @@ QString DocumentWidget::getAnySelection(ErrorSound errorSound) const {
 		return QString::fromStdString(info_->buffer->BufGetSelectionText());
 	}
 
-	if(errorSound == ErrorSound::Beep) {
+	if (errorSound == ErrorSound::Beep) {
 		QApplication::beep();
 	}
 
@@ -6752,8 +6739,8 @@ void DocumentWidget::setHighlightSyntax(bool value) {
 
 	highlightSyntax_ = value;
 
-	if(isTopDocument()) {
-		if(auto win = MainWindow::fromDocument(this)) {
+	if (isTopDocument()) {
+		if (auto win = MainWindow::fromDocument(this)) {
 			no_signals(win->ui.action_Highlight_Syntax)->setChecked(value);
 		}
 	}
@@ -6782,7 +6769,7 @@ void DocumentWidget::setMakeBackupCopy(bool value) {
 	emit_event("set_make_backup_copy", value ? QLatin1String("1") : QLatin1String("0"));
 
 	if (isTopDocument()) {
-		if(auto win = MainWindow::fromDocument(this)) {
+		if (auto win = MainWindow::fromDocument(this)) {
 			no_signals(win->ui.action_Make_Backup_Copy)->setChecked(value);
 		}
 	}
@@ -6808,12 +6795,12 @@ void DocumentWidget::setIncrementalBackup(bool value) {
 
 	info_->autoSave = value;
 
-	if(!isTopDocument()) {
+	if (!isTopDocument()) {
 		return;
 	}
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -6833,12 +6820,12 @@ void DocumentWidget::setUserLocked(bool value) {
 
 	info_->lockReasons.setUserLocked(value);
 
-	if(!isTopDocument()) {
+	if (!isTopDocument()) {
 		return;
 	}
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return;
 	}
 
@@ -6859,7 +6846,7 @@ void DocumentWidget::addMark(TextArea *area, QChar label) {
 	label = label.toUpper();
 
 	auto it = markTable_.find(label);
-	if(it != markTable_.end()) {
+	if (it != markTable_.end()) {
 		// store the cursor location and selection position in the table
 		it->second.label     = label;
 		it->second.cursorPos = area->cursorPos();
@@ -6886,7 +6873,7 @@ void DocumentWidget::selectNumberedLine(TextArea *area, int64_t lineNum) {
 
 	for (i = 1; i <= lineNum && lineEnd < info_->buffer->length(); i++) {
 		lineStart = lineEnd + 1;
-		lineEnd = info_->buffer->BufEndOfLine(lineStart);
+		lineEnd   = info_->buffer->BufEndOfLine(lineStart);
 	}
 
 	// highlight the line
@@ -6913,9 +6900,9 @@ void DocumentWidget::selectNumberedLine(TextArea *area, int64_t lineNum) {
 void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
 
 	// look up the mark in the mark table
-	label = label.toUpper();
+	label   = label.toUpper();
 	auto it = markTable_.find(label);
-	if(it == markTable_.end()) {
+	if (it == markTable_.end()) {
 		QApplication::beep();
 		return;
 	}
@@ -6930,9 +6917,9 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
 	if (extendSel) {
 
 		const TextCursor oldStart = oldSel.hasSelection() ? oldSel.start() : area->cursorPos();
-		const TextCursor oldEnd   = oldSel.hasSelection() ? oldSel.end()   : area->cursorPos();
-		const TextCursor newStart = sel.hasSelection()    ? sel.start()    : cursorPos;
-		const TextCursor newEnd   = sel.hasSelection()    ? sel.end()      : cursorPos;
+		const TextCursor oldEnd   = oldSel.hasSelection() ? oldSel.end() : area->cursorPos();
+		const TextCursor newStart = sel.hasSelection() ? sel.start() : cursorPos;
+		const TextCursor newEnd   = sel.hasSelection() ? sel.end() : cursorPos;
 
 		info_->buffer->BufSelect(oldStart < newStart ? oldStart : newStart, oldEnd > newEnd ? oldEnd : newEnd);
 	} else {
@@ -6976,11 +6963,11 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 
 	int i;
 	int pathMatch = 0;
-	int samePath = 0;
-	int nMatches = 0;
+	int samePath  = 0;
+	int nMatches  = 0;
 
 	// verify that the string is reasonable as a tag
-	if(string.isEmpty()) {
+	if (string.isEmpty()) {
 		QApplication::beep();
 		return -1;
 	}
@@ -6990,7 +6977,7 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 	QList<Tags::Tag> tags = Tags::lookupTag(string, Tags::searchMode);
 
 	// First look up all of the matching tags
-	for(const Tags::Tag &tag : tags) {
+	for (const Tags::Tag &tag : tags) {
 
 		QString fileToSearch = tag.file;
 		QString searchString = tag.searchString;
@@ -7052,13 +7039,13 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 		Tags::tagFiles[0]  = Tags::tagFiles[pathMatch];
 		Tags::tagSearch[0] = Tags::tagSearch[pathMatch];
 		Tags::tagPosInf[0] = Tags::tagPosInf[pathMatch];
-		nMatches = 1;
+		nMatches           = 1;
 	}
 
 	//  If all of the tag entries are the same file, just use the first.
 	if (Preferences::GetPrefSmartTags()) {
 		for (i = 1; i < nMatches; i++) {
-			if(Tags::tagFiles[i] != Tags::tagFiles[i - 1]) {
+			if (Tags::tagFiles[i] != Tags::tagFiles[i - 1]) {
 				break;
 			}
 		}
@@ -7125,7 +7112,7 @@ void DocumentWidget::createSelectMenu(TextArea *area, const QStringList &args) {
 
 	auto dialog = std::make_unique<DialogDuplicateTags>(this, area);
 	dialog->setTag(Tags::tagName);
-	for(int i = 0; i < args.size(); ++i) {
+	for (int i = 0; i < args.size(); ++i) {
 		dialog->addListItem(args[i], i);
 	}
 	dialog->exec();
@@ -7151,7 +7138,7 @@ int DocumentWidget::showTipString(const QString &text, bool anchored, int pos, b
 	Tags::globAlignMode = alignMode;
 
 	MainWindow *win = MainWindow::fromDocument(this);
-	if(!win) {
+	if (!win) {
 		return 0;
 	}
 
@@ -7172,22 +7159,22 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 
 	// open the file containing the definition
 	DocumentWidget::editExistingFile(
-	            this,
-	            fi->filename,
-	            fi->pathname,
-	            0,
-	            QString(),
-	            /*iconic=*/false,
-	            QString(),
-	            Preferences::GetPrefOpenInTab(),
-	            /*bgOpen=*/false);
+		this,
+		fi->filename,
+		fi->pathname,
+		0,
+		QString(),
+		/*iconic=*/false,
+		QString(),
+		Preferences::GetPrefOpenInTab(),
+		/*bgOpen=*/false);
 
 	DocumentWidget *documentToSearch = MainWindow::findWindowWithFile(fi->filename, fi->pathname);
-	if(!documentToSearch) {
+	if (!documentToSearch) {
 		QMessageBox::warning(
-					this,
-					tr("File not found"),
-					tr("File %1 not found").arg(Tags::tagFiles[i]));
+			this,
+			tr("File not found"),
+			tr("File %1 not found").arg(Tags::tagFiles[i]));
 		return;
 	}
 
@@ -7205,9 +7192,9 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 	// search for the tags file search string in the newly opened file
 	if (!Tags::fakeRegExSearch(documentToSearch->buffer()->BufAsString(), Tags::tagSearch[i], &startPos, &endPos)) {
 		QMessageBox::warning(
-					this,
-					tr("Tag Error"),
-					tr("Definition for %1\nnot found in %2").arg(Tags::tagName, Tags::tagFiles[i]));
+			this,
+			tr("Tag Error"),
+			tr("Definition for %1\nnot found in %2").arg(Tags::tagName, Tags::tagFiles[i]));
 		return;
 	}
 

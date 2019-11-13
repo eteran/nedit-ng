@@ -1,5 +1,6 @@
 
 #include "DialogLanguageModes.h"
+#include "CommonDialog.h"
 #include "DialogSyntaxPatterns.h"
 #include "DocumentWidget.h"
 #include "Highlight.h"
@@ -11,9 +12,8 @@
 #include "Search.h"
 #include "SmartIndent.h"
 #include "TextArea.h"
-#include "userCmds.h"
 #include "Util/regex.h"
-#include "CommonDialog.h"
+#include "userCmds.h"
 
 #include <QMessageBox>
 #include <QRegularExpressionValidator>
@@ -23,7 +23,8 @@
  * @param parent
  * @param f
  */
-DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatterns, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), dialogSyntaxPatterns_(dialogSyntaxPatterns) {
+DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatterns, QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f), dialogSyntaxPatterns_(dialogSyntaxPatterns) {
 	ui.setupUi(this);
 	connectSlots();
 
@@ -33,7 +34,7 @@ DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatte
 	ui.listItems->setModel(model_);
 
 	// Copy the list of menu information to one that the user can freely edit
-	for(const LanguageMode &lang : Preferences::LanguageModes) {
+	for (const LanguageMode &lang : Preferences::LanguageModes) {
 		model_->addItem(lang);
 	}
 
@@ -41,7 +42,7 @@ DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatte
 	connect(this, &DialogLanguageModes::restore, ui.listItems, &QListView::setCurrentIndex, Qt::QueuedConnection);
 
 	// default to selecting the first item
-	if(model_->rowCount() != 0) {
+	if (model_->rowCount() != 0) {
 		QModelIndex index = model_->index(0, 0);
 		ui.listItems->setCurrentIndex(index);
 	}
@@ -68,7 +69,6 @@ void DialogLanguageModes::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogLanguageModes::buttonBox_clicked);
 }
 
-
 void DialogLanguageModes::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
 	static bool canceled = false;
 
@@ -84,7 +84,7 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 	//               it results in a crash when leaving invalid entries :-(
 	//               we can do better of course
 #if 1
-	if(previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
+	if (previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
 		QMessageBox messageBox(this);
 		messageBox.setWindowTitle(tr("Discard Entry"));
 		messageBox.setIcon(QMessageBox::Warning);
@@ -108,8 +108,8 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 #endif
 
 	// this is only safe if we aren't moving due to a delete operation
-	if(previous.isValid() && previous != deleted_) {
-		if(!updateCurrentItem(previous)) {
+	if (previous.isValid() && previous != deleted_) {
+		if (!updateCurrentItem(previous)) {
 			// reselect the old item
 			canceled = true;
 			Q_EMIT restore(previous);
@@ -118,31 +118,31 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 	}
 
 	// previous was OK, so let's update the contents of the dialog
-	if(auto ptr = model_->itemFromIndex(current)) {
+	if (auto ptr = model_->itemFromIndex(current)) {
 		QStringList extensions;
 		extensions.reserve(ptr->extensions.size());
 
 		std::copy(ptr->extensions.begin(), ptr->extensions.end(), std::back_inserter(extensions));
 
-		ui.editName      ->setText(ptr->name);
+		ui.editName->setText(ptr->name);
 		ui.editExtensions->setText(extensions.join(QLatin1Char(' ')));
-		ui.editRegex     ->setText(ptr->recognitionExpr);
-		ui.editCallTips  ->setText(ptr->defTipsFile);
+		ui.editRegex->setText(ptr->recognitionExpr);
+		ui.editCallTips->setText(ptr->defTipsFile);
 		ui.editDelimiters->setText(ptr->delimiters);
 
-		if(ptr->tabDist != LanguageMode::DEFAULT_TAB_DIST) {
+		if (ptr->tabDist != LanguageMode::DEFAULT_TAB_DIST) {
 			ui.editTabSpacing->setText(QString::number(ptr->tabDist));
 		} else {
 			ui.editTabSpacing->setText(QString());
 		}
 
-		if(ptr->emTabDist != LanguageMode::DEFAULT_EM_TAB_DIST) {
+		if (ptr->emTabDist != LanguageMode::DEFAULT_EM_TAB_DIST) {
 			ui.editEmulatedTabSpacing->setText(QString::number(ptr->emTabDist));
 		} else {
 			ui.editEmulatedTabSpacing->setText(QString());
 		}
 
-		switch(ptr->indentStyle) {
+		switch (ptr->indentStyle) {
 		case IndentStyle::None:
 			ui.radioIndentNone->setChecked(true);
 			break;
@@ -157,7 +157,7 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 			break;
 		}
 
-		switch(ptr->wrapStyle) {
+		switch (ptr->wrapStyle) {
 		case WrapStyle::None:
 			ui.radioWrapNone->setChecked(true);
 			break;
@@ -172,10 +172,10 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 			break;
 		}
 	} else {
-		ui.editName      ->setText(QString());
+		ui.editName->setText(QString());
 		ui.editExtensions->setText(QString());
-		ui.editRegex     ->setText(QString());
-		ui.editCallTips  ->setText(QString());
+		ui.editRegex->setText(QString());
+		ui.editCallTips->setText(QString());
 		ui.editDelimiters->setText(QString());
 		ui.editTabSpacing->setText(QString());
 		ui.editEmulatedTabSpacing->setText(QString());
@@ -203,7 +203,7 @@ void DialogLanguageModes::buttonBox_accepted() {
  * @param button
  */
 void DialogLanguageModes::buttonBox_clicked(QAbstractButton *button) {
-	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
+	if (ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 		updateLMList(Verbosity::Verbose);
 	}
 }
@@ -231,14 +231,14 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 	// read the extension list field
 	QString extStr      = ui.editExtensions->text().simplified();
 	QStringList extList = extStr.split(QLatin1Char(' '), QString::SkipEmptyParts);
-	lm.extensions = extList;
+	lm.extensions       = extList;
 
 	// read recognition expression
 	QString recognitionExpr = ui.editRegex->text();
-	if(!recognitionExpr.isEmpty()) {
+	if (!recognitionExpr.isEmpty()) {
 		try {
 			auto compiledRE = make_regex(recognitionExpr, REDFLT_STANDARD);
-		} catch(const RegexError &e) {
+		} catch (const RegexError &e) {
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QString::fromLatin1(e.what())));
 			}
@@ -250,7 +250,7 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 
 	// Read the default calltips file for the language mode
 	QString tipsFile = ui.editCallTips->text();
-	if(!tipsFile.isEmpty()) {
+	if (!tipsFile.isEmpty()) {
 		// Ensure that AddTagsFile will work
 		if (!Tags::addTagsFile(tipsFile, Tags::SearchMode::TIP)) {
 			if (verbosity == Verbosity::Verbose) {
@@ -265,7 +265,7 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 
 	// read tab spacing field
 	QString tabsSpacing = ui.editTabSpacing->text();
-	if(tabsSpacing.isEmpty()) {
+	if (tabsSpacing.isEmpty()) {
 		lm.tabDist = LanguageMode::DEFAULT_TAB_DIST;
 	} else {
 		bool ok;
@@ -280,7 +280,7 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 
 	// read emulated tab field
 	QString emulatedTabSpacing = ui.editEmulatedTabSpacing->text();
-	if(emulatedTabSpacing.isEmpty()) {
+	if (emulatedTabSpacing.isEmpty()) {
 		lm.emTabDist = LanguageMode::DEFAULT_EM_TAB_DIST;
 	} else {
 		bool ok;
@@ -295,29 +295,29 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 
 	// read delimiters string
 	QString delimiters = ui.editDelimiters->text();
-	if(!delimiters.isEmpty()) {
+	if (!delimiters.isEmpty()) {
 		lm.delimiters = delimiters;
 	}
 
 	// read indent style
-	if(ui.radioIndentNone->isChecked()) {
+	if (ui.radioIndentNone->isChecked()) {
 		lm.indentStyle = IndentStyle::None;
-	} else if(ui.radioIndentAuto->isChecked()) {
+	} else if (ui.radioIndentAuto->isChecked()) {
 		lm.indentStyle = IndentStyle::Auto;
-	} else if(ui.radioIndentSmart->isChecked()) {
+	} else if (ui.radioIndentSmart->isChecked()) {
 		lm.indentStyle = IndentStyle::Smart;
-	} else if(ui.radioIndentDefault->isChecked()) {
+	} else if (ui.radioIndentDefault->isChecked()) {
 		lm.indentStyle = IndentStyle::Default;
 	}
 
 	// read wrap style
-	if(ui.radioWrapNone->isChecked()) {
+	if (ui.radioWrapNone->isChecked()) {
 		lm.wrapStyle = WrapStyle::None;
-	} else if(ui.radioWrapAuto->isChecked()) {
+	} else if (ui.radioWrapAuto->isChecked()) {
 		lm.wrapStyle = WrapStyle::Newline;
-	} else if(ui.radioWrapContinuous->isChecked()) {
+	} else if (ui.radioWrapContinuous->isChecked()) {
 		lm.wrapStyle = WrapStyle::Continuous;
-	} else if(ui.radioWrapDefault->isChecked()) {
+	} else if (ui.radioWrapDefault->isChecked()) {
 		lm.wrapStyle = WrapStyle::Default;
 	}
 
@@ -332,13 +332,13 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 bool DialogLanguageModes::updateLanguageList(Verbosity verbosity) {
 
 	QModelIndex index = ui.listItems->currentIndex();
-	if(!index.isValid()) {
+	if (!index.isValid()) {
 		return false;
 	}
 
-	if(const LanguageMode *oldLM = model_->itemFromIndex(index)) {
+	if (const LanguageMode *oldLM = model_->itemFromIndex(index)) {
 
-		if(auto newLM = readFields(verbosity)) {
+		if (auto newLM = readFields(verbosity)) {
 
 			/* If there was a name change of a non-duplicate language mode, modify the
 			   name to the weird format of: "old name:new name".  This signals that a
@@ -352,7 +352,7 @@ bool DialogLanguageModes::updateLanguageList(Verbosity verbosity) {
 					int oldLen = (colon == -1) ? oldLM->name.size() : colon;
 
 					auto tempName = tr("%1:%2").arg(oldLM->name.left(oldLen), newLM->name);
-					newLM->name = tempName;
+					newLM->name   = tempName;
 				}
 			}
 
@@ -372,14 +372,14 @@ bool DialogLanguageModes::updateLanguageList(Verbosity verbosity) {
 bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 
 	// Get the current contents of the dialog fields
-	if(!updateLanguageList(verbosity)) {
+	if (!updateLanguageList(verbosity)) {
 		return false;
 	}
 
 	/* Fix up language mode indices in all open documents (which may change
 	   if the currently selected mode is deleted or has changed position),
 	   and update word delimiters */
-	for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+	for (DocumentWidget *document : DocumentWidget::allDocuments()) {
 
 		const size_t languageMode = document->getLanguageMode();
 
@@ -393,21 +393,21 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 			// but let's try to match it to an entry in the new language list...
 			for (int i = 0; i < model_->rowCount(); i++) {
 
-				QModelIndex index = model_->index(i, 0);
+				QModelIndex index        = model_->index(i, 0);
 				const LanguageMode *lang = model_->itemFromIndex(index);
 
 				QStringList parts = lang->name.split(QLatin1Char(':'));
-				QString name = (parts.size() == 2) ? parts[0] : lang->name;
+				QString name      = (parts.size() == 2) ? parts[0] : lang->name;
 
 				// OK, a language matched this document, update it!
 				if (name == documentLanguage) {
 					QString newDelimiters = lang->delimiters;
 
-					if(newDelimiters.isNull()) {
+					if (newDelimiters.isNull()) {
 						newDelimiters = Preferences::GetPrefDelimiters();
 					}
 
-					for(TextArea *area : document->textPanes()) {
+					for (TextArea *area : document->textPanes()) {
 						area->setWordDelimiters(newDelimiters.toStdString());
 					}
 
@@ -424,7 +424,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 		// update names appropriately
 		for (int i = 0; i < model_->rowCount(); i++) {
 
-			QModelIndex index = model_->index(i, 0);
+			QModelIndex index        = model_->index(i, 0);
 			const LanguageMode *lang = model_->itemFromIndex(index);
 
 			QStringList parts = lang->name.split(QLatin1Char(':'));
@@ -434,7 +434,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 				QString newName = parts[1];
 
 				MainWindow::renameHighlightPattern(oldName, newName);
-				if(dialogSyntaxPatterns_) {
+				if (dialogSyntaxPatterns_) {
 					dialogSyntaxPatterns_->RenameHighlightPattern(oldName, newName);
 				}
 
@@ -442,7 +442,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 
 				// make a copy of the language mode, and set the new name
 				LanguageMode newLanguageMode = *lang;
-				newLanguageMode.name = newName;
+				newLanguageMode.name         = newName;
 
 				model_->updateItem(index, newLanguageMode);
 			}
@@ -453,7 +453,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 
 		for (int i = 0; i < model_->rowCount(); i++) {
 			QModelIndex index = model_->index(i, 0);
-			auto item = model_->itemFromIndex(index);
+			auto item         = model_->itemFromIndex(index);
 			Preferences::LanguageModes.push_back(*item);
 		}
 
@@ -462,12 +462,12 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 		UpdateUserMenuInfo();
 
 		// Update the menus in the window menu bars ...
-		for(MainWindow *win : MainWindow::allWindows()) {
+		for (MainWindow *win : MainWindow::allWindows()) {
 			win->updateLanguageModeSubmenu();
 		}
 
 		// and load any needed calltips files ...
-		for(DocumentWidget *currentDocument : DocumentWidget::allDocuments()) {
+		for (DocumentWidget *currentDocument : DocumentWidget::allDocuments()) {
 			const size_t currentLanguageMode = currentDocument->getLanguageMode();
 			if (currentLanguageMode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[currentLanguageMode].defTipsFile.isNull()) {
 				Tags::addTagsFile(Preferences::LanguageModes[currentLanguageMode].defTipsFile, Tags::SearchMode::TIP);
@@ -475,7 +475,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 		}
 
 		// If a syntax highlighting dialog is up, update its menu
-		if(dialogSyntaxPatterns_) {
+		if (dialogSyntaxPatterns_) {
 			dialogSyntaxPatterns_->UpdateLanguageModeMenu();
 		}
 
@@ -494,14 +494,14 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
  */
 void DialogLanguageModes::buttonNew_clicked() {
 
-	if(!updateCurrentItem()) {
+	if (!updateCurrentItem()) {
 		return;
 	}
 
 	CommonDialog::addNewItem(&ui, model_, []() {
 		LanguageMode item;
 		// some sensible defaults...
-		item.name  = tr("New Item");
+		item.name = tr("New Item");
 		return item;
 	});
 }
@@ -511,7 +511,7 @@ void DialogLanguageModes::buttonNew_clicked() {
  */
 void DialogLanguageModes::buttonCopy_clicked() {
 
-	if(!updateCurrentItem()) {
+	if (!updateCurrentItem()) {
 		return;
 	}
 
@@ -534,10 +534,10 @@ void DialogLanguageModes::buttonDown_clicked() {
 
 int DialogLanguageModes::countLanguageModes(const QString &name) const {
 	int count = 0;
-	for(int i = 0; i < model_->rowCount(); ++i) {
+	for (int i = 0; i < model_->rowCount(); ++i) {
 		QModelIndex index = model_->index(i, 0);
-		auto style = model_->itemFromIndex(index);
-		if(style->name == name) {
+		auto style        = model_->itemFromIndex(index);
+		if (style->name == name) {
 			++count;
 		}
 	}
@@ -563,13 +563,13 @@ bool DialogLanguageModes::LMHasHighlightPatterns(const QString &name) const {
 void DialogLanguageModes::buttonDelete_clicked() {
 
 	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
-		if(auto current = model_->itemFromIndex(index)) {
+	if (index.isValid()) {
+		if (auto current = model_->itemFromIndex(index)) {
 
 			const int count = countLanguageModes(current->name);
 
 			// Allow duplicate names to be deleted regardless of dependencies
-			if(count <= 1) {
+			if (count <= 1) {
 				// don't allow deletion if data will be lost
 				if (LMHasHighlightPatterns(current->name)) {
 					QMessageBox::warning(this,
@@ -596,7 +596,6 @@ void DialogLanguageModes::buttonDelete_clicked() {
 	}
 }
 
-
 /**
  * @brief DialogLanguageModes::updateCurrentItem
  * @param item
@@ -605,12 +604,12 @@ void DialogLanguageModes::buttonDelete_clicked() {
 bool DialogLanguageModes::updateCurrentItem(const QModelIndex &index) {
 	// Get the current contents of the "patterns" dialog fields
 	auto dialogFields = readFields(Verbosity::Verbose);
-	if(!dialogFields) {
+	if (!dialogFields) {
 		return false;
 	}
 
 	// Get the current contents of the dialog fields
-	if(!index.isValid()) {
+	if (!index.isValid()) {
 		return false;
 	}
 
@@ -624,7 +623,7 @@ bool DialogLanguageModes::updateCurrentItem(const QModelIndex &index) {
  */
 bool DialogLanguageModes::updateCurrentItem() {
 	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
+	if (index.isValid()) {
 		return updateCurrentItem(index);
 	}
 
@@ -637,7 +636,7 @@ bool DialogLanguageModes::updateCurrentItem() {
  * @return
  */
 bool DialogLanguageModes::validateFields(Verbosity verbosity) {
-	if(readFields(verbosity)) {
+	if (readFields(verbosity)) {
 		return true;
 	}
 

@@ -2,14 +2,15 @@
 #include "DialogRepeat.h"
 #include "CommandRecorder.h"
 #include "DocumentWidget.h"
-#include "macro.h"
 #include "TextBuffer.h"
+#include "macro.h"
 
-#include <QMessageBox>
 #include <QIntValidator>
+#include <QMessageBox>
 #include <QTimer>
 
-DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
+DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f), document_(document) {
 	ui.setupUi(this);
 	connectSlots();
 
@@ -24,13 +25,12 @@ void DialogRepeat::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogRepeat::buttonBox_accepted);
 }
 
-
 bool DialogRepeat::setCommand(const QString &command) {
 
 	/* make a label for the Last command item of the dialog, which includes
 	   the last executed action name */
 	int index = command.indexOf(QLatin1Char('('));
-	if(index == -1) {
+	if (index == -1) {
 		return false;
 	}
 
@@ -40,7 +40,7 @@ bool DialogRepeat::setCommand(const QString &command) {
 }
 
 void DialogRepeat::buttonBox_accepted() {
-	if(!doRepeatDialogAction()) {
+	if (!doRepeatDialogAction()) {
 		return;
 	}
 
@@ -63,14 +63,14 @@ bool DialogRepeat::doRepeatDialogAction() {
 	} else {
 
 		const QString strTimes = ui.lineEdit->text();
-		if(strTimes.isEmpty()) {
+		if (strTimes.isEmpty()) {
 			QMessageBox::warning(this, tr("Warning"), tr("Please supply a value for number of times"));
 			return false;
 		}
 
 		bool ok;
 		const int nTimes = strTimes.toInt(&ok);
-		if(!ok) {
+		if (!ok) {
 			QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in number of times").arg(strTimes));
 			return false;
 		}

@@ -9,7 +9,7 @@ class DocumentModel final : public QAbstractItemModel {
 	Q_OBJECT
 
 public:
-	explicit DocumentModel(QObject *parent = nullptr) ;
+	explicit DocumentModel(QObject *parent = nullptr);
 	~DocumentModel() override = default;
 
 public:
@@ -33,6 +33,5 @@ private:
 	QVector<DocumentWidget *> items_;
 	bool showFullPath_ = false;
 };
-
 
 #endif

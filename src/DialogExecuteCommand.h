@@ -23,8 +23,8 @@ public:
 
 private:
 	Ui::DialogExecuteCommand ui;
-	QStringList              history_;
-	int                      historyIndex_ = 0;
+	QStringList history_;
+	int historyIndex_ = 0;
 };
 
 #endif

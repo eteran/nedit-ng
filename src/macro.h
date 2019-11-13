@@ -27,14 +27,12 @@ void returnShellCommandOutput(DocumentWidget *document, const QString &outText, 
 /* Data attached to window during shell command execution with
    information for controling and communicating with the process */
 struct MacroCommandData {
-	QTimer                        bannerTimer;
-	QTimer                        continuationTimer;
-	bool                          bannerIsUp        = false;
-	bool                          closeOnCompletion = false;
+	QTimer bannerTimer;
+	QTimer continuationTimer;
+	bool bannerIsUp        = false;
+	bool closeOnCompletion = false;
 	std::shared_ptr<MacroContext> context;
-	std::unique_ptr<Program>      program;
+	std::unique_ptr<Program> program;
 };
-
-
 
 #endif

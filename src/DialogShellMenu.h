@@ -23,7 +23,7 @@ Q_SIGNALS:
 
 private:
 	void currentChanged(const QModelIndex &current, const QModelIndex &previous);
-	
+
 private:
 	void radioToSameDocument_toggled(bool checked);
 	void buttonBox_clicked(QAbstractButton *button);
@@ -49,4 +49,3 @@ private:
 };
 
 #endif
-

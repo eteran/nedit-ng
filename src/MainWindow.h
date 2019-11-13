@@ -7,21 +7,21 @@
 #include "Direction.h"
 #include "IndentStyle.h"
 #include "NewMode.h"
-#include "SearchType.h"
 #include "Search.h"
+#include "SearchType.h"
+#include "TextCursor.h"
+#include "Util/FileFormats.h"
 #include "WrapMode.h"
 #include "WrapStyle.h"
 #include "userCmds.h"
-#include "TextCursor.h"
-#include "Util/FileFormats.h"
 
-#include <vector>
 #include <gsl/span>
+#include <vector>
 
+#include <QFileDialog>
+#include <QFileInfoList>
 #include <QMainWindow>
 #include <QPointer>
-#include <QFileInfoList>
-#include <QFileDialog>
 
 #include "ui_MainWindow.h"
 
@@ -41,7 +41,7 @@ class MainWindow final : public QMainWindow {
 	friend class DialogReplace;
 
 public:
-	explicit MainWindow (QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
+	explicit MainWindow(QWidget *parent = nullptr, Qt::WindowFlags flags = Qt::WindowFlags());
 	~MainWindow() override;
 
 private:
@@ -420,19 +420,19 @@ public Q_SLOTS:
 	void updateWindowTitle(DocumentWidget *document);
 
 public:
-	int  fHistIndex_;
-	int  rHistIndex_;
+	int fHistIndex_;
+	int rHistIndex_;
 	bool showISearchLine_;
 	bool showLineNumbers_;
 
 private:
-	QList<QAction *>                     previousOpenFilesList_;
-	QPointer<DialogFind>                 dialogFind_;
-	QPointer<DialogReplace>              dialogReplace_;
-	QPointer<DialogShellMenu>            dialogShellMenu_;
-	QPointer<DialogMacros>               dialogMacros_;
+	QList<QAction *> previousOpenFilesList_;
+	QPointer<DialogFind> dialogFind_;
+	QPointer<DialogReplace> dialogReplace_;
+	QPointer<DialogShellMenu> dialogShellMenu_;
+	QPointer<DialogMacros> dialogMacros_;
 	QPointer<DialogWindowBackgroundMenu> dialogWindowBackgroundMenu_;
-	QPointer<TextArea>                   lastFocus_;
+	QPointer<TextArea> lastFocus_;
 
 private:
 	bool iSearchLastLiteralCase_    = false;          // idem, for literal mode

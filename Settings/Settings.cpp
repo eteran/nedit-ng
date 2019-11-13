@@ -173,16 +173,16 @@ QString styleFile() {
 }
 
 QString randomString(int length) {
-   static const QString alphabet(QLatin1String("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"));
+	static const QString alphabet(QLatin1String("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"));
 
-   QString randomString;
-   randomString.reserve(length);
-   for(int i = 0; i < length; ++i) {
-	   int index = qrand() % alphabet.size();
-	   randomString.append(alphabet[index]);
-   }
+	QString randomString;
+	randomString.reserve(length);
+	for (int i = 0; i < length; ++i) {
+		int index = qrand() % alphabet.size();
+		randomString.append(alphabet[index]);
+	}
 
-   return randomString;
+	return randomString;
 }
 
 /**
@@ -271,7 +271,7 @@ void loadPreferences(bool isServer) {
 	forceOSConversion            = settings.value(tr("nedit.forceOSConversion"), true).toBool();
 	honorSymlinks                = settings.value(tr("nedit.honorSymlinks"), true).toBool();
 
-	if(isServer && serverName.isEmpty()) {
+	if (isServer && serverName.isEmpty()) {
 		serverName = randomString(8);
 	}
 

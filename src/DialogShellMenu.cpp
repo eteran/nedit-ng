@@ -1,12 +1,12 @@
 
 #include "DialogShellMenu.h"
+#include "CommonDialog.h"
 #include "MainWindow.h"
+#include "MenuData.h"
 #include "MenuItem.h"
 #include "MenuItemModel.h"
 #include "Preferences.h"
-#include "MenuData.h"
 #include "userCmds.h"
-#include "CommonDialog.h"
 
 #include <QMessageBox>
 
@@ -15,7 +15,8 @@
  * @param parent
  * @param f
  */
-DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
+DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f) {
 	ui.setupUi(this);
 	connectSlots();
 
@@ -27,7 +28,7 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(pa
 	ui.listItems->setModel(model_);
 
 	// Copy the list of menu information to one that the user can freely edit
-	for(MenuData &menuData : ShellMenuData) {
+	for (MenuData &menuData : ShellMenuData) {
 		model_->addItem(menuData.item);
 	}
 
@@ -35,7 +36,7 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(pa
 	connect(this, &DialogShellMenu::restore, ui.listItems, &QListView::setCurrentIndex, Qt::QueuedConnection);
 
 	// default to selecting the first item
-	if(model_->rowCount() != 0) {
+	if (model_->rowCount() != 0) {
 		QModelIndex index = model_->index(0, 0);
 		ui.listItems->setCurrentIndex(index);
 	}
@@ -55,20 +56,19 @@ void DialogShellMenu::connectSlots() {
 	connect(ui.radioToSameDocument, &QRadioButton::toggled, this, &DialogShellMenu::radioToSameDocument_toggled);
 }
 
-
 /**
  * @brief DialogShellMenu::buttonNew_clicked
  */
 void DialogShellMenu::buttonNew_clicked() {
 
-	if(!updateCurrentItem()) {
+	if (!updateCurrentItem()) {
 		return;
 	}
 
 	CommonDialog::addNewItem(&ui, model_, []() {
 		MenuItem item;
 		// some sensible defaults...
-		item.name  = tr("New Item");
+		item.name = tr("New Item");
 		return item;
 	});
 }
@@ -78,7 +78,7 @@ void DialogShellMenu::buttonNew_clicked() {
  */
 void DialogShellMenu::buttonCopy_clicked() {
 
-	if(!updateCurrentItem()) {
+	if (!updateCurrentItem()) {
 		return;
 	}
 
@@ -121,7 +121,7 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
 
 	// if we are actually switching items, check that the previous one was valid
 	// so we can optionally cancel
-	if(previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
+	if (previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
 		QMessageBox messageBox(this);
 		messageBox.setWindowTitle(tr("Discard Entry"));
 		messageBox.setIcon(QMessageBox::Warning);
@@ -144,8 +144,8 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
 	}
 
 	// this is only safe if we aren't moving due to a delete operation
-	if(previous.isValid() && previous != deleted_) {
-		if(!updateCurrentItem(previous)) {
+	if (previous.isValid() && previous != deleted_) {
+		if (!updateCurrentItem(previous)) {
 			// reselect the old item
 			canceled = true;
 			Q_EMIT restore(previous);
@@ -154,13 +154,13 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
 	}
 
 	// previous was OK, so let's update the contents of the dialog
-	if(const auto ptr = model_->itemFromIndex(current)) {
+	if (const auto ptr = model_->itemFromIndex(current)) {
 
 		ui.editName->setText(ptr->name);
 		ui.editAccelerator->setKeySequence(ptr->shortcut);
 		ui.editCommand->setPlainText(ptr->cmd);
 
-		switch(ptr->input) {
+		switch (ptr->input) {
 		case FROM_SELECTION:
 			ui.radioFromSelection->setChecked(true);
 			break;
@@ -175,7 +175,7 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
 			break;
 		}
 
-		switch(ptr->output) {
+		switch (ptr->output) {
 		case TO_SAME_WINDOW:
 			ui.radioToSameDocument->setChecked(true);
 			break;
@@ -213,7 +213,7 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
  * @param button
  */
 void DialogShellMenu::buttonBox_clicked(QAbstractButton *button) {
-	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
+	if (ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 		applyDialogChanges();
 	}
 }
@@ -266,21 +266,21 @@ boost::optional<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
 	menuItem.cmd      = cmdText;
 	menuItem.shortcut = ui.editAccelerator->keySequence();
 
-	if(ui.radioFromSelection->isChecked()) {
+	if (ui.radioFromSelection->isChecked()) {
 		menuItem.input = FROM_SELECTION;
-	} else if(ui.radioFromDocument->isChecked()) {
+	} else if (ui.radioFromDocument->isChecked()) {
 		menuItem.input = FROM_WINDOW;
-	} else if(ui.radioFromEither->isChecked()) {
+	} else if (ui.radioFromEither->isChecked()) {
 		menuItem.input = FROM_EITHER;
-	} else if(ui.radioFromNone->isChecked()) {
+	} else if (ui.radioFromNone->isChecked()) {
 		menuItem.input = FROM_NONE;
 	}
 
-	if(ui.radioToSameDocument->isChecked()) {
+	if (ui.radioToSameDocument->isChecked()) {
 		menuItem.output = TO_SAME_WINDOW;
-	} else if(ui.radioToDialog->isChecked()) {
+	} else if (ui.radioToDialog->isChecked()) {
 		menuItem.output = TO_DIALOG;
-	} else if(ui.radioToNewDocument->isChecked()) {
+	} else if (ui.radioToNewDocument->isChecked()) {
 		menuItem.output = TO_NEW_WINDOW;
 	}
 
@@ -297,15 +297,15 @@ boost::optional<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
  */
 bool DialogShellMenu::applyDialogChanges() {
 
-	if(model_->rowCount() != 0) {
+	if (model_->rowCount() != 0) {
 		auto dialogFields = readFields(Verbosity::Verbose);
-		if(!dialogFields) {
+		if (!dialogFields) {
 			return false;
 		}
 
 		// Get the current selected item
 		QModelIndex index = ui.listItems->currentIndex();
-		if(!index.isValid()) {
+		if (!index.isValid()) {
 			return false;
 		}
 
@@ -316,10 +316,10 @@ bool DialogShellMenu::applyDialogChanges() {
 
 	std::vector<MenuData> newItems;
 
-	for(int i = 0; i < model_->rowCount(); ++i) {
+	for (int i = 0; i < model_->rowCount(); ++i) {
 		QModelIndex index = model_->index(i, 0);
-		auto item = model_->itemFromIndex(index);
-		newItems.push_back({ *item, nullptr });
+		auto item         = model_->itemFromIndex(index);
+		newItems.push_back({*item, nullptr});
 	}
 
 	ShellMenuData = std::move(newItems);
@@ -327,7 +327,7 @@ bool DialogShellMenu::applyDialogChanges() {
 	parseMenuItemList(ShellMenuData);
 
 	// Update the menus themselves in all of the NEdit windows
-	for(MainWindow *window : MainWindow::allWindows()) {
+	for (MainWindow *window : MainWindow::allWindows()) {
 		window->updateUserMenus();
 	}
 
@@ -352,12 +352,12 @@ void DialogShellMenu::radioToSameDocument_toggled(bool checked) {
 bool DialogShellMenu::updateCurrentItem(const QModelIndex &index) {
 	// Get the current contents of the "patterns" dialog fields
 	auto dialogFields = readFields(Verbosity::Verbose);
-	if(!dialogFields) {
+	if (!dialogFields) {
 		return false;
 	}
 
 	// Get the current contents of the dialog fields
-	if(!index.isValid()) {
+	if (!index.isValid()) {
 		return false;
 	}
 
@@ -371,13 +371,12 @@ bool DialogShellMenu::updateCurrentItem(const QModelIndex &index) {
  */
 bool DialogShellMenu::updateCurrentItem() {
 	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
+	if (index.isValid()) {
 		return updateCurrentItem(index);
 	}
 
 	return true;
 }
-
 
 /**
  * @brief DialogShellMenu::validateFields
@@ -385,7 +384,7 @@ bool DialogShellMenu::updateCurrentItem() {
  * @return
  */
 bool DialogShellMenu::validateFields(Verbosity verbosity) {
-	if(readFields(verbosity)) {
+	if (readFields(verbosity)) {
 		return true;
 	}
 

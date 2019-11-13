@@ -16,7 +16,6 @@ private:
 	std::string error_;
 };
 
-
 void reg_error(const char *str);
 
 #endif

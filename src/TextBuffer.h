@@ -2,18 +2,18 @@
 #ifndef TEXT_BUFFER_H_
 #define TEXT_BUFFER_H_
 
-#include "gap_buffer.h"
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
 #include "TextRange.h"
 #include "Util/string_view.h"
+#include "gap_buffer.h"
 
 #include <gsl/gsl_util>
 
-#include <deque>
-#include <string>
 #include <cstdint>
+#include <deque>
 #include <memory>
+#include <string>
 
 #include <boost/optional.hpp>
 
@@ -64,13 +64,13 @@ public:
 		void updateSelection(TextCursor pos, int64_t nDeleted, int64_t nInserted);
 
 	public:
-		bool hasSelection() const      { return selected_; }
-		bool isRectangular() const     { return rectangular_; }
-		bool isZeroWidth() const       { return zeroWidth_; }
-		TextCursor start() const       { return start_; }
-		TextCursor end() const         { return end_; }
-		int64_t rectStart() const      { return rectStart_; }
-		int64_t rectEnd() const        { return rectEnd_; }
+		bool hasSelection() const { return selected_; }
+		bool isRectangular() const { return rectangular_; }
+		bool isZeroWidth() const { return zeroWidth_; }
+		TextCursor start() const { return start_; }
+		TextCursor end() const { return end_; }
+		int64_t rectStart() const { return rectStart_; }
+		int64_t rectEnd() const { return rectEnd_; }
 
 	public:
 		bool selected_     = false; // true if the selection is active
@@ -85,9 +85,9 @@ public:
 public:
 	BasicTextBuffer();
 	explicit BasicTextBuffer(int64_t size);
-	BasicTextBuffer(const BasicTextBuffer &)            = delete;
+	BasicTextBuffer(const BasicTextBuffer &) = delete;
 	BasicTextBuffer &operator=(const BasicTextBuffer &) = delete;
-	~BasicTextBuffer() = default;
+	~BasicTextBuffer()                                  = default;
 
 public:
 	static int BufCharWidth(Ch ch, int64_t indent, int tabDist) noexcept;
@@ -164,7 +164,7 @@ public:
 	void BufSecondaryUnselect() noexcept;
 	void BufSecRectSelect(TextCursor start, TextCursor end, int64_t rectStart, int64_t rectEnd) noexcept;
 	void BufSelectAll() noexcept;
-	void BufSelect(TextCursor start, TextCursor end) noexcept;	
+	void BufSelect(TextCursor start, TextCursor end) noexcept;
 	void BufSelect(std::pair<TextCursor, TextCursor> range) noexcept;
 	void BufSetAll(view_type text);
 	void BufSetTabDistance(int distance, bool notify) noexcept;
@@ -213,9 +213,9 @@ private:
 	static string_type copyLine(Ran first, Ran last);
 
 private:
-	TextCursor cursorPosHint_ = {};               // hint for reasonable cursor position after a buffer modification operation
-	int tabDist_              = DefaultTabWidth;  // equiv. number of characters in a tab
-	bool useTabs_             = true;             // true if buffer routines are allowed to use tabs for padding in rectangular operations
+	TextCursor cursorPosHint_ = {};              // hint for reasonable cursor position after a buffer modification operation
+	int tabDist_              = DefaultTabWidth; // equiv. number of characters in a tab
+	bool useTabs_             = true;            // true if buffer routines are allowed to use tabs for padding in rectangular operations
 	bool syncXSelection_      = true;
 
 private:
@@ -226,12 +226,10 @@ private:
 	std::deque<std::pair<modify_callback_type, void *>> modifyProcs_;        // procedures to call when buffer is modified to redisplay contents
 
 public:
-	Selection primary;   // highlighted areas
+	Selection primary; // highlighted areas
 	Selection secondary;
 	Selection highlight;
 };
-
-
 
 extern template class BasicTextBuffer<char>;
 extern template class gap_buffer<char>;

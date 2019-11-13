@@ -4,9 +4,9 @@
 #include "MenuData.h"
 #include "MenuItem.h"
 #include "Preferences.h"
-#include "parse.h"
 #include "Util/Input.h"
 #include "Util/Raise.h"
+#include "parse.h"
 
 #include <QTextStream>
 #include <memory>
@@ -39,11 +39,11 @@ QString copyMacroToEnd(Input &in) {
 
 	if (!code.startsWith(QLatin1Char('{'))) {
 		Preferences::reportError(
-		            nullptr,
-		            code,
-		            input.index() - in.index(),
-		            QLatin1String("macro menu item"),
-		            QLatin1String("expecting '{'"));
+			nullptr,
+			code,
+			input.index() - in.index(),
+			QLatin1String("macro menu item"),
+			QLatin1String("expecting '{'"));
 
 		return QString();
 	}
@@ -51,13 +51,13 @@ QString copyMacroToEnd(Input &in) {
 	// Parse the input
 	int stoppedAt;
 	QString errMsg;
-	if(!isMacroValid(code, &errMsg, &stoppedAt)) {
+	if (!isMacroValid(code, &errMsg, &stoppedAt)) {
 		Preferences::reportError(
-		            nullptr,
-		            code,
-		            stoppedAt,
-		            QLatin1String("macro menu item"),
-		            errMsg);
+			nullptr,
+			code,
+			stoppedAt,
+			QLatin1String("macro menu item"),
+			errMsg);
 
 		return QString();
 	}
@@ -84,15 +84,15 @@ QString copyMacroToEnd(Input &in) {
 
 	auto retPtr = std::back_inserter(retStr);
 
-	while(input.index() != stoppedAt + in.index()) {
-		if(input.match(QLatin1String("\n\t\t"))) {
+	while (input.index() != stoppedAt + in.index()) {
+		if (input.match(QLatin1String("\n\t\t"))) {
 			*retPtr++ = QLatin1Char('\n');
 		} else {
 			*retPtr++ = *input++;
 		}
 	}
 
-	if(retStr.endsWith(QLatin1Char('\t'))) {
+	if (retStr.endsWith(QLatin1Char('\t'))) {
 		retStr.chop(1);
 	}
 
@@ -113,7 +113,7 @@ QString writeMenuItemString(const std::vector<MenuData> &menuItems, CommandTypes
 		auto &f = data.item;
 
 		QString accStr = f.shortcut.toString();
-		*outPtr++ = QLatin1Char('\t');
+		*outPtr++      = QLatin1Char('\t');
 
 		std::copy(f.name.begin(), f.name.end(), outPtr);
 		*outPtr++ = QLatin1Char(':');
@@ -122,22 +122,32 @@ QString writeMenuItemString(const std::vector<MenuData> &menuItems, CommandTypes
 		*outPtr++ = QLatin1Char(':');
 
 		if (listType == CommandTypes::SHELL_CMDS) {
-			switch(f.input) {
-			case FROM_SELECTION: *outPtr++ = QLatin1Char('I'); break;
-			case FROM_WINDOW:    *outPtr++ = QLatin1Char('A'); break;
-			case FROM_EITHER:    *outPtr++ = QLatin1Char('E'); break;
+			switch (f.input) {
+			case FROM_SELECTION:
+				*outPtr++ = QLatin1Char('I');
+				break;
+			case FROM_WINDOW:
+				*outPtr++ = QLatin1Char('A');
+				break;
+			case FROM_EITHER:
+				*outPtr++ = QLatin1Char('E');
+				break;
 			default:
 				break;
 			}
 
-			switch(f.output) {
-			case TO_DIALOG:     *outPtr++ = QLatin1Char('D'); break;
-			case TO_NEW_WINDOW: *outPtr++ = QLatin1Char('W'); break;
+			switch (f.output) {
+			case TO_DIALOG:
+				*outPtr++ = QLatin1Char('D');
+				break;
+			case TO_NEW_WINDOW:
+				*outPtr++ = QLatin1Char('W');
+				break;
 			default:
 				break;
 			}
 
-			if (f.repInput)  *outPtr++ = QLatin1Char('X');
+			if (f.repInput) *outPtr++ = QLatin1Char('X');
 			if (f.saveFirst) *outPtr++ = QLatin1Char('S');
 			if (f.loadAfter) *outPtr++ = QLatin1Char('L');
 
@@ -156,7 +166,7 @@ QString writeMenuItemString(const std::vector<MenuData> &menuItems, CommandTypes
 		*outPtr++ = QLatin1Char('\t');
 		*outPtr++ = QLatin1Char('\t');
 
-		Q_FOREACH(QChar ch, f.cmd) {
+		Q_FOREACH (QChar ch, f.cmd) {
 			if (ch == QLatin1Char('\n')) { // and newlines to backslash-n's,
 				*outPtr++ = QLatin1Char('\n');
 				*outPtr++ = QLatin1Char('\t');
@@ -167,7 +177,7 @@ QString writeMenuItemString(const std::vector<MenuData> &menuItems, CommandTypes
 
 		if (listType == CommandTypes::MACRO_CMDS || listType == CommandTypes::BG_MENU_CMDS) {
 
-			if(outStr.endsWith(QLatin1Char('\t'))) {
+			if (outStr.endsWith(QLatin1Char('\t'))) {
 				outStr.chop(1);
 			}
 
@@ -196,17 +206,17 @@ bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 			in.skipWhitespace();
 
 			// end of string in proper place
-			if(in.atEnd()) {
+			if (in.atEnd()) {
 				return true;
 			}
 
 			// read name field
 			QString nameStr = in.readUntil(QLatin1Char(':'));
-			if(nameStr.isEmpty()) {
+			if (nameStr.isEmpty()) {
 				Raise<ParseError>("no name field");
 			}
 
-			if(in.atEnd()) {
+			if (in.atEnd()) {
 				Raise<ParseError>("end not expected");
 			}
 
@@ -215,7 +225,7 @@ bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 			// read accelerator field
 			QString accStr = in.readUntil(QLatin1Char(':'));
 
-			if(in.atEnd()) {
+			if (in.atEnd()) {
 				Raise<ParseError>("end not expected");
 			}
 
@@ -228,11 +238,11 @@ bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 			bool saveFirst  = false;
 			bool loadAfter  = false;
 
-			for(; !in.atEnd() && *in != QLatin1Char(':'); ++in) {
+			for (; !in.atEnd() && *in != QLatin1Char(':'); ++in) {
 
 				if (listType == CommandTypes::SHELL_CMDS) {
 
-					switch((*in).toLatin1()) {
+					switch ((*in).toLatin1()) {
 					case 'I':
 						input = FROM_SELECTION;
 						break;
@@ -261,7 +271,7 @@ bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 						Raise<ParseError>("unreadable flag field");
 					}
 				} else {
-					switch((*in).toLatin1()) {
+					switch ((*in).toLatin1()) {
 					case 'R':
 						input = FROM_SELECTION;
 						break;
@@ -293,7 +303,7 @@ bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 			} else {
 
 				QString p = copyMacroToEnd(in);
-				if(p.isNull()) {
+				if (p.isNull()) {
 					return false;
 				}
 
@@ -303,7 +313,7 @@ bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 			in.skipWhitespaceNL();
 
 			// create a menu item record
-			auto f = std::make_unique<MenuItem>();
+			auto f       = std::make_unique<MenuItem>();
 			f->name      = nameStr;
 			f->cmd       = cmdStr;
 			f->input     = input;
@@ -318,13 +328,13 @@ bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 				return data.item.name == f->name;
 			});
 
-			if(it == menuItems.end()) {
-				menuItems.push_back({ *f, nullptr });
+			if (it == menuItems.end()) {
+				menuItems.push_back({*f, nullptr});
 			} else {
 				it->item = *f;
 			}
 		}
-	} catch(const ParseError &error) {
+	} catch (const ParseError &error) {
 		qWarning("NEdit: Parse error in user defined menu item, %s", error.message.c_str());
 		return false;
 	}
@@ -341,15 +351,14 @@ void setDefaultIndex(const std::vector<MenuData> &infoList, size_t index) {
 	/* Scan the list for items with the same name and a language mode
 	   specified. If one is found, then set the default index to the
 	   index of the current default item. */
-	for (const MenuData &data: infoList) {
-		if(const std::unique_ptr<UserMenuInfo> &info = data.info) {
+	for (const MenuData &data : infoList) {
+		if (const std::unique_ptr<UserMenuInfo> &info = data.info) {
 			if (!info->umiIsDefault && info->umiName == defaultMenuName) {
 				info->umiDefaultIndex = index;
 			}
 		}
 	}
 }
-
 
 /*
 ** Cache user menus:
@@ -359,9 +368,9 @@ void setDefaultIndex(const std::vector<MenuData> &infoList, size_t index) {
 void parseMenuItemName(const QString &menuItemName, const std::unique_ptr<UserMenuInfo> &info) {
 
 	int index = menuItemName.indexOf(QLatin1Char('@'));
-	if(index != -1) {
+	if (index != -1) {
 		QString languageString = menuItemName.mid(index);
-		if(languageString == QLatin1String("*")) {
+		if (languageString == QLatin1String("*")) {
 			/* only language is "*": this is for all but language specific macros */
 			info->umiIsDefault = true;
 			return;
@@ -371,7 +380,7 @@ void parseMenuItemName(const QString &menuItemName, const std::unique_ptr<UserMe
 		std::vector<size_t> languageModes;
 
 		// setup a list of all language modes related to given menu item
-		for(const QString &language : languages) {
+		for (const QString &language : languages) {
 			/* lookup corresponding language mode index; if PLAIN is
 			   returned then this means, that language mode name after
 			   "@" is unknown (i.e. not defined) */
@@ -398,7 +407,7 @@ void parseMenuItemName(const QString &menuItemName, const std::unique_ptr<UserMe
 QString stripLanguageMode(const QString &menuItemName) {
 
 	int index = menuItemName.indexOf(QLatin1Char('@'));
-	if(index != -1) {
+	if (index != -1) {
 		return menuItemName.left(index);
 	} else {
 		return menuItemName;
@@ -429,7 +438,7 @@ std::unique_ptr<UserMenuInfo> parseMenuItemRec(const MenuItem &item) {
 }
 
 static std::vector<MenuData> &selectMenu(CommandTypes type) {
-	switch(type) {
+	switch (type) {
 	case CommandTypes::SHELL_CMDS:
 		return ShellMenuData;
 	case CommandTypes::MACRO_CMDS:
@@ -444,17 +453,16 @@ static std::vector<MenuData> &selectMenu(CommandTypes type) {
 MenuData *findMenuItem(const QString &name, CommandTypes type) {
 
 	std::vector<MenuData> &menu = selectMenu(type);
-	auto it = std::find_if(menu.begin(), menu.end(), [&name](MenuData &entry) {
-		return entry.item.name == name;
-	});
+	auto it                     = std::find_if(menu.begin(), menu.end(), [&name](MenuData &entry) {
+        return entry.item.name == name;
+    });
 
-	if(it != menu.end()) {
+	if (it != menu.end()) {
 		return &*it;
 	}
 
 	return nullptr;
 }
-
 
 /*
 ** Generate a text string for the preferences file describing the contents
@@ -507,17 +515,17 @@ void SetupUserMenuInfo() {
 ** (i.e. add / move / delete of language modes etc).
 */
 void UpdateUserMenuInfo() {
-	for(auto &item : ShellMenuData) {
+	for (auto &item : ShellMenuData) {
 		item.info = nullptr;
 	}
 	parseMenuItemList(ShellMenuData);
 
-	for(auto &item : MacroMenuData) {
+	for (auto &item : MacroMenuData) {
 		item.info = nullptr;
 	}
 	parseMenuItemList(MacroMenuData);
 
-	for(auto &item : BGMenuData) {
+	for (auto &item : BGMenuData) {
 		item.info = nullptr;
 	}
 	parseMenuItemList(BGMenuData);
@@ -533,7 +541,7 @@ void parseMenuItemList(std::vector<MenuData> &itemList) {
 
 	/* 1st pass: setup user menu info: extract language modes, menu name &
 	   default indication; build user menu ID */
-	for (MenuData &data: itemList) {
+	for (MenuData &data : itemList) {
 		data.info = parseMenuItemRec(data.item);
 	}
 

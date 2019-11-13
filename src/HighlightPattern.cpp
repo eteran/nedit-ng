@@ -1,7 +1,8 @@
 
 #include "HighlightPattern.h"
 
-HighlightPattern::HighlightPattern(QString styleName) : style(std::move(styleName)) {
+HighlightPattern::HighlightPattern(QString styleName)
+	: style(std::move(styleName)) {
 }
 
 bool HighlightPattern::operator==(const HighlightPattern &rhs) const {
@@ -26,7 +27,7 @@ bool HighlightPattern::operator==(const HighlightPattern &rhs) const {
 		return false;
 	}
 
-	if(style != rhs.style) {
+	if (style != rhs.style) {
 		return false;
 	}
 
@@ -35,7 +36,6 @@ bool HighlightPattern::operator==(const HighlightPattern &rhs) const {
 	}
 
 	return true;
-
 }
 
 bool HighlightPattern::operator!=(const HighlightPattern &rhs) const {

@@ -7,7 +7,8 @@
  * @brief TextAreaMimeData::TextAreaMimeData
  * @param buffer
  */
-TextAreaMimeData::TextAreaMimeData(const std::shared_ptr<TextBuffer> &buffer) : buffer_(buffer) {
+TextAreaMimeData::TextAreaMimeData(const std::shared_ptr<TextBuffer> &buffer)
+	: buffer_(buffer) {
 }
 
 /**
@@ -19,7 +20,7 @@ TextAreaMimeData::TextAreaMimeData(const std::shared_ptr<TextBuffer> &buffer) : 
 QVariant TextAreaMimeData::retrieveData(const QString &mimeType, QVariant::Type type) const {
 
 	auto that = const_cast<TextAreaMimeData *>(this);
-	if(buffer_->primary.hasSelection()) {
+	if (buffer_->primary.hasSelection()) {
 		const std::string text = buffer_->BufGetSelectionText();
 		that->setText(QString::fromStdString(text));
 	}
@@ -33,10 +34,9 @@ QVariant TextAreaMimeData::retrieveData(const QString &mimeType, QVariant::Type 
  */
 QStringList TextAreaMimeData::formats() const {
 
-	if(buffer_->primary.hasSelection()) {
+	if (buffer_->primary.hasSelection()) {
 		static const QStringList f = {
-		    QLatin1String("text/plain")
-		};
+			QLatin1String("text/plain")};
 
 		return f;
 	}
@@ -58,9 +58,8 @@ bool TextAreaMimeData::hasFormat(const QString &mimeType) const {
  * @return
  */
 TextBuffer *TextAreaMimeData::buffer() const {
-    return buffer_.get();
+	return buffer_.get();
 }
-
 
 /**
  * @brief TextAreaMimeData::isOwner
@@ -70,8 +69,8 @@ TextBuffer *TextAreaMimeData::buffer() const {
  */
 bool TextAreaMimeData::isOwner(const QMimeData *mimeData, const TextBuffer *buffer) {
 
-	if(auto mime = qobject_cast<const TextAreaMimeData *>(mimeData)) {
-		if(mime->buffer() == buffer) {
+	if (auto mime = qobject_cast<const TextAreaMimeData *>(mimeData)) {
+		if (mime->buffer() == buffer) {
 			return true;
 		}
 	}

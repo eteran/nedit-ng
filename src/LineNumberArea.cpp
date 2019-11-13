@@ -2,14 +2,15 @@
 #include "LineNumberArea.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
-#include <QPainter>
 #include <QPaintEvent>
+#include <QPainter>
 
 /**
  * @brief LineNumberArea::LineNumberArea
  * @param editor
  */
-LineNumberArea::LineNumberArea(TextArea *area) : QWidget(area), area_(area) {
+LineNumberArea::LineNumberArea(TextArea *area)
+	: QWidget(area), area_(area) {
 	resize(0, 0);
 }
 
@@ -36,7 +37,7 @@ void LineNumberArea::paintEvent(QPaintEvent *event) {
 	painter.setFont(area_->font_);
 
 	// Draw the line numbers, aligned to the text
-	int y = area_->viewport()->contentsRect().top();
+	int y        = area_->viewport()->contentsRect().top();
 	int64_t line = area_->getAbsTopLineNum();
 
 #if 0
@@ -88,11 +89,10 @@ void LineNumberArea::wheelEvent(QWheelEvent *event) {
 void LineNumberArea::mouseDoubleClickEvent(QMouseEvent *event) {
 
 	QMouseEvent e(event->type(),
-	              QPoint(std::max(0, event->x() - width()), event->y()),
-	              event->button(),
-	              event->buttons(),
-	              event->modifiers()
-	              );
+				  QPoint(std::max(0, event->x() - width()), event->y()),
+				  event->button(),
+				  event->buttons(),
+				  event->modifiers());
 
 	area_->mouseDoubleClickEvent(&e);
 }
@@ -103,11 +103,10 @@ void LineNumberArea::mouseDoubleClickEvent(QMouseEvent *event) {
  */
 void LineNumberArea::mouseMoveEvent(QMouseEvent *event) {
 	QMouseEvent e(event->type(),
-	              QPoint(std::max(0, event->x() - width()), event->y()),
-	              event->button(),
-	              event->buttons(),
-	              event->modifiers()
-	              );
+				  QPoint(std::max(0, event->x() - width()), event->y()),
+				  event->button(),
+				  event->buttons(),
+				  event->modifiers());
 	area_->mouseMoveEvent(&e);
 }
 
@@ -117,11 +116,10 @@ void LineNumberArea::mouseMoveEvent(QMouseEvent *event) {
  */
 void LineNumberArea::mousePressEvent(QMouseEvent *event) {
 	QMouseEvent e(event->type(),
-	              QPoint(std::max(0, event->x() - width()), event->y()),
-	              event->button(),
-	              event->buttons(),
-	              event->modifiers()
-	              );
+				  QPoint(std::max(0, event->x() - width()), event->y()),
+				  event->button(),
+				  event->buttons(),
+				  event->modifiers());
 	area_->mousePressEvent(&e);
 }
 
@@ -131,10 +129,9 @@ void LineNumberArea::mousePressEvent(QMouseEvent *event) {
  */
 void LineNumberArea::mouseReleaseEvent(QMouseEvent *event) {
 	QMouseEvent e(event->type(),
-	              QPoint(std::max(0, event->x() - width()), event->y()),
-	              event->button(),
-	              event->buttons(),
-	              event->modifiers()
-	              );
+				  QPoint(std::max(0, event->x() - width()), event->y()),
+				  event->button(),
+				  event->buttons(),
+				  event->modifiers());
 	area_->mouseReleaseEvent(&e);
 }

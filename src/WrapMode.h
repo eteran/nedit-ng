@@ -11,7 +11,7 @@ enum class WrapMode {
 
 inline QLatin1String to_string(WrapMode wrap) {
 
-	switch(wrap) {
+	switch (wrap) {
 	case WrapMode::NoWrap:
 		return QLatin1String("nowrap");
 	case WrapMode::Wrap:

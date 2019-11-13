@@ -2,8 +2,8 @@
 #ifndef UTIL_STRING_H_
 #define UTIL_STRING_H_
 
-#include <string>
 #include "Util/string_view.h"
+#include <string>
 
 class QString;
 

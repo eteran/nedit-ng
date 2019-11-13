@@ -49,14 +49,13 @@ private:
 	void finishEditing();
 
 private:
-	QLineEdit *  lineEdit_;
+	QLineEdit *lineEdit_;
 	QKeySequence keySequence_;
 	QVector<int> keys_;
-	int          prevKey_               = -1;
-	int          releaseTimer_          = 0;
-	int          maximumSequenceLength_ = 4;
-	bool         modifierRequired_      = false;
-
+	int prevKey_               = -1;
+	int releaseTimer_          = 0;
+	int maximumSequenceLength_ = 4;
+	bool modifierRequired_     = false;
 };
 
 #endif

@@ -284,7 +284,7 @@ QString ReadAnyTextFile(const QString &fileName, bool forceNL) {
 		}
 
 		return QString::fromStdString(contents);
-	} catch(const std::ios_base::failure &ex) {
+	} catch (const std::ios_base::failure &ex) {
 		qWarning("NEdit: Error while reading file. %s", ex.what());
 		return {};
 	}

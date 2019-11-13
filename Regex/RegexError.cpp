@@ -1,7 +1,7 @@
 
 #include "RegexError.h"
-#include <QtDebug>
 #include <QByteArray>
+#include <QtDebug>
 
 /**
  * @brief RegexError::RegexError

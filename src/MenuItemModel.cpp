@@ -6,7 +6,8 @@
  * @brief MenuItemModel::MenuItemModel
  * @param parent
  */
-MenuItemModel::MenuItemModel(QObject *parent) : QAbstractItemModel(parent) {
+MenuItemModel::MenuItemModel(QObject *parent)
+	: QAbstractItemModel(parent) {
 }
 
 /**
@@ -18,11 +19,11 @@ MenuItemModel::MenuItemModel(QObject *parent) : QAbstractItemModel(parent) {
  */
 QModelIndex MenuItemModel::index(int row, int column, const QModelIndex &parent) const {
 
-	if(row >= rowCount(parent) || column >= columnCount(parent)) {
+	if (row >= rowCount(parent) || column >= columnCount(parent)) {
 		return {};
 	}
 
-	if(row < 0) {
+	if (row < 0) {
 		return {};
 	}
 
@@ -46,12 +47,12 @@ QModelIndex MenuItemModel::parent(const QModelIndex &index) const {
  * @return
  */
 QVariant MenuItemModel::data(const QModelIndex &index, int role) const {
-	if(index.isValid()) {
+	if (index.isValid()) {
 
 		const MenuItem &item = items_[index.row()];
 
-		if(role == Qt::DisplayRole) {
-			switch(index.column()) {
+		if (role == Qt::DisplayRole) {
+			switch (index.column()) {
 			case 0:
 				return item.name;
 			}
@@ -69,8 +70,8 @@ QVariant MenuItemModel::data(const QModelIndex &index, int role) const {
  * @return
  */
 QVariant MenuItemModel::headerData(int section, Qt::Orientation orientation, int role) const {
-	if(role == Qt::DisplayRole && orientation == Qt::Horizontal) {
-		switch(section) {
+	if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
+		switch (section) {
 		case 0:
 			return tr("Name");
 		}
@@ -123,9 +124,9 @@ void MenuItemModel::clear() {
  * @param index
  */
 void MenuItemModel::moveItemUp(const QModelIndex &index) {
-	if(index.isValid()) {
+	if (index.isValid()) {
 		int row = index.row();
-		if(row > 0) {
+		if (row > 0) {
 			beginMoveRows(QModelIndex(), row, row, QModelIndex(), row - 1);
 			moveItem(items_, row, row - 1);
 			endMoveRows();
@@ -138,9 +139,9 @@ void MenuItemModel::moveItemUp(const QModelIndex &index) {
  * @param index
  */
 void MenuItemModel::moveItemDown(const QModelIndex &index) {
-	if(index.isValid()) {
+	if (index.isValid()) {
 		int row = index.row();
-		if(row < rowCount() - 1) {
+		if (row < rowCount() - 1) {
 			beginMoveRows(QModelIndex(), row, row, QModelIndex(), row + 2);
 			moveItem(items_, row, row + 1);
 			endMoveRows();
@@ -153,9 +154,9 @@ void MenuItemModel::moveItemDown(const QModelIndex &index) {
  * @param index
  */
 void MenuItemModel::deleteItem(const QModelIndex &index) {
-	if(index.isValid()) {
+	if (index.isValid()) {
 		int row = index.row();
-		if(row < rowCount()) {
+		if (row < rowCount()) {
 			beginRemoveRows(QModelIndex(), row, row);
 			items_.remove(row);
 			endRemoveRows();
@@ -164,10 +165,10 @@ void MenuItemModel::deleteItem(const QModelIndex &index) {
 }
 
 bool MenuItemModel::updateItem(const QModelIndex &index, const MenuItem &item) {
-	if(index.isValid()) {
+	if (index.isValid()) {
 		int row = index.row();
-		if(row < rowCount()) {
-			items_[row] = item;
+		if (row < rowCount()) {
+			items_[row]                     = item;
 			static const QVector<int> roles = {Qt::DisplayRole};
 			Q_EMIT dataChanged(index, index, roles);
 			return true;
@@ -178,13 +179,12 @@ bool MenuItemModel::updateItem(const QModelIndex &index, const MenuItem &item) {
 }
 
 const MenuItem *MenuItemModel::itemFromIndex(const QModelIndex &index) const {
-	if(index.isValid()) {
+	if (index.isValid()) {
 		int row = index.row();
-		if(row < rowCount()) {
+		if (row < rowCount()) {
 			return &items_[row];
 		}
 	}
 
 	return nullptr;
 }
-

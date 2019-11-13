@@ -7,22 +7,24 @@
 template <class T>
 class SignalBlocker {
 public:
-	explicit SignalBlocker(T *blocked) : blocked_(blocked), previous_(blocked->blockSignals(true)) {
+	explicit SignalBlocker(T *blocked)
+		: blocked_(blocked), previous_(blocked->blockSignals(true)) {
 	}
 
 	~SignalBlocker() {
-		if(blocked_) {
+		if (blocked_) {
 			blocked_->blockSignals(previous_);
 		}
 	}
 
-	SignalBlocker(const SignalBlocker &)            = delete;
-	SignalBlocker& operator=(const SignalBlocker &) = delete;
+	SignalBlocker(const SignalBlocker &) = delete;
+	SignalBlocker &operator=(const SignalBlocker &) = delete;
 
-	SignalBlocker(SignalBlocker &&other) noexcept : blocked_(std::exchange(other.blocked_, nullptr)), previous_(std::exchange(other.previous_, false)) {
+	SignalBlocker(SignalBlocker &&other) noexcept
+		: blocked_(std::exchange(other.blocked_, nullptr)), previous_(std::exchange(other.previous_, false)) {
 	}
 
-	SignalBlocker& operator=(SignalBlocker &&rhs) noexcept {
+	SignalBlocker &operator=(SignalBlocker &&rhs) noexcept {
 		blocked_  = std::exchange(rhs.blocked_, nullptr);
 		previous_ = std::exchange(rhs.previous_, false);
 		return *this;
@@ -35,7 +37,7 @@ public:
 	explicit operator bool() const { return blocked_ != nullptr; }
 
 private:
-	T   *blocked_;
+	T *blocked_;
 	bool previous_;
 };
 

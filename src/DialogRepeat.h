@@ -10,7 +10,7 @@ class DocumentWidget;
 class DialogRepeat final : public Dialog {
 	Q_OBJECT
 public:
-    explicit DialogRepeat(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogRepeat(DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogRepeat() override = default;
 
 public:

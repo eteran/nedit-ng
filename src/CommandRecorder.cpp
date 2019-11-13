@@ -1,8 +1,8 @@
 
 #include "CommandRecorder.h"
+#include "DocumentWidget.h"
 #include "TextEditEvent.h"
 #include "WindowMenuEvent.h"
-#include "DocumentWidget.h"
 #include <QtDebug>
 
 namespace {
@@ -25,8 +25,7 @@ const QLatin1String MouseActions[] = {
 	QLatin1String("copy_to_or_end_drag"),
 	QLatin1String("exchange"),
 	QLatin1String("process_bdrag"),
-	QLatin1String("mouse_pan")
-};
+	QLatin1String("mouse_pan")};
 
 /* List of actions to not record because they
    generate further actions, more suitable for recording */
@@ -46,8 +45,7 @@ const QLatin1String RedundantActions[] = {
 	QLatin1String("filter_selection_dialog"),
 	QLatin1String("execute_command_dialog"),
 	QLatin1String("repeat_dialog"),
-	QLatin1String("start_incremental_find")
-};
+	QLatin1String("start_incremental_find")};
 
 /**
  * @brief isMouseAction
@@ -111,8 +109,8 @@ QString CommandRecorder::escapeString(const QString &s) {
 
 	QString r;
 	r.reserve(s.size());
-	for(QChar ch : s) {
-		if(EscapeChars.contains(ch)) {
+	for (QChar ch : s) {
+		if (EscapeChars.contains(ch)) {
 			r.append(QLatin1Char('\\'));
 		}
 		r.append(ch);
@@ -124,7 +122,8 @@ QString CommandRecorder::escapeString(const QString &s) {
  * @brief CommandRecorder::CommandRecorder
  * @param parent
  */
-CommandRecorder::CommandRecorder(QObject *parent) : QObject(parent) {
+CommandRecorder::CommandRecorder(QObject *parent)
+	: QObject(parent) {
 }
 
 /**
@@ -146,9 +145,9 @@ bool CommandRecorder::eventFilter(QObject *obj, QEvent *event) {
 
 	Q_UNUSED(obj)
 
-	if(event->type() == TextEditEvent::eventType) {
+	if (event->type() == TextEditEvent::eventType) {
 		lastActionHook(static_cast<TextEditEvent *>(event));
-	} else if(event->type() == WindowMenuEvent::eventType) {
+	} else if (event->type() == WindowMenuEvent::eventType) {
 		lastActionHook(static_cast<WindowMenuEvent *>(event));
 	}
 
@@ -159,7 +158,7 @@ void CommandRecorder::lastActionHook(const WindowMenuEvent *ev) {
 
 	/* The last action is recorded for the benefit of repeating the last
 	   action.  Don't record repeat_macro and wipe out the real action */
-	if(ev->actionString() == QLatin1String("repeat_macro")) {
+	if (ev->actionString() == QLatin1String("repeat_macro")) {
 		return;
 	}
 
@@ -168,7 +167,7 @@ void CommandRecorder::lastActionHook(const WindowMenuEvent *ev) {
 	if (!actionString.isNull()) {
 		lastCommand_ = actionString;
 
-		if(isRecording_) {
+		if (isRecording_) {
 			/* beep on un-recordable operations which require a mouse position, to
 			   remind the user that the action was not recorded */
 			if (isMouseAction(ev)) {
@@ -186,7 +185,7 @@ void CommandRecorder::lastActionHook(const TextEditEvent *ev) {
 
 	/* The last action is recorded for the benefit of repeating the last
 	   action.  Don't record repeat_macro and wipe out the real action */
-	if(ev->actionString() == QLatin1String("repeat_macro")) {
+	if (ev->actionString() == QLatin1String("repeat_macro")) {
 		return;
 	}
 
@@ -195,7 +194,7 @@ void CommandRecorder::lastActionHook(const TextEditEvent *ev) {
 	if (!actionString.isNull()) {
 		lastCommand_ = actionString;
 
-		if(isRecording_) {
+		if (isRecording_) {
 			/* beep on un-recordable operations which require a mouse position, to
 			   remind the user that the action was not recorded */
 			if (isMouseAction(ev)) {
@@ -257,12 +256,12 @@ bool CommandRecorder::isRecording() const {
  */
 void CommandRecorder::setRecording(bool enabled) {
 
-	if(isRecording_ == enabled) {
+	if (isRecording_ == enabled) {
 		// no change in state, do nothing
 		return;
 	}
 
-	if(!enabled) {
+	if (!enabled) {
 		// we've been asked to stop recording
 		// Store the finished action for the replay menu item
 		replayMacro_ = macroRecordBuffer_;

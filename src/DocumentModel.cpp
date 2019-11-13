@@ -6,7 +6,8 @@
  * @brief DocumentModel::LanguageModeModel
  * @param parent
  */
-DocumentModel::DocumentModel(QObject *parent) : QAbstractItemModel(parent) {
+DocumentModel::DocumentModel(QObject *parent)
+	: QAbstractItemModel(parent) {
 }
 
 /**
@@ -18,11 +19,11 @@ DocumentModel::DocumentModel(QObject *parent) : QAbstractItemModel(parent) {
  */
 QModelIndex DocumentModel::index(int row, int column, const QModelIndex &parent) const {
 
-	if(row >= rowCount(parent) || column >= columnCount(parent)) {
+	if (row >= rowCount(parent) || column >= columnCount(parent)) {
 		return {};
 	}
 
-	if(row < 0) {
+	if (row < 0) {
 		return {};
 	}
 
@@ -46,16 +47,16 @@ QModelIndex DocumentModel::parent(const QModelIndex &index) const {
  * @return
  */
 QVariant DocumentModel::data(const QModelIndex &index, int role) const {
-	if(index.isValid()) {
+	if (index.isValid()) {
 
 		const DocumentWidget *document = items_[index.row()];
 
-		if(role == Qt::DisplayRole) {
-			switch(index.column()) {
+		if (role == Qt::DisplayRole) {
+			switch (index.column()) {
 			case 0:
 				return showFullPath_ ? document->fullPath() : document->filename();
 			}
-		} else if(role == Qt::UserRole) {
+		} else if (role == Qt::UserRole) {
 			return QVariant();
 		}
 	}
@@ -71,8 +72,8 @@ QVariant DocumentModel::data(const QModelIndex &index, int role) const {
  * @return
  */
 QVariant DocumentModel::headerData(int section, Qt::Orientation orientation, int role) const {
-	if(role == Qt::DisplayRole && orientation == Qt::Horizontal) {
-		switch(section) {
+	if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
+		switch (section) {
 		case 0:
 			return tr("Name");
 		}
@@ -136,9 +137,9 @@ void DocumentModel::clear() {
  * @param index
  */
 void DocumentModel::moveItemUp(const QModelIndex &index) {
-	if(index.isValid()) {
+	if (index.isValid()) {
 		int row = index.row();
-		if(row > 0) {
+		if (row > 0) {
 			beginMoveRows(QModelIndex(), row, row, QModelIndex(), row - 1);
 			moveItem(items_, row, row - 1);
 			endMoveRows();
@@ -151,9 +152,9 @@ void DocumentModel::moveItemUp(const QModelIndex &index) {
  * @param index
  */
 void DocumentModel::moveItemDown(const QModelIndex &index) {
-	if(index.isValid()) {
+	if (index.isValid()) {
 		int row = index.row();
-		if(row < rowCount() - 1) {
+		if (row < rowCount() - 1) {
 			beginMoveRows(QModelIndex(), row, row, QModelIndex(), row + 2);
 			moveItem(items_, row, row + 1);
 			endMoveRows();
@@ -166,9 +167,9 @@ void DocumentModel::moveItemDown(const QModelIndex &index) {
  * @param index
  */
 void DocumentModel::deleteItem(const QModelIndex &index) {
-	if(index.isValid()) {
+	if (index.isValid()) {
 		int row = index.row();
-		if(row < rowCount()) {
+		if (row < rowCount()) {
 			beginRemoveRows(QModelIndex(), row, row);
 			items_.remove(row);
 			endRemoveRows();
@@ -182,13 +183,12 @@ void DocumentModel::deleteItem(const QModelIndex &index) {
  * @return
  */
 DocumentWidget *DocumentModel::itemFromIndex(const QModelIndex &index) {
-	if(index.isValid()) {
+	if (index.isValid()) {
 		int row = index.row();
-		if(row < rowCount()) {
+		if (row < rowCount()) {
 			return items_[row];
 		}
 	}
 
 	return nullptr;
 }
-

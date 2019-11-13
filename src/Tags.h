@@ -8,8 +8,8 @@
 
 #include <deque>
 
-#include <QString>
 #include <QDateTime>
+#include <QString>
 
 class TextArea;
 class QTextStream;
@@ -30,11 +30,11 @@ enum class SearchMode {
 };
 
 struct File {
-	QString   filename;
+	QString filename;
 	QDateTime date;
-	bool      loaded;
-	int       index;
-	int       refcount; // Only tips files are refcounted, not tags files
+	bool loaded;
+	int index;
+	int refcount; // Only tips files are refcounted, not tags files
 };
 
 struct Tag {
@@ -42,9 +42,9 @@ struct Tag {
 	QString file;
 	QString searchString;
 	QString path;
-	size_t  language;
+	size_t language;
 	int64_t posInf;
-	int     index;
+	int index;
 };
 
 enum CalltipToken {
@@ -57,7 +57,6 @@ enum CalltipToken {
 	TF_ERROR,
 	TF_ERROR_EOF
 };
-
 
 QList<Tag> lookupTag(const QString &name, SearchMode mode);
 bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMode mode);
@@ -76,17 +75,17 @@ extern std::deque<File> TagsFileList; // list of loaded tags files
 extern std::deque<File> TipsFileList; // list of loaded calltips tag files
 
 extern SearchMode searchMode;
-extern QString    tagName;
+extern QString tagName;
 
 extern QString tagFiles[MaxDupTags];
 extern QString tagSearch[MaxDupTags];
 extern int64_t tagPosInf[MaxDupTags];
 
-extern bool            globAnchored;
+extern bool globAnchored;
 extern CallTipPosition globPos;
-extern TipHAlignMode   globHAlign;
-extern TipVAlignMode   globVAlign;
-extern TipAlignMode    globAlignMode;
+extern TipHAlignMode globHAlign;
+extern TipVAlignMode globVAlign;
+extern TipAlignMode globAlignMode;
 }
 
 #endif

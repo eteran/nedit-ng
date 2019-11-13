@@ -14,11 +14,11 @@ namespace CommonDialog {
  */
 template <class Ui>
 void setButtonIcons(Ui *ui) {
-	ui->buttonNew   ->setIcon(QIcon::fromTheme(QLatin1String("document-new"), QIcon(QLatin1String(":/document-new.svg"))));
-	ui->buttonDelete->setIcon(QIcon::fromTheme(QLatin1String("edit-delete"),  QIcon(QLatin1String(":/edit-delete.svg"))));
-	ui->buttonCopy  ->setIcon(QIcon::fromTheme(QLatin1String("edit-copy"),    QIcon(QLatin1String(":/edit-copy.svg"))));
-	ui->buttonUp    ->setIcon(QIcon::fromTheme(QLatin1String("go-up"),        QIcon(QLatin1String(":/go-up.svg"))));
-	ui->buttonDown  ->setIcon(QIcon::fromTheme(QLatin1String("go-down"),      QIcon(QLatin1String(":/go-down.svg"))));
+	ui->buttonNew->setIcon(QIcon::fromTheme(QLatin1String("document-new"), QIcon(QLatin1String(":/document-new.svg"))));
+	ui->buttonDelete->setIcon(QIcon::fromTheme(QLatin1String("edit-delete"), QIcon(QLatin1String(":/edit-delete.svg"))));
+	ui->buttonCopy->setIcon(QIcon::fromTheme(QLatin1String("edit-copy"), QIcon(QLatin1String(":/edit-copy.svg"))));
+	ui->buttonUp->setIcon(QIcon::fromTheme(QLatin1String("go-up"), QIcon(QLatin1String(":/go-up.svg"))));
+	ui->buttonDown->setIcon(QIcon::fromTheme(QLatin1String("go-down"), QIcon(QLatin1String(":/go-down.svg"))));
 }
 
 /**
@@ -29,28 +29,28 @@ void setButtonIcons(Ui *ui) {
  */
 template <class Ui, class Model>
 void updateButtonStates(Ui *ui, Model *model, const QModelIndex &current) {
-	if(current.isValid()) {
-		if(current.row() == 0) {
-			ui->buttonUp    ->setEnabled(false);
-			ui->buttonDown  ->setEnabled(model->rowCount() > 1);
+	if (current.isValid()) {
+		if (current.row() == 0) {
+			ui->buttonUp->setEnabled(false);
+			ui->buttonDown->setEnabled(model->rowCount() > 1);
 			ui->buttonDelete->setEnabled(true);
-			ui->buttonCopy  ->setEnabled(true);
-		} else if(current.row() == model->rowCount() - 1) {
-			ui->buttonUp    ->setEnabled(true);
-			ui->buttonDown  ->setEnabled(false);
+			ui->buttonCopy->setEnabled(true);
+		} else if (current.row() == model->rowCount() - 1) {
+			ui->buttonUp->setEnabled(true);
+			ui->buttonDown->setEnabled(false);
 			ui->buttonDelete->setEnabled(true);
-			ui->buttonCopy  ->setEnabled(true);
+			ui->buttonCopy->setEnabled(true);
 		} else {
-			ui->buttonUp    ->setEnabled(true);
-			ui->buttonDown  ->setEnabled(true);
+			ui->buttonUp->setEnabled(true);
+			ui->buttonDown->setEnabled(true);
 			ui->buttonDelete->setEnabled(true);
-			ui->buttonCopy  ->setEnabled(true);
+			ui->buttonCopy->setEnabled(true);
 		}
 	} else {
-		ui->buttonUp    ->setEnabled(false);
-		ui->buttonDown  ->setEnabled(false);
+		ui->buttonUp->setEnabled(false);
+		ui->buttonDown->setEnabled(false);
 		ui->buttonDelete->setEnabled(false);
-		ui->buttonCopy  ->setEnabled(false);
+		ui->buttonCopy->setEnabled(false);
 	}
 }
 
@@ -92,7 +92,7 @@ void addNewItem(Ui *ui, Model *model, Func func) {
 template <class Ui, class Model>
 void deleteItem(Ui *ui, Model *model, QModelIndex *deleted) {
 	QModelIndex index = ui->listItems->currentIndex();
-	if(index.isValid()) {
+	if (index.isValid()) {
 		*deleted = index;
 		model->deleteItem(index);
 	}
@@ -110,7 +110,7 @@ template <class Ui, class Model>
 void copyItem(Ui *ui, Model *model) {
 
 	QModelIndex index = ui->listItems->currentIndex();
-	if(index.isValid()) {
+	if (index.isValid()) {
 		auto ptr = model->itemFromIndex(index);
 		model->addItem(*ptr);
 
@@ -130,7 +130,7 @@ void copyItem(Ui *ui, Model *model) {
 template <class Ui, class Model>
 void moveItemUp(Ui *ui, Model *model) {
 	QModelIndex index = ui->listItems->currentIndex();
-	if(index.isValid()) {
+	if (index.isValid()) {
 		model->moveItemUp(index);
 	}
 
@@ -146,7 +146,7 @@ void moveItemUp(Ui *ui, Model *model) {
 template <class Ui, class Model>
 void moveItemDown(Ui *ui, Model *model) {
 	QModelIndex index = ui->listItems->currentIndex();
-	if(index.isValid()) {
+	if (index.isValid()) {
 		model->moveItemDown(index);
 	}
 

@@ -8,7 +8,8 @@
  * @param parent
  * @param f
  */
-CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f) {
+CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f)
+	: QWidget(parent, f) {
 	ui.setupUi(this);
 	setAttribute(Qt::WA_DeleteOnClose, true);
 	ui.labelTip->setPalette(QToolTip::palette());

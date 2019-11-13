@@ -2,16 +2,16 @@
 #ifndef TEXT_BUFFER_TCC_
 #define TEXT_BUFFER_TCC_
 
-#include "TextBuffer.h"
 #include "TextAreaMimeData.h"
+#include "TextBuffer.h"
 #include "Util/algorithm.h"
 
 #include <algorithm>
 #include <cassert>
 
-#include <QtDebug>
 #include <QApplication>
 #include <QClipboard>
+#include <QtDebug>
 
 namespace detail {
 
@@ -22,10 +22,9 @@ template <>
 const char *controlCharacter<char>(size_t index) noexcept {
 	static const char *const ControlCodeTable[32] = {
 		"nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel",
-		"bs",  "ht",  "nl",  "vt",  "np",  "cr",  "so",  "si",
+		"bs", "ht", "nl", "vt", "np", "cr", "so", "si",
 		"dle", "dc1", "dc2", "dc3", "dc4", "nak", "syn", "etb",
-		"can", "em",  "sub", "esc", "fs",  "gs",  "rs",  "us"
-	};
+		"can", "em", "sub", "esc", "fs", "gs", "rs", "us"};
 
 	assert(index < 32);
 	return ControlCodeTable[index];
@@ -35,10 +34,9 @@ template <>
 const wchar_t *controlCharacter<wchar_t>(size_t index) noexcept {
 	static const wchar_t *const ControlCodeTable[32] = {
 		L"nul", L"soh", L"stx", L"etx", L"eot", L"enq", L"ack", L"bel",
-		L"bs",  L"ht",  L"nl",  L"vt",  L"np",  L"cr",  L"so",  L"si",
+		L"bs", L"ht", L"nl", L"vt", L"np", L"cr", L"so", L"si",
 		L"dle", L"dc1", L"dc2", L"dc3", L"dc4", L"nak", L"syn", L"etb",
-		L"can", L"em",  L"sub", L"esc", L"fs",  L"gs",  L"rs",  L"us"
-	};
+		L"can", L"em", L"sub", L"esc", L"fs", L"gs", L"rs", L"us"};
 
 	assert(index < 32);
 	return ControlCodeTable[index];
@@ -145,7 +143,7 @@ void BasicTextBuffer<Ch, Tr>::BufInsert(TextCursor pos, view_type text) noexcept
 
 	// insert and redisplay
 	const int64_t nInserted = insert(pos, text);
-	cursorPosHint_ = pos + nInserted;
+	cursorPosHint_          = pos + nInserted;
 	callModifyCBs(pos, 0, nInserted, 0, {});
 }
 
@@ -160,7 +158,7 @@ void BasicTextBuffer<Ch, Tr>::BufInsert(TextCursor pos, Ch ch) noexcept {
 
 	// insert and redisplay
 	const int64_t nInserted = insert(pos, ch);
-	cursorPosHint_ = pos + nInserted;
+	cursorPosHint_          = pos + nInserted;
 	callModifyCBs(pos, 0, nInserted, 0, {});
 }
 
@@ -310,9 +308,9 @@ void BasicTextBuffer<Ch, Tr>::overlayRect(TextCursor startPos, int64_t rectStart
 	   text between rectStart and rectEnd and padding appropriately.  Trim
 	   trailing space from line (whitespace at the ends of lines otherwise
 	   tends to multiply, since additional padding is added to maintain it */
-	auto outPtr = std::back_inserter(outStr);
+	auto outPtr          = std::back_inserter(outStr);
 	TextCursor lineStart = start;
-	auto insPtr = insText.begin();
+	auto insPtr          = insText.begin();
 
 	while (true) {
 		const TextCursor lineEnd  = BufEndOfLine(lineStart);
@@ -324,7 +322,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRect(TextCursor startPos, int64_t rectStart
 		overlayRectInLine(line, insLine, rectStart, rectEnd, tabDist_, useTabs_, &temp, &endOffset);
 		len = static_cast<int64_t>(temp.size());
 
-		for(auto it = outStr.rbegin(); it != outStr.rend() && (*it == Ch(' ') || *it == Ch('\t')); ++it) {
+		for (auto it = outStr.rbegin(); it != outStr.rend() && (*it == Ch(' ') || *it == Ch('\t')); ++it) {
 			--len;
 		}
 
@@ -340,7 +338,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRect(TextCursor startPos, int64_t rectStart
 	}
 
 	// trim back off extra newline
-	if(!outStr.empty()) {
+	if (!outStr.empty()) {
 		outStr.pop_back();
 	}
 
@@ -391,7 +389,6 @@ void BasicTextBuffer<Ch, Tr>::BufOverlayRect(TextCursor startPos, int64_t rectSt
 	if (charsDeleted) {
 		*charsDeleted = nDeleted;
 	}
-
 }
 
 /*
@@ -505,7 +502,7 @@ auto BasicTextBuffer<Ch, Tr>::BufGetTextInRect(TextCursor start, TextCursor end,
 	textOut.reserve(static_cast<size_t>(end - start));
 
 	TextCursor lineStart = start;
-	auto outPtr = std::back_inserter(textOut);
+	auto outPtr          = std::back_inserter(textOut);
 
 	while (lineStart <= end) {
 
@@ -514,7 +511,7 @@ auto BasicTextBuffer<Ch, Tr>::BufGetTextInRect(TextCursor start, TextCursor end,
 
 		findRectSelBoundariesForCopy(lineStart, rectStart, rectEnd, &selLeft, &selRight);
 		const string_type textIn = BufGetRange(selLeft, selRight);
-		const int64_t len = selRight - selLeft;
+		const int64_t len        = selRight - selLeft;
 
 		std::copy_n(textIn.begin(), len, outPtr);
 		lineStart = BufEndOfLine(selRight) + 1;
@@ -522,7 +519,7 @@ auto BasicTextBuffer<Ch, Tr>::BufGetTextInRect(TextCursor start, TextCursor end,
 	}
 
 	// don't leave trailing newline
-	if(!textOut.empty()) {
+	if (!textOut.empty()) {
 		textOut.pop_back();
 	}
 
@@ -538,7 +535,7 @@ auto BasicTextBuffer<Ch, Tr>::BufGetTextInRect(TextCursor start, TextCursor end,
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSetTabDistance(int distance, bool notify) noexcept {
 
-	if(notify) {
+	if (notify) {
 		/* First call the pre-delete callbacks with the previous tab setting
 		   still active. */
 		callPreDeleteCBs(BufStartOfBuffer(), buffer_.size());
@@ -570,11 +567,10 @@ void BasicTextBuffer<Ch, Tr>::BufSelect(std::pair<TextCursor, TextCursor> range)
 	BufSelect(range.first, range.second);
 }
 
-
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::updatePrimarySelection() noexcept {
 #ifdef Q_OS_UNIX
-	if(syncXSelection_ && QApplication::clipboard()->supportsSelection()) {
+	if (syncXSelection_ && QApplication::clipboard()->supportsSelection()) {
 		const bool selected = primary.selected_;
 		const bool isOwner  = TextAreaMimeData::isOwner(QApplication::clipboard()->mimeData(QClipboard::Selection), this);
 
@@ -1002,7 +998,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(TextCursor startPos, 
 
 	const TextCursor start = BufStartOfBuffer();
 
-	if(startPos == start) {
+	if (startPos == start) {
 		return start;
 	}
 
@@ -1016,7 +1012,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(TextCursor startPos, 
 			}
 		}
 
-		if(pos == start) {
+		if (pos == start) {
 			break;
 		}
 		--pos;
@@ -1076,7 +1072,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor s
 			}
 		}
 
-		if(pos == start) {
+		if (pos == start) {
 			break;
 		}
 
@@ -1181,7 +1177,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor s
 			return pos;
 		}
 
-		if(pos == start) {
+		if (pos == start) {
 			return boost::none;
 		}
 
@@ -1260,13 +1256,13 @@ void BasicTextBuffer<Ch, Tr>::deleteRect(TextCursor start, TextCursor end, int64
 	   possibly expanded tabs as well as an additional  MAX_EXP_CHAR_LEN * 2
 	   characters per line for padding where tabs and control characters cross
 	   the edges of the selection */
-	start = BufStartOfLine(start);
-	end   = BufEndOfLine(end);
+	start                = BufStartOfLine(start);
+	end                  = BufEndOfLine(end);
 	const int64_t nLines = BufCountLines(start, end) + 1;
 
-	const string_type text = BufGetRange(start, end);
+	const string_type text    = BufGetRange(start, end);
 	const string_type expText = expandTabs(text, 0, tabDist_);
-	auto len = static_cast<int64_t>(expText.size());
+	auto len                  = static_cast<int64_t>(expText.size());
 
 	string_type outStr;
 	outStr.reserve(expText.size() + static_cast<size_t>(nLines * MAX_EXP_CHAR_LEN * 2));
@@ -1274,7 +1270,7 @@ void BasicTextBuffer<Ch, Tr>::deleteRect(TextCursor start, TextCursor end, int64
 	/* loop over all lines in the buffer between start and end removing
 	   the text between rectStart and rectEnd and padding appropriately */
 	TextCursor lineStart = start;
-	auto outPtr = std::back_inserter(outStr);
+	auto outPtr          = std::back_inserter(outStr);
 
 	while (lineStart <= BufEndOfBuffer() && lineStart <= end) {
 		const TextCursor lineEnd = BufEndOfLine(lineStart);
@@ -1396,8 +1392,8 @@ void BasicTextBuffer<Ch, Tr>::insertCol(int64_t column, TextCursor startPos, vie
 	const TextCursor start = BufStartOfLine(startPos);
 	const int64_t nLines   = countLines(insText) + 1;
 
-	const int insWidth   = textWidth(insText, tabDist_);
-	const TextCursor end = BufEndOfLine(BufCountForwardNLines(start, nLines - 1));
+	const int insWidth         = textWidth(insText, tabDist_);
+	const TextCursor end       = BufEndOfLine(BufCountForwardNLines(start, nLines - 1));
 	const string_type replText = BufGetRange(start, end);
 
 	const string_type expRep = expandTabs(replText, 0, tabDist_);
@@ -1500,7 +1496,7 @@ void BasicTextBuffer<Ch, Tr>::redisplaySelection(const Selection &oldSelection, 
 	/* If the selection changed from normal to rectangular or visa versa, or
 	   if a rectangular selection changed boundaries, redisplay everything */
 	if ((oldSelection.rectangular_ && !newSelection->rectangular_) || (!oldSelection.rectangular_ && newSelection->rectangular_) ||
-	    (oldSelection.rectangular_ && ((oldSelection.rectStart_ != newSelection->rectStart_) || (oldSelection.rectEnd_ != newSelection->rectEnd_)))) {
+		(oldSelection.rectangular_ && ((oldSelection.rectStart_ != newSelection->rectStart_) || (oldSelection.rectEnd_ != newSelection->rectEnd_)))) {
 
 		callModifyCBs(std::min(oldStart, newStart), 0, 0, std::max(oldEnd, newEnd) - std::min(oldStart, newStart), {});
 		return;
@@ -1518,9 +1514,9 @@ void BasicTextBuffer<Ch, Tr>::redisplaySelection(const Selection &oldSelection, 
 	   changed areas), and the unchanged area of their intersection,
 	   and update only the changed area(s) */
 	const TextCursor ch1Start = std::min(oldStart, newStart);
-	const TextCursor ch2End   = std::max(oldEnd,   newEnd);
+	const TextCursor ch2End   = std::max(oldEnd, newEnd);
 	const TextCursor ch1End   = std::max(oldStart, newStart);
-	const TextCursor ch2Start = std::min(oldEnd,   newEnd);
+	const TextCursor ch2Start = std::min(oldEnd, newEnd);
 
 	if (ch1Start != ch1End) {
 		callModifyCBs(ch1Start, 0, 0, ch1End - ch1Start, {});
@@ -1536,7 +1532,7 @@ void BasicTextBuffer<Ch, Tr>::removeSelected(const Selection *sel) noexcept {
 
 	assert(sel);
 
-	if(!sel->hasSelection()) {
+	if (!sel->hasSelection()) {
 		return;
 	}
 
@@ -1566,7 +1562,6 @@ void BasicTextBuffer<Ch, Tr>::replaceSelected(Selection *sel, view_type text) no
 		BufReplace(sel->start_, sel->end_, text);
 	}
 
-
 	/* Unselect (happens automatically in BufReplaceEx, but BufReplaceRectEx
 	   can't detect when the contents of a selection goes away) */
 	sel->selected_ = false;
@@ -1578,11 +1573,10 @@ void BasicTextBuffer<Ch, Tr>::replaceSelected(Selection *sel, view_type text) no
 */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::updateSelections(TextCursor pos, int64_t nDeleted, int64_t nInserted) noexcept {
-	primary  .updateSelection(pos, nDeleted, nInserted);
+	primary.updateSelection(pos, nDeleted, nInserted);
 	secondary.updateSelection(pos, nDeleted, nInserted);
 	highlight.updateSelection(pos, nDeleted, nInserted);
 }
-
 
 template <class Ch, class Tr>
 int64_t BasicTextBuffer<Ch, Tr>::length() const noexcept {
@@ -1629,8 +1623,8 @@ bool BasicTextBuffer<Ch, Tr>::GetSimpleSelection(TextRange *range) const noexcep
 
 	if (isRect) {
 		const TextCursor lineStart = BufStartOfLine(selStart);
-		selStart  = TextCursor(BufCountForwardDispChars(lineStart, rectStart));
-		selEnd    = TextCursor(BufCountForwardDispChars(lineStart, rectEnd));
+		selStart                   = TextCursor(BufCountForwardDispChars(lineStart, rectStart));
+		selEnd                     = TextCursor(BufCountForwardDispChars(lineStart, rectEnd));
 	}
 
 	range->start = selStart;
@@ -1649,10 +1643,10 @@ auto BasicTextBuffer<Ch, Tr>::unexpandTabs(view_type text, int64_t startIndent, 
 	string_type outStr;
 	outStr.reserve(text.size());
 
-	auto outPtr = std::back_inserter(outStr);
+	auto outPtr    = std::back_inserter(outStr);
 	int64_t indent = startIndent;
 
-	for (size_t pos = 0; pos != text.size(); ) {
+	for (size_t pos = 0; pos != text.size();) {
 		if (text[pos] == Ch(' ')) {
 
 			Ch expandedChar[MAX_EXP_CHAR_LEN];
@@ -1668,8 +1662,8 @@ auto BasicTextBuffer<Ch, Tr>::unexpandTabs(view_type text, int64_t startIndent, 
 				*outPtr++ = text[pos++];
 				indent++;
 			}
-		} else if (text[pos]== Ch('\n')) {
-			indent = startIndent;
+		} else if (text[pos] == Ch('\n')) {
+			indent    = startIndent;
 			*outPtr++ = text[pos++];
 		} else {
 			*outPtr++ = text[pos++];
@@ -1722,7 +1716,7 @@ auto BasicTextBuffer<Ch, Tr>::expandTabs(view_type text, int64_t startIndent, in
 
 			indent += len;
 		} else if (ch == Ch('\n')) {
-			indent = startIndent;
+			indent    = startIndent;
 			*outPtr++ = ch;
 		} else {
 			indent += BufCharWidth(ch, indent, tabDist);
@@ -1762,7 +1756,7 @@ template <class Out>
 int BasicTextBuffer<Ch, Tr>::addPadding(Out out, int64_t startIndent, int64_t toIndent, int tabDist, bool useTabs) noexcept {
 
 	int64_t indent = startIndent;
-	int count  = 0;
+	int count      = 0;
 
 	if (useTabs) {
 		while (indent < toIndent) {
@@ -1802,7 +1796,7 @@ void BasicTextBuffer<Ch, Tr>::insertColInLine(view_type line, view_type insLine,
 	int64_t postColIndent;
 
 	// copy the line up to "column"
-	auto outPtr = std::back_inserter(*outStr);
+	auto outPtr    = std::back_inserter(*outStr);
 	int64_t indent = 0;
 
 	auto linePtr = line.begin();
@@ -1840,7 +1834,7 @@ void BasicTextBuffer<Ch, Tr>::insertColInLine(view_type line, view_type insLine,
 
 	// pad out to column if text is too short
 	if (indent < column) {
-		len = addPadding(outPtr, indent, column, tabDist, useTabs);
+		len    = addPadding(outPtr, indent, column, tabDist, useTabs);
 		indent = column;
 	}
 
@@ -1848,11 +1842,11 @@ void BasicTextBuffer<Ch, Tr>::insertColInLine(view_type line, view_type insLine,
 	   the inserted string began at column 0 to its new column destination */
 	if (!insLine.empty()) {
 		string_type retabbedStr = realignTabs(insLine, 0, indent, tabDist, useTabs);
-		len = static_cast<int64_t>(retabbedStr.size());
+		len                     = static_cast<int64_t>(retabbedStr.size());
 
 		for (Ch ch : retabbedStr) {
 			*outPtr++ = ch;
-			len = BufCharWidth(ch, indent, tabDist);
+			len       = BufCharWidth(ch, indent, tabDist);
 			indent += len;
 		}
 	}
@@ -1866,8 +1860,8 @@ void BasicTextBuffer<Ch, Tr>::insertColInLine(view_type line, view_type insLine,
 	/* Pad out to column + width of inserted text + (additional original
 	   offset due to non-breaking character at column) */
 	int64_t toIndent = column + insWidth + postColIndent - column;
-	len = addPadding(outPtr, indent, toIndent, tabDist, useTabs);
-	indent = toIndent;
+	len              = addPadding(outPtr, indent, toIndent, tabDist, useTabs);
+	indent           = toIndent;
 
 	// realign tabs for text beyond "column" and write it out
 	string_type retabbedStr = realignTabs(substr(linePtr, line.end()), postColIndent, indent, tabDist, useTabs);
@@ -1892,9 +1886,9 @@ void BasicTextBuffer<Ch, Tr>::deleteRectFromLine(view_type line, int64_t rectSta
 	int64_t len;
 
 	// copy the line up to rectStart
-	auto outPtr = std::back_inserter(*outStr);
+	auto outPtr    = std::back_inserter(*outStr);
 	int64_t indent = 0;
-	auto c = line.begin();
+	auto c         = line.begin();
 	for (; c != line.end(); c++) {
 		if (indent > rectStart)
 			break;
@@ -1925,7 +1919,7 @@ void BasicTextBuffer<Ch, Tr>::deleteRectFromLine(view_type line, int64_t rectSta
 	/* fill in any space left by removed tabs or control characters
 	   which straddled the boundaries */
 	indent = std::max(rectStart + postRectIndent - rectEnd, preRectIndent);
-	len = addPadding(outPtr, preRectIndent, indent, tabDist, useTabs);
+	len    = addPadding(outPtr, preRectIndent, indent, tabDist, useTabs);
 
 	/* Copy the rest of the line.  If the indentation has changed, preserve
 	   the position of non-whitespace characters by converting tabs to
@@ -2004,7 +1998,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRectInLine(view_type line, view_type insLin
 		if (inIndent + len > rectStart) {
 			break;
 		}
-		inIndent  += len;
+		inIndent += len;
 		outIndent += len;
 		*outPtr++ = *linePtr;
 	}
@@ -2026,7 +2020,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRectInLine(view_type line, view_type insLin
 	}
 
 	/* skip the characters between rectStart and rectEnd */
-	for(; linePtr != line.end() && inIndent < rectEnd; linePtr++) {
+	for (; linePtr != line.end() && inIndent < rectEnd; linePtr++) {
 		inIndent += BufCharWidth(*linePtr, inIndent, tabDist);
 	}
 
@@ -2054,11 +2048,11 @@ void BasicTextBuffer<Ch, Tr>::overlayRectInLine(view_type line, view_type insLin
 	   the inserted string began at column 0 to its new column destination */
 	if (!insLine.empty()) {
 		string_type retabbedStr = realignTabs(insLine, 0, rectStart, tabDist, useTabs);
-		len = static_cast<int64_t>(retabbedStr.size());
+		len                     = static_cast<int64_t>(retabbedStr.size());
 
 		for (Ch c : retabbedStr) {
 			*outPtr++ = c;
-			len = BufCharWidth(c, outIndent, tabDist);
+			len       = BufCharWidth(c, outIndent, tabDist);
 			outIndent += len;
 		}
 	}
@@ -2084,7 +2078,8 @@ void BasicTextBuffer<Ch, Tr>::overlayRectInLine(view_type line, view_type insLin
 ** Create an empty text buffer
 */
 template <class Ch, class Tr>
-BasicTextBuffer<Ch, Tr>::BasicTextBuffer() : BasicTextBuffer(0) {
+BasicTextBuffer<Ch, Tr>::BasicTextBuffer()
+	: BasicTextBuffer(0) {
 }
 
 /*
@@ -2093,7 +2088,8 @@ BasicTextBuffer<Ch, Tr>::BasicTextBuffer() : BasicTextBuffer(0) {
 ** will need to hold
 */
 template <class Ch, class Tr>
-BasicTextBuffer<Ch, Tr>::BasicTextBuffer(int64_t size) : buffer_(size) {
+BasicTextBuffer<Ch, Tr>::BasicTextBuffer(int64_t size)
+	: buffer_(size) {
 }
 
 template <class Ch, class Tr>
@@ -2186,7 +2182,7 @@ bool BasicTextBuffer<Ch, Tr>::Selection::getSelectionPos(TextCursor *start, Text
 
 template <class Ch, class Tr>
 boost::optional<SelectionPos> BasicTextBuffer<Ch, Tr>::Selection::getSelectionPos() const {
-	if(!selected_) {
+	if (!selected_) {
 		return boost::none;
 	}
 
@@ -2198,7 +2194,7 @@ boost::optional<SelectionPos> BasicTextBuffer<Ch, Tr>::Selection::getSelectionPo
 		pos.rectStart = rectStart_;
 		pos.rectEnd   = rectEnd_;
 	}
-    return pos;
+	return pos;
 }
 
 /**
@@ -2217,7 +2213,7 @@ void BasicTextBuffer<Ch, Tr>::Selection::updateSelection(TextCursor pos, int64_t
 
 	if (pos + nDeleted <= start_) {
 		start_ += nInserted - nDeleted;
-		end_   += nInserted - nDeleted;
+		end_ += nInserted - nDeleted;
 	} else if (pos <= start_ && pos + nDeleted >= end_) {
 		start_     = pos;
 		end_       = pos;
@@ -2262,7 +2258,7 @@ void BasicTextBuffer<Ch, Tr>::sanitizeRange(TextCursor &start, TextCursor &end) 
 	TextCursor last  = BufEndOfBuffer();
 
 	start = qBound(first, start, last);
-	end   = qBound(first, end,   last);
+	end   = qBound(first, end, last);
 }
 
 #endif

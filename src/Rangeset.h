@@ -6,8 +6,8 @@
 #include "TextCursor.h"
 #include "TextRange.h"
 #include <QColor>
-#include <vector>
 #include <boost/optional.hpp>
+#include <vector>
 
 // NOTE(eteran): a bit of an artificial limit, but we'll keep it for now
 constexpr int N_RANGESETS = 63;
@@ -15,12 +15,12 @@ constexpr int N_RANGESETS = 63;
 class Rangeset;
 
 struct RangesetInfo {
-	bool        defined = false;
-	int         label   = 0;
-	int64_t     count   = 0;
-	QString     color;
-	QString     name;
-	QString     mode;
+	bool defined  = false;
+	int label     = 0;
+	int64_t count = 0;
+	QString color;
+	QString name;
+	QString mode;
 };
 
 using RangesetUpdateFn = Rangeset *(Rangeset *rangeset, TextCursor pos, int64_t ins, int64_t del);
@@ -28,11 +28,11 @@ using RangesetUpdateFn = Rangeset *(Rangeset *rangeset, TextCursor pos, int64_t 
 class Rangeset {
 public:
 	explicit Rangeset(TextBuffer *buffer, uint8_t label);
-	Rangeset()                            = delete;
-	Rangeset(const Rangeset &)            = default;
-	Rangeset& operator=(const Rangeset &) = default;
+	Rangeset()                 = delete;
+	Rangeset(const Rangeset &) = default;
+	Rangeset &operator=(const Rangeset &) = default;
 	Rangeset(Rangeset &&)                 = default;
-	Rangeset& operator=(Rangeset &&)      = default;
+	Rangeset &operator=(Rangeset &&) = default;
 	~Rangeset();
 
 public:
@@ -69,17 +69,17 @@ public:
 
 public:
 	TextBuffer *buffer_;
-	RangesetUpdateFn *update_;  // modification update function
+	RangesetUpdateFn *update_;      // modification update function
 	std::vector<TextRange> ranges_; // the ranges table (sorted array of ranges)
 
-	QColor color_;              // the value of a particular color
-	QString color_name_;        // the name of an assigned color
-	QString name_;              // name of rangeset
-	QString update_name_;       // update function name
+	QColor color_;        // the value of a particular color
+	QString color_name_;  // the name of an assigned color
+	QString name_;        // name of rangeset
+	QString update_name_; // update function name
 
-	int64_t last_index_ = 0;    // a place to start looking
-	int8_t color_set_   = 0;    // 0: unset; 1: set; -1: invalid
-	uint8_t label_;             // a number 1-63
+	int64_t last_index_ = 0; // a place to start looking
+	int8_t color_set_   = 0; // 0: unset; 1: set; -1: invalid
+	uint8_t label_;          // a number 1-63
 };
 
 #endif

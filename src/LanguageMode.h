@@ -23,15 +23,15 @@ public:
 	static constexpr int DEFAULT_EM_TAB_DIST = -1;
 
 public:
-	QString     name;
+	QString name;
 	QStringList extensions;
-	QString     recognitionExpr;
-	QString     defTipsFile;
-	QString     delimiters;
-	WrapStyle   wrapStyle       = WrapStyle::None;
-	IndentStyle indentStyle     = IndentStyle::None;
-	int         tabDist         = DEFAULT_TAB_DIST;
-	int         emTabDist       = DEFAULT_EM_TAB_DIST;
+	QString recognitionExpr;
+	QString defTipsFile;
+	QString delimiters;
+	WrapStyle wrapStyle     = WrapStyle::None;
+	IndentStyle indentStyle = IndentStyle::None;
+	int tabDist             = DEFAULT_TAB_DIST;
+	int emTabDist           = DEFAULT_EM_TAB_DIST;
 };
 
 #endif

@@ -11,18 +11,18 @@
 #include "Settings.h"
 #include "StyleTableEntry.h"
 #include "TextBuffer.h"
-#include "WindowHighlightData.h"
-#include "X11Colors.h"
 #include "Util/Input.h"
 #include "Util/Resource.h"
+#include "WindowHighlightData.h"
+#include "X11Colors.h"
 
-#include <QSettings>
-#include <QMessageBox>
-#include <QPushButton>
-#include <QtDebug>
 #include <QDomDocument>
 #include <QDomElement>
 #include <QFile>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QSettings>
+#include <QtDebug>
 
 #include <algorithm>
 #include <climits>
@@ -42,22 +42,22 @@ std::vector<PatternSet> PatternSets;
 
 namespace {
 
-const auto NEDIT_DEFAULT_TEXT_FG    = QLatin1String("#221f1e");
-const auto NEDIT_DEFAULT_TEXT_BG    = QLatin1String("#d6d2d0");
-const auto NEDIT_DEFAULT_SEL_FG     = QLatin1String("#ffffff");
-const auto NEDIT_DEFAULT_SEL_BG     = QLatin1String("#43ace8");
-const auto NEDIT_DEFAULT_HI_FG      = QLatin1String("white");        /* These are colors for flashing */
-const auto NEDIT_DEFAULT_HI_BG      = QLatin1String("red");          /* matching parens. */
-const auto NEDIT_DEFAULT_LINENO_FG  = QLatin1String("black");
-const auto NEDIT_DEFAULT_LINENO_BG  = QLatin1String("#d6d2d0");
-const auto NEDIT_DEFAULT_CURSOR_FG  = QLatin1String("black");
+const auto NEDIT_DEFAULT_TEXT_FG   = QLatin1String("#221f1e");
+const auto NEDIT_DEFAULT_TEXT_BG   = QLatin1String("#d6d2d0");
+const auto NEDIT_DEFAULT_SEL_FG    = QLatin1String("#ffffff");
+const auto NEDIT_DEFAULT_SEL_BG    = QLatin1String("#43ace8");
+const auto NEDIT_DEFAULT_HI_FG     = QLatin1String("white"); /* These are colors for flashing */
+const auto NEDIT_DEFAULT_HI_BG     = QLatin1String("red");   /* matching parens. */
+const auto NEDIT_DEFAULT_LINENO_FG = QLatin1String("black");
+const auto NEDIT_DEFAULT_LINENO_BG = QLatin1String("#d6d2d0");
+const auto NEDIT_DEFAULT_CURSOR_FG = QLatin1String("black");
 
 /* Initial forward expansion of parsing region in incremental reparsing,
    when style changes propagate forward beyond the original modification.
    This distance is increased by a factor of two for each subsequent step. */
 constexpr int REPARSE_CHUNK_SIZE = 80;
 
-constexpr auto STYLE_NOT_FOUND   = static_cast<size_t>(-1);
+constexpr auto STYLE_NOT_FOUND = static_cast<size_t>(-1);
 
 constexpr bool isPlain(int style) {
 	return (style == PLAIN_STYLE || style == UNFINISHED_STYLE);
@@ -114,7 +114,7 @@ TextCursor lastModified(const Ptr &buffer) {
 bool isDefaultPatternSet(const PatternSet &patternSet) {
 
 	boost::optional<PatternSet> defaultPatSet = readDefaultPatternSet(patternSet.languageMode);
-	if(!defaultPatSet) {
+	if (!defaultPatSet) {
 		return false;
 	}
 
@@ -150,7 +150,7 @@ void fillStyleString(const char *&stringPtr, char *&stylePtr, const char *toPtr,
 		*stylePtr++ = static_cast<char>(style);
 	}
 
-	if(prevChar) {
+	if (prevChar) {
 		*prevChar = *(toPtr - 1);
 	}
 
@@ -170,7 +170,6 @@ void recolorSubexpr(const std::unique_ptr<Regex> &re, size_t subexpr, uint8_t st
 	fillStyleString(stringPtr, stylePtr, re->endp[subexpr], style, nullptr);
 }
 
-
 /*
 ** Takes a string which has already been parsed through pass1 parsing and
 ** re-parses the areas where pass two patterns are applicable.  Parameters
@@ -183,14 +182,14 @@ void passTwoParseString(const HighlightData *pattern, const char *first, const c
 	char *stylePtr;
 	const char *parseStart = nullptr;
 	const char *parseEnd;
-	char *s = styleString;
+	char *s       = styleString;
 	const char *c = string;
 	const char *stringPtr;
 	int firstPass2Style = pattern[1].style;
 
 	for (;; c++, s++) {
 		if (!inParseRegion && c != match_to && (*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || static_cast<uint8_t>(*s) >= firstPass2Style)) {
-			parseStart = c;
+			parseStart    = c;
 			inParseRegion = true;
 		}
 
@@ -201,7 +200,7 @@ void passTwoParseString(const HighlightData *pattern, const char *first, const c
 			}
 
 			stringPtr = parseStart;
-			stylePtr = &styleString[parseStart - string];
+			stylePtr  = &styleString[parseStart - string];
 
 			match_to = parseEnd;
 
@@ -238,8 +237,8 @@ void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleStri
 	TextCursor pos;
 	TextCursor modStart;
 	TextCursor modEnd;
-	auto minPos = TextCursor(INT_MAX);
-	auto maxPos = TextCursor();
+	auto minPos                      = TextCursor(INT_MAX);
+	auto maxPos                      = TextCursor();
 	const TextBuffer::Selection *sel = &styleBuf->primary;
 
 	// Skip the range already marked for redraw
@@ -346,7 +345,7 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 
 	// copy the buffer range into a string
 
-	std::string str      = buf     ->BufGetRange(beginSafety, endSafety);
+	std::string str      = buf->BufGetRange(beginSafety, endSafety);
 	std::string styleStr = styleBuf->BufGetRange(beginSafety, endSafety);
 
 	const char *const string   = &str[0];
@@ -356,7 +355,7 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	// Parse it with pass 1 patterns
 	// printf("parsing from %d thru %d\n", beginSafety, endSafety);
 	int prevChar          = getPrevChar(buf, beginParse);
-	const char *stringPtr = &string     [beginParse - beginSafety];
+	const char *stringPtr = &string[beginParse - beginSafety];
 	char *stylePtr        = &styleString[beginParse - beginSafety];
 
 	parseString(
@@ -411,29 +410,29 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 
 		if (endPass2Safety == endSafety) {
 			passTwoParseString(
-						&pass2Patterns[0],
-						string,
-						string + str.size(),
-						string,
-						styleString,
-						endParse - beginSafety,
-						&prevChar,
-						delimiters,
-						string,
-						match_to);
+				&pass2Patterns[0],
+				string,
+				string + str.size(),
+				string,
+				styleString,
+				endParse - beginSafety,
+				&prevChar,
+				delimiters,
+				string,
+				match_to);
 			goto parseDone;
 		} else {
 			passTwoParseString(
-						&pass2Patterns[0],
-						string,
-						string + str.size(),
-						string,
-						styleString,
-						modStart - beginSafety,
-						&prevChar,
-						delimiters,
-						string,
-						match_to);
+				&pass2Patterns[0],
+				string,
+				string + str.size(),
+				string,
+				styleString,
+				modStart - beginSafety,
+				&prevChar,
+				delimiters,
+				string,
+				match_to);
 		}
 	}
 
@@ -444,31 +443,31 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 		if (beginSafety > modEnd) {
 			prevChar = getPrevChar(buf, beginSafety);
 			passTwoParseString(
-						&pass2Patterns[0],
-						string,
-						string + str.size(),
-						string,
-						styleString,
-						endParse - beginSafety,
-						&prevChar,
-						delimiters,
-						string,
-						match_to);
+				&pass2Patterns[0],
+				string,
+				string + str.size(),
+				string,
+				styleString,
+				endParse - beginSafety,
+				&prevChar,
+				delimiters,
+				string,
+				match_to);
 		} else {
 			startPass2Safety = std::max(beginSafety, backwardOneContext(buf, contextRequirements, modEnd));
 
 			prevChar = getPrevChar(buf, startPass2Safety);
 			passTwoParseString(
-						&pass2Patterns[0],
-						string,
-						string + str.size(),
-						&string[startPass2Safety - beginSafety],
-						&styleString[startPass2Safety - beginSafety],
-						endParse - startPass2Safety,
-						&prevChar,
-						delimiters,
-						string,
-						match_to);
+				&pass2Patterns[0],
+				string,
+				string + str.size(),
+				&string[startPass2Safety - beginSafety],
+				&styleString[startPass2Safety - beginSafety],
+				endParse - startPass2Safety,
+				&prevChar,
+				delimiters,
+				string,
+				match_to);
 		}
 	}
 
@@ -646,7 +645,7 @@ void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightDat
 	   far enough back in the buffer such that the guranteed number of
 	   lines and characters of context are examined. */
 	TextCursor beginParse = pos;
-	int parseInStyle = findSafeParseRestartPos(buf, highlightData, &beginParse);
+	int parseInStyle      = findSafeParseRestartPos(buf, highlightData, &beginParse);
 
 	/* Find the position "endParse" at which point it is safe to stop
 	   parsing, unless styles are getting changed beyond the last
@@ -682,7 +681,7 @@ void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightDat
 		   hierarchy and start again from where the previous parse left off. */
 		if (endAt < endParse) {
 			beginParse = endAt;
-			endParse = forwardOneContext(buf, context, std::max(endAt, std::max(lastModified(styleBuf), lastMod)));
+			endParse   = forwardOneContext(buf, context, std::max(endAt, std::max(lastModified(styleBuf), lastMod)));
 			if (isPlain(parseInStyle)) {
 				qCritical("NEdit: internal error: incr. reparse fell short");
 				return;
@@ -697,7 +696,7 @@ void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightDat
 			   the end of the parse range by powers of 2 * REPARSE_CHUNK_SIZE and
 			   reparse until nothing changes */
 		} else {
-			lastMod = lastModified(styleBuf);
+			lastMod  = lastModified(styleBuf);
 			endParse = std::min(buf->BufEndOfBuffer(), forwardOneContext(buf, context, lastMod) + (REPARSE_CHUNK_SIZE << nPasses));
 		}
 	}
@@ -813,14 +812,13 @@ boost::optional<std::vector<HighlightPattern>> readHighlightPatterns(Input &in, 
 
 	while (true) {
 		in.skipWhitespaceNL();
-		if(in.atEnd()) {
+		if (in.atEnd()) {
 			*errMsg = tr("end of pattern list not found");
 			return boost::none;
 		} else if (*in == QLatin1Char('}')) {
 			++in;
 			break;
 		}
-
 
 		HighlightPattern pat;
 		if (!readHighlightPattern(in, errMsg, &pat)) {
@@ -866,7 +864,7 @@ boost::optional<PatternSet> readPatternSet(Input &in) {
 		   pattern set */
 		if (in.match(QLatin1String("Default"))) {
 			boost::optional<PatternSet> retPatSet = readDefaultPatternSet(patSet.languageMode);
-			if(!retPatSet) {
+			if (!retPatSet) {
 				Raise<HighlightError>(tr("No default pattern set"));
 			}
 			return retPatSet;
@@ -896,13 +894,13 @@ boost::optional<PatternSet> readPatternSet(Input &in) {
 
 		// pattern set was read correctly, make an allocated copy to return
 		return patSet;
-	} catch(const HighlightError &error) {
+	} catch (const HighlightError &error) {
 		Preferences::reportError(
-					nullptr,
-					*in.string(),
-					in.index(),
-					tr("highlight pattern"),
-					error.message);
+			nullptr,
+			*in.string(),
+			in.index(),
+			tr("highlight pattern"),
+			error.message);
 
 		return boost::none;
 	}
@@ -921,7 +919,7 @@ QString createPatternsString(const PatternSet *patternSet, const QString &indent
 
 	const auto Colon = QLatin1Char(':');
 
-	for(const HighlightPattern &pat : patternSet->patterns) {
+	for (const HighlightPattern &pat : patternSet->patterns) {
 
 		out << indentString
 			<< pat.name
@@ -950,9 +948,9 @@ QString createPatternsString(const PatternSet *patternSet, const QString &indent
 
 		out << Colon;
 
-		if (pat.flags & DEFER_PARSING)            out << QLatin1Char('D');
+		if (pat.flags & DEFER_PARSING) out << QLatin1Char('D');
 		if (pat.flags & PARSE_SUBPATS_FROM_START) out << QLatin1Char('R');
-		if (pat.flags & COLOR_ONLY)               out << QLatin1Char('C');
+		if (pat.flags & COLOR_ONLY) out << QLatin1Char('C');
 		out << QLatin1Char('\n');
 	}
 
@@ -986,10 +984,10 @@ void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted
 	Q_UNUSED(nRestyled)
 	Q_UNUSED(deletedText)
 
-	auto document = static_cast<DocumentWidget *>(user);
+	auto document                                             = static_cast<DocumentWidget *>(user);
 	const std::unique_ptr<WindowHighlightData> &highlightData = document->highlightData_;
 
-	if(!highlightData) {
+	if (!highlightData) {
 		return;
 	}
 
@@ -1031,8 +1029,8 @@ void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted
 ** Advances "string", "styleString" pointers to the next character past
 ** the end of the parsed section, and updates "prevChar" to reflect
 ** the new character before "string".
-** If "anchored" is true, just scan the sub-pattern starting at the beginning
-** of the string.  "length" is how much of the string must be parsed, but
+**
+** "length" is how much of the string must be parsed, but
 ** "string" must still be null terminated, the termination indicating how
 ** far the string should be searched, and "length" the part which is actually
 ** required (the string may or may not be parsed beyond "length").
@@ -1064,18 +1062,18 @@ bool parseString(const HighlightData *pattern, const char *first, const char *la
 	const std::unique_ptr<Regex> &subPatternRE = pattern->subPatternRE;
 
 	const QByteArray delimitersString = delimiters.toLatin1();
-	const char * delimitersPtr = delimiters.isNull() ? nullptr : delimitersString.data();
+	const char *delimitersPtr         = delimiters.isNull() ? nullptr : delimitersString.data();
 
 	while (subPatternRE->ExecRE(
-			   stringPtr,
-			   string + length + 1,
-			   false,
-			   *prevChar,
-			   succChar,
-			   delimitersPtr,
-			   look_behind_to,
-			   match_to,
-			   last)) {
+		stringPtr,
+		string + length + 1,
+		false,
+		*prevChar,
+		succChar,
+		delimitersPtr,
+		look_behind_to,
+		match_to,
+		last)) {
 
 		/* Beware of the case where only one real branch exists, but that
 		   branch has sub-branches itself. In that case the top_branch refers
@@ -1105,15 +1103,15 @@ bool parseString(const HighlightData *pattern, const char *first, const char *la
 					if (subPat->colorOnly) {
 						if (!subExecuted) {
 							if (!pattern->endRE->ExecRE(
-										savedStartPtr,
-										savedStartPtr + 1,
-										false,
-										savedPrevChar,
-										succChar,
-										delimitersPtr,
-										look_behind_to,
-										match_to,
-										last)) {
+									savedStartPtr,
+									savedStartPtr + 1,
+									false,
+									savedPrevChar,
+									succChar,
+									delimitersPtr,
+									look_behind_to,
+									match_to,
+									last)) {
 								qCritical("NEdit: Internal error, failed to recover end match in parseString");
 								return false;
 							}
@@ -1178,11 +1176,11 @@ bool parseString(const HighlightData *pattern, const char *first, const char *la
 			   to that point (this is currently always the case) */
 			if (!(subPat->flags & PARSE_SUBPATS_FROM_START)) {
 				fillStyleString(
-							stringPtr,
-							stylePtr,
-							subPatternRE->endp[0], // subPat->startRE->endp[0],
-							subPat->style,
-							prevChar);
+					stringPtr,
+					stylePtr,
+					subPatternRE->endp[0], // subPat->startRE->endp[0],
+					subPat->style,
+					prevChar);
 			}
 
 			// Parse to the end of the subPattern
@@ -1227,15 +1225,15 @@ bool parseString(const HighlightData *pattern, const char *first, const char *la
 			if (subSubPat->colorOnly) {
 				if (!subExecuted) {
 					if (!subPat->startRE->ExecRE(
-								savedStartPtr,
-								savedStartPtr + 1,
-								false,
-								savedPrevChar,
-								succChar,
-								delimitersPtr,
-								look_behind_to,
-								match_to,
-								last)) {
+							savedStartPtr,
+							savedStartPtr + 1,
+							false,
+							savedPrevChar,
+							succChar,
+							delimitersPtr,
+							look_behind_to,
+							match_to,
+							last)) {
 						qCritical("NEdit: Internal error, failed to recover start match in parseString");
 						return false;
 					}
@@ -1349,7 +1347,7 @@ HighlightData *patternOfStyle(const std::unique_ptr<HighlightData[]> &patterns, 
  */
 size_t indexOfNamedPattern(const std::vector<HighlightPattern> &patterns, const QString &name) {
 
-	if(name.isNull()) {
+	if (name.isNull()) {
 		return PATTERN_NOT_FOUND;
 	}
 
@@ -1387,7 +1385,7 @@ void saveTheme() {
 	QString filename = Settings::themeFile();
 
 	QFile file(filename);
-	if(file.open(QIODevice::WriteOnly)) {
+	if (file.open(QIODevice::WriteOnly)) {
 		QDomDocument xml;
 		QDomProcessingInstruction pi = xml.createProcessingInstruction(QLatin1String("xml"), QLatin1String(R"(version="1.0" encoding="UTF-8")"));
 
@@ -1432,18 +1430,17 @@ void saveTheme() {
 			root.appendChild(lineno);
 		}
 
-
 		// save styles for syntax highlighting...
-		for(const HighlightStyle &hs : HighlightStyles) {
+		for (const HighlightStyle &hs : HighlightStyles) {
 			QDomElement style = xml.createElement(QLatin1String("style"));
 			style.setAttribute(QLatin1String("name"), hs.name);
 			style.setAttribute(QLatin1String("foreground"), hs.color);
-			if(!hs.bgColor.isEmpty()) {
+			if (!hs.bgColor.isEmpty()) {
 				style.setAttribute(QLatin1String("background"), hs.bgColor);
 			}
 
 			// map the font to it's associated value
-			switch(hs.font) {
+			switch (hs.font) {
 			case Font::Plain:
 				style.setAttribute(QLatin1String("font"), QLatin1String("Plain"));
 				break;
@@ -1473,15 +1470,15 @@ void loadTheme() {
 	QString filename = Settings::themeFile();
 
 	QFile file(filename);
-	if(!file.open(QIODevice::ReadOnly)) {
+	if (!file.open(QIODevice::ReadOnly)) {
 		file.setFileName(QLatin1String(":/DefaultStyles.xml"));
-		if(!file.open(QIODevice::ReadOnly)) {
+		if (!file.open(QIODevice::ReadOnly)) {
 			qFatal("NEdit: failed to open theme file!");
 		}
 	}
 
 	QDomDocument xml;
-	if(xml.setContent(&file)) {
+	if (xml.setContent(&file)) {
 		const QDomElement root = xml.firstChildElement(QLatin1String("theme"));
 
 		// load basic color Settings::..
@@ -1491,15 +1488,15 @@ void loadTheme() {
 		const QDomElement cursor    = root.firstChildElement(QLatin1String("cursor"));
 		const QDomElement lineno    = root.firstChildElement(QLatin1String("line-numbers"));
 
-		Settings::colors[ColorTypes::TEXT_BG_COLOR]   = text.attribute(QLatin1String("background"),      NEDIT_DEFAULT_TEXT_BG);
-		Settings::colors[ColorTypes::TEXT_FG_COLOR]   = text.attribute(QLatin1String("foreground"),      NEDIT_DEFAULT_TEXT_FG);
+		Settings::colors[ColorTypes::TEXT_BG_COLOR]   = text.attribute(QLatin1String("background"), NEDIT_DEFAULT_TEXT_BG);
+		Settings::colors[ColorTypes::TEXT_FG_COLOR]   = text.attribute(QLatin1String("foreground"), NEDIT_DEFAULT_TEXT_FG);
 		Settings::colors[ColorTypes::SELECT_BG_COLOR] = selection.attribute(QLatin1String("background"), NEDIT_DEFAULT_SEL_BG);
 		Settings::colors[ColorTypes::SELECT_FG_COLOR] = selection.attribute(QLatin1String("foreground"), NEDIT_DEFAULT_SEL_FG);
 		Settings::colors[ColorTypes::HILITE_BG_COLOR] = highlight.attribute(QLatin1String("background"), NEDIT_DEFAULT_HI_BG);
-		Settings::colors[ColorTypes::HILITE_FG_COLOR] = highlight.attribute(QLatin1String("foreground"), NEDIT_DEFAULT_HI_FG);		
-		Settings::colors[ColorTypes::LINENO_FG_COLOR] = lineno.attribute(QLatin1String("foreground"),    NEDIT_DEFAULT_LINENO_FG);
-		Settings::colors[ColorTypes::LINENO_BG_COLOR] = lineno.attribute(QLatin1String("background"),    NEDIT_DEFAULT_LINENO_BG);
-		Settings::colors[ColorTypes::CURSOR_FG_COLOR] = cursor.attribute(QLatin1String("foreground"),    NEDIT_DEFAULT_CURSOR_FG);
+		Settings::colors[ColorTypes::HILITE_FG_COLOR] = highlight.attribute(QLatin1String("foreground"), NEDIT_DEFAULT_HI_FG);
+		Settings::colors[ColorTypes::LINENO_FG_COLOR] = lineno.attribute(QLatin1String("foreground"), NEDIT_DEFAULT_LINENO_FG);
+		Settings::colors[ColorTypes::LINENO_BG_COLOR] = lineno.attribute(QLatin1String("background"), NEDIT_DEFAULT_LINENO_BG);
+		Settings::colors[ColorTypes::CURSOR_FG_COLOR] = cursor.attribute(QLatin1String("foreground"), NEDIT_DEFAULT_CURSOR_FG);
 
 		// load styles for syntax highlighting...
 		QDomElement style = root.firstChildElement(QLatin1String("style"));
@@ -1509,26 +1506,26 @@ void loadTheme() {
 			hs.name      = style.attribute(QLatin1String("name"));
 			hs.color     = style.attribute(QLatin1String("foreground"), QLatin1String("black"));
 			hs.bgColor   = style.attribute(QLatin1String("background"), QString());
-			QString font = style.attribute(QLatin1String("font"),       QLatin1String("Plain"));
+			QString font = style.attribute(QLatin1String("font"), QLatin1String("Plain"));
 
-			if(hs.name.isEmpty()) {
+			if (hs.name.isEmpty()) {
 				qWarning("NEdit: style name required");
 				continue;
 			}
 
-			if(hs.color.isEmpty()) {
+			if (hs.color.isEmpty()) {
 				qWarning("NEdit: color name required in: %s", qPrintable(hs.name));
 				continue;
 			}
 
 			// map the font to it's associated value
-			if(font == QLatin1String("Plain")) {
+			if (font == QLatin1String("Plain")) {
 				hs.font = Font::Plain;
-			} else if(font == QLatin1String("Italic")) {
+			} else if (font == QLatin1String("Italic")) {
 				hs.font = Font::Italic;
-			} else if(font == QLatin1String("Bold")) {
+			} else if (font == QLatin1String("Bold")) {
 				hs.font = Font::Bold;
-			} else if(font == QLatin1String("Bold Italic")) {
+			} else if (font == QLatin1String("Bold Italic")) {
 				hs.font = Font::Italic | Font::Bold;
 			} else {
 				qWarning("NEdit: unrecognized font type %s in %s", qPrintable(font), qPrintable(hs.name));
@@ -1540,12 +1537,11 @@ void loadTheme() {
 				return entry.name == hs.name;
 			});
 
-			if(it == HighlightStyles.end()) {
+			if (it == HighlightStyles.end()) {
 				HighlightStyles.push_back(hs);
 			} else {
 				*it = hs;
 			}
-
 		}
 	}
 }
@@ -1563,7 +1559,7 @@ bool LoadHighlightString(const QString &string) {
 
 		// Read each pattern set, abort on error
 		boost::optional<PatternSet> patSet = readPatternSet(in);
-		if(!patSet) {
+		if (!patSet) {
 			return false;
 		}
 
@@ -1572,7 +1568,7 @@ bool LoadHighlightString(const QString &string) {
 			return patternSet.languageMode == patSet->languageMode;
 		});
 
-		if(it != PatternSets.end()) {
+		if (it != PatternSets.end()) {
 			*it = std::move(*patSet);
 		} else {
 			PatternSets.push_back(std::move(*patSet));
@@ -1596,7 +1592,7 @@ QString WriteHighlightString() {
 	QString str;
 	QTextStream out(&str);
 
-	for(const PatternSet &patternSet : PatternSets) {
+	for (const PatternSet &patternSet : PatternSets) {
 		if (patternSet.patterns.empty()) {
 			continue;
 		}
@@ -1613,7 +1609,7 @@ QString WriteHighlightString() {
 		}
 	}
 
-	if(!str.isEmpty()) {
+	if (!str.isEmpty()) {
 		str.chop(2);
 	}
 
@@ -1668,7 +1664,6 @@ QString BgColorOfNamedStyle(const QString &styleName) {
 	}
 
 	return HighlightStyles[styleNo].bgColor;
-
 }
 
 /*
@@ -1692,7 +1687,7 @@ PatternSet *FindPatternSet(const QString &languageMode) {
 		return (patternSet.languageMode == languageMode);
 	});
 
-	if(it != PatternSets.end()) {
+	if (it != PatternSets.end()) {
 		return &*it;
 	}
 
@@ -1710,7 +1705,7 @@ boost::optional<PatternSet> readDefaultPatternSet(QByteArray &patternData, const
 	auto defaultPattern = QString::fromLatin1(patternData);
 	auto compare        = QString(QLatin1String("%1:")).arg(langModeName);
 
-	if(defaultPattern.startsWith(compare)) {
+	if (defaultPattern.startsWith(compare)) {
 		Input in(&defaultPattern);
 		return readPatternSet(in);
 	}
@@ -1723,14 +1718,14 @@ boost::optional<PatternSet> readDefaultPatternSet(QByteArray &patternData, const
 ** pattern set available for that language mode, and if so, return it
 */
 boost::optional<PatternSet> readDefaultPatternSet(const QString &langModeName) {
-	for(int i = 0; i < 28; ++i) {
+	for (int i = 0; i < 28; ++i) {
 
 		auto name = QString(QLatin1String("DefaultPatternSet%1.txt")).arg(i, 2, 10, QLatin1Char('0'));
 
 		QByteArray data = loadResource(name);
 
-		if(!data.isNull()) {
-			if(boost::optional<PatternSet> patternSet = readDefaultPatternSet(data, langModeName)) {
+		if (!data.isNull()) {
+			if (boost::optional<PatternSet> patternSet = readDefaultPatternSet(data, langModeName)) {
 				return patternSet;
 			}
 		}

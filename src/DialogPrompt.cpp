@@ -7,7 +7,8 @@
  * @param parent
  * @param f
  */
-DialogPrompt::DialogPrompt(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
+DialogPrompt::DialogPrompt(QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f) {
 	setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowTitleHint);
 	ui.setupUi(this);
 	connectSlots();
@@ -65,8 +66,8 @@ void DialogPrompt::buttonBox_clicked(QAbstractButton *button) {
 
 	QList<QAbstractButton *> buttons = ui.buttonBox->buttons();
 
-	for(int i = 0; i < buttons.size(); ++i) {
-		if(button == buttons[i]) {
+	for (int i = 0; i < buttons.size(); ++i) {
+		if (button == buttons[i]) {
 			result_ = (i + 1);
 			break;
 		}

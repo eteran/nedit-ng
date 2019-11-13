@@ -7,7 +7,8 @@
  * @param parent passed to QDialog's constructor
  * @param f      passed to QDialog's constructor
  */
-Dialog::Dialog(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
+Dialog::Dialog(QWidget *parent, Qt::WindowFlags f)
+	: QDialog(parent, f) {
 }
 
 /**
@@ -19,7 +20,7 @@ Dialog::Dialog(QWidget *parent, Qt::WindowFlags f) : QDialog(parent, f) {
 void Dialog::showEvent(QShowEvent *event) {
 	Q_UNUSED(event)
 
-	if(Preferences::GetPrefRepositionDialogs()) {
+	if (Preferences::GetPrefRepositionDialogs()) {
 		QPoint pos = QCursor::pos();
 
 		int x = pos.x() - (width() / 2);

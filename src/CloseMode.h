@@ -12,7 +12,7 @@ enum class CloseMode {
 
 inline QLatin1String to_string(CloseMode mode) {
 
-	switch(mode) {
+	switch (mode) {
 	case CloseMode::Prompt:
 		return QLatin1String("prompt");
 	case CloseMode::Save:

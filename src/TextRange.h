@@ -17,5 +17,4 @@ inline bool operator==(const TextRange &lhs, const TextRange &rhs) {
 	return lhs.start == rhs.start && lhs.end == rhs.end;
 }
 
-
 #endif

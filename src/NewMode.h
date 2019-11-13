@@ -13,7 +13,7 @@ enum class NewMode {
 
 inline QLatin1String to_string(NewMode mode) {
 
-	switch(mode) {
+	switch (mode) {
 	case NewMode::Prefs:
 		return QLatin1String("prefs");
 	case NewMode::Tab:

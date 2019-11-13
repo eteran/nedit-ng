@@ -2,10 +2,10 @@
 #ifndef COMMAND_RECORDER_H_
 #define COMMAND_RECORDER_H_
 
-#include <QObject>
 #include <QEvent>
-#include <QString>
+#include <QObject>
 #include <QPointer>
+#include <QString>
 
 class TextEditEvent;
 class DocumentWidget;

@@ -2,10 +2,10 @@
 #ifndef WINDOW_MENU_EVENT_H_
 #define WINDOW_MENU_EVENT_H_
 
+#include <QApplication>
 #include <QEvent>
 #include <QString>
 #include <QStringList>
-#include <QApplication>
 
 class WindowMenuEvent : public QEvent {
 public:
@@ -24,8 +24,8 @@ private:
 	QStringList arguments_;
 };
 
-template<class ... Types>
-void emit_event(const char *name, Types ... args) {
+template <class... Types>
+void emit_event(const char *name, Types... args) {
 	WindowMenuEvent menuEvent(QString::fromLatin1(name), {args...});
 	QApplication::sendEvent(qApp, &menuEvent);
 }

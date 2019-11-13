@@ -4,12 +4,12 @@
 
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
-#include "Util/string_view.h"
 #include "Util/QtHelper.h"
+#include "Util/string_view.h"
 
 #include <boost/optional.hpp>
-#include <vector>
 #include <memory>
+#include <vector>
 
 #include <QCoreApplication>
 
@@ -69,7 +69,7 @@ void RenameHighlightPattern(const QString &oldName, const QString &newName);
 void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user);
 
 extern std::vector<HighlightStyle> HighlightStyles;
-extern std::vector<PatternSet>     PatternSets;
+extern std::vector<PatternSet> PatternSets;
 }
 
 #endif

@@ -1,25 +1,25 @@
 
 #include "DialogMacros.h"
 #include "CommandRecorder.h"
+#include "CommonDialog.h"
 #include "MainWindow.h"
 #include "MenuData.h"
 #include "MenuItem.h"
 #include "MenuItemModel.h"
 #include "Preferences.h"
+#include "Util/String.h"
 #include "parse.h"
 #include "userCmds.h"
-#include "Util/String.h"
-#include "CommonDialog.h"
 
 #include <QMessageBox>
-
 
 /**
  * @brief DialogMacros::DialogMacros
  * @param parent
  * @param f
  */
-DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
+DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f) {
 	ui.setupUi(this);
 	connectSlots();
 
@@ -33,7 +33,7 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
 	ui.listItems->setModel(model_);
 
 	// Copy the list of menu information to one that the user can freely edit
-	for(MenuData &menuData : MacroMenuData) {
+	for (MenuData &menuData : MacroMenuData) {
 		model_->addItem(menuData.item);
 	}
 
@@ -41,7 +41,7 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
 	connect(this, &DialogMacros::restore, ui.listItems, &QListView::setCurrentIndex, Qt::QueuedConnection);
 
 	// default to selecting the first item
-	if(model_->rowCount() != 0) {
+	if (model_->rowCount() != 0) {
 		QModelIndex index = model_->index(0, 0);
 		ui.listItems->setCurrentIndex(index);
 	}
@@ -67,14 +67,14 @@ void DialogMacros::connectSlots() {
  */
 void DialogMacros::buttonNew_clicked() {
 
-	if(!updateCurrentItem()) {
+	if (!updateCurrentItem()) {
 		return;
 	}
 
 	CommonDialog::addNewItem(&ui, model_, []() {
 		MenuItem item;
 		// some sensible defaults...
-		item.name  = tr("New Item");
+		item.name = tr("New Item");
 		return item;
 	});
 }
@@ -84,7 +84,7 @@ void DialogMacros::buttonNew_clicked() {
  */
 void DialogMacros::buttonCopy_clicked() {
 
-	if(!updateCurrentItem()) {
+	if (!updateCurrentItem()) {
 		return;
 	}
 
@@ -140,7 +140,7 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
 
 	// if we are actually switching items, check that the previous one was valid
 	// so we can optionally cancel
-	if(previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
+	if (previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
 		QMessageBox messageBox(this);
 		messageBox.setWindowTitle(tr("Discard Entry"));
 		messageBox.setIcon(QMessageBox::Warning);
@@ -163,8 +163,8 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
 	}
 
 	// this is only safe if we aren't moving due to a delete operation
-	if(previous.isValid() && previous != deleted_) {
-		if(!updateCurrentItem(previous)) {
+	if (previous.isValid() && previous != deleted_) {
+		if (!updateCurrentItem(previous)) {
 			// reselect the old item
 			canceled = true;
 			Q_EMIT restore(previous);
@@ -173,7 +173,7 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
 	}
 
 	// previous was OK, so let's update the contents of the dialog
-	if(const auto ptr = model_->itemFromIndex(current)) {
+	if (const auto ptr = model_->itemFromIndex(current)) {
 		ui.editName->setText(ptr->name);
 		ui.editAccelerator->setKeySequence(ptr->shortcut);
 		ui.checkRequiresSelection->setChecked(ptr->input == FROM_SELECTION);
@@ -228,7 +228,7 @@ void DialogMacros::buttonOK_clicked() {
 bool DialogMacros::validateFields(Verbosity verbosity) {
 
 	auto dialogFields = readFields(verbosity);
-	if(!dialogFields) {
+	if (!dialogFields) {
 		return false;
 	}
 
@@ -238,7 +238,6 @@ bool DialogMacros::validateFields(Verbosity verbosity) {
 
 	return true;
 }
-
 
 /*
 ** Read the name, accelerator, mnemonic, and command fields from the shell or
@@ -256,7 +255,6 @@ boost::optional<MenuItem> DialogMacros::readFields(Verbosity verbosity) {
 		}
 		return boost::none;
 	}
-
 
 	if (nameText.indexOf(QLatin1Char(':')) != -1) {
 		if (verbosity == Verbosity::Verbose) {
@@ -301,8 +299,8 @@ bool DialogMacros::checkMacroText(const QString &macro, Verbosity verbosity) {
 
 	QString errMsg;
 	int stoppedAt;
-	if(!isMacroValid(macro, &errMsg, &stoppedAt)) {
-		if(verbosity == Verbosity::Verbose) {
+	if (!isMacroValid(macro, &errMsg, &stoppedAt)) {
+		if (verbosity == Verbosity::Verbose) {
 			Preferences::reportError(this, macro, stoppedAt, tr("macro"), errMsg);
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
@@ -312,8 +310,8 @@ bool DialogMacros::checkMacroText(const QString &macro, Verbosity verbosity) {
 		return false;
 	}
 
-	if(stoppedAt != macro.size()) {
-		if(verbosity == Verbosity::Verbose) {
+	if (stoppedAt != macro.size()) {
+		if (verbosity == Verbosity::Verbose) {
 			Preferences::reportError(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
@@ -331,15 +329,15 @@ bool DialogMacros::checkMacroText(const QString &macro, Verbosity verbosity) {
  */
 bool DialogMacros::applyDialogChanges() {
 
-	if(model_->rowCount() != 0) {
+	if (model_->rowCount() != 0) {
 		auto dialogFields = readFields(Verbosity::Verbose);
-		if(!dialogFields) {
+		if (!dialogFields) {
 			return false;
 		}
 
 		// Get the current selected item
 		QModelIndex index = ui.listItems->currentIndex();
-		if(!index.isValid()) {
+		if (!index.isValid()) {
 			return false;
 		}
 
@@ -350,10 +348,10 @@ bool DialogMacros::applyDialogChanges() {
 
 	std::vector<MenuData> newItems;
 
-	for(int i = 0; i < model_->rowCount(); ++i) {
+	for (int i = 0; i < model_->rowCount(); ++i) {
 		QModelIndex index = model_->index(i, 0);
-		auto item = model_->itemFromIndex(index);
-		newItems.push_back({ *item, nullptr });
+		auto item         = model_->itemFromIndex(index);
+		newItems.push_back({*item, nullptr});
 	}
 
 	MacroMenuData = std::move(newItems);
@@ -361,7 +359,7 @@ bool DialogMacros::applyDialogChanges() {
 	parseMenuItemList(MacroMenuData);
 
 	// Update the menus themselves in all of the NEdit windows
-	for(MainWindow *window : MainWindow::allWindows()) {
+	for (MainWindow *window : MainWindow::allWindows()) {
 		window->updateUserMenus();
 	}
 
@@ -378,11 +376,11 @@ bool DialogMacros::applyDialogChanges() {
 bool DialogMacros::updateCurrentItem(const QModelIndex &index) {
 
 	auto dialogFields = readFields(Verbosity::Verbose);
-	if(!dialogFields) {
+	if (!dialogFields) {
 		return false;
 	}
 
-	if(!index.isValid()) {
+	if (!index.isValid()) {
 		return false;
 	}
 
@@ -396,7 +394,7 @@ bool DialogMacros::updateCurrentItem(const QModelIndex &index) {
  */
 bool DialogMacros::updateCurrentItem() {
 	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
+	if (index.isValid()) {
 		return updateCurrentItem(index);
 	}
 

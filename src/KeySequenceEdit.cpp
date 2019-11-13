@@ -1,10 +1,10 @@
 
 #include "KeySequenceEdit.h"
+#include <QAction>
 #include <QBoxLayout>
 #include <QEvent>
 #include <QKeyEvent>
 #include <QLineEdit>
-#include <QAction>
 #include <QStyle>
 
 /*!
@@ -64,12 +64,10 @@ void KeySequenceEdit::resetState() {
 	lineEdit_->setPlaceholderText(tr("Press shortcut"));
 
 	// hook the clear button...
-	if(auto action = lineEdit_->findChild<QAction *>()) {
+	if (auto action = lineEdit_->findChild<QAction *>()) {
 		connect(action, &QAction::triggered, this, &KeySequenceEdit::clear, Qt::QueuedConnection);
 	}
 }
-
-
 
 /**
  * @brief KeySequenceEdit::finishEditing
@@ -85,7 +83,8 @@ void KeySequenceEdit::finishEditing() {
  * @param parent
  * @param f
  */
-KeySequenceEdit::KeySequenceEdit(QWidget *parent, Qt::WindowFlags f) : QWidget(parent, f) {
+KeySequenceEdit::KeySequenceEdit(QWidget *parent, Qt::WindowFlags f)
+	: QWidget(parent, f) {
 
 	lineEdit_ = new QLineEdit(this);
 	lineEdit_->setContextMenuPolicy(Qt::PreventContextMenu);
@@ -111,7 +110,8 @@ KeySequenceEdit::KeySequenceEdit(QWidget *parent, Qt::WindowFlags f) : QWidget(p
  * @param parent
  * @param f
  */
-KeySequenceEdit::KeySequenceEdit(const QKeySequence &keySequence, QWidget *parent, Qt::WindowFlags f) : KeySequenceEdit(parent, f) {
+KeySequenceEdit::KeySequenceEdit(const QKeySequence &keySequence, QWidget *parent, Qt::WindowFlags f)
+	: KeySequenceEdit(parent, f) {
 	setKeySequence(keySequence);
 }
 
@@ -129,7 +129,7 @@ int KeySequenceEdit::maximumSequenceLength() const {
  */
 void KeySequenceEdit::setMaximumSequenceLength(int maximum) {
 
-	if(maximum < 1 || maximum > 4) {
+	if (maximum < 1 || maximum > 4) {
 		qWarning("Maximum sequence length must be an integer from 1 to 4");
 		return;
 	}
@@ -138,7 +138,6 @@ void KeySequenceEdit::setMaximumSequenceLength(int maximum) {
 
 	Q_EMIT maximumSequenceLengthChanged(maximum);
 }
-
 
 /**
  * This property contains the currently chosen key_ sequence. The shortcut can
@@ -175,7 +174,6 @@ void KeySequenceEdit::setKeySequence(const QKeySequence &keySequence) {
 	Q_EMIT keySequenceChanged(keySequence);
 }
 
-
 /**
  * Clears the current key sequence.
  *
@@ -197,7 +195,7 @@ bool KeySequenceEdit::event(QEvent *e) {
 	case QEvent::ShortcutOverride:
 		e->accept();
 		return true;
-	default :
+	default:
 		break;
 	}
 
@@ -221,7 +219,7 @@ void KeySequenceEdit::keyPressEvent(QKeyEvent *e) {
 		return;
 	}
 
-	if(modifierRequired_ && e->modifiers() == Qt::NoModifier) {
+	if (modifierRequired_ && e->modifiers() == Qt::NoModifier) {
 		return;
 	}
 
@@ -239,7 +237,7 @@ void KeySequenceEdit::keyPressEvent(QKeyEvent *e) {
 
 	keys_.push_back(nextKey);
 
-	switch(keys_.size()) {
+	switch (keys_.size()) {
 	case 1:
 		keySequence_ = QKeySequence(keys_[0]);
 		break;
@@ -311,5 +309,3 @@ void KeySequenceEdit::setModifierRequired(bool required) {
 	modifierRequired_ = required;
 	Q_EMIT modifierRequiredChanged(required);
 }
-
-

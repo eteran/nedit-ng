@@ -9,8 +9,8 @@
 class RangesetTable {
 public:
 	explicit RangesetTable(TextBuffer *buffer);
-	RangesetTable(const RangesetTable &)            = delete;
-	RangesetTable& operator=(const RangesetTable &) = delete;
+	RangesetTable(const RangesetTable &) = delete;
+	RangesetTable &operator=(const RangesetTable &) = delete;
 	~RangesetTable();
 
 public:

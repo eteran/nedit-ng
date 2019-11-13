@@ -18,8 +18,8 @@ class DialogFind : public Dialog {
 
 public:
 	struct Fields {
-		Direction  direction;
-		QString    searchString;
+		Direction direction;
+		QString searchString;
 		SearchType searchType;
 	};
 

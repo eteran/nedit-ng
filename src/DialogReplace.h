@@ -21,9 +21,9 @@ class DialogReplace : public Dialog {
 
 public:
 	struct Fields {
-		Direction  direction;
-		QString    searchString;
-		QString    replaceString;
+		Direction direction;
+		QString searchString;
+		QString replaceString;
 		SearchType searchType;
 	};
 

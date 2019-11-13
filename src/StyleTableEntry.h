@@ -7,15 +7,15 @@
 
 class StyleTableEntry {
 public:
-	QString      highlightName;
-	QString      styleName;
-	QString      colorName;
-	QString      bgColorName;
-	QColor       color;
-	QColor       bgColor;
-	bool         isBold;
-	bool         isItalic;
-	bool         isUnderlined;
+	QString highlightName;
+	QString styleName;
+	QString colorName;
+	QString bgColorName;
+	QColor color;
+	QColor bgColor;
+	bool isBold;
+	bool isItalic;
+	bool isUnderlined;
 };
 
 #endif

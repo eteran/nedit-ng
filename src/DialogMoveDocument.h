@@ -28,9 +28,8 @@ private Q_SLOTS:
 	void on_listWindows_itemDoubleClicked(QListWidgetItem *item);
 
 private:
-	Ui::DialogMoveDocument    ui;
+	Ui::DialogMoveDocument ui;
 	std::vector<MainWindow *> windows_;
-
 };
 
 #endif

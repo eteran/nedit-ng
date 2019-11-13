@@ -7,7 +7,8 @@
 #include <QMessageBox>
 #include <QTimer>
 
-DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
+DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f), document_(document) {
 	ui.setupUi(this);
 	connectSlots();
 
@@ -15,9 +16,7 @@ DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt
 		resize(0, 0);
 	});
 
-	const int margin = document ?
-				document->firstPane()->getWrapMargin() :
-				Preferences::GetPrefWrapMargin();
+	const int margin = document ? document->firstPane()->getWrapMargin() : Preferences::GetPrefWrapMargin();
 
 	ui.checkWrapAndFill->setChecked(margin == 0);
 	ui.spinWrapAndFill->setValue(margin);
@@ -30,7 +29,6 @@ void DialogWrapMargin::connectSlots() {
 	connect(ui.checkWrapAndFill, &QCheckBox::toggled, this, &DialogWrapMargin::checkWrapAndFill_toggled);
 	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogWrapMargin::buttonBox_accepted);
 }
-
 
 void DialogWrapMargin::checkWrapAndFill_toggled(bool checked) {
 	ui.label->setEnabled(!checked);
@@ -47,7 +45,7 @@ void DialogWrapMargin::buttonBox_accepted() {
 	}
 
 	// Set the value in either the requested window or default preferences
-	if(!document_) {
+	if (!document_) {
 		Preferences::SetPrefWrapMargin(margin);
 	} else {
 		document_->setWrapMargin(margin);
@@ -55,4 +53,3 @@ void DialogWrapMargin::buttonBox_accepted() {
 
 	accept();
 }
-

@@ -1,16 +1,16 @@
 
 #include "DialogWindowBackgroundMenu.h"
 #include "CommandRecorder.h"
+#include "CommonDialog.h"
 #include "MainWindow.h"
 #include "MenuData.h"
 #include "MenuItem.h"
 #include "MenuItemModel.h"
 #include "Preferences.h"
 #include "SignalBlocker.h"
+#include "Util/String.h"
 #include "parse.h"
 #include "userCmds.h"
-#include "Util/String.h"
-#include "CommonDialog.h"
 
 #include <QMessageBox>
 
@@ -19,7 +19,8 @@
  * @param parent
  * @param f
  */
-DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
+DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f) {
 	ui.setupUi(this);
 	connectSlots();
 
@@ -33,7 +34,7 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 	ui.listItems->setModel(model_);
 
 	// Copy the list of menu information to one that the user can freely edit
-	for(MenuData &menuData : BGMenuData) {
+	for (MenuData &menuData : BGMenuData) {
 		model_->addItem(menuData.item);
 	}
 
@@ -41,7 +42,7 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 	connect(this, &DialogWindowBackgroundMenu::restore, ui.listItems, &QListView::setCurrentIndex, Qt::QueuedConnection);
 
 	// default to selecting the first item
-	if(model_->rowCount() != 0) {
+	if (model_->rowCount() != 0) {
 		QModelIndex index = model_->index(0, 0);
 		ui.listItems->setCurrentIndex(index);
 	}
@@ -62,20 +63,19 @@ void DialogWindowBackgroundMenu::connectSlots() {
 	connect(ui.buttonOK, &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonOK_clicked);
 }
 
-
 /**
  * @brief DialogWindowBackgroundMenu::buttonNew_clicked
  */
 void DialogWindowBackgroundMenu::buttonNew_clicked() {
 
-	if(!updateCurrentItem()) {
+	if (!updateCurrentItem()) {
 		return;
 	}
 
 	CommonDialog::addNewItem(&ui, model_, []() {
 		MenuItem item;
 		// some sensible defaults...
-		item.name  = tr("New Item");
+		item.name = tr("New Item");
 		return item;
 	});
 }
@@ -85,7 +85,7 @@ void DialogWindowBackgroundMenu::buttonNew_clicked() {
  */
 void DialogWindowBackgroundMenu::buttonCopy_clicked() {
 
-	if(!updateCurrentItem()) {
+	if (!updateCurrentItem()) {
 		return;
 	}
 
@@ -141,7 +141,7 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
 
 	// if we are actually switching items, check that the previous one was valid
 	// so we can optionally cancel
-	if(previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
+	if (previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
 		QMessageBox messageBox(this);
 		messageBox.setWindowTitle(tr("Discard Entry"));
 		messageBox.setIcon(QMessageBox::Warning);
@@ -164,8 +164,8 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
 	}
 
 	// this is only safe if we aren't moving due to a delete operation
-	if(previous.isValid() && previous != deleted_) {
-		if(!updateCurrentItem(previous)) {
+	if (previous.isValid() && previous != deleted_) {
+		if (!updateCurrentItem(previous)) {
 			// reselect the old item
 			canceled = true;
 			Q_EMIT restore(previous);
@@ -174,7 +174,7 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
 	}
 
 	// previous was OK, so let's update the contents of the dialog
-	if(const auto ptr = model_->itemFromIndex(current)) {
+	if (const auto ptr = model_->itemFromIndex(current)) {
 		ui.editName->setText(ptr->name);
 		ui.editAccelerator->setKeySequence(ptr->shortcut);
 		ui.checkRequiresSelection->setChecked(ptr->input == FROM_SELECTION);
@@ -228,7 +228,7 @@ void DialogWindowBackgroundMenu::buttonOK_clicked() {
  */
 bool DialogWindowBackgroundMenu::validateFields(Verbosity verbosity) {
 
-	if(auto f = readFields(verbosity)) {
+	if (auto f = readFields(verbosity)) {
 		return checkMacroText(f->cmd, verbosity);
 	}
 
@@ -248,7 +248,6 @@ boost::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbo
 		}
 		return boost::none;
 	}
-
 
 	if (nameText.indexOf(QLatin1Char(':')) != -1) {
 		if (verbosity == Verbosity::Verbose) {
@@ -293,8 +292,8 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 
 	QString errMsg;
 	int stoppedAt;
-	if(!isMacroValid(macro, &errMsg, &stoppedAt)) {
-		if(verbosity == Verbosity::Verbose) {
+	if (!isMacroValid(macro, &errMsg, &stoppedAt)) {
+		if (verbosity == Verbosity::Verbose) {
 			Preferences::reportError(this, macro, stoppedAt, tr("macro"), errMsg);
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
@@ -304,8 +303,8 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 		return false;
 	}
 
-	if(stoppedAt != macro.size()) {
-		if(verbosity == Verbosity::Verbose) {
+	if (stoppedAt != macro.size()) {
+		if (verbosity == Verbosity::Verbose) {
 			Preferences::reportError(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
 		}
 
@@ -324,15 +323,15 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
  */
 bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
-	if(model_->rowCount() != 0) {
+	if (model_->rowCount() != 0) {
 		auto dialogFields = readFields(Verbosity::Verbose);
-		if(!dialogFields) {
+		if (!dialogFields) {
 			return false;
 		}
 
 		// Get the current selected item
 		QModelIndex index = ui.listItems->currentIndex();
-		if(!index.isValid()) {
+		if (!index.isValid()) {
 			return false;
 		}
 
@@ -343,10 +342,10 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
 	std::vector<MenuData> newItems;
 
-	for(int i = 0; i < model_->rowCount(); ++i) {
+	for (int i = 0; i < model_->rowCount(); ++i) {
 		QModelIndex index = model_->index(i, 0);
-		auto item = model_->itemFromIndex(index);
-		newItems.push_back({ *item, nullptr });
+		auto item         = model_->itemFromIndex(index);
+		newItems.push_back({*item, nullptr});
 	}
 
 	BGMenuData = std::move(newItems);
@@ -354,7 +353,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 	parseMenuItemList(BGMenuData);
 
 	// Update the menus themselves in all of the NEdit windows
-	for(MainWindow *window : MainWindow::allWindows()) {
+	for (MainWindow *window : MainWindow::allWindows()) {
 		window->updateUserMenus();
 	}
 
@@ -379,12 +378,12 @@ void DialogWindowBackgroundMenu::setPasteReplayEnabled(bool enabled) {
 bool DialogWindowBackgroundMenu::updateCurrentItem(const QModelIndex &index) {
 	// Get the current contents of the "patterns" dialog fields
 	auto dialogFields = readFields(Verbosity::Verbose);
-	if(!dialogFields) {
+	if (!dialogFields) {
 		return false;
 	}
 
 	// Get the current contents of the dialog fields
-	if(!index.isValid()) {
+	if (!index.isValid()) {
 		return false;
 	}
 
@@ -398,7 +397,7 @@ bool DialogWindowBackgroundMenu::updateCurrentItem(const QModelIndex &index) {
  */
 bool DialogWindowBackgroundMenu::updateCurrentItem() {
 	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
+	if (index.isValid()) {
 		return updateCurrentItem(index);
 	}
 

@@ -18,7 +18,7 @@ bool PatternSet::operator!=(const PatternSet &rhs) const {
 		return true;
 	}
 
-	if(patterns != rhs.patterns) {
+	if (patterns != rhs.patterns) {
 		return true;
 	}
 

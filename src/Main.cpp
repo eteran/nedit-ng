@@ -9,15 +9,15 @@
 #include "Preferences.h"
 #include "Regex.h"
 #include "Settings.h"
+#include "Util/FileSystem.h"
 #include "interpret.h"
 #include "macro.h"
 #include "nedit.h"
 #include "parse.h"
-#include "Util/FileSystem.h"
 
-#include <QString>
-#include <QFile>
 #include <QApplication>
+#include <QFile>
+#include <QString>
 
 namespace {
 
@@ -25,7 +25,7 @@ constexpr const char cmdLineHelp[] =
 	"Usage: nedit-ng [-read] [-create] [-line n | +n] [-server] [-do command]\n"
 	"                [-tags file] [-tabs n] [-wrap] [-nowrap] [-autowrap]\n"
 	"                [-autoindent] [-noautoindent] [-autosave] [-noautosave]\n"
-    "                [-lm languagemode] [-rows n] [-columns n] [-font font]\n"
+	"                [-lm languagemode] [-rows n] [-columns n] [-font font]\n"
 	"                [-geometry geometry] [-iconic] [-noiconic] [-svrname name]\n"
 	"                [-import file] [-tabbed] [-untabbed] [-group] [-V|-version]\n"
 	"                [-h|-help] [--] [file...]\n";
@@ -81,7 +81,7 @@ Main::Main(const QStringList &args) {
 	// Enable a Qt style sheet if present
 	QString styleFile = Settings::styleFile();
 	QFile file(styleFile);
-	if(file.open(QIODevice::ReadOnly)) {
+	if (file.open(QIODevice::ReadOnly)) {
 		qApp->setStyleSheet(QString::fromUtf8(file.readAll()));
 		file.close();
 	}
@@ -146,10 +146,10 @@ Main::Main(const QStringList &args) {
 				toDoCommand = args[i];
 			}
 		} else if (opts && args[i] == QLatin1String("-svrname")) {
-			i = nextArg(args, i);
+			i                    = nextArg(args, i);
 			Settings::serverName = args[i];
 		} else if (opts && (args[i] == QLatin1String("-font") || args[i] == QLatin1String("-fn"))) {
-			i = nextArg(args, i);
+			i                  = nextArg(args, i);
 			Settings::fontName = args[i];
 		} else if (opts && args[i] == QLatin1String("-wrap")) {
 			Settings::autoWrap = WrapStyle::Continuous;
@@ -170,7 +170,7 @@ Main::Main(const QStringList &args) {
 
 			bool ok;
 			int n = args[i].toInt(&ok);
-			if(!ok) {
+			if (!ok) {
 				fprintf(stderr, "NEdit: argument to rows should be a number\n");
 			} else {
 				Settings::textRows = n;
@@ -180,7 +180,7 @@ Main::Main(const QStringList &args) {
 
 			bool ok;
 			int n = args[i].toInt(&ok);
-			if(!ok) {
+			if (!ok) {
 				fprintf(stderr, "NEdit: argument to cols should be a number\n");
 			} else {
 				Settings::textCols = n;
@@ -190,7 +190,7 @@ Main::Main(const QStringList &args) {
 
 			bool ok;
 			int n = args[i].toInt(&ok);
-			if(!ok) {
+			if (!ok) {
 				fprintf(stderr, "NEdit: argument to tabs should be a number\n");
 			} else {
 				Settings::tabDistance = n;
@@ -201,10 +201,10 @@ Main::Main(const QStringList &args) {
 			editFlags |= SUPPRESS_CREATE_WARN;
 		} else if (opts && args[i] == QLatin1String("-tabbed")) {
 			tabbed = 1;
-			group = 0; // override -group option
+			group  = 0; // override -group option
 		} else if (opts && args[i] == QLatin1String("-untabbed")) {
 			tabbed = 0;
-			group = 0; // override -group option
+			group  = 0; // override -group option
 		} else if (opts && args[i] == QLatin1String("-group")) {
 			group = 2; // 2: start new group, 1: in group
 		} else if (opts && args[i] == QLatin1String("-line")) {
@@ -212,7 +212,7 @@ Main::Main(const QStringList &args) {
 
 			bool ok;
 			lineNum = args[i].toInt(&ok);
-			if(!ok) {
+			if (!ok) {
 				fprintf(stderr, "NEdit: argument to line should be a number\n");
 			} else {
 				gotoLine = true;
@@ -220,7 +220,7 @@ Main::Main(const QStringList &args) {
 		} else if (opts && (args[i].startsWith(QLatin1Char('+')))) {
 			bool ok;
 			lineNum = args[i].toInt(&ok);
-			if(!ok) {
+			if (!ok) {
 				fprintf(stderr, "NEdit: argument to + should be a number\n");
 			} else {
 				gotoLine = true;
@@ -232,10 +232,10 @@ Main::Main(const QStringList &args) {
 		} else if (opts && args[i] == QLatin1String("-noiconic")) {
 			iconic = false;
 		} else if (opts && (args[i] == QLatin1String("-geometry") || args[i] == QLatin1String("-g"))) {
-			i = nextArg(args, i);
+			i        = nextArg(args, i);
 			geometry = args[i];
 		} else if (opts && args[i] == QLatin1String("-lm")) {
-			i = nextArg(args, i);
+			i        = nextArg(args, i);
 			langMode = args[i];
 		} else if (opts && args[i] == QLatin1String("-import")) {
 			i = nextArg(args, i); // already processed, skip
@@ -255,15 +255,15 @@ Main::Main(const QStringList &args) {
 			if (fi) {
 				/* determine if file is to be openned in new tab, by
 				   factoring the options -group, -tabbed & -untabbed */
-				switch(group) {
+				switch (group) {
 				case 2:
 					isTabbed = 0; // start a new window for new group
-					group = 1;    // next file will be within group
+					group    = 1; // next file will be within group
 					break;
 				case 1:
 					isTabbed = 1; // new tab for file in group
 					break;
-				default:          // not in group
+				default: // not in group
 					isTabbed = (tabbed == -1) ? Preferences::GetPrefOpenInTab() : tabbed;
 				}
 
@@ -276,28 +276,28 @@ Main::Main(const QStringList &args) {
 
 				QPointer<DocumentWidget> document;
 
-				if(MainWindow *window = MainWindow::firstWindow()) {
+				if (MainWindow *window = MainWindow::firstWindow()) {
 					document = DocumentWidget::editExistingFile(
-					               window->currentDocument(),
-					               fi->filename,
-					               fi->pathname,
-					               editFlags,
-					               geometry,
-					               iconic,
-					               langMode,
-					               isTabbed,
-					               /*bgOpen=*/true);
+						window->currentDocument(),
+						fi->filename,
+						fi->pathname,
+						editFlags,
+						geometry,
+						iconic,
+						langMode,
+						isTabbed,
+						/*bgOpen=*/true);
 				} else {
 					document = DocumentWidget::editExistingFile(
-					               nullptr,
-					               fi->filename,
-					               fi->pathname,
-					               editFlags,
-					               geometry,
-					               iconic,
-					               langMode,
-					               isTabbed,
-					               /*bgOpen=*/true);
+						nullptr,
+						fi->filename,
+						fi->pathname,
+						editFlags,
+						geometry,
+						iconic,
+						langMode,
+						isTabbed,
+						/*bgOpen=*/true);
 				}
 
 				fileSpecified = true;
@@ -378,7 +378,7 @@ bool Main::checkDoMacroArg(const QString &macro) {
 	QString macroString = macro + QLatin1Char('\n');
 
 	// Do a test parse
-	if(!isMacroValid(macroString, &errMsg, &stoppedAt)) {
+	if (!isMacroValid(macroString, &errMsg, &stoppedAt)) {
 		Preferences::reportError(nullptr, macroString, stoppedAt, tr("argument to -do"), errMsg);
 		return false;
 	}

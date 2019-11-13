@@ -12,8 +12,8 @@ enum SmartIndentReason {
 
 struct SmartIndentEvent {
 	SmartIndentReason reason;
-	TextCursor        pos;
-	int               request;
+	TextCursor pos;
+	int request;
 	view::string_view charsTyped;
 };
 

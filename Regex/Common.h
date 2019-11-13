@@ -41,14 +41,12 @@ constexpr R literal_escape(Ch ch) noexcept {
 
 	constexpr char valid_escape[] = {
 		'a', 'b', 'e', 'f', 'n', 'r', 't', 'v', '(', ')', '-', '[', ']', '<',
-		'>', '{', '}', '.', '\\', '|', '^', '$', '*', '+', '?', '&'
-	};
+		'>', '{', '}', '.', '\\', '|', '^', '$', '*', '+', '?', '&'};
 
 	constexpr char value[] = {
 		'\a', '\b', 0x1B, // Escape character in ASCII character set.
 		'\f', '\n', '\r', '\t', '\v', '(', ')', '-', '[', ']', '<', '>', '{',
-		'}', '.', '\\', '|', '^', '$', '*', '+', '?', '&'
-	};
+		'}', '.', '\\', '|', '^', '$', '*', '+', '?', '&'};
 
 	for (int i = 0; i != sizeof(valid_escape); ++i) {
 		if (ch == valid_escape[i]) {
@@ -78,9 +76,9 @@ R numeric_escape(Ch ch, const char **parse) {
 	static const char digits[] = "fedcbaFEDCBA9876543210";
 
 	static const unsigned int digit_val[] = {
-		15, 14, 13, 12, 11, 10,            // Lower case Hex digits
-		15, 14, 13, 12, 11, 10,            // Upper case Hex digits
-		9,  8,  7,  6,  5,  4,  3, 2, 1, 0 // Decimal Digits
+		15, 14, 13, 12, 11, 10,      // Lower case Hex digits
+		15, 14, 13, 12, 11, 10,      // Upper case Hex digits
+		9, 8, 7, 6, 5, 4, 3, 2, 1, 0 // Decimal Digits
 	};
 
 	const char *digit_str;
@@ -96,8 +94,8 @@ R numeric_escape(Ch ch, const char **parse) {
 
 	case 'x':
 	case 'X':
-		width = 2; // Can not be bigger than \0377
-		radix = 16;
+		width     = 2; // Can not be bigger than \0377
+		radix     = 16;
 		pos_delta = 0;
 		digit_str = digits; // Use all of the digit characters.
 
@@ -114,7 +112,7 @@ R numeric_escape(Ch ch, const char **parse) {
 
 	for (int i = 0; pos_ptr != nullptr && (i < width); i++) {
 		const ptrdiff_t pos = (pos_ptr - digit_str) + pos_delta;
-		value = (value * radix) + digit_val[pos];
+		value               = (value * radix) + digit_val[pos];
 
 		/* If this digit makes the value over 255, treat this digit as a literal
 		   character instead of part of the numeric escape.  For example, \0777

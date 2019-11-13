@@ -78,9 +78,9 @@
  */
 
 #include "Regex.h"
+#include "Common.h"
 #include "Compile.h"
 #include "Execute.h"
-#include "Common.h"
 
 #include <cassert>
 
@@ -89,7 +89,6 @@ std::bitset<256> Regex::Default_Delimiters;
 
 ExecuteContext eContext;
 ParseContext pContext;
-
 
 /* The "internal use only" fields in `Regex.h' are present to pass info from
  * `CompileRE' to `ExecRE' which permits the execute phase to run lots faster on
@@ -101,7 +100,6 @@ ParseContext pContext;
  * `match_start' and `anchor' permit very fast decisions on suitable starting
  * points for a match, considerably reducing the work done by ExecRE. */
 
-
 /* A node is one char of opcode followed by two chars of NEXT pointer plus
  * any operands.  NEXT pointers are stored as two 8-bit pieces, high order
  * first.  The value is a positive offset from the opcode of the node
@@ -110,7 +108,6 @@ ParseContext pContext;
  *
  * Using two bytes for NEXT_PTR_SIZE is vast overkill for most things,
  * but allows patterns to get big without disasters. */
-
 
 /**
  * @brief Regex::execute
@@ -159,7 +156,7 @@ bool Regex::execute(view::string_view string, size_t offset, size_t end_offset, 
 		string,
 		offset,
 		end_offset,
-		(offset     == 0            ) ? -1 : string[offset - 1],
+		(offset == 0) ? -1 : string[offset - 1],
 		(end_offset == string.size()) ? -1 : string[end_offset],
 		delimiters,
 		reverse);
@@ -191,8 +188,6 @@ bool Regex::execute(view::string_view string, size_t offset, size_t end_offset, 
 		&string[string.size()]);
 }
 
-
-
 /*----------------------------------------------------------------------*
  * SetDefaultWordDelimiters
  *
@@ -213,7 +208,7 @@ std::bitset<256> Regex::makeDelimiterTable(view::string_view delimiters) {
 
 	std::bitset<256> table;
 
-	for(char ch : delimiters) {
+	for (char ch : delimiters) {
 		table[static_cast<size_t>(ch)] = true;
 	}
 
@@ -226,7 +221,7 @@ std::bitset<256> Regex::makeDelimiterTable(view::string_view delimiters) {
 }
 
 bool Regex::isValid() const noexcept {
-	if(program.empty()) {
+	if (program.empty()) {
 		return false;
 	}
 

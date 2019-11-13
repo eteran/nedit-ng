@@ -2,30 +2,28 @@
 #ifndef REGEX_H_
 #define REGEX_H_
 
-#include "RegexError.h"
 #include "Constants.h"
+#include "RegexError.h"
 #include "Util/string_view.h"
 
 #include <array>
-#include <cstdint>
 #include <bitset>
+#include <cstdint>
 #include <memory>
 #include <vector>
 
-
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */
 enum RE_DEFAULT_FLAG {
-	REDFLT_STANDARD = 0,
+	REDFLT_STANDARD         = 0,
 	REDFLT_CASE_INSENSITIVE = 1
 	/* REDFLT_MATCH_NEWLINE = 2    Currently not used. */
 };
 
-
 class Regex {
 public:
 	Regex(view::string_view exp, int defaultFlags);
-	Regex(const Regex &)            = delete;
-	Regex& operator=(const Regex &) = delete;
+	Regex(const Regex &) = delete;
+	Regex &operator=(const Regex &) = delete;
 	~Regex()                        = default;
 
 public:
@@ -120,13 +118,13 @@ public:
 	static void SetDefaultWordDelimiters(view::string_view delimiters);
 
 public:
-	std::array<const char *, NSUBEXP> startp = {}; /* Captured text starting locations. */
-	std::array<const char *, NSUBEXP> endp   = {}; /* Captured text ending locations. */
-	const char *extentpBW       = nullptr;         /* Points to the maximum extent of text scanned by ExecRE in front of the string to achieve a match (needed because of positive look-behind.) */
-	const char *extentpFW       = nullptr;         /* Points to the maximum extent of text scanned by ExecRE to achieve a match (needed because of positive look-ahead.) */
-	size_t top_branch           = 0;               /* Zero-based index of the top branch that matches. Used by syntax highlighting only. */
-	char match_start            = '\0';            /* Internal use only. */
-	char anchor                 = '\0';            /* Internal use only. */
+	std::array<const char *, NSUBEXP> startp = {};      /* Captured text starting locations. */
+	std::array<const char *, NSUBEXP> endp   = {};      /* Captured text ending locations. */
+	const char *extentpBW                    = nullptr; /* Points to the maximum extent of text scanned by ExecRE in front of the string to achieve a match (needed because of positive look-behind.) */
+	const char *extentpFW                    = nullptr; /* Points to the maximum extent of text scanned by ExecRE to achieve a match (needed because of positive look-ahead.) */
+	size_t top_branch                        = 0;       /* Zero-based index of the top branch that matches. Used by syntax highlighting only. */
+	char match_start                         = '\0';    /* Internal use only. */
+	char anchor                              = '\0';    /* Internal use only. */
 	std::vector<uint8_t> program;
 
 public:

@@ -4,8 +4,8 @@
 #include "LanguageMode.h"
 #include "Preferences.h"
 #include "SmartIndent.h"
-#include "macro.h"
 #include "Util/String.h"
+#include "macro.h"
 
 #include <QMessageBox>
 
@@ -14,7 +14,8 @@
  * @param parent
  * @param f
  */
-DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
+DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f) {
 	ui.setupUi(this);
 	connectSlots();
 
@@ -31,13 +32,12 @@ void DialogSmartIndentCommon::connectSlots() {
 	connect(ui.buttonRestore, &QPushButton::clicked, this, &DialogSmartIndentCommon::buttonRestore_clicked);
 }
 
-
 /**
  * @brief DialogSmartIndentCommon::buttonOK_clicked
  */
 void DialogSmartIndentCommon::buttonOK_clicked() {
 	// change the macro
-	if(updateSmartIndentCommonData()) {
+	if (updateSmartIndentCommonData()) {
 		accept();
 	}
 }
@@ -64,12 +64,12 @@ void DialogSmartIndentCommon::buttonCheck_clicked() {
  */
 void DialogSmartIndentCommon::buttonRestore_clicked() {
 	int resp = QMessageBox::question(
-				this,
-				tr("Discard Changes"),
-				tr("Are you sure you want to discard all changes to common smart indent macros"),
-				QMessageBox::Discard | QMessageBox::Cancel);
+		this,
+		tr("Discard Changes"),
+		tr("Are you sure you want to discard all changes to common smart indent macros"),
+		QMessageBox::Discard | QMessageBox::Cancel);
 
-	if(resp == QMessageBox::Cancel) {
+	if (resp == QMessageBox::Cancel) {
 		return;
 	}
 
@@ -88,7 +88,7 @@ bool DialogSmartIndentCommon::checkSmartIndentCommonDialogData() {
 
 	QString code = ui.editCode->toPlainText();
 
-	if(!code.isEmpty()) {
+	if (!code.isEmpty()) {
 		QString widgetText = ensure_newline(code);
 		int stoppedAt;
 		if (!CheckMacroString(this, widgetText, tr("macros"), &stoppedAt)) {
@@ -123,7 +123,7 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	   since user could theoretically execute an action routine, but it
 	   probably won't be referenced in a smart indent initialization) */
 	std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
-	if(!documents.empty()) {
+	if (!documents.empty()) {
 		if (!documents[0]->readMacroString(SmartIndent::CommonMacros, tr("common macros"))) {
 			return false;
 		}
@@ -132,7 +132,7 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 	/* Find windows that are currently using smart indent and
 	   re-initialize the smart indent macros (in case they have initialization
 	   data which depends on common data) */
-	for(DocumentWidget *document : documents) {
+	for (DocumentWidget *document : documents) {
 		if (document->autoIndentStyle() == IndentStyle::Smart && document->getLanguageMode() != PLAIN_LANGUAGE_MODE) {
 			document->endSmartIndent();
 			document->beginSmartIndent(Verbosity::Silent);

@@ -9,9 +9,9 @@
 #include "Preferences.h"
 #include "SmartIndent.h"
 #include "SmartIndentEntry.h"
+#include "Util/String.h"
 #include "macro.h"
 #include "parse.h"
-#include "Util/String.h"
 
 #include <QMessageBox>
 
@@ -21,7 +21,8 @@
  * @param parent
  * @param f
  */
-DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
+DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f) {
 	ui.setupUi(this);
 	connectSlots();
 
@@ -48,7 +49,6 @@ void DialogSmartIndent::connectSlots() {
 	connect(ui.buttonHelp, &QPushButton::clicked, this, &DialogSmartIndent::buttonHelp_clicked);
 }
 
-
 /**
  * @brief DialogSmartIndent::updateLanguageModes
  */
@@ -56,7 +56,7 @@ void DialogSmartIndent::updateLanguageModes() {
 
 	const QString languageMode = languageMode_;
 	ui.comboLanguageMode->clear();
-	for(const LanguageMode &lang : Preferences::LanguageModes) {
+	for (const LanguageMode &lang : Preferences::LanguageModes) {
 		ui.comboLanguageMode->addItem(lang.name);
 	}
 
@@ -69,8 +69,8 @@ void DialogSmartIndent::updateLanguageModes() {
  */
 void DialogSmartIndent::setLanguageMode(const QString &s) {
 	languageMode_ = s;
-	int index = ui.comboLanguageMode->findText(languageMode_, Qt::MatchFixedString | Qt::MatchCaseSensitive);
-	if(index != -1) {
+	int index     = ui.comboLanguageMode->findText(languageMode_, Qt::MatchFixedString | Qt::MatchCaseSensitive);
+	if (index != -1) {
 		ui.comboLanguageMode->setCurrentIndex(index);
 	}
 }
@@ -136,11 +136,11 @@ void DialogSmartIndent::buttonCheck_clicked() {
 void DialogSmartIndent::buttonDelete_clicked() {
 
 	int resp = QMessageBox::question(
-				this,
-				tr("Delete Macros"),
-				tr("Are you sure you want to delete smart indent macros for language mode %1?").arg(languageMode_),
-				QMessageBox::Yes | QMessageBox::Cancel);
-	if(resp == QMessageBox::Cancel) {
+		this,
+		tr("Delete Macros"),
+		tr("Are you sure you want to delete smart indent macros for language mode %1?").arg(languageMode_),
+		QMessageBox::Yes | QMessageBox::Cancel);
+	if (resp == QMessageBox::Cancel) {
 		return;
 	}
 
@@ -149,7 +149,7 @@ void DialogSmartIndent::buttonDelete_clicked() {
 		return entry.languageMode == languageMode_;
 	});
 
-	if(it != SmartIndent::SmartIndentSpecs.end()) {
+	if (it != SmartIndent::SmartIndentSpecs.end()) {
 		SmartIndent::SmartIndentSpecs.erase(it);
 	}
 
@@ -163,21 +163,21 @@ void DialogSmartIndent::buttonDelete_clicked() {
 void DialogSmartIndent::buttonRestore_clicked() {
 
 	const SmartIndentEntry *defaultIS = SmartIndent::findDefaultIndentSpec(languageMode_);
-	if(!defaultIS) {
+	if (!defaultIS) {
 		QMessageBox::warning(
-					this,
-					tr("Smart Indent"),
-					tr("There are no default indent macros for language mode %1").arg(languageMode_));
+			this,
+			tr("Smart Indent"),
+			tr("There are no default indent macros for language mode %1").arg(languageMode_));
 		return;
 	}
 
 	int resp = QMessageBox::question(
-				this,
-				tr("Discard Changes"),
-				tr("Are you sure you want to discard all changes to smart indent macros for language mode %1?").arg(languageMode_),
-				QMessageBox::Discard | QMessageBox::Cancel);
+		this,
+		tr("Discard Changes"),
+		tr("Are you sure you want to discard all changes to smart indent macros for language mode %1?").arg(languageMode_),
+		QMessageBox::Discard | QMessageBox::Cancel);
 
-	if(resp == QMessageBox::Cancel) {
+	if (resp == QMessageBox::Cancel) {
 		return;
 	}
 
@@ -212,7 +212,7 @@ void DialogSmartIndent::buttonHelp_clicked() {
  */
 void DialogSmartIndent::setSmartIndentDialogData(const SmartIndentEntry *is) {
 
-	if(!is) {
+	if (!is) {
 		ui.editInit->setPlainText(QString());
 		ui.editNewline->setPlainText(QString());
 		ui.editModMacro->setPlainText(QString());
@@ -253,13 +253,13 @@ bool DialogSmartIndent::updateSmartIndentData() {
 
 	/* Find windows that are currently using this indent specification and
 	   re-do the smart indent macros */
-	for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+	for (DocumentWidget *document : DocumentWidget::allDocuments()) {
 
 		QString lmName = Preferences::LanguageModeName(document->getLanguageMode());
-		if(!lmName.isNull()) {
+		if (!lmName.isNull()) {
 			if (lmName == newMacros.languageMode) {
 
-				if(MainWindow *window = MainWindow::fromDocument(document)) {
+				if (MainWindow *window = MainWindow::fromDocument(document)) {
 					window->ui.action_Indent_Smart->setEnabled(true);
 				}
 
@@ -293,7 +293,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 	QString initText = ui.editInit->toPlainText();
 	if (!initText.isEmpty()) {
 		QString widgetText = ensure_newline(initText);
-		int stoppedAt = 0;
+		int stoppedAt      = 0;
 		if (!CheckMacroString(this, widgetText, tr("initialization macro"), &stoppedAt)) {
 			QTextCursor cursor = ui.editInit->textCursor();
 			cursor.setPosition(stoppedAt);
@@ -315,7 +315,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 		QString errMsg;
 		int stoppedAt = 0;
 
-		if(!isMacroValid(widgetText, &errMsg, &stoppedAt)) {
+		if (!isMacroValid(widgetText, &errMsg, &stoppedAt)) {
 			Preferences::reportError(this, widgetText, stoppedAt, tr("newline macro"), errMsg);
 			QTextCursor cursor = ui.editNewline->textCursor();
 			cursor.setPosition(stoppedAt);
@@ -325,7 +325,6 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 		}
 	}
 
-
 	// Test compile the modify macro
 	QString modMacroText = ui.editModMacro->toPlainText();
 	if (!modMacroText.isEmpty()) {
@@ -333,7 +332,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 		QString errMsg;
 		int stoppedAt = 0;
 
-		if(!isMacroValid(widgetText, &errMsg, &stoppedAt)) {
+		if (!isMacroValid(widgetText, &errMsg, &stoppedAt)) {
 			Preferences::reportError(this, widgetText, stoppedAt, tr("modify macro"), errMsg);
 			QTextCursor cursor = ui.editModMacro->textCursor();
 			cursor.setPosition(stoppedAt);
@@ -354,12 +353,11 @@ SmartIndentEntry DialogSmartIndent::getSmartIndentDialogData() const {
 
 	SmartIndentEntry is;
 	is.languageMode = languageMode_;
-	is.initMacro    = ui.editInit->toPlainText().isEmpty()     ? QString() : ensure_newline(ui.editInit->toPlainText());
-	is.newlineMacro = ui.editNewline->toPlainText().isEmpty()  ? QString() : ensure_newline(ui.editNewline->toPlainText());
+	is.initMacro    = ui.editInit->toPlainText().isEmpty() ? QString() : ensure_newline(ui.editInit->toPlainText());
+	is.newlineMacro = ui.editNewline->toPlainText().isEmpty() ? QString() : ensure_newline(ui.editNewline->toPlainText());
 	is.modMacro     = ui.editModMacro->toPlainText().isEmpty() ? QString() : ensure_newline(ui.editModMacro->toPlainText());
 	return is;
 }
-
 
 QString DialogSmartIndent::languageMode() const {
 	return languageMode_;

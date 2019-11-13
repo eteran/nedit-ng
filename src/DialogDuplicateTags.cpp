@@ -9,7 +9,8 @@
  * @param area
  * @param f
  */
-DialogDuplicateTags::DialogDuplicateTags(DocumentWidget *document, TextArea *area, Qt::WindowFlags f) : Dialog(document, f), document_(document), area_(area) {
+DialogDuplicateTags::DialogDuplicateTags(DocumentWidget *document, TextArea *area, Qt::WindowFlags f)
+	: Dialog(document, f), document_(document), area_(area) {
 	ui.setupUi(this);
 	connectSlots();
 }
@@ -44,7 +45,7 @@ void DialogDuplicateTags::addListItem(const QString &text, int id) {
  * @brief DialogDuplicateTags::buttonBox_accepted
  */
 void DialogDuplicateTags::buttonBox_accepted() {
-	if(applySelection()) {
+	if (applySelection()) {
 		accept();
 	}
 }
@@ -54,7 +55,7 @@ void DialogDuplicateTags::buttonBox_accepted() {
  * @param button
  */
 void DialogDuplicateTags::buttonBox_clicked(QAbstractButton *button) {
-	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
+	if (ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 		applySelection();
 	}
 }
@@ -65,7 +66,7 @@ void DialogDuplicateTags::buttonBox_clicked(QAbstractButton *button) {
  */
 bool DialogDuplicateTags::applySelection() {
 	QListWidgetItem *item = ui.listWidget->currentItem();
-	if(!item) {
+	if (!item) {
 		QApplication::beep();
 		return false;
 	}
@@ -79,6 +80,4 @@ bool DialogDuplicateTags::applySelection() {
 	}
 
 	return true;
-
-
 }

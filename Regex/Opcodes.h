@@ -5,7 +5,6 @@
 #include "Constants.h"
 #include <cstdint>
 
-
 /* STRUCTURE FOR A REGULAR EXPRESSION (regex) gPROGRAM'.
  *
  * This is essentially a linear encoding of a nondeterministic finite-state
@@ -25,7 +24,7 @@
 
 // DEFINITION            VALUE  MEANING
 enum Opcode : uint8_t {
-	END          = 1, // End of program.
+	END = 1, // End of program.
 
 	// Zero width positional assertions.
 	BOL          = 2, // Match position at beginning of line.
@@ -41,7 +40,7 @@ enum Opcode : uint8_t {
 	ANY_BUT = 10, // Match any character not in the set.
 
 	// Op codes to match any character.
-	ANY   = 11,   // Match any one character (implements '.')
+	ANY   = 11, // Match any one character (implements '.')
 	EVERY = 12, // Same as ANY but matches newline.
 
 	// Shortcut escapes, \d, \D, \l, \L, \s, \S, \w, \W, \y, \Y.
@@ -90,16 +89,16 @@ enum Opcode : uint8_t {
 	NEG_AHEAD_OPEN   = 44, // Begin negative look ahead
 	LOOK_AHEAD_CLOSE = 45, // End positive or negative look ahead
 
-	POS_BEHIND_OPEN   = 46,   // Begin positive look behind
-	NEG_BEHIND_OPEN   = 47,   // Begin negative look behind
+	POS_BEHIND_OPEN   = 46, // Begin positive look behind
+	NEG_BEHIND_OPEN   = 47, // Begin negative look behind
 	LOOK_BEHIND_CLOSE = 48, // Close look behind
 
-	OPEN  = 49, // Open for capturing parentheses.
+	OPEN = 49, // Open for capturing parentheses.
 
 	//  OPEN+1 is number 1, etc.
-	CLOSE  = (OPEN + NSUBEXP), // Close for capturing parentheses.
+	CLOSE = (OPEN + NSUBEXP), // Close for capturing parentheses.
 
-	LAST_PAREN  = (CLOSE + NSUBEXP),
+	LAST_PAREN = (CLOSE + NSUBEXP),
 };
 
 static_assert(LAST_PAREN <= UINT8_MAX, "Too many parentheses for storage in an uint8_t (LAST_PAREN too big.)");

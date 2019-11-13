@@ -2,12 +2,12 @@
 #include "DialogPrint.h"
 #include "DocumentWidget.h"
 
+#include <QDir>
+#include <QFileDialog>
 #include <QMessageBox>
+#include <QPainter>
 #include <QPrinterInfo>
 #include <QTextDocument>
-#include <QDir>
-#include <QPainter>
-#include <QFileDialog>
 #include <utility>
 
 /**
@@ -18,11 +18,12 @@
  * @param parent
  * @param f
  */
-DialogPrint::DialogPrint(QString contents, QString jobname, DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document), contents_(std::move(contents)), jobname_(std::move(jobname)) {
+DialogPrint::DialogPrint(QString contents, QString jobname, DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f), document_(document), contents_(std::move(contents)), jobname_(std::move(jobname)) {
 	ui.setupUi(this);
 	connectSlots();
 
-	QStringList printers = QPrinterInfo::availablePrinterNames();
+	QStringList printers   = QPrinterInfo::availablePrinterNames();
 	QString defaultPrinter = QPrinterInfo::defaultPrinterName();
 	ui.printers->addItem(tr("Print to File (PDF)"));
 
@@ -37,13 +38,12 @@ void DialogPrint::connectSlots() {
 	connect(ui.buttonPrint, &QPushButton::clicked, this, &DialogPrint::buttonPrint_clicked);
 }
 
-
 /**
  * @brief DialogPrint::on_printers_currentIndexChanged
  * @param index
  */
 void DialogPrint::on_printers_currentIndexChanged(int index) {
-	if(index == 0) {
+	if (index == 0) {
 		ui.labelCopies->setEnabled(false);
 		ui.spinCopies->setEnabled(false);
 	} else {
@@ -70,7 +70,7 @@ void DialogPrint::buttonPrint_clicked() {
 
 	setCursor(Qt::WaitCursor);
 
-	if(ui.printers->currentIndex() == 0) {
+	if (ui.printers->currentIndex() == 0) {
 
 		QFileDialog dialog(this, tr("Print to File"));
 		dialog.setFileMode(QFileDialog::AnyFile);
@@ -80,7 +80,7 @@ void DialogPrint::buttonPrint_clicked() {
 		dialog.setFilter(QDir::AllDirs | QDir::AllEntries | QDir::Hidden | QDir::System);
 		dialog.setNameFilter(tr("*.pdf"));
 
-		if(dialog.exec()) {
+		if (dialog.exec()) {
 			QStringList selectedFiles = dialog.selectedFiles();
 			QString filename          = selectedFiles[0];
 
@@ -90,21 +90,19 @@ void DialogPrint::buttonPrint_clicked() {
 
 			print(&printer);
 
-			if(printer.printerState() == QPrinter::Error) {
+			if (printer.printerState() == QPrinter::Error) {
 				QMessageBox::warning(
-							this,
-							tr("Error Printing to File"),
-							tr("Failed to print to file, is it writable?"));
+					this,
+					tr("Error Printing to File"),
+					tr("Failed to print to file, is it writable?"));
 			}
 
 		} else {
 			QMessageBox::warning(
-						this,
-						tr("Error Printing to File"),
-						tr("No file was specified, please provide a filename to print to."));
+				this,
+				tr("Error Printing to File"),
+				tr("No file was specified, please provide a filename to print to."));
 		}
-
-
 
 	} else {
 		auto pi = QPrinterInfo::printerInfo(ui.printers->currentText());
@@ -112,11 +110,11 @@ void DialogPrint::buttonPrint_clicked() {
 		printer.setCopyCount(ui.spinCopies->value());
 		print(&printer);
 
-		if(printer.printerState() == QPrinter::Error) {
+		if (printer.printerState() == QPrinter::Error) {
 			QMessageBox::warning(
-						this,
-						tr("Error Printing to File"),
-						tr("An error occured while printing."));
+				this,
+				tr("Error Printing to File"),
+				tr("An error occured while printing."));
 		}
 	}
 

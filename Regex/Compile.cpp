@@ -1,18 +1,18 @@
 
 #include "Compile.h"
-#include "Execute.h"
-#include "Constants.h"
 #include "Common.h"
+#include "Constants.h"
+#include "Execute.h"
 #include "Opcodes.h"
-#include "RegexError.h"
 #include "Regex.h"
+#include "RegexError.h"
+#include "Util/Compiler.h"
 #include "Util/Raise.h"
 #include "Util/utils.h"
-#include "Util/Compiler.h"
 
-#include <cstring>
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 
 namespace {
 
@@ -25,9 +25,9 @@ enum ShortcutEscapeFlag {
 };
 
 // Flags to be passed up and down via function parameters during compile.
-constexpr int WORST       = 0; // Worst case. No assumptions can be made.
-constexpr int HAS_WIDTH   = 1; // Known never to match null string.
-constexpr int SIMPLE      = 2; // Simple enough to be STAR/PLUS operand.
+constexpr int WORST     = 0; // Worst case. No assumptions can be made.
+constexpr int HAS_WIDTH = 1; // Known never to match null string.
+constexpr int SIMPLE    = 2; // Simple enough to be STAR/PLUS operand.
 
 constexpr int NO_PAREN    = 0; // Only set by initial call to "chunk".
 constexpr int PAREN       = 1; // Used for normal capturing parentheses.
@@ -38,7 +38,7 @@ constexpr int NEWLINE     = 5; // Construct to match newlines in most cases
 constexpr int NO_NEWLINE  = 6; // Construct to match newlines normally
 
 // Largest size a compiled regex can be. Probably could be 65535UL.
-constexpr size_t MaxCompiledSize  = std::numeric_limits<int16_t>::max();
+constexpr size_t MaxCompiledSize = std::numeric_limits<int16_t>::max();
 
 struct len_range {
 	int32_t lower;
@@ -48,15 +48,15 @@ struct len_range {
 uint8_t *chunk(int paren, int *flag_param, len_range &range_param);
 
 const char Default_Meta_Char[] = "{.*+?[(|)^<>$";
-const char ASCII_Digits[] = "0123456789"; // Same for all locales.
+const char ASCII_Digits[]      = "0123456789"; // Same for all locales.
 
 // Array sizes for arrays used by function init_ansi_classes.
 constexpr int WHITE_SPACE_SIZE = 16;
 constexpr int ALNUM_CHAR_SIZE  = 256;
 
-char White_Space[WHITE_SPACE_SIZE];       // Arrays used by
-char Word_Char[ALNUM_CHAR_SIZE];          // functions
-char Letter_Char[ALNUM_CHAR_SIZE];        // init_ansi_classes () and shortcut_escape ().
+char White_Space[WHITE_SPACE_SIZE]; // Arrays used by
+char Word_Char[ALNUM_CHAR_SIZE];    // functions
+char Letter_Char[ALNUM_CHAR_SIZE];  // init_ansi_classes () and shortcut_escape ().
 
 /*----------------------------------------------------------------------*
  * next_ptr - compute the address of a node's "NEXT" pointer.
@@ -290,7 +290,7 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
 	// Find the last node in the chain (node with a null NEXT pointer)
 	uint8_t *scan = search_from;
 
-	while(uint8_t *next = next_ptr(scan)) {
+	while (uint8_t *next = next_ptr(scan)) {
 		scan = next;
 	}
 
@@ -342,7 +342,7 @@ uint8_t *insert(uint8_t op, uint8_t *insert_pos, uint32_t min, uint32_t max, uin
 	*ptr++ = 0;
 	*ptr++ = 0;
 
-	switch(op) {
+	switch (op) {
 	case BRACE:
 	case LAZY_BRACE:
 		*ptr++ = PUT_OFFSET_L(min);
@@ -403,7 +403,7 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 	static const char codes[] = "ByYdDlLsSwW";
 
 	const char *clazz = nullptr;
-	auto ret_val = reinterpret_cast<uint8_t *>(1); // Assume success.
+	auto ret_val      = reinterpret_cast<uint8_t *>(1); // Assume success.
 	const char *valid_codes;
 
 	if (Flags == EMIT_CLASS_BYTES || Flags == CHECK_CLASS_ESCAPE) {
@@ -553,7 +553,7 @@ void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
 template <ShortcutEscapeFlag Flags>
 uint8_t *back_ref(const char *ch, int *flag_param) {
 
-	size_t c_offset = 0;
+	size_t c_offset           = 0;
 	const bool is_cross_regex = false;
 
 	uint8_t *ret_val;
@@ -614,7 +614,6 @@ uint8_t *back_ref(const char *ch, int *flag_param) {
 	return ret_val;
 }
 
-
 /*----------------------------------------------------------------------*
  * atom
  *
@@ -631,8 +630,8 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 	int flags_local;
 	len_range range_local;
 
-	*flag_param = WORST;   // Tentatively.
-	range_param.lower = 0; // Idem
+	*flag_param       = WORST; // Tentatively.
+	range_param.lower = 0;     // Idem
 	range_param.upper = 0;
 
 	/* Process any regex comments, e.g. '(?# match next token->)'.  The
@@ -663,7 +662,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 		}
 	}
 
-	if(pContext.Reg_Parse == pContext.InputString.end()) {
+	if (pContext.Reg_Parse == pContext.InputString.end()) {
 		// Supposed to be caught earlier.
 		Raise<RegexError>("internal error #3, 'atom'");
 	}
@@ -748,7 +747,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 	case '|':
 	case ')':
 		Raise<RegexError>("internal error #3, 'atom'"); // Supposed to be
-		                                                // caught earlier.
+														// caught earlier.
 	case '?':
 	case '+':
 	case '*':
@@ -998,7 +997,6 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 						   so generate our own here. */
 
 						Raise<RegexError>("\\%c is an invalid escape sequence", *pContext.Reg_Parse);
-
 					}
 
 					++pContext.Reg_Parse;
@@ -1065,9 +1063,9 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 	uint32_t min_max[2] = {REG_ZERO, REG_INFINITY};
 	int flags_local;
 	int i;
-	int brace_present = 0;
-	bool lazy = false;
-	bool comma_present = false;
+	int brace_present    = 0;
+	bool lazy            = false;
+	bool comma_present   = false;
 	int digit_present[2] = {0, 0};
 	len_range range_local;
 
@@ -1081,7 +1079,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 	if (!isQuantifier(op_code)) {
 		*flag_param = flags_local;
 		range_param = range_local;
-		return  ret_val;
+		return ret_val;
 	} else if (op_code == '{') { // {n,m} quantifier present
 		brace_present++;
 		++pContext.Reg_Parse;
@@ -1263,11 +1261,11 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 		 *
 		 */
 
-		tail(ret_val, emit_node(BACK));              // 1
-		insert(BRANCH, ret_val, 0UL, 0UL, 0);        // 2,4
-		insert(NOTHING, ret_val, 0UL, 0UL, 0);       // 3
+		tail(ret_val, emit_node(BACK));        // 1
+		insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 2,4
+		insert(NOTHING, ret_val, 0UL, 0UL, 0); // 3
 
-		next = emit_node(NOTHING);                   // 2,3
+		next = emit_node(NOTHING); // 2,3
 
 		offset_tail(ret_val, NODE_SIZE, next);        // 2
 		tail(ret_val, next);                          // 3
@@ -1361,7 +1359,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 		tail(emit_node(BACK), ret_val);                                           // 3
 		tail(ret_val, emit_node(NOTHING));                                        // 4
 
-		next = insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces);        // 5
+		next = insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 5
 
 		tail(ret_val, next); // 5
 
@@ -1382,12 +1380,12 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			next = emit_special(TEST_COUNT, min_max[0], pContext.Num_Braces); // 2,7
 
-			tail(ret_val, next);                                       // 2
-			insert(BRANCH,  ret_val, 0UL, 0UL, pContext.Num_Braces);   // 4,6
-			insert(NOTHING, ret_val, 0UL, 0UL, pContext.Num_Braces);   // 5
-			insert(BRANCH,  ret_val, 0UL, 0UL, pContext.Num_Braces);   // 3,4,8
-			tail(emit_node(BACK), ret_val);                            // 3
-			tail(ret_val, ret_val + (2 * NODE_SIZE));                  // 4
+			tail(ret_val, next);                                     // 2
+			insert(BRANCH, ret_val, 0UL, 0UL, pContext.Num_Braces);  // 4,6
+			insert(NOTHING, ret_val, 0UL, 0UL, pContext.Num_Braces); // 5
+			insert(BRANCH, ret_val, 0UL, 0UL, pContext.Num_Braces);  // 3,4,8
+			tail(emit_node(BACK), ret_val);                          // 3
+			tail(ret_val, ret_val + (2 * NODE_SIZE));                // 4
 
 			next = emit_node(NOTHING); // 5,6,7
 
@@ -1418,7 +1416,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 			tail(ret_val, next);                   // 2
 			tail(emit_node(BACK), ret_val);        // 3
 			tail(ret_val, emit_node(BACK));        // 4
-			insert(BRANCH,  ret_val, 0UL, 0UL, 0); // 5,7
+			insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 5,7
 			insert(NOTHING, ret_val, 0UL, 0UL, 0); // 6
 
 			next = emit_node(NOTHING); // 5,6
@@ -1601,12 +1599,12 @@ uint8_t *alternative(int *flag_param, len_range &range_param) {
 	int flags_local;
 	len_range range_local;
 
-	*flag_param = WORST;   // Tentatively.
-	range_param.lower = 0; // Idem
+	*flag_param       = WORST; // Tentatively.
+	range_param.lower = 0;     // Idem
 	range_param.upper = 0;
 
 	ret_val = emit_node(BRANCH);
-	chain = nullptr;
+	chain   = nullptr;
 
 	/* Loop until we hit the start of the next alternative, the end of this set
 	   of alternatives (end of parentheses), or the end of the regex. */
@@ -1614,7 +1612,7 @@ uint8_t *alternative(int *flag_param, len_range &range_param) {
 	while (*pContext.Reg_Parse != '|' && *pContext.Reg_Parse != ')' && pContext.Reg_Parse != pContext.InputString.end()) {
 		latest = piece(&flags_local, range_local);
 
-		if(!latest)
+		if (!latest)
 			return nullptr; // Something went wrong.
 
 		*flag_param |= flags_local & HAS_WIDTH;
@@ -1634,7 +1632,7 @@ uint8_t *alternative(int *flag_param, len_range &range_param) {
 		chain = latest;
 	}
 
-	if(!chain) { // Loop ran zero times.
+	if (!chain) { // Loop ran zero times.
 		emit_node(NOTHING);
 	}
 
@@ -1654,8 +1652,8 @@ uint8_t *alternative(int *flag_param, len_range &range_param) {
  *----------------------------------------------------------------------*/
 uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
-	uint8_t *ret_val = nullptr;
-	uint8_t *ender = nullptr;
+	uint8_t *ret_val  = nullptr;
+	uint8_t *ender    = nullptr;
 	size_t this_paren = 0;
 	int flags_local;
 	bool first = true;
@@ -1664,11 +1662,11 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 	const bool old_newline   = pContext.Match_Newline;
 
 	len_range range_local;
-	bool look_only = false;
+	bool look_only                   = false;
 	uint8_t *emit_look_behind_bounds = nullptr;
-	*flag_param = HAS_WIDTH; // Tentatively.
-	range_param.lower = 0;   // Idem
-	range_param.upper = 0;
+	*flag_param                      = HAS_WIDTH; // Tentatively.
+	range_param.lower                = 0;         // Idem
+	range_param.upper                = 0;
 
 	// Make an OPEN node, if parenthesized.
 
@@ -1682,13 +1680,13 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		ret_val = emit_node(OPEN + this_paren);
 	} else if (paren == POS_AHEAD_OPEN || paren == NEG_AHEAD_OPEN) {
 		*flag_param = WORST; // Look ahead is zero width.
-		look_only = true;
-		ret_val = emit_node(paren);
+		look_only   = true;
+		ret_val     = emit_node(paren);
 	} else if (paren == POS_BEHIND_OPEN || paren == NEG_BEHIND_OPEN) {
 		*flag_param = WORST; // Look behind is zero width.
-		look_only = true;
+		look_only   = true;
 		// We'll overwrite the zero length later on, so we save the ptr
-		ret_val = emit_special(paren, 0, 0);
+		ret_val                 = emit_special(paren, 0, 0);
 		emit_look_behind_bounds = ret_val + NODE_SIZE;
 	} else if (paren == INSENSITIVE) {
 		pContext.Is_Case_Insensitive = true;
@@ -1708,7 +1706,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		}
 
 		if (first) {
-			first = false;
+			first       = false;
 			range_param = range_local;
 			if (!ret_val) {
 				ret_val = this_branch;
@@ -1871,10 +1869,10 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 
 	if (pContext.Enable_Counting_Quantifier) {
 		pContext.Brace_Char = '{';
-		pContext.Meta_Char = &Default_Meta_Char[0];
+		pContext.Meta_Char  = &Default_Meta_Char[0];
 	} else {
-		pContext.Brace_Char = '*';                  // Bypass the '{' in
-		pContext.Meta_Char = &Default_Meta_Char[1]; // Default_Meta_Char
+		pContext.Brace_Char = '*';                   // Bypass the '{' in
+		pContext.Meta_Char  = &Default_Meta_Char[1]; // Default_Meta_Char
 	}
 
 	// Initialize arrays used by function 'shortcut_escape'.
@@ -1883,7 +1881,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 	}
 
 	pContext.FirstPass = true;
-	pContext.Reg_Size = 0UL;
+	pContext.Reg_Size  = 0UL;
 	pContext.Code.clear();
 
 	/* We can't allocate space until we know how big the compiled form will be,
@@ -1911,7 +1909,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 #if 0 // Currently not used. Uncomment if needed.
 		pContext.Match_Newline       = ((defaultFlags & REDFLT_MATCH_NEWLINE)    ? true : false);
 #else
-		pContext.Match_Newline       = false;
+		pContext.Match_Newline = false;
 #endif
 
 		pContext.Reg_Parse       = exp.begin();

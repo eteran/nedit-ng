@@ -1,15 +1,15 @@
 
 #include "DialogDrawingStyles.h"
+#include "CommonDialog.h"
 #include "DialogSyntaxPatterns.h"
 #include "DocumentWidget.h"
 #include "Highlight.h"
 #include "HighlightStyleModel.h"
 #include "Preferences.h"
 #include "X11Colors.h"
-#include "CommonDialog.h"
 
-#include <QMessageBox>
 #include <QColorDialog>
+#include <QMessageBox>
 #include <QRegularExpressionValidator>
 
 /**
@@ -17,7 +17,8 @@
  * @param parent
  * @param f
  */
-DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatterns, std::vector<HighlightStyle> &highlightStyles, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) , highlightStyles_(highlightStyles), dialogSyntaxPatterns_(dialogSyntaxPatterns) {
+DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatterns, std::vector<HighlightStyle> &highlightStyles, QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f), highlightStyles_(highlightStyles), dialogSyntaxPatterns_(dialogSyntaxPatterns) {
 	ui.setupUi(this);
 	connectSlots();
 
@@ -27,7 +28,7 @@ DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatte
 	ui.listItems->setModel(model_);
 
 	// Copy the list of highlight style information to one that the user can freely edit
-	for(const HighlightStyle &style : highlightStyles) {
+	for (const HighlightStyle &style : highlightStyles) {
 		model_->addItem(style);
 	}
 
@@ -35,7 +36,7 @@ DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatte
 	connect(this, &DialogDrawingStyles::restore, ui.listItems, &QListView::setCurrentIndex, Qt::QueuedConnection);
 
 	// default to selecting the first item
-	if(model_->rowCount() != 0) {
+	if (model_->rowCount() != 0) {
 		QModelIndex index = model_->index(0, 0);
 		ui.listItems->setCurrentIndex(index);
 	}
@@ -61,17 +62,16 @@ void DialogDrawingStyles::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogDrawingStyles::buttonBox_clicked);
 }
 
-
 /**
  * @brief DialogDrawingStyles::setStyleByName
  * @param name
  */
 void DialogDrawingStyles::setStyleByName(const QString &name) {
 
-	for(int i = 0; i < model_->rowCount(); ++i) {
+	for (int i = 0; i < model_->rowCount(); ++i) {
 		QModelIndex index = model_->index(i, 0);
-		auto ptr = model_->itemFromIndex(index);
-		if(ptr->name == name) {
+		auto ptr          = model_->itemFromIndex(index);
+		if (ptr->name == name) {
 			ui.listItems->setCurrentIndex(index);
 			break;
 		}
@@ -86,7 +86,7 @@ void DialogDrawingStyles::setStyleByName(const QString &name) {
  */
 void DialogDrawingStyles::buttonNew_clicked() {
 
-	if(!updateCurrentItem()) {
+	if (!updateCurrentItem()) {
 		return;
 	}
 
@@ -104,7 +104,7 @@ void DialogDrawingStyles::buttonNew_clicked() {
  */
 void DialogDrawingStyles::buttonCopy_clicked() {
 
-	if(!updateCurrentItem()) {
+	if (!updateCurrentItem()) {
 		return;
 	}
 
@@ -148,7 +148,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 
 	// if we are actually switching items, check that the previous one was valid
 	// so we can optionally cancel
-	if(previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
+	if (previous.isValid() && previous != deleted_ && !validateFields(Verbosity::Silent)) {
 		QMessageBox messageBox(this);
 		messageBox.setWindowTitle(tr("Discard Entry"));
 		messageBox.setIcon(QMessageBox::Warning);
@@ -171,8 +171,8 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 	}
 
 	// this is only safe if we aren't moving due to a delete operation
-	if(previous.isValid() && previous != deleted_) {
-		if(!updateCurrentItem(previous)) {
+	if (previous.isValid() && previous != deleted_) {
+		if (!updateCurrentItem(previous)) {
 			// reselect the old item
 			canceled = true;
 			Q_EMIT restore(previous);
@@ -181,7 +181,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 	}
 
 	// previous was OK, so let's update the contents of the dialog
-	if(const auto style = model_->itemFromIndex(current)) {
+	if (const auto style = model_->itemFromIndex(current)) {
 		ui.editName->setText(style->name);
 		ui.editColorFG->setText(style->color);
 		ui.editColorBG->setText(style->bgColor);
@@ -196,7 +196,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 		if (style->name == QLatin1String("Plain")) {
 			// unless there is more than one "Plain"
 			int count = countPlainEntries();
-			if(count < 2) {
+			if (count < 2) {
 				ui.buttonDelete->setEnabled(false);
 			}
 		}
@@ -215,13 +215,12 @@ void DialogDrawingStyles::buttonBox_accepted() {
 	accept();
 }
 
-
 /**
  * @brief DialogDrawingStyles::buttonBox_clicked
  * @param button
  */
 void DialogDrawingStyles::buttonBox_clicked(QAbstractButton *button) {
-	if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
+	if (ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 		applyDialogChanges();
 	}
 }
@@ -232,7 +231,7 @@ void DialogDrawingStyles::buttonBox_clicked(QAbstractButton *button) {
  * @return
  */
 bool DialogDrawingStyles::validateFields(Verbosity verbosity) {
-	if(readFields(verbosity)) {
+	if (readFields(verbosity)) {
 		return true;
 	}
 	return false;
@@ -279,7 +278,7 @@ boost::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbos
 
 	// Verify that the color is a valid X color spec
 	QColor rgb = X11Colors::fromString(hs.color);
-	if(!rgb.isValid()) {
+	if (!rgb.isValid()) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X color specification: %1").arg(hs.color));
 		}
@@ -327,24 +326,24 @@ boost::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbos
  */
 bool DialogDrawingStyles::applyDialogChanges() {
 
-	if(model_->rowCount() != 0) {
+	if (model_->rowCount() != 0) {
 		auto dialogFields = readFields(Verbosity::Verbose);
-		if(!dialogFields) {
+		if (!dialogFields) {
 			return false;
 		}
 
 		// Get the current selected item
 		QModelIndex index = ui.listItems->currentIndex();
-		if(!index.isValid()) {
+		if (!index.isValid()) {
 			return false;
 		}
 
 		// update the currently selected item's associated data
 		// and make sure it has the text updated as well
 		auto ptr = model_->itemFromIndex(index);
-		if(ptr->name == QLatin1String("Plain") && dialogFields->name != QLatin1String("Plain")) {
+		if (ptr->name == QLatin1String("Plain") && dialogFields->name != QLatin1String("Plain")) {
 			int count = countPlainEntries();
-			if(count < 2) {
+			if (count < 2) {
 				QMessageBox::information(this,
 										 tr("Highlight Style"),
 										 tr("There must be at least one Plain entry. Cannot rename this entry."));
@@ -357,21 +356,21 @@ bool DialogDrawingStyles::applyDialogChanges() {
 	// Replace the old highlight styles list with the new one from the dialog
 	std::vector<HighlightStyle> newStyles;
 
-	for(int i = 0; i < model_->rowCount(); ++i) {
+	for (int i = 0; i < model_->rowCount(); ++i) {
 		QModelIndex index = model_->index(i, 0);
-		auto style = model_->itemFromIndex(index);
+		auto style        = model_->itemFromIndex(index);
 		newStyles.push_back(*style);
 	}
 
 	highlightStyles_ = newStyles;
 
 	// If a syntax highlighting dialog is up, update its menu
-	if(dialogSyntaxPatterns_) {
+	if (dialogSyntaxPatterns_) {
 		dialogSyntaxPatterns_->updateHighlightStyleMenu();
 	}
 
 	// Redisplay highlighted windows which use changed style(s)
-	for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+	for (DocumentWidget *document : DocumentWidget::allDocuments()) {
 		document->updateHighlightStyles();
 	}
 
@@ -388,12 +387,12 @@ bool DialogDrawingStyles::applyDialogChanges() {
 bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
 	// Get the current contents of the "patterns" dialog fields
 	auto dialogFields = readFields(Verbosity::Verbose);
-	if(!dialogFields) {
+	if (!dialogFields) {
 		return false;
 	}
 
 	// Get the current contents of the dialog fields
-	if(!index.isValid()) {
+	if (!index.isValid()) {
 		return false;
 	}
 
@@ -401,9 +400,9 @@ bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
 	// and make sure it has the text updated as well. Disallow renaming
 	// the last "Plain" entry though
 	auto ptr = model_->itemFromIndex(index);
-	if(ptr->name == QLatin1String("Plain") && dialogFields->name != QLatin1String("Plain")) {
+	if (ptr->name == QLatin1String("Plain") && dialogFields->name != QLatin1String("Plain")) {
 		int count = countPlainEntries();
-		if(count < 2) {
+		if (count < 2) {
 			QMessageBox::information(this, tr("Highlight Style"), tr("There must be at least one Plain entry. Cannot rename this entry."));
 			return false;
 		}
@@ -419,7 +418,7 @@ bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
  */
 bool DialogDrawingStyles::updateCurrentItem() {
 	QModelIndex index = ui.listItems->currentIndex();
-	if(index.isValid()) {
+	if (index.isValid()) {
 		return updateCurrentItem(index);
 	}
 
@@ -432,10 +431,10 @@ bool DialogDrawingStyles::updateCurrentItem() {
  */
 int DialogDrawingStyles::countPlainEntries() const {
 	int count = 0;
-	for(int i = 0; i < model_->rowCount(); ++i) {
+	for (int i = 0; i < model_->rowCount(); ++i) {
 		QModelIndex index = model_->index(i, 0);
-		auto style = model_->itemFromIndex(index);
-		if(style->name == QLatin1String("Plain")) {
+		auto style        = model_->itemFromIndex(index);
+		if (style->name == QLatin1String("Plain")) {
 			++count;
 		}
 	}
@@ -451,7 +450,7 @@ void DialogDrawingStyles::chooseColor(QLineEdit *edit) {
 	QString name = edit->text();
 
 	QColor color = QColorDialog::getColor(X11Colors::fromString(name), this);
-	if(color.isValid()) {
+	if (color.isValid()) {
 		edit->setText(tr("#%1").arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0')));
 	}
 }

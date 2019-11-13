@@ -7,8 +7,8 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 
-#include <QMessageBox>
 #include <QIntValidator>
+#include <QMessageBox>
 #include <QTimer>
 
 /**
@@ -17,7 +17,8 @@
  * @param parent
  * @param f
  */
-DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f), document_(document) {
+DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f), document_(document) {
 
 	ui.setupUi(this);
 	connectSlots();
@@ -31,7 +32,7 @@ DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlag
 	int tabDist;
 
 	// Set default values
-	if(!document) {
+	if (!document) {
 		emTabDist = Preferences::GetPrefEmTabDist(PLAIN_LANGUAGE_MODE);
 		useTabs   = Preferences::GetPrefInsertTabs();
 		tabDist   = Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE);
@@ -55,7 +56,6 @@ DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlag
 
 	ui.editEmulatedTabSpacing->setValidator(new QIntValidator(0, INT_MAX, this));
 	ui.editTabSpacing->setValidator(new QIntValidator(0, INT_MAX, this));
-
 }
 
 /**
@@ -66,7 +66,6 @@ void DialogTabs::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogTabs::buttonBox_accepted);
 	connect(ui.buttonBox, &QDialogButtonBox::helpRequested, this, &DialogTabs::buttonBox_helpRequested);
 }
-
 
 /**
  * @brief DialogTabs::checkEmulateTabs_toggled
@@ -85,13 +84,13 @@ void DialogTabs::buttonBox_accepted() {
 	const bool emulate = ui.checkEmulateTabs->isChecked();
 	const bool useTabs = ui.checkUseTabsInPadding->isChecked();
 
-	if(ui.editTabSpacing->text().isEmpty()) {
+	if (ui.editTabSpacing->text().isEmpty()) {
 		QMessageBox::critical(this, tr("Warning"), tr("Please supply a value for tab spacing"));
 	}
 
 	bool ok;
-	int tabDist  = ui.editTabSpacing->text().toInt(&ok);
-	if(!ok) {
+	int tabDist = ui.editTabSpacing->text().toInt(&ok);
+	if (!ok) {
 		QMessageBox::critical(this, tr("Warning"), tr("Can't read integer value \"%1\" in tab spacing").arg(ui.editTabSpacing->text()));
 		return;
 	}
@@ -103,7 +102,7 @@ void DialogTabs::buttonBox_accepted() {
 
 	int emTabDist = 0;
 	if (emulate) {
-		if(ui.editEmulatedTabSpacing->text().isEmpty()) {
+		if (ui.editEmulatedTabSpacing->text().isEmpty()) {
 			QMessageBox::critical(this, tr("Warning"), tr("Please supply a value for emulated tab spacing"));
 			return;
 		}
@@ -121,9 +120,8 @@ void DialogTabs::buttonBox_accepted() {
 		}
 	}
 
-
 	// Set the value in either the requested window or default preferences
-	if(!document_) {
+	if (!document_) {
 		Preferences::SetPrefTabDist(tabDist);
 		Preferences::SetPrefEmTabDist(emTabDist);
 		Preferences::SetPrefInsertTabs(useTabs);

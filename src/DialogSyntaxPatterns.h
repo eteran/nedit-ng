@@ -6,8 +6,8 @@
 #include "Verbosity.h"
 #include "ui_DialogSyntaxPatterns.h"
 
-#include <memory>
 #include <boost/optional.hpp>
+#include <memory>
 
 class HighlightPattern;
 class HighlightPatternModel;
@@ -18,7 +18,7 @@ class DialogSyntaxPatterns final : public Dialog {
 	Q_OBJECT
 
 public:
-    explicit DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogSyntaxPatterns() override = default;
 
 public:

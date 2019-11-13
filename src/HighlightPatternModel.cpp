@@ -6,7 +6,8 @@
  * @brief HighlightPatternModel::HighlightPatternModel
  * @param parent
  */
-HighlightPatternModel::HighlightPatternModel(QObject *parent) : QAbstractItemModel(parent) {
+HighlightPatternModel::HighlightPatternModel(QObject *parent)
+	: QAbstractItemModel(parent) {
 }
 
 /**
@@ -18,11 +19,11 @@ HighlightPatternModel::HighlightPatternModel(QObject *parent) : QAbstractItemMod
  */
 QModelIndex HighlightPatternModel::index(int row, int column, const QModelIndex &parent) const {
 
-	if(row >= rowCount(parent) || column >= columnCount(parent)) {
+	if (row >= rowCount(parent) || column >= columnCount(parent)) {
 		return {};
 	}
 
-	if(row < 0) {
+	if (row < 0) {
 		return {};
 	}
 
@@ -46,16 +47,16 @@ QModelIndex HighlightPatternModel::parent(const QModelIndex &index) const {
  * @return
  */
 QVariant HighlightPatternModel::data(const QModelIndex &index, int role) const {
-	if(index.isValid()) {
+	if (index.isValid()) {
 
 		const HighlightPattern &item = items_[index.row()];
 
-		if(role == Qt::DisplayRole) {
-			switch(index.column()) {
+		if (role == Qt::DisplayRole) {
+			switch (index.column()) {
 			case 0:
 				return item.name;
 			}
-		} else if(role == Qt::UserRole) {
+		} else if (role == Qt::UserRole) {
 			return QVariant();
 		}
 	}
@@ -71,8 +72,8 @@ QVariant HighlightPatternModel::data(const QModelIndex &index, int role) const {
  * @return
  */
 QVariant HighlightPatternModel::headerData(int section, Qt::Orientation orientation, int role) const {
-	if(role == Qt::DisplayRole && orientation == Qt::Horizontal) {
-		switch(section) {
+	if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
+		switch (section) {
 		case 0:
 			return tr("Name");
 		}
@@ -125,9 +126,9 @@ void HighlightPatternModel::clear() {
  * @param index
  */
 void HighlightPatternModel::moveItemUp(const QModelIndex &index) {
-	if(index.isValid()) {
+	if (index.isValid()) {
 		int row = index.row();
-		if(row > 0) {
+		if (row > 0) {
 			beginMoveRows(QModelIndex(), row, row, QModelIndex(), row - 1);
 			moveItem(items_, row, row - 1);
 			endMoveRows();
@@ -140,9 +141,9 @@ void HighlightPatternModel::moveItemUp(const QModelIndex &index) {
  * @param index
  */
 void HighlightPatternModel::moveItemDown(const QModelIndex &index) {
-	if(index.isValid()) {
+	if (index.isValid()) {
 		int row = index.row();
-		if(row < rowCount() - 1) {
+		if (row < rowCount() - 1) {
 			beginMoveRows(QModelIndex(), row, row, QModelIndex(), row + 2);
 			moveItem(items_, row, row + 1);
 			endMoveRows();
@@ -155,9 +156,9 @@ void HighlightPatternModel::moveItemDown(const QModelIndex &index) {
  * @param index
  */
 void HighlightPatternModel::deleteItem(const QModelIndex &index) {
-	if(index.isValid()) {
+	if (index.isValid()) {
 		int row = index.row();
-		if(row < rowCount()) {
+		if (row < rowCount()) {
 			beginRemoveRows(QModelIndex(), row, row);
 			items_.remove(row);
 			endRemoveRows();
@@ -172,10 +173,10 @@ void HighlightPatternModel::deleteItem(const QModelIndex &index) {
  * @return
  */
 bool HighlightPatternModel::updateItem(const QModelIndex &index, const HighlightPattern &item) {
-	if(index.isValid()) {
+	if (index.isValid()) {
 		int row = index.row();
-		if(row < rowCount()) {
-			items_[row] = item;
+		if (row < rowCount()) {
+			items_[row]                     = item;
 			static const QVector<int> roles = {Qt::DisplayRole};
 			Q_EMIT dataChanged(index, index, roles);
 			return true;
@@ -191,13 +192,12 @@ bool HighlightPatternModel::updateItem(const QModelIndex &index, const Highlight
  * @return
  */
 const HighlightPattern *HighlightPatternModel::itemFromIndex(const QModelIndex &index) const {
-	if(index.isValid()) {
+	if (index.isValid()) {
 		int row = index.row();
-		if(row < rowCount()) {
+		if (row < rowCount()) {
 			return &items_[row];
 		}
 	}
 
 	return nullptr;
 }
-

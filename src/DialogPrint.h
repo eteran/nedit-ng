@@ -30,10 +30,8 @@ protected:
 public:
 	Ui::DialogPrint ui;
 	DocumentWidget *document_;
-	QString         contents_;
-	QString         jobname_;
+	QString contents_;
+	QString jobname_;
 };
 
 #endif
-
-

@@ -8,7 +8,8 @@
  * @param parent
  * @param f
  */
-DialogExecuteCommand::DialogExecuteCommand(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
+DialogExecuteCommand::DialogExecuteCommand(QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f) {
 	ui.setupUi(this);
 
 	QTimer::singleShot(0, this, [this]() {
@@ -24,7 +25,7 @@ DialogExecuteCommand::DialogExecuteCommand(QWidget *parent, Qt::WindowFlags f) :
  * @param event
  */
 void DialogExecuteCommand::keyPressEvent(QKeyEvent *event) {
-	if(ui.textCommand->hasFocus()) {
+	if (ui.textCommand->hasFocus()) {
 		int index = historyIndex_;
 
 		// only process up and down arrow keys
@@ -49,7 +50,6 @@ void DialogExecuteCommand::keyPressEvent(QKeyEvent *event) {
 	QDialog::keyPressEvent(event);
 }
 
-
 /**
  * @brief DialogExecuteCommand::showEvent
  * @param event
@@ -66,7 +66,7 @@ void DialogExecuteCommand::showEvent(QShowEvent *event) {
  * @param string
  */
 void DialogExecuteCommand::addHistoryItem(const QString &s) {
-	if(!s.isEmpty()) {
+	if (!s.isEmpty()) {
 		history_ << s;
 	}
 }

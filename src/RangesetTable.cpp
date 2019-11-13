@@ -1,30 +1,26 @@
 
 #include "RangesetTable.h"
 #include "TextBuffer.h"
+#include <array>
 #include <gsl/gsl_util>
 #include <string>
-#include <array>
 
 namespace {
 
 // --------------------------------------------------------------------------
 
 constexpr std::array<uint8_t, N_RANGESETS> rangeset_labels = {
-	{
-	58, 10, 15,  1, 27, 52, 14,  3, 61, 13, 31, 30, 45, 28, 41, 55,
-	33, 20, 62, 34, 42, 18, 57, 47, 24, 49, 19, 50, 25, 38, 40,  2,
-	21, 39, 59, 22, 60,  4,  6, 16, 29, 37, 48, 46, 54, 43, 32, 56,
-	51,  7,  9, 63,  5,  8, 36, 44, 26, 11, 23, 17, 53, 35, 12
-	}
-};
-
+	{58, 10, 15, 1, 27, 52, 14, 3, 61, 13, 31, 30, 45, 28, 41, 55,
+	 33, 20, 62, 34, 42, 18, 57, 47, 24, 49, 19, 50, 25, 38, 40, 2,
+	 21, 39, 59, 22, 60, 4, 6, 16, 29, 37, 48, 46, 54, 43, 32, 56,
+	 51, 7, 9, 63, 5, 8, 36, 44, 26, 11, 23, 17, 53, 35, 12}};
 
 // --------------------------------------------------------------------------
 
 void RangesetBufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
 	Q_UNUSED(nRestyled)
 
-	if(auto *table = static_cast<RangesetTable *>(user)) {
+	if (auto *table = static_cast<RangesetTable *>(user)) {
 		if ((nInserted != nDeleted) || table->buffer_->compare(pos, deletedText) != 0) {
 			table->updatePos(pos, nInserted, nDeleted);
 		}
@@ -37,7 +33,8 @@ void RangesetBufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, 
  * @brief RangesetTable::RangesetTable
  * @param buffer
  */
-RangesetTable::RangesetTable(TextBuffer *buffer) : buffer_(buffer) {
+RangesetTable::RangesetTable(TextBuffer *buffer)
+	: buffer_(buffer) {
 	/* Range sets must be updated before the text display callbacks are
 	   called to avoid highlighted ranges getting out of sync. */
 	buffer->BufAddHighPriorityModifyCB(RangesetBufModifiedCB, this);
@@ -50,7 +47,6 @@ RangesetTable::~RangesetTable() {
 	buffer_->BufRemoveModifyCB(RangesetBufModifiedCB, this);
 }
 
-
 /*
 ** Fetch the rangeset identified by label
 */
@@ -59,7 +55,7 @@ Rangeset *RangesetTable::RangesetFetch(int label) {
 		return set.label_ == label;
 	});
 
-	if(it == sets_.end()) {
+	if (it == sets_.end()) {
 		return nullptr;
 	}
 
@@ -74,7 +70,7 @@ void RangesetTable::forgetLabel(int label) {
 		return set.label_ == label;
 	});
 
-	if(it != sets_.end()) {
+	if (it != sets_.end()) {
 		sets_.erase(it);
 	}
 }
@@ -97,7 +93,7 @@ QString RangesetTable::getColorName(size_t index) const {
 */
 size_t RangesetTable::index1ofPos(TextCursor pos, bool needs_color) {
 
-	for(size_t i = 0; i < sets_.size(); ++i) {
+	for (size_t i = 0; i < sets_.size(); ++i) {
 		Rangeset &set = sets_[i];
 		if (set.RangesetCheckRangeOfPos(pos) >= 0) {
 			if (needs_color && set.color_set_ >= 0 && !set.color_name_.isNull()) {
@@ -141,7 +137,6 @@ int RangesetTable::rangesetsAvailable() const {
 	return static_cast<int>(N_RANGESETS - sets_.size());
 }
 
-
 std::vector<uint8_t> RangesetTable::labels() const {
 	std::vector<uint8_t> list;
 	list.reserve(sets_.size());
@@ -159,7 +154,7 @@ void RangesetTable::updatePos(TextCursor pos, int64_t ins, int64_t del) {
 		return;
 	}
 
-	for(Rangeset &set : sets_)  {
+	for (Rangeset &set : sets_) {
 		set.update_(&set, pos, ins, del);
 	}
 }
@@ -176,12 +171,12 @@ int RangesetTable::RangesetCreate() {
 		return std::find(list.begin(), list.end(), ch) == list.end();
 	});
 
-	if(it == rangeset_labels.end()) {
+	if (it == rangeset_labels.end()) {
 		return 0;
 	}
 
 	const size_t labelIndex = (it - rangeset_labels.begin());
-	const uint8_t label  = rangeset_labels[labelIndex];
+	const uint8_t label     = rangeset_labels[labelIndex];
 
 	sets_.insert(sets_.begin(), Rangeset(buffer_, label));
 	return label;

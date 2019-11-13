@@ -1,12 +1,12 @@
 
 #include "nedit.h"
-#include "Main.h"
 #include "DialogAbout.h"
+#include "Main.h"
 
-#include <QStringList>
 #include <QApplication>
-#include <QTranslator>
 #include <QLibraryInfo>
+#include <QStringList>
+#include <QTranslator>
 
 bool IsServer = false;
 
@@ -22,7 +22,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 
 #if defined(NDEBUG)
 	// filter out messages that come from Qt itself
-	if(!context.file && context.line == 0 && !context.function) {
+	if (!context.file && context.line == 0 && !context.function) {
 		return;
 	}
 #endif
@@ -90,8 +90,8 @@ int main(int argc, char *argv[]) {
 	// NOTE(eteran):for issue #38, grab -geometry <arg> before Qt consumes it!
 	QString geometry;
 	for (int i = 1; i < argc && strcmp(argv[i], "--"); i++) {
-		if(strcmp(argv[i], "-geometry") == 0) {
-			if(i++ < argc) {
+		if (strcmp(argv[i], "-geometry") == 0) {
+			if (i++ < argc) {
 				geometry = QString::fromLatin1(argv[i]);
 			}
 		}
@@ -102,7 +102,7 @@ int main(int argc, char *argv[]) {
 
 	// NOTE: for issue #41, translate QMessageBox.
 	QTranslator qtTranslator;
-	if (qtTranslator.load(QLocale(), QLatin1String("qtbase"),  QLatin1String("_"), QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
+	if (qtTranslator.load(QLocale(), QLatin1String("qtbase"), QLatin1String("_"), QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
 		app.installTranslator(&qtTranslator);
 	}
 
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]) {
 	// NOTE(eteran): for issue #38, re-add -geometry <arg> because Qt has
 	// removed it at this point
 	QStringList arguments = app.arguments();
-	if(!geometry.isNull()) {
+	if (!geometry.isNull()) {
 		arguments.insert(1, QLatin1String("-geometry"));
 		arguments.insert(2, geometry);
 	}

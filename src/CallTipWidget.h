@@ -2,8 +2,8 @@
 #ifndef CALLTIP_WIDGET_H_
 #define CALLTIP_WIDGET_H_
 
-#include <QWidget>
 #include "ui_CallTipWidget.h"
+#include <QWidget>
 
 class CallTipWidget final : public QWidget {
 	Q_OBJECT

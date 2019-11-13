@@ -9,7 +9,7 @@ class HighlightPatternModel final : public QAbstractItemModel {
 	Q_OBJECT
 
 public:
-	explicit HighlightPatternModel(QObject *parent = nullptr) ;
+	explicit HighlightPatternModel(QObject *parent = nullptr);
 	~HighlightPatternModel() override = default;
 
 public:

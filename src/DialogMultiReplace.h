@@ -13,7 +13,7 @@ class MainWindow;
 class DialogMultiReplace : public Dialog {
 	Q_OBJECT
 public:
-    explicit DialogMultiReplace(DialogReplace *replace, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogMultiReplace(DialogReplace *replace, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogMultiReplace() override = default;
 
 private:
@@ -30,7 +30,6 @@ public:
 	Ui::DialogMultiReplace ui;
 	DialogReplace *replace_;
 	DocumentModel *model_;
-
 };
 
 #endif

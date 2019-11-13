@@ -7,8 +7,8 @@
 
 #include <QColorDialog>
 #include <QMessageBox>
-#include <QPixmap>
 #include <QPainter>
+#include <QPixmap>
 #include <QTimer>
 
 namespace {
@@ -46,7 +46,8 @@ QIcon toIcon(const QColor &color) {
  * @param parent
  * @param f
  */
-DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, f) {
+DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f) {
 	ui.setupUi(this);
 
 	QTimer::singleShot(0, this, [this]() {
@@ -120,7 +121,7 @@ DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
 	});
 
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, [this](QAbstractButton *button) {
-		if(ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
+		if (ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 			updateColors();
 		}
 	});
@@ -138,7 +139,7 @@ DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f) : Dialog(parent, 
 QColor DialogColors::chooseColor(QPushButton *button, const QColor &currentColor) {
 
 	QColor color = QColorDialog::getColor(currentColor, this);
-	if(color.isValid()) {
+	if (color.isValid()) {
 		QPixmap pixmap(16, 16);
 		pixmap.fill(color);
 		button->setIcon(QIcon(pixmap));
@@ -155,21 +156,21 @@ QColor DialogColors::chooseColor(QPushButton *button, const QColor &currentColor
  */
 void DialogColors::updateColors() {
 
-	for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+	for (DocumentWidget *document : DocumentWidget::allDocuments()) {
 		document->setColors(
-		    textFG_,
-		    textBG_,
-		    selectionFG_,
-		    selectionBG_,
-		    matchFG_,
-		    matchBG_,
-		    lineNumbersFG_,
-		    lineNumbersBG_,
-		    cursorFG_);
+			textFG_,
+			textBG_,
+			selectionFG_,
+			selectionBG_,
+			matchFG_,
+			matchBG_,
+			lineNumbersFG_,
+			lineNumbersBG_,
+			cursorFG_);
 	}
 
-	Preferences::SetPrefColorName(TEXT_FG_COLOR,   toString(textFG_));
-	Preferences::SetPrefColorName(TEXT_BG_COLOR,   toString(textBG_));
+	Preferences::SetPrefColorName(TEXT_FG_COLOR, toString(textFG_));
+	Preferences::SetPrefColorName(TEXT_BG_COLOR, toString(textBG_));
 	Preferences::SetPrefColorName(SELECT_FG_COLOR, toString(selectionFG_));
 	Preferences::SetPrefColorName(SELECT_BG_COLOR, toString(selectionBG_));
 	Preferences::SetPrefColorName(HILITE_FG_COLOR, toString(matchFG_));

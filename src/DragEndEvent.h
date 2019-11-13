@@ -7,9 +7,9 @@
 #include <cstdint>
 
 struct DragEndEvent {
-	TextCursor        startPos;
-	int64_t           nCharsDeleted;
-	int64_t           nCharsInserted;
+	TextCursor startPos;
+	int64_t nCharsDeleted;
+	int64_t nCharsInserted;
 	view::string_view deletedText;
 };
 
