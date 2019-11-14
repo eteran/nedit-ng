@@ -278,13 +278,13 @@ void translatePrefFormats(uint32_t fileVer) {
 	   the standard resource manager routines */
 
 	if (!Settings::shellCommands.isNull()) {
-		LoadShellCmdsString(Settings::shellCommands);
+		load_shell_commands_string(Settings::shellCommands);
 	}
 	if (!Settings::macroCommands.isNull()) {
-		LoadMacroCmdsString(Settings::macroCommands);
+		load_macro_commands_string(Settings::macroCommands);
 	}
 	if (!Settings::bgMenuCommands.isNull()) {
-		LoadBGMenuCmdsString(Settings::bgMenuCommands);
+		load_bg_menu_commands_string(Settings::bgMenuCommands);
 	}
 	if (!Settings::highlightPatterns.isNull()) {
 		Highlight::LoadHighlightString(Settings::highlightPatterns);
@@ -317,7 +317,7 @@ void translatePrefFormats(uint32_t fileVer) {
 	/* setup language mode dependent info of user menus (to increase
 	   performance when switching between documents of different
 	   language modes) */
-	SetupUserMenuInfo();
+	setup_user_menu_info();
 }
 
 /**
@@ -426,9 +426,9 @@ void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 	}
 
 	Settings::fileVersion           = ConfigFileVersion;
-	Settings::shellCommands         = WriteShellCmdsString();
-	Settings::macroCommands         = WriteMacroCmdsString();
-	Settings::bgMenuCommands        = WriteBGMenuCmdsString();
+	Settings::shellCommands         = write_shell_commands_string();
+	Settings::macroCommands         = write_macro_commands_string();
+	Settings::bgMenuCommands        = write_bg_menu_commands_string();
 	Settings::highlightPatterns     = Highlight::WriteHighlightString();
 	Settings::languageModes         = WriteLanguageModesString();
 	Settings::smartIndentInit       = SmartIndent::writeSmartIndentString();

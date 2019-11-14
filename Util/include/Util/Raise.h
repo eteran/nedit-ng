@@ -6,7 +6,8 @@
 #include <utility>
 
 template <class E, class... Args>
-COLD_CODE NO_RETURN constexpr void Raise(Args &&... args) {
+[[noreturn]]
+COLD_CODE constexpr void Raise(Args &&... args) {
 	throw E{std::forward<Args>(args)...};
 }
 

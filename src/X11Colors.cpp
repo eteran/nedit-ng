@@ -793,7 +793,8 @@ const X11Color colors[] = {
 	{102, 51, 153, QLatin1String("rebecca purple")},
 	{102, 51, 153, QLatin1String("RebeccaPurple")},
 	{192, 192, 192, QLatin1String("silver")},
-	{0, 128, 128, QLatin1String("teal")}};
+	{0, 128, 128, QLatin1String("teal")},
+};
 
 }
 

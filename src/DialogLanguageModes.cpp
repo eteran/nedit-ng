@@ -459,7 +459,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 
 		/* Update user menu info to update language mode dependencies of
 		   user menu items */
-		UpdateUserMenuInfo();
+		update_user_menu_info();
 
 		// Update the menus in the window menu bars ...
 		for (MainWindow *win : MainWindow::allWindows()) {

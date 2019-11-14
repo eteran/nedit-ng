@@ -356,7 +356,7 @@ bool DialogMacros::applyDialogChanges() {
 
 	MacroMenuData = std::move(newItems);
 
-	parseMenuItemList(MacroMenuData);
+	parse_menu_item_list(MacroMenuData);
 
 	// Update the menus themselves in all of the NEdit windows
 	for (MainWindow *window : MainWindow::allWindows()) {

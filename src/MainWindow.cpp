@@ -1239,7 +1239,7 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 			if (subSep == -1) {
 				name = name.mid(index);
 
-				if (type != CommandTypes::SHELL_CMDS) {
+				if (type != CommandTypes::Shell) {
 					// create the actual action or, if it represents one of our
 					// *very* common entries make it equivalent to the global
 					// QAction representing that task
@@ -1309,7 +1309,7 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 void MainWindow::updateUserMenus(DocumentWidget *document) {
 
 	// update user menus, which are shared over all documents
-	auto shellMenu = createUserMenu(document, ShellMenuData, CommandTypes::SHELL_CMDS);
+	auto shellMenu = createUserMenu(document, ShellMenuData, CommandTypes::Shell);
 	ui.menu_Shell->clear();
 	ui.menu_Shell->addAction(ui.action_Execute_Command);
 	ui.menu_Shell->addAction(ui.action_Execute_Command_Line);
@@ -1323,7 +1323,7 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	addToGroup(shellGroup, shellMenu);
 	connect(shellGroup, &QActionGroup::triggered, this, &MainWindow::shellTriggered);
 
-	auto macroMenu = createUserMenu(document, MacroMenuData, CommandTypes::MACRO_CMDS);
+	auto macroMenu = createUserMenu(document, MacroMenuData, CommandTypes::Macro);
 	ui.menu_Macro->clear();
 	ui.menu_Macro->addAction(ui.action_Learn_Keystrokes);
 	ui.menu_Macro->addAction(ui.action_Finish_Learn);
@@ -1339,7 +1339,7 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	connect(macroGroup, &QActionGroup::triggered, this, &MainWindow::macroTriggered);
 
 	// update background menu, which is owned by a single document
-	document->contextMenu_ = createUserMenu(document, BGMenuData, CommandTypes::BG_MENU_CMDS);
+	document->contextMenu_ = createUserMenu(document, BGMenuData, CommandTypes::Context);
 
 	// handler for BG menu scripts
 	connect(document->contextMenu_, &QMenu::triggered, this, [this](QAction *action) {
@@ -7142,7 +7142,7 @@ void MainWindow::updateMenuItems() {
 */
 bool MainWindow::execNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source) {
 
-	if (MenuData *p = findMenuItem(name, CommandTypes::SHELL_CMDS)) {
+	if (MenuData *p = find_menu_item(name, CommandTypes::Shell)) {
 
 		if (p->item.output == TO_SAME_WINDOW && document->checkReadOnly()) {
 			return false;
@@ -7170,7 +7170,7 @@ bool MainWindow::execNamedMacroMenuCmd(DocumentWidget *document, TextArea *area,
 	Q_UNUSED(source)
 	Q_UNUSED(area)
 
-	if (MenuData *p = findMenuItem(name, CommandTypes::MACRO_CMDS)) {
+	if (MenuData *p = find_menu_item(name, CommandTypes::Macro)) {
 		document->doMacro(
 			p->item.cmd,
 			tr("macro menu command"));
@@ -7194,7 +7194,7 @@ bool MainWindow::execNamedBGMenuCmd(DocumentWidget *document, TextArea *area, co
 	Q_UNUSED(source)
 	Q_UNUSED(area)
 
-	if (MenuData *p = findMenuItem(name, CommandTypes::BG_MENU_CMDS)) {
+	if (MenuData *p = find_menu_item(name, CommandTypes::Context)) {
 		document->doMacro(
 			p->item.cmd,
 			tr("background menu macro"));

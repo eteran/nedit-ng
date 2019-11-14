@@ -350,7 +350,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
 	BGMenuData = std::move(newItems);
 
-	parseMenuItemList(BGMenuData);
+	parse_menu_item_list(BGMenuData);
 
 	// Update the menus themselves in all of the NEdit windows
 	for (MainWindow *window : MainWindow::allWindows()) {

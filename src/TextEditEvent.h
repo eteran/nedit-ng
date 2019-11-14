@@ -5,7 +5,6 @@
 #include "TextArea.h"
 #include <QEvent>
 #include <QString>
-#include <QStringList>
 
 class TextEditEvent : public QEvent {
 public:

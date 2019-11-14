@@ -121,7 +121,7 @@ QString writeMenuItemString(const std::vector<MenuData> &menuItems, CommandTypes
 		std::copy(accStr.begin(), accStr.end(), outPtr);
 		*outPtr++ = QLatin1Char(':');
 
-		if (listType == CommandTypes::SHELL_CMDS) {
+		if (listType == CommandTypes::Shell) {
 			switch (f.input) {
 			case FROM_SELECTION:
 				*outPtr++ = QLatin1Char('I');
@@ -175,7 +175,7 @@ QString writeMenuItemString(const std::vector<MenuData> &menuItems, CommandTypes
 				*outPtr++ = ch;
 		}
 
-		if (listType == CommandTypes::MACRO_CMDS || listType == CommandTypes::BG_MENU_CMDS) {
+		if (listType == CommandTypes::Macro || listType == CommandTypes::Context) {
 
 			if (outStr.endsWith(QLatin1Char('\t'))) {
 				outStr.chop(1);
@@ -240,7 +240,7 @@ bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 
 			for (; !in.atEnd() && *in != QLatin1Char(':'); ++in) {
 
-				if (listType == CommandTypes::SHELL_CMDS) {
+				if (listType == CommandTypes::Shell) {
 
 					switch ((*in).toLatin1()) {
 					case 'I':
@@ -285,7 +285,7 @@ bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 			QString cmdStr;
 
 			// read command field
-			if (listType == CommandTypes::SHELL_CMDS) {
+			if (listType == CommandTypes::Shell) {
 
 				if (*in++ != QLatin1Char('\n')) {
 					Raise<ParseError>("command must begin with newline");
@@ -439,18 +439,18 @@ std::unique_ptr<UserMenuInfo> parseMenuItemRec(const MenuItem &item) {
 
 static std::vector<MenuData> &selectMenu(CommandTypes type) {
 	switch (type) {
-	case CommandTypes::SHELL_CMDS:
+	case CommandTypes::Shell:
 		return ShellMenuData;
-	case CommandTypes::MACRO_CMDS:
+	case CommandTypes::Macro:
 		return MacroMenuData;
-	case CommandTypes::BG_MENU_CMDS:
+	case CommandTypes::Context:
 		return BGMenuData;
 	}
 
 	Q_UNREACHABLE();
 }
 
-MenuData *findMenuItem(const QString &name, CommandTypes type) {
+MenuData *find_menu_item(const QString &name, CommandTypes type) {
 
 	std::vector<MenuData> &menu = selectMenu(type);
 	auto it                     = std::find_if(menu.begin(), menu.end(), [&name](MenuData &entry) {
@@ -468,16 +468,16 @@ MenuData *findMenuItem(const QString &name, CommandTypes type) {
 ** Generate a text string for the preferences file describing the contents
 ** of the shell cmd list, macro menu and background menus.
 */
-QString WriteShellCmdsString() {
-	return writeMenuItemString(ShellMenuData, CommandTypes::SHELL_CMDS);
+QString write_shell_commands_string() {
+	return writeMenuItemString(ShellMenuData, CommandTypes::Shell);
 }
 
-QString WriteMacroCmdsString() {
-	return writeMenuItemString(MacroMenuData, CommandTypes::MACRO_CMDS);
+QString write_macro_commands_string() {
+	return writeMenuItemString(MacroMenuData, CommandTypes::Macro);
 }
 
-QString WriteBGMenuCmdsString() {
-	return writeMenuItemString(BGMenuData, CommandTypes::BG_MENU_CMDS);
+QString write_bg_menu_commands_string() {
+	return writeMenuItemString(BGMenuData, CommandTypes::Context);
 }
 
 /*
@@ -485,16 +485,16 @@ QString WriteBGMenuCmdsString() {
 ** background menu and add them to the internal list used for constructing
 ** menus
 */
-bool LoadShellCmdsString(const QString &inString) {
-	return loadMenuItemString(inString, ShellMenuData, CommandTypes::SHELL_CMDS);
+bool load_shell_commands_string(const QString &inString) {
+	return loadMenuItemString(inString, ShellMenuData, CommandTypes::Shell);
 }
 
-bool LoadMacroCmdsString(const QString &inString) {
-	return loadMenuItemString(inString, MacroMenuData, CommandTypes::MACRO_CMDS);
+bool load_macro_commands_string(const QString &inString) {
+	return loadMenuItemString(inString, MacroMenuData, CommandTypes::Macro);
 }
 
-bool LoadBGMenuCmdsString(const QString &inString) {
-	return loadMenuItemString(inString, BGMenuData, CommandTypes::BG_MENU_CMDS);
+bool load_bg_menu_commands_string(const QString &inString) {
+	return loadMenuItemString(inString, BGMenuData, CommandTypes::Context);
 }
 
 /*
@@ -503,10 +503,10 @@ bool LoadBGMenuCmdsString(const QString &inString) {
 ** string (reason: language mode info from preference string is read *after*
 ** user menu preference string was read).
 */
-void SetupUserMenuInfo() {
-	parseMenuItemList(ShellMenuData);
-	parseMenuItemList(MacroMenuData);
-	parseMenuItemList(BGMenuData);
+void setup_user_menu_info() {
+	parse_menu_item_list(ShellMenuData);
+	parse_menu_item_list(MacroMenuData);
+	parse_menu_item_list(BGMenuData);
 }
 
 /*
@@ -514,21 +514,21 @@ void SetupUserMenuInfo() {
 ** Update user menu info to take into account e.g. change of language modes
 ** (i.e. add / move / delete of language modes etc).
 */
-void UpdateUserMenuInfo() {
+void update_user_menu_info() {
 	for (auto &item : ShellMenuData) {
 		item.info = nullptr;
 	}
-	parseMenuItemList(ShellMenuData);
+	parse_menu_item_list(ShellMenuData);
 
 	for (auto &item : MacroMenuData) {
 		item.info = nullptr;
 	}
-	parseMenuItemList(MacroMenuData);
+	parse_menu_item_list(MacroMenuData);
 
 	for (auto &item : BGMenuData) {
 		item.info = nullptr;
 	}
-	parseMenuItemList(BGMenuData);
+	parse_menu_item_list(BGMenuData);
 }
 
 /*
@@ -537,7 +537,7 @@ void UpdateUserMenuInfo() {
 ** management of user menu.
 */
 
-void parseMenuItemList(std::vector<MenuData> &itemList) {
+void parse_menu_item_list(std::vector<MenuData> &itemList) {
 
 	/* 1st pass: setup user menu info: extract language modes, menu name &
 	   default indication; build user menu ID */
