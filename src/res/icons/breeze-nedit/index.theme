@@ -2,7 +2,10 @@
 Name=Breeze nedit-ng
 Comment=Breeze Icon Theme for nedit-ng
 Inherits=default
-Directories=16x16
+Directories=16x16,32x32
  
 [16x16]
 Size=16
+
+[32x32]
+Size=32

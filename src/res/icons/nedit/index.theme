@@ -2,7 +2,10 @@
 Name=nedit-ng Theme
 Comment=Icon Theme for nedit-ng
 Inherits=breeze-nedit
-Directories=16x16
+Directories=16x16,32x32
  
 [16x16]
 Size=16
+
+[32x32]
+Size=32

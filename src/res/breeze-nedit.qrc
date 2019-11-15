@@ -51,5 +51,6 @@
 		<file alias="16x16/go-up.svg">icons/breeze-nedit/16x16/go-up.svg</file>
 		<file alias="16x16/view-filter.svg">icons/breeze-nedit/16x16/view-filter.svg</file>
 		<file alias="16x16/document-close.svg">icons/breeze-nedit/16x16/document-close.svg</file>
+		<file alias="32x32/preferences-desktop-font.svg">icons/breeze-nedit/32x32/preferences-desktop-font.svg</file>
     </qresource>
 </RCC>
