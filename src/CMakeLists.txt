@@ -30,6 +30,8 @@ list(APPEND QRC_FILES ${TRANSLATIONS_QRC})
 
 qt5_add_resources(QRC_SOURCES
 	res/nedit-ng.qrc
+	res/breeze-nedit.qrc
+	res/breeze-dark-nedit.qrc
 	${TRANSLATIONS_QRC}
 )
 

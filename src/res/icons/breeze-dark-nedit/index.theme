@@ -1,0 +1,8 @@
+[Icon Theme]
+Name=Breeze Dark nedit-ng
+Comment=Breeze Dark Icon Theme for nedit-ng
+Inherits=breeze-nedit
+Directories=16x16
+ 
+[16x16]
+Size=16

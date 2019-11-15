@@ -39,13 +39,6 @@
         <file>DefaultSmartIndentInitCommon.txt</file>
         <file>DefaultMacroCommands.txt</file>
         <file>DefaultLanguageModes.txt</file>
-        <file>tab-close.svg</file>
-        <file>edit-find.svg</file>
-        <file>document-new.svg</file>
-        <file>edit-copy.svg</file>
-        <file>edit-delete.svg</file>
-        <file>go-down.svg</file>
-        <file>go-up.svg</file>
         <file>DefaultShellCommandsUnix.txt</file>
         <file>DefaultShellCommandsWindows.txt</file>
     </qresource>
