@@ -14,11 +14,11 @@ namespace CommonDialog {
  */
 template <class Ui>
 void setButtonIcons(Ui *ui) {
-	ui->buttonNew->setIcon(QIcon::fromTheme(QLatin1String("document-new"), QIcon(QLatin1String(":/document-new.svg"))));
-	ui->buttonDelete->setIcon(QIcon::fromTheme(QLatin1String("edit-delete"), QIcon(QLatin1String(":/edit-delete.svg"))));
-	ui->buttonCopy->setIcon(QIcon::fromTheme(QLatin1String("edit-copy"), QIcon(QLatin1String(":/edit-copy.svg"))));
-	ui->buttonUp->setIcon(QIcon::fromTheme(QLatin1String("go-up"), QIcon(QLatin1String(":/go-up.svg"))));
-	ui->buttonDown->setIcon(QIcon::fromTheme(QLatin1String("go-down"), QIcon(QLatin1String(":/go-down.svg"))));
+	ui->buttonNew->setIcon(QIcon::fromTheme(QLatin1String("document-new")));
+	ui->buttonDelete->setIcon(QIcon::fromTheme(QLatin1String("edit-delete")));
+	ui->buttonCopy->setIcon(QIcon::fromTheme(QLatin1String("edit-copy")));
+	ui->buttonUp->setIcon(QIcon::fromTheme(QLatin1String("go-up")));
+	ui->buttonDown->setIcon(QIcon::fromTheme(QLatin1String("go-down")));
 }
 
 /**

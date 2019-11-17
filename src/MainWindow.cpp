@@ -236,7 +236,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 	showLineNumbers_ = Preferences::GetPrefLineNums();
 
 	// make sure that the ifind button has an icon
-	ui.buttonIFind->setIcon(QIcon::fromTheme(tr("edit-find"), QIcon(QLatin1String(":/edit-find.svg"))));
+	ui.buttonIFind->setIcon(QIcon::fromTheme(tr("edit-find")));
 
 	// default to hiding the optional panels
 	ui.incrementalSearchFrame->setVisible(showISearchLine_);
@@ -342,7 +342,7 @@ void MainWindow::setupTabBar() {
 	// create and hook up the tab close button
 	auto deleteTabButton = new QToolButton(ui.tabWidget);
 	deleteTabButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
-	deleteTabButton->setIcon(QIcon::fromTheme(tr("tab-close"), QIcon(QLatin1String(":/tab-close.svg"))));
+	deleteTabButton->setIcon(QIcon::fromTheme(tr("tab-close")));
 	deleteTabButton->setAutoRaise(true);
 	deleteTabButton->setFocusPolicy(Qt::NoFocus);
 	deleteTabButton->setObjectName(tr("tab-close"));
