@@ -5,13 +5,21 @@
 #include "TextCursor.h"
 #include <boost/variant.hpp>
 
-enum class TipHAlignMode { Left,
-						   Center,
-						   Right };
-enum class TipVAlignMode { Above,
-						   Below };
-enum class TipAlignMode { Sloppy,
-						  Strict };
+enum class TipHAlignMode {
+	Left,
+	Center,
+	Right
+};
+
+enum class TipVAlignMode {
+	Above,
+	Below
+};
+
+enum class TipAlignMode {
+	Sloppy,
+	Strict
+};
 
 // a cursor if it's anchored, otherwise it's a relative x position
 using CallTipPosition = boost::variant<int, TextCursor>;
