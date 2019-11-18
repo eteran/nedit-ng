@@ -2981,9 +2981,11 @@ uint32_t TextArea::styleOfPos(TextCursor lineStartPos, int64_t lineLen, int64_t 
 	/* store in the BACKLIGHT_MASK portion of style the background color class
 	   of the character thisChar */
 	if (!bgClass_.empty()) {
-		style |= (bgClass_[static_cast<size_t>(thisChar)] << BACKLIGHT_SHIFT);
+		auto index = static_cast<size_t>(thisChar);
+		if (index < bgClass_.size()) {
+			style |= (bgClass_[index] << BACKLIGHT_SHIFT);
+		}
 	}
-
 	return style;
 }
 
@@ -3541,8 +3543,8 @@ void TextArea::setupBGClasses(const QString &str) {
 		return;
 	}
 
-	std::array<uint8_t, 256> bgClass;
-	std::array<QColor, 256> bgClassColors;
+	std::array<uint8_t, 256> bgClass      = {};
+	std::array<QColor, 256> bgClassColors = {};
 
 	// default for all chars is class number zero, for standard background
 	bgClassColors[0] = bgColorDefault;
