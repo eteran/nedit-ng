@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.0)
 
 option(NEDIT_BUILD_TESTS "Build Tests")
+option(NEDIT_INCLUDE_DECOMPILER "Build experimental regex decompiler code.")
 
-add_library(Regex 
+set(SOURCES
 	Common.h
 	Constants.h
 	Execute.cpp
@@ -16,8 +17,18 @@ add_library(Regex
 	RegexError.h
 	Substitute.cpp
 	Substitute.h
-    Decompile.cpp
-    Decompile.h
+)
+
+if(NEDIT_INCLUDE_DECOMPILER)
+	set(SOURCES
+		${SOURCES}
+		Decompile.cpp
+		Decompile.h
+	)
+endif()
+
+add_library(Regex 
+	${SOURCES}
 )
 
 target_include_directories(Regex PUBLIC

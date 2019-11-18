@@ -773,7 +773,7 @@ int main() {
 		return -1;
 	}
 
-#if 1
+#if defined(NEDIT_INCLUDE_DECOMPILER)
 	for (Test t : tests) {
 		try {
 			Regex re(t.input, REDFLT_STANDARD);
