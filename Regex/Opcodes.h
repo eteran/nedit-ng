@@ -96,9 +96,9 @@ enum Opcode : uint8_t {
 	OPEN = 49, // Open for capturing parentheses.
 
 	//  OPEN+1 is number 1, etc.
-	CLOSE = (OPEN + NSUBEXP), // Close for capturing parentheses.
+	CLOSE = (OPEN + MaxSubExpr), // Close for capturing parentheses.
 
-	LAST_PAREN = (CLOSE + NSUBEXP),
+	LAST_PAREN = (CLOSE + MaxSubExpr),
 };
 
 static_assert(LAST_PAREN <= UINT8_MAX, "Too many parentheses for storage in an uint8_t (LAST_PAREN too big.)");

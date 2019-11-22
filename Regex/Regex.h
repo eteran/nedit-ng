@@ -118,13 +118,13 @@ public:
 	static void SetDefaultWordDelimiters(view::string_view delimiters);
 
 public:
-	std::array<const char *, NSUBEXP> startp = {};      /* Captured text starting locations. */
-	std::array<const char *, NSUBEXP> endp   = {};      /* Captured text ending locations. */
-	const char *extentpBW                    = nullptr; /* Points to the maximum extent of text scanned by ExecRE in front of the string to achieve a match (needed because of positive look-behind.) */
-	const char *extentpFW                    = nullptr; /* Points to the maximum extent of text scanned by ExecRE to achieve a match (needed because of positive look-ahead.) */
-	size_t top_branch                        = 0;       /* Zero-based index of the top branch that matches. Used by syntax highlighting only. */
-	char match_start                         = '\0';    /* Internal use only. */
-	char anchor                              = '\0';    /* Internal use only. */
+	std::array<const char *, MaxSubExpr> startp = {};      /* Captured text starting locations. */
+	std::array<const char *, MaxSubExpr> endp   = {};      /* Captured text ending locations. */
+	const char *extentpBW                       = nullptr; /* Points to the maximum extent of text scanned by ExecRE in front of the string to achieve a match (needed because of positive look-behind.) */
+	const char *extentpFW                       = nullptr; /* Points to the maximum extent of text scanned by ExecRE to achieve a match (needed because of positive look-ahead.) */
+	size_t top_branch                           = 0;       /* Zero-based index of the top branch that matches. Used by syntax highlighting only. */
+	char match_start                            = '\0';    /* Internal use only. */
+	char anchor                                 = '\0';    /* Internal use only. */
 	std::vector<uint8_t> program;
 
 public:

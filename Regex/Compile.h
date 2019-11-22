@@ -22,7 +22,7 @@ struct ParseContext {
 	bool FirstPass;
 	bool Is_Case_Insensitive;
 	bool Match_Newline;
-	bool Enable_Counting_Quantifier = true;
+	static constexpr bool Enable_Counting_Quantifier = true;
 	char Brace_Char;
 };
 

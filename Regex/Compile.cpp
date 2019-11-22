@@ -1060,7 +1060,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 uint8_t *piece(int *flag_param, len_range &range_param) {
 
 	uint8_t *next;
-	uint32_t min_max[2] = {REG_ZERO, REG_INFINITY};
+	uint32_t min_max[2] = {0, REG_INFINITY};
 	int flags_local;
 	int i;
 	int brace_present    = 0;
@@ -1136,13 +1136,13 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 		   '{,0}', and '{0}' which really means nothing to humans but would be
 		   interpreted as '{0,infinity}' or '*' if we didn't make this check. */
 
-		if (digit_present[0] && (min_max[0] == REG_ZERO) && !comma_present) {
+		if (digit_present[0] && (min_max[0] == 0) && !comma_present) {
 
 			Raise<RegexError>("{0} is an invalid range");
-		} else if (digit_present[0] && (min_max[0] == REG_ZERO) && digit_present[1] && (min_max[1] == REG_ZERO)) {
+		} else if (digit_present[0] && (min_max[0] == 0) && digit_present[1] && (min_max[1] == 0)) {
 
 			Raise<RegexError>("{0,0} is an invalid range");
-		} else if (digit_present[1] && (min_max[1] == REG_ZERO)) {
+		} else if (digit_present[1] && (min_max[1] == 0)) {
 			if (digit_present[0]) {
 				Raise<RegexError>("{%lu,0} is an invalid range", min_max[0]);
 			} else {
@@ -1175,13 +1175,13 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 	// Avoid overhead of counting if possible
 
 	if (op_code == '{') {
-		if (min_max[0] == REG_ZERO && min_max[1] == REG_INFINITY) {
+		if (min_max[0] == 0 && min_max[1] == REG_INFINITY) {
 			op_code = '*';
-		} else if (min_max[0] == REG_ONE && min_max[1] == REG_INFINITY) {
+		} else if (min_max[0] == 1 && min_max[1] == REG_INFINITY) {
 			op_code = '+';
-		} else if (min_max[0] == REG_ZERO && min_max[1] == REG_ONE) {
+		} else if (min_max[0] == 0 && min_max[1] == 1) {
 			op_code = '?';
-		} else if (min_max[0] == REG_ONE && min_max[1] == REG_ONE) {
+		} else if (min_max[0] == 1 && min_max[1] == 1) {
 			/* "x{1,1}" is the same as "x".  No need to pollute the compiled
 				regex with such nonsense. */
 
@@ -1194,9 +1194,9 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 	}
 
 	if (op_code == '+')
-		min_max[0] = REG_ONE;
+		min_max[0] = 1;
 	if (op_code == '?')
-		min_max[1] = REG_ONE;
+		min_max[1] = 1;
 
 	/* It is dangerous to apply certain quantifiers to a possibly zero width
 	   item. */
@@ -1209,7 +1209,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 		}
 	}
 
-	*flag_param = (min_max[0] > REG_ZERO) ? (WORST | HAS_WIDTH) : WORST;
+	*flag_param = (min_max[0] > 0) ? (WORST | HAS_WIDTH) : WORST;
 	if (range_local.lower >= 0) {
 		if (min_max[1] != REG_INFINITY) {
 			range_param.lower = range_local.lower * min_max[0];
@@ -1365,7 +1365,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 		pContext.Num_Braces++;
 	} else if (op_code == '{' && lazy) {
-		if (min_max[0] == REG_ZERO && min_max[1] != REG_INFINITY) {
+		if (min_max[0] == 0 && min_max[1] != REG_INFINITY) {
 			/* Node structure for (x){0,n}? or {,n}? construct.
 			 *       _________3____________
 			 *    8_| _4__        1_  _2   \
@@ -1397,7 +1397,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			tail(ret_val, next); // 8
 
-		} else if (min_max[0] > REG_ZERO && min_max[1] == REG_INFINITY) {
+		} else if (min_max[0] > 0 && min_max[1] == REG_INFINITY) {
 			/* Node structure for (x){m,}? construct.
 			 *       ______8_________________
 			 *      |         _______3_____  \
@@ -1469,7 +1469,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 		pContext.Num_Braces++;
 	} else if (op_code == '{') {
-		if (min_max[0] == REG_ZERO && min_max[1] != REG_INFINITY) {
+		if (min_max[0] == 0 && min_max[1] != REG_INFINITY) {
 			/* Node structure for (x){0,n} or (x){,n} construct.
 			 *
 			 *       ___3____________
@@ -1498,7 +1498,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			tail(ret_val, next); // 7
 
-		} else if (min_max[0] > REG_ZERO && min_max[1] == REG_INFINITY) {
+		} else if (min_max[0] > 0 && min_max[1] == REG_INFINITY) {
 			/* Node structure for (x){m,} construct.
 			 *       __________4________
 			 *      |    __3__________  \
@@ -1671,8 +1671,8 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 	// Make an OPEN node, if parenthesized.
 
 	if (paren == PAREN) {
-		if (pContext.Total_Paren >= NSUBEXP) {
-			Raise<RegexError>("number of ()'s > %u", NSUBEXP);
+		if (pContext.Total_Paren >= MaxSubExpr) {
+			Raise<RegexError>("number of ()'s > %u", MaxSubExpr);
 		}
 
 		this_paren = pContext.Total_Paren;
@@ -1919,7 +1919,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 		pContext.Closed_Parens   = 0;
 		pContext.Paren_Has_Width = 0;
 
-		emit_byte(MAGIC);
+		emit_byte(Magic);
 		emit_byte('%'); // Placeholder for num of capturing parentheses.
 		emit_byte('%'); // Placeholder for num of general {m,n} constructs.
 

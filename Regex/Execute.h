@@ -25,8 +25,8 @@ struct ExecuteContext {
 	const char *End_Of_String;                   // Logical end of input
 	const char *Real_End_Of_String;              // Point that the string truly ends and we may not pass safely
 	const char *Look_Behind_To;                  // Position till were look behind can safely check back
-	array_iterator<NSUBEXP> Start_Ptr_Ptr;       // Pointer to 'startp' array.
-	array_iterator<NSUBEXP> End_Ptr_Ptr;         // Ditto for 'endp'.
+	array_iterator<MaxSubExpr> Start_Ptr_Ptr;    // Pointer to 'startp' array.
+	array_iterator<MaxSubExpr> End_Ptr_Ptr;      // Ditto for 'endp'.
 	const char *Extent_Ptr_FW;                   // Forward extent pointer
 	const char *Extent_Ptr_BW;                   // Backward extent pointer
 	std::array<const char *, 10> Back_Ref_Start; // Back_Ref_Start [0] and
