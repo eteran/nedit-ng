@@ -4182,6 +4182,10 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 		}
 
 		refreshTabState();
+
+		if (Preferences::GetPrefSortTabs()) {
+			targetWindow->sortTabBar();
+		}
 	}
 }
 
