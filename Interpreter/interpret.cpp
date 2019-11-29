@@ -58,8 +58,8 @@ Inst **LoopStackPtr = LoopStack;   //  to fill at the end of a loop
 // Global data for the interpreter
 MacroContext Context;
 
-const char *ErrMsg;  // global for returning error messages from executing functions
-bool PreemptRequest; // passes preemption requests from called routines back up to the interpreter
+const char *ErrorMessage; // global for returning error messages from executing functions
+bool PreemptRequest;      // passes preemption requests from called routines back up to the interpreter
 
 // Stack-> symN-sym0(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
 constexpr int FP_ARG_ARRAY_CACHE_INDEX = -1;
@@ -135,7 +135,7 @@ int execError(const std::error_code &error_code, T &&... args) {
 	std::string str = error_code.message();
 
 	qsnprintf(msg, sizeof(msg), str.c_str(), std::forward<T>(args)...);
-	ErrMsg = msg;
+	ErrorMessage = msg;
 	return STAT_ERROR;
 }
 
@@ -144,7 +144,7 @@ int execError(const char *s1, T &&... args) {
 	static char msg[MAX_ERR_MSG_LEN];
 
 	qsnprintf(msg, sizeof(msg), s1, std::forward<T>(args)...);
-	ErrMsg = msg;
+	ErrorMessage = msg;
 	return STAT_ERROR;
 }
 
@@ -561,7 +561,7 @@ ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation,
 	** until one returns something other than STAT_OK, then take action
 	*/
 	restoreContext(continuation);
-	ErrMsg = nullptr;
+	ErrorMessage = nullptr;
 	Q_FOREVER {
 
 		// Execute an instruction
@@ -576,7 +576,7 @@ ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation,
 			restoreContext(&oldContext);
 			return MACRO_PREEMPT;
 		case STAT_ERROR:
-			*msg = QString::fromLatin1(ErrMsg);
+			*msg = QString::fromLatin1(ErrorMessage);
 			restoreContext(&oldContext);
 			return MACRO_ERROR;
 		case STAT_DONE:
