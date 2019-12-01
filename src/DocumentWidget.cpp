@@ -5829,28 +5829,24 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
 	}
 
 	// Copy the buffer range into a string
-	std::string str            = buf->BufGetRange(beginSafety, endSafety);
-	const char *string         = &str[0];
-	const char *const match_to = string + str.size();
+	std::string str    = buf->BufGetRange(beginSafety, endSafety);
+	const char *string = &str[0];
 
-	std::string styleStr = styleBuf->BufGetRange(beginSafety, endSafety);
-	char *styleString    = &styleStr[0];
-	char *stylePtr       = &styleStr[0];
+	std::string styleStr    = styleBuf->BufGetRange(beginSafety, endSafety);
+	char *const styleString = &styleStr[0];
+	char *stylePtr          = &styleStr[0];
 
 	// Parse it with pass 2 patterns
 	int prevChar = Highlight::getPrevChar(buf, beginSafety);
 
 	Highlight::parseString(
 		&pass2Patterns[0],
-		string,
-		string + str.size(),
+		str,
 		string,
 		stylePtr,
 		endParse - beginSafety,
 		&prevChar,
-		documentDelimiters(),
-		string,
-		match_to);
+		documentDelimiters());
 
 	/* Update the style buffer the new style information, but only between
 	   beginParse and endParse.  Skip the safety region */
@@ -5894,35 +5890,26 @@ void DocumentWidget::startHighlighting(Verbosity verbosity) {
 
 	/* Parse the buffer with pass 1 patterns.  If there are none, initialize
 	   the style buffer to all UNFINISHED_STYLE to trigger parsing later */
-	if (!highlightData->pass1Patterns) {
-		std::string style_buffer(static_cast<size_t>(bufLength), UNFINISHED_STYLE);
-		highlightData->styleBuffer->BufSetAll(style_buffer);
-	} else {
-
-		std::vector<char> styleString(static_cast<size_t>(bufLength) + 1);
-		char *const styleBegin = &styleString[0];
-		char *stylePtr         = styleBegin;
+	std::string style_buffer(static_cast<size_t>(bufLength), UNFINISHED_STYLE);
+	if (highlightData->pass1Patterns) {
+		char *stylePtr = &style_buffer[0];
 
 		int prevChar = -1;
 
-		view::string_view bufString = info_->buffer->BufAsString();
-		const char *stringPtr       = bufString.data();
-		const char *const match_to  = bufString.data() + bufString.size();
+		view::string_view text = info_->buffer->BufAsString();
+		const char *stringPtr  = text.data();
 
 		Highlight::parseString(
 			&highlightData->pass1Patterns[0],
-			bufString.data(),
-			bufString.data() + bufString.size(),
+			text,
 			stringPtr,
 			stylePtr,
 			bufLength,
 			&prevChar,
-			documentDelimiters(),
-			stringPtr,
-			match_to);
-
-		highlightData->styleBuffer->BufSetAll(view::string_view(styleBegin, static_cast<size_t>(stylePtr - styleBegin)));
+			documentDelimiters());
 	}
+
+	highlightData->styleBuffer->BufSetAll(style_buffer);
 
 	// install highlight pattern data in the window data structure
 	highlightData_ = std::move(highlightData);

@@ -176,7 +176,7 @@ void recolorSubexpr(const std::unique_ptr<Regex> &re, size_t subexpr, uint8_t st
 ** have the same meaning as in parseString, except that string pointers are
 ** not updated.
 */
-void passTwoParseString(const HighlightData *pattern, const char *first, const char *last, const char *string, char *styleString, int64_t length, int *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_to) {
+void passTwoParseString(const HighlightData *pattern, view::string_view text, const char *string, char *styleString, int64_t length, int *prevChar, const QString &delimiters, const char *lookBehindTo, const char *match_to) {
 
 	bool inParseRegion = false;
 	char *stylePtr;
@@ -206,8 +206,7 @@ void passTwoParseString(const HighlightData *pattern, const char *first, const c
 
 			parseString(
 				pattern,
-				first,
-				last,
+				text,
 				stringPtr,
 				stylePtr,
 				std::min<int64_t>(parseEnd - parseStart, length - (parseStart - string)),
@@ -360,15 +359,12 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 
 	parseString(
 		&pass1Patterns[0],
-		string,
-		string + str.size(),
+		str,
 		stringPtr,
 		stylePtr,
 		endParse - beginParse,
 		&prevChar,
-		delimiters,
-		string,
-		match_to);
+		delimiters);
 
 	// On non top-level patterns, parsing can end early
 	endParse = std::min(endParse, stringPtr - string + beginSafety);
@@ -411,8 +407,7 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 		if (endPass2Safety == endSafety) {
 			passTwoParseString(
 				&pass2Patterns[0],
-				string,
-				string + str.size(),
+				str,
 				string,
 				styleString,
 				endParse - beginSafety,
@@ -424,8 +419,7 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 		} else {
 			passTwoParseString(
 				&pass2Patterns[0],
-				string,
-				string + str.size(),
+				str,
 				string,
 				styleString,
 				modStart - beginSafety,
@@ -444,8 +438,7 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 			prevChar = getPrevChar(buf, beginSafety);
 			passTwoParseString(
 				&pass2Patterns[0],
-				string,
-				string + str.size(),
+				str,
 				string,
 				styleString,
 				endParse - beginSafety,
@@ -459,8 +452,7 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 			prevChar = getPrevChar(buf, startPass2Safety);
 			passTwoParseString(
 				&pass2Patterns[0],
-				string,
-				string + str.size(),
+				str,
 				&string[startPass2Safety - beginSafety],
 				&styleString[startPass2Safety - beginSafety],
 				endParse - startPass2Safety,
@@ -1046,11 +1038,16 @@ void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted
 ** the error pattern matched, if the end of the string was reached without
 ** matching the end expression, or in the unlikely event of an internal error.
 */
-bool parseString(const HighlightData *pattern, const char *first, const char *last, const char *&string, char *&styleString, int64_t length, int *prevChar, const QString &delimiters, const char *look_behind_to, const char *match_to) {
+bool parseString(const HighlightData *pattern, view::string_view text, const char *&string, char *&styleString, int64_t length, int *prevChar, const QString &delimiters) {
+	const char *look_behind_to = text.begin();
+	const char *match_to       = text.end();
+	return parseString(pattern, text, string, styleString, length, prevChar, delimiters, look_behind_to, match_to);
+}
+
+bool parseString(const HighlightData *pattern, view::string_view text, const char *&string, char *&styleString, int64_t length, int *prevChar, const QString &delimiters, const char *look_behind_to, const char *match_to) {
 
 	bool subExecuted;
-	const int succChar = (match_to && (match_to != last)) ? (*match_to) : -1;
-	HighlightData *subSubPat;
+	const int succChar = (match_to && (match_to != text.end())) ? (*match_to) : -1;
 
 	if (length <= 0) {
 		return false;
@@ -1073,7 +1070,7 @@ bool parseString(const HighlightData *pattern, const char *first, const char *la
 		delimitersPtr,
 		look_behind_to,
 		match_to,
-		last)) {
+		text.end())) {
 
 		/* Beware of the case where only one real branch exists, but that
 		   branch has sub-branches itself. In that case the top_branch refers
@@ -1111,7 +1108,7 @@ bool parseString(const HighlightData *pattern, const char *first, const char *la
 									delimitersPtr,
 									look_behind_to,
 									match_to,
-									last)) {
+									text.end())) {
 								qCritical("NEdit: Internal error, failed to recover end match in parseString");
 								return false;
 							}
@@ -1186,8 +1183,7 @@ bool parseString(const HighlightData *pattern, const char *first, const char *la
 			// Parse to the end of the subPattern
 			parseString(
 				subPat,
-				first,
-				last,
+				text,
 				stringPtr,
 				stylePtr,
 				length - (stringPtr - string),
@@ -1206,8 +1202,7 @@ bool parseString(const HighlightData *pattern, const char *first, const char *la
 			// Parse to the end of the subPattern
 			parseString(
 				subPat,
-				first,
-				last,
+				text,
 				stringPtr,
 				stylePtr,
 				subPatternRE->endp[0] - stringPtr,
@@ -1221,7 +1216,7 @@ bool parseString(const HighlightData *pattern, const char *first, const char *la
 		   based on the coloring sub-expression references */
 		subExecuted = false;
 		for (i = 0; i < subPat->nSubPatterns; i++) {
-			subSubPat = subPat->subPatterns[i];
+			HighlightData *subSubPat = subPat->subPatterns[i];
 			if (subSubPat->colorOnly) {
 				if (!subExecuted) {
 					if (!subPat->startRE->ExecRE(
@@ -1233,7 +1228,7 @@ bool parseString(const HighlightData *pattern, const char *first, const char *la
 							delimitersPtr,
 							look_behind_to,
 							match_to,
-							last)) {
+							text.end())) {
 						qCritical("NEdit: Internal error, failed to recover start match in parseString");
 						return false;
 					}
