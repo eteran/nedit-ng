@@ -3127,6 +3127,10 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 	 * rendering to here. This is because this code actually clears the
 	 * background behind the rendered text */
 
+	// TODO(eteran): Idea, use one of the free bits in the style buffer to notate
+	// a location as "has cursor", this will allow us to move the rendering
+	// of the cursor to this function, giving us generally a bit more flexibility.
+
 	painter->setPen(fground);
 	painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, s);
 	painter->restore();
