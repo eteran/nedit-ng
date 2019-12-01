@@ -374,7 +374,7 @@ constexpr InputHandler inputHandlers[] = {
 	{Qt::Key_Left, Qt::AltModifier | Qt::ShiftModifier, &TextArea::keySelectAP, TextArea::LeftFlag | TextArea::RectFlag},                                 // key-select(left, rect)
 	{Qt::Key_Left, Qt::MetaModifier | Qt::ShiftModifier, &TextArea::keySelectAP, TextArea::LeftFlag | TextArea::RectFlag},                                // key-select(left, rect)
 	{Qt::Key_Left, Qt::ControlModifier | Qt::ShiftModifier, &TextArea::backwardWordAP, TextArea::ExtendFlag},                                             // backward-word(extend)
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS)
 	{Qt::Key_Up, Qt::AltModifier | Qt::ShiftModifier | Qt::KeypadModifier, &TextArea::processShiftUpAP, TextArea::RectFlag},                                                   // process-shift-up(rect)
 	{Qt::Key_Up, Qt::MetaModifier | Qt::ShiftModifier | Qt::KeypadModifier, &TextArea::processShiftUpAP, TextArea::RectFlag},                                                  // process-shift-up(rect)
 	{Qt::Key_Down, Qt::AltModifier | Qt::ShiftModifier | Qt::KeypadModifier, &TextArea::processShiftDownAP, TextArea::RectFlag},                                               // process-shift-down(rect)
@@ -425,11 +425,11 @@ constexpr InputHandler inputHandlers[] = {
 	{Qt::Key_Left, Qt::NoModifier, &TextArea::backwardCharacter, TextArea::NoneFlag},                                                                    // backward-character()
 	{Qt::Key_Up, Qt::NoModifier, &TextArea::processUp, TextArea::NoneFlag},                                                                              // process-up()
 	{Qt::Key_Down, Qt::NoModifier, &TextArea::processDown, TextArea::NoneFlag},                                                                          // process-down()
-#ifdef Q_OS_MACOS
-	{Qt::Key_Right, Qt::KeypadModifier, &TextArea::forwardCharacterAP, TextArea::NoneFlag}, // forward-character()
-	{Qt::Key_Left, Qt::KeypadModifier, &TextArea::backwardCharacterAP, TextArea::NoneFlag}, // backward-character()
-	{Qt::Key_Up, Qt::KeypadModifier, &TextArea::processUpAP, TextArea::NoneFlag},           // process-up()
-	{Qt::Key_Down, Qt::KeypadModifier, &TextArea::processDownAP, TextArea::NoneFlag},       // process-down()
+#if defined(Q_OS_MACOS)
+	{Qt::Key_Right, Qt::KeypadModifier, &TextArea::forwardCharacter, TextArea::NoneFlag}, // forward-character()
+	{Qt::Key_Left, Qt::KeypadModifier, &TextArea::backwardCharacter, TextArea::NoneFlag}, // backward-character()
+	{Qt::Key_Up, Qt::KeypadModifier, &TextArea::processUp, TextArea::NoneFlag},           // process-up()
+	{Qt::Key_Down, Qt::KeypadModifier, &TextArea::processDown, TextArea::NoneFlag},       // process-down()
 #endif
 	{Qt::Key_Return, Qt::NoModifier, &TextArea::newline, TextArea::NoneFlag},                                        // newline()
 	{Qt::Key_Enter, Qt::KeypadModifier, &TextArea::newline, TextArea::NoneFlag},                                     // newline()
@@ -450,7 +450,7 @@ constexpr InputHandler inputHandlers[] = {
 	{Qt::Key_Down, Qt::ShiftModifier, &TextArea::processShiftDownAP, TextArea::NoneFlag},                            // process-shift-down()
 	{Qt::Key_Left, Qt::ShiftModifier, &TextArea::keySelectAP, TextArea::LeftFlag},                                   // key-select(left)
 	{Qt::Key_Right, Qt::ShiftModifier, &TextArea::keySelectAP, TextArea::RightFlag},                                 // key-select(right)
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS)
 	{Qt::Key_Up, Qt::ShiftModifier | Qt::KeypadModifier, &TextArea::processShiftUpAP, TextArea::NoneFlag},     // process-shift-up()
 	{Qt::Key_Down, Qt::ShiftModifier | Qt::KeypadModifier, &TextArea::processShiftDownAP, TextArea::NoneFlag}, // process-shift-down()
 	{Qt::Key_Left, Qt::ShiftModifier | Qt::KeypadModifier, &TextArea::keySelectAP, TextArea::LeftFlag},        // key-select(left)
@@ -466,7 +466,7 @@ constexpr InputHandler inputHandlers[] = {
 	{Qt::Key_Right, Qt::ControlModifier, &TextArea::forwardWordAP, TextArea::NoneFlag},                      // forward-word()
 	{Qt::Key_Up, Qt::ControlModifier, &TextArea::backwardParagraphAP, TextArea::NoneFlag},                   // backward-paragraph()
 	{Qt::Key_Down, Qt::ControlModifier, &TextArea::forwardParagraphAP, TextArea::NoneFlag},                  // forward-paragraph()
-#ifdef Q_OS_MACOS
+#if defined(Q_OS_MACOS)
 	{Qt::Key_Left, Qt::ControlModifier | Qt::KeypadModifier, &TextArea::backwardWordAP, TextArea::NoneFlag},     // backward-word()
 	{Qt::Key_Right, Qt::ControlModifier | Qt::KeypadModifier, &TextArea::forwardWordAP, TextArea::NoneFlag},     // forward-word()
 	{Qt::Key_Up, Qt::ControlModifier | Qt::KeypadModifier, &TextArea::backwardParagraphAP, TextArea::NoneFlag},  // backward-paragraph()
