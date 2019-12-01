@@ -251,86 +251,83 @@ Main::Main(const QStringList &args) {
 			exit(EXIT_FAILURE);
 		} else {
 
-			const boost::optional<PathInfo> fi = parseFilename(args[i]);
-			if (fi) {
-				/* determine if file is to be openned in new tab, by
-				   factoring the options -group, -tabbed & -untabbed */
-				switch (group) {
-				case 2:
-					isTabbed = 0; // start a new window for new group
-					group    = 1; // next file will be within group
-					break;
-				case 1:
-					isTabbed = 1; // new tab for file in group
-					break;
-				default: // not in group
-					isTabbed = (tabbed == -1) ? Preferences::GetPrefOpenInTab() : tabbed;
-				}
+			const PathInfo fi = parseFilename(args[i]);
 
-				/* Files are opened in background to improve opening speed
-				   by defering certain time  consuiming task such as syntax
-				   highlighting. At the end of the file-opening loop, the
-				   last file opened will be raised to restore those deferred
-				   items. The current file may also be raised if there're
-				   macros to execute on. */
-
-				QPointer<DocumentWidget> document;
-
-				if (MainWindow *window = MainWindow::firstWindow()) {
-					document = DocumentWidget::editExistingFile(
-						window->currentDocument(),
-						fi->filename,
-						fi->pathname,
-						editFlags,
-						geometry,
-						iconic,
-						langMode,
-						isTabbed,
-						/*bgOpen=*/true);
-				} else {
-					document = DocumentWidget::editExistingFile(
-						nullptr,
-						fi->filename,
-						fi->pathname,
-						editFlags,
-						geometry,
-						iconic,
-						langMode,
-						isTabbed,
-						/*bgOpen=*/true);
-				}
-
-				fileSpecified = true;
-
-				if (document) {
-
-					// raise the last tab of previous window
-					if (lastFile && MainWindow::fromDocument(lastFile) != MainWindow::fromDocument(document)) {
-						lastFile->raiseDocument();
-					}
-
-					if (!macroFileReadEx) {
-						document->readMacroInitFile();
-						macroFileReadEx = true;
-					}
-					if (gotoLine) {
-						document->selectNumberedLine(document->firstPane(), lineNum);
-					}
-
-					if (!toDoCommand.isNull()) {
-						document->doMacro(toDoCommand, QLatin1String("-do macro"));
-						toDoCommand = QString();
-					}
-				}
-
-				// register last opened file for later use
-				if (document) {
-					lastFile = document;
-				}
-
-			} else {
-				fprintf(stderr, "nedit: file name too long: %s\n", qPrintable(args[i]));
+			/* determine if file is to be openned in new tab, by
+			   factoring the options -group, -tabbed & -untabbed */
+			switch (group) {
+			case 2:
+				isTabbed = 0; // start a new window for new group
+				group    = 1; // next file will be within group
+				break;
+			case 1:
+				isTabbed = 1; // new tab for file in group
+				break;
+			default: // not in group
+				isTabbed = (tabbed == -1) ? Preferences::GetPrefOpenInTab() : tabbed;
 			}
+
+			/* Files are opened in background to improve opening speed
+			   by defering certain time  consuiming task such as syntax
+			   highlighting. At the end of the file-opening loop, the
+			   last file opened will be raised to restore those deferred
+			   items. The current file may also be raised if there're
+			   macros to execute on. */
+
+			QPointer<DocumentWidget> document;
+
+			if (MainWindow *window = MainWindow::firstWindow()) {
+				document = DocumentWidget::editExistingFile(
+					window->currentDocument(),
+					fi.filename,
+					fi.pathname,
+					editFlags,
+					geometry,
+					iconic,
+					langMode,
+					isTabbed,
+					/*bgOpen=*/true);
+			} else {
+				document = DocumentWidget::editExistingFile(
+					nullptr,
+					fi.filename,
+					fi.pathname,
+					editFlags,
+					geometry,
+					iconic,
+					langMode,
+					isTabbed,
+					/*bgOpen=*/true);
+			}
+
+			fileSpecified = true;
+
+			if (document) {
+
+				// raise the last tab of previous window
+				if (lastFile && MainWindow::fromDocument(lastFile) != MainWindow::fromDocument(document)) {
+					lastFile->raiseDocument();
+				}
+
+				if (!macroFileReadEx) {
+					document->readMacroInitFile();
+					macroFileReadEx = true;
+				}
+				if (gotoLine) {
+					document->selectNumberedLine(document->firstPane(), lineNum);
+				}
+
+				if (!toDoCommand.isNull()) {
+					document->doMacro(toDoCommand, QLatin1String("-do macro"));
+					toDoCommand = QString();
+				}
+			}
+
+			// register last opened file for later use
+			if (document) {
+				lastFile = document;
+			}
+
 
 			// -line/+n does only affect the file following this switch
 			gotoLine = false;

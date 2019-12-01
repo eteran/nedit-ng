@@ -1585,6 +1585,10 @@ void MainWindow::on_action_Redo_triggered() {
 	}
 }
 
+DocumentWidget *MainWindow::findWindowWithFile(const PathInfo &path) {
+	return findWindowWithFile(path.filename, path.pathname);
+}
+
 /*
 ** Check if there is already a window open for a given file
 */
@@ -2106,22 +2110,17 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 	// OK, we've got some things to try to open, let's go for it!
 	for (const QFileInfo &file : fileList) {
 
-		const boost::optional<PathInfo> fi = parseFilename(file.absoluteFilePath());
-		if (!fi) {
-			QApplication::beep();
-			break;
-		} else {
-			DocumentWidget::editExistingFile(
-				openInTab ? document : nullptr,
-				fi->filename,
-				fi->pathname,
-				0,
-				QString(),
-				/*iconic*/ false,
-				QString(),
-				openInTab,
-				/*bgOpen=*/false);
-		}
+		const PathInfo fi = parseFilename(file.absoluteFilePath());
+		DocumentWidget::editExistingFile(
+			openInTab ? document : nullptr,
+			fi.filename,
+			fi.pathname,
+			0,
+			QString(),
+			/*iconic*/ false,
+			QString(),
+			openInTab,
+			/*bgOpen=*/false);
 	}
 
 	MainWindow::checkCloseEnableState();

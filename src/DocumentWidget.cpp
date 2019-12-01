@@ -2544,13 +2544,10 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 		addWrapNewlines();
 	}
 
-	const boost::optional<PathInfo> fi = parseFilename(fullname);
-	if (!fi) {
-		return false;
-	}
+	const PathInfo fi = parseFilename(fullname);
 
 	// If the requested file is this file, just save it and return
-	if (info_->filename == fi->filename && info_->path == fi->pathname) {
+	if (info_->filename == fi.filename && info_->path == fi.pathname) {
 		if (writeBckVersion()) {
 			return false;
 		}
@@ -2559,12 +2556,12 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 	}
 
 	// If the file is open in another window, make user close it.
-	if (DocumentWidget *otherWindow = MainWindow::findWindowWithFile(fi->filename, fi->pathname)) {
+	if (DocumentWidget *otherWindow = MainWindow::findWindowWithFile(fi)) {
 
 		QMessageBox messageBox(this);
 		messageBox.setWindowTitle(tr("File open"));
 		messageBox.setIcon(QMessageBox::Warning);
-		messageBox.setText(tr("%1 is open in another NEdit window").arg(fi->filename));
+		messageBox.setText(tr("%1 is open in another NEdit window").arg(fi.filename));
 		QPushButton *buttonCloseOther = messageBox.addButton(tr("Close Other Window"), QMessageBox::AcceptRole);
 		QPushButton *buttonCancel     = messageBox.addButton(QMessageBox::Cancel);
 		Q_UNUSED(buttonCloseOther)
@@ -2578,7 +2575,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 		 * after doing the dialog, check again whether the window still
 		 * exists in case the user somehow closed the window
 		 */
-		if (otherWindow == MainWindow::findWindowWithFile(fi->filename, fi->pathname)) {
+		if (otherWindow == MainWindow::findWindowWithFile(fi)) {
 			if (!otherWindow->closeFileAndWindow(CloseMode::Prompt)) {
 				return false;
 			}
@@ -2587,8 +2584,8 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 
 	// Change the name of the file and save it under the new name
 	removeBackupFile();
-	setPath(fi->pathname);
-	info_->filename = fi->filename;
+	setPath(fi.pathname);
+	info_->filename = fi.filename;
 	info_->mode     = 0;
 	info_->uid      = 0;
 	info_->gid      = 0;
@@ -2994,16 +2991,11 @@ DocumentWidget *DocumentWidget::fromArea(TextArea *area) {
  */
 DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 
-	const boost::optional<PathInfo> fi = parseFilename(fullpath);
-	if (!fi) {
-		qWarning("NEdit: invalid file name for open action: %s", qPrintable(fullpath));
-		return nullptr;
-	}
-
+	const PathInfo fi = parseFilename(fullpath);
 	DocumentWidget *document = DocumentWidget::editExistingFile(
 		this,
-		fi->filename,
-		fi->pathname,
+		fi.filename,
+		fi.pathname,
 		0,
 		QString(),
 		/*iconic=*/false,
@@ -6950,8 +6942,6 @@ LockReasons DocumentWidget::lockReasons() const {
 		the correct one. */
 int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 
-	PathInfo fi;
-
 	int i;
 	int pathMatch = 0;
 	int samePath  = 0;
@@ -6994,8 +6984,7 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 		Tags::tagSearch[nMatches] = searchString;
 		Tags::tagPosInf[nMatches] = startPos;
 
-		// NOTE(eteran): no error checking...
-		parseFilename(Tags::tagFiles[nMatches], &fi);
+		PathInfo fi = parseFilename(Tags::tagFiles[nMatches]);
 
 		// Is this match in the current file?  If so, use it!
 		if (Preferences::GetPrefSmartTags() && info_->filename == fi.filename && info_->path == fi.pathname) {
@@ -7053,8 +7042,7 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 
 			QString temp;
 
-			// NOTE(eteran): no error checking...
-			parseFilename(Tags::tagFiles[i], &fi);
+			PathInfo fi = parseFilename(Tags::tagFiles[i]);
 
 			if ((i < nMatches - 1 && (Tags::tagFiles[i] == Tags::tagFiles[i + 1])) || (i > 0 && (Tags::tagFiles[i] == Tags::tagFiles[i - 1]))) {
 
@@ -7145,14 +7133,13 @@ int DocumentWidget::showTipString(const QString &text, bool anchored, int pos, b
 	tagFiles[i], tagSearch[i], tagPosInf[i] */
 void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 
-	const boost::optional<PathInfo> fi = parseFilename(Tags::tagFiles[i]);
-	Q_ASSERT(fi);
+	const PathInfo fi = parseFilename(Tags::tagFiles[i]);
 
 	// open the file containing the definition
 	DocumentWidget::editExistingFile(
 		this,
-		fi->filename,
-		fi->pathname,
+		fi.filename,
+		fi.pathname,
 		0,
 		QString(),
 		/*iconic=*/false,
@@ -7160,7 +7147,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 		Preferences::GetPrefOpenInTab(),
 		/*bgOpen=*/false);
 
-	DocumentWidget *documentToSearch = MainWindow::findWindowWithFile(fi->filename, fi->pathname);
+	DocumentWidget *documentToSearch = MainWindow::findWindowWithFile(fi);
 	if (!documentToSearch) {
 		QMessageBox::warning(
 			this,

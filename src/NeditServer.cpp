@@ -339,13 +339,9 @@ void NeditServer::newConnection() {
 			EditFlags::CREATE |
 			(createFlag ? EditFlags::SUPPRESS_CREATE_WARN : 0);
 
-		const boost::optional<PathInfo> fi = parseFilename(fullname);
-		if (!fi) {
-			qWarning("NEdit: invalid file name");
-			break;
-		}
+		const PathInfo fi = parseFilename(fullname);
 
-		DocumentWidget *document = MainWindow::findWindowWithFile(fi->filename, fi->pathname);
+		DocumentWidget *document = MainWindow::findWindowWithFile(fi);
 		if (!document) {
 			/* Files are opened in background to improve opening speed
 			   by defering certain time  consuiming task such as syntax
@@ -356,8 +352,8 @@ void NeditServer::newConnection() {
 
 			document = DocumentWidget::editExistingFile(
 				findDocumentOnDesktop(tabbed, currentDesktop),
-				fi->filename,
-				fi->pathname,
+				fi.filename,
+				fi.pathname,
 				editFlags,
 				geometry,
 				iconicFlag,

@@ -263,13 +263,8 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 		} else {
 
 			// this just essentially checks that the path is sane
-			const boost::optional<PathInfo> fi = parseFilename(args[i]);
-			if (!fi) {
-				// An Error, most likely too long paths/strings given
-				return boost::none;
-			}
-
-			const QString path = fi->pathname + fi->filename;
+			const PathInfo fi = parseFilename(args[i]);
+			const QString path = fi.pathname + fi.filename;
 
 			int isTabbed;
 

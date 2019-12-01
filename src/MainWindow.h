@@ -26,6 +26,7 @@
 #include "ui_MainWindow.h"
 
 class TextArea;
+class PathInfo;
 class DocumentWidget;
 class DialogReplace;
 class DialogFind;
@@ -128,6 +129,7 @@ public:
 	static DocumentWidget *editNewFile(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode);
 	static DocumentWidget *editNewFile(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode, const QDir &defaultPath);
 	static DocumentWidget *findWindowWithFile(const QString &filename, const QString &path);
+	static DocumentWidget *findWindowWithFile(const PathInfo &path);
 	static QString promptForNewFile(DocumentWidget *document, FileFormats *format, bool *addWrap);
 	static MainWindow *firstWindow();
 	static MainWindow *fromDocument(const DocumentWidget *document);

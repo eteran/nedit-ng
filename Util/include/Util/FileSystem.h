@@ -19,8 +19,7 @@ FileFormats FormatOfFile(view::string_view text);
 QString GetTrailingPathComponents(const QString &path, int components);
 QString NormalizePathname(const QString &pathname);
 QString ReadAnyTextFile(const QString &fileName, bool forceNL);
-bool parseFilename(const QString &fullname, PathInfo *fileInfo);
-boost::optional<PathInfo> parseFilename(const QString &fullname);
+PathInfo parseFilename(const QString &fullname);
 
 // std::string based convesions
 void ConvertToMac(std::string &text);
