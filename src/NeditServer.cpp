@@ -111,7 +111,7 @@ long QueryDesktop(Display *display, Window window) {
  * @return
  */
 bool isLocatedOnDesktop(QWidget *widget, long currentDesktop) {
-#ifdef QT_X11
+#if defined(QT_X11)
 	if (currentDesktop == -1) {
 		return true; /* No desktop information available */
 	}
@@ -169,6 +169,19 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
 	return nullptr;
 }
 
+/**
+ * @brief current_desktop
+ * @return
+ */
+long current_desktop() {
+#if defined(QT_X11)
+	Display *TheDisplay = QX11Info::display();
+	return QueryCurrentDesktop(TheDisplay, RootWindow(TheDisplay, DefaultScreen(TheDisplay)));
+#else
+	return QApplication::desktop()->screenNumber(QApplication::activeWindow());
+#endif
+}
+
 }
 
 /**
@@ -218,12 +231,7 @@ void NeditServer::newConnection() {
 	int lastIconic = 0;
 
 	QPointer<DocumentWidget> lastFile;
-#if QT_X11
-	Display *TheDisplay       = QX11Info::display();
-	const long currentDesktop = QueryCurrentDesktop(TheDisplay, RootWindow(TheDisplay, DefaultScreen(TheDisplay)));
-#else
-	const long currentDesktop = QApplication::desktop()->screenNumber(QApplication::activeWindow());
-#endif
+	const long currentDesktop = current_desktop();
 
 	auto array = jsonDocument.array();
 	/* If the command string is empty, put up an empty, Untitled window

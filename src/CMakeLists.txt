@@ -35,9 +35,15 @@ qt5_add_resources(QRC_SOURCES
 	${TRANSLATIONS_QRC}
 )
 
+foreach(FILE IN LISTS QRC_SOURCES)
+	set_property(SOURCE ${FILE} PROPERTY SKIP_UNITY_BUILD_INCLUSION ON)
+endforeach()
+
 if(${X11_FOUND} AND (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
     link_directories(/usr/X11/lib)
 endif()
+
+#set_property(SOURCE NeditServer.cpp PROPERTY SKIP_UNITY_BUILD_INCLUSION ON)
 
 add_executable(nedit-ng
 
