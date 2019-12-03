@@ -138,6 +138,21 @@ bool patternIsParsable(HighlightData *pattern) {
 ** character, prevChar, which is fed to regular the expression matching
 ** routines for determining word and line boundaries at the start of the string.
 */
+void fillStyleString(const char *&stringPtr, char *&stylePtr, const char *toPtr, uint8_t style) {
+
+	const long len = toPtr - stringPtr;
+
+	if (stringPtr >= toPtr) {
+		return;
+	}
+
+	for (long i = 0; i < len; i++) {
+		*stylePtr++ = static_cast<char>(style);
+	}
+
+	stringPtr = toPtr;
+}
+
 void fillStyleString(const char *&stringPtr, char *&stylePtr, const char *toPtr, uint8_t style, ParseContext *ctx) {
 
 	const long len = toPtr - stringPtr;
@@ -150,11 +165,8 @@ void fillStyleString(const char *&stringPtr, char *&stylePtr, const char *toPtr,
 		*stylePtr++ = static_cast<char>(style);
 	}
 
-	if (ctx) {
-		ctx->prev_char = *(toPtr - 1);
-	}
-
-	stringPtr = toPtr;
+	ctx->prev_char = *(toPtr - 1);
+	stringPtr      = toPtr;
 }
 
 /*
@@ -167,7 +179,7 @@ void recolorSubexpr(const std::unique_ptr<Regex> &re, size_t subexpr, uint8_t st
 	const char *stringPtr = re->startp[subexpr];
 	char *stylePtr        = &styleString[stringPtr - string];
 
-	fillStyleString(stringPtr, stylePtr, re->endp[subexpr], style, nullptr);
+	fillStyleString(stringPtr, stylePtr, re->endp[subexpr], style);
 }
 
 /*
@@ -178,13 +190,11 @@ void recolorSubexpr(const std::unique_ptr<Regex> &re, size_t subexpr, uint8_t st
 */
 void passTwoParseString(const HighlightData *pattern, const char *string, char *styleString, int64_t length, ParseContext *ctx, const char *lookBehindTo, const char *match_to) {
 
-	bool inParseRegion = false;
-	char *stylePtr;
+	bool inParseRegion     = false;
 	const char *parseStart = nullptr;
 	const char *parseEnd;
-	char *s       = styleString;
-	const char *c = string;
-	const char *stringPtr;
+	char *s             = styleString;
+	const char *c       = string;
 	int firstPass2Style = pattern[1].style;
 
 	for (;; c++, s++) {
@@ -199,8 +209,8 @@ void passTwoParseString(const HighlightData *pattern, const char *string, char *
 				ctx->prev_char = *(parseStart - 1);
 			}
 
-			stringPtr = parseStart;
-			stylePtr  = &styleString[parseStart - string];
+			const char *stringPtr = parseStart;
+			char *stylePtr        = &styleString[parseStart - string];
 
 			match_to = parseEnd;
 			length   = std::min<int64_t>(parseEnd - parseStart, length - (parseStart - string));
