@@ -151,23 +151,23 @@ void fillStyleString(const char *string_ptr, char *style_ptr, const char *to_ptr
 	}
 }
 
-void fillStyleString(const char *&stringPtr, char *&stylePtr, const char *toPtr, uint8_t style, ParseContext *ctx) {
+void fillStyleString(const char *&string_ptr, char *&style_ptr, const char *to_ptr, uint8_t style, ParseContext *ctx) {
 
-	const ptrdiff_t len = toPtr - stringPtr;
+	const ptrdiff_t len = to_ptr - string_ptr;
 
-	if (stringPtr >= toPtr) {
+	if (string_ptr >= to_ptr) {
 		return;
 	}
 
 	for (ptrdiff_t i = 0; i < len; i++) {
-		*stylePtr++ = static_cast<char>(style);
+		*style_ptr++ = static_cast<char>(style);
 	}
 
 	if (ctx->prev_char) {
-		*ctx->prev_char = *(toPtr - 1);
+		*ctx->prev_char = *(to_ptr - 1);
 	}
 
-	stringPtr = toPtr;
+	string_ptr = to_ptr;
 }
 
 /*
@@ -177,10 +177,11 @@ void fillStyleString(const char *&stringPtr, char *&stylePtr, const char *toPtr,
 */
 void recolorSubexpr(const std::unique_ptr<Regex> &re, size_t subexpr, uint8_t style, const char *string, char *styleString) {
 
-	const char *stringPtr = re->startp[subexpr];
-	char *stylePtr        = &styleString[stringPtr - string];
+	const char *string_ptr = re->startp[subexpr];
+	const char *to_ptr     = re->endp[subexpr];
+	char *style_ptr        = &styleString[string_ptr - string];
 
-	fillStyleString(stringPtr, stylePtr, re->endp[subexpr], style);
+	fillStyleString(string_ptr, style_ptr, to_ptr, style);
 }
 
 /*
