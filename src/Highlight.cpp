@@ -165,8 +165,11 @@ void fillStyleString(const char *&stringPtr, char *&stylePtr, const char *toPtr,
 		*stylePtr++ = static_cast<char>(style);
 	}
 
-	ctx->prev_char = *(toPtr - 1);
-	stringPtr      = toPtr;
+	if (ctx->prev_char) {
+		*ctx->prev_char = *(toPtr - 1);
+	}
+
+	stringPtr = toPtr;
 }
 
 /*
@@ -206,7 +209,7 @@ void passTwoParseString(const HighlightData *pattern, const char *string, char *
 		if (inParseRegion && (c == match_to || !(*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || static_cast<uint8_t>(*s) >= firstPass2Style))) {
 			parseEnd = c;
 			if (parseStart != string) {
-				ctx->prev_char = *(parseStart - 1);
+				*ctx->prev_char = *(parseStart - 1);
 			}
 
 			const char *stringPtr = parseStart;
@@ -361,8 +364,9 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	const char *const match_to = string + str.size();
 
 	// Parse it with pass 1 patterns
+	int prev_char = getPrevChar(buf, beginParse);
 	ParseContext ctx;
-	ctx.prev_char         = getPrevChar(buf, beginParse);
+	ctx.prev_char         = &prev_char;
 	ctx.text              = str;
 	const char *stringPtr = &string[beginParse - beginSafety];
 	char *stylePtr        = &styleString[beginParse - beginSafety];
@@ -410,7 +414,8 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 			endPass2Safety = endSafety;
 		}
 
-		ctx.prev_char = getPrevChar(buf, beginSafety);
+		int prev_char = getPrevChar(buf, beginSafety);
+		ctx.prev_char = &prev_char;
 
 		if (endPass2Safety == endSafety) {
 			passTwoParseString(
@@ -439,7 +444,7 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	   to ensure that parsing at modEnd is correct. */
 	if (endParse > modEnd) {
 		if (beginSafety > modEnd) {
-			ctx.prev_char = getPrevChar(buf, beginSafety);
+			prev_char = getPrevChar(buf, beginSafety);
 			passTwoParseString(
 				&pass2Patterns[0],
 				string,
@@ -451,7 +456,7 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 		} else {
 			startPass2Safety = std::max(beginSafety, backwardOneContext(buf, contextRequirements, modEnd));
 
-			ctx.prev_char = getPrevChar(buf, startPass2Safety);
+			prev_char = getPrevChar(buf, startPass2Safety);
 			passTwoParseString(
 				&pass2Patterns[0],
 				&string[startPass2Safety - beginSafety],
@@ -1061,7 +1066,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&s
 		stringPtr,
 		string_ptr + length + 1,
 		false,
-		ctx->prev_char,
+		*ctx->prev_char,
 		succChar,
 		delimitersPtr,
 		look_behind_to,
@@ -1084,7 +1089,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&s
 		   done.  Fill in the style string, update the pointers, color the
 		   end expression if there were coloring sub-patterns, and return */
 		const char *savedStartPtr = stringPtr;
-		const int savedPrevChar   = ctx->prev_char;
+		const int savedPrevChar   = *ctx->prev_char;
 
 		if (pattern->endRE) {
 			if (subIndex == 0) {

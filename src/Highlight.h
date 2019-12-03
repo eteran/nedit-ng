@@ -46,7 +46,7 @@ namespace Highlight {
 Q_DECLARE_NAMESPACE_TR(Highlight)
 
 struct ParseContext {
-	int prev_char;
+	int *prev_char = nullptr;
 	QString delimiters;
 	view::string_view text;
 };
