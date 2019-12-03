@@ -303,7 +303,7 @@ void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleStri
 ** finished (this will normally be endParse, unless the pass1Patterns is a
 ** pattern which does end and the end is reached).
 */
-TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::unique_ptr<HighlightData[]> &pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, TextCursor beginParse, TextCursor endParse, const QString &delimiters) {
+TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::unique_ptr<HighlightData[]> &pass2Patterns, TextBuffer *buf, const std::shared_ptr<TextBuffer> &styleBuf, const ReparseContext &contextRequirements, TextCursor beginParse, TextCursor endParse) {
 
 	TextCursor endSafety;
 	TextCursor endPass2Safety;
@@ -625,7 +625,7 @@ int findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlig
 ** been presented to the patterns.  Changes the style buffer in "highlightData"
 ** with the parsing result.
 */
-void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, TextCursor pos, int64_t nInserted, const QString &delimiters) {
+void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, TextCursor pos, int64_t nInserted) {
 
 	const std::shared_ptr<TextBuffer> &styleBuf           = highlightData->styleBuffer;
 	const std::unique_ptr<HighlightData[]> &pass1Patterns = highlightData->pass1Patterns;
@@ -667,7 +667,7 @@ void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightDat
 			startPattern = &pass1Patterns[0];
 		}
 
-		TextCursor endAt = parseBufferRange(startPattern, pass2Patterns, buf, styleBuf, context, beginParse, endParse, delimiters);
+		TextCursor endAt = parseBufferRange(startPattern, pass2Patterns, buf, styleBuf, context, beginParse, endParse);
 
 		/* If parse completed at this level, move one style up in the
 		   hierarchy and start again from where the previous parse left off. */
@@ -1011,7 +1011,7 @@ void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted
 
 	// Re-parse around the changed region
 	if (highlightData->pass1Patterns) {
-		incrementalReparse(highlightData, document->buffer(), pos, nInserted, document->documentDelimiters());
+		incrementalReparse(highlightData, document->buffer(), pos, nInserted);
 	}
 }
 
