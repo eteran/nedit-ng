@@ -2991,7 +2991,7 @@ DocumentWidget *DocumentWidget::fromArea(TextArea *area) {
  */
 DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 
-	const PathInfo fi = parseFilename(fullpath);
+	const PathInfo fi        = parseFilename(fullpath);
 	DocumentWidget *document = DocumentWidget::editExistingFile(
 		this,
 		fi.filename,
@@ -4588,24 +4588,27 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 		return;
 	}
 
-	const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_;
-	bool fromMacro                                   = (cmdData->source == CommandSource::Macro);
+	if (!shellCmdData_) {
+		return;
+	}
+
+	const bool fromMacro = (shellCmdData_->source == CommandSource::Macro);
 
 	// Cancel pending timeouts
-	cmdData->bannerTimer.stop();
+	shellCmdData_->bannerTimer.stop();
 
 	// Clean up waiting-for-shell-command-to-complete mode
-	if (cmdData->source == CommandSource::User) {
+	if (shellCmdData_->source == CommandSource::User) {
 		setCursor(Qt::ArrowCursor);
 		win->ui.action_Cancel_Shell_Command->setEnabled(false);
-		if (cmdData->bannerIsUp) {
+		if (shellCmdData_->bannerIsUp) {
 			clearModeMessage();
 		}
 	}
 
 	// when this function ends, do some cleanup
-	auto _ = gsl::finally([this, &cmdData, fromMacro] {
-		delete cmdData->process;
+	auto _ = gsl::finally([this, fromMacro] {
+		delete shellCmdData_->process;
 		shellCmdData_ = nullptr;
 
 		if (fromMacro) {
@@ -4622,24 +4625,24 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 	}
 
 	// if we have terminated the process, let's be 100% sure we've gotten all input
-	cmdData->process->waitForReadyRead();
+	shellCmdData_->process->waitForReadyRead();
 
 	/* Assemble the output from the process' stderr and stdout streams into
 	   strings */
-	if (cmdData->flags & ERROR_DIALOGS) {
+	if (shellCmdData_->flags & ERROR_DIALOGS) {
 		// make sure we got the rest and convert it to a string
-		QByteArray dataErr = cmdData->process->readAllStandardError();
-		cmdData->standardError.append(dataErr);
-		errText = QString::fromLocal8Bit(cmdData->standardError);
+		QByteArray dataErr = shellCmdData_->process->readAllStandardError();
+		shellCmdData_->standardError.append(dataErr);
+		errText = QString::fromLocal8Bit(shellCmdData_->standardError);
 
-		QByteArray dataOut = cmdData->process->readAllStandardOutput();
-		cmdData->standardOutput.append(dataOut);
-		outText = QString::fromLocal8Bit(cmdData->standardOutput);
+		QByteArray dataOut = shellCmdData_->process->readAllStandardOutput();
+		shellCmdData_->standardOutput.append(dataOut);
+		outText = QString::fromLocal8Bit(shellCmdData_->standardOutput);
 	} else {
 
-		QByteArray dataAll = cmdData->process->readAll();
-		cmdData->standardOutput.append(dataAll);
-		outText = QString::fromLocal8Bit(cmdData->standardOutput);
+		QByteArray dataAll = shellCmdData_->process->readAll();
+		shellCmdData_->standardOutput.append(dataAll);
+		outText = QString::fromLocal8Bit(shellCmdData_->standardOutput);
 	}
 
 	static const QRegularExpression trailingNewlines(QLatin1String("\\n+$"));
@@ -4647,17 +4650,17 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 	/* Present error and stderr-information dialogs.  If a command returned
 	   error output, or if the process' exit status indicated failure,
 	   present the information to the user. */
-	if (cmdData->flags & ERROR_DIALOGS) {
+	if (shellCmdData_->flags & ERROR_DIALOGS) {
 		bool cancel = false;
 		// NOTE(eteran): assumes UNIX return code style!
 		bool failure     = exitCode != 0;
 		bool errorReport = !errText.isEmpty();
 
-		static constexpr int DF_MAX_MSG_LENGTH = 4096;
+		static constexpr int MaxMessageLength = 4096;
 
 		if (failure && errorReport) {
 			errText.remove(trailingNewlines);
-			errText.truncate(DF_MAX_MSG_LENGTH);
+			errText.truncate(MaxMessageLength);
 
 			QMessageBox msgBox;
 			msgBox.setWindowTitle(tr("Warning"));
@@ -4670,7 +4673,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 			cancel = (msgBox.exec() == QMessageBox::Cancel);
 
 		} else if (failure) {
-			outText.truncate(DF_MAX_MSG_LENGTH);
+			outText.truncate(MaxMessageLength);
 
 			QMessageBox msgBox;
 			msgBox.setWindowTitle(tr("Command Failure"));
@@ -4685,7 +4688,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 		} else if (errorReport) {
 
 			errText.remove(trailingNewlines);
-			errText.truncate(DF_MAX_MSG_LENGTH);
+			errText.truncate(MaxMessageLength);
 
 			QMessageBox msgBox;
 			msgBox.setWindowTitle(tr("Information"));
@@ -4707,7 +4710,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 		/* If output is to a dialog, present the dialog.  Otherwise insert the
 		   (remaining) output in the text widget as requested, and move the
 		   insert point to the end */
-		if (cmdData->flags & OUTPUT_TO_DIALOG) {
+		if (shellCmdData_->flags & OUTPUT_TO_DIALOG) {
 			outText.remove(trailingNewlines);
 
 			if (!outText.isEmpty()) {
@@ -4715,16 +4718,16 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 				dialog->setText(outText);
 				dialog->show();
 			}
-		} else if (cmdData->flags & OUTPUT_TO_STRING) {
+		} else if (shellCmdData_->flags & OUTPUT_TO_STRING) {
 			returnShellCommandOutput(this, outText, exitCode);
 		} else {
 
 			std::string output_string = outText.toStdString();
 
-			auto area       = cmdData->area;
+			auto area       = shellCmdData_->area;
 			TextBuffer *buf = area->buffer();
 
-			if (cmdData->flags & REPLACE_SELECTION) {
+			if (shellCmdData_->flags & REPLACE_SELECTION) {
 				TextCursor reselectStart = buf->primary.isRectangular() ? TextCursor(-1) : buf->primary.start();
 				buf->BufReplaceSelected(output_string);
 
@@ -4734,13 +4737,13 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 					buf->BufSelect(reselectStart, reselectStart + static_cast<int64_t>(output_string.size()));
 				}
 			} else {
-				safeBufReplace(buf, &cmdData->leftPos, &cmdData->rightPos, output_string);
-				area->TextSetCursorPos(cmdData->leftPos + outText.size());
+				safeBufReplace(buf, &shellCmdData_->leftPos, &shellCmdData_->rightPos, output_string);
+				area->TextSetCursorPos(shellCmdData_->leftPos + outText.size());
 			}
 		}
 
 		// If the command requires the file to be reloaded afterward, reload it
-		if (cmdData->flags & RELOAD_FILE_AFTER) {
+		if (shellCmdData_->flags & RELOAD_FILE_AFTER) {
 			revertToSaved();
 		}
 	}

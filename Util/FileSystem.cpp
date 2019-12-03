@@ -30,7 +30,7 @@ constexpr int FORMAT_SAMPLE_CHARS = 2000;
  * @return
  */
 PathInfo parseFilename(const QString &fullname) {
-    PathInfo fileInfo;
+	PathInfo fileInfo;
 
 	const int fullLen = fullname.size();
 	int scanStart     = -1;

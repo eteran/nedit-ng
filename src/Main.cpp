@@ -328,7 +328,6 @@ Main::Main(const QStringList &args) {
 				lastFile = document;
 			}
 
-
 			// -line/+n does only affect the file following this switch
 			gotoLine = false;
 		}
