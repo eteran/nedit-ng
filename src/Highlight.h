@@ -48,6 +48,7 @@ Q_DECLARE_NAMESPACE_TR(Highlight)
 struct ParseContext {
 	int prev_char;
 	QString delimiters;
+	view::string_view text;
 };
 
 void loadTheme();
@@ -56,8 +57,8 @@ bool FontOfNamedStyleIsBold(const QString &styleName);
 bool FontOfNamedStyleIsItalic(const QString &styleName);
 bool LoadHighlightString(const QString &string);
 bool NamedStyleExists(const QString &styleName);
-bool parseString(const HighlightData *pattern, view::string_view text, const char *&string_ptr, char *&style_ptr, int64_t length, ParseContext *ctx);
-bool parseString(const HighlightData *pattern, view::string_view text, const char *&string_ptr, char *&style_ptr, int64_t length, ParseContext *ctx, const char *look_behind_to, const char *match_to);
+bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&style_ptr, int64_t length, ParseContext *ctx);
+bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&style_ptr, int64_t length, ParseContext *ctx, const char *look_behind_to, const char *match_to);
 HighlightData *patternOfStyle(const std::unique_ptr<HighlightData[]> &patterns, int style);
 size_t findTopLevelParentIndex(const std::vector<HighlightPattern> &patterns, size_t index);
 size_t indexOfNamedPattern(const std::vector<HighlightPattern> &patterns, const QString &name);

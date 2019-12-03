@@ -5835,10 +5835,10 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
 	Highlight::ParseContext ctx;
 	ctx.prev_char  = Highlight::getPrevChar(buf, beginSafety);
 	ctx.delimiters = documentDelimiters();
+	ctx.text       = str;
 
 	Highlight::parseString(
 		&pass2Patterns[0],
-		str,
 		string,
 		stylePtr,
 		endParse - beginSafety,
@@ -5891,15 +5891,13 @@ void DocumentWidget::startHighlighting(Verbosity verbosity) {
 		char *stylePtr = &style_buffer[0];
 
 		Highlight::ParseContext ctx;
-		ctx.prev_char  = -1;
-		ctx.delimiters = documentDelimiters();
-
-		view::string_view text = info_->buffer->BufAsString();
-		const char *stringPtr  = text.data();
+		ctx.prev_char         = -1;
+		ctx.delimiters        = documentDelimiters();
+		ctx.text              = info_->buffer->BufAsString();
+		const char *stringPtr = ctx.text.data();
 
 		Highlight::parseString(
 			&highlightData->pass1Patterns[0],
-			text,
 			stringPtr,
 			stylePtr,
 			bufLength,
