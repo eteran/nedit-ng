@@ -133,35 +133,33 @@ bool patternIsParsable(HighlightData *pattern) {
 }
 
 /*
-** Advance "stringPtr" and "stylePtr" until "stringPtr" == "toPtr", filling
-** "stylePtr" with style "style".  Can also optionally update the pre-string
-** character, prevChar, which is fed to regular the expression matching
+** Advance "string_ptr" and "style_ptr" until "string_ptr" == "to_ptr", filling
+** "style_ptr" with style "style".  Can also optionally update the pre-string
+** character, prev_char, which is fed to regular the expression matching
 ** routines for determining word and line boundaries at the start of the string.
 */
-void fillStyleString(const char *&stringPtr, char *&stylePtr, const char *toPtr, uint8_t style) {
+void fillStyleString(const char *string_ptr, char *style_ptr, const char *to_ptr, uint8_t style) {
 
-	const long len = toPtr - stringPtr;
+	const ptrdiff_t len = to_ptr - string_ptr;
 
-	if (stringPtr >= toPtr) {
+	if (string_ptr >= to_ptr) {
 		return;
 	}
 
-	for (long i = 0; i < len; i++) {
-		*stylePtr++ = static_cast<char>(style);
+	for (ptrdiff_t i = 0; i < len; i++) {
+		*style_ptr++ = static_cast<char>(style);
 	}
-
-	stringPtr = toPtr;
 }
 
 void fillStyleString(const char *&stringPtr, char *&stylePtr, const char *toPtr, uint8_t style, ParseContext *ctx) {
 
-	const long len = toPtr - stringPtr;
+	const ptrdiff_t len = toPtr - stringPtr;
 
 	if (stringPtr >= toPtr) {
 		return;
 	}
 
-	for (long i = 0; i < len; i++) {
+	for (ptrdiff_t i = 0; i < len; i++) {
 		*stylePtr++ = static_cast<char>(style);
 	}
 
