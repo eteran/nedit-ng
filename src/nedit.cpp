@@ -87,7 +87,7 @@ int main(int argc, char *argv[]) {
 #endif
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
-	// NOTE(eteran):for issue #38, grab -geometry <arg> before Qt consumes it!
+	// NOTE(eteran): for issue #38, grab -geometry <arg> before Qt consumes it!
 	QString geometry;
 	for (int i = 1; i < argc && strcmp(argv[i], "--"); i++) {
 		if (strcmp(argv[i], "-geometry") == 0) {
