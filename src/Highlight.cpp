@@ -138,7 +138,7 @@ void fillStyleString(const char *string_ptr, char *style_ptr, const char *to_ptr
 	}
 }
 
-void fillStyleString(const char *&string_ptr, char *&style_ptr, const char *to_ptr, uint8_t style, ParseContext *ctx) {
+void fillStyleString(const char *&string_ptr, char *&style_ptr, const char *to_ptr, uint8_t style, const ParseContext *ctx) {
 
 	const ptrdiff_t len = to_ptr - string_ptr;
 
@@ -177,7 +177,7 @@ void recolorSubexpr(const std::unique_ptr<Regex> &re, size_t subexpr, uint8_t st
 ** have the same meaning as in parseString, except that string pointers are
 ** not updated.
 */
-void passTwoParseString(const HighlightData *pattern, const char *string, char *styleString, int64_t length, ParseContext *ctx, const char *lookBehindTo, const char *match_to) {
+void passTwoParseString(const HighlightData *pattern, const char *string, char *styleString, int64_t length, const ParseContext *ctx, const char *lookBehindTo, const char *match_to) {
 
 	bool inParseRegion     = false;
 	const char *parseStart = nullptr;
@@ -1025,20 +1025,20 @@ void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted
 ** the error pattern matched, if the end of the string was reached without
 ** matching the end expression, or in the unlikely event of an internal error.
 */
-bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&style_ptr, int64_t length, ParseContext *ctx) {
+bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&style_ptr, int64_t length, const ParseContext *ctx) {
 	const char *look_behind_to = ctx->text.begin();
 	const char *match_to       = ctx->text.end();
 	return parseString(pattern, string_ptr, style_ptr, length, ctx, look_behind_to, match_to);
 }
 
-bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&style_ptr, int64_t length, ParseContext *ctx, const char *look_behind_to, const char *match_to) {
-
-	bool subExecuted;
-	const int succChar = (match_to && (match_to != ctx->text.end())) ? (*match_to) : -1;
+bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&style_ptr, int64_t length, const ParseContext *ctx, const char *look_behind_to, const char *match_to) {
 
 	if (length <= 0) {
 		return false;
 	}
+
+	bool subExecuted;
+	const int succChar = (match_to && (match_to != ctx->text.end())) ? (*match_to) : -1;
 
 	const char *stringPtr = string_ptr;
 	char *stylePtr        = style_ptr;
