@@ -4753,9 +4753,10 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 ** Cancel the shell command in progress
 */
 void DocumentWidget::abortShellCommand() {
-	if (const std::unique_ptr<ShellCommandData> &cmdData = shellCmdData_) {
-		if (QProcess *process = cmdData->process) {
+	if (shellCmdData_) {
+		if (QProcess *process = shellCmdData_->process) {
 			process->kill();
+			shellCmdData_ = nullptr;
 		}
 	}
 }
