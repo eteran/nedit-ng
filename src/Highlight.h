@@ -51,8 +51,6 @@ struct ParseContext {
 	view::string_view text;
 };
 
-void loadTheme();
-void saveTheme();
 bool FontOfNamedStyleIsBold(const QString &styleName);
 bool FontOfNamedStyleIsItalic(const QString &styleName);
 bool LoadHighlightString(const QString &string);

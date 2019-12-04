@@ -9,6 +9,7 @@
 #include "SmartIndent.h"
 #include "Tags.h"
 #include "TextBuffer.h"
+#include "Theme.h"
 #include "Util/ClearCase.h"
 #include "Util/Input.h"
 #include "Util/version.h"
@@ -299,7 +300,7 @@ void translatePrefFormats(uint32_t fileVer) {
 		SmartIndent::loadSmartIndentCommonString(Settings::smartIndentInitCommon);
 	}
 
-	Highlight::loadTheme();
+	Theme::load();
 
 	// translate the font names into QFont suitable for the text widget
 	Settings::font = Font::fromString(Settings::fontName);
@@ -441,7 +442,7 @@ void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 			tr("Unable to save preferences in %1").arg(prefFileName));
 	}
 
-	Highlight::saveTheme();
+	Theme::save();
 	PrefsHaveChanged = false;
 }
 

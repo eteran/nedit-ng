@@ -49,6 +49,8 @@ add_executable(nedit-ng
 
 	${QRC_SOURCES}
 
+	Theme.h
+	Theme.cpp
 	BlockDragTypes.h
 	Bookmark.h
 	CallTip.h
