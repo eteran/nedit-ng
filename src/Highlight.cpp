@@ -362,7 +362,9 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 		stringPtr,
 		stylePtr,
 		endParse - beginParse,
-		&ctx);
+		&ctx,
+		nullptr,
+		nullptr);
 
 	// On non top-level patterns, parsing can end early
 	endParse = std::min(endParse, stringPtr - string + beginSafety);
@@ -967,9 +969,9 @@ void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted
 	Q_UNUSED(nRestyled)
 	Q_UNUSED(deletedText)
 
-	auto document                                             = static_cast<DocumentWidget *>(user);
-	const std::unique_ptr<WindowHighlightData> &highlightData = document->highlightData_;
+	auto document = static_cast<DocumentWidget *>(user);
 
+	const std::unique_ptr<WindowHighlightData> &highlightData = document->highlightData_;
 	if (!highlightData) {
 		return;
 	}
@@ -1025,20 +1027,22 @@ void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted
 ** the error pattern matched, if the end of the string was reached without
 ** matching the end expression, or in the unlikely event of an internal error.
 */
-bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&style_ptr, int64_t length, const ParseContext *ctx) {
-	const char *look_behind_to = ctx->text.begin();
-	const char *match_to       = ctx->text.end();
-	return parseString(pattern, string_ptr, style_ptr, length, ctx, look_behind_to, match_to);
-}
-
 bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&style_ptr, int64_t length, const ParseContext *ctx, const char *look_behind_to, const char *match_to) {
 
 	if (length <= 0) {
 		return false;
 	}
 
+	if (!look_behind_to) {
+		look_behind_to = ctx->text.begin();
+	}
+
+	if (!match_to) {
+		match_to = ctx->text.end();
+	}
+
 	bool subExecuted;
-	const int succChar = (match_to && (match_to != ctx->text.end())) ? (*match_to) : -1;
+	const int succChar = (match_to != ctx->text.end()) ? (*match_to) : -1;
 
 	const char *stringPtr = string_ptr;
 	char *stylePtr        = style_ptr;
@@ -1075,7 +1079,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&s
 		   done.  Fill in the style string, update the pointers, color the
 		   end expression if there were coloring sub-patterns, and return */
 		const char *const savedStartPtr = stringPtr;
-		const int savedPrevChar   = *ctx->prev_char;
+		const int savedPrevChar         = *ctx->prev_char;
 
 		if (pattern->endRE) {
 			if (subIndex == 0) {
