@@ -1065,7 +1065,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&s
 		size_t subIndex = (pattern->nSubBranches > 1) ? subPatternRE->top_branch : 0;
 
 		// Combination of all sub-patterns and end pattern matched
-		const char *startingStringPtr = stringPtr;
+		const char *const startingStringPtr = stringPtr;
 
 		/* Fill in the pattern style for the text that was skipped over before
 		   the match, and advance the pointers to the start of the pattern */
@@ -1074,7 +1074,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&s
 		/* If the combined pattern matched this pattern's end pattern, we're
 		   done.  Fill in the style string, update the pointers, color the
 		   end expression if there were coloring sub-patterns, and return */
-		const char *savedStartPtr = stringPtr;
+		const char *const savedStartPtr = stringPtr;
 		const int savedPrevChar   = *ctx->prev_char;
 
 		if (pattern->endRE) {
