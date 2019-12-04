@@ -116,7 +116,7 @@ bool isDefaultPatternSet(const PatternSet &patternSet) {
 ** confirm and color.  Returns true if the pattern is suitable for parsing.
 */
 bool patternIsParsable(HighlightData *pattern) {
-	return pattern != nullptr && pattern->subPatternRE != nullptr;
+	return pattern && pattern->subPatternRE;
 }
 
 /*
@@ -162,11 +162,11 @@ void fillStyleString(const char *&string_ptr, char *&style_ptr, const char *to_p
 ** sub-expression, "subExpr", of regular expression "re" applies to the
 ** corresponding portion of "string".
 */
-void recolorSubexpr(const std::unique_ptr<Regex> &re, size_t subexpr, uint8_t style, const char *string, char *styleString) {
+void recolorSubexpr(const std::unique_ptr<Regex> &re, size_t subexpr, uint8_t style, const char *string_base, char *style_base) {
 
 	const char *string_ptr = re->startp[subexpr];
 	const char *to_ptr     = re->endp[subexpr];
-	char *style_ptr        = &styleString[string_ptr - string];
+	char *style_ptr        = &style_base[string_ptr - string_base];
 
 	fillStyleString(string_ptr, style_ptr, to_ptr, style);
 }
@@ -302,7 +302,7 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	TextCursor beginSafety;
 	TextCursor p;
 	int style;
-	int firstPass2Style = (pass2Patterns == nullptr) ? INT_MAX : pass2Patterns[1].style;
+	int firstPass2Style = (!pass2Patterns) ? INT_MAX : pass2Patterns[1].style;
 
 	// Begin parsing one context distance back (or to the last style change)
 	int beginStyle = pass1Patterns->style;
@@ -370,8 +370,13 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	endParse = std::min(endParse, stringPtr - string + beginSafety);
 
 	// If there are no pass 2 patterns, we're done
-	if (!pass2Patterns)
-		goto parseDone;
+	if (!pass2Patterns) {
+		/* Update the style buffer with the new style information, but only
+		 * through endParse.  Skip the safety region at the end */
+		styleString[endParse - beginSafety] = '\0';
+		modifyStyleBuf(styleBuf, &styleString[beginParse - beginSafety], beginParse, endParse, firstPass2Style);
+		return endParse;
+	}
 
 	/* Parsing of pass 2 patterns is done only as necessary for determining
 	   where styles have changed.  Find the area to avoid, which is already
@@ -414,7 +419,13 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 				&ctx,
 				string,
 				match_to);
-			goto parseDone;
+
+			/* Update the style buffer with the new style information, but only
+			 * through endParse.  Skip the safety region at the end */
+			styleString[endParse - beginSafety] = '\0';
+			modifyStyleBuf(styleBuf, &styleString[beginParse - beginSafety], beginParse, endParse, firstPass2Style);
+			return endParse;
+
 		} else {
 			passTwoParseString(
 				&pass2Patterns[0],
@@ -456,13 +467,10 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 		}
 	}
 
-parseDone:
-
 	/* Update the style buffer with the new style information, but only
 	   through endParse.  Skip the safety region at the end */
 	styleString[endParse - beginSafety] = '\0';
 	modifyStyleBuf(styleBuf, &styleString[beginParse - beginSafety], beginParse, endParse, firstPass2Style);
-
 	return endParse;
 }
 
@@ -1042,7 +1050,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&s
 	}
 
 	bool subExecuted;
-	const int succChar = (match_to != ctx->text.end()) ? (*match_to) : -1;
+	const int next_char = (match_to != ctx->text.end()) ? (*match_to) : -1;
 
 	const char *stringPtr = string_ptr;
 	char *stylePtr        = style_ptr;
@@ -1057,7 +1065,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&s
 		string_ptr + length + 1,
 		false,
 		*ctx->prev_char,
-		succChar,
+		next_char,
 		delimitersPtr,
 		look_behind_to,
 		match_to,
@@ -1095,7 +1103,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&s
 									savedStartPtr + 1,
 									false,
 									savedPrevChar,
-									succChar,
+									next_char,
 									delimitersPtr,
 									look_behind_to,
 									match_to,
@@ -1211,7 +1219,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&s
 							savedStartPtr + 1,
 							false,
 							savedPrevChar,
-							succChar,
+							next_char,
 							delimitersPtr,
 							look_behind_to,
 							match_to,
