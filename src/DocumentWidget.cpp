@@ -6218,7 +6218,8 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 		if (patternSrc[i].subPatternOf.isNull()) {
 			compiledPats[0].subPatterns[compiledPats[0].nSubPatterns++] = &compiledPats[i];
 		} else {
-			size_t parentIndex                                                              = Highlight::indexOfNamedPattern(patternSrc, patternSrc[i].subPatternOf);
+			const size_t parentIndex = Highlight::indexOfNamedPattern(patternSrc, patternSrc[i].subPatternOf);
+
 			compiledPats[parentIndex].subPatterns[compiledPats[parentIndex].nSubPatterns++] = &compiledPats[i];
 		}
 	}

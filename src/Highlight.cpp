@@ -950,6 +950,22 @@ QString createPatternsString(const PatternSet *patternSet, const QString &indent
 	return str;
 }
 
+HighlightData *find_subpattern(const HighlightData *pattern, size_t index) {
+
+	// Figure out which sub-pattern matched
+	for (size_t i = 0; i < pattern->nSubPatterns; i++) {
+		HighlightData *subPat = pattern->subPatterns[i];
+		if (subPat->colorOnly) {
+			++index;
+		} else if (i == index) {
+			return subPat;
+		}
+	}
+
+	qCritical("NEdit: Internal error, failed to find sub-pattern");
+	return nullptr;
+}
+
 }
 
 /*
@@ -1139,24 +1155,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&s
 			--subIndex;
 		}
 
-		HighlightData *subPat = nullptr;
-		size_t i;
-
-		// Figure out which sub-pattern matched
-		for (i = 0; i < pattern->nSubPatterns; i++) {
-			subPat = pattern->subPatterns[i];
-			if (subPat->colorOnly) {
-				++subIndex;
-			} else if (i == subIndex) {
-				break;
-			}
-		}
-
-		if (i == pattern->nSubPatterns) {
-			qCritical("NEdit: Internal error, failed to match in parseString [1]");
-			return false;
-		}
-
+		HighlightData *subPat = find_subpattern(pattern, subIndex);
 		Q_ASSERT(subPat);
 
 		// the sub-pattern is a simple match, just color it
@@ -1210,7 +1209,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&s
 		/* If the sub-pattern has color-only sub-sub-patterns, add color
 		   based on the coloring sub-expression references */
 		subExecuted = false;
-		for (i = 0; i < subPat->nSubPatterns; i++) {
+		for (size_t i = 0; i < subPat->nSubPatterns; i++) {
 			HighlightData *subSubPat = subPat->subPatterns[i];
 			if (subSubPat->colorOnly) {
 				if (!subExecuted) {
