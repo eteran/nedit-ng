@@ -574,8 +574,8 @@ public:
     * @throw OperationException If filename or buffer pointer is invalid.
     *
     */
-void Parse(Node &root, const char *filename);
-void Parse(Node &root, std::iostream &stream);
+void ParseFromFile(Node &root, const char *filename);
+void Parse(Node &root, std::istream &stream);
 void Parse(Node &root, const std::string &string);
 void Parse(Node &root, const char *buffer, const size_t size);
 
@@ -605,8 +605,8 @@ struct SerializeConfig {
     *                           If config is invalid.
     *
     */
-void Serialize(const Node &root, const char *filename, const SerializeConfig &config = {2, 64, false, false});
-void Serialize(const Node &root, std::iostream &stream, const SerializeConfig &config = {2, 64, false, false});
+void SerializeToFile(const Node &root, const char *filename, const SerializeConfig &config = {2, 64, false, false});
+void Serialize(const Node &root, std::ostream &stream, const SerializeConfig &config = {2, 64, false, false});
 void Serialize(const Node &root, std::string &string, const SerializeConfig &config = {2, 64, false, false});
 
 }

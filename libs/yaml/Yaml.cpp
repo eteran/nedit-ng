@@ -67,7 +67,7 @@ bool FindQuote(const std::string &input, size_t &start, size_t &end, size_t sear
 		const char token = input[qPos];
 		if (token == '"' && (qPos == 0 || input[qPos - 1] != '\\')) {
 			// Found start quote.
-			if (foundStart == false) {
+			if (!foundStart) {
 				start      = qPos;
 				foundStart = true;
 			}
@@ -1206,7 +1206,7 @@ public:
         * @breif Run full parsing procedure.
         *
         */
-	void Parse(Node &root, std::iostream &stream) {
+	void Parse(Node &root, std::istream &stream) {
 		try {
 			root.Clear();
 			ReadLines(stream);
@@ -1234,7 +1234,7 @@ private:
         *           - Document start/end.
         *
         */
-	void ReadLines(std::iostream &stream) {
+	void ReadLines(std::istream &stream) {
 		std::string line;
 		size_t lineNo            = 0;
 		bool documentStartFound  = false;
@@ -1255,7 +1255,7 @@ private:
 			}
 
 			// Start of document.
-			if (documentStartFound == false && line == "---") {
+			if (!documentStartFound && line == "---") {
 				// Erase all lines before this line.
 				ClearLines();
 				documentStartFound = true;
@@ -1323,12 +1323,12 @@ private:
 	void PostProcessLines() {
 		for (auto it = m_Lines.begin(); it != m_Lines.end();) {
 			// Sequence.
-			if (PostProcessSequenceLine(it) == true) {
+			if (PostProcessSequenceLine(it)) {
 				continue;
 			}
 
 			// Mapping.
-			if (PostProcessMappingLine(it) == true) {
+			if (PostProcessMappingLine(it)) {
 				continue;
 			}
 
@@ -1439,7 +1439,7 @@ private:
 		}
 
 		// Make sure the value is not a sequence start.
-		if (IsSequenceStart(value) == true) {
+		if (IsSequenceStart(value)) {
 			throw ParsingException(ExceptionMessage(g_ErrorBlockSequenceNotAllowed, *pLine, valueStart));
 		}
 
@@ -1462,7 +1462,7 @@ private:
 
 		// Add new line with value.
 		unsigned char dummyBlockFlags = 0;
-		if (IsBlockScalar(value, pLine->No, dummyBlockFlags) == true) {
+		if (IsBlockScalar(value, pLine->No, dummyBlockFlags)) {
 			newLineOffset = pLine->Offset;
 		}
 		ReaderLine *pNewLine = new ReaderLine(value, pLine->No, newLineOffset, Node::ScalarType);
@@ -1485,12 +1485,12 @@ private:
 
 		size_t parentOffset = pLine->Offset;
 		if (pLine != m_Lines.front()) {
-			std::list<ReaderLine *>::iterator lastIt = it;
+			auto lastIt = it;
 			--lastIt;
 			parentOffset = (*lastIt)->Offset;
 		}
 
-		std::list<ReaderLine *>::iterator lastNotEmpty = it++;
+		auto lastNotEmpty = it++;
 
 		// Find last empty lines
 		while (it != m_Lines.end()) {
@@ -1653,7 +1653,7 @@ private:
 
 		// Find parent offset
 		if (it != m_Lines.begin()) {
-			std::list<ReaderLine *>::iterator parentIt = it;
+			auto parentIt = it;
 			--parentIt;
 			parentOffset = (*parentIt)->Offset;
 		}
@@ -1667,7 +1667,7 @@ private:
 		}
 
 		// Not a block scalar, cut end spaces/tabs
-		if (isBlockScalar == false) {
+		if (!isBlockScalar) {
 			while (1) {
 				pLine = *it;
 
@@ -1691,7 +1691,7 @@ private:
 				data += " ";
 			}
 
-			if (ValidateQuote(data) == false) {
+			if (!ValidateQuote(data)) {
 				throw ParsingException(ExceptionMessage(g_ErrorInvalidQuote, *pFirstLine));
 			}
 		}
@@ -1895,9 +1895,9 @@ private:
 };
 
 // Parsing functions
-void Parse(Node &root, const char *filename) {
+void ParseFromFile(Node &root, const char *filename) {
 	std::ifstream f(filename, std::ifstream::binary);
-	if (f.is_open() == false) {
+	if (!f.is_open()) {
 		throw OperationException(g_ErrorCannotOpenFile);
 	}
 
@@ -1912,7 +1912,7 @@ void Parse(Node &root, const char *filename) {
 	Parse(root, data.get(), fileSize);
 }
 
-void Parse(Node &root, std::iostream &stream) {
+void Parse(Node &root, std::istream &stream) {
 	auto parser = std::make_unique<Parser>();
 	parser->Parse(root, stream);
 }
@@ -1928,12 +1928,12 @@ void Parse(Node &root, const char *buffer, const size_t size) {
 }
 
 // Serialization functions
-void Serialize(const Node &root, const char *filename, const SerializeConfig &config) {
+void SerializeToFile(const Node &root, const char *filename, const SerializeConfig &config) {
 	std::stringstream stream;
 	Serialize(root, stream, config);
 
 	std::ofstream f(filename);
-	if (f.is_open() == false) {
+	if (!f.is_open()) {
 		throw OperationException(g_ErrorCannotOpenFile);
 	}
 
@@ -1974,7 +1974,7 @@ size_t LineFolding(const std::string &input, std::vector<std::string> &folded, c
 	return folded.size();
 }
 
-static void SerializeLoop(const Node &node, std::iostream &stream, bool useLevel, const size_t level, const SerializeConfig &config) {
+static void SerializeLoop(const Node &node, std::ostream &stream, bool useLevel, const size_t level, const SerializeConfig &config) {
 	const size_t indention = config.SpaceIndentation;
 
 	switch (node.Type()) {
@@ -1986,7 +1986,7 @@ static void SerializeLoop(const Node &node, std::iostream &stream, bool useLevel
 			}
 			stream << std::string(level, ' ') << "- ";
 			useLevel = false;
-			if (value.IsSequence() || (value.IsMap() && config.SequenceMapNewline == true)) {
+			if (value.IsSequence() || (value.IsMap() && config.SequenceMapNewline)) {
 				useLevel = true;
 				stream << "\n";
 			}
@@ -2017,7 +2017,7 @@ static void SerializeLoop(const Node &node, std::iostream &stream, bool useLevel
 			}
 
 			useLevel = false;
-			if (value.IsScalar() == false || (value.IsScalar() && config.MapScalarNewline)) {
+			if (!value.IsScalar() || (value.IsScalar() && config.MapScalarNewline)) {
 				useLevel = true;
 				stream << "\n";
 			}
@@ -2042,7 +2042,7 @@ static void SerializeLoop(const Node &node, std::iostream &stream, bool useLevel
 		std::string line;
 		std::vector<std::string> lines;
 		std::istringstream iss(value);
-		while (iss.eof() == false) {
+		while (!iss.eof()) {
 			std::getline(iss, line);
 			lines.push_back(line);
 		}
@@ -2078,7 +2078,7 @@ static void SerializeLoop(const Node &node, std::iostream &stream, bool useLevel
 			}
 		}
 
-		if (endNewline == false) {
+		if (!endNewline) {
 			stream << "-";
 		}
 		stream << "\n";
@@ -2093,7 +2093,7 @@ static void SerializeLoop(const Node &node, std::iostream &stream, bool useLevel
 	}
 }
 
-void Serialize(const Node &root, std::iostream &stream, const SerializeConfig &config) {
+void Serialize(const Node &root, std::ostream &stream, const SerializeConfig &config) {
 	if (config.SpaceIndentation < 2) {
 		throw OperationException(g_ErrorIndentation);
 	}
