@@ -685,15 +685,9 @@ void MainWindow::setupMenuStrings() {
 	ui.action_Find_Incremental->setText(tr("Fi&nd Incremental\t[Shift] Ctrl+I"));
 	ui.action_Replace->setText(tr("&Replace...\t[Shift] Ctrl+R"));
 	ui.action_Replace_Find_Again->setText(tr("Replace Find &Again\t[Shift] Ctrl+T"));
-#ifdef NEDIT_META_SHORCUTS
-	ui.action_Replace_Again->setText(tr("Re&place Again\t[Shift] Meta+T"));
-	ui.action_Mark->setText(tr("Mar&k\tMeta+M a-z"));
-	ui.action_Goto_Mark->setText(tr("G&oto Mark\t[Shift] Meta+G a-z"));
-#else
 	ui.action_Replace_Again->setText(tr("Re&place Again\t[Shift] Alt+T"));
 	ui.action_Mark->setText(tr("Mar&k\tAlt+M a-z"));
 	ui.action_Goto_Mark->setText(tr("G&oto Mark\t[Shift] Alt+G a-z"));
-#endif
 	ui.action_Goto_Matching->setText(tr("Goto &Matching (..)\t[Shift] Ctrl+M"));
 
 	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_9), this, [this]() { action_Shift_Left_Tabs(); });
@@ -707,24 +701,14 @@ void MainWindow::setupMenuStrings() {
 
 	// This is an annoying solution... we can probably do better...
 	for (int key = Qt::Key_A; key <= Qt::Key_Z; ++key) {
-#ifdef NEDIT_META_SHORCUTS
-		create_shortcut(QKeySequence(Qt::META + Qt::Key_M, key), this, [this]() { action_Mark_Shortcut(); });
-		create_shortcut(QKeySequence(Qt::META + Qt::Key_G, key), this, [this]() { action_Goto_Mark_Shortcut(); });
-		create_shortcut(QKeySequence(Qt::SHIFT + Qt::META + Qt::Key_G, key), this, [this]() { action_Shift_Goto_Mark_Shortcut(); });
-#else
 		create_shortcut(QKeySequence(Qt::ALT + Qt::Key_M, key), this, [this]() { action_Mark_Shortcut(); });
 		create_shortcut(QKeySequence(Qt::ALT + Qt::Key_G, key), this, [this]() { action_Goto_Mark_Shortcut(); });
 		create_shortcut(QKeySequence(Qt::SHIFT + Qt::ALT + Qt::Key_G, key), this, [this]() { action_Shift_Goto_Mark_Shortcut(); });
-#endif
 	}
 
 	create_shortcut(QKeySequence(Qt::CTRL + Qt::Key_PageDown), this, [this]() { action_Next_Document(); });
 	create_shortcut(QKeySequence(Qt::CTRL + Qt::Key_PageUp), this, [this]() { action_Prev_Document(); });
-#ifdef NEDIT_META_SHORCUTS
-	create_shortcut(QKeySequence(Qt::META + Qt::Key_Home), this, [this]() { action_Last_Document(); });
-#else
 	create_shortcut(QKeySequence(Qt::ALT + Qt::Key_Home), this, [this]() { action_Last_Document(); });
-#endif
 }
 
 /**

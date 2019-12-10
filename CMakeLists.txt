@@ -20,7 +20,6 @@ elseif(TARGET_COMPILER_MSVC)
 endif()
 
 option(NEDIT_PURIFY "Fill Unused TextBuffer space")
-option(NEDIT_META_SHORCUTS "Use META+<Key> key for shortcuts which nedit used ALT+<Key>")
 
 set(NEDIT_PER_TAB_CLOSE     ON CACHE BOOL "Per Tab Close Buttons")
 set(NEDIT_VISUAL_CTRL_CHARS ON CACHE BOOL "Visualize ASCII Control Characters")
@@ -74,10 +73,6 @@ find_package(Boost 1.35 REQUIRED)
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build." FORCE)
     set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "RelWithDebInfo" "MinSizeRel")
-endif()
-
-if(NEDIT_META_SHORCUTS)
-	add_definitions(-DNEDIT_META_SHORCUTS)
 endif()
 
 if(NEDIT_PURIFY)
