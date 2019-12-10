@@ -685,9 +685,15 @@ void MainWindow::setupMenuStrings() {
 	ui.action_Find_Incremental->setText(tr("Fi&nd Incremental\t[Shift] Ctrl+I"));
 	ui.action_Replace->setText(tr("&Replace...\t[Shift] Ctrl+R"));
 	ui.action_Replace_Find_Again->setText(tr("Replace Find &Again\t[Shift] Ctrl+T"));
+#ifdef NEDIT_META_SHORCUTS
+	ui.action_Replace_Again->setText(tr("Re&place Again\t[Shift] Meta+T"));
+	ui.action_Mark->setText(tr("Mar&k\tMeta+M a-z"));
+	ui.action_Goto_Mark->setText(tr("G&oto Mark\t[Shift] Meta+G a-z"));
+#else
 	ui.action_Replace_Again->setText(tr("Re&place Again\t[Shift] Alt+T"));
 	ui.action_Mark->setText(tr("Mar&k\tAlt+M a-z"));
 	ui.action_Goto_Mark->setText(tr("G&oto Mark\t[Shift] Alt+G a-z"));
+#endif
 	ui.action_Goto_Matching->setText(tr("Goto &Matching (..)\t[Shift] Ctrl+M"));
 
 	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_9), this, [this]() { action_Shift_Left_Tabs(); });
@@ -701,14 +707,24 @@ void MainWindow::setupMenuStrings() {
 
 	// This is an annoying solution... we can probably do better...
 	for (int key = Qt::Key_A; key <= Qt::Key_Z; ++key) {
+#ifdef NEDIT_META_SHORCUTS
+		create_shortcut(QKeySequence(Qt::META + Qt::Key_M, key), this, [this]() { action_Mark_Shortcut(); });
+		create_shortcut(QKeySequence(Qt::META + Qt::Key_G, key), this, [this]() { action_Goto_Mark_Shortcut(); });
+		create_shortcut(QKeySequence(Qt::SHIFT + Qt::META + Qt::Key_G, key), this, [this]() { action_Shift_Goto_Mark_Shortcut(); });
+#else
 		create_shortcut(QKeySequence(Qt::ALT + Qt::Key_M, key), this, [this]() { action_Mark_Shortcut(); });
 		create_shortcut(QKeySequence(Qt::ALT + Qt::Key_G, key), this, [this]() { action_Goto_Mark_Shortcut(); });
 		create_shortcut(QKeySequence(Qt::SHIFT + Qt::ALT + Qt::Key_G, key), this, [this]() { action_Shift_Goto_Mark_Shortcut(); });
+#endif
 	}
 
 	create_shortcut(QKeySequence(Qt::CTRL + Qt::Key_PageDown), this, [this]() { action_Next_Document(); });
 	create_shortcut(QKeySequence(Qt::CTRL + Qt::Key_PageUp), this, [this]() { action_Prev_Document(); });
+#ifdef NEDIT_META_SHORCUTS
+	create_shortcut(QKeySequence(Qt::META + Qt::Key_Home), this, [this]() { action_Last_Document(); });
+#else
 	create_shortcut(QKeySequence(Qt::ALT + Qt::Key_Home), this, [this]() { action_Last_Document(); });
+#endif
 }
 
 /**
@@ -3691,10 +3707,10 @@ DocumentWidget *MainWindow::documentAt(int index) const {
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Statistics_Line_toggled
+ * @brief MainWindow::action_Statistics_Line_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Statistics_Line_toggled(bool state) {
+void MainWindow::action_Statistics_Line_toggled(bool state) {
 
 	for (DocumentWidget *document : openDocuments()) {
 		document->showStatsLine(state);
@@ -3709,16 +3725,16 @@ void MainWindow::MainWindow::action_Statistics_Line_toggled(bool state) {
 ** Turn on and off the continuing display of the incremental search line
 ** (when off, it is popped up and down as needed via TempShowISearch)
 */
-void MainWindow::MainWindow::action_Incremental_Search_Line_toggled(bool state) {
+void MainWindow::action_Incremental_Search_Line_toggled(bool state) {
 	showISearchLine_ = state;
 	ui.incrementalSearchFrame->setVisible(state);
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Show_Line_Numbers_toggled
+ * @brief MainWindow::action_Show_Line_Numbers_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Show_Line_Numbers_toggled(bool state) {
+void MainWindow::action_Show_Line_Numbers_toggled(bool state) {
 	showLineNumbers(state);
 }
 
@@ -3809,10 +3825,10 @@ void MainWindow::action_Text_Fonts_triggered() {
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Highlight_Syntax_toggled
+ * @brief MainWindow::action_Highlight_Syntax_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Highlight_Syntax_toggled(bool state) {
+void MainWindow::action_Highlight_Syntax_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
 
 		document->highlightSyntax_ = state;
@@ -3826,30 +3842,30 @@ void MainWindow::MainWindow::action_Highlight_Syntax_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Apply_Backlighting_toggled
+ * @brief MainWindow::action_Apply_Backlighting_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Apply_Backlighting_toggled(bool state) {
+void MainWindow::action_Apply_Backlighting_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
 		document->setBacklightChars(state ? Preferences::GetPrefBacklightCharTypes() : QString());
 	}
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Make_Backup_Copy_toggled
+ * @brief MainWindow::action_Make_Backup_Copy_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Make_Backup_Copy_toggled(bool state) {
+void MainWindow::action_Make_Backup_Copy_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
 		document->info_->saveOldVersion = state;
 	}
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Incremental_Backup_toggled
+ * @brief MainWindow::action_Incremental_Backup_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Incremental_Backup_toggled(bool state) {
+void MainWindow::action_Incremental_Backup_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
 		document->info_->autoSave = state;
 	}
@@ -3875,30 +3891,30 @@ void MainWindow::matchingGroupTriggered(QAction *action) {
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Matching_Syntax_toggled
+ * @brief MainWindow::action_Matching_Syntax_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Matching_Syntax_toggled(bool state) {
+void MainWindow::action_Matching_Syntax_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
 		document->info_->matchSyntaxBased = state;
 	}
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Overtype_toggled
+ * @brief MainWindow::action_Overtype_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Overtype_toggled(bool state) {
+void MainWindow::action_Overtype_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
 		document->setOverstrike(state);
 	}
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Read_Only_toggled
+ * @brief MainWindow::action_Read_Only_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Read_Only_toggled(bool state) {
+void MainWindow::action_Read_Only_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
 		document->info_->lockReasons.setUserLocked(state);
 		updateWindowTitle(document);
@@ -4104,10 +4120,10 @@ void MainWindow::action_Default_Window_Background_Menu_triggered() {
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Sort_Open_Prev_Menu_toggled
+ * @brief MainWindow::action_Default_Sort_Open_Prev_Menu_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Sort_Open_Prev_Menu_toggled(bool state) {
+void MainWindow::action_Default_Sort_Open_Prev_Menu_toggled(bool state) {
 
 	// Set the preference, make the other windows' menus agree
 	Preferences::SetPrefSortOpenPrevMenu(state);
@@ -4117,10 +4133,10 @@ void MainWindow::MainWindow::action_Default_Sort_Open_Prev_Menu_toggled(bool sta
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Show_Path_In_Windows_Menu_toggled
+ * @brief MainWindow::action_Default_Show_Path_In_Windows_Menu_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Show_Path_In_Windows_Menu_toggled(bool state) {
+void MainWindow::action_Default_Show_Path_In_Windows_Menu_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefShowPathInWindowsMenu(state);
@@ -4142,10 +4158,10 @@ void MainWindow::action_Default_Customize_Window_Title_triggered() {
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Search_Verbose_toggled
+ * @brief MainWindow::action_Default_Search_Verbose_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Search_Verbose_toggled(bool state) {
+void MainWindow::action_Default_Search_Verbose_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefSearchDlogs(state);
@@ -4155,10 +4171,10 @@ void MainWindow::MainWindow::action_Default_Search_Verbose_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Search_Wrap_Around_toggled
+ * @brief MainWindow::action_Default_Search_Wrap_Around_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Search_Wrap_Around_toggled(bool state) {
+void MainWindow::action_Default_Search_Wrap_Around_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefSearchWraps(state);
@@ -4168,10 +4184,10 @@ void MainWindow::MainWindow::action_Default_Search_Wrap_Around_toggled(bool stat
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Search_Beep_On_Search_Wrap_toggled
+ * @brief MainWindow::action_Default_Search_Beep_On_Search_Wrap_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Search_Beep_On_Search_Wrap_toggled(bool state) {
+void MainWindow::action_Default_Search_Beep_On_Search_Wrap_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefBeepOnSearchWrap(state);
@@ -4181,10 +4197,10 @@ void MainWindow::MainWindow::action_Default_Search_Beep_On_Search_Wrap_toggled(b
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Search_Keep_Dialogs_Up_toggled
+ * @brief MainWindow::action_Default_Search_Keep_Dialogs_Up_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Search_Keep_Dialogs_Up_toggled(bool state) {
+void MainWindow::action_Default_Search_Keep_Dialogs_Up_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefKeepSearchDlogs(state);
@@ -4270,10 +4286,10 @@ void MainWindow::action_Default_Syntax_Text_Drawing_Styles_triggered() {
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Apply_Backlighting_toggled
+ * @brief MainWindow::action_Default_Apply_Backlighting_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Apply_Backlighting_toggled(bool state) {
+void MainWindow::action_Default_Apply_Backlighting_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefBacklightChars(state);
@@ -4283,10 +4299,10 @@ void MainWindow::MainWindow::action_Default_Apply_Backlighting_toggled(bool stat
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Tab_Open_File_In_New_Tab_toggled
+ * @brief MainWindow::action_Default_Tab_Open_File_In_New_Tab_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) {
+void MainWindow::action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefOpenInTab(state);
@@ -4302,10 +4318,10 @@ void MainWindow::MainWindow::action_Default_Tab_Open_File_In_New_Tab_toggled(boo
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Tab_Show_Tab_Bar_toggled
+ * @brief MainWindow::action_Default_Tab_Show_Tab_Bar_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
+void MainWindow::action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefTabBar(state);
@@ -4316,10 +4332,10 @@ void MainWindow::MainWindow::action_Default_Tab_Show_Tab_Bar_toggled(bool state)
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled
+ * @brief MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled(bool state) {
+void MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefTabBarHideOne(state);
@@ -4330,10 +4346,10 @@ void MainWindow::MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Docum
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled
+ * @brief MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool state) {
+void MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefGlobalTabNavigate(state);
@@ -4343,10 +4359,10 @@ void MainWindow::MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows_to
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically_toggled
+ * @brief MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state) {
+void MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefSortTabs(state);
@@ -4371,10 +4387,10 @@ void MainWindow::MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically_toggled
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Show_Tooltips_toggled
+ * @brief MainWindow::action_Default_Show_Tooltips_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Show_Tooltips_toggled(bool state) {
+void MainWindow::action_Default_Show_Tooltips_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefToolTips(state);
@@ -4384,10 +4400,10 @@ void MainWindow::MainWindow::action_Default_Show_Tooltips_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Statistics_Line_toggled
+ * @brief MainWindow::action_Default_Statistics_Line_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Statistics_Line_toggled(bool state) {
+void MainWindow::action_Default_Statistics_Line_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefStatsLine(state);
@@ -4397,10 +4413,10 @@ void MainWindow::MainWindow::action_Default_Statistics_Line_toggled(bool state) 
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Incremental_Search_Line_toggled
+ * @brief MainWindow::action_Default_Incremental_Search_Line_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Incremental_Search_Line_toggled(bool state) {
+void MainWindow::action_Default_Incremental_Search_Line_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefISearchLine(state);
@@ -4410,10 +4426,10 @@ void MainWindow::MainWindow::action_Default_Incremental_Search_Line_toggled(bool
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Show_Line_Numbers_toggled
+ * @brief MainWindow::action_Default_Show_Line_Numbers_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Show_Line_Numbers_toggled(bool state) {
+void MainWindow::action_Default_Show_Line_Numbers_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefLineNums(state);
@@ -4423,10 +4439,10 @@ void MainWindow::MainWindow::action_Default_Show_Line_Numbers_toggled(bool state
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Make_Backup_Copy_toggled
+ * @brief MainWindow::action_Default_Make_Backup_Copy_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Make_Backup_Copy_toggled(bool state) {
+void MainWindow::action_Default_Make_Backup_Copy_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefSaveOldVersion(state);
@@ -4436,10 +4452,10 @@ void MainWindow::MainWindow::action_Default_Make_Backup_Copy_toggled(bool state)
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Incremental_Backup_toggled
+ * @brief MainWindow::action_Default_Incremental_Backup_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Incremental_Backup_toggled(bool state) {
+void MainWindow::action_Default_Incremental_Backup_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefAutoSave(state);
@@ -4475,10 +4491,10 @@ void MainWindow::defaultMatchingGroupTriggered(QAction *action) {
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Matching_Syntax_Based_toggled
+ * @brief MainWindow::action_Default_Matching_Syntax_Based_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Matching_Syntax_Based_toggled(bool state) {
+void MainWindow::action_Default_Matching_Syntax_Based_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefMatchSyntaxBased(state);
@@ -4488,10 +4504,10 @@ void MainWindow::MainWindow::action_Default_Matching_Syntax_Based_toggled(bool s
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Terminate_with_Line_Break_on_Save_toggled
+ * @brief MainWindow::action_Default_Terminate_with_Line_Break_on_Save_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state) {
+void MainWindow::action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefAppendLF(state);
@@ -4501,10 +4517,10 @@ void MainWindow::MainWindow::action_Default_Terminate_with_Line_Break_on_Save_to
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Popups_Under_Pointer_toggled
+ * @brief MainWindow::action_Default_Popups_Under_Pointer_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Popups_Under_Pointer_toggled(bool state) {
+void MainWindow::action_Default_Popups_Under_Pointer_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefRepositionDialogs(state);
@@ -4514,10 +4530,10 @@ void MainWindow::MainWindow::action_Default_Popups_Under_Pointer_toggled(bool st
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled
+ * @brief MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled
  * @param state
  */
-void MainWindow::MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state) {
+void MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefAutoScroll(state);
@@ -4527,7 +4543,7 @@ void MainWindow::MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_t
 }
 
 /**
- * @brief MainWindow::MainWindow::action_Default_Warnings_Files_Modified_Externally_toggled
+ * @brief MainWindow::action_Default_Warnings_Files_Modified_Externally_toggled
  * @param state
  */
 void MainWindow::action_Default_Warnings_Files_Modified_Externally_toggled(bool state) {
