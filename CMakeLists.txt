@@ -144,6 +144,7 @@ endif()
 
 add_subdirectory(Util)
 add_subdirectory(src)
+add_subdirectory(libs)
 add_subdirectory(client)
 add_subdirectory(Regex)
 add_subdirectory(Settings)
