@@ -7,6 +7,7 @@
 #include "Util/Input.h"
 #include "Util/Raise.h"
 #include "Util/Resource.h"
+#include "Util/algorithm.h"
 #include "shift.h"
 
 #include <QMessageBox>
@@ -286,15 +287,9 @@ bool loadSmartIndentString(const QString &string) {
 				is.modMacro = QString();
 			}
 
-			auto it = std::find_if(SmartIndentSpecs.begin(), SmartIndentSpecs.end(), [&is](const SmartIndentEntry &entry) {
+			insert_or_replace(SmartIndentSpecs, is, [&is](const SmartIndentEntry &entry) {
 				return entry.languageMode == is.languageMode;
 			});
-
-			if (it == SmartIndentSpecs.end()) {
-				SmartIndentSpecs.push_back(is);
-			} else {
-				*it = is;
-			}
 		}
 	} catch (const ParseError &e) {
 		return Preferences::reportError(

@@ -1,0 +1,175 @@
+- Ada:
+    extensions:
+      - .ada
+      - .ad
+      - .ads
+      - .adb
+      - .a
+- Awk:
+    extensions:
+      - .awk
+- C++:
+    extensions:
+      - .cc
+      - .hh
+      - .C
+      - .H
+      - .i
+      - .cxx
+      - .hxx
+      - .cpp
+      - .c++
+    delimiters: .,/\`'!|@#%^&*()-=+{}[]":;<>?~
+- C:
+    extensions:
+      - .c
+      - .h
+    delimiters: .,/\`'!|@#%^&*()-=+{}[]":;<>?~
+- CSS:
+    extensions:
+      - css
+    delimiters: .,/\`'!|@#%^&*()=+{}[]":;<>?~
+    wrap: None
+    indent: Auto
+- Csh:
+    extensions:
+      - .csh
+      - .cshrc
+      - .tcshrc
+      - .login
+      - .logout
+    regex: ^[ \t]*#[ \t]*![ \t]*/bin/t?csh
+- Fortran:
+    extensions:
+      - .f
+      - .f77
+      - .for
+- Java:
+    extensions:
+      - .java
+- JavaScript:
+    extensions:
+      - .js
+- LaTeX:
+    extensions:
+      - .tex
+      - .sty
+      - .cls
+      - .ltx
+      - .ins
+      - .clo
+      - .fd
+- Lex:
+    extensions:
+      - .lex
+- Makefile:
+    extensions:
+      - Makefile
+      - makefile
+      - .gmk
+    tab_distance: 8
+    em_tab_distance: 8
+    wrap: None
+- Matlab:
+    extensions:
+      - .m
+      - .oct
+      - .sci
+- NEdit Macro:
+    extensions:
+      - .nm
+      - .neditmacro
+- Pascal:
+    extensions:
+      - .pas
+      - .p
+      - .int
+- Perl:
+    extensions:
+      - .pl
+      - .pm
+      - .p5
+      - .PL
+    delimiters: .,/\\`'!$@#%^&*()-=+{}[]":;<>?~|
+    regex: ^[ \t]*#[ \t]*!.*perl
+    wrap: None
+    indent: Auto
+- PostScript:
+    extensions:
+      - .ps
+      - .eps
+      - .epsf
+      - .epsi
+    delimiters: /%(){}[]<>
+    regex: ^%!
+- Python:
+    extensions:
+      - .py
+    delimiters: "!\"#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~"
+    regex: ^#!.*python
+    wrap: None
+    indent: Auto
+- Regex:
+    extensions:
+      - .reg
+      - .regex
+    regex: \(\?[:#=!iInN].+\)
+    wrap: Continuous
+    indent: None
+- SGML HTML:
+    extensions:
+      - .sgml
+      - .sgm
+      - .html
+      - .htm
+    regex: \<[Hh][Tt][Mm][Ll]\>
+- SQL:
+    extensions:
+      - .sql
+- Sh Ksh Bash:
+    extensions:
+      - .sh
+      - .bash
+      - .ksh
+      - .profile
+      - .bashrc
+      - .bash_logout
+      - .bash_login
+      - .bash_profile
+    regex: ^[ \t]*#[ \t]*![ \t]*/.*bin/(bash|ksh|sh|zsh)
+- Tcl:
+    extensions:
+      - .tcl
+      - .tk
+      - .itcl
+      - .itk
+    wrap: None
+    indent: Smart
+- VHDL:
+    extensions:
+      - .vhd
+      - .vhdl
+      - .vdl
+- Verilog:
+    extensions:
+      - .v
+- XML:
+    extensions:
+      - .xml
+      - .xsl
+      - .dtd
+    delimiters: <>/="'()+*?|
+    regex: \<(?i\?xml|!doctype)
+    wrap: None
+- X Resources:
+    extensions:
+      - .Xresources
+      - .Xdefaults
+      - .nedit
+      - .pats
+      - nedit.rc
+    regex: ^[!#].*([Aa]pp|[Xx]).*[Dd]efaults
+- Yacc:
+    extensions:
+      - .y
+    delimiters: .,/\`'!|@#%^&*()-=+{}[]":;<>?~

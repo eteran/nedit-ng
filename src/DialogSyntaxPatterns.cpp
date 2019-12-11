@@ -14,6 +14,7 @@
 #include "PatternSet.h"
 #include "Preferences.h"
 #include "SignalBlocker.h"
+#include "Util/algorithm.h"
 #include "WindowHighlightData.h"
 
 #include <QMessageBox>
@@ -464,15 +465,9 @@ void DialogSyntaxPatterns::buttonRestore_clicked() {
 	}
 
 	// if a stored version of the pattern set exists, replace it, if it doesn't, add a new one
-	auto it = std::find_if(Highlight::PatternSets.begin(), Highlight::PatternSets.end(), [languageMode](const PatternSet &pattern) {
+	insert_or_replace(Highlight::PatternSets, *defaultPatSet, [languageMode](const PatternSet &pattern) {
 		return pattern.languageMode == languageMode;
 	});
-
-	if (it != Highlight::PatternSets.end()) {
-		*it = *defaultPatSet;
-	} else {
-		Highlight::PatternSets.push_back(*defaultPatSet);
-	}
 
 	model_->clear();
 

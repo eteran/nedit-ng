@@ -38,8 +38,8 @@
         <file>DefaultSmartIndentInit.txt</file>
         <file>DefaultSmartIndentInitCommon.txt</file>
         <file>DefaultMacroCommands.txt</file>
-        <file>DefaultLanguageModes.txt</file>
         <file>DefaultShellCommandsUnix.txt</file>
         <file>DefaultShellCommandsWindows.txt</file>
+        <file>DefaultLanguageModes.yml</file>
     </qresource>
 </RCC>

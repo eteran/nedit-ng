@@ -43,4 +43,15 @@ constexpr view::basic_string_view<Ch, Tr> substr(const Ch *first, const Ch *last
 	return view::basic_string_view<Ch, Tr>(data, static_cast<size_t>(size));
 }
 
+template <class Cont, class T, class Pred>
+void insert_or_replace(Cont &cont, T &&item, Pred &&pred) {
+
+	auto it = std::find_if(cont.begin(), cont.end(), pred);
+	if (it != cont.end()) {
+		*it = std::move(item);
+	} else {
+		cont.emplace_back(std::move(item));
+	}
+}
+
 #endif
