@@ -13,6 +13,7 @@
 #include "TextBuffer.h"
 #include "Util/Input.h"
 #include "Util/Resource.h"
+#include "Util/algorithm.h"
 #include "WindowHighlightData.h"
 #include "X11Colors.h"
 
@@ -1385,15 +1386,9 @@ bool LoadHighlightString(const QString &string) {
 		}
 
 		// Add/change the pattern set in the list
-		auto it = std::find_if(PatternSets.begin(), PatternSets.end(), [&patSet](const PatternSet &patternSet) {
+		insert_or_replace(PatternSets, *patSet, [&patSet](const PatternSet &patternSet) {
 			return patternSet.languageMode == patSet->languageMode;
 		});
-
-		if (it != PatternSets.end()) {
-			*it = std::move(*patSet);
-		} else {
-			PatternSets.push_back(std::move(*patSet));
-		}
 
 		// if the string ends here, we're done
 		in.skipWhitespaceNL();

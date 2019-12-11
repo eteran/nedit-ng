@@ -12,6 +12,7 @@
 #include "Theme.h"
 #include "Util/ClearCase.h"
 #include "Util/Input.h"
+#include "Util/algorithm.h"
 #include "Util/version.h"
 #include "nedit.h"
 #include "search.h"
@@ -236,15 +237,9 @@ int loadLanguageModesString(const QString &string) {
 			lm.defTipsFile = defTipsFile;
 
 			// pattern set was read correctly, add/replace it in the list
-			auto it = std::find_if(LanguageModes.begin(), LanguageModes.end(), [&lm](const LanguageMode &languageMode) {
+			insert_or_replace(LanguageModes, lm, [&lm](const LanguageMode &languageMode) {
 				return languageMode.name == lm.name;
 			});
-
-			if (it != LanguageModes.end()) {
-				*it = lm;
-			} else {
-				LanguageModes.push_back(lm);
-			}
 
 			// if the string ends here, we're done
 			in.skipWhitespaceNL();

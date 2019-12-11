@@ -3219,7 +3219,7 @@ void MainWindow::action_Mark_Shortcut() {
 		if (DocumentWidget *document = currentDocument()) {
 
 			const int key = sequence[1];
-			if(key >= Qt::Key_A && key <= Qt::Key_Z) {
+			if (key >= Qt::Key_A && key <= Qt::Key_Z) {
 				QString keyseq(key);
 				action_Mark(document, keyseq);
 			} else {
@@ -3290,15 +3290,12 @@ void MainWindow::action_Goto_Mark_Shortcut_Helper(bool shifted) {
 
 		if (DocumentWidget *document = currentDocument()) {
 
-			if (DocumentWidget *document = currentDocument()) {
-
-				const int key = sequence[1];
-				if(key >= Qt::Key_A && key <= Qt::Key_Z) {
-					QString keyseq(key);
-					action_Goto_Mark(document, keyseq, shifted);
-				} else {
-					QApplication::beep();
-				}
+			const int key = sequence[1];
+			if (key >= Qt::Key_A && key <= Qt::Key_Z) {
+				QString keyseq(key);
+				action_Goto_Mark(document, keyseq, shifted);
+			} else {
+				QApplication::beep();
 			}
 		}
 	}

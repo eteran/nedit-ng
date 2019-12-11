@@ -3,6 +3,7 @@
 #include "Highlight.h"
 #include "HighlightStyle.h"
 #include "Settings.h"
+#include "Util/algorithm.h"
 
 #include <QDomDocument>
 #include <QDomElement>
@@ -95,15 +96,9 @@ void load() {
 			}
 
 			// pattern set was read correctly, add/change it in the list
-			auto it = std::find_if(Highlight::HighlightStyles.begin(), Highlight::HighlightStyles.end(), [&hs](const HighlightStyle &entry) {
+			insert_or_replace(Highlight::HighlightStyles, hs, [&hs](const HighlightStyle &entry) {
 				return entry.name == hs.name;
 			});
-
-			if (it == Highlight::HighlightStyles.end()) {
-				Highlight::HighlightStyles.push_back(hs);
-			} else {
-				*it = hs;
-			}
 		}
 	}
 }

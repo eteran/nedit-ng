@@ -10,6 +10,7 @@
 #include "SmartIndent.h"
 #include "SmartIndentEntry.h"
 #include "Util/String.h"
+#include "Util/algorithm.h"
 #include "macro.h"
 #include "parse.h"
 
@@ -238,18 +239,11 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	// Get the current data
 	SmartIndentEntry newMacros = getSmartIndentDialogData();
 
-	// Find the original macros
-	auto it = std::find_if(SmartIndent::SmartIndentSpecs.begin(), SmartIndent::SmartIndentSpecs.end(), [this](const SmartIndentEntry &entry) {
-		return entry.languageMode == languageMode_;
-	});
-
 	/* If it's a new language, add it at the end, otherwise replace the
 	   existing macros */
-	if (it == SmartIndent::SmartIndentSpecs.end()) {
-		SmartIndent::SmartIndentSpecs.push_back(newMacros);
-	} else {
-		*it = newMacros;
-	}
+	insert_or_replace(SmartIndent::SmartIndentSpecs, newMacros, [this](const SmartIndentEntry &entry) {
+		return entry.languageMode == languageMode_;
+	});
 
 	/* Find windows that are currently using this indent specification and
 	   re-do the smart indent macros */
