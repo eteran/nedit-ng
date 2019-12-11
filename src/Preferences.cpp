@@ -16,6 +16,7 @@
 #include "nedit.h"
 #include "search.h"
 #include "userCmds.h"
+#include "yaml-cpp/yaml.h"
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -32,6 +33,8 @@
 #include <pwd.h>
 #include <unistd.h>
 #endif
+
+#include <iostream>
 
 namespace Preferences {
 namespace {
@@ -105,162 +108,288 @@ QString getDefaultShell() {
 #endif
 }
 
-int loadLanguageModesString(const QString &string) {
+void loadLanguageModesString(const QString &string) {
 
 	struct ModeError {
 		QString message;
 	};
 
-	Input in(&string);
+	if (string == QLatin1String("*")) {
 
-	try {
-		QString errMsg;
+		const QString languageModeFile = Settings::languageModeFile();
+		try {
+			YAML::Node languages = YAML::LoadFile(languageModeFile.toUtf8().data());
+			for (size_t i = 0; i < languages.size(); i++) {
+				YAML::Node language = languages[i];
+				if (languages[i].IsMap()) {
+					for (auto it = language.begin(); it != language.end(); ++it) {
 
-		Q_FOREVER {
-			// skip over blank space
-			in.skipWhitespaceNL();
+						LanguageMode lm;
 
-			LanguageMode lm;
+						lm.name                   = QString::fromUtf8(it->first.as<std::string>().c_str());
+						const YAML::Node &entries = it->second;
 
-			// read language mode name
-			const QString name = ReadSymbolicField(in);
-			if (name.isNull()) {
-				Raise<ModeError>(tr("language mode name required"));
-			}
+						for (auto it2 = entries.begin(); it2 != entries.end(); ++it2) {
 
-			lm.name = name;
+							const auto &key         = it2->first.as<std::string>();
+							const YAML::Node &value = it2->second;
 
-			if (!SkipDelimiter(in, &errMsg)) {
-				Raise<ModeError>(errMsg);
-			}
+							if (key == "delimiters") {
+								lm.delimiters = QString::fromUtf8(value.as<std::string>().c_str());
+							} else if (key == "tab_distance") {
+								lm.tabDist = value.as<int>();
+							} else if (key == "em_tab_distance") {
+								lm.emTabDist = value.as<int>();
+							} else if (key == "regex") {
+								lm.recognitionExpr = QString::fromUtf8(value.as<std::string>().c_str());
+							} else if (key == "wrap") {
+								const auto &string_val = QString::fromUtf8(value.as<std::string>().c_str());
+								auto it                = std::find(std::begin(AutoWrapTypes), std::end(AutoWrapTypes), string_val);
+								if (it == std::end(AutoWrapTypes)) {
+									Raise<ModeError>(tr("unrecognized wrap style"));
+								}
 
-			// read list of extensions
-			lm.extensions = readExtensionList(in);
-			if (!SkipDelimiter(in, &errMsg)) {
-				Raise<ModeError>(errMsg);
-			}
+								lm.wrapStyle = static_cast<WrapStyle>(it - std::begin(AutoWrapTypes));
+							} else if (key == "indent") {
+								const auto &string_val = QString::fromUtf8(value.as<std::string>().c_str());
+								auto it                = std::find(std::begin(AutoIndentTypes), std::end(AutoIndentTypes), string_val);
+								if (it == std::end(AutoIndentTypes)) {
+									Raise<ModeError>(tr("unrecognized indent style"));
+								}
 
-			// read the recognition regular expression
-			QString recognitionExpr;
-			if (in.atEnd() || *in == QLatin1Char('\n') || *in == QLatin1Char(':')) {
-				recognitionExpr = QString();
-			} else if (!ReadQuotedString(in, &errMsg, &recognitionExpr)) {
-				Raise<ModeError>(errMsg);
-			}
+								lm.indentStyle = static_cast<IndentStyle>(it - std::begin(AutoIndentTypes));
+							} else if (key == "default_tips") {
+								lm.defTipsFile = QString::fromUtf8(value.as<std::string>().c_str());
+							} else if (key == "extensions") {
+							}
+						}
 
-			lm.recognitionExpr = recognitionExpr;
+						{
+							// pattern set was read correctly, add/replace it in the list
+							auto it = std::find_if(LanguageModes.begin(), LanguageModes.end(), [&lm](const LanguageMode &languageMode) {
+								return languageMode.name == lm.name;
+							});
 
-			if (!SkipDelimiter(in, &errMsg)) {
-				Raise<ModeError>(errMsg);
-			}
-
-			// read the indent style
-			const QString styleName = ReadSymbolicField(in);
-			if (styleName.isNull()) {
-				lm.indentStyle = IndentStyle::Default;
-			} else {
-				auto it = std::find(std::begin(AutoIndentTypes), std::end(AutoIndentTypes), styleName);
-				if (it == std::end(AutoIndentTypes)) {
-					Raise<ModeError>(tr("unrecognized indent style"));
+							if (it != LanguageModes.end()) {
+								*it = lm;
+							} else {
+								LanguageModes.push_back(lm);
+							}
+						}
+					}
 				}
-
-				lm.indentStyle = static_cast<IndentStyle>(it - std::begin(AutoIndentTypes));
 			}
-
-			if (!SkipDelimiter(in, &errMsg)) {
-				Raise<ModeError>(errMsg);
-			}
-
-			// read the wrap style
-			const QString wrapStyle = ReadSymbolicField(in);
-			if (wrapStyle.isNull()) {
-				lm.wrapStyle = WrapStyle::Default;
-			} else {
-				auto it = std::find(std::begin(AutoWrapTypes), std::end(AutoWrapTypes), wrapStyle);
-				if (it == std::end(AutoWrapTypes)) {
-					Raise<ModeError>(tr("unrecognized wrap style"));
-				}
-
-				lm.wrapStyle = static_cast<WrapStyle>(it - std::begin(AutoWrapTypes));
-			}
-
-			if (!SkipDelimiter(in, &errMsg)) {
-				Raise<ModeError>(errMsg);
-			}
-
-			// read the tab distance
-			if (in.atEnd() || *in == QLatin1Char('\n') || *in == QLatin1Char(':')) {
-				lm.tabDist = LanguageMode::DEFAULT_TAB_DIST;
-			} else if (!ReadNumericField(in, &lm.tabDist)) {
-				Raise<ModeError>(tr("bad tab spacing"));
-			}
-
-			if (!SkipDelimiter(in, &errMsg)) {
-				Raise<ModeError>(errMsg);
-			}
-
-			// read emulated tab distance
-			if (in.atEnd() || *in == QLatin1Char('\n') || *in == QLatin1Char(':')) {
-				lm.emTabDist = LanguageMode::DEFAULT_EM_TAB_DIST;
-			} else if (!ReadNumericField(in, &lm.emTabDist)) {
-				Raise<ModeError>(tr("bad emulated tab spacing"));
-			}
-
-			if (!SkipDelimiter(in, &errMsg)) {
-				Raise<ModeError>(errMsg);
-			}
-
-			// read the delimiters string
-			QString delimiters;
-			if (in.atEnd() || *in == QLatin1Char('\n') || *in == QLatin1Char(':')) {
-				delimiters = QString();
-			} else if (!ReadQuotedString(in, &errMsg, &delimiters)) {
-				Raise<ModeError>(errMsg);
-			}
-
-			lm.delimiters = delimiters;
-
-			// After 5.3 all language modes need a default tips file field
-			if (!SkipDelimiter(in, &errMsg)) {
-				Raise<ModeError>(errMsg);
-			}
-
-			// read the default tips file
-			QString defTipsFile;
-			if (in.atEnd() || *in == QLatin1Char('\n')) {
-				defTipsFile = QString();
-			} else if (!ReadQuotedString(in, &errMsg, &defTipsFile)) {
-				Raise<ModeError>(errMsg);
-			}
-
-			lm.defTipsFile = defTipsFile;
-
-			// pattern set was read correctly, add/replace it in the list
-			auto it = std::find_if(LanguageModes.begin(), LanguageModes.end(), [&lm](const LanguageMode &languageMode) {
-				return languageMode.name == lm.name;
-			});
-
-			if (it != LanguageModes.end()) {
-				*it = lm;
-			} else {
-				LanguageModes.push_back(lm);
-			}
-
-			// if the string ends here, we're done
-			in.skipWhitespaceNL();
-
-			if (in.atEnd()) {
-				return true;
-			}
+		} catch (const YAML::Exception &e) {
+			printf("Error:\n");
 		}
-	} catch (const ModeError &error) {
-		return reportError(
-			nullptr,
-			*in.string(),
-			in.index(),
-			tr("language mode specification"),
-			error.message);
+
+	} else {
+
+		Input in(&string);
+
+		try {
+			QString errMsg;
+
+			Q_FOREVER {
+				// skip over blank space
+				in.skipWhitespaceNL();
+
+				LanguageMode lm;
+
+				// read language mode name
+				const QString name = ReadSymbolicField(in);
+				if (name.isNull()) {
+					Raise<ModeError>(tr("language mode name required"));
+				}
+
+				lm.name = name;
+
+				if (!SkipDelimiter(in, &errMsg)) {
+					Raise<ModeError>(errMsg);
+				}
+
+				// read list of extensions
+				lm.extensions = readExtensionList(in);
+				if (!SkipDelimiter(in, &errMsg)) {
+					Raise<ModeError>(errMsg);
+				}
+
+				// read the recognition regular expression
+				QString recognitionExpr;
+				if (in.atEnd() || *in == QLatin1Char('\n') || *in == QLatin1Char(':')) {
+					recognitionExpr = QString();
+				} else if (!ReadQuotedString(in, &errMsg, &recognitionExpr)) {
+					Raise<ModeError>(errMsg);
+				}
+
+				lm.recognitionExpr = recognitionExpr;
+
+				if (!SkipDelimiter(in, &errMsg)) {
+					Raise<ModeError>(errMsg);
+				}
+
+				// read the indent style
+				const QString styleName = ReadSymbolicField(in);
+				if (styleName.isNull()) {
+					lm.indentStyle = IndentStyle::Default;
+				} else {
+					auto it = std::find(std::begin(AutoIndentTypes), std::end(AutoIndentTypes), styleName);
+					if (it == std::end(AutoIndentTypes)) {
+						Raise<ModeError>(tr("unrecognized indent style"));
+					}
+
+					lm.indentStyle = static_cast<IndentStyle>(it - std::begin(AutoIndentTypes));
+				}
+
+				if (!SkipDelimiter(in, &errMsg)) {
+					Raise<ModeError>(errMsg);
+				}
+
+				// read the wrap style
+				const QString wrapStyle = ReadSymbolicField(in);
+				if (wrapStyle.isNull()) {
+					lm.wrapStyle = WrapStyle::Default;
+				} else {
+					auto it = std::find(std::begin(AutoWrapTypes), std::end(AutoWrapTypes), wrapStyle);
+					if (it == std::end(AutoWrapTypes)) {
+						Raise<ModeError>(tr("unrecognized wrap style"));
+					}
+
+					lm.wrapStyle = static_cast<WrapStyle>(it - std::begin(AutoWrapTypes));
+				}
+
+				if (!SkipDelimiter(in, &errMsg)) {
+					Raise<ModeError>(errMsg);
+				}
+
+				// read the tab distance
+				if (in.atEnd() || *in == QLatin1Char('\n') || *in == QLatin1Char(':')) {
+					lm.tabDist = LanguageMode::DEFAULT_TAB_DIST;
+				} else if (!ReadNumericField(in, &lm.tabDist)) {
+					Raise<ModeError>(tr("bad tab spacing"));
+				}
+
+				if (!SkipDelimiter(in, &errMsg)) {
+					Raise<ModeError>(errMsg);
+				}
+
+				// read emulated tab distance
+				if (in.atEnd() || *in == QLatin1Char('\n') || *in == QLatin1Char(':')) {
+					lm.emTabDist = LanguageMode::DEFAULT_EM_TAB_DIST;
+				} else if (!ReadNumericField(in, &lm.emTabDist)) {
+					Raise<ModeError>(tr("bad emulated tab spacing"));
+				}
+
+				if (!SkipDelimiter(in, &errMsg)) {
+					Raise<ModeError>(errMsg);
+				}
+
+				// read the delimiters string
+				QString delimiters;
+				if (in.atEnd() || *in == QLatin1Char('\n') || *in == QLatin1Char(':')) {
+					delimiters = QString();
+				} else if (!ReadQuotedString(in, &errMsg, &delimiters)) {
+					Raise<ModeError>(errMsg);
+				}
+
+				lm.delimiters = delimiters;
+
+				// After 5.3 all language modes need a default tips file field
+				if (!SkipDelimiter(in, &errMsg)) {
+					Raise<ModeError>(errMsg);
+				}
+
+				// read the default tips file
+				QString defTipsFile;
+				if (in.atEnd() || *in == QLatin1Char('\n')) {
+					defTipsFile = QString();
+				} else if (!ReadQuotedString(in, &errMsg, &defTipsFile)) {
+					Raise<ModeError>(errMsg);
+				}
+
+				lm.defTipsFile = defTipsFile;
+
+				// pattern set was read correctly, add/replace it in the list
+				auto it = std::find_if(LanguageModes.begin(), LanguageModes.end(), [&lm](const LanguageMode &languageMode) {
+					return languageMode.name == lm.name;
+				});
+
+				if (it != LanguageModes.end()) {
+					*it = lm;
+				} else {
+					LanguageModes.push_back(lm);
+				}
+
+				// if the string ends here, we're done
+				in.skipWhitespaceNL();
+
+				if (in.atEnd()) {
+					break;
+				}
+			}
+		} catch (const ModeError &error) {
+			reportError(
+				nullptr,
+				*in.string(),
+				in.index(),
+				tr("language mode specification"),
+				error.message);
+		}
 	}
+
+	YAML::Emitter out;
+	out << YAML::BeginMap;
+	for (const LanguageMode &lang : LanguageModes) {
+
+		out << YAML::Key << lang.name.toUtf8().data();
+		out << YAML::Value << YAML::BeginMap;
+		if (!lang.extensions.empty()) {
+			out << YAML::Key << "extensions";
+			out << YAML::Value << YAML::BeginSeq;
+			for (const QString &s : lang.extensions) {
+				out << s.toUtf8().data();
+			}
+			out << YAML::EndSeq;
+		}
+
+		if (!lang.delimiters.isEmpty()) {
+			out << YAML::Key << "delimiters";
+			out << YAML::Value << lang.delimiters.toUtf8().data();
+		}
+
+		if (lang.tabDist != LanguageMode::DEFAULT_TAB_DIST) {
+			out << YAML::Key << "tab_distance";
+			out << YAML::Value << lang.tabDist;
+		}
+
+		if (lang.tabDist != LanguageMode::DEFAULT_EM_TAB_DIST) {
+			out << YAML::Key << "em_tab_distance";
+			out << YAML::Value << lang.emTabDist;
+		}
+
+		if (!lang.recognitionExpr.isEmpty()) {
+			out << YAML::Key << "regex";
+			out << YAML::Value << lang.recognitionExpr.toUtf8().data();
+		}
+
+		if (lang.wrapStyle != WrapStyle::Default) {
+			out << YAML::Key << "wrap";
+			out << YAML::Value << AutoWrapTypes[static_cast<int>(lang.wrapStyle)].data();
+		}
+
+		if (lang.indentStyle != IndentStyle::Default) {
+			out << YAML::Key << "indent";
+			out << YAML::Value << AutoIndentTypes[static_cast<int>(lang.indentStyle)].data();
+		}
+
+		if (!lang.defTipsFile.isEmpty()) {
+			out << YAML::Key << "default_tips";
+			out << YAML::Value << lang.defTipsFile.toUtf8().data();
+		}
+		out << YAML::EndMap;
+	}
+	out << YAML::EndMap;
+	std::cout << out.c_str() << std::endl;
 }
 
 /*

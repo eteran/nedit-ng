@@ -280,6 +280,7 @@ PUBLIC
 	$<$<BOOL:${X11_FOUND}>:X11>
 PRIVATE
 	Boost::boost
+	-lyaml-cpp
 )
 
 set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)

@@ -39,6 +39,7 @@ QString historyFile();
 QString autoLoadMacroFile();
 QString styleFile();
 QString themeFile();
+QString languageModeFile();
 
 // Standard
 extern bool showResizeNotification;
