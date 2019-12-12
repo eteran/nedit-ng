@@ -209,7 +209,7 @@ void loadPreferences(bool isServer) {
 	macroCommands         = settings.value(tr("nedit.macroCommands"), loadResource(QLatin1String("DefaultMacroCommands.txt"))).toString();
 	bgMenuCommands        = settings.value(tr("nedit.bgMenuCommands"), loadResource(QLatin1String("DefaultBackgroundMenuCommands.txt"))).toString();
 	highlightPatterns     = settings.value(tr("nedit.highlightPatterns"), loadResource(QLatin1String("DefaultHighlightPatterns.txt"))).toString();
-	languageModes         = settings.value(tr("nedit.languageModes"), loadResource(QLatin1String("DefaultLanguageModes.txt"))).toString();
+	languageModes         = settings.value(tr("nedit.languageModes"), QLatin1String("*")).toString();
 	smartIndentInit       = settings.value(tr("nedit.smartIndentInit"), loadResource(QLatin1String("DefaultSmartIndentInit.txt"))).toString();
 	smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), loadResource(QLatin1String("DefaultSmartIndentInitCommon.txt"))).toString();
 

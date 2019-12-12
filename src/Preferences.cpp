@@ -30,13 +30,15 @@
 
 #include <cctype>
 #include <memory>
+#include <fstream>
+#include <iostream>
 
 #ifdef Q_OS_UNIX
 #include <pwd.h>
 #include <unistd.h>
 #endif
 
-#include <iostream>
+
 
 namespace Preferences {
 namespace {
@@ -363,60 +365,6 @@ void loadLanguageModesString(const QString &string) {
 			}
 		}
 	}
-
-	YAML::Emitter out;
-	out << YAML::BeginMap;
-	for (const LanguageMode &lang : LanguageModes) {
-
-		out << YAML::Key << lang.name.toUtf8().data();
-		out << YAML::Value << YAML::BeginMap;
-		if (!lang.extensions.empty()) {
-			out << YAML::Key << "extensions";
-			out << YAML::Value << YAML::BeginSeq;
-			for (const QString &s : lang.extensions) {
-				out << s.toUtf8().data();
-			}
-			out << YAML::EndSeq;
-		}
-
-		if (!lang.delimiters.isEmpty()) {
-			out << YAML::Key << "delimiters";
-			out << YAML::Value << lang.delimiters.toUtf8().data();
-		}
-
-		if (lang.tabDist != LanguageMode::DEFAULT_TAB_DIST) {
-			out << YAML::Key << "tab_distance";
-			out << YAML::Value << lang.tabDist;
-		}
-
-		if (lang.tabDist != LanguageMode::DEFAULT_EM_TAB_DIST) {
-			out << YAML::Key << "em_tab_distance";
-			out << YAML::Value << lang.emTabDist;
-		}
-
-		if (!lang.recognitionExpr.isEmpty()) {
-			out << YAML::Key << "regex";
-			out << YAML::Value << lang.recognitionExpr.toUtf8().data();
-		}
-
-		if (lang.wrapStyle != WrapStyle::Default) {
-			out << YAML::Key << "wrap";
-			out << YAML::Value << AutoWrapTypes[static_cast<int>(lang.wrapStyle)].data();
-		}
-
-		if (lang.indentStyle != IndentStyle::Default) {
-			out << YAML::Key << "indent";
-			out << YAML::Value << AutoIndentTypes[static_cast<int>(lang.indentStyle)].data();
-		}
-
-		if (!lang.defTipsFile.isEmpty()) {
-			out << YAML::Key << "default_tips";
-			out << YAML::Value << lang.defTipsFile.toUtf8().data();
-		}
-		out << YAML::EndMap;
-	}
-	out << YAML::EndMap;
-	std::cout << out.c_str() << std::endl;
 }
 
 /*
@@ -483,61 +431,73 @@ void translatePrefFormats(uint32_t fileVer) {
  */
 QString WriteLanguageModesString() {
 
-	QString str;
-	QTextStream out(&str);
+	try {
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		for (const LanguageMode &lang : LanguageModes) {
 
-	for (const LanguageMode &language : LanguageModes) {
+			out << YAML::Key << lang.name.toUtf8().data();
+			out << YAML::Value << YAML::BeginMap;
+			if (!lang.extensions.empty()) {
+				out << YAML::Key << "extensions";
+				out << YAML::Value << YAML::BeginSeq;
+				for (const QString &s : lang.extensions) {
+					out << s.toUtf8().data();
+				}
+				out << YAML::EndSeq;
+			}
 
-		out << QLatin1Char('\t')
-			<< language.name
-			<< QLatin1Char(':');
+			if (!lang.delimiters.isEmpty()) {
+				out << YAML::Key << "delimiters";
+				out << YAML::Value << lang.delimiters.toUtf8().data();
+			}
 
-		QString exts = language.extensions.join(QLatin1Char(' '));
-		out << exts
-			<< QLatin1Char(':');
+			if (lang.tabDist != LanguageMode::DEFAULT_TAB_DIST) {
+				out << YAML::Key << "tab_distance";
+				out << YAML::Value << lang.tabDist;
+			}
 
-		if (!language.recognitionExpr.isEmpty()) {
-			out << MakeQuotedString(language.recognitionExpr);
+			if (lang.tabDist != LanguageMode::DEFAULT_EM_TAB_DIST) {
+				out << YAML::Key << "em_tab_distance";
+				out << YAML::Value << lang.emTabDist;
+			}
+
+			if (!lang.recognitionExpr.isEmpty()) {
+				out << YAML::Key << "regex";
+				out << YAML::Value << lang.recognitionExpr.toUtf8().data();
+			}
+
+			if (lang.wrapStyle != WrapStyle::Default) {
+				out << YAML::Key << "wrap";
+				out << YAML::Value << AutoWrapTypes[static_cast<int>(lang.wrapStyle)].data();
+			}
+
+			if (lang.indentStyle != IndentStyle::Default) {
+				out << YAML::Key << "indent";
+				out << YAML::Value << AutoIndentTypes[static_cast<int>(lang.indentStyle)].data();
+			}
+
+			if (!lang.defTipsFile.isEmpty()) {
+				out << YAML::Key << "default_tips";
+				out << YAML::Value << lang.defTipsFile.toUtf8().data();
+			}
+			out << YAML::EndMap;
+		}
+		out << YAML::EndMap;
+
+		const QString languageModeFile = Settings::languageModeFile();
+		QFile file(languageModeFile);
+		if(file.open(QIODevice::WriteOnly)) {
+			file.write(out.c_str());
+			file.write("\n");
 		}
 
-		out << QLatin1Char(':');
-		if (language.indentStyle != IndentStyle::Default) {
-			out << AutoIndentTypes[static_cast<int>(language.indentStyle)];
-		}
-
-		out << QLatin1Char(':');
-		if (language.wrapStyle != WrapStyle::Default) {
-			out << AutoWrapTypes[static_cast<int>(language.wrapStyle)];
-		}
-
-		out << QLatin1Char(':');
-		if (language.tabDist != LanguageMode::DEFAULT_TAB_DIST) {
-			out << language.tabDist;
-		}
-
-		out << QLatin1Char(':');
-		if (language.emTabDist != LanguageMode::DEFAULT_EM_TAB_DIST) {
-			out << language.emTabDist;
-		}
-
-		out << QLatin1Char(':');
-		if (!language.delimiters.isEmpty()) {
-			out << MakeQuotedString(language.delimiters);
-		}
-
-		out << QLatin1Char(':');
-		if (!language.defTipsFile.isEmpty()) {
-			out << MakeQuotedString(language.defTipsFile);
-		}
-
-		out << QLatin1Char('\n');
+		return QLatin1String("*");
+	} catch (const YAML::Exception &ex) {
+		qWarning("NEdit: Error writing languages.yml in config directory:\n%s", ex.what());
 	}
 
-	if (!str.isEmpty()) {
-		str.chop(1);
-	}
-
-	return str;
+	return QString();
 }
 
 }
