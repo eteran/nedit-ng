@@ -6,6 +6,7 @@ enable_testing()
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules/")
 include("DetectCompiler")
+include("AddWarnings")
 
 if((TARGET_COMPILER_GCC) OR (TARGET_COMPILER_CLANG))
     option(ENABLE_PROFILING     "Enable profiling")
@@ -93,54 +94,8 @@ add_definitions(-DQT_NO_KEYWORDS)
 
 if(TARGET_COMPILER_MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -DUNICODE -D_UNICODE)
-else()
-    add_compile_options(
-        -W
-        -Wall
-        #-Wshadow
-        -Wnon-virtual-dtor
-        #-Wold-style-cast
-        -Wcast-align
-        -Wunused
-        -Woverloaded-virtual
-        -pedantic
-        #-Wconversion
-        #-Wsign-conversion
-        #-Wnull-dereference
-        -Wdouble-promotion
-        -Wformat=2
-        -Wno-unused-macros
-        -Wno-switch-enum
-        -Wno-unknown-pragmas
-    )
-
-    if(TARGET_COMPILER_CLANG)
-		add_compile_options(
-			#-Wshorten-64-to-32
-			-Wconditional-uninitialized
-			#-Wshadow-uncaptured-local
-			-Wmissing-prototypes
-			#-Wexit-time-destructors
-			#-Wglobal-constructors
-			-Wimplicit-fallthrough
-		)
-
-    elseif(TARGET_COMPILER_GCC)
-		add_compile_options(
-			#-Wuseless-cast
-			#-Wduplicated-cond
-			#-Wduplicated-branches
-			-Wlogical-op
-			
-			#-Wsuggest-attribute=pure
-			#-Wsuggest-attribute=const
-			#-Wsuggest-attribute=noreturn
-			-Wsuggest-final-types
-			-Wsuggest-final-methods
-			-Wsuggest-override
-		)
-	endif()
 endif()
+
 
 add_subdirectory(Util)
 add_subdirectory(src)

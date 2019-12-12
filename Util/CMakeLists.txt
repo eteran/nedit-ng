@@ -30,7 +30,7 @@ add_library(Util
 	include/Util/utils.h
 	include/Util/version.h
 	include/Util/QtHelper.h
-        include/Util/Compiler.h
+	include/Util/Compiler.h
 )
 
 target_include_directories(Util 
@@ -45,6 +45,8 @@ PUBLIC
 	Qt5::Network
 	Boost::boost
 )
+
+target_add_warnings(Util)
 
 set_property(TARGET Util PROPERTY CXX_STANDARD 14)
 set_property(TARGET Util PROPERTY CXX_EXTENSIONS OFF)
