@@ -3,8 +3,10 @@ cmake_minimum_required(VERSION 3.0)
 find_package(Qt5 5.5.0 REQUIRED Core Xml)
 find_package(X11 REQUIRED)
 
-if(${X11_FOUND} AND (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
-    link_directories(/usr/X11/lib)
+if(${X11_FOUND})
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        link_directories(/usr/X11/lib)
+    endif()
 endif()
 
 add_executable(nedit-import
