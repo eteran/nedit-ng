@@ -40,8 +40,8 @@ function(TARGET_ADD_WARNINGS TARGET)
 			target_compile_options(${TARGET}
 			PUBLIC
 				#-Wuseless-cast
-				-Wduplicated-cond
-				-Wduplicated-branches
+                                #-Wduplicated-cond
+                                #-Wduplicated-branches
 				-Wlogical-op
 
 				#-Wsuggest-attribute=pure
