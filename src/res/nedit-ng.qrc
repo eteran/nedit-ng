@@ -6,7 +6,6 @@
         <file>DefaultStyles.xml</file>
         <file>DefaultShellCommandsFreeBSD.txt</file>
         <file>DefaultShellCommandsLinux.txt</file>
-        <file>DefaultHighlightPatterns.txt</file>
         <file>DefaultSmartIndentInit.txt</file>
         <file>DefaultSmartIndentInitCommon.txt</file>
         <file>DefaultMacroCommands.txt</file>
