@@ -433,9 +433,10 @@ QString WriteLanguageModesString() {
 
 	try {
 		YAML::Emitter out;
-		out << YAML::BeginMap;
+		out << YAML::BeginSeq;
 		for (const LanguageMode &lang : LanguageModes) {
 
+			out << YAML::BeginMap;
 			out << YAML::Key << lang.name.toUtf8().data();
 			out << YAML::Value << YAML::BeginMap;
 			if (!lang.extensions.empty()) {
@@ -482,8 +483,9 @@ QString WriteLanguageModesString() {
 				out << YAML::Value << lang.defTipsFile.toUtf8().data();
 			}
 			out << YAML::EndMap;
+			out << YAML::EndMap;
 		}
-		out << YAML::EndMap;
+		out << YAML::EndSeq;
 
 		const QString languageModeFile = Settings::languageModeFile();
 		QFile file(languageModeFile);

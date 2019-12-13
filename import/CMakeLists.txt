@@ -23,6 +23,8 @@ target_include_directories(nedit-import PRIVATE
 	${X11_INCLUDE_DIR}
 )
 
+target_add_warnings(nedit-import)
+
 set_property(TARGET nedit-import PROPERTY CXX_STANDARD 14)
 set_property(TARGET nedit-import PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET nedit-import PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
