@@ -19,11 +19,11 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <QFile>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QSettings>
 #include <QtDebug>
-#include <QFile>
 
 #include <algorithm>
 #include <climits>
@@ -1422,13 +1422,17 @@ QString WriteHighlightString() {
 				out << YAML::BeginMap;
 				out << YAML::Key << "name" << YAML::Value << pat.name.toUtf8().data();
 				out << YAML::Key << "style" << YAML::Value << pat.style.toUtf8().data();
-				if(!pat.startRE.isNull()) {
+				out << YAML::Key << "parent_pattern" << YAML::Value << pat.subPatternOf.toUtf8().data();
+				out << YAML::Key << "defer_parsing" << YAML::Value << ((pat.flags & DEFER_PARSING) ? true : false);
+				out << YAML::Key << "color_only" << YAML::Value << ((pat.flags & COLOR_ONLY) ? true : false);
+				out << YAML::Key << "parse_subpatterns_from_start" << YAML::Value << ((pat.flags & PARSE_SUBPATS_FROM_START) ? true : false);
+				if (!pat.startRE.isNull()) {
 					out << YAML::Key << "start_re" << YAML::Value << pat.startRE.toUtf8().data();
 				}
-				if(!pat.endRE.isNull()) {
+				if (!pat.endRE.isNull()) {
 					out << YAML::Key << "end_re" << YAML::Value << pat.endRE.toUtf8().data();
 				}
-				if(!pat.errorRE.isNull()) {
+				if (!pat.errorRE.isNull()) {
 					out << YAML::Key << "error_re" << YAML::Value << pat.errorRE.toUtf8().data();
 				}
 				out << YAML::EndMap;
@@ -1438,79 +1442,12 @@ QString WriteHighlightString() {
 		}
 		out << YAML::EndMap;
 
-
-#if 0
-			for (const HighlightPattern &pat : patternSet.patterns) {
-
-				if (!pat.subPatternOf.isNull()) {
-					out << pat.subPatternOf;
-				}
-
-				out << Colon;
-
-				if (pat.flags & DEFER_PARSING) out << QLatin1Char('D');
-				if (pat.flags & PARSE_SUBPATS_FROM_START) out << QLatin1Char('R');
-				if (pat.flags & COLOR_ONLY) out << QLatin1Char('C');
-				out << QLatin1Char('\n');
-			}
-#endif
-#if 0
-			if (!lang.extensions.empty()) {
-				out << YAML::Key << "extensions";
-				out << YAML::Value << YAML::BeginSeq;
-				for (const QString &s : lang.extensions) {
-					out << s.toUtf8().data();
-				}
-				out << YAML::EndSeq;
-			}
-
-			if (!lang.delimiters.isEmpty()) {
-				out << YAML::Key << "delimiters";
-				out << YAML::Value << lang.delimiters.toUtf8().data();
-			}
-
-			if (lang.tabDist != LanguageMode::DEFAULT_TAB_DIST) {
-				out << YAML::Key << "tab_distance";
-				out << YAML::Value << lang.tabDist;
-			}
-
-			if (lang.tabDist != LanguageMode::DEFAULT_EM_TAB_DIST) {
-				out << YAML::Key << "em_tab_distance";
-				out << YAML::Value << lang.emTabDist;
-			}
-
-			if (!lang.recognitionExpr.isEmpty()) {
-				out << YAML::Key << "regex";
-				out << YAML::Value << lang.recognitionExpr.toUtf8().data();
-			}
-
-			if (lang.wrapStyle != WrapStyle::Default) {
-				out << YAML::Key << "wrap";
-				out << YAML::Value << AutoWrapTypes[static_cast<int>(lang.wrapStyle)].data();
-			}
-
-			if (lang.indentStyle != IndentStyle::Default) {
-				out << YAML::Key << "indent";
-				out << YAML::Value << AutoIndentTypes[static_cast<int>(lang.indentStyle)].data();
-			}
-
-			if (!lang.defTipsFile.isEmpty()) {
-				out << YAML::Key << "default_tips";
-				out << YAML::Value << lang.defTipsFile.toUtf8().data();
-			}
-			out << YAML::EndMap;
-#endif
-
-
-
-
 		const QString languageModeFile = QLatin1String("test.yaml");
 		QFile file(languageModeFile);
-		if(file.open(QIODevice::WriteOnly)) {
+		if (file.open(QIODevice::WriteOnly)) {
 			file.write(out.c_str());
 			file.write("\n");
 		}
-
 
 		//return QLatin1String("*");
 	} catch (const YAML::Exception &ex) {
@@ -1518,7 +1455,6 @@ QString WriteHighlightString() {
 	}
 
 #endif
-
 
 	QString str;
 	QTextStream out(&str);

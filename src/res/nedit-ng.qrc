@@ -41,5 +41,6 @@
         <file>DefaultShellCommandsUnix.txt</file>
         <file>DefaultShellCommandsWindows.txt</file>
         <file>DefaultLanguageModes.yml</file>
+        <file>DefaultPatternSets.yml</file>
     </qresource>
 </RCC>

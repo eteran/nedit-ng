@@ -12,9 +12,9 @@
 #include "Theme.h"
 #include "Util/ClearCase.h"
 #include "Util/Input.h"
+#include "Util/Resource.h"
 #include "Util/algorithm.h"
 #include "Util/version.h"
-#include "Util/Resource.h"
 #include "nedit.h"
 #include "search.h"
 #include "userCmds.h"
@@ -29,16 +29,14 @@
 #include <QtDebug>
 
 #include <cctype>
-#include <memory>
 #include <fstream>
 #include <iostream>
+#include <memory>
 
 #ifdef Q_OS_UNIX
 #include <pwd.h>
 #include <unistd.h>
 #endif
-
-
 
 namespace Preferences {
 namespace {
@@ -325,11 +323,11 @@ void loadLanguageModesString(const QString &string) {
 		YAML::Node languages;
 
 		const QString languageModeFile = Settings::languageModeFile();
-		if(QFileInfo(languageModeFile).exists()) {
+		if (QFileInfo(languageModeFile).exists()) {
 			languages = YAML::LoadFile(languageModeFile.toUtf8().data());
 		} else {
 			QByteArray defaultLanguageModes = loadResource(QLatin1String("DefaultLanguageModes.yml"));
-			languages = YAML::Load(defaultLanguageModes.data());
+			languages                       = YAML::Load(defaultLanguageModes.data());
 		}
 
 		for (size_t i = 0; i < languages.size(); i++) {
@@ -489,7 +487,7 @@ QString WriteLanguageModesString() {
 
 		const QString languageModeFile = Settings::languageModeFile();
 		QFile file(languageModeFile);
-		if(file.open(QIODevice::WriteOnly)) {
+		if (file.open(QIODevice::WriteOnly)) {
 			file.write(out.c_str());
 			file.write("\n");
 		}
