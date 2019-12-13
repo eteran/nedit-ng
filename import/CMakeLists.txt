@@ -4,7 +4,7 @@ find_package(Qt5 5.5.0 REQUIRED Core Xml)
 find_package(X11 REQUIRED)
 
 if(${X11_FOUND})
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    if(TARGET_PLATFORM_MACOS)
         link_directories(/usr/X11/lib)
     endif()
 endif()

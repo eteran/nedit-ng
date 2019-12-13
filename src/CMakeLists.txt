@@ -40,7 +40,7 @@ foreach(FILE IN LISTS QRC_SOURCES)
 endforeach()
 
 if(${X11_FOUND})
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+    if(TARGET_PLATFORM_MACOS)
         link_directories(/usr/X11/lib)
     endif()
 endif()
