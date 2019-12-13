@@ -95,12 +95,7 @@ target_include_directories(yaml-cpp
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_link_libraries(yaml-cpp
-PUBLIC
-
-)
-
-set_property(TARGET Util PROPERTY CXX_STANDARD 14)
-set_property(TARGET Util PROPERTY CXX_EXTENSIONS OFF)
+set_property(TARGET yaml-cpp PROPERTY CXX_STANDARD 14)
+set_property(TARGET yaml-cpp PROPERTY CXX_EXTENSIONS OFF)
 
 
