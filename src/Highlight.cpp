@@ -1430,7 +1430,7 @@ void LoadHighlightString(const QString &string) {
 		if (QFileInfo(highlightPatternsFile).exists()) {
 			patternSets = YAML::LoadFile(highlightPatternsFile.toUtf8().data());
 		} else {
-			static QByteArray defaultPatternSets = loadResource(QLatin1String("DefaultPatternSets.yml"));
+			static QByteArray defaultPatternSets = loadResource(QLatin1String("DefaultPatternSets.yaml"));
 			patternSets                          = YAML::Load(defaultPatternSets.data());
 		}
 
@@ -1533,7 +1533,7 @@ QString WriteHighlightString() {
 
 		return QLatin1String("*");
 	} catch (const YAML::Exception &ex) {
-		qWarning("NEdit: Error writing patterns.yml in config directory:\n%s", ex.what());
+		qWarning("NEdit: Error writing patterns.yaml in config directory:\n%s", ex.what());
 	}
 
 	return QString();
@@ -1623,7 +1623,7 @@ PatternSet *FindPatternSet(const QString &languageMode) {
 */
 boost::optional<PatternSet> readDefaultPatternSet(const QString &langModeName) {
 
-	static QByteArray defaultPatternSets = loadResource(QLatin1String("DefaultPatternSets.yml"));
+	static QByteArray defaultPatternSets = loadResource(QLatin1String("DefaultPatternSets.yaml"));
 	static YAML::Node patternSets        = YAML::Load(defaultPatternSets.data());
 
 	for (auto it = patternSets.begin(); it != patternSets.end(); ++it) {

@@ -11,7 +11,7 @@
         <file>DefaultMacroCommands.txt</file>
         <file>DefaultShellCommandsUnix.txt</file>
         <file>DefaultShellCommandsWindows.txt</file>
-        <file>DefaultLanguageModes.yml</file>
-        <file>DefaultPatternSets.yml</file>
+        <file>DefaultLanguageModes.yaml</file>
+        <file>DefaultPatternSets.yaml</file>
     </qresource>
 </RCC>

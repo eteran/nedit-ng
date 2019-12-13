@@ -168,7 +168,7 @@ QString autoLoadMacroFile() {
  */
 QString languageModeFile() {
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("languages.yml"));
+	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("languages.yaml"));
 	return configFile;
 }
 
@@ -184,7 +184,7 @@ QString styleFile() {
 
 QString highlightPatternsFile() {
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("patterns.yml"));
+	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("patterns.yaml"));
 	return configFile;
 }
 

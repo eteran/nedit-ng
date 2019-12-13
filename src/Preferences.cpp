@@ -326,7 +326,7 @@ void loadLanguageModesString(const QString &string) {
 		if (QFileInfo(languageModeFile).exists()) {
 			languages = YAML::LoadFile(languageModeFile.toUtf8().data());
 		} else {
-			static QByteArray defaultLanguageModes = loadResource(QLatin1String("DefaultLanguageModes.yml"));
+			static QByteArray defaultLanguageModes = loadResource(QLatin1String("DefaultLanguageModes.yaml"));
 			languages                              = YAML::Load(defaultLanguageModes.data());
 		}
 
@@ -494,7 +494,7 @@ QString WriteLanguageModesString() {
 
 		return QLatin1String("*");
 	} catch (const YAML::Exception &ex) {
-		qWarning("NEdit: Error writing languages.yml in config directory:\n%s", ex.what());
+		qWarning("NEdit: Error writing languages.yaml in config directory:\n%s", ex.what());
 	}
 
 	return QString();
