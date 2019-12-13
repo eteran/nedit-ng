@@ -445,8 +445,8 @@ void DialogSyntaxPatterns::buttonRestore_clicked() {
 
 	const QString languageMode = ui.comboLanguageMode->currentText();
 
-	boost::optional<PatternSet> defaultPatSet = Highlight::readDefaultPatternSet(languageMode);
-	if (!defaultPatSet) {
+	boost::optional<PatternSet> patternSet = Highlight::readDefaultPatternSet(languageMode);
+	if (!patternSet) {
 		QMessageBox::warning(
 			this,
 			tr("No Default Pattern"),
@@ -465,20 +465,20 @@ void DialogSyntaxPatterns::buttonRestore_clicked() {
 	}
 
 	// if a stored version of the pattern set exists, replace it, if it doesn't, add a new one
-	insert_or_replace(Highlight::PatternSets, *defaultPatSet, [languageMode](const PatternSet &pattern) {
+	insert_or_replace(Highlight::PatternSets, *patternSet, [languageMode](const PatternSet &pattern) {
 		return pattern.languageMode == languageMode;
 	});
 
 	model_->clear();
 
 	// Update the dialog
-	for (HighlightPattern &pattern : defaultPatSet->patterns) {
+	for (HighlightPattern &pattern : patternSet->patterns) {
 		model_->addItem(pattern);
 	}
 
 	// Fill in the dialog information for the selected language mode
-	ui.editContextLines->setText(QString::number(defaultPatSet->lineContext));
-	ui.editContextChars->setText(QString::number(defaultPatSet->charContext));
+	ui.editContextLines->setText(QString::number(patternSet->lineContext));
+	ui.editContextChars->setText(QString::number(patternSet->charContext));
 
 	// default to selecting the first item
 	if (model_->rowCount() != 0) {

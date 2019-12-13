@@ -182,6 +182,10 @@ QString styleFile() {
 	return configFile;
 }
 
+/**
+ * @brief highlightPatternsFile
+ * @return
+ */
 QString highlightPatternsFile() {
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
 	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("patterns.yaml"));
