@@ -223,7 +223,7 @@ bool smartIndentMacrosAvailable(const QString &languageModeName) {
  * @param string
  * @return
  */
-bool loadSmartIndentString(const QString &string) {
+void loadSmartIndentString(const QString &string) {
 
 	Input in(&string);
 	QString errMsg;
@@ -241,7 +241,7 @@ bool loadSmartIndentString(const QString &string) {
 
 			// finished
 			if (in.atEnd()) {
-				return true;
+				return;
 			}
 
 			// read language mode name
@@ -292,7 +292,7 @@ bool loadSmartIndentString(const QString &string) {
 			});
 		}
 	} catch (const ParseError &e) {
-		return Preferences::reportError(
+		Preferences::reportError(
 			nullptr,
 			*in.string(),
 			in.index(),
@@ -301,7 +301,7 @@ bool loadSmartIndentString(const QString &string) {
 	}
 }
 
-bool loadSmartIndentCommonString(const QString &string) {
+void loadSmartIndentCommonString(const QString &string) {
 
 	Input in(&string);
 
@@ -315,12 +315,11 @@ bool loadSmartIndentCommonString(const QString &string) {
 	if (in.match(QLatin1String("Default"))) {
 		QByteArray defaults = defaultCommonMacros();
 		CommonMacros        = QString::fromLatin1(defaults);
-		return true;
+		return;
 	}
 
 	// Remove leading tabs added by writer routine
 	CommonMacros = shiftText(in.mid(), ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/ 8);
-	return true;
 }
 
 QString writeSmartIndentString() {

@@ -19,8 +19,8 @@ namespace SmartIndent {
 Q_DECLARE_NAMESPACE_TR(SmartIndent)
 
 bool LMHasSmartIndentMacros(const QString &languageMode);
-bool loadSmartIndentCommonString(const QString &string);
-bool loadSmartIndentString(const QString &string);
+void loadSmartIndentCommonString(const QString &string);
+void loadSmartIndentString(const QString &string);
 bool smartIndentMacrosAvailable(const QString &languageModeName);
 QString writeSmartIndentCommonString();
 QString writeSmartIndentString();

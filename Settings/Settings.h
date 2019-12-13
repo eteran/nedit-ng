@@ -40,6 +40,7 @@ QString autoLoadMacroFile();
 QString styleFile();
 QString themeFile();
 QString languageModeFile();
+QString highlightPatternsFile();
 
 // Standard
 extern bool showResizeNotification;

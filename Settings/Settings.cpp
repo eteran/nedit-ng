@@ -182,6 +182,17 @@ QString styleFile() {
 	return configFile;
 }
 
+QString highlightPatternsFile() {
+	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
+	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("patterns.yml"));
+	return configFile;
+}
+
+/**
+ * @brief randomString
+ * @param length
+ * @return
+ */
 QString randomString(int length) {
 	static const QString alphabet(QLatin1String("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"));
 
@@ -208,7 +219,7 @@ void loadPreferences(bool isServer) {
 	shellCommands         = settings.value(tr("nedit.shellCommands"), loadResource(shellCommandsResource)).toString();
 	macroCommands         = settings.value(tr("nedit.macroCommands"), loadResource(QLatin1String("DefaultMacroCommands.txt"))).toString();
 	bgMenuCommands        = settings.value(tr("nedit.bgMenuCommands"), loadResource(QLatin1String("DefaultBackgroundMenuCommands.txt"))).toString();
-	highlightPatterns     = settings.value(tr("nedit.highlightPatterns"), loadResource(QLatin1String("DefaultHighlightPatterns.txt"))).toString();
+	highlightPatterns     = settings.value(tr("nedit.highlightPatterns"), QLatin1String("*")).toString();
 	languageModes         = settings.value(tr("nedit.languageModes"), QLatin1String("*")).toString();
 	smartIndentInit       = settings.value(tr("nedit.smartIndentInit"), loadResource(QLatin1String("DefaultSmartIndentInit.txt"))).toString();
 	smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), loadResource(QLatin1String("DefaultSmartIndentInitCommon.txt"))).toString();

@@ -191,7 +191,7 @@ QString writeMenuItemString(const std::vector<MenuData> &menuItems, CommandTypes
 	return outStr;
 }
 
-bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItems, CommandTypes listType) {
+void loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItems, CommandTypes listType) {
 
 	struct ParseError {
 		std::string message;
@@ -207,7 +207,7 @@ bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 
 			// end of string in proper place
 			if (in.atEnd()) {
-				return true;
+				return;
 			}
 
 			// read name field
@@ -304,7 +304,7 @@ bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 
 				QString p = copyMacroToEnd(in);
 				if (p.isNull()) {
-					return false;
+					return;
 				}
 
 				cmdStr = p;
@@ -336,7 +336,6 @@ bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 		}
 	} catch (const ParseError &error) {
 		qWarning("NEdit: Parse error in user defined menu item, %s", error.message.c_str());
-		return false;
 	}
 }
 
@@ -485,16 +484,16 @@ QString write_bg_menu_commands_string() {
 ** background menu and add them to the internal list used for constructing
 ** menus
 */
-bool load_shell_commands_string(const QString &inString) {
-	return loadMenuItemString(inString, ShellMenuData, CommandTypes::Shell);
+void load_shell_commands_string(const QString &inString) {
+	loadMenuItemString(inString, ShellMenuData, CommandTypes::Shell);
 }
 
-bool load_macro_commands_string(const QString &inString) {
-	return loadMenuItemString(inString, MacroMenuData, CommandTypes::Macro);
+void load_macro_commands_string(const QString &inString) {
+	loadMenuItemString(inString, MacroMenuData, CommandTypes::Macro);
 }
 
-bool load_bg_menu_commands_string(const QString &inString) {
-	return loadMenuItemString(inString, BGMenuData, CommandTypes::Context);
+void load_bg_menu_commands_string(const QString &inString) {
+	loadMenuItemString(inString, BGMenuData, CommandTypes::Context);
 }
 
 /*
