@@ -429,14 +429,14 @@ void loadMacroMenuYaml(std::vector<MenuData> &menuItems) {
 				}
 
 				// add/replace menu record in the list
-				auto it = std::find_if(menuItems.begin(), menuItems.end(), [&menuItem](MenuData &data) {
+				auto it2 = std::find_if(menuItems.begin(), menuItems.end(), [&menuItem](MenuData &data) {
 					return data.item.name == menuItem.name;
 				});
 
-				if (it == menuItems.end()) {
+				if (it2 == menuItems.end()) {
 					menuItems.push_back({menuItem, nullptr});
 				} else {
-					it->item = menuItem;
+					it2->item = menuItem;
 				}
 			}
 		}
@@ -510,14 +510,14 @@ void loadShellMenuYaml(std::vector<MenuData> &menuItems) {
 				}
 
 				// add/replace menu record in the list
-				auto it = std::find_if(menuItems.begin(), menuItems.end(), [&menuItem](MenuData &data) {
+				auto it2 = std::find_if(menuItems.begin(), menuItems.end(), [&menuItem](MenuData &data) {
 					return data.item.name == menuItem.name;
 				});
 
-				if (it == menuItems.end()) {
+				if (it2 == menuItems.end()) {
 					menuItems.push_back({menuItem, nullptr});
 				} else {
-					it->item = menuItem;
+					it2->item = menuItem;
 				}
 			}
 		}
@@ -559,14 +559,14 @@ void loadContextMenuYaml(std::vector<MenuData> &menuItems) {
 				}
 
 				// add/replace menu record in the list
-				auto it = std::find_if(menuItems.begin(), menuItems.end(), [&menuItem](MenuData &data) {
+				auto it2 = std::find_if(menuItems.begin(), menuItems.end(), [&menuItem](MenuData &data) {
 					return data.item.name == menuItem.name;
 				});
 
-				if (it == menuItems.end()) {
+				if (it2 == menuItems.end()) {
 					menuItems.push_back({menuItem, nullptr});
 				} else {
-					it->item = menuItem;
+					it2->item = menuItem;
 				}
 			}
 		}
