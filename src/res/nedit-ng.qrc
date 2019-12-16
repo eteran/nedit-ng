@@ -13,5 +13,11 @@
         <file>DefaultShellCommandsWindows.txt</file>
         <file>DefaultLanguageModes.yaml</file>
         <file>DefaultPatternSets.yaml</file>
+        <file>DefaultContextMenu.yaml</file>
+        <file>DefaultMacroMenu.yaml</file>
+        <file>DefaultShellMenuLinux.yaml</file>
+        <file>DefaultShellMenuFreeBSD.yaml</file>
+        <file>DefaultShellMenuUnix.yaml</file>
+        <file>DefaultShellMenuWindows.yaml</file>
     </qresource>
 </RCC>

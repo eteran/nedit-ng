@@ -18,7 +18,8 @@
 #include "nedit.h"
 #include "search.h"
 #include "userCmds.h"
-#include "yaml-cpp/yaml.h"
+
+#include <yaml-cpp/yaml.h>
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -158,7 +159,7 @@ boost::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 				} else if (key == "extensions") {
 					QStringList extensions;
 					for (size_t i = 0; i < value.size(); i++) {
-						YAML::Node extension = value[i];
+						const YAML::Node &extension = value[i];
 						extensions.push_back(QString::fromUtf8(extension.as<std::string>().c_str()));
 					}
 					lm.extensions = extensions;
@@ -429,6 +430,8 @@ void translatePrefFormats(uint32_t fileVer) {
  */
 QString WriteLanguageModesString() {
 
+	const QString filename = Settings::languageModeFile();
+
 	try {
 		YAML::Emitter out;
 		out << YAML::BeginSeq;
@@ -485,8 +488,8 @@ QString WriteLanguageModesString() {
 		}
 		out << YAML::EndSeq;
 
-		const QString languageModeFile = Settings::languageModeFile();
-		QFile file(languageModeFile);
+
+		QFile file(filename);
 		if (file.open(QIODevice::WriteOnly)) {
 			file.write(out.c_str());
 			file.write("\n");
@@ -494,7 +497,7 @@ QString WriteLanguageModesString() {
 
 		return QLatin1String("*");
 	} catch (const YAML::Exception &ex) {
-		qWarning("NEdit: Error writing languages.yaml in config directory:\n%s", ex.what());
+		qWarning("NEdit: Error writing %s in config directory:\n%s", qPrintable(filename), ex.what());
 	}
 
 	return QString();

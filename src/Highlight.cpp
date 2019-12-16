@@ -840,7 +840,7 @@ HighlightPattern readPatternYaml(const YAML::Node &patterns) {
 
 	for (auto it = patterns.begin(); it != patterns.end(); ++it) {
 
-		const auto &key         = it->first.as<std::string>();
+		const std::string &key  = it->first.as<std::string>();
 		const YAML::Node &value = it->second;
 
 		if (key == "name") {
@@ -893,7 +893,7 @@ boost::optional<PatternSet> readPatternSetYaml(YAML::const_iterator it) {
 				} else if (key == "line_context") {
 					patternSet.lineContext = value.as<int>();
 				} else if (key == "patterns") {
-					for (auto entry : value) {
+					for (const YAML::Node &entry : value) {
 
 						HighlightPattern pattern = readPatternYaml(entry);
 
@@ -1477,6 +1477,9 @@ void LoadHighlightString(const QString &string) {
 ** highlight pattern list (PatternSets) for this session.
 */
 QString WriteHighlightString() {
+
+	const QString filename = Settings::highlightPatternsFile();
+
 	try {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
@@ -1524,8 +1527,8 @@ QString WriteHighlightString() {
 		}
 		out << YAML::EndMap;
 
-		const QString languageModeFile = Settings::highlightPatternsFile();
-		QFile file(languageModeFile);
+
+		QFile file(filename);
 		if (file.open(QIODevice::WriteOnly)) {
 			file.write(out.c_str());
 			file.write("\n");
@@ -1533,7 +1536,7 @@ QString WriteHighlightString() {
 
 		return QLatin1String("*");
 	} catch (const YAML::Exception &ex) {
-		qWarning("NEdit: Error writing patterns.yaml in config directory:\n%s", ex.what());
+		qWarning("NEdit: Error writing %s in config directory:\n%s", qPrintable(filename), ex.what());
 	}
 
 	return QString();

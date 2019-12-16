@@ -41,6 +41,9 @@ QString styleFile();
 QString themeFile();
 QString languageModeFile();
 QString highlightPatternsFile();
+QString macroMenuFile();
+QString shellMenuFile();
+QString contextMenuFile();
 
 // Standard
 extern bool showResizeNotification;

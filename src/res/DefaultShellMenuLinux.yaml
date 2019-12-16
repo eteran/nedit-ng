@@ -1,0 +1,56 @@
+---
+name: "&spell"
+shortcut: Alt+B
+input: either
+output: same_window
+replace_input: true
+command: |
+  cat>spellTmp; xterm -e ispell -x spellTmp; cat spellTmp; rm spellTmp
+...
+---
+name: "&wc"
+input: either
+output: dialog
+command: |
+  wc | awk '{print $1 " lines, " $2 " words, " $3 " characters"}'
+...
+---
+name: s&ort
+input: either
+output: same_window
+replace_input: true
+command: |
+  sort
+...
+---
+name: "&number lines"
+input: window
+output: new_window
+command: |
+  nl -ba
+...
+---
+name: "&make"
+shortcut: Alt+Z
+input: none
+output: new_window
+command: |
+  make
+...
+---
+name: ex&pand
+input: either
+output: same_window
+replace_input: true
+command: |
+  expand
+...
+---
+name: "&unexpand"
+input: either
+output: same_window
+replace_input: true
+command: |
+  unexpand
+...
+

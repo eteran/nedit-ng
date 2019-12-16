@@ -4906,7 +4906,10 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 
 	QString substitutedCommand = command;
 	substitutedCommand.replace(QLatin1Char('%'), fullPath());
-	substitutedCommand.replace(QLatin1Char('#'), QString::number(loc->line));
+
+	if(loc) {
+		substitutedCommand.replace(QLatin1Char('#'), QString::number(loc->line));
+	}
 
 	/* Get the command input as a text string.  If there is input, errors
 	  shouldn't be mixed in with output, so set flags to ERROR_DIALOGS */
