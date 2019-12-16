@@ -2,15 +2,9 @@
     <qresource prefix="/">
         <file>DefaultCommonMacros.txt</file>
         <file>nedit-ng.png</file>
-        <file>DefaultBackgroundMenuCommands.txt</file>
         <file>DefaultStyles.xml</file>
-        <file>DefaultShellCommandsFreeBSD.txt</file>
-        <file>DefaultShellCommandsLinux.txt</file>
         <file>DefaultSmartIndentInit.txt</file>
         <file>DefaultSmartIndentInitCommon.txt</file>
-        <file>DefaultMacroCommands.txt</file>
-        <file>DefaultShellCommandsUnix.txt</file>
-        <file>DefaultShellCommandsWindows.txt</file>
         <file>DefaultLanguageModes.yaml</file>
         <file>DefaultPatternSets.yaml</file>
         <file>DefaultContextMenu.yaml</file>
