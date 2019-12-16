@@ -118,56 +118,55 @@ boost::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 	};
 
 	try {
+		LanguageMode lm;
 		for (auto it = language.begin(); it != language.end(); ++it) {
 
-			LanguageMode lm;
+			const auto &key         = it->first.as<std::string>();
+			const YAML::Node &value = it->second;
 
-			lm.name                   = QString::fromUtf8(it->first.as<std::string>().c_str());
-			const YAML::Node &entries = it->second;
-
-			for (auto it2 = entries.begin(); it2 != entries.end(); ++it2) {
-
-				const auto &key         = it2->first.as<std::string>();
-				const YAML::Node &value = it2->second;
-
-				if (key == "delimiters") {
-					lm.delimiters = QString::fromUtf8(value.as<std::string>().c_str());
-				} else if (key == "tab_distance") {
-					lm.tabDist = value.as<int>();
-				} else if (key == "em_tab_distance") {
-					lm.emTabDist = value.as<int>();
-				} else if (key == "regex") {
-					lm.recognitionExpr = QString::fromUtf8(value.as<std::string>().c_str());
-				} else if (key == "wrap") {
-					const auto &string_val = QString::fromUtf8(value.as<std::string>().c_str());
-					auto it                = std::find(std::begin(AutoWrapTypes), std::end(AutoWrapTypes), string_val);
-					if (it == std::end(AutoWrapTypes)) {
-						Raise<ModeError>(tr("unrecognized wrap style"));
-					}
-
-					lm.wrapStyle = static_cast<WrapStyle>(it - std::begin(AutoWrapTypes));
-				} else if (key == "indent") {
-					const auto &string_val = QString::fromUtf8(value.as<std::string>().c_str());
-					auto it                = std::find(std::begin(AutoIndentTypes), std::end(AutoIndentTypes), string_val);
-					if (it == std::end(AutoIndentTypes)) {
-						Raise<ModeError>(tr("unrecognized indent style"));
-					}
-
-					lm.indentStyle = static_cast<IndentStyle>(it - std::begin(AutoIndentTypes));
-				} else if (key == "default_tips") {
-					lm.defTipsFile = QString::fromUtf8(value.as<std::string>().c_str());
-				} else if (key == "extensions") {
-					QStringList extensions;
-					for (size_t i = 0; i < value.size(); i++) {
-						const YAML::Node &extension = value[i];
-						extensions.push_back(QString::fromUtf8(extension.as<std::string>().c_str()));
-					}
-					lm.extensions = extensions;
+			if (key == "name") {
+				lm.name = QString::fromUtf8(value.as<std::string>().c_str());
+			} else if (key == "delimiters") {
+				lm.delimiters = QString::fromUtf8(value.as<std::string>().c_str());
+			} else if (key == "tab_distance") {
+				lm.tabDist = value.as<int>();
+			} else if (key == "em_tab_distance") {
+				lm.emTabDist = value.as<int>();
+			} else if (key == "regex") {
+				lm.recognitionExpr = QString::fromUtf8(value.as<std::string>().c_str());
+			} else if (key == "wrap") {
+				const auto &string_val = QString::fromUtf8(value.as<std::string>().c_str());
+				auto it                = std::find(std::begin(AutoWrapTypes), std::end(AutoWrapTypes), string_val);
+				if (it == std::end(AutoWrapTypes)) {
+					Raise<ModeError>(tr("unrecognized wrap style"));
 				}
-			}
 
-			return lm;
+				lm.wrapStyle = static_cast<WrapStyle>(it - std::begin(AutoWrapTypes));
+			} else if (key == "indent") {
+				const auto &string_val = QString::fromUtf8(value.as<std::string>().c_str());
+				auto it                = std::find(std::begin(AutoIndentTypes), std::end(AutoIndentTypes), string_val);
+				if (it == std::end(AutoIndentTypes)) {
+					Raise<ModeError>(tr("unrecognized indent style"));
+				}
+
+				lm.indentStyle = static_cast<IndentStyle>(it - std::begin(AutoIndentTypes));
+			} else if (key == "default_tips") {
+				lm.defTipsFile = QString::fromUtf8(value.as<std::string>().c_str());
+			} else if (key == "extensions") {
+				QStringList extensions;
+				for (size_t i = 0; i < value.size(); i++) {
+					const YAML::Node &extension = value[i];
+					extensions.push_back(QString::fromUtf8(extension.as<std::string>().c_str()));
+				}
+				lm.extensions = extensions;
+			}
 		}
+
+		if (lm.name.isEmpty()) {
+			Raise<ModeError>(tr("language entry has no name."));
+		}
+
+		return lm;
 	} catch (const YAML::Exception &ex) {
 		qWarning("NEdit: Invalid YAML:\n%s", ex.what());
 	} catch (const ModeError &ex) {
@@ -325,14 +324,13 @@ void loadLanguageModesString(const QString &string) {
 
 		const QString languageModeFile = Settings::languageModeFile();
 		if (QFileInfo(languageModeFile).exists()) {
-			languages = YAML::LoadFile(languageModeFile.toUtf8().data());
+			languages = YAML::LoadAllFromFile(languageModeFile.toUtf8().data());
 		} else {
 			static QByteArray defaultLanguageModes = loadResource(QLatin1String("DefaultLanguageModes.yaml"));
-			languages                              = YAML::Load(defaultLanguageModes.data());
+			languages                              = YAML::LoadAll(defaultLanguageModes.data());
 		}
 
-		for (size_t i = 0; i < languages.size(); i++) {
-			const YAML::Node &language = languages[i];
+		for (const YAML::Node &language : languages) {
 
 			boost::optional<LanguageMode> lm = readLanguageModeYaml(language);
 			if (!lm) {
@@ -434,15 +432,14 @@ QString WriteLanguageModesString() {
 
 	try {
 		YAML::Emitter out;
-		out << YAML::BeginSeq;
 		for (const LanguageMode &lang : LanguageModes) {
 
+			out << YAML::BeginDoc;
 			out << YAML::BeginMap;
-			out << YAML::Key << lang.name.toUtf8().data();
-			out << YAML::Value << YAML::BeginMap;
+			out << YAML::Key << "name" << YAML::Value << lang.name.toUtf8().data();
+
 			if (!lang.extensions.empty()) {
-				out << YAML::Key << "extensions";
-				out << YAML::Value << YAML::BeginSeq;
+				out << YAML::Key << "extensions" << YAML::Value << YAML::BeginSeq;
 				for (const QString &s : lang.extensions) {
 					out << s.toUtf8().data();
 				}
@@ -450,44 +447,35 @@ QString WriteLanguageModesString() {
 			}
 
 			if (!lang.delimiters.isEmpty()) {
-				out << YAML::Key << "delimiters";
-				out << YAML::Value << lang.delimiters.toUtf8().data();
+				out << YAML::Key << "delimiters" << YAML::Value << lang.delimiters.toUtf8().data();
 			}
 
 			if (lang.tabDist != LanguageMode::DEFAULT_TAB_DIST) {
-				out << YAML::Key << "tab_distance";
-				out << YAML::Value << lang.tabDist;
+				out << YAML::Key << "tab_distance" << YAML::Value << lang.tabDist;
 			}
 
 			if (lang.tabDist != LanguageMode::DEFAULT_EM_TAB_DIST) {
-				out << YAML::Key << "em_tab_distance";
-				out << YAML::Value << lang.emTabDist;
+				out << YAML::Key << "em_tab_distance" << YAML::Value << lang.emTabDist;
 			}
 
 			if (!lang.recognitionExpr.isEmpty()) {
-				out << YAML::Key << "regex";
-				out << YAML::Value << lang.recognitionExpr.toUtf8().data();
+				out << YAML::Key << "regex" << YAML::Value << lang.recognitionExpr.toUtf8().data();
 			}
 
 			if (lang.wrapStyle != WrapStyle::Default) {
-				out << YAML::Key << "wrap";
-				out << YAML::Value << AutoWrapTypes[static_cast<int>(lang.wrapStyle)].data();
+				out << YAML::Key << "wrap" << YAML::Value << AutoWrapTypes[static_cast<int>(lang.wrapStyle)].data();
 			}
 
 			if (lang.indentStyle != IndentStyle::Default) {
-				out << YAML::Key << "indent";
-				out << YAML::Value << AutoIndentTypes[static_cast<int>(lang.indentStyle)].data();
+				out << YAML::Key << "indent" << YAML::Value << AutoIndentTypes[static_cast<int>(lang.indentStyle)].data();
 			}
 
 			if (!lang.defTipsFile.isEmpty()) {
-				out << YAML::Key << "default_tips";
-				out << YAML::Value << lang.defTipsFile.toUtf8().data();
+				out << YAML::Key << "default_tips" << YAML::Value << lang.defTipsFile.toUtf8().data();
 			}
 			out << YAML::EndMap;
-			out << YAML::EndMap;
+			out << YAML::EndDoc;
 		}
-		out << YAML::EndSeq;
-
 
 		QFile file(filename);
 		if (file.open(QIODevice::WriteOnly)) {

@@ -1527,7 +1527,6 @@ QString WriteHighlightString() {
 		}
 		out << YAML::EndMap;
 
-
 		QFile file(filename);
 		if (file.open(QIODevice::WriteOnly)) {
 			file.write(out.c_str());

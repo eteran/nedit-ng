@@ -4907,7 +4907,7 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 	QString substitutedCommand = command;
 	substitutedCommand.replace(QLatin1Char('%'), fullPath());
 
-	if(loc) {
+	if (loc) {
 		substitutedCommand.replace(QLatin1Char('#'), QString::number(loc->line));
 	}
 
