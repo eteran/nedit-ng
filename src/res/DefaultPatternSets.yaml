@@ -222,7 +222,7 @@ C++:
       defer_parsing: true
       regex_start: <(?:new|delete|this|return|goto|if|else|case|default|switch|break|continue|while|do|for|try|catch|throw|sizeof|true|false|namespace|using|dynamic_cast|static_cast|reinterpret_cast|const_cast)>
     - name: braces
-      style: Keyword
+      style: Bracket
       defer_parsing: true
       regex_start: "[{}]"
 C:
