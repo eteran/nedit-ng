@@ -410,7 +410,7 @@ public:
 	void action_About_Qt_triggered();
 	void action_Help_triggered();
 
-private Q_SLOTS:
+private:
 	void focusChanged(QWidget *from, QWidget *to);
 
 public Q_SLOTS:
