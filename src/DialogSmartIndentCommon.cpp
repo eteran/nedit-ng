@@ -74,7 +74,7 @@ void DialogSmartIndentCommon::buttonRestore_clicked() {
 	}
 
 	// replace common macros with default
-    SmartIndent::CommonMacros = SmartIndent::loadDefaultCommonMacros();
+	SmartIndent::CommonMacros = SmartIndent::loadDefaultCommonMacros();
 
 	// Update the dialog
 	ui.editCode->setPlainText(SmartIndent::CommonMacros);

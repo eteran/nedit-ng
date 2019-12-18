@@ -76,8 +76,8 @@ bool isDefaultIndentSpec(const SmartIndentEntry *indentSpec) {
  * @return
  */
 std::vector<SmartIndentEntry> loadDefaultIndentSpecs() {
-	QByteArray defaultIndentRules = loadResource(QLatin1String("DefaultSmartIndent.yaml"));
-	YAML::Node indentRules        = YAML::Load(defaultIndentRules.data());
+	static QByteArray defaultIndentRules = loadResource(QLatin1String("DefaultSmartIndent.yaml"));
+	static YAML::Node indentRules        = YAML::Load(defaultIndentRules.data());
 
 	std::vector<SmartIndentEntry> specs;
 
@@ -126,8 +126,8 @@ std::vector<SmartIndentEntry> loadDefaultIndentSpecs() {
  * @return
  */
 QString loadDefaultCommonMacros() {
-	QByteArray defaultIndentRules = loadResource(QLatin1String("DefaultSmartIndent.yaml"));
-	YAML::Node indentRules        = YAML::Load(defaultIndentRules.data());
+	static QByteArray defaultIndentRules = loadResource(QLatin1String("DefaultSmartIndent.yaml"));
+	static YAML::Node indentRules        = YAML::Load(defaultIndentRules.data());
 
 	for (auto it = indentRules.begin(); it != indentRules.end(); ++it) {
 		const auto &key         = it->first.as<std::string>();
@@ -353,8 +353,8 @@ QString writeSmartIndentString() {
 
 		out << YAML::BeginMap;
 
-        static const QString defaults = loadDefaultCommonMacros();
-        if (CommonMacros == defaults) {
+		static const QString defaults = loadDefaultCommonMacros();
+		if (CommonMacros == defaults) {
 			out << YAML::Key << "common" << YAML::Value << "Default";
 		} else {
 			out << YAML::Key << "common" << YAML::Value << YAML::Literal << CommonMacros.toUtf8().data();
