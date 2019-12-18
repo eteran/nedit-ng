@@ -59,7 +59,6 @@ command: |
   
   $compWord["wordEnd"] = $cursor
   
-...
 ---
 name: Fill Sel. w/Char
 input: selection
@@ -183,7 +182,6 @@ command: |
   # Replace the selection with the complete fill text
   replace_selection(toppiece midpiece botpiece)
   
-...
 ---
 name: Quote Mail Reply
 command: |
@@ -192,7 +190,6 @@ command: |
   else
       replace_in_selection("^.*$", "\\> &", "regex")
   
-...
 ---
 name: Unquote Mail Reply
 command: |
@@ -201,7 +198,6 @@ command: |
   else
       replace_in_selection("(^\\> )(.*)$", "\\2", "regex")
   
-...
 ---
 name: Comments>/* Comment */@C@C++@Java@CSS@JavaScript@Lex
 input: selection
@@ -211,7 +207,6 @@ command: |
   replace_range(selStart, selEnd, "/* " get_selection() " */")
   select(selStart, selEnd + 6)
   
-...
 ---
 name: Comments>/* Uncomment */@C@C++@Java@CSS@JavaScript@Lex
 input: selection
@@ -224,77 +219,66 @@ command: |
   replace_selection(get_range(start, end))
   select(pos, $cursor)
   
-...
 ---
 name: Comments>// Comment@C@C++@Java@JavaScript
 input: selection
 command: |
   replace_in_selection("^.*$", "// &", "regex")
   
-...
 ---
 name: Comments>// Uncomment@C@C++@Java@JavaScript
 input: selection
 command: |
   replace_in_selection("(^[ \\t]*// ?)(.*)$", "\\2", "regex")
   
-...
 ---
 name: Comments># Comment@Perl@Sh Ksh Bash@NEdit Macro@Makefile@Awk@Csh@Python@Tcl
 input: selection
 command: |
   replace_in_selection("^.*$", "#&", "regex")
   
-...
 ---
 name: Comments># Uncomment@Perl@Sh Ksh Bash@NEdit Macro@Makefile@Awk@Csh@Python@Tcl
 input: selection
 command: |
   replace_in_selection("(^[ \\t]*#)(.*)$", "\\2", "regex")
   
-...
 ---
 name: Comments>-- Comment@SQL
 input: selection
 command: |
   replace_in_selection("^.*$", "--&", "regex")
   
-...
 ---
 name: Comments>-- Uncomment@SQL
 input: selection
 command: |
   replace_in_selection("(^[ \\t]*--)(.*)$", "\\2", "regex")
   
-...
 ---
 name: Comments>! Comment@X Resources
 input: selection
 command: |
   replace_in_selection("^.*$", "!&", "regex")
   
-...
 ---
 name: Comments>! Uncomment@X Resources
 input: selection
 command: |
   replace_in_selection("(^[ \\t]*!)(.*)$", "\\2", "regex")
   
-...
 ---
 name: Comments>% Comment@LaTeX
 input: selection
 command: |
   replace_in_selection("^.*$", "%&", "regex")
   
-...
 ---
 name: Comments>% Uncomment@LaTeX
 input: selection
 command: |
   replace_in_selection("(^[ \\t]*%)(.*)$", "\\2", "regex")
   
-...
 ---
 name: Comments>Bar Comment@C
 input: selection
@@ -311,7 +295,6 @@ command: |
   replace_selection(newText)
   select(start, start + length(newText))
   
-...
 ---
 name: Comments>Bar Uncomment@C
 input: selection
@@ -329,7 +312,6 @@ command: |
   replace_range(selStart, selEnd, newText)
   select(selStart, selStart + length(newText))
   
-...
 ---
 name: Make C Prototypes@C@C++
 command: |
@@ -373,5 +355,4 @@ command: |
   focus_window("last")
   replace_range(0, 0, prototypes staticPrototypes)
   
-...
 

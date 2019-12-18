@@ -472,7 +472,6 @@ QString WriteLanguageModesString() {
 				out << YAML::Key << "default_tips" << YAML::Value << lang.defTipsFile.toUtf8().data();
 			}
 			out << YAML::EndMap;
-			out << YAML::EndDoc;
 		}
 
 		QFile file(filename);

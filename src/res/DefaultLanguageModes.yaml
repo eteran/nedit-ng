@@ -6,12 +6,10 @@ extensions:
   - .ads
   - .adb
   - .a
-...
 ---
 name: Awk
 extensions:
   - .awk
-...
 ---
 name: C++
 extensions:
@@ -26,14 +24,12 @@ extensions:
   - .hpp
   - .c++
 delimiters: .,/\`'!|@#%^&*()-=+{}[]":;<>?~
-...
 ---
 name: C
 extensions:
   - .c
   - .h
 delimiters: .,/\`'!|@#%^&*()-=+{}[]":;<>?~
-...
 ---
 name: CSS
 extensions:
@@ -41,7 +37,6 @@ extensions:
 delimiters: .,/\`'!|@#%^&*()=+{}[]":;<>?~
 wrap: None
 indent: Auto
-...
 ---
 name: Csh
 extensions:
@@ -51,24 +46,20 @@ extensions:
   - .login
   - .logout
 regex: ^[ \t]*#[ \t]*![ \t]*/bin/t?csh
-...
 ---
 name: Fortran
 extensions:
   - .f
   - .f77
   - .for
-...
 ---
 name: Java
 extensions:
   - .java
-...
 ---
 name: JavaScript
 extensions:
   - .js
-...
 ---
 name: LaTeX
 extensions:
@@ -79,12 +70,10 @@ extensions:
   - .ins
   - .clo
   - .fd
-...
 ---
 name: Lex
 extensions:
   - .lex
-...
 ---
 name: Makefile
 extensions:
@@ -94,27 +83,23 @@ extensions:
 tab_distance: 8
 em_tab_distance: 8
 wrap: None
-...
 ---
 name: Matlab
 extensions:
   - .m
   - .oct
   - .sci
-...
 ---
 name: NEdit Macro
 extensions:
   - .nm
   - .neditmacro
-...
 ---
 name: Pascal
 extensions:
   - .pas
   - .p
   - .int
-...
 ---
 name: Perl
 extensions:
@@ -126,7 +111,6 @@ delimiters: .,/\\`'!$@#%^&*()-=+{}[]":;<>?~|
 regex: ^[ \t]*#[ \t]*!.*perl
 wrap: None
 indent: Auto
-...
 ---
 name: PostScript
 extensions:
@@ -136,7 +120,6 @@ extensions:
   - .epsi
 delimiters: /%(){}[]<>
 regex: ^%!
-...
 ---
 name: Python
 extensions:
@@ -145,7 +128,6 @@ delimiters: "!\"#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~"
 regex: ^#!.*python
 wrap: None
 indent: Auto
-...
 ---
 name: Regex
 extensions:
@@ -154,7 +136,6 @@ extensions:
 regex: \(\?[:#=!iInN].+\)
 wrap: Continuous
 indent: None
-...
 ---
 name: SGML HTML
 extensions:
@@ -163,12 +144,10 @@ extensions:
   - .html
   - .htm
 regex: \<[Hh][Tt][Mm][Ll]\>
-...
 ---
 name: SQL
 extensions:
   - .sql
-...
 ---
 name: Sh Ksh Bash
 extensions:
@@ -181,7 +160,6 @@ extensions:
   - .bash_login
   - .bash_profile
 regex: ^[ \t]*#[ \t]*![ \t]*/.*bin/(bash|ksh|sh|zsh)
-...
 ---
 name: Tcl
 extensions:
@@ -191,19 +169,16 @@ extensions:
   - .itk
 wrap: None
 indent: Smart
-...
 ---
 name: VHDL
 extensions:
   - .vhd
   - .vhdl
   - .vdl
-...
 ---
 name: Verilog
 extensions:
   - .v
-...
 ---
 name: XML
 extensions:
@@ -213,7 +188,6 @@ extensions:
 delimiters: <>/="'()+*?|
 regex: \<(?i\?xml|!doctype)
 wrap: None
-...
 ---
 name: X Resources
 extensions:
@@ -223,11 +197,9 @@ extensions:
   - .pats
   - nedit.rc
 regex: ^[!#].*([Aa]pp|[Xx]).*[Dd]efaults
-...
 ---
 name: Yacc
 extensions:
   - .y
 delimiters: .,/\`'!|@#%^&*()-=+{}[]":;<>?~
-...
 

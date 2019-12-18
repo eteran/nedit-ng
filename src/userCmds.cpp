@@ -133,7 +133,6 @@ QString writeMacroMenuYaml(const std::vector<MenuData> &menuItems) {
 
 			out << YAML::Key << "command" << YAML::Value << YAML::Literal << item.cmd.toUtf8().data();
 			out << YAML::EndMap;
-			out << YAML::EndDoc;
 		}
 
 		QFile file(filename);
@@ -204,7 +203,6 @@ QString writeShellMenuYaml(const std::vector<MenuData> &menuItems) {
 
 			out << YAML::Key << "command" << YAML::Value << YAML::Literal << item.cmd.toUtf8().data();
 			out << YAML::EndMap;
-			out << YAML::EndDoc;
 		}
 
 		QFile file(filename);
@@ -244,7 +242,6 @@ QString writeContextMenuYaml(const std::vector<MenuData> &menuItems) {
 
 			out << YAML::Key << "command" << YAML::Value << YAML::Literal << item.cmd.toUtf8().data();
 			out << YAML::EndMap;
-			out << YAML::EndDoc;
 		}
 
 		QFile file(filename);
