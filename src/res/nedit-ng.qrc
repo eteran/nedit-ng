@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>DefaultCommonMacros.txt</file>
         <file>nedit-ng.png</file>
         <file>DefaultStyles.xml</file>
         <file>DefaultLanguageModes.yaml</file>

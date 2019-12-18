@@ -4,7 +4,6 @@
 
 #include "Util/QtHelper.h"
 #include <QPointer>
-#include <boost/optional.hpp>
 #include <memory>
 #include <vector>
 
@@ -28,7 +27,7 @@ QString writeSmartIndentString();
 void editCommonSmartIndentMacro();
 void renameSmartIndentMacros(const QString &oldName, const QString &newName);
 void updateLangModeMenuSmartIndent();
-QByteArray defaultCommonMacros();
+QString loadDefaultCommonMacros();
 const SmartIndentEntry *findIndentSpec(const QString &language);
 const SmartIndentEntry *findDefaultIndentSpec(const QString &language);
 

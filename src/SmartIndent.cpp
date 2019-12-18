@@ -85,8 +85,7 @@ std::vector<SmartIndentEntry> loadDefaultIndentSpecs() {
 		const auto &key         = it->first.as<std::string>();
 		const YAML::Node &value = it->second;
 
-		if (key == "common") {
-		} else if (key == "languages") {
+		if (key == "languages") {
 
 			for (auto lang_it = value.begin(); lang_it != value.end(); ++lang_it) {
 
@@ -123,6 +122,26 @@ std::vector<SmartIndentEntry> loadDefaultIndentSpecs() {
 }
 
 /**
+ * @brief loadDefaultCommonMacros
+ * @return
+ */
+QString loadDefaultCommonMacros() {
+	QByteArray defaultIndentRules = loadResource(QLatin1String("DefaultSmartIndent.yaml"));
+	YAML::Node indentRules        = YAML::Load(defaultIndentRules.data());
+
+	for (auto it = indentRules.begin(); it != indentRules.end(); ++it) {
+		const auto &key         = it->first.as<std::string>();
+		const YAML::Node &value = it->second;
+
+		if (key == "common") {
+			return QString::fromUtf8(value.as<std::string>().c_str());
+		}
+	}
+
+	return QString();
+}
+
+/**
  * @brief findDefaultIndentSpec
  * @param language
  * @return
@@ -144,15 +163,6 @@ const SmartIndentEntry *findDefaultIndentSpec(const QString &language) {
 	}
 
 	return nullptr;
-}
-
-/**
- * @brief defaultCommonMacros
- * @return
- */
-QByteArray defaultCommonMacros() {
-	static QByteArray defaultMacros = loadResource(QLatin1String("DefaultCommonMacros.txt"));
-	return defaultMacros;
 }
 
 /*
@@ -192,8 +202,7 @@ void loadSmartIndentString(const QString &string) {
 				if (key == "common") {
 					CommonMacros = QString::fromUtf8(value.as<std::string>().c_str());
 					if (CommonMacros == QLatin1String("Default")) {
-						static const QByteArray defaults = defaultCommonMacros();
-						CommonMacros                     = QString::fromLatin1(defaults);
+						CommonMacros = loadDefaultCommonMacros();
 					}
 				} else if (key == "languages") {
 					for (auto lang_it = value.begin(); lang_it != value.end(); ++lang_it) {
@@ -328,8 +337,7 @@ void loadSmartIndentCommonString(const QString &string) {
 		/* look for "Default" keyword, and if it's there, return the default
            smart common macro */
 		if (in.match(QLatin1String("Default"))) {
-			static const QByteArray defaults = defaultCommonMacros();
-			CommonMacros                     = QString::fromLatin1(defaults);
+			CommonMacros = loadDefaultCommonMacros();
 			return;
 		}
 
@@ -345,8 +353,8 @@ QString writeSmartIndentString() {
 
 		out << YAML::BeginMap;
 
-		static const QByteArray defaults = defaultCommonMacros();
-		if (CommonMacros == QString::fromLatin1(defaults)) {
+        static const QString defaults = loadDefaultCommonMacros();
+        if (CommonMacros == defaults) {
 			out << YAML::Key << "common" << YAML::Value << "Default";
 		} else {
 			out << YAML::Key << "common" << YAML::Value << YAML::Literal << CommonMacros.toUtf8().data();
