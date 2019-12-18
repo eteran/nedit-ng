@@ -3,8 +3,6 @@
         <file>DefaultCommonMacros.txt</file>
         <file>nedit-ng.png</file>
         <file>DefaultStyles.xml</file>
-        <file>DefaultSmartIndentInit.txt</file>
-        <file>DefaultSmartIndentInitCommon.txt</file>
         <file>DefaultLanguageModes.yaml</file>
         <file>DefaultPatternSets.yaml</file>
         <file>DefaultContextMenu.yaml</file>
@@ -13,5 +11,6 @@
         <file>DefaultShellMenuFreeBSD.yaml</file>
         <file>DefaultShellMenuUnix.yaml</file>
         <file>DefaultShellMenuWindows.yaml</file>
+        <file>DefaultSmartIndent.yaml</file>
     </qresource>
 </RCC>

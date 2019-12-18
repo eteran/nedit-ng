@@ -44,6 +44,7 @@ QString highlightPatternsFile();
 QString macroMenuFile();
 QString shellMenuFile();
 QString contextMenuFile();
+QString smartIndentFile();
 
 // Standard
 extern bool showResizeNotification;

@@ -998,6 +998,12 @@ boost::optional<PatternSet> readPatternSet(Input &in) {
 	}
 }
 
+/**
+ * @brief find_subpattern
+ * @param pattern
+ * @param index
+ * @return
+ */
 HighlightData *find_subpattern(const HighlightData *pattern, size_t index) {
 
 	// Figure out which sub-pattern matched
@@ -1012,6 +1018,26 @@ HighlightData *find_subpattern(const HighlightData *pattern, size_t index) {
 
 	qCritical("NEdit: Internal error, failed to find sub-pattern");
 	return nullptr;
+}
+
+/**
+ * @brief readDefaultPatternSets
+ * @return
+ */
+std::vector<PatternSet> readDefaultPatternSets() {
+	QByteArray defaultPatternSets = loadResource(QLatin1String("DefaultPatternSets.yaml"));
+	YAML::Node patternSets        = YAML::Load(defaultPatternSets.data());
+
+	std::vector<PatternSet> defaultPatterns;
+
+	for (auto it = patternSets.begin(); it != patternSets.end(); ++it) {
+		// Read each pattern set, abort on error
+		if (boost::optional<PatternSet> patSet = readPatternSetYaml(it)) {
+			defaultPatterns.push_back(*patSet);
+		}
+	}
+
+	return defaultPatterns;
 }
 
 }
@@ -1625,16 +1651,14 @@ PatternSet *FindPatternSet(const QString &languageMode) {
 */
 boost::optional<PatternSet> readDefaultPatternSet(const QString &langModeName) {
 
-	static QByteArray defaultPatternSets = loadResource(QLatin1String("DefaultPatternSets.yaml"));
-	static YAML::Node patternSets        = YAML::Load(defaultPatternSets.data());
+	static const std::vector<PatternSet> defaultPatternSets = readDefaultPatternSets();
 
-	for (auto it = patternSets.begin(); it != patternSets.end(); ++it) {
-		// Read each pattern set, abort on error
-		if (boost::optional<PatternSet> patSet = readPatternSetYaml(it)) {
-			if (patSet->languageMode == langModeName) {
-				return patSet;
-			}
-		}
+	auto it = std::find_if(defaultPatternSets.begin(), defaultPatternSets.end(), [&langModeName](const PatternSet &patternSet) {
+		return langModeName == patternSet.languageMode;
+	});
+
+	if (it != defaultPatternSets.end()) {
+		return *it;
 	}
 
 	return boost::none;

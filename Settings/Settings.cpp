@@ -213,6 +213,16 @@ QString highlightPatternsFile() {
 }
 
 /**
+ * @brief smartIndentFile
+ * @return
+ */
+QString smartIndentFile() {
+	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
+	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("smart_indent.yaml"));
+	return configFile;
+}
+
+/**
  * @brief randomString
  * @param length
  * @return
@@ -245,8 +255,8 @@ void loadPreferences(bool isServer) {
 	bgMenuCommands        = settings.value(tr("nedit.bgMenuCommands"), QLatin1String("*")).toString();
 	highlightPatterns     = settings.value(tr("nedit.highlightPatterns"), QLatin1String("*")).toString();
 	languageModes         = settings.value(tr("nedit.languageModes"), QLatin1String("*")).toString();
-	smartIndentInit       = settings.value(tr("nedit.smartIndentInit"), loadResource(QLatin1String("DefaultSmartIndentInit.txt"))).toString();
-	smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), loadResource(QLatin1String("DefaultSmartIndentInitCommon.txt"))).toString();
+	smartIndentInit       = settings.value(tr("nedit.smartIndentInit"), QLatin1String("*")).toString();
+	smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), QLatin1String("*")).toString();
 
 	autoWrap          = readEnum(settings, tr("nedit.autoWrap"), WrapStyle::Continuous);
 	autoIndent        = readEnum(settings, tr("nedit.autoIndent"), IndentStyle::Auto);
