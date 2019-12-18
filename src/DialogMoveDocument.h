@@ -24,9 +24,6 @@ public:
 	int selectionIndex() const;
 	bool moveAllSelected() const;
 
-private Q_SLOTS:
-	void on_listWindows_itemDoubleClicked(QListWidgetItem *item);
-
 private:
 	Ui::DialogMoveDocument ui;
 	std::vector<MainWindow *> windows_;

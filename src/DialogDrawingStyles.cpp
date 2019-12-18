@@ -19,6 +19,7 @@
  */
 DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatterns, std::vector<HighlightStyle> &highlightStyles, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f), highlightStyles_(highlightStyles), dialogSyntaxPatterns_(dialogSyntaxPatterns) {
+
 	ui.setupUi(this);
 	connectSlots();
 

@@ -280,13 +280,13 @@ public:
 	void macroTriggered(QAction *action);
 	void shellTriggered(QAction *action);
 
-public Q_SLOTS:
+private:
 #ifdef PER_TAB_CLOSE
-	void on_tabWidget_tabCloseRequested(int index);
+	void tabWidget_tabCloseRequested(int index);
 #endif
-	void on_tabWidget_tabCountChanged(int count);
-	void on_tabWidget_currentChanged(int index);
-	void on_tabWidget_customContextMenuRequested(const QPoint &pos);
+	void tabWidget_tabCountChanged(int count);
+	void tabWidget_currentChanged(int index);
+	void tabWidget_customContextMenuRequested(const QPoint &pos);
 
 public:
 	// File Menu

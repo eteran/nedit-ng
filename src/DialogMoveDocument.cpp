@@ -10,6 +10,11 @@
 DialogMoveDocument::DialogMoveDocument(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
 	ui.setupUi(this);
+
+	connect(ui.listWindows, &QListWidget::itemDoubleClicked, this, [this](QListWidgetItem *item) {
+		Q_UNUSED(item)
+		accept();
+	});
 }
 
 /**
@@ -58,14 +63,4 @@ int DialogMoveDocument::selectionIndex() const {
  */
 bool DialogMoveDocument::moveAllSelected() const {
 	return ui.checkMoveAll->isChecked();
-}
-
-/**
- * @brief DialogMoveDocument::on_listWindows_itemDoubleClicked
- * @param item
- */
-void DialogMoveDocument::on_listWindows_itemDoubleClicked(QListWidgetItem *item) {
-
-	Q_UNUSED(item)
-	accept();
 }

@@ -7,35 +7,13 @@ HighlightPattern::HighlightPattern(QString styleName)
 
 bool HighlightPattern::operator==(const HighlightPattern &rhs) const {
 
-	if (flags != rhs.flags) {
-		return false;
-	}
-
-	if (name != rhs.name) {
-		return false;
-	}
-
-	if (startRE != rhs.startRE) {
-		return false;
-	}
-
-	if (endRE != rhs.endRE) {
-		return false;
-	}
-
-	if (errorRE != rhs.errorRE) {
-		return false;
-	}
-
-	if (style != rhs.style) {
-		return false;
-	}
-
-	if (subPatternOf != rhs.subPatternOf) {
-		return false;
-	}
-
-	return true;
+	return name == rhs.name &&
+		   startRE == rhs.startRE &&
+		   endRE == rhs.endRE &&
+		   errorRE == rhs.errorRE &&
+		   style == rhs.style &&
+		   subPatternOf == rhs.subPatternOf &&
+		   flags == rhs.flags;
 }
 
 bool HighlightPattern::operator!=(const HighlightPattern &rhs) const {

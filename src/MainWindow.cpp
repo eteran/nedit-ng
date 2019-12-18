@@ -203,6 +203,7 @@ void downcaseSelection(DocumentWidget *document, TextArea *area) {
  */
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags) {
+
 	ui.setupUi(this);
 	connectSlots();
 
@@ -389,6 +390,13 @@ void MainWindow::connectSlots() {
 	connect(ui.action_Default_Warnings_Files_Modified_Externally, &QAction::toggled, this, &MainWindow::action_Default_Warnings_Files_Modified_Externally_toggled);
 	connect(ui.action_Default_Warnings_Check_Modified_File_Contents, &QAction::toggled, this, &MainWindow::action_Default_Warnings_Check_Modified_File_Contents_toggled);
 	connect(ui.action_Default_Warnings_On_Exit, &QAction::toggled, this, &MainWindow::action_Default_Warnings_On_Exit_toggled);
+
+#ifdef PER_TAB_CLOSE
+	connect(ui.tabWidget, &TabWidget::tabCloseRequested, this, &MainWindow::tabWidget_tabCloseRequested);
+#endif
+	connect(ui.tabWidget, &TabWidget::tabCountChanged, this, &MainWindow::tabWidget_tabCountChanged);
+	connect(ui.tabWidget, &TabWidget::currentChanged, this, &MainWindow::tabWidget_currentChanged);
+	connect(ui.tabWidget, &TabWidget::customContextMenuRequested, this, &MainWindow::tabWidget_customContextMenuRequested);
 }
 
 /**
@@ -2000,18 +2008,18 @@ void MainWindow::updatePrevOpenMenu() {
 }
 
 /**
- * @brief MainWindow::on_tabWidget_tabCountChanged
+ * @brief MainWindow::tabWidget_tabCountChanged
  * @param count
  */
-void MainWindow::on_tabWidget_tabCountChanged(int count) {
+void MainWindow::tabWidget_tabCountChanged(int count) {
 	ui.action_Detach_Tab->setEnabled(count > 1);
 }
 
 /**
- * @brief MainWindow::on_tabWidget_currentChanged
+ * @brief MainWindow::tabWidget_currentChanged
  * @param index
  */
-void MainWindow::on_tabWidget_currentChanged(int index) {
+void MainWindow::tabWidget_currentChanged(int index) {
 	if (index != -1) {
 		if (DocumentWidget *document = documentAt(index)) {
 			endISearch();
@@ -2021,10 +2029,10 @@ void MainWindow::on_tabWidget_currentChanged(int index) {
 }
 
 /**
- * @brief MainWindow::on_tabWidget_customContextMenuRequested
+ * @brief MainWindow::tabWidget_customContextMenuRequested
  * @param pos
  */
-void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
+void MainWindow::tabWidget_customContextMenuRequested(const QPoint &pos) {
 	const int index = ui.tabWidget->tabBar()->tabAt(pos);
 	if (index != -1) {
 		auto *menu              = new QMenu(this);
@@ -7320,10 +7328,10 @@ void MainWindow::updateWindowTitle(DocumentWidget *document) {
 
 #ifdef PER_TAB_CLOSE
 /**
- * @brief MainWindow::on_tabWidget_tabCloseRequested
+ * @brief MainWindow::tabWidget_tabCloseRequested
  * @param index
  */
-void MainWindow::on_tabWidget_tabCloseRequested(int index) {
+void MainWindow::tabWidget_tabCloseRequested(int index) {
 	if (DocumentWidget *document = documentAt(index)) {
 		action_Close(document, CloseMode::Prompt);
 	}

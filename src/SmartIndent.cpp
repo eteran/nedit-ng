@@ -29,8 +29,6 @@ QString CommonMacros;
 
 namespace {
 
-const auto MacroEndBoundary = QLatin1String("--End-of-Macro--");
-
 /**
  * Read a macro (arbitrary text terminated by the macro end boundary string)
  * trim off added tabs and return the string. Returns QString() if the macro
@@ -41,6 +39,9 @@ const auto MacroEndBoundary = QLatin1String("--End-of-Macro--");
  * @return
  */
 QString readSmartIndentMacro(Input &in) {
+
+	static const auto MacroEndBoundary = QLatin1String("--End-of-Macro--");
+
 	// Strip leading newline
 	if (*in == QLatin1Char('\n')) {
 		++in;
