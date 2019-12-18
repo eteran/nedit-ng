@@ -78,7 +78,6 @@ extern bool warnExit;
 extern bool warnFileMods;
 extern bool warnRealFileMods;
 extern bool smartHome;
-extern int fileVersion;
 extern IndentStyle autoIndent;
 extern WrapStyle autoWrap;
 extern int emulateTabs;

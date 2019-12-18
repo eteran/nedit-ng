@@ -42,8 +42,6 @@
 namespace Preferences {
 namespace {
 
-constexpr int ConfigFileVersion = 1;
-
 const QLatin1String AutoWrapTypes[] = {
 	QLatin1String("None"),
 	QLatin1String("Newline"),
@@ -533,7 +531,6 @@ void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 		}
 	}
 
-	Settings::fileVersion           = ConfigFileVersion;
 	Settings::shellCommands         = write_shell_commands_string();
 	Settings::macroCommands         = write_macro_commands_string();
 	Settings::bgMenuCommands        = write_bg_menu_commands_string();

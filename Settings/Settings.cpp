@@ -66,7 +66,6 @@ bool warnExit;
 bool warnFileMods;
 bool warnRealFileMods;
 bool smartHome;
-int fileVersion;
 IndentStyle autoIndent;
 WrapStyle autoWrap;
 int emulateTabs;
@@ -248,8 +247,6 @@ void loadPreferences(bool isServer) {
 	QString filename = configFile();
 	QSettings settings(filename, QSettings::IniFormat);
 
-	fileVersion = settings.value(tr("nedit.fileVersion"), 1).toInt();
-
 	shellCommands         = settings.value(tr("nedit.shellCommands"), QLatin1String("*")).toString();
 	macroCommands         = settings.value(tr("nedit.macroCommands"), QLatin1String("*")).toString();
 	bgMenuCommands        = settings.value(tr("nedit.bgMenuCommands"), QLatin1String("*")).toString();
@@ -348,7 +345,6 @@ void importSettings(const QString &filename) {
 
 	QSettings settings(filename, QSettings::IniFormat);
 
-	fileVersion           = settings.value(tr("nedit.fileVersion"), fileVersion).toInt();
 	shellCommands         = settings.value(tr("nedit.shellCommands"), shellCommands).toString();
 	macroCommands         = settings.value(tr("nedit.macroCommands"), macroCommands).toString();
 	bgMenuCommands        = settings.value(tr("nedit.bgMenuCommands"), bgMenuCommands).toString();
@@ -433,7 +429,6 @@ bool savePreferences() {
 	QString filename = configFile();
 	QSettings settings(filename, QSettings::IniFormat);
 
-	settings.setValue(tr("nedit.fileVersion"), fileVersion);
 	settings.setValue(tr("nedit.shellCommands"), shellCommands);
 	settings.setValue(tr("nedit.macroCommands"), macroCommands);
 	settings.setValue(tr("nedit.bgMenuCommands"), bgMenuCommands);

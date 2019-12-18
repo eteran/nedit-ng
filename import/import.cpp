@@ -515,7 +515,6 @@ int main(int argc, char *argv[]) {
 
 	// Advanced stuff from secondary XResources...
 	// make sure that there are some sensible defaults...
-	Settings::fileVersion                  = 1;
 	Settings::colorizeHighlightedText      = true;
 	Settings::alwaysCheckRelativeTagsSpecs = true;
 	Settings::findReplaceUsesSelection     = false;
