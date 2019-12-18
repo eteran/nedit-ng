@@ -53,7 +53,7 @@ struct ParseContext {
 
 bool FontOfNamedStyleIsBold(const QString &styleName);
 bool FontOfNamedStyleIsItalic(const QString &styleName);
-bool LoadHighlightString(const QString &string);
+void LoadHighlightString(const QString &string);
 bool NamedStyleExists(const QString &styleName);
 bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&style_ptr, int64_t length, const ParseContext *ctx, const char *look_behind_to, const char *match_to);
 HighlightData *patternOfStyle(const std::unique_ptr<HighlightData[]> &patterns, int style);
@@ -66,7 +66,6 @@ QString FgColorOfNamedStyle(const QString &styleName);
 QString WriteHighlightString();
 size_t IndexOfNamedStyle(const QString &styleName);
 boost::optional<PatternSet> readDefaultPatternSet(const QString &langModeName);
-boost::optional<PatternSet> readDefaultPatternSet(QByteArray &patternData, const QString &langModeName);
 TextCursor backwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos);
 TextCursor forwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos);
 void RenameHighlightPattern(const QString &oldName, const QString &newName);

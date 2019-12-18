@@ -39,6 +39,12 @@ QString historyFile();
 QString autoLoadMacroFile();
 QString styleFile();
 QString themeFile();
+QString languageModeFile();
+QString highlightPatternsFile();
+QString macroMenuFile();
+QString shellMenuFile();
+QString contextMenuFile();
+QString smartIndentFile();
 
 // Standard
 extern bool showResizeNotification;

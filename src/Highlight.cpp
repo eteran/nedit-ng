@@ -17,6 +17,10 @@
 #include "WindowHighlightData.h"
 #include "X11Colors.h"
 
+#include <yaml-cpp/yaml.h>
+
+#include <QFile>
+#include <QFileInfo>
 #include <QMessageBox>
 #include <QPushButton>
 #include <QSettings>
@@ -825,6 +829,100 @@ boost::optional<std::vector<HighlightPattern>> readHighlightPatterns(Input &in, 
 	return ret;
 }
 
+/**
+ * @brief readPatternYaml
+ * @param patterns
+ * @return
+ */
+HighlightPattern readPatternYaml(const YAML::Node &patterns) {
+	HighlightPattern pattern;
+	pattern.flags = 0;
+
+	for (auto it = patterns.begin(); it != patterns.end(); ++it) {
+
+		const std::string &key  = it->first.as<std::string>();
+		const YAML::Node &value = it->second;
+
+		if (key == "name") {
+			pattern.name = QString::fromUtf8(value.as<std::string>().c_str());
+		} else if (key == "style") {
+			pattern.style = QString::fromUtf8(value.as<std::string>().c_str());
+		} else if (key == "regex_start") {
+			pattern.startRE = QString::fromUtf8(value.as<std::string>().c_str());
+		} else if (key == "regex_end") {
+			pattern.endRE = QString::fromUtf8(value.as<std::string>().c_str());
+		} else if (key == "regex_error") {
+			pattern.errorRE = QString::fromUtf8(value.as<std::string>().c_str());
+		} else if (key == "parent") {
+			pattern.subPatternOf = QString::fromUtf8(value.as<std::string>().c_str());
+		} else if (key == "defer_parsing") {
+			pattern.flags |= value.as<bool>() ? DEFER_PARSING : 0;
+		} else if (key == "color_only") {
+			pattern.flags |= value.as<bool>() ? COLOR_ONLY : 0;
+		} else if (key == "parse_subpatterns_from_start") {
+			pattern.flags |= value.as<bool>() ? PARSE_SUBPATS_FROM_START : 0;
+		}
+	}
+
+	return pattern;
+}
+
+/**
+ * @brief readPatternSetYaml
+ * @param it
+ * @return
+ */
+boost::optional<PatternSet> readPatternSetYaml(YAML::const_iterator it) {
+	struct HighlightError {
+		QString message;
+	};
+
+	try {
+		PatternSet patternSet;
+		patternSet.languageMode = QString::fromUtf8(it->first.as<std::string>().c_str());
+		YAML::Node entries      = it->second;
+
+		if (entries.IsMap()) {
+			for (auto set_it = entries.begin(); set_it != entries.end(); ++set_it) {
+
+				const auto &key         = set_it->first.as<std::string>();
+				const YAML::Node &value = set_it->second;
+
+				if (key == "char_context") {
+					patternSet.charContext = value.as<int>();
+				} else if (key == "line_context") {
+					patternSet.lineContext = value.as<int>();
+				} else if (key == "patterns") {
+					for (const YAML::Node &entry : value) {
+
+						HighlightPattern pattern = readPatternYaml(entry);
+
+						if (pattern.name.isEmpty()) {
+							Raise<HighlightError>(tr("pattern name field required"));
+						}
+
+						if (pattern.style.isEmpty()) {
+							Raise<HighlightError>(tr("pattern style field required"));
+						}
+
+						patternSet.patterns.emplace_back(std::move(pattern));
+					}
+				}
+			}
+		} else if (entries.as<std::string>() == "Default") {
+			return readDefaultPatternSet(patternSet.languageMode);
+		}
+
+		return patternSet;
+	} catch (const YAML::Exception &ex) {
+		qWarning("NEdit: Invalid YAML:\n%s", ex.what());
+	} catch (const HighlightError &ex) {
+		qWarning("NEdit: %s", qPrintable(ex.message));
+	}
+
+	return boost::none;
+}
+
 /*
 ** Read in a pattern set character string, and advance *inPtr beyond it.
 ** Returns nullptr and outputs an error to stderr on failure.
@@ -901,56 +999,11 @@ boost::optional<PatternSet> readPatternSet(Input &in) {
 }
 
 /**
- * @brief createPatternsString
- * @param patternSet
- * @param indentString
+ * @brief find_subpattern
+ * @param pattern
+ * @param index
  * @return
  */
-QString createPatternsString(const PatternSet *patternSet, const QString &indentString) {
-
-	QString str;
-	QTextStream out(&str);
-
-	const auto Colon = QLatin1Char(':');
-
-	for (const HighlightPattern &pat : patternSet->patterns) {
-
-		out << indentString
-			<< pat.name
-			<< Colon;
-
-		if (!pat.startRE.isNull()) {
-			out << Preferences::MakeQuotedString(pat.startRE);
-		}
-		out << Colon;
-
-		if (!pat.endRE.isNull()) {
-			out << Preferences::MakeQuotedString(pat.endRE);
-		}
-		out << Colon;
-
-		if (!pat.errorRE.isNull()) {
-			out << Preferences::MakeQuotedString(pat.errorRE);
-		}
-		out << Colon
-			<< pat.style
-			<< Colon;
-
-		if (!pat.subPatternOf.isNull()) {
-			out << pat.subPatternOf;
-		}
-
-		out << Colon;
-
-		if (pat.flags & DEFER_PARSING) out << QLatin1Char('D');
-		if (pat.flags & PARSE_SUBPATS_FROM_START) out << QLatin1Char('R');
-		if (pat.flags & COLOR_ONLY) out << QLatin1Char('C');
-		out << QLatin1Char('\n');
-	}
-
-	return str;
-}
-
 HighlightData *find_subpattern(const HighlightData *pattern, size_t index) {
 
 	// Figure out which sub-pattern matched
@@ -965,6 +1018,26 @@ HighlightData *find_subpattern(const HighlightData *pattern, size_t index) {
 
 	qCritical("NEdit: Internal error, failed to find sub-pattern");
 	return nullptr;
+}
+
+/**
+ * @brief readDefaultPatternSets
+ * @return
+ */
+std::vector<PatternSet> readDefaultPatternSets() {
+	QByteArray defaultPatternSets = loadResource(QLatin1String("DefaultPatternSets.yaml"));
+	YAML::Node patternSets        = YAML::Load(defaultPatternSets.data());
+
+	std::vector<PatternSet> defaultPatterns;
+
+	for (auto it = patternSets.begin(); it != patternSets.end(); ++it) {
+		// Read each pattern set, abort on error
+		if (boost::optional<PatternSet> patSet = readPatternSetYaml(it)) {
+			defaultPatterns.push_back(*patSet);
+		}
+	}
+
+	return defaultPatterns;
 }
 
 }
@@ -1373,27 +1446,53 @@ size_t findTopLevelParentIndex(const std::vector<HighlightPattern> &patterns, si
 ** to the PatternSets list of loaded highlight patterns.  Note that the
 ** patterns themselves are not parsed until they are actually used.
 */
-bool LoadHighlightString(const QString &string) {
+void LoadHighlightString(const QString &string) {
 
-	Input in(&string);
+	if (string == QLatin1String("*")) {
 
-	Q_FOREVER {
+		YAML::Node patternSets;
 
-		// Read each pattern set, abort on error
-		boost::optional<PatternSet> patSet = readPatternSet(in);
-		if (!patSet) {
-			return false;
+		const QString highlightPatternsFile = Settings::highlightPatternsFile();
+		if (QFileInfo(highlightPatternsFile).exists()) {
+			patternSets = YAML::LoadFile(highlightPatternsFile.toUtf8().data());
+		} else {
+			static QByteArray defaultPatternSets = loadResource(QLatin1String("DefaultPatternSets.yaml"));
+			patternSets                          = YAML::Load(defaultPatternSets.data());
 		}
 
-		// Add/change the pattern set in the list
-		insert_or_replace(PatternSets, *patSet, [&patSet](const PatternSet &patternSet) {
-			return patternSet.languageMode == patSet->languageMode;
-		});
+		for (auto it = patternSets.begin(); it != patternSets.end(); ++it) {
+			// Read each pattern set, abort on error
+			boost::optional<PatternSet> patSet = readPatternSetYaml(it);
+			if (!patSet) {
+				break;
+			}
 
-		// if the string ends here, we're done
-		in.skipWhitespaceNL();
-		if (in.atEnd()) {
-			return true;
+			// Add/change the pattern set in the list
+			insert_or_replace(PatternSets, *patSet, [&patSet](const PatternSet &patternSet) {
+				return patternSet.languageMode == patSet->languageMode;
+			});
+		}
+	} else {
+		Input in(&string);
+
+		Q_FOREVER {
+
+			// Read each pattern set, abort on error
+			boost::optional<PatternSet> patSet = readPatternSet(in);
+			if (!patSet) {
+				break;
+			}
+
+			// Add/change the pattern set in the list
+			insert_or_replace(PatternSets, *patSet, [&patSet](const PatternSet &patternSet) {
+				return patternSet.languageMode == patSet->languageMode;
+			});
+
+			// if the string ends here, we're done
+			in.skipWhitespaceNL();
+			if (in.atEnd()) {
+				break;
+			}
 		}
 	}
 }
@@ -1405,31 +1504,67 @@ bool LoadHighlightString(const QString &string) {
 */
 QString WriteHighlightString() {
 
-	QString str;
-	QTextStream out(&str);
+	const QString filename = Settings::highlightPatternsFile();
 
-	for (const PatternSet &patternSet : PatternSets) {
-		if (patternSet.patterns.empty()) {
-			continue;
+	try {
+		YAML::Emitter out;
+		out << YAML::BeginMap;
+		for (const PatternSet &patternSet : PatternSets) {
+			if (isDefaultPatternSet(patternSet)) {
+				out << YAML::Key << patternSet.languageMode.toUtf8().data();
+				out << YAML::Value << "Default";
+			} else {
+
+				out << YAML::Key << patternSet.languageMode.toUtf8().data();
+				out << YAML::Value << YAML::BeginMap;
+				out << YAML::Key << "line_context" << YAML::Value << patternSet.lineContext;
+				out << YAML::Key << "char_context" << YAML::Value << patternSet.charContext;
+				out << YAML::Key << "patterns" << YAML::Value;
+				out << YAML::BeginSeq;
+				for (const HighlightPattern &pat : patternSet.patterns) {
+					out << YAML::BeginMap;
+					out << YAML::Key << "name" << YAML::Value << pat.name.toUtf8().data();
+					out << YAML::Key << "style" << YAML::Value << pat.style.toUtf8().data();
+
+					out << YAML::Key << "defer_parsing" << YAML::Value << ((pat.flags & DEFER_PARSING) ? true : false);
+					out << YAML::Key << "color_only" << YAML::Value << ((pat.flags & COLOR_ONLY) ? true : false);
+					out << YAML::Key << "parse_subpatterns_from_start" << YAML::Value << ((pat.flags & PARSE_SUBPATS_FROM_START) ? true : false);
+
+					if (!pat.subPatternOf.isNull()) {
+						out << YAML::Key << "parent" << YAML::Value << pat.subPatternOf.toUtf8().data();
+					}
+
+					if (!pat.startRE.isNull()) {
+						out << YAML::Key << "regex_start" << YAML::Value << pat.startRE.toUtf8().data();
+					}
+
+					if (!pat.endRE.isNull()) {
+						out << YAML::Key << "regex_end" << YAML::Value << pat.endRE.toUtf8().data();
+					}
+
+					if (!pat.errorRE.isNull()) {
+						out << YAML::Key << "regex_error" << YAML::Value << pat.errorRE.toUtf8().data();
+					}
+					out << YAML::EndMap;
+				}
+				out << YAML::EndSeq;
+				out << YAML::EndMap;
+			}
+		}
+		out << YAML::EndMap;
+
+		QFile file(filename);
+		if (file.open(QIODevice::WriteOnly)) {
+			file.write(out.c_str());
+			file.write("\n");
 		}
 
-		out << patternSet.languageMode
-			<< QLatin1Char(':');
-
-		if (isDefaultPatternSet(patternSet)) {
-			out << QLatin1String("Default\n\t");
-		} else {
-			out << QString(QLatin1String("%1:%2{\n")).arg(patternSet.lineContext).arg(patternSet.charContext)
-				<< createPatternsString(&patternSet, QLatin1String("\t\t"))
-				<< QLatin1String("\t}\n\t");
-		}
+		return QLatin1String("*");
+	} catch (const YAML::Exception &ex) {
+		qWarning("NEdit: Error writing %s in config directory:\n%s", qPrintable(filename), ex.what());
 	}
 
-	if (!str.isEmpty()) {
-		str.chop(2);
-	}
-
-	return str;
+	return QString();
 }
 
 bool FontOfNamedStyleIsBold(const QString &styleName) {
@@ -1510,41 +1645,20 @@ PatternSet *FindPatternSet(const QString &languageMode) {
 	return nullptr;
 }
 
-/**
- * @brief readDefaultPatternSet
- * @param patternData
- * @param langModeName
- * @return
- */
-boost::optional<PatternSet> readDefaultPatternSet(QByteArray &patternData, const QString &langModeName) {
-
-	auto defaultPattern = QString::fromLatin1(patternData);
-	auto compare        = QString(QLatin1String("%1:")).arg(langModeName);
-
-	if (defaultPattern.startsWith(compare)) {
-		Input in(&defaultPattern);
-		return readPatternSet(in);
-	}
-
-	return boost::none;
-}
-
 /*
 ** Given a language mode name, determine if there is a default (built-in)
 ** pattern set available for that language mode, and if so, return it
 */
 boost::optional<PatternSet> readDefaultPatternSet(const QString &langModeName) {
-	for (int i = 0; i < 28; ++i) {
 
-		auto name = QString(QLatin1String("DefaultPatternSet%1.txt")).arg(i, 2, 10, QLatin1Char('0'));
+	static const std::vector<PatternSet> defaultPatternSets = readDefaultPatternSets();
 
-		QByteArray data = loadResource(name);
+	auto it = std::find_if(defaultPatternSets.begin(), defaultPatternSets.end(), [&langModeName](const PatternSet &patternSet) {
+		return langModeName == patternSet.languageMode;
+	});
 
-		if (!data.isNull()) {
-			if (boost::optional<PatternSet> patternSet = readDefaultPatternSet(data, langModeName)) {
-				return patternSet;
-			}
-		}
+	if (it != defaultPatternSets.end()) {
+		return *it;
 	}
 
 	return boost::none;

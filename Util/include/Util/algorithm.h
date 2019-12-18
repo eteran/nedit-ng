@@ -48,9 +48,9 @@ void insert_or_replace(Cont &cont, T &&item, Pred &&pred) {
 
 	auto it = std::find_if(cont.begin(), cont.end(), pred);
 	if (it != cont.end()) {
-		*it = std::move(item);
+		*it = item;
 	} else {
-		cont.emplace_back(std::move(item));
+		cont.emplace_back(item);
 	}
 }
 

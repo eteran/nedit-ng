@@ -38,5 +38,7 @@ PRIVATE
 	Boost::boost
 )
 
+target_add_warnings(Interpreter)
+
 set_property(TARGET Interpreter PROPERTY CXX_STANDARD 14)
 set_property(TARGET Interpreter PROPERTY CXX_EXTENSIONS OFF)

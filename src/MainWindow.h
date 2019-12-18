@@ -26,7 +26,7 @@
 #include "ui_MainWindow.h"
 
 class TextArea;
-class PathInfo;
+struct PathInfo;
 class DocumentWidget;
 class DialogReplace;
 class DialogFind;

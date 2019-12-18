@@ -1,4 +1,0 @@
-	C:Default
-	C++:Default
-	Python:Default
-	Matlab:Default

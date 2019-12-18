@@ -39,8 +39,10 @@ foreach(FILE IN LISTS QRC_SOURCES)
 	set_property(SOURCE ${FILE} PROPERTY SKIP_UNITY_BUILD_INCLUSION ON)
 endforeach()
 
-if(${X11_FOUND} AND (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
-    link_directories(/usr/X11/lib)
+if(${X11_FOUND})
+    if(TARGET_PLATFORM_MACOS)
+        link_directories(/usr/X11/lib)
+    endif()
 endif()
 
 #set_property(SOURCE NeditServer.cpp PROPERTY SKIP_UNITY_BUILD_INCLUSION ON)
@@ -258,12 +260,13 @@ add_executable(nedit-ng
 
 if(${X11_FOUND})
     if(Qt5X11Extras_FOUND)
-		target_compile_definitions(nedit-ng
-			PUBLIC -DQT_X11
-		)
+        target_compile_definitions(nedit-ng
+            PUBLIC -DQT_X11
+        )
     endif()
 endif()
 
+target_add_warnings(nedit-ng)
 
 target_link_libraries(nedit-ng
 PUBLIC
@@ -280,6 +283,7 @@ PUBLIC
 	$<$<BOOL:${X11_FOUND}>:X11>
 PRIVATE
 	Boost::boost
+	yaml-cpp
 )
 
 set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)
