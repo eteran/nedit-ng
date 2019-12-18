@@ -218,7 +218,7 @@ QString highlightPatternsFile() {
  */
 QString smartIndentFile() {
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("smart_indent.yaml"));
+	static const auto configFile   = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("indent.yaml"));
 	return configFile;
 }
 
