@@ -812,9 +812,9 @@ nedit-ng a été écrit par Evan Teran. Il est destiné à être un remplacement
    Running Qt: %8
        Locale: %9
 </source>
-        <translation>version de nedit-ng %1
+        <translation type="unfinished">version de nedit-ng %1
 
-     Compilésur: %2, %3, %4
+     Compilé sur: %2, %3, %4
       Avec Qt: %7
    Utilisant Qt: %8
        Langue: %9
