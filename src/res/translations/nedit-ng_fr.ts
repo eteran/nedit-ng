@@ -72,7 +72,12 @@ p, li { white-space: pre-wrap; }
 &lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Monospace&apos;; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;Xuo &amp;lt;https://github.com/ericxuo&amp;gt; - French&lt;/span&gt;&lt;/p&gt;
 &lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;&lt;br /&gt;Want to contribute? Email the author at &lt;/span&gt;&lt;a href=&quot;mailto:evan.teran@gmail.com&quot;&gt;&lt;span style=&quot; font-size:9pt; text-decoration: underline; color:#0057ae;&quot;&gt;evan.teran@gmail.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:&apos;Monospace&apos;; font-size:10pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;Xuo &amp;lt;https://github.com/ericxuo&amp;gt; - Français&lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:12px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:9pt;&quot;&gt;&lt;br /&gt;Want to contribute? Email the author at &lt;/span&gt;&lt;a href=&quot;mailto:evan.teran@gmail.com&quot;&gt;&lt;span style=&quot; font-size:9pt; text-decoration: underline; color:#0057ae;&quot;&gt;evan.teran@gmail.com&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</translation>
     </message>
     <message>
         <location filename="../../DialogAbout.ui" line="117"/>
@@ -598,7 +603,13 @@ nedit-ng a été écrit par Evan Teran. Il est destiné à être un remplacement
    Running Qt: %8
        Locale: %9
 </source>
-        <translation type="unfinished"></translation>
+        <translation>version de nedit-ng %1
+
+     Compilésur: %2, %3, %4
+      Avec Qt: %7
+   Utilisant Qt: %8
+       Langue: %9
+</translation>
     </message>
 </context>
 <context>
@@ -641,7 +652,7 @@ nedit-ng a été écrit par Evan Teran. Il est destiné à être un remplacement
     <message>
         <location filename="../../DialogColors.ui" line="130"/>
         <source>Line Numbers Foreground</source>
-        <translation type="unfinished"></translation>
+        <translation>Nombre de Lignes</translation>
     </message>
     <message>
         <location filename="../../DialogColors.ui" line="166"/>
@@ -651,7 +662,7 @@ nedit-ng a été écrit par Evan Teran. Il est destiné à être un remplacement
     <message>
         <location filename="../../DialogColors.ui" line="148"/>
         <source>Line Numbers Background</source>
-        <translation type="unfinished"></translation>
+        <translation>Fond de Nombre de Lignes</translation>
     </message>
     <message>
         <location filename="../../DialogColors.ui" line="195"/>
@@ -3660,127 +3671,128 @@ n&apos;a pas été trouvée dans %2</translation>
     <message>
         <location filename="../../PageEditor.ui" line="14"/>
         <source>Form</source>
-        <translation type="unfinished"></translation>
+        <translation>Forme</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="20"/>
         <source>Editor Font</source>
-        <translation type="unfinished">Fonte de l&apos;éditeur</translation>
+        <translation>Fonte de l&apos;éditeur</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="35"/>
         <source>Show Matching (..)</source>
-        <translation type="unfinished"></translation>
+        <translation>Montrer les Correspondances (..)</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="41"/>
         <source>Off</source>
-        <translation type="unfinished"></translation>
+        <translation>Désactivé</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="48"/>
         <source>Delimiter</source>
-        <translation type="unfinished"></translation>
+        <translation>Délimiteur</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="55"/>
         <source>Range</source>
-        <translation type="unfinished"></translation>
+        <translatorcomment>Intervalle</translatorcomment>
+        <translation>Intervalle</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="69"/>
         <source>Syntax Based</source>
-        <translation type="unfinished"></translation>
+        <translation>Basé sur la Syntaxe</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="79"/>
         <source>Auto Indent</source>
-        <translation type="unfinished"></translation>
+        <translation>Auto Indentation</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="88"/>
         <source>&amp;Smart</source>
-        <translation type="unfinished">&amp;Intelligent</translation>
+        <translation>&amp;Intelligent</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="95"/>
         <source>&amp;Off</source>
-        <translation type="unfinished">&amp;Désactivé</translation>
+        <translation>&amp;Désactivé</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="102"/>
         <source>&amp;On</source>
-        <translation type="unfinished"></translation>
+        <translation>&amp;Activé</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="112"/>
         <source>Wrap</source>
-        <translation type="unfinished"></translation>
+        <translation>Retour à la ligne</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="120"/>
         <source>&amp;None</source>
-        <translation type="unfinished">Aucu&amp;n</translation>
+        <translation>Aucu&amp;n</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="127"/>
         <source>&amp;Auto Newline</source>
-        <translation type="unfinished">&amp;Aller à la ligne automatique</translation>
+        <translation>&amp;Aller à la ligne automatique</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="134"/>
         <source>&amp;Continuous</source>
-        <translation type="unfinished">&amp;Continu</translation>
+        <translation>&amp;Continu</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="150"/>
         <source>Wrap and Fill at width of window</source>
-        <translation type="unfinished"></translation>
+        <translation>Retour à la ligne et rempli la largeur de la fenêtre</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="159"/>
         <source>Margin for Wrap and Fill</source>
-        <translation type="unfinished">Marge d&apos;enroulement et de remplissage</translation>
+        <translation>Marge d&apos;enroulement et de remplissage</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="174"/>
         <source>Tab Stops</source>
-        <translation type="unfinished"></translation>
+        <translation>Fins de Tabulations</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="187"/>
         <source>&amp;Emulate tabs</source>
-        <translation type="unfinished">Tabulations émulé&amp;es</translation>
+        <translation>Tabulations émulé&amp;es</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="200"/>
         <source>Emulated tab spacing</source>
-        <translation type="unfinished">Taille des tabulations émulées</translation>
+        <translation>Taille des tabulations émulées</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="207"/>
         <source>Tab spacing (for hardware tab characters)</source>
-        <translation type="unfinished">Taille des tabulations (du clavier)</translation>
+        <translation>Taille des tabulations (du clavier)</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="214"/>
         <source>&amp;Use tab characters in padding and emulated tabs</source>
-        <translation type="unfinished">&amp;Utiliser des tabulations dans les tabulations de remplissage et émulées</translation>
+        <translation>&amp;Utiliser des tabulations dans les tabulations de remplissage et émulées</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="227"/>
         <source>Highlight Syntax</source>
-        <translation type="unfinished"></translation>
+        <translation>Syntaxe de Surbrillance</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="234"/>
         <source>Apply Backlighting</source>
-        <translation type="unfinished"></translation>
+        <translation>Appliquer le rétro-éclairage</translation>
     </message>
     <message>
         <location filename="../../PageEditor.ui" line="241"/>
         <source>Show Line Numbers</source>
-        <translation type="unfinished"></translation>
+        <translation>Montrer les numéros de Ligne</translation>
     </message>
 </context>
 <context>
