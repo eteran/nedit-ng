@@ -1,6 +1,7 @@
 site_name: NEdit-ng Docs
 theme: readthedocs
 repo_url: https://github.com/eteran/nedit-ng
+edit_uri: https://github.com/eteran/nedit-ng/edit/master/docs/docs/
 extra:
     version: 2019.4
 nav:
@@ -18,7 +19,7 @@ nav:
     - Tab Stops/Emulated Tab Stops: 11.md
     - Auto/Smart Indent: 12.md
     - Syntax Highlighting: 13.md
-    - Finding Declarations \(ctags\.md: 14.md
+    - Finding Declarations (ctags): 14.md
     - Calltips: 15.md
     - Basic Regular Expression Syntax: 16.md
     - Metacharacters: 17.md
