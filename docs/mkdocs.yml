@@ -2,6 +2,8 @@ site_name: NEdit-ng Docs
 theme: readthedocs
 repo_url: https://github.com/eteran/nedit-ng
 edit_uri: https://github.com/eteran/nedit-ng/edit/master/docs/docs/
+extra_css:
+    - css/extra.css
 extra:
     version: 2019.4
 nav:
