@@ -1,5 +1,8 @@
 site_name: NEdit-ng Docs
 theme: readthedocs
+repo_url: https://github.com/eteran/nedit-ng
+extra:
+    version: 2019.4
 nav:
     - Welcome: index.md
     - Getting Started: 01.md
