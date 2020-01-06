@@ -29,6 +29,10 @@ Dependency                                  | Version Required
 	$ cd build
 	$ cmake ..
 	$ make
+	
+### Help Documentation
+
+NEdit had extensive help texts, which have been carefully updated and made available online here: https://eteran.github.io/nedit-ng/
 
 ### Inherited Limitations:
 
