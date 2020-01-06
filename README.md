@@ -12,7 +12,7 @@ Because it is a true port of the original code, it (at least for now) inherits
 some (but not all) of the limitations of the original. On the other hand, some 
 aspects have been improved simply by the fact that it is now a Qt application.
 
-![Nedit-ng](https://github.com/eteran/nedit-ng/raw/master/doc/img/nedit-ng-find.png)
+![Nedit-ng](https://eteran.github.io/nedit-ng/img/nedit-ng-find.png)
 
 ### Requirements:
 
