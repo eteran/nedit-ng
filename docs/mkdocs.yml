@@ -1,6 +1,7 @@
 site_name: NEdit-ng Docs
 theme: readthedocs
 nav:
+    - Welcome: index.md
     - Getting Started: 01.md
     - Selecting Text: 02.md
     - Finding and Replacing Text: 03.md
