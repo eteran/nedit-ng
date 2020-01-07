@@ -1,4 +1,4 @@
-## Welcome to NEdit-ng\!
+## Welcome to NEdit-ng!
 
 NEdit-ng is a GUI text editor for programs and plain-text files.
 NEdit-ng is a Qt port of the Nirvana Editor (NEdit) version 5.6. It is
@@ -17,4 +17,4 @@ These help texts are similarly copies of the nedit originals, converted
 to be viewable in a browser with some text changes, but there are still
 some sections that haven't been fully updated. The Help menu will also
 be undergoing some changes to better integrate it with the help texts,
-in the meantime please pardon our dust\!
+in the meantime please pardon our dust!
