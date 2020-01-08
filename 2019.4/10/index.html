@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Programming with NEdit-ng - NEdit-ng Docs</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  <link href="../css/extra.css" rel="stylesheet">
+  <link href="../css/version-select.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Programming with NEdit-ng";
+    var mkdocs_page_input_path = "10.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> NEdit-ng Docs</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Welcome</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../01/">Getting Started</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../02/">Selecting Text</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../03/">Finding and Replacing Text</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../04/">Cut and Paste</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../05/">Using the Mouse</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../06/">Keyboard Shortcuts</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../07/">Shifting and Filling</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../08/">Tabbed Editing</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../09/">File Format</a>
+	    </li>
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href="./">Programming with NEdit-ng</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#language-modes">Language Modes</a></li>
+    
+
+    <li class="toctree-l2"><a href="#backlighting">Backlighting</a></li>
+    
+
+    <li class="toctree-l2"><a href="#line-numbers">Line Numbers</a></li>
+    
+
+    <li class="toctree-l2"><a href="#matching-parentheses">Matching Parentheses</a></li>
+    
+
+    <li class="toctree-l2"><a href="#opening-included-files">Opening Included Files</a></li>
+    
+
+    <li class="toctree-l2"><a href="#interface-to-programming-tools">Interface to Programming Tools</a></li>
+    
+
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../11/">Tab Stops/Emulated Tab Stops</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../12/">Auto/Smart Indent</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../13/">Syntax Highlighting</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../14/">Finding Declarations (ctags)</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../15/">Calltips</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../16/">Basic Regular Expression Syntax</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../17/">Metacharacters</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../18/">Parenthetical Constructs</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../19/">Advanced Topics</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../20/">Example Regular Expressions</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../21/">Shell Commands and Filters</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../22/">Learn/Replay</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../23/">Macro Language</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../24/">Macro Subroutines</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../25/">Rangesets</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../26/">Highlighting Information</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../27/">Action Routines</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../28/">Customizing NEdit-ng</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../29/">Preferences</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../30/">Config Entries</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../31/">Key Bindings</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../32/">Highlighting Patterns</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../33/">Smart Indent Macros</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../34/">NEdit-ng Command Line</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../35/">Client/Server Mode</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../36/">Crash Recovery</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../38/">GNU General Public License</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../40/">Problems/Defects</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../41/">Tabs Dialog</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../42/">Customize Window Title Dialog</a>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">NEdit-ng Docs</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Programming with NEdit-ng</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/eteran/nedit-ng/blob/master/docs/docs/10.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <p>Though general in appearance, NEdit-ng has many features intended
+specifically for programmers. Major programming-related topics are
+listed in: <a href="../13/">Syntax Highlighting</a>, <a href="../11/">Tab Stops/Emulated Tab Stops</a>, 
+<a href="../14/">Finding Declarations (ctags)</a>, <a href="../15/">Calltips</a>, and
+<a href="../12/">Auto/Smart Indent</a>. Minor topics related to programming are
+discussed below.</p>
+<h2 id="language-modes">Language Modes</h2>
+<p>When NEdit-ng initially reads a file, it attempts to determine whether
+the file is in one of the computer languages that it knows about.
+Knowing what language a file is written in allows NEdit-ng to assign
+highlight patterns and smart indent macros, and to set language specific
+preferences like word delimiters, tab emulation, and auto-indent.
+Language mode can be recognized from both the file name and from the
+first 200 characters of content. Language mode recognition and
+language-specific preferences are configured in: <strong>Preferences &rarr;
+Default Settings &rarr; Language Modes...</strong>.</p>
+<p>You can set the language mode manually for a window, by selecting it
+from <strong>Preferences &rarr; Language Mode</strong>.</p>
+<h2 id="backlighting">Backlighting</h2>
+<p>NEdit-ng can be made to set the background color of particular classes
+of characters to allow easy identification of those characters. This is
+particularly useful if you need to be able to distinguish between tabs
+and spaces in a file where the difference is important. The colors used
+for backlighting are specified in the config.ini file under
+<code>nedit.backlightCharTypes</code>. You can turn backlighting on and off through
+<strong>Preferences &rarr; Apply Backlighting</strong>.</p>
+<p>If you prefer to have backlighting turned on for all new windows, use
+<strong>Preferences &rarr; Default Settings &rarr; Apply Backlighting</strong>. 
+This setting can be saved along with other preferences using 
+<strong>Preferences &rarr; Save Defaults</strong>.</p>
+<h2 id="line-numbers">Line Numbers</h2>
+<p>To find a particular line in a source file by line number, choose <strong>Search &rarr; Goto Line Number...</strong>. 
+You can also directly select a line number text in a compiler message in your terminal window and choose
+<strong>Search &rarr; Goto Selected</strong>.</p>
+<p>To find out the line number of a particular line in your file, turn on
+**Preferences &rarr; Statistics Line" and position the insertion point
+anywhere on the line. The statistics line continuously updates the line
+number of the line containing the cursor.</p>
+<p>To go to a specific column on a given line, choose <strong>Search &rarr; Goto Line Number...</strong> 
+and enter a line number and a column number separated by
+a comma. (e.g. Enter <code>100,12</code> for line 100 column 12.) If you want to go
+to a column on the current line just leave out the line number. (e.g.
+Enter <code>,45</code> to go the column 45 on the current line.)</p>
+<h2 id="matching-parentheses">Matching Parentheses</h2>
+<p>To help you inspect nested parentheses, brackets, braces, quotes, and
+other characters, NEdit-ng has both an automatic parenthesis matching
+mode, and a Goto Matching command. Automatic parenthesis matching is
+activated when you type, or move the insertion cursor after a
+parenthesis, bracket, or brace. It momentarily highlights either the
+opposite character ('Delimiter') or the entire expression ('Range') when
+the opposite character is visible in the window. To find a matching
+character anywhere in the file, select it or position the cursor after
+it, and choose <strong>Search &rarr; Goto Matching</strong>. If the character
+matches itself, such as a quote or slash, select the first character of
+the pair. NEdit-ng will match <code>{</code>, <code>(</code>, <code>[</code>, <code>&lt;</code>, <code>"</code>, <code>'</code>, <code>`</code>,
+<code>/</code>, and <code>\</code>. Holding <kbd>Shift</kbd> while typing the accelerator key
+(<kbd>Shift</kbd> + <kbd>Ctrl</kbd> + <kbd>M</kbd>, by default), 
+will select all of the text between the matching characters.</p>
+<p>When syntax highlighting is enabled, the matching routines can
+optionally make use of the syntax information for improved accuracy. In
+that case, a brace inside a highlighted string will not match a brace
+inside a comment, for instance.</p>
+<h2 id="opening-included-files">Opening Included Files</h2>
+<p><strong>File &rarr; Open Selected</strong> understands the C preprocessor's 
+<code>#include</code> syntax, so selecting an <code>#include</code> line and
+invoking <strong>File &rarr; Open Selected</strong> will often find the file referred to, unless
+doing so depends on the settings of compiler switches or other
+information not available to NEdit-ng.</p>
+<h2 id="interface-to-programming-tools">Interface to Programming Tools</h2>
+<p>Integrated software development environments can be interfaced directly
+with NEdit-ng via the client server interface. These tools allow you to
+click directly on compiler and runtime error messages and request
+NEdit-ng to open files, and select lines of interest. The easiest method
+is usually to use the tool's interface for character-based editors like
+vi, to invoke nc-ng, but programmatic interfaces can also be derived
+using the <a href="https://github.com/eteran/nedit-ng/tree/master/client">source code for nc-ng</a>.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../11/" class="btn btn-neutral float-right" title="Tab Stops/Emulated Tab Stops">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../09/" class="btn btn-neutral" title="File Format"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/eteran/nedit-ng/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../09/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../11/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../js/version-select.js" defer></script>
+      <script src="../search/main.js" defer></script>
+
+</body>
+</html>
