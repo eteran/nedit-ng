@@ -4,8 +4,9 @@ repo_url: https://github.com/eteran/nedit-ng
 edit_uri: https://github.com/eteran/nedit-ng/blob/master/docs/docs/
 extra_css:
     - css/extra.css
+    - css/version-select.css
 extra:
-    version: 2019.4
+      version: 2019.4
 nav:
     - Welcome: index.md
     - Getting Started: 01.md
@@ -49,3 +50,5 @@ nav:
     - Tabs Dialog: 41.md
     - Customize Window Title Dialog: 42.md
 
+extra_javascript:
+    - js/version-select.js
