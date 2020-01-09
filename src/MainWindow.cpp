@@ -5417,7 +5417,7 @@ void MainWindow::focusChanged(QWidget *from, QWidget *to) {
  * @brief MainWindow::action_Help_triggered
  */
 void MainWindow::action_Help_triggered() {
-	Help::displayTopic(this, Help::Topic::Start);
+	Help::displayTopic(Help::Topic::Start);
 }
 
 /**

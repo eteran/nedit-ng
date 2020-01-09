@@ -491,7 +491,7 @@ void DialogSyntaxPatterns::buttonRestore_clicked() {
  * @brief DialogSyntaxPatterns::buttonHelp_clicked
  */
 void DialogSyntaxPatterns::buttonHelp_clicked() {
-	Help::displayTopic(this, Help::Topic::Syntax);
+	Help::displayTopic(Help::Topic::Syntax);
 }
 
 /**

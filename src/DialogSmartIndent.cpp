@@ -196,7 +196,7 @@ void DialogSmartIndent::buttonRestore_clicked() {
  * @brief DialogSmartIndent::buttonHelp_clicked
  */
 void DialogSmartIndent::buttonHelp_clicked() {
-	Help::displayTopic(this, Help::Topic::SmartIndent);
+	Help::displayTopic(Help::Topic::SmartIndent);
 }
 
 /**
