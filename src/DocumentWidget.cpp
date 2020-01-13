@@ -4516,20 +4516,26 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 	// support for merged output if we are not using ERROR_DIALOGS
 	if (flags & ERROR_DIALOGS) {
 		connect(process, &QProcess::readyReadStandardError, this, [this]() {
-			QByteArray dataErr = shellCmdData_->process->readAllStandardError();
-			shellCmdData_->standardError.append(dataErr);
+			if(shellCmdData_) {
+				QByteArray dataErr = shellCmdData_->process->readAllStandardError();
+				shellCmdData_->standardError.append(dataErr);
+			}
 		});
 
 		connect(process, &QProcess::readyReadStandardOutput, this, [this]() {
-			QByteArray dataOut = shellCmdData_->process->readAllStandardOutput();
-			shellCmdData_->standardOutput.append(dataOut);
+			if(shellCmdData_) {
+				QByteArray dataOut = shellCmdData_->process->readAllStandardOutput();
+				shellCmdData_->standardOutput.append(dataOut);
+			}
 		});
 	} else {
 		process->setProcessChannelMode(QProcess::MergedChannels);
 
 		connect(process, &QProcess::readyRead, this, [this]() {
-			QByteArray dataAll = shellCmdData_->process->readAll();
-			shellCmdData_->standardOutput.append(dataAll);
+			if(shellCmdData_) {
+				QByteArray dataAll = shellCmdData_->process->readAll();
+				shellCmdData_->standardOutput.append(dataAll);
+			}
 		});
 	}
 
