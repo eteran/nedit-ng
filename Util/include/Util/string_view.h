@@ -546,28 +546,24 @@ using u32string_view = basic_string_view<char32_t>;
 // for more details on this algorithm
 namespace detail {
 
-template <class T>
-struct hash_constants;
+template <size_t N>
+struct hash_constants_impl;
 
 template <>
-struct hash_constants<uint64_t> {
+struct hash_constants_impl<8> {
 	static constexpr uint64_t FNV_offset_basis = 0xcbf29ce484222325ull;
 	static constexpr uint64_t FNV_prime        = 1099511628211ull;
 };
 
 template <>
-struct hash_constants<uint32_t> {
+struct hash_constants_impl<4> {
 	static constexpr uint32_t FNV_offset_basis = 0x811c9dc5;
 	static constexpr uint32_t FNV_prime        = 16777619;
 };
 
-#ifdef __APPLE__
-template <>
-struct hash_constants<unsigned long> {
-	static constexpr uint32_t FNV_offset_basis = 0x811c9dc5;
-	static constexpr uint32_t FNV_prime        = 16777619;
+template <class T>
+struct hash_constants : hash_constants_impl<sizeof(T)> {
 };
-#endif
 
 }
 
