@@ -5,8 +5,6 @@
 #include "Dialog.h"
 #include "ui_DialogSmartIndent.h"
 
-#include <boost/optional.hpp>
-
 class DocumentWidget;
 class SmartIndentEntry;
 

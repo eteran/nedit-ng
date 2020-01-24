@@ -1,0 +1,28 @@
+---
+name: Undo
+command: |
+  undo()
+  
+---
+name: Redo
+command: |
+  redo()
+  
+---
+name: Cut
+input: selection
+command: |
+  cut_clipboard()
+  
+---
+name: Copy
+input: selection
+command: |
+  copy_clipboard()
+  
+---
+name: Paste
+command: |
+  paste_clipboard()
+  
+

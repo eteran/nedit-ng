@@ -74,7 +74,7 @@ void DialogSmartIndentCommon::buttonRestore_clicked() {
 	}
 
 	// replace common macros with default
-	SmartIndent::CommonMacros = QString::fromLatin1(SmartIndent::defaultCommonMacros());
+	SmartIndent::CommonMacros = SmartIndent::loadDefaultCommonMacros();
 
 	// Update the dialog
 	ui.editCode->setPlainText(SmartIndent::CommonMacros);

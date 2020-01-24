@@ -1,0 +1,54 @@
+site_name: NEdit-ng Docs
+theme: readthedocs
+repo_url: https://github.com/eteran/nedit-ng
+edit_uri: https://github.com/eteran/nedit-ng/blob/master/docs/docs/
+extra_css:
+    - css/extra.css
+    - css/version-select.css
+extra:
+      version: 2019.4
+nav:
+    - Welcome: index.md
+    - Getting Started: 01.md
+    - Selecting Text: 02.md
+    - Finding and Replacing Text: 03.md
+    - Cut and Paste: 04.md
+    - Using the Mouse: 05.md
+    - Keyboard Shortcuts: 06.md
+    - Shifting and Filling: 07.md
+    - Tabbed Editing: 08.md
+    - File Format: 09.md
+    - Programming with NEdit-ng: 10.md
+    - Tab Stops/Emulated Tab Stops: 11.md
+    - Auto/Smart Indent: 12.md
+    - Syntax Highlighting: 13.md
+    - Finding Declarations (ctags): 14.md
+    - Calltips: 15.md
+    - Basic Regular Expression Syntax: 16.md
+    - Metacharacters: 17.md
+    - Parenthetical Constructs: 18.md
+    - Advanced Topics: 19.md
+    - Example Regular Expressions: 20.md
+    - Shell Commands and Filters: 21.md
+    - Learn/Replay: 22.md
+    - Macro Language: 23.md
+    - Macro Subroutines: 24.md
+    - Rangesets: 25.md
+    - Highlighting Information: 26.md
+    - Action Routines: 27.md
+    - Customizing NEdit-ng: 28.md
+    - Preferences: 29.md
+    - Config Entries: 30.md
+    - Key Bindings: 31.md
+    - Highlighting Patterns: 32.md
+    - Smart Indent Macros: 33.md
+    - NEdit-ng Command Line: 34.md
+    - Client/Server Mode: 35.md
+    - Crash Recovery: 36.md
+    - GNU General Public License: 38.md
+    - Problems/Defects: 40.md
+    - Tabs Dialog: 41.md
+    - Customize Window Title Dialog: 42.md
+
+extra_javascript:
+    - js/version-select.js

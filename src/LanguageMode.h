@@ -28,8 +28,8 @@ public:
 	QString recognitionExpr;
 	QString defTipsFile;
 	QString delimiters;
-	WrapStyle wrapStyle     = WrapStyle::None;
-	IndentStyle indentStyle = IndentStyle::None;
+	WrapStyle wrapStyle     = WrapStyle::Default;
+	IndentStyle indentStyle = IndentStyle::Default;
 	int tabDist             = DEFAULT_TAB_DIST;
 	int emTabDist           = DEFAULT_EM_TAB_DIST;
 };

@@ -226,12 +226,14 @@ void KeySequenceEdit::keyPressEvent(QKeyEvent *e) {
 	QString selectedText = lineEdit_->selectedText();
 	if (!selectedText.isEmpty() && selectedText == lineEdit_->text()) {
 		clear();
-		if (nextKey == Qt::Key_Backspace)
+		if (nextKey == Qt::Key_Backspace) {
 			return;
+		}
 	}
 
-	if (keys_.size() >= maximumSequenceLength_)
+	if (keys_.size() >= maximumSequenceLength_) {
 		return;
+	}
 
 	nextKey |= translateModifiers(e->modifiers(), e->text());
 

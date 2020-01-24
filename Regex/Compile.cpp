@@ -736,8 +736,9 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 			ret_val = chunk(PAREN, &flags_local, range_local);
 		}
 
-		if (!ret_val)
+		if (!ret_val) {
 			return nullptr; // Something went wrong.
+		}
 
 		// Add HAS_WIDTH flag if it was set by call to chunk.
 
@@ -778,8 +779,9 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 			/* All negated classes include newline unless escaped with
 			   a "(?n)" switch. */
 
-			if (!pContext.Match_Newline)
+			if (!pContext.Match_Newline) {
 				emit_byte('\n');
+			}
 		} else {
 			ret_val = emit_node(ANY_OF);
 		}
@@ -906,8 +908,9 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 			}
 		} // End of while (Reg_Parse != Reg_Parse_End && *pContext.Reg_Parse != ']')
 
-		if (*pContext.Reg_Parse != ']')
+		if (*pContext.Reg_Parse != ']') {
 			Raise<RegexError>("missing right ']'");
+		}
 
 		emit_byte('\0');
 
@@ -1030,13 +1033,15 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 				}
 			}
 
-			if (len <= 0)
+			if (len <= 0) {
 				Raise<RegexError>("internal error #4, 'atom'");
+			}
 
 			*flag_param |= HAS_WIDTH;
 
-			if (len == 1)
+			if (len == 1) {
 				*flag_param |= SIMPLE;
+			}
 
 			range_param.lower = len;
 			range_param.upper = len;
@@ -1071,8 +1076,9 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 	uint8_t *ret_val = atom(&flags_local, range_local);
 
-	if (!ret_val)
+	if (!ret_val) {
 		return nullptr; // Something went wrong.
+	}
 
 	char op_code = *pContext.Reg_Parse;
 
@@ -1150,8 +1156,9 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 			}
 		}
 
-		if (!comma_present)
+		if (!comma_present) {
 			min_max[1] = min_max[0]; // {x} means {x,x}
+		}
 
 		if (*pContext.Reg_Parse != '}') {
 			Raise<RegexError>("{m,n} specification missing right '}'");
@@ -1193,10 +1200,12 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 		}
 	}
 
-	if (op_code == '+')
+	if (op_code == '+') {
 		min_max[0] = 1;
-	if (op_code == '?')
+	}
+	if (op_code == '?') {
 		min_max[1] = 1;
+	}
 
 	/* It is dangerous to apply certain quantifiers to a possibly zero width
 	   item. */
@@ -1612,8 +1621,9 @@ uint8_t *alternative(int *flag_param, len_range &range_param) {
 	while (*pContext.Reg_Parse != '|' && *pContext.Reg_Parse != ')' && pContext.Reg_Parse != pContext.InputString.end()) {
 		latest = piece(&flags_local, range_local);
 
-		if (!latest)
+		if (!latest) {
 			return nullptr; // Something went wrong.
+		}
 
 		*flag_param |= flags_local & HAS_WIDTH;
 		if (range_local.lower < 0) {
@@ -1730,13 +1740,15 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		/* If any alternative could be zero width, consider the whole
 		   parenthisized thing to be zero width. */
 
-		if (!(flags_local & HAS_WIDTH))
+		if (!(flags_local & HAS_WIDTH)) {
 			*flag_param &= ~HAS_WIDTH;
+		}
 
 		// Are there more alternatives to process?
 
-		if (*pContext.Reg_Parse != '|')
+		if (*pContext.Reg_Parse != '|') {
 			break;
+		}
 
 		++pContext.Reg_Parse;
 	} while (true);

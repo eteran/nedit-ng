@@ -10,6 +10,7 @@
 #include "SmartIndent.h"
 #include "SmartIndentEntry.h"
 #include "Util/String.h"
+#include "Util/algorithm.h"
 #include "macro.h"
 #include "parse.h"
 
@@ -23,6 +24,7 @@
  */
 DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
+
 	ui.setupUi(this);
 	connectSlots();
 
@@ -146,7 +148,7 @@ void DialogSmartIndent::buttonDelete_clicked() {
 
 	// if a stored version of the pattern set exists, delete it from the list
 	auto it = std::find_if(SmartIndent::SmartIndentSpecs.begin(), SmartIndent::SmartIndentSpecs.end(), [this](const SmartIndentEntry &entry) {
-		return entry.languageMode == languageMode_;
+		return entry.language == languageMode_;
 	});
 
 	if (it != SmartIndent::SmartIndentSpecs.end()) {
@@ -162,8 +164,8 @@ void DialogSmartIndent::buttonDelete_clicked() {
  */
 void DialogSmartIndent::buttonRestore_clicked() {
 
-	const SmartIndentEntry *defaultIS = SmartIndent::findDefaultIndentSpec(languageMode_);
-	if (!defaultIS) {
+	const SmartIndentEntry *spec = SmartIndent::findDefaultIndentSpec(languageMode_);
+	if (!spec) {
 		QMessageBox::warning(
 			this,
 			tr("Smart Indent"),
@@ -182,28 +184,19 @@ void DialogSmartIndent::buttonRestore_clicked() {
 	}
 
 	// if a stored version of the indent macros exist, replace them, if not, add a new one
-	size_t i;
-	for (i = 0; i < SmartIndent::SmartIndentSpecs.size(); i++) {
-		if (languageMode_ == SmartIndent::SmartIndentSpecs[i].languageMode) {
-			break;
-		}
-	}
-
-	if (i < SmartIndent::SmartIndentSpecs.size()) {
-		SmartIndent::SmartIndentSpecs[i] = *defaultIS;
-	} else {
-		SmartIndent::SmartIndentSpecs.push_back(*defaultIS);
-	}
+	insert_or_replace(SmartIndent::SmartIndentSpecs, *spec, [spec](const SmartIndentEntry &entry) {
+		return entry.language == spec->language;
+	});
 
 	// Update the dialog
-	setSmartIndentDialogData(defaultIS);
+	setSmartIndentDialogData(&*spec);
 }
 
 /**
  * @brief DialogSmartIndent::buttonHelp_clicked
  */
 void DialogSmartIndent::buttonHelp_clicked() {
-	Help::displayTopic(this, Help::Topic::SmartIndent);
+	Help::displayTopic(Help::Topic::SmartIndent);
 }
 
 /**
@@ -238,18 +231,11 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	// Get the current data
 	SmartIndentEntry newMacros = getSmartIndentDialogData();
 
-	// Find the original macros
-	auto it = std::find_if(SmartIndent::SmartIndentSpecs.begin(), SmartIndent::SmartIndentSpecs.end(), [this](const SmartIndentEntry &entry) {
-		return entry.languageMode == languageMode_;
-	});
-
 	/* If it's a new language, add it at the end, otherwise replace the
 	   existing macros */
-	if (it == SmartIndent::SmartIndentSpecs.end()) {
-		SmartIndent::SmartIndentSpecs.push_back(newMacros);
-	} else {
-		*it = newMacros;
-	}
+	insert_or_replace(SmartIndent::SmartIndentSpecs, newMacros, [this](const SmartIndentEntry &entry) {
+		return entry.language == languageMode_;
+	});
 
 	/* Find windows that are currently using this indent specification and
 	   re-do the smart indent macros */
@@ -257,7 +243,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 
 		QString lmName = Preferences::LanguageModeName(document->getLanguageMode());
 		if (!lmName.isNull()) {
-			if (lmName == newMacros.languageMode) {
+			if (lmName == newMacros.language) {
 
 				if (MainWindow *window = MainWindow::fromDocument(document)) {
 					window->ui.action_Indent_Smart->setEnabled(true);
@@ -352,7 +338,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 SmartIndentEntry DialogSmartIndent::getSmartIndentDialogData() const {
 
 	SmartIndentEntry is;
-	is.languageMode = languageMode_;
+	is.language     = languageMode_;
 	is.initMacro    = ui.editInit->toPlainText().isEmpty() ? QString() : ensure_newline(ui.editInit->toPlainText());
 	is.newlineMacro = ui.editNewline->toPlainText().isEmpty() ? QString() : ensure_newline(ui.editNewline->toPlainText());
 	is.modMacro     = ui.editModMacro->toPlainText().isEmpty() ? QString() : ensure_newline(ui.editModMacro->toPlainText());

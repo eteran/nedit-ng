@@ -203,6 +203,7 @@ void downcaseSelection(DocumentWidget *document, TextArea *area) {
  */
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags) {
+
 	ui.setupUi(this);
 	connectSlots();
 
@@ -276,6 +277,126 @@ void MainWindow::connectSlots() {
 	connect(ui.checkIFindRegex, &QCheckBox::toggled, this, &MainWindow::checkIFindRegex_toggled);
 	connect(ui.checkIFindReverse, &QCheckBox::toggled, this, &MainWindow::checkIFindReverse_toggled);
 	connect(ui.editIFind, &QLineEdit::returnPressed, this, &MainWindow::editIFind_returnPressed);
+	connect(ui.action_New, &QAction::triggered, this, &MainWindow::action_New_triggered);
+	connect(ui.action_New_Window, &QAction::triggered, this, &MainWindow::action_New_Window_triggered);
+	connect(ui.action_Open, &QAction::triggered, this, &MainWindow::action_Open_triggered);
+	connect(ui.action_Select_All, &QAction::triggered, this, &MainWindow::action_Select_All_triggered);
+	connect(ui.action_Open_Selected, &QAction::triggered, this, &MainWindow::action_Open_Selected_triggered);
+	connect(ui.action_Close, &QAction::triggered, this, &MainWindow::action_Close_triggered);
+	connect(ui.action_Include_File, &QAction::triggered, this, &MainWindow::action_Include_File_triggered);
+	connect(ui.action_Load_Calltips_File, &QAction::triggered, this, &MainWindow::action_Load_Calltips_File_triggered);
+	connect(ui.action_Load_Tags_File, &QAction::triggered, this, &MainWindow::action_Load_Tags_File_triggered);
+	connect(ui.action_Load_Macro_File, &QAction::triggered, this, &MainWindow::action_Load_Macro_File_triggered);
+	connect(ui.action_Print, &QAction::triggered, this, &MainWindow::action_Print_triggered);
+	connect(ui.action_Print_Selection, &QAction::triggered, this, &MainWindow::action_Print_Selection_triggered);
+	connect(ui.action_Save, &QAction::triggered, this, &MainWindow::action_Save_triggered);
+	connect(ui.action_Save_As, &QAction::triggered, this, &MainWindow::action_Save_As_triggered);
+	connect(ui.action_Revert_to_Saved, &QAction::triggered, this, &MainWindow::action_Revert_to_Saved_triggered);
+	connect(ui.action_Exit, &QAction::triggered, this, &MainWindow::action_Exit_triggered);
+	connect(ui.action_Undo, &QAction::triggered, this, &MainWindow::action_Undo_triggered);
+	connect(ui.action_Redo, &QAction::triggered, this, &MainWindow::action_Redo_triggered);
+	connect(ui.action_Cut, &QAction::triggered, this, &MainWindow::action_Cut_triggered);
+	connect(ui.action_Copy, &QAction::triggered, this, &MainWindow::action_Copy_triggered);
+	connect(ui.action_Paste, &QAction::triggered, this, &MainWindow::action_Paste_triggered);
+	connect(ui.action_Paste_Column, &QAction::triggered, this, &MainWindow::action_Paste_Column_triggered);
+	connect(ui.action_Delete, &QAction::triggered, this, &MainWindow::action_Delete_triggered);
+	connect(ui.action_Shift_Left, &QAction::triggered, this, &MainWindow::action_Shift_Left_triggered);
+	connect(ui.action_Shift_Right, &QAction::triggered, this, &MainWindow::action_Shift_Right_triggered);
+	connect(ui.action_Lower_case, &QAction::triggered, this, &MainWindow::action_Lower_case_triggered);
+	connect(ui.action_Upper_case, &QAction::triggered, this, &MainWindow::action_Upper_case_triggered);
+	connect(ui.action_Fill_Paragraph, &QAction::triggered, this, &MainWindow::action_Fill_Paragraph_triggered);
+	connect(ui.action_Insert_Form_Feed, &QAction::triggered, this, &MainWindow::action_Insert_Form_Feed_triggered);
+	connect(ui.action_Insert_Ctrl_Code, &QAction::triggered, this, &MainWindow::action_Insert_Ctrl_Code_triggered);
+	connect(ui.action_Goto_Line_Number, &QAction::triggered, this, &MainWindow::action_Goto_Line_Number_triggered);
+	connect(ui.action_Goto_Selected, &QAction::triggered, this, &MainWindow::action_Goto_Selected_triggered);
+	connect(ui.action_Find, &QAction::triggered, this, &MainWindow::action_Find_triggered);
+	connect(ui.action_Find_Again, &QAction::triggered, this, &MainWindow::action_Find_Again_triggered);
+	connect(ui.action_Find_Selection, &QAction::triggered, this, &MainWindow::action_Find_Selection_triggered);
+	connect(ui.action_Find_Incremental, &QAction::triggered, this, &MainWindow::action_Find_Incremental_triggered);
+	connect(ui.action_Replace, &QAction::triggered, this, &MainWindow::action_Replace_triggered);
+	connect(ui.action_Replace_Find_Again, &QAction::triggered, this, &MainWindow::action_Replace_Find_Again_triggered);
+	connect(ui.action_Replace_Again, &QAction::triggered, this, &MainWindow::action_Replace_Again_triggered);
+	connect(ui.action_Mark, &QAction::triggered, this, &MainWindow::action_Mark_triggered);
+	connect(ui.action_Goto_Mark, &QAction::triggered, this, &MainWindow::action_Goto_Mark_triggered);
+	connect(ui.action_Goto_Matching, &QAction::triggered, this, &MainWindow::action_Goto_Matching_triggered);
+	connect(ui.action_Show_Calltip, &QAction::triggered, this, &MainWindow::action_Show_Calltip_triggered);
+	connect(ui.action_Find_Definition, &QAction::triggered, this, &MainWindow::action_Find_Definition_triggered);
+	connect(ui.action_Execute_Command, &QAction::triggered, this, &MainWindow::action_Execute_Command_triggered);
+	connect(ui.action_Execute_Command_Line, &QAction::triggered, this, &MainWindow::action_Execute_Command_Line_triggered);
+	connect(ui.action_Filter_Selection, &QAction::triggered, this, &MainWindow::action_Filter_Selection_triggered);
+	connect(ui.action_Cancel_Shell_Command, &QAction::triggered, this, &MainWindow::action_Cancel_Shell_Command_triggered);
+	connect(ui.action_Detach_Tab, &QAction::triggered, this, &MainWindow::action_Detach_Tab_triggered);
+	connect(ui.action_Split_Pane, &QAction::triggered, this, &MainWindow::action_Split_Pane_triggered);
+	connect(ui.action_Close_Pane, &QAction::triggered, this, &MainWindow::action_Close_Pane_triggered);
+	connect(ui.action_Move_Tab_To, &QAction::triggered, this, &MainWindow::action_Move_Tab_To_triggered);
+	connect(ui.action_Wrap_Margin, &QAction::triggered, this, &MainWindow::action_Wrap_Margin_triggered);
+	connect(ui.action_Tab_Stops, &QAction::triggered, this, &MainWindow::action_Tab_Stops_triggered);
+	connect(ui.action_Text_Fonts, &QAction::triggered, this, &MainWindow::action_Text_Fonts_triggered);
+	connect(ui.action_Save_Defaults, &QAction::triggered, this, &MainWindow::action_Save_Defaults_triggered);
+	connect(ui.action_Default_Language_Modes, &QAction::triggered, this, &MainWindow::action_Default_Language_Modes_triggered);
+	connect(ui.action_Default_Program_Smart_Indent, &QAction::triggered, this, &MainWindow::action_Default_Program_Smart_Indent_triggered);
+	connect(ui.action_Default_Wrap_Margin, &QAction::triggered, this, &MainWindow::action_Default_Wrap_Margin_triggered);
+	connect(ui.action_Default_Command_Shell, &QAction::triggered, this, &MainWindow::action_Default_Command_Shell_triggered);
+	connect(ui.action_Default_Tab_Stops, &QAction::triggered, this, &MainWindow::action_Default_Tab_Stops_triggered);
+	connect(ui.action_Default_Text_Fonts, &QAction::triggered, this, &MainWindow::action_Default_Text_Fonts_triggered);
+	connect(ui.action_Default_Colors, &QAction::triggered, this, &MainWindow::action_Default_Colors_triggered);
+	connect(ui.action_Default_Shell_Menu, &QAction::triggered, this, &MainWindow::action_Default_Shell_Menu_triggered);
+	connect(ui.action_Default_Macro_Menu, &QAction::triggered, this, &MainWindow::action_Default_Macro_Menu_triggered);
+	connect(ui.action_Default_Window_Background_Menu, &QAction::triggered, this, &MainWindow::action_Default_Window_Background_Menu_triggered);
+	connect(ui.action_Default_Customize_Window_Title, &QAction::triggered, this, &MainWindow::action_Default_Customize_Window_Title_triggered);
+	connect(ui.action_Default_Syntax_Recognition_Patterns, &QAction::triggered, this, &MainWindow::action_Default_Syntax_Recognition_Patterns_triggered);
+	connect(ui.action_Default_Syntax_Text_Drawing_Styles, &QAction::triggered, this, &MainWindow::action_Default_Syntax_Text_Drawing_Styles_triggered);
+	connect(ui.action_Learn_Keystrokes, &QAction::triggered, this, &MainWindow::action_Learn_Keystrokes_triggered);
+	connect(ui.action_Finish_Learn, &QAction::triggered, this, &MainWindow::action_Finish_Learn_triggered);
+	connect(ui.action_Cancel_Learn, &QAction::triggered, this, &MainWindow::action_Cancel_Learn_triggered);
+	connect(ui.action_Repeat, &QAction::triggered, this, &MainWindow::action_Repeat_triggered);
+	connect(ui.action_Replay_Keystrokes, &QAction::triggered, this, &MainWindow::action_Replay_Keystrokes_triggered);
+	connect(ui.action_About, &QAction::triggered, this, &MainWindow::action_About_triggered);
+	connect(ui.action_About_Qt, &QAction::triggered, this, &MainWindow::action_About_Qt_triggered);
+	connect(ui.action_Help, &QAction::triggered, this, &MainWindow::action_Help_triggered);
+
+	connect(ui.action_Statistics_Line, &QAction::toggled, this, &MainWindow::action_Statistics_Line_toggled);
+	connect(ui.action_Incremental_Search_Line, &QAction::toggled, this, &MainWindow::action_Incremental_Search_Line_toggled);
+	connect(ui.action_Show_Line_Numbers, &QAction::toggled, this, &MainWindow::action_Show_Line_Numbers_toggled);
+	connect(ui.action_Highlight_Syntax, &QAction::toggled, this, &MainWindow::action_Highlight_Syntax_toggled);
+	connect(ui.action_Apply_Backlighting, &QAction::toggled, this, &MainWindow::action_Apply_Backlighting_toggled);
+	connect(ui.action_Make_Backup_Copy, &QAction::toggled, this, &MainWindow::action_Make_Backup_Copy_toggled);
+	connect(ui.action_Incremental_Backup, &QAction::toggled, this, &MainWindow::action_Incremental_Backup_toggled);
+	connect(ui.action_Matching_Syntax, &QAction::toggled, this, &MainWindow::action_Matching_Syntax_toggled);
+	connect(ui.action_Overtype, &QAction::toggled, this, &MainWindow::action_Overtype_toggled);
+	connect(ui.action_Read_Only, &QAction::toggled, this, &MainWindow::action_Read_Only_toggled);
+	connect(ui.action_Default_Sort_Open_Prev_Menu, &QAction::toggled, this, &MainWindow::action_Default_Sort_Open_Prev_Menu_toggled);
+	connect(ui.action_Default_Show_Path_In_Windows_Menu, &QAction::toggled, this, &MainWindow::action_Default_Show_Path_In_Windows_Menu_toggled);
+	connect(ui.action_Default_Search_Verbose, &QAction::toggled, this, &MainWindow::action_Default_Search_Verbose_toggled);
+	connect(ui.action_Default_Search_Wrap_Around, &QAction::toggled, this, &MainWindow::action_Default_Search_Wrap_Around_toggled);
+	connect(ui.action_Default_Search_Beep_On_Search_Wrap, &QAction::toggled, this, &MainWindow::action_Default_Search_Beep_On_Search_Wrap_toggled);
+	connect(ui.action_Default_Search_Keep_Dialogs_Up, &QAction::toggled, this, &MainWindow::action_Default_Search_Keep_Dialogs_Up_toggled);
+	connect(ui.action_Default_Apply_Backlighting, &QAction::toggled, this, &MainWindow::action_Default_Apply_Backlighting_toggled);
+	connect(ui.action_Default_Tab_Open_File_In_New_Tab, &QAction::toggled, this, &MainWindow::action_Default_Tab_Open_File_In_New_Tab_toggled);
+	connect(ui.action_Default_Tab_Show_Tab_Bar, &QAction::toggled, this, &MainWindow::action_Default_Tab_Show_Tab_Bar_toggled);
+	connect(ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open, &QAction::toggled, this, &MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled);
+	connect(ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows, &QAction::toggled, this, &MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled);
+	connect(ui.action_Default_Tab_Sort_Tabs_Alphabetically, &QAction::toggled, this, &MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically_toggled);
+	connect(ui.action_Default_Show_Tooltips, &QAction::toggled, this, &MainWindow::action_Default_Show_Tooltips_toggled);
+	connect(ui.action_Default_Statistics_Line, &QAction::toggled, this, &MainWindow::action_Default_Statistics_Line_toggled);
+	connect(ui.action_Default_Incremental_Search_Line, &QAction::toggled, this, &MainWindow::action_Default_Incremental_Search_Line_toggled);
+	connect(ui.action_Default_Show_Line_Numbers, &QAction::toggled, this, &MainWindow::action_Default_Show_Line_Numbers_toggled);
+	connect(ui.action_Default_Make_Backup_Copy, &QAction::toggled, this, &MainWindow::action_Default_Make_Backup_Copy_toggled);
+	connect(ui.action_Default_Incremental_Backup, &QAction::toggled, this, &MainWindow::action_Default_Incremental_Backup_toggled);
+	connect(ui.action_Default_Matching_Syntax_Based, &QAction::toggled, this, &MainWindow::action_Default_Matching_Syntax_Based_toggled);
+	connect(ui.action_Default_Terminate_with_Line_Break_on_Save, &QAction::toggled, this, &MainWindow::action_Default_Terminate_with_Line_Break_on_Save_toggled);
+	connect(ui.action_Default_Popups_Under_Pointer, &QAction::toggled, this, &MainWindow::action_Default_Popups_Under_Pointer_toggled);
+	connect(ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom, &QAction::toggled, this, &MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled);
+	connect(ui.action_Default_Warnings_Files_Modified_Externally, &QAction::toggled, this, &MainWindow::action_Default_Warnings_Files_Modified_Externally_toggled);
+	connect(ui.action_Default_Warnings_Check_Modified_File_Contents, &QAction::toggled, this, &MainWindow::action_Default_Warnings_Check_Modified_File_Contents_toggled);
+	connect(ui.action_Default_Warnings_On_Exit, &QAction::toggled, this, &MainWindow::action_Default_Warnings_On_Exit_toggled);
+
+#ifdef PER_TAB_CLOSE
+	connect(ui.tabWidget, &TabWidget::tabCloseRequested, this, &MainWindow::tabWidget_tabCloseRequested);
+#endif
+	connect(ui.tabWidget, &TabWidget::tabCountChanged, this, &MainWindow::tabWidget_tabCountChanged);
+	connect(ui.tabWidget, &TabWidget::currentChanged, this, &MainWindow::tabWidget_currentChanged);
+	connect(ui.tabWidget, &TabWidget::customContextMenuRequested, this, &MainWindow::tabWidget_customContextMenuRequested);
 }
 
 /**
@@ -348,7 +469,7 @@ void MainWindow::setupTabBar() {
 	deleteTabButton->setObjectName(tr("tab-close"));
 	ui.tabWidget->setCornerWidget(deleteTabButton);
 
-	connect(deleteTabButton, &QToolButton::clicked, this, &MainWindow::on_action_Close_triggered);
+	connect(deleteTabButton, &QToolButton::clicked, this, &MainWindow::action_Close_triggered);
 #else
 	ui.tabWidget->setTabsClosable(true);
 #endif
@@ -549,6 +670,13 @@ void MainWindow::setupMenuDefaults() {
 	MainWindow::updateMenuItems();
 }
 
+template <class Func>
+QShortcut *create_shortcut(const QKeySequence &seq, QWidget *parent, Func func) {
+	auto shortcut = new QShortcut(seq, parent);
+	QObject::connect(shortcut, &QShortcut::activated, parent, func);
+	return shortcut;
+}
+
 /**
  * nedit has some menu shortcuts which are different from conventional
  * shortcuts. Fortunately, Qt has a means to do this stuff manually.
@@ -570,26 +698,25 @@ void MainWindow::setupMenuStrings() {
 	ui.action_Goto_Mark->setText(tr("G&oto Mark\t[Shift] Alt+G a-z"));
 	ui.action_Goto_Matching->setText(tr("Goto &Matching (..)\t[Shift] Ctrl+M"));
 
-	new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_9), this, SLOT(action_Shift_Left_Tabs()));
-	new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_0), this, SLOT(action_Shift_Right_Tabs()));
-
-	new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_F), this, SLOT(action_Shift_Find()));
-	new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_G), this, SLOT(action_Shift_Find_Again()));
-	new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H), this, SLOT(action_Shift_Find_Selection()));
-	new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I), this, SLOT(action_Shift_Find_Incremental()));
-	new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_R), this, SLOT(action_Shift_Replace()));
-	new QShortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_M), this, SLOT(action_Shift_Goto_Matching()));
+	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_9), this, [this]() { action_Shift_Left_Tabs(); });
+	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_0), this, [this]() { action_Shift_Right_Tabs(); });
+	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_F), this, [this]() { action_Shift_Find(); });
+	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_G), this, [this]() { action_Shift_Find_Again(); });
+	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H), this, [this]() { action_Shift_Find_Selection(); });
+	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I), this, [this]() { action_Shift_Find_Incremental(); });
+	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_R), this, [this]() { action_Shift_Replace(); });
+	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_M), this, [this]() { action_Shift_Goto_Matching(); });
 
 	// This is an annoying solution... we can probably do better...
 	for (int key = Qt::Key_A; key <= Qt::Key_Z; ++key) {
-		new QShortcut(QKeySequence(Qt::ALT + Qt::Key_M, key), this, SLOT(action_Mark_Shortcut()));
-		new QShortcut(QKeySequence(Qt::ALT + Qt::Key_G, key), this, SLOT(action_Goto_Mark_Shortcut()));
-		new QShortcut(QKeySequence(Qt::SHIFT + Qt::ALT + Qt::Key_G, key), this, SLOT(action_Shift_Goto_Mark_Shortcut()));
+		create_shortcut(QKeySequence(Qt::ALT + Qt::Key_M, key), this, [this]() { action_Mark_Shortcut(); });
+		create_shortcut(QKeySequence(Qt::ALT + Qt::Key_G, key), this, [this]() { action_Goto_Mark_Shortcut(); });
+		create_shortcut(QKeySequence(Qt::SHIFT + Qt::ALT + Qt::Key_G, key), this, [this]() { action_Shift_Goto_Mark_Shortcut(); });
 	}
 
-	new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_PageDown), this, SLOT(action_Next_Document()));
-	new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_PageUp), this, SLOT(action_Prev_Document()));
-	new QShortcut(QKeySequence(Qt::ALT + Qt::Key_Home), this, SLOT(action_Last_Document()));
+	create_shortcut(QKeySequence(Qt::CTRL + Qt::Key_PageDown), this, [this]() { action_Next_Document(); });
+	create_shortcut(QKeySequence(Qt::CTRL + Qt::Key_PageUp), this, [this]() { action_Prev_Document(); });
+	create_shortcut(QKeySequence(Qt::ALT + Qt::Key_Home), this, [this]() { action_Last_Document(); });
 }
 
 /**
@@ -725,9 +852,9 @@ void MainWindow::setupMenuGroups() {
 }
 
 /**
- * @brief MainWindow::on_action_New_triggered
+ * @brief MainWindow::action_New_triggered
  */
-void MainWindow::on_action_New_triggered() {
+void MainWindow::action_New_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		action_New(document, NewMode::Prefs);
 	}
@@ -815,9 +942,9 @@ void MainWindow::action_Open(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Open_triggered
+ * @brief MainWindow::action_Open_triggered
  */
-void MainWindow::on_action_Open_triggered() {
+void MainWindow::action_Open_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Open(document);
@@ -836,9 +963,9 @@ void MainWindow::action_Close(DocumentWidget *document, CloseMode mode) {
 }
 
 /**
- * @brief MainWindow::on_action_Close_triggered
+ * @brief MainWindow::action_Close_triggered
  */
-void MainWindow::on_action_Close_triggered() {
+void MainWindow::action_Close_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Close(document, CloseMode::Prompt);
@@ -846,9 +973,9 @@ void MainWindow::on_action_Close_triggered() {
 }
 
 /**
- * @brief MainWindow::on_action_About_triggered
+ * @brief MainWindow::action_About_triggered
  */
-void MainWindow::on_action_About_triggered() {
+void MainWindow::action_About_triggered() {
 	auto dialog = std::make_unique<DialogAbout>(this);
 	dialog->exec();
 }
@@ -864,9 +991,9 @@ void MainWindow::action_Select_All(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Select_All_triggered
+ * @brief MainWindow::action_Select_All_triggered
  */
-void MainWindow::on_action_Select_All_triggered() {
+void MainWindow::action_Select_All_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Select_All(document);
@@ -912,9 +1039,9 @@ void MainWindow::action_Include_File(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Include_File_triggered
+ * @brief MainWindow::action_Include_File_triggered
  */
-void MainWindow::on_action_Include_File_triggered() {
+void MainWindow::action_Include_File_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Include_File(document);
@@ -922,36 +1049,36 @@ void MainWindow::on_action_Include_File_triggered() {
 }
 
 /**
- * @brief MainWindow::on_action_Cut_triggered
+ * @brief MainWindow::action_Cut_triggered
  */
-void MainWindow::on_action_Cut_triggered() {
+void MainWindow::action_Cut_triggered() {
 	if (QPointer<TextArea> area = lastFocus()) {
 		area->cutClipboard();
 	}
 }
 
 /**
- * @brief MainWindow::on_action_Copy_triggered
+ * @brief MainWindow::action_Copy_triggered
  */
-void MainWindow::on_action_Copy_triggered() {
+void MainWindow::action_Copy_triggered() {
 	if (QPointer<TextArea> area = lastFocus()) {
 		area->copyClipboard();
 	}
 }
 
 /**
- * @brief MainWindow::on_action_Paste_triggered
+ * @brief MainWindow::action_Paste_triggered
  */
-void MainWindow::on_action_Paste_triggered() {
+void MainWindow::action_Paste_triggered() {
 	if (QPointer<TextArea> area = lastFocus()) {
 		area->pasteClipboard();
 	}
 }
 
 /**
- * @brief MainWindow::on_action_Paste_Column_triggered
+ * @brief MainWindow::action_Paste_Column_triggered
  */
-void MainWindow::on_action_Paste_Column_triggered() {
+void MainWindow::action_Paste_Column_triggered() {
 	if (QPointer<TextArea> area = lastFocus()) {
 		area->pasteClipboard(TextArea::RectFlag);
 	}
@@ -973,9 +1100,9 @@ void MainWindow::action_Delete(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Delete_triggered
+ * @brief MainWindow::action_Delete_triggered
  */
-void MainWindow::on_action_Delete_triggered() {
+void MainWindow::action_Delete_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Delete(document);
@@ -1551,9 +1678,9 @@ void MainWindow::action_Undo(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Undo_triggered
+ * @brief MainWindow::action_Undo_triggered
  */
-void MainWindow::on_action_Undo_triggered() {
+void MainWindow::action_Undo_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Undo(document);
@@ -1576,9 +1703,9 @@ void MainWindow::action_Redo(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Redo_triggered
+ * @brief MainWindow::action_Redo_triggered
  */
-void MainWindow::on_action_Redo_triggered() {
+void MainWindow::action_Redo_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Redo(document);
@@ -1881,18 +2008,18 @@ void MainWindow::updatePrevOpenMenu() {
 }
 
 /**
- * @brief MainWindow::on_tabWidget_tabCountChanged
+ * @brief MainWindow::tabWidget_tabCountChanged
  * @param count
  */
-void MainWindow::on_tabWidget_tabCountChanged(int count) {
+void MainWindow::tabWidget_tabCountChanged(int count) {
 	ui.action_Detach_Tab->setEnabled(count > 1);
 }
 
 /**
- * @brief MainWindow::on_tabWidget_currentChanged
+ * @brief MainWindow::tabWidget_currentChanged
  * @param index
  */
-void MainWindow::on_tabWidget_currentChanged(int index) {
+void MainWindow::tabWidget_currentChanged(int index) {
 	if (index != -1) {
 		if (DocumentWidget *document = documentAt(index)) {
 			endISearch();
@@ -1902,10 +2029,10 @@ void MainWindow::on_tabWidget_currentChanged(int index) {
 }
 
 /**
- * @brief MainWindow::on_tabWidget_customContextMenuRequested
+ * @brief MainWindow::tabWidget_customContextMenuRequested
  * @param pos
  */
-void MainWindow::on_tabWidget_customContextMenuRequested(const QPoint &pos) {
+void MainWindow::tabWidget_customContextMenuRequested(const QPoint &pos) {
 	const int index = ui.tabWidget->tabBar()->tabAt(pos);
 	if (index != -1) {
 		auto *menu              = new QMenu(this);
@@ -1964,9 +2091,9 @@ void MainWindow::action_Open_Selected(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Open_Selected_triggered
+ * @brief MainWindow::action_Open_Selected_triggered
  */
-void MainWindow::on_action_Open_Selected_triggered() {
+void MainWindow::action_Open_Selected_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Open_Selected(document);
@@ -2144,9 +2271,9 @@ void MainWindow::action_Shift_Left(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Shift_Left_triggered
+ * @brief MainWindow::action_Shift_Left_triggered
  */
-void MainWindow::on_action_Shift_Left_triggered() {
+void MainWindow::action_Shift_Left_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Shift_Left(document);
@@ -2171,9 +2298,9 @@ void MainWindow::action_Shift_Right(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Shift_Right_triggered
+ * @brief MainWindow::action_Shift_Right_triggered
  */
-void MainWindow::on_action_Shift_Right_triggered() {
+void MainWindow::action_Shift_Right_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Shift_Right(document);
@@ -2250,9 +2377,9 @@ void MainWindow::action_Lower_case(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Lower_case_triggered
+ * @brief MainWindow::action_Lower_case_triggered
  */
-void MainWindow::on_action_Lower_case_triggered() {
+void MainWindow::action_Lower_case_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Lower_case(document);
@@ -2277,9 +2404,9 @@ void MainWindow::action_Upper_case(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Upper_case_triggered
+ * @brief MainWindow::action_Upper_case_triggered
  */
-void MainWindow::on_action_Upper_case_triggered() {
+void MainWindow::action_Upper_case_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Upper_case(document);
@@ -2304,9 +2431,9 @@ void MainWindow::action_Fill_Paragraph(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Fill_Paragraph_triggered
+ * @brief MainWindow::action_Fill_Paragraph_triggered
  */
-void MainWindow::on_action_Fill_Paragraph_triggered() {
+void MainWindow::action_Fill_Paragraph_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Fill_Paragraph(document);
@@ -2314,9 +2441,9 @@ void MainWindow::on_action_Fill_Paragraph_triggered() {
 }
 
 /**
- * @brief MainWindow::on_action_Insert_Form_Feed_triggered
+ * @brief MainWindow::action_Insert_Form_Feed_triggered
  */
-void MainWindow::on_action_Insert_Form_Feed_triggered() {
+void MainWindow::action_Insert_Form_Feed_triggered() {
 
 	if (QPointer<TextArea> area = lastFocus()) {
 		area->insertStringAP(QLatin1String("\f"));
@@ -2366,9 +2493,9 @@ void MainWindow::action_Insert_Ctrl_Code(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Insert_Ctrl_Code_triggered
+ * @brief MainWindow::action_Insert_Ctrl_Code_triggered
  */
-void MainWindow::on_action_Insert_Ctrl_Code_triggered() {
+void MainWindow::action_Insert_Ctrl_Code_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Insert_Ctrl_Code(document);
@@ -2422,9 +2549,9 @@ void MainWindow::action_Goto_Line_Number(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Goto_Line_Number_triggered
+ * @brief MainWindow::action_Goto_Line_Number_triggered
  */
-void MainWindow::on_action_Goto_Line_Number_triggered() {
+void MainWindow::action_Goto_Line_Number_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		action_Goto_Line_Number(document);
 	}
@@ -2448,9 +2575,9 @@ void MainWindow::action_Goto_Selected(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Goto_Selected_triggered
+ * @brief MainWindow::action_Goto_Selected_triggered
  */
-void MainWindow::on_action_Goto_Selected_triggered() {
+void MainWindow::action_Goto_Selected_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		action_Goto_Selected(document);
 	}
@@ -2646,9 +2773,9 @@ void MainWindow::editIFind_textChanged(const QString &text) {
 }
 
 /**
- * @brief MainWindow::on_action_Find_Incremental_triggered
+ * @brief MainWindow::action_Find_Incremental_triggered
  */
-void MainWindow::on_action_Find_Incremental_triggered() {
+void MainWindow::action_Find_Incremental_triggered() {
 	beginISearch(Direction::Forward);
 }
 
@@ -2973,9 +3100,9 @@ void MainWindow::action_Replace_Find_Again(DocumentWidget *document, Direction d
 }
 
 /**
- * @brief MainWindow::on_action_Replace_Find_Again_triggered
+ * @brief MainWindow::action_Replace_Find_Again_triggered
  */
-void MainWindow::on_action_Replace_Find_Again_triggered() {
+void MainWindow::action_Replace_Find_Again_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Replace_Find_Again(document, Direction::Forward, Preferences::GetPrefSearchWraps());
@@ -3013,9 +3140,9 @@ void MainWindow::action_Replace_Again(DocumentWidget *document, Direction direct
 }
 
 /**
- * @brief MainWindow::on_action_Replace_Again_triggered
+ * @brief MainWindow::action_Replace_Again_triggered
  */
-void MainWindow::on_action_Replace_Again_triggered() {
+void MainWindow::action_Replace_Again_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Replace_Again(document,
@@ -3081,9 +3208,9 @@ void MainWindow::action_Mark(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Mark_triggered
+ * @brief MainWindow::action_Mark_triggered
  */
-void MainWindow::on_action_Mark_triggered() {
+void MainWindow::action_Mark_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		action_Mark(document);
 	}
@@ -3098,88 +3225,13 @@ void MainWindow::action_Mark_Shortcut() {
 		const QKeySequence sequence = shortcut->key();
 
 		if (DocumentWidget *document = currentDocument()) {
-			switch (sequence[1]) {
-			case Qt::Key_A:
-				action_Mark(document, QLatin1String("A"));
-				break;
-			case Qt::Key_B:
-				action_Mark(document, QLatin1String("B"));
-				break;
-			case Qt::Key_C:
-				action_Mark(document, QLatin1String("C"));
-				break;
-			case Qt::Key_D:
-				action_Mark(document, QLatin1String("D"));
-				break;
-			case Qt::Key_E:
-				action_Mark(document, QLatin1String("E"));
-				break;
-			case Qt::Key_F:
-				action_Mark(document, QLatin1String("F"));
-				break;
-			case Qt::Key_G:
-				action_Mark(document, QLatin1String("G"));
-				break;
-			case Qt::Key_H:
-				action_Mark(document, QLatin1String("H"));
-				break;
-			case Qt::Key_I:
-				action_Mark(document, QLatin1String("I"));
-				break;
-			case Qt::Key_J:
-				action_Mark(document, QLatin1String("J"));
-				break;
-			case Qt::Key_K:
-				action_Mark(document, QLatin1String("K"));
-				break;
-			case Qt::Key_L:
-				action_Mark(document, QLatin1String("L"));
-				break;
-			case Qt::Key_M:
-				action_Mark(document, QLatin1String("M"));
-				break;
-			case Qt::Key_N:
-				action_Mark(document, QLatin1String("N"));
-				break;
-			case Qt::Key_O:
-				action_Mark(document, QLatin1String("O"));
-				break;
-			case Qt::Key_P:
-				action_Mark(document, QLatin1String("P"));
-				break;
-			case Qt::Key_Q:
-				action_Mark(document, QLatin1String("Q"));
-				break;
-			case Qt::Key_R:
-				action_Mark(document, QLatin1String("R"));
-				break;
-			case Qt::Key_S:
-				action_Mark(document, QLatin1String("S"));
-				break;
-			case Qt::Key_T:
-				action_Mark(document, QLatin1String("T"));
-				break;
-			case Qt::Key_U:
-				action_Mark(document, QLatin1String("U"));
-				break;
-			case Qt::Key_V:
-				action_Mark(document, QLatin1String("V"));
-				break;
-			case Qt::Key_W:
-				action_Mark(document, QLatin1String("W"));
-				break;
-			case Qt::Key_X:
-				action_Mark(document, QLatin1String("X"));
-				break;
-			case Qt::Key_Y:
-				action_Mark(document, QLatin1String("Y"));
-				break;
-			case Qt::Key_Z:
-				action_Mark(document, QLatin1String("Z"));
-				break;
-			default:
+
+			const int key = sequence[1];
+			if (key >= Qt::Key_A && key <= Qt::Key_Z) {
+				QString keyseq(key);
+				action_Mark(document, keyseq);
+			} else {
 				QApplication::beep();
-				break;
 			}
 		}
 	}
@@ -3225,9 +3277,9 @@ void MainWindow::action_Goto_Mark_Dialog(DocumentWidget *document, bool extend) 
 }
 
 /**
- * @brief MainWindow::on_action_Goto_Mark_triggered
+ * @brief MainWindow::action_Goto_Mark_triggered
  */
-void MainWindow::on_action_Goto_Mark_triggered() {
+void MainWindow::action_Goto_Mark_triggered() {
 
 	const bool extend = (QApplication::keyboardModifiers() & Qt::SHIFT);
 
@@ -3245,88 +3297,13 @@ void MainWindow::action_Goto_Mark_Shortcut_Helper(bool shifted) {
 		const QKeySequence sequence = shortcut->key();
 
 		if (DocumentWidget *document = currentDocument()) {
-			switch (sequence[1]) {
-			case Qt::Key_A:
-				action_Goto_Mark(document, QLatin1String("A"), shifted);
-				break;
-			case Qt::Key_B:
-				action_Goto_Mark(document, QLatin1String("B"), shifted);
-				break;
-			case Qt::Key_C:
-				action_Goto_Mark(document, QLatin1String("C"), shifted);
-				break;
-			case Qt::Key_D:
-				action_Goto_Mark(document, QLatin1String("D"), shifted);
-				break;
-			case Qt::Key_E:
-				action_Goto_Mark(document, QLatin1String("E"), shifted);
-				break;
-			case Qt::Key_F:
-				action_Goto_Mark(document, QLatin1String("F"), shifted);
-				break;
-			case Qt::Key_G:
-				action_Goto_Mark(document, QLatin1String("G"), shifted);
-				break;
-			case Qt::Key_H:
-				action_Goto_Mark(document, QLatin1String("H"), shifted);
-				break;
-			case Qt::Key_I:
-				action_Goto_Mark(document, QLatin1String("I"), shifted);
-				break;
-			case Qt::Key_J:
-				action_Goto_Mark(document, QLatin1String("J"), shifted);
-				break;
-			case Qt::Key_K:
-				action_Goto_Mark(document, QLatin1String("K"), shifted);
-				break;
-			case Qt::Key_L:
-				action_Goto_Mark(document, QLatin1String("L"), shifted);
-				break;
-			case Qt::Key_M:
-				action_Goto_Mark(document, QLatin1String("M"), shifted);
-				break;
-			case Qt::Key_N:
-				action_Goto_Mark(document, QLatin1String("N"), shifted);
-				break;
-			case Qt::Key_O:
-				action_Goto_Mark(document, QLatin1String("O"), shifted);
-				break;
-			case Qt::Key_P:
-				action_Goto_Mark(document, QLatin1String("P"), shifted);
-				break;
-			case Qt::Key_Q:
-				action_Goto_Mark(document, QLatin1String("Q"), shifted);
-				break;
-			case Qt::Key_R:
-				action_Goto_Mark(document, QLatin1String("R"), shifted);
-				break;
-			case Qt::Key_S:
-				action_Goto_Mark(document, QLatin1String("S"), shifted);
-				break;
-			case Qt::Key_T:
-				action_Goto_Mark(document, QLatin1String("T"), shifted);
-				break;
-			case Qt::Key_U:
-				action_Goto_Mark(document, QLatin1String("U"), shifted);
-				break;
-			case Qt::Key_V:
-				action_Goto_Mark(document, QLatin1String("V"), shifted);
-				break;
-			case Qt::Key_W:
-				action_Goto_Mark(document, QLatin1String("W"), shifted);
-				break;
-			case Qt::Key_X:
-				action_Goto_Mark(document, QLatin1String("X"), shifted);
-				break;
-			case Qt::Key_Y:
-				action_Goto_Mark(document, QLatin1String("Y"), shifted);
-				break;
-			case Qt::Key_Z:
-				action_Goto_Mark(document, QLatin1String("Z"), shifted);
-				break;
-			default:
+
+			const int key = sequence[1];
+			if (key >= Qt::Key_A && key <= Qt::Key_Z) {
+				QString keyseq(key);
+				action_Goto_Mark(document, keyseq, shifted);
+			} else {
 				QApplication::beep();
-				break;
 			}
 		}
 	}
@@ -3359,9 +3336,9 @@ void MainWindow::action_Goto_Matching(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Goto_Matching_triggered
+ * @brief MainWindow::action_Goto_Matching_triggered
  */
-void MainWindow::on_action_Goto_Matching_triggered() {
+void MainWindow::action_Goto_Matching_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		action_Goto_Matching(document);
 	}
@@ -3505,9 +3482,9 @@ void MainWindow::action_Load_Calltips_File(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Load_Calltips_File_triggered
+ * @brief MainWindow::action_Load_Calltips_File_triggered
  */
-void MainWindow::on_action_Load_Calltips_File_triggered() {
+void MainWindow::action_Load_Calltips_File_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Load_Calltips_File(document);
@@ -3546,9 +3523,9 @@ void MainWindow::action_Load_Tags_File(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Load_Tags_File_triggered
+ * @brief MainWindow::action_Load_Tags_File_triggered
  */
-void MainWindow::on_action_Load_Tags_File_triggered() {
+void MainWindow::action_Load_Tags_File_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Load_Tags_File(document);
@@ -3580,9 +3557,9 @@ void MainWindow::action_Load_Macro_File(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Load_Macro_File_triggered
+ * @brief MainWindow::action_Load_Macro_File_triggered
  */
-void MainWindow::on_action_Load_Macro_File_triggered() {
+void MainWindow::action_Load_Macro_File_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		action_Load_Macro_File(document);
 	}
@@ -3601,9 +3578,9 @@ void MainWindow::action_Print(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Print_triggered
+ * @brief MainWindow::action_Print_triggered
  */
-void MainWindow::on_action_Print_triggered() {
+void MainWindow::action_Print_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Print(document);
@@ -3623,9 +3600,9 @@ void MainWindow::action_Print_Selection(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Print_Selection_triggered
+ * @brief MainWindow::action_Print_Selection_triggered
  */
-void MainWindow::on_action_Print_Selection_triggered() {
+void MainWindow::action_Print_Selection_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Print_Selection(document);
@@ -3644,9 +3621,9 @@ void MainWindow::action_Split_Pane(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Split_Pane_triggered
+ * @brief MainWindow::action_Split_Pane_triggered
  */
-void MainWindow::on_action_Split_Pane_triggered() {
+void MainWindow::action_Split_Pane_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Split_Pane(document);
@@ -3665,9 +3642,9 @@ void MainWindow::action_Close_Pane(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Close_Pane_triggered
+ * @brief MainWindow::action_Close_Pane_triggered
  */
-void MainWindow::on_action_Close_Pane_triggered() {
+void MainWindow::action_Close_Pane_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Close_Pane(document);
@@ -3685,9 +3662,9 @@ void MainWindow::action_Move_Tab_To(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Move_Tab_To_triggered
+ * @brief MainWindow::action_Move_Tab_To_triggered
  */
-void MainWindow::on_action_Move_Tab_To_triggered() {
+void MainWindow::action_Move_Tab_To_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Move_Tab_To(document);
@@ -3695,9 +3672,9 @@ void MainWindow::on_action_Move_Tab_To_triggered() {
 }
 
 /**
- * @brief MainWindow::on_action_About_Qt_triggered
+ * @brief MainWindow::action_About_Qt_triggered
  */
-void MainWindow::on_action_About_Qt_triggered() {
+void MainWindow::action_About_Qt_triggered() {
 	QMessageBox::aboutQt(this);
 }
 
@@ -3719,10 +3696,10 @@ DocumentWidget *MainWindow::documentAt(int index) const {
 }
 
 /**
- * @brief MainWindow::on_action_Statistics_Line_toggled
+ * @brief MainWindow::action_Statistics_Line_toggled
  * @param state
  */
-void MainWindow::on_action_Statistics_Line_toggled(bool state) {
+void MainWindow::action_Statistics_Line_toggled(bool state) {
 
 	for (DocumentWidget *document : openDocuments()) {
 		document->showStatsLine(state);
@@ -3737,16 +3714,16 @@ void MainWindow::on_action_Statistics_Line_toggled(bool state) {
 ** Turn on and off the continuing display of the incremental search line
 ** (when off, it is popped up and down as needed via TempShowISearch)
 */
-void MainWindow::on_action_Incremental_Search_Line_toggled(bool state) {
+void MainWindow::action_Incremental_Search_Line_toggled(bool state) {
 	showISearchLine_ = state;
 	ui.incrementalSearchFrame->setVisible(state);
 }
 
 /**
- * @brief MainWindow::on_action_Show_Line_Numbers_toggled
+ * @brief MainWindow::action_Show_Line_Numbers_toggled
  * @param state
  */
-void MainWindow::on_action_Show_Line_Numbers_toggled(bool state) {
+void MainWindow::action_Show_Line_Numbers_toggled(bool state) {
 	showLineNumbers(state);
 }
 
@@ -3807,9 +3784,9 @@ void MainWindow::wrapGroupTriggered(QAction *action) {
 }
 
 /**
- * @brief MainWindow::on_action_Wrap_Margin_triggered
+ * @brief MainWindow::action_Wrap_Margin_triggered
  */
-void MainWindow::on_action_Wrap_Margin_triggered() {
+void MainWindow::action_Wrap_Margin_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		auto dialog = std::make_unique<DialogWrapMargin>(document, this);
 		dialog->exec();
@@ -3817,9 +3794,9 @@ void MainWindow::on_action_Wrap_Margin_triggered() {
 }
 
 /**
- * @brief MainWindow::on_action_Tab_Stops_triggered
+ * @brief MainWindow::action_Tab_Stops_triggered
  */
-void MainWindow::on_action_Tab_Stops_triggered() {
+void MainWindow::action_Tab_Stops_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		auto dialog = std::make_unique<DialogTabs>(document, this);
 		dialog->exec();
@@ -3827,9 +3804,9 @@ void MainWindow::on_action_Tab_Stops_triggered() {
 }
 
 /**
- * @brief MainWindow::on_action_Text_Fonts_triggered
+ * @brief MainWindow::action_Text_Fonts_triggered
  */
-void MainWindow::on_action_Text_Fonts_triggered() {
+void MainWindow::action_Text_Fonts_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		auto dialogFonts = std::make_unique<DialogFonts>(document, this);
 		dialogFonts->exec();
@@ -3837,10 +3814,10 @@ void MainWindow::on_action_Text_Fonts_triggered() {
 }
 
 /**
- * @brief MainWindow::on_action_Highlight_Syntax_toggled
+ * @brief MainWindow::action_Highlight_Syntax_toggled
  * @param state
  */
-void MainWindow::on_action_Highlight_Syntax_toggled(bool state) {
+void MainWindow::action_Highlight_Syntax_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
 
 		document->highlightSyntax_ = state;
@@ -3854,30 +3831,30 @@ void MainWindow::on_action_Highlight_Syntax_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::on_action_Apply_Backlighting_toggled
+ * @brief MainWindow::action_Apply_Backlighting_toggled
  * @param state
  */
-void MainWindow::on_action_Apply_Backlighting_toggled(bool state) {
+void MainWindow::action_Apply_Backlighting_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
 		document->setBacklightChars(state ? Preferences::GetPrefBacklightCharTypes() : QString());
 	}
 }
 
 /**
- * @brief MainWindow::on_action_Make_Backup_Copy_toggled
+ * @brief MainWindow::action_Make_Backup_Copy_toggled
  * @param state
  */
-void MainWindow::on_action_Make_Backup_Copy_toggled(bool state) {
+void MainWindow::action_Make_Backup_Copy_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
 		document->info_->saveOldVersion = state;
 	}
 }
 
 /**
- * @brief MainWindow::on_action_Incremental_Backup_toggled
+ * @brief MainWindow::action_Incremental_Backup_toggled
  * @param state
  */
-void MainWindow::on_action_Incremental_Backup_toggled(bool state) {
+void MainWindow::action_Incremental_Backup_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
 		document->info_->autoSave = state;
 	}
@@ -3903,30 +3880,30 @@ void MainWindow::matchingGroupTriggered(QAction *action) {
 }
 
 /**
- * @brief MainWindow::on_action_Matching_Syntax_toggled
+ * @brief MainWindow::action_Matching_Syntax_toggled
  * @param state
  */
-void MainWindow::on_action_Matching_Syntax_toggled(bool state) {
+void MainWindow::action_Matching_Syntax_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
 		document->info_->matchSyntaxBased = state;
 	}
 }
 
 /**
- * @brief MainWindow::on_action_Overtype_toggled
+ * @brief MainWindow::action_Overtype_toggled
  * @param state
  */
-void MainWindow::on_action_Overtype_toggled(bool state) {
+void MainWindow::action_Overtype_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
 		document->setOverstrike(state);
 	}
 }
 
 /**
- * @brief MainWindow::on_action_Read_Only_toggled
+ * @brief MainWindow::action_Read_Only_toggled
  * @param state
  */
-void MainWindow::on_action_Read_Only_toggled(bool state) {
+void MainWindow::action_Read_Only_toggled(bool state) {
 	if (DocumentWidget *document = currentDocument()) {
 		document->info_->lockReasons.setUserLocked(state);
 		updateWindowTitle(document);
@@ -3935,16 +3912,16 @@ void MainWindow::on_action_Read_Only_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::on_action_Save_Defaults_triggered
+ * @brief MainWindow::action_Save_Defaults_triggered
  */
-void MainWindow::on_action_Save_Defaults_triggered() {
+void MainWindow::action_Save_Defaults_triggered() {
 	Preferences::SaveNEditPrefs(this, Verbosity::Verbose);
 }
 
 /**
- * @brief MainWindow::on_action_Default_Language_Modes_triggered
+ * @brief MainWindow::action_Default_Language_Modes_triggered
  */
-void MainWindow::on_action_Default_Language_Modes_triggered() {
+void MainWindow::action_Default_Language_Modes_triggered() {
 	auto dialog = std::make_unique<DialogLanguageModes>(nullptr, this);
 	dialog->exec();
 }
@@ -3967,9 +3944,9 @@ void MainWindow::defaultIndentGroupTriggered(QAction *action) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Program_Smart_Indent_triggered
+ * @brief MainWindow::action_Default_Program_Smart_Indent_triggered
  */
-void MainWindow::on_action_Default_Program_Smart_Indent_triggered() {
+void MainWindow::action_Default_Program_Smart_Indent_triggered() {
 
 	if (!SmartIndent::SmartIndentDialog) {
 		// We pass this document so that the dialog can show the information for the currently
@@ -4017,9 +3994,9 @@ void MainWindow::defaultWrapGroupTriggered(QAction *action) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Wrap_Margin_triggered
+ * @brief MainWindow::action_Default_Wrap_Margin_triggered
  */
-void MainWindow::on_action_Default_Wrap_Margin_triggered() {
+void MainWindow::action_Default_Wrap_Margin_triggered() {
 	auto dialog = std::make_unique<DialogWrapMargin>(nullptr, this);
 	dialog->exec();
 }
@@ -4039,9 +4016,9 @@ void MainWindow::defaultTagCollisionsGroupTriggered(QAction *action) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Command_Shell_triggered
+ * @brief MainWindow::action_Default_Command_Shell_triggered
  */
-void MainWindow::on_action_Default_Command_Shell_triggered() {
+void MainWindow::action_Default_Command_Shell_triggered() {
 	bool ok;
 	QString shell = QInputDialog::getText(this,
 										  tr("Command Shell"),
@@ -4068,25 +4045,25 @@ void MainWindow::on_action_Default_Command_Shell_triggered() {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Tab_Stops_triggered
+ * @brief MainWindow::action_Default_Tab_Stops_triggered
  */
-void MainWindow::on_action_Default_Tab_Stops_triggered() {
+void MainWindow::action_Default_Tab_Stops_triggered() {
 	auto dialog = std::make_unique<DialogTabs>(nullptr, this);
 	dialog->exec();
 }
 
 /**
- * @brief MainWindow::on_action_Default_Text_Fonts_triggered
+ * @brief MainWindow::action_Default_Text_Fonts_triggered
  */
-void MainWindow::on_action_Default_Text_Fonts_triggered() {
+void MainWindow::action_Default_Text_Fonts_triggered() {
 	auto dialog = std::make_unique<DialogFonts>(nullptr, this);
 	dialog->exec();
 }
 
 /**
- * @brief MainWindow::on_action_Default_Colors_triggered
+ * @brief MainWindow::action_Default_Colors_triggered
  */
-void MainWindow::on_action_Default_Colors_triggered() {
+void MainWindow::action_Default_Colors_triggered() {
 	auto dialog = std::make_unique<DialogColors>(this);
 	dialog->exec();
 }
@@ -4094,7 +4071,7 @@ void MainWindow::on_action_Default_Colors_triggered() {
 /*
 ** Present a dialog for editing the user specified commands in the shell menu
 */
-void MainWindow::on_action_Default_Shell_Menu_triggered() {
+void MainWindow::action_Default_Shell_Menu_triggered() {
 	if (!dialogShellMenu_) {
 		dialogShellMenu_ = new DialogShellMenu(this);
 	}
@@ -4108,7 +4085,7 @@ void MainWindow::on_action_Default_Shell_Menu_triggered() {
 ** Present a dialogs for editing the user specified commands in the Macro
 ** and background menus
 */
-void MainWindow::on_action_Default_Macro_Menu_triggered() {
+void MainWindow::action_Default_Macro_Menu_triggered() {
 	if (!dialogMacros_) {
 		dialogMacros_ = new DialogMacros(this);
 	}
@@ -4119,9 +4096,9 @@ void MainWindow::on_action_Default_Macro_Menu_triggered() {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Window_Background_Menu_triggered
+ * @brief MainWindow::action_Default_Window_Background_Menu_triggered
  */
-void MainWindow::on_action_Default_Window_Background_Menu_triggered() {
+void MainWindow::action_Default_Window_Background_Menu_triggered() {
 	if (!dialogWindowBackgroundMenu_) {
 		dialogWindowBackgroundMenu_ = new DialogWindowBackgroundMenu(this);
 	}
@@ -4132,10 +4109,10 @@ void MainWindow::on_action_Default_Window_Background_Menu_triggered() {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Sort_Open_Prev_Menu_toggled
+ * @brief MainWindow::action_Default_Sort_Open_Prev_Menu_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Sort_Open_Prev_Menu_toggled(bool state) {
+void MainWindow::action_Default_Sort_Open_Prev_Menu_toggled(bool state) {
 
 	// Set the preference, make the other windows' menus agree
 	Preferences::SetPrefSortOpenPrevMenu(state);
@@ -4145,10 +4122,10 @@ void MainWindow::on_action_Default_Sort_Open_Prev_Menu_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Show_Path_In_Windows_Menu_toggled
+ * @brief MainWindow::action_Default_Show_Path_In_Windows_Menu_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Show_Path_In_Windows_Menu_toggled(bool state) {
+void MainWindow::action_Default_Show_Path_In_Windows_Menu_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefShowPathInWindowsMenu(state);
@@ -4160,9 +4137,9 @@ void MainWindow::on_action_Default_Show_Path_In_Windows_Menu_toggled(bool state)
 }
 
 /**
- * @brief MainWindow::on_action_Default_Customize_Window_Title_triggered
+ * @brief MainWindow::action_Default_Customize_Window_Title_triggered
  */
-void MainWindow::on_action_Default_Customize_Window_Title_triggered() {
+void MainWindow::action_Default_Customize_Window_Title_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		auto dialog = std::make_unique<DialogWindowTitle>(document, this);
 		dialog->exec();
@@ -4170,10 +4147,10 @@ void MainWindow::on_action_Default_Customize_Window_Title_triggered() {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Search_Verbose_toggled
+ * @brief MainWindow::action_Default_Search_Verbose_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Search_Verbose_toggled(bool state) {
+void MainWindow::action_Default_Search_Verbose_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefSearchDlogs(state);
@@ -4183,10 +4160,10 @@ void MainWindow::on_action_Default_Search_Verbose_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Search_Wrap_Around_toggled
+ * @brief MainWindow::action_Default_Search_Wrap_Around_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Search_Wrap_Around_toggled(bool state) {
+void MainWindow::action_Default_Search_Wrap_Around_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefSearchWraps(state);
@@ -4196,10 +4173,10 @@ void MainWindow::on_action_Default_Search_Wrap_Around_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Search_Beep_On_Search_Wrap_toggled
+ * @brief MainWindow::action_Default_Search_Beep_On_Search_Wrap_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Search_Beep_On_Search_Wrap_toggled(bool state) {
+void MainWindow::action_Default_Search_Beep_On_Search_Wrap_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefBeepOnSearchWrap(state);
@@ -4209,10 +4186,10 @@ void MainWindow::on_action_Default_Search_Beep_On_Search_Wrap_toggled(bool state
 }
 
 /**
- * @brief MainWindow::on_action_Default_Search_Keep_Dialogs_Up_toggled
+ * @brief MainWindow::action_Default_Search_Keep_Dialogs_Up_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Search_Keep_Dialogs_Up_toggled(bool state) {
+void MainWindow::action_Default_Search_Keep_Dialogs_Up_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefKeepSearchDlogs(state);
@@ -4284,24 +4261,24 @@ void MainWindow::defaultSyntaxGroupTriggered(QAction *action) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Syntax_Recognition_Patterns_triggered
+ * @brief MainWindow::action_Default_Syntax_Recognition_Patterns_triggered
  */
-void MainWindow::on_action_Default_Syntax_Recognition_Patterns_triggered() {
+void MainWindow::action_Default_Syntax_Recognition_Patterns_triggered() {
 	editHighlightPatterns();
 }
 
 /**
- * @brief MainWindow::on_action_Default_Syntax_Text_Drawing_Styles_triggered
+ * @brief MainWindow::action_Default_Syntax_Text_Drawing_Styles_triggered
  */
-void MainWindow::on_action_Default_Syntax_Text_Drawing_Styles_triggered() {
+void MainWindow::action_Default_Syntax_Text_Drawing_Styles_triggered() {
 	editHighlightStyles(QString());
 }
 
 /**
- * @brief MainWindow::on_action_Default_Apply_Backlighting_toggled
+ * @brief MainWindow::action_Default_Apply_Backlighting_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Apply_Backlighting_toggled(bool state) {
+void MainWindow::action_Default_Apply_Backlighting_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefBacklightChars(state);
@@ -4311,10 +4288,10 @@ void MainWindow::on_action_Default_Apply_Backlighting_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Tab_Open_File_In_New_Tab_toggled
+ * @brief MainWindow::action_Default_Tab_Open_File_In_New_Tab_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) {
+void MainWindow::action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefOpenInTab(state);
@@ -4330,10 +4307,10 @@ void MainWindow::on_action_Default_Tab_Open_File_In_New_Tab_toggled(bool state) 
 }
 
 /**
- * @brief MainWindow::on_action_Default_Tab_Show_Tab_Bar_toggled
+ * @brief MainWindow::action_Default_Tab_Show_Tab_Bar_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
+void MainWindow::action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefTabBar(state);
@@ -4344,10 +4321,10 @@ void MainWindow::on_action_Default_Tab_Show_Tab_Bar_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled
+ * @brief MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled(bool state) {
+void MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefTabBarHideOne(state);
@@ -4358,10 +4335,10 @@ void MainWindow::on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Op
 }
 
 /**
- * @brief MainWindow::on_action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled
+ * @brief MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool state) {
+void MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefGlobalTabNavigate(state);
@@ -4371,10 +4348,10 @@ void MainWindow::on_action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(boo
 }
 
 /**
- * @brief MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled
+ * @brief MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state) {
+void MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefSortTabs(state);
@@ -4399,10 +4376,10 @@ void MainWindow::on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool sta
 }
 
 /**
- * @brief MainWindow::on_action_Default_Show_Tooltips_toggled
+ * @brief MainWindow::action_Default_Show_Tooltips_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Show_Tooltips_toggled(bool state) {
+void MainWindow::action_Default_Show_Tooltips_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefToolTips(state);
@@ -4412,10 +4389,10 @@ void MainWindow::on_action_Default_Show_Tooltips_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Statistics_Line_toggled
+ * @brief MainWindow::action_Default_Statistics_Line_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Statistics_Line_toggled(bool state) {
+void MainWindow::action_Default_Statistics_Line_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefStatsLine(state);
@@ -4425,10 +4402,10 @@ void MainWindow::on_action_Default_Statistics_Line_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Incremental_Search_Line_toggled
+ * @brief MainWindow::action_Default_Incremental_Search_Line_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Incremental_Search_Line_toggled(bool state) {
+void MainWindow::action_Default_Incremental_Search_Line_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefISearchLine(state);
@@ -4438,10 +4415,10 @@ void MainWindow::on_action_Default_Incremental_Search_Line_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Show_Line_Numbers_toggled
+ * @brief MainWindow::action_Default_Show_Line_Numbers_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Show_Line_Numbers_toggled(bool state) {
+void MainWindow::action_Default_Show_Line_Numbers_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefLineNums(state);
@@ -4451,10 +4428,10 @@ void MainWindow::on_action_Default_Show_Line_Numbers_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Make_Backup_Copy_toggled
+ * @brief MainWindow::action_Default_Make_Backup_Copy_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Make_Backup_Copy_toggled(bool state) {
+void MainWindow::action_Default_Make_Backup_Copy_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefSaveOldVersion(state);
@@ -4464,10 +4441,10 @@ void MainWindow::on_action_Default_Make_Backup_Copy_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Incremental_Backup_toggled
+ * @brief MainWindow::action_Default_Incremental_Backup_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Incremental_Backup_toggled(bool state) {
+void MainWindow::action_Default_Incremental_Backup_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefAutoSave(state);
@@ -4503,10 +4480,10 @@ void MainWindow::defaultMatchingGroupTriggered(QAction *action) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Matching_Syntax_Based_toggled
+ * @brief MainWindow::action_Default_Matching_Syntax_Based_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Matching_Syntax_Based_toggled(bool state) {
+void MainWindow::action_Default_Matching_Syntax_Based_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefMatchSyntaxBased(state);
@@ -4516,10 +4493,10 @@ void MainWindow::on_action_Default_Matching_Syntax_Based_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Terminate_with_Line_Break_on_Save_toggled
+ * @brief MainWindow::action_Default_Terminate_with_Line_Break_on_Save_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state) {
+void MainWindow::action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefAppendLF(state);
@@ -4529,10 +4506,10 @@ void MainWindow::on_action_Default_Terminate_with_Line_Break_on_Save_toggled(boo
 }
 
 /**
- * @brief MainWindow::on_action_Default_Popups_Under_Pointer_toggled
+ * @brief MainWindow::action_Default_Popups_Under_Pointer_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Popups_Under_Pointer_toggled(bool state) {
+void MainWindow::action_Default_Popups_Under_Pointer_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefRepositionDialogs(state);
@@ -4542,10 +4519,10 @@ void MainWindow::on_action_Default_Popups_Under_Pointer_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled
+ * @brief MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state) {
+void MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefAutoScroll(state);
@@ -4555,10 +4532,10 @@ void MainWindow::on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bo
 }
 
 /**
- * @brief MainWindow::on_action_Default_Warnings_Files_Modified_Externally_toggled
+ * @brief MainWindow::action_Default_Warnings_Files_Modified_Externally_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Warnings_Files_Modified_Externally_toggled(bool state) {
+void MainWindow::action_Default_Warnings_Files_Modified_Externally_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefWarnFileMods(state);
@@ -4569,10 +4546,10 @@ void MainWindow::on_action_Default_Warnings_Files_Modified_Externally_toggled(bo
 }
 
 /**
- * @brief MainWindow::on_action_Default_Warnings_Check_Modified_File_Contents_toggled
+ * @brief MainWindow::action_Default_Warnings_Check_Modified_File_Contents_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Warnings_Check_Modified_File_Contents_toggled(bool state) {
+void MainWindow::action_Default_Warnings_Check_Modified_File_Contents_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefWarnRealFileMods(state);
@@ -4582,10 +4559,10 @@ void MainWindow::on_action_Default_Warnings_Check_Modified_File_Contents_toggled
 }
 
 /**
- * @brief MainWindow::on_action_Default_Warnings_On_Exit_toggled
+ * @brief MainWindow::action_Default_Warnings_On_Exit_toggled
  * @param state
  */
-void MainWindow::on_action_Default_Warnings_On_Exit_toggled(bool state) {
+void MainWindow::action_Default_Warnings_On_Exit_toggled(bool state) {
 
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefWarnExit(state);
@@ -4880,9 +4857,9 @@ void MainWindow::action_Save(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Save_triggered
+ * @brief MainWindow::action_Save_triggered
  */
-void MainWindow::on_action_Save_triggered() {
+void MainWindow::action_Save_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Save(document);
@@ -5026,9 +5003,9 @@ void MainWindow::action_Save_As(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Save_As_triggered
+ * @brief MainWindow::action_Save_As_triggered
  */
-void MainWindow::on_action_Save_As_triggered() {
+void MainWindow::action_Save_As_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		action_Save_As(document);
 	}
@@ -5043,9 +5020,9 @@ void MainWindow::action_Revert_to_Saved(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Revert_to_Saved_triggered
+ * @brief MainWindow::action_Revert_to_Saved_triggered
  */
-void MainWindow::on_action_Revert_to_Saved_triggered() {
+void MainWindow::action_Revert_to_Saved_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		// re-reading file is irreversible, prompt the user first
@@ -5090,9 +5067,9 @@ void MainWindow::action_New_Window(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_New_Window_triggered
+ * @brief MainWindow::action_New_Window_triggered
  */
-void MainWindow::on_action_New_Window_triggered() {
+void MainWindow::action_New_Window_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_New_Window(document);
@@ -5167,9 +5144,9 @@ void MainWindow::action_Exit(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Exit_triggered
+ * @brief MainWindow::action_Exit_triggered
  */
-void MainWindow::on_action_Exit_triggered() {
+void MainWindow::action_Exit_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Exit(document);
@@ -5258,7 +5235,7 @@ void MainWindow::closeEvent(QCloseEvent *event) {
 	if (windows.size() == 1) {
 		// this is only window, then this is the same as exit
 		event->ignore();
-		on_action_Exit_triggered();
+		action_Exit_triggered();
 
 	} else {
 
@@ -5303,54 +5280,54 @@ void MainWindow::action_Execute_Command_Line(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Execute_Command_Line_triggered
+ * @brief MainWindow::action_Execute_Command_Line_triggered
  */
-void MainWindow::on_action_Execute_Command_Line_triggered() {
+void MainWindow::action_Execute_Command_Line_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		action_Execute_Command_Line(document);
 	}
 }
 
 /**
- * @brief MainWindow::on_action_Cancel_Shell_Command_triggered
+ * @brief MainWindow::action_Cancel_Shell_Command_triggered
  */
-void MainWindow::on_action_Cancel_Shell_Command_triggered() {
+void MainWindow::action_Cancel_Shell_Command_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		document->abortShellCommand();
 	}
 }
 
 /**
- * @brief MainWindow::on_action_Learn_Keystrokes_triggered
+ * @brief MainWindow::action_Learn_Keystrokes_triggered
  */
-void MainWindow::on_action_Learn_Keystrokes_triggered() {
+void MainWindow::action_Learn_Keystrokes_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		document->beginLearn();
 	}
 }
 
 /**
- * @brief MainWindow::on_action_Finish_Learn_triggered
+ * @brief MainWindow::action_Finish_Learn_triggered
  */
-void MainWindow::on_action_Finish_Learn_triggered() {
+void MainWindow::action_Finish_Learn_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		document->finishLearning();
 	}
 }
 
 /**
- * @brief MainWindow::on_action_Replay_Keystrokes_triggered
+ * @brief MainWindow::action_Replay_Keystrokes_triggered
  */
-void MainWindow::on_action_Replay_Keystrokes_triggered() {
+void MainWindow::action_Replay_Keystrokes_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		document->replay();
 	}
 }
 
 /**
- * @brief MainWindow::on_action_Cancel_Learn_triggered
+ * @brief MainWindow::action_Cancel_Learn_triggered
  */
-void MainWindow::on_action_Cancel_Learn_triggered() {
+void MainWindow::action_Cancel_Learn_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		document->cancelMacroOrLearn();
 	}
@@ -5395,9 +5372,9 @@ void MainWindow::action_Repeat(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Repeat_triggered
+ * @brief MainWindow::action_Repeat_triggered
  */
-void MainWindow::on_action_Repeat_triggered() {
+void MainWindow::action_Repeat_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Repeat(document);
@@ -5437,10 +5414,10 @@ void MainWindow::focusChanged(QWidget *from, QWidget *to) {
 }
 
 /**
- * @brief MainWindow::on_action_Help_triggered
+ * @brief MainWindow::action_Help_triggered
  */
-void MainWindow::on_action_Help_triggered() {
-	Help::displayTopic(this, Help::Topic::Start);
+void MainWindow::action_Help_triggered() {
+	Help::displayTopic(Help::Topic::Start);
 }
 
 /**
@@ -5514,9 +5491,9 @@ void MainWindow::action_Find(DocumentWidget *document, const QString &string, Di
 }
 
 /**
- * @brief MainWindow::on_action_Find_triggered
+ * @brief MainWindow::action_Find_triggered
  */
-void MainWindow::on_action_Find_triggered() {
+void MainWindow::action_Find_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Find_Dialog(
@@ -5528,9 +5505,9 @@ void MainWindow::on_action_Find_triggered() {
 }
 
 /**
- * @brief MainWindow::on_action_Find_Again_triggered
+ * @brief MainWindow::action_Find_Again_triggered
  */
-void MainWindow::on_action_Find_Again_triggered() {
+void MainWindow::action_Find_Again_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Find_Again(
@@ -5541,9 +5518,9 @@ void MainWindow::on_action_Find_Again_triggered() {
 }
 
 /**
- * @brief MainWindow::on_action_Find_Selection_triggered
+ * @brief MainWindow::action_Find_Selection_triggered
  */
-void MainWindow::on_action_Find_Selection_triggered() {
+void MainWindow::action_Find_Selection_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Find_Selection(
@@ -5643,9 +5620,9 @@ void MainWindow::action_Shift_Replace() {
 }
 
 /**
- * @brief MainWindow::on_action_Replace_triggered
+ * @brief MainWindow::action_Replace_triggered
  */
-void MainWindow::on_action_Replace_triggered() {
+void MainWindow::action_Replace_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Replace_Dialog(document,
@@ -5720,9 +5697,9 @@ void MainWindow::action_Find_Definition(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Find_Definition_triggered
+ * @brief MainWindow::action_Find_Definition_triggered
  */
-void MainWindow::on_action_Find_Definition_triggered() {
+void MainWindow::action_Find_Definition_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		action_Find_Definition(document);
 	}
@@ -5737,9 +5714,9 @@ void MainWindow::action_Show_Calltip(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Show_Calltip_triggered
+ * @brief MainWindow::action_Show_Calltip_triggered
  */
-void MainWindow::on_action_Show_Calltip_triggered() {
+void MainWindow::action_Show_Calltip_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		action_Show_Calltip(document);
 	}
@@ -5771,9 +5748,9 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, CommandSource
 }
 
 /**
- * @brief MainWindow::on_action_Filter_Selection_triggered
+ * @brief MainWindow::action_Filter_Selection_triggered
  */
-void MainWindow::on_action_Filter_Selection_triggered() {
+void MainWindow::action_Filter_Selection_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Filter_Selection(document, CommandSource::User);
@@ -5843,9 +5820,9 @@ void MainWindow::action_Execute_Command(DocumentWidget *document) {
 }
 
 /**
- * @brief MainWindow::on_action_Execute_Command_triggered
+ * @brief MainWindow::action_Execute_Command_triggered
  */
-void MainWindow::on_action_Execute_Command_triggered() {
+void MainWindow::action_Execute_Command_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Execute_Command(document);
@@ -5934,9 +5911,9 @@ void MainWindow::action_Repeat_Macro(DocumentWidget *document, const QString &ma
 }
 
 /**
- * @brief MainWindow::on_action_Detach_Tab_triggered
+ * @brief MainWindow::action_Detach_Tab_triggered
  */
-void MainWindow::on_action_Detach_Tab_triggered() {
+void MainWindow::action_Detach_Tab_triggered() {
 
 	if (DocumentWidget *document = currentDocument()) {
 		action_Detach_Document(document);
@@ -7351,10 +7328,10 @@ void MainWindow::updateWindowTitle(DocumentWidget *document) {
 
 #ifdef PER_TAB_CLOSE
 /**
- * @brief MainWindow::on_tabWidget_tabCloseRequested
+ * @brief MainWindow::tabWidget_tabCloseRequested
  * @param index
  */
-void MainWindow::on_tabWidget_tabCloseRequested(int index) {
+void MainWindow::tabWidget_tabCloseRequested(int index) {
 	if (DocumentWidget *document = documentAt(index)) {
 		action_Close(document, CloseMode::Prompt);
 	}

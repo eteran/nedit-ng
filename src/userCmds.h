@@ -16,9 +16,9 @@ enum class CommandTypes {
 	Context
 };
 
-bool load_bg_menu_commands_string(const QString &inString);
-bool load_macro_commands_string(const QString &inString);
-bool load_shell_commands_string(const QString &inString);
+void load_bg_menu_commands_string(const QString &inString);
+void load_macro_commands_string(const QString &inString);
+void load_shell_commands_string(const QString &inString);
 QString write_bg_menu_commands_string();
 QString write_macro_commands_string();
 QString write_shell_commands_string();

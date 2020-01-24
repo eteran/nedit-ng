@@ -87,8 +87,9 @@ QString writeMenuItemString(const std::vector<MenuItem> &menuItems, bool isShell
 				*outPtr++ = QLatin1Char('\n');
 				*outPtr++ = QLatin1Char('\t');
 				*outPtr++ = QLatin1Char('\t');
-			} else
+			} else {
 				*outPtr++ = ch;
+			}
 		}
 
 		if (!isShellCommand) {
@@ -515,7 +516,6 @@ int main(int argc, char *argv[]) {
 
 	// Advanced stuff from secondary XResources...
 	// make sure that there are some sensible defaults...
-	Settings::fileVersion                  = 1;
 	Settings::colorizeHighlightedText      = true;
 	Settings::alwaysCheckRelativeTagsSpecs = true;
 	Settings::findReplaceUsesSelection     = false;

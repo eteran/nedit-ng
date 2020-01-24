@@ -6,9 +6,6 @@
 #include "TextCursor.h"
 #include <QChar>
 
-// max. # of bookmarks (one per letter & #)
-constexpr int MAX_MARKS = 36;
-
 // Element in bookmark table
 struct Bookmark {
 	QChar label;

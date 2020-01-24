@@ -8,17 +8,17 @@
 enum class TipHAlignMode {
 	Left,
 	Center,
-	Right
+	Right,
 };
 
 enum class TipVAlignMode {
 	Above,
-	Below
+	Below,
 };
 
 enum class TipAlignMode {
 	Sloppy,
-	Strict
+	Strict,
 };
 
 // a cursor if it's anchored, otherwise it's a relative x position

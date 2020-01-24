@@ -39,6 +39,12 @@ QString historyFile();
 QString autoLoadMacroFile();
 QString styleFile();
 QString themeFile();
+QString languageModeFile();
+QString highlightPatternsFile();
+QString macroMenuFile();
+QString shellMenuFile();
+QString contextMenuFile();
+QString smartIndentFile();
 
 // Standard
 extern bool showResizeNotification;
@@ -72,7 +78,6 @@ extern bool warnExit;
 extern bool warnFileMods;
 extern bool warnRealFileMods;
 extern bool smartHome;
-extern int fileVersion;
 extern IndentStyle autoIndent;
 extern WrapStyle autoWrap;
 extern int emulateTabs;

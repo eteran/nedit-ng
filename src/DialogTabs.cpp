@@ -138,5 +138,5 @@ void DialogTabs::buttonBox_accepted() {
  * @brief DialogTabs::buttonBox_helpRequested
  */
 void DialogTabs::buttonBox_helpRequested() {
-	Help::displayTopic(this, Help::Topic::TabsDialog);
+	Help::displayTopic(Help::Topic::TabsDialog);
 }

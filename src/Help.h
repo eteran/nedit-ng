@@ -25,7 +25,7 @@ enum class Topic {
 	Syntax,
 	Tags,
 	Calltips,
-	Basicsyntax,
+	BasicSyntax,
 	Escapesequences,
 	Parenconstructs,
 	Advancedtopics,
@@ -54,7 +54,7 @@ enum class Topic {
 	CustomTitleDialog,
 };
 
-void displayTopic(QWidget *parent, Topic topic);
+void displayTopic(Topic topic);
 }
 
 #endif

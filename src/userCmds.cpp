@@ -4,12 +4,18 @@
 #include "MenuData.h"
 #include "MenuItem.h"
 #include "Preferences.h"
+#include "Settings.h"
 #include "Util/Input.h"
 #include "Util/Raise.h"
+#include "Util/Resource.h"
 #include "parse.h"
 
+#include <QFileInfo>
 #include <QTextStream>
+
+#include <boost/optional.hpp>
 #include <memory>
+#include <yaml-cpp/yaml.h>
 
 /* Descriptions of the current user programmed menu items for re-generating
    menus and processing shell, macro, and background menu selections */
@@ -104,100 +110,498 @@ QString copyMacroToEnd(Input &in) {
 	return retStr;
 }
 
-QString writeMenuItemString(const std::vector<MenuData> &menuItems, CommandTypes listType) {
+QString writeMacroMenuYaml(const std::vector<MenuData> &menuItems) {
+	const QString filename = Settings::macroMenuFile();
 
-	QString outStr;
-	auto outPtr = std::back_inserter(outStr);
+	try {
+		YAML::Emitter out;
+		for (const MenuData &entry : menuItems) {
 
-	for (const MenuData &data : menuItems) {
-		auto &f = data.item;
+			const MenuItem &item = entry.item;
 
-		QString accStr = f.shortcut.toString();
-		*outPtr++      = QLatin1Char('\t');
+			out << YAML::BeginDoc;
+			out << YAML::BeginMap;
+			out << YAML::Key << "name" << YAML::Value << item.name.toUtf8().data();
 
-		std::copy(f.name.begin(), f.name.end(), outPtr);
-		*outPtr++ = QLatin1Char(':');
-
-		std::copy(accStr.begin(), accStr.end(), outPtr);
-		*outPtr++ = QLatin1Char(':');
-
-		if (listType == CommandTypes::Shell) {
-			switch (f.input) {
-			case FROM_SELECTION:
-				*outPtr++ = QLatin1Char('I');
-				break;
-			case FROM_WINDOW:
-				*outPtr++ = QLatin1Char('A');
-				break;
-			case FROM_EITHER:
-				*outPtr++ = QLatin1Char('E');
-				break;
-			default:
-				break;
+			if (!item.shortcut.isEmpty()) {
+				out << YAML::Key << "shortcut" << YAML::Value << item.shortcut.toString().toUtf8().data();
 			}
 
-			switch (f.output) {
-			case TO_DIALOG:
-				*outPtr++ = QLatin1Char('D');
-				break;
-			case TO_NEW_WINDOW:
-				*outPtr++ = QLatin1Char('W');
-				break;
-			default:
-				break;
+			if (item.input == FROM_SELECTION) {
+				out << YAML::Key << "input" << YAML::Value << "selection";
 			}
 
-			if (f.repInput) *outPtr++ = QLatin1Char('X');
-			if (f.saveFirst) *outPtr++ = QLatin1Char('S');
-			if (f.loadAfter) *outPtr++ = QLatin1Char('L');
-
-			*outPtr++ = QLatin1Char(':');
-		} else {
-			if (f.input == FROM_SELECTION) {
-				*outPtr++ = QLatin1Char('R');
-			}
-
-			*outPtr++ = QLatin1Char(':');
-			*outPtr++ = QLatin1Char(' ');
-			*outPtr++ = QLatin1Char('{');
+			out << YAML::Key << "command" << YAML::Value << YAML::Literal << item.cmd.toUtf8().data();
+			out << YAML::EndMap;
 		}
 
-		*outPtr++ = QLatin1Char('\n');
-		*outPtr++ = QLatin1Char('\t');
-		*outPtr++ = QLatin1Char('\t');
-
-		Q_FOREACH (QChar ch, f.cmd) {
-			if (ch == QLatin1Char('\n')) { // and newlines to backslash-n's,
-				*outPtr++ = QLatin1Char('\n');
-				*outPtr++ = QLatin1Char('\t');
-				*outPtr++ = QLatin1Char('\t');
-			} else
-				*outPtr++ = ch;
+		QFile file(filename);
+		if (file.open(QIODevice::WriteOnly)) {
+			file.write(out.c_str());
+			file.write("\n");
 		}
 
-		if (listType == CommandTypes::Macro || listType == CommandTypes::Context) {
-
-			if (outStr.endsWith(QLatin1Char('\t'))) {
-				outStr.chop(1);
-			}
-
-			*outPtr++ = QLatin1Char('}');
-		}
-
-		*outPtr++ = QLatin1Char('\n');
+		return QLatin1String("*");
+	} catch (const YAML::Exception &ex) {
+		qWarning("NEdit: Error writing %s in config directory:\n%s", qPrintable(filename), ex.what());
 	}
 
-	outStr.chop(1);
-	return outStr;
+	return QString();
 }
 
-bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItems, CommandTypes listType) {
+QString writeShellMenuYaml(const std::vector<MenuData> &menuItems) {
+	const QString filename = Settings::shellMenuFile();
+
+	try {
+		YAML::Emitter out;
+		for (const MenuData &entry : menuItems) {
+
+			const MenuItem &item = entry.item;
+
+			out << YAML::BeginDoc;
+			out << YAML::BeginMap;
+			out << YAML::Key << "name" << YAML::Value << item.name.toUtf8().data();
+
+			if (!item.shortcut.isEmpty()) {
+				out << YAML::Key << "shortcut" << YAML::Value << item.shortcut.toString().toUtf8().data();
+			}
+
+			switch (item.input) {
+			case FROM_SELECTION:
+				out << YAML::Key << "input" << YAML::Value << "selection";
+				break;
+			case FROM_WINDOW:
+				out << YAML::Key << "input" << YAML::Value << "window";
+				break;
+			case FROM_EITHER:
+				out << YAML::Key << "input" << YAML::Value << "either";
+				break;
+			case FROM_NONE:
+				out << YAML::Key << "input" << YAML::Value << "none";
+				break;
+			default:
+				break;
+			}
+
+			switch (item.output) {
+			case TO_DIALOG:
+				out << YAML::Key << "output" << YAML::Value << "dialog";
+				break;
+			case TO_NEW_WINDOW:
+				out << YAML::Key << "output" << YAML::Value << "new_window";
+				break;
+			case TO_SAME_WINDOW:
+				out << YAML::Key << "output" << YAML::Value << "same_window";
+				break;
+			default:
+				break;
+			}
+
+			if (item.repInput) {
+				out << YAML::Key << "replace_input" << YAML::Value << true;
+			}
+			if (item.saveFirst) {
+				out << YAML::Key << "save_first" << YAML::Value << true;
+			}
+			if (item.loadAfter) {
+				out << YAML::Key << "load_after" << YAML::Value << true;
+			}
+
+			out << YAML::Key << "command" << YAML::Value << YAML::Literal << item.cmd.toUtf8().data();
+			out << YAML::EndMap;
+		}
+
+		QFile file(filename);
+		if (file.open(QIODevice::WriteOnly)) {
+			file.write(out.c_str());
+			file.write("\n");
+		}
+
+		return QLatin1String("*");
+	} catch (const YAML::Exception &ex) {
+		qWarning("NEdit: Error writing %s in config directory:\n%s", qPrintable(filename), ex.what());
+	}
+
+	return QString();
+}
+
+QString writeContextMenuYaml(const std::vector<MenuData> &menuItems) {
+	const QString filename = Settings::contextMenuFile();
+
+	try {
+		YAML::Emitter out;
+		for (const MenuData &entry : menuItems) {
+
+			const MenuItem &item = entry.item;
+
+			out << YAML::BeginDoc;
+			out << YAML::BeginMap;
+			out << YAML::Key << "name" << YAML::Value << item.name.toUtf8().data();
+
+			if (!item.shortcut.isEmpty()) {
+				out << YAML::Key << "shortcut" << YAML::Value << item.shortcut.toString().toUtf8().data();
+			}
+
+			if (item.input == FROM_SELECTION) {
+				out << YAML::Key << "input" << YAML::Value << "selection";
+			}
+
+			out << YAML::Key << "command" << YAML::Value << YAML::Literal << item.cmd.toUtf8().data();
+			out << YAML::EndMap;
+		}
+
+		QFile file(filename);
+		if (file.open(QIODevice::WriteOnly)) {
+			file.write(out.c_str());
+			file.write("\n");
+		}
+
+		return QLatin1String("*");
+	} catch (const YAML::Exception &ex) {
+		qWarning("NEdit: Error writing %s in config directory:\n%s", qPrintable(filename), ex.what());
+	}
+
+	return QString();
+}
+
+/**
+ * @brief readMenuItem
+ * @param in
+ * @param listType
+ */
+boost::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
 
 	struct ParseError {
 		std::string message;
 	};
 
 	try {
+		// read name field
+		QString nameStr = in.readUntil(QLatin1Char(':'));
+		if (nameStr.isEmpty()) {
+			Raise<ParseError>("no name field");
+		}
+
+		if (in.atEnd()) {
+			Raise<ParseError>("end not expected");
+		}
+
+		++in;
+
+		// read accelerator field
+		QString accStr = in.readUntil(QLatin1Char(':'));
+
+		if (in.atEnd()) {
+			Raise<ParseError>("end not expected");
+		}
+
+		++in;
+
+		// read flags field
+		InSrcs input    = FROM_NONE;
+		OutDests output = TO_SAME_WINDOW;
+		bool repInput   = false;
+		bool saveFirst  = false;
+		bool loadAfter  = false;
+
+		for (; !in.atEnd() && *in != QLatin1Char(':'); ++in) {
+
+			if (listType == CommandTypes::Shell) {
+
+				switch ((*in).toLatin1()) {
+				case 'I':
+					input = FROM_SELECTION;
+					break;
+				case 'A':
+					input = FROM_WINDOW;
+					break;
+				case 'E':
+					input = FROM_EITHER;
+					break;
+				case 'W':
+					output = TO_NEW_WINDOW;
+					break;
+				case 'D':
+					output = TO_DIALOG;
+					break;
+				case 'X':
+					repInput = true;
+					break;
+				case 'S':
+					saveFirst = true;
+					break;
+				case 'L':
+					loadAfter = true;
+					break;
+				default:
+					Raise<ParseError>("unreadable flag field");
+				}
+			} else {
+				switch ((*in).toLatin1()) {
+				case 'R':
+					input = FROM_SELECTION;
+					break;
+				default:
+					Raise<ParseError>("unreadable flag field");
+				}
+			}
+		}
+		++in;
+
+		QString cmdStr;
+
+		// read command field
+		if (listType == CommandTypes::Shell) {
+
+			if (*in++ != QLatin1Char('\n')) {
+				Raise<ParseError>("command must begin with newline");
+			}
+
+			// leading whitespace
+			in.skipWhitespace();
+
+			cmdStr = in.readUntil(QLatin1Char('\n'));
+
+			if (cmdStr.isEmpty()) {
+				Raise<ParseError>("shell command field is empty");
+			}
+
+		} else {
+
+			QString p = copyMacroToEnd(in);
+			if (p.isNull()) {
+				return boost::none;
+			}
+
+			cmdStr = p;
+		}
+
+		in.skipWhitespaceNL();
+
+		// create a menu item record
+		MenuItem menuItem;
+		menuItem.name      = nameStr;
+		menuItem.cmd       = cmdStr;
+		menuItem.input     = input;
+		menuItem.output    = output;
+		menuItem.repInput  = repInput;
+		menuItem.saveFirst = saveFirst;
+		menuItem.loadAfter = loadAfter;
+		menuItem.shortcut  = QKeySequence::fromString(accStr);
+
+		return menuItem;
+	} catch (const ParseError &error) {
+		qWarning("NEdit: Parse error in user defined menu item, %s", error.message.c_str());
+		return boost::none;
+	}
+}
+
+/**
+ * @brief loadMacroMenuYaml
+ * @param menuItems
+ */
+void loadMacroMenuYaml(std::vector<MenuData> &menuItems) {
+	try {
+		std::vector<YAML::Node> menu;
+		const QString filename = Settings::macroMenuFile();
+		if (QFileInfo(filename).exists()) {
+			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
+		} else {
+			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultMacroMenu.yaml"));
+			menu                          = YAML::LoadAll(defaultMenu.data());
+		}
+
+		for (const YAML::Node &entry : menu) {
+			MenuItem menuItem;
+
+			for (auto &&it : entry) {
+				const std::string &key = it.first.as<std::string>();
+				YAML::Node value       = it.second;
+
+				if (key == "name") {
+					menuItem.name = QString::fromUtf8(value.as<std::string>().c_str());
+				} else if (key == "command") {
+					menuItem.cmd = QString::fromUtf8(value.as<std::string>().c_str());
+				} else if (key == "shortcut") {
+					menuItem.shortcut = QKeySequence::fromString(QString::fromUtf8(value.as<std::string>().c_str()));
+				} else if (key == "input") {
+					const std::string &input_type = value.as<std::string>();
+					if (input_type == "selection") {
+						menuItem.input = FROM_SELECTION;
+					} else {
+						qWarning("Invalid input type: %s", input_type.c_str());
+					}
+				}
+
+				// add/replace menu record in the list
+				auto it2 = std::find_if(menuItems.begin(), menuItems.end(), [&menuItem](MenuData &data) {
+					return data.item.name == menuItem.name;
+				});
+
+				if (it2 == menuItems.end()) {
+					menuItems.push_back({menuItem, nullptr});
+				} else {
+					it2->item = menuItem;
+				}
+			}
+		}
+	} catch (const YAML::Exception &ex) {
+		qWarning("NEdit: Invalid YAML:\n%s", ex.what());
+	}
+}
+
+void loadShellMenuYaml(std::vector<MenuData> &menuItems) {
+	try {
+		std::vector<YAML::Node> menu;
+		const QString filename = Settings::shellMenuFile();
+		if (QFileInfo(filename).exists()) {
+			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
+		} else {
+#if defined(Q_OS_LINUX)
+			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultShellMenuLinux.yaml"));
+#elif defined(Q_OS_FREEBSD)
+			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultShellMenuFreeBSD.yaml"));
+#elif defined(Q_OS_UNIX)
+			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultShellUnix.yaml"));
+#elif defined(Q_OS_WIN)
+			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultShellWindows.yaml"));
+#endif
+			menu = YAML::LoadAll(defaultMenu.data());
+		}
+
+		for (const YAML::Node &entry : menu) {
+			MenuItem menuItem;
+
+			for (auto &&it : entry) {
+				const std::string &key = it.first.as<std::string>();
+				YAML::Node value       = it.second;
+
+				if (key == "name") {
+					menuItem.name = QString::fromUtf8(value.as<std::string>().c_str());
+				} else if (key == "command") {
+					menuItem.cmd = QString::fromUtf8(value.as<std::string>().c_str());
+				} else if (key == "shortcut") {
+					menuItem.shortcut = QKeySequence::fromString(QString::fromUtf8(value.as<std::string>().c_str()));
+				} else if (key == "input") {
+					const std::string &input_type = value.as<std::string>();
+					if (input_type == "selection") {
+						menuItem.input = FROM_SELECTION;
+					} else if (input_type == "window") {
+						menuItem.input = FROM_WINDOW;
+					} else if (input_type == "either") {
+						menuItem.input = FROM_EITHER;
+					} else if (input_type == "none") {
+						menuItem.input = FROM_NONE;
+					} else {
+						qWarning("Invalid input type: %s", input_type.c_str());
+					}
+				} else if (key == "output") {
+					const std::string &output_type = value.as<std::string>();
+					if (output_type == "dialog") {
+						menuItem.output = TO_DIALOG;
+					} else if (output_type == "new_window") {
+						menuItem.output = TO_NEW_WINDOW;
+					} else if (output_type == "same_window") {
+						menuItem.output = TO_SAME_WINDOW;
+					} else {
+						qWarning("Invalid output type: %s", output_type.c_str());
+					}
+				} else if (key == "replace_input") {
+					menuItem.repInput = value.as<bool>();
+				} else if (key == "save_first") {
+					menuItem.saveFirst = value.as<bool>();
+				} else if (key == "load_after") {
+					menuItem.loadAfter = value.as<bool>();
+				}
+
+				// add/replace menu record in the list
+				auto it2 = std::find_if(menuItems.begin(), menuItems.end(), [&menuItem](MenuData &data) {
+					return data.item.name == menuItem.name;
+				});
+
+				if (it2 == menuItems.end()) {
+					menuItems.push_back({menuItem, nullptr});
+				} else {
+					it2->item = menuItem;
+				}
+			}
+		}
+	} catch (const YAML::Exception &ex) {
+		qWarning("NEdit: Invalid YAML:\n%s", ex.what());
+	}
+}
+
+/**
+ * @brief loadContextMenuYaml
+ * @param menuItems
+ */
+void loadContextMenuYaml(std::vector<MenuData> &menuItems) {
+	try {
+		std::vector<YAML::Node> menu;
+		const QString filename = Settings::contextMenuFile();
+		if (QFileInfo(filename).exists()) {
+			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
+		} else {
+			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultContextMenu.yaml"));
+			menu                          = YAML::LoadAll(defaultMenu.data());
+		}
+
+		for (const YAML::Node &entry : menu) {
+			MenuItem menuItem;
+
+			for (auto &&it : entry) {
+				const std::string &key = it.first.as<std::string>();
+				YAML::Node value       = it.second;
+
+				if (key == "name") {
+					menuItem.name = QString::fromUtf8(value.as<std::string>().c_str());
+				} else if (key == "command") {
+					menuItem.cmd = QString::fromUtf8(value.as<std::string>().c_str());
+				} else if (key == "shortcut") {
+					menuItem.shortcut = QKeySequence::fromString(QString::fromUtf8(value.as<std::string>().c_str()));
+				} else if (key == "input") {
+					const std::string &input_type = value.as<std::string>();
+					if (input_type == "selection") {
+						menuItem.input = FROM_SELECTION;
+					} else {
+						qWarning("Invalid input type: %s", input_type.c_str());
+					}
+				}
+
+				// add/replace menu record in the list
+				auto it2 = std::find_if(menuItems.begin(), menuItems.end(), [&menuItem](MenuData &data) {
+					return data.item.name == menuItem.name;
+				});
+
+				if (it2 == menuItems.end()) {
+					menuItems.push_back({menuItem, nullptr});
+				} else {
+					it2->item = menuItem;
+				}
+			}
+		}
+	} catch (const YAML::Exception &ex) {
+		qWarning("NEdit: Invalid YAML:\n%s", ex.what());
+	}
+}
+
+/**
+ * @brief loadMenuItemString
+ * @param inString
+ * @param menuItems
+ * @param listType
+ */
+void loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItems, CommandTypes listType) {
+
+	if (inString == QLatin1String("*")) {
+		if (listType == CommandTypes::Context) {
+			loadContextMenuYaml(menuItems);
+		} else if (listType == CommandTypes::Macro) {
+			loadMacroMenuYaml(menuItems);
+		} else if (listType == CommandTypes::Shell) {
+			loadShellMenuYaml(menuItems);
+		}
+	} else {
 		Input in(&inString);
 
 		Q_FOREVER {
@@ -207,121 +611,13 @@ bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 
 			// end of string in proper place
 			if (in.atEnd()) {
-				return true;
+				return;
 			}
 
-			// read name field
-			QString nameStr = in.readUntil(QLatin1Char(':'));
-			if (nameStr.isEmpty()) {
-				Raise<ParseError>("no name field");
+			boost::optional<MenuItem> f = readMenuItem(in, listType);
+			if (!f) {
+				break;
 			}
-
-			if (in.atEnd()) {
-				Raise<ParseError>("end not expected");
-			}
-
-			++in;
-
-			// read accelerator field
-			QString accStr = in.readUntil(QLatin1Char(':'));
-
-			if (in.atEnd()) {
-				Raise<ParseError>("end not expected");
-			}
-
-			++in;
-
-			// read flags field
-			InSrcs input    = FROM_NONE;
-			OutDests output = TO_SAME_WINDOW;
-			bool repInput   = false;
-			bool saveFirst  = false;
-			bool loadAfter  = false;
-
-			for (; !in.atEnd() && *in != QLatin1Char(':'); ++in) {
-
-				if (listType == CommandTypes::Shell) {
-
-					switch ((*in).toLatin1()) {
-					case 'I':
-						input = FROM_SELECTION;
-						break;
-					case 'A':
-						input = FROM_WINDOW;
-						break;
-					case 'E':
-						input = FROM_EITHER;
-						break;
-					case 'W':
-						output = TO_NEW_WINDOW;
-						break;
-					case 'D':
-						output = TO_DIALOG;
-						break;
-					case 'X':
-						repInput = true;
-						break;
-					case 'S':
-						saveFirst = true;
-						break;
-					case 'L':
-						loadAfter = true;
-						break;
-					default:
-						Raise<ParseError>("unreadable flag field");
-					}
-				} else {
-					switch ((*in).toLatin1()) {
-					case 'R':
-						input = FROM_SELECTION;
-						break;
-					default:
-						Raise<ParseError>("unreadable flag field");
-					}
-				}
-			}
-			++in;
-
-			QString cmdStr;
-
-			// read command field
-			if (listType == CommandTypes::Shell) {
-
-				if (*in++ != QLatin1Char('\n')) {
-					Raise<ParseError>("command must begin with newline");
-				}
-
-				// leading whitespace
-				in.skipWhitespace();
-
-				cmdStr = in.readUntil(QLatin1Char('\n'));
-
-				if (cmdStr.isEmpty()) {
-					Raise<ParseError>("shell command field is empty");
-				}
-
-			} else {
-
-				QString p = copyMacroToEnd(in);
-				if (p.isNull()) {
-					return false;
-				}
-
-				cmdStr = p;
-			}
-
-			in.skipWhitespaceNL();
-
-			// create a menu item record
-			auto f       = std::make_unique<MenuItem>();
-			f->name      = nameStr;
-			f->cmd       = cmdStr;
-			f->input     = input;
-			f->output    = output;
-			f->repInput  = repInput;
-			f->saveFirst = saveFirst;
-			f->loadAfter = loadAfter;
-			f->shortcut  = QKeySequence::fromString(accStr);
 
 			// add/replace menu record in the list
 			auto it = std::find_if(menuItems.begin(), menuItems.end(), [&f](MenuData &data) {
@@ -334,9 +630,6 @@ bool loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 				it->item = *f;
 			}
 		}
-	} catch (const ParseError &error) {
-		qWarning("NEdit: Parse error in user defined menu item, %s", error.message.c_str());
-		return false;
 	}
 }
 
@@ -469,15 +762,15 @@ MenuData *find_menu_item(const QString &name, CommandTypes type) {
 ** of the shell cmd list, macro menu and background menus.
 */
 QString write_shell_commands_string() {
-	return writeMenuItemString(ShellMenuData, CommandTypes::Shell);
+	return writeShellMenuYaml(ShellMenuData);
 }
 
 QString write_macro_commands_string() {
-	return writeMenuItemString(MacroMenuData, CommandTypes::Macro);
+	return writeMacroMenuYaml(MacroMenuData);
 }
 
 QString write_bg_menu_commands_string() {
-	return writeMenuItemString(BGMenuData, CommandTypes::Context);
+	return writeContextMenuYaml(BGMenuData);
 }
 
 /*
@@ -485,16 +778,16 @@ QString write_bg_menu_commands_string() {
 ** background menu and add them to the internal list used for constructing
 ** menus
 */
-bool load_shell_commands_string(const QString &inString) {
-	return loadMenuItemString(inString, ShellMenuData, CommandTypes::Shell);
+void load_shell_commands_string(const QString &inString) {
+	loadMenuItemString(inString, ShellMenuData, CommandTypes::Shell);
 }
 
-bool load_macro_commands_string(const QString &inString) {
-	return loadMenuItemString(inString, MacroMenuData, CommandTypes::Macro);
+void load_macro_commands_string(const QString &inString) {
+	loadMenuItemString(inString, MacroMenuData, CommandTypes::Macro);
 }
 
-bool load_bg_menu_commands_string(const QString &inString) {
-	return loadMenuItemString(inString, BGMenuData, CommandTypes::Context);
+void load_bg_menu_commands_string(const QString &inString) {
+	loadMenuItemString(inString, BGMenuData, CommandTypes::Context);
 }
 
 /*

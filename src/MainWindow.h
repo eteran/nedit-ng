@@ -26,7 +26,7 @@
 #include "ui_MainWindow.h"
 
 class TextArea;
-class PathInfo;
+struct PathInfo;
 class DocumentWidget;
 class DialogReplace;
 class DialogFind;
@@ -157,7 +157,7 @@ private:
 	void editIFind_returnPressed();
 	void connectSlots();
 
-public Q_SLOTS:
+public:
 	// internal variants of signals
 	void action_New_Window(DocumentWidget *document);
 	void action_Set_Auto_Indent(DocumentWidget *document, IndentStyle state);
@@ -280,137 +280,137 @@ public:
 	void macroTriggered(QAction *action);
 	void shellTriggered(QAction *action);
 
-public Q_SLOTS:
+private:
 #ifdef PER_TAB_CLOSE
-	void on_tabWidget_tabCloseRequested(int index);
+	void tabWidget_tabCloseRequested(int index);
 #endif
-	void on_tabWidget_tabCountChanged(int count);
-	void on_tabWidget_currentChanged(int index);
-	void on_tabWidget_customContextMenuRequested(const QPoint &pos);
+	void tabWidget_tabCountChanged(int count);
+	void tabWidget_currentChanged(int index);
+	void tabWidget_customContextMenuRequested(const QPoint &pos);
 
-public Q_SLOTS:
+public:
 	// File Menu
-	void on_action_New_triggered();
-	void on_action_New_Window_triggered();
-	void on_action_Open_triggered();
-	void on_action_Select_All_triggered();
-	void on_action_Open_Selected_triggered();
-	void on_action_Close_triggered();
-	void on_action_Include_File_triggered();
-	void on_action_Load_Calltips_File_triggered();
-	void on_action_Load_Tags_File_triggered();
-	void on_action_Load_Macro_File_triggered();
-	void on_action_Print_triggered();
-	void on_action_Print_Selection_triggered();
-	void on_action_Save_triggered();
-	void on_action_Save_As_triggered();
-	void on_action_Revert_to_Saved_triggered();
-	void on_action_Exit_triggered();
+	void action_New_triggered();
+	void action_New_Window_triggered();
+	void action_Open_triggered();
+	void action_Select_All_triggered();
+	void action_Open_Selected_triggered();
+	void action_Close_triggered();
+	void action_Include_File_triggered();
+	void action_Load_Calltips_File_triggered();
+	void action_Load_Tags_File_triggered();
+	void action_Load_Macro_File_triggered();
+	void action_Print_triggered();
+	void action_Print_Selection_triggered();
+	void action_Save_triggered();
+	void action_Save_As_triggered();
+	void action_Revert_to_Saved_triggered();
+	void action_Exit_triggered();
 
 	// Edit Menu
-	void on_action_Undo_triggered();
-	void on_action_Redo_triggered();
-	void on_action_Cut_triggered();
-	void on_action_Copy_triggered();
-	void on_action_Paste_triggered();
-	void on_action_Paste_Column_triggered();
-	void on_action_Delete_triggered();
-	void on_action_Shift_Left_triggered();
-	void on_action_Shift_Right_triggered();
-	void on_action_Lower_case_triggered();
-	void on_action_Upper_case_triggered();
-	void on_action_Fill_Paragraph_triggered();
-	void on_action_Insert_Form_Feed_triggered();
-	void on_action_Insert_Ctrl_Code_triggered();
+	void action_Undo_triggered();
+	void action_Redo_triggered();
+	void action_Cut_triggered();
+	void action_Copy_triggered();
+	void action_Paste_triggered();
+	void action_Paste_Column_triggered();
+	void action_Delete_triggered();
+	void action_Shift_Left_triggered();
+	void action_Shift_Right_triggered();
+	void action_Lower_case_triggered();
+	void action_Upper_case_triggered();
+	void action_Fill_Paragraph_triggered();
+	void action_Insert_Form_Feed_triggered();
+	void action_Insert_Ctrl_Code_triggered();
 
-	void on_action_Goto_Line_Number_triggered();
-	void on_action_Goto_Selected_triggered();
-	void on_action_Find_triggered();
-	void on_action_Find_Again_triggered();
-	void on_action_Find_Selection_triggered();
-	void on_action_Find_Incremental_triggered();
-	void on_action_Replace_triggered();
-	void on_action_Replace_Find_Again_triggered();
-	void on_action_Replace_Again_triggered();
-	void on_action_Mark_triggered();
-	void on_action_Goto_Mark_triggered();
-	void on_action_Goto_Matching_triggered();
-	void on_action_Show_Calltip_triggered();
-	void on_action_Find_Definition_triggered();
-	void on_action_Execute_Command_triggered();
-	void on_action_Execute_Command_Line_triggered();
-	void on_action_Filter_Selection_triggered();
-	void on_action_Cancel_Shell_Command_triggered();
+	void action_Goto_Line_Number_triggered();
+	void action_Goto_Selected_triggered();
+	void action_Find_triggered();
+	void action_Find_Again_triggered();
+	void action_Find_Selection_triggered();
+	void action_Find_Incremental_triggered();
+	void action_Replace_triggered();
+	void action_Replace_Find_Again_triggered();
+	void action_Replace_Again_triggered();
+	void action_Mark_triggered();
+	void action_Goto_Mark_triggered();
+	void action_Goto_Matching_triggered();
+	void action_Show_Calltip_triggered();
+	void action_Find_Definition_triggered();
+	void action_Execute_Command_triggered();
+	void action_Execute_Command_Line_triggered();
+	void action_Filter_Selection_triggered();
+	void action_Cancel_Shell_Command_triggered();
 
-	void on_action_Detach_Tab_triggered();
-	void on_action_Split_Pane_triggered();
-	void on_action_Close_Pane_triggered();
-	void on_action_Move_Tab_To_triggered();
+	void action_Detach_Tab_triggered();
+	void action_Split_Pane_triggered();
+	void action_Close_Pane_triggered();
+	void action_Move_Tab_To_triggered();
 
-	void on_action_Statistics_Line_toggled(bool state);
-	void on_action_Incremental_Search_Line_toggled(bool state);
-	void on_action_Show_Line_Numbers_toggled(bool state);
-	void on_action_Wrap_Margin_triggered();
-	void on_action_Tab_Stops_triggered();
-	void on_action_Text_Fonts_triggered();
-	void on_action_Highlight_Syntax_toggled(bool state);
-	void on_action_Apply_Backlighting_toggled(bool state);
-	void on_action_Make_Backup_Copy_toggled(bool state);
-	void on_action_Incremental_Backup_toggled(bool state);
-	void on_action_Matching_Syntax_toggled(bool state);
-	void on_action_Overtype_toggled(bool state);
-	void on_action_Read_Only_toggled(bool state);
-	void on_action_Save_Defaults_triggered();
+	void action_Statistics_Line_toggled(bool state);
+	void action_Incremental_Search_Line_toggled(bool state);
+	void action_Show_Line_Numbers_toggled(bool state);
+	void action_Wrap_Margin_triggered();
+	void action_Tab_Stops_triggered();
+	void action_Text_Fonts_triggered();
+	void action_Highlight_Syntax_toggled(bool state);
+	void action_Apply_Backlighting_toggled(bool state);
+	void action_Make_Backup_Copy_toggled(bool state);
+	void action_Incremental_Backup_toggled(bool state);
+	void action_Matching_Syntax_toggled(bool state);
+	void action_Overtype_toggled(bool state);
+	void action_Read_Only_toggled(bool state);
+	void action_Save_Defaults_triggered();
 
 	// Preferences Defaults
-	void on_action_Default_Language_Modes_triggered();
-	void on_action_Default_Program_Smart_Indent_triggered();
-	void on_action_Default_Wrap_Margin_triggered();
-	void on_action_Default_Command_Shell_triggered();
-	void on_action_Default_Tab_Stops_triggered();
-	void on_action_Default_Text_Fonts_triggered();
-	void on_action_Default_Colors_triggered();
-	void on_action_Default_Shell_Menu_triggered();
-	void on_action_Default_Macro_Menu_triggered();
-	void on_action_Default_Window_Background_Menu_triggered();
-	void on_action_Default_Sort_Open_Prev_Menu_toggled(bool state);
-	void on_action_Default_Show_Path_In_Windows_Menu_toggled(bool state);
-	void on_action_Default_Customize_Window_Title_triggered();
-	void on_action_Default_Search_Verbose_toggled(bool state);
-	void on_action_Default_Search_Wrap_Around_toggled(bool state);
-	void on_action_Default_Search_Beep_On_Search_Wrap_toggled(bool state);
-	void on_action_Default_Search_Keep_Dialogs_Up_toggled(bool state);
-	void on_action_Default_Syntax_Recognition_Patterns_triggered();
-	void on_action_Default_Syntax_Text_Drawing_Styles_triggered();
-	void on_action_Default_Apply_Backlighting_toggled(bool state);
-	void on_action_Default_Tab_Open_File_In_New_Tab_toggled(bool state);
-	void on_action_Default_Tab_Show_Tab_Bar_toggled(bool state);
-	void on_action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled(bool state);
-	void on_action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool state);
-	void on_action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state);
-	void on_action_Default_Show_Tooltips_toggled(bool state);
-	void on_action_Default_Statistics_Line_toggled(bool state);
-	void on_action_Default_Incremental_Search_Line_toggled(bool state);
-	void on_action_Default_Show_Line_Numbers_toggled(bool state);
-	void on_action_Default_Make_Backup_Copy_toggled(bool state);
-	void on_action_Default_Incremental_Backup_toggled(bool state);
-	void on_action_Default_Matching_Syntax_Based_toggled(bool state);
-	void on_action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state);
-	void on_action_Default_Popups_Under_Pointer_toggled(bool state);
-	void on_action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state);
-	void on_action_Default_Warnings_Files_Modified_Externally_toggled(bool state);
-	void on_action_Default_Warnings_Check_Modified_File_Contents_toggled(bool state);
-	void on_action_Default_Warnings_On_Exit_toggled(bool state);
-	void on_action_Learn_Keystrokes_triggered();
-	void on_action_Finish_Learn_triggered();
-	void on_action_Cancel_Learn_triggered();
-	void on_action_Repeat_triggered();
-	void on_action_Replay_Keystrokes_triggered();
-	void on_action_About_triggered();
-	void on_action_About_Qt_triggered();
-	void on_action_Help_triggered();
+	void action_Default_Language_Modes_triggered();
+	void action_Default_Program_Smart_Indent_triggered();
+	void action_Default_Wrap_Margin_triggered();
+	void action_Default_Command_Shell_triggered();
+	void action_Default_Tab_Stops_triggered();
+	void action_Default_Text_Fonts_triggered();
+	void action_Default_Colors_triggered();
+	void action_Default_Shell_Menu_triggered();
+	void action_Default_Macro_Menu_triggered();
+	void action_Default_Window_Background_Menu_triggered();
+	void action_Default_Sort_Open_Prev_Menu_toggled(bool state);
+	void action_Default_Show_Path_In_Windows_Menu_toggled(bool state);
+	void action_Default_Customize_Window_Title_triggered();
+	void action_Default_Search_Verbose_toggled(bool state);
+	void action_Default_Search_Wrap_Around_toggled(bool state);
+	void action_Default_Search_Beep_On_Search_Wrap_toggled(bool state);
+	void action_Default_Search_Keep_Dialogs_Up_toggled(bool state);
+	void action_Default_Syntax_Recognition_Patterns_triggered();
+	void action_Default_Syntax_Text_Drawing_Styles_triggered();
+	void action_Default_Apply_Backlighting_toggled(bool state);
+	void action_Default_Tab_Open_File_In_New_Tab_toggled(bool state);
+	void action_Default_Tab_Show_Tab_Bar_toggled(bool state);
+	void action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled(bool state);
+	void action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool state);
+	void action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state);
+	void action_Default_Show_Tooltips_toggled(bool state);
+	void action_Default_Statistics_Line_toggled(bool state);
+	void action_Default_Incremental_Search_Line_toggled(bool state);
+	void action_Default_Show_Line_Numbers_toggled(bool state);
+	void action_Default_Make_Backup_Copy_toggled(bool state);
+	void action_Default_Incremental_Backup_toggled(bool state);
+	void action_Default_Matching_Syntax_Based_toggled(bool state);
+	void action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state);
+	void action_Default_Popups_Under_Pointer_toggled(bool state);
+	void action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state);
+	void action_Default_Warnings_Files_Modified_Externally_toggled(bool state);
+	void action_Default_Warnings_Check_Modified_File_Contents_toggled(bool state);
+	void action_Default_Warnings_On_Exit_toggled(bool state);
+	void action_Learn_Keystrokes_triggered();
+	void action_Finish_Learn_triggered();
+	void action_Cancel_Learn_triggered();
+	void action_Repeat_triggered();
+	void action_Replay_Keystrokes_triggered();
+	void action_About_triggered();
+	void action_About_Qt_triggered();
+	void action_Help_triggered();
 
-private Q_SLOTS:
+private:
 	void focusChanged(QWidget *from, QWidget *to);
 
 public Q_SLOTS:
