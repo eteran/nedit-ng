@@ -87,8 +87,9 @@ QString writeMenuItemString(const std::vector<MenuItem> &menuItems, bool isShell
 				*outPtr++ = QLatin1Char('\n');
 				*outPtr++ = QLatin1Char('\t');
 				*outPtr++ = QLatin1Char('\t');
-			} else
+			} else {
 				*outPtr++ = ch;
+			}
 		}
 
 		if (!isShellCommand) {

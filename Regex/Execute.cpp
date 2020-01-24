@@ -1144,7 +1144,7 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 #if 1 // NOTE(eteran): possible fix for issue #97
 			if (!eContext.Recursion_Limit_Exceeded && !ret_val && end_of_string(str)) {
 #else
-			if (!eContext.Recursion_Limit_Exceeded && !ret_val && AT_END_OF_STRING(str) && str != end) {
+			if (!eContext.Recursion_Limit_Exceeded && !ret_val && end_of_string(str) && str != end) {
 #endif
 				if (attempt(re, str)) {
 					ret_val = true;

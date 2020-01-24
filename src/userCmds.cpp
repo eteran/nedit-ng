@@ -197,9 +197,15 @@ QString writeShellMenuYaml(const std::vector<MenuData> &menuItems) {
 				break;
 			}
 
-			if (item.repInput) out << YAML::Key << "replace_input" << YAML::Value << true;
-			if (item.saveFirst) out << YAML::Key << "save_first" << YAML::Value << true;
-			if (item.loadAfter) out << YAML::Key << "load_after" << YAML::Value << true;
+			if (item.repInput) {
+				out << YAML::Key << "replace_input" << YAML::Value << true;
+			}
+			if (item.saveFirst) {
+				out << YAML::Key << "save_first" << YAML::Value << true;
+			}
+			if (item.loadAfter) {
+				out << YAML::Key << "load_after" << YAML::Value << true;
+			}
 
 			out << YAML::Key << "command" << YAML::Value << YAML::Literal << item.cmd.toUtf8().data();
 			out << YAML::EndMap;

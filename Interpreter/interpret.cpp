@@ -937,8 +937,9 @@ static int pushSymVal() {
 		if (std::error_code ec = (to_subroutine(s->value))(Context.FocusDocument, {}, &symVal)) {
 			return execError(ec, s->name.c_str());
 		}
-	} else
+	} else {
 		return execError("reading non-variable: %s", s->name.c_str());
+	}
 
 	if (is_unset(symVal)) {
 		return execError("variable not set: %s", s->name.c_str());

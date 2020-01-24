@@ -1,8 +1,8 @@
 
 #include "Help.h"
 #include "Util/version.h"
-#include <QMessageBox>
 #include <QDesktopServices>
+#include <QMessageBox>
 #include <QUrl>
 
 namespace Help {
@@ -14,7 +14,7 @@ namespace Help {
 void displayTopic(Topic topic) {
 
 	QUrl url;
-	switch(topic) {
+	switch (topic) {
 	case Help::Topic::Start:
 		url = QString(QLatin1String("https://eteran.github.io/nedit-ng/%1.%2/")).arg(NEDIT_VERSION_MAJ).arg(NEDIT_VERSION_REV);
 		break;
