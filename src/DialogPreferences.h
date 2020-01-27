@@ -9,39 +9,45 @@
 #include <QLineEdit>
 #include <QListWidget>
 #include <QStackedWidget>
+#include <QColor>
 #include <QString>
+#include "ui_DialogPreferences.h"
 
 class DialogPreferences : public QDialog {
 	Q_OBJECT
-private:
-	struct Page {
-		QWidget *widget;
-		QString name;
-		QIcon icon;
-	};
-
 public:
 	explicit DialogPreferences(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogPreferences() override = default;
 
 private:
-	void addPage(Page page);
+	void setupFonts();
+	void setupColors();
+	void setupDisplay();
+	void setupGeneral();
+
+private:
+	void applyFonts();
+	void applyColors();
+	void applyDisplay();
+	void applyGeneral();
 
 private:
 	void buttonBoxClicked(QAbstractButton *button);
 	void applySettings();
 	void acceptDialog();
+	QColor chooseColor(QPushButton *button, const QColor &currentColor);
 
 private:
-	Page createPage1();
-	Page createPage2();
-	Page createPage3();
-
-private:
-	QStackedWidget *stackedLayout_;
-	QLineEdit *filter_;
-	QDialogButtonBox *buttonBox_;
-	QListWidget *contentsWidget_;
+	QColor textFG_;
+	QColor textBG_;
+	QColor selectionFG_;
+	QColor selectionBG_;
+	QColor matchFG_;
+	QColor matchBG_;
+	QColor lineNumbersFG_;
+	QColor lineNumbersBG_;
+	QColor cursorFG_;
+	Ui::DialogPreferences ui;
 };
 
 #endif

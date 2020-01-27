@@ -70,6 +70,9 @@ add_executable(nedit-ng
 	DialogAbout.cpp
 	DialogAbout.h
 	DialogAbout.ui
+	DialogPreferences.cpp
+	DialogPreferences.h
+	DialogPreferences.ui
 	DialogColors.cpp
 	DialogColors.h
 	DialogColors.ui

@@ -1,12 +1,48 @@
 
 #include "DialogPreferences.h"
-#include "BorderLayout.h"
-#include "PageEditor.h"
-#include <QLabel>
-#include <QPlainTextEdit>
-#include <QTextBrowser>
+#include "Preferences.h"
+#include "Font.h"
+#include "Settings.h"
+#include "X11Colors.h"
+#include "MainWindow.h"
+#include "DocumentWidget.h"
+#include "DialogSmartIndent.h"
+#include <QPainter>
+#include <QColorDialog>
+#include <QMessageBox>
+
+namespace {
 
 constexpr int CategoryIconSize = 48;
+
+/**
+ * @brief toString
+ * @param color
+ * @return
+ */
+QString toString(const QColor &color) {
+	return QString(QLatin1String("#%1")).arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0'));
+}
+
+/**
+ * @brief toIcon
+ * @param color
+ * @return
+ */
+QIcon toIcon(const QColor &color) {
+	QPixmap pixmap(16, 16);
+	QPainter painter(&pixmap);
+
+	painter.fillRect(1, 1, 30, 30, color);
+
+	painter.setPen(Qt::black);
+	painter.drawRect(0, 0, 32, 32);
+
+	return QIcon(pixmap);
+}
+
+}
+
 
 /**
  * @brief DialogPreferences::DialogPreferences
@@ -16,68 +52,209 @@ constexpr int CategoryIconSize = 48;
 DialogPreferences::DialogPreferences(QWidget *parent, Qt::WindowFlags f)
 	: QDialog(parent, f) {
 
-	setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-	setWindowTitle(tr("Preferences"));
+	ui.setupUi(this);
 
-	// setup the navigation
-	auto layoutLeft = new QVBoxLayout;
-	filter_         = new QLineEdit;
-	contentsWidget_ = new QListWidget;
-	filter_->setPlaceholderText(tr("Filter"));
-	layoutLeft->addWidget(filter_);
-	layoutLeft->addWidget(contentsWidget_);
+	// Setup navigation
+	ui.listWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+	ui.listWidget->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+	ui.listWidget->setIconSize(QSize(CategoryIconSize, CategoryIconSize));
+	ui.listWidget->setMovement(QListView::Static);
 
-	contentsWidget_->setSelectionMode(QAbstractItemView::SingleSelection);
-	contentsWidget_->setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-	contentsWidget_->setIconSize(QSize(CategoryIconSize, CategoryIconSize));
-	contentsWidget_->setMovement(QListView::Static);
+	//auto filter = new QSortFilterProxyModel(this);
+	//ui.listWidget->setModel(filter);
 
-	// setup the buttonbox
-	buttonBox_ = new QDialogButtonBox;
-	buttonBox_->setStandardButtons(QDialogButtonBox::Ok | QDialogButtonBox::Apply | QDialogButtonBox::Cancel);
-	connect(buttonBox_, &QDialogButtonBox::rejected, this, &DialogPreferences::close);
-	connect(buttonBox_, &QDialogButtonBox::clicked, this, &DialogPreferences::buttonBoxClicked);
+	connect(ui.listWidget, &QListWidget::currentRowChanged, this, [this](int index) {
+		ui.pageTitle->setText(ui.listWidget->item(index)->text());
+		ui.pageContainer->setCurrentIndex(index);
+	});
 
-	// setup center!
-	stackedLayout_ = new QStackedWidget;
+	ui.listWidget->setCurrentRow(0);
 
-	addPage(createPage1());
-	addPage(createPage2());
-	addPage(createPage3());
+	// setup the button box
+	connect(ui.buttonBox, &QDialogButtonBox::rejected, this, &DialogPreferences::close);
+	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogPreferences::buttonBoxClicked);
 
-	connect(contentsWidget_, &QListWidget::currentRowChanged, stackedLayout_, &QStackedWidget::setCurrentIndex);
-	contentsWidget_->setCurrentRow(0);
-
-	auto layout = new BorderLayout;
-	layout->addWidget(stackedLayout_, BorderLayout::Center);
-	layout->add(layoutLeft, BorderLayout::West);
-	layout->addWidget(buttonBox_, BorderLayout::South);
-	setLayout(layout);
+	setupFonts();
+	setupColors();
+	setupDisplay();
+	setupGeneral();
 }
 
 /**
- * @brief DialogPreferences::addPage
- * @param page
+ * @brief DialogPreferences::applyFonts
  */
-void DialogPreferences::addPage(Page page) {
+void DialogPreferences::applyFonts() {
+	QFont font = ui.comboFont->currentFont();
+	font.setPointSize(ui.comboFontSize->currentData().toInt());
+	QString fontName = font.toString();
 
-	auto widget = new QWidget;
+	Preferences::SetPrefFont(fontName);
 
-	auto label = new QLabel(page.name);
-	QFont font = label->font();
-	font.setPointSize(16);
-	font.setBold(true);
-	label->setFont(font);
-
-	auto layout = new QVBoxLayout;
-	layout->addWidget(label);
-	layout->addWidget(page.widget);
-
-	widget->setLayout(layout);
-	stackedLayout_->addWidget(widget);
-
-	contentsWidget_->addItem(new QListWidgetItem(page.icon, page.name));
+	for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+		document->action_Set_Fonts(fontName);
+	}
 }
+
+/**
+ * @brief DialogPreferences::applyColors
+ */
+void DialogPreferences::applyColors() {
+	for (DocumentWidget *document : DocumentWidget::allDocuments()) {
+		document->setColors(
+			textFG_,
+			textBG_,
+			selectionFG_,
+			selectionBG_,
+			matchFG_,
+			matchBG_,
+			lineNumbersFG_,
+			lineNumbersBG_,
+			cursorFG_);
+	}
+
+	Preferences::SetPrefColorName(TEXT_FG_COLOR, toString(textFG_));
+	Preferences::SetPrefColorName(TEXT_BG_COLOR, toString(textBG_));
+	Preferences::SetPrefColorName(SELECT_FG_COLOR, toString(selectionFG_));
+	Preferences::SetPrefColorName(SELECT_BG_COLOR, toString(selectionBG_));
+	Preferences::SetPrefColorName(HILITE_FG_COLOR, toString(matchFG_));
+	Preferences::SetPrefColorName(HILITE_BG_COLOR, toString(matchBG_));
+	Preferences::SetPrefColorName(LINENO_FG_COLOR, toString(lineNumbersFG_));
+	Preferences::SetPrefColorName(LINENO_BG_COLOR, toString(lineNumbersBG_));
+	Preferences::SetPrefColorName(CURSOR_FG_COLOR, toString(cursorFG_));
+}
+
+void DialogPreferences::setupGeneral() {
+
+	ui.checkMakeBackup->setChecked(Preferences::GetPrefAutoSave());
+	ui.checkIncrementalBackup->setChecked(Preferences::GetPrefSaveOldVersion());
+
+}
+
+void DialogPreferences::applyGeneral() {
+
+	Preferences::SetPrefAutoSave(ui.checkMakeBackup->isChecked());
+	Preferences::SetPrefSaveOldVersion(ui.checkIncrementalBackup->isChecked());
+
+	std::vector<MainWindow *> windows = MainWindow::allWindows();
+	for(MainWindow *win : windows) {
+		win->action_Make_Backup_Copy_toggled(ui.checkMakeBackup->isChecked());
+		win->action_Incremental_Backup_toggled(ui.checkIncrementalBackup->isChecked());
+	}
+
+}
+
+
+
+void DialogPreferences::setupDisplay() {
+	ui.checkShowStatistics->setChecked(Preferences::GetPrefStatsLine());
+	ui.checkShowIncrementalSearch->setChecked(Preferences::GetPrefISearchLine());
+	ui.checkShowLineNumbers->setChecked(Preferences::GetPrefLineNums());
+	ui.checkApplyBacklighting->setChecked(Preferences::GetPrefBacklightChars());
+}
+
+/**
+ * @brief DialogPreferences::setupFonts
+ */
+void DialogPreferences::setupFonts() {
+	const QFont font = Font::fromString(Preferences::GetPrefFontName());
+
+	for (int size : QFontDatabase::standardSizes()) {
+		ui.comboFontSize->addItem(tr("%1").arg(size), size);
+	}
+
+	ui.comboFont->setCurrentFont(font);
+
+	const int n = ui.comboFontSize->findData(font.pointSize());
+	if (n != -1) {
+		ui.comboFontSize->setCurrentIndex(n);
+	}
+}
+
+void DialogPreferences::setupColors() {
+	textFG_        = X11Colors::fromString(Preferences::GetPrefColorName(TEXT_FG_COLOR));
+	textBG_        = X11Colors::fromString(Preferences::GetPrefColorName(TEXT_BG_COLOR));
+	selectionFG_   = X11Colors::fromString(Preferences::GetPrefColorName(SELECT_FG_COLOR));
+	selectionBG_   = X11Colors::fromString(Preferences::GetPrefColorName(SELECT_BG_COLOR));
+	matchFG_       = X11Colors::fromString(Preferences::GetPrefColorName(HILITE_FG_COLOR));
+	matchBG_       = X11Colors::fromString(Preferences::GetPrefColorName(HILITE_BG_COLOR));
+	lineNumbersFG_ = X11Colors::fromString(Preferences::GetPrefColorName(LINENO_FG_COLOR));
+	lineNumbersBG_ = X11Colors::fromString(Preferences::GetPrefColorName(LINENO_BG_COLOR));
+	cursorFG_      = X11Colors::fromString(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
+
+	ui.pushButtonFG->setText(Preferences::GetPrefColorName(TEXT_FG_COLOR));
+	ui.pushButtonBG->setText(Preferences::GetPrefColorName(TEXT_BG_COLOR));
+	ui.pushButtonSelectionFG->setText(Preferences::GetPrefColorName(SELECT_FG_COLOR));
+	ui.pushButtonSelectionBG->setText(Preferences::GetPrefColorName(SELECT_BG_COLOR));
+	ui.pushButtonMatchFG->setText(Preferences::GetPrefColorName(HILITE_FG_COLOR));
+	ui.pushButtonMatchBG->setText(Preferences::GetPrefColorName(HILITE_BG_COLOR));
+	ui.pushButtonLineNumbersFG->setText(Preferences::GetPrefColorName(LINENO_FG_COLOR));
+	ui.pushButtonLineNumbersBG->setText(Preferences::GetPrefColorName(LINENO_BG_COLOR));
+	ui.pushButtonCursor->setText(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
+
+	ui.pushButtonFG->setIcon(toIcon(textFG_));
+	ui.pushButtonBG->setIcon(toIcon(textBG_));
+	ui.pushButtonSelectionFG->setIcon(toIcon(selectionFG_));
+	ui.pushButtonSelectionBG->setIcon(toIcon(selectionBG_));
+	ui.pushButtonMatchFG->setIcon(toIcon(matchFG_));
+	ui.pushButtonMatchBG->setIcon(toIcon(matchBG_));
+	ui.pushButtonLineNumbersFG->setIcon(toIcon(lineNumbersFG_));
+	ui.pushButtonLineNumbersBG->setIcon(toIcon(lineNumbersBG_));
+	ui.pushButtonCursor->setIcon(toIcon(cursorFG_));
+
+	connect(ui.pushButtonFG, &QPushButton::clicked, this, [this]() {
+		textFG_ = chooseColor(ui.pushButtonFG, textFG_);
+	});
+
+	connect(ui.pushButtonBG, &QPushButton::clicked, this, [this]() {
+		textBG_ = chooseColor(ui.pushButtonBG, textBG_);
+	});
+
+	connect(ui.pushButtonSelectionFG, &QPushButton::clicked, this, [this]() {
+		selectionFG_ = chooseColor(ui.pushButtonSelectionFG, selectionFG_);
+	});
+
+	connect(ui.pushButtonSelectionBG, &QPushButton::clicked, this, [this]() {
+		selectionBG_ = chooseColor(ui.pushButtonSelectionBG, selectionBG_);
+	});
+
+	connect(ui.pushButtonMatchFG, &QPushButton::clicked, this, [this]() {
+		matchFG_ = chooseColor(ui.pushButtonMatchFG, matchFG_);
+	});
+
+	connect(ui.pushButtonMatchBG, &QPushButton::clicked, this, [this]() {
+		matchBG_ = chooseColor(ui.pushButtonMatchBG, matchBG_);
+	});
+
+	connect(ui.pushButtonLineNumbersFG, &QPushButton::clicked, this, [this]() {
+		lineNumbersFG_ = chooseColor(ui.pushButtonLineNumbersFG, lineNumbersFG_);
+	});
+
+	connect(ui.pushButtonLineNumbersBG, &QPushButton::clicked, this, [this]() {
+		lineNumbersBG_ = chooseColor(ui.pushButtonLineNumbersBG, lineNumbersBG_);
+	});
+
+	connect(ui.pushButtonCursor, &QPushButton::clicked, this, [this]() {
+		cursorFG_ = chooseColor(ui.pushButtonCursor, cursorFG_);
+	});
+}
+
+/**
+ * @brief DialogColors::chooseColor
+ * @param edit
+ */
+QColor DialogPreferences::chooseColor(QPushButton *button, const QColor &currentColor) {
+
+	QColor color = QColorDialog::getColor(currentColor, this);
+	if (color.isValid()) {
+		QPixmap pixmap(16, 16);
+		pixmap.fill(color);
+		button->setIcon(QIcon(pixmap));
+		button->setText(toString(color));
+	}
+
+	return color;
+}
+
 
 /**
  * @brief DialogPreferences::buttonBoxClicked
@@ -85,7 +262,7 @@ void DialogPreferences::addPage(Page page) {
  */
 void DialogPreferences::buttonBoxClicked(QAbstractButton *button) {
 
-	switch (buttonBox_->standardButton(button)) {
+	switch (ui.buttonBox->standardButton(button)) {
 	case QDialogButtonBox::Apply:
 		applySettings();
 		break;
@@ -101,36 +278,35 @@ void DialogPreferences::buttonBoxClicked(QAbstractButton *button) {
  * @brief DialogPreferences::applySettings
  */
 void DialogPreferences::applySettings() {
-	qDebug("Apply");
+	applyFonts();
+	applyColors();
+	applyDisplay();
+	applyGeneral();
 }
 
 /**
  * @brief DialogPreferences::acceptDialog
  */
 void DialogPreferences::acceptDialog() {
-	qDebug("Ok");
+	applySettings();
 }
 
-auto DialogPreferences::createPage1() -> Page {
-	Page page;
-	page.icon   = QIcon::fromTheme(QLatin1String("accessories-text-editor"));
-	page.name   = tr("Editor");
-	page.widget = new PageEditor;
-	return page;
-}
+/**
+ * @brief DialogPreferences::applyDisplay
+ */
+void DialogPreferences::applyDisplay() {
 
-auto DialogPreferences::createPage2() -> Page {
-	Page page;
-	page.icon   = QIcon::fromTheme(QLatin1String("document-save-as"));
-	page.name   = tr("Page 2");
-	page.widget = new QPlainTextEdit;
-	return page;
-}
+	std::vector<MainWindow *> windows = MainWindow::allWindows();
 
-auto DialogPreferences::createPage3() -> Page {
-	Page page;
-	page.icon   = QIcon::fromTheme(QLatin1String("document-open"));
-	page.name   = tr("Page 3");
-	page.widget = new QTextBrowser;
-	return page;
+	Preferences::SetPrefISearchLine(ui.checkShowIncrementalSearch->isChecked());
+	Preferences::SetPrefLineNums(ui.checkShowLineNumbers->isChecked());
+	Preferences::SetPrefBacklightChars(ui.checkApplyBacklighting->isChecked());
+	Preferences::SetPrefStatsLine(ui.checkShowStatistics->isChecked());
+
+	for(MainWindow *win : windows) {
+		win->action_Incremental_Search_Line_toggled(ui.checkShowIncrementalSearch->isChecked());
+		win->action_Show_Line_Numbers_toggled(ui.checkShowLineNumbers->isChecked());
+		win->action_Apply_Backlighting_toggled(ui.checkApplyBacklighting->isChecked());
+		win->action_Statistics_Line_toggled(ui.checkShowStatistics->isChecked());
+	}
 }
