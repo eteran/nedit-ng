@@ -77,7 +77,7 @@ DialogPreferences::DialogPreferences(QWidget *parent, Qt::WindowFlags f)
 	setupFonts();
 	setupColors();
 	setupDisplay();
-	setupGeneral();
+	setupBackup();
 }
 
 /**
@@ -123,33 +123,39 @@ void DialogPreferences::applyColors() {
 	Preferences::SetPrefColorName(CURSOR_FG_COLOR, toString(cursorFG_));
 }
 
-void DialogPreferences::setupGeneral() {
+/**
+ * @brief DialogPreferences::applyGeneral
+ */
+void DialogPreferences::applyDisplay() {
 
-	ui.checkMakeBackup->setChecked(Preferences::GetPrefAutoSave());
-	ui.checkIncrementalBackup->setChecked(Preferences::GetPrefSaveOldVersion());
-
-}
-
-void DialogPreferences::applyGeneral() {
-
-	Preferences::SetPrefAutoSave(ui.checkMakeBackup->isChecked());
-	Preferences::SetPrefSaveOldVersion(ui.checkIncrementalBackup->isChecked());
+	Preferences::SetPrefStatsLine(ui.checkShowStatistics->isChecked());
+	Preferences::SetPrefISearchLine(ui.checkShowIncrementalSearch->isChecked());
+	Preferences::SetPrefLineNums(ui.checkShowLineNumbers->isChecked());
+	Preferences::SetPrefBacklightChars(ui.checkApplyBacklighting->isChecked());
 
 	std::vector<MainWindow *> windows = MainWindow::allWindows();
 	for(MainWindow *win : windows) {
-		win->action_Make_Backup_Copy_toggled(ui.checkMakeBackup->isChecked());
+		win->action_Statistics_Line_toggled(ui.checkShowStatistics->isChecked());
+		win->action_Incremental_Search_Line_toggled(ui.checkShowIncrementalSearch->isChecked());
+		win->action_Show_Line_Numbers_toggled(ui.checkShowLineNumbers->isChecked());
+		win->action_Apply_Backlighting_toggled(ui.checkApplyBacklighting->isChecked());
+	}
+}
+
+/**
+ * @brief DialogPreferences::applyBackup
+ */
+void DialogPreferences::applyBackup() {
+
+	Preferences::SetPrefSaveOldVersion(ui.checkMakeBackupCopy->isChecked());
+	Preferences::SetPrefAutoSave(ui.checkIncrementalBackup->isChecked());
+
+	std::vector<MainWindow *> windows = MainWindow::allWindows();
+	for(MainWindow *win : windows) {
+		win->action_Make_Backup_Copy_toggled(ui.checkMakeBackupCopy->isChecked());
 		win->action_Incremental_Backup_toggled(ui.checkIncrementalBackup->isChecked());
 	}
 
-}
-
-
-
-void DialogPreferences::setupDisplay() {
-	ui.checkShowStatistics->setChecked(Preferences::GetPrefStatsLine());
-	ui.checkShowIncrementalSearch->setChecked(Preferences::GetPrefISearchLine());
-	ui.checkShowLineNumbers->setChecked(Preferences::GetPrefLineNums());
-	ui.checkApplyBacklighting->setChecked(Preferences::GetPrefBacklightChars());
 }
 
 /**
@@ -239,6 +245,24 @@ void DialogPreferences::setupColors() {
 }
 
 /**
+ * @brief DialogPreferences::setupGeneral
+ */
+void DialogPreferences::setupDisplay() {
+	ui.checkShowStatistics->setChecked(Preferences::GetPrefStatsLine());
+	ui.checkShowIncrementalSearch->setChecked(Preferences::GetPrefISearchLine());
+	ui.checkShowLineNumbers->setChecked(Preferences::GetPrefLineNums());
+	ui.checkApplyBacklighting->setChecked(Preferences::GetPrefBacklightChars());
+}
+
+/**
+ * @brief DialogPreferences::setupBackup
+ */
+void DialogPreferences::setupBackup() {
+	ui.checkMakeBackupCopy->setChecked(Preferences::GetPrefSaveOldVersion());
+	ui.checkIncrementalBackup->setChecked(Preferences::GetPrefAutoSave());
+}
+
+/**
  * @brief DialogColors::chooseColor
  * @param edit
  */
@@ -281,7 +305,7 @@ void DialogPreferences::applySettings() {
 	applyFonts();
 	applyColors();
 	applyDisplay();
-	applyGeneral();
+	applyBackup();
 }
 
 /**
@@ -291,22 +315,3 @@ void DialogPreferences::acceptDialog() {
 	applySettings();
 }
 
-/**
- * @brief DialogPreferences::applyDisplay
- */
-void DialogPreferences::applyDisplay() {
-
-	std::vector<MainWindow *> windows = MainWindow::allWindows();
-
-	Preferences::SetPrefISearchLine(ui.checkShowIncrementalSearch->isChecked());
-	Preferences::SetPrefLineNums(ui.checkShowLineNumbers->isChecked());
-	Preferences::SetPrefBacklightChars(ui.checkApplyBacklighting->isChecked());
-	Preferences::SetPrefStatsLine(ui.checkShowStatistics->isChecked());
-
-	for(MainWindow *win : windows) {
-		win->action_Incremental_Search_Line_toggled(ui.checkShowIncrementalSearch->isChecked());
-		win->action_Show_Line_Numbers_toggled(ui.checkShowLineNumbers->isChecked());
-		win->action_Apply_Backlighting_toggled(ui.checkApplyBacklighting->isChecked());
-		win->action_Statistics_Line_toggled(ui.checkShowStatistics->isChecked());
-	}
-}

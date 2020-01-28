@@ -23,13 +23,13 @@ private:
 	void setupFonts();
 	void setupColors();
 	void setupDisplay();
-	void setupGeneral();
+	void setupBackup();
 
 private:
 	void applyFonts();
 	void applyColors();
 	void applyDisplay();
-	void applyGeneral();
+	void applyBackup();
 
 private:
 	void buttonBoxClicked(QAbstractButton *button);

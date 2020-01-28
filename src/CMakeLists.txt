@@ -73,9 +73,6 @@ add_executable(nedit-ng
 	DialogPreferences.cpp
 	DialogPreferences.h
 	DialogPreferences.ui
-	DialogColors.cpp
-	DialogColors.h
-	DialogColors.ui
 	DialogDrawingStyles.cpp
 	DialogDrawingStyles.h
 	DialogDrawingStyles.ui
@@ -91,9 +88,6 @@ add_executable(nedit-ng
 	DialogFind.cpp
 	DialogFind.h
 	DialogFind.ui
-	DialogFonts.cpp
-	DialogFonts.h
-	DialogFonts.ui
 	DialogLanguageModes.cpp
 	DialogLanguageModes.h
 	DialogLanguageModes.ui

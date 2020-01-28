@@ -2322,10 +2322,7 @@ bool DocumentWidget::writeBackupFile() {
 			tr("Unable to save backup for %1:\n%2\nAutomatic backup is now off").arg(info_->filename, errorString(errno)));
 
 		info_->autoSave = false;
-
-		if (auto win = MainWindow::fromDocument(this)) {
-			no_signals(win->ui.action_Incremental_Backup)->setChecked(false);
-		}
+		// TODO(eteran): this disables auto-save locally, disable globally?
 		return false;
 	}
 
@@ -2772,11 +2769,8 @@ bool DocumentWidget::writeBckVersion() {
 		}
 
 		if (messageBox.clickedButton() == buttonTurnOff) {
+			// TODO(eteran): this disables backup saves locally, disable globally?
 			info_->saveOldVersion = false;
-
-			if (auto win = MainWindow::fromDocument(this)) {
-				no_signals(win->ui.action_Make_Backup_Copy)->setChecked(false);
-			}
 		}
 
 		return false;
@@ -3313,13 +3307,7 @@ void DocumentWidget::refreshMenuToggleStates() {
 	win->ui.action_Delete->setEnabled(info_->wasSelected);
 
 	// Preferences menu
-	no_signals(win->ui.action_Statistics_Line)->setChecked(showStats_);
-	no_signals(win->ui.action_Incremental_Search_Line)->setChecked(win->showISearchLine_);
-	no_signals(win->ui.action_Show_Line_Numbers)->setChecked(win->showLineNumbers_);
 	no_signals(win->ui.action_Highlight_Syntax)->setChecked(highlightSyntax_);
-	no_signals(win->ui.action_Apply_Backlighting)->setChecked(backlightChars_);
-	no_signals(win->ui.action_Make_Backup_Copy)->setChecked(info_->saveOldVersion);
-	no_signals(win->ui.action_Incremental_Backup)->setChecked(info_->autoSave);
 	no_signals(win->ui.action_Overtype)->setChecked(info_->overstrike);
 	no_signals(win->ui.action_Matching_Syntax)->setChecked(info_->matchSyntaxBased);
 	no_signals(win->ui.action_Read_Only)->setChecked(info_->lockReasons.isUserLocked());
@@ -4256,23 +4244,6 @@ QString DocumentWidget::backlightCharTypes() const {
  */
 bool DocumentWidget::backlightChars() const {
 	return backlightChars_;
-}
-
-/**
- * @brief DocumentWidget::setShowStatisticsLine
- * @param value
- */
-void DocumentWidget::setShowStatisticsLine(bool value) {
-
-	emit_event("set_statistics_line", value ? QLatin1String("1") : QLatin1String("0"));
-
-	// stats line is a shell-level item, so we toggle the button state
-	// regardless of it's 'topness'
-	if (auto win = MainWindow::fromDocument(this)) {
-		no_signals(win->ui.action_Statistics_Line)->setChecked(value);
-	}
-
-	showStats_ = value;
 }
 
 /**
@@ -6764,50 +6735,11 @@ bool DocumentWidget::makeBackupCopy() const {
 }
 
 /**
- * @brief DocumentWidget::setMakeBackupCopy
- * @param value
- */
-void DocumentWidget::setMakeBackupCopy(bool value) {
-
-	emit_event("set_make_backup_copy", value ? QLatin1String("1") : QLatin1String("0"));
-
-	if (isTopDocument()) {
-		if (auto win = MainWindow::fromDocument(this)) {
-			no_signals(win->ui.action_Make_Backup_Copy)->setChecked(value);
-		}
-	}
-
-	info_->saveOldVersion = value;
-}
-
-/**
  * @brief DocumentWidget::incrementalBackup
  * @return
  */
 bool DocumentWidget::incrementalBackup() const {
 	return info_->autoSave;
-}
-
-/**
- * @brief DocumentWidget::setIncrementalBackup
- * @param value
- */
-void DocumentWidget::setIncrementalBackup(bool value) {
-
-	emit_event("set_incremental_backup", QString::number(value));
-
-	info_->autoSave = value;
-
-	if (!isTopDocument()) {
-		return;
-	}
-
-	MainWindow *win = MainWindow::fromDocument(this);
-	if (!win) {
-		return;
-	}
-
-	no_signals(win->ui.action_Highlight_Syntax)->setChecked(value);
 }
 
 /**

@@ -101,10 +101,7 @@ public:
 	void parseGeometry(QString geometry);
 	void replaceInSelection(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
 	void searchForSelected(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap);
-	void setIncrementalSearchLine(bool value);
-	void setShowLineNumbers(bool show);
 	void setWindowSizeDefault(int rows, int cols);
-	void showLineNumbers(bool state);
 	void sortTabBar();
 	void tempShowISearch(bool state);
 	void updateLanguageModeSubmenu();
@@ -352,7 +349,6 @@ public:
 	void action_Show_Line_Numbers_toggled(bool state);
 	void action_Wrap_Margin_triggered();
 	void action_Tab_Stops_triggered();
-	void action_Text_Fonts_triggered();
 	void action_Highlight_Syntax_toggled(bool state);
 	void action_Apply_Backlighting_toggled(bool state);
 	void action_Make_Backup_Copy_toggled(bool state);
@@ -362,6 +358,8 @@ public:
 	void action_Read_Only_toggled(bool state);
 	void action_Save_Defaults_triggered();
 
+	void action_Settings_triggered();
+
 	// Preferences Defaults
 	void action_Default_Language_Modes_triggered();
 	void action_Default_Program_Smart_Indent_triggered();
@@ -369,7 +367,6 @@ public:
 	void action_Default_Command_Shell_triggered();
 	void action_Default_Tab_Stops_triggered();
 	void action_Default_Text_Fonts_triggered();
-	void action_Default_Colors_triggered();
 	void action_Default_Shell_Menu_triggered();
 	void action_Default_Macro_Menu_triggered();
 	void action_Default_Window_Background_Menu_triggered();
@@ -382,18 +379,12 @@ public:
 	void action_Default_Search_Keep_Dialogs_Up_toggled(bool state);
 	void action_Default_Syntax_Recognition_Patterns_triggered();
 	void action_Default_Syntax_Text_Drawing_Styles_triggered();
-	void action_Default_Apply_Backlighting_toggled(bool state);
 	void action_Default_Tab_Open_File_In_New_Tab_toggled(bool state);
 	void action_Default_Tab_Show_Tab_Bar_toggled(bool state);
 	void action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled(bool state);
 	void action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled(bool state);
 	void action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state);
 	void action_Default_Show_Tooltips_toggled(bool state);
-	void action_Default_Statistics_Line_toggled(bool state);
-	void action_Default_Incremental_Search_Line_toggled(bool state);
-	void action_Default_Show_Line_Numbers_toggled(bool state);
-	void action_Default_Make_Backup_Copy_toggled(bool state);
-	void action_Default_Incremental_Backup_toggled(bool state);
 	void action_Default_Matching_Syntax_Based_toggled(bool state);
 	void action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state);
 	void action_Default_Popups_Under_Pointer_toggled(bool state);

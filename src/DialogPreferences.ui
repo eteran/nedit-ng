@@ -65,8 +65,24 @@
            <string>Shell</string>
           </property>
           <property name="icon">
-           <iconset theme="document-close">
+           <iconset theme="shell">
             <normaloff>.</normaloff>.</iconset>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>General</string>
+          </property>
+          <property name="icon">
+           <iconset theme="preferences"/>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>Window</string>
+          </property>
+          <property name="icon">
+           <iconset theme="window"/>
           </property>
          </item>
          <item>
@@ -74,18 +90,8 @@
            <string>Search</string>
           </property>
           <property name="icon">
-           <iconset theme="document-save-as">
+           <iconset theme="search">
             <normaloff>.</normaloff>.</iconset>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>Window</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>General</string>
           </property>
          </item>
         </widget>
@@ -112,7 +118,7 @@
        <item>
         <widget class="QTabWidget" name="pageContainer">
          <property name="currentIndex">
-          <number>0</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="tabWidgetPage1">
           <attribute name="title">
@@ -357,49 +363,58 @@
               <attribute name="title">
                <string>Display</string>
               </attribute>
-              <widget class="QGroupBox" name="groupBox">
-               <property name="geometry">
-                <rect>
-                 <x>10</x>
-                 <y>10</y>
-                 <width>233</width>
-                 <height>189</height>
-                </rect>
-               </property>
-               <property name="title">
-                <string>General</string>
-               </property>
-               <layout class="QVBoxLayout" name="verticalLayout_7">
-                <item>
-                 <widget class="QCheckBox" name="checkShowStatistics">
-                  <property name="text">
-                   <string>Show Statistics Line</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="checkShowIncrementalSearch">
-                  <property name="text">
-                   <string>Show Incremental Search Line</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="checkShowLineNumbers">
-                  <property name="text">
-                   <string>Show Line Numbers</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QCheckBox" name="checkApplyBacklighting">
-                  <property name="text">
-                   <string>Apply Backlighting</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </widget>
+              <layout class="QVBoxLayout" name="verticalLayout_10">
+               <item>
+                <widget class="QGroupBox" name="groupBox">
+                 <property name="title">
+                  <string>General</string>
+                 </property>
+                 <layout class="QVBoxLayout" name="verticalLayout_7">
+                  <item>
+                   <widget class="QCheckBox" name="checkShowStatistics">
+                    <property name="text">
+                     <string>Show Statistics Line</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkShowIncrementalSearch">
+                    <property name="text">
+                     <string>Show Incremental Search Line</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkShowLineNumbers">
+                    <property name="text">
+                     <string>Show Line Numbers</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QCheckBox" name="checkApplyBacklighting">
+                    <property name="text">
+                     <string>Apply Backlighting</string>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer_4">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>306</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
              </widget>
              <widget class="QWidget" name="tab">
               <attribute name="title">
@@ -455,7 +470,7 @@
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_14">
               <item>
-               <widget class="QCheckBox" name="checkMakeBackup">
+               <widget class="QCheckBox" name="checkMakeBackupCopy">
                 <property name="text">
                  <string>Mak&amp;e Backup Copy (*.bck)</string>
                 </property>

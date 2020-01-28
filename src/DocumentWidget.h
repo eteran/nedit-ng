@@ -198,15 +198,12 @@ public:
 	void setFileFormat(FileFormats fileFormat);
 	void setFilename(const QString &filename);
 	void setHighlightSyntax(bool value);
-	void setIncrementalBackup(bool value);
 	void setLanguageMode(size_t mode, bool forceNewDefaults);
-	void setMakeBackupCopy(bool value);
 	void setMatchSyntaxBased(bool value);
 	void setOverstrike(bool overstrike);
 	void setPath(const QDir &path);
 	void setPath(const QString &pathname);
 	void setShowMatching(ShowMatchingStyle state);
-	void setShowStatisticsLine(bool value);
 	void setTabDistance(int distance);
 	void setUseTabs(bool value);
 	void setUserLocked(bool value);

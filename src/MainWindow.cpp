@@ -2,16 +2,15 @@
 #include "MainWindow.h"
 #include "CommandRecorder.h"
 #include "DialogAbout.h"
-#include "DialogColors.h"
 #include "DialogDrawingStyles.h"
 #include "DialogExecuteCommand.h"
 #include "DialogFilter.h"
 #include "DialogFind.h"
-#include "DialogFonts.h"
 #include "DialogLanguageModes.h"
 #include "DialogMacros.h"
 #include "DialogRepeat.h"
 #include "DialogReplace.h"
+#include "DialogPreferences.h"
 #include "DialogShellMenu.h"
 #include "DialogSmartIndent.h"
 #include "DialogSyntaxPatterns.h"
@@ -242,8 +241,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 	// default to hiding the optional panels
 	ui.incrementalSearchFrame->setVisible(showISearchLine_);
 
-	ui.action_Statistics_Line->setChecked(Preferences::GetPrefStatsLine());
-
 	// make sure we include this windows which is in the middle of being created
 	std::vector<MainWindow *> windows = MainWindow::allWindows();
 	auto it                           = std::find(windows.begin(), windows.end(), this);
@@ -331,15 +328,12 @@ void MainWindow::connectSlots() {
 	connect(ui.action_Move_Tab_To, &QAction::triggered, this, &MainWindow::action_Move_Tab_To_triggered);
 	connect(ui.action_Wrap_Margin, &QAction::triggered, this, &MainWindow::action_Wrap_Margin_triggered);
 	connect(ui.action_Tab_Stops, &QAction::triggered, this, &MainWindow::action_Tab_Stops_triggered);
-	connect(ui.action_Text_Fonts, &QAction::triggered, this, &MainWindow::action_Text_Fonts_triggered);
 	connect(ui.action_Save_Defaults, &QAction::triggered, this, &MainWindow::action_Save_Defaults_triggered);
 	connect(ui.action_Default_Language_Modes, &QAction::triggered, this, &MainWindow::action_Default_Language_Modes_triggered);
 	connect(ui.action_Default_Program_Smart_Indent, &QAction::triggered, this, &MainWindow::action_Default_Program_Smart_Indent_triggered);
 	connect(ui.action_Default_Wrap_Margin, &QAction::triggered, this, &MainWindow::action_Default_Wrap_Margin_triggered);
 	connect(ui.action_Default_Command_Shell, &QAction::triggered, this, &MainWindow::action_Default_Command_Shell_triggered);
 	connect(ui.action_Default_Tab_Stops, &QAction::triggered, this, &MainWindow::action_Default_Tab_Stops_triggered);
-	connect(ui.action_Default_Text_Fonts, &QAction::triggered, this, &MainWindow::action_Default_Text_Fonts_triggered);
-	connect(ui.action_Default_Colors, &QAction::triggered, this, &MainWindow::action_Default_Colors_triggered);
 	connect(ui.action_Default_Shell_Menu, &QAction::triggered, this, &MainWindow::action_Default_Shell_Menu_triggered);
 	connect(ui.action_Default_Macro_Menu, &QAction::triggered, this, &MainWindow::action_Default_Macro_Menu_triggered);
 	connect(ui.action_Default_Window_Background_Menu, &QAction::triggered, this, &MainWindow::action_Default_Window_Background_Menu_triggered);
@@ -355,13 +349,7 @@ void MainWindow::connectSlots() {
 	connect(ui.action_About_Qt, &QAction::triggered, this, &MainWindow::action_About_Qt_triggered);
 	connect(ui.action_Help, &QAction::triggered, this, &MainWindow::action_Help_triggered);
 
-	connect(ui.action_Statistics_Line, &QAction::toggled, this, &MainWindow::action_Statistics_Line_toggled);
-	connect(ui.action_Incremental_Search_Line, &QAction::toggled, this, &MainWindow::action_Incremental_Search_Line_toggled);
-	connect(ui.action_Show_Line_Numbers, &QAction::toggled, this, &MainWindow::action_Show_Line_Numbers_toggled);
 	connect(ui.action_Highlight_Syntax, &QAction::toggled, this, &MainWindow::action_Highlight_Syntax_toggled);
-	connect(ui.action_Apply_Backlighting, &QAction::toggled, this, &MainWindow::action_Apply_Backlighting_toggled);
-	connect(ui.action_Make_Backup_Copy, &QAction::toggled, this, &MainWindow::action_Make_Backup_Copy_toggled);
-	connect(ui.action_Incremental_Backup, &QAction::toggled, this, &MainWindow::action_Incremental_Backup_toggled);
 	connect(ui.action_Matching_Syntax, &QAction::toggled, this, &MainWindow::action_Matching_Syntax_toggled);
 	connect(ui.action_Overtype, &QAction::toggled, this, &MainWindow::action_Overtype_toggled);
 	connect(ui.action_Read_Only, &QAction::toggled, this, &MainWindow::action_Read_Only_toggled);
@@ -371,18 +359,12 @@ void MainWindow::connectSlots() {
 	connect(ui.action_Default_Search_Wrap_Around, &QAction::toggled, this, &MainWindow::action_Default_Search_Wrap_Around_toggled);
 	connect(ui.action_Default_Search_Beep_On_Search_Wrap, &QAction::toggled, this, &MainWindow::action_Default_Search_Beep_On_Search_Wrap_toggled);
 	connect(ui.action_Default_Search_Keep_Dialogs_Up, &QAction::toggled, this, &MainWindow::action_Default_Search_Keep_Dialogs_Up_toggled);
-	connect(ui.action_Default_Apply_Backlighting, &QAction::toggled, this, &MainWindow::action_Default_Apply_Backlighting_toggled);
 	connect(ui.action_Default_Tab_Open_File_In_New_Tab, &QAction::toggled, this, &MainWindow::action_Default_Tab_Open_File_In_New_Tab_toggled);
 	connect(ui.action_Default_Tab_Show_Tab_Bar, &QAction::toggled, this, &MainWindow::action_Default_Tab_Show_Tab_Bar_toggled);
 	connect(ui.action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open, &QAction::toggled, this, &MainWindow::action_Default_Tab_Hide_Tab_Bar_When_Only_One_Document_is_Open_toggled);
 	connect(ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows, &QAction::toggled, this, &MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled);
 	connect(ui.action_Default_Tab_Sort_Tabs_Alphabetically, &QAction::toggled, this, &MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically_toggled);
 	connect(ui.action_Default_Show_Tooltips, &QAction::toggled, this, &MainWindow::action_Default_Show_Tooltips_toggled);
-	connect(ui.action_Default_Statistics_Line, &QAction::toggled, this, &MainWindow::action_Default_Statistics_Line_toggled);
-	connect(ui.action_Default_Incremental_Search_Line, &QAction::toggled, this, &MainWindow::action_Default_Incremental_Search_Line_toggled);
-	connect(ui.action_Default_Show_Line_Numbers, &QAction::toggled, this, &MainWindow::action_Default_Show_Line_Numbers_toggled);
-	connect(ui.action_Default_Make_Backup_Copy, &QAction::toggled, this, &MainWindow::action_Default_Make_Backup_Copy_toggled);
-	connect(ui.action_Default_Incremental_Backup, &QAction::toggled, this, &MainWindow::action_Default_Incremental_Backup_toggled);
 	connect(ui.action_Default_Matching_Syntax_Based, &QAction::toggled, this, &MainWindow::action_Default_Matching_Syntax_Based_toggled);
 	connect(ui.action_Default_Terminate_with_Line_Break_on_Save, &QAction::toggled, this, &MainWindow::action_Default_Terminate_with_Line_Break_on_Save_toggled);
 	connect(ui.action_Default_Popups_Under_Pointer, &QAction::toggled, this, &MainWindow::action_Default_Popups_Under_Pointer_toggled);
@@ -397,6 +379,8 @@ void MainWindow::connectSlots() {
 	connect(ui.tabWidget, &TabWidget::tabCountChanged, this, &MainWindow::tabWidget_tabCountChanged);
 	connect(ui.tabWidget, &TabWidget::currentChanged, this, &MainWindow::tabWidget_currentChanged);
 	connect(ui.tabWidget, &TabWidget::customContextMenuRequested, this, &MainWindow::tabWidget_customContextMenuRequested);
+
+	connect(ui.action_Settings, &QAction::triggered, this, &MainWindow::action_Settings_triggered);
 }
 
 /**
@@ -545,8 +529,6 @@ void MainWindow::setupGlobalPrefenceDefaults() {
 		ui.action_Default_Syntax_Off->setChecked(true);
 	}
 
-	no_signals(ui.action_Default_Apply_Backlighting)->setChecked(Preferences::GetPrefBacklightChars());
-
 	// Default tab settings
 	no_signals(ui.action_Default_Tab_Open_File_In_New_Tab)->setChecked(Preferences::GetPrefOpenInTab());
 	no_signals(ui.action_Default_Tab_Show_Tab_Bar)->setChecked(Preferences::GetPrefTabBar());
@@ -561,11 +543,6 @@ void MainWindow::setupGlobalPrefenceDefaults() {
 	ui.tabWidget->setTabBarAutoHide(Preferences::GetPrefTabBarHideOne());
 
 	no_signals(ui.action_Default_Show_Tooltips)->setChecked(Preferences::GetPrefToolTips());
-	no_signals(ui.action_Default_Statistics_Line)->setChecked(Preferences::GetPrefStatsLine());
-	no_signals(ui.action_Default_Incremental_Search_Line)->setChecked(Preferences::GetPrefISearchLine());
-	no_signals(ui.action_Default_Show_Line_Numbers)->setChecked(Preferences::GetPrefLineNums());
-	no_signals(ui.action_Default_Make_Backup_Copy)->setChecked(Preferences::GetPrefSaveOldVersion());
-	no_signals(ui.action_Default_Incremental_Backup)->setChecked(Preferences::GetPrefAutoSave());
 
 	switch (Preferences::GetPrefShowMatching()) {
 	case ShowMatchingStyle::None:
@@ -652,13 +629,7 @@ void MainWindow::setupDocumentPreferenceDefaults() {
 void MainWindow::setupMenuDefaults() {
 
 	// active settings
-	no_signals(ui.action_Statistics_Line)->setChecked(Preferences::GetPrefStatsLine());
-	no_signals(ui.action_Incremental_Search_Line)->setChecked(Preferences::GetPrefISearchLine());
-	no_signals(ui.action_Show_Line_Numbers)->setChecked(Preferences::GetPrefLineNums());
 	no_signals(ui.action_Highlight_Syntax)->setChecked(Preferences::GetPrefHighlightSyntax());
-	no_signals(ui.action_Apply_Backlighting)->setChecked(Preferences::GetPrefBacklightChars());
-	no_signals(ui.action_Make_Backup_Copy)->setChecked(Preferences::GetPrefAutoSave());
-	no_signals(ui.action_Incremental_Backup)->setChecked(Preferences::GetPrefSaveOldVersion());
 	no_signals(ui.action_Matching_Syntax)->setChecked(Preferences::GetPrefMatchSyntaxBased());
 
 	setupGlobalPrefenceDefaults();
@@ -1764,29 +1735,7 @@ void MainWindow::forceShowLineNumbers() {
 	// we temporarily set showLineNumbers_ to false, because the ShowLineNumbers
 	// function only has an effect if the state is changing
 	if (std::exchange(showLineNumbers_, false)) {
-		showLineNumbers(true);
-	}
-}
-
-/*
-** Turn on and off the display of line numbers
-*/
-void MainWindow::showLineNumbers(bool state) {
-
-	showLineNumbers_ = state;
-
-	/* Just setting showLineNumbers_ is sufficient to tell
-	   updateLineNumDisp() to expand the line number areas and the this
-	   size for the number of lines required.  To hide the line number
-	   display, set the width to zero, and contract the this width. */
-	const int reqCols = showLineNumbers_ ? updateLineNumDisp() : 0;
-
-	/* line numbers panel is shell-level, hence other
-	   tabbed documents in the this should sync */
-	for (DocumentWidget *document : openDocuments()) {
-		for (TextArea *area : document->textPanes()) {
-			area->setLineNumCols(reqCols);
-		}
+		action_Show_Line_Numbers_toggled(true);
 	}
 }
 
@@ -3720,11 +3669,27 @@ void MainWindow::action_Incremental_Search_Line_toggled(bool state) {
 }
 
 /**
+ * Turn on and off the display of line numbers
+ *
  * @brief MainWindow::action_Show_Line_Numbers_toggled
  * @param state
  */
 void MainWindow::action_Show_Line_Numbers_toggled(bool state) {
-	showLineNumbers(state);
+	showLineNumbers_ = state;
+
+	/* Just setting showLineNumbers_ is sufficient to tell
+	   updateLineNumDisp() to expand the line number areas and the this
+	   size for the number of lines required.  To hide the line number
+	   display, set the width to zero, and contract the this width. */
+	const int reqCols = showLineNumbers_ ? updateLineNumDisp() : 0;
+
+	/* line numbers panel is shell-level, hence other
+	   tabbed documents in the this should sync */
+	for (DocumentWidget *document : openDocuments()) {
+		for (TextArea *area : document->textPanes()) {
+			area->setLineNumCols(reqCols);
+		}
+	}
 }
 
 /**
@@ -3800,16 +3765,6 @@ void MainWindow::action_Tab_Stops_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		auto dialog = std::make_unique<DialogTabs>(document, this);
 		dialog->exec();
-	}
-}
-
-/**
- * @brief MainWindow::action_Text_Fonts_triggered
- */
-void MainWindow::action_Text_Fonts_triggered() {
-	if (DocumentWidget *document = currentDocument()) {
-		auto dialogFonts = std::make_unique<DialogFonts>(document, this);
-		dialogFonts->exec();
 	}
 }
 
@@ -4052,22 +4007,6 @@ void MainWindow::action_Default_Tab_Stops_triggered() {
 	dialog->exec();
 }
 
-/**
- * @brief MainWindow::action_Default_Text_Fonts_triggered
- */
-void MainWindow::action_Default_Text_Fonts_triggered() {
-	auto dialog = std::make_unique<DialogFonts>(nullptr, this);
-	dialog->exec();
-}
-
-/**
- * @brief MainWindow::action_Default_Colors_triggered
- */
-void MainWindow::action_Default_Colors_triggered() {
-	auto dialog = std::make_unique<DialogColors>(this);
-	dialog->exec();
-}
-
 /*
 ** Present a dialog for editing the user specified commands in the shell menu
 */
@@ -4275,19 +4214,6 @@ void MainWindow::action_Default_Syntax_Text_Drawing_Styles_triggered() {
 }
 
 /**
- * @brief MainWindow::action_Default_Apply_Backlighting_toggled
- * @param state
- */
-void MainWindow::action_Default_Apply_Backlighting_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefBacklightChars(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Apply_Backlighting)->setChecked(state);
-	}
-}
-
-/**
  * @brief MainWindow::action_Default_Tab_Open_File_In_New_Tab_toggled
  * @param state
  */
@@ -4385,71 +4311,6 @@ void MainWindow::action_Default_Show_Tooltips_toggled(bool state) {
 	Preferences::SetPrefToolTips(state);
 	for (MainWindow *window : MainWindow::allWindows()) {
 		no_signals(window->ui.action_Default_Show_Tooltips)->setChecked(state);
-	}
-}
-
-/**
- * @brief MainWindow::action_Default_Statistics_Line_toggled
- * @param state
- */
-void MainWindow::action_Default_Statistics_Line_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefStatsLine(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Statistics_Line)->setChecked(state);
-	}
-}
-
-/**
- * @brief MainWindow::action_Default_Incremental_Search_Line_toggled
- * @param state
- */
-void MainWindow::action_Default_Incremental_Search_Line_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefISearchLine(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Incremental_Search_Line)->setChecked(state);
-	}
-}
-
-/**
- * @brief MainWindow::action_Default_Show_Line_Numbers_toggled
- * @param state
- */
-void MainWindow::action_Default_Show_Line_Numbers_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefLineNums(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Show_Line_Numbers)->setChecked(state);
-	}
-}
-
-/**
- * @brief MainWindow::action_Default_Make_Backup_Copy_toggled
- * @param state
- */
-void MainWindow::action_Default_Make_Backup_Copy_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefSaveOldVersion(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Make_Backup_Copy)->setChecked(state);
-	}
-}
-
-/**
- * @brief MainWindow::action_Default_Incremental_Backup_toggled
- * @param state
- */
-void MainWindow::action_Default_Incremental_Backup_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefAutoSave(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Incremental_Backup)->setChecked(state);
 	}
 }
 
@@ -6029,18 +5890,6 @@ bool MainWindow::getIncrementalSearchLine() const {
 }
 
 /**
- * @brief MainWindow::setIncrementalSearchLine
- * @param value
- */
-void MainWindow::setIncrementalSearchLine(bool value) {
-
-	emit_event("set_incremental_search_line", QString::number(value));
-
-	showISearchLine_ = value;
-	no_signals(ui.action_Incremental_Search_Line)->setChecked(value);
-}
-
-/**
  * @brief MainWindow::searchWindow
  * @param document
  * @param searchString
@@ -7182,18 +7031,6 @@ bool MainWindow::execNamedBGMenuCmd(DocumentWidget *document, TextArea *area, co
 }
 
 /**
- * @brief MainWindow::setShowLineNumbers
- * @param show
- */
-void MainWindow::setShowLineNumbers(bool show) {
-
-	emit_event("set_show_line_numbers", show ? QLatin1String("1") : QLatin1String("0"));
-
-	no_signals(ui.action_Show_Line_Numbers)->setChecked(show);
-	showLineNumbers_ = show;
-}
-
-/**
  * @brief MainWindow::getShowLineNumbers
  * @return
  */
@@ -7357,4 +7194,13 @@ QPointer<TextArea> MainWindow::lastFocus() {
 	}
 
 	return lastFocus_;
+}
+
+/**
+ * @brief MainWindow::action_Settings_triggered
+ */
+void MainWindow::action_Settings_triggered() {
+	auto dialog = std::make_unique<DialogPreferences>(this);
+	dialog->exec();
+
 }

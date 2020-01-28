@@ -144,7 +144,7 @@
      <x>0</x>
      <y>0</y>
      <width>621</width>
-     <height>29</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -366,20 +366,12 @@
      <addaction name="menu_Default_Tag_Collisions"/>
      <addaction name="action_Default_Command_Shell"/>
      <addaction name="action_Default_Tab_Stops"/>
-     <addaction name="action_Default_Text_Fonts"/>
-     <addaction name="action_Default_Colors"/>
      <addaction name="menu_Default_Customize_Menus"/>
      <addaction name="action_Default_Customize_Window_Title"/>
      <addaction name="menu_Default_Searching"/>
      <addaction name="menu_Default_Syntax_Highlighting"/>
-     <addaction name="action_Default_Apply_Backlighting"/>
      <addaction name="menuTabbed_Editing"/>
      <addaction name="action_Default_Show_Tooltips"/>
-     <addaction name="action_Default_Statistics_Line"/>
-     <addaction name="action_Default_Incremental_Search_Line"/>
-     <addaction name="action_Default_Show_Line_Numbers"/>
-     <addaction name="action_Default_Make_Backup_Copy"/>
-     <addaction name="action_Default_Incremental_Backup"/>
      <addaction name="menu_Default_Show_Matching"/>
      <addaction name="action_Default_Terminate_with_Line_Break_on_Save"/>
      <addaction name="action_Default_Popups_Under_Pointer"/>
@@ -410,20 +402,14 @@
      <addaction name="action_Indent_Smart"/>
     </widget>
     <addaction name="menu_Default_Settings"/>
+    <addaction name="action_Settings"/>
     <addaction name="action_Save_Defaults"/>
     <addaction name="separator"/>
-    <addaction name="action_Statistics_Line"/>
-    <addaction name="action_Incremental_Search_Line"/>
-    <addaction name="action_Show_Line_Numbers"/>
     <addaction name="action_Language_Mode"/>
     <addaction name="menu_Auto_Indent"/>
     <addaction name="menu_Wrap"/>
     <addaction name="action_Tab_Stops"/>
-    <addaction name="action_Text_Fonts"/>
     <addaction name="action_Highlight_Syntax"/>
-    <addaction name="action_Apply_Backlighting"/>
-    <addaction name="action_Make_Backup_Copy"/>
-    <addaction name="action_Incremental_Backup"/>
     <addaction name="menu_Show_Matching"/>
     <addaction name="separator"/>
     <addaction name="action_Overtype"/>
@@ -1076,33 +1062,6 @@
     <string>Sa&amp;ve Defaults...</string>
    </property>
   </action>
-  <action name="action_Statistics_Line">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Statistics Line</string>
-   </property>
-   <property name="shortcut">
-    <string>Alt+A</string>
-   </property>
-  </action>
-  <action name="action_Incremental_Search_Line">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Incremental Search Line</string>
-   </property>
-  </action>
-  <action name="action_Show_Line_Numbers">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Show Line &amp;Numbers</string>
-   </property>
-  </action>
   <action name="action_Language_Mode">
    <property name="icon">
     <iconset theme="set-language">
@@ -1117,45 +1076,12 @@
     <string>&amp;Tab Stops...</string>
    </property>
   </action>
-  <action name="action_Text_Fonts">
-   <property name="icon">
-    <iconset theme="preferences-desktop-font">
-     <normaloff>.</normaloff>.</iconset>
-   </property>
-   <property name="text">
-    <string>Text &amp;Fonts...</string>
-   </property>
-  </action>
   <action name="action_Highlight_Syntax">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
     <string>&amp;Highlight Syntax</string>
-   </property>
-  </action>
-  <action name="action_Apply_Backlighting">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Apply Backli&amp;ghting</string>
-   </property>
-  </action>
-  <action name="action_Make_Backup_Copy">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Mak&amp;e Backup Copy (*.bck)</string>
-   </property>
-  </action>
-  <action name="action_Incremental_Backup">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Incremental &amp;Backup</string>
    </property>
   </action>
   <action name="action_Overtype">
@@ -1351,31 +1277,9 @@
     <string>&amp;Tab Stops...</string>
    </property>
   </action>
-  <action name="action_Default_Text_Fonts">
-   <property name="icon">
-    <iconset theme="preferences-desktop-font">
-     <normaloff>.</normaloff>.</iconset>
-   </property>
-   <property name="text">
-    <string>Text &amp;Fonts...</string>
-   </property>
-  </action>
-  <action name="action_Default_Colors">
-   <property name="text">
-    <string>&amp;Colors...</string>
-   </property>
-  </action>
   <action name="action_Default_Customize_Window_Title">
    <property name="text">
     <string>Customize Win&amp;dow Title...</string>
-   </property>
-  </action>
-  <action name="action_Default_Apply_Backlighting">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Apply Bac&amp;klighting</string>
    </property>
   </action>
   <action name="action_Default_Show_Tooltips">
@@ -1384,38 +1288,6 @@
    </property>
    <property name="text">
     <string>Show Tooltips</string>
-   </property>
-  </action>
-  <action name="action_Default_Statistics_Line">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Statistics Line</string>
-   </property>
-  </action>
-  <action name="action_Default_Incremental_Search_Line">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Incremental Search L&amp;ine</string>
-   </property>
-  </action>
-  <action name="action_Default_Make_Backup_Copy">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Mak&amp;e Backup Copy (*.bck)</string>
-   </property>
-  </action>
-  <action name="action_Default_Incremental_Backup">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Incremental &amp;Backup</string>
    </property>
   </action>
   <action name="action_Default_Terminate_with_Line_Break_on_Save">
@@ -1693,14 +1565,6 @@
     <string>&amp;Sort Tabs Alphabetically</string>
    </property>
   </action>
-  <action name="action_Default_Show_Line_Numbers">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Show Line &amp;Numbers</string>
-   </property>
-  </action>
   <action name="action_Default_Matching_Off">
    <property name="checkable">
     <bool>true</bool>
@@ -1807,6 +1671,14 @@
    </property>
    <property name="shortcut">
     <string>F1</string>
+   </property>
+  </action>
+  <action name="action_Settings">
+   <property name="icon">
+    <iconset theme="preferences"/>
+   </property>
+   <property name="text">
+    <string>&amp;Settings...</string>
    </property>
   </action>
  </widget>
