@@ -1,15 +1,15 @@
 
 #include "DialogPreferences.h"
-#include "Preferences.h"
+#include "DialogSmartIndent.h"
+#include "DocumentWidget.h"
 #include "Font.h"
+#include "MainWindow.h"
+#include "Preferences.h"
 #include "Settings.h"
 #include "X11Colors.h"
-#include "MainWindow.h"
-#include "DocumentWidget.h"
-#include "DialogSmartIndent.h"
-#include <QPainter>
 #include <QColorDialog>
 #include <QMessageBox>
+#include <QPainter>
 
 namespace {
 
@@ -42,7 +42,6 @@ QIcon toIcon(const QColor &color) {
 }
 
 }
-
 
 /**
  * @brief DialogPreferences::DialogPreferences
@@ -78,6 +77,74 @@ DialogPreferences::DialogPreferences(QWidget *parent, Qt::WindowFlags f)
 	setupColors();
 	setupDisplay();
 	setupBackup();
+	setupMatching();
+	setupShell();
+	setupBehavior();
+	setupWrap();
+}
+
+bool DialogPreferences::validateShell() {
+	if (!QFile::exists(ui.editShellPath->text())) {
+		int resp = QMessageBox::warning(
+			this,
+			tr("Command Shell"),
+			tr("The selected shell is not available.\nDo you want to use it anyway?"),
+			QMessageBox::Ok | QMessageBox::Cancel);
+		if (resp != QMessageBox::Cancel) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * @brief DialogPreferences::applyWrap
+ */
+void DialogPreferences::applyWrap() {
+
+	int margin = ui.checkWrapAndFill->isChecked() ? 0 : ui.spinWrapAndFill->value();
+
+	// Global
+	Preferences::SetPrefWrapMargin(margin);
+
+	if (ui.radioWrapNone->isChecked()) {
+		Preferences::SetPrefWrap(WrapStyle::None);
+	} else if (ui.radioWrapAuto->isChecked()) {
+		Preferences::SetPrefWrap(WrapStyle::Newline);
+	} else if (ui.radioWrapContinuous->isChecked()) {
+		Preferences::SetPrefWrap(WrapStyle::Continuous);
+	}
+
+	// Open Documents
+	for (DocumentWidget *document : DocumentWidget::allDocuments()) {
+		document->setWrapMargin(margin);
+	}
+
+	for (MainWindow *win : MainWindow::allWindows()) {
+		if (ui.radioWrapNone->isChecked()) {
+			win->action_Set_Auto_Wrap(WrapStyle::None);
+		} else if (ui.radioWrapAuto->isChecked()) {
+			win->action_Set_Auto_Wrap(WrapStyle::Newline);
+		} else if (ui.radioWrapContinuous->isChecked()) {
+			win->action_Set_Auto_Wrap(WrapStyle::Continuous);
+		}
+	}
+}
+
+/**
+ * @brief DialogPreferences::applyBehavior
+ */
+void DialogPreferences::applyBehavior() {
+	Preferences::SetPrefAppendLF(ui.checkTerminateWithNewline);
+	Preferences::SetPrefAutoScroll(ui.checkAutoScroll);
+}
+
+/**
+ * @brief DialogPreferences::applyShell
+ */
+void DialogPreferences::applyShell() {
+	Preferences::SetPrefShell(ui.editShellPath->text());
 }
 
 /**
@@ -90,7 +157,7 @@ void DialogPreferences::applyFonts() {
 
 	Preferences::SetPrefFont(fontName);
 
-	for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+	for (DocumentWidget *document : DocumentWidget::allDocuments()) {
 		document->action_Set_Fonts(fontName);
 	}
 }
@@ -134,7 +201,7 @@ void DialogPreferences::applyDisplay() {
 	Preferences::SetPrefBacklightChars(ui.checkApplyBacklighting->isChecked());
 
 	std::vector<MainWindow *> windows = MainWindow::allWindows();
-	for(MainWindow *win : windows) {
+	for (MainWindow *win : windows) {
 		win->action_Statistics_Line_toggled(ui.checkShowStatistics->isChecked());
 		win->action_Incremental_Search_Line_toggled(ui.checkShowIncrementalSearch->isChecked());
 		win->action_Show_Line_Numbers_toggled(ui.checkShowLineNumbers->isChecked());
@@ -151,11 +218,69 @@ void DialogPreferences::applyBackup() {
 	Preferences::SetPrefAutoSave(ui.checkIncrementalBackup->isChecked());
 
 	std::vector<MainWindow *> windows = MainWindow::allWindows();
-	for(MainWindow *win : windows) {
+	for (MainWindow *win : windows) {
 		win->action_Make_Backup_Copy_toggled(ui.checkMakeBackupCopy->isChecked());
 		win->action_Incremental_Backup_toggled(ui.checkIncrementalBackup->isChecked());
 	}
+}
 
+/**
+ * @brief DialogPreferences::applyMatching
+ */
+void DialogPreferences::applyMatching() {
+
+	if (ui.radioMatchingOff->isChecked()) {
+		Preferences::SetPrefShowMatching(ShowMatchingStyle::None);
+	} else if (ui.radioMatchingDelimiter->isChecked()) {
+		Preferences::SetPrefShowMatching(ShowMatchingStyle::Delimiter);
+	} else if (ui.radioMatchingRange->isChecked()) {
+		Preferences::SetPrefShowMatching(ShowMatchingStyle::Range);
+	}
+
+	Preferences::SetPrefMatchSyntaxBased(ui.checkMatchingSyntax->isChecked());
+
+	std::vector<MainWindow *> windows = MainWindow::allWindows();
+	for (MainWindow *win : windows) {
+		win->action_Matching_Syntax_toggled(ui.checkMatchingSyntax->isChecked());
+
+		if (ui.radioMatchingOff->isChecked()) {
+			win->action_Match_Style_Changed(ShowMatchingStyle::None);
+		} else if (ui.radioMatchingDelimiter->isChecked()) {
+			win->action_Match_Style_Changed(ShowMatchingStyle::Delimiter);
+		} else if (ui.radioMatchingRange->isChecked()) {
+			win->action_Match_Style_Changed(ShowMatchingStyle::Range);
+		}
+	}
+}
+
+/**
+ * @brief DialogPreferences::setupWrap
+ */
+void DialogPreferences::setupWrap() {
+
+	connect(ui.checkWrapAndFill, &QCheckBox::toggled, this, [this](bool checked) {
+		ui.label->setEnabled(!checked);
+		ui.spinWrapAndFill->setEnabled(!checked);
+	});
+
+	const int margin = Preferences::GetPrefWrapMargin();
+
+	ui.checkWrapAndFill->setChecked(margin == 0);
+	ui.spinWrapAndFill->setValue(margin);
+
+	switch (Preferences::GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
+	case WrapStyle::None:
+		ui.radioWrapNone->setChecked(true);
+		break;
+	case WrapStyle::Newline:
+		ui.radioWrapAuto->setChecked(true);
+		break;
+	case WrapStyle::Continuous:
+		ui.radioWrapContinuous->setChecked(true);
+		break;
+	default:
+		break;
+	}
 }
 
 /**
@@ -263,6 +388,47 @@ void DialogPreferences::setupBackup() {
 }
 
 /**
+ * @brief DialogPreferences::setupMatching
+ */
+void DialogPreferences::setupMatching() {
+	switch (Preferences::GetPrefShowMatching()) {
+	case ShowMatchingStyle::None:
+		ui.radioMatchingOff->setChecked(true);
+		break;
+	case ShowMatchingStyle::Delimiter:
+		ui.radioMatchingDelimiter->setChecked(true);
+		break;
+	case ShowMatchingStyle::Range:
+		ui.radioMatchingRange->setChecked(true);
+		break;
+	}
+
+	ui.checkMatchingSyntax->setChecked(Preferences::GetPrefMatchSyntaxBased());
+}
+
+/**
+ * @brief DialogPreferences::setupBehavior
+ */
+void DialogPreferences::setupBehavior() {
+	ui.checkAutoScroll->setChecked(Preferences::GetPrefAutoScroll());
+	ui.checkTerminateWithNewline->setChecked(Preferences::GetPrefAppendLF());
+}
+
+/**
+ * @brief DialogPreferences::setupShell
+ */
+void DialogPreferences::setupShell() {
+	ui.editShellPath->setText(Preferences::GetPrefShell());
+
+	connect(ui.buttonShellPath, &QPushButton::clicked, this, [this]() {
+		QString shell = QFileDialog::getOpenFileName(this, tr("Command Shell"));
+		if (!shell.isEmpty()) {
+			ui.editShellPath->setText(shell);
+		}
+	});
+}
+
+/**
  * @brief DialogColors::chooseColor
  * @param edit
  */
@@ -278,7 +444,6 @@ QColor DialogPreferences::chooseColor(QPushButton *button, const QColor &current
 
 	return color;
 }
-
 
 /**
  * @brief DialogPreferences::buttonBoxClicked
@@ -302,10 +467,26 @@ void DialogPreferences::buttonBoxClicked(QAbstractButton *button) {
  * @brief DialogPreferences::applySettings
  */
 void DialogPreferences::applySettings() {
+
+	if (!validateFonts() ||
+			!validateColors() ||
+			!validateDisplay() ||
+			!validateBackup() ||
+			!validateMatching() ||
+			!validateShell() ||
+			!validateBehavior() ||
+			!validateWrap()) {
+		return;
+	}
+
 	applyFonts();
 	applyColors();
 	applyDisplay();
 	applyBackup();
+	applyMatching();
+	applyShell();
+	applyBehavior();
+	applyWrap();
 }
 
 /**
@@ -314,4 +495,3 @@ void DialogPreferences::applySettings() {
 void DialogPreferences::acceptDialog() {
 	applySettings();
 }
-

@@ -640,6 +640,7 @@ TextArea *DocumentWidget::createTextArea(const std::shared_ptr<TextBuffer> &buff
 							 buffer.get(),
 							 Preferences::GetPrefDefaultFont());
 
+	// TODO(eteran): auto-scrolling can only be changed with a restart
 	area->setCursorVPadding(Preferences::GetVerticalAutoScroll());
 	area->setEmulateTabs(Preferences::GetPrefEmTabDist(PLAIN_LANGUAGE_MODE));
 
@@ -1345,19 +1346,6 @@ void DocumentWidget::setAutoWrap(WrapStyle wrapStyle) {
 	}
 
 	info_->wrapMode = wrapStyle;
-
-	if (!isTopDocument()) {
-		return;
-	}
-
-	MainWindow *win = MainWindow::fromDocument(this);
-	if (!win) {
-		return;
-	}
-
-	no_signals(win->ui.action_Wrap_Auto_Newline)->setChecked(autoWrap);
-	no_signals(win->ui.action_Wrap_Continuous)->setChecked(contWrap);
-	no_signals(win->ui.action_Wrap_None)->setChecked(wrapStyle == WrapStyle::None);
 }
 
 /**
@@ -2646,15 +2634,6 @@ void DocumentWidget::addWrapNewlines() {
 		area->verticalScrollBar()->setValue(topLines[i]);
 		area->horizontalScrollBar()->setValue(0);
 	}
-
-	MainWindow *win = MainWindow::fromDocument(this);
-	if (!win) {
-		return;
-	}
-
-	/* Show the user that something has happened by turning off
-	   Continuous Wrap mode */
-	no_signals(win->ui.action_Wrap_Continuous)->setChecked(false);
 }
 
 /*
@@ -3309,7 +3288,6 @@ void DocumentWidget::refreshMenuToggleStates() {
 	// Preferences menu
 	no_signals(win->ui.action_Highlight_Syntax)->setChecked(highlightSyntax_);
 	no_signals(win->ui.action_Overtype)->setChecked(info_->overstrike);
-	no_signals(win->ui.action_Matching_Syntax)->setChecked(info_->matchSyntaxBased);
 	no_signals(win->ui.action_Read_Only)->setChecked(info_->lockReasons.isUserLocked());
 
 	win->ui.action_Indent_Smart->setEnabled(SmartIndent::smartIndentMacrosAvailable(Preferences::LanguageModeName(languageMode_)));
@@ -3317,7 +3295,6 @@ void DocumentWidget::refreshMenuToggleStates() {
 
 	setAutoIndent(info_->indentStyle);
 	setAutoWrap(info_->wrapMode);
-	setShowMatching(info_->showMatchingStyle);
 	setLanguageMode(languageMode_, /*forceNewDefaults=*/false);
 
 	// Windows Menu
@@ -3381,37 +3358,6 @@ void DocumentWidget::executeNewlineMacro(SmartIndentEvent *event) {
 		}
 
 		event->request = to_integer(result);
-	}
-}
-
-/*
-** Set showMatching state to one of None, Delimeter or Range.
-** Update the menu to reflect the change of state.
-*/
-void DocumentWidget::setShowMatching(ShowMatchingStyle state) {
-
-	emit_event("set_show_matching", to_string(state));
-
-	info_->showMatchingStyle = state;
-	if (!isTopDocument()) {
-		return;
-	}
-
-	MainWindow *win = MainWindow::fromDocument(this);
-	if (!win) {
-		return;
-	}
-
-	switch (state) {
-	case ShowMatchingStyle::None:
-		no_signals(win->ui.action_Matching_Off)->setChecked(true);
-		break;
-	case ShowMatchingStyle::Delimiter:
-		no_signals(win->ui.action_Matching_Delimiter)->setChecked(true);
-		break;
-	case ShowMatchingStyle::Range:
-		no_signals(win->ui.action_Matching_Range)->setChecked(true);
-		break;
 	}
 }
 
@@ -4260,23 +4206,6 @@ bool DocumentWidget::showStatisticsLine() const {
  */
 bool DocumentWidget::matchSyntaxBased() const {
 	return info_->matchSyntaxBased;
-}
-
-/**
- * @brief DocumentWidget::setMatchSyntaxBased
- * @param value
- */
-void DocumentWidget::setMatchSyntaxBased(bool value) {
-
-	emit_event("set_match_syntax_based", value ? QLatin1String("1") : QLatin1String("0"));
-
-	if (isTopDocument()) {
-		if (auto win = MainWindow::fromDocument(this)) {
-			no_signals(win->ui.action_Matching_Syntax)->setChecked(value);
-		}
-	}
-
-	info_->matchSyntaxBased = value;
 }
 
 /**

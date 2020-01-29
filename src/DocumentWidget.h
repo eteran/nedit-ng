@@ -199,11 +199,9 @@ public:
 	void setFilename(const QString &filename);
 	void setHighlightSyntax(bool value);
 	void setLanguageMode(size_t mode, bool forceNewDefaults);
-	void setMatchSyntaxBased(bool value);
 	void setOverstrike(bool overstrike);
 	void setPath(const QDir &path);
 	void setPath(const QString &pathname);
-	void setShowMatching(ShowMatchingStyle state);
 	void setTabDistance(int distance);
 	void setUseTabs(bool value);
 	void setUserLocked(bool value);

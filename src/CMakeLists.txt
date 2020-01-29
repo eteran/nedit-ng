@@ -145,9 +145,6 @@ add_executable(nedit-ng
 	DialogWindowTitle.cpp
 	DialogWindowTitle.h
 	DialogWindowTitle.ui
-	DialogWrapMargin.cpp
-	DialogWrapMargin.h
-	DialogWrapMargin.ui
 	Direction.h
 	DocumentInfo.cpp
 	DocumentInfo.h

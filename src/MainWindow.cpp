@@ -8,9 +8,9 @@
 #include "DialogFind.h"
 #include "DialogLanguageModes.h"
 #include "DialogMacros.h"
+#include "DialogPreferences.h"
 #include "DialogRepeat.h"
 #include "DialogReplace.h"
-#include "DialogPreferences.h"
 #include "DialogShellMenu.h"
 #include "DialogSmartIndent.h"
 #include "DialogSyntaxPatterns.h"
@@ -18,7 +18,6 @@
 #include "DialogWindowBackgroundMenu.h"
 #include "DialogWindowSize.h"
 #include "DialogWindowTitle.h"
-#include "DialogWrapMargin.h"
 #include "DocumentWidget.h"
 #include "Help.h"
 #include "Highlight.h"
@@ -326,13 +325,10 @@ void MainWindow::connectSlots() {
 	connect(ui.action_Split_Pane, &QAction::triggered, this, &MainWindow::action_Split_Pane_triggered);
 	connect(ui.action_Close_Pane, &QAction::triggered, this, &MainWindow::action_Close_Pane_triggered);
 	connect(ui.action_Move_Tab_To, &QAction::triggered, this, &MainWindow::action_Move_Tab_To_triggered);
-	connect(ui.action_Wrap_Margin, &QAction::triggered, this, &MainWindow::action_Wrap_Margin_triggered);
 	connect(ui.action_Tab_Stops, &QAction::triggered, this, &MainWindow::action_Tab_Stops_triggered);
 	connect(ui.action_Save_Defaults, &QAction::triggered, this, &MainWindow::action_Save_Defaults_triggered);
 	connect(ui.action_Default_Language_Modes, &QAction::triggered, this, &MainWindow::action_Default_Language_Modes_triggered);
 	connect(ui.action_Default_Program_Smart_Indent, &QAction::triggered, this, &MainWindow::action_Default_Program_Smart_Indent_triggered);
-	connect(ui.action_Default_Wrap_Margin, &QAction::triggered, this, &MainWindow::action_Default_Wrap_Margin_triggered);
-	connect(ui.action_Default_Command_Shell, &QAction::triggered, this, &MainWindow::action_Default_Command_Shell_triggered);
 	connect(ui.action_Default_Tab_Stops, &QAction::triggered, this, &MainWindow::action_Default_Tab_Stops_triggered);
 	connect(ui.action_Default_Shell_Menu, &QAction::triggered, this, &MainWindow::action_Default_Shell_Menu_triggered);
 	connect(ui.action_Default_Macro_Menu, &QAction::triggered, this, &MainWindow::action_Default_Macro_Menu_triggered);
@@ -350,7 +346,6 @@ void MainWindow::connectSlots() {
 	connect(ui.action_Help, &QAction::triggered, this, &MainWindow::action_Help_triggered);
 
 	connect(ui.action_Highlight_Syntax, &QAction::toggled, this, &MainWindow::action_Highlight_Syntax_toggled);
-	connect(ui.action_Matching_Syntax, &QAction::toggled, this, &MainWindow::action_Matching_Syntax_toggled);
 	connect(ui.action_Overtype, &QAction::toggled, this, &MainWindow::action_Overtype_toggled);
 	connect(ui.action_Read_Only, &QAction::toggled, this, &MainWindow::action_Read_Only_toggled);
 	connect(ui.action_Default_Sort_Open_Prev_Menu, &QAction::toggled, this, &MainWindow::action_Default_Sort_Open_Prev_Menu_toggled);
@@ -365,10 +360,7 @@ void MainWindow::connectSlots() {
 	connect(ui.action_Default_Tab_Next_Prev_Tabs_Across_Windows, &QAction::toggled, this, &MainWindow::action_Default_Tab_Next_Prev_Tabs_Across_Windows_toggled);
 	connect(ui.action_Default_Tab_Sort_Tabs_Alphabetically, &QAction::toggled, this, &MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically_toggled);
 	connect(ui.action_Default_Show_Tooltips, &QAction::toggled, this, &MainWindow::action_Default_Show_Tooltips_toggled);
-	connect(ui.action_Default_Matching_Syntax_Based, &QAction::toggled, this, &MainWindow::action_Default_Matching_Syntax_Based_toggled);
-	connect(ui.action_Default_Terminate_with_Line_Break_on_Save, &QAction::toggled, this, &MainWindow::action_Default_Terminate_with_Line_Break_on_Save_toggled);
 	connect(ui.action_Default_Popups_Under_Pointer, &QAction::toggled, this, &MainWindow::action_Default_Popups_Under_Pointer_toggled);
-	connect(ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom, &QAction::toggled, this, &MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled);
 	connect(ui.action_Default_Warnings_Files_Modified_Externally, &QAction::toggled, this, &MainWindow::action_Default_Warnings_Files_Modified_Externally_toggled);
 	connect(ui.action_Default_Warnings_Check_Modified_File_Contents, &QAction::toggled, this, &MainWindow::action_Default_Warnings_Check_Modified_File_Contents_toggled);
 	connect(ui.action_Default_Warnings_On_Exit, &QAction::toggled, this, &MainWindow::action_Default_Warnings_On_Exit_toggled);
@@ -480,21 +472,6 @@ void MainWindow::setupGlobalPrefenceDefaults() {
 		break;
 	}
 
-	// Default Wrap
-	switch (Preferences::GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
-	case WrapStyle::None:
-		ui.action_Default_Wrap_None->setChecked(true);
-		break;
-	case WrapStyle::Newline:
-		ui.action_Default_Wrap_Auto_Newline->setChecked(true);
-		break;
-	case WrapStyle::Continuous:
-		ui.action_Default_Wrap_Continuous->setChecked(true);
-		break;
-	default:
-		break;
-	}
-
 	// Default Search Settings
 	no_signals(ui.action_Default_Search_Verbose)->setChecked(Preferences::GetPrefSearchDlogs());
 	no_signals(ui.action_Default_Search_Wrap_Around)->setChecked(Preferences::GetPrefSearchWraps() == WrapMode::Wrap);
@@ -544,22 +521,7 @@ void MainWindow::setupGlobalPrefenceDefaults() {
 
 	no_signals(ui.action_Default_Show_Tooltips)->setChecked(Preferences::GetPrefToolTips());
 
-	switch (Preferences::GetPrefShowMatching()) {
-	case ShowMatchingStyle::None:
-		ui.action_Default_Matching_Off->setChecked(true);
-		break;
-	case ShowMatchingStyle::Delimiter:
-		ui.action_Default_Matching_Delimiter->setChecked(true);
-		break;
-	case ShowMatchingStyle::Range:
-		ui.action_Default_Matching_Range->setChecked(true);
-		break;
-	}
-
-	no_signals(ui.action_Default_Matching_Syntax_Based)->setChecked(Preferences::GetPrefMatchSyntaxBased());
-	no_signals(ui.action_Default_Terminate_with_Line_Break_on_Save)->setChecked(Preferences::GetPrefAppendLF());
 	no_signals(ui.action_Default_Popups_Under_Pointer)->setChecked(Preferences::GetPrefRepositionDialogs());
-	no_signals(ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom)->setChecked(Preferences::GetPrefAutoScroll());
 	no_signals(ui.action_Default_Warnings_Files_Modified_Externally)->setChecked(Preferences::GetPrefWarnFileMods());
 	no_signals(ui.action_Default_Warnings_Check_Modified_File_Contents)->setChecked(Preferences::GetPrefWarnRealFileMods());
 	no_signals(ui.action_Default_Warnings_On_Exit)->setChecked(Preferences::GetPrefWarnExit());
@@ -589,33 +551,6 @@ void MainWindow::setupDocumentPreferenceDefaults() {
 		break;
 	}
 
-	// based on document, which defaults to this
-	switch (Preferences::GetPrefWrap(PLAIN_LANGUAGE_MODE)) {
-	case WrapStyle::None:
-		ui.action_Wrap_None->setChecked(true);
-		break;
-	case WrapStyle::Newline:
-		ui.action_Wrap_Auto_Newline->setChecked(true);
-		break;
-	case WrapStyle::Continuous:
-		ui.action_Wrap_Continuous->setChecked(true);
-		break;
-	default:
-		break;
-	}
-
-	switch (Preferences::GetPrefShowMatching()) {
-	case ShowMatchingStyle::None:
-		ui.action_Matching_Off->setChecked(true);
-		break;
-	case ShowMatchingStyle::Delimiter:
-		ui.action_Matching_Delimiter->setChecked(true);
-		break;
-	case ShowMatchingStyle::Range:
-		ui.action_Matching_Range->setChecked(true);
-		break;
-	}
-
 	if (Preferences::GetPrefSmartTags()) {
 		ui.action_Default_Tag_Smart->setChecked(true);
 	} else {
@@ -630,7 +565,6 @@ void MainWindow::setupMenuDefaults() {
 
 	// active settings
 	no_signals(ui.action_Highlight_Syntax)->setChecked(Preferences::GetPrefHighlightSyntax());
-	no_signals(ui.action_Matching_Syntax)->setChecked(Preferences::GetPrefMatchSyntaxBased());
 
 	setupGlobalPrefenceDefaults();
 	setupDocumentPreferenceDefaults();
@@ -762,25 +696,10 @@ void MainWindow::setupMenuGroups() {
 	indentGroup->addAction(ui.action_Indent_On);
 	indentGroup->addAction(ui.action_Indent_Smart);
 
-	auto wrapGroup = new QActionGroup(this);
-	wrapGroup->addAction(ui.action_Wrap_None);
-	wrapGroup->addAction(ui.action_Wrap_Auto_Newline);
-	wrapGroup->addAction(ui.action_Wrap_Continuous);
-
-	auto matchingGroup = new QActionGroup(this);
-	matchingGroup->addAction(ui.action_Matching_Off);
-	matchingGroup->addAction(ui.action_Matching_Range);
-	matchingGroup->addAction(ui.action_Matching_Delimiter);
-
 	auto defaultIndentGroup = new QActionGroup(this);
 	defaultIndentGroup->addAction(ui.action_Default_Indent_Off);
 	defaultIndentGroup->addAction(ui.action_Default_Indent_On);
 	defaultIndentGroup->addAction(ui.action_Default_Indent_Smart);
-
-	auto defaultWrapGroup = new QActionGroup(this);
-	defaultWrapGroup->addAction(ui.action_Default_Wrap_None);
-	defaultWrapGroup->addAction(ui.action_Default_Wrap_Auto_Newline);
-	defaultWrapGroup->addAction(ui.action_Default_Wrap_Continuous);
 
 	auto defaultTagCollisionsGroup = new QActionGroup(this);
 	defaultTagCollisionsGroup->addAction(ui.action_Default_Tag_Show_All);
@@ -798,11 +717,6 @@ void MainWindow::setupMenuGroups() {
 	defaultSyntaxGroup->addAction(ui.action_Default_Syntax_Off);
 	defaultSyntaxGroup->addAction(ui.action_Default_Syntax_On);
 
-	auto defaultMatchingGroup = new QActionGroup(this);
-	defaultMatchingGroup->addAction(ui.action_Default_Matching_Off);
-	defaultMatchingGroup->addAction(ui.action_Default_Matching_Delimiter);
-	defaultMatchingGroup->addAction(ui.action_Default_Matching_Range);
-
 	auto defaultSizeGroup = new QActionGroup(this);
 	defaultSizeGroup->addAction(ui.action_Default_Size_24_x_80);
 	defaultSizeGroup->addAction(ui.action_Default_Size_40_x_80);
@@ -811,14 +725,10 @@ void MainWindow::setupMenuGroups() {
 	defaultSizeGroup->addAction(ui.action_Default_Size_Custom);
 
 	connect(indentGroup, &QActionGroup::triggered, this, &MainWindow::indentGroupTriggered);
-	connect(wrapGroup, &QActionGroup::triggered, this, &MainWindow::wrapGroupTriggered);
-	connect(matchingGroup, &QActionGroup::triggered, this, &MainWindow::matchingGroupTriggered);
 	connect(defaultIndentGroup, &QActionGroup::triggered, this, &MainWindow::defaultIndentGroupTriggered);
-	connect(defaultWrapGroup, &QActionGroup::triggered, this, &MainWindow::defaultWrapGroupTriggered);
 	connect(defaultTagCollisionsGroup, &QActionGroup::triggered, this, &MainWindow::defaultTagCollisionsGroupTriggered);
 	connect(defaultSearchGroup, &QActionGroup::triggered, this, &MainWindow::defaultSearchGroupTriggered);
 	connect(defaultSyntaxGroup, &QActionGroup::triggered, this, &MainWindow::defaultSyntaxGroupTriggered);
-	connect(defaultMatchingGroup, &QActionGroup::triggered, this, &MainWindow::defaultMatchingGroupTriggered);
 	connect(defaultSizeGroup, &QActionGroup::triggered, this, &MainWindow::defaultSizeGroupTriggered);
 }
 
@@ -3722,39 +3632,11 @@ void MainWindow::indentGroupTriggered(QAction *action) {
 
 /**
  * @brief MainWindow::action_Set_Auto_Wrap
- * @param document
  * @param state
  */
-void MainWindow::action_Set_Auto_Wrap(DocumentWidget *document, WrapStyle state) {
-	emit_event("set_wrap_text", to_string(state));
-	document->setAutoWrap(state);
-}
-
-/**
- * @brief MainWindow::wrapGroupTriggered
- * @param action
- */
-void MainWindow::wrapGroupTriggered(QAction *action) {
-	if (DocumentWidget *document = currentDocument()) {
-		if (action == ui.action_Wrap_None) {
-			action_Set_Auto_Wrap(document, WrapStyle::None);
-		} else if (action == ui.action_Wrap_Auto_Newline) {
-			action_Set_Auto_Wrap(document, WrapStyle::Newline);
-		} else if (action == ui.action_Wrap_Continuous) {
-			action_Set_Auto_Wrap(document, WrapStyle::Continuous);
-		} else {
-			qWarning("NEdit: set_wrap_text invalid argument");
-		}
-	}
-}
-
-/**
- * @brief MainWindow::action_Wrap_Margin_triggered
- */
-void MainWindow::action_Wrap_Margin_triggered() {
-	if (DocumentWidget *document = currentDocument()) {
-		auto dialog = std::make_unique<DialogWrapMargin>(document, this);
-		dialog->exec();
+void MainWindow::action_Set_Auto_Wrap(WrapStyle state) {
+	for (DocumentWidget *document : openDocuments()) {
+		document->setAutoWrap(state);
 	}
 }
 
@@ -3790,7 +3672,7 @@ void MainWindow::action_Highlight_Syntax_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Apply_Backlighting_toggled(bool state) {
-	if (DocumentWidget *document = currentDocument()) {
+	for (DocumentWidget *document : openDocuments()) {
 		document->setBacklightChars(state ? Preferences::GetPrefBacklightCharTypes() : QString());
 	}
 }
@@ -3800,7 +3682,7 @@ void MainWindow::action_Apply_Backlighting_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Make_Backup_Copy_toggled(bool state) {
-	if (DocumentWidget *document = currentDocument()) {
+	for (DocumentWidget *document : openDocuments()) {
 		document->info_->saveOldVersion = state;
 	}
 }
@@ -3810,27 +3692,18 @@ void MainWindow::action_Make_Backup_Copy_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Incremental_Backup_toggled(bool state) {
-	if (DocumentWidget *document = currentDocument()) {
+	for (DocumentWidget *document : openDocuments()) {
 		document->info_->autoSave = state;
 	}
 }
 
 /**
- * @brief MainWindow::matchingGroupTriggered
- * @param action
+ * @brief MainWindow::action_Match_Style_Changed
+ * @param style
  */
-void MainWindow::matchingGroupTriggered(QAction *action) {
-
-	if (DocumentWidget *document = currentDocument()) {
-		if (action == ui.action_Matching_Off) {
-			document->setShowMatching(ShowMatchingStyle::None);
-		} else if (action == ui.action_Matching_Delimiter) {
-			document->setShowMatching(ShowMatchingStyle::Delimiter);
-		} else if (action == ui.action_Matching_Range) {
-			document->setShowMatching(ShowMatchingStyle::Range);
-		} else {
-			qWarning("NEdit: Invalid argument for set_show_matching");
-		}
+void MainWindow::action_Match_Style_Changed(ShowMatchingStyle style) {
+	for (DocumentWidget *document : openDocuments()) {
+		document->info_->showMatchingStyle = style;
 	}
 }
 
@@ -3839,7 +3712,7 @@ void MainWindow::matchingGroupTriggered(QAction *action) {
  * @param state
  */
 void MainWindow::action_Matching_Syntax_toggled(bool state) {
-	if (DocumentWidget *document = currentDocument()) {
+	for (DocumentWidget *document : openDocuments()) {
 		document->info_->matchSyntaxBased = state;
 	}
 }
@@ -3932,31 +3805,6 @@ void MainWindow::action_Default_Program_Smart_Indent_triggered() {
 }
 
 /**
- * @brief MainWindow::defaultWrapGroupTriggered
- * @param action
- */
-void MainWindow::defaultWrapGroupTriggered(QAction *action) {
-
-	if (action == ui.action_Default_Wrap_None) {
-		Preferences::SetPrefWrap(WrapStyle::None);
-	} else if (action == ui.action_Default_Wrap_Auto_Newline) {
-		Preferences::SetPrefWrap(WrapStyle::Newline);
-	} else if (action == ui.action_Default_Wrap_Continuous) {
-		Preferences::SetPrefWrap(WrapStyle::Continuous);
-	} else {
-		qWarning("NEdit: invalid default wrap");
-	}
-}
-
-/**
- * @brief MainWindow::action_Default_Wrap_Margin_triggered
- */
-void MainWindow::action_Default_Wrap_Margin_triggered() {
-	auto dialog = std::make_unique<DialogWrapMargin>(nullptr, this);
-	dialog->exec();
-}
-
-/**
  * @brief MainWindow::defaultTagCollisionsGroupTriggered
  * @param action
  */
@@ -3967,35 +3815,6 @@ void MainWindow::defaultTagCollisionsGroupTriggered(QAction *action) {
 		Preferences::SetPrefSmartTags(true);
 	} else {
 		qWarning("NEdit: invalid default collisions");
-	}
-}
-
-/**
- * @brief MainWindow::action_Default_Command_Shell_triggered
- */
-void MainWindow::action_Default_Command_Shell_triggered() {
-	bool ok;
-	QString shell = QInputDialog::getText(this,
-										  tr("Command Shell"),
-										  tr("Enter shell path:"),
-										  QLineEdit::Normal,
-										  Preferences::GetPrefShell(),
-										  &ok);
-
-	if (ok && !shell.isEmpty()) {
-
-		if (!QFile::exists(shell)) {
-			int resp = QMessageBox::warning(
-				this,
-				tr("Command Shell"),
-				tr("The selected shell is not available.\nDo you want to use it anyway?"),
-				QMessageBox::Ok | QMessageBox::Cancel);
-			if (resp == QMessageBox::Cancel) {
-				return;
-			}
-		}
-
-		Preferences::SetPrefShell(shell);
 	}
 }
 
@@ -4315,58 +4134,6 @@ void MainWindow::action_Default_Show_Tooltips_toggled(bool state) {
 }
 
 /**
- * @brief MainWindow::defaultMatchingGroupTriggered
- * @param action
- */
-void MainWindow::defaultMatchingGroupTriggered(QAction *action) {
-
-	std::vector<MainWindow *> windows = MainWindow::allWindows();
-
-	if (action == ui.action_Default_Matching_Off) {
-		Preferences::SetPrefShowMatching(ShowMatchingStyle::None);
-		for (MainWindow *window : windows) {
-			no_signals(window->ui.action_Default_Matching_Off)->setChecked(true);
-		}
-	} else if (action == ui.action_Default_Matching_Delimiter) {
-		Preferences::SetPrefShowMatching(ShowMatchingStyle::Delimiter);
-		for (MainWindow *window : windows) {
-			no_signals(window->ui.action_Default_Matching_Delimiter)->setChecked(true);
-		}
-	} else if (action == ui.action_Default_Matching_Range) {
-		Preferences::SetPrefShowMatching(ShowMatchingStyle::Range);
-		for (MainWindow *window : windows) {
-			no_signals(window->ui.action_Default_Matching_Range)->setChecked(true);
-		}
-	}
-}
-
-/**
- * @brief MainWindow::action_Default_Matching_Syntax_Based_toggled
- * @param state
- */
-void MainWindow::action_Default_Matching_Syntax_Based_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefMatchSyntaxBased(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Matching_Syntax_Based)->setChecked(state);
-	}
-}
-
-/**
- * @brief MainWindow::action_Default_Terminate_with_Line_Break_on_Save_toggled
- * @param state
- */
-void MainWindow::action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefAppendLF(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Terminate_with_Line_Break_on_Save)->setChecked(state);
-	}
-}
-
-/**
  * @brief MainWindow::action_Default_Popups_Under_Pointer_toggled
  * @param state
  */
@@ -4376,19 +4143,6 @@ void MainWindow::action_Default_Popups_Under_Pointer_toggled(bool state) {
 	Preferences::SetPrefRepositionDialogs(state);
 	for (MainWindow *window : MainWindow::allWindows()) {
 		no_signals(window->ui.action_Default_Popups_Under_Pointer)->setChecked(state);
-	}
-}
-
-/**
- * @brief MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled
- * @param state
- */
-void MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state) {
-
-	// Set the preference and make the other windows' menus agree
-	Preferences::SetPrefAutoScroll(state);
-	for (MainWindow *window : MainWindow::allWindows()) {
-		no_signals(window->ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom)->setChecked(state);
 	}
 }
 
@@ -4790,7 +4544,7 @@ QString MainWindow::promptForNewFile(DocumentWidget *document, FileFormats *form
 				wrapCheck->setChecked(true);
 			}
 
-			QObject::connect(wrapCheck, &QCheckBox::toggled, document, [wrapCheck, document](bool checked) {
+			connect(wrapCheck, &QCheckBox::toggled, document, [wrapCheck, document](bool checked) {
 				if (checked) {
 					int ret = QMessageBox::information(document, tr("Add Wrap"),
 													   tr("This operation adds permanent line breaks to match the automatic wrapping done by the Continuous Wrap mode Preferences Option.\n\n"
@@ -7202,5 +6956,4 @@ QPointer<TextArea> MainWindow::lastFocus() {
 void MainWindow::action_Settings_triggered() {
 	auto dialog = std::make_unique<DialogPreferences>(this);
 	dialog->exec();
-
 }

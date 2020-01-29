@@ -1338,43 +1338,6 @@ std::error_code setLanguageModeMS(DocumentWidget *document, Arguments arguments,
 	return MacroErrorCode::Success;
 }
 
-std::error_code setShowMatchingMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	document = MacroRunDocument();
-
-	if (arguments.size() > 0) {
-		QString arg;
-		if (std::error_code ec = readArgument(arguments[0], &arg)) {
-			return ec;
-		}
-
-		if (arg == QLatin1String("off")) {
-			document->setShowMatching(ShowMatchingStyle::None);
-		} else if (arg == QLatin1String("delimiter")) {
-			document->setShowMatching(ShowMatchingStyle::Delimiter);
-		} else if (arg == QLatin1String("range")) {
-			document->setShowMatching(ShowMatchingStyle::Range);
-		}
-		/* For backward compatibility with pre-5.2 versions, we also
-		   accept 0 and 1 as aliases for None and Delimeter.
-		   It is quite unlikely, though, that anyone ever used this
-		   action procedure via the macro language or a key binding,
-		   so this can probably be left out safely. */
-		else if (arg == QLatin1String("0")) {
-			document->setShowMatching(ShowMatchingStyle::None);
-		} else if (arg == QLatin1String("1")) {
-			document->setShowMatching(ShowMatchingStyle::Delimiter);
-		} else {
-			qWarning("NEdit: Invalid argument for set_show_matching");
-		}
-	} else {
-		qWarning("NEdit: set_show_matching requires argument");
-	}
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
-
 std::error_code setTabDistMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	document = MacroRunDocument();
@@ -4813,8 +4776,6 @@ const SubRoutine MenuMacroSubrNames[] = {
 	{"set_language_mode", setLanguageModeMS},
 	{"set_locked", menuToggleEvent<&DocumentWidget::setUserLocked, &DocumentWidget::userLocked>},
 	{"set_overtype_mode", menuToggleEvent<&DocumentWidget::setOverstrike, &DocumentWidget::overstrike>},
-	{"set_show_matching", setShowMatchingMS},
-	{"set_match_syntax_based", menuToggleEvent<&DocumentWidget::setMatchSyntaxBased, &DocumentWidget::matchSyntaxBased>},
 	{"set_tab_dist", setTabDistMS},
 	{"set_use_tabs", menuToggleEvent<&DocumentWidget::setUseTabs, &DocumentWidget::useTabs>},
 	{"set_wrap_margin", setWrapMarginMS},

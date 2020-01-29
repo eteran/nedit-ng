@@ -9,6 +9,7 @@
 #include "NewMode.h"
 #include "Search.h"
 #include "SearchType.h"
+#include "ShowMatchingStyle.h"
 #include "TextCursor.h"
 #include "Util/FileFormats.h"
 #include "WrapMode.h"
@@ -158,7 +159,7 @@ public:
 	// internal variants of signals
 	void action_New_Window(DocumentWidget *document);
 	void action_Set_Auto_Indent(DocumentWidget *document, IndentStyle state);
-	void action_Set_Auto_Wrap(DocumentWidget *document, WrapStyle state);
+	void action_Set_Auto_Wrap(WrapStyle state);
 	void action_Close(DocumentWidget *document, CloseMode mode = CloseMode::Prompt);
 	void action_Close_Pane(DocumentWidget *document);
 	void action_Delete(DocumentWidget *document);
@@ -265,8 +266,6 @@ public:
 public:
 	// groups
 	void indentGroupTriggered(QAction *action);
-	void wrapGroupTriggered(QAction *action);
-	void matchingGroupTriggered(QAction *action);
 	void defaultIndentGroupTriggered(QAction *action);
 	void defaultWrapGroupTriggered(QAction *action);
 	void defaultTagCollisionsGroupTriggered(QAction *action);
@@ -347,7 +346,6 @@ public:
 	void action_Statistics_Line_toggled(bool state);
 	void action_Incremental_Search_Line_toggled(bool state);
 	void action_Show_Line_Numbers_toggled(bool state);
-	void action_Wrap_Margin_triggered();
 	void action_Tab_Stops_triggered();
 	void action_Highlight_Syntax_toggled(bool state);
 	void action_Apply_Backlighting_toggled(bool state);
@@ -357,14 +355,13 @@ public:
 	void action_Overtype_toggled(bool state);
 	void action_Read_Only_toggled(bool state);
 	void action_Save_Defaults_triggered();
+	void action_Match_Style_Changed(ShowMatchingStyle style);
 
 	void action_Settings_triggered();
 
 	// Preferences Defaults
 	void action_Default_Language_Modes_triggered();
 	void action_Default_Program_Smart_Indent_triggered();
-	void action_Default_Wrap_Margin_triggered();
-	void action_Default_Command_Shell_triggered();
 	void action_Default_Tab_Stops_triggered();
 	void action_Default_Text_Fonts_triggered();
 	void action_Default_Shell_Menu_triggered();
@@ -386,17 +383,19 @@ public:
 	void action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state);
 	void action_Default_Show_Tooltips_toggled(bool state);
 	void action_Default_Matching_Syntax_Based_toggled(bool state);
-	void action_Default_Terminate_with_Line_Break_on_Save_toggled(bool state);
 	void action_Default_Popups_Under_Pointer_toggled(bool state);
-	void action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state);
 	void action_Default_Warnings_Files_Modified_Externally_toggled(bool state);
 	void action_Default_Warnings_Check_Modified_File_Contents_toggled(bool state);
 	void action_Default_Warnings_On_Exit_toggled(bool state);
+
+	// Macros
 	void action_Learn_Keystrokes_triggered();
 	void action_Finish_Learn_triggered();
 	void action_Cancel_Learn_triggered();
 	void action_Repeat_triggered();
 	void action_Replay_Keystrokes_triggered();
+
+	// Help
 	void action_About_triggered();
 	void action_About_Qt_triggered();
 	void action_Help_triggered();

@@ -235,16 +235,6 @@
     <property name="title">
      <string>&amp;Preferences</string>
     </property>
-    <widget class="QMenu" name="menu_Show_Matching">
-     <property name="title">
-      <string>Show &amp;Matching (..)</string>
-     </property>
-     <addaction name="action_Matching_Off"/>
-     <addaction name="action_Matching_Delimiter"/>
-     <addaction name="action_Matching_Range"/>
-     <addaction name="separator"/>
-     <addaction name="action_Matching_Syntax"/>
-    </widget>
     <widget class="QMenu" name="menu_Default_Settings">
      <property name="title">
       <string>&amp;Default Settings</string>
@@ -258,20 +248,6 @@
       <addaction name="action_Default_Indent_Smart"/>
       <addaction name="separator"/>
       <addaction name="action_Default_Program_Smart_Indent"/>
-     </widget>
-     <widget class="QMenu" name="menu_Default_Wrap">
-      <property name="title">
-       <string>&amp;Wrap</string>
-      </property>
-      <property name="icon">
-       <iconset theme="text-wrap">
-        <normaloff>.</normaloff>.</iconset>
-      </property>
-      <addaction name="action_Default_Wrap_None"/>
-      <addaction name="action_Default_Wrap_Auto_Newline"/>
-      <addaction name="action_Default_Wrap_Continuous"/>
-      <addaction name="separator"/>
-      <addaction name="action_Default_Wrap_Margin"/>
      </widget>
      <widget class="QMenu" name="menu_Default_Tag_Collisions">
       <property name="title">
@@ -332,16 +308,6 @@
       <addaction name="action_Default_Tab_Next_Prev_Tabs_Across_Windows"/>
       <addaction name="action_Default_Tab_Sort_Tabs_Alphabetically"/>
      </widget>
-     <widget class="QMenu" name="menu_Default_Show_Matching">
-      <property name="title">
-       <string>Show &amp;Matching (..)</string>
-      </property>
-      <addaction name="action_Default_Matching_Off"/>
-      <addaction name="action_Default_Matching_Delimiter"/>
-      <addaction name="action_Default_Matching_Range"/>
-      <addaction name="separator"/>
-      <addaction name="action_Default_Matching_Syntax_Based"/>
-     </widget>
      <widget class="QMenu" name="menu_Default_Warnings">
       <property name="title">
        <string>Wa&amp;rnings</string>
@@ -362,9 +328,7 @@
      </widget>
      <addaction name="action_Default_Language_Modes"/>
      <addaction name="menu_Default_Auto_Indent"/>
-     <addaction name="menu_Default_Wrap"/>
      <addaction name="menu_Default_Tag_Collisions"/>
-     <addaction name="action_Default_Command_Shell"/>
      <addaction name="action_Default_Tab_Stops"/>
      <addaction name="menu_Default_Customize_Menus"/>
      <addaction name="action_Default_Customize_Window_Title"/>
@@ -372,26 +336,9 @@
      <addaction name="menu_Default_Syntax_Highlighting"/>
      <addaction name="menuTabbed_Editing"/>
      <addaction name="action_Default_Show_Tooltips"/>
-     <addaction name="menu_Default_Show_Matching"/>
-     <addaction name="action_Default_Terminate_with_Line_Break_on_Save"/>
      <addaction name="action_Default_Popups_Under_Pointer"/>
-     <addaction name="action_Default_Auto_Scroll_Near_Window_Top_Bottom"/>
      <addaction name="menu_Default_Warnings"/>
      <addaction name="menu_Default_Initial_Window_Size"/>
-    </widget>
-    <widget class="QMenu" name="menu_Wrap">
-     <property name="title">
-      <string>&amp;Wrap</string>
-     </property>
-     <property name="icon">
-      <iconset theme="text-wrap">
-       <normaloff>.</normaloff>.</iconset>
-     </property>
-     <addaction name="action_Wrap_None"/>
-     <addaction name="action_Wrap_Auto_Newline"/>
-     <addaction name="action_Wrap_Continuous"/>
-     <addaction name="separator"/>
-     <addaction name="action_Wrap_Margin"/>
     </widget>
     <widget class="QMenu" name="menu_Auto_Indent">
      <property name="title">
@@ -407,10 +354,8 @@
     <addaction name="separator"/>
     <addaction name="action_Language_Mode"/>
     <addaction name="menu_Auto_Indent"/>
-    <addaction name="menu_Wrap"/>
     <addaction name="action_Tab_Stops"/>
     <addaction name="action_Highlight_Syntax"/>
-    <addaction name="menu_Show_Matching"/>
     <addaction name="separator"/>
     <addaction name="action_Overtype"/>
     <addaction name="action_Read_Only"/>
@@ -1103,67 +1048,6 @@
     <string>Read Onl&amp;y</string>
    </property>
   </action>
-  <action name="action_Matching_Off">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Off</string>
-   </property>
-  </action>
-  <action name="action_Matching_Delimiter">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Delimiter</string>
-   </property>
-  </action>
-  <action name="action_Matching_Range">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Range</string>
-   </property>
-  </action>
-  <action name="action_Matching_Syntax">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Syntax Based</string>
-   </property>
-  </action>
-  <action name="action_Wrap_None">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;None</string>
-   </property>
-  </action>
-  <action name="action_Wrap_Auto_Newline">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Auto Newline</string>
-   </property>
-  </action>
-  <action name="action_Wrap_Continuous">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Continuous</string>
-   </property>
-  </action>
-  <action name="action_Wrap_Margin">
-   <property name="text">
-    <string>&amp;Wrap Margin...</string>
-   </property>
-  </action>
   <action name="action_Indent_Off">
    <property name="checkable">
     <bool>true</bool>
@@ -1267,11 +1151,6 @@
     <string>&amp;Language Modes...</string>
    </property>
   </action>
-  <action name="action_Default_Command_Shell">
-   <property name="text">
-    <string>C&amp;ommand Shell...</string>
-   </property>
-  </action>
   <action name="action_Default_Tab_Stops">
    <property name="text">
     <string>&amp;Tab Stops...</string>
@@ -1290,28 +1169,12 @@
     <string>Show Tooltips</string>
    </property>
   </action>
-  <action name="action_Default_Terminate_with_Line_Break_on_Save">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Terminate with Line Break on Sa&amp;ve</string>
-   </property>
-  </action>
   <action name="action_Default_Popups_Under_Pointer">
    <property name="checkable">
     <bool>true</bool>
    </property>
    <property name="text">
     <string>&amp;Popups Under Pointer</string>
-   </property>
-  </action>
-  <action name="action_Default_Auto_Scroll_Near_Window_Top_Bottom">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>Auto Scroll Near Window Top/Bottom</string>
    </property>
   </action>
   <action name="action_Default_Indent_Off">
@@ -1341,35 +1204,6 @@
   <action name="action_Default_Program_Smart_Indent">
    <property name="text">
     <string>&amp;Program Smart Indent...</string>
-   </property>
-  </action>
-  <action name="action_Default_Wrap_None">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;None</string>
-   </property>
-  </action>
-  <action name="action_Default_Wrap_Auto_Newline">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Auto Newline</string>
-   </property>
-  </action>
-  <action name="action_Default_Wrap_Continuous">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Continuous</string>
-   </property>
-  </action>
-  <action name="action_Default_Wrap_Margin">
-   <property name="text">
-    <string>&amp;Wrap Margin...</string>
    </property>
   </action>
   <action name="action_Default_Tag_Show_All">
@@ -1565,38 +1399,6 @@
     <string>&amp;Sort Tabs Alphabetically</string>
    </property>
   </action>
-  <action name="action_Default_Matching_Off">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Off</string>
-   </property>
-  </action>
-  <action name="action_Default_Matching_Delimiter">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Delimiter</string>
-   </property>
-  </action>
-  <action name="action_Default_Matching_Range">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Range</string>
-   </property>
-  </action>
-  <action name="action_Default_Matching_Syntax_Based">
-   <property name="checkable">
-    <bool>true</bool>
-   </property>
-   <property name="text">
-    <string>&amp;Syntax Based</string>
-   </property>
-  </action>
   <action name="action_Default_Warnings_Files_Modified_Externally">
    <property name="checkable">
     <bool>true</bool>
@@ -1675,7 +1477,8 @@
   </action>
   <action name="action_Settings">
    <property name="icon">
-    <iconset theme="preferences"/>
+    <iconset theme="preferences">
+     <normaloff>.</normaloff>.</iconset>
    </property>
    <property name="text">
     <string>&amp;Settings...</string>
