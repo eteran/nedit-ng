@@ -5127,7 +5127,7 @@ void DocumentWidget::runMacro(Program *prog) {
 	macroCmdData_ = std::move(cmdData);
 
 	// Set up timer proc for putting up banner when macro takes too long
-	QObject::connect(&macroCmdData_->bannerTimer, &QTimer::timeout, this, &DocumentWidget::macroBannerTimeoutProc);
+	connect(&macroCmdData_->bannerTimer, &QTimer::timeout, this, &DocumentWidget::macroBannerTimeoutProc);
 	macroCmdData_->bannerTimer.setSingleShot(true);
 	macroCmdData_->bannerTimer.start(BannerWaitTime);
 

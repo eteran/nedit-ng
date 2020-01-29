@@ -1294,36 +1294,6 @@ std::error_code setEmTabDistMS(DocumentWidget *document, Arguments arguments, Da
 	return MacroErrorCode::Success;
 }
 
-std::error_code setFontsMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
-
-	QString fontName;
-
-	if (arguments.size() == 1) {
-		if (std::error_code ec = readArguments(arguments, 0, &fontName)) {
-			return ec;
-		}
-	} else {
-		QString italicName;
-		QString boldName;
-		QString boldItalicName;
-
-		if (std::error_code ec = readArguments(arguments, 0, &fontName, &italicName, &boldName, &boldItalicName)) {
-			qWarning("NEdit: set_fonts requires 1 or 4 arguments");
-			return ec;
-		}
-
-		qWarning("NEdit: support for independent fonts for styles is no longer support, arguments 2-4 are ignored");
-	}
-
-	document->action_Set_Fonts(fontName);
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
-
 std::error_code setLanguageModeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	document = MacroRunDocument();
@@ -1353,60 +1323,6 @@ std::error_code setTabDistMS(DocumentWidget *document, Arguments arguments, Data
 		}
 	} else {
 		qWarning("NEdit: set_tab_dist requires argument");
-	}
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
-
-std::error_code setWrapMarginMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	document = MacroRunDocument();
-
-	if (arguments.size() > 0) {
-		int newMargin = 0;
-
-		std::error_code ec = readArguments(arguments, 0, &newMargin);
-		if (ec && newMargin > 0 && newMargin <= 1000) {
-
-			const std::vector<TextArea *> panes = document->textPanes();
-
-			for (TextArea *area : panes) {
-				area->setWrapMargin(newMargin);
-			}
-		} else {
-			qWarning("NEdit: set_wrap_margin requires integer argument >= 0 and < 1000");
-		}
-	} else {
-		qWarning("NEdit: set_wrap_margin requires argument");
-	}
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
-
-std::error_code setWrapTextMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	document = MacroRunDocument();
-
-	if (arguments.size() > 0) {
-
-		QString arg;
-		if (std::error_code ec = readArgument(arguments[0], &arg)) {
-			return ec;
-		}
-
-		if (arg == QLatin1String("none")) {
-			document->setAutoWrap(WrapStyle::None);
-		} else if (arg == QLatin1String("auto")) {
-			document->setAutoWrap(WrapStyle::Newline);
-		} else if (arg == QLatin1String("continuous")) {
-			document->setAutoWrap(WrapStyle::Continuous);
-		} else {
-			qWarning("NEdit: set_wrap_text invalid argument");
-		}
-	} else {
-		qWarning("NEdit: set_wrap_text requires argument");
 	}
 
 	*result = make_value();
@@ -4771,15 +4687,12 @@ const SubRoutine MenuMacroSubrNames[] = {
 	// Preferences
 	{"set_auto_indent", setAutoIndentMS},
 	{"set_em_tab_dist", setEmTabDistMS},
-	{"set_fonts", setFontsMS},
 	{"set_highlight_syntax", menuToggleEvent<&DocumentWidget::setHighlightSyntax, &DocumentWidget::highlightSyntax>},
 	{"set_language_mode", setLanguageModeMS},
 	{"set_locked", menuToggleEvent<&DocumentWidget::setUserLocked, &DocumentWidget::userLocked>},
 	{"set_overtype_mode", menuToggleEvent<&DocumentWidget::setOverstrike, &DocumentWidget::overstrike>},
 	{"set_tab_dist", setTabDistMS},
 	{"set_use_tabs", menuToggleEvent<&DocumentWidget::setUseTabs, &DocumentWidget::useTabs>},
-	{"set_wrap_margin", setWrapMarginMS},
-	{"set_wrap_text", setWrapTextMS},
 
 	// Deprecated
 	{"match", menuEventU<&MainWindow::action_Shift_Goto_Matching>},

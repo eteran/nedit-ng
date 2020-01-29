@@ -13,7 +13,7 @@
 #include <QStackedWidget>
 #include <QString>
 
-class DialogPreferences : public QDialog {
+class DialogPreferences final : public QDialog {
 	Q_OBJECT
 public:
 	explicit DialogPreferences(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
