@@ -469,13 +469,13 @@ void DialogPreferences::buttonBoxClicked(QAbstractButton *button) {
 void DialogPreferences::applySettings() {
 
 	if (!validateFonts() ||
-			!validateColors() ||
-			!validateDisplay() ||
-			!validateBackup() ||
-			!validateMatching() ||
-			!validateShell() ||
-			!validateBehavior() ||
-			!validateWrap()) {
+		!validateColors() ||
+		!validateDisplay() ||
+		!validateBackup() ||
+		!validateMatching() ||
+		!validateShell() ||
+		!validateBehavior() ||
+		!validateWrap()) {
 		return;
 	}
 
