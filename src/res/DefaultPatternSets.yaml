@@ -212,15 +212,15 @@ C++:
     - name: numeric constant
       style: Numeric Const
       defer_parsing: true
-      regex_start: (?<!\Y)(?:(?:0(?:x|X)[0-9a-fA-F]*)|(?:(?:[0-9]+\.?[0-9]*)|(?:\.[0-9]+))(?:(?:e|E)(?:\+|-)?[0-9]+)?)(?:L|l|UL|ul|u|U|F|f)?(?!\Y)
+      regex_start: (?<!\Y)(?:(?:0(?:x|X)[0-9a-fA-F]*)|(?:(?:[0-9]+\.?[0-9]*)|(?:\.[0-9]+))(?:(?:e|E)(?:\+|-)?[0-9]+)?)(?:L|l|ULL?|ull?|u|U|F|f)?(?!\Y)
     - name: storage keyword
       style: Storage Type
       defer_parsing: true
-      regex_start: <(?:class|typename|typeid|template|friend|virtual|inline|explicit|operator|public|private|protected|const|extern|auto|register|static|mutable|unsigned|signed|volatile|char|double|float|int|long|short|bool|wchar_t|void|typedef|struct|union|enum|asm|export)>
+      regex_start: <(?:and|bitor|or|xor|compl|bitand|and_eq|or_eq|xor_eq|not|not_eq|thread_local|alignas|alignof|char16_t|char32_t|class|typename|typeid|template|friend|virtual|inline|explicit|operator|public|private|protected|const|extern|auto|register|static|mutable|unsigned|signed|volatile|char|double|float|int|long|short|bool|wchar_t|void|typedef|struct|union|enum|asm|export)>
     - name: keyword
       style: Keyword
       defer_parsing: true
-      regex_start: <(?:new|delete|this|return|goto|if|else|case|default|switch|break|continue|while|do|for|try|catch|throw|sizeof|true|false|namespace|using|dynamic_cast|static_cast|reinterpret_cast|const_cast)>
+      regex_start: <(?:override|final|constexpr|decltype|noexcept|nullptr|static_assert|new|delete|this|return|goto|if|else|case|default|switch|break|continue|while|do|for|try|catch|throw|sizeof|true|false|namespace|using|dynamic_cast|static_cast|reinterpret_cast|const_cast)>
     - name: braces
       style: Bracket
       defer_parsing: true
