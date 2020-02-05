@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Using the Mouse - NEdit-ng Docs</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  <link href="../css/extra.css" rel="stylesheet">
+  <link href="../css/version-select.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Using the Mouse";
+    var mkdocs_page_input_path = "05.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> NEdit-ng Docs</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Welcome</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../01/">Getting Started</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../02/">Selecting Text</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../03/">Finding and Replacing Text</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../04/">Cut and Paste</a>
+	    </li>
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href="./">Using the Mouse</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#button-and-modifier-key-summary">Button and Modifier Key Summary</a></li>
+    
+        <ul>
+        
+            <li><a class="toctree-l3" href="#general-meaning-of-mouse-buttons-and-modifier-keys">General meaning of mouse buttons and modifier keys:</a></li>
+        
+        </ul>
+    
+
+    <li class="toctree-l2"><a href="#left-mouse-button">Left Mouse Button</a></li>
+    
+
+    <li class="toctree-l2"><a href="#right-mouse-button">Right Mouse Button</a></li>
+    
+
+    <li class="toctree-l2"><a href="#middle-mouse-button">Middle Mouse Button</a></li>
+    
+
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../06/">Keyboard Shortcuts</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../07/">Shifting and Filling</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../08/">Tabbed Editing</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../09/">File Format</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../10/">Programming with NEdit-ng</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../11/">Tab Stops/Emulated Tab Stops</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../12/">Auto/Smart Indent</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../13/">Syntax Highlighting</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../14/">Finding Declarations (ctags)</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../15/">Calltips</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../16/">Basic Regular Expression Syntax</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../17/">Metacharacters</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../18/">Parenthetical Constructs</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../19/">Advanced Topics</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../20/">Example Regular Expressions</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../21/">Shell Commands and Filters</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../22/">Learn/Replay</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../23/">Macro Language</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../24/">Macro Subroutines</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../25/">Rangesets</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../26/">Highlighting Information</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../27/">Action Routines</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../28/">Customizing NEdit-ng</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../29/">Preferences</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../30/">Config Entries</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../31/">Key Bindings</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../32/">Highlighting Patterns</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../33/">Smart Indent Macros</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../34/">NEdit-ng Command Line</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../35/">Client/Server Mode</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../36/">Crash Recovery</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../38/">GNU General Public License</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../40/">Problems/Defects</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../41/">Tabs Dialog</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../42/">Customize Window Title Dialog</a>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">NEdit-ng Docs</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Using the Mouse</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/eteran/nedit-ng/blob/master/docs/docs/05.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <p>Mouse-based editing is what NEdit-ng is all about, and learning to use the
+more advanced features like secondary selections and primary selection
+dragging will be well worth your while.</p>
+<p>If you don't have time to learn everything, you can get by adequately
+with just the left mouse button: Clicking the left button moves the
+cursor. Dragging with the left button makes a selection. Holding the
+<kbd>Shift</kbd> key while clicking extends the existing selection, or begins a
+selection between the cursor and the mouse. Double or triple clicking
+selects a whole word or a whole line.</p>
+<p>This section will make more sense if you also read <a href="../02/">Selecting Text</a>, 
+which explains the terminology of selections, that is, what is meant by 
+primary, secondary, rectangular, etc.</p>
+<h2 id="button-and-modifier-key-summary">Button and Modifier Key Summary</h2>
+<h3 id="general-meaning-of-mouse-buttons-and-modifier-keys">General meaning of mouse buttons and modifier keys:</h3>
+<h4 id="buttons">Buttons</h4>
+<ul>
+<li>Button 1 (left)<br />
+    Cursor position and primary selection</li>
+<li>Button 2 (middle)<br />
+    Secondary selections, and dragging and copying the primary selection</li>
+<li>Button 3 (right)<br />
+    Quick-access programmable menu and pan scrolling</li>
+</ul>
+<h4 id="modifier-keys">Modifier keys</h4>
+<ul>
+<li><kbd>Shift</kbd><br />
+    On primary selections, (left mouse button): Extends selection to the
+    mouse pointer
+    On secondary and copy operations, (middle): Toggles between move and
+    copy</li>
+<li><kbd>Ctrl</kbd><br />
+    Makes selection rectangular or insertion columnar</li>
+<li><kbd>Alt</kbd> (on release)<sup><a href="#note-1">1</a></sup><br />
+    Exchange primary and secondary selections</li>
+</ul>
+<h2 id="left-mouse-button">Left Mouse Button</h2>
+<p>The left mouse button is used to position the cursor and to make primary
+selections.</p>
+<ul>
+<li>Click<br />
+    Moves the cursor</li>
+<li>Double Click<br />
+    Selects a whole word</li>
+<li>Triple Click<br />
+    Selects a whole line</li>
+<li>Quad Click<br />
+    Selects the whole file</li>
+<li><kbd>Shift</kbd> Click<br />
+    Adjusts (extends or shrinks) the selection, or if there is no
+    existing selection, begins a new selection between the cursor and
+    the mouse.</li>
+<li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> Click<br />
+    Adjusts (extends or shrinks) the Click selection rectangularly.</li>
+<li>Drag<br />
+    Selects text between where the mouse was pressed and where it was released.</li>
+<li><kbd>Ctrl</kbd> Drag<br />
+    Selects rectangle between where the mouse was pressed and where it was released.</li>
+</ul>
+<h2 id="right-mouse-button">Right Mouse Button</h2>
+<p>The right mouse button shows a programmable menu for frequently used
+commands.</p>
+<ul>
+<li>Click/Drag<br />
+    Pops up the background menu (programmed from <strong>Preferences &rarr;
+    Default Settings &rarr; Customize Menus &rarr; Window Background</strong>).</li>
+<li><kbd>Ctrl</kbd> + Drag<br />
+    Pan scrolling. Scrolls the window both vertically and horizontally,
+    as if you had grabbed it with your mouse.</li>
+</ul>
+<h2 id="middle-mouse-button">Middle Mouse Button</h2>
+<p>The middle mouse button is for making secondary selections, and copying
+and dragging the primary selection.</p>
+<ul>
+<li>
+<p>Click<br />
+    Copies the primary selection to the clicked position.</p>
+</li>
+<li>
+<p><kbd>Shift</kbd> + Click<br />
+    Moves the primary selection to the clicked position, deleting it
+    from its original position.</p>
+</li>
+<li>
+<p>Drag  </p>
+<ol>
+<li>Outside of the primary selection: Begins a secondary selection.</li>
+<li>Inside of the primary selection: Moves the selection by
+    dragging.</li>
+</ol>
+</li>
+<li>
+<p><kbd>Ctrl</kbd> + Drag  </p>
+<ol>
+<li>Outside of the primary selection: Begins a rectangular secondary
+    selection.</li>
+<li>Inside of the primary selection: Drags the selection in overlay
+    mode (see below).</li>
+</ol>
+</li>
+</ul>
+<p>When the mouse button is released after creating a secondary selection:</p>
+<ul>
+<li>No Modifiers<br />
+    If there is a primary selection, replaces it with the secondary
+    selection. Otherwise, inserts the secondary selection at the cursor
+    position.</li>
+<li><kbd>Shift</kbd><br />
+    Move the secondary selection, deleting it from its original
+    position. If there is a primary selection, the move will replace the
+    primary selection with the secondary selection. Otherwise, moves the
+    secondary selection to the cursor position.</li>
+<li><kbd>Alt</kbd> <sup><a href="#note-1">1</a></sup><br />
+    Exchange the primary and secondary selections.</li>
+</ul>
+<p>While moving the primary selection by dragging with the middle mouse
+button:</p>
+<ul>
+<li><kbd>Shift</kbd><br />
+    Leaves a copy of the original selection in place rather than
+    removing it or blanking the area.</li>
+<li><kbd>Ctrl</kbd><br />
+    Changes from insert mode to overlay mode (see below).</li>
+<li><kbd>Escape</kbd><br />
+    Cancels drag in progress.</li>
+</ul>
+<p>Overlay Mode: Normally, dragging moves text by removing it from the
+selected position at the start of the drag, and inserting it at a new
+position relative to the mouse. When you drag a block of text over
+existing characters, the existing characters are displaced to the end of
+the selection. In overlay mode, characters which are occluded by blocks
+of text being dragged are simply removed. When dragging non-rectangular
+selections, overlay mode also converts the selection to rectangular
+form, allowing it to be dragged outside of the bounds of the existing
+text.</p>
+<p>Mouse buttons 4 and 5 are usually represented by a mouse wheel nowadays.
+They are used to scroll up or down in the text window.</p>
+<p><a name="note-1"></a>
+<small><sup>1</sup><kbd>Alt</kbd> may be labeled Meta or Compose-Character on some
+keyboards. Some window managers may bind combinations of <kbd>Alt</kbd> and
+mouse buttons to window manager operations. In NEdit-ng, <kbd>Alt</kbd> is only
+used on button release, so regardless of the window manager bindings for
+Alt-modified mouse buttons, you can still do the corresponding NEdit-ng
+operation by using <kbd>Alt</kbd> AFTER the initial mouse press, so that
+<kbd>Alt</kbd> is held while you release the mouse button. If you find this
+difficult or annoying, you can re-configure most window managers to skip
+this binding, or re-configure NEdit-ng to use a different key
+combination.</small></p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../06/" class="btn btn-neutral float-right" title="Keyboard Shortcuts">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../04/" class="btn btn-neutral" title="Cut and Paste"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/eteran/nedit-ng/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../04/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../06/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../js/version-select.js" defer></script>
+      <script src="../search/main.js" defer></script>
+
+</body>
+</html>

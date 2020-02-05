@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  
+  <link rel="shortcut icon" href="../img/favicon.ico">
+  <title>Client/Server Mode - NEdit-ng Docs</title>
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css">
+  <link href="../css/extra.css" rel="stylesheet">
+  <link href="../css/version-select.css" rel="stylesheet">
+  
+  <script>
+    // Current page data
+    var mkdocs_page_name = "Client/Server Mode";
+    var mkdocs_page_input_path = "35.md";
+    var mkdocs_page_url = null;
+  </script>
+  
+  <script src="../js/jquery-2.1.1.min.js" defer></script>
+  <script src="../js/modernizr-2.8.3.min.js" defer></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script> 
+  
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> NEdit-ng Docs</a>
+        <div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+	<ul class="current">
+	  
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="..">Welcome</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../01/">Getting Started</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../02/">Selecting Text</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../03/">Finding and Replacing Text</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../04/">Cut and Paste</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../05/">Using the Mouse</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../06/">Keyboard Shortcuts</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../07/">Shifting and Filling</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../08/">Tabbed Editing</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../09/">File Format</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../10/">Programming with NEdit-ng</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../11/">Tab Stops/Emulated Tab Stops</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../12/">Auto/Smart Indent</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../13/">Syntax Highlighting</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../14/">Finding Declarations (ctags)</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../15/">Calltips</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../16/">Basic Regular Expression Syntax</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../17/">Metacharacters</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../18/">Parenthetical Constructs</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../19/">Advanced Topics</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../20/">Example Regular Expressions</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../21/">Shell Commands and Filters</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../22/">Learn/Replay</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../23/">Macro Language</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../24/">Macro Subroutines</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../25/">Rangesets</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../26/">Highlighting Information</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../27/">Action Routines</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../28/">Customizing NEdit-ng</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../29/">Preferences</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../30/">Config Entries</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../31/">Key Bindings</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../32/">Highlighting Patterns</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../33/">Smart Indent Macros</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../34/">NEdit-ng Command Line</a>
+	    </li>
+          
+            <li class="toctree-l1 current">
+		
+    <a class="current" href="./">Client/Server Mode</a>
+    <ul class="subnav">
+            
+    <li class="toctree-l2"><a href="#command-line-arguments">Command Line Arguments</a></li>
+    
+
+    <li class="toctree-l2"><a href="#multiple-servers">Multiple Servers</a></li>
+    
+
+    <li class="toctree-l2"><a href="#communication">Communication</a></li>
+    
+
+    </ul>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../36/">Crash Recovery</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../38/">GNU General Public License</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../40/">Problems/Defects</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../41/">Tabs Dialog</a>
+	    </li>
+          
+            <li class="toctree-l1">
+		
+    <a class="" href="../42/">Customize Window Title Dialog</a>
+	    </li>
+          
+        </ul>
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="..">NEdit-ng Docs</a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    
+      
+    
+    <li>Client/Server Mode</li>
+    <li class="wy-breadcrumbs-aside">
+      
+        <a href="https://github.com/eteran/nedit-ng/blob/master/docs/docs/35.md"
+          class="icon icon-github"> Edit on GitHub</a>
+      
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              
+                <p>NEdit-ng can be operated on its own, or as a two-part client/server
+application. Client/server mode is useful for integrating NEdit-ng with
+software development environments, mailers, and other programs; or just
+as a quick way to open files from the shell command line without
+starting a new NEdit-ng session.</p>
+<p>To run NEdit-ng in server mode, type:</p>
+<pre><code>nedit-ng -server
+</code></pre>
+<p>NEdit-ng can also be started in server mode via the NEdit-ng Client
+program (<code>nc-ng</code>) when no servers are available.</p>
+<p>The <code>nc-ng</code> program, which is distributed along with NEdit-ng, sends
+commands to an NEdit-ng server to open files or execute editor actions.
+It can also be used on files that are already opened.</p>
+<p>Listing a file on the <code>nc-ng</code> command line means: Open it if it is not
+already open and bring the window to the front.</p>
+<p><code>nc-ng</code> supports the following command line options:</p>
+<pre><code>nc-ng [-read] [-create]
+   [-line n | +n] [-do command] [-lm languagemode]
+   [-svrname name] [-svrcmd command]
+   [-ask] [-noask] [-timeout seconds]
+   [-geometry geometry | -g geometry] [-icon | -iconic]
+   [-tabbed] [-untabbed] [-group] [-wait]
+   [-V | -version]
+   [--] [file...]
+</code></pre>
+<ul>
+<li>
+<p><code>-read</code><br />
+    Open the file read-only regardless of its actual permissions. There
+    is no effect if the file is already open.</p>
+</li>
+<li>
+<p><code>-create</code><br />
+    Don't warn about file creation when a file doesn't exist.</p>
+</li>
+<li>
+<p><code>-line n</code>, <code>+n</code><br />
+    Go to line number <code>n</code>. This will also affect files which are already
+    open.</p>
+</li>
+<li>
+<p><code>-do command</code><br />
+    Execute an NEdit-ng macro or action on the file following the <code>-do</code>
+    argument on the command line.</p>
+<p>If you use this command without a filename, <code>nc-ng</code> would randomly
+choose one window to focus and execute the macro in.</p>
+</li>
+<li>
+<p><code>-lm languagemode</code><br />
+    Initial language mode used.</p>
+</li>
+<li>
+<p><code>-svrname name</code><br />
+    Explicitly instructs <code>nc-ng</code> which server to connect to, an instance
+    of nedit-ng with a corresponding <code>-svrname</code> argument. By naming
+    servers, you can run several simultaneously, and direct files and
+    commands specifically to any one.</p>
+</li>
+<li>
+<p><code>-svrcmd command</code><br />
+    The command which nc-ng uses to start an NEdit-ng server. Defaults
+    to <code>nedit-ng -server</code>.</p>
+</li>
+<li>
+<p><code>-ask</code>, <code>-noask</code><br />
+    Instructs <code>nc-ng</code> to automatically start a server if one is not
+    available.</p>
+</li>
+<li>
+<p><code>-timeout seconds</code><br />
+    Basic time-out period used in communication with an NEdit-ng server.
+    The default is 10 seconds.</p>
+<p>Under rare conditions (such as a slow connection), it may be
+necessary to increase the time-out period. In most cases, the
+default is fine.</p>
+</li>
+<li>
+<p><code>-geometry geometry</code>, <code>-g geometry</code><br />
+    The initial size and/or location of editor windows. See <a href="../34/">NEdit-ng
+    Command Line</a> for details.</p>
+</li>
+<li>
+<p><code>-icon</code>, <code>-iconic</code><br />
+    Initial window state.</p>
+</li>
+<li>
+<p><code>-tabbed</code><br />
+    Open all subsequent files in new tabs. Resets <code>-group</code> option.</p>
+</li>
+<li>
+<p><code>-untabbed</code><br />
+    Open all subsequent files in new windows. Resets <code>-group</code> option.</p>
+</li>
+<li>
+<p><code>-group</code><br />
+    Open all subsequent files as tabs in a new window.</p>
+</li>
+<li>
+<p><code>-wait</code><br />
+    Instructs <code>nc-ng</code> not to return to the shell until all files given are
+    closed.</p>
+<p>Normally, <code>nc-ng</code> returns once the files given in its command line are
+opened by the server. When this option is given, <code>nc-ng</code> returns only
+after the last file given in this call is closed.</p>
+<p>Note that this option affects all files in the command line, not
+only the ones following this option.</p>
+<p>Note that <code>nc-ng</code> will wait for all files given in the command line,
+even if the files were already opened.</p>
+</li>
+<li>
+<p><code>-version</code>, <code>-V</code><br />
+    Prints <code>nc-ng</code>'s version and build information.</p>
+</li>
+</ul>
+<h3 id="command-line-arguments">Command Line Arguments</h3>
+<p>In typical Unix style, arguments affect the files which follow them on
+the command line, for example:</p>
+<p><strong>Incorrect</strong>:   <code>nc-ng file.c -line 25</code><br />
+<strong>Correct</strong>:     <code>nc-ng -line 25 file.c</code>  </p>
+<p><code>-read</code>, <code>-create</code>, and <code>-line</code> affect all of the files which follow
+them on the command line.</p>
+<p>The <code>-do</code> macro is executed only once, on the next file on the line.
+<code>-do</code> without a file following it on the command line, executes the
+macro on the first available window (presumably when you give a <code>-do</code>
+command without a corresponding file or window, you intend it to do
+something independent of the window in which it happens to execute).</p>
+<p>The <code>-wait</code> option affects all files named in the command line.</p>
+<h3 id="multiple-servers">Multiple Servers</h3>
+<p>Sometimes it is useful to have more than one NEdit-ng server running,
+for example to keep mail and programming work separate. The option,
+<code>-svrname</code>, to both <code>nedit-ng</code> and <code>nc-ng</code>, allows you to start, and
+communicate with, separate named servers. A named server responds only
+to requests with the corresponding <code>-svrname</code> argument.</p>
+<h3 id="communication">Communication</h3>
+<p>Communication between <code>nc-ng</code> and <code>nedit-ng</code> is done through a local socket. <code>nc-ng</code> uses the 
+<code>DISPLAY</code> environment variable, the machine name and your user name to find the appropriate server.</p>
+<p>The command which <code>nc-ng</code> uses to start an NEdit-ng server is settable
+using the <code>-svrCommand</code> argument, by default <code>nedit-ng -server</code>.</p>
+              
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../36/" class="btn btn-neutral float-right" title="Crash Recovery">Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href="../34/" class="btn btn-neutral" title="NEdit-ng Command Line"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+    
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+      
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+      
+          <a href="https://github.com/eteran/nedit-ng/" class="fa fa-github" style="float: left; color: #fcfcfc"> GitHub</a>
+      
+      
+        <span><a href="../34/" style="color: #fcfcfc;">&laquo; Previous</a></span>
+      
+      
+        <span style="margin-left: 15px"><a href="../36/" style="color: #fcfcfc">Next &raquo;</a></span>
+      
+    </span>
+</div>
+    <script>var base_url = '..';</script>
+    <script src="../js/theme.js" defer></script>
+      <script src="../js/version-select.js" defer></script>
+      <script src="../search/main.js" defer></script>
+
+</body>
+</html>
