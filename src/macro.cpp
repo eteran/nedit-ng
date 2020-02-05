@@ -2868,7 +2868,11 @@ std::error_code filenameDialogMS(DocumentWidget *document, Arguments arguments, 
 	QString filename;
 	if (mode == QLatin1String("exist")) {
 		// NOTE(eteran); filters probably don't work quite the same with Qt's dialog
-		filename = QFileDialog::getOpenFileName(nullptr, title, defaultPath, defaultFilter, nullptr);
+		QStringList filenames = MainWindow::promptForExistingFiles(nullptr, defaultPath, title, QFileDialog::ExistingFile, defaultFilter, defaultName);
+		if (!filenames.isEmpty()) {
+			filename = filenames[0];
+		}
+
 	} else {
 		// NOTE(eteran); filters probably don't work quite the same with Qt's dialog
 		filename = QFileDialog::getSaveFileName(nullptr, title, defaultPath, defaultFilter, nullptr);

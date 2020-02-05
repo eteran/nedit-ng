@@ -890,31 +890,6 @@ void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
 }
 
 /**
- * @brief MainWindow::promptForExistingFiles
- * @param path
- * @param prompt
- * @param filemode
- * @return
- */
-QStringList MainWindow::promptForExistingFiles(const QString &path, const QString &prompt, QFileDialog::FileMode mode) {
-
-	QFileDialog dialog(this, prompt);
-	dialog.setOptions(QFileDialog::DontUseNativeDialog | QFileDialog::DontUseCustomDirectoryIcons);
-	dialog.setFileMode(mode);
-	dialog.setFilter(QDir::AllDirs | QDir::AllEntries | QDir::Hidden | QDir::System);
-
-	if (!path.isEmpty()) {
-		dialog.setDirectory(path);
-	}
-
-	if (dialog.exec()) {
-		return dialog.selectedFiles();
-	}
-
-	return QStringList();
-}
-
-/**
  * @brief MainWindow::action_Open
  * @param document
  * @param filename
@@ -931,7 +906,7 @@ void MainWindow::action_Open(DocumentWidget *document, const QString &filename) 
  * @param document
  */
 void MainWindow::action_Open(DocumentWidget *document) {
-	QStringList filenames = promptForExistingFiles(document->path(), tr("Open File"), QFileDialog::ExistingFiles);
+	QStringList filenames = promptForExistingFiles(this, document->path(), tr("Open File"), QFileDialog::ExistingFiles);
 	if (filenames.isEmpty()) {
 		return;
 	}
@@ -1029,7 +1004,7 @@ void MainWindow::action_Include_File(DocumentWidget *document) {
 		return;
 	}
 
-	QStringList filenames = promptForExistingFiles(document->path(), tr("Include File"), QFileDialog::ExistingFile);
+	QStringList filenames = promptForExistingFiles(this, document->path(), tr("Include File"), QFileDialog::ExistingFile);
 
 	if (filenames.isEmpty()) {
 		return;
@@ -3472,7 +3447,7 @@ void MainWindow::action_Load_Tips_File(DocumentWidget *document, const QString &
  * @param document
  */
 void MainWindow::action_Load_Calltips_File(DocumentWidget *document) {
-	QStringList filenames = promptForExistingFiles(document->path(), tr("Load Calltips File"), QFileDialog::ExistingFile);
+	QStringList filenames = promptForExistingFiles(this, document->path(), tr("Load Calltips File"), QFileDialog::ExistingFile);
 	if (filenames.isEmpty()) {
 		return;
 	}
@@ -3513,7 +3488,7 @@ void MainWindow::action_Load_Tags_File(DocumentWidget *document, const QString &
  * @param document
  */
 void MainWindow::action_Load_Tags_File(DocumentWidget *document) {
-	QStringList filenames = promptForExistingFiles(document->path(), tr("Load Tags File"), QFileDialog::ExistingFile);
+	QStringList filenames = promptForExistingFiles(this, document->path(), tr("Load Tags File"), QFileDialog::ExistingFile);
 	if (filenames.isEmpty()) {
 		return;
 	}
@@ -3548,7 +3523,7 @@ void MainWindow::action_Load_Macro_File(DocumentWidget *document, const QString 
  * @param document
  */
 void MainWindow::action_Load_Macro_File(DocumentWidget *document) {
-	QStringList filenames = promptForExistingFiles(document->path(), tr("Load Macro File"), QFileDialog::ExistingFile);
+	QStringList filenames = promptForExistingFiles(this, document->path(), tr("Load Macro File"), QFileDialog::ExistingFile);
 	if (filenames.isEmpty()) {
 		return;
 	}
@@ -4864,6 +4839,42 @@ void MainWindow::action_Save_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		action_Save(document);
 	}
+}
+
+/**
+ * @brief promptForExistingFiles
+ * @param parent
+ * @param path
+ * @param prompt
+ * @param mode
+ * @param nameFilter
+ * @param defaultSelection
+ * @return
+ */
+QStringList MainWindow::promptForExistingFiles(QWidget *parent, const QString &path, const QString &prompt, QFileDialog::FileMode mode, const QString &nameFilter, const QString &defaultSelection) {
+
+	QFileDialog dialog(parent, prompt);
+	dialog.setOptions(QFileDialog::DontUseNativeDialog | QFileDialog::DontUseCustomDirectoryIcons);
+	dialog.setFileMode(mode);
+	dialog.setFilter(QDir::AllDirs | QDir::AllEntries | QDir::Hidden | QDir::System);
+
+	if (!path.isEmpty()) {
+		dialog.setDirectory(path);
+	}
+
+	if (!nameFilter.isEmpty()) {
+		dialog.setNameFilter(nameFilter);
+	}
+
+	if (!defaultSelection.isEmpty()) {
+		dialog.selectFile(defaultSelection);
+	}
+
+	if (dialog.exec()) {
+		return dialog.selectedFiles();
+	}
+
+	return QStringList();
 }
 
 /**

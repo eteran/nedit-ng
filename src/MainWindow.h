@@ -86,7 +86,6 @@ public:
 	DocumentWidget *documentAt(int index) const;
 	int updateGutterWidth();
 	int updateLineNumDisp();
-	QStringList promptForExistingFiles(const QString &path, const QString &prompt, QFileDialog::FileMode mode);
 	size_t tabCount() const;
 	std::vector<DocumentWidget *> openDocuments() const;
 	void beginISearch(Direction direction);
@@ -131,6 +130,7 @@ public:
 	static DocumentWidget *findWindowWithFile(const QString &filename, const QString &path);
 	static DocumentWidget *findWindowWithFile(const PathInfo &path);
 	static QString promptForNewFile(DocumentWidget *document, FileFormats *format, bool *addWrap);
+	static QStringList promptForExistingFiles(QWidget *parent, const QString &path, const QString &prompt, QFileDialog::FileMode mode, const QString &nameFilter = QString(), const QString &defaultSelection = QString());
 	static MainWindow *firstWindow();
 	static MainWindow *fromDocument(const DocumentWidget *document);
 	static QString uniqueUntitledName();
