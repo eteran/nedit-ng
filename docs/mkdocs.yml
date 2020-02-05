@@ -6,7 +6,7 @@ extra_css:
     - css/extra.css
     - css/version-select.css
 extra:
-      version: 2019.4
+      version: 2020.1
 nav:
     - Welcome: index.md
     - Getting Started: 01.md
