@@ -255,7 +255,7 @@ void loadPreferences(bool isServer) {
 	smartIndentInit       = settings.value(tr("nedit.smartIndentInit"), QLatin1String("*")).toString();
 	smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), QLatin1String("*")).toString();
 
-	autoWrap          = readEnum(settings, tr("nedit.autoWrap"), WrapStyle::Continuous);
+	autoWrap          = readEnum(settings, tr("nedit.autoWrap"), WrapStyle::None);
 	autoIndent        = readEnum(settings, tr("nedit.autoIndent"), IndentStyle::Auto);
 	showMatching      = readEnum(settings, tr("nedit.showMatching"), ShowMatchingStyle::Delimiter);
 	searchMethod      = readEnum(settings, tr("nedit.searchMethod"), SearchType::Literal);
