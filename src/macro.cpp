@@ -596,23 +596,6 @@ std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, D
 	return ec;
 }
 
-template <void (MainWindow::*Set)(bool), bool (MainWindow::*Get)() const>
-std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	document = MacroRunDocument();
-
-	auto win = MainWindow::fromDocument(document);
-	Q_ASSERT(win);
-
-	std::error_code ec;
-	if (boost::optional<bool> next = toggle_or_bool(arguments, (win->*Get)(), &ec)) {
-		(win->*Set)(*next);
-		*result = make_value();
-		return MacroErrorCode::Success;
-	}
-
-	return ec;
-}
-
 template <void (TextArea::*Func)(TextArea::EventFlags)>
 std::error_code textEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
@@ -1247,82 +1230,6 @@ std::error_code detachDocumentDialogMS(DocumentWidget *document, Arguments argum
 	return MacroErrorCode::Success;
 }
 
-std::error_code setAutoIndentMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	QString string;
-	if (std::error_code ec = readArguments(arguments, 0, &string)) {
-		return ec;
-	}
-
-	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
-
-	if (string == QLatin1String("off")) {
-		document->setAutoIndent(IndentStyle::None);
-	} else if (string == QLatin1String("on")) {
-		document->setAutoIndent(IndentStyle::Auto);
-	} else if (string == QLatin1String("smart")) {
-		document->setAutoIndent(IndentStyle::Smart);
-	} else {
-		qWarning("NEdit: set_auto_indent invalid argument");
-	}
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
-
-std::error_code setEmTabDistMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	int number;
-	if (std::error_code ec = readArguments(arguments, 0, &number)) {
-		return ec;
-	}
-
-	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
-
-	if (number < 1000) {
-		if (number < 0) {
-			number = 0;
-		}
-		document->setEmTabDistance(number);
-	} else {
-		qWarning("NEdit: set_em_tab_dist requires integer argument >= -1 and < 1000");
-	}
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
-
-std::error_code setFontsMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
-
-	QString fontName;
-
-	if (arguments.size() == 1) {
-		if (std::error_code ec = readArguments(arguments, 0, &fontName)) {
-			return ec;
-		}
-	} else {
-		QString italicName;
-		QString boldName;
-		QString boldItalicName;
-
-		if (std::error_code ec = readArguments(arguments, 0, &fontName, &italicName, &boldName, &boldItalicName)) {
-			qWarning("NEdit: set_fonts requires 1 or 4 arguments");
-			return ec;
-		}
-
-		qWarning("NEdit: support for independent fonts for styles is no longer support, arguments 2-4 are ignored");
-	}
-
-	document->action_Set_Fonts(fontName);
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
 
 std::error_code setLanguageModeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
@@ -1334,118 +1241,6 @@ std::error_code setLanguageModeMS(DocumentWidget *document, Arguments arguments,
 	}
 
 	document->action_Set_Language_Mode(languageMode, false);
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
-
-std::error_code setShowMatchingMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	document = MacroRunDocument();
-
-	if (arguments.size() > 0) {
-		QString arg;
-		if (std::error_code ec = readArgument(arguments[0], &arg)) {
-			return ec;
-		}
-
-		if (arg == QLatin1String("off")) {
-			document->setShowMatching(ShowMatchingStyle::None);
-		} else if (arg == QLatin1String("delimiter")) {
-			document->setShowMatching(ShowMatchingStyle::Delimiter);
-		} else if (arg == QLatin1String("range")) {
-			document->setShowMatching(ShowMatchingStyle::Range);
-		}
-		/* For backward compatibility with pre-5.2 versions, we also
-		   accept 0 and 1 as aliases for None and Delimeter.
-		   It is quite unlikely, though, that anyone ever used this
-		   action procedure via the macro language or a key binding,
-		   so this can probably be left out safely. */
-		else if (arg == QLatin1String("0")) {
-			document->setShowMatching(ShowMatchingStyle::None);
-		} else if (arg == QLatin1String("1")) {
-			document->setShowMatching(ShowMatchingStyle::Delimiter);
-		} else {
-			qWarning("NEdit: Invalid argument for set_show_matching");
-		}
-	} else {
-		qWarning("NEdit: set_show_matching requires argument");
-	}
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
-
-std::error_code setTabDistMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	document = MacroRunDocument();
-
-	if (arguments.size() > 0) {
-		int newTabDist = 0;
-
-		std::error_code ec = readArguments(arguments, 0, &newTabDist);
-		if (ec && newTabDist > 0 && newTabDist <= TextBuffer::MAX_EXP_CHAR_LEN) {
-			document->setTabDistance(newTabDist);
-		} else {
-			qWarning("NEdit: set_tab_dist requires integer argument > 0 and <= %d", TextBuffer::MAX_EXP_CHAR_LEN);
-		}
-	} else {
-		qWarning("NEdit: set_tab_dist requires argument");
-	}
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
-
-std::error_code setWrapMarginMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	document = MacroRunDocument();
-
-	if (arguments.size() > 0) {
-		int newMargin = 0;
-
-		std::error_code ec = readArguments(arguments, 0, &newMargin);
-		if (ec && newMargin > 0 && newMargin <= 1000) {
-
-			const std::vector<TextArea *> panes = document->textPanes();
-
-			for (TextArea *area : panes) {
-				area->setWrapMargin(newMargin);
-			}
-		} else {
-			qWarning("NEdit: set_wrap_margin requires integer argument >= 0 and < 1000");
-		}
-	} else {
-		qWarning("NEdit: set_wrap_margin requires argument");
-	}
-
-	*result = make_value();
-	return MacroErrorCode::Success;
-}
-
-std::error_code setWrapTextMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-
-	document = MacroRunDocument();
-
-	if (arguments.size() > 0) {
-
-		QString arg;
-		if (std::error_code ec = readArgument(arguments[0], &arg)) {
-			return ec;
-		}
-
-		if (arg == QLatin1String("none")) {
-			document->setAutoWrap(WrapStyle::None);
-		} else if (arg == QLatin1String("auto")) {
-			document->setAutoWrap(WrapStyle::Newline);
-		} else if (arg == QLatin1String("continuous")) {
-			document->setAutoWrap(WrapStyle::Continuous);
-		} else {
-			qWarning("NEdit: set_wrap_text invalid argument");
-		}
-	} else {
-		qWarning("NEdit: set_wrap_text requires argument");
-	}
-
 	*result = make_value();
 	return MacroErrorCode::Success;
 }
@@ -4810,27 +4605,9 @@ const SubRoutine MenuMacroSubrNames[] = {
 	{"move_document_dialog", menuEventU<&MainWindow::action_Move_Tab_To>},
 
 	// Preferences
-	{"set_auto_indent", setAutoIndentMS},
-	{"set_em_tab_dist", setEmTabDistMS},
-	{"set_fonts", setFontsMS},
-	{"set_highlight_syntax", menuToggleEvent<&DocumentWidget::setHighlightSyntax, &DocumentWidget::highlightSyntax>},
-	{"set_incremental_backup", menuToggleEvent<&DocumentWidget::setIncrementalBackup, &DocumentWidget::incrementalBackup>},
-	{"set_incremental_search_line", menuToggleEvent<&MainWindow::setIncrementalSearchLine, &MainWindow::getIncrementalSearchLine>},
 	{"set_language_mode", setLanguageModeMS},
 	{"set_locked", menuToggleEvent<&DocumentWidget::setUserLocked, &DocumentWidget::userLocked>},
-	{"set_make_backup_copy", menuToggleEvent<&DocumentWidget::setMakeBackupCopy, &DocumentWidget::makeBackupCopy>},
 	{"set_overtype_mode", menuToggleEvent<&DocumentWidget::setOverstrike, &DocumentWidget::overstrike>},
-	{"set_show_line_numbers", menuToggleEvent<&MainWindow::setShowLineNumbers, &MainWindow::getShowLineNumbers>},
-	{"set_show_matching", setShowMatchingMS},
-	{"set_match_syntax_based", menuToggleEvent<&DocumentWidget::setMatchSyntaxBased, &DocumentWidget::matchSyntaxBased>},
-	{"set_statistics_line", menuToggleEvent<&DocumentWidget::setShowStatisticsLine, &DocumentWidget::showStatisticsLine>},
-	{"set_tab_dist", setTabDistMS},
-	{"set_use_tabs", menuToggleEvent<&DocumentWidget::setUseTabs, &DocumentWidget::useTabs>},
-	{"set_wrap_margin", setWrapMarginMS},
-	{"set_wrap_text", setWrapTextMS},
-
-	// Deprecated
-	{"match", menuEventU<&MainWindow::action_Shift_Goto_Matching>},
 
 	// These aren't mentioned in the documentation...
 	{"find_incremental", findIncrMS},
