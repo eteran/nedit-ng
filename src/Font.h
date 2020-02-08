@@ -4,6 +4,8 @@
 
 class QString;
 class QFont;
+class QFontMetrics;
+class QChar;
 
 namespace Font {
 
@@ -14,6 +16,8 @@ enum Type {
 };
 
 QFont fromString(const QString &fontName);
+int characterWidth(const QFontMetrics fm, QChar ch);
+int stringWidth(const QFontMetrics fm, const QString &s);
 
 }
 

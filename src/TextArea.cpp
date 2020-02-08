@@ -7270,7 +7270,7 @@ void TextArea::updateFontMetrics(const QFont &font) {
 		qWarning("NEdit: a variable width font has been specified. This is not supported, and will result in unexpected results");
 	}
 
-	fixedFontWidth_  = fm.width(QLatin1Char('X')); // NOTE(eteran): maxWidth()
+	fixedFontWidth_  = Font::characterWidth(fm, QLatin1Char('X')); // NOTE(eteran): maxWidth()
 	fixedFontHeight_ = fm.ascent() + fm.descent();
 }
 
@@ -7737,7 +7737,7 @@ void TextArea::showResizeNotification() {
 		if (!resizeWidget_) {
 			resizeWidget_ = new QLabel(tr("Size: XXX x XXX"), this);
 			resizeWidget_->setAttribute(Qt::WA_TransparentForMouseEvents);
-			resizeWidget_->setMinimumWidth(resizeWidget_->fontMetrics().width(tr("Size: XXX x XXX")));
+			resizeWidget_->setMinimumWidth(Font::stringWidth(resizeWidget_->fontMetrics(), tr("Size: XXX x XXX")));
 			resizeWidget_->setMinimumHeight(resizeWidget_->sizeHint().height());
 			resizeWidget_->setAlignment(Qt::AlignCenter);
 

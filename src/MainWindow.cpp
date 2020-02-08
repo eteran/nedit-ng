@@ -22,6 +22,7 @@
 #include "DialogWrapMargin.h"
 #include "DocumentWidget.h"
 #include "Help.h"
+#include "Font.h"
 #include "Highlight.h"
 #include "LanguageMode.h"
 #include "Location.h"
@@ -441,7 +442,7 @@ void MainWindow::parseGeometry(QString geometry) {
 		const QMargins m = area->getMargins();
 
 		// NOTE(eteran): maxWidth()
-		const int w = extent + (fm.width(QLatin1Char('X')) * cols) + m.left() + m.right() + area->lineNumberAreaWidth();
+		const int w = extent + (Font::characterWidth(fm, QLatin1Char('X')) * cols) + m.left() + m.right() + area->lineNumberAreaWidth();
 		const int h = extent + (fm.ascent() + fm.descent()) * rows + m.top() + m.bottom();
 
 		document->setMinimumSize(w, h);

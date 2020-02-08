@@ -1,5 +1,6 @@
 
 #include "ElidedLabel.h"
+#include "Font.h"
 #include <QApplication>
 #include <QClipboard>
 #include <QContextMenuEvent>
@@ -58,7 +59,7 @@ QSize ElidedLabel::sizeHint() const {
 
 	QFontMetrics fm(fontMetrics());
 
-	int textWidth = fm.width(fullText_);
+	int textWidth = Font::stringWidth(fm, fullText_);
 	if (textWidth > maxWidth) {
 		textWidth = maxWidth;
 	}
@@ -94,7 +95,7 @@ void ElidedLabel::squeezeTextToLabel() {
 	bool squeezed = false;
 
 	for (const QString &line : fullText_.split(QLatin1Char('\n'))) {
-		int lineWidth = fm.width(line);
+		int lineWidth = Font::stringWidth(fm, line);
 		if (lineWidth > labelWidth) {
 			squeezed = true;
 			squeezedLines << fm.elidedText(line, elideMode_, labelWidth);
