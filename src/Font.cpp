@@ -19,7 +19,6 @@ int characterWidth(const QFontMetrics fm, QChar ch) {
 #else
 	return fm.width(ch);
 #endif
-
 }
 
 int stringWidth(const QFontMetrics fm, const QString &s) {

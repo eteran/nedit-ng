@@ -238,7 +238,7 @@ public:
 			if (cur == data_) {
 				return npos;
 			}
-		};
+		}
 	}
 
 	constexpr size_type rfind(Ch c, size_type pos = npos) const noexcept {

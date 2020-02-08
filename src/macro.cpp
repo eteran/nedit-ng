@@ -1230,7 +1230,6 @@ std::error_code detachDocumentDialogMS(DocumentWidget *document, Arguments argum
 	return MacroErrorCode::Success;
 }
 
-
 std::error_code setLanguageModeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	document = MacroRunDocument();
