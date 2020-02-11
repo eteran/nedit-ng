@@ -105,7 +105,6 @@ add_subdirectory(client)
 add_subdirectory(Regex)
 add_subdirectory(Settings)
 add_subdirectory(Interpreter)
-add_subdirectory(GSL EXCLUDE_FROM_ALL)
 
 if(UNIX)
     find_package(X11)
