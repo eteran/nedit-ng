@@ -21,6 +21,7 @@ public:
 	*/
 	static constexpr int DEFAULT_TAB_DIST    = -1;
 	static constexpr int DEFAULT_EM_TAB_DIST = -1;
+	static constexpr int DEFAULT_INSERT_TABS = -1;
 
 public:
 	QString name;
@@ -32,6 +33,7 @@ public:
 	IndentStyle indentStyle = IndentStyle::Default;
 	int tabDist             = DEFAULT_TAB_DIST;
 	int emTabDist           = DEFAULT_EM_TAB_DIST;
+	int insertTabs          = DEFAULT_INSERT_TABS;
 };
 
 #endif

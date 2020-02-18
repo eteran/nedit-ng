@@ -34,7 +34,7 @@ DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlag
 	// Set default values
 	if (!document) {
 		emTabDist = Preferences::GetPrefEmTabDist(PLAIN_LANGUAGE_MODE);
-		useTabs   = Preferences::GetPrefInsertTabs();
+		useTabs   = Preferences::GetPrefInsertTabs(PLAIN_LANGUAGE_MODE);
 		tabDist   = Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE);
 	} else {
 		emTabDist = document->firstPane()->getEmulateTabs();

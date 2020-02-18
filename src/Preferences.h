@@ -56,7 +56,7 @@ IndentStyle GetPrefAutoIndent(size_t langMode);
 int GetPrefCols();
 int GetPrefEmTabDist(size_t langMode);
 int GetPrefGlobalTabNavigate();
-int GetPrefInsertTabs();
+int GetPrefInsertTabs(size_t langMode);
 int GetPrefISearchLine();
 int GetPrefLineNums();
 bool GetPrefMatchSyntaxBased();

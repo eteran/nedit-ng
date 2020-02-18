@@ -195,6 +195,7 @@ public:
 	void setBacklightChars(const QString &applyBacklightTypes);
 	void setColors(const QColor &textFg, const QColor &textBg, const QColor &selectFg, const QColor &selectBg, const QColor &hiliteFg, const QColor &hiliteBg, const QColor &lineNoFg, const QColor &lineNoBg, const QColor &cursorFg);
 	void setEmTabDistance(int distance);
+	void setInsertTabs(bool value);
 	void setFileFormat(FileFormats fileFormat);
 	void setFilename(const QString &filename);
 	void setHighlightSyntax(bool value);

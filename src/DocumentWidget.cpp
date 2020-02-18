@@ -601,7 +601,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 
 	// Set the requested hardware tab distance and useTabs in the text buffer
 	info_->buffer->BufSetTabDistance(Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE), true);
-	info_->buffer->BufSetUseTabs(Preferences::GetPrefInsertTabs());
+	info_->buffer->BufSetUseTabs(Preferences::GetPrefInsertTabs(PLAIN_LANGUAGE_MODE));
 
 	static int n = 0;
 	area->setObjectName(tr("TextArea_%1").arg(n++));
@@ -1170,8 +1170,9 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 	/* Decide on desired values for language-specific parameters.  If a
 	   parameter was set to its default value, set it to the new default,
 	   otherwise, leave it alone */
-	const bool wrapModeIsDef = (info_->wrapMode == Preferences::GetPrefWrap(oldMode));
-	const bool tabDistIsDef  = (info_->buffer->BufGetTabDistance() == Preferences::GetPrefTabDist(oldMode));
+	const bool wrapModeIsDef  = (info_->wrapMode == Preferences::GetPrefWrap(oldMode));
+	const bool tabDistIsDef   = (info_->buffer->BufGetTabDistance() == Preferences::GetPrefTabDist(oldMode));
+	const bool tabInsertIsDef = (info_->buffer->BufGetUseTabs() == Preferences::GetPrefInsertTabs(oldMode));
 
 	const int oldEmTabDist            = textAreas[0]->getEmulateTabs();
 	const QString oldlanguageModeName = Preferences::LanguageModeName(oldMode);
@@ -1181,6 +1182,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 	const bool highlightIsDef   = highlightSyntax_ == Preferences::GetPrefHighlightSyntax() || (Preferences::GetPrefHighlightSyntax() && Highlight::FindPatternSet(oldlanguageModeName) == nullptr);
 	const WrapStyle wrapMode    = wrapModeIsDef || forceDefaults ? Preferences::GetPrefWrap(mode) : info_->wrapMode;
 	const int tabDist           = tabDistIsDef || forceDefaults ? Preferences::GetPrefTabDist(mode) : info_->buffer->BufGetTabDistance();
+	const int insertTabs        = tabInsertIsDef || forceDefaults ? Preferences::GetPrefInsertTabs(mode) : info_->buffer->BufGetUseTabs();
 	const int emTabDist         = emTabDistIsDef || forceDefaults ? Preferences::GetPrefEmTabDist(mode) : oldEmTabDist;
 	IndentStyle indentStyle     = indentStyleIsDef || forceDefaults ? Preferences::GetPrefAutoIndent(mode) : info_->indentStyle;
 	bool highlight              = highlightIsDef || forceDefaults ? Preferences::GetPrefHighlightSyntax() : highlightSyntax_;
@@ -1227,6 +1229,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 	setAutoIndent(indentStyle);
 	setTabDistance(tabDist);
 	setEmTabDistance(emTabDist);
+	setInsertTabs(insertTabs);
 
 	// Load calltips files for new mode
 	if (mode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[mode].defTipsFile.isNull()) {
@@ -1292,6 +1295,16 @@ void DocumentWidget::setEmTabDistance(int distance) {
 	for (TextArea *area : textPanes()) {
 		area->setEmulateTabs(distance);
 	}
+}
+
+/**
+ * @brief DocumentWidget::setInsertTabs
+ * @param value
+ */
+void DocumentWidget::setInsertTabs(bool value) {
+
+	emit_event("set_insert_tabs", QString::number(value));
+	info_->buffer->BufSetUseTabs(value);
 }
 
 /*

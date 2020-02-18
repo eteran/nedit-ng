@@ -130,6 +130,8 @@ boost::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 				lm.tabDist = value.as<int>();
 			} else if (key == "em_tab_distance") {
 				lm.emTabDist = value.as<int>();
+			} else if (key == "insert_tabs") {
+				lm.insertTabs = value.as<bool>();
 			} else if (key == "regex") {
 				lm.recognitionExpr = QString::fromUtf8(value.as<std::string>().c_str());
 			} else if (key == "wrap") {
@@ -454,6 +456,10 @@ QString WriteLanguageModesString() {
 
 			if (lang.tabDist != LanguageMode::DEFAULT_EM_TAB_DIST) {
 				out << YAML::Key << "em_tab_distance" << YAML::Value << lang.emTabDist;
+			}
+
+			if (lang.insertTabs != LanguageMode::DEFAULT_INSERT_TABS) {
+				out << YAML::Key << "insert_tabs" << YAML::Value << static_cast<bool>(lang.insertTabs);
 			}
 
 			if (!lang.recognitionExpr.isEmpty()) {
@@ -926,8 +932,13 @@ void SetPrefInsertTabs(bool state) {
 	Settings::insertTabs = state;
 }
 
-int GetPrefInsertTabs() {
-	return Settings::insertTabs;
+int GetPrefInsertTabs(size_t langMode) {
+
+	if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].insertTabs == LanguageMode::DEFAULT_INSERT_TABS) {
+		return Settings::insertTabs;
+	}
+
+	return LanguageModes[langMode].insertTabs;
 }
 
 void SetPrefShowMatching(ShowMatchingStyle state) {
