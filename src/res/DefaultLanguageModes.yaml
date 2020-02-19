@@ -82,6 +82,7 @@ extensions:
   - .gmk
 tab_distance: 8
 em_tab_distance: 8
+insert_tabs: true
 wrap: None
 ---
 name: Matlab
