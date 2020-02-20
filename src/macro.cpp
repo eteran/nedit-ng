@@ -2306,7 +2306,6 @@ std::error_code stringDialogMS(DocumentWidget *document, Arguments arguments, Da
 
 	QString btnLabel;
 	QString message;
-	long i;
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
@@ -2330,7 +2329,7 @@ std::error_code stringDialogMS(DocumentWidget *document, Arguments arguments, Da
 	}
 
 	// check that all button labels can be read
-	for (i = 1; i < arguments.size(); i++) {
+	for (int i = 1; i < arguments.size(); i++) {
 		if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 			return ec;
 		}
@@ -2688,7 +2687,6 @@ std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, Data
 	QString btnLabel;
 	QString message;
 	QString text;
-	long i;
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
@@ -2720,7 +2718,7 @@ std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, Data
 	}
 
 	// check that all button labels can be read
-	for (i = 2; i < arguments.size(); i++) {
+	for (int i = 2; i < arguments.size(); i++) {
 		if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 			return ec;
 		}

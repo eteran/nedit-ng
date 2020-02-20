@@ -189,7 +189,7 @@ void DialogSmartIndent::buttonRestore_clicked() {
 	});
 
 	// Update the dialog
-	setSmartIndentDialogData(&*spec);
+	setSmartIndentDialogData(spec);
 }
 
 /**

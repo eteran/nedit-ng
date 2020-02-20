@@ -142,7 +142,7 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 			ui.editEmulatedTabSpacing->setText(QString());
 		}
 
-		if(ptr->insertTabs != LanguageMode::DEFAULT_INSERT_TABS) {
+		if (ptr->insertTabs != LanguageMode::DEFAULT_INSERT_TABS) {
 			ui.checkUsedTabs->setCheckState(ptr->insertTabs ? Qt::Checked : Qt::Unchecked);
 		} else {
 			ui.checkUsedTabs->setCheckState(Qt::PartiallyChecked);
@@ -300,7 +300,7 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 		lm.emTabDist = emulatedTabSpacingValue;
 	}
 
-	switch(ui.checkUsedTabs->checkState()) {
+	switch (ui.checkUsedTabs->checkState()) {
 	case Qt::PartiallyChecked:
 		lm.insertTabs = LanguageMode::DEFAULT_INSERT_TABS;
 		break;

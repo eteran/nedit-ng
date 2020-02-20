@@ -4137,12 +4137,10 @@ bool TextArea::moveDown(bool absolute) {
 
 	if (absolute) {
 		lineStartPos = buffer_->BufStartOfLine(cursorPos_);
-		visLineNum   = -1;
 	} else if (posToVisibleLineNum(cursorPos_, &visLineNum)) {
 		lineStartPos = lineStarts_[visLineNum];
 	} else {
 		lineStartPos = startOfLine(cursorPos_);
-		visLineNum   = -1;
 	}
 
 	const int64_t column = (cursorPreferredCol_ >= 0) ? cursorPreferredCol_ : buffer_->BufCountDispChars(lineStartPos, cursorPos_);
@@ -7414,7 +7412,7 @@ TextCursor TextArea::lineAndColToPosition(Location loc) const {
 		// Count columns, expanding each character
 		const std::string lineStr = buffer_->BufGetRange(lineStart, lineEnd);
 		int outIndex              = 0;
-		for (TextCursor i = lineStart; i < lineEnd; ++i, ++charIndex) {
+		for (TextCursor cur = lineStart; cur < lineEnd; ++cur, ++charIndex) {
 
 			charLen = TextBuffer::BufCharWidth(lineStr[charIndex], outIndex, buffer_->BufGetTabDistance());
 
