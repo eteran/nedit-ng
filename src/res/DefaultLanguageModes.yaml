@@ -129,6 +129,7 @@ delimiters: "!\"#$%&'()*+,-./:;<=>?@[\\\\]^`{|}~"
 regex: ^#!.*python
 wrap: None
 indent: Auto
+insert_tabs: false
 ---
 name: Regex
 extensions:

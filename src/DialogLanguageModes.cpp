@@ -142,6 +142,12 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 			ui.editEmulatedTabSpacing->setText(QString());
 		}
 
+		if(ptr->insertTabs != LanguageMode::DEFAULT_INSERT_TABS) {
+			ui.checkUsedTabs->setCheckState(ptr->insertTabs ? Qt::Checked : Qt::Unchecked);
+		} else {
+			ui.checkUsedTabs->setCheckState(Qt::PartiallyChecked);
+		}
+
 		switch (ptr->indentStyle) {
 		case IndentStyle::None:
 			ui.radioIndentNone->setChecked(true);
@@ -181,6 +187,7 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 		ui.editEmulatedTabSpacing->setText(QString());
 		ui.radioWrapNone->setChecked(true);
 		ui.radioIndentNone->setChecked(true);
+		ui.checkUsedTabs->setCheckState(Qt::PartiallyChecked);
 	}
 
 	// ensure that the appropriate buttons are enabled
@@ -291,6 +298,18 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 		}
 
 		lm.emTabDist = emulatedTabSpacingValue;
+	}
+
+	switch(ui.checkUsedTabs->checkState()) {
+	case Qt::PartiallyChecked:
+		lm.insertTabs = LanguageMode::DEFAULT_INSERT_TABS;
+		break;
+	case Qt::Checked:
+		lm.insertTabs = true;
+		break;
+	case Qt::Unchecked:
+		lm.insertTabs = false;
+		break;
 	}
 
 	// read delimiters string
