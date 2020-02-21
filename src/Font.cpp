@@ -13,7 +13,7 @@ QFont fromString(const QString &fontName) {
 	return font;
 }
 
-int characterWidth(const QFontMetrics fm, QChar ch) {
+int characterWidth(const QFontMetrics &fm, QChar ch) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
 	return fm.horizontalAdvance(ch);
 #else
@@ -21,7 +21,7 @@ int characterWidth(const QFontMetrics fm, QChar ch) {
 #endif
 }
 
-int stringWidth(const QFontMetrics fm, const QString &s) {
+int stringWidth(const QFontMetrics &fm, const QString &s) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
 	return fm.horizontalAdvance(s);
 #else

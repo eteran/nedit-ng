@@ -66,7 +66,7 @@ Rangeset *RangesetTable::RangesetFetch(int label) {
 ** Forget the rangeset identified by label
 */
 void RangesetTable::forgetLabel(int label) {
-	auto it = std::find_if(sets_.begin(), sets_.end(), [label](const Rangeset set) {
+	auto it = std::find_if(sets_.begin(), sets_.end(), [label](const Rangeset &set) {
 		return set.label_ == label;
 	});
 

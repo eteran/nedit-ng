@@ -1917,7 +1917,7 @@ std::error_code appendFileMS(DocumentWidget *document, Arguments arguments, Data
 */
 std::error_code searchStringMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	int64_t beginPos;
+	int64_t beginPos = 0;
 	WrapMode wrap;
 	SearchType type;
 	QString searchStr;
@@ -2141,10 +2141,10 @@ std::error_code selectMS(DocumentWidget *document, Arguments arguments, DataValu
 }
 
 std::error_code selectRectangleMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	int64_t start;
-	int64_t end;
-	int left;
-	int right;
+	int64_t start = 0;
+	int64_t end   = 0;
+	int left      = 0;
+	int right     = 0;
 
 	// Get arguments and convert to int
 	if (std::error_code ec = readArguments(arguments, 0, &start, &end, &left, &right)) {

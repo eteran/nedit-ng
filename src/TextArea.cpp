@@ -3655,7 +3655,7 @@ bool TextArea::positionToXY(TextCursor pos, int *x, int *y) const {
 
 	// TODO(eteran): return optional pair?
 	const QRect viewRect = viewport()->contentsRect();
-	int visLineNum;
+	int visLineNum       = 0;
 
 	// If position is not displayed, return false
 	if (pos < firstChar_ || (pos > lastChar_ && !emptyLinesVisible())) {

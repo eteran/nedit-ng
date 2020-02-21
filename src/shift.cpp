@@ -434,7 +434,8 @@ std::string shiftLineLeft(view::string_view line, int64_t lineLen, int tabDist, 
 }
 
 QString shiftLineRight(const QString &line, int64_t lineLen, int tabsAllowed, int tabDist, int nChars) {
-	int whiteWidth, i;
+	int whiteWidth;
+	int i;
 
 	auto lineInPtr = line.begin();
 	QString lineOut;

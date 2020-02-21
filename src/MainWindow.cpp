@@ -5002,8 +5002,8 @@ void MainWindow::action_Save_As(DocumentWidget *document, const QString &filenam
  * @param document
  */
 void MainWindow::action_Save_As(DocumentWidget *document) {
-	bool addWrap = false;
-	FileFormats fileFormat;
+	bool addWrap           = false;
+	FileFormats fileFormat = FileFormats::Unix;
 
 	QString fullname = promptForNewFile(document, &fileFormat, &addWrap);
 	if (fullname.isNull()) {
@@ -7090,8 +7090,7 @@ bool MainWindow::searchMatchesSelection(DocumentWidget *document, const QString 
 
 	// return the start and end of the selection
 	if (isRect) {
-		bool ret = buffer->GetSimpleSelection(textRange);
-		Q_ASSERT(ret);
+		buffer->GetSimpleSelection(textRange);
 	} else {
 		textRange->start = selStart;
 		textRange->end   = selEnd;

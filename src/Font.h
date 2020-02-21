@@ -16,8 +16,8 @@ enum Type {
 };
 
 QFont fromString(const QString &fontName);
-int characterWidth(const QFontMetrics fm, QChar ch);
-int stringWidth(const QFontMetrics fm, const QString &s);
+int characterWidth(const QFontMetrics &fm, QChar ch);
+int stringWidth(const QFontMetrics &fm, const QString &s);
 
 }
 

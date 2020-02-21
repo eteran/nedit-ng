@@ -6872,7 +6872,7 @@ void DocumentWidget::addMark(TextArea *area, QChar label) {
 		bookmark.label     = label;
 		bookmark.cursorPos = area->cursorPos();
 		bookmark.sel       = info_->buffer->primary;
-		markTable_.emplace(label, std::move(bookmark));
+		markTable_.emplace(label, bookmark);
 	}
 }
 
