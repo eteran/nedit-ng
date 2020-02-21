@@ -13,6 +13,10 @@ QFont fromString(const QString &fontName) {
 	return font;
 }
 
+int maxWidth(const QFontMetrics &fm) {
+	return Font::characterWidth(fm, QLatin1Char('X'));
+}
+
 int characterWidth(const QFontMetrics &fm, QChar ch) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
 	return fm.horizontalAdvance(ch);

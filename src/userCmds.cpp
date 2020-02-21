@@ -102,7 +102,7 @@ QString copyMacroToEnd(Input &in) {
 		retStr.chop(1);
 	}
 
-	// NOTE(eteran): move past the trailing '}'
+	// move past the trailing '}'
 	++input;
 
 	in = input;

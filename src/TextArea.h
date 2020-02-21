@@ -39,11 +39,11 @@ class QLabel;
 
 constexpr auto NO_HINT = TextCursor(-1);
 
-using unfinishedStyleCBProcEx = void (*)(const TextArea *, TextCursor, const void *);
-using cursorMovedCBEx         = void (*)(TextArea *, void *);
-using dragStartCBEx           = void (*)(TextArea *, void *);
-using dragEndCBEx             = void (*)(TextArea *, const DragEndEvent *, void *);
-using smartIndentCBEx         = void (*)(TextArea *, SmartIndentEvent *, void *);
+using UnfinishedStyleCallback = void (*)(const TextArea *, TextCursor, const void *);
+using CursorMovedCallback     = void (*)(TextArea *, void *);
+using DragStartCallback       = void (*)(TextArea *, void *);
+using DragEndCallback         = void (*)(TextArea *, const DragEndEvent *, void *);
+using SmartIndentCallback     = void (*)(TextArea *, SmartIndentEvent *, void *);
 
 class TextArea final : public QAbstractScrollArea {
 	Q_OBJECT
@@ -93,10 +93,10 @@ public:
 public:
 	// NOTE(eteran): if these aren't expected to have side effects, then some
 	// of them may be able to be replaced with signals
-	void addCursorMovementCallback(cursorMovedCBEx callback, void *arg);
-	void addDragStartCallback(dragStartCBEx callback, void *arg);
-	void addDragEndCallback(dragEndCBEx callback, void *arg);
-	void addSmartIndentCallback(smartIndentCBEx callback, void *arg);
+	void addCursorMovementCallback(CursorMovedCallback callback, void *arg);
+	void addDragStartCallback(DragStartCallback callback, void *arg);
+	void addDragEndCallback(DragEndCallback callback, void *arg);
+	void addSmartIndentCallback(SmartIndentCallback callback, void *arg);
 
 protected:
 	bool focusNextPrevChild(bool next) override;
@@ -124,74 +124,74 @@ private:
 	bool clickTracker(QMouseEvent *event, bool inDoubleClickHandler);
 
 public Q_SLOTS:
-	void backwardCharacter(TextArea::EventFlags flags = NoneFlag);
-	void backwardParagraphAP(TextArea::EventFlags flags = NoneFlag);
-	void backwardWordAP(TextArea::EventFlags flags = NoneFlag);
-	void beginningOfFileAP(TextArea::EventFlags flags = NoneFlag);
-	void beginningOfLine(TextArea::EventFlags flags = NoneFlag);
-	void beginningOfSelectionAP(TextArea::EventFlags flags = NoneFlag);
-	void copyClipboard(TextArea::EventFlags flags = NoneFlag);
-	void copyPrimaryAP(TextArea::EventFlags flags = NoneFlag);
-	void cutClipboard(TextArea::EventFlags flags = NoneFlag);
-	void cutPrimaryAP(TextArea::EventFlags flags = NoneFlag);
-	void deleteNextCharacter(TextArea::EventFlags flags = NoneFlag);
-	void deleteNextWordAP(TextArea::EventFlags flags = NoneFlag);
-	void deletePreviousCharacter(TextArea::EventFlags flags = NoneFlag);
-	void deletePreviousWord(TextArea::EventFlags flags = NoneFlag);
-	void deleteSelectionAP(TextArea::EventFlags flags = NoneFlag);
-	void deleteToEndOfLineAP(TextArea::EventFlags flags = NoneFlag);
-	void deleteToStartOfLineAP(TextArea::EventFlags flags = NoneFlag);
-	void deselectAllAP(TextArea::EventFlags flags = NoneFlag);
-	void endOfFileAP(TextArea::EventFlags flags = NoneFlag);
-	void endOfLine(TextArea::EventFlags flags = NoneFlag);
-	void endOfSelectionAP(TextArea::EventFlags flags = NoneFlag);
-	void forwardCharacter(TextArea::EventFlags flags = NoneFlag);
-	void forwardParagraphAP(TextArea::EventFlags flags = NoneFlag);
-	void forwardWordAP(TextArea::EventFlags flags = NoneFlag);
-	void insertStringAP(const QString &string, TextArea::EventFlags flags = NoneFlag);
-	void keySelectAP(TextArea::EventFlags flags = NoneFlag);
-	void newline(TextArea::EventFlags flags = NoneFlag);
-	void newlineAndIndentAP(TextArea::EventFlags flags = NoneFlag);
-	void newlineNoIndentAP(TextArea::EventFlags flags = NoneFlag);
-	void nextDocumentAP(TextArea::EventFlags flags = NoneFlag);
-	void nextPageAP(TextArea::EventFlags flags = NoneFlag);
-	void pageLeftAP(TextArea::EventFlags flags = NoneFlag);
-	void pageRightAP(TextArea::EventFlags flags = NoneFlag);
-	void pasteClipboard(TextArea::EventFlags flags = NoneFlag);
-	void previousDocumentAP(TextArea::EventFlags flags = NoneFlag);
-	void previousPageAP(TextArea::EventFlags flags = NoneFlag);
-	void processCancel(TextArea::EventFlags flags = NoneFlag);
-	void processDown(TextArea::EventFlags flags = NoneFlag);
-	void processShiftDownAP(TextArea::EventFlags flags = NoneFlag);
-	void processShiftUpAP(TextArea::EventFlags flags = NoneFlag);
-	void processTabAP(TextArea::EventFlags flags = NoneFlag);
-	void processUp(TextArea::EventFlags flags = NoneFlag);
-	void scrollDownAP(int count, TextArea::ScrollUnit units = ScrollUnit::Lines, TextArea::EventFlags flags = NoneFlag);
-	void scrollLeftAP(int pixels, TextArea::EventFlags flags = NoneFlag);
-	void scrollRightAP(int pixels, TextArea::EventFlags flags = NoneFlag);
-	void scrollToLineAP(int line, TextArea::EventFlags flags = NoneFlag);
-	void scrollUpAP(int count, TextArea::ScrollUnit units = ScrollUnit::Lines, TextArea::EventFlags flags = NoneFlag);
-	void selectAllAP(TextArea::EventFlags flags = NoneFlag);
-	void selfInsertAP(const QString &string, TextArea::EventFlags flags = NoneFlag);
-	void toggleOverstrike(TextArea::EventFlags flags = NoneFlag);
-	void zoomInAP(TextArea::EventFlags flags = NoneFlag);
-	void zoomOutAP(TextArea::EventFlags flags = NoneFlag);
+	void backwardCharacter(EventFlags flags = NoneFlag);
+	void backwardParagraphAP(EventFlags flags = NoneFlag);
+	void backwardWordAP(EventFlags flags = NoneFlag);
+	void beginningOfFileAP(EventFlags flags = NoneFlag);
+	void beginningOfLine(EventFlags flags = NoneFlag);
+	void beginningOfSelectionAP(EventFlags flags = NoneFlag);
+	void copyClipboard(EventFlags flags = NoneFlag);
+	void copyPrimaryAP(EventFlags flags = NoneFlag);
+	void cutClipboard(EventFlags flags = NoneFlag);
+	void cutPrimaryAP(EventFlags flags = NoneFlag);
+	void deleteNextCharacter(EventFlags flags = NoneFlag);
+	void deleteNextWordAP(EventFlags flags = NoneFlag);
+	void deletePreviousCharacter(EventFlags flags = NoneFlag);
+	void deletePreviousWord(EventFlags flags = NoneFlag);
+	void deleteSelectionAP(EventFlags flags = NoneFlag);
+	void deleteToEndOfLineAP(EventFlags flags = NoneFlag);
+	void deleteToStartOfLineAP(EventFlags flags = NoneFlag);
+	void deselectAllAP(EventFlags flags = NoneFlag);
+	void endOfFileAP(EventFlags flags = NoneFlag);
+	void endOfLine(EventFlags flags = NoneFlag);
+	void endOfSelectionAP(EventFlags flags = NoneFlag);
+	void forwardCharacter(EventFlags flags = NoneFlag);
+	void forwardParagraphAP(EventFlags flags = NoneFlag);
+	void forwardWordAP(EventFlags flags = NoneFlag);
+	void insertStringAP(const QString &string, EventFlags flags = NoneFlag);
+	void keySelectAP(EventFlags flags = NoneFlag);
+	void newline(EventFlags flags = NoneFlag);
+	void newlineAndIndentAP(EventFlags flags = NoneFlag);
+	void newlineNoIndentAP(EventFlags flags = NoneFlag);
+	void nextDocumentAP(EventFlags flags = NoneFlag);
+	void nextPageAP(EventFlags flags = NoneFlag);
+	void pageLeftAP(EventFlags flags = NoneFlag);
+	void pageRightAP(EventFlags flags = NoneFlag);
+	void pasteClipboard(EventFlags flags = NoneFlag);
+	void previousDocumentAP(EventFlags flags = NoneFlag);
+	void previousPageAP(EventFlags flags = NoneFlag);
+	void processCancel(EventFlags flags = NoneFlag);
+	void processDown(EventFlags flags = NoneFlag);
+	void processShiftDownAP(EventFlags flags = NoneFlag);
+	void processShiftUpAP(EventFlags flags = NoneFlag);
+	void processTabAP(EventFlags flags = NoneFlag);
+	void processUp(EventFlags flags = NoneFlag);
+	void scrollDownAP(int count, ScrollUnit units = ScrollUnit::Lines, EventFlags flags = NoneFlag);
+	void scrollLeftAP(int pixels, EventFlags flags = NoneFlag);
+	void scrollRightAP(int pixels, EventFlags flags = NoneFlag);
+	void scrollToLineAP(int line, EventFlags flags = NoneFlag);
+	void scrollUpAP(int count, ScrollUnit units = ScrollUnit::Lines, EventFlags flags = NoneFlag);
+	void selectAllAP(EventFlags flags = NoneFlag);
+	void selfInsertAP(const QString &string, EventFlags flags = NoneFlag);
+	void toggleOverstrike(EventFlags flags = NoneFlag);
+	void zoomInAP(EventFlags flags = NoneFlag);
+	void zoomOutAP(EventFlags flags = NoneFlag);
 
 private Q_SLOTS:
 	// mouse related events
-	void copyToAP(QMouseEvent *event, TextArea::EventFlags flags = NoneFlag);
-	void copyToOrEndDragAP(QMouseEvent *event, TextArea::EventFlags flags = NoneFlag);
-	void exchangeAP(QMouseEvent *event, TextArea::EventFlags flags = NoneFlag);
-	void extendAdjustAP(QMouseEvent *event, TextArea::EventFlags flags = NoneFlag);
-	void extendStartAP(QMouseEvent *event, TextArea::EventFlags flags = NoneFlag);
-	void mousePanAP(QMouseEvent *event, TextArea::EventFlags flags = NoneFlag);
+	void copyToAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void copyToOrEndDragAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void exchangeAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void extendAdjustAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void extendStartAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void mousePanAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 	void moveDestinationAP(QMouseEvent *event);
-	void moveToAP(QMouseEvent *event, TextArea::EventFlags flags = NoneFlag);
-	void moveToOrEndDragAP(QMouseEvent *event, TextArea::EventFlags flags = NoneFlag);
-	void secondaryAdjustAP(QMouseEvent *event, TextArea::EventFlags flags = NoneFlag);
-	void secondaryOrDragAdjustAP(QMouseEvent *event, TextArea::EventFlags flags = NoneFlag);
-	void secondaryOrDragStartAP(QMouseEvent *event, TextArea::EventFlags flags = NoneFlag);
-	void secondaryStartAP(QMouseEvent *event, TextArea::EventFlags flags = NoneFlag);
+	void moveToAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void moveToOrEndDragAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void secondaryAdjustAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void secondaryOrDragAdjustAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags = NoneFlag);
+	void secondaryStartAP(QMouseEvent *event, EventFlags flags = NoneFlag);
 
 public:
 	DocumentWidget *document() const;
@@ -223,7 +223,7 @@ public:
 	int64_t getBufferLinesCount() const;
 	std::string TextGetWrapped(TextCursor startPos, TextCursor endPos);
 	void removeWidgetHighlight();
-	void attachHighlightData(TextBuffer *styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user);
+	void attachHighlightData(TextBuffer *styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, UnfinishedStyleCallback unfinishedHighlightCB, void *user);
 	void TextDKillCalltip(int id);
 	void TextDMaintainAbsLineNum(bool state);
 	void TextSetCursorPos(TextCursor pos);
@@ -445,14 +445,14 @@ private:
 	std::vector<StyleTableEntry> styleTable_;       // Table of fonts and colors for coloring/syntax-highlighting
 	std::vector<uint8_t> bgClass_;                  // obtains index into bgClassColors_
 	uint32_t unfinishedStyle_;                      // Style buffer entry which triggers on-the-fly reparsing of region
-	unfinishedStyleCBProcEx unfinishedHighlightCB_; // Callback to parse "unfinished" regions
+	UnfinishedStyleCallback unfinishedHighlightCB_; // Callback to parse "unfinished" regions
 	void *highlightCBArg_;                          // Arg to unfinishedHighlightCB
 
 private:
-	std::vector<std::pair<cursorMovedCBEx, void *>> movedCallbacks_;
-	std::vector<std::pair<dragStartCBEx, void *>> dragStartCallbacks_;
-	std::vector<std::pair<dragEndCBEx, void *>> dragEndCallbacks_;
-	std::vector<std::pair<smartIndentCBEx, void *>> smartIndentCallbacks_;
+	std::vector<std::pair<CursorMovedCallback, void *>> movedCallbacks_;
+	std::vector<std::pair<DragStartCallback, void *>> dragStartCallbacks_;
+	std::vector<std::pair<DragEndCallback, void *>> dragEndCallbacks_;
+	std::vector<std::pair<SmartIndentCallback, void *>> smartIndentCallbacks_;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(TextArea::EventFlags)

@@ -441,8 +441,7 @@ void MainWindow::parseGeometry(QString geometry) {
 		TextArea *area   = document->firstPane();
 		const QMargins m = area->getMargins();
 
-		// NOTE(eteran): maxWidth()
-		const int w = extent + (Font::characterWidth(fm, QLatin1Char('X')) * cols) + m.left() + m.right() + area->lineNumberAreaWidth();
+		const int w = extent + (Font::maxWidth(fm) * cols) + m.left() + m.right() + area->lineNumberAreaWidth();
 		const int h = extent + (fm.ascent() + fm.descent()) * rows + m.top() + m.bottom();
 
 		document->setMinimumSize(w, h);

@@ -1984,25 +1984,12 @@ void TextArea::findWrapRange(view::string_view deletedText, TextCursor pos, int6
 	*linesInserted = nLines;
 
 	/* Count deleted lines between countFrom and countTo as the text existed
-	   before the modification (that is, as if the text between pos and
-	   pos+nInserted were replaced by "deletedText").  This extra context is
-	   necessary because wrapping can occur outside of the modified region
-	   as a result of adding or deleting text in the region. This is done by
-	   creating a TextBuffer containing the deleted text and the necessary
-	   additional context, and calling the wrappedLineCounter on it.
-
-	   NOTE: This must not be done in continuous wrap mode when the font
-		 width is not fixed. In that case, the calculation would try
-		 to access style information that is no longer available (deleted
-		 text), or out of date (updated highlighting), possibly leading
-		 to completely wrong calculations and/or even crashes eventually.
-		 (This is not theoretical; it really happened.)
-
-		 In that case, the calculation of the number of deleted lines
-		 has happened before the buffer was modified (only in that case,
-		 because resynchronization of the line starts is impossible
-		 in that case, which makes the whole calculation less efficient).
-	*/
+	 * before the modification (that is, as if the text between pos and
+	 * pos+nInserted were replaced by "deletedText").  This extra context is
+	 * necessary because wrapping can occur outside of the modified region
+	 * as a result of adding or deleting text in the region. This is done by
+	 * creating a TextBuffer containing the deleted text and the necessary
+	 * additional context, and calling the wrappedLineCounter on it. */
 	if (suppressResync_) {
 		*linesDeleted   = nLinesDeleted_;
 		suppressResync_ = false;
@@ -5271,9 +5258,8 @@ void TextArea::processTabAP(EventFlags flags) {
 	EMIT_EVENT_0("process_tab");
 
 	const TextBuffer::Selection &sel = buffer_->primary;
-	int emTabDist                    = emulateTabs_;
-	int emTabsBeforeCursor           = emTabsBeforeCursor_;
-	int64_t indent;
+	const int emTabDist              = emulateTabs_;
+	const int emTabsBeforeCursor     = emTabsBeforeCursor_;
 
 	if (checkReadOnly()) {
 		return;
@@ -5312,7 +5298,8 @@ void TextArea::processTabAP(EventFlags flags) {
 
 	// Add spaces and tabs to outStr until it reaches toIndent
 	auto outPtr = std::back_inserter(outStr);
-	indent      = startIndent;
+
+	int64_t indent = startIndent;
 	while (indent < toIndent) {
 		const int tabWidth = TextBuffer::BufCharWidth('\t', indent, buffer_->BufGetTabDistance());
 		if (buffer_->BufGetUseTabs() && tabWidth > 1 && indent + tabWidth <= toIndent) {
@@ -6346,10 +6333,9 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	dragSourceDeleted_   = sourceDeleted;
 	dragType_            = dragType;
 
-	// NOTE(eteran): as an optimization, if we are moving a block
-	// but not combining it with the new location's content, then the selected
-	// text is functionally the same, so we don't need to constantly syncronize
-	// the X selection.
+	// as an optimization, if we are moving a block but not combining it with
+	// the new location's content, then the selected text is functionally the
+	// same, so we don't need to constantly syncronize the X selection.
 	bool prev = true;
 	if (dragType == DRAG_OVERLAY_MOVE) {
 		prev = buffer_->BufSetSyncXSelection(false);
@@ -6762,11 +6748,7 @@ void TextArea::setReadOnly(bool value) {
 
 void TextArea::setOverstrike(bool value) {
 
-	// TODO(eteran): this API is a little confusing to be honest, we are setting
-	// to a specific value, but we are acting like a toggle. This seems to be
-	// correct overall since there are only two real options. But I think we
-	// can do better
-
+	// Only need to do anything if the value of overstrike has changed
 	if (overstrike_ != value) {
 		overstrike_ = value;
 
@@ -7176,19 +7158,19 @@ boost::optional<Location> TextArea::positionToLineAndCol(TextCursor pos) const {
 	return loc;
 }
 
-void TextArea::addCursorMovementCallback(cursorMovedCBEx callback, void *arg) {
+void TextArea::addCursorMovementCallback(CursorMovedCallback callback, void *arg) {
 	movedCallbacks_.emplace_back(callback, arg);
 }
 
-void TextArea::addDragStartCallback(dragStartCBEx callback, void *arg) {
+void TextArea::addDragStartCallback(DragStartCallback callback, void *arg) {
 	dragStartCallbacks_.emplace_back(callback, arg);
 }
 
-void TextArea::addDragEndCallback(dragEndCBEx callback, void *arg) {
+void TextArea::addDragEndCallback(DragEndCallback callback, void *arg) {
 	dragEndCallbacks_.emplace_back(callback, arg);
 }
 
-void TextArea::addSmartIndentCallback(smartIndentCBEx callback, void *arg) {
+void TextArea::addSmartIndentCallback(SmartIndentCallback callback, void *arg) {
 	smartIndentCallbacks_.emplace_back(callback, arg);
 }
 
@@ -7231,7 +7213,7 @@ int64_t TextArea::getBufferLinesCount() const {
 ** a normal buffer modification if the buffer contains a primary selection
 ** (see extendRangeForStyleMods for more information on this protocol).
 */
-void TextArea::attachHighlightData(TextBuffer *styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, unfinishedStyleCBProcEx unfinishedHighlightCB, void *user) {
+void TextArea::attachHighlightData(TextBuffer *styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, UnfinishedStyleCallback unfinishedHighlightCB, void *user) {
 	styleBuffer_           = styleBuffer;
 	styleTable_            = styleTable;
 	unfinishedStyle_       = unfinishedStyle;
@@ -7268,7 +7250,7 @@ void TextArea::updateFontMetrics(const QFont &font) {
 		qWarning("NEdit: a variable width font has been specified. This is not supported, and will result in unexpected results");
 	}
 
-	fixedFontWidth_  = Font::characterWidth(fm, QLatin1Char('X')); // NOTE(eteran): maxWidth()
+	fixedFontWidth_  = Font::maxWidth(fm);
 	fixedFontHeight_ = fm.ascent() + fm.descent();
 }
 
