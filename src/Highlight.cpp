@@ -840,8 +840,8 @@ HighlightPattern readPatternYaml(const YAML::Node &patterns) {
 
 	for (auto it = patterns.begin(); it != patterns.end(); ++it) {
 
-		const std::string &key  = it->first.as<std::string>();
-		const YAML::Node &value = it->second;
+		const std::string key  = it->first.as<std::string>();
+		const YAML::Node value = it->second;
 
 		if (key == "name") {
 			pattern.name = QString::fromUtf8(value.as<std::string>().c_str());
@@ -885,15 +885,15 @@ boost::optional<PatternSet> readPatternSetYaml(YAML::const_iterator it) {
 		if (entries.IsMap()) {
 			for (auto set_it = entries.begin(); set_it != entries.end(); ++set_it) {
 
-				const auto &key         = set_it->first.as<std::string>();
-				const YAML::Node &value = set_it->second;
+				const std::string key  = set_it->first.as<std::string>();
+				const YAML::Node value = set_it->second;
 
 				if (key == "char_context") {
 					patternSet.charContext = value.as<int>();
 				} else if (key == "line_context") {
 					patternSet.lineContext = value.as<int>();
 				} else if (key == "patterns") {
-					for (const YAML::Node &entry : value) {
+					for (YAML::Node entry : value) {
 
 						HighlightPattern pattern = readPatternYaml(entry);
 

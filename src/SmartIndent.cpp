@@ -83,8 +83,8 @@ std::vector<SmartIndentEntry> loadDefaultIndentSpecs() {
 	std::vector<SmartIndentEntry> specs;
 
 	for (auto it = indentRules.begin(); it != indentRules.end(); ++it) {
-		const auto &key         = it->first.as<std::string>();
-		const YAML::Node &value = it->second;
+		const std::string key  = it->first.as<std::string>();
+		const YAML::Node value = it->second;
 
 		if (key == "languages") {
 
@@ -93,12 +93,12 @@ std::vector<SmartIndentEntry> loadDefaultIndentSpecs() {
 				SmartIndentEntry is;
 				is.language = QString::fromUtf8(lang_it->first.as<std::string>().c_str());
 
-				const YAML::Node &entries = lang_it->second;
+				YAML::Node entries = lang_it->second;
 
 				if (entries.IsMap()) {
 					for (auto set_it = entries.begin(); set_it != entries.end(); ++set_it) {
-						const auto &key         = set_it->first.as<std::string>();
-						const YAML::Node &value = set_it->second;
+						const std::string key  = set_it->first.as<std::string>();
+						const YAML::Node value = set_it->second;
 
 						if (key == "on_init") {
 							is.initMacro = QString::fromUtf8(value.as<std::string>().c_str());
@@ -131,8 +131,8 @@ QString loadDefaultCommonMacros() {
 	static YAML::Node indentRules        = YAML::Load(defaultIndentRules.data());
 
 	for (auto it = indentRules.begin(); it != indentRules.end(); ++it) {
-		const auto &key         = it->first.as<std::string>();
-		const YAML::Node &value = it->second;
+		const std::string key  = it->first.as<std::string>();
+		const YAML::Node value = it->second;
 
 		if (key == "common") {
 			return QString::fromUtf8(value.as<std::string>().c_str());
@@ -197,8 +197,8 @@ void loadSmartIndentString(const QString &string) {
 			}
 
 			for (auto it = indentRules.begin(); it != indentRules.end(); ++it) {
-				const auto &key         = it->first.as<std::string>();
-				const YAML::Node &value = it->second;
+				const std::string key  = it->first.as<std::string>();
+				const YAML::Node value = it->second;
 
 				if (key == "common") {
 					CommonMacros = QString::fromUtf8(value.as<std::string>().c_str());
@@ -214,8 +214,8 @@ void loadSmartIndentString(const QString &string) {
 
 						if (entries.IsMap()) {
 							for (auto set_it = entries.begin(); set_it != entries.end(); ++set_it) {
-								const auto &key         = set_it->first.as<std::string>();
-								const YAML::Node &value = set_it->second;
+								const std::string key  = set_it->first.as<std::string>();
+								const YAML::Node value = set_it->second;
 
 								if (key == "on_init") {
 									is.initMacro = QString::fromUtf8(value.as<std::string>().c_str());

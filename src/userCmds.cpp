@@ -411,12 +411,12 @@ void loadMacroMenuYaml(std::vector<MenuData> &menuItems) {
 			menu                          = YAML::LoadAll(defaultMenu.data());
 		}
 
-		for (const YAML::Node &entry : menu) {
+		for (YAML::Node entry : menu) {
 			MenuItem menuItem;
 
 			for (auto &&it : entry) {
-				const std::string &key = it.first.as<std::string>();
-				YAML::Node value       = it.second;
+				const std::string key  = it.first.as<std::string>();
+				const YAML::Node value = it.second;
 
 				if (key == "name") {
 					menuItem.name = QString::fromUtf8(value.as<std::string>().c_str());
@@ -469,12 +469,12 @@ void loadShellMenuYaml(std::vector<MenuData> &menuItems) {
 			menu = YAML::LoadAll(defaultMenu.data());
 		}
 
-		for (const YAML::Node &entry : menu) {
+		for (YAML::Node entry : menu) {
 			MenuItem menuItem;
 
 			for (auto &&it : entry) {
-				const std::string &key = it.first.as<std::string>();
-				YAML::Node value       = it.second;
+				const std::string key  = it.first.as<std::string>();
+				const YAML::Node value = it.second;
 
 				if (key == "name") {
 					menuItem.name = QString::fromUtf8(value.as<std::string>().c_str());
@@ -546,12 +546,12 @@ void loadContextMenuYaml(std::vector<MenuData> &menuItems) {
 			menu                          = YAML::LoadAll(defaultMenu.data());
 		}
 
-		for (const YAML::Node &entry : menu) {
+		for (YAML::Node entry : menu) {
 			MenuItem menuItem;
 
 			for (auto &&it : entry) {
-				const std::string &key = it.first.as<std::string>();
-				YAML::Node value       = it.second;
+				const std::string key  = it.first.as<std::string>();
+				const YAML::Node value = it.second;
 
 				if (key == "name") {
 					menuItem.name = QString::fromUtf8(value.as<std::string>().c_str());
@@ -560,7 +560,7 @@ void loadContextMenuYaml(std::vector<MenuData> &menuItems) {
 				} else if (key == "shortcut") {
 					menuItem.shortcut = QKeySequence::fromString(QString::fromUtf8(value.as<std::string>().c_str()));
 				} else if (key == "input") {
-					const std::string &input_type = value.as<std::string>();
+					std::string input_type = value.as<std::string>();
 					if (input_type == "selection") {
 						menuItem.input = FROM_SELECTION;
 					} else {

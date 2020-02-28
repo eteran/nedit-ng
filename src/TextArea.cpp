@@ -2821,7 +2821,6 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 		++startIndex;
 	}
 
-
 	/* Scan character positions from the beginning of the clipping range, and
 	 * draw parts whenever the style changes (also note if the cursor is on
 	 * this line, and where it should be drawn to take advantage of the x

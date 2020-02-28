@@ -119,8 +119,8 @@ boost::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 		LanguageMode lm;
 		for (auto it = language.begin(); it != language.end(); ++it) {
 
-			const auto &key         = it->first.as<std::string>();
-			const YAML::Node &value = it->second;
+			const std::string key  = it->first.as<std::string>();
+			const YAML::Node value = it->second;
 
 			if (key == "name") {
 				lm.name = QString::fromUtf8(value.as<std::string>().c_str());
@@ -135,16 +135,16 @@ boost::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 			} else if (key == "regex") {
 				lm.recognitionExpr = QString::fromUtf8(value.as<std::string>().c_str());
 			} else if (key == "wrap") {
-				const auto &string_val = QString::fromUtf8(value.as<std::string>().c_str());
-				auto it                = std::find(std::begin(AutoWrapTypes), std::end(AutoWrapTypes), string_val);
+				auto string_val = QString::fromUtf8(value.as<std::string>().c_str());
+				auto it         = std::find(std::begin(AutoWrapTypes), std::end(AutoWrapTypes), string_val);
 				if (it == std::end(AutoWrapTypes)) {
 					Raise<ModeError>(tr("unrecognized wrap style"));
 				}
 
 				lm.wrapStyle = static_cast<WrapStyle>(it - std::begin(AutoWrapTypes));
 			} else if (key == "indent") {
-				const auto &string_val = QString::fromUtf8(value.as<std::string>().c_str());
-				auto it                = std::find(std::begin(AutoIndentTypes), std::end(AutoIndentTypes), string_val);
+				auto string_val = QString::fromUtf8(value.as<std::string>().c_str());
+				auto it         = std::find(std::begin(AutoIndentTypes), std::end(AutoIndentTypes), string_val);
 				if (it == std::end(AutoIndentTypes)) {
 					Raise<ModeError>(tr("unrecognized indent style"));
 				}
@@ -155,7 +155,7 @@ boost::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 			} else if (key == "extensions") {
 				QStringList extensions;
 				for (size_t i = 0; i < value.size(); i++) {
-					const YAML::Node &extension = value[i];
+					const YAML::Node extension = value[i];
 					extensions.push_back(QString::fromUtf8(extension.as<std::string>().c_str()));
 				}
 				lm.extensions = extensions;
@@ -330,7 +330,7 @@ void loadLanguageModesString(const QString &string) {
 			languages                              = YAML::LoadAll(defaultLanguageModes.data());
 		}
 
-		for (const YAML::Node &language : languages) {
+		for (YAML::Node language : languages) {
 
 			boost::optional<LanguageMode> lm = readLanguageModeYaml(language);
 			if (!lm) {
