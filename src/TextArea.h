@@ -297,7 +297,7 @@ private:
 	int widthInPixels(char ch, int column) const;
 	std::string createIndentString(TextBuffer *buf, int64_t bufOffset, TextCursor lineStartPos, TextCursor lineEndPos, int *column);
 	std::string wrapText(view::string_view startLine, view::string_view text, int64_t bufOffset, int wrapMargin, int64_t *breakBefore);
-	uint32_t styleOfPos(TextCursor lineStartPos, int64_t lineLen, int64_t lineIndex, int64_t dispIndex, int thisChar) const;
+	uint32_t styleOfPos(TextCursor lineStartPos, size_t lineLen, size_t lineIndex, int64_t dispIndex, int thisChar) const;
 	void beginBlockDrag();
 	void blockDragSelection(const QPoint &pos, BlockDragTypes dragType);
 	void CopyToClipboard();

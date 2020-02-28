@@ -2771,7 +2771,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 		return ret;
 	}();
 
-	const auto nLineSize = static_cast<int>(currentLine.size());
+	const size_t lineSize = currentLine.size();
 
 	/* Rectangular selections are based on "real" line starts (after a newline
 	   or start of buffer).  Calculate the difference between the last newline
@@ -2798,19 +2798,19 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	const int tabDist = buffer_->BufGetTabDistance();
 	int startX        = viewRect.left() - horizontalScrollBar()->value();
 	int outIndex      = 0;
-	int startIndex    = 0;
+	size_t startIndex = 0;
 	uint32_t style    = 0;
 
 	for (;;) {
 		int charLen   = 1;
 		char baseChar = '\0';
-		if (startIndex < nLineSize) {
-			baseChar = currentLine[static_cast<size_t>(startIndex)];
+		if (startIndex < lineSize) {
+			baseChar = currentLine[startIndex];
 			charLen  = TextBuffer::BufCharWidth(baseChar, outIndex, tabDist);
 		}
 
-		style               = styleOfPos(lineStartPos, nLineSize, startIndex, dispIndexOffset + outIndex, baseChar);
-		const int charWidth = (startIndex >= nLineSize) ? fixedFontWidth_ : lengthToWidth(charLen);
+		style               = styleOfPos(lineStartPos, lineSize, startIndex, dispIndexOffset + outIndex, baseChar);
+		const int charWidth = (startIndex >= lineSize) ? fixedFontWidth_ : lengthToWidth(charLen);
 
 		if (startX + charWidth >= leftClip) {
 			break;
@@ -2829,16 +2829,16 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	char outStr[MAX_DISP_LINE_LEN];
 	char *outPtr = outStr;
 	int x        = startX;
-	int charIndex;
+	size_t charIndex;
 	boost::optional<int> cursorX;
 
 	for (charIndex = startIndex;; ++charIndex) {
 
 		// take note of where the cursor is if it's on this line...
 		if (lineStartPos + charIndex == cursorPos_) {
-			if (charIndex < nLineSize || (charIndex == nLineSize && cursorPos_ >= buffer_->BufEndOfBuffer())) {
+			if (charIndex < lineSize || (charIndex == lineSize && cursorPos_ >= buffer_->BufEndOfBuffer())) {
 				cursorX = x - 1;
-			} else if ((charIndex == nLineSize) && wrapUsesCharacter(cursorPos_)) {
+			} else if ((charIndex == lineSize) && wrapUsesCharacter(cursorPos_)) {
 				cursorX = x - 1;
 			}
 		}
@@ -2846,20 +2846,21 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 		char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
 		char baseChar = '\0';
 		int charLen   = 1;
-		if (charIndex < nLineSize) {
-			baseChar = currentLine[static_cast<size_t>(charIndex)];
+
+		if (charIndex < lineSize) {
+			baseChar = currentLine[charIndex];
 			charLen  = TextBuffer::BufExpandCharacter(baseChar, outIndex, expandedChar, tabDist);
 		}
 
-		uint32_t charStyle = styleOfPos(lineStartPos, nLineSize, charIndex, dispIndexOffset + outIndex, baseChar);
+		uint32_t charStyle = styleOfPos(lineStartPos, lineSize, charIndex, dispIndexOffset + outIndex, baseChar);
 
 		for (int i = 0; i < charLen; ++i) {
 
 			/* NOTE(eteran): this double check of the style is necessary to make
 			 * certain types of selections work correctly
 			 */
-			if (i != 0 && charIndex < nLineSize && currentLine[static_cast<size_t>(charIndex)] == '\t') {
-				charStyle = styleOfPos(lineStartPos, nLineSize, charIndex, dispIndexOffset + outIndex, '\t');
+			if (i != 0 && charIndex < lineSize && currentLine[charIndex] == '\t') {
+				charStyle = styleOfPos(lineStartPos, lineSize, charIndex, dispIndexOffset + outIndex, '\t');
 			}
 
 			if (charStyle != style) {
@@ -2871,7 +2872,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 				style  = charStyle;
 			}
 
-			if (charIndex < nLineSize) {
+			if (charIndex < lineSize) {
 				*outPtr = expandedChar[i];
 			}
 
@@ -2895,7 +2896,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	if (cursorOn_) {
 		if (cursorX) {
 			drawCursor(painter, *cursorX, y);
-		} else if (charIndex < nLineSize && (lineStartPos + charIndex + 1 == cursorPos_) && x == rightClip) {
+		} else if (charIndex < lineSize && (lineStartPos + charIndex + 1 == cursorPos_) && x == rightClip) {
 			if (cursorPos_ >= buffer_->length()) {
 				drawCursor(painter, x - 1, y);
 			} else if (wrapUsesCharacter(cursorPos_)) {
@@ -2926,7 +2927,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 ** Note that style is a somewhat incorrect name, drawing method would
 ** be more appropriate.
 */
-uint32_t TextArea::styleOfPos(TextCursor lineStartPos, int64_t lineLen, int64_t lineIndex, int64_t dispIndex, int thisChar) const {
+uint32_t TextArea::styleOfPos(TextCursor lineStartPos, size_t lineLen, size_t lineIndex, int64_t dispIndex, int thisChar) const {
 
 	if (lineStartPos == -1 || !buffer_) {
 		return FILL_MASK;

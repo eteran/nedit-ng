@@ -33,6 +33,24 @@ void writeEnum(QSettings &settings, const QString &key, const T &value) {
 	settings.setValue(key, static_cast<int>(value));
 }
 
+/**
+ * @brief randomString
+ * @param length
+ * @return
+ */
+QString randomString(int length) {
+	static const QString alphabet(QLatin1String("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"));
+
+	QString randomString;
+	randomString.reserve(length);
+	for (int i = 0; i < length; ++i) {
+		int index = qrand() % alphabet.size();
+		randomString.append(alphabet[index]);
+	}
+
+	return randomString;
+}
+
 }
 
 bool showResizeNotification;
@@ -219,24 +237,6 @@ QString smartIndentFile() {
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
 	static const auto filename     = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("indent.yaml"));
 	return filename;
-}
-
-/**
- * @brief randomString
- * @param length
- * @return
- */
-QString randomString(int length) {
-	static const QString alphabet(QLatin1String("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"));
-
-	QString randomString;
-	randomString.reserve(length);
-	for (int i = 0; i < length; ++i) {
-		int index = qrand() % alphabet.size();
-		randomString.append(alphabet[index]);
-	}
-
-	return randomString;
 }
 
 /**
