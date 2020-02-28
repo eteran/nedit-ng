@@ -2825,8 +2825,8 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	 * draw parts whenever the style changes (also note if the cursor is on
 	 * this line, and where it should be drawn to take advantage of the x
 	 * position which we've gone to so much trouble to calculate) */
-	char outStr[MAX_DISP_LINE_LEN];
-	char *outPtr = outStr;
+	char buffer[MAX_DISP_LINE_LEN];
+	char *outPtr = buffer;
 	int x        = startX;
 	size_t charIndex;
 	boost::optional<int> cursorX;
@@ -2864,9 +2864,9 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 
 			if (charStyle != style) {
 
-				drawString(painter, style, startX, y, x, outStr, outPtr - outStr);
+				drawString(painter, style, startX, y, x, buffer, outPtr - buffer);
 
-				outPtr = outStr;
+				outPtr = buffer;
 				startX = x;
 				style  = charStyle;
 			}
@@ -2880,13 +2880,13 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 			x += fixedFontWidth_;
 		}
 
-		if (outPtr - outStr + TextBuffer::MAX_EXP_CHAR_LEN >= MAX_DISP_LINE_LEN || x >= rightClip) {
+		if (outPtr - buffer + TextBuffer::MAX_EXP_CHAR_LEN >= MAX_DISP_LINE_LEN || x >= rightClip) {
 			break;
 		}
 	}
 
 	// Draw the remaining style segment
-	drawString(painter, style, startX, y, x, outStr, outPtr - outStr);
+	drawString(painter, style, startX, y, x, buffer, outPtr - buffer);
 
 	/* Draw the cursor if part of it appeared on the redisplayed part of
 	   this line.  Also check for the cases which are not caught as the
