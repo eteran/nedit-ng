@@ -128,7 +128,7 @@ constexpr uint32_t RANGESET_MASK     = (0x3f << RANGESET_SHIFT);
 /* Maximum displayable line length (how many characters will fit across the
    widest window).  This amount of memory is temporarily allocated from the
    stack in the redisplayLine routine for drawing strings */
-constexpr int MAX_DISP_LINE_LEN = 1000;
+constexpr int MAX_DISP_LINE_LEN = 1024;
 
 /**
  * @brief offscreenV
@@ -2799,7 +2799,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	int startX        = viewRect.left() - horizontalScrollBar()->value();
 	int outIndex      = 0;
 	int startIndex    = 0;
-	uint32_t style;
+	uint32_t style    = 0;
 
 	for (;;) {
 		int charLen   = 1;
@@ -2821,6 +2821,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 		++startIndex;
 	}
 
+
 	/* Scan character positions from the beginning of the clipping range, and
 	 * draw parts whenever the style changes (also note if the cursor is on
 	 * this line, and where it should be drawn to take advantage of the x
@@ -2837,10 +2838,8 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 		if (lineStartPos + charIndex == cursorPos_) {
 			if (charIndex < nLineSize || (charIndex == nLineSize && cursorPos_ >= buffer_->BufEndOfBuffer())) {
 				cursorX = x - 1;
-			} else if (charIndex == nLineSize) {
-				if (wrapUsesCharacter(cursorPos_)) {
-					cursorX = x - 1;
-				}
+			} else if ((charIndex == nLineSize) && wrapUsesCharacter(cursorPos_)) {
+				cursorX = x - 1;
 			}
 		}
 
@@ -2864,7 +2863,9 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 			}
 
 			if (charStyle != style) {
+
 				drawString(painter, style, startX, y, x, outStr, outPtr - outStr);
+
 				outPtr = outStr;
 				startX = x;
 				style  = charStyle;
@@ -2897,10 +2898,8 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 		} else if (charIndex < nLineSize && (lineStartPos + charIndex + 1 == cursorPos_) && x == rightClip) {
 			if (cursorPos_ >= buffer_->length()) {
 				drawCursor(painter, x - 1, y);
-			} else {
-				if (wrapUsesCharacter(cursorPos_)) {
-					drawCursor(painter, x - 1, y);
-				}
+			} else if (wrapUsesCharacter(cursorPos_)) {
+				drawCursor(painter, x - 1, y);
 			}
 		}
 	}
@@ -2984,7 +2983,7 @@ uint32_t TextArea::styleOfPos(TextCursor lineStartPos, int64_t lineLen, int64_t 
 ** rectangle where text would have drawn from x to toX and from y to
 ** the maximum y extent of the current font(s).
 */
-void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int toX, const char *string, int nChars) {
+void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int toX, const char *string, int64_t nChars) {
 
 	const QRect viewRect = viewport()->contentsRect();
 	const QPalette &pal  = palette();
