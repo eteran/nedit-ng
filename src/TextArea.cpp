@@ -63,13 +63,12 @@ namespace {
  * @param len
  * @return
  */
-template <class Dist>
-QString asciiToUnicode(const char *chars, Dist len) {
+QString asciiToUnicode(view::string_view string) {
 	QString s;
-	s.reserve(len);
+	s.reserve(string.size());
 
-	for (Dist i = 0; i < len; ++i) {
-		quint32 ch = chars[i] & 0xff;
+	for(char c : string) {
+		uint32_t ch = c & 0xff;
 		if (ch < 0x80 || ch >= 0xa0) {
 			s.append(QChar(ch));
 		} else {
@@ -2864,7 +2863,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 
 			if (charStyle != style) {
 
-				drawString(painter, style, startX, y, x, buffer, outPtr - buffer);
+				drawString(painter, style, startX, y, x, view::string_view(buffer, outPtr - buffer));
 
 				outPtr = buffer;
 				startX = x;
@@ -2886,7 +2885,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	}
 
 	// Draw the remaining style segment
-	drawString(painter, style, startX, y, x, buffer, outPtr - buffer);
+	drawString(painter, style, startX, y, x, view::string_view(buffer, outPtr - buffer));
 
 	/* Draw the cursor if part of it appeared on the redisplayed part of
 	   this line.  Also check for the cases which are not caught as the
@@ -2983,7 +2982,7 @@ uint32_t TextArea::styleOfPos(TextCursor lineStartPos, size_t lineLen, size_t li
 ** rectangle where text would have drawn from x to toX and from y to
 ** the maximum y extent of the current font(s).
 */
-void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int toX, const char *string, int64_t nChars) {
+void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int toX, view::string_view string) {
 
 	const QRect viewRect = viewport()->contentsRect();
 	const QPalette &pal  = palette();
@@ -3101,7 +3100,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 		renderFont.setUnderline(true);
 	}
 
-	const auto s = asciiToUnicode(string, nChars);
+	const auto s = asciiToUnicode(string);
 	const QRect rect(x, y, toX - x, fixedFontHeight_);
 
 	painter->save();

@@ -326,7 +326,7 @@ private:
 	void checkAutoShowInsertPos();
 	void checkMoveSelectionChange(EventFlags flags, TextCursor startPos);
 	void drawCursor(QPainter *painter, int x, int y);
-	void drawString(QPainter *painter, uint32_t style, int x, int y, int toX, const char *string, int64_t nChars);
+	void drawString(QPainter *painter, uint32_t style, int x, int y, int toX, view::string_view string);
 	void endDrag();
 	void extendRangeForStyleMods(TextCursor *start, TextCursor *end);
 	void findLineEnd(TextCursor startPos, bool startPosIsLineStart, TextCursor *lineEnd, TextCursor *nextLineStart);
