@@ -39,8 +39,8 @@ function(TARGET_ADD_WARNINGS TARGET)
 	    elseif(TARGET_COMPILER_GCC)
 			target_compile_options(${TARGET}
 			PUBLIC
-			    -Wduplicated-branches
-				-Wduplicated-cond
+				#-Wduplicated-branches
+				#-Wduplicated-cond
 				#-Wuseless-cast
 				-Wlogical-op
 				-Wsuggest-final-methods
