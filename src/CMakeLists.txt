@@ -42,6 +42,7 @@ endforeach()
 if(${X11_FOUND})
     if(TARGET_PLATFORM_MACOS)
         link_directories(/usr/X11/lib)
+        link_directories(/opt/X11/lib)
     endif()
 endif()
 
