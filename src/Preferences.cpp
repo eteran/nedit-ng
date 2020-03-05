@@ -16,7 +16,6 @@
 #include "Util/algorithm.h"
 #include "Util/version.h"
 #include "nedit.h"
-#include "Search.h"
 #include "userCmds.h"
 
 #include <yaml-cpp/yaml.h>
