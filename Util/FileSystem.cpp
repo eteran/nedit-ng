@@ -30,27 +30,30 @@ constexpr int FORMAT_SAMPLE_CHARS = 2000;
  * @return
  */
 PathInfo parseFilename(const QString &fullname) {
+
 	PathInfo fileInfo;
 
-	const int fullLen = fullname.size();
+    QString cleanedPath = QDir::cleanPath(fullname);
+
+    const int fullLen = cleanedPath.size();
 	int scanStart     = -1;
 
 	/* For clearcase version extended paths, slash characters after the "@@/"
 	   should be considered part of the file name, rather than the path */
-	const int viewExtendPath = ClearCase::GetVersionExtendedPathIndex(fullname);
+    const int viewExtendPath = ClearCase::GetVersionExtendedPathIndex(cleanedPath);
 	if (viewExtendPath != -1) {
 		scanStart = viewExtendPath - 1;
 	}
 
 	// find the last slash
-	const int i = fullname.lastIndexOf(QLatin1Char('/'), scanStart);
+    const int i = cleanedPath.lastIndexOf(QLatin1Char('/'), scanStart);
 
 	// move chars before / (or ] or :) into pathname,& after into filename
 	int pathLen = i + 1;
 	int fileLen = fullLen - pathLen;
 
-	fileInfo.pathname = fullname.left(pathLen);
-	fileInfo.filename = fullname.mid(pathLen, fileLen);
+    fileInfo.pathname = cleanedPath.left(pathLen);
+    fileInfo.filename = cleanedPath.mid(pathLen, fileLen);
 	fileInfo.pathname = NormalizePathname(fileInfo.pathname);
 
 	return fileInfo;
@@ -63,7 +66,7 @@ PathInfo parseFilename(const QString &fullname) {
  */
 QString NormalizePathname(const QString &pathname) {
 
-	QString path = pathname;
+    QString path = QDir::cleanPath(pathname);
 	QFileInfo fi(path);
 
 	// if this is a relative pathname, prepend current directory
