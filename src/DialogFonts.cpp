@@ -25,6 +25,8 @@ DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFl
 		ui.buttonBox->removeButton(ui.buttonBox->button(QDialogButtonBox::Apply));
 		ui.buttonBox->removeButton(ui.buttonBox->button(QDialogButtonBox::Close));
 		ui.buttonBox->addButton(QDialogButtonBox::Cancel);
+		ui.fontSetAsDef->setChecked(true);
+		ui.fontSetAsDef->setEnabled(false);
 	}
 
 	const QFont font = document ? Font::fromString(document->fontName_) : Font::fromString(Preferences::GetPrefFontName());
@@ -76,9 +78,18 @@ void DialogFonts::updateFont() {
 	font.setPointSize(ui.fontSize->currentData().toInt());
 	QString fontName = font.toString();
 
-	if (document_) {
-		document_->action_Set_Fonts(fontName);
+	const bool applyToAll = ui.fontApplyAll->isChecked();
+	const bool setAsDef = ui.fontSetAsDef->isChecked();
+
+	if (applyToAll) {
+		for (DocumentWidget *doc : DocumentWidget::allDocuments()) {
+			doc->action_Set_Fonts(fontName);
+		}
 	} else {
+		document_->action_Set_Fonts(fontName);
+	}
+
+	if (setAsDef) {
 		Preferences::SetPrefFont(fontName);
 	}
 }
