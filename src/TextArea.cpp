@@ -67,7 +67,7 @@ QString asciiToUnicode(view::string_view string) {
 	QString s;
 	s.reserve(string.size());
 
-	for(char c : string) {
+	for (char c : string) {
 		uint32_t ch = c & 0xff;
 		if (ch < 0x80 || ch >= 0xa0) {
 			s.append(QChar(ch));
