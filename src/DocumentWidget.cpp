@@ -332,6 +332,32 @@ QLatin1String createRepeatMacro(int how) {
 	}
 }
 
+/**
+** Replaces '%' with <fullName> and '#' with <lineNumber>. But '%%' and '##'
+** are replaced by '%' and '#'.
+*/
+QString escapeCommand(const QString &command, const QString &fullName, int lineNumber) {
+	QString ret;
+	for (int i = 0; i < command.size(); ++i) {
+		auto c = command[i];
+		if (c == QLatin1Char('%') || c == QLatin1Char('#')) {
+			if (i + 1 < command.size() && command[i + 1] == c) {
+				ret.append(c);
+				i += 1;
+			} else if (c == QLatin1Char('%')) {
+				ret.append(fullName);
+			} else if (c == QLatin1Char('#')) {
+				ret.append(QString::number(lineNumber));
+			} else {
+				assert(0);
+			}
+		} else {
+			ret.append(command[i]);
+		}
+	}
+	return ret;
+}
+
 }
 
 /*
@@ -3886,9 +3912,7 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 
 	const boost::optional<Location> loc = area->positionToLineAndCol(pos);
 
-	QString substitutedCommand = command;
-	substitutedCommand.replace(QLatin1Char('%'), fullName);
-	substitutedCommand.replace(QLatin1Char('#'), QString::number(loc->line));
+	QString substitutedCommand = escapeCommand(command, fullName, loc->line);
 
 	if (substitutedCommand.isNull()) {
 		QMessageBox::critical(this, tr("Shell Command"), tr("Shell command is too long due to\n"
@@ -4820,9 +4844,7 @@ void DocumentWidget::execCursorLine(TextArea *area, CommandSource source) {
 	   for # in the shell command */
 	const boost::optional<Location> loc = area->positionToLineAndCol(pos);
 
-	auto substitutedCommand = QString::fromStdString(cmdText);
-	substitutedCommand.replace(QLatin1Char('%'), fullPath());
-	substitutedCommand.replace(QLatin1Char('#'), QString::number(loc->line));
+	auto substitutedCommand = escapeCommand(QString::fromStdString(cmdText), fullPath(), loc->line);
 
 	if (substitutedCommand.isNull()) {
 		QMessageBox::critical(
@@ -4923,12 +4945,7 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 
 	const boost::optional<Location> loc = area->positionToLineAndCol(pos);
 
-	QString substitutedCommand = command;
-	substitutedCommand.replace(QLatin1Char('%'), fullPath());
-
-	if (loc) {
-		substitutedCommand.replace(QLatin1Char('#'), QString::number(loc->line));
-	}
+	QString substitutedCommand = escapeCommand(command, fullPath(), loc ? loc->line : 0);
 
 	/* Get the command input as a text string.  If there is input, errors
 	  shouldn't be mixed in with output, so set flags to ERROR_DIALOGS */
