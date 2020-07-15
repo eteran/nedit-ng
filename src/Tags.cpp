@@ -874,7 +874,7 @@ bool addTagsFile(const QString &tagSpec, SearchMode mode) {
 		return false;
 	}
 
-	QStringList filenames = tagSpec.split(QLatin1Char(':'));
+	QStringList filenames = tagSpec.split(QDir::listSeparator());
 
 	for (const QString &filename : filenames) {
 
@@ -942,7 +942,7 @@ bool deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload) 
 
 	bool removed = true;
 
-	QStringList filenames = tagSpec.split(QLatin1Char(':'));
+	QStringList filenames = tagSpec.split(QDir::listSeparator());
 
 	for (const QString &filename : filenames) {
 
