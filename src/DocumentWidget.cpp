@@ -7244,11 +7244,11 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 	   about 1/4 of the way down from the top */
 	const int64_t lineNum = documentToSearch->buffer()->BufCountLines(TextCursor(0), TextCursor(startPos));
 
-	int rows = area->getRows();
-
-	area->verticalScrollBar()->setValue(lineNum - (rows / 4));
-	area->horizontalScrollBar()->setValue(0);
-	area->TextSetCursorPos(TextCursor(endPos));
+	QPointer<TextArea> tagArea = MainWindow::fromDocument(documentToSearch)->lastFocus();
+	int rows = tagArea->getRows();
+	tagArea->verticalScrollBar()->setValue(lineNum - (rows / 4));
+	tagArea->horizontalScrollBar()->setValue(0);
+	tagArea->TextSetCursorPos(TextCursor(endPos));
 }
 
 /**
