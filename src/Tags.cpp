@@ -174,7 +174,7 @@ bool delTag(int index) {
 */
 int scanCTagsLine(const QString &line, const QString &tagPath, int index) {
 
-	QRegExp regex(QLatin1String(R"(^([^\t]+)\t([^\t]+)\t([^\n]+)\n$)"));
+	QRegExp regex(QLatin1String(R"(^([^\t]+)\t([^\t]+)\t([^\n]+)$)"));
 	if (!regex.exactMatch(line)) {
 		return 0;
 	}
