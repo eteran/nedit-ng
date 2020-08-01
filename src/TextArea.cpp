@@ -35,6 +35,7 @@
 #include <QTimer>
 #include <QtDebug>
 #include <QtGlobal>
+#include <QPainterPath>
 
 #include <gsl/gsl_util>
 #include <memory>
