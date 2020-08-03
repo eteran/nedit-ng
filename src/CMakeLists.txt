@@ -14,6 +14,7 @@ endif()
 
 qt5_add_translation(QM_FILES
 	res/translations/nedit-ng_fr.ts
+	res/translations/nedit-ng_fi.ts
 )
 
 # Create translations QRC file - translations.qrc
