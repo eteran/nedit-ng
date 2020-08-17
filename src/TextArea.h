@@ -100,8 +100,8 @@ public:
 
 protected:
 	bool focusNextPrevChild(bool next) override;
-	virtual void mouseQuadrupleClickEvent(QMouseEvent *event);
-	virtual void mouseTripleClickEvent(QMouseEvent *event);
+	void mouseQuadrupleClickEvent(QMouseEvent *event);
+	void mouseTripleClickEvent(QMouseEvent *event);
 	void contextMenuEvent(QContextMenuEvent *event) override;
 	void focusInEvent(QFocusEvent *event) override;
 	void focusOutEvent(QFocusEvent *event) override;
