@@ -27,6 +27,7 @@
 #include <QMimeData>
 #include <QPaintEvent>
 #include <QPainter>
+#include <QPainterPath>
 #include <QPoint>
 #include <QResizeEvent>
 #include <QScrollBar>
@@ -35,7 +36,6 @@
 #include <QTimer>
 #include <QtDebug>
 #include <QtGlobal>
-#include <QPainterPath>
 
 #include <gsl/gsl_util>
 #include <memory>

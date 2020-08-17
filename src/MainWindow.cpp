@@ -1315,7 +1315,7 @@ void MainWindow::checkCloseEnableState() {
 QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<MenuData> &data, CommandTypes type) {
 
 	auto rootMenu = new QMenu(this);
-	for (int i = 0; i < data.size(); ++i) {
+	for (qulonglong i = 0; i < data.size(); ++i) {
 		const MenuData &menuData = data[i];
 
 		const std::vector<size_t> &modes = menuData.info->umiLanguageModes;

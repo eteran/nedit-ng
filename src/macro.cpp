@@ -178,10 +178,10 @@ std::string MacroErrorCategory::message(int ev) const {
  * @param firstFlag
  * @return The flags if all arguments were valid, otherwise, nothing
  */
-boost::optional<TextArea::EventFlags> flagsFromArguments(Arguments arguments, int firstFlag) {
+boost::optional<TextArea::EventFlags> flagsFromArguments(Arguments arguments, size_t firstFlag) {
 
 	TextArea::EventFlags f = TextArea::NoneFlag;
-	for (int i = firstFlag; i < arguments.size(); ++i) {
+	for (size_t i = firstFlag; i < arguments.size(); ++i) {
 
 		const std::string s = to_string(arguments[i]);
 
@@ -372,11 +372,11 @@ std::error_code readArgument(const DataValue &dv, QString *result) {
  * @return
  */
 template <class T>
-std::error_code readArguments(Arguments arguments, int index, T arg) {
+std::error_code readArguments(Arguments arguments, size_t index, T arg) {
 
 	static_assert(std::is_pointer<T>::value, "Argument is not a pointer");
 
-	if (static_cast<size_t>(arguments.size() - index) < 1) {
+	if (arguments.size() - index < 1) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -392,11 +392,11 @@ std::error_code readArguments(Arguments arguments, int index, T arg) {
  * @return
  */
 template <class T, class... Ts>
-std::error_code readArguments(Arguments arguments, int index, T arg, Ts... args) {
+std::error_code readArguments(Arguments arguments, size_t index, T arg, Ts... args) {
 
 	static_assert(std::is_pointer<T>::value, "Argument is not a pointer");
 
-	if (static_cast<size_t>(arguments.size() - index) < (sizeof...(args)) + 1) {
+	if ((arguments.size() - index) < (sizeof...(args)) + 1) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -470,8 +470,8 @@ std::error_code readSearchArgs(Arguments arguments, Direction *searchDirection, 
 ** tells the routine how many required arguments there are to ignore before
 ** looking for keywords
 */
-Direction searchDirection(Arguments arguments, int index) {
-	for (int i = index; i < arguments.size(); ++i) {
+Direction searchDirection(Arguments arguments, size_t index) {
+	for (size_t i = index; i < arguments.size(); ++i) {
 		QString arg;
 		if (std::error_code ec = readArgument(arguments[i], &arg)) {
 			return Direction::Forward;
@@ -493,8 +493,8 @@ Direction searchDirection(Arguments arguments, int index) {
 ** tells the routine how many required arguments there are to ignore before
 ** looking for keywords
 */
-bool searchKeepDialogs(Arguments arguments, int index) {
-	for (int i = index; i < arguments.size(); ++i) {
+bool searchKeepDialogs(Arguments arguments, size_t index) {
+	for (size_t i = index; i < arguments.size(); ++i) {
 		QString arg;
 		if (std::error_code ec = readArgument(arguments[i], &arg)) {
 			return Preferences::GetPrefKeepSearchDlogs();
@@ -516,8 +516,8 @@ bool searchKeepDialogs(Arguments arguments, int index) {
 ** tells the routine how many required arguments there are to ignore before
 ** looking for keywords
 */
-WrapMode searchWrap(Arguments arguments, int index) {
-	for (int i = index; i < arguments.size(); ++i) {
+WrapMode searchWrap(Arguments arguments, size_t index) {
+	for (size_t i = index; i < arguments.size(); ++i) {
 		QString arg;
 		if (std::error_code ec = readArgument(arguments[i], &arg)) {
 			return Preferences::GetPrefSearchWraps();
@@ -539,9 +539,9 @@ WrapMode searchWrap(Arguments arguments, int index) {
 ** tells the routine how many required arguments there are to ignore before
 ** looking for keywords
 */
-SearchType searchType(Arguments arguments, int index) {
+SearchType searchType(Arguments arguments, size_t index) {
 
-	for (int i = index; i < arguments.size(); ++i) {
+	for (size_t i = index; i < arguments.size(); ++i) {
 		QString arg;
 
 		if (std::error_code ec = readArgument(arguments[i], &arg)) {
@@ -1251,7 +1251,7 @@ std::error_code findIncrMS(DocumentWidget *document, Arguments arguments, DataVa
 	auto win = MainWindow::fromDocument(document);
 	Q_ASSERT(win);
 
-	int i;
+	size_t i;
 	bool continued = false;
 
 	QString arg;
@@ -2041,7 +2041,7 @@ std::error_code replaceInStringMS(DocumentWidget *document, Arguments arguments,
 	int64_t copyStart;
 	int64_t copyEnd;
 	bool force = false;
-	int i;
+	size_t i;
 
 	// Validate arguments and convert to proper types
 	if (arguments.size() < 3 || arguments.size() > 5) {
@@ -2183,7 +2183,7 @@ std::error_code tPrintMS(DocumentWidget *document, Arguments arguments, DataValu
 		return MacroErrorCode::TooFewArguments;
 	}
 
-	for (int i = 0; i < arguments.size(); i++) {
+	for (size_t i = 0; i < arguments.size(); i++) {
 		if (std::error_code ec = readArgument(arguments[i], &string)) {
 			return ec;
 		}
@@ -2264,7 +2264,7 @@ std::error_code dialogMS(DocumentWidget *document, Arguments arguments, DataValu
 	}
 
 	// check that all button labels can be read
-	for (int i = 1; i < arguments.size(); i++) {
+	for (size_t i = 1; i < arguments.size(); i++) {
 		if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 			return ec;
 		}
@@ -2282,7 +2282,7 @@ std::error_code dialogMS(DocumentWidget *document, Arguments arguments, DataValu
 	if (arguments.size() == 1) {
 		prompt->addButton(QDialogButtonBox::Ok);
 	} else {
-		for (int i = 1; i < arguments.size(); ++i) {
+		for (size_t i = 1; i < arguments.size(); ++i) {
 			if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 				// NOTE(eteran): does not report
 			}
@@ -2329,7 +2329,7 @@ std::error_code stringDialogMS(DocumentWidget *document, Arguments arguments, Da
 	}
 
 	// check that all button labels can be read
-	for (int i = 1; i < arguments.size(); i++) {
+	for (size_t i = 1; i < arguments.size(); i++) {
 		if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 			return ec;
 		}
@@ -2347,7 +2347,7 @@ std::error_code stringDialogMS(DocumentWidget *document, Arguments arguments, Da
 	if (arguments.size() == 1) {
 		prompt->addButton(QDialogButtonBox::Ok);
 	} else {
-		for (int i = 1; i < arguments.size(); ++i) {
+		for (size_t i = 1; i < arguments.size(); ++i) {
 			if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 				// NOTE(eteran): does not report
 			}
@@ -2400,7 +2400,7 @@ std::error_code calltipMS(DocumentWidget *document, Arguments arguments, DataVal
 	std::string txtArg;
 	bool anchored = false;
 	bool lookup   = true;
-	int i;
+	size_t i;
 	int anchorPos;
 	auto mode      = Tags::SearchMode::None;
 	auto hAlign    = TipHAlignMode::Left;
@@ -2718,7 +2718,7 @@ std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, Data
 	}
 
 	// check that all button labels can be read
-	for (int i = 2; i < arguments.size(); i++) {
+	for (size_t i = 2; i < arguments.size(); i++) {
 		if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 			return ec;
 		}
@@ -2738,7 +2738,7 @@ std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, Data
 	if (arguments.size() == 2) {
 		prompt->addButton(QDialogButtonBox::Ok);
 	} else {
-		for (int i = 2; i < arguments.size(); ++i) {
+		for (size_t i = 2; i < arguments.size(); ++i) {
 			if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 				// NOTE(eteran): does not report
 			}
@@ -2769,7 +2769,7 @@ std::error_code stringCompareMS(DocumentWidget *document, Arguments arguments, D
 	QString rightStr;
 	QString argStr;
 	bool considerCase = true;
-	int i;
+	size_t i;
 	int compareResult;
 
 	if (arguments.size() < 2) {

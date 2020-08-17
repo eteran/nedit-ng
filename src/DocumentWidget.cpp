@@ -1533,8 +1533,8 @@ void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<M
 			if (QMenu *subMenu = action->menu()) {
 				updateSelectionSensitiveMenu(subMenu, menuList, enabled);
 			} else {
-				int index = action->data().toInt();
-				if (index < 0 || index >= menuList.size()) {
+				size_t index = action->data().toUInt();
+				if (index >= menuList.size()) {
 					return;
 				}
 
@@ -3183,6 +3183,13 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 		return false;
 	}
 #endif
+
+	if (statbuf.st_size > (0x100000000ll)) {
+		info_->filenameSet = false; // Temp. prevent check for changes.
+		QMessageBox::critical(this, tr("Error opening File"), tr("File size too large %1").arg(name));
+		info_->filenameSet = true;
+		return false;
+	}
 
 	// Allocate space for the whole contents of the file (unfortunately)
 	try {
