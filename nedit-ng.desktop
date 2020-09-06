@@ -1,0 +1,9 @@
+[Desktop Entry]
+GenericName=NEdit-ng
+Name=nedit-ng
+MimeType=text/plain;
+Exec=nedit %U
+Icon=nedit
+Type=Application
+Terminal=false
+Categories=Qt;Utility;TextEditor;
