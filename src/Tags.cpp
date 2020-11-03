@@ -350,16 +350,16 @@ int loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 
 	const PathInfo tagPathInfo = parseFilename(resolvedTagsFile);
 
-	/* This might take a while if you have a huge tags file (like I do)..
-	   keep the windows up to date and post a busy cursor so the user
-	   doesn't think we died. */
-	MainWindow::allDocumentsBusy(tr("Loading tags file..."));
-
 	QString filename;
 
 	QTextStream stream(&f);
 
 	while (!stream.atEnd()) {
+		/* This might take a while if you have a huge tags file (like I do)..
+		   keep the windows up to date and post a busy cursor so the user
+		   doesn't think we died. */
+		MainWindow::allDocumentsBusy(tr("Loading tags file..."));
+
 		QString line = stream.readLine();
 
 		/* the first character in the file decides if the file is treat as

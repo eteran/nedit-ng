@@ -4797,6 +4797,8 @@ void MainWindow::allDocumentsBusy(const QString &message) {
 		modeMessageSet = true;
 	}
 
+	/* Keep UI alive while loading large files */
+	QApplication::processEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
 	currentlyBusy = true;
 }
 
