@@ -412,6 +412,7 @@ public:
 
 private:
 	void focusChanged(QWidget *from, QWidget *to);
+	void updateWindowHints(DocumentWidget *);
 
 public Q_SLOTS:
 	void selectionChanged(bool selected);

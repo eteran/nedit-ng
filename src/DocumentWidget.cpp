@@ -3290,6 +3290,7 @@ void DocumentWidget::refreshWindowStates() {
 
 	Q_EMIT updateWindowReadOnly(this);
 	Q_EMIT updateWindowTitle(this);
+	Q_EMIT fontChanged(this);
 
 	// show/hide statsline as needed
 	if (modeMessageDisplayed() && !ui.statusFrame->isVisible()) {
@@ -4271,6 +4272,8 @@ void DocumentWidget::action_Set_Fonts(const QString &fontName) {
 	for (TextArea *area : textPanes()) {
 		area->setFont(font_);
 	}
+
+	Q_EMIT fontChanged(this);
 }
 
 /*

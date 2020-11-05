@@ -1097,6 +1097,7 @@ DocumentWidget *MainWindow::createDocument(const QString &name) {
 	connect(document, &DocumentWidget::updateStatus, this, &MainWindow::updateStatus);
 	connect(document, &DocumentWidget::updateWindowReadOnly, this, &MainWindow::updateWindowReadOnly);
 	connect(document, &DocumentWidget::updateWindowTitle, this, &MainWindow::updateWindowTitle);
+	connect(document, &DocumentWidget::fontChanged, this, &MainWindow::updateWindowHints);
 
 	ui.tabWidget->addTab(document, name);
 	return document;
@@ -4749,6 +4750,7 @@ DocumentWidget *MainWindow::editNewFile(MainWindow *window, const QString &geome
 	window->updateWindowReadOnly(document);
 	window->updateStatus(document, document->firstPane());
 	window->updateWindowTitle(document);
+	window->updateWindowHints(document);
 	document->refreshTabState();
 
 	if (languageMode.isNull()) {
@@ -4797,6 +4799,8 @@ void MainWindow::allDocumentsBusy(const QString &message) {
 		modeMessageSet = true;
 	}
 
+	/* Keep UI alive while loading large files */
+	QApplication::processEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
 	currentlyBusy = true;
 }
 
@@ -7279,6 +7283,17 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
 	if (!document->modeMessageDisplayed()) {
 		document->ui.labelFileAndSize->setText(string);
 	}
+}
+
+/**
+ * @brief Update window geometry hints to allow for incremented resize.
+ * @param document
+ */
+void MainWindow::updateWindowHints(DocumentWidget *document)
+{
+	QFontMetrics fm(document->defaultFont());
+	QSize increment(fm.averageCharWidth(), fm.height());
+	setSizeIncrement(increment);
 }
 
 /*
