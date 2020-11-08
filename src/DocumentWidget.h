@@ -83,7 +83,7 @@ Q_SIGNALS:
 	void updateStatus(DocumentWidget *document, TextArea *area);
 	void updateWindowReadOnly(DocumentWidget *document);
 	void updateWindowTitle(DocumentWidget *document);
-        void fontChanged(DocumentWidget *document);
+	void fontChanged(DocumentWidget *document);
 
 public:
 	void dragEndCallback(TextArea *area, const DragEndEvent *event);

@@ -7289,8 +7289,7 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
  * @brief Update window geometry hints to allow for incremented resize.
  * @param document
  */
-void MainWindow::updateWindowHints(DocumentWidget *document)
-{
+void MainWindow::updateWindowHints(DocumentWidget *document) {
 	QFontMetrics fm(document->defaultFont());
 	QSize increment(fm.averageCharWidth(), fm.height());
 	setSizeIncrement(increment);
