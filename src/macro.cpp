@@ -3359,7 +3359,7 @@ std::error_code emptyArrayMV(DocumentWidget *document, Arguments arguments, Data
 	Q_UNUSED(document)
 	Q_UNUSED(arguments)
 
-	*result = make_value(ArrayPtr());
+	*result = make_value(std::make_shared<Array>());
 	return MacroErrorCode::Success;
 }
 
@@ -4251,7 +4251,7 @@ std::error_code getStyleByNameMS(DocumentWidget *document, Arguments arguments, 
 		return MacroErrorCode::Param1NotAString;
 	}
 
-	*result = make_value(ArrayPtr());
+	*result = make_value(std::make_shared<Array>());
 
 	if (!Highlight::NamedStyleExists(styleName)) {
 		// if the given name is invalid we just return an empty array.
@@ -4289,7 +4289,7 @@ std::error_code getStyleAtPosMS(DocumentWidget *document, Arguments arguments, D
 		return ec;
 	}
 
-	*result = make_value(ArrayPtr());
+	*result = make_value(std::make_shared<Array>());
 
 	//  Verify sane buffer position
 	if ((bufferPos < 0) || (bufferPos >= buf->length())) {
@@ -4368,7 +4368,7 @@ std::error_code getPatternByNameMS(DocumentWidget *document, Arguments arguments
 
 	QString patternName;
 
-	*result = make_value(ArrayPtr());
+	*result = make_value(std::make_shared<Array>());
 
 	// Validate number of arguments
 	if (std::error_code ec = readArguments(arguments, 0, &patternName)) {
@@ -4402,7 +4402,7 @@ std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arguments,
 	int64_t bufferPos;
 	TextBuffer *buffer = document->buffer();
 
-	*result = make_value(ArrayPtr());
+	*result = make_value(std::make_shared<Array>());
 
 	// Validate number of arguments
 	if (std::error_code ec = readArguments(arguments, 0, &bufferPos)) {
