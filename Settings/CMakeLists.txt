@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-find_package(Qt5 5.5.0 REQUIRED Core Widgets)
+find_package(Qt6 6.0.0 REQUIRED Core Widgets)
 
 add_library(Settings 
 	IndentStyle.h
@@ -18,8 +18,8 @@ target_include_directories(Settings PUBLIC
 
 target_link_libraries(Settings
 PUBLIC
-	Qt5::Core
-	Qt5::Widgets
+	Qt6::Core
+	Qt6::Widgets
 	Util
 )
 

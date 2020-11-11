@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-find_package(Qt5 5.5.0 REQUIRED Core Network)
+find_package(Qt6 6.0.0 REQUIRED Core Network)
 
 add_library(Util
 	ClearCase.cpp
@@ -41,8 +41,8 @@ target_link_libraries(Util
 PUBLIC
 	Regex
 	GSL
-	Qt5::Core
-	Qt5::Network
+	Qt6::Core
+	Qt6::Network
 	Boost::boost
 )
 

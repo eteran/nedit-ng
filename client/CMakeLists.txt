@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.0)
 
-find_package(Qt5 5.5.0 REQUIRED Core Network)
+find_package(Qt6 6.0.0 REQUIRED Core Network)
 
 add_executable(nc-ng
 	nc.cpp
 )
 
 target_link_libraries(nc-ng PUBLIC
-	Qt5::Core
-	Qt5::Network
+	Qt6::Core
+	Qt6::Network
 	Util
 	Settings
 	Boost::boost
