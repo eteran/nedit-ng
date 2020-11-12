@@ -135,7 +135,7 @@ void addToGroup(QActionGroup *group, QMenu *menu) {
 ** Capitalize or lowercase the contents of the selection (or of the character
 ** before the cursor if there is no selection).
 */
-template <int (&F)(int)>
+template <int (&F)(int) noexcept>
 void changeCase(DocumentWidget *document, TextArea *area) {
 
 	TextBuffer *buf = document->buffer();

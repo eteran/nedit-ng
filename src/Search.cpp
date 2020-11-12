@@ -314,9 +314,9 @@ boost::optional<Search::Result> searchLiteralWord(view::string_view string, view
 				++lcPtr;
 
 				if (ucPtr == ucString.end() &&                                                        // matched whole string
-					(cignore_R || safe_ctype<isspace>(*tempPtr) || ::strchr(delimiters, *tempPtr)) && // next char right delimits word ?
+					(cignore_R || safe_ctype<::isspace>(*tempPtr) || ::strchr(delimiters, *tempPtr)) && // next char right delimits word ?
 					(cignore_L || it == string.begin() ||                                             // border case
-					 safe_ctype<isspace>(it[-1]) || ::strchr(delimiters, it[-1]))) {                  // next char left delimits word ?
+					 safe_ctype<::isspace>(it[-1]) || ::strchr(delimiters, it[-1]))) {                  // next char left delimits word ?
 
 					Search::Result result;
 					result.start    = it - string.begin();
@@ -342,11 +342,11 @@ boost::optional<Search::Result> searchLiteralWord(view::string_view string, view
 		delimiters = delimiterString.data();
 	}
 
-	if (safe_ctype<isspace>(searchString.front()) || ::strchr(delimiters, searchString.front())) {
+	if (safe_ctype<::isspace>(searchString.front()) || ::strchr(delimiters, searchString.front())) {
 		cignore_L = true;
 	}
 
-	if (safe_ctype<isspace>(searchString.back()) || ::strchr(delimiters, searchString.back())) {
+	if (safe_ctype<::isspace>(searchString.back()) || ::strchr(delimiters, searchString.back())) {
 		cignore_R = true;
 	}
 
