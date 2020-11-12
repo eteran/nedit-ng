@@ -16,7 +16,7 @@ target_link_libraries(nc-ng PUBLIC
 
 target_add_warnings(nc-ng)
 
-set_property(TARGET nc-ng PROPERTY CXX_STANDARD 14)
+set_property(TARGET nc-ng PROPERTY CXX_STANDARD 17)
 set_property(TARGET nc-ng PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET nc-ng PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 

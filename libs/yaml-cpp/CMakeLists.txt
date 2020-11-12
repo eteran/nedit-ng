@@ -95,7 +95,7 @@ target_include_directories(yaml-cpp
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-set_property(TARGET yaml-cpp PROPERTY CXX_STANDARD 14)
+set_property(TARGET yaml-cpp PROPERTY CXX_STANDARD 17)
 set_property(TARGET yaml-cpp PROPERTY CXX_EXTENSIONS OFF)
 
 

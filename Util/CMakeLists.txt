@@ -48,7 +48,7 @@ PUBLIC
 
 target_add_warnings(Util)
 
-set_property(TARGET Util PROPERTY CXX_STANDARD 14)
+set_property(TARGET Util PROPERTY CXX_STANDARD 17)
 set_property(TARGET Util PROPERTY CXX_EXTENSIONS OFF)
 
 
