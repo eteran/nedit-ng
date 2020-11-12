@@ -35,7 +35,7 @@ std::string to_upper(view::string_view s) {
 	std::string str;
 	str.reserve(s.size());
 	std::transform(s.begin(), s.end(), std::back_inserter(str), [](char ch) {
-		return safe_ctype<std::toupper>(ch);
+		return safe_ctype<::toupper>(ch);
 	});
 	return str;
 }
@@ -50,7 +50,7 @@ std::string to_lower(view::string_view s) {
 	std::string str;
 	str.reserve(s.size());
 	std::transform(s.begin(), s.end(), std::back_inserter(str), [](char ch) {
-		return safe_ctype<std::tolower>(ch);
+		return safe_ctype<::tolower>(ch);
 	});
 	return str;
 }

@@ -2282,7 +2282,7 @@ bool StringToNum(const std::string &string, int *number) {
 		++it;
 	}
 
-	while (safe_ctype<isdigit>(*it)) {
+	while (safe_ctype<::isdigit>(*it)) {
 		++it;
 	}
 

@@ -1761,7 +1761,7 @@ std::error_code toupperMS(DocumentWidget *document, Arguments arguments, DataVal
 
 	// Allocate a new string and copy an uppercased version of the string it
 	for (char &ch : string) {
-		ch = static_cast<char>(safe_ctype<toupper>(ch));
+		ch = static_cast<char>(safe_ctype<::toupper>(ch));
 	}
 
 	*result = make_value(string);
@@ -1780,7 +1780,7 @@ std::error_code tolowerMS(DocumentWidget *document, Arguments arguments, DataVal
 
 	// Allocate a new string and copy an uppercased version of the string it
 	for (char &ch : string) {
-		ch = static_cast<char>(safe_ctype<tolower>(ch));
+		ch = static_cast<char>(safe_ctype<::tolower>(ch));
 	}
 
 	*result = make_value(string);
