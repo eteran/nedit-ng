@@ -1,8 +1,9 @@
-/* A Bison parser, made by GNU Bison 3.1.  */
+/* A Bison parser, made by GNU Bison 3.7.1.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018 Free Software Foundation, Inc.
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
+   Inc.
 
    This program is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -33,6 +34,10 @@
 /* C LALR(1) parser skeleton written by Richard Stallman, by
    simplifying the original so-called "semantic" parser.  */
 
+/* DO NOT RELY ON FEATURES THAT ARE NOT DOCUMENTED in the manual,
+   especially those whose name start with YY_ or yy_.  They are
+   private implementation details that can be changed or removed.  */
+
 /* All symbols defined below should begin with yy or YY, to avoid
    infringing on user name space.  This should be done even for local
    variables, as they might otherwise be expanded by user macros.
@@ -44,7 +49,7 @@
 #define YYBISON 1
 
 /* Bison version.  */
-#define YYBISON_VERSION "3.1"
+#define YYBISON_VERSION "3.7.1"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -61,8 +66,8 @@
 
 
 
-/* Copy the first part of user declarations.  */
-#line 1 "parser.y" /* yacc.c:339  */
+/* First part of user prologue.  */
+#line 1 "parser.y"
 
 #include "parse.h"
 #include "interpret.h"
@@ -73,6 +78,7 @@
 #include <cstdio>
 #include <cctype>
 #include <string>
+#include <gsl/gsl_util>
 
 /* Macros to add error processing to AddOp and AddSym calls */
 #define ADD_OP(op) if (!AddOp(op, &ErrMsg)) return 1
@@ -98,135 +104,190 @@ extern Inst *LoopStack[]; /* addresses of break, cont stmts */
 extern Inst **LoopStackPtr;  /*  to fill at the end of a loop */
 
 
-#line 102 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:339  */
+#line 108 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
 
-# ifndef YY_NULLPTR
-#  if defined __cplusplus && 201103L <= __cplusplus
-#   define YY_NULLPTR nullptr
+# ifndef YY_CAST
+#  ifdef __cplusplus
+#   define YY_CAST(Type, Val) static_cast<Type> (Val)
+#   define YY_REINTERPRET_CAST(Type, Val) reinterpret_cast<Type> (Val)
 #  else
-#   define YY_NULLPTR 0
+#   define YY_CAST(Type, Val) ((Type) (Val))
+#   define YY_REINTERPRET_CAST(Type, Val) ((Type) (Val))
+#  endif
+# endif
+# ifndef YY_NULLPTR
+#  if defined __cplusplus
+#   if 201103L <= __cplusplus
+#    define YY_NULLPTR nullptr
+#   else
+#    define YY_NULLPTR 0
+#   endif
+#  else
+#   define YY_NULLPTR ((void*)0)
 #  endif
 # endif
 
-/* Enabling verbose error messages.  */
-#ifdef YYERROR_VERBOSE
-# undef YYERROR_VERBOSE
-# define YYERROR_VERBOSE 1
-#else
-# define YYERROR_VERBOSE 0
-#endif
-
-/* In a future release of Bison, this section will be replaced
-   by #include "parser.hpp".  */
-#ifndef YY_YY_HOME_ETERAN_PROJECTS_NEDIT_NG_BUILD_INTERPRETER_PARSER_HPP_INCLUDED
-# define YY_YY_HOME_ETERAN_PROJECTS_NEDIT_NG_BUILD_INTERPRETER_PARSER_HPP_INCLUDED
-/* Debug traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
-#if YYDEBUG
-extern int yydebug;
-#endif
-
-/* Token type.  */
-#ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-  enum yytokentype
-  {
-    NUMBER = 258,
-    STRING = 259,
-    SYMBOL = 260,
-    DELETE = 261,
-    ARG_LOOKUP = 262,
-    IF = 263,
-    WHILE = 264,
-    ELSE = 265,
-    FOR = 266,
-    BREAK = 267,
-    CONTINUE = 268,
-    RETURN = 269,
-    IF_NO_ELSE = 270,
-    ADDEQ = 271,
-    SUBEQ = 272,
-    MULEQ = 273,
-    DIVEQ = 274,
-    MODEQ = 275,
-    ANDEQ = 276,
-    OREQ = 277,
-    CONCAT = 278,
-    OR = 279,
-    AND = 280,
-    GT = 281,
-    GE = 282,
-    LT = 283,
-    LE = 284,
-    EQ = 285,
-    NE = 286,
-    IN = 287,
-    UNARY_MINUS = 288,
-    NOT = 289,
-    INCR = 290,
-    DECR = 291,
-    POW = 292
-  };
-#endif
-
-/* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-
-union YYSTYPE
+#include "parser.hpp"
+/* Symbol kind.  */
+enum yysymbol_kind_t
 {
-#line 37 "parser.y" /* yacc.c:355  */
-
-    Symbol *sym;
-    Inst *inst;
-    int nArgs;
-
-#line 186 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:355  */
+  YYSYMBOL_YYEMPTY = -2,
+  YYSYMBOL_YYEOF = 0,                      /* "end of file"  */
+  YYSYMBOL_YYerror = 1,                    /* error  */
+  YYSYMBOL_YYUNDEF = 2,                    /* "invalid token"  */
+  YYSYMBOL_NUMBER = 3,                     /* NUMBER  */
+  YYSYMBOL_STRING = 4,                     /* STRING  */
+  YYSYMBOL_SYMBOL = 5,                     /* SYMBOL  */
+  YYSYMBOL_DELETE = 6,                     /* DELETE  */
+  YYSYMBOL_ARG_LOOKUP = 7,                 /* ARG_LOOKUP  */
+  YYSYMBOL_IF = 8,                         /* IF  */
+  YYSYMBOL_WHILE = 9,                      /* WHILE  */
+  YYSYMBOL_ELSE = 10,                      /* ELSE  */
+  YYSYMBOL_FOR = 11,                       /* FOR  */
+  YYSYMBOL_BREAK = 12,                     /* BREAK  */
+  YYSYMBOL_CONTINUE = 13,                  /* CONTINUE  */
+  YYSYMBOL_RETURN = 14,                    /* RETURN  */
+  YYSYMBOL_IF_NO_ELSE = 15,                /* IF_NO_ELSE  */
+  YYSYMBOL_16_ = 16,                       /* '='  */
+  YYSYMBOL_ADDEQ = 17,                     /* ADDEQ  */
+  YYSYMBOL_SUBEQ = 18,                     /* SUBEQ  */
+  YYSYMBOL_MULEQ = 19,                     /* MULEQ  */
+  YYSYMBOL_DIVEQ = 20,                     /* DIVEQ  */
+  YYSYMBOL_MODEQ = 21,                     /* MODEQ  */
+  YYSYMBOL_ANDEQ = 22,                     /* ANDEQ  */
+  YYSYMBOL_OREQ = 23,                      /* OREQ  */
+  YYSYMBOL_CONCAT = 24,                    /* CONCAT  */
+  YYSYMBOL_OR = 25,                        /* OR  */
+  YYSYMBOL_AND = 26,                       /* AND  */
+  YYSYMBOL_27_ = 27,                       /* '|'  */
+  YYSYMBOL_28_ = 28,                       /* '&'  */
+  YYSYMBOL_GT = 29,                        /* GT  */
+  YYSYMBOL_GE = 30,                        /* GE  */
+  YYSYMBOL_LT = 31,                        /* LT  */
+  YYSYMBOL_LE = 32,                        /* LE  */
+  YYSYMBOL_EQ = 33,                        /* EQ  */
+  YYSYMBOL_NE = 34,                        /* NE  */
+  YYSYMBOL_IN = 35,                        /* IN  */
+  YYSYMBOL_36_ = 36,                       /* '+'  */
+  YYSYMBOL_37_ = 37,                       /* '-'  */
+  YYSYMBOL_38_ = 38,                       /* '*'  */
+  YYSYMBOL_39_ = 39,                       /* '/'  */
+  YYSYMBOL_40_ = 40,                       /* '%'  */
+  YYSYMBOL_UNARY_MINUS = 41,               /* UNARY_MINUS  */
+  YYSYMBOL_NOT = 42,                       /* NOT  */
+  YYSYMBOL_INCR = 43,                      /* INCR  */
+  YYSYMBOL_DECR = 44,                      /* DECR  */
+  YYSYMBOL_POW = 45,                       /* POW  */
+  YYSYMBOL_46_ = 46,                       /* '['  */
+  YYSYMBOL_47_ = 47,                       /* '('  */
+  YYSYMBOL_48_ = 48,                       /* '{'  */
+  YYSYMBOL_49_ = 49,                       /* '}'  */
+  YYSYMBOL_50_n_ = 50,                     /* '\n'  */
+  YYSYMBOL_51_ = 51,                       /* ')'  */
+  YYSYMBOL_52_ = 52,                       /* ';'  */
+  YYSYMBOL_53_ = 53,                       /* ']'  */
+  YYSYMBOL_54_ = 54,                       /* ','  */
+  YYSYMBOL_YYACCEPT = 55,                  /* $accept  */
+  YYSYMBOL_program = 56,                   /* program  */
+  YYSYMBOL_block = 57,                     /* block  */
+  YYSYMBOL_stmts = 58,                     /* stmts  */
+  YYSYMBOL_stmt = 59,                      /* stmt  */
+  YYSYMBOL_60_1 = 60,                      /* $@1  */
+  YYSYMBOL_simpstmt = 61,                  /* simpstmt  */
+  YYSYMBOL_evalsym = 62,                   /* evalsym  */
+  YYSYMBOL_comastmts = 63,                 /* comastmts  */
+  YYSYMBOL_arglist = 64,                   /* arglist  */
+  YYSYMBOL_expr = 65,                      /* expr  */
+  YYSYMBOL_initarraylv = 66,               /* initarraylv  */
+  YYSYMBOL_arraylv = 67,                   /* arraylv  */
+  YYSYMBOL_arrayexpr = 68,                 /* arrayexpr  */
+  YYSYMBOL_numexpr = 69,                   /* numexpr  */
+  YYSYMBOL_while = 70,                     /* while  */
+  YYSYMBOL_for = 71,                       /* for  */
+  YYSYMBOL_else = 72,                      /* else  */
+  YYSYMBOL_cond = 73,                      /* cond  */
+  YYSYMBOL_and = 74,                       /* and  */
+  YYSYMBOL_or = 75,                        /* or  */
+  YYSYMBOL_blank = 76                      /* blank  */
 };
-
-typedef union YYSTYPE YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
-# define YYSTYPE_IS_DECLARED 1
-#endif
+typedef enum yysymbol_kind_t yysymbol_kind_t;
 
 
-extern YYSTYPE yylval;
 
-int yyparse (void);
-
-#endif /* !YY_YY_HOME_ETERAN_PROJECTS_NEDIT_NG_BUILD_INTERPRETER_PARSER_HPP_INCLUDED  */
-
-/* Copy the second part of user declarations.  */
-
-#line 203 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:358  */
 
 #ifdef short
 # undef short
 #endif
 
-#ifdef YYTYPE_UINT8
-typedef YYTYPE_UINT8 yytype_uint8;
-#else
-typedef unsigned char yytype_uint8;
+/* On compilers that do not define __PTRDIFF_MAX__ etc., make sure
+   <limits.h> and (if available) <stdint.h> are included
+   so that the code can choose integer types of a good width.  */
+
+#ifndef __PTRDIFF_MAX__
+# include <limits.h> /* INFRINGES ON USER NAME SPACE */
+# if defined __STDC_VERSION__ && 199901 <= __STDC_VERSION__
+#  include <stdint.h> /* INFRINGES ON USER NAME SPACE */
+#  define YY_STDINT_H
+# endif
 #endif
 
-#ifdef YYTYPE_INT8
-typedef YYTYPE_INT8 yytype_int8;
+/* Narrow types that promote to a signed type and that can represent a
+   signed or unsigned integer of at least N bits.  In tables they can
+   save space and decrease cache pressure.  Promoting to a signed type
+   helps avoid bugs in integer arithmetic.  */
+
+#ifdef __INT_LEAST8_MAX__
+typedef __INT_LEAST8_TYPE__ yytype_int8;
+#elif defined YY_STDINT_H
+typedef int_least8_t yytype_int8;
 #else
 typedef signed char yytype_int8;
 #endif
 
-#ifdef YYTYPE_UINT16
-typedef YYTYPE_UINT16 yytype_uint16;
-#else
-typedef unsigned short yytype_uint16;
-#endif
-
-#ifdef YYTYPE_INT16
-typedef YYTYPE_INT16 yytype_int16;
+#ifdef __INT_LEAST16_MAX__
+typedef __INT_LEAST16_TYPE__ yytype_int16;
+#elif defined YY_STDINT_H
+typedef int_least16_t yytype_int16;
 #else
 typedef short yytype_int16;
+#endif
+
+#if defined __UINT_LEAST8_MAX__ && __UINT_LEAST8_MAX__ <= __INT_MAX__
+typedef __UINT_LEAST8_TYPE__ yytype_uint8;
+#elif (!defined __UINT_LEAST8_MAX__ && defined YY_STDINT_H \
+       && UINT_LEAST8_MAX <= INT_MAX)
+typedef uint_least8_t yytype_uint8;
+#elif !defined __UINT_LEAST8_MAX__ && UCHAR_MAX <= INT_MAX
+typedef unsigned char yytype_uint8;
+#else
+typedef short yytype_uint8;
+#endif
+
+#if defined __UINT_LEAST16_MAX__ && __UINT_LEAST16_MAX__ <= __INT_MAX__
+typedef __UINT_LEAST16_TYPE__ yytype_uint16;
+#elif (!defined __UINT_LEAST16_MAX__ && defined YY_STDINT_H \
+       && UINT_LEAST16_MAX <= INT_MAX)
+typedef uint_least16_t yytype_uint16;
+#elif !defined __UINT_LEAST16_MAX__ && USHRT_MAX <= INT_MAX
+typedef unsigned short yytype_uint16;
+#else
+typedef int yytype_uint16;
+#endif
+
+#ifndef YYPTRDIFF_T
+# if defined __PTRDIFF_TYPE__ && defined __PTRDIFF_MAX__
+#  define YYPTRDIFF_T __PTRDIFF_TYPE__
+#  define YYPTRDIFF_MAXIMUM __PTRDIFF_MAX__
+# elif defined PTRDIFF_MAX
+#  ifndef ptrdiff_t
+#   include <stddef.h> /* INFRINGES ON USER NAME SPACE */
+#  endif
+#  define YYPTRDIFF_T ptrdiff_t
+#  define YYPTRDIFF_MAXIMUM PTRDIFF_MAX
+# else
+#  define YYPTRDIFF_T long
+#  define YYPTRDIFF_MAXIMUM LONG_MAX
+# endif
 #endif
 
 #ifndef YYSIZE_T
@@ -234,7 +295,7 @@ typedef short yytype_int16;
 #  define YYSIZE_T __SIZE_TYPE__
 # elif defined size_t
 #  define YYSIZE_T size_t
-# elif ! defined YYSIZE_T
+# elif defined __STDC_VERSION__ && 199901 <= __STDC_VERSION__
 #  include <stddef.h> /* INFRINGES ON USER NAME SPACE */
 #  define YYSIZE_T size_t
 # else
@@ -242,7 +303,20 @@ typedef short yytype_int16;
 # endif
 #endif
 
-#define YYSIZE_MAXIMUM ((YYSIZE_T) -1)
+#define YYSIZE_MAXIMUM                                  \
+  YY_CAST (YYPTRDIFF_T,                                 \
+           (YYPTRDIFF_MAXIMUM < YY_CAST (YYSIZE_T, -1)  \
+            ? YYPTRDIFF_MAXIMUM                         \
+            : YY_CAST (YYSIZE_T, -1)))
+
+#define YYSIZEOF(X) YY_CAST (YYPTRDIFF_T, sizeof (X))
+
+
+/* Stored state numbers (used for stacks). */
+typedef yytype_uint8 yy_state_t;
+
+/* State numbers in computations.  */
+typedef int yy_state_fast_t;
 
 #ifndef YY_
 # if defined YYENABLE_NLS && YYENABLE_NLS
@@ -256,30 +330,20 @@ typedef short yytype_int16;
 # endif
 #endif
 
-#ifndef YY_ATTRIBUTE
-# if (defined __GNUC__                                               \
-      && (2 < __GNUC__ || (__GNUC__ == 2 && 96 <= __GNUC_MINOR__)))  \
-     || defined __SUNPRO_C && 0x5110 <= __SUNPRO_C
-#  define YY_ATTRIBUTE(Spec) __attribute__(Spec)
+
+#ifndef YY_ATTRIBUTE_PURE
+# if defined __GNUC__ && 2 < __GNUC__ + (96 <= __GNUC_MINOR__)
+#  define YY_ATTRIBUTE_PURE __attribute__ ((__pure__))
 # else
-#  define YY_ATTRIBUTE(Spec) /* empty */
+#  define YY_ATTRIBUTE_PURE
 # endif
 #endif
 
-#ifndef YY_ATTRIBUTE_PURE
-# define YY_ATTRIBUTE_PURE   YY_ATTRIBUTE ((__pure__))
-#endif
-
 #ifndef YY_ATTRIBUTE_UNUSED
-# define YY_ATTRIBUTE_UNUSED YY_ATTRIBUTE ((__unused__))
-#endif
-
-#if !defined _Noreturn \
-     && (!defined __STDC_VERSION__ || __STDC_VERSION__ < 201112)
-# if defined _MSC_VER && 1200 <= _MSC_VER
-#  define _Noreturn __declspec (noreturn)
+# if defined __GNUC__ && 2 < __GNUC__ + (7 <= __GNUC_MINOR__)
+#  define YY_ATTRIBUTE_UNUSED __attribute__ ((__unused__))
 # else
-#  define _Noreturn YY_ATTRIBUTE ((__noreturn__))
+#  define YY_ATTRIBUTE_UNUSED
 # endif
 #endif
 
@@ -292,11 +356,11 @@ typedef short yytype_int16;
 
 #if defined __GNUC__ && ! defined __ICC && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
 /* Suppress an incorrect diagnostic about yylval being uninitialized.  */
-# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN \
-    _Pragma ("GCC diagnostic push") \
-    _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")\
+# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                            \
+    _Pragma ("GCC diagnostic push")                                     \
+    _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")              \
     _Pragma ("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
-# define YY_IGNORE_MAYBE_UNINITIALIZED_END \
+# define YY_IGNORE_MAYBE_UNINITIALIZED_END      \
     _Pragma ("GCC diagnostic pop")
 #else
 # define YY_INITIAL_VALUE(Value) Value
@@ -309,8 +373,22 @@ typedef short yytype_int16;
 # define YY_INITIAL_VALUE(Value) /* Nothing. */
 #endif
 
+#if defined __cplusplus && defined __GNUC__ && ! defined __ICC && 6 <= __GNUC__
+# define YY_IGNORE_USELESS_CAST_BEGIN                          \
+    _Pragma ("GCC diagnostic push")                            \
+    _Pragma ("GCC diagnostic ignored \"-Wuseless-cast\"")
+# define YY_IGNORE_USELESS_CAST_END            \
+    _Pragma ("GCC diagnostic pop")
+#endif
+#ifndef YY_IGNORE_USELESS_CAST_BEGIN
+# define YY_IGNORE_USELESS_CAST_BEGIN
+# define YY_IGNORE_USELESS_CAST_END
+#endif
 
-#if ! defined yyoverflow || YYERROR_VERBOSE
+
+#define YY_ASSERT(E) ((void) (0 && (E)))
+
+#if !defined yyoverflow
 
 /* The parser invokes alloca or malloc; define the necessary symbols.  */
 
@@ -375,8 +453,7 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 #   endif
 #  endif
 # endif
-#endif /* ! defined yyoverflow || YYERROR_VERBOSE */
-
+#endif /* !defined yyoverflow */
 
 #if (! defined yyoverflow \
      && (! defined __cplusplus \
@@ -385,17 +462,17 @@ void free (void *); /* INFRINGES ON USER NAME SPACE */
 /* A type that is properly aligned for any stack member.  */
 union yyalloc
 {
-  yytype_int16 yyss_alloc;
+  yy_state_t yyss_alloc;
   YYSTYPE yyvs_alloc;
 };
 
 /* The size of the maximum gap between one aligned stack and the next.  */
-# define YYSTACK_GAP_MAXIMUM (sizeof (union yyalloc) - 1)
+# define YYSTACK_GAP_MAXIMUM (YYSIZEOF (union yyalloc) - 1)
 
 /* The size of an array large to enough to hold all stacks, each with
    N elements.  */
 # define YYSTACK_BYTES(N) \
-     ((N) * (sizeof (yytype_int16) + sizeof (YYSTYPE)) \
+     ((N) * (YYSIZEOF (yy_state_t) + YYSIZEOF (YYSTYPE)) \
       + YYSTACK_GAP_MAXIMUM)
 
 # define YYCOPY_NEEDED 1
@@ -408,11 +485,11 @@ union yyalloc
 # define YYSTACK_RELOCATE(Stack_alloc, Stack)                           \
     do                                                                  \
       {                                                                 \
-        YYSIZE_T yynewbytes;                                            \
+        YYPTRDIFF_T yynewbytes;                                         \
         YYCOPY (&yyptr->Stack_alloc, Stack, yysize);                    \
         Stack = &yyptr->Stack_alloc;                                    \
-        yynewbytes = yystacksize * sizeof (*Stack) + YYSTACK_GAP_MAXIMUM; \
-        yyptr += yynewbytes / sizeof (*yyptr);                          \
+        yynewbytes = yystacksize * YYSIZEOF (*Stack) + YYSTACK_GAP_MAXIMUM; \
+        yyptr += yynewbytes / YYSIZEOF (*yyptr);                        \
       }                                                                 \
     while (0)
 
@@ -424,12 +501,12 @@ union yyalloc
 # ifndef YYCOPY
 #  if defined __GNUC__ && 1 < __GNUC__
 #   define YYCOPY(Dst, Src, Count) \
-      __builtin_memcpy (Dst, Src, (Count) * sizeof (*(Src)))
+      __builtin_memcpy (Dst, Src, YY_CAST (YYSIZE_T, (Count)) * sizeof (*(Src)))
 #  else
 #   define YYCOPY(Dst, Src, Count)              \
       do                                        \
         {                                       \
-          YYSIZE_T yyi;                         \
+          YYPTRDIFF_T yyi;                      \
           for (yyi = 0; yyi < (Count); yyi++)   \
             (Dst)[yyi] = (Src)[yyi];            \
         }                                       \
@@ -452,17 +529,20 @@ union yyalloc
 /* YYNSTATES -- Number of states.  */
 #define YYNSTATES  208
 
-/* YYTRANSLATE[YYX] -- Symbol number corresponding to YYX as returned
-   by yylex, with out-of-bounds checking.  */
-#define YYUNDEFTOK  2
+/* YYMAXUTOK -- Last valid token kind.  */
 #define YYMAXUTOK   292
 
-#define YYTRANSLATE(YYX)                                                \
-  ((unsigned) (YYX) <= YYMAXUTOK ? yytranslate[YYX] : YYUNDEFTOK)
+
+/* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
+   as returned by yylex, with out-of-bounds checking.  */
+#define YYTRANSLATE(YYX)                                \
+  (0 <= (YYX) && (YYX) <= YYMAXUTOK                     \
+   ? YY_CAST (yysymbol_kind_t, yytranslate[YYX])        \
+   : YYSYMBOL_YYUNDEF)
 
 /* YYTRANSLATE[TOKEN-NUM] -- Symbol number corresponding to TOKEN-NUM
-   as returned by yylex, without out-of-bounds checking.  */
-static const yytype_uint8 yytranslate[] =
+   as returned by yylex.  */
+static const yytype_int8 yytranslate[] =
 {
        0,     2,     2,     2,     2,     2,     2,     2,     2,     2,
       50,     2,     2,     2,     2,     2,     2,     2,     2,     2,
@@ -498,44 +578,57 @@ static const yytype_uint8 yytranslate[] =
 
 #if YYDEBUG
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
-static const yytype_uint16 yyrline[] =
+static const yytype_int16 yyrline[] =
 {
-       0,    72,    72,    75,    78,    81,    85,    86,    87,    89,
-      90,    92,    93,    96,    99,   103,   108,   108,   118,   124,
-     130,   133,   137,   140,   143,   146,   149,   152,   155,   158,
-     161,   164,   167,   172,   177,   182,   187,   192,   197,   202,
-     207,   212,   217,   222,   226,   230,   234,   238,   243,   247,
-     250,   253,   257,   260,   263,   267,   268,   272,   275,   279,
-     282,   286,   290,   293,   296,   299,   304,   305,   308,   311,
-     314,   317,   320,   323,   326,   329,   332,   335,   338,   341,
-     344,   347,   350,   353,   356,   359,   362,   365,   368,   371,
-     375,   379,   383,   387,   391,   395,   399,   403,   406,   410,
-     415,   420,   421
+       0,    73,    73,    76,    79,    82,    86,    87,    88,    90,
+      91,    93,    94,    97,   100,   104,   109,   109,   119,   125,
+     131,   134,   138,   141,   144,   147,   150,   153,   156,   159,
+     162,   165,   168,   173,   178,   183,   188,   193,   198,   203,
+     208,   213,   218,   223,   227,   231,   235,   239,   244,   248,
+     251,   254,   258,   261,   264,   268,   269,   273,   276,   280,
+     283,   287,   291,   294,   297,   300,   305,   306,   309,   312,
+     315,   318,   321,   324,   327,   330,   333,   336,   339,   342,
+     345,   348,   351,   354,   357,   360,   363,   366,   369,   372,
+     376,   380,   384,   388,   392,   396,   400,   404,   407,   411,
+     416,   421,   422
 };
 #endif
 
-#if YYDEBUG || YYERROR_VERBOSE || 0
+/** Accessing symbol of state STATE.  */
+#define YY_ACCESSING_SYMBOL(State) YY_CAST (yysymbol_kind_t, yystos[State])
+
+#if YYDEBUG || 0
+/* The user-facing name of the symbol whose (internal) number is
+   YYSYMBOL.  No bounds checking.  */
+static const char *yysymbol_name (yysymbol_kind_t yysymbol) YY_ATTRIBUTE_UNUSED;
+
 /* YYTNAME[SYMBOL-NUM] -- String name of the symbol SYMBOL-NUM.
    First, the terminals, then, starting at YYNTOKENS, nonterminals.  */
 static const char *const yytname[] =
 {
-  "$end", "error", "$undefined", "NUMBER", "STRING", "SYMBOL", "DELETE",
-  "ARG_LOOKUP", "IF", "WHILE", "ELSE", "FOR", "BREAK", "CONTINUE",
-  "RETURN", "IF_NO_ELSE", "'='", "ADDEQ", "SUBEQ", "MULEQ", "DIVEQ",
-  "MODEQ", "ANDEQ", "OREQ", "CONCAT", "OR", "AND", "'|'", "'&'", "GT",
-  "GE", "LT", "LE", "EQ", "NE", "IN", "'+'", "'-'", "'*'", "'/'", "'%'",
-  "UNARY_MINUS", "NOT", "INCR", "DECR", "POW", "'['", "'('", "'{'", "'}'",
-  "'\\n'", "')'", "';'", "']'", "','", "$accept", "program", "block",
-  "stmts", "stmt", "$@1", "simpstmt", "evalsym", "comastmts", "arglist",
-  "expr", "initarraylv", "arraylv", "arrayexpr", "numexpr", "while", "for",
-  "else", "cond", "and", "or", "blank", YY_NULLPTR
+  "\"end of file\"", "error", "\"invalid token\"", "NUMBER", "STRING",
+  "SYMBOL", "DELETE", "ARG_LOOKUP", "IF", "WHILE", "ELSE", "FOR", "BREAK",
+  "CONTINUE", "RETURN", "IF_NO_ELSE", "'='", "ADDEQ", "SUBEQ", "MULEQ",
+  "DIVEQ", "MODEQ", "ANDEQ", "OREQ", "CONCAT", "OR", "AND", "'|'", "'&'",
+  "GT", "GE", "LT", "LE", "EQ", "NE", "IN", "'+'", "'-'", "'*'", "'/'",
+  "'%'", "UNARY_MINUS", "NOT", "INCR", "DECR", "POW", "'['", "'('", "'{'",
+  "'}'", "'\\n'", "')'", "';'", "']'", "','", "$accept", "program",
+  "block", "stmts", "stmt", "$@1", "simpstmt", "evalsym", "comastmts",
+  "arglist", "expr", "initarraylv", "arraylv", "arrayexpr", "numexpr",
+  "while", "for", "else", "cond", "and", "or", "blank", YY_NULLPTR
 };
+
+static const char *
+yysymbol_name (yysymbol_kind_t yysymbol)
+{
+  return yytname[yysymbol];
+}
 #endif
 
-# ifdef YYPRINT
+#ifdef YYPRINT
 /* YYTOKNUM[NUM] -- (External) token number corresponding to the
    (internal) symbol number NUM (which must be that of a token).  */
-static const yytype_uint16 yytoknum[] =
+static const yytype_int16 yytoknum[] =
 {
        0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
      265,   266,   267,   268,   269,   270,    61,   271,   272,   273,
@@ -544,16 +637,16 @@ static const yytype_uint16 yytoknum[] =
       37,   288,   289,   290,   291,   292,    91,    40,   123,   125,
       10,    41,    59,    93,    44
 };
-# endif
+#endif
 
-#define YYPACT_NINF -66
+#define YYPACT_NINF (-66)
 
-#define yypact_value_is_default(Yystate) \
-  (!!((Yystate) == (-66)))
+#define yypact_value_is_default(Yyn) \
+  ((Yyn) == YYPACT_NINF)
 
-#define YYTABLE_NINF -102
+#define YYTABLE_NINF (-102)
 
-#define yytable_value_is_error(Yytable_value) \
+#define yytable_value_is_error(Yyn) \
   0
 
   /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
@@ -586,7 +679,7 @@ static const yytype_int16 yypact[] =
   /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
      Performed when YYTABLE does not specify something else to do.  Zero
      means the default is an error.  */
-static const yytype_uint8 yydefact[] =
+static const yytype_int8 yydefact[] =
 {
        0,     5,     0,     0,     1,    48,     0,     0,    94,    95,
        0,     0,     0,     0,     0,   101,   102,     2,     9,     0,
@@ -750,7 +843,7 @@ static const yytype_int16 yycheck[] =
 
   /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
      symbol of state STATE-NUM.  */
-static const yytype_uint8 yystos[] =
+static const yytype_int8 yystos[] =
 {
        0,     1,    56,    76,     0,     5,     6,     8,     9,    11,
       12,    13,    14,    43,    44,    48,    50,    58,    59,    61,
@@ -776,7 +869,7 @@ static const yytype_uint8 yystos[] =
 };
 
   /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
-static const yytype_uint8 yyr1[] =
+static const yytype_int8 yyr1[] =
 {
        0,    55,    56,    56,    56,    56,    57,    57,    57,    58,
       58,    59,    59,    59,    59,    59,    60,    59,    59,    59,
@@ -792,7 +885,7 @@ static const yytype_uint8 yyr1[] =
 };
 
   /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
-static const yytype_uint8 yyr2[] =
+static const yytype_int8 yyr2[] =
 {
        0,     2,     2,     5,     4,     1,     5,     4,     1,     1,
        2,     3,     6,     9,     6,    10,     0,     9,     3,     3,
@@ -808,10 +901,10 @@ static const yytype_uint8 yyr2[] =
 };
 
 
+enum { YYENOMEM = -2 };
+
 #define yyerrok         (yyerrstatus = 0)
 #define yyclearin       (yychar = YYEMPTY)
-#define YYEMPTY         (-2)
-#define YYEOF           0
 
 #define YYACCEPT        goto yyacceptlab
 #define YYABORT         goto yyabortlab
@@ -820,27 +913,26 @@ static const yytype_uint8 yyr2[] =
 
 #define YYRECOVERING()  (!!yyerrstatus)
 
-#define YYBACKUP(Token, Value)                                  \
-do                                                              \
-  if (yychar == YYEMPTY)                                        \
-    {                                                           \
-      yychar = (Token);                                         \
-      yylval = (Value);                                         \
-      YYPOPSTACK (yylen);                                       \
-      yystate = *yyssp;                                         \
-      goto yybackup;                                            \
-    }                                                           \
-  else                                                          \
-    {                                                           \
-      yyerror (YY_("syntax error: cannot back up")); \
-      YYERROR;                                                  \
-    }                                                           \
-while (0)
+#define YYBACKUP(Token, Value)                                    \
+  do                                                              \
+    if (yychar == YYEMPTY)                                        \
+      {                                                           \
+        yychar = (Token);                                         \
+        yylval = (Value);                                         \
+        YYPOPSTACK (yylen);                                       \
+        yystate = *yyssp;                                         \
+        goto yybackup;                                            \
+      }                                                           \
+    else                                                          \
+      {                                                           \
+        yyerror (YY_("syntax error: cannot back up")); \
+        YYERROR;                                                  \
+      }                                                           \
+  while (0)
 
-/* Error token number */
-#define YYTERROR        1
-#define YYERRCODE       256
-
+/* Backward compatibility with an undocumented macro.
+   Use YYerror or YYUNDEF. */
+#define YYERRCODE YYUNDEF
 
 
 /* Enable debugging if requested.  */
@@ -858,54 +950,58 @@ do {                                            \
 } while (0)
 
 /* This macro is provided for backward compatibility. */
-#ifndef YY_LOCATION_PRINT
-# define YY_LOCATION_PRINT(File, Loc) ((void) 0)
-#endif
+# ifndef YY_LOCATION_PRINT
+#  define YY_LOCATION_PRINT(File, Loc) ((void) 0)
+# endif
 
 
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)                    \
+# define YY_SYMBOL_PRINT(Title, Kind, Value, Location)                    \
 do {                                                                      \
   if (yydebug)                                                            \
     {                                                                     \
       YYFPRINTF (stderr, "%s ", Title);                                   \
       yy_symbol_print (stderr,                                            \
-                  Type, Value); \
+                  Kind, Value); \
       YYFPRINTF (stderr, "\n");                                           \
     }                                                                     \
 } while (0)
 
 
-/*----------------------------------------.
-| Print this symbol's value on YYOUTPUT.  |
-`----------------------------------------*/
+/*-----------------------------------.
+| Print this symbol's value on YYO.  |
+`-----------------------------------*/
 
 static void
-yy_symbol_value_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep)
+yy_symbol_value_print (FILE *yyo,
+                       yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep)
 {
-  FILE *yyo = yyoutput;
-  YYUSE (yyo);
+  FILE *yyoutput = yyo;
+  YYUSE (yyoutput);
   if (!yyvaluep)
     return;
 # ifdef YYPRINT
-  if (yytype < YYNTOKENS)
-    YYPRINT (yyoutput, yytoknum[yytype], *yyvaluep);
+  if (yykind < YYNTOKENS)
+    YYPRINT (yyo, yytoknum[yykind], *yyvaluep);
 # endif
-  YYUSE (yytype);
+  YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
+  YYUSE (yykind);
+  YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
 
-/*--------------------------------.
-| Print this symbol on YYOUTPUT.  |
-`--------------------------------*/
+/*---------------------------.
+| Print this symbol on YYO.  |
+`---------------------------*/
 
 static void
-yy_symbol_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep)
+yy_symbol_print (FILE *yyo,
+                 yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep)
 {
-  YYFPRINTF (yyoutput, "%s %s (",
-             yytype < YYNTOKENS ? "token" : "nterm", yytname[yytype]);
+  YYFPRINTF (yyo, "%s %s (",
+             yykind < YYNTOKENS ? "token" : "nterm", yysymbol_name (yykind));
 
-  yy_symbol_value_print (yyoutput, yytype, yyvaluep);
-  YYFPRINTF (yyoutput, ")");
+  yy_symbol_value_print (yyo, yykind, yyvaluep);
+  YYFPRINTF (yyo, ")");
 }
 
 /*------------------------------------------------------------------.
@@ -914,7 +1010,7 @@ yy_symbol_print (FILE *yyoutput, int yytype, YYSTYPE const * const yyvaluep)
 `------------------------------------------------------------------*/
 
 static void
-yy_stack_print (yytype_int16 *yybottom, yytype_int16 *yytop)
+yy_stack_print (yy_state_t *yybottom, yy_state_t *yytop)
 {
   YYFPRINTF (stderr, "Stack now");
   for (; yybottom <= yytop; yybottom++)
@@ -937,21 +1033,21 @@ do {                                                            \
 `------------------------------------------------*/
 
 static void
-yy_reduce_print (yytype_int16 *yyssp, YYSTYPE *yyvsp, int yyrule)
+yy_reduce_print (yy_state_t *yyssp, YYSTYPE *yyvsp,
+                 int yyrule)
 {
-  unsigned long yylno = yyrline[yyrule];
+  int yylno = yyrline[yyrule];
   int yynrhs = yyr2[yyrule];
   int yyi;
-  YYFPRINTF (stderr, "Reducing stack by rule %d (line %lu):\n",
+  YYFPRINTF (stderr, "Reducing stack by rule %d (line %d):\n",
              yyrule - 1, yylno);
   /* The symbols being reduced.  */
   for (yyi = 0; yyi < yynrhs; yyi++)
     {
       YYFPRINTF (stderr, "   $%d = ", yyi + 1);
       yy_symbol_print (stderr,
-                       yystos[yyssp[yyi + 1 - yynrhs]],
-                       &(yyvsp[(yyi + 1) - (yynrhs)])
-                                              );
+                       YY_ACCESSING_SYMBOL (+yyssp[yyi + 1 - yynrhs]),
+                       &yyvsp[(yyi + 1) - (yynrhs)]);
       YYFPRINTF (stderr, "\n");
     }
 }
@@ -966,8 +1062,8 @@ do {                                    \
    multiple parsers can coexist.  */
 int yydebug;
 #else /* !YYDEBUG */
-# define YYDPRINTF(Args)
-# define YY_SYMBOL_PRINT(Title, Type, Value, Location)
+# define YYDPRINTF(Args) ((void) 0)
+# define YY_SYMBOL_PRINT(Title, Kind, Value, Location)
 # define YY_STACK_PRINT(Bottom, Top)
 # define YY_REDUCE_PRINT(Rule)
 #endif /* !YYDEBUG */
@@ -990,256 +1086,38 @@ int yydebug;
 #endif
 
 
-#if YYERROR_VERBOSE
 
-# ifndef yystrlen
-#  if defined __GLIBC__ && defined _STRING_H
-#   define yystrlen strlen
-#  else
-/* Return the length of YYSTR.  */
-static YYSIZE_T
-yystrlen (const char *yystr)
-{
-  YYSIZE_T yylen;
-  for (yylen = 0; yystr[yylen]; yylen++)
-    continue;
-  return yylen;
-}
-#  endif
-# endif
 
-# ifndef yystpcpy
-#  if defined __GLIBC__ && defined _STRING_H && defined _GNU_SOURCE
-#   define yystpcpy stpcpy
-#  else
-/* Copy YYSRC to YYDEST, returning the address of the terminating '\0' in
-   YYDEST.  */
-static char *
-yystpcpy (char *yydest, const char *yysrc)
-{
-  char *yyd = yydest;
-  const char *yys = yysrc;
 
-  while ((*yyd++ = *yys++) != '\0')
-    continue;
-
-  return yyd - 1;
-}
-#  endif
-# endif
-
-# ifndef yytnamerr
-/* Copy to YYRES the contents of YYSTR after stripping away unnecessary
-   quotes and backslashes, so that it's suitable for yyerror.  The
-   heuristic is that double-quoting is unnecessary unless the string
-   contains an apostrophe, a comma, or backslash (other than
-   backslash-backslash).  YYSTR is taken from yytname.  If YYRES is
-   null, do not copy; instead, return the length of what the result
-   would have been.  */
-static YYSIZE_T
-yytnamerr (char *yyres, const char *yystr)
-{
-  if (*yystr == '"')
-    {
-      YYSIZE_T yyn = 0;
-      char const *yyp = yystr;
-
-      for (;;)
-        switch (*++yyp)
-          {
-          case '\'':
-          case ',':
-            goto do_not_strip_quotes;
-
-          case '\\':
-            if (*++yyp != '\\')
-              goto do_not_strip_quotes;
-            /* Fall through.  */
-          default:
-            if (yyres)
-              yyres[yyn] = *yyp;
-            yyn++;
-            break;
-
-          case '"':
-            if (yyres)
-              yyres[yyn] = '\0';
-            return yyn;
-          }
-    do_not_strip_quotes: ;
-    }
-
-  if (! yyres)
-    return yystrlen (yystr);
-
-  return yystpcpy (yyres, yystr) - yyres;
-}
-# endif
-
-/* Copy into *YYMSG, which is of size *YYMSG_ALLOC, an error message
-   about the unexpected token YYTOKEN for the state stack whose top is
-   YYSSP.
-
-   Return 0 if *YYMSG was successfully written.  Return 1 if *YYMSG is
-   not large enough to hold the message.  In that case, also set
-   *YYMSG_ALLOC to the required number of bytes.  Return 2 if the
-   required number of bytes is too large to store.  */
-static int
-yysyntax_error (YYSIZE_T *yymsg_alloc, char **yymsg,
-                yytype_int16 *yyssp, int yytoken)
-{
-  YYSIZE_T yysize0 = yytnamerr (YY_NULLPTR, yytname[yytoken]);
-  YYSIZE_T yysize = yysize0;
-  enum { YYERROR_VERBOSE_ARGS_MAXIMUM = 5 };
-  /* Internationalized format string. */
-  const char *yyformat = YY_NULLPTR;
-  /* Arguments of yyformat. */
-  char const *yyarg[YYERROR_VERBOSE_ARGS_MAXIMUM];
-  /* Number of reported tokens (one for the "unexpected", one per
-     "expected"). */
-  int yycount = 0;
-
-  /* There are many possibilities here to consider:
-     - If this state is a consistent state with a default action, then
-       the only way this function was invoked is if the default action
-       is an error action.  In that case, don't check for expected
-       tokens because there are none.
-     - The only way there can be no lookahead present (in yychar) is if
-       this state is a consistent state with a default action.  Thus,
-       detecting the absence of a lookahead is sufficient to determine
-       that there is no unexpected or expected token to report.  In that
-       case, just report a simple "syntax error".
-     - Don't assume there isn't a lookahead just because this state is a
-       consistent state with a default action.  There might have been a
-       previous inconsistent state, consistent state with a non-default
-       action, or user semantic action that manipulated yychar.
-     - Of course, the expected token list depends on states to have
-       correct lookahead information, and it depends on the parser not
-       to perform extra reductions after fetching a lookahead from the
-       scanner and before detecting a syntax error.  Thus, state merging
-       (from LALR or IELR) and default reductions corrupt the expected
-       token list.  However, the list is correct for canonical LR with
-       one exception: it will still contain any token that will not be
-       accepted due to an error action in a later state.
-  */
-  if (yytoken != YYEMPTY)
-    {
-      int yyn = yypact[*yyssp];
-      yyarg[yycount++] = yytname[yytoken];
-      if (!yypact_value_is_default (yyn))
-        {
-          /* Start YYX at -YYN if negative to avoid negative indexes in
-             YYCHECK.  In other words, skip the first -YYN actions for
-             this state because they are default actions.  */
-          int yyxbegin = yyn < 0 ? -yyn : 0;
-          /* Stay within bounds of both yycheck and yytname.  */
-          int yychecklim = YYLAST - yyn + 1;
-          int yyxend = yychecklim < YYNTOKENS ? yychecklim : YYNTOKENS;
-          int yyx;
-
-          for (yyx = yyxbegin; yyx < yyxend; ++yyx)
-            if (yycheck[yyx + yyn] == yyx && yyx != YYTERROR
-                && !yytable_value_is_error (yytable[yyx + yyn]))
-              {
-                if (yycount == YYERROR_VERBOSE_ARGS_MAXIMUM)
-                  {
-                    yycount = 1;
-                    yysize = yysize0;
-                    break;
-                  }
-                yyarg[yycount++] = yytname[yyx];
-                {
-                  YYSIZE_T yysize1 = yysize + yytnamerr (YY_NULLPTR, yytname[yyx]);
-                  if (! (yysize <= yysize1
-                         && yysize1 <= YYSTACK_ALLOC_MAXIMUM))
-                    return 2;
-                  yysize = yysize1;
-                }
-              }
-        }
-    }
-
-  switch (yycount)
-    {
-# define YYCASE_(N, S)                      \
-      case N:                               \
-        yyformat = S;                       \
-      break
-    default: /* Avoid compiler warnings. */
-      YYCASE_(0, YY_("syntax error"));
-      YYCASE_(1, YY_("syntax error, unexpected %s"));
-      YYCASE_(2, YY_("syntax error, unexpected %s, expecting %s"));
-      YYCASE_(3, YY_("syntax error, unexpected %s, expecting %s or %s"));
-      YYCASE_(4, YY_("syntax error, unexpected %s, expecting %s or %s or %s"));
-      YYCASE_(5, YY_("syntax error, unexpected %s, expecting %s or %s or %s or %s"));
-# undef YYCASE_
-    }
-
-  {
-    YYSIZE_T yysize1 = yysize + yystrlen (yyformat);
-    if (! (yysize <= yysize1 && yysize1 <= YYSTACK_ALLOC_MAXIMUM))
-      return 2;
-    yysize = yysize1;
-  }
-
-  if (*yymsg_alloc < yysize)
-    {
-      *yymsg_alloc = 2 * yysize;
-      if (! (yysize <= *yymsg_alloc
-             && *yymsg_alloc <= YYSTACK_ALLOC_MAXIMUM))
-        *yymsg_alloc = YYSTACK_ALLOC_MAXIMUM;
-      return 1;
-    }
-
-  /* Avoid sprintf, as that infringes on the user's name space.
-     Don't have undefined behavior even if the translation
-     produced a string with the wrong number of "%s"s.  */
-  {
-    char *yyp = *yymsg;
-    int yyi = 0;
-    while ((*yyp = *yyformat) != '\0')
-      if (*yyp == '%' && yyformat[1] == 's' && yyi < yycount)
-        {
-          yyp += yytnamerr (yyp, yyarg[yyi++]);
-          yyformat += 2;
-        }
-      else
-        {
-          yyp++;
-          yyformat++;
-        }
-  }
-  return 0;
-}
-#endif /* YYERROR_VERBOSE */
 
 /*-----------------------------------------------.
 | Release the memory associated to this symbol.  |
 `-----------------------------------------------*/
 
 static void
-yydestruct (const char *yymsg, int yytype, YYSTYPE *yyvaluep)
+yydestruct (const char *yymsg,
+            yysymbol_kind_t yykind, YYSTYPE *yyvaluep)
 {
   YYUSE (yyvaluep);
   if (!yymsg)
     yymsg = "Deleting";
-  YY_SYMBOL_PRINT (yymsg, yytype, yyvaluep, yylocationp);
+  YY_SYMBOL_PRINT (yymsg, yykind, yyvaluep, yylocationp);
 
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  YYUSE (yytype);
+  YYUSE (yykind);
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
 
-
-
-/* The lookahead symbol.  */
+/* Lookahead token kind.  */
 int yychar;
 
 /* The semantic value of the lookahead symbol.  */
 YYSTYPE yylval;
 /* Number of syntax errors so far.  */
 int yynerrs;
+
+
 
 
 /*----------.
@@ -1249,43 +1127,36 @@ int yynerrs;
 int
 yyparse (void)
 {
-    int yystate;
+    yy_state_fast_t yystate = 0;
     /* Number of tokens to shift before error messages enabled.  */
-    int yyerrstatus;
+    int yyerrstatus = 0;
 
-    /* The stacks and their tools:
-       'yyss': related to states.
-       'yyvs': related to semantic values.
-
-       Refer to the stacks through separate pointers, to allow yyoverflow
+    /* Refer to the stacks through separate pointers, to allow yyoverflow
        to reallocate them elsewhere.  */
 
-    /* The state stack.  */
-    yytype_int16 yyssa[YYINITDEPTH];
-    yytype_int16 *yyss;
-    yytype_int16 *yyssp;
+    /* Their size.  */
+    YYPTRDIFF_T yystacksize = YYINITDEPTH;
 
-    /* The semantic value stack.  */
+    /* The state stack: array, bottom, top.  */
+    yy_state_t yyssa[YYINITDEPTH];
+    yy_state_t *yyss = yyssa;
+    yy_state_t *yyssp = yyss;
+
+    /* The semantic value stack: array, bottom, top.  */
     YYSTYPE yyvsa[YYINITDEPTH];
-    YYSTYPE *yyvs;
-    YYSTYPE *yyvsp;
-
-    YYSIZE_T yystacksize;
+    YYSTYPE *yyvs = yyvsa;
+    YYSTYPE *yyvsp = yyvs;
 
   int yyn;
+  /* The return value of yyparse.  */
   int yyresult;
-  /* Lookahead token as an internal (translated) token number.  */
-  int yytoken = 0;
+  /* Lookahead symbol kind.  */
+  yysymbol_kind_t yytoken = YYSYMBOL_YYEMPTY;
   /* The variables used to return semantic value and location from the
      action routines.  */
   YYSTYPE yyval;
 
-#if YYERROR_VERBOSE
-  /* Buffer for error messages, and its allocated size.  */
-  char yymsgbuf[128];
-  char *yymsg = yymsgbuf;
-  YYSIZE_T yymsg_alloc = sizeof yymsgbuf;
-#endif
+
 
 #define YYPOPSTACK(N)   (yyvsp -= (N), yyssp -= (N))
 
@@ -1293,58 +1164,60 @@ yyparse (void)
      Keep to zero when no symbol should be popped.  */
   int yylen = 0;
 
-  yyssp = yyss = yyssa;
-  yyvsp = yyvs = yyvsa;
-  yystacksize = YYINITDEPTH;
-
   YYDPRINTF ((stderr, "Starting parse\n"));
 
-  yystate = 0;
-  yyerrstatus = 0;
-  yynerrs = 0;
   yychar = YYEMPTY; /* Cause a token to be read.  */
   goto yysetstate;
 
+
 /*------------------------------------------------------------.
-| yynewstate -- Push a new state, which is found in yystate.  |
+| yynewstate -- push a new state, which is found in yystate.  |
 `------------------------------------------------------------*/
- yynewstate:
+yynewstate:
   /* In all cases, when you get here, the value and location stacks
      have just been pushed.  So pushing a state here evens the stacks.  */
   yyssp++;
 
- yysetstate:
-  *yyssp = yystate;
+
+/*--------------------------------------------------------------------.
+| yysetstate -- set current state (the top of the stack) to yystate.  |
+`--------------------------------------------------------------------*/
+yysetstate:
+  YYDPRINTF ((stderr, "Entering state %d\n", yystate));
+  YY_ASSERT (0 <= yystate && yystate < YYNSTATES);
+  YY_IGNORE_USELESS_CAST_BEGIN
+  *yyssp = YY_CAST (yy_state_t, yystate);
+  YY_IGNORE_USELESS_CAST_END
+  YY_STACK_PRINT (yyss, yyssp);
 
   if (yyss + yystacksize - 1 <= yyssp)
+#if !defined yyoverflow && !defined YYSTACK_RELOCATE
+    goto yyexhaustedlab;
+#else
     {
       /* Get the current used size of the three stacks, in elements.  */
-      YYSIZE_T yysize = yyssp - yyss + 1;
+      YYPTRDIFF_T yysize = yyssp - yyss + 1;
 
-#ifdef yyoverflow
+# if defined yyoverflow
       {
         /* Give user a chance to reallocate the stack.  Use copies of
            these so that the &'s don't force the real ones into
            memory.  */
+        yy_state_t *yyss1 = yyss;
         YYSTYPE *yyvs1 = yyvs;
-        yytype_int16 *yyss1 = yyss;
 
         /* Each stack pointer address is followed by the size of the
            data in use in that stack, in bytes.  This used to be a
            conditional around just the two extra args, but that might
            be undefined if yyoverflow is a macro.  */
         yyoverflow (YY_("memory exhausted"),
-                    &yyss1, yysize * sizeof (*yyssp),
-                    &yyvs1, yysize * sizeof (*yyvsp),
+                    &yyss1, yysize * YYSIZEOF (*yyssp),
+                    &yyvs1, yysize * YYSIZEOF (*yyvsp),
                     &yystacksize);
-
         yyss = yyss1;
         yyvs = yyvs1;
       }
-#else /* no yyoverflow */
-# ifndef YYSTACK_RELOCATE
-      goto yyexhaustedlab;
-# else
+# else /* defined YYSTACK_RELOCATE */
       /* Extend the stack our own way.  */
       if (YYMAXDEPTH <= yystacksize)
         goto yyexhaustedlab;
@@ -1353,9 +1226,10 @@ yyparse (void)
         yystacksize = YYMAXDEPTH;
 
       {
-        yytype_int16 *yyss1 = yyss;
+        yy_state_t *yyss1 = yyss;
         union yyalloc *yyptr =
-          (union yyalloc *) YYSTACK_ALLOC (YYSTACK_BYTES (yystacksize));
+          YY_CAST (union yyalloc *,
+                   YYSTACK_ALLOC (YY_CAST (YYSIZE_T, YYSTACK_BYTES (yystacksize))));
         if (! yyptr)
           goto yyexhaustedlab;
         YYSTACK_RELOCATE (yyss_alloc, yyss);
@@ -1365,30 +1239,30 @@ yyparse (void)
           YYSTACK_FREE (yyss1);
       }
 # endif
-#endif /* no yyoverflow */
 
       yyssp = yyss + yysize - 1;
       yyvsp = yyvs + yysize - 1;
 
-      YYDPRINTF ((stderr, "Stack size increased to %lu\n",
-                  (unsigned long) yystacksize));
+      YY_IGNORE_USELESS_CAST_BEGIN
+      YYDPRINTF ((stderr, "Stack size increased to %ld\n",
+                  YY_CAST (long, yystacksize)));
+      YY_IGNORE_USELESS_CAST_END
 
       if (yyss + yystacksize - 1 <= yyssp)
         YYABORT;
     }
-
-  YYDPRINTF ((stderr, "Entering state %d\n", yystate));
+#endif /* !defined yyoverflow && !defined YYSTACK_RELOCATE */
 
   if (yystate == YYFINAL)
     YYACCEPT;
 
   goto yybackup;
 
+
 /*-----------.
 | yybackup.  |
 `-----------*/
 yybackup:
-
   /* Do appropriate processing given the current state.  Read a
      lookahead token if we need one and don't already have one.  */
 
@@ -1399,17 +1273,28 @@ yybackup:
 
   /* Not known => get a lookahead token if don't already have one.  */
 
-  /* YYCHAR is either YYEMPTY or YYEOF or a valid lookahead symbol.  */
+  /* YYCHAR is either empty, or end-of-input, or a valid lookahead.  */
   if (yychar == YYEMPTY)
     {
-      YYDPRINTF ((stderr, "Reading a token: "));
+      YYDPRINTF ((stderr, "Reading a token\n"));
       yychar = yylex ();
     }
 
   if (yychar <= YYEOF)
     {
-      yychar = yytoken = YYEOF;
+      yychar = YYEOF;
+      yytoken = YYSYMBOL_YYEOF;
       YYDPRINTF ((stderr, "Now at end of input.\n"));
+    }
+  else if (yychar == YYerror)
+    {
+      /* The scanner already issued an error message, process directly
+         to error recovery.  But do not keep the error token as
+         lookahead, it is too special and may lead us to an endless
+         loop in error recovery. */
+      yychar = YYUNDEF;
+      yytoken = YYSYMBOL_YYerror;
+      goto yyerrlab1;
     }
   else
     {
@@ -1438,15 +1323,13 @@ yybackup:
 
   /* Shift the lookahead token.  */
   YY_SYMBOL_PRINT ("Shifting", yytoken, &yylval, &yylloc);
-
-  /* Discard the shifted token.  */
-  yychar = YYEMPTY;
-
   yystate = yyn;
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
   *++yyvsp = yylval;
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 
+  /* Discard the shifted token.  */
+  yychar = YYEMPTY;
   goto yynewstate;
 
 
@@ -1461,7 +1344,7 @@ yydefault:
 
 
 /*-----------------------------.
-| yyreduce -- Do a reduction.  |
+| yyreduce -- do a reduction.  |
 `-----------------------------*/
 yyreduce:
   /* yyn is the number of a rule to reduce with.  */
@@ -1481,784 +1364,785 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-        case 2:
-#line 72 "parser.y" /* yacc.c:1651  */
-    {
+  case 2: /* program: blank stmts  */
+#line 73 "parser.y"
+                        {
                 ADD_OP(OP_RETURN_NO_VAL); return 0;
             }
-#line 1490 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1373 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 3:
-#line 75 "parser.y" /* yacc.c:1651  */
-    {
+  case 3: /* program: blank '{' blank stmts '}'  */
+#line 76 "parser.y"
+                                        {
                 ADD_OP(OP_RETURN_NO_VAL); return 0;
             }
-#line 1498 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1381 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 4:
-#line 78 "parser.y" /* yacc.c:1651  */
-    {
+  case 4: /* program: blank '{' blank '}'  */
+#line 79 "parser.y"
+                                  {
                 ADD_OP(OP_RETURN_NO_VAL); return 0;
             }
-#line 1506 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1389 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 5:
-#line 81 "parser.y" /* yacc.c:1651  */
-    {
+  case 5: /* program: error  */
+#line 82 "parser.y"
+                    {
                 return 1;
             }
-#line 1514 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1397 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 12:
-#line 93 "parser.y" /* yacc.c:1651  */
-    {
+  case 12: /* stmt: IF '(' cond ')' blank block  */
+#line 94 "parser.y"
+                                                           {
                 SET_BR_OFF((yyvsp[-3].inst), GetPC());
             }
-#line 1522 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1405 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 13:
-#line 96 "parser.y" /* yacc.c:1651  */
-    {
+  case 13: /* stmt: IF '(' cond ')' blank block else blank block  */
+#line 97 "parser.y"
+                                                                      {
                 SET_BR_OFF((yyvsp[-6].inst), ((yyvsp[-2].inst)+1)); SET_BR_OFF((yyvsp[-2].inst), GetPC());
             }
-#line 1530 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1413 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 14:
-#line 99 "parser.y" /* yacc.c:1651  */
-    {
+  case 14: /* stmt: while '(' cond ')' blank block  */
+#line 100 "parser.y"
+                                             {
                 ADD_OP(OP_BRANCH); ADD_BR_OFF((yyvsp[-5].inst));
                 SET_BR_OFF((yyvsp[-3].inst), GetPC()); FillLoopAddrs(GetPC(), (yyvsp[-5].inst));
             }
-#line 1539 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1422 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 15:
-#line 103 "parser.y" /* yacc.c:1651  */
-    {
+  case 15: /* stmt: for '(' comastmts ';' cond ';' comastmts ')' blank block  */
+#line 104 "parser.y"
+                                                                       {
                 FillLoopAddrs(GetPC()+2+((yyvsp[-3].inst)-((yyvsp[-5].inst)+1)), GetPC());
                 SwapCode((yyvsp[-5].inst)+1, (yyvsp[-3].inst), GetPC());
                 ADD_OP(OP_BRANCH); ADD_BR_OFF((yyvsp[-7].inst)); SET_BR_OFF((yyvsp[-5].inst), GetPC());
             }
-#line 1549 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1432 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 16:
-#line 108 "parser.y" /* yacc.c:1651  */
-    {
+  case 16: /* $@1: %empty  */
+#line 109 "parser.y"
+                                              {
                 Symbol *iterSym = InstallIteratorSymbol();
                 ADD_OP(OP_BEGIN_ARRAY_ITER); ADD_SYM(iterSym);
                 ADD_OP(OP_ARRAY_ITER); ADD_SYM((yyvsp[-3].sym)); ADD_SYM(iterSym); ADD_BR_OFF(nullptr);
             }
-#line 1559 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1442 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 17:
-#line 113 "parser.y" /* yacc.c:1651  */
-    {
+  case 17: /* stmt: for '(' SYMBOL IN arrayexpr ')' $@1 blank block  */
+#line 114 "parser.y"
+                            {
                     ADD_OP(OP_BRANCH); ADD_BR_OFF((yyvsp[-4].inst)+2);
                     SET_BR_OFF((yyvsp[-4].inst)+5, GetPC());
                     FillLoopAddrs(GetPC(), (yyvsp[-4].inst)+2);
             }
-#line 1569 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1452 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 18:
-#line 118 "parser.y" /* yacc.c:1651  */
-    {
+  case 18: /* stmt: BREAK '\n' blank  */
+#line 119 "parser.y"
+                               {
                 ADD_OP(OP_BRANCH); ADD_BR_OFF(nullptr);
                 if (AddBreakAddr(GetPC()-1)) {
                     yyerror("break outside loop"); YYERROR;
                 }
             }
-#line 1580 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1463 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 19:
-#line 124 "parser.y" /* yacc.c:1651  */
-    {
+  case 19: /* stmt: CONTINUE '\n' blank  */
+#line 125 "parser.y"
+                                  {
                 ADD_OP(OP_BRANCH); ADD_BR_OFF(nullptr);
                 if (AddContinueAddr(GetPC()-1)) {
                     yyerror("continue outside loop"); YYERROR;
                 }
             }
-#line 1591 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1474 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 20:
-#line 130 "parser.y" /* yacc.c:1651  */
-    {
+  case 20: /* stmt: RETURN expr '\n' blank  */
+#line 131 "parser.y"
+                                     {
                 ADD_OP(OP_RETURN);
             }
-#line 1599 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1482 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 21:
-#line 133 "parser.y" /* yacc.c:1651  */
-    {
+  case 21: /* stmt: RETURN '\n' blank  */
+#line 134 "parser.y"
+                                {
                 ADD_OP(OP_RETURN_NO_VAL);
             }
-#line 1607 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1490 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 22:
-#line 137 "parser.y" /* yacc.c:1651  */
-    {
+  case 22: /* simpstmt: SYMBOL '=' expr  */
+#line 138 "parser.y"
+                            {
                 ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-2].sym));
             }
-#line 1615 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1498 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 23:
-#line 140 "parser.y" /* yacc.c:1651  */
-    {
+  case 23: /* simpstmt: evalsym ADDEQ expr  */
+#line 141 "parser.y"
+                                 {
                 ADD_OP(OP_ADD); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-2].sym));
             }
-#line 1623 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1506 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 24:
-#line 143 "parser.y" /* yacc.c:1651  */
-    {
+  case 24: /* simpstmt: evalsym SUBEQ expr  */
+#line 144 "parser.y"
+                                 {
                 ADD_OP(OP_SUB); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-2].sym));
             }
-#line 1631 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1514 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 25:
-#line 146 "parser.y" /* yacc.c:1651  */
-    {
+  case 25: /* simpstmt: evalsym MULEQ expr  */
+#line 147 "parser.y"
+                                 {
                 ADD_OP(OP_MUL); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-2].sym));
             }
-#line 1639 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1522 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 26:
-#line 149 "parser.y" /* yacc.c:1651  */
-    {
+  case 26: /* simpstmt: evalsym DIVEQ expr  */
+#line 150 "parser.y"
+                                 {
                 ADD_OP(OP_DIV); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-2].sym));
             }
-#line 1647 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1530 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 27:
-#line 152 "parser.y" /* yacc.c:1651  */
-    {
+  case 27: /* simpstmt: evalsym MODEQ expr  */
+#line 153 "parser.y"
+                                 {
                 ADD_OP(OP_MOD); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-2].sym));
             }
-#line 1655 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1538 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 28:
-#line 155 "parser.y" /* yacc.c:1651  */
-    {
+  case 28: /* simpstmt: evalsym ANDEQ expr  */
+#line 156 "parser.y"
+                                 {
                 ADD_OP(OP_BIT_AND); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-2].sym));
             }
-#line 1663 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1546 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 29:
-#line 158 "parser.y" /* yacc.c:1651  */
-    {
+  case 29: /* simpstmt: evalsym OREQ expr  */
+#line 159 "parser.y"
+                                {
                 ADD_OP(OP_BIT_OR); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-2].sym));
             }
-#line 1671 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1554 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 30:
-#line 161 "parser.y" /* yacc.c:1651  */
-    {
+  case 30: /* simpstmt: DELETE arraylv '[' arglist ']'  */
+#line 162 "parser.y"
+                                             {
                 ADD_OP(OP_ARRAY_DELETE); ADD_IMMED((yyvsp[-1].nArgs));
             }
-#line 1679 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1562 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 31:
-#line 164 "parser.y" /* yacc.c:1651  */
-    {
+  case 31: /* simpstmt: initarraylv '[' arglist ']' '=' expr  */
+#line 165 "parser.y"
+                                                   {
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-3].nArgs));
             }
-#line 1687 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1570 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 32:
-#line 167 "parser.y" /* yacc.c:1651  */
-    {
+  case 32: /* simpstmt: initarraylv '[' arglist ']' ADDEQ expr  */
+#line 168 "parser.y"
+                                                     {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED((yyvsp[-3].nArgs));
                 ADD_OP(OP_ADD);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-3].nArgs));
             }
-#line 1697 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1580 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 33:
-#line 172 "parser.y" /* yacc.c:1651  */
-    {
+  case 33: /* simpstmt: initarraylv '[' arglist ']' SUBEQ expr  */
+#line 173 "parser.y"
+                                                     {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED((yyvsp[-3].nArgs));
                 ADD_OP(OP_SUB);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-3].nArgs));
             }
-#line 1707 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1590 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 34:
-#line 177 "parser.y" /* yacc.c:1651  */
-    {
+  case 34: /* simpstmt: initarraylv '[' arglist ']' MULEQ expr  */
+#line 178 "parser.y"
+                                                     {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED((yyvsp[-3].nArgs));
                 ADD_OP(OP_MUL);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-3].nArgs));
             }
-#line 1717 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1600 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 35:
-#line 182 "parser.y" /* yacc.c:1651  */
-    {
+  case 35: /* simpstmt: initarraylv '[' arglist ']' DIVEQ expr  */
+#line 183 "parser.y"
+                                                     {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED((yyvsp[-3].nArgs));
                 ADD_OP(OP_DIV);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-3].nArgs));
             }
-#line 1727 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1610 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 36:
-#line 187 "parser.y" /* yacc.c:1651  */
-    {
+  case 36: /* simpstmt: initarraylv '[' arglist ']' MODEQ expr  */
+#line 188 "parser.y"
+                                                     {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED((yyvsp[-3].nArgs));
                 ADD_OP(OP_MOD);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-3].nArgs));
             }
-#line 1737 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1620 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 37:
-#line 192 "parser.y" /* yacc.c:1651  */
-    {
+  case 37: /* simpstmt: initarraylv '[' arglist ']' ANDEQ expr  */
+#line 193 "parser.y"
+                                                     {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED((yyvsp[-3].nArgs));
                 ADD_OP(OP_BIT_AND);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-3].nArgs));
             }
-#line 1747 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1630 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 38:
-#line 197 "parser.y" /* yacc.c:1651  */
-    {
+  case 38: /* simpstmt: initarraylv '[' arglist ']' OREQ expr  */
+#line 198 "parser.y"
+                                                    {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED((yyvsp[-3].nArgs));
                 ADD_OP(OP_BIT_OR);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-3].nArgs));
             }
-#line 1757 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1640 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 39:
-#line 202 "parser.y" /* yacc.c:1651  */
-    {
+  case 39: /* simpstmt: initarraylv '[' arglist ']' INCR  */
+#line 203 "parser.y"
+                                               {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(0); ADD_IMMED((yyvsp[-2].nArgs));
                 ADD_OP(OP_INCR);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-2].nArgs));
             }
-#line 1767 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1650 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 40:
-#line 207 "parser.y" /* yacc.c:1651  */
-    {
+  case 40: /* simpstmt: initarraylv '[' arglist ']' DECR  */
+#line 208 "parser.y"
+                                               {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(0); ADD_IMMED((yyvsp[-2].nArgs));
                 ADD_OP(OP_DECR);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-2].nArgs));
             }
-#line 1777 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1660 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 41:
-#line 212 "parser.y" /* yacc.c:1651  */
-    {
+  case 41: /* simpstmt: INCR initarraylv '[' arglist ']'  */
+#line 213 "parser.y"
+                                               {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(0); ADD_IMMED((yyvsp[-1].nArgs));
                 ADD_OP(OP_INCR);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-1].nArgs));
             }
-#line 1787 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1670 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 42:
-#line 217 "parser.y" /* yacc.c:1651  */
-    {
+  case 42: /* simpstmt: DECR initarraylv '[' arglist ']'  */
+#line 218 "parser.y"
+                                               {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(0); ADD_IMMED((yyvsp[-1].nArgs));
                 ADD_OP(OP_DECR);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-1].nArgs));
             }
-#line 1797 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1680 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 43:
-#line 222 "parser.y" /* yacc.c:1651  */
-    {
+  case 43: /* simpstmt: SYMBOL '(' arglist ')'  */
+#line 223 "parser.y"
+                                     {
                 ADD_OP(OP_SUBR_CALL);
                 ADD_SYM(PromoteToGlobal((yyvsp[-3].sym))); ADD_IMMED((yyvsp[-1].nArgs));
             }
-#line 1806 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1689 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 44:
-#line 226 "parser.y" /* yacc.c:1651  */
-    {
+  case 44: /* simpstmt: INCR SYMBOL  */
+#line 227 "parser.y"
+                          {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[0].sym)); ADD_OP(OP_INCR);
                 ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[0].sym));
             }
-#line 1815 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1698 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 45:
-#line 230 "parser.y" /* yacc.c:1651  */
-    {
+  case 45: /* simpstmt: SYMBOL INCR  */
+#line 231 "parser.y"
+                          {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[-1].sym)); ADD_OP(OP_INCR);
                 ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-1].sym));
             }
-#line 1824 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1707 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 46:
-#line 234 "parser.y" /* yacc.c:1651  */
-    {
+  case 46: /* simpstmt: DECR SYMBOL  */
+#line 235 "parser.y"
+                          {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[0].sym)); ADD_OP(OP_DECR);
                 ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[0].sym));
             }
-#line 1833 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1716 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 47:
-#line 238 "parser.y" /* yacc.c:1651  */
-    {
+  case 47: /* simpstmt: SYMBOL DECR  */
+#line 239 "parser.y"
+                          {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[-1].sym)); ADD_OP(OP_DECR);
                 ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-1].sym));
             }
-#line 1842 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1725 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 48:
-#line 243 "parser.y" /* yacc.c:1651  */
-    {
+  case 48: /* evalsym: SYMBOL  */
+#line 244 "parser.y"
+                   {
                 (yyval.sym) = (yyvsp[0].sym); ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[0].sym));
             }
-#line 1850 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1733 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 49:
-#line 247 "parser.y" /* yacc.c:1651  */
-    {
+  case 49: /* comastmts: %empty  */
+#line 248 "parser.y"
+                          {
                 (yyval.inst) = GetPC();
             }
-#line 1858 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1741 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 50:
-#line 250 "parser.y" /* yacc.c:1651  */
-    {
+  case 50: /* comastmts: simpstmt  */
+#line 251 "parser.y"
+                       {
                 (yyval.inst) = GetPC();
             }
-#line 1866 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1749 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 51:
-#line 253 "parser.y" /* yacc.c:1651  */
-    {
+  case 51: /* comastmts: comastmts ',' simpstmt  */
+#line 254 "parser.y"
+                                     {
                 (yyval.inst) = GetPC();
             }
-#line 1874 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1757 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 52:
-#line 257 "parser.y" /* yacc.c:1651  */
-    {
+  case 52: /* arglist: %empty  */
+#line 258 "parser.y"
+                          {
                 (yyval.nArgs) = 0;
             }
-#line 1882 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1765 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 53:
-#line 260 "parser.y" /* yacc.c:1651  */
-    {
+  case 53: /* arglist: expr  */
+#line 261 "parser.y"
+                   {
                 (yyval.nArgs) = 1;
             }
-#line 1890 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1773 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 54:
-#line 263 "parser.y" /* yacc.c:1651  */
-    {
+  case 54: /* arglist: arglist ',' expr  */
+#line 264 "parser.y"
+                               {
                 (yyval.nArgs) = (yyvsp[-2].nArgs) + 1;
             }
-#line 1898 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1781 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 56:
-#line 268 "parser.y" /* yacc.c:1651  */
-    {
+  case 56: /* expr: expr numexpr  */
+#line 269 "parser.y"
+                                        {
                 ADD_OP(OP_CONCAT);
             }
-#line 1906 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1789 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 57:
-#line 272 "parser.y" /* yacc.c:1651  */
-    {
+  case 57: /* initarraylv: SYMBOL  */
+#line 273 "parser.y"
+                       {
                     ADD_OP(OP_PUSH_ARRAY_SYM); ADD_SYM((yyvsp[0].sym)); ADD_IMMED(1);
                 }
-#line 1914 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1797 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 58:
-#line 275 "parser.y" /* yacc.c:1651  */
-    {
+  case 58: /* initarraylv: initarraylv '[' arglist ']'  */
+#line 276 "parser.y"
+                                              {
                     ADD_OP(OP_ARRAY_REF); ADD_IMMED((yyvsp[-1].nArgs));
                 }
-#line 1922 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1805 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 59:
-#line 279 "parser.y" /* yacc.c:1651  */
-    {
+  case 59: /* arraylv: SYMBOL  */
+#line 280 "parser.y"
+                   {
                 ADD_OP(OP_PUSH_ARRAY_SYM); ADD_SYM((yyvsp[0].sym)); ADD_IMMED(0);
             }
-#line 1930 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1813 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 60:
-#line 282 "parser.y" /* yacc.c:1651  */
-    {
+  case 60: /* arraylv: arraylv '[' arglist ']'  */
+#line 283 "parser.y"
+                                      {
                 ADD_OP(OP_ARRAY_REF); ADD_IMMED((yyvsp[-1].nArgs));
             }
-#line 1938 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1821 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 61:
-#line 286 "parser.y" /* yacc.c:1651  */
-    {
+  case 61: /* arrayexpr: numexpr  */
+#line 287 "parser.y"
+                    {
                 (yyval.inst) = GetPC();
             }
-#line 1946 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1829 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 62:
-#line 290 "parser.y" /* yacc.c:1651  */
-    {
+  case 62: /* numexpr: NUMBER  */
+#line 291 "parser.y"
+                   {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[0].sym));
             }
-#line 1954 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1837 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 63:
-#line 293 "parser.y" /* yacc.c:1651  */
-    {
+  case 63: /* numexpr: STRING  */
+#line 294 "parser.y"
+                     {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[0].sym));
             }
-#line 1962 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1845 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 64:
-#line 296 "parser.y" /* yacc.c:1651  */
-    {
+  case 64: /* numexpr: SYMBOL  */
+#line 297 "parser.y"
+                     {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[0].sym));
             }
-#line 1970 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1853 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 65:
-#line 299 "parser.y" /* yacc.c:1651  */
-    {
+  case 65: /* numexpr: SYMBOL '(' arglist ')'  */
+#line 300 "parser.y"
+                                     {
                 ADD_OP(OP_SUBR_CALL);
                 ADD_SYM(PromoteToGlobal((yyvsp[-3].sym))); ADD_IMMED((yyvsp[-1].nArgs));
                 ADD_OP(OP_FETCH_RET_VAL);
             }
-#line 1980 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1863 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 67:
-#line 305 "parser.y" /* yacc.c:1651  */
-    {
+  case 67: /* numexpr: ARG_LOOKUP '[' numexpr ']'  */
+#line 306 "parser.y"
+                                         {
                ADD_OP(OP_PUSH_ARG);
             }
-#line 1988 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1871 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 68:
-#line 308 "parser.y" /* yacc.c:1651  */
-    {
+  case 68: /* numexpr: ARG_LOOKUP '[' ']'  */
+#line 309 "parser.y"
+                                 {
                ADD_OP(OP_PUSH_ARG_COUNT);
             }
-#line 1996 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1879 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 69:
-#line 311 "parser.y" /* yacc.c:1651  */
-    {
+  case 69: /* numexpr: ARG_LOOKUP  */
+#line 312 "parser.y"
+                         {
                ADD_OP(OP_PUSH_ARG_ARRAY);
             }
-#line 2004 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1887 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 70:
-#line 314 "parser.y" /* yacc.c:1651  */
-    {
+  case 70: /* numexpr: numexpr '[' arglist ']'  */
+#line 315 "parser.y"
+                                      {
                 ADD_OP(OP_ARRAY_REF); ADD_IMMED((yyvsp[-1].nArgs));
             }
-#line 2012 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1895 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 71:
-#line 317 "parser.y" /* yacc.c:1651  */
-    {
+  case 71: /* numexpr: numexpr '+' numexpr  */
+#line 318 "parser.y"
+                                  {
                 ADD_OP(OP_ADD);
             }
-#line 2020 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1903 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 72:
-#line 320 "parser.y" /* yacc.c:1651  */
-    {
+  case 72: /* numexpr: numexpr '-' numexpr  */
+#line 321 "parser.y"
+                                  {
                 ADD_OP(OP_SUB);
             }
-#line 2028 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1911 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 73:
-#line 323 "parser.y" /* yacc.c:1651  */
-    {
+  case 73: /* numexpr: numexpr '*' numexpr  */
+#line 324 "parser.y"
+                                  {
                 ADD_OP(OP_MUL);
             }
-#line 2036 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1919 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 74:
-#line 326 "parser.y" /* yacc.c:1651  */
-    {
+  case 74: /* numexpr: numexpr '/' numexpr  */
+#line 327 "parser.y"
+                                  {
                 ADD_OP(OP_DIV);
             }
-#line 2044 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1927 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 75:
-#line 329 "parser.y" /* yacc.c:1651  */
-    {
+  case 75: /* numexpr: numexpr '%' numexpr  */
+#line 330 "parser.y"
+                                  {
                 ADD_OP(OP_MOD);
             }
-#line 2052 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1935 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 76:
-#line 332 "parser.y" /* yacc.c:1651  */
-    {
+  case 76: /* numexpr: numexpr POW numexpr  */
+#line 333 "parser.y"
+                                  {
                 ADD_OP(OP_POWER);
             }
-#line 2060 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1943 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 77:
-#line 335 "parser.y" /* yacc.c:1651  */
-    {
+  case 77: /* numexpr: '-' numexpr  */
+#line 336 "parser.y"
+                                             {
                 ADD_OP(OP_NEGATE);
             }
-#line 2068 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1951 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 78:
-#line 338 "parser.y" /* yacc.c:1651  */
-    {
+  case 78: /* numexpr: numexpr GT numexpr  */
+#line 339 "parser.y"
+                                  {
                 ADD_OP(OP_GT);
             }
-#line 2076 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1959 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 79:
-#line 341 "parser.y" /* yacc.c:1651  */
-    {
+  case 79: /* numexpr: numexpr GE numexpr  */
+#line 342 "parser.y"
+                                  {
                 ADD_OP(OP_GE);
             }
-#line 2084 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1967 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 80:
-#line 344 "parser.y" /* yacc.c:1651  */
-    {
+  case 80: /* numexpr: numexpr LT numexpr  */
+#line 345 "parser.y"
+                                  {
                 ADD_OP(OP_LT);
             }
-#line 2092 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1975 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 81:
-#line 347 "parser.y" /* yacc.c:1651  */
-    {
+  case 81: /* numexpr: numexpr LE numexpr  */
+#line 348 "parser.y"
+                                  {
                 ADD_OP(OP_LE);
             }
-#line 2100 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1983 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 82:
-#line 350 "parser.y" /* yacc.c:1651  */
-    {
+  case 82: /* numexpr: numexpr EQ numexpr  */
+#line 351 "parser.y"
+                                  {
                 ADD_OP(OP_EQ);
             }
-#line 2108 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1991 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 83:
-#line 353 "parser.y" /* yacc.c:1651  */
-    {
+  case 83: /* numexpr: numexpr NE numexpr  */
+#line 354 "parser.y"
+                                  {
                 ADD_OP(OP_NE);
             }
-#line 2116 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 1999 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 84:
-#line 356 "parser.y" /* yacc.c:1651  */
-    {
+  case 84: /* numexpr: numexpr '&' numexpr  */
+#line 357 "parser.y"
+                                  {
                 ADD_OP(OP_BIT_AND);
             }
-#line 2124 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2007 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 85:
-#line 359 "parser.y" /* yacc.c:1651  */
-    {
+  case 85: /* numexpr: numexpr '|' numexpr  */
+#line 360 "parser.y"
+                                   {
                 ADD_OP(OP_BIT_OR);
             }
-#line 2132 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2015 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 86:
-#line 362 "parser.y" /* yacc.c:1651  */
-    {
+  case 86: /* numexpr: numexpr and numexpr  */
+#line 363 "parser.y"
+                                            {
                 ADD_OP(OP_AND); SET_BR_OFF((yyvsp[-1].inst), GetPC());
             }
-#line 2140 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2023 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 87:
-#line 365 "parser.y" /* yacc.c:1651  */
-    {
+  case 87: /* numexpr: numexpr or numexpr  */
+#line 366 "parser.y"
+                                          {
                 ADD_OP(OP_OR); SET_BR_OFF((yyvsp[-1].inst), GetPC());
             }
-#line 2148 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2031 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 88:
-#line 368 "parser.y" /* yacc.c:1651  */
-    {
+  case 88: /* numexpr: NOT numexpr  */
+#line 369 "parser.y"
+                          {
                 ADD_OP(OP_NOT);
             }
-#line 2156 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2039 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 89:
-#line 371 "parser.y" /* yacc.c:1651  */
-    {
+  case 89: /* numexpr: INCR SYMBOL  */
+#line 372 "parser.y"
+                          {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[0].sym)); ADD_OP(OP_INCR);
                 ADD_OP(OP_DUP); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[0].sym));
             }
-#line 2165 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2048 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 90:
-#line 375 "parser.y" /* yacc.c:1651  */
-    {
+  case 90: /* numexpr: SYMBOL INCR  */
+#line 376 "parser.y"
+                          {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[-1].sym)); ADD_OP(OP_DUP);
                 ADD_OP(OP_INCR); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-1].sym));
             }
-#line 2174 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2057 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 91:
-#line 379 "parser.y" /* yacc.c:1651  */
-    {
+  case 91: /* numexpr: DECR SYMBOL  */
+#line 380 "parser.y"
+                          {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[0].sym)); ADD_OP(OP_DECR);
                 ADD_OP(OP_DUP); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[0].sym));
             }
-#line 2183 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2066 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 92:
-#line 383 "parser.y" /* yacc.c:1651  */
-    {
+  case 92: /* numexpr: SYMBOL DECR  */
+#line 384 "parser.y"
+                          {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[-1].sym)); ADD_OP(OP_DUP);
                 ADD_OP(OP_DECR); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-1].sym));
             }
-#line 2192 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2075 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 93:
-#line 387 "parser.y" /* yacc.c:1651  */
-    {
+  case 93: /* numexpr: numexpr IN numexpr  */
+#line 388 "parser.y"
+                                 {
                 ADD_OP(OP_IN_ARRAY);
             }
-#line 2200 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2083 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 94:
-#line 391 "parser.y" /* yacc.c:1651  */
-    {
+  case 94: /* while: WHILE  */
+#line 392 "parser.y"
+              {
             (yyval.inst) = GetPC(); StartLoopAddrList();
         }
-#line 2208 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2091 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 95:
-#line 395 "parser.y" /* yacc.c:1651  */
-    {
+  case 95: /* for: FOR  */
+#line 396 "parser.y"
+            {
             StartLoopAddrList(); (yyval.inst) = GetPC();
         }
-#line 2216 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2099 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 96:
-#line 399 "parser.y" /* yacc.c:1651  */
-    {
+  case 96: /* else: ELSE  */
+#line 400 "parser.y"
+             {
             ADD_OP(OP_BRANCH); (yyval.inst) = GetPC(); ADD_BR_OFF(nullptr);
         }
-#line 2224 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2107 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 97:
-#line 403 "parser.y" /* yacc.c:1651  */
-    {
+  case 97: /* cond: %empty  */
+#line 404 "parser.y"
+                      {
             ADD_OP(OP_BRANCH_NEVER); (yyval.inst) = GetPC(); ADD_BR_OFF(nullptr);
         }
-#line 2232 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2115 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 98:
-#line 406 "parser.y" /* yacc.c:1651  */
-    {
+  case 98: /* cond: numexpr  */
+#line 407 "parser.y"
+                  {
             ADD_OP(OP_BRANCH_FALSE); (yyval.inst) = GetPC(); ADD_BR_OFF(nullptr);
         }
-#line 2240 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2123 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 99:
-#line 410 "parser.y" /* yacc.c:1651  */
-    {
+  case 99: /* and: AND  */
+#line 411 "parser.y"
+            {
             ADD_OP(OP_DUP); ADD_OP(OP_BRANCH_FALSE); (yyval.inst) = GetPC();
             ADD_BR_OFF(nullptr);
         }
-#line 2249 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2132 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
-  case 100:
-#line 415 "parser.y" /* yacc.c:1651  */
-    {
+  case 100: /* or: OR  */
+#line 416 "parser.y"
+           {
             ADD_OP(OP_DUP); ADD_OP(OP_BRANCH_TRUE); (yyval.inst) = GetPC();
             ADD_BR_OFF(nullptr);
         }
-#line 2258 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2141 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
 
-#line 2262 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp" /* yacc.c:1651  */
+#line 2145 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+
       default: break;
     }
   /* User semantic actions sometimes alter yychar, and that requires
@@ -2272,25 +2156,23 @@ yyreduce:
      case of YYERROR or YYBACKUP, subsequent parser actions might lead
      to an incorrect destructor call or verbose syntax error message
      before the lookahead is translated.  */
-  YY_SYMBOL_PRINT ("-> $$ =", yyr1[yyn], &yyval, &yyloc);
+  YY_SYMBOL_PRINT ("-> $$ =", YY_CAST (yysymbol_kind_t, yyr1[yyn]), &yyval, &yyloc);
 
   YYPOPSTACK (yylen);
   yylen = 0;
-  YY_STACK_PRINT (yyss, yyssp);
 
   *++yyvsp = yyval;
 
   /* Now 'shift' the result of the reduction.  Determine what state
      that goes to, based on the state we popped back to and the rule
      number reduced by.  */
-
-  yyn = yyr1[yyn];
-
-  yystate = yypgoto[yyn - YYNTOKENS] + *yyssp;
-  if (0 <= yystate && yystate <= YYLAST && yycheck[yystate] == *yyssp)
-    yystate = yytable[yystate];
-  else
-    yystate = yydefgoto[yyn - YYNTOKENS];
+  {
+    const int yylhs = yyr1[yyn] - YYNTOKENS;
+    const int yyi = yypgoto[yylhs] + *yyssp;
+    yystate = (0 <= yyi && yyi <= YYLAST && yycheck[yyi] == *yyssp
+               ? yytable[yyi]
+               : yydefgoto[yylhs]);
+  }
 
   goto yynewstate;
 
@@ -2301,49 +2183,13 @@ yyreduce:
 yyerrlab:
   /* Make sure we have latest lookahead translation.  See comments at
      user semantic actions for why this is necessary.  */
-  yytoken = yychar == YYEMPTY ? YYEMPTY : YYTRANSLATE (yychar);
-
+  yytoken = yychar == YYEMPTY ? YYSYMBOL_YYEMPTY : YYTRANSLATE (yychar);
   /* If not already recovering from an error, report this error.  */
   if (!yyerrstatus)
     {
       ++yynerrs;
-#if ! YYERROR_VERBOSE
       yyerror (YY_("syntax error"));
-#else
-# define YYSYNTAX_ERROR yysyntax_error (&yymsg_alloc, &yymsg, \
-                                        yyssp, yytoken)
-      {
-        char const *yymsgp = YY_("syntax error");
-        int yysyntax_error_status;
-        yysyntax_error_status = YYSYNTAX_ERROR;
-        if (yysyntax_error_status == 0)
-          yymsgp = yymsg;
-        else if (yysyntax_error_status == 1)
-          {
-            if (yymsg != yymsgbuf)
-              YYSTACK_FREE (yymsg);
-            yymsg = (char *) YYSTACK_ALLOC (yymsg_alloc);
-            if (!yymsg)
-              {
-                yymsg = yymsgbuf;
-                yymsg_alloc = sizeof yymsgbuf;
-                yysyntax_error_status = 2;
-              }
-            else
-              {
-                yysyntax_error_status = YYSYNTAX_ERROR;
-                yymsgp = yymsg;
-              }
-          }
-        yyerror (yymsgp);
-        if (yysyntax_error_status == 2)
-          goto yyexhaustedlab;
-      }
-# undef YYSYNTAX_ERROR
-#endif
     }
-
-
 
   if (yyerrstatus == 3)
     {
@@ -2373,12 +2219,10 @@ yyerrlab:
 | yyerrorlab -- error raised explicitly by YYERROR.  |
 `---------------------------------------------------*/
 yyerrorlab:
-
-  /* Pacify compilers like GCC when the user code never invokes
-     YYERROR and the label yyerrorlab therefore never appears in user
-     code.  */
-  if (/*CONSTCOND*/ 0)
-     goto yyerrorlab;
+  /* Pacify compilers when the user code never invokes YYERROR and the
+     label yyerrorlab therefore never appears in user code.  */
+  if (0)
+    YYERROR;
 
   /* Do not reclaim the symbols of the rule whose action triggered
      this YYERROR.  */
@@ -2395,13 +2239,14 @@ yyerrorlab:
 yyerrlab1:
   yyerrstatus = 3;      /* Each real token shifted decrements this.  */
 
+  /* Pop stack until we find a state that shifts the error token.  */
   for (;;)
     {
       yyn = yypact[yystate];
       if (!yypact_value_is_default (yyn))
         {
-          yyn += YYTERROR;
-          if (0 <= yyn && yyn <= YYLAST && yycheck[yyn] == YYTERROR)
+          yyn += YYSYMBOL_YYerror;
+          if (0 <= yyn && yyn <= YYLAST && yycheck[yyn] == YYSYMBOL_YYerror)
             {
               yyn = yytable[yyn];
               if (0 < yyn)
@@ -2415,7 +2260,7 @@ yyerrlab1:
 
 
       yydestruct ("Error: popping",
-                  yystos[yystate], yyvsp);
+                  YY_ACCESSING_SYMBOL (yystate), yyvsp);
       YYPOPSTACK (1);
       yystate = *yyssp;
       YY_STACK_PRINT (yyss, yyssp);
@@ -2427,7 +2272,7 @@ yyerrlab1:
 
 
   /* Shift the error token.  */
-  YY_SYMBOL_PRINT ("Shifting", yystos[yyn], yyvsp, yylsp);
+  YY_SYMBOL_PRINT ("Shifting", YY_ACCESSING_SYMBOL (yyn), yyvsp, yylsp);
 
   yystate = yyn;
   goto yynewstate;
@@ -2440,6 +2285,7 @@ yyacceptlab:
   yyresult = 0;
   goto yyreturn;
 
+
 /*-----------------------------------.
 | yyabortlab -- YYABORT comes here.  |
 `-----------------------------------*/
@@ -2447,16 +2293,21 @@ yyabortlab:
   yyresult = 1;
   goto yyreturn;
 
-#if !defined yyoverflow || YYERROR_VERBOSE
+
+#if !defined yyoverflow
 /*-------------------------------------------------.
 | yyexhaustedlab -- memory exhaustion comes here.  |
 `-------------------------------------------------*/
 yyexhaustedlab:
   yyerror (YY_("memory exhausted"));
   yyresult = 2;
-  /* Fall through.  */
+  goto yyreturn;
 #endif
 
+
+/*-------------------------------------------------------.
+| yyreturn -- parsing is finished, clean up and return.  |
+`-------------------------------------------------------*/
 yyreturn:
   if (yychar != YYEMPTY)
     {
@@ -2473,20 +2324,18 @@ yyreturn:
   while (yyssp != yyss)
     {
       yydestruct ("Cleanup: popping",
-                  yystos[*yyssp], yyvsp);
+                  YY_ACCESSING_SYMBOL (+*yyssp), yyvsp);
       YYPOPSTACK (1);
     }
 #ifndef yyoverflow
   if (yyss != yyssa)
     YYSTACK_FREE (yyss);
 #endif
-#if YYERROR_VERBOSE
-  if (yymsg != yymsgbuf)
-    YYSTACK_FREE (yymsg);
-#endif
+
   return yyresult;
 }
-#line 424 "parser.y" /* yacc.c:1910  */
+
+#line 425 "parser.y"
  /* User Subroutines Section */
 
 
