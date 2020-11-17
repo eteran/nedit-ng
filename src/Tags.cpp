@@ -878,7 +878,7 @@ bool addTagsFile(const QString &tagSpec, SearchMode mode) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
 	QStringList filenames = tagSpec.split(QDir::listSeparator());
 #else
-	QStringList filenames = tagSpec.split(QLatin1Chat(':'));
+	QStringList filenames = tagSpec.split(QLatin1Char(':'));
 #endif
 	for (const QString &filename : filenames) {
 
