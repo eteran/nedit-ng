@@ -174,7 +174,7 @@ bool delTag(int index) {
 */
 int scanCTagsLine(const QString &line, const QString &tagPath, int index) {
 
-	QRegExp regex(QLatin1String(R"(^([^\t]+)\t([^\t]+)\t([^\n]+)\n$)"));
+	QRegExp regex(QLatin1String(R"(^([^\t]+)\t([^\t]+)\t([^\n]+)$)"));
 	if (!regex.exactMatch(line)) {
 		return 0;
 	}
@@ -874,7 +874,7 @@ bool addTagsFile(const QString &tagSpec, SearchMode mode) {
 		return false;
 	}
 
-	QStringList filenames = tagSpec.split(QLatin1Char(':'));
+	QStringList filenames = tagSpec.split(QDir::listSeparator());
 
 	for (const QString &filename : filenames) {
 
@@ -942,7 +942,7 @@ bool deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload) 
 
 	bool removed = true;
 
-	QStringList filenames = tagSpec.split(QLatin1Char(':'));
+	QStringList filenames = tagSpec.split(QDir::listSeparator());
 
 	for (const QString &filename : filenames) {
 
