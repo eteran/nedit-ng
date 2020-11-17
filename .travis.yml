@@ -1,25 +1,17 @@
 dist: bionic
-
 language: cpp
-
 cache: apt
-
 compiler:
     - gcc
-
 env:
     global:
         - MAKEFLAGS="-j2"
-
 before_script:
     - mkdir build && cd build && CXX=g++ cmake ..
-
 script:
     - make
-
 os:
     - linux
-
 addons:
     apt:
         packages:
