@@ -44,11 +44,11 @@ QString randomString(int length) {
 
 	QString randomString;
 	randomString.reserve(length);
-	
+
 	std::random_device rd;
 	std::mt19937 mt(rd());
 	std::uniform_int_distribution<> dist(0, sizeof(alphabet) - 1);
-	
+
 	for (int i = 0; i < length; ++i) {
 		size_t index = dist(mt);
 		randomString.append(QChar::fromLatin1(alphabet[index]));

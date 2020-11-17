@@ -313,9 +313,9 @@ boost::optional<Search::Result> searchLiteralWord(view::string_view string, view
 				++ucPtr;
 				++lcPtr;
 
-				if (ucPtr == ucString.end() &&                                                        // matched whole string
+				if (ucPtr == ucString.end() &&                                                          // matched whole string
 					(cignore_R || safe_ctype<::isspace>(*tempPtr) || ::strchr(delimiters, *tempPtr)) && // next char right delimits word ?
-					(cignore_L || it == string.begin() ||                                             // border case
+					(cignore_L || it == string.begin() ||                                               // border case
 					 safe_ctype<::isspace>(it[-1]) || ::strchr(delimiters, it[-1]))) {                  // next char left delimits word ?
 
 					Search::Result result;

@@ -12,8 +12,8 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cstring>
 #include <cctype>
+#include <cstring>
 
 namespace {
 
