@@ -22,8 +22,6 @@ os:
 
 addons:
     apt:
-        sources:
-            - ubuntu-toolchain-r-test
         packages:
             - build-essential
             - libboost-dev
@@ -31,3 +29,4 @@ addons:
             - qt5-default
             - qtbase5-dev-tools
             - qttools5-dev-tools
+			- qttools5-dev
