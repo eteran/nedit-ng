@@ -1,3 +1,5 @@
+dist: bionic
+
 language: cpp
 
 cache: apt
@@ -10,7 +12,7 @@ env:
         - MAKEFLAGS="-j2"
 
 before_script:
-    - mkdir build && cd build && CXX=g++-5 cmake ..
+    - mkdir build && cd build && CXX=g++ cmake ..
 
 script:
     - make
@@ -25,8 +27,6 @@ addons:
         packages:
             - build-essential
             - libboost-dev
-            - gcc-5
-            - g++-5
             - cmake
             - qt5-default
             - qtbase5-dev-tools
