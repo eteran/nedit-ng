@@ -17,6 +17,10 @@ qt5_add_translation(QM_FILES
 	res/translations/nedit-ng_fi.ts
 )
 
+if(WIN32)
+	set(APP_ICON_RESOURCE_WINDOWS "res/nedit-ng.rc")
+endif()
+
 # Create translations QRC file - translations.qrc
 set(TRANSLATIONS_QRC "${CMAKE_CURRENT_BINARY_DIR}/translations.qrc")
 
@@ -52,6 +56,7 @@ endif()
 add_executable(nedit-ng
 
 	${QRC_SOURCES}
+	${APP_ICON_RESOURCE_WINDOWS}
 
 	Theme.h
 	Theme.cpp
