@@ -568,6 +568,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	// track what the last created document was so that focus_document("last")
 	// works correctly
 	LastCreated = this;
+	setAcceptDrops(true);
 
 	// Every document has a backing buffer
 	info_->buffer = std::make_shared<TextBuffer>();
@@ -7358,4 +7359,30 @@ WrapStyle DocumentWidget::wrapMode() const {
  */
 void DocumentWidget::setFileFormat(FileFormats fileFormat) {
 	info_->fileFormat = fileFormat;
+}
+
+/**
+ * @brief dragEnterEvent
+ * @param event
+ */
+void DocumentWidget::dragEnterEvent(QDragEnterEvent *event) {
+	if (event->mimeData()->hasUrls()) {
+		event->accept();
+	}
+}
+
+/**
+ * @brief dropEvent
+ * @param event
+ */
+void DocumentWidget::dropEvent(QDropEvent *event) {
+	auto urls = event->mimeData()->urls();
+	for (auto url : urls) {
+		if (url.isLocalFile()) {
+			QString fileName = url.toLocalFile();
+			open(fileName);
+		} else {
+			QApplication::beep();
+		}
+	}
 }
