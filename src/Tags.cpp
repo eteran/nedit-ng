@@ -808,7 +808,7 @@ bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMod
 		return false;
 	}
 
-	QStringList filenames = tagSpec.split(QLatin1Char(':'));
+	QStringList filenames = tagSpec.split(QDir::listSeparator());
 
 	for (const QString &filename : filenames) {
 		if (QFileInfo(filename).isAbsolute() || filename.startsWith(QLatin1Char('~'))) {
