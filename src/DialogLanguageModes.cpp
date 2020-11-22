@@ -236,9 +236,13 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 	lm.name = name;
 
 	// read the extension list field
-	QString extStr      = ui.editExtensions->text().simplified();
+	QString extStr = ui.editExtensions->text().simplified();
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
+	QStringList extList = extStr.split(QLatin1Char(' '), Qt::SkipEmptyParts);
+#else
 	QStringList extList = extStr.split(QLatin1Char(' '), QString::SkipEmptyParts);
-	lm.extensions       = extList;
+#endif
+	lm.extensions = extList;
 
 	// read recognition expression
 	QString recognitionExpr = ui.editRegex->text();

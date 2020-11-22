@@ -568,6 +568,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	// track what the last created document was so that focus_document("last")
 	// works correctly
 	LastCreated = this;
+	setAcceptDrops(true);
 
 	// Every document has a backing buffer
 	info_->buffer = std::make_shared<TextBuffer>();
@@ -7244,11 +7245,11 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 	   about 1/4 of the way down from the top */
 	const int64_t lineNum = documentToSearch->buffer()->BufCountLines(TextCursor(0), TextCursor(startPos));
 
-	int rows = area->getRows();
-
-	area->verticalScrollBar()->setValue(lineNum - (rows / 4));
-	area->horizontalScrollBar()->setValue(0);
-	area->TextSetCursorPos(TextCursor(endPos));
+	QPointer<TextArea> tagArea = MainWindow::fromDocument(documentToSearch)->lastFocus();
+	int rows                   = tagArea->getRows();
+	tagArea->verticalScrollBar()->setValue(lineNum - (rows / 4));
+	tagArea->horizontalScrollBar()->setValue(0);
+	tagArea->TextSetCursorPos(TextCursor(endPos));
 }
 
 /**
@@ -7358,4 +7359,30 @@ WrapStyle DocumentWidget::wrapMode() const {
  */
 void DocumentWidget::setFileFormat(FileFormats fileFormat) {
 	info_->fileFormat = fileFormat;
+}
+
+/**
+ * @brief dragEnterEvent
+ * @param event
+ */
+void DocumentWidget::dragEnterEvent(QDragEnterEvent *event) {
+	if (event->mimeData()->hasUrls()) {
+		event->accept();
+	}
+}
+
+/**
+ * @brief dropEvent
+ * @param event
+ */
+void DocumentWidget::dropEvent(QDropEvent *event) {
+	auto urls = event->mimeData()->urls();
+	for (auto url : urls) {
+		if (url.isLocalFile()) {
+			QString fileName = url.toLocalFile();
+			open(fileName);
+		} else {
+			QApplication::beep();
+		}
+	}
 }

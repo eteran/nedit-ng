@@ -56,8 +56,6 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
  */
 int main(int argc, char *argv[]) {
 
-	qsrand(::time(nullptr));
-
 	// On linux (and perhaps other UNIX's), we should support -version even
 	// when X11 is not running
 #ifdef Q_OS_LINUX

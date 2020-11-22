@@ -2,8 +2,13 @@ cmake_minimum_required(VERSION 3.0)
 
 find_package(Qt6 6.0.0 REQUIRED Core Network)
 
+if(WIN32)
+	set(APP_ICON_RESOURCE_WINDOWS "../src/res/nedit-ng.rc")
+endif()
+
 add_executable(nc-ng
 	nc.cpp
+	${APP_ICON_RESOURCE_WINDOWS}
 )
 
 target_link_libraries(nc-ng PUBLIC
