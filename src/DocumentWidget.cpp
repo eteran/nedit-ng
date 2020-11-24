@@ -473,6 +473,9 @@ DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, con
 
 	if (Preferences::GetPrefAlwaysCheckRelTagsSpecs()) {
 		Tags::addRelTagsFile(Preferences::GetPrefTagFile(), path, Tags::SearchMode::TAG);
+		for (MainWindow *window : MainWindow::allWindows()) {
+			window->updateTagsFileMenu();
+		}
 	}
 
 	MainWindow::addToPrevOpenMenu(fullname);
