@@ -167,7 +167,8 @@ public:
 public:
 	constexpr int compare(basic_string_view x) const noexcept {
 		const int cmp = Tr::compare(data_, x.data_, (std::min)(size_, x.size_));
-		return cmp != 0 ? cmp : (size_ == x.size_ ? 0 : size_ < x.size_ ? -1 : 1);
+		return cmp != 0 ? cmp : (size_ == x.size_ ? 0 : size_ < x.size_ ? -1
+																		: 1);
 	}
 
 	constexpr int compare(size_type pos1, size_type n1, basic_string_view x) const noexcept {

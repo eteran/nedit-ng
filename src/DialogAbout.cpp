@@ -34,9 +34,9 @@ DialogAbout::DialogAbout(QWidget *parent, Qt::WindowFlags f)
 QString DialogAbout::createInfoString() {
 
 #ifdef NEDIT_VERSION_GIT
-	auto versionString   = tr(NEDIT_VERSION_GIT);
+	auto versionString = tr(NEDIT_VERSION_GIT);
 #else
-	auto versionString   = tr("%1.%2").arg(NEDIT_VERSION_MAJ).arg(NEDIT_VERSION_REV);
+	auto versionString = tr("%1.%2").arg(NEDIT_VERSION_MAJ).arg(NEDIT_VERSION_REV);
 #endif
 
 	QString localeString = QLocale::system().bcp47Name();
