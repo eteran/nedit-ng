@@ -1363,6 +1363,11 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 						if (!menuData.item.shortcut.isEmpty()) {
 							action->setShortcut(menuData.item.shortcut);
 						}
+
+						// if this action REQUIRES a selection, default to disabled
+						if (menuData.item.input == InSrcs::FROM_SELECTION) {
+							action->setEnabled(false);
+						}
 					}
 				} else {
 					QAction *action = parentMenu->addAction(name);
@@ -1370,6 +1375,11 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 
 					if (!menuData.item.shortcut.isEmpty()) {
 						action->setShortcut(menuData.item.shortcut);
+					}
+
+					// if this action REQUIRES a selection, default to disabled
+					if (menuData.item.input == InSrcs::FROM_SELECTION) {
+						action->setEnabled(false);
 					}
 				}
 				break;

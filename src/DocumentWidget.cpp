@@ -1534,13 +1534,15 @@ void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<M
 			if (QMenu *subMenu = action->menu()) {
 				updateSelectionSensitiveMenu(subMenu, menuList, enabled);
 			} else {
-				size_t index = action->data().toUInt();
-				if (index >= menuList.size()) {
-					return;
-				}
+				if (action->data().isValid()) {
+					size_t index = action->data().toUInt();
+					if (index >= menuList.size()) {
+						return;
+					}
 
-				if (menuList[index].item.input == FROM_SELECTION) {
-					action->setEnabled(enabled);
+					if (menuList[index].item.input == FROM_SELECTION) {
+						action->setEnabled(enabled);
+					}
 				}
 			}
 		}
