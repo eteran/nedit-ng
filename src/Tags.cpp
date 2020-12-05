@@ -831,7 +831,12 @@ bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMod
 		return false;
 	}
 
-	QStringList filenames = tagSpec.split(QDir::listSeparator());
+#ifdef Q_OS_WIN
+	auto sep = QLatin1Char(';');
+#else
+	auto sep = QLatin1Char(':');
+#endif
+	QStringList filenames = tagSpec.split(sep);
 
 	for (const QString &filename : filenames) {
 		if (QFileInfo(filename).isAbsolute() || filename.startsWith(QLatin1Char('~'))) {
@@ -899,11 +904,13 @@ bool addTagsFile(const QString &tagSpec, SearchMode mode) {
 		return false;
 	}
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
-	QStringList filenames = tagSpec.split(QDir::listSeparator());
+#ifdef Q_OS_WIN
+	auto sep = QLatin1Char(';');
 #else
-	QStringList filenames = tagSpec.split(QLatin1Char(':'));
+	auto sep = QLatin1Char(':');
 #endif
+	QStringList filenames = tagSpec.split(sep);
+
 	for (const QString &filename : filenames) {
 
 		QString pathName;
@@ -969,11 +976,14 @@ bool deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload) 
 	std::deque<File> *const FileList = tagListByType(searchMode);
 
 	bool removed = true;
-#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
-	QStringList filenames = tagSpec.split(QDir::listSeparator());
+
+#ifdef Q_OS_WIN
+	auto sep = QLatin1Char(';');
 #else
-	QStringList filenames = tagSpec.split(QLatin1Char(':'));
+	auto sep = QLatin1Char(':');
 #endif
+	QStringList filenames = tagSpec.split(sep);
+
 	for (const QString &filename : filenames) {
 
 		QString pathName;
