@@ -30,6 +30,7 @@ public:
 protected:
 	void keyPressEvent(QKeyEvent *event) override;
 	void showEvent(QShowEvent *event) override;
+	bool eventFilter(QObject *obj, QEvent *ev) override;
 
 public:
 	void initToggleButtons(SearchType searchType);

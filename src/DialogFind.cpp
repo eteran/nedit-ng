@@ -24,6 +24,8 @@ DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowF
 	ui.setupUi(this);
 	connectSlots();
 
+	ui.textFind->installEventFilter(this);
+
 	QTimer::singleShot(0, this, [this]() {
 		resize(0, 0);
 	});
@@ -50,11 +52,74 @@ void DialogFind::showEvent(QShowEvent *event) {
 }
 
 /**
+ * @brief DialogFind::eventFilter
+ * @param obj
+ * @param ev
+ * @return
+ */
+bool DialogFind::eventFilter(QObject *obj, QEvent *ev) {
+	if(obj == ui.textFind) {
+		if(ev->type() == QEvent::KeyPress) {
+			auto event = static_cast<QKeyEvent *>(ev);
+
+			int index = window_->fHistIndex_;
+
+			printf("HERE: %d\n", event->key());
+			fflush(stdout);
+
+			// only process up and down arrow keys
+			if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
+				return Dialog::eventFilter(obj, event);
+			}
+
+			// increment or decrement the index depending on which arrow was pressed
+			index += (event->key() == Qt::Key_Up) ? 1 : -1;
+
+			// if the index is out of range, beep and return
+			if (index != 0 && Search::historyIndex(index) == -1) {
+				QApplication::beep();
+				return true;
+			}
+
+			// determine the strings and button settings to use
+			QString searchStr;
+			SearchType searchType;
+			if (index == 0) {
+				searchStr  = QString();
+				searchType = Preferences::GetPrefSearch();
+			} else {
+				const Search::HistoryEntry *entry = Search::HistoryByIndex(index);
+				Q_ASSERT(entry);
+				searchStr  = entry->search;
+				searchType = entry->type;
+			}
+
+			// Set the buttons and fields with the selected search type
+			initToggleButtons(searchType);
+
+			ui.textFind->setText(searchStr);
+
+			// Set the state of the Find ... button
+			updateFindButton();
+
+			window_->fHistIndex_ = index;
+
+			return true;
+		} else {
+			return false;
+		}
+	} else {
+		return Dialog::eventFilter(obj, ev);
+	}
+}
+
+
+/**
  * @brief DialogFind::keyPressEvent
  * @param event
  */
 void DialogFind::keyPressEvent(QKeyEvent *event) {
-
+#if 0
 	if (ui.textFind->hasFocus()) {
 		int index = window_->fHistIndex_;
 
@@ -96,7 +161,7 @@ void DialogFind::keyPressEvent(QKeyEvent *event) {
 
 		window_->fHistIndex_ = index;
 	}
-
+#endif
 	QDialog::keyPressEvent(event);
 }
 
