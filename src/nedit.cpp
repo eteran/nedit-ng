@@ -3,6 +3,7 @@
 #include "DialogAbout.h"
 #include "Main.h"
 
+#include <QStyleFactory>
 #include <QApplication>
 #include <QLibraryInfo>
 #include <QStringList>
@@ -117,6 +118,10 @@ int main(int argc, char *argv[]) {
 		arguments.insert(1, QLatin1String("-geometry"));
 		arguments.insert(2, geometry);
 	}
+
+#ifdef Q_OS_MACOS
+	qApp->setStyle(QStyleFactory::create(QLatin1String("fusion")));
+#endif
 
 	// Light/Dark icons on all platforms
 	if (qApp->palette().window().color().lightnessF() >= 0.5) {

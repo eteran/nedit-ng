@@ -1363,6 +1363,11 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 						if (!menuData.item.shortcut.isEmpty()) {
 							action->setShortcut(menuData.item.shortcut);
 						}
+
+						// if this action REQUIRES a selection, default to disabled
+						if (menuData.item.input == InSrcs::FROM_SELECTION) {
+							action->setEnabled(false);
+						}
 					}
 				} else {
 					QAction *action = parentMenu->addAction(name);
@@ -1370,6 +1375,11 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 
 					if (!menuData.item.shortcut.isEmpty()) {
 						action->setShortcut(menuData.item.shortcut);
+					}
+
+					// if this action REQUIRES a selection, default to disabled
+					if (menuData.item.input == InSrcs::FROM_SELECTION) {
+						action->setEnabled(false);
 					}
 				}
 				break;
@@ -5952,6 +5962,12 @@ void MainWindow::action_Detach_Document(DocumentWidget *document) {
 
 		new_window->parseGeometry(QString());
 		new_window->show();
+
+		// NOTE(eteran): this needs to be AFTER we show the window
+		// because internally, it only includes visible windows
+		// Perhaps, we should support an "ALL" flag that can be
+		// propagated down
+		updateWindowMenus();
 	}
 }
 

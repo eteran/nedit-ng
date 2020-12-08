@@ -1534,13 +1534,15 @@ void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<M
 			if (QMenu *subMenu = action->menu()) {
 				updateSelectionSensitiveMenu(subMenu, menuList, enabled);
 			} else {
-				size_t index = action->data().toUInt();
-				if (index >= menuList.size()) {
-					return;
-				}
+				if (action->data().isValid()) {
+					size_t index = action->data().toUInt();
+					if (index >= menuList.size()) {
+						return;
+					}
 
-				if (menuList[index].item.input == FROM_SELECTION) {
-					action->setEnabled(enabled);
+					if (menuList[index].item.input == FROM_SELECTION) {
+						action->setEnabled(enabled);
+					}
 				}
 			}
 		}
@@ -7109,13 +7111,13 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 
 				if (!Tags::tagSearch[i].isEmpty() && (Tags::tagPosInf[i] != -1)) {
 					// etags
-					temp = QString::asprintf("%2d. %s%s %8li %s", i + 1, qPrintable(fi.pathname), qPrintable(fi.filename), Tags::tagPosInf[i], qPrintable(Tags::tagSearch[i]));
+					temp = QString::asprintf("%2d. %s%s %8lli %s", i + 1, qPrintable(fi.pathname), qPrintable(fi.filename), static_cast<long long>(Tags::tagPosInf[i]), qPrintable(Tags::tagSearch[i]));
 				} else if (!Tags::tagSearch[i].isEmpty()) {
 					// ctags search expr
 					temp = QString::asprintf("%2d. %s%s          %s", i + 1, qPrintable(fi.pathname), qPrintable(fi.filename), qPrintable(Tags::tagSearch[i]));
 				} else {
 					// line number only
-					temp = QString::asprintf("%2d. %s%s %8li", i + 1, qPrintable(fi.pathname), qPrintable(fi.filename), Tags::tagPosInf[i]);
+					temp = QString::asprintf("%2d. %s%s %8lli", i + 1, qPrintable(fi.pathname), qPrintable(fi.filename), static_cast<long long>(Tags::tagPosInf[i]));
 				}
 			} else {
 				temp = QString::asprintf("%2d. %s%s", i + 1, qPrintable(fi.pathname), qPrintable(fi.filename));
