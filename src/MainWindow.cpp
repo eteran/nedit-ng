@@ -5962,6 +5962,12 @@ void MainWindow::action_Detach_Document(DocumentWidget *document) {
 
 		new_window->parseGeometry(QString());
 		new_window->show();
+
+		// NOTE(eteran): this needs to be AFTER we show the window
+		// because internally, it only includes visible windows
+		// Perhaps, we should support an "ALL" flag that can be
+		// propagated down
+		updateWindowMenus();
 	}
 }
 
