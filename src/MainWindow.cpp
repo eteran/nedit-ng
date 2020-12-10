@@ -7306,9 +7306,15 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
  * @param document
  */
 void MainWindow::updateWindowHints(DocumentWidget *document) {
+	Q_UNUSED(document);
+	// NOTE(eteran): I'm not against supporting this, but it breaks being able to resize
+	// the font nicely, at least in my WM... so NERFing this code until I can figure out
+	// a nice way to handle it.	
+#if 0
 	QFontMetrics fm(document->defaultFont());
 	QSize increment(fm.averageCharWidth(), fm.height());
 	setSizeIncrement(increment);
+#endif
 }
 
 /*
