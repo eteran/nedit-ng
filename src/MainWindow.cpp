@@ -5968,6 +5968,13 @@ void MainWindow::action_Detach_Document(DocumentWidget *document) {
 		// Perhaps, we should support an "ALL" flag that can be
 		// propagated down
 		updateWindowMenus();
+
+		// NOTE(eteran): fix for issue #194
+		for (MainWindow *window : MainWindow::allWindows()) {
+			window->updateTagsFileMenu();
+			window->updateTipsFileMenu();
+		}
+		MainWindow::updateMenuItems();
 	}
 }
 
