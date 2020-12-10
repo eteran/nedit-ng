@@ -59,9 +59,8 @@ private:
 	QTabWidget *tabWidget() const;
 
 private:
-	void keyPressEvent(QKeyEvent *event) override;
 	void closeEvent(QCloseEvent *event) override;
-	bool eventFilter(QObject *object, QEvent *event) override;
+	bool eventFilter(QObject *object, QEvent *ev) override;
 
 public:
 	bool checkPrefsChangesSaved();

@@ -3,10 +3,10 @@
 #include "DialogAbout.h"
 #include "Main.h"
 
-#include <QStyleFactory>
 #include <QApplication>
 #include <QLibraryInfo>
 #include <QStringList>
+#include <QStyleFactory>
 #include <QTranslator>
 
 bool IsServer = false;

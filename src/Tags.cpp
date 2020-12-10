@@ -91,7 +91,7 @@ QString rstrip(QString s) {
 
 QList<Tag> getTagFromTable(QMultiHash<QString, Tag> &table, const QString &name) {
 	auto tags = table.values(name);
-	tags = getUniqueTags(tags);
+	tags      = getUniqueTags(tags);
 	return tags;
 }
 
