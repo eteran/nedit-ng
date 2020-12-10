@@ -125,6 +125,12 @@ void DialogReplace::showEvent(QShowEvent *event) {
 	ui.textFind->setFocus();
 }
 
+/**
+ * @brief DialogReplace::eventFilter
+ * @param obj
+ * @param ev
+ * @return
+ */
 bool DialogReplace::eventFilter(QObject *obj, QEvent *ev) {
 
 	if (obj == ui.textFind) {
@@ -135,7 +141,7 @@ bool DialogReplace::eventFilter(QObject *obj, QEvent *ev) {
 
 			// only process up and down arrow keys
 			if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
-				return Dialog::eventFilter(obj, event);
+				return false;
 			}
 
 			// increment or decrement the index depending on which arrow was pressed
@@ -187,7 +193,7 @@ bool DialogReplace::eventFilter(QObject *obj, QEvent *ev) {
 
 			// only process up and down arrow keys
 			if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
-				return Dialog::eventFilter(obj, event);
+				return false;
 			}
 
 			// increment or decrement the index depending on which arrow was pressed
@@ -212,7 +218,7 @@ bool DialogReplace::eventFilter(QObject *obj, QEvent *ev) {
 			return false;
 		}
 	} else {
-		return Dialog::eventFilter(obj, ev);
+		return false;
 	}
 }
 
