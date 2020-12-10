@@ -174,18 +174,20 @@ bool delTag(int index) {
 */
 int scanCTagsLine(const QString &line, const QString &tagPath, int index) {
 
-	QRegExp regex(QLatin1String(R"(^([^\t]+)\t([^\t]+)\t([^\n]+)$)"));
-	if (!regex.exactMatch(line)) {
+	static const auto regex = QRegularExpression(QLatin1String(R"(^([^\t]+)\t([^\t]+)\t([^\n]+)$)"));
+
+	QRegularExpressionMatch match = regex.match(line);
+	if (!match.hasMatch()) {
 		return 0;
 	}
 
-	if (regex.captureCount() != 3) {
+	if (match.lastCapturedIndex() != 3) {
 		return 0;
 	}
 
-	QString name         = regex.cap(1);
-	QString file         = regex.cap(2);
-	QString searchString = regex.cap(3);
+	QString name         = match.captured(1);
+	QString file         = match.captured(2);
+	QString searchString = match.captured(3);
 
 	if (name.startsWith(QLatin1Char('!'))) {
 		return 0;
