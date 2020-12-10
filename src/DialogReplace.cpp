@@ -1,6 +1,6 @@
 
-#include "DialogMultiReplace.h"
 #include "DialogReplace.h"
+#include "DialogMultiReplace.h"
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "Preferences.h"
@@ -133,93 +133,86 @@ void DialogReplace::showEvent(QShowEvent *event) {
  */
 bool DialogReplace::eventFilter(QObject *obj, QEvent *ev) {
 
-	if (obj == ui.textFind) {
-		if (ev->type() == QEvent::KeyPress) {
-			auto event = static_cast<QKeyEvent *>(ev);
+	if (obj == ui.textFind && ev->type() == QEvent::KeyPress) {
+		auto event = static_cast<QKeyEvent *>(ev);
 
-			int index = window_->rHistIndex_;
+		int index = window_->rHistIndex_;
 
-			// only process up and down arrow keys
-			if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
-				return false;
-			}
-
-			// increment or decrement the index depending on which arrow was pressed
-			index += (event->key() == Qt::Key_Up) ? 1 : -1;
-
-			// if the index is out of range, beep and return
-			if (index != 0 && Search::historyIndex(index) == -1) {
-				QApplication::beep();
-				return true;
-			}
-
-			// determine the strings and button settings to use
-			QString searchStr;
-			QString replaceStr;
-			SearchType searchType;
-			if (index == 0) {
-				searchStr  = QString();
-				replaceStr = QString();
-				searchType = Preferences::GetPrefSearch();
-			} else {
-				const Search::HistoryEntry *entry = Search::HistoryByIndex(index);
-				Q_ASSERT(entry);
-
-				searchStr  = entry->search;
-				replaceStr = entry->replace;
-				searchType = entry->type;
-			}
-
-			// Set the buttons and fields with the selected search type
-			initToggleButtons(searchType);
-
-			ui.textFind->setText(searchStr);
-			ui.textReplace->setText(replaceStr);
-
-			// Set the state of the Find ... button
-			updateFindButton();
-
-			window_->rHistIndex_ = index;
-
-			return true;
-		} else {
+		// only process up and down arrow keys
+		if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
 			return false;
 		}
-	} else if (obj == ui.textReplace) {
 
-		if (ev->type() == QEvent::KeyPress) {
-			auto event = static_cast<QKeyEvent *>(ev);
-			int index  = window_->rHistIndex_;
+		// increment or decrement the index depending on which arrow was pressed
+		index += (event->key() == Qt::Key_Up) ? 1 : -1;
 
-			// only process up and down arrow keys
-			if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
-				return false;
-			}
-
-			// increment or decrement the index depending on which arrow was pressed
-			index += (event->key() == Qt::Key_Up) ? 1 : -1;
-
-			// if the index is out of range, beep and return
-			if (index != 0 && Search::historyIndex(index) == -1) {
-				QApplication::beep();
-				return true;
-			}
-
-			// change only the replace field information
-			if (index == 0) {
-				ui.textReplace->setText(QString());
-			} else {
-				ui.textReplace->setText(Search::HistoryByIndex(index)->replace);
-			}
-
-			window_->rHistIndex_ = index;
+		// if the index is out of range, beep and return
+		if (index != 0 && Search::historyIndex(index) == -1) {
+			QApplication::beep();
 			return true;
-		} else {
-			return false;
 		}
-	} else {
-		return false;
+
+		// determine the strings and button settings to use
+		QString searchStr;
+		QString replaceStr;
+		SearchType searchType;
+		if (index == 0) {
+			searchStr  = QString();
+			replaceStr = QString();
+			searchType = Preferences::GetPrefSearch();
+		} else {
+			const Search::HistoryEntry *entry = Search::HistoryByIndex(index);
+			Q_ASSERT(entry);
+
+			searchStr  = entry->search;
+			replaceStr = entry->replace;
+			searchType = entry->type;
+		}
+
+		// Set the buttons and fields with the selected search type
+		initToggleButtons(searchType);
+
+		ui.textFind->setText(searchStr);
+		ui.textReplace->setText(replaceStr);
+
+		// Set the state of the Find ... button
+		updateFindButton();
+
+		window_->rHistIndex_ = index;
+
+		return true;
 	}
+
+	if (obj == ui.textReplace && ev->type() == QEvent::KeyPress) {
+		auto event = static_cast<QKeyEvent *>(ev);
+		int index  = window_->rHistIndex_;
+
+		// only process up and down arrow keys
+		if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
+			return false;
+		}
+
+		// increment or decrement the index depending on which arrow was pressed
+		index += (event->key() == Qt::Key_Up) ? 1 : -1;
+
+		// if the index is out of range, beep and return
+		if (index != 0 && Search::historyIndex(index) == -1) {
+			QApplication::beep();
+			return true;
+		}
+
+		// change only the replace field information
+		if (index == 0) {
+			ui.textReplace->setText(QString());
+		} else {
+			ui.textReplace->setText(Search::HistoryByIndex(index)->replace);
+		}
+
+		window_->rHistIndex_ = index;
+		return true;
+	}
+
+	return false;
 }
 
 /**

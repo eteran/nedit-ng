@@ -474,6 +474,7 @@ void MainWindow::setupTabBar() {
 	ui.tabWidget->setTabsClosable(true);
 #endif
 	ui.tabWidget->tabBar()->installEventFilter(this);
+	ui.editIFind->installEventFilter(this);
 }
 
 /**
@@ -2842,58 +2843,6 @@ void MainWindow::editIFind_returnPressed() {
 	if (DocumentWidget *document = currentDocument()) {
 		action_Find(document, searchString, direction, searchType, Preferences::GetPrefSearchWraps());
 	}
-}
-
-/**
- * @brief MainWindow::keyPressEvent
- * @param event
- */
-void MainWindow::keyPressEvent(QKeyEvent *event) {
-
-	// only process up and down arrow keys
-	if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down && event->key() != Qt::Key_Escape) {
-		QMainWindow::keyPressEvent(event);
-		return;
-	}
-
-	int index = iSearchHistIndex_;
-
-	// allow escape key to cancel search
-	if (event->key() == Qt::Key_Escape) {
-		endISearch();
-		return;
-	}
-
-	// increment or decrement the index depending on which arrow was pressed
-	index += (event->key() == Qt::Key_Up) ? 1 : -1;
-
-	// if the index is out of range, beep and return
-	if (index != 0 && Search::historyIndex(index) == -1) {
-		QApplication::beep();
-		return;
-	}
-
-	QString searchStr;
-	SearchType searchType;
-
-	// determine the strings and button settings to use
-	if (index == 0) {
-		searchStr  = QString();
-		searchType = Preferences::GetPrefSearch();
-	} else {
-		const Search::HistoryEntry *entry = Search::HistoryByIndex(index);
-		Q_ASSERT(entry);
-		searchStr  = entry->search;
-		searchType = entry->type;
-	}
-
-	iSearchHistIndex_ = index;
-	initToggleButtonsiSearch(searchType);
-
-	// Beware the value changed callback is processed as part of this call
-	int previousPosition = ui.editIFind->cursorPosition();
-	ui.editIFind->setText(searchStr);
-	ui.editIFind->setCursorPosition(previousPosition);
 }
 
 /*
@@ -5451,45 +5400,96 @@ void MainWindow::action_Help_triggered() {
  * @param event
  * @return
  */
-bool MainWindow::eventFilter(QObject *object, QEvent *event) {
+bool MainWindow::eventFilter(QObject *object, QEvent *ev) {
 
-	if (auto tabBar = qobject_cast<QTabBar *>(object)) {
-		if (event->type() == QEvent::ToolTip) {
-			if (Preferences::GetPrefToolTips()) {
+	if (object == ui.editIFind && ev->type() == QEvent::KeyPress) {
 
-				int index = tabBar->tabAt(static_cast<QHelpEvent *>(event)->pos());
-				if (index != -1) {
+		auto event = static_cast<QKeyEvent *>(ev);
 
-					if (DocumentWidget *document = documentAt(index)) {
+		// only process up and down arrow keys
+		if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down && event->key() != Qt::Key_Escape) {
+			return false;
+		}
 
-						QString labelString;
-						QString filename = document->filename();
+		int index = iSearchHistIndex_;
 
-						/* Set tab label to document's filename. Position of "*" (modified)
-						 * will change per label alignment setting */
-						QStyle *const style = ui.tabWidget->tabBar()->style();
-						const int alignment = style->styleHint(QStyle::SH_TabBar_Alignment);
-
-						if (alignment != Qt::AlignRight) {
-							labelString = tr("%1%2").arg(document->fileChanged() ? tr("*") : QString(), filename);
-						} else {
-							labelString = tr("%2%1").arg(document->fileChanged() ? tr("*") : QString(), filename);
-						}
-
-						QString tipString;
-						if (Preferences::GetPrefShowPathInWindowsMenu() && document->filenameSet()) {
-							tipString = tr("%1 - %2").arg(labelString, document->path());
-						} else {
-							tipString = labelString;
-						}
-
-						QToolTip::showText(static_cast<QHelpEvent *>(event)->globalPos(), tipString, this);
-					}
-				}
-			}
+		// allow escape key to cancel search
+		if (event->key() == Qt::Key_Escape) {
+			endISearch();
 			return true;
 		}
+
+		// increment or decrement the index depending on which arrow was pressed
+		index += (event->key() == Qt::Key_Up) ? 1 : -1;
+
+		// if the index is out of range, beep and return
+		if (index != 0 && Search::historyIndex(index) == -1) {
+			QApplication::beep();
+			return true;
+		}
+
+		QString searchStr;
+		SearchType searchType;
+
+		// determine the strings and button settings to use
+		if (index == 0) {
+			searchStr  = QString();
+			searchType = Preferences::GetPrefSearch();
+		} else {
+			const Search::HistoryEntry *entry = Search::HistoryByIndex(index);
+			Q_ASSERT(entry);
+			searchStr  = entry->search;
+			searchType = entry->type;
+		}
+
+		iSearchHistIndex_ = index;
+		initToggleButtonsiSearch(searchType);
+
+		// Beware the value changed callback is processed as part of this call
+		int previousPosition = ui.editIFind->cursorPosition();
+		ui.editIFind->setText(searchStr);
+		ui.editIFind->setCursorPosition(previousPosition);
+		return true;
 	}
+
+	if (object == ui.tabWidget->tabBar() && ev->type() == QEvent::ToolTip) {
+		if (Preferences::GetPrefToolTips()) {
+			auto event  = static_cast<QHelpEvent *>(ev);
+			auto tabBar = ui.tabWidget->tabBar();
+
+			int index = tabBar->tabAt(static_cast<QHelpEvent *>(event)->pos());
+			if (index != -1) {
+
+				if (DocumentWidget *document = documentAt(index)) {
+
+					QString labelString;
+					QString filename = document->filename();
+
+					/* Set tab label to document's filename. Position of "*" (modified)
+					 * will change per label alignment setting */
+					QStyle *const style = ui.tabWidget->tabBar()->style();
+					const int alignment = style->styleHint(QStyle::SH_TabBar_Alignment);
+
+					if (alignment != Qt::AlignRight) {
+						labelString = tr("%1%2").arg(document->fileChanged() ? tr("*") : QString(), filename);
+					} else {
+						labelString = tr("%2%1").arg(document->fileChanged() ? tr("*") : QString(), filename);
+					}
+
+					QString tipString;
+					if (Preferences::GetPrefShowPathInWindowsMenu() && document->filenameSet()) {
+						tipString = tr("%1 - %2").arg(labelString, document->path());
+					} else {
+						tipString = labelString;
+					}
+
+					QToolTip::showText(static_cast<QHelpEvent *>(event)->globalPos(), tipString, this);
+				}
+			}
+		}
+		return true;
+	}
+
 	return false;
 }
 
@@ -7316,7 +7316,7 @@ void MainWindow::updateWindowHints(DocumentWidget *document) {
 	Q_UNUSED(document);
 	// NOTE(eteran): I'm not against supporting this, but it breaks being able to resize
 	// the font nicely, at least in my WM... so NERFing this code until I can figure out
-	// a nice way to handle it.	
+	// a nice way to handle it.
 #if 0
 	QFontMetrics fm(document->defaultFont());
 	QSize increment(fm.averageCharWidth(), fm.height());

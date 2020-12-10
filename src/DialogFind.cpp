@@ -58,56 +58,52 @@ void DialogFind::showEvent(QShowEvent *event) {
  * @return
  */
 bool DialogFind::eventFilter(QObject *obj, QEvent *ev) {
-	if (obj == ui.textFind) {
-		if (ev->type() == QEvent::KeyPress) {
-			auto event = static_cast<QKeyEvent *>(ev);
+	if (obj == ui.textFind && ev->type() == QEvent::KeyPress) {
+		auto event = static_cast<QKeyEvent *>(ev);
 
-			int index = window_->fHistIndex_;
+		int index = window_->fHistIndex_;
 
-			// only process up and down arrow keys
-			if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
-				return false;
-			}
-
-			// increment or decrement the index depending on which arrow was pressed
-			index += (event->key() == Qt::Key_Up) ? 1 : -1;
-
-			// if the index is out of range, beep and return
-			if (index != 0 && Search::historyIndex(index) == -1) {
-				QApplication::beep();
-				return true;
-			}
-
-			// determine the strings and button settings to use
-			QString searchStr;
-			SearchType searchType;
-			if (index == 0) {
-				searchStr  = QString();
-				searchType = Preferences::GetPrefSearch();
-			} else {
-				const Search::HistoryEntry *entry = Search::HistoryByIndex(index);
-				Q_ASSERT(entry);
-				searchStr  = entry->search;
-				searchType = entry->type;
-			}
-
-			// Set the buttons and fields with the selected search type
-			initToggleButtons(searchType);
-
-			ui.textFind->setText(searchStr);
-
-			// Set the state of the Find ... button
-			updateFindButton();
-
-			window_->fHistIndex_ = index;
-
-			return true;
-		} else {
+		// only process up and down arrow keys
+		if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
 			return false;
 		}
-	} else {
-		return false;
+
+		// increment or decrement the index depending on which arrow was pressed
+		index += (event->key() == Qt::Key_Up) ? 1 : -1;
+
+		// if the index is out of range, beep and return
+		if (index != 0 && Search::historyIndex(index) == -1) {
+			QApplication::beep();
+			return true;
+		}
+
+		// determine the strings and button settings to use
+		QString searchStr;
+		SearchType searchType;
+		if (index == 0) {
+			searchStr  = QString();
+			searchType = Preferences::GetPrefSearch();
+		} else {
+			const Search::HistoryEntry *entry = Search::HistoryByIndex(index);
+			Q_ASSERT(entry);
+			searchStr  = entry->search;
+			searchType = entry->type;
+		}
+
+		// Set the buttons and fields with the selected search type
+		initToggleButtons(searchType);
+
+		ui.textFind->setText(searchStr);
+
+		// Set the state of the Find ... button
+		updateFindButton();
+
+		window_->fHistIndex_ = index;
+
+		return true;
 	}
+
+	return false;
 }
 
 /**
