@@ -19,6 +19,9 @@ DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::Window
 	});
 
 	ui.lineEdit->setValidator(new QIntValidator(0, INT_MAX, this));
+
+	const QString replayMacro = CommandRecorder::instance()->replayMacro();
+	ui.radioLearnReplay->setEnabled(!replayMacro.isEmpty());
 }
 
 void DialogRepeat::connectSlots() {
