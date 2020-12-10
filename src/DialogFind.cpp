@@ -66,7 +66,7 @@ bool DialogFind::eventFilter(QObject *obj, QEvent *ev) {
 
 			// only process up and down arrow keys
 			if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
-				return Dialog::eventFilter(obj, event);
+				return false;
 			}
 
 			// increment or decrement the index depending on which arrow was pressed
@@ -106,7 +106,7 @@ bool DialogFind::eventFilter(QObject *obj, QEvent *ev) {
 			return false;
 		}
 	} else {
-		return Dialog::eventFilter(obj, ev);
+		return false;
 	}
 }
 
