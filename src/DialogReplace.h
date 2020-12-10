@@ -32,8 +32,8 @@ public:
 	~DialogReplace() override = default;
 
 protected:
-	void keyPressEvent(QKeyEvent *event) override;
 	void showEvent(QShowEvent *event) override;
+	bool eventFilter(QObject *obj, QEvent *ev) override;
 
 public:
 	bool keepDialog() const;
