@@ -39,8 +39,28 @@ if(Git_FOUND)
 		string(STRIP ${GIT_ERROR} GIT_ERROR)
 		message(STATUS "Git error: ${GIT_ERROR}")
 	else()
-		message(STATUS "Unable to extract nedit-ng branch info from git")
+		message(STATUS "Unable to extract nedit-ng commit id from git")
 	endif()
+
+
+        execute_process(
+                COMMAND git rev-parse --abbrev-ref HEAD
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                OUTPUT_VARIABLE GIT_OUTPUT
+                ERROR_VARIABLE GIT_ERROR
+                OUTPUT_STRIP_TRAILING_WHITESPACE
+                )
+
+        if(GIT_OUTPUT)
+                string(STRIP ${GIT_OUTPUT} NEDIT_BRANCH_GIT)
+                message(STATUS "NEDIT_BRANCH_GIT = \"${NEDIT_BRANCH_GIT}\"")
+        elseif(GIT_ERROR)
+                string(STRIP ${GIT_ERROR} GIT_ERROR)
+                message(STATUS "Git error: ${GIT_ERROR}")
+        else()
+                message(STATUS "Unable to extract nedit-ng branch name from git")
+        endif()
+
 
 else()
 	message(STATUS "Git is not installed")
