@@ -680,7 +680,7 @@ Symbol *InstallIteratorSymbol() {
 
 	static int interatorNameIndex = 0;
 
-	auto symbolName = QString(QLatin1String("aryiter %1")).arg(interatorNameIndex++);
+	auto symbolName = QStringLiteral("aryiter %1").arg(interatorNameIndex++);
 
 	return InstallSymbolEx(symbolName, LOCAL_SYM, make_value(ArrayIterator()));
 }
@@ -716,7 +716,7 @@ Symbol *InstallStringConstSymbol(view::string_view str) {
 		return sym;
 	}
 
-	auto stringName = QString(QLatin1String("string #%1")).arg(stringConstIndex++);
+	auto stringName = QStringLiteral("string #%1").arg(stringConstIndex++);
 
 	DataValue value = make_value(str);
 	return InstallSymbolEx(stringName, CONST_SYM, value);
