@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>334</width>
-    <height>129</height>
+    <height>157</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -40,6 +40,13 @@
        <widget class="QComboBox" name="fontSize"/>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="checkApplyAll">
+     <property name="text">
+      <string>Apply to all documents</string>
+     </property>
     </widget>
    </item>
    <item>
