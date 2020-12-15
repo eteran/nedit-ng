@@ -78,6 +78,11 @@ void DialogFonts::updateFont() {
 
 	if (document_) {
 		document_->action_Set_Fonts(fontName);
+		if(ui.checkApplyAll->isChecked()) {
+			for(DocumentWidget *document : DocumentWidget::allDocuments()) {
+				document->action_Set_Fonts(fontName);
+			}
+		}
 	} else {
 		Preferences::SetPrefFont(fontName);
 	}
