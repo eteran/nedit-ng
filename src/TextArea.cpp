@@ -510,7 +510,6 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
 
 	setWordDelimiters(Preferences::GetPrefDelimiters().toStdString());
 
-	cursorBlinkRate_         = QApplication::cursorFlashTime() / 2;
 	showTerminalSizeHint_    = Preferences::GetPrefShowResizeNotification();
 	colorizeHighlightedText_ = Preferences::GetPrefColorizeHighlightedText();
 	autoWrapPastedText_      = Preferences::GetPrefAutoWrapPastedText();
@@ -524,6 +523,8 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
 	overstrike_              = document->overstrike();
 	hidePointer_             = Preferences::GetPrefTypingHidesPointer();
 	smartHome_               = Preferences::GetPrefSmartHome();
+
+	cursorBlinkTimer_->setInterval(QApplication::cursorFlashTime() / 2);
 
 	updateFontMetrics(font);
 
@@ -1060,7 +1061,7 @@ void TextArea::focusInEvent(QFocusEvent *event) {
 
 	// If the timer is not already started, start it
 	if (!cursorBlinkTimer_->isActive()) {
-		cursorBlinkTimer_->start(cursorBlinkRate_);
+		cursorBlinkTimer_->start();
 	}
 
 	// Change the cursor to active style
