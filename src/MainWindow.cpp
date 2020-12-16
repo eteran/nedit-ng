@@ -7143,7 +7143,7 @@ void MainWindow::updateMenuItems() {
 	const bool tipStat = !Tags::TipsFileList.empty();
 	const bool tagStat = !Tags::TagsFileList.empty();
 
-	for (MainWindow *window : MainWindow::allWindows()) {
+	for (MainWindow *window : MainWindow::allWindows(true)) {
 		window->ui.action_Unload_Calltips_File->setEnabled(tipStat);
 		window->ui.action_Unload_Tags_File->setEnabled(tagStat);
 		window->ui.action_Show_Calltip->setEnabled(tipStat || tagStat);
