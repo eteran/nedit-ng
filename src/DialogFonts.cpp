@@ -39,6 +39,10 @@ DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFl
 	if (n != -1) {
 		ui.fontSize->setCurrentIndex(n);
 	}
+
+	if (!document) {
+		ui.checkApplyAll->setVisible(false);
+	}
 }
 
 void DialogFonts::connectSlots() {
