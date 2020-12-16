@@ -43,10 +43,10 @@ QString DialogAbout::createInfoString() {
 	QString gitExtra;
 
 #ifdef NEDIT_BRANCH_GIT
-	 gitExtra += tr("   Git branch: %1\n").arg(QLatin1String(NEDIT_BRANCH_GIT));
+	gitExtra += tr("   Git branch: %1\n").arg(QLatin1String(NEDIT_BRANCH_GIT));
 #endif
 #ifdef NEDIT_COMMIT_GIT
-	 gitExtra += tr("   Git commit: %1\n").arg(QLatin1String(NEDIT_COMMIT_GIT));
+	gitExtra += tr("   Git commit: %1\n").arg(QLatin1String(NEDIT_COMMIT_GIT));
 #endif
 
 	return tr("nedit-ng version %1\n"
