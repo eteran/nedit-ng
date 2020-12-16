@@ -425,7 +425,6 @@ private:
 	bool readOnly_;
 	bool smartIndent_;
 	bool smartHome_;
-	int cursorBlinkRate_;
 	int cursorVPadding_;
 	int emulateTabs_;
 	int fixedFontWidth_; // Font width if all current fonts are fixed and match in width
