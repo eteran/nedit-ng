@@ -1992,6 +1992,8 @@ void MainWindow::updatePrevOpenMenu() {
 	for (int i = count; i < previousOpenFilesList_.size(); ++i) {
 		previousOpenFilesList_[i]->setVisible(false);
 	}
+
+	ui.action_Open_Previous->setEnabled(count != 0);
 }
 
 /**
