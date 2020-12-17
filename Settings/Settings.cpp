@@ -5,6 +5,7 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QtDebug>
+#include <QtGlobal>
 #include <random>
 
 namespace Settings {
@@ -136,12 +137,27 @@ QStringList includePaths;
 QFont font;
 
 /**
+ * @brief configDirectory
+ * @return
+ */
+QString configDirectory() {
+	static const QByteArray nedit_home = qgetenv("NEDIT_NG_HOME");
+	if (!nedit_home.isEmpty()) {
+		return QString::fromLocal8Bit(nedit_home);
+	}
+
+	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
+	static const auto filename     = tr("%1/%2").arg(configDir, tr("nedit-ng"));
+	return filename;
+}
+
+/**
  * @brief themeFile
  * @return
  */
 QString themeFile() {
-	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto filename     = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("theme.xml"));
+	static const QString configDir = configDirectory();
+	static const auto filename     = tr("%1/%2").arg(configDir, tr("theme.xml"));
 	return filename;
 }
 
@@ -150,8 +166,8 @@ QString themeFile() {
  * @return
  */
 QString configFile() {
-	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto filename     = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("config.ini"));
+	static const QString configDir = configDirectory();
+	static const auto filename     = tr("%1/%2").arg(configDir, tr("config.ini"));
 	return filename;
 }
 
@@ -160,8 +176,8 @@ QString configFile() {
  * @return
  */
 QString historyFile() {
-	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto filename     = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("history"));
+	static const QString configDir = configDirectory();
+	static const auto filename     = tr("%1/%2").arg(configDir, tr("history"));
 	return filename;
 }
 
@@ -170,8 +186,8 @@ QString historyFile() {
  * @return
  */
 QString autoLoadMacroFile() {
-	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto filename     = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("autoload.nm"));
+	static const QString configDir = configDirectory();
+	static const auto filename     = tr("%1/%2").arg(configDir, tr("autoload.nm"));
 	return filename;
 }
 
@@ -180,8 +196,8 @@ QString autoLoadMacroFile() {
  * @return
  */
 QString languageModeFile() {
-	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto filename     = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("languages.yaml"));
+	static const QString configDir = configDirectory();
+	static const auto filename     = tr("%1/%2").arg(configDir, tr("languages.yaml"));
 	return filename;
 }
 
@@ -190,8 +206,8 @@ QString languageModeFile() {
  * @return
  */
 QString macroMenuFile() {
-	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto filename     = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("macros.yaml"));
+	static const QString configDir = configDirectory();
+	static const auto filename     = tr("%1/%2").arg(configDir, tr("macros.yaml"));
 	return filename;
 }
 
@@ -200,8 +216,8 @@ QString macroMenuFile() {
  * @return
  */
 QString shellMenuFile() {
-	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto filename     = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("shell.yaml"));
+	static const QString configDir = configDirectory();
+	static const auto filename     = tr("%1/%2").arg(configDir, tr("shell.yaml"));
 	return filename;
 }
 
@@ -210,8 +226,8 @@ QString shellMenuFile() {
  * @return
  */
 QString contextMenuFile() {
-	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto filename     = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("context.yaml"));
+	static const QString configDir = configDirectory();
+	static const auto filename     = tr("%1/%2").arg(configDir, tr("context.yaml"));
 	return filename;
 }
 
@@ -220,8 +236,8 @@ QString contextMenuFile() {
  * @return
  */
 QString styleFile() {
-	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto filename     = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("style.qss"));
+	static const QString configDir = configDirectory();
+	static const auto filename     = tr("%1/%2").arg(configDir, tr("style.qss"));
 	return filename;
 }
 
@@ -230,8 +246,8 @@ QString styleFile() {
  * @return
  */
 QString highlightPatternsFile() {
-	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto filename     = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("patterns.yaml"));
+	static const QString configDir = configDirectory();
+	static const auto filename     = tr("%1/%2").arg(configDir, tr("patterns.yaml"));
 	return filename;
 }
 
@@ -240,8 +256,8 @@ QString highlightPatternsFile() {
  * @return
  */
 QString smartIndentFile() {
-	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto filename     = tr("%1/%2/%3").arg(configDir, tr("nedit-ng"), tr("indent.yaml"));
+	static const QString configDir = configDirectory();
+	static const auto filename     = tr("%1/%2").arg(configDir, tr("indent.yaml"));
 	return filename;
 }
 
