@@ -141,9 +141,9 @@ QFont font;
  * @return
  */
 QString configDirectory() {
-	static const QString nedit_home = qEnvironmentVariable("NEDIT_HOME");
+	static const QByteArray nedit_home = qgetenv("NEDIT_HOME");
 	if (!nedit_home.isEmpty()) {
-		return nedit_home;
+		return QString::fromLocal8Bit(nedit_home);
 	}
 
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
