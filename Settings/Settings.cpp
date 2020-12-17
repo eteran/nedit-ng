@@ -141,7 +141,7 @@ QFont font;
  * @return
  */
 QString configDirectory() {
-	static const QByteArray nedit_home = qgetenv("NEDIT_HOME");
+	static const QByteArray nedit_home = qgetenv("NEDIT_NG_HOME");
 	if (!nedit_home.isEmpty()) {
 		return QString::fromLocal8Bit(nedit_home);
 	}
