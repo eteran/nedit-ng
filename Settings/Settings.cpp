@@ -140,7 +140,7 @@ QFont font;
  * @return
  */
 QString configDirectory() {
-	QString nedit_home = qEnvironmentVariable("NEDIT_HOME");
+	static const QString nedit_home = qEnvironmentVariable("NEDIT_HOME");
 	if (!nedit_home.isEmpty()) {
 		return nedit_home;
 	}
