@@ -4525,6 +4525,7 @@ const SubRoutine MenuMacroSubrNames[] = {
 	{"open", menuEventSU<&MainWindow::action_Open>},
 	{"open_dialog", menuEventU<&MainWindow::action_Open>},
 	{"open_selected", menuEventU<&MainWindow::action_Open_Selected>},
+	{"open_copied", menuEventU<&MainWindow::action_Shift_Open_Selected>},
 	{"close", closeMS},
 	{"save", menuEventU<&MainWindow::action_Save>},
 	{"save_as", saveAsMS},

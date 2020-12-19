@@ -707,6 +707,7 @@ void MainWindow::setupMenuStrings() {
 	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I), this, [this]() { action_Shift_Find_Incremental(); });
 	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_R), this, [this]() { action_Shift_Replace(); });
 	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_M), this, [this]() { action_Shift_Goto_Matching(); });
+	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Y), this, [this]() { action_Shift_Open_Selected(); });
 
 	// This is an annoying solution... we can probably do better...
 	for (int key = Qt::Key_A; key <= Qt::Key_Z; ++key) {
@@ -2087,6 +2088,42 @@ void MainWindow::action_Open_Selected_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
 		action_Open_Selected(document);
 	}
+}
+
+/**
+ * @brief MainWindow::action_Shift_Open_Selected
+ */
+void MainWindow::action_Shift_Open_Selected() {
+	if (DocumentWidget *document = currentDocument()) {
+		action_Shift_Open_Selected(document);
+	}
+}
+
+/**
+ * @brief MainWindow::action_Shift_Open_Selected
+ * @param document
+ */
+void MainWindow::action_Shift_Open_Selected(DocumentWidget *document) {
+
+	emit_event("open_copied");
+
+	QString copied;
+
+	// Get the clipboard text, if there's nothing copied, do nothing
+	if (QApplication::clipboard()->supportsSelection()) {
+		const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Clipboard);
+		if (mimeData->hasText()) {
+			copied = mimeData->text();
+		}
+	}
+
+	if (!copied.isEmpty()) {
+		openFile(document, copied);
+	} else {
+		QApplication::beep();
+	}
+
+	MainWindow::checkCloseEnableState();
 }
 
 QFileInfoList MainWindow::openFileHelperSystem(DocumentWidget *document, const QRegularExpressionMatch &match, QString *searchPath, QString *searchName) const {
