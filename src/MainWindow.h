@@ -240,6 +240,7 @@ public:
 	void action_Unload_Tags_File(DocumentWidget *document, const QString &filename);
 	void action_Unload_Tips_File(DocumentWidget *document, const QString &filename);
 	void action_Upper_case(DocumentWidget *document);
+	void action_Shift_Open_Selected(DocumentWidget *document);
 
 	// has no visual shortcut at all
 	void action_Next_Document();
@@ -263,6 +264,7 @@ public:
 	void action_Shift_Right_Tabs();
 	void action_Shift_Find_Selection();
 	void action_Shift_Find_Incremental();
+	void action_Shift_Open_Selected();
 
 public:
 	// groups
