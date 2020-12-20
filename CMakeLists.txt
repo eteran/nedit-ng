@@ -13,19 +13,33 @@ include("EnableSTLDebug")
 include("Profiling")
 include("ProjectDefaults")
 
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A Qt port of the Nirvana Editor (NEdit)")
-set(CPACK_PACKAGE_CONTACT "evan.teran@gmail.com")
-set(CPACK_PACKAGE_VENDOR "Evan Teran")
+set(CPACK_PACKAGE_NAME "nedit-ng")
+set(CPACK_PACKAGE_CONTACT "Evan Teran <evan.teran@gmail.com>")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/README.md")
-set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE.md")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A Qt port of the Nirvana Editor (NEdit)")
+set(CPACK_PACKAGE_VENDOR "Evan Teran")
+set(CPACK_PACKAGE_VERSION "2020.1")
 set(CPACK_PACKAGE_VERSION_MAJOR "2020")
 set(CPACK_PACKAGE_VERSION_MINOR "1")
+
+set(CPACK_RPM_PACKAGE_LICENSE "GPL-2")
+set(CPACK_RPM_PACKAGE_GROUP "Applications/Editors")
+
+# build requirements...
+# set(CPACK_RPM_PACKAGE_REQUIRES "qt5-qtbase-devel, qt5-linguist, gcc, gcc-c++, boost-devel, cmake")
+set(CPACK_RPM_PACKAGE_REQUIRES "qt5-qtbase >= 5.6")
+
+set(CPACK_DEBIAN_PACKAGE_BUILD_DEPENDS "cmake (>= 3.0), qt5-default (>= 5.6), qtbase5-dev-tools (>= 5.6), qttools5-dev-tools (>= 5.6), qttools5-dev (>= 5.6), libboost-dev (>= 1.35), bison (>=3.0)")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5core5a (>= 5.6), libqt5gui5 (>= 5.6), libqt5network5 (>= 5.6), libqt5printsupport5 (>= 5.6), libqt5widgets5 (>= 5.6), libqt5xml5 (>= 5.6)")
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/eteran/nedit-ng")
 set(CPACK_DEBIAN_PACKAGE_SECTION "editors")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5core5a (>= 5.6), libqt5gui5 (>= 5.6), libqt5network5 (>= 5.6), libqt5printsupport5 (>= 5.6), libqt5widgets5 (>= 5.6), libqt5xml5 (>= 5.6)")
-set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
-include(CPack)
+set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 
+set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE.md")
+set(CPACK_STRIP_FILES "bin/nc-ng")
+set(CPACK_STRIP_FILES "bin/nedit-import")
+set(CPACK_STRIP_FILES "bin/nedit-ng")
+include(CPack)
 
 find_package(Boost 1.35 REQUIRED)
 
