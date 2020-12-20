@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(nedit CXX)
+project(nedit-ng CXX)
 
 enable_testing()
 
@@ -12,6 +12,20 @@ include("EnableSanitizers")
 include("EnableSTLDebug")
 include("Profiling")
 include("ProjectDefaults")
+
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A Qt port of the Nirvana Editor (NEdit)")
+set(CPACK_PACKAGE_CONTACT "evan.teran@gmail.com")
+set(CPACK_PACKAGE_VENDOR "Evan Teran")
+set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE.md")
+set(CPACK_PACKAGE_VERSION_MAJOR "2020")
+set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/eteran/nedit-ng")
+set(CPACK_DEBIAN_PACKAGE_SECTION "editors")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5core5a (>= 5.6), libqt5gui5 (>= 5.6), libqt5network5 (>= 5.6), libqt5printsupport5 (>= 5.6), libqt5widgets5 (>= 5.6), libqt5xml5 (>= 5.6)")
+set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}_${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}")
+include(CPack)
+
 
 find_package(Boost 1.35 REQUIRED)
 
