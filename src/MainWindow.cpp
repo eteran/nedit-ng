@@ -2110,11 +2110,9 @@ void MainWindow::action_Shift_Open_Selected(DocumentWidget *document) {
 	QString copied;
 
 	// Get the clipboard text, if there's nothing copied, do nothing
-	if (QApplication::clipboard()->supportsSelection()) {
-		const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Clipboard);
-		if (mimeData->hasText()) {
-			copied = mimeData->text();
-		}
+	const QMimeData *mimeData = QApplication::clipboard()->mimeData(QClipboard::Clipboard);
+	if (mimeData->hasText()) {
+		copied = mimeData->text();
 	}
 
 	if (!copied.isEmpty()) {
