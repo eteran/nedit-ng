@@ -1110,8 +1110,9 @@ void DocumentWidget::raiseFocusDocumentWindow(bool focus) {
 		win->showNormal();
 	}
 
+	win->raise();
+
 	if (focus) {
-		win->raise();
 		win->activateWindow();
 	}
 }
