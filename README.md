@@ -4,7 +4,7 @@
 [![Build Status](https://travis-ci.com/eteran/nedit-ng.svg?branch=master)](https://travis-ci.com/eteran/nedit-ng)
 [![License](https://img.shields.io/badge/license-GPL2-blue.svg)](https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html)
 
-nedit-ng is a Qt port of the Nirvana Editor (NEdit) version 5.6. It is intended
+nedit-ng is a Qt port of the [Nirvana Editor (NEdit)](https://sourceforge.net/projects/nedit/) version 5.6. It is intended
 to be a **drop in replacement** for nedit in every practical way, just as on 
 many systems `/usr/bin/vi` is now a symlink to `/usr/bin/vim`.
 
@@ -64,13 +64,14 @@ NEdit had extensive help texts, which have been carefully updated and made avail
   active developer community, making it significantly easier for contributions
   to be made by the open source community.
 
-Version 1.0's goal is to be a nearly 1:1 port of the original NEdit. Once that 
-is complete some post 1.0 goals are already planned:
+The goal of the initial release is to be a nearly 1:1 port of the original NEdit. 
+Now that we have achieved that goal. looking towards the future, some additional
+goals are:
 
-* Cross platform
-* Internationalization!
-* Python/LUA scripting support in addition to the built-in macro system
-* An improved preferences system
-* Extensibility though plugins
-* Sessions, meaning that you can save and restore an edit session (such as 
+- [x] Cross platform
+- [x] Internationalization!
+- [ ] Python/LUA scripting support in addition to the built-in macro system
+- [ ] An improved preferences system
+- [ ] Extensibility though plugins
+- [ ] Sessions, meaning that you can save and restore an edit session (such as 
   several open tabs)
