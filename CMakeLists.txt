@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(nedit-ng CXX)
+project(nedit-ng 
+	LANGUAGES CXX 
+	VERSION 2020.1)
 
 enable_testing()
 
@@ -14,14 +16,12 @@ include("Profiling")
 include("ProjectDefaults")
 
 set(CMAKE_PROJECT_HOMEPAGE_URL "https://github.com/eteran/nedit-ng")
+set(CMAKE_PROJECT_DESCRIPTION "A Qt port of the Nirvana Editor (NEdit)")
+
 set(CPACK_PACKAGE_NAME "nedit-ng")
 set(CPACK_PACKAGE_CONTACT "Evan Teran <evan.teran@gmail.com>")
 set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/README.md")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A Qt port of the Nirvana Editor (NEdit)")
 set(CPACK_PACKAGE_VENDOR "Evan Teran")
-set(CPACK_PACKAGE_VERSION "2020.1")
-set(CPACK_PACKAGE_VERSION_MAJOR "2020")
-set(CPACK_PACKAGE_VERSION_MINOR "1")
 
 set(CPACK_RPM_PACKAGE_LICENSE "GPL-2")
 set(CPACK_RPM_PACKAGE_GROUP "Applications/Editors")
