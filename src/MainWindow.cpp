@@ -4606,14 +4606,12 @@ void MainWindow::updateWindowSizeMenu() {
 /**
  * @brief MainWindow::action_Next_Document
  */
-void MainWindow::action_Next_Document() {
-
+void MainWindow::action_Next_Document(bool crossWindows) {
 	emit_event("next_document");
 
-	bool crossWindows = Preferences::GetPrefGlobalTabNavigate();
-	int currentIndex  = ui.tabWidget->currentIndex();
-	int nextIndex     = currentIndex + 1;
-	int tabCount      = ui.tabWidget->count();
+	int currentIndex = ui.tabWidget->currentIndex();
+	int nextIndex    = currentIndex + 1;
+	int tabCount     = ui.tabWidget->count();
 
 	if (!crossWindows) {
 		if (nextIndex == tabCount) {
@@ -4652,14 +4650,12 @@ void MainWindow::action_Next_Document() {
 /**
  * @brief MainWindow::action_Prev_Document
  */
-void MainWindow::action_Prev_Document() {
-
+void MainWindow::action_Prev_Document(bool crossWindows) {
 	emit_event("previous_document");
 
-	bool crossWindows = Preferences::GetPrefGlobalTabNavigate();
-	int currentIndex  = ui.tabWidget->currentIndex();
-	int prevIndex     = currentIndex - 1;
-	int tabCount      = ui.tabWidget->count();
+	int currentIndex = ui.tabWidget->currentIndex();
+	int prevIndex    = currentIndex - 1;
+	int tabCount     = ui.tabWidget->count();
 
 	if (!crossWindows) {
 		if (currentIndex == 0) {
@@ -4693,6 +4689,22 @@ void MainWindow::action_Prev_Document() {
 			ui.tabWidget->setCurrentIndex(prevIndex);
 		}
 	}
+}
+
+/**
+ * @brief MainWindow::action_Next_Document
+ */
+void MainWindow::action_Next_Document() {
+	const bool crossWindows = Preferences::GetPrefGlobalTabNavigate();
+	action_Next_Document(crossWindows);
+}
+
+/**
+ * @brief MainWindow::action_Prev_Document
+ */
+void MainWindow::action_Prev_Document() {
+	const bool crossWindows = Preferences::GetPrefGlobalTabNavigate();
+	action_Prev_Document(crossWindows);
 }
 
 /**

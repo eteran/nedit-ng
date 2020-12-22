@@ -4437,6 +4437,49 @@ std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arguments,
 		TextCursor(bufferPos));
 }
 
+/*
+** A subroutine to raise a window
+*/
+std::error_code raiseWindow(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	// TODO(eteran): support the undocumented "focus"/"nofocus" argument...
+
+	if (arguments.size() > 1) {
+		return MacroErrorCode::TooManyArguments;
+	}
+
+	if (arguments.size() == 0) {
+		document->raiseDocumentWindow();
+	} else {
+		QString windowIndex;
+		if (std::error_code ec = readArgument(arguments[0], &windowIndex)) {
+			return ec;
+		}
+
+		if (windowIndex == QLatin1String("first")) {
+			if (auto window = MainWindow::fromDocument(document)) {
+			}
+		} else if (windowIndex == QLatin1String("last")) {
+			if (auto window = MainWindow::fromDocument(document)) {
+			}
+		} else if (windowIndex == QLatin1String("prev")) {
+			if (auto window = MainWindow::fromDocument(document)) {
+			}
+		} else if (windowIndex == QLatin1String("next")) {
+			if (auto window = MainWindow::fromDocument(document)) {
+			}
+		} else {
+			bool ok   = false;
+			int index = windowIndex.toInt(&ok);
+			if (ok) {
+			}
+		}
+	}
+
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
+
 const SubRoutine TextAreaSubrNames[] = {
 	// Keyboard
 	{"backward_character", textEvent<&TextArea::backwardCharacter>},
@@ -4491,7 +4534,6 @@ const SubRoutine TextAreaSubrNames[] = {
 
 #if 0 // NOTE(eteran): do these make sense to support
 	{"focus_pane",                nullptr}, // NOTE(eteran): was from MainWindow in my code...
-	{"raise_window",              nullptr}, // NOTE(eteran): was from MainWindow in my code...
 #endif
 
 #if 0 // NOTE(eteran): mouse event, no point in scripting...
@@ -4682,6 +4724,8 @@ const SubRoutine MacroSubrs[] = {
 	{"get_style_by_name", getStyleByNameMS},
 	{"get_style_at_pos", getStyleAtPosMS},
 	{"filename_dialog", filenameDialogMS},
+
+	{"raise_window", raiseWindow},
 };
 
 const SubRoutine SpecialVars[] = {

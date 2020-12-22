@@ -246,6 +246,8 @@ public:
 	void action_Next_Document();
 	void action_Prev_Document();
 	void action_Last_Document();
+	void action_Next_Document(bool crossWindows);
+	void action_Prev_Document(bool crossWindows);
 
 	// These are a bit weird as they are multi-key shortcuts
 	// and act a bit differently from the menu
