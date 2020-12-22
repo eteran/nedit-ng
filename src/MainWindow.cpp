@@ -3141,8 +3141,11 @@ void MainWindow::action_Shift_Replace_Again() {
  */
 void MainWindow::action_Mark(DocumentWidget *document, const QString &mark) {
 
-	if (mark.size() != 1 || !mark[0].isLetter()) {
-		qWarning("NEdit: action requires a single-letter label");
+	// NOTE(eteran): as per discussion#212, bookmarks from macros
+	// might not be letters! So we have looser requirements here than
+	// the UI instigated version.
+	if (mark.size() != 1) {
+		qWarning("NEdit: action requires a single-character label");
 		QApplication::beep();
 		return;
 	}
@@ -3173,6 +3176,12 @@ void MainWindow::action_Mark(DocumentWidget *document) {
 		&ok);
 
 	if (!ok) {
+		return;
+	}
+
+	if (result.size() != 1 || !result[0].isLetter()) {
+		qWarning("NEdit: action requires a single-letter label");
+		QApplication::beep();
 		return;
 	}
 
@@ -3213,8 +3222,11 @@ void MainWindow::action_Goto_Mark(DocumentWidget *document, const QString &mark,
 
 	emit_event("goto_mark", mark);
 
-	if (mark.size() != 1 || !mark[0].isLetter()) {
-		qWarning("NEdit: action requires a single-letter label");
+	// NOTE(eteran): as per discussion#212, bookmarks from macros
+	// might not be letters! So we have looser requirements here than
+	// the UI instigated version.
+	if (mark.size() != 1) {
+		qWarning("NEdit: action requires a single-character label");
 		QApplication::beep();
 		return;
 	}
@@ -3242,6 +3254,12 @@ void MainWindow::action_Goto_Mark_Dialog(DocumentWidget *document, bool extend) 
 		&ok);
 
 	if (!ok) {
+		return;
+	}
+
+	if (result.size() != 1 || !result[0].isLetter()) {
+		qWarning("NEdit: action requires a single-letter label");
+		QApplication::beep();
 		return;
 	}
 
