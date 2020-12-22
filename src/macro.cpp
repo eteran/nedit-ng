@@ -4486,6 +4486,8 @@ const SubRoutine TextAreaSubrNames[] = {
 	{"scroll_up", scrollUpMS},
 	{"scroll_to_line", textEventArg<int, &TextArea::scrollToLineAP>},
 	{"self_insert", textEventArg<const QString &, &TextArea::insertStringAP>},
+	{"toggle_overstrike", textEvent<&TextArea::toggleOverstrike>}, // NOTE(eteran): Not mentioned in the documentation
+	{"process_home", textEvent<&TextArea::beginningOfLine>},       // NOTE(eteran): Not mentioned in the documentation
 
 #if 0 // NOTE(eteran): do these make sense to support
 	{"focus_pane",                nullptr}, // NOTE(eteran): was from MainWindow in my code...
@@ -4511,10 +4513,8 @@ const SubRoutine TextAreaSubrNames[] = {
 	{"select_all",                selectAllMS},
 #endif
 
-#if 0 // NOTE(eteran): Not mentioned in the documentation
+#if 0
 	{"end_drag",                  nullptr},
-	{"process_home",              processHomeMS},
-	{"toggle_overstrike",         toggleOverstrikeMS},
 #endif
 };
 
