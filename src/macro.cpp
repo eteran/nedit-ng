@@ -1450,8 +1450,8 @@ std::error_code focusWindowMS(DocumentWidget *document, Arguments arguments, Dat
 		return ec;
 	}
 
-	std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
-	std::deque<DocumentWidget *>::iterator it;
+	const std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
+	std::deque<DocumentWidget *>::const_iterator it;
 
 	if (string == QLatin1String("last")) {
 		it = documents.begin();
@@ -4446,7 +4446,7 @@ std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, Dat
 			return ec;
 		}
 
-		std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
+		const std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 		if (index == QLatin1String("last")) {
 			document = *documents.begin();
