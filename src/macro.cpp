@@ -584,7 +584,7 @@ boost::optional<bool> toggle_or_bool(Arguments arguments, bool previous, std::er
 
 template <void (DocumentWidget::*Set)(bool), bool (DocumentWidget::*Get)() const>
 std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	std::error_code ec;
 	if (boost::optional<bool> next = toggle_or_bool(arguments, (document->*Get)(), &ec)) {
@@ -720,7 +720,7 @@ std::error_code menuEvent(DocumentWidget *document, Arguments arguments, DataVal
 
 	(void)arguments;
 
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	MainWindow *win = MainWindow::fromDocument(document);
 	Q_ASSERT(win);
@@ -810,7 +810,7 @@ std::error_code scrollUpMS(DocumentWidget *document, Arguments arguments, DataVa
 std::error_code closeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	if (arguments.size() > 1) {
 		return MacroErrorCode::WrongNumberOfArguments;
@@ -852,7 +852,7 @@ std::error_code closeMS(DocumentWidget *document, Arguments arguments, DataValue
 std::error_code newMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	if (arguments.size() > 1) {
 		return MacroErrorCode::WrongNumberOfArguments;
@@ -894,7 +894,7 @@ std::error_code newMS(DocumentWidget *document, Arguments arguments, DataValue *
 std::error_code newOppositeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	if (arguments.size() > 0) {
 		return MacroErrorCode::WrongNumberOfArguments;
@@ -911,7 +911,7 @@ std::error_code newOppositeMS(DocumentWidget *document, Arguments arguments, Dat
 std::error_code saveAsMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	if (arguments.size() > 2 || arguments.empty()) {
 		return MacroErrorCode::WrongNumberOfArguments;
@@ -949,7 +949,7 @@ std::error_code findMS(DocumentWidget *document, Arguments arguments, DataValue 
 	// find( search-string [, search-direction] [, search-type] [, search-wrap] )
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	if (arguments.size() > 4 || arguments.empty()) {
 		return MacroErrorCode::WrongNumberOfArguments;
@@ -975,7 +975,7 @@ std::error_code findMS(DocumentWidget *document, Arguments arguments, DataValue 
 std::error_code findDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	Direction direction = searchDirection(arguments, 0);
 	SearchType type     = searchType(arguments, 0);
@@ -992,7 +992,7 @@ std::error_code findDialogMS(DocumentWidget *document, Arguments arguments, Data
 std::error_code findAgainMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	Direction direction = searchDirection(arguments, 0);
 	WrapMode wrap       = searchWrap(arguments, 0);
@@ -1008,7 +1008,7 @@ std::error_code findAgainMS(DocumentWidget *document, Arguments arguments, DataV
 std::error_code findSelectionMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	Direction direction = searchDirection(arguments, 0);
 	SearchType type     = searchType(arguments, 0);
@@ -1025,7 +1025,7 @@ std::error_code findSelectionMS(DocumentWidget *document, Arguments arguments, D
 std::error_code replaceMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	if (arguments.size() > 5 || arguments.size() < 2) {
 		return MacroErrorCode::WrongNumberOfArguments;
@@ -1052,7 +1052,7 @@ std::error_code replaceMS(DocumentWidget *document, Arguments arguments, DataVal
 std::error_code replaceDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	Direction direction = searchDirection(arguments, 0);
 	SearchType type     = searchType(arguments, 0);
@@ -1069,7 +1069,7 @@ std::error_code replaceDialogMS(DocumentWidget *document, Arguments arguments, D
 std::error_code replaceAgainMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	if (arguments.size() != 2) {
 		return MacroErrorCode::WrongNumberOfArguments;
@@ -1092,7 +1092,7 @@ std::error_code gotoMarkMS(DocumentWidget *document, Arguments arguments, DataVa
 	// goto_mark( mark, [, extend] )
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	if (arguments.size() > 2 || arguments.size() < 1) {
 		return MacroErrorCode::WrongNumberOfArguments;
@@ -1128,7 +1128,7 @@ std::error_code gotoMarkDialogMS(DocumentWidget *document, Arguments arguments, 
 	// goto_mark( mark, [, extend] )
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	if (arguments.size() > 1) {
 		return MacroErrorCode::WrongNumberOfArguments;
@@ -1159,7 +1159,7 @@ std::error_code findDefinitionMS(DocumentWidget *document, Arguments arguments, 
 	// find_definition( [ argument ] )
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	if (arguments.size() > 1) {
 		return MacroErrorCode::WrongNumberOfArguments;
@@ -1184,7 +1184,7 @@ std::error_code repeatMacroMS(DocumentWidget *document, Arguments arguments, Dat
 	// repeat_macro( how/count, method )
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	QString howString;
 	QString method;
@@ -1221,7 +1221,7 @@ std::error_code detachDocumentDialogMS(DocumentWidget *document, Arguments argum
 	Q_UNUSED(result)
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		window->action_Detach_Document_Dialog(document);
@@ -1232,7 +1232,7 @@ std::error_code detachDocumentDialogMS(DocumentWidget *document, Arguments argum
 
 std::error_code setLanguageModeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	QString languageMode;
 	if (std::error_code ec = readArguments(arguments, 0, &languageMode)) {
@@ -1246,7 +1246,7 @@ std::error_code setLanguageModeMS(DocumentWidget *document, Arguments arguments,
 
 std::error_code findIncrMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	auto win = MainWindow::fromDocument(document);
 	Q_ASSERT(win);
@@ -1285,7 +1285,7 @@ std::error_code findIncrMS(DocumentWidget *document, Arguments arguments, DataVa
 
 std::error_code startIncrFindMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	auto win = MainWindow::fromDocument(document);
 	Q_ASSERT(win);
@@ -1298,7 +1298,7 @@ std::error_code startIncrFindMS(DocumentWidget *document, Arguments arguments, D
 
 std::error_code replaceFindMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	auto win = MainWindow::fromDocument(document);
 	Q_ASSERT(win);
@@ -1328,7 +1328,7 @@ std::error_code replaceFindMS(DocumentWidget *document, Arguments arguments, Dat
 
 std::error_code replaceFindSameMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	auto win = MainWindow::fromDocument(document);
 	Q_ASSERT(win);
@@ -1349,7 +1349,7 @@ std::error_code replaceFindSameMS(DocumentWidget *document, Arguments arguments,
 
 std::error_code backgroundMenuCommandMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	auto win = MainWindow::fromDocument(document);
 	Q_ASSERT(win);
@@ -2309,8 +2309,8 @@ std::error_code stringDialogMS(DocumentWidget *document, Arguments arguments, Da
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
-	document                                         = MacroRunDocument();
-	const std::shared_ptr<MacroCommandData> &cmdData = document->macroCmdData_;
+	document                                        = MacroRunDocument();
+	const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_;
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
 	   This subroutine can't be run if macro execution can't be interrupted */
@@ -2528,7 +2528,7 @@ std::error_code replaceAllInSelectionMS(DocumentWidget *document, Arguments argu
 	// replace_in_selection( search-string, replace-string [, search-type] )
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	//  Get the argument list.
 	QString searchString;
@@ -2553,7 +2553,7 @@ std::error_code replaceAllMS(DocumentWidget *document, Arguments arguments, Data
 	// replace_all( search-string, replace-string [, search-type] )
 
 	// ensure that we are dealing with the document which currently has the focus
-	document = MacroRunDocument();
+	document = MacroFocusDocument();
 
 	if (arguments.size() < 2 || arguments.size() > 3) {
 		return MacroErrorCode::WrongNumberOfArguments;
@@ -2612,7 +2612,7 @@ std::error_code filenameDialogMS(DocumentWidget *document, Arguments arguments, 
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
 	   This subroutine can't be run if macro execution can't be interrupted */
-	if (!document->macroCmdData_) {
+	if (!MacroRunDocument()->macroCmdData_) {
 		return MacroErrorCode::InvalidContext;
 	}
 
@@ -2690,8 +2690,8 @@ std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, Data
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
-	document                                         = MacroRunDocument();
-	const std::shared_ptr<MacroCommandData> &cmdData = document->macroCmdData_;
+	document                                        = MacroRunDocument();
+	const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_;
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
 	   This subroutine can't be run if macro execution can't be interrupted */
