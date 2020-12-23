@@ -4783,8 +4783,6 @@ DocumentWidget *MainWindow::editNewFile(MainWindow *window, const QString &geome
  */
 void MainWindow::allDocumentsBusy(const QString &message) {
 
-	std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
-
 	if (!currentlyBusy) {
 		busyStartTime  = QDateTime::currentDateTimeUtc().toMSecsSinceEpoch();
 		modeMessageSet = false;
@@ -4801,7 +4799,7 @@ void MainWindow::allDocumentsBusy(const QString &message) {
 	} else if (!modeMessageSet && !message.isNull() && (QDateTime::currentDateTimeUtc().toMSecsSinceEpoch() - busyStartTime) > 1000) {
 
 		// Show the mode message when we've been busy for more than a second
-		for (DocumentWidget *document : documents) {
+		for (DocumentWidget *document : DocumentWidget::allDocuments()) {
 			document->setModeMessage(message);
 		}
 		modeMessageSet = true;

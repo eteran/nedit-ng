@@ -142,8 +142,7 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
 		/* A new window is requested, unless we find an untitled unmodified
 			document on the current desktop */
 
-		const std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
-		for (DocumentWidget *document : documents) {
+		for (DocumentWidget *document : DocumentWidget::allDocuments()) {
 			if (document->filenameSet() || document->fileChanged() || document->macroCmdData_) {
 				continue;
 			}
@@ -153,11 +152,8 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
 			}
 		}
 	} else {
-
-		const std::vector<MainWindow *> windows = MainWindow::allWindows();
-
 		// Find a window on the current desktop to hold the new document
-		for (MainWindow *window : windows) {
+		for (MainWindow *window : MainWindow::allWindows()) {
 
 			if (isLocatedOnDesktop(window, currentDesktop)) {
 				return window->currentDocument();
