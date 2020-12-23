@@ -4440,39 +4440,41 @@ std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arguments,
 */
 std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	// figure out which document we're gonna target, default to "this one"
-	std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
-	size_t target_index                    = 0;
-	for (size_t i = 0; i < documents.size(); ++i) {
-		if (documents[i] == document) {
-			target_index = i;
-			break;
-		}
-	}
-
 	if (arguments.size() > 0) {
 		QString index;
 		if (std::error_code ec = readArgument(arguments[0], &index)) {
 			return ec;
 		}
 
-		// just remember that we push new documents on the FRONT of the list
-		// so iteration is backwards
+		std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
+
 		if (index == QLatin1String("last")) {
-			target_index = 0;
+			document = *documents.begin();
 		} else if (index == QLatin1String("first")) {
-			target_index = documents.size() - 1;
-		} else if (index == QLatin1String("previous")) {
-			if (target_index == 0) {
-				target_index = documents.size() - 1;
-			} else {
-				--target_index;
-			}
+			document = *documents.rbegin();
 		} else if (index == QLatin1String("next")) {
-			if (target_index == documents.size() - 1) {
-				target_index = 0;
-			} else {
-				++target_index;
+			auto it = std::find_if(documents.begin(), documents.end(), [document](DocumentWidget *doc) {
+				return doc == document;
+			});
+
+			if (it != documents.end()) {
+				it = std::next(it);
+			}
+
+			if(it != documents.end()) {
+				document = *it;
+			}
+		} else if (index == QLatin1String("previous")) {
+			auto it = std::find_if(documents.rbegin(), documents.rend(), [document](DocumentWidget *doc) {
+				return doc == document;
+			});
+
+			if (it != documents.rend()) {
+				it = std::next(it);
+			}
+
+			if(it != documents.rend()) {
+				document = *it;
 			}
 		} else {
 			bool ok = false;
@@ -4482,10 +4484,26 @@ std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, Dat
 			}
 
 			if (n < 0) {
-				target_index = documents.size() - (std::abs(n) - 1);
+				auto it = documents.rbegin();
+				while(it != documents.rend() && n < 1) {
+					++n;
+					++it;
+				}
+
+				if(it != documents.rend()) {
+					document = *it;
+				}
+
 			} else if (n > 0) {
-				// the index is 1 based!
-				target_index = n - 1;
+				auto it = documents.begin();
+				while(it != documents.end() && n > 1) {
+					--n;
+					++it;
+				}
+
+				if(it != documents.end()) {
+					document = *it;
+				}
 			}
 		}
 	}
@@ -4511,9 +4529,7 @@ std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, Dat
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	// make sure that the index they gave is inside our bounds
-	target_index %= documents.size();
-	documents[target_index]->raiseFocusDocumentWindow(focus);
+	document->raiseFocusDocumentWindow(focus);
 
 	*result = make_value();
 	return MacroErrorCode::Success;
