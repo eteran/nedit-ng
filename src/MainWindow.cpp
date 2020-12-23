@@ -1157,7 +1157,7 @@ void MainWindow::updateWindowMenus() {
 void MainWindow::updateWindowMenu() {
 
 	// Make a sorted list of windows
-	std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+	std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 	std::sort(documents.begin(), documents.end(), [](const DocumentWidget *a, const DocumentWidget *b) {
 		// Untitled first, then filename and path are considered
@@ -1626,7 +1626,7 @@ void MainWindow::tempShowISearch(bool state) {
 */
 QString MainWindow::uniqueUntitledName() {
 
-	const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+	const std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 	for (int i = 0; i < INT_MAX; i++) {
 
@@ -1709,7 +1709,7 @@ DocumentWidget *MainWindow::findWindowWithFile(const PathInfo &path) {
 */
 DocumentWidget *MainWindow::findWindowWithFile(const QString &filename, const QString &path) {
 
-	const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+	const std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 #ifdef Q_OS_UNIX
 	if (!Preferences::GetPrefHonorSymlinks()) {
@@ -4783,7 +4783,7 @@ DocumentWidget *MainWindow::editNewFile(MainWindow *window, const QString &geome
  */
 void MainWindow::allDocumentsBusy(const QString &message) {
 
-	std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+	std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 	if (!currentlyBusy) {
 		busyStartTime  = QDateTime::currentDateTimeUtc().toMSecsSinceEpoch();
@@ -5109,7 +5109,7 @@ void MainWindow::action_Exit(DocumentWidget *document) {
 
 	Q_UNUSED(document)
 
-	std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+	std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 	if (!checkPrefsChangesSaved()) {
 		return;

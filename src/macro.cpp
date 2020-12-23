@@ -1450,15 +1450,13 @@ std::error_code focusWindowMS(DocumentWidget *document, Arguments arguments, Dat
 		return ec;
 	}
 
-	std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
-	std::vector<DocumentWidget *>::iterator it;
+	std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
+	std::deque<DocumentWidget *>::iterator it;
 
 	if (string == QLatin1String("last")) {
-
-		it = std::find(documents.begin(), documents.end(), DocumentWidget::LastCreated);
+		it = documents.begin();
 
 	} else if (string == QLatin1String("next")) {
-
 		it = std::find_if(documents.begin(), documents.end(), [document](DocumentWidget *doc) {
 			return doc == document;
 		});
@@ -4440,41 +4438,82 @@ std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arguments,
 /*
 ** A subroutine to raise a window
 */
-std::error_code raiseWindow(DocumentWidget *document, Arguments arguments, DataValue *result) {
+std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	// TODO(eteran): support the undocumented "focus"/"nofocus" argument...
-
-	if (arguments.size() > 1) {
-		return MacroErrorCode::TooManyArguments;
+	// figure out which document we're gonna target, default to "this one"
+	std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
+	size_t target_index                    = 0;
+	for (size_t i = 0; i < documents.size(); ++i) {
+		if (documents[i] == document) {
+			target_index = i;
+			break;
+		}
 	}
 
-	if (arguments.size() == 0) {
-		document->raiseDocumentWindow();
-	} else {
-		QString windowIndex;
-		if (std::error_code ec = readArgument(arguments[0], &windowIndex)) {
+	if (arguments.size() > 0) {
+		QString index;
+		if (std::error_code ec = readArgument(arguments[0], &index)) {
 			return ec;
 		}
 
-		if (windowIndex == QLatin1String("first")) {
-			if (auto window = MainWindow::fromDocument(document)) {
+		// just remember that we push new documents on the FRONT of the list
+		// so iteration is backwards
+		if (index == QLatin1String("last")) {
+			target_index = 0;
+		} else if (index == QLatin1String("first")) {
+			target_index = documents.size() - 1;
+		} else if (index == QLatin1String("previous")) {
+			if (target_index == 0) {
+				target_index = documents.size() - 1;
+			} else {
+				--target_index;
 			}
-		} else if (windowIndex == QLatin1String("last")) {
-			if (auto window = MainWindow::fromDocument(document)) {
-			}
-		} else if (windowIndex == QLatin1String("prev")) {
-			if (auto window = MainWindow::fromDocument(document)) {
-			}
-		} else if (windowIndex == QLatin1String("next")) {
-			if (auto window = MainWindow::fromDocument(document)) {
+		} else if (index == QLatin1String("next")) {
+			if (target_index == documents.size() - 1) {
+				target_index = 0;
+			} else {
+				++target_index;
 			}
 		} else {
-			bool ok   = false;
-			int index = windowIndex.toInt(&ok);
-			if (ok) {
+			bool ok = false;
+			int n   = index.toInt(&ok);
+			if (!ok) {
+				return MacroErrorCode::InvalidArgument;
+			}
+
+			if (n < 0) {
+				target_index = documents.size() - (std::abs(n) - 1);
+			} else if (n > 0) {
+				// the index is 1 based!
+				target_index = n - 1;
 			}
 		}
 	}
+
+	bool focus = Preferences::GetPrefFocusOnRaise();
+	if (arguments.size() > 1) {
+
+		QString argument;
+		if (std::error_code ec = readArgument(arguments[0], &argument)) {
+			return ec;
+		}
+
+		if (argument == QLatin1String("focus")) {
+			focus = true;
+		} else if (argument == QLatin1String("nofocus")) {
+			focus = false;
+		} else {
+			return MacroErrorCode::InvalidArgument;
+		}
+	}
+
+	if (arguments.size() > 2) {
+		return MacroErrorCode::TooManyArguments;
+	}
+
+	// make sure that the index they gave is inside our bounds
+	target_index %= documents.size();
+	documents[target_index]->raiseFocusDocumentWindow(focus);
 
 	*result = make_value();
 	return MacroErrorCode::Success;
@@ -4724,8 +4763,7 @@ const SubRoutine MacroSubrs[] = {
 	{"get_style_by_name", getStyleByNameMS},
 	{"get_style_at_pos", getStyleAtPosMS},
 	{"filename_dialog", filenameDialogMS},
-
-	{"raise_window", raiseWindow},
+	{"raise_window", raiseWindowMS},
 };
 
 const SubRoutine SpecialVars[] = {

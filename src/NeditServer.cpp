@@ -142,7 +142,7 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
 		/* A new window is requested, unless we find an untitled unmodified
 			document on the current desktop */
 
-		const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+		const std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
 		for (DocumentWidget *document : documents) {
 			if (document->filenameSet() || document->fileChanged() || document->macroCmdData_) {
 				continue;
@@ -237,7 +237,7 @@ void NeditServer::newConnection() {
 	/* If the command string is empty, put up an empty, Untitled window
 	   (or just pop one up if it already exists) */
 	if (array.isEmpty()) {
-		std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+		std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 		auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *document) {
 			return (!document->filenameSet() && !document->fileChanged() && isLocatedOnDesktop(MainWindow::fromDocument(document), currentDesktop));
@@ -286,7 +286,7 @@ void NeditServer::newConnection() {
 		 */
 		if (fullname.isEmpty()) {
 
-			std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+			std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 			auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *doc) {
 				return (!doc->filenameSet() && !doc->fileChanged() && isLocatedOnDesktop(MainWindow::fromDocument(doc), currentDesktop));

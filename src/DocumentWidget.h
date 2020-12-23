@@ -29,6 +29,8 @@
 #include <QProcess>
 #include <QWidget>
 
+#include <deque>
+
 #include <gsl/span>
 
 #include <boost/optional.hpp>
@@ -96,7 +98,7 @@ public:
 public:
 	static DocumentWidget *editExistingFile(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, bool iconic, const QString &languageMode, bool tabbed, bool background);
 	static DocumentWidget *fromArea(TextArea *area);
-	static std::vector<DocumentWidget *> allDocuments();
+	static std::deque<DocumentWidget *> allDocuments();
 
 public:
 	void action_Set_Fonts(const QString &fontName);
@@ -325,9 +327,6 @@ private:
 	std::map<QChar, Bookmark> markTable_;
 	std::unique_ptr<ShellCommandData> shellCmdData_; // when a shell command is executing, info. about it, otherwise, nullptr
 	Ui::DocumentWidget ui;
-
-public:
-	static DocumentWidget *LastCreated;
 };
 
 #endif

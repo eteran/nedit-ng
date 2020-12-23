@@ -72,9 +72,9 @@ struct ShellCommandData {
 	bool bannerIsUp;
 };
 
-DocumentWidget *DocumentWidget::LastCreated = nullptr;
-
 namespace {
+
+std::deque<DocumentWidget *> documentList;
 
 // Max # of ADDITIONAL text editing panes  that can be added to a window
 constexpr int MaxPanes = 6;
@@ -497,9 +497,8 @@ DocumentWidget::DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget 
 
 	ui.setupUi(this);
 
-	// track what the last created document was so that focus_document("last")
-	// works correctly
-	LastCreated = this;
+	documentList.push_front(this);
+	setAcceptDrops(true);
 
 	// create the text widget
 	if (Settings::splitHorizontally) {
@@ -568,9 +567,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	info_           = std::make_shared<DocumentInfo>();
 	info_->filename = name;
 
-	// track what the last created document was so that focus_document("last")
-	// works correctly
-	LastCreated = this;
+	documentList.push_front(this);
 	setAcceptDrops(true);
 
 	// Every document has a backing buffer
@@ -2997,6 +2994,9 @@ void DocumentWidget::closeDocument() {
 	win->ui.tabWidget->removeTab(win->ui.tabWidget->indexOf(this));
 	this->deleteLater();
 
+	// remove it from our list too
+	documentList.erase(std::remove(documentList.begin(), documentList.end(), this), documentList.end());
+
 	// Close of window running a macro may have been disabled.
 	// NOTE(eteran): this may be redundant...
 	MainWindow::checkCloseEnableState();
@@ -3111,7 +3111,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 				QAbstractButton *newButton    = msgbox.addButton(tr("New File"), QMessageBox::AcceptRole);
 
 				// ask user for next action if file not found
-				std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+				std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 				if (documents.size() == 1 && documents.front() == this) {
 					exitButton = msgbox.addButton(tr("Exit NEdit"), QMessageBox::RejectRole);
@@ -5154,19 +5154,8 @@ void DocumentWidget::repeatMacro(const QString &macro, int how) {
  * @brief DocumentWidget::allDocuments
  * @return
  */
-std::vector<DocumentWidget *> DocumentWidget::allDocuments() {
-	std::vector<MainWindow *> windows = MainWindow::allWindows();
-	std::vector<DocumentWidget *> documents;
-
-	for (MainWindow *window : windows) {
-
-		std::vector<DocumentWidget *> openDocuments = window->openDocuments();
-
-		documents.reserve(documents.size() + openDocuments.size());
-		documents.insert(documents.end(), openDocuments.begin(), openDocuments.end());
-	}
-
-	return documents;
+std::deque<DocumentWidget *> DocumentWidget::allDocuments() {
+	return documentList;
 }
 
 /**

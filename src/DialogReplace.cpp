@@ -23,8 +23,8 @@ int countWritableWindows() {
 
 	int nWritable = 0;
 
-	std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
-	size_t nBefore                          = documents.size();
+	std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
+	size_t nBefore                         = documents.size();
 
 	auto first = documents.begin();
 	auto last  = documents.end();
@@ -37,8 +37,8 @@ int countWritableWindows() {
 		   arbitrary windows in response. */
 		document->checkForChangesToFile();
 
-		const std::vector<DocumentWidget *> afterDocuments = DocumentWidget::allDocuments();
-		size_t nAfter                                      = afterDocuments.size();
+		const std::deque<DocumentWidget *> afterDocuments = DocumentWidget::allDocuments();
+		size_t nAfter                                     = afterDocuments.size();
 
 		if (nAfter != nBefore) {
 			// The user has destroyed a file; start counting all over again
@@ -66,7 +66,7 @@ int countWritableWindows() {
 std::vector<DocumentWidget *> collectWritableWindows() {
 
 	std::vector<DocumentWidget *> documents;
-	std::vector<DocumentWidget *> allDocuments = DocumentWidget::allDocuments();
+	std::deque<DocumentWidget *> allDocuments = DocumentWidget::allDocuments();
 
 	std::copy_if(allDocuments.begin(), allDocuments.end(), std::back_inserter(documents), [](DocumentWidget *document) {
 		return (!document->lockReasons().isAnyLocked());
