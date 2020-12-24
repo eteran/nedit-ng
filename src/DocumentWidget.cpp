@@ -1111,9 +1111,10 @@ void DocumentWidget::raiseFocusDocumentWindow(bool focus) {
 	}
 
 	win->raise();
+	win->activateWindow();
 
 	if (focus) {
-		win->activateWindow();
+		setFocus();
 	}
 }
 
