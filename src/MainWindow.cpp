@@ -4765,6 +4765,14 @@ DocumentWidget *MainWindow::editNewFile(MainWindow *window, const QString &geome
 	window->updateStatus(document, document->firstPane());
 	window->updateWindowTitle(document);
 	window->updateWindowHints(document);
+
+	// NOTE(eteran): addresses issue #224. When a new tab causes a reordering
+	// AND a focus event will trigger a "save/cancel" dialog
+	// we can end up with the wrong names on tabs!
+	// so we sort BEFORE we update the tab state just to be sure everything
+	// is in the right spots!
+	window->sortTabBar();
+
 	document->refreshTabState();
 
 	if (languageMode.isNull()) {
@@ -4779,7 +4787,7 @@ DocumentWidget *MainWindow::editNewFile(MainWindow *window, const QString &geome
 		document->raiseDocumentWindow();
 	}
 
-	window->sortTabBar();
+
 	return document;
 }
 
