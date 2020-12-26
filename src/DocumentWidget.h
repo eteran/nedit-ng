@@ -293,6 +293,8 @@ private:
 	void updateMarkTable(TextCursor pos, int64_t nInserted, int64_t nDeleted);
 	void updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<MenuData> &menuList, bool enabled);
 	void updateSelectionSensitiveMenus(bool enabled);
+
+protected:
 	void dragEnterEvent(QDragEnterEvent *event) override;
 	void dropEvent(QDropEvent *event) override;
 
