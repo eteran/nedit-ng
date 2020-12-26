@@ -52,6 +52,7 @@
 #include <QMimeData>
 #include <QShortcut>
 #include <QToolTip>
+#include <QTimer>
 #include <qplatformdefs.h>
 
 #include <cmath>
@@ -5445,7 +5446,9 @@ void MainWindow::focusChanged(QWidget *from, QWidget *to) {
 			endISearch();
 
 			// Check for changes to read-only status and/or file modifications
-			document->checkForChangesToFile();
+			QTimer::singleShot(0, [document]() {
+				document->checkForChangesToFile();
+			});
 		}
 	}
 }
