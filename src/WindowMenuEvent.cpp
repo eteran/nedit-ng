@@ -30,7 +30,7 @@ QString WindowMenuEvent::argumentString() const {
  * @return
  */
 QString WindowMenuEvent::toString() const {
-	return QString(QLatin1String("%1(%2)")).arg(macroString_, argumentString());
+	return QStringLiteral("%1(%2)").arg(macroString_, argumentString());
 }
 
 /**

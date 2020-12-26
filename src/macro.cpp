@@ -1504,7 +1504,7 @@ std::error_code focusWindowMS(DocumentWidget *document, Arguments arguments, Dat
 	}
 
 	// Return the name of the window
-	*result = make_value(QString(QLatin1String("%1%2")).arg(target->path(), target->filename()));
+	*result = make_value(QStringLiteral("%1%2").arg(target->path(), target->filename()));
 	return MacroErrorCode::Success;
 }
 
