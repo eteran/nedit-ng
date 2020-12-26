@@ -1714,7 +1714,7 @@ DocumentWidget *MainWindow::findWindowWithFile(const QString &filename, const QS
 #ifdef Q_OS_UNIX
 	if (!Preferences::GetPrefHonorSymlinks()) {
 
-		QString fullname = tr("%1%2").arg(path, filename);
+		auto fullname = QStringLiteral("%1%2").arg(path, filename);
 
 		QT_STATBUF attribute;
 		if (QT_STAT(fullname.toUtf8().data(), &attribute) == 0) {
@@ -2137,7 +2137,7 @@ QFileInfoList MainWindow::openFileHelperSystem(DocumentWidget *document, const Q
 	for (const QString &includeDir : includeDirs) {
 		// we need to do this because someone could write #include <path/to/file.h>
 		// which confuses QDir..
-		QFileInfo fullPath = tr("%1/%2").arg(includeDir, match.captured(1));
+		QFileInfo fullPath = QStringLiteral("%1/%2").arg(includeDir, match.captured(1));
 		QString filename   = fullPath.fileName();
 		QString filepath   = fullPath.path();
 
@@ -2185,7 +2185,7 @@ QFileInfoList MainWindow::openFileHelperString(DocumentWidget *document, const Q
 	} else {
 		// we need to do this because someone could write #include "path/to/file.h"
 		// which confuses QDir..
-		QFileInfo fullPath = tr("%1/%2").arg(document->path(), text);
+		QFileInfo fullPath = QStringLiteral("%1/%2").arg(document->path(), text);
 		QString filename   = fullPath.fileName();
 		QString filepath   = fullPath.path();
 

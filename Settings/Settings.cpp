@@ -147,7 +147,7 @@ QString configDirectory() {
 	}
 
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("nedit-ng"));
+	static const auto filename     = QStringLiteral("%1/nedit-ng").arg(configDir);
 	return filename;
 }
 
@@ -157,7 +157,7 @@ QString configDirectory() {
  */
 QString themeFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("theme.xml"));
+	static const auto filename     = QStringLiteral("%1/theme.xml").arg(configDir);
 	return filename;
 }
 
@@ -167,7 +167,7 @@ QString themeFile() {
  */
 QString configFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("config.ini"));
+	static const auto filename     = QStringLiteral("%1/config.ini").arg(configDir);
 	return filename;
 }
 
@@ -177,7 +177,7 @@ QString configFile() {
  */
 QString historyFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("history"));
+	static const auto filename     = QStringLiteral("%1/history").arg(configDir);
 	return filename;
 }
 
@@ -187,7 +187,7 @@ QString historyFile() {
  */
 QString autoLoadMacroFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("autoload.nm"));
+	static const auto filename     = QStringLiteral("%1/autoload.nm").arg(configDir);
 	return filename;
 }
 
@@ -197,7 +197,7 @@ QString autoLoadMacroFile() {
  */
 QString languageModeFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("languages.yaml"));
+	static const auto filename     = QStringLiteral("%1/languages.yaml").arg(configDir);
 	return filename;
 }
 
@@ -207,7 +207,7 @@ QString languageModeFile() {
  */
 QString macroMenuFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("macros.yaml"));
+	static const auto filename     = QStringLiteral("%1/macros.yaml").arg(configDir);
 	return filename;
 }
 
@@ -217,7 +217,7 @@ QString macroMenuFile() {
  */
 QString shellMenuFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("shell.yaml"));
+	static const auto filename     = QStringLiteral("%1/shell.yaml").arg(configDir);
 	return filename;
 }
 
@@ -227,7 +227,7 @@ QString shellMenuFile() {
  */
 QString contextMenuFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("context.yaml"));
+	static const auto filename     = QStringLiteral("%1/context.yaml").arg(configDir);
 	return filename;
 }
 
@@ -237,7 +237,7 @@ QString contextMenuFile() {
  */
 QString styleFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("style.qss"));
+	static const auto filename     = QStringLiteral("%1/style.qss").arg(configDir);
 	return filename;
 }
 
@@ -247,7 +247,7 @@ QString styleFile() {
  */
 QString highlightPatternsFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("patterns.yaml"));
+	static const auto filename     = QStringLiteral("%1/patterns.yaml").arg(configDir);
 	return filename;
 }
 
@@ -257,7 +257,7 @@ QString highlightPatternsFile() {
  */
 QString smartIndentFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("indent.yaml"));
+	static const auto filename     = QStringLiteral("%1/indent.yaml").arg(configDir);
 	return filename;
 }
 
