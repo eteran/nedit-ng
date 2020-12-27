@@ -415,6 +415,9 @@ private:
 	void focusChanged(QWidget *from, QWidget *to);
 	void updateWindowHints(DocumentWidget *);
 
+Q_SIGNALS:
+	void checkForChangesToFile(DocumentWidget *document);
+
 public Q_SLOTS:
 	void selectionChanged(bool selected);
 	void undoAvailable(bool available);
