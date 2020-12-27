@@ -257,6 +257,12 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 	for (MainWindow *window : windows) {
 		window->ui.action_Move_Tab_To->setEnabled(enabled);
 	}
+
+	connect(
+		this, &MainWindow::checkForChangesToFile, this, [](DocumentWidget *document) {
+			document->checkForChangesToFile();
+		},
+		Qt::QueuedConnection);
 }
 
 /**
@@ -4787,7 +4793,6 @@ DocumentWidget *MainWindow::editNewFile(MainWindow *window, const QString &geome
 		document->raiseDocumentWindow();
 	}
 
-
 	return document;
 }
 
@@ -5445,7 +5450,7 @@ void MainWindow::focusChanged(QWidget *from, QWidget *to) {
 			endISearch();
 
 			// Check for changes to read-only status and/or file modifications
-			document->checkForChangesToFile();
+			Q_EMIT checkForChangesToFile(document);
 		}
 	}
 }
