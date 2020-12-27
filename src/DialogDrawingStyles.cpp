@@ -452,7 +452,7 @@ void DialogDrawingStyles::chooseColor(QLineEdit *edit) {
 
 	QColor color = QColorDialog::getColor(X11Colors::fromString(name), this);
 	if (color.isValid()) {
-		edit->setText(tr("#%1").arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0')));
+		edit->setText(QStringLiteral("#%1").arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0')));
 	}
 }
 

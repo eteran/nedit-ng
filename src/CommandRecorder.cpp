@@ -95,7 +95,7 @@ QString actionToString(const Event *ev) {
  * @return
  */
 QString CommandRecorder::quoteString(const QString &s) {
-	return tr("\"%1\"").arg(s);
+	return QStringLiteral("\"%1\"").arg(s);
 }
 
 /**

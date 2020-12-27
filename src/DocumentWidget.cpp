@@ -469,7 +469,7 @@ DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, con
 	Q_EMIT document->updateStatus(document, nullptr);
 
 	// Add the name to the convenience menu of previously opened files
-	auto fullname = tr("%1%2").arg(path, name);
+	auto fullname = QStringLiteral("%1%2").arg(path, name);
 
 	if (Preferences::GetPrefAlwaysCheckRelTagsSpecs()) {
 		Tags::addRelTagsFile(Preferences::GetPrefTagFile(), path, Tags::SearchMode::TAG);
@@ -759,9 +759,9 @@ void DocumentWidget::refreshTabState() {
 		if (absTruncate > 3) {
 			if (filename.size() > absTruncate) {
 				if (Settings::truncateLongNamesInTabs > 0) {
-					filename = tr("%1%2").arg(QLatin1String("..."), filename.right(absTruncate - 3));
+					filename = QStringLiteral("%1%2").arg(QLatin1String("..."), filename.right(absTruncate - 3));
 				} else {
-					filename = tr("%1%2").arg(filename.left(absTruncate - 3), QLatin1String("..."));
+					filename = QStringLiteral("%1%2").arg(filename.left(absTruncate - 3), QLatin1String("..."));
 				}
 			}
 		} else {
@@ -780,9 +780,9 @@ void DocumentWidget::refreshTabState() {
 		const int alignment = style->styleHint(QStyle::SH_TabBar_Alignment);
 
 		if (alignment != Qt::AlignRight) {
-			labelString = tr("%1%2").arg(info_->fileChanged ? tr("*") : QString(), filename);
+			labelString = QStringLiteral("%1%2").arg(info_->fileChanged ? tr("*") : QString(), filename);
 		} else {
-			labelString = tr("%2%1").arg(info_->fileChanged ? tr("*") : QString(), filename);
+			labelString = QStringLiteral("%2%1").arg(info_->fileChanged ? tr("*") : QString(), filename);
 		}
 	}
 
@@ -1942,9 +1942,9 @@ void DocumentWidget::removeBackupFile() const {
 QString DocumentWidget::backupFileName() const {
 
 	if (info_->filenameSet) {
-		return tr("%1~%2").arg(info_->path, info_->filename);
+		return QStringLiteral("%1~%2").arg(info_->path, info_->filename);
 	} else {
-		return PrependHome(tr("~%1").arg(info_->filename));
+		return PrependHome(QStringLiteral("~%1").arg(info_->filename));
 	}
 }
 
@@ -2134,7 +2134,7 @@ QString DocumentWidget::fullPath() const {
 	}
 
 	Q_ASSERT(info_->path.endsWith(QLatin1Char('/')));
-	return tr("%1%2").arg(info_->path, info_->filename);
+	return QStringLiteral("%1%2").arg(info_->path, info_->filename);
 }
 
 /**
@@ -2732,7 +2732,7 @@ bool DocumentWidget::writeBckVersion() {
 		QString fullname = fullPath();
 
 		// Generate name for old version
-		auto bckname = tr("%1.bck").arg(fullname);
+		auto bckname = QStringLiteral("%1.bck").arg(fullname);
 
 		// Delete the old backup file
 		// Errors are ignored; we'll notice them later.
@@ -7046,7 +7046,7 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 		if (QFileInfo(fileToSearch).isAbsolute()) {
 			Tags::tagFiles[nMatches] = fileToSearch;
 		} else {
-			Tags::tagFiles[nMatches] = tr("%1%2").arg(tagPath, fileToSearch);
+			Tags::tagFiles[nMatches] = QStringLiteral("%1%2").arg(tagPath, fileToSearch);
 		}
 
 		Tags::tagSearch[nMatches] = searchString;

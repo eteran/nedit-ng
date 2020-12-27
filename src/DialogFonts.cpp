@@ -30,7 +30,7 @@ DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFl
 	const QFont font = document ? Font::fromString(document->fontName_) : Font::fromString(Preferences::GetPrefFontName());
 
 	for (int size : QFontDatabase::standardSizes()) {
-		ui.fontSize->addItem(tr("%1").arg(size), size);
+		ui.fontSize->addItem(QStringLiteral("%1").arg(size), size);
 	}
 
 	ui.fontCombo->setCurrentFont(font);
