@@ -12,7 +12,13 @@
  */
 DialogAbout::DialogAbout(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
+
 	ui.setupUi(this);
+
+	ui.textAbout->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+	ui.textThanks->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+	ui.textTranslations->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
+	ui.textLicense->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
 	ui.textAbout->setText(tr("%1"
 							 "\n"
