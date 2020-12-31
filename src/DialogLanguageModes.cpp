@@ -25,8 +25,11 @@
  */
 DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatterns, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f), dialogSyntaxPatterns_(dialogSyntaxPatterns) {
+
 	ui.setupUi(this);
 	connectSlots();
+
+	ui.editDelimiters->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
 	CommonDialog::setButtonIcons(&ui);
 

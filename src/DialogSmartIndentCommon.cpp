@@ -16,9 +16,11 @@
  */
 DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
+
 	ui.setupUi(this);
 	connectSlots();
 
+	ui.editCode->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 	ui.editCode->setPlainText(SmartIndent::CommonMacros);
 }
 
