@@ -20,8 +20,11 @@
  */
 DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
+
 	ui.setupUi(this);
 	connectSlots();
+
+	ui.editMacro->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 
 	CommonDialog::setButtonIcons(&ui);
 

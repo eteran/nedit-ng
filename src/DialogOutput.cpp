@@ -8,7 +8,10 @@
  */
 DialogOutput::DialogOutput(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
+
 	ui.setupUi(this);
+
+	ui.plainTextEdit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 }
 
 /**
