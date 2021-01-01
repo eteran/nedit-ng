@@ -17,7 +17,10 @@
    <item row="0" column="0" colspan="2">
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Tab spacing (for hardware tab characters)</string>
+      <string>&amp;Tab spacing (for hardware tab characters)</string>
+     </property>
+     <property name="buddy">
+      <cstring>editTabSpacing</cstring>
      </property>
     </widget>
    </item>
@@ -37,7 +40,10 @@
       <bool>false</bool>
      </property>
      <property name="text">
-      <string>Emulated tab spacing</string>
+      <string>Emulated tab &amp;spacing</string>
+     </property>
+     <property name="buddy">
+      <cstring>editEmulatedTabSpacing</cstring>
      </property>
     </widget>
    </item>

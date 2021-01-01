@@ -39,7 +39,10 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>Language Mode:</string>
+        <string>&amp;Language Mode:</string>
+       </property>
+       <property name="buddy">
+        <cstring>comboLanguageMode</cstring>
        </property>
       </widget>
      </item>
@@ -81,7 +84,10 @@
        <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Language Specific Initialization Macro Commands and Definitions</string>
+          <string>Language Specific &amp;Initialization Macro Commands and Definitions</string>
+         </property>
+         <property name="buddy">
+          <cstring>editInit</cstring>
          </property>
         </widget>
        </item>
@@ -103,7 +109,10 @@
          <item>
           <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>Newline Macro</string>
+            <string>&amp;Newline Macro</string>
+           </property>
+           <property name="buddy">
+            <cstring>editNewline</cstring>
            </property>
           </widget>
          </item>
@@ -147,7 +156,10 @@
          <item>
           <widget class="QLabel" name="label_4">
            <property name="text">
-            <string>Type-in Macro</string>
+            <string>Type-in &amp;Macro</string>
+           </property>
+           <property name="buddy">
+            <cstring>editModMacro</cstring>
            </property>
           </widget>
          </item>
