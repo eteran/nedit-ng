@@ -17,7 +17,10 @@
    <item row="1" column="0">
     <widget class="QLabel" name="labelCopies">
      <property name="text">
-      <string>Number of copies</string>
+      <string>&amp;Number of copies</string>
+     </property>
+     <property name="buddy">
+      <cstring>spinCopies</cstring>
      </property>
     </widget>
    </item>
@@ -53,7 +56,10 @@
    <item row="0" column="0">
     <widget class="QLabel" name="labelPrinters">
      <property name="text">
-      <string>Printer</string>
+      <string>P&amp;rinter</string>
+     </property>
+     <property name="buddy">
+      <cstring>printers</cstring>
      </property>
     </widget>
    </item>

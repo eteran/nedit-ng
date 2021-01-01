@@ -17,7 +17,10 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Common Definitions for Smart Indent Macros</string>
+      <string>&amp;Common Definitions for Smart Indent Macros</string>
+     </property>
+     <property name="buddy">
+      <cstring>editCode</cstring>
      </property>
     </widget>
    </item>
@@ -45,34 +48,32 @@
        </property>
        <property name="icon">
         <iconset theme="dialog-ok">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="buttonApply">
        <property name="text">
-        <string>Apply</string>
+        <string>Appl&amp;y</string>
        </property>
        <property name="icon">
         <iconset theme="dialog-ok-apply">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="buttonCheck">
        <property name="text">
-        <string>Check</string>
+        <string>Chec&amp;k</string>
        </property>
       </widget>
      </item>
      <item>
       <widget class="QPushButton" name="buttonRestore">
        <property name="text">
-        <string>Restore Defaults</string>
+        <string>Restore D&amp;efaults</string>
        </property>
       </widget>
      </item>
@@ -83,8 +84,7 @@
        </property>
        <property name="icon">
         <iconset theme="dialog-close">
-         <normaloff/>
-        </iconset>
+         <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
      </item>
