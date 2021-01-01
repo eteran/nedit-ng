@@ -62,7 +62,10 @@
         <bool>false</bool>
        </property>
        <property name="text">
-        <string>Margin for Wrap and Fill</string>
+        <string>&amp;Margin for Wrap and Fill</string>
+       </property>
+       <property name="buddy">
+        <cstring>spinWrapAndFill</cstring>
        </property>
       </widget>
      </item>
