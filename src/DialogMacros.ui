@@ -113,7 +113,10 @@ Select &quot;New&quot; to add a new command to the menu.</string>
          <item>
           <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>Menu Entry</string>
+            <string>Menu Entr&amp;y</string>
+           </property>
+           <property name="buddy">
+            <cstring>editName</cstring>
            </property>
           </widget>
          </item>
@@ -150,7 +153,10 @@ Select &quot;New&quot; to add a new command to the menu.</string>
          <item row="0" column="0">
           <widget class="QLabel" name="label_4">
            <property name="text">
-            <string>Accelerator</string>
+            <string>Acce&amp;lerator</string>
+           </property>
+           <property name="buddy">
+            <cstring>editAccelerator</cstring>
            </property>
           </widget>
          </item>
@@ -167,7 +173,7 @@ Replay Macro</string>
        <item>
         <widget class="QCheckBox" name="checkRequiresSelection">
          <property name="text">
-          <string>Requires Selection</string>
+          <string>&amp;Requires Selection</string>
          </property>
         </widget>
        </item>
@@ -178,7 +184,10 @@ Replay Macro</string>
    <item>
     <widget class="QLabel" name="label_6">
      <property name="text">
-      <string>Macro Command to Execute</string>
+      <string>Macro Command to E&amp;xecute</string>
+     </property>
+     <property name="buddy">
+      <cstring>editMacro</cstring>
      </property>
     </widget>
    </item>
