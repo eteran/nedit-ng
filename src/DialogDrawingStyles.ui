@@ -113,7 +113,10 @@
        <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Name:</string>
+          <string>Na&amp;me:</string>
+         </property>
+         <property name="buddy">
+          <cstring>editName</cstring>
          </property>
         </widget>
        </item>
@@ -123,7 +126,10 @@
        <item>
         <widget class="QLabel" name="label_3">
          <property name="text">
-          <string>Foreground Color:</string>
+          <string>Foreground &amp;Color:</string>
+         </property>
+         <property name="buddy">
+          <cstring>editColorFG</cstring>
          </property>
         </widget>
        </item>
@@ -144,7 +150,10 @@
        <item>
         <widget class="QLabel" name="label_4">
          <property name="text">
-          <string>Background Color (optional)</string>
+          <string>Back&amp;ground Color (optional)</string>
+         </property>
+         <property name="buddy">
+          <cstring>editColorBG</cstring>
          </property>
         </widget>
        </item>
@@ -178,14 +187,14 @@
           <item row="0" column="1">
            <widget class="QCheckBox" name="checkItalic">
             <property name="text">
-             <string>Italic</string>
+             <string>&amp;Italic</string>
             </property>
            </widget>
           </item>
           <item row="0" column="0">
            <widget class="QCheckBox" name="checkBold">
             <property name="text">
-             <string>Bold</string>
+             <string>&amp;Bold</string>
             </property>
            </widget>
           </item>

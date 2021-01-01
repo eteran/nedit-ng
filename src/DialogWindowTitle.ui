@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>503</width>
-    <height>495</height>
+    <height>510</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -97,7 +97,10 @@
           <item>
            <widget class="QLabel" name="labelDirectory">
             <property name="text">
-             <string>, max components</string>
+             <string>, ma&amp;x components</string>
+            </property>
+            <property name="buddy">
+             <cstring>editDirectory</cstring>
             </property>
            </widget>
           </item>
@@ -126,7 +129,10 @@
         <item>
          <widget class="QLabel" name="label_2">
           <property name="text">
-           <string>Format:</string>
+           <string>Fo&amp;rmat:</string>
+          </property>
+          <property name="buddy">
+           <cstring>editFormat</cstring>
           </property>
          </widget>
         </item>
