@@ -483,7 +483,7 @@ constexpr InputHandler inputHandlers[] = {
  * @param font
  */
 TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &font)
-	: QAbstractScrollArea(document), document_(document), font_(font), buffer_(buffer) {
+	: QAbstractScrollArea(document), document_(document), buffer_(buffer), font_(font) {
 
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
