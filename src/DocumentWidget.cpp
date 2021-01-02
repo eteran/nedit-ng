@@ -4020,16 +4020,16 @@ void DocumentWidget::splitPane() {
 		area->setBacklightCharTypes(backlightCharTypes_);
 		area->setFont(font_);
 
-        const int scrollPosition = activeArea->verticalScrollBar()->value();
+		const int scrollPosition = activeArea->verticalScrollBar()->value();
 
-        // NOTE(eteran): annoyingly, on windows the viewrect isn't resized until it is shown
-        // so if we try to do this now, it will try to scroll to a spot outside of
-        // then "lineStarts_" array. The simplest thing to do to make it work correctly
-        // is to schedule the scrolling for after the event is fully processed
-        // FIXES https://github.com/eteran/nedit-ng/issues/239
-        QTimer::singleShot(0, [area, scrollPosition]() {
-            area->verticalScrollBar()->setValue(scrollPosition);
-        });
+		// NOTE(eteran): annoyingly, on windows the viewrect isn't resized until it is shown
+		// so if we try to do this now, it will try to scroll to a spot outside of
+		// then "lineStarts_" array. The simplest thing to do to make it work correctly
+		// is to schedule the scrolling for after the event is fully processed
+		// FIXES https://github.com/eteran/nedit-ng/issues/239
+		QTimer::singleShot(0, [area, scrollPosition]() {
+			area->verticalScrollBar()->setValue(scrollPosition);
+		});
 	}
 
 	attachHighlightToWidget(area);
