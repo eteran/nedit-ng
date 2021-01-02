@@ -407,36 +407,36 @@ private:
 	QPoint clickPos_;
 	QPoint mouseCoord_; // Last known mouse position in drag operation (for autoscroll)
 	QPointer<CallTipWidget> calltipWidget_;
-	TextBuffer *buffer_; // Contains text to be displayed
-	TextCursor anchor_;  // Anchor for drag operations
-	TextCursor cursorPos_;
-	TextCursor dragInsertPos_;       // location where text being block dragged was last inserted
-	TextCursor dragSourceDeletePos_; // location from which move source text was removed at start of drag
-	TextCursor firstChar_;           // Buffer positions of first and last displayed character (lastChar_ points either to a newline or one character beyond the end of the buffer)
-	TextCursor lastChar_;
-	bool autoIndent_;
-	bool autoWrapPastedText_;
-	bool autoWrap_;
-	bool colorizeHighlightedText_;
-	bool continuousWrap_;
-	bool heavyCursor_;
-	bool hidePointer_;
-	bool overstrike_;
-	bool readOnly_;
-	bool smartIndent_;
-	bool smartHome_;
-	int cursorVPadding_;
-	int emulateTabs_;
-	int fixedFontWidth_; // Font width if all current fonts are fixed and match in width
-	int fixedFontHeight_;
-	int wrapMargin_;
-	int rectAnchor_;       // Anchor for rectangular drag operations
-	int64_t dragDeleted_;  // # of characters deleted at drag destination in last drag position
-	int64_t dragInserted_; // # of characters inserted at drag destination in last drag position
-	int64_t dragNLines_;   // # of newlines in text being drag'd
-	int64_t dragRectStart_;
-	int64_t dragSourceDeleted_;         // # of chars. deleted when move source text was deleted
-	int64_t dragSourceInserted_;        // # of chars. inserted when move source text was inserted
+    TextBuffer *buffer_ = nullptr;; // Contains text to be displayed
+    TextCursor anchor_ = {};  // Anchor for drag operations
+    TextCursor cursorPos_ = {};
+    TextCursor dragInsertPos_ = {};       // location where text being block dragged was last inserted
+    TextCursor dragSourceDeletePos_ = {}; // location from which move source text was removed at start of drag
+    TextCursor firstChar_ = {};           // Buffer positions of first and last displayed character (lastChar_ points either to a newline or one character beyond the end of the buffer)
+    TextCursor lastChar_ = {};
+    bool autoIndent_ = 0;
+    bool autoWrapPastedText_ = 0;
+    bool autoWrap_ = 0;
+    bool colorizeHighlightedText_ = 0;
+    bool continuousWrap_ = 0;
+    bool heavyCursor_ = 0;
+    bool hidePointer_ = 0;
+    bool overstrike_ = 0;
+    bool readOnly_ = 0;
+    bool smartIndent_ = 0;
+    bool smartHome_ = 0;
+    int cursorVPadding_ = 0;
+    int emulateTabs_ = 0;
+    int fixedFontWidth_ = 0; // Font width if all current fonts are fixed and match in width
+    int fixedFontHeight_ = 0;
+    int wrapMargin_ = 0;
+    int rectAnchor_ = 0;       // Anchor for rectangular drag operations
+    int64_t dragDeleted_ = 0;  // # of characters deleted at drag destination in last drag position
+    int64_t dragInserted_ = 0; // # of characters inserted at drag destination in last drag position
+    int64_t dragNLines_ = 0;   // # of newlines in text being drag'd
+    int64_t dragRectStart_ = 0;
+    int64_t dragSourceDeleted_ = 0;         // # of chars. deleted when move source text was deleted
+    int64_t dragSourceInserted_ = 0;        // # of chars. inserted when move source text was inserted
 	TextBuffer *styleBuffer_ = nullptr; // Optional parallel buffer containing color and font information
 	std::string delimiters_;
 	std::shared_ptr<TextBuffer> dragOrigBuf_;       // backup buffer copy used during block dragging of selections
@@ -444,8 +444,8 @@ private:
 	std::vector<StyleTableEntry> styleTable_;       // Table of fonts and colors for coloring/syntax-highlighting
 	std::vector<uint8_t> bgClass_;                  // obtains index into bgClassColors_
 	uint32_t unfinishedStyle_;                      // Style buffer entry which triggers on-the-fly reparsing of region
-	UnfinishedStyleCallback unfinishedHighlightCB_; // Callback to parse "unfinished" regions
-	void *highlightCBArg_;                          // Arg to unfinishedHighlightCB
+    UnfinishedStyleCallback unfinishedHighlightCB_ = nullptr; // Callback to parse "unfinished" regions
+    void *highlightCBArg_ = nullptr;                          // Arg to unfinishedHighlightCB
 
 private:
 	std::vector<std::pair<CursorMovedCallback, void *>> movedCallbacks_;
