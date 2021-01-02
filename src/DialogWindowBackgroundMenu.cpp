@@ -24,8 +24,6 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 	ui.setupUi(this);
 	connectSlots();
 
-	ui.editMacro->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-
 	CommonDialog::setButtonIcons(&ui);
 
 	ui.editAccelerator->setMaximumSequenceLength(1);
