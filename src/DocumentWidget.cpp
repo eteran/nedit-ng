@@ -4019,6 +4019,7 @@ void DocumentWidget::splitPane() {
 		area->setLineNumCols(activeArea->getLineNumCols());
 		area->setBacklightCharTypes(backlightCharTypes_);
 		area->setFont(font_);
+		area->verticalScrollBar()->setValue(activeArea->verticalScrollBar()->value());
 	}
 
 	attachHighlightToWidget(area);
