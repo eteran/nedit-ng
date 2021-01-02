@@ -29,8 +29,6 @@ DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatte
 	ui.setupUi(this);
 	connectSlots();
 
-	ui.editDelimiters->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-
 	CommonDialog::setButtonIcons(&ui);
 
 	model_ = new LanguageModeModel(this);

@@ -28,10 +28,6 @@ DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, 
 	ui.setupUi(this);
 	connectSlots();
 
-	ui.editInit->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-	ui.editNewline->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-	ui.editModMacro->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-
 	QString languageMode = Preferences::LanguageModeName((document->getLanguageMode() == PLAIN_LANGUAGE_MODE) ? 0 : document->getLanguageMode());
 
 	updateLanguageModes();
