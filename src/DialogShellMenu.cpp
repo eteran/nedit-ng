@@ -21,8 +21,6 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f)
 	ui.setupUi(this);
 	connectSlots();
 
-	ui.editCommand->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-
 	CommonDialog::setButtonIcons(&ui);
 
 	ui.editAccelerator->setMaximumSequenceLength(1);

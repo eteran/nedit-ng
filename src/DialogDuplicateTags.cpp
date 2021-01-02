@@ -15,8 +15,6 @@ DialogDuplicateTags::DialogDuplicateTags(DocumentWidget *document, TextArea *are
 
 	ui.setupUi(this);
 	connectSlots();
-
-	ui.listWidget->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
 }
 
 /**

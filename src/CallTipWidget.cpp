@@ -14,8 +14,6 @@ CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f)
 
 	ui.setupUi(this);
 
-	ui.labelTip->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-
 	setAttribute(Qt::WA_DeleteOnClose, true);
 	ui.labelTip->setPalette(QToolTip::palette());
 

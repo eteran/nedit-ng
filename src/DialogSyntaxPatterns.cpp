@@ -30,10 +30,6 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f
 	ui.setupUi(this);
 	connectSlots();
 
-	ui.editRegex->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-	ui.editRegexEnd->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-	ui.editRegexError->setFont(QFontDatabase::systemFont(QFontDatabase::FixedFont));
-
 	CommonDialog::setButtonIcons(&ui);
 
 	model_ = new HighlightPatternModel(this);

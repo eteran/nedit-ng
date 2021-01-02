@@ -130,6 +130,19 @@ int main(int argc, char *argv[]) {
 		QIcon::setThemeName(QLatin1String("breeze-dark-nedit"));
 	}
 
+	// Make all text fields use fixed-width fonts by default
+	QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+	QApplication::setFont(fixedFont, "QLineEdit");
+	QApplication::setFont(fixedFont, "QTextEdit");
+	QApplication::setFont(fixedFont, "QPlainTextEdit");
+
+	// NEdit classic applied fixed-width fonts to list widgets, but since
+	// they're not editable, it's not really needed here. I imagine it
+	// was there to deal with fake columns in the tags conflict dialog,
+	// or anywhere else that used spaces to emulate columns. Motif didn't
+	// have column-based list widgets.
+	// QApplication::setFont(fixedFont, "QListWidget");
+
 	Main main{arguments};
 
 	// Process events.
