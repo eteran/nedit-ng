@@ -1439,10 +1439,12 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	ui.menu_Shell->addSeparator();
 	ui.menu_Shell->addActions(shellMenu->actions());
 
-	auto shellGroup = new QActionGroup(this);
-	shellGroup->setExclusive(false);
-	addToGroup(shellGroup, shellMenu);
-	connect(shellGroup, &QActionGroup::triggered, this, &MainWindow::shellTriggered);
+	delete shellGroup_;
+	shellGroup_ = new QActionGroup(this);
+	shellGroup_->setExclusive(false);
+	addToGroup(shellGroup_, shellMenu);
+	connect(shellGroup_, &QActionGroup::triggered, this, &MainWindow::shellTriggered);
+	delete shellMenu;
 
 	auto macroMenu = createUserMenu(document, MacroMenuData, CommandTypes::Macro);
 	ui.menu_Macro->clear();
@@ -1454,12 +1456,15 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	ui.menu_Macro->addSeparator();
 	ui.menu_Macro->addActions(macroMenu->actions());
 
-	auto macroGroup = new QActionGroup(this);
-	macroGroup->setExclusive(false);
-	addToGroup(macroGroup, macroMenu);
-	connect(macroGroup, &QActionGroup::triggered, this, &MainWindow::macroTriggered);
+	delete macroGroup_;
+	macroGroup_ = new QActionGroup(this);
+	macroGroup_->setExclusive(false);
+	addToGroup(macroGroup_, macroMenu);
+	connect(macroGroup_, &QActionGroup::triggered, this, &MainWindow::macroTriggered);
+	delete macroMenu;
 
 	// update background menu, which is owned by a single document
+	delete document->contextMenu_;
 	document->contextMenu_ = createUserMenu(document, BGMenuData, CommandTypes::Context);
 
 	// handler for BG menu scripts

@@ -447,6 +447,8 @@ private:
 	int iSearchHistIndex_           = 0;              // find and replace dialogs
 	TextCursor iSearchLastBeginPos_ = {};             // beg. pos. last match of current i.s.
 	TextCursor iSearchStartPos_     = TextCursor(-1); // start pos. of current incr. search
+	QActionGroup *shellGroup_       = nullptr;
+	QActionGroup *macroGroup_       = nullptr;
 
 public:
 	Ui::MainWindow ui;
