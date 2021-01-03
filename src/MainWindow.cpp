@@ -1430,23 +1430,24 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 void MainWindow::updateUserMenus(DocumentWidget *document) {
 
 	// update user menus, which are shared over all documents
-	auto shellMenu = createUserMenu(document, ShellMenuData, CommandTypes::Shell);
+	delete shellMenu_;
+	shellMenu_ = createUserMenu(document, ShellMenuData, CommandTypes::Shell);
 	ui.menu_Shell->clear();
 	ui.menu_Shell->addAction(ui.action_Execute_Command);
 	ui.menu_Shell->addAction(ui.action_Execute_Command_Line);
 	ui.menu_Shell->addAction(ui.action_Filter_Selection);
 	ui.menu_Shell->addAction(ui.action_Cancel_Shell_Command);
 	ui.menu_Shell->addSeparator();
-	ui.menu_Shell->addActions(shellMenu->actions());
+	ui.menu_Shell->addActions(shellMenu_->actions());
 
 	delete shellGroup_;
 	shellGroup_ = new QActionGroup(this);
 	shellGroup_->setExclusive(false);
-	addToGroup(shellGroup_, shellMenu);
+	addToGroup(shellGroup_, shellMenu_);
 	connect(shellGroup_, &QActionGroup::triggered, this, &MainWindow::shellTriggered);
-	delete shellMenu;
 
-	auto macroMenu = createUserMenu(document, MacroMenuData, CommandTypes::Macro);
+	delete macroMenu_;
+	macroMenu_ = createUserMenu(document, MacroMenuData, CommandTypes::Macro);
 	ui.menu_Macro->clear();
 	ui.menu_Macro->addAction(ui.action_Learn_Keystrokes);
 	ui.menu_Macro->addAction(ui.action_Finish_Learn);
@@ -1454,14 +1455,13 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	ui.menu_Macro->addAction(ui.action_Replay_Keystrokes);
 	ui.menu_Macro->addAction(ui.action_Repeat);
 	ui.menu_Macro->addSeparator();
-	ui.menu_Macro->addActions(macroMenu->actions());
+	ui.menu_Macro->addActions(macroMenu_->actions());
 
 	delete macroGroup_;
 	macroGroup_ = new QActionGroup(this);
 	macroGroup_->setExclusive(false);
-	addToGroup(macroGroup_, macroMenu);
+	addToGroup(macroGroup_, macroMenu_);
 	connect(macroGroup_, &QActionGroup::triggered, this, &MainWindow::macroTriggered);
-	delete macroMenu;
 
 	// update background menu, which is owned by a single document
 	delete document->contextMenu_;
