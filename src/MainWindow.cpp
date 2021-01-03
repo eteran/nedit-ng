@@ -1409,7 +1409,7 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 			}
 
 			if (!parentAction) {
-				auto newMenu = new QMenu(parentName, this);
+				auto newMenu = new QMenu(parentName, parentMenu);
 				parentMenu->addMenu(newMenu);
 				parentMenu = newMenu;
 			} else {
