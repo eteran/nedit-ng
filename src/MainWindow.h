@@ -449,6 +449,8 @@ private:
 	TextCursor iSearchStartPos_     = TextCursor(-1); // start pos. of current incr. search
 	QActionGroup *shellGroup_       = nullptr;
 	QActionGroup *macroGroup_       = nullptr;
+	QMenu *shellMenu_               = nullptr;
+	QMenu *macroMenu_               = nullptr;
 
 public:
 	Ui::MainWindow ui;
