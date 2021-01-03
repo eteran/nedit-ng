@@ -173,7 +173,7 @@ Replay Macro</string>
        <item>
         <widget class="QCheckBox" name="checkRequiresSelection">
          <property name="text">
-          <string>Requires Selection</string>
+          <string>&amp;Requires Selection</string>
          </property>
         </widget>
        </item>
