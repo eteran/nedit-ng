@@ -1321,7 +1321,7 @@ void MainWindow::checkCloseEnableState() {
 /*
 ** Create either the Shell menu, Macro menu or Background menu
 */
-QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<MenuData> &data, CommandTypes type) {
+QMenu *MainWindow::createUserMenu(size_t currentLanguageMode, const gsl::span<MenuData> &data, CommandTypes type) {
 
 	auto rootMenu = new QMenu(this);
 	for (qulonglong i = 0; i < data.size(); ++i) {
@@ -1332,8 +1332,8 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 		bool found = modes.empty();
 
 		if (!found) {
-			found = std::any_of(modes.begin(), modes.end(), [document](size_t languageMode) {
-				return languageMode == document->languageMode_;
+			found = std::any_of(modes.begin(), modes.end(), [currentLanguageMode](size_t languageMode) {
+				return languageMode == currentLanguageMode;
 			});
 		}
 
@@ -1429,9 +1429,11 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 */
 void MainWindow::updateUserMenus(DocumentWidget *document) {
 
+	const size_t language = document->languageMode_;
+
 	// update user menus, which are shared over all documents
 	delete shellMenu_;
-	shellMenu_ = createUserMenu(document, ShellMenuData, CommandTypes::Shell);
+	shellMenu_ = createUserMenu(language, ShellMenuData, CommandTypes::Shell);
 	ui.menu_Shell->clear();
 	ui.menu_Shell->addAction(ui.action_Execute_Command);
 	ui.menu_Shell->addAction(ui.action_Execute_Command_Line);
@@ -1447,7 +1449,7 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	connect(shellGroup_, &QActionGroup::triggered, this, &MainWindow::shellTriggered);
 
 	delete macroMenu_;
-	macroMenu_ = createUserMenu(document, MacroMenuData, CommandTypes::Macro);
+	macroMenu_ = createUserMenu(language, MacroMenuData, CommandTypes::Macro);
 	ui.menu_Macro->clear();
 	ui.menu_Macro->addAction(ui.action_Learn_Keystrokes);
 	ui.menu_Macro->addAction(ui.action_Finish_Learn);
@@ -1465,7 +1467,7 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 
 	// update background menu, which is owned by a single document
 	delete document->contextMenu_;
-	document->contextMenu_ = createUserMenu(document, BGMenuData, CommandTypes::Context);
+	document->contextMenu_ = createUserMenu(language, BGMenuData, CommandTypes::Context);
 
 	// handler for BG menu scripts
 	connect(document->contextMenu_, &QMenu::triggered, this, [this](QAction *action) {
