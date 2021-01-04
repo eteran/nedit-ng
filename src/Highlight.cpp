@@ -1454,7 +1454,7 @@ void LoadHighlightString(const QString &string) {
 		YAML::Node patternSets;
 
 		const QString highlightPatternsFile = Settings::highlightPatternsFile();
-		if (QFileInfo(highlightPatternsFile).exists()) {
+		if (QFileInfo::exists(highlightPatternsFile)) {
 			patternSets = YAML::LoadFile(highlightPatternsFile.toUtf8().data());
 		} else {
 			static QByteArray defaultPatternSets = loadResource(QLatin1String("DefaultPatternSets.yaml"));

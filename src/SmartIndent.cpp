@@ -189,7 +189,7 @@ void loadSmartIndentString(const QString &string) {
 			YAML::Node indentRules;
 
 			const QString filename = Settings::smartIndentFile();
-			if (QFileInfo(filename).exists()) {
+			if (QFileInfo::exists(filename)) {
 				indentRules = YAML::LoadFile(filename.toUtf8().data());
 			} else {
 				static QByteArray defaultIndentRules = loadResource(QLatin1String("DefaultSmartIndent.yaml"));

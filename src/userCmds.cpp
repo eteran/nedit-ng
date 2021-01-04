@@ -404,7 +404,7 @@ void loadMacroMenuYaml(std::vector<MenuData> &menuItems) {
 	try {
 		std::vector<YAML::Node> menu;
 		const QString filename = Settings::macroMenuFile();
-		if (QFileInfo(filename).exists()) {
+		if (QFileInfo::exists(filename)) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
 			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultMacroMenu.yaml"));
@@ -454,7 +454,7 @@ void loadShellMenuYaml(std::vector<MenuData> &menuItems) {
 	try {
 		std::vector<YAML::Node> menu;
 		const QString filename = Settings::shellMenuFile();
-		if (QFileInfo(filename).exists()) {
+		if (QFileInfo::exists(filename)) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
 #if defined(Q_OS_LINUX)
@@ -539,7 +539,7 @@ void loadContextMenuYaml(std::vector<MenuData> &menuItems) {
 	try {
 		std::vector<YAML::Node> menu;
 		const QString filename = Settings::contextMenuFile();
-		if (QFileInfo(filename).exists()) {
+		if (QFileInfo::exists(filename)) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
 			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultContextMenu.yaml"));
