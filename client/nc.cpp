@@ -493,7 +493,7 @@ int main(int argc, char *argv[]) {
 		// to close the socket. We'll leave it to the server to track
 		// when everything is all done. Otherwise, just disconnect.
 		if (ServerPreferences.waitForClose) {
-			socket->waitForDisconnected();
+			socket->waitForDisconnected(-1);
 		} else {
 			socket->disconnectFromServer();
 		}
