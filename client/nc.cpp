@@ -385,34 +385,19 @@ int startServer(const char *message, const QStringList &commandLineArgs) {
 	const QString command = arguments.takeFirst();
 
 	// start the server
-	auto process = new QProcess;
-	process->start(command, arguments);
+	// NOTE(eteran): we need to start the process detached, otherwise when nc closes
+	// all hell breaks loose.
+	// Unfortunately, this means that we no longer have the ability to get advanced information
+	// about why it may have failed to start
+	qint64 pid       = 0;
+	const bool sysrc = QProcess::startDetached(command, arguments, QString(), &pid);
 
-	const bool sysrc = process->waitForStarted();
 	if (!sysrc) {
-		switch (process->error()) {
-		case QProcess::FailedToStart:
-			fprintf(stderr, "nc-ng: The server process failed to start. Either the invoked program is missing, or you may have insufficient permissions to invoke the program.\n");
-			break;
-		case QProcess::Crashed:
-			fprintf(stderr, "nc-ng: The server process crashed some time after starting successfully.\n");
-			break;
-		case QProcess::Timedout:
-			fprintf(stderr, "nc-ng: Timeout while waiting for the server process\n");
-			break;
-		case QProcess::WriteError:
-			fprintf(stderr, "nc-ng: An error occurred when attempting to write to the server process.\n");
-			break;
-		case QProcess::ReadError:
-			fprintf(stderr, "nc-ng: An error occurred when attempting to read from the server process.\n");
-			break;
-		case QProcess::UnknownError:
-			fprintf(stderr, "nc-ng: An unknown error occurred.\n");
-			break;
-		}
+		fprintf(stderr, "nc-ng: The server process failed to start. Either the invoked program is missing, or you may have insufficient permissions to invoke the program.\n");
+		return -1;
+	} else {
+		return 0;
 	}
-
-	return (sysrc) ? 0 : -1;
 }
 
 }
