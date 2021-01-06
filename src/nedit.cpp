@@ -20,29 +20,21 @@ namespace {
  * @param msg
  */
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
-
-#if defined(NDEBUG)
-	// filter out messages that come from Qt itself
-	if (!context.file && context.line == 0 && !context.function) {
-		return;
-	}
-#endif
-
 	switch (type) {
 	case QtDebugMsg:
-		fprintf(stderr, "Debug: %s (%s:%u, %s)\n", qPrintable(msg), context.file, context.line, context.function);
+		fprintf(stderr, "Debug: %s\n", qPrintable(msg));
 		break;
 	case QtWarningMsg:
-		fprintf(stderr, "Warning: %s (%s:%u, %s)\n", qPrintable(msg), context.file, context.line, context.function);
+		fprintf(stderr, "Warning: %s\n", qPrintable(msg));
 		break;
 	case QtInfoMsg:
-		fprintf(stderr, "Info: %s (%s:%u, %s)\n", qPrintable(msg), context.file, context.line, context.function);
+		fprintf(stderr, "Info: %s\n", qPrintable(msg));
 		break;
 	case QtCriticalMsg:
-		fprintf(stderr, "Critical: %s (%s:%u, %s)\n", qPrintable(msg), context.file, context.line, context.function);
+		fprintf(stderr, "Critical: %s\n", qPrintable(msg));
 		break;
 	case QtFatalMsg:
-		fprintf(stderr, "Fatal: %s (%s:%u, %s)\n", qPrintable(msg), context.file, context.line, context.function);
+		fprintf(stderr, "Fatal: %s\n", qPrintable(msg));
 		abort();
 	}
 }
