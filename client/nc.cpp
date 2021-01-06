@@ -17,6 +17,7 @@
 #include <QThread>
 
 #include <boost/optional.hpp>
+#include <chrono>
 #include <iostream>
 #include <memory>
 
@@ -446,11 +447,20 @@ int main(int argc, char *argv[]) {
 
 	QString socketName = LocalSocketName(ServerPreferences.serverName);
 
-	for (int i = 0; i < 10; ++i) {
+	// How many times to try connecting to the socket
+	constexpr int RetryCount = 20;
+
+	// How long to wait between retries
+	const std::chrono::microseconds delay(125000);
+
+	// Qt local socket timeout
+	const std::chrono::milliseconds timeout(std::chrono::seconds(ServerPreferences.timeOut));
+
+	for (int i = 0; i < RetryCount; ++i) {
 
 		auto socket = std::make_unique<QLocalSocket>();
 		socket->connectToServer(socketName, QIODevice::WriteOnly);
-		if (!socket->waitForConnected(ServerPreferences.timeOut * 1000)) {
+		if (!socket->waitForConnected(timeout.count())) {
 			if (i == 0) {
 				switch (startServer("No servers available, start one? (y|n) [y]: ", commandLine.arguments)) {
 				case -1: // Start failed
@@ -461,7 +471,7 @@ int main(int argc, char *argv[]) {
 			}
 
 			// give just a little bit of time for things to get going...
-			QThread::usleep(125000);
+			QThread::usleep(delay.count());
 			continue;
 		}
 
@@ -472,7 +482,7 @@ int main(int argc, char *argv[]) {
 
 		socket->write(ba);
 		socket->flush();
-		socket->waitForBytesWritten(ServerPreferences.timeOut * 1000);
+		socket->waitForBytesWritten(timeout.count());
 
 		// if we are enabling wait mode, we simply wait for the server
 		// to close the socket. We'll leave it to the server to track
@@ -486,5 +496,6 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
+	fprintf(stderr, "nc-ng: Failed to connect to server socket\n");
 	return -1;
 }
