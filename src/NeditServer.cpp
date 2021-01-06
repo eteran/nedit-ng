@@ -212,19 +212,30 @@ void NeditServer::newConnection() {
 	// and use it to keep this socket alive until it returns
 	std::shared_ptr<QLocalSocket> socket(server_->nextPendingConnection());
 
-	while (socket->bytesAvailable() < static_cast<int>(sizeof(qint32))) {
-		socket->waitForReadyRead();
-	}
-
 	QDataStream stream(socket.get());
 	stream.setVersion(QDataStream::Qt_5_0);
 
 	QByteArray jsonString;
-	stream >> jsonString;
+	do {
+		if (!socket->waitForReadyRead(1000)) {
+			qWarning("NEdit: error processing server request: [%d] %s", socket->error(), qPrintable(socket->errorString()));
+			return;
+		}
 
-	auto jsonDocument = QJsonDocument::fromJson(jsonString);
+		stream.startTransaction();
+		stream >> jsonString;
+	} while (!stream.commitTransaction());
+
+	QJsonParseError error;
+	auto jsonDocument = QJsonDocument::fromJson(jsonString, &error);
+
+	if (error.error != QJsonParseError::NoError) {
+		qWarning("NEdit: error parsing JSON: [%d] %s \n", error.error, qPrintable(error.errorString()));
+		return;
+	}
+
 	if (!jsonDocument.isArray()) {
-		qWarning("NEdit: error processing server request");
+		qWarning("NEdit: error processing server request. Top level JSON value is not an array.");
 		return;
 	}
 
@@ -263,7 +274,7 @@ void NeditServer::newConnection() {
 	for (auto entry : array) {
 
 		if (!entry.isObject()) {
-			qWarning("NEdit: error processing server request");
+			qWarning("NEdit: error processing server request. Non-object in JSON array.");
 			break;
 		}
 
