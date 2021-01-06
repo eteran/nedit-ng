@@ -20,9 +20,14 @@ namespace {
  * @param msg
  */
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
+
+	Q_UNUSED(context);
+
 	switch (type) {
 	case QtDebugMsg:
+	#ifndef NDEBUG
 		fprintf(stderr, "Debug: %s\n", qPrintable(msg));
+	#endif
 		break;
 	case QtWarningMsg:
 		fprintf(stderr, "Warning: %s\n", qPrintable(msg));
