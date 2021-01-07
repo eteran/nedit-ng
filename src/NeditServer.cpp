@@ -21,7 +21,11 @@
 
 #include <memory>
 
-#if defined(QT_X11)
+#if defined(QT_X11) && !defined(Q_OS_MAC)
+#define USE_X11
+#endif
+
+#if defined(USE_X11)
 #include <QX11Info>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -29,14 +33,14 @@
 
 namespace {
 
-#if !defined(QT_X11)
+#if !defined(USE_X11)
 QScreen *screenFromWidget(QWidget *widget) {
 	QWindow *window = widget->windowHandle();
 	return window->screen();
 }
 #endif
 
-#if defined(QT_X11)
+#if defined(USE_X11)
 /**
  * @brief queryDesktop
  * @param display
@@ -113,13 +117,14 @@ long QueryDesktop(Display *display, Window window) {
 }
 #endif
 
+
+#if defined(USE_X11)
 /**
  * @brief isLocatedOnDesktop
  * @param widget
  * @param currentDesktop
  * @return
  */
-#if defined(QT_X11)
 bool isLocatedOnDesktop(QWidget *widget, long currentDesktop) {
 
 	if (currentDesktop == -1) {
@@ -137,6 +142,12 @@ bool isLocatedOnDesktop(QWidget *widget, long currentDesktop) {
 	return false;
 }
 #else
+/**
+ * @brief isLocatedOnDesktop
+ * @param widget
+ * @param currentDesktop
+ * @return
+ */
 bool isLocatedOnDesktop(QWidget *widget, QScreen *currentDesktop) {
 	return screenFromWidget(widget) == currentDesktop;
 }
@@ -187,7 +198,7 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, Desktop currentDesktop) {
  * @brief current_desktop
  * @return
  */
-#if defined(QT_X11)
+#if defined(USE_X11)
 long current_desktop() {
 	Display *TheDisplay = QX11Info::display();
 	return QueryCurrentDesktop(TheDisplay, RootWindow(TheDisplay, DefaultScreen(TheDisplay)));
