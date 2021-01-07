@@ -707,10 +707,9 @@ TextArea *DocumentWidget::createTextArea(const std::shared_ptr<TextBuffer> &buff
 	// policy here, in fact, that would break things.
 	//area->setContextMenuPolicy(Qt::CustomContextMenu);
 
+	// just emit an event that will later be caught by the higher layer informing it of the context menu request
 	connect(area, &TextArea::customContextMenuRequested, this, [this](const QPoint &pos) {
-		if (contextMenu_) {
-			contextMenu_->exec(pos);
-		}
+		Q_EMIT contextMenuRequested(this, pos);
 	});
 
 	return area;
@@ -1528,7 +1527,7 @@ void DocumentWidget::updateSelectionSensitiveMenus(bool enabled) {
 
 	updateSelectionSensitiveMenu(win->ui.menu_Shell, ShellMenuData, enabled);
 	updateSelectionSensitiveMenu(win->ui.menu_Macro, MacroMenuData, enabled);
-	updateSelectionSensitiveMenu(contextMenu_, BGMenuData, enabled);
+	updateSelectionSensitiveMenu(win->contextMenu_, BGMenuData, enabled);
 }
 
 void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<MenuData> &menuList, bool enabled) {

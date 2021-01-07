@@ -451,6 +451,7 @@ private:
 	QActionGroup *macroGroup_       = nullptr;
 	QMenu *shellMenu_               = nullptr;
 	QMenu *macroMenu_               = nullptr;
+	QMenu *contextMenu_             = nullptr;
 
 public:
 	Ui::MainWindow ui;
