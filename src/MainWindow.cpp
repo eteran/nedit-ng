@@ -1432,7 +1432,9 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	const size_t language = document->languageMode_;
 
 	// update user menus, which are shared over all documents
-	shellMenu_->deleteLater();
+	if(shellMenu_) {
+		shellMenu_->deleteLater();
+	}
 	shellMenu_ = createUserMenu(language, ShellMenuData, CommandTypes::Shell);
 	ui.menu_Shell->clear();
 	ui.menu_Shell->addAction(ui.action_Execute_Command);
@@ -1442,13 +1444,17 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	ui.menu_Shell->addSeparator();
 	ui.menu_Shell->addActions(shellMenu_->actions());
 
-	shellGroup_->deleteLater();
+	if(shellGroup_) {
+		shellGroup_->deleteLater();
+	}
 	shellGroup_ = new QActionGroup(this);
 	shellGroup_->setExclusive(false);
 	addToGroup(shellGroup_, shellMenu_);
 	connect(shellGroup_, &QActionGroup::triggered, this, &MainWindow::shellTriggered);
 
-	macroMenu_->deleteLater();
+	if(macroMenu_) {
+		macroMenu_->deleteLater();
+	}
 	macroMenu_ = createUserMenu(language, MacroMenuData, CommandTypes::Macro);
 	ui.menu_Macro->clear();
 	ui.menu_Macro->addAction(ui.action_Learn_Keystrokes);
@@ -1459,14 +1465,18 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	ui.menu_Macro->addSeparator();
 	ui.menu_Macro->addActions(macroMenu_->actions());
 
-	macroGroup_->deleteLater();
+	if(macroGroup_) {
+		macroGroup_->deleteLater();
+	}
 	macroGroup_ = new QActionGroup(this);
 	macroGroup_->setExclusive(false);
 	addToGroup(macroGroup_, macroMenu_);
 	connect(macroGroup_, &QActionGroup::triggered, this, &MainWindow::macroTriggered);
 
 	// update background menu, which is owned by a single document
-	document->contextMenu_->deleteLater();
+	if(document->contextMenu_) {
+		document->contextMenu_->deleteLater();
+	}
 	document->contextMenu_ = createUserMenu(language, BGMenuData, CommandTypes::Context);
 
 	// handler for BG menu scripts
