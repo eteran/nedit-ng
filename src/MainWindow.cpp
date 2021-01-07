@@ -1094,26 +1094,18 @@ void MainWindow::action_Delete_triggered() {
 
 /**
  * @brief MainWindow::createDocument
- * @param name
+ * @param document
+ * @param pos
  * @return
  */
-DocumentWidget *MainWindow::createDocument(const QString &name) {
-	auto document = new DocumentWidget(name, this);
+void MainWindow::handleContextMenuEvent(DocumentWidget *document, const QPoint &pos) {
+	if (contextMenu_) {
+		if (QAction *action = contextMenu_->exec(pos)) {
 
-	connect(document, &DocumentWidget::canUndoChanged, this, &MainWindow::undoAvailable);
-	connect(document, &DocumentWidget::canRedoChanged, this, &MainWindow::redoAvailable);
-	connect(document, &DocumentWidget::updateStatus, this, &MainWindow::updateStatus);
-	connect(document, &DocumentWidget::updateWindowReadOnly, this, &MainWindow::updateWindowReadOnly);
-	connect(document, &DocumentWidget::updateWindowTitle, this, &MainWindow::updateWindowTitle);
-	connect(document, &DocumentWidget::fontChanged, this, &MainWindow::updateWindowHints);
-	connect(document, &DocumentWidget::contextMenuRequested, this, [this](DocumentWidget *document, const QPoint &pos) {
-		if (contextMenu_) {
-			if (QAction *action = contextMenu_->exec(pos)) {
+			QVariant data = action->data();
+			if (!data.isNull()) {
 
-				QVariant data = action->data();
-				if (!data.isNull()) {
-
-					/* Don't allow users to execute a macro command from the menu (or accel)
+				/* Don't allow users to execute a macro command from the menu (or accel)
 					 * if there's already a macro command executing, UNLESS the macro is
 					 * directly called from another one.  NEdit can't handle
 					 * running multiple, independent uncoordinated, macros in the same
@@ -1123,22 +1115,41 @@ DocumentWidget *MainWindow::createDocument(const QString &name) {
 					 * level, however, a call here with a macro running means that THE USER
 					 * is explicitly invoking another macro via the menu or an accelerator,
 					 * UNLESS the macro event marker is set */
-					if (document) {
-						if (document->macroCmdData_) {
-							QApplication::beep();
-							return;
-						}
+				if (document) {
+					if (document->macroCmdData_) {
+						QApplication::beep();
+						return;
+					}
 
-						const auto index   = data.toUInt();
-						const QString name = BGMenuData[index].item.name;
-						if (QPointer<TextArea> area = lastFocus()) {
-							execNamedBGMenuCmd(document, area, name, CommandSource::User);
-						}
+					const auto index   = data.toUInt();
+					const QString name = BGMenuData[index].item.name;
+					if (QPointer<TextArea> area = lastFocus()) {
+						execNamedBGMenuCmd(document, area, name, CommandSource::User);
 					}
 				}
 			}
 		}
-	});
+	}
+}
+
+/**
+ * @brief MainWindow::createDocument
+ * @param name
+ * @return
+ */
+DocumentWidget *MainWindow::createDocument(const QString &name) {
+	auto document = new DocumentWidget(name, this);
+
+	// NOTE(eteran): if any slots are connected in this function, they also need to be updated in
+	// DocumentWidget::updateSignals!!
+
+	connect(document, &DocumentWidget::canUndoChanged, this, &MainWindow::undoAvailable);
+	connect(document, &DocumentWidget::canRedoChanged, this, &MainWindow::redoAvailable);
+	connect(document, &DocumentWidget::updateStatus, this, &MainWindow::updateStatus);
+	connect(document, &DocumentWidget::updateWindowReadOnly, this, &MainWindow::updateWindowReadOnly);
+	connect(document, &DocumentWidget::updateWindowTitle, this, &MainWindow::updateWindowTitle);
+	connect(document, &DocumentWidget::fontChanged, this, &MainWindow::updateWindowHints);
+	connect(document, &DocumentWidget::contextMenuRequested, this, &MainWindow::handleContextMenuEvent);
 
 	ui.tabWidget->addTab(document, name);
 	return document;

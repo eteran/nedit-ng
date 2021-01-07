@@ -4171,6 +4171,8 @@ void DocumentWidget::updateSignals(MainWindow *from, MainWindow *to) {
 	connect(this, &DocumentWidget::updateStatus, to, &MainWindow::updateStatus);
 	connect(this, &DocumentWidget::updateWindowReadOnly, to, &MainWindow::updateWindowReadOnly);
 	connect(this, &DocumentWidget::updateWindowTitle, to, &MainWindow::updateWindowTitle);
+	connect(this, &DocumentWidget::fontChanged, to, &MainWindow::updateWindowHints);
+	connect(this, &DocumentWidget::contextMenuRequested, to, &MainWindow::handleContextMenuEvent);
 }
 
 /*
