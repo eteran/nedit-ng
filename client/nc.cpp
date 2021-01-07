@@ -401,6 +401,26 @@ int startServer(const char *message, const QStringList &commandLineArgs) {
 	}
 }
 
+bool writeToSocket(QLocalSocket *socket, const QByteArray &data) {
+	int remaining   = data.size();
+	const char *ptr = data.data();
+
+	constexpr int MaxChunk = 4096;
+
+	while (socket->isOpen() && remaining > 0) {
+		const int64_t written = socket->write(ptr, std::min(MaxChunk, remaining));
+		if (written == -1) {
+			return false;
+		}
+
+		socket->waitForBytesWritten(-1);
+
+		ptr += written;
+		remaining -= written;
+	}
+	return true;
+}
+
 }
 
 /**
@@ -480,9 +500,7 @@ int main(int argc, char *argv[]) {
 		stream.setVersion(QDataStream::Qt_5_0);
 		stream << commandLine.jsonRequest;
 
-		socket->write(ba);
-		socket->flush();
-		socket->waitForBytesWritten(timeout.count());
+		writeToSocket(socket.get(), ba);
 
 		// if we are enabling wait mode, we simply wait for the server
 		// to close the socket. We'll leave it to the server to track
