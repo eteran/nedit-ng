@@ -244,7 +244,7 @@ void NeditServer::newConnection() {
 
 	QByteArray jsonString;
 	do {
-		if (!socket->waitForReadyRead(1000)) {
+		if (!socket->waitForReadyRead()) {
 			qWarning("NEdit: error processing server request: [%d] %s", socket->error(), qPrintable(socket->errorString()));
 			return;
 		}
