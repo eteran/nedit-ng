@@ -15,11 +15,17 @@
 #include <QJsonObject>
 #include <QLocalServer>
 #include <QLocalSocket>
+#include <QScreen>
 #include <QThread>
+#include <QWindow>
 
 #include <memory>
 
-#if defined(QT_X11)
+#if defined(QT_X11) && !defined(Q_OS_MAC)
+#define USE_X11
+#endif
+
+#if defined(USE_X11)
 #include <QX11Info>
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
@@ -27,7 +33,14 @@
 
 namespace {
 
-#if defined(QT_X11)
+#if !defined(USE_X11)
+QScreen *screenFromWidget(QWidget *widget) {
+	QWindow *window = widget->windowHandle();
+	return window->screen();
+}
+#endif
+
+#if defined(USE_X11)
 /**
  * @brief queryDesktop
  * @param display
@@ -104,6 +117,8 @@ long QueryDesktop(Display *display, Window window) {
 }
 #endif
 
+
+#if defined(USE_X11)
 /**
  * @brief isLocatedOnDesktop
  * @param widget
@@ -111,7 +126,7 @@ long QueryDesktop(Display *display, Window window) {
  * @return
  */
 bool isLocatedOnDesktop(QWidget *widget, long currentDesktop) {
-#if defined(QT_X11)
+
 	if (currentDesktop == -1) {
 		return true; /* No desktop information available */
 	}
@@ -125,10 +140,18 @@ bool isLocatedOnDesktop(QWidget *widget, long currentDesktop) {
 	}
 
 	return false;
-#else
-	return QApplication::desktop()->screenNumber(widget) == currentDesktop;
-#endif
 }
+#else
+/**
+ * @brief isLocatedOnDesktop
+ * @param widget
+ * @param currentDesktop
+ * @return
+ */
+bool isLocatedOnDesktop(QWidget *widget, QScreen *currentDesktop) {
+	return screenFromWidget(widget) == currentDesktop;
+}
+#endif
 
 /**
  * @brief findDocumentOnDesktop
@@ -136,7 +159,8 @@ bool isLocatedOnDesktop(QWidget *widget, long currentDesktop) {
  * @param currentDesktop
  * @return
  */
-DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
+template <class Desktop>
+DocumentWidget *findDocumentOnDesktop(int tabbed, Desktop currentDesktop) {
 	if (tabbed == 0 || (tabbed == -1 && !Preferences::GetPrefOpenInTab())) {
 
 		/* A new window is requested, unless we find an untitled unmodified
@@ -147,6 +171,7 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
 			if (document->filenameSet() || document->fileChanged() || document->macroCmdData_) {
 				continue;
 			}
+
 			/* No check for top document here! */
 			if (isLocatedOnDesktop(document, currentDesktop)) {
 				return document;
@@ -173,14 +198,16 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, long currentDesktop) {
  * @brief current_desktop
  * @return
  */
+#if defined(USE_X11)
 long current_desktop() {
-#if defined(QT_X11)
 	Display *TheDisplay = QX11Info::display();
 	return QueryCurrentDesktop(TheDisplay, RootWindow(TheDisplay, DefaultScreen(TheDisplay)));
-#else
-	return QApplication::desktop()->screenNumber(QApplication::activeWindow());
-#endif
 }
+#else
+QScreen *current_desktop() {
+	return screenFromWidget(QApplication::activeWindow());
+}
+#endif
 
 }
 
@@ -242,7 +269,7 @@ void NeditServer::newConnection() {
 	int lastIconic = 0;
 
 	QPointer<DocumentWidget> lastFile;
-	const long currentDesktop = current_desktop();
+	const auto currentDesktop = current_desktop();
 
 	auto array = jsonDocument.array();
 	/* If the command string is empty, put up an empty, Untitled window
@@ -299,11 +326,11 @@ void NeditServer::newConnection() {
 
 			std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
-			auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *doc) {
-				return (!doc->filenameSet() && !doc->fileChanged() && isLocatedOnDesktop(MainWindow::fromDocument(doc), currentDesktop));
-			});
-
 			if (doCommand.isEmpty()) {
+				auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *doc) {
+					return (!doc->filenameSet() && !doc->fileChanged() && isLocatedOnDesktop(MainWindow::fromDocument(doc), currentDesktop));
+				});
+
 				if (it == documents.end()) {
 
 					MainWindow::editNewFile(
