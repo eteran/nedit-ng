@@ -1106,6 +1106,39 @@ DocumentWidget *MainWindow::createDocument(const QString &name) {
 	connect(document, &DocumentWidget::updateWindowReadOnly, this, &MainWindow::updateWindowReadOnly);
 	connect(document, &DocumentWidget::updateWindowTitle, this, &MainWindow::updateWindowTitle);
 	connect(document, &DocumentWidget::fontChanged, this, &MainWindow::updateWindowHints);
+	connect(document, &DocumentWidget::contextMenuRequested, this, [this](DocumentWidget *document, const QPoint &pos) {
+		if (contextMenu_) {
+			if (QAction *action = contextMenu_->exec(pos)) {
+
+				QVariant data = action->data();
+				if (!data.isNull()) {
+
+					/* Don't allow users to execute a macro command from the menu (or accel)
+					 * if there's already a macro command executing, UNLESS the macro is
+					 * directly called from another one.  NEdit can't handle
+					 * running multiple, independent uncoordinated, macros in the same
+					 * window.  Macros may invoke macro menu commands recursively via the
+					 * macro_menu_command action proc, which is important for being able to
+					 * repeat any operation, and to embed macros within eachother at any
+					 * level, however, a call here with a macro running means that THE USER
+					 * is explicitly invoking another macro via the menu or an accelerator,
+					 * UNLESS the macro event marker is set */
+					if (document) {
+						if (document->macroCmdData_) {
+							QApplication::beep();
+							return;
+						}
+
+						const auto index   = data.toUInt();
+						const QString name = BGMenuData[index].item.name;
+						if (QPointer<TextArea> area = lastFocus()) {
+							execNamedBGMenuCmd(document, area, name, CommandSource::User);
+						}
+					}
+				}
+			}
+		}
+	});
 
 	ui.tabWidget->addTab(document, name);
 	return document;
@@ -1432,7 +1465,7 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	const size_t language = document->languageMode_;
 
 	// update user menus, which are shared over all documents
-	if(shellMenu_) {
+	if (shellMenu_) {
 		shellMenu_->deleteLater();
 	}
 	shellMenu_ = createUserMenu(language, ShellMenuData, CommandTypes::Shell);
@@ -1444,7 +1477,7 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	ui.menu_Shell->addSeparator();
 	ui.menu_Shell->addActions(shellMenu_->actions());
 
-	if(shellGroup_) {
+	if (shellGroup_) {
 		shellGroup_->deleteLater();
 	}
 	shellGroup_ = new QActionGroup(this);
@@ -1452,7 +1485,7 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	addToGroup(shellGroup_, shellMenu_);
 	connect(shellGroup_, &QActionGroup::triggered, this, &MainWindow::shellTriggered);
 
-	if(macroMenu_) {
+	if (macroMenu_) {
 		macroMenu_->deleteLater();
 	}
 	macroMenu_ = createUserMenu(language, MacroMenuData, CommandTypes::Macro);
@@ -1465,7 +1498,7 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	ui.menu_Macro->addSeparator();
 	ui.menu_Macro->addActions(macroMenu_->actions());
 
-	if(macroGroup_) {
+	if (macroGroup_) {
 		macroGroup_->deleteLater();
 	}
 	macroGroup_ = new QActionGroup(this);
@@ -1474,40 +1507,10 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	connect(macroGroup_, &QActionGroup::triggered, this, &MainWindow::macroTriggered);
 
 	// update background menu, which is owned by a single document
-	if(document->contextMenu_) {
-		document->contextMenu_->deleteLater();
+	if (contextMenu_) {
+		contextMenu_->deleteLater();
 	}
-	document->contextMenu_ = createUserMenu(language, BGMenuData, CommandTypes::Context);
-
-	// handler for BG menu scripts
-	connect(document->contextMenu_, &QMenu::triggered, this, [this](QAction *action) {
-		QVariant data = action->data();
-		if (!data.isNull()) {
-
-			/* Don't allow users to execute a macro command from the menu (or accel)
-			   if there's already a macro command executing, UNLESS the macro is
-			   directly called from another one.  NEdit can't handle
-			   running multiple, independent uncoordinated, macros in the same
-			   window.  Macros may invoke macro menu commands recursively via the
-			   macro_menu_command action proc, which is important for being able to
-			   repeat any operation, and to embed macros within eachother at any
-			   level, however, a call here with a macro running means that THE USER
-			   is explicitly invoking another macro via the menu or an accelerator,
-			   UNLESS the macro event marker is set */
-			if (DocumentWidget *document = currentDocument()) {
-				if (document->macroCmdData_) {
-					QApplication::beep();
-					return;
-				}
-
-				const auto index   = data.toUInt();
-				const QString name = BGMenuData[index].item.name;
-				if (QPointer<TextArea> area = lastFocus()) {
-					execNamedBGMenuCmd(document, area, name, CommandSource::User);
-				}
-			}
-		}
-	});
+	contextMenu_ = createUserMenu(language, BGMenuData, CommandTypes::Context);
 }
 
 /**

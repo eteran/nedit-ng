@@ -25,9 +25,9 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 
 	switch (type) {
 	case QtDebugMsg:
-	#ifndef NDEBUG
+#ifndef NDEBUG
 		fprintf(stderr, "Debug: %s\n", qPrintable(msg));
-	#endif
+#endif
 		break;
 	case QtWarningMsg:
 		fprintf(stderr, "Warning: %s\n", qPrintable(msg));
