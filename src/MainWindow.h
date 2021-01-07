@@ -425,6 +425,7 @@ public Q_SLOTS:
 	void updateStatus(DocumentWidget *document, TextArea *area);
 	void updateWindowReadOnly(DocumentWidget *document);
 	void updateWindowTitle(DocumentWidget *document);
+	void handleContextMenuEvent(DocumentWidget *document, const QPoint &pos);
 
 public:
 	int fHistIndex_;
