@@ -175,7 +175,7 @@
         <string>W&amp;indow</string>
        </property>
        <property name="icon">
-        <iconset theme="window">
+        <iconset theme="whole-window">
          <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>
