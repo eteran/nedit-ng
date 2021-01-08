@@ -22,7 +22,7 @@
 		<file alias="16x16/dialog-close.svg">icons/breeze-nedit/16x16/dialog-close.svg</file>
 		<file alias="16x16/folder-documents.svg">icons/breeze-nedit/16x16/folder-documents.svg</file>
 		<file alias="16x16/edit-select-all.svg">icons/breeze-nedit/16x16/edit-select-all.svg</file>
-		<file alias="16x16/window.svg">icons/breeze-nedit/16x16/window.svg</file>
+		<file alias="16x16/whole-window.svg">icons/breeze-nedit/16x16/whole-window.svg</file>
 		<file alias="16x16/edit-find-replace.svg">icons/breeze-nedit/16x16/edit-find-replace.svg</file>
 		<file alias="16x16/format-text-uppercase.svg">icons/breeze-nedit/16x16/format-text-uppercase.svg</file>
 		<file alias="16x16/document-save.svg">icons/breeze-nedit/16x16/document-save.svg</file>
