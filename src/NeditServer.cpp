@@ -111,10 +111,10 @@ long QueryDesktop(Display *display, Window window) {
  * @return
  */
 bool isLocatedOnDesktop(QWidget *widget, long currentDesktop) {
-#if defined(QT_X11)
 	if (currentDesktop == -1) {
 		return true; /* No desktop information available */
 	}
+#if defined(QT_X11)
 
 	Display *TheDisplay = QX11Info::display();
 	long windowDesktop  = QueryDesktop(TheDisplay, widget->winId());
@@ -299,11 +299,12 @@ void NeditServer::newConnection() {
 
 			std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
-			auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *doc) {
-				return (!doc->filenameSet() && !doc->fileChanged() && isLocatedOnDesktop(MainWindow::fromDocument(doc), currentDesktop));
-			});
-
 			if (doCommand.isEmpty()) {
+
+				auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *doc) {
+					return (!doc->filenameSet() && !doc->fileChanged() && isLocatedOnDesktop(MainWindow::fromDocument(doc), currentDesktop));
+				});
+
 				if (it == documents.end()) {
 
 					MainWindow::editNewFile(
