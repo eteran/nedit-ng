@@ -271,6 +271,8 @@ void NeditServer::newConnection() {
 		return;
 	}
 
+	MainWindow *targetWindow = nullptr;
+
 	for (auto entry : array) {
 
 		if (!entry.isObject()) {
@@ -307,11 +309,21 @@ void NeditServer::newConnection() {
 
 				if (it == documents.end()) {
 
-					MainWindow::editNewFile(
-						MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop)),
+					// we haven't picked a target yet, so let's try
+					if (!targetWindow) {
+						targetWindow = MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop));
+					}
+
+					DocumentWidget *newDocument = MainWindow::editNewFile(
+						targetWindow,
 						QString(),
 						iconicFlag,
 						languageMode.isEmpty() ? QString() : languageMode);
+
+					// if we STILL don't have a target window, OK, fine, just use the one for the document we just opened
+					if (!targetWindow) {
+						targetWindow = MainWindow::fromDocument(newDocument);
+					}
 				} else {
 					if (iconicFlag) {
 						(*it)->raiseDocument();
