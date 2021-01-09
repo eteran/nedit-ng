@@ -2,6 +2,7 @@
 #include "Settings.h"
 #include "Util/Resource.h"
 
+#include <QFontDatabase>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QtDebug>
@@ -20,7 +21,12 @@ const QStringList DEFAULT_INCLUDE_PATHS = {
 
 const auto DEFAULT_DELIMETERS      = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
 const auto DEFAULT_BACKLIGHT_CHARS = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
-const auto DEFAULT_TEXT_FONT       = QLatin1String("Courier New,10,-1,5,50,0,0,0,0,0");
+
+QString defaultTextFont() {
+	QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+	fixedFont.setPointSize(12);
+	return fixedFont.toString();
+}
 
 template <class T>
 using IsEnum = typename std::enable_if<std::is_enum<T>::value>::type;
@@ -321,7 +327,7 @@ void loadPreferences(bool isServer) {
 	tabDistance                  = settings.value(tr("nedit.tabDistance"), 8).toInt();
 	emulateTabs                  = settings.value(tr("nedit.emulateTabs"), 0).toInt();
 	insertTabs                   = settings.value(tr("nedit.insertTabs"), true).toBool();
-	fontName                     = settings.value(tr("nedit.textFont"), DEFAULT_TEXT_FONT).toString();
+	fontName                     = settings.value(tr("nedit.textFont"), defaultTextFont()).toString();
 	shell                        = settings.value(tr("nedit.shell"), QLatin1String("DEFAULT")).toString();
 	geometry                     = settings.value(tr("nedit.geometry"), QString()).toString();
 	tagFile                      = settings.value(tr("nedit.tagFile"), QString()).toString();
