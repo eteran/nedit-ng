@@ -404,7 +404,7 @@ void loadMacroMenuYaml(std::vector<MenuData> &menuItems) {
 	try {
 		std::vector<YAML::Node> menu;
 		const QString filename = Settings::macroMenuFile();
-		if (QFileInfo(filename).exists()) {
+		if (QFileInfo::exists(filename)) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
 			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultMacroMenu.yaml"));
@@ -435,7 +435,7 @@ void loadMacroMenuYaml(std::vector<MenuData> &menuItems) {
 			}
 
 			// add/replace menu record in the list
-			auto it2 = std::find_if(menuItems.begin(), menuItems.end(), [&menuItem](MenuData &data) {
+			auto it2 = std::find_if(menuItems.begin(), menuItems.end(), [&menuItem](const MenuData &data) {
 				return data.item.name == menuItem.name;
 			});
 
@@ -454,7 +454,7 @@ void loadShellMenuYaml(std::vector<MenuData> &menuItems) {
 	try {
 		std::vector<YAML::Node> menu;
 		const QString filename = Settings::shellMenuFile();
-		if (QFileInfo(filename).exists()) {
+		if (QFileInfo::exists(filename)) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
 #if defined(Q_OS_LINUX)
@@ -516,7 +516,7 @@ void loadShellMenuYaml(std::vector<MenuData> &menuItems) {
 			}
 
 			// add/replace menu record in the list
-			auto it2 = std::find_if(menuItems.begin(), menuItems.end(), [&menuItem](MenuData &data) {
+			auto it2 = std::find_if(menuItems.begin(), menuItems.end(), [&menuItem](const MenuData &data) {
 				return data.item.name == menuItem.name;
 			});
 
@@ -539,7 +539,7 @@ void loadContextMenuYaml(std::vector<MenuData> &menuItems) {
 	try {
 		std::vector<YAML::Node> menu;
 		const QString filename = Settings::contextMenuFile();
-		if (QFileInfo(filename).exists()) {
+		if (QFileInfo::exists(filename)) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
 			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultContextMenu.yaml"));
@@ -570,7 +570,7 @@ void loadContextMenuYaml(std::vector<MenuData> &menuItems) {
 			}
 
 			// add/replace menu record in the list
-			auto it2 = std::find_if(menuItems.begin(), menuItems.end(), [&menuItem](MenuData &data) {
+			auto it2 = std::find_if(menuItems.begin(), menuItems.end(), [&menuItem](const MenuData &data) {
 				return data.item.name == menuItem.name;
 			});
 
@@ -620,7 +620,7 @@ void loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 			}
 
 			// add/replace menu record in the list
-			auto it = std::find_if(menuItems.begin(), menuItems.end(), [&f](MenuData &data) {
+			auto it = std::find_if(menuItems.begin(), menuItems.end(), [&f](const MenuData &data) {
 				return data.item.name == f->name;
 			});
 
@@ -749,9 +749,10 @@ static std::vector<MenuData> &selectMenu(CommandTypes type) {
 MenuData *find_menu_item(const QString &name, CommandTypes type) {
 
 	std::vector<MenuData> &menu = selectMenu(type);
-	auto it                     = std::find_if(menu.begin(), menu.end(), [&name](MenuData &entry) {
-        return entry.item.name == name;
-    });
+
+	auto it = std::find_if(menu.begin(), menu.end(), [&name](const MenuData &entry) {
+		return entry.item.name == name;
+	});
 
 	if (it != menu.end()) {
 		return &*it;

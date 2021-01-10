@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>688</width>
-    <height>555</height>
+    <height>556</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -113,7 +113,10 @@ Select &quot;New&quot; to add a new command to the menu.</string>
          <item>
           <widget class="QLabel" name="label_3">
            <property name="text">
-            <string>Menu Entry</string>
+            <string>Menu Entr&amp;y</string>
+           </property>
+           <property name="buddy">
+            <cstring>editName</cstring>
            </property>
           </widget>
          </item>
@@ -153,7 +156,10 @@ Select &quot;New&quot; to add a new command to the menu.</string>
            <item row="0" column="0">
             <widget class="QLabel" name="label_4">
              <property name="text">
-              <string>Accelerator</string>
+              <string>Acce&amp;lerator</string>
+             </property>
+             <property name="buddy">
+              <cstring>editAccelerator</cstring>
              </property>
             </widget>
            </item>
@@ -280,7 +286,10 @@ Select &quot;New&quot; to add a new command to the menu.</string>
      <item>
       <widget class="QLabel" name="label_6">
        <property name="text">
-        <string>Shell Command to Execute</string>
+        <string>Shell Command to E&amp;xecute</string>
+       </property>
+       <property name="buddy">
+        <cstring>editCommand</cstring>
        </property>
       </widget>
      </item>

@@ -257,6 +257,12 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 	for (MainWindow *window : windows) {
 		window->ui.action_Move_Tab_To->setEnabled(enabled);
 	}
+
+	connect(
+		this, &MainWindow::checkForChangesToFile, this, [](DocumentWidget *document) {
+			document->checkForChangesToFile();
+		},
+		Qt::QueuedConnection);
 }
 
 /**
@@ -1088,11 +1094,54 @@ void MainWindow::action_Delete_triggered() {
 
 /**
  * @brief MainWindow::createDocument
+ * @param document
+ * @param pos
+ * @return
+ */
+void MainWindow::handleContextMenuEvent(DocumentWidget *document, const QPoint &pos) {
+	if (contextMenu_) {
+		if (QAction *action = contextMenu_->exec(pos)) {
+
+			QVariant data = action->data();
+			if (!data.isNull()) {
+
+				/* Don't allow users to execute a macro command from the menu (or accel)
+					 * if there's already a macro command executing, UNLESS the macro is
+					 * directly called from another one.  NEdit can't handle
+					 * running multiple, independent uncoordinated, macros in the same
+					 * window.  Macros may invoke macro menu commands recursively via the
+					 * macro_menu_command action proc, which is important for being able to
+					 * repeat any operation, and to embed macros within eachother at any
+					 * level, however, a call here with a macro running means that THE USER
+					 * is explicitly invoking another macro via the menu or an accelerator,
+					 * UNLESS the macro event marker is set */
+				if (document) {
+					if (document->macroCmdData_) {
+						QApplication::beep();
+						return;
+					}
+
+					const auto index   = data.toUInt();
+					const QString name = BGMenuData[index].item.name;
+					if (QPointer<TextArea> area = lastFocus()) {
+						execNamedBGMenuCmd(document, area, name, CommandSource::User);
+					}
+				}
+			}
+		}
+	}
+}
+
+/**
+ * @brief MainWindow::createDocument
  * @param name
  * @return
  */
 DocumentWidget *MainWindow::createDocument(const QString &name) {
 	auto document = new DocumentWidget(name, this);
+
+	// NOTE(eteran): if any slots are connected in this function, they also need to be updated in
+	// DocumentWidget::updateSignals!!
 
 	connect(document, &DocumentWidget::canUndoChanged, this, &MainWindow::undoAvailable);
 	connect(document, &DocumentWidget::canRedoChanged, this, &MainWindow::redoAvailable);
@@ -1100,6 +1149,7 @@ DocumentWidget *MainWindow::createDocument(const QString &name) {
 	connect(document, &DocumentWidget::updateWindowReadOnly, this, &MainWindow::updateWindowReadOnly);
 	connect(document, &DocumentWidget::updateWindowTitle, this, &MainWindow::updateWindowTitle);
 	connect(document, &DocumentWidget::fontChanged, this, &MainWindow::updateWindowHints);
+	connect(document, &DocumentWidget::contextMenuRequested, this, &MainWindow::handleContextMenuEvent);
 
 	ui.tabWidget->addTab(document, name);
 	return document;
@@ -1315,7 +1365,7 @@ void MainWindow::checkCloseEnableState() {
 /*
 ** Create either the Shell menu, Macro menu or Background menu
 */
-QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<MenuData> &data, CommandTypes type) {
+QMenu *MainWindow::createUserMenu(size_t currentLanguageMode, const gsl::span<MenuData> &data, CommandTypes type) {
 
 	auto rootMenu = new QMenu(this);
 	for (qulonglong i = 0; i < data.size(); ++i) {
@@ -1326,8 +1376,8 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 		bool found = modes.empty();
 
 		if (!found) {
-			found = std::any_of(modes.begin(), modes.end(), [document](size_t languageMode) {
-				return languageMode == document->languageMode_;
+			found = std::any_of(modes.begin(), modes.end(), [currentLanguageMode](size_t languageMode) {
+				return languageMode == currentLanguageMode;
 			});
 		}
 
@@ -1403,7 +1453,7 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 			}
 
 			if (!parentAction) {
-				auto newMenu = new QMenu(parentName, this);
+				auto newMenu = new QMenu(parentName, parentMenu);
 				parentMenu->addMenu(newMenu);
 				parentMenu = newMenu;
 			} else {
@@ -1423,22 +1473,33 @@ QMenu *MainWindow::createUserMenu(DocumentWidget *document, const gsl::span<Menu
 */
 void MainWindow::updateUserMenus(DocumentWidget *document) {
 
+	const size_t language = document->languageMode_;
+
 	// update user menus, which are shared over all documents
-	auto shellMenu = createUserMenu(document, ShellMenuData, CommandTypes::Shell);
+	if (shellMenu_) {
+		shellMenu_->deleteLater();
+	}
+	shellMenu_ = createUserMenu(language, ShellMenuData, CommandTypes::Shell);
 	ui.menu_Shell->clear();
 	ui.menu_Shell->addAction(ui.action_Execute_Command);
 	ui.menu_Shell->addAction(ui.action_Execute_Command_Line);
 	ui.menu_Shell->addAction(ui.action_Filter_Selection);
 	ui.menu_Shell->addAction(ui.action_Cancel_Shell_Command);
 	ui.menu_Shell->addSeparator();
-	ui.menu_Shell->addActions(shellMenu->actions());
+	ui.menu_Shell->addActions(shellMenu_->actions());
 
-	auto shellGroup = new QActionGroup(this);
-	shellGroup->setExclusive(false);
-	addToGroup(shellGroup, shellMenu);
-	connect(shellGroup, &QActionGroup::triggered, this, &MainWindow::shellTriggered);
+	if (shellGroup_) {
+		shellGroup_->deleteLater();
+	}
+	shellGroup_ = new QActionGroup(this);
+	shellGroup_->setExclusive(false);
+	addToGroup(shellGroup_, shellMenu_);
+	connect(shellGroup_, &QActionGroup::triggered, this, &MainWindow::shellTriggered);
 
-	auto macroMenu = createUserMenu(document, MacroMenuData, CommandTypes::Macro);
+	if (macroMenu_) {
+		macroMenu_->deleteLater();
+	}
+	macroMenu_ = createUserMenu(language, MacroMenuData, CommandTypes::Macro);
 	ui.menu_Macro->clear();
 	ui.menu_Macro->addAction(ui.action_Learn_Keystrokes);
 	ui.menu_Macro->addAction(ui.action_Finish_Learn);
@@ -1446,45 +1507,21 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	ui.menu_Macro->addAction(ui.action_Replay_Keystrokes);
 	ui.menu_Macro->addAction(ui.action_Repeat);
 	ui.menu_Macro->addSeparator();
-	ui.menu_Macro->addActions(macroMenu->actions());
+	ui.menu_Macro->addActions(macroMenu_->actions());
 
-	auto macroGroup = new QActionGroup(this);
-	macroGroup->setExclusive(false);
-	addToGroup(macroGroup, macroMenu);
-	connect(macroGroup, &QActionGroup::triggered, this, &MainWindow::macroTriggered);
+	if (macroGroup_) {
+		macroGroup_->deleteLater();
+	}
+	macroGroup_ = new QActionGroup(this);
+	macroGroup_->setExclusive(false);
+	addToGroup(macroGroup_, macroMenu_);
+	connect(macroGroup_, &QActionGroup::triggered, this, &MainWindow::macroTriggered);
 
 	// update background menu, which is owned by a single document
-	document->contextMenu_ = createUserMenu(document, BGMenuData, CommandTypes::Context);
-
-	// handler for BG menu scripts
-	connect(document->contextMenu_, &QMenu::triggered, this, [this](QAction *action) {
-		QVariant data = action->data();
-		if (!data.isNull()) {
-
-			/* Don't allow users to execute a macro command from the menu (or accel)
-			   if there's already a macro command executing, UNLESS the macro is
-			   directly called from another one.  NEdit can't handle
-			   running multiple, independent uncoordinated, macros in the same
-			   window.  Macros may invoke macro menu commands recursively via the
-			   macro_menu_command action proc, which is important for being able to
-			   repeat any operation, and to embed macros within eachother at any
-			   level, however, a call here with a macro running means that THE USER
-			   is explicitly invoking another macro via the menu or an accelerator,
-			   UNLESS the macro event marker is set */
-			if (DocumentWidget *document = currentDocument()) {
-				if (document->macroCmdData_) {
-					QApplication::beep();
-					return;
-				}
-
-				const auto index   = data.toUInt();
-				const QString name = BGMenuData[index].item.name;
-				if (QPointer<TextArea> area = lastFocus()) {
-					execNamedBGMenuCmd(document, area, name, CommandSource::User);
-				}
-			}
-		}
-	});
+	if (contextMenu_) {
+		contextMenu_->deleteLater();
+	}
+	contextMenu_ = createUserMenu(language, BGMenuData, CommandTypes::Context);
 }
 
 /**
@@ -1714,7 +1751,7 @@ DocumentWidget *MainWindow::findWindowWithFile(const QString &filename, const QS
 #ifdef Q_OS_UNIX
 	if (!Preferences::GetPrefHonorSymlinks()) {
 
-		QString fullname = tr("%1%2").arg(path, filename);
+		auto fullname = QStringLiteral("%1%2").arg(path, filename);
 
 		QT_STATBUF attribute;
 		if (QT_STAT(fullname.toUtf8().data(), &attribute) == 0) {
@@ -2137,7 +2174,7 @@ QFileInfoList MainWindow::openFileHelperSystem(DocumentWidget *document, const Q
 	for (const QString &includeDir : includeDirs) {
 		// we need to do this because someone could write #include <path/to/file.h>
 		// which confuses QDir..
-		QFileInfo fullPath = tr("%1/%2").arg(includeDir, match.captured(1));
+		QFileInfo fullPath = QStringLiteral("%1/%2").arg(includeDir, match.captured(1));
 		QString filename   = fullPath.fileName();
 		QString filepath   = fullPath.path();
 
@@ -2185,7 +2222,7 @@ QFileInfoList MainWindow::openFileHelperString(DocumentWidget *document, const Q
 	} else {
 		// we need to do this because someone could write #include "path/to/file.h"
 		// which confuses QDir..
-		QFileInfo fullPath = tr("%1/%2").arg(document->path(), text);
+		QFileInfo fullPath = QStringLiteral("%1/%2").arg(document->path(), text);
 		QString filename   = fullPath.fileName();
 		QString filepath   = fullPath.path();
 
@@ -4777,6 +4814,14 @@ DocumentWidget *MainWindow::editNewFile(MainWindow *window, const QString &geome
 	window->updateStatus(document, document->firstPane());
 	window->updateWindowTitle(document);
 	window->updateWindowHints(document);
+
+	// NOTE(eteran): addresses issue #224. When a new tab causes a reordering
+	// AND a focus event will trigger a "save/cancel" dialog
+	// we can end up with the wrong names on tabs!
+	// so we sort BEFORE we update the tab state just to be sure everything
+	// is in the right spots!
+	window->sortTabBar();
+
 	document->refreshTabState();
 
 	if (languageMode.isNull()) {
@@ -4791,7 +4836,6 @@ DocumentWidget *MainWindow::editNewFile(MainWindow *window, const QString &geome
 		document->raiseDocumentWindow();
 	}
 
-	window->sortTabBar();
 	return document;
 }
 
@@ -5447,7 +5491,7 @@ void MainWindow::focusChanged(QWidget *from, QWidget *to) {
 			endISearch();
 
 			// Check for changes to read-only status and/or file modifications
-			document->checkForChangesToFile();
+			Q_EMIT checkForChangesToFile(document);
 		}
 	}
 }

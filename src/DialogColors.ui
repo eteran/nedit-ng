@@ -19,7 +19,10 @@
      <item>
       <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Plain Text Foreground</string>
+        <string>&amp;Plain Text Foreground</string>
+       </property>
+       <property name="buddy">
+        <cstring>pushButtonFG</cstring>
        </property>
       </widget>
      </item>
@@ -37,7 +40,10 @@
      <item>
       <widget class="QLabel" name="label_9">
        <property name="text">
-        <string>Text Area Background</string>
+        <string>&amp;Text Area Background</string>
+       </property>
+       <property name="buddy">
+        <cstring>pushButtonBG</cstring>
        </property>
       </widget>
      </item>
@@ -55,7 +61,10 @@
      <item>
       <widget class="QLabel" name="label_4">
        <property name="text">
-        <string>Selection Foreground</string>
+        <string>&amp;Selection Foreground</string>
+       </property>
+       <property name="buddy">
+        <cstring>pushButtonSelectionFG</cstring>
        </property>
       </widget>
      </item>
@@ -73,7 +82,10 @@
      <item>
       <widget class="QLabel" name="label_10">
        <property name="text">
-        <string>Selection Background</string>
+        <string>Selection &amp;Background</string>
+       </property>
+       <property name="buddy">
+        <cstring>pushButtonSelectionBG</cstring>
        </property>
       </widget>
      </item>
@@ -91,7 +103,10 @@
      <item>
       <widget class="QLabel" name="label_5">
        <property name="text">
-        <string>Matching (..) Foreground</string>
+        <string>&amp;Matching (..) Foreground</string>
+       </property>
+       <property name="buddy">
+        <cstring>pushButtonMatchFG</cstring>
        </property>
       </widget>
      </item>
@@ -109,7 +124,10 @@
      <item>
       <widget class="QLabel" name="label_7">
        <property name="text">
-        <string>Matching (..) Background</string>
+        <string>Matc&amp;hing (..) Background</string>
+       </property>
+       <property name="buddy">
+        <cstring>pushButtonMatchBG</cstring>
        </property>
       </widget>
      </item>
@@ -127,7 +145,10 @@
      <item>
       <widget class="QLabel" name="label_6">
        <property name="text">
-        <string>Line Numbers Foreground</string>
+        <string>&amp;Line Numbers Foreground</string>
+       </property>
+       <property name="buddy">
+        <cstring>pushButtonLineNumbersFG</cstring>
        </property>
       </widget>
      </item>
@@ -145,7 +166,10 @@
      <item>
       <widget class="QLabel" name="label_11">
        <property name="text">
-        <string>Line Numbers Background</string>
+        <string>L&amp;ine Numbers Background</string>
+       </property>
+       <property name="buddy">
+        <cstring>pushButtonLineNumbersBG</cstring>
        </property>
       </widget>
      </item>
@@ -163,7 +187,10 @@
      <item>
       <widget class="QLabel" name="label_8">
        <property name="text">
-        <string>Cursor Color</string>
+        <string>&amp;Cursor Color</string>
+       </property>
+       <property name="buddy">
+        <cstring>pushButtonCursor</cstring>
        </property>
       </widget>
      </item>

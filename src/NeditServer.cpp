@@ -111,10 +111,10 @@ long QueryDesktop(Display *display, Window window) {
  * @return
  */
 bool isLocatedOnDesktop(QWidget *widget, long currentDesktop) {
-#if defined(QT_X11)
 	if (currentDesktop == -1) {
 		return true; /* No desktop information available */
 	}
+#if defined(QT_X11)
 
 	Display *TheDisplay = QX11Info::display();
 	long windowDesktop  = QueryDesktop(TheDisplay, widget->winId());
@@ -208,19 +208,30 @@ void NeditServer::newConnection() {
 	// and use it to keep this socket alive until it returns
 	std::shared_ptr<QLocalSocket> socket(server_->nextPendingConnection());
 
-	while (socket->bytesAvailable() < static_cast<int>(sizeof(qint32))) {
-		socket->waitForReadyRead();
-	}
-
 	QDataStream stream(socket.get());
 	stream.setVersion(QDataStream::Qt_5_0);
 
 	QByteArray jsonString;
-	stream >> jsonString;
+	do {
+		if (!socket->waitForReadyRead()) {
+			qWarning("NEdit: error processing server request: [%d] %s", socket->error(), qPrintable(socket->errorString()));
+			return;
+		}
 
-	auto jsonDocument = QJsonDocument::fromJson(jsonString);
+		stream.startTransaction();
+		stream >> jsonString;
+	} while (!stream.commitTransaction());
+
+	QJsonParseError error;
+	auto jsonDocument = QJsonDocument::fromJson(jsonString, &error);
+
+	if (error.error != QJsonParseError::NoError) {
+		qWarning("NEdit: error parsing JSON: [%d] %s \n", error.error, qPrintable(error.errorString()));
+		return;
+	}
+
 	if (!jsonDocument.isArray()) {
-		qWarning("NEdit: error processing server request");
+		qWarning("NEdit: error processing server request. Top level JSON value is not an array.");
 		return;
 	}
 
@@ -259,7 +270,7 @@ void NeditServer::newConnection() {
 	for (auto entry : array) {
 
 		if (!entry.isObject()) {
-			qWarning("NEdit: error processing server request");
+			qWarning("NEdit: error processing server request. Non-object in JSON array.");
 			break;
 		}
 
@@ -284,11 +295,12 @@ void NeditServer::newConnection() {
 
 			std::deque<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
-			auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *doc) {
-				return (!doc->filenameSet() && !doc->fileChanged() && isLocatedOnDesktop(MainWindow::fromDocument(doc), currentDesktop));
-			});
-
 			if (doCommand.isEmpty()) {
+
+				auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *doc) {
+					return (!doc->filenameSet() && !doc->fileChanged() && isLocatedOnDesktop(MainWindow::fromDocument(doc), currentDesktop));
+				});
+
 				if (it == documents.end()) {
 
 					MainWindow::editNewFile(

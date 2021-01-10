@@ -2,6 +2,7 @@
 #include "DialogDuplicateTags.h"
 #include "DocumentWidget.h"
 #include <QAbstractButton>
+#include <QFontDatabase>
 
 /**
  * @brief DialogDuplicateTags::DialogDuplicateTags
@@ -11,6 +12,7 @@
  */
 DialogDuplicateTags::DialogDuplicateTags(DocumentWidget *document, TextArea *area, Qt::WindowFlags f)
 	: Dialog(document, f), document_(document), area_(area) {
+
 	ui.setupUi(this);
 	connectSlots();
 }

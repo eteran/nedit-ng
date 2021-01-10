@@ -2,6 +2,7 @@
 #include "Settings.h"
 #include "Util/Resource.h"
 
+#include <QFontDatabase>
 #include <QSettings>
 #include <QStandardPaths>
 #include <QtDebug>
@@ -20,7 +21,12 @@ const QStringList DEFAULT_INCLUDE_PATHS = {
 
 const auto DEFAULT_DELIMETERS      = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
 const auto DEFAULT_BACKLIGHT_CHARS = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
-const auto DEFAULT_TEXT_FONT       = QLatin1String("Courier New,10,-1,5,50,0,0,0,0,0");
+
+QString defaultTextFont() {
+	QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+	fixedFont.setPointSize(12);
+	return fixedFont.toString();
+}
 
 template <class T>
 using IsEnum = typename std::enable_if<std::is_enum<T>::value>::type;
@@ -56,6 +62,21 @@ QString randomString(int length) {
 	}
 
 	return randomString;
+}
+
+/**
+ * @brief configDirectory
+ * @return
+ */
+QString configDirectory() {
+	static const QByteArray nedit_home = qgetenv("NEDIT_NG_HOME");
+	if (!nedit_home.isEmpty()) {
+		return QString::fromLocal8Bit(nedit_home);
+	}
+
+	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
+	static const auto filename     = QStringLiteral("%1/nedit-ng").arg(configDir);
+	return filename;
 }
 
 }
@@ -137,27 +158,12 @@ QStringList includePaths;
 QFont font;
 
 /**
- * @brief configDirectory
- * @return
- */
-QString configDirectory() {
-	static const QByteArray nedit_home = qgetenv("NEDIT_NG_HOME");
-	if (!nedit_home.isEmpty()) {
-		return QString::fromLocal8Bit(nedit_home);
-	}
-
-	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("nedit-ng"));
-	return filename;
-}
-
-/**
  * @brief themeFile
  * @return
  */
 QString themeFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("theme.xml"));
+	static const auto filename     = QStringLiteral("%1/theme.xml").arg(configDir);
 	return filename;
 }
 
@@ -167,7 +173,7 @@ QString themeFile() {
  */
 QString configFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("config.ini"));
+	static const auto filename     = QStringLiteral("%1/config.ini").arg(configDir);
 	return filename;
 }
 
@@ -177,7 +183,7 @@ QString configFile() {
  */
 QString historyFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("history"));
+	static const auto filename     = QStringLiteral("%1/history").arg(configDir);
 	return filename;
 }
 
@@ -187,7 +193,7 @@ QString historyFile() {
  */
 QString autoLoadMacroFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("autoload.nm"));
+	static const auto filename     = QStringLiteral("%1/autoload.nm").arg(configDir);
 	return filename;
 }
 
@@ -197,7 +203,7 @@ QString autoLoadMacroFile() {
  */
 QString languageModeFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("languages.yaml"));
+	static const auto filename     = QStringLiteral("%1/languages.yaml").arg(configDir);
 	return filename;
 }
 
@@ -207,7 +213,7 @@ QString languageModeFile() {
  */
 QString macroMenuFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("macros.yaml"));
+	static const auto filename     = QStringLiteral("%1/macros.yaml").arg(configDir);
 	return filename;
 }
 
@@ -217,7 +223,7 @@ QString macroMenuFile() {
  */
 QString shellMenuFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("shell.yaml"));
+	static const auto filename     = QStringLiteral("%1/shell.yaml").arg(configDir);
 	return filename;
 }
 
@@ -227,7 +233,7 @@ QString shellMenuFile() {
  */
 QString contextMenuFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("context.yaml"));
+	static const auto filename     = QStringLiteral("%1/context.yaml").arg(configDir);
 	return filename;
 }
 
@@ -237,7 +243,7 @@ QString contextMenuFile() {
  */
 QString styleFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("style.qss"));
+	static const auto filename     = QStringLiteral("%1/style.qss").arg(configDir);
 	return filename;
 }
 
@@ -247,7 +253,7 @@ QString styleFile() {
  */
 QString highlightPatternsFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("patterns.yaml"));
+	static const auto filename     = QStringLiteral("%1/patterns.yaml").arg(configDir);
 	return filename;
 }
 
@@ -257,7 +263,7 @@ QString highlightPatternsFile() {
  */
 QString smartIndentFile() {
 	static const QString configDir = configDirectory();
-	static const auto filename     = tr("%1/%2").arg(configDir, tr("indent.yaml"));
+	static const auto filename     = QStringLiteral("%1/indent.yaml").arg(configDir);
 	return filename;
 }
 
@@ -321,7 +327,7 @@ void loadPreferences(bool isServer) {
 	tabDistance                  = settings.value(tr("nedit.tabDistance"), 8).toInt();
 	emulateTabs                  = settings.value(tr("nedit.emulateTabs"), 0).toInt();
 	insertTabs                   = settings.value(tr("nedit.insertTabs"), true).toBool();
-	fontName                     = settings.value(tr("nedit.textFont"), DEFAULT_TEXT_FONT).toString();
+	fontName                     = settings.value(tr("nedit.textFont"), defaultTextFont()).toString();
 	shell                        = settings.value(tr("nedit.shell"), QLatin1String("DEFAULT")).toString();
 	geometry                     = settings.value(tr("nedit.geometry"), QString()).toString();
 	tagFile                      = settings.value(tr("nedit.tagFile"), QString()).toString();
@@ -332,7 +338,7 @@ void loadPreferences(bool isServer) {
 	smartTags                    = settings.value(tr("nedit.smartTags"), true).toBool();
 	typingHidesPointer           = settings.value(tr("nedit.typingHidesPointer"), false).toBool();
 	alwaysCheckRelativeTagsSpecs = settings.value(tr("nedit.alwaysCheckRelativeTagsSpecs"), true).toBool();
-	colorizeHighlightedText      = settings.value(tr("nedit.colorizeHighlightedText"), false).toBool();
+	colorizeHighlightedText      = settings.value(tr("nedit.colorizeHighlightedText"), true).toBool();
 	autoWrapPastedText           = settings.value(tr("nedit.autoWrapPastedText"), false).toBool();
 	heavyCursor                  = settings.value(tr("nedit.heavyCursor"), false).toBool();
 	prefFileRead                 = settings.value(tr("nedit.prefFileRead"), false).toBool();

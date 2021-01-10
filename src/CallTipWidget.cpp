@@ -1,6 +1,7 @@
 
 #include "CallTipWidget.h"
 #include <QClipboard>
+#include <QFontDatabase>
 #include <QToolTip>
 
 /**
@@ -10,7 +11,9 @@
  */
 CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f)
 	: QWidget(parent, f) {
+
 	ui.setupUi(this);
+
 	setAttribute(Qt::WA_DeleteOnClose, true);
 	ui.labelTip->setPalette(QToolTip::palette());
 

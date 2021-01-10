@@ -26,6 +26,7 @@
  */
 DialogSyntaxPatterns::DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f)
 	: Dialog(window, f), window_(window) {
+
 	ui.setupUi(this);
 	connectSlots();
 
@@ -219,23 +220,23 @@ void DialogSyntaxPatterns::updateLabels() {
 	bool parentSense;
 
 	if (ui.radioColoring->isChecked()) {
-		startLbl    = tr("Sub-expressions to Highlight in Parent's Starting Regular Expression (\\1, &, etc.)");
-		endLbl      = tr("Sub-expressions to Highlight in Parent Pattern's Ending Regular Expression");
+		startLbl    = tr("Sub-expressions to Highlight in Parent's Starting &Regular Expression (\\1, &, etc.)");
+		endLbl      = tr("Sub-expressions to Highlight in Parent Pattern's &Ending Regular Expression");
 		endSense    = true;
 		errSense    = false;
 		matchSense  = false;
 		parentSense = true;
 	} else {
-		endLbl      = tr("Ending Regular Expression");
+		endLbl      = tr("&Ending Regular Expression");
 		matchSense  = true;
 		parentSense = ui.radioSubPattern->isChecked();
 
 		if (ui.radioSimpleRegex->isChecked()) {
-			startLbl = tr("Regular Expression to Match");
+			startLbl = tr("&Regular Expression to Match");
 			endSense = false;
 			errSense = false;
 		} else {
-			startLbl = tr("Starting Regular Expression");
+			startLbl = tr("Starting &Regular Expression");
 			endSense = true;
 			errSense = true;
 		}

@@ -469,7 +469,7 @@ DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, con
 	Q_EMIT document->updateStatus(document, nullptr);
 
 	// Add the name to the convenience menu of previously opened files
-	auto fullname = tr("%1%2").arg(path, name);
+	auto fullname = QStringLiteral("%1%2").arg(path, name);
 
 	if (Preferences::GetPrefAlwaysCheckRelTagsSpecs()) {
 		Tags::addRelTagsFile(Preferences::GetPrefTagFile(), path, Tags::SearchMode::TAG);
@@ -704,10 +704,9 @@ TextArea *DocumentWidget::createTextArea(const std::shared_ptr<TextBuffer> &buff
 	// policy here, in fact, that would break things.
 	//area->setContextMenuPolicy(Qt::CustomContextMenu);
 
+	// just emit an event that will later be caught by the higher layer informing it of the context menu request
 	connect(area, &TextArea::customContextMenuRequested, this, [this](const QPoint &pos) {
-		if (contextMenu_) {
-			contextMenu_->exec(pos);
-		}
+		Q_EMIT contextMenuRequested(this, pos);
 	});
 
 	return area;
@@ -756,9 +755,9 @@ void DocumentWidget::refreshTabState() {
 		if (absTruncate > 3) {
 			if (filename.size() > absTruncate) {
 				if (Settings::truncateLongNamesInTabs > 0) {
-					filename = tr("%1%2").arg(QLatin1String("..."), filename.right(absTruncate - 3));
+					filename = QStringLiteral("%1%2").arg(QLatin1String("..."), filename.right(absTruncate - 3));
 				} else {
-					filename = tr("%1%2").arg(filename.left(absTruncate - 3), QLatin1String("..."));
+					filename = QStringLiteral("%1%2").arg(filename.left(absTruncate - 3), QLatin1String("..."));
 				}
 			}
 		} else {
@@ -777,9 +776,9 @@ void DocumentWidget::refreshTabState() {
 		const int alignment = style->styleHint(QStyle::SH_TabBar_Alignment);
 
 		if (alignment != Qt::AlignRight) {
-			labelString = tr("%1%2").arg(info_->fileChanged ? tr("*") : QString(), filename);
+			labelString = QStringLiteral("%1%2").arg(info_->fileChanged ? tr("*") : QString(), filename);
 		} else {
-			labelString = tr("%2%1").arg(info_->fileChanged ? tr("*") : QString(), filename);
+			labelString = QStringLiteral("%2%1").arg(info_->fileChanged ? tr("*") : QString(), filename);
 		}
 	}
 
@@ -1107,9 +1106,11 @@ void DocumentWidget::raiseFocusDocumentWindow(bool focus) {
 		win->showNormal();
 	}
 
+	win->raise();
+	win->activateWindow();
+
 	if (focus) {
-		win->raise();
-		win->activateWindow();
+		setFocus();
 	}
 }
 
@@ -1523,7 +1524,7 @@ void DocumentWidget::updateSelectionSensitiveMenus(bool enabled) {
 
 	updateSelectionSensitiveMenu(win->ui.menu_Shell, ShellMenuData, enabled);
 	updateSelectionSensitiveMenu(win->ui.menu_Macro, MacroMenuData, enabled);
-	updateSelectionSensitiveMenu(contextMenu_, BGMenuData, enabled);
+	updateSelectionSensitiveMenu(win->contextMenu_, BGMenuData, enabled);
 }
 
 void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<MenuData> &menuList, bool enabled) {
@@ -1937,9 +1938,9 @@ void DocumentWidget::removeBackupFile() const {
 QString DocumentWidget::backupFileName() const {
 
 	if (info_->filenameSet) {
-		return tr("%1~%2").arg(info_->path, info_->filename);
+		return QStringLiteral("%1~%2").arg(info_->path, info_->filename);
 	} else {
-		return PrependHome(tr("~%1").arg(info_->filename));
+		return PrependHome(QStringLiteral("~%1").arg(info_->filename));
 	}
 }
 
@@ -2129,7 +2130,7 @@ QString DocumentWidget::fullPath() const {
 	}
 
 	Q_ASSERT(info_->path.endsWith(QLatin1Char('/')));
-	return tr("%1%2").arg(info_->path, info_->filename);
+	return QStringLiteral("%1%2").arg(info_->path, info_->filename);
 }
 
 /**
@@ -2727,7 +2728,7 @@ bool DocumentWidget::writeBckVersion() {
 		QString fullname = fullPath();
 
 		// Generate name for old version
-		auto bckname = tr("%1.bck").arg(fullname);
+		auto bckname = QStringLiteral("%1.bck").arg(fullname);
 
 		// Delete the old backup file
 		// Errors are ignored; we'll notice them later.
@@ -4017,6 +4018,17 @@ void DocumentWidget::splitPane() {
 		area->setLineNumCols(activeArea->getLineNumCols());
 		area->setBacklightCharTypes(backlightCharTypes_);
 		area->setFont(font_);
+
+		const int scrollPosition = activeArea->verticalScrollBar()->value();
+
+		// NOTE(eteran): annoyingly, on windows the viewrect isn't resized until it is shown
+		// so if we try to do this now, it will try to scroll to a spot outside of
+		// then "lineStarts_" array. The simplest thing to do to make it work correctly
+		// is to schedule the scrolling for after the event is fully processed
+		// FIXES https://github.com/eteran/nedit-ng/issues/239
+		QTimer::singleShot(0, [area, scrollPosition]() {
+			area->verticalScrollBar()->setValue(scrollPosition);
+		});
 	}
 
 	attachHighlightToWidget(area);
@@ -4159,6 +4171,8 @@ void DocumentWidget::updateSignals(MainWindow *from, MainWindow *to) {
 	connect(this, &DocumentWidget::updateStatus, to, &MainWindow::updateStatus);
 	connect(this, &DocumentWidget::updateWindowReadOnly, to, &MainWindow::updateWindowReadOnly);
 	connect(this, &DocumentWidget::updateWindowTitle, to, &MainWindow::updateWindowTitle);
+	connect(this, &DocumentWidget::fontChanged, to, &MainWindow::updateWindowHints);
+	connect(this, &DocumentWidget::contextMenuRequested, to, &MainWindow::handleContextMenuEvent);
 }
 
 /*
@@ -7033,7 +7047,7 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 		if (QFileInfo(fileToSearch).isAbsolute()) {
 			Tags::tagFiles[nMatches] = fileToSearch;
 		} else {
-			Tags::tagFiles[nMatches] = tr("%1%2").arg(tagPath, fileToSearch);
+			Tags::tagFiles[nMatches] = QStringLiteral("%1%2").arg(tagPath, fileToSearch);
 		}
 
 		Tags::tagSearch[nMatches] = searchString;

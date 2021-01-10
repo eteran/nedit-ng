@@ -17,6 +17,7 @@
 #include <QThread>
 
 #include <boost/optional.hpp>
+#include <chrono>
 #include <iostream>
 #include <memory>
 
@@ -385,34 +386,39 @@ int startServer(const char *message, const QStringList &commandLineArgs) {
 	const QString command = arguments.takeFirst();
 
 	// start the server
-	auto process = new QProcess;
-	process->start(command, arguments);
+	// NOTE(eteran): we need to start the process detached, otherwise when nc closes
+	// all hell breaks loose.
+	// Unfortunately, this means that we no longer have the ability to get advanced information
+	// about why it may have failed to start
+	qint64 pid       = 0;
+	const bool sysrc = QProcess::startDetached(command, arguments, QString(), &pid);
 
-	const bool sysrc = process->waitForStarted();
 	if (!sysrc) {
-		switch (process->error()) {
-		case QProcess::FailedToStart:
-			fprintf(stderr, "nc-ng: The server process failed to start. Either the invoked program is missing, or you may have insufficient permissions to invoke the program.\n");
-			break;
-		case QProcess::Crashed:
-			fprintf(stderr, "nc-ng: The server process crashed some time after starting successfully.\n");
-			break;
-		case QProcess::Timedout:
-			fprintf(stderr, "nc-ng: Timeout while waiting for the server process\n");
-			break;
-		case QProcess::WriteError:
-			fprintf(stderr, "nc-ng: An error occurred when attempting to write to the server process.\n");
-			break;
-		case QProcess::ReadError:
-			fprintf(stderr, "nc-ng: An error occurred when attempting to read from the server process.\n");
-			break;
-		case QProcess::UnknownError:
-			fprintf(stderr, "nc-ng: An unknown error occurred.\n");
-			break;
-		}
+		fprintf(stderr, "nc-ng: The server process failed to start. Either the invoked program is missing, or you may have insufficient permissions to invoke the program.\n");
+		return -1;
+	} else {
+		return 0;
 	}
+}
 
-	return (sysrc) ? 0 : -1;
+bool writeToSocket(QLocalSocket *socket, const QByteArray &data) {
+	int remaining   = data.size();
+	const char *ptr = data.data();
+
+	constexpr int MaxChunk = 4096;
+
+	while (socket->isOpen() && remaining > 0) {
+		const int64_t written = socket->write(ptr, std::min(MaxChunk, remaining));
+		if (written == -1) {
+			return false;
+		}
+
+		socket->waitForBytesWritten(-1);
+
+		ptr += written;
+		remaining -= written;
+	}
+	return true;
 }
 
 }
@@ -461,11 +467,20 @@ int main(int argc, char *argv[]) {
 
 	QString socketName = LocalSocketName(ServerPreferences.serverName);
 
-	for (int i = 0; i < 10; ++i) {
+	// How many times to try connecting to the socket
+	constexpr int RetryCount = 20;
+
+	// How long to wait between retries
+	const std::chrono::microseconds delay(125000);
+
+	// Qt local socket timeout
+	const std::chrono::milliseconds timeout(std::chrono::seconds(ServerPreferences.timeOut));
+
+	for (int i = 0; i < RetryCount; ++i) {
 
 		auto socket = std::make_unique<QLocalSocket>();
 		socket->connectToServer(socketName, QIODevice::WriteOnly);
-		if (!socket->waitForConnected(ServerPreferences.timeOut * 1000)) {
+		if (!socket->waitForConnected(timeout.count())) {
 			if (i == 0) {
 				switch (startServer("No servers available, start one? (y|n) [y]: ", commandLine.arguments)) {
 				case -1: // Start failed
@@ -476,7 +491,7 @@ int main(int argc, char *argv[]) {
 			}
 
 			// give just a little bit of time for things to get going...
-			QThread::usleep(125000);
+			QThread::usleep(delay.count());
 			continue;
 		}
 
@@ -485,15 +500,13 @@ int main(int argc, char *argv[]) {
 		stream.setVersion(QDataStream::Qt_5_0);
 		stream << commandLine.jsonRequest;
 
-		socket->write(ba);
-		socket->flush();
-		socket->waitForBytesWritten(ServerPreferences.timeOut * 1000);
+		writeToSocket(socket.get(), ba);
 
 		// if we are enabling wait mode, we simply wait for the server
 		// to close the socket. We'll leave it to the server to track
 		// when everything is all done. Otherwise, just disconnect.
 		if (ServerPreferences.waitForClose) {
-			socket->waitForDisconnected();
+			socket->waitForDisconnected(-1);
 		} else {
 			socket->disconnectFromServer();
 		}
@@ -501,5 +514,6 @@ int main(int argc, char *argv[]) {
 		return 0;
 	}
 
+	fprintf(stderr, "nc-ng: Failed to connect to server socket\n");
 	return -1;
 }

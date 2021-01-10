@@ -55,7 +55,7 @@ private:
 	void setupGlobalPrefenceDefaults();
 	void setupDocumentPreferenceDefaults();
 	void setupPrevOpenMenuActions();
-	QMenu *createUserMenu(DocumentWidget *document, const gsl::span<MenuData> &data, CommandTypes type);
+	QMenu *createUserMenu(size_t currentLanguageMode, const gsl::span<MenuData> &data, CommandTypes type);
 	QTabWidget *tabWidget() const;
 
 private:
@@ -417,6 +417,9 @@ private:
 	void focusChanged(QWidget *from, QWidget *to);
 	void updateWindowHints(DocumentWidget *);
 
+Q_SIGNALS:
+	void checkForChangesToFile(DocumentWidget *document);
+
 public Q_SLOTS:
 	void selectionChanged(bool selected);
 	void undoAvailable(bool available);
@@ -424,6 +427,7 @@ public Q_SLOTS:
 	void updateStatus(DocumentWidget *document, TextArea *area);
 	void updateWindowReadOnly(DocumentWidget *document);
 	void updateWindowTitle(DocumentWidget *document);
+	void handleContextMenuEvent(DocumentWidget *document, const QPoint &pos);
 
 public:
 	int fHistIndex_;
@@ -446,6 +450,11 @@ private:
 	int iSearchHistIndex_           = 0;              // find and replace dialogs
 	TextCursor iSearchLastBeginPos_ = {};             // beg. pos. last match of current i.s.
 	TextCursor iSearchStartPos_     = TextCursor(-1); // start pos. of current incr. search
+	QActionGroup *shellGroup_       = nullptr;
+	QActionGroup *macroGroup_       = nullptr;
+	QMenu *shellMenu_               = nullptr;
+	QMenu *macroMenu_               = nullptr;
+	QMenu *contextMenu_             = nullptr;
 
 public:
 	Ui::MainWindow ui;

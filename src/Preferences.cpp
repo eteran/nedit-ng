@@ -322,7 +322,7 @@ void loadLanguageModesString(const QString &string) {
 		YAML::Node languages;
 
 		const QString languageModeFile = Settings::languageModeFile();
-		if (QFileInfo(languageModeFile).exists()) {
+		if (QFileInfo::exists(languageModeFile)) {
 			languages = YAML::LoadAllFromFile(languageModeFile.toUtf8().data());
 		} else {
 			static QByteArray defaultLanguageModes = loadResource(QLatin1String("DefaultLanguageModes.yaml"));

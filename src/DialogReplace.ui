@@ -19,7 +19,10 @@
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
-        <string>String to Find:</string>
+        <string>S&amp;tring to Find:</string>
+       </property>
+       <property name="buddy">
+        <cstring>textFind</cstring>
        </property>
       </widget>
      </item>
@@ -58,8 +61,11 @@
    <item>
     <widget class="QLabel" name="label_3">
      <property name="text">
-      <string>Replace With:</string>
+      <string>Replace &amp;With:</string>
      </property>
+       <property name="buddy">
+        <cstring>textReplace</cstring>
+       </property>
     </widget>
    </item>
    <item>
@@ -169,7 +175,7 @@
         <string>W&amp;indow</string>
        </property>
        <property name="icon">
-        <iconset theme="window">
+        <iconset theme="whole-window">
          <normaloff>.</normaloff>.</iconset>
        </property>
       </widget>

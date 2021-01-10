@@ -402,6 +402,7 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	   the whole thing and take advantage of the safety region which will be
 	   thrown away below.  Otherwise save the contents of the safety region
 	   temporarily, and restore it after the parse. */
+	int safe_prev_char = '\0';
 	if (beginSafety < modStart) {
 		if (endSafety > modStart) {
 			endPass2Safety = forwardOneContext(buf, contextRequirements, modStart);
@@ -412,8 +413,8 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 			endPass2Safety = endSafety;
 		}
 
-		int prev_char = getPrevChar(buf, beginSafety);
-		ctx.prev_char = &prev_char;
+		safe_prev_char = getPrevChar(buf, beginSafety);
+		ctx.prev_char  = &safe_prev_char;
 
 		if (endPass2Safety == endSafety) {
 			passTwoParseString(
@@ -1453,7 +1454,7 @@ void LoadHighlightString(const QString &string) {
 		YAML::Node patternSets;
 
 		const QString highlightPatternsFile = Settings::highlightPatternsFile();
-		if (QFileInfo(highlightPatternsFile).exists()) {
+		if (QFileInfo::exists(highlightPatternsFile)) {
 			patternSets = YAML::LoadFile(highlightPatternsFile.toUtf8().data());
 		} else {
 			static QByteArray defaultPatternSets = loadResource(QLatin1String("DefaultPatternSets.yaml"));

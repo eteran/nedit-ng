@@ -86,6 +86,7 @@ Q_SIGNALS:
 	void updateWindowReadOnly(DocumentWidget *document);
 	void updateWindowTitle(DocumentWidget *document);
 	void fontChanged(DocumentWidget *document);
+	void contextMenuRequested(DocumentWidget *document, const QPoint &pos);
 
 public:
 	void dragEndCallback(TextArea *area, const DragEndEvent *event);
@@ -295,6 +296,8 @@ private:
 	void updateMarkTable(TextCursor pos, int64_t nInserted, int64_t nDeleted);
 	void updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<MenuData> &menuList, bool enabled);
 	void updateSelectionSensitiveMenus(bool enabled);
+
+protected:
 	void dragEnterEvent(QDragEnterEvent *event) override;
 	void dropEvent(QDropEvent *event) override;
 
@@ -313,9 +316,6 @@ public:
 	std::shared_ptr<MacroCommandData> macroCmdData_;     // same for macro commands
 	std::unique_ptr<RangesetTable> rangesetTable_;       // current range sets
 	std::unique_ptr<WindowHighlightData> highlightData_; // info for syntax highlighting
-
-private:
-	QMenu *contextMenu_ = nullptr;
 
 private:
 	QSplitter *splitter_;

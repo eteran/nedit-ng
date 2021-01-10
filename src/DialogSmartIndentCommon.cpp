@@ -16,6 +16,7 @@
  */
 DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
+
 	ui.setupUi(this);
 	connectSlots();
 
