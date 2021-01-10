@@ -338,7 +338,7 @@ void loadPreferences(bool isServer) {
 	smartTags                    = settings.value(tr("nedit.smartTags"), true).toBool();
 	typingHidesPointer           = settings.value(tr("nedit.typingHidesPointer"), false).toBool();
 	alwaysCheckRelativeTagsSpecs = settings.value(tr("nedit.alwaysCheckRelativeTagsSpecs"), true).toBool();
-	colorizeHighlightedText      = settings.value(tr("nedit.colorizeHighlightedText"), false).toBool();
+	colorizeHighlightedText      = settings.value(tr("nedit.colorizeHighlightedText"), true).toBool();
 	autoWrapPastedText           = settings.value(tr("nedit.autoWrapPastedText"), false).toBool();
 	heavyCursor                  = settings.value(tr("nedit.heavyCursor"), false).toBool();
 	prefFileRead                 = settings.value(tr("nedit.prefFileRead"), false).toBool();
