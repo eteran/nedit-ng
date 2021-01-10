@@ -93,8 +93,16 @@ template <class Ui, class Model>
 void deleteItem(Ui *ui, Model *model, QModelIndex *deleted) {
 	QModelIndex index = ui->listItems->currentIndex();
 	if (index.isValid()) {
+
+		const int deletedRow = index.row();
+
 		*deleted = index;
 		model->deleteItem(index);
+
+		ui->listItems->setCurrentIndex(QModelIndex());
+
+		QModelIndex newIndex = model->index(deletedRow, 0);
+		ui->listItems->setCurrentIndex(newIndex);
 	}
 
 	ui->listItems->scrollTo(ui->listItems->currentIndex());
