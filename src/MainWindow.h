@@ -25,15 +25,16 @@
 
 #include "ui_MainWindow.h"
 
-class TextArea;
-struct PathInfo;
-class DocumentWidget;
-class DialogReplace;
+class DialogColors;
 class DialogFind;
-class DialogShellMenu;
 class DialogMacros;
+class DialogReplace;
+class DialogShellMenu;
 class DialogWindowBackgroundMenu;
+class DocumentWidget;
+class TextArea;
 struct MenuData;
+struct PathInfo;
 struct TextRange;
 
 class MainWindow final : public QMainWindow {
@@ -439,6 +440,7 @@ private:
 	QPointer<DialogReplace> dialogReplace_;
 	QPointer<DialogShellMenu> dialogShellMenu_;
 	QPointer<DialogMacros> dialogMacros_;
+	QPointer<DialogColors> dialogColors_;
 	QPointer<DialogWindowBackgroundMenu> dialogWindowBackgroundMenu_;
 	QPointer<TextArea> lastFocus_;
 

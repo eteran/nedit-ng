@@ -4091,8 +4091,13 @@ void MainWindow::action_Default_Text_Fonts_triggered() {
  * @brief MainWindow::action_Default_Colors_triggered
  */
 void MainWindow::action_Default_Colors_triggered() {
-	auto dialog = std::make_unique<DialogColors>(this);
-	dialog->exec();
+	if (!dialogColors_) {
+		dialogColors_ = new DialogColors(this);
+	}
+
+	// TODO(eteran): do we want to take any measures to prevent
+	// more than one of these being shown?
+	dialogColors_->show();
 }
 
 /*
