@@ -412,6 +412,7 @@ public:
 	void action_About_triggered();
 	void action_About_Qt_triggered();
 	void action_Help_triggered();
+	void action_Open_Configuration_Directory_triggered();
 
 private:
 	void focusChanged(QWidget *from, QWidget *to);
