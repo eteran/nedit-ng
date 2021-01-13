@@ -7254,15 +7254,22 @@ TextBuffer *TextArea::styleBuffer() const {
  * @param font
  */
 void TextArea::updateFontMetrics(const QFont &font) {
-	QFontMetrics fm(font);
 	QFontInfo fi(font);
 
 	if (!fi.fixedPitch()) {
 		qWarning("NEdit: a variable width font has been specified. This is not supported, and will result in unexpected results");
 	}
 
+	QFontMetrics fm(font);
 	fixedFontWidth_  = Font::maxWidth(fm);
-	fixedFontHeight_ = fm.ascent() + fm.descent();
+	const int height = fm.ascent() + fm.descent();
+
+	QFont boldFont = font;
+	boldFont.setWeight(QFont::Bold);
+	QFontMetrics fmb(boldFont);
+	const int boldHeight = fmb.ascent() + fmb.descent();
+
+	fixedFontHeight_ = std::max(height, boldHeight);
 }
 
 int TextArea::getLineNumWidth() const {
