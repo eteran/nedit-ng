@@ -729,6 +729,7 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 	// Get the line and character context values
 	if (ui.editContextLines->text().isEmpty()) {
 		QMessageBox::critical(this, tr("Warning"), tr("Please supply a value for context lines"));
+		return nullptr;
 	}
 
 	bool ok;
@@ -741,6 +742,7 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 	// Get the line and character context values
 	if (ui.editContextChars->text().isEmpty()) {
 		QMessageBox::critical(this, tr("Warning"), tr("Please supply a value for context chars"));
+		return nullptr;
 	}
 
 	int charContext = ui.editContextChars->text().toInt(&ok);
