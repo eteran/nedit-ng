@@ -750,7 +750,9 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 	}
 
 	// ensure that the list has the current item complete filled out
-	updateCurrentItem();
+	if(!updateCurrentItem()) {
+		return nullptr;
+	}
 
 	/* Allocate a new pattern set structure and copy the fields read from the
 	   dialog, including the modified pattern list into it */
