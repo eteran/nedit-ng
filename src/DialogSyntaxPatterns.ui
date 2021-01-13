@@ -246,7 +246,7 @@
          <item>
           <widget class="QRadioButton" name="radioSubPattern">
            <property name="text">
-            <string>S&amp;ub-pattern (processed within start &amp; end of parent)</string>
+            <string>S&amp;ub-pattern (processed within start &amp;&amp; end of parent)</string>
            </property>
           </widget>
          </item>
