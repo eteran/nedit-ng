@@ -363,7 +363,6 @@ void MainWindow::connectSlots() {
 	connect(ui.action_About_Qt, &QAction::triggered, this, &MainWindow::action_About_Qt_triggered);
 	connect(ui.action_Help, &QAction::triggered, this, &MainWindow::action_Help_triggered);
 	connect(ui.action_Open_Configuration_Directory, &QAction::triggered, this, &MainWindow::action_Open_Configuration_Directory_triggered);
-	connect(ui.action_Open_Configuration_File, &QAction::triggered, this, &MainWindow::action_Open_Configuration_File_triggered);
 
 	connect(ui.action_Statistics_Line, &QAction::toggled, this, &MainWindow::action_Statistics_Line_toggled);
 	connect(ui.action_Incremental_Search_Line, &QAction::toggled, this, &MainWindow::action_Incremental_Search_Line_toggled);
