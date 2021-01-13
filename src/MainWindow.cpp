@@ -6139,13 +6139,19 @@ void MainWindow::editHighlightPatterns() {
 		return;
 	}
 
+	if (!dialogSyntaxPatterns_) {
+		dialogSyntaxPatterns_ = new DialogSyntaxPatterns(this);
+	}
+
+
 	if (DocumentWidget *document = currentDocument()) {
 		QString languageName = Preferences::LanguageModeName((document->languageMode_ == PLAIN_LANGUAGE_MODE) ? 0 : document->languageMode_);
-
-		auto SyntaxPatterns = std::make_unique<DialogSyntaxPatterns>(this);
-		SyntaxPatterns->setLanguageName(languageName);
-		SyntaxPatterns->exec();
+		dialogSyntaxPatterns_->setLanguageName(languageName);
 	}
+
+	// TODO(eteran): do we want to take any measures to prevent
+	// more than one of these being shown?
+	dialogSyntaxPatterns_->show();
 }
 
 /*
@@ -6154,6 +6160,9 @@ void MainWindow::editHighlightPatterns() {
 ** edited in the dialog.
 */
 void MainWindow::renameHighlightPattern(const QString &oldName, const QString &newName) {
+
+	// TODO(eteran): this function doesn't REALLY belong in "MainWindow"
+	// since it generically manages highlight pattern sets
 
 	for (PatternSet &patternSet : Highlight::PatternSets) {
 		if (patternSet.languageMode == oldName) {
