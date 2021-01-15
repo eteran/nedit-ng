@@ -3039,7 +3039,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 			renderFont.setBold(styleRec->isBold);
 			renderFont.setItalic(styleRec->isItalic);
 
-			fastPath = (!styleRec->isBold && !styleRec->isItalic);
+			fastPath = !widerBold_ || (!styleRec->isBold && !styleRec->isItalic);
 
 			fground = styleRec->color;
 			// here you could pick up specific select and highlight fground
@@ -7273,14 +7273,16 @@ void TextArea::updateFontMetrics(const QFont &font) {
 
 	QFontMetrics fm(font);
 	fixedFontWidth_  = Font::maxWidth(fm);
-	const int height = fm.ascent() + fm.descent();
+	const int standardHeight = fm.ascent() + fm.descent();
 
 	QFont boldFont = font;
 	boldFont.setWeight(QFont::Bold);
 	QFontMetrics fmb(boldFont);
 	const int boldHeight = fmb.ascent() + fmb.descent();
 
-	fixedFontHeight_ = std::max(height, boldHeight);
+	fixedFontHeight_ = std::max(standardHeight, boldHeight);
+
+	widerBold_ = Font::maxWidth(fm) != Font::maxWidth(fmb);
 }
 
 int TextArea::getLineNumWidth() const {
