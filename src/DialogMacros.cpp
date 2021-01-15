@@ -10,6 +10,8 @@
 #include "Util/String.h"
 #include "parse.h"
 #include "userCmds.h"
+#include "Font.h"
+#include "LanguageMode.h"
 
 #include <QMessageBox>
 
@@ -23,6 +25,10 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f)
 
 	ui.setupUi(this);
 	connectSlots();
+
+	const int tabStop = Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE);  // 4 characters
+	ui.editMacro->setTabStopDistance(tabStop * Font::characterWidth(ui.editMacro->fontMetrics(), QLatin1Char(' ')));
+
 
 	CommonDialog::setButtonIcons(&ui);
 
