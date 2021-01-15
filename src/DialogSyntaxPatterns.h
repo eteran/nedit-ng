@@ -6,19 +6,21 @@
 #include "Verbosity.h"
 #include "ui_DialogSyntaxPatterns.h"
 
+#include <QPointer>
+
 #include <boost/optional.hpp>
 #include <memory>
 
 class HighlightPattern;
 class HighlightPatternModel;
-class MainWindow;
 class PatternSet;
+class DialogDrawingStyles;
 
 class DialogSyntaxPatterns final : public Dialog {
 	Q_OBJECT
 
 public:
-	explicit DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogSyntaxPatterns(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogSyntaxPatterns() override = default;
 
 public:
@@ -71,7 +73,7 @@ private:
 	HighlightPatternModel *model_;
 	QModelIndex deleted_;
 	QString previousLanguage_;
-	MainWindow *window_;
+	QPointer<DialogDrawingStyles> dialogDrawingStyles_;
 };
 
 #endif

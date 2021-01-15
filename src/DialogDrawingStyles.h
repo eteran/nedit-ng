@@ -6,6 +6,8 @@
 #include "Verbosity.h"
 #include "ui_DialogDrawingStyles.h"
 
+#include <QPointer>
+
 #include <boost/optional.hpp>
 
 class DialogSyntaxPatterns;
@@ -52,7 +54,7 @@ private:
 	HighlightStyleModel *model_;
 	std::vector<HighlightStyle> &highlightStyles_;
 	QModelIndex deleted_;
-	DialogSyntaxPatterns *dialogSyntaxPatterns_;
+	QPointer<DialogSyntaxPatterns> dialogSyntaxPatterns_;
 };
 
 #endif
