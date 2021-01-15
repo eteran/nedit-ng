@@ -13,6 +13,7 @@
 #include "Util/algorithm.h"
 #include "macro.h"
 #include "parse.h"
+#include "Font.h"
 
 #include <QMessageBox>
 
@@ -27,6 +28,11 @@ DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, 
 
 	ui.setupUi(this);
 	connectSlots();
+
+	const int tabStop = Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE);  // 4 characters
+	ui.editInit->setTabStopDistance(tabStop * Font::characterWidth(ui.editInit->fontMetrics(), QLatin1Char(' ')));
+	ui.editNewline->setTabStopDistance(tabStop * Font::characterWidth(ui.editNewline->fontMetrics(), QLatin1Char(' ')));
+	ui.editModMacro->setTabStopDistance(tabStop * Font::characterWidth(ui.editModMacro->fontMetrics(), QLatin1Char(' ')));
 
 	QString languageMode = Preferences::LanguageModeName((document->getLanguageMode() == PLAIN_LANGUAGE_MODE) ? 0 : document->getLanguageMode());
 

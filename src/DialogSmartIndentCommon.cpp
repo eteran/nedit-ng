@@ -6,6 +6,7 @@
 #include "SmartIndent.h"
 #include "Util/String.h"
 #include "macro.h"
+#include "Font.h"
 
 #include <QMessageBox>
 
@@ -19,6 +20,9 @@ DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlag
 
 	ui.setupUi(this);
 	connectSlots();
+
+	const int tabStop = Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE);  // 4 characters
+	ui.editCode->setTabStopDistance(tabStop * Font::characterWidth(ui.editCode->fontMetrics(), QLatin1Char(' ')));
 
 	ui.editCode->setPlainText(SmartIndent::CommonMacros);
 }
