@@ -27,7 +27,11 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f)
 	connectSlots();
 
 	const int tabStop = Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE);  // 4 characters
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
 	ui.editMacro->setTabStopDistance(tabStop * Font::characterWidth(ui.editMacro->fontMetrics(), QLatin1Char(' ')));
+#else
+	ui.editMacro->setTabStopWidth(tabStop * Font::characterWidth(ui.editMacro->fontMetrics(), QLatin1Char(' ')));
+#endif
 
 
 	CommonDialog::setButtonIcons(&ui);
