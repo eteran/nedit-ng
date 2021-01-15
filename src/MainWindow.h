@@ -32,6 +32,7 @@ class DialogReplace;
 class DialogShellMenu;
 class DialogWindowBackgroundMenu;
 class DialogSyntaxPatterns;
+class DialogDrawingStyles;
 class DocumentWidget;
 class TextArea;
 struct MenuData;
@@ -444,6 +445,7 @@ private:
 	QPointer<DialogColors> dialogColors_;
 	QPointer<DialogWindowBackgroundMenu> dialogWindowBackgroundMenu_;
 	QPointer<DialogSyntaxPatterns> dialogSyntaxPatterns_;
+	QPointer<DialogDrawingStyles> dialogDrawingStyles_;
 	QPointer<TextArea> lastFocus_;
 
 private:

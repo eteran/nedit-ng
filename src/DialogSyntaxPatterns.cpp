@@ -24,8 +24,8 @@
  * @param parent
  * @param f
  */
-DialogSyntaxPatterns::DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f)
-	: Dialog(window, f), window_(window) {
+DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f) {
 
 	ui.setupUi(this);
 	connectSlots();
@@ -277,9 +277,13 @@ void DialogSyntaxPatterns::buttonLanguageMode_clicked() {
 void DialogSyntaxPatterns::buttonHighlightStyle_clicked() {
 	QString style = ui.comboHighlightStyle->currentText();
 	if (!style.isEmpty()) {
-		auto DrawingStyles = std::make_unique<DialogDrawingStyles>(this, Highlight::HighlightStyles, this);
-		DrawingStyles->setStyleByName(style);
-		DrawingStyles->exec();
+
+		if (!dialogDrawingStyles_) {
+			dialogDrawingStyles_ = new DialogDrawingStyles(this, Highlight::HighlightStyles, this);
+		}
+
+		dialogDrawingStyles_->setStyleByName(style);
+		dialogDrawingStyles_->show();
 	}
 }
 

@@ -6120,9 +6120,15 @@ MainWindow *MainWindow::fromDocument(const DocumentWidget *document) {
 */
 void MainWindow::editHighlightStyles(const QString &initialStyle) {
 
-	auto DrawingStyles = std::make_unique<DialogDrawingStyles>(nullptr, Highlight::HighlightStyles, this);
-	DrawingStyles->setStyleByName(initialStyle);
-	DrawingStyles->exec();
+	if (!dialogDrawingStyles_) {
+		dialogDrawingStyles_ = new DialogDrawingStyles(nullptr, Highlight::HighlightStyles, this);
+	}
+
+	dialogDrawingStyles_->setStyleByName(initialStyle);
+
+	// TODO(eteran): do we want to take any measures to prevent
+	// more than one of these being shown?
+	dialogDrawingStyles_->show();
 }
 
 /*
