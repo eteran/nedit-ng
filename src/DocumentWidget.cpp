@@ -5388,7 +5388,7 @@ DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProc() {
 */
 void DocumentWidget::resumeMacroExecution() {
 
-	if (const std::shared_ptr<MacroCommandData> &cmdData = macroCmdData_) {
+	if (const std::shared_ptr<MacroCommandData> cmdData = macroCmdData_) {
 
 		// create a background task that will run so long as the function returns false
 		connect(&cmdData->continuationTimer, &QTimer::timeout, this, [cmdData, this]() {
@@ -6501,7 +6501,7 @@ std::unique_ptr<Regex> DocumentWidget::compileRegexAndWarn(const QString &re) {
 ** process close the window when the macro is finished executing.
 */
 bool DocumentWidget::macroWindowCloseActions() {
-	const std::shared_ptr<MacroCommandData> &cmdData = macroCmdData_;
+	const std::shared_ptr<MacroCommandData> cmdData = macroCmdData_;
 
 	CommandRecorder *recorder = CommandRecorder::instance();
 
@@ -6515,7 +6515,7 @@ bool DocumentWidget::macroWindowCloseActions() {
 	if (!cmdData) {
 		for (DocumentWidget *document : DocumentWidget::allDocuments()) {
 
-			const std::shared_ptr<MacroCommandData> &mcd = document->macroCmdData_;
+			const std::shared_ptr<MacroCommandData> mcd = document->macroCmdData_;
 
 			if (document == MacroRunDocument() && MacroFocusDocument() == this) {
 				SetMacroFocusDocument(MacroRunDocument());

@@ -5003,7 +5003,7 @@ void RegisterMacroSubroutines() {
 */
 void returnShellCommandOutput(DocumentWidget *document, const QString &outText, int status) {
 
-	if (const std::shared_ptr<MacroCommandData> &cmdData = document->macroCmdData_) {
+	if (const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_) {
 
 		DataValue retVal = make_value(outText);
 
