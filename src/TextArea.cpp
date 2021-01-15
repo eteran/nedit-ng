@@ -2992,6 +2992,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 	QColor fground       = pal.color(QPalette::Text);
 	QFont renderFont     = font_;
 	bool underlineStyle  = false;
+	bool fastPath        = true;
 
 	enum DrawType {
 		DrawStyle,
@@ -3037,6 +3038,8 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 
 			renderFont.setBold(styleRec->isBold);
 			renderFont.setItalic(styleRec->isItalic);
+
+			fastPath = (!styleRec->isBold && !styleRec->isItalic);
 
 			fground = styleRec->color;
 			// here you could pick up specific select and highlight fground
@@ -3119,15 +3122,15 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 	// of the cursor to this function, giving us generally a bit more flexibility.
 
 	painter->setPen(fground);
-#if 0
-	painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, s);
-#else
-	for(QChar ch : s) {
-		QString str(ch);
-		painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, str);
-		rect.adjust(fixedFontWidth_, 0, -fixedFontWidth_, 0);
+	if(Q_LIKELY(fastPath)) {
+		painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, s);
+	} else {
+		for(QChar ch : s) {
+			QString str(ch);
+			painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, str);
+			rect.adjust(fixedFontWidth_, 0, -fixedFontWidth_, 0);
+		}
 	}
-#endif
 	painter->restore();
 }
 
