@@ -2992,6 +2992,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 	QColor fground       = pal.color(QPalette::Text);
 	QFont renderFont     = font_;
 	bool underlineStyle  = false;
+	bool fastPath        = true;
 
 	enum DrawType {
 		DrawStyle,
@@ -3037,6 +3038,8 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 
 			renderFont.setBold(styleRec->isBold);
 			renderFont.setItalic(styleRec->isItalic);
+
+			fastPath = !widerBold_ || (!styleRec->isBold && !styleRec->isItalic);
 
 			fground = styleRec->color;
 			// here you could pick up specific select and highlight fground
@@ -3103,7 +3106,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 	}
 
 	const auto s = asciiToUnicode(string);
-	const QRect rect(x, y, toX - x, fixedFontHeight_);
+	QRect rect(x, y, toX - x, fixedFontHeight_);
 
 	painter->save();
 	painter->setFont(renderFont);
@@ -3119,7 +3122,14 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 	// of the cursor to this function, giving us generally a bit more flexibility.
 
 	painter->setPen(fground);
-	painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, s);
+	if(Q_LIKELY(fastPath)) {
+		painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, s);
+	} else {
+		for(QChar ch : s) {
+			painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, {ch});
+			rect.adjust(fixedFontWidth_, 0, 0, 0);
+		}
+	}
 	painter->restore();
 }
 
@@ -7262,14 +7272,16 @@ void TextArea::updateFontMetrics(const QFont &font) {
 
 	QFontMetrics fm(font);
 	fixedFontWidth_  = Font::maxWidth(fm);
-	const int height = fm.ascent() + fm.descent();
+	const int standardHeight = fm.ascent() + fm.descent();
 
 	QFont boldFont = font;
 	boldFont.setWeight(QFont::Bold);
 	QFontMetrics fmb(boldFont);
 	const int boldHeight = fmb.ascent() + fmb.descent();
 
-	fixedFontHeight_ = std::max(height, boldHeight);
+	fixedFontHeight_ = std::max(standardHeight, boldHeight);
+
+	widerBold_ = Font::maxWidth(fm) != Font::maxWidth(fmb);
 }
 
 int TextArea::getLineNumWidth() const {
