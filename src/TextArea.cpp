@@ -3103,7 +3103,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 	}
 
 	const auto s = asciiToUnicode(string);
-	const QRect rect(x, y, toX - x, fixedFontHeight_);
+	QRect rect(x, y, toX - x, fixedFontHeight_);
 
 	painter->save();
 	painter->setFont(renderFont);
@@ -3119,7 +3119,15 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 	// of the cursor to this function, giving us generally a bit more flexibility.
 
 	painter->setPen(fground);
+#if 0
 	painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, s);
+#else
+	for(QChar ch : s) {
+		QString str(ch);
+		painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, str);
+		rect.adjust(fixedFontWidth_, 0, -fixedFontWidth_, 0);
+	}
+#endif
 	painter->restore();
 }
 
