@@ -6166,23 +6166,6 @@ void MainWindow::editHighlightPatterns() {
 	dialogSyntaxPatterns_->show();
 }
 
-/*
-** Change the language mode name of pattern sets for language "oldName" to
-** "newName" in both the stored patterns, and the pattern set currently being
-** edited in the dialog.
-*/
-void MainWindow::renameHighlightPattern(const QString &oldName, const QString &newName) {
-
-	// TODO(eteran): this function doesn't REALLY belong in "MainWindow"
-	// since it generically manages highlight pattern sets
-
-	for (PatternSet &patternSet : Highlight::PatternSets) {
-		if (patternSet.languageMode == oldName) {
-			patternSet.languageMode = newName;
-		}
-	}
-}
-
 /**
  * @brief MainWindow::getIncrementalSearchLine
  * @return
