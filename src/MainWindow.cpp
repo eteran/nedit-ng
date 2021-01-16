@@ -2654,7 +2654,7 @@ void MainWindow::action_Goto_Selected_triggered() {
 void MainWindow::action_Find_Dialog(DocumentWidget *document, Direction direction, SearchType type, bool keepDialog) {
 
 	if (!dialogFind_) {
-		dialogFind_ = new DialogFind(this, document);
+		dialogFind_ = new DialogFind(this, document);		
 	}
 
 	dialogFind_->setTextFieldFromDocument(document);
@@ -4093,6 +4093,7 @@ void MainWindow::action_Default_Text_Fonts_triggered() {
 void MainWindow::action_Default_Colors_triggered() {
 	if (!dialogColors_) {
 		dialogColors_ = new DialogColors(this);
+		dialogColors_->setAttribute(Qt::WA_DeleteOnClose);
 	}
 
 	// TODO(eteran): do we want to take any measures to prevent
@@ -4106,6 +4107,7 @@ void MainWindow::action_Default_Colors_triggered() {
 void MainWindow::action_Default_Shell_Menu_triggered() {
 	if (!dialogShellMenu_) {
 		dialogShellMenu_ = new DialogShellMenu(this);
+		dialogShellMenu_->setAttribute(Qt::WA_DeleteOnClose);
 	}
 
 	// TODO(eteran): do we want to take any measures to prevent
@@ -4120,6 +4122,7 @@ void MainWindow::action_Default_Shell_Menu_triggered() {
 void MainWindow::action_Default_Macro_Menu_triggered() {
 	if (!dialogMacros_) {
 		dialogMacros_ = new DialogMacros(this);
+		dialogMacros_->setAttribute(Qt::WA_DeleteOnClose);
 	}
 
 	// TODO(eteran): do we want to take any measures to prevent
@@ -4133,6 +4136,7 @@ void MainWindow::action_Default_Macro_Menu_triggered() {
 void MainWindow::action_Default_Window_Background_Menu_triggered() {
 	if (!dialogWindowBackgroundMenu_) {
 		dialogWindowBackgroundMenu_ = new DialogWindowBackgroundMenu(this);
+		dialogWindowBackgroundMenu_->setAttribute(Qt::WA_DeleteOnClose);
 	}
 
 	// TODO(eteran): do we want to take any measures to prevent
@@ -6122,6 +6126,7 @@ void MainWindow::editHighlightStyles(const QString &initialStyle) {
 
 	if (!dialogDrawingStyles_) {
 		dialogDrawingStyles_ = new DialogDrawingStyles(nullptr, Highlight::HighlightStyles, this);
+		dialogDrawingStyles_->setAttribute(Qt::WA_DeleteOnClose);
 	}
 
 	dialogDrawingStyles_->setStyleByName(initialStyle);
@@ -6147,6 +6152,7 @@ void MainWindow::editHighlightPatterns() {
 
 	if (!dialogSyntaxPatterns_) {
 		dialogSyntaxPatterns_ = new DialogSyntaxPatterns(this);
+		dialogSyntaxPatterns_->setAttribute(Qt::WA_DeleteOnClose);
 	}
 
 
