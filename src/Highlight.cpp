@@ -1679,4 +1679,18 @@ size_t IndexOfNamedStyle(const QString &styleName) {
 	return STYLE_NOT_FOUND;
 }
 
+/*
+** Change the language mode name of pattern sets for language "oldName" to
+** "newName" in both the stored patterns, and the pattern set currently being
+** edited in the dialog.
+*/
+void RenameHighlightPattern(const QString &oldName, const QString &newName) {
+
+	for (PatternSet &patternSet : Highlight::PatternSets) {
+		if (patternSet.languageMode == oldName) {
+			patternSet.languageMode = newName;
+		}
+	}
+}
+
 }

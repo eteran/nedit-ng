@@ -144,7 +144,6 @@ public:
 	static void checkCloseEnableState(const std::vector<MainWindow *> &windows);
 	static void invalidatePrevOpenMenus();
 	static void readNEditDB();
-	static void renameHighlightPattern(const QString &oldName, const QString &newName);
 	static void updateMenuItems();
 	static void updateWindowMenus();
 	static void writeNEditDB();

@@ -457,7 +457,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 				QString oldName = parts[0];
 				QString newName = parts[1];
 
-				MainWindow::renameHighlightPattern(oldName, newName);
+				Highlight::RenameHighlightPattern(oldName, newName);
 				if (dialogSyntaxPatterns_) {
 					dialogSyntaxPatterns_->RenameHighlightPattern(oldName, newName);
 				}
