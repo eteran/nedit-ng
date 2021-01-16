@@ -907,14 +907,18 @@ bool DialogSyntaxPatterns::validateFields(Verbosity verbosity) {
 */
 bool DialogSyntaxPatterns::TestHighlightPatterns(const std::unique_ptr<PatternSet> &patSet) {
 
-	/* Compile the patterns (passing a random window as a source for fonts, and
-	   parent for dialogs, since we really don't care what fonts are used) */
-	if (PatternSet *const patternSet = patSet.get()) {
-		for (DocumentWidget *document : DocumentWidget::allDocuments()) {
-			if (document->createHighlightData(patternSet)) {
-				return true;
+	try {
+		/* Compile the patterns (passing a random window as a source for fonts, and
+		   parent for dialogs, since we really don't care what fonts are used) */
+		if (PatternSet *const patternSet = patSet.get()) {
+			for (DocumentWidget *document : DocumentWidget::allDocuments()) {
+				if (document->createHighlightData(patternSet, Verbosity::Verbose)) {
+					return true;
+				}
 			}
 		}
+	} catch (const RegexError &e) {
+		QMessageBox::critical(this, tr("Error"), tr("Error compiling syntax highlight patterns:\n%1").arg(QString::fromLatin1(e.what())));
 	}
 
 	return false;
