@@ -155,7 +155,7 @@ public:
 	int64_t styleLengthOfCodeFromPos(TextCursor pos) const;
 	size_t getLanguageMode() const;
 	size_t highlightCodeOfPos(TextCursor pos) const;
-	std::unique_ptr<WindowHighlightData> createHighlightData(PatternSet *patternSet);
+	std::unique_ptr<WindowHighlightData> createHighlightData(PatternSet *patternSet, Verbosity verbosity = Verbosity::Silent);
 	std::vector<TextArea *> textPanes() const;
 	void abortShellCommand();
 	void addMark(TextArea *area, QChar label);
@@ -245,7 +245,7 @@ private:
 	boost::optional<TextCursor> findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit);
 	int findAllMatches(TextArea *area, const QString &string);
 	size_t matchLanguageMode() const;
-	std::unique_ptr<HighlightData[]> compilePatterns(const std::vector<HighlightPattern> &patternSrc);
+	std::unique_ptr<HighlightData[]> compilePatterns(const std::vector<HighlightPattern> &patternSrc, Verbosity verbosity = Verbosity::Silent);
 	std::unique_ptr<Regex> compileRegexAndWarn(const QString &re);
 	void abortMacroCommand();
 	void actionClose(CloseMode mode);

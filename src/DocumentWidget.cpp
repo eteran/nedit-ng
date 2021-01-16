@@ -6013,7 +6013,7 @@ void DocumentWidget::attachHighlightToWidget(TextArea *area) {
 ** highlighting fonts from "window", includes pattern compilation.  If errors
 ** are encountered, warns user with a dialog and returns nullptr.
 */
-std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(PatternSet *patternSet) {
+std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(PatternSet *patternSet, Verbosity verbosity) {
 
 	std::vector<HighlightPattern> &patterns = patternSet->patterns;
 
@@ -6110,14 +6110,14 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 
 	// Compile patterns
 	if (!pass1PatternSrc.empty()) {
-		pass1Pats = compilePatterns(pass1PatternSrc);
+		pass1Pats = compilePatterns(pass1PatternSrc, verbosity);
 		if (!pass1Pats) {
 			return nullptr;
 		}
 	}
 
 	if (!pass2PatternSrc.empty()) {
-		pass2Pats = compilePatterns(pass2PatternSrc);
+		pass2Pats = compilePatterns(pass2PatternSrc, verbosity);
 		if (!pass2Pats) {
 			return nullptr;
 		}
@@ -6251,7 +6251,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 ** actually used by the code.  Output is a tree of HighlightData structures
 ** containing compiled regular expressions and style information.
 */
-std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vector<HighlightPattern> &patternSrc) {
+std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vector<HighlightPattern> &patternSrc, Verbosity verbosity) {
 
 	/* Allocate memory for the compiled patterns.  The list is terminated
 	   by a record with style == 0. */
@@ -6451,6 +6451,9 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 			compiledPats[patternNum].subPatternRE = std::make_unique<Regex>(bigPattern, REDFLT_STANDARD);
 		} catch (const RegexError &e) {
 			qWarning("NEdit: Error compiling syntax highlight patterns:\n%s", e.what());
+			if(verbosity == Verbosity::Verbose) {
+				throw;
+			}
 			return nullptr;
 		}
 	}
