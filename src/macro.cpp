@@ -1369,7 +1369,7 @@ std::error_code setTabDistMS(DocumentWidget *document, Arguments arguments, Data
 		int newTabDist = 0;
 
 		std::error_code ec = readArguments(arguments, 0, &newTabDist);
-		if (ec && newTabDist > 0 && newTabDist <= TextBuffer::MAX_EXP_CHAR_LEN) {
+		if (!ec && newTabDist > 0 && newTabDist <= TextBuffer::MAX_EXP_CHAR_LEN) {
 			document->setTabDistance(newTabDist);
 		} else {
 			qWarning("NEdit: set_tab_dist requires integer argument > 0 and <= %d", TextBuffer::MAX_EXP_CHAR_LEN);
@@ -1390,7 +1390,7 @@ std::error_code setWrapMarginMS(DocumentWidget *document, Arguments arguments, D
 		int newMargin = 0;
 
 		std::error_code ec = readArguments(arguments, 0, &newMargin);
-		if (ec && newMargin > 0 && newMargin <= 1000) {
+		if (!ec && newMargin > 0 && newMargin <= 1000) {
 
 			const std::vector<TextArea *> panes = document->textPanes();
 
