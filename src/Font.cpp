@@ -9,9 +9,10 @@ QFont fromString(const QString &fontName) {
 	QFont font;
 	font.fromString(fontName);
 	font.setStyleName(QString());
-#if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
+QT_WARNING_PUSH
+QT_WARNING_DISABLE_DEPRECATED
 	font.setStyleStrategy(QFont::ForceIntegerMetrics);
-#endif
+QT_WARNING_POP
 	return font;
 }
 
