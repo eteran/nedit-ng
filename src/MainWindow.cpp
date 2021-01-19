@@ -2654,7 +2654,7 @@ void MainWindow::action_Goto_Selected_triggered() {
 void MainWindow::action_Find_Dialog(DocumentWidget *document, Direction direction, SearchType type, bool keepDialog) {
 
 	if (!dialogFind_) {
-		dialogFind_ = new DialogFind(this, document);		
+		dialogFind_ = new DialogFind(this, document);
 	}
 
 	dialogFind_->setTextFieldFromDocument(document);
@@ -6154,7 +6154,6 @@ void MainWindow::editHighlightPatterns() {
 		dialogSyntaxPatterns_ = new DialogSyntaxPatterns(this);
 		dialogSyntaxPatterns_->setAttribute(Qt::WA_DeleteOnClose);
 	}
-
 
 	if (DocumentWidget *document = currentDocument()) {
 		QString languageName = Preferences::LanguageModeName((document->languageMode_ == PLAIN_LANGUAGE_MODE) ? 0 : document->languageMode_);

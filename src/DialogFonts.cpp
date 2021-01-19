@@ -14,6 +14,7 @@
  */
 DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f), document_(document) {
+
 	ui.setupUi(this);
 	connectSlots();
 
@@ -29,22 +30,34 @@ DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFl
 
 	const QFont font = document ? Font::fromString(document->fontName_) : Font::fromString(Preferences::GetPrefFontName());
 
-	for (int size : QFontDatabase::standardSizes()) {
-		ui.fontSize->addItem(QStringLiteral("%1").arg(size), size);
-	}
+	// whenever the font changes, update the available sizes too
+	connect(ui.fontCombo, &QFontComboBox::currentFontChanged, this, [this](const QFont &font) {
+		const QList<int> sizes = Font::pointSizes(font);
+
+		const QVariant currentSize = ui.fontSize->currentData();
+		const int current          = currentSize.isValid() ? currentSize.toInt() : font.pointSize();
+
+		ui.fontSize->clear();
+		for (int size : sizes) {
+			ui.fontSize->addItem(QStringLiteral("%1").arg(size), size);
+		}
+
+		const int n = ui.fontSize->findData(current);
+		if (n != -1) {
+			ui.fontSize->setCurrentIndex(n);
+		}
+	});
 
 	ui.fontCombo->setCurrentFont(font);
-
-	const int n = ui.fontSize->findData(font.pointSize());
-	if (n != -1) {
-		ui.fontSize->setCurrentIndex(n);
-	}
 
 	if (!document) {
 		ui.checkApplyAll->setVisible(false);
 	}
 }
 
+/**
+ * @brief DialogFonts::connectSlots
+ */
 void DialogFonts::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogFonts::buttonBox_clicked);
 }

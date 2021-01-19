@@ -756,7 +756,7 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 	}
 
 	// ensure that the list has the current item complete filled out
-	if(!updateCurrentItem()) {
+	if (!updateCurrentItem()) {
 		return nullptr;
 	}
 
