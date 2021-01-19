@@ -3951,6 +3951,7 @@ void MainWindow::action_Save_Defaults_triggered() {
 void MainWindow::action_Default_Language_Modes_triggered() {
 	if (!dialogLanguageModes_) {
 		dialogLanguageModes_ = new DialogLanguageModes(nullptr, this);
+		dialogLanguageModes_->setAttribute(Qt::WA_DeleteOnClose);
 	}
 
 	dialogLanguageModes_->show();
