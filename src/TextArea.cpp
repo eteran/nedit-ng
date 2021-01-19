@@ -3122,10 +3122,10 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 	// of the cursor to this function, giving us generally a bit more flexibility.
 
 	painter->setPen(fground);
-	if(Q_LIKELY(fastPath)) {
+	if (Q_LIKELY(fastPath)) {
 		painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, s);
 	} else {
-		for(QChar ch : s) {
+		for (QChar ch : s) {
 			painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, {ch});
 			rect.adjust(fixedFontWidth_, 0, 0, 0);
 		}
@@ -7271,7 +7271,7 @@ void TextArea::updateFontMetrics(const QFont &font) {
 	}
 
 	QFontMetrics fm(font);
-	fixedFontWidth_  = Font::maxWidth(fm);
+	fixedFontWidth_          = Font::maxWidth(fm);
 	const int standardHeight = fm.ascent() + fm.descent();
 
 	QFont boldFont = font;
@@ -7872,14 +7872,15 @@ void TextArea::makeSelectionVisible() {
  */
 void TextArea::zoomOutAP(TextArea::EventFlags flags) {
 	Q_UNUSED(flags)
-	QList<int> sizes = QFontDatabase::standardSizes();
-	QFontInfo fi(font_);
+	const QList<int> sizes = Font::pointSizes(font_);
 
-	int currentSize = fi.pointSize();
+	int currentSize = font_.pointSize();
 	int index       = sizes.indexOf(currentSize);
 	if (index != 0) {
 		font_.setPointSize(sizes[index - 1]);
 		document_->action_Set_Fonts(font_.toString());
+	} else {
+		QApplication::beep();
 	}
 }
 
@@ -7889,14 +7890,15 @@ void TextArea::zoomOutAP(TextArea::EventFlags flags) {
  */
 void TextArea::zoomInAP(TextArea::EventFlags flags) {
 	Q_UNUSED(flags)
-	QList<int> sizes = QFontDatabase::standardSizes();
-	QFontInfo fi(font_);
+	const QList<int> sizes = Font::pointSizes(font_);
 
-	int currentSize = fi.pointSize();
+	int currentSize = font_.pointSize();
 	int index       = sizes.indexOf(currentSize);
 	if (index != sizes.size() - 1) {
 		font_.setPointSize(sizes[index + 1]);
 		document_->action_Set_Fonts(font_.toString());
+	} else {
+		QApplication::beep();
 	}
 }
 

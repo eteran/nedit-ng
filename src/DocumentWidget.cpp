@@ -6451,7 +6451,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 			compiledPats[patternNum].subPatternRE = std::make_unique<Regex>(bigPattern, REDFLT_STANDARD);
 		} catch (const RegexError &e) {
 			qWarning("NEdit: Error compiling syntax highlight patterns:\n%s", e.what());
-			if(verbosity == Verbosity::Verbose) {
+			if (verbosity == Verbosity::Verbose) {
 				throw;
 			}
 			return nullptr;

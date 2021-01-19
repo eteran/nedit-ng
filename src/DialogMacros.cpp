@@ -2,6 +2,8 @@
 #include "DialogMacros.h"
 #include "CommandRecorder.h"
 #include "CommonDialog.h"
+#include "Font.h"
+#include "LanguageMode.h"
 #include "MainWindow.h"
 #include "MenuData.h"
 #include "MenuItem.h"
@@ -10,8 +12,6 @@
 #include "Util/String.h"
 #include "parse.h"
 #include "userCmds.h"
-#include "Font.h"
-#include "LanguageMode.h"
 
 #include <QMessageBox>
 
@@ -26,13 +26,12 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f)
 	ui.setupUi(this);
 	connectSlots();
 
-	const int tabStop = Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE);  // 4 characters
+	const int tabStop = Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE); // 4 characters
 #if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
 	ui.editMacro->setTabStopDistance(tabStop * Font::characterWidth(ui.editMacro->fontMetrics(), QLatin1Char(' ')));
 #else
 	ui.editMacro->setTabStopWidth(tabStop * Font::characterWidth(ui.editMacro->fontMetrics(), QLatin1Char(' ')));
 #endif
-
 
 	CommonDialog::setButtonIcons(&ui);
 

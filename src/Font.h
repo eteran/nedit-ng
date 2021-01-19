@@ -2,6 +2,8 @@
 #ifndef FONT_H_
 #define FONT_H_
 
+#include <QList>
+
 class QString;
 class QFont;
 class QFontMetrics;
@@ -19,6 +21,7 @@ QFont fromString(const QString &fontName);
 int maxWidth(const QFontMetrics &fm);
 int characterWidth(const QFontMetrics &fm, QChar ch);
 int stringWidth(const QFontMetrics &fm, const QString &s);
+QList<int> pointSizes(const QFont &font);
 
 }
 

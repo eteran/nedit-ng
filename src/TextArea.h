@@ -408,7 +408,7 @@ private:
 	bool smartIndent_                              = false;
 	bool suppressResync_                           = false; // Suppress resynchronization of line starts during buffer updates
 	bool widerBold_                                = false;
-	int absTopLineNum_                             = 1;     // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
+	int absTopLineNum_                             = 1; // In continuous wrap mode, the line number of the top line if the text were not wrapped (note that this is only maintained as needed).
 	int clickCount_                                = 0;
 	int cursorPreferredCol_                        = -1; // Column for vert. cursor movement
 	int cursorVPadding_                            = 0;
@@ -447,7 +447,6 @@ private:
 	std::vector<StyleTableEntry> styleTable_; // Table of fonts and colors for coloring/syntax-highlighting
 	std::vector<uint8_t> bgClass_;            // obtains index into bgClassColors_
 	uint32_t unfinishedStyle_;                // Style buffer entry which triggers on-the-fly reparsing of region
-
 
 private:
 	std::vector<std::pair<CursorMovedCallback, void *>> movedCallbacks_;
