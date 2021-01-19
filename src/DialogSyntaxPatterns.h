@@ -15,6 +15,7 @@ class HighlightPattern;
 class HighlightPatternModel;
 class PatternSet;
 class DialogDrawingStyles;
+class DialogLanguageModes;
 
 class DialogSyntaxPatterns final : public Dialog {
 	Q_OBJECT
@@ -74,6 +75,7 @@ private:
 	QModelIndex deleted_;
 	QString previousLanguage_;
 	QPointer<DialogDrawingStyles> dialogDrawingStyles_;
+	QPointer<DialogLanguageModes> dialogLanguageModes_;
 };
 
 #endif

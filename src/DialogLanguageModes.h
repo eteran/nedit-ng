@@ -6,6 +6,8 @@
 #include "Verbosity.h"
 #include "ui_DialogLanguageModes.h"
 
+#include <QPointer>
+
 #include <boost/optional.hpp>
 
 class DialogSyntaxPatterns;
@@ -50,7 +52,7 @@ private:
 	Ui::DialogLanguageModes ui;
 	LanguageModeModel *model_;
 	QModelIndex deleted_;
-	DialogSyntaxPatterns *dialogSyntaxPatterns_;
+	QPointer<DialogSyntaxPatterns> dialogSyntaxPatterns_;
 };
 
 #endif

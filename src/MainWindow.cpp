@@ -3949,8 +3949,11 @@ void MainWindow::action_Save_Defaults_triggered() {
  * @brief MainWindow::action_Default_Language_Modes_triggered
  */
 void MainWindow::action_Default_Language_Modes_triggered() {
-	auto dialog = std::make_unique<DialogLanguageModes>(nullptr, this);
-	dialog->exec();
+	if (!dialogLanguageModes_) {
+		dialogLanguageModes_ = new DialogLanguageModes(nullptr, this);
+	}
+
+	dialogLanguageModes_->show();
 }
 
 /**

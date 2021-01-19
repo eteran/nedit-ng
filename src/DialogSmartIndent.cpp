@@ -110,8 +110,11 @@ void DialogSmartIndent::buttonCommon_clicked() {
  * @brief DialogSmartIndent::buttonLanguageMode_clicked
  */
 void DialogSmartIndent::buttonLanguageMode_clicked() {
-	auto dialog = std::make_unique<DialogLanguageModes>(nullptr, this);
-	dialog->exec();
+	if (!dialogLanguageModes_) {
+		dialogLanguageModes_ = new DialogLanguageModes(nullptr, this);
+	}
+
+	dialogLanguageModes_->show();
 }
 
 /**
