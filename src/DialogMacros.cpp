@@ -328,6 +328,7 @@ bool DialogMacros::checkMacroText(const QString &macro, Verbosity verbosity) {
 		cursor.setPosition(stoppedAt);
 		ui.editMacro->setTextCursor(cursor);
 		ui.editMacro->setFocus();
+		return false;
 	}
 
 	return true;
