@@ -63,6 +63,11 @@ QString readSmartIndentMacro(Input &in) {
 	return shiftText(macroStr, ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars=*/8);
 }
 
+/**
+ * @brief isDefaultIndentSpec
+ * @param indentSpec
+ * @return
+ */
 bool isDefaultIndentSpec(const SmartIndentEntry *indentSpec) {
 
 	if (const SmartIndentEntry *spec = findDefaultIndentSpec(indentSpec->language)) {
@@ -327,6 +332,10 @@ void loadSmartIndentString(const QString &string) {
 	}
 }
 
+/**
+ * @brief loadSmartIndentCommonString
+ * @param string
+ */
 void loadSmartIndentCommonString(const QString &string) {
 
 	if (string != QLatin1String("*")) {
@@ -347,6 +356,10 @@ void loadSmartIndentCommonString(const QString &string) {
 	}
 }
 
+/**
+ * @brief writeSmartIndentString
+ * @return
+ */
 QString writeSmartIndentString() {
 	QString filename = Settings::smartIndentFile();
 	try {
@@ -402,6 +415,10 @@ QString writeSmartIndentString() {
 	return QString();
 }
 
+/**
+ * @brief writeSmartIndentCommonString
+ * @return
+ */
 QString writeSmartIndentCommonString() {
 	return QLatin1String("*");
 }
@@ -456,7 +473,7 @@ void renameSmartIndentMacros(const QString &oldName, const QString &newName) {
 	}
 
 	if (SmartIndentDialog) {
-		if (SmartIndentDialog->languageMode_ == oldName) {
+		if (SmartIndentDialog->languageMode() == oldName) {
 			SmartIndentDialog->setLanguageMode(newName);
 		}
 	}
