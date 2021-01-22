@@ -360,6 +360,10 @@ SmartIndentEntry DialogSmartIndent::getSmartIndentDialogData() const {
 	return is;
 }
 
+/**
+ * @brief DialogSmartIndent::languageMode
+ * @return
+ */
 QString DialogSmartIndent::languageMode() const {
 	return languageMode_;
 }

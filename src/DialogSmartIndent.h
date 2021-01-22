@@ -42,11 +42,9 @@ private:
 	void buttonHelp_clicked();
 	void connectSlots();
 
-public:
+private:
 	Ui::DialogSmartIndent ui;
 	QString languageMode_;
-
-private:
 	QPointer<DialogLanguageModes> dialogLanguageModes_;
 };
 
