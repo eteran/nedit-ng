@@ -2273,19 +2273,19 @@ static int deleteArrayElement() {
 bool StringToNum(const std::string &string, int *number) {
 	auto it = string.begin();
 
-	while (*it == ' ' || *it == '\t') {
+	while (it != string.end() && (*it == ' ' || *it == '\t')) {
 		++it;
 	}
 
-	if (*it == '+' || *it == '-') {
+	if (it != string.end() && (*it == '+' || *it == '-')) {
 		++it;
 	}
 
-	while (safe_ctype<::isdigit>(*it)) {
+	while (it != string.end() && safe_ctype<::isdigit>(*it)) {
 		++it;
 	}
 
-	while (*it == ' ' || *it == '\t') {
+	while (it != string.end() && (*it == ' ' || *it == '\t')) {
 		++it;
 	}
 
