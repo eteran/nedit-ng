@@ -29,7 +29,7 @@ DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, 
 	ui.setupUi(this);
 	connectSlots();
 
-	const int tabStop = Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE); // 4 characters
+	const int tabStop = Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
 	ui.editInit->setTabStopDistance(tabStop * Font::characterWidth(ui.editInit->fontMetrics(), QLatin1Char(' ')));
 	ui.editNewline->setTabStopDistance(tabStop * Font::characterWidth(ui.editNewline->fontMetrics(), QLatin1Char(' ')));
