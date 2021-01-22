@@ -21,7 +21,7 @@ DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlag
 	ui.setupUi(this);
 	connectSlots();
 
-	const int tabStop = Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE); // 4 characters
+	const int tabStop = Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
 	ui.editCode->setTabStopDistance(tabStop * Font::characterWidth(ui.editCode->fontMetrics(), QLatin1Char(' ')));
 #else
