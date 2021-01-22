@@ -1353,8 +1353,7 @@ static int eq() {
 		}
 	} else if (is_string(v2) && is_integer(v1)) {
 		int number;
-		std::string s2 = to_string(v1);
-		if (!StringToNum(s2, &number)) {
+		if (!StringToNum(to_string(v2), &number)) {
 			v1 = make_value(0);
 		} else {
 			v1 = make_value(number == to_integer(v1));
