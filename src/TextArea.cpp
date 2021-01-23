@@ -3241,10 +3241,7 @@ void TextArea::handleResize(bool widthChanged) {
 
 	const QRect viewRect      = viewport()->contentsRect();
 	const int oldVisibleLines = nVisibleLines_;
-	int newVisibleLines       = (viewRect.height() / fixedFontHeight_);
-	if ((viewRect.height() % fixedFontHeight_) != 0) {
-		++newVisibleLines;
-	}
+	const int newVisibleLines = (viewRect.height() / fixedFontHeight_);
 
 	/* In continuous wrap mode, a change in width affects the total number of
 	   lines in the buffer, and can leave the top line number incorrect, and
