@@ -208,8 +208,8 @@ public:
 	TextCursor lineAndColToPosition(Location loc) const;
 	TextBuffer *styleBuffer() const;
 	int TextDGetCalltipID(int id) const;
-	int TextDMaxFontWidth() const;
-	int TextDMinFontWidth() const;
+	int maximumFontWidth() const;
+	int minimumFontWidth() const;
 	int TextDShowCalltip(const QString &text, bool anchored, CallTipPosition pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode);
 	int TextNumVisibleLines() const;
 	int TextVisibleWidth() const;
@@ -219,6 +219,8 @@ public:
 	int getRows() const;
 	int getWrapMargin() const;
 	int lineNumberAreaWidth() const;
+	int fixedFontHeight() const;
+	int fixedFontWidth() const;
 	int64_t TextFirstVisibleLine() const;
 	int64_t getBufferLinesCount() const;
 	std::string TextGetWrapped(TextCursor startPos, TextCursor endPos);
