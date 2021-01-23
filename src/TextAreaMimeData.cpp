@@ -17,8 +17,11 @@ TextAreaMimeData::TextAreaMimeData(const std::shared_ptr<TextBuffer> &buffer)
  * @param type
  * @return
  */
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+QVariant TextAreaMimeData::retrieveData(const QString &mimeType, QMetaType  type) const {
+#else
 QVariant TextAreaMimeData::retrieveData(const QString &mimeType, QVariant::Type type) const {
-
+#endif
 	auto that = const_cast<TextAreaMimeData *>(this);
 	if (buffer_->primary.hasSelection()) {
 		const std::string text = buffer_->BufGetSelectionText();

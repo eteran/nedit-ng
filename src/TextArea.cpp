@@ -7570,31 +7570,59 @@ void TextArea::TextDMaintainAbsLineNum(bool state) {
 	resetAbsLineNum();
 }
 
+/**
+ * @brief TextArea::buffer
+ * @return
+ */
 TextBuffer *TextArea::buffer() const {
 	return buffer_;
 }
 
-int TextArea::TextDMinFontWidth() const {
+/**
+ * @brief TextArea::minimumFontWidth
+ * @return
+ */
+int TextArea::minimumFontWidth() const {
 	return fixedFontWidth_;
 }
 
-int TextArea::TextDMaxFontWidth() const {
+/**
+ * @brief TextArea::maximumFontWidth
+ * @return
+ */
+int TextArea::maximumFontWidth() const {
 	return fixedFontWidth_;
 }
 
+/**
+ * @brief TextArea::TextNumVisibleLines
+ * @return
+ */
 int TextArea::TextNumVisibleLines() const {
 	return nVisibleLines_;
 }
 
+/**
+ * @brief TextArea::TextFirstVisibleLine
+ * @return
+ */
 int64_t TextArea::TextFirstVisibleLine() const {
 	return topLineNum_;
 }
 
+/**
+ * @brief TextArea::TextVisibleWidth
+ * @return
+ */
 int TextArea::TextVisibleWidth() const {
 	const QRect viewRect = viewport()->contentsRect();
 	return viewRect.width();
 }
 
+/**
+ * @brief TextArea::beginningOfSelectionAP
+ * @param flags
+ */
 void TextArea::beginningOfSelectionAP(EventFlags flags) {
 
 	EMIT_EVENT_0("beginning_of_selection");
@@ -7611,6 +7639,10 @@ void TextArea::beginningOfSelectionAP(EventFlags flags) {
 	}
 }
 
+/**
+ * @brief TextArea::deleteSelectionAP
+ * @param flags
+ */
 void TextArea::deleteSelectionAP(EventFlags flags) {
 
 	EMIT_EVENT_0("delete_selection");
@@ -7943,4 +7975,21 @@ bool TextArea::visibleLineContainsCursor(int visLine, TextCursor cursor) const {
  */
 DocumentWidget *TextArea::document() const {
 	return document_;
+}
+
+
+/**
+ * @brief TextArea::fixedFontHeight
+ * @return
+ */
+int TextArea::fixedFontHeight() const {
+	return fixedFontHeight_;
+}
+
+/**
+ * @brief TextArea::fixedFontWidth
+ * @return
+ */
+int TextArea::fixedFontWidth() const {
+	return fixedFontWidth_;
 }

@@ -52,6 +52,8 @@
 #include <QMimeData>
 #include <QShortcut>
 #include <QToolTip>
+#include <QTimer>
+#include <QActionGroup>
 #include <qplatformdefs.h>
 
 #include <cmath>
@@ -237,6 +239,9 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 	showISearchLine_ = Preferences::GetPrefISearchLine();
 	showLineNumbers_ = Preferences::GetPrefLineNums();
 
+	// make it so we can capture up/down key presses in the incremental find
+	ui.editIFind->installEventFilter(this);
+
 	// make sure that the ifind button has an icon
 	ui.buttonIFind->setIcon(QIcon::fromTheme(QLatin1String("edit-find")));
 
@@ -247,7 +252,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 
 	// make sure we include this windows which is in the middle of being created
 	std::vector<MainWindow *> windows = MainWindow::allWindows();
-	auto it                           = std::find(windows.begin(), windows.end(), this);
+
+	auto it = std::find(windows.begin(), windows.end(), this);
 	if (it == windows.end()) {
 		windows.push_back(this);
 	}
@@ -440,24 +446,26 @@ void MainWindow::parseGeometry(QString geometry) {
 	}
 
 	if (DocumentWidget *document = currentDocument()) {
-		QFontMetrics fm(document->font_);
-
 		const int extent = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
 
 		TextArea *area   = document->firstPane();
 		const QMargins m = area->getMargins();
 
-		const int w = extent + (Font::maxWidth(fm) * cols) + m.left() + m.right() + area->lineNumberAreaWidth();
-		const int h = extent + (fm.ascent() + fm.descent()) * rows + m.top() + m.bottom();
+		const int w = extent + (area->fixedFontWidth() * cols) + m.left() + m.right() + area->lineNumberAreaWidth();
+		const int h = extent + (area->fixedFontHeight() * rows) + m.top() + m.bottom();
 
+		// make the window squeeze down to the desired size of the text area
 		document->setMinimumSize(w, h);
 		adjustSize();
 
-		// NOTE(eteran): this processEvents() is to force the resize
-		// to happen now, so that we can set the widget to be fully
-		// resizable again right after we make everything adjust
-		QApplication::processEvents();
-		document->setMinimumSize(0, 0);
+		// NOTE(eteran): we do this in a one shot timer so that the adjustSize
+		// can happen now, but once we are done with this event,
+		// we can set the widget to be fully resizable again right after
+		// we make everything adjust. If we don't give Qt an opportunity to process
+		// the events, it will consolidate them resulting in no resize
+		QTimer::singleShot(0, this, [document]() {
+			document->setMinimumSize(0, 0);
+		});
 	}
 }
 
@@ -480,7 +488,6 @@ void MainWindow::setupTabBar() {
 	ui.tabWidget->setTabsClosable(true);
 #endif
 	ui.tabWidget->tabBar()->installEventFilter(this);
-	ui.editIFind->installEventFilter(this);
 }
 
 /**
@@ -2174,9 +2181,9 @@ QFileInfoList MainWindow::openFileHelperSystem(DocumentWidget *document, const Q
 	for (const QString &includeDir : includeDirs) {
 		// we need to do this because someone could write #include <path/to/file.h>
 		// which confuses QDir..
-		QFileInfo fullPath = QStringLiteral("%1/%2").arg(includeDir, match.captured(1));
-		QString filename   = fullPath.fileName();
-		QString filepath   = fullPath.path();
+		QFileInfo fullPath(QStringLiteral("%1/%2").arg(includeDir, match.captured(1)));
+		QString filename = fullPath.fileName();
+		QString filepath = fullPath.path();
 
 		filepath = NormalizePathname(filepath);
 
@@ -2206,9 +2213,9 @@ QFileInfoList MainWindow::openFileHelperString(DocumentWidget *document, const Q
 	QFileInfoList results;
 
 	if (QFileInfo(text).isAbsolute()) {
-		QFileInfo fullPath = text;
-		QString filename   = fullPath.fileName();
-		QString filepath   = fullPath.path();
+		QFileInfo fullPath(text);
+		QString filename = fullPath.fileName();
+		QString filepath = fullPath.path();
 
 		filepath = NormalizePathname(filepath);
 
@@ -2222,9 +2229,9 @@ QFileInfoList MainWindow::openFileHelperString(DocumentWidget *document, const Q
 	} else {
 		// we need to do this because someone could write #include "path/to/file.h"
 		// which confuses QDir..
-		QFileInfo fullPath = QStringLiteral("%1/%2").arg(document->path(), text);
-		QString filename   = fullPath.fileName();
-		QString filepath   = fullPath.path();
+		QFileInfo fullPath(QStringLiteral("%1/%2").arg(document->path(), text));
+		QString filename = fullPath.fileName();
+		QString filepath = fullPath.path();
 
 		filepath = NormalizePathname(filepath);
 

@@ -3,9 +3,9 @@
 #define MAIN_H_
 
 #include <QCoreApplication>
+#include <QStringList>
 #include <memory>
 
-class QStringList;
 class QString;
 class NeditServer;
 

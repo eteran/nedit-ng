@@ -3507,7 +3507,7 @@ std::error_code minFontWidthMV(DocumentWidget *document, Arguments arguments, Da
 	Q_UNUSED(arguments)
 
 	TextArea *area = document->firstPane();
-	*result        = make_value(area->TextDMinFontWidth());
+	*result        = make_value(area->minimumFontWidth());
 	return MacroErrorCode::Success;
 }
 
@@ -3515,7 +3515,7 @@ std::error_code maxFontWidthMV(DocumentWidget *document, Arguments arguments, Da
 	Q_UNUSED(arguments)
 
 	TextArea *area = document->firstPane();
-	*result        = make_value(area->TextDMaxFontWidth());
+	*result        = make_value(area->maximumFontWidth());
 	return MacroErrorCode::Success;
 }
 
