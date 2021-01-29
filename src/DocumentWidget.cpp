@@ -52,6 +52,12 @@
 
 #include <chrono>
 
+#if defined(Q_OS_WIN)
+#define FDOPEN _fdopen
+#else
+#define FDOPEN fdopen
+#endif
+
 // NOTE(eteran): generally, this class reaches out to MainWindow FAR too much
 // it would be better to create some fundamental signals that MainWindow could
 // listen on and update itself as needed. This would reduce a lot fo the heavy
@@ -1203,7 +1209,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 	   otherwise, leave it alone */
 	const bool wrapModeIsDef  = (info_->wrapMode == Preferences::GetPrefWrap(oldMode));
 	const bool tabDistIsDef   = (info_->buffer->BufGetTabDistance() == Preferences::GetPrefTabDist(oldMode));
-	const bool tabInsertIsDef = (info_->buffer->BufGetUseTabs() == Preferences::GetPrefInsertTabs(oldMode));
+	const bool tabInsertIsDef = (static_cast<int>(info_->buffer->BufGetUseTabs()) == Preferences::GetPrefInsertTabs(oldMode));
 
 	const int oldEmTabDist            = textAreas[0]->getEmulateTabs();
 	const QString oldlanguageModeName = Preferences::LanguageModeName(oldMode);
@@ -2360,7 +2366,7 @@ bool DocumentWidget::writeBackupFile() {
 #else
 	int fd = QT_OPEN(name.toUtf8().data(), QT_OPEN_CREAT | O_EXCL | QT_OPEN_WRONLY, S_IRUSR | S_IWUSR);
 #endif
-	if (fd < 0 || (fp = fdopen(fd, "w")) == nullptr) {
+	if (fd < 0 || (fp = FDOPEN(fd, "w")) == nullptr) {
 
 		QMessageBox::warning(
 			this,

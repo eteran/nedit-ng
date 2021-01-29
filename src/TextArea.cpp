@@ -66,7 +66,7 @@ namespace {
  */
 QString asciiToUnicode(view::string_view string) {
 	QString s;
-	s.reserve(string.size());
+	s.reserve(static_cast<int>(string.size()));
 
 	for (char c : string) {
 		uint32_t ch = c & 0xff;

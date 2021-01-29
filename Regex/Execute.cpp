@@ -30,7 +30,7 @@ bool attempt(Regex *prog, const char *string);
    only necessary during compilation, can be left out.
    The net result of using this inlined version at two critical places is
    a 25% speedup (again, witnesses on Perl syntax highlighting). */
-FORCE_INLINE inline uint8_t *NEXT_PTR(uint8_t *ptr) noexcept {
+FORCE_INLINE uint8_t *NEXT_PTR(uint8_t *ptr) noexcept {
 
 	// NOTE(eteran): like next_ptr, but is inline
 	// doesn't do "is this a first pass compile" check
@@ -53,7 +53,7 @@ FORCE_INLINE inline uint8_t *NEXT_PTR(uint8_t *ptr) noexcept {
  * @param ptr
  * @return
  */
-FORCE_INLINE inline bool end_of_string(const char *ptr) noexcept {
+FORCE_INLINE bool end_of_string(const char *ptr) noexcept {
 
 	if (eContext.End_Of_String != nullptr && ptr >= eContext.End_Of_String) {
 		return true;
@@ -71,7 +71,7 @@ FORCE_INLINE inline bool end_of_string(const char *ptr) noexcept {
  * @param p
  * @return
  */
-FORCE_INLINE inline uint16_t get_lower(uint8_t *p) noexcept {
+FORCE_INLINE uint16_t get_lower(uint8_t *p) noexcept {
 	return static_cast<uint8_t>(((p[NODE_SIZE + 0] & 0xff) << 8) + ((p[NODE_SIZE + 1]) & 0xff));
 }
 
@@ -80,7 +80,7 @@ FORCE_INLINE inline uint16_t get_lower(uint8_t *p) noexcept {
  * @param p
  * @return
  */
-FORCE_INLINE inline uint16_t get_upper(uint8_t *p) noexcept {
+FORCE_INLINE uint16_t get_upper(uint8_t *p) noexcept {
 	return static_cast<uint8_t>(((p[NODE_SIZE + 2] & 0xff) << 8) + ((p[NODE_SIZE + 3]) & 0xff));
 }
 
