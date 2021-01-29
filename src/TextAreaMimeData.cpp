@@ -18,7 +18,7 @@ TextAreaMimeData::TextAreaMimeData(const std::shared_ptr<TextBuffer> &buffer)
  * @return
  */
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-QVariant TextAreaMimeData::retrieveData(const QString &mimeType, QMetaType  type) const {
+QVariant TextAreaMimeData::retrieveData(const QString &mimeType, QMetaType type) const {
 #else
 QVariant TextAreaMimeData::retrieveData(const QString &mimeType, QVariant::Type type) const {
 #endif

@@ -2008,10 +2008,10 @@ void DocumentWidget::checkForChangesToFile() {
 
 		/* Can't stat the file --
 		 * maybe it's been deleted. The filename is now invalid */
-		info_->fileMissing = true;
+		info_->fileMissing      = true;
 		info_->statbuf.st_mtime = 1;
-		info_->statbuf.st_dev         = 0;
-		info_->statbuf.st_ino         = 0;
+		info_->statbuf.st_dev   = 0;
+		info_->statbuf.st_ino   = 0;
 
 		/* Warn the user, if they like to be warned (Maybe this should be
 		 * its own preference setting: GetPrefWarnFileDeleted()) */
@@ -2096,7 +2096,7 @@ void DocumentWidget::checkForChangesToFile() {
 	if (!silent && ((info_->statbuf.st_mtime != 0 && info_->statbuf.st_mtime != statbuf.st_mtime) || info_->fileMissing)) {
 
 		info_->statbuf.st_mtime = 0; // Inhibit further warnings
-		info_->fileMissing = false;
+		info_->fileMissing      = false;
 		if (!Preferences::GetPrefWarnFileMods()) {
 			return;
 		}
@@ -2326,7 +2326,7 @@ void DocumentWidget::revertToSaved() {
 		} else {
 			// Treat it like an externally modified file
 			info_->statbuf.st_mtime = 0;
-			info_->fileMissing = false;
+			info_->fileMissing      = false;
 		}
 		return;
 	}
@@ -2453,7 +2453,7 @@ bool DocumentWidget::saveDocument() {
 		if (messageBox.clickedButton() != buttonContinue) {
 			// Cancel and mark file as externally modified
 			info_->statbuf.st_mtime = 0;
-			info_->fileMissing = false;
+			info_->fileMissing      = false;
 			return false;
 		}
 	}
@@ -2553,15 +2553,15 @@ bool DocumentWidget::doSave() {
 	QT_STATBUF statbuf;
 	if (QT_STAT(fullname.toUtf8().data(), &statbuf) == 0) {
 		info_->statbuf.st_mtime = statbuf.st_mtime;
-		info_->fileMissing = false;
-		info_->statbuf.st_dev         = statbuf.st_dev;
-		info_->statbuf.st_ino         = statbuf.st_ino;
+		info_->fileMissing      = false;
+		info_->statbuf.st_dev   = statbuf.st_dev;
+		info_->statbuf.st_ino   = statbuf.st_ino;
 	} else {
 		// This needs to produce an error message -- the file can't be accessed!
 		info_->statbuf.st_mtime = 0;
-		info_->fileMissing = true;
-		info_->statbuf.st_dev         = 0;
-		info_->statbuf.st_ino         = 0;
+		info_->fileMissing      = true;
+		info_->statbuf.st_dev   = 0;
+		info_->statbuf.st_ino   = 0;
 	}
 
 	return true;
@@ -2637,10 +2637,10 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 	// Change the name of the file and save it under the new name
 	removeBackupFile();
 	setPath(fi.pathname);
-	info_->filename = fi.filename;
-	info_->statbuf.st_mode     = 0;
-	info_->statbuf.st_uid      = 0;
-	info_->statbuf.st_gid      = 0;
+	info_->filename        = fi.filename;
+	info_->statbuf.st_mode = 0;
+	info_->statbuf.st_uid  = 0;
+	info_->statbuf.st_gid  = 0;
 
 	info_->lockReasons.clear();
 	const int retVal = doSave();
@@ -2960,13 +2960,13 @@ void DocumentWidget::closeDocument() {
 		QString name = MainWindow::uniqueUntitledName();
 		info_->lockReasons.clear();
 
-		info_->statbuf.st_mode        = 0;
-		info_->statbuf.st_uid         = 0;
-		info_->statbuf.st_gid         = 0;
+		info_->statbuf.st_mode  = 0;
+		info_->statbuf.st_uid   = 0;
+		info_->statbuf.st_gid   = 0;
 		info_->statbuf.st_mtime = 0;
-		info_->statbuf.st_dev         = 0;
-		info_->statbuf.st_ino         = 0;
-		info_->filename    = name;
+		info_->statbuf.st_dev   = 0;
+		info_->statbuf.st_ino   = 0;
+		info_->filename         = name;
 		setPath(QString());
 
 		markTable_.clear();
@@ -3228,13 +3228,13 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 		/* Any errors that happen after this point leave the window in a
 		 * "broken" state, and thus RevertToSaved will abandon the window if
 		 * info_->fileMissing is false and doOpen fails. */
-		info_->statbuf.st_mode        = statbuf.st_mode;
-		info_->statbuf.st_uid         = statbuf.st_uid;
-		info_->statbuf.st_gid         = statbuf.st_gid;
+		info_->statbuf.st_mode  = statbuf.st_mode;
+		info_->statbuf.st_uid   = statbuf.st_uid;
+		info_->statbuf.st_gid   = statbuf.st_gid;
 		info_->statbuf.st_mtime = statbuf.st_mtime;
-		info_->statbuf.st_dev         = statbuf.st_dev;
-		info_->statbuf.st_ino         = statbuf.st_ino;
-		info_->fileMissing = false;
+		info_->statbuf.st_dev   = statbuf.st_dev;
+		info_->statbuf.st_ino   = statbuf.st_ino;
+		info_->fileMissing      = false;
 
 		// Detect and convert DOS and Macintosh format files
 		if (Preferences::GetPrefForceOSConversion()) {

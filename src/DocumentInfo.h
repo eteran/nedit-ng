@@ -12,9 +12,9 @@
 #include "WrapStyle.h"
 #include <QString>
 #include <QtGlobal>
-#include <qplatformdefs.h>
 #include <deque>
 #include <memory>
+#include <qplatformdefs.h>
 
 #ifdef Q_OS_MACOS
 #include <sys/stat.h>
@@ -28,7 +28,6 @@ struct DocumentInfo {
 	std::deque<UndoInfo> undo;                        // info for undoing last operation
 	LockReasons lockReasons;                          // all ways a file can be locked
 	std::unique_ptr<SmartIndentData> smartIndentData; // compiled macros for smart indent
-
 
 	QT_STATBUF statbuf = {}; // we care about MOST of the fields of this structure.
 							 // So instead of trying to match the OS specific types, just use it
