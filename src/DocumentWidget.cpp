@@ -2008,10 +2008,10 @@ void DocumentWidget::checkForChangesToFile() {
 
 		/* Can't stat the file --
 		 * maybe it's been deleted. The filename is now invalid */
-		info_->fileMissing = true;
-		info_->lastModTime = 1;
-		info_->dev         = 0;
-		info_->ino         = 0;
+		info_->fileMissing      = true;
+		info_->statbuf.st_mtime = 1;
+		info_->statbuf.st_dev   = 0;
+		info_->statbuf.st_ino   = 0;
 
 		/* Warn the user, if they like to be warned (Maybe this should be
 		 * its own preference setting: GetPrefWarnFileDeleted()) */
@@ -2072,11 +2072,11 @@ void DocumentWidget::checkForChangesToFile() {
 
 	/* Check that the file's read-only status is still correct (but
 	   only if the file can still be opened successfully in read mode) */
-	if (info_->mode != statbuf.st_mode || info_->uid != statbuf.st_uid || info_->gid != statbuf.st_gid) {
+	if (info_->statbuf.st_mode != statbuf.st_mode || info_->statbuf.st_uid != statbuf.st_uid || info_->statbuf.st_gid != statbuf.st_gid) {
 
-		info_->mode = statbuf.st_mode;
-		info_->uid  = statbuf.st_uid;
-		info_->gid  = statbuf.st_gid;
+		info_->statbuf.st_mode = statbuf.st_mode;
+		info_->statbuf.st_uid  = statbuf.st_uid;
+		info_->statbuf.st_gid  = statbuf.st_gid;
 
 		QFile fp(fullname);
 		if (fp.open(QIODevice::ReadWrite) || fp.open(QIODevice::ReadOnly)) {
@@ -2093,17 +2093,17 @@ void DocumentWidget::checkForChangesToFile() {
 
 	/* Warn the user if the file has been modified, unless checking is
 	 * turned off or the user has already been warned. */
-	if (!silent && ((info_->lastModTime != 0 && info_->lastModTime != statbuf.st_mtime) || info_->fileMissing)) {
+	if (!silent && ((info_->statbuf.st_mtime != 0 && info_->statbuf.st_mtime != statbuf.st_mtime) || info_->fileMissing)) {
 
-		info_->lastModTime = 0; // Inhibit further warnings
-		info_->fileMissing = false;
+		info_->statbuf.st_mtime = 0; // Inhibit further warnings
+		info_->fileMissing      = false;
 		if (!Preferences::GetPrefWarnFileMods()) {
 			return;
 		}
 
 		if (Preferences::GetPrefWarnRealFileMods() && !compareDocumentToFile(fullname)) {
 			// Contents hasn't changed. Update the modification time.
-			info_->lastModTime = statbuf.st_mtime;
+			info_->statbuf.st_mtime = statbuf.st_mtime;
 			return;
 		}
 
@@ -2325,8 +2325,8 @@ void DocumentWidget::revertToSaved() {
 			closeDocument();
 		} else {
 			// Treat it like an externally modified file
-			info_->lastModTime = 0;
-			info_->fileMissing = false;
+			info_->statbuf.st_mtime = 0;
+			info_->fileMissing      = false;
 		}
 		return;
 	}
@@ -2420,7 +2420,7 @@ bool DocumentWidget::saveDocument() {
 
 	/* Return success if the file is normal & unchanged or is a
 		read-only file. */
-	if ((!info_->fileChanged && !info_->fileMissing && info_->lastModTime > 0) || info_->lockReasons.isAnyLockedIgnoringPerm()) {
+	if ((!info_->fileChanged && !info_->fileMissing && info_->statbuf.st_mtime > 0) || info_->lockReasons.isAnyLockedIgnoringPerm()) {
 		return true;
 	}
 
@@ -2452,8 +2452,8 @@ bool DocumentWidget::saveDocument() {
 		messageBox.exec();
 		if (messageBox.clickedButton() != buttonContinue) {
 			// Cancel and mark file as externally modified
-			info_->lastModTime = 0;
-			info_->fileMissing = false;
+			info_->statbuf.st_mtime = 0;
+			info_->fileMissing      = false;
 			return false;
 		}
 	}
@@ -2552,16 +2552,16 @@ bool DocumentWidget::doSave() {
 	// update the modification time
 	QT_STATBUF statbuf;
 	if (QT_STAT(fullname.toUtf8().data(), &statbuf) == 0) {
-		info_->lastModTime = statbuf.st_mtime;
-		info_->fileMissing = false;
-		info_->dev         = statbuf.st_dev;
-		info_->ino         = statbuf.st_ino;
+		info_->statbuf.st_mtime = statbuf.st_mtime;
+		info_->fileMissing      = false;
+		info_->statbuf.st_dev   = statbuf.st_dev;
+		info_->statbuf.st_ino   = statbuf.st_ino;
 	} else {
 		// This needs to produce an error message -- the file can't be accessed!
-		info_->lastModTime = 0;
-		info_->fileMissing = true;
-		info_->dev         = 0;
-		info_->ino         = 0;
+		info_->statbuf.st_mtime = 0;
+		info_->fileMissing      = true;
+		info_->statbuf.st_dev   = 0;
+		info_->statbuf.st_ino   = 0;
 	}
 
 	return true;
@@ -2637,10 +2637,10 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 	// Change the name of the file and save it under the new name
 	removeBackupFile();
 	setPath(fi.pathname);
-	info_->filename = fi.filename;
-	info_->mode     = 0;
-	info_->uid      = 0;
-	info_->gid      = 0;
+	info_->filename        = fi.filename;
+	info_->statbuf.st_mode = 0;
+	info_->statbuf.st_uid  = 0;
+	info_->statbuf.st_gid  = 0;
 
 	info_->lockReasons.clear();
 	const int retVal = doSave();
@@ -2853,7 +2853,7 @@ bool DocumentWidget::fileWasModifiedExternally() const {
 		return false;
 	}
 
-	if (info_->lastModTime == statbuf.st_mtime) {
+	if (info_->statbuf.st_mtime == statbuf.st_mtime) {
 		return false;
 	}
 
@@ -2871,9 +2871,9 @@ bool DocumentWidget::closeFileAndWindow(CloseMode preResponse) {
 	   just close it.  Otherwise ask for confirmation first. */
 	if (!info_->fileChanged &&
 		/* Normal File */
-		((!info_->fileMissing && info_->lastModTime > 0) ||
+		((!info_->fileMissing && info_->statbuf.st_mtime > 0) ||
 		 /* New File */
-		 (info_->fileMissing && info_->lastModTime == 0) ||
+		 (info_->fileMissing && info_->statbuf.st_mtime == 0) ||
 		 /* File deleted/modified externally, ignored by user. */
 		 !Preferences::GetPrefWarnFileMods())) {
 
@@ -2960,13 +2960,13 @@ void DocumentWidget::closeDocument() {
 		QString name = MainWindow::uniqueUntitledName();
 		info_->lockReasons.clear();
 
-		info_->mode        = 0;
-		info_->uid         = 0;
-		info_->gid         = 0;
-		info_->lastModTime = 0;
-		info_->dev         = 0;
-		info_->ino         = 0;
-		info_->filename    = name;
+		info_->statbuf.st_mode  = 0;
+		info_->statbuf.st_uid   = 0;
+		info_->statbuf.st_gid   = 0;
+		info_->statbuf.st_mtime = 0;
+		info_->statbuf.st_dev   = 0;
+		info_->statbuf.st_ino   = 0;
+		info_->filename         = name;
 		setPath(QString());
 
 		markTable_.clear();
@@ -3228,13 +3228,13 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 		/* Any errors that happen after this point leave the window in a
 		 * "broken" state, and thus RevertToSaved will abandon the window if
 		 * info_->fileMissing is false and doOpen fails. */
-		info_->mode        = statbuf.st_mode;
-		info_->uid         = statbuf.st_uid;
-		info_->gid         = statbuf.st_gid;
-		info_->lastModTime = statbuf.st_mtime;
-		info_->dev         = statbuf.st_dev;
-		info_->ino         = statbuf.st_ino;
-		info_->fileMissing = false;
+		info_->statbuf.st_mode  = statbuf.st_mode;
+		info_->statbuf.st_uid   = statbuf.st_uid;
+		info_->statbuf.st_gid   = statbuf.st_gid;
+		info_->statbuf.st_mtime = statbuf.st_mtime;
+		info_->statbuf.st_dev   = statbuf.st_dev;
+		info_->statbuf.st_ino   = statbuf.st_ino;
+		info_->fileMissing      = false;
 
 		// Detect and convert DOS and Macintosh format files
 		if (Preferences::GetPrefForceOSConversion()) {
@@ -7322,7 +7322,7 @@ void DocumentWidget::setPath(const QDir &pathname) {
  * @return
  */
 dev_t DocumentWidget::device() const {
-	return info_->dev;
+	return info_->statbuf.st_dev;
 }
 
 /**
@@ -7330,7 +7330,7 @@ dev_t DocumentWidget::device() const {
  * @return
  */
 ino_t DocumentWidget::inode() const {
-	return info_->ino;
+	return info_->statbuf.st_ino;
 }
 
 /**
