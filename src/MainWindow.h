@@ -460,6 +460,7 @@ private:
 	QMenu *shellMenu_               = nullptr;
 	QMenu *macroMenu_               = nullptr;
 	QMenu *contextMenu_             = nullptr;
+	size_t windowId_                = 0;
 
 public:
 	Ui::MainWindow ui;
