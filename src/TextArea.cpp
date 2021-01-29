@@ -3767,9 +3767,11 @@ void TextArea::cancelDrag() {
 		viewport()->setCursor(Qt::ArrowCursor);
 		break;
 	case NOT_CLICKED:
-		dragState_ = DRAG_CANCELED;
 		break;
 	default:
+		if(dragState != NOT_CLICKED) {
+			dragState_ = DRAG_CANCELED;
+		}
 		break;
 	}
 }
