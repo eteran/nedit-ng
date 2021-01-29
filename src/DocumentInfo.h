@@ -12,6 +12,7 @@
 #include "WrapStyle.h"
 #include <QString>
 #include <QtGlobal>
+#include <qplatformdefs.h>
 #include <deque>
 #include <memory>
 
@@ -28,21 +29,11 @@ struct DocumentInfo {
 	LockReasons lockReasons;                          // all ways a file can be locked
 	std::unique_ptr<SmartIndentData> smartIndentData; // compiled macros for smart indent
 
-#ifdef Q_OS_UNIX
-	uid_t uid   = 0; // last recorded user id of the file
-	gid_t gid   = 0; // last recorded group id of the file
-	mode_t mode = 0; // permissions of file being edited
-#elif defined(Q_OS_WIN)
-	// copied from the Windows version of the struct stat
-	unsigned short mode = 0;
-	short uid           = 0;
-	short gid           = 0;
-#endif
+
+	QT_STATBUF statbuf = {}; // we care about MOST of the fields of this structure.
+							 // So instead of trying to match the OS specific types, just use it
 
 	FileFormats fileFormat = FileFormats::Unix;                    // whether to save the file straight (Unix format), or convert it to MS DOS style with \r\n line breaks
-	time_t lastModTime     = 0;                                    // time of last modification to file
-	dev_t dev              = 0;                                    // device where the file resides
-	ino_t ino              = 0;                                    // file's inode
 	std::shared_ptr<TextBuffer> buffer;                            // holds the text being edited
 	int autoSaveCharCount               = 0;                       // count of single characters typed since last backup file generated
 	int autoSaveOpCount                 = 0;                       // count of editing operations
