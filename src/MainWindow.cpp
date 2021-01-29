@@ -45,15 +45,15 @@
 #include "shift.h"
 #include "userCmds.h"
 
+#include <QActionGroup>
 #include <QButtonGroup>
 #include <QClipboard>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QShortcut>
-#include <QToolTip>
 #include <QTimer>
-#include <QActionGroup>
+#include <QToolTip>
 #include <qplatformdefs.h>
 
 #include <cmath>

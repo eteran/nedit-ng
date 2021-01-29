@@ -3769,7 +3769,7 @@ void TextArea::cancelDrag() {
 	case NOT_CLICKED:
 		break;
 	default:
-		if(dragState != NOT_CLICKED) {
+		if (dragState != NOT_CLICKED) {
 			dragState_ = DRAG_CANCELED;
 		}
 		break;
@@ -7978,7 +7978,6 @@ bool TextArea::visibleLineContainsCursor(int visLine, TextCursor cursor) const {
 DocumentWidget *TextArea::document() const {
 	return document_;
 }
-
 
 /**
  * @brief TextArea::fixedFontHeight
