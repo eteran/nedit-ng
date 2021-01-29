@@ -207,6 +207,10 @@ void downcaseSelection(DocumentWidget *document, TextArea *area) {
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags) {
 
+	static size_t next_window_id = 0;
+
+	windowId_ = next_window_id++;
+
 	ui.setupUi(this);
 	connectSlots();
 
@@ -1295,6 +1299,11 @@ std::vector<MainWindow *> MainWindow::allWindows(bool includeInvisible) {
 			}
 		}
 	}
+
+	// ensure a deterministic ordering
+	std::sort(windows.begin(), windows.end(), [](const MainWindow *lhs, const MainWindow *rhs) {
+		return lhs->windowId_ < rhs->windowId_;
+	});
 
 	return windows;
 }
