@@ -1119,7 +1119,9 @@ void DocumentWidget::raiseFocusDocumentWindow(bool focus) {
 	win->activateWindow();
 
 	if (focus) {
-		setFocus();
+		if(TextArea *area = firstPane()) {
+			area->setFocus();
+		}
 	}
 }
 
