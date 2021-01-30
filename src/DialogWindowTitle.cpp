@@ -708,7 +708,7 @@ QString DialogWindowTitle::formatWindowTitleInternal(const QString &filename, co
 
 			case 'u': // user name
 				userNamePresent = true;
-				title.append(GetUserName());
+				title.append(getUserName());
 				break;
 
 			case '%': // escaped %

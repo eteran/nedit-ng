@@ -1951,7 +1951,7 @@ QString DocumentWidget::backupFileName() const {
 	if (info_->filenameSet) {
 		return QStringLiteral("%1~%2").arg(info_->path, info_->filename);
 	} else {
-		return PrependHome(QStringLiteral("~%1").arg(info_->filename));
+		return prependHome(QStringLiteral("~%1").arg(info_->filename));
 	}
 }
 
