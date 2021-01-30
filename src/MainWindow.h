@@ -59,6 +59,7 @@ private:
 	void setupGlobalPrefenceDefaults();
 	void setupDocumentPreferenceDefaults();
 	void setupPrevOpenMenuActions();
+	void setupISearchBar();
 	QMenu *createUserMenu(size_t currentLanguageMode, const gsl::span<MenuData> &data, CommandTypes type);
 	QTabWidget *tabWidget() const;
 

@@ -236,22 +236,9 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 
 	setupPrevOpenMenuActions();
 	updatePrevOpenMenu();
+	setupISearchBar();
 
-	// determine the strings and button settings to use
-	initToggleButtonsiSearch(Preferences::GetPrefSearch());
-
-	showISearchLine_ = Preferences::GetPrefISearchLine();
 	showLineNumbers_ = Preferences::GetPrefLineNums();
-
-	// make it so we can capture up/down key presses in the incremental find
-	ui.editIFind->installEventFilter(this);
-
-	// make sure that the ifind button has an icon
-	ui.buttonIFind->setIcon(QIcon::fromTheme(QLatin1String("edit-find")));
-
-	// default to hiding the optional panels
-	ui.incrementalSearchFrame->setVisible(showISearchLine_);
-
 	ui.action_Statistics_Line->setChecked(Preferences::GetPrefStatsLine());
 
 	// make sure we include this windows which is in the middle of being created
@@ -282,6 +269,25 @@ MainWindow::~MainWindow() {
 	// disconnect this signal explicitly or we set off the UBSAN during qApp
 	// destruction
 	disconnect(qApp, &QApplication::focusChanged, this, &MainWindow::focusChanged);
+}
+
+/**
+ * @brief MainWindow::setupISearchBar
+ */
+void MainWindow::setupISearchBar() {
+	// determine the strings and button settings to use
+	initToggleButtonsiSearch(Preferences::GetPrefSearch());
+
+	showISearchLine_ = Preferences::GetPrefISearchLine();
+
+	// make it so we can capture up/down key presses in the incremental find
+	ui.editIFind->installEventFilter(this);
+
+	// make sure that the ifind button has an icon
+	ui.buttonIFind->setIcon(QIcon::fromTheme(QLatin1String("edit-find")));
+
+	// default to hiding the optional panels
+	ui.incrementalSearchFrame->setVisible(showISearchLine_);
 }
 
 /**

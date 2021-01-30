@@ -40,9 +40,9 @@ QString LocalSocketName(const QString &server_name) {
 	} else {
 #ifdef Q_OS_LINUX
 		QByteArray display = qgetenv("DISPLAY");
-		return QStringLiteral("nedit-ng_%1_%2_%3_%4").arg(GetUserName(), hostname, server_name, QString::fromLocal8Bit(display));
+		return QStringLiteral("nedit-ng_%1_%2_%3_%4").arg(getUserName(), hostname, server_name, QString::fromLocal8Bit(display));
 #else
-		return QStringLiteral("nedit-ng_%1_%2_%3").arg(GetUserName(), hostname, server_name);
+		return QStringLiteral("nedit-ng_%1_%2_%3").arg(getUserName(), hostname, server_name);
 #endif
 	}
 }

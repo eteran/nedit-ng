@@ -15,6 +15,7 @@
 #include "Util/Resource.h"
 #include "Util/algorithm.h"
 #include "Util/version.h"
+#include "Util/User.h"
 #include "nedit.h"
 #include "userCmds.h"
 
@@ -32,11 +33,6 @@
 #include <fstream>
 #include <iostream>
 #include <memory>
-
-#ifdef Q_OS_UNIX
-#include <pwd.h>
-#include <unistd.h>
-#endif
 
 namespace Preferences {
 namespace {
@@ -86,26 +82,6 @@ QStringList readExtensionList(Input &in) {
 	}
 
 	return extensionList;
-}
-
-/*
-**  This function returns the user's login shell.
-**  In case of errors, the fallback of "sh" will be returned.
-*/
-QString getDefaultShell() {
-#ifdef Q_OS_UNIX
-	struct passwd *passwdEntry = getpwuid(getuid()); //  getuid() never fails.
-
-	if (!passwdEntry) {
-		//  Something bad happened! Do something, quick!
-		perror("NEdit: Failed to get passwd entry (falling back to 'sh')");
-		return QLatin1String("sh");
-	}
-
-	return QString::fromUtf8(passwdEntry->pw_shell);
-#else
-	return QString();
-#endif
 }
 
 boost::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
