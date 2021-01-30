@@ -4564,6 +4564,12 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 		return;
 	}
 
+	QString userShell = Preferences::GetPrefShell();
+	if(userShell.isEmpty()) {
+		QMessageBox::critical(this, tr("No Shell"), tr("Cannot execute shell command because no shell has been set."));
+		return;
+	}
+
 	DocumentWidget *document = this;
 
 	/* a shell command called from a macro must be executed in the same
@@ -4618,7 +4624,7 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 	QStringList args;
 	args << QLatin1String("-c");
 	args << command;
-	process->start(Preferences::GetPrefShell(), args);
+	process->start(userShell, args);
 
 	// if there's nothing to write to the process' stdin, close it now, otherwise
 	// write it to the process
