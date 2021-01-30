@@ -465,6 +465,9 @@ void loadShellMenuYaml(std::vector<MenuData> &menuItems) {
 			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultShellMenuUnix.yaml"));
 #elif defined(Q_OS_WIN)
 			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultShellMenuWindows.yaml"));
+#else
+			// Using an "unsupported" system so we don't have a set of defaults. Just use an empty one
+			static QByteArray defaultMenu;
 #endif
 			menu = YAML::LoadAll(defaultMenu.data());
 		}
