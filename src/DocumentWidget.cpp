@@ -4837,7 +4837,6 @@ void DocumentWidget::abortShellCommand() {
 	if (shellCmdData_) {
 		if (QProcess *process = shellCmdData_->process) {
 			process->kill();
-			shellCmdData_ = nullptr;
 		}
 	}
 }
