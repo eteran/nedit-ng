@@ -4750,7 +4750,6 @@ std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, Dat
 
 std::error_code focusPaneAP(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-
 	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
@@ -4762,12 +4761,12 @@ std::error_code focusPaneAP(DocumentWidget *document, Arguments arguments, DataV
 	Q_ASSERT(win);
 
 	std::vector<TextArea *> panes = document->textPanes();
-	QPointer<TextArea> lastFocus = win->lastFocus();
+	QPointer<TextArea> lastFocus  = win->lastFocus();
 
 	// Find the currently focused pane for relative indexing
 	size_t paneIndex = 0;
-	for(size_t i = 0; i < panes.size(); ++i) {
-		if(lastFocus == panes[i]) {
+	for (size_t i = 0; i < panes.size(); ++i) {
+		if (lastFocus == panes[i]) {
 			paneIndex = i;
 		}
 	}
