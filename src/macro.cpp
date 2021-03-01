@@ -2491,6 +2491,7 @@ std::error_code dialogMS(DocumentWidget *document, Arguments arguments, DataValu
 		for (size_t i = 1; i < arguments.size(); ++i) {
 			if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 				// NOTE(eteran): does not report
+				Q_UNUSED(ec);
 			}
 			prompt->addButton(btnLabel);
 		}
@@ -2556,6 +2557,7 @@ std::error_code stringDialogMS(DocumentWidget *document, Arguments arguments, Da
 		for (size_t i = 1; i < arguments.size(); ++i) {
 			if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 				// NOTE(eteran): does not report
+				Q_UNUSED(ec);
 			}
 			prompt->addButton(btnLabel);
 		}
@@ -2947,6 +2949,7 @@ std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, Data
 		for (size_t i = 2; i < arguments.size(); ++i) {
 			if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 				// NOTE(eteran): does not report
+				Q_UNUSED(ec);
 			}
 			prompt->addButton(btnLabel);
 		}
@@ -4644,6 +4647,10 @@ std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arguments,
 }
 
 std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	// ensure that we are dealing with the document which currently has the focus
+	document = MacroFocusDocument();
+
 	if (arguments.size() > 0) {
 		QString index;
 		if (std::error_code ec = readArgument(arguments[0], &index)) {
@@ -4741,6 +4748,69 @@ std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, Dat
 	return MacroErrorCode::Success;
 }
 
+std::error_code focusPaneAP(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+
+	// ensure that we are dealing with the document which currently has the focus
+	document = MacroFocusDocument();
+
+	if (arguments.size() != 1) {
+		return MacroErrorCode::TooFewArguments;
+	}
+
+	MainWindow *win = MainWindow::fromDocument(document);
+	Q_ASSERT(win);
+
+	std::vector<TextArea *> panes = document->textPanes();
+	QPointer<TextArea> lastFocus = win->lastFocus();
+
+	// Find the currently focused pane for relative indexing
+	size_t paneIndex = 0;
+	for(size_t i = 0; i < panes.size(); ++i) {
+		if(lastFocus == panes[i]) {
+			paneIndex = i;
+		}
+	}
+
+	QString index;
+	if (std::error_code ec = readArgument(arguments[0], &index)) {
+		return ec;
+	}
+
+	if (index == QLatin1String("first")) {
+		paneIndex = 0;
+	} else if (index == QLatin1String("last")) {
+		paneIndex = panes.size() - 1;
+	} else if (index == QLatin1String("next")) {
+		paneIndex = (paneIndex + 1) % panes.size();
+	} else if (index == QLatin1String("previous")) {
+		paneIndex = (paneIndex - 1) % panes.size();
+	} else {
+		bool ok = false;
+		int n   = index.toInt(&ok);
+		if (!ok) {
+			return MacroErrorCode::InvalidArgument;
+		}
+
+		if (n > 0) {
+			paneIndex = paneIndex - 1;
+		} else if (n < 0) {
+			paneIndex = panes.size() + n;
+		} else {
+			paneIndex = -1;
+		}
+	}
+
+	if (paneIndex >= panes.size()) {
+		QApplication::beep();
+	} else {
+		panes[paneIndex]->setFocus();
+	}
+
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
+
 const SubRoutine TextAreaSubrNames[] = {
 	// Keyboard
 	{"backward_character", textEvent<&TextArea::backwardCharacter>},
@@ -4792,11 +4862,6 @@ const SubRoutine TextAreaSubrNames[] = {
 	{"self_insert", textEventArg<const QString &, &TextArea::insertStringAP>},
 	{"process_home", textEvent<&TextArea::beginningOfLine>},
 	{"toggle_overstrike", textEvent<&TextArea::toggleOverstrike>},
-
-#if 0 // NOTE(eteran): do these make sense to support
-	{"focus_pane",                nullptr}, // NOTE(eteran): was from MainWindow in my code...
-
-#endif
 
 #if 0 // NOTE(eteran): mouse event, no point in scripting...
 	{"extend_end",                nullptr},
@@ -4970,6 +5035,7 @@ const SubRoutine MacroSubrs[] = {
 	{"select", selectMS},
 	{"select_rectangle", selectRectangleMS},
 	{"focus_window", focusWindowMS},
+	{"focus_pane", focusPaneAP},
 	{"shell_command", shellCmdMS},
 	{"string_to_clipboard", stringToClipboardMS},
 	{"clipboard_to_string", clipboardToStringMS},
