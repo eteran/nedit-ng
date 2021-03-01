@@ -13,9 +13,9 @@
 #include "Util/ClearCase.h"
 #include "Util/Input.h"
 #include "Util/Resource.h"
+#include "Util/User.h"
 #include "Util/algorithm.h"
 #include "Util/version.h"
-#include "Util/User.h"
 #include "nedit.h"
 #include "userCmds.h"
 
