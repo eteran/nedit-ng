@@ -1119,7 +1119,7 @@ void DocumentWidget::raiseFocusDocumentWindow(bool focus) {
 	win->activateWindow();
 
 	if (focus) {
-		if(TextArea *area = firstPane()) {
+		if (TextArea *area = firstPane()) {
 			area->setFocus();
 		}
 	}
@@ -4565,7 +4565,7 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 	}
 
 	QString userShell = Preferences::GetPrefShell();
-	if(userShell.isEmpty()) {
+	if (userShell.isEmpty()) {
 		QMessageBox::critical(this, tr("No Shell"), tr("Cannot execute shell command because no shell has been set."));
 		return;
 	}

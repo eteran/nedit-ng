@@ -10,8 +10,8 @@
 #include <pwd.h>
 #include <unistd.h>
 #elif defined(Q_OS_WIN)
-#include <Windows.h>
 #include <Lmcons.h>
+#include <Windows.h>
 #endif
 
 /*
@@ -95,8 +95,8 @@ QString getUserName() {
 	perror("nedit: getpwuid() failed - reverting to $USER");
 	return QString::fromLocal8Bit(qgetenv("USER"));
 #elif defined(Q_OS_WIN)
-	wchar_t name[UNLEN+1] = {};
-	DWORD size = UNLEN + 1;
+	wchar_t name[UNLEN + 1] = {};
+	DWORD size              = UNLEN + 1;
 
 	if (GetUserNameW(name, &size)) {
 		return QString::fromWCharArray(name, size);

@@ -4643,6 +4643,104 @@ std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arguments,
 		TextCursor(bufferPos));
 }
 
+std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
+	if (arguments.size() > 0) {
+		QString index;
+		if (std::error_code ec = readArgument(arguments[0], &index)) {
+			return ec;
+		}
+
+		const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+
+		if (index == QLatin1String("last")) {
+			document = *documents.rbegin();
+		} else if (index == QLatin1String("first")) {
+			document = *documents.begin();
+		} else if (index == QLatin1String("next")) {
+			auto it = std::find_if(documents.begin(), documents.end(), [document](DocumentWidget *doc) {
+				return doc == document;
+			});
+
+			if (it != documents.end()) {
+				it = std::next(it);
+			}
+
+			if (it != documents.end()) {
+				document = *it;
+			}
+
+		} else if (index == QLatin1String("previous")) {
+			auto it = std::find_if(documents.rbegin(), documents.rend(), [document](DocumentWidget *doc) {
+				return doc == document;
+			});
+
+			if (it != documents.rend()) {
+				it = std::next(it);
+			}
+
+			if (it != documents.rend()) {
+				document = *it;
+			}
+		} else {
+			bool ok = false;
+			int n   = index.toInt(&ok);
+			if (!ok) {
+				return MacroErrorCode::InvalidArgument;
+			}
+
+			if (n == 0) {
+				return MacroErrorCode::InvalidArgument;
+			}
+
+			if (n < 0) {
+				auto it = documents.rbegin();
+				while (it != documents.rend() && n < 1) {
+					++n;
+					++it;
+				}
+
+				if (it != documents.rend()) {
+					document = *it;
+				}
+			} else if (n > 0) {
+				auto it = documents.begin();
+				while (it != documents.end() && n > 1) {
+					++n;
+					++it;
+				}
+
+				if (it != documents.end()) {
+					document = *it;
+				}
+			}
+		}
+	}
+
+	bool focus = Preferences::GetPrefFocusOnRaise();
+	if (arguments.size() > 1) {
+		QString argument;
+		if (std::error_code ec = readArgument(arguments[1], &argument)) {
+			return ec;
+		}
+
+		if (argument == QLatin1String("focus")) {
+			focus = true;
+		} else if (argument == QLatin1String("nofocus")) {
+			focus = false;
+		} else {
+			return MacroErrorCode::InvalidArgument;
+		}
+	}
+
+	if (arguments.size() > 2) {
+		return MacroErrorCode::TooManyArguments;
+	}
+
+	document->raiseFocusDocumentWindow(focus);
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
+
 const SubRoutine TextAreaSubrNames[] = {
 	// Keyboard
 	{"backward_character", textEvent<&TextArea::backwardCharacter>},
@@ -4695,7 +4793,7 @@ const SubRoutine TextAreaSubrNames[] = {
 
 #if 0 // NOTE(eteran): do these make sense to support
 	{"focus_pane",                nullptr}, // NOTE(eteran): was from MainWindow in my code...
-	{"raise_window",              nullptr}, // NOTE(eteran): was from MainWindow in my code...
+
 #endif
 
 #if 0 // NOTE(eteran): mouse event, no point in scripting...
@@ -4903,6 +5001,7 @@ const SubRoutine MacroSubrs[] = {
 	{"get_style_by_name", getStyleByNameMS},
 	{"get_style_at_pos", getStyleAtPosMS},
 	{"filename_dialog", filenameDialogMS},
+	{"raise_window", raiseWindowMS},
 };
 
 const SubRoutine SpecialVars[] = {
