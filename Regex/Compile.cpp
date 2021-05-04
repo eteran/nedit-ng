@@ -14,6 +14,7 @@
 #include <cassert>
 #include <cctype>
 #include <cstring>
+#include <limits>
 
 namespace {
 
