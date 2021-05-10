@@ -4,6 +4,7 @@
 
 #include <exception>
 #include <string>
+#include <Util/Compiler.h>
 
 class RegexError final : public std::exception {
 public:
@@ -16,6 +17,7 @@ private:
 	std::string error_;
 };
 
+COLD_CODE
 void reg_error(const char *str);
 
 #endif

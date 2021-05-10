@@ -19,8 +19,8 @@ template <class Ch>
 const Ch *controlCharacter(size_t index) noexcept;
 
 template <>
-const char *controlCharacter<char>(size_t index) noexcept {
-	static const char *const ControlCodeTable[32] = {
+constexpr const char *controlCharacter<char>(size_t index) noexcept {
+	const char *const ControlCodeTable[32] = {
 		"nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel",
 		"bs", "ht", "nl", "vt", "np", "cr", "so", "si",
 		"dle", "dc1", "dc2", "dc3", "dc4", "nak", "syn", "etb",
@@ -31,8 +31,8 @@ const char *controlCharacter<char>(size_t index) noexcept {
 }
 
 template <>
-const wchar_t *controlCharacter<wchar_t>(size_t index) noexcept {
-	static const wchar_t *const ControlCodeTable[32] = {
+constexpr const wchar_t *controlCharacter<wchar_t>(size_t index) noexcept {
+	const wchar_t *const ControlCodeTable[32] = {
 		L"nul", L"soh", L"stx", L"etx", L"eot", L"enq", L"ack", L"bel",
 		L"bs", L"ht", L"nl", L"vt", L"np", L"cr", L"so", L"si",
 		L"dle", L"dc1", L"dc2", L"dc3", L"dc4", L"nak", L"syn", L"etb",
