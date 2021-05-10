@@ -575,7 +575,7 @@ void SetPrefWrapMargin(int margin) {
 }
 
 int GetPrefWrapMargin() {
-	return Settings::wrapMargin;
+	return std::max(0, Settings::wrapMargin);
 }
 
 void SetPrefSearch(SearchType searchType) {
@@ -686,7 +686,7 @@ WrapMode GetPrefSearchWraps() {
 	return Settings::searchWraps ? WrapMode::Wrap : WrapMode::NoWrap;
 }
 
-int GetPrefStickyCaseSenseBtn() {
+bool GetPrefStickyCaseSenseBtn() {
 	return Settings::stickyCaseSenseButton;
 }
 
@@ -697,7 +697,7 @@ void SetPrefStatsLine(bool state) {
 	Settings::statisticsLine = state;
 }
 
-int GetPrefStatsLine() {
+bool GetPrefStatsLine() {
 	return Settings::statisticsLine;
 }
 
@@ -708,7 +708,7 @@ void SetPrefISearchLine(bool state) {
 	Settings::iSearchLine = state;
 }
 
-int GetPrefISearchLine() {
+bool GetPrefISearchLine() {
 	return Settings::iSearchLine;
 }
 
@@ -741,7 +741,7 @@ void SetPrefTabBarHideOne(bool state) {
 	Settings::tabBarHideOne = state;
 }
 
-int GetPrefTabBarHideOne() {
+bool GetPrefTabBarHideOne() {
 	return Settings::tabBarHideOne;
 }
 
@@ -752,7 +752,7 @@ void SetPrefGlobalTabNavigate(bool state) {
 	Settings::globalTabNavigate = state;
 }
 
-int GetPrefGlobalTabNavigate() {
+bool GetPrefGlobalTabNavigate() {
 	return Settings::globalTabNavigate;
 }
 
@@ -774,7 +774,7 @@ void SetPrefLineNums(bool state) {
 	Settings::lineNumbers = state;
 }
 
-int GetPrefLineNums() {
+bool GetPrefLineNums() {
 	return Settings::lineNumbers;
 }
 
@@ -785,7 +785,7 @@ void SetPrefShowPathInWindowsMenu(bool state) {
 	Settings::pathInWindowsMenu = state;
 }
 
-int GetPrefShowPathInWindowsMenu() {
+bool GetPrefShowPathInWindowsMenu() {
 	return Settings::pathInWindowsMenu;
 }
 
@@ -841,7 +841,7 @@ void SetPrefRows(int nRows) {
 }
 
 int GetPrefRows() {
-	return Settings::textRows;
+	return std::max(1, Settings::textRows);
 }
 
 void SetPrefCols(int nCols) {
@@ -852,7 +852,7 @@ void SetPrefCols(int nCols) {
 }
 
 int GetPrefCols() {
-	return Settings::textCols;
+	return std::max(0, Settings::textCols);
 }
 
 void SetPrefTabDist(int tabDist) {
@@ -1016,7 +1016,7 @@ void SetPrefSortOpenPrevMenu(bool state) {
 	Settings::sortOpenPrevMenu = state;
 }
 
-int GetPrefSortOpenPrevMenu() {
+bool GetPrefSortOpenPrevMenu() {
 	return Settings::sortOpenPrevMenu;
 }
 
@@ -1031,7 +1031,7 @@ void SetPrefSmartTags(bool state) {
 	Settings::smartTags = state;
 }
 
-int GetPrefSmartTags() {
+bool GetPrefSmartTags() {
 	return Settings::smartTags;
 }
 
@@ -1091,7 +1091,15 @@ QString GetPrefServerName() {
 }
 
 int GetPrefMaxPrevOpenFiles() {
-	return Settings::maxPrevOpenFiles;
+	return std::max(1, Settings::maxPrevOpenFiles);
+}
+
+int GetPrefAutoSaveCharLimit() {
+	return std::max(1, Settings::autoSaveCharLimit);
+}
+
+int GetPrefAutoSaveOpLimit() {
+	return std::max(1, Settings::autoSaveOpLimit);
 }
 
 bool GetPrefTypingHidesPointer() {

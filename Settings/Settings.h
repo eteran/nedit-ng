@@ -117,6 +117,8 @@ extern bool splitHorizontally;
 extern int truncateLongNamesInTabs;
 extern int autoScrollVPadding;
 extern int maxPrevOpenFiles;
+extern int autoSaveCharLimit;
+extern int autoSaveOpLimit;
 extern TruncSubstitution truncSubstitution;
 extern QString backlightCharTypes;
 extern QString tagFile;

@@ -1279,7 +1279,7 @@ void MainWindow::sortTabBar() {
 	int i = 0;
 	for (DocumentWidget *document : documents) {
 		const int from = ui.tabWidget->indexOf(document);
-		if(from != -1) {
+		if (from != -1) {
 			ui.tabWidget->tabBar()->moveTab(from, i);
 			++i;
 		}

@@ -981,10 +981,10 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 	Q_UNUSED(nRestyled)
 
 	// number of distinct chars the user can typebefore NEdit gens. new backup file
-	constexpr int AutoSaveCharLimit = 80;
+	const int autoSaveCharLimit = Preferences::GetPrefAutoSaveCharLimit();
 
 	// number of distinct editing operations user can do before NEdit gens. new backup file
-	constexpr int AutoSaveOpLimit = 8;
+	const int autoSaveOpLimit = Preferences::GetPrefAutoSaveOpLimit();
 
 	const bool selected = info_->buffer->primary.hasSelection();
 
@@ -1029,7 +1029,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 	saveUndoInformation(pos, nInserted, nDeleted, deletedText);
 
 	// Trigger automatic backup if operation or character limits reached
-	if (info_->autoSave && (info_->autoSaveCharCount > AutoSaveCharLimit || info_->autoSaveOpCount > AutoSaveOpLimit)) {
+	if (info_->autoSave && (info_->autoSaveCharCount > autoSaveCharLimit || info_->autoSaveOpCount > autoSaveOpLimit)) {
 		writeBackupFile();
 		info_->autoSaveCharCount = 0;
 		info_->autoSaveOpCount   = 0;
