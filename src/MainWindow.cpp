@@ -1278,9 +1278,11 @@ void MainWindow::sortTabBar() {
 	// shuffle around the tabs to their new indexes
 	int i = 0;
 	for (DocumentWidget *document : documents) {
-		int from = ui.tabWidget->indexOf(document);
-		ui.tabWidget->tabBar()->moveTab(from, i);
-		++i;
+		const int from = ui.tabWidget->indexOf(document);
+		if(from != -1) {
+			ui.tabWidget->tabBar()->moveTab(from, i);
+			++i;
+		}
 	}
 }
 
