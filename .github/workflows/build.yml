@@ -1,20 +1,50 @@
-name: Build
-on:
-  push:
-    branches:
-      - master
-  pull_request:
-    types: [opened, synchronize, reopened]
+name: Github-CI
+
+on: [push, pull_request]
+
 jobs:
-  sonarcloud:
-    name: SonarCloud
-    runs-on: ubuntu-latest
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - uses: actions/checkout@v1
+      - name: dowwload sonar cloud client
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: |
+          wget -nv https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.0.2311-linux.zip
+          unzip -q sonar-scanner-cli-4.6.0.2311-linux.zip
+          echo "${PWD}/sonar-scanner-4.6.0.2311-linux/bin/" >> $GITHUB_PATH
+          wget -nv https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+          unzip -q build-wrapper-linux-x86.zip
+          echo "${PWD}/build-wrapper-linux-x86" >> $GITHUB_PATH
+      - name: Install dependencies
+        shell: bash
+        run: sudo apt-get install -y libboost-dev qt5-default qtbase5-dev-tools qttools5-dev-tools qttools5-dev
+      - name: Compile
+        working-directory: ${{github.workspace}}
+        shell: bash      
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          cd ..          
+          build-wrapper-linux-x86-64 --out-dir bw-output cmake --build build/
+          ls -l
+          cd bw-output
+          ls -l
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+        working-directory: ${{github.workspace}}
+        run: |
+          sonar-scanner -X -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=$SONAR_TOKEN
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+         branch: ${{ github.ref }}
+
+
+
+
