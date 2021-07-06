@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-find_package(Qt5 5.5.0 REQUIRED Core Network)
+find_package(Qt6 6.0.0 REQUIRED Core Network)
 
 if(WIN32)
 	set(APP_ICON_RESOURCE_WINDOWS "../src/res/nedit-ng.rc")
@@ -12,8 +12,8 @@ add_executable(nc-ng
 )
 
 target_link_libraries(nc-ng PUBLIC
-	Qt5::Core
-	Qt5::Network
+	Qt6::Core
+	Qt6::Network
 	Util
 	Settings
 	Boost::boost
@@ -21,7 +21,7 @@ target_link_libraries(nc-ng PUBLIC
 
 target_add_warnings(nc-ng)
 
-set_property(TARGET nc-ng PROPERTY CXX_STANDARD 14)
+set_property(TARGET nc-ng PROPERTY CXX_STANDARD 17)
 set_property(TARGET nc-ng PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET nc-ng PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 

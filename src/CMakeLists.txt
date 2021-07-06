@@ -5,14 +5,14 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt5 5.5.0 REQUIRED Widgets Network Xml PrintSupport LinguistTools)
-find_package(Qt5 5.5.0 QUIET OPTIONAL_COMPONENTS X11Extras)
+find_package(Qt6 6.0.0 REQUIRED Widgets Network Xml PrintSupport LinguistTools)
+find_package(Qt6 6.0.0 QUIET OPTIONAL_COMPONENTS X11Extras)
 
 if(UNIX)
 	find_package(X11)
 endif()
 
-qt5_add_translation(QM_FILES
+qt6_add_translation(QM_FILES
 	res/translations/nedit-ng_fr.ts
 	res/translations/nedit-ng_fi.ts
 )
@@ -33,7 +33,7 @@ endforeach()
 file(APPEND ${TRANSLATIONS_QRC} "\n\t</qresource>\n</RCC>")
 list(APPEND QRC_FILES ${TRANSLATIONS_QRC})
 
-qt5_add_resources(QRC_SOURCES
+qt6_add_resources(QRC_SOURCES
 	res/nedit-ng.qrc
 	res/breeze-nedit.qrc
 	res/breeze-dark-nedit.qrc
@@ -266,7 +266,7 @@ add_executable(nedit-ng
 )
 
 if(${X11_FOUND})
-    if(Qt5X11Extras_FOUND)
+    if(Qt6X11Extras_FOUND)
         target_compile_definitions(nedit-ng
             PUBLIC -DQT_X11
         )
@@ -282,11 +282,11 @@ PUBLIC
 	Settings
 	Interpreter
 	GSL
-	Qt5::Widgets
-	Qt5::Network
-	Qt5::Xml
-	Qt5::PrintSupport
-	$<$<BOOL:${Qt5X11Extras_FOUND}>:Qt5::X11Extras>
+	Qt6::Widgets
+	Qt6::Network
+	Qt6::Xml
+	Qt6::PrintSupport
+	$<$<BOOL:${Qt6X11Extras_FOUND}>:Qt6::X11Extras>
 	$<$<BOOL:${X11_FOUND}>:X11>
 PRIVATE
 	Boost::boost
@@ -294,7 +294,7 @@ PRIVATE
 )
 
 set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)
-set_property(TARGET nedit-ng PROPERTY CXX_STANDARD 14)
+set_property(TARGET nedit-ng PROPERTY CXX_STANDARD 17)
 set_property(TARGET nedit-ng PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 if(TARGET_COMPILER_MSVC)

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.0)
 
-find_package(Qt5 5.5.0 REQUIRED Core Xml)
+find_package(Qt6 6.0.0 REQUIRED Core Xml)
 find_package(X11 REQUIRED)
 
 if(${X11_FOUND})
@@ -15,8 +15,8 @@ add_executable(nedit-import
 )
 
 target_link_libraries(nedit-import PUBLIC
-	Qt5::Core
-	Qt5::Xml
+	Qt6::Core
+	Qt6::Xml
 	Settings
 	Interpreter
 	X11
@@ -28,7 +28,7 @@ target_include_directories(nedit-import PRIVATE
 
 target_add_warnings(nedit-import)
 
-set_property(TARGET nedit-import PROPERTY CXX_STANDARD 14)
+set_property(TARGET nedit-import PROPERTY CXX_STANDARD 17)
 set_property(TARGET nedit-import PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET nedit-import PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
