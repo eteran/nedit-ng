@@ -10,7 +10,7 @@ target_link_libraries(nedit-regex-test
 )
 
 if(NEDIT_INCLUDE_DECOMPILER)
-	target_compile_definitions(nedit-regex-test -DNEDIT_INCLUDE_DECOMPILER)
+	target_compile_definitions(nedit-regex-test PUBLIC -DNEDIT_INCLUDE_DECOMPILER)
 endif()
 
 set_property(TARGET nedit-regex-test PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
