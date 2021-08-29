@@ -4896,6 +4896,7 @@ const SubRoutine MenuMacroSubrNames[] = {
 	{"open_copied", menuEventU<&MainWindow::action_Shift_Open_Selected>},
 	{"close", closeMS},
 	{"save", menuEventU<&MainWindow::action_Save>},
+	{"save_all", menuEventU<&MainWindow::action_Save_All>},
 	{"save_as", saveAsMS},
 	{"save_as_dialog", menuEventU<&MainWindow::action_Save_As>},
 	{"revert_to_saved_dialog", menuEventU<&MainWindow::action_Revert_to_Saved>},

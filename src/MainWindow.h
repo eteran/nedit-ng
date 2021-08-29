@@ -222,6 +222,7 @@ public:
 	void action_Replace_Find(DocumentWidget *document, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps);
 	void action_Replace_In_Selection(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType type);
 	void action_Revert_to_Saved(DocumentWidget *document);
+	void action_Save_All(DocumentWidget *document);
 	void action_Save_As(DocumentWidget *document);
 	void action_Save_As(DocumentWidget *document, const QString &filename, bool wrapped);
 	void action_Save(DocumentWidget *document);
@@ -309,6 +310,7 @@ public:
 	void action_Print_Selection_triggered();
 	void action_Save_triggered();
 	void action_Save_As_triggered();
+	void action_Save_All_triggered();
 	void action_Revert_to_Saved_triggered();
 	void action_Exit_triggered();
 

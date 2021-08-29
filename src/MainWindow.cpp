@@ -313,6 +313,7 @@ void MainWindow::connectSlots() {
 	connect(ui.action_Print, &QAction::triggered, this, &MainWindow::action_Print_triggered);
 	connect(ui.action_Print_Selection, &QAction::triggered, this, &MainWindow::action_Print_Selection_triggered);
 	connect(ui.action_Save, &QAction::triggered, this, &MainWindow::action_Save_triggered);
+	connect(ui.action_Save_All, &QAction::triggered, this, &MainWindow::action_Save_All_triggered);
 	connect(ui.action_Save_As, &QAction::triggered, this, &MainWindow::action_Save_As_triggered);
 	connect(ui.action_Revert_to_Saved, &QAction::triggered, this, &MainWindow::action_Revert_to_Saved_triggered);
 	connect(ui.action_Exit, &QAction::triggered, this, &MainWindow::action_Exit_triggered);
@@ -5076,6 +5077,34 @@ QString MainWindow::promptForNewFile(DocumentWidget *document, FileFormats *form
 	}
 
 	return filename;
+}
+
+/**
+ * @brief MainWindow::action_Save_All
+ * @param document
+ */
+void MainWindow::action_Save_All(DocumentWidget *document) {
+	Q_UNUSED(document);
+
+	emit_event("save_all");
+
+	std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+	for (DocumentWidget *document : documents) {
+		if (document->checkReadOnly()) {
+			continue;
+		}
+
+		document->saveDocument();
+	}
+}
+
+/**
+ * @brief MainWindow::action_Save_All_triggered
+ */
+void MainWindow::action_Save_All_triggered() {
+	if (DocumentWidget *document = currentDocument()) {
+		action_Save_All(document);
+	}
 }
 
 /**
