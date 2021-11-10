@@ -146,10 +146,12 @@ Main::Main(const QStringList &args) {
 				toDoCommand = args[i];
 			}
 		} else if (opts && args[i] == QLatin1String("-svrname")) {
-			i                    = nextArg(args, i);
-			Settings::serverName = args[i];
+			i = nextArg(args, i);
+
+			Settings::serverNameOverride = args[i];
 		} else if (opts && (args[i] == QLatin1String("-font") || args[i] == QLatin1String("-fn"))) {
-			i                  = nextArg(args, i);
+			i = nextArg(args, i);
+
 			Settings::fontName = args[i];
 		} else if (opts && args[i] == QLatin1String("-wrap")) {
 			Settings::autoWrap = WrapStyle::Continuous;
@@ -232,10 +234,12 @@ Main::Main(const QStringList &args) {
 		} else if (opts && args[i] == QLatin1String("-noiconic")) {
 			iconic = false;
 		} else if (opts && (args[i] == QLatin1String("-geometry") || args[i] == QLatin1String("-g"))) {
-			i        = nextArg(args, i);
+			i = nextArg(args, i);
+
 			geometry = args[i];
 		} else if (opts && args[i] == QLatin1String("-lm")) {
-			i        = nextArg(args, i);
+			i = nextArg(args, i);
+
 			langMode = args[i];
 		} else if (opts && args[i] == QLatin1String("-import")) {
 			i = nextArg(args, i); // already processed, skip

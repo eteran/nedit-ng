@@ -1087,6 +1087,10 @@ QString GetPrefGeometry() {
 }
 
 QString GetPrefServerName() {
+	if (!Settings::serverNameOverride.isNull()) {
+		return Settings::serverNameOverride;
+	}
+
 	return Settings::serverName;
 }
 

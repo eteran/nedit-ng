@@ -94,6 +94,7 @@ extern QString highlightPatterns;
 extern QString languageModes;
 extern QString macroCommands;
 extern QString serverName;
+extern QString serverNameOverride;
 extern QString shell;
 extern QString shellCommands;
 extern QString smartIndentInit;

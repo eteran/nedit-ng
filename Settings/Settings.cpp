@@ -146,6 +146,7 @@ QString languageModes;
 QStringList includePaths;
 QString macroCommands;
 QString serverName;
+QString serverNameOverride;
 QString shell;
 QString shellCommands;
 QString smartIndentInit;
