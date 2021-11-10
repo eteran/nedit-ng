@@ -2186,7 +2186,7 @@ boost::optional<SelectionPos> BasicTextBuffer<Ch, Tr>::Selection::getSelectionPo
 		return boost::none;
 	}
 
-	SelectionPos pos;
+	SelectionPos pos = {};
 	pos.isRect = rectangular_;
 	pos.start  = start_;
 	pos.end    = end_;

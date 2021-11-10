@@ -283,7 +283,7 @@ uint8_t *emit_special(Ch op_code, uint32_t test_val, size_t index) noexcept {
 /*----------------------------------------------------------------------*
  * tail - Set the next-pointer at the end of a node chain.
  *----------------------------------------------------------------------*/
-void tail(uint8_t *search_from, uint8_t *point_to) {
+void tail(uint8_t *search_from, const uint8_t *point_to) {
 
 	if (pContext.FirstPass) {
 		return;
@@ -315,7 +315,7 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
  * the operand. The parameter 'insert_pos' points to the location
  * where the new node is to be inserted.
  *----------------------------------------------------------------------*/
-uint8_t *insert(uint8_t op, uint8_t *insert_pos, uint32_t min, uint32_t max, uint16_t index) {
+uint8_t *insert(uint8_t op, const uint8_t *insert_pos, uint32_t min, uint32_t max, uint16_t index) {
 
 	if (pContext.FirstPass) {
 
