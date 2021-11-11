@@ -141,6 +141,7 @@ void DialogDrawingStyles::buttonDown_clicked() {
 void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
 
 	static bool canceled = false;
+	bool skip_check      = false;
 
 	if (canceled) {
 		canceled = false;
@@ -156,7 +157,6 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 		messageBox.setText(tr("Discard incomplete entry for current highlight style?"));
 		QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
 		QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
-		Q_UNUSED(buttonDiscard)
 
 		messageBox.exec();
 		if (messageBox.clickedButton() == buttonKeep) {
@@ -168,11 +168,14 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 			canceled = true;
 			Q_EMIT restore(previous);
 			return;
+		} else if (messageBox.clickedButton() == buttonDiscard) {
+			model_->deleteItem(previous);
+			skip_check = true;
 		}
 	}
 
 	// this is only safe if we aren't moving due to a delete operation
-	if (previous.isValid() && previous != deleted_) {
+	if (previous.isValid() && previous != deleted_ && !skip_check) {
 		if (!updateCurrentItem(previous)) {
 			// reselect the old item
 			canceled = true;
