@@ -59,8 +59,8 @@ void DialogMultiReplace::buttonSelectAll_clicked() {
  */
 void DialogMultiReplace::buttonReplace_clicked() {
 
-	QModelIndexList selections = ui.listFiles->selectionModel()->selectedRows();
-	const int nSelected        = selections.size();
+	const QModelIndexList selections = ui.listFiles->selectionModel()->selectedRows();
+	const int nSelected              = selections.size();
 
 	if (!nSelected) {
 		QMessageBox::information(this, tr("No Files"), tr("No files selected!"));
