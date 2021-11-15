@@ -398,7 +398,7 @@ bool AddImmediate(int value, QString *msg) {
 /*
 ** Add a branch offset operand to the current program
 */
-bool AddBranchOffset(Inst *to, QString *msg) {
+bool AddBranchOffset(const Inst *to, QString *msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
 		*msg = MacroTooLarge;
 		return false;
@@ -475,7 +475,7 @@ static void addLoopAddr(Inst *addr) {
 	*LoopStackPtr++ = addr;
 }
 
-void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
+void FillLoopAddrs(const Inst *breakAddr, const Inst *continueAddr) {
 	while (true) {
 		LoopStackPtr--;
 		if (LoopStackPtr < LoopStack) {
@@ -1809,7 +1809,7 @@ static int branchNever() {
 ** this does not duplicate the key/node data since they are never
 ** modified, only replaced
 */
-int ArrayCopy(DataValue *dstArray, DataValue *srcArray) {
+int ArrayCopy(DataValue *dstArray, const DataValue *srcArray) {
 	*dstArray = *srcArray;
 	return STAT_OK;
 }

@@ -30,7 +30,7 @@ public:
 	/**
 	 * Match a 'Regex' structure against a string.
 	 *
-	 * @param string         Text to search within
+	 * @param start          Text to search within
 	 * @param end            Pointer to the logical end of the string
 	 * @param reverse        Backward search.
 	 * @param prev_char      Character immediately prior to 'string'.  Set to '\n' or -1 if true beginning of text.
@@ -39,7 +39,7 @@ public:
 	 * @param look_behind_to Boundary for look-behind; defaults to "string" if nullptr
 	 * @param match_till     Boundary to where match can extend. \0 is assumed to be the boundary if not set. Lookahead can cross the boundary.
 	 */
-	bool ExecRE(const char *string, const char *end, bool reverse, int prev_char, int succ_char, const char *delimiters, const char *look_behind_to, const char *match_to, const char *string_end);
+	bool ExecRE(const char *start, const char *end, bool reverse, int prev_char, int succ_char, const char *delimiters, const char *look_behind_to, const char *match_to, const char *string_end);
 
 	/**
 	 * Match a 'Regex' structure against a string.
