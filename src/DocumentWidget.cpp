@@ -711,7 +711,7 @@ TextArea *DocumentWidget::createTextArea(const std::shared_ptr<TextBuffer> &buff
 	// so TextArea captures the default context menu event, then if appropriate
 	// fires off a customContextMenuRequested event manually. So no need to set the
 	// policy here, in fact, that would break things.
-	//area->setContextMenuPolicy(Qt::CustomContextMenu);
+	// area->setContextMenuPolicy(Qt::CustomContextMenu);
 
 	// just emit an event that will later be caught by the higher layer informing it of the context menu request
 	connect(area, &TextArea::customContextMenuRequested, this, [this](const QPoint &pos) {
@@ -3945,7 +3945,10 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 	   for # in the shell command */
 	QString fullName = fullPath();
 
-	const boost::optional<Location> loc = area->positionToLineAndCol(pos);
+	boost::optional<Location> loc = area->positionToLineAndCol(pos);
+	if (!loc) {
+		loc = Location{-1, -1};
+	}
 
 	QString substitutedCommand = escapeCommand(command, fullName, loc->line);
 
