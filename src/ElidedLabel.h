@@ -10,8 +10,8 @@ class ElidedLabel : public QLabel {
 
 public:
 	/**
-	* Default constructor.
-	*/
+	 * Default constructor.
+	 */
 	explicit ElidedLabel(QWidget *parent = nullptr);
 	explicit ElidedLabel(const QString &text, QWidget *parent = nullptr);
 
@@ -22,45 +22,45 @@ public:
 	QSize sizeHint() const override;
 
 	/**
-	* Overridden for internal reasons; the API remains unaffected.
-	*/
+	 * Overridden for internal reasons; the API remains unaffected.
+	 */
 	virtual void setAlignment(Qt::Alignment);
 
 	/**
-	*  Returns the text elide mode.
-	*/
+	 *  Returns the text elide mode.
+	 */
 	Qt::TextElideMode textElideMode() const;
 
 	/**
-	* Sets the text elide mode.
-	* @param mode The text elide mode.
-	*/
+	 * Sets the text elide mode.
+	 * @param mode The text elide mode.
+	 */
 	void setTextElideMode(Qt::TextElideMode mode);
 
 	/**
-	* Get the full text set via setText.
-	*/
+	 * Get the full text set via setText.
+	 */
 	QString fullText() const;
 
 public Q_SLOTS:
 	/**
-	* Sets the text. Note that this is not technically a reimplementation of
-	* QLabel::setText(), which is not virtual (in Qt 4.3). Therefore, you may
-	* need to cast the object to ElidedLabel in some situations: \Example \code
-	* ElidedLabel* squeezed = new ElidedLabel("text", parent);
-	* QLabel* label = squeezed;
-	* label->setText("new text")        // this will not work
-	* squeezed->setText("new text");    // works as expected
-	* static_cast<ElidedLabel*>(label)->setText("new text"); // works as
-	* expected \endcode
-	* @param mode The new text.
-	*/
+	 * Sets the text. Note that this is not technically a reimplementation of
+	 * QLabel::setText(), which is not virtual (in Qt 4.3). Therefore, you may
+	 * need to cast the object to ElidedLabel in some situations: \Example \code
+	 * ElidedLabel* squeezed = new ElidedLabel("text", parent);
+	 * QLabel* label = squeezed;
+	 * label->setText("new text")        // this will not work
+	 * squeezed->setText("new text");    // works as expected
+	 * static_cast<ElidedLabel*>(label)->setText("new text"); // works as
+	 * expected \endcode
+	 * @param mode The new text.
+	 */
 	void setText(const QString &text);
 
 	/**
-	* Clears the text. Same remark as above.
-	*
-	*/
+	 * Clears the text. Same remark as above.
+	 *
+	 */
 	void clear();
 
 protected:

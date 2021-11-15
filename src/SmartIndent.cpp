@@ -232,7 +232,7 @@ void loadSmartIndentString(const QString &string) {
 							}
 						} else if (entries.as<std::string>() == "Default") {
 							/* look for "Default" keyword, and if it's there, return the default
-                               smart indent macros */
+							   smart indent macros */
 							const SmartIndentEntry *spec = findDefaultIndentSpec(is.language);
 							if (!spec) {
 								Raise<ParseError>(tr("no default smart indent macro for language: %1").arg(is.language));
@@ -280,10 +280,10 @@ void loadSmartIndentString(const QString &string) {
 				}
 
 				/* look for "Default" keyword, and if it's there, return the default
-                   smart indent macros */
+				   smart indent macros */
 				if (in.match(QLatin1String("Default"))) {
 					/* look for "Default" keyword, and if it's there, return the default
-                       smart indent macros */
+					   smart indent macros */
 					const SmartIndentEntry *spec = findDefaultIndentSpec(is.language);
 					if (!spec) {
 						Raise<ParseError>(tr("no default smart indent macro for language: %1").arg(is.language));
@@ -293,7 +293,7 @@ void loadSmartIndentString(const QString &string) {
 				} else {
 
 					/* read the initialization macro (arbitrary text terminated by the
-                       macro end boundary string) */
+					   macro end boundary string) */
 					is.initMacro = readSmartIndentMacro(in);
 					if (is.initMacro.isNull()) {
 						Raise<ParseError>(tr("no end boundary to initialization macro"));
@@ -345,7 +345,7 @@ void loadSmartIndentCommonString(const QString &string) {
 		in.skipWhitespaceNL();
 
 		/* look for "Default" keyword, and if it's there, return the default
-           smart common macro */
+		   smart common macro */
 		if (in.match(QLatin1String("Default"))) {
 			CommonMacros = loadDefaultCommonMacros();
 			return;

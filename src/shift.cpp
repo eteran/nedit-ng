@@ -465,7 +465,7 @@ QString shiftLineRight(const QString &line, int64_t lineLen, int tabsAllowed, in
 
 					lineOut.resize(lineOut.size() - tabDist);
 
-					//lineOutPtr -= tabDist;
+					// lineOutPtr -= tabDist;
 					*lineOutPtr++ = QLatin1Char('\t');
 				}
 			}
@@ -511,7 +511,7 @@ std::string shiftLineRight(view::string_view line, int64_t lineLen, int tabsAllo
 
 					lineOut.resize(lineOut.size() - static_cast<size_t>(tabDist));
 
-					//lineOutPtr -= tabDist;
+					// lineOutPtr -= tabDist;
 					*lineOutPtr++ = '\t';
 				}
 			}
