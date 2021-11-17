@@ -2475,6 +2475,7 @@ bool TextArea::posToVisibleLineNum(TextCursor pos, int *lineNum) const {
 	}
 
 	if (pos > lastChar_) {
+		// TODO(eteran): determine if this can EVER be true, I am yet to find a circumstance where it can happen
 		if (emptyLinesVisible()) {
 			if (lastChar_ < buffer_->length()) {
 				if (!posToVisibleLineNum(lastChar_, lineNum)) {
@@ -2483,8 +2484,7 @@ bool TextArea::posToVisibleLineNum(TextCursor pos, int *lineNum) const {
 				}
 				return ++(*lineNum) <= nVisibleLines_ - 1;
 			} else {
-				posToVisibleLineNum(std::max(lastChar_ - 1, buffer_->BufStartOfBuffer()), lineNum);
-				return true;
+				return posToVisibleLineNum(std::max(lastChar_ - 1, buffer_->BufStartOfBuffer()), lineNum);
 			}
 		}
 		return false;
@@ -2621,22 +2621,25 @@ void TextArea::extendRangeForStyleMods(TextCursor *start, TextCursor *end) {
 */
 void TextArea::redisplayRange(TextCursor start, TextCursor end) {
 
-	int startLine;
-	int lastLine;
-
 	// If the range is outside of the displayed text, just return
 	if (end < firstChar_ || (start > lastChar_ && !emptyLinesVisible())) {
 		return;
 	}
 
 	// Clean up the starting and ending values
-	start = qBound(buffer_->BufStartOfBuffer(), start, buffer_->BufEndOfBuffer());
-	end   = qBound(buffer_->BufStartOfBuffer(), end, buffer_->BufEndOfBuffer());
+	const TextCursor start_of_buffer = buffer_->BufStartOfBuffer();
+	const TextCursor end_of_buffer   = buffer_->BufEndOfBuffer();
+
+	start = qBound(start_of_buffer, start, end_of_buffer);
+	end   = qBound(start_of_buffer, end, end_of_buffer);
 
 	// Get the starting and ending lines
 	if (start < firstChar_) {
 		start = firstChar_;
 	}
+
+	int startLine;
+	int lastLine;
 
 	if (!posToVisibleLineNum(start, &startLine)) {
 		startLine = nVisibleLines_ - 1;
@@ -3049,13 +3052,13 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 		}
 
 		/* Background color priority order is:
-			** 1 Primary(Selection),
-			** 2 Highlight(Parens),
-			** 3 Rangeset
-			** 4 SyntaxHighlightStyle,
-			** 5 Backlight (if NOT fill)
-			** 6 DefaultBackground
-			*/
+		 ** 1 Primary(Selection),
+		 ** 2 Highlight(Parens),
+		 ** 3 Rangeset
+		 ** 4 SyntaxHighlightStyle,
+		 ** 5 Backlight (if NOT fill)
+		 ** 6 DefaultBackground
+		 */
 		if (style & PRIMARY_MASK) {
 			bground = pal.color(QPalette::Highlight);
 
@@ -5679,13 +5682,13 @@ void TextArea::adjustSelection(const QPoint &coord) {
 		const TextCursor endPos   = buffer_->BufEndOfLine(std::max(anchor_, newPos));
 		buffer_->BufRectSelect(startPos, endPos, startCol, endCol);
 
-	} else if (clickCount_ == 1) { //multiClickState_ == ONE_CLICK) {
+	} else if (clickCount_ == 1) { // multiClickState_ == ONE_CLICK) {
 		const TextCursor startPos = startOfWord(std::min(anchor_, newPos));
 		const TextCursor endPos   = endOfWord(std::max(anchor_, newPos));
 		buffer_->BufSelect(startPos, endPos);
 		newPos = (newPos < anchor_) ? startPos : endPos;
 
-	} else if (clickCount_ == 2) { //multiClickState_ == TWO_CLICKS) {
+	} else if (clickCount_ == 2) { // multiClickState_ == TWO_CLICKS) {
 		const TextCursor startPos = buffer_->BufStartOfLine(std::min(anchor_, newPos));
 		const TextCursor endPos   = buffer_->BufEndOfLine(std::max(anchor_, newPos));
 		buffer_->BufSelect(startPos, std::min(endPos + 1, buffer_->BufEndOfBuffer()));
