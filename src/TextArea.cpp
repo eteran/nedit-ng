@@ -2124,44 +2124,44 @@ bool TextArea::updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t c
 	   array */
 	if (pos <= lastChar_) {
 		// find line on which the change began
-		posToVisibleLineNum(pos, &lineOfPos);
-		// salvage line starts after the changed area
-		if (lineDelta == 0) {
-			for (int i = lineOfPos + 1; i < nVisLines && lineStarts_[i] != -1; i++) {
-				lineStarts_[i] += charDelta;
+		if (posToVisibleLineNum(pos, &lineOfPos)) {
+			// salvage line starts after the changed area
+			if (lineDelta == 0) {
+				for (int i = lineOfPos + 1; i < nVisLines && lineStarts_[i] != -1; i++) {
+					lineStarts_[i] += charDelta;
+				}
+			} else if (lineDelta > 0) {
+				for (int i = nVisLines - 1; i >= lineOfPos + lineDelta + 1; i--) {
+					lineStarts_[i] = lineStarts_[i - lineDelta] + (lineStarts_[i - lineDelta] == -1 ? 0 : charDelta);
+				}
+			} else /* (lineDelta < 0) */ {
+				for (int i = std::max(0, lineOfPos + 1); i < nVisLines + lineDelta; i++) {
+					lineStarts_[i] = lineStarts_[i - lineDelta] + (lineStarts_[i - lineDelta] == -1 ? 0 : charDelta);
+				}
 			}
-		} else if (lineDelta > 0) {
-			for (int i = nVisLines - 1; i >= lineOfPos + lineDelta + 1; i--) {
-				lineStarts_[i] = lineStarts_[i - lineDelta] + (lineStarts_[i - lineDelta] == -1 ? 0 : charDelta);
+
+			// fill in the missing line starts
+			if (linesInserted >= 0) {
+				calcLineStarts(lineOfPos + 1, lineOfPos + linesInserted);
 			}
-		} else /* (lineDelta < 0) */ {
-			for (int i = std::max(0, lineOfPos + 1); i < nVisLines + lineDelta; i++) {
-				lineStarts_[i] = lineStarts_[i - lineDelta] + (lineStarts_[i - lineDelta] == -1 ? 0 : charDelta);
+
+			if (lineDelta < 0) {
+				calcLineStarts(nVisLines + lineDelta, nVisLines);
 			}
+
+			// calculate lastChar by finding the end of the last displayed line
+			calcLastChar();
 		}
-
-		// fill in the missing line starts
-		if (linesInserted >= 0) {
-			calcLineStarts(lineOfPos + 1, lineOfPos + linesInserted);
-		}
-
-		if (lineDelta < 0) {
-			calcLineStarts(nVisLines + lineDelta, nVisLines);
-		}
-
-		// calculate lastChar by finding the end of the last displayed line
-		calcLastChar();
-
 		return false;
 	}
 
 	/* Change was past the end of the displayed text, but displayable by virtue
 	   of being an insert at the end of the buffer into visible blank lines */
 	if (emptyLinesVisible()) {
-		posToVisibleLineNum(pos, &lineOfPos);
-		calcLineStarts(lineOfPos, lineOfPos + linesInserted);
-		calcLastChar();
-
+		if (posToVisibleLineNum(pos, &lineOfPos)) {
+			calcLineStarts(lineOfPos, lineOfPos + linesInserted);
+			calcLastChar();
+		}
 		return false;
 	}
 

@@ -3602,10 +3602,10 @@ void DocumentWidget::actionClose(CloseMode mode) {
 	MainWindow::updateWindowMenus();
 }
 
-bool DocumentWidget::includeFile(const QString &name) {
+void DocumentWidget::includeFile(const QString &name) {
 
 	if (checkReadOnly()) {
-		return false;
+		return;
 	}
 
 	// TODO(eteran): this code is *almost* identical to a block of code in doOpen, we should
@@ -3613,14 +3613,14 @@ bool DocumentWidget::includeFile(const QString &name) {
 	QFile file(name);
 	if (!file.open(QFile::ReadOnly)) {
 		QMessageBox::critical(this, tr("Error opening File"), file.errorString());
-		return false;
+		return;
 	}
 
 	if (file.size() != 0) {
 		uchar *memory = file.map(0, file.size());
 		if (!memory) {
 			QMessageBox::critical(this, tr("Error opening File"), file.errorString());
-			return false;
+			return;
 		}
 
 		auto text = std::string{reinterpret_cast<char *>(memory), static_cast<size_t>(file.size())};
@@ -3649,8 +3649,6 @@ bool DocumentWidget::includeFile(const QString &name) {
 			}
 		}
 	}
-
-	return true;
 }
 
 boost::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit) {
@@ -5261,7 +5259,7 @@ void DocumentWidget::beginLearn() {
 ** Read an NEdit macro file.  Extends the syntax of the macro parser with
 ** define keyword, and allows intermixing of defines with immediate actions.
 */
-bool DocumentWidget::readMacroFile(const QString &fileName, bool warnNotExist) {
+void DocumentWidget::readMacroFile(const QString &fileName, bool warnNotExist) {
 
 	/* read-in macro file and force a terminating \n, to prevent syntax
 	** errors with statements on the last line
@@ -5273,11 +5271,11 @@ bool DocumentWidget::readMacroFile(const QString &fileName, bool warnNotExist) {
 								  tr("Read Macro"),
 								  tr("Error reading macro file %1: %2").arg(fileName, errorString(errno)));
 		}
-		return false;
+		return;
 	}
 
 	// Parse text
-	return readCheckMacroString(this, text, this, fileName, nullptr);
+	readCheckMacroString(this, text, this, fileName, nullptr);
 }
 
 /*

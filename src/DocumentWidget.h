@@ -140,7 +140,7 @@ public:
 	bool matchSyntaxBased() const;
 	bool modeMessageDisplayed() const;
 	bool overstrike() const;
-	bool readMacroFile(const QString &fileName, bool warnNotExist);
+	void readMacroFile(const QString &fileName, bool warnNotExist);
 	bool readMacroString(const QString &string, const QString &errIn);
 	bool showStatisticsLine() const;
 	bool useTabs() const;
@@ -236,7 +236,7 @@ private:
 	bool doOpen(const QString &name, const QString &path, int flags);
 	bool doSave();
 	bool fileWasModifiedExternally() const;
-	bool includeFile(const QString &name);
+	void includeFile(const QString &name);
 	bool macroWindowCloseActions();
 	bool saveDocument();
 	bool saveDocumentAs(const QString &newName, bool addWrap);
