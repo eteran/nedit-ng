@@ -2,11 +2,11 @@
 #ifndef RANGESET_H_
 #define RANGESET_H_
 
+#include "Ext/optional.h"
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
 #include "TextRange.h"
 #include <QColor>
-#include <boost/optional.hpp>
 #include <vector>
 
 // NOTE(eteran): a bit of an artificial limit, but we'll keep it for now
@@ -44,8 +44,8 @@ public:
 	RangesetInfo RangesetGetInfo() const;
 
 public:
-	boost::optional<TextRange> RangesetFindRangeNo(int index) const;
-	boost::optional<TextRange> RangesetSpan() const;
+	ext::optional<TextRange> RangesetFindRangeNo(int index) const;
+	ext::optional<TextRange> RangesetSpan() const;
 
 public:
 	int64_t RangesetCheckRangeOfPos(TextCursor pos);

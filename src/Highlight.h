@@ -2,12 +2,12 @@
 #ifndef HIGHLIGHT_H_
 #define HIGHLIGHT_H_
 
+#include "Ext/string_view.h"
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
 #include "Util/QtHelper.h"
-#include "Util/string_view.h"
 
-#include <boost/optional.hpp>
+#include "Ext/optional.h"
 #include <memory>
 #include <vector>
 
@@ -48,7 +48,7 @@ Q_DECLARE_NAMESPACE_TR(Highlight)
 struct ParseContext {
 	int *prev_char = nullptr;
 	QString delimiters;
-	view::string_view text;
+	ext::string_view text;
 };
 
 bool FontOfNamedStyleIsBold(const QString &styleName);
@@ -65,11 +65,11 @@ QString BgColorOfNamedStyle(const QString &styleName);
 QString FgColorOfNamedStyle(const QString &styleName);
 QString WriteHighlightString();
 size_t IndexOfNamedStyle(const QString &styleName);
-boost::optional<PatternSet> readDefaultPatternSet(const QString &langModeName);
+ext::optional<PatternSet> readDefaultPatternSet(const QString &langModeName);
 TextCursor backwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos);
 TextCursor forwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos);
 void RenameHighlightPattern(const QString &oldName, const QString &newName);
-void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user);
+void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, ext::string_view deletedText, void *user);
 
 extern std::vector<HighlightStyle> HighlightStyles;
 extern std::vector<PatternSet> PatternSets;

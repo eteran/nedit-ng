@@ -242,7 +242,7 @@ void DialogReplace::textFind_textChanged(const QString &text) {
 void DialogReplace::buttonFind_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
-	boost::optional<Fields> fields = readFields();
+	ext::optional<Fields> fields = readFields();
 	if (!fields) {
 		return;
 	}
@@ -276,7 +276,7 @@ void DialogReplace::buttonFind_clicked() {
 void DialogReplace::buttonReplace_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
-	boost::optional<Fields> fields = readFields();
+	ext::optional<Fields> fields = readFields();
 	if (!fields) {
 		return;
 	}
@@ -304,7 +304,7 @@ void DialogReplace::buttonReplace_clicked() {
 void DialogReplace::buttonReplaceFind_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
-	boost::optional<Fields> fields = readFields();
+	ext::optional<Fields> fields = readFields();
 	if (!fields) {
 		return;
 	}
@@ -332,7 +332,7 @@ void DialogReplace::buttonReplaceFind_clicked() {
 void DialogReplace::buttonWindow_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
-	boost::optional<Fields> fields = readFields();
+	ext::optional<Fields> fields = readFields();
 	if (!fields) {
 		return;
 	}
@@ -358,7 +358,7 @@ void DialogReplace::buttonWindow_clicked() {
 void DialogReplace::buttonSelection_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
-	boost::optional<Fields> fields = readFields();
+	ext::optional<Fields> fields = readFields();
 	if (!fields) {
 		return;
 	}
@@ -384,7 +384,7 @@ void DialogReplace::buttonSelection_clicked() {
 void DialogReplace::buttonMulti_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
-	boost::optional<Fields> fields = readFields();
+	ext::optional<Fields> fields = readFields();
 	if (!fields) {
 		return;
 	}
@@ -576,7 +576,7 @@ void DialogReplace::setActionButtons(bool replaceBtn, bool replaceFindBtn, bool 
 ** strings and search type from the Replace dialog.  If the strings are ok,
 ** save a copy in the search history, and return the fields
 */
-boost::optional<DialogReplace::Fields> DialogReplace::readFields() {
+ext::optional<DialogReplace::Fields> DialogReplace::readFields() {
 
 	Fields fields;
 
@@ -600,7 +600,7 @@ boost::optional<DialogReplace::Fields> DialogReplace::readFields() {
 			auto compiledRE = make_regex(replaceText, regexDefault);
 		} catch (const RegexError &e) {
 			QMessageBox::warning(this, tr("Search String"), tr("Please respecify the search string:\n%1").arg(QString::fromLatin1(e.what())));
-			return boost::none;
+			return {};
 		}
 	} else {
 		if (ui.checkCase->isChecked()) {

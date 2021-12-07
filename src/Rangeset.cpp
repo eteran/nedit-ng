@@ -546,9 +546,9 @@ QString Rangeset::name() const {
  * @brief Rangeset::RangesetSpan
  * @return
  */
-boost::optional<TextRange> Rangeset::RangesetSpan() const {
+ext::optional<TextRange> Rangeset::RangesetSpan() const {
 	if (ranges_.empty()) {
-		return boost::none;
+		return {};
 	}
 
 	TextRange r;
@@ -562,11 +562,11 @@ boost::optional<TextRange> Rangeset::RangesetSpan() const {
  * @param index
  * @return
  */
-boost::optional<TextRange> Rangeset::RangesetFindRangeNo(int index) const {
+ext::optional<TextRange> Rangeset::RangesetFindRangeNo(int index) const {
 
 	const auto n = static_cast<size_t>(index);
 	if (index < 0 || ranges_.size() <= n) {
-		return boost::none;
+		return {};
 	}
 
 	return ranges_[n];

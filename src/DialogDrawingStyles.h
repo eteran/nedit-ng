@@ -8,7 +8,7 @@
 
 #include <QPointer>
 
-#include <boost/optional.hpp>
+#include "Ext/optional.h"
 
 class DialogSyntaxPatterns;
 class HighlightStyleModel;
@@ -43,7 +43,7 @@ private:
 private:
 	bool applyDialogChanges();
 	bool validateFields(Verbosity verbosity);
-	boost::optional<HighlightStyle> readFields(Verbosity verbosity);
+	ext::optional<HighlightStyle> readFields(Verbosity verbosity);
 	bool updateCurrentItem();
 	bool updateCurrentItem(const QModelIndex &index);
 	int countPlainEntries() const;

@@ -66,6 +66,7 @@ add_definitions(-DQT_NO_CAST_TO_ASCII)
 add_definitions(-DQT_NO_KEYWORDS)
 
 add_subdirectory(Util)
+add_subdirectory(Ext)
 add_subdirectory(src)
 add_subdirectory(libs)
 add_subdirectory(client)

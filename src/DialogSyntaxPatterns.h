@@ -8,7 +8,7 @@
 
 #include <QPointer>
 
-#include <boost/optional.hpp>
+#include "Ext/optional.h"
 #include <memory>
 
 class HighlightPattern;
@@ -64,7 +64,7 @@ private:
 	bool updateCurrentItem();
 	bool updateCurrentItem(const QModelIndex &index);
 	bool updatePatternSet();
-	boost::optional<HighlightPattern> readFields(Verbosity verbosity);
+	ext::optional<HighlightPattern> readFields(Verbosity verbosity);
 	std::unique_ptr<PatternSet> getDialogPatternSet();
 	void setStyleMenu(const QString &name);
 	void updateLabels();

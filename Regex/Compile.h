@@ -2,7 +2,7 @@
 #ifndef COMPILE_H_
 #define COMPILE_H_
 
-#include "Util/string_view.h"
+#include "Ext/string_view.h"
 #include <bitset>
 #include <vector>
 
@@ -10,8 +10,8 @@ class Regex;
 
 // Global work variables for 'CompileRE'.
 struct ParseContext {
-	view::string_view::iterator Reg_Parse; // Input scan ptr (scans user's regex)
-	view::string_view InputString;
+	ext::string_view::iterator Reg_Parse; // Input scan ptr (scans user's regex)
+	ext::string_view InputString;
 	std::vector<uint8_t> Code;
 	const char *Meta_Char;
 	size_t Reg_Size;                 // Size of compiled regex code.

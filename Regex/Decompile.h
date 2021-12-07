@@ -2,8 +2,8 @@
 #ifndef DECOMPILE_H_
 #define DECOMPILE_H_
 
+#include "Ext/variant.h"
 #include "Opcodes.h"
-#include <boost/variant.hpp>
 #include <string>
 #include <vector>
 class Regex;
@@ -46,7 +46,7 @@ struct Instruction6 {
 	uint16_t op2;
 };
 
-using Instruction = boost::variant<Instruction1, Instruction2, Instruction3, Instruction4, Instruction5, Instruction6>;
+using Instruction = ext::variant<Instruction1, Instruction2, Instruction3, Instruction4, Instruction5, Instruction6>;
 
 std::vector<Instruction> decompileRegex(const Regex &re);
 

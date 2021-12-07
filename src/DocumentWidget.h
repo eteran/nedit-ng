@@ -8,6 +8,7 @@
 #include "CommandSource.h"
 #include "DocumentInfo.h"
 #include "ErrorSound.h"
+#include "Ext/string_view.h"
 #include "IndentStyle.h"
 #include "LanguageMode.h"
 #include "LockReasons.h"
@@ -19,7 +20,6 @@
 #include "TextBufferFwd.h"
 #include "UndoInfo.h"
 #include "Util/FileFormats.h"
-#include "Util/string_view.h"
 #include "Verbosity.h"
 #include "WrapStyle.h"
 
@@ -31,7 +31,7 @@
 
 #include <gsl/span>
 
-#include <boost/optional.hpp>
+#include "Ext/optional.h"
 
 #include <sys/stat.h>
 
@@ -89,8 +89,8 @@ Q_SIGNALS:
 public:
 	void dragEndCallback(TextArea *area, const DragEndEvent *event);
 	void dragStartCallback(TextArea *area);
-	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText);
-	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, TextArea *area);
+	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, ext::string_view deletedText);
+	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, ext::string_view deletedText, TextArea *area);
 	void movedCallback(TextArea *area);
 	void smartIndentCallback(TextArea *area, SmartIndentEvent *event);
 
@@ -242,7 +242,7 @@ private:
 	bool saveDocumentAs(const QString &newName, bool addWrap);
 	bool writeBackupFile();
 	bool writeBckVersion();
-	boost::optional<TextCursor> findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit);
+	ext::optional<TextCursor> findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit);
 	int findAllMatches(TextArea *area, const QString &string);
 	size_t matchLanguageMode() const;
 	std::unique_ptr<HighlightData[]> compilePatterns(const std::vector<HighlightPattern> &patternSrc, Verbosity verbosity = Verbosity::Silent);
@@ -252,7 +252,7 @@ private:
 	void addRedoItem(UndoInfo &&redo);
 	void addUndoItem(UndoInfo &&undo);
 	void addWrapNewlines();
-	void appendDeletedText(view::string_view deletedText, int64_t deletedLen, Direction direction);
+	void appendDeletedText(ext::string_view deletedText, int64_t deletedLen, Direction direction);
 	void attachHighlightToWidget(TextArea *area);
 	void beginLearn();
 	void cancelLearning();
@@ -285,7 +285,7 @@ private:
 	void removeUndoItem();
 	void replay();
 	void revertToSaved();
-	void saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, view::string_view deletedText);
+	void saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, ext::string_view deletedText);
 	void setModeMessage(const QString &message);
 	void setWindowModified(bool modified);
 	void trimUndoList(size_t maxLength);

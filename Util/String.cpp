@@ -30,7 +30,7 @@ QString ensure_newline(const QString &string) {
  * @param s
  * @return
  */
-std::string to_upper(view::string_view s) {
+std::string to_upper(ext::string_view s) {
 
 	std::string str;
 	str.reserve(s.size());
@@ -45,7 +45,7 @@ std::string to_upper(view::string_view s) {
  * @param s
  * @return
  */
-std::string to_lower(view::string_view s) {
+std::string to_lower(ext::string_view s) {
 
 	std::string str;
 	str.reserve(s.size());

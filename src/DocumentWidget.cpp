@@ -160,7 +160,7 @@ QString errorString(int error) {
  * @param deletedText
  * @param user
  */
-void modifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
+void modifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, ext::string_view deletedText, void *user) {
 	if (auto document = static_cast<DocumentWidget *>(user)) {
 		document->modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText);
 	}
@@ -232,7 +232,7 @@ void handleUnparsedRegionCB(const TextArea *area, TextCursor pos, const void *us
 */
 // TODO(eteran): I think the bufReplaceEx function already sanitizes its input,
 //               so it's possible that this function is redundant.
-void safeBufReplace(TextBuffer *buf, TextCursor *start, TextCursor *end, view::string_view text) {
+void safeBufReplace(TextBuffer *buf, TextCursor *start, TextCursor *end, ext::string_view text) {
 
 	const TextCursor last = buf->BufEndOfBuffer();
 
@@ -878,7 +878,7 @@ size_t DocumentWidget::matchLanguageMode() const {
 		for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
 			if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {
 
-				boost::optional<Search::Result> searchResult = Search::SearchString(
+				ext::optional<Search::Result> searchResult = Search::SearchString(
 					first200,
 					Preferences::LanguageModes[i].recognitionExpr,
 					Direction::Forward,
@@ -977,7 +977,7 @@ void DocumentWidget::updateMarkTable(TextCursor pos, int64_t nInserted, int64_t 
  * @param deletedText
  * @param area
  */
-void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, TextArea *area) {
+void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, ext::string_view deletedText, TextArea *area) {
 	Q_UNUSED(nRestyled)
 
 	// number of distinct chars the user can typebefore NEdit gens. new backup file
@@ -1053,7 +1053,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
  * @param nRestyled
  * @param deletedText
  */
-void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText) {
+void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, ext::string_view deletedText) {
 	modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText, nullptr);
 }
 
@@ -1569,7 +1569,7 @@ void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<M
 ** Note: This routine must be kept efficient.  It is called for every
 **       character typed.
 */
-void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, view::string_view deletedText) {
+void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, ext::string_view deletedText) {
 
 	const int isUndo = (!info_->undo.empty() && info_->undo.front().inUndo);
 	const int isRedo = (!info_->redo.empty() && info_->redo.front().inUndo);
@@ -1639,7 +1639,7 @@ void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int6
 
 	// if text was deleted, save it
 	if (nDeleted > 0) {
-		undo.oldText = deletedText.to_string();
+		undo.oldText = std::string(deletedText.begin(), deletedText.end());
 	}
 
 	// increment the operation count for the autosave feature
@@ -1698,7 +1698,7 @@ void DocumentWidget::clearRedoList() {
 ** for continuing of a string of one character deletes or replaces, but will
 ** work with more than one character.
 */
-void DocumentWidget::appendDeletedText(view::string_view deletedText, int64_t deletedLen, Direction direction) {
+void DocumentWidget::appendDeletedText(ext::string_view deletedText, int64_t deletedLen, Direction direction) {
 	UndoInfo &undo = info_->undo.front();
 
 	// re-allocate, adding space for the new character(s)
@@ -2240,7 +2240,7 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 		nRead += offset;
 
 		// check for on-disk file format changes, but only for the first chunk
-		if (bufPos == 0 && info_->fileFormat != FormatOfFile(view::string_view(fileString, static_cast<size_t>(nRead)))) {
+		if (bufPos == 0 && info_->fileFormat != FormatOfFile(ext::string_view(fileString, static_cast<size_t>(nRead)))) {
 			return true;
 		}
 
@@ -2975,7 +2975,7 @@ void DocumentWidget::closeDocument() {
 
 		// clear the buffer, but ignore changes
 		info_->ignoreModify = true;
-		info_->buffer->BufSetAll(view::string_view());
+		info_->buffer->BufSetAll(ext::string_view());
 		info_->ignoreModify = false;
 
 		info_->filenameSet = false;
@@ -3651,7 +3651,7 @@ void DocumentWidget::includeFile(const QString &name) {
 	}
 }
 
-boost::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit) {
+ext::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit) {
 
 	Style style;
 	bool matchSyntaxBased = info_->matchSyntaxBased;
@@ -3667,7 +3667,7 @@ boost::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style
 	});
 
 	if (matchIt == std::end(MatchingChars)) {
-		return boost::none;
+		return {};
 	}
 
 	const char matchChar      = matchIt->match;
@@ -3737,7 +3737,7 @@ boost::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style
 		break;
 	}
 
-	return boost::none;
+	return {};
 }
 
 void DocumentWidget::gotoMatchingCharacter(TextArea *area, bool select) {
@@ -3767,7 +3767,7 @@ void DocumentWidget::gotoMatchingCharacter(TextArea *area, bool select) {
 	}
 
 	// Search for it in the buffer
-	boost::optional<TextCursor> matchPos = findMatchingChar(
+	ext::optional<TextCursor> matchPos = findMatchingChar(
 		info_->buffer->BufGetCharacter(range.start),
 		getHighlightInfo(range.start),
 		range.start,
@@ -3943,7 +3943,7 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 	   for # in the shell command */
 	QString fullName = fullPath();
 
-	boost::optional<Location> loc = area->positionToLineAndCol(pos);
+	ext::optional<Location> loc = area->positionToLineAndCol(pos);
 	if (!loc) {
 		loc = Location{-1, -1};
 	}
@@ -4438,7 +4438,7 @@ void DocumentWidget::gotoAP(TextArea *area, int line, int column) {
 	if (line == -1) {
 		position = area->cursorPos();
 
-		boost::optional<Location> loc = area->positionToLineAndCol(position);
+		ext::optional<Location> loc = area->positionToLineAndCol(position);
 		if (!loc) {
 			return;
 		}
@@ -4898,7 +4898,7 @@ void DocumentWidget::execCursorLine(TextArea *area, CommandSource source) {
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	const boost::optional<Location> loc = area->positionToLineAndCol(pos);
+	const ext::optional<Location> loc = area->positionToLineAndCol(pos);
 
 	auto substitutedCommand = escapeCommand(QString::fromStdString(cmdText), fullPath(), loc->line);
 
@@ -4999,7 +4999,7 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 	   for # in the shell command */
 	TextCursor pos = area->cursorPos();
 
-	const boost::optional<Location> loc = area->positionToLineAndCol(pos);
+	const ext::optional<Location> loc = area->positionToLineAndCol(pos);
 
 	QString substitutedCommand = escapeCommand(command, fullPath(), loc ? loc->line : 0);
 
@@ -5494,7 +5494,7 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 	}
 
 	// do the search
-	boost::optional<TextCursor> matchPos = findMatchingChar(ch, style, searchPos, startPos, endPos);
+	ext::optional<TextCursor> matchPos = findMatchingChar(ch, style, searchPos, startPos, endPos);
 	if (!matchPos) {
 		return;
 	}
@@ -5945,7 +5945,7 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
 
 	/* Update the style buffer the new style information, but only between
 	   beginParse and endParse.  Skip the safety region */
-	auto view = view::string_view(&styleString[beginParse - beginSafety], static_cast<size_t>(endParse - beginParse));
+	auto view = ext::string_view(&styleString[beginParse - beginSafety], static_cast<size_t>(endParse - beginParse));
 	styleBuf->BufReplace(beginParse, endParse, view);
 }
 

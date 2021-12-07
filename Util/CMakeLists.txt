@@ -111,7 +111,6 @@ PUBLIC
 	GSL
 	Qt5::Core
 	Qt5::Network
-	Boost::boost
 )
 
 target_add_warnings(Util)

@@ -2,8 +2,8 @@
 #ifndef CALL_TIP_H_
 #define CALL_TIP_H_
 
+#include "Ext/variant.h"
 #include "TextCursor.h"
-#include <boost/variant.hpp>
 
 enum class TipHAlignMode {
 	Left,
@@ -22,7 +22,7 @@ enum class TipAlignMode {
 };
 
 // a cursor if it's anchored, otherwise it's a relative x position
-using CallTipPosition = boost::variant<int, TextCursor>;
+using CallTipPosition = ext::variant<int, TextCursor>;
 
 struct CallTip {
 	int ID                 = 0;                    // ID of displayed calltip.  Equals zero if none is displayed.

@@ -6,11 +6,11 @@
 namespace {
 
 struct Test {
-	view::string_view input;
-	view::string_view output;
+	ext::string_view input;
+	ext::string_view output;
 };
 
-int test_regex_match(view::string_view regex, view::string_view input) {
+int test_regex_match(ext::string_view regex, ext::string_view input) {
 	Regex re(regex, REDFLT_STANDARD);
 
 	if (re.execute(input)) {

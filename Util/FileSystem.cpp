@@ -114,7 +114,7 @@ QString GetTrailingPathComponents(const QString &path, int components) {
 ** the sampled portion of a Macintosh looking file), the file is judged to be
 ** Unix format.
 */
-FileFormats FormatOfFile(view::string_view text) {
+FileFormats FormatOfFile(ext::string_view text) {
 
 	size_t nNewlines = 0;
 	size_t nReturns  = 0;

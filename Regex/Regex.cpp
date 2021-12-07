@@ -115,7 +115,7 @@ ParseContext pContext;
  * @param reverse
  * @return
  */
-bool Regex::execute(view::string_view string, bool reverse) {
+bool Regex::execute(ext::string_view string, bool reverse) {
 	return execute(string, 0, reverse);
 }
 
@@ -126,7 +126,7 @@ bool Regex::execute(view::string_view string, bool reverse) {
  * @param reverse
  * @return
  */
-bool Regex::execute(view::string_view string, size_t offset, bool reverse) {
+bool Regex::execute(ext::string_view string, size_t offset, bool reverse) {
 	return execute(string, offset, nullptr, reverse);
 }
 
@@ -138,7 +138,7 @@ bool Regex::execute(view::string_view string, size_t offset, bool reverse) {
  * @param reverse
  * @return
  */
-bool Regex::execute(view::string_view string, size_t offset, const char *delimiters, bool reverse) {
+bool Regex::execute(ext::string_view string, size_t offset, const char *delimiters, bool reverse) {
 	return execute(string, offset, string.size(), delimiters, reverse);
 }
 
@@ -151,7 +151,7 @@ bool Regex::execute(view::string_view string, size_t offset, const char *delimit
  * @param reverse
  * @return
  */
-bool Regex::execute(view::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse) {
+bool Regex::execute(ext::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse) {
 	return execute(
 		string,
 		offset,
@@ -173,7 +173,7 @@ bool Regex::execute(view::string_view string, size_t offset, size_t end_offset, 
  * @param reverse
  * @return
  */
-bool Regex::execute(view::string_view string, size_t offset, size_t end_offset, int prev, int succ, const char *delimiters, bool reverse) {
+bool Regex::execute(ext::string_view string, size_t offset, size_t end_offset, int prev, int succ, const char *delimiters, bool reverse) {
 	assert(offset <= end_offset);
 	assert(end_offset <= string.size());
 	return ExecRE(
@@ -193,7 +193,7 @@ bool Regex::execute(view::string_view string, size_t offset, size_t end_offset, 
  *
  * Builds a default delimiter table that persists across 'ExecRE' calls.
  *----------------------------------------------------------------------*/
-void Regex::SetDefaultWordDelimiters(view::string_view delimiters) {
+void Regex::SetDefaultWordDelimiters(ext::string_view delimiters) {
 	Default_Delimiters = makeDelimiterTable(delimiters);
 }
 
@@ -204,7 +204,7 @@ void Regex::SetDefaultWordDelimiters(view::string_view delimiters) {
  * lookup table for determining whether a character is a delimiter or
  * not.
  *----------------------------------------------------------------------*/
-std::bitset<256> Regex::makeDelimiterTable(view::string_view delimiters) {
+std::bitset<256> Regex::makeDelimiterTable(ext::string_view delimiters) {
 
 	std::bitset<256> table;
 

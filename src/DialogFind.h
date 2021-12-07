@@ -6,7 +6,7 @@
 #include "Direction.h"
 #include "SearchType.h"
 
-#include <boost/optional.hpp>
+#include "Ext/optional.h"
 
 #include "ui_DialogFind.h"
 
@@ -41,7 +41,7 @@ public:
 	void updateFindButton();
 
 private:
-	boost::optional<Fields> readFields();
+	ext::optional<Fields> readFields();
 
 private:
 	void textFind_textChanged(const QString &text);

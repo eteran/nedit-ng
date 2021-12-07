@@ -37,6 +37,7 @@ target_include_directories(Regex PUBLIC
 
 target_link_libraries(Regex PUBLIC
 	Util
+	Ext
 )
 
 target_add_warnings(Regex)

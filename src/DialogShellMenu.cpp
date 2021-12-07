@@ -240,21 +240,21 @@ void DialogShellMenu::buttonBox_accepted() {
 ** pointer to the new MenuItem structure as the function value, or nullptr on
 ** failure.
 */
-boost::optional<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
+ext::optional<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
 
 	QString nameText = ui.editName->text();
 	if (nameText.isEmpty()) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Please specify a name for the menu item"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	if (nameText.indexOf(QLatin1Char(':')) != -1) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Menu item names may not contain colon (:) characters"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	QString cmdText = ui.editCommand->toPlainText();
@@ -262,7 +262,7 @@ boost::optional<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Command to Execute"), tr("Please specify macro command(s) to execute"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	MenuItem menuItem;

@@ -16,7 +16,6 @@ target_link_libraries(nc-ng PUBLIC
 	Qt5::Network
 	Util
 	Settings
-	Boost::boost
 )
 
 target_add_warnings(nc-ng)

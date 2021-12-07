@@ -278,6 +278,7 @@ target_add_warnings(nedit-ng)
 
 target_link_libraries(nedit-ng
 PUBLIC
+    Ext
 	Util
 	Regex
 	Settings
@@ -290,7 +291,6 @@ PUBLIC
 	$<$<BOOL:${Qt5X11Extras_FOUND}>:Qt5::X11Extras>
 	$<$<BOOL:${X11_FOUND}>:X11>
 PRIVATE
-	Boost::boost
 	yaml-cpp
 )
 set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)

@@ -2,7 +2,8 @@
 #ifndef GAP_BUFFER_H_
 #define GAP_BUFFER_H_
 
-#include "Util/string_view.h"
+#include "Ext/string_view.h"
+#include "Util/Raise.h"
 #include "gap_buffer_fwd.h"
 #include "gap_buffer_iterator.h"
 
@@ -16,7 +17,7 @@ class gap_buffer {
 public:
 	static constexpr int PreferredGapSize = 80;
 	using string_type                     = std::basic_string<Ch, Tr>;
-	using view_type                       = view::basic_string_view<Ch, Tr>;
+	using view_type                       = ext::basic_string_view<Ch, Tr>;
 
 public:
 	using value_type             = typename std::allocator<Ch>::value_type;

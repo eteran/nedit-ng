@@ -2,8 +2,8 @@
 #ifndef SMART_INDENT_EVENT_H_
 #define SMART_INDENT_EVENT_H_
 
+#include "Ext/string_view.h"
 #include "TextCursor.h"
-#include "Util/string_view.h"
 
 enum SmartIndentReason {
 	NEWLINE_INDENT_NEEDED,
@@ -14,7 +14,7 @@ struct SmartIndentEvent {
 	SmartIndentReason reason;
 	TextCursor pos;
 	int request;
-	view::string_view charsTyped;
+	ext::string_view charsTyped;
 };
 
 #endif

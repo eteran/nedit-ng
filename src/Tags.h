@@ -3,8 +3,8 @@
 #define TAGS_H_
 
 #include "CallTip.h"
+#include "Ext/string_view.h"
 #include "Util/QtHelper.h"
-#include "Util/string_view.h"
 
 #include <deque>
 
@@ -62,7 +62,7 @@ QList<Tag> lookupTag(const QString &name, SearchMode mode);
 bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMode mode);
 bool addTagsFile(const QString &tagSpec, SearchMode mode);
 bool deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload);
-bool fakeRegExSearch(view::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos);
+bool fakeRegExSearch(ext::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos);
 int tagsShowCalltip(TextArea *area, const QString &text);
 void showMatchingCalltip(QWidget *parent, TextArea *area, int id);
 

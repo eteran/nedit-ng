@@ -688,7 +688,7 @@ Symbol *InstallIteratorSymbol() {
 /*
 ** Lookup a constant string by its value.
 */
-Symbol *LookupStringConstSymbol(view::string_view value) {
+Symbol *LookupStringConstSymbol(ext::string_view value) {
 
 	auto it = std::find_if(GlobalSymList.begin(), GlobalSymList.end(), [value](Symbol *s) {
 		return (s->type == CONST_SYM && is_string(s->value) && to_string(s->value) == value);
@@ -708,7 +708,7 @@ Symbol *InstallStringConstSymbolEx(const QString &str) {
 /*
 ** install string str in the global symbol table with a string name
 */
-Symbol *InstallStringConstSymbol(view::string_view str) {
+Symbol *InstallStringConstSymbol(ext::string_view str) {
 
 	static int stringConstIndex = 0;
 
@@ -729,7 +729,7 @@ Symbol *LookupSymbolEx(const QString &name) {
 	return LookupSymbol(name.toStdString());
 }
 
-Symbol *LookupSymbol(view::string_view name) {
+Symbol *LookupSymbol(ext::string_view name) {
 
 	// first look for a local symbol
 	auto local = std::find_if(LocalSymList.begin(), LocalSymList.end(), [name](Symbol *s) {

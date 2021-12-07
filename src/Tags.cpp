@@ -100,7 +100,7 @@ QList<Tag> getTagFromTable(QMultiHash<QString, Tag> &table, const QString &name)
  * separators (for now) are \n.  If the end of string is reached before n
  * lines, return the number of lines advanced, else normally return -1.
  */
-int64_t moveAheadNLines(view::string_view str, int64_t &pos, int64_t n) {
+int64_t moveAheadNLines(ext::string_view str, int64_t &pos, int64_t n) {
 
 	int64_t i = n;
 	while (static_cast<size_t>(pos) != str.size() && n > 0) {
@@ -1113,7 +1113,7 @@ QList<Tag> lookupTag(const QString &name, SearchMode mode) {
 ** into NEdit compatible regular expressions and does the search.
 ** Etags search expressions are plain literals strings, which
 */
-bool fakeRegExSearch(view::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos) {
+bool fakeRegExSearch(ext::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos) {
 
 	if (searchString.isEmpty()) {
 		return false;
@@ -1123,7 +1123,7 @@ bool fakeRegExSearch(view::string_view buffer, const QString &searchString, int6
 	Direction dir;
 	bool ctagsMode;
 
-	view::string_view fileString = buffer;
+	ext::string_view fileString = buffer;
 
 	// determine search direction and start position
 	if (*startPos != -1) { // etags mode!

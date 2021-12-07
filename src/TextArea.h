@@ -6,11 +6,12 @@
 #include "CallTip.h"
 #include "CursorStyles.h"
 #include "DragStates.h"
+#include "Ext/optional.h"
+#include "Ext/string_view.h"
 #include "Location.h"
 #include "StyleTableEntry.h"
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
-#include "Util/string_view.h"
 
 #include <QAbstractScrollArea>
 #include <QColor>
@@ -23,8 +24,6 @@
 
 #include <memory>
 #include <vector>
-
-#include <boost/optional.hpp>
 
 class CallTipWidget;
 class TextArea;
@@ -204,7 +203,7 @@ public:
 	TextCursor firstVisiblePos() const;
 	TextCursor cursorPos() const;
 	TextCursor TextLastVisiblePos() const;
-	boost::optional<Location> positionToLineAndCol(TextCursor pos) const;
+	ext::optional<Location> positionToLineAndCol(TextCursor pos) const;
 	TextCursor lineAndColToPosition(Location loc) const;
 	TextBuffer *styleBuffer() const;
 	int TextDGetCalltipID(int id) const;
@@ -250,7 +249,7 @@ public:
 
 public:
 	void bufPreDeleteCallback(TextCursor pos, int64_t nDeleted);
-	void bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText);
+	void bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, ext::string_view deletedText);
 
 private:
 	QColor getRangesetColor(size_t ind, QColor bground) const;
@@ -285,8 +284,8 @@ private:
 	bool visibleLineContainsCursor(int visLine, TextCursor cursor) const;
 	bool wrapLine(TextBuffer *buf, int64_t bufOffset, TextCursor lineStartPos, TextCursor lineEndPos, TextCursor limitPos, TextCursor *breakAt, int64_t *charsAdded);
 	bool wrapUsesCharacter(TextCursor lineEndPos) const;
-	boost::optional<TextCursor> spanBackward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const;
-	boost::optional<TextCursor> spanForward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const;
+	ext::optional<TextCursor> spanBackward(TextBuffer *buf, TextCursor startPos, ext::string_view searchChars, bool ignoreSpace) const;
+	ext::optional<TextCursor> spanForward(TextBuffer *buf, TextCursor startPos, ext::string_view searchChars, bool ignoreSpace) const;
 	int offsetWrappedColumn(int row, int column) const;
 	int offsetWrappedRow(int row) const;
 	int preferredColumn(int *visLineNum, TextCursor *lineStartPos);
@@ -298,7 +297,7 @@ private:
 	int visLineLength(int visLineNum) const;
 	int widthInPixels(char ch, int column) const;
 	std::string createIndentString(TextBuffer *buf, int64_t bufOffset, TextCursor lineStartPos, TextCursor lineEndPos, int *column);
-	std::string wrapText(view::string_view startLine, view::string_view text, int64_t bufOffset, int wrapMargin, int64_t *breakBefore);
+	std::string wrapText(ext::string_view startLine, ext::string_view text, int64_t bufOffset, int wrapMargin, int64_t *breakBefore);
 	uint32_t styleOfPos(TextCursor lineStartPos, size_t lineLen, size_t lineIndex, int64_t dispIndex, int thisChar) const;
 	void beginBlockDrag();
 	void blockDragSelection(const QPoint &pos, BlockDragTypes dragType);
@@ -311,10 +310,10 @@ private:
 	void TextCutClipboard();
 	void TextDBlankCursor();
 	void TextDMakeInsertPosVisible();
-	void TextDOverstrike(view::string_view text);
+	void TextDOverstrike(ext::string_view text);
 	void setWrapMode(bool wrap, int wrapMargin);
 	void coordToUnconstrainedPosition(const QPoint &coord, int *row, int *column) const;
-	void TextInsertAtCursor(view::string_view chars, bool allowPendingDelete, bool allowWrap);
+	void TextInsertAtCursor(ext::string_view chars, bool allowPendingDelete, bool allowWrap);
 	void TextPasteClipboard();
 	void adjustSecondarySelection(const QPoint &coord);
 	void adjustSelection(const QPoint &coord);
@@ -328,15 +327,15 @@ private:
 	void checkAutoShowInsertPos();
 	void checkMoveSelectionChange(EventFlags flags, TextCursor startPos);
 	void drawCursor(QPainter *painter, int x, int y);
-	void drawString(QPainter *painter, uint32_t style, int x, int y, int toX, view::string_view string);
+	void drawString(QPainter *painter, uint32_t style, int x, int y, int toX, ext::string_view string);
 	void endDrag();
 	void extendRangeForStyleMods(TextCursor *start, TextCursor *end);
 	void findLineEnd(TextCursor startPos, bool startPosIsLineStart, TextCursor *lineEnd, TextCursor *nextLineStart);
-	void findWrapRange(view::string_view deletedText, TextCursor pos, int64_t nInserted, int64_t nDeleted, TextCursor *modRangeStart, TextCursor *modRangeEnd, int64_t *linesInserted, int64_t *linesDeleted);
+	void findWrapRange(ext::string_view deletedText, TextCursor pos, int64_t nInserted, int64_t nDeleted, TextCursor *modRangeStart, TextCursor *modRangeEnd, int64_t *linesInserted, int64_t *linesDeleted);
 	void handleResize(bool widthChanged);
 	void hideOrShowHScrollBar();
 	void insertClipboard(bool isColumnar);
-	void insertText(view::string_view text);
+	void insertText(ext::string_view text);
 	void keyMoveExtendSelection(TextCursor origPos, bool rectangular);
 	void measureDeletedLines(TextCursor pos, int64_t nDeleted);
 	void offsetAbsLineNum(TextCursor oldFirstChar);
@@ -354,7 +353,7 @@ private:
 	void setLineNumberAreaWidth(int lineNumWidth);
 	void setupBGClasses(const QString &str);
 	void showResizeNotification();
-	void simpleInsertAtCursor(view::string_view chars, bool allowPendingDelete);
+	void simpleInsertAtCursor(ext::string_view chars, bool allowPendingDelete);
 	void unblankCursor();
 	void updateCalltip(int calltipID);
 	void updateFontMetrics(const QFont &font);

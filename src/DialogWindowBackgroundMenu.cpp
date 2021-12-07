@@ -241,7 +241,7 @@ bool DialogWindowBackgroundMenu::validateFields(Verbosity verbosity) {
 /*
 ** Read the name, accelerator, mnemonic, and command fields.
 */
-boost::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbosity) {
+ext::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbosity) {
 
 	QString nameText = ui.editName->text();
 
@@ -249,14 +249,14 @@ boost::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbo
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Please specify a name for the menu item"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	if (nameText.indexOf(QLatin1Char(':')) != -1) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Menu item names may not contain colon (:) characters"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	QString cmdText = ui.editMacro->toPlainText();
@@ -264,12 +264,12 @@ boost::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbo
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Command to Execute"), tr("Please specify macro command(s) to execute"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	cmdText = ensure_newline(cmdText);
 	if (!checkMacroText(cmdText, verbosity)) {
-		return boost::none;
+		return {};
 	}
 
 	MenuItem menuItem;

@@ -229,7 +229,7 @@ void DialogLanguageModes::buttonBox_clicked(QAbstractButton *button) {
 ** structure reflecting the current state of the selected language mode in the dialog.
 ** If any of the information is incorrect or missing, display a warning dialog.
 */
-boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity) {
+ext::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity) {
 
 	LanguageMode lm;
 
@@ -239,7 +239,7 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Language Mode Name"), tr("Please specify a name for the language mode"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	lm.name = name;
@@ -262,7 +262,7 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QString::fromLatin1(e.what())));
 			}
-			return boost::none;
+			return {};
 		}
 	}
 
@@ -276,7 +276,7 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Error reading Calltips"), tr("Can't read default calltips file(s):\n  \"%1\"\n").arg(tipsFile));
 			}
-			return boost::none;
+			return {};
 		} else if (!Tags::deleteTagsFile(tipsFile, Tags::SearchMode::TIP, false)) {
 			qCritical("NEdit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"", qPrintable(tipsFile));
 		}
@@ -292,7 +292,7 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 		int tabsSpacingValue = tabsSpacing.toInt(&ok);
 		if (!ok) {
 			QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in tab spacing").arg(tabsSpacing));
-			return boost::none;
+			return {};
 		}
 
 		lm.tabDist = tabsSpacingValue;
@@ -307,7 +307,7 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 		int emulatedTabSpacingValue = emulatedTabSpacing.toInt(&ok);
 		if (!ok) {
 			QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in emulated tab spacing").arg(tabsSpacing));
-			return boost::none;
+			return {};
 		}
 
 		lm.emTabDist = emulatedTabSpacingValue;

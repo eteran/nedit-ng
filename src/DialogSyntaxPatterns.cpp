@@ -454,7 +454,7 @@ void DialogSyntaxPatterns::buttonRestore_clicked() {
 
 	const QString languageMode = ui.comboLanguageMode->currentText();
 
-	boost::optional<PatternSet> patternSet = Highlight::readDefaultPatternSet(languageMode);
+	ext::optional<PatternSet> patternSet = Highlight::readDefaultPatternSet(languageMode);
 	if (!patternSet) {
 		QMessageBox::warning(
 			this,
@@ -790,7 +790,7 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 ** telling the user what's wrong (Passing "silent" as true, suppresses these
 ** dialogs).  Returns nullptr on error.
 */
-boost::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity verbosity) {
+ext::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity verbosity) {
 
 	HighlightPattern pat;
 
@@ -805,7 +805,7 @@ boost::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity ver
 	// read the name field
 	QString name = ui.editPatternName->text().simplified();
 	if (name.isNull()) {
-		return boost::none;
+		return {};
 	}
 
 	pat.name = name;
@@ -813,7 +813,7 @@ boost::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity ver
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Pattern Name"), tr("Please specify a name for the pattern"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	// read the startRE field
@@ -822,7 +822,7 @@ boost::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity ver
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Matching Regex"), tr("Please specify a regular expression to match"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	/* Make sure coloring patterns contain only sub-expression references
@@ -851,7 +851,7 @@ boost::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity ver
 					tr("Pattern Error"),
 					tr("The expression field in patterns which specify highlighting for a parent, must contain only sub-expression references in regular expression replacement form (&\\1\\2 etc.).  See Help -> Regular Expressions and Help -> Syntax Highlighting for more information"));
 			}
-			return boost::none;
+			return {};
 		}
 	}
 
@@ -862,7 +862,7 @@ boost::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity ver
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Specify Parent Pattern"), tr("Please specify a parent pattern"));
 			}
-			return boost::none;
+			return {};
 		}
 
 		if (!parent.isNull()) {
@@ -880,7 +880,7 @@ boost::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity ver
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Specify Regex"), tr("Please specify an ending regular expression"));
 			}
-			return boost::none;
+			return {};
 		}
 	}
 

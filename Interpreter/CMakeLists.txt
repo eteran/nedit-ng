@@ -34,8 +34,7 @@ PUBLIC
 	Qt5::Core
 	Util
 	GSL
-PRIVATE
-	Boost::boost
+	Ext
 )
 
 target_add_warnings(Interpreter)

@@ -2,10 +2,10 @@
 #ifndef TEXT_BUFFER_H_
 #define TEXT_BUFFER_H_
 
+#include "Ext/string_view.h"
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
 #include "TextRange.h"
-#include "Util/string_view.h"
 #include "gap_buffer.h"
 
 #include <gsl/gsl_util>
@@ -15,7 +15,7 @@
 #include <memory>
 #include <string>
 
-#include <boost/optional.hpp>
+#include "Ext/optional.h"
 
 struct SelectionPos {
 	TextCursor start;
@@ -29,7 +29,7 @@ template <class Ch, class Tr>
 class BasicTextBuffer : public std::enable_shared_from_this<BasicTextBuffer<Ch, Tr>> {
 public:
 	using string_type = std::basic_string<Ch, Tr>;
-	using view_type   = view::basic_string_view<Ch, Tr>;
+	using view_type   = ext::basic_string_view<Ch, Tr>;
 
 public:
 	using modify_callback_type     = void (*)(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view_type deletedText, void *user);
@@ -55,7 +55,7 @@ public:
 		friend class BasicTextBuffer;
 
 	public:
-		boost::optional<SelectionPos> getSelectionPos() const;
+		ext::optional<SelectionPos> getSelectionPos() const;
 		bool getSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const;
 		bool inSelection(TextCursor pos, TextCursor lineStartPos, int64_t dispIndex) const;
 		bool rangeTouchesRectSel(TextCursor rangeStart, TextCursor rangeEnd) const;
@@ -101,13 +101,13 @@ public:
 public:
 	bool BufGetEmptySelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
 	bool BufGetSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
-	boost::optional<SelectionPos> BufGetSelectionPos() const noexcept;
+	ext::optional<SelectionPos> BufGetSelectionPos() const noexcept;
 	bool BufGetSyncXSelection() const;
 	bool BufGetUseTabs() const noexcept;
 	bool BufIsEmpty() const noexcept;
 	bool BufSetSyncXSelection(bool sync);
-	boost::optional<TextCursor> searchBackward(TextCursor startPos, view_type searchChars) const noexcept;
-	boost::optional<TextCursor> searchForward(TextCursor startPos, view_type searchChars) const noexcept;
+	ext::optional<TextCursor> searchBackward(TextCursor startPos, view_type searchChars) const noexcept;
+	ext::optional<TextCursor> searchForward(TextCursor startPos, view_type searchChars) const noexcept;
 	Ch BufGetCharacter(TextCursor pos) const noexcept;
 	int64_t BufCountDispChars(TextCursor lineStartPos, TextCursor targetPos) const noexcept;
 	int64_t BufCountLines(TextCursor startPos, TextCursor endPos) const noexcept;
@@ -176,8 +176,8 @@ public:
 	bool GetSimpleSelection(TextRange *range) const noexcept;
 
 private:
-	boost::optional<TextCursor> searchBackward(TextCursor startPos, Ch searchChar) const noexcept;
-	boost::optional<TextCursor> searchForward(TextCursor startPos, Ch searchChar) const noexcept;
+	ext::optional<TextCursor> searchBackward(TextCursor startPos, Ch searchChar) const noexcept;
+	ext::optional<TextCursor> searchForward(TextCursor startPos, Ch searchChar) const noexcept;
 	int64_t insert(TextCursor pos, view_type text) noexcept;
 	int64_t insert(TextCursor pos, Ch ch) noexcept;
 	string_type getSelectionText(const Selection *sel) const;

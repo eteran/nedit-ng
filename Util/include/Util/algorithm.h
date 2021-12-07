@@ -2,7 +2,7 @@
 #ifndef ALGORITHM_H_
 #define ALGORITHM_H_
 
-#include "string_view.h"
+#include "Ext/string_view.h"
 #include <QtGlobal>
 #include <algorithm>
 
@@ -36,11 +36,11 @@ QT_WARNING_POP
 
 // string_view algorithms
 template <class Ch, class Tr = std::char_traits<Ch>>
-constexpr view::basic_string_view<Ch, Tr> substr(const Ch *first, const Ch *last) {
+constexpr ext::basic_string_view<Ch, Tr> substr(const Ch *first, const Ch *last) {
 
 	const Ch *data = first;
 	auto size      = std::distance(first, last);
-	return view::basic_string_view<Ch, Tr>(data, static_cast<size_t>(size));
+	return ext::basic_string_view<Ch, Tr>(data, static_cast<size_t>(size));
 }
 
 template <class Cont, class T, class Pred>

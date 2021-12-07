@@ -75,7 +75,7 @@ QVector<QString> PrevOpen;
 /*
 ** Extract the line and column number from the text string.
 */
-boost::optional<Location> StringToLineAndCol(const QString &text) {
+ext::optional<Location> StringToLineAndCol(const QString &text) {
 
 	static const QRegularExpression re(QLatin1String(
 		"^"
@@ -110,13 +110,13 @@ boost::optional<Location> StringToLineAndCol(const QString &text) {
 		}
 
 		if (r == -1 && c == -1) {
-			return boost::none;
+			return {};
 		}
 
 		return Location{r, c};
 	}
 
-	return boost::none;
+	return {};
 }
 
 /**
@@ -143,7 +143,7 @@ void changeCase(DocumentWidget *document, TextArea *area) {
 	TextBuffer *buf = document->buffer();
 
 	// Get the selection.  Use character before cursor if no selection
-	if (boost::optional<SelectionPos> pos = buf->BufGetSelectionPos()) {
+	if (ext::optional<SelectionPos> pos = buf->BufGetSelectionPos()) {
 		bool modified = false;
 
 		std::string text = buf->BufGetSelectionText();
@@ -2601,7 +2601,7 @@ void MainWindow::action_Goto_Line_Number(DocumentWidget *document, const QString
 		  [line]:[column]   (menu action)
 		  line              (macro call)
 		  line, column      (macro call) */
-	boost::optional<Location> loc = StringToLineAndCol(s);
+	ext::optional<Location> loc = StringToLineAndCol(s);
 	if (!loc) {
 		QApplication::beep();
 		return;
@@ -6264,7 +6264,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 	}
 
 	// get the entire text buffer from the text area widget
-	view::string_view fileString = buffer->BufAsString();
+	ext::string_view fileString = buffer->BufAsString();
 
 	/* If we're already outside the boundaries, we must consider wrapping
 	   immediately (Note: fileEnd+1 is a valid starting position. Consider
@@ -6883,7 +6883,7 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 	TextBuffer *buffer = document->buffer();
 
 	// find out where the selection is
-	boost::optional<SelectionPos> pos = buffer->BufGetSelectionPos();
+	ext::optional<SelectionPos> pos = buffer->BufGetSelectionPos();
 	if (!pos) {
 		return;
 	}
@@ -6911,7 +6911,7 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 	int64_t realOffset   = 0;
 
 	Q_FOREVER {
-		boost::optional<Search::Result> searchResult = Search::SearchString(
+		ext::optional<Search::Result> searchResult = Search::SearchString(
 			fileString,
 			searchString,
 			Direction::Forward,
@@ -7120,11 +7120,11 @@ bool MainWindow::replaceAll(DocumentWidget *document, TextArea *area, const QStr
 	TextBuffer *buffer = document->buffer();
 
 	// view the entire text buffer from the text area widget as a string
-	view::string_view fileString = buffer->BufAsString();
+	ext::string_view fileString = buffer->BufAsString();
 
 	QString delimieters = document->getWindowDelimiters();
 
-	boost::optional<std::string> newFileString = Search::ReplaceAllInString(
+	ext::optional<std::string> newFileString = Search::ReplaceAllInString(
 		fileString,
 		searchString,
 		replaceString,
@@ -7260,7 +7260,7 @@ bool MainWindow::searchMatchesSelection(DocumentWidget *document, const QString 
 	// search for the string in the selection (we are only interested
 	// in an exact match, but the procedure SearchString does important
 	// stuff like applying the correct matching algorithm)
-	boost::optional<Search::Result> searchResult = Search::SearchString(
+	ext::optional<Search::Result> searchResult = Search::SearchString(
 		string,
 		searchString,
 		Direction::Forward,
@@ -7451,7 +7451,7 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
 	QString slinecol;
 	const int64_t length = document->buffer()->length();
 
-	if (boost::optional<Location> loc = area->positionToLineAndCol(pos)) {
+	if (ext::optional<Location> loc = area->positionToLineAndCol(pos)) {
 		slinecol = tr("L: %1  C: %2").arg(loc->line).arg(loc->column);
 		if (showLineNumbers_) {
 			string = tr("%1%2%3 byte %4 of %5").arg(document->path(), document->filename(), format).arg(to_integer(pos)).arg(length);
