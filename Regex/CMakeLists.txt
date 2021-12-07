@@ -41,7 +41,7 @@ target_link_libraries(Regex PUBLIC
 
 target_add_warnings(Regex)
 
-set_property(TARGET Regex PROPERTY CXX_STANDARD 14)
+set_property(TARGET Regex PROPERTY CXX_STANDARD ${TARGET_COMPILER_HIGHEST_STD_SUPPORTED})
 set_property(TARGET Regex PROPERTY CXX_EXTENSIONS OFF)
 
 if(NEDIT_BUILD_TESTS)

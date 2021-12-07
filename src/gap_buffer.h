@@ -23,10 +23,10 @@ public:
 	using allocator_type         = std::allocator<Ch>;
 	using size_type              = int64_t; // NOTE(eteran): typically unsigned...
 	using difference_type        = typename std::allocator<Ch>::difference_type;
-	using reference              = typename std::allocator<Ch>::reference;
-	using const_reference        = typename std::allocator<Ch>::const_reference;
-	using pointer                = typename std::allocator<Ch>::pointer;
-	using const_pointer          = typename std::allocator<Ch>::const_pointer;
+	using reference              = Ch&;
+	using const_reference        = const Ch&;
+	using pointer                = Ch*;
+	using const_pointer          = const Ch*;
 	using iterator               = gap_buffer_iterator<Ch, Tr, false>;
 	using const_iterator         = gap_buffer_iterator<Ch, Tr, true>;
 	using reverse_iterator       = std::reverse_iterator<iterator>;

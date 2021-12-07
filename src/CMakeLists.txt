@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.3)
+
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
@@ -292,9 +293,8 @@ PRIVATE
 	Boost::boost
 	yaml-cpp
 )
-
 set_property(TARGET nedit-ng PROPERTY CXX_EXTENSIONS OFF)
-set_property(TARGET nedit-ng PROPERTY CXX_STANDARD 14)
+set_property(TARGET nedit-ng PROPERTY CXX_STANDARD ${TARGET_COMPILER_HIGHEST_STD_SUPPORTED})
 set_property(TARGET nedit-ng PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
 if(TARGET_COMPILER_MSVC)
