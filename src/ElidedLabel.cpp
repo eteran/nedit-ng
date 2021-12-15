@@ -4,7 +4,7 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QContextMenuEvent>
-#include <QDesktopWidget>
+#include <QScreen>
 #include <QMenu>
 #include <QMimeData>
 #include <QTextDocument>
@@ -55,7 +55,7 @@ QSize ElidedLabel::minimumSizeHint() const {
  * @return
  */
 QSize ElidedLabel::sizeHint() const {
-	const int maxWidth = QApplication::desktop()->geometry().width() * 3 / 4;
+	const int maxWidth = screen()->geometry().width() * 3 / 4;
 
 	QFontMetrics fm(fontMetrics());
 

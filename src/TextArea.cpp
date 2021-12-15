@@ -19,7 +19,7 @@
 
 #include <QApplication>
 #include <QClipboard>
-#include <QDesktopWidget>
+#include <QScreen>
 #include <QFocusEvent>
 #include <QFontDatabase>
 #include <QMenu>
@@ -137,8 +137,8 @@ constexpr int MAX_DISP_LINE_LEN = 1024;
  * @param height
  * @return
  */
-bool offscreenV(QDesktopWidget *desktop, int top, int height) {
-	return (top < CALLTIP_EDGE_GUARD || top + height >= desktop->height() - CALLTIP_EDGE_GUARD);
+bool offscreenV(QScreen *screen, int top, int height) {
+	return (top < CALLTIP_EDGE_GUARD || top + height >= screen->geometry().height() - CALLTIP_EDGE_GUARD);
 }
 
 /*
@@ -3496,11 +3496,12 @@ void TextArea::updateCalltip(int calltipID) {
 	// If we're not in strict mode try to keep the tip on-screen
 	if (calltip_.alignMode == TipAlignMode::Sloppy) {
 
-		QDesktopWidget *desktop = QApplication::desktop();
+		QScreen *currentScreen = screen();
+		QRect screenGeometry = currentScreen->geometry();
 
 		// make sure tip doesn't run off right or left side of screen
-		if (abs.x() + tipWidth >= desktop->width() - CALLTIP_EDGE_GUARD) {
-			abs.setX(desktop->width() - tipWidth - CALLTIP_EDGE_GUARD);
+		if (abs.x() + tipWidth >= screenGeometry.width() - CALLTIP_EDGE_GUARD) {
+			abs.setX(screenGeometry.width() - tipWidth - CALLTIP_EDGE_GUARD);
 		}
 
 		if (abs.x() < CALLTIP_EDGE_GUARD) {
@@ -3508,17 +3509,17 @@ void TextArea::updateCalltip(int calltipID) {
 		}
 
 		// Try to keep the tip onscreen vertically if possible
-		if (desktop->height() > tipHeight && offscreenV(desktop, abs.y(), tipHeight)) {
+		if (screenGeometry.height() > tipHeight && offscreenV(currentScreen, abs.y(), tipHeight)) {
 			// Maybe flipping from below to above (or vice-versa) will help
-			if (!offscreenV(desktop, abs.y() + flip_delta, tipHeight)) {
+			if (!offscreenV(currentScreen, abs.y() + flip_delta, tipHeight)) {
 				abs.setY(abs.y() + flip_delta);
 			}
 
 			// Make sure the tip doesn't end up *totally* offscreen
 			else if (abs.y() + tipHeight < 0) {
 				abs.setY(CALLTIP_EDGE_GUARD);
-			} else if (abs.y() >= desktop->height()) {
-				abs.setY(desktop->height() - tipHeight - CALLTIP_EDGE_GUARD);
+			} else if (abs.y() >= screenGeometry.height()) {
+				abs.setY(screenGeometry.height() - tipHeight - CALLTIP_EDGE_GUARD);
 			}
 			// If no case applied, just go with the default placement.
 		}
