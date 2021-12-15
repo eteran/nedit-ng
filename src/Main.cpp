@@ -149,6 +149,7 @@ Main::Main(const QStringList &args) {
 			i = nextArg(args, i);
 
 			Settings::serverNameOverride = args[i];
+			IsServer = true;
 		} else if (opts && (args[i] == QLatin1String("-font") || args[i] == QLatin1String("-fn"))) {
 			i = nextArg(args, i);
 
