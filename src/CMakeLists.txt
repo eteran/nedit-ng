@@ -299,6 +299,10 @@ set_property(TARGET nedit-ng PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_D
 
 if(TARGET_COMPILER_MSVC)
 	set_property(TARGET nedit-ng PROPERTY WIN32_EXECUTABLE ON)
+	target_compile_definitions(nedit-ng
+		PUBLIC -D_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING
+		)
+
 endif()
 
 install(TARGETS nedit-ng DESTINATION bin)
