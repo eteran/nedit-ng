@@ -9,6 +9,10 @@
 #include <QMimeData>
 #include <QTextDocument>
 
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+#include <QWindow>
+#endif
+
 /**
  * @brief ElidedLabel::ElidedLabel
  * @param text
@@ -55,8 +59,12 @@ QSize ElidedLabel::minimumSizeHint() const {
  * @return
  */
 QSize ElidedLabel::sizeHint() const {
-	const int maxWidth = screen()->geometry().width() * 3 / 4;
-
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+	QScreen *currentScreen = window()->windowHandle()->screen();
+#else
+	QScreen *currentScreen = screen();
+#endif
+	const int maxWidth = currentScreen->geometry().width() * 3 / 4;
 	QFontMetrics fm(fontMetrics());
 
 	int textWidth = Font::stringWidth(fm, fullText_);
