@@ -137,7 +137,7 @@ void addToGroup(QActionGroup *group, QMenu *menu) {
 ** Capitalize or lowercase the contents of the selection (or of the character
 ** before the cursor if there is no selection).
 */
-template <int (&F)(int) noexcept>
+template <int (&F)(unsigned char) noexcept>
 void changeCase(DocumentWidget *document, TextArea *area) {
 
 	TextBuffer *buf = document->buffer();
@@ -149,9 +149,8 @@ void changeCase(DocumentWidget *document, TextArea *area) {
 		std::string text = buf->BufGetSelectionText();
 
 		for (char &ch : text) {
-			const char oldChar = ch;
-			ch                 = safe_ctype<F>(ch);
-			if (ch != oldChar) {
+			const char prev_char = std::exchange(ch, F(ch));
+			if (ch != prev_char) {
 				modified = true;
 			}
 		}
@@ -174,7 +173,7 @@ void changeCase(DocumentWidget *document, TextArea *area) {
 
 		char ch = buf->BufGetCharacter(cursorPos - 1);
 
-		ch = safe_ctype<F>(ch);
+		ch = F(ch);
 		buf->BufReplace(cursorPos - 1, cursorPos, ch);
 	}
 }
@@ -185,7 +184,7 @@ void changeCase(DocumentWidget *document, TextArea *area) {
  * @param area
  */
 void upcaseSelection(DocumentWidget *document, TextArea *area) {
-	changeCase<::toupper>(document, area);
+	changeCase<safe_toupper>(document, area);
 }
 
 /**
@@ -194,7 +193,7 @@ void upcaseSelection(DocumentWidget *document, TextArea *area) {
  * @param area
  */
 void downcaseSelection(DocumentWidget *document, TextArea *area) {
-	changeCase<::tolower>(document, area);
+	changeCase<safe_tolower>(document, area);
 }
 
 }

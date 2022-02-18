@@ -130,7 +130,7 @@ void restoreContext(Pointer context) {
 ** be used to both process the message and return.
 */
 template <class... T>
-int execError(const std::error_code &error_code, T &&...args) {
+int execError(const std::error_code &error_code, T &&... args) {
 	static char msg[MAX_ERR_MSG_LEN];
 
 	std::string str = error_code.message();
@@ -141,7 +141,7 @@ int execError(const std::error_code &error_code, T &&...args) {
 }
 
 template <class... T>
-int execError(const char *s1, T &&...args) {
+int execError(const char *s1, T &&... args) {
 	static char msg[MAX_ERR_MSG_LEN];
 
 	qsnprintf(msg, sizeof(msg), s1, std::forward<T>(args)...);
@@ -2281,7 +2281,7 @@ bool StringToNum(const std::string &string, int *number) {
 		++it;
 	}
 
-	while (it != string.end() && safe_ctype<::isdigit>(*it)) {
+	while (it != string.end() && safe_isdigit(*it)) {
 		++it;
 	}
 

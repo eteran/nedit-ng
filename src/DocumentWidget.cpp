@@ -3819,7 +3819,7 @@ int DocumentWidget::findDefinitionHelperCommon(TextArea *area, const QString &va
 
 	// make sure that the whole value is ascii
 	auto p = std::find_if(value.begin(), value.end(), [](QChar ch) {
-		return !safe_ctype<::isascii>(ch.toLatin1());
+		return !safe_isascii(ch.toLatin1());
 	});
 
 	if (p == value.end()) {

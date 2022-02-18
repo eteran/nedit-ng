@@ -87,7 +87,7 @@ bool Regex::SubstituteRE(view::string_view source, std::string &dest) const noex
 				int count = 0;
 				std::transform(re->startp[paren_no], re->endp[paren_no], out, [&count](char ch) -> int {
 					if (count++ == 0) {
-						return safe_ctype<::toupper>(ch);
+						return safe_toupper(ch);
 					} else {
 						return ch;
 					}
@@ -95,14 +95,14 @@ bool Regex::SubstituteRE(view::string_view source, std::string &dest) const noex
 			} break;
 			case 'U':
 				std::transform(re->startp[paren_no], re->endp[paren_no], out, [](char ch) {
-					return safe_ctype<::toupper>(ch);
+					return safe_toupper(ch);
 				});
 				break;
 			case 'l': {
 				int count = 0;
 				std::transform(re->startp[paren_no], re->endp[paren_no], out, [&count](char ch) -> int {
 					if (count++ == 0) {
-						return safe_ctype<::tolower>(ch);
+						return safe_tolower(ch);
 					} else {
 						return ch;
 					}
@@ -110,7 +110,7 @@ bool Regex::SubstituteRE(view::string_view source, std::string &dest) const noex
 			} break;
 			case 'L':
 				std::transform(re->startp[paren_no], re->endp[paren_no], out, [](char ch) {
-					return safe_ctype<::tolower>(ch);
+					return safe_tolower(ch);
 				});
 				break;
 			default:

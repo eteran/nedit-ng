@@ -136,18 +136,18 @@ bool init_ansi_classes() noexcept {
 
 			const auto ch = static_cast<char>(i);
 
-			if (safe_ctype<::isalnum>(ch) || ch == Underscore) {
+			if (safe_isalnum(ch) || ch == Underscore) {
 				Word_Char[word_count++] = ch;
 			}
 
-			if (safe_ctype<::isalpha>(ch)) {
+			if (safe_isalpha(ch)) {
 				Letter_Char[letter_count++] = ch;
 			}
 
 			/* Note: Whether or not newline is considered to be whitespace is
 			   handled by switches within the original regex and is thus omitted
 			   here. */
-			if (safe_ctype<::isspace>(ch) && (ch != Newline)) {
+			if (safe_isspace(ch) && (ch != Newline)) {
 				White_Space[space_count++] = ch;
 			}
 
@@ -218,16 +218,16 @@ void emit_class_byte(T ch) noexcept {
 	if (pContext.FirstPass) {
 		pContext.Reg_Size++;
 
-		if (pContext.Is_Case_Insensitive && safe_ctype<::isalpha>(ch)) {
+		if (pContext.Is_Case_Insensitive && safe_isalpha(ch)) {
 			pContext.Reg_Size++;
 		}
 
 	} else {
-		if (pContext.Is_Case_Insensitive && safe_ctype<::isalpha>(ch)) {
+		if (pContext.Is_Case_Insensitive && safe_isalpha(ch)) {
 			/* For case insensitive character classes, emit both upper and lower
 			 * case versions of alphabetical characters. */
-			pContext.Code.push_back(static_cast<uint8_t>(safe_ctype<::tolower>(ch)));
-			pContext.Code.push_back(static_cast<uint8_t>(safe_ctype<::toupper>(ch)));
+			pContext.Code.push_back(static_cast<uint8_t>(safe_tolower(ch)));
+			pContext.Code.push_back(static_cast<uint8_t>(safe_toupper(ch)));
 		} else {
 			pContext.Code.push_back(static_cast<uint8_t>(ch));
 		}
@@ -426,7 +426,7 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 		if (Flags == EMIT_CLASS_BYTES) {
 			clazz = ASCII_Digits;
 		} else if (Flags == EMIT_NODE) {
-			ret_val = (safe_ctype<::islower>(ch) ? emit_node(DIGIT) : emit_node(NOT_DIGIT));
+			ret_val = (safe_islower(ch) ? emit_node(DIGIT) : emit_node(NOT_DIGIT));
 		}
 		break;
 	case 'l':
@@ -434,7 +434,7 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 		if (Flags == EMIT_CLASS_BYTES) {
 			clazz = Letter_Char;
 		} else if (Flags == EMIT_NODE) {
-			ret_val = (safe_ctype<::islower>(ch) ? emit_node(LETTER) : emit_node(NOT_LETTER));
+			ret_val = (safe_islower(ch) ? emit_node(LETTER) : emit_node(NOT_LETTER));
 		}
 		break;
 	case 's':
@@ -447,9 +447,9 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 			clazz = White_Space;
 		} else if (Flags == EMIT_NODE) {
 			if (pContext.Match_Newline) {
-				ret_val = (safe_ctype<::islower>(ch) ? emit_node(SPACE_NL) : emit_node(NOT_SPACE_NL));
+				ret_val = (safe_islower(ch) ? emit_node(SPACE_NL) : emit_node(NOT_SPACE_NL));
 			} else {
-				ret_val = (safe_ctype<::islower>(ch) ? emit_node(SPACE) : emit_node(NOT_SPACE));
+				ret_val = (safe_islower(ch) ? emit_node(SPACE) : emit_node(NOT_SPACE));
 			}
 		}
 		break;
@@ -458,7 +458,7 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 		if (Flags == EMIT_CLASS_BYTES) {
 			clazz = Word_Char;
 		} else if (Flags == EMIT_NODE) {
-			ret_val = (safe_ctype<::islower>(ch) ? emit_node(WORD_CHAR) : emit_node(NOT_WORD_CHAR));
+			ret_val = (safe_islower(ch) ? emit_node(WORD_CHAR) : emit_node(NOT_WORD_CHAR));
 		}
 		break;
 
@@ -568,7 +568,7 @@ uint8_t *back_ref(const char *ch, int *flag_param) {
 #endif
 
 	// Only \1, \2, ... \9 are supported.
-	if (!safe_ctype<::isdigit>(ch[c_offset])) {
+	if (!safe_isdigit(ch[c_offset])) {
 		return nullptr;
 	}
 
@@ -847,8 +847,8 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 					}
 
 					if (pContext.Is_Case_Insensitive) {
-						second_value = static_cast<unsigned int>(safe_ctype<::tolower>(second_value));
-						last_value   = static_cast<unsigned int>(safe_ctype<::tolower>(last_value));
+						second_value = static_cast<unsigned int>(safe_tolower(second_value));
+						last_value   = static_cast<unsigned int>(safe_tolower(last_value));
 					}
 
 					/* For case insensitive, something like [A-_] will
@@ -1111,7 +1111,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 			   value for max and min of 65,535 is due to using 2 bytes to store
 			   each value in the compiled regex code. */
 
-			while (safe_ctype<::isdigit>(*pContext.Reg_Parse)) {
+			while (safe_isdigit(*pContext.Reg_Parse)) {
 				// (6553 * 10 + 6) > 65535 (16 bit max)
 
 				// NOTE(eteran): we're storing this into a 32-bit variable... so would be simpler
