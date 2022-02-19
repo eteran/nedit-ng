@@ -16,10 +16,24 @@
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QThread>
+#include <QScreen>
 
 #include <memory>
 
 namespace {
+
+QScreen *screenAt(QPoint pos) {
+#if QT_VERSION < QT_VERSION_CHECK(5, 10, 0)
+	for (QScreen *screen : QApplication::screens()) {
+		if (screen->geometry().contains(pos)) {
+			return screen;
+		}
+	}
+	return nullptr;
+#else
+	return QApplication::screenAt(pos);
+#endif
+}
 
 /**
  * @brief isLocatedOnDesktop
@@ -32,7 +46,7 @@ bool isLocatedOnDesktop(QWidget *widget, QScreen *currentDesktop) {
 		return true;
 	}
 
-	return QApplication::screenAt(widget->pos()) == currentDesktop;
+	return screenAt(widget->pos()) == currentDesktop;
 
 }
 
@@ -88,8 +102,10 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, QScreen *currentDesktop, Docum
  * @return
  */
 QScreen *current_desktop() {
-	return QApplication::screenAt(QCursor::pos());
+	return screenAt(QCursor::pos());
 }
+
+
 
 }
 
