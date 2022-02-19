@@ -494,13 +494,13 @@ static int yylex(void) {
     }
 
     /* process number tokens */
-    if (safe_ctype<::isdigit>(InPtr->toLatin1()))  { /* number */
+	if (safe_isdigit(InPtr->toLatin1()))  { /* number */
 
         QString value;
         auto p = std::back_inserter(value);
 
         *p++ = *InPtr++;
-        while (InPtr != EndPtr && safe_ctype<::isdigit>(InPtr->toLatin1())) {
+		while (InPtr != EndPtr && safe_isdigit(InPtr->toLatin1())) {
             *p++ = *InPtr++;
         }
 
@@ -518,13 +518,13 @@ static int yylex(void) {
 
     /* process symbol tokens.  "define" is a special case not handled
        by this parser, considered end of input. */
-    if (safe_ctype<::isalpha>(InPtr->toLatin1()) || *InPtr == QLatin1Char('$')) {
+	if (safe_isalpha(InPtr->toLatin1()) || *InPtr == QLatin1Char('$')) {
 
         QString symName;
         auto p = std::back_inserter(symName);
 
         *p++ = *InPtr++;
-        while ((InPtr != EndPtr) && (safe_ctype<::isalnum>(InPtr->toLatin1()) || *InPtr==QLatin1Char('_'))) {
+		while ((InPtr != EndPtr) && (safe_isalnum(InPtr->toLatin1()) || *InPtr == QLatin1Char('_'))) {
             *p++ = *InPtr++;
         }
 
@@ -586,14 +586,14 @@ static int yylex(void) {
 
                     InPtr++;
 
-                    if (InPtr == EndPtr || (hexD = strchr(hexDigits, safe_ctype<::tolower>(InPtr->toLatin1()))) == nullptr) {
+					if (InPtr == EndPtr || (hexD = strchr(hexDigits, safe_tolower(InPtr->toLatin1()))) == nullptr) {
                         *p++ = QLatin1Char('x');
                     } else {
                         hexValue = static_cast<int>(hexD - hexDigits);
                         InPtr++;
 
                         /* now do we have another digit? only accept one more */
-                        if (InPtr != EndPtr && (hexD = strchr(hexDigits, safe_ctype<::tolower>(InPtr->toLatin1()))) != nullptr){
+						if (InPtr != EndPtr && (hexD = strchr(hexDigits, safe_tolower(InPtr->toLatin1()))) != nullptr){
                           hexValue = static_cast<int>(hexD - hexDigits + (hexValue << 4));
                           InPtr++;
                         }
