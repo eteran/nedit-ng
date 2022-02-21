@@ -15,8 +15,8 @@
 #include <QJsonObject>
 #include <QLocalServer>
 #include <QLocalSocket>
-#include <QThread>
 #include <QScreen>
+#include <QThread>
 
 #include <memory>
 
@@ -42,12 +42,11 @@ QScreen *screenAt(QPoint pos) {
  * @return
  */
 bool isLocatedOnDesktop(QWidget *widget, QScreen *currentDesktop) {
-	if (!currentDesktop ) {
+	if (!currentDesktop) {
 		return true;
 	}
 
 	return screenAt(widget->pos()) == currentDesktop;
-
 }
 
 /**
@@ -75,7 +74,8 @@ DocumentWidget *documentForTargetScreen(QScreen *currentDesktop) {
  * @param currentDesktop
  * @return
  */
-DocumentWidget *findDocumentOnDesktop(int tabbed, QScreen *currentDesktop, DocumentWidget *targetDocument) {
+DocumentWidget *findDocumentOnDesktop(int tabbed, QScreen *currentDesktop) {
+
 	if (tabbed == 0 || (tabbed == -1 && !Preferences::GetPrefOpenInTab())) {
 
 		// A new window is requested, unless we find an untitled unmodified document on the current desktop
@@ -90,7 +90,7 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, QScreen *currentDesktop, Docum
 			}
 		}
 	} else {
-		return targetDocument;
+		return documentForTargetScreen(currentDesktop);
 	}
 
 	// No window found on current desktop -> create new window
@@ -104,8 +104,6 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, QScreen *currentDesktop, Docum
 QScreen *current_desktop() {
 	return screenAt(QCursor::pos());
 }
-
-
 
 }
 
@@ -168,7 +166,6 @@ void NeditServer::newConnection() {
 
 	QPointer<DocumentWidget> lastFile;
 	QScreen *const currentDesktop = current_desktop();
-	DocumentWidget *const targetDocument = documentForTargetScreen(currentDesktop);
 
 	auto array = jsonDocument.array();
 	/* If the command string is empty, put up an empty, Untitled window
@@ -185,7 +182,7 @@ void NeditServer::newConnection() {
 			const int tabbed = -1;
 
 			MainWindow::editNewFile(
-				MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop, targetDocument)),
+				MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop)),
 				QString(),
 				false,
 				QString());
@@ -234,7 +231,7 @@ void NeditServer::newConnection() {
 				if (it == documents.end()) {
 
 					MainWindow::editNewFile(
-						MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop, targetDocument)),
+						MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop)),
 						QString(),
 						iconicFlag,
 						languageMode.isEmpty() ? QString() : languageMode);
@@ -289,7 +286,7 @@ void NeditServer::newConnection() {
 			   macros to execute on. */
 
 			document = DocumentWidget::editExistingFile(
-				findDocumentOnDesktop(tabbed, currentDesktop, targetDocument),
+				findDocumentOnDesktop(tabbed, currentDesktop),
 				fi.filename,
 				fi.pathname,
 				editFlags,

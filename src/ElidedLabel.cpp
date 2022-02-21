@@ -4,9 +4,9 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QContextMenuEvent>
-#include <QScreen>
 #include <QMenu>
 #include <QMimeData>
+#include <QScreen>
 #include <QTextDocument>
 
 #if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)

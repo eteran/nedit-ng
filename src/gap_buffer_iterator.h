@@ -18,8 +18,8 @@ class gap_buffer_iterator {
 public:
 	using difference_type   = std::ptrdiff_t;
 	using iterator_category = std::random_access_iterator_tag;
-	using pointer           = Ch*;
-	using reference         = Ch&;
+	using pointer           = Ch *;
+	using reference         = Ch &;
 	using value_type        = Ch;
 
 public:

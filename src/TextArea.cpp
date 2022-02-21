@@ -19,7 +19,6 @@
 
 #include <QApplication>
 #include <QClipboard>
-#include <QScreen>
 #include <QFocusEvent>
 #include <QFontDatabase>
 #include <QMenu>
@@ -30,6 +29,7 @@
 #include <QPainterPath>
 #include <QPoint>
 #include <QResizeEvent>
+#include <QScreen>
 #include <QScrollBar>
 #include <QShortcut>
 #include <QTextCodec>
@@ -3500,11 +3500,11 @@ void TextArea::updateCalltip(int calltipID) {
 	// If we're not in strict mode try to keep the tip on-screen
 	if (calltip_.alignMode == TipAlignMode::Sloppy) {
 
-	#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
 		QScreen *currentScreen = window()->windowHandle()->screen();
-	#else
+#else
 		QScreen *currentScreen = screen();
-	#endif
+#endif
 		QRect screenGeometry = currentScreen->geometry();
 
 		// make sure tip doesn't run off right or left side of screen
