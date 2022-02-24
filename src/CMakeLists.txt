@@ -7,11 +7,6 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
 find_package(Qt5 5.5.0 REQUIRED Widgets Network Xml PrintSupport LinguistTools)
-find_package(Qt5 5.5.0 QUIET OPTIONAL_COMPONENTS X11Extras)
-
-if(UNIX)
-	find_package(X11)
-endif()
 
 qt5_add_translation(QM_FILES
 	res/translations/nedit-ng_fr.ts
@@ -44,13 +39,6 @@ qt5_add_resources(QRC_SOURCES
 foreach(FILE IN LISTS QRC_SOURCES)
 	set_property(SOURCE ${FILE} PROPERTY SKIP_UNITY_BUILD_INCLUSION ON)
 endforeach()
-
-if(${X11_FOUND})
-    if(TARGET_PLATFORM_MACOS)
-        link_directories(/usr/X11/lib)
-        link_directories(/opt/X11/lib)
-    endif()
-endif()
 
 #set_property(SOURCE NeditServer.cpp PROPERTY SKIP_UNITY_BUILD_INCLUSION ON)
 
@@ -266,14 +254,6 @@ add_executable(nedit-ng
 	userCmds.h
 )
 
-if(${X11_FOUND})
-    if(Qt5X11Extras_FOUND)
-        target_compile_definitions(nedit-ng
-            PUBLIC -DQT_X11
-        )
-    endif()
-endif()
-
 target_add_warnings(nedit-ng)
 
 target_link_libraries(nedit-ng
@@ -287,8 +267,6 @@ PUBLIC
 	Qt5::Network
 	Qt5::Xml
 	Qt5::PrintSupport
-	$<$<BOOL:${Qt5X11Extras_FOUND}>:Qt5::X11Extras>
-	$<$<BOOL:${X11_FOUND}>:X11>
 PRIVATE
 	Boost::boost
 	yaml-cpp

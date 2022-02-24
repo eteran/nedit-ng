@@ -16,7 +16,7 @@
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QScreen>
-#include <QThread>
+#include <QVarLengthArray>
 
 #include <memory>
 
@@ -24,11 +24,22 @@ namespace {
 
 QScreen *screenAt(QPoint pos) {
 #if QT_VERSION < QT_VERSION_CHECK(5, 10, 0)
-	for (QScreen *screen : QApplication::screens()) {
-		if (screen->geometry().contains(pos)) {
-			return screen;
+	QVarLengthArray<const QScreen *, 8> visitedScreens;
+	for (const QScreen *screen : QGuiApplication::screens()) {
+		if (visitedScreens.contains(screen)) {
+			continue;
+		}
+
+		// The virtual siblings include the screen itself, so iterate directly
+		for (QScreen *sibling : screen->virtualSiblings()) {
+			if (sibling->geometry().contains(point)) {
+				return sibling;
+			}
+
+			visitedScreens.append(sibling);
 		}
 	}
+
 	return nullptr;
 #else
 	return QApplication::screenAt(pos);
