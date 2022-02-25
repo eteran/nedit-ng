@@ -32,7 +32,7 @@ QScreen *screenAt(QPoint pos) {
 
 		// The virtual siblings include the screen itself, so iterate directly
 		for (QScreen *sibling : screen->virtualSiblings()) {
-			if (sibling->geometry().contains(point)) {
+			if (sibling->geometry().contains(pos)) {
 				return sibling;
 			}
 
