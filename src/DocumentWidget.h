@@ -326,6 +326,17 @@ private:
 	std::unique_ptr<ShellCommandData> shellCmdData_; // when a shell command is executing, info. about it, otherwise, nullptr
 	Ui::DocumentWidget ui;
 
+private:
+	// Hack for https://github.com/eteran/nedit-ng/issues/167
+	// Used as a Hack to silence the 'File Modified Externally' pop-up
+	// Unless cursor position changes (which means we clicked on the text area
+	// of the window or the current window is modified.
+	// This should probably have some kind of name and be configurable via
+	// application configuration mechanism.
+	TextCursor currTextCursorPosition_;
+	TextCursor checkedTextCursorPosition_;
+	bool isWindowModified_ = false;
+
 public:
 	static DocumentWidget *LastCreated;
 };

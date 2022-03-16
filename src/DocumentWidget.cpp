@@ -740,6 +740,8 @@ void DocumentWidget::setWindowModified(bool modified) {
 
 	Q_EMIT updateWindowTitle(this);
 	refreshTabState();
+
+	isWindowModified_ = modified;
 }
 
 /*
@@ -942,6 +944,10 @@ void DocumentWidget::movedCallback(TextArea *area) {
 			//  Start blinking the caret again.
 			blinkTimer->start();
 		}
+	}
+
+	if (area) {
+		currTextCursorPosition_ = area->cursorPos();
 	}
 }
 
@@ -1989,11 +1995,14 @@ void DocumentWidget::checkForChangesToFile() {
 		return;
 	}
 
+	const bool windowIsModifiedOrCursorChangedPosition
+		= isWindowModified_ || (currTextCursorPosition_ != checkedTextCursorPosition_);
+
 	/* Update the status, but don't pop up a dialog if we're called from a
 	 * place where the window might be iconic (e.g., from the replace dialog)
 	 * or on another desktop.
 	 */
-	const bool silent = (!isTopDocument() || !win->isVisible());
+	const bool silent = (!isTopDocument() || !win->isVisible() || !windowIsModifiedOrCursorChangedPosition);
 
 	// Get the file mode and modification time
 	QString fullname = fullPath();
@@ -2095,7 +2104,7 @@ void DocumentWidget::checkForChangesToFile() {
 
 	/* Warn the user if the file has been modified, unless checking is
 	 * turned off or the user has already been warned. */
-	if (!silent && ((info_->statbuf.st_mtime != 0 && info_->statbuf.st_mtime != statbuf.st_mtime) || info_->fileMissing)) {
+	if (!silent && ((info_->statbuf.st_mtime != 0 && info_->statbuf.st_mtime != statbuf.st_mtime) || info_->fileMissing || windowIsModifiedOrCursorChangedPosition)) {
 
 		info_->statbuf.st_mtime = 0; // Inhibit further warnings
 		info_->fileMissing      = false;
@@ -2106,6 +2115,7 @@ void DocumentWidget::checkForChangesToFile() {
 		if (Preferences::GetPrefWarnRealFileMods() && !compareDocumentToFile(fullname)) {
 			// Contents hasn't changed. Update the modification time.
 			info_->statbuf.st_mtime = statbuf.st_mtime;
+			checkedTextCursorPosition_ = currTextCursorPosition_;
 			return;
 		}
 
