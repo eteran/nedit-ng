@@ -2030,7 +2030,7 @@ void DocumentWidget::checkForChangesToFile() {
 				|| (whenUserInteracts && userInteractionDetected);
 		}
 	};
-	const Feature167Config feature167Config(false, false, true, isWindowModified_, userInteractionDetected_);
+	const Feature167Config feature167Config(true, true, true, isWindowModified_, userInteractionDetected_);
 
 	/* Update the status, but don't pop up a dialog if we're called from a
 	 * place where the window might be iconic (e.g., from the replace dialog)
