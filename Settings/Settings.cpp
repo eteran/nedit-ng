@@ -124,6 +124,9 @@ bool undoModifiesSelection;
 bool warnExit;
 bool warnFileMods;
 bool warnRealFileMods;
+bool warnAlways;
+bool warnWhenLocalMods;
+bool warnWhenUserInteracts;
 IndentStyle autoIndent;
 int autoSaveCharLimit;
 int autoSaveOpLimit;
@@ -320,6 +323,9 @@ void loadPreferences(bool isServer) {
 	pathInWindowsMenu      = settings.value(tr("nedit.pathInWindowsMenu"), true).toBool();
 	warnFileMods           = settings.value(tr("nedit.warnFileMods"), true).toBool();
 	warnRealFileMods       = settings.value(tr("nedit.warnRealFileMods"), true).toBool();
+	warnAlways             = settings.value(tr("nedit.warnAlways"), true).toBool();
+	warnWhenLocalMods      = settings.value(tr("nedit.warnWhenLocalMods"), true).toBool();
+	warnWhenUserInteracts  = settings.value(tr("nedit.warnWhenUserInteracts"), true).toBool();
 	warnExit               = settings.value(tr("nedit.warnExit"), true).toBool();
 	showResizeNotification = settings.value(tr("nedit.showResizeNotification"), false).toBool();
 	smartHome              = settings.value(tr("nedit.smartHome"), false).toBool();
@@ -420,6 +426,9 @@ void importSettings(const QString &filename) {
 	pathInWindowsMenu     = settings.value(tr("nedit.pathInWindowsMenu"), pathInWindowsMenu).toBool();
 	warnFileMods          = settings.value(tr("nedit.warnFileMods"), warnFileMods).toBool();
 	warnRealFileMods      = settings.value(tr("nedit.warnRealFileMods"), warnRealFileMods).toBool();
+	warnAlways            = settings.value(tr("nedit.warnAlways"), warnAlways).toBool();
+	warnWhenLocalMods     = settings.value(tr("nedit.warnWhenLocalMods"), warnWhenLocalMods).toBool();
+	warnWhenUserInteracts = settings.value(tr("nedit.warnWhenUserInteracts"), warnWhenUserInteracts).toBool();
 	warnExit              = settings.value(tr("nedit.warnExit"), warnExit).toBool();
 	smartHome             = settings.value(tr("nedit.smartHome"), smartHome).toBool();
 
@@ -506,6 +515,9 @@ bool savePreferences() {
 	settings.setValue(tr("nedit.pathInWindowsMenu"), pathInWindowsMenu);
 	settings.setValue(tr("nedit.warnFileMods"), warnFileMods);
 	settings.setValue(tr("nedit.warnRealFileMods"), warnRealFileMods);
+	settings.setValue(tr("nedit.warnAlways"), warnAlways);
+	settings.setValue(tr("nedit.warnWhenLocalMods"), warnWhenLocalMods);
+	settings.setValue(tr("nedit.warnWhenUserInteracts"), warnWhenUserInteracts);
 	settings.setValue(tr("nedit.warnExit"), warnExit);
 	settings.setValue(tr("nedit.smartHome"), smartHome);
 

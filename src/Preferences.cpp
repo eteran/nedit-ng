@@ -811,6 +811,39 @@ bool GetPrefWarnRealFileMods() {
 	return Settings::warnRealFileMods;
 }
 
+void SetPrefWarnAlways(bool state) {
+	if (Settings::warnAlways != state) {
+		PrefsHaveChanged = true;
+	}
+	Settings::warnAlways = state;
+}
+
+bool GetPrefWarnAlways() {
+	return Settings::warnAlways;
+}
+
+void SetPrefWarnWhenLocalMods(bool state) {
+	if (Settings::warnWhenLocalMods != state) {
+		PrefsHaveChanged = true;
+	}
+	Settings::warnWhenLocalMods = state;
+}
+
+bool GetPrefWarnWhenLocalMods() {
+	return Settings::warnWhenLocalMods;
+}
+
+void SetPrefWarnWhenUserInteracts(bool state) {
+	if (Settings::warnWhenUserInteracts != state) {
+		PrefsHaveChanged = true;
+	}
+	Settings::warnWhenUserInteracts = state;
+}
+
+bool GetPrefWarnWhenUserInteracts() {
+	return Settings::warnWhenUserInteracts;
+}
+
 void SetPrefWarnExit(bool state) {
 	if (Settings::warnExit != state) {
 		PrefsHaveChanged = true;

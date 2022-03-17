@@ -581,6 +581,9 @@ int main(int argc, char *argv[]) {
 	Settings::lineNumbers           = readResource<bool>(prefDB, "nedit.lineNumbers");
 	Settings::pathInWindowsMenu     = readResource<bool>(prefDB, "nedit.pathInWindowsMenu");
 	Settings::warnRealFileMods      = readResource<bool>(prefDB, "nedit.warnRealFileMods");
+	Settings::warnAlways            = readResource<bool>(prefDB, "nedit.warnAlways");
+	Settings::warnWhenLocalMods     = readResource<bool>(prefDB, "nedit.warnWhenLocalMods");
+	Settings::warnWhenUserInteracts = readResource<bool>(prefDB, "nedit.warnWhenUserInteracts");
 	Settings::warnExit              = readResource<bool>(prefDB, "nedit.warnExit");
 	Settings::openInTab             = readResource<bool>(prefDB, "nedit.openInTab");
 
