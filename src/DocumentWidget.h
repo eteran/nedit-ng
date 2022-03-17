@@ -335,7 +335,7 @@ private:
 	//   what the user is doing, unless the user wants to actually interact with
 	//   the window.
 	// Three checkboxes for better control of this feature:
-	//   Always                    [x] (The currently supported mode)
+	//   Always                    [x] (Original mode)
 	//   When Window is Modified   [x] (Only matters when Always is unchecked)
 	//   When User Interacts       [x] (Only matters when Always is unchecked)
 	// TODO: Detect other interactions for instance clicking on the title bar,
