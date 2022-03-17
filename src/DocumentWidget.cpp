@@ -2030,7 +2030,7 @@ void DocumentWidget::checkForChangesToFile() {
 				|| (whenUserInteracts && userInteractionDetected);
 		}
 	};
-	const Feature167Config feature167Config(false, true, true, isWindowModified_, userInteractionDetected_);
+	const Feature167Config feature167Config(false, false, true, isWindowModified_, userInteractionDetected_);
 
 	/* Update the status, but don't pop up a dialog if we're called from a
 	 * place where the window might be iconic (e.g., from the replace dialog)
@@ -2154,6 +2154,10 @@ void DocumentWidget::checkForChangesToFile() {
 			<< "\n    feature167Config.CheckEnabled()=" << Bool2CString(feature167Config.CheckEnabled())
 			<< "\n";
 	}
+
+#if 0
+	clearUserInteractionDetected();
+#endif
 
 	/* Warn the user if the file has been modified, unless checking is
 	 * turned off or the user has already been warned. */

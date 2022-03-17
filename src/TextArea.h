@@ -440,16 +440,6 @@ private:
 	int64_t dragSourceInserted_                    = 0;       // # of chars. inserted when move source text was inserted
 	void *highlightCBArg_                          = nullptr; // Arg to unfinishedHighlightCB
 
-#if 0
-private:
-	// TODO: Improve documentation:
-	// Used by DocumentWidget::checkForChangesToFile() when
-	// CheckFileModfiedOnlyWhenUserInteractionIsDetected.
-	// Set by the user interaction callbacks in this class and cleared by
-	// DocumentWidget::checkForChangesToFile().
-	bool checkFileModifiedExternallyUserInteractionDetected_ = false;
-#endif
-
 private:
 	BlockDragTypes dragType_; // style of block drag operation
 	CallTip calltip_;
