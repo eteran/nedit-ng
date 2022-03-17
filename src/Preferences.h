@@ -141,6 +141,9 @@ void SetPrefUndoModifiesSelection(bool);
 void SetPrefWarnExit(bool state);
 void SetPrefWarnFileMods(bool state);
 void SetPrefWarnRealFileMods(bool state);
+void SetPrefWarnAlways(bool state);
+void SetPrefWarnWhenLocalMods(bool state);
+void SetPrefWarnWhenUserInteracts(bool state);
 void SetPrefWrap(WrapStyle state);
 void SetPrefWrapMargin(int margin);
 

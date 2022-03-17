@@ -412,6 +412,9 @@ void MainWindow::connectSlots() {
 	connect(ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom, &QAction::toggled, this, &MainWindow::action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled);
 	connect(ui.action_Default_Warnings_Files_Modified_Externally, &QAction::toggled, this, &MainWindow::action_Default_Warnings_Files_Modified_Externally_toggled);
 	connect(ui.action_Default_Warnings_Check_Modified_File_Contents, &QAction::toggled, this, &MainWindow::action_Default_Warnings_Check_Modified_File_Contents_toggled);
+	connect(ui.action_Default_Warnings_When_Always, &QAction::toggled, this, &MainWindow::action_Default_Warnings_When_Always_toggled);
+	connect(ui.action_Default_Warnings_When_Local_Modified, &QAction::toggled, this, &MainWindow::action_Default_Warnings_When_Local_Modified_toggled);
+	connect(ui.action_Default_Warnings_When_User_Interacts, &QAction::toggled, this, &MainWindow::action_Default_Warnings_When_User_Interacts_toggled);
 	connect(ui.action_Default_Warnings_On_Exit, &QAction::toggled, this, &MainWindow::action_Default_Warnings_On_Exit_toggled);
 
 #ifdef PER_TAB_CLOSE
@@ -609,6 +612,9 @@ void MainWindow::setupGlobalPrefenceDefaults() {
 	no_signals(ui.action_Default_Auto_Scroll_Near_Window_Top_Bottom)->setChecked(Preferences::GetPrefAutoScroll());
 	no_signals(ui.action_Default_Warnings_Files_Modified_Externally)->setChecked(Preferences::GetPrefWarnFileMods());
 	no_signals(ui.action_Default_Warnings_Check_Modified_File_Contents)->setChecked(Preferences::GetPrefWarnRealFileMods());
+	no_signals(ui.action_Default_Warnings_When_Always)->setChecked(Preferences::GetPrefWarnAlways());
+	no_signals(ui.action_Default_Warnings_When_Local_Modified)->setChecked(Preferences::GetPrefWarnWhenLocalMods());
+	no_signals(ui.action_Default_Warnings_When_User_Interacts)->setChecked(Preferences::GetPrefWarnWhenUserInteracts());
 	no_signals(ui.action_Default_Warnings_On_Exit)->setChecked(Preferences::GetPrefWarnExit());
 	ui.action_Default_Warnings_Check_Modified_File_Contents->setEnabled(Preferences::GetPrefWarnFileMods());
 
@@ -4619,6 +4625,45 @@ void MainWindow::action_Default_Warnings_Check_Modified_File_Contents_toggled(bo
 	Preferences::SetPrefWarnRealFileMods(state);
 	for (MainWindow *window : MainWindow::allWindows()) {
 		no_signals(window->ui.action_Default_Warnings_Check_Modified_File_Contents)->setChecked(state);
+	}
+}
+
+/**
+ * @brief MainWindow::action_Default_Warnings_When_Always_toggled
+ * @param state
+ */
+void MainWindow::action_Default_Warnings_When_Always_toggled(bool state) {
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefWarnAlways(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Warnings_When_Always)->setChecked(state);
+	}
+}
+
+/**
+ * @brief MainWindow::action_Default_Warnings_When_Local_Modified_toggled
+ * @param state
+ */
+void MainWindow::action_Default_Warnings_When_Local_Modified_toggled(bool state) {
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefWarnWhenLocalMods(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Warnings_When_Local_Modified)->setChecked(state);
+	}
+}
+
+/**
+ * @brief MainWindow::action_Default_Warnings_When_User_Interacts_toggled
+ * @param state
+ */
+void MainWindow::action_Default_Warnings_When_User_Interacts_toggled(bool state) {
+
+	// Set the preference and make the other windows' menus agree
+	Preferences::SetPrefWarnWhenUserInteracts(state);
+	for (MainWindow *window : MainWindow::allWindows()) {
+		no_signals(window->ui.action_Default_Warnings_When_User_Interacts)->setChecked(state);
 	}
 }
 
