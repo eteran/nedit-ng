@@ -123,6 +123,11 @@ private:
 private:
 	bool clickTracker(QMouseEvent *event, bool inDoubleClickHandler);
 
+private:
+	// See DocumentWidget.h Feature-167:
+	void clearUserInteractionDetected();
+	void setUserInteractionDetected();
+
 public Q_SLOTS:
 	void backwardCharacter(TextArea::EventFlags flags = NoneFlag);
 	void backwardParagraphAP(TextArea::EventFlags flags = NoneFlag);
@@ -434,6 +439,16 @@ private:
 	int64_t dragSourceDeleted_                     = 0;       // # of chars. deleted when move source text was deleted
 	int64_t dragSourceInserted_                    = 0;       // # of chars. inserted when move source text was inserted
 	void *highlightCBArg_                          = nullptr; // Arg to unfinishedHighlightCB
+
+#if 0
+private:
+	// TODO: Improve documentation:
+	// Used by DocumentWidget::checkForChangesToFile() when
+	// CheckFileModfiedOnlyWhenUserInteractionIsDetected.
+	// Set by the user interaction callbacks in this class and cleared by
+	// DocumentWidget::checkForChangesToFile().
+	bool checkFileModifiedExternallyUserInteractionDetected_ = false;
+#endif
 
 private:
 	BlockDragTypes dragType_; // style of block drag operation

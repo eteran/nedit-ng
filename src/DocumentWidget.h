@@ -326,16 +326,42 @@ private:
 	std::unique_ptr<ShellCommandData> shellCmdData_; // when a shell command is executing, info. about it, otherwise, nullptr
 	Ui::DocumentWidget ui;
 
+	// Feature-167:
+	// Implement a mode where the 'File Modified Externally' pop-up is silent
+	//   if the current window is not modified and the user is not interacting
+	//   with the window.
+	// This allows the window to get focus for instance when the window manager
+	//   is configured with 'Focus Follow Mouse' without raising and disturbing
+	//   what the user is doing, unless the user wants to actually interact with
+	//   the window.
+	// TODO: Make this mode a configuration option.
+	// TODO: Maybe we want three checkboxes for better control of this feature:
+	//   Always                    [x] (The currently supported mode)
+	//   When Window is Modified   [x] (Only matters when Always is unchecked)
+	//   When User Interacts       [x] (Only matters when Always is unchecked)
+	// TODO: Detect other interactions for instance clicking on the title bar,
+	//   or a menu item, or interacting with a non-TextArea widget.
 private:
-	// Hack for https://github.com/eteran/nedit-ng/issues/167
-	// Used as a Hack to silence the 'File Modified Externally' pop-up
-	// Unless cursor position changes (which means we clicked on the text area
-	// of the window or the current window is modified.
-	// This should probably have some kind of name and be configurable via
-	// application configuration mechanism.
-	TextCursor currTextCursorPosition_;
-	TextCursor checkedTextCursorPosition_;
+	// Tracks if the window is modified. Set and Cleared by
+	//   DocumentWidget::setWindowModified().
 	bool isWindowModified_ = false;
+	// Tracks if the user has interacted with the window since the most recent
+	//   'File Modified Externally' check occurred.
+	// Set by TextArea::setUserInteractionDetected() when the TextArea methods
+	//   determine that the user has interacted with the TextArea.
+	// Set by DocumentWidget::movedCallback when the TextCursor Position has
+	//   changed.
+	// Cleared by TextArea::setUserInteractionDetected() when the focus moves
+	//   away from the text area.
+	// Cleared by DocumentWidget::checkForChangesToFile() each time it performs
+	//   'File Modified Externally' check.
+	bool userInteractionDetected_ = false;
+	// Used to track and ignore the first setUserInteractionDetected() as it is
+	//   spurious during startup.
+	bool setUserInteractionDetectedFirstTime_ = true;
+public:
+	void clearUserInteractionDetected();
+	void setUserInteractionDetected();
 
 public:
 	static DocumentWidget *LastCreated;
