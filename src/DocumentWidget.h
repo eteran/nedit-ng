@@ -334,8 +334,7 @@ private:
 	//   is configured with 'Focus Follow Mouse' without raising and disturbing
 	//   what the user is doing, unless the user wants to actually interact with
 	//   the window.
-	// TODO: Make this mode a configuration option.
-	// TODO: Maybe we want three checkboxes for better control of this feature:
+	// Three checkboxes for better control of this feature:
 	//   Always                    [x] (The currently supported mode)
 	//   When Window is Modified   [x] (Only matters when Always is unchecked)
 	//   When User Interacts       [x] (Only matters when Always is unchecked)
