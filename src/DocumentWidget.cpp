@@ -2003,15 +2003,14 @@ void DocumentWidget::checkForChangesToFile() {
 	}
 
 	// See Feature-167 discussion in DocumentWidget.h
-#warning "TODO: Turn these into configuration options."
-	struct Feature167Config {
+	struct Feature167Helper {
 		bool always;
 		bool whenWindowIsModified;
 		bool whenUserInteracts;
 		bool isWindowModified;
 		bool userInteractionDetected;
 
-		Feature167Config(
+		Feature167Helper(
 				bool talways,
 				bool twhenWindowIsModified,
 				bool twhenUserInteracts,
@@ -2030,13 +2029,18 @@ void DocumentWidget::checkForChangesToFile() {
 				|| (whenUserInteracts && userInteractionDetected);
 		}
 	};
-	const Feature167Config feature167Config(true, true, true, isWindowModified_, userInteractionDetected_);
+	const Feature167Helper feature167Helper(
+		Preferences::GetPrefWarnAlways(),
+		Preferences::GetPrefWarnWhenLocalMods(),
+		Preferences::GetPrefWarnWhenUserInteracts(),
+		isWindowModified_,
+		userInteractionDetected_);
 
 	/* Update the status, but don't pop up a dialog if we're called from a
 	 * place where the window might be iconic (e.g., from the replace dialog)
 	 * or on another desktop.
 	 */
-	const bool silent = (!isTopDocument() || !win->isVisible() || !feature167Config.CheckEnabled());
+	const bool silent = (!isTopDocument() || !win->isVisible() || !feature167Helper.CheckEnabled());
 
 	// Get the file mode and modification time
 	QString fullname = fullPath();
@@ -2139,9 +2143,9 @@ void DocumentWidget::checkForChangesToFile() {
 	if (debugChanges) {
 		QTextStream out(stdout);
 		out << "State: " << (intptr_t)this
-			<< "\n    Feature167Conf: Always=" << Bool2CString(feature167Config.always)
-				<< " WhenModified=" << Bool2CString(feature167Config.whenWindowIsModified)
-				<< " WhenUserInteracts=" << Bool2CString(feature167Config.whenUserInteracts)
+			<< "\n    Feature167Conf: Always=" << Bool2CString(feature167Helper.always)
+				<< " WhenModified=" << Bool2CString(feature167Helper.whenWindowIsModified)
+				<< " WhenUserInteracts=" << Bool2CString(feature167Helper.whenUserInteracts)
 			<< "\n    silent=" << Bool2CString(silent)
 			<< "\n    isTopDocument()=" << Bool2CString(isTopDocument())
 			<< "\n    win->isVisible()=" << Bool2CString(win->isVisible())
@@ -2151,13 +2155,9 @@ void DocumentWidget::checkForChangesToFile() {
 			<< "\n    (info_->statbuf.st_mtime != statbuf.st_mtime)=" << Bool2CString(info_->statbuf.st_mtime != statbuf.st_mtime)
 			<< "\n    isWindowModified_=" << Bool2CString(isWindowModified_)
 			<< "\n    userInteractionDetected_=" << Bool2CString(userInteractionDetected_)
-			<< "\n    feature167Config.CheckEnabled()=" << Bool2CString(feature167Config.CheckEnabled())
+			<< "\n    feature167Helper.CheckEnabled()=" << Bool2CString(feature167Helper.CheckEnabled())
 			<< "\n";
 	}
-
-#if 0
-	clearUserInteractionDetected();
-#endif
 
 	/* Warn the user if the file has been modified, unless checking is
 	 * turned off or the user has already been warned. */
