@@ -936,6 +936,8 @@ void DocumentWidget::movedCallback(TextArea *area) {
 	// Check the character before the cursor for matchable characters
 	flashMatchingChar(area);
 
+	setUserInteractionDetected();
+
 	// Check for changes to read-only status and/or file modifications
 	checkForChangesToFile();
 
@@ -945,8 +947,6 @@ void DocumentWidget::movedCallback(TextArea *area) {
 			blinkTimer->start();
 		}
 	}
-
-	setUserInteractionDetected();
 }
 
 /**
@@ -1044,6 +1044,8 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 
 	// Update # of bytes, and line and col statistics
 	Q_EMIT updateStatus(this, area);
+
+	setUserInteractionDetected();
 
 	// Check if external changes have been made to file and warn user
 	checkForChangesToFile();
@@ -2457,6 +2459,8 @@ bool DocumentWidget::writeBackupFile() {
  * @return
  */
 bool DocumentWidget::saveDocument() {
+
+	setUserInteractionDetected();
 
 	// Try to ensure our information is up-to-date
 	checkForChangesToFile();
