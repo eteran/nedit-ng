@@ -355,9 +355,6 @@ private:
 	// Cleared by DocumentWidget::checkForChangesToFile() each time it performs
 	//   'File Modified Externally' check.
 	bool userInteractionDetected_ = false;
-	// Used to track and ignore the first setUserInteractionDetected() as it is
-	//   spurious during startup.
-	bool setUserInteractionDetectedFirstTime_ = true;
 public:
 	void clearUserInteractionDetected();
 	void setUserInteractionDetected();

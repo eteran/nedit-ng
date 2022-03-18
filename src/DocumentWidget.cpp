@@ -7487,12 +7487,5 @@ void DocumentWidget::clearUserInteractionDetected() {
  * @brief DocumentWidget::setUserInteractionDetected
  */
 void DocumentWidget::setUserInteractionDetected(){
-
-	// Skip the first one as it is a spurious startup condition.
-	if (setUserInteractionDetectedFirstTime_) {
-		setUserInteractionDetectedFirstTime_ = false;
-		return;
-	}
-
 	userInteractionDetected_ = true;
 }
