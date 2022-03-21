@@ -1996,44 +1996,16 @@ void DocumentWidget::checkForChangesToFile() {
 	}
 
 	// See Feature-167 discussion in DocumentWidget.h
-	struct Feature167Helper {
-		bool always;
-		bool whenWindowIsModified;
-		bool whenUserInteracts;
-		bool isWindowModified;
-		bool userInteractionDetected;
-
-		Feature167Helper(
-				bool talways,
-				bool twhenWindowIsModified,
-				bool twhenUserInteracts,
-				bool tisWindowModified,
-				bool tuserInteractionDetected)
-			: always(talways)
-			, whenWindowIsModified(twhenWindowIsModified)
-			, whenUserInteracts(twhenUserInteracts)
-			, isWindowModified(tisWindowModified)
-			, userInteractionDetected(tuserInteractionDetected)
-			{ }
-
-		bool CheckEnabled() const {
-			return always
-				|| (whenWindowIsModified && isWindowModified)
-				|| (whenUserInteracts && userInteractionDetected);
-		}
-	};
-	const Feature167Helper feature167Helper(
-		Preferences::GetPrefWarnAlways(),
-		Preferences::GetPrefWarnWhenLocalMods(),
-		Preferences::GetPrefWarnWhenUserInteracts(),
-		isWindowModified_,
-		userInteractionDetected_);
+	const bool feature167CheckEnabled
+		= Preferences::GetPrefWarnAlways()
+			|| (Preferences::GetPrefWarnWhenLocalMods() && isWindowModified_)
+			|| (Preferences::GetPrefWarnWhenUserInteracts() && userInteractionDetected_);
 
 	/* Update the status, but don't pop up a dialog if we're called from a
 	 * place where the window might be iconic (e.g., from the replace dialog)
 	 * or on another desktop.
 	 */
-	const bool silent = (!isTopDocument() || !win->isVisible() || !feature167Helper.CheckEnabled());
+	const bool silent = (!isTopDocument() || !win->isVisible() || !feature167CheckEnabled);
 
 	// Get the file mode and modification time
 	QString fullname = fullPath();
