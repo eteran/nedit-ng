@@ -326,7 +326,7 @@ private:
 	std::unique_ptr<ShellCommandData> shellCmdData_; // when a shell command is executing, info. about it, otherwise, nullptr
 	Ui::DocumentWidget ui;
 
-	// Feature-167:
+	// Feature-167: Extended Modification Warnings Control
 	// Implement a mode where the 'File Modified Externally' pop-up is silent
 	//   if the current window is not modified and the user is not interacting
 	//   with the window.
@@ -335,9 +335,9 @@ private:
 	//   what the user is doing, unless the user wants to actually interact with
 	//   the window.
 	// Three checkboxes for better control of this feature:
-	//   Always                    [x] (Original mode)
-	//   When Window is Modified   [x] (Only matters when Always is unchecked)
-	//   When User Interacts       [x] (Only matters when Always is unchecked)
+	//   Warn Always                    [x] (Original mode when Warn is Enabled)
+	//   Warn When Window is Modified   [x] (Only matters when Always is unchecked)
+	//   Warn When User Interacts       [x] (Only matters when Always is unchecked)
 	// TODO: Detect other interactions for instance clicking on the title bar,
 	//   or a menu item, or interacting with a non-TextArea widget.
 private:
@@ -350,7 +350,7 @@ private:
 	//   determine that the user has interacted with the TextArea.
 	// Set by DocumentWidget::movedCallback when the TextCursor Position has
 	//   changed.
-	// Cleared by TextArea::setUserInteractionDetected() when the focus moves
+	// Cleared by TextArea::clearUserInteractionDetected() when the focus moves
 	//   away from the text area.
 	// Cleared by DocumentWidget::checkForChangesToFile() each time it performs
 	//   'File Modified Externally' check.

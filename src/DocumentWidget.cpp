@@ -1996,7 +1996,7 @@ void DocumentWidget::checkForChangesToFile() {
 	}
 
 	// See Feature-167 discussion in DocumentWidget.h
-	const bool feature167CheckEnabled
+	const bool extendedModificationWarnings
 		= Preferences::GetPrefWarnAlways()
 			|| (Preferences::GetPrefWarnWhenLocalMods() && isWindowModified_)
 			|| (Preferences::GetPrefWarnWhenUserInteracts() && userInteractionDetected_);
@@ -2005,7 +2005,7 @@ void DocumentWidget::checkForChangesToFile() {
 	 * place where the window might be iconic (e.g., from the replace dialog)
 	 * or on another desktop.
 	 */
-	const bool silent = (!isTopDocument() || !win->isVisible() || !feature167CheckEnabled);
+	const bool silent = (!isTopDocument() || !win->isVisible() || !extendedModificationWarnings);
 
 	// Get the file mode and modification time
 	QString fullname = fullPath();
