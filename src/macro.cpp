@@ -5001,7 +5001,9 @@ const SubRoutine MenuMacroSubrNames[] = {
 	{"previous_document", menuEvent<&MainWindow::action_Prev_Document>},
 	{"last_document", menuEvent<&MainWindow::action_Last_Document>},
 	{"bg_menu_command", backgroundMenuCommandMS},
-#if 0 // NOTE(eteran): what are these for? are they needed?
+	// NOTE(eteran): These are for triggering context menus for the tab-bar and text-area background
+	// I think that these are generally not meaningful to call from a macro
+#if 0
 	{ "post_window_bg_menu",          nullptr },
 	{ "post_tab_context_menu",        nullptr },
 #endif
