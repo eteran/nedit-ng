@@ -2,6 +2,7 @@
 #include "Util/ServerCommon.h"
 #include "Util/Host.h"
 #include "Util/User.h"
+#include <QCryptographicHash>
 #include <QDir>
 #include <QStandardPaths>
 #include <QString>
@@ -23,26 +24,36 @@
  *
  * A typical example of $RUNTIME_PATH would be something like:
  * /var/run/user/1000/
+ *
+ * NOTE(eteran): to avoid path length issues, server_name is hashed in order
+ * to create a predictable, fixed length string. Which is then rendered to the path
+ * as a hex-string
  */
 QString LocalSocketName(const QString &server_name) {
 
 	const QString runtimePath = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation);
 	const QString hostname    = GetNameOfHost();
 
+	// convert the server_name to a hex-string of the SHA-1 hash in order
+	// to get a predictable, fixed length string from every user input
+	// https://github.com/eteran/nedit-ng/issues/328
+	const QByteArray hashed_server_name = QCryptographicHash::hash(server_name.toUtf8(), QCryptographicHash::Sha1);
+	const QString server_id             = QString::fromUtf8(hashed_server_name.toHex());
+
 	if (!runtimePath.isEmpty()) {
 		QDir().mkpath(runtimePath);
 #ifdef Q_OS_LINUX
 		QByteArray display = qgetenv("DISPLAY");
-		return QStringLiteral("%1/nedit-ng_%2_%3_%4").arg(runtimePath, hostname, server_name, QString::fromLocal8Bit(display));
+		return QStringLiteral("%1/nedit-ng_%2_%3_%4").arg(runtimePath, hostname, server_id, QString::fromLocal8Bit(display));
 #else
-		return QStringLiteral("%1/nedit-ng_%2_%3").arg(runtimePath, hostname, server_name);
+		return QStringLiteral("%1/nedit-ng_%2_%3").arg(runtimePath, hostname, server_id);
 #endif
 	} else {
 #ifdef Q_OS_LINUX
 		QByteArray display = qgetenv("DISPLAY");
-		return QStringLiteral("nedit-ng_%1_%2_%3_%4").arg(getUserName(), hostname, server_name, QString::fromLocal8Bit(display));
+		return QStringLiteral("nedit-ng_%1_%2_%3_%4").arg(getUserName(), hostname, server_id, QString::fromLocal8Bit(display));
 #else
-		return QStringLiteral("nedit-ng_%1_%2_%3").arg(getUserName(), hostname, server_name);
+		return QStringLiteral("nedit-ng_%1_%2_%3").arg(getUserName(), hostname, server_id);
 #endif
 	}
 }
