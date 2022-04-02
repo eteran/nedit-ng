@@ -3506,7 +3506,7 @@ void TextArea::updateCalltip(int calltipID) {
 		QScreen *currentScreen = screen();
 #endif
 		if(!currentScreen) {
-			return;
+			currentScreen = QGuiApplication::primaryScreen();
 		}
 
 		QRect screenGeometry = currentScreen->geometry();

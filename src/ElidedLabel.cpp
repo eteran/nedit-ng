@@ -66,7 +66,7 @@ QSize ElidedLabel::sizeHint() const {
 #endif
 
 	if(!currentScreen) {
-		return QLabel::sizeHint();
+		currentScreen = QGuiApplication::primaryScreen();
 	}
 
 	const int maxWidth = currentScreen->geometry().width() * 3 / 4;
