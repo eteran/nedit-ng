@@ -3505,6 +3505,10 @@ void TextArea::updateCalltip(int calltipID) {
 #else
 		QScreen *currentScreen = screen();
 #endif
+		if(!currentScreen) {
+			return;
+		}
+
 		QRect screenGeometry = currentScreen->geometry();
 
 		// make sure tip doesn't run off right or left side of screen

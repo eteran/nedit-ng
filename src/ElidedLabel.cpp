@@ -64,6 +64,11 @@ QSize ElidedLabel::sizeHint() const {
 #else
 	QScreen *currentScreen = screen();
 #endif
+
+	if(!currentScreen) {
+		return QLabel::sizeHint();
+	}
+
 	const int maxWidth = currentScreen->geometry().width() * 3 / 4;
 	QFontMetrics fm(fontMetrics());
 
