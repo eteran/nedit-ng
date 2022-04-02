@@ -3858,10 +3858,14 @@ void MainWindow::action_Tab_Stops_triggered() {
  * @brief MainWindow::action_Text_Fonts_triggered
  */
 void MainWindow::action_Text_Fonts_triggered() {
-	if (DocumentWidget *document = currentDocument()) {
-		auto dialogFonts = std::make_unique<DialogFonts>(document, this);
-		dialogFonts->exec();
+	if (!dialogFonts_) {
+		if (DocumentWidget *document = currentDocument()) {
+			dialogFonts_ = new DialogFonts(document, this);
+			dialogFonts_->setAttribute(Qt::WA_DeleteOnClose);
+		}
 	}
+
+	dialogFonts_->show();
 }
 
 /**
@@ -4111,8 +4115,12 @@ void MainWindow::action_Default_Tab_Stops_triggered() {
  * @brief MainWindow::action_Default_Text_Fonts_triggered
  */
 void MainWindow::action_Default_Text_Fonts_triggered() {
-	auto dialog = std::make_unique<DialogFonts>(nullptr, this);
-	dialog->exec();
+	if (!dialogFonts_) {
+		dialogFonts_ = new DialogFonts(nullptr, this);
+		dialogFonts_->setAttribute(Qt::WA_DeleteOnClose);
+	}
+
+	dialogFonts_->show();
 }
 
 /**

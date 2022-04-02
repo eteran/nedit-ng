@@ -35,6 +35,7 @@ class DialogSyntaxPatterns;
 class DialogDrawingStyles;
 class DialogLanguageModes;
 class DocumentWidget;
+class DialogFonts;
 class TextArea;
 struct MenuData;
 struct PathInfo;
@@ -450,6 +451,7 @@ private:
 	QPointer<DialogSyntaxPatterns> dialogSyntaxPatterns_;
 	QPointer<DialogDrawingStyles> dialogDrawingStyles_;
 	QPointer<DialogLanguageModes> dialogLanguageModes_;
+	QPointer<DialogFonts> dialogFonts_;
 	QPointer<TextArea> lastFocus_;
 
 private:
