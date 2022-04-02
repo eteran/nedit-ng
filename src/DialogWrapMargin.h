@@ -4,6 +4,7 @@
 
 #include "Dialog.h"
 #include "ui_DialogWrapMargin.h"
+#include <QPointer>
 
 class DocumentWidget;
 
@@ -20,7 +21,7 @@ private:
 
 private:
 	Ui::DialogWrapMargin ui;
-	DocumentWidget *document_;
+	QPointer<DocumentWidget> document_;
 };
 
 #endif

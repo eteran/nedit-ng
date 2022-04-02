@@ -66,7 +66,7 @@ private:
 private:
 	Ui::DialogReplace ui;
 	MainWindow *window_;
-	DocumentWidget *document_;
+	QPointer<DocumentWidget> document_;
 	bool lastRegexCase_   = true;  // idem, for regex mode in replace dialog
 	bool lastLiteralCase_ = false; // idem, for literal mode
 };

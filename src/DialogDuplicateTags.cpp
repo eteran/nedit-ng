@@ -73,6 +73,11 @@ bool DialogDuplicateTags::applySelection() {
 		return false;
 	}
 
+	if (!document_) {
+		QApplication::beep();
+		return false;
+	}
+
 	const int id = item->data(Qt::UserRole).toInt();
 
 	if (Tags::searchMode == Tags::SearchMode::TAG) {

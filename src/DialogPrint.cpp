@@ -57,6 +57,10 @@ void DialogPrint::on_printers_currentIndexChanged(int index) {
  * @param printer
  */
 void DialogPrint::print(QPrinter *printer) {
+	if (!document_) {
+		return;
+	}
+
 	QTextDocument doc;
 	doc.setDefaultFont(document_->defaultFont());
 	doc.setPlainText(contents_);

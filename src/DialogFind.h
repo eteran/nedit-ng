@@ -5,6 +5,7 @@
 #include "Dialog.h"
 #include "Direction.h"
 #include "SearchType.h"
+#include <QPointer>
 
 #include <boost/optional.hpp>
 
@@ -54,7 +55,7 @@ private:
 private:
 	Ui::DialogFind ui;
 	MainWindow *window_;
-	DocumentWidget *document_;
+	QPointer<DocumentWidget> document_;
 	bool lastRegexCase_   = true;
 	bool lastLiteralCase_ = false;
 };

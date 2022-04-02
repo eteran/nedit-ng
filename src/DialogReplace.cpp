@@ -220,7 +220,7 @@ bool DialogReplace::eventFilter(QObject *obj, QEvent *ev) {
  * @param checked
  */
 void DialogReplace::checkKeep_toggled(bool checked) {
-	if (checked) {
+	if (checked && document_) {
 		setWindowTitle(tr("Find/Replace (in %1)").arg(document_->filename()));
 	} else {
 		setWindowTitle(tr("Find/Replace"));
@@ -244,6 +244,10 @@ void DialogReplace::buttonFind_clicked() {
 	// Validate and fetch the find and replace strings from the dialog
 	boost::optional<Fields> fields = readFields();
 	if (!fields) {
+		return;
+	}
+
+	if (!document_) {
 		return;
 	}
 
@@ -281,6 +285,10 @@ void DialogReplace::buttonReplace_clicked() {
 		return;
 	}
 
+	if (!document_) {
+		return;
+	}
+
 	// Set the initial focus of the dialog back to the search string
 	ui.textFind->setFocus();
 
@@ -306,6 +314,10 @@ void DialogReplace::buttonReplaceFind_clicked() {
 	// Validate and fetch the find and replace strings from the dialog
 	boost::optional<Fields> fields = readFields();
 	if (!fields) {
+		return;
+	}
+
+	if (!document_) {
 		return;
 	}
 
@@ -337,6 +349,10 @@ void DialogReplace::buttonWindow_clicked() {
 		return;
 	}
 
+	if (!document_) {
+		return;
+	}
+
 	// Set the initial focus of the dialog back to the search string
 	ui.textFind->setFocus();
 
@@ -360,6 +376,10 @@ void DialogReplace::buttonSelection_clicked() {
 	// Validate and fetch the find and replace strings from the dialog
 	boost::optional<Fields> fields = readFields();
 	if (!fields) {
+		return;
+	}
+
+	if (!document_) {
 		return;
 	}
 
@@ -638,6 +658,8 @@ bool DialogReplace::keepDialog() const {
  * @param document
  */
 void DialogReplace::setDocument(DocumentWidget *document) {
+	Q_ASSERT(document);
+
 	document_ = document;
 	if (keepDialog()) {
 		setWindowTitle(tr("Replace (in %1)").arg(document_->filename()));

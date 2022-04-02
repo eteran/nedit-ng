@@ -4,6 +4,7 @@
 
 #include "Dialog.h"
 #include "ui_DialogDuplicateTags.h"
+#include <QPointer>
 
 class DocumentWidget;
 class TextArea;
@@ -26,7 +27,7 @@ private:
 
 private:
 	Ui::DialogDuplicateTags ui;
-	DocumentWidget *document_;
+	QPointer<DocumentWidget> document_;
 	TextArea *area_;
 };
 

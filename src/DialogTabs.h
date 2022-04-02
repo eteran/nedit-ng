@@ -4,6 +4,7 @@
 
 #include "Dialog.h"
 #include "ui_DialogTabs.h"
+#include <QPointer>
 
 class DocumentWidget;
 
@@ -22,7 +23,7 @@ private:
 
 private:
 	Ui::DialogTabs ui;
-	DocumentWidget *document_;
+	QPointer<DocumentWidget> document_;
 };
 
 #endif

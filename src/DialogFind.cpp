@@ -111,7 +111,7 @@ bool DialogFind::eventFilter(QObject *obj, QEvent *ev) {
  * @param checked
  */
 void DialogFind::checkKeep_toggled(bool checked) {
-	if (checked) {
+	if (checked && document_) {
 		setWindowTitle(tr("Find (in %1)").arg(document_->filename()));
 	} else {
 		setWindowTitle(tr("Find"));
@@ -214,6 +214,10 @@ void DialogFind::setTextFieldFromDocument(DocumentWidget *document) {
  * @brief DialogFind::buttonFind_clicked
  */
 void DialogFind::buttonFind_clicked() {
+
+	if (!document_) {
+		return;
+	}
 
 	// fetch find string, direction and type from the dialog
 	boost::optional<Fields> fields = readFields();
@@ -344,7 +348,9 @@ bool DialogFind::keepDialog() const {
  * @param document
  */
 void DialogFind::setDocument(DocumentWidget *document) {
+	Q_ASSERT(document);
 	document_ = document;
+
 	if (keepDialog()) {
 		setWindowTitle(tr("Find (in %1)").arg(document_->filename()));
 	}

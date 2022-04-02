@@ -52,6 +52,10 @@ void DialogRepeat::buttonBox_accepted() {
 
 bool DialogRepeat::doRepeatDialogAction() {
 
+	if (!document_) {
+		return false;
+	}
+
 	int how;
 
 	// Find out from the dialog how to repeat the command

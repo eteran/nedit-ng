@@ -4212,10 +4212,14 @@ void MainWindow::action_Default_Show_Path_In_Windows_Menu_toggled(bool state) {
  * @brief MainWindow::action_Default_Customize_Window_Title_triggered
  */
 void MainWindow::action_Default_Customize_Window_Title_triggered() {
-	if (DocumentWidget *document = currentDocument()) {
-		auto dialog = std::make_unique<DialogWindowTitle>(document, this);
-		dialog->exec();
+
+	if (!dialogWindowTitle_) {
+		if (DocumentWidget *document = currentDocument()) {
+			dialogWindowTitle_ = new DialogWindowTitle(document, this);
+			dialogWindowTitle_->setAttribute(Qt::WA_DeleteOnClose);
+		}
 	}
+	dialogWindowTitle_->show();
 }
 
 /**
@@ -7501,6 +7505,8 @@ void MainWindow::updateWindowHints(DocumentWidget *document) {
 ** the window data structure.
 */
 void MainWindow::updateWindowReadOnly(DocumentWidget *document) {
+	Q_ASSERT(document);
+
 	const bool state = document->lockReasons().isAnyLocked();
 
 	for (TextArea *area : document->textPanes()) {
@@ -7518,6 +7524,8 @@ void MainWindow::updateWindowReadOnly(DocumentWidget *document) {
  * @param document
  */
 void MainWindow::updateWindowTitle(DocumentWidget *document) {
+
+	Q_ASSERT(document);
 
 	QString title = DialogWindowTitle::formatWindowTitle(
 		document,

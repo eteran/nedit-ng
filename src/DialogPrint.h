@@ -4,6 +4,7 @@
 
 #include "Dialog.h"
 #include "ui_DialogPrint.h"
+#include <QPointer>
 
 class DocumentWidget;
 class QPrinter;
@@ -29,7 +30,7 @@ protected:
 
 public:
 	Ui::DialogPrint ui;
-	DocumentWidget *document_;
+	QPointer<DocumentWidget> document_;
 	QString contents_;
 	QString jobname_;
 };

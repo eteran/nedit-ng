@@ -4,6 +4,7 @@
 
 #include "Dialog.h"
 #include "ui_DialogRepeat.h"
+#include <QPointer>
 
 class DocumentWidget;
 
@@ -26,7 +27,7 @@ private:
 private:
 	Ui::DialogRepeat ui;
 	QString lastCommand_;
-	DocumentWidget *document_;
+	QPointer<DocumentWidget> document_;
 };
 
 #endif
