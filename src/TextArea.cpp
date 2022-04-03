@@ -3500,16 +3500,8 @@ void TextArea::updateCalltip(int calltipID) {
 	// If we're not in strict mode try to keep the tip on-screen
 	if (calltip_.alignMode == TipAlignMode::Sloppy) {
 
-#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
-		QScreen *currentScreen = window()->windowHandle()->screen();
-#else
-		QScreen *currentScreen = screen();
-#endif
-		if(!currentScreen) {
-			currentScreen = QGuiApplication::primaryScreen();
-		}
-
-		QRect screenGeometry = currentScreen->geometry();
+		QScreen *currentScreen = QGuiApplication::primaryScreen();
+		QRect screenGeometry   = currentScreen->geometry();
 
 		// make sure tip doesn't run off right or left side of screen
 		if (abs.x() + tipWidth >= screenGeometry.width() - CALLTIP_EDGE_GUARD) {

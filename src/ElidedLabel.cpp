@@ -59,15 +59,7 @@ QSize ElidedLabel::minimumSizeHint() const {
  * @return
  */
 QSize ElidedLabel::sizeHint() const {
-#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
-	QScreen *currentScreen = window()->windowHandle()->screen();
-#else
-	QScreen *currentScreen = screen();
-#endif
-
-	if(!currentScreen) {
-		currentScreen = QGuiApplication::primaryScreen();
-	}
+	QScreen *currentScreen = QGuiApplication::primaryScreen();
 
 	const int maxWidth = currentScreen->geometry().width() * 3 / 4;
 	QFontMetrics fm(fontMetrics());
