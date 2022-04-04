@@ -42,18 +42,8 @@ QString LocalSocketName(const QString &server_name) {
 
 	if (!runtimePath.isEmpty()) {
 		QDir().mkpath(runtimePath);
-#ifdef Q_OS_LINUX
-		QByteArray display = qgetenv("DISPLAY");
-		return QStringLiteral("%1/nedit-ng_%2_%3_%4").arg(runtimePath, hostname, server_id, QString::fromLocal8Bit(display));
-#else
 		return QStringLiteral("%1/nedit-ng_%2_%3").arg(runtimePath, hostname, server_id);
-#endif
 	} else {
-#ifdef Q_OS_LINUX
-		QByteArray display = qgetenv("DISPLAY");
-		return QStringLiteral("nedit-ng_%1_%2_%3_%4").arg(getUserName(), hostname, server_id, QString::fromLocal8Bit(display));
-#else
 		return QStringLiteral("nedit-ng_%1_%2_%3").arg(getUserName(), hostname, server_id);
-#endif
 	}
 }
