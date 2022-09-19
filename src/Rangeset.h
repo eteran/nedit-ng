@@ -28,11 +28,11 @@ using RangesetUpdateFn = Rangeset *(Rangeset *rangeset, TextCursor pos, int64_t 
 class Rangeset {
 public:
 	explicit Rangeset(TextBuffer *buffer, uint8_t label);
-	Rangeset()                 = delete;
-	Rangeset(const Rangeset &) = default;
+	Rangeset()                            = delete;
+	Rangeset(const Rangeset &)            = default;
 	Rangeset &operator=(const Rangeset &) = default;
 	Rangeset(Rangeset &&)                 = default;
-	Rangeset &operator=(Rangeset &&) = default;
+	Rangeset &operator=(Rangeset &&)      = default;
 	~Rangeset();
 
 public:

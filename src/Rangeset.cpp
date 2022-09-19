@@ -50,7 +50,7 @@ bool is_end(int64_t i) {
 
 void rangesetRefreshAllRanges(TextBuffer *buffer, Rangeset *rangeset) {
 
-	for (TextRange &range : rangeset->ranges_) {
+	for (const TextRange &range : rangeset->ranges_) {
 		RangesetRefreshRange(buffer, range.start, range.end);
 	}
 }
@@ -687,7 +687,7 @@ bool Rangeset::setMode(const QString &mode) {
 		return setMode(DEFAULT_UPDATE_FN_NAME);
 	}
 
-	for (auto &entry : RangesetUpdateMap) {
+	for (const auto &entry : RangesetUpdateMap) {
 		if (entry.name == mode) {
 			update_      = entry.update_fn;
 			update_name_ = entry.name;
@@ -780,7 +780,7 @@ int64_t Rangeset::RangesetAdd(const Rangeset &other) {
 		// no ranges in destination: just copy the ranges from the other set
 		ranges_ = other.ranges_;
 
-		for (TextRange &range : ranges_) {
+		for (const TextRange &range : ranges_) {
 			RangesetRefreshRange(buffer_, range.start, range.end);
 		}
 

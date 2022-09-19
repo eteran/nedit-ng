@@ -28,11 +28,11 @@ enum UndoTypes {
 class UndoInfo {
 public:
 	explicit UndoInfo(UndoTypes undoType, TextCursor start, TextCursor end);
-	UndoInfo(const UndoInfo &) = default;
-	UndoInfo(UndoInfo &&)      = default;
+	UndoInfo(const UndoInfo &)            = default;
+	UndoInfo(UndoInfo &&)                 = default;
 	UndoInfo &operator=(const UndoInfo &) = default;
-	UndoInfo &operator=(UndoInfo &&) = default;
-	~UndoInfo()                      = default;
+	UndoInfo &operator=(UndoInfo &&)      = default;
+	~UndoInfo()                           = default;
 
 public:
 	std::string oldText;

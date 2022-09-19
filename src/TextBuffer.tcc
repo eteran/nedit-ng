@@ -736,7 +736,7 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufRemoveModifyCB(modify_callback_type bufModifiedCB, void *user) noexcept {
 
 	for (auto it = modifyProcs_.begin(); it != modifyProcs_.end(); ++it) {
-		auto &pair = *it;
+		const auto &pair = *it;
 		if (pair.first == bufModifiedCB && pair.second == user) {
 			modifyProcs_.erase(it);
 			return;
@@ -761,7 +761,7 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufRemovePreDeleteCB(pre_delete_callback_type bufPreDeleteCB, void *user) noexcept {
 
 	for (auto it = preDeleteProcs_.begin(); it != preDeleteProcs_.end(); ++it) {
-		auto &pair = *it;
+		const auto &pair = *it;
 		if (pair.first == bufPreDeleteCB && pair.second == user) {
 			preDeleteProcs_.erase(it);
 			return;

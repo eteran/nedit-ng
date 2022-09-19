@@ -35,11 +35,11 @@ public:
 public:
 	gap_buffer();
 	explicit gap_buffer(size_type reserve_size);
-	gap_buffer(const gap_buffer &) = delete;
+	gap_buffer(const gap_buffer &)            = delete;
 	gap_buffer &operator=(const gap_buffer &) = delete;
 	gap_buffer(gap_buffer &&)                 = delete;
-	gap_buffer &operator=(gap_buffer &&) = delete;
-	~gap_buffer()                        = default;
+	gap_buffer &operator=(gap_buffer &&)      = delete;
+	~gap_buffer()                             = default;
 
 public:
 	iterator begin() noexcept { return iterator(this, 0); }

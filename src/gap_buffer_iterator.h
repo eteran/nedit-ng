@@ -41,7 +41,7 @@ public:
 	}
 
 public:
-	gap_buffer_iterator(const gap_buffer_iterator &rhs) = default;
+	gap_buffer_iterator(const gap_buffer_iterator &rhs)         = default;
 	gap_buffer_iterator &operator=(const gap_buffer_iterator &) = default;
 
 public:

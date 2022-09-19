@@ -86,7 +86,7 @@ public:
 
 public:
 	TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &font);
-	TextArea(const TextArea &other) = delete;
+	TextArea(const TextArea &other)       = delete;
 	TextArea &operator=(const TextArea &) = delete;
 	~TextArea() override;
 

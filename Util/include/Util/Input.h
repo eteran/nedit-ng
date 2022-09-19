@@ -9,8 +9,8 @@ class QString;
 class Input {
 public:
 	explicit Input(const QString *input);
-	Input()                   = default;
-	Input(const Input &other) = default;
+	Input()                            = default;
+	Input(const Input &other)          = default;
 	Input &operator=(const Input &rhs) = default;
 
 public:

@@ -17,7 +17,7 @@ public:
 		}
 	}
 
-	SignalBlocker(const SignalBlocker &) = delete;
+	SignalBlocker(const SignalBlocker &)            = delete;
 	SignalBlocker &operator=(const SignalBlocker &) = delete;
 
 	SignalBlocker(SignalBlocker &&other) noexcept

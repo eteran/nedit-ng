@@ -85,7 +85,7 @@ public:
 public:
 	BasicTextBuffer();
 	explicit BasicTextBuffer(int64_t size);
-	BasicTextBuffer(const BasicTextBuffer &) = delete;
+	BasicTextBuffer(const BasicTextBuffer &)            = delete;
 	BasicTextBuffer &operator=(const BasicTextBuffer &) = delete;
 	~BasicTextBuffer()                                  = default;
 

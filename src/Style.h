@@ -4,8 +4,8 @@
 
 class Style {
 public:
-	Style()              = default;
-	Style(const Style &) = default;
+	Style()                         = default;
+	Style(const Style &)            = default;
 	Style &operator=(const Style &) = default;
 
 	explicit Style(void *v)
