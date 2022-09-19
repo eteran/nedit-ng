@@ -19,7 +19,7 @@ const QStringList DEFAULT_INCLUDE_PATHS = {
 	QLatin1String("/usr/include/"),
 	QLatin1String("/usr/local/include/")};
 
-const auto DEFAULT_DELIMETERS      = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
+const auto DEFAULT_DELIMITERS      = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
 const auto DEFAULT_BACKLIGHT_CHARS = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
 
 QString defaultTextFont() {
@@ -333,7 +333,7 @@ void loadPreferences(bool isServer) {
 	shell                        = settings.value(tr("nedit.shell"), QLatin1String("DEFAULT")).toString();
 	geometry                     = settings.value(tr("nedit.geometry"), QString()).toString();
 	tagFile                      = settings.value(tr("nedit.tagFile"), QString()).toString();
-	wordDelimiters               = settings.value(tr("nedit.wordDelimiters"), DEFAULT_DELIMETERS).toString();
+	wordDelimiters               = settings.value(tr("nedit.wordDelimiters"), DEFAULT_DELIMITERS).toString();
 	includePaths                 = settings.value(tr("nedit.includePaths"), DEFAULT_INCLUDE_PATHS).toStringList();
 	serverName                   = settings.value(tr("nedit.serverName"), QString()).toString();
 	maxPrevOpenFiles             = settings.value(tr("nedit.maxPrevOpenFiles"), 30).toInt();
