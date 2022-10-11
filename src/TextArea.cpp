@@ -7205,6 +7205,24 @@ void TextArea::addSmartIndentCallback(SmartIndentCallback callback, void *arg) {
 	smartIndentCallbacks_.emplace_back(callback, arg);
 }
 
+/*
+**  Sets the caret to on or off and restart the caret blink timer.
+**  This could be used by other modules to modify the caret's blinking.
+*/
+void TextArea::resetCursorBlink(bool startsBlanked)
+{
+	if (cursorBlinkTimer_->isActive()) {
+		//  Start blinking the caret again.
+		cursorBlinkTimer_->start();
+
+		if (startsBlanked) {
+			TextDBlankCursor();
+		} else {
+			unblankCursor();
+		}
+	}
+}
+
 bool TextArea::focusNextPrevChild(bool next) {
 
 	// Prevent tab from changing focus

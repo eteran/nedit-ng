@@ -937,12 +937,8 @@ void DocumentWidget::movedCallback(TextArea *area) {
 	// Check for changes to read-only status and/or file modifications
 	checkForChangesToFile();
 
-	if (QTimer *const blinkTimer = area->cursorBlinkTimer()) {
-		if (!blinkTimer->isActive()) {
-			//  Start blinking the caret again.
-			blinkTimer->start();
-		}
-	}
+	// Start blinking the caret again.
+	area->resetCursorBlink(false);
 }
 
 /**
