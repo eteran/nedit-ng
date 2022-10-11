@@ -97,6 +97,7 @@ public:
 	void addDragStartCallback(DragStartCallback callback, void *arg);
 	void addDragEndCallback(DragEndCallback callback, void *arg);
 	void addSmartIndentCallback(SmartIndentCallback callback, void *arg);
+	void resetCursorBlink(bool startsBlanked);
 
 protected:
 	bool focusNextPrevChild(bool next) override;
