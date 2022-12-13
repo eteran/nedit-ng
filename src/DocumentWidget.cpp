@@ -3002,7 +3002,7 @@ void DocumentWidget::closeDocument() {
 	win->ui.tabWidget->removeTab(win->ui.tabWidget->indexOf(this));
 
 	// NOTE(eteran): fixes issue #306
-	// If a macro is still running in this tab, don't schedule a deletion yet
+	// If a shell command is still running in this tab, don't schedule a deletion yet
 	// Instead, chain the deletion to trigger when the QProcess
 	// is being destroyed
 	// Otherwise, just schedule it to be deleted as soon as possible.

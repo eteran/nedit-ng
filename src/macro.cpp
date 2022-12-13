@@ -35,7 +35,7 @@
 #include <QMimeData>
 
 // DISABLED for 5.4
-//#define ENABLE_BACKLIGHT_STRING
+// #define ENABLE_BACKLIGHT_STRING
 
 namespace {
 
@@ -2445,13 +2445,16 @@ std::error_code shellCmdMS(DocumentWidget *document, Arguments arguments, DataVa
 
 std::error_code dialogMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
+	Q_UNUSED(document);
+
 	QString btnLabel;
 	QString message;
 
+	QPointer<DocumentWidget> documentPointer = MacroRunDocument();
+
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
-	document                                        = MacroRunDocument();
-	const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_;
+	const std::shared_ptr<MacroCommandData> cmdData = documentPointer->macroCmdData_;
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
 	   This subroutine can't be run if macro execution can't be interrupted */
@@ -2485,6 +2488,7 @@ std::error_code dialogMS(DocumentWidget *document, Arguments arguments, DataValu
 	// NOTE(eteran): passing document here breaks things...
 	auto prompt = std::make_shared<DialogPrompt>(nullptr);
 	prompt->setMessage(message);
+
 	if (arguments.size() == 1) {
 		prompt->addButton(QDialogButtonBox::Ok);
 	} else {
@@ -2497,11 +2501,13 @@ std::error_code dialogMS(DocumentWidget *document, Arguments arguments, DataValu
 		}
 	}
 
-	QObject::connect(prompt.get(), &QDialog::finished, [prompt, document, cmdData](int) {
-		auto result = make_value(prompt->result());
-		modifyReturnedValue(cmdData->context, result);
+	QObject::connect(prompt.get(), &QDialog::finished, [prompt, documentPointer, cmdData](int) {
+		if (documentPointer) {
+			auto result = make_value(prompt->result());
+			modifyReturnedValue(cmdData->context, result);
 
-		document->resumeMacroExecution();
+			documentPointer->resumeMacroExecution();
+		}
 	});
 
 	prompt->setWindowModality(Qt::NonModal);
@@ -2511,13 +2517,15 @@ std::error_code dialogMS(DocumentWidget *document, Arguments arguments, DataValu
 
 std::error_code stringDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
+	Q_UNUSED(document);
+
 	QString btnLabel;
 	QString message;
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
-	document                                        = MacroRunDocument();
-	const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_;
+	QPointer<DocumentWidget> documentPointer        = MacroRunDocument();
+	const std::shared_ptr<MacroCommandData> cmdData = documentPointer->macroCmdData_;
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
 	   This subroutine can't be run if macro execution can't be interrupted */
@@ -2551,6 +2559,7 @@ std::error_code stringDialogMS(DocumentWidget *document, Arguments arguments, Da
 	// NOTE(eteran): passing document here breaks things...
 	auto prompt = std::make_shared<DialogPromptString>(nullptr);
 	prompt->setMessage(message);
+
 	if (arguments.size() == 1) {
 		prompt->addButton(QDialogButtonBox::Ok);
 	} else {
@@ -2563,14 +2572,16 @@ std::error_code stringDialogMS(DocumentWidget *document, Arguments arguments, Da
 		}
 	}
 
-	QObject::connect(prompt.get(), &QDialog::finished, [prompt, document, cmdData](int) {
-		// Return the button number in the global variable $string_dialog_button
-		ReturnGlobals[STRING_DIALOG_BUTTON]->value = make_value(prompt->result());
+	QObject::connect(prompt.get(), &QDialog::finished, [prompt, documentPointer, cmdData](int) {
+		if (documentPointer) {
+			// Return the button number in the global variable $string_dialog_button
+			ReturnGlobals[STRING_DIALOG_BUTTON]->value = make_value(prompt->result());
 
-		auto result = make_value(prompt->text());
-		modifyReturnedValue(cmdData->context, result);
+			auto result = make_value(prompt->text());
+			modifyReturnedValue(cmdData->context, result);
 
-		document->resumeMacroExecution();
+			documentPointer->resumeMacroExecution();
+		}
 	});
 
 	prompt->setWindowModality(Qt::NonModal);
@@ -2892,13 +2903,15 @@ std::error_code filenameDialogMS(DocumentWidget *document, Arguments arguments, 
 // T Balinski
 std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
+	Q_UNUSED(document);
+
 	QString btnLabel;
 	QString message;
 	QString text;
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
-	document                                        = MacroRunDocument();
+	QPointer<DocumentWidget> documentPointer        = MacroRunDocument();
 	const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_;
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
@@ -2955,14 +2968,16 @@ std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, Data
 		}
 	}
 
-	QObject::connect(prompt.get(), &QDialog::finished, [prompt, document, cmdData](int) {
-		// Return the button number in the global variable $list_dialog_button
-		ReturnGlobals[LIST_DIALOG_BUTTON]->value = make_value(prompt->result());
+	QObject::connect(prompt.get(), &QDialog::finished, [prompt, documentPointer, cmdData](int) {
+		if (documentPointer) {
+			// Return the button number in the global variable $list_dialog_button
+			ReturnGlobals[LIST_DIALOG_BUTTON]->value = make_value(prompt->result());
 
-		auto result = make_value(prompt->text());
-		modifyReturnedValue(cmdData->context, result);
+			auto result = make_value(prompt->text());
+			modifyReturnedValue(cmdData->context, result);
 
-		document->resumeMacroExecution();
+			documentPointer->resumeMacroExecution();
+		}
 	});
 
 	prompt->setWindowModality(Qt::NonModal);
