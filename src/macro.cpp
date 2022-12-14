@@ -2450,10 +2450,9 @@ std::error_code dialogMS(DocumentWidget *document, Arguments arguments, DataValu
 	QString btnLabel;
 	QString message;
 
-	QPointer<DocumentWidget> documentPointer = MacroRunDocument();
-
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
+	QPointer<DocumentWidget> documentPointer        = MacroRunDocument();
 	const std::shared_ptr<MacroCommandData> cmdData = documentPointer->macroCmdData_;
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
@@ -2912,7 +2911,7 @@ std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, Data
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
 	QPointer<DocumentWidget> documentPointer        = MacroRunDocument();
-	const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_;
+	const std::shared_ptr<MacroCommandData> cmdData = documentPointer->macroCmdData_;
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
 	   This subroutine can't be run if macro execution can't be interrupted */
