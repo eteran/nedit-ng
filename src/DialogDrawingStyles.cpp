@@ -161,7 +161,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 		messageBox.exec();
 		if (messageBox.clickedButton() == buttonKeep) {
 
-			// again to cause messagebox to pop up
+			// again to cause message box to pop up
 			validateFields(Verbosity::Verbose);
 
 			// reselect the old item
@@ -196,7 +196,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 		// ensure that the appropriate buttons are enabled
 		CommonDialog::updateButtonStates(&ui, model_, current);
 
-		// don't allow deleteing the last "Plain" entry since it's reserved
+		// don't allow deleting the last "Plain" entry since it's reserved
 		if (style->name == QLatin1String("Plain")) {
 			// unless there is more than one "Plain"
 			int count = countPlainEntries();

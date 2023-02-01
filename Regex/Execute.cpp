@@ -254,7 +254,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 	if (++eContext.Recursion_Count > RecursionLimit) {
 		// Prevent duplicate errors
 		if (!eContext.Recursion_Limit_Exceeded) {
-			reg_error("recursion limit exceeded, please respecify expression");
+			reg_error("recursion limit exceeded, please re-specify expression");
 		}
 
 		eContext.Recursion_Limit_Exceeded = true;

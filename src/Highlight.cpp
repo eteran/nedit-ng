@@ -292,7 +292,7 @@ void modifyStyleBuf(const std::shared_ptr<TextBuffer> &styleBuf, char *styleStri
 ** safely be started using the pass1Patterns given.  Internally, adds a
 ** "takeoff" safety region before beginParse, so that pass 2 patterns will be
 ** allowed to match properly if they begin before beginParse, and a "landing"
-** safety region beyond endparse so that endParse is guranteed to be parsed
+** safety region beyond endparse so that endParse is guaranteed to be parsed
 ** correctly in both passes.  Returns the buffer position at which parsing
 ** finished (this will normally be endParse, unless the pass1Patterns is a
 ** pattern which does end and the end is reached).
@@ -330,7 +330,7 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 		}
 	}
 
-	/* Parse one parse context beyond requested end to gurantee that parsing
+	/* Parse one parse context beyond requested end to guarantee that parsing
 	   at endParse is complete, unless patterns can't cross line boundaries,
 	   in which case the end of the line is fine */
 	if (endParse == 0) {
@@ -482,9 +482,9 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 
 /*
 ** Back up position pointed to by "pos" enough that parsing from that point
-** on will satisfy context gurantees for pattern matching for modifications
+** on will satisfy context guarantees for pattern matching for modifications
 ** at pos.  Returns the style with which to begin parsing.  The caller is
-** guranteed that parsing may safely BEGIN with that style, but not that it
+** guaranteed that parsing may safely BEGIN with that style, but not that it
 ** will continue at that level.
 **
 ** This routine can be fooled if a continuous style run of more than one
@@ -641,7 +641,7 @@ void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightDat
 	const std::vector<uint8_t> &parentStyles              = highlightData->parentStyles;
 
 	/* Find the position "beginParse" at which to begin reparsing.  This is
-	   far enough back in the buffer such that the guranteed number of
+	   far enough back in the buffer such that the guaranteed number of
 	   lines and characters of context are examined. */
 	TextCursor beginParse = pos;
 	int parseInStyle      = findSafeParseRestartPos(buf, highlightData, &beginParse);
@@ -1341,7 +1341,7 @@ int getPrevChar(TextBuffer *buf, TextCursor pos) {
 
 /*
 ** Return a position far enough back in "buf" from "fromPos" to give patterns
-** their guranteed amount of context for matching (from "context").  If
+** their guaranteed amount of context for matching (from "context").  If
 ** backing up by lines yields the greater distance, the returned position will
 ** be to the newline character before the start of the line, rather than to
 ** the first character of the line.  (I did this because earlier prototypes of

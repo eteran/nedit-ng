@@ -502,7 +502,7 @@ void FillLoopAddrs(const Inst *breakAddr, const Inst *continueAddr) {
 ** "args".  Returns one of MACRO_DONE, MACRO_PREEMPT, or MACRO_ERROR.
 ** if MACRO_DONE is returned, the macro completed, and the returned value
 ** (if any) can be read from "result".  If MACRO_PREEMPT is returned, the
-** macro exceeded its alotted time-slice and scheduled...
+** macro exceeded its allotted time-slice and scheduled...
 */
 int executeMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg) {
 

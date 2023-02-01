@@ -251,7 +251,8 @@ const char *ReturnGlobalNames[N_RETURN_GLOBALS] = {
 	"$search_end",
 	"$read_status",
 	"$shell_cmd_status",
-	"$list_dialog_button"};
+	"$list_dialog_button",
+};
 
 Symbol *ReturnGlobals[N_RETURN_GLOBALS];
 

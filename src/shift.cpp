@@ -164,7 +164,7 @@ TextCursor findParagraphEnd(TextBuffer *buf, TextCursor startPos) {
 /*
 ** Find the implied left margin of a text string (the number of columns to the
 ** first non-whitespace character on any line) up to either the terminating
-** null character at the end of the string, or "length" characters, whever
+** null character at the end of the string, or "length" characters, whichever
 ** comes first.
 */
 template <class In, class Size>

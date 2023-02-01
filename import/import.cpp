@@ -20,7 +20,7 @@
 #include <string>
 
 // Placing these before X11 includes because that header does defines some
-// inconvinient macros :-(
+// inconvenient macros :-(
 namespace {
 
 struct Style {

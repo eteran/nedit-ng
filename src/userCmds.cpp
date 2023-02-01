@@ -29,7 +29,7 @@ namespace {
 ** Scan text from "in" to the end of macro input (matching brace),
 ** advancing in, and return macro text as function return value.
 **
-** This is kind of wastefull in that it throws away the compiled macro,
+** This is kind of wasteful in that it throws away the compiled macro,
 ** to be re-generated from the text as needed, but compile time is
 ** negligible for most macros.
 */

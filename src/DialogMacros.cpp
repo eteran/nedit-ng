@@ -162,7 +162,7 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
 		messageBox.exec();
 		if (messageBox.clickedButton() == buttonKeep) {
 
-			// again to cause messagebox to pop up
+			// again to cause message box to pop up
 			validateFields(Verbosity::Verbose);
 
 			// reselect the old item

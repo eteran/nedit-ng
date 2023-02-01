@@ -1600,7 +1600,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
  * alternative
  *
  * Processes one alternative of an '|' operator.  Connects the NEXT
- * pointers of each regex atom together sequentialy.
+ * pointers of each regex atom together sequentially.
  *----------------------------------------------------------------------*/
 uint8_t *alternative(int *flag_param, len_range &range_param) {
 
@@ -1637,7 +1637,7 @@ uint8_t *alternative(int *flag_param, len_range &range_param) {
 			range_param.upper += range_local.upper;
 		}
 
-		if (chain) { // Connect the regex atoms together sequentialy.
+		if (chain) { // Connect the regex atoms together sequentially.
 			tail(chain, latest);
 		}
 
@@ -1740,7 +1740,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		tail(ret_val, this_branch); // Connect BRANCH -> BRANCH.
 
 		/* If any alternative could be zero width, consider the whole
-		   parenthisized thing to be zero width. */
+		   parenthesized thing to be zero width. */
 
 		if (!(flags_local & HAS_WIDTH)) {
 			*flag_param &= ~HAS_WIDTH;

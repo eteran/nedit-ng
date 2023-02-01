@@ -64,7 +64,7 @@
 // coupling seen in this class :-/.
 
 /* data attached to window during shell command execution with information for
- * controling and communicating with the process */
+ * controlling and communicating with the process */
 struct ShellCommandData {
 	QTimer bannerTimer;
 	QByteArray standardError;
@@ -658,7 +658,7 @@ DocumentWidget::~DocumentWidget() {
 	// And delete the rangeset table too for the same reasons
 	rangesetTable_ = nullptr;
 
-	// Free syntax highlighting patterns, if any. w/o redisplaying
+	// Free syntax highlighting patterns, if any. w/o re-displaying
 	freeHighlightingData();
 
 	info_->buffer->BufRemoveModifyCB(modifiedCB, this);
@@ -928,7 +928,7 @@ void DocumentWidget::movedCallback(TextArea *area) {
 		return;
 	}
 
-	// update line and column nubers in statistics line
+	// update line and column numbers in statistics line
 	Q_EMIT updateStatus(this, area);
 
 	// Check the character before the cursor for matchable characters
@@ -976,7 +976,7 @@ void DocumentWidget::updateMarkTable(TextCursor pos, int64_t nInserted, int64_t 
 void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, TextArea *area) {
 	Q_UNUSED(nRestyled)
 
-	// number of distinct chars the user can typebefore NEdit gens. new backup file
+	// number of distinct chars the user can type before NEdit gens. new backup file
 	const int autoSaveCharLimit = Preferences::GetPrefAutoSaveCharLimit();
 
 	// number of distinct editing operations user can do before NEdit gens. new backup file
@@ -999,7 +999,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 		info_->wasSelected = selected;
 
 		/* do not refresh window-level items (window, menu-bar etc) when
-		 * motifying non-top document */
+		 * modifying non-top document */
 		if (isTopDocument()) {
 			win->selectionChanged(selected);
 
@@ -2166,7 +2166,7 @@ QString DocumentWidget::path() const {
 
 /*
  * Check if the contents of the TextBuffer is equal
- * the contens of the file named fileName. The format of
+ * the contents of the file named fileName. The format of
  * the file (UNIX/DOS/MAC) is handled properly.
  *
  * Return values
@@ -2315,7 +2315,7 @@ void DocumentWidget::revertToSaved() {
 
 	const int openFlags = info_->lockReasons.isUserLocked() ? EditFlags::PREF_READ_ONLY : 0;
 	if (!doOpen(name, path, openFlags)) {
-		/* This is a bit sketchy.  The only error in doOpen that irreperably
+		/* This is a bit sketchy.  The only error in doOpen that irreparably
 		   damages the window is "too much binary data".  It should be
 		   pretty rare to be reverting something that was fine only to find
 		   that now it has too much binary data. */
@@ -4715,7 +4715,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 	QString errText;
 	QString outText;
 
-	// If the process was killed or became inaccessable, give up
+	// If the process was killed or became inaccessible, give up
 	if (exitStatus != QProcess::NormalExit) {
 		return;
 	}
@@ -5562,7 +5562,7 @@ PatternSet *DocumentWidget::findPatternsForWindow(Verbosity verbosity) {
 
 /*
 ** Free highlighting data from a window destined for destruction, without
-** redisplaying.
+** re-displaying.
 */
 void DocumentWidget::freeHighlightingData() {
 

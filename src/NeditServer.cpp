@@ -290,7 +290,7 @@ void NeditServer::newConnection() {
 		DocumentWidget *document = MainWindow::findWindowWithFile(fi);
 		if (!document) {
 			/* Files are opened in background to improve opening speed
-			   by defering certain time  consuiming task such as syntax
+			   by deferring certain time consuming task such as syntax
 			   highlighting. At the end of the file-opening loop, the
 			   last file opened will be raised to restore those deferred
 			   items. The current file may also be raised if there're
@@ -320,7 +320,7 @@ void NeditServer::newConnection() {
 
 			if (lineNum > 0) {
 				// NOTE(eteran): this was previously window->lastFocus, but that
-				// is very inconvinient to get at this point in the code (now)
+				// is very inconvenient to get at this point in the code (now)
 				// firstPane() seems practical for now
 				document->selectNumberedLine(document->firstPane(), lineNum);
 			}
@@ -344,7 +344,7 @@ void NeditServer::newConnection() {
 			}
 
 			if (wait) {
-				// by creating this lambda, we are incrmenting the reference
+				// by creating this lambda, we are incrementing the reference
 				// count of the socket, so it won't be destroyed until all open
 				// documents are closed.
 				// We create the dummy QObject in order to manage the lifetime

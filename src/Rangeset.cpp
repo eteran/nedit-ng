@@ -231,7 +231,7 @@ int64_t rangesetShuffleToFrom(T *table, int64_t to, int64_t from, int64_t n, int
 
 /*
 ** Functions to adjust a rangeset to include new text or remove old.
-** *** NOTE: No redisplay: that's outside the responsability of these routines.
+** *** NOTE: No redisplay: that's outside the responsibility of these routines.
 */
 
 /* "Insert/Delete": if the start point is in or at the end of a range
@@ -632,7 +632,7 @@ int64_t Rangeset::RangesetInverse() {
 		newRanges.reserve(ranges_.size() + 1);
 
 		if (!has_zero) {
-			// existing ranges don't extend to the begining, so add an element for it
+			// existing ranges don't extend to the beginning, so add an element for it
 			newRanges.push_back({first, ranges_.front().start});
 		}
 

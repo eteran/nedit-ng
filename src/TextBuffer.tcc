@@ -827,7 +827,7 @@ int BasicTextBuffer<Ch, Tr>::BufGetExpandedChar(TextCursor pos, int64_t indent, 
 ** representation (which may be several characters for a tab or a
 ** control code).  Returns the number of characters added to "outStr".
 ** "indent" is the number of characters from the start of the line
-** for figuring tabs.  Output string is guranteed to be shorter or
+** for figuring tabs.  Output string is guaranteed to be shorter or
 ** equal in length to MAX_EXP_CHAR_LEN
 */
 template <class Ch, class Tr>
@@ -1084,7 +1084,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor s
 
 /*
 ** Compares len Bytes contained in buf starting at Position pos with
-** the contens of cmpText. Returns 0 if there are no differences,
+** the contents of cmpText. Returns 0 if there are no differences,
 ** != 0 otherwise.
 */
 template <class Ch, class Tr>

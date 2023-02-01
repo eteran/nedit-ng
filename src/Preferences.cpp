@@ -382,7 +382,7 @@ void translatePrefFormats(uint32_t fileVer) {
 	Settings::font = Font::fromString(Settings::fontName);
 
 	/*
-	**  The default set for the comand shell in PrefDescrip ("DEFAULT") is
+	**  The default set for the command shell ("DEFAULT") is
 	**  only a place-holder, the actual default is the user's login shell
 	**  (or whatever is implemented in getDefaultShell()). We put the login
 	**  shell's name in PrefData here.
