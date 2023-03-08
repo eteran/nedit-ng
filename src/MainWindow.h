@@ -58,7 +58,7 @@ private:
 	void setupMenuAlternativeMenus();
 	void createLanguageModeSubMenu();
 	void setupMenuDefaults();
-	void setupGlobalPrefenceDefaults();
+	void setupGlobalPreferenceDefaults();
 	void setupDocumentPreferenceDefaults();
 	void setupPrevOpenMenuActions();
 	void setupISearchBar();

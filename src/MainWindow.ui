@@ -305,7 +305,7 @@
        <addaction name="action_Default_Search_Literal_Whole_Word"/>
        <addaction name="action_Default_Search_Literal_Case_Sensitive_Whole_Word"/>
        <addaction name="action_Default_Search_Regular_Expression"/>
-       <addaction name="action_Default_Search_Regular_Expresison_Case_Insensitive"/>
+       <addaction name="action_Default_Search_Regular_Expression_Case_Insensitive"/>
       </widget>
       <addaction name="action_Default_Search_Verbose"/>
       <addaction name="action_Default_Search_Wrap_Around"/>
@@ -1620,7 +1620,7 @@
     <string>&amp;Regular Expression</string>
    </property>
   </action>
-  <action name="action_Default_Search_Regular_Expresison_Case_Insensitive">
+  <action name="action_Default_Search_Regular_Expression_Case_Insensitive">
    <property name="checkable">
     <bool>true</bool>
    </property>
