@@ -287,6 +287,9 @@ void MainWindow::setupISearchBar() {
 
 	// default to hiding the optional panels
 	ui.incrementalSearchFrame->setVisible(showISearchLine_);
+
+	// install an event filter to capture middle clicking on the clear button
+	ui.editIFind->findChild<QToolButton *>()->installEventFilter(this);
 }
 
 /**
@@ -501,9 +504,9 @@ void MainWindow::setupTabBar() {
 }
 
 /**
- * @brief MainWindow::setupGlobalPrefenceDefaults
+ * @brief MainWindow::setupGlobalPreferenceDefaults
  */
-void MainWindow::setupGlobalPrefenceDefaults() {
+void MainWindow::setupGlobalPreferenceDefaults() {
 
 	// Default Indent
 	switch (Preferences::GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
@@ -558,7 +561,7 @@ void MainWindow::setupGlobalPrefenceDefaults() {
 		ui.action_Default_Search_Regular_Expression->setChecked(true);
 		break;
 	case SearchType::RegexNoCase:
-		ui.action_Default_Search_Regular_Expresison_Case_Insensitive->setChecked(true);
+		ui.action_Default_Search_Regular_Expression_Case_Insensitive->setChecked(true);
 		break;
 	}
 
@@ -685,7 +688,7 @@ void MainWindow::setupMenuDefaults() {
 	no_signals(ui.action_Incremental_Backup)->setChecked(Preferences::GetPrefSaveOldVersion());
 	no_signals(ui.action_Matching_Syntax)->setChecked(Preferences::GetPrefMatchSyntaxBased());
 
-	setupGlobalPrefenceDefaults();
+	setupGlobalPreferenceDefaults();
 	setupDocumentPreferenceDefaults();
 
 	updateWindowSizeMenu();
@@ -846,7 +849,7 @@ void MainWindow::setupMenuGroups() {
 	defaultSearchGroup->addAction(ui.action_Default_Search_Literal_Whole_Word);
 	defaultSearchGroup->addAction(ui.action_Default_Search_Literal_Case_Sensitive_Whole_Word);
 	defaultSearchGroup->addAction(ui.action_Default_Search_Regular_Expression);
-	defaultSearchGroup->addAction(ui.action_Default_Search_Regular_Expresison_Case_Insensitive);
+	defaultSearchGroup->addAction(ui.action_Default_Search_Regular_Expression_Case_Insensitive);
 
 	auto defaultSyntaxGroup = new QActionGroup(this);
 	defaultSyntaxGroup->addAction(ui.action_Default_Syntax_Off);
@@ -1128,7 +1131,7 @@ void MainWindow::handleContextMenuEvent(DocumentWidget *document, const QPoint &
 				 * running multiple, independent uncoordinated, macros in the same
 				 * window.  Macros may invoke macro menu commands recursively via the
 				 * macro_menu_command action proc, which is important for being able to
-				 * repeat any operation, and to embed macros within eachother at any
+				 * repeat any operation, and to embed macros within each other at any
 				 * level, however, a call here with a macro running means that THE USER
 				 * is explicitly invoking another macro via the menu or an accelerator,
 				 * UNLESS the macro event marker is set */
@@ -1599,7 +1602,7 @@ void MainWindow::updateLanguageModeSubmenu() {
 }
 
 /*
-** Create a submenu for chosing language mode for the current window.
+** Create a submenu for choosing language mode for the current window.
 */
 void MainWindow::createLanguageModeSubMenu() {
 	updateLanguageModeSubmenu();
@@ -4307,10 +4310,10 @@ void MainWindow::defaultSearchGroupTriggered(QAction *action) {
 		for (MainWindow *window : windows) {
 			no_signals(window->ui.action_Default_Search_Regular_Expression)->setChecked(true);
 		}
-	} else if (action == ui.action_Default_Search_Regular_Expresison_Case_Insensitive) {
+	} else if (action == ui.action_Default_Search_Regular_Expression_Case_Insensitive) {
 		Preferences::SetPrefSearch(SearchType::RegexNoCase);
 		for (MainWindow *window : windows) {
-			no_signals(window->ui.action_Default_Search_Regular_Expresison_Case_Insensitive)->setChecked(true);
+			no_signals(window->ui.action_Default_Search_Regular_Expression_Case_Insensitive)->setChecked(true);
 		}
 	}
 }
@@ -5055,7 +5058,7 @@ QString MainWindow::promptForNewFile(DocumentWidget *document, FileFormats *form
 				if (checked) {
 					int ret = QMessageBox::information(document, tr("Add Wrap"),
 													   tr("This operation adds permanent line breaks to match the automatic wrapping done by the Continuous Wrap mode Preferences Option.\n\n"
-														  "*** This Option is Irreversable ***\n\n"
+														  "*** This Option is Irreversible ***\n\n"
 														  "Once newlines are inserted, continuous wrapping will no longer work automatically on these lines"),
 													   QMessageBox::Ok | QMessageBox::Cancel);
 
@@ -5305,7 +5308,7 @@ void MainWindow::action_Exit_triggered() {
 
 /*
 ** Check if preferences have changed, and if so, ask the user if he wants
-** to re-save.  Returns false if user requests cancelation of Exit (or whatever
+** to re-save.  Returns false if user requests cancellation of Exit (or whatever
 ** operation triggered this call to be made).
 */
 bool MainWindow::checkPrefsChangesSaved() {
@@ -5577,6 +5580,11 @@ void MainWindow::action_Help_triggered() {
  * @return
  */
 bool MainWindow::eventFilter(QObject *object, QEvent *ev) {
+
+	if (ev->type() == QEvent::MouseButtonRelease && static_cast<QMouseEvent*>(ev)->button() == Qt::MiddleButton && object == ui.editIFind->findChild<QToolButton *>()) {
+		ui.editIFind->setText(QApplication::clipboard()->text(QClipboard::Selection));
+		return true;
+	}
 
 	if (object == ui.editIFind && ev->type() == QEvent::KeyPress) {
 
@@ -6072,7 +6080,7 @@ void MainWindow::macroTriggered(QAction *action) {
 		   running multiple, independent uncoordinated, macros in the same
 		   window.  Macros may invoke macro menu commands recursively via the
 		   macro_menu_command action proc, which is important for being able to
-		   repeat any operation, and to embed macros within eachother at any
+		   repeat any operation, and to embed macros within each other at any
 		   level, however, a call here with a macro running means that THE USER
 		   is explicitly invoking another macro via the menu or an accelerator,
 		   UNLESS the macro event marker is set */
@@ -6214,7 +6222,7 @@ void MainWindow::editHighlightPatterns() {
 		QMessageBox::warning(this,
 							 tr("No Language Modes"),
 							 tr("No Language Modes available for syntax highlighting\n"
-								"Add language modes under Preferenses->Language Modes"));
+								"Add language modes under Preferences->Language Modes"));
 		return;
 	}
 
@@ -6657,7 +6665,7 @@ bool MainWindow::searchAndReplace(DocumentWidget *document, TextArea *area, cons
 	/* NOTE(eteran): OK, the whole point of extentBW, and extentFW
 	 * are to help with regex search/replace operations involving look-ahead and
 	 * look-behind. For example, if the buffer contains "ABCDEF-A" and we want
-	 * the regex to match "(?<=-)[A-Z]" (a captial letter preceded by a dash).
+	 * the regex to match "(?<=-)[A-Z]" (a capital letter preceded by a dash).
 	 * The regex is matching the "A" and thus the start position of the match is
 	 * offset 7. However, the extentBW is offset 6 because the "-" was
 	 * required for the match.
@@ -6877,7 +6885,7 @@ void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QSt
 }
 
 /*
-** Replace all occurences of "searchString" in "window" with "replaceString"
+** Replace all occurrences of "searchString" in "window" with "replaceString"
 ** within the current primary selection in "window". Also adds the search and
 ** replace strings to the global search history.
 */
@@ -7112,7 +7120,7 @@ bool MainWindow::prefOrUserCancelsSubst(DocumentWidget *document) {
 }
 
 /*
-** Replace all occurences of "searchString" in "window" with "replaceString".
+** Replace all occurrences of "searchString" in "window" with "replaceString".
 ** Also adds the search and replace strings to the global search history.
 */
 bool MainWindow::replaceAll(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType) {
@@ -7133,7 +7141,7 @@ bool MainWindow::replaceAll(DocumentWidget *document, TextArea *area, const QStr
 	// view the entire text buffer from the text area widget as a string
 	view::string_view fileString = buffer->BufAsString();
 
-	QString delimieters = document->getWindowDelimiters();
+	QString delimiters = document->getWindowDelimiters();
 
 	boost::optional<std::string> newFileString = Search::ReplaceAllInString(
 		fileString,
@@ -7142,7 +7150,7 @@ bool MainWindow::replaceAll(DocumentWidget *document, TextArea *area, const QStr
 		searchType,
 		&copyStart,
 		&copyEnd,
-		delimieters);
+		delimiters);
 
 	if (!newFileString) {
 		if (document->multiFileBusy_) {
@@ -7326,7 +7334,7 @@ void MainWindow::updateMenuItems() {
 
 /*
 ** Search through the shell menu and execute the first command with menu item
-** name "itemName".  Returns true on successs and false on failure.
+** name "itemName".  Returns true on success and false on failure.
 */
 bool MainWindow::execNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source) {
 
@@ -7350,7 +7358,7 @@ bool MainWindow::execNamedShellMenuCmd(DocumentWidget *document, TextArea *area,
 
 /*
 ** Search through the Macro or background menu and execute the first command
-** with menu item name "itemName".  Returns true on successs and false on
+** with menu item name "itemName".  Returns true on success and false on
 ** failure.
 */
 bool MainWindow::execNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source) {
@@ -7431,7 +7439,7 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
 	}
 
 	/* This routine is called for each character typed, so its performance
-	   affects overall editor perfomance.  Only update if the line is on. */
+	   affects overall editor performance.  Only update if the line is on. */
 	if (!document->showStats_) {
 		return;
 	}
