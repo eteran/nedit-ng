@@ -79,3 +79,7 @@ jobs:
       - name: Build
         run:
           cmake --build ${{github.workspace}}/build --parallel 4 --target ALL_BUILD --config ${{env.BUILD_TYPE}}
+
+      - name: Deploy app
+        run: |
+          windeployqt --release --no-quick-import ${{github.workspace}}/build
