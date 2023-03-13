@@ -8,7 +8,7 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Debug
-  BOOST_INSTALL_DIR: "${{github.workspace}}/bin"
+  BOOST_INSTALL_DIR: "D:/a/nedit-ng/nedit-ng/bin"
   BOOST_TOOLSET: "msvc"
   BOOST_VERSION: "1.80.0"
 
@@ -64,7 +64,7 @@ jobs:
 
       - name: Configure
         run: |
-          cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} \
+          cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}\
           -DBoost_INCLUDE_DIR=${{env.BOOST_INSTALL_DIR}}/boost/boost/include\
           -Boost_LIBRARY_DIRS=${{env.BOOST_INSTALL_DIR}}/boost/boost/lib\
         env:
