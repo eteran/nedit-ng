@@ -10,8 +10,7 @@ env:
   BUILD_TYPE: Debug
   boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz'
   boost_archive_name: 'boost_1_78_0.tar.gz'
-  boost_folder_name: 'boost_1_78_0'
-  boost_include_folder: 'C:\Boost\include\boost-1_78'
+  boost_folder_name: 'D:/boost_1_78_0'
 
 jobs:
   build_ubuntu_20:
@@ -52,7 +51,7 @@ jobs:
               "${{ env.boost_url }}" `
               -OutFile "${{ env.boost_archive_name }}" `
               -UserAgent "''"
-          tar xzf ${{ env.boost_archive_name }}
+          tar xzf ${{ env.boost_archive_name }} -C ${{ env.boost_folder_name }}
           rm ${{ env.boost_archive_name }}
           # cd ${{ env.boost_folder_name }}
           # .\bootstrap.bat
