@@ -51,7 +51,7 @@ jobs:
               "${{ env.boost_url }}" `
               -OutFile "${{ env.boost_archive_name }}" `
               -UserAgent "''"
-          tar xzf ${{ env.boost_archive_name }} -C ${{ env.boost_folder_name }}
+          tar xzf ${{ env.boost_archive_name }} -C D:/
           rm ${{ env.boost_archive_name }}
           # cd ${{ env.boost_folder_name }}
           # .\bootstrap.bat
