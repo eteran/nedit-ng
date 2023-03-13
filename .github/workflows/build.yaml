@@ -1,0 +1,45 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        #- os: macos-latest
+        #  DEPLOY_PATH: nedit-ng.dmg
+        - os: ubuntu-20.04
+          DEPLOY_PATH: nedit-ng.AppImage
+        # - os: windows-latest
+        #  DEPLOY_PATH: nedit-ng-Windows.zip
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: "5.12.8"
+
+      - name: Configure
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build Unix
+        if: runner.os == 'macOS' || runner.os == 'Linux'
+        run: |
+          cmake --build build --parallel --config Release
+
+      - name: Build Windows
+        if: runner.os == 'Windows'
+        run: |
+          cmake --build build --parallel --target ALL_BUILD --config Release
