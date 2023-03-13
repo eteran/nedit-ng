@@ -7,7 +7,7 @@ on:
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Debug
+  BUILD_TYPE: Release
   boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz'
   boost_archive_name: 'boost_1_78_0.tar.gz'
   boost_folder_name: 'D:/boost_1_78_0'
@@ -82,4 +82,4 @@ jobs:
 
       - name: Deploy app
         run: |
-          windeployqt --release --no-quick-import ${{github.workspace}}/build
+          windeployqt --release --no-quick-import ${{github.workspace}}/build/${{env.BUILD_TYPE}}
