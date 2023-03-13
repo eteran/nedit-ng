@@ -8,9 +8,10 @@ on:
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Debug
-  BOOST_INSTALL_DIR: "D:/a/nedit-ng/nedit-ng/bin"
-  BOOST_TOOLSET: "msvc"
-  BOOST_VERSION: "1.80.0"
+  boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz'
+  boost_archive_name: 'boost_1_78_0.tar.gz'
+  boost_folder_name: 'boost_1_78_0'
+  boost_include_folder: 'C:\Boost\include\boost-1_78'
 
 jobs:
   build_ubuntu_20:
@@ -45,17 +46,19 @@ jobs:
           version: "5.12.8"
           setup-python: 'false'
 
-      - name: Install boost
-        uses: MarkusJx/install-boost@v2.4.1
-        id: install-boost
-        with:
-            # REQUIRED: Specify the required boost version
-            # A list of supported versions can be found here:
-            # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
-            boost_version: ${{env.BOOST_VERSION}}
-            platform_version: 2022
-            toolset: ${{env.BOOST_TOOLSET}}
-            boost_install_dir: ${{env.BOOST_INSTALL_DIR}}
+      - name: Install Boost
+        run: |
+          Invoke-WebRequest `
+              "${{ env.boost_url }}" `
+              -OutFile "${{ env.boost_archive_name }}" `
+              -UserAgent "''"
+          tar xzf ${{ env.boost_archive_name }}
+          rm ${{ env.boost_archive_name }}
+          # cd ${{ env.boost_folder_name }}
+          # .\bootstrap.bat
+          # .\b2 address-model=${{ matrix.arch.address_model }} --with-atomic --with-thread --with-chrono install
+          # cd ..
+          # Remove-Item ${{ env.boost_folder_name }} -Recurse -Force
 
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.3
@@ -69,7 +72,7 @@ jobs:
         run: |
           cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G"Visual Studio 17 2022"
         env:
-          BOOST_ROOT: "${{env.BOOST_INSTALL_DIR}}/boost/boost"
+          BOOST_ROOT: "${{env.boost_folder_name}}"
 
       - name: Build
         run:
