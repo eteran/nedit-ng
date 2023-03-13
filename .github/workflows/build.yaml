@@ -5,55 +5,41 @@ on:
   pull_request:
   push:
 
+env:
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Debug
+
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-        #- os: macos-latest
-        #  DEPLOY_PATH: nedit-ng.dmg
-        - os: ubuntu-20.04
-        #  DEPLOY_PATH: nedit-ng.AppImage
-        - os: windows-latest
-        #  DEPLOY_PATH: nedit-ng-Windows.zip
-
+  build_ubuntu_20:
+    runs-on: ubuntu-20.04
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
+      - name: Install Dependencies
+        run: sudo apt-get install -y libboost-dev
 
       - name: Install Qt
-        if: runner.os == 'Linux'
         uses: jurplel/install-qt-action@v3
         with:
           version: "5.12.8"
           setup-python: 'false'
 
+      - name: Configure
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --parallel 4 --config ${{env.BUILD_TYPE}}
+
+  build_windows:
+    runs-on: windows-latest
+    steps:
       - name: Install Qt
-        if: runner.os == 'Windows'
         uses: jurplel/install-qt-action@v3
         with:
           version: "5.12.8"
           setup-python: 'false'
 
       - name: Install boost
-        if: runner.os == 'Linux'
         uses: MarkusJx/install-boost@v2.4.1
-        id: install-boost-linux
-        with:
-            # REQUIRED: Specify the required boost version
-            # A list of supported versions can be found here:
-            # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
-            boost_version: 1.71.0
-            platform_version: 20.04
-
-      - name: Install boost
-        if: runner.os == 'Windows'
-        uses: MarkusJx/install-boost@v2.4.1
-        id: install-boost-windows
+        id: install-boost
         with:
             # REQUIRED: Specify the required boost version
             # A list of supported versions can be found here:
@@ -62,25 +48,10 @@ jobs:
             platform_version: 2019
 
       - name: Configure
-        if: runner.os == 'Linux'
-        run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
         env:
-          BOOST_ROOT: ${{ steps.install-boost-linux.outputs.BOOST_ROOT }}
+          BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
 
-      - name: Configure
-        if: runner.os == 'Windows'
-        run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release
-        env:
-          BOOST_ROOT: ${{ steps.install-boost-windows.outputs.BOOST_ROOT }}
-
-      - name: Build Unix
-        if: runner.os == 'macOS' || runner.os == 'Linux'
-        run: |
-          cmake --build build --parallel --config Release
-
-      - name: Build Windows
-        if: runner.os == 'Windows'
-        run: |
-          cmake --build build --parallel --target ALL_BUILD --config Release
+      - name: Build
+        run:
+          cmake --build ${{github.workspace}}/build --parallel 4 --target ALL_BUILD --config ${{env.BUILD_TYPE}}
