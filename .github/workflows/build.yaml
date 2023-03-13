@@ -57,6 +57,9 @@ jobs:
             toolset: ${{env.BOOST_TOOLSET}}
             boost_install_dir: ${{env.BOOST_INSTALL_DIR}}
 
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v1.0.3
+
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -64,7 +67,7 @@ jobs:
 
       - name: Configure
         run: |
-          cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBoost_INCLUDE_DIR=${{env.BOOST_INSTALL_DIR}}/boost/boost/include -DBoost_LIBRARY_DIRS=${{env.BOOST_INSTALL_DIR}}/boost/boost/lib
+          cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G"Visual Studio 17 2022"
         env:
           BOOST_ROOT: "${{env.BOOST_INSTALL_DIR}}/boost/boost"
 
