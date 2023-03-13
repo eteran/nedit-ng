@@ -53,11 +53,6 @@ jobs:
               -UserAgent "''"
           tar xzf ${{ env.boost_archive_name }} -C D:/
           rm ${{ env.boost_archive_name }}
-          # cd ${{ env.boost_folder_name }}
-          # .\bootstrap.bat
-          # .\b2 address-model=${{ matrix.arch.address_model }} --with-atomic --with-thread --with-chrono install
-          # cd ..
-          # Remove-Item ${{ env.boost_folder_name }} -Recurse -Force
 
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.3
