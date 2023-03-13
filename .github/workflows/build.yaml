@@ -64,9 +64,7 @@ jobs:
 
       - name: Configure
         run: |
-          cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}\
-          -DBoost_INCLUDE_DIR=${{env.BOOST_INSTALL_DIR}}/boost/boost/include\
-          -Boost_LIBRARY_DIRS=${{env.BOOST_INSTALL_DIR}}/boost/boost/lib\
+          cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBoost_INCLUDE_DIR=${{env.BOOST_INSTALL_DIR}}/boost/boost/include -Boost_LIBRARY_DIRS=${{env.BOOST_INSTALL_DIR}}/boost/boost/lib
         env:
           BOOST_ROOT: "${{env.BOOST_INSTALL_DIR}}/boost/boost"
 
