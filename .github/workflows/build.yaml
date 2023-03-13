@@ -45,7 +45,15 @@ jobs:
           version: "5.12.8"
           setup-python: 'false'
 
+      - name: Cache Boost
+        id: cache-boost
+        uses: actions/cache@v3
+        with:
+          path: ${{env.boost_folder_name}}
+          key: ${{ runner.os }}-boost
+
       - name: Install Boost
+        if: steps.cache-boost.outputs.cache-hit != 'true'
         run: |
           Invoke-WebRequest `
               "${{ env.boost_url }}" `
