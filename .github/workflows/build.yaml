@@ -62,10 +62,18 @@ jobs:
             platform_version: 2019
 
       - name: Configure
+        if: runner.os == 'Linux'
         run: |
           cmake -B build -DCMAKE_BUILD_TYPE=Release
         env:
-          BOOST_ROOT: ${{ steps.install-boost.outputs.BOOST_ROOT }}
+          BOOST_ROOT: ${{ steps.install-boost-linux.outputs.BOOST_ROOT }}
+
+      - name: Configure
+        if: runner.os == 'Windows'
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+        env:
+          BOOST_ROOT: ${{ steps.install-boost-windows.outputs.BOOST_ROOT }}
 
       - name: Build Unix
         if: runner.os == 'macOS' || runner.os == 'Linux'
