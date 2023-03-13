@@ -16,7 +16,7 @@ jobs:
         #  DEPLOY_PATH: nedit-ng.dmg
         - os: ubuntu-20.04
         #  DEPLOY_PATH: nedit-ng.AppImage
-        # - os: windows-latest
+        - os: windows-latest
         #  DEPLOY_PATH: nedit-ng-Windows.zip
 
     steps:
@@ -29,8 +29,10 @@ jobs:
         uses: jurplel/install-qt-action@v3
         with:
           version: "5.12.8"
+          setup-python: 'false'
 
       - name: Install boost
+        if: runner.os == 'Linux'
         uses: MarkusJx/install-boost@v2.4.1
         id: install-boost
         with:
@@ -39,6 +41,17 @@ jobs:
             # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
             boost_version: 1.71.0
             platform_version: 20.04
+
+      - name: Install boost
+        if: runner.os == 'Windows'
+        uses: MarkusJx/install-boost@v2.4.1
+        id: install-boost
+        with:
+            # REQUIRED: Specify the required boost version
+            # A list of supported versions can be found here:
+            # https://github.com/MarkusJx/prebuilt-boost/blob/main/versions-manifest.json
+            boost_version: 1.71.0
+            platform_version: 2019
 
       - name: Configure
         run: |
