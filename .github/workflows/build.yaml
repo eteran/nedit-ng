@@ -26,6 +26,14 @@ jobs:
           submodules: recursive
 
       - name: Install Qt
+        if: runner.os == 'Linux'
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: "5.12.8"
+          setup-python: 'false'
+
+      - name: Install Qt
+        if: runner.os == 'Windows'
         uses: jurplel/install-qt-action@v3
         with:
           version: "5.12.8"
@@ -34,7 +42,7 @@ jobs:
       - name: Install boost
         if: runner.os == 'Linux'
         uses: MarkusJx/install-boost@v2.4.1
-        id: install-boost
+        id: install-boost-linux
         with:
             # REQUIRED: Specify the required boost version
             # A list of supported versions can be found here:
@@ -45,7 +53,7 @@ jobs:
       - name: Install boost
         if: runner.os == 'Windows'
         uses: MarkusJx/install-boost@v2.4.1
-        id: install-boost
+        id: install-boost-windows
         with:
             # REQUIRED: Specify the required boost version
             # A list of supported versions can be found here:
