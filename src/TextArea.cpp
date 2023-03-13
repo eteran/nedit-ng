@@ -46,7 +46,7 @@
 
 #define EMIT_EVENT_0(name)                                       \
 	do {                                                         \
-		if (!(flags & SupressRecording)) {                       \
+		if (!(flags & SuppressRecording)) {                       \
 			TextEditEvent textEvent(QLatin1String(name), flags); \
 			QApplication::sendEvent(this, &textEvent);           \
 		}                                                        \
@@ -54,7 +54,7 @@
 
 #define EMIT_EVENT_1(name, arg)                                         \
 	do {                                                                \
-		if (!(flags & SupressRecording)) {                              \
+		if (!(flags & SuppressRecording)) {                              \
 			TextEditEvent textEvent(QLatin1String(name), flags, (arg)); \
 			QApplication::sendEvent(this, &textEvent);                  \
 		}                                                               \
@@ -818,9 +818,9 @@ void TextArea::newline(EventFlags flags) {
 	EMIT_EVENT_0("newline");
 
 	if (autoIndent_ || smartIndent_) {
-		newlineAndIndentAP(flags | SupressRecording);
+		newlineAndIndentAP(flags | SuppressRecording);
 	} else {
-		newlineNoIndentAP(flags | SupressRecording);
+		newlineNoIndentAP(flags | SuppressRecording);
 	}
 }
 
@@ -5797,7 +5797,7 @@ void TextArea::copyToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
 	DragStates dragState = dragState_;
 
 	if (dragState != PRIMARY_BLOCK_DRAG) {
-		copyToAP(event, flags | SupressRecording);
+		copyToAP(event, flags | SuppressRecording);
 		return;
 	}
 
@@ -5901,7 +5901,7 @@ void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 	/* If the click was outside of the primary selection, this is not
 	   a drag, start a secondary selection */
 	if (!buffer_->primary.hasSelection() || !inSelection(event->pos())) {
-		secondaryStartAP(event, flags | SupressRecording);
+		secondaryStartAP(event, flags | SuppressRecording);
 		return;
 	}
 
@@ -5989,7 +5989,7 @@ void TextArea::secondaryOrDragAdjustAP(QMouseEvent *event, EventFlags flags) {
 	/* Only dragging of blocks of text is handled in this action proc.
 	   Otherwise, defer to secondaryAdjust to handle the rest */
 	if (dragState != CLICKED_IN_SELECTION && dragState != PRIMARY_BLOCK_DRAG) {
-		secondaryAdjustAP(event, flags | SupressRecording);
+		secondaryAdjustAP(event, flags | SuppressRecording);
 		return;
 	}
 
@@ -6603,7 +6603,7 @@ void TextArea::moveToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
 	DragStates dragState = dragState_;
 
 	if (dragState != PRIMARY_BLOCK_DRAG) {
-		moveToAP(event, flags | SupressRecording);
+		moveToAP(event, flags | SuppressRecording);
 		return;
 	}
 

@@ -21,7 +21,7 @@ QString NormalizePathname(const QString &pathname);
 QString ReadAnyTextFile(const QString &fileName, bool forceNL);
 PathInfo parseFilename(const QString &fullname);
 
-// std::string based convesions
+// std::string based conversions
 void ConvertToMac(std::string &text);
 void ConvertToDos(std::string &text);
 void ConvertFromMac(std::string &text);
@@ -36,10 +36,10 @@ using IsInteger = typename std::enable_if<std::is_integral<Integer>::value>::typ
 ** from DOS or Macintosh format to Unix format.  Conversion is done in-place.
 **
 ** In the DOS case, the length will be shorter. The routine has support for
-** blockwise file to string conversion: if the text has a trailing '\r' and
+** block-wise file to string conversion: if the text has a trailing '\r' and
 ** 'pendingCR' is not null, the '\r' is deposited in there and is not
 ** converted. If there is no trailing '\r', a '\0' is deposited in 'pendingCR'
-** It's the caller's responsability to make sure that the pending character,
+** It's the caller's responsibility to make sure that the pending character,
 ** if present, is inserted at the beginning of the next block to convert.
 */
 template <class Length, class = IsInteger<Length>>

@@ -6078,8 +6078,8 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 		for (HighlightPattern &pattern : patterns) {
 
 			if (!pattern.subPatternOf.isNull()) {
-				const size_t parentindex = Highlight::findTopLevelParentIndex(patterns, i);
-				if (parentindex == PATTERN_NOT_FOUND) {
+				const size_t parent_index = Highlight::findTopLevelParentIndex(patterns, i);
+				if (parent_index == PATTERN_NOT_FOUND) {
 					QMessageBox::warning(
 						this,
 						tr("Parent Pattern"),
@@ -6087,7 +6087,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 					return nullptr;
 				}
 
-				if (patterns[parentindex].flags & DEFER_PARSING) {
+				if (patterns[parent_index].flags & DEFER_PARSING) {
 					pattern.flags |= DEFER_PARSING;
 				} else {
 					pattern.flags &= ~DEFER_PARSING;

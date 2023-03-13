@@ -53,23 +53,23 @@ private:
 
 public:
 	enum EventFlag {
-		NoneFlag         = 0x0000,
-		AbsoluteFlag     = 0x0001,
-		ColumnFlag       = 0x0002,
-		CopyFlag         = 0x0004,
-		DownFlag         = 0x0008,
-		ExtendFlag       = 0x0010,
-		LeftFlag         = 0x0020,
-		NoBellFlag       = 0x0040,
-		OverlayFlag      = 0x0080,
-		RectFlag         = 0x0100,
-		RightFlag        = 0x0200,
-		ScrollbarFlag    = 0x0400,
-		StutterFlag      = 0x0800,
-		TailFlag         = 0x1000,
-		UpFlag           = 0x2000,
-		WrapFlag         = 0x4000,
-		SupressRecording = 0x8000, // We use this to prevent recording of events that are triggered by events (and are thus redundant)
+		NoneFlag          = 0x0000,
+		AbsoluteFlag      = 0x0001,
+		ColumnFlag        = 0x0002,
+		CopyFlag          = 0x0004,
+		DownFlag          = 0x0008,
+		ExtendFlag        = 0x0010,
+		LeftFlag          = 0x0020,
+		NoBellFlag        = 0x0040,
+		OverlayFlag       = 0x0080,
+		RectFlag          = 0x0100,
+		RightFlag         = 0x0200,
+		ScrollbarFlag     = 0x0400,
+		StutterFlag       = 0x0800,
+		TailFlag          = 0x1000,
+		UpFlag            = 0x2000,
+		WrapFlag          = 0x4000,
+		SuppressRecording = 0x8000, // We use this to prevent recording of events that are triggered by events (and are thus redundant)
 	};
 
 	Q_DECLARE_FLAGS(EventFlags, EventFlag)
@@ -442,14 +442,14 @@ private:
 	QFont font_;
 	QPoint btnDownCoord_; // Mark the position of last btn down action for deciding when to begin paying attention to motion actions, and where to paste columns
 	QPoint clickPos_;
-	QPoint mouseCoord_; // Last known mouse position in drag operation (for autoscroll)
+	QPoint mouseCoord_; // Last known mouse position in drag operation (for auto-scroll)
 	QPointer<CallTipWidget> calltipWidget_;
 	std::string delimiters_;
 	std::shared_ptr<TextBuffer> dragOrigBuf_; // backup buffer copy used during block dragging of selections
 	std::vector<QColor> bgClassColors_;       // table of colors for each BG class
 	std::vector<StyleTableEntry> styleTable_; // Table of fonts and colors for coloring/syntax-highlighting
 	std::vector<uint8_t> bgClass_;            // obtains index into bgClassColors_
-	uint32_t unfinishedStyle_;                // Style buffer entry which triggers on-the-fly reparsing of region
+	uint32_t unfinishedStyle_;                // Style buffer entry which triggers on-the-fly re-parsing of region
 
 private:
 	std::vector<std::pair<CursorMovedCallback, void *>> movedCallbacks_;

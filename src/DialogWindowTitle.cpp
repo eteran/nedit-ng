@@ -600,7 +600,7 @@ void DialogWindowTitle::editDirectory_textChanged(const QString &text) {
 QString DialogWindowTitle::formatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &format, UpdateState *state) {
 	QString title;
 
-	// Flags to supress one of these if both are specified and they are identical
+	// Flags to suppress one of these if both are specified and they are identical
 	bool serverNameSeen       = false;
 	bool clearCaseViewTagSeen = false;
 

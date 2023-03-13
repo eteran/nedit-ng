@@ -624,7 +624,7 @@ std::error_code textEvent(DocumentWidget *document, Arguments arguments, DataVal
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		if (TextArea *area = window->lastFocus()) {
-			(area->*Func)(*flags | TextArea::SupressRecording);
+			(area->*Func)(*flags | TextArea::SuppressRecording);
 		}
 	}
 
@@ -651,7 +651,7 @@ std::error_code textEventArg(DocumentWidget *document, Arguments arguments, Data
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		if (TextArea *area = window->lastFocus()) {
-			(area->*Func)(argument, *flags | TextArea::SupressRecording);
+			(area->*Func)(argument, *flags | TextArea::SuppressRecording);
 		}
 	}
 
@@ -779,7 +779,7 @@ std::error_code scrollDownMS(DocumentWidget *document, Arguments arguments, Data
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		if (TextArea *area = window->lastFocus()) {
-			area->scrollDownAP(count, units, TextArea::SupressRecording);
+			area->scrollDownAP(count, units, TextArea::SuppressRecording);
 		}
 	}
 
@@ -817,7 +817,7 @@ std::error_code scrollUpMS(DocumentWidget *document, Arguments arguments, DataVa
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		if (TextArea *area = window->lastFocus()) {
-			area->scrollUpAP(count, units, TextArea::SupressRecording);
+			area->scrollUpAP(count, units, TextArea::SuppressRecording);
 		}
 	}
 
@@ -2229,7 +2229,7 @@ std::error_code searchMS(DocumentWidget *document, Arguments arguments, DataValu
 }
 
 /*
-** Built-in macro subroutine for replacing all occurences of a search string in
+** Built-in macro subroutine for replacing all occurrences of a search string in
 ** a string with a replacement string.  Arguments are $1: string to search in,
 ** $2: string to search for, $3: replacement string. Also takes an optional
 ** search type: one of "literal", "case" or "regex" (default is "literal"), and
@@ -3030,7 +3030,7 @@ std::error_code stringCompareMS(DocumentWidget *document, Arguments arguments, D
 
 /*
 ** This function is intended to split strings into an array of substrings
-** Importatnt note: It should always return at least one entry with key 0
+** Important note: It should always return at least one entry with key 0
 ** split("", ",") result[0] = ""
 ** split("1,2", ",") result[0] = "1" result[1] = "2"
 ** split("1,2,", ",") result[0] = "1" result[1] = "2" result[2] = ""
@@ -3121,7 +3121,7 @@ std::error_code splitMS(DocumentWidget *document, Arguments arguments, DataValue
 		auto indexStr = std::to_string(indexNum);
 
 		if (lastEnd == strLength) {
-			// The pattern mathed the end of the string. Add an empty chunk.
+			// The pattern matched the end of the string. Add an empty chunk.
 			element = make_value(std::string());
 
 			if (!ArrayInsert(result, indexStr, &element)) {
@@ -3486,7 +3486,7 @@ std::error_code fontNameMV(DocumentWidget *document, Arguments arguments, DataVa
 std::error_code fontNameItalicMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	qWarning("NEdit: seperate italic fonts are not longer supported");
+	qWarning("NEdit: separate italic fonts are not longer supported");
 
 	// NOTE(eteran): used to be italicFontName_
 	*result = make_value(document->fontName_);
@@ -3496,7 +3496,7 @@ std::error_code fontNameItalicMV(DocumentWidget *document, Arguments arguments, 
 std::error_code fontNameBoldMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	qWarning("NEdit: seperate bold fonts are not longer supported");
+	qWarning("NEdit: separate bold fonts are not longer supported");
 
 	// NOTE(eteran): used to be boldFontName_
 	*result = make_value(document->fontName_);
@@ -3506,7 +3506,7 @@ std::error_code fontNameBoldMV(DocumentWidget *document, Arguments arguments, Da
 std::error_code fontNameBoldItalicMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	qWarning("NEdit: seperate bold-italic fonts are not longer supported");
+	qWarning("NEdit: separate bold-italic fonts are not longer supported");
 
 	// NOTE(eteran): used to be boldItalicFontName_
 	*result = make_value(document->fontName_);
@@ -3797,7 +3797,7 @@ std::error_code rangesetDestroyMS(DocumentWidget *document, Arguments arguments,
 }
 
 /*
-** Built-in macro subroutine for getting all range sets with a specfic name.
+** Built-in macro subroutine for getting all range sets with a specific name.
 ** Arguments are $1: range set name.
 ** return value is an array indexed 0 to n, with the rangeset labels as values;
 */
