@@ -1,16 +1,16 @@
 name: Build
 
 on:
-  workflow_dispatch:
-  pull_request:
   push:
+    branches: [master]
+  pull_request:
+    branches: [master]
 
 env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
-  boost_url: 'https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz'
-  boost_archive_name: 'boost_1_78_0.tar.gz'
-  boost_folder_name: 'D:/boost_1_78_0'
+  BOOST_URL: 'https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz'
+  BOOST_TGZ: 'boost_1_78_0.tar.gz'
+  BOOST_PATH: 'D:/boost_1_78_0'
 
 jobs:
   build_ubuntu_20:
@@ -26,7 +26,7 @@ jobs:
           setup-python: 'false'
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: true
 
@@ -49,24 +49,24 @@ jobs:
         id: cache-boost
         uses: actions/cache@v3
         with:
-          path: ${{env.boost_folder_name}}
-          key: ${{ runner.os }}-boost
+          path: ${{env.BOOST_PATH}}
+          key: win64-boost
 
       - name: Install Boost
         if: steps.cache-boost.outputs.cache-hit != 'true'
         run: |
           Invoke-WebRequest `
-              "${{ env.boost_url }}" `
-              -OutFile "${{ env.boost_archive_name }}" `
+              "${{ env.BOOST_URL }}" `
+              -OutFile "${{ env.BOOST_TGZ }}" `
               -UserAgent "''"
-          tar xzf ${{ env.boost_archive_name }} -C D:/
-          rm ${{ env.boost_archive_name }}
+          tar xzf ${{ env.BOOST_TGZ }} -C D:/
+          rm ${{ env.BOOST_TGZ }}
 
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v1.0.3
 
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           submodules: true
 
@@ -74,7 +74,7 @@ jobs:
         run: |
           cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G"Visual Studio 17 2022"
         env:
-          BOOST_ROOT: "${{env.boost_folder_name}}"
+          BOOST_ROOT: "${{env.BOOST_PATH}}"
 
       - name: Build
         run:
@@ -82,18 +82,13 @@ jobs:
 
       - name: Deploy app
         run: |
-          mkdir nedit-ng-Windows
-          cp ${{github.workspace}}/build/${{env.BUILD_TYPE}}/nedit-ng.exe nedit-ng-Windows/
-          windeployqt --release nedit-ng-Windows/
-
-      #- name: Zip windows
-      #  uses: vimtor/action-zip@v1
-      #  with:
-      #    files: output
-      #    dest: nedit-ng-Windows.zip
+          mkdir nedit-ng-win64
+          cp ${{github.workspace}}/build/${{env.BUILD_TYPE}}/nedit-ng.exe nedit-ng-win64/
+          cp ${{github.workspace}}/build/${{env.BUILD_TYPE}}/nc-ng.exe nedit-ng-win64/
+          windeployqt --release nedit-ng-win64/nedit-ng.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: nedit-ng-${{ runner.os }}
-          path: nedit-ng-Windows/
+          name: nedit-ng-win64
+          path: nedit-ng-win64/
