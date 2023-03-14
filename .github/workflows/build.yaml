@@ -82,18 +82,19 @@ jobs:
 
       - name: Deploy app
         run: |
-          mkdir output
-          cp ${{github.workspace}}/build/${{env.BUILD_TYPE}}/nedit-ng.exe output
-          windeployqt --release output/nedit-ng.exe
+          mkdir nedit-ng-Windows
+          cp ${{github.workspace}}/build/${{env.BUILD_TYPE}}/nedit-ng.exe nedit-ng-Windows/
+          cp ${{github.workspace}}/build/${{env.BUILD_TYPE}}/nc-ng.exe nedit-ng-Windows/
+          windeployqt --release nedit-ng-Windows/
 
-      - name: Zip windows
-        uses: vimtor/action-zip@v1
-        with:
-          files: output
-          dest: nedit-ng-Windows.zip
+      #- name: Zip windows
+      #  uses: vimtor/action-zip@v1
+      #  with:
+      #    files: output
+      #    dest: nedit-ng-Windows.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
         with:
           name: nedit-ng-${{ runner.os }}
-          path: nedit-ng-Windows.zip
+          path: nedit-ng-Windows/
