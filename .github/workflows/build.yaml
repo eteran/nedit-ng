@@ -84,7 +84,6 @@ jobs:
         run: |
           mkdir nedit-ng-Windows
           cp ${{github.workspace}}/build/${{env.BUILD_TYPE}}/nedit-ng.exe nedit-ng-Windows/
-          cp ${{github.workspace}}/build/${{env.BUILD_TYPE}}/nc-ng.exe nedit-ng-Windows/
           windeployqt --release nedit-ng-Windows/
 
       #- name: Zip windows
