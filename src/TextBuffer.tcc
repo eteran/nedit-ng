@@ -238,7 +238,7 @@ void BasicTextBuffer<Ch, Tr>::BufCopyFromBuf(BasicTextBuffer<Ch, Tr> *fromBuf, T
 }
 
 /*
-** Insert "text" columnwise into buffer starting at displayed character
+** Insert "text" column-wise into buffer starting at displayed character
 ** position "column" on the line beginning at "startPos".  Opens a rectangular
 ** space the width and height of "text", by moving all text to the right of
 ** "column" right.  If charsInserted and charsDeleted are not nullptr, the

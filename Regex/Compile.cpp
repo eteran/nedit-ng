@@ -1845,7 +1845,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 	/* If this set of parentheses is known to never match the empty string, set
 	   a bit in Paren_Has_Width to let future calls to function back_ref know
 	   that this set of parentheses has non-zero width.  This will allow star
-	   (*) or question (?) quantifiers to be aplied to a back-reference that
+	   (*) or question (?) quantifiers to be applied to a back-reference that
 	   refers to this set of parentheses. */
 
 	if ((*flag_param & HAS_WIDTH) && paren == PAREN && !zero_width && this_paren < pContext.Paren_Has_Width.size()) {
