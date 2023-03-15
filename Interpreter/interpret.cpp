@@ -150,7 +150,7 @@ int execError(const char *s1, T &&...args) {
 }
 
 /*
-** checks errno after operations which can set it.  If an error occured,
+** checks errno after operations which can set it.  If an error occurred,
 ** creates appropriate error messages and returns false
 */
 int errCheck(const char *s) {
@@ -558,7 +558,7 @@ ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation,
 	Q_ASSERT(continuation);
 
 	/*
-	** Execution Loop:  Call the succesive routine addresses in the program
+	** Execution Loop:  Call the successive routine addresses in the program
 	** until one returns something other than STAT_OK, then take action
 	*/
 	restoreContext(continuation);
@@ -1712,7 +1712,7 @@ static int returnValOrNone(bool valOnStack) {
 	Context.StackP -= (FP_TO_ARGS_DIST + nArgs);
 	Context.FrameP = newFrameP;
 
-	// push returned value, if requsted
+	// push returned value, if requested
 	if (!Context.PC) {
 		if (valOnStack) {
 			PUSH(retVal);

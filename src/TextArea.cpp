@@ -91,7 +91,7 @@ constexpr int SIZE_HINT_DURATION = 1000;
 
 constexpr int CALLTIP_EDGE_GUARD = 5;
 
-// Length of delay in milliseconds for vertical autoscrolling
+// Length of delay in milliseconds for vertical auto-scrolling
 constexpr int VERTICAL_SCROLL_DELAY = 50;
 
 /* Masks for text drawing methods.  These are or'd together to form an
@@ -464,7 +464,7 @@ constexpr InputHandler inputHandlers[] = {
 	{Qt::Key_Insert, Qt::ControlModifier, &TextArea::copyClipboard, TextArea::NoneFlag},                     // copy-clipboard()
 	{Qt::Key_Insert, Qt::ShiftModifier, &TextArea::pasteClipboard, TextArea::NoneFlag},                      // paste-clipboard()
 	{Qt::Key_Insert, Qt::ControlModifier | Qt::ShiftModifier, &TextArea::copyPrimaryAP, TextArea::NoneFlag}, // copy-primary()
-	{Qt::Key_Home, Qt::ControlModifier, &TextArea::beginningOfFileAP, TextArea::NoneFlag},                   // begining-of-file()
+	{Qt::Key_Home, Qt::ControlModifier, &TextArea::beginningOfFileAP, TextArea::NoneFlag},                   // beginning-of-file()
 	{Qt::Key_End, Qt::ControlModifier, &TextArea::endOfFileAP, TextArea::NoneFlag},                          // end-of-file()
 	{Qt::Key_Left, Qt::ControlModifier, &TextArea::backwardWordAP, TextArea::NoneFlag},                      // backward-word()
 	{Qt::Key_Right, Qt::ControlModifier, &TextArea::forwardWordAP, TextArea::NoneFlag},                      // forward-word()
@@ -728,7 +728,7 @@ void TextArea::beginningOfLine(EventFlags flags) {
 
 		if (smartHome_) {
 			// if the user presses home, go to the first non-whitespace character
-			// if they are already there, go to the actual begining of the line
+			// if they are already there, go to the actual beginning of the line
 			if (boost::optional<TextCursor> p = spanForward(buffer_, lineStart, " \t", false)) {
 				if (p != insertPos) {
 					lineStart = *p;
@@ -995,7 +995,7 @@ void TextArea::autoScrollTimerTimeout() {
 	const int fontHeight    = fixedFontHeight_;
 	const QPoint mouseCoord = mouseCoord_;
 
-	/* For vertical autoscrolling just dragging the mouse outside of the top
+	/* For vertical auto-scrolling just dragging the mouse outside of the top
 	 * or bottom of the window is sufficient, for horizontal (non-rectangular)
 	 * scrolling, see if the position where the CURSOR would go is outside */
 	const TextCursor newPos = coordToPosition(mouseCoord);
@@ -1131,7 +1131,7 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
 	// NOTE(eteran): these were added because Qt handles disabled shortcuts differently from Motif
 	// In Motif, they are apparently still caught, but just do nothing, in Qt, it acts like
 	// they don't exist, so they get sent to widgets lower in the chain (such as this one)
-	// resulting in the suprising ability to type in some funny characters
+	// resulting in the surprising ability to type in some funny characters
 
 	// The following characters work with ALT in nedit : vjouyq1234567890
 	// The following characters work with CTRL in nedit: b34578
@@ -1537,7 +1537,7 @@ void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nD
 	}
 
 	/* If there is a style buffer, check if the modification caused additional
-	   changes that need to be redisplayed.  (Redisplaying separately would
+	   changes that need to be redisplayed.  (Re-displaying separately would
 	   cause double-redraw on almost every modification involving styled
 	   text).  Extend the redraw range to incorporate style changes */
 	if (styleBuffer_) {
@@ -1711,7 +1711,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 
 	/*
 	** Loop until position exceeds maxPos or line count exceeds maxLines.
-	** (actually, contines beyond maxPos to end of line containing maxPos,
+	** (actually, continues beyond maxPos to end of line containing maxPos,
 	** in case later characters cause a word wrap back before maxPos)
 	*/
 	int colNum = 0;
@@ -2074,7 +2074,7 @@ TextCursor TextArea::endOfLine(TextCursor pos, bool startPosIsLineStart) const {
 /*
 ** Update the line starts array, topLineNum, firstChar and lastChar after a
 ** modification to the text buffer, given by the position where the change
-** began "pos", and the nmubers of characters and lines inserted and deleted.
+** began "pos", and the numbers of characters and lines inserted and deleted.
 */
 bool TextArea::updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t charsDeleted, int64_t linesInserted, int64_t linesDeleted) {
 
@@ -3934,7 +3934,7 @@ void TextArea::cancelBlockDrag() {
 	// Indicate end of drag
 	dragState_ = DRAG_CANCELED;
 
-	// Call finish-drag calback
+	// Call finish-drag callback
 	constexpr DragEndEvent endStruct = {
 		TextCursor(), 0, 0, {}};
 
@@ -4134,7 +4134,7 @@ bool TextArea::moveUp(bool absolute) {
 	// move the cursor
 	setInsertPosition(newPos);
 
-	// if a preferred column wasn't aleady established, establish it
+	// if a preferred column wasn't already established, establish it
 	cursorPreferredCol_ = column;
 	return true;
 }
@@ -4355,7 +4355,7 @@ std::string TextArea::wrapText(view::string_view startLine, view::string_view te
 }
 
 /*
-** Insert "text" (which must not contain newlines), overstriking the current
+** Insert "text" (which must not contain newlines), over-striking the current
 ** cursor location.
 */
 void TextArea::TextDOverstrike(view::string_view text) {
@@ -4441,7 +4441,7 @@ void TextArea::insertText(view::string_view text) {
 ** Auto-wrapping can also trigger auto-indent.  The additional parameter
 ** bufOffset is needed when auto-indent is set to smart indent and the smart
 ** indent routines need to scan far back in the buffer.  "charsAdded" returns
-** the number of characters added to acheive the auto-indent.  wrapMargin is
+** the number of characters added to achieve the auto-indent.  wrapMargin is
 ** used to decide whether auto-indent should be skipped because the indent
 ** string itself would exceed the wrap margin.
 */
@@ -5469,7 +5469,7 @@ TextCursor TextArea::xyToPos(int x, int y, PositionType posType) const {
 ** for rectangular selections and code written before continuous wrap mode,
 ** which thinks that the unconstrained column is the number of characters
 ** from the last newline.  Obviously this is time consuming, because it
-** invloves character re-counting.
+** involves character re-counting.
 */
 int TextArea::offsetWrappedColumn(int row, int column) const {
 
@@ -5659,7 +5659,7 @@ void TextArea::extendAdjustAP(QMouseEvent *event, EventFlags flags) {
 	   to date about which type of drag this is */
 	dragState_ = rectDrag ? PRIMARY_RECT_DRAG : PRIMARY_DRAG;
 
-	/* Record the new position for the autoscrolling timer routine, and
+	/* Record the new position for the auto-scrolling timer routine, and
 	   engage or disengage the timer if the mouse is in/out of the window */
 	checkAutoScroll(event->pos());
 
@@ -5709,7 +5709,7 @@ void TextArea::adjustSelection(const QPoint &coord) {
 
 /*
 ** Given a new mouse pointer location, pass the position on to the
-** autoscroll timer routine, and make sure the timer is on when it's
+** auto-scroll timer routine, and make sure the timer is on when it's
 ** needed and off when it's not.
 */
 void TextArea::checkAutoScroll(const QPoint &coord) {
@@ -5725,7 +5725,7 @@ void TextArea::checkAutoScroll(const QPoint &coord) {
 	// If the timer is not already started, start it
 	autoScrollTimer_->start(0);
 
-	// Pass on the newest mouse location to the autoscroll routine
+	// Pass on the newest mouse location to the auto-scroll routine
 	mouseCoord_ = coord;
 }
 
@@ -5877,7 +5877,7 @@ void TextArea::finishBlockDrag() {
 	// Return to normal drag state
 	dragState_ = NOT_CLICKED;
 
-	// Call finish-drag calback
+	// Call finish-drag callback
 	DragEndEvent endStruct;
 	endStruct.startPos       = modRangeStart;
 	endStruct.nCharsDeleted  = origModRangeEnd - modRangeStart;
@@ -6004,7 +6004,7 @@ void TextArea::secondaryOrDragAdjustAP(QMouseEvent *event, EventFlags flags) {
 		}
 	}
 
-	/* Record the new position for the autoscrolling timer routine, and
+	/* Record the new position for the auto-scrolling timer routine, and
 	   engage or disengage the timer if the mouse is in/out of the window */
 	checkAutoScroll(event->pos());
 
@@ -6041,7 +6041,7 @@ void TextArea::secondaryAdjustAP(QMouseEvent *event, EventFlags flags) {
 	   to date about which type of drag this is */
 	dragState_ = rectDrag ? SECONDARY_RECT_DRAG : SECONDARY_DRAG;
 
-	/* Record the new position for the autoscrolling timer routine, and
+	/* Record the new position for the auto-scrolling timer routine, and
 	   engage or disengage the timer if the mouse is in/out of the window */
 	checkAutoScroll(event->pos());
 
@@ -6191,7 +6191,7 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	   re-selection and rectangular operations).
 
 	   The hard part is keeping track of the changes such that a single replace
-	   operation will do everyting.  This is done using a routine called
+	   operation will do everything.  This is done using a routine called
 	   trackModifyRange which tracks expanding ranges of changes in the two
 	   buffers in modRangeStart, tempModRangeEnd, and bufModRangeEnd. */
 
@@ -6366,7 +6366,7 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 
 	// as an optimization, if we are moving a block but not combining it with
 	// the new location's content, then the selected text is functionally the
-	// same, so we don't need to constantly syncronize the X selection.
+	// same, so we don't need to constantly synchronize the X selection.
 	bool prev = true;
 	if (dragType == DRAG_OVERLAY_MOVE) {
 		prev = buffer_->BufSetSyncXSelection(false);
@@ -6935,7 +6935,7 @@ void TextArea::nextPageAP(EventFlags flags) {
 
 	} else if (flags & StutterFlag) { // Mac style
 		// move to bottom line of visible area
-		// if already there, page down maintaining preferrred column
+		// if already there, page down maintaining preferred column
 		targetLine = std::max(std::min(nVisibleLines_ - 1, nBufferLines_), 0);
 		column     = preferredColumn(&visLineNum, &lineStartPos);
 		if (lineStartPos == lineStarts_[targetLine]) {
@@ -7041,7 +7041,7 @@ void TextArea::previousPageAP(EventFlags flags) {
 
 	} else if (flags & StutterFlag) { // Mac style
 		// move to top line of visible area
-		// if already there, page up maintaining preferrred column if required
+		// if already there, page up maintaining preferred column if required
 		int targetLine   = 0;
 		const int column = preferredColumn(&visLineNum, &lineStartPos);
 		if (lineStartPos == lineStarts_[targetLine]) {
@@ -7327,7 +7327,7 @@ QMargins TextArea::getMargins() const {
 
 /*
 ** Fetch text from the widget's buffer, adding wrapping newlines to emulate
-** effect acheived by wrapping in the text display in continuous wrap mode.
+** effect achieved by wrapping in the text display in continuous wrap mode.
 */
 std::string TextArea::TextGetWrapped(TextCursor startPos, TextCursor endPos) {
 
@@ -7908,7 +7908,7 @@ void TextArea::makeSelectionVisible() {
 	   if it is to be used much with either.  Note also that this is a second
 	   scrolling operation, causing the display to jump twice.  It's done after
 	   vertical scrolling to take advantage of TextDPosToXY which requires it's
-	   reqested position to be vertically on screen) */
+	   requested position to be vertically on screen) */
 	int leftX;
 	int rightX;
 	int dummy;

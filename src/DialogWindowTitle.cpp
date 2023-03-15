@@ -17,7 +17,7 @@
 namespace {
 
 /*
-** Remove empty paranthesis pairs and multiple spaces in a row
+** Remove empty parenthesis pairs and multiple spaces in a row
 ** with one space.
 ** Also remove leading and trailing spaces and dashes.
 */
@@ -30,7 +30,7 @@ QString compressWindowTitle(const QString &title) {
 	result.replace(QLatin1String("{}"), QString());
 	result.replace(QLatin1String("[]"), QString());
 
-	// remove leading/trailing whitspace/dashes
+	// remove leading/trailing whitespace/dashes
 	static const QRegularExpression regex(QLatin1String("((^[\\s-]+)|([\\s-]+$))"));
 	result.replace(regex, QString());
 
@@ -352,7 +352,7 @@ void DialogWindowTitle::checkBrief_toggled(bool checked) {
 		// Find all %S occurrences and replace them by %*S
 		format.replace(QLatin1String("%S"), QLatin1String("%*S"));
 	} else {
-		// Replace all %*S occurences by %S
+		// Replace all %*S occurrences by %S
 		format.replace(QLatin1String("%*S"), QLatin1String("%S"));
 	}
 

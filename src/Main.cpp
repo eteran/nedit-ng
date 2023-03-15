@@ -258,7 +258,7 @@ Main::Main(const QStringList &args) {
 
 			const PathInfo fi = parseFilename(args[i]);
 
-			/* determine if file is to be openned in new tab, by
+			/* determine if file is to be opened in new tab, by
 			   factoring the options -group, -tabbed & -untabbed */
 			switch (group) {
 			case 2:
@@ -273,7 +273,7 @@ Main::Main(const QStringList &args) {
 			}
 
 			/* Files are opened in background to improve opening speed
-			   by defering certain time  consuiming task such as syntax
+			   by deferring certain time consuming task such as syntax
 			   highlighting. At the end of the file-opening loop, the
 			   last file opened will be raised to restore those deferred
 			   items. The current file may also be raised if there're

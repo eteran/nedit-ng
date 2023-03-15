@@ -432,7 +432,7 @@ boost::optional<Search::Result> SearchStringEx(view::string_view string, view::s
 
 /*
 ** Substitutes a replace string for a string that was matched using a
-** regular expression.  This was added later and is rather ineficient
+** regular expression.  This was added later and is rather inefficient
 ** because instead of using the compiled regular expression that was used
 ** to make the match in the first place, it re-compiles the expression
 ** and redoes the search on the already-matched string.  This allows the
@@ -453,7 +453,7 @@ bool replaceUsingRegex(view::string_view searchStr, view::string_view replaceStr
 }
 
 /*
-** Replace all occurences of "searchString" in "inString" with "replaceString"
+** Replace all occurrences of "searchString" in "inString" with "replaceString"
 ** and return a string covering the range between the start of the
 ** first replacement (returned in "copyStart", and the end of the last
 ** replacement (returned in "copyEnd")

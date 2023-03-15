@@ -602,7 +602,7 @@ void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QMod
 
 /*
 ** If a syntax highlighting dialog is up, ask to have the option menu for
-** chosing language mode updated (via a call to CreateLanguageModeMenu)
+** choosing language mode updated (via a call to CreateLanguageModeMenu)
 */
 void DialogSyntaxPatterns::UpdateLanguageModeMenu() {
 

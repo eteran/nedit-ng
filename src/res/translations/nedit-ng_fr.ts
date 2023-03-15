@@ -1048,7 +1048,7 @@ nedit-ng a été écrit par Evan Teran. Il est destiné à être un remplacement
         <location filename="../../DialogExecuteCommand.ui" line="33"/>
         <source>Shell command:   (use up arrow key to recall previous;
 % expands to current filename, # to line number)</source>
-        <translation>Commande du shell : (utilisez la flèche vers le haut pour rappeler la dernière commande; 
+        <translation>Commande du shell : (utilisez la flèche vers le haut pour rappeler la dernière commande;
 % correspond au nom de fichier actuel, # au numéro de ligne.)</translation>
     </message>
 </context>
@@ -1704,7 +1704,7 @@ Rejouer la Macro</translation>
     </message>
     <message>
         <location filename="../../DialogPrint.cpp" line="110"/>
-        <source>An error occured while printing.</source>
+        <source>An error occurred while printing.</source>
         <translation>Une erreur est survenue lors de l&apos;impression.</translation>
     </message>
 </context>
@@ -3316,7 +3316,7 @@ use Save As... to save this file under a different name,
 or Revert to Saved to revert to the modified version.</source>
         <translation>%1 a été modifié par un autre programme.
 
-Poursuivre cette opération va écraser toutes les 
+Poursuivre cette opération va écraser toutes les
 modifications apportées au fichier depuis son ouverture dans NEdit,
 et votre travail ou celui de quelqu&apos;un d&apos;autre risque d&apos;être perdu.
 
@@ -3608,8 +3608,8 @@ Sauvegarder sous un autre nom ?</translation>
         <source>Shell command is too long due to
 filename substitutions with &apos;%%&apos; or
 line number substitutions with &apos;#&apos;</source>
-        <translation>La commande du shell est trop longue en raison des 
-substitutions de nom de fichier avec &apos;%%&apos; ou des 
+        <translation>La commande du shell est trop longue en raison des
+substitutions de nom de fichier avec &apos;%%&apos; ou des
 substitutions de numéro de ligne avec &apos;#&apos;</translation>
     </message>
     <message>
@@ -3777,7 +3777,7 @@ dialog, or choose a different language mode from:
 Preferences -&gt; Language Mode.</source>
         <translation>La coloration syntaxique n&apos;est pas disponible dans le langage %1.
 
-Vous pouvez créer de nouveaux modèles de coloration syntaxique dans la fenêtre 
+Vous pouvez créer de nouveaux modèles de coloration syntaxique dans la fenêtre
 Préférences -&gt; Paramètres par défaut -&gt; Coloration Syntaxique
 ou choisir un autre langage parmi:
 Préférences -&gt; Langages.</translation>

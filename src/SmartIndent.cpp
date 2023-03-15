@@ -481,7 +481,7 @@ void renameSmartIndentMacros(const QString &oldName, const QString &newName) {
 
 /*
 ** If a smart indent dialog is up, ask to have the option menu for
-** chosing language mode updated (via a call to CreateLanguageModeMenu)
+** choosing language mode updated (via a call to CreateLanguageModeMenu)
 */
 void updateLangModeMenuSmartIndent() {
 

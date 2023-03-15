@@ -118,7 +118,7 @@ void DialogPrint::buttonPrint_clicked() {
 			QMessageBox::warning(
 				this,
 				tr("Error Printing to File"),
-				tr("An error occured while printing."));
+				tr("An error occurred while printing."));
 		}
 	}
 
