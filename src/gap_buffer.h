@@ -287,7 +287,7 @@ auto gap_buffer<Ch, Tr>::to_view() noexcept -> view_type {
 	size_type leftLen        = gap_start_;
 	const size_type rightLen = bufLen - leftLen;
 
-	// find where best to put the gap to minimise memory movement
+	// find where best to put the gap to minimize memory movement
 	if (leftLen != 0 && rightLen != 0) {
 		leftLen = (leftLen < rightLen) ? 0 : bufLen;
 		move_gap(leftLen);
@@ -313,7 +313,7 @@ auto gap_buffer<Ch, Tr>::to_view(size_type start, size_type end) noexcept -> vie
 	size_type leftLen        = gap_start_;
 	const size_type rightLen = bufLen - leftLen;
 
-	// find where best to put the gap to minimise memory movement
+	// find where best to put the gap to minimize memory movement
 	if (leftLen != 0 && rightLen != 0) {
 		leftLen = (leftLen < rightLen) ? 0 : bufLen;
 		move_gap(leftLen);
@@ -354,7 +354,7 @@ void gap_buffer<Ch, Tr>::insert(size_type pos, view_type str) {
 	/* Prepare the buffer to receive the new text.  If the new text fits in
 	   the current buffer, just move the gap (if necessary) to where
 	   the text should be inserted.  If the new text is too large, reallocate
-	   the buffer with a gap large enough to accomodate the new text and a
+	   the buffer with a gap large enough to accommodate the new text and a
 	   gap of PreferredGapSize */
 	if (length > gap_size()) {
 		reallocate_buffer(pos, length + PreferredGapSize);
@@ -382,7 +382,7 @@ void gap_buffer<Ch, Tr>::insert(size_type pos, Ch ch) {
 	/* Prepare the buffer to receive the new text.  If the new text fits in
 	   the current buffer, just move the gap (if necessary) to where
 	   the text should be inserted.  If the new text is too large, reallocate
-	   the buffer with a gap large enough to accomodate the new text and a
+	   the buffer with a gap large enough to accommodate the new text and a
 	   gap of PreferredGapSize */
 	if (length > gap_size()) {
 		reallocate_buffer(pos, length + PreferredGapSize);

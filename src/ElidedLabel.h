@@ -44,7 +44,7 @@ public:
 
 public Q_SLOTS:
 	/**
-	 * Sets the text. Note that this is not technically a reimplementation of
+	 * Sets the text. Note that this is not technically a re-implementation of
 	 * QLabel::setText(), which is not virtual (in Qt 4.3). Therefore, you may
 	 * need to cast the object to ElidedLabel in some situations: \Example \code
 	 * ElidedLabel* squeezed = new ElidedLabel("text", parent);

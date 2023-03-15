@@ -96,7 +96,7 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 	}
 
 	// if we are setting the language for the first time skip this part
-	// otherwise check if any uncommited changes are present
+	// otherwise check if any uncommitted changes are present
 	if (!previousLanguage_.isEmpty()) {
 
 		// Look up the original version of the patterns being edited

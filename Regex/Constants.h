@@ -5,7 +5,7 @@
 #include <cstdint>
 
 /* The first byte of the Regex internal 'program' is a magic number to help
-   gaurd against corrupted data; the compiled regex code really begins in the
+   guard against corrupted data; the compiled regex code really begins in the
    second byte. */
 constexpr uint8_t Magic = 0234;
 

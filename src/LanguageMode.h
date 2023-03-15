@@ -16,7 +16,7 @@ constexpr auto UNKNOWN_LANGUAGE_MODE = static_cast<size_t>(-2);
 class LanguageMode {
 public:
 	/*
-	** suplement wrap and indent styles w/ a value meaning "use default" for
+	** supplement wrap and indent styles w/ a value meaning "use default" for
 	** the override fields in the language modes dialog
 	*/
 	static constexpr int DEFAULT_TAB_DIST    = -1;

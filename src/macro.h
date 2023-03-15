@@ -25,7 +25,7 @@ void RegisterMacroSubroutines();
 void returnShellCommandOutput(DocumentWidget *document, const QString &outText, int status);
 
 /* Data attached to window during shell command execution with
-   information for controling and communicating with the process */
+   information for controlling and communicating with the process */
 struct MacroCommandData {
 	QTimer bannerTimer;
 	QTimer continuationTimer;
