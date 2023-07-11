@@ -8,6 +8,9 @@ if(${X11_FOUND})
         link_directories(/usr/X11/lib)
         link_directories(/opt/X11/lib)
     endif()
+    if(TARGET_PLATFORM_OPENBSD)
+        link_directories(/usr/X11R6/lib)
+    endif()
 endif()
 
 add_executable(nedit-import
