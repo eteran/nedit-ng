@@ -15,7 +15,7 @@ public:
 	~TextAreaMimeData() override = default;
 
 public:
-	QStringList formats() const override final;
+	QStringList formats() const final;
 	bool hasFormat(const QString &mimeType) const override;
 
 protected:
