@@ -5,8 +5,7 @@
 #include <QColor>
 #include <QString>
 
-class StyleTableEntry {
-public:
+struct StyleTableEntry {
 	QString highlightName;
 	QString styleName;
 	QString colorName;

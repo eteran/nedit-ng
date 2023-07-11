@@ -40,7 +40,7 @@ class MainWindow;
 class PatternSet;
 class Regex;
 class Style;
-class StyleTableEntry;
+struct StyleTableEntry;
 class TextArea;
 class UndoInfo;
 struct DragEndEvent;
