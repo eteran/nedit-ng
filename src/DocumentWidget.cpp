@@ -740,6 +740,8 @@ void DocumentWidget::setWindowModified(bool modified) {
 
 	Q_EMIT updateWindowTitle(this);
 	refreshTabState();
+
+	isWindowModified_ = modified;
 }
 
 /*
@@ -934,6 +936,8 @@ void DocumentWidget::movedCallback(TextArea *area) {
 	// Check the character before the cursor for matchable characters
 	flashMatchingChar(area);
 
+	setUserInteractionDetected();
+
 	// Check for changes to read-only status and/or file modifications
 	checkForChangesToFile();
 
@@ -1036,6 +1040,8 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 
 	// Update # of bytes, and line and col statistics
 	Q_EMIT updateStatus(this, area);
+
+	setUserInteractionDetected();
 
 	// Check if external changes have been made to file and warn user
 	checkForChangesToFile();
@@ -1985,11 +1991,17 @@ void DocumentWidget::checkForChangesToFile() {
 		return;
 	}
 
+	// See Feature-167 discussion in DocumentWidget.h
+	const bool extendedModificationWarnings
+		= Preferences::GetPrefWarnAlways()
+			|| (Preferences::GetPrefWarnWhenLocalMods() && isWindowModified_)
+			|| (Preferences::GetPrefWarnWhenUserInteracts() && userInteractionDetected_);
+
 	/* Update the status, but don't pop up a dialog if we're called from a
 	 * place where the window might be iconic (e.g., from the replace dialog)
 	 * or on another desktop.
 	 */
-	const bool silent = (!isTopDocument() || !win->isVisible());
+	const bool silent = (!isTopDocument() || !win->isVisible() || !extendedModificationWarnings);
 
 	// Get the file mode and modification time
 	QString fullname = fullPath();
@@ -2100,6 +2112,9 @@ void DocumentWidget::checkForChangesToFile() {
 		}
 
 		if (Preferences::GetPrefWarnRealFileMods() && !compareDocumentToFile(fullname)) {
+
+			clearUserInteractionDetected();
+
 			// Contents hasn't changed. Update the modification time.
 			info_->statbuf.st_mtime = statbuf.st_mtime;
 			return;
@@ -2412,6 +2427,8 @@ bool DocumentWidget::writeBackupFile() {
  * @return
  */
 bool DocumentWidget::saveDocument() {
+
+	setUserInteractionDetected();
 
 	// Try to ensure our information is up-to-date
 	checkForChangesToFile();
@@ -7429,4 +7446,18 @@ void DocumentWidget::dropEvent(QDropEvent *event) {
 			QApplication::beep();
 		}
 	}
+}
+
+/**
+ * @brief DocumentWidget::clearUserInteractionDetected
+ */
+void DocumentWidget::clearUserInteractionDetected() {
+	userInteractionDetected_ = false;
+}
+
+/**
+ * @brief DocumentWidget::setUserInteractionDetected
+ */
+void DocumentWidget::setUserInteractionDetected(){
+	userInteractionDetected_ = true;
 }

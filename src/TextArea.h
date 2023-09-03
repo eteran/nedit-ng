@@ -124,6 +124,11 @@ private:
 private:
 	bool clickTracker(QMouseEvent *event, bool inDoubleClickHandler);
 
+private:
+	// See DocumentWidget.h Feature-167:
+	void clearUserInteractionDetected();
+	void setUserInteractionDetected();
+
 public Q_SLOTS:
 	void backwardCharacter(TextArea::EventFlags flags = NoneFlag);
 	void backwardParagraphAP(TextArea::EventFlags flags = NoneFlag);

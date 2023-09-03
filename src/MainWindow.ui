@@ -349,6 +349,9 @@
       </property>
       <addaction name="action_Default_Warnings_Files_Modified_Externally"/>
       <addaction name="action_Default_Warnings_Check_Modified_File_Contents"/>
+      <addaction name="action_Default_Warnings_When_Always"/>
+      <addaction name="action_Default_Warnings_When_Local_Modified"/>
+      <addaction name="action_Default_Warnings_When_User_Interacts"/>
       <addaction name="action_Default_Warnings_On_Exit"/>
      </widget>
      <widget class="QMenu" name="menu_Default_Initial_Window_Size">
@@ -1748,6 +1751,30 @@
    </property>
    <property name="text">
     <string>&amp;Check Modified File Contents</string>
+   </property>
+  </action>
+  <action name="action_Default_Warnings_When_Always">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;Always</string>
+   </property>
+  </action>
+  <action name="action_Default_Warnings_When_Local_Modified">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;When Local Modified</string>
+   </property>
+  </action>
+  <action name="action_Default_Warnings_When_User_Interacts">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>&amp;When User Interacts</string>
    </property>
   </action>
   <action name="action_Default_Warnings_On_Exit">

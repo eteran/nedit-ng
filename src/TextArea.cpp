@@ -926,6 +926,8 @@ TextArea::~TextArea() {
  */
 void TextArea::verticalScrollBar_valueChanged(int value) {
 
+	setUserInteractionDetected();
+
 	// Limit the requested scroll position to allowable values
 	if (continuousWrap_) {
 		if ((value > topLineNum_) && (value > (nBufferLines_ + 2 + cursorVPadding_ - nVisibleLines_))) {
@@ -964,6 +966,8 @@ void TextArea::verticalScrollBar_valueChanged(int value) {
  */
 void TextArea::horizontalScrollBar_valueChanged(int value) {
 	Q_UNUSED(value)
+
+	setUserInteractionDetected();
 
 	// NOTE(eteran): the original code seemed to do some cleverness
 	//               involving copying the parts that were "moved"
@@ -1093,6 +1097,8 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
 	// If there's a calltip displayed, kill it.
 	TextDKillCalltip(0);
 	QAbstractScrollArea::focusOutEvent(event);
+
+	clearUserInteractionDetected();
 }
 
 /**
@@ -1100,9 +1106,12 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
  * @param event
  */
 void TextArea::contextMenuEvent(QContextMenuEvent *event) {
+
 	if (event->modifiers() != Qt::ControlModifier) {
 		Q_EMIT customContextMenuRequested(mapToGlobal(event->pos()));
 	}
+
+	setUserInteractionDetected();
 }
 
 /**
@@ -1110,6 +1119,8 @@ void TextArea::contextMenuEvent(QContextMenuEvent *event) {
  * @param event
  */
 void TextArea::keyPressEvent(QKeyEvent *event) {
+
+	setUserInteractionDetected();
 
 	if (isModifier(event)) {
 		return;
@@ -1254,6 +1265,8 @@ void TextArea::mouseMoveEvent(QMouseEvent *event) {
  * @param event
  */
 void TextArea::mousePressEvent(QMouseEvent *event) {
+
+	setUserInteractionDetected();
 
 	if (event->button() == Qt::LeftButton) {
 		switch (event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)) {
@@ -5502,6 +5515,8 @@ void TextArea::endDrag() {
 
 bool TextArea::clickTracker(QMouseEvent *event, bool inDoubleClickHandler) {
 
+	setUserInteractionDetected();
+
 	if (clickCount_ < 3 && clickPos_ == event->pos() && !clickTimerExpired_) {
 		clickCount_++;
 	} else {
@@ -5532,6 +5547,20 @@ bool TextArea::clickTracker(QMouseEvent *event, bool inDoubleClickHandler) {
 	}
 
 	return true;
+}
+
+/*
+ * @brief TextArea::clearUserInteractionDetected
+*/
+void TextArea::clearUserInteractionDetected() {
+	document_->clearUserInteractionDetected();
+}
+
+/*
+ * @brief TextArea::setUserInteractionDetected
+*/
+void TextArea::setUserInteractionDetected() {
+	document_->setUserInteractionDetected();
 }
 
 /**
@@ -7976,6 +8005,8 @@ void TextArea::wheelEvent(QWheelEvent *event) {
 	} else {
 		QAbstractScrollArea::wheelEvent(event);
 	}
+
+	setUserInteractionDetected();
 }
 
 /**

@@ -409,6 +409,9 @@ public:
 	void action_Default_Auto_Scroll_Near_Window_Top_Bottom_toggled(bool state);
 	void action_Default_Warnings_Files_Modified_Externally_toggled(bool state);
 	void action_Default_Warnings_Check_Modified_File_Contents_toggled(bool state);
+	void action_Default_Warnings_When_Always_toggled(bool state);
+	void action_Default_Warnings_When_Local_Modified_toggled(bool state);
+	void action_Default_Warnings_When_User_Interacts_toggled(bool state);
 	void action_Default_Warnings_On_Exit_toggled(bool state);
 	void action_Learn_Keystrokes_triggered();
 	void action_Finish_Learn_triggered();
