@@ -2180,6 +2180,9 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 
 	char pendingCR = '\0';
 
+	// TODO(eteran): in the age of modern computers, we can just memory map
+	// the whole file and use that for comparison
+
 	QFile file(fileName);
 	if (!file.open(QIODevice::ReadOnly)) {
 		return true;
