@@ -270,7 +270,7 @@ boost::optional<DialogFind::Fields> DialogFind::readFields() {
 			QMessageBox::warning(
 				this,
 				tr("Regex Error"),
-				tr("Please respecify the search string:\n%1").arg(QString::fromLatin1(e.what())));
+				tr("Please re-specify the search string:\n%1").arg(QString::fromLatin1(e.what())));
 			return boost::none;
 		}
 	} else {

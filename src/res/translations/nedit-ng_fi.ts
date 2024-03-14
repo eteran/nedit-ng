@@ -773,7 +773,7 @@ edellisten komentojen uudelleenkäyttämiseksi)</translation>
     </message>
     <message>
         <location filename="../../DialogFind.cpp" line="263"/>
-        <source>Please respecify the search string:
+        <source>Please re-specify the search string:
 %1</source>
         <translation>Korjaa haussa käytettävä merkkijono: %1</translation>
     </message>
@@ -1547,7 +1547,7 @@ Replay Macro</source>
     </message>
     <message>
         <location filename="../../DialogReplace.cpp" line="593"/>
-        <source>Please respecify the search string:
+        <source>Please re-specify the search string:
 %1</source>
         <translation>Muokkaa etsittävää merkkijonoa
 %1</translation>

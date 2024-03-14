@@ -619,7 +619,7 @@ boost::optional<DialogReplace::Fields> DialogReplace::readFields() {
 		try {
 			auto compiledRE = make_regex(replaceText, regexDefault);
 		} catch (const RegexError &e) {
-			QMessageBox::warning(this, tr("Search String"), tr("Please respecify the search string:\n%1").arg(QString::fromLatin1(e.what())));
+			QMessageBox::warning(this, tr("Search String"), tr("Please re-specify the search string:\n%1").arg(QString::fromLatin1(e.what())));
 			return boost::none;
 		}
 	} else {

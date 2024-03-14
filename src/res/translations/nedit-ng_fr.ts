@@ -1142,7 +1142,7 @@ nedit-ng a été écrit par Evan Teran. Il est destiné à être un remplacement
     </message>
     <message>
         <location filename="../../DialogFind.cpp" line="245"/>
-        <source>Please respecify the search string:
+        <source>Please re-specify the search string:
 %1</source>
         <translation>Veuillez spécifier de nouveau la chaîne de recherche :
 %1</translation>
@@ -1912,7 +1912,7 @@ Rejouer la Macro</translation>
     </message>
     <message>
         <location filename="../../DialogReplace.cpp" line="571"/>
-        <source>Please respecify the search string:
+        <source>Please re-specify the search string:
 %1</source>
         <translation>Veuillez spécifier de nouveau la chaîne à rechercher:
 %1</translation>
