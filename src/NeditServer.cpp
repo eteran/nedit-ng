@@ -6,7 +6,6 @@
 #include "Preferences.h"
 #include "Util/FileSystem.h"
 #include "Util/ServerCommon.h"
-
 #include <QApplication>
 #include <QDataStream>
 #include <QDesktopWidget>
@@ -17,7 +16,6 @@
 #include <QLocalSocket>
 #include <QScreen>
 #include <QVarLengthArray>
-
 #include <memory>
 
 namespace {
@@ -305,7 +303,7 @@ void NeditServer::newConnection() {
 				iconicFlag,
 				languageMode.isEmpty() ? QString() : languageMode,
 				tabbed == -1 ? Preferences::GetPrefOpenInTab() : tabbed,
-				/*bgOpen=*/true);
+				/*background=*/true);
 
 			if (document) {
 				if (lastFile && MainWindow::fromDocument(document) != MainWindow::fromDocument(lastFile)) {

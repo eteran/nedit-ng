@@ -46,7 +46,7 @@
 
 #define EMIT_EVENT_0(name)                                       \
 	do {                                                         \
-		if (!(flags & SuppressRecording)) {                       \
+		if (!(flags & SuppressRecording)) {                      \
 			TextEditEvent textEvent(QLatin1String(name), flags); \
 			QApplication::sendEvent(this, &textEvent);           \
 		}                                                        \
@@ -54,7 +54,7 @@
 
 #define EMIT_EVENT_1(name, arg)                                         \
 	do {                                                                \
-		if (!(flags & SuppressRecording)) {                              \
+		if (!(flags & SuppressRecording)) {                             \
 			TextEditEvent textEvent(QLatin1String(name), flags, (arg)); \
 			QApplication::sendEvent(this, &textEvent);                  \
 		}                                                               \
@@ -230,7 +230,9 @@ TextCursor findRelativeLineStart(const TextBuffer *buf, TextCursor referencePos,
 
 	if (newLineNum < referenceLineNum) {
 		return buf->BufCountBackwardNLines(referencePos, referenceLineNum - newLineNum);
-	} else if (newLineNum > referenceLineNum) {
+	}
+
+	if (newLineNum > referenceLineNum) {
 		return buf->BufCountForwardNLines(referencePos, newLineNum - referenceLineNum);
 	}
 
@@ -2487,9 +2489,9 @@ bool TextArea::posToVisibleLineNum(TextCursor pos, int *lineNum) const {
 					return false;
 				}
 				return ++(*lineNum) <= nVisibleLines_ - 1;
-			} else {
-				return posToVisibleLineNum(std::max(lastChar_ - 1, buffer_->BufStartOfBuffer()), lineNum);
 			}
+
+			return posToVisibleLineNum(std::max(lastChar_ - 1, buffer_->BufStartOfBuffer()), lineNum);
 		}
 		return false;
 	}
@@ -3012,13 +3014,17 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 		// select a GC
 		if (style & (STYLE_LOOKUP_MASK | BACKLIGHT_MASK | RANGESET_MASK)) {
 			return DrawStyle;
-		} else if (style & HIGHLIGHT_MASK) {
-			return DrawHighlight;
-		} else if (style & PRIMARY_MASK) {
-			return DrawSelect;
-		} else {
-			return DrawPlain;
 		}
+
+		if (style & HIGHLIGHT_MASK) {
+			return DrawHighlight;
+		}
+
+		if (style & PRIMARY_MASK) {
+			return DrawSelect;
+		}
+
+		return DrawPlain;
 	}();
 
 	switch (drawType) {
@@ -4694,9 +4700,9 @@ bool TextArea::deletePendingSelection() {
 		checkAutoShowInsertPos();
 		callCursorMovementCBs();
 		return true;
-	} else {
-		return false;
 	}
+
+	return false;
 }
 
 TextCursor TextArea::startOfWord(TextCursor pos) const {
@@ -5519,10 +5525,11 @@ bool TextArea::clickTracker(QMouseEvent *event, bool inDoubleClickHandler) {
 	case 1:
 		if (inDoubleClickHandler) {
 			return true;
-		} else {
-			mouseDoubleClickEvent(event);
-			return false;
 		}
+
+		mouseDoubleClickEvent(event);
+		return false;
+
 	case 2:
 		mouseTripleClickEvent(event);
 		return false;
@@ -7209,8 +7216,7 @@ void TextArea::addSmartIndentCallback(SmartIndentCallback callback, void *arg) {
 **  Sets the caret to on or off and restart the caret blink timer.
 **  This could be used by other modules to modify the caret's blinking.
 */
-void TextArea::resetCursorBlink(bool startsBlanked)
-{
+void TextArea::resetCursorBlink(bool startsBlanked) {
 	if (cursorBlinkTimer_->isActive()) {
 		//  Start blinking the caret again.
 		cursorBlinkTimer_->start();
@@ -7504,11 +7510,13 @@ int TextArea::TextDGetCalltipID(int id) const {
 
 	if (id == 0) {
 		return calltip_.ID;
-	} else if (id == calltip_.ID) {
-		return id;
-	} else {
-		return 0;
 	}
+
+	if (id == calltip_.ID) {
+		return id;
+	}
+
+	return 0;
 }
 
 /**
@@ -7559,9 +7567,10 @@ int TextArea::TextDShowCalltip(const QString &text, bool anchored, CallTipPositi
 				return 0;
 			}
 			calltip_.pos = -1;
-		} else
+		} else {
 			// Store the x-offset for use when redrawing
 			calltip_.pos = rel.x();
+		}
 	}
 
 	calltip_.ID        = StaticCalltipID;

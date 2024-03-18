@@ -694,16 +694,17 @@ QString DialogWindowTitle::formatWindowTitleInternal(const QString &filename, co
 
 			case 'S': // file status
 				fileStatusPresent = true;
-				if (lockReasons.isAnyLockedIgnoringUser() && fileChanged)
+				if (lockReasons.isAnyLockedIgnoringUser() && fileChanged) {
 					title.append(tr("read only, modified"));
-				else if (lockReasons.isAnyLockedIgnoringUser())
+				} else if (lockReasons.isAnyLockedIgnoringUser()) {
 					title.append(tr("read only"));
-				else if (lockReasons.isUserLocked() && fileChanged)
+				} else if (lockReasons.isUserLocked() && fileChanged) {
 					title.append(tr("locked, modified"));
-				else if (lockReasons.isUserLocked())
+				} else if (lockReasons.isUserLocked()) {
 					title.append(tr("locked"));
-				else if (fileChanged)
+				} else if (fileChanged) {
 					title.append(tr("modified"));
+				}
 				break;
 
 			case 'u': // user name
@@ -720,16 +721,17 @@ QString DialogWindowTitle::formatWindowTitleInternal(const QString &filename, co
 				if (format_it != format.end() && *format_it == QLatin1Char('S')) {
 					++format_it;
 					shortStatus = true;
-					if (lockReasons.isAnyLockedIgnoringUser() && fileChanged)
+					if (lockReasons.isAnyLockedIgnoringUser() && fileChanged) {
 						title.append(tr("RO*"));
-					else if (lockReasons.isAnyLockedIgnoringUser())
+					} else if (lockReasons.isAnyLockedIgnoringUser()) {
 						title.append(tr("RO"));
-					else if (lockReasons.isUserLocked() && fileChanged)
+					} else if (lockReasons.isUserLocked() && fileChanged) {
 						title.append(tr("LO*"));
-					else if (lockReasons.isUserLocked())
+					} else if (lockReasons.isUserLocked()) {
 						title.append(tr("LO"));
-					else if (fileChanged)
+					} else if (fileChanged) {
 						title.append(tr("*"));
+					}
 					break;
 				}
 				title.append(c);

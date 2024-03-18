@@ -291,7 +291,7 @@ Main::Main(const QStringList &args) {
 					iconic,
 					langMode,
 					isTabbed,
-					/*bgOpen=*/true);
+					/*background=*/true);
 			} else {
 				document = DocumentWidget::editExistingFile(
 					nullptr,
@@ -302,7 +302,7 @@ Main::Main(const QStringList &args) {
 					iconic,
 					langMode,
 					isTabbed,
-					/*bgOpen=*/true);
+					/*background=*/true);
 			}
 
 			fileSpecified = true;

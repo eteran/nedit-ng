@@ -1196,9 +1196,9 @@ auto BasicTextBuffer<Ch, Tr>::getSelectionText(const Selection *sel) const -> st
 	// If the selection is not rectangular, return the selected range
 	if (sel->rectangular_) {
 		return BufGetTextInRect(sel->start_, sel->end_, sel->rectStart_, sel->rectEnd_);
-	} else {
-		return BufGetRange(sel->start_, sel->end_);
 	}
+
+	return BufGetRange(sel->start_, sel->end_);
 }
 
 /*
@@ -2187,9 +2187,9 @@ boost::optional<SelectionPos> BasicTextBuffer<Ch, Tr>::Selection::getSelectionPo
 	}
 
 	SelectionPos pos = {};
-	pos.isRect = rectangular_;
-	pos.start  = start_;
-	pos.end    = end_;
+	pos.isRect       = rectangular_;
+	pos.start        = start_;
+	pos.end          = end_;
 	if (rectangular_) {
 		pos.rectStart = rectStart_;
 		pos.rectEnd   = rectEnd_;

@@ -206,17 +206,19 @@ int gap_buffer<Ch, Tr>::compare(size_type pos, view_type str) const noexcept {
 
 	if (posEnd <= gap_start_) {
 		return Tr::compare(&buf_[pos], str.data(), str.size());
-	} else if (pos >= gap_start_) {
-		return Tr::compare(&buf_[pos + gap_size()], str.data(), str.size());
-	} else {
-		const auto part1Length = static_cast<size_t>(gap_start_ - pos);
-		const int result       = Tr::compare(&buf_[pos], str.data(), part1Length);
-		if (result != 0) {
-			return result;
-		}
-
-		return Tr::compare(&buf_[gap_end_], &str[part1Length], static_cast<size_t>(str.size() - part1Length));
 	}
+
+	if (pos >= gap_start_) {
+		return Tr::compare(&buf_[pos + gap_size()], str.data(), str.size());
+	}
+
+	const auto part1Length = static_cast<size_t>(gap_start_ - pos);
+	const int result       = Tr::compare(&buf_[pos], str.data(), part1Length);
+	if (result != 0) {
+		return result;
+	}
+
+	return Tr::compare(&buf_[gap_end_], &str[part1Length], static_cast<size_t>(str.size() - part1Length));
 }
 
 /**

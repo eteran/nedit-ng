@@ -143,9 +143,8 @@ inline std::string to_string(const DataValue &dv) {
 
 	if (auto n = boost::get<int>(&dv.value)) {
 		return std::to_string(*n);
-	} else {
-		return boost::get<std::string>(dv.value);
 	}
+	return boost::get<std::string>(dv.value);
 }
 
 inline int to_integer(const DataValue &dv) {

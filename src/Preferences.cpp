@@ -1187,10 +1187,10 @@ size_t FindLanguageMode(const QString &languageName) {
 QString LanguageModeName(size_t mode) {
 	if (mode == PLAIN_LANGUAGE_MODE || LanguageModes.empty()) {
 		return QString();
-	} else {
-		Q_ASSERT(mode < LanguageModes.size());
-		return LanguageModes[mode].name;
 	}
+
+	Q_ASSERT(mode < LanguageModes.size());
+	return LanguageModes[mode].name;
 }
 
 bool ReadNumericField(Input &in, int *value) {
@@ -1284,7 +1284,9 @@ bool ReadQuotedString(Input &in, QString *errMsg, QString *string) {
 		if (c.atEnd()) {
 			*errMsg = tr("string not terminated");
 			return false;
-		} else if (*c == Quote) {
+		}
+
+		if (*c == Quote) {
 			if (*(c + 1) == Quote) {
 				++c;
 			} else {

@@ -112,9 +112,9 @@ int64_t moveAheadNLines(view::string_view str, int64_t &pos, int64_t n) {
 
 	if (n == 0) {
 		return -1;
-	} else {
-		return i - n;
 	}
+
+	return i - n;
 }
 
 /**
@@ -125,9 +125,9 @@ int64_t moveAheadNLines(view::string_view str, int64_t &pos, int64_t n) {
 QMultiHash<QString, Tag> *hashTableByType(SearchMode mode) {
 	if (mode == SearchMode::TIP) {
 		return &LoadedTips;
-	} else {
-		return &LoadedTags;
 	}
+
+	return &LoadedTags;
 }
 
 /**
@@ -138,9 +138,9 @@ QMultiHash<QString, Tag> *hashTableByType(SearchMode mode) {
 std::deque<File> *tagListByType(SearchMode mode) {
 	if (mode == SearchMode::TAG) {
 		return &TagsFileList;
-	} else {
-		return &TipsFileList;
 	}
+
+	return &TipsFileList;
 }
 
 /*  Delete a tag from the cache.
@@ -314,12 +314,11 @@ int scanETagsLine(const QString &line, const QString &tagPath, int index, QStrin
 		if (line.midRef(posCOM + 1, 7) == QLatin1String("include")) {
 
 			if (!QFileInfo(file).isAbsolute()) {
-
 				QString incPath = NormalizePathname(tr("%1%2").arg(tagPath, file));
 				return loadTagsFile(incPath, index, recLevel + 1);
-			} else {
-				return loadTagsFile(file, index, recLevel + 1);
 			}
+
+			return loadTagsFile(file, index, recLevel + 1);
 		}
 	}
 
@@ -532,6 +531,7 @@ CalltipToken nextTFBlock(QTextStream &stream, QString &header, QString &body, in
 			qWarning("NEdit: Warning: empty '* language *' block in calltips file.");
 			return TF_ERROR;
 		}
+
 		*blkLine = *currLine;
 		header   = rstrip(line);
 		code     = TF_LANGUAGE;
@@ -539,12 +539,15 @@ CalltipToken nextTFBlock(QTextStream &stream, QString &header, QString &body, in
 		// VERSION block
 		const bool eof = !stream.readLineInto(&line);
 		++(*currLine);
-		if (eof)
+		if (eof) {
 			return TF_ERROR_EOF;
+		}
+
 		if (lineEmpty(line)) {
 			qWarning("NEdit: Warning: empty '* version *' block in calltips file.");
 			return TF_ERROR;
 		}
+
 		*blkLine = *currLine;
 		header   = rstrip(line);
 		code     = TF_VERSION;
@@ -559,10 +562,12 @@ CalltipToken nextTFBlock(QTextStream &stream, QString &header, QString &body, in
 		if (eof) {
 			return TF_ERROR_EOF;
 		}
+
 		if (lineEmpty(line)) {
 			qWarning("NEdit: Warning: empty calltip block:\n   \"%s\"", qPrintable(header));
 			return TF_ERROR;
 		}
+
 		*blkLine = *currLine;
 		body     = line;
 		code     = TF_BLOCK;
@@ -756,12 +761,14 @@ int matchTagRec(QList<Tag> &tags, Tag &tag) {
 QList<Tag> getUniqueTags(QList<Tag> &tags) {
 	QList<Tag> ntags;
 
-	if (tags.size() <= 1)
+	if (tags.size() <= 1) {
 		return tags;
+	}
 
 	for (Tag t1 : tags) {
-		if (!matchTagRec(ntags, t1))
+		if (!matchTagRec(ntags, t1)) {
 			ntags.append(t1);
+		}
 	}
 
 	return ntags;
@@ -1102,9 +1109,9 @@ QList<Tag> lookupTag(const QString &name, SearchMode mode) {
 	searchMode = mode;
 	if (searchMode == SearchMode::TIP) {
 		return lookupTagFromList(&TipsFileList, name, mode);
-	} else {
-		return lookupTagFromList(&TagsFileList, name, mode);
 	}
+
+	return lookupTagFromList(&TagsFileList, name, mode);
 }
 
 /*
@@ -1222,11 +1229,11 @@ bool fakeRegExSearch(view::string_view buffer, const QString &searchString, int6
 		*startPos = searchResult.start;
 		*endPos   = searchResult.end;
 		return true;
-	} else {
-		// startPos, endPos left untouched by SearchString if search failed.
-		QApplication::beep();
-		return false;
 	}
+
+	// startPos, endPos left untouched by SearchString if search failed.
+	QApplication::beep();
+	return false;
 }
 
 /*
@@ -1349,9 +1356,9 @@ QList<Tag> getTag(const QString &name, SearchMode mode) {
 
 	if (mode == SearchMode::TIP) {
 		return getTagFromTable(LoadedTips, name);
-	} else {
-		return getTagFromTable(LoadedTags, name);
 	}
+
+	return getTagFromTable(LoadedTags, name);
 }
 
 /**
@@ -1363,9 +1370,9 @@ QList<Tag> getTag(const QString &name, SearchMode mode) {
 int tagsShowCalltip(TextArea *area, const QString &text) {
 	if (!text.isNull()) {
 		return area->TextDShowCalltip(text, globAnchored, globPos, globHAlign, globVAlign, globAlignMode);
-	} else {
-		return 0;
 	}
+
+	return 0;
 }
 
 }

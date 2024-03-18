@@ -431,17 +431,16 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 			styleString[endParse - beginSafety] = '\0';
 			modifyStyleBuf(styleBuf, &styleString[beginParse - beginSafety], beginParse, endParse, firstPass2Style);
 			return endParse;
-
-		} else {
-			passTwoParseString(
-				&pass2Patterns[0],
-				string,
-				styleString,
-				modStart - beginSafety,
-				&ctx,
-				string,
-				match_to);
 		}
+
+		passTwoParseString(
+			&pass2Patterns[0],
+			string,
+			styleString,
+			modStart - beginSafety,
+			&ctx,
+			string,
+			match_to);
 	}
 
 	/* Re-parse the areas after the modification with pass 2 patterns, from
@@ -558,11 +557,11 @@ int findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlig
 			if (patternIsParsable(patternOfStyle(pass1Patterns, style))) {
 				*pos = i + 1;
 				return style;
-			} else {
-				/* The parent is not parsable, so well have to continue
-				   searching. The parent now becomes the running style. */
-				runningStyle = style;
 			}
+			/* The parent is not parsable, so well have to continue
+			   searching. The parent now becomes the running style. */
+			runningStyle = style;
+
 		}
 
 		/* If the style is preceded by a child style, it's safe to resume
@@ -587,10 +586,10 @@ int findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlig
 			if (patternIsParsable(patternOfStyle(pass1Patterns, parentStyle))) {
 				*pos = i + 1;
 				return parentStyle;
-			} else {
-				// Switch to the new style
-				runningStyle = style;
 			}
+			// Switch to the new style
+			runningStyle = style;
+
 		}
 
 		/* If the style is preceded by an unrelated style, it's safe to
@@ -1357,11 +1356,13 @@ TextCursor backwardOneContext(TextBuffer *buf, const ReparseContext &context, Te
 
 	if (context.nLines == 0) {
 		return std::max(begin, fromPos - context.nChars);
-	} else if (context.nChars == 0) {
-		return std::max(begin, buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1);
-	} else {
-		return std::max(begin, std::min(std::max(begin, buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1), fromPos - context.nChars));
 	}
+
+	if (context.nChars == 0) {
+		return std::max(begin, buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1);
+	}
+
+	return std::max(begin, std::min(std::max(begin, buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1), fromPos - context.nChars));
 }
 
 /*
@@ -1378,11 +1379,13 @@ TextCursor forwardOneContext(TextBuffer *buf, const ReparseContext &context, Tex
 
 	if (context.nLines == 0) {
 		return std::min(end, fromPos + context.nChars);
-	} else if (context.nChars == 0) {
-		return std::min(end, buf->BufCountForwardNLines(fromPos, context.nLines));
-	} else {
-		return std::min(end, std::max(buf->BufCountForwardNLines(fromPos, context.nLines), fromPos + context.nChars));
 	}
+
+	if (context.nChars == 0) {
+		return std::min(end, buf->BufCountForwardNLines(fromPos, context.nLines));
+	}
+
+	return std::min(end, std::max(buf->BufCountForwardNLines(fromPos, context.nLines), fromPos + context.nChars));
 }
 
 /*

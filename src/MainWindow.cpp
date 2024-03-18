@@ -1697,9 +1697,9 @@ QString MainWindow::uniqueUntitledName() {
 		const QString name = [i]() {
 			if (i == 0) {
 				return tr("Untitled");
-			} else {
-				return tr("Untitled_%1").arg(i);
 			}
+
+			return tr("Untitled_%1").arg(i);
 		}();
 
 		auto it = std::find_if(documents.begin(), documents.end(), [name](DocumentWidget *document) {
@@ -2335,7 +2335,7 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 			/*iconic*/ false,
 			QString(),
 			openInTab,
-			/*bgOpen=*/false);
+			/*background=*/false);
 	}
 
 	MainWindow::checkCloseEnableState();
@@ -2819,16 +2819,15 @@ void MainWindow::editIFind_textChanged(const QString &text) {
 		if (ui.checkIFindCase->isChecked()) {
 			if (ui.checkIFindRegex->isChecked()) {
 				return SearchType::Regex;
-			} else {
-				return SearchType::CaseSense;
 			}
-		} else {
-			if (ui.checkIFindRegex->isChecked()) {
-				return SearchType::RegexNoCase;
-			} else {
-				return SearchType::Literal;
-			}
+
+			return SearchType::CaseSense;
 		}
+
+		if (ui.checkIFindRegex->isChecked()) {
+			return SearchType::RegexNoCase;
+		}
+		return SearchType::Literal;
 	}();
 
 	const Direction direction = ui.checkIFindReverse->isChecked() ? Direction::Backward : Direction::Forward;
@@ -2921,16 +2920,16 @@ void MainWindow::editIFind_returnPressed() {
 		if (ui.checkIFindCase->isChecked()) {
 			if (ui.checkIFindRegex->isChecked()) {
 				return SearchType::Regex;
-			} else {
-				return SearchType::CaseSense;
 			}
-		} else {
-			if (ui.checkIFindRegex->isChecked()) {
-				return SearchType::RegexNoCase;
-			} else {
-				return SearchType::Literal;
-			}
+
+			return SearchType::CaseSense;
 		}
+
+		if (ui.checkIFindRegex->isChecked()) {
+			return SearchType::RegexNoCase;
+		}
+
+		return SearchType::Literal;
 	}();
 
 	Direction direction = ui.checkIFindReverse->isChecked() ? Direction::Backward : Direction::Forward;
@@ -5336,11 +5335,13 @@ bool MainWindow::checkPrefsChangesSaved() {
 	if (messageBox.clickedButton() == buttonSave) {
 		Preferences::SaveNEditPrefs(this, Verbosity::Silent);
 		return true;
-	} else if (messageBox.clickedButton() == buttonDontSave) {
-		return true;
-	} else {
-		return false;
 	}
+
+	if (messageBox.clickedButton() == buttonDontSave) {
+		return true;
+	}
+
+	return false;
 }
 
 /*
@@ -5581,7 +5582,7 @@ void MainWindow::action_Help_triggered() {
  */
 bool MainWindow::eventFilter(QObject *object, QEvent *ev) {
 
-	if (ev->type() == QEvent::MouseButtonRelease && static_cast<QMouseEvent*>(ev)->button() == Qt::MiddleButton && object == ui.editIFind->findChild<QToolButton *>()) {
+	if (ev->type() == QEvent::MouseButtonRelease && static_cast<QMouseEvent *>(ev)->button() == Qt::MiddleButton && object == ui.editIFind->findChild<QToolButton *>()) {
 		ui.editIFind->setText(QApplication::clipboard()->text(QClipboard::Selection));
 		return true;
 	}

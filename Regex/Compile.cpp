@@ -78,9 +78,9 @@ uint8_t *next_ptr(uint8_t *ptr) noexcept {
 
 	if (GET_OP_CODE(ptr) == BACK) {
 		return (ptr - offset);
-	} else {
-		return (ptr + offset);
 	}
+
+	return (ptr + offset);
 }
 
 /**
@@ -182,13 +182,13 @@ uint8_t *emit_node(T op_code) noexcept {
 	if (pContext.FirstPass) {
 		pContext.Reg_Size += NODE_SIZE;
 		return reinterpret_cast<uint8_t *>(1);
-	} else {
-		const size_t end_offset = pContext.Code.size();
-		pContext.Code.push_back(static_cast<uint8_t>(op_code));
-		pContext.Code.push_back(0);
-		pContext.Code.push_back(0);
-		return &pContext.Code[end_offset];
 	}
+
+	const size_t end_offset = pContext.Code.size();
+	pContext.Code.push_back(static_cast<uint8_t>(op_code));
+	pContext.Code.push_back(0);
+	pContext.Code.push_back(0);
+	return &pContext.Code[end_offset];
 }
 
 /*----------------------------------------------------------------------*
@@ -261,23 +261,23 @@ uint8_t *emit_special(Ch op_code, uint32_t test_val, size_t index) noexcept {
 		}
 
 		return reinterpret_cast<uint8_t *>(1);
-	} else {
-		uint8_t *ret_val = emit_node(op_code); // Return the address for start of node.
-		if (op_code == INC_COUNT || op_code == TEST_COUNT) {
-			pContext.Code.push_back(index & 0xff);
+	}
 
-			if (op_code == TEST_COUNT) {
-				pContext.Code.push_back(PUT_OFFSET_L(test_val));
-				pContext.Code.push_back(PUT_OFFSET_R(test_val));
-			}
-		} else if (op_code == POS_BEHIND_OPEN || op_code == NEG_BEHIND_OPEN) {
-			pContext.Code.push_back(PUT_OFFSET_L(test_val));
-			pContext.Code.push_back(PUT_OFFSET_R(test_val));
+	uint8_t *ret_val = emit_node(op_code); // Return the address for start of node.
+	if (op_code == INC_COUNT || op_code == TEST_COUNT) {
+		pContext.Code.push_back(index & 0xff);
+
+		if (op_code == TEST_COUNT) {
 			pContext.Code.push_back(PUT_OFFSET_L(test_val));
 			pContext.Code.push_back(PUT_OFFSET_R(test_val));
 		}
-		return ret_val;
+	} else if (op_code == POS_BEHIND_OPEN || op_code == NEG_BEHIND_OPEN) {
+		pContext.Code.push_back(PUT_OFFSET_L(test_val));
+		pContext.Code.push_back(PUT_OFFSET_R(test_val));
+		pContext.Code.push_back(PUT_OFFSET_L(test_val));
+		pContext.Code.push_back(PUT_OFFSET_R(test_val));
 	}
+	return ret_val;
 }
 
 /*----------------------------------------------------------------------*
@@ -757,7 +757,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 		Raise<RegexError>("%c follows nothing", pContext.Reg_Parse[-1]);
 
 	case '{':
-		if (pContext.Enable_Counting_Quantifier) {
+		if (ParseContext::Enable_Counting_Quantifier) {
 			Raise<RegexError>("{m,n} follows nothing");
 		} else {
 			ret_val = emit_node(EXACTLY); // Treat braces as literals.
@@ -1881,7 +1881,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 	int flags_local;
 	len_range range_local;
 
-	if (pContext.Enable_Counting_Quantifier) {
+	if (ParseContext::Enable_Counting_Quantifier) {
 		pContext.Brace_Char = '{';
 		pContext.Meta_Char  = &Default_Meta_Char[0];
 	} else {

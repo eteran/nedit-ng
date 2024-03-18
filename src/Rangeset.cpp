@@ -118,9 +118,13 @@ int64_t weighted_at_or_before(const T *table, int64_t base, int64_t len, T val) 
 
 	if (val <= min) { /* initial range checks */
 		return lo;    /* needed to avoid out-of-range mid values */
-	} else if (val > max) {
+	}
+
+	if (val > max) {
 		return len;
-	} else if (val == max) {
+	}
+
+	if (val == max) {
 		return hi;
 	}
 

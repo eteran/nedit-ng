@@ -380,15 +380,17 @@ private:
 
 template <class Ch, class Tr>
 constexpr bool operator==(basic_string_view<Ch, Tr> lhs, basic_string_view<Ch, Tr> rhs) noexcept {
-	if (lhs.size() != rhs.size())
+	if (lhs.size() != rhs.size()) {
 		return false;
+	}
 	return lhs.compare(rhs) == 0;
 }
 
 template <class Ch, class Tr>
 constexpr bool operator!=(basic_string_view<Ch, Tr> lhs, basic_string_view<Ch, Tr> rhs) noexcept {
-	if (lhs.size() != rhs.size())
+	if (lhs.size() != rhs.size()) {
 		return true;
+	}
 	return lhs.compare(rhs) != 0;
 }
 

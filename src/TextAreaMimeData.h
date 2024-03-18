@@ -11,7 +11,7 @@ class TextArea;
 class TextAreaMimeData : public QMimeData {
 	Q_OBJECT
 public:
-	explicit TextAreaMimeData(const std::shared_ptr<TextBuffer> &buffer);
+	explicit TextAreaMimeData(std::shared_ptr<TextBuffer> buffer);
 	~TextAreaMimeData() override = default;
 
 public:

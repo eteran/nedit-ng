@@ -44,9 +44,9 @@ FORCE_INLINE uint8_t *NEXT_PTR(uint8_t *ptr) noexcept {
 
 	if (GET_OP_CODE(ptr) == BACK) {
 		return (ptr - offset);
-	} else {
-		return (ptr + offset);
 	}
+
+	return (ptr + offset);
 }
 
 /**

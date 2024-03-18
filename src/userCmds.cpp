@@ -708,9 +708,9 @@ QString stripLanguageMode(const QString &menuItemName) {
 	int index = menuItemName.indexOf(QLatin1Char('@'));
 	if (index != -1) {
 		return menuItemName.left(index);
-	} else {
-		return menuItemName;
 	}
+
+	return menuItemName;
 }
 
 /*

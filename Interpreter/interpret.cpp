@@ -803,7 +803,9 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 		qInfo("NEdit: To boldly go where no local sym has gone before: %s", sym->name.c_str());
 		sym->type = GLOBAL_SYM;
 		return sym;
-	} else if (s != nullptr) {
+	}
+
+	if (s != nullptr) {
 		/* case b)
 		   sym will shadow the old symbol from the GlobalSymList */
 		qInfo("NEdit: duplicate symbol in LocalSymList and GlobalSymList: %s", sym->name.c_str());
@@ -823,47 +825,47 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 	do {                                           \
 		if (Context.StackP == Context.Stack.get()) \
 			return execError(StackUnderflowMsg);   \
-		dataVal = *--Context.StackP;               \
+		(dataVal) = *--Context.StackP;             \
 	} while (0)
 
 #define PUSH(dataVal)                                           \
 	do {                                                        \
 		if (Context.StackP >= &Context.Stack.get()[STACK_SIZE]) \
 			return execError(StackOverflowMsg);                 \
-		*Context.StackP++ = dataVal;                            \
+		*Context.StackP++ = (dataVal);                          \
 	} while (0)
 
-#define PEEK(dataVal, peekIndex)                     \
-	do {                                             \
-		dataVal = *(Context.StackP - peekIndex - 1); \
+#define PEEK(dataVal, peekIndex)                       \
+	do {                                               \
+		(dataVal) = *(Context.StackP - (peekIndex)-1); \
 	} while (0)
 
-#define POP_INT(number)                                            \
-	do {                                                           \
-		if (Context.StackP == Context.Stack.get())                 \
-			return execError(StackUnderflowMsg);                   \
-		--Context.StackP;                                          \
-		if (is_string(*Context.StackP)) {                          \
-			if (!StringToNum(to_string(*Context.StackP), &number)) \
-				return execError(StringToNumberMsg);               \
-		} else if (is_integer(*Context.StackP))                    \
-			number = to_integer(*Context.StackP);                  \
-		else                                                       \
-			return execError(CantConvertArrayToInteger);           \
+#define POP_INT(number)                                              \
+	do {                                                             \
+		if (Context.StackP == Context.Stack.get())                   \
+			return execError(StackUnderflowMsg);                     \
+		--Context.StackP;                                            \
+		if (is_string(*Context.StackP)) {                            \
+			if (!StringToNum(to_string(*Context.StackP), &(number))) \
+				return execError(StringToNumberMsg);                 \
+		} else if (is_integer(*Context.StackP))                      \
+			(number) = to_integer(*Context.StackP);                  \
+		else                                                         \
+			return execError(CantConvertArrayToInteger);             \
 	} while (0)
 
-#define POP_STRING(string_ref)                                        \
-	do {                                                              \
-		if (Context.StackP == Context.Stack.get())                    \
-			return execError(StackUnderflowMsg);                      \
-		--Context.StackP;                                             \
-		if (is_integer(*Context.StackP)) {                            \
-			string_ref = std::to_string(to_integer(*Context.StackP)); \
-		} else if (is_string(*Context.StackP)) {                      \
-			string_ref = to_string(*Context.StackP);                  \
-		} else {                                                      \
-			return execError(CantConvertArrayToString);               \
-		}                                                             \
+#define POP_STRING(string_ref)                                          \
+	do {                                                                \
+		if (Context.StackP == Context.Stack.get())                      \
+			return execError(StackUnderflowMsg);                        \
+		--Context.StackP;                                               \
+		if (is_integer(*Context.StackP)) {                              \
+			(string_ref) = std::to_string(to_integer(*Context.StackP)); \
+		} else if (is_string(*Context.StackP)) {                        \
+			(string_ref) = to_string(*Context.StackP);                  \
+		} else {                                                        \
+			return execError(CantConvertArrayToString);                 \
+		}                                                               \
 	} while (0)
 
 #define PUSH_INT(number)                                        \
@@ -1263,7 +1265,8 @@ static int multiply() {
 }
 
 static int divide() {
-	int n1, n2;
+	int n1;
+	int n2;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
@@ -1278,7 +1281,8 @@ static int divide() {
 }
 
 static int modulo() {
-	int n1, n2;
+	int n1;
+	int n2;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);

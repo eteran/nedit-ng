@@ -396,9 +396,9 @@ int startServer(const char *message, const QStringList &commandLineArgs) {
 	if (!sysrc) {
 		fprintf(stderr, "nc-ng: The server process failed to start. Either the invoked program is missing, or you may have insufficient permissions to invoke the program.\n");
 		return -1;
-	} else {
-		return 0;
 	}
+
+	return 0;
 }
 
 bool writeToSocket(QLocalSocket *socket, const QByteArray &data) {

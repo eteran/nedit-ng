@@ -3719,26 +3719,25 @@ std::error_code rangesetCreateMS(DocumentWidget *document, Arguments arguments, 
 		const int label = rangesetTable->RangesetCreate();
 		*result         = make_value(label);
 		return MacroErrorCode::Success;
-	} else {
+	}
 
-		int nRangesetsRequired;
-		if (std::error_code ec = readArgument(arguments[0], &nRangesetsRequired)) {
-			return ec;
-		}
+	int nRangesetsRequired;
+	if (std::error_code ec = readArgument(arguments[0], &nRangesetsRequired)) {
+		return ec;
+	}
 
-		*result = make_value(std::make_shared<Array>());
+	*result = make_value(std::make_shared<Array>());
 
-		if (nRangesetsRequired > rangesetTable->rangesetsAvailable()) {
-			return MacroErrorCode::Success;
-		}
-
-		for (int i = 0; i < nRangesetsRequired; i++) {
-			DataValue element = make_value(rangesetTable->RangesetCreate());
-			ArrayInsert(result, std::to_string(i), &element);
-		}
-
+	if (nRangesetsRequired > rangesetTable->rangesetsAvailable()) {
 		return MacroErrorCode::Success;
 	}
+
+	for (int i = 0; i < nRangesetsRequired; i++) {
+		DataValue element = make_value(rangesetTable->RangesetCreate());
+		ArrayInsert(result, std::to_string(i), &element);
+	}
+
+	return MacroErrorCode::Success;
 }
 
 /*

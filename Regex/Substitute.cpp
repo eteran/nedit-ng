@@ -88,9 +88,9 @@ bool Regex::SubstituteRE(view::string_view source, std::string &dest) const noex
 				std::transform(re->startp[paren_no], re->endp[paren_no], out, [&count](char ch) -> int {
 					if (count++ == 0) {
 						return safe_toupper(ch);
-					} else {
-						return ch;
 					}
+
+					return ch;
 				});
 			} break;
 			case 'U':
@@ -103,9 +103,9 @@ bool Regex::SubstituteRE(view::string_view source, std::string &dest) const noex
 				std::transform(re->startp[paren_no], re->endp[paren_no], out, [&count](char ch) -> int {
 					if (count++ == 0) {
 						return safe_tolower(ch);
-					} else {
-						return ch;
 					}
+
+					return ch;
 				});
 			} break;
 			case 'L':

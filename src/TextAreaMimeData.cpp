@@ -7,8 +7,8 @@
  * @brief TextAreaMimeData::TextAreaMimeData
  * @param buffer
  */
-TextAreaMimeData::TextAreaMimeData(const std::shared_ptr<TextBuffer> &buffer)
-	: buffer_(buffer) {
+TextAreaMimeData::TextAreaMimeData(std::shared_ptr<TextBuffer> buffer)
+	: buffer_(std::move(buffer)) {
 }
 
 /**

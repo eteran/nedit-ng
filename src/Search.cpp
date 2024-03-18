@@ -243,32 +243,32 @@ boost::optional<Search::Result> searchLiteral(view::string_view string, view::st
 		}
 
 		return boost::none;
-	} else {
-		// Direction::Backward
-		// search from beginPos to start of file.  A negative begin pos
-		// says begin searching from the far end of the file
+	}
 
-		if (beginPos >= 0) {
-			for (auto it = mid; it >= first; --it) {
-				if (boost::optional<Search::Result> result = do_search(it)) {
-					return result;
-				}
-			}
-		}
+	// Direction::Backward
+	// search from beginPos to start of file.  A negative begin pos
+	// says begin searching from the far end of the file
 
-		if (wrap == WrapMode::NoWrap) {
-			return boost::none;
-		}
-
-		// search from end of file to beginPos
-		for (auto it = last; it >= mid; --it) {
+	if (beginPos >= 0) {
+		for (auto it = mid; it >= first; --it) {
 			if (boost::optional<Search::Result> result = do_search(it)) {
 				return result;
 			}
 		}
+	}
 
+	if (wrap == WrapMode::NoWrap) {
 		return boost::none;
 	}
+
+	// search from end of file to beginPos
+	for (auto it = last; it >= mid; --it) {
+		if (boost::optional<Search::Result> result = do_search(it)) {
+			return result;
+		}
+	}
+
+	return boost::none;
 }
 
 /*
@@ -378,31 +378,30 @@ boost::optional<Search::Result> searchLiteralWord(view::string_view string, view
 			}
 		}
 		return boost::none;
-	} else {
-		// Direction::Backward
-		// search from beginPos to start of file. A negative begin pos
-		// says begin searching from the far end of the file
+	}
 
-		if (beginPos >= 0) {
-			for (auto it = mid; it >= first; --it) {
-				if (boost::optional<Search::Result> result = do_search_word(it)) {
-					return result;
-				}
-			}
-		}
-
-		if (wrap == WrapMode::NoWrap) {
-			return boost::none;
-		}
-
-		// search from end of file to beginPos
-		for (auto it = last; it >= mid; --it) {
+	// Direction::Backward
+	// search from beginPos to start of file. A negative begin pos
+	// says begin searching from the far end of the file
+	if (beginPos >= 0) {
+		for (auto it = mid; it >= first; --it) {
 			if (boost::optional<Search::Result> result = do_search_word(it)) {
 				return result;
 			}
 		}
+	}
+
+	if (wrap == WrapMode::NoWrap) {
 		return boost::none;
 	}
+
+	// search from end of file to beginPos
+	for (auto it = last; it >= mid; --it) {
+		if (boost::optional<Search::Result> result = do_search_word(it)) {
+			return result;
+		}
+	}
+	return boost::none;
 }
 
 /*

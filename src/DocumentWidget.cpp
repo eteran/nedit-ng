@@ -288,26 +288,32 @@ UndoTypes determineUndoType(int64_t nInserted, int64_t nDeleted) {
 
 	if (textInserted && !textDeleted) {
 		// Insert
-		if (nInserted == 1)
+		if (nInserted == 1) {
 			return ONE_CHAR_INSERT;
-		else
-			return BLOCK_INSERT;
-	} else if (textInserted && textDeleted) {
-		// Replace
-		if (nInserted == 1)
-			return ONE_CHAR_REPLACE;
-		else
-			return BLOCK_REPLACE;
-	} else if (!textInserted && textDeleted) {
-		// Delete
-		if (nDeleted == 1)
-			return ONE_CHAR_DELETE;
-		else
-			return BLOCK_DELETE;
-	} else {
-		// Nothing deleted or inserted
-		return UNDO_NOOP;
+		}
+		return BLOCK_INSERT;
 	}
+
+	if (textInserted && textDeleted) {
+		// Replace
+		if (nInserted == 1) {
+			return ONE_CHAR_REPLACE;
+		}
+
+		return BLOCK_REPLACE;
+	}
+
+	if (!textInserted && textDeleted) {
+		// Delete
+		if (nDeleted == 1) {
+			return ONE_CHAR_DELETE;
+		}
+
+		return BLOCK_DELETE;
+	}
+
+	// Nothing deleted or inserted
+	return UNDO_NOOP;
 }
 
 /**
@@ -380,7 +386,7 @@ QString escapeCommand(const QString &command, const QString &fullName, int lineN
 ** If languageMode is passed as QString(), it will be determined automatically
 ** from the file extension or file contents.
 **
-** If bgOpen is true, then the file will be open in background. This
+** If background is true, then the file will be open in background. This
 ** works in association with the SetLanguageMode() function that has
 ** the syntax highlighting deferred, in order to speed up the file-
 ** opening operation when multiple files are being opened in succession.
@@ -1509,9 +1515,9 @@ TextArea *DocumentWidget::firstPane() const {
 QString DocumentWidget::documentDelimiters() const {
 	if (languageMode_ == PLAIN_LANGUAGE_MODE) {
 		return QString();
-	} else {
-		return Preferences::LanguageModes[languageMode_].delimiters;
 	}
+
+	return Preferences::LanguageModes[languageMode_].delimiters;
 }
 
 /*
@@ -1946,9 +1952,9 @@ QString DocumentWidget::backupFileName() const {
 
 	if (info_->filenameSet) {
 		return QStringLiteral("%1~%2").arg(info_->path, info_->filename);
-	} else {
-		return prependHome(QStringLiteral("~%1").arg(info_->filename));
 	}
+
+	return prependHome(QStringLiteral("~%1").arg(info_->filename));
 }
 
 /*
@@ -3066,7 +3072,7 @@ DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 		/*iconic=*/false,
 		QString(),
 		Preferences::GetPrefOpenInTab(),
-		/*bgOpen=*/false);
+		/*background=*/false);
 
 	MainWindow::checkCloseEnableState();
 
@@ -3143,7 +3149,9 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 				if (msgbox.clickedButton() == cancelButton) {
 					return false;
-				} else if (msgbox.clickedButton() == exitButton) {
+				}
+
+				if (msgbox.clickedButton() == exitButton) {
 					// NOTE(eteran): we use ::exit here because if we got here
 					// it's because we failed to open the initial documents on
 					// launch and the user has opted to no longer continue
@@ -3157,10 +3165,10 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 			if (fd == -1) {
 				QMessageBox::critical(this, tr("Error creating File"), tr("Can't create %1:\n%2").arg(fullname, errorString(errno)));
 				return false;
-			} else {
-				QT_CLOSE(fd);
-				QFile::remove(fullname);
 			}
+
+			QT_CLOSE(fd);
+			QFile::remove(fullname);
 
 			setWindowModified(false);
 			if ((flags & EditFlags::PREF_READ_ONLY) != 0) {
@@ -3190,8 +3198,8 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 #ifdef Q_OS_WIN
 // Copied from linux libc sys/stat.h:
-#define S_ISREG(m) (((m)&S_IFMT) == S_IFREG)
-#define S_ISDIR(m) (((m)&S_IFMT) == S_IFDIR)
+#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
 	if (S_ISDIR(statbuf.st_mode)) {
@@ -5651,10 +5659,10 @@ QColor DocumentWidget::highlightBGColorOfCode(size_t hCode) const {
 
 	if (entry && !entry->bgColorName.isNull()) {
 		return entry->bgColor;
-	} else {
-		// pick up background color of the (first) text widget of the window
-		return firstPane()->getBackgroundColor();
 	}
+
+	// pick up background color of the (first) text widget of the window
+	return firstPane()->getBackgroundColor();
 }
 
 /*
@@ -6789,9 +6797,9 @@ QString DocumentWidget::getAnySelection(ErrorSound errorSound) const {
 QString DocumentWidget::getWindowDelimiters() const {
 	if (languageMode_ == PLAIN_LANGUAGE_MODE) {
 		return QString();
-	} else {
-		return Preferences::LanguageModes[languageMode_].delimiters;
 	}
+
+	return Preferences::LanguageModes[languageMode_].delimiters;
 }
 
 /**
@@ -7232,9 +7240,9 @@ int DocumentWidget::showTipString(const QString &text, bool anchored, int pos, b
 	// If this isn't a lookup request, just display it.
 	if (!lookup) {
 		return Tags::tagsShowCalltip(win->lastFocus(), text);
-	} else {
-		return findDefinitionHelperCommon(win->lastFocus(), text, search_type);
 	}
+
+	return findDefinitionHelperCommon(win->lastFocus(), text, search_type);
 }
 
 /*  Open a new (or existing) editor window to the location specified in
@@ -7253,7 +7261,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 		/*iconic=*/false,
 		QString(),
 		Preferences::GetPrefOpenInTab(),
-		/*bgOpen=*/false);
+		/*background=*/false);
 
 	DocumentWidget *documentToSearch = MainWindow::findWindowWithFile(fi);
 	if (!documentToSearch) {
