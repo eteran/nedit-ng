@@ -53,8 +53,9 @@ std::string fillParagraph(view::string_view text, int64_t leftMargin, int64_t fi
 
 	for (char ch : text) {
 		if (ch == '\t' || ch == ' ') {
-			if (!inMargin)
+			if (!inMargin) {
 				*outPtr++ = ch;
+			}
 		} else if (ch == '\n') {
 			if (inMargin) {
 				/* a newline before any text separates paragraphs, so leave
@@ -66,8 +67,9 @@ std::string fillParagraph(view::string_view text, int64_t leftMargin, int64_t fi
 
 				*outPtr++ = '\n';
 				nLines += 2;
-			} else
+			} else {
 				*outPtr++ = ' ';
+			}
 			inMargin = true;
 		} else {
 			*outPtr++ = ch;
@@ -569,8 +571,9 @@ std::string shiftText(view::string_view text, ShiftDirection direction, int tabs
 			}
 			// start line over
 			lineStartPtr = textPtr;
-		} else
+		} else {
 			textPtr++;
+		}
 	}
 
 	return shiftedText;

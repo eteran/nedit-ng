@@ -5,7 +5,7 @@
 #include <cctype>
 
 inline int safe_isascii(unsigned char ch) noexcept {
-	return ch < 0x80;
+	return static_cast<int>(ch) < 0x80;
 }
 
 inline int safe_isalnum(unsigned char ch) noexcept {

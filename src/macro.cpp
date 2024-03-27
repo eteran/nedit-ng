@@ -448,17 +448,17 @@ std::error_code readSearchArgs(Arguments arguments, Direction *searchDirection, 
 	for (const DataValue &dv : arguments) {
 
 		QString argStr;
-		if (std::error_code ec = readArgument(dv, &argStr))
+		if (std::error_code ec = readArgument(dv, &argStr)) {
 			return ec;
-		else if (argStr == QLatin1String("wrap"))
+		} else if (argStr == QLatin1String("wrap")) {
 			*wrap = WrapMode::Wrap;
-		else if (argStr == QLatin1String("nowrap"))
+		} else if (argStr == QLatin1String("nowrap")) {
 			*wrap = WrapMode::NoWrap;
-		else if (argStr == QLatin1String("backward"))
+		} else if (argStr == QLatin1String("backward")) {
 			*searchDirection = Direction::Backward;
-		else if (argStr == QLatin1String("forward"))
+		} else if (argStr == QLatin1String("forward")) {
 			*searchDirection = Direction::Forward;
-		else if (!StringToSearchType(argStr, searchType)) {
+		} else if (!StringToSearchType(argStr, searchType)) {
 			return MacroErrorCode::UnrecognizedArgument;
 		}
 	}
@@ -478,11 +478,13 @@ Direction searchDirection(Arguments arguments, size_t index) {
 			return Direction::Forward;
 		}
 
-		if (arg.compare(QLatin1String("forward"), Qt::CaseInsensitive) == 0)
+		if (arg.compare(QLatin1String("forward"), Qt::CaseInsensitive) == 0) {
 			return Direction::Forward;
+		}
 
-		if (arg.compare(QLatin1String("backward"), Qt::CaseInsensitive) == 0)
+		if (arg.compare(QLatin1String("backward"), Qt::CaseInsensitive) == 0) {
 			return Direction::Backward;
+		}
 	}
 
 	return Direction::Forward;
@@ -501,11 +503,13 @@ bool searchKeepDialogs(Arguments arguments, size_t index) {
 			return Preferences::GetPrefKeepSearchDlogs();
 		}
 
-		if (arg.compare(QLatin1String("keep"), Qt::CaseInsensitive) == 0)
+		if (arg.compare(QLatin1String("keep"), Qt::CaseInsensitive) == 0) {
 			return true;
+		}
 
-		if (arg.compare(QLatin1String("nokeep"), Qt::CaseInsensitive) == 0)
+		if (arg.compare(QLatin1String("nokeep"), Qt::CaseInsensitive) == 0) {
 			return false;
+		}
 	}
 
 	return Preferences::GetPrefKeepSearchDlogs();
@@ -524,11 +528,13 @@ WrapMode searchWrap(Arguments arguments, size_t index) {
 			return Preferences::GetPrefSearchWraps();
 		}
 
-		if (arg.compare(QLatin1String("wrap"), Qt::CaseInsensitive) == 0)
+		if (arg.compare(QLatin1String("wrap"), Qt::CaseInsensitive) == 0) {
 			return WrapMode::Wrap;
+		}
 
-		if (arg.compare(QLatin1String("nowrap"), Qt::CaseInsensitive) == 0)
+		if (arg.compare(QLatin1String("nowrap"), Qt::CaseInsensitive) == 0) {
 			return WrapMode::NoWrap;
+		}
 	}
 
 	return Preferences::GetPrefSearchWraps();
@@ -1943,13 +1949,27 @@ std::error_code substringMS(DocumentWidget *document, Arguments arguments, DataV
 		}
 	}
 
-	if (from < 0) from += length;
-	if (from < 0) from = 0;
-	if (from > length) from = length;
-	if (to < 0) to += length;
-	if (to < 0) to = 0;
-	if (to > length) to = length;
-	if (from > to) to = from;
+	if (from < 0) {
+		from += length;
+	}
+	if (from < 0) {
+		from = 0;
+	}
+	if (from > length) {
+		from = length;
+	}
+	if (to < 0) {
+		to += length;
+	}
+	if (to < 0) {
+		to = 0;
+	}
+	if (to > length) {
+		to = length;
+	}
+	if (from > to) {
+		to = from;
+	}
 
 	// Allocate a new string and copy the sub-string into it
 	*result = make_value(string.mid(from, to - from));
@@ -2209,8 +2229,9 @@ std::error_code searchMS(DocumentWidget *document, Arguments arguments, DataValu
 
 	/* Use the search string routine, by adding the buffer contents as the
 	 * string argument */
-	if (arguments.size() > 8)
+	if (arguments.size() > 8) {
 		return MacroErrorCode::WrongNumberOfArguments;
+	}
 
 	// NOTE(eteran): the original version of this code was copy-free
 	// in the interest of making the macro code simpler
@@ -2647,8 +2668,9 @@ std::error_code calltipMS(DocumentWidget *document, Arguments arguments, DataVal
 	} else {
 		anchorPos = -1;
 	}
-	if (anchorPos >= 0)
+	if (anchorPos >= 0) {
 		anchored = true;
+	}
 
 	// Any further args are directives for relative positioning
 	for (i = 2; i < arguments.size(); ++i) {
@@ -2658,23 +2680,27 @@ std::error_code calltipMS(DocumentWidget *document, Arguments arguments, DataVal
 
 		switch (txtArg[0]) {
 		case 'c':
-			if (txtArg == "center")
+			if (txtArg == "center") {
 				return MacroErrorCode::UnrecognizedArgument;
+			}
 			hAlign = TipHAlignMode::Center;
 			break;
 		case 'r':
-			if (txtArg == "right")
+			if (txtArg == "right") {
 				return MacroErrorCode::UnrecognizedArgument;
+			}
 			hAlign = TipHAlignMode::Right;
 			break;
 		case 'a':
-			if (txtArg == "above")
+			if (txtArg == "above") {
 				return MacroErrorCode::UnrecognizedArgument;
+			}
 			vAlign = TipVAlignMode::Above;
 			break;
 		case 's':
-			if (txtArg == "strict")
+			if (txtArg == "strict") {
 				return MacroErrorCode::UnrecognizedArgument;
+			}
 			alignMode = TipAlignMode::Strict;
 			break;
 		case 't':

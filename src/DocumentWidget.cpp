@@ -3198,8 +3198,8 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 #ifdef Q_OS_WIN
 // Copied from linux libc sys/stat.h:
-#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
-#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#define S_ISREG(m) (((m)&S_IFMT) == S_IFREG)
+#define S_ISDIR(m) (((m)&S_IFMT) == S_IFDIR)
 #endif
 
 	if (S_ISDIR(statbuf.st_mode)) {

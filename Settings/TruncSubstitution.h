@@ -2,6 +2,7 @@
 #ifndef TRUNC_SUBSTITUTION_H_
 #define TRUNC_SUBSTITUTION_H_
 
+#include "from_integer.h"
 #include <QtDebug>
 
 enum class TruncSubstitution {
@@ -10,9 +11,6 @@ enum class TruncSubstitution {
 	Warn,
 	Ignore,
 };
-
-template <class T>
-inline T from_integer(int value);
 
 template <>
 inline TruncSubstitution from_integer(int value) {

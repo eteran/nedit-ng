@@ -1,6 +1,7 @@
 
 #include "Settings.h"
 #include "Util/Resource.h"
+#include "from_integer.h"
 
 #include <QFontDatabase>
 #include <QSettings>
@@ -17,7 +18,8 @@ bool settingsLoaded_ = false;
 
 const QStringList DEFAULT_INCLUDE_PATHS = {
 	QLatin1String("/usr/include/"),
-	QLatin1String("/usr/local/include/")};
+	QLatin1String("/usr/local/include/"),
+};
 
 const auto DEFAULT_DELIMITERS      = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
 const auto DEFAULT_BACKLIGHT_CHARS = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
