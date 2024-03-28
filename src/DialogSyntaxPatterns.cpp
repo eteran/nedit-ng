@@ -537,7 +537,9 @@ void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QMod
 			canceled = true;
 			Q_EMIT restore(previous);
 			return;
-		} else if (messageBox.clickedButton() == buttonDiscard) {
+		}
+
+		if (messageBox.clickedButton() == buttonDiscard) {
 			model_->deleteItem(previous);
 			skip_check = true;
 		}

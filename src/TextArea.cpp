@@ -308,10 +308,8 @@ void trackModifyRange(TextCursor *rangeStart, TextCursor *modRangeEnd, TextCurso
  * @return
  */
 bool isModifier(QKeyEvent *e) {
-	if (!e) {
-		return false;
-	}
 
+	Q_ASSERT(e);
 	switch (e->key()) {
 	case Qt::Key_Shift:
 	case Qt::Key_Control:
@@ -1113,6 +1111,10 @@ void TextArea::contextMenuEvent(QContextMenuEvent *event) {
  */
 void TextArea::keyPressEvent(QKeyEvent *event) {
 
+	if (!event) {
+		return;
+	}
+
 	if (isModifier(event)) {
 		return;
 	}
@@ -1633,9 +1635,9 @@ void TextArea::measureDeletedLines(TextCursor pos, int64_t nDeleted) {
 				++nLines;
 			}
 			break;
-		} else {
-			lineStart = retPos;
 		}
+
+		lineStart = retPos;
 
 		++nLines;
 		if (lineStart > pos + nDeleted && buffer_->BufGetCharacter(lineStart - 1) == '\n') {
@@ -1931,9 +1933,9 @@ void TextArea::findWrapRange(view::string_view deletedText, TextCursor pos, int6
 				++nLines;
 			}
 			break;
-		} else {
-			lineStart = retPos;
 		}
+
+		lineStart = retPos;
 
 		++nLines;
 		if (lineStart > pos + nInserted && buffer_->BufGetCharacter(lineStart - 1) == '\n') {
@@ -2112,8 +2114,9 @@ bool TextArea::updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t c
 			if (topLineNum_ > nBufferLines_ + lineDelta) {
 				topLineNum_ = 1;
 				firstChar_  = buffer_->BufStartOfBuffer();
-			} else
+			} else {
 				firstChar_ = forwardNLines(buffer_->BufStartOfBuffer(), topLineNum_ - 1, true);
+			}
 		}
 		calcLineStarts(0, nVisLines - 1);
 
@@ -4256,9 +4259,9 @@ void TextArea::TextInsertAtCursor(view::string_view chars, bool allowPendingDele
 		buffer_->BufReplaceSelected(wrappedText);
 		setInsertPosition(buffer_->BufCursorPosHint());
 	} else if (overstrike_) {
-		if (breakAt == 0 && singleLine)
+		if (breakAt == 0 && singleLine) {
 			TextDOverstrike(wrappedText);
-		else {
+		} else {
 			buffer_->BufReplace(cursorPos - breakAt, cursorPos, wrappedText);
 			setInsertPosition(buffer_->BufCursorPosHint());
 		}
@@ -4399,7 +4402,9 @@ void TextArea::TextDOverstrike(view::string_view text) {
 		if (indent == endIndent) {
 			++p;
 			break;
-		} else if (indent > endIndent) {
+		}
+
+		if (indent > endIndent) {
 			if (ch != '\t') {
 				++p;
 
@@ -5242,12 +5247,15 @@ void TextArea::forwardParagraphAP(EventFlags flags) {
 	TextCursor pos = std::min(buffer_->BufEndOfLine(insertPos) + 1, buffer_->BufEndOfBuffer());
 	while (pos < buffer_->length()) {
 		char c = buffer_->BufGetCharacter(pos);
-		if (c == '\n')
+		if (c == '\n') {
 			break;
-		if (::strchr(whiteChars, c) != nullptr)
+		}
+
+		if (::strchr(whiteChars, c) != nullptr) {
 			++pos;
-		else
+		} else {
 			pos = std::min(buffer_->BufEndOfLine(pos) + 1, buffer_->BufEndOfBuffer());
+		}
 	}
 
 	setInsertPosition(std::min(pos + 1, buffer_->BufEndOfBuffer()));
@@ -5275,11 +5283,13 @@ void TextArea::backwardParagraphAP(EventFlags flags) {
 
 	while (pos > 0) {
 		char c = buffer_->BufGetCharacter(pos);
-		if (c == '\n')
+		if (c == '\n') {
 			break;
-		if (::strchr(whiteChars, c) != nullptr)
+		}
+
+		if (::strchr(whiteChars, c) != nullptr) {
 			--pos;
-		else {
+		} else {
 			parStart = buffer_->BufStartOfLine(pos);
 			pos      = std::max(parStart - 2, buffer_->BufStartOfBuffer());
 		}
@@ -6683,8 +6693,9 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 	const bool silent    = flags & NoBellFlag;
 
 	endDrag();
-	if (checkReadOnly())
+	if (checkReadOnly()) {
 		return;
+	}
 
 	/* If there's no secondary selection here, or the primary and secondary
 	   selection overlap, just beep and return */
@@ -7493,7 +7504,7 @@ TextCursor TextArea::lineAndColToPosition(Location loc) const {
  * @param column
  * @return
  */
-TextCursor TextArea::lineAndColToPosition(int line, int column) {
+TextCursor TextArea::lineAndColToPosition(int line, int column) const {
 
 	Location loc;
 	loc.line   = line;

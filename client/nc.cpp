@@ -175,7 +175,9 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 		if (opts && args[i] == QLatin1String("--")) {
 			opts = false; // treat all remaining arguments as filenames
 			continue;
-		} else if (opts && args[i] == QLatin1String("-debug-proto")) {
+		}
+
+		if (opts && args[i] == QLatin1String("-debug-proto")) {
 			debug_proto = true;
 		} else if (opts && args[i] == QLatin1String("-wait")) {
 			ServerPreferences.waitForClose = true;

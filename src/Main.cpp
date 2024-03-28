@@ -106,11 +106,13 @@ Main::Main(const QStringList &args) {
 	   which would then be out of sync with the real preference settings) */
 	for (int i = 1; i < args.size(); ++i) {
 
-		const QString arg = args[i];
+		const QString &arg = args[i];
 
 		if (arg == QLatin1String("--")) {
 			break; // treat all remaining arguments as filenames
-		} else if (arg == QLatin1String("-import")) {
+		}
+
+		if (arg == QLatin1String("-import")) {
 			i = nextArg(args, i);
 			Preferences::ImportPrefFile(args[i]);
 		}
@@ -134,7 +136,9 @@ Main::Main(const QStringList &args) {
 		if (opts && args[i] == QLatin1String("--")) {
 			opts = false; // treat all remaining arguments as filenames
 			continue;
-		} else if (opts && args[i] == QLatin1String("-tags")) {
+		}
+
+		if (opts && args[i] == QLatin1String("-tags")) {
 			i = nextArg(args, i);
 			if (!Tags::addTagsFile(args[i], Tags::SearchMode::TAG)) {
 				fprintf(stderr, "NEdit: Unable to load tags file\n");

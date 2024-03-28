@@ -18,8 +18,8 @@
  * @param parent
  * @param f
  */
-DialogPrint::DialogPrint(QString contents, QString jobname, DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
-	: Dialog(parent, f), document_(document), contents_(std::move(contents)), jobname_(std::move(jobname)) {
+DialogPrint::DialogPrint(QString contents, QString jobName, DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f), document_(document), contents_(std::move(contents)), jobName_(std::move(jobName)) {
 	ui.setupUi(this);
 	connectSlots();
 
@@ -56,7 +56,7 @@ void DialogPrint::on_printers_currentIndexChanged(int index) {
  * @brief DialogPrint::print
  * @param printer
  */
-void DialogPrint::print(QPrinter *printer) {
+void DialogPrint::print(QPrinter *printer) const {
 	if (!document_) {
 		return;
 	}

@@ -450,7 +450,9 @@ std::error_code readSearchArgs(Arguments arguments, Direction *searchDirection, 
 		QString argStr;
 		if (std::error_code ec = readArgument(dv, &argStr)) {
 			return ec;
-		} else if (argStr == QLatin1String("wrap")) {
+		}
+
+		if (argStr == QLatin1String("wrap")) {
 			*wrap = WrapMode::Wrap;
 		} else if (argStr == QLatin1String("nowrap")) {
 			*wrap = WrapMode::NoWrap;
@@ -641,7 +643,7 @@ std::error_code textEvent(DocumentWidget *document, Arguments arguments, DataVal
 template <class T, void (TextArea::*Func)(T, TextArea::EventFlags)>
 std::error_code textEventArg(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	if (arguments.size() < 1) {
+	if (arguments.empty()) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -920,7 +922,7 @@ std::error_code newOppositeMS(DocumentWidget *document, Arguments arguments, Dat
 	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
-	if (arguments.size() > 0) {
+	if (!arguments.empty()) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -1118,7 +1120,7 @@ std::error_code gotoMarkMS(DocumentWidget *document, Arguments arguments, DataVa
 	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
-	if (arguments.size() > 2 || arguments.size() < 1) {
+	if (arguments.size() > 2 || arguments.empty()) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -1335,7 +1337,7 @@ std::error_code setShowMatchingMS(DocumentWidget *document, Arguments arguments,
 
 	document = MacroFocusDocument();
 
-	if (arguments.size() > 0) {
+	if (!arguments.empty()) {
 		QString arg;
 		if (std::error_code ec = readArgument(arguments[0], &arg)) {
 			return ec;
@@ -1372,7 +1374,7 @@ std::error_code setTabDistMS(DocumentWidget *document, Arguments arguments, Data
 
 	document = MacroFocusDocument();
 
-	if (arguments.size() > 0) {
+	if (!arguments.empty()) {
 		int newTabDist = 0;
 
 		std::error_code ec = readArguments(arguments, 0, &newTabDist);
@@ -1393,7 +1395,7 @@ std::error_code setWrapMarginMS(DocumentWidget *document, Arguments arguments, D
 
 	document = MacroFocusDocument();
 
-	if (arguments.size() > 0) {
+	if (!arguments.empty()) {
 		int newMargin = 0;
 
 		std::error_code ec = readArguments(arguments, 0, &newMargin);
@@ -1419,7 +1421,7 @@ std::error_code setWrapTextMS(DocumentWidget *document, Arguments arguments, Dat
 
 	document = MacroFocusDocument();
 
-	if (arguments.size() > 0) {
+	if (!arguments.empty()) {
 
 		QString arg;
 		if (std::error_code ec = readArgument(arguments[0], &arg)) {
@@ -2648,7 +2650,7 @@ std::error_code calltipMS(DocumentWidget *document, Arguments arguments, DataVal
 	auto alignMode = TipAlignMode::Sloppy;
 
 	// Read and check the string
-	if (arguments.size() < 1) {
+	if (arguments.empty()) {
 		return MacroErrorCode::TooFewArguments;
 	}
 	if (arguments.size() > 6) {
@@ -2746,7 +2748,7 @@ std::error_code killCalltipMS(DocumentWidget *document, Arguments arguments, Dat
 	if (arguments.size() > 1) {
 		return MacroErrorCode::TooManyArguments;
 	}
-	if (arguments.size() > 0) {
+	if (!arguments.empty()) {
 		if (std::error_code ec = readArgument(arguments[0], &calltipID)) {
 			return ec;
 		}
@@ -3033,7 +3035,9 @@ std::error_code stringCompareMS(DocumentWidget *document, Arguments arguments, D
 	for (i = 2; i < arguments.size(); ++i) {
 		if (std::error_code ec = readArgument(arguments[i], &argStr)) {
 			return ec;
-		} else if (argStr == QLatin1String("case")) {
+		}
+
+		if (argStr == QLatin1String("case")) {
 			considerCase = true;
 		} else if (argStr == QLatin1String("nocase")) {
 			considerCase = false;
@@ -3777,7 +3781,7 @@ std::error_code rangesetDestroyMS(DocumentWidget *document, Arguments arguments,
 	}
 
 	if (is_array(arguments[0])) {
-		DataValue *array = &arguments[0];
+		DataValue *array = arguments.data();
 		int arraySize    = ArraySize(array);
 
 		std::vector<int> deleteLabels;
@@ -3877,7 +3881,7 @@ std::error_code rangesetAddMS(DocumentWidget *document, Arguments arguments, Dat
 	TextBuffer *buffer                                  = document->buffer();
 	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
-	if (arguments.size() < 1 || arguments.size() > 3) {
+	if (arguments.empty() || arguments.size() > 3) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -3976,7 +3980,7 @@ std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments arguments
 	TextBuffer *buffer                                  = document->buffer();
 	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
-	if (arguments.size() < 1 || arguments.size() > 3) {
+	if (arguments.empty() || arguments.size() > 3) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -4157,7 +4161,7 @@ std::error_code rangesetRangeMS(DocumentWidget *document, Arguments arguments, D
 
 	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
-	if (arguments.size() < 1 || arguments.size() > 2) {
+	if (arguments.empty() || arguments.size() > 2) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -4222,7 +4226,7 @@ std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments argume
 	TextBuffer *buffer                                  = document->buffer();
 	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
-	if (arguments.size() < 1 || arguments.size() > 2) {
+	if (arguments.empty() || arguments.size() > 2) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -4352,7 +4356,7 @@ std::error_code rangesetSetModeMS(DocumentWidget *document, Arguments arguments,
 
 	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
-	if (arguments.size() < 1 || arguments.size() > 2) {
+	if (arguments.empty() || arguments.size() > 2) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -4691,7 +4695,7 @@ std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, Dat
 	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
-	if (arguments.size() > 0) {
+	if (!arguments.empty()) {
 		QString index;
 		if (std::error_code ec = readArgument(arguments[0], &index)) {
 			return ec;

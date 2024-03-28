@@ -749,9 +749,9 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				}
 
 				break;
-			} else {
-				MATCH_RETURN(false);
 			}
+
+			MATCH_RETURN(false);
 		}
 
 		case POS_AHEAD_OPEN:
@@ -972,7 +972,7 @@ bool attempt(Regex *prog, const char *string) {
 	std::fill_n(prog->startp.begin(), eContext.Total_Paren + 1, nullptr);
 	std::fill_n(prog->endp.begin(), eContext.Total_Paren + 1, nullptr);
 
-	if (match((&prog->program[0] + REGEX_START_OFFSET), &branch_index)) {
+	if (match((&prog->program[REGEX_START_OFFSET]), &branch_index)) {
 		prog->startp[0]  = string;
 		prog->endp[0]    = eContext.Reg_Input;     // <-- One char AFTER
 		prog->extentpBW  = eContext.Extent_Ptr_BW; //     matched string!
@@ -1118,8 +1118,9 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 			}
 
 			return checked_return(ret_val);
+		}
 
-		} else if (re->match_start != '\0') {
+		if (re->match_start != '\0') {
 			// We know what char match must start with.
 			for (str = start; !end_of_string(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
 
@@ -1132,73 +1133,76 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 			}
 
 			return checked_return(ret_val);
-		} else {
-			// General case
-			for (str = start; !end_of_string(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
-
-				if (attempt(re, str)) {
-					ret_val = true;
-					break;
-				}
-			}
-
-			// Beware of a single $ matching \0
-#if 1 // NOTE(eteran): possible fix for issue #97
-			if (!eContext.Recursion_Limit_Exceeded && !ret_val && end_of_string(str)) {
-#else
-			if (!eContext.Recursion_Limit_Exceeded && !ret_val && end_of_string(str) && str != end) {
-#endif
-				if (attempt(re, str)) {
-					ret_val = true;
-				}
-			}
-
-			return checked_return(ret_val);
-		}
-	} else { // Search reverse, same as forward, but loops run backward
-
-		// Make sure that we don't start matching beyond the logical end
-		if (eContext.End_Of_String != nullptr && end > eContext.End_Of_String) {
-			end = eContext.End_Of_String;
 		}
 
-		if (re->anchor) {
-			// Search is anchored at BOL
-			for (str = (end - 1); str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
-				if (*str == '\n') {
-					if (attempt(re, str + 1)) {
-						ret_val = true;
-						return checked_return(ret_val);
-					}
-				}
-			}
+		// General case
+		for (str = start; !end_of_string(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
 
-			if (!eContext.Recursion_Limit_Exceeded && attempt(re, start)) {
+			if (attempt(re, str)) {
 				ret_val = true;
-				return checked_return(ret_val);
+				break;
 			}
+		}
 
-			return checked_return(ret_val);
-		} else if (re->match_start != '\0') {
-			// We know what char match must start with.
-			for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
-				if (*str == static_cast<uint8_t>(re->match_start)) {
-					if (attempt(re, str)) {
-						ret_val = true;
-						break;
-					}
+		// Beware of a single $ matching \0
+#if 1 // NOTE(eteran): possible fix for issue #97
+		if (!eContext.Recursion_Limit_Exceeded && !ret_val && end_of_string(str)) {
+#else
+		if (!eContext.Recursion_Limit_Exceeded && !ret_val && end_of_string(str) && str != end) {
+#endif
+			if (attempt(re, str)) {
+				ret_val = true;
+			}
+		}
+
+		return checked_return(ret_val);
+	}
+
+	// Search reverse, same as forward, but loops run backward
+
+	// Make sure that we don't start matching beyond the logical end
+	if (eContext.End_Of_String != nullptr && end > eContext.End_Of_String) {
+		end = eContext.End_Of_String;
+	}
+
+	if (re->anchor) {
+		// Search is anchored at BOL
+		for (str = (end - 1); str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
+			if (*str == '\n') {
+				if (attempt(re, str + 1)) {
+					ret_val = true;
+					return checked_return(ret_val);
 				}
 			}
+		}
 
+		if (!eContext.Recursion_Limit_Exceeded && attempt(re, start)) {
+			ret_val = true;
 			return checked_return(ret_val);
-		} else {
-			// General case
-			for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
+		}
+
+		return checked_return(ret_val);
+	}
+
+	if (re->match_start != '\0') {
+		// We know what char match must start with.
+		for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
+			if (*str == static_cast<uint8_t>(re->match_start)) {
 				if (attempt(re, str)) {
 					ret_val = true;
 					break;
 				}
 			}
+		}
+
+		return checked_return(ret_val);
+	}
+
+	// General case
+	for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
+		if (attempt(re, str)) {
+			ret_val = true;
+			break;
 		}
 	}
 

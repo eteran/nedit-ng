@@ -168,7 +168,9 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 			canceled = true;
 			Q_EMIT restore(previous);
 			return;
-		} else if (messageBox.clickedButton() == buttonDiscard) {
+		}
+
+		if (messageBox.clickedButton() == buttonDiscard) {
 			model_->deleteItem(previous);
 			skip_check = true;
 		}

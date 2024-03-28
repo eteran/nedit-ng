@@ -1969,18 +1969,18 @@ static int arrayRef() {
 			}
 			PUSH(valueItem);
 			return STAT_OK;
-		} else {
-			return execError("operator [] on non-array");
 		}
-	} else {
-		POP(srcArray);
-		if (is_array(srcArray)) {
-			PUSH_INT(ArraySize(&srcArray));
-			return STAT_OK;
-		} else {
-			return execError("operator [] on non-array");
-		}
+
+		return execError("operator [] on non-array");
 	}
+
+	POP(srcArray);
+	if (is_array(srcArray)) {
+		PUSH_INT(ArraySize(&srcArray));
+		return STAT_OK;
+	}
+
+	return execError("operator [] on non-array");
 }
 
 /*
@@ -2024,12 +2024,14 @@ static int arrayAssign() {
 				return errNum;
 			}
 		}
+
 		if (ArrayInsert(&dstArray, keyString, &srcValue)) {
 			return STAT_OK;
-		} else {
-			return execError("array member allocation failure");
 		}
+
+		return execError("array member allocation failure");
 	}
+
 	return execError("empty operator []");
 }
 
@@ -2074,12 +2076,12 @@ static int arrayRefAndAssignSetup() {
 				PUSH(moveExpr);
 			}
 			return STAT_OK;
-		} else {
-			return execError("operator [] on non-array");
 		}
-	} else {
-		return execError("array[] not an lvalue");
+
+		return execError("operator [] on non-array");
 	}
+
+	return execError("array[] not an lvalue");
 }
 
 /*

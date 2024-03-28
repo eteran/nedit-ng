@@ -90,7 +90,7 @@ public:
 	DocumentWidget *createDocument(const QString &name);
 	DocumentWidget *currentDocument() const;
 	DocumentWidget *documentAt(int index) const;
-	int updateGutterWidth();
+	int updateGutterWidth() const;
 	int updateLineNumDisp();
 	size_t tabCount() const;
 	std::vector<DocumentWidget *> openDocuments() const;

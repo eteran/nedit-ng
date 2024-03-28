@@ -201,7 +201,7 @@ public:
 	QMargins getMargins() const;
 	QTimer *cursorBlinkTimer() const;
 	TextBuffer *buffer() const;
-	TextCursor lineAndColToPosition(int line, int column);
+	TextCursor lineAndColToPosition(int line, int column) const;
 	TextCursor firstVisiblePos() const;
 	TextCursor cursorPos() const;
 	TextCursor TextLastVisiblePos() const;

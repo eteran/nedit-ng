@@ -350,7 +350,7 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	std::string str      = buf->BufGetRange(beginSafety, endSafety);
 	std::string styleStr = styleBuf->BufGetRange(beginSafety, endSafety);
 
-	const char *const string   = &str[0];
+	const char *const string   = str.data();
 	char *const styleString    = &styleStr[0];
 	const char *const match_to = string + str.size();
 
@@ -813,7 +813,9 @@ boost::optional<std::vector<HighlightPattern>> readHighlightPatterns(Input &in, 
 		if (in.atEnd()) {
 			*errMsg = tr("end of pattern list not found");
 			return boost::none;
-		} else if (*in == QLatin1Char('}')) {
+		}
+
+		if (*in == QLatin1Char('}')) {
 			++in;
 			break;
 		}
@@ -1530,9 +1532,9 @@ QString WriteHighlightString() {
 					out << YAML::Key << "name" << YAML::Value << pat.name.toUtf8().data();
 					out << YAML::Key << "style" << YAML::Value << pat.style.toUtf8().data();
 
-					out << YAML::Key << "defer_parsing" << YAML::Value << ((pat.flags & DEFER_PARSING) ? true : false);
-					out << YAML::Key << "color_only" << YAML::Value << ((pat.flags & COLOR_ONLY) ? true : false);
-					out << YAML::Key << "parse_subpatterns_from_start" << YAML::Value << ((pat.flags & PARSE_SUBPATS_FROM_START) ? true : false);
+					out << YAML::Key << "defer_parsing" << YAML::Value << ((pat.flags & DEFER_PARSING) != 0);
+					out << YAML::Key << "color_only" << YAML::Value << ((pat.flags & COLOR_ONLY) != 0);
+					out << YAML::Key << "parse_subpatterns_from_start" << YAML::Value << ((pat.flags & PARSE_SUBPATS_FROM_START) != 0);
 
 					if (!pat.subPatternOf.isNull()) {
 						out << YAML::Key << "parent" << YAML::Value << pat.subPatternOf.toUtf8().data();

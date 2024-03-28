@@ -518,7 +518,7 @@ int main(int argc, char *argv[]) {
 
 	auto contents = std::string{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
 
-	XrmDatabase prefDB = XrmGetStringDatabase(&contents[0]);
+	XrmDatabase prefDB = XrmGetStringDatabase(contents.data());
 
 	QString value = readResource<QString>(prefDB, "nedit.fileVersion");
 

@@ -539,7 +539,7 @@ void MainWindow::setupGlobalPreferenceDefaults() {
 	}
 
 	// Default Search Settings
-	no_signals(ui.action_Default_Search_Verbose)->setChecked(Preferences::GetPrefSearchDlogs());
+	no_signals(ui.action_Default_Search_Verbose)->setChecked(Preferences::GetPrefSearchDialogs());
 	no_signals(ui.action_Default_Search_Wrap_Around)->setChecked(Preferences::GetPrefSearchWraps() == WrapMode::Wrap);
 	no_signals(ui.action_Default_Search_Beep_On_Search_Wrap)->setChecked(Preferences::GetPrefBeepOnSearchWrap());
 	no_signals(ui.action_Default_Search_Keep_Dialogs_Up)->setChecked(Preferences::GetPrefKeepSearchDlogs());
@@ -1627,7 +1627,7 @@ int MainWindow::updateLineNumDisp() {
 **  Set the new gutter width in the window. Sadly, the only way to do this is
 **  to set it on every single document, so we have to iterate over them.
 */
-int MainWindow::updateGutterWidth() {
+int MainWindow::updateGutterWidth() const {
 
 	// Min. # of columns in line number display
 	constexpr int MIN_LINE_NUM_COLS = 4;
@@ -1694,7 +1694,7 @@ QString MainWindow::uniqueUntitledName() {
 
 	for (int i = 0; i < INT_MAX; i++) {
 
-		const QString name = [i]() {
+		QString name = [i]() {
 			if (i == 0) {
 				return tr("Untitled");
 			}
@@ -6325,7 +6325,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 				if (direction == Direction::Forward && beginPos != 0) {
 					if (Preferences::GetPrefBeepOnSearchWrap()) {
 						QApplication::beep();
-					} else if (Preferences::GetPrefSearchDlogs()) {
+					} else if (Preferences::GetPrefSearchDialogs()) {
 
 						QMessageBox messageBox(document);
 						messageBox.setWindowTitle(tr("Wrap Search"));
@@ -6354,7 +6354,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 				} else if (direction == Direction::Backward && beginPos != fileEnd) {
 					if (Preferences::GetPrefBeepOnSearchWrap()) {
 						QApplication::beep();
-					} else if (Preferences::GetPrefSearchDlogs()) {
+					} else if (Preferences::GetPrefSearchDialogs()) {
 
 						QMessageBox messageBox(document);
 						messageBox.setWindowTitle(tr("Wrap Search"));
@@ -6383,7 +6383,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 			}
 
 			if (!found) {
-				if (Preferences::GetPrefSearchDlogs()) {
+				if (Preferences::GetPrefSearchDialogs()) {
 					QMessageBox::information(document, tr("String not found"), tr("String was not found"));
 				} else {
 					QApplication::beep();
@@ -6829,7 +6829,7 @@ void MainWindow::searchForSelected(DocumentWidget *document, TextArea *area, Dir
 
 	const QString selected = document->getAnySelection();
 	if (selected.isEmpty()) {
-		if (Preferences::GetPrefSearchDlogs()) {
+		if (Preferences::GetPrefSearchDialogs()) {
 			QMessageBox::warning(document, tr("Wrong Selection"), tr("Selection not appropriate for searching"));
 		} else {
 			QApplication::beep();
@@ -7037,7 +7037,7 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 		}
 	} else {
 		//  Nothing found, tell the user about it
-		if (Preferences::GetPrefSearchDlogs()) {
+		if (Preferences::GetPrefSearchDialogs()) {
 
 			if (dialogFind_) {
 				if (!dialogFind_->keepDialog()) {
@@ -7157,7 +7157,7 @@ bool MainWindow::replaceAll(DocumentWidget *document, TextArea *area, const QStr
 		if (document->multiFileBusy_) {
 			// only needed during multi-file replacements
 			document->replaceFailed_ = true;
-		} else if (Preferences::GetPrefSearchDlogs()) {
+		} else if (Preferences::GetPrefSearchDialogs()) {
 
 			if (dialogFind_) {
 				if (!dialogFind_->keepDialog()) {

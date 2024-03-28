@@ -3198,8 +3198,8 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 #ifdef Q_OS_WIN
 // Copied from linux libc sys/stat.h:
-#define S_ISREG(m) (((m)&S_IFMT) == S_IFREG)
-#define S_ISDIR(m) (((m)&S_IFMT) == S_IFDIR)
+#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
 	if (S_ISDIR(statbuf.st_mode)) {
@@ -5915,7 +5915,9 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
 			endParse  = std::min(endParse, p);
 			endSafety = p;
 			break;
-		} else if (ch != UNFINISHED_STYLE && p < endParse) {
+		}
+
+		if (ch != UNFINISHED_STYLE && p < endParse) {
 			endParse = p;
 			if (static_cast<uint8_t>(ch) < firstPass2Style) {
 				endSafety = p;
@@ -6243,10 +6245,10 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	};
 
 	// PLAIN_STYLE (pass 1)
-	it++ = createStyleTableEntry(zeroPass1 ? &pass2PatternSrc[0] : &pass1PatternSrc[0]);
+	it++ = createStyleTableEntry(zeroPass1 ? pass2PatternSrc.data() : pass1PatternSrc.data());
 
 	// PLAIN_STYLE (pass 2)
-	it++ = createStyleTableEntry(zeroPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
+	it++ = createStyleTableEntry(zeroPass2 ? pass1PatternSrc.data() : pass2PatternSrc.data());
 
 	// explicit styles (pass 1)
 	for (size_t i = 1; i < pass1PatternSrc.size(); i++) {
@@ -7432,12 +7434,13 @@ void DocumentWidget::dragEnterEvent(QDragEnterEvent *event) {
  */
 void DocumentWidget::dropEvent(QDropEvent *event) {
 	auto urls = event->mimeData()->urls();
-	for (auto url : urls) {
-		if (url.isLocalFile()) {
-			QString fileName = url.toLocalFile();
-			open(fileName);
-		} else {
+	for (const QUrl &url : urls) {
+		if (!url.isLocalFile()) {
 			QApplication::beep();
+			break;
 		}
+
+		QString fileName = url.toLocalFile();
+		open(fileName);
 	}
 }

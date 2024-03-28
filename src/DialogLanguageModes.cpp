@@ -109,7 +109,9 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 			canceled = true;
 			Q_EMIT restore(previous);
 			return;
-		} else if (messageBox.clickedButton() == buttonDiscard) {
+		}
+
+		if (messageBox.clickedButton() == buttonDiscard) {
 			model_->deleteItem(previous);
 			skip_check = true;
 		}
@@ -277,7 +279,9 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 				QMessageBox::warning(this, tr("Error reading Calltips"), tr("Can't read default calltips file(s):\n  \"%1\"\n").arg(tipsFile));
 			}
 			return boost::none;
-		} else if (!Tags::deleteTagsFile(tipsFile, Tags::SearchMode::TIP, false)) {
+		}
+
+		if (!Tags::deleteTagsFile(tipsFile, Tags::SearchMode::TIP, false)) {
 			qCritical("NEdit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"", qPrintable(tipsFile));
 		}
 	}

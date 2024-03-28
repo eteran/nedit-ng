@@ -416,7 +416,9 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 
 	if (!::strchr(valid_codes, static_cast<int>(ch))) {
 		return nullptr; // Not a valid shortcut escape sequence
-	} else if (Flags == CHECK_ESCAPE || Flags == CHECK_CLASS_ESCAPE) {
+	}
+
+	if (Flags == CHECK_ESCAPE || Flags == CHECK_CLASS_ESCAPE) {
 		return ret_val; // Just checking if this is a valid shortcut escape.
 	}
 
@@ -1088,7 +1090,9 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 		*flag_param = flags_local;
 		range_param = range_local;
 		return ret_val;
-	} else if (op_code == '{') { // {n,m} quantifier present
+	}
+
+	if (op_code == '{') { // {n,m} quantifier present
 		brace_present++;
 		++pContext.Reg_Parse;
 
@@ -1919,9 +1923,9 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 		 *    Match_Newline:       Newlines are NOT matched by default
 		 *                         in character classes
 		 */
-		pContext.Is_Case_Insensitive = ((defaultFlags & REDFLT_CASE_INSENSITIVE) ? true : false);
+		pContext.Is_Case_Insensitive = ((defaultFlags & REDFLT_CASE_INSENSITIVE) != 0);
 #if 0 // Currently not used. Uncomment if needed.
-		pContext.Match_Newline       = ((defaultFlags & REDFLT_MATCH_NEWLINE)    ? true : false);
+		pContext.Match_Newline       = ((defaultFlags & REDFLT_MATCH_NEWLINE) != 0);
 #else
 		pContext.Match_Newline = false;
 #endif
@@ -1969,7 +1973,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 	 *----------------------------------------*/
 
 	// First BRANCH.
-	uint8_t *scan = (&re->program[0] + REGEX_START_OFFSET);
+	uint8_t *scan = (&re->program[REGEX_START_OFFSET]);
 
 	if (GET_OP_CODE(next_ptr(scan)) == END) { // Only one top-level choice.
 		scan = OPERAND(scan);

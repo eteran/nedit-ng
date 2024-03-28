@@ -141,7 +141,9 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
 			canceled = true;
 			Q_EMIT restore(previous);
 			return;
-		} else if (messageBox.clickedButton() == buttonDiscard) {
+		}
+
+		if (messageBox.clickedButton() == buttonDiscard) {
 			model_->deleteItem(previous);
 			skip_check = true;
 		}

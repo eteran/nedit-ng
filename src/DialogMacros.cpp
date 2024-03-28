@@ -169,7 +169,9 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
 			canceled = true;
 			Q_EMIT restore(previous);
 			return;
-		} else if (messageBox.clickedButton() == buttonDiscard) {
+		}
+
+		if (messageBox.clickedButton() == buttonDiscard) {
 			model_->deleteItem(previous);
 			skip_check = true;
 		}

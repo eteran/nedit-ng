@@ -40,7 +40,8 @@ ElidedLabel::ElidedLabel(QWidget *parent)
 /**
  * @brief ElidedLabel::resizeEvent
  */
-void ElidedLabel::resizeEvent(QResizeEvent *) {
+void ElidedLabel::resizeEvent(QResizeEvent *event) {
+	Q_UNUSED(event);
 	squeezeTextToLabel();
 }
 

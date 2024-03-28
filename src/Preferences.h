@@ -51,7 +51,7 @@ bool GetPrefMatchSyntaxBased();
 bool GetPrefOpenInTab();
 bool GetPrefRepositionDialogs();
 bool GetPrefSaveOldVersion();
-bool GetPrefSearchDlogs();
+bool GetPrefSearchDialogs();
 bool GetPrefShowPathInWindowsMenu();
 bool GetPrefShowResizeNotification();
 bool GetPrefSmartHome();

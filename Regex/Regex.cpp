@@ -183,7 +183,7 @@ bool Regex::execute(view::string_view string, size_t offset, size_t end_offset, 
 		prev,
 		succ,
 		delimiters,
-		&string[0],
+		string.data(),
 		&string[string.size()],
 		&string[string.size()]);
 }
@@ -225,5 +225,5 @@ bool Regex::isValid() const noexcept {
 		return false;
 	}
 
-	return (U_CHAR_AT(&program[0]) == Magic);
+	return (U_CHAR_AT(program.data()) == Magic);
 }

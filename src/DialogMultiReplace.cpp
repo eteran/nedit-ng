@@ -5,7 +5,6 @@
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "Preferences.h"
-
 #include <QMessageBox>
 
 /**
@@ -135,7 +134,7 @@ void DialogMultiReplace::buttonReplace_clicked() {
 	/* We suppressed multiple beeps/dialogs. If there wasn't any file in
 	   which the replacement succeeded, we should still warn the user */
 	if (replaceFailed) {
-		if (Preferences::GetPrefSearchDlogs()) {
+		if (Preferences::GetPrefSearchDialogs()) {
 			if (noWritableLeft) {
 				QMessageBox::information(this, tr("Read-only Files"), tr("All selected files have become read-only."));
 			} else {
@@ -150,7 +149,7 @@ void DialogMultiReplace::buttonReplace_clicked() {
 /**
  * @brief DialogMultiReplace::uploadFileListItems
  */
-void DialogMultiReplace::uploadFileListItems(const std::vector<DocumentWidget *> &writeableDocuments) {
+void DialogMultiReplace::uploadFileListItems(const std::vector<DocumentWidget *> &writeableDocuments) const {
 
 	model_->clear();
 

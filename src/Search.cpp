@@ -50,10 +50,10 @@ boost::optional<Search::Result> forwardRegexSearch(view::string_view string, vie
 		if (compiledRE.execute(string, static_cast<size_t>(beginPos), delimiters, false)) {
 
 			Search::Result result;
-			result.start    = compiledRE.startp[0] - &string[0];
-			result.end      = compiledRE.endp[0] - &string[0];
-			result.extentFW = compiledRE.extentpFW - &string[0];
-			result.extentBW = compiledRE.extentpBW - &string[0];
+			result.start    = compiledRE.startp[0] - string.data();
+			result.end      = compiledRE.endp[0] - string.data();
+			result.extentFW = compiledRE.extentpFW - string.data();
+			result.extentBW = compiledRE.extentpBW - string.data();
 			return result;
 		}
 
@@ -66,10 +66,10 @@ boost::optional<Search::Result> forwardRegexSearch(view::string_view string, vie
 		if (compiledRE.execute(string, 0, static_cast<size_t>(beginPos), delimiters, false)) {
 
 			Search::Result result;
-			result.start    = compiledRE.startp[0] - &string[0];
-			result.end      = compiledRE.endp[0] - &string[0];
-			result.extentFW = compiledRE.extentpFW - &string[0];
-			result.extentBW = compiledRE.extentpBW - &string[0];
+			result.start    = compiledRE.startp[0] - string.data();
+			result.end      = compiledRE.endp[0] - string.data();
+			result.extentFW = compiledRE.extentpFW - string.data();
+			result.extentBW = compiledRE.extentpBW - string.data();
 			return result;
 		}
 
@@ -104,10 +104,10 @@ boost::optional<Search::Result> backwardRegexSearch(view::string_view string, vi
 			if (compiledRE.execute(string, 0, static_cast<size_t>(beginPos), -1, -1, delimiters, true)) {
 
 				Search::Result result;
-				result.start    = compiledRE.startp[0] - &string[0];
-				result.end      = compiledRE.endp[0] - &string[0];
-				result.extentFW = compiledRE.extentpFW - &string[0];
-				result.extentBW = compiledRE.extentpBW - &string[0];
+				result.start    = compiledRE.startp[0] - string.data();
+				result.end      = compiledRE.endp[0] - string.data();
+				result.extentFW = compiledRE.extentpFW - string.data();
+				result.extentBW = compiledRE.extentpBW - string.data();
 				return result;
 			}
 		}
@@ -124,10 +124,10 @@ boost::optional<Search::Result> backwardRegexSearch(view::string_view string, vi
 
 		if (compiledRE.execute(string, static_cast<size_t>(beginPos), delimiters, true)) {
 			Search::Result result;
-			result.start    = compiledRE.startp[0] - &string[0];
-			result.end      = compiledRE.endp[0] - &string[0];
-			result.extentFW = compiledRE.extentpFW - &string[0];
-			result.extentBW = compiledRE.extentpBW - &string[0];
+			result.start    = compiledRE.startp[0] - string.data();
+			result.end      = compiledRE.endp[0] - string.data();
+			result.extentFW = compiledRE.extentpFW - string.data();
+			result.extentBW = compiledRE.extentpBW - string.data();
 			return result;
 		}
 

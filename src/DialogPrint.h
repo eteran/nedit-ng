@@ -12,7 +12,7 @@ class QPrinter;
 class DialogPrint final : public Dialog {
 	Q_OBJECT
 public:
-	DialogPrint(QString contents, QString jobname, DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+	DialogPrint(QString contents, QString jobName, DocumentWidget *document, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogPrint() override = default;
 
 private Q_SLOTS:
@@ -23,7 +23,7 @@ private:
 	void connectSlots();
 
 private:
-	void print(QPrinter *printer);
+	void print(QPrinter *printer) const;
 
 protected:
 	void showEvent(QShowEvent *event) override;
@@ -32,7 +32,7 @@ public:
 	Ui::DialogPrint ui;
 	QPointer<DocumentWidget> document_;
 	QString contents_;
-	QString jobname_;
+	QString jobName_;
 };
 
 #endif

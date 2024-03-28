@@ -735,9 +735,9 @@ int64_t Rangeset::RangesetCheckRangeOfPos(TextCursor pos) {
 	if (pos >= ranges[last]) {        /* last even: this is a start */
 		if (pos < ranges[last + 1]) { /* checking an end here */
 			return last / 2;          /* no need to change rangeset->last_index */
-		} else {
-			last += 2; /* not in this range: move on */
 		}
+
+		last += 2; /* not in this range: move on */
 
 		if (last == len) {
 			return -1; /* moved on too far */

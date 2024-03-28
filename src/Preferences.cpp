@@ -649,7 +649,7 @@ void SetPrefSearchDlogs(bool state) {
 	Settings::searchDialogs = state;
 }
 
-bool GetPrefSearchDlogs() {
+bool GetPrefSearchDialogs() {
 	return Settings::searchDialogs;
 }
 
@@ -1394,9 +1394,13 @@ bool reportError(QWidget *toDialog, const QString &string, int stoppedAt, const 
 	for (c = stoppedAt; c >= 0; c--) {
 		if (c == 0) {
 			break;
-		} else if (string[c] == QLatin1Char('\n') && nNonWhite >= 5) {
+		}
+
+		if (string[c] == QLatin1Char('\n') && nNonWhite >= 5) {
 			break;
-		} else if (string[c] != QLatin1Char(' ') && string[c] != QLatin1Char('\t')) {
+		}
+
+		if (string[c] != QLatin1Char(' ') && string[c] != QLatin1Char('\t')) {
 			++nNonWhite;
 		}
 	}

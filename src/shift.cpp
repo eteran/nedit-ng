@@ -335,7 +335,9 @@ QString shiftLineLeft(const QString &line, int64_t lineLen, int tabDist, int nCh
 		if (lineInPtr == line.end() || (lineInPtr - line.begin()) >= lineLen) {
 			// nothing on line, wipe it out
 			return QString();
-		} else if (*lineInPtr == QLatin1Char(' ')) {
+		}
+
+		if (*lineInPtr == QLatin1Char(' ')) {
 			// white space continues with space, advance one character
 			whiteWidth++;
 			out.append(*lineInPtr++);
@@ -392,7 +394,9 @@ std::string shiftLineLeft(view::string_view line, int64_t lineLen, int tabDist, 
 		if (lineInPtr == line.end() || (lineInPtr - line.begin()) >= lineLen) {
 			// nothing on line, wipe it out
 			return std::string();
-		} else if (*lineInPtr == ' ') {
+		}
+
+		if (*lineInPtr == ' ') {
 			// white space continues with space, advance one character
 			whiteWidth++;
 			out.append(1, *lineInPtr++);
@@ -449,7 +453,9 @@ QString shiftLineRight(const QString &line, int64_t lineLen, int tabsAllowed, in
 		if (lineInPtr == line.end() || (lineInPtr - line.begin()) >= lineLen) {
 			// nothing on line, wipe it out
 			return lineOut;
-		} else if (*lineInPtr == QLatin1Char(' ')) {
+		}
+
+		if (*lineInPtr == QLatin1Char(' ')) {
 			// white space continues with tab, advance to next tab stop
 			whiteWidth++;
 			*lineOutPtr++ = *lineInPtr++;
@@ -495,7 +501,9 @@ std::string shiftLineRight(view::string_view line, int64_t lineLen, int tabsAllo
 		if (lineInPtr == line.end() || (lineInPtr - line.begin()) >= lineLen) {
 			// nothing on line, wipe it out
 			return lineOut;
-		} else if (*lineInPtr == ' ') {
+		}
+
+		if (*lineInPtr == ' ') {
 			// white space continues with tab, advance to next tab stop
 			whiteWidth++;
 			*lineOutPtr++ = *lineInPtr++;
@@ -565,10 +573,11 @@ std::string shiftText(view::string_view text, ShiftDirection direction, int tabs
 			if (textPtr == text.end()) {
 				// terminate string & exit loop at end of text
 				break;
-			} else {
-				// move the newline from text to shifted text
-				*shiftedPtr++ = *textPtr++;
 			}
+
+			// move the newline from text to shifted text
+			*shiftedPtr++ = *textPtr++;
+
 			// start line over
 			lineStartPtr = textPtr;
 		} else {
@@ -814,10 +823,11 @@ QString shiftText(const QString &text, ShiftDirection direction, bool tabsAllowe
 			if (textPtr == text.end()) {
 				// terminate string & exit loop at end of text
 				break;
-			} else {
-				// move the newline from text to shifted text
-				*shiftedPtr++ = *textPtr++;
 			}
+
+			// move the newline from text to shifted text
+			*shiftedPtr++ = *textPtr++;
+
 			// start line over
 			lineStartPtr = textPtr;
 		} else {
