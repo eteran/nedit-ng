@@ -8,7 +8,7 @@ public:
 	Style(const Style &)            = default;
 	Style &operator=(const Style &) = default;
 
-	explicit Style(void *v)
+	explicit Style(size_t v)
 		: value_(v) {
 	}
 
@@ -18,7 +18,7 @@ public:
 	}
 
 private:
-	void *value_ = nullptr;
+	size_t value_ = 0;
 };
 
 #endif

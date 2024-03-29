@@ -55,7 +55,7 @@ bool FontOfNamedStyleIsItalic(const QString &styleName);
 void LoadHighlightString(const QString &string);
 bool NamedStyleExists(const QString &styleName);
 bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&style_ptr, int64_t length, const ParseContext *ctx, const char *look_behind_to, const char *match_to);
-HighlightData *patternOfStyle(const std::unique_ptr<HighlightData[]> &patterns, int style);
+HighlightData *patternOfStyle(const std::unique_ptr<HighlightData[]> &patterns, uint8_t style);
 size_t findTopLevelParentIndex(const std::vector<HighlightPattern> &patterns, size_t index);
 size_t indexOfNamedPattern(const std::vector<HighlightPattern> &patterns, const QString &name);
 int getPrevChar(TextBuffer *buf, TextCursor pos);

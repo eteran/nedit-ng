@@ -5685,12 +5685,12 @@ Style DocumentWidget::getHighlightInfo(TextCursor pos) {
 	}
 
 	// Be careful with signed/unsigned conversions. NO conversion here!
-	int style = highlightData->styleBuffer->BufGetCharacter(pos);
+	auto style = static_cast<uint8_t>(highlightData->styleBuffer->BufGetCharacter(pos));
 
 	// Beware of unparsed regions.
 	if (style == UNFINISHED_STYLE) {
 		handleUnparsedRegion(highlightData->styleBuffer, pos);
-		style = highlightData->styleBuffer->BufGetCharacter(pos);
+		style = static_cast<uint8_t>(highlightData->styleBuffer->BufGetCharacter(pos));
 	}
 
 	if (highlightData->pass1Patterns) {
@@ -5705,7 +5705,7 @@ Style DocumentWidget::getHighlightInfo(TextCursor pos) {
 		return Style();
 	}
 
-	return Style(reinterpret_cast<void *>(pattern->userStyleIndex));
+	return Style(pattern->userStyleIndex);
 }
 
 /*

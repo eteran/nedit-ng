@@ -1,0 +1,42 @@
+version: "0.2"
+ignorePaths: []
+dictionaryDefinitions: []
+dictionaries: []
+ignoreWords: []
+import: []
+words:
+  - Balinski
+  - Edel
+  - Greef
+  - Markus
+  - Rebecca
+  - Schwarzenberg
+  - Teran
+  - Vohlken
+  - amai
+  - backlighting
+  - burlywood
+  - calltip
+  - calltips
+  - clearcase
+  - cornsilk
+  - decompile
+  - eteran
+  - gainsboro
+  - konsole
+  - nedit
+  - overtype
+  - pixmap
+  - qgetenv
+  - qobject
+  - qreal
+  - qsnprintf
+  - qtbase
+  - qulonglong
+  - qvsnprintf
+  - rangeset
+  - rangesets
+  - reparse
+  - unhighlight
+  - unixware
+  - untabbed
