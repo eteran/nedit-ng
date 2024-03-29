@@ -211,7 +211,7 @@ private:
 	static int textWidth(view_type text, int tabDist) noexcept;
 	static int64_t countLines(view_type string) noexcept;
 	static void overlayRectInLine(view_type line, view_type insLine, int64_t rectStart, int64_t rectEnd, int tabDist, bool useTabs, string_type *outStr, int64_t *endOffset) noexcept;
-	static int writeControl(Ch out[20], const char *ctrl_char) noexcept;
+	static int writeControl(Ch out[MAX_EXP_CHAR_LEN], const char *ctrl_char) noexcept;
 
 private:
 	template <class Out>
