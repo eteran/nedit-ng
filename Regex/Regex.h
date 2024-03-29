@@ -104,7 +104,7 @@ public:
 	 * @param dest
 	 * @return
 	 */
-	bool SubstituteRE(view::string_view source, std::string &dest) const noexcept;
+	bool SubstituteRE(view::string_view source, std::string &dest) const;
 
 	/**
 	 * @brief isValid

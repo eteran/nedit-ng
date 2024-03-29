@@ -36,9 +36,8 @@ constexpr int PASS_2_REPARSE_CHUNK_SIZE = 1000;
 constexpr auto ASCII_A = static_cast<char>(65);
 
 // Meanings of style buffer characters (styles)
-constexpr uint8_t UNFINISHED_STYLE = ASCII_A;
-
-constexpr uint8_t PLAIN_STYLE = (ASCII_A + 1);
+constexpr uint8_t UNFINISHED_STYLE = (ASCII_A + 0);
+constexpr uint8_t PLAIN_STYLE      = (ASCII_A + 1);
 
 constexpr auto PATTERN_NOT_FOUND = static_cast<size_t>(-1);
 

@@ -148,11 +148,11 @@ uint32_t greedy(uint8_t *p, uint32_t max) {
 		break;
 	case EXACTLY:
 		// Count occurrences of single character operand.
-		count = greedy_consume(input_str, max_cmp, [operand](char ch) { return *operand == ch; });
+		count = greedy_consume(input_str, max_cmp, [operand](char ch) { return static_cast<char>(*operand) == ch; });
 		break;
 	case SIMILAR:
 		// Case insensitive version of EXACTLY
-		count = greedy_consume(input_str, max_cmp, [operand](char ch) { return *operand == safe_tolower(ch); });
+		count = greedy_consume(input_str, max_cmp, [operand](char ch) { return static_cast<char>(*operand) == safe_tolower(ch); });
 		break;
 	case ANY_OF:
 		// [...] character class.
@@ -300,7 +300,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			uint8_t *opnd = OPERAND(scan);
 
 			// Inline the first character, for speed.
-			if (end_of_string(eContext.Reg_Input) || *opnd != *eContext.Reg_Input) {
+			if (end_of_string(eContext.Reg_Input) || static_cast<char>(*opnd) != *eContext.Reg_Input) {
 				MATCH_RETURN(false);
 			}
 
@@ -646,7 +646,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			}
 
 			while (min <= num_matched && num_matched <= max) {
-				if (next_char == '\0' || (!end_of_string(eContext.Reg_Input) && next_char == *eContext.Reg_Input)) {
+				if (next_char == '\0' || (!end_of_string(eContext.Reg_Input) && static_cast<char>(next_char) == *eContext.Reg_Input)) {
 					if (match(next, nullptr)) {
 						MATCH_RETURN(true);
 					}
@@ -1124,7 +1124,7 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 			// We know what char match must start with.
 			for (str = start; !end_of_string(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
 
-				if (*str == static_cast<uint8_t>(re->match_start)) {
+				if (*str == re->match_start) {
 					if (attempt(re, str)) {
 						ret_val = true;
 						break;
@@ -1187,7 +1187,7 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 	if (re->match_start != '\0') {
 		// We know what char match must start with.
 		for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
-			if (*str == static_cast<uint8_t>(re->match_start)) {
+			if (*str == re->match_start) {
 				if (attempt(re, str)) {
 					ret_val = true;
 					break;
