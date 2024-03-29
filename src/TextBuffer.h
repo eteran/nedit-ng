@@ -25,8 +25,18 @@ struct SelectionPos {
 	int64_t rectEnd;
 };
 
+class BasicTextBufferBase {
+protected:
+	/* Initial size for the buffer gap (empty space in the buffer where text
+	 * might be inserted if the user is typing sequential chars)
+	 */
+	static constexpr int PreferredGapSize = 80;
+
+	static const char *ControlCodeTable[32];
+};
+
 template <class Ch, class Tr>
-class BasicTextBuffer : public std::enable_shared_from_this<BasicTextBuffer<Ch, Tr>> {
+class BasicTextBuffer : public BasicTextBufferBase, public std::enable_shared_from_this<BasicTextBuffer<Ch, Tr>> {
 public:
 	using string_type = std::basic_string<Ch, Tr>;
 	using view_type   = view::basic_string_view<Ch, Tr>;
@@ -35,14 +45,6 @@ public:
 	using modify_callback_type           = void (*)(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view_type deletedText, void *user);
 	using pre_delete_callback_type       = void (*)(TextCursor pos, int64_t nDeleted, void *user);
 	using selection_update_callback_type = void (*)(const std::shared_ptr<BasicTextBuffer<Ch, Tr>> &);
-
-private:
-	/* Initial size for the buffer gap (empty space in the buffer where text
-	 * might be inserted if the user is typing sequential chars)
-	 */
-	static constexpr int PreferredGapSize = 80;
-
-	static const char *ControlCodeTable[32];
 
 public:
 	/* Maximum length in characters of a tab or control character expansion

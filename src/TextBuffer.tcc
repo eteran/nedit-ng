@@ -8,13 +8,6 @@
 #include <cassert>
 #include <cstring>
 
-template <class Ch, class Tr>
-const char *BasicTextBuffer<Ch, Tr>::ControlCodeTable[32] = {
-	"nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel",
-	"bs", "ht", "nl", "vt", "np", "cr", "so", "si",
-	"dle", "dc1", "dc2", "dc3", "dc4", "nak", "syn", "etb",
-	"can", "em", "sub", "esc", "fs", "gs", "rs", "us"};
-
 /*
 ** Get the entire contents of a text buffer.
 */
