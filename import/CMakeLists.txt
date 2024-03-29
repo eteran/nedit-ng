@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15)
 
 find_package(Qt5 5.5.0 REQUIRED Core Xml)
 find_package(X11 REQUIRED)

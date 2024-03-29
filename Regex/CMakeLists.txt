@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15)
 
 option(NEDIT_BUILD_TESTS "Build Tests")
 option(NEDIT_INCLUDE_DECOMPILER "Build experimental regex decompiler code.")
@@ -27,7 +27,7 @@ if(NEDIT_INCLUDE_DECOMPILER)
 	)
 endif()
 
-add_library(Regex 
+add_library(Regex
 	${SOURCES}
 )
 

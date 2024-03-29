@@ -1,7 +1,7 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15)
 
-project(nedit-ng 
-	LANGUAGES CXX 
+project(nedit-ng
+	LANGUAGES CXX
 	VERSION 2020.1)
 
 enable_testing()

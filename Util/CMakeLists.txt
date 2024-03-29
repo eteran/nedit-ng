@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15)
 
 find_package(Qt5 5.5.0 REQUIRED Core Network)
 
@@ -99,7 +99,7 @@ add_library(Util
 	include/Util/Compiler.h
 )
 
-target_include_directories(Util 
+target_include_directories(Util
 	PUBLIC
 	    ${CMAKE_CURRENT_SOURCE_DIR}/include
 		${CMAKE_CURRENT_BINARY_DIR}/include
