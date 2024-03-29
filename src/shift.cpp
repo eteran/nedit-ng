@@ -218,7 +218,6 @@ std::string fillParagraphs(view::string_view text, int64_t rightMargin, int tabD
 
 	// Create a buffer to accumulate the filled paragraphs
 	TextBuffer buf;
-	buf.BufSetSyncXSelection(false);
 	buf.BufSetAll(text);
 
 	/*
@@ -618,7 +617,6 @@ void shiftRect(DocumentWidget *document, TextArea *area, ShiftDirection directio
 	/* Create a temporary buffer for the lines containing the selection, to
 	   hide the intermediate steps from the display update routines */
 	TextBuffer tempBuf;
-	tempBuf.BufSetSyncXSelection(false);
 	tempBuf.BufSetTabDistance(buf->BufGetTabDistance(), false);
 	tempBuf.BufSetUseTabs(buf->BufGetUseTabs());
 

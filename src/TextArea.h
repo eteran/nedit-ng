@@ -91,6 +91,9 @@ public:
 	~TextArea() override;
 
 public:
+	static void updatePrimarySelection(const std::shared_ptr<TextBuffer> &buffer);
+
+public:
 	// NOTE(eteran): if these aren't expected to have side effects, then some
 	// of them may be able to be replaced with signals
 	void addCursorMovementCallback(CursorMovedCallback callback, void *arg);

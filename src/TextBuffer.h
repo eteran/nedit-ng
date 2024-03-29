@@ -32,14 +32,17 @@ public:
 	using view_type   = view::basic_string_view<Ch, Tr>;
 
 public:
-	using modify_callback_type     = void (*)(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view_type deletedText, void *user);
-	using pre_delete_callback_type = void (*)(TextCursor pos, int64_t nDeleted, void *user);
+	using modify_callback_type           = void (*)(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view_type deletedText, void *user);
+	using pre_delete_callback_type       = void (*)(TextCursor pos, int64_t nDeleted, void *user);
+	using selection_update_callback_type = void (*)(const std::shared_ptr<BasicTextBuffer<Ch, Tr>> &);
 
 private:
 	/* Initial size for the buffer gap (empty space in the buffer where text
 	 * might be inserted if the user is typing sequential chars)
 	 */
 	static constexpr int PreferredGapSize = 80;
+
+	static const char *ControlCodeTable[32];
 
 public:
 	/* Maximum length in characters of a tab or control character expansion
@@ -99,6 +102,8 @@ public:
 	Ch back() const noexcept;
 
 public:
+	selection_update_callback_type BufGetSelectionUpdate() const;
+	void BufSetSelectionUpdate(selection_update_callback_type fn);
 	bool BufGetEmptySelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
 	bool BufGetSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
 	boost::optional<SelectionPos> BufGetSelectionPos() const noexcept;
@@ -204,6 +209,7 @@ private:
 	static int textWidth(view_type text, int tabDist) noexcept;
 	static int64_t countLines(view_type string) noexcept;
 	static void overlayRectInLine(view_type line, view_type insLine, int64_t rectStart, int64_t rectEnd, int tabDist, bool useTabs, string_type *outStr, int64_t *endOffset) noexcept;
+	static int writeControl(Ch out[20], const char *ctrl_char) noexcept;
 
 private:
 	template <class Out>
@@ -224,6 +230,7 @@ private:
 private:
 	std::deque<std::pair<pre_delete_callback_type, void *>> preDeleteProcs_; // procedures to call before text is deleted from the buffer; at most one is supported.
 	std::deque<std::pair<modify_callback_type, void *>> modifyProcs_;        // procedures to call when buffer is modified to redisplay contents
+	selection_update_callback_type selectionUpdate_ = nullptr;
 
 public:
 	Selection primary; // highlighted areas

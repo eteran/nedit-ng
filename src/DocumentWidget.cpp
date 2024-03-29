@@ -588,6 +588,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	// Every document has a backing buffer
 	info_->buffer = std::make_shared<TextBuffer>();
 	info_->buffer->BufAddModifyCB(Highlight::SyntaxHighlightModifyCB, this);
+	info_->buffer->BufSetSelectionUpdate(TextArea::updatePrimarySelection);
 
 	// create the text widget
 	if (Settings::splitHorizontally) {
@@ -6262,7 +6263,6 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 
 	// Create the style buffer
 	auto styleBuf = std::make_unique<TextBuffer>();
-	styleBuf->BufSetSyncXSelection(false);
 
 	const int contextLines = patternSet->lineContext;
 	const int contextChars = patternSet->charContext;

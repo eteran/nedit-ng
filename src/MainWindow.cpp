@@ -6921,7 +6921,6 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 	   intermediate steps from the display routines, and so everything can
 	   be undone in a single operation */
 	TextBuffer tempBuf;
-	tempBuf.BufSetSyncXSelection(false);
 	tempBuf.BufSetAll(fileString);
 
 	// search the string and do the replacements in the temporary buffer

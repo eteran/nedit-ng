@@ -2,47 +2,18 @@
 #ifndef TEXT_BUFFER_TCC_
 #define TEXT_BUFFER_TCC_
 
-#include "TextAreaMimeData.h"
 #include "TextBuffer.h"
 #include "Util/algorithm.h"
-
 #include <algorithm>
 #include <cassert>
+#include <cstring>
 
-#include <QApplication>
-#include <QClipboard>
-#include <QtDebug>
-
-namespace detail {
-
-template <class Ch>
-const Ch *controlCharacter(size_t index) noexcept;
-
-template <>
-constexpr const char *controlCharacter<char>(size_t index) noexcept {
-	const char *const ControlCodeTable[32] = {
-		"nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel",
-		"bs", "ht", "nl", "vt", "np", "cr", "so", "si",
-		"dle", "dc1", "dc2", "dc3", "dc4", "nak", "syn", "etb",
-		"can", "em", "sub", "esc", "fs", "gs", "rs", "us"};
-
-	assert(index < 32);
-	return ControlCodeTable[index];
-}
-
-template <>
-constexpr const wchar_t *controlCharacter<wchar_t>(size_t index) noexcept {
-	const wchar_t *const ControlCodeTable[32] = {
-		L"nul", L"soh", L"stx", L"etx", L"eot", L"enq", L"ack", L"bel",
-		L"bs", L"ht", L"nl", L"vt", L"np", L"cr", L"so", L"si",
-		L"dle", L"dc1", L"dc2", L"dc3", L"dc4", L"nak", L"syn", L"etb",
-		L"can", L"em", L"sub", L"esc", L"fs", L"gs", L"rs", L"us"};
-
-	assert(index < 32);
-	return ControlCodeTable[index];
-}
-
-}
+template <class Ch, class Tr>
+const char *BasicTextBuffer<Ch, Tr>::ControlCodeTable[32] = {
+	"nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel",
+	"bs", "ht", "nl", "vt", "np", "cr", "so", "si",
+	"dle", "dc1", "dc2", "dc3", "dc4", "nak", "syn", "etb",
+	"can", "em", "sub", "esc", "fs", "gs", "rs", "us"};
 
 /*
 ** Get the entire contents of a text buffer.
@@ -569,21 +540,9 @@ void BasicTextBuffer<Ch, Tr>::BufSelect(std::pair<TextCursor, TextCursor> range)
 
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::updatePrimarySelection() noexcept {
-#ifdef Q_OS_UNIX
-	if (syncXSelection_ && QApplication::clipboard()->supportsSelection()) {
-		const bool selected = primary.selected_;
-		const bool isOwner  = TextAreaMimeData::isOwner(QApplication::clipboard()->mimeData(QClipboard::Selection), this);
-
-		// if we already own the selection, then we don't need to do anything
-		// things are lazily evaluated in TextAreaMimeData::retrieveData
-		if ((isOwner && selected) || (!isOwner && !selected)) {
-			return;
-		}
-
-		auto data = new TextAreaMimeData(this->shared_from_this());
-		QApplication::clipboard()->setMimeData(data, QClipboard::Selection);
+	if (syncXSelection_ && selectionUpdate_) {
+		selectionUpdate_(this->shared_from_this());
 	}
-#endif
 }
 
 template <class Ch, class Tr>
@@ -842,6 +801,21 @@ int BasicTextBuffer<Ch, Tr>::BufExpandTab(int64_t indent, Ch outStr[MAX_EXP_CHAR
 }
 
 template <class Ch, class Tr>
+int BasicTextBuffer<Ch, Tr>::writeControl(Ch out[MAX_EXP_CHAR_LEN], const char *ctrl_char) noexcept {
+
+	auto ptr = out;
+	auto in  = ctrl_char;
+
+	*ptr++ = '<';
+	while (const char ch = *in++) {
+		*ptr++ = Ch(ch);
+	}
+	*ptr++ = '>';
+
+	return ptr - out;
+}
+
+template <class Ch, class Tr>
 int BasicTextBuffer<Ch, Tr>::BufExpandCharacter(Ch ch, int64_t indent, Ch outStr[MAX_EXP_CHAR_LEN], int tabDist) noexcept {
 
 	// Convert tabs to spaces
@@ -851,12 +825,13 @@ int BasicTextBuffer<Ch, Tr>::BufExpandCharacter(Ch ch, int64_t indent, Ch outStr
 
 #if defined(VISUAL_CTRL_CHARS)
 	// Convert ASCII control codes to readable character sequences
-	if ((static_cast<size_t>(ch)) < 32) {
-		return snprintf(outStr, MAX_EXP_CHAR_LEN, "<%s>", detail::controlCharacter<Ch>(static_cast<size_t>(ch)));
+	if (static_cast<size_t>(ch) < 32) {
+		const char *s = ControlCodeTable[static_cast<size_t>(ch)];
+		return writeControl(outStr, s);
 	}
 
 	if (ch == 127) {
-		return snprintf(outStr, MAX_EXP_CHAR_LEN, "<del>");
+		return writeControl(outStr, "del");
 	}
 #endif
 	// Otherwise, just return the character
@@ -877,12 +852,12 @@ int BasicTextBuffer<Ch, Tr>::BufCharWidth(Ch ch, int64_t indent, int tabDist) no
 
 #if defined(VISUAL_CTRL_CHARS)
 	if (static_cast<size_t>(ch) < 32) {
-		const Ch *const s = detail::controlCharacter<Ch>(static_cast<size_t>(ch));
-		return static_cast<int>(Tr::length(s) + 2);
+		const char *s = ControlCodeTable[static_cast<size_t>(ch)];
+		return static_cast<int>(strlen(s) + 2);
 	}
 
 	if (ch == 127) {
-		return 5; // Tr::length("<del>")
+		return 5; // strlen("<del>")
 	}
 #endif
 	return 1;
@@ -2124,6 +2099,16 @@ bool BasicTextBuffer<Ch, Tr>::BufGetSyncXSelection() const {
 template <class Ch, class Tr>
 bool BasicTextBuffer<Ch, Tr>::BufSetSyncXSelection(bool sync) {
 	return std::exchange(syncXSelection_, sync);
+}
+
+template <class Ch, class Tr>
+auto BasicTextBuffer<Ch, Tr>::BufGetSelectionUpdate() const -> selection_update_callback_type {
+	return selectionUpdate_;
+}
+
+template <class Ch, class Tr>
+void BasicTextBuffer<Ch, Tr>::BufSetSelectionUpdate(selection_update_callback_type fn) {
+	selectionUpdate_ = fn;
 }
 
 /**

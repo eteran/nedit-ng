@@ -2008,7 +2008,6 @@ void TextArea::findWrapRange(view::string_view deletedText, TextCursor pos, int6
 	const int64_t length = (pos - countFrom) + nDeleted + (countTo - (pos + nInserted));
 
 	TextBuffer deletedTextBuf;
-	deletedTextBuf.BufSetSyncXSelection(false);
 
 	if (pos > countFrom) {
 		deletedTextBuf.BufCopyFromBuf(buffer_, countFrom, pos, buffer_->BufStartOfBuffer());
@@ -4307,7 +4306,6 @@ std::string TextArea::wrapText(view::string_view startLine, view::string_view te
 
 	// Create a temporary text buffer and load it with the strings
 	TextBuffer wrapBuf;
-	wrapBuf.BufSetSyncXSelection(false);
 	wrapBuf.BufInsert(buffer_->BufStartOfBuffer(), startLine);
 	wrapBuf.BufAppend(text);
 
@@ -6081,7 +6079,6 @@ void TextArea::beginBlockDrag() {
 	/* Save a copy of the whole text buffer as a backup, and for
 	   deriving changes */
 	dragOrigBuf_ = std::make_unique<TextBuffer>();
-	dragOrigBuf_->BufSetSyncXSelection(false);
 	dragOrigBuf_->BufSetTabDistance(buffer_->BufGetTabDistance(), true);
 	dragOrigBuf_->BufSetUseTabs(buffer_->BufGetUseTabs());
 
@@ -6119,7 +6116,6 @@ void TextArea::beginBlockDrag() {
 	dragInserted_  = sel.end() - sel.start();
 	if (sel.isRectangular()) {
 		TextBuffer testBuf;
-		testBuf.BufSetSyncXSelection(false);
 
 		std::string testText = buffer_->BufGetRange(sel.start(), sel.end());
 		testBuf.BufSetTabDistance(buffer_->BufGetTabDistance(), true);
@@ -6217,7 +6213,6 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	   range of characters which might be modified in this drag step
 	   (this could be tighter, but hopefully it's not too slow) */
 	TextBuffer tempBuf;
-	tempBuf.BufSetSyncXSelection(false);
 	tempBuf.BufSetTabDistance(buffer_->BufGetTabDistance(), false);
 	tempBuf.BufSetUseTabs(buffer_->BufGetUseTabs());
 
@@ -7356,7 +7351,6 @@ std::string TextArea::TextGetWrapped(TextCursor startPos, TextCursor endPos) {
 	   newlines will expand it to.  Since it's a text buffer, if we guess
 	   wrong, it will fail softly, and simply expand the size */
 	TextBuffer outBuf((endPos - startPos) + (endPos - startPos) / 5);
-	outBuf.BufSetSyncXSelection(false);
 
 	TextCursor outPos;
 
@@ -8039,4 +8033,22 @@ int TextArea::fixedFontHeight() const {
  */
 int TextArea::fixedFontWidth() const {
 	return fixedFontWidth_;
+}
+
+void TextArea::updatePrimarySelection(const std::shared_ptr<TextBuffer> &buffer) {
+#ifdef Q_OS_UNIX
+	if (QApplication::clipboard()->supportsSelection()) {
+		const bool selected = buffer->primary.selected_;
+		const bool isOwner  = TextAreaMimeData::isOwner(QApplication::clipboard()->mimeData(QClipboard::Selection), buffer.get());
+
+		// if we already own the selection, then we don't need to do anything
+		// things are lazily evaluated in TextAreaMimeData::retrieveData
+		if ((isOwner && selected) || (!isOwner && !selected)) {
+			return;
+		}
+
+		auto data = new TextAreaMimeData(buffer);
+		QApplication::clipboard()->setMimeData(data, QClipboard::Selection);
+	}
+#endif
 }
