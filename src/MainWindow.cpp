@@ -5642,7 +5642,7 @@ bool MainWindow::eventFilter(QObject *object, QEvent *ev) {
 			auto event  = static_cast<QHelpEvent *>(ev);
 			auto tabBar = ui.tabWidget->tabBar();
 
-			int index = tabBar->tabAt(static_cast<QHelpEvent *>(event)->pos());
+			int index = tabBar->tabAt(event->pos());
 			if (index != -1) {
 
 				if (DocumentWidget *document = documentAt(index)) {
@@ -5668,7 +5668,7 @@ bool MainWindow::eventFilter(QObject *object, QEvent *ev) {
 						tipString = labelString;
 					}
 
-					QToolTip::showText(static_cast<QHelpEvent *>(event)->globalPos(), tipString, this);
+					QToolTip::showText(event->globalPos(), tipString, this);
 				}
 			}
 		}

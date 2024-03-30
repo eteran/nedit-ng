@@ -260,7 +260,7 @@ void bufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t 
 ** Count the number of newlines in a text string
 */
 int64_t countNewlines(view::string_view string) {
-	return static_cast<int64_t>(std::count(string.begin(), string.end(), '\n'));
+	return std::count(string.begin(), string.end(), '\n');
 }
 
 void ringIfNecessary(bool silent) {
