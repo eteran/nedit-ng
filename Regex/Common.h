@@ -18,7 +18,7 @@ unsigned int U_CHAR_AT(Ptr p) noexcept {
 template <class T>
 T *OPERAND(T *p) noexcept {
 	static_assert(sizeof(T) == 1, "Invalid Pointer Type");
-	return p + NODE_SIZE;
+	return p + NODE_SIZE<size_t>;
 }
 
 template <class T>

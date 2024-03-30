@@ -421,9 +421,9 @@ boost::optional<Search::Result> SearchStringEx(view::string_view string, view::s
 	case SearchType::Literal:
 		return searchLiteral(string, searchString, direction, wrap, beginPos, Qt::CaseInsensitive);
 	case SearchType::Regex:
-		return searchRegex(string, searchString, direction, wrap, beginPos, delimiters, REDFLT_STANDARD);
+		return searchRegex(string, searchString, direction, wrap, beginPos, delimiters, RE_DEFAULT_STANDARD);
 	case SearchType::RegexNoCase:
-		return searchRegex(string, searchString, direction, wrap, beginPos, delimiters, REDFLT_CASE_INSENSITIVE);
+		return searchRegex(string, searchString, direction, wrap, beginPos, delimiters, RE_DEFAULT_CASE_INSENSITIVE);
 	}
 
 	Q_UNREACHABLE();
@@ -469,12 +469,12 @@ boost::optional<std::string> Search::ReplaceAllInString(view::string_view inStri
 
 	/* rehearse the search first to determine the size of the buffer needed
 	   to hold the substituted text.  No substitution done here yet */
-	bool found       = true;
-	int replaceLen   = replaceString.size();
-	int nFound       = 0;
-	int removeLen    = 0;
-	int addLen       = 0;
-	int64_t beginPos = 0;
+	bool found        = true;
+	int replaceLen    = replaceString.size();
+	int nFound        = 0;
+	int64_t removeLen = 0;
+	int64_t addLen    = 0;
+	int64_t beginPos  = 0;
 
 	*copyStart = -1;
 
@@ -512,7 +512,7 @@ boost::optional<std::string> Search::ReplaceAllInString(view::string_view inStri
 					delimiters,
 					defaultRegexFlags(searchType));
 
-				addLen += replaceResult.size();
+				addLen += gsl::narrow<int64_t>(replaceResult.size());
 			} else {
 				addLen += replaceLen;
 			}
@@ -730,12 +730,12 @@ bool Search::isRegexType(SearchType searchType) {
 int Search::defaultRegexFlags(SearchType searchType) {
 	switch (searchType) {
 	case SearchType::Regex:
-		return REDFLT_STANDARD;
+		return RE_DEFAULT_STANDARD;
 	case SearchType::RegexNoCase:
-		return REDFLT_CASE_INSENSITIVE;
+		return RE_DEFAULT_CASE_INSENSITIVE;
 	default:
 		// We should never get here, but just in case ...
-		return REDFLT_STANDARD;
+		return RE_DEFAULT_STANDARD;
 	}
 }
 

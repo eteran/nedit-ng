@@ -15,6 +15,7 @@
 #include <cctype>
 #include <cstring>
 #include <limits>
+#include <gsl/gsl_util>
 
 namespace {
 
@@ -180,7 +181,7 @@ template <class T>
 uint8_t *emit_node(T op_code) noexcept {
 
 	if (pContext.FirstPass) {
-		pContext.Reg_Size += NODE_SIZE;
+		pContext.Reg_Size += NODE_SIZE<size_t>;
 		return reinterpret_cast<uint8_t *>(1);
 	}
 
@@ -246,18 +247,18 @@ uint8_t *emit_special(Ch op_code, uint32_t test_val, size_t index) noexcept {
 		switch (op_code) {
 		case POS_BEHIND_OPEN:
 		case NEG_BEHIND_OPEN:
-			pContext.Reg_Size += LENGTH_SIZE; // Length of the look-behind match
-			pContext.Reg_Size += NODE_SIZE;   // Make room for the node
+			pContext.Reg_Size += LENGTH_SIZE<size_t>; // Length of the look-behind match
+			pContext.Reg_Size += NODE_SIZE<size_t>;   // Make room for the node
 			break;
 
 		case TEST_COUNT:
-			pContext.Reg_Size += NEXT_PTR_SIZE; // Make room for a test value.
+			pContext.Reg_Size += NEXT_PTR_SIZE<size_t>; // Make room for a test value.
 			NEDIT_FALLTHROUGH();
 		case INC_COUNT:
-			pContext.Reg_Size += INDEX_SIZE; // Make room for an index value.
+			pContext.Reg_Size += INDEX_SIZE<size_t>; // Make room for an index value.
 			NEDIT_FALLTHROUGH();
 		default:
-			pContext.Reg_Size += NODE_SIZE; // Make room for the node.
+			pContext.Reg_Size += NODE_SIZE<size_t>; // Make room for the node.
 		}
 
 		return reinterpret_cast<uint8_t *>(1);
@@ -319,14 +320,14 @@ uint8_t *insert(uint8_t op, const uint8_t *insert_pos, uint32_t min, uint32_t ma
 
 	if (pContext.FirstPass) {
 
-		size_t insert_size = NODE_SIZE;
+		size_t insert_size = NODE_SIZE<size_t>;
 
 		if (op == BRACE || op == LAZY_BRACE) {
 			// Make room for the min and max values.
-			insert_size += (2 * NEXT_PTR_SIZE);
+			insert_size += (2 * NEXT_PTR_SIZE<size_t>);
 		} else if (op == INIT_COUNT) {
 			// Make room for an index value.
-			insert_size += INDEX_SIZE;
+			insert_size += INDEX_SIZE<size_t>;
 		}
 
 		pContext.Reg_Size += insert_size;
@@ -1227,8 +1228,8 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 	*flag_param = (min_max[0] > 0) ? (WORST | HAS_WIDTH) : WORST;
 	if (range_local.lower >= 0) {
 		if (min_max[1] != REG_INFINITY) {
-			range_param.lower = range_local.lower * min_max[0];
-			range_param.upper = range_local.upper * min_max[1];
+			range_param.lower = gsl::narrow<int32_t>(range_local.lower * min_max[0]);
+			range_param.upper = gsl::narrow<int32_t>(range_local.upper * min_max[1]);
 		} else {
 			range_param.lower = -1; // Not a fixed-size length
 			range_param.upper = -1;
@@ -1282,15 +1283,15 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 		next = emit_node(NOTHING); // 2,3
 
-		offset_tail(ret_val, NODE_SIZE, next);        // 2
+		offset_tail(ret_val, NODE_SIZE<size_t>, next);        // 2
 		tail(ret_val, next);                          // 3
 		insert(BRANCH, ret_val, 0UL, 0UL, 0);         // 4,5
-		tail(ret_val, ret_val + (2 * NODE_SIZE));     // 4
-		offset_tail(ret_val, 3 * NODE_SIZE, ret_val); // 5
+		tail(ret_val, ret_val + (2 * NODE_SIZE<size_t>));     // 4
+		offset_tail(ret_val, 3 * NODE_SIZE<size_t>, ret_val); // 5
 
 		if (op_code == '+') {
 			insert(NOTHING, ret_val, 0UL, 0UL, 0);    // 6
-			tail(ret_val, ret_val + (4 * NODE_SIZE)); // 6
+			tail(ret_val, ret_val + (4 * NODE_SIZE<size_t>)); // 6
 		}
 	} else if (op_code == '*') {
 		/* Node structure for (x)* construct.
@@ -1302,8 +1303,8 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 		 */
 
 		insert(BRANCH, ret_val, 0UL, 0UL, 0);             // 1,3
-		offset_tail(ret_val, NODE_SIZE, emit_node(BACK)); // 2
-		offset_tail(ret_val, NODE_SIZE, ret_val);         // 1
+		offset_tail(ret_val, NODE_SIZE<size_t>, emit_node(BACK)); // 2
+		offset_tail(ret_val, NODE_SIZE<size_t>, ret_val);         // 1
 		tail(ret_val, emit_node(BRANCH));                 // 3
 		tail(ret_val, emit_node(NOTHING));                // 4
 	} else if (op_code == '+') {
@@ -1336,11 +1337,11 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 		next = emit_node(NOTHING); // 1,2,3
 
-		offset_tail(ret_val, 2 * NODE_SIZE, next);  // 1
-		offset_tail(ret_val, NODE_SIZE, next);      // 2
+		offset_tail(ret_val, 2 * NODE_SIZE<size_t>, next);  // 1
+		offset_tail(ret_val, NODE_SIZE<size_t>, next);      // 2
 		tail(ret_val, next);                        // 3
 		insert(BRANCH, ret_val, 0UL, 0UL, 0);       // 4
-		tail(ret_val, (ret_val + (2 * NODE_SIZE))); // 4
+		tail(ret_val, (ret_val + (2 * NODE_SIZE<size_t>))); // 4
 
 	} else if (op_code == '?') {
 		/* Node structure for (x)? construct.
@@ -1356,7 +1357,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 		next = emit_node(NOTHING); // 2,3
 
 		tail(ret_val, next);                   // 2
-		offset_tail(ret_val, NODE_SIZE, next); // 3
+		offset_tail(ret_val, NODE_SIZE<size_t>, next); // 3
 	} else if (op_code == '{' && min_max[0] == min_max[1]) {
 		/* Node structure for (x){m}, (x){m}?, (x){m,m}, or (x){m,m}? constructs.
 		 * Note that minimal and maximal matching mean the same thing when we
@@ -1400,13 +1401,13 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 			insert(NOTHING, ret_val, 0UL, 0UL, pContext.Num_Braces); // 5
 			insert(BRANCH, ret_val, 0UL, 0UL, pContext.Num_Braces);  // 3,4,8
 			tail(emit_node(BACK), ret_val);                          // 3
-			tail(ret_val, ret_val + (2 * NODE_SIZE));                // 4
+			tail(ret_val, ret_val + (2 * NODE_SIZE<size_t>));                // 4
 
 			next = emit_node(NOTHING); // 5,6,7
 
-			offset_tail(ret_val, NODE_SIZE, next);     // 5
-			offset_tail(ret_val, 2 * NODE_SIZE, next); // 6
-			offset_tail(ret_val, 3 * NODE_SIZE, next); // 7
+			offset_tail(ret_val, NODE_SIZE<size_t>, next);     // 5
+			offset_tail(ret_val, 2 * NODE_SIZE<size_t>, next); // 6
+			offset_tail(ret_val, 3 * NODE_SIZE<size_t>, next); // 7
 
 			next = insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 8
 
@@ -1436,13 +1437,13 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			next = emit_node(NOTHING); // 5,6
 
-			offset_tail(ret_val, NODE_SIZE, next);                      // 5
+			offset_tail(ret_val, NODE_SIZE<size_t>, next);                      // 5
 			tail(ret_val, next);                                        // 6
 			insert(BRANCH, ret_val, 0UL, 0UL, 0);                       // 7,8
-			tail(ret_val, ret_val + (2 * NODE_SIZE));                   // 7
-			offset_tail(ret_val, 3 * NODE_SIZE, ret_val);               // 8
+			tail(ret_val, ret_val + (2 * NODE_SIZE<size_t>));                   // 7
+			offset_tail(ret_val, 3 * NODE_SIZE<size_t>, ret_val);               // 8
 			insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 9
-			tail(ret_val, ret_val + INDEX_SIZE + (4 * NODE_SIZE));      // 9
+			tail(ret_val, ret_val + INDEX_SIZE<size_t> + (4 * NODE_SIZE<size_t>));      // 9
 
 		} else {
 			/* Node structure for (x){m,n}? construct.
@@ -1473,13 +1474,13 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			next = emit_node(NOTHING); // 5,6,7
 
-			offset_tail(ret_val, NODE_SIZE, next);                      // 5
-			offset_tail(ret_val, 2 * NODE_SIZE, next);                  // 6
-			offset_tail(ret_val, 3 * NODE_SIZE, next);                  // 7
-			tail(ret_val, ret_val + (2 * NODE_SIZE));                   // 8
-			offset_tail(next, -NODE_SIZE, ret_val);                     // 9
+			offset_tail(ret_val, NODE_SIZE<size_t>, next);                      // 5
+			offset_tail(ret_val, 2 * NODE_SIZE<size_t>, next);                  // 6
+			offset_tail(ret_val, 3 * NODE_SIZE<size_t>, next);                  // 7
+			tail(ret_val, ret_val + (2 * NODE_SIZE<size_t>));                   // 8
+			offset_tail(next, -NODE_SIZE<int>, ret_val);                     // 9
 			insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 10
-			tail(ret_val, ret_val + INDEX_SIZE + (4 * NODE_SIZE));      // 10
+			tail(ret_val, ret_val + INDEX_SIZE<size_t> + (4 * NODE_SIZE<size_t>));      // 10
 		}
 
 		pContext.Num_Braces++;
@@ -1507,7 +1508,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			tail(ret_val, next);                   // 4
 			tail(next, emit_node(NOTHING));        // 5,6
-			offset_tail(ret_val, NODE_SIZE, next); // 6
+			offset_tail(ret_val, NODE_SIZE<size_t>, next); // 6
 
 			next = insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 7
 
@@ -1535,13 +1536,13 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 			next = emit_node(BACK); // 4
 
 			tail(next, ret_val);                   // 4
-			offset_tail(ret_val, NODE_SIZE, next); // 5
+			offset_tail(ret_val, NODE_SIZE<size_t>, next); // 5
 			tail(ret_val, emit_node(BRANCH));      // 6
 			tail(ret_val, emit_node(NOTHING));     // 7
 
 			insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 8
 
-			tail(ret_val, ret_val + INDEX_SIZE + (2 * NODE_SIZE)); // 8
+			tail(ret_val, ret_val + INDEX_SIZE<size_t> + (2 * NODE_SIZE<size_t>)); // 8
 
 		} else {
 			/* Node structure for (x){m,n} construct.
@@ -1570,15 +1571,15 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 			next = emit_node(BRANCH); // 5,8
 
 			tail(ret_val, next);                    // 5
-			offset_tail(next, -NODE_SIZE, ret_val); // 6
+			offset_tail(next, -NODE_SIZE<int>, ret_val); // 6
 
 			next = emit_node(NOTHING); // 7,8
 
-			offset_tail(ret_val, NODE_SIZE, next); // 7
+			offset_tail(ret_val, NODE_SIZE<size_t>, next); // 7
 
-			offset_tail(next, -NODE_SIZE, next);                        // 8
+			offset_tail(next, -NODE_SIZE<int>, next);                        // 8
 			insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 9
-			tail(ret_val, ret_val + INDEX_SIZE + (2 * NODE_SIZE));      // 9
+			tail(ret_val, ret_val + INDEX_SIZE<size_t> + (2 * NODE_SIZE<size_t>));      // 9
 		}
 
 		pContext.Num_Braces++;
@@ -1703,7 +1704,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		look_only   = true;
 		// We'll overwrite the zero length later on, so we save the ptr
 		ret_val                 = emit_special(paren, 0, 0);
-		emit_look_behind_bounds = ret_val + NODE_SIZE;
+		emit_look_behind_bounds = ret_val + NODE_SIZE<size_t>;
 	} else if (paren == INSENSITIVE) {
 		pContext.Is_Case_Insensitive = true;
 	} else if (paren == SENSITIVE) {
@@ -1777,7 +1778,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
 	// Hook the tails of the branch alternatives to the closing node.
 	for (uint8_t *this_branch = ret_val; this_branch != nullptr; this_branch = next_ptr(this_branch)) {
-		branch_tail(this_branch, NODE_SIZE, ender);
+		branch_tail(this_branch, NODE_SIZE<size_t>, ender);
 	}
 
 	// Check for proper termination.
@@ -1788,7 +1789,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		if (*pContext.Reg_Parse == ')') {
 			Raise<RegexError>("missing left parenthesis '('");
 		} else {
-			Raise<RegexError>("junk on end"); // "Can't happen" - NOTREACHED
+			Raise<RegexError>("junk on end"); // "Can't happen" - NOT REACHED
 		}
 	}
 
@@ -1923,9 +1924,9 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 		 *    Match_Newline:       Newlines are NOT matched by default
 		 *                         in character classes
 		 */
-		pContext.Is_Case_Insensitive = ((defaultFlags & REDFLT_CASE_INSENSITIVE) != 0);
+		pContext.Is_Case_Insensitive = ((defaultFlags & RE_DEFAULT_CASE_INSENSITIVE) != 0);
 #if 0 // Currently not used. Uncomment if needed.
-		pContext.Match_Newline       = ((defaultFlags & REDFLT_MATCH_NEWLINE) != 0);
+		pContext.Match_Newline       = ((defaultFlags & RE_DEFAULT_MATCH_NEWLINE) != 0);
 #else
 		pContext.Match_Newline = false;
 #endif
@@ -1987,8 +1988,8 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 			/* Allow x+ or x+? at the start of the regex to be
 			   optimized. */
 
-			if (GET_OP_CODE(scan + NODE_SIZE) == EXACTLY) {
-				re->match_start = static_cast<char>(*OPERAND(scan + NODE_SIZE));
+			if (GET_OP_CODE(scan + NODE_SIZE<size_t>) == EXACTLY) {
+				re->match_start = static_cast<char>(*OPERAND(scan + NODE_SIZE<size_t>));
 			}
 		} else if (GET_OP_CODE(scan) == BOL) {
 			re->anchor++;

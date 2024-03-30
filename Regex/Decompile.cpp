@@ -4,12 +4,12 @@
 
 namespace {
 
-constexpr int16_t make_int16(uint8_t hi, uint16_t lo) {
-	return (static_cast<int16_t>(hi << 8)) | lo;
+constexpr uint16_t make_uint16(uint8_t hi, uint8_t lo) {
+	return (static_cast<uint16_t>(hi) << 8) | lo;
 }
 
-constexpr uint16_t make_uint16(uint8_t hi, uint16_t lo) {
-	return (static_cast<uint16_t>(hi << 8)) | lo;
+constexpr int16_t make_int16(uint8_t hi, uint8_t lo) {
+	return static_cast<int16_t>(make_uint16(hi, lo));
 }
 
 }
@@ -337,11 +337,11 @@ std::vector<Instruction> decompileRegex(const Regex &re) {
 			uint8_t offset_hi = *it++;
 			uint8_t offset_lo = *it++;
 
-			int16_t min_hi = *it++;
-			int16_t min_lo = *it++;
+			uint8_t min_hi = *it++;
+			uint8_t min_lo = *it++;
 
-			int16_t max_hi = *it++;
-			int16_t max_lo = *it++;
+			uint8_t max_hi = *it++;
+			uint8_t max_lo = *it++;
 
 			results.emplace_back(Instruction3{static_cast<Opcode>(opcode), make_int16(offset_hi, offset_lo), make_uint16(min_hi, min_lo), make_uint16(max_hi, max_lo)});
 			break;
@@ -352,11 +352,11 @@ std::vector<Instruction> decompileRegex(const Regex &re) {
 			uint8_t offset_hi = *it++;
 			uint8_t offset_lo = *it++;
 
-			int16_t min_hi = *it++;
-			int16_t min_lo = *it++;
+			uint8_t min_hi = *it++;
+			uint8_t min_lo = *it++;
 
-			int16_t max_hi = *it++;
-			int16_t max_lo = *it++;
+			uint8_t max_hi = *it++;
+			uint8_t max_lo = *it++;
 
 			results.emplace_back(Instruction3{static_cast<Opcode>(opcode), make_int16(offset_hi, offset_lo), make_uint16(min_hi, min_lo), make_uint16(max_hi, max_lo)});
 			break;

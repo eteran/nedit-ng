@@ -4256,7 +4256,7 @@ std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments argume
 	}
 
 	const int64_t maxpos = buffer->length();
-	int rangeIndex;
+	int64_t rangeIndex;
 	if (pos < 0 || pos > maxpos) {
 		rangeIndex = 0;
 	} else {

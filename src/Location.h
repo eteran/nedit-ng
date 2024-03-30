@@ -2,9 +2,11 @@
 #ifndef LOCATION_H_
 #define LOCATION_H_
 
+#include <cstdint>
+
 struct Location {
-	int line;
-	int column;
+	int64_t line;
+	int64_t column;
 };
 
 #endif

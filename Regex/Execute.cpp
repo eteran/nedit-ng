@@ -73,7 +73,7 @@ FORCE_INLINE bool end_of_string(const char *ptr) noexcept {
  * @return
  */
 FORCE_INLINE uint16_t get_lower(const uint8_t *p) noexcept {
-	return static_cast<uint8_t>(((p[NODE_SIZE + 0] & 0xff) << 8) + ((p[NODE_SIZE + 1]) & 0xff));
+	return static_cast<uint8_t>(((p[NODE_SIZE<size_t> + 0] & 0xff) << 8) + ((p[NODE_SIZE<size_t> + 1]) & 0xff));
 }
 
 /**
@@ -82,7 +82,7 @@ FORCE_INLINE uint16_t get_lower(const uint8_t *p) noexcept {
  * @return
  */
 FORCE_INLINE uint16_t get_upper(const uint8_t *p) noexcept {
-	return static_cast<uint8_t>(((p[NODE_SIZE + 2] & 0xff) << 8) + ((p[NODE_SIZE + 3]) & 0xff));
+	return static_cast<uint8_t>(((p[NODE_SIZE<size_t> + 2] & 0xff) << 8) + ((p[NODE_SIZE<size_t> + 3]) & 0xff));
 }
 
 /**
@@ -625,14 +625,14 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				lazy = true;
 				NEDIT_FALLTHROUGH();
 			case BRACE:
-				min = static_cast<uint32_t>(GET_OFFSET(scan + NEXT_PTR_SIZE));
-				max = static_cast<uint32_t>(GET_OFFSET(scan + (2 * NEXT_PTR_SIZE)));
+				min = static_cast<uint32_t>(GET_OFFSET(scan + NEXT_PTR_SIZE<size_t>));
+				max = static_cast<uint32_t>(GET_OFFSET(scan + (2 * NEXT_PTR_SIZE<size_t>)));
 
 				if (max <= REG_INFINITY) {
 					max = std::numeric_limits<uint32_t>::max();
 				}
 
-				next_op = OPERAND(scan + (2 * NEXT_PTR_SIZE));
+				next_op = OPERAND(scan + (2 * NEXT_PTR_SIZE<size_t>));
 			}
 
 			save = eContext.Reg_Input;
@@ -693,8 +693,8 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			break;
 
 		case TEST_COUNT:
-			if (eContext.BraceCounts[*OPERAND(scan)] < static_cast<uint32_t>(GET_OFFSET(scan + NEXT_PTR_SIZE + INDEX_SIZE))) {
-				next = scan + NODE_SIZE + INDEX_SIZE + NEXT_PTR_SIZE;
+			if (eContext.BraceCounts[*OPERAND(scan)] < static_cast<uint32_t>(GET_OFFSET(scan + NEXT_PTR_SIZE<size_t> + INDEX_SIZE<size_t>))) {
+				next = scan + NODE_SIZE<size_t> + INDEX_SIZE<size_t> + NEXT_PTR_SIZE<size_t>;
 			}
 			break;
 
@@ -869,7 +869,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				   node. The look-behind node is followed by a chain of
 				   branches (contents of the look-behind expression), and
 				   terminated by a look-behind-close node. */
-				next = NEXT_PTR(OPERAND(scan) + LENGTH_SIZE); // 1st branch
+				next = NEXT_PTR(OPERAND(scan) + LENGTH_SIZE<size_t>); // 1st branch
 
 				// Skip the chained branches inside the look-ahead
 				while (GET_OP_CODE(next) == BRANCH) {

@@ -305,11 +305,11 @@ TextCursor findParagraphStart(TextBuffer *buf, TextCursor startPos) {
 	return parStart > buf->BufStartOfBuffer() ? parStart : buf->BufStartOfBuffer();
 }
 
-int countLines(view::string_view text) {
+int64_t countLines(view::string_view text) {
 	return std::count(text.begin(), text.end(), '\n') + 1;
 }
 
-int countLines(const QString &text) {
+int64_t countLines(const QString &text) {
 	return std::count(text.begin(), text.end(), QLatin1Char('\n')) + 1;
 }
 
@@ -785,7 +785,7 @@ void fillSelection(DocumentWidget *document, TextArea *area) {
 ** shift lines left and right in a multi-line text string.
 */
 QString shiftText(const QString &text, ShiftDirection direction, bool tabsAllowed, int tabDist, int nChars) {
-	int bufLen;
+	int64_t bufLen;
 
 	/*
 	** Shift left adds a maximum of tabDist-2 characters per line
@@ -799,7 +799,7 @@ QString shiftText(const QString &text, ShiftDirection direction, bool tabsAllowe
 	}
 
 	QString shiftedText;
-	shiftedText.reserve(bufLen);
+	shiftedText.reserve(gsl::narrow<int>(bufLen));
 
 	auto shiftedPtr = std::back_inserter(shiftedText);
 
@@ -814,7 +814,9 @@ QString shiftText(const QString &text, ShiftDirection direction, bool tabsAllowe
 
 			auto segment = text.mid(gsl::narrow<int>(lineStartPtr - text.data()));
 
-			QString shiftedLineString = (direction == ShiftDirection::Right) ? shiftLineRight(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars) : shiftLineLeft(segment, textPtr - lineStartPtr, tabDist, nChars);
+			QString shiftedLineString = (direction == ShiftDirection::Right)
+											? shiftLineRight(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars)
+											: shiftLineLeft(segment, textPtr - lineStartPtr, tabDist, nChars);
 
 			std::copy(shiftedLineString.begin(), shiftedLineString.end(), shiftedPtr);
 

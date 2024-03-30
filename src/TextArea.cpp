@@ -226,7 +226,7 @@ void findTextMargins(TextBuffer *buf, TextCursor start, TextCursor end, int64_t 
 ** Find a text position in buffer "buf" by counting forward or backward
 ** from a reference position with known line number
 */
-TextCursor findRelativeLineStart(const TextBuffer *buf, TextCursor referencePos, int referenceLineNum, int newLineNum) {
+TextCursor findRelativeLineStart(const TextBuffer *buf, TextCursor referencePos, int64_t referenceLineNum, int64_t newLineNum) {
 
 	if (newLineNum < referenceLineNum) {
 		return buf->BufCountBackwardNLines(referencePos, referenceLineNum - newLineNum);
@@ -259,8 +259,8 @@ void bufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t 
 /*
 ** Count the number of newlines in a text string
 */
-int countNewlines(view::string_view string) {
-	return static_cast<int>(std::count(string.begin(), string.end(), '\n'));
+int64_t countNewlines(view::string_view string) {
+	return static_cast<int64_t>(std::count(string.begin(), string.end(), '\n'));
 }
 
 void ringIfNecessary(bool silent) {
@@ -926,18 +926,20 @@ TextArea::~TextArea() {
  */
 void TextArea::verticalScrollBar_valueChanged(int value) {
 
+	int64_t value64 = value;
+
 	// Limit the requested scroll position to allowable values
 	if (continuousWrap_) {
-		if ((value > topLineNum_) && (value > (nBufferLines_ + 2 + cursorVPadding_ - nVisibleLines_))) {
-			value = std::max(topLineNum_, nBufferLines_ + 2 + cursorVPadding_ - nVisibleLines_);
+		if ((value64 > topLineNum_) && (value64 > (nBufferLines_ + 2 + cursorVPadding_ - nVisibleLines_))) {
+			value64 = std::max(topLineNum_, nBufferLines_ + 2 + cursorVPadding_ - nVisibleLines_);
 		}
 	}
 
-	const int lineDelta = topLineNum_ - value;
+	const int64_t lineDelta = topLineNum_ - value64;
 
 	/* If the vertical scroll position has changed, update the line
 	   starts array and related counters in the text display */
-	offsetLineStarts(value);
+	offsetLineStarts(value64);
 
 	/* Update the scroll bar ranges, note: updating the horizontal scroll bars
 	 * can have the further side-effect of changing the horizontal scroll
@@ -1596,7 +1598,7 @@ void TextArea::measureDeletedLines(TextCursor pos, int64_t nDeleted) {
 	TextCursor retPos;
 	const int nVisLines = nVisibleLines_;
 	int nLines          = 0;
-	int retLines;
+	int64_t retLines;
 
 	/*
 	** Determine where to begin searching: either the previous newline, or
@@ -1677,7 +1679,7 @@ void TextArea::measureDeletedLines(TextCursor pos, int64_t nDeleted) {
 **   retLineStart:  Start of the line where counting ended
 **   retLineEnd:    End position of the last line traversed
 */
-void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, TextCursor maxPos, int maxLines, bool startPosIsLineStart, TextCursor *retPos, int *retLines, TextCursor *retLineStart, TextCursor *retLineEnd) const {
+void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, TextCursor maxPos, int64_t maxLines, bool startPosIsLineStart, TextCursor *retPos, int64_t *retLines, TextCursor *retLineStart, TextCursor *retLineEnd) const {
 
 	const QRect viewRect = viewport()->contentsRect();
 	TextCursor lineStart;
@@ -1687,8 +1689,8 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 	bool countPixels;
 	bool foundBreak;
 	int wrapMargin;
-	int maxWidth;
-	int nLines        = 0;
+	int64_t maxWidth;
+	int64_t nLines    = 0;
 	const int tabDist = buffer_->BufGetTabDistance();
 
 	/* If there's a wrap margin set, it's more efficient to measure in columns,
@@ -1698,7 +1700,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 	if (wrapMargin_ != 0) {
 		countPixels = false;
 		wrapMargin  = wrapMargin_;
-		maxWidth    = INT_MAX;
+		maxWidth    = INT64_MAX;
 	} else {
 		countPixels = true;
 		wrapMargin  = INT_MAX;
@@ -1718,8 +1720,8 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 	** (actually, continues beyond maxPos to end of line containing maxPos,
 	** in case later characters cause a word wrap back before maxPos)
 	*/
-	int colNum = 0;
-	int width  = 0;
+	int64_t colNum = 0;
+	int64_t width  = 0;
 	for (TextCursor p = lineStart; p < buf->BufEndOfBuffer(); ++p) {
 		const char ch = buf->BufGetCharacter(p);
 
@@ -1787,8 +1789,8 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 
 			if (p >= maxPos) {
 				*retPos       = maxPos;
-				*retLines     = maxPos < newLineStart ? nLines : nLines + 1;
-				*retLineStart = maxPos < newLineStart ? lineStart : newLineStart;
+				*retLines     = (maxPos < newLineStart) ? nLines : nLines + 1;
+				*retLineStart = (maxPos < newLineStart) ? lineStart : newLineStart;
 				*retLineEnd   = maxPos;
 				return;
 			}
@@ -1818,7 +1820,7 @@ void TextArea::wrappedLineCounter(const TextBuffer *buf, TextCursor startPos, Te
 ** Measure the width in pixels of a character "ch" at a particular column
 ** "colNum".
 */
-int TextArea::widthInPixels(char ch, int column) const {
+int TextArea::widthInPixels(char ch, int64_t column) const {
 	return lengthToWidth(TextBuffer::BufCharWidth(ch, column, buffer_->BufGetTabDistance()));
 }
 
@@ -1834,7 +1836,7 @@ int TextArea::lengthToWidth(int length) const noexcept {
 ** rather than the last newline.
 */
 TextCursor TextArea::startOfLine(TextCursor pos) const {
-	int retLines;
+	int64_t retLines;
 	TextCursor retPos;
 	TextCursor retLineStart;
 	TextCursor retLineEnd;
@@ -1848,7 +1850,7 @@ TextCursor TextArea::startOfLine(TextCursor pos) const {
 		buffer_,
 		buffer_->BufStartOfLine(pos),
 		pos,
-		INT_MAX,
+		INT64_MAX,
 		true,
 		&retPos,
 		&retLines,
@@ -1885,7 +1887,7 @@ void TextArea::findWrapRange(view::string_view deletedText, TextCursor pos, int6
 	TextCursor countFrom;
 	TextCursor countTo;
 	TextCursor adjLineStart;
-	int retLines;
+	int64_t retLines;
 	int visLineNum      = 0;
 	int nLines          = 0;
 	const int nVisLines = nVisibleLines_;
@@ -2027,7 +2029,7 @@ void TextArea::findWrapRange(view::string_view deletedText, TextCursor pos, int6
 		&deletedTextBuf,
 		buffer_->BufStartOfBuffer(),
 		TextCursor(length),
-		INT_MAX,
+		INT64_MAX,
 		true,
 		&retPos,
 		&retLines,
@@ -2056,7 +2058,7 @@ void TextArea::findWrapRange(view::string_view deletedText, TextCursor pos, int6
 */
 TextCursor TextArea::endOfLine(TextCursor pos, bool startPosIsLineStart) const {
 
-	int retLines;
+	int64_t retLines;
 	TextCursor retPos;
 	TextCursor retLineStart;
 	TextCursor retLineEnd;
@@ -2083,9 +2085,9 @@ bool TextArea::updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t c
 
 	int lineOfPos;
 	int lineOfEnd;
-	const int nVisLines     = nVisibleLines_;
-	const int64_t charDelta = charsInserted - charsDeleted;
-	const int64_t lineDelta = linesInserted - linesDeleted;
+	const int nVisLines  = nVisibleLines_;
+	const auto charDelta = gsl::narrow<int>(charsInserted - charsDeleted);
+	const auto lineDelta = gsl::narrow<int>(linesInserted - linesDeleted);
 
 	/* If all of the changes were before the displayed text, the display
 	   doesn't change, just update the top line num and offset the line
@@ -2106,7 +2108,7 @@ bool TextArea::updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t c
 	if (pos < firstChar_) {
 		// If some text remains in the window, anchor on that
 		if (posToVisibleLineNum(pos + charsDeleted, &lineOfEnd) && ++lineOfEnd < nVisLines && lineStarts_[lineOfEnd] != -1) {
-			topLineNum_ = std::max<int>(1, topLineNum_ + lineDelta);
+			topLineNum_ = std::max<int64_t>(1, topLineNum_ + lineDelta);
 			firstChar_  = countBackwardNLines(lineStarts_[lineOfEnd] + charDelta, lineOfEnd);
 			// Otherwise anchor on original line number and recount everything
 		} else {
@@ -2150,7 +2152,7 @@ bool TextArea::updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t c
 
 			// fill in the missing line starts
 			if (linesInserted >= 0) {
-				calcLineStarts(lineOfPos + 1, lineOfPos + linesInserted);
+				calcLineStarts(lineOfPos + 1, gsl::narrow<int>(lineOfPos + linesInserted));
 			}
 
 			if (lineDelta < 0) {
@@ -2167,7 +2169,7 @@ bool TextArea::updateLineStarts(TextCursor pos, int64_t charsInserted, int64_t c
 	   of being an insert at the end of the buffer into visible blank lines */
 	if (emptyLinesVisible()) {
 		if (posToVisibleLineNum(pos, &lineOfPos)) {
-			calcLineStarts(lineOfPos, lineOfPos + linesInserted);
+			calcLineStarts(lineOfPos, gsl::narrow<int>(lineOfPos + linesInserted));
 			calcLastChar();
 		}
 		return false;
@@ -2265,21 +2267,21 @@ void TextArea::calcLastChar() {
 ** Same as BufCountBackwardNLines, but takes in to account line breaks when
 ** wrapping is turned on.
 */
-TextCursor TextArea::countBackwardNLines(TextCursor startPos, int nLines) const {
+TextCursor TextArea::countBackwardNLines(TextCursor startPos, int64_t nLines) const {
 
 	// If we're not wrapping, use the more efficient BufCountBackwardNLines
 	if (!continuousWrap_) {
 		return buffer_->BufCountBackwardNLines(startPos, nLines);
 	}
 
-	int retLines;
+	int64_t retLines;
 	TextCursor retPos;
 	TextCursor retLineStart;
 	TextCursor retLineEnd;
 	TextCursor pos = startPos;
 	while (true) {
 		const TextCursor lineStart = buffer_->BufStartOfLine(pos);
-		wrappedLineCounter(buffer_, lineStart, pos, INT_MAX, true, &retPos, &retLines, &retLineStart, &retLineEnd);
+		wrappedLineCounter(buffer_, lineStart, pos, INT64_MAX, true, &retPos, &retLines, &retLineStart, &retLineEnd);
 
 		if (retLines > nLines) {
 			return forwardNLines(lineStart, retLines - nLines, true);
@@ -2330,12 +2332,12 @@ void TextArea::redisplayRect(const QRect &rect) {
  */
 void TextArea::updateVScrollBarRange() {
 	/* NOTE(eteran) Originally, it seemed that some special handling was needed
-	 * to handle continuous wrap mode. Upong further inspection, it looks like
+	 * to handle continuous wrap mode. Upon further inspection, it looks like
 	 * nBufferLines_ properly tracks the number of conceptual lines in the
 	 * buffer, including those that are due to wrapping. So we can just use that
 	 * value regardless */
-	verticalScrollBar()->setRange(1, std::max(1, nBufferLines_ - nVisibleLines_ + 2));
-	verticalScrollBar()->setPageStep(std::max(1, nVisibleLines_ - 1));
+	verticalScrollBar()->setRange(1, gsl::narrow<int>(std::max<int64_t>(1, nBufferLines_ - nVisibleLines_ + 2)));
+	verticalScrollBar()->setPageStep(gsl::narrow<int>(std::max(1, nVisibleLines_ - 1)));
 }
 
 /**
@@ -2350,7 +2352,7 @@ void TextArea::updateVScrollBarRange() {
  * @param startPosIsLineStart
  * @return
  */
-TextCursor TextArea::forwardNLines(TextCursor startPos, int nLines, bool startPosIsLineStart) const {
+TextCursor TextArea::forwardNLines(TextCursor startPos, int64_t nLines, bool startPosIsLineStart) const {
 
 	// if we're not wrapping use more efficient BufCountForwardNLines
 	if (!continuousWrap_) {
@@ -2366,7 +2368,7 @@ TextCursor TextArea::forwardNLines(TextCursor startPos, int nLines, bool startPo
 	TextCursor retPos;
 	TextCursor retLineStart;
 	TextCursor retLineEnd;
-	int retLines;
+	int64_t retLines;
 	wrappedLineCounter(buffer_, startPos, buffer_->BufEndOfBuffer(), nLines, startPosIsLineStart, &retPos, &retLines, &retLineStart, &retLineEnd);
 	return retPos;
 }
@@ -2406,7 +2408,7 @@ void TextArea::findLineEnd(TextCursor startPos, bool startPosIsLineStart, TextCu
 	}
 
 	// use the wrapped line counter routine to count forward one line
-	int retLines;
+	int64_t retLines;
 	TextCursor retLineStart;
 	wrappedLineCounter(
 		buffer_,
@@ -2443,12 +2445,12 @@ bool TextArea::updateHScrollBarRange() {
 	const int origHOffset = horizontalScrollBar()->value();
 
 	// Scan all the displayed lines to find the width of the longest line
-	int maxWidth = 0;
+	int64_t maxWidth = 0;
 	for (int i = 0; i < nVisibleLines_ && lineStarts_[i] != -1; i++) {
 		maxWidth = std::max(measureVisLine(i), maxWidth);
 	}
 
-	horizontalScrollBar()->setRange(0, std::max(maxWidth - viewRect.width() + 1, 0));
+	horizontalScrollBar()->setRange(0, gsl::narrow<int>(std::max<int64_t>(maxWidth - viewRect.width() + 1, 0)));
 	horizontalScrollBar()->setPageStep(std::max(viewRect.width() - 100, 10));
 
 	// Return true if scroll position was changed
@@ -2515,16 +2517,16 @@ bool TextArea::posToVisibleLineNum(TextCursor pos, int *lineNum) const {
  * @param visLineNum
  * @return
  */
-int TextArea::measureVisLine(int visLineNum) const {
+int64_t TextArea::measureVisLine(int visLineNum) const {
 
-	int width                     = 0;
-	int charCount                 = 0;
-	const int lineLen             = visLineLength(visLineNum);
+	int64_t width                 = 0;
+	int64_t charCount             = 0;
+	const int64_t lineLen         = visLineLength(visLineNum);
 	const TextCursor lineStartPos = lineStarts_[visLineNum];
 
 	for (int i = 0; i < lineLen; i++) {
 		char expandedChar[TextBuffer::MAX_EXP_CHAR_LEN];
-		const int len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
+		const int64_t len = buffer_->BufGetExpandedChar(lineStartPos + i, charCount, expandedChar);
 		width += (fixedFontWidth_ * len);
 		charCount += len;
 	}
@@ -3108,7 +3110,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 
 		// wipes out to right hand edge of widget
 		if (toX >= viewRect.left()) {
-			const int left = std::max(x, viewRect.left());
+			const auto left = std::max(x, viewRect.left());
 			painter->fillRect(QRect(left, y, toX - left, fixedFontHeight_), bground);
 		}
 
@@ -3286,7 +3288,7 @@ void TextArea::handleResize(bool widthChanged) {
 	/* if the window became taller, there may be an opportunity to display
 	   more text by scrolling down */
 	if (oldVisibleLines < newVisibleLines && topLineNum_ + nVisibleLines_ > nBufferLines_) {
-		verticalScrollBar()->setValue(std::max(1, nBufferLines_ - nVisibleLines_ + 2 + cursorVPadding_));
+		verticalScrollBar()->setValue(gsl::narrow<int>(std::max<int64_t>(1, nBufferLines_ - nVisibleLines_ + 2 + cursorVPadding_)));
 	}
 
 	/* Update the scroll bar bar parameters.
@@ -3305,14 +3307,14 @@ void TextArea::handleResize(bool widthChanged) {
 ** can pass "startPosIsLineStart" as true to make the call more efficient
 ** by avoiding the additional step of scanning back to the last newline.
 */
-int TextArea::countLines(TextCursor startPos, TextCursor endPos, bool startPosIsLineStart) {
+int64_t TextArea::countLines(TextCursor startPos, TextCursor endPos, bool startPosIsLineStart) {
 
 	// If we're not wrapping use simple (and more efficient) BufCountLines
 	if (!continuousWrap_) {
 		return buffer_->BufCountLines(startPos, endPos);
 	}
 
-	int retLines;
+	int64_t retLines;
 	TextCursor retPos;
 	TextCursor retLineStart;
 	TextCursor retLineEnd;
@@ -3321,7 +3323,7 @@ int TextArea::countLines(TextCursor startPos, TextCursor endPos, bool startPosIs
 		buffer_,
 		startPos,
 		endPos,
-		INT_MAX,
+		INT64_MAX,
 		startPosIsLineStart,
 		&retPos,
 		&retLines,
@@ -3353,7 +3355,7 @@ void TextArea::TextDBlankCursor() {
 }
 
 /**
- * @brief TextArea::TextDUnblankCursor
+ * @brief TextArea::unblankCursor
  */
 void TextArea::unblankCursor() {
 	if (!cursorOn_) {
@@ -3369,11 +3371,11 @@ void TextArea::unblankCursor() {
 ** count lines from the nearest known line start (start or end of buffer, or
 ** the closest value in the lineStarts array)
 */
-void TextArea::offsetLineStarts(int newTopLineNum) {
+void TextArea::offsetLineStarts(int64_t newTopLineNum) {
 
 	const TextCursor oldFirstChar = firstChar_;
-	const int oldTopLineNum       = topLineNum_;
-	const int lineDelta           = newTopLineNum - oldTopLineNum;
+	const int64_t oldTopLineNum   = topLineNum_;
+	const auto lineDelta          = gsl::narrow<int>(newTopLineNum - oldTopLineNum);
 	const int nVisLines           = nVisibleLines_;
 
 	// If there was no offset, nothing needs to be changed
@@ -3384,14 +3386,14 @@ void TextArea::offsetLineStarts(int newTopLineNum) {
 	/* Find the new value for firstChar by counting lines from the nearest
 	   known line start (start or end of buffer, or the closest value in the
 	   lineStarts array) */
-	const int lastLineNum = oldTopLineNum + nVisLines - 1;
+	const int64_t lastLineNum = oldTopLineNum + nVisLines - 1;
 
 	if (newTopLineNum < oldTopLineNum && newTopLineNum < -lineDelta) {
 		firstChar_ = forwardNLines(buffer_->BufStartOfBuffer(), newTopLineNum - 1, true);
 	} else if (newTopLineNum < oldTopLineNum) {
 		firstChar_ = countBackwardNLines(firstChar_, -lineDelta);
 	} else if (newTopLineNum < lastLineNum) {
-		firstChar_ = lineStarts_[newTopLineNum - oldTopLineNum];
+		firstChar_ = lineStarts_[gsl::narrow<int>(newTopLineNum - oldTopLineNum)];
 	} else if (newTopLineNum - lastLineNum < nBufferLines_ - newTopLineNum) {
 		firstChar_ = forwardNLines(lineStarts_[nVisLines - 1], newTopLineNum - lastLineNum, true);
 	} else {
@@ -3835,8 +3837,8 @@ void TextArea::TextDMakeInsertPosVisible() {
 	const QRect viewRect       = viewport()->contentsRect();
 	const TextCursor cursorPos = cursorPos_;
 	const int cursorVPadding   = cursorVPadding_;
-	int linesFromTop           = 0;
-	int topLine                = topLineNum_;
+	int64_t linesFromTop       = 0;
+	int64_t topLine            = topLineNum_;
 
 	// Don't do padding if this is a mouse operation
 	const bool do_padding = ((dragState_ == NOT_CLICKED) && (cursorVPadding > 0));
@@ -3866,10 +3868,10 @@ void TextArea::TextDMakeInsertPosVisible() {
 		// Keep the cursor away from the top or bottom of screen.
 		if (nVisibleLines_ <= 2 * cursorVPadding) {
 			topLine += (linesFromTop - nVisibleLines_ / 2);
-			topLine = std::max(topLine, 1);
+			topLine = std::max<int64_t>(topLine, 1);
 		} else if (linesFromTop < cursorVPadding) {
 			topLine -= (cursorVPadding - linesFromTop);
-			topLine = std::max(topLine, 1);
+			topLine = std::max<int64_t>(topLine, 1);
 		} else if (linesFromTop > nVisibleLines_ - cursorVPadding - 1) {
 			topLine += (linesFromTop - (nVisibleLines_ - cursorVPadding - 1));
 		}
@@ -3881,7 +3883,7 @@ void TextArea::TextDMakeInsertPosVisible() {
 	   horizontal */
 	QPoint p;
 	if (!positionToXY(cursorPos, &p)) {
-		verticalScrollBar()->setValue(topLine);
+		verticalScrollBar()->setValue(gsl::narrow<int>(topLine));
 
 		if (!positionToXY(cursorPos, &p)) {
 			return; // Give up, it's not worth it (but why does it fail?)
@@ -3897,7 +3899,7 @@ void TextArea::TextDMakeInsertPosVisible() {
 	}
 
 	// Do the scroll
-	verticalScrollBar()->setValue(topLine);
+	verticalScrollBar()->setValue(gsl::narrow<int>(topLine));
 	horizontalScrollBar()->setValue(horizOffset);
 }
 
@@ -3991,9 +3993,9 @@ void TextArea::keyMoveExtendSelection(TextCursor origPos, bool rectangular) {
 	if ((sel->hasSelection() || sel->isZeroWidth()) && sel->isRectangular() && rectangular) {
 
 		// rect -> rect
-		const int newCol          = buffer_->BufCountDispChars(buffer_->BufStartOfLine(newPos), newPos);
-		const int startCol        = std::min(rectAnchor_, newCol);
-		const int endCol          = std::max(rectAnchor_, newCol);
+		const int64_t newCol      = buffer_->BufCountDispChars(buffer_->BufStartOfLine(newPos), newPos);
+		const int64_t startCol    = std::min(rectAnchor_, newCol);
+		const int64_t endCol      = std::max(rectAnchor_, newCol);
 		const TextCursor startPos = buffer_->BufStartOfLine(std::min(anchor_, newPos));
 		const TextCursor endPos   = buffer_->BufEndOfLine(std::max(anchor_, newPos));
 
@@ -4001,7 +4003,7 @@ void TextArea::keyMoveExtendSelection(TextCursor origPos, bool rectangular) {
 
 	} else if (sel->hasSelection() && rectangular) { // plain -> rect
 
-		const int newCol = buffer_->BufCountDispChars(buffer_->BufStartOfLine(newPos), newPos);
+		const int64_t newCol = buffer_->BufCountDispChars(buffer_->BufStartOfLine(newPos), newPos);
 		TextCursor anchor;
 
 		if (std::abs(newPos - sel->start()) < std::abs(newPos - sel->end())) {
@@ -4011,7 +4013,7 @@ void TextArea::keyMoveExtendSelection(TextCursor origPos, bool rectangular) {
 		}
 
 		const TextCursor anchorLineStart = buffer_->BufStartOfLine(anchor);
-		const int rectAnchor             = buffer_->BufCountDispChars(anchorLineStart, anchor);
+		const int64_t rectAnchor         = buffer_->BufCountDispChars(anchorLineStart, anchor);
 
 		anchor_     = anchor;
 		rectAnchor_ = rectAnchor;
@@ -4050,10 +4052,10 @@ void TextArea::keyMoveExtendSelection(TextCursor origPos, bool rectangular) {
 
 	} else if (rectangular) { // no sel -> rect
 
-		const int origCol         = buffer_->BufCountDispChars(buffer_->BufStartOfLine(origPos), origPos);
-		const int newCol          = buffer_->BufCountDispChars(buffer_->BufStartOfLine(newPos), newPos);
-		const int startCol        = std::min(newCol, origCol);
-		const int endCol          = std::max(newCol, origCol);
+		const int64_t origCol     = buffer_->BufCountDispChars(buffer_->BufStartOfLine(origPos), origPos);
+		const int64_t newCol      = buffer_->BufCountDispChars(buffer_->BufStartOfLine(newPos), newPos);
+		const int64_t startCol    = std::min(newCol, origCol);
+		const int64_t endCol      = std::max(newCol, origCol);
 		const TextCursor startPos = buffer_->BufStartOfLine(std::min(origPos, newPos));
 		const TextCursor endPos   = buffer_->BufEndOfLine(std::max(origPos, newPos));
 
@@ -4491,7 +4493,7 @@ bool TextArea::wrapLine(TextBuffer *buf, int64_t bufOffset, TextCursor lineStart
 	buf->BufReplace(p, p + 1, indentStr);
 
 	*breakAt    = p;
-	*charsAdded = indentStr.size() - 1;
+	*charsAdded = static_cast<int64_t>(indentStr.size() - 1);
 	return true;
 }
 
@@ -5149,9 +5151,9 @@ void TextArea::endOfFileAP(EventFlags flags) {
 
 	cancelDrag();
 	if (flags & ScrollbarFlag) {
-		const int lastTopLine = std::max(1, nBufferLines_ - (nVisibleLines_ - 2) + cursorVPadding_);
+		const auto lastTopLine = std::max<int64_t>(1, nBufferLines_ - (nVisibleLines_ - 2) + cursorVPadding_);
 		if (lastTopLine != topLineNum_) {
-			verticalScrollBar()->setValue(lastTopLine);
+			verticalScrollBar()->setValue(gsl::narrow<int>(lastTopLine));
 		}
 	} else {
 		setInsertPosition(buffer_->BufEndOfBuffer());
@@ -5497,7 +5499,7 @@ int TextArea::offsetWrappedColumn(int row, int column) const {
 	}
 
 	const TextCursor lineStart = buffer_->BufStartOfLine(dispLineStart);
-	return column + buffer_->BufCountDispChars(lineStart, dispLineStart);
+	return gsl::narrow<int>(column + buffer_->BufCountDispChars(lineStart, dispLineStart));
 }
 
 /*
@@ -5584,7 +5586,7 @@ void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
 
 	const TextBuffer::Selection *sel = &buffer_->primary;
 	TextCursor anchor;
-	int rectAnchor;
+	int64_t rectAnchor;
 	TextCursor anchorLineStart;
 	int row;
 	int column;
@@ -5623,8 +5625,8 @@ void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
 		buffer_->BufRectSelect(
 			buffer_->BufStartOfLine(std::min(anchor, newPos)),
 			buffer_->BufEndOfLine(std::max(anchor, newPos)),
-			std::min(rectAnchor, column),
-			std::max(rectAnchor, column));
+			std::min<int64_t>(rectAnchor, column),
+			std::max<int64_t>(rectAnchor, column));
 	} else {
 		buffer_->BufSelect(std::minmax(anchor, newPos));
 	}
@@ -5696,8 +5698,8 @@ void TextArea::adjustSelection(const QPoint &coord) {
 
 		coordToUnconstrainedPosition(coord, &row, &column);
 		column                    = offsetWrappedColumn(row, column);
-		const int startCol        = std::min(rectAnchor_, column);
-		const int endCol          = std::max(rectAnchor_, column);
+		const auto startCol       = std::min<int64_t>(rectAnchor_, column);
+		const auto endCol         = std::max<int64_t>(rectAnchor_, column);
 		const TextCursor startPos = buffer_->BufStartOfLine(std::min(anchor_, newPos));
 		const TextCursor endPos   = buffer_->BufEndOfLine(std::max(anchor_, newPos));
 		buffer_->BufRectSelect(startPos, endPos, startCol, endCol);
@@ -6094,12 +6096,12 @@ void TextArea::beginBlockDrag() {
 	   selection (the position where text will actually be inserted In dragging
 	   non-rectangular selections)  */
 	if (sel.isRectangular()) {
-		dragXOffset_ = btnDownCoord_.x() + horizontalScrollBar()->value() - viewRect.left() - sel.rectStart() * fontWidth;
+		dragXOffset_ = gsl::narrow<int>(btnDownCoord_.x() + horizontalScrollBar()->value() - viewRect.left() - sel.rectStart() * fontWidth);
 	} else {
 		int x;
 		int y;
 		if (!positionToXY(sel.start(), &x, &y)) {
-			x = buffer_->BufCountDispChars(startOfLine(sel.start()), sel.start()) * fontWidth + viewRect.left() - horizontalScrollBar()->value();
+			x = gsl::narrow<int>(buffer_->BufCountDispChars(startOfLine(sel.start()), sel.start()) * fontWidth + viewRect.left() - horizontalScrollBar()->value());
 		}
 		dragXOffset_ = btnDownCoord_.x() - x;
 	}
@@ -6107,7 +6109,7 @@ void TextArea::beginBlockDrag() {
 	const TextCursor mousePos = coordToPosition(btnDownCoord_);
 	const int64_t nLines      = buffer_->BufCountLines(sel.start(), mousePos);
 
-	dragYOffset_ = nLines * fontHeight + (((btnDownCoord_.y() - viewRect.top()) % fontHeight) - fontHeight / 2);
+	dragYOffset_ = gsl::narrow<int>(nLines * fontHeight + (((btnDownCoord_.y() - viewRect.top()) % fontHeight) - fontHeight / 2));
 	dragNLines_  = buffer_->BufCountLines(sel.start(), sel.end());
 
 	/* Record the current drag insert position and the information for
@@ -6183,8 +6185,8 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	int64_t sourceInserted;
 	int64_t sourceDeleted;
 	int64_t insRectStart;
-	int insLineNum;
-	int referenceLine;
+	int64_t insLineNum;
+	int64_t referenceLine;
 
 	if (dragState_ != PRIMARY_BLOCK_DRAG) {
 		return;
@@ -6242,7 +6244,7 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	}
 
 	if (!rectangular && overlay && nLines != 0) {
-		dragXOffset -= fontWidth * (origSel.rectStart() - (origSel.start() - origSelLineStart));
+		dragXOffset -= fontWidth * gsl::narrow<int>(origSel.rectStart() - (origSel.start() - origSelLineStart));
 	}
 
 	/* If the drag operation is of a different type than the last one, and the
@@ -6299,7 +6301,7 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	int column;
 	coordToUnconstrainedPosition(
 		QPoint(
-			std::max(0, pos.x() - dragXOffset),
+			std::max(0, (pos.x() - dragXOffset)),
 			std::max(0, pos.y() - (dragYOffset_ % fontHeight))),
 		&row,
 		&column);
@@ -6419,8 +6421,8 @@ void TextArea::adjustSecondarySelection(const QPoint &coord) {
 		int column;
 		coordToUnconstrainedPosition(coord, &row, &column);
 		column                    = offsetWrappedColumn(row, column);
-		const int startCol        = std::min(rectAnchor_, column);
-		const int endCol          = std::max(rectAnchor_, column);
+		const auto startCol       = std::min<int64_t>(rectAnchor_, column);
+		const auto endCol         = std::max<int64_t>(rectAnchor_, column);
 		const TextCursor startPos = buffer_->BufStartOfLine(std::min(anchor_, newPos));
 		const TextCursor endPos   = buffer_->BufEndOfLine(std::max(anchor_, newPos));
 		buffer_->BufSecRectSelect(startPos, endPos, startCol, endCol);
@@ -6441,7 +6443,7 @@ int TextArea::offsetWrappedRow(int row) const {
 		return row;
 	}
 
-	return buffer_->BufCountLines(firstChar_, lineStarts_[row]);
+	return gsl::narrow<int>(buffer_->BufCountLines(firstChar_, lineStarts_[row]));
 }
 
 void TextArea::setWordDelimiters(const std::string &delimiters) {
@@ -6765,7 +6767,7 @@ void TextArea::exchangeSelections() {
 ** Returns the absolute (non-wrapped) line number of the first line displayed.
 ** Returns 0 if the absolute top line number is not being maintained.
 */
-int TextArea::getAbsTopLineNum() const {
+int64_t TextArea::getAbsTopLineNum() const {
 
 	if (!continuousWrap_) {
 		return topLineNum_;
@@ -6821,7 +6823,7 @@ void TextArea::setFont(const QFont &font) {
 	// force recalculation of font related parameters
 	handleResize(/*widthChanged=*/false);
 
-	// force a recalc of the line numbers
+	// force a recalculation of the line numbers
 	setLineNumCols(getLineNumCols());
 
 	horizontalScrollBar()->setSingleStep(fixedFontWidth_);
@@ -6871,8 +6873,8 @@ void TextArea::pageLeftAP(EventFlags flags) {
 			ringIfNecessary(silent);
 			return;
 		}
-		const int indent = buffer_->BufCountDispChars(lineStartPos, insertPos);
-		TextCursor pos   = buffer_->BufCountForwardDispChars(lineStartPos, std::max(0, indent - viewRect.width() / fixedFontWidth_));
+		const int64_t indent = buffer_->BufCountDispChars(lineStartPos, insertPos);
+		TextCursor pos       = buffer_->BufCountForwardDispChars(lineStartPos, std::max<int64_t>(0, indent - viewRect.width() / fixedFontWidth_));
 		setInsertPosition(pos);
 
 		horizontalScrollBar()->triggerAction(QAbstractSlider::SliderPageStepSub);
@@ -6924,12 +6926,12 @@ void TextArea::nextPageAP(EventFlags flags) {
 
 	EMIT_EVENT_0("next_page");
 
-	int lastTopLine            = std::max(1, nBufferLines_ - (nVisibleLines_ - 2) + cursorVPadding_);
+	auto lastTopLine           = std::max<int64_t>(1, nBufferLines_ - (nVisibleLines_ - 2) + cursorVPadding_);
 	const TextCursor insertPos = cursorPos_;
-	int column                 = 0;
+	int64_t column             = 0;
 	int visLineNum;
 	TextCursor lineStartPos;
-	int targetLine;
+	int64_t targetLine;
 	int pageForwardCount = std::max(1, nVisibleLines_ - 1);
 
 	const bool silent         = flags & NoBellFlag;
@@ -6944,14 +6946,14 @@ void TextArea::nextPageAP(EventFlags flags) {
 			return;
 		}
 
-		verticalScrollBar()->setValue(targetLine);
+		verticalScrollBar()->setValue(gsl::narrow<int>(targetLine));
 
 	} else if (flags & StutterFlag) { // Mac style
 		// move to bottom line of visible area
 		// if already there, page down maintaining preferred column
-		targetLine = std::max(std::min(nVisibleLines_ - 1, nBufferLines_), 0);
+		targetLine = std::max<int64_t>(std::min<int64_t>(nVisibleLines_ - 1, nBufferLines_), 0);
 		column     = preferredColumn(&visLineNum, &lineStartPos);
-		if (lineStartPos == lineStarts_[targetLine]) {
+		if (lineStartPos == lineStarts_[gsl::narrow<int>(targetLine)]) {
 			if (insertPos >= buffer_->length() || topLineNum_ == lastTopLine) {
 				ringIfNecessary(silent);
 				return;
@@ -6966,13 +6968,13 @@ void TextArea::nextPageAP(EventFlags flags) {
 
 			setInsertPosition(pos);
 
-			verticalScrollBar()->setValue(targetLine);
+			verticalScrollBar()->setValue(gsl::narrow<int>(targetLine));
 		} else {
-			TextCursor pos = lineStarts_[targetLine];
+			TextCursor pos = lineStarts_[gsl::narrow<int>(targetLine)];
 
 			while (targetLine > 0 && pos == -1) {
 				--targetLine;
-				pos = lineStarts_[targetLine];
+				pos = lineStarts_[gsl::narrow<int>(targetLine)];
 			}
 
 			if (lineStartPos == pos) {
@@ -7007,7 +7009,7 @@ void TextArea::nextPageAP(EventFlags flags) {
 		}
 
 		targetLine = topLineNum_ + nVisibleLines_ - 1;
-		targetLine = qBound(1, targetLine, lastTopLine);
+		targetLine = qBound<int64_t>(1, targetLine, lastTopLine);
 
 		TextCursor pos = forwardNLines(insertPos, nVisibleLines_ - 1, false);
 		if (maintainColumn) {
@@ -7016,7 +7018,7 @@ void TextArea::nextPageAP(EventFlags flags) {
 
 		setInsertPosition(pos);
 
-		verticalScrollBar()->setValue(targetLine);
+		verticalScrollBar()->setValue(gsl::narrow<int>(targetLine));
 
 		checkMoveSelectionChange(flags, insertPos);
 		checkAutoShowInsertPos();
@@ -7036,33 +7038,33 @@ void TextArea::previousPageAP(EventFlags flags) {
 	const TextCursor insertPos = cursorPos_;
 	int visLineNum;
 	TextCursor lineStartPos;
-	const int pageBackwardCount = std::max(1, nVisibleLines_ - 1);
+	const int64_t pageBackwardCount = std::max(1, nVisibleLines_ - 1);
 
 	const bool silent         = flags & NoBellFlag;
 	const bool maintainColumn = flags & ColumnFlag;
 
 	cancelDrag();
 	if (flags & ScrollbarFlag) { // scrollbar only
-		const int targetLine = std::max(topLineNum_ - pageBackwardCount, 1);
+		const auto targetLine = std::max<int64_t>(topLineNum_ - pageBackwardCount, 1);
 
 		if (targetLine == topLineNum_) {
 			ringIfNecessary(silent);
 			return;
 		}
 
-		verticalScrollBar()->setValue(targetLine);
+		verticalScrollBar()->setValue(gsl::narrow<int>(targetLine));
 
 	} else if (flags & StutterFlag) { // Mac style
 		// move to top line of visible area
 		// if already there, page up maintaining preferred column if required
-		int targetLine   = 0;
-		const int column = preferredColumn(&visLineNum, &lineStartPos);
-		if (lineStartPos == lineStarts_[targetLine]) {
+		int64_t targetLine   = 0;
+		const int64_t column = preferredColumn(&visLineNum, &lineStartPos);
+		if (lineStartPos == lineStarts_[gsl::narrow<int>(targetLine)]) {
 			if (topLineNum_ == 1 && (maintainColumn || column == 0)) {
 				ringIfNecessary(silent);
 				return;
 			}
-			targetLine = std::max(topLineNum_ - pageBackwardCount, 1);
+			targetLine = std::max<int64_t>(topLineNum_ - pageBackwardCount, 1);
 
 			TextCursor pos = countBackwardNLines(insertPos, pageBackwardCount);
 			if (maintainColumn) {
@@ -7071,9 +7073,9 @@ void TextArea::previousPageAP(EventFlags flags) {
 
 			setInsertPosition(pos);
 
-			verticalScrollBar()->setValue(targetLine);
+			verticalScrollBar()->setValue(gsl::narrow<int>(targetLine));
 		} else {
-			TextCursor pos = lineStarts_[targetLine];
+			TextCursor pos = lineStarts_[gsl::narrow<int>(targetLine)];
 			if (maintainColumn) {
 				pos = preferredColumnPos(column, pos);
 			}
@@ -7094,12 +7096,12 @@ void TextArea::previousPageAP(EventFlags flags) {
 			return;
 		}
 
-		int column = 0;
+		int64_t column = 0;
 		if (maintainColumn) {
 			column = preferredColumn(&visLineNum, &lineStartPos);
 		}
 
-		int targetLine = topLineNum_ - (nVisibleLines_ - 1);
+		int64_t targetLine = topLineNum_ - (nVisibleLines_ - 1);
 		if (targetLine < 1) {
 			targetLine = 1;
 		}
@@ -7111,7 +7113,7 @@ void TextArea::previousPageAP(EventFlags flags) {
 
 		setInsertPosition(pos);
 
-		verticalScrollBar()->setValue(targetLine);
+		verticalScrollBar()->setValue(gsl::narrow<int>(targetLine));
 
 		checkMoveSelectionChange(flags, insertPos);
 		checkAutoShowInsertPos();
@@ -7130,7 +7132,7 @@ void TextArea::previousPageAP(EventFlags flags) {
 ** visible line index (-1 if not visible) and the lineStartPos
 ** of the current insert position.
 */
-int TextArea::preferredColumn(int *visLineNum, TextCursor *lineStartPos) {
+int64_t TextArea::preferredColumn(int *visLineNum, TextCursor *lineStartPos) {
 
 	/* Find the position of the start of the line.  Use the line starts array
 	if possible, to avoid unbounded line-counting in continuous wrap mode */
@@ -7142,14 +7144,16 @@ int TextArea::preferredColumn(int *visLineNum, TextCursor *lineStartPos) {
 	}
 
 	// Decide what column to move to, if there's a preferred column use that
-	return (cursorPreferredCol_ >= 0) ? cursorPreferredCol_ : buffer_->BufCountDispChars(*lineStartPos, cursorPos_);
+	return (cursorPreferredCol_ >= 0)
+			   ? cursorPreferredCol_
+			   : buffer_->BufCountDispChars(*lineStartPos, cursorPos_);
 }
 
 /*
 ** Return the insert position of the requested column given
 ** the lineStartPos.
 */
-TextCursor TextArea::preferredColumnPos(int column, TextCursor lineStartPos) {
+TextCursor TextArea::preferredColumnPos(int64_t column, TextCursor lineStartPos) {
 
 	TextCursor newPos = buffer_->BufCountForwardDispChars(lineStartPos, column);
 	if (continuousWrap_) {
@@ -7498,7 +7502,7 @@ TextCursor TextArea::lineAndColToPosition(Location loc) const {
  * @param column
  * @return
  */
-TextCursor TextArea::lineAndColToPosition(int line, int column) const {
+TextCursor TextArea::lineAndColToPosition(int64_t line, int64_t column) const {
 
 	Location loc;
 	loc.line   = line;
@@ -7640,7 +7644,7 @@ int TextArea::maximumFontWidth() const {
  * @brief TextArea::TextNumVisibleLines
  * @return
  */
-int TextArea::TextNumVisibleLines() const {
+int64_t TextArea::TextNumVisibleLines() const {
 	return nVisibleLines_;
 }
 
@@ -7764,7 +7768,9 @@ void TextArea::scrollUpAP(int count, ScrollUnit units, EventFlags flags) {
 		nLines *= nVisibleLines_;
 	}
 
-	verticalScrollBar()->setValue(verticalScrollBar()->value() - nLines);
+	const int prevValue = verticalScrollBar()->value();
+	Q_ASSERT(prevValue > nLines);
+	verticalScrollBar()->setValue(prevValue - nLines);
 }
 
 void TextArea::scrollDownAP(int count, ScrollUnit units, EventFlags flags) {
@@ -7776,7 +7782,8 @@ void TextArea::scrollDownAP(int count, ScrollUnit units, EventFlags flags) {
 		nLines *= nVisibleLines_;
 	}
 
-	verticalScrollBar()->setValue(verticalScrollBar()->value() + nLines);
+	const int prevValue = verticalScrollBar()->value();
+	verticalScrollBar()->setValue(prevValue + nLines);
 }
 
 void TextArea::scrollLeftAP(int pixels, EventFlags flags) {
@@ -7879,38 +7886,38 @@ void TextArea::makeSelectionVisible() {
 		const int rows         = getRows();
 		const int scrollOffset = rows / 3;
 
-		const int topLineNum = verticalScrollBar()->value();
+		const int64_t topLineNum = verticalScrollBar()->value();
 
 		if (right > lastChar) {
 			// End of sel. is below bottom of screen
-			const int leftLineNum   = topLineNum + countLines(topChar, left, /*startPosIsLineStart=*/false);
-			const int targetLineNum = topLineNum + scrollOffset;
+			const int64_t leftLineNum   = topLineNum + countLines(topChar, left, /*startPosIsLineStart=*/false);
+			const int64_t targetLineNum = topLineNum + scrollOffset;
 
 			if (leftLineNum >= targetLineNum) {
 				// Start of sel. is not between top & target
-				int linesToScroll = countLines(lastChar, right, /*startPosIsLineStart=*/false) + scrollOffset;
+				int64_t linesToScroll = countLines(lastChar, right, /*startPosIsLineStart=*/false) + scrollOffset;
 				if (leftLineNum - linesToScroll < targetLineNum) {
 					linesToScroll = leftLineNum - targetLineNum;
 				}
 
 				// Scroll start of selection to the target line
-				verticalScrollBar()->setValue(topLineNum + linesToScroll);
+				verticalScrollBar()->setValue(gsl::narrow<int>(topLineNum + linesToScroll));
 			}
 		} else if (left < topChar) {
-			// Start of sel. is above top of screen
-			const int lastLineNum   = topLineNum + rows;
-			const int rightLineNum  = lastLineNum - countLines(right, lastChar, /*startPosIsLineStart=*/false);
-			const int targetLineNum = lastLineNum - scrollOffset;
+			// Start of sel. is above top of screenF
+			const int64_t lastLineNum   = topLineNum + rows;
+			const int64_t rightLineNum  = lastLineNum - countLines(right, lastChar, /*startPosIsLineStart=*/false);
+			const int64_t targetLineNum = lastLineNum - scrollOffset;
 
 			if (rightLineNum <= targetLineNum) {
 				// End of sel. is not between bottom & target
-				int linesToScroll = countLines(left, topChar, /*startPosIsLineStart=*/false) + scrollOffset;
+				int64_t linesToScroll = countLines(left, topChar, /*startPosIsLineStart=*/false) + scrollOffset;
 				if (rightLineNum + linesToScroll > targetLineNum) {
 					linesToScroll = targetLineNum - rightLineNum;
 				}
 
 				// Scroll end of selection to the target line
-				verticalScrollBar()->setValue(topLineNum - linesToScroll);
+				verticalScrollBar()->setValue(gsl::narrow<int>(topLineNum - linesToScroll));
 			}
 		}
 	}

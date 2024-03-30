@@ -27,14 +27,14 @@ bool Regex::SubstituteRE(view::string_view source, std::string &dest) const {
 
 		char ch = *in++;
 
-		char chgcase    = '\0';
+		char changeCase = '\0';
 		size_t paren_no = InvalidParenNumber;
 
 		if (ch == '\\') {
 			// Process any case altering tokens, i.e \u, \U, \l, \L.
 
 			if (*in == 'u' || *in == 'U' || *in == 'l' || *in == 'L') {
-				chgcase = *in++;
+				changeCase = *in++;
 
 				if (in == source.end()) {
 					break;
@@ -82,7 +82,7 @@ bool Regex::SubstituteRE(view::string_view source, std::string &dest) const {
 
 			/* The tokens \u and \l only modify the first character while the
 			 * tokens \U and \L modify the entire string. */
-			switch (chgcase) {
+			switch (changeCase) {
 			case 'u': {
 				int count = 0;
 				std::transform(re->startp[paren_no], re->endp[paren_no], out, [&count](char ch) -> int {

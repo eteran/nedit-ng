@@ -348,7 +348,7 @@ QLatin1String createRepeatMacro(int how) {
 ** Replaces '%' with <fullName> and '#' with <lineNumber>. But '%%' and '##'
 ** are replaced by '%' and '#'.
 */
-QString escapeCommand(const QString &command, const QString &fullName, int lineNumber) {
+QString escapeCommand(const QString &command, const QString &fullName, int64_t lineNumber) {
 	QString ret;
 	for (int i = 0; i < command.size(); ++i) {
 		auto c = command[i];
@@ -2217,7 +2217,7 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 	int64_t restLen = std::min(PREFERRED_CMPBUF_LEN, fileLen);
 
 	TextCursor bufPos = {};
-	int filePos       = 0;
+	int64_t filePos   = 0;
 	char fileString[PREFERRED_CMPBUF_LEN + 2];
 
 	/* For large files, the comparison can take a while. If it takes too long,
@@ -2231,7 +2231,7 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 
 	while (restLen > 0) {
 
-		size_t offset = 0;
+		int64_t offset = 0;
 		if (pendingCR) {
 			fileString[offset++] = pendingCR;
 		}
@@ -2789,7 +2789,7 @@ bool DocumentWidget::writeBckVersion() {
 #endif
 
 		// Allocate I/O buffer
-		constexpr size_t IO_BUFFER_SIZE = (1024 * 1024);
+		constexpr size_t IO_BUFFER_SIZE = (1024ul * 1024ul);
 		auto io_buffer                  = std::make_unique<char[]>(IO_BUFFER_SIZE);
 
 		// copy loop
@@ -4438,7 +4438,7 @@ void DocumentWidget::setOverstrike(bool overstrike) {
  * @param lineNum
  * @param column
  */
-void DocumentWidget::gotoAP(TextArea *area, int line, int column) {
+void DocumentWidget::gotoAP(TextArea *area, int64_t line, int64_t column) {
 
 	TextCursor position;
 
@@ -6004,7 +6004,7 @@ void DocumentWidget::startHighlighting(Verbosity verbosity) {
 		ctx.prev_char         = &prev_char;
 		ctx.delimiters        = documentDelimiters();
 		ctx.text              = info_->buffer->BufAsString();
-		const char *stringPtr = &ctx.text[0];
+		const char *stringPtr = ctx.text.data();
 
 		Highlight::parseString(
 			&highlightData->pass1Patterns[0],
@@ -6349,12 +6349,12 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 				Input in(&patternSrc[i].startRE);
 				Q_FOREVER {
 					if (in.match(QLatin1Char('&'))) {
-						compiledPats[i].startSubexprs.push_back(0);
+						compiledPats[i].startSubexpressions.push_back(0);
 					} else if (in.match(QLatin1Char('\\'))) {
 
 						QString number;
 						if (in.match(re, &number)) {
-							compiledPats[i].startSubexprs.push_back(number.toUInt());
+							compiledPats[i].startSubexpressions.push_back(number.toUInt());
 						} else {
 							break;
 						}
@@ -6370,12 +6370,12 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 				Input in(&patternSrc[i].endRE);
 				Q_FOREVER {
 					if (in.match(QLatin1Char('&'))) {
-						compiledPats[i].endSubexprs.push_back(0);
+						compiledPats[i].endSubexpressions.push_back(0);
 					} else if (in.match(QLatin1Char('\\'))) {
 
 						QString number;
 						if (in.match(re, &number)) {
-							compiledPats[i].endSubexprs.push_back(number.toUInt());
+							compiledPats[i].endSubexpressions.push_back(number.toUInt());
 						} else {
 							break;
 						}
@@ -6483,7 +6483,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 		bigPattern.pop_back(); // remove last '|' character
 
 		try {
-			compiledPats[patternNum].subPatternRE = std::make_unique<Regex>(bigPattern, REDFLT_STANDARD);
+			compiledPats[patternNum].subPatternRE = std::make_unique<Regex>(bigPattern, RE_DEFAULT_STANDARD);
 		} catch (const RegexError &e) {
 			qWarning("NEdit: Error compiling syntax highlight patterns:\n%s", e.what());
 			if (verbosity == Verbosity::Verbose) {
@@ -6507,7 +6507,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 std::unique_ptr<Regex> DocumentWidget::compileRegexAndWarn(const QString &re) {
 
 	try {
-		return make_regex(re, REDFLT_STANDARD);
+		return make_regex(re, RE_DEFAULT_STANDARD);
 	} catch (const RegexError &e) {
 
 		constexpr int MaxLength = 4096;
@@ -7304,7 +7304,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 
 	QPointer<TextArea> tagArea = MainWindow::fromDocument(documentToSearch)->lastFocus();
 	int rows                   = tagArea->getRows();
-	tagArea->verticalScrollBar()->setValue(lineNum - (rows / 4));
+	tagArea->verticalScrollBar()->setValue(gsl::narrow<int>(lineNum - (rows / 4)));
 	tagArea->horizontalScrollBar()->setValue(0);
 	tagArea->TextSetCursorPos(TextCursor(endPos));
 }

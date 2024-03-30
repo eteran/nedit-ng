@@ -14,9 +14,9 @@
 
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */
 enum RE_DEFAULT_FLAG {
-	REDFLT_STANDARD         = 0,
-	REDFLT_CASE_INSENSITIVE = 1
-	/* REDFLT_MATCH_NEWLINE = 2    Currently not used. */
+	RE_DEFAULT_STANDARD         = 0,
+	RE_DEFAULT_CASE_INSENSITIVE = 1
+	/* RE_DEFAULT_MATCH_NEWLINE = 2    Currently not used. */
 };
 
 class Regex {

@@ -18,6 +18,7 @@
 
 #include <boost/optional.hpp>
 #include <chrono>
+#include <gsl/gsl_util>
 #include <iostream>
 #include <memory>
 
@@ -271,7 +272,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 
 			int isTabbed;
 
-			/* determine if file is to be openned in new tab, by
+			/* determine if file is to be opened in new tab, by
 			   factoring the options -group, -tabbed & -untabbed */
 			if (group == 2) {
 				isTabbed = 0; // start a new window for new group
@@ -404,10 +405,10 @@ int startServer(const char *message, const QStringList &commandLineArgs) {
 }
 
 bool writeToSocket(QLocalSocket *socket, const QByteArray &data) {
-	int remaining   = data.size();
-	const char *ptr = data.data();
+	int64_t remaining = data.size();
+	const char *ptr   = data.data();
 
-	constexpr int MaxChunk = 4096;
+	constexpr int64_t MaxChunk = 4096;
 
 	while (socket->isOpen() && remaining > 0) {
 		const int64_t written = socket->write(ptr, std::min(MaxChunk, remaining));
@@ -482,7 +483,7 @@ int main(int argc, char *argv[]) {
 
 		auto socket = std::make_unique<QLocalSocket>();
 		socket->connectToServer(socketName, QIODevice::WriteOnly);
-		if (!socket->waitForConnected(timeout.count())) {
+		if (!socket->waitForConnected(gsl::narrow<int>(timeout.count()))) {
 			if (i == 0) {
 				switch (startServer("No servers available, start one? (y|n) [y]: ", commandLine.arguments)) {
 				case -1: // Start failed

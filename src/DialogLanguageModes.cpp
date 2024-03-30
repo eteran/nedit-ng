@@ -259,7 +259,7 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 	QString recognitionExpr = ui.editRegex->text();
 	if (!recognitionExpr.isEmpty()) {
 		try {
-			auto compiledRE = make_regex(recognitionExpr, REDFLT_STANDARD);
+			auto compiledRE = make_regex(recognitionExpr, RE_DEFAULT_STANDARD);
 		} catch (const RegexError &e) {
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QString::fromLatin1(e.what())));

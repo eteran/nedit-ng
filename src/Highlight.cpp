@@ -1207,7 +1207,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&s
 							subExecuted = true;
 						}
 
-						for (size_t subExpr : subPat->endSubexprs) {
+						for (size_t subExpr : subPat->endSubexpressions) {
 							recolorSubexpression(pattern->endRE, subExpr, subPat->style, string_ptr, style_ptr);
 						}
 					}
@@ -1306,7 +1306,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&s
 					subExecuted = true;
 				}
 
-				for (size_t subExpr : subSubPat->startSubexprs) {
+				for (size_t subExpr : subSubPat->startSubexpressions) {
 					recolorSubexpression(subPat->startRE, subExpr, subSubPat->style, string_ptr, style_ptr);
 				}
 			}

@@ -5,25 +5,23 @@ dictionaries: []
 ignoreWords: []
 import: []
 words:
-  - Balinski
-  - Edel
-  - Greef
-  - Markus
-  - Rebecca
-  - Schwarzenberg
-  - Teran
-  - Vohlken
   - amai
   - backlighting
+  - Balinski
+  - bground
   - burlywood
   - calltip
   - calltips
   - clearcase
   - cornsilk
   - decompile
+  - Edel
   - eteran
+  - fground
   - gainsboro
+  - Greef
   - konsole
+  - Markus
   - nedit
   - overtype
   - pixmap
@@ -36,7 +34,12 @@ words:
   - qvsnprintf
   - rangeset
   - rangesets
+  - Rebecca
   - reparse
+  - Schwarzenberg
+  - Teran
+  - unblank
   - unhighlight
   - unixware
   - untabbed
+  - Vohlken

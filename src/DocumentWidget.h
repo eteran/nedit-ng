@@ -173,7 +173,7 @@ public:
 	void findDefinitionCalltip(TextArea *area, const QString &tipName);
 	void findDefinitionHelper(TextArea *area, const QString &arg, Tags::SearchMode search_type);
 	void finishMacroCmdExecution();
-	void gotoAP(TextArea *area, int lineNum, int column);
+	void gotoAP(TextArea *area, int64_t lineNum, int64_t column);
 	void gotoMark(TextArea *area, QChar label, bool extendSel);
 	void gotoMatchingCharacter(TextArea *area, bool select);
 	void handleUnparsedRegion(const std::shared_ptr<TextBuffer> &styleBuf, TextCursor pos) const;

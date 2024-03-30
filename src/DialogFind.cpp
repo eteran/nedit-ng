@@ -257,10 +257,10 @@ boost::optional<DialogFind::Fields> DialogFind::readFields() {
 		int regexDefault;
 		if (ui.checkCase->isChecked()) {
 			fields.searchType = SearchType::Regex;
-			regexDefault      = REDFLT_STANDARD;
+			regexDefault      = RE_DEFAULT_STANDARD;
 		} else {
 			fields.searchType = SearchType::RegexNoCase;
-			regexDefault      = REDFLT_CASE_INSENSITIVE;
+			regexDefault      = RE_DEFAULT_CASE_INSENSITIVE;
 		}
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
