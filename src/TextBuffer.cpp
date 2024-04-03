@@ -11,3 +11,6 @@ const char *BasicTextBufferBase::ControlCodeTable[32] = {
 // Force full instantiation
 template class BasicTextBuffer<char>;
 template class gap_buffer<char>;
+
+template class BasicTextBuffer<uint8_t>;
+template class gap_buffer<uint8_t>;

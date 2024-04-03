@@ -176,8 +176,8 @@ public:
 	void gotoAP(TextArea *area, int64_t lineNum, int64_t column);
 	void gotoMark(TextArea *area, QChar label, bool extendSel);
 	void gotoMatchingCharacter(TextArea *area, bool select);
-	void handleUnparsedRegion(const std::shared_ptr<TextBuffer> &styleBuf, TextCursor pos) const;
-	void handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) const;
+	void handleUnparsedRegion(const std::shared_ptr<UTextBuffer> &styleBuf, TextCursor pos) const;
+	void handleUnparsedRegion(UTextBuffer *styleBuf, TextCursor pos) const;
 	void macroBannerTimeoutProc();
 	void makeSelectionVisible(TextArea *area);
 	void moveDocument(MainWindow *fromWindow);

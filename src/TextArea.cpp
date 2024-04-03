@@ -2599,7 +2599,7 @@ bool TextArea::wrapUsesCharacter(TextCursor lineEndPos) const {
 ** contains auxiliary information for coloring or styling text).
 */
 void TextArea::extendRangeForStyleMods(TextCursor *start, TextCursor *end) {
-	const TextBuffer::Selection *sel = &styleBuffer_->primary;
+	const UTextBuffer::Selection *sel = &styleBuffer_->primary;
 
 	/* The peculiar protocol used here is that modifications to the style
 	   buffer are marked by selecting them with the buffer's primary selection.
@@ -2952,11 +2952,11 @@ uint32_t TextArea::styleOfPos(TextCursor lineStartPos, size_t lineLen, size_t li
 	if (lineIndex >= lineLen) {
 		style = FILL_MASK;
 	} else if (styleBuffer_) {
-		style = static_cast<uint8_t>(styleBuffer_->BufGetCharacter(pos));
+		style = styleBuffer_->BufGetCharacter(pos);
 		if (style == unfinishedStyle_) {
 			// encountered "unfinished" style, trigger parsing
 			(unfinishedHighlightCB_)(this, pos, highlightCBArg_);
-			style = static_cast<uint8_t>(styleBuffer_->BufGetCharacter(pos));
+			style = styleBuffer_->BufGetCharacter(pos);
 		}
 	}
 
@@ -7278,7 +7278,7 @@ int64_t TextArea::getBufferLinesCount() const {
 ** a normal buffer modification if the buffer contains a primary selection
 ** (see extendRangeForStyleMods for more information on this protocol).
 */
-void TextArea::attachHighlightData(TextBuffer *styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, UnfinishedStyleCallback unfinishedHighlightCB, void *user) {
+void TextArea::attachHighlightData(UTextBuffer *styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, UnfinishedStyleCallback unfinishedHighlightCB, void *user) {
 	styleBuffer_           = styleBuffer;
 	styleTable_            = styleTable;
 	unfinishedStyle_       = unfinishedStyle;
@@ -7299,7 +7299,7 @@ TextCursor TextArea::TextLastVisiblePos() const {
 	return lastChar_;
 }
 
-TextBuffer *TextArea::styleBuffer() const {
+UTextBuffer *TextArea::styleBuffer() const {
 	return styleBuffer_;
 }
 
@@ -7383,7 +7383,7 @@ std::string TextArea::TextGetWrapped(TextCursor startPos, TextCursor endPos) {
 	return outBuf.BufGetAll();
 }
 
-void TextArea::setStyleBuffer(TextBuffer *buffer) {
+void TextArea::setStyleBuffer(UTextBuffer *buffer) {
 	styleBuffer_ = buffer;
 }
 

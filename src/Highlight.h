@@ -33,7 +33,7 @@ enum {
 // How much re-parsing to do when an unfinished style is encountered
 constexpr int PASS_2_REPARSE_CHUNK_SIZE = 1000;
 
-constexpr auto ASCII_A = static_cast<char>(65);
+constexpr char ASCII_A = 'A';
 
 // Meanings of style buffer characters (styles)
 constexpr uint8_t UNFINISHED_STYLE = (ASCII_A + 0);
@@ -54,7 +54,7 @@ bool FontOfNamedStyleIsBold(const QString &styleName);
 bool FontOfNamedStyleIsItalic(const QString &styleName);
 void LoadHighlightString(const QString &string);
 bool NamedStyleExists(const QString &styleName);
-bool parseString(const HighlightData *pattern, const char *&string_ptr, char *&style_ptr, int64_t length, const ParseContext *ctx, const char *look_behind_to, const char *match_to);
+bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t *&style_ptr, int64_t length, const ParseContext *ctx, const char *look_behind_to, const char *match_to);
 HighlightData *patternOfStyle(const std::unique_ptr<HighlightData[]> &patterns, uint8_t style);
 size_t findTopLevelParentIndex(const std::vector<HighlightPattern> &patterns, size_t index);
 size_t indexOfNamedPattern(const std::vector<HighlightPattern> &patterns, const QString &name);

@@ -1544,6 +1544,7 @@ static int power() {
 		don't want to round this to 1. This is mainly intended to deal with
 		4^2 = 15.999996 and 16.000001.
 	*/
+
 	if (n2 < 0 && n1 != 1 && n1 != -1) {
 		if (n1 != 0) {
 			// since we're integer only, nearly all negative exponents result in 0
@@ -1553,14 +1554,13 @@ static int power() {
 			n3 = static_cast<int>(pow(static_cast<double>(n1), static_cast<double>(n2)));
 		}
 	} else {
-		if ((n1 < 0) && (n2 & 1)) {
-			// round to nearest integer for negative values
-			n3 = static_cast<int>(pow(static_cast<double>(n1), static_cast<double>(n2)) - 0.5);
-		} else {
-			// round to nearest integer for positive values
-			n3 = static_cast<int>(pow(static_cast<double>(n1), static_cast<double>(n2)) + 0.5);
-		}
+		// round to nearest integer
+		// NOTE(eteran): this use to detect if the result would be negative and round by adding/subtracting
+		// 0.5 before the final cast to int
+		// this SHOULD be the equivalent to that
+		n3 = static_cast<int>(std::lround(pow(static_cast<double>(n1), static_cast<double>(n2))));
 	}
+
 	PUSH_INT(n3);
 	return errCheck("exponentiation");
 }

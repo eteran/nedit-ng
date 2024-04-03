@@ -5685,12 +5685,12 @@ Style DocumentWidget::getHighlightInfo(TextCursor pos) {
 	}
 
 	// Be careful with signed/unsigned conversions. NO conversion here!
-	auto style = static_cast<uint8_t>(highlightData->styleBuffer->BufGetCharacter(pos));
+	uint8_t style = highlightData->styleBuffer->BufGetCharacter(pos);
 
 	// Beware of unparsed regions.
 	if (style == UNFINISHED_STYLE) {
 		handleUnparsedRegion(highlightData->styleBuffer, pos);
-		style = static_cast<uint8_t>(highlightData->styleBuffer->BufGetCharacter(pos));
+		style = highlightData->styleBuffer->BufGetCharacter(pos);
 	}
 
 	if (highlightData->pass1Patterns) {
@@ -5718,9 +5718,9 @@ int64_t DocumentWidget::styleLengthOfCodeFromPos(TextCursor pos) const {
 	const TextCursor oldPos = pos;
 
 	if (const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
-		if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
+		if (const std::shared_ptr<UTextBuffer> &styleBuf = highlightData->styleBuffer) {
 
-			auto hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+			uint8_t hCode = styleBuf->BufGetCharacter(pos);
 			if (!hCode) {
 				return 0;
 			}
@@ -5728,7 +5728,7 @@ int64_t DocumentWidget::styleLengthOfCodeFromPos(TextCursor pos) const {
 			if (hCode == UNFINISHED_STYLE) {
 				// encountered "unfinished" style, trigger parsing
 				handleUnparsedRegion(highlightData->styleBuffer, pos);
-				hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+				hCode = styleBuf->BufGetCharacter(pos);
 			}
 
 			StyleTableEntry *entry = styleTableEntryOfCode(hCode);
@@ -5742,10 +5742,10 @@ int64_t DocumentWidget::styleLengthOfCodeFromPos(TextCursor pos) const {
 				if (hCode == UNFINISHED_STYLE) {
 					// encountered "unfinished" style, trigger parsing, then loop
 					handleUnparsedRegion(highlightData->styleBuffer, pos);
-					hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+					hCode = styleBuf->BufGetCharacter(pos);
 				} else {
 					// advance the position and get the new code
-					hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(++pos));
+					hCode = styleBuf->BufGetCharacter(++pos);
 				}
 			}
 		}
@@ -5806,13 +5806,13 @@ size_t DocumentWidget::highlightCodeOfPos(TextCursor pos) const {
 	size_t hCode = 0;
 	if (const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 
-		if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
+		if (const std::shared_ptr<UTextBuffer> &styleBuf = highlightData->styleBuffer) {
 
-			hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+			hCode = styleBuf->BufGetCharacter(pos);
 			if (hCode == UNFINISHED_STYLE) {
 				// encountered "unfinished" style, trigger parsing
 				handleUnparsedRegion(highlightData->styleBuffer, pos);
-				hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+				hCode = styleBuf->BufGetCharacter(pos);
 			}
 		}
 	}
@@ -5831,9 +5831,9 @@ int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
 
 	if (const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 
-		if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
+		if (const std::shared_ptr<UTextBuffer> &styleBuf = highlightData->styleBuffer) {
 
-			auto hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+			uint8_t hCode = styleBuf->BufGetCharacter(pos);
 			if (!hCode) {
 				return 0;
 			}
@@ -5841,7 +5841,7 @@ int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
 			if (hCode == UNFINISHED_STYLE) {
 				// encountered "unfinished" style, trigger parsing
 				handleUnparsedRegion(highlightData->styleBuffer, pos);
-				hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+				hCode = styleBuf->BufGetCharacter(pos);
 			}
 
 			if (checkCode == 0) {
@@ -5852,10 +5852,10 @@ int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
 				if (hCode == UNFINISHED_STYLE) {
 					// encountered "unfinished" style, trigger parsing, then loop
 					handleUnparsedRegion(highlightData->styleBuffer, pos);
-					hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+					hCode = styleBuf->BufGetCharacter(pos);
 				} else {
 					// advance the position and get the new code
-					hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(++pos));
+					hCode = styleBuf->BufGetCharacter(++pos);
 				}
 			}
 		}
@@ -5873,7 +5873,7 @@ int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
 ** needs re-parsing.  This routine applies pass 2 patterns to a chunk of
 ** the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
 */
-void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) const {
+void DocumentWidget::handleUnparsedRegion(UTextBuffer *styleBuf, TextCursor pos) const {
 	TextBuffer *buf                                           = info_->buffer.get();
 	const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
 
@@ -5896,8 +5896,8 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
 	TextCursor beginSafety = Highlight::backwardOneContext(buf, context, beginParse);
 
 	for (TextCursor p = beginParse; p >= beginSafety; --p) {
-		char ch = styleBuf->BufGetCharacter(p);
-		if (ch != UNFINISHED_STYLE && ch != PLAIN_STYLE && static_cast<uint8_t>(ch) < firstPass2Style) {
+		uint8_t ch = styleBuf->BufGetCharacter(p);
+		if (ch != UNFINISHED_STYLE && ch != PLAIN_STYLE && ch < firstPass2Style) {
 			beginSafety = p + 1;
 			break;
 		}
@@ -5911,8 +5911,8 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
 	TextCursor endSafety = Highlight::forwardOneContext(buf, context, endParse);
 
 	for (TextCursor p = pos; p < endSafety; ++p) {
-		char ch = styleBuf->BufGetCharacter(p);
-		if (ch != UNFINISHED_STYLE && ch != PLAIN_STYLE && static_cast<uint8_t>(ch) < firstPass2Style) {
+		uint8_t ch = styleBuf->BufGetCharacter(p);
+		if (ch != UNFINISHED_STYLE && ch != PLAIN_STYLE && ch < firstPass2Style) {
 			endParse  = std::min(endParse, p);
 			endSafety = p;
 			break;
@@ -5920,7 +5920,7 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
 
 		if (ch != UNFINISHED_STYLE && p < endParse) {
 			endParse = p;
-			if (static_cast<uint8_t>(ch) < firstPass2Style) {
+			if (ch < firstPass2Style) {
 				endSafety = p;
 			} else {
 				endSafety = Highlight::forwardOneContext(buf, context, endParse);
@@ -5933,9 +5933,9 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
 	std::string str    = buf->BufGetRange(beginSafety, endSafety);
 	const char *string = &str[0];
 
-	std::string styleStr    = styleBuf->BufGetRange(beginSafety, endSafety);
-	char *const styleString = &styleStr[0];
-	char *stylePtr          = &styleStr[0];
+	std::basic_string<uint8_t> styleStr = styleBuf->BufGetRange(beginSafety, endSafety);
+	uint8_t *const styleString          = &styleStr[0];
+	uint8_t *stylePtr                   = &styleStr[0];
 
 	// Parse it with pass 2 patterns
 	int prev_char = Highlight::getPrevChar(buf, beginSafety);
@@ -5955,7 +5955,7 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
 
 	/* Update the style buffer the new style information, but only between
 	   beginParse and endParse.  Skip the safety region */
-	auto view = view::string_view(&styleString[beginParse - beginSafety], static_cast<size_t>(endParse - beginParse));
+	auto view = UTextBuffer::view_type(&styleString[beginParse - beginSafety], static_cast<size_t>(endParse - beginParse));
 	styleBuf->BufReplace(beginParse, endParse, view);
 }
 
@@ -5964,7 +5964,7 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
  * @param styleBuf
  * @param pos
  */
-void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &styleBuf, TextCursor pos) const {
+void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<UTextBuffer> &styleBuf, TextCursor pos) const {
 	handleUnparsedRegion(styleBuf.get(), pos);
 }
 
@@ -5995,9 +5995,9 @@ void DocumentWidget::startHighlighting(Verbosity verbosity) {
 
 	/* Parse the buffer with pass 1 patterns.  If there are none, initialize
 	   the style buffer to all UNFINISHED_STYLE to trigger parsing later */
-	std::string style_buffer(static_cast<size_t>(bufLength), UNFINISHED_STYLE);
+	std::basic_string<uint8_t> style_buffer(static_cast<size_t>(bufLength), UNFINISHED_STYLE);
 	if (highlightData->pass1Patterns) {
-		char *stylePtr = &style_buffer[0];
+		uint8_t *stylePtr = &style_buffer[0];
 
 		int prev_char = -1;
 		Highlight::ParseContext ctx;
@@ -6262,7 +6262,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	}
 
 	// Create the style buffer
-	auto styleBuf = std::make_unique<TextBuffer>();
+	auto styleBuf = std::make_unique<UTextBuffer>();
 
 	const int contextLines = patternSet->lineContext;
 	const int contextChars = patternSet->charContext;

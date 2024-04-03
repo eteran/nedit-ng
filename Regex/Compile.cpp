@@ -19,6 +19,9 @@
 
 namespace {
 
+const auto FirstPassToken = reinterpret_cast<uint8_t *>(1);
+
+
 // Flags for function shortcut_escape()
 enum ShortcutEscapeFlag {
 	CHECK_ESCAPE       = 0, // Check an escape sequence for validity only.
@@ -182,7 +185,7 @@ uint8_t *emit_node(T op_code) noexcept {
 
 	if (pContext.FirstPass) {
 		pContext.Reg_Size += NODE_SIZE<size_t>;
-		return reinterpret_cast<uint8_t *>(1);
+		return FirstPassToken;
 	}
 
 	const size_t end_offset = pContext.Code.size();
@@ -261,7 +264,7 @@ uint8_t *emit_special(Ch op_code, uint32_t test_val, size_t index) noexcept {
 			pContext.Reg_Size += NODE_SIZE<size_t>; // Make room for the node.
 		}
 
-		return reinterpret_cast<uint8_t *>(1);
+		return FirstPassToken;
 	}
 
 	uint8_t *ret_val = emit_node(op_code); // Return the address for start of node.
@@ -331,7 +334,7 @@ uint8_t *insert(uint8_t op, const uint8_t *insert_pos, uint32_t min, uint32_t ma
 		}
 
 		pContext.Reg_Size += insert_size;
-		return reinterpret_cast<uint8_t *>(1);
+		return FirstPassToken;
 	}
 
 	// Where operand used to be.
@@ -406,7 +409,7 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 	static const char codes[] = "ByYdDlLsSwW";
 
 	const char *clazz = nullptr;
-	auto ret_val      = reinterpret_cast<uint8_t *>(1); // Assume success.
+	auto ret_val      = FirstPassToken; // Assume success.
 	const char *valid_codes;
 
 	if (Flags == EMIT_CLASS_BYTES || Flags == CHECK_CLASS_ESCAPE) {
@@ -611,7 +614,7 @@ uint8_t *back_ref(const char *ch, int *flag_param) {
 			*flag_param |= HAS_WIDTH;
 		}
 	} else if (Flags == CHECK_ESCAPE) {
-		ret_val = reinterpret_cast<uint8_t *>(1);
+		ret_val = FirstPassToken;
 	} else {
 		ret_val = nullptr;
 	}

@@ -222,13 +222,13 @@ public:
 	QTimer *cursorBlinkTimer() const;
 	std::string TextGetWrapped(TextCursor startPos, TextCursor endPos);
 	TextBuffer *buffer() const;
-	TextBuffer *styleBuffer() const;
+	UTextBuffer *styleBuffer() const;
 	TextCursor cursorPos() const;
 	TextCursor firstVisiblePos() const;
 	TextCursor lineAndColToPosition(int64_t line, int64_t column) const;
 	TextCursor lineAndColToPosition(Location loc) const;
 	TextCursor TextLastVisiblePos() const;
-	void attachHighlightData(TextBuffer *styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, UnfinishedStyleCallback unfinishedHighlightCB, void *user);
+	void attachHighlightData(UTextBuffer *styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, UnfinishedStyleCallback unfinishedHighlightCB, void *user);
 	void makeSelectionVisible();
 	void removeWidgetHighlight();
 	void setAutoIndent(bool value);
@@ -245,7 +245,7 @@ public:
 	void setOverstrike(bool value);
 	void setReadOnly(bool value);
 	void setSmartIndent(bool value);
-	void setStyleBuffer(TextBuffer *buffer);
+	void setStyleBuffer(UTextBuffer *buffer);
 	void setWordDelimiters(const std::string &delimiters);
 	void setWrapMargin(int value);
 	void TextDKillCalltip(int id);
@@ -384,7 +384,7 @@ private:
 	QVector<TextCursor> lineStarts_                = {TextCursor()};
 	QWidget *lineNumberArea_                       = nullptr;
 	TextBuffer *buffer_                            = nullptr; // Contains text to be displayed
-	TextBuffer *styleBuffer_                       = nullptr; // Optional parallel buffer containing color and font information
+	UTextBuffer *styleBuffer_                      = nullptr; // Optional parallel buffer containing color and font information
 	TextCursor anchor_                             = {};      // Anchor for drag operations
 	TextCursor cursorPos_                          = {};
 	TextCursor cursorToHint_                       = NO_HINT; // Tells the buffer modified callback where to move the cursor, to reduce the number of redraw calls

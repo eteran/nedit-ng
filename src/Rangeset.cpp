@@ -160,6 +160,9 @@ TextCursor *flattenRanges(std::vector<TextRange> &ranges) {
 	// NOTE(eteran): ranges_ contains TextRange objects which are POD structs
 	// with two TextCursors in them. So by casting to TextCursor *, we can
 	// iterate through the individual elements of the pairs.
+	// so { {s1, e1}, {s2, e2}, {s3, e3}, ... }
+	// becomes
+	// { s1, e1, s2, e2, s3, e3, ... }
 	return reinterpret_cast<TextCursor *>(ranges.data());
 }
 
@@ -173,7 +176,7 @@ int64_t rangesetWeightedAtOrBefore(Rangeset *rangeset, TextCursor pos) {
 
 	int64_t i;
 
-	TextCursor *rangeTable = flattenRanges(rangeset->ranges_);
+	const TextCursor *rangeTable = flattenRanges(rangeset->ranges_);
 
 	auto n = static_cast<int64_t>(rangeset->ranges_.size());
 	if (n == 0) {
