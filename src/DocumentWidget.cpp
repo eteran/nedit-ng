@@ -4725,7 +4725,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 	});
 
 	QString errText;
-	QString outText;
+	std::string outText;
 
 	// If the process was killed or became inaccessible, give up
 	if (exitStatus != QProcess::NormalExit) {
@@ -4745,14 +4745,15 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 
 		QByteArray dataOut = shellCmdData_->process->readAllStandardOutput();
 		shellCmdData_->standardOutput.append(dataOut);
-		outText = QString::fromLocal8Bit(shellCmdData_->standardOutput);
+		outText = std::string(shellCmdData_->standardOutput.data(), shellCmdData_->standardOutput.size());
 	} else {
 
 		QByteArray dataAll = shellCmdData_->process->readAll();
 		shellCmdData_->standardOutput.append(dataAll);
-		outText = QString::fromLocal8Bit(shellCmdData_->standardOutput);
+		outText = std::string(shellCmdData_->standardOutput.data(), shellCmdData_->standardOutput.size());
 	}
 
+	static constexpr int MaxMessageLength = 4096;
 	static const QRegularExpression trailingNewlines(QLatin1String("\\n+$"));
 
 	/* Present error and stderr-information dialogs.  If a command returned
@@ -4763,8 +4764,6 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 		// NOTE(eteran): assumes UNIX return code style!
 		bool failure     = exitCode != 0;
 		bool errorReport = !errText.isEmpty();
-
-		static constexpr int MaxMessageLength = 4096;
 
 		if (failure && errorReport) {
 			errText.remove(trailingNewlines);
@@ -4781,11 +4780,11 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 			cancel = (msgBox.exec() == QMessageBox::Cancel);
 
 		} else if (failure) {
-			outText.truncate(MaxMessageLength);
+			QString dialogOutText = QString::fromLocal8Bit(outText.data(), std::min<size_t>(MaxMessageLength, outText.size()));
 
 			QMessageBox msgBox;
 			msgBox.setWindowTitle(tr("Command Failure"));
-			msgBox.setText(tr("Command reported failed exit status.\nOutput from command:\n%1").arg(outText));
+			msgBox.setText(tr("Command reported failed exit status.\nOutput from command:\n%1").arg(dialogOutText));
 			msgBox.setIcon(QMessageBox::Warning);
 			msgBox.setStandardButtons(QMessageBox::Cancel);
 			auto accept = new QPushButton(tr("Proceed"));
@@ -4819,33 +4818,32 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 		   (remaining) output in the text widget as requested, and move the
 		   insert point to the end */
 		if (shellCmdData_->flags & OUTPUT_TO_DIALOG) {
-			outText.remove(trailingNewlines);
+			QString dialogOutText = QString::fromLocal8Bit(outText.data(), std::min<size_t>(MaxMessageLength, outText.size()));
+			dialogOutText.remove(trailingNewlines);
 
-			if (!outText.isEmpty()) {
+			if (!dialogOutText.isEmpty()) {
 				auto dialog = new DialogOutput(this);
-				dialog->setText(outText);
+				dialog->setText(dialogOutText);
 				dialog->show();
 			}
 		} else if (shellCmdData_->flags & OUTPUT_TO_STRING) {
 			returnShellCommandOutput(this, outText, exitCode);
 		} else {
 
-			std::string output_string = outText.toStdString();
-
 			auto area       = shellCmdData_->area;
 			TextBuffer *buf = area->buffer();
 
 			if (shellCmdData_->flags & REPLACE_SELECTION) {
 				TextCursor reselectStart = buf->primary.isRectangular() ? TextCursor(-1) : buf->primary.start();
-				buf->BufReplaceSelected(output_string);
+				buf->BufReplaceSelected(outText);
 
 				area->TextSetCursorPos(buf->BufCursorPosHint());
 
 				if (reselectStart != -1) {
-					buf->BufSelect(reselectStart, reselectStart + static_cast<int64_t>(output_string.size()));
+					buf->BufSelect(reselectStart, reselectStart + static_cast<int64_t>(outText.size()));
 				}
 			} else {
-				safeBufReplace(buf, &shellCmdData_->leftPos, &shellCmdData_->rightPos, output_string);
+				safeBufReplace(buf, &shellCmdData_->leftPos, &shellCmdData_->rightPos, outText);
 				area->TextSetCursorPos(shellCmdData_->leftPos + outText.size());
 			}
 		}

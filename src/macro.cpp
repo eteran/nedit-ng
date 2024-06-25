@@ -5212,7 +5212,7 @@ void RegisterMacroSubroutines() {
 ** teaching other modules about macro return globals, since other than this,
 ** they're not used outside of macro.c)
 */
-void returnShellCommandOutput(DocumentWidget *document, const QString &outText, int status) {
+void returnShellCommandOutput(DocumentWidget *document, view::string_view outText, int status) {
 
 	if (const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_) {
 
