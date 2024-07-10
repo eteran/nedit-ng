@@ -7,7 +7,6 @@
 #include "DragStates.h"
 #include "Font.h"
 #include "Highlight.h"
-#include "LanguageMode.h"
 #include "LineNumberArea.h"
 #include "Preferences.h"
 #include "RangesetTable.h"

@@ -2,8 +2,6 @@
 #include "Rangeset.h"
 #include "TextBuffer.h"
 #include <algorithm>
-#include <cctype>
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 

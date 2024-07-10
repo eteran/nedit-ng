@@ -21,17 +21,11 @@
 #include <QRegularExpression>
 #include <QTextStream>
 
-#include <array>
-#include <cctype>
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <deque>
 #include <fstream>
 #include <iostream>
-#include <memory>
-#include <sstream>
-#include <unordered_map>
 
 #ifdef Q_OS_UNIX
 #include <sys/param.h>

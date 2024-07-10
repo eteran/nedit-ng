@@ -6,18 +6,14 @@
 #include "Preferences.h"
 #include "Regex.h"
 #include "TextBuffer.h"
-#include "TruncSubstitution.h"
 #include "Util/String.h"
 #include "Util/algorithm.h"
 #include "Util/utils.h"
-#include "WrapStyle.h"
 #include "userCmds.h"
 
 #include <gsl/gsl_util>
 
 #include <algorithm>
-#include <cctype>
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 

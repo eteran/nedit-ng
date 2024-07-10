@@ -9,7 +9,6 @@
 #include "Regex.h"
 #include "ReparseContext.h"
 #include "Settings.h"
-#include "StyleTableEntry.h"
 #include "TextBuffer.h"
 #include "Util/Input.h"
 #include "Util/Resource.h"
@@ -28,8 +27,6 @@
 
 #include <algorithm>
 #include <climits>
-#include <cmath>
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
