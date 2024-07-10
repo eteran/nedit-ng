@@ -12,7 +12,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cctype>
 #include <cstring>
 #include <limits>
 #include <gsl/gsl_util>

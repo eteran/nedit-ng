@@ -18,7 +18,6 @@
 #include <QPointer>
 #include <QtDebug>
 #include <climits>
-#include <cstdio>
 #include <cstring>
 
 namespace SmartIndent {

@@ -11,7 +11,6 @@
 #include "Font.h"
 #include "Highlight.h"
 #include "HighlightData.h"
-#include "HighlightStyle.h"
 #include "MainWindow.h"
 #include "PatternSet.h"
 #include "Preferences.h"

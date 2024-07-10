@@ -13,7 +13,6 @@
 #include "RangesetTable.h"
 #include "Search.h"
 #include "SearchType.h"
-#include "SignalBlocker.h"
 #include "SmartIndent.h"
 #include "TextArea.h"
 #include "TextBuffer.h"

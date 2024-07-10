@@ -7,7 +7,6 @@
 #include "MainWindow.h"
 #include "Settings.h"
 #include "SmartIndent.h"
-#include "Tags.h"
 #include "TextBuffer.h"
 #include "Theme.h"
 #include "Util/ClearCase.h"
@@ -29,10 +28,6 @@
 #include <QString>
 #include <QtDebug>
 
-#include <cctype>
-#include <fstream>
-#include <iostream>
-#include <memory>
 
 namespace Preferences {
 namespace {
