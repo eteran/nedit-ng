@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Basic Regular Expression Syntax - NEdit-ng Docs</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../css/extra.css" rel="stylesheet" />
+        <link href="../css/version-select.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Basic Regular Expression Syntax";
+        var mkdocs_page_input_path = "16.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> NEdit-ng Docs
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Welcome</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../01/">Getting Started</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../02/">Selecting Text</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../03/">Finding and Replacing Text</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../04/">Cut and Paste</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../05/">Using the Mouse</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../06/">Keyboard Shortcuts</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../07/">Shifting and Filling</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../08/">Tabbed Editing</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../09/">File Format</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../10/">Programming with NEdit-ng</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../11/">Tab Stops/Emulated Tab Stops</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../12/">Auto/Smart Indent</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../13/">Syntax Highlighting</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../14/">Finding Declarations (ctags)</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../15/">Calltips</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Basic Regular Expression Syntax</a>
+    <ul class="current">
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../17/">Metacharacters</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../18/">Parenthetical Constructs</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../19/">Advanced Topics</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../20/">Example Regular Expressions</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../21/">Shell Commands and Filters</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../22/">Learn/Replay</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../23/">Macro Language</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../24/">Macro Subroutines</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../25/">Rangesets</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../26/">Highlighting Information</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../27/">Action Routines</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../28/">Customizing NEdit-ng</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../29/">Preferences</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../30/">Config Entries</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../31/">Key Bindings</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../32/">Highlighting Patterns</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../33/">Smart Indent Macros</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../34/">NEdit-ng Command Line</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../35/">Client/Server Mode</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../36/">Crash Recovery</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../38/">GNU General Public License</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../40/">Problems/Defects</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../41/">Tabs Dialog</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../42/">Customize Window Title Dialog</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">NEdit-ng Docs</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Basic Regular Expression Syntax</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/eteran/nedit-ng/blob/master/docs/docs/16.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <p>Regular expressions (regex's) are useful as a way to match inexact
+sequences of characters. They can be used in the <strong>Search &rarr; Find...</strong> and
+<strong>Search &rarr; Replace...</strong> dialogs and are at the core of Color Syntax
+Highlighting patterns. To specify a regular expression in a search
+dialog, simply click on the <strong>Regular Expression</strong> radio button in the
+dialog.</p>
+<p>A regex is a specification of a pattern to be matched in the searched
+text. This pattern consists of a sequence of tokens, each being able to
+match a single character or a sequence of characters in the text, or
+assert that a specific position within the text has been reached (the
+latter is called an anchor.) Tokens (also called atoms) can be modified
+by adding one of a number of special quantifier tokens immediately after
+the token. A quantifier token specifies how many times the previous
+token must be matched (see below.)</p>
+<p>Tokens can be grouped together using one of a number of grouping
+constructs, the most common being plain parentheses. Tokens that are
+grouped in this way are also collectively considered to be a regex atom,
+since this new larger atom may also be modified by a quantifier.</p>
+<p>A regex can also be organized into a list of alternatives by separating
+each alternative with pipe characters, <code>|</code>. This is called alternation.
+A match will be attempted for each alternative listed, in the order
+specified, until a match results or the list of alternatives is
+exhausted (see <a href="#Alternation">Alternation</a> below.)</p>
+<h2 id="the-any-character">The 'Any' Character</h2>
+<p>If a dot <code>.</code> appears in a regex, it means to match any character
+exactly once. By default, dot will not match a newline character, but
+this behavior can be changed (see <a href="../18/">Parenthetical
+Constructs</a>, under the heading, Matching Newlines).</p>
+<h2 id="character-classes">Character Classes</h2>
+<p>A character class, or range, matches exactly one character of text, but
+the candidates for matching are limited to those specified by the class.
+Classes come in two flavors as described below:</p>
+<ul>
+<li><code>[...]</code><br />
+    Regular class, match only characters listed.</li>
+<li><code>[^...]</code><br />
+    Negated class, match only characters <em>not</em> listed.</li>
+</ul>
+<p>As with the dot token, by default negated character classes do not match
+newline, but can be made to do so.</p>
+<p>The characters that are considered special within a class specification
+are different than the rest of regex syntax as follows. If the first
+character in a class is the <code>]</code> character (second character if the
+first character is <code>^</code>) it is a literal character and part of the class
+character set. This also applies if the first or last character is <code>-</code>.
+Outside of these rules, two characters separated by <code>-</code> form a character
+range which includes all the characters between the two characters as
+well. For example, <code>[^f-j]</code> is the same as <code>[^fghij]</code> and means to
+match any character that is not <code>f</code>, <code>g</code>, <code>h</code>, <code>i</code>, or <code>j</code>.</p>
+<h2 id="anchors">Anchors</h2>
+<p>Anchors are assertions that you are at a very specific position within
+the search text. NEdit-ng regular expressions support the following
+anchor tokens:</p>
+<ul>
+<li><code>^</code><br />
+    Beginning of line</li>
+<li><code>$</code><br />
+    End of line</li>
+<li><code>&lt;</code><br />
+    Left word boundary</li>
+<li><code>&gt;</code><br />
+    Right word boundary</li>
+<li><code>\B</code><br />
+    Not a word boundary</li>
+</ul>
+<p>Note that the <code>\B</code> token ensures that neither the left nor the right
+character are delimiters, <strong>or</strong> that both left and right characters are
+delimiters. The left word anchor checks whether the previous character
+is a delimiter and the next character is not. The right word anchor
+works in a similar way.</p>
+<p>Note that word delimiters are user-settable, and defined by the
+config.ini entry <code>nedit.wordDelimiters</code>, see <a href="../30/">Config Entries</a>.</p>
+<h2 id="quantifiers">Quantifiers</h2>
+<p>Quantifiers specify how many times the previous regular expression atom
+may be matched in the search text. Some quantifiers can produce a large
+performance penalty, and can in some instances completely lock up NEdit.
+To prevent this, avoid nested quantifiers, especially those of the
+maximal matching type (see below.)</p>
+<p>The following quantifiers are maximal matching, or "greedy", in that
+they match as much text as possible (but don't exclude shorter matches
+if that is necessary to achieve an overall match).</p>
+<ul>
+<li><code>*</code><br />
+    Match zero or more</li>
+<li><code>+</code><br />
+    Match one or more</li>
+<li><code>?</code><br />
+    Match zero or one</li>
+</ul>
+<p>The following quantifiers are minimal matching, or "lazy", in that they
+match as little text as possible (but don't exclude longer matches if
+that is necessary to achieve an overall match).</p>
+<ul>
+<li><code>*?</code><br />
+    Match zero or more</li>
+<li><code>+?</code><br />
+    Match one or more</li>
+<li><code>??</code><br />
+    Match zero or one</li>
+</ul>
+<p>One final quantifier is the counting quantifier, or brace quantifier. It
+takes the following basic form:</p>
+<ul>
+<li><code>{min,max}</code><br />
+    Match from <code>min</code> to <code>max</code> times the previous regular expression
+    atom.</li>
+</ul>
+<p>If <code>min</code> is omitted, it is assumed to be zero. If <code>max</code> is omitted, it
+is assumed to be infinity. Whether specified or assumed, <code>min</code> must be
+less than or equal to <code>max</code>. Note that both <code>min</code> and <code>max</code> are limited
+to 65535. If both are omitted, then the construct is the same as <code>*</code>.
+Note that <code>{,}</code> and <code>{}</code> are both valid brace constructs. A single
+number appearing without a comma, e.g. <code>{3}</code> is short for the
+<code>{min,min}</code> construct, or to match exactly <code>min</code> number of times.</p>
+<p>The quantifiers <code>{1}</code> and <code>{1,1}</code> are accepted by the syntax, but
+are optimized away since they mean to match exactly once, which is
+redundant information. Also, for efficiency, certain combinations of
+<code>min</code> and <code>max</code> are converted to either <code>*</code>, <code>+</code>, or <code>?</code> as
+follows:</p>
+<ul>
+<li><code>{} {,} {0,}</code><br />
+<code>*</code></li>
+<li><code>{1,}</code><br />
+<code>+</code></li>
+<li><code>{,1} {0,1}</code><br />
+<code>?</code></li>
+</ul>
+<p>Note that <code>{0}</code> and <code>{0,0}</code> are meaningless and will generate an error
+message at regular expression compile time.</p>
+<p>Brace quantifiers can also be "lazy". For example <code>{2,5}?</code> would try to
+match 2 times if possible, and will only match 3, 4, or 5 times if that
+is what is necessary to achieve an overall match.</p>
+<h2 id="alternation">Alternation</h2>
+<p>A series of alternative patterns to match can be specified by separating
+them with vertical pipes, <code>|</code>. An example of alternation would be
+<code>a|be|sea</code>. This will match <code>a</code>, or <code>be</code>, or <code>sea</code>. Each alternative can
+be an arbitrarily complex regular expression. The alternatives are
+attempted in the order specified. An empty alternative can be specified
+if desired, e.g. <code>a|b|</code>. Since an empty alternative can match
+nothingness (the empty string), this guarantees that the expression will
+match.</p>
+<h2 id="comments">Comments</h2>
+<p>Comments are of the form <code>(?#&lt;comment text&gt;)</code> and can be inserted
+anywhere and have no effect on the execution of the regular expression.
+They can be handy for documenting very complex regular expressions. Note
+that a comment begins with <code>(?#</code> and ends at the first occurrence of an
+ending parenthesis, or the end of the regular expression... period.
+Comments do not recognize any escape sequences.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../15/" class="btn btn-neutral float-left" title="Calltips"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../17/" class="btn btn-neutral float-right" title="Metacharacters">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/eteran/nedit-ng" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../15/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../17/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+      <script src="../js/version-select.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
