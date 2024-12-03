@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Action Routines - NEdit-ng Docs</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../css/extra.css" rel="stylesheet" />
+        <link href="../css/version-select.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Action Routines";
+        var mkdocs_page_input_path = "27.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> NEdit-ng Docs
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Welcome</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../01/">Getting Started</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../02/">Selecting Text</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../03/">Finding and Replacing Text</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../04/">Cut and Paste</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../05/">Using the Mouse</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../06/">Keyboard Shortcuts</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../07/">Shifting and Filling</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../08/">Tabbed Editing</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../09/">File Format</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../10/">Programming with NEdit-ng</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../11/">Tab Stops/Emulated Tab Stops</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../12/">Auto/Smart Indent</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../13/">Syntax Highlighting</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../14/">Finding Declarations (ctags)</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../15/">Calltips</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../16/">Basic Regular Expression Syntax</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../17/">Metacharacters</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../18/">Parenthetical Constructs</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../19/">Advanced Topics</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../20/">Example Regular Expressions</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../21/">Shell Commands and Filters</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../22/">Learn/Replay</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../23/">Macro Language</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../24/">Macro Subroutines</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../25/">Rangesets</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../26/">Highlighting Information</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Action Routines</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#file-menu">File Menu</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#edit-menu">Edit Menu</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#search-menu">Search Menu</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#shell-menu">Shell Menu</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#macro-menu">Macro Menu</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#windows-menu">Windows Menu</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../28/">Customizing NEdit-ng</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../29/">Preferences</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../30/">Config Entries</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../31/">Key Bindings</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../32/">Highlighting Patterns</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../33/">Smart Indent Macros</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../34/">NEdit-ng Command Line</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../35/">Client/Server Mode</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../36/">Crash Recovery</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../38/">GNU General Public License</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../40/">Problems/Defects</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../41/">Tabs Dialog</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../42/">Customize Window Title Dialog</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">NEdit-ng Docs</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Action Routines</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/eteran/nedit-ng/blob/master/docs/docs/27.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <p>All of the editing capabilities of NEdit-ng are represented as a special
+type of subroutine, called an action routine, which can be invoked from
+both macros and translation table entries (see <a href="../31/">Key Binding</a>).</p>
+<h2 id="actions-representing-menu-commands">Actions Representing Menu Commands</h2>
+<h3 id="file-menu">File Menu</h3>
+<ul>
+<li><code>new()</code></li>
+<li><code>open()</code></li>
+<li><code>open_dialog()</code></li>
+<li><code>open_selected()</code></li>
+<li><code>close()</code></li>
+<li><code>save()</code></li>
+<li><code>save_as()</code></li>
+<li><code>save_as_dialog()</code></li>
+<li><code>revert_to_saved_dialog()</code></li>
+<li><code>include_file()</code></li>
+<li><code>include_file_dialog()</code></li>
+<li><code>load_macro_file()</code></li>
+<li><code>load_macro_file_dialog()</code></li>
+<li><code>load_tags_file()</code></li>
+<li><code>load_tags_file_dialog()</code></li>
+<li><code>unload_tags_file()</code></li>
+<li><code>load_tips_file()</code></li>
+<li><code>load_tips_file_dialog()</code></li>
+<li><code>unload_tips_file()</code></li>
+<li><code>print()</code></li>
+<li><code>print_selection()</code></li>
+<li><code>exit()</code></li>
+</ul>
+<h3 id="edit-menu">Edit Menu</h3>
+<ul>
+<li><code>undo()</code></li>
+<li><code>redo()</code></li>
+<li><code>delete()</code></li>
+<li><code>select_all()</code></li>
+<li><code>shift_left()</code></li>
+<li><code>shift_left_by_tab()</code></li>
+<li><code>shift_right()</code></li>
+<li><code>shift_right_by_tab()</code></li>
+<li><code>uppercase()</code></li>
+<li><code>lowercase()</code></li>
+<li><code>fill_paragraph()</code></li>
+<li><code>control_code_dialog()</code></li>
+</ul>
+<h3 id="search-menu">Search Menu</h3>
+<ul>
+<li><code>find()</code></li>
+<li><code>find_dialog()</code></li>
+<li><code>find_again()</code></li>
+<li><code>find_selection()</code></li>
+<li><code>replace()</code></li>
+<li><code>replace_dialog()</code></li>
+<li><code>replace_all()</code></li>
+<li><code>replace_in_selection()</code></li>
+<li><code>replace_again()</code></li>
+<li><code>goto_line_number()</code></li>
+<li><code>goto_line_number_dialog()</code></li>
+<li><code>goto_selected()</code></li>
+<li><code>mark()</code></li>
+<li><code>mark_dialog()</code></li>
+<li><code>goto_mark()</code></li>
+<li><code>goto_mark_dialog()</code></li>
+<li><code>goto_matching()</code></li>
+<li><code>select_to_matching()</code></li>
+<li><code>find_definition()</code></li>
+<li><code>show_tip()</code></li>
+</ul>
+<h3 id="shell-menu">Shell Menu</h3>
+<ul>
+<li><code>filter_selection_dialog()</code></li>
+<li><code>filter_selection()</code></li>
+<li><code>execute_command()</code></li>
+<li><code>execute_command_dialog()</code></li>
+<li><code>execute_command_line()</code></li>
+<li><code>shell_menu_command()</code></li>
+</ul>
+<h3 id="macro-menu">Macro Menu</h3>
+<ul>
+<li><code>macro_menu_command()</code></li>
+<li><code>repeat_macro()</code></li>
+<li><code>repeat_dialog()</code></li>
+</ul>
+<h3 id="windows-menu">Windows Menu</h3>
+<ul>
+<li><code>split_pane()</code></li>
+<li><code>close_pane()</code></li>
+<li><code>detach_document()</code></li>
+<li><code>move_document_dialog()</code></li>
+</ul>
+<p>An action representing a menu command is usually named the same as its
+corresponding menu item except that all punctuation is removed, all
+letters are changed to lower case, and spaces are replaced with
+underscores. To present a dialog to ask the user for input, use the
+actions with the <code>_dialog</code> suffix. Actions without the <code>_dialog</code>
+suffix take the information from the routine's arguments (see below).</p>
+<h2 id="menu-action-routine-arguments">Menu Action Routine Arguments</h2>
+<p>Arguments are text strings enclosed in quotes. Below are the menu action
+routines which take arguments. Optional arguments are enclosed in <code>[]</code>.</p>
+<ul>
+<li><code>new( ["tab" | "window" | "prefs" | "opposite"] )</code></li>
+<li><code>close( ["prompt" | "save" | "nosave"] )</code></li>
+<li><code>execute_command( shell-command )</code></li>
+<li><code>filter_selection( shell-command )</code></li>
+<li><code>find( search-string [, search-direction] [, search-type] [, search-wrap] )</code></li>
+<li><code>find_again( [search-direction] [, search-wrap] )</code></li>
+<li><code>find_definition( [tag-name] )</code></li>
+<li><code>find_dialog( [search-direction] [, search-type] [, keep-dialog] )</code></li>
+<li><code>find_selection( [search-direction] [, search-wrap] [, non-regex-search-type] )</code></li>
+<li><code>goto_line_number( [line-number] [, column-number] )</code></li>
+<li><code>goto_mark( mark-letter )</code></li>
+<li><code>include_file( filename )</code></li>
+<li><code>load_tags_file( filename )</code></li>
+<li><code>macro_menu_command( macro-menu-item-name )</code></li>
+<li><code>mark( mark-letter )</code></li>
+<li><code>open( filename )</code></li>
+<li><code>replace( search-string, replace-string, [, search-direction] [, search-type] [, search-wrap] )</code></li>
+<li><code>replace_again( [search-direction] [, search-wrap] )</code></li>
+<li><code>replace_all( search-string, replace-string [, search-type] )</code></li>
+<li><code>replace_dialog( [search-direction] [, search-type] [, keep-dialog] )</code></li>
+<li><code>replace_in_selection( search-string, replace-string [, search-type] )</code></li>
+<li><code>save_as( filename )</code></li>
+<li><code>shell_menu_command( shell-menu-item-name )</code></li>
+<li><code>unload_tags_file( filename )</code></li>
+</ul>
+<h3 id="some-notes-on-argument-types-above">Some notes on argument types above</h3>
+<ul>
+<li>
+<p>Arguments to <code>new()</code>  </p>
+<ul>
+<li><code>"tab"</code><br />
+    Open a new tab</li>
+<li><code>"window"</code><br />
+    Open a new window</li>
+<li><code>"prefs"</code><br />
+    Follow the user's tab/window preference</li>
+<li><code>"opposite"</code><br />
+    Opposite of user's tab/window preference</li>
+</ul>
+<p>Default behaviour is <code>"prefs"</code>.</p>
+</li>
+<li>
+<p><code>filename</code><br />
+    Path names are relative to the directory from which NEdit-ng was
+    started. Shell interpreted wildcards and <code>~</code> are not expanded.</p>
+</li>
+<li>
+<p><code>keep-dialog</code><br />
+    Either <code>"keep"</code> or <code>"nokeep"</code>.</p>
+</li>
+<li>
+<p><code>mark-letter</code><br />
+    The mark command limits users to single letters. Inside of macros,
+    single digits are allowed as marks. These won't interfere with marks
+    set by the user.</p>
+</li>
+<li>
+<p><code>macro-menu-item-name</code><br />
+    Name of the command exactly as specified in the Macro Menu dialogs.</p>
+</li>
+<li>
+<p><code>non-regex-search-type</code><br />
+    Either <code>"literal"</code>, "case", <code>"word"</code>, or <code>"caseWord"</code>.</p>
+</li>
+<li>
+<p><code>search-direction</code><br />
+    Either <code>"forward"</code> or <code>"backward"</code>.</p>
+</li>
+<li>
+<p><code>search-type</code><br />
+    Either <code>"literal"</code>, <code>"case"</code>, <code>"word"</code>, <code>"caseWord"</code>, <code>"regex"</code>, or <code>"regexNoCase"</code>.</p>
+</li>
+<li>
+<p><code>search-wrap</code><br />
+    Either <code>"wrap"</code> or <code>"nowrap"</code>.</p>
+</li>
+<li>
+<p><code>shell-menu-item-name</code><br />
+    Name of the command exactly as specified in the Shell Menu dialogs.</p>
+</li>
+</ul>
+<h2 id="window-preferences-actions-deprecated">Window Preferences Actions (Deprecated)</h2>
+<p><strong>NOTE:</strong> The following functions for setting preferences are all deprecated.
+  There is a plan to revamp the preference system to be more like most modern editors; 
+  replacing the global and per-window settings with a single set of application wide 
+  settings controlled by singular settings dialog.</p>
+<ul>
+<li><code>set_auto_indent( "off" | "on" | "smart" )</code><br />
+    Set auto indent mode for the current window.</li>
+<li><code>set_em_tab_dist( em-tab-distance )</code><br />
+    Set the emulated tab size. An em-tab-distance value of <code>0</code> or less
+    translates to no emulated tabs. Em-tab-distance must be smaller than
+    <code>1000</code>.</li>
+<li><code>set_fonts( font-name, italic-font-name, bold-font-name, bold-italic-font-name )</code><br />
+    Set all the fonts used for the current window.</li>
+<li><code>set_highlight_syntax( [0 | 1] )</code><br />
+    Set syntax highlighting mode for the current window. A value of 0
+    turns it off and a value of <code>1</code> turns it on. If no parameters are
+    supplied the option is toggled.</li>
+<li><code>set_incremental_backup( [0 | 1] )</code><br />
+    Set incremental backup mode for the current window. A value of 0
+    turns it off and a value of <code>1</code> turns it on. If no parameters are
+    supplied the option is toggled.</li>
+<li><code>set_incremental_search_line( [0 | 1] )</code><br />
+    Show or hide the incremental search line for the current window. A
+    value of <code>0</code> turns it off and a value of <code>1</code> turns it on. If no
+    parameters are supplied the option is toggled.</li>
+<li><code>set_language_mode( language-mode )</code><br />
+    Set the language mode for the current window. If the language mode
+    is <code>""</code> or unrecognized, it will be set to Plain.</li>
+<li><code>set_locked( [0 | 1] )</code><br />
+    This only affects the locked status of a file, not its read-only
+    status. Permissions are <em>not</em> changed. A value of <code>0</code> turns it off and
+    a value of <code>1</code> turns it on. If no parameters are supplied the option
+    is toggled.</li>
+<li><code>set_make_backup_copy( [0 | 1] )</code><br />
+    Set whether backup copies are made during saves for the current
+    window. A value of <code>0</code> turns it off and a value of <code>1</code> turns it on. If
+    no parameters are supplied the option is toggled.</li>
+<li><code>set_overtype_mode( [0 | 1] )</code><br />
+    Set overtype mode for the current window. A value of <code>0</code> turns it off
+    and a value of <code>1</code> turns it on. If no parameters are supplied the
+    option is toggled.</li>
+<li><code>set_show_line_numbers( [0 | 1] )</code><br />
+    Show or hide line numbers for the current window. A value of <code>0</code> turns
+    it off and a value of <code>1</code> turns it on. If no parameters are supplied
+    the option is toggled.</li>
+<li><code>set_show_matching( "off" | "delimiter" | "range" )</code><br />
+    Set show matching (...) mode for the current window.</li>
+<li><code>set_match_syntax_based( [0 | 1] )</code><br />
+    Set whether matching should be syntax based for the current window.</li>
+<li><code>set_statistics_line( [0 | 1] )</code><br />
+    Show or hide the statistics line for the current window. A value of
+    <code>0</code> turns it off and a value of <code>1</code> turns it on. If no parameters are
+    supplied the option is toggled.</li>
+<li><code>set_tab_dist( tab-distance )</code><br />
+    Set the size of hardware tab spacing. Tab-distance must be a value
+    greater than <code>0</code> and no greater than 20.</li>
+<li><code>set_use_tabs( [0 | 1] )</code><br />
+    Set whether tab characters are used for the current window. A value
+    of <code>0</code> turns it off (using space characters instead) and a value of 1
+    turns it on. If no parameters are supplied the option is toggled.</li>
+<li><code>set_wrap_margin( wrap-width )</code><br />
+    Set the wrap width for text wrapping of the current window. A value
+    of <code>0</code> means to wrap at window width.</li>
+<li><code>set_wrap_text( "none" | "auto" | "continuous" )</code><br />
+    Set wrap text mode for the current window.</li>
+</ul>
+<h2 id="keyboard-only-actions">Keyboard-Only Actions</h2>
+<p>In addition to the arguments listed in the call descriptions below, any
+routine involving cursor movement can take the argument <code>"extend"</code>,
+meaning, adjust the primary selection to the new cursor position.
+Routines which take the <code>"extend"</code> argument as well as mouse dragging
+operations for both primary and secondary selections can take the
+optional keyword <code>"rect"</code>, meaning, make the selection rectangular. Any
+routine that accepts the <code>"scrollbar"</code> argument will move the display but
+not the cursor or selection. Routines that accept the <code>"nobell"</code>
+argument will fail silently without beeping, when that argument is
+supplied.</p>
+<ul>
+<li>
+<p><code>backward_character( ["nobell"] )</code><br />
+    Moves the cursor one character to the left.</p>
+</li>
+<li>
+<p><code>backward_paragraph(["nobell"] )</code><br />
+    Moves the cursor to the beginning of the paragraph, or if the cursor
+    is already at the beginning of a paragraph, moves the cursor to the
+    beginning of the previous paragraph. Paragraphs are defined as
+    regions of text delimited by one or more blank lines.</p>
+</li>
+<li>
+<p><code>backward_word( ["nobell"] )</code><br />
+    Moves the cursor to the beginning of a word, or, if the cursor is
+    already at the beginning of a word, moves the cursor to the
+    beginning of the previous word. Word delimiters are user-settable,
+    and defined by the X resource wordDelimiters.</p>
+</li>
+<li>
+<p><code>beginning_of_file( ["scrollbar"] )</code><br />
+    Moves the cursor to the beginning of the file.</p>
+</li>
+<li>
+<p><code>beginning_of_line( ["absolute"] )</code><br />
+    Moves the cursor to the beginning of the line. If <code>"absolute"</code> is
+    given, always moves to the absolute beginning of line, regardless of
+    the text wrapping mode.</p>
+</li>
+<li>
+<p><code>beginning_of_selection()</code><br />
+    Moves the cursor to the beginning of the selection without
+    disturbing the selection.</p>
+</li>
+<li>
+<p><code>copy_clipboard()</code><br />
+    Copies the current selection to the clipboard.</p>
+</li>
+<li>
+<p><code>copy_primary()</code><br />
+    Copies the primary selection to the cursor.</p>
+</li>
+<li>
+<p><code>copy_to()</code><br />
+    If a secondary selection exists, copies the secondary selection to
+    the cursor. If no secondary selection exists, copies the primary
+    selection to the pointer location.</p>
+</li>
+<li>
+<p><code>copy_to_or_end_drag()</code><br />
+    Completes either a secondary selection operation, or a primary drag.
+    If the user is dragging the mouse to adjust a secondary selection,
+    the selection is copied and either inserted at the cursor location,
+    or, if pending-delete is on and a primary selection exists in the
+    window, replaces the primary selection. If the user is dragging a
+    block of text (primary selection), completes the drag operation and
+    leaves the text at its current location.</p>
+</li>
+<li>
+<p><code>cut_clipboard()</code><br />
+    Deletes the text in the primary selection and places it in the
+    clipboard.</p>
+</li>
+<li>
+<p><code>cut_primary()</code><br />
+    Copies the primary selection to the cursor and deletes it at its
+    original location.</p>
+</li>
+<li>
+<p><code>delete_selection()</code><br />
+    Deletes the contents of the primary selection.</p>
+</li>
+<li>
+<p><code>delete_next_character( ["nobell"] )</code><br />
+    If a primary selection exists, deletes its contents. Otherwise,
+    deletes the character following the cursor.</p>
+</li>
+<li>
+<p><code>delete_previous_character( ["nobell"] )</code><br />
+    If a primary selection exists, deletes its contents. Otherwise,
+    deletes the character before the cursor.</p>
+</li>
+<li>
+<p><code>delete_next_word( ["nobell"] )</code><br />
+    If a primary selection exists, deletes its contents. Otherwise,
+    deletes the word following the cursor.</p>
+</li>
+<li>
+<p><code>delete_previous_word( ["nobell"] )</code><br />
+    If a primary selection exists, deletes its contents. Otherwise,
+    deletes the word before the cursor.</p>
+</li>
+<li>
+<p><code>delete_to_start_of_line( ["nobell", "wrap"] )</code><br />
+    If a primary selection exists, deletes its contents. Otherwise,
+    deletes the characters between the cursor and the start of the line.
+    If <code>"wrap"</code> is given, deletes to the previous wrap point or
+    beginning of line, whichever is closest.</p>
+</li>
+<li>
+<p><code>delete_to_end_of_line( ["nobell", "absolute"] )</code><br />
+    If a primary selection exists, deletes its contents. Otherwise,
+    deletes the characters between the cursor and the end of the line.
+    If <code>"absolute"</code> is given, always deletes to the absolute end of
+    line, regardless of the text wrapping mode.</p>
+</li>
+<li>
+<p><code>deselect_all()</code><br />
+    De-selects the primary selection.</p>
+</li>
+<li>
+<p><code>end_of_file( ["scrollbar"] )</code><br />
+    Moves the cursor to the end of the file.</p>
+</li>
+<li>
+<p><code>end_of_line( ["absolute"] )</code><br />
+    Moves the cursor to the end of the line. If <code>"absolute"</code> is given,
+    always moves to the absolute end of line, regardless of the text
+    wrapping mode.</p>
+</li>
+<li>
+<p><code>end_of_selection()</code><br />
+    Moves the cursor to the end of the selection without disturbing the
+    selection.</p>
+</li>
+<li>
+<p><code>exchange( ["nobell"] )</code><br />
+    Exchange the primary and secondary selections.</p>
+</li>
+<li>
+<p><code>extend_adjust()</code><br />
+    Attached mouse-movement events to begin a selection between the
+    cursor and the mouse, or extend the primary selection to the mouse
+    position.</p>
+</li>
+<li>
+<p><code>extend_end()</code><br />
+    Completes a primary drag-selection operation.</p>
+</li>
+<li>
+<p><code>extend_start()</code><br />
+    Begins a selection between the cursor and the mouse. A
+    drag-selection operation can be started with either <code>extend_start()</code>
+    or <code>grab_focus()</code>.</p>
+</li>
+<li>
+<p><code>focus_pane( [relative-pane] | [positive-index] | [negative-index] )</code><br />
+    Move the focus to the requested pane. Arguments can be specified in
+    the form of a relative-pane (<code>"first"</code>, <code>"last"</code>, <code>"next"</code>,
+    <code>"previous"</code>), a positive-index (numbers greater than <code>0</code>, <code>1</code> is the
+    same as <code>"first"</code>) or a negative-index (numbers less than <code>0</code>, <code>-1</code> is
+    the same as <code>"last"</code>).</p>
+</li>
+<li>
+<p><code>forward_character()</code><br />
+    Moves the cursor one character to the right.</p>
+</li>
+<li>
+<p><code>forward_paragraph( ["nobell"] )</code><br />
+    Moves the cursor to the beginning of the next paragraph. Paragraphs
+    are defined as regions of text delimited by one or more blank lines.</p>
+</li>
+<li>
+<p><code>forward_word( ["tail"] ["nobell"] )</code><br />
+    Moves the cursor to the beginning of the next word. Word delimiters
+    are user-settable, and defined by the config.ini setting
+    <code>nedit.wordDelimiters</code>. If the <code>"tail"</code> argument is supplied the
+    cursor will be moved to the end of the current word or the end of
+    the next word, if the cursor is between words.</p>
+</li>
+<li>
+<p><code>grab_focus()</code><br />
+    Moves the cursor to the mouse pointer location, and prepares for a
+    possible drag-selection operation (bound to <code>extend_adjust()</code>), or
+    multi-click operation (a further <code>grab_focus()</code> action). If a second
+    invocation of grab focus follows immediately, it selects a whole
+    word, or a third, a whole line.</p>
+</li>
+<li>
+<p><code>insert_string( "string" )</code><br />
+    If pending delete is on and the cursor is inside the selection,
+    replaces the selection with "string". Otherwise, inserts <code>"string"</code> at
+    the cursor location.</p>
+</li>
+<li>
+<p><code>key_select( "direction" [,"nobell"] )</code><br />
+    Moves the cursor one character in "direction" (<code>"left"</code>, <code>"right"</code>,
+    <code>"up"</code>, or <code>"down"</code>) and extends the selection. Same as
+    forward/backward-character("extend"), or process-up/down("extend"),
+    for compatibility with previous versions.</p>
+</li>
+<li>
+<p><code>last_document()</code><br />
+    Switches the active tab to the one that was previously active.</p>
+</li>
+<li>
+<p><code>move-destination()</code><br />
+    Moves the cursor to the pointer location without disturbing the
+    selection. (This is an unusual way of working. We left it in for
+    compatibility with previous versions, but if you actually use this
+    capability, please send us some mail, otherwise it is likely to
+    disappear in the future.</p>
+</li>
+<li>
+<p><code>move_to()</code><br />
+    If a secondary selection exists, deletes the contents of the
+    secondary selection and inserts it at the cursor, or if
+    pending-delete is on and there is a primary selection, replaces the
+    primary selection. If no secondary selection exists, moves the
+    primary selection to the pointer location, deleting it from its
+    original position.</p>
+</li>
+<li>
+<p><code>move_to_or_end_drag()</code><br />
+    Completes either a secondary selection operation, or a primary drag.
+    If the user is dragging the mouse to adjust a secondary selection,
+    the selection is deleted and either inserted at the cursor location,
+    or, if pending-delete is on and a primary selection exists in the
+    window, replaces the primary selection. If the user is dragging a
+    block of text (primary selection), completes the drag operation and
+    deletes the text from its current location.</p>
+</li>
+<li>
+<p><code>newline()</code><br />
+    Inserts a newline character. If Auto Indent is on, lines up the
+    indentation of the cursor with the current line.</p>
+</li>
+<li>
+<p><code>newline_and_indent()</code><br />
+    Inserts a newline character and lines up the indentation of the
+    cursor with the current line, regardless of the setting of Auto
+    Indent.</p>
+</li>
+<li>
+<p><code>newline_no_indent()</code><br />
+    Inserts a newline character, without automatic indentation,
+    regardless of the setting of Auto Indent.</p>
+</li>
+<li>
+<p><code>next_document()</code><br />
+    Switches the active tab to the next one on the tab bar.</p>
+</li>
+<li>
+<p><code>next_page( ["stutter"] ["column"] ["scrollbar"] ["nobell"] )</code><br />
+    Moves the cursor and scroll forward one page. The parameter
+    <code>"stutter"</code> moves the cursor to the bottom of the display, unless it
+    is already there, otherwise it will page down. The parameter
+    <code>"column"</code> will maintain the preferred column while moving the cursor.</p>
+</li>
+<li>
+<p><code>page_left( ["scrollbar"] ["nobell"] )</code><br />
+    Move the cursor and scroll left one page.</p>
+</li>
+<li>
+<p><code>page_right( ["scrollbar"] ["nobell"] )</code><br />
+    Move the cursor and scroll right one page.</p>
+</li>
+<li>
+<p><code>paste_clipboard()</code><br />
+    Insert the contents of the clipboard at the cursor, or if pending
+    delete is on, replace the primary selection with the contents of the
+    clipboard.</p>
+</li>
+<li>
+<p><code>previous_document()</code><br />
+    Switches the active tab to the previous one on the tab bar.</p>
+</li>
+<li>
+<p><code>previous_page( ["stutter"] ["column"] ["scrollbar"] ["nobell"] )</code><br />
+    Moves the cursor and scroll backward one page. The parameter
+    <code>"stutter"</code> moves the cursor to the top of the display, unless it is
+    already there, otherwise it will page up. The parameter "column"
+    will maintain the preferred column while moving the cursor.</p>
+</li>
+<li>
+<p><code>process_bdrag()</code><br />
+    Same as <code>secondary_or_drag_start()</code> for compatibility with previous
+    versions.</p>
+</li>
+<li>
+<p><code>process_cancel()</code><br />
+    Cancels the current <code>extend_adjust()</code>, <code>secondary_adjust()</code>, or
+    <code>secondary_or_drag_adjust()</code> in progress.</p>
+</li>
+<li>
+<p><code>process_down( ["nobell", "absolute"] )</code><br />
+    Moves the cursor down one line. If <code>"absolute"</code> is given, always moves
+    to the next line in the text buffer, regardless of wrapping.</p>
+</li>
+<li>
+<p><code>process_return()</code><br />
+    Same as newline for compatibility with previous versions.</p>
+</li>
+<li>
+<p><code>process_shift_down( ["nobell", "absolute"] )</code><br />
+    Same as <code>process_down("extend")</code> for compatibility with previous
+    versions.</p>
+</li>
+<li>
+<p><code>process_shift_up( ["nobell", "absolute"] )</code><br />
+    Same as <code>process_up("extend")</code> for compatibility with previous
+    versions.</p>
+</li>
+<li>
+<p><code>process_tab()</code><br />
+    If tab emulation is turned on, inserts an emulated tab, otherwise
+    inserts a tab character.</p>
+</li>
+<li>
+<p><code>process_up( ["nobell", "absolute"] )</code><br />
+    Moves the cursor up one line. If <code>"absolute"</code> is given, always moves
+    to the previous line in the text buffer, regardless of wrapping.</p>
+</li>
+<li>
+<p><code>raise_window([relative-window] | [positive-index] | [negative-index] [, "focus" | "nofocus"] )</code><br />
+    Raise the current focused window to the front if no argument is
+    supplied. Arguments can be specified in the form of a
+    relative-window (<code>"first"</code>, <code>"last"</code>, <code>"next"</code>, <code>"previous"</code>), a
+    positive-index (numbers greater than <code>0</code>, <code>1</code> is the same as <code>"last"</code>)
+    or a negative-index (numbers less than <code>0</code>, <code>-1</code> is the same as
+    <code>"first"</code>).</p>
+<p>Moreover, it can be specified whether or not the raised window
+should request the input focus. By default, it depends on the
+value of the <code>nedit.focusOnRaise</code> setting (see <a href="../30/">Config Entries</a>) 
+whether or not the input focus is requested.</p>
+</li>
+<li>
+<p><code>scroll_down( nUnits, ["lines" | "pages"] )</code><br />
+    Scroll the display down (towards the end of the file) by a given
+    number of units, units being lines or pages. Default units are
+    lines.</p>
+</li>
+<li>
+<p><code>scroll_left( nPixels )</code><br />
+    Scroll the display left by nPixels.</p>
+</li>
+<li>
+<p><code>scroll_right( nPixels )</code><br />
+    Scroll the display right by nPixels.</p>
+</li>
+<li>
+<p><code>scroll_up( nUnits, ["lines" | "pages"] )</code><br />
+    Scroll the display up (towards the beginning of the file) by a given
+    number of units, units being lines or pages. Default units are
+    lines.</p>
+</li>
+<li>
+<p><code>scroll_to_line( lineNum )</code><br />
+    Scroll to position line number lineNum at the top of the pane. The
+    first line of a file is line 1.</p>
+</li>
+<li>
+<p><code>secondary_adjust()</code><br />
+    Attached mouse-movement events to extend the secondary selection to
+    the mouse position.</p>
+</li>
+<li>
+<p><code>secondary_or_drag_adjust()</code><br />
+    Attached mouse-movement events to extend the secondary selection, or
+    reposition the primary text being dragged. Takes two optional
+    arguments, <code>"copy"</code>, and <code>"overlay"</code>. <code>"copy"</code> leaves a copy of the
+    dragged text at the site at which the drag began. <code>"overlay"</code> does
+    the drag in overlay mode, meaning the dragged text is laid on top of
+    the existing text, obscuring and ultimately deleting it when the
+    drag is complete.</p>
+</li>
+<li>
+<p><code>secondary_or_drag_start()</code><br />
+    To be attached to a mouse down event. Begins drag selecting a
+    secondary selection, or dragging the contents of the primary
+    selection, depending on whether the mouse is pressed inside of an
+    existing primary selection.</p>
+</li>
+<li>
+<p><code>secondary_start()</code><br />
+    To be attached to a mouse down event. Begin drag selecting a
+    secondary selection.</p>
+</li>
+<li>
+<p><code>select_all()</code><br />
+    Select the entire file.</p>
+</li>
+<li>
+<p><code>self_insert()</code><br />
+    To be attached to a key-press event, inserts the character
+    equivalent of the key pressed.</p>
+</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../26/" class="btn btn-neutral float-left" title="Highlighting Information"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../28/" class="btn btn-neutral float-right" title="Customizing NEdit-ng">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/eteran/nedit-ng" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../26/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../28/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+      <script src="../js/version-select.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
