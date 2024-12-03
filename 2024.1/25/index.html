@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>Rangesets - NEdit-ng Docs</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../css/extra.css" rel="stylesheet" />
+        <link href="../css/version-select.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Rangesets";
+        var mkdocs_page_input_path = "25.md";
+        var mkdocs_page_url = null;
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> NEdit-ng Docs
+        </a>
+        <div class="version">
+          2020.1
+        </div><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Welcome</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../01/">Getting Started</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../02/">Selecting Text</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../03/">Finding and Replacing Text</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../04/">Cut and Paste</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../05/">Using the Mouse</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../06/">Keyboard Shortcuts</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../07/">Shifting and Filling</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../08/">Tabbed Editing</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../09/">File Format</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../10/">Programming with NEdit-ng</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../11/">Tab Stops/Emulated Tab Stops</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../12/">Auto/Smart Indent</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../13/">Syntax Highlighting</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../14/">Finding Declarations (ctags)</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../15/">Calltips</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../16/">Basic Regular Expression Syntax</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../17/">Metacharacters</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../18/">Parenthetical Constructs</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../19/">Advanced Topics</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../20/">Example Regular Expressions</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../21/">Shell Commands and Filters</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../22/">Learn/Replay</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../23/">Macro Language</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../24/">Macro Subroutines</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">Rangesets</a>
+    <ul class="current">
+    </ul>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../26/">Highlighting Information</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../27/">Action Routines</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../28/">Customizing NEdit-ng</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../29/">Preferences</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../30/">Config Entries</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../31/">Key Bindings</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../32/">Highlighting Patterns</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../33/">Smart Indent Macros</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../34/">NEdit-ng Command Line</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../35/">Client/Server Mode</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../36/">Crash Recovery</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../38/">GNU General Public License</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../40/">Problems/Defects</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../41/">Tabs Dialog</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../42/">Customize Window Title Dialog</a>
+                </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">NEdit-ng Docs</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">Rangesets</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/eteran/nedit-ng/blob/master/docs/docs/25.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <p>Rangesets are a tool of the macro language to tag parts, or ranges, of
+the text, which shall be viewed as a group. A range is merely a
+contiguous range of characters between a start and an end position in
+the document, and a set of ranges belonging together is called a
+rangeset. So, a rangeset is nothing but an in general non-contiguous
+part of the text.</p>
+<p>Rangesets can be assigned a background color to make them visible:
+characters within all ranges of a rangeset will have the background
+color of the rangeset. (If more than one rangeset includes a given
+character, its background color will be that of the most recently
+created rangeset which has a color defined.)</p>
+<p>Applications of rangesets are for example:</p>
+<ul>
+<li>Showing differences between two versions of a file. Then, one
+    rangeset would be those parts of the current file that are not in
+    the prior version.</li>
+<li>Highlighting all occurrences of a particular pattern, e.g. showing
+    all the strings 'foobar' in the file.</li>
+<li>Highlighting spelling mistakes found by a spell-checker.</li>
+</ul>
+<p>Rangesets are manipulated only through macro routines. Rangesets must be
+created first using the <code>rangeset_create()</code> function, which will return
+an identifier for the newly-created (empty) rangeset. This identifier is
+then passed to the other rangeset functions to manipulate the rangeset.
+For example, ranges are added to a rangeset with the <code>rangeset_add()</code>
+function.</p>
+<p>Notice that the ranges inside a rangeset do not have a particular
+identity. Only, they are given a (dynamically changing) numeric index,
+counting from 1, in the order of appearance in the text buffer. The
+ranges are adjusted when modifications are made to the text buffer: they
+shift around when characters are added or deleted staying with the
+original strings of characters. However, ranges within a set will
+coalesce if the characters between them are removed, or a new range is
+added to the set which bridges or overlaps others. For more on this, see
+<a href="#how-rangesets-change-with-modifications">How rangesets change with modifications</a>.</p>
+<p>There is a limit to the number of rangesets which can exist at any time
+&mdash; currently up to 63 in each document. Care should be taken to
+destroy any rangesets which are no longer needed, by using the
+<code>rangeset_destroy()</code> function, if this limit is reached.</p>
+<p>Rangesets can be named: this is useful for macros which need a fixed
+identification for rangesets which are used for the same purpose in
+different documents. Although a new rangeset's number is arbitrary, its
+name can be fixed. This is done using the <code>rangeset_set_name()</code>
+function. Note that rangeset names within a particular document may not
+be unique. For this reason, the <code>rangeset_get_by_name()</code> function
+returns an array of identifiers, which will be empty if the name has not
+been associated with a rangeset.</p>
+<h3 id="how-rangesets-change-with-modifications">How rangesets change with modifications</h3>
+<p>When changes are made to the document text, ranges within each set are
+altered with it, according to their behavioral mode. If changes are made
+outside of the ranges in a rangeset, each range simply maintains its
+size and adjusts its position to match the changes. When text within a
+range is deleted, the range's length is reduced by the same amount. When
+changes involving new text are made within a range of the set, or to one
+of the extremities of a range, different behaviours may be desirable.
+The <code>rangeset_set_mode()</code> function allows these modes to be chosen.</p>
+<p>Note that the precise behaviour of these modes may change in future
+versions of NEdit-ng.</p>
+<p>The available modes are:</p>
+<p><code>maintain</code> or <code>ins_del</code> &mdash; Both these modes have the same
+behaviour.  New text added at the front of a range in a set is not added
+to the range; new text added within the range or at the end extends the
+range. Replacement overlapping an extremity of the set acts as if the
+new text were added first, then the old text deleted. This causes
+curtailment at the front of the range, extension at the end. Replacement
+of the full text of the range removes the range from the set. The
+default behaviour for a newly created rangeset is maintain. </p>
+<p><code>del_ins</code> &mdash; New text added at the front or end of a range in a set
+is not added to the range; new text added within the range extends the
+range. Replacement overlapping an extremity of the set acts as if the
+old text were deleted first, then the new text added. This causes
+curtailment at either end. Replacement of the full text of the range
+removes the range from the set. </p>
+<p><code>include</code> &mdash; New text added at the front or end of a range in a set extends the range, as does new text added within the range. Replacement overlapping an extremity of the set acts as if the new text were added first, then the old text deleted. This causes curtailment at the front of the range, extension at the end. Replacement of the full text of the range adds the new text to the range if the start position of the replacement is at the range's start point. </p>
+<p><code>exclude</code> &mdash; New text added at the front or end of a range in a set
+does not extend the range; new text added within the range extends the
+range. Replacement overlapping an extremity causes curtailment of the
+range. Replacement of the full text of the range removes the range from
+the set. </p>
+<p><code>break</code> &mdash; New text added at the front or end of a range in a set
+does not extend the range; new text added within the range will split
+the range. Replacement overlapping an extremity causes curtailment of
+the range. Replacement of the full text of the range removes the range
+from the set. </p>
+<h3 id="notes">Notes</h3>
+<p>A rangeset is manipulated <em>only</em> through macro routines. Rangesets can
+easily become very large, and may exceed the capacity of the running
+process. Coloring relies on proper color names or specifications (such
+as the "#rrggbb" hexadecimal digit strings), and appropriate hardware
+support. If an invalid color name is given, the default background color
+is used instead. Behaviours set using <code>rangeset_set_mode()</code> are subject
+to change in future versions.</p>
+<h2 id="rangeset-read-only-variables">Rangeset read-only variables</h2>
+<ul>
+<li><code>$rangeset_list</code> <br />
+    array of active rangeset identifiers, with integer keys starting at
+    0, in the order the rangesets were defined.</li>
+</ul>
+<h2 id="rangeset-functions">Rangeset functions</h2>
+<ul>
+<li>
+<p><code>rangeset_create()</code><br />
+<code>rangeset_create( n )</code><br />
+    Creates one or more new rangesets. The first form creates a single
+    range set and returns its identifier; if there are no rangesets
+    available it returns 0. The second form creates n new rangesets, and
+    returns an array of the rangeset identifiers with keys beginning at</p>
+<ol>
+<li>If the requested number of rangesets is not available it returns
+an empty array.</li>
+</ol>
+</li>
+<li>
+<p><code>rangeset_destroy( r )</code><br />
+<code>rangeset_destroy( array )</code><br />
+    Deletes all information about a rangeset or a number of rangesets.
+    The first form destroys the rangeset identified by r. The second
+    form should be passed an array of rangeset identifiers with keys
+    beginning at 0 (i.e. the same form of array returned by
+    <code>rangeset_create(n)</code>; it destroys all the rangesets appearing in the
+    array. If any of the rangesets do not exist, the function continues
+    without errors. Does not return a value.</p>
+</li>
+<li>
+<p><code>rangeset_add( r )</code><br />
+<code>rangeset_add( r, start, end )</code><br />
+<code>rangeset_add( r, r0 )</code><br />
+    Adds to the rangeset r. The first form adds the range identified by
+    the current primary selection to the rangeset, unless the selection
+    is rectangular. The second form adds the range defined by the start
+    and end positions given. The third form adds all ranges in the
+    rangeset r0 to the rangeset r, and returns 0.</p>
+<p>Returns the index of the newly-added range within the rangeset.</p>
+</li>
+<li>
+<p><code>rangeset_subtract( r, [start, end] )</code><br />
+<code>rangeset_subtract( r, r0 )</code><br />
+    Removes from the rangeset r. The first form removes the range
+    identified by the current primary selection from the rangeset,
+    unless start and end are defined, in which case the range they
+    define is removed. The second form removes all ranges in the
+    rangeset r0 from the rangeset r. Does not return a value.</p>
+</li>
+<li>
+<p><code>rangeset_invert( r )</code><br />
+    Changes the rangeset r so that it contains all ranges not in r. Does
+    not return a value.</p>
+</li>
+<li>
+<p><code>rangeset_get_by_name( name )</code><br />
+    Returns an array of active rangeset identifiers, with integer keys
+    starting at 0, whose name matches name.</p>
+</li>
+<li>
+<p><code>rangeset_info( r )</code><br />
+    Returns an array containing information about the rangeset r. The
+    array has the following keys: <code>defined</code> (whether a rangeset with
+    identifier r is defined), <code>count</code> (the number of ranges in the
+    rangeset), <code>color</code> (the current background color of the rangeset,
+    an empty string if the rangeset has no color), <code>name</code> (the user
+    supplied name of the rangeset, an empty string if the rangeset has
+    no name), and <code>mode</code> (the name of the modify-response mode of the
+    rangeset).</p>
+</li>
+<li>
+<p><code>rangeset_range( r, [index] )</code><br />
+    Returns details of a specific range in the rangeset r. The range is
+    specified by index, which should be between 1 and n (inclusive),
+    where n is the number of ranges in the rangeset. The return value is
+    an array containing the keys <code>start</code> (the start position of the
+    range) and <code>end</code> (the end position of the range). If index is not
+    supplied, the region returned is the span of the entire rangeset
+    (the region starting at the start of the first range and ending at
+    the end of the last). If index is outside the correct range of
+    values, the function returns an empty array.</p>
+</li>
+<li>
+<p><code>rangeset_includes( r, pos )</code><br />
+    Returns the index of the range in rangeset r which includes pos;
+    returns 0 if pos is not contained in any of the ranges of r. This
+    can also be used as a simple true/false function which returns true
+    if pos is contained in the rangeset.</p>
+</li>
+<li>
+<p><code>rangeset_set_color( r, color )</code><br />
+    Attempts to apply the color as a background color to the ranges of
+    r. If color is at empty string, removes the coloring of r. No check
+    is made regarding the validity of color: if the color is invalid (a
+    bad name, or not supported by the hardware) this has unpredictable
+    effects.</p>
+</li>
+<li>
+<p><code>rangeset_set_name( r, name )</code><br />
+    Apply the name to the rangeset r.</p>
+</li>
+<li>
+<p><code>rangeset_set_mode( r, type )</code><br />
+    Changes the behaviour of the rangeset r when modifications to the
+    text buffer occur. type can be one of the following: <code>maintain</code> (the
+    default), <code>break</code>, <code>include</code>, <code>exclude</code>, <code>ins_del</code> or <code>del_ins</code>.
+    (These modes are described above.)</p>
+</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../24/" class="btn btn-neutral float-left" title="Macro Subroutines"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../26/" class="btn btn-neutral float-right" title="Highlighting Information">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/eteran/nedit-ng" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../24/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../26/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="../search/main.js"></script>
+      <script src="../js/version-select.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
