@@ -8,6 +8,7 @@
 #include <bitset>
 #include <cstdint>
 #include <memory>
+#include <limits>
 
 // #define ENABLE_CROSS_REGEX_BACKREF
 
