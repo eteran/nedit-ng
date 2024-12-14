@@ -1,9 +1,10 @@
 
 #include "RangesetTable.h"
 #include "TextBuffer.h"
+#include <algorithm>
 #include <array>
 #include <gsl/gsl_util>
-#include <string>
+#include <iterator>
 
 namespace {
 

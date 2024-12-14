@@ -26,7 +26,6 @@
 #include "Highlight.h"
 #include "LanguageMode.h"
 #include "Location.h"
-#include "PatternSet.h"
 #include "Preferences.h"
 #include "Regex.h"
 #include "Search.h"

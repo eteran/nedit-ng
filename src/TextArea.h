@@ -437,6 +437,7 @@ private:
 	int64_t rectAnchor_                            = 0; // Anchor for rectangular drag operations
 	int wrapMargin_                                = 0;
 	void *highlightCBArg_                          = nullptr; // Arg to unfinishedHighlightCB
+	Qt::MouseButton mouseButtonState_              = Qt::MouseButton::NoButton;
 
 private:
 	BlockDragTypes dragType_; // style of block drag operation
