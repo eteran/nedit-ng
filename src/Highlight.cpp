@@ -1024,8 +1024,8 @@ HighlightData *find_subpattern(const HighlightData *pattern, size_t index) {
  * @return
  */
 std::vector<PatternSet> readDefaultPatternSets() {
-	QByteArray defaultPatternSets = loadResource(QLatin1String("DefaultPatternSets.yaml"));
-	YAML::Node patternSets        = YAML::Load(defaultPatternSets.data());
+	static QByteArray defaultPatternSets = loadResource(QLatin1String("DefaultPatternSets.yaml"));
+	static YAML::Node patternSets        = YAML::Load(defaultPatternSets.data());
 
 	std::vector<PatternSet> defaultPatterns;
 
