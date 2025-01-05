@@ -1070,11 +1070,7 @@ void TextArea::focusInEvent(QFocusEvent *event) {
 	}
 
 	// Change the cursor to active style
-	if (overstrike_) {
-		setCursorStyle(CursorStyles::Block);
-	} else {
-		setCursorStyle(CursorStyles::Normal);
-	}
+	setCursorStyle(overstrike_ ? CursorStyles::Block : CursorStyles::Normal);
 
 	unblankCursor();
 	QAbstractScrollArea::focusInEvent(event);
@@ -1094,21 +1090,6 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
 	// If there's a calltip displayed, kill it.
 	TextDKillCalltip(0);
 	QAbstractScrollArea::focusOutEvent(event);
-}
-
-/**
- * @brief TextArea::contextMenuEvent
- * @param event
- */
-void TextArea::contextMenuEvent(QContextMenuEvent *event) {
-
-    if (mouseButtonState_ != Qt::MouseButton::NoButton) {
-        return;
-    }
-
-	if (event->modifiers() != Qt::ControlModifier) {
-		Q_EMIT customContextMenuRequested(mapToGlobal(event->pos()));
-	}
 }
 
 /**
@@ -1190,9 +1171,9 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
 void TextArea::mouseDoubleClickEvent(QMouseEvent *event) {
 	if (event->button() == Qt::LeftButton) {
 
-        if (mouseButtonState_ != Qt::MouseButton::NoButton) {
-            return;
-        }
+		if (mouseButtonState_ != Qt::MouseButton::NoButton) {
+			return;
+		}
 
 		if (!clickTracker(event, /*inDoubleClickHandler=*/true)) {
 			return;
@@ -1270,13 +1251,12 @@ void TextArea::mouseMoveEvent(QMouseEvent *event) {
  */
 void TextArea::mousePressEvent(QMouseEvent *event) {
 
-    // only accept one mouse button press at a time
-    if (mouseButtonState_ != Qt::MouseButton::NoButton) {
-        return;
-    }
+	// only accept one mouse button press at a time
+	if (mouseButtonState_ != Qt::MouseButton::NoButton) {
+		return;
+	}
 
-    mouseButtonState_ = event->button();
-
+	mouseButtonState_ = event->button();
 
 	if (event->button() == Qt::LeftButton) {
 		switch (event->modifiers() & (Qt::ShiftModifier | Qt::ControlModifier | Qt::AltModifier | Qt::MetaModifier)) {
@@ -1340,22 +1320,25 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
  */
 void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 
-    // ignore key ups from buttons not currently known to be pressed
-    if(mouseButtonState_ != event->button()) {
-        return;
-    }
+	// ignore key ups from buttons not currently known to be pressed
+	if (mouseButtonState_ != event->button()) {
+		return;
+	}
 
-    mouseButtonState_ = Qt::MouseButton::NoButton;
+	mouseButtonState_ = Qt::MouseButton::NoButton;
 
 	switch (event->button()) {
 	case Qt::LeftButton:
-        if(dragState_ == PRIMARY_CLICKED) {
-            endDrag();
-        }
+		if (dragState_ == PRIMARY_CLICKED) {
+			endDrag();
+		}
 		break;
 
 	case Qt::RightButton:
 		endDrag();
+		if (event->modifiers() != Qt::ControlModifier) {
+			Q_EMIT customContextMenuRequested(mapToGlobal(event->pos()));
+		}
 		break;
 
 	case Qt::MiddleButton:

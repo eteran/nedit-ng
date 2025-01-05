@@ -719,6 +719,8 @@ TextArea *DocumentWidget::createTextArea(const std::shared_ptr<TextBuffer> &buff
 	// policy here, in fact, that would break things.
 	// area->setContextMenuPolicy(Qt::CustomContextMenu);
 
+	area->setContextMenuPolicy(Qt::PreventContextMenu);
+
 	// just emit an event that will later be caught by the higher layer informing it of the context menu request
 	connect(area, &TextArea::customContextMenuRequested, this, [this](const QPoint &pos) {
 		Q_EMIT contextMenuRequested(this, pos);
