@@ -11,7 +11,6 @@
 #include "Font.h"
 #include "Highlight.h"
 #include "HighlightData.h"
-#include "HighlightStyle.h"
 #include "MainWindow.h"
 #include "PatternSet.h"
 #include "Preferences.h"
@@ -719,6 +718,8 @@ TextArea *DocumentWidget::createTextArea(const std::shared_ptr<TextBuffer> &buff
 	// fires off a customContextMenuRequested event manually. So no need to set the
 	// policy here, in fact, that would break things.
 	// area->setContextMenuPolicy(Qt::CustomContextMenu);
+
+	area->setContextMenuPolicy(Qt::PreventContextMenu);
 
 	// just emit an event that will later be caught by the higher layer informing it of the context menu request
 	connect(area, &TextArea::customContextMenuRequested, this, [this](const QPoint &pos) {

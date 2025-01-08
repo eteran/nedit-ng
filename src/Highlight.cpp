@@ -9,7 +9,6 @@
 #include "Regex.h"
 #include "ReparseContext.h"
 #include "Settings.h"
-#include "StyleTableEntry.h"
 #include "TextBuffer.h"
 #include "Util/Input.h"
 #include "Util/Resource.h"
@@ -28,8 +27,6 @@
 
 #include <algorithm>
 #include <climits>
-#include <cmath>
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <memory>
@@ -1027,8 +1024,8 @@ HighlightData *find_subpattern(const HighlightData *pattern, size_t index) {
  * @return
  */
 std::vector<PatternSet> readDefaultPatternSets() {
-	QByteArray defaultPatternSets = loadResource(QLatin1String("DefaultPatternSets.yaml"));
-	YAML::Node patternSets        = YAML::Load(defaultPatternSets.data());
+	static QByteArray defaultPatternSets = loadResource(QLatin1String("DefaultPatternSets.yaml"));
+	static YAML::Node patternSets        = YAML::Load(defaultPatternSets.data());
 
 	std::vector<PatternSet> defaultPatterns;
 

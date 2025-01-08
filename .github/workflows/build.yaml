@@ -8,9 +8,9 @@ on:
 
 env:
   BUILD_TYPE: Release
-  BOOST_URL: 'https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz'
-  BOOST_TGZ: 'boost_1_78_0.tar.gz'
-  BOOST_PATH: 'D:/boost_1_78_0'
+  BOOST_URL: 'https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_87_0.tar.gz'
+  BOOST_TGZ: 'boost_1_87_0.tar.gz'
+  BOOST_PATH: 'D:/boost_1_87_0'
 
 jobs:
   build_ubuntu_20:

@@ -106,7 +106,6 @@ protected:
 	bool focusNextPrevChild(bool next) override;
 	void mouseQuadrupleClickEvent(QMouseEvent *event);
 	void mouseTripleClickEvent(QMouseEvent *event);
-	void contextMenuEvent(QContextMenuEvent *event) override;
 	void focusInEvent(QFocusEvent *event) override;
 	void focusOutEvent(QFocusEvent *event) override;
 	void keyPressEvent(QKeyEvent *event) override;
@@ -437,6 +436,7 @@ private:
 	int64_t rectAnchor_                            = 0; // Anchor for rectangular drag operations
 	int wrapMargin_                                = 0;
 	void *highlightCBArg_                          = nullptr; // Arg to unfinishedHighlightCB
+	Qt::MouseButton mouseButtonState_              = Qt::MouseButton::NoButton;
 
 private:
 	BlockDragTypes dragType_; // style of block drag operation

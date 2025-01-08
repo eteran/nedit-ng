@@ -2,7 +2,6 @@
 #include "Util/String.h"
 #include "Util/utils.h"
 #include <QString>
-#include <cctype>
 
 /*
 ** If "string" is not terminated with a newline character, return a
