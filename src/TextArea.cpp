@@ -1306,6 +1306,9 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 	} else if (event->button() == Qt::RightButton) {
 		if (event->modifiers() == Qt::ControlModifier) {
 			mousePanAP(event);
+		} else {
+			mouseButtonState_ = Qt::MouseButton::NoButton;
+			Q_EMIT customContextMenuRequested(mapToGlobal(event->pos()));
 		}
 	} else if (event->button() == Qt::MiddleButton) {
 		secondaryOrDragStartAP(event);
@@ -1336,9 +1339,6 @@ void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 
 	case Qt::RightButton:
 		endDrag();
-		if (event->modifiers() != Qt::ControlModifier) {
-			Q_EMIT customContextMenuRequested(mapToGlobal(event->pos()));
-		}
 		break;
 
 	case Qt::MiddleButton:
