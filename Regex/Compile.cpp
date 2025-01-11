@@ -410,7 +410,7 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 	auto ret_val      = FirstPassToken; // Assume success.
 	const char *valid_codes;
 
-	if (Flags == EMIT_CLASS_BYTES || Flags == CHECK_CLASS_ESCAPE) {
+	if constexpr (Flags == EMIT_CLASS_BYTES || Flags == CHECK_CLASS_ESCAPE) {
 		valid_codes = codes + 3; // \B, \y and \Y are not allowed in classes
 	} else {
 		valid_codes = codes;
@@ -420,14 +420,14 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 		return nullptr; // Not a valid shortcut escape sequence
 	}
 
-	if (Flags == CHECK_ESCAPE || Flags == CHECK_CLASS_ESCAPE) {
+	if constexpr (Flags == CHECK_ESCAPE || Flags == CHECK_CLASS_ESCAPE) {
 		return ret_val; // Just checking if this is a valid shortcut escape.
 	}
 
 	switch (ch) {
 	case 'd':
 	case 'D':
-		if (Flags == EMIT_CLASS_BYTES) {
+		if constexpr (Flags == EMIT_CLASS_BYTES) {
 			clazz = ASCII_Digits;
 		} else if (Flags == EMIT_NODE) {
 			ret_val = (safe_islower(ch) ? emit_node(DIGIT) : emit_node(NOT_DIGIT));
@@ -435,21 +435,21 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 		break;
 	case 'l':
 	case 'L':
-		if (Flags == EMIT_CLASS_BYTES) {
+		if constexpr (Flags == EMIT_CLASS_BYTES) {
 			clazz = Letter_Char;
-		} else if (Flags == EMIT_NODE) {
+		} else if constexpr (Flags == EMIT_NODE) {
 			ret_val = (safe_islower(ch) ? emit_node(LETTER) : emit_node(NOT_LETTER));
 		}
 		break;
 	case 's':
 	case 'S':
-		if (Flags == EMIT_CLASS_BYTES) {
+		if constexpr (Flags == EMIT_CLASS_BYTES) {
 			if (pContext.Match_Newline) {
 				emit_byte('\n');
 			}
 
 			clazz = White_Space;
-		} else if (Flags == EMIT_NODE) {
+		} else if constexpr (Flags == EMIT_NODE) {
 			if (pContext.Match_Newline) {
 				ret_val = (safe_islower(ch) ? emit_node(SPACE_NL) : emit_node(NOT_SPACE_NL));
 			} else {
@@ -459,7 +459,7 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 		break;
 	case 'w':
 	case 'W':
-		if (Flags == EMIT_CLASS_BYTES) {
+		if constexpr (Flags == EMIT_CLASS_BYTES) {
 			clazz = Word_Char;
 		} else if (Flags == EMIT_NODE) {
 			ret_val = (safe_islower(ch) ? emit_node(WORD_CHAR) : emit_node(NOT_WORD_CHAR));
@@ -470,7 +470,7 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 		 * \B, \Y and \Y can only generate a node.  At run time, the delimiter
 		 * table will be available for these nodes to use. */
 	case 'y':
-		if (Flags == EMIT_NODE) {
+		if constexpr (Flags == EMIT_NODE) {
 			ret_val = emit_node(IS_DELIM);
 		} else {
 			Raise<RegexError>("internal error #5 'shortcut_escape'");
@@ -478,14 +478,14 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 		break;
 
 	case 'Y':
-		if (Flags == EMIT_NODE) {
+		if constexpr (Flags == EMIT_NODE) {
 			ret_val = emit_node(NOT_DELIM);
 		} else {
 			Raise<RegexError>("internal error #6 'shortcut_escape'");
 		}
 		break;
 	case 'B':
-		if (Flags == EMIT_NODE) {
+		if constexpr (Flags == EMIT_NODE) {
 			ret_val = emit_node(NOT_BOUNDARY);
 		} else {
 			Raise<RegexError>("internal error #7 'shortcut_escape'");
@@ -588,7 +588,7 @@ uint8_t *back_ref(std::string_view::iterator ch, int *flag_param) {
 		Raise<RegexError>("\\%d is an illegal back reference", paren_no);
 	}
 
-	if (Flags == EMIT_NODE) {
+	if constexpr (Flags == EMIT_NODE) {
 		if (is_cross_regex) {
 			++pContext.Reg_Parse; /* Skip past the '~' in a cross regex back
 								   * reference. We only do this if we are emitting code. */
@@ -611,7 +611,7 @@ uint8_t *back_ref(std::string_view::iterator ch, int *flag_param) {
 		if (is_cross_regex || pContext.Paren_Has_Width[paren_no]) {
 			*flag_param |= HAS_WIDTH;
 		}
-	} else if (Flags == CHECK_ESCAPE) {
+	} else if constexpr (Flags == CHECK_ESCAPE) {
 		ret_val = FirstPassToken;
 	} else {
 		ret_val = nullptr;
