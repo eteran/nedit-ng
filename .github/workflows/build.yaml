@@ -1,0 +1,68 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  BUILD_TYPE: Release
+jobs:
+  build_ubuntu_20:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: "5.12.8"
+          setup-python: 'false'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Configure
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build --parallel 4 --config ${{env.BUILD_TYPE}}
+
+  build_windows:
+    runs-on: windows-2022
+    steps:
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v3
+        with:
+          version: "5.12.8"
+          setup-python: 'false'
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Configure
+        run: |
+          cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G"Visual Studio 17 2022"
+
+      - name: Build
+        run:
+          cmake --build ${{github.workspace}}/build --parallel 4 --target ALL_BUILD --config ${{env.BUILD_TYPE}}
+
+      - name: Deploy app
+        run: |
+          mkdir nedit-ng-win64
+          cp ${{github.workspace}}/build/${{env.BUILD_TYPE}}/nedit-ng.exe nedit-ng-win64/
+          cp ${{github.workspace}}/build/${{env.BUILD_TYPE}}/nc-ng.exe nedit-ng-win64/
+          windeployqt --release nedit-ng-win64/nedit-ng.exe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nedit-ng-win64
+          path: nedit-ng-win64/

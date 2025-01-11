@@ -150,7 +150,7 @@ int execError(const char *s1, T &&...args) {
 }
 
 /*
-** checks errno after operations which can set it.  If an error occured,
+** checks errno after operations which can set it.  If an error occurred,
 ** creates appropriate error messages and returns false
 */
 int errCheck(const char *s) {
@@ -398,7 +398,7 @@ bool AddImmediate(int value, QString *msg) {
 /*
 ** Add a branch offset operand to the current program
 */
-bool AddBranchOffset(Inst *to, QString *msg) {
+bool AddBranchOffset(const Inst *to, QString *msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
 		*msg = MacroTooLarge;
 		return false;
@@ -475,7 +475,7 @@ static void addLoopAddr(Inst *addr) {
 	*LoopStackPtr++ = addr;
 }
 
-void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
+void FillLoopAddrs(const Inst *breakAddr, const Inst *continueAddr) {
 	while (true) {
 		LoopStackPtr--;
 		if (LoopStackPtr < LoopStack) {
@@ -502,7 +502,7 @@ void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr) {
 ** "args".  Returns one of MACRO_DONE, MACRO_PREEMPT, or MACRO_ERROR.
 ** if MACRO_DONE is returned, the macro completed, and the returned value
 ** (if any) can be read from "result".  If MACRO_PREEMPT is returned, the
-** macro exceeded its alotted time-slice and scheduled...
+** macro exceeded its allotted time-slice and scheduled...
 */
 int executeMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg) {
 
@@ -558,7 +558,7 @@ ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation,
 	Q_ASSERT(continuation);
 
 	/*
-	** Execution Loop:  Call the succesive routine addresses in the program
+	** Execution Loop:  Call the successive routine addresses in the program
 	** until one returns something other than STAT_OK, then take action
 	*/
 	restoreContext(continuation);
@@ -688,7 +688,7 @@ Symbol *InstallIteratorSymbol() {
 /*
 ** Lookup a constant string by its value.
 */
-Symbol *LookupStringConstSymbol(view::string_view value) {
+Symbol *LookupStringConstSymbol(std::string_view value) {
 
 	auto it = std::find_if(GlobalSymList.begin(), GlobalSymList.end(), [value](Symbol *s) {
 		return (s->type == CONST_SYM && is_string(s->value) && to_string(s->value) == value);
@@ -708,7 +708,7 @@ Symbol *InstallStringConstSymbolEx(const QString &str) {
 /*
 ** install string str in the global symbol table with a string name
 */
-Symbol *InstallStringConstSymbol(view::string_view str) {
+Symbol *InstallStringConstSymbol(std::string_view str) {
 
 	static int stringConstIndex = 0;
 
@@ -729,7 +729,7 @@ Symbol *LookupSymbolEx(const QString &name) {
 	return LookupSymbol(name.toStdString());
 }
 
-Symbol *LookupSymbol(view::string_view name) {
+Symbol *LookupSymbol(std::string_view name) {
 
 	// first look for a local symbol
 	auto local = std::find_if(LocalSymList.begin(), LocalSymList.end(), [name](Symbol *s) {
@@ -803,7 +803,9 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 		qInfo("NEdit: To boldly go where no local sym has gone before: %s", sym->name.c_str());
 		sym->type = GLOBAL_SYM;
 		return sym;
-	} else if (s != nullptr) {
+	}
+
+	if (s != nullptr) {
 		/* case b)
 		   sym will shadow the old symbol from the GlobalSymList */
 		qInfo("NEdit: duplicate symbol in LocalSymList and GlobalSymList: %s", sym->name.c_str());
@@ -823,47 +825,47 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 	do {                                           \
 		if (Context.StackP == Context.Stack.get()) \
 			return execError(StackUnderflowMsg);   \
-		dataVal = *--Context.StackP;               \
+		(dataVal) = *--Context.StackP;             \
 	} while (0)
 
 #define PUSH(dataVal)                                           \
 	do {                                                        \
 		if (Context.StackP >= &Context.Stack.get()[STACK_SIZE]) \
 			return execError(StackOverflowMsg);                 \
-		*Context.StackP++ = dataVal;                            \
+		*Context.StackP++ = (dataVal);                          \
 	} while (0)
 
-#define PEEK(dataVal, peekIndex)                     \
-	do {                                             \
-		dataVal = *(Context.StackP - peekIndex - 1); \
+#define PEEK(dataVal, peekIndex)                         \
+	do {                                                 \
+		(dataVal) = *(Context.StackP - (peekIndex) - 1); \
 	} while (0)
 
-#define POP_INT(number)                                            \
-	do {                                                           \
-		if (Context.StackP == Context.Stack.get())                 \
-			return execError(StackUnderflowMsg);                   \
-		--Context.StackP;                                          \
-		if (is_string(*Context.StackP)) {                          \
-			if (!StringToNum(to_string(*Context.StackP), &number)) \
-				return execError(StringToNumberMsg);               \
-		} else if (is_integer(*Context.StackP))                    \
-			number = to_integer(*Context.StackP);                  \
-		else                                                       \
-			return execError(CantConvertArrayToInteger);           \
+#define POP_INT(number)                                              \
+	do {                                                             \
+		if (Context.StackP == Context.Stack.get())                   \
+			return execError(StackUnderflowMsg);                     \
+		--Context.StackP;                                            \
+		if (is_string(*Context.StackP)) {                            \
+			if (!StringToNum(to_string(*Context.StackP), &(number))) \
+				return execError(StringToNumberMsg);                 \
+		} else if (is_integer(*Context.StackP))                      \
+			(number) = to_integer(*Context.StackP);                  \
+		else                                                         \
+			return execError(CantConvertArrayToInteger);             \
 	} while (0)
 
-#define POP_STRING(string_ref)                                        \
-	do {                                                              \
-		if (Context.StackP == Context.Stack.get())                    \
-			return execError(StackUnderflowMsg);                      \
-		--Context.StackP;                                             \
-		if (is_integer(*Context.StackP)) {                            \
-			string_ref = std::to_string(to_integer(*Context.StackP)); \
-		} else if (is_string(*Context.StackP)) {                      \
-			string_ref = to_string(*Context.StackP);                  \
-		} else {                                                      \
-			return execError(CantConvertArrayToString);               \
-		}                                                             \
+#define POP_STRING(string_ref)                                          \
+	do {                                                                \
+		if (Context.StackP == Context.Stack.get())                      \
+			return execError(StackUnderflowMsg);                        \
+		--Context.StackP;                                               \
+		if (is_integer(*Context.StackP)) {                              \
+			(string_ref) = std::to_string(to_integer(*Context.StackP)); \
+		} else if (is_string(*Context.StackP)) {                        \
+			(string_ref) = to_string(*Context.StackP);                  \
+		} else {                                                        \
+			return execError(CantConvertArrayToString);                 \
+		}                                                               \
 	} while (0)
 
 #define PUSH_INT(number)                                        \
@@ -1263,7 +1265,8 @@ static int multiply() {
 }
 
 static int divide() {
-	int n1, n2;
+	int n1;
+	int n2;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
@@ -1278,7 +1281,8 @@ static int divide() {
 }
 
 static int modulo() {
-	int n1, n2;
+	int n1;
+	int n2;
 
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(2, 3);
@@ -1353,8 +1357,7 @@ static int eq() {
 		}
 	} else if (is_string(v2) && is_integer(v1)) {
 		int number;
-		std::string s2 = to_string(v1);
-		if (!StringToNum(s2, &number)) {
+		if (!StringToNum(to_string(v2), &number)) {
 			v1 = make_value(0);
 		} else {
 			v1 = make_value(number == to_integer(v1));
@@ -1541,6 +1544,7 @@ static int power() {
 		don't want to round this to 1. This is mainly intended to deal with
 		4^2 = 15.999996 and 16.000001.
 	*/
+
 	if (n2 < 0 && n1 != 1 && n1 != -1) {
 		if (n1 != 0) {
 			// since we're integer only, nearly all negative exponents result in 0
@@ -1550,14 +1554,13 @@ static int power() {
 			n3 = static_cast<int>(pow(static_cast<double>(n1), static_cast<double>(n2)));
 		}
 	} else {
-		if ((n1 < 0) && (n2 & 1)) {
-			// round to nearest integer for negative values
-			n3 = static_cast<int>(pow(static_cast<double>(n1), static_cast<double>(n2)) - 0.5);
-		} else {
-			// round to nearest integer for positive values
-			n3 = static_cast<int>(pow(static_cast<double>(n1), static_cast<double>(n2)) + 0.5);
-		}
+		// round to nearest integer
+		// NOTE(eteran): this use to detect if the result would be negative and round by adding/subtracting
+		// 0.5 before the final cast to int
+		// this SHOULD be the equivalent to that
+		n3 = static_cast<int>(std::lround(pow(static_cast<double>(n1), static_cast<double>(n2))));
 	}
+
 	PUSH_INT(n3);
 	return errCheck("exponentiation");
 }
@@ -1713,7 +1716,7 @@ static int returnValOrNone(bool valOnStack) {
 	Context.StackP -= (FP_TO_ARGS_DIST + nArgs);
 	Context.FrameP = newFrameP;
 
-	// push returned value, if requsted
+	// push returned value, if requested
 	if (!Context.PC) {
 		if (valOnStack) {
 			PUSH(retVal);
@@ -1810,7 +1813,7 @@ static int branchNever() {
 ** this does not duplicate the key/node data since they are never
 ** modified, only replaced
 */
-int ArrayCopy(DataValue *dstArray, DataValue *srcArray) {
+int ArrayCopy(DataValue *dstArray, const DataValue *srcArray) {
 	*dstArray = *srcArray;
 	return STAT_OK;
 }
@@ -1966,18 +1969,18 @@ static int arrayRef() {
 			}
 			PUSH(valueItem);
 			return STAT_OK;
-		} else {
-			return execError("operator [] on non-array");
 		}
-	} else {
-		POP(srcArray);
-		if (is_array(srcArray)) {
-			PUSH_INT(ArraySize(&srcArray));
-			return STAT_OK;
-		} else {
-			return execError("operator [] on non-array");
-		}
+
+		return execError("operator [] on non-array");
 	}
+
+	POP(srcArray);
+	if (is_array(srcArray)) {
+		PUSH_INT(ArraySize(&srcArray));
+		return STAT_OK;
+	}
+
+	return execError("operator [] on non-array");
 }
 
 /*
@@ -2021,12 +2024,14 @@ static int arrayAssign() {
 				return errNum;
 			}
 		}
+
 		if (ArrayInsert(&dstArray, keyString, &srcValue)) {
 			return STAT_OK;
-		} else {
-			return execError("array member allocation failure");
 		}
+
+		return execError("array member allocation failure");
 	}
+
 	return execError("empty operator []");
 }
 
@@ -2071,12 +2076,12 @@ static int arrayRefAndAssignSetup() {
 				PUSH(moveExpr);
 			}
 			return STAT_OK;
-		} else {
-			return execError("operator [] on non-array");
 		}
-	} else {
-		return execError("array[] not an lvalue");
+
+		return execError("operator [] on non-array");
 	}
+
+	return execError("array[] not an lvalue");
 }
 
 /*
@@ -2274,19 +2279,19 @@ static int deleteArrayElement() {
 bool StringToNum(const std::string &string, int *number) {
 	auto it = string.begin();
 
-	while (*it == ' ' || *it == '\t') {
+	while (it != string.end() && (*it == ' ' || *it == '\t')) {
 		++it;
 	}
 
-	if (*it == '+' || *it == '-') {
+	if (it != string.end() && (*it == '+' || *it == '-')) {
 		++it;
 	}
 
-	while (safe_ctype<::isdigit>(*it)) {
+	while (it != string.end() && safe_isdigit(*it)) {
 		++it;
 	}
 
-	while (*it == ' ' || *it == '\t') {
+	while (it != string.end() && (*it == ' ' || *it == '\t')) {
 		++it;
 	}
 

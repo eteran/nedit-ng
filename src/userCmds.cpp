@@ -13,8 +13,8 @@
 #include <QFileInfo>
 #include <QTextStream>
 
-#include <boost/optional.hpp>
 #include <memory>
+#include <optional>
 #include <yaml-cpp/yaml.h>
 
 /* Descriptions of the current user programmed menu items for re-generating
@@ -29,7 +29,7 @@ namespace {
 ** Scan text from "in" to the end of macro input (matching brace),
 ** advancing in, and return macro text as function return value.
 **
-** This is kind of wastefull in that it throws away the compiled macro,
+** This is kind of wasteful in that it throws away the compiled macro,
 ** to be re-generated from the text as needed, but compile time is
 ** negligible for most macros.
 */
@@ -269,7 +269,7 @@ QString writeContextMenuYaml(const std::vector<MenuData> &menuItems) {
  * @param in
  * @param listType
  */
-boost::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
+std::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
 
 	struct ParseError {
 		std::string message;
@@ -370,7 +370,7 @@ boost::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
 
 			QString p = copyMacroToEnd(in);
 			if (p.isNull()) {
-				return boost::none;
+				return {};
 			}
 
 			cmdStr = p;
@@ -392,7 +392,7 @@ boost::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
 		return menuItem;
 	} catch (const ParseError &error) {
 		qWarning("NEdit: Parse error in user defined menu item, %s", error.message.c_str());
-		return boost::none;
+		return {};
 	}
 }
 
@@ -465,6 +465,9 @@ void loadShellMenuYaml(std::vector<MenuData> &menuItems) {
 			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultShellMenuUnix.yaml"));
 #elif defined(Q_OS_WIN)
 			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultShellMenuWindows.yaml"));
+#else
+			// Using an "unsupported" system so we don't have a set of defaults. Just use an empty one
+			static QByteArray defaultMenu;
 #endif
 			menu = YAML::LoadAll(defaultMenu.data());
 		}
@@ -614,7 +617,7 @@ void loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 				return;
 			}
 
-			boost::optional<MenuItem> f = readMenuItem(in, listType);
+			std::optional<MenuItem> f = readMenuItem(in, listType);
 			if (!f) {
 				break;
 			}
@@ -705,9 +708,9 @@ QString stripLanguageMode(const QString &menuItemName) {
 	int index = menuItemName.indexOf(QLatin1Char('@'));
 	if (index != -1) {
 		return menuItemName.left(index);
-	} else {
-		return menuItemName;
 	}
+
+	return menuItemName;
 }
 
 /*

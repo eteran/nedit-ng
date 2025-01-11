@@ -3,6 +3,7 @@
 #include "DialogLanguageModes.h"
 #include "DialogSmartIndentCommon.h"
 #include "DocumentWidget.h"
+#include "Font.h"
 #include "Help.h"
 #include "LanguageMode.h"
 #include "MainWindow.h"
@@ -27,6 +28,17 @@ DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, 
 
 	ui.setupUi(this);
 	connectSlots();
+
+	const int tabStop = Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
+	ui.editInit->setTabStopDistance(tabStop * Font::characterWidth(ui.editInit->fontMetrics(), QLatin1Char(' ')));
+	ui.editNewline->setTabStopDistance(tabStop * Font::characterWidth(ui.editNewline->fontMetrics(), QLatin1Char(' ')));
+	ui.editModMacro->setTabStopDistance(tabStop * Font::characterWidth(ui.editModMacro->fontMetrics(), QLatin1Char(' ')));
+#else
+	ui.editInit->setTabStopWidth(tabStop * Font::characterWidth(ui.editInit->fontMetrics(), QLatin1Char(' ')));
+	ui.editNewline->setTabStopWidth(tabStop * Font::characterWidth(ui.editNewline->fontMetrics(), QLatin1Char(' ')));
+	ui.editModMacro->setTabStopWidth(tabStop * Font::characterWidth(ui.editModMacro->fontMetrics(), QLatin1Char(' ')));
+#endif
 
 	QString languageMode = Preferences::LanguageModeName((document->getLanguageMode() == PLAIN_LANGUAGE_MODE) ? 0 : document->getLanguageMode());
 
@@ -98,8 +110,11 @@ void DialogSmartIndent::buttonCommon_clicked() {
  * @brief DialogSmartIndent::buttonLanguageMode_clicked
  */
 void DialogSmartIndent::buttonLanguageMode_clicked() {
-	auto dialog = std::make_unique<DialogLanguageModes>(nullptr, this);
-	dialog->exec();
+	if (!dialogLanguageModes_) {
+		dialogLanguageModes_ = new DialogLanguageModes(nullptr, this);
+	}
+
+	dialogLanguageModes_->show();
 }
 
 /**
@@ -345,6 +360,10 @@ SmartIndentEntry DialogSmartIndent::getSmartIndentDialogData() const {
 	return is;
 }
 
+/**
+ * @brief DialogSmartIndent::languageMode
+ * @return
+ */
 QString DialogSmartIndent::languageMode() const {
 	return languageMode_;
 }

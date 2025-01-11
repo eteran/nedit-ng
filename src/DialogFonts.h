@@ -4,6 +4,7 @@
 
 #include "Dialog.h"
 #include "ui_DialogFonts.h"
+#include <QPointer>
 
 class DocumentWidget;
 
@@ -21,7 +22,7 @@ private:
 
 private:
 	Ui::DialogFonts ui;
-	DocumentWidget *document_;
+	QPointer<DocumentWidget> document_;
 };
 
 #endif

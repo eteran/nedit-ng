@@ -2,9 +2,11 @@
 #ifndef ALGORITHM_H_
 #define ALGORITHM_H_
 
-#include "string_view.h"
 #include <QtGlobal>
 #include <algorithm>
+#include <string_view>
+#include <type_traits>
+#include <cstddef>
 
 // container algorithms
 
@@ -34,15 +36,6 @@ void moveItem(Cont &cont, int from, int to) {
 
 QT_WARNING_POP
 
-// string_view algorithms
-template <class Ch, class Tr = std::char_traits<Ch>>
-constexpr view::basic_string_view<Ch, Tr> substr(const Ch *first, const Ch *last) {
-
-	const Ch *data = first;
-	auto size      = std::distance(first, last);
-	return view::basic_string_view<Ch, Tr>(data, static_cast<size_t>(size));
-}
-
 template <class Cont, class T, class Pred>
 void insert_or_replace(Cont &cont, T &&item, Pred &&pred) {
 
@@ -52,6 +45,17 @@ void insert_or_replace(Cont &cont, T &&item, Pred &&pred) {
 	} else {
 		cont.emplace_back(item);
 	}
+}
+
+template <class C>
+constexpr auto ssize(const C &c) -> std::common_type_t<ptrdiff_t, std::make_signed_t<decltype(c.size())>> {
+	using R = std::common_type_t<ptrdiff_t, std::make_signed_t<decltype(c.size())>>;
+	return static_cast<R>(c.size());
+}
+
+template <class T, ptrdiff_t N>
+constexpr ptrdiff_t ssize(const T (&array)[N]) noexcept {
+	return N;
 }
 
 #endif

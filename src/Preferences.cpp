@@ -7,18 +7,21 @@
 #include "MainWindow.h"
 #include "Settings.h"
 #include "SmartIndent.h"
-#include "Tags.h"
 #include "TextBuffer.h"
 #include "Theme.h"
 #include "Util/ClearCase.h"
 #include "Util/Input.h"
+#include "Util/Raise.h"
 #include "Util/Resource.h"
+#include "Util/User.h"
 #include "Util/algorithm.h"
 #include "Util/version.h"
 #include "nedit.h"
 #include "userCmds.h"
 
 #include <yaml-cpp/yaml.h>
+
+#include <algorithm>
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -27,16 +30,6 @@
 #include <QSettings>
 #include <QString>
 #include <QtDebug>
-
-#include <cctype>
-#include <fstream>
-#include <iostream>
-#include <memory>
-
-#ifdef Q_OS_UNIX
-#include <pwd.h>
-#include <unistd.h>
-#endif
 
 namespace Preferences {
 namespace {
@@ -88,27 +81,7 @@ QStringList readExtensionList(Input &in) {
 	return extensionList;
 }
 
-/*
-**  This function returns the user's login shell.
-**  In case of errors, the fallback of "sh" will be returned.
-*/
-QString getDefaultShell() {
-#ifdef Q_OS_UNIX
-	struct passwd *passwdEntry = getpwuid(getuid()); //  getuid() never fails.
-
-	if (!passwdEntry) {
-		//  Something bad happened! Do something, quick!
-		perror("NEdit: Failed to get passwd entry (falling back to 'sh')");
-		return QLatin1String("sh");
-	}
-
-	return QString::fromUtf8(passwdEntry->pw_shell);
-#else
-	return QString();
-#endif
-}
-
-boost::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
+std::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 
 	struct ModeError {
 		QString message;
@@ -122,9 +95,9 @@ boost::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 			const YAML::Node value = it->second;
 
 			if (key == "name") {
-				lm.name = QString::fromUtf8(value.as<std::string>().c_str());
+				lm.name = QString::fromStdString(value.as<std::string>());
 			} else if (key == "delimiters") {
-				lm.delimiters = QString::fromUtf8(value.as<std::string>().c_str());
+				lm.delimiters = QString::fromStdString(value.as<std::string>());
 			} else if (key == "tab_distance") {
 				lm.tabDist = value.as<int>();
 			} else if (key == "em_tab_distance") {
@@ -132,9 +105,9 @@ boost::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 			} else if (key == "insert_tabs") {
 				lm.insertTabs = value.as<bool>();
 			} else if (key == "regex") {
-				lm.recognitionExpr = QString::fromUtf8(value.as<std::string>().c_str());
+				lm.recognitionExpr = QString::fromStdString(value.as<std::string>());
 			} else if (key == "wrap") {
-				auto string_val = QString::fromUtf8(value.as<std::string>().c_str());
+				auto string_val = QString::fromStdString(value.as<std::string>());
 				auto it         = std::find(std::begin(AutoWrapTypes), std::end(AutoWrapTypes), string_val);
 				if (it == std::end(AutoWrapTypes)) {
 					Raise<ModeError>(tr("unrecognized wrap style"));
@@ -142,7 +115,7 @@ boost::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 
 				lm.wrapStyle = static_cast<WrapStyle>(it - std::begin(AutoWrapTypes));
 			} else if (key == "indent") {
-				auto string_val = QString::fromUtf8(value.as<std::string>().c_str());
+				auto string_val = QString::fromStdString(value.as<std::string>());
 				auto it         = std::find(std::begin(AutoIndentTypes), std::end(AutoIndentTypes), string_val);
 				if (it == std::end(AutoIndentTypes)) {
 					Raise<ModeError>(tr("unrecognized indent style"));
@@ -150,7 +123,7 @@ boost::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 
 				lm.indentStyle = static_cast<IndentStyle>(it - std::begin(AutoIndentTypes));
 			} else if (key == "default_tips") {
-				lm.defTipsFile = QString::fromUtf8(value.as<std::string>().c_str());
+				lm.defTipsFile = QString::fromStdString(value.as<std::string>());
 			} else if (key == "extensions") {
 				QStringList extensions;
 				for (size_t i = 0; i < value.size(); i++) {
@@ -172,10 +145,10 @@ boost::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 		qWarning("NEdit: %s", qPrintable(ex.message));
 	}
 
-	return boost::none;
+	return {};
 }
 
-boost::optional<LanguageMode> readLanguageMode(Input &in) {
+std::optional<LanguageMode> readLanguageMode(Input &in) {
 
 	struct ModeError {
 		QString message;
@@ -312,7 +285,7 @@ boost::optional<LanguageMode> readLanguageMode(Input &in) {
 			error.message);
 	}
 
-	return boost::none;
+	return {};
 }
 
 void loadLanguageModesString(const QString &string) {
@@ -331,7 +304,7 @@ void loadLanguageModesString(const QString &string) {
 
 		for (YAML::Node language : languages) {
 
-			boost::optional<LanguageMode> lm = readLanguageModeYaml(language);
+			std::optional<LanguageMode> lm = readLanguageModeYaml(language);
 			if (!lm) {
 				break;
 			}
@@ -344,7 +317,7 @@ void loadLanguageModesString(const QString &string) {
 		Input in(&string);
 
 		Q_FOREVER {
-			boost::optional<LanguageMode> lm = readLanguageMode(in);
+			std::optional<LanguageMode> lm = readLanguageMode(in);
 			if (!lm) {
 				break;
 			}
@@ -406,7 +379,7 @@ void translatePrefFormats(uint32_t fileVer) {
 	Settings::font = Font::fromString(Settings::fontName);
 
 	/*
-	**  The default set for the comand shell in PrefDescrip ("DEFAULT") is
+	**  The default set for the command shell ("DEFAULT") is
 	**  only a place-holder, the actual default is the user's login shell
 	**  (or whatever is implemented in getDefaultShell()). We put the login
 	**  shell's name in PrefData here.
@@ -599,7 +572,7 @@ void SetPrefWrapMargin(int margin) {
 }
 
 int GetPrefWrapMargin() {
-	return Settings::wrapMargin;
+	return std::max(0, Settings::wrapMargin);
 }
 
 void SetPrefSearch(SearchType searchType) {
@@ -673,7 +646,7 @@ void SetPrefSearchDlogs(bool state) {
 	Settings::searchDialogs = state;
 }
 
-bool GetPrefSearchDlogs() {
+bool GetPrefSearchDialogs() {
 	return Settings::searchDialogs;
 }
 
@@ -710,7 +683,7 @@ WrapMode GetPrefSearchWraps() {
 	return Settings::searchWraps ? WrapMode::Wrap : WrapMode::NoWrap;
 }
 
-int GetPrefStickyCaseSenseBtn() {
+bool GetPrefStickyCaseSenseBtn() {
 	return Settings::stickyCaseSenseButton;
 }
 
@@ -721,7 +694,7 @@ void SetPrefStatsLine(bool state) {
 	Settings::statisticsLine = state;
 }
 
-int GetPrefStatsLine() {
+bool GetPrefStatsLine() {
 	return Settings::statisticsLine;
 }
 
@@ -732,7 +705,7 @@ void SetPrefISearchLine(bool state) {
 	Settings::iSearchLine = state;
 }
 
-int GetPrefISearchLine() {
+bool GetPrefISearchLine() {
 	return Settings::iSearchLine;
 }
 
@@ -765,7 +738,7 @@ void SetPrefTabBarHideOne(bool state) {
 	Settings::tabBarHideOne = state;
 }
 
-int GetPrefTabBarHideOne() {
+bool GetPrefTabBarHideOne() {
 	return Settings::tabBarHideOne;
 }
 
@@ -776,7 +749,7 @@ void SetPrefGlobalTabNavigate(bool state) {
 	Settings::globalTabNavigate = state;
 }
 
-int GetPrefGlobalTabNavigate() {
+bool GetPrefGlobalTabNavigate() {
 	return Settings::globalTabNavigate;
 }
 
@@ -798,7 +771,7 @@ void SetPrefLineNums(bool state) {
 	Settings::lineNumbers = state;
 }
 
-int GetPrefLineNums() {
+bool GetPrefLineNums() {
 	return Settings::lineNumbers;
 }
 
@@ -809,7 +782,7 @@ void SetPrefShowPathInWindowsMenu(bool state) {
 	Settings::pathInWindowsMenu = state;
 }
 
-int GetPrefShowPathInWindowsMenu() {
+bool GetPrefShowPathInWindowsMenu() {
 	return Settings::pathInWindowsMenu;
 }
 
@@ -865,7 +838,7 @@ void SetPrefRows(int nRows) {
 }
 
 int GetPrefRows() {
-	return Settings::textRows;
+	return std::max(1, Settings::textRows);
 }
 
 void SetPrefCols(int nCols) {
@@ -876,7 +849,7 @@ void SetPrefCols(int nCols) {
 }
 
 int GetPrefCols() {
-	return Settings::textCols;
+	return std::max(0, Settings::textCols);
 }
 
 void SetPrefTabDist(int tabDist) {
@@ -1040,7 +1013,7 @@ void SetPrefSortOpenPrevMenu(bool state) {
 	Settings::sortOpenPrevMenu = state;
 }
 
-int GetPrefSortOpenPrevMenu() {
+bool GetPrefSortOpenPrevMenu() {
 	return Settings::sortOpenPrevMenu;
 }
 
@@ -1055,7 +1028,7 @@ void SetPrefSmartTags(bool state) {
 	Settings::smartTags = state;
 }
 
-int GetPrefSmartTags() {
+bool GetPrefSmartTags() {
 	return Settings::smartTags;
 }
 
@@ -1111,11 +1084,23 @@ QString GetPrefGeometry() {
 }
 
 QString GetPrefServerName() {
+	if (!Settings::serverNameOverride.isNull()) {
+		return Settings::serverNameOverride;
+	}
+
 	return Settings::serverName;
 }
 
 int GetPrefMaxPrevOpenFiles() {
-	return Settings::maxPrevOpenFiles;
+	return std::max(1, Settings::maxPrevOpenFiles);
+}
+
+int GetPrefAutoSaveCharLimit() {
+	return std::max(1, Settings::autoSaveCharLimit);
+}
+
+int GetPrefAutoSaveOpLimit() {
+	return std::max(1, Settings::autoSaveOpLimit);
 }
 
 bool GetPrefTypingHidesPointer() {
@@ -1199,10 +1184,10 @@ size_t FindLanguageMode(const QString &languageName) {
 QString LanguageModeName(size_t mode) {
 	if (mode == PLAIN_LANGUAGE_MODE || LanguageModes.empty()) {
 		return QString();
-	} else {
-		Q_ASSERT(mode < LanguageModes.size());
-		return LanguageModes[mode].name;
 	}
+
+	Q_ASSERT(mode < LanguageModes.size());
+	return LanguageModes[mode].name;
 }
 
 bool ReadNumericField(Input &in, int *value) {
@@ -1296,7 +1281,9 @@ bool ReadQuotedString(Input &in, QString *errMsg, QString *string) {
 		if (c.atEnd()) {
 			*errMsg = tr("string not terminated");
 			return false;
-		} else if (*c == Quote) {
+		}
+
+		if (*c == Quote) {
 			if (*(c + 1) == Quote) {
 				++c;
 			} else {
@@ -1396,7 +1383,7 @@ bool SkipDelimiter(Input &in, QString *errMsg) {
 bool reportError(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message) {
 
 	// NOTE(eteran): hack to work around the fact that stoppedAt can be a "one past the end iterator"
-	stoppedAt = qBound(0, stoppedAt, string.size() - 1);
+	stoppedAt = std::clamp(stoppedAt, 0, string.size() - 1);
 
 	int nNonWhite = 0;
 	int c;
@@ -1404,9 +1391,13 @@ bool reportError(QWidget *toDialog, const QString &string, int stoppedAt, const 
 	for (c = stoppedAt; c >= 0; c--) {
 		if (c == 0) {
 			break;
-		} else if (string[c] == QLatin1Char('\n') && nNonWhite >= 5) {
+		}
+
+		if (string[c] == QLatin1Char('\n') && nNonWhite >= 5) {
 			break;
-		} else if (string[c] != QLatin1Char(' ') && string[c] != QLatin1Char('\t')) {
+		}
+
+		if (string[c] != QLatin1Char(' ') && string[c] != QLatin1Char('\t')) {
 			++nNonWhite;
 		}
 	}

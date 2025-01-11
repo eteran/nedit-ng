@@ -17,7 +17,7 @@
 namespace {
 
 /*
-** Remove empty paranthesis pairs and multiple spaces in a row
+** Remove empty parenthesis pairs and multiple spaces in a row
 ** with one space.
 ** Also remove leading and trailing spaces and dashes.
 */
@@ -30,7 +30,7 @@ QString compressWindowTitle(const QString &title) {
 	result.replace(QLatin1String("{}"), QString());
 	result.replace(QLatin1String("[]"), QString());
 
-	// remove leading/trailing whitspace/dashes
+	// remove leading/trailing whitespace/dashes
 	static const QRegularExpression regex(QLatin1String("((^[\\s-]+)|([\\s-]+$))"));
 	result.replace(regex, QString());
 
@@ -352,7 +352,7 @@ void DialogWindowTitle::checkBrief_toggled(bool checked) {
 		// Find all %S occurrences and replace them by %*S
 		format.replace(QLatin1String("%S"), QLatin1String("%*S"));
 	} else {
-		// Replace all %*S occurences by %S
+		// Replace all %*S occurrences by %S
 		format.replace(QLatin1String("%*S"), QLatin1String("%S"));
 	}
 
@@ -600,7 +600,7 @@ void DialogWindowTitle::editDirectory_textChanged(const QString &text) {
 QString DialogWindowTitle::formatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &format, UpdateState *state) {
 	QString title;
 
-	// Flags to supress one of these if both are specified and they are identical
+	// Flags to suppress one of these if both are specified and they are identical
 	bool serverNameSeen       = false;
 	bool clearCaseViewTagSeen = false;
 
@@ -694,21 +694,22 @@ QString DialogWindowTitle::formatWindowTitleInternal(const QString &filename, co
 
 			case 'S': // file status
 				fileStatusPresent = true;
-				if (lockReasons.isAnyLockedIgnoringUser() && fileChanged)
+				if (lockReasons.isAnyLockedIgnoringUser() && fileChanged) {
 					title.append(tr("read only, modified"));
-				else if (lockReasons.isAnyLockedIgnoringUser())
+				} else if (lockReasons.isAnyLockedIgnoringUser()) {
 					title.append(tr("read only"));
-				else if (lockReasons.isUserLocked() && fileChanged)
+				} else if (lockReasons.isUserLocked() && fileChanged) {
 					title.append(tr("locked, modified"));
-				else if (lockReasons.isUserLocked())
+				} else if (lockReasons.isUserLocked()) {
 					title.append(tr("locked"));
-				else if (fileChanged)
+				} else if (fileChanged) {
 					title.append(tr("modified"));
+				}
 				break;
 
 			case 'u': // user name
 				userNamePresent = true;
-				title.append(GetUserName());
+				title.append(getUserName());
 				break;
 
 			case '%': // escaped %
@@ -720,16 +721,17 @@ QString DialogWindowTitle::formatWindowTitleInternal(const QString &filename, co
 				if (format_it != format.end() && *format_it == QLatin1Char('S')) {
 					++format_it;
 					shortStatus = true;
-					if (lockReasons.isAnyLockedIgnoringUser() && fileChanged)
+					if (lockReasons.isAnyLockedIgnoringUser() && fileChanged) {
 						title.append(tr("RO*"));
-					else if (lockReasons.isAnyLockedIgnoringUser())
+					} else if (lockReasons.isAnyLockedIgnoringUser()) {
 						title.append(tr("RO"));
-					else if (lockReasons.isUserLocked() && fileChanged)
+					} else if (lockReasons.isUserLocked() && fileChanged) {
 						title.append(tr("LO*"));
-					else if (lockReasons.isUserLocked())
+					} else if (lockReasons.isUserLocked()) {
 						title.append(tr("LO"));
-					else if (fileChanged)
+					} else if (fileChanged) {
 						title.append(tr("*"));
+					}
 					break;
 				}
 				title.append(c);

@@ -6,8 +6,8 @@
 #include <string>
 
 /* The accumulated list of undo operations can potentially consume huge
-   amounts of memory.  These tuning parameters determine how much undo infor-
-   mation is retained.  Normally, the list is kept between UNDO_OP_LIMIT and
+   amounts of memory.  These tuning parameters determine how much undo
+   information is retained.  Normally, the list is kept between UNDO_OP_LIMIT and
    UNDO_OP_TRIMTO in length (when the list reaches UNDO_OP_LIMIT, it is
    trimmed to UNDO_OP_TRIMTO then allowed to grow back to UNDO_OP_LIMIT). */
 
@@ -28,11 +28,11 @@ enum UndoTypes {
 class UndoInfo {
 public:
 	explicit UndoInfo(UndoTypes undoType, TextCursor start, TextCursor end);
-	UndoInfo(const UndoInfo &) = default;
-	UndoInfo(UndoInfo &&)      = default;
+	UndoInfo(const UndoInfo &)            = default;
+	UndoInfo(UndoInfo &&)                 = default;
 	UndoInfo &operator=(const UndoInfo &) = default;
-	UndoInfo &operator=(UndoInfo &&) = default;
-	~UndoInfo()                      = default;
+	UndoInfo &operator=(UndoInfo &&)      = default;
+	~UndoInfo()                           = default;
 
 public:
 	std::string oldText;

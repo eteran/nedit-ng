@@ -2,6 +2,7 @@
 #ifndef SEARCH_TYPE_H_
 #define SEARCH_TYPE_H_
 
+#include "from_integer.h"
 #include <QLatin1String>
 #include <QtDebug>
 
@@ -16,9 +17,6 @@ enum class SearchType {
 	CaseSenseWord,
 	RegexNoCase,
 };
-
-template <class T>
-inline T from_integer(int value);
 
 template <>
 inline SearchType from_integer(int value) {

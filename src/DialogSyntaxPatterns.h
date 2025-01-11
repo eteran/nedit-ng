@@ -6,19 +6,22 @@
 #include "Verbosity.h"
 #include "ui_DialogSyntaxPatterns.h"
 
-#include <boost/optional.hpp>
+#include <QPointer>
+
 #include <memory>
+#include <optional>
 
 class HighlightPattern;
 class HighlightPatternModel;
-class MainWindow;
 class PatternSet;
+class DialogDrawingStyles;
+class DialogLanguageModes;
 
 class DialogSyntaxPatterns final : public Dialog {
 	Q_OBJECT
 
 public:
-	explicit DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f = Qt::WindowFlags());
+	explicit DialogSyntaxPatterns(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
 	~DialogSyntaxPatterns() override = default;
 
 public:
@@ -61,7 +64,7 @@ private:
 	bool updateCurrentItem();
 	bool updateCurrentItem(const QModelIndex &index);
 	bool updatePatternSet();
-	boost::optional<HighlightPattern> readFields(Verbosity verbosity);
+	std::optional<HighlightPattern> readFields(Verbosity verbosity);
 	std::unique_ptr<PatternSet> getDialogPatternSet();
 	void setStyleMenu(const QString &name);
 	void updateLabels();
@@ -71,7 +74,8 @@ private:
 	HighlightPatternModel *model_;
 	QModelIndex deleted_;
 	QString previousLanguage_;
-	MainWindow *window_;
+	QPointer<DialogDrawingStyles> dialogDrawingStyles_;
+	QPointer<DialogLanguageModes> dialogLanguageModes_;
 };
 
 #endif

@@ -16,10 +16,13 @@
 #include <QString>
 #include <QThread>
 
-#include <boost/optional.hpp>
+#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <memory>
+#include <optional>
+
+#include <gsl/gsl_util>
 
 namespace {
 
@@ -152,7 +155,7 @@ void printNcVersion() {
  * Converts command line into a command string suitable for passing to the
  * server
  */
-boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
+std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 
 	CommandLine commandLine;
 	QString toDoCommand;
@@ -175,7 +178,9 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 		if (opts && args[i] == QLatin1String("--")) {
 			opts = false; // treat all remaining arguments as filenames
 			continue;
-		} else if (opts && args[i] == QLatin1String("-debug-proto")) {
+		}
+
+		if (opts && args[i] == QLatin1String("-debug-proto")) {
 			debug_proto = true;
 		} else if (opts && args[i] == QLatin1String("-wait")) {
 			ServerPreferences.waitForClose = true;
@@ -269,7 +274,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 
 			int isTabbed;
 
-			/* determine if file is to be openned in new tab, by
+			/* determine if file is to be opened in new tab, by
 			   factoring the options -group, -tabbed & -untabbed */
 			if (group == 2) {
 				isTabbed = 0; // start a new window for new group
@@ -345,7 +350,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 CommandLine processCommandLine(const QStringList &args) {
 
 	// Convert command line arguments into a command string for the server
-	if (boost::optional<CommandLine> commandLine = parseCommandLine(args)) {
+	if (std::optional<CommandLine> commandLine = parseCommandLine(args)) {
 		return *commandLine;
 	}
 
@@ -396,16 +401,16 @@ int startServer(const char *message, const QStringList &commandLineArgs) {
 	if (!sysrc) {
 		fprintf(stderr, "nc-ng: The server process failed to start. Either the invoked program is missing, or you may have insufficient permissions to invoke the program.\n");
 		return -1;
-	} else {
-		return 0;
 	}
+
+	return 0;
 }
 
 bool writeToSocket(QLocalSocket *socket, const QByteArray &data) {
-	int remaining   = data.size();
-	const char *ptr = data.data();
+	int64_t remaining = data.size();
+	const char *ptr   = data.data();
 
-	constexpr int MaxChunk = 4096;
+	constexpr int64_t MaxChunk = 4096;
 
 	while (socket->isOpen() && remaining > 0) {
 		const int64_t written = socket->write(ptr, std::min(MaxChunk, remaining));
@@ -447,7 +452,7 @@ int main(int argc, char *argv[]) {
 
 	/* Make sure that the time out unit is at least 1 second and not too
 	   large either (overflow!). */
-	ServerPreferences.timeOut = qBound(1, ServerPreferences.timeOut, 1000);
+	ServerPreferences.timeOut = std::clamp(ServerPreferences.timeOut, 1, 1000);
 
 	/* For Clearcase users who have not set a server name, use the clearcase
 	   view name.  Clearcase views make files with the same absolute path names
@@ -480,7 +485,7 @@ int main(int argc, char *argv[]) {
 
 		auto socket = std::make_unique<QLocalSocket>();
 		socket->connectToServer(socketName, QIODevice::WriteOnly);
-		if (!socket->waitForConnected(timeout.count())) {
+		if (!socket->waitForConnected(gsl::narrow<int>(timeout.count()))) {
 			if (i == 0) {
 				switch (startServer("No servers available, start one? (y|n) [y]: ", commandLine.arguments)) {
 				case -1: // Start failed

@@ -18,7 +18,7 @@ unsigned int U_CHAR_AT(Ptr p) noexcept {
 template <class T>
 T *OPERAND(T *p) noexcept {
 	static_assert(sizeof(T) == 1, "Invalid Pointer Type");
-	return p + NODE_SIZE;
+	return p + NODE_SIZE<size_t>;
 }
 
 template <class T>
@@ -70,8 +70,8 @@ constexpr R literal_escape(Ch ch) noexcept {
  * octal escape.  RegexError is thrown if \x0, \x00, \0, \00, \000, or
  * \0000 is specified.
  *--------------------------------------------------------------------*/
-template <class R, class Ch>
-R numeric_escape(Ch ch, const char **parse) {
+template <class R, class Ch, class Iterator>
+R numeric_escape(Ch ch, Iterator *parse) {
 
 	static const char digits[] = "fedcbaFEDCBA9876543210";
 
@@ -105,7 +105,7 @@ R numeric_escape(Ch ch, const char **parse) {
 		return '\0'; // Not a numeric escape
 	}
 
-	const char *scan = *parse;
+	Iterator scan = *parse;
 	scan++; // Only change *parse on success.
 
 	const char *pos_ptr = ::strchr(digit_str, static_cast<int>(*scan));

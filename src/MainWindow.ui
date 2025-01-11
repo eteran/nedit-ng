@@ -144,7 +144,7 @@
      <x>0</x>
      <y>0</y>
      <width>621</width>
-     <height>20</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -162,6 +162,7 @@
     <addaction name="separator"/>
     <addaction name="action_Close"/>
     <addaction name="action_Save"/>
+    <addaction name="action_Save_All"/>
     <addaction name="action_Save_As"/>
     <addaction name="action_Revert_to_Saved"/>
     <addaction name="separator"/>
@@ -304,7 +305,7 @@
        <addaction name="action_Default_Search_Literal_Whole_Word"/>
        <addaction name="action_Default_Search_Literal_Case_Sensitive_Whole_Word"/>
        <addaction name="action_Default_Search_Regular_Expression"/>
-       <addaction name="action_Default_Search_Regular_Expresison_Case_Insensitive"/>
+       <addaction name="action_Default_Search_Regular_Expression_Case_Insensitive"/>
       </widget>
       <addaction name="action_Default_Search_Verbose"/>
       <addaction name="action_Default_Search_Wrap_Around"/>
@@ -648,7 +649,7 @@
     <bool>false</bool>
    </property>
    <property name="text">
-    <string>Print Se&amp;lection...</string>
+    <string>Prin&amp;t Selection...</string>
    </property>
   </action>
   <action name="action_Exit">
@@ -1621,7 +1622,7 @@
     <string>&amp;Regular Expression</string>
    </property>
   </action>
-  <action name="action_Default_Search_Regular_Expresison_Case_Insensitive">
+  <action name="action_Default_Search_Regular_Expression_Case_Insensitive">
    <property name="checkable">
     <bool>true</bool>
    </property>
@@ -1814,6 +1815,17 @@
   <action name="action_Open_Configuration_Directory">
    <property name="text">
     <string>Open Configuration &amp;Directory</string>
+    </property>
+  </action>
+  <action name="action_Save_All">
+   <property name="icon">
+    <iconset theme="document-save"/>
+   </property>
+   <property name="text">
+    <string>Save A&amp;ll</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
    </property>
   </action>
  </widget>

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15)
 project(nedit-regex-test CXX)
 
 add_executable(nedit-regex-test
@@ -10,11 +10,17 @@ target_link_libraries(nedit-regex-test
 )
 
 if(NEDIT_INCLUDE_DECOMPILER)
-	target_compile_definitions(nedit-regex-test -DNEDIT_INCLUDE_DECOMPILER)
+	target_compile_definitions(nedit-regex-test PUBLIC -DNEDIT_INCLUDE_DECOMPILER)
 endif()
 
-set_property(TARGET nedit-regex-test PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
-set_property(TARGET nedit-regex-test PROPERTY CXX_STANDARD 14)
+
+set_target_properties(nedit-regex-test
+PROPERTIES
+	CXX_STANDARD 17
+	CXX_STANDARD_REQUIRED ON
+	CXX_EXTENSIONS OFF
+	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+)
 
 add_test(
 	NAME nedit-regex-test

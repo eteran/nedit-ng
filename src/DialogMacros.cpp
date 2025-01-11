@@ -2,6 +2,8 @@
 #include "DialogMacros.h"
 #include "CommandRecorder.h"
 #include "CommonDialog.h"
+#include "Font.h"
+#include "LanguageMode.h"
 #include "MainWindow.h"
 #include "MenuData.h"
 #include "MenuItem.h"
@@ -23,6 +25,13 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f)
 
 	ui.setupUi(this);
 	connectSlots();
+
+	const int tabStop = Preferences::GetPrefTabDist(PLAIN_LANGUAGE_MODE);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 10, 0)
+	ui.editMacro->setTabStopDistance(tabStop * Font::characterWidth(ui.editMacro->fontMetrics(), QLatin1Char(' ')));
+#else
+	ui.editMacro->setTabStopWidth(tabStop * Font::characterWidth(ui.editMacro->fontMetrics(), QLatin1Char(' ')));
+#endif
 
 	CommonDialog::setButtonIcons(&ui);
 
@@ -133,6 +142,7 @@ void DialogMacros::buttonDown_clicked() {
  */
 void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
 	static bool canceled = false;
+	bool skip_check      = false;
 
 	if (canceled) {
 		canceled = false;
@@ -148,12 +158,11 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
 		messageBox.setText(tr("Discard incomplete entry for current menu item?"));
 		QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
 		QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
-		Q_UNUSED(buttonDiscard)
 
 		messageBox.exec();
 		if (messageBox.clickedButton() == buttonKeep) {
 
-			// again to cause messagebox to pop up
+			// again to cause message box to pop up
 			validateFields(Verbosity::Verbose);
 
 			// reselect the old item
@@ -161,10 +170,15 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
 			Q_EMIT restore(previous);
 			return;
 		}
+
+		if (messageBox.clickedButton() == buttonDiscard) {
+			model_->deleteItem(previous);
+			skip_check = true;
+		}
 	}
 
 	// this is only safe if we aren't moving due to a delete operation
-	if (previous.isValid() && previous != deleted_) {
+	if (previous.isValid() && previous != deleted_ && !skip_check) {
 		if (!updateCurrentItem(previous)) {
 			// reselect the old item
 			canceled = true;
@@ -246,7 +260,7 @@ bool DialogMacros::validateFields(Verbosity verbosity) {
 ** pointer to the new MenuItem structure as the function value, or nullptr on
 ** failure.
 */
-boost::optional<MenuItem> DialogMacros::readFields(Verbosity verbosity) {
+std::optional<MenuItem> DialogMacros::readFields(Verbosity verbosity) {
 
 	QString nameText = ui.editName->text();
 
@@ -254,14 +268,14 @@ boost::optional<MenuItem> DialogMacros::readFields(Verbosity verbosity) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Please specify a name for the menu item"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	if (nameText.indexOf(QLatin1Char(':')) != -1) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Menu item names may not contain colon (:) characters"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	QString cmdText = ui.editMacro->toPlainText();
@@ -269,12 +283,12 @@ boost::optional<MenuItem> DialogMacros::readFields(Verbosity verbosity) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Command to Execute"), tr("Please specify macro command(s) to execute"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	cmdText = ensure_newline(cmdText);
 	if (!checkMacroText(cmdText, verbosity)) {
-		return boost::none;
+		return {};
 	}
 
 	MenuItem menuItem;
@@ -319,6 +333,7 @@ bool DialogMacros::checkMacroText(const QString &macro, Verbosity verbosity) {
 		cursor.setPosition(stoppedAt);
 		ui.editMacro->setTextCursor(cursor);
 		ui.editMacro->setFocus();
+		return false;
 	}
 
 	return true;

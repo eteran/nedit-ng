@@ -4,7 +4,8 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "Util/algorithm.h"
-#include "Util/string_view.h"
+
+#include <string_view>
 
 #include <gsl/gsl_util>
 
@@ -40,7 +41,7 @@ std::string makeIndentString(int64_t indent, int tabDist, bool allowTabs) {
 ** re-creating whitespace to the left of the text using tabs (if allowTabs is
 ** true) calculated using tabDist, and spaces.
 */
-std::string fillParagraph(view::string_view text, int64_t leftMargin, int64_t firstLineIndent, int64_t rightMargin, int tabDist, bool allowTabs) {
+std::string fillParagraph(std::string_view text, int64_t leftMargin, int64_t firstLineIndent, int64_t rightMargin, int tabDist, bool allowTabs) {
 
 	size_t nLines = 1;
 
@@ -53,8 +54,9 @@ std::string fillParagraph(view::string_view text, int64_t leftMargin, int64_t fi
 
 	for (char ch : text) {
 		if (ch == '\t' || ch == ' ') {
-			if (!inMargin)
+			if (!inMargin) {
 				*outPtr++ = ch;
+			}
 		} else if (ch == '\n') {
 			if (inMargin) {
 				/* a newline before any text separates paragraphs, so leave
@@ -66,8 +68,9 @@ std::string fillParagraph(view::string_view text, int64_t leftMargin, int64_t fi
 
 				*outPtr++ = '\n';
 				nLines += 2;
-			} else
+			} else {
 				*outPtr++ = ' ';
+			}
 			inMargin = true;
 		} else {
 			*outPtr++ = ch;
@@ -164,7 +167,7 @@ TextCursor findParagraphEnd(TextBuffer *buf, TextCursor startPos) {
 /*
 ** Find the implied left margin of a text string (the number of columns to the
 ** first non-whitespace character on any line) up to either the terminating
-** null character at the end of the string, or "length" characters, whever
+** null character at the end of the string, or "length" characters, whichever
 ** comes first.
 */
 template <class In, class Size>
@@ -212,11 +215,10 @@ int findLeftMargin(In first, In last, Size length, int tabDist) {
 ** capability not currently used in NEdit, but carried over from code for
 ** previous versions which did all paragraphs together).
 */
-std::string fillParagraphs(view::string_view text, int64_t rightMargin, int tabDist, int useTabs, bool alignWithFirst) {
+std::string fillParagraphs(std::string_view text, int64_t rightMargin, int tabDist, int useTabs, bool alignWithFirst) {
 
 	// Create a buffer to accumulate the filled paragraphs
 	TextBuffer buf;
-	buf.BufSetSyncXSelection(false);
 	buf.BufSetAll(text);
 
 	/*
@@ -304,11 +306,11 @@ TextCursor findParagraphStart(TextBuffer *buf, TextCursor startPos) {
 	return parStart > buf->BufStartOfBuffer() ? parStart : buf->BufStartOfBuffer();
 }
 
-int countLines(view::string_view text) {
+int64_t countLines(std::string_view text) {
 	return std::count(text.begin(), text.end(), '\n') + 1;
 }
 
-int countLines(const QString &text) {
+int64_t countLines(const QString &text) {
 	return std::count(text.begin(), text.end(), QLatin1Char('\n')) + 1;
 }
 
@@ -333,7 +335,9 @@ QString shiftLineLeft(const QString &line, int64_t lineLen, int tabDist, int nCh
 		if (lineInPtr == line.end() || (lineInPtr - line.begin()) >= lineLen) {
 			// nothing on line, wipe it out
 			return QString();
-		} else if (*lineInPtr == QLatin1Char(' ')) {
+		}
+
+		if (*lineInPtr == QLatin1Char(' ')) {
 			// white space continues with space, advance one character
 			whiteWidth++;
 			out.append(*lineInPtr++);
@@ -376,7 +380,7 @@ QString shiftLineLeft(const QString &line, int64_t lineLen, int tabDist, int nCh
 	}
 }
 
-std::string shiftLineLeft(view::string_view line, int64_t lineLen, int tabDist, int nChars) {
+std::string shiftLineLeft(std::string_view line, int64_t lineLen, int tabDist, int nChars) {
 
 	auto lineInPtr = line.begin();
 
@@ -390,7 +394,9 @@ std::string shiftLineLeft(view::string_view line, int64_t lineLen, int tabDist, 
 		if (lineInPtr == line.end() || (lineInPtr - line.begin()) >= lineLen) {
 			// nothing on line, wipe it out
 			return std::string();
-		} else if (*lineInPtr == ' ') {
+		}
+
+		if (*lineInPtr == ' ') {
 			// white space continues with space, advance one character
 			whiteWidth++;
 			out.append(1, *lineInPtr++);
@@ -433,7 +439,7 @@ std::string shiftLineLeft(view::string_view line, int64_t lineLen, int tabDist, 
 	}
 }
 
-QString shiftLineRight(const QString &line, int64_t lineLen, int tabsAllowed, int tabDist, int nChars) {
+QString shiftLineRight(const QString &line, int64_t lineLen, bool tabsAllowed, int tabDist, int nChars) {
 	int whiteWidth;
 	int i;
 
@@ -447,7 +453,9 @@ QString shiftLineRight(const QString &line, int64_t lineLen, int tabsAllowed, in
 		if (lineInPtr == line.end() || (lineInPtr - line.begin()) >= lineLen) {
 			// nothing on line, wipe it out
 			return lineOut;
-		} else if (*lineInPtr == QLatin1Char(' ')) {
+		}
+
+		if (*lineInPtr == QLatin1Char(' ')) {
 			// white space continues with tab, advance to next tab stop
 			whiteWidth++;
 			*lineOutPtr++ = *lineInPtr++;
@@ -465,7 +473,7 @@ QString shiftLineRight(const QString &line, int64_t lineLen, int tabsAllowed, in
 
 					lineOut.resize(lineOut.size() - tabDist);
 
-					//lineOutPtr -= tabDist;
+					// lineOutPtr -= tabDist;
 					*lineOutPtr++ = QLatin1Char('\t');
 				}
 			}
@@ -480,7 +488,7 @@ QString shiftLineRight(const QString &line, int64_t lineLen, int tabsAllowed, in
 	}
 }
 
-std::string shiftLineRight(view::string_view line, int64_t lineLen, int tabsAllowed, int tabDist, int nChars) {
+std::string shiftLineRight(std::string_view line, int64_t lineLen, bool tabsAllowed, int tabDist, int nChars) {
 	int whiteWidth;
 
 	auto lineInPtr = line.begin();
@@ -493,7 +501,9 @@ std::string shiftLineRight(view::string_view line, int64_t lineLen, int tabsAllo
 		if (lineInPtr == line.end() || (lineInPtr - line.begin()) >= lineLen) {
 			// nothing on line, wipe it out
 			return lineOut;
-		} else if (*lineInPtr == ' ') {
+		}
+
+		if (*lineInPtr == ' ') {
 			// white space continues with tab, advance to next tab stop
 			whiteWidth++;
 			*lineOutPtr++ = *lineInPtr++;
@@ -511,7 +521,7 @@ std::string shiftLineRight(view::string_view line, int64_t lineLen, int tabsAllo
 
 					lineOut.resize(lineOut.size() - static_cast<size_t>(tabDist));
 
-					//lineOutPtr -= tabDist;
+					// lineOutPtr -= tabDist;
 					*lineOutPtr++ = '\t';
 				}
 			}
@@ -526,7 +536,7 @@ std::string shiftLineRight(view::string_view line, int64_t lineLen, int tabsAllo
 	}
 }
 
-std::string shiftText(view::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars) {
+std::string shiftText(std::string_view text, ShiftDirection direction, bool tabsAllowed, int tabDist, int nChars) {
 	size_t bufLen;
 
 	/*
@@ -554,23 +564,27 @@ std::string shiftText(view::string_view text, ShiftDirection direction, int tabs
 	while (true) {
 		if (textPtr == text.end() || *textPtr == '\n') {
 
-			auto segment = substr(lineStartPtr, text.end());
+			auto segment = text.substr(gsl::narrow<size_t>(lineStartPtr - text.begin()));
 
-			std::string shiftedLineString = (direction == ShiftDirection::Right) ? shiftLineRight(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars) : shiftLineLeft(segment, textPtr - lineStartPtr, tabDist, nChars);
+			std::string shiftedLineString = (direction == ShiftDirection::Right)
+												? shiftLineRight(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars)
+												: shiftLineLeft(segment, textPtr - lineStartPtr, tabDist, nChars);
 
 			std::copy(shiftedLineString.begin(), shiftedLineString.end(), shiftedPtr);
 
 			if (textPtr == text.end()) {
 				// terminate string & exit loop at end of text
 				break;
-			} else {
-				// move the newline from text to shifted text
-				*shiftedPtr++ = *textPtr++;
 			}
+
+			// move the newline from text to shifted text
+			*shiftedPtr++ = *textPtr++;
+
 			// start line over
 			lineStartPtr = textPtr;
-		} else
+		} else {
 			textPtr++;
+		}
 	}
 
 	return shiftedText;
@@ -606,7 +620,6 @@ void shiftRect(DocumentWidget *document, TextArea *area, ShiftDirection directio
 	/* Create a temporary buffer for the lines containing the selection, to
 	   hide the intermediate steps from the display update routines */
 	TextBuffer tempBuf;
-	tempBuf.BufSetSyncXSelection(false);
 	tempBuf.BufSetTabDistance(buf->BufGetTabDistance(), false);
 	tempBuf.BufSetUseTabs(buf->BufGetUseTabs());
 
@@ -686,7 +699,7 @@ void shiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection dir
 
 	buf->BufReplaceSelected(shiftedText);
 
-	const TextCursor newEndPos = selStart + static_cast<int64_t>(shiftedText.size());
+	const TextCursor newEndPos = selStart + ssize(shiftedText);
 	buf->BufSelect(selStart, newEndPos);
 }
 
@@ -757,7 +770,7 @@ void fillSelection(DocumentWidget *document, TextArea *area) {
 	} else {
 		buf->BufReplace(left, right, filledText);
 		if (hasSelection) {
-			buf->BufSelect(left, left + static_cast<int64_t>(filledText.size()));
+			buf->BufSelect(left, left + ssize(filledText));
 		}
 	}
 
@@ -766,7 +779,7 @@ void fillSelection(DocumentWidget *document, TextArea *area) {
 	if (hasSelection && isRect) {
 		area->TextSetCursorPos(buf->BufCursorPosHint());
 	} else {
-		const auto len = static_cast<int64_t>(filledText.size());
+		const auto len = ssize(filledText);
 		area->TextSetCursorPos(insertPos < left ? left : (insertPos > left + len ? left + len : insertPos));
 	}
 }
@@ -775,7 +788,7 @@ void fillSelection(DocumentWidget *document, TextArea *area) {
 ** shift lines left and right in a multi-line text string.
 */
 QString shiftText(const QString &text, ShiftDirection direction, bool tabsAllowed, int tabDist, int nChars) {
-	int bufLen;
+	int64_t bufLen;
 
 	/*
 	** Shift left adds a maximum of tabDist-2 characters per line
@@ -789,7 +802,7 @@ QString shiftText(const QString &text, ShiftDirection direction, bool tabsAllowe
 	}
 
 	QString shiftedText;
-	shiftedText.reserve(bufLen);
+	shiftedText.reserve(gsl::narrow<int>(bufLen));
 
 	auto shiftedPtr = std::back_inserter(shiftedText);
 
@@ -804,17 +817,20 @@ QString shiftText(const QString &text, ShiftDirection direction, bool tabsAllowe
 
 			auto segment = text.mid(gsl::narrow<int>(lineStartPtr - text.data()));
 
-			QString shiftedLineString = (direction == ShiftDirection::Right) ? shiftLineRight(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars) : shiftLineLeft(segment, textPtr - lineStartPtr, tabDist, nChars);
+			QString shiftedLineString = (direction == ShiftDirection::Right)
+											? shiftLineRight(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars)
+											: shiftLineLeft(segment, textPtr - lineStartPtr, tabDist, nChars);
 
 			std::copy(shiftedLineString.begin(), shiftedLineString.end(), shiftedPtr);
 
 			if (textPtr == text.end()) {
 				// terminate string & exit loop at end of text
 				break;
-			} else {
-				// move the newline from text to shifted text
-				*shiftedPtr++ = *textPtr++;
 			}
+
+			// move the newline from text to shifted text
+			*shiftedPtr++ = *textPtr++;
+
 			// start line over
 			lineStartPtr = textPtr;
 		} else {

@@ -2,6 +2,7 @@
 #ifndef INDENT_STYLE_H_
 #define INDENT_STYLE_H_
 
+#include "from_integer.h"
 #include <QLatin1String>
 #include <QtDebug>
 
@@ -11,9 +12,6 @@ enum class IndentStyle {
 	Auto    = 1,
 	Smart   = 2,
 };
-
-template <class T>
-inline T from_integer(int value);
 
 template <>
 inline IndentStyle from_integer(int value) {

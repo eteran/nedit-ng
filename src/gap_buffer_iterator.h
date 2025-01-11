@@ -9,7 +9,6 @@
 
 template <class Ch, class Tr, bool IsConst>
 class gap_buffer_iterator {
-	using traits_type = typename std::iterator<std::random_access_iterator_tag, Ch>;
 	using buffer_type = typename std::conditional<IsConst, const gap_buffer<Ch, Tr>, gap_buffer<Ch, Tr>>::type;
 	using size_type   = typename buffer_type::size_type;
 
@@ -17,11 +16,11 @@ class gap_buffer_iterator {
 	friend class gap_buffer_iterator;
 
 public:
-	using difference_type   = typename traits_type::difference_type;
-	using iterator_category = typename traits_type::iterator_category;
-	using pointer           = typename traits_type::pointer;
-	using reference         = typename traits_type::reference;
-	using value_type        = typename traits_type::value_type;
+	using difference_type   = std::ptrdiff_t;
+	using iterator_category = std::random_access_iterator_tag;
+	using pointer           = Ch *;
+	using reference         = Ch &;
+	using value_type        = Ch;
 
 public:
 	gap_buffer_iterator() = default;
@@ -42,7 +41,7 @@ public:
 	}
 
 public:
-	gap_buffer_iterator(const gap_buffer_iterator &rhs) = default;
+	gap_buffer_iterator(const gap_buffer_iterator &rhs)         = default;
 	gap_buffer_iterator &operator=(const gap_buffer_iterator &) = default;
 
 public:

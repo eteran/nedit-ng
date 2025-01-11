@@ -6,7 +6,7 @@
 #include "TextCursor.h"
 #include "TextRange.h"
 #include <QColor>
-#include <boost/optional.hpp>
+#include <optional>
 #include <vector>
 
 // NOTE(eteran): a bit of an artificial limit, but we'll keep it for now
@@ -28,11 +28,11 @@ using RangesetUpdateFn = Rangeset *(Rangeset *rangeset, TextCursor pos, int64_t 
 class Rangeset {
 public:
 	explicit Rangeset(TextBuffer *buffer, uint8_t label);
-	Rangeset()                 = delete;
-	Rangeset(const Rangeset &) = default;
+	Rangeset()                            = delete;
+	Rangeset(const Rangeset &)            = default;
 	Rangeset &operator=(const Rangeset &) = default;
 	Rangeset(Rangeset &&)                 = default;
-	Rangeset &operator=(Rangeset &&) = default;
+	Rangeset &operator=(Rangeset &&)      = default;
 	~Rangeset();
 
 public:
@@ -44,8 +44,8 @@ public:
 	RangesetInfo RangesetGetInfo() const;
 
 public:
-	boost::optional<TextRange> RangesetFindRangeNo(int index) const;
-	boost::optional<TextRange> RangesetSpan() const;
+	std::optional<TextRange> RangesetFindRangeNo(int index) const;
+	std::optional<TextRange> RangesetSpan() const;
 
 public:
 	int64_t RangesetCheckRangeOfPos(TextCursor pos);

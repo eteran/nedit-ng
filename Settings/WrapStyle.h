@@ -2,6 +2,7 @@
 #ifndef WRAP_STYLE_H_
 #define WRAP_STYLE_H_
 
+#include "from_integer.h"
 #include <QLatin1String>
 #include <QtDebug>
 
@@ -11,9 +12,6 @@ enum class WrapStyle : int {
 	Newline    = 1,
 	Continuous = 2
 };
-
-template <class T>
-inline T from_integer(int value);
 
 template <>
 inline WrapStyle from_integer(int value) {

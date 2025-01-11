@@ -13,8 +13,8 @@ struct HighlightData {
 	std::unique_ptr<Regex> endRE;
 	std::unique_ptr<Regex> errorRE;
 	std::unique_ptr<Regex> subPatternRE;
-	std::vector<size_t> startSubexprs;
-	std::vector<size_t> endSubexprs;
+	std::vector<size_t> startSubexpressions;
+	std::vector<size_t> endSubexpressions;
 	std::unique_ptr<HighlightData *[]> subPatterns;
 	size_t userStyleIndex;
 	size_t nSubPatterns;

@@ -5,7 +5,6 @@
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
 #include "TextRange.h"
-#include "Util/string_view.h"
 #include "gap_buffer.h"
 
 #include <gsl/gsl_util>
@@ -13,9 +12,9 @@
 #include <cstdint>
 #include <deque>
 #include <memory>
+#include <optional>
 #include <string>
-
-#include <boost/optional.hpp>
+#include <string_view>
 
 struct SelectionPos {
 	TextCursor start;
@@ -25,21 +24,26 @@ struct SelectionPos {
 	int64_t rectEnd;
 };
 
-template <class Ch, class Tr>
-class BasicTextBuffer : public std::enable_shared_from_this<BasicTextBuffer<Ch, Tr>> {
-public:
-	using string_type = std::basic_string<Ch, Tr>;
-	using view_type   = view::basic_string_view<Ch, Tr>;
-
-public:
-	using modify_callback_type     = void (*)(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view_type deletedText, void *user);
-	using pre_delete_callback_type = void (*)(TextCursor pos, int64_t nDeleted, void *user);
-
-private:
+class BasicTextBufferBase {
+protected:
 	/* Initial size for the buffer gap (empty space in the buffer where text
 	 * might be inserted if the user is typing sequential chars)
 	 */
 	static constexpr int PreferredGapSize = 80;
+
+	static const char *ControlCodeTable[32];
+};
+
+template <class Ch, class Tr>
+class BasicTextBuffer : public BasicTextBufferBase, public std::enable_shared_from_this<BasicTextBuffer<Ch, Tr>> {
+public:
+	using string_type = std::basic_string<Ch, Tr>;
+	using view_type   = std::basic_string_view<Ch, Tr>;
+
+public:
+	using modify_callback_type           = void (*)(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view_type deletedText, void *user);
+	using pre_delete_callback_type       = void (*)(TextCursor pos, int64_t nDeleted, void *user);
+	using selection_update_callback_type = void (*)(const std::shared_ptr<BasicTextBuffer<Ch, Tr>> &);
 
 public:
 	/* Maximum length in characters of a tab or control character expansion
@@ -55,7 +59,7 @@ public:
 		friend class BasicTextBuffer;
 
 	public:
-		boost::optional<SelectionPos> getSelectionPos() const;
+		std::optional<SelectionPos> getSelectionPos() const;
 		bool getSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const;
 		bool inSelection(TextCursor pos, TextCursor lineStartPos, int64_t dispIndex) const;
 		bool rangeTouchesRectSel(TextCursor rangeStart, TextCursor rangeEnd) const;
@@ -85,7 +89,7 @@ public:
 public:
 	BasicTextBuffer();
 	explicit BasicTextBuffer(int64_t size);
-	BasicTextBuffer(const BasicTextBuffer &) = delete;
+	BasicTextBuffer(const BasicTextBuffer &)            = delete;
 	BasicTextBuffer &operator=(const BasicTextBuffer &) = delete;
 	~BasicTextBuffer()                                  = default;
 
@@ -99,15 +103,17 @@ public:
 	Ch back() const noexcept;
 
 public:
+	selection_update_callback_type BufGetSelectionUpdate() const;
+	void BufSetSelectionUpdate(selection_update_callback_type fn);
 	bool BufGetEmptySelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
 	bool BufGetSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
-	boost::optional<SelectionPos> BufGetSelectionPos() const noexcept;
+	std::optional<SelectionPos> BufGetSelectionPos() const noexcept;
 	bool BufGetSyncXSelection() const;
 	bool BufGetUseTabs() const noexcept;
 	bool BufIsEmpty() const noexcept;
 	bool BufSetSyncXSelection(bool sync);
-	boost::optional<TextCursor> searchBackward(TextCursor startPos, view_type searchChars) const noexcept;
-	boost::optional<TextCursor> searchForward(TextCursor startPos, view_type searchChars) const noexcept;
+	std::optional<TextCursor> searchBackward(TextCursor startPos, view_type searchChars) const noexcept;
+	std::optional<TextCursor> searchForward(TextCursor startPos, view_type searchChars) const noexcept;
 	Ch BufGetCharacter(TextCursor pos) const noexcept;
 	int64_t BufCountDispChars(TextCursor lineStartPos, TextCursor targetPos) const noexcept;
 	int64_t BufCountLines(TextCursor startPos, TextCursor endPos) const noexcept;
@@ -176,8 +182,8 @@ public:
 	bool GetSimpleSelection(TextRange *range) const noexcept;
 
 private:
-	boost::optional<TextCursor> searchBackward(TextCursor startPos, Ch searchChar) const noexcept;
-	boost::optional<TextCursor> searchForward(TextCursor startPos, Ch searchChar) const noexcept;
+	std::optional<TextCursor> searchBackward(TextCursor startPos, Ch searchChar) const noexcept;
+	std::optional<TextCursor> searchForward(TextCursor startPos, Ch searchChar) const noexcept;
 	int64_t insert(TextCursor pos, view_type text) noexcept;
 	int64_t insert(TextCursor pos, Ch ch) noexcept;
 	string_type getSelectionText(const Selection *sel) const;
@@ -204,6 +210,7 @@ private:
 	static int textWidth(view_type text, int tabDist) noexcept;
 	static int64_t countLines(view_type string) noexcept;
 	static void overlayRectInLine(view_type line, view_type insLine, int64_t rectStart, int64_t rectEnd, int tabDist, bool useTabs, string_type *outStr, int64_t *endOffset) noexcept;
+	static int writeControl(Ch out[MAX_EXP_CHAR_LEN], const char *ctrl_char) noexcept;
 
 private:
 	template <class Out>
@@ -224,6 +231,7 @@ private:
 private:
 	std::deque<std::pair<pre_delete_callback_type, void *>> preDeleteProcs_; // procedures to call before text is deleted from the buffer; at most one is supported.
 	std::deque<std::pair<modify_callback_type, void *>> modifyProcs_;        // procedures to call when buffer is modified to redisplay contents
+	selection_update_callback_type selectionUpdate_ = nullptr;
 
 public:
 	Selection primary; // highlighted areas

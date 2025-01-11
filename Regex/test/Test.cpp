@@ -6,12 +6,12 @@
 namespace {
 
 struct Test {
-	view::string_view input;
-	view::string_view output;
+	std::string_view input;
+	std::string_view output;
 };
 
-int test_regex_match(view::string_view regex, view::string_view input) {
-	Regex re(regex, REDFLT_STANDARD);
+int test_regex_match(std::string_view regex, std::string_view input) {
+	Regex re(regex, RE_DEFAULT_STANDARD);
 
 	if (re.execute(input)) {
 		return 0;
@@ -726,7 +726,7 @@ int main() {
 
 	for (Test t : tests) {
 		try {
-			Regex re(t.input, REDFLT_STANDARD);
+			Regex re(t.input, RE_DEFAULT_STANDARD);
 
 			std::string bytes;
 
@@ -737,13 +737,13 @@ int main() {
 			}
 
 			if (bytes != t.output) {
-				std::cerr << "ERROR    : " << t.input.to_string() << '\n';
-				std::cerr << "EXPECTED : " << t.output.to_string() << '\n';
+				std::cerr << "ERROR    : " << t.input << '\n';
+				std::cerr << "EXPECTED : " << t.output << '\n';
 				std::cerr << "GOT      : " << bytes << std::endl;
 				return -1;
 			}
 		} catch (...) {
-			std::cerr << "EXCEPTION: " << t.input.to_string() << '\n';
+			std::cerr << "EXCEPTION: " << t.input << '\n';
 			return -1;
 		}
 	}
@@ -773,20 +773,20 @@ int main() {
 		return -1;
 	}
 
-#if 0 // testing "catastrophic backtracking" 
+#if 0 // testing "catastrophic backtracking"
     if (test_regex_match(R"((\\?.)*\\\n)", R"(Ada:Default\n\tAwk:Default\n\tC++:Default\n\tC:Default\n\tCSS:Default\n\tCsh:Default\n\tFortran:Default\n\tJava:Default\n\tJavaScript:Default\n\tLaTeX:Default\n\tLex:Default\n\tMakefile:Default\n\tMatlab:Default\n\tNEdit Macro:Default\n\tPascal:Default\n\tPerl:Default\n\tPostScript:Default\n\tPython:Default\n\tRegex:Default\n\tSGML HTML:Default\n\tSQL:Default\n\tSh Ksh Bash:Default\n\tTcl:Default\n\tVHDL:Default\n\tVerilog:Default\n\tXML:Default\n\tX Resources:Default\n\tYacc:Default)") != 0) {
 		std::cerr << "ERROR    : Failed to X resources match" << std::endl;
-		return -1;    
+		return -1;
     }
 #endif
 
 #if defined(NEDIT_INCLUDE_DECOMPILER)
 	for (Test t : tests) {
 		try {
-			Regex re(t.input, REDFLT_STANDARD);
+			Regex re(t.input, RE_DEFAULT_STANDARD);
 			decompileRegex(re);
 		} catch (...) {
-			std::cerr << "EXCEPTION: " << t.input.to_string() << '\n';
+			std::cerr << "EXCEPTION: " << t.input << '\n';
 			return -1;
 		}
 	}

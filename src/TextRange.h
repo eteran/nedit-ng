@@ -10,7 +10,7 @@ struct TextRange {
 };
 
 inline bool operator<(const TextRange &lhs, const TextRange &rhs) {
-	return lhs.start < rhs.start;
+	return (lhs.start < rhs.start) || (lhs.start == rhs.start && lhs.end < rhs.end);
 }
 
 inline bool operator==(const TextRange &lhs, const TextRange &rhs) {

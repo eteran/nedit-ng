@@ -7,7 +7,7 @@
 #include "SearchType.h"
 
 #include <QPointer>
-#include <boost/optional.hpp>
+#include <optional>
 
 #include "ui_DialogReplace.h"
 
@@ -48,7 +48,7 @@ public:
 	void updateFindButton();
 
 private:
-	boost::optional<Fields> readFields();
+	std::optional<Fields> readFields();
 
 private:
 	void textFind_textChanged(const QString &text);
@@ -66,7 +66,7 @@ private:
 private:
 	Ui::DialogReplace ui;
 	MainWindow *window_;
-	DocumentWidget *document_;
+	QPointer<DocumentWidget> document_;
 	bool lastRegexCase_   = true;  // idem, for regex mode in replace dialog
 	bool lastLiteralCase_ = false; // idem, for literal mode
 };

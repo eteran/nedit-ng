@@ -114,6 +114,7 @@ void DialogShellMenu::buttonDown_clicked() {
  */
 void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
 	static bool canceled = false;
+	bool skip_check      = false;
 
 	if (canceled) {
 		canceled = false;
@@ -129,12 +130,11 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
 		messageBox.setText(tr("Discard incomplete entry for current menu item?"));
 		QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
 		QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
-		Q_UNUSED(buttonDiscard)
 
 		messageBox.exec();
 		if (messageBox.clickedButton() == buttonKeep) {
 
-			// again to cause messagebox to pop up
+			// again to cause   to pop up
 			validateFields(Verbosity::Verbose);
 
 			// reselect the old item
@@ -142,10 +142,15 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
 			Q_EMIT restore(previous);
 			return;
 		}
+
+		if (messageBox.clickedButton() == buttonDiscard) {
+			model_->deleteItem(previous);
+			skip_check = true;
+		}
 	}
 
 	// this is only safe if we aren't moving due to a delete operation
-	if (previous.isValid() && previous != deleted_) {
+	if (previous.isValid() && previous != deleted_ && !skip_check) {
 		if (!updateCurrentItem(previous)) {
 			// reselect the old item
 			canceled = true;
@@ -237,21 +242,21 @@ void DialogShellMenu::buttonBox_accepted() {
 ** pointer to the new MenuItem structure as the function value, or nullptr on
 ** failure.
 */
-boost::optional<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
+std::optional<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
 
 	QString nameText = ui.editName->text();
 	if (nameText.isEmpty()) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Please specify a name for the menu item"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	if (nameText.indexOf(QLatin1Char(':')) != -1) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Menu item names may not contain colon (:) characters"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	QString cmdText = ui.editCommand->toPlainText();
@@ -259,7 +264,7 @@ boost::optional<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Command to Execute"), tr("Please specify macro command(s) to execute"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	MenuItem menuItem;

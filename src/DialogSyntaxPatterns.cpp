@@ -24,8 +24,8 @@
  * @param parent
  * @param f
  */
-DialogSyntaxPatterns::DialogSyntaxPatterns(MainWindow *window, Qt::WindowFlags f)
-	: Dialog(window, f), window_(window) {
+DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f)
+	: Dialog(parent, f) {
 
 	ui.setupUi(this);
 	connectSlots();
@@ -96,7 +96,7 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 	}
 
 	// if we are setting the language for the first time skip this part
-	// otherwise check if any uncommited changes are present
+	// otherwise check if any uncommitted changes are present
 	if (!previousLanguage_.isEmpty()) {
 
 		// Look up the original version of the patterns being edited
@@ -267,8 +267,12 @@ void DialogSyntaxPatterns::on_comboLanguageMode_currentIndexChanged(const QStrin
  * @brief DialogSyntaxPatterns::buttonLanguageMode_clicked
  */
 void DialogSyntaxPatterns::buttonLanguageMode_clicked() {
-	auto dialog = std::make_unique<DialogLanguageModes>(this, this);
-	dialog->exec();
+
+	if (!dialogLanguageModes_) {
+		dialogLanguageModes_ = new DialogLanguageModes(this, this);
+	}
+
+	dialogLanguageModes_->show();
 }
 
 /**
@@ -277,9 +281,13 @@ void DialogSyntaxPatterns::buttonLanguageMode_clicked() {
 void DialogSyntaxPatterns::buttonHighlightStyle_clicked() {
 	QString style = ui.comboHighlightStyle->currentText();
 	if (!style.isEmpty()) {
-		auto DrawingStyles = std::make_unique<DialogDrawingStyles>(this, Highlight::HighlightStyles, this);
-		DrawingStyles->setStyleByName(style);
-		DrawingStyles->exec();
+
+		if (!dialogDrawingStyles_) {
+			dialogDrawingStyles_ = new DialogDrawingStyles(this, Highlight::HighlightStyles, this);
+		}
+
+		dialogDrawingStyles_->setStyleByName(style);
+		dialogDrawingStyles_->show();
 	}
 }
 
@@ -446,7 +454,7 @@ void DialogSyntaxPatterns::buttonRestore_clicked() {
 
 	const QString languageMode = ui.comboLanguageMode->currentText();
 
-	boost::optional<PatternSet> patternSet = Highlight::readDefaultPatternSet(languageMode);
+	std::optional<PatternSet> patternSet = Highlight::readDefaultPatternSet(languageMode);
 	if (!patternSet) {
 		QMessageBox::warning(
 			this,
@@ -502,6 +510,7 @@ void DialogSyntaxPatterns::buttonHelp_clicked() {
  */
 void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
 	static bool canceled = false;
+	bool skip_check      = false;
 
 	if (canceled) {
 		canceled = false;
@@ -517,12 +526,11 @@ void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QMod
 		messageBox.setText(tr("Discard incomplete entry for current menu item?"));
 		QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
 		QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
-		Q_UNUSED(buttonDiscard)
 
 		messageBox.exec();
 		if (messageBox.clickedButton() == buttonKeep) {
 
-			// again to cause messagebox to pop up
+			// again to cause message box to pop up
 			validateFields(Verbosity::Verbose);
 
 			// reselect the old item
@@ -530,10 +538,15 @@ void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QMod
 			Q_EMIT restore(previous);
 			return;
 		}
+
+		if (messageBox.clickedButton() == buttonDiscard) {
+			model_->deleteItem(previous);
+			skip_check = true;
+		}
 	}
 
 	// this is only safe if we aren't moving due to a delete operation
-	if (previous.isValid() && previous != deleted_) {
+	if (previous.isValid() && previous != deleted_ && !skip_check) {
 		if (!updateCurrentItem(previous)) {
 			// reselect the old item
 			canceled = true;
@@ -591,7 +604,7 @@ void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QMod
 
 /*
 ** If a syntax highlighting dialog is up, ask to have the option menu for
-** chosing language mode updated (via a call to CreateLanguageModeMenu)
+** choosing language mode updated (via a call to CreateLanguageModeMenu)
 */
 void DialogSyntaxPatterns::UpdateLanguageModeMenu() {
 
@@ -752,7 +765,7 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 	}
 
 	// ensure that the list has the current item complete filled out
-	if(!updateCurrentItem()) {
+	if (!updateCurrentItem()) {
 		return nullptr;
 	}
 
@@ -779,7 +792,7 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 ** telling the user what's wrong (Passing "silent" as true, suppresses these
 ** dialogs).  Returns nullptr on error.
 */
-boost::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity verbosity) {
+std::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity verbosity) {
 
 	HighlightPattern pat;
 
@@ -794,7 +807,7 @@ boost::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity ver
 	// read the name field
 	QString name = ui.editPatternName->text().simplified();
 	if (name.isNull()) {
-		return boost::none;
+		return {};
 	}
 
 	pat.name = name;
@@ -802,7 +815,7 @@ boost::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity ver
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Pattern Name"), tr("Please specify a name for the pattern"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	// read the startRE field
@@ -811,7 +824,7 @@ boost::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity ver
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Matching Regex"), tr("Please specify a regular expression to match"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	/* Make sure coloring patterns contain only sub-expression references
@@ -840,7 +853,7 @@ boost::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity ver
 					tr("Pattern Error"),
 					tr("The expression field in patterns which specify highlighting for a parent, must contain only sub-expression references in regular expression replacement form (&\\1\\2 etc.).  See Help -> Regular Expressions and Help -> Syntax Highlighting for more information"));
 			}
-			return boost::none;
+			return {};
 		}
 	}
 
@@ -851,7 +864,7 @@ boost::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity ver
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Specify Parent Pattern"), tr("Please specify a parent pattern"));
 			}
-			return boost::none;
+			return {};
 		}
 
 		if (!parent.isNull()) {
@@ -869,7 +882,7 @@ boost::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity ver
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Specify Regex"), tr("Please specify an ending regular expression"));
 			}
-			return boost::none;
+			return {};
 		}
 	}
 
@@ -903,14 +916,18 @@ bool DialogSyntaxPatterns::validateFields(Verbosity verbosity) {
 */
 bool DialogSyntaxPatterns::TestHighlightPatterns(const std::unique_ptr<PatternSet> &patSet) {
 
-	/* Compile the patterns (passing a random window as a source for fonts, and
-	   parent for dialogs, since we really don't care what fonts are used) */
-	if (PatternSet *const patternSet = patSet.get()) {
-		for (DocumentWidget *document : DocumentWidget::allDocuments()) {
-			if (document->createHighlightData(patternSet)) {
-				return true;
+	try {
+		/* Compile the patterns (passing a random window as a source for fonts, and
+		   parent for dialogs, since we really don't care what fonts are used) */
+		if (PatternSet *const patternSet = patSet.get()) {
+			for (DocumentWidget *document : DocumentWidget::allDocuments()) {
+				if (document->createHighlightData(patternSet, Verbosity::Verbose)) {
+					return true;
+				}
 			}
 		}
+	} catch (const RegexError &e) {
+		QMessageBox::critical(this, tr("Error"), tr("Error compiling syntax highlight patterns:\n%1").arg(QString::fromLatin1(e.what())));
 	}
 
 	return false;

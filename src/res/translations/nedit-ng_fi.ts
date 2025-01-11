@@ -676,7 +676,7 @@ vain kun korostus on pois päältä.</translation>
         <location filename="../../DialogExecuteCommand.ui" line="33"/>
         <source>Shell command:   (use up arrow key to recall previous;
 % expands to current filename, # to line number)</source>
-        <translation>Komentotulkkikomento: (käytä nuoli ylös näppäintä 
+        <translation>Komentotulkkikomento: (käytä nuoli ylös näppäintä
 hakeaksesi aikaisemman komennon;
 % kovataan nykyisellä tiedostonimellä,
 # rivinumerolla)</translation>
@@ -692,7 +692,7 @@ hakeaksesi aikaisemman komennon;
     <message>
         <location filename="../../DialogFilter.ui" line="33"/>
         <source>Shell command:  (use up arrow key to recall previous)</source>
-        <translation>Komentotulkkikomento: (käytä nuoli ylös näppäintä 
+        <translation>Komentotulkkikomento: (käytä nuoli ylös näppäintä
 edellisten komentojen uudelleenkäyttämiseksi)</translation>
     </message>
 </context>
@@ -773,7 +773,7 @@ edellisten komentojen uudelleenkäyttämiseksi)</translation>
     </message>
     <message>
         <location filename="../../DialogFind.cpp" line="263"/>
-        <source>Please respecify the search string:
+        <source>Please re-specify the search string:
 %1</source>
         <translation>Korjaa haussa käytettävä merkkijono: %1</translation>
     </message>
@@ -962,7 +962,7 @@ Valitse &quot;Uusi&quot; lisätäksesi listaan uusi tyyli</translation>
         <source>Can&apos;t read default calltips file(s):
   &quot;%1&quot;
 </source>
-        <translation>Ei voi lukea oletuhvihjetiedostoa: 
+        <translation>Ei voi lukea oletuhvihjetiedostoa:
   &quot;%1&quot;
 </translation>
     </message>
@@ -1339,7 +1339,7 @@ Replay Macro</source>
     </message>
     <message>
         <location filename="../../DialogPrint.cpp" line="117"/>
-        <source>An error occured while printing.</source>
+        <source>An error occurred while printing.</source>
         <translation>Virhe tulostettaessa.</translation>
     </message>
 </context>
@@ -1547,7 +1547,7 @@ Replay Macro</source>
     </message>
     <message>
         <location filename="../../DialogReplace.cpp" line="593"/>
-        <source>Please respecify the search string:
+        <source>Please re-specify the search string:
 %1</source>
         <translation>Muokkaa etsittävää merkkijonoa
 %1</translation>
@@ -2860,8 +2860,8 @@ Another program may have changed the permissions of one of its parent directorie
         <source>Error while checking the status of file &apos;%1&apos;:
     &apos;%2&apos;
 Please make sure that no data is lost before closing this window.</source>
-        <translation>Tiedoston &quot;%1&quot; tilan tarkistus epäonnistui: 
-   &quot;%2&quot;. 
+        <translation>Tiedoston &quot;%1&quot; tilan tarkistus epäonnistui:
+   &quot;%2&quot;.
 Älä sulje tätä ikkunaa ennenkuin olet varmistanut ettei tietoja häviä.</translation>
     </message>
     <message>
@@ -2914,7 +2914,7 @@ Varoitus: Uudelleenlataus poistaa kaikki tässä ikkunassa tehdyt muutokset!</tr
         <source>Unable to save backup for %1:
 %2
 Automatic backup is now off</source>
-        <translation>Varmuuskopion luominen tiedostolle %1 epäonnistui : 
+        <translation>Varmuuskopion luominen tiedostolle %1 epäonnistui :
 %2
 Automaattinen varmuuskopiointi on kytketty pois päältä</translation>
     </message>
@@ -2928,7 +2928,7 @@ Automaattinen varmuuskopiointi on kytketty pois päältä</translation>
         <source>Error while saving backup for %1:
 %2
 Automatic backup is now off</source>
-        <translation>Varmuuskopion luominen tiedostolle %1 epäonnistui : 
+        <translation>Varmuuskopion luominen tiedostolle %1 epäonnistui :
 %2
 Automaattinen varmuuskopiointi on kytketty pois päältä</translation>
     </message>
@@ -2951,7 +2951,7 @@ use Save As... to save this file under a different name,
 or Revert to Saved to revert to the modified version.</source>
         <translation>Tiedostoa %1 on muokattu tämän ikkunan ulkopuolella.
 
-Jatkaminen korvaa ulkopuoliset muutokset tämän ikkunan 
+Jatkaminen korvaa ulkopuoliset muutokset tämän ikkunan
 sisällöllä ja voi aiheuttaa jonkun toisen tekemien muutosten tuhoutumisen.
 
 Peruuta ylikirjoitus säilyttääksesi ikkunan ulkopuolella tehdyt muutokset.
@@ -4820,7 +4820,7 @@ not found in %2</source>
         <location filename="../../MainWindow.cpp" line="2208"/>
         <source>Could not open %1%2:
 %3</source>
-        <translation>Ei voinut avata %1%2: 
+        <translation>Ei voinut avata %1%2:
 %3</translation>
     </message>
     <message>

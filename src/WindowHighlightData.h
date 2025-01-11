@@ -17,7 +17,7 @@ class PatternSet;
 struct WindowHighlightData {
 	std::vector<uint8_t> parentStyles;
 	std::vector<StyleTableEntry> styleTable;
-	std::shared_ptr<TextBuffer> styleBuffer;
+	std::shared_ptr<UTextBuffer> styleBuffer;
 	std::unique_ptr<HighlightData[]> pass1Patterns;
 	std::unique_ptr<HighlightData[]> pass2Patterns;
 	PatternSet *patternSetForWindow    = nullptr;

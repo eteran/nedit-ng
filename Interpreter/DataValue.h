@@ -2,16 +2,16 @@
 #ifndef DATA_VALUE_H_
 #define DATA_VALUE_H_
 
-#include "Util/string_view.h"
+#include <string_view>
 
 #include <gsl/span>
 
+#include <limits>
 #include <map>
 #include <memory>
 #include <string>
 #include <system_error>
-
-#include <boost/variant.hpp>
+#include <variant>
 
 #include <QString>
 
@@ -33,8 +33,8 @@ struct ArrayIterator {
 	Array::iterator it;
 };
 
-using Data = boost::variant<
-	boost::blank,
+using Data = std::variant<
+	std::monostate,
 	int32_t,
 	std::string,
 	ArrayPtr,
@@ -87,9 +87,9 @@ inline DataValue make_value(bool n) {
 	return DV;
 }
 
-inline DataValue make_value(view::string_view str) {
+inline DataValue make_value(std::string_view str) {
 	DataValue DV;
-	DV.value = str.to_string();
+	DV.value = std::string(str);
 	return DV;
 }
 
@@ -124,56 +124,55 @@ inline DataValue make_value(LibraryRoutine routine) {
 }
 
 inline bool is_unset(const DataValue &dv) {
-	return dv.value.which() == 0;
+	return dv.value.index() == 0;
 }
 
 inline bool is_integer(const DataValue &dv) {
-	return dv.value.which() == 1;
+	return dv.value.index() == 1;
 }
 
 inline bool is_string(const DataValue &dv) {
-	return dv.value.which() == 2;
+	return dv.value.index() == 2;
 }
 
 inline bool is_array(const DataValue &dv) {
-	return dv.value.which() == 3;
+	return dv.value.index() == 3;
 }
 
 inline std::string to_string(const DataValue &dv) {
 
-	if (auto n = boost::get<int>(&dv.value)) {
-		return std::to_string(*n);
-	} else {
-		return boost::get<std::string>(dv.value);
+	if (auto n = std::get<int>(dv.value)) {
+		return std::to_string(n);
 	}
+	return std::get<std::string>(dv.value);
 }
 
 inline int to_integer(const DataValue &dv) {
-	return boost::get<int>(dv.value);
+	return std::get<int>(dv.value);
 }
 
 inline Program *to_program(const DataValue &dv) {
-	return boost::get<Program *>(dv.value);
+	return std::get<Program *>(dv.value);
 }
 
 inline LibraryRoutine to_subroutine(const DataValue &dv) {
-	return boost::get<LibraryRoutine>(dv.value);
+	return std::get<LibraryRoutine>(dv.value);
 }
 
 inline DataValue *to_data_value(const DataValue &dv) {
-	return boost::get<DataValue *>(dv.value);
+	return std::get<DataValue *>(dv.value);
 }
 
 inline Inst *to_instruction(const DataValue &dv) {
-	return boost::get<Inst *>(dv.value);
+	return std::get<Inst *>(dv.value);
 }
 
 inline ArrayPtr to_array(const DataValue &dv) {
-	return boost::get<ArrayPtr>(dv.value);
+	return std::get<ArrayPtr>(dv.value);
 }
 
 inline ArrayIterator to_iterator(const DataValue &dv) {
-	return boost::get<ArrayIterator>(dv.value);
+	return std::get<ArrayIterator>(dv.value);
 }
 
 #endif

@@ -13,20 +13,21 @@
 #include "RangesetTable.h"
 #include "Search.h"
 #include "SearchType.h"
-#include "SignalBlocker.h"
 #include "SmartIndent.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "Util/FileSystem.h"
 #include "Util/Input.h"
+#include "Util/algorithm.h"
 #include "Util/utils.h"
 #include "Util/version.h"
 #include "WrapMode.h"
 #include "interpret.h"
 #include "parse.h"
 
-#include <boost/optional.hpp>
+#include <algorithm>
 #include <fstream>
+#include <optional>
 #include <stack>
 
 #include <QClipboard>
@@ -35,7 +36,7 @@
 #include <QMimeData>
 
 // DISABLED for 5.4
-//#define ENABLE_BACKLIGHT_STRING
+// #define ENABLE_BACKLIGHT_STRING
 
 namespace {
 
@@ -178,7 +179,7 @@ std::string MacroErrorCategory::message(int ev) const {
  * @param firstFlag
  * @return The flags if all arguments were valid, otherwise, nothing
  */
-boost::optional<TextArea::EventFlags> flagsFromArguments(Arguments arguments, size_t firstFlag) {
+std::optional<TextArea::EventFlags> flagsFromArguments(Arguments arguments, size_t firstFlag) {
 
 	TextArea::EventFlags f = TextArea::NoneFlag;
 	for (size_t i = firstFlag; i < arguments.size(); ++i) {
@@ -216,7 +217,7 @@ boost::optional<TextArea::EventFlags> flagsFromArguments(Arguments arguments, si
 		} else if (s == "nobell") {
 			f |= TextArea::NoBellFlag;
 		} else {
-			return boost::none;
+			return {};
 		}
 	}
 
@@ -251,7 +252,8 @@ const char *ReturnGlobalNames[N_RETURN_GLOBALS] = {
 	"$search_end",
 	"$read_status",
 	"$shell_cmd_status",
-	"$list_dialog_button"};
+	"$list_dialog_button",
+};
 
 Symbol *ReturnGlobals[N_RETURN_GLOBALS];
 
@@ -447,17 +449,19 @@ std::error_code readSearchArgs(Arguments arguments, Direction *searchDirection, 
 	for (const DataValue &dv : arguments) {
 
 		QString argStr;
-		if (std::error_code ec = readArgument(dv, &argStr))
+		if (std::error_code ec = readArgument(dv, &argStr)) {
 			return ec;
-		else if (argStr == QLatin1String("wrap"))
+		}
+
+		if (argStr == QLatin1String("wrap")) {
 			*wrap = WrapMode::Wrap;
-		else if (argStr == QLatin1String("nowrap"))
+		} else if (argStr == QLatin1String("nowrap")) {
 			*wrap = WrapMode::NoWrap;
-		else if (argStr == QLatin1String("backward"))
+		} else if (argStr == QLatin1String("backward")) {
 			*searchDirection = Direction::Backward;
-		else if (argStr == QLatin1String("forward"))
+		} else if (argStr == QLatin1String("forward")) {
 			*searchDirection = Direction::Forward;
-		else if (!StringToSearchType(argStr, searchType)) {
+		} else if (!StringToSearchType(argStr, searchType)) {
 			return MacroErrorCode::UnrecognizedArgument;
 		}
 	}
@@ -477,11 +481,13 @@ Direction searchDirection(Arguments arguments, size_t index) {
 			return Direction::Forward;
 		}
 
-		if (arg.compare(QLatin1String("forward"), Qt::CaseInsensitive) == 0)
+		if (arg.compare(QLatin1String("forward"), Qt::CaseInsensitive) == 0) {
 			return Direction::Forward;
+		}
 
-		if (arg.compare(QLatin1String("backward"), Qt::CaseInsensitive) == 0)
+		if (arg.compare(QLatin1String("backward"), Qt::CaseInsensitive) == 0) {
 			return Direction::Backward;
+		}
 	}
 
 	return Direction::Forward;
@@ -500,11 +506,13 @@ bool searchKeepDialogs(Arguments arguments, size_t index) {
 			return Preferences::GetPrefKeepSearchDlogs();
 		}
 
-		if (arg.compare(QLatin1String("keep"), Qt::CaseInsensitive) == 0)
+		if (arg.compare(QLatin1String("keep"), Qt::CaseInsensitive) == 0) {
 			return true;
+		}
 
-		if (arg.compare(QLatin1String("nokeep"), Qt::CaseInsensitive) == 0)
+		if (arg.compare(QLatin1String("nokeep"), Qt::CaseInsensitive) == 0) {
 			return false;
+		}
 	}
 
 	return Preferences::GetPrefKeepSearchDlogs();
@@ -523,11 +531,13 @@ WrapMode searchWrap(Arguments arguments, size_t index) {
 			return Preferences::GetPrefSearchWraps();
 		}
 
-		if (arg.compare(QLatin1String("wrap"), Qt::CaseInsensitive) == 0)
+		if (arg.compare(QLatin1String("wrap"), Qt::CaseInsensitive) == 0) {
 			return WrapMode::Wrap;
+		}
 
-		if (arg.compare(QLatin1String("nowrap"), Qt::CaseInsensitive) == 0)
+		if (arg.compare(QLatin1String("nowrap"), Qt::CaseInsensitive) == 0) {
 			return WrapMode::NoWrap;
+		}
 	}
 
 	return Preferences::GetPrefSearchWraps();
@@ -564,13 +574,13 @@ SearchType searchType(Arguments arguments, size_t index) {
  * @param error
  * @return
  */
-boost::optional<bool> toggle_or_bool(Arguments arguments, bool previous, std::error_code *error) {
+std::optional<bool> toggle_or_bool(Arguments arguments, bool previous, std::error_code *error) {
 	switch (arguments.size()) {
 	case 1: {
 		int next;
 		if (std::error_code ec = readArguments(arguments, 0, &next)) {
 			*error = ec;
-			return boost::none;
+			return {};
 		}
 		return next;
 	}
@@ -578,7 +588,7 @@ boost::optional<bool> toggle_or_bool(Arguments arguments, bool previous, std::er
 		return !previous;
 	default:
 		*error = MacroErrorCode::WrongNumberOfToggleArguments;
-		return boost::none;
+		return {};
 	}
 }
 
@@ -587,7 +597,7 @@ std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, D
 	document = MacroFocusDocument();
 
 	std::error_code ec;
-	if (boost::optional<bool> next = toggle_or_bool(arguments, (document->*Get)(), &ec)) {
+	if (std::optional<bool> next = toggle_or_bool(arguments, (document->*Get)(), &ec)) {
 		(document->*Set)(*next);
 		*result = make_value();
 		return MacroErrorCode::Success;
@@ -604,7 +614,7 @@ std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, D
 	Q_ASSERT(win);
 
 	std::error_code ec;
-	if (boost::optional<bool> next = toggle_or_bool(arguments, (win->*Get)(), &ec)) {
+	if (std::optional<bool> next = toggle_or_bool(arguments, (win->*Get)(), &ec)) {
 		(win->*Set)(*next);
 		*result = make_value();
 		return MacroErrorCode::Success;
@@ -616,14 +626,14 @@ std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, D
 template <void (TextArea::*Func)(TextArea::EventFlags)>
 std::error_code textEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	boost::optional<TextArea::EventFlags> flags = flagsFromArguments(arguments, 0);
+	std::optional<TextArea::EventFlags> flags = flagsFromArguments(arguments, 0);
 	if (!flags) {
 		return MacroErrorCode::InvalidArgument;
 	}
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		if (TextArea *area = window->lastFocus()) {
-			(area->*Func)(*flags | TextArea::SupressRecording);
+			(area->*Func)(*flags | TextArea::SuppressRecording);
 		}
 	}
 
@@ -634,7 +644,7 @@ std::error_code textEvent(DocumentWidget *document, Arguments arguments, DataVal
 template <class T, void (TextArea::*Func)(T, TextArea::EventFlags)>
 std::error_code textEventArg(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	if (arguments.size() < 1) {
+	if (arguments.empty()) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -643,14 +653,14 @@ std::error_code textEventArg(DocumentWidget *document, Arguments arguments, Data
 		return ec;
 	}
 
-	boost::optional<TextArea::EventFlags> flags = flagsFromArguments(arguments, 1);
+	std::optional<TextArea::EventFlags> flags = flagsFromArguments(arguments, 1);
 	if (!flags) {
 		return MacroErrorCode::InvalidArgument;
 	}
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		if (TextArea *area = window->lastFocus()) {
-			(area->*Func)(argument, *flags | TextArea::SupressRecording);
+			(area->*Func)(argument, *flags | TextArea::SuppressRecording);
 		}
 	}
 
@@ -778,7 +788,7 @@ std::error_code scrollDownMS(DocumentWidget *document, Arguments arguments, Data
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		if (TextArea *area = window->lastFocus()) {
-			area->scrollDownAP(count, units, TextArea::SupressRecording);
+			area->scrollDownAP(count, units, TextArea::SuppressRecording);
 		}
 	}
 
@@ -816,7 +826,7 @@ std::error_code scrollUpMS(DocumentWidget *document, Arguments arguments, DataVa
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		if (TextArea *area = window->lastFocus()) {
-			area->scrollUpAP(count, units, TextArea::SupressRecording);
+			area->scrollUpAP(count, units, TextArea::SuppressRecording);
 		}
 	}
 
@@ -913,7 +923,7 @@ std::error_code newOppositeMS(DocumentWidget *document, Arguments arguments, Dat
 	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
-	if (arguments.size() > 0) {
+	if (!arguments.empty()) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -1111,7 +1121,7 @@ std::error_code gotoMarkMS(DocumentWidget *document, Arguments arguments, DataVa
 	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
-	if (arguments.size() > 2 || arguments.size() < 1) {
+	if (arguments.size() > 2 || arguments.empty()) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -1328,7 +1338,7 @@ std::error_code setShowMatchingMS(DocumentWidget *document, Arguments arguments,
 
 	document = MacroFocusDocument();
 
-	if (arguments.size() > 0) {
+	if (!arguments.empty()) {
 		QString arg;
 		if (std::error_code ec = readArgument(arguments[0], &arg)) {
 			return ec;
@@ -1365,11 +1375,11 @@ std::error_code setTabDistMS(DocumentWidget *document, Arguments arguments, Data
 
 	document = MacroFocusDocument();
 
-	if (arguments.size() > 0) {
+	if (!arguments.empty()) {
 		int newTabDist = 0;
 
 		std::error_code ec = readArguments(arguments, 0, &newTabDist);
-		if (ec && newTabDist > 0 && newTabDist <= TextBuffer::MAX_EXP_CHAR_LEN) {
+		if (!ec && newTabDist > 0 && newTabDist <= TextBuffer::MAX_EXP_CHAR_LEN) {
 			document->setTabDistance(newTabDist);
 		} else {
 			qWarning("NEdit: set_tab_dist requires integer argument > 0 and <= %d", TextBuffer::MAX_EXP_CHAR_LEN);
@@ -1386,11 +1396,11 @@ std::error_code setWrapMarginMS(DocumentWidget *document, Arguments arguments, D
 
 	document = MacroFocusDocument();
 
-	if (arguments.size() > 0) {
+	if (!arguments.empty()) {
 		int newMargin = 0;
 
 		std::error_code ec = readArguments(arguments, 0, &newMargin);
-		if (ec && newMargin > 0 && newMargin <= 1000) {
+		if (!ec && newMargin > 0 && newMargin <= 1000) {
 
 			const std::vector<TextArea *> panes = document->textPanes();
 
@@ -1412,7 +1422,7 @@ std::error_code setWrapTextMS(DocumentWidget *document, Arguments arguments, Dat
 
 	document = MacroFocusDocument();
 
-	if (arguments.size() > 0) {
+	if (!arguments.empty()) {
 
 		QString arg;
 		if (std::error_code ec = readArgument(arguments[0], &arg)) {
@@ -1729,8 +1739,8 @@ std::error_code getRangeMS(DocumentWidget *document, Arguments arguments, DataVa
 		return ec;
 	}
 
-	from = qBound<int64_t>(0, from, buf->length());
-	to   = qBound<int64_t>(0, to, buf->length());
+	from = std::clamp<int64_t>(from, 0, buf->length());
+	to   = std::clamp<int64_t>(to, 0, buf->length());
 
 	if (from > to) {
 		std::swap(from, to);
@@ -1756,7 +1766,7 @@ std::error_code getCharacterMS(DocumentWidget *document, Arguments arguments, Da
 		return ec;
 	}
 
-	pos = qBound<int64_t>(0, pos, buf->length());
+	pos = std::clamp<int64_t>(pos, 0, buf->length());
 
 	// Return the character in a pre-allocated string)
 	std::string str(1, buf->BufGetCharacter(TextCursor(pos)));
@@ -1783,8 +1793,8 @@ std::error_code replaceRangeMS(DocumentWidget *document, Arguments arguments, Da
 		return ec;
 	}
 
-	from = qBound<int64_t>(0, from, buf->length());
-	to   = qBound<int64_t>(0, to, buf->length());
+	from = std::clamp<int64_t>(from, 0, buf->length());
+	to   = std::clamp<int64_t>(to, 0, buf->length());
 
 	if (from > to) {
 		std::swap(from, to);
@@ -1899,8 +1909,8 @@ std::error_code replaceSubstringMS(DocumentWidget *document, Arguments arguments
 
 	const int length = string.size();
 
-	from = qBound(0, from, length);
-	to   = qBound(0, to, length);
+	from = std::clamp(from, 0, length);
+	to   = std::clamp(to, 0, length);
 
 	if (from > to) {
 		std::swap(from, to);
@@ -1942,13 +1952,27 @@ std::error_code substringMS(DocumentWidget *document, Arguments arguments, DataV
 		}
 	}
 
-	if (from < 0) from += length;
-	if (from < 0) from = 0;
-	if (from > length) from = length;
-	if (to < 0) to += length;
-	if (to < 0) to = 0;
-	if (to > length) to = length;
-	if (from > to) to = from;
+	if (from < 0) {
+		from += length;
+	}
+	if (from < 0) {
+		from = 0;
+	}
+	if (from > length) {
+		from = length;
+	}
+	if (to < 0) {
+		to += length;
+	}
+	if (to < 0) {
+		to = 0;
+	}
+	if (to > length) {
+		to = length;
+	}
+	if (from > to) {
+		to = from;
+	}
 
 	// Allocate a new string and copy the sub-string into it
 	*result = make_value(string.mid(from, to - from));
@@ -1967,7 +1991,7 @@ std::error_code toupperMS(DocumentWidget *document, Arguments arguments, DataVal
 
 	// Allocate a new string and copy an uppercased version of the string it
 	for (char &ch : string) {
-		ch = static_cast<char>(safe_ctype<::toupper>(ch));
+		ch = static_cast<char>(safe_toupper(ch));
 	}
 
 	*result = make_value(string);
@@ -1986,7 +2010,7 @@ std::error_code tolowerMS(DocumentWidget *document, Arguments arguments, DataVal
 
 	// Allocate a new string and copy an uppercased version of the string it
 	for (char &ch : string) {
-		ch = static_cast<char>(safe_ctype<::tolower>(ch));
+		ch = static_cast<char>(safe_tolower(ch));
 	}
 
 	*result = make_value(string);
@@ -2208,8 +2232,9 @@ std::error_code searchMS(DocumentWidget *document, Arguments arguments, DataValu
 
 	/* Use the search string routine, by adding the buffer contents as the
 	 * string argument */
-	if (arguments.size() > 8)
+	if (arguments.size() > 8) {
 		return MacroErrorCode::WrongNumberOfArguments;
+	}
 
 	// NOTE(eteran): the original version of this code was copy-free
 	// in the interest of making the macro code simpler
@@ -2228,7 +2253,7 @@ std::error_code searchMS(DocumentWidget *document, Arguments arguments, DataValu
 }
 
 /*
-** Built-in macro subroutine for replacing all occurences of a search string in
+** Built-in macro subroutine for replacing all occurrences of a search string in
 ** a string with a replacement string.  Arguments are $1: string to search in,
 ** $2: string to search for, $3: replacement string. Also takes an optional
 ** search type: one of "literal", "case" or "regex" (default is "literal"), and
@@ -2277,7 +2302,7 @@ std::error_code replaceInStringMS(DocumentWidget *document, Arguments arguments,
 	}
 
 	// Do the replace
-	boost::optional<std::string> replacedStr = Search::ReplaceAllInString(
+	std::optional<std::string> replacedStr = Search::ReplaceAllInString(
 		string,
 		searchStr,
 		replaceStr,
@@ -2337,8 +2362,8 @@ std::error_code selectMS(DocumentWidget *document, Arguments arguments, DataValu
 		std::swap(start, end);
 	}
 
-	start = qBound<int64_t>(0, start, document->buffer()->length());
-	end   = qBound<int64_t>(0, end, document->buffer()->length());
+	start = std::clamp<int64_t>(start, 0, document->buffer()->length());
+	end   = std::clamp<int64_t>(end, 0, document->buffer()->length());
 
 	// Make the selection
 	document->buffer()->BufSelect(TextCursor(start), TextCursor(end));
@@ -2445,13 +2470,15 @@ std::error_code shellCmdMS(DocumentWidget *document, Arguments arguments, DataVa
 
 std::error_code dialogMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
+	Q_UNUSED(document);
+
 	QString btnLabel;
 	QString message;
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
-	document                                        = MacroRunDocument();
-	const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_;
+	QPointer<DocumentWidget> documentPointer        = MacroRunDocument();
+	const std::shared_ptr<MacroCommandData> cmdData = documentPointer->macroCmdData_;
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
 	   This subroutine can't be run if macro execution can't be interrupted */
@@ -2485,22 +2512,26 @@ std::error_code dialogMS(DocumentWidget *document, Arguments arguments, DataValu
 	// NOTE(eteran): passing document here breaks things...
 	auto prompt = std::make_shared<DialogPrompt>(nullptr);
 	prompt->setMessage(message);
+
 	if (arguments.size() == 1) {
 		prompt->addButton(QDialogButtonBox::Ok);
 	} else {
 		for (size_t i = 1; i < arguments.size(); ++i) {
 			if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 				// NOTE(eteran): does not report
+				Q_UNUSED(ec);
 			}
 			prompt->addButton(btnLabel);
 		}
 	}
 
-	QObject::connect(prompt.get(), &QDialog::finished, [prompt, document, cmdData](int) {
-		auto result = make_value(prompt->result());
-		modifyReturnedValue(cmdData->context, result);
+	QObject::connect(prompt.get(), &QDialog::finished, [prompt, documentPointer, cmdData](int) {
+		if (documentPointer) {
+			auto result = make_value(prompt->result());
+			modifyReturnedValue(cmdData->context, result);
 
-		document->resumeMacroExecution();
+			documentPointer->resumeMacroExecution();
+		}
 	});
 
 	prompt->setWindowModality(Qt::NonModal);
@@ -2510,13 +2541,15 @@ std::error_code dialogMS(DocumentWidget *document, Arguments arguments, DataValu
 
 std::error_code stringDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
+	Q_UNUSED(document);
+
 	QString btnLabel;
 	QString message;
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
-	document                                        = MacroRunDocument();
-	const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_;
+	QPointer<DocumentWidget> documentPointer        = MacroRunDocument();
+	const std::shared_ptr<MacroCommandData> cmdData = documentPointer->macroCmdData_;
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
 	   This subroutine can't be run if macro execution can't be interrupted */
@@ -2550,25 +2583,29 @@ std::error_code stringDialogMS(DocumentWidget *document, Arguments arguments, Da
 	// NOTE(eteran): passing document here breaks things...
 	auto prompt = std::make_shared<DialogPromptString>(nullptr);
 	prompt->setMessage(message);
+
 	if (arguments.size() == 1) {
 		prompt->addButton(QDialogButtonBox::Ok);
 	} else {
 		for (size_t i = 1; i < arguments.size(); ++i) {
 			if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 				// NOTE(eteran): does not report
+				Q_UNUSED(ec);
 			}
 			prompt->addButton(btnLabel);
 		}
 	}
 
-	QObject::connect(prompt.get(), &QDialog::finished, [prompt, document, cmdData](int) {
-		// Return the button number in the global variable $string_dialog_button
-		ReturnGlobals[STRING_DIALOG_BUTTON]->value = make_value(prompt->result());
+	QObject::connect(prompt.get(), &QDialog::finished, [prompt, documentPointer, cmdData](int) {
+		if (documentPointer) {
+			// Return the button number in the global variable $string_dialog_button
+			ReturnGlobals[STRING_DIALOG_BUTTON]->value = make_value(prompt->result());
 
-		auto result = make_value(prompt->text());
-		modifyReturnedValue(cmdData->context, result);
+			auto result = make_value(prompt->text());
+			modifyReturnedValue(cmdData->context, result);
 
-		document->resumeMacroExecution();
+			documentPointer->resumeMacroExecution();
+		}
 	});
 
 	prompt->setWindowModality(Qt::NonModal);
@@ -2614,7 +2651,7 @@ std::error_code calltipMS(DocumentWidget *document, Arguments arguments, DataVal
 	auto alignMode = TipAlignMode::Sloppy;
 
 	// Read and check the string
-	if (arguments.size() < 1) {
+	if (arguments.empty()) {
 		return MacroErrorCode::TooFewArguments;
 	}
 	if (arguments.size() > 6) {
@@ -2634,8 +2671,9 @@ std::error_code calltipMS(DocumentWidget *document, Arguments arguments, DataVal
 	} else {
 		anchorPos = -1;
 	}
-	if (anchorPos >= 0)
+	if (anchorPos >= 0) {
 		anchored = true;
+	}
 
 	// Any further args are directives for relative positioning
 	for (i = 2; i < arguments.size(); ++i) {
@@ -2645,23 +2683,27 @@ std::error_code calltipMS(DocumentWidget *document, Arguments arguments, DataVal
 
 		switch (txtArg[0]) {
 		case 'c':
-			if (txtArg == "center")
+			if (txtArg == "center") {
 				return MacroErrorCode::UnrecognizedArgument;
+			}
 			hAlign = TipHAlignMode::Center;
 			break;
 		case 'r':
-			if (txtArg == "right")
+			if (txtArg == "right") {
 				return MacroErrorCode::UnrecognizedArgument;
+			}
 			hAlign = TipHAlignMode::Right;
 			break;
 		case 'a':
-			if (txtArg == "above")
+			if (txtArg == "above") {
 				return MacroErrorCode::UnrecognizedArgument;
+			}
 			vAlign = TipVAlignMode::Above;
 			break;
 		case 's':
-			if (txtArg == "strict")
+			if (txtArg == "strict") {
 				return MacroErrorCode::UnrecognizedArgument;
+			}
 			alignMode = TipAlignMode::Strict;
 			break;
 		case 't':
@@ -2707,7 +2749,7 @@ std::error_code killCalltipMS(DocumentWidget *document, Arguments arguments, Dat
 	if (arguments.size() > 1) {
 		return MacroErrorCode::TooManyArguments;
 	}
-	if (arguments.size() > 0) {
+	if (!arguments.empty()) {
 		if (std::error_code ec = readArgument(arguments[0], &calltipID)) {
 			return ec;
 		}
@@ -2890,14 +2932,16 @@ std::error_code filenameDialogMS(DocumentWidget *document, Arguments arguments, 
 // T Balinski
 std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
+	Q_UNUSED(document);
+
 	QString btnLabel;
 	QString message;
 	QString text;
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
-	document                                        = MacroRunDocument();
-	const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_;
+	QPointer<DocumentWidget> documentPointer        = MacroRunDocument();
+	const std::shared_ptr<MacroCommandData> cmdData = documentPointer->macroCmdData_;
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
 	   This subroutine can't be run if macro execution can't be interrupted */
@@ -2947,19 +2991,22 @@ std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, Data
 		for (size_t i = 2; i < arguments.size(); ++i) {
 			if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 				// NOTE(eteran): does not report
+				Q_UNUSED(ec);
 			}
 			prompt->addButton(btnLabel);
 		}
 	}
 
-	QObject::connect(prompt.get(), &QDialog::finished, [prompt, document, cmdData](int) {
-		// Return the button number in the global variable $list_dialog_button
-		ReturnGlobals[LIST_DIALOG_BUTTON]->value = make_value(prompt->result());
+	QObject::connect(prompt.get(), &QDialog::finished, [prompt, documentPointer, cmdData](int) {
+		if (documentPointer) {
+			// Return the button number in the global variable $list_dialog_button
+			ReturnGlobals[LIST_DIALOG_BUTTON]->value = make_value(prompt->result());
 
-		auto result = make_value(prompt->text());
-		modifyReturnedValue(cmdData->context, result);
+			auto result = make_value(prompt->text());
+			modifyReturnedValue(cmdData->context, result);
 
-		document->resumeMacroExecution();
+			documentPointer->resumeMacroExecution();
+		}
 	});
 
 	prompt->setWindowModality(Qt::NonModal);
@@ -2989,7 +3036,9 @@ std::error_code stringCompareMS(DocumentWidget *document, Arguments arguments, D
 	for (i = 2; i < arguments.size(); ++i) {
 		if (std::error_code ec = readArgument(arguments[i], &argStr)) {
 			return ec;
-		} else if (argStr == QLatin1String("case")) {
+		}
+
+		if (argStr == QLatin1String("case")) {
 			considerCase = true;
 		} else if (argStr == QLatin1String("nocase")) {
 			considerCase = false;
@@ -3004,7 +3053,7 @@ std::error_code stringCompareMS(DocumentWidget *document, Arguments arguments, D
 		compareResult = leftStr.compare(rightStr, Qt::CaseInsensitive);
 	}
 
-	compareResult = qBound(-1, compareResult, 1);
+	compareResult = std::clamp(compareResult, -1, 1);
 
 	*result = make_value(compareResult);
 	return MacroErrorCode::Success;
@@ -3012,7 +3061,7 @@ std::error_code stringCompareMS(DocumentWidget *document, Arguments arguments, D
 
 /*
 ** This function is intended to split strings into an array of substrings
-** Importatnt note: It should always return at least one entry with key 0
+** Important note: It should always return at least one entry with key 0
 ** split("", ",") result[0] = ""
 ** split("1,2", ",") result[0] = "1" result[1] = "2"
 ** split("1,2,", ",") result[0] = "1" result[1] = "2" result[2] = ""
@@ -3053,7 +3102,7 @@ std::error_code splitMS(DocumentWidget *document, Arguments arguments, DataValue
 	int64_t beginPos = 0;
 	int64_t lastEnd  = 0;
 	int indexNum     = 0;
-	auto strLength   = static_cast<int64_t>(sourceStr.size());
+	auto strLength   = ssize(sourceStr);
 	bool found       = true;
 
 	Search::Result searchResult;
@@ -3075,7 +3124,7 @@ std::error_code splitMS(DocumentWidget *document, Arguments arguments, DataValue
 		int64_t elementEnd = found ? searchResult.start : strLength;
 		int64_t elementLen = elementEnd - lastEnd;
 
-		view::string_view str(
+		std::string_view str(
 			&sourceStr[static_cast<size_t>(lastEnd)],
 			static_cast<size_t>(elementLen));
 
@@ -3103,7 +3152,7 @@ std::error_code splitMS(DocumentWidget *document, Arguments arguments, DataValue
 		auto indexStr = std::to_string(indexNum);
 
 		if (lastEnd == strLength) {
-			// The pattern mathed the end of the string. Add an empty chunk.
+			// The pattern matched the end of the string. Add an empty chunk.
 			element = make_value(std::string());
 
 			if (!ArrayInsert(result, indexStr, &element)) {
@@ -3113,7 +3162,7 @@ std::error_code splitMS(DocumentWidget *document, Arguments arguments, DataValue
 			/* We skipped the last character to prevent an endless loop.
 			   Add it to the list. */
 			int64_t elementLen = strLength - lastEnd;
-			view::string_view str(&sourceStr[static_cast<size_t>(lastEnd)], static_cast<size_t>(elementLen));
+			std::string_view str(&sourceStr[static_cast<size_t>(lastEnd)], static_cast<size_t>(elementLen));
 
 			element = make_value(str);
 			if (!ArrayInsert(result, indexStr, &element)) {
@@ -3223,7 +3272,7 @@ std::error_code lineMV(DocumentWidget *document, Arguments arguments, DataValue 
 	TextArea *area       = MainWindow::fromDocument(document)->lastFocus();
 	TextCursor cursorPos = area->cursorPos();
 
-	if (const boost::optional<Location> loc = area->positionToLineAndCol(cursorPos)) {
+	if (const std::optional<Location> loc = area->positionToLineAndCol(cursorPos)) {
 		*result = make_value(loc->line);
 	} else {
 		*result = make_value(buf->BufCountLines(buf->BufStartOfBuffer(), cursorPos) + 1);
@@ -3468,7 +3517,7 @@ std::error_code fontNameMV(DocumentWidget *document, Arguments arguments, DataVa
 std::error_code fontNameItalicMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	qWarning("NEdit: seperate italic fonts are not longer supported");
+	qWarning("NEdit: separate italic fonts are not longer supported");
 
 	// NOTE(eteran): used to be italicFontName_
 	*result = make_value(document->fontName_);
@@ -3478,7 +3527,7 @@ std::error_code fontNameItalicMV(DocumentWidget *document, Arguments arguments, 
 std::error_code fontNameBoldMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	qWarning("NEdit: seperate bold fonts are not longer supported");
+	qWarning("NEdit: separate bold fonts are not longer supported");
 
 	// NOTE(eteran): used to be boldFontName_
 	*result = make_value(document->fontName_);
@@ -3488,7 +3537,7 @@ std::error_code fontNameBoldMV(DocumentWidget *document, Arguments arguments, Da
 std::error_code fontNameBoldItalicMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	qWarning("NEdit: seperate bold-italic fonts are not longer supported");
+	qWarning("NEdit: separate bold-italic fonts are not longer supported");
 
 	// NOTE(eteran): used to be boldItalicFontName_
 	*result = make_value(document->fontName_);
@@ -3499,7 +3548,7 @@ std::error_code subscriptSepMV(DocumentWidget *document, Arguments arguments, Da
 	Q_UNUSED(document)
 	Q_UNUSED(arguments)
 
-	*result = make_value(view::string_view(ARRAY_DIM_SEP, 1));
+	*result = make_value(std::string_view(ARRAY_DIM_SEP, 1));
 	return MacroErrorCode::Success;
 }
 
@@ -3507,7 +3556,7 @@ std::error_code minFontWidthMV(DocumentWidget *document, Arguments arguments, Da
 	Q_UNUSED(arguments)
 
 	TextArea *area = document->firstPane();
-	*result        = make_value(area->TextDMinFontWidth());
+	*result        = make_value(area->minimumFontWidth());
 	return MacroErrorCode::Success;
 }
 
@@ -3515,7 +3564,7 @@ std::error_code maxFontWidthMV(DocumentWidget *document, Arguments arguments, Da
 	Q_UNUSED(arguments)
 
 	TextArea *area = document->firstPane();
-	*result        = make_value(area->TextDMaxFontWidth());
+	*result        = make_value(area->maximumFontWidth());
 	return MacroErrorCode::Success;
 }
 
@@ -3701,26 +3750,25 @@ std::error_code rangesetCreateMS(DocumentWidget *document, Arguments arguments, 
 		const int label = rangesetTable->RangesetCreate();
 		*result         = make_value(label);
 		return MacroErrorCode::Success;
-	} else {
+	}
 
-		int nRangesetsRequired;
-		if (std::error_code ec = readArgument(arguments[0], &nRangesetsRequired)) {
-			return ec;
-		}
+	int nRangesetsRequired;
+	if (std::error_code ec = readArgument(arguments[0], &nRangesetsRequired)) {
+		return ec;
+	}
 
-		*result = make_value(std::make_shared<Array>());
+	*result = make_value(std::make_shared<Array>());
 
-		if (nRangesetsRequired > rangesetTable->rangesetsAvailable()) {
-			return MacroErrorCode::Success;
-		}
-
-		for (int i = 0; i < nRangesetsRequired; i++) {
-			DataValue element = make_value(rangesetTable->RangesetCreate());
-			ArrayInsert(result, std::to_string(i), &element);
-		}
-
+	if (nRangesetsRequired > rangesetTable->rangesetsAvailable()) {
 		return MacroErrorCode::Success;
 	}
+
+	for (int i = 0; i < nRangesetsRequired; i++) {
+		DataValue element = make_value(rangesetTable->RangesetCreate());
+		ArrayInsert(result, std::to_string(i), &element);
+	}
+
+	return MacroErrorCode::Success;
 }
 
 /*
@@ -3734,7 +3782,7 @@ std::error_code rangesetDestroyMS(DocumentWidget *document, Arguments arguments,
 	}
 
 	if (is_array(arguments[0])) {
-		DataValue *array = &arguments[0];
+		DataValue *array = arguments.data();
 		int arraySize    = ArraySize(array);
 
 		std::vector<int> deleteLabels;
@@ -3779,7 +3827,7 @@ std::error_code rangesetDestroyMS(DocumentWidget *document, Arguments arguments,
 }
 
 /*
-** Built-in macro subroutine for getting all range sets with a specfic name.
+** Built-in macro subroutine for getting all range sets with a specific name.
 ** Arguments are $1: range set name.
 ** return value is an array indexed 0 to n, with the rangeset labels as values;
 */
@@ -3834,7 +3882,7 @@ std::error_code rangesetAddMS(DocumentWidget *document, Arguments arguments, Dat
 	TextBuffer *buffer                                  = document->buffer();
 	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
-	if (arguments.size() < 1 || arguments.size() > 3) {
+	if (arguments.empty() || arguments.size() > 3) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -3898,8 +3946,8 @@ std::error_code rangesetAddMS(DocumentWidget *document, Arguments arguments, Dat
 
 		// make sure range is in order and fits buffer size
 		const auto maxpos = TextCursor(buffer->length());
-		start             = qBound(TextCursor(), start, maxpos);
-		end               = qBound(TextCursor(), end, maxpos);
+		start             = std::clamp(start, TextCursor(), maxpos);
+		end               = std::clamp(end, TextCursor(), maxpos);
 
 		if (start > end) {
 			std::swap(start, end);
@@ -3933,7 +3981,7 @@ std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments arguments
 	TextBuffer *buffer                                  = document->buffer();
 	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
-	if (arguments.size() < 1 || arguments.size() > 3) {
+	if (arguments.empty() || arguments.size() > 3) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -3997,8 +4045,8 @@ std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments arguments
 
 		// make sure range is in order and fits buffer size
 		const int64_t maxpos = buffer->length();
-		start                = qBound<int64_t>(0, start, maxpos);
-		end                  = qBound<int64_t>(0, end, maxpos);
+		start                = std::clamp<int64_t>(start, 0, maxpos);
+		end                  = std::clamp<int64_t>(end, 0, maxpos);
 
 		if (start > end) {
 			std::swap(start, end);
@@ -4114,7 +4162,7 @@ std::error_code rangesetRangeMS(DocumentWidget *document, Arguments arguments, D
 
 	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
-	if (arguments.size() < 1 || arguments.size() > 2) {
+	if (arguments.empty() || arguments.size() > 2) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -4131,7 +4179,7 @@ std::error_code rangesetRangeMS(DocumentWidget *document, Arguments arguments, D
 	QT_WARNING_PUSH
 	QT_WARNING_DISABLE_GCC("-Wmaybe-uninitialized") // NOTE(eteran): GCC 7+ false positive
 
-	boost::optional<TextRange> range;
+	std::optional<TextRange> range;
 
 	if (Rangeset *rangeset = rangesetTable->RangesetFetch(label)) {
 		if (arguments.size() == 1) {
@@ -4179,7 +4227,7 @@ std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments argume
 	TextBuffer *buffer                                  = document->buffer();
 	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
-	if (arguments.size() < 1 || arguments.size() > 2) {
+	if (arguments.empty() || arguments.size() > 2) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -4209,7 +4257,7 @@ std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments argume
 	}
 
 	const int64_t maxpos = buffer->length();
-	int rangeIndex;
+	int64_t rangeIndex;
 	if (pos < 0 || pos > maxpos) {
 		rangeIndex = 0;
 	} else {
@@ -4309,7 +4357,7 @@ std::error_code rangesetSetModeMS(DocumentWidget *document, Arguments arguments,
 
 	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
-	if (arguments.size() < 1 || arguments.size() > 2) {
+	if (arguments.empty() || arguments.size() > 2) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
@@ -4643,6 +4691,170 @@ std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arguments,
 		TextCursor(bufferPos));
 }
 
+std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	// ensure that we are dealing with the document which currently has the focus
+	document = MacroFocusDocument();
+
+	if (!arguments.empty()) {
+		QString index;
+		if (std::error_code ec = readArgument(arguments[0], &index)) {
+			return ec;
+		}
+
+		const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+
+		if (index == QLatin1String("last")) {
+			document = *documents.rbegin();
+		} else if (index == QLatin1String("first")) {
+			document = *documents.begin();
+		} else if (index == QLatin1String("next")) {
+			auto it = std::find_if(documents.begin(), documents.end(), [document](DocumentWidget *doc) {
+				return doc == document;
+			});
+
+			if (it != documents.end()) {
+				it = std::next(it);
+			}
+
+			if (it != documents.end()) {
+				document = *it;
+			}
+
+		} else if (index == QLatin1String("previous")) {
+			auto it = std::find_if(documents.rbegin(), documents.rend(), [document](DocumentWidget *doc) {
+				return doc == document;
+			});
+
+			if (it != documents.rend()) {
+				it = std::next(it);
+			}
+
+			if (it != documents.rend()) {
+				document = *it;
+			}
+		} else {
+			bool ok = false;
+			int n   = index.toInt(&ok);
+			if (!ok) {
+				return MacroErrorCode::InvalidArgument;
+			}
+
+			if (n == 0) {
+				return MacroErrorCode::InvalidArgument;
+			}
+
+			if (n < 0) {
+				auto it = documents.rbegin();
+				while (it != documents.rend() && n < 1) {
+					++n;
+					++it;
+				}
+
+				if (it != documents.rend()) {
+					document = *it;
+				}
+			} else if (n > 0) {
+				auto it = documents.begin();
+				while (it != documents.end() && n > 1) {
+					++n;
+					++it;
+				}
+
+				if (it != documents.end()) {
+					document = *it;
+				}
+			}
+		}
+	}
+
+	bool focus = Preferences::GetPrefFocusOnRaise();
+	if (arguments.size() > 1) {
+		QString argument;
+		if (std::error_code ec = readArgument(arguments[1], &argument)) {
+			return ec;
+		}
+
+		if (argument == QLatin1String("focus")) {
+			focus = true;
+		} else if (argument == QLatin1String("nofocus")) {
+			focus = false;
+		} else {
+			return MacroErrorCode::InvalidArgument;
+		}
+	}
+
+	if (arguments.size() > 2) {
+		return MacroErrorCode::TooManyArguments;
+	}
+
+	document->raiseFocusDocumentWindow(focus);
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
+
+std::error_code focusPaneAP(DocumentWidget *document, Arguments arguments, DataValue *result) {
+
+	// ensure that we are dealing with the document which currently has the focus
+	document = MacroFocusDocument();
+
+	if (arguments.size() != 1) {
+		return MacroErrorCode::TooFewArguments;
+	}
+
+	MainWindow *win = MainWindow::fromDocument(document);
+	Q_ASSERT(win);
+
+	std::vector<TextArea *> panes = document->textPanes();
+	QPointer<TextArea> lastFocus  = win->lastFocus();
+
+	// Find the currently focused pane for relative indexing
+	size_t paneIndex = 0;
+	for (size_t i = 0; i < panes.size(); ++i) {
+		if (lastFocus == panes[i]) {
+			paneIndex = i;
+		}
+	}
+
+	QString index;
+	if (std::error_code ec = readArgument(arguments[0], &index)) {
+		return ec;
+	}
+
+	if (index == QLatin1String("first")) {
+		paneIndex = 0;
+	} else if (index == QLatin1String("last")) {
+		paneIndex = panes.size() - 1;
+	} else if (index == QLatin1String("next")) {
+		paneIndex = (paneIndex + 1) % panes.size();
+	} else if (index == QLatin1String("previous")) {
+		paneIndex = (paneIndex - 1) % panes.size();
+	} else {
+		bool ok = false;
+		int n   = index.toInt(&ok);
+		if (!ok) {
+			return MacroErrorCode::InvalidArgument;
+		}
+
+		if (n > 0) {
+			paneIndex = paneIndex - 1;
+		} else if (n < 0) {
+			paneIndex = panes.size() + n;
+		} else {
+			paneIndex = -1;
+		}
+	}
+
+	if (paneIndex >= panes.size()) {
+		QApplication::beep();
+	} else {
+		panes[paneIndex]->setFocus();
+	}
+
+	*result = make_value();
+	return MacroErrorCode::Success;
+}
+
 const SubRoutine TextAreaSubrNames[] = {
 	// Keyboard
 	{"backward_character", textEvent<&TextArea::backwardCharacter>},
@@ -4692,11 +4904,8 @@ const SubRoutine TextAreaSubrNames[] = {
 	{"scroll_up", scrollUpMS},
 	{"scroll_to_line", textEventArg<int, &TextArea::scrollToLineAP>},
 	{"self_insert", textEventArg<const QString &, &TextArea::insertStringAP>},
-
-#if 0 // NOTE(eteran): do these make sense to support
-	{"focus_pane",                nullptr}, // NOTE(eteran): was from MainWindow in my code...
-	{"raise_window",              nullptr}, // NOTE(eteran): was from MainWindow in my code...
-#endif
+	{"process_home", textEvent<&TextArea::beginningOfLine>},
+	{"toggle_overstrike", textEvent<&TextArea::toggleOverstrike>},
 
 #if 0 // NOTE(eteran): mouse event, no point in scripting...
 	{"extend_end",                nullptr},
@@ -4719,8 +4928,6 @@ const SubRoutine TextAreaSubrNames[] = {
 
 #if 0 // NOTE(eteran): Not mentioned in the documentation
 	{"end_drag",                  nullptr},
-	{"process_home",              processHomeMS},
-	{"toggle_overstrike",         toggleOverstrikeMS},
 #endif
 };
 
@@ -4734,6 +4941,7 @@ const SubRoutine MenuMacroSubrNames[] = {
 	{"open_copied", menuEventU<&MainWindow::action_Shift_Open_Selected>},
 	{"close", closeMS},
 	{"save", menuEventU<&MainWindow::action_Save>},
+	{"save_all", menuEventU<&MainWindow::action_Save_All>},
 	{"save_as", saveAsMS},
 	{"save_as_dialog", menuEventU<&MainWindow::action_Save_As>},
 	{"revert_to_saved_dialog", menuEventU<&MainWindow::action_Revert_to_Saved>},
@@ -4838,7 +5046,9 @@ const SubRoutine MenuMacroSubrNames[] = {
 	{"previous_document", menuEvent<&MainWindow::action_Prev_Document>},
 	{"last_document", menuEvent<&MainWindow::action_Last_Document>},
 	{"bg_menu_command", backgroundMenuCommandMS},
-#if 0 // NOTE(eteran): what are these for? are they needed?
+// NOTE(eteran): These are for triggering context menus for the tab-bar and text-area background
+// I think that these are generally not meaningful to call from a macro
+#if 0
 	{ "post_window_bg_menu",          nullptr },
 	{ "post_tab_context_menu",        nullptr },
 #endif
@@ -4872,6 +5082,7 @@ const SubRoutine MacroSubrs[] = {
 	{"select", selectMS},
 	{"select_rectangle", selectRectangleMS},
 	{"focus_window", focusWindowMS},
+	{"focus_pane", focusPaneAP},
 	{"shell_command", shellCmdMS},
 	{"string_to_clipboard", stringToClipboardMS},
 	{"clipboard_to_string", clipboardToStringMS},
@@ -4903,6 +5114,7 @@ const SubRoutine MacroSubrs[] = {
 	{"get_style_by_name", getStyleByNameMS},
 	{"get_style_at_pos", getStyleAtPosMS},
 	{"filename_dialog", filenameDialogMS},
+	{"raise_window", raiseWindowMS},
 };
 
 const SubRoutine SpecialVars[] = {
@@ -5001,9 +5213,9 @@ void RegisterMacroSubroutines() {
 ** teaching other modules about macro return globals, since other than this,
 ** they're not used outside of macro.c)
 */
-void returnShellCommandOutput(DocumentWidget *document, const QString &outText, int status) {
+void returnShellCommandOutput(DocumentWidget *document, std::string_view outText, int status) {
 
-	if (const std::shared_ptr<MacroCommandData> &cmdData = document->macroCmdData_) {
+	if (const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_) {
 
 		DataValue retVal = make_value(outText);
 

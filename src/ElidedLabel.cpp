@@ -4,10 +4,14 @@
 #include <QApplication>
 #include <QClipboard>
 #include <QContextMenuEvent>
-#include <QDesktopWidget>
 #include <QMenu>
 #include <QMimeData>
+#include <QScreen>
 #include <QTextDocument>
+
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+#include <QWindow>
+#endif
 
 /**
  * @brief ElidedLabel::ElidedLabel
@@ -36,7 +40,8 @@ ElidedLabel::ElidedLabel(QWidget *parent)
 /**
  * @brief ElidedLabel::resizeEvent
  */
-void ElidedLabel::resizeEvent(QResizeEvent *) {
+void ElidedLabel::resizeEvent(QResizeEvent *event) {
+	Q_UNUSED(event);
 	squeezeTextToLabel();
 }
 
@@ -55,8 +60,9 @@ QSize ElidedLabel::minimumSizeHint() const {
  * @return
  */
 QSize ElidedLabel::sizeHint() const {
-	const int maxWidth = QApplication::desktop()->geometry().width() * 3 / 4;
+	QScreen *currentScreen = QGuiApplication::primaryScreen();
 
+	const int maxWidth = currentScreen->geometry().width() * 3 / 4;
 	QFontMetrics fm(fontMetrics());
 
 	int textWidth = Font::stringWidth(fm, fullText_);

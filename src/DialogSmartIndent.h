@@ -5,8 +5,11 @@
 #include "Dialog.h"
 #include "ui_DialogSmartIndent.h"
 
+#include <QPointer>
+
 class DocumentWidget;
 class SmartIndentEntry;
+class DialogLanguageModes;
 
 class DialogSmartIndent final : public Dialog {
 	Q_OBJECT
@@ -39,9 +42,10 @@ private:
 	void buttonHelp_clicked();
 	void connectSlots();
 
-public:
+private:
 	Ui::DialogSmartIndent ui;
 	QString languageMode_;
+	QPointer<DialogLanguageModes> dialogLanguageModes_;
 };
 
 #endif

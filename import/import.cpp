@@ -20,7 +20,7 @@
 #include <string>
 
 // Placing these before X11 includes because that header does defines some
-// inconvinient macros :-(
+// inconvenient macros :-(
 namespace {
 
 struct Style {
@@ -313,15 +313,20 @@ SearchType from_string(const QString &str) {
 
 	if (str == QLatin1String("Literal")) {
 		return SearchType::Literal;
-	} else if (str == QLatin1String("CaseSense")) {
+	}
+	if (str == QLatin1String("CaseSense")) {
 		return SearchType::CaseSense;
-	} else if (str == QLatin1String("RegExp")) {
+	}
+	if (str == QLatin1String("RegExp")) {
 		return SearchType::Regex;
-	} else if (str == QLatin1String("LiteralWord")) {
+	}
+	if (str == QLatin1String("LiteralWord")) {
 		return SearchType::LiteralWord;
-	} else if (str == QLatin1String("CaseSenseWord")) {
+	}
+	if (str == QLatin1String("CaseSenseWord")) {
 		return SearchType::CaseSenseWord;
-	} else if (str == QLatin1String("RegExpNoCase")) {
+	}
+	if (str == QLatin1String("RegExpNoCase")) {
 		return SearchType::RegexNoCase;
 	}
 
@@ -334,9 +339,11 @@ WrapStyle from_string(const QString &str) {
 
 	if (str == QLatin1String("None")) {
 		return WrapStyle::None;
-	} else if (str == QLatin1String("Newline")) {
+	}
+	if (str == QLatin1String("Newline")) {
 		return WrapStyle::Newline;
-	} else if (str == QLatin1String("Continuous")) {
+	}
+	if (str == QLatin1String("Continuous")) {
 		return WrapStyle::Continuous;
 	}
 
@@ -349,9 +356,11 @@ IndentStyle from_string(const QString &str) {
 
 	if (str == QLatin1String("None")) {
 		return IndentStyle::None;
-	} else if (str == QLatin1String("Auto")) {
+	}
+	if (str == QLatin1String("Auto")) {
 		return IndentStyle::Auto;
-	} else if (str == QLatin1String("Smart")) {
+	}
+	if (str == QLatin1String("Smart")) {
 		return IndentStyle::Smart;
 	}
 
@@ -367,13 +376,17 @@ ShowMatchingStyle from_string(const QString &str) {
 
 	if (str == QLatin1String("Off")) {
 		return ShowMatchingStyle::None;
-	} else if (str == QLatin1String("Delimiter")) {
+	}
+	if (str == QLatin1String("Delimiter")) {
 		return ShowMatchingStyle::Delimiter;
-	} else if (str == QLatin1String("Range")) {
+	}
+	if (str == QLatin1String("Range")) {
 		return ShowMatchingStyle::Range;
-	} else if (str == QLatin1String("False")) {
+	}
+	if (str == QLatin1String("False")) {
 		return ShowMatchingStyle::None;
-	} else if (str == QLatin1String("True")) {
+	}
+	if (str == QLatin1String("True")) {
 		return ShowMatchingStyle::Delimiter;
 	}
 
@@ -505,7 +518,7 @@ int main(int argc, char *argv[]) {
 
 	auto contents = std::string{std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>()};
 
-	XrmDatabase prefDB = XrmGetStringDatabase(&contents[0]);
+	XrmDatabase prefDB = XrmGetStringDatabase(contents.data());
 
 	QString value = readResource<QString>(prefDB, "nedit.fileVersion");
 

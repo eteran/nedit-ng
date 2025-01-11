@@ -5,7 +5,6 @@
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "Preferences.h"
-
 #include <QMessageBox>
 
 /**
@@ -59,8 +58,8 @@ void DialogMultiReplace::buttonSelectAll_clicked() {
  */
 void DialogMultiReplace::buttonReplace_clicked() {
 
-	QModelIndexList selections = ui.listFiles->selectionModel()->selectedRows();
-	const int nSelected        = selections.size();
+	const QModelIndexList selections = ui.listFiles->selectionModel()->selectedRows();
+	const int nSelected              = selections.size();
 
 	if (!nSelected) {
 		QMessageBox::information(this, tr("No Files"), tr("No files selected!"));
@@ -87,7 +86,7 @@ void DialogMultiReplace::buttonReplace_clicked() {
 	/* Fetch the find and replace strings from the dialog;
 	 * they should have been validated already, but it is possible that the
 	 * user modified the strings again, so we should verify them again too. */
-	boost::optional<DialogReplace::Fields> fields = replace_->readFields();
+	std::optional<DialogReplace::Fields> fields = replace_->readFields();
 	if (!fields) {
 		return;
 	}
@@ -135,7 +134,7 @@ void DialogMultiReplace::buttonReplace_clicked() {
 	/* We suppressed multiple beeps/dialogs. If there wasn't any file in
 	   which the replacement succeeded, we should still warn the user */
 	if (replaceFailed) {
-		if (Preferences::GetPrefSearchDlogs()) {
+		if (Preferences::GetPrefSearchDialogs()) {
 			if (noWritableLeft) {
 				QMessageBox::information(this, tr("Read-only Files"), tr("All selected files have become read-only."));
 			} else {
@@ -150,7 +149,7 @@ void DialogMultiReplace::buttonReplace_clicked() {
 /**
  * @brief DialogMultiReplace::uploadFileListItems
  */
-void DialogMultiReplace::uploadFileListItems(const std::vector<DocumentWidget *> &writeableDocuments) {
+void DialogMultiReplace::uploadFileListItems(const std::vector<DocumentWidget *> &writeableDocuments) const {
 
 	model_->clear();
 

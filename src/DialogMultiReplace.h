@@ -24,7 +24,7 @@ private:
 	void connectSlots();
 
 public:
-	void uploadFileListItems(const std::vector<DocumentWidget *> &writeableDocuments);
+	void uploadFileListItems(const std::vector<DocumentWidget *> &writeableDocuments) const;
 
 public:
 	Ui::DialogMultiReplace ui;

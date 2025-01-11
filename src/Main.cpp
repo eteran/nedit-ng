@@ -106,11 +106,13 @@ Main::Main(const QStringList &args) {
 	   which would then be out of sync with the real preference settings) */
 	for (int i = 1; i < args.size(); ++i) {
 
-		const QString arg = args[i];
+		const QString &arg = args[i];
 
 		if (arg == QLatin1String("--")) {
 			break; // treat all remaining arguments as filenames
-		} else if (arg == QLatin1String("-import")) {
+		}
+
+		if (arg == QLatin1String("-import")) {
 			i = nextArg(args, i);
 			Preferences::ImportPrefFile(args[i]);
 		}
@@ -134,7 +136,9 @@ Main::Main(const QStringList &args) {
 		if (opts && args[i] == QLatin1String("--")) {
 			opts = false; // treat all remaining arguments as filenames
 			continue;
-		} else if (opts && args[i] == QLatin1String("-tags")) {
+		}
+
+		if (opts && args[i] == QLatin1String("-tags")) {
 			i = nextArg(args, i);
 			if (!Tags::addTagsFile(args[i], Tags::SearchMode::TAG)) {
 				fprintf(stderr, "NEdit: Unable to load tags file\n");
@@ -146,10 +150,13 @@ Main::Main(const QStringList &args) {
 				toDoCommand = args[i];
 			}
 		} else if (opts && args[i] == QLatin1String("-svrname")) {
-			i                    = nextArg(args, i);
-			Settings::serverName = args[i];
+			i = nextArg(args, i);
+
+			Settings::serverNameOverride = args[i];
+			IsServer                     = true;
 		} else if (opts && (args[i] == QLatin1String("-font") || args[i] == QLatin1String("-fn"))) {
-			i                  = nextArg(args, i);
+			i = nextArg(args, i);
+
 			Settings::fontName = args[i];
 		} else if (opts && args[i] == QLatin1String("-wrap")) {
 			Settings::autoWrap = WrapStyle::Continuous;
@@ -232,10 +239,12 @@ Main::Main(const QStringList &args) {
 		} else if (opts && args[i] == QLatin1String("-noiconic")) {
 			iconic = false;
 		} else if (opts && (args[i] == QLatin1String("-geometry") || args[i] == QLatin1String("-g"))) {
-			i        = nextArg(args, i);
+			i = nextArg(args, i);
+
 			geometry = args[i];
 		} else if (opts && args[i] == QLatin1String("-lm")) {
-			i        = nextArg(args, i);
+			i = nextArg(args, i);
+
 			langMode = args[i];
 		} else if (opts && args[i] == QLatin1String("-import")) {
 			i = nextArg(args, i); // already processed, skip
@@ -253,7 +262,7 @@ Main::Main(const QStringList &args) {
 
 			const PathInfo fi = parseFilename(args[i]);
 
-			/* determine if file is to be openned in new tab, by
+			/* determine if file is to be opened in new tab, by
 			   factoring the options -group, -tabbed & -untabbed */
 			switch (group) {
 			case 2:
@@ -268,7 +277,7 @@ Main::Main(const QStringList &args) {
 			}
 
 			/* Files are opened in background to improve opening speed
-			   by defering certain time  consuiming task such as syntax
+			   by deferring certain time consuming task such as syntax
 			   highlighting. At the end of the file-opening loop, the
 			   last file opened will be raised to restore those deferred
 			   items. The current file may also be raised if there're
@@ -286,7 +295,7 @@ Main::Main(const QStringList &args) {
 					iconic,
 					langMode,
 					isTabbed,
-					/*bgOpen=*/true);
+					/*background=*/true);
 			} else {
 				document = DocumentWidget::editExistingFile(
 					nullptr,
@@ -297,7 +306,7 @@ Main::Main(const QStringList &args) {
 					iconic,
 					langMode,
 					isTabbed,
-					/*bgOpen=*/true);
+					/*background=*/true);
 			}
 
 			fileSpecified = true;

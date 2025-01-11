@@ -10,11 +10,9 @@
 #include "Util/utils.h"
 
 #include <algorithm>
-#include <cassert>
-#include <cctype>
 #include <climits>
-#include <cstdio>
 #include <cstring>
+#include <limits>
 
 namespace {
 
@@ -30,7 +28,7 @@ bool attempt(Regex *prog, const char *string);
    only necessary during compilation, can be left out.
    The net result of using this inlined version at two critical places is
    a 25% speedup (again, witnesses on Perl syntax highlighting). */
-FORCE_INLINE inline uint8_t *NEXT_PTR(uint8_t *ptr) noexcept {
+FORCE_INLINE uint8_t *NEXT_PTR(uint8_t *ptr) noexcept {
 
 	// NOTE(eteran): like next_ptr, but is inline
 	// doesn't do "is this a first pass compile" check
@@ -43,9 +41,9 @@ FORCE_INLINE inline uint8_t *NEXT_PTR(uint8_t *ptr) noexcept {
 
 	if (GET_OP_CODE(ptr) == BACK) {
 		return (ptr - offset);
-	} else {
-		return (ptr + offset);
 	}
+
+	return (ptr + offset);
 }
 
 /**
@@ -53,7 +51,7 @@ FORCE_INLINE inline uint8_t *NEXT_PTR(uint8_t *ptr) noexcept {
  * @param ptr
  * @return
  */
-FORCE_INLINE inline bool end_of_string(const char *ptr) noexcept {
+FORCE_INLINE bool end_of_string(const char *ptr) noexcept {
 
 	if (eContext.End_Of_String != nullptr && ptr >= eContext.End_Of_String) {
 		return true;
@@ -71,8 +69,8 @@ FORCE_INLINE inline bool end_of_string(const char *ptr) noexcept {
  * @param p
  * @return
  */
-FORCE_INLINE inline uint16_t get_lower(uint8_t *p) noexcept {
-	return static_cast<uint8_t>(((p[NODE_SIZE + 0] & 0xff) << 8) + ((p[NODE_SIZE + 1]) & 0xff));
+FORCE_INLINE uint16_t get_lower(const uint8_t *p) noexcept {
+	return static_cast<uint8_t>(((p[NODE_SIZE<size_t> + 0] & 0xff) << 8) + ((p[NODE_SIZE<size_t> + 1]) & 0xff));
 }
 
 /**
@@ -80,8 +78,8 @@ FORCE_INLINE inline uint16_t get_lower(uint8_t *p) noexcept {
  * @param p
  * @return
  */
-FORCE_INLINE inline uint16_t get_upper(uint8_t *p) noexcept {
-	return static_cast<uint8_t>(((p[NODE_SIZE + 2] & 0xff) << 8) + ((p[NODE_SIZE + 3]) & 0xff));
+FORCE_INLINE uint16_t get_upper(const uint8_t *p) noexcept {
+	return static_cast<uint8_t>(((p[NODE_SIZE<size_t> + 2] & 0xff) << 8) + ((p[NODE_SIZE<size_t> + 3]) & 0xff));
 }
 
 /**
@@ -147,11 +145,11 @@ uint32_t greedy(uint8_t *p, uint32_t max) {
 		break;
 	case EXACTLY:
 		// Count occurrences of single character operand.
-		count = greedy_consume(input_str, max_cmp, [operand](char ch) { return *operand == ch; });
+		count = greedy_consume(input_str, max_cmp, [operand](char ch) { return static_cast<char>(*operand) == ch; });
 		break;
 	case SIMILAR:
 		// Case insensitive version of EXACTLY
-		count = greedy_consume(input_str, max_cmp, [operand](char ch) { return *operand == safe_ctype<::tolower>(ch); });
+		count = greedy_consume(input_str, max_cmp, [operand](char ch) { return static_cast<char>(*operand) == safe_tolower(ch); });
 		break;
 	case ANY_OF:
 		// [...] character class.
@@ -174,43 +172,43 @@ uint32_t greedy(uint8_t *p, uint32_t max) {
 		break;
 	case WORD_CHAR:
 		// \w (word character, alpha-numeric or underscore)
-		count = greedy_consume(input_str, max_cmp, [](char ch) { return (safe_ctype<::isalnum>(ch) || ch == '_'); });
+		count = greedy_consume(input_str, max_cmp, [](char ch) { return (safe_isalnum(ch) || ch == '_'); });
 		break;
 	case NOT_WORD_CHAR:
 		// \W (NOT a word character)
-		count = greedy_consume(input_str, max_cmp, [](char ch) { return !safe_ctype<::isalnum>(ch) && ch != '_' && ch != '\n'; });
+		count = greedy_consume(input_str, max_cmp, [](char ch) { return !safe_isalnum(ch) && ch != '_' && ch != '\n'; });
 		break;
 	case DIGIT:
 		// same as [0123456789]
-		count = greedy_consume(input_str, max_cmp, [](char ch) { return safe_ctype<::isdigit>(ch); });
+		count = greedy_consume(input_str, max_cmp, [](char ch) { return safe_isdigit(ch); });
 		break;
 	case NOT_DIGIT:
 		// same as [^0123456789]
-		count = greedy_consume(input_str, max_cmp, [](char ch) { return !safe_ctype<::isdigit>(ch) && ch != '\n'; });
+		count = greedy_consume(input_str, max_cmp, [](char ch) { return !safe_isdigit(ch) && ch != '\n'; });
 		break;
 	case SPACE:
 		// same as [ \t\r\f\v]-- doesn't match newline.
-		count = greedy_consume(input_str, max_cmp, [](char ch) { return safe_ctype<::isspace>(ch) && ch != '\n'; });
+		count = greedy_consume(input_str, max_cmp, [](char ch) { return safe_isspace(ch) && ch != '\n'; });
 		break;
 	case SPACE_NL:
 		// same as [\n \t\r\f\v]-- matches newline.
-		count = greedy_consume(input_str, max_cmp, [](char ch) { return safe_ctype<::isspace>(ch); });
+		count = greedy_consume(input_str, max_cmp, [](char ch) { return safe_isspace(ch); });
 		break;
 	case NOT_SPACE:
 		// same as [^\n \t\r\f\v]-- doesn't match newline.
-		count = greedy_consume(input_str, max_cmp, [](char ch) { return !safe_ctype<::isspace>(ch); });
+		count = greedy_consume(input_str, max_cmp, [](char ch) { return !safe_isspace(ch); });
 		break;
 	case NOT_SPACE_NL:
 		// same as [^ \t\r\f\v]-- matches newline.
-		count = greedy_consume(input_str, max_cmp, [](char ch) { return (!safe_ctype<::isspace>(ch) || ch == '\n'); });
+		count = greedy_consume(input_str, max_cmp, [](char ch) { return (!safe_isspace(ch) || ch == '\n'); });
 		break;
 	case LETTER:
 		// same as [a-zA-Z]
-		count = greedy_consume(input_str, max_cmp, [](char ch) { return safe_ctype<::isalpha>(ch); });
+		count = greedy_consume(input_str, max_cmp, [](char ch) { return safe_isalpha(ch); });
 		break;
 	case NOT_LETTER:
 		// same as [^a-zA-Z]
-		count = greedy_consume(input_str, max_cmp, [](char ch) { return !safe_ctype<::isalpha>(ch) && ch != '\n'; });
+		count = greedy_consume(input_str, max_cmp, [](char ch) { return !safe_isalpha(ch) && ch != '\n'; });
 		break;
 	default:
 		/* Called inappropriately.  Only atoms that are SIMPLE should generate
@@ -253,7 +251,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 	if (++eContext.Recursion_Count > RecursionLimit) {
 		// Prevent duplicate errors
 		if (!eContext.Recursion_Limit_Exceeded) {
-			reg_error("recursion limit exceeded, please respecify expression");
+			reg_error("recursion limit exceeded, please re-specify expression");
 		}
 
 		eContext.Recursion_Limit_Exceeded = true;
@@ -299,7 +297,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			uint8_t *opnd = OPERAND(scan);
 
 			// Inline the first character, for speed.
-			if (end_of_string(eContext.Reg_Input) || *opnd != *eContext.Reg_Input) {
+			if (end_of_string(eContext.Reg_Input) || static_cast<char>(*opnd) != *eContext.Reg_Input) {
 				MATCH_RETURN(false);
 			}
 
@@ -324,7 +322,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			/* Note: the SIMILAR operand was converted to lower case during
 				   regex compile. */
 			while ((test = *opnd++) != '\0') {
-				if (end_of_string(eContext.Reg_Input) || safe_ctype<::tolower>(*eContext.Reg_Input++) != test) {
+				if (end_of_string(eContext.Reg_Input) || safe_tolower(*eContext.Reg_Input++) != test) {
 					MATCH_RETURN(false);
 				}
 			}
@@ -440,7 +438,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			MATCH_RETURN(false);
 
 		case WORD_CHAR: // \w (word character; alpha-numeric or underscore)
-			if (!end_of_string(eContext.Reg_Input) && (safe_ctype<::isalnum>(*eContext.Reg_Input) || *eContext.Reg_Input == '_')) {
+			if (!end_of_string(eContext.Reg_Input) && (safe_isalnum(*eContext.Reg_Input) || *eContext.Reg_Input == '_')) {
 				eContext.Reg_Input++;
 				break;
 			}
@@ -448,7 +446,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			MATCH_RETURN(false);
 
 		case NOT_WORD_CHAR: // \W (NOT a word character)
-			if (end_of_string(eContext.Reg_Input) || safe_ctype<::isalnum>(*eContext.Reg_Input) || *eContext.Reg_Input == '_' || *eContext.Reg_Input == '\n') {
+			if (end_of_string(eContext.Reg_Input) || safe_isalnum(*eContext.Reg_Input) || *eContext.Reg_Input == '_' || *eContext.Reg_Input == '\n') {
 				MATCH_RETURN(false);
 			}
 
@@ -472,7 +470,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			break;
 
 		case DIGIT: // \d, same as [0123456789]
-			if (end_of_string(eContext.Reg_Input) || !safe_ctype<::isdigit>(*eContext.Reg_Input)) {
+			if (end_of_string(eContext.Reg_Input) || !safe_isdigit(*eContext.Reg_Input)) {
 				MATCH_RETURN(false);
 			}
 
@@ -480,7 +478,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			break;
 
 		case NOT_DIGIT: // \D, same as [^0123456789]
-			if (end_of_string(eContext.Reg_Input) || safe_ctype<::isdigit>(*eContext.Reg_Input) || *eContext.Reg_Input == '\n') {
+			if (end_of_string(eContext.Reg_Input) || safe_isdigit(*eContext.Reg_Input) || *eContext.Reg_Input == '\n') {
 				MATCH_RETURN(false);
 			}
 
@@ -488,7 +486,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			break;
 
 		case LETTER: // \l, same as [a-zA-Z]
-			if (end_of_string(eContext.Reg_Input) || !safe_ctype<::isalpha>(*eContext.Reg_Input)) {
+			if (end_of_string(eContext.Reg_Input) || !safe_isalpha(*eContext.Reg_Input)) {
 				MATCH_RETURN(false);
 			}
 
@@ -496,7 +494,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			break;
 
 		case NOT_LETTER: // \L, same as [^0123456789]
-			if (end_of_string(eContext.Reg_Input) || safe_ctype<::isalpha>(*eContext.Reg_Input) || *eContext.Reg_Input == '\n') {
+			if (end_of_string(eContext.Reg_Input) || safe_isalpha(*eContext.Reg_Input) || *eContext.Reg_Input == '\n') {
 				MATCH_RETURN(false);
 			}
 
@@ -504,7 +502,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			break;
 
 		case SPACE: // \s, same as [ \t\r\f\v]
-			if (end_of_string(eContext.Reg_Input) || !safe_ctype<::isspace>(*eContext.Reg_Input) || *eContext.Reg_Input == '\n') {
+			if (end_of_string(eContext.Reg_Input) || !safe_isspace(*eContext.Reg_Input) || *eContext.Reg_Input == '\n') {
 				MATCH_RETURN(false);
 			}
 
@@ -512,7 +510,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			break;
 
 		case SPACE_NL: // \s, same as [\n \t\r\f\v]
-			if (end_of_string(eContext.Reg_Input) || !safe_ctype<::isspace>(*eContext.Reg_Input)) {
+			if (end_of_string(eContext.Reg_Input) || !safe_isspace(*eContext.Reg_Input)) {
 				MATCH_RETURN(false);
 			}
 
@@ -520,7 +518,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			break;
 
 		case NOT_SPACE: // \S, same as [^\n \t\r\f\v]
-			if (end_of_string(eContext.Reg_Input) || safe_ctype<::isspace>(*eContext.Reg_Input)) {
+			if (end_of_string(eContext.Reg_Input) || safe_isspace(*eContext.Reg_Input)) {
 				MATCH_RETURN(false);
 			}
 
@@ -528,7 +526,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			break;
 
 		case NOT_SPACE_NL: // \S, same as [^ \t\r\f\v]
-			if (end_of_string(eContext.Reg_Input) || (safe_ctype<::isspace>(*eContext.Reg_Input) && *eContext.Reg_Input != '\n')) {
+			if (end_of_string(eContext.Reg_Input) || (safe_isspace(*eContext.Reg_Input) && *eContext.Reg_Input != '\n')) {
 				MATCH_RETURN(false);
 			}
 
@@ -598,7 +596,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			switch (GET_OP_CODE(scan)) {
 			case LAZY_STAR:
 				lazy = true;
-				NEDIT_FALLTHROUGH();
+				[[fallthrough]];
 			case STAR:
 				min = 0;
 				max = std::numeric_limits<uint32_t>::max();
@@ -606,7 +604,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 
 			case LAZY_PLUS:
 				lazy = true;
-				NEDIT_FALLTHROUGH();
+				[[fallthrough]];
 			case PLUS:
 				min = 1;
 				max = std::numeric_limits<uint32_t>::max();
@@ -614,7 +612,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 
 			case LAZY_QUESTION:
 				lazy = true;
-				NEDIT_FALLTHROUGH();
+				[[fallthrough]];
 			case QUESTION:
 				min = 0;
 				max = 1;
@@ -622,16 +620,16 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 
 			case LAZY_BRACE:
 				lazy = true;
-				NEDIT_FALLTHROUGH();
+				[[fallthrough]];
 			case BRACE:
-				min = static_cast<uint32_t>(GET_OFFSET(scan + NEXT_PTR_SIZE));
-				max = static_cast<uint32_t>(GET_OFFSET(scan + (2 * NEXT_PTR_SIZE)));
+				min = static_cast<uint32_t>(GET_OFFSET(scan + NEXT_PTR_SIZE<size_t>));
+				max = static_cast<uint32_t>(GET_OFFSET(scan + (2 * NEXT_PTR_SIZE<size_t>)));
 
 				if (max <= REG_INFINITY) {
 					max = std::numeric_limits<uint32_t>::max();
 				}
 
-				next_op = OPERAND(scan + (2 * NEXT_PTR_SIZE));
+				next_op = OPERAND(scan + (2 * NEXT_PTR_SIZE<size_t>));
 			}
 
 			save = eContext.Reg_Input;
@@ -645,7 +643,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			}
 
 			while (min <= num_matched && num_matched <= max) {
-				if (next_char == '\0' || (!end_of_string(eContext.Reg_Input) && next_char == *eContext.Reg_Input)) {
+				if (next_char == '\0' || (!end_of_string(eContext.Reg_Input) && static_cast<char>(next_char) == *eContext.Reg_Input)) {
 					if (match(next, nullptr)) {
 						MATCH_RETURN(true);
 					}
@@ -692,8 +690,8 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			break;
 
 		case TEST_COUNT:
-			if (eContext.BraceCounts[*OPERAND(scan)] < static_cast<uint32_t>(GET_OFFSET(scan + NEXT_PTR_SIZE + INDEX_SIZE))) {
-				next = scan + NODE_SIZE + INDEX_SIZE + NEXT_PTR_SIZE;
+			if (eContext.BraceCounts[*OPERAND(scan)] < static_cast<uint32_t>(GET_OFFSET(scan + NEXT_PTR_SIZE<size_t> + INDEX_SIZE<size_t>))) {
+				next = scan + NODE_SIZE<size_t> + INDEX_SIZE<size_t> + NEXT_PTR_SIZE<size_t>;
 			}
 			break;
 
@@ -735,7 +733,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				if (GET_OP_CODE(scan) == BACK_REF_CI) {
 #endif
 					while (captured < finish) {
-						if (end_of_string(eContext.Reg_Input) || safe_ctype<::tolower>(*captured++) != safe_ctype<::tolower>(*eContext.Reg_Input++)) {
+						if (end_of_string(eContext.Reg_Input) || safe_tolower(*captured++) != safe_tolower(*eContext.Reg_Input++)) {
 							MATCH_RETURN(false);
 						}
 					}
@@ -748,9 +746,9 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				}
 
 				break;
-			} else {
-				MATCH_RETURN(false);
 			}
+
+			MATCH_RETURN(false);
 		}
 
 		case POS_AHEAD_OPEN:
@@ -868,7 +866,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				   node. The look-behind node is followed by a chain of
 				   branches (contents of the look-behind expression), and
 				   terminated by a look-behind-close node. */
-				next = NEXT_PTR(OPERAND(scan) + LENGTH_SIZE); // 1st branch
+				next = NEXT_PTR(OPERAND(scan) + LENGTH_SIZE<size_t>); // 1st branch
 
 				// Skip the chained branches inside the look-ahead
 				while (GET_OP_CODE(next) == BRANCH) {
@@ -971,7 +969,7 @@ bool attempt(Regex *prog, const char *string) {
 	std::fill_n(prog->startp.begin(), eContext.Total_Paren + 1, nullptr);
 	std::fill_n(prog->endp.begin(), eContext.Total_Paren + 1, nullptr);
 
-	if (match((&prog->program[0] + REGEX_START_OFFSET), &branch_index)) {
+	if (match((&prog->program[REGEX_START_OFFSET]), &branch_index)) {
 		prog->startp[0]  = string;
 		prog->endp[0]    = eContext.Reg_Input;     // <-- One char AFTER
 		prog->extentpBW  = eContext.Extent_Ptr_BW; //     matched string!
@@ -1117,12 +1115,13 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 			}
 
 			return checked_return(ret_val);
+		}
 
-		} else if (re->match_start != '\0') {
+		if (re->match_start != '\0') {
 			// We know what char match must start with.
 			for (str = start; !end_of_string(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
 
-				if (*str == static_cast<uint8_t>(re->match_start)) {
+				if (*str == re->match_start) {
 					if (attempt(re, str)) {
 						ret_val = true;
 						break;
@@ -1131,73 +1130,76 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 			}
 
 			return checked_return(ret_val);
-		} else {
-			// General case
-			for (str = start; !end_of_string(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
-
-				if (attempt(re, str)) {
-					ret_val = true;
-					break;
-				}
-			}
-
-			// Beware of a single $ matching \0
-#if 1 // NOTE(eteran): possible fix for issue #97
-			if (!eContext.Recursion_Limit_Exceeded && !ret_val && end_of_string(str)) {
-#else
-			if (!eContext.Recursion_Limit_Exceeded && !ret_val && end_of_string(str) && str != end) {
-#endif
-				if (attempt(re, str)) {
-					ret_val = true;
-				}
-			}
-
-			return checked_return(ret_val);
-		}
-	} else { // Search reverse, same as forward, but loops run backward
-
-		// Make sure that we don't start matching beyond the logical end
-		if (eContext.End_Of_String != nullptr && end > eContext.End_Of_String) {
-			end = eContext.End_Of_String;
 		}
 
-		if (re->anchor) {
-			// Search is anchored at BOL
-			for (str = (end - 1); str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
-				if (*str == '\n') {
-					if (attempt(re, str + 1)) {
-						ret_val = true;
-						return checked_return(ret_val);
-					}
-				}
-			}
+		// General case
+		for (str = start; !end_of_string(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
 
-			if (!eContext.Recursion_Limit_Exceeded && attempt(re, start)) {
+			if (attempt(re, str)) {
 				ret_val = true;
-				return checked_return(ret_val);
+				break;
 			}
+		}
 
-			return checked_return(ret_val);
-		} else if (re->match_start != '\0') {
-			// We know what char match must start with.
-			for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
-				if (*str == static_cast<uint8_t>(re->match_start)) {
-					if (attempt(re, str)) {
-						ret_val = true;
-						break;
-					}
+		// Beware of a single $ matching \0
+#if 1 // NOTE(eteran): possible fix for issue #97
+		if (!eContext.Recursion_Limit_Exceeded && !ret_val && end_of_string(str)) {
+#else
+		if (!eContext.Recursion_Limit_Exceeded && !ret_val && end_of_string(str) && str != end) {
+#endif
+			if (attempt(re, str)) {
+				ret_val = true;
+			}
+		}
+
+		return checked_return(ret_val);
+	}
+
+	// Search reverse, same as forward, but loops run backward
+
+	// Make sure that we don't start matching beyond the logical end
+	if (eContext.End_Of_String != nullptr && end > eContext.End_Of_String) {
+		end = eContext.End_Of_String;
+	}
+
+	if (re->anchor) {
+		// Search is anchored at BOL
+		for (str = (end - 1); str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
+			if (*str == '\n') {
+				if (attempt(re, str + 1)) {
+					ret_val = true;
+					return checked_return(ret_val);
 				}
 			}
+		}
 
+		if (!eContext.Recursion_Limit_Exceeded && attempt(re, start)) {
+			ret_val = true;
 			return checked_return(ret_val);
-		} else {
-			// General case
-			for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
+		}
+
+		return checked_return(ret_val);
+	}
+
+	if (re->match_start != '\0') {
+		// We know what char match must start with.
+		for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
+			if (*str == re->match_start) {
 				if (attempt(re, str)) {
 					ret_val = true;
 					break;
 				}
 			}
+		}
+
+		return checked_return(ret_val);
+	}
+
+	// General case
+	for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
+		if (attempt(re, str)) {
+			ret_val = true;
+			break;
 		}
 	}
 

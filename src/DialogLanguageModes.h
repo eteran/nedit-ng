@@ -6,7 +6,9 @@
 #include "Verbosity.h"
 #include "ui_DialogLanguageModes.h"
 
-#include <boost/optional.hpp>
+#include <QPointer>
+
+#include <optional>
 
 class DialogSyntaxPatterns;
 class LanguageMode;
@@ -42,7 +44,7 @@ private:
 	bool updateCurrentItem(const QModelIndex &index);
 	bool updateLanguageList(Verbosity verbosity);
 	bool updateLMList(Verbosity verbosity);
-	boost::optional<LanguageMode> readFields(Verbosity verbosity);
+	std::optional<LanguageMode> readFields(Verbosity verbosity);
 	int countLanguageModes(const QString &name) const;
 	bool LMHasHighlightPatterns(const QString &name) const;
 
@@ -50,7 +52,7 @@ private:
 	Ui::DialogLanguageModes ui;
 	LanguageModeModel *model_;
 	QModelIndex deleted_;
-	DialogSyntaxPatterns *dialogSyntaxPatterns_;
+	QPointer<DialogSyntaxPatterns> dialogSyntaxPatterns_;
 };
 
 #endif

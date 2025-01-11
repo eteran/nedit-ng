@@ -1,6 +1,7 @@
 
 #include "Settings.h"
 #include "Util/Resource.h"
+#include "from_integer.h"
 
 #include <QFontDatabase>
 #include <QSettings>
@@ -17,9 +18,10 @@ bool settingsLoaded_ = false;
 
 const QStringList DEFAULT_INCLUDE_PATHS = {
 	QLatin1String("/usr/include/"),
-	QLatin1String("/usr/local/include/")};
+	QLatin1String("/usr/local/include/"),
+};
 
-const auto DEFAULT_DELIMETERS      = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
+const auto DEFAULT_DELIMITERS      = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
 const auto DEFAULT_BACKLIGHT_CHARS = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
 
 QString defaultTextFont() {
@@ -66,14 +68,21 @@ QString randomString(int length) {
 
 }
 
-bool showResizeNotification;
+bool alwaysCheckRelativeTagsSpecs;
 bool appendLF;
 bool autoSave;
 bool autoScroll;
+bool autoWrapPastedText;
 bool backlightChars;
 bool beepOnSearchWrap;
+bool colorizeHighlightedText;
+bool findReplaceUsesSelection;
+bool focusOnRaise;
+bool forceOSConversion;
 bool globalTabNavigate;
+bool heavyCursor;
 bool highlightSyntax;
+bool honorSymlinks;
 bool insertTabs;
 bool iSearchLine;
 bool lineNumbers;
@@ -86,61 +95,56 @@ bool retainSearchDialogs;
 bool saveOldVersion;
 bool searchDialogs;
 bool searchWraps;
+bool showResizeNotification;
+bool smartHome;
 bool smartTags;
 bool sortOpenPrevMenu;
 bool sortTabs;
+bool splitHorizontally;
 bool statisticsLine;
+bool stickyCaseSenseButton;
 bool tabBar;
 bool tabBarHideOne;
 bool toolTips;
+bool typingHidesPointer;
+bool undoModifiesSelection;
 bool warnExit;
 bool warnFileMods;
 bool warnRealFileMods;
-bool smartHome;
 IndentStyle autoIndent;
-WrapStyle autoWrap;
+int autoSaveCharLimit;
+int autoSaveOpLimit;
+int autoScrollVPadding;
 int emulateTabs;
-SearchType searchMethod;
-ShowMatchingStyle showMatching;
+int maxPrevOpenFiles;
 int tabDistance;
 int textCols;
 int textRows;
+int truncateLongNamesInTabs;
 int wrapMargin;
+QFont font;
+QString backlightCharTypes;
 QString bgMenuCommands;
 QString colors[9];
+QString fontName;
 QString geometry;
 QString highlightPatterns;
 QString languageModes;
+QStringList includePaths;
 QString macroCommands;
 QString serverName;
+QString serverNameOverride;
 QString shell;
 QString shellCommands;
 QString smartIndentInit;
 QString smartIndentInitCommon;
-QString fontName;
-QString titleFormat;
-
-bool autoWrapPastedText;
-bool colorizeHighlightedText;
-bool heavyCursor;
-bool alwaysCheckRelativeTagsSpecs;
-bool findReplaceUsesSelection;
-bool focusOnRaise;
-bool forceOSConversion;
-bool honorSymlinks;
-bool stickyCaseSenseButton;
-bool typingHidesPointer;
-bool undoModifiesSelection;
-bool splitHorizontally;
-int truncateLongNamesInTabs;
-int autoScrollVPadding;
-int maxPrevOpenFiles;
-TruncSubstitution truncSubstitution;
-QString backlightCharTypes;
 QString tagFile;
+QString titleFormat;
 QString wordDelimiters;
-QStringList includePaths;
-QFont font;
+SearchType searchMethod;
+ShowMatchingStyle showMatching;
+TruncSubstitution truncSubstitution;
+WrapStyle autoWrap;
 
 /**
  * @brief configDirectory
@@ -331,10 +335,12 @@ void loadPreferences(bool isServer) {
 	shell                        = settings.value(tr("nedit.shell"), QLatin1String("DEFAULT")).toString();
 	geometry                     = settings.value(tr("nedit.geometry"), QString()).toString();
 	tagFile                      = settings.value(tr("nedit.tagFile"), QString()).toString();
-	wordDelimiters               = settings.value(tr("nedit.wordDelimiters"), DEFAULT_DELIMETERS).toString();
+	wordDelimiters               = settings.value(tr("nedit.wordDelimiters"), DEFAULT_DELIMITERS).toString();
 	includePaths                 = settings.value(tr("nedit.includePaths"), DEFAULT_INCLUDE_PATHS).toStringList();
 	serverName                   = settings.value(tr("nedit.serverName"), QString()).toString();
 	maxPrevOpenFiles             = settings.value(tr("nedit.maxPrevOpenFiles"), 30).toInt();
+	autoSaveCharLimit            = settings.value(tr("nedit.autoSaveCharLimit"), 80).toInt();
+	autoSaveOpLimit              = settings.value(tr("nedit.autoSaveOpLimit"), 8).toInt();
 	smartTags                    = settings.value(tr("nedit.smartTags"), true).toBool();
 	typingHidesPointer           = settings.value(tr("nedit.typingHidesPointer"), false).toBool();
 	alwaysCheckRelativeTagsSpecs = settings.value(tr("nedit.alwaysCheckRelativeTagsSpecs"), true).toBool();
@@ -432,6 +438,8 @@ void importSettings(const QString &filename) {
 	includePaths                 = settings.value(tr("nedit.includePaths"), includePaths).toStringList();
 	serverName                   = settings.value(tr("nedit.serverName"), serverName).toString();
 	maxPrevOpenFiles             = settings.value(tr("nedit.maxPrevOpenFiles"), maxPrevOpenFiles).toInt();
+	autoSaveCharLimit            = settings.value(tr("nedit.autoSaveCharLimit"), autoSaveCharLimit).toInt();
+	autoSaveOpLimit              = settings.value(tr("nedit.autoSaveOpLimit"), autoSaveOpLimit).toInt();
 	smartTags                    = settings.value(tr("nedit.smartTags"), smartTags).toBool();
 	typingHidesPointer           = settings.value(tr("nedit.typingHidesPointer"), typingHidesPointer).toBool();
 	alwaysCheckRelativeTagsSpecs = settings.value(tr("nedit.alwaysCheckRelativeTagsSpecs"), alwaysCheckRelativeTagsSpecs).toBool();
@@ -516,6 +524,8 @@ bool savePreferences() {
 	settings.setValue(tr("nedit.includePaths"), includePaths);
 	settings.setValue(tr("nedit.serverName"), serverName);
 	settings.setValue(tr("nedit.maxPrevOpenFiles"), maxPrevOpenFiles);
+	settings.setValue(tr("nedit.autoSaveCharLimit"), autoSaveCharLimit);
+	settings.setValue(tr("nedit.autoSaveOpLimit"), autoSaveOpLimit);
 	settings.setValue(tr("nedit.smartTags"), smartTags);
 	settings.setValue(tr("nedit.typingHidesPointer"), typingHidesPointer);
 	settings.setValue(tr("nedit.autoWrapPastedText"), autoWrapPastedText);

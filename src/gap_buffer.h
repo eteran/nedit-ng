@@ -2,31 +2,33 @@
 #ifndef GAP_BUFFER_H_
 #define GAP_BUFFER_H_
 
-#include "Util/string_view.h"
+#include "Util/Raise.h"
 #include "gap_buffer_fwd.h"
 #include "gap_buffer_iterator.h"
 
 #include <algorithm>
 #include <cassert>
 #include <memory>
+#include <stdexcept>
 #include <string>
+#include <string_view>
 
 template <class Ch, class Tr>
 class gap_buffer {
 public:
 	static constexpr int PreferredGapSize = 80;
 	using string_type                     = std::basic_string<Ch, Tr>;
-	using view_type                       = view::basic_string_view<Ch, Tr>;
+	using view_type                       = std::basic_string_view<Ch, Tr>;
 
 public:
 	using value_type             = typename std::allocator<Ch>::value_type;
 	using allocator_type         = std::allocator<Ch>;
 	using size_type              = int64_t; // NOTE(eteran): typically unsigned...
 	using difference_type        = typename std::allocator<Ch>::difference_type;
-	using reference              = typename std::allocator<Ch>::reference;
-	using const_reference        = typename std::allocator<Ch>::const_reference;
-	using pointer                = typename std::allocator<Ch>::pointer;
-	using const_pointer          = typename std::allocator<Ch>::const_pointer;
+	using reference              = Ch &;
+	using const_reference        = const Ch &;
+	using pointer                = Ch *;
+	using const_pointer          = const Ch *;
 	using iterator               = gap_buffer_iterator<Ch, Tr, false>;
 	using const_iterator         = gap_buffer_iterator<Ch, Tr, true>;
 	using reverse_iterator       = std::reverse_iterator<iterator>;
@@ -35,11 +37,11 @@ public:
 public:
 	gap_buffer();
 	explicit gap_buffer(size_type reserve_size);
-	gap_buffer(const gap_buffer &) = delete;
+	gap_buffer(const gap_buffer &)            = delete;
 	gap_buffer &operator=(const gap_buffer &) = delete;
 	gap_buffer(gap_buffer &&)                 = delete;
-	gap_buffer &operator=(gap_buffer &&) = delete;
-	~gap_buffer()                        = default;
+	gap_buffer &operator=(gap_buffer &&)      = delete;
+	~gap_buffer()                             = default;
 
 public:
 	iterator begin() noexcept { return iterator(this, 0); }
@@ -206,17 +208,19 @@ int gap_buffer<Ch, Tr>::compare(size_type pos, view_type str) const noexcept {
 
 	if (posEnd <= gap_start_) {
 		return Tr::compare(&buf_[pos], str.data(), str.size());
-	} else if (pos >= gap_start_) {
-		return Tr::compare(&buf_[pos + gap_size()], str.data(), str.size());
-	} else {
-		const auto part1Length = static_cast<size_t>(gap_start_ - pos);
-		const int result       = Tr::compare(&buf_[pos], str.data(), part1Length);
-		if (result != 0) {
-			return result;
-		}
-
-		return Tr::compare(&buf_[gap_end_], &str[part1Length], static_cast<size_t>(str.size() - part1Length));
 	}
+
+	if (pos >= gap_start_) {
+		return Tr::compare(&buf_[pos + gap_size()], str.data(), str.size());
+	}
+
+	const auto part1Length = static_cast<size_t>(gap_start_ - pos);
+	const int result       = Tr::compare(&buf_[pos], str.data(), part1Length);
+	if (result != 0) {
+		return result;
+	}
+
+	return Tr::compare(&buf_[gap_end_], &str[part1Length], static_cast<size_t>(str.size() - part1Length));
 }
 
 /**
@@ -287,7 +291,7 @@ auto gap_buffer<Ch, Tr>::to_view() noexcept -> view_type {
 	size_type leftLen        = gap_start_;
 	const size_type rightLen = bufLen - leftLen;
 
-	// find where best to put the gap to minimise memory movement
+	// find where best to put the gap to minimize memory movement
 	if (leftLen != 0 && rightLen != 0) {
 		leftLen = (leftLen < rightLen) ? 0 : bufLen;
 		move_gap(leftLen);
@@ -313,7 +317,7 @@ auto gap_buffer<Ch, Tr>::to_view(size_type start, size_type end) noexcept -> vie
 	size_type leftLen        = gap_start_;
 	const size_type rightLen = bufLen - leftLen;
 
-	// find where best to put the gap to minimise memory movement
+	// find where best to put the gap to minimize memory movement
 	if (leftLen != 0 && rightLen != 0) {
 		leftLen = (leftLen < rightLen) ? 0 : bufLen;
 		move_gap(leftLen);
@@ -354,7 +358,7 @@ void gap_buffer<Ch, Tr>::insert(size_type pos, view_type str) {
 	/* Prepare the buffer to receive the new text.  If the new text fits in
 	   the current buffer, just move the gap (if necessary) to where
 	   the text should be inserted.  If the new text is too large, reallocate
-	   the buffer with a gap large enough to accomodate the new text and a
+	   the buffer with a gap large enough to accommodate the new text and a
 	   gap of PreferredGapSize */
 	if (length > gap_size()) {
 		reallocate_buffer(pos, length + PreferredGapSize);
@@ -382,7 +386,7 @@ void gap_buffer<Ch, Tr>::insert(size_type pos, Ch ch) {
 	/* Prepare the buffer to receive the new text.  If the new text fits in
 	   the current buffer, just move the gap (if necessary) to where
 	   the text should be inserted.  If the new text is too large, reallocate
-	   the buffer with a gap large enough to accomodate the new text and a
+	   the buffer with a gap large enough to accommodate the new text and a
 	   gap of PreferredGapSize */
 	if (length > gap_size()) {
 		reallocate_buffer(pos, length + PreferredGapSize);

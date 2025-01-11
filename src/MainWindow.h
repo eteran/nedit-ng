@@ -32,7 +32,11 @@ class DialogReplace;
 class DialogShellMenu;
 class DialogWindowBackgroundMenu;
 class DialogSyntaxPatterns;
+class DialogDrawingStyles;
+class DialogLanguageModes;
 class DocumentWidget;
+class DialogWindowTitle;
+class DialogFonts;
 class TextArea;
 struct MenuData;
 struct PathInfo;
@@ -54,9 +58,10 @@ private:
 	void setupMenuAlternativeMenus();
 	void createLanguageModeSubMenu();
 	void setupMenuDefaults();
-	void setupGlobalPrefenceDefaults();
+	void setupGlobalPreferenceDefaults();
 	void setupDocumentPreferenceDefaults();
 	void setupPrevOpenMenuActions();
+	void setupISearchBar();
 	QMenu *createUserMenu(size_t currentLanguageMode, const gsl::span<MenuData> &data, CommandTypes type);
 	QTabWidget *tabWidget() const;
 
@@ -85,7 +90,7 @@ public:
 	DocumentWidget *createDocument(const QString &name);
 	DocumentWidget *currentDocument() const;
 	DocumentWidget *documentAt(int index) const;
-	int updateGutterWidth();
+	int updateGutterWidth() const;
 	int updateLineNumDisp();
 	size_t tabCount() const;
 	std::vector<DocumentWidget *> openDocuments() const;
@@ -143,7 +148,6 @@ public:
 	static void checkCloseEnableState(const std::vector<MainWindow *> &windows);
 	static void invalidatePrevOpenMenus();
 	static void readNEditDB();
-	static void renameHighlightPattern(const QString &oldName, const QString &newName);
 	static void updateMenuItems();
 	static void updateWindowMenus();
 	static void writeNEditDB();
@@ -220,6 +224,7 @@ public:
 	void action_Replace_Find(DocumentWidget *document, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWraps);
 	void action_Replace_In_Selection(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType type);
 	void action_Revert_to_Saved(DocumentWidget *document);
+	void action_Save_All(DocumentWidget *document);
 	void action_Save_As(DocumentWidget *document);
 	void action_Save_As(DocumentWidget *document, const QString &filename, bool wrapped);
 	void action_Save(DocumentWidget *document);
@@ -307,6 +312,7 @@ public:
 	void action_Print_Selection_triggered();
 	void action_Save_triggered();
 	void action_Save_As_triggered();
+	void action_Save_All_triggered();
 	void action_Revert_to_Saved_triggered();
 	void action_Exit_triggered();
 
@@ -445,6 +451,10 @@ private:
 	QPointer<DialogColors> dialogColors_;
 	QPointer<DialogWindowBackgroundMenu> dialogWindowBackgroundMenu_;
 	QPointer<DialogSyntaxPatterns> dialogSyntaxPatterns_;
+	QPointer<DialogDrawingStyles> dialogDrawingStyles_;
+	QPointer<DialogLanguageModes> dialogLanguageModes_;
+	QPointer<DialogFonts> dialogFonts_;
+	QPointer<DialogWindowTitle> dialogWindowTitle_;
 	QPointer<TextArea> lastFocus_;
 
 private:
@@ -458,6 +468,7 @@ private:
 	QMenu *shellMenu_               = nullptr;
 	QMenu *macroMenu_               = nullptr;
 	QMenu *contextMenu_             = nullptr;
+	size_t windowId_                = 0;
 
 public:
 	Ui::MainWindow ui;

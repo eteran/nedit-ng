@@ -111,7 +111,7 @@ bool DialogFind::eventFilter(QObject *obj, QEvent *ev) {
  * @param checked
  */
 void DialogFind::checkKeep_toggled(bool checked) {
-	if (checked) {
+	if (checked && document_) {
 		setWindowTitle(tr("Find (in %1)").arg(document_->filename()));
 	} else {
 		setWindowTitle(tr("Find"));
@@ -215,8 +215,12 @@ void DialogFind::setTextFieldFromDocument(DocumentWidget *document) {
  */
 void DialogFind::buttonFind_clicked() {
 
+	if (!document_) {
+		return;
+	}
+
 	// fetch find string, direction and type from the dialog
-	boost::optional<Fields> fields = readFields();
+	std::optional<Fields> fields = readFields();
 	if (!fields) {
 		return;
 	}
@@ -242,7 +246,7 @@ void DialogFind::buttonFind_clicked() {
 ** strings and search type from the Find dialog.  If the strings are ok,
 ** save a copy in the search history, and return the fields
 */
-boost::optional<DialogFind::Fields> DialogFind::readFields() {
+std::optional<DialogFind::Fields> DialogFind::readFields() {
 
 	Fields fields;
 
@@ -253,10 +257,10 @@ boost::optional<DialogFind::Fields> DialogFind::readFields() {
 		int regexDefault;
 		if (ui.checkCase->isChecked()) {
 			fields.searchType = SearchType::Regex;
-			regexDefault      = REDFLT_STANDARD;
+			regexDefault      = RE_DEFAULT_STANDARD;
 		} else {
 			fields.searchType = SearchType::RegexNoCase;
-			regexDefault      = REDFLT_CASE_INSENSITIVE;
+			regexDefault      = RE_DEFAULT_CASE_INSENSITIVE;
 		}
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
@@ -266,8 +270,8 @@ boost::optional<DialogFind::Fields> DialogFind::readFields() {
 			QMessageBox::warning(
 				this,
 				tr("Regex Error"),
-				tr("Please respecify the search string:\n%1").arg(QString::fromLatin1(e.what())));
-			return boost::none;
+				tr("Please re-specify the search string:\n%1").arg(QString::fromLatin1(e.what())));
+			return {};
 		}
 	} else {
 		if (ui.checkCase->isChecked()) {
@@ -344,7 +348,9 @@ bool DialogFind::keepDialog() const {
  * @param document
  */
 void DialogFind::setDocument(DocumentWidget *document) {
+	Q_ASSERT(document);
 	document_ = document;
+
 	if (keepDialog()) {
 		setWindowTitle(tr("Find (in %1)").arg(document_->filename()));
 	}

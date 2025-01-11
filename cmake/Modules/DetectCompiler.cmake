@@ -8,3 +8,4 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
 else()
 	message(FATAL_ERROR "Unsupported Compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
+

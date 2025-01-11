@@ -2,6 +2,15 @@
 #include "TextBuffer.h"
 #include "TextBuffer.tcc"
 
-// Force full intantiation
+const char *BasicTextBufferBase::ControlCodeTable[32] = {
+	"nul", "soh", "stx", "etx", "eot", "enq", "ack", "bel",
+	"bs", "ht", "nl", "vt", "np", "cr", "so", "si",
+	"dle", "dc1", "dc2", "dc3", "dc4", "nak", "syn", "etb",
+	"can", "em", "sub", "esc", "fs", "gs", "rs", "us"};
+
+// Force full instantiation
 template class BasicTextBuffer<char>;
 template class gap_buffer<char>;
+
+template class BasicTextBuffer<uint8_t>;
+template class gap_buffer<uint8_t>;

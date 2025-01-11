@@ -21,10 +21,10 @@ public:
 		: index_(index) {}
 
 public:
-	BasicTextCursor()                        = default;
-	BasicTextCursor(const BasicTextCursor &) = default;
-	BasicTextCursor &operator=(const BasicTextCursor &) = default;
-	BasicTextCursor(BasicTextCursor &&) noexcept        = default;
+	BasicTextCursor()                                       = default;
+	BasicTextCursor(const BasicTextCursor &)                = default;
+	BasicTextCursor &operator=(const BasicTextCursor &)     = default;
+	BasicTextCursor(BasicTextCursor &&) noexcept            = default;
 	BasicTextCursor &operator=(BasicTextCursor &&) noexcept = default;
 	~BasicTextCursor()                                      = default;
 
@@ -85,41 +85,65 @@ public:
 	constexpr bool operator>=(const BasicTextCursor &rhs) const noexcept { return index_ >= rhs.index_; }
 #ifdef CURSOR_COMPARE_TO_INTEGER
 	template <class Integer, class = IsInteger<Integer>>
-	constexpr bool operator==(Integer rhs) const noexcept { return index_ == rhs; }
+	constexpr bool operator==(Integer rhs) const noexcept {
+		return index_ == rhs;
+	}
 
 	template <class Integer, class = IsInteger<Integer>>
-	constexpr bool operator!=(Integer rhs) const noexcept { return index_ != rhs; }
+	constexpr bool operator!=(Integer rhs) const noexcept {
+		return index_ != rhs;
+	}
 
 	template <class Integer, class = IsInteger<Integer>>
-	constexpr bool operator<(Integer rhs) const noexcept { return index_ < rhs; }
+	constexpr bool operator<(Integer rhs) const noexcept {
+		return index_ < rhs;
+	}
 
 	template <class Integer, class = IsInteger<Integer>>
-	constexpr bool operator<=(Integer rhs) const noexcept { return index_ <= rhs; }
+	constexpr bool operator<=(Integer rhs) const noexcept {
+		return index_ <= rhs;
+	}
 
 	template <class Integer, class = IsInteger<Integer>>
-	constexpr bool operator>(Integer rhs) const noexcept { return index_ > rhs; }
+	constexpr bool operator>(Integer rhs) const noexcept {
+		return index_ > rhs;
+	}
 
 	template <class Integer, class = IsInteger<Integer>>
-	constexpr bool operator>=(Integer rhs) const noexcept { return index_ >= rhs; }
+	constexpr bool operator>=(Integer rhs) const noexcept {
+		return index_ >= rhs;
+	}
 
 public:
 	template <class Integer, class = IsInteger<Integer>>
-	friend constexpr bool operator==(Integer lhs, const BasicTextCursor &rhs) noexcept { return lhs == rhs.index_; }
+	friend constexpr bool operator==(Integer lhs, const BasicTextCursor &rhs) noexcept {
+		return lhs == rhs.index_;
+	}
 
 	template <class Integer, class = IsInteger<Integer>>
-	friend constexpr bool operator!=(Integer lhs, const BasicTextCursor &rhs) noexcept { return lhs != rhs.index_; }
+	friend constexpr bool operator!=(Integer lhs, const BasicTextCursor &rhs) noexcept {
+		return lhs != rhs.index_;
+	}
 
 	template <class Integer, class = IsInteger<Integer>>
-	friend constexpr bool operator<(Integer lhs, const BasicTextCursor &rhs) noexcept { return lhs < rhs.index_; }
+	friend constexpr bool operator<(Integer lhs, const BasicTextCursor &rhs) noexcept {
+		return lhs < rhs.index_;
+	}
 
 	template <class Integer, class = IsInteger<Integer>>
-	friend constexpr bool operator<=(Integer lhs, const BasicTextCursor &rhs) noexcept { return lhs <= rhs.index_; }
+	friend constexpr bool operator<=(Integer lhs, const BasicTextCursor &rhs) noexcept {
+		return lhs <= rhs.index_;
+	}
 
 	template <class Integer, class = IsInteger<Integer>>
-	friend constexpr bool operator>(Integer lhs, const BasicTextCursor &rhs) noexcept { return lhs > rhs.index_; }
+	friend constexpr bool operator>(Integer lhs, const BasicTextCursor &rhs) noexcept {
+		return lhs > rhs.index_;
+	}
 
 	template <class Integer, class = IsInteger<Integer>>
-	friend constexpr bool operator>=(Integer lhs, const BasicTextCursor &rhs) noexcept { return lhs >= rhs.index_; }
+	friend constexpr bool operator>=(Integer lhs, const BasicTextCursor &rhs) noexcept {
+		return lhs >= rhs.index_;
+	}
 #endif
 public:
 	template <class Integer, class = IsInteger<Integer>>

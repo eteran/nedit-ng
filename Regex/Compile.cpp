@@ -12,10 +12,13 @@
 
 #include <algorithm>
 #include <cassert>
-#include <cctype>
 #include <cstring>
+#include <gsl/gsl_util>
+#include <limits>
 
 namespace {
+
+const auto FirstPassToken = reinterpret_cast<uint8_t *>(1);
 
 // Flags for function shortcut_escape()
 enum ShortcutEscapeFlag {
@@ -77,9 +80,9 @@ uint8_t *next_ptr(uint8_t *ptr) noexcept {
 
 	if (GET_OP_CODE(ptr) == BACK) {
 		return (ptr - offset);
-	} else {
-		return (ptr + offset);
 	}
+
+	return (ptr + offset);
 }
 
 /**
@@ -135,18 +138,18 @@ bool init_ansi_classes() noexcept {
 
 			const auto ch = static_cast<char>(i);
 
-			if (safe_ctype<::isalnum>(ch) || ch == Underscore) {
+			if (safe_isalnum(ch) || ch == Underscore) {
 				Word_Char[word_count++] = ch;
 			}
 
-			if (safe_ctype<::isalpha>(ch)) {
+			if (safe_isalpha(ch)) {
 				Letter_Char[letter_count++] = ch;
 			}
 
 			/* Note: Whether or not newline is considered to be whitespace is
 			   handled by switches within the original regex and is thus omitted
 			   here. */
-			if (safe_ctype<::isspace>(ch) && (ch != Newline)) {
+			if (safe_isspace(ch) && (ch != Newline)) {
 				White_Space[space_count++] = ch;
 			}
 
@@ -179,15 +182,15 @@ template <class T>
 uint8_t *emit_node(T op_code) noexcept {
 
 	if (pContext.FirstPass) {
-		pContext.Reg_Size += NODE_SIZE;
-		return reinterpret_cast<uint8_t *>(1);
-	} else {
-		const size_t end_offset = pContext.Code.size();
-		pContext.Code.push_back(static_cast<uint8_t>(op_code));
-		pContext.Code.push_back(0);
-		pContext.Code.push_back(0);
-		return &pContext.Code[end_offset];
+		pContext.Reg_Size += NODE_SIZE<size_t>;
+		return FirstPassToken;
 	}
+
+	const size_t end_offset = pContext.Code.size();
+	pContext.Code.push_back(static_cast<uint8_t>(op_code));
+	pContext.Code.push_back(0);
+	pContext.Code.push_back(0);
+	return &pContext.Code[end_offset];
 }
 
 /*----------------------------------------------------------------------*
@@ -217,16 +220,16 @@ void emit_class_byte(T ch) noexcept {
 	if (pContext.FirstPass) {
 		pContext.Reg_Size++;
 
-		if (pContext.Is_Case_Insensitive && safe_ctype<::isalpha>(ch)) {
+		if (pContext.Is_Case_Insensitive && safe_isalpha(ch)) {
 			pContext.Reg_Size++;
 		}
 
 	} else {
-		if (pContext.Is_Case_Insensitive && safe_ctype<::isalpha>(ch)) {
+		if (pContext.Is_Case_Insensitive && safe_isalpha(ch)) {
 			/* For case insensitive character classes, emit both upper and lower
 			 * case versions of alphabetical characters. */
-			pContext.Code.push_back(static_cast<uint8_t>(safe_ctype<::tolower>(ch)));
-			pContext.Code.push_back(static_cast<uint8_t>(safe_ctype<::toupper>(ch)));
+			pContext.Code.push_back(static_cast<uint8_t>(safe_tolower(ch)));
+			pContext.Code.push_back(static_cast<uint8_t>(safe_toupper(ch)));
 		} else {
 			pContext.Code.push_back(static_cast<uint8_t>(ch));
 		}
@@ -245,44 +248,44 @@ uint8_t *emit_special(Ch op_code, uint32_t test_val, size_t index) noexcept {
 		switch (op_code) {
 		case POS_BEHIND_OPEN:
 		case NEG_BEHIND_OPEN:
-			pContext.Reg_Size += LENGTH_SIZE; // Length of the look-behind match
-			pContext.Reg_Size += NODE_SIZE;   // Make room for the node
+			pContext.Reg_Size += LENGTH_SIZE<size_t>; // Length of the look-behind match
+			pContext.Reg_Size += NODE_SIZE<size_t>;   // Make room for the node
 			break;
 
 		case TEST_COUNT:
-			pContext.Reg_Size += NEXT_PTR_SIZE; // Make room for a test value.
-			NEDIT_FALLTHROUGH();
+			pContext.Reg_Size += NEXT_PTR_SIZE<size_t>; // Make room for a test value.
+			[[fallthrough]];
 		case INC_COUNT:
-			pContext.Reg_Size += INDEX_SIZE; // Make room for an index value.
-			NEDIT_FALLTHROUGH();
+			pContext.Reg_Size += INDEX_SIZE<size_t>; // Make room for an index value.
+			[[fallthrough]];
 		default:
-			pContext.Reg_Size += NODE_SIZE; // Make room for the node.
+			pContext.Reg_Size += NODE_SIZE<size_t>; // Make room for the node.
 		}
 
-		return reinterpret_cast<uint8_t *>(1);
-	} else {
-		uint8_t *ret_val = emit_node(op_code); // Return the address for start of node.
-		if (op_code == INC_COUNT || op_code == TEST_COUNT) {
-			pContext.Code.push_back(index & 0xff);
-
-			if (op_code == TEST_COUNT) {
-				pContext.Code.push_back(PUT_OFFSET_L(test_val));
-				pContext.Code.push_back(PUT_OFFSET_R(test_val));
-			}
-		} else if (op_code == POS_BEHIND_OPEN || op_code == NEG_BEHIND_OPEN) {
-			pContext.Code.push_back(PUT_OFFSET_L(test_val));
-			pContext.Code.push_back(PUT_OFFSET_R(test_val));
-			pContext.Code.push_back(PUT_OFFSET_L(test_val));
-			pContext.Code.push_back(PUT_OFFSET_R(test_val));
-		}
-		return ret_val;
+		return FirstPassToken;
 	}
+
+	uint8_t *ret_val = emit_node(op_code); // Return the address for start of node.
+	if (op_code == INC_COUNT || op_code == TEST_COUNT) {
+		pContext.Code.push_back(index & 0xff);
+
+		if (op_code == TEST_COUNT) {
+			pContext.Code.push_back(PUT_OFFSET_L(test_val));
+			pContext.Code.push_back(PUT_OFFSET_R(test_val));
+		}
+	} else if (op_code == POS_BEHIND_OPEN || op_code == NEG_BEHIND_OPEN) {
+		pContext.Code.push_back(PUT_OFFSET_L(test_val));
+		pContext.Code.push_back(PUT_OFFSET_R(test_val));
+		pContext.Code.push_back(PUT_OFFSET_L(test_val));
+		pContext.Code.push_back(PUT_OFFSET_R(test_val));
+	}
+	return ret_val;
 }
 
 /*----------------------------------------------------------------------*
  * tail - Set the next-pointer at the end of a node chain.
  *----------------------------------------------------------------------*/
-void tail(uint8_t *search_from, uint8_t *point_to) {
+void tail(uint8_t *search_from, const uint8_t *point_to) {
 
 	if (pContext.FirstPass) {
 		return;
@@ -314,22 +317,22 @@ void tail(uint8_t *search_from, uint8_t *point_to) {
  * the operand. The parameter 'insert_pos' points to the location
  * where the new node is to be inserted.
  *----------------------------------------------------------------------*/
-uint8_t *insert(uint8_t op, uint8_t *insert_pos, uint32_t min, uint32_t max, uint16_t index) {
+uint8_t *insert(uint8_t op, const uint8_t *insert_pos, uint32_t min, uint32_t max, uint16_t index) {
 
 	if (pContext.FirstPass) {
 
-		size_t insert_size = NODE_SIZE;
+		size_t insert_size = NODE_SIZE<size_t>;
 
 		if (op == BRACE || op == LAZY_BRACE) {
 			// Make room for the min and max values.
-			insert_size += (2 * NEXT_PTR_SIZE);
+			insert_size += (2 * NEXT_PTR_SIZE<size_t>);
 		} else if (op == INIT_COUNT) {
 			// Make room for an index value.
-			insert_size += INDEX_SIZE;
+			insert_size += INDEX_SIZE<size_t>;
 		}
 
 		pContext.Reg_Size += insert_size;
-		return reinterpret_cast<uint8_t *>(1);
+		return FirstPassToken;
 	}
 
 	// Where operand used to be.
@@ -404,10 +407,10 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 	static const char codes[] = "ByYdDlLsSwW";
 
 	const char *clazz = nullptr;
-	auto ret_val      = reinterpret_cast<uint8_t *>(1); // Assume success.
+	auto ret_val      = FirstPassToken; // Assume success.
 	const char *valid_codes;
 
-	if (Flags == EMIT_CLASS_BYTES || Flags == CHECK_CLASS_ESCAPE) {
+	if constexpr (Flags == EMIT_CLASS_BYTES || Flags == CHECK_CLASS_ESCAPE) {
 		valid_codes = codes + 3; // \B, \y and \Y are not allowed in classes
 	} else {
 		valid_codes = codes;
@@ -415,49 +418,51 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 
 	if (!::strchr(valid_codes, static_cast<int>(ch))) {
 		return nullptr; // Not a valid shortcut escape sequence
-	} else if (Flags == CHECK_ESCAPE || Flags == CHECK_CLASS_ESCAPE) {
+	}
+
+	if constexpr (Flags == CHECK_ESCAPE || Flags == CHECK_CLASS_ESCAPE) {
 		return ret_val; // Just checking if this is a valid shortcut escape.
 	}
 
 	switch (ch) {
 	case 'd':
 	case 'D':
-		if (Flags == EMIT_CLASS_BYTES) {
+		if constexpr (Flags == EMIT_CLASS_BYTES) {
 			clazz = ASCII_Digits;
 		} else if (Flags == EMIT_NODE) {
-			ret_val = (safe_ctype<::islower>(ch) ? emit_node(DIGIT) : emit_node(NOT_DIGIT));
+			ret_val = (safe_islower(ch) ? emit_node(DIGIT) : emit_node(NOT_DIGIT));
 		}
 		break;
 	case 'l':
 	case 'L':
-		if (Flags == EMIT_CLASS_BYTES) {
+		if constexpr (Flags == EMIT_CLASS_BYTES) {
 			clazz = Letter_Char;
-		} else if (Flags == EMIT_NODE) {
-			ret_val = (safe_ctype<::islower>(ch) ? emit_node(LETTER) : emit_node(NOT_LETTER));
+		} else if constexpr (Flags == EMIT_NODE) {
+			ret_val = (safe_islower(ch) ? emit_node(LETTER) : emit_node(NOT_LETTER));
 		}
 		break;
 	case 's':
 	case 'S':
-		if (Flags == EMIT_CLASS_BYTES) {
+		if constexpr (Flags == EMIT_CLASS_BYTES) {
 			if (pContext.Match_Newline) {
 				emit_byte('\n');
 			}
 
 			clazz = White_Space;
-		} else if (Flags == EMIT_NODE) {
+		} else if constexpr (Flags == EMIT_NODE) {
 			if (pContext.Match_Newline) {
-				ret_val = (safe_ctype<::islower>(ch) ? emit_node(SPACE_NL) : emit_node(NOT_SPACE_NL));
+				ret_val = (safe_islower(ch) ? emit_node(SPACE_NL) : emit_node(NOT_SPACE_NL));
 			} else {
-				ret_val = (safe_ctype<::islower>(ch) ? emit_node(SPACE) : emit_node(NOT_SPACE));
+				ret_val = (safe_islower(ch) ? emit_node(SPACE) : emit_node(NOT_SPACE));
 			}
 		}
 		break;
 	case 'w':
 	case 'W':
-		if (Flags == EMIT_CLASS_BYTES) {
+		if constexpr (Flags == EMIT_CLASS_BYTES) {
 			clazz = Word_Char;
 		} else if (Flags == EMIT_NODE) {
-			ret_val = (safe_ctype<::islower>(ch) ? emit_node(WORD_CHAR) : emit_node(NOT_WORD_CHAR));
+			ret_val = (safe_islower(ch) ? emit_node(WORD_CHAR) : emit_node(NOT_WORD_CHAR));
 		}
 		break;
 
@@ -465,7 +470,7 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 		 * \B, \Y and \Y can only generate a node.  At run time, the delimiter
 		 * table will be available for these nodes to use. */
 	case 'y':
-		if (Flags == EMIT_NODE) {
+		if constexpr (Flags == EMIT_NODE) {
 			ret_val = emit_node(IS_DELIM);
 		} else {
 			Raise<RegexError>("internal error #5 'shortcut_escape'");
@@ -473,14 +478,14 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 		break;
 
 	case 'Y':
-		if (Flags == EMIT_NODE) {
+		if constexpr (Flags == EMIT_NODE) {
 			ret_val = emit_node(NOT_DELIM);
 		} else {
 			Raise<RegexError>("internal error #6 'shortcut_escape'");
 		}
 		break;
 	case 'B':
-		if (Flags == EMIT_NODE) {
+		if constexpr (Flags == EMIT_NODE) {
 			ret_val = emit_node(NOT_BOUNDARY);
 		} else {
 			Raise<RegexError>("internal error #7 'shortcut_escape'");
@@ -552,7 +557,7 @@ void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
  * text previously matched by another regex. *** IMPLEMENT LATER ***
  *--------------------------------------------------------------------*/
 template <ShortcutEscapeFlag Flags>
-uint8_t *back_ref(const char *ch, int *flag_param) {
+uint8_t *back_ref(std::string_view::iterator ch, int *flag_param) {
 
 	size_t c_offset           = 0;
 	const bool is_cross_regex = false;
@@ -567,7 +572,7 @@ uint8_t *back_ref(const char *ch, int *flag_param) {
 #endif
 
 	// Only \1, \2, ... \9 are supported.
-	if (!safe_ctype<::isdigit>(ch[c_offset])) {
+	if (!safe_isdigit(ch[c_offset])) {
 		return nullptr;
 	}
 
@@ -583,7 +588,7 @@ uint8_t *back_ref(const char *ch, int *flag_param) {
 		Raise<RegexError>("\\%d is an illegal back reference", paren_no);
 	}
 
-	if (Flags == EMIT_NODE) {
+	if constexpr (Flags == EMIT_NODE) {
 		if (is_cross_regex) {
 			++pContext.Reg_Parse; /* Skip past the '~' in a cross regex back
 								   * reference. We only do this if we are emitting code. */
@@ -606,8 +611,8 @@ uint8_t *back_ref(const char *ch, int *flag_param) {
 		if (is_cross_regex || pContext.Paren_Has_Width[paren_no]) {
 			*flag_param |= HAS_WIDTH;
 		}
-	} else if (Flags == CHECK_ESCAPE) {
-		ret_val = reinterpret_cast<uint8_t *>(1);
+	} else if constexpr (Flags == CHECK_ESCAPE) {
+		ret_val = FirstPassToken;
 	} else {
 		ret_val = nullptr;
 	}
@@ -756,7 +761,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 		Raise<RegexError>("%c follows nothing", pContext.Reg_Parse[-1]);
 
 	case '{':
-		if (pContext.Enable_Counting_Quantifier) {
+		if (ParseContext::Enable_Counting_Quantifier) {
 			Raise<RegexError>("{m,n} follows nothing");
 		} else {
 			ret_val = emit_node(EXACTLY); // Treat braces as literals.
@@ -846,8 +851,8 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 					}
 
 					if (pContext.Is_Case_Insensitive) {
-						second_value = static_cast<unsigned int>(safe_ctype<::tolower>(second_value));
-						last_value   = static_cast<unsigned int>(safe_ctype<::tolower>(last_value));
+						second_value = static_cast<unsigned int>(safe_tolower(second_value));
+						last_value   = static_cast<unsigned int>(safe_tolower(last_value));
 					}
 
 					/* For case insensitive, something like [A-_] will
@@ -954,12 +959,12 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 
 		/* Fall through to Default case to handle literal escapes and numeric
 		 * escapes. */
-		NEDIT_FALLTHROUGH();
+		[[fallthrough]];
 	default:
 		--pContext.Reg_Parse; /* If we fell through from the above code, we are now
 							   * pointing at the back slash (\) character. */
 		{
-			const char *parse_save;
+			std::string_view::iterator parse_save;
 			int len = 0;
 
 			if (pContext.Is_Case_Insensitive) {
@@ -1087,7 +1092,9 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 		*flag_param = flags_local;
 		range_param = range_local;
 		return ret_val;
-	} else if (op_code == '{') { // {n,m} quantifier present
+	}
+
+	if (op_code == '{') { // {n,m} quantifier present
 		brace_present++;
 		++pContext.Reg_Parse;
 
@@ -1110,7 +1117,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 			   value for max and min of 65,535 is due to using 2 bytes to store
 			   each value in the compiled regex code. */
 
-			while (safe_ctype<::isdigit>(*pContext.Reg_Parse)) {
+			while (safe_isdigit(*pContext.Reg_Parse)) {
 				// (6553 * 10 + 6) > 65535 (16 bit max)
 
 				// NOTE(eteran): we're storing this into a 32-bit variable... so would be simpler
@@ -1222,8 +1229,8 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 	*flag_param = (min_max[0] > 0) ? (WORST | HAS_WIDTH) : WORST;
 	if (range_local.lower >= 0) {
 		if (min_max[1] != REG_INFINITY) {
-			range_param.lower = range_local.lower * min_max[0];
-			range_param.upper = range_local.upper * min_max[1];
+			range_param.lower = gsl::narrow<int32_t>(range_local.lower * min_max[0]);
+			range_param.upper = gsl::narrow<int32_t>(range_local.upper * min_max[1]);
 		} else {
 			range_param.lower = -1; // Not a fixed-size length
 			range_param.upper = -1;
@@ -1277,15 +1284,15 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 		next = emit_node(NOTHING); // 2,3
 
-		offset_tail(ret_val, NODE_SIZE, next);        // 2
-		tail(ret_val, next);                          // 3
-		insert(BRANCH, ret_val, 0UL, 0UL, 0);         // 4,5
-		tail(ret_val, ret_val + (2 * NODE_SIZE));     // 4
-		offset_tail(ret_val, 3 * NODE_SIZE, ret_val); // 5
+		offset_tail(ret_val, NODE_SIZE<size_t>, next);        // 2
+		tail(ret_val, next);                                  // 3
+		insert(BRANCH, ret_val, 0UL, 0UL, 0);                 // 4,5
+		tail(ret_val, ret_val + (2 * NODE_SIZE<size_t>));     // 4
+		offset_tail(ret_val, 3 * NODE_SIZE<size_t>, ret_val); // 5
 
 		if (op_code == '+') {
-			insert(NOTHING, ret_val, 0UL, 0UL, 0);    // 6
-			tail(ret_val, ret_val + (4 * NODE_SIZE)); // 6
+			insert(NOTHING, ret_val, 0UL, 0UL, 0);            // 6
+			tail(ret_val, ret_val + (4 * NODE_SIZE<size_t>)); // 6
 		}
 	} else if (op_code == '*') {
 		/* Node structure for (x)* construct.
@@ -1296,11 +1303,11 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 		 *       \__3_______|  4
 		 */
 
-		insert(BRANCH, ret_val, 0UL, 0UL, 0);             // 1,3
-		offset_tail(ret_val, NODE_SIZE, emit_node(BACK)); // 2
-		offset_tail(ret_val, NODE_SIZE, ret_val);         // 1
-		tail(ret_val, emit_node(BRANCH));                 // 3
-		tail(ret_val, emit_node(NOTHING));                // 4
+		insert(BRANCH, ret_val, 0UL, 0UL, 0);                     // 1,3
+		offset_tail(ret_val, NODE_SIZE<size_t>, emit_node(BACK)); // 2
+		offset_tail(ret_val, NODE_SIZE<size_t>, ret_val);         // 1
+		tail(ret_val, emit_node(BRANCH));                         // 3
+		tail(ret_val, emit_node(NOTHING));                        // 4
 	} else if (op_code == '+') {
 		/* Node structure for (x)+ construct.
 		 *
@@ -1331,11 +1338,11 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 		next = emit_node(NOTHING); // 1,2,3
 
-		offset_tail(ret_val, 2 * NODE_SIZE, next);  // 1
-		offset_tail(ret_val, NODE_SIZE, next);      // 2
-		tail(ret_val, next);                        // 3
-		insert(BRANCH, ret_val, 0UL, 0UL, 0);       // 4
-		tail(ret_val, (ret_val + (2 * NODE_SIZE))); // 4
+		offset_tail(ret_val, 2 * NODE_SIZE<size_t>, next);  // 1
+		offset_tail(ret_val, NODE_SIZE<size_t>, next);      // 2
+		tail(ret_val, next);                                // 3
+		insert(BRANCH, ret_val, 0UL, 0UL, 0);               // 4
+		tail(ret_val, (ret_val + (2 * NODE_SIZE<size_t>))); // 4
 
 	} else if (op_code == '?') {
 		/* Node structure for (x)? construct.
@@ -1350,8 +1357,8 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 		next = emit_node(NOTHING); // 2,3
 
-		tail(ret_val, next);                   // 2
-		offset_tail(ret_val, NODE_SIZE, next); // 3
+		tail(ret_val, next);                           // 2
+		offset_tail(ret_val, NODE_SIZE<size_t>, next); // 3
 	} else if (op_code == '{' && min_max[0] == min_max[1]) {
 		/* Node structure for (x){m}, (x){m}?, (x){m,m}, or (x){m,m}? constructs.
 		 * Note that minimal and maximal matching mean the same thing when we
@@ -1395,13 +1402,13 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 			insert(NOTHING, ret_val, 0UL, 0UL, pContext.Num_Braces); // 5
 			insert(BRANCH, ret_val, 0UL, 0UL, pContext.Num_Braces);  // 3,4,8
 			tail(emit_node(BACK), ret_val);                          // 3
-			tail(ret_val, ret_val + (2 * NODE_SIZE));                // 4
+			tail(ret_val, ret_val + (2 * NODE_SIZE<size_t>));        // 4
 
 			next = emit_node(NOTHING); // 5,6,7
 
-			offset_tail(ret_val, NODE_SIZE, next);     // 5
-			offset_tail(ret_val, 2 * NODE_SIZE, next); // 6
-			offset_tail(ret_val, 3 * NODE_SIZE, next); // 7
+			offset_tail(ret_val, NODE_SIZE<size_t>, next);     // 5
+			offset_tail(ret_val, 2 * NODE_SIZE<size_t>, next); // 6
+			offset_tail(ret_val, 3 * NODE_SIZE<size_t>, next); // 7
 
 			next = insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 8
 
@@ -1431,13 +1438,13 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			next = emit_node(NOTHING); // 5,6
 
-			offset_tail(ret_val, NODE_SIZE, next);                      // 5
-			tail(ret_val, next);                                        // 6
-			insert(BRANCH, ret_val, 0UL, 0UL, 0);                       // 7,8
-			tail(ret_val, ret_val + (2 * NODE_SIZE));                   // 7
-			offset_tail(ret_val, 3 * NODE_SIZE, ret_val);               // 8
-			insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 9
-			tail(ret_val, ret_val + INDEX_SIZE + (4 * NODE_SIZE));      // 9
+			offset_tail(ret_val, NODE_SIZE<size_t>, next);                         // 5
+			tail(ret_val, next);                                                   // 6
+			insert(BRANCH, ret_val, 0UL, 0UL, 0);                                  // 7,8
+			tail(ret_val, ret_val + (2 * NODE_SIZE<size_t>));                      // 7
+			offset_tail(ret_val, 3 * NODE_SIZE<size_t>, ret_val);                  // 8
+			insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces);            // 9
+			tail(ret_val, ret_val + INDEX_SIZE<size_t> + (4 * NODE_SIZE<size_t>)); // 9
 
 		} else {
 			/* Node structure for (x){m,n}? construct.
@@ -1468,13 +1475,13 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			next = emit_node(NOTHING); // 5,6,7
 
-			offset_tail(ret_val, NODE_SIZE, next);                      // 5
-			offset_tail(ret_val, 2 * NODE_SIZE, next);                  // 6
-			offset_tail(ret_val, 3 * NODE_SIZE, next);                  // 7
-			tail(ret_val, ret_val + (2 * NODE_SIZE));                   // 8
-			offset_tail(next, -NODE_SIZE, ret_val);                     // 9
-			insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 10
-			tail(ret_val, ret_val + INDEX_SIZE + (4 * NODE_SIZE));      // 10
+			offset_tail(ret_val, NODE_SIZE<size_t>, next);                         // 5
+			offset_tail(ret_val, 2 * NODE_SIZE<size_t>, next);                     // 6
+			offset_tail(ret_val, 3 * NODE_SIZE<size_t>, next);                     // 7
+			tail(ret_val, ret_val + (2 * NODE_SIZE<size_t>));                      // 8
+			offset_tail(next, -NODE_SIZE<int>, ret_val);                           // 9
+			insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces);            // 10
+			tail(ret_val, ret_val + INDEX_SIZE<size_t> + (4 * NODE_SIZE<size_t>)); // 10
 		}
 
 		pContext.Num_Braces++;
@@ -1500,9 +1507,9 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			next = emit_node(BRANCH); // 4,5
 
-			tail(ret_val, next);                   // 4
-			tail(next, emit_node(NOTHING));        // 5,6
-			offset_tail(ret_val, NODE_SIZE, next); // 6
+			tail(ret_val, next);                           // 4
+			tail(next, emit_node(NOTHING));                // 5,6
+			offset_tail(ret_val, NODE_SIZE<size_t>, next); // 6
 
 			next = insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 7
 
@@ -1529,14 +1536,14 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			next = emit_node(BACK); // 4
 
-			tail(next, ret_val);                   // 4
-			offset_tail(ret_val, NODE_SIZE, next); // 5
-			tail(ret_val, emit_node(BRANCH));      // 6
-			tail(ret_val, emit_node(NOTHING));     // 7
+			tail(next, ret_val);                           // 4
+			offset_tail(ret_val, NODE_SIZE<size_t>, next); // 5
+			tail(ret_val, emit_node(BRANCH));              // 6
+			tail(ret_val, emit_node(NOTHING));             // 7
 
 			insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 8
 
-			tail(ret_val, ret_val + INDEX_SIZE + (2 * NODE_SIZE)); // 8
+			tail(ret_val, ret_val + INDEX_SIZE<size_t> + (2 * NODE_SIZE<size_t>)); // 8
 
 		} else {
 			/* Node structure for (x){m,n} construct.
@@ -1564,16 +1571,16 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 			next = emit_node(BRANCH); // 5,8
 
-			tail(ret_val, next);                    // 5
-			offset_tail(next, -NODE_SIZE, ret_val); // 6
+			tail(ret_val, next);                         // 5
+			offset_tail(next, -NODE_SIZE<int>, ret_val); // 6
 
 			next = emit_node(NOTHING); // 7,8
 
-			offset_tail(ret_val, NODE_SIZE, next); // 7
+			offset_tail(ret_val, NODE_SIZE<size_t>, next); // 7
 
-			offset_tail(next, -NODE_SIZE, next);                        // 8
-			insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces); // 9
-			tail(ret_val, ret_val + INDEX_SIZE + (2 * NODE_SIZE));      // 9
+			offset_tail(next, -NODE_SIZE<int>, next);                              // 8
+			insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces);            // 9
+			tail(ret_val, ret_val + INDEX_SIZE<size_t> + (2 * NODE_SIZE<size_t>)); // 9
 		}
 
 		pContext.Num_Braces++;
@@ -1599,7 +1606,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
  * alternative
  *
  * Processes one alternative of an '|' operator.  Connects the NEXT
- * pointers of each regex atom together sequentialy.
+ * pointers of each regex atom together sequentially.
  *----------------------------------------------------------------------*/
 uint8_t *alternative(int *flag_param, len_range &range_param) {
 
@@ -1636,7 +1643,7 @@ uint8_t *alternative(int *flag_param, len_range &range_param) {
 			range_param.upper += range_local.upper;
 		}
 
-		if (chain) { // Connect the regex atoms together sequentialy.
+		if (chain) { // Connect the regex atoms together sequentially.
 			tail(chain, latest);
 		}
 
@@ -1698,7 +1705,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		look_only   = true;
 		// We'll overwrite the zero length later on, so we save the ptr
 		ret_val                 = emit_special(paren, 0, 0);
-		emit_look_behind_bounds = ret_val + NODE_SIZE;
+		emit_look_behind_bounds = ret_val + NODE_SIZE<size_t>;
 	} else if (paren == INSENSITIVE) {
 		pContext.Is_Case_Insensitive = true;
 	} else if (paren == SENSITIVE) {
@@ -1739,7 +1746,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		tail(ret_val, this_branch); // Connect BRANCH -> BRANCH.
 
 		/* If any alternative could be zero width, consider the whole
-		   parenthisized thing to be zero width. */
+		   parenthesized thing to be zero width. */
 
 		if (!(flags_local & HAS_WIDTH)) {
 			*flag_param &= ~HAS_WIDTH;
@@ -1772,7 +1779,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
 	// Hook the tails of the branch alternatives to the closing node.
 	for (uint8_t *this_branch = ret_val; this_branch != nullptr; this_branch = next_ptr(this_branch)) {
-		branch_tail(this_branch, NODE_SIZE, ender);
+		branch_tail(this_branch, NODE_SIZE<size_t>, ender);
 	}
 
 	// Check for proper termination.
@@ -1783,7 +1790,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		if (*pContext.Reg_Parse == ')') {
 			Raise<RegexError>("missing left parenthesis '('");
 		} else {
-			Raise<RegexError>("junk on end"); // "Can't happen" - NOTREACHED
+			Raise<RegexError>("junk on end"); // "Can't happen" - NOT REACHED
 		}
 	}
 
@@ -1844,7 +1851,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 	/* If this set of parentheses is known to never match the empty string, set
 	   a bit in Paren_Has_Width to let future calls to function back_ref know
 	   that this set of parentheses has non-zero width.  This will allow star
-	   (*) or question (?) quantifiers to be aplied to a back-reference that
+	   (*) or question (?) quantifiers to be applied to a back-reference that
 	   refers to this set of parentheses. */
 
 	if ((*flag_param & HAS_WIDTH) && paren == PAREN && !zero_width && this_paren < pContext.Paren_Has_Width.size()) {
@@ -1873,14 +1880,14 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
  * Beware that the optimization and preparation code in here knows about
  * some of the structure of the compiled Regex.
  *----------------------------------------------------------------------*/
-Regex::Regex(view::string_view exp, int defaultFlags) {
+Regex::Regex(std::string_view exp, int defaultFlags) {
 
 	Regex *const re = this;
 
 	int flags_local;
 	len_range range_local;
 
-	if (pContext.Enable_Counting_Quantifier) {
+	if (ParseContext::Enable_Counting_Quantifier) {
 		pContext.Brace_Char = '{';
 		pContext.Meta_Char  = &Default_Meta_Char[0];
 	} else {
@@ -1918,9 +1925,9 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 		 *    Match_Newline:       Newlines are NOT matched by default
 		 *                         in character classes
 		 */
-		pContext.Is_Case_Insensitive = ((defaultFlags & REDFLT_CASE_INSENSITIVE) ? true : false);
+		pContext.Is_Case_Insensitive = ((defaultFlags & RE_DEFAULT_CASE_INSENSITIVE) != 0);
 #if 0 // Currently not used. Uncomment if needed.
-		pContext.Match_Newline       = ((defaultFlags & REDFLT_MATCH_NEWLINE)    ? true : false);
+		pContext.Match_Newline       = ((defaultFlags & RE_DEFAULT_MATCH_NEWLINE) != 0);
 #else
 		pContext.Match_Newline = false;
 #endif
@@ -1968,7 +1975,7 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 	 *----------------------------------------*/
 
 	// First BRANCH.
-	uint8_t *scan = (&re->program[0] + REGEX_START_OFFSET);
+	uint8_t *scan = (&re->program[REGEX_START_OFFSET]);
 
 	if (GET_OP_CODE(next_ptr(scan)) == END) { // Only one top-level choice.
 		scan = OPERAND(scan);
@@ -1982,8 +1989,8 @@ Regex::Regex(view::string_view exp, int defaultFlags) {
 			/* Allow x+ or x+? at the start of the regex to be
 			   optimized. */
 
-			if (GET_OP_CODE(scan + NODE_SIZE) == EXACTLY) {
-				re->match_start = static_cast<char>(*OPERAND(scan + NODE_SIZE));
+			if (GET_OP_CODE(scan + NODE_SIZE<size_t>) == EXACTLY) {
+				re->match_start = static_cast<char>(*OPERAND(scan + NODE_SIZE<size_t>));
 			}
 		} else if (GET_OP_CODE(scan) == BOL) {
 			re->anchor++;

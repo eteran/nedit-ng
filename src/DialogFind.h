@@ -5,8 +5,9 @@
 #include "Dialog.h"
 #include "Direction.h"
 #include "SearchType.h"
+#include <QPointer>
 
-#include <boost/optional.hpp>
+#include <optional>
 
 #include "ui_DialogFind.h"
 
@@ -41,7 +42,7 @@ public:
 	void updateFindButton();
 
 private:
-	boost::optional<Fields> readFields();
+	std::optional<Fields> readFields();
 
 private:
 	void textFind_textChanged(const QString &text);
@@ -54,7 +55,7 @@ private:
 private:
 	Ui::DialogFind ui;
 	MainWindow *window_;
-	DocumentWidget *document_;
+	QPointer<DocumentWidget> document_;
 	bool lastRegexCase_   = true;
 	bool lastLiteralCase_ = false;
 };

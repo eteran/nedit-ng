@@ -4,6 +4,7 @@
 
 #include <QTimer>
 #include <memory>
+#include <string_view>
 
 class DocumentWidget;
 class MainWindow;
@@ -22,10 +23,10 @@ bool CheckMacroString(QWidget *dialogParent, const QString &string, const QStrin
 bool readCheckMacroString(QWidget *dialogParent, const QString &string, DocumentWidget *runDocument, const QString &errIn, int *errPos);
 
 void RegisterMacroSubroutines();
-void returnShellCommandOutput(DocumentWidget *document, const QString &outText, int status);
+void returnShellCommandOutput(DocumentWidget *document, std::string_view outText, int status);
 
 /* Data attached to window during shell command execution with
-   information for controling and communicating with the process */
+   information for controlling and communicating with the process */
 struct MacroCommandData {
 	QTimer bannerTimer;
 	QTimer continuationTimer;

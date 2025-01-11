@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 #ifdef Q_OS_LINUX
 	if (qEnvironmentVariableIsEmpty("DISPLAY")) {
 		// Respond to -V or -version even if there is no display
-		for (int i = 1; i < argc && strcmp(argv[i], "--"); i++) {
+		for (int i = 1; i < argc && strcmp(argv[i], "--") != 0; i++) {
 
 			if (strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0) {
 				QString infoString = DialogAbout::createInfoString();
@@ -67,6 +67,7 @@ int main(int argc, char *argv[]) {
 				exit(EXIT_SUCCESS);
 			}
 		}
+
 		fputs("NEdit: Can't open display\n", stderr);
 		exit(EXIT_FAILURE);
 	}
@@ -85,7 +86,7 @@ int main(int argc, char *argv[]) {
 
 	// NOTE(eteran): for issue #38, grab -geometry <arg> before Qt consumes it!
 	QString geometry;
-	for (int i = 1; i < argc && strcmp(argv[i], "--"); i++) {
+	for (int i = 1; i < argc && strcmp(argv[i], "--") != 0; i++) {
 		if (strcmp(argv[i], "-geometry") == 0) {
 			if (i++ < argc) {
 				geometry = QString::fromLatin1(argv[i]);
@@ -99,18 +100,18 @@ int main(int argc, char *argv[]) {
 	// NOTE: for issue #41, translate QMessageBox.
 	QTranslator qtTranslator;
 	if (qtTranslator.load(QLocale(), QLatin1String("qtbase"), QLatin1String("_"), QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
-		app.installTranslator(&qtTranslator);
+		QApplication::installTranslator(&qtTranslator);
 	}
 
 	QTranslator translator;
 	// look up e.g. :/translations/nedit-ng_{lang}.qm
 	if (translator.load(QLocale(), QLatin1String("nedit-ng"), QLatin1String("_"), QLatin1String(":/translations"))) {
-		app.installTranslator(&translator);
+		QApplication::installTranslator(&translator);
 	}
 
 	// NOTE(eteran): for issue #38, re-add -geometry <arg> because Qt has
 	// removed it at this point
-	QStringList arguments = app.arguments();
+	QStringList arguments = QApplication::arguments();
 	if (!geometry.isNull()) {
 		arguments.insert(1, QLatin1String("-geometry"));
 		arguments.insert(2, geometry);
@@ -143,5 +144,5 @@ int main(int argc, char *argv[]) {
 	Main main{arguments};
 
 	// Process events.
-	return app.exec();
+	return qApp->exec();
 }

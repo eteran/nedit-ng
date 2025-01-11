@@ -141,6 +141,7 @@ void DialogDrawingStyles::buttonDown_clicked() {
 void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
 
 	static bool canceled = false;
+	bool skip_check      = false;
 
 	if (canceled) {
 		canceled = false;
@@ -156,12 +157,11 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 		messageBox.setText(tr("Discard incomplete entry for current highlight style?"));
 		QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
 		QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
-		Q_UNUSED(buttonDiscard)
 
 		messageBox.exec();
 		if (messageBox.clickedButton() == buttonKeep) {
 
-			// again to cause messagebox to pop up
+			// again to cause message box to pop up
 			validateFields(Verbosity::Verbose);
 
 			// reselect the old item
@@ -169,10 +169,15 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 			Q_EMIT restore(previous);
 			return;
 		}
+
+		if (messageBox.clickedButton() == buttonDiscard) {
+			model_->deleteItem(previous);
+			skip_check = true;
+		}
 	}
 
 	// this is only safe if we aren't moving due to a delete operation
-	if (previous.isValid() && previous != deleted_) {
+	if (previous.isValid() && previous != deleted_ && !skip_check) {
 		if (!updateCurrentItem(previous)) {
 			// reselect the old item
 			canceled = true;
@@ -193,7 +198,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 		// ensure that the appropriate buttons are enabled
 		CommonDialog::updateButtonStates(&ui, model_, current);
 
-		// don't allow deleteing the last "Plain" entry since it's reserved
+		// don't allow deleting the last "Plain" entry since it's reserved
 		if (style->name == QLatin1String("Plain")) {
 			// unless there is more than one "Plain"
 			int count = countPlainEntries();
@@ -243,13 +248,13 @@ bool DialogDrawingStyles::validateFields(Verbosity verbosity) {
  * @param mode
  * @return
  */
-boost::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosity) {
+std::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosity) {
 
 	HighlightStyle hs;
 
 	QString name = ui.editName->text().simplified();
 	if (name.isNull()) {
-		return boost::none;
+		return {};
 	}
 
 	hs.name = name;
@@ -260,13 +265,13 @@ boost::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbos
 								 tr("Please specify a name for the highlight style"));
 		}
 
-		return boost::none;
+		return {};
 	}
 
 	// read the color field
 	QString color = ui.editColorFG->text().simplified();
 	if (color.isEmpty()) {
-		return boost::none;
+		return {};
 	}
 
 	hs.color = color;
@@ -274,7 +279,7 @@ boost::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbos
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Style Color"), tr("Please specify a color for the highlight style"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	// Verify that the color is a valid X color spec
@@ -283,7 +288,7 @@ boost::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbos
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X color specification: %1").arg(hs.color));
 		}
-		return boost::none;
+		return {};
 	}
 
 	// read the background color field - this may be empty
@@ -304,7 +309,7 @@ boost::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbos
 									 tr("Invalid X background color specification: %1").arg(hs.bgColor));
 			}
 
-			return boost::none;
+			return {};
 		}
 	}
 

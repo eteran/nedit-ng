@@ -19,9 +19,9 @@
 #include "TextBufferFwd.h"
 #include "UndoInfo.h"
 #include "Util/FileFormats.h"
-#include "Util/string_view.h"
 #include "Verbosity.h"
 #include "WrapStyle.h"
+#include <string_view>
 
 #include "ui_DocumentWidget.h"
 
@@ -31,7 +31,7 @@
 
 #include <gsl/span>
 
-#include <boost/optional.hpp>
+#include <optional>
 
 #include <sys/stat.h>
 
@@ -40,7 +40,7 @@ class MainWindow;
 class PatternSet;
 class Regex;
 class Style;
-class StyleTableEntry;
+struct StyleTableEntry;
 class TextArea;
 class UndoInfo;
 struct DragEndEvent;
@@ -89,8 +89,8 @@ Q_SIGNALS:
 public:
 	void dragEndCallback(TextArea *area, const DragEndEvent *event);
 	void dragStartCallback(TextArea *area);
-	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText);
-	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, TextArea *area);
+	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText);
+	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, TextArea *area);
 	void movedCallback(TextArea *area);
 	void smartIndentCallback(TextArea *area, SmartIndentEvent *event);
 
@@ -140,7 +140,7 @@ public:
 	bool matchSyntaxBased() const;
 	bool modeMessageDisplayed() const;
 	bool overstrike() const;
-	bool readMacroFile(const QString &fileName, bool warnNotExist);
+	void readMacroFile(const QString &fileName, bool warnNotExist);
 	bool readMacroString(const QString &string, const QString &errIn);
 	bool showStatisticsLine() const;
 	bool useTabs() const;
@@ -155,7 +155,7 @@ public:
 	int64_t styleLengthOfCodeFromPos(TextCursor pos) const;
 	size_t getLanguageMode() const;
 	size_t highlightCodeOfPos(TextCursor pos) const;
-	std::unique_ptr<WindowHighlightData> createHighlightData(PatternSet *patternSet);
+	std::unique_ptr<WindowHighlightData> createHighlightData(PatternSet *patternSet, Verbosity verbosity = Verbosity::Silent);
 	std::vector<TextArea *> textPanes() const;
 	void abortShellCommand();
 	void addMark(TextArea *area, QChar label);
@@ -173,11 +173,11 @@ public:
 	void findDefinitionCalltip(TextArea *area, const QString &tipName);
 	void findDefinitionHelper(TextArea *area, const QString &arg, Tags::SearchMode search_type);
 	void finishMacroCmdExecution();
-	void gotoAP(TextArea *area, int lineNum, int column);
+	void gotoAP(TextArea *area, int64_t lineNum, int64_t column);
 	void gotoMark(TextArea *area, QChar label, bool extendSel);
 	void gotoMatchingCharacter(TextArea *area, bool select);
-	void handleUnparsedRegion(const std::shared_ptr<TextBuffer> &styleBuf, TextCursor pos) const;
-	void handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) const;
+	void handleUnparsedRegion(const std::shared_ptr<UTextBuffer> &styleBuf, TextCursor pos) const;
+	void handleUnparsedRegion(UTextBuffer *styleBuf, TextCursor pos) const;
 	void macroBannerTimeoutProc();
 	void makeSelectionVisible(TextArea *area);
 	void moveDocument(MainWindow *fromWindow);
@@ -236,23 +236,23 @@ private:
 	bool doOpen(const QString &name, const QString &path, int flags);
 	bool doSave();
 	bool fileWasModifiedExternally() const;
-	bool includeFile(const QString &name);
+	void includeFile(const QString &name);
 	bool macroWindowCloseActions();
 	bool saveDocument();
 	bool saveDocumentAs(const QString &newName, bool addWrap);
 	bool writeBackupFile();
 	bool writeBckVersion();
-	boost::optional<TextCursor> findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit);
+	std::optional<TextCursor> findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit);
 	int findAllMatches(TextArea *area, const QString &string);
 	size_t matchLanguageMode() const;
-	std::unique_ptr<HighlightData[]> compilePatterns(const std::vector<HighlightPattern> &patternSrc);
+	std::unique_ptr<HighlightData[]> compilePatterns(const std::vector<HighlightPattern> &patternSrc, Verbosity verbosity = Verbosity::Silent);
 	std::unique_ptr<Regex> compileRegexAndWarn(const QString &re);
 	void abortMacroCommand();
 	void actionClose(CloseMode mode);
 	void addRedoItem(UndoInfo &&redo);
 	void addUndoItem(UndoInfo &&undo);
 	void addWrapNewlines();
-	void appendDeletedText(view::string_view deletedText, int64_t deletedLen, Direction direction);
+	void appendDeletedText(std::string_view deletedText, int64_t deletedLen, Direction direction);
 	void attachHighlightToWidget(TextArea *area);
 	void beginLearn();
 	void cancelLearning();
@@ -285,7 +285,7 @@ private:
 	void removeUndoItem();
 	void replay();
 	void revertToSaved();
-	void saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, view::string_view deletedText);
+	void saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, std::string_view deletedText);
 	void setModeMessage(const QString &message);
 	void setWindowModified(bool modified);
 	void trimUndoList(size_t maxLength);

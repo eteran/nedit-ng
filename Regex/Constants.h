@@ -2,10 +2,11 @@
 #ifndef CONSTANTS_H_
 #define CONSTANTS_H_
 
+#include <cstddef>
 #include <cstdint>
 
 /* The first byte of the Regex internal 'program' is a magic number to help
-   gaurd against corrupted data; the compiled regex code really begins in the
+   guard against corrupted data; the compiled regex code really begins in the
    second byte. */
 constexpr uint8_t Magic = 0234;
 
@@ -22,11 +23,20 @@ constexpr auto MaxSubExpr = 50u;
  */
 constexpr int RecursionLimit = 10000;
 
-constexpr int OP_CODE_SIZE  = 1;
-constexpr int NEXT_PTR_SIZE = 2;
-constexpr int INDEX_SIZE    = 1;
-constexpr int LENGTH_SIZE   = 4;
-constexpr int NODE_SIZE     = NEXT_PTR_SIZE + OP_CODE_SIZE;
+template <class T>
+constexpr T OP_CODE_SIZE = 1;
+
+template <class T>
+constexpr T NEXT_PTR_SIZE = 2;
+
+template <class T>
+constexpr T INDEX_SIZE = 1;
+
+template <class T>
+constexpr T LENGTH_SIZE = 4;
+
+template <class T>
+constexpr T NODE_SIZE = NEXT_PTR_SIZE<T> + OP_CODE_SIZE<T>;
 
 constexpr auto REG_INFINITY = 0UL;
 

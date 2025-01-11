@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15)
 
 option(NEDIT_BUILD_TESTS "Build Tests")
 option(NEDIT_INCLUDE_DECOMPILER "Build experimental regex decompiler code.")
@@ -27,7 +27,7 @@ if(NEDIT_INCLUDE_DECOMPILER)
 	)
 endif()
 
-add_library(Regex 
+add_library(Regex
 	${SOURCES}
 )
 
@@ -41,8 +41,12 @@ target_link_libraries(Regex PUBLIC
 
 target_add_warnings(Regex)
 
-set_property(TARGET Regex PROPERTY CXX_STANDARD 14)
-set_property(TARGET Regex PROPERTY CXX_EXTENSIONS OFF)
+set_target_properties(Regex
+PROPERTIES
+	CXX_STANDARD 17
+	CXX_STANDARD_REQUIRED ON
+	CXX_EXTENSIONS OFF
+)
 
 if(NEDIT_BUILD_TESTS)
 	if(NOT MSVC)

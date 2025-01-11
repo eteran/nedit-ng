@@ -26,7 +26,6 @@
 #include "Highlight.h"
 #include "LanguageMode.h"
 #include "Location.h"
-#include "PatternSet.h"
 #include "Preferences.h"
 #include "Regex.h"
 #include "Search.h"
@@ -45,16 +44,19 @@
 #include "shift.h"
 #include "userCmds.h"
 
+#include <QActionGroup>
 #include <QButtonGroup>
 #include <QClipboard>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QShortcut>
+#include <QTimer>
 #include <QToolTip>
 #include <QDesktopServices>
 #include <qplatformdefs.h>
 
+#include <algorithm>
 #include <cmath>
 
 #ifdef Q_OS_LINUX
@@ -74,7 +76,7 @@ QVector<QString> PrevOpen;
 /*
 ** Extract the line and column number from the text string.
 */
-boost::optional<Location> StringToLineAndCol(const QString &text) {
+std::optional<Location> StringToLineAndCol(const QString &text) {
 
 	static const QRegularExpression re(QLatin1String(
 		"^"
@@ -97,7 +99,7 @@ boost::optional<Location> StringToLineAndCol(const QString &text) {
 		if (!row_ok) {
 			r = -1;
 		} else {
-			r = qBound(0, r, INT_MAX);
+			r = std::clamp(r, 0, INT_MAX);
 		}
 
 		bool col_ok;
@@ -105,17 +107,17 @@ boost::optional<Location> StringToLineAndCol(const QString &text) {
 		if (!col_ok) {
 			c = -1;
 		} else {
-			c = qBound(0, c, INT_MAX);
+			c = std::clamp(c, 0, INT_MAX);
 		}
 
 		if (r == -1 && c == -1) {
-			return boost::none;
+			return {};
 		}
 
 		return Location{r, c};
 	}
 
-	return boost::none;
+	return {};
 }
 
 /**
@@ -136,21 +138,20 @@ void addToGroup(QActionGroup *group, QMenu *menu) {
 ** Capitalize or lowercase the contents of the selection (or of the character
 ** before the cursor if there is no selection).
 */
-template <int (&F)(int) noexcept>
+template <int (&F)(unsigned char) noexcept>
 void changeCase(DocumentWidget *document, TextArea *area) {
 
 	TextBuffer *buf = document->buffer();
 
 	// Get the selection.  Use character before cursor if no selection
-	if (boost::optional<SelectionPos> pos = buf->BufGetSelectionPos()) {
+	if (std::optional<SelectionPos> pos = buf->BufGetSelectionPos()) {
 		bool modified = false;
 
 		std::string text = buf->BufGetSelectionText();
 
 		for (char &ch : text) {
-			const char oldChar = ch;
-			ch                 = safe_ctype<F>(ch);
-			if (ch != oldChar) {
+			const char prev_char = std::exchange(ch, F(ch));
+			if (ch != prev_char) {
 				modified = true;
 			}
 		}
@@ -173,7 +174,7 @@ void changeCase(DocumentWidget *document, TextArea *area) {
 
 		char ch = buf->BufGetCharacter(cursorPos - 1);
 
-		ch = safe_ctype<F>(ch);
+		ch = F(ch);
 		buf->BufReplace(cursorPos - 1, cursorPos, ch);
 	}
 }
@@ -184,7 +185,7 @@ void changeCase(DocumentWidget *document, TextArea *area) {
  * @param area
  */
 void upcaseSelection(DocumentWidget *document, TextArea *area) {
-	changeCase<::toupper>(document, area);
+	changeCase<safe_toupper>(document, area);
 }
 
 /**
@@ -193,7 +194,7 @@ void upcaseSelection(DocumentWidget *document, TextArea *area) {
  * @param area
  */
 void downcaseSelection(DocumentWidget *document, TextArea *area) {
-	changeCase<::tolower>(document, area);
+	changeCase<safe_tolower>(document, area);
 }
 
 }
@@ -205,6 +206,10 @@ void downcaseSelection(DocumentWidget *document, TextArea *area) {
  */
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags) {
+
+	static size_t next_window_id = 0;
+
+	windowId_ = next_window_id++;
 
 	ui.setupUi(this);
 	connectSlots();
@@ -231,24 +236,15 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 
 	setupPrevOpenMenuActions();
 	updatePrevOpenMenu();
+	setupISearchBar();
 
-	// determine the strings and button settings to use
-	initToggleButtonsiSearch(Preferences::GetPrefSearch());
-
-	showISearchLine_ = Preferences::GetPrefISearchLine();
 	showLineNumbers_ = Preferences::GetPrefLineNums();
-
-	// make sure that the ifind button has an icon
-	ui.buttonIFind->setIcon(QIcon::fromTheme(QLatin1String("edit-find")));
-
-	// default to hiding the optional panels
-	ui.incrementalSearchFrame->setVisible(showISearchLine_);
-
 	ui.action_Statistics_Line->setChecked(Preferences::GetPrefStatsLine());
 
 	// make sure we include this windows which is in the middle of being created
 	std::vector<MainWindow *> windows = MainWindow::allWindows();
-	auto it                           = std::find(windows.begin(), windows.end(), this);
+
+	auto it = std::find(windows.begin(), windows.end(), this);
 	if (it == windows.end()) {
 		windows.push_back(this);
 	}
@@ -276,6 +272,28 @@ MainWindow::~MainWindow() {
 }
 
 /**
+ * @brief MainWindow::setupISearchBar
+ */
+void MainWindow::setupISearchBar() {
+	// determine the strings and button settings to use
+	initToggleButtonsiSearch(Preferences::GetPrefSearch());
+
+	showISearchLine_ = Preferences::GetPrefISearchLine();
+
+	// make it so we can capture up/down key presses in the incremental find
+	ui.editIFind->installEventFilter(this);
+
+	// make sure that the ifind button has an icon
+	ui.buttonIFind->setIcon(QIcon::fromTheme(QLatin1String("edit-find")));
+
+	// default to hiding the optional panels
+	ui.incrementalSearchFrame->setVisible(showISearchLine_);
+
+	// install an event filter to capture middle clicking on the clear button
+	ui.editIFind->findChild<QToolButton *>()->installEventFilter(this);
+}
+
+/**
  * @brief MainWindow::connectSlots
  */
 void MainWindow::connectSlots() {
@@ -298,6 +316,7 @@ void MainWindow::connectSlots() {
 	connect(ui.action_Print, &QAction::triggered, this, &MainWindow::action_Print_triggered);
 	connect(ui.action_Print_Selection, &QAction::triggered, this, &MainWindow::action_Print_Selection_triggered);
 	connect(ui.action_Save, &QAction::triggered, this, &MainWindow::action_Save_triggered);
+	connect(ui.action_Save_All, &QAction::triggered, this, &MainWindow::action_Save_All_triggered);
 	connect(ui.action_Save_As, &QAction::triggered, this, &MainWindow::action_Save_As_triggered);
 	connect(ui.action_Revert_to_Saved, &QAction::triggered, this, &MainWindow::action_Revert_to_Saved_triggered);
 	connect(ui.action_Exit, &QAction::triggered, this, &MainWindow::action_Exit_triggered);
@@ -442,24 +461,26 @@ void MainWindow::parseGeometry(QString geometry) {
 	}
 
 	if (DocumentWidget *document = currentDocument()) {
-		QFontMetrics fm(document->font_);
-
 		const int extent = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent);
 
 		TextArea *area   = document->firstPane();
 		const QMargins m = area->getMargins();
 
-		const int w = extent + (Font::maxWidth(fm) * cols) + m.left() + m.right() + area->lineNumberAreaWidth();
-		const int h = extent + (fm.ascent() + fm.descent()) * rows + m.top() + m.bottom();
+		const int w = extent + (area->fixedFontWidth() * cols) + m.left() + m.right() + area->lineNumberAreaWidth();
+		const int h = extent + (area->fixedFontHeight() * rows) + m.top() + m.bottom();
 
+		// make the window squeeze down to the desired size of the text area
 		document->setMinimumSize(w, h);
 		adjustSize();
 
-		// NOTE(eteran): this processEvents() is to force the resize
-		// to happen now, so that we can set the widget to be fully
-		// resizable again right after we make everything adjust
-		QApplication::processEvents();
-		document->setMinimumSize(0, 0);
+		// NOTE(eteran): we do this in a one shot timer so that the adjustSize
+		// can happen now, but once we are done with this event,
+		// we can set the widget to be fully resizable again right after
+		// we make everything adjust. If we don't give Qt an opportunity to process
+		// the events, it will consolidate them resulting in no resize
+		QTimer::singleShot(0, this, [document]() {
+			document->setMinimumSize(0, 0);
+		});
 	}
 }
 
@@ -482,13 +503,12 @@ void MainWindow::setupTabBar() {
 	ui.tabWidget->setTabsClosable(true);
 #endif
 	ui.tabWidget->tabBar()->installEventFilter(this);
-	ui.editIFind->installEventFilter(this);
 }
 
 /**
- * @brief MainWindow::setupGlobalPrefenceDefaults
+ * @brief MainWindow::setupGlobalPreferenceDefaults
  */
-void MainWindow::setupGlobalPrefenceDefaults() {
+void MainWindow::setupGlobalPreferenceDefaults() {
 
 	// Default Indent
 	switch (Preferences::GetPrefAutoIndent(PLAIN_LANGUAGE_MODE)) {
@@ -521,7 +541,7 @@ void MainWindow::setupGlobalPrefenceDefaults() {
 	}
 
 	// Default Search Settings
-	no_signals(ui.action_Default_Search_Verbose)->setChecked(Preferences::GetPrefSearchDlogs());
+	no_signals(ui.action_Default_Search_Verbose)->setChecked(Preferences::GetPrefSearchDialogs());
 	no_signals(ui.action_Default_Search_Wrap_Around)->setChecked(Preferences::GetPrefSearchWraps() == WrapMode::Wrap);
 	no_signals(ui.action_Default_Search_Beep_On_Search_Wrap)->setChecked(Preferences::GetPrefBeepOnSearchWrap());
 	no_signals(ui.action_Default_Search_Keep_Dialogs_Up)->setChecked(Preferences::GetPrefKeepSearchDlogs());
@@ -543,7 +563,7 @@ void MainWindow::setupGlobalPrefenceDefaults() {
 		ui.action_Default_Search_Regular_Expression->setChecked(true);
 		break;
 	case SearchType::RegexNoCase:
-		ui.action_Default_Search_Regular_Expresison_Case_Insensitive->setChecked(true);
+		ui.action_Default_Search_Regular_Expression_Case_Insensitive->setChecked(true);
 		break;
 	}
 
@@ -670,7 +690,7 @@ void MainWindow::setupMenuDefaults() {
 	no_signals(ui.action_Incremental_Backup)->setChecked(Preferences::GetPrefSaveOldVersion());
 	no_signals(ui.action_Matching_Syntax)->setChecked(Preferences::GetPrefMatchSyntaxBased());
 
-	setupGlobalPrefenceDefaults();
+	setupGlobalPreferenceDefaults();
 	setupDocumentPreferenceDefaults();
 
 	updateWindowSizeMenu();
@@ -831,7 +851,7 @@ void MainWindow::setupMenuGroups() {
 	defaultSearchGroup->addAction(ui.action_Default_Search_Literal_Whole_Word);
 	defaultSearchGroup->addAction(ui.action_Default_Search_Literal_Case_Sensitive_Whole_Word);
 	defaultSearchGroup->addAction(ui.action_Default_Search_Regular_Expression);
-	defaultSearchGroup->addAction(ui.action_Default_Search_Regular_Expresison_Case_Insensitive);
+	defaultSearchGroup->addAction(ui.action_Default_Search_Regular_Expression_Case_Insensitive);
 
 	auto defaultSyntaxGroup = new QActionGroup(this);
 	defaultSyntaxGroup->addAction(ui.action_Default_Syntax_Off);
@@ -1108,15 +1128,15 @@ void MainWindow::handleContextMenuEvent(DocumentWidget *document, const QPoint &
 			if (!data.isNull()) {
 
 				/* Don't allow users to execute a macro command from the menu (or accel)
-					 * if there's already a macro command executing, UNLESS the macro is
-					 * directly called from another one.  NEdit can't handle
-					 * running multiple, independent uncoordinated, macros in the same
-					 * window.  Macros may invoke macro menu commands recursively via the
-					 * macro_menu_command action proc, which is important for being able to
-					 * repeat any operation, and to embed macros within eachother at any
-					 * level, however, a call here with a macro running means that THE USER
-					 * is explicitly invoking another macro via the menu or an accelerator,
-					 * UNLESS the macro event marker is set */
+				 * if there's already a macro command executing, UNLESS the macro is
+				 * directly called from another one.  NEdit can't handle
+				 * running multiple, independent uncoordinated, macros in the same
+				 * window.  Macros may invoke macro menu commands recursively via the
+				 * macro_menu_command action proc, which is important for being able to
+				 * repeat any operation, and to embed macros within each other at any
+				 * level, however, a call here with a macro running means that THE USER
+				 * is explicitly invoking another macro via the menu or an accelerator,
+				 * UNLESS the macro event marker is set */
 				if (document) {
 					if (document->macroCmdData_) {
 						QApplication::beep();
@@ -1263,9 +1283,11 @@ void MainWindow::sortTabBar() {
 	// shuffle around the tabs to their new indexes
 	int i = 0;
 	for (DocumentWidget *document : documents) {
-		int from = ui.tabWidget->indexOf(document);
-		ui.tabWidget->tabBar()->moveTab(from, i);
-		++i;
+		const int from = ui.tabWidget->indexOf(document);
+		if (from != -1) {
+			ui.tabWidget->tabBar()->moveTab(from, i);
+			++i;
+		}
 	}
 }
 
@@ -1290,6 +1312,11 @@ std::vector<MainWindow *> MainWindow::allWindows(bool includeInvisible) {
 			}
 		}
 	}
+
+	// ensure a deterministic ordering
+	std::sort(windows.begin(), windows.end(), [](const MainWindow *lhs, const MainWindow *rhs) {
+		return lhs->windowId_ < rhs->windowId_;
+	});
 
 	return windows;
 }
@@ -1577,7 +1604,7 @@ void MainWindow::updateLanguageModeSubmenu() {
 }
 
 /*
-** Create a submenu for chosing language mode for the current window.
+** Create a submenu for choosing language mode for the current window.
 */
 void MainWindow::createLanguageModeSubMenu() {
 	updateLanguageModeSubmenu();
@@ -1602,7 +1629,7 @@ int MainWindow::updateLineNumDisp() {
 **  Set the new gutter width in the window. Sadly, the only way to do this is
 **  to set it on every single document, so we have to iterate over them.
 */
-int MainWindow::updateGutterWidth() {
+int MainWindow::updateGutterWidth() const {
 
 	// Min. # of columns in line number display
 	constexpr int MIN_LINE_NUM_COLS = 4;
@@ -1669,12 +1696,12 @@ QString MainWindow::uniqueUntitledName() {
 
 	for (int i = 0; i < INT_MAX; i++) {
 
-		const QString name = [i]() {
+		QString name = [i]() {
 			if (i == 0) {
 				return tr("Untitled");
-			} else {
-				return tr("Untitled_%1").arg(i);
 			}
+
+			return tr("Untitled_%1").arg(i);
 		}();
 
 		auto it = std::find_if(documents.begin(), documents.end(), [name](DocumentWidget *document) {
@@ -2176,9 +2203,9 @@ QFileInfoList MainWindow::openFileHelperSystem(DocumentWidget *document, const Q
 	for (const QString &includeDir : includeDirs) {
 		// we need to do this because someone could write #include <path/to/file.h>
 		// which confuses QDir..
-		QFileInfo fullPath = QStringLiteral("%1/%2").arg(includeDir, match.captured(1));
-		QString filename   = fullPath.fileName();
-		QString filepath   = fullPath.path();
+		QFileInfo fullPath(QStringLiteral("%1/%2").arg(includeDir, match.captured(1)));
+		QString filename = fullPath.fileName();
+		QString filepath = fullPath.path();
 
 		filepath = NormalizePathname(filepath);
 
@@ -2208,9 +2235,9 @@ QFileInfoList MainWindow::openFileHelperString(DocumentWidget *document, const Q
 	QFileInfoList results;
 
 	if (QFileInfo(text).isAbsolute()) {
-		QFileInfo fullPath = text;
-		QString filename   = fullPath.fileName();
-		QString filepath   = fullPath.path();
+		QFileInfo fullPath(text);
+		QString filename = fullPath.fileName();
+		QString filepath = fullPath.path();
 
 		filepath = NormalizePathname(filepath);
 
@@ -2224,9 +2251,9 @@ QFileInfoList MainWindow::openFileHelperString(DocumentWidget *document, const Q
 	} else {
 		// we need to do this because someone could write #include "path/to/file.h"
 		// which confuses QDir..
-		QFileInfo fullPath = QStringLiteral("%1/%2").arg(document->path(), text);
-		QString filename   = fullPath.fileName();
-		QString filepath   = fullPath.path();
+		QFileInfo fullPath(QStringLiteral("%1/%2").arg(document->path(), text));
+		QString filename = fullPath.fileName();
+		QString filepath = fullPath.path();
 
 		filepath = NormalizePathname(filepath);
 
@@ -2310,7 +2337,7 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 			/*iconic*/ false,
 			QString(),
 			openInTab,
-			/*bgOpen=*/false);
+			/*background=*/false);
 	}
 
 	MainWindow::checkCloseEnableState();
@@ -2578,7 +2605,7 @@ void MainWindow::action_Goto_Line_Number(DocumentWidget *document, const QString
 		  [line]:[column]   (menu action)
 		  line              (macro call)
 		  line, column      (macro call) */
-	boost::optional<Location> loc = StringToLineAndCol(s);
+	std::optional<Location> loc = StringToLineAndCol(s);
 	if (!loc) {
 		QApplication::beep();
 		return;
@@ -2794,16 +2821,15 @@ void MainWindow::editIFind_textChanged(const QString &text) {
 		if (ui.checkIFindCase->isChecked()) {
 			if (ui.checkIFindRegex->isChecked()) {
 				return SearchType::Regex;
-			} else {
-				return SearchType::CaseSense;
 			}
-		} else {
-			if (ui.checkIFindRegex->isChecked()) {
-				return SearchType::RegexNoCase;
-			} else {
-				return SearchType::Literal;
-			}
+
+			return SearchType::CaseSense;
 		}
+
+		if (ui.checkIFindRegex->isChecked()) {
+			return SearchType::RegexNoCase;
+		}
+		return SearchType::Literal;
 	}();
 
 	const Direction direction = ui.checkIFindReverse->isChecked() ? Direction::Backward : Direction::Forward;
@@ -2896,16 +2922,16 @@ void MainWindow::editIFind_returnPressed() {
 		if (ui.checkIFindCase->isChecked()) {
 			if (ui.checkIFindRegex->isChecked()) {
 				return SearchType::Regex;
-			} else {
-				return SearchType::CaseSense;
 			}
-		} else {
-			if (ui.checkIFindRegex->isChecked()) {
-				return SearchType::RegexNoCase;
-			} else {
-				return SearchType::Literal;
-			}
+
+			return SearchType::CaseSense;
 		}
+
+		if (ui.checkIFindRegex->isChecked()) {
+			return SearchType::RegexNoCase;
+		}
+
+		return SearchType::Literal;
 	}();
 
 	Direction direction = ui.checkIFindReverse->isChecked() ? Direction::Backward : Direction::Forward;
@@ -3836,10 +3862,14 @@ void MainWindow::action_Tab_Stops_triggered() {
  * @brief MainWindow::action_Text_Fonts_triggered
  */
 void MainWindow::action_Text_Fonts_triggered() {
-	if (DocumentWidget *document = currentDocument()) {
-		auto dialogFonts = std::make_unique<DialogFonts>(document, this);
-		dialogFonts->exec();
+	if (!dialogFonts_) {
+		if (DocumentWidget *document = currentDocument()) {
+			dialogFonts_ = new DialogFonts(document, this);
+			dialogFonts_->setAttribute(Qt::WA_DeleteOnClose);
+		}
 	}
+
+	dialogFonts_->show();
 }
 
 /**
@@ -3951,8 +3981,12 @@ void MainWindow::action_Save_Defaults_triggered() {
  * @brief MainWindow::action_Default_Language_Modes_triggered
  */
 void MainWindow::action_Default_Language_Modes_triggered() {
-	auto dialog = std::make_unique<DialogLanguageModes>(nullptr, this);
-	dialog->exec();
+	if (!dialogLanguageModes_) {
+		dialogLanguageModes_ = new DialogLanguageModes(nullptr, this);
+		dialogLanguageModes_->setAttribute(Qt::WA_DeleteOnClose);
+	}
+
+	dialogLanguageModes_->show();
 }
 
 /**
@@ -4085,8 +4119,12 @@ void MainWindow::action_Default_Tab_Stops_triggered() {
  * @brief MainWindow::action_Default_Text_Fonts_triggered
  */
 void MainWindow::action_Default_Text_Fonts_triggered() {
-	auto dialog = std::make_unique<DialogFonts>(nullptr, this);
-	dialog->exec();
+	if (!dialogFonts_) {
+		dialogFonts_ = new DialogFonts(nullptr, this);
+		dialogFonts_->setAttribute(Qt::WA_DeleteOnClose);
+	}
+
+	dialogFonts_->show();
 }
 
 /**
@@ -4095,6 +4133,7 @@ void MainWindow::action_Default_Text_Fonts_triggered() {
 void MainWindow::action_Default_Colors_triggered() {
 	if (!dialogColors_) {
 		dialogColors_ = new DialogColors(this);
+		dialogColors_->setAttribute(Qt::WA_DeleteOnClose);
 	}
 
 	// TODO(eteran): do we want to take any measures to prevent
@@ -4108,6 +4147,7 @@ void MainWindow::action_Default_Colors_triggered() {
 void MainWindow::action_Default_Shell_Menu_triggered() {
 	if (!dialogShellMenu_) {
 		dialogShellMenu_ = new DialogShellMenu(this);
+		dialogShellMenu_->setAttribute(Qt::WA_DeleteOnClose);
 	}
 
 	// TODO(eteran): do we want to take any measures to prevent
@@ -4122,6 +4162,7 @@ void MainWindow::action_Default_Shell_Menu_triggered() {
 void MainWindow::action_Default_Macro_Menu_triggered() {
 	if (!dialogMacros_) {
 		dialogMacros_ = new DialogMacros(this);
+		dialogMacros_->setAttribute(Qt::WA_DeleteOnClose);
 	}
 
 	// TODO(eteran): do we want to take any measures to prevent
@@ -4135,6 +4176,7 @@ void MainWindow::action_Default_Macro_Menu_triggered() {
 void MainWindow::action_Default_Window_Background_Menu_triggered() {
 	if (!dialogWindowBackgroundMenu_) {
 		dialogWindowBackgroundMenu_ = new DialogWindowBackgroundMenu(this);
+		dialogWindowBackgroundMenu_->setAttribute(Qt::WA_DeleteOnClose);
 	}
 
 	// TODO(eteran): do we want to take any measures to prevent
@@ -4174,10 +4216,14 @@ void MainWindow::action_Default_Show_Path_In_Windows_Menu_toggled(bool state) {
  * @brief MainWindow::action_Default_Customize_Window_Title_triggered
  */
 void MainWindow::action_Default_Customize_Window_Title_triggered() {
-	if (DocumentWidget *document = currentDocument()) {
-		auto dialog = std::make_unique<DialogWindowTitle>(document, this);
-		dialog->exec();
+
+	if (!dialogWindowTitle_) {
+		if (DocumentWidget *document = currentDocument()) {
+			dialogWindowTitle_ = new DialogWindowTitle(document, this);
+			dialogWindowTitle_->setAttribute(Qt::WA_DeleteOnClose);
+		}
 	}
+	dialogWindowTitle_->show();
 }
 
 /**
@@ -4265,10 +4311,10 @@ void MainWindow::defaultSearchGroupTriggered(QAction *action) {
 		for (MainWindow *window : windows) {
 			no_signals(window->ui.action_Default_Search_Regular_Expression)->setChecked(true);
 		}
-	} else if (action == ui.action_Default_Search_Regular_Expresison_Case_Insensitive) {
+	} else if (action == ui.action_Default_Search_Regular_Expression_Case_Insensitive) {
 		Preferences::SetPrefSearch(SearchType::RegexNoCase);
 		for (MainWindow *window : windows) {
-			no_signals(window->ui.action_Default_Search_Regular_Expresison_Case_Insensitive)->setChecked(true);
+			no_signals(window->ui.action_Default_Search_Regular_Expression_Case_Insensitive)->setChecked(true);
 		}
 	}
 }
@@ -5013,7 +5059,7 @@ QString MainWindow::promptForNewFile(DocumentWidget *document, FileFormats *form
 				if (checked) {
 					int ret = QMessageBox::information(document, tr("Add Wrap"),
 													   tr("This operation adds permanent line breaks to match the automatic wrapping done by the Continuous Wrap mode Preferences Option.\n\n"
-														  "*** This Option is Irreversable ***\n\n"
+														  "*** This Option is Irreversible ***\n\n"
 														  "Once newlines are inserted, continuous wrapping will no longer work automatically on these lines"),
 													   QMessageBox::Ok | QMessageBox::Cancel);
 
@@ -5046,6 +5092,34 @@ QString MainWindow::promptForNewFile(DocumentWidget *document, FileFormats *form
 	}
 
 	return filename;
+}
+
+/**
+ * @brief MainWindow::action_Save_All
+ * @param document
+ */
+void MainWindow::action_Save_All(DocumentWidget *document) {
+	Q_UNUSED(document);
+
+	emit_event("save_all");
+
+	std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+	for (DocumentWidget *document : documents) {
+		if (document->checkReadOnly()) {
+			continue;
+		}
+
+		document->saveDocument();
+	}
+}
+
+/**
+ * @brief MainWindow::action_Save_All_triggered
+ */
+void MainWindow::action_Save_All_triggered() {
+	if (DocumentWidget *document = currentDocument()) {
+		action_Save_All(document);
+	}
 }
 
 /**
@@ -5235,7 +5309,7 @@ void MainWindow::action_Exit_triggered() {
 
 /*
 ** Check if preferences have changed, and if so, ask the user if he wants
-** to re-save.  Returns false if user requests cancelation of Exit (or whatever
+** to re-save.  Returns false if user requests cancellation of Exit (or whatever
 ** operation triggered this call to be made).
 */
 bool MainWindow::checkPrefsChangesSaved() {
@@ -5263,11 +5337,13 @@ bool MainWindow::checkPrefsChangesSaved() {
 	if (messageBox.clickedButton() == buttonSave) {
 		Preferences::SaveNEditPrefs(this, Verbosity::Silent);
 		return true;
-	} else if (messageBox.clickedButton() == buttonDontSave) {
-		return true;
-	} else {
-		return false;
 	}
+
+	if (messageBox.clickedButton() == buttonDontSave) {
+		return true;
+	}
+
+	return false;
 }
 
 /*
@@ -5517,6 +5593,11 @@ void MainWindow::action_Open_Configuration_Directory_triggered() {
  */
 bool MainWindow::eventFilter(QObject *object, QEvent *ev) {
 
+	if (ev->type() == QEvent::MouseButtonRelease && static_cast<QMouseEvent *>(ev)->button() == Qt::MiddleButton && object == ui.editIFind->findChild<QToolButton *>()) {
+		ui.editIFind->setText(QApplication::clipboard()->text(QClipboard::Selection));
+		return true;
+	}
+
 	if (object == ui.editIFind && ev->type() == QEvent::KeyPress) {
 
 		auto event = static_cast<QKeyEvent *>(ev);
@@ -5572,7 +5653,7 @@ bool MainWindow::eventFilter(QObject *object, QEvent *ev) {
 			auto event  = static_cast<QHelpEvent *>(ev);
 			auto tabBar = ui.tabWidget->tabBar();
 
-			int index = tabBar->tabAt(static_cast<QHelpEvent *>(event)->pos());
+			int index = tabBar->tabAt(event->pos());
 			if (index != -1) {
 
 				if (DocumentWidget *document = documentAt(index)) {
@@ -5598,7 +5679,7 @@ bool MainWindow::eventFilter(QObject *object, QEvent *ev) {
 						tipString = labelString;
 					}
 
-					QToolTip::showText(static_cast<QHelpEvent *>(event)->globalPos(), tipString, this);
+					QToolTip::showText(event->globalPos(), tipString, this);
 				}
 			}
 		}
@@ -6011,7 +6092,7 @@ void MainWindow::macroTriggered(QAction *action) {
 		   running multiple, independent uncoordinated, macros in the same
 		   window.  Macros may invoke macro menu commands recursively via the
 		   macro_menu_command action proc, which is important for being able to
-		   repeat any operation, and to embed macros within eachother at any
+		   repeat any operation, and to embed macros within each other at any
 		   level, however, a call here with a macro running means that THE USER
 		   is explicitly invoking another macro via the menu or an accelerator,
 		   UNLESS the macro event marker is set */
@@ -6131,9 +6212,16 @@ MainWindow *MainWindow::fromDocument(const DocumentWidget *document) {
 */
 void MainWindow::editHighlightStyles(const QString &initialStyle) {
 
-	auto DrawingStyles = std::make_unique<DialogDrawingStyles>(nullptr, Highlight::HighlightStyles, this);
-	DrawingStyles->setStyleByName(initialStyle);
-	DrawingStyles->exec();
+	if (!dialogDrawingStyles_) {
+		dialogDrawingStyles_ = new DialogDrawingStyles(nullptr, Highlight::HighlightStyles, this);
+		dialogDrawingStyles_->setAttribute(Qt::WA_DeleteOnClose);
+	}
+
+	dialogDrawingStyles_->setStyleByName(initialStyle);
+
+	// TODO(eteran): do we want to take any measures to prevent
+	// more than one of these being shown?
+	dialogDrawingStyles_->show();
 }
 
 /*
@@ -6146,14 +6234,14 @@ void MainWindow::editHighlightPatterns() {
 		QMessageBox::warning(this,
 							 tr("No Language Modes"),
 							 tr("No Language Modes available for syntax highlighting\n"
-								"Add language modes under Preferenses->Language Modes"));
+								"Add language modes under Preferences->Language Modes"));
 		return;
 	}
 
 	if (!dialogSyntaxPatterns_) {
 		dialogSyntaxPatterns_ = new DialogSyntaxPatterns(this);
+		dialogSyntaxPatterns_->setAttribute(Qt::WA_DeleteOnClose);
 	}
-
 
 	if (DocumentWidget *document = currentDocument()) {
 		QString languageName = Preferences::LanguageModeName((document->languageMode_ == PLAIN_LANGUAGE_MODE) ? 0 : document->languageMode_);
@@ -6163,23 +6251,6 @@ void MainWindow::editHighlightPatterns() {
 	// TODO(eteran): do we want to take any measures to prevent
 	// more than one of these being shown?
 	dialogSyntaxPatterns_->show();
-}
-
-/*
-** Change the language mode name of pattern sets for language "oldName" to
-** "newName" in both the stored patterns, and the pattern set currently being
-** edited in the dialog.
-*/
-void MainWindow::renameHighlightPattern(const QString &oldName, const QString &newName) {
-
-	// TODO(eteran): this function doesn't REALLY belong in "MainWindow"
-	// since it generically manages highlight pattern sets
-
-	for (PatternSet &patternSet : Highlight::PatternSets) {
-		if (patternSet.languageMode == oldName) {
-			patternSet.languageMode = newName;
-		}
-	}
 }
 
 /**
@@ -6224,7 +6295,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 	}
 
 	// get the entire text buffer from the text area widget
-	view::string_view fileString = buffer->BufAsString();
+	std::string_view fileString = buffer->BufAsString();
 
 	/* If we're already outside the boundaries, we must consider wrapping
 	   immediately (Note: fileEnd+1 is a valid starting position. Consider
@@ -6265,7 +6336,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 				if (direction == Direction::Forward && beginPos != 0) {
 					if (Preferences::GetPrefBeepOnSearchWrap()) {
 						QApplication::beep();
-					} else if (Preferences::GetPrefSearchDlogs()) {
+					} else if (Preferences::GetPrefSearchDialogs()) {
 
 						QMessageBox messageBox(document);
 						messageBox.setWindowTitle(tr("Wrap Search"));
@@ -6294,7 +6365,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 				} else if (direction == Direction::Backward && beginPos != fileEnd) {
 					if (Preferences::GetPrefBeepOnSearchWrap()) {
 						QApplication::beep();
-					} else if (Preferences::GetPrefSearchDlogs()) {
+					} else if (Preferences::GetPrefSearchDialogs()) {
 
 						QMessageBox messageBox(document);
 						messageBox.setWindowTitle(tr("Wrap Search"));
@@ -6323,7 +6394,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 			}
 
 			if (!found) {
-				if (Preferences::GetPrefSearchDlogs()) {
+				if (Preferences::GetPrefSearchDialogs()) {
 					QMessageBox::information(document, tr("String not found"), tr("String was not found"));
 				} else {
 					QApplication::beep();
@@ -6555,7 +6626,7 @@ bool MainWindow::replaceAndSearch(DocumentWidget *document, TextArea *area, cons
 				Search::defaultRegexFlags(searchType));
 
 			buffer->BufReplace(selectionRange, replaceResult);
-			replaceLen = static_cast<int64_t>(replaceResult.size());
+			replaceLen = ssize(replaceResult);
 		} else {
 			buffer->BufReplace(selectionRange, replaceString.toStdString());
 			replaceLen = replaceString.size();
@@ -6606,7 +6677,7 @@ bool MainWindow::searchAndReplace(DocumentWidget *document, TextArea *area, cons
 	/* NOTE(eteran): OK, the whole point of extentBW, and extentFW
 	 * are to help with regex search/replace operations involving look-ahead and
 	 * look-behind. For example, if the buffer contains "ABCDEF-A" and we want
-	 * the regex to match "(?<=-)[A-Z]" (a captial letter preceded by a dash).
+	 * the regex to match "(?<=-)[A-Z]" (a capital letter preceded by a dash).
 	 * The regex is matching the "A" and thus the start position of the match is
 	 * offset 7. However, the extentBW is offset 6 because the "-" was
 	 * required for the match.
@@ -6684,7 +6755,7 @@ bool MainWindow::searchAndReplace(DocumentWidget *document, TextArea *area, cons
 			Search::defaultRegexFlags(searchType));
 
 		buffer->BufReplace(selectionRange, replaceResult);
-		replaceLen = static_cast<int64_t>(replaceResult.size());
+		replaceLen = ssize(replaceResult);
 	} else {
 		buffer->BufReplace(selectionRange, replaceString.toStdString());
 		replaceLen = replaceString.size();
@@ -6769,7 +6840,7 @@ void MainWindow::searchForSelected(DocumentWidget *document, TextArea *area, Dir
 
 	const QString selected = document->getAnySelection();
 	if (selected.isEmpty()) {
-		if (Preferences::GetPrefSearchDlogs()) {
+		if (Preferences::GetPrefSearchDialogs()) {
 			QMessageBox::warning(document, tr("Wrong Selection"), tr("Selection not appropriate for searching"));
 		} else {
 			QApplication::beep();
@@ -6826,7 +6897,7 @@ void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QSt
 }
 
 /*
-** Replace all occurences of "searchString" in "window" with "replaceString"
+** Replace all occurrences of "searchString" in "window" with "replaceString"
 ** within the current primary selection in "window". Also adds the search and
 ** replace strings to the global search history.
 */
@@ -6843,7 +6914,7 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 	TextBuffer *buffer = document->buffer();
 
 	// find out where the selection is
-	boost::optional<SelectionPos> pos = buffer->BufGetSelectionPos();
+	std::optional<SelectionPos> pos = buffer->BufGetSelectionPos();
 	if (!pos) {
 		return;
 	}
@@ -6861,7 +6932,6 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 	   intermediate steps from the display routines, and so everything can
 	   be undone in a single operation */
 	TextBuffer tempBuf;
-	tempBuf.BufSetSyncXSelection(false);
 	tempBuf.BufSetAll(fileString);
 
 	// search the string and do the replacements in the temporary buffer
@@ -6871,7 +6941,7 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 	int64_t realOffset   = 0;
 
 	Q_FOREVER {
-		boost::optional<Search::Result> searchResult = Search::SearchString(
+		std::optional<Search::Result> searchResult = Search::SearchString(
 			fileString,
 			searchString,
 			Direction::Forward,
@@ -6941,7 +7011,7 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 			}
 
 			tempBuf.BufReplace(TextCursor(searchResult->start + realOffset), TextCursor(searchResult->end + realOffset), replaceResult);
-			replaceLen = static_cast<int64_t>(replaceResult.size());
+			replaceLen = ssize(replaceResult);
 		} else {
 			// at this point plain substitutions (should) always work
 			tempBuf.BufReplace(TextCursor(searchResult->start + realOffset), TextCursor(searchResult->end + realOffset), replaceString.toStdString());
@@ -6977,7 +7047,7 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 		}
 	} else {
 		//  Nothing found, tell the user about it
-		if (Preferences::GetPrefSearchDlogs()) {
+		if (Preferences::GetPrefSearchDialogs()) {
 
 			if (dialogFind_) {
 				if (!dialogFind_->keepDialog()) {
@@ -7061,7 +7131,7 @@ bool MainWindow::prefOrUserCancelsSubst(DocumentWidget *document) {
 }
 
 /*
-** Replace all occurences of "searchString" in "window" with "replaceString".
+** Replace all occurrences of "searchString" in "window" with "replaceString".
 ** Also adds the search and replace strings to the global search history.
 */
 bool MainWindow::replaceAll(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType) {
@@ -7080,24 +7150,24 @@ bool MainWindow::replaceAll(DocumentWidget *document, TextArea *area, const QStr
 	TextBuffer *buffer = document->buffer();
 
 	// view the entire text buffer from the text area widget as a string
-	view::string_view fileString = buffer->BufAsString();
+	std::string_view fileString = buffer->BufAsString();
 
-	QString delimieters = document->getWindowDelimiters();
+	QString delimiters = document->getWindowDelimiters();
 
-	boost::optional<std::string> newFileString = Search::ReplaceAllInString(
+	std::optional<std::string> newFileString = Search::ReplaceAllInString(
 		fileString,
 		searchString,
 		replaceString,
 		searchType,
 		&copyStart,
 		&copyEnd,
-		delimieters);
+		delimiters);
 
 	if (!newFileString) {
 		if (document->multiFileBusy_) {
 			// only needed during multi-file replacements
 			document->replaceFailed_ = true;
-		} else if (Preferences::GetPrefSearchDlogs()) {
+		} else if (Preferences::GetPrefSearchDialogs()) {
 
 			if (dialogFind_) {
 				if (!dialogFind_->keepDialog()) {
@@ -7220,7 +7290,7 @@ bool MainWindow::searchMatchesSelection(DocumentWidget *document, const QString 
 	// search for the string in the selection (we are only interested
 	// in an exact match, but the procedure SearchString does important
 	// stuff like applying the correct matching algorithm)
-	boost::optional<Search::Result> searchResult = Search::SearchString(
+	std::optional<Search::Result> searchResult = Search::SearchString(
 		string,
 		searchString,
 		Direction::Forward,
@@ -7275,7 +7345,7 @@ void MainWindow::updateMenuItems() {
 
 /*
 ** Search through the shell menu and execute the first command with menu item
-** name "itemName".  Returns true on successs and false on failure.
+** name "itemName".  Returns true on success and false on failure.
 */
 bool MainWindow::execNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source) {
 
@@ -7299,7 +7369,7 @@ bool MainWindow::execNamedShellMenuCmd(DocumentWidget *document, TextArea *area,
 
 /*
 ** Search through the Macro or background menu and execute the first command
-** with menu item name "itemName".  Returns true on successs and false on
+** with menu item name "itemName".  Returns true on success and false on
 ** failure.
 */
 bool MainWindow::execNamedMacroMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source) {
@@ -7380,7 +7450,7 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
 	}
 
 	/* This routine is called for each character typed, so its performance
-	   affects overall editor perfomance.  Only update if the line is on. */
+	   affects overall editor performance.  Only update if the line is on. */
 	if (!document->showStats_) {
 		return;
 	}
@@ -7411,7 +7481,7 @@ void MainWindow::updateStatus(DocumentWidget *document, TextArea *area) {
 	QString slinecol;
 	const int64_t length = document->buffer()->length();
 
-	if (boost::optional<Location> loc = area->positionToLineAndCol(pos)) {
+	if (std::optional<Location> loc = area->positionToLineAndCol(pos)) {
 		slinecol = tr("L: %1  C: %2").arg(loc->line).arg(loc->column);
 		if (showLineNumbers_) {
 			string = tr("%1%2%3 byte %4 of %5").arg(document->path(), document->filename(), format).arg(to_integer(pos)).arg(length);
@@ -7454,6 +7524,8 @@ void MainWindow::updateWindowHints(DocumentWidget *document) {
 ** the window data structure.
 */
 void MainWindow::updateWindowReadOnly(DocumentWidget *document) {
+	Q_ASSERT(document);
+
 	const bool state = document->lockReasons().isAnyLocked();
 
 	for (TextArea *area : document->textPanes()) {
@@ -7471,6 +7543,8 @@ void MainWindow::updateWindowReadOnly(DocumentWidget *document) {
  * @param document
  */
 void MainWindow::updateWindowTitle(DocumentWidget *document) {
+
+	Q_ASSERT(document);
 
 	QString title = DialogWindowTitle::formatWindowTitle(
 		document,

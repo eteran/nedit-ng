@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15)
 
 find_package(Qt5 5.5.0 REQUIRED Core Network)
 
@@ -90,7 +90,6 @@ add_library(Util
 	include/Util/Resource.h
 	include/Util/ServerCommon.h
 	include/Util/String.h
-	include/Util/string_view.h
 	include/Util/System.h
 	include/Util/User.h
 	include/Util/utils.h
@@ -99,7 +98,7 @@ add_library(Util
 	include/Util/Compiler.h
 )
 
-target_include_directories(Util 
+target_include_directories(Util
 	PUBLIC
 	    ${CMAKE_CURRENT_SOURCE_DIR}/include
 		${CMAKE_CURRENT_BINARY_DIR}/include
@@ -111,12 +110,13 @@ PUBLIC
 	GSL
 	Qt5::Core
 	Qt5::Network
-	Boost::boost
 )
 
 target_add_warnings(Util)
 
-set_property(TARGET Util PROPERTY CXX_STANDARD 14)
-set_property(TARGET Util PROPERTY CXX_EXTENSIONS OFF)
-
-
+set_target_properties(Util
+PROPERTIES
+	CXX_STANDARD 17
+	CXX_STANDARD_REQUIRED ON
+	CXX_EXTENSIONS OFF
+)

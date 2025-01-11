@@ -3,7 +3,7 @@
 #define INTERPRET_H_
 
 #include "DataValue.h"
-#include "Util/string_view.h"
+#include <string_view>
 
 #include <gsl/span>
 
@@ -131,11 +131,11 @@ void ArrayDelete(DataValue *theArray, const std::string &keyStr);
 void ArrayDeleteAll(DataValue *theArray);
 int ArraySize(DataValue *theArray);
 bool ArrayGet(DataValue *theArray, const std::string &keyStr, DataValue *theValue);
-int ArrayCopy(DataValue *dstArray, DataValue *srcArray);
+int ArrayCopy(DataValue *dstArray, const DataValue *srcArray);
 
 /* Routines for creating a program, (accumulated beginning with
    BeginCreatingProgram and returned via FinishCreatingProgram) */
-bool AddBranchOffset(Inst *to, QString *msg);
+bool AddBranchOffset(const Inst *to, QString *msg);
 bool AddBreakAddr(Inst *addr);
 bool AddContinueAddr(Inst *addr);
 bool AddImmediate(int value, QString *msg);
@@ -144,15 +144,15 @@ bool AddSym(Symbol *sym, QString *msg);
 Inst *GetPC();
 Program *FinishCreatingProgram();
 Symbol *InstallIteratorSymbol();
-Symbol *InstallStringConstSymbol(view::string_view str);
+Symbol *InstallStringConstSymbol(std::string_view str);
 Symbol *InstallStringConstSymbolEx(const QString &str);
 Symbol *InstallSymbol(const std::string &name, SymTypes type, const DataValue &value);
 Symbol *InstallSymbolEx(const QString &name, enum SymTypes type, const DataValue &value);
-Symbol *LookupStringConstSymbol(view::string_view value);
+Symbol *LookupStringConstSymbol(std::string_view value);
 Symbol *LookupSymbolEx(const QString &name);
-Symbol *LookupSymbol(view::string_view name);
+Symbol *LookupSymbol(std::string_view name);
 void BeginCreatingProgram();
-void FillLoopAddrs(Inst *breakAddr, Inst *continueAddr);
+void FillLoopAddrs(const Inst *breakAddr, const Inst *continueAddr);
 void StartLoopAddrList();
 void SwapCode(Inst *start, Inst *boundary, Inst *end);
 

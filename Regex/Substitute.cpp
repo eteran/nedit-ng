@@ -5,11 +5,12 @@
 #include "Util/utils.h"
 
 #include <algorithm>
+#include <iterator>
 
 /*
 **  SubstituteRE - Perform substitutions after a 'Regex' match.
 */
-bool Regex::SubstituteRE(view::string_view source, std::string &dest) const noexcept {
+bool Regex::SubstituteRE(std::string_view source, std::string &dest) const {
 
 	constexpr auto InvalidParenNumber = static_cast<size_t>(-1);
 
@@ -27,14 +28,14 @@ bool Regex::SubstituteRE(view::string_view source, std::string &dest) const noex
 
 		char ch = *in++;
 
-		char chgcase    = '\0';
+		char changeCase = '\0';
 		size_t paren_no = InvalidParenNumber;
 
 		if (ch == '\\') {
 			// Process any case altering tokens, i.e \u, \U, \l, \L.
 
 			if (*in == 'u' || *in == 'U' || *in == 'l' || *in == 'L') {
-				chgcase = *in++;
+				changeCase = *in++;
 
 				if (in == source.end()) {
 					break;
@@ -73,8 +74,8 @@ bool Regex::SubstituteRE(view::string_view source, std::string &dest) const noex
 				ch = '\\';
 			} else {
 				ch = *in++; // Allow any escape sequence (This is
-			}               // INCONSISTENT with the 'CompileRE'
-		}                   // mind set of issuing an error!
+			} // INCONSISTENT with the 'CompileRE'
+		} // mind set of issuing an error!
 
 		if (paren_no == InvalidParenNumber) { // Ordinary character.
 			*out++ = ch;
@@ -82,35 +83,35 @@ bool Regex::SubstituteRE(view::string_view source, std::string &dest) const noex
 
 			/* The tokens \u and \l only modify the first character while the
 			 * tokens \U and \L modify the entire string. */
-			switch (chgcase) {
+			switch (changeCase) {
 			case 'u': {
 				int count = 0;
 				std::transform(re->startp[paren_no], re->endp[paren_no], out, [&count](char ch) -> int {
 					if (count++ == 0) {
-						return safe_ctype<::toupper>(ch);
-					} else {
-						return ch;
+						return safe_toupper(ch);
 					}
+
+					return ch;
 				});
 			} break;
 			case 'U':
 				std::transform(re->startp[paren_no], re->endp[paren_no], out, [](char ch) {
-					return safe_ctype<::toupper>(ch);
+					return safe_toupper(ch);
 				});
 				break;
 			case 'l': {
 				int count = 0;
 				std::transform(re->startp[paren_no], re->endp[paren_no], out, [&count](char ch) -> int {
 					if (count++ == 0) {
-						return safe_ctype<::tolower>(ch);
-					} else {
-						return ch;
+						return safe_tolower(ch);
 					}
+
+					return ch;
 				});
 			} break;
 			case 'L':
 				std::transform(re->startp[paren_no], re->endp[paren_no], out, [](char ch) {
-					return safe_ctype<::tolower>(ch);
+					return safe_tolower(ch);
 				});
 				break;
 			default:

@@ -6,7 +6,9 @@
 #include "Verbosity.h"
 #include "ui_DialogDrawingStyles.h"
 
-#include <boost/optional.hpp>
+#include <QPointer>
+
+#include <optional>
 
 class DialogSyntaxPatterns;
 class HighlightStyleModel;
@@ -41,7 +43,7 @@ private:
 private:
 	bool applyDialogChanges();
 	bool validateFields(Verbosity verbosity);
-	boost::optional<HighlightStyle> readFields(Verbosity verbosity);
+	std::optional<HighlightStyle> readFields(Verbosity verbosity);
 	bool updateCurrentItem();
 	bool updateCurrentItem(const QModelIndex &index);
 	int countPlainEntries() const;
@@ -52,7 +54,7 @@ private:
 	HighlightStyleModel *model_;
 	std::vector<HighlightStyle> &highlightStyles_;
 	QModelIndex deleted_;
-	DialogSyntaxPatterns *dialogSyntaxPatterns_;
+	QPointer<DialogSyntaxPatterns> dialogSyntaxPatterns_;
 };
 
 #endif

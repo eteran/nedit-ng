@@ -11,7 +11,6 @@
 #include "Font.h"
 #include "Highlight.h"
 #include "HighlightData.h"
-#include "HighlightStyle.h"
 #include "MainWindow.h"
 #include "PatternSet.h"
 #include "Preferences.h"
@@ -27,7 +26,9 @@
 #include "Util/ClearCase.h"
 #include "Util/FileSystem.h"
 #include "Util/Input.h"
+#include "Util/Raise.h"
 #include "Util/User.h"
+#include "Util/algorithm.h"
 #include "Util/regex.h"
 #include "Util/utils.h"
 #include "WindowHighlightData.h"
@@ -52,13 +53,19 @@
 
 #include <chrono>
 
+#if defined(Q_OS_WIN)
+#define FDOPEN _fdopen
+#else
+#define FDOPEN fdopen
+#endif
+
 // NOTE(eteran): generally, this class reaches out to MainWindow FAR too much
 // it would be better to create some fundamental signals that MainWindow could
 // listen on and update itself as needed. This would reduce a lot fo the heavy
 // coupling seen in this class :-/.
 
 /* data attached to window during shell command execution with information for
- * controling and communicating with the process */
+ * controlling and communicating with the process */
 struct ShellCommandData {
 	QTimer bannerTimer;
 	QByteArray standardError;
@@ -154,7 +161,7 @@ QString errorString(int error) {
  * @param deletedText
  * @param user
  */
-void modifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
+void modifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, void *user) {
 	if (auto document = static_cast<DocumentWidget *>(user)) {
 		document->modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText);
 	}
@@ -226,7 +233,7 @@ void handleUnparsedRegionCB(const TextArea *area, TextCursor pos, const void *us
 */
 // TODO(eteran): I think the bufReplaceEx function already sanitizes its input,
 //               so it's possible that this function is redundant.
-void safeBufReplace(TextBuffer *buf, TextCursor *start, TextCursor *end, view::string_view text) {
+void safeBufReplace(TextBuffer *buf, TextCursor *start, TextCursor *end, std::string_view text) {
 
 	const TextCursor last = buf->BufEndOfBuffer();
 
@@ -282,26 +289,32 @@ UndoTypes determineUndoType(int64_t nInserted, int64_t nDeleted) {
 
 	if (textInserted && !textDeleted) {
 		// Insert
-		if (nInserted == 1)
+		if (nInserted == 1) {
 			return ONE_CHAR_INSERT;
-		else
-			return BLOCK_INSERT;
-	} else if (textInserted && textDeleted) {
-		// Replace
-		if (nInserted == 1)
-			return ONE_CHAR_REPLACE;
-		else
-			return BLOCK_REPLACE;
-	} else if (!textInserted && textDeleted) {
-		// Delete
-		if (nDeleted == 1)
-			return ONE_CHAR_DELETE;
-		else
-			return BLOCK_DELETE;
-	} else {
-		// Nothing deleted or inserted
-		return UNDO_NOOP;
+		}
+		return BLOCK_INSERT;
 	}
+
+	if (textInserted && textDeleted) {
+		// Replace
+		if (nInserted == 1) {
+			return ONE_CHAR_REPLACE;
+		}
+
+		return BLOCK_REPLACE;
+	}
+
+	if (!textInserted && textDeleted) {
+		// Delete
+		if (nDeleted == 1) {
+			return ONE_CHAR_DELETE;
+		}
+
+		return BLOCK_DELETE;
+	}
+
+	// Nothing deleted or inserted
+	return UNDO_NOOP;
 }
 
 /**
@@ -336,7 +349,7 @@ QLatin1String createRepeatMacro(int how) {
 ** Replaces '%' with <fullName> and '#' with <lineNumber>. But '%%' and '##'
 ** are replaced by '%' and '#'.
 */
-QString escapeCommand(const QString &command, const QString &fullName, int lineNumber) {
+QString escapeCommand(const QString &command, const QString &fullName, int64_t lineNumber) {
 	QString ret;
 	for (int i = 0; i < command.size(); ++i) {
 		auto c = command[i];
@@ -374,7 +387,7 @@ QString escapeCommand(const QString &command, const QString &fullName, int lineN
 ** If languageMode is passed as QString(), it will be determined automatically
 ** from the file extension or file contents.
 **
-** If bgOpen is true, then the file will be open in background. This
+** If background is true, then the file will be open in background. This
 ** works in association with the SetLanguageMode() function that has
 ** the syntax highlighting deferred, in order to speed up the file-
 ** opening operation when multiple files are being opened in succession.
@@ -576,6 +589,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	// Every document has a backing buffer
 	info_->buffer = std::make_shared<TextBuffer>();
 	info_->buffer->BufAddModifyCB(Highlight::SyntaxHighlightModifyCB, this);
+	info_->buffer->BufSetSelectionUpdate(TextArea::updatePrimarySelection);
 
 	// create the text widget
 	if (Settings::splitHorizontally) {
@@ -652,7 +666,7 @@ DocumentWidget::~DocumentWidget() {
 	// And delete the rangeset table too for the same reasons
 	rangesetTable_ = nullptr;
 
-	// Free syntax highlighting patterns, if any. w/o redisplaying
+	// Free syntax highlighting patterns, if any. w/o re-displaying
 	freeHighlightingData();
 
 	info_->buffer->BufRemoveModifyCB(modifiedCB, this);
@@ -705,7 +719,9 @@ TextArea *DocumentWidget::createTextArea(const std::shared_ptr<TextBuffer> &buff
 	// so TextArea captures the default context menu event, then if appropriate
 	// fires off a customContextMenuRequested event manually. So no need to set the
 	// policy here, in fact, that would break things.
-	//area->setContextMenuPolicy(Qt::CustomContextMenu);
+	// area->setContextMenuPolicy(Qt::CustomContextMenu);
+
+	area->setContextMenuPolicy(Qt::PreventContextMenu);
 
 	// just emit an event that will later be caught by the higher layer informing it of the context menu request
 	connect(area, &TextArea::customContextMenuRequested, this, [this](const QPoint &pos) {
@@ -872,7 +888,7 @@ size_t DocumentWidget::matchLanguageMode() const {
 		for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
 			if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {
 
-				boost::optional<Search::Result> searchResult = Search::SearchString(
+				std::optional<Search::Result> searchResult = Search::SearchString(
 					first200,
 					Preferences::LanguageModes[i].recognitionExpr,
 					Direction::Forward,
@@ -922,7 +938,7 @@ void DocumentWidget::movedCallback(TextArea *area) {
 		return;
 	}
 
-	// update line and column nubers in statistics line
+	// update line and column numbers in statistics line
 	Q_EMIT updateStatus(this, area);
 
 	// Check the character before the cursor for matchable characters
@@ -931,12 +947,8 @@ void DocumentWidget::movedCallback(TextArea *area) {
 	// Check for changes to read-only status and/or file modifications
 	checkForChangesToFile();
 
-	if (QTimer *const blinkTimer = area->cursorBlinkTimer()) {
-		if (!blinkTimer->isActive()) {
-			//  Start blinking the caret again.
-			blinkTimer->start();
-		}
-	}
+	// Start blinking the caret again.
+	area->resetCursorBlink(false);
 }
 
 /**
@@ -971,14 +983,14 @@ void DocumentWidget::updateMarkTable(TextCursor pos, int64_t nInserted, int64_t 
  * @param deletedText
  * @param area
  */
-void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, TextArea *area) {
+void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, TextArea *area) {
 	Q_UNUSED(nRestyled)
 
-	// number of distinct chars the user can typebefore NEdit gens. new backup file
-	constexpr int AutoSaveCharLimit = 80;
+	// number of distinct chars the user can type before NEdit gens. new backup file
+	const int autoSaveCharLimit = Preferences::GetPrefAutoSaveCharLimit();
 
 	// number of distinct editing operations user can do before NEdit gens. new backup file
-	constexpr int AutoSaveOpLimit = 8;
+	const int autoSaveOpLimit = Preferences::GetPrefAutoSaveOpLimit();
 
 	const bool selected = info_->buffer->primary.hasSelection();
 
@@ -997,7 +1009,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 		info_->wasSelected = selected;
 
 		/* do not refresh window-level items (window, menu-bar etc) when
-		 * motifying non-top document */
+		 * modifying non-top document */
 		if (isTopDocument()) {
 			win->selectionChanged(selected);
 
@@ -1023,7 +1035,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 	saveUndoInformation(pos, nInserted, nDeleted, deletedText);
 
 	// Trigger automatic backup if operation or character limits reached
-	if (info_->autoSave && (info_->autoSaveCharCount > AutoSaveCharLimit || info_->autoSaveOpCount > AutoSaveOpLimit)) {
+	if (info_->autoSave && (info_->autoSaveCharCount > autoSaveCharLimit || info_->autoSaveOpCount > autoSaveOpLimit)) {
 		writeBackupFile();
 		info_->autoSaveCharCount = 0;
 		info_->autoSaveOpCount   = 0;
@@ -1047,7 +1059,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
  * @param nRestyled
  * @param deletedText
  */
-void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText) {
+void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText) {
 	modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText, nullptr);
 }
 
@@ -1113,7 +1125,9 @@ void DocumentWidget::raiseFocusDocumentWindow(bool focus) {
 	win->activateWindow();
 
 	if (focus) {
-		setFocus();
+		if (TextArea *area = firstPane()) {
+			area->setFocus();
+		}
 	}
 }
 
@@ -1203,7 +1217,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 	   otherwise, leave it alone */
 	const bool wrapModeIsDef  = (info_->wrapMode == Preferences::GetPrefWrap(oldMode));
 	const bool tabDistIsDef   = (info_->buffer->BufGetTabDistance() == Preferences::GetPrefTabDist(oldMode));
-	const bool tabInsertIsDef = (info_->buffer->BufGetUseTabs() == Preferences::GetPrefInsertTabs(oldMode));
+	const bool tabInsertIsDef = (static_cast<int>(info_->buffer->BufGetUseTabs()) == Preferences::GetPrefInsertTabs(oldMode));
 
 	const int oldEmTabDist            = textAreas[0]->getEmulateTabs();
 	const QString oldlanguageModeName = Preferences::LanguageModeName(oldMode);
@@ -1505,9 +1519,9 @@ TextArea *DocumentWidget::firstPane() const {
 QString DocumentWidget::documentDelimiters() const {
 	if (languageMode_ == PLAIN_LANGUAGE_MODE) {
 		return QString();
-	} else {
-		return Preferences::LanguageModes[languageMode_].delimiters;
 	}
+
+	return Preferences::LanguageModes[languageMode_].delimiters;
 }
 
 /*
@@ -1561,7 +1575,7 @@ void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<M
 ** Note: This routine must be kept efficient.  It is called for every
 **       character typed.
 */
-void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, view::string_view deletedText) {
+void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, std::string_view deletedText) {
 
 	const int isUndo = (!info_->undo.empty() && info_->undo.front().inUndo);
 	const int isRedo = (!info_->redo.empty() && info_->redo.front().inUndo);
@@ -1631,7 +1645,7 @@ void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int6
 
 	// if text was deleted, save it
 	if (nDeleted > 0) {
-		undo.oldText = deletedText.to_string();
+		undo.oldText = std::string(deletedText);
 	}
 
 	// increment the operation count for the autosave feature
@@ -1690,7 +1704,7 @@ void DocumentWidget::clearRedoList() {
 ** for continuing of a string of one character deletes or replaces, but will
 ** work with more than one character.
 */
-void DocumentWidget::appendDeletedText(view::string_view deletedText, int64_t deletedLen, Direction direction) {
+void DocumentWidget::appendDeletedText(std::string_view deletedText, int64_t deletedLen, Direction direction) {
 	UndoInfo &undo = info_->undo.front();
 
 	// re-allocate, adding space for the new character(s)
@@ -1942,9 +1956,9 @@ QString DocumentWidget::backupFileName() const {
 
 	if (info_->filenameSet) {
 		return QStringLiteral("%1~%2").arg(info_->path, info_->filename);
-	} else {
-		return PrependHome(QStringLiteral("~%1").arg(info_->filename));
 	}
+
+	return prependHome(QStringLiteral("~%1").arg(info_->filename));
 }
 
 /*
@@ -2002,10 +2016,10 @@ void DocumentWidget::checkForChangesToFile() {
 
 		/* Can't stat the file --
 		 * maybe it's been deleted. The filename is now invalid */
-		info_->fileMissing = true;
-		info_->lastModTime = 1;
-		info_->dev         = 0;
-		info_->ino         = 0;
+		info_->fileMissing      = true;
+		info_->statbuf.st_mtime = 1;
+		info_->statbuf.st_dev   = 0;
+		info_->statbuf.st_ino   = 0;
 
 		/* Warn the user, if they like to be warned (Maybe this should be
 		 * its own preference setting: GetPrefWarnFileDeleted()) */
@@ -2066,11 +2080,11 @@ void DocumentWidget::checkForChangesToFile() {
 
 	/* Check that the file's read-only status is still correct (but
 	   only if the file can still be opened successfully in read mode) */
-	if (info_->mode != statbuf.st_mode || info_->uid != statbuf.st_uid || info_->gid != statbuf.st_gid) {
+	if (info_->statbuf.st_mode != statbuf.st_mode || info_->statbuf.st_uid != statbuf.st_uid || info_->statbuf.st_gid != statbuf.st_gid) {
 
-		info_->mode = statbuf.st_mode;
-		info_->uid  = statbuf.st_uid;
-		info_->gid  = statbuf.st_gid;
+		info_->statbuf.st_mode = statbuf.st_mode;
+		info_->statbuf.st_uid  = statbuf.st_uid;
+		info_->statbuf.st_gid  = statbuf.st_gid;
 
 		QFile fp(fullname);
 		if (fp.open(QIODevice::ReadWrite) || fp.open(QIODevice::ReadOnly)) {
@@ -2087,17 +2101,17 @@ void DocumentWidget::checkForChangesToFile() {
 
 	/* Warn the user if the file has been modified, unless checking is
 	 * turned off or the user has already been warned. */
-	if (!silent && ((info_->lastModTime != 0 && info_->lastModTime != statbuf.st_mtime) || info_->fileMissing)) {
+	if (!silent && ((info_->statbuf.st_mtime != 0 && info_->statbuf.st_mtime != statbuf.st_mtime) || info_->fileMissing)) {
 
-		info_->lastModTime = 0; // Inhibit further warnings
-		info_->fileMissing = false;
+		info_->statbuf.st_mtime = 0; // Inhibit further warnings
+		info_->fileMissing      = false;
 		if (!Preferences::GetPrefWarnFileMods()) {
 			return;
 		}
 
 		if (Preferences::GetPrefWarnRealFileMods() && !compareDocumentToFile(fullname)) {
 			// Contents hasn't changed. Update the modification time.
-			info_->lastModTime = statbuf.st_mtime;
+			info_->statbuf.st_mtime = statbuf.st_mtime;
 			return;
 		}
 
@@ -2162,7 +2176,7 @@ QString DocumentWidget::path() const {
 
 /*
  * Check if the contents of the TextBuffer is equal
- * the contens of the file named fileName. The format of
+ * the contents of the file named fileName. The format of
  * the file (UNIX/DOS/MAC) is handled properly.
  *
  * Return values
@@ -2175,6 +2189,9 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 	constexpr auto PREFERRED_CMPBUF_LEN = static_cast<int64_t>(0x8000);
 
 	char pendingCR = '\0';
+
+	// TODO(eteran): in the age of modern computers, we can just memory map
+	// the whole file and use that for comparison
 
 	QFile file(fileName);
 	if (!file.open(QIODevice::ReadOnly)) {
@@ -2203,7 +2220,7 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 	int64_t restLen = std::min(PREFERRED_CMPBUF_LEN, fileLen);
 
 	TextCursor bufPos = {};
-	int filePos       = 0;
+	int64_t filePos   = 0;
 	char fileString[PREFERRED_CMPBUF_LEN + 2];
 
 	/* For large files, the comparison can take a while. If it takes too long,
@@ -2217,7 +2234,7 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 
 	while (restLen > 0) {
 
-		size_t offset = 0;
+		int64_t offset = 0;
 		if (pendingCR) {
 			fileString[offset++] = pendingCR;
 		}
@@ -2232,7 +2249,7 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 		nRead += offset;
 
 		// check for on-disk file format changes, but only for the first chunk
-		if (bufPos == 0 && info_->fileFormat != FormatOfFile(view::string_view(fileString, static_cast<size_t>(nRead)))) {
+		if (bufPos == 0 && info_->fileFormat != FormatOfFile(std::string_view(fileString, static_cast<size_t>(nRead)))) {
 			return true;
 		}
 
@@ -2311,7 +2328,7 @@ void DocumentWidget::revertToSaved() {
 
 	const int openFlags = info_->lockReasons.isUserLocked() ? EditFlags::PREF_READ_ONLY : 0;
 	if (!doOpen(name, path, openFlags)) {
-		/* This is a bit sketchy.  The only error in doOpen that irreperably
+		/* This is a bit sketchy.  The only error in doOpen that irreparably
 		   damages the window is "too much binary data".  It should be
 		   pretty rare to be reverting something that was fine only to find
 		   that now it has too much binary data. */
@@ -2319,8 +2336,8 @@ void DocumentWidget::revertToSaved() {
 			closeDocument();
 		} else {
 			// Treat it like an externally modified file
-			info_->lastModTime = 0;
-			info_->fileMissing = false;
+			info_->statbuf.st_mtime = 0;
+			info_->fileMissing      = false;
 		}
 		return;
 	}
@@ -2360,7 +2377,7 @@ bool DocumentWidget::writeBackupFile() {
 #else
 	int fd = QT_OPEN(name.toUtf8().data(), QT_OPEN_CREAT | O_EXCL | QT_OPEN_WRONLY, S_IRUSR | S_IWUSR);
 #endif
-	if (fd < 0 || (fp = fdopen(fd, "w")) == nullptr) {
+	if (fd < 0 || (fp = FDOPEN(fd, "w")) == nullptr) {
 
 		QMessageBox::warning(
 			this,
@@ -2414,7 +2431,7 @@ bool DocumentWidget::saveDocument() {
 
 	/* Return success if the file is normal & unchanged or is a
 		read-only file. */
-	if ((!info_->fileChanged && !info_->fileMissing && info_->lastModTime > 0) || info_->lockReasons.isAnyLockedIgnoringPerm()) {
+	if ((!info_->fileChanged && !info_->fileMissing && info_->statbuf.st_mtime > 0) || info_->lockReasons.isAnyLockedIgnoringPerm()) {
 		return true;
 	}
 
@@ -2446,8 +2463,8 @@ bool DocumentWidget::saveDocument() {
 		messageBox.exec();
 		if (messageBox.clickedButton() != buttonContinue) {
 			// Cancel and mark file as externally modified
-			info_->lastModTime = 0;
-			info_->fileMissing = false;
+			info_->statbuf.st_mtime = 0;
+			info_->fileMissing      = false;
 			return false;
 		}
 	}
@@ -2533,7 +2550,7 @@ bool DocumentWidget::doSave() {
 	}
 
 	// write to the file
-	if (file.write(text.data(), static_cast<int64_t>(text.size())) == -1) {
+	if (file.write(text.data(), ssize(text)) == -1) {
 		QMessageBox::critical(this, tr("Error saving File"), tr("%1 not saved:\n%2").arg(info_->filename, file.errorString()));
 		file.close();
 		file.remove();
@@ -2546,16 +2563,16 @@ bool DocumentWidget::doSave() {
 	// update the modification time
 	QT_STATBUF statbuf;
 	if (QT_STAT(fullname.toUtf8().data(), &statbuf) == 0) {
-		info_->lastModTime = statbuf.st_mtime;
-		info_->fileMissing = false;
-		info_->dev         = statbuf.st_dev;
-		info_->ino         = statbuf.st_ino;
+		info_->statbuf.st_mtime = statbuf.st_mtime;
+		info_->fileMissing      = false;
+		info_->statbuf.st_dev   = statbuf.st_dev;
+		info_->statbuf.st_ino   = statbuf.st_ino;
 	} else {
 		// This needs to produce an error message -- the file can't be accessed!
-		info_->lastModTime = 0;
-		info_->fileMissing = true;
-		info_->dev         = 0;
-		info_->ino         = 0;
+		info_->statbuf.st_mtime = 0;
+		info_->fileMissing      = true;
+		info_->statbuf.st_dev   = 0;
+		info_->statbuf.st_ino   = 0;
 	}
 
 	return true;
@@ -2631,10 +2648,10 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 	// Change the name of the file and save it under the new name
 	removeBackupFile();
 	setPath(fi.pathname);
-	info_->filename = fi.filename;
-	info_->mode     = 0;
-	info_->uid      = 0;
-	info_->gid      = 0;
+	info_->filename        = fi.filename;
+	info_->statbuf.st_mode = 0;
+	info_->statbuf.st_uid  = 0;
+	info_->statbuf.st_gid  = 0;
 
 	info_->lockReasons.clear();
 	const int retVal = doSave();
@@ -2775,7 +2792,7 @@ bool DocumentWidget::writeBckVersion() {
 #endif
 
 		// Allocate I/O buffer
-		constexpr size_t IO_BUFFER_SIZE = (1024 * 1024);
+		constexpr size_t IO_BUFFER_SIZE = (1024ul * 1024ul);
 		auto io_buffer                  = std::make_unique<char[]>(IO_BUFFER_SIZE);
 
 		// copy loop
@@ -2847,7 +2864,7 @@ bool DocumentWidget::fileWasModifiedExternally() const {
 		return false;
 	}
 
-	if (info_->lastModTime == statbuf.st_mtime) {
+	if (info_->statbuf.st_mtime == statbuf.st_mtime) {
 		return false;
 	}
 
@@ -2865,9 +2882,9 @@ bool DocumentWidget::closeFileAndWindow(CloseMode preResponse) {
 	   just close it.  Otherwise ask for confirmation first. */
 	if (!info_->fileChanged &&
 		/* Normal File */
-		((!info_->fileMissing && info_->lastModTime > 0) ||
+		((!info_->fileMissing && info_->statbuf.st_mtime > 0) ||
 		 /* New File */
-		 (info_->fileMissing && info_->lastModTime == 0) ||
+		 (info_->fileMissing && info_->statbuf.st_mtime == 0) ||
 		 /* File deleted/modified externally, ignored by user. */
 		 !Preferences::GetPrefWarnFileMods())) {
 
@@ -2954,20 +2971,20 @@ void DocumentWidget::closeDocument() {
 		QString name = MainWindow::uniqueUntitledName();
 		info_->lockReasons.clear();
 
-		info_->mode        = 0;
-		info_->uid         = 0;
-		info_->gid         = 0;
-		info_->lastModTime = 0;
-		info_->dev         = 0;
-		info_->ino         = 0;
-		info_->filename    = name;
+		info_->statbuf.st_mode  = 0;
+		info_->statbuf.st_uid   = 0;
+		info_->statbuf.st_gid   = 0;
+		info_->statbuf.st_mtime = 0;
+		info_->statbuf.st_dev   = 0;
+		info_->statbuf.st_ino   = 0;
+		info_->filename         = name;
 		setPath(QString());
 
 		markTable_.clear();
 
 		// clear the buffer, but ignore changes
 		info_->ignoreModify = true;
-		info_->buffer->BufSetAll(view::string_view());
+		info_->buffer->BufSetAll(std::string_view());
 		info_->ignoreModify = false;
 
 		info_->filenameSet = false;
@@ -2996,7 +3013,19 @@ void DocumentWidget::closeDocument() {
 	// NOTE(eteran): removing the tab does not automatically delete the widget
 	// so we also schedule it for deletion later
 	win->ui.tabWidget->removeTab(win->ui.tabWidget->indexOf(this));
-	this->deleteLater();
+
+	// NOTE(eteran): fixes issue #306
+	// If a shell command is still running in this tab, don't schedule a deletion yet
+	// Instead, chain the deletion to trigger when the QProcess
+	// is being destroyed
+	// Otherwise, just schedule it to be deleted as soon as possible.
+	if (shellCmdData_) {
+		connect(shellCmdData_->process, &QProcess::destroyed, shellCmdData_->process, [this]() {
+			this->deleteLater();
+		});
+	} else {
+		this->deleteLater();
+	}
 
 	// Close of window running a macro may have been disabled.
 	// NOTE(eteran): this may be redundant...
@@ -3047,7 +3076,7 @@ DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 		/*iconic=*/false,
 		QString(),
 		Preferences::GetPrefOpenInTab(),
-		/*bgOpen=*/false);
+		/*background=*/false);
 
 	MainWindow::checkCloseEnableState();
 
@@ -3124,7 +3153,9 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 				if (msgbox.clickedButton() == cancelButton) {
 					return false;
-				} else if (msgbox.clickedButton() == exitButton) {
+				}
+
+				if (msgbox.clickedButton() == exitButton) {
 					// NOTE(eteran): we use ::exit here because if we got here
 					// it's because we failed to open the initial documents on
 					// launch and the user has opted to no longer continue
@@ -3138,10 +3169,10 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 			if (fd == -1) {
 				QMessageBox::critical(this, tr("Error creating File"), tr("Can't create %1:\n%2").arg(fullname, errorString(errno)));
 				return false;
-			} else {
-				QT_CLOSE(fd);
-				QFile::remove(fullname);
 			}
+
+			QT_CLOSE(fd);
+			QFile::remove(fullname);
 
 			setWindowModified(false);
 			if ((flags & EditFlags::PREF_READ_ONLY) != 0) {
@@ -3171,8 +3202,8 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 #ifdef Q_OS_WIN
 // Copied from linux libc sys/stat.h:
-#define S_ISREG(m) (((m)&S_IFMT) == S_IFREG)
-#define S_ISDIR(m) (((m)&S_IFMT) == S_IFDIR)
+#define S_ISREG(m) (((m) & S_IFMT) == S_IFREG)
+#define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
 #endif
 
 	if (S_ISDIR(statbuf.st_mode)) {
@@ -3222,13 +3253,13 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 		/* Any errors that happen after this point leave the window in a
 		 * "broken" state, and thus RevertToSaved will abandon the window if
 		 * info_->fileMissing is false and doOpen fails. */
-		info_->mode        = statbuf.st_mode;
-		info_->uid         = statbuf.st_uid;
-		info_->gid         = statbuf.st_gid;
-		info_->lastModTime = statbuf.st_mtime;
-		info_->dev         = statbuf.st_dev;
-		info_->ino         = statbuf.st_ino;
-		info_->fileMissing = false;
+		info_->statbuf.st_mode  = statbuf.st_mode;
+		info_->statbuf.st_uid   = statbuf.st_uid;
+		info_->statbuf.st_gid   = statbuf.st_gid;
+		info_->statbuf.st_mtime = statbuf.st_mtime;
+		info_->statbuf.st_dev   = statbuf.st_dev;
+		info_->statbuf.st_ino   = statbuf.st_ino;
+		info_->fileMissing      = false;
 
 		// Detect and convert DOS and Macintosh format files
 		if (Preferences::GetPrefForceOSConversion()) {
@@ -3582,10 +3613,10 @@ void DocumentWidget::actionClose(CloseMode mode) {
 	MainWindow::updateWindowMenus();
 }
 
-bool DocumentWidget::includeFile(const QString &name) {
+void DocumentWidget::includeFile(const QString &name) {
 
 	if (checkReadOnly()) {
-		return false;
+		return;
 	}
 
 	// TODO(eteran): this code is *almost* identical to a block of code in doOpen, we should
@@ -3593,14 +3624,14 @@ bool DocumentWidget::includeFile(const QString &name) {
 	QFile file(name);
 	if (!file.open(QFile::ReadOnly)) {
 		QMessageBox::critical(this, tr("Error opening File"), file.errorString());
-		return false;
+		return;
 	}
 
 	if (file.size() != 0) {
 		uchar *memory = file.map(0, file.size());
 		if (!memory) {
 			QMessageBox::critical(this, tr("Error opening File"), file.errorString());
-			return false;
+			return;
 		}
 
 		auto text = std::string{reinterpret_cast<char *>(memory), static_cast<size_t>(file.size())};
@@ -3629,11 +3660,9 @@ bool DocumentWidget::includeFile(const QString &name) {
 			}
 		}
 	}
-
-	return true;
 }
 
-boost::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit) {
+std::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit) {
 
 	Style style;
 	bool matchSyntaxBased = info_->matchSyntaxBased;
@@ -3649,7 +3678,7 @@ boost::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style
 	});
 
 	if (matchIt == std::end(MatchingChars)) {
-		return boost::none;
+		return {};
 	}
 
 	const char matchChar      = matchIt->match;
@@ -3719,7 +3748,7 @@ boost::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style
 		break;
 	}
 
-	return boost::none;
+	return {};
 }
 
 void DocumentWidget::gotoMatchingCharacter(TextArea *area, bool select) {
@@ -3749,7 +3778,7 @@ void DocumentWidget::gotoMatchingCharacter(TextArea *area, bool select) {
 	}
 
 	// Search for it in the buffer
-	boost::optional<TextCursor> matchPos = findMatchingChar(
+	std::optional<TextCursor> matchPos = findMatchingChar(
 		info_->buffer->BufGetCharacter(range.start),
 		getHighlightInfo(range.start),
 		range.start,
@@ -3801,7 +3830,7 @@ int DocumentWidget::findDefinitionHelperCommon(TextArea *area, const QString &va
 
 	// make sure that the whole value is ascii
 	auto p = std::find_if(value.begin(), value.end(), [](QChar ch) {
-		return !safe_ctype<::isascii>(ch.toLatin1());
+		return !safe_isascii(ch.toLatin1());
 	});
 
 	if (p == value.end()) {
@@ -3925,7 +3954,10 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 	   for # in the shell command */
 	QString fullName = fullPath();
 
-	const boost::optional<Location> loc = area->positionToLineAndCol(pos);
+	std::optional<Location> loc = area->positionToLineAndCol(pos);
+	if (!loc) {
+		loc = Location{-1, -1};
+	}
 
 	QString substitutedCommand = escapeCommand(command, fullName, loc->line);
 
@@ -4409,7 +4441,7 @@ void DocumentWidget::setOverstrike(bool overstrike) {
  * @param lineNum
  * @param column
  */
-void DocumentWidget::gotoAP(TextArea *area, int line, int column) {
+void DocumentWidget::gotoAP(TextArea *area, int64_t line, int64_t column) {
 
 	TextCursor position;
 
@@ -4417,7 +4449,7 @@ void DocumentWidget::gotoAP(TextArea *area, int line, int column) {
 	if (line == -1) {
 		position = area->cursorPos();
 
-		boost::optional<Location> loc = area->positionToLineAndCol(position);
+		std::optional<Location> loc = area->positionToLineAndCol(position);
 		if (!loc) {
 			return;
 		}
@@ -4556,6 +4588,12 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 		return;
 	}
 
+	QString userShell = Preferences::GetPrefShell();
+	if (userShell.isEmpty()) {
+		QMessageBox::critical(this, tr("No Shell"), tr("Cannot execute shell command because no shell has been set."));
+		return;
+	}
+
 	DocumentWidget *document = this;
 
 	/* a shell command called from a macro must be executed in the same
@@ -4610,7 +4648,7 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 	QStringList args;
 	args << QLatin1String("-c");
 	args << command;
-	process->start(Preferences::GetPrefShell(), args);
+	process->start(userShell, args);
 
 	// if there's nothing to write to the process' stdin, close it now, otherwise
 	// write it to the process
@@ -4690,9 +4728,9 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 	});
 
 	QString errText;
-	QString outText;
+	std::string outText;
 
-	// If the process was killed or became inaccessable, give up
+	// If the process was killed or became inaccessible, give up
 	if (exitStatus != QProcess::NormalExit) {
 		return;
 	}
@@ -4710,14 +4748,15 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 
 		QByteArray dataOut = shellCmdData_->process->readAllStandardOutput();
 		shellCmdData_->standardOutput.append(dataOut);
-		outText = QString::fromLocal8Bit(shellCmdData_->standardOutput);
+		outText = std::string(shellCmdData_->standardOutput.data(), shellCmdData_->standardOutput.size());
 	} else {
 
 		QByteArray dataAll = shellCmdData_->process->readAll();
 		shellCmdData_->standardOutput.append(dataAll);
-		outText = QString::fromLocal8Bit(shellCmdData_->standardOutput);
+		outText = std::string(shellCmdData_->standardOutput.data(), shellCmdData_->standardOutput.size());
 	}
 
+	static constexpr int MaxMessageLength = 4096;
 	static const QRegularExpression trailingNewlines(QLatin1String("\\n+$"));
 
 	/* Present error and stderr-information dialogs.  If a command returned
@@ -4728,8 +4767,6 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 		// NOTE(eteran): assumes UNIX return code style!
 		bool failure     = exitCode != 0;
 		bool errorReport = !errText.isEmpty();
-
-		static constexpr int MaxMessageLength = 4096;
 
 		if (failure && errorReport) {
 			errText.remove(trailingNewlines);
@@ -4746,11 +4783,11 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 			cancel = (msgBox.exec() == QMessageBox::Cancel);
 
 		} else if (failure) {
-			outText.truncate(MaxMessageLength);
+			QString dialogOutText = QString::fromLocal8Bit(outText.data(), std::min<size_t>(MaxMessageLength, outText.size()));
 
 			QMessageBox msgBox;
 			msgBox.setWindowTitle(tr("Command Failure"));
-			msgBox.setText(tr("Command reported failed exit status.\nOutput from command:\n%1").arg(outText));
+			msgBox.setText(tr("Command reported failed exit status.\nOutput from command:\n%1").arg(dialogOutText));
 			msgBox.setIcon(QMessageBox::Warning);
 			msgBox.setStandardButtons(QMessageBox::Cancel);
 			auto accept = new QPushButton(tr("Proceed"));
@@ -4784,33 +4821,32 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 		   (remaining) output in the text widget as requested, and move the
 		   insert point to the end */
 		if (shellCmdData_->flags & OUTPUT_TO_DIALOG) {
-			outText.remove(trailingNewlines);
+			QString dialogOutText = QString::fromLocal8Bit(outText.data(), std::min<size_t>(MaxMessageLength, outText.size()));
+			dialogOutText.remove(trailingNewlines);
 
-			if (!outText.isEmpty()) {
+			if (!dialogOutText.isEmpty()) {
 				auto dialog = new DialogOutput(this);
-				dialog->setText(outText);
+				dialog->setText(dialogOutText);
 				dialog->show();
 			}
 		} else if (shellCmdData_->flags & OUTPUT_TO_STRING) {
 			returnShellCommandOutput(this, outText, exitCode);
 		} else {
 
-			std::string output_string = outText.toStdString();
-
 			auto area       = shellCmdData_->area;
 			TextBuffer *buf = area->buffer();
 
 			if (shellCmdData_->flags & REPLACE_SELECTION) {
 				TextCursor reselectStart = buf->primary.isRectangular() ? TextCursor(-1) : buf->primary.start();
-				buf->BufReplaceSelected(output_string);
+				buf->BufReplaceSelected(outText);
 
 				area->TextSetCursorPos(buf->BufCursorPosHint());
 
 				if (reselectStart != -1) {
-					buf->BufSelect(reselectStart, reselectStart + static_cast<int64_t>(output_string.size()));
+					buf->BufSelect(reselectStart, reselectStart + ssize(outText));
 				}
 			} else {
-				safeBufReplace(buf, &shellCmdData_->leftPos, &shellCmdData_->rightPos, output_string);
+				safeBufReplace(buf, &shellCmdData_->leftPos, &shellCmdData_->rightPos, outText);
 				area->TextSetCursorPos(shellCmdData_->leftPos + outText.size());
 			}
 		}
@@ -4829,7 +4865,6 @@ void DocumentWidget::abortShellCommand() {
 	if (shellCmdData_) {
 		if (QProcess *process = shellCmdData_->process) {
 			process->kill();
-			shellCmdData_ = nullptr;
 		}
 	}
 }
@@ -4872,7 +4907,7 @@ void DocumentWidget::execCursorLine(TextArea *area, CommandSource source) {
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	const boost::optional<Location> loc = area->positionToLineAndCol(pos);
+	const std::optional<Location> loc = area->positionToLineAndCol(pos);
 
 	auto substitutedCommand = escapeCommand(QString::fromStdString(cmdText), fullPath(), loc->line);
 
@@ -4973,7 +5008,7 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 	   for # in the shell command */
 	TextCursor pos = area->cursorPos();
 
-	const boost::optional<Location> loc = area->positionToLineAndCol(pos);
+	const std::optional<Location> loc = area->positionToLineAndCol(pos);
 
 	QString substitutedCommand = escapeCommand(command, fullPath(), loc ? loc->line : 0);
 
@@ -5233,7 +5268,7 @@ void DocumentWidget::beginLearn() {
 ** Read an NEdit macro file.  Extends the syntax of the macro parser with
 ** define keyword, and allows intermixing of defines with immediate actions.
 */
-bool DocumentWidget::readMacroFile(const QString &fileName, bool warnNotExist) {
+void DocumentWidget::readMacroFile(const QString &fileName, bool warnNotExist) {
 
 	/* read-in macro file and force a terminating \n, to prevent syntax
 	** errors with statements on the last line
@@ -5245,11 +5280,11 @@ bool DocumentWidget::readMacroFile(const QString &fileName, bool warnNotExist) {
 								  tr("Read Macro"),
 								  tr("Error reading macro file %1: %2").arg(fileName, errorString(errno)));
 		}
-		return false;
+		return;
 	}
 
 	// Parse text
-	return readCheckMacroString(this, text, this, fileName, nullptr);
+	readCheckMacroString(this, text, this, fileName, nullptr);
 }
 
 /*
@@ -5388,7 +5423,7 @@ DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProc() {
 */
 void DocumentWidget::resumeMacroExecution() {
 
-	if (const std::shared_ptr<MacroCommandData> &cmdData = macroCmdData_) {
+	if (const std::shared_ptr<MacroCommandData> cmdData = macroCmdData_) {
 
 		// create a background task that will run so long as the function returns false
 		connect(&cmdData->continuationTimer, &QTimer::timeout, this, [cmdData, this]() {
@@ -5468,7 +5503,7 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 	}
 
 	// do the search
-	boost::optional<TextCursor> matchPos = findMatchingChar(ch, style, searchPos, startPos, endPos);
+	std::optional<TextCursor> matchPos = findMatchingChar(ch, style, searchPos, startPos, endPos);
 	if (!matchPos) {
 		return;
 	}
@@ -5540,7 +5575,7 @@ PatternSet *DocumentWidget::findPatternsForWindow(Verbosity verbosity) {
 
 /*
 ** Free highlighting data from a window destined for destruction, without
-** redisplaying.
+** re-displaying.
 */
 void DocumentWidget::freeHighlightingData() {
 
@@ -5626,10 +5661,10 @@ QColor DocumentWidget::highlightBGColorOfCode(size_t hCode) const {
 
 	if (entry && !entry->bgColorName.isNull()) {
 		return entry->bgColor;
-	} else {
-		// pick up background color of the (first) text widget of the window
-		return firstPane()->getBackgroundColor();
 	}
+
+	// pick up background color of the (first) text widget of the window
+	return firstPane()->getBackgroundColor();
 }
 
 /*
@@ -5651,7 +5686,7 @@ Style DocumentWidget::getHighlightInfo(TextCursor pos) {
 	}
 
 	// Be careful with signed/unsigned conversions. NO conversion here!
-	int style = highlightData->styleBuffer->BufGetCharacter(pos);
+	uint8_t style = highlightData->styleBuffer->BufGetCharacter(pos);
 
 	// Beware of unparsed regions.
 	if (style == UNFINISHED_STYLE) {
@@ -5671,7 +5706,7 @@ Style DocumentWidget::getHighlightInfo(TextCursor pos) {
 		return Style();
 	}
 
-	return Style(reinterpret_cast<void *>(pattern->userStyleIndex));
+	return Style(pattern->userStyleIndex);
 }
 
 /*
@@ -5684,9 +5719,9 @@ int64_t DocumentWidget::styleLengthOfCodeFromPos(TextCursor pos) const {
 	const TextCursor oldPos = pos;
 
 	if (const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
-		if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
+		if (const std::shared_ptr<UTextBuffer> &styleBuf = highlightData->styleBuffer) {
 
-			auto hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+			uint8_t hCode = styleBuf->BufGetCharacter(pos);
 			if (!hCode) {
 				return 0;
 			}
@@ -5694,7 +5729,7 @@ int64_t DocumentWidget::styleLengthOfCodeFromPos(TextCursor pos) const {
 			if (hCode == UNFINISHED_STYLE) {
 				// encountered "unfinished" style, trigger parsing
 				handleUnparsedRegion(highlightData->styleBuffer, pos);
-				hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+				hCode = styleBuf->BufGetCharacter(pos);
 			}
 
 			StyleTableEntry *entry = styleTableEntryOfCode(hCode);
@@ -5708,10 +5743,10 @@ int64_t DocumentWidget::styleLengthOfCodeFromPos(TextCursor pos) const {
 				if (hCode == UNFINISHED_STYLE) {
 					// encountered "unfinished" style, trigger parsing, then loop
 					handleUnparsedRegion(highlightData->styleBuffer, pos);
-					hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+					hCode = styleBuf->BufGetCharacter(pos);
 				} else {
 					// advance the position and get the new code
-					hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(++pos));
+					hCode = styleBuf->BufGetCharacter(++pos);
 				}
 			}
 		}
@@ -5772,13 +5807,13 @@ size_t DocumentWidget::highlightCodeOfPos(TextCursor pos) const {
 	size_t hCode = 0;
 	if (const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 
-		if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
+		if (const std::shared_ptr<UTextBuffer> &styleBuf = highlightData->styleBuffer) {
 
-			hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+			hCode = styleBuf->BufGetCharacter(pos);
 			if (hCode == UNFINISHED_STYLE) {
 				// encountered "unfinished" style, trigger parsing
 				handleUnparsedRegion(highlightData->styleBuffer, pos);
-				hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+				hCode = styleBuf->BufGetCharacter(pos);
 			}
 		}
 	}
@@ -5797,9 +5832,9 @@ int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
 
 	if (const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 
-		if (const std::shared_ptr<TextBuffer> &styleBuf = highlightData->styleBuffer) {
+		if (const std::shared_ptr<UTextBuffer> &styleBuf = highlightData->styleBuffer) {
 
-			auto hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+			uint8_t hCode = styleBuf->BufGetCharacter(pos);
 			if (!hCode) {
 				return 0;
 			}
@@ -5807,7 +5842,7 @@ int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
 			if (hCode == UNFINISHED_STYLE) {
 				// encountered "unfinished" style, trigger parsing
 				handleUnparsedRegion(highlightData->styleBuffer, pos);
-				hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+				hCode = styleBuf->BufGetCharacter(pos);
 			}
 
 			if (checkCode == 0) {
@@ -5818,10 +5853,10 @@ int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
 				if (hCode == UNFINISHED_STYLE) {
 					// encountered "unfinished" style, trigger parsing, then loop
 					handleUnparsedRegion(highlightData->styleBuffer, pos);
-					hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(pos));
+					hCode = styleBuf->BufGetCharacter(pos);
 				} else {
 					// advance the position and get the new code
-					hCode = static_cast<uint8_t>(styleBuf->BufGetCharacter(++pos));
+					hCode = styleBuf->BufGetCharacter(++pos);
 				}
 			}
 		}
@@ -5839,7 +5874,7 @@ int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
 ** needs re-parsing.  This routine applies pass 2 patterns to a chunk of
 ** the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
 */
-void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) const {
+void DocumentWidget::handleUnparsedRegion(UTextBuffer *styleBuf, TextCursor pos) const {
 	TextBuffer *buf                                           = info_->buffer.get();
 	const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
 
@@ -5862,8 +5897,8 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
 	TextCursor beginSafety = Highlight::backwardOneContext(buf, context, beginParse);
 
 	for (TextCursor p = beginParse; p >= beginSafety; --p) {
-		char ch = styleBuf->BufGetCharacter(p);
-		if (ch != UNFINISHED_STYLE && ch != PLAIN_STYLE && static_cast<uint8_t>(ch) < firstPass2Style) {
+		uint8_t ch = styleBuf->BufGetCharacter(p);
+		if (ch != UNFINISHED_STYLE && ch != PLAIN_STYLE && ch < firstPass2Style) {
 			beginSafety = p + 1;
 			break;
 		}
@@ -5877,14 +5912,16 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
 	TextCursor endSafety = Highlight::forwardOneContext(buf, context, endParse);
 
 	for (TextCursor p = pos; p < endSafety; ++p) {
-		char ch = styleBuf->BufGetCharacter(p);
-		if (ch != UNFINISHED_STYLE && ch != PLAIN_STYLE && static_cast<uint8_t>(ch) < firstPass2Style) {
+		uint8_t ch = styleBuf->BufGetCharacter(p);
+		if (ch != UNFINISHED_STYLE && ch != PLAIN_STYLE && ch < firstPass2Style) {
 			endParse  = std::min(endParse, p);
 			endSafety = p;
 			break;
-		} else if (ch != UNFINISHED_STYLE && p < endParse) {
+		}
+
+		if (ch != UNFINISHED_STYLE && p < endParse) {
 			endParse = p;
-			if (static_cast<uint8_t>(ch) < firstPass2Style) {
+			if (ch < firstPass2Style) {
 				endSafety = p;
 			} else {
 				endSafety = Highlight::forwardOneContext(buf, context, endParse);
@@ -5897,9 +5934,9 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
 	std::string str    = buf->BufGetRange(beginSafety, endSafety);
 	const char *string = &str[0];
 
-	std::string styleStr    = styleBuf->BufGetRange(beginSafety, endSafety);
-	char *const styleString = &styleStr[0];
-	char *stylePtr          = &styleStr[0];
+	std::basic_string<uint8_t> styleStr = styleBuf->BufGetRange(beginSafety, endSafety);
+	uint8_t *const styleString          = &styleStr[0];
+	uint8_t *stylePtr                   = &styleStr[0];
 
 	// Parse it with pass 2 patterns
 	int prev_char = Highlight::getPrevChar(buf, beginSafety);
@@ -5919,7 +5956,7 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
 
 	/* Update the style buffer the new style information, but only between
 	   beginParse and endParse.  Skip the safety region */
-	auto view = view::string_view(&styleString[beginParse - beginSafety], static_cast<size_t>(endParse - beginParse));
+	auto view = UTextBuffer::view_type(&styleString[beginParse - beginSafety], static_cast<size_t>(endParse - beginParse));
 	styleBuf->BufReplace(beginParse, endParse, view);
 }
 
@@ -5928,7 +5965,7 @@ void DocumentWidget::handleUnparsedRegion(TextBuffer *styleBuf, TextCursor pos) 
  * @param styleBuf
  * @param pos
  */
-void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<TextBuffer> &styleBuf, TextCursor pos) const {
+void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<UTextBuffer> &styleBuf, TextCursor pos) const {
 	handleUnparsedRegion(styleBuf.get(), pos);
 }
 
@@ -5959,16 +5996,16 @@ void DocumentWidget::startHighlighting(Verbosity verbosity) {
 
 	/* Parse the buffer with pass 1 patterns.  If there are none, initialize
 	   the style buffer to all UNFINISHED_STYLE to trigger parsing later */
-	std::string style_buffer(static_cast<size_t>(bufLength), UNFINISHED_STYLE);
+	std::basic_string<uint8_t> style_buffer(static_cast<size_t>(bufLength), UNFINISHED_STYLE);
 	if (highlightData->pass1Patterns) {
-		char *stylePtr = &style_buffer[0];
+		uint8_t *stylePtr = &style_buffer[0];
 
 		int prev_char = -1;
 		Highlight::ParseContext ctx;
 		ctx.prev_char         = &prev_char;
 		ctx.delimiters        = documentDelimiters();
 		ctx.text              = info_->buffer->BufAsString();
-		const char *stringPtr = &ctx.text[0];
+		const char *stringPtr = ctx.text.data();
 
 		Highlight::parseString(
 			&highlightData->pass1Patterns[0],
@@ -6013,7 +6050,7 @@ void DocumentWidget::attachHighlightToWidget(TextArea *area) {
 ** highlighting fonts from "window", includes pattern compilation.  If errors
 ** are encountered, warns user with a dialog and returns nullptr.
 */
-std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(PatternSet *patternSet) {
+std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(PatternSet *patternSet, Verbosity verbosity) {
 
 	std::vector<HighlightPattern> &patterns = patternSet->patterns;
 
@@ -6056,8 +6093,8 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 		for (HighlightPattern &pattern : patterns) {
 
 			if (!pattern.subPatternOf.isNull()) {
-				const size_t parentindex = Highlight::findTopLevelParentIndex(patterns, i);
-				if (parentindex == PATTERN_NOT_FOUND) {
+				const size_t parent_index = Highlight::findTopLevelParentIndex(patterns, i);
+				if (parent_index == PATTERN_NOT_FOUND) {
 					QMessageBox::warning(
 						this,
 						tr("Parent Pattern"),
@@ -6065,7 +6102,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 					return nullptr;
 				}
 
-				if (patterns[parentindex].flags & DEFER_PARSING) {
+				if (patterns[parent_index].flags & DEFER_PARSING) {
 					pattern.flags |= DEFER_PARSING;
 				} else {
 					pattern.flags &= ~DEFER_PARSING;
@@ -6110,14 +6147,14 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 
 	// Compile patterns
 	if (!pass1PatternSrc.empty()) {
-		pass1Pats = compilePatterns(pass1PatternSrc);
+		pass1Pats = compilePatterns(pass1PatternSrc, verbosity);
 		if (!pass1Pats) {
 			return nullptr;
 		}
 	}
 
 	if (!pass2PatternSrc.empty()) {
-		pass2Pats = compilePatterns(pass2PatternSrc);
+		pass2Pats = compilePatterns(pass2PatternSrc, verbosity);
 		if (!pass2Pats) {
 			return nullptr;
 		}
@@ -6210,10 +6247,10 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	};
 
 	// PLAIN_STYLE (pass 1)
-	it++ = createStyleTableEntry(zeroPass1 ? &pass2PatternSrc[0] : &pass1PatternSrc[0]);
+	it++ = createStyleTableEntry(zeroPass1 ? pass2PatternSrc.data() : pass1PatternSrc.data());
 
 	// PLAIN_STYLE (pass 2)
-	it++ = createStyleTableEntry(zeroPass2 ? &pass1PatternSrc[0] : &pass2PatternSrc[0]);
+	it++ = createStyleTableEntry(zeroPass2 ? pass1PatternSrc.data() : pass2PatternSrc.data());
 
 	// explicit styles (pass 1)
 	for (size_t i = 1; i < pass1PatternSrc.size(); i++) {
@@ -6226,8 +6263,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	}
 
 	// Create the style buffer
-	auto styleBuf = std::make_unique<TextBuffer>();
-	styleBuf->BufSetSyncXSelection(false);
+	auto styleBuf = std::make_unique<UTextBuffer>();
 
 	const int contextLines = patternSet->lineContext;
 	const int contextChars = patternSet->charContext;
@@ -6251,7 +6287,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 ** actually used by the code.  Output is a tree of HighlightData structures
 ** containing compiled regular expressions and style information.
 */
-std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vector<HighlightPattern> &patternSrc) {
+std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vector<HighlightPattern> &patternSrc, Verbosity verbosity) {
 
 	/* Allocate memory for the compiled patterns.  The list is terminated
 	   by a record with style == 0. */
@@ -6314,12 +6350,12 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 				Input in(&patternSrc[i].startRE);
 				Q_FOREVER {
 					if (in.match(QLatin1Char('&'))) {
-						compiledPats[i].startSubexprs.push_back(0);
+						compiledPats[i].startSubexpressions.push_back(0);
 					} else if (in.match(QLatin1Char('\\'))) {
 
 						QString number;
 						if (in.match(re, &number)) {
-							compiledPats[i].startSubexprs.push_back(number.toUInt());
+							compiledPats[i].startSubexpressions.push_back(number.toUInt());
 						} else {
 							break;
 						}
@@ -6335,12 +6371,12 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 				Input in(&patternSrc[i].endRE);
 				Q_FOREVER {
 					if (in.match(QLatin1Char('&'))) {
-						compiledPats[i].endSubexprs.push_back(0);
+						compiledPats[i].endSubexpressions.push_back(0);
 					} else if (in.match(QLatin1Char('\\'))) {
 
 						QString number;
 						if (in.match(re, &number)) {
-							compiledPats[i].endSubexprs.push_back(number.toUInt());
+							compiledPats[i].endSubexpressions.push_back(number.toUInt());
 						} else {
 							break;
 						}
@@ -6448,9 +6484,12 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 		bigPattern.pop_back(); // remove last '|' character
 
 		try {
-			compiledPats[patternNum].subPatternRE = std::make_unique<Regex>(bigPattern, REDFLT_STANDARD);
+			compiledPats[patternNum].subPatternRE = std::make_unique<Regex>(bigPattern, RE_DEFAULT_STANDARD);
 		} catch (const RegexError &e) {
 			qWarning("NEdit: Error compiling syntax highlight patterns:\n%s", e.what());
+			if (verbosity == Verbosity::Verbose) {
+				throw;
+			}
 			return nullptr;
 		}
 	}
@@ -6469,7 +6508,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 std::unique_ptr<Regex> DocumentWidget::compileRegexAndWarn(const QString &re) {
 
 	try {
-		return make_regex(re, REDFLT_STANDARD);
+		return make_regex(re, RE_DEFAULT_STANDARD);
 	} catch (const RegexError &e) {
 
 		constexpr int MaxLength = 4096;
@@ -6501,7 +6540,7 @@ std::unique_ptr<Regex> DocumentWidget::compileRegexAndWarn(const QString &re) {
 ** process close the window when the macro is finished executing.
 */
 bool DocumentWidget::macroWindowCloseActions() {
-	const std::shared_ptr<MacroCommandData> &cmdData = macroCmdData_;
+	const std::shared_ptr<MacroCommandData> cmdData = macroCmdData_;
 
 	CommandRecorder *recorder = CommandRecorder::instance();
 
@@ -6515,7 +6554,7 @@ bool DocumentWidget::macroWindowCloseActions() {
 	if (!cmdData) {
 		for (DocumentWidget *document : DocumentWidget::allDocuments()) {
 
-			const std::shared_ptr<MacroCommandData> &mcd = document->macroCmdData_;
+			const std::shared_ptr<MacroCommandData> mcd = document->macroCmdData_;
 
 			if (document == MacroRunDocument() && MacroFocusDocument() == this) {
 				SetMacroFocusDocument(MacroRunDocument());
@@ -6761,9 +6800,9 @@ QString DocumentWidget::getAnySelection(ErrorSound errorSound) const {
 QString DocumentWidget::getWindowDelimiters() const {
 	if (languageMode_ == PLAIN_LANGUAGE_MODE) {
 		return QString();
-	} else {
-		return Preferences::LanguageModes[languageMode_].delimiters;
 	}
+
+	return Preferences::LanguageModes[languageMode_].delimiters;
 }
 
 /**
@@ -7204,9 +7243,9 @@ int DocumentWidget::showTipString(const QString &text, bool anchored, int pos, b
 	// If this isn't a lookup request, just display it.
 	if (!lookup) {
 		return Tags::tagsShowCalltip(win->lastFocus(), text);
-	} else {
-		return findDefinitionHelperCommon(win->lastFocus(), text, search_type);
 	}
+
+	return findDefinitionHelperCommon(win->lastFocus(), text, search_type);
 }
 
 /*  Open a new (or existing) editor window to the location specified in
@@ -7225,7 +7264,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 		/*iconic=*/false,
 		QString(),
 		Preferences::GetPrefOpenInTab(),
-		/*bgOpen=*/false);
+		/*background=*/false);
 
 	DocumentWidget *documentToSearch = MainWindow::findWindowWithFile(fi);
 	if (!documentToSearch) {
@@ -7266,7 +7305,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 
 	QPointer<TextArea> tagArea = MainWindow::fromDocument(documentToSearch)->lastFocus();
 	int rows                   = tagArea->getRows();
-	tagArea->verticalScrollBar()->setValue(lineNum - (rows / 4));
+	tagArea->verticalScrollBar()->setValue(gsl::narrow<int>(lineNum - (rows / 4)));
 	tagArea->horizontalScrollBar()->setValue(0);
 	tagArea->TextSetCursorPos(TextCursor(endPos));
 }
@@ -7313,7 +7352,7 @@ void DocumentWidget::setPath(const QDir &pathname) {
  * @return
  */
 dev_t DocumentWidget::device() const {
-	return info_->dev;
+	return info_->statbuf.st_dev;
 }
 
 /**
@@ -7321,7 +7360,7 @@ dev_t DocumentWidget::device() const {
  * @return
  */
 ino_t DocumentWidget::inode() const {
-	return info_->ino;
+	return info_->statbuf.st_ino;
 }
 
 /**
@@ -7396,12 +7435,13 @@ void DocumentWidget::dragEnterEvent(QDragEnterEvent *event) {
  */
 void DocumentWidget::dropEvent(QDropEvent *event) {
 	auto urls = event->mimeData()->urls();
-	for (auto url : urls) {
-		if (url.isLocalFile()) {
-			QString fileName = url.toLocalFile();
-			open(fileName);
-		} else {
+	for (const QUrl &url : urls) {
+		if (!url.isLocalFile()) {
 			QApplication::beep();
+			break;
 		}
+
+		QString fileName = url.toLocalFile();
+		open(fileName);
 	}
 }

@@ -133,6 +133,7 @@ void DialogWindowBackgroundMenu::buttonDown_clicked() {
  */
 void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
 	static bool canceled = false;
+	bool skip_check      = false;
 
 	if (canceled) {
 		canceled = false;
@@ -148,12 +149,11 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
 		messageBox.setText(tr("Discard incomplete entry for current menu item?"));
 		QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
 		QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
-		Q_UNUSED(buttonDiscard)
 
 		messageBox.exec();
 		if (messageBox.clickedButton() == buttonKeep) {
 
-			// again to cause messagebox to pop up
+			// again to cause message box to pop up
 			validateFields(Verbosity::Verbose);
 
 			// reselect the old item
@@ -161,10 +161,15 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
 			Q_EMIT restore(previous);
 			return;
 		}
+
+		if (messageBox.clickedButton() == buttonDiscard) {
+			model_->deleteItem(previous);
+			skip_check = true;
+		}
 	}
 
 	// this is only safe if we aren't moving due to a delete operation
-	if (previous.isValid() && previous != deleted_) {
+	if (previous.isValid() && previous != deleted_ && !skip_check) {
 		if (!updateCurrentItem(previous)) {
 			// reselect the old item
 			canceled = true;
@@ -238,7 +243,7 @@ bool DialogWindowBackgroundMenu::validateFields(Verbosity verbosity) {
 /*
 ** Read the name, accelerator, mnemonic, and command fields.
 */
-boost::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbosity) {
+std::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbosity) {
 
 	QString nameText = ui.editName->text();
 
@@ -246,14 +251,14 @@ boost::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbo
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Please specify a name for the menu item"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	if (nameText.indexOf(QLatin1Char(':')) != -1) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Menu item names may not contain colon (:) characters"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	QString cmdText = ui.editMacro->toPlainText();
@@ -261,12 +266,12 @@ boost::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbo
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Command to Execute"), tr("Please specify macro command(s) to execute"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	cmdText = ensure_newline(cmdText);
 	if (!checkMacroText(cmdText, verbosity)) {
-		return boost::none;
+		return {};
 	}
 
 	MenuItem menuItem;

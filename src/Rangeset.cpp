@@ -1,9 +1,8 @@
 
 #include "Rangeset.h"
 #include "TextBuffer.h"
+#include "Util/algorithm.h"
 #include <algorithm>
-#include <cctype>
-#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 
@@ -50,7 +49,7 @@ bool is_end(int64_t i) {
 
 void rangesetRefreshAllRanges(TextBuffer *buffer, Rangeset *rangeset) {
 
-	for (TextRange &range : rangeset->ranges_) {
+	for (const TextRange &range : rangeset->ranges_) {
 		RangesetRefreshRange(buffer, range.start, range.end);
 	}
 }
@@ -73,11 +72,11 @@ int64_t at_or_before(const T *table, int64_t base, int64_t len, T val) {
 	int64_t mid = 0;
 
 	if (base >= len) {
-		return len; /* not sure what this means! */
+		return len; // not sure what this means!
 	}
 
-	int64_t lo = base;    /* first valid index */
-	int64_t hi = len - 1; /* last valid index */
+	int64_t lo = base;    // first valid index
+	int64_t hi = len - 1; // last valid index
 
 	while (lo <= hi) {
 		mid = (lo + hi) / 2;
@@ -93,7 +92,7 @@ int64_t at_or_before(const T *table, int64_t base, int64_t len, T val) {
 		}
 	}
 
-	/* if we get here, we didn't find val itself */
+	// if we get here, we didn't find val itself
 	if (val > table[mid]) {
 		mid++;
 	}
@@ -107,27 +106,31 @@ int64_t weighted_at_or_before(const T *table, int64_t base, int64_t len, T val) 
 	int64_t mid = 0;
 
 	if (base >= len) {
-		return len; /* not sure what this means! */
+		return len; // not sure what this means!
 	}
 
-	int64_t lo = base;    /* first valid index */
-	int64_t hi = len - 1; /* last valid index */
+	int64_t lo = base;    // first valid index
+	int64_t hi = len - 1; // last valid index
 
-	TextCursor min = table[lo]; /* establish initial min/max */
+	TextCursor min = table[lo]; // establish initial min/max
 	TextCursor max = table[hi];
 
-	if (val <= min) { /* initial range checks */
-		return lo;    /* needed to avoid out-of-range mid values */
-	} else if (val > max) {
+	if (val <= min) { // initial range checks
+		return lo;    // needed to avoid out-of-range mid values
+	}
+
+	if (val > max) {
 		return len;
-	} else if (val == max) {
+	}
+
+	if (val == max) {
 		return hi;
 	}
 
 	while (lo <= hi) {
-		/* Beware of integer overflow when multiplying large numbers! */
-		mid = lo + static_cast<int>((hi - lo) * static_cast<double>(val - min) / (max - min));
-		/* we won't worry about min == max - values should be unique */
+		// Beware of integer overflow when multiplying large numbers!
+		mid = lo + static_cast<int64_t>((hi - lo) * static_cast<long double>(val - min) / (max - min));
+		// we won't worry about min == max - values should be unique
 
 		if (val == table[mid]) {
 			return mid;
@@ -136,13 +139,13 @@ int64_t weighted_at_or_before(const T *table, int64_t base, int64_t len, T val) 
 		if (val < table[mid]) {
 			hi  = mid - 1;
 			max = table[mid];
-		} else { /* val > table[mid] */
+		} else { // val > table[mid]
 			lo  = mid + 1;
 			min = table[mid];
 		}
 	}
 
-	/* if we get here, we didn't find val itself */
+	// if we get here, we didn't find val itself
 	if (val > table[mid]) {
 		return mid + 1;
 	}
@@ -151,6 +154,16 @@ int64_t weighted_at_or_before(const T *table, int64_t base, int64_t len, T val) 
 }
 
 // --------------------------------------------------------------------------
+
+TextCursor *flattenRanges(std::vector<TextRange> &ranges) {
+	// NOTE(eteran): ranges_ contains TextRange objects which are POD structs
+	// with two TextCursors in them. So by casting to TextCursor *, we can
+	// iterate through the individual elements of the pairs.
+	// so { {s1, e1}, {s2, e2}, {s3, e3}, ... }
+	// becomes
+	// { s1, e1, s2, e2, s3, e3, ... }
+	return reinterpret_cast<TextCursor *>(ranges.data());
+}
 
 /*
 ** Find the index of the first entry in the range set's ranges table (viewed as
@@ -161,9 +174,10 @@ int64_t weighted_at_or_before(const T *table, int64_t base, int64_t len, T val) 
 int64_t rangesetWeightedAtOrBefore(Rangeset *rangeset, TextCursor pos) {
 
 	int64_t i;
-	auto rangeTable = reinterpret_cast<TextCursor *>(rangeset->ranges_.data());
 
-	int64_t n = rangeset->ranges_.size();
+	const TextCursor *rangeTable = flattenRanges(rangeset->ranges_);
+
+	auto n = static_cast<int64_t>(rangeset->ranges_.size());
 	if (n == 0) {
 		return 0;
 	}
@@ -200,30 +214,30 @@ int64_t rangesetShuffleToFrom(T *table, int64_t to, int64_t from, int64_t n, int
 	}
 
 	if (delta != 0) {
-		if (diff > 0) { /* shuffle entries down */
+		if (diff > 0) { // shuffle entries down
 			for (end = to + n; to < end; to++) {
 				table[to] = table[to + diff] + delta;
 			}
-		} else if (diff < 0) { /* shuffle entries up */
+		} else if (diff < 0) { // shuffle entries up
 			for (end = to, to += n; --to >= end;) {
 				table[to] = table[to + diff] + delta;
 			}
-		} else { /* diff == 0: just run through */
+		} else { // diff == 0: just run through
 			for (end = n; end--;) {
 				table[to++] += delta;
 			}
 		}
 	} else {
-		if (diff > 0) { /* shuffle entries down */
+		if (diff > 0) { // shuffle entries down
 			for (end = to + n; to < end; to++) {
 				table[to] = table[to + diff];
 			}
-		} else if (diff < 0) { /* shuffle entries up */
+		} else if (diff < 0) { // shuffle entries up
 			for (end = to, to += n; --to >= end;) {
 				table[to] = table[to + diff];
 			}
 		}
-		/* else diff == 0: nothing to do */
+		// else diff == 0: nothing to do
 	}
 
 	return n;
@@ -231,7 +245,7 @@ int64_t rangesetShuffleToFrom(T *table, int64_t to, int64_t from, int64_t n, int
 
 /*
 ** Functions to adjust a rangeset to include new text or remove old.
-** *** NOTE: No redisplay: that's outside the responsability of these routines.
+** *** NOTE: No redisplay: that's outside the responsibility of these routines.
 */
 
 /* "Insert/Delete": if the start point is in or at the end of a range
@@ -240,13 +254,13 @@ int64_t rangesetShuffleToFrom(T *table, int64_t to, int64_t from, int64_t n, int
 */
 Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, int64_t del) {
 
-	auto rangeTable = reinterpret_cast<TextCursor *>(rangeset->ranges_.data());
-	int64_t n       = 2 * rangeset->ranges_.size();
+	TextCursor *rangeTable = flattenRanges(rangeset->ranges_);
+	auto n                 = 2 * static_cast<int64_t>(rangeset->ranges_.size());
 
 	int64_t i = rangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n) {
-		return rangeset; /* all beyond the end */
+		return rangeset; // all beyond the end
 	}
 
 	TextCursor end_del = pos + del;
@@ -257,7 +271,7 @@ Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins
 	   position by movement only. (They may need shuffling up or down, depending
 	   on whether ranges have been deleted or created by the change.) */
 	int64_t j = i;
-	while (j < n && rangeTable[j] <= end_del) { /* skip j to first ind beyond changes */
+	while (j < n && rangeTable[j] <= end_del) { // skip j to first ind beyond changes
 		j++;
 	}
 
@@ -290,13 +304,13 @@ Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins
 */
 Rangeset *rangesetInclMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, int64_t del) {
 
-	auto rangeTable = reinterpret_cast<TextCursor *>(rangeset->ranges_.data());
-	int64_t n       = 2 * rangeset->ranges_.size();
+	TextCursor *rangeTable = flattenRanges(rangeset->ranges_);
+	auto n                 = 2 * static_cast<int64_t>(rangeset->ranges_.size());
 
 	int64_t i = rangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n) {
-		return rangeset; /* all beyond the end */
+		return rangeset; // all beyond the end
 	}
 
 	/* if the insert occurs at the start of a range, the following lines will
@@ -314,7 +328,7 @@ Rangeset *rangesetInclMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, 
 	   position by movement only. (They may need shuffling up or down, depending
 	   on whether ranges have been deleted or created by the change.) */
 	int64_t j = i;
-	while (j < n && rangeTable[j] <= end_del) { /* skip j to first ind beyond changes */
+	while (j < n && rangeTable[j] <= end_del) { // skip j to first ind beyond changes
 		j++;
 	}
 
@@ -348,13 +362,13 @@ Rangeset *rangesetInclMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, 
 */
 Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, int64_t del) {
 
-	auto rangeTable = reinterpret_cast<TextCursor *>(rangeset->ranges_.data());
-	int64_t n       = 2 * rangeset->ranges_.size();
+	TextCursor *rangeTable = flattenRanges(rangeset->ranges_);
+	auto n                 = 2 * static_cast<int64_t>(rangeset->ranges_.size());
 
 	int64_t i = rangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n) {
-		return rangeset; /* all beyond the end */
+		return rangeset; // all beyond the end
 	}
 
 	TextCursor end_del = pos + del;
@@ -365,7 +379,7 @@ Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins
 	   position by movement only. (They may need shuffling up or down, depending
 	   on whether ranges have been deleted or created by the change.) */
 	int64_t j = i;
-	while (j < n && rangeTable[j] <= end_del) { /* skip j to first ind beyond changes */
+	while (j < n && rangeTable[j] <= end_del) { // skip j to first ind beyond changes
 		j++;
 	}
 
@@ -401,13 +415,13 @@ Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins
 */
 Rangeset *rangesetExclMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, int64_t del) {
 
-	auto rangeTable = reinterpret_cast<TextCursor *>(rangeset->ranges_.data());
-	int64_t n       = 2 * rangeset->ranges_.size();
+	TextCursor *rangeTable = flattenRanges(rangeset->ranges_);
+	int64_t n              = 2 * static_cast<int64_t>(rangeset->ranges_.size());
 
 	int64_t i = rangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n) {
-		return rangeset; /* all beyond the end */
+		return rangeset; // all beyond the end
 	}
 
 	/* if the insert occurs at the end of a range, the following lines will
@@ -425,7 +439,7 @@ Rangeset *rangesetExclMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, 
 	   position by movement only. (They may need shuffling up or down, depending
 	   on whether ranges have been deleted or created by the change.) */
 	int64_t j = i;
-	while (j < n && rangeTable[j] <= end_del) { /* skip j to first ind beyond changes */
+	while (j < n && rangeTable[j] <= end_del) { // skip j to first ind beyond changes
 		j++;
 	}
 
@@ -458,14 +472,14 @@ Rangeset *rangesetExclMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, 
 */
 Rangeset *rangesetBreakMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, int64_t del) {
 
-	auto rangeTable = reinterpret_cast<TextCursor *>(rangeset->ranges_.data());
+	TextCursor *rangeTable = flattenRanges(rangeset->ranges_);
 
-	int64_t n = 2 * rangeset->ranges_.size();
+	auto n = 2 * static_cast<int64_t>(rangeset->ranges_.size());
 
 	int64_t i = rangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n) {
-		return rangeset; /* all beyond the end */
+		return rangeset; // all beyond the end
 	}
 
 	/* if the insert occurs at the end of a range, the following lines will
@@ -483,7 +497,7 @@ Rangeset *rangesetBreakMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins,
 	   position by movement only. (They may need shuffling up or down, depending
 	   on whether ranges have been deleted or created by the change.) */
 	int64_t j = i;
-	while (j < n && rangeTable[j] <= end_del) { /* skip j to first ind beyond changes */
+	while (j < n && rangeTable[j] <= end_del) { // skip j to first ind beyond changes
 		j++;
 	}
 
@@ -491,7 +505,7 @@ Rangeset *rangesetBreakMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins,
 		rangeTable[i] = pos;
 	}
 
-	/* do we need to insert a gap? yes if pos is in a range and ins > 0 */
+	// do we need to insert a gap? yes if pos is in a range and ins > 0
 
 	/* The logic for the next statement: if i and j are both range ends, range
 	   boundaries indicated by index values between i and j (if any) have been
@@ -500,27 +514,27 @@ Rangeset *rangesetBreakMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins,
 
 	bool need_gap = (is_end(i) && is_end(j) && ins > 0);
 
-	/* if we've got start-end or end-start, skip rangeTable[i] */
-	if (is_start(i) != is_start(j)) { /* one is start, other is end */
+	// if we've got start-end or end-start, skip rangeTable[i]
+	if (is_start(i) != is_start(j)) { // one is start, other is end
 		if (is_start(i)) {
 			if (rangeTable[i] == pos) {
-				rangeTable[i] = pos + ins; /* move the range start */
+				rangeTable[i] = pos + ins; // move the range start
 			}
 		}
-		i++; /* skip to next index */
+		i++; // skip to next index
 	}
 
 	/* values rangeTable[j] to rangeTable[n-1] must be adjusted by movement and placed in
 	   position. */
 
 	if (need_gap) {
-		i += 2; /* make space for the break */
+		i += 2; // make space for the break
 	}
 
-	/* adjust other position values: shuffle them up or down if necessary */
+	// adjust other position values: shuffle them up or down if necessary
 	rangesetShuffleToFrom(rangeTable, i, j, n - j, movement);
 
-	if (need_gap) { /* add the gap informations */
+	if (need_gap) { // add the gap informations
 		rangeTable[i - 2] = pos;
 		rangeTable[i - 1] = pos + ins;
 	}
@@ -546,9 +560,9 @@ QString Rangeset::name() const {
  * @brief Rangeset::RangesetSpan
  * @return
  */
-boost::optional<TextRange> Rangeset::RangesetSpan() const {
+std::optional<TextRange> Rangeset::RangesetSpan() const {
 	if (ranges_.empty()) {
-		return boost::none;
+		return {};
 	}
 
 	TextRange r;
@@ -562,11 +576,11 @@ boost::optional<TextRange> Rangeset::RangesetSpan() const {
  * @param index
  * @return
  */
-boost::optional<TextRange> Rangeset::RangesetFindRangeNo(int index) const {
+std::optional<TextRange> Rangeset::RangesetFindRangeNo(int index) const {
 
 	const auto n = static_cast<size_t>(index);
 	if (index < 0 || ranges_.size() <= n) {
-		return boost::none;
+		return {};
 	}
 
 	return ranges_[n];
@@ -583,32 +597,32 @@ int64_t Rangeset::RangesetFindRangeOfPos(TextCursor pos, bool incl_end) const {
 		return -1;
 	}
 
-	auto ranges       = reinterpret_cast<const TextCursor *>(ranges_.data()); /* { s1,e1, s2,e2, s3,e3,... } */
-	const int64_t len = ranges_.size() * 2;
+	auto ranges       = reinterpret_cast<const TextCursor *>(ranges_.data()); // { s1,e1, s2,e2, s3,e3,... }
+	const auto len    = ssize(ranges_) * 2;
 	const int64_t ind = at_or_before(ranges, 0, len, pos);
 
 	if (ind == len) {
-		return -1; /* beyond end */
+		return -1; // beyond end
 	}
 
 	if (is_end(ind)) {
 		if (pos < ranges[ind] || (incl_end && pos == ranges[ind])) {
-			return ind / 2; /* return the range index */
+			return ind / 2; // return the range index
 		}
-	} else { /* ind even: references start marker */
+	} else { // ind even: references start marker
 		if (pos == ranges[ind]) {
-			return ind / 2; /* return the range index */
+			return ind / 2; // return the range index
 		}
 	}
 
-	return -1; /* not in any range */
+	return -1; // not in any range
 }
 
 /*
 ** Get number of ranges in rangeset.
 */
 int64_t Rangeset::size() const {
-	return ranges_.size();
+	return ssize(ranges_);
 }
 
 /*
@@ -632,7 +646,7 @@ int64_t Rangeset::RangesetInverse() {
 		newRanges.reserve(ranges_.size() + 1);
 
 		if (!has_zero) {
-			// existing ranges don't extend to the begining, so add an element for it
+			// existing ranges don't extend to the beginning, so add an element for it
 			newRanges.push_back({first, ranges_.front().start});
 		}
 
@@ -653,7 +667,7 @@ int64_t Rangeset::RangesetInverse() {
 	}
 
 	RangesetRefreshRange(buffer_, first, last);
-	return ranges_.size();
+	return ssize(ranges_);
 }
 
 /*
@@ -661,8 +675,8 @@ int64_t Rangeset::RangesetInverse() {
 */
 bool Rangeset::setColor(TextBuffer *buffer, const QString &color_name) {
 
-	/* store new color name value */
-	color_name_ = color_name.isEmpty() ? QString() : color_name; /* "" invalid */
+	// store new color name value
+	color_name_ = color_name.isEmpty() ? QString() : color_name; // "" invalid
 	color_set_  = 0;
 
 	rangesetRefreshAllRanges(buffer, this);
@@ -687,7 +701,7 @@ bool Rangeset::setMode(const QString &mode) {
 		return setMode(DEFAULT_UPDATE_FN_NAME);
 	}
 
-	for (auto &entry : RangesetUpdateMap) {
+	for (const auto &entry : RangesetUpdateMap) {
 		if (entry.name == mode) {
 			update_      = entry.update_fn;
 			update_name_ = entry.name;
@@ -711,38 +725,38 @@ int64_t Rangeset::RangesetCheckRangeOfPos(TextCursor pos) {
 
 	int64_t index;
 
-	int64_t len = ranges_.size();
+	auto len = ssize(ranges_);
 	if (ranges_.empty()) {
-		return -1; /* no ranges */
+		return -1; // no ranges
 	}
 
-	auto ranges  = reinterpret_cast<TextCursor *>(ranges_.data()); /* { s1,e1, s2,e2, s3,e3,... } */
-	int64_t last = last_index_;
+	TextCursor *ranges = flattenRanges(ranges_); // { s1,e1, s2,e2, s3,e3,... }
+	int64_t last       = last_index_;
 
-	/* try to profit from the last lookup by using its index */
+	// try to profit from the last lookup by using its index
 	if (last >= len || last < 0) {
-		last        = (len > 0) ? len - 1 : 0; /* make sure last is in range */
+		last        = (len > 0) ? len - 1 : 0; // make sure last is in range
 		last_index_ = last;
 	}
 
 	len *= 2;
 	last *= 2;
 
-	if (pos >= ranges[last]) {        /* last even: this is a start */
-		if (pos < ranges[last + 1]) { /* checking an end here */
-			return last / 2;          /* no need to change rangeset->last_index */
-		} else {
-			last += 2; /* not in this range: move on */
+	if (pos >= ranges[last]) {        // last even: this is a start
+		if (pos < ranges[last + 1]) { // checking an end here
+			return last / 2;          // no need to change rangeset->last_index
 		}
+
+		last += 2; // not in this range: move on
 
 		if (last == len) {
-			return -1; /* moved on too far */
+			return -1; // moved on too far
 		}
 
-		/* find the entry in the upper portion of ranges */
-		index = weighted_at_or_before(ranges, last, len, pos); /* search end only */
+		// find the entry in the upper portion of ranges
+		index = weighted_at_or_before(ranges, last, len, pos); // search end only
 	} else if (last > 0) {
-		index = weighted_at_or_before(ranges, 0, last, pos); /* search front only */
+		index = weighted_at_or_before(ranges, 0, last, pos); // search front only
 	} else {
 		index = 0;
 	}
@@ -750,20 +764,20 @@ int64_t Rangeset::RangesetCheckRangeOfPos(TextCursor pos) {
 	last_index_ = index / 2;
 
 	if (index == len) {
-		return -1; /* beyond end */
+		return -1; // beyond end
 	}
 
 	if (is_end(index)) {
 		if (pos < ranges[index]) {
-			return index / 2; /* return the range index */
+			return index / 2; // return the range index
 		}
-	} else { /* index even: references start marker */
+	} else { // index even: references start marker
 		if (pos == ranges[index]) {
-			return index / 2; /* return the range index */
+			return index / 2; // return the range index
 		}
 	}
 
-	return -1; /* not in any range */
+	return -1; // not in any range
 }
 
 /*
@@ -773,18 +787,18 @@ int64_t Rangeset::RangesetAdd(const Rangeset &other) {
 
 	if (other.ranges_.empty()) {
 		// no ranges in plusSet - nothing to do
-		return ranges_.size();
+		return ssize(ranges_);
 	}
 
 	if (ranges_.empty()) {
 		// no ranges in destination: just copy the ranges from the other set
 		ranges_ = other.ranges_;
 
-		for (TextRange &range : ranges_) {
+		for (const TextRange &range : ranges_) {
 			RangesetRefreshRange(buffer_, range.start, range.end);
 		}
 
-		return ranges_.size();
+		return ssize(ranges_);
 	}
 
 	auto origRanges    = ranges_.cbegin();
@@ -800,11 +814,11 @@ int64_t Rangeset::RangesetAdd(const Rangeset &other) {
 	   ranges (from origSet and plusSet) - don't worry, they're both considered
 	   read-only - building the merged set in newRanges */
 
-	bool isOld = true; /* true if origRanges points to a range in oldRanges[] */
+	bool isOld = true; // true if origRanges points to a range in oldRanges[]
 
 	while (nOrigRanges > 0 || nPlusRanges > 0) {
 
-		/* make the range with the lowest start value the origRanges range */
+		// make the range with the lowest start value the origRanges range
 		if (nOrigRanges == 0 || (nPlusRanges > 0 && origRanges->start > plusRanges->start)) {
 			std::swap(origRanges, plusRanges);
 			std::swap(nOrigRanges, nPlusRanges);
@@ -819,7 +833,7 @@ int64_t Rangeset::RangesetAdd(const Rangeset &other) {
 			RangesetRefreshRange(buffer_, newRange->start, newRange->end);
 		}
 
-		/* now we must cycle over plusRanges, merging in the overlapped ranges */
+		// now we must cycle over plusRanges, merging in the overlapped ranges
 		while (nPlusRanges > 0 && newRange->end >= plusRanges->start) {
 			do {
 				if (newRange->end < plusRanges->end) {
@@ -841,9 +855,9 @@ int64_t Rangeset::RangesetAdd(const Rangeset &other) {
 		}
 	}
 
-	/* finally, forget the old rangeset values, and reallocate the new ones */
+	// finally, forget the old rangeset values, and reallocate the new ones
 	ranges_ = std::move(newRanges);
-	return ranges_.size();
+	return ssize(ranges_);
 }
 
 /*
@@ -884,7 +898,7 @@ int64_t Rangeset::RangesetRemove(const Rangeset &other) {
 			if (nMinusRanges > 0) {
 				// keep all origRanges ranges strictly in front of *minusRanges
 				while (nOrigRanges > 0 && origRanges->end <= minusRanges->start) {
-					*newRangeOut++ = *origRanges++; /* *minusRanges beyond *origRanges: save *origRanges in *newRangeOut */
+					*newRangeOut++ = *origRanges++; // *minusRanges beyond *origRanges: save *origRanges in *newRangeOut
 					--nOrigRanges;
 				}
 			} else {
@@ -894,7 +908,7 @@ int64_t Rangeset::RangesetRemove(const Rangeset &other) {
 					--nOrigRanges;
 				}
 			}
-		} while (nMinusRanges > 0 && minusRanges->end <= origRanges->start); /* any more non-overlaps */
+		} while (nMinusRanges > 0 && minusRanges->end <= origRanges->start); // any more non-overlaps
 
 		// when we get here either we're done, or we have overlap
 		if (nOrigRanges > 0) {
@@ -908,23 +922,23 @@ int64_t Rangeset::RangesetRemove(const Rangeset &other) {
 				} else {
 					// all *origRanges inside *minusRanges
 					RangesetRefreshRange(buffer_, origRanges->start, origRanges->end);
-					origRanges++; /* all of *origRanges can be skipped */
+					origRanges++; // all of *origRanges can be skipped
 					nOrigRanges--;
 				}
 			} else {
-				/* minusRanges->start inside *origRanges: save front, adjust or skip rest */
-				*newRangeOut++ = {origRanges->start, minusRanges->start}; /* save front of *origRanges in *newRanges */
+				// minusRanges->start inside *origRanges: save front, adjust or skip rest
+				*newRangeOut++ = {origRanges->start, minusRanges->start}; // save front of *origRanges in *newRanges
 
 				if (minusRanges->end < origRanges->end) {
-					/* all *minusRanges inside *origRanges */
+					// all *minusRanges inside *origRanges
 					RangesetRefreshRange(buffer_, minusRanges->start, minusRanges->end);
-					origRanges->start = minusRanges->end; /* cut front of *origRanges upto end *minusRanges */
-					minusRanges++;                        /* dealt with this *minusRanges: move on */
+					origRanges->start = minusRanges->end; // cut front of *origRanges upto end *minusRanges
+					minusRanges++;                        // dealt with this *minusRanges: move on
 					nMinusRanges--;
 				} else {
-					/* minusRanges->end beyond *origRanges */
+					// minusRanges->end beyond *origRanges
 					RangesetRefreshRange(buffer_, minusRanges->start, origRanges->end);
-					origRanges++; /* skip rest of *origRanges */
+					origRanges++; // skip rest of *origRanges
 					nOrigRanges--;
 				}
 			}
@@ -933,7 +947,7 @@ int64_t Rangeset::RangesetRemove(const Rangeset &other) {
 
 	// finally, forget the old rangeset values, and reallocate the new ones
 	ranges_ = std::move(newRanges);
-	return ranges_.size();
+	return ssize(ranges_);
 }
 
 /*
@@ -947,14 +961,14 @@ int64_t Rangeset::RangesetAdd(TextRange r) {
 		std::swap(r.start, r.end);
 	} else if (r.start == r.end) {
 		// no-op - empty range == no range
-		return ranges_.size();
+		return ssize(ranges_);
 	}
 
 	// if it's the first range, just insert it
 	if (ranges_.empty()) {
 		ranges_.push_back(r);
 		RangesetRefreshRange(buffer_, r.start, r.end);
-		return ranges_.size();
+		return ssize(ranges_);
 	}
 
 	auto next = std::lower_bound(ranges_.begin(), ranges_.end(), r);
@@ -990,7 +1004,7 @@ int64_t Rangeset::RangesetAdd(TextRange r) {
 	}
 
 	RangesetRefreshRange(buffer_, r.start, r.end);
-	return ranges_.size();
+	return ssize(ranges_);
 }
 
 /*
@@ -1004,11 +1018,11 @@ int64_t Rangeset::RangesetRemove(TextRange r) {
 		std::swap(r.start, r.end);
 	} else if (r.start == r.end) {
 		// no-op - empty range == no range
-		return ranges_.size();
+		return ssize(ranges_);
 	}
 
 	if (ranges_.empty()) {
-		return ranges_.size();
+		return ssize(ranges_);
 	}
 
 	auto next = std::lower_bound(ranges_.begin(), ranges_.end(), r);
@@ -1035,7 +1049,7 @@ int64_t Rangeset::RangesetRemove(TextRange r) {
 	}
 
 	RangesetRefreshRange(buffer_, r.start, r.end);
-	return ranges_.size();
+	return ssize(ranges_);
 }
 
 /**
@@ -1076,7 +1090,7 @@ RangesetInfo Rangeset::RangesetGetInfo() const {
 	RangesetInfo info;
 	info.defined = true;
 	info.label   = static_cast<int>(label_);
-	info.count   = ranges_.size();
+	info.count   = ssize(ranges_);
 	info.color   = color_name_;
 	info.name    = name_;
 	info.mode    = update_name_;

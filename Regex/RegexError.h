@@ -2,6 +2,7 @@
 #ifndef REGEX_ERROR_H_
 #define REGEX_ERROR_H_
 
+#include <Util/Compiler.h>
 #include <exception>
 #include <string>
 
@@ -16,6 +17,7 @@ private:
 	std::string error_;
 };
 
+COLD_CODE
 void reg_error(const char *str);
 
 #endif

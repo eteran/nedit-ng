@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15)
 
 find_package(BISON QUIET)
 find_package(Qt5 5.5.0 REQUIRED Core)
@@ -21,7 +21,7 @@ add_library(Interpreter
 	interpret.h
 	parse.h
 	parse.cpp
-	
+
 	${BISON_parser_OUTPUT_SOURCE}
 )
 
@@ -34,11 +34,13 @@ PUBLIC
 	Qt5::Core
 	Util
 	GSL
-PRIVATE
-	Boost::boost
 )
 
 target_add_warnings(Interpreter)
 
-set_property(TARGET Interpreter PROPERTY CXX_STANDARD 14)
-set_property(TARGET Interpreter PROPERTY CXX_EXTENSIONS OFF)
+set_target_properties(Interpreter
+PROPERTIES
+	CXX_STANDARD 17
+	CXX_STANDARD_REQUIRED ON
+	CXX_EXTENSIONS OFF
+)

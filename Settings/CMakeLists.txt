@@ -1,8 +1,8 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.15)
 
 find_package(Qt5 5.5.0 REQUIRED Core Widgets)
 
-add_library(Settings 
+add_library(Settings
 	IndentStyle.h
 	SearchType.h
 	Settings.cpp
@@ -25,7 +25,9 @@ PUBLIC
 
 target_add_warnings(Settings)
 
-set_property(TARGET Settings PROPERTY CXX_STANDARD 14)
-set_property(TARGET Settings PROPERTY CXX_EXTENSIONS OFF)
-
-
+set_target_properties(Settings
+PROPERTIES
+	CXX_STANDARD 17
+	CXX_STANDARD_REQUIRED ON
+	CXX_EXTENSIONS OFF
+)

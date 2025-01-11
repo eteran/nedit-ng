@@ -2,6 +2,7 @@
 #ifndef SHOW_MATCHING_STYLE_H_
 #define SHOW_MATCHING_STYLE_H_
 
+#include "from_integer.h"
 #include <QLatin1String>
 #include <QtDebug>
 
@@ -10,9 +11,6 @@ enum class ShowMatchingStyle {
 	Delimiter,
 	Range,
 };
-
-template <class T>
-inline T from_integer(int value);
 
 template <>
 inline ShowMatchingStyle from_integer(int value) {

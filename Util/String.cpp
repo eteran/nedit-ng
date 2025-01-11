@@ -2,7 +2,6 @@
 #include "Util/String.h"
 #include "Util/utils.h"
 #include <QString>
-#include <cctype>
 
 /*
 ** If "string" is not terminated with a newline character, return a
@@ -30,12 +29,12 @@ QString ensure_newline(const QString &string) {
  * @param s
  * @return
  */
-std::string to_upper(view::string_view s) {
+std::string to_upper(std::string_view s) {
 
 	std::string str;
 	str.reserve(s.size());
 	std::transform(s.begin(), s.end(), std::back_inserter(str), [](char ch) {
-		return safe_ctype<::toupper>(ch);
+		return safe_toupper(ch);
 	});
 	return str;
 }
@@ -45,12 +44,12 @@ std::string to_upper(view::string_view s) {
  * @param s
  * @return
  */
-std::string to_lower(view::string_view s) {
+std::string to_lower(std::string_view s) {
 
 	std::string str;
 	str.reserve(s.size());
 	std::transform(s.begin(), s.end(), std::back_inserter(str), [](char ch) {
-		return safe_ctype<::tolower>(ch);
+		return safe_tolower(ch);
 	});
 	return str;
 }

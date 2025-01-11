@@ -18,7 +18,6 @@
 #include <QPointer>
 #include <QtDebug>
 #include <climits>
-#include <cstdio>
 #include <cstring>
 
 namespace SmartIndent {
@@ -63,6 +62,11 @@ QString readSmartIndentMacro(Input &in) {
 	return shiftText(macroStr, ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars=*/8);
 }
 
+/**
+ * @brief isDefaultIndentSpec
+ * @param indentSpec
+ * @return
+ */
 bool isDefaultIndentSpec(const SmartIndentEntry *indentSpec) {
 
 	if (const SmartIndentEntry *spec = findDefaultIndentSpec(indentSpec->language)) {
@@ -227,7 +231,7 @@ void loadSmartIndentString(const QString &string) {
 							}
 						} else if (entries.as<std::string>() == "Default") {
 							/* look for "Default" keyword, and if it's there, return the default
-                               smart indent macros */
+							   smart indent macros */
 							const SmartIndentEntry *spec = findDefaultIndentSpec(is.language);
 							if (!spec) {
 								Raise<ParseError>(tr("no default smart indent macro for language: %1").arg(is.language));
@@ -275,10 +279,10 @@ void loadSmartIndentString(const QString &string) {
 				}
 
 				/* look for "Default" keyword, and if it's there, return the default
-                   smart indent macros */
+				   smart indent macros */
 				if (in.match(QLatin1String("Default"))) {
 					/* look for "Default" keyword, and if it's there, return the default
-                       smart indent macros */
+					   smart indent macros */
 					const SmartIndentEntry *spec = findDefaultIndentSpec(is.language);
 					if (!spec) {
 						Raise<ParseError>(tr("no default smart indent macro for language: %1").arg(is.language));
@@ -288,7 +292,7 @@ void loadSmartIndentString(const QString &string) {
 				} else {
 
 					/* read the initialization macro (arbitrary text terminated by the
-                       macro end boundary string) */
+					   macro end boundary string) */
 					is.initMacro = readSmartIndentMacro(in);
 					if (is.initMacro.isNull()) {
 						Raise<ParseError>(tr("no end boundary to initialization macro"));
@@ -327,6 +331,10 @@ void loadSmartIndentString(const QString &string) {
 	}
 }
 
+/**
+ * @brief loadSmartIndentCommonString
+ * @param string
+ */
 void loadSmartIndentCommonString(const QString &string) {
 
 	if (string != QLatin1String("*")) {
@@ -336,7 +344,7 @@ void loadSmartIndentCommonString(const QString &string) {
 		in.skipWhitespaceNL();
 
 		/* look for "Default" keyword, and if it's there, return the default
-           smart common macro */
+		   smart common macro */
 		if (in.match(QLatin1String("Default"))) {
 			CommonMacros = loadDefaultCommonMacros();
 			return;
@@ -347,6 +355,10 @@ void loadSmartIndentCommonString(const QString &string) {
 	}
 }
 
+/**
+ * @brief writeSmartIndentString
+ * @return
+ */
 QString writeSmartIndentString() {
 	QString filename = Settings::smartIndentFile();
 	try {
@@ -402,6 +414,10 @@ QString writeSmartIndentString() {
 	return QString();
 }
 
+/**
+ * @brief writeSmartIndentCommonString
+ * @return
+ */
 QString writeSmartIndentCommonString() {
 	return QLatin1String("*");
 }
@@ -456,7 +472,7 @@ void renameSmartIndentMacros(const QString &oldName, const QString &newName) {
 	}
 
 	if (SmartIndentDialog) {
-		if (SmartIndentDialog->languageMode_ == oldName) {
+		if (SmartIndentDialog->languageMode() == oldName) {
 			SmartIndentDialog->setLanguageMode(newName);
 		}
 	}
@@ -464,7 +480,7 @@ void renameSmartIndentMacros(const QString &oldName, const QString &newName) {
 
 /*
 ** If a smart indent dialog is up, ask to have the option menu for
-** chosing language mode updated (via a call to CreateLanguageModeMenu)
+** choosing language mode updated (via a call to CreateLanguageModeMenu)
 */
 void updateLangModeMenuSmartIndent() {
 

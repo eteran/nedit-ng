@@ -11,15 +11,19 @@ class TextArea;
 class TextAreaMimeData : public QMimeData {
 	Q_OBJECT
 public:
-	explicit TextAreaMimeData(const std::shared_ptr<TextBuffer> &buffer);
+	explicit TextAreaMimeData(std::shared_ptr<TextBuffer> buffer);
 	~TextAreaMimeData() override = default;
 
 public:
-	QStringList formats() const override final;
+	QStringList formats() const final;
 	bool hasFormat(const QString &mimeType) const override;
 
 protected:
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+	QVariant retrieveData(const QString &mimeType, QMetaType type) const override;
+#else
 	QVariant retrieveData(const QString &mimeType, QVariant::Type type) const override;
+#endif
 
 public:
 	TextBuffer *buffer() const;

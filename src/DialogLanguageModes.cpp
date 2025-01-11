@@ -70,8 +70,14 @@ void DialogLanguageModes::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogLanguageModes::buttonBox_clicked);
 }
 
+/**
+ * @brief DialogLanguageModes::currentChanged
+ * @param current
+ * @param previous
+ */
 void DialogLanguageModes::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
 	static bool canceled = false;
+	bool skip_check      = false;
 
 	if (canceled) {
 		canceled = false;
@@ -92,12 +98,11 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 		messageBox.setText(tr("Discard incomplete entry for current menu item?"));
 		QPushButton *buttonKeep    = messageBox.addButton(tr("Keep"), QMessageBox::RejectRole);
 		QPushButton *buttonDiscard = messageBox.addButton(QMessageBox::Discard);
-		Q_UNUSED(buttonDiscard)
 
 		messageBox.exec();
 		if (messageBox.clickedButton() == buttonKeep) {
 
-			// again to cause messagebox to pop up
+			// again to cause message box to pop up
 			validateFields(Verbosity::Verbose);
 
 			// reselect the old item
@@ -105,11 +110,16 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 			Q_EMIT restore(previous);
 			return;
 		}
+
+		if (messageBox.clickedButton() == buttonDiscard) {
+			model_->deleteItem(previous);
+			skip_check = true;
+		}
 	}
 #endif
 
 	// this is only safe if we aren't moving due to a delete operation
-	if (previous.isValid() && previous != deleted_) {
+	if (previous.isValid() && previous != deleted_ && !skip_check) {
 		if (!updateCurrentItem(previous)) {
 			// reselect the old item
 			canceled = true;
@@ -221,7 +231,7 @@ void DialogLanguageModes::buttonBox_clicked(QAbstractButton *button) {
 ** structure reflecting the current state of the selected language mode in the dialog.
 ** If any of the information is incorrect or missing, display a warning dialog.
 */
-boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity) {
+std::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity) {
 
 	LanguageMode lm;
 
@@ -231,7 +241,7 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Language Mode Name"), tr("Please specify a name for the language mode"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	lm.name = name;
@@ -249,12 +259,12 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 	QString recognitionExpr = ui.editRegex->text();
 	if (!recognitionExpr.isEmpty()) {
 		try {
-			auto compiledRE = make_regex(recognitionExpr, REDFLT_STANDARD);
+			auto compiledRE = make_regex(recognitionExpr, RE_DEFAULT_STANDARD);
 		} catch (const RegexError &e) {
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Regex"), tr("Recognition expression:\n%1").arg(QString::fromLatin1(e.what())));
 			}
-			return boost::none;
+			return {};
 		}
 	}
 
@@ -268,8 +278,10 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Error reading Calltips"), tr("Can't read default calltips file(s):\n  \"%1\"\n").arg(tipsFile));
 			}
-			return boost::none;
-		} else if (!Tags::deleteTagsFile(tipsFile, Tags::SearchMode::TIP, false)) {
+			return {};
+		}
+
+		if (!Tags::deleteTagsFile(tipsFile, Tags::SearchMode::TIP, false)) {
 			qCritical("NEdit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"", qPrintable(tipsFile));
 		}
 	}
@@ -284,7 +296,7 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 		int tabsSpacingValue = tabsSpacing.toInt(&ok);
 		if (!ok) {
 			QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in tab spacing").arg(tabsSpacing));
-			return boost::none;
+			return {};
 		}
 
 		lm.tabDist = tabsSpacingValue;
@@ -299,7 +311,7 @@ boost::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosit
 		int emulatedTabSpacingValue = emulatedTabSpacing.toInt(&ok);
 		if (!ok) {
 			QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in emulated tab spacing").arg(tabsSpacing));
-			return boost::none;
+			return {};
 		}
 
 		lm.emTabDist = emulatedTabSpacingValue;
@@ -457,7 +469,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 				QString oldName = parts[0];
 				QString newName = parts[1];
 
-				MainWindow::renameHighlightPattern(oldName, newName);
+				Highlight::RenameHighlightPattern(oldName, newName);
 				if (dialogSyntaxPatterns_) {
 					dialogSyntaxPatterns_->RenameHighlightPattern(oldName, newName);
 				}

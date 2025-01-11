@@ -220,7 +220,7 @@ bool DialogReplace::eventFilter(QObject *obj, QEvent *ev) {
  * @param checked
  */
 void DialogReplace::checkKeep_toggled(bool checked) {
-	if (checked) {
+	if (checked && document_) {
 		setWindowTitle(tr("Find/Replace (in %1)").arg(document_->filename()));
 	} else {
 		setWindowTitle(tr("Find/Replace"));
@@ -242,8 +242,12 @@ void DialogReplace::textFind_textChanged(const QString &text) {
 void DialogReplace::buttonFind_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
-	boost::optional<Fields> fields = readFields();
+	std::optional<Fields> fields = readFields();
 	if (!fields) {
+		return;
+	}
+
+	if (!document_) {
 		return;
 	}
 
@@ -276,8 +280,12 @@ void DialogReplace::buttonFind_clicked() {
 void DialogReplace::buttonReplace_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
-	boost::optional<Fields> fields = readFields();
+	std::optional<Fields> fields = readFields();
 	if (!fields) {
+		return;
+	}
+
+	if (!document_) {
 		return;
 	}
 
@@ -304,8 +312,12 @@ void DialogReplace::buttonReplace_clicked() {
 void DialogReplace::buttonReplaceFind_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
-	boost::optional<Fields> fields = readFields();
+	std::optional<Fields> fields = readFields();
 	if (!fields) {
+		return;
+	}
+
+	if (!document_) {
 		return;
 	}
 
@@ -332,8 +344,12 @@ void DialogReplace::buttonReplaceFind_clicked() {
 void DialogReplace::buttonWindow_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
-	boost::optional<Fields> fields = readFields();
+	std::optional<Fields> fields = readFields();
 	if (!fields) {
+		return;
+	}
+
+	if (!document_) {
 		return;
 	}
 
@@ -358,8 +374,12 @@ void DialogReplace::buttonWindow_clicked() {
 void DialogReplace::buttonSelection_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
-	boost::optional<Fields> fields = readFields();
+	std::optional<Fields> fields = readFields();
 	if (!fields) {
+		return;
+	}
+
+	if (!document_) {
 		return;
 	}
 
@@ -384,7 +404,7 @@ void DialogReplace::buttonSelection_clicked() {
 void DialogReplace::buttonMulti_clicked() {
 
 	// Validate and fetch the find and replace strings from the dialog
-	boost::optional<Fields> fields = readFields();
+	std::optional<Fields> fields = readFields();
 	if (!fields) {
 		return;
 	}
@@ -576,7 +596,7 @@ void DialogReplace::setActionButtons(bool replaceBtn, bool replaceFindBtn, bool 
 ** strings and search type from the Replace dialog.  If the strings are ok,
 ** save a copy in the search history, and return the fields
 */
-boost::optional<DialogReplace::Fields> DialogReplace::readFields() {
+std::optional<DialogReplace::Fields> DialogReplace::readFields() {
 
 	Fields fields;
 
@@ -589,18 +609,18 @@ boost::optional<DialogReplace::Fields> DialogReplace::readFields() {
 		int regexDefault;
 		if (ui.checkCase->isChecked()) {
 			fields.searchType = SearchType::Regex;
-			regexDefault      = REDFLT_STANDARD;
+			regexDefault      = RE_DEFAULT_STANDARD;
 		} else {
 			fields.searchType = SearchType::RegexNoCase;
-			regexDefault      = REDFLT_CASE_INSENSITIVE;
+			regexDefault      = RE_DEFAULT_CASE_INSENSITIVE;
 		}
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
 		try {
 			auto compiledRE = make_regex(replaceText, regexDefault);
 		} catch (const RegexError &e) {
-			QMessageBox::warning(this, tr("Search String"), tr("Please respecify the search string:\n%1").arg(QString::fromLatin1(e.what())));
-			return boost::none;
+			QMessageBox::warning(this, tr("Search String"), tr("Please re-specify the search string:\n%1").arg(QString::fromLatin1(e.what())));
+			return {};
 		}
 	} else {
 		if (ui.checkCase->isChecked()) {
@@ -638,6 +658,8 @@ bool DialogReplace::keepDialog() const {
  * @param document
  */
 void DialogReplace::setDocument(DocumentWidget *document) {
+	Q_ASSERT(document);
+
 	document_ = document;
 	if (keepDialog()) {
 		setWindowTitle(tr("Replace (in %1)").arg(document_->filename()));
