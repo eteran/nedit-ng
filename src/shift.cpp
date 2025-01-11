@@ -563,7 +563,7 @@ std::string shiftText(std::string_view text, ShiftDirection direction, bool tabs
 	while (true) {
 		if (textPtr == text.end() || *textPtr == '\n') {
 
-			auto segment = text.substr(gsl::narrow<size_t>(lineStartPtr - text.data()));
+			auto segment = text.substr(gsl::narrow<size_t>(lineStartPtr - text.begin()));
 
 			std::string shiftedLineString = (direction == ShiftDirection::Right)
 												? shiftLineRight(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars)
