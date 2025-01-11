@@ -99,16 +99,14 @@ TextCursor lastModified(const Ptr &buffer) {
 }
 
 /*
-** Return true if patSet exactly matches one of the default pattern sets
+** Return true if `patternSet` exactly matches one of the default pattern sets
 */
 bool isDefaultPatternSet(const PatternSet &patternSet) {
-
-	std::optional<PatternSet> defaultPatSet = readDefaultPatternSet(patternSet.languageMode);
-	if (!defaultPatSet) {
-		return false;
+	if (std::optional<PatternSet> defaultPatSet = readDefaultPatternSet(patternSet.languageMode)) {
+		return patternSet == *defaultPatSet;
 	}
 
-	return patternSet == *defaultPatSet;
+	return false;
 }
 
 /*
