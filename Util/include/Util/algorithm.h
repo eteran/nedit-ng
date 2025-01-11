@@ -35,12 +35,15 @@ void moveItem(Cont &cont, int from, int to) {
 QT_WARNING_POP
 
 // string_view algorithms
-template <class Ch, class Tr = std::char_traits<Ch>>
-constexpr std::basic_string_view<Ch, Tr> substr(const Ch *first, const Ch *last) {
+template <class Iter>
+constexpr auto substr(Iter start, Iter end) {
 
-	const Ch *data = first;
-	auto size      = std::distance(first, last);
-	return std::basic_string_view<Ch, Tr>(data, static_cast<size_t>(size));
+	using Ch = typename std::iterator_traits<Iter>::value_type;
+
+	const Ch *first = &*start;
+	const Ch *last  = &*end;
+	auto size       = std::distance(first, last);
+	return std::basic_string_view<Ch>(first, static_cast<size_t>(size));
 }
 
 template <class Cont, class T, class Pred>

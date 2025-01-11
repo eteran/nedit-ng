@@ -1298,7 +1298,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 							delimitersPtr,
 							look_behind_to,
 							match_to,
-							ctx->text.end())) {
+							end_ptr)) {
 						qCritical("NEdit: Internal error, failed to recover start match in parseString");
 						return false;
 					}

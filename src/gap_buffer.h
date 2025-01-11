@@ -8,8 +8,8 @@
 
 #include <algorithm>
 #include <cassert>
-#include <exception>
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <string_view>
 

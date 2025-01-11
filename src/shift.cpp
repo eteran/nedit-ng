@@ -565,7 +565,9 @@ std::string shiftText(std::string_view text, ShiftDirection direction, int tabsA
 
 			auto segment = substr(lineStartPtr, text.end());
 
-			std::string shiftedLineString = (direction == ShiftDirection::Right) ? shiftLineRight(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars) : shiftLineLeft(segment, textPtr - lineStartPtr, tabDist, nChars);
+			std::string shiftedLineString = (direction == ShiftDirection::Right)
+												? shiftLineRight(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars)
+												: shiftLineLeft(segment, textPtr - lineStartPtr, tabDist, nChars);
 
 			std::copy(shiftedLineString.begin(), shiftedLineString.end(), shiftedPtr);
 
