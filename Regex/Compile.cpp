@@ -964,7 +964,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 		--pContext.Reg_Parse; /* If we fell through from the above code, we are now
 							   * pointing at the back slash (\) character. */
 		{
-			const char *parse_save;
+			std::string_view::iterator parse_save;
 			int len = 0;
 
 			if (pContext.Is_Case_Insensitive) {
