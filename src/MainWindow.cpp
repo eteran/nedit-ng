@@ -5580,7 +5580,12 @@ void MainWindow::action_Help_triggered() {
  * @brief MainWindow::action_Open_Configuration_Directory_triggered
  */
 void MainWindow::action_Open_Configuration_Directory_triggered() {
-	QUrl url(QStringLiteral("file:///%1").arg(Settings::configDirectory()));
+    const QString configDir = Settings::configDirectory();
+
+    // ensure that the folder exists
+    QDir(configDir).mkpath(QStringLiteral("."));
+
+    QUrl url(QStringLiteral("file:///%1").arg(configDir, QUrl::TolerantMode));
 	QDesktopServices::openUrl(url);
 
 }
