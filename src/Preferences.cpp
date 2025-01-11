@@ -11,6 +11,7 @@
 #include "Theme.h"
 #include "Util/ClearCase.h"
 #include "Util/Input.h"
+#include "Util/Raise.h"
 #include "Util/Resource.h"
 #include "Util/User.h"
 #include "Util/algorithm.h"
@@ -20,6 +21,8 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include <algorithm>
+
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QPushButton>
@@ -27,7 +30,6 @@
 #include <QSettings>
 #include <QString>
 #include <QtDebug>
-
 
 namespace Preferences {
 namespace {
@@ -93,9 +95,9 @@ std::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 			const YAML::Node value = it->second;
 
 			if (key == "name") {
-				lm.name = QString::fromUtf8(value.as<std::string>().c_str());
+				lm.name = QString::fromStdString(value.as<std::string>());
 			} else if (key == "delimiters") {
-				lm.delimiters = QString::fromUtf8(value.as<std::string>().c_str());
+				lm.delimiters = QString::fromStdString(value.as<std::string>());
 			} else if (key == "tab_distance") {
 				lm.tabDist = value.as<int>();
 			} else if (key == "em_tab_distance") {
@@ -103,9 +105,9 @@ std::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 			} else if (key == "insert_tabs") {
 				lm.insertTabs = value.as<bool>();
 			} else if (key == "regex") {
-				lm.recognitionExpr = QString::fromUtf8(value.as<std::string>().c_str());
+				lm.recognitionExpr = QString::fromStdString(value.as<std::string>());
 			} else if (key == "wrap") {
-				auto string_val = QString::fromUtf8(value.as<std::string>().c_str());
+				auto string_val = QString::fromStdString(value.as<std::string>());
 				auto it         = std::find(std::begin(AutoWrapTypes), std::end(AutoWrapTypes), string_val);
 				if (it == std::end(AutoWrapTypes)) {
 					Raise<ModeError>(tr("unrecognized wrap style"));
@@ -113,7 +115,7 @@ std::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 
 				lm.wrapStyle = static_cast<WrapStyle>(it - std::begin(AutoWrapTypes));
 			} else if (key == "indent") {
-				auto string_val = QString::fromUtf8(value.as<std::string>().c_str());
+				auto string_val = QString::fromStdString(value.as<std::string>());
 				auto it         = std::find(std::begin(AutoIndentTypes), std::end(AutoIndentTypes), string_val);
 				if (it == std::end(AutoIndentTypes)) {
 					Raise<ModeError>(tr("unrecognized indent style"));
@@ -121,7 +123,7 @@ std::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 
 				lm.indentStyle = static_cast<IndentStyle>(it - std::begin(AutoIndentTypes));
 			} else if (key == "default_tips") {
-				lm.defTipsFile = QString::fromUtf8(value.as<std::string>().c_str());
+				lm.defTipsFile = QString::fromStdString(value.as<std::string>());
 			} else if (key == "extensions") {
 				QStringList extensions;
 				for (size_t i = 0; i < value.size(); i++) {
@@ -1381,7 +1383,7 @@ bool SkipDelimiter(Input &in, QString *errMsg) {
 bool reportError(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message) {
 
 	// NOTE(eteran): hack to work around the fact that stoppedAt can be a "one past the end iterator"
-	stoppedAt = qBound(0, stoppedAt, string.size() - 1);
+	stoppedAt = std::clamp(stoppedAt, 0, string.size() - 1);
 
 	int nNonWhite = 0;
 	int c;

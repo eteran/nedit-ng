@@ -11,6 +11,7 @@
 #include "Settings.h"
 #include "TextBuffer.h"
 #include "Util/Input.h"
+#include "Util/Raise.h"
 #include "Util/Resource.h"
 #include "Util/algorithm.h"
 #include "WindowHighlightData.h"
@@ -98,16 +99,14 @@ TextCursor lastModified(const Ptr &buffer) {
 }
 
 /*
-** Return true if patSet exactly matches one of the default pattern sets
+** Return true if `patternSet` exactly matches one of the default pattern sets
 */
 bool isDefaultPatternSet(const PatternSet &patternSet) {
-
-	std::optional<PatternSet> defaultPatSet = readDefaultPatternSet(patternSet.languageMode);
-	if (!defaultPatSet) {
-		return false;
+	if (std::optional<PatternSet> defaultPatSet = readDefaultPatternSet(patternSet.languageMode)) {
+		return patternSet == *defaultPatSet;
 	}
 
-	return patternSet == *defaultPatSet;
+	return false;
 }
 
 /*
@@ -1061,7 +1060,7 @@ std::vector<PatternSet> readDefaultPatternSets() {
 ** Note: This routine must be kept efficient.  It is called for every
 ** character typed.
 */
-void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
+void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, void *user) {
 
 	Q_UNUSED(nRestyled)
 	Q_UNUSED(deletedText)
@@ -1131,16 +1130,19 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 		return false;
 	}
 
+	const char *const begin_ptr = ctx->text.data();
+	const char *const end_ptr   = ctx->text.data() + ctx->text.size();
+
 	if (!look_behind_to) {
-		look_behind_to = ctx->text.begin();
+		look_behind_to = begin_ptr;
 	}
 
 	if (!match_to) {
-		match_to = ctx->text.end();
+		match_to = end_ptr;
 	}
 
 	bool subExecuted;
-	const int next_char = (match_to != ctx->text.end()) ? (*match_to) : -1;
+	const int next_char = (match_to != end_ptr) ? (*match_to) : -1;
 
 	const char *stringPtr = string_ptr;
 	uint8_t *stylePtr     = style_ptr;
@@ -1159,7 +1161,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 		delimitersPtr,
 		look_behind_to,
 		match_to,
-		ctx->text.end())) {
+		end_ptr)) {
 
 		/* Beware of the case where only one real branch exists, but that
 		   branch has sub-branches itself. In that case the top_branch refers
@@ -1197,7 +1199,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 									delimitersPtr,
 									look_behind_to,
 									match_to,
-									ctx->text.end())) {
+									end_ptr)) {
 								qCritical("NEdit: Internal error, failed to recover end match in parseString");
 								return false;
 							}
@@ -1296,7 +1298,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 							delimitersPtr,
 							look_behind_to,
 							match_to,
-							ctx->text.end())) {
+							end_ptr)) {
 						qCritical("NEdit: Internal error, failed to recover start match in parseString");
 						return false;
 					}

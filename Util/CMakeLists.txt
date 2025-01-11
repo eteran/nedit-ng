@@ -90,7 +90,6 @@ add_library(Util
 	include/Util/Resource.h
 	include/Util/ServerCommon.h
 	include/Util/String.h
-	include/Util/string_view.h
 	include/Util/System.h
 	include/Util/User.h
 	include/Util/utils.h

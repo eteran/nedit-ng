@@ -10,8 +10,7 @@
 #include "Util/FileSystem.h"
 #include "Util/Input.h"
 #include "Util/User.h"
-
-#include <gsl/gsl_util>
+#include "Util/algorithm.h"
 
 #include <QApplication>
 #include <QDir>
@@ -30,6 +29,8 @@
 #ifdef Q_OS_UNIX
 #include <sys/param.h>
 #endif
+
+#include <gsl/gsl_util>
 
 namespace Tags {
 
@@ -94,7 +95,7 @@ QList<Tag> getTagFromTable(QMultiHash<QString, Tag> &table, const QString &name)
  * separators (for now) are \n.  If the end of string is reached before n
  * lines, return the number of lines advanced, else normally return -1.
  */
-int64_t moveAheadNLines(view::string_view str, int64_t &pos, int64_t n) {
+int64_t moveAheadNLines(std::string_view str, int64_t &pos, int64_t n) {
 
 	int64_t i = n;
 	while (static_cast<size_t>(pos) != str.size() && n > 0) {
@@ -1114,7 +1115,7 @@ QList<Tag> lookupTag(const QString &name, SearchMode mode) {
 ** into NEdit compatible regular expressions and does the search.
 ** Etags search expressions are plain literals strings, which
 */
-bool fakeRegExSearch(view::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos) {
+bool fakeRegExSearch(std::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos) {
 
 	if (searchString.isEmpty()) {
 		return false;
@@ -1124,7 +1125,7 @@ bool fakeRegExSearch(view::string_view buffer, const QString &searchString, int6
 	Direction dir;
 	bool ctagsMode;
 
-	view::string_view fileString = buffer;
+	std::string_view fileString = buffer;
 
 	// determine search direction and start position
 	if (*startPos != -1) { // etags mode!
@@ -1137,7 +1138,7 @@ bool fakeRegExSearch(view::string_view buffer, const QString &searchString, int6
 		ctagsMode      = true;
 	} else if (searchString.size() > 1 && searchString[0] == QLatin1Char('?')) {
 		dir            = Direction::Backward;
-		searchStartPos = static_cast<int64_t>(fileString.size());
+		searchStartPos = ssize(fileString);
 		ctagsMode      = true;
 	} else {
 		qWarning("NEdit: Error parsing tag file search string");

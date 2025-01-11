@@ -4,7 +4,7 @@
 
 #include "Constants.h"
 #include "RegexError.h"
-#include "Util/string_view.h"
+#include <string_view>
 
 #include <array>
 #include <bitset>
@@ -21,7 +21,7 @@ enum RE_DEFAULT_FLAG {
 
 class Regex {
 public:
-	Regex(view::string_view exp, int defaultFlags);
+	Regex(std::string_view exp, int defaultFlags);
 	Regex(const Regex &)            = delete;
 	Regex &operator=(const Regex &) = delete;
 	~Regex()                        = default;
@@ -47,7 +47,7 @@ public:
 	 * @param string  Text to search within
 	 * @param reverse Backward search.
 	 */
-	bool execute(view::string_view string, bool reverse = false);
+	bool execute(std::string_view string, bool reverse = false);
 
 	/**
 	 * Match a 'Regex' structure against a string.
@@ -57,7 +57,7 @@ public:
 	 * @param offset  Offset into the string to begin search
 	 * @param reverse Backward search.
 	 */
-	bool execute(view::string_view string, size_t offset, bool reverse = false);
+	bool execute(std::string_view string, size_t offset, bool reverse = false);
 
 	/**
 	 * Match a 'Regex' structure against a string.
@@ -68,7 +68,7 @@ public:
 	 * @param delimiters Word delimiters to use (nullptr for default)
 	 * @param reverse    Backward search.
 	 */
-	bool execute(view::string_view string, size_t offset, const char *delimiters, bool reverse = false);
+	bool execute(std::string_view string, size_t offset, const char *delimiters, bool reverse = false);
 
 	/**
 	 * Match a 'Regex' structure against a string. Will only match things between offset and end_offset
@@ -80,7 +80,7 @@ public:
 	 * @param delimiters Word delimiters to use (nullptr for default)
 	 * @param reverse    Backward search.
 	 */
-	bool execute(view::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse = false);
+	bool execute(std::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse = false);
 
 	/**
 	 * Match a 'Regex' structure against a string. Will only match things between offset and end_offset
@@ -94,7 +94,7 @@ public:
 	 * @param succ       Character immediately after 'end'.  Set to '\n' or -1 if true beginning of text.
 	 * @param reverse    Backward search.
 	 */
-	bool execute(view::string_view string, size_t offset, size_t end_offset, int prev, int succ, const char *delimiters, bool reverse = false);
+	bool execute(std::string_view string, size_t offset, size_t end_offset, int prev, int succ, const char *delimiters, bool reverse = false);
 
 	/**
 	 * Perform substitutions after a 'Regex' match.
@@ -104,7 +104,7 @@ public:
 	 * @param dest
 	 * @return
 	 */
-	bool SubstituteRE(view::string_view source, std::string &dest) const;
+	bool SubstituteRE(std::string_view source, std::string &dest) const;
 
 	/**
 	 * @brief isValid
@@ -115,7 +115,7 @@ public:
 public:
 	/* Builds a default delimiter table that persists across 'ExecRE' calls that
 	   is identical to 'delimiters'.*/
-	static void SetDefaultWordDelimiters(view::string_view delimiters);
+	static void SetDefaultWordDelimiters(std::string_view delimiters);
 
 public:
 	std::array<const char *, MaxSubExpr> startp = {};      /* Captured text starting locations. */
@@ -129,7 +129,7 @@ public:
 
 public:
 	static std::bitset<256> Default_Delimiters;
-	static std::bitset<256> makeDelimiterTable(view::string_view delimiters);
+	static std::bitset<256> makeDelimiterTable(std::string_view delimiters);
 };
 
 #endif

@@ -6,11 +6,11 @@
 namespace {
 
 struct Test {
-	view::string_view input;
-	view::string_view output;
+	std::string_view input;
+	std::string_view output;
 };
 
-int test_regex_match(view::string_view regex, view::string_view input) {
+int test_regex_match(std::string_view regex, std::string_view input) {
 	Regex re(regex, RE_DEFAULT_STANDARD);
 
 	if (re.execute(input)) {
@@ -737,13 +737,13 @@ int main() {
 			}
 
 			if (bytes != t.output) {
-				std::cerr << "ERROR    : " << t.input.to_string() << '\n';
-				std::cerr << "EXPECTED : " << t.output.to_string() << '\n';
+				std::cerr << "ERROR    : " << t.input << '\n';
+				std::cerr << "EXPECTED : " << t.output << '\n';
 				std::cerr << "GOT      : " << bytes << std::endl;
 				return -1;
 			}
 		} catch (...) {
-			std::cerr << "EXCEPTION: " << t.input.to_string() << '\n';
+			std::cerr << "EXCEPTION: " << t.input << '\n';
 			return -1;
 		}
 	}
@@ -786,7 +786,7 @@ int main() {
 			Regex re(t.input, RE_DEFAULT_STANDARD);
 			decompileRegex(re);
 		} catch (...) {
-			std::cerr << "EXCEPTION: " << t.input.to_string() << '\n';
+			std::cerr << "EXCEPTION: " << t.input << '\n';
 			return -1;
 		}
 	}

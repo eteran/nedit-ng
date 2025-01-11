@@ -5,7 +5,6 @@
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
 #include "TextRange.h"
-#include "Util/string_view.h"
 #include "gap_buffer.h"
 
 #include <gsl/gsl_util>
@@ -13,9 +12,9 @@
 #include <cstdint>
 #include <deque>
 #include <memory>
-#include <string>
-
 #include <optional>
+#include <string>
+#include <string_view>
 
 struct SelectionPos {
 	TextCursor start;
@@ -39,7 +38,7 @@ template <class Ch, class Tr>
 class BasicTextBuffer : public BasicTextBufferBase, public std::enable_shared_from_this<BasicTextBuffer<Ch, Tr>> {
 public:
 	using string_type = std::basic_string<Ch, Tr>;
-	using view_type   = view::basic_string_view<Ch, Tr>;
+	using view_type   = std::basic_string_view<Ch, Tr>;
 
 public:
 	using modify_callback_type           = void (*)(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view_type deletedText, void *user);

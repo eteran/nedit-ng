@@ -55,6 +55,7 @@
 #include <QToolTip>
 #include <qplatformdefs.h>
 
+#include <algorithm>
 #include <cmath>
 
 #ifdef Q_OS_LINUX
@@ -97,7 +98,7 @@ std::optional<Location> StringToLineAndCol(const QString &text) {
 		if (!row_ok) {
 			r = -1;
 		} else {
-			r = qBound(0, r, INT_MAX);
+			r = std::clamp(r, 0, INT_MAX);
 		}
 
 		bool col_ok;
@@ -105,7 +106,7 @@ std::optional<Location> StringToLineAndCol(const QString &text) {
 		if (!col_ok) {
 			c = -1;
 		} else {
-			c = qBound(0, c, INT_MAX);
+			c = std::clamp(c, 0, INT_MAX);
 		}
 
 		if (r == -1 && c == -1) {
@@ -6283,7 +6284,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 	}
 
 	// get the entire text buffer from the text area widget
-	view::string_view fileString = buffer->BufAsString();
+	std::string_view fileString = buffer->BufAsString();
 
 	/* If we're already outside the boundaries, we must consider wrapping
 	   immediately (Note: fileEnd+1 is a valid starting position. Consider
@@ -6614,7 +6615,7 @@ bool MainWindow::replaceAndSearch(DocumentWidget *document, TextArea *area, cons
 				Search::defaultRegexFlags(searchType));
 
 			buffer->BufReplace(selectionRange, replaceResult);
-			replaceLen = static_cast<int64_t>(replaceResult.size());
+			replaceLen = ssize(replaceResult);
 		} else {
 			buffer->BufReplace(selectionRange, replaceString.toStdString());
 			replaceLen = replaceString.size();
@@ -6743,7 +6744,7 @@ bool MainWindow::searchAndReplace(DocumentWidget *document, TextArea *area, cons
 			Search::defaultRegexFlags(searchType));
 
 		buffer->BufReplace(selectionRange, replaceResult);
-		replaceLen = static_cast<int64_t>(replaceResult.size());
+		replaceLen = ssize(replaceResult);
 	} else {
 		buffer->BufReplace(selectionRange, replaceString.toStdString());
 		replaceLen = replaceString.size();
@@ -6999,7 +7000,7 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 			}
 
 			tempBuf.BufReplace(TextCursor(searchResult->start + realOffset), TextCursor(searchResult->end + realOffset), replaceResult);
-			replaceLen = static_cast<int64_t>(replaceResult.size());
+			replaceLen = ssize(replaceResult);
 		} else {
 			// at this point plain substitutions (should) always work
 			tempBuf.BufReplace(TextCursor(searchResult->start + realOffset), TextCursor(searchResult->end + realOffset), replaceString.toStdString());
@@ -7138,7 +7139,7 @@ bool MainWindow::replaceAll(DocumentWidget *document, TextArea *area, const QStr
 	TextBuffer *buffer = document->buffer();
 
 	// view the entire text buffer from the text area widget as a string
-	view::string_view fileString = buffer->BufAsString();
+	std::string_view fileString = buffer->BufAsString();
 
 	QString delimiters = document->getWindowDelimiters();
 

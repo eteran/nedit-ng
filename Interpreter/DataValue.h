@@ -2,7 +2,7 @@
 #ifndef DATA_VALUE_H_
 #define DATA_VALUE_H_
 
-#include "Util/string_view.h"
+#include <string_view>
 
 #include <gsl/span>
 
@@ -87,9 +87,9 @@ inline DataValue make_value(bool n) {
 	return DV;
 }
 
-inline DataValue make_value(view::string_view str) {
+inline DataValue make_value(std::string_view str) {
 	DataValue DV;
-	DV.value = str.to_string();
+	DV.value = std::string(str);
 	return DV;
 }
 
