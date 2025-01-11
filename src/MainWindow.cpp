@@ -55,6 +55,7 @@
 #include <QToolTip>
 #include <qplatformdefs.h>
 
+#include <algorithm>
 #include <cmath>
 
 #ifdef Q_OS_LINUX
@@ -97,7 +98,7 @@ std::optional<Location> StringToLineAndCol(const QString &text) {
 		if (!row_ok) {
 			r = -1;
 		} else {
-			r = qBound(0, r, INT_MAX);
+			r = std::clamp(r, 0, INT_MAX);
 		}
 
 		bool col_ok;
@@ -105,7 +106,7 @@ std::optional<Location> StringToLineAndCol(const QString &text) {
 		if (!col_ok) {
 			c = -1;
 		} else {
-			c = qBound(0, c, INT_MAX);
+			c = std::clamp(c, 0, INT_MAX);
 		}
 
 		if (r == -1 && c == -1) {

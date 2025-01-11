@@ -40,8 +40,10 @@
 #include <QWindow>
 #endif
 
-#include <gsl/gsl_util>
+#include <algorithm>
 #include <memory>
+
+#include <gsl/gsl_util>
 
 #define EMIT_EVENT_0(name)                                       \
 	do {                                                         \
@@ -2211,8 +2213,8 @@ void TextArea::calcLineStarts(int startLine, int endLine) {
 		return;
 	}
 
-	endLine   = qBound(0, endLine, nVis - 1);
-	startLine = qBound(0, startLine, nVis - 1);
+	endLine   = std::clamp(endLine, 0, nVis - 1);
+	startLine = std::clamp(startLine, 0, nVis - 1);
 
 	if (startLine > endLine) {
 		return;
@@ -2652,8 +2654,8 @@ void TextArea::redisplayRange(TextCursor start, TextCursor end) {
 	const TextCursor start_of_buffer = buffer_->BufStartOfBuffer();
 	const TextCursor end_of_buffer   = buffer_->BufEndOfBuffer();
 
-	start = qBound(start_of_buffer, start, end_of_buffer);
-	end   = qBound(start_of_buffer, end, end_of_buffer);
+	start = std::clamp(start, start_of_buffer, end_of_buffer);
+	end   = std::clamp(end, start_of_buffer, end_of_buffer);
 
 	// Get the starting and ending lines
 	if (start < firstChar_) {
@@ -3815,7 +3817,7 @@ void TextArea::setInsertPosition(TextCursor newPos) {
 		return;
 	}
 
-	newPos = qBound(buffer_->BufStartOfBuffer(), newPos, buffer_->BufEndOfBuffer());
+	newPos = std::clamp(newPos, buffer_->BufStartOfBuffer(), buffer_->BufEndOfBuffer());
 
 	// cursor movement cancels vertical cursor motion column
 	cursorPreferredCol_ = -1;
@@ -7021,7 +7023,7 @@ void TextArea::nextPageAP(EventFlags flags) {
 		}
 
 		targetLine = topLineNum_ + nVisibleLines_ - 1;
-		targetLine = qBound<int64_t>(1, targetLine, lastTopLine);
+		targetLine = std::clamp<int64_t>(targetLine, 1, lastTopLine);
 
 		TextCursor pos = forwardNLines(insertPos, nVisibleLines_ - 1, false);
 		if (maintainColumn) {

@@ -4,6 +4,7 @@
 
 #include "TextBuffer.h"
 #include "Util/algorithm.h"
+
 #include <algorithm>
 #include <cassert>
 #include <cstring>
@@ -100,7 +101,7 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufInsert(TextCursor pos, view_type text) noexcept {
 
 	// if pos is not contiguous to existing text, make it
-	pos = qBound(BufStartOfBuffer(), pos, BufEndOfBuffer());
+	pos = std::clamp(pos, BufStartOfBuffer(), BufEndOfBuffer());
 
 	// Even if nothing is deleted, we must call these callbacks
 	callPreDeleteCBs(pos, 0);
@@ -115,7 +116,7 @@ template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufInsert(TextCursor pos, Ch ch) noexcept {
 
 	// if pos is not contiguous to existing text, make it
-	pos = qBound(BufStartOfBuffer(), pos, BufEndOfBuffer());
+	pos = std::clamp(pos, BufStartOfBuffer(), BufEndOfBuffer());
 
 	// Even if nothing is deleted, we must call these callbacks
 	callPreDeleteCBs(pos, 0);
@@ -2235,8 +2236,8 @@ void BasicTextBuffer<Ch, Tr>::sanitizeRange(TextCursor &start, TextCursor &end) 
 	TextCursor first = BufStartOfBuffer();
 	TextCursor last  = BufEndOfBuffer();
 
-	start = qBound(first, start, last);
-	end   = qBound(first, end, last);
+	start = std::clamp(start, first, last);
+	end   = std::clamp(end, first, last);
 }
 
 #endif

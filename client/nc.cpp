@@ -16,11 +16,13 @@
 #include <QString>
 #include <QThread>
 
+#include <algorithm>
 #include <chrono>
-#include <gsl/gsl_util>
 #include <iostream>
 #include <memory>
 #include <optional>
+
+#include <gsl/gsl_util>
 
 namespace {
 
@@ -450,7 +452,7 @@ int main(int argc, char *argv[]) {
 
 	/* Make sure that the time out unit is at least 1 second and not too
 	   large either (overflow!). */
-	ServerPreferences.timeOut = qBound(1, ServerPreferences.timeOut, 1000);
+	ServerPreferences.timeOut = std::clamp(ServerPreferences.timeOut, 1, 1000);
 
 	/* For Clearcase users who have not set a server name, use the clearcase
 	   view name.  Clearcase views make files with the same absolute path names

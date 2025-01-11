@@ -24,6 +24,7 @@
 #include "interpret.h"
 #include "parse.h"
 
+#include <algorithm>
 #include <fstream>
 #include <optional>
 #include <stack>
@@ -1737,8 +1738,8 @@ std::error_code getRangeMS(DocumentWidget *document, Arguments arguments, DataVa
 		return ec;
 	}
 
-	from = qBound<int64_t>(0, from, buf->length());
-	to   = qBound<int64_t>(0, to, buf->length());
+	from = std::clamp<int64_t>(from, 0, buf->length());
+	to   = std::clamp<int64_t>(to, 0, buf->length());
 
 	if (from > to) {
 		std::swap(from, to);
@@ -1764,7 +1765,7 @@ std::error_code getCharacterMS(DocumentWidget *document, Arguments arguments, Da
 		return ec;
 	}
 
-	pos = qBound<int64_t>(0, pos, buf->length());
+	pos = std::clamp<int64_t>(pos, 0, buf->length());
 
 	// Return the character in a pre-allocated string)
 	std::string str(1, buf->BufGetCharacter(TextCursor(pos)));
@@ -1791,8 +1792,8 @@ std::error_code replaceRangeMS(DocumentWidget *document, Arguments arguments, Da
 		return ec;
 	}
 
-	from = qBound<int64_t>(0, from, buf->length());
-	to   = qBound<int64_t>(0, to, buf->length());
+	from = std::clamp<int64_t>(from, 0, buf->length());
+	to   = std::clamp<int64_t>(to, 0, buf->length());
 
 	if (from > to) {
 		std::swap(from, to);
@@ -1907,8 +1908,8 @@ std::error_code replaceSubstringMS(DocumentWidget *document, Arguments arguments
 
 	const int length = string.size();
 
-	from = qBound(0, from, length);
-	to   = qBound(0, to, length);
+	from = std::clamp(from, 0, length);
+	to   = std::clamp(to, 0, length);
 
 	if (from > to) {
 		std::swap(from, to);
@@ -2360,8 +2361,8 @@ std::error_code selectMS(DocumentWidget *document, Arguments arguments, DataValu
 		std::swap(start, end);
 	}
 
-	start = qBound<int64_t>(0, start, document->buffer()->length());
-	end   = qBound<int64_t>(0, end, document->buffer()->length());
+	start = std::clamp<int64_t>(start, 0, document->buffer()->length());
+	end   = std::clamp<int64_t>(end, 0, document->buffer()->length());
 
 	// Make the selection
 	document->buffer()->BufSelect(TextCursor(start), TextCursor(end));
@@ -3051,7 +3052,7 @@ std::error_code stringCompareMS(DocumentWidget *document, Arguments arguments, D
 		compareResult = leftStr.compare(rightStr, Qt::CaseInsensitive);
 	}
 
-	compareResult = qBound(-1, compareResult, 1);
+	compareResult = std::clamp(compareResult, -1, 1);
 
 	*result = make_value(compareResult);
 	return MacroErrorCode::Success;
@@ -3944,8 +3945,8 @@ std::error_code rangesetAddMS(DocumentWidget *document, Arguments arguments, Dat
 
 		// make sure range is in order and fits buffer size
 		const auto maxpos = TextCursor(buffer->length());
-		start             = qBound(TextCursor(), start, maxpos);
-		end               = qBound(TextCursor(), end, maxpos);
+		start             = std::clamp(start, TextCursor(), maxpos);
+		end               = std::clamp(end, TextCursor(), maxpos);
 
 		if (start > end) {
 			std::swap(start, end);
@@ -4043,8 +4044,8 @@ std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments arguments
 
 		// make sure range is in order and fits buffer size
 		const int64_t maxpos = buffer->length();
-		start                = qBound<int64_t>(0, start, maxpos);
-		end                  = qBound<int64_t>(0, end, maxpos);
+		start                = std::clamp<int64_t>(start, 0, maxpos);
+		end                  = std::clamp<int64_t>(end, 0, maxpos);
 
 		if (start > end) {
 			std::swap(start, end);

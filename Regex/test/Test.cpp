@@ -737,13 +737,13 @@ int main() {
 			}
 
 			if (bytes != t.output) {
-				std::cerr << "ERROR    : " << t.input.to_string() << '\n';
-				std::cerr << "EXPECTED : " << t.output.to_string() << '\n';
+				std::cerr << "ERROR    : " << t.input << '\n';
+				std::cerr << "EXPECTED : " << t.output << '\n';
 				std::cerr << "GOT      : " << bytes << std::endl;
 				return -1;
 			}
 		} catch (...) {
-			std::cerr << "EXCEPTION: " << t.input.to_string() << '\n';
+			std::cerr << "EXCEPTION: " << t.input << '\n';
 			return -1;
 		}
 	}
@@ -786,7 +786,7 @@ int main() {
 			Regex re(t.input, RE_DEFAULT_STANDARD);
 			decompileRegex(re);
 		} catch (...) {
-			std::cerr << "EXCEPTION: " << t.input.to_string() << '\n';
+			std::cerr << "EXCEPTION: " << t.input << '\n';
 			return -1;
 		}
 	}
