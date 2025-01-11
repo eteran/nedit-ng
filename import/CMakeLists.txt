@@ -31,7 +31,7 @@ target_include_directories(nedit-import PRIVATE
 
 target_add_warnings(nedit-import)
 
-set_property(TARGET nedit-import PROPERTY CXX_STANDARD ${TARGET_COMPILER_HIGHEST_STD_SUPPORTED})
+set_property(TARGET nedit-import PROPERTY CXX_STANDARD 17)
 set_property(TARGET nedit-import PROPERTY CXX_EXTENSIONS OFF)
 set_property(TARGET nedit-import PROPERTY RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
