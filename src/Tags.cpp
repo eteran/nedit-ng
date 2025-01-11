@@ -846,9 +846,9 @@ bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMod
 
 		QString pathName;
 		if (!windowPath.isEmpty()) {
-			pathName = tr("%1/%2").arg(windowPath, filename);
+			pathName = QStringLiteral("%1/%2").arg(windowPath, filename);
 		} else {
-			pathName = tr("%1/%2").arg(QDir::currentPath(), filename);
+			pathName = QStringLiteral("%1/%2").arg(QDir::currentPath(), filename);
 		}
 
 		pathName = NormalizePathname(pathName);
@@ -916,7 +916,7 @@ bool addTagsFile(const QString &tagSpec, SearchMode mode) {
 
 		QString pathName;
 		if (!QFileInfo(filename).isAbsolute()) {
-			pathName = tr("%1/%2").arg(QDir::currentPath(), filename);
+			pathName = QStringLiteral("%1/%2").arg(QDir::currentPath(), filename);
 		} else {
 			pathName = filename;
 		}
@@ -989,7 +989,7 @@ bool deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload) 
 
 		QString pathName;
 		if (!QFileInfo(filename).isAbsolute()) {
-			pathName = tr("%1/%2").arg(QDir::currentPath(), filename);
+			pathName = QStringLiteral("%1/%2").arg(QDir::currentPath(), filename);
 		} else {
 			pathName = filename;
 		}
