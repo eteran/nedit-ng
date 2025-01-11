@@ -1833,7 +1833,12 @@ void BasicTextBuffer<Ch, Tr>::insertColInLine(view_type line, view_type insLine,
 	indent           = toIndent;
 
 	// realign tabs for text beyond "column" and write it out
-	string_type retabbedStr = realignTabs(substr(linePtr, line.end()), postColIndent, indent, tabDist, useTabs);
+	string_type retabbedStr = realignTabs(
+		line.substr(linePtr - line.begin()),
+		postColIndent,
+		indent,
+		tabDist,
+		useTabs);
 
 	*endOffset = static_cast<int64_t>(outStr->size());
 
@@ -1893,7 +1898,12 @@ void BasicTextBuffer<Ch, Tr>::deleteRectFromLine(view_type line, int64_t rectSta
 	/* Copy the rest of the line.  If the indentation has changed, preserve
 	   the position of non-whitespace characters by converting tabs to
 	   spaces, then back to tabs with the correct offset */
-	string_type retabbedStr = realignTabs(substr(c, line.end()), postRectIndent, indent, tabDist, useTabs);
+	string_type retabbedStr = realignTabs(
+		line.substr(c - line.begin()),
+		postRectIndent,
+		indent,
+		tabDist,
+		useTabs);
 
 	*endOffset = static_cast<int64_t>(outStr->size());
 

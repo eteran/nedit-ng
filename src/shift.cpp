@@ -438,7 +438,7 @@ std::string shiftLineLeft(std::string_view line, int64_t lineLen, int tabDist, i
 	}
 }
 
-QString shiftLineRight(const QString &line, int64_t lineLen, int tabsAllowed, int tabDist, int nChars) {
+QString shiftLineRight(const QString &line, int64_t lineLen, bool tabsAllowed, int tabDist, int nChars) {
 	int whiteWidth;
 	int i;
 
@@ -487,7 +487,7 @@ QString shiftLineRight(const QString &line, int64_t lineLen, int tabsAllowed, in
 	}
 }
 
-std::string shiftLineRight(std::string_view line, int64_t lineLen, int tabsAllowed, int tabDist, int nChars) {
+std::string shiftLineRight(std::string_view line, int64_t lineLen, bool tabsAllowed, int tabDist, int nChars) {
 	int whiteWidth;
 
 	auto lineInPtr = line.begin();
@@ -535,7 +535,7 @@ std::string shiftLineRight(std::string_view line, int64_t lineLen, int tabsAllow
 	}
 }
 
-std::string shiftText(std::string_view text, ShiftDirection direction, int tabsAllowed, int tabDist, int nChars) {
+std::string shiftText(std::string_view text, ShiftDirection direction, bool tabsAllowed, int tabDist, int nChars) {
 	size_t bufLen;
 
 	/*
@@ -563,7 +563,7 @@ std::string shiftText(std::string_view text, ShiftDirection direction, int tabsA
 	while (true) {
 		if (textPtr == text.end() || *textPtr == '\n') {
 
-			auto segment = substr(lineStartPtr, text.end());
+			auto segment = text.substr(gsl::narrow<size_t>(lineStartPtr - text.data()));
 
 			std::string shiftedLineString = (direction == ShiftDirection::Right)
 												? shiftLineRight(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars)
