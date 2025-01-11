@@ -1154,8 +1154,6 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 	const QByteArray delimitersString = ctx->delimiters.toLatin1();
 	const char *delimitersPtr         = ctx->delimiters.isNull() ? nullptr : delimitersString.data();
 
-	const char *end_ptr = ctx->text.data() + ctx->text.size();
-
 	while (subPatternRE->ExecRE(
 		stringPtr,
 		string_ptr + length + 1,
