@@ -6,11 +6,11 @@
 namespace {
 
 struct Test {
-	view::string_view input;
-	view::string_view output;
+	std::string_view input;
+	std::string_view output;
 };
 
-int test_regex_match(view::string_view regex, view::string_view input) {
+int test_regex_match(std::string_view regex, std::string_view input) {
 	Regex re(regex, RE_DEFAULT_STANDARD);
 
 	if (re.execute(input)) {

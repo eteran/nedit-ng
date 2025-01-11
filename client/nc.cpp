@@ -16,11 +16,11 @@
 #include <QString>
 #include <QThread>
 
-#include <optional>
 #include <chrono>
 #include <gsl/gsl_util>
 #include <iostream>
 #include <memory>
+#include <optional>
 
 namespace {
 

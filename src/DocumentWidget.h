@@ -19,9 +19,9 @@
 #include "TextBufferFwd.h"
 #include "UndoInfo.h"
 #include "Util/FileFormats.h"
-#include "Util/string_view.h"
 #include "Verbosity.h"
 #include "WrapStyle.h"
+#include <string_view>
 
 #include "ui_DocumentWidget.h"
 
@@ -89,8 +89,8 @@ Q_SIGNALS:
 public:
 	void dragEndCallback(TextArea *area, const DragEndEvent *event);
 	void dragStartCallback(TextArea *area);
-	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText);
-	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, TextArea *area);
+	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText);
+	void modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, TextArea *area);
 	void movedCallback(TextArea *area);
 	void smartIndentCallback(TextArea *area, SmartIndentEvent *event);
 
@@ -252,7 +252,7 @@ private:
 	void addRedoItem(UndoInfo &&redo);
 	void addUndoItem(UndoInfo &&undo);
 	void addWrapNewlines();
-	void appendDeletedText(view::string_view deletedText, int64_t deletedLen, Direction direction);
+	void appendDeletedText(std::string_view deletedText, int64_t deletedLen, Direction direction);
 	void attachHighlightToWidget(TextArea *area);
 	void beginLearn();
 	void cancelLearning();
@@ -285,7 +285,7 @@ private:
 	void removeUndoItem();
 	void replay();
 	void revertToSaved();
-	void saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, view::string_view deletedText);
+	void saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, std::string_view deletedText);
 	void setModeMessage(const QString &message);
 	void setWindowModified(bool modified);
 	void trimUndoList(size_t maxLength);

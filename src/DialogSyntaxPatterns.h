@@ -8,8 +8,8 @@
 
 #include <QPointer>
 
-#include <optional>
 #include <memory>
+#include <optional>
 
 class HighlightPattern;
 class HighlightPatternModel;

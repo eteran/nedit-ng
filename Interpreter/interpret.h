@@ -3,7 +3,7 @@
 #define INTERPRET_H_
 
 #include "DataValue.h"
-#include "Util/string_view.h"
+#include <string_view>
 
 #include <gsl/span>
 
@@ -144,13 +144,13 @@ bool AddSym(Symbol *sym, QString *msg);
 Inst *GetPC();
 Program *FinishCreatingProgram();
 Symbol *InstallIteratorSymbol();
-Symbol *InstallStringConstSymbol(view::string_view str);
+Symbol *InstallStringConstSymbol(std::string_view str);
 Symbol *InstallStringConstSymbolEx(const QString &str);
 Symbol *InstallSymbol(const std::string &name, SymTypes type, const DataValue &value);
 Symbol *InstallSymbolEx(const QString &name, enum SymTypes type, const DataValue &value);
-Symbol *LookupStringConstSymbol(view::string_view value);
+Symbol *LookupStringConstSymbol(std::string_view value);
 Symbol *LookupSymbolEx(const QString &name);
-Symbol *LookupSymbol(view::string_view name);
+Symbol *LookupSymbol(std::string_view name);
 void BeginCreatingProgram();
 void FillLoopAddrs(const Inst *breakAddr, const Inst *continueAddr);
 void StartLoopAddrList();

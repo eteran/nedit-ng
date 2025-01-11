@@ -11,6 +11,7 @@
 #include "Settings.h"
 #include "TextBuffer.h"
 #include "Util/Input.h"
+#include "Util/Raise.h"
 #include "Util/Resource.h"
 #include "Util/algorithm.h"
 #include "WindowHighlightData.h"
@@ -1061,7 +1062,7 @@ std::vector<PatternSet> readDefaultPatternSets() {
 ** Note: This routine must be kept efficient.  It is called for every
 ** character typed.
 */
-void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
+void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, void *user) {
 
 	Q_UNUSED(nRestyled)
 	Q_UNUSED(deletedText)

@@ -596,7 +596,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			switch (GET_OP_CODE(scan)) {
 			case LAZY_STAR:
 				lazy = true;
-				NEDIT_FALLTHROUGH();
+				[[fallthrough]];
 			case STAR:
 				min = 0;
 				max = std::numeric_limits<uint32_t>::max();
@@ -604,7 +604,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 
 			case LAZY_PLUS:
 				lazy = true;
-				NEDIT_FALLTHROUGH();
+				[[fallthrough]];
 			case PLUS:
 				min = 1;
 				max = std::numeric_limits<uint32_t>::max();
@@ -612,7 +612,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 
 			case LAZY_QUESTION:
 				lazy = true;
-				NEDIT_FALLTHROUGH();
+				[[fallthrough]];
 			case QUESTION:
 				min = 0;
 				max = 1;
@@ -620,7 +620,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 
 			case LAZY_BRACE:
 				lazy = true;
-				NEDIT_FALLTHROUGH();
+				[[fallthrough]];
 			case BRACE:
 				min = static_cast<uint32_t>(GET_OFFSET(scan + NEXT_PTR_SIZE<size_t>));
 				max = static_cast<uint32_t>(GET_OFFSET(scan + (2 * NEXT_PTR_SIZE<size_t>)));

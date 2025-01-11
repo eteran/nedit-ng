@@ -9,7 +9,7 @@
 /*
 **  SubstituteRE - Perform substitutions after a 'Regex' match.
 */
-bool Regex::SubstituteRE(view::string_view source, std::string &dest) const {
+bool Regex::SubstituteRE(std::string_view source, std::string &dest) const {
 
 	constexpr auto InvalidParenNumber = static_cast<size_t>(-1);
 
@@ -73,8 +73,8 @@ bool Regex::SubstituteRE(view::string_view source, std::string &dest) const {
 				ch = '\\';
 			} else {
 				ch = *in++; // Allow any escape sequence (This is
-			}               // INCONSISTENT with the 'CompileRE'
-		}                   // mind set of issuing an error!
+			} // INCONSISTENT with the 'CompileRE'
+		} // mind set of issuing an error!
 
 		if (paren_no == InvalidParenNumber) { // Ordinary character.
 			*out++ = ch;

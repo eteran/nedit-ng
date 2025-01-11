@@ -3,7 +3,7 @@
 #define SMART_INDENT_EVENT_H_
 
 #include "TextCursor.h"
-#include "Util/string_view.h"
+#include <string_view>
 
 enum SmartIndentReason {
 	NEWLINE_INDENT_NEEDED,
@@ -14,7 +14,7 @@ struct SmartIndentEvent {
 	SmartIndentReason reason;
 	TextCursor pos;
 	int request;
-	view::string_view charsTyped;
+	std::string_view charsTyped;
 };
 
 #endif

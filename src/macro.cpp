@@ -24,8 +24,8 @@
 #include "interpret.h"
 #include "parse.h"
 
-#include <optional>
 #include <fstream>
+#include <optional>
 #include <stack>
 
 #include <QClipboard>
@@ -3122,7 +3122,7 @@ std::error_code splitMS(DocumentWidget *document, Arguments arguments, DataValue
 		int64_t elementEnd = found ? searchResult.start : strLength;
 		int64_t elementLen = elementEnd - lastEnd;
 
-		view::string_view str(
+		std::string_view str(
 			&sourceStr[static_cast<size_t>(lastEnd)],
 			static_cast<size_t>(elementLen));
 
@@ -3160,7 +3160,7 @@ std::error_code splitMS(DocumentWidget *document, Arguments arguments, DataValue
 			/* We skipped the last character to prevent an endless loop.
 			   Add it to the list. */
 			int64_t elementLen = strLength - lastEnd;
-			view::string_view str(&sourceStr[static_cast<size_t>(lastEnd)], static_cast<size_t>(elementLen));
+			std::string_view str(&sourceStr[static_cast<size_t>(lastEnd)], static_cast<size_t>(elementLen));
 
 			element = make_value(str);
 			if (!ArrayInsert(result, indexStr, &element)) {
@@ -3546,7 +3546,7 @@ std::error_code subscriptSepMV(DocumentWidget *document, Arguments arguments, Da
 	Q_UNUSED(document)
 	Q_UNUSED(arguments)
 
-	*result = make_value(view::string_view(ARRAY_DIM_SEP, 1));
+	*result = make_value(std::string_view(ARRAY_DIM_SEP, 1));
 	return MacroErrorCode::Success;
 }
 
@@ -5211,7 +5211,7 @@ void RegisterMacroSubroutines() {
 ** teaching other modules about macro return globals, since other than this,
 ** they're not used outside of macro.c)
 */
-void returnShellCommandOutput(DocumentWidget *document, view::string_view outText, int status) {
+void returnShellCommandOutput(DocumentWidget *document, std::string_view outText, int status) {
 
 	if (const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_) {
 

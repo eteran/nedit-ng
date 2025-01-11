@@ -11,6 +11,7 @@
 #include "Theme.h"
 #include "Util/ClearCase.h"
 #include "Util/Input.h"
+#include "Util/Raise.h"
 #include "Util/Resource.h"
 #include "Util/User.h"
 #include "Util/algorithm.h"
@@ -27,7 +28,6 @@
 #include <QSettings>
 #include <QString>
 #include <QtDebug>
-
 
 namespace Preferences {
 namespace {

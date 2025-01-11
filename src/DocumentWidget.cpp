@@ -26,6 +26,7 @@
 #include "Util/ClearCase.h"
 #include "Util/FileSystem.h"
 #include "Util/Input.h"
+#include "Util/Raise.h"
 #include "Util/User.h"
 #include "Util/regex.h"
 #include "Util/utils.h"
@@ -159,7 +160,7 @@ QString errorString(int error) {
  * @param deletedText
  * @param user
  */
-void modifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, void *user) {
+void modifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, void *user) {
 	if (auto document = static_cast<DocumentWidget *>(user)) {
 		document->modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText);
 	}
@@ -231,7 +232,7 @@ void handleUnparsedRegionCB(const TextArea *area, TextCursor pos, const void *us
 */
 // TODO(eteran): I think the bufReplaceEx function already sanitizes its input,
 //               so it's possible that this function is redundant.
-void safeBufReplace(TextBuffer *buf, TextCursor *start, TextCursor *end, view::string_view text) {
+void safeBufReplace(TextBuffer *buf, TextCursor *start, TextCursor *end, std::string_view text) {
 
 	const TextCursor last = buf->BufEndOfBuffer();
 
@@ -981,7 +982,7 @@ void DocumentWidget::updateMarkTable(TextCursor pos, int64_t nInserted, int64_t 
  * @param deletedText
  * @param area
  */
-void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText, TextArea *area) {
+void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, TextArea *area) {
 	Q_UNUSED(nRestyled)
 
 	// number of distinct chars the user can type before NEdit gens. new backup file
@@ -1057,7 +1058,7 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
  * @param nRestyled
  * @param deletedText
  */
-void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, view::string_view deletedText) {
+void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText) {
 	modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText, nullptr);
 }
 
@@ -1573,7 +1574,7 @@ void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<M
 ** Note: This routine must be kept efficient.  It is called for every
 **       character typed.
 */
-void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, view::string_view deletedText) {
+void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, std::string_view deletedText) {
 
 	const int isUndo = (!info_->undo.empty() && info_->undo.front().inUndo);
 	const int isRedo = (!info_->redo.empty() && info_->redo.front().inUndo);
@@ -1643,7 +1644,7 @@ void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int6
 
 	// if text was deleted, save it
 	if (nDeleted > 0) {
-		undo.oldText = deletedText.to_string();
+		undo.oldText = std::string(deletedText);
 	}
 
 	// increment the operation count for the autosave feature
@@ -1702,7 +1703,7 @@ void DocumentWidget::clearRedoList() {
 ** for continuing of a string of one character deletes or replaces, but will
 ** work with more than one character.
 */
-void DocumentWidget::appendDeletedText(view::string_view deletedText, int64_t deletedLen, Direction direction) {
+void DocumentWidget::appendDeletedText(std::string_view deletedText, int64_t deletedLen, Direction direction) {
 	UndoInfo &undo = info_->undo.front();
 
 	// re-allocate, adding space for the new character(s)
@@ -2247,7 +2248,7 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 		nRead += offset;
 
 		// check for on-disk file format changes, but only for the first chunk
-		if (bufPos == 0 && info_->fileFormat != FormatOfFile(view::string_view(fileString, static_cast<size_t>(nRead)))) {
+		if (bufPos == 0 && info_->fileFormat != FormatOfFile(std::string_view(fileString, static_cast<size_t>(nRead)))) {
 			return true;
 		}
 
@@ -2982,7 +2983,7 @@ void DocumentWidget::closeDocument() {
 
 		// clear the buffer, but ignore changes
 		info_->ignoreModify = true;
-		info_->buffer->BufSetAll(view::string_view());
+		info_->buffer->BufSetAll(std::string_view());
 		info_->ignoreModify = false;
 
 		info_->filenameSet = false;

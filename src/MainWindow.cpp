@@ -6283,7 +6283,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 	}
 
 	// get the entire text buffer from the text area widget
-	view::string_view fileString = buffer->BufAsString();
+	std::string_view fileString = buffer->BufAsString();
 
 	/* If we're already outside the boundaries, we must consider wrapping
 	   immediately (Note: fileEnd+1 is a valid starting position. Consider
@@ -7138,7 +7138,7 @@ bool MainWindow::replaceAll(DocumentWidget *document, TextArea *area, const QStr
 	TextBuffer *buffer = document->buffer();
 
 	// view the entire text buffer from the text area widget as a string
-	view::string_view fileString = buffer->BufAsString();
+	std::string_view fileString = buffer->BufAsString();
 
 	QString delimiters = document->getWindowDelimiters();
 

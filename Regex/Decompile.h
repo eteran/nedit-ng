@@ -3,8 +3,8 @@
 #define DECOMPILE_H_
 
 #include "Opcodes.h"
-#include <variant>
 #include <string>
+#include <variant>
 #include <vector>
 class Regex;
 
