@@ -8,17 +8,10 @@ on:
 
 env:
   BUILD_TYPE: Release
-  BOOST_URL: 'https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_87_0.tar.gz'
-  BOOST_TGZ: 'boost_1_87_0.tar.gz'
-  BOOST_PATH: 'D:/boost_1_87_0'
-
 jobs:
   build_ubuntu_20:
     runs-on: ubuntu-20.04
     steps:
-      - name: Install Dependencies
-        run: sudo apt-get install -y libboost-dev
-
       - name: Install Qt
         uses: jurplel/install-qt-action@v3
         with:
@@ -45,23 +38,6 @@ jobs:
           version: "5.12.8"
           setup-python: 'false'
 
-      - name: Cache Boost
-        id: cache-boost
-        uses: actions/cache@v4
-        with:
-          path: ${{env.BOOST_PATH}}
-          key: win64-boost
-
-      - name: Install Boost
-        if: steps.cache-boost.outputs.cache-hit != 'true'
-        run: |
-          Invoke-WebRequest `
-              "${{ env.BOOST_URL }}" `
-              -OutFile "${{ env.BOOST_TGZ }}" `
-              -UserAgent "''"
-          tar xzf ${{ env.BOOST_TGZ }} -C D:/
-          rm ${{ env.BOOST_TGZ }}
-
       - name: Add msbuild to PATH
         uses: microsoft/setup-msbuild@v2
 
@@ -73,8 +49,6 @@ jobs:
       - name: Configure
         run: |
           cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -G"Visual Studio 17 2022"
-        env:
-          BOOST_ROOT: "${{env.BOOST_PATH}}"
 
       - name: Build
         run:

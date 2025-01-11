@@ -5,7 +5,7 @@
 #include "string_view.h"
 #include <QString>
 #include <QtGlobal>
-#include <boost/optional.hpp>
+#include <optional>
 #include <string>
 
 enum class FileFormats : int;

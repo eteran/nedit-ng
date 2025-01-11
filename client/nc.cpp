@@ -16,7 +16,7 @@
 #include <QString>
 #include <QThread>
 
-#include <boost/optional.hpp>
+#include <optional>
 #include <chrono>
 #include <gsl/gsl_util>
 #include <iostream>
@@ -153,7 +153,7 @@ void printNcVersion() {
  * Converts command line into a command string suitable for passing to the
  * server
  */
-boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
+std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 
 	CommandLine commandLine;
 	QString toDoCommand;
@@ -348,7 +348,7 @@ boost::optional<CommandLine> parseCommandLine(const QStringList &args) {
 CommandLine processCommandLine(const QStringList &args) {
 
 	// Convert command line arguments into a command string for the server
-	if (boost::optional<CommandLine> commandLine = parseCommandLine(args)) {
+	if (std::optional<CommandLine> commandLine = parseCommandLine(args)) {
 		return *commandLine;
 	}
 

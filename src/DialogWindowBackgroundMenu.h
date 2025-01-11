@@ -6,7 +6,7 @@
 #include "Verbosity.h"
 #include "ui_DialogWindowBackgroundMenu.h"
 
-#include <boost/optional.hpp>
+#include <optional>
 
 struct MenuItem;
 class MenuItemModel;
@@ -45,7 +45,7 @@ private:
 	bool checkMacroText(const QString &macro, Verbosity verbosity);
 	bool updateCurrentItem();
 	bool updateCurrentItem(const QModelIndex &index);
-	boost::optional<MenuItem> readFields(Verbosity verbosity);
+	std::optional<MenuItem> readFields(Verbosity verbosity);
 
 private:
 	Ui::DialogWindowBackgroundMenu ui;

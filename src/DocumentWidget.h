@@ -31,7 +31,7 @@
 
 #include <gsl/span>
 
-#include <boost/optional.hpp>
+#include <optional>
 
 #include <sys/stat.h>
 
@@ -242,7 +242,7 @@ private:
 	bool saveDocumentAs(const QString &newName, bool addWrap);
 	bool writeBackupFile();
 	bool writeBckVersion();
-	boost::optional<TextCursor> findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit);
+	std::optional<TextCursor> findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit);
 	int findAllMatches(TextArea *area, const QString &string);
 	size_t matchLanguageMode() const;
 	std::unique_ptr<HighlightData[]> compilePatterns(const std::vector<HighlightPattern> &patternSrc, Verbosity verbosity = Verbosity::Silent);

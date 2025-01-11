@@ -7,7 +7,7 @@
 #include "Util/QtHelper.h"
 #include "Util/string_view.h"
 
-#include <boost/optional.hpp>
+#include <optional>
 #include <memory>
 #include <vector>
 
@@ -64,7 +64,7 @@ QString BgColorOfNamedStyle(const QString &styleName);
 QString FgColorOfNamedStyle(const QString &styleName);
 QString WriteHighlightString();
 size_t IndexOfNamedStyle(const QString &styleName);
-boost::optional<PatternSet> readDefaultPatternSet(const QString &langModeName);
+std::optional<PatternSet> readDefaultPatternSet(const QString &langModeName);
 TextCursor backwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos);
 TextCursor forwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos);
 void RenameHighlightPattern(const QString &oldName, const QString &newName);

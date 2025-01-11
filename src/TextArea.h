@@ -24,7 +24,7 @@
 #include <memory>
 #include <vector>
 
-#include <boost/optional.hpp>
+#include <optional>
 
 class CallTipWidget;
 class TextArea;
@@ -197,7 +197,7 @@ private Q_SLOTS:
 	void secondaryStartAP(QMouseEvent *event, TextArea::EventFlags flags = NoneFlag);
 
 public:
-	boost::optional<Location> positionToLineAndCol(TextCursor pos) const;
+	std::optional<Location> positionToLineAndCol(TextCursor pos) const;
 	DocumentWidget *document() const;
 	int fixedFontHeight() const;
 	int fixedFontWidth() const;
@@ -287,8 +287,8 @@ private:
 	bool visibleLineContainsCursor(int visLine, TextCursor cursor) const;
 	bool wrapLine(TextBuffer *buf, int64_t bufOffset, TextCursor lineStartPos, TextCursor lineEndPos, TextCursor limitPos, TextCursor *breakAt, int64_t *charsAdded);
 	bool wrapUsesCharacter(TextCursor lineEndPos) const;
-	boost::optional<TextCursor> spanBackward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const;
-	boost::optional<TextCursor> spanForward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const;
+	std::optional<TextCursor> spanBackward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const;
+	std::optional<TextCursor> spanForward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const;
 	int offsetWrappedColumn(int row, int column) const;
 	int offsetWrappedRow(int row) const;
 	int64_t preferredColumn(int *visLineNum, TextCursor *lineStartPos);

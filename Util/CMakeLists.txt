@@ -111,12 +111,13 @@ PUBLIC
 	GSL
 	Qt5::Core
 	Qt5::Network
-	Boost::boost
 )
 
 target_add_warnings(Util)
 
-set_property(TARGET Util PROPERTY CXX_STANDARD 17)
-set_property(TARGET Util PROPERTY CXX_EXTENSIONS OFF)
-
-
+set_target_properties(Util
+PROPERTIES
+	CXX_STANDARD 17
+	CXX_STANDARD_REQUIRED ON
+	CXX_EXTENSIONS OFF
+)

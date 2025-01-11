@@ -572,7 +572,7 @@ void BasicTextBuffer<Ch, Tr>::BufRectSelect(TextCursor start, TextCursor end, in
 }
 
 template <class Ch, class Tr>
-boost::optional<SelectionPos> BasicTextBuffer<Ch, Tr>::BufGetSelectionPos() const noexcept {
+std::optional<SelectionPos> BasicTextBuffer<Ch, Tr>::BufGetSelectionPos() const noexcept {
 	return primary.getSelectionPos();
 }
 
@@ -738,7 +738,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufEndOfBuffer() const noexcept {
 template <class Ch, class Tr>
 TextCursor BasicTextBuffer<Ch, Tr>::BufStartOfLine(TextCursor pos) const noexcept {
 
-	boost::optional<TextCursor> startPos = searchBackward(pos, Ch('\n'));
+	std::optional<TextCursor> startPos = searchBackward(pos, Ch('\n'));
 	if (!startPos) {
 		return {};
 	}
@@ -754,7 +754,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufStartOfLine(TextCursor pos) const noexcep
 template <class Ch, class Tr>
 TextCursor BasicTextBuffer<Ch, Tr>::BufEndOfLine(TextCursor pos) const noexcept {
 
-	boost::optional<TextCursor> endPos = searchForward(pos, Ch('\n'));
+	std::optional<TextCursor> endPos = searchForward(pos, Ch('\n'));
 	if (!endPos) {
 		return BufEndOfBuffer();
 	}
@@ -994,7 +994,7 @@ TextCursor BasicTextBuffer<Ch, Tr>::BufCountBackwardNLines(TextCursor startPos, 
 ** with the character at "startPos", and returning the result
 */
 template <class Ch, class Tr>
-boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor startPos, view_type searchChars) const noexcept {
+std::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor startPos, view_type searchChars) const noexcept {
 
 	TextCursor pos = startPos;
 	TextCursor end = BufEndOfBuffer();
@@ -1012,7 +1012,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor st
 		++pos;
 	}
 
-	return boost::none;
+	return {};
 }
 
 /*
@@ -1020,12 +1020,12 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor st
 ** with the character BEFORE at "startPos"
 */
 template <class Ch, class Tr>
-boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor startPos, view_type searchChars) const noexcept {
+std::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor startPos, view_type searchChars) const noexcept {
 
 	const TextCursor start = BufStartOfBuffer();
 
 	if (startPos == start) {
-		return boost::none;
+		return {};
 	}
 
 	TextCursor pos = startPos - 1;
@@ -1047,7 +1047,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor s
 		--pos;
 	}
 
-	return boost::none;
+	return {};
 }
 
 /*
@@ -1108,7 +1108,7 @@ int64_t BasicTextBuffer<Ch, Tr>::insert(TextCursor pos, Ch ch) noexcept {
 ** count lines quickly, hence searching for a single character: newline)
 */
 template <class Ch, class Tr>
-boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor startPos, Ch searchChar) const noexcept {
+std::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor startPos, Ch searchChar) const noexcept {
 
 	TextCursor pos = startPos;
 	TextCursor end = BufEndOfBuffer();
@@ -1120,7 +1120,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor st
 		++pos;
 	}
 
-	return boost::none;
+	return {};
 }
 
 /*
@@ -1131,12 +1131,12 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchForward(TextCursor st
 ** count lines quickly, hence searching for a single character: newline)
 */
 template <class Ch, class Tr>
-boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor startPos, Ch searchChar) const noexcept {
+std::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor startPos, Ch searchChar) const noexcept {
 
 	TextCursor start = BufStartOfBuffer();
 
 	if (startPos == start) {
-		return boost::none;
+		return {};
 	}
 
 	TextCursor pos = startPos - 1;
@@ -1146,7 +1146,7 @@ boost::optional<TextCursor> BasicTextBuffer<Ch, Tr>::searchBackward(TextCursor s
 		}
 
 		if (pos == start) {
-			return boost::none;
+			return {};
 		}
 
 		--pos;
@@ -2159,9 +2159,9 @@ bool BasicTextBuffer<Ch, Tr>::Selection::getSelectionPos(TextCursor *start, Text
 }
 
 template <class Ch, class Tr>
-boost::optional<SelectionPos> BasicTextBuffer<Ch, Tr>::Selection::getSelectionPos() const {
+std::optional<SelectionPos> BasicTextBuffer<Ch, Tr>::Selection::getSelectionPos() const {
 	if (!selected_) {
-		return boost::none;
+		return {};
 	}
 
 	SelectionPos pos = {};

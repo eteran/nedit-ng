@@ -220,7 +220,7 @@ void DialogFind::buttonFind_clicked() {
 	}
 
 	// fetch find string, direction and type from the dialog
-	boost::optional<Fields> fields = readFields();
+	std::optional<Fields> fields = readFields();
 	if (!fields) {
 		return;
 	}
@@ -246,7 +246,7 @@ void DialogFind::buttonFind_clicked() {
 ** strings and search type from the Find dialog.  If the strings are ok,
 ** save a copy in the search history, and return the fields
 */
-boost::optional<DialogFind::Fields> DialogFind::readFields() {
+std::optional<DialogFind::Fields> DialogFind::readFields() {
 
 	Fields fields;
 
@@ -271,7 +271,7 @@ boost::optional<DialogFind::Fields> DialogFind::readFields() {
 				this,
 				tr("Regex Error"),
 				tr("Please re-specify the search string:\n%1").arg(QString::fromLatin1(e.what())));
-			return boost::none;
+			return {};
 		}
 	} else {
 		if (ui.checkCase->isChecked()) {

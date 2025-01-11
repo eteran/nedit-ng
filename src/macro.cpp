@@ -24,7 +24,7 @@
 #include "interpret.h"
 #include "parse.h"
 
-#include <boost/optional.hpp>
+#include <optional>
 #include <fstream>
 #include <stack>
 
@@ -177,7 +177,7 @@ std::string MacroErrorCategory::message(int ev) const {
  * @param firstFlag
  * @return The flags if all arguments were valid, otherwise, nothing
  */
-boost::optional<TextArea::EventFlags> flagsFromArguments(Arguments arguments, size_t firstFlag) {
+std::optional<TextArea::EventFlags> flagsFromArguments(Arguments arguments, size_t firstFlag) {
 
 	TextArea::EventFlags f = TextArea::NoneFlag;
 	for (size_t i = firstFlag; i < arguments.size(); ++i) {
@@ -215,7 +215,7 @@ boost::optional<TextArea::EventFlags> flagsFromArguments(Arguments arguments, si
 		} else if (s == "nobell") {
 			f |= TextArea::NoBellFlag;
 		} else {
-			return boost::none;
+			return {};
 		}
 	}
 
@@ -572,13 +572,13 @@ SearchType searchType(Arguments arguments, size_t index) {
  * @param error
  * @return
  */
-boost::optional<bool> toggle_or_bool(Arguments arguments, bool previous, std::error_code *error) {
+std::optional<bool> toggle_or_bool(Arguments arguments, bool previous, std::error_code *error) {
 	switch (arguments.size()) {
 	case 1: {
 		int next;
 		if (std::error_code ec = readArguments(arguments, 0, &next)) {
 			*error = ec;
-			return boost::none;
+			return {};
 		}
 		return next;
 	}
@@ -586,7 +586,7 @@ boost::optional<bool> toggle_or_bool(Arguments arguments, bool previous, std::er
 		return !previous;
 	default:
 		*error = MacroErrorCode::WrongNumberOfToggleArguments;
-		return boost::none;
+		return {};
 	}
 }
 
@@ -595,7 +595,7 @@ std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, D
 	document = MacroFocusDocument();
 
 	std::error_code ec;
-	if (boost::optional<bool> next = toggle_or_bool(arguments, (document->*Get)(), &ec)) {
+	if (std::optional<bool> next = toggle_or_bool(arguments, (document->*Get)(), &ec)) {
 		(document->*Set)(*next);
 		*result = make_value();
 		return MacroErrorCode::Success;
@@ -612,7 +612,7 @@ std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, D
 	Q_ASSERT(win);
 
 	std::error_code ec;
-	if (boost::optional<bool> next = toggle_or_bool(arguments, (win->*Get)(), &ec)) {
+	if (std::optional<bool> next = toggle_or_bool(arguments, (win->*Get)(), &ec)) {
 		(win->*Set)(*next);
 		*result = make_value();
 		return MacroErrorCode::Success;
@@ -624,7 +624,7 @@ std::error_code menuToggleEvent(DocumentWidget *document, Arguments arguments, D
 template <void (TextArea::*Func)(TextArea::EventFlags)>
 std::error_code textEvent(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	boost::optional<TextArea::EventFlags> flags = flagsFromArguments(arguments, 0);
+	std::optional<TextArea::EventFlags> flags = flagsFromArguments(arguments, 0);
 	if (!flags) {
 		return MacroErrorCode::InvalidArgument;
 	}
@@ -651,7 +651,7 @@ std::error_code textEventArg(DocumentWidget *document, Arguments arguments, Data
 		return ec;
 	}
 
-	boost::optional<TextArea::EventFlags> flags = flagsFromArguments(arguments, 1);
+	std::optional<TextArea::EventFlags> flags = flagsFromArguments(arguments, 1);
 	if (!flags) {
 		return MacroErrorCode::InvalidArgument;
 	}
@@ -2300,7 +2300,7 @@ std::error_code replaceInStringMS(DocumentWidget *document, Arguments arguments,
 	}
 
 	// Do the replace
-	boost::optional<std::string> replacedStr = Search::ReplaceAllInString(
+	std::optional<std::string> replacedStr = Search::ReplaceAllInString(
 		string,
 		searchStr,
 		replaceStr,
@@ -3270,7 +3270,7 @@ std::error_code lineMV(DocumentWidget *document, Arguments arguments, DataValue 
 	TextArea *area       = MainWindow::fromDocument(document)->lastFocus();
 	TextCursor cursorPos = area->cursorPos();
 
-	if (const boost::optional<Location> loc = area->positionToLineAndCol(cursorPos)) {
+	if (const std::optional<Location> loc = area->positionToLineAndCol(cursorPos)) {
 		*result = make_value(loc->line);
 	} else {
 		*result = make_value(buf->BufCountLines(buf->BufStartOfBuffer(), cursorPos) + 1);
@@ -4177,7 +4177,7 @@ std::error_code rangesetRangeMS(DocumentWidget *document, Arguments arguments, D
 	QT_WARNING_PUSH
 	QT_WARNING_DISABLE_GCC("-Wmaybe-uninitialized") // NOTE(eteran): GCC 7+ false positive
 
-	boost::optional<TextRange> range;
+	std::optional<TextRange> range;
 
 	if (Rangeset *rangeset = rangesetTable->RangesetFetch(label)) {
 		if (arguments.size() == 1) {

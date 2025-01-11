@@ -25,7 +25,9 @@ PUBLIC
 
 target_add_warnings(Settings)
 
-set_property(TARGET Settings PROPERTY CXX_STANDARD 17)
-set_property(TARGET Settings PROPERTY CXX_EXTENSIONS OFF)
-
-
+set_target_properties(Settings
+PROPERTIES
+	CXX_STANDARD 17
+	CXX_STANDARD_REQUIRED ON
+	CXX_EXTENSIONS OFF
+)

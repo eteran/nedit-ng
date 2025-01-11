@@ -6,7 +6,7 @@
 #include "TextCursor.h"
 #include "TextRange.h"
 #include <QColor>
-#include <boost/optional.hpp>
+#include <optional>
 #include <vector>
 
 // NOTE(eteran): a bit of an artificial limit, but we'll keep it for now
@@ -44,8 +44,8 @@ public:
 	RangesetInfo RangesetGetInfo() const;
 
 public:
-	boost::optional<TextRange> RangesetFindRangeNo(int index) const;
-	boost::optional<TextRange> RangesetSpan() const;
+	std::optional<TextRange> RangesetFindRangeNo(int index) const;
+	std::optional<TextRange> RangesetSpan() const;
 
 public:
 	int64_t RangesetCheckRangeOfPos(TextCursor pos);

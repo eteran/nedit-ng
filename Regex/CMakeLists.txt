@@ -41,8 +41,12 @@ target_link_libraries(Regex PUBLIC
 
 target_add_warnings(Regex)
 
-set_property(TARGET Regex PROPERTY CXX_STANDARD 17)
-set_property(TARGET Regex PROPERTY CXX_EXTENSIONS OFF)
+set_target_properties(Regex
+PROPERTIES
+	CXX_STANDARD 17
+	CXX_STANDARD_REQUIRED ON
+	CXX_EXTENSIONS OFF
+)
 
 if(NEDIT_BUILD_TESTS)
 	if(NOT MSVC)

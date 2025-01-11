@@ -886,7 +886,7 @@ size_t DocumentWidget::matchLanguageMode() const {
 		for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
 			if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {
 
-				boost::optional<Search::Result> searchResult = Search::SearchString(
+				std::optional<Search::Result> searchResult = Search::SearchString(
 					first200,
 					Preferences::LanguageModes[i].recognitionExpr,
 					Direction::Forward,
@@ -3660,7 +3660,7 @@ void DocumentWidget::includeFile(const QString &name) {
 	}
 }
 
-boost::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit) {
+std::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit) {
 
 	Style style;
 	bool matchSyntaxBased = info_->matchSyntaxBased;
@@ -3676,7 +3676,7 @@ boost::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style
 	});
 
 	if (matchIt == std::end(MatchingChars)) {
-		return boost::none;
+		return {};
 	}
 
 	const char matchChar      = matchIt->match;
@@ -3746,7 +3746,7 @@ boost::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style
 		break;
 	}
 
-	return boost::none;
+	return {};
 }
 
 void DocumentWidget::gotoMatchingCharacter(TextArea *area, bool select) {
@@ -3776,7 +3776,7 @@ void DocumentWidget::gotoMatchingCharacter(TextArea *area, bool select) {
 	}
 
 	// Search for it in the buffer
-	boost::optional<TextCursor> matchPos = findMatchingChar(
+	std::optional<TextCursor> matchPos = findMatchingChar(
 		info_->buffer->BufGetCharacter(range.start),
 		getHighlightInfo(range.start),
 		range.start,
@@ -3952,7 +3952,7 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 	   for # in the shell command */
 	QString fullName = fullPath();
 
-	boost::optional<Location> loc = area->positionToLineAndCol(pos);
+	std::optional<Location> loc = area->positionToLineAndCol(pos);
 	if (!loc) {
 		loc = Location{-1, -1};
 	}
@@ -4447,7 +4447,7 @@ void DocumentWidget::gotoAP(TextArea *area, int64_t line, int64_t column) {
 	if (line == -1) {
 		position = area->cursorPos();
 
-		boost::optional<Location> loc = area->positionToLineAndCol(position);
+		std::optional<Location> loc = area->positionToLineAndCol(position);
 		if (!loc) {
 			return;
 		}
@@ -4905,7 +4905,7 @@ void DocumentWidget::execCursorLine(TextArea *area, CommandSource source) {
 
 	/* Substitute the current file name for % and the current line number
 	   for # in the shell command */
-	const boost::optional<Location> loc = area->positionToLineAndCol(pos);
+	const std::optional<Location> loc = area->positionToLineAndCol(pos);
 
 	auto substitutedCommand = escapeCommand(QString::fromStdString(cmdText), fullPath(), loc->line);
 
@@ -5006,7 +5006,7 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 	   for # in the shell command */
 	TextCursor pos = area->cursorPos();
 
-	const boost::optional<Location> loc = area->positionToLineAndCol(pos);
+	const std::optional<Location> loc = area->positionToLineAndCol(pos);
 
 	QString substitutedCommand = escapeCommand(command, fullPath(), loc ? loc->line : 0);
 
@@ -5501,7 +5501,7 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 	}
 
 	// do the search
-	boost::optional<TextCursor> matchPos = findMatchingChar(ch, style, searchPos, startPos, endPos);
+	std::optional<TextCursor> matchPos = findMatchingChar(ch, style, searchPos, startPos, endPos);
 	if (!matchPos) {
 		return;
 	}
