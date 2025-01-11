@@ -34,6 +34,7 @@ bool savePreferences();
 void importSettings(const QString &filename);
 
 // Paths
+QString configDirectory();
 QString configFile();
 QString historyFile();
 QString autoLoadMacroFile();
