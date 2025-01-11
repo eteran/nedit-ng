@@ -5,6 +5,7 @@
 #include "Util/utils.h"
 
 #include <algorithm>
+#include <iterator>
 
 /*
 **  SubstituteRE - Perform substitutions after a 'Regex' match.
