@@ -557,7 +557,7 @@ void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
  * text previously matched by another regex. *** IMPLEMENT LATER ***
  *--------------------------------------------------------------------*/
 template <ShortcutEscapeFlag Flags>
-uint8_t *back_ref(const char *ch, int *flag_param) {
+uint8_t *back_ref(std::string_view::iterator ch, int *flag_param) {
 
 	size_t c_offset           = 0;
 	const bool is_cross_regex = false;
