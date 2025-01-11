@@ -1154,6 +1154,8 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 	const QByteArray delimitersString = ctx->delimiters.toLatin1();
 	const char *delimitersPtr         = ctx->delimiters.isNull() ? nullptr : delimitersString.data();
 
+	const char *end_ptr = ctx->text.data() + ctx->text.size();
+
 	while (subPatternRE->ExecRE(
 		stringPtr,
 		string_ptr + length + 1,
@@ -1163,7 +1165,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 		delimitersPtr,
 		look_behind_to,
 		match_to,
-		ctx->text.end())) {
+		end_ptr)) {
 
 		/* Beware of the case where only one real branch exists, but that
 		   branch has sub-branches itself. In that case the top_branch refers
@@ -1201,7 +1203,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 									delimitersPtr,
 									look_behind_to,
 									match_to,
-									ctx->text.end())) {
+									end_ptr)) {
 								qCritical("NEdit: Internal error, failed to recover end match in parseString");
 								return false;
 							}
