@@ -248,13 +248,13 @@ bool DialogDrawingStyles::validateFields(Verbosity verbosity) {
  * @param mode
  * @return
  */
-boost::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosity) {
+std::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosity) {
 
 	HighlightStyle hs;
 
 	QString name = ui.editName->text().simplified();
 	if (name.isNull()) {
-		return boost::none;
+		return {};
 	}
 
 	hs.name = name;
@@ -265,13 +265,13 @@ boost::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbos
 								 tr("Please specify a name for the highlight style"));
 		}
 
-		return boost::none;
+		return {};
 	}
 
 	// read the color field
 	QString color = ui.editColorFG->text().simplified();
 	if (color.isEmpty()) {
-		return boost::none;
+		return {};
 	}
 
 	hs.color = color;
@@ -279,7 +279,7 @@ boost::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbos
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Style Color"), tr("Please specify a color for the highlight style"));
 		}
-		return boost::none;
+		return {};
 	}
 
 	// Verify that the color is a valid X color spec
@@ -288,7 +288,7 @@ boost::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbos
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X color specification: %1").arg(hs.color));
 		}
-		return boost::none;
+		return {};
 	}
 
 	// read the background color field - this may be empty
@@ -309,7 +309,7 @@ boost::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbos
 									 tr("Invalid X background color specification: %1").arg(hs.bgColor));
 			}
 
-			return boost::none;
+			return {};
 		}
 	}
 

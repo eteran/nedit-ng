@@ -13,7 +13,7 @@
 #include <QFileInfo>
 #include <QTextStream>
 
-#include <boost/optional.hpp>
+#include <optional>
 #include <memory>
 #include <yaml-cpp/yaml.h>
 
@@ -269,7 +269,7 @@ QString writeContextMenuYaml(const std::vector<MenuData> &menuItems) {
  * @param in
  * @param listType
  */
-boost::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
+std::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
 
 	struct ParseError {
 		std::string message;
@@ -370,7 +370,7 @@ boost::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
 
 			QString p = copyMacroToEnd(in);
 			if (p.isNull()) {
-				return boost::none;
+				return {};
 			}
 
 			cmdStr = p;
@@ -392,7 +392,7 @@ boost::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
 		return menuItem;
 	} catch (const ParseError &error) {
 		qWarning("NEdit: Parse error in user defined menu item, %s", error.message.c_str());
-		return boost::none;
+		return {};
 	}
 }
 
@@ -617,7 +617,7 @@ void loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 				return;
 			}
 
-			boost::optional<MenuItem> f = readMenuItem(in, listType);
+			std::optional<MenuItem> f = readMenuItem(in, listType);
 			if (!f) {
 				break;
 			}

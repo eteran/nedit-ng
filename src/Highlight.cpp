@@ -102,7 +102,7 @@ TextCursor lastModified(const Ptr &buffer) {
 */
 bool isDefaultPatternSet(const PatternSet &patternSet) {
 
-	boost::optional<PatternSet> defaultPatSet = readDefaultPatternSet(patternSet.languageMode);
+	std::optional<PatternSet> defaultPatSet = readDefaultPatternSet(patternSet.languageMode);
 	if (!defaultPatSet) {
 		return false;
 	}
@@ -791,14 +791,14 @@ bool readHighlightPattern(Input &in, QString *errMsg, HighlightPattern *pattern)
 ** structures, and a language mode name.  If unsuccessful, returns an empty
 ** vector message in "errMsg".
 */
-boost::optional<std::vector<HighlightPattern>> readHighlightPatterns(Input &in, QString *errMsg) {
+std::optional<std::vector<HighlightPattern>> readHighlightPatterns(Input &in, QString *errMsg) {
 	// skip over blank space
 	in.skipWhitespaceNL();
 
 	// look for initial brace
 	if (*in != QLatin1Char('{')) {
 		*errMsg = tr("pattern list must begin with \"{\"");
-		return boost::none;
+		return {};
 	}
 	++in;
 
@@ -809,7 +809,7 @@ boost::optional<std::vector<HighlightPattern>> readHighlightPatterns(Input &in, 
 		in.skipWhitespaceNL();
 		if (in.atEnd()) {
 			*errMsg = tr("end of pattern list not found");
-			return boost::none;
+			return {};
 		}
 
 		if (*in == QLatin1Char('}')) {
@@ -819,7 +819,7 @@ boost::optional<std::vector<HighlightPattern>> readHighlightPatterns(Input &in, 
 
 		HighlightPattern pat;
 		if (!readHighlightPattern(in, errMsg, &pat)) {
-			return boost::none;
+			return {};
 		}
 
 		ret.push_back(pat);
@@ -871,7 +871,7 @@ HighlightPattern readPatternYaml(const YAML::Node &patterns) {
  * @param it
  * @return
  */
-boost::optional<PatternSet> readPatternSetYaml(YAML::const_iterator it) {
+std::optional<PatternSet> readPatternSetYaml(YAML::const_iterator it) {
 	struct HighlightError {
 		QString message;
 	};
@@ -919,14 +919,14 @@ boost::optional<PatternSet> readPatternSetYaml(YAML::const_iterator it) {
 		qWarning("NEdit: %s", qPrintable(ex.message));
 	}
 
-	return boost::none;
+	return {};
 }
 
 /*
 ** Read in a pattern set character string, and advance *inPtr beyond it.
 ** Returns nullptr and outputs an error to stderr on failure.
 */
-boost::optional<PatternSet> readPatternSet(Input &in) {
+std::optional<PatternSet> readPatternSet(Input &in) {
 
 	struct HighlightError {
 		QString message;
@@ -954,7 +954,7 @@ boost::optional<PatternSet> readPatternSet(Input &in) {
 		/* look for "Default" keyword, and if it's there, return the default
 		   pattern set */
 		if (in.match(QLatin1String("Default"))) {
-			boost::optional<PatternSet> retPatSet = readDefaultPatternSet(patSet.languageMode);
+			std::optional<PatternSet> retPatSet = readDefaultPatternSet(patSet.languageMode);
 			if (!retPatSet) {
 				Raise<HighlightError>(tr("No default pattern set"));
 			}
@@ -976,7 +976,7 @@ boost::optional<PatternSet> readPatternSet(Input &in) {
 		}
 
 		// read pattern list
-		boost::optional<std::vector<HighlightPattern>> patterns = readHighlightPatterns(in, &errMsg);
+		std::optional<std::vector<HighlightPattern>> patterns = readHighlightPatterns(in, &errMsg);
 		if (!patterns) {
 			Raise<HighlightError>(errMsg);
 		}
@@ -993,7 +993,7 @@ boost::optional<PatternSet> readPatternSet(Input &in) {
 			tr("highlight pattern"),
 			error.message);
 
-		return boost::none;
+		return {};
 	}
 }
 
@@ -1031,7 +1031,7 @@ std::vector<PatternSet> readDefaultPatternSets() {
 
 	for (auto it = patternSets.begin(); it != patternSets.end(); ++it) {
 		// Read each pattern set, abort on error
-		if (boost::optional<PatternSet> patSet = readPatternSetYaml(it)) {
+		if (std::optional<PatternSet> patSet = readPatternSetYaml(it)) {
 			defaultPatterns.push_back(*patSet);
 		}
 	}
@@ -1466,7 +1466,7 @@ void LoadHighlightString(const QString &string) {
 
 		for (auto it = patternSets.begin(); it != patternSets.end(); ++it) {
 			// Read each pattern set, abort on error
-			boost::optional<PatternSet> patSet = readPatternSetYaml(it);
+			std::optional<PatternSet> patSet = readPatternSetYaml(it);
 			if (!patSet) {
 				break;
 			}
@@ -1482,7 +1482,7 @@ void LoadHighlightString(const QString &string) {
 		Q_FOREVER {
 
 			// Read each pattern set, abort on error
-			boost::optional<PatternSet> patSet = readPatternSet(in);
+			std::optional<PatternSet> patSet = readPatternSet(in);
 			if (!patSet) {
 				break;
 			}
@@ -1653,7 +1653,7 @@ PatternSet *FindPatternSet(const QString &languageMode) {
 ** Given a language mode name, determine if there is a default (built-in)
 ** pattern set available for that language mode, and if so, return it
 */
-boost::optional<PatternSet> readDefaultPatternSet(const QString &langModeName) {
+std::optional<PatternSet> readDefaultPatternSet(const QString &langModeName) {
 
 	static const std::vector<PatternSet> defaultPatternSets = readDefaultPatternSets();
 
@@ -1665,7 +1665,7 @@ boost::optional<PatternSet> readDefaultPatternSet(const QString &langModeName) {
 		return *it;
 	}
 
-	return boost::none;
+	return {};
 }
 
 /*

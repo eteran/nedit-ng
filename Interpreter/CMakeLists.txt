@@ -34,11 +34,13 @@ PUBLIC
 	Qt5::Core
 	Util
 	GSL
-PRIVATE
-	Boost::boost
 )
 
 target_add_warnings(Interpreter)
 
-set_property(TARGET Interpreter PROPERTY CXX_STANDARD ${TARGET_COMPILER_HIGHEST_STD_SUPPORTED})
-set_property(TARGET Interpreter PROPERTY CXX_EXTENSIONS OFF)
+set_target_properties(Interpreter
+PROPERTIES
+	CXX_STANDARD 17
+	CXX_STANDARD_REQUIRED ON
+	CXX_EXTENSIONS OFF
+)

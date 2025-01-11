@@ -15,7 +15,7 @@
 #include <memory>
 #include <string>
 
-#include <boost/optional.hpp>
+#include <optional>
 
 struct SelectionPos {
 	TextCursor start;
@@ -60,7 +60,7 @@ public:
 		friend class BasicTextBuffer;
 
 	public:
-		boost::optional<SelectionPos> getSelectionPos() const;
+		std::optional<SelectionPos> getSelectionPos() const;
 		bool getSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const;
 		bool inSelection(TextCursor pos, TextCursor lineStartPos, int64_t dispIndex) const;
 		bool rangeTouchesRectSel(TextCursor rangeStart, TextCursor rangeEnd) const;
@@ -108,13 +108,13 @@ public:
 	void BufSetSelectionUpdate(selection_update_callback_type fn);
 	bool BufGetEmptySelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
 	bool BufGetSelectionPos(TextCursor *start, TextCursor *end, bool *isRect, int64_t *rectStart, int64_t *rectEnd) const noexcept;
-	boost::optional<SelectionPos> BufGetSelectionPos() const noexcept;
+	std::optional<SelectionPos> BufGetSelectionPos() const noexcept;
 	bool BufGetSyncXSelection() const;
 	bool BufGetUseTabs() const noexcept;
 	bool BufIsEmpty() const noexcept;
 	bool BufSetSyncXSelection(bool sync);
-	boost::optional<TextCursor> searchBackward(TextCursor startPos, view_type searchChars) const noexcept;
-	boost::optional<TextCursor> searchForward(TextCursor startPos, view_type searchChars) const noexcept;
+	std::optional<TextCursor> searchBackward(TextCursor startPos, view_type searchChars) const noexcept;
+	std::optional<TextCursor> searchForward(TextCursor startPos, view_type searchChars) const noexcept;
 	Ch BufGetCharacter(TextCursor pos) const noexcept;
 	int64_t BufCountDispChars(TextCursor lineStartPos, TextCursor targetPos) const noexcept;
 	int64_t BufCountLines(TextCursor startPos, TextCursor endPos) const noexcept;
@@ -183,8 +183,8 @@ public:
 	bool GetSimpleSelection(TextRange *range) const noexcept;
 
 private:
-	boost::optional<TextCursor> searchBackward(TextCursor startPos, Ch searchChar) const noexcept;
-	boost::optional<TextCursor> searchForward(TextCursor startPos, Ch searchChar) const noexcept;
+	std::optional<TextCursor> searchBackward(TextCursor startPos, Ch searchChar) const noexcept;
+	std::optional<TextCursor> searchForward(TextCursor startPos, Ch searchChar) const noexcept;
 	int64_t insert(TextCursor pos, view_type text) noexcept;
 	int64_t insert(TextCursor pos, Ch ch) noexcept;
 	string_type getSelectionText(const Selection *sel) const;

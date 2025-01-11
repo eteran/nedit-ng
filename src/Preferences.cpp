@@ -79,7 +79,7 @@ QStringList readExtensionList(Input &in) {
 	return extensionList;
 }
 
-boost::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
+std::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 
 	struct ModeError {
 		QString message;
@@ -143,10 +143,10 @@ boost::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 		qWarning("NEdit: %s", qPrintable(ex.message));
 	}
 
-	return boost::none;
+	return {};
 }
 
-boost::optional<LanguageMode> readLanguageMode(Input &in) {
+std::optional<LanguageMode> readLanguageMode(Input &in) {
 
 	struct ModeError {
 		QString message;
@@ -283,7 +283,7 @@ boost::optional<LanguageMode> readLanguageMode(Input &in) {
 			error.message);
 	}
 
-	return boost::none;
+	return {};
 }
 
 void loadLanguageModesString(const QString &string) {
@@ -302,7 +302,7 @@ void loadLanguageModesString(const QString &string) {
 
 		for (YAML::Node language : languages) {
 
-			boost::optional<LanguageMode> lm = readLanguageModeYaml(language);
+			std::optional<LanguageMode> lm = readLanguageModeYaml(language);
 			if (!lm) {
 				break;
 			}
@@ -315,7 +315,7 @@ void loadLanguageModesString(const QString &string) {
 		Input in(&string);
 
 		Q_FOREVER {
-			boost::optional<LanguageMode> lm = readLanguageMode(in);
+			std::optional<LanguageMode> lm = readLanguageMode(in);
 			if (!lm) {
 				break;
 			}

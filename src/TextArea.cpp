@@ -728,7 +728,7 @@ void TextArea::beginningOfLine(EventFlags flags) {
 		if (smartHome_) {
 			// if the user presses home, go to the first non-whitespace character
 			// if they are already there, go to the actual beginning of the line
-			if (boost::optional<TextCursor> p = spanForward(buffer_, lineStart, " \t", false)) {
+			if (std::optional<TextCursor> p = spanForward(buffer_, lineStart, " \t", false)) {
 				if (p != insertPos) {
 					lineStart = *p;
 				}
@@ -2855,7 +2855,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	char *outPtr = buffer;
 	int x        = startX;
 	size_t charIndex;
-	boost::optional<int> cursorX;
+	std::optional<int> cursorX;
 
 	for (charIndex = startIndex;; ++charIndex) {
 
@@ -3462,14 +3462,14 @@ void TextArea::updateCalltip(int calltipID) {
 
 	if (calltip_.anchored) {
 		// Put it at the anchor position
-		if (!positionToXY(boost::get<TextCursor>(calltip_.pos), &rel_x, &rel_y)) {
+		if (!positionToXY(std::get<TextCursor>(calltip_.pos), &rel_x, &rel_y)) {
 			if (calltip_.alignMode == TipAlignMode::Strict) {
 				TextDKillCalltip(calltip_.ID);
 			}
 			return;
 		}
 	} else {
-		if (boost::get<int>(calltip_.pos) < 0) {
+		if (std::get<int>(calltip_.pos) < 0) {
 			// First display of tip with cursor offscreen (detected in ShowCalltip)
 			calltip_.pos    = viewRect.width() / 2;
 			calltip_.hAlign = TipHAlignMode::Center;
@@ -3481,7 +3481,7 @@ void TextArea::updateCalltip(int calltipID) {
 			}
 			return;
 		}
-		rel_x = boost::get<int>(calltip_.pos);
+		rel_x = std::get<int>(calltip_.pos);
 	}
 
 	const int lineHeight = fixedFontHeight_;
@@ -4730,7 +4730,7 @@ TextCursor TextArea::startOfWord(TextCursor pos) const {
 
 	const char ch = buffer_->BufGetCharacter(pos);
 
-	boost::optional<TextCursor> startPos;
+	std::optional<TextCursor> startPos;
 
 	if (ch == ' ' || ch == '\t') {
 		startPos = spanBackward(buffer_, pos, view::string_view(" \t", 2), false);
@@ -4755,7 +4755,7 @@ TextCursor TextArea::endOfWord(TextCursor pos) const {
 
 	const char ch = buffer_->BufGetCharacter(pos);
 
-	boost::optional<TextCursor> endPos;
+	std::optional<TextCursor> endPos;
 
 	if (ch == ' ' || ch == '\t') {
 		endPos = spanForward(buffer_, pos, view::string_view(" \t", 2), false);
@@ -4777,10 +4777,10 @@ TextCursor TextArea::endOfWord(TextCursor pos) const {
 ** "searchChars",  starting with the character BEFORE "startPos". If
 ** ignoreSpace is set, then Space, Tab, and Newlines are ignored in searchChars.
 */
-boost::optional<TextCursor> TextArea::spanBackward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const {
+std::optional<TextCursor> TextArea::spanBackward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const {
 
 	if (startPos == 0) {
-		return boost::none;
+		return {};
 	}
 
 	TextCursor pos = startPos - 1;
@@ -4803,7 +4803,7 @@ boost::optional<TextCursor> TextArea::spanBackward(TextBuffer *buf, TextCursor s
 		--pos;
 	}
 
-	return boost::none;
+	return {};
 }
 
 /*
@@ -4811,7 +4811,7 @@ boost::optional<TextCursor> TextArea::spanBackward(TextBuffer *buf, TextCursor s
 ** "searchChars",  starting with the character "startPos". If ignoreSpace
 ** is set, then Space, Tab, and Newlines are ignored in searchChars.
 */
-boost::optional<TextCursor> TextArea::spanForward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const {
+std::optional<TextCursor> TextArea::spanForward(TextBuffer *buf, TextCursor startPos, view::string_view searchChars, bool ignoreSpace) const {
 
 	TextCursor pos = startPos;
 	while (pos < buf->length()) {
@@ -4831,7 +4831,7 @@ boost::optional<TextCursor> TextArea::spanForward(TextBuffer *buf, TextCursor st
 		++pos;
 	}
 
-	return boost::none;
+	return {};
 }
 
 void TextArea::processShiftUpAP(EventFlags flags) {
@@ -7191,13 +7191,13 @@ TextCursor TextArea::cursorPos() const {
 ** WORKS FOR DISPLAYED LINES AND, IN CONTINUOUS WRAP MODE, ONLY WHEN THE
 ** ABSOLUTE LINE NUMBER IS BEING MAINTAINED.  Otherwise, it returns false.
 */
-boost::optional<Location> TextArea::positionToLineAndCol(TextCursor pos) const {
+std::optional<Location> TextArea::positionToLineAndCol(TextCursor pos) const {
 	/* In continuous wrap mode, the absolute (non-wrapped) line count is
 	   maintained separately, as needed.  Only return it if we're actually
 	   keeping track of it and pos is in the displayed text */
 	if (continuousWrap_) {
 		if (!maintainingAbsTopLineNum() || pos < firstChar_ || pos > lastChar_) {
-			return boost::none;
+			return {};
 		}
 
 		Location loc;
@@ -7209,7 +7209,7 @@ boost::optional<Location> TextArea::positionToLineAndCol(TextCursor pos) const {
 	// Only return the data if pos is within the displayed text
 	int visLineNum;
 	if (!posToVisibleLineNum(pos, &visLineNum)) {
-		return boost::none;
+		return {};
 	}
 
 	Location loc;
@@ -7573,7 +7573,7 @@ int TextArea::TextDShowCalltip(const QString &text, bool anchored, CallTipPositi
 	if (anchored) {
 		// Put it at the specified position
 		// If position is not displayed, return 0
-		if (boost::get<TextCursor>(pos) < firstChar_ || boost::get<TextCursor>(pos) > lastChar_) {
+		if (std::get<TextCursor>(pos) < firstChar_ || std::get<TextCursor>(pos) > lastChar_) {
 			QApplication::beep();
 			return 0;
 		}
@@ -7685,7 +7685,7 @@ void TextArea::beginningOfSelectionAP(EventFlags flags) {
 
 	EMIT_EVENT_0("beginning_of_selection");
 
-	const boost::optional<SelectionPos> pos = buffer_->BufGetSelectionPos();
+	const std::optional<SelectionPos> pos = buffer_->BufGetSelectionPos();
 	if (!pos) {
 		return;
 	}
@@ -7759,7 +7759,7 @@ void TextArea::endOfSelectionAP(EventFlags flags) {
 
 	EMIT_EVENT_0("end_of_selection");
 
-	const boost::optional<SelectionPos> pos = buffer_->BufGetSelectionPos();
+	const std::optional<SelectionPos> pos = buffer_->BufGetSelectionPos();
 	if (!pos) {
 		return;
 	}

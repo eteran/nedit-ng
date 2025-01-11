@@ -8,7 +8,7 @@
 
 #include <QPointer>
 
-#include <boost/optional.hpp>
+#include <optional>
 
 class DialogSyntaxPatterns;
 class LanguageMode;
@@ -44,7 +44,7 @@ private:
 	bool updateCurrentItem(const QModelIndex &index);
 	bool updateLanguageList(Verbosity verbosity);
 	bool updateLMList(Verbosity verbosity);
-	boost::optional<LanguageMode> readFields(Verbosity verbosity);
+	std::optional<LanguageMode> readFields(Verbosity verbosity);
 	int countLanguageModes(const QString &name) const;
 	bool LMHasHighlightPatterns(const QString &name) const;
 
