@@ -47,13 +47,13 @@
 #include <QActionGroup>
 #include <QButtonGroup>
 #include <QClipboard>
+#include <QDesktopServices>
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QShortcut>
 #include <QTimer>
 #include <QToolTip>
-#include <QDesktopServices>
 #include <qplatformdefs.h>
 
 #include <algorithm>
@@ -5580,14 +5580,13 @@ void MainWindow::action_Help_triggered() {
  * @brief MainWindow::action_Open_Configuration_Directory_triggered
  */
 void MainWindow::action_Open_Configuration_Directory_triggered() {
-    const QString configDir = Settings::configDirectory();
+	const QString configDir = Settings::configDirectory();
 
-    // ensure that the folder exists
-    QDir(configDir).mkpath(QStringLiteral("."));
+	// ensure that the folder exists
+	QDir(configDir).mkpath(QStringLiteral("."));
 
-    QUrl url(QStringLiteral("file:///%1").arg(configDir, QUrl::TolerantMode));
+	QUrl url(QStringLiteral("file:///%1").arg(configDir, QUrl::TolerantMode));
 	QDesktopServices::openUrl(url);
-
 }
 
 /**
