@@ -1,6 +1,7 @@
 
 #include "Rangeset.h"
 #include "TextBuffer.h"
+#include "Util/algorithm.h"
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
@@ -597,7 +598,7 @@ int64_t Rangeset::RangesetFindRangeOfPos(TextCursor pos, bool incl_end) const {
 	}
 
 	auto ranges       = reinterpret_cast<const TextCursor *>(ranges_.data()); // { s1,e1, s2,e2, s3,e3,... }
-	const auto len    = static_cast<int64_t>(ranges_.size()) * 2;
+	const auto len    = ssize(ranges_) * 2;
 	const int64_t ind = at_or_before(ranges, 0, len, pos);
 
 	if (ind == len) {
@@ -621,7 +622,7 @@ int64_t Rangeset::RangesetFindRangeOfPos(TextCursor pos, bool incl_end) const {
 ** Get number of ranges in rangeset.
 */
 int64_t Rangeset::size() const {
-	return static_cast<int64_t>(ranges_.size());
+	return ssize(ranges_);
 }
 
 /*
@@ -666,7 +667,7 @@ int64_t Rangeset::RangesetInverse() {
 	}
 
 	RangesetRefreshRange(buffer_, first, last);
-	return static_cast<int64_t>(ranges_.size());
+	return ssize(ranges_);
 }
 
 /*
@@ -724,7 +725,7 @@ int64_t Rangeset::RangesetCheckRangeOfPos(TextCursor pos) {
 
 	int64_t index;
 
-	auto len = static_cast<int64_t>(ranges_.size());
+	auto len = ssize(ranges_);
 	if (ranges_.empty()) {
 		return -1; // no ranges
 	}
@@ -786,7 +787,7 @@ int64_t Rangeset::RangesetAdd(const Rangeset &other) {
 
 	if (other.ranges_.empty()) {
 		// no ranges in plusSet - nothing to do
-		return static_cast<int64_t>(ranges_.size());
+		return ssize(ranges_);
 	}
 
 	if (ranges_.empty()) {
@@ -797,7 +798,7 @@ int64_t Rangeset::RangesetAdd(const Rangeset &other) {
 			RangesetRefreshRange(buffer_, range.start, range.end);
 		}
 
-		return static_cast<int64_t>(ranges_.size());
+		return ssize(ranges_);
 	}
 
 	auto origRanges    = ranges_.cbegin();
@@ -856,7 +857,7 @@ int64_t Rangeset::RangesetAdd(const Rangeset &other) {
 
 	// finally, forget the old rangeset values, and reallocate the new ones
 	ranges_ = std::move(newRanges);
-	return static_cast<int64_t>(ranges_.size());
+	return ssize(ranges_);
 }
 
 /*
@@ -946,7 +947,7 @@ int64_t Rangeset::RangesetRemove(const Rangeset &other) {
 
 	// finally, forget the old rangeset values, and reallocate the new ones
 	ranges_ = std::move(newRanges);
-	return static_cast<int64_t>(ranges_.size());
+	return ssize(ranges_);
 }
 
 /*
@@ -960,14 +961,14 @@ int64_t Rangeset::RangesetAdd(TextRange r) {
 		std::swap(r.start, r.end);
 	} else if (r.start == r.end) {
 		// no-op - empty range == no range
-		return static_cast<int64_t>(ranges_.size());
+		return ssize(ranges_);
 	}
 
 	// if it's the first range, just insert it
 	if (ranges_.empty()) {
 		ranges_.push_back(r);
 		RangesetRefreshRange(buffer_, r.start, r.end);
-		return static_cast<int64_t>(ranges_.size());
+		return ssize(ranges_);
 	}
 
 	auto next = std::lower_bound(ranges_.begin(), ranges_.end(), r);
@@ -1003,7 +1004,7 @@ int64_t Rangeset::RangesetAdd(TextRange r) {
 	}
 
 	RangesetRefreshRange(buffer_, r.start, r.end);
-	return static_cast<int64_t>(ranges_.size());
+	return ssize(ranges_);
 }
 
 /*
@@ -1017,11 +1018,11 @@ int64_t Rangeset::RangesetRemove(TextRange r) {
 		std::swap(r.start, r.end);
 	} else if (r.start == r.end) {
 		// no-op - empty range == no range
-		return static_cast<int64_t>(ranges_.size());
+		return ssize(ranges_);
 	}
 
 	if (ranges_.empty()) {
-		return static_cast<int64_t>(ranges_.size());
+		return ssize(ranges_);
 	}
 
 	auto next = std::lower_bound(ranges_.begin(), ranges_.end(), r);
@@ -1048,7 +1049,7 @@ int64_t Rangeset::RangesetRemove(TextRange r) {
 	}
 
 	RangesetRefreshRange(buffer_, r.start, r.end);
-	return static_cast<int64_t>(ranges_.size());
+	return ssize(ranges_);
 }
 
 /**
@@ -1089,7 +1090,7 @@ RangesetInfo Rangeset::RangesetGetInfo() const {
 	RangesetInfo info;
 	info.defined = true;
 	info.label   = static_cast<int>(label_);
-	info.count   = static_cast<int64_t>(ranges_.size());
+	info.count   = ssize(ranges_);
 	info.color   = color_name_;
 	info.name    = name_;
 	info.mode    = update_name_;

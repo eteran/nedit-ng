@@ -4,6 +4,7 @@
 #include "TextArea.h"
 #include "TextBuffer.h"
 #include "Util/algorithm.h"
+
 #include <string_view>
 
 #include <gsl/gsl_util>
@@ -698,7 +699,7 @@ void shiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection dir
 
 	buf->BufReplaceSelected(shiftedText);
 
-	const TextCursor newEndPos = selStart + static_cast<int64_t>(shiftedText.size());
+	const TextCursor newEndPos = selStart + ssize(shiftedText);
 	buf->BufSelect(selStart, newEndPos);
 }
 
@@ -769,7 +770,7 @@ void fillSelection(DocumentWidget *document, TextArea *area) {
 	} else {
 		buf->BufReplace(left, right, filledText);
 		if (hasSelection) {
-			buf->BufSelect(left, left + static_cast<int64_t>(filledText.size()));
+			buf->BufSelect(left, left + ssize(filledText));
 		}
 	}
 
@@ -778,7 +779,7 @@ void fillSelection(DocumentWidget *document, TextArea *area) {
 	if (hasSelection && isRect) {
 		area->TextSetCursorPos(buf->BufCursorPosHint());
 	} else {
-		const auto len = static_cast<int64_t>(filledText.size());
+		const auto len = ssize(filledText);
 		area->TextSetCursorPos(insertPos < left ? left : (insertPos > left + len ? left + len : insertPos));
 	}
 }

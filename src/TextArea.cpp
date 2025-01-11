@@ -14,6 +14,7 @@
 #include "TextAreaMimeData.h"
 #include "TextBuffer.h"
 #include "TextEditEvent.h"
+#include "Util/algorithm.h"
 #include "X11Colors.h"
 
 #include <QApplication>
@@ -4450,7 +4451,7 @@ void TextArea::insertText(std::string_view text) {
 
 	const TextCursor pos = cursorPos_;
 
-	cursorToHint_ = pos + static_cast<int64_t>(text.size());
+	cursorToHint_ = pos + ssize(text);
 	buffer_->BufInsert(pos, text);
 	cursorToHint_ = NO_HINT;
 }

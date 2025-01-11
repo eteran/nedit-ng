@@ -10,8 +10,7 @@
 #include "Util/FileSystem.h"
 #include "Util/Input.h"
 #include "Util/User.h"
-
-#include <gsl/gsl_util>
+#include "Util/algorithm.h"
 
 #include <QApplication>
 #include <QDir>
@@ -30,6 +29,8 @@
 #ifdef Q_OS_UNIX
 #include <sys/param.h>
 #endif
+
+#include <gsl/gsl_util>
 
 namespace Tags {
 
@@ -1137,7 +1138,7 @@ bool fakeRegExSearch(std::string_view buffer, const QString &searchString, int64
 		ctagsMode      = true;
 	} else if (searchString.size() > 1 && searchString[0] == QLatin1Char('?')) {
 		dir            = Direction::Backward;
-		searchStartPos = static_cast<int64_t>(fileString.size());
+		searchStartPos = ssize(fileString);
 		ctagsMode      = true;
 	} else {
 		qWarning("NEdit: Error parsing tag file search string");

@@ -6615,7 +6615,7 @@ bool MainWindow::replaceAndSearch(DocumentWidget *document, TextArea *area, cons
 				Search::defaultRegexFlags(searchType));
 
 			buffer->BufReplace(selectionRange, replaceResult);
-			replaceLen = static_cast<int64_t>(replaceResult.size());
+			replaceLen = ssize(replaceResult);
 		} else {
 			buffer->BufReplace(selectionRange, replaceString.toStdString());
 			replaceLen = replaceString.size();
@@ -6744,7 +6744,7 @@ bool MainWindow::searchAndReplace(DocumentWidget *document, TextArea *area, cons
 			Search::defaultRegexFlags(searchType));
 
 		buffer->BufReplace(selectionRange, replaceResult);
-		replaceLen = static_cast<int64_t>(replaceResult.size());
+		replaceLen = ssize(replaceResult);
 	} else {
 		buffer->BufReplace(selectionRange, replaceString.toStdString());
 		replaceLen = replaceString.size();
@@ -7000,7 +7000,7 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 			}
 
 			tempBuf.BufReplace(TextCursor(searchResult->start + realOffset), TextCursor(searchResult->end + realOffset), replaceResult);
-			replaceLen = static_cast<int64_t>(replaceResult.size());
+			replaceLen = ssize(replaceResult);
 		} else {
 			// at this point plain substitutions (should) always work
 			tempBuf.BufReplace(TextCursor(searchResult->start + realOffset), TextCursor(searchResult->end + realOffset), replaceString.toStdString());

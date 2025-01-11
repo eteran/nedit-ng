@@ -5,6 +5,8 @@
 #include <QtGlobal>
 #include <algorithm>
 #include <string_view>
+#include <type_traits>
+#include <cstddef>
 
 // container algorithms
 
@@ -43,6 +45,17 @@ void insert_or_replace(Cont &cont, T &&item, Pred &&pred) {
 	} else {
 		cont.emplace_back(item);
 	}
+}
+
+template <class C>
+constexpr auto ssize(const C &c) -> std::common_type_t<ptrdiff_t, std::make_signed_t<decltype(c.size())>> {
+	using R = std::common_type_t<ptrdiff_t, std::make_signed_t<decltype(c.size())>>;
+	return static_cast<R>(c.size());
+}
+
+template <class T, ptrdiff_t N>
+constexpr ptrdiff_t ssize(const T (&array)[N]) noexcept {
+	return N;
 }
 
 #endif

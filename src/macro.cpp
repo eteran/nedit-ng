@@ -18,6 +18,7 @@
 #include "TextBuffer.h"
 #include "Util/FileSystem.h"
 #include "Util/Input.h"
+#include "Util/algorithm.h"
 #include "Util/utils.h"
 #include "Util/version.h"
 #include "WrapMode.h"
@@ -3101,7 +3102,7 @@ std::error_code splitMS(DocumentWidget *document, Arguments arguments, DataValue
 	int64_t beginPos = 0;
 	int64_t lastEnd  = 0;
 	int indexNum     = 0;
-	auto strLength   = static_cast<int64_t>(sourceStr.size());
+	auto strLength   = ssize(sourceStr);
 	bool found       = true;
 
 	Search::Result searchResult;

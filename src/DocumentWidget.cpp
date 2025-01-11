@@ -28,6 +28,7 @@
 #include "Util/Input.h"
 #include "Util/Raise.h"
 #include "Util/User.h"
+#include "Util/algorithm.h"
 #include "Util/regex.h"
 #include "Util/utils.h"
 #include "WindowHighlightData.h"
@@ -2549,7 +2550,7 @@ bool DocumentWidget::doSave() {
 	}
 
 	// write to the file
-	if (file.write(text.data(), static_cast<int64_t>(text.size())) == -1) {
+	if (file.write(text.data(), ssize(text)) == -1) {
 		QMessageBox::critical(this, tr("Error saving File"), tr("%1 not saved:\n%2").arg(info_->filename, file.errorString()));
 		file.close();
 		file.remove();
@@ -4842,7 +4843,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 				area->TextSetCursorPos(buf->BufCursorPosHint());
 
 				if (reselectStart != -1) {
-					buf->BufSelect(reselectStart, reselectStart + static_cast<int64_t>(outText.size()));
+					buf->BufSelect(reselectStart, reselectStart + ssize(outText));
 				}
 			} else {
 				safeBufReplace(buf, &shellCmdData_->leftPos, &shellCmdData_->rightPos, outText);

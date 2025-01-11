@@ -32,13 +32,13 @@ auto BasicTextBuffer<Ch, Tr>::BufAsString() noexcept -> view_type {
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSetAll(view_type text) {
 
-	const auto insertLength = static_cast<int64_t>(text.size());
+	const auto insertLength = ssize(text);
 
 	callPreDeleteCBs(BufStartOfBuffer(), buffer_.size());
 
 	// Save information for redisplay, and get rid of the old buffer
 	const string_type deletedText = BufGetAll();
-	const auto deleteLength       = static_cast<int64_t>(deletedText.size());
+	const auto deleteLength       = ssize(deletedText);
 
 	buffer_.assign(text);
 
@@ -146,7 +146,7 @@ void BasicTextBuffer<Ch, Tr>::BufReplace(TextCursor start, TextCursor end, view_
 
 	sanitizeRange(start, end);
 
-	const auto nInserted = static_cast<int64_t>(text.size());
+	const auto nInserted = ssize(text);
 
 	callPreDeleteCBs(start, end - start);
 	const string_type deletedText = BufGetRange(start, end);
@@ -285,7 +285,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRect(TextCursor startPos, int64_t rectStart
 
 		string_type temp;
 		overlayRectInLine(line, insLine, rectStart, rectEnd, tabDist_, useTabs_, &temp, &endOffset);
-		len = static_cast<int64_t>(temp.size());
+		len = ssize(temp);
 
 		for (auto it = outStr.rbegin(); it != outStr.rend() && (*it == Ch(' ') || *it == Ch('\t')); ++it) {
 			--len;
@@ -311,9 +311,9 @@ void BasicTextBuffer<Ch, Tr>::overlayRect(TextCursor startPos, int64_t rectStart
 	deleteRange(start, end);
 	insert(start, outStr);
 
-	*nInserted = static_cast<int64_t>(outStr.size());
+	*nInserted = ssize(outStr);
 	*nDeleted  = end - start;
-	*endPos    = start + static_cast<int64_t>(outStr.size()) - len + endOffset;
+	*endPos    = start + ssize(outStr) - len + endOffset;
 }
 
 /*
@@ -1080,7 +1080,7 @@ int BasicTextBuffer<Ch, Tr>::compare(TextCursor pos, Ch ch) const noexcept {
 */
 template <class Ch, class Tr>
 int64_t BasicTextBuffer<Ch, Tr>::insert(TextCursor pos, view_type text) noexcept {
-	const auto length = static_cast<int64_t>(text.size());
+	const auto length = ssize(text);
 
 	buffer_.insert(to_integer(pos), text);
 
@@ -1231,7 +1231,7 @@ void BasicTextBuffer<Ch, Tr>::deleteRect(TextCursor start, TextCursor end, int64
 
 	const string_type text    = BufGetRange(start, end);
 	const string_type expText = expandTabs(text, 0, tabDist_);
-	auto len                  = static_cast<int64_t>(expText.size());
+	auto len                  = ssize(expText);
 
 	string_type outStr;
 	outStr.reserve(expText.size() + static_cast<size_t>(nLines * MAX_EXP_CHAR_LEN * 2));
@@ -1247,7 +1247,7 @@ void BasicTextBuffer<Ch, Tr>::deleteRect(TextCursor start, TextCursor end, int64
 
 		string_type temp;
 		deleteRectFromLine(line, rectStart, rectEnd, tabDist_, useTabs_, &temp, &endOffset);
-		len = static_cast<int64_t>(temp.size());
+		len = ssize(temp);
 
 		std::copy_n(temp.begin(), len, outPtr);
 
@@ -1264,8 +1264,8 @@ void BasicTextBuffer<Ch, Tr>::deleteRect(TextCursor start, TextCursor end, int64
 	deleteRange(start, end);
 	insert(start, outStr);
 
-	*replaceLen = static_cast<int64_t>(outStr.size());
-	*endPos     = start + static_cast<int64_t>(outStr.size()) - len + endOffset;
+	*replaceLen = ssize(outStr);
+	*endPos     = start + ssize(outStr) - len + endOffset;
 }
 
 /*
@@ -1385,7 +1385,7 @@ void BasicTextBuffer<Ch, Tr>::insertCol(int64_t column, TextCursor startPos, vie
 
 		string_type temp;
 		insertColInLine(line, insLine, column, insWidth, tabDist_, useTabs_, &temp, &endOffset);
-		len = static_cast<int64_t>(temp.size());
+		len = ssize(temp);
 
 #if 0
 		/* Earlier comments claimed that trailing whitespace could multiply on
@@ -1418,9 +1418,9 @@ void BasicTextBuffer<Ch, Tr>::insertCol(int64_t column, TextCursor startPos, vie
 	deleteRange(start, end);
 	insert(start, outStr);
 
-	*nInserted = static_cast<int64_t>(outStr.size());
+	*nInserted = ssize(outStr);
 	*nDeleted  = end - start;
-	*endPos    = start + static_cast<int64_t>(outStr.size()) - len + endOffset;
+	*endPos    = start + ssize(outStr) - len + endOffset;
 }
 
 /*
@@ -1811,7 +1811,7 @@ void BasicTextBuffer<Ch, Tr>::insertColInLine(view_type line, view_type insLine,
 	   the inserted string began at column 0 to its new column destination */
 	if (!insLine.empty()) {
 		string_type retabbedStr = realignTabs(insLine, 0, indent, tabDist, useTabs);
-		len                     = static_cast<int64_t>(retabbedStr.size());
+		len                     = ssize(retabbedStr);
 
 		for (Ch ch : retabbedStr) {
 			*outPtr++ = ch;
@@ -2027,7 +2027,7 @@ void BasicTextBuffer<Ch, Tr>::overlayRectInLine(view_type line, view_type insLin
 	   the inserted string began at column 0 to its new column destination */
 	if (!insLine.empty()) {
 		string_type retabbedStr = realignTabs(insLine, 0, rectStart, tabDist, useTabs);
-		len                     = static_cast<int64_t>(retabbedStr.size());
+		len                     = ssize(retabbedStr);
 
 		for (Ch c : retabbedStr) {
 			*outPtr++ = c;
