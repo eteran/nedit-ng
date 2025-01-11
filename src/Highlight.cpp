@@ -1132,16 +1132,19 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 		return false;
 	}
 
+	const char *const begin_ptr = ctx->text.data();
+	const char *const end_ptr   = ctx->text.data() + ctx->text.size();
+
 	if (!look_behind_to) {
-		look_behind_to = ctx->text.begin();
+		look_behind_to = begin_ptr;
 	}
 
 	if (!match_to) {
-		match_to = ctx->text.end();
+		match_to = end_ptr;
 	}
 
 	bool subExecuted;
-	const int next_char = (match_to != ctx->text.end()) ? (*match_to) : -1;
+	const int next_char = (match_to != end_ptr) ? (*match_to) : -1;
 
 	const char *stringPtr = string_ptr;
 	uint8_t *stylePtr     = style_ptr;
