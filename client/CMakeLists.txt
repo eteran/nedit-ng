@@ -18,13 +18,13 @@ set(PROJECT_SOURCES
 
 if(QT_VERSION_MAJOR EQUAL 6)
     qt6_add_executable(nc-ng
-        MANUAL_FINALIZATION
-        ${PROJECT_SOURCES}
+		MANUAL_FINALIZATION
+		${PROJECT_SOURCES}
 		${APP_ICON_RESOURCE_WINDOWS}
     )
 else()
     add_executable(nc-ng
-        ${PROJECT_SOURCES}
+		${PROJECT_SOURCES}
 		${APP_ICON_RESOURCE_WINDOWS}
     )
 endif()
