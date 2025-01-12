@@ -9,7 +9,7 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Network)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Network)
 
 if(WIN32)
-	set(APP_ICON_RESOURCE_WINDOWS "../src/res/nc-ng.rc")
+        set(APP_ICON_RESOURCE_WINDOWS "../src/res/nedit-ng.rc")
 endif()
 
 set(PROJECT_SOURCES
@@ -52,7 +52,7 @@ set_target_properties(nc-ng PROPERTIES
     MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
     MACOSX_BUNDLE TRUE
     WIN32_EXECUTABLE TRUE
-	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+    RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
 
 if(TARGET_COMPILER_MSVC)
@@ -69,6 +69,6 @@ install(TARGETS nc-ng
 )
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt6_finalize_executable(nc-ng)
+    qt_finalize_executable(nc-ng)
 endif()
 

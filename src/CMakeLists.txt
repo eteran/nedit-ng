@@ -309,5 +309,5 @@ install(TARGETS nedit-ng
 )
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt6_finalize_executable(nedit-ng)
+    qt_finalize_executable(nedit-ng)
 endif()
