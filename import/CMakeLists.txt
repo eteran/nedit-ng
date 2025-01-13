@@ -76,5 +76,5 @@ install(TARGETS nedit-import
 )
 
 if(QT_VERSION_MAJOR EQUAL 6)
-    qt6_finalize_executable(nedit-import)
+    qt_finalize_executable(nedit-import)
 endif()
