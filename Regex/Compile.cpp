@@ -6,11 +6,9 @@
 #include "Opcodes.h"
 #include "Regex.h"
 #include "RegexError.h"
-#include "Util/Compiler.h"
 #include "Util/Raise.h"
 #include "Util/utils.h"
 
-#include <algorithm>
 #include <cassert>
 #include <cstring>
 #include <gsl/gsl_util>
