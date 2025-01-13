@@ -107,11 +107,21 @@ constexpr uint8_t PUT_OFFSET_R(T v) noexcept {
 
 /**
  * @brief isQuantifier
- * @param c
+ * @param it
  * @return
  */
-bool isQuantifier(char ch) noexcept {
-	return ch == '*' || ch == '+' || ch == '?' || ch == pContext.Brace_Char;
+bool isQuantifier(std::string_view::iterator it) noexcept {
+	return (it != pContext.InputString.end()) && (*it == '*' || *it == '+' || *it == '?' || *it == pContext.Brace_Char);
+}
+
+/**
+ * @brief matchChar
+ * @param it
+ * @param ch
+ * @return
+ */
+bool matchChar(std::string_view::iterator it, char ch) {
+	return it != pContext.InputString.end() && *pContext.Reg_Parse == ch;
 }
 
 /*--------------------------------------------------------------------*
@@ -646,7 +656,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 	   string)... period.  Handles multiple sequential comments,
 	   e.g. '(?# one)(?# two)...'  */
 
-	while (*pContext.Reg_Parse == '(' && pContext.Reg_Parse[1] == '?' && *(pContext.Reg_Parse + 2) == '#') {
+	while (matchChar(pContext.Reg_Parse, '(') && pContext.Reg_Parse[1] == '?' && *(pContext.Reg_Parse + 2) == '#') {
 
 		pContext.Reg_Parse += 3;
 
@@ -654,11 +664,11 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 			++pContext.Reg_Parse;
 		}
 
-		if (*pContext.Reg_Parse == ')') {
+		if (matchChar(pContext.Reg_Parse, ')')) {
 			++pContext.Reg_Parse;
 		}
 
-		if (pContext.Reg_Parse == pContext.InputString.end() || *pContext.Reg_Parse == ')' || *pContext.Reg_Parse == '|') {
+		if (pContext.Reg_Parse == pContext.InputString.end() || matchChar(pContext.Reg_Parse, ')') || matchChar(pContext.Reg_Parse, '|')) {
 			/* Hit end of regex string or end of parenthesized regex; have to
 			 return "something" (i.e. a NOTHING node) to avoid generating an
 			 error. */
@@ -698,38 +708,38 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 		range_param.upper = 1;
 		break;
 	case '(':
-		if (*pContext.Reg_Parse == '?') { // Special parenthetical expression
+		if (matchChar(pContext.Reg_Parse, '?')) { // Special parenthetical expression
 			++pContext.Reg_Parse;
 			range_local.lower = 0; // Make sure it is always used
 			range_local.upper = 0;
 
-			if (*pContext.Reg_Parse == ':') {
+			if (matchChar(pContext.Reg_Parse, ':')) {
 				++pContext.Reg_Parse;
 				ret_val = chunk(NO_CAPTURE, &flags_local, range_local);
-			} else if (*pContext.Reg_Parse == '=') {
+			} else if (matchChar(pContext.Reg_Parse, '=')) {
 				++pContext.Reg_Parse;
 				ret_val = chunk(POS_AHEAD_OPEN, &flags_local, range_local);
-			} else if (*pContext.Reg_Parse == '!') {
+			} else if (matchChar(pContext.Reg_Parse, '!')) {
 				++pContext.Reg_Parse;
 				ret_val = chunk(NEG_AHEAD_OPEN, &flags_local, range_local);
-			} else if (*pContext.Reg_Parse == 'i') {
+			} else if (matchChar(pContext.Reg_Parse, 'i')) {
 				++pContext.Reg_Parse;
 				ret_val = chunk(INSENSITIVE, &flags_local, range_local);
-			} else if (*pContext.Reg_Parse == 'I') {
+			} else if (matchChar(pContext.Reg_Parse, 'I')) {
 				++pContext.Reg_Parse;
 				ret_val = chunk(SENSITIVE, &flags_local, range_local);
-			} else if (*pContext.Reg_Parse == 'n') {
+			} else if (matchChar(pContext.Reg_Parse, 'n')) {
 				++pContext.Reg_Parse;
 				ret_val = chunk(NEWLINE, &flags_local, range_local);
-			} else if (*pContext.Reg_Parse == 'N') {
+			} else if (matchChar(pContext.Reg_Parse, 'N')) {
 				++pContext.Reg_Parse;
 				ret_val = chunk(NO_NEWLINE, &flags_local, range_local);
-			} else if (*pContext.Reg_Parse == '<') {
+			} else if (matchChar(pContext.Reg_Parse, '<')) {
 				++pContext.Reg_Parse;
-				if (*pContext.Reg_Parse == '=') {
+				if (matchChar(pContext.Reg_Parse, '=')) {
 					++pContext.Reg_Parse;
 					ret_val = chunk(POS_BEHIND_OPEN, &flags_local, range_local);
-				} else if (*pContext.Reg_Parse == '!') {
+				} else if (matchChar(pContext.Reg_Parse, '!')) {
 					++pContext.Reg_Parse;
 					ret_val = chunk(NEG_BEHIND_OPEN, &flags_local, range_local);
 				} else {
@@ -778,7 +788,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 
 		// Handle characters that can only occur at the start of a class.
 
-		if (*pContext.Reg_Parse == '^') { // Complement of range.
+		if (matchChar(pContext.Reg_Parse, '^')) { // Complement of range.
 			ret_val = emit_node(ANY_BUT);
 			++pContext.Reg_Parse;
 
@@ -792,7 +802,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 			ret_val = emit_node(ANY_OF);
 		}
 
-		if (*pContext.Reg_Parse == ']' || *pContext.Reg_Parse == '-') {
+		if (matchChar(pContext.Reg_Parse, ']') || matchChar(pContext.Reg_Parse, '-')) {
 			/* If '-' or ']' is the first character in a class,
 			   it is a literal character in the class. */
 
@@ -804,10 +814,10 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 		// Handle the rest of the class characters.
 
 		while (pContext.Reg_Parse != pContext.InputString.end() && *pContext.Reg_Parse != ']') {
-			if (*pContext.Reg_Parse == '-') { // Process a range, e.g [a-z].
+			if (matchChar(pContext.Reg_Parse, '-')) { // Process a range, e.g [a-z].
 				++pContext.Reg_Parse;
 
-				if (*pContext.Reg_Parse == ']' || pContext.Reg_Parse == pContext.InputString.end()) {
+				if (matchChar(pContext.Reg_Parse, ']') || pContext.Reg_Parse == pContext.InputString.end()) {
 					/* If '-' is the last character in a class it is a literal
 					   character.  If 'Reg_Parse' points to the end of the
 					   regex string, an error will be generated later. */
@@ -1027,7 +1037,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 				   have an EXACTLY node with an 'abc' operand followed by a STAR
 				   node followed by another EXACTLY node with a 'd' operand. */
 
-				if (isQuantifier(*pContext.Reg_Parse) && len > 0) {
+				if (isQuantifier(pContext.Reg_Parse) && len > 0) {
 					pContext.Reg_Parse = parse_save; // Point to previous regex token.
 
 					if (pContext.FirstPass) {
@@ -1086,13 +1096,13 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 		return nullptr; // Something went wrong.
 	}
 
-	char op_code = *pContext.Reg_Parse;
-
-	if (!isQuantifier(op_code)) {
+	if (!isQuantifier(pContext.Reg_Parse)) {
 		*flag_param = flags_local;
 		range_param = range_local;
 		return ret_val;
 	}
+
+	char op_code = *pContext.Reg_Parse;
 
 	if (op_code == '{') { // {n,m} quantifier present
 		brace_present++;
@@ -1139,7 +1149,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 				}
 			}
 
-			if (!comma_present && *pContext.Reg_Parse == ',') {
+			if (!comma_present && matchChar(pContext.Reg_Parse, ',')) {
 				comma_present = true;
 				++pContext.Reg_Parse;
 			}
@@ -1182,7 +1192,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 
 	// Check for a minimal matching (non-greedy or "lazy") specification.
 
-	if (*pContext.Reg_Parse == '?') {
+	if (pContext.Reg_Parse != pContext.InputString.end() && matchChar(pContext.Reg_Parse, '?')) {
 		lazy = true;
 		++pContext.Reg_Parse;
 	}
@@ -1591,7 +1601,7 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 		Raise<RegexError>("internal error #2, 'piece'");
 	}
 
-	if (isQuantifier(*pContext.Reg_Parse)) {
+	if (isQuantifier(pContext.Reg_Parse)) {
 		if (op_code == '{') {
 			Raise<RegexError>("nested quantifiers, {m,n}%c", *pContext.Reg_Parse);
 		} else {
@@ -1626,7 +1636,7 @@ uint8_t *alternative(int *flag_param, len_range &range_param) {
 	/* Loop until we hit the start of the next alternative, the end of this set
 	   of alternatives (end of parentheses), or the end of the regex. */
 
-	while (*pContext.Reg_Parse != '|' && *pContext.Reg_Parse != ')' && pContext.Reg_Parse != pContext.InputString.end()) {
+	while (pContext.Reg_Parse != pContext.InputString.end() && *pContext.Reg_Parse != '|' && *pContext.Reg_Parse != ')') {
 		latest = piece(&flags_local, range_local);
 
 		if (!latest) {
@@ -1754,7 +1764,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
 		// Are there more alternatives to process?
 
-		if (*pContext.Reg_Parse != '|') {
+		if (pContext.Reg_Parse == pContext.InputString.end() || *pContext.Reg_Parse != '|') {
 			break;
 		}
 
@@ -1787,7 +1797,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 	if (paren != NO_PAREN && *pContext.Reg_Parse++ != ')') {
 		Raise<RegexError>("missing right parenthesis ')'");
 	} else if (paren == NO_PAREN && pContext.Reg_Parse != pContext.InputString.end()) {
-		if (*pContext.Reg_Parse == ')') {
+		if (matchChar(pContext.Reg_Parse, ')')) {
 			Raise<RegexError>("missing left parenthesis '('");
 		} else {
 			Raise<RegexError>("junk on end"); // "Can't happen" - NOT REACHED
@@ -1829,9 +1839,9 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		/* Determine if a parenthesized expression is modified by a quantifier
 		   that can have zero width. */
 
-		if (*pContext.Reg_Parse == '?' || *pContext.Reg_Parse == '*') {
+		if (pContext.Reg_Parse != pContext.InputString.end() && (matchChar(pContext.Reg_Parse, '?') || matchChar(pContext.Reg_Parse, '*'))) {
 			zero_width++;
-		} else if (*pContext.Reg_Parse == '{' && pContext.Brace_Char == '{') {
+		} else if (pContext.Reg_Parse != pContext.InputString.end() && (matchChar(pContext.Reg_Parse, '{') && pContext.Brace_Char == '{')) {
 			if (pContext.Reg_Parse[1] == ',' || pContext.Reg_Parse[1] == '}') {
 				zero_width++;
 			} else if (pContext.Reg_Parse[1] == '0') {
