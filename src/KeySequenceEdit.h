@@ -9,7 +9,7 @@
 
 class QLineEdit;
 
-class KeySequenceEdit : public QWidget {
+class KeySequenceEdit final : public QWidget {
 	Q_OBJECT
 	Q_PROPERTY(QKeySequence keySequence READ keySequence WRITE setKeySequence NOTIFY keySequenceChanged USER true)
 	Q_PROPERTY(int maximumSequenceLength READ maximumSequenceLength WRITE setMaximumSequenceLength NOTIFY maximumSequenceLengthChanged)

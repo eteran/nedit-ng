@@ -8,7 +8,7 @@
 
 class TextArea;
 
-class TextAreaMimeData : public QMimeData {
+class TextAreaMimeData final : public QMimeData {
 	Q_OBJECT
 public:
 	explicit TextAreaMimeData(std::shared_ptr<TextBuffer> buffer);

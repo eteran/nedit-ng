@@ -6,7 +6,7 @@
 
 class TextArea;
 
-class LineNumberArea : public QWidget {
+class LineNumberArea final : public QWidget {
 	Q_OBJECT
 public:
 	static constexpr int Padding = 5;

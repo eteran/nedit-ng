@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - name: Install Qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           version: ${{matrix.QT_VERSION}}
           setup-python: 'false'
@@ -40,7 +40,7 @@ jobs:
     runs-on: windows-2022
     steps:
       - name: Install Qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           version: ${{matrix.QT_VERSION}}
           setup-python: 'false'

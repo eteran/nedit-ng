@@ -61,7 +61,7 @@ class QTimer;
 
 enum class Direction : uint8_t;
 
-class DocumentWidget : public QWidget {
+class DocumentWidget final : public QWidget {
 	Q_OBJECT
 	friend class MainWindow;
 
