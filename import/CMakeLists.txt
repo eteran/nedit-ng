@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
-find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Xml)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Xml)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Xml Network)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Xml Network)
 
 find_package(X11 REQUIRED)
 
@@ -40,6 +40,7 @@ target_link_libraries(nedit-import PUBLIC
 	X11
 	Qt${QT_VERSION_MAJOR}::Core
 	Qt${QT_VERSION_MAJOR}::Xml
+	Qt${QT_VERSION_MAJOR}::Network
 )
 
 target_include_directories(nedit-import PRIVATE
