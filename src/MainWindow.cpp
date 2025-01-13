@@ -725,26 +725,26 @@ void MainWindow::setupMenuStrings() {
 	ui.action_Goto_Mark->setText(tr("G&oto Mark\t[Shift] Alt+G a-z"));
 	ui.action_Goto_Matching->setText(tr("Goto &Matching (..)\t[Shift] Ctrl+M"));
 
-	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_9), this, [this]() { action_Shift_Left_Tabs(); });
-	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_0), this, [this]() { action_Shift_Right_Tabs(); });
-	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_F), this, [this]() { action_Shift_Find(); });
-	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_G), this, [this]() { action_Shift_Find_Again(); });
-	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_H), this, [this]() { action_Shift_Find_Selection(); });
-	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_I), this, [this]() { action_Shift_Find_Incremental(); });
-	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_R), this, [this]() { action_Shift_Replace(); });
-	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_M), this, [this]() { action_Shift_Goto_Matching(); });
-	create_shortcut(QKeySequence(Qt::CTRL + Qt::SHIFT + Qt::Key_Y), this, [this]() { action_Shift_Open_Selected(); });
+    create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_9), this, [this]() { action_Shift_Left_Tabs(); });
+    create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_0), this, [this]() { action_Shift_Right_Tabs(); });
+    create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_F), this, [this]() { action_Shift_Find(); });
+    create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_G), this, [this]() { action_Shift_Find_Again(); });
+    create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H), this, [this]() { action_Shift_Find_Selection(); });
+    create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_I), this, [this]() { action_Shift_Find_Incremental(); });
+    create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_R), this, [this]() { action_Shift_Replace(); });
+    create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_M), this, [this]() { action_Shift_Goto_Matching(); });
+    create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Y), this, [this]() { action_Shift_Open_Selected(); });
 
 	// This is an annoying solution... we can probably do better...
 	for (int key = Qt::Key_A; key <= Qt::Key_Z; ++key) {
-		create_shortcut(QKeySequence(Qt::ALT + Qt::Key_M, key), this, [this]() { action_Mark_Shortcut(); });
-		create_shortcut(QKeySequence(Qt::ALT + Qt::Key_G, key), this, [this]() { action_Goto_Mark_Shortcut(); });
-		create_shortcut(QKeySequence(Qt::SHIFT + Qt::ALT + Qt::Key_G, key), this, [this]() { action_Shift_Goto_Mark_Shortcut(); });
+        create_shortcut(QKeySequence(Qt::ALT | Qt::Key_M, key), this, [this]() { action_Mark_Shortcut(); });
+        create_shortcut(QKeySequence(Qt::ALT | Qt::Key_G, key), this, [this]() { action_Goto_Mark_Shortcut(); });
+        create_shortcut(QKeySequence(Qt::SHIFT | Qt::ALT | Qt::Key_G, key), this, [this]() { action_Shift_Goto_Mark_Shortcut(); });
 	}
 
-	create_shortcut(QKeySequence(Qt::CTRL + Qt::Key_PageDown), this, [this]() { action_Next_Document(); });
-	create_shortcut(QKeySequence(Qt::CTRL + Qt::Key_PageUp), this, [this]() { action_Prev_Document(); });
-	create_shortcut(QKeySequence(Qt::ALT + Qt::Key_Home), this, [this]() { action_Last_Document(); });
+    create_shortcut(QKeySequence(Qt::CTRL | Qt::Key_PageDown), this, [this]() { action_Next_Document(); });
+    create_shortcut(QKeySequence(Qt::CTRL | Qt::Key_PageUp), this, [this]() { action_Prev_Document(); });
+    create_shortcut(QKeySequence(Qt::ALT | Qt::Key_Home), this, [this]() { action_Last_Document(); });
 }
 
 /**
@@ -3270,9 +3270,9 @@ void MainWindow::action_Mark_Shortcut() {
 
 		if (DocumentWidget *document = currentDocument()) {
 
-			const int key = sequence[1];
-			if (key >= Qt::Key_A && key <= Qt::Key_Z) {
-				QString keyseq(key);
+            const Qt::Key key = sequence[1].key();
+            if (key >= Qt::Key_A && key <= Qt::Key_Z) {
+                QString keyseq(QChar{key});
 				action_Mark(document, keyseq);
 			} else {
 				QApplication::beep();
@@ -3351,9 +3351,9 @@ void MainWindow::action_Goto_Mark_Shortcut_Helper(bool shifted) {
 
 		if (DocumentWidget *document = currentDocument()) {
 
-			const int key = sequence[1];
-			if (key >= Qt::Key_A && key <= Qt::Key_Z) {
-				QString keyseq(key);
+            const Qt::Key key = sequence[1].key();
+            if (key >= Qt::Key_A && key <= Qt::Key_Z) {
+                QString keyseq(QChar{key});
 				action_Goto_Mark(document, keyseq, shifted);
 			} else {
 				QApplication::beep();

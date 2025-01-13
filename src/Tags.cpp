@@ -266,7 +266,7 @@ int scanETagsLine(const QString &line, const QString &tagPath, int index, QStrin
 		// exuberant ctags -e style
 		QString searchString = line.left(posDEL);
 		QString name         = line.mid(posDEL + 1, (posSOH - posDEL) - 1);
-		int pos              = line.midRef(posCOM + 1).toInt();
+		int pos              = line.mid(posCOM + 1).toInt();
 
 		// No ability to set language mode for the moment
 		return addTag(name, file, PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
@@ -295,7 +295,7 @@ int scanETagsLine(const QString &line, const QString &tagPath, int index, QStrin
 		}
 
 		QString name = searchString.mid(pos + 1, len - pos);
-		pos          = line.midRef(posCOM + 1).toInt();
+		pos          = line.mid(posCOM + 1).toInt();
 
 		return addTag(name, file, PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
 	}
@@ -306,7 +306,7 @@ int scanETagsLine(const QString &line, const QString &tagPath, int index, QStrin
 		file = line.left(posCOM);
 
 		// check if that's an include file ...
-		if (line.midRef(posCOM + 1, 7) == QLatin1String("include")) {
+		if (line.mid(posCOM + 1, 7) == QLatin1String("include")) {
 
 			if (!QFileInfo(file).isAbsolute()) {
 				QString incPath = NormalizePathname(tr("%1%2").arg(tagPath, file));
@@ -365,7 +365,7 @@ int loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 		   etags or ctags file.
 		 */
 		if (tagFileType == TFT_CHECK) {
-			if (line.startsWith(0x0c)) { // <np>
+			if (line.startsWith(QChar::FormFeed)) { // <np>
 				tagFileType = TFT_ETAGS;
 			} else {
 				tagFileType = TFT_CTAGS;

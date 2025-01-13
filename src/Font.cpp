@@ -16,6 +16,7 @@ QFont fromString(const QString &fontName) {
 	QFont font;
 	font.fromString(fontName);
 	font.setStyleName(QString());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	QT_WARNING_PUSH
 	QT_WARNING_DISABLE_DEPRECATED
 	// NOTE(eteran): unfortunately, this line seems to matter
@@ -25,6 +26,7 @@ QFont fromString(const QString &fontName) {
 	// See https://github.com/eteran/nedit-ng/issues/274
 	font.setStyleStrategy(QFont::ForceIntegerMetrics);
 	QT_WARNING_POP
+#endif
 	return font;
 }
 

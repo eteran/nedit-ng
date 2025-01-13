@@ -1383,7 +1383,7 @@ bool SkipDelimiter(Input &in, QString *errMsg) {
 bool reportError(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message) {
 
 	// NOTE(eteran): hack to work around the fact that stoppedAt can be a "one past the end iterator"
-	stoppedAt = std::clamp(stoppedAt, 0, string.size() - 1);
+	stoppedAt = std::clamp<int64_t>(stoppedAt, 0, string.size() - 1);
 
 	int nNonWhite = 0;
 	int c;

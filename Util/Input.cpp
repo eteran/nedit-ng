@@ -282,7 +282,8 @@ bool Input::match(const QString &s) {
 		return false;
 	}
 
-	if (string_->midRef(index_, s.size()) == s) {
+	// TODO(eteran): can be potentially optimized to not use a copy
+	if (string_->mid(index_, s.size()) == s) {
 		index_ += s.size();
 		return true;
 	}
