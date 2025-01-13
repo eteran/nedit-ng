@@ -15,7 +15,7 @@ class DialogMultiReplace;
 class DocumentWidget;
 class MainWindow;
 
-class DialogReplace : public Dialog {
+class DialogReplace final : public Dialog {
 	Q_OBJECT
 	friend class DialogMultiReplace;
 

@@ -10,7 +10,7 @@ class DocumentModel;
 class DocumentWidget;
 class MainWindow;
 
-class DialogMultiReplace : public Dialog {
+class DialogMultiReplace final : public Dialog {
 	Q_OBJECT
 public:
 	explicit DialogMultiReplace(DialogReplace *replace, Qt::WindowFlags f = Qt::WindowFlags());

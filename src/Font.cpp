@@ -1,5 +1,6 @@
 
 #include "Font.h"
+
 #include <QFont>
 #include <QFontDatabase>
 #include <QFontInfo>
@@ -16,6 +17,7 @@ QFont fromString(const QString &fontName) {
 	QFont font;
 	font.fromString(fontName);
 	font.setStyleName(QString());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	QT_WARNING_PUSH
 	QT_WARNING_DISABLE_DEPRECATED
 	// NOTE(eteran): unfortunately, this line seems to matter
@@ -25,6 +27,9 @@ QFont fromString(const QString &fontName) {
 	// See https://github.com/eteran/nedit-ng/issues/274
 	font.setStyleStrategy(QFont::ForceIntegerMetrics);
 	QT_WARNING_POP
+#else
+	font.setHintingPreference(QFont::PreferFullHinting);
+#endif
 	return font;
 }
 
@@ -72,14 +77,18 @@ int stringWidth(const QFontMetrics &fm, const QString &s) {
  */
 QList<int> pointSizes(const QFont &font) {
 
-	// attemps to return the list of point sizes supported by this font
+	// attempts to return the list of point sizes supported by this font
 	// but that list CAN be empty. If it is, just fall back on the standard
 	// list of sizes which may or may be usable... but it's arguably better
 	// than an empty list
-
-	QFontDatabase database;
 	QFontInfo fi(font);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+	QFontDatabase database;
 	QList<int> sizes = database.pointSizes(fi.family(), fi.styleName());
+#else
+	QList<int> sizes = QFontDatabase::pointSizes(fi.family(), fi.styleName());
+#endif
+
 	if (sizes.empty()) {
 		sizes = QFontDatabase::standardSizes();
 	}

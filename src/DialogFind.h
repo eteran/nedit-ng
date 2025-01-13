@@ -14,7 +14,7 @@
 class DocumentWidget;
 class MainWindow;
 
-class DialogFind : public Dialog {
+class DialogFind final : public Dialog {
 	Q_OBJECT
 
 public:

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
-find_package(Qt5 5.5.0 REQUIRED Core Network)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core Network)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core Network)
 
 # extract nedit-ng version info if source directory is a git repo
 message(STATUS "Extracting nedit-ng version info with git...")
@@ -108,15 +109,8 @@ target_link_libraries(Util
 PUBLIC
 	Regex
 	GSL
-	Qt5::Core
-	Qt5::Network
+	Qt${QT_VERSION_MAJOR}::Core
+	Qt${QT_VERSION_MAJOR}::Network
 )
 
 target_add_warnings(Util)
-
-set_target_properties(Util
-PROPERTIES
-	CXX_STANDARD 17
-	CXX_STANDARD_REQUIRED ON
-	CXX_EXTENSIONS OFF
-)

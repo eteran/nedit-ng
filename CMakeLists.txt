@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.15)
 
-project(nedit-ng
-	LANGUAGES CXX
-	VERSION 2025.1)
+project(nedit-ng LANGUAGES CXX VERSION 2025.1)
 
 enable_testing()
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/Modules/")
 include("AddWarnings")
@@ -14,34 +16,10 @@ include("EnableSanitizers")
 include("EnableSTLDebug")
 include("Profiling")
 include("ProjectDefaults")
+include("QtTranslations")
 
 set(CMAKE_PROJECT_HOMEPAGE_URL "https://github.com/eteran/nedit-ng")
 set(CMAKE_PROJECT_DESCRIPTION "A Qt port of the Nirvana Editor (NEdit)")
-
-set(CPACK_PACKAGE_NAME "nedit-ng")
-set(CPACK_PACKAGE_CONTACT "Evan Teran <evan.teran@gmail.com>")
-set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/README.md")
-set(CPACK_PACKAGE_VENDOR "Evan Teran")
-
-set(CPACK_RPM_PACKAGE_LICENSE "GPL-2")
-set(CPACK_RPM_PACKAGE_GROUP "Applications/Editors")
-
-# build requirements...
-# set(CPACK_RPM_PACKAGE_REQUIRES "qt5-qtbase-devel, qt5-linguist, gcc, gcc-c++, cmake")
-set(CPACK_RPM_PACKAGE_REQUIRES "qt5-qtbase >= 5.6")
-set(CPACK_RPM_FILE_NAME RPM-DEFAULT)
-
-set(CPACK_DEBIAN_PACKAGE_BUILD_DEPENDS "cmake (>= 3.0), qt5-default (>= 5.6), qtbase5-dev-tools (>= 5.6), qttools5-dev-tools (>= 5.6), qttools5-dev (>= 5.6), bison (>=3.0)")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libqt5core5a (>= 5.6), libqt5gui5 (>= 5.6), libqt5network5 (>= 5.6), libqt5printsupport5 (>= 5.6), libqt5widgets5 (>= 5.6), libqt5xml5 (>= 5.6)")
-set(CPACK_DEBIAN_PACKAGE_HOMEPAGE ${CMAKE_PROJECT_HOMEPAGE_URL})
-set(CPACK_DEBIAN_PACKAGE_SECTION "editors")
-set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
-
-set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/LICENSE.md")
-set(CPACK_STRIP_FILES "bin/nc-ng")
-set(CPACK_STRIP_FILES "bin/nedit-import")
-set(CPACK_STRIP_FILES "bin/nedit-ng")
-include(CPack)
 
 set(NEDIT_PURIFY            OFF CACHE BOOL "Fill Unused TextBuffer space")
 set(NEDIT_PER_TAB_CLOSE     ON  CACHE BOOL "Per Tab Close Buttons")

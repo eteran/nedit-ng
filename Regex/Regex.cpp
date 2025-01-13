@@ -177,15 +177,15 @@ bool Regex::execute(std::string_view string, size_t offset, size_t end_offset, i
 	assert(offset <= end_offset);
 	assert(end_offset <= string.size());
 	return ExecRE(
-		&string[offset],
-		&string[end_offset],
+		string.data() + offset,
+		string.data() + end_offset,
 		reverse,
 		prev,
 		succ,
 		delimiters,
 		string.data(),
-		&string[string.size()],
-		&string[string.size()]);
+		string.data() + string.size(),
+		string.data() + string.size());
 }
 
 /*----------------------------------------------------------------------*

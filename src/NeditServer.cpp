@@ -6,9 +6,9 @@
 #include "Preferences.h"
 #include "Util/FileSystem.h"
 #include "Util/ServerCommon.h"
+
 #include <QApplication>
 #include <QDataStream>
-#include <QDesktopWidget>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -16,6 +16,7 @@
 #include <QLocalSocket>
 #include <QScreen>
 #include <QVarLengthArray>
+
 #include <memory>
 
 namespace {

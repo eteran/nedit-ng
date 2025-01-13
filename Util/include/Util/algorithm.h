@@ -4,9 +4,9 @@
 
 #include <QtGlobal>
 #include <algorithm>
+#include <cstddef>
 #include <string_view>
 #include <type_traits>
-#include <cstddef>
 
 // container algorithms
 

@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.15)
 
 find_package(BISON QUIET)
-find_package(Qt5 5.5.0 REQUIRED Core)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Core)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Core)
 
 # using a different name from parse.cpp
 # because it will also output parse.h, which will conflict with the
@@ -29,18 +30,11 @@ target_include_directories(Interpreter
 	PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_link_libraries(Interpreter
-PUBLIC
-	Qt5::Core
-	Util
-	GSL
-)
-
 target_add_warnings(Interpreter)
 
-set_target_properties(Interpreter
-PROPERTIES
-	CXX_STANDARD 17
-	CXX_STANDARD_REQUIRED ON
-	CXX_EXTENSIONS OFF
+target_link_libraries(Interpreter
+PUBLIC
+	Util
+	GSL
+	Qt${QT_VERSION_MAJOR}::Core
 )

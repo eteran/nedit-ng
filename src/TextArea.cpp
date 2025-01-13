@@ -28,11 +28,11 @@
 #include <QPainter>
 #include <QPainterPath>
 #include <QPoint>
+#include <QRegularExpression>
 #include <QResizeEvent>
 #include <QScreen>
 #include <QScrollBar>
 #include <QShortcut>
-#include <QTextCodec>
 #include <QTimer>
 #include <QtDebug>
 #include <QtGlobal>
@@ -3637,12 +3637,15 @@ void TextArea::setupBGClasses(const QString &str) {
 #else
 			QStringList rangeList = ranges.split(QLatin1Char(','), QString::SkipEmptyParts);
 #endif
-			for (const QString &range : rangeList) {
-				QRegExp regex(QLatin1String("([0-9]+)(?:-([0-9]+))?"));
-				if (regex.exactMatch(range)) {
 
-					const QString lo = regex.cap(1);
-					const QString hi = regex.cap(2);
+			for (const QString &range : rangeList) {
+				QRegularExpression regex(QRegularExpression::anchoredPattern(QLatin1String("([0-9]+)(?:-([0-9]+))?")));
+				QRegularExpressionMatch match = regex.match(range);
+
+				if (match.hasMatch()) {
+
+					const QString lo = match.captured(1);
+					const QString hi = match.captured(2);
 
 					bool loOK;
 					bool hiOK;

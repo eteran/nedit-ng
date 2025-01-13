@@ -13,15 +13,6 @@ if(NEDIT_INCLUDE_DECOMPILER)
 	target_compile_definitions(nedit-regex-test PUBLIC -DNEDIT_INCLUDE_DECOMPILER)
 endif()
 
-
-set_target_properties(nedit-regex-test
-PROPERTIES
-	CXX_STANDARD 17
-	CXX_STANDARD_REQUIRED ON
-	CXX_EXTENSIONS OFF
-	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
-)
-
 add_test(
 	NAME nedit-regex-test
 	COMMAND $<TARGET_FILE:nedit-regex-test>
