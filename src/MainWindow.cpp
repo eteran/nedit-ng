@@ -3269,8 +3269,11 @@ void MainWindow::action_Mark_Shortcut() {
 		const QKeySequence sequence = shortcut->key();
 
 		if (DocumentWidget *document = currentDocument()) {
-
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             const Qt::Key key = sequence[1].key();
+#else
+            const int key = sequence[1];
+#endif
             if (key >= Qt::Key_A && key <= Qt::Key_Z) {
                 QString keyseq(QChar{key});
 				action_Mark(document, keyseq);
@@ -3351,7 +3354,11 @@ void MainWindow::action_Goto_Mark_Shortcut_Helper(bool shifted) {
 
 		if (DocumentWidget *document = currentDocument()) {
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
             const Qt::Key key = sequence[1].key();
+#else
+            const int key = sequence[1];
+#endif
             if (key >= Qt::Key_A && key <= Qt::Key_Z) {
                 QString keyseq(QChar{key});
 				action_Goto_Mark(document, keyseq, shifted);

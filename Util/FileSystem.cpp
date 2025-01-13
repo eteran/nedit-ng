@@ -119,7 +119,8 @@ FileFormats FormatOfFile(std::string_view text) {
 	size_t nNewlines = 0;
 	size_t nReturns  = 0;
 
-	const auto end = std::min(text.end(), text.begin() + FORMAT_SAMPLE_CHARS);
+	const size_t sampleSize = std::min<size_t>(text.size(), FORMAT_SAMPLE_CHARS);
+	const auto end          = text.begin() + sampleSize;
 
 	for (auto it = text.begin(); it != end; ++it) {
 		if (*it == '\n') {
