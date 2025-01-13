@@ -1594,7 +1594,7 @@ std::error_code lengthMS(DocumentWidget *document, Arguments arguments, DataValu
 		return ec;
 	}
 
-	*result = make_value(string.size());
+	*result = make_value(static_cast<int64_t>(string.size()));
 	return MacroErrorCode::Success;
 }
 
