@@ -451,7 +451,9 @@ constexpr const char *formatted_string([[maybe_unused]] T s) {
 
 template <class R, class T>
 constexpr R formatted_pointer([[maybe_unused]] T p) {
-	if constexpr (std::is_convertible<T, const void *>::value) {
+	if constexpr (std::is_same<R, uintptr_t>::value) {
+		return reinterpret_cast<uintptr_t>(p);
+	} else if constexpr (std::is_convertible<T, const void *>::value) {
 		return reinterpret_cast<R>(reinterpret_cast<uintptr_t>(p));
 	}
 	Raise<format_error>("Non-Pointer Argument For Pointer Format");
