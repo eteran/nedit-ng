@@ -131,6 +131,9 @@ void restoreContext(Pointer context) {
 */
 template <class... T>
 int execError(const std::error_code &error_code, T &&...args) {
+	// NOTE(eteran): this warning is not needed for this function because
+	// we happen to know that the inputs for `execError` always originate
+	// from string constants
 	QT_WARNING_PUSH
 	QT_WARNING_DISABLE_GCC("-Wformat-security")
 	static char msg[MAX_ERR_MSG_LEN];
@@ -143,6 +146,9 @@ int execError(const std::error_code &error_code, T &&...args) {
 
 template <class... T>
 int execError(const char *s1, T &&...args) {
+	// NOTE(eteran): this warning is not needed for this function because
+	// we happen to know that the inputs for `execError` always originate
+	// from string constants
 	QT_WARNING_PUSH
 	QT_WARNING_DISABLE_GCC("-Wformat-security")
 	static char msg[MAX_ERR_MSG_LEN];
