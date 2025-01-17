@@ -54,7 +54,7 @@ constexpr auto ssize(const C &c) -> std::common_type_t<ptrdiff_t, std::make_sign
 }
 
 template <class T, ptrdiff_t N>
-constexpr ptrdiff_t ssize(const T (&array)[N]) noexcept {
+constexpr ptrdiff_t ssize(const T (&)[N]) noexcept {
 	return N;
 }
 
