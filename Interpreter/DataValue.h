@@ -141,8 +141,8 @@ inline bool is_array(const DataValue &dv) {
 
 inline std::string to_string(const DataValue &dv) {
 
-	if (auto n = std::get_if<int>(&dv.value)) {
-		return std::to_string(*n);
+	if (auto n = std::get<int>(dv.value)) {
+		return std::to_string(n);
 	}
 	return std::get<std::string>(dv.value);
 }

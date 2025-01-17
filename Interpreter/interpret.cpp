@@ -1,11 +1,9 @@
 
 #include "interpret.h"
-#include "Printf.h"
 #include "Util/utils.h"
 #include <cassert>
 #include <cmath>
 #include <gsl/gsl_util>
-#include <sstream>
 
 // This enables preemption, useful to disable it for debugging things
 #define ENABLE_PREEMPTION
@@ -61,8 +59,8 @@ Inst **LoopStackPtr = LoopStack;   //  to fill at the end of a loop
 // Global data for the interpreter
 MacroContext Context;
 
-QString ErrorMessage; // global for returning error messages from executing functions
-bool PreemptRequest;  // passes preemption requests from called routines back up to the interpreter
+const char *ErrorMessage; // global for returning error messages from executing functions
+bool PreemptRequest;      // passes preemption requests from called routines back up to the interpreter
 
 // Stack-> symN-sym0(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
 constexpr int FP_ARG_ARRAY_CACHE_INDEX = -1;
@@ -133,23 +131,25 @@ void restoreContext(Pointer context) {
 */
 template <class... T>
 int execError(const std::error_code &error_code, T &&...args) {
-
-	std::stringstream ss;
+	QT_WARNING_PUSH
+	QT_WARNING_DISABLE_GCC("-Wformat-security")
+	static char msg[MAX_ERR_MSG_LEN];
 	std::string str = error_code.message();
-	cxx17::sprintf(ss, str.c_str(), std::forward<T>(args)...);
-
-	ErrorMessage = QString::fromStdString(ss.str());
+	qsnprintf(msg, sizeof(msg), str.c_str(), std::forward<T>(args)...);
+	ErrorMessage = msg;
 	return STAT_ERROR;
+	QT_WARNING_POP
 }
 
 template <class... T>
 int execError(const char *s1, T &&...args) {
-
-	std::stringstream ss;
-	cxx17::sprintf(ss, s1, std::forward<T>(args)...);
-
-	ErrorMessage = QString::fromStdString(ss.str());
+	QT_WARNING_PUSH
+	QT_WARNING_DISABLE_GCC("-Wformat-security")
+	static char msg[MAX_ERR_MSG_LEN];
+	qsnprintf(msg, sizeof(msg), s1, std::forward<T>(args)...);
+	ErrorMessage = msg;
 	return STAT_ERROR;
+	QT_WARNING_POP
 }
 
 /*
@@ -565,7 +565,7 @@ ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation,
 	** until one returns something other than STAT_OK, then take action
 	*/
 	restoreContext(continuation);
-	ErrorMessage = QString();
+	ErrorMessage = nullptr;
 	Q_FOREVER {
 
 		// Execute an instruction
@@ -580,7 +580,7 @@ ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation,
 			restoreContext(&oldContext);
 			return MACRO_PREEMPT;
 		case STAT_ERROR:
-			*msg = ErrorMessage;
+			*msg = QString::fromLatin1(ErrorMessage);
 			restoreContext(&oldContext);
 			return MACRO_ERROR;
 		case STAT_DONE:
