@@ -20,6 +20,15 @@ int test_regex_match(std::string_view regex, std::string_view input) {
 	return -1;
 }
 
+bool test_regex_error(std::string_view regex) {
+	try {
+		Regex re(regex, RE_DEFAULT_STANDARD);
+	} catch (const std::exception &) {
+		return true;
+	}
+	return false;
+}
+
 }
 
 int main() {
@@ -742,8 +751,9 @@ int main() {
 				std::cerr << "GOT      : " << bytes << std::endl;
 				return -1;
 			}
-		} catch (...) {
+		} catch (const std::exception &e) {
 			std::cerr << "EXCEPTION: " << t.input << '\n';
+			std::cerr << e.what() << '\n';
 			return -1;
 		}
 	}
@@ -770,6 +780,41 @@ int main() {
 
 	if (test_regex_match("$", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != 0) {
 		std::cerr << "ERROR    : Failed to match buffer end" << std::endl;
+		return -1;
+	}
+
+	if (test_regex_match("[0-9]{1,1234}", "123456") != 0) {
+		std::cerr << "ERROR    : Failed to match min/max" << std::endl;
+		return -1;
+	}
+
+	if(!test_regex_error("[0-9]{0}")) {
+		std::cerr << "ERROR    : Failed to catch invalid range (1)" << std::endl;
+		return -1;
+	}
+
+	if(!test_regex_error("[0-9]{0,0}")) {
+		std::cerr << "ERROR    : Failed to catch invalid range (2)" << std::endl;
+		return -1;
+	}
+
+	if(!test_regex_error("[0-9]{1,0}")) {
+		std::cerr << "ERROR    : Failed to catch invalid range (3)" << std::endl;
+		return -1;
+	}
+
+	if(!test_regex_error("[0-9]{,0}")) {
+		std::cerr << "ERROR    : Failed to catch invalid range (4)" << std::endl;
+		return -1;
+	}
+
+	if(!test_regex_error("[0-9]{1,2")) {
+		std::cerr << "ERROR    : Failed to catch missing end bracket" << std::endl;
+		return -1;
+	}
+
+	if(!test_regex_error("[0-9]{10,2}")) {
+		std::cerr << "ERROR    : Failed to catch backwards range" << std::endl;
 		return -1;
 	}
 
