@@ -23,12 +23,24 @@ QByteArray loadResource(const QString &resource) {
 	auto defaults = QByteArray::fromRawData(reinterpret_cast<const char *>(res.data()), gsl::narrow<int>(res.size()));
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 13, 0)
-	if (res.compressionAlgorithm() == QResource::ZlibCompression) {
+	switch (res.compressionAlgorithm()) {
+	case QResource::NoCompression:
+		break;
+	case QResource::ZlibCompression:
+		defaults = qUncompress(defaults);
+		break;
+	case QResource::ZstdCompression:
+		qFatal("Resources compiled with Zstd compression which is not supported by this build of NEdit.");
+		break;
+	default:
+		qFatal("Resources compiled with an unsupported compression algorithm.");
+		break;
+	}
 #else
 	if (res.isCompressed()) {
-#endif
 		defaults = qUncompress(defaults);
 	}
+#endif
 
 	return defaults;
 }
