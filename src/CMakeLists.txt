@@ -229,10 +229,13 @@ set(PROJECT_SOURCES
 set(TRANSLATIONS_QRC ${CMAKE_CURRENT_BINARY_DIR}/i18n.qrc)
 
 if(QT_VERSION_MAJOR EQUAL 6)
-	qt6_add_resources(PROJECT_SOURCES
-		res/nedit-ng.qrc
-		res/breeze-nedit.qrc
-		res/breeze-dark-nedit.qrc
+        qt6_add_resources(
+        PROJECT_SOURCES
+            res/nedit-ng.qrc
+            res/breeze-nedit.qrc
+            res/breeze-dark-nedit.qrc
+        OPTIONS
+            --compress-algo zlib
 	)
 
 	qt6_add_translation(QM_FILES ${TS_FILES})
@@ -246,10 +249,11 @@ if(QT_VERSION_MAJOR EQUAL 6)
 		${APP_ICON_RESOURCE_WINDOWS}
     )
 else()
-	qt5_add_resources(PROJECT_SOURCES
-		res/nedit-ng.qrc
-		res/breeze-nedit.qrc
-		res/breeze-dark-nedit.qrc
+        qt5_add_resources(
+        PROJECT_SOURCES
+            res/nedit-ng.qrc
+            res/breeze-nedit.qrc
+            res/breeze-dark-nedit.qrc
 	)
 
 	qt5_add_translation(QM_FILES ${TS_FILES})
