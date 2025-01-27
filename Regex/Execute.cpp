@@ -888,7 +888,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 		default:
 			if ((GET_OP_CODE(scan) > OPEN) && (GET_OP_CODE(scan) < OPEN + MaxSubExpr)) {
 
-				uint8_t no       = GET_OP_CODE(scan) - OPEN;
+				const uint8_t no = GET_OP_CODE(scan) - OPEN;
 				const char *save = eContext.Reg_Input;
 
 				if (no < 10) {
@@ -910,7 +910,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				}
 			} else if ((GET_OP_CODE(scan) > CLOSE) && (GET_OP_CODE(scan) < CLOSE + MaxSubExpr)) {
 
-				uint8_t no       = GET_OP_CODE(scan) - CLOSE;
+				const uint8_t no = GET_OP_CODE(scan) - CLOSE;
 				const char *save = eContext.Reg_Input;
 
 				if (no < 10) {

@@ -41,7 +41,7 @@ QString copyMacroToEnd(Input &in) {
 	// to anchor the parse (if not, it will take the whole file)
 	input.skipWhitespaceNL();
 
-	QString code = input.mid();
+	const QString code = input.mid();
 
 	if (!code.startsWith(QLatin1Char('{'))) {
 		Preferences::reportError(

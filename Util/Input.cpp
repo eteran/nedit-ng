@@ -207,7 +207,7 @@ bool Input::operator!=(const Input &rhs) const {
 void Input::consume(const QString &chars) {
 
 	while (!atEnd()) {
-		QChar ch = peek();
+		const QChar ch = peek();
 
 		if (chars.indexOf(ch) == -1) {
 			break;
@@ -222,7 +222,7 @@ void Input::consume(const QString &chars) {
  * @param re
  */
 void Input::consume(const QRegularExpression &re) {
-	QRegularExpressionMatch match = re.match(
+	const QRegularExpressionMatch match = re.match(
 		*string_,
 		index_,
 		QRegularExpression::NormalMatch,
@@ -247,7 +247,7 @@ void Input::consume(const QRegularExpression &re) {
  */
 bool Input::match(const QRegularExpression &re, QString *m) {
 
-	QRegularExpressionMatch match = re.match(
+	const QRegularExpressionMatch match = re.match(
 		*string_,
 		index_,
 		QRegularExpression::NormalMatch,

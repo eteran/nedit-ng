@@ -7326,7 +7326,7 @@ UTextBuffer *TextArea::styleBuffer() const {
  * @param font
  */
 void TextArea::updateFontMetrics(const QFont &font) {
-	QFontInfo fi(font);
+	const QFontInfo fi(font);
 
 	if (!fi.fixedPitch()) {
 		qWarning("NEdit: a variable width font has been specified. This is not supported, and will result in unexpected results");

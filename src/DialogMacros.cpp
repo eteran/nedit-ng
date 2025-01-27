@@ -352,7 +352,7 @@ bool DialogMacros::applyDialogChanges() {
 		}
 
 		// Get the current selected item
-		QModelIndex index = ui.listItems->currentIndex();
+		const QModelIndex index = ui.listItems->currentIndex();
 		if (!index.isValid()) {
 			return false;
 		}
@@ -409,7 +409,7 @@ bool DialogMacros::updateCurrentItem(const QModelIndex &index) {
  * @return
  */
 bool DialogMacros::updateCurrentItem() {
-	QModelIndex index = ui.listItems->currentIndex();
+	const QModelIndex index = ui.listItems->currentIndex();
 	if (index.isValid()) {
 		return updateCurrentItem(index);
 	}

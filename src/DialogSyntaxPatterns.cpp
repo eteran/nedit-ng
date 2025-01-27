@@ -317,7 +317,7 @@ bool DialogSyntaxPatterns::updateCurrentItem(const QModelIndex &index) {
  * @return
  */
 bool DialogSyntaxPatterns::updateCurrentItem() {
-	QModelIndex index = ui.listItems->currentIndex();
+	const QModelIndex index = ui.listItems->currentIndex();
 	if (index.isValid()) {
 		return updateCurrentItem(index);
 	}

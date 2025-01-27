@@ -1341,7 +1341,7 @@ void showMatchingCalltip(QWidget *parent, TextArea *area, int id) {
  * @return
  */
 bool searchLine(const QString &line, const QRegularExpression &re) {
-	QRegularExpressionMatch match = re.match(line);
+	const QRegularExpressionMatch match = re.match(line);
 	return match.hasMatch();
 }
 

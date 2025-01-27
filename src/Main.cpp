@@ -249,7 +249,7 @@ Main::Main(const QStringList &args) {
 		} else if (opts && args[i] == QLatin1String("-import")) {
 			i = nextArg(args, i); // already processed, skip
 		} else if (opts && (args[i] == QLatin1String("-V") || args[i] == QLatin1String("-version"))) {
-			QString infoString = DialogAbout::createInfoString();
+			const QString infoString = DialogAbout::createInfoString();
 			printf("%s", qPrintable(infoString));
 			exit(EXIT_SUCCESS);
 		} else if (opts && (args[i] == QLatin1String("-h") || args[i] == QLatin1String("-help"))) {

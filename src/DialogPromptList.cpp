@@ -31,7 +31,7 @@ void DialogPromptList::setMessage(const QString &text) {
 }
 
 void DialogPromptList::setList(const QString &string) {
-	QStringList items = string.split(QLatin1Char('\n'));
+	const QStringList items = string.split(QLatin1Char('\n'));
 	ui.listWidget->clear();
 	ui.listWidget->addItems(items);
 }

@@ -70,7 +70,7 @@ void DialogFilter::showEvent(QShowEvent *event) {
  */
 void DialogFilter::buttonBox_accepted() {
 
-	QString s = ui.textFilter->text();
+	const QString s = ui.textFilter->text();
 	if (!s.isEmpty()) {
 		history_ << s;
 	}

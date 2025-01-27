@@ -310,7 +310,7 @@ bool DialogShellMenu::applyDialogChanges() {
 		}
 
 		// Get the current selected item
-		QModelIndex index = ui.listItems->currentIndex();
+		const QModelIndex index = ui.listItems->currentIndex();
 		if (!index.isValid()) {
 			return false;
 		}
@@ -376,7 +376,7 @@ bool DialogShellMenu::updateCurrentItem(const QModelIndex &index) {
  * @return
  */
 bool DialogShellMenu::updateCurrentItem() {
-	QModelIndex index = ui.listItems->currentIndex();
+	const QModelIndex index = ui.listItems->currentIndex();
 	if (index.isValid()) {
 		return updateCurrentItem(index);
 	}

@@ -121,7 +121,7 @@ QString copyMacroToEnd(Input &in) {
 	// to anchor the parse (if not, it will take the whole file)
 	input.skipWhitespaceNL();
 
-	QString code = input.mid();
+	const QString code = input.mid();
 
 	if (!code.startsWith(QLatin1Char('{'))) {
 		qWarning("Error In Macro/Command String");
@@ -443,9 +443,9 @@ QString covertRGBColor(const QString &color) {
 
 		QRegularExpressionMatch match = rgb_regex.match(color);
 		if (match.hasMatch()) {
-			uint16_t r = match.captured(QLatin1String("red")).toUShort(nullptr, 16);
-			uint16_t g = match.captured(QLatin1String("green")).toUShort(nullptr, 16);
-			uint16_t b = match.captured(QLatin1String("blue")).toUShort(nullptr, 16);
+			const uint16_t r = match.captured(QLatin1String("red")).toUShort(nullptr, 16);
+			const uint16_t g = match.captured(QLatin1String("green")).toUShort(nullptr, 16);
+			const uint16_t b = match.captured(QLatin1String("blue")).toUShort(nullptr, 16);
 
 			QColor c(r, g, b);
 			auto newColor = QString::asprintf("#%02x%02x%02x",
@@ -469,9 +469,9 @@ QString covertRGBColor(const QString &color) {
 
 		QRegularExpressionMatch match_rgbi = rgbi_regex.match(color);
 		if (match_rgbi.hasMatch()) {
-			qreal r = match_rgbi.captured(QLatin1String("red")).toDouble();
-			qreal g = match_rgbi.captured(QLatin1String("green")).toDouble();
-			qreal b = match_rgbi.captured(QLatin1String("blue")).toDouble();
+			const qreal r = match_rgbi.captured(QLatin1String("red")).toDouble();
+			const qreal g = match_rgbi.captured(QLatin1String("green")).toDouble();
+			const qreal b = match_rgbi.captured(QLatin1String("blue")).toDouble();
 
 			QColor c(static_cast<int>(r * 255), static_cast<int>(g * 255), static_cast<int>(b * 255));
 			auto newColor = QString::asprintf("#%02x%02x%02x",
@@ -497,14 +497,14 @@ QString covertRGBColor(const QString &color) {
 int main(int argc, char *argv[]) {
 
 	if (argc != 2) {
-		std::cerr << "usage: " << argv[0] << " <filename>" << std::endl;
+		std::cerr << "usage: " << argv[0] << " <filename>" << '\n';
 		return -1;
 	}
 
 	Display *dpy = XOpenDisplay(nullptr);
 
 	if (!dpy) {
-		std::cout << "Could not open DISPLAY." << std::endl;
+		std::cout << "Could not open DISPLAY." << '\n';
 		return -1;
 	}
 
@@ -512,7 +512,7 @@ int main(int argc, char *argv[]) {
 
 	std::ifstream file(argv[1]);
 	if (!file) {
-		std::cout << "Could not open resource file." << std::endl;
+		std::cout << "Could not open resource file." << '\n';
 		return -1;
 	}
 
@@ -520,10 +520,10 @@ int main(int argc, char *argv[]) {
 
 	XrmDatabase prefDB = XrmGetStringDatabase(contents.data());
 
-	QString value = readResource<QString>(prefDB, "nedit.fileVersion");
+	const QString value = readResource<QString>(prefDB, "nedit.fileVersion");
 
 	if (value != QLatin1String("5.6") && value != QLatin1String("5.7")) {
-		std::cout << "Importing is only supported for NEdit 5.6 and 5.7" << std::endl;
+		std::cout << "Importing is only supported for NEdit 5.6 and 5.7" << '\n';
 		return -1;
 	}
 
@@ -645,7 +645,7 @@ int main(int argc, char *argv[]) {
 
 	QString line;
 	while (stream.readLineInto(&line)) {
-		QRegularExpressionMatch match = re.match(line);
+		const QRegularExpressionMatch match = re.match(line);
 		if (match.hasMatch()) {
 			Style s;
 			s.name       = match.captured(QLatin1String("name"));
@@ -665,6 +665,6 @@ int main(int argc, char *argv[]) {
 	Settings::savePreferences();
 
 	// Write the theme XML file
-	QString themeFilename = Settings::themeFile();
+	const QString themeFilename = Settings::themeFile();
 	SaveTheme(themeFilename, styles);
 }

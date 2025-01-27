@@ -91,7 +91,7 @@ void DialogFonts::updateFont() {
 
 	QFont font = ui.fontCombo->currentFont();
 	font.setPointSize(ui.fontSize->currentData().toInt());
-	QString fontName = font.toString();
+	const QString fontName = font.toString();
 
 	if (document_) {
 		document_->action_Set_Fonts(fontName);

@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
 		for (int i = 1; i < argc && strcmp(argv[i], "--") != 0; i++) {
 
 			if (strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0) {
-				QString infoString = DialogAbout::createInfoString();
+				const QString infoString = DialogAbout::createInfoString();
 				printf("%s", qPrintable(infoString));
 				exit(EXIT_SUCCESS);
 			}

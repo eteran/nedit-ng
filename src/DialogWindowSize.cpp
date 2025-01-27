@@ -35,7 +35,7 @@ void DialogWindowSize::buttonBox_accepted() {
 		return;
 	}
 
-	int rowValue = width.toInt(&ok);
+	const int rowValue = width.toInt(&ok);
 	if (!ok) {
 		QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in number of rows").arg(width));
 		return;
@@ -46,7 +46,7 @@ void DialogWindowSize::buttonBox_accepted() {
 		return;
 	}
 
-	int colValue = height.toInt(&ok);
+	const int colValue = height.toInt(&ok);
 	if (!ok) {
 		QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in number of columns").arg(height));
 		return;

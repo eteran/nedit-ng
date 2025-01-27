@@ -335,7 +335,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 		}
 
 		// Get the current selected item
-		QModelIndex index = ui.listItems->currentIndex();
+		const QModelIndex index = ui.listItems->currentIndex();
 		if (!index.isValid()) {
 			return false;
 		}
@@ -401,7 +401,7 @@ bool DialogWindowBackgroundMenu::updateCurrentItem(const QModelIndex &index) {
  * @return
  */
 bool DialogWindowBackgroundMenu::updateCurrentItem() {
-	QModelIndex index = ui.listItems->currentIndex();
+	const QModelIndex index = ui.listItems->currentIndex();
 	if (index.isValid()) {
 		return updateCurrentItem(index);
 	}

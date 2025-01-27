@@ -66,10 +66,10 @@ void load() {
 		for (; !style.isNull(); style = style.nextSiblingElement(QLatin1String("style"))) {
 
 			HighlightStyle hs;
-			hs.name      = style.attribute(QLatin1String("name"));
-			hs.color     = style.attribute(QLatin1String("foreground"), QLatin1String("black"));
-			hs.bgColor   = style.attribute(QLatin1String("background"), QString());
-			QString font = style.attribute(QLatin1String("font"), QLatin1String("Plain"));
+			hs.name            = style.attribute(QLatin1String("name"));
+			hs.color           = style.attribute(QLatin1String("foreground"), QLatin1String("black"));
+			hs.bgColor         = style.attribute(QLatin1String("background"), QString());
+			const QString font = style.attribute(QLatin1String("font"), QLatin1String("Plain"));
 
 			if (hs.name.isEmpty()) {
 				qWarning("NEdit: style name required");

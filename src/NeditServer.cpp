@@ -124,8 +124,8 @@ QScreen *current_desktop() {
 NeditServer::NeditServer(QObject *parent)
 	: QObject(parent) {
 
-	QString socketName = LocalSocketName(Preferences::GetPrefServerName());
-	server_            = new QLocalServer(this);
+	const QString socketName = LocalSocketName(Preferences::GetPrefServerName());
+	server_                  = new QLocalServer(this);
 	server_->setSocketOptions(QLocalServer::UserAccessOption);
 	connect(server_, &QLocalServer::newConnection, this, &NeditServer::newConnection);
 

@@ -339,7 +339,7 @@ bool DialogDrawingStyles::applyDialogChanges() {
 		}
 
 		// Get the current selected item
-		QModelIndex index = ui.listItems->currentIndex();
+		const QModelIndex index = ui.listItems->currentIndex();
 		if (!index.isValid()) {
 			return false;
 		}
@@ -423,7 +423,7 @@ bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
  * @return
  */
 bool DialogDrawingStyles::updateCurrentItem() {
-	QModelIndex index = ui.listItems->currentIndex();
+	const QModelIndex index = ui.listItems->currentIndex();
 	if (index.isValid()) {
 		return updateCurrentItem(index);
 	}

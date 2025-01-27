@@ -367,7 +367,7 @@ std::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity)
  */
 bool DialogLanguageModes::updateLanguageList(Verbosity verbosity) {
 
-	QModelIndex index = ui.listItems->currentIndex();
+	const QModelIndex index = ui.listItems->currentIndex();
 	if (!index.isValid()) {
 		return false;
 	}
@@ -598,7 +598,7 @@ bool DialogLanguageModes::LMHasHighlightPatterns(const QString &name) const {
  */
 void DialogLanguageModes::buttonDelete_clicked() {
 
-	QModelIndex index = ui.listItems->currentIndex();
+	const QModelIndex index = ui.listItems->currentIndex();
 	if (index.isValid()) {
 		if (auto current = model_->itemFromIndex(index)) {
 
@@ -658,7 +658,7 @@ bool DialogLanguageModes::updateCurrentItem(const QModelIndex &index) {
  * @return
  */
 bool DialogLanguageModes::updateCurrentItem() {
-	QModelIndex index = ui.listItems->currentIndex();
+	const QModelIndex index = ui.listItems->currentIndex();
 	if (index.isValid()) {
 		return updateCurrentItem(index);
 	}

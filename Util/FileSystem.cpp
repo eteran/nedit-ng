@@ -67,7 +67,7 @@ PathInfo parseFilename(const QString &fullname) {
 QString NormalizePathname(const QString &pathname) {
 
 	QString path = QDir::cleanPath(pathname);
-	QFileInfo fi(path);
+	const QFileInfo fi(path);
 
 	// if this is a relative pathname, prepend current directory
 	if (fi.isRelative()) {

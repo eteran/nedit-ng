@@ -138,7 +138,7 @@ void DocumentModel::clear() {
  */
 void DocumentModel::moveItemUp(const QModelIndex &index) {
 	if (index.isValid()) {
-		int row = index.row();
+		const int row = index.row();
 		if (row > 0) {
 			beginMoveRows(QModelIndex(), row, row, QModelIndex(), row - 1);
 			moveItem(items_, row, row - 1);
@@ -153,7 +153,7 @@ void DocumentModel::moveItemUp(const QModelIndex &index) {
  */
 void DocumentModel::moveItemDown(const QModelIndex &index) {
 	if (index.isValid()) {
-		int row = index.row();
+		const int row = index.row();
 		if (row < rowCount() - 1) {
 			beginMoveRows(QModelIndex(), row, row, QModelIndex(), row + 2);
 			moveItem(items_, row, row + 1);
@@ -168,7 +168,7 @@ void DocumentModel::moveItemDown(const QModelIndex &index) {
  */
 void DocumentModel::deleteItem(const QModelIndex &index) {
 	if (index.isValid()) {
-		int row = index.row();
+		const int row = index.row();
 		if (row < rowCount()) {
 			beginRemoveRows(QModelIndex(), row, row);
 			items_.remove(row);
@@ -184,7 +184,7 @@ void DocumentModel::deleteItem(const QModelIndex &index) {
  */
 DocumentWidget *DocumentModel::itemFromIndex(const QModelIndex &index) {
 	if (index.isValid()) {
-		int row = index.row();
+		const int row = index.row();
 		if (row < rowCount()) {
 			return items_[row];
 		}
