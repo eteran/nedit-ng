@@ -1,54 +1,23 @@
 cmake_minimum_required(VERSION 3.15)
 
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 
-find_package(Qt5 5.5.0 REQUIRED Widgets Network Xml PrintSupport LinguistTools)
-
-qt5_add_translation(QM_FILES
-	res/translations/nedit-ng_fr.ts
-	res/translations/nedit-ng_fi.ts
-)
+find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets Network Xml PrintSupport LinguistTools)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Network Xml PrintSupport LinguistTools)
 
 if(WIN32)
 	set(APP_ICON_RESOURCE_WINDOWS "res/nedit-ng.rc")
 endif()
 
-# Create translations QRC file - translations.qrc
-set(TRANSLATIONS_QRC "${CMAKE_CURRENT_BINARY_DIR}/translations.qrc")
-
-file(WRITE ${TRANSLATIONS_QRC} "<RCC>\n\t<qresource prefix=\"/translations\">")
-foreach(QM_FILE ${QM_FILES})
-	get_filename_component(QM_FILE_NAME ${QM_FILE} NAME)
-	file(APPEND ${TRANSLATIONS_QRC} "\n\t\t<file>${QM_FILE_NAME}</file>")
-endforeach()
-
-file(APPEND ${TRANSLATIONS_QRC} "\n\t</qresource>\n</RCC>")
-list(APPEND QRC_FILES ${TRANSLATIONS_QRC})
-
-qt5_add_resources(QRC_SOURCES
-	res/nedit-ng.qrc
-	res/breeze-nedit.qrc
-	res/breeze-dark-nedit.qrc
-	${TRANSLATIONS_QRC}
+set(TS_FILES
+	i18n/nedit-ng_fr.ts
+	i18n/nedit-ng_fi.ts
 )
 
-foreach(FILE IN LISTS QRC_SOURCES)
-	set_property(SOURCE ${FILE} PROPERTY SKIP_UNITY_BUILD_INCLUSION ON)
-endforeach()
-
-#set_property(SOURCE NeditServer.cpp PROPERTY SKIP_UNITY_BUILD_INCLUSION ON)
-
-add_executable(nedit-ng
-
-	${QRC_SOURCES}
-	${APP_ICON_RESOURCE_WINDOWS}
-
-	Theme.h
-	Theme.cpp
+set(PROJECT_SOURCES
 	BlockDragTypes.h
 	Bookmark.h
 	CallTip.h
@@ -163,6 +132,9 @@ add_executable(nedit-ng
 	ErrorSound.h
 	Font.cpp
 	Font.h
+	gap_buffer_fwd.h
+	gap_buffer_iterator.h
+	gap_buffer.h
 	Help.cpp
 	Help.h
 	Highlight.cpp
@@ -184,6 +156,8 @@ add_executable(nedit-ng
 	LineNumberArea.h
 	Location.h
 	LockReasons.h
+	macro.cpp
+	macro.h
 	Main.cpp
 	Main.h
 	MainWindow.cpp
@@ -193,6 +167,8 @@ add_executable(nedit-ng
 	MenuItem.h
 	MenuItemModel.cpp
 	MenuItemModel.h
+	nedit.cpp
+	nedit.h
 	NeditServer.cpp
 	NeditServer.h
 	NewMode.h
@@ -207,6 +183,8 @@ add_executable(nedit-ng
 	ReparseContext.h
 	Search.cpp
 	Search.h
+	shift.cpp
+	shift.h
 	ShiftDirection.h
 	SignalBlocker.h
 	SmartIndent.cpp
@@ -232,8 +210,12 @@ add_executable(nedit-ng
 	TextEditEvent.cpp
 	TextEditEvent.h
 	TextRange.h
+	Theme.cpp
+	Theme.h
 	UndoInfo.cpp
 	UndoInfo.h
+	userCmds.cpp
+	userCmds.h
 	Verbosity.h
 	WindowHighlightData.h
 	WindowMenuEvent.cpp
@@ -241,50 +223,95 @@ add_executable(nedit-ng
 	WrapMode.h
 	X11Colors.cpp
 	X11Colors.h
-	gap_buffer.h
-	gap_buffer_fwd.h
-	gap_buffer_iterator.h
-	macro.cpp
-	macro.h
-	nedit.cpp
-	nedit.h
-	shift.cpp
-	shift.h
-	userCmds.cpp
-	userCmds.h
+	${TS_FILES}
 )
+
+set(TRANSLATIONS_QRC ${CMAKE_CURRENT_BINARY_DIR}/i18n.qrc)
+
+if(QT_VERSION_MAJOR EQUAL 6)
+        qt6_add_resources(
+        PROJECT_SOURCES
+            res/nedit-ng.qrc
+            res/breeze-nedit.qrc
+            res/breeze-dark-nedit.qrc
+        OPTIONS
+            --compress-algo zlib
+	)
+
+	qt6_add_translation(QM_FILES ${TS_FILES})
+
+	generate_translation_resource_file(${TRANSLATIONS_QRC} "${QM_FILES}")
+
+    qt6_add_executable(nedit-ng
+        MANUAL_FINALIZATION
+        ${PROJECT_SOURCES}
+		${TRANSLATIONS_QRC}
+		${APP_ICON_RESOURCE_WINDOWS}
+    )
+else()
+        qt5_add_resources(
+        PROJECT_SOURCES
+            res/nedit-ng.qrc
+            res/breeze-nedit.qrc
+            res/breeze-dark-nedit.qrc
+	)
+
+	qt5_add_translation(QM_FILES ${TS_FILES})
+
+	generate_translation_resource_file(${TRANSLATIONS_QRC} "${QM_FILES}")
+
+    add_executable(nedit-ng
+        ${PROJECT_SOURCES}
+		${TRANSLATIONS_QRC}
+		${APP_ICON_RESOURCE_WINDOWS}
+    )
+endif()
 
 target_add_warnings(nedit-ng)
 
 target_link_libraries(nedit-ng
-PUBLIC
+PRIVATE
 	Util
 	Regex
 	Settings
 	Interpreter
 	GSL
-	Qt5::Widgets
-	Qt5::Network
-	Qt5::Xml
-	Qt5::PrintSupport
-PRIVATE
+	Qt${QT_VERSION_MAJOR}::Widgets
+	Qt${QT_VERSION_MAJOR}::Network
+	Qt${QT_VERSION_MAJOR}::Xml
+	Qt${QT_VERSION_MAJOR}::PrintSupport
 	yaml-cpp
 )
 
-set_target_properties(nedit-ng
-PROPERTIES
-	CXX_STANDARD 17
-	CXX_STANDARD_REQUIRED ON
-	CXX_EXTENSIONS OFF
+# Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
+# If you are developing for iOS or macOS you should consider setting an
+# explicit, fixed bundle identifier manually though.
+if(${QT_VERSION} VERSION_LESS 6.1.0)
+	set(BUNDLE_ID_OPTION MACOSX_BUNDLE_GUI_IDENTIFIER com.example.nedit-ng)
+endif()
+
+set_target_properties(nedit-ng PROPERTIES
+	${BUNDLE_ID_OPTION}
+	MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION}
+	MACOSX_BUNDLE_SHORT_VERSION_STRING ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+	MACOSX_BUNDLE TRUE
+	WIN32_EXECUTABLE TRUE
 	RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
 )
 
 if(TARGET_COMPILER_MSVC)
-	set_property(TARGET nedit-ng PROPERTY WIN32_EXECUTABLE ON)
 	target_compile_definitions(nedit-ng
 		PUBLIC -D_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING
-		)
-
+	)
 endif()
 
-install(TARGETS nedit-ng DESTINATION bin)
+include(GNUInstallDirs)
+install(TARGETS nedit-ng
+    BUNDLE DESTINATION .
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+if(QT_VERSION_MAJOR EQUAL 6)
+    qt_finalize_executable(nedit-ng)
+endif()

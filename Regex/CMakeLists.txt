@@ -41,13 +41,6 @@ target_link_libraries(Regex PUBLIC
 
 target_add_warnings(Regex)
 
-set_target_properties(Regex
-PROPERTIES
-	CXX_STANDARD 17
-	CXX_STANDARD_REQUIRED ON
-	CXX_EXTENSIONS OFF
-)
-
 if(NEDIT_BUILD_TESTS)
 	if(NOT MSVC)
 		add_subdirectory("${CMAKE_CURRENT_LIST_DIR}/test")

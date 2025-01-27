@@ -222,7 +222,17 @@ void Input::consume(const QString &chars) {
  * @param re
  */
 void Input::consume(const QRegularExpression &re) {
-	QRegularExpressionMatch match = re.match(string_, index_, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
+	QRegularExpressionMatch match = re.match(
+		*string_,
+		index_,
+		QRegularExpression::NormalMatch,
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		QRegularExpression::AnchorAtOffsetMatchOption
+#else
+		QRegularExpression::AnchoredMatchOption
+#endif
+	);
+
 	if (match.hasMatch()) {
 		QString cap = match.captured(0);
 		index_ += cap.size();
@@ -236,7 +246,17 @@ void Input::consume(const QRegularExpression &re) {
  * @return
  */
 bool Input::match(const QRegularExpression &re, QString *m) {
-	QRegularExpressionMatch match = re.match(string_, index_, QRegularExpression::NormalMatch, QRegularExpression::AnchoredMatchOption);
+
+	QRegularExpressionMatch match = re.match(
+		*string_,
+		index_,
+		QRegularExpression::NormalMatch,
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+		QRegularExpression::AnchorAtOffsetMatchOption
+#else
+		QRegularExpression::AnchoredMatchOption
+#endif
+	);
 	if (match.hasMatch()) {
 
 		QString cap = match.captured(0);
@@ -262,7 +282,8 @@ bool Input::match(const QString &s) {
 		return false;
 	}
 
-	if (string_->midRef(index_, s.size()) == s) {
+	// TODO(eteran): can be potentially optimized to not use a copy
+	if (string_->mid(index_, s.size()) == s) {
 		index_ += s.size();
 		return true;
 	}

@@ -5,7 +5,7 @@
 #include "Dialog.h"
 #include "ui_DialogOutput.h"
 
-class DialogOutput : public Dialog {
+class DialogOutput final : public Dialog {
 	Q_OBJECT
 
 public:

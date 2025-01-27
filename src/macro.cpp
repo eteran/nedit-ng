@@ -1594,7 +1594,7 @@ std::error_code lengthMS(DocumentWidget *document, Arguments arguments, DataValu
 		return ec;
 	}
 
-	*result = make_value(string.size());
+	*result = make_value(static_cast<int64_t>(string.size()));
 	return MacroErrorCode::Success;
 }
 
@@ -1989,7 +1989,7 @@ std::error_code toupperMS(DocumentWidget *document, Arguments arguments, DataVal
 		return ec;
 	}
 
-	// Allocate a new string and copy an uppercased version of the string it
+	// Allocate a new string and copy an upper-case version of the string it
 	for (char &ch : string) {
 		ch = static_cast<char>(safe_toupper(ch));
 	}
@@ -2008,7 +2008,7 @@ std::error_code tolowerMS(DocumentWidget *document, Arguments arguments, DataVal
 		return ec;
 	}
 
-	// Allocate a new string and copy an uppercased version of the string it
+	// Allocate a new string and copy an upper-case version of the string it
 	for (char &ch : string) {
 		ch = static_cast<char>(safe_tolower(ch));
 	}

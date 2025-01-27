@@ -4,7 +4,7 @@
 
 #include <QTabWidget>
 
-class TabWidget : public QTabWidget {
+class TabWidget final : public QTabWidget {
 	Q_OBJECT
 
 public:

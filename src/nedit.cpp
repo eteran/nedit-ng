@@ -100,13 +100,13 @@ int main(int argc, char *argv[]) {
 	// NOTE: for issue #41, translate QMessageBox.
 	QTranslator qtTranslator;
 	if (qtTranslator.load(QLocale(), QLatin1String("qtbase"), QLatin1String("_"), QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
-		QApplication::installTranslator(&qtTranslator);
+		app.installTranslator(&qtTranslator);
 	}
 
 	QTranslator translator;
-	// look up e.g. :/translations/nedit-ng_{lang}.qm
-	if (translator.load(QLocale(), QLatin1String("nedit-ng"), QLatin1String("_"), QLatin1String(":/translations"))) {
-		QApplication::installTranslator(&translator);
+	// look up e.g. :/i18n/nedit-ng_{lang}.qm
+	if (translator.load(QLocale(), QLatin1String("nedit-ng"), QLatin1String("_"), QLatin1String(":/i18n"))) {
+		app.installTranslator(&translator);
 	}
 
 	// NOTE(eteran): for issue #38, re-add -geometry <arg> because Qt has

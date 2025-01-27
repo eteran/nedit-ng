@@ -4,7 +4,7 @@
 
 #include <QLabel>
 
-class ElidedLabel : public QLabel {
+class ElidedLabel final : public QLabel {
 	Q_OBJECT
 	Q_PROPERTY(Qt::TextElideMode textElideMode READ textElideMode WRITE setTextElideMode)
 

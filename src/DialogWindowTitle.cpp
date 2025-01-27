@@ -529,7 +529,7 @@ void DialogWindowTitle::removeFromFormat(const QString &string) {
 	const QRegularExpression re1(tr(R"([\{\(\[\<]?%1[\}\)\]\>]?)").arg(QRegularExpression::escape(string)));
 	format.replace(re1, QString());
 
-	// remove leading/trailing whitspace/dashes
+	// remove leading/trailing whitespace/dashes
 	static const QRegularExpression re2(QLatin1String("^[\\s]+"));
 	static const QRegularExpression re3(QLatin1String("[\\s]+$"));
 	format.replace(re2, QString());

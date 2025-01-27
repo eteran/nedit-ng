@@ -8,14 +8,18 @@ on:
 
 env:
   BUILD_TYPE: Release
+
 jobs:
   build_ubuntu_20:
+    strategy:
+      matrix:
+        QT_VERSION: [5.12.8, 6.7.0]
     runs-on: ubuntu-20.04
     steps:
       - name: Install Qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
-          version: "5.12.8"
+          version: ${{matrix.QT_VERSION}}
           setup-python: 'false'
 
       - name: Checkout
@@ -30,12 +34,15 @@ jobs:
         run: cmake --build ${{github.workspace}}/build --parallel 4 --config ${{env.BUILD_TYPE}}
 
   build_windows:
+    strategy:
+      matrix:
+        QT_VERSION: [5.12.8, 6.7.0]
     runs-on: windows-2022
     steps:
       - name: Install Qt
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
-          version: "5.12.8"
+          version: ${{matrix.QT_VERSION}}
           setup-python: 'false'
 
       - name: Add msbuild to PATH
@@ -56,13 +63,14 @@ jobs:
 
       - name: Deploy app
         run: |
-          mkdir nedit-ng-win64
-          cp ${{github.workspace}}/build/${{env.BUILD_TYPE}}/nedit-ng.exe nedit-ng-win64/
-          cp ${{github.workspace}}/build/${{env.BUILD_TYPE}}/nc-ng.exe nedit-ng-win64/
-          windeployqt --release nedit-ng-win64/nedit-ng.exe
+          mkdir nedit-ng-win64-qt${{matrix.QT_VERSION}}
+          cp ${{github.workspace}}/build/${{env.BUILD_TYPE}}/nedit-ng.exe nedit-ng-win64-qt${{matrix.QT_VERSION}}/
+          cp ${{github.workspace}}/build/${{env.BUILD_TYPE}}/nc-ng.exe nedit-ng-win64-qt${{matrix.QT_VERSION}}/
+          cd nedit-ng-win64-qt${{matrix.QT_VERSION}}
+          windeployqt --release nedit-ng.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: nedit-ng-win64
-          path: nedit-ng-win64/
+          name: nedit-ng-win64-qt${{matrix.QT_VERSION}}
+          path: nedit-ng-win64-qt${{matrix.QT_VERSION}}/
