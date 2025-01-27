@@ -34,7 +34,7 @@ bool DialogRepeat::setCommand(const QString &command) {
 
 	/* make a label for the Last command item of the dialog, which includes
 	   the last executed action name */
-	int index = command.indexOf(QLatin1Char('('));
+	const int index = command.indexOf(QLatin1Char('('));
 	if (index == -1) {
 		return false;
 	}

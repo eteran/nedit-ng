@@ -174,7 +174,7 @@ int scanCTagsLine(const QString &line, const QString &tagPath, int index) {
 
 	static const auto regex = QRegularExpression(QLatin1String(R"(^([^\t]+)\t([^\t]+)\t([^\n]+)$)"));
 
-	QRegularExpressionMatch match = regex.match(line);
+	const QRegularExpressionMatch match = regex.match(line);
 	if (!match.hasMatch()) {
 		return 0;
 	}
@@ -183,8 +183,8 @@ int scanCTagsLine(const QString &line, const QString &tagPath, int index) {
 		return 0;
 	}
 
-	QString name         = match.captured(1);
-	QString file         = match.captured(2);
+	const QString name   = match.captured(1);
+	const QString file   = match.captured(2);
 	QString searchString = match.captured(3);
 
 	if (name.startsWith(QLatin1Char('!'))) {
@@ -869,8 +869,8 @@ bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMod
 		}
 
 		// or if the file isn't found...
-		QFileInfo fileInfo(pathName);
-		QDateTime timestamp = fileInfo.lastModified();
+		const QFileInfo fileInfo(pathName);
+		const QDateTime timestamp = fileInfo.lastModified();
 		if (timestamp.isNull()) {
 			continue;
 		}
@@ -942,8 +942,8 @@ bool addTagsFile(const QString &tagSpec, SearchMode mode) {
 			continue;
 		}
 
-		QFileInfo fileInfo(pathName);
-		QDateTime timestamp = fileInfo.lastModified();
+		const QFileInfo fileInfo(pathName);
+		const QDateTime timestamp = fileInfo.lastModified();
 
 		if (timestamp.isNull()) {
 			// Problem reading this tags file. Return false
@@ -1053,8 +1053,8 @@ QList<Tag> lookupTagFromList(std::deque<File> *FileList, const QString &name, Se
 
 			if (tf.loaded) {
 
-				QFileInfo fileInfo(tf.filename);
-				QDateTime timestamp = fileInfo.lastModified();
+				const QFileInfo fileInfo(tf.filename);
+				const QDateTime timestamp = fileInfo.lastModified();
 
 				if (timestamp.isNull()) {
 					qWarning("NEdit: Error getting status for tag file %s", qPrintable(tf.filename));
@@ -1078,8 +1078,8 @@ QList<Tag> lookupTagFromList(std::deque<File> *FileList, const QString &name, Se
 
 			if (load_status) {
 
-				QFileInfo fileInfo(tf.filename);
-				QDateTime timestamp = fileInfo.lastModified();
+				const QFileInfo fileInfo(tf.filename);
+				const QDateTime timestamp = fileInfo.lastModified();
 
 				if (timestamp.isNull()) {
 					if (!tf.loaded) {
@@ -1319,8 +1319,8 @@ void showMatchingCalltip(QWidget *parent, TextArea *area, int id) {
 		}
 
 		// 5. Copy the calltip to a string
-		int64_t tipLen = endPos - startPos;
-		auto message   = QString::fromLatin1(&fileString[static_cast<size_t>(startPos)], gsl::narrow<int>(tipLen));
+		const int64_t tipLen = endPos - startPos;
+		const auto message   = QString::fromLatin1(&fileString[static_cast<size_t>(startPos)], gsl::narrow<int>(tipLen));
 
 		// 6. Display it
 		tagsShowCalltip(area, message);

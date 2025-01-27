@@ -89,7 +89,7 @@ void DialogTabs::buttonBox_accepted() {
 	}
 
 	bool ok;
-	int tabDist = ui.editTabSpacing->text().toInt(&ok);
+	const int tabDist = ui.editTabSpacing->text().toInt(&ok);
 	if (!ok) {
 		QMessageBox::critical(this, tr("Warning"), tr("Can't read integer value \"%1\" in tab spacing").arg(ui.editTabSpacing->text()));
 		return;

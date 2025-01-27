@@ -163,7 +163,7 @@ void DialogWindowTitle::formatChangedCB() {
 		return; // Prevent recursive feedback
 	}
 
-	QString format = ui.editFormat->text();
+	const QString format = ui.editFormat->text();
 	QString serverName;
 	if (ui.checkServerEqualsCC->isChecked() && ui.checkClearCasePresent->isChecked()) {
 		serverName = viewTag_;
@@ -268,8 +268,8 @@ QString DialogWindowTitle::formatWindowTitleAndUpdate(const QString &filename, c
 
 		if (state.noOfComponents >= 0) {
 
-			QString value = ui.editDirectory->text();
-			auto comp     = QString::number(state.noOfComponents);
+			const QString value = ui.editDirectory->text();
+			const auto comp     = QString::number(state.noOfComponents);
 
 			// Don't overwrite unless diff.
 			if (value != comp) {
@@ -510,7 +510,7 @@ void DialogWindowTitle::checkServerEqualsCC_toggled(bool checked) {
  * @param string
  */
 void DialogWindowTitle::appendToFormat(const QString &string) {
-	QString format = ui.editFormat->text();
+	const QString format = ui.editFormat->text();
 	ui.editFormat->setText(format + string);
 }
 
@@ -545,7 +545,7 @@ void DialogWindowTitle::removeFromFormat(const QString &string) {
 void DialogWindowTitle::buttonBox_clicked(QAbstractButton *button) {
 	if (ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 
-		QString format = ui.editFormat->text();
+		const QString format = ui.editFormat->text();
 
 		if (format != Preferences::GetPrefTitleFormat()) {
 			Preferences::SetPrefTitleFormat(format);
@@ -570,7 +570,7 @@ void DialogWindowTitle::editDirectory_textChanged(const QString &text) {
 
 	QString format = ui.editFormat->text();
 	bool ok;
-	int maxComp = text.toInt(&ok);
+	const int maxComp = text.toInt(&ok);
 
 	static const QRegularExpression re(QLatin1String("%[0-9]?d"));
 
@@ -671,7 +671,7 @@ QString DialogWindowTitle::formatWindowTitleInternal(const QString &filename, co
 					format_it++; // delete the argument
 
 					if (filenameSet) {
-						QString trailingPath = GetTrailingPathComponents(path, noOfComponents);
+						const QString trailingPath = GetTrailingPathComponents(path, noOfComponents);
 
 						// prefix with ellipsis if components were skipped
 						if (trailingPath != path) {

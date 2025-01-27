@@ -152,7 +152,7 @@ void DialogSmartIndent::buttonCheck_clicked() {
  */
 void DialogSmartIndent::buttonDelete_clicked() {
 
-	int resp = QMessageBox::question(
+	const int resp = QMessageBox::question(
 		this,
 		tr("Delete Macros"),
 		tr("Are you sure you want to delete smart indent macros for language mode %1?").arg(languageMode_),
@@ -188,7 +188,7 @@ void DialogSmartIndent::buttonRestore_clicked() {
 		return;
 	}
 
-	int resp = QMessageBox::question(
+	const int resp = QMessageBox::question(
 		this,
 		tr("Discard Changes"),
 		tr("Are you sure you want to discard all changes to smart indent macros for language mode %1?").arg(languageMode_),

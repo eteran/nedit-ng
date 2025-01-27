@@ -43,7 +43,7 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 
 	// default to selecting the first item
 	if (model_->rowCount() != 0) {
-		QModelIndex index = model_->index(0, 0);
+		const QModelIndex index = model_->index(0, 0);
 		ui.listItems->setCurrentIndex(index);
 	}
 }
@@ -104,7 +104,7 @@ void DialogWindowBackgroundMenu::buttonDelete_clicked() {
  */
 void DialogWindowBackgroundMenu::buttonPasteLRMacro_clicked() {
 
-	QString replayMacro = CommandRecorder::instance()->replayMacro();
+	const QString replayMacro = CommandRecorder::instance()->replayMacro();
 	if (replayMacro.isEmpty()) {
 		return;
 	}

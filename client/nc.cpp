@@ -196,7 +196,7 @@ std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			i = nextArg(args, i);
 
 			bool ok;
-			int n = args[i].toInt(&ok);
+			const int n = args[i].toInt(&ok);
 			if (!ok) {
 				fprintf(stderr, "nc-ng: argument to timeout should be a number\n");
 			} else {

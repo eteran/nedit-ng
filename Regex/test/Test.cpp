@@ -724,13 +724,13 @@ int main() {
 		{R"%((?<!\Y)")%", R"(\x9c\x00\x00\x22\x00\x18\x2f\x00\x07\x00\x01\x00\x01\x22\x00\x06\x18\x00\x03\x30\x00\x03\x07\x00\x05\x22\x00\x01\x00\x00)"},
 	};
 
-	for (Test t : tests) {
+	for (const Test &t : tests) {
 		try {
 			Regex re(t.input, RE_DEFAULT_STANDARD);
 
 			std::string bytes;
 
-			for (uint8_t ch : re.program) {
+			for (const uint8_t ch : re.program) {
 				char buf[8];
 				snprintf(buf, sizeof(buf), "\\x%02x", ch & 0xff);
 				bytes.append(buf);
@@ -781,7 +781,7 @@ int main() {
 #endif
 
 #if defined(NEDIT_INCLUDE_DECOMPILER)
-	for (Test t : tests) {
+	for (const Test &t : tests) {
 		try {
 			Regex re(t.input, RE_DEFAULT_STANDARD);
 			decompileRegex(re);

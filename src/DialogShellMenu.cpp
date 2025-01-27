@@ -38,7 +38,7 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f)
 
 	// default to selecting the first item
 	if (model_->rowCount() != 0) {
-		QModelIndex index = model_->index(0, 0);
+		const QModelIndex index = model_->index(0, 0);
 		ui.listItems->setCurrentIndex(index);
 	}
 }

@@ -360,7 +360,7 @@ void loadSmartIndentCommonString(const QString &string) {
  * @return
  */
 QString writeSmartIndentString() {
-	QString filename = Settings::smartIndentFile();
+	const QString filename = Settings::smartIndentFile();
 	try {
 		YAML::Emitter out;
 

@@ -55,6 +55,8 @@ QVariant MenuItemModel::data(const QModelIndex &index, int role) const {
 			switch (index.column()) {
 			case 0:
 				return item.name;
+			default:
+				return QVariant();
 			}
 		}
 	}
@@ -74,6 +76,8 @@ QVariant MenuItemModel::headerData(int section, Qt::Orientation orientation, int
 		switch (section) {
 		case 0:
 			return tr("Name");
+		default:
+			return QVariant();
 		}
 	}
 

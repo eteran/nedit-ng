@@ -251,7 +251,7 @@ std::optional<DialogFind::Fields> DialogFind::readFields() {
 	Fields fields;
 
 	// Get the search string, search type, and direction from the dialog
-	QString findText = ui.textFind->text();
+	const QString findText = ui.textFind->text();
 
 	if (ui.checkRegex->isChecked()) {
 		int regexDefault;
@@ -300,8 +300,8 @@ std::optional<DialogFind::Fields> DialogFind::readFields() {
  */
 void DialogFind::checkRegex_toggled(bool checked) {
 
-	bool searchRegex     = checked;
-	bool searchCaseSense = ui.checkCase->isChecked();
+	const bool searchRegex     = checked;
+	const bool searchCaseSense = ui.checkCase->isChecked();
 
 	// In sticky mode, restore the state of the Case Sensitive button
 	if (Preferences::GetPrefStickyCaseSenseBtn()) {

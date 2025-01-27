@@ -98,7 +98,7 @@ void DialogMultiReplace::buttonReplace_clicked() {
 	bool noWritableLeft = true;
 
 	// Perform the replacements and mark the selected files (history)
-	for (QModelIndex index : selections) {
+	for (const QModelIndex index : selections) {
 		if (DocumentWidget *writeableDocument = model_->itemFromIndex(index)) {
 
 			/* First check again whether the file is still writable. If the

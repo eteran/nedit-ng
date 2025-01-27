@@ -3157,7 +3157,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 	if (Q_LIKELY(fastPath)) {
 		painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, s);
 	} else {
-		for (QChar ch : s) {
+		for (const QChar ch : s) {
 			painter->drawText(rect, Qt::TextSingleLine | Qt::TextDontClip | Qt::AlignVCenter | Qt::AlignLeft, {ch});
 			rect.adjust(fixedFontWidth_, 0, 0, 0);
 		}
@@ -3629,18 +3629,18 @@ void TextArea::setupBGClasses(const QString &str) {
 			// side effects of this.
 			const auto nextClass = static_cast<uint8_t>(class_no++);
 
-			QColor pix               = X11Colors::fromString(color);
+			const QColor pix         = X11Colors::fromString(color);
 			bgClassColors[nextClass] = pix;
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-			QStringList rangeList = ranges.split(QLatin1Char(','), Qt::SkipEmptyParts);
+			const QStringList rangeList = ranges.split(QLatin1Char(','), Qt::SkipEmptyParts);
 #else
-			QStringList rangeList = ranges.split(QLatin1Char(','), QString::SkipEmptyParts);
+			const QStringList rangeList = ranges.split(QLatin1Char(','), QString::SkipEmptyParts);
 #endif
 
 			for (const QString &range : rangeList) {
 				QRegularExpression regex(QRegularExpression::anchoredPattern(QLatin1String("([0-9]+)(?:-([0-9]+))?")));
-				QRegularExpressionMatch match = regex.match(range);
+				const QRegularExpressionMatch match = regex.match(range);
 
 				if (match.hasMatch()) {
 
@@ -4398,7 +4398,7 @@ void TextArea::TextDOverstrike(std::string_view text) {
 	// determine how many displayed character positions are covered
 	const int64_t startIndent = buffer_->BufCountDispChars(lineStart, startPos);
 	int64_t indent            = startIndent;
-	for (char ch : text) {
+	for (const char ch : text) {
 		indent += TextBuffer::BufCharWidth(ch, indent, buffer_->BufGetTabDistance());
 	}
 	const int64_t endIndent = indent;

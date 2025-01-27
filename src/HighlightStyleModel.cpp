@@ -55,6 +55,8 @@ QVariant HighlightStyleModel::data(const QModelIndex &index, int role) const {
 			switch (index.column()) {
 			case 0:
 				return item.name;
+			default:
+				return QVariant();
 			}
 		} else if (role == Qt::UserRole) {
 			return QVariant();
@@ -76,6 +78,8 @@ QVariant HighlightStyleModel::headerData(int section, Qt::Orientation orientatio
 		switch (section) {
 		case 0:
 			return tr("Name");
+		default:
+			return QVariant();
 		}
 	}
 

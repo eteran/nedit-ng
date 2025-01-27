@@ -2273,14 +2273,14 @@ QFileInfoList MainWindow::openFileHelper(DocumentWidget *document, const QString
 	static const QRegularExpression reLocal(QLatin1String("#include\\s*\"([^\"]+)\""));
 
 	{
-		QRegularExpressionMatch match = reSystem.match(text);
+		const QRegularExpressionMatch match = reSystem.match(text);
 		if (match.hasMatch()) {
 			return openFileHelperSystem(document, match, searchPath, searchName);
 		}
 	}
 
 	{
-		QRegularExpressionMatch match = reLocal.match(text);
+		const QRegularExpressionMatch match = reLocal.match(text);
 		if (match.hasMatch()) {
 			return openFileHelperLocal(document, match, searchPath, searchName);
 		}
@@ -2566,14 +2566,14 @@ void MainWindow::action_Insert_Ctrl_Code(DocumentWidget *document) {
 	}
 
 	bool ok;
-	int n = QInputDialog::getInt(this,
-								 tr("Insert Ctrl Code"),
-								 tr("ASCII Character Code:"),
-								 0,
-								 0,
-								 255,
-								 1,
-								 &ok);
+	const int n = QInputDialog::getInt(this,
+									   tr("Insert Ctrl Code"),
+									   tr("ASCII Character Code:"),
+									   0,
+									   0,
+									   255,
+									   1,
+									   &ok);
 	if (ok) {
 		QString str(QChar::fromLatin1(static_cast<char>(n)));
 		action_Insert_Ctrl_Code(document, str);

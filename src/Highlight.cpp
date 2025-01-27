@@ -180,12 +180,11 @@ void recolorSubexpression(const std::unique_ptr<Regex> &re, size_t subexpr, uint
 */
 void passTwoParseString(const HighlightData *pattern, const char *string, uint8_t *styleString, int64_t length, const ParseContext *ctx, const char *lookBehindTo, const char *match_to) {
 
-	bool inParseRegion     = false;
-	const char *parseStart = nullptr;
-	const char *parseEnd;
-	uint8_t *s              = styleString;
-	const char *c           = string;
-	uint8_t firstPass2Style = pattern[1].style;
+	bool inParseRegion            = false;
+	const char *parseStart        = nullptr;
+	uint8_t *s                    = styleString;
+	const char *c                 = string;
+	const uint8_t firstPass2Style = pattern[1].style;
 
 	for (;; c++, s++) {
 		if (!inParseRegion && c != match_to && (*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || *s >= firstPass2Style)) {
@@ -194,7 +193,7 @@ void passTwoParseString(const HighlightData *pattern, const char *string, uint8_
 		}
 
 		if (inParseRegion && (c == match_to || !(*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || *s >= firstPass2Style))) {
-			parseEnd = c;
+			const char *parseEnd = c;
 			if (parseStart != string) {
 				*ctx->prev_char = static_cast<unsigned char>(*(parseStart - 1));
 			}

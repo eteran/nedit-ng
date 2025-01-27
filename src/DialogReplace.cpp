@@ -602,8 +602,8 @@ std::optional<DialogReplace::Fields> DialogReplace::readFields() {
 
 	/* Get the search and replace strings, search type, and direction
 	   from the dialog */
-	QString replaceText     = ui.textFind->text();
-	QString replaceWithText = ui.textReplace->text();
+	const QString replaceText     = ui.textFind->text();
+	const QString replaceWithText = ui.textReplace->text();
 
 	if (ui.checkRegex->isChecked()) {
 		int regexDefault;

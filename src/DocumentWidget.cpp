@@ -6616,7 +6616,7 @@ void DocumentWidget::cancelMacroOrLearn() {
 */
 void DocumentWidget::replay() {
 
-	QString replayMacro = CommandRecorder::instance()->replayMacro();
+	const QString replayMacro = CommandRecorder::instance()->replayMacro();
 
 	// Verify that a replay macro exists and it's not empty and that
 	// we're not already running a macro
@@ -6625,7 +6625,7 @@ void DocumentWidget::replay() {
 		QString errMsg;
 		int stoppedAt;
 
-		Program *prog = compileMacro(replayMacro, &errMsg, &stoppedAt);
+		Program *const prog = compileMacro(replayMacro, &errMsg, &stoppedAt);
 		if (!prog) {
 			qWarning("NEdit: internal error, learn/replay macro syntax error: %s", qPrintable(errMsg));
 			return;
@@ -6641,7 +6641,7 @@ void DocumentWidget::cancelLearning() {
 		return;
 	}
 
-	DocumentWidget *document = CommandRecorder::instance()->macroRecordDocument();
+	DocumentWidget *const document = CommandRecorder::instance()->macroRecordDocument();
 	Q_ASSERT(document);
 
 	for (MainWindow *window : MainWindow::allWindows()) {
@@ -6664,7 +6664,7 @@ void DocumentWidget::finishLearning() {
 		return;
 	}
 
-	DocumentWidget *document = CommandRecorder::instance()->macroRecordDocument();
+	DocumentWidget *const document = CommandRecorder::instance()->macroRecordDocument();
 	Q_ASSERT(document);
 
 	CommandRecorder::instance()->stopRecording();
@@ -6693,7 +6693,7 @@ void DocumentWidget::doMacro(const QString &macro, const QString &errInName) {
 
 	/* Add a terminating newline (which command line users are likely to omit
 	   since they are typically invoking a single routine) */
-	QString qMacro = macro + QLatin1Char('\n');
+	const QString qMacro = macro + QLatin1Char('\n');
 	QString errMsg;
 
 	// Parse the macro and report errors if it fails

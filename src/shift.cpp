@@ -52,7 +52,7 @@ std::string fillParagraph(std::string_view text, int64_t leftMargin, int64_t fir
 
 	bool inMargin = true;
 
-	for (char ch : text) {
+	for (const char ch : text) {
 		if (ch == '\t' || ch == ' ') {
 			if (!inMargin) {
 				*outPtr++ = ch;

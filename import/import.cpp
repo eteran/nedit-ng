@@ -54,7 +54,7 @@ QString writeMenuItemString(const std::vector<MenuItem> &menuItems, bool isShell
 
 		// handle that we do mnemonics the Qt way...
 		if (!item.mnemonic.isEmpty()) {
-			int n = name.indexOf(item.mnemonic);
+			const int n = name.indexOf(item.mnemonic);
 			if (n != -1) {
 				name.insert(n, QLatin1Char('&'));
 			}
@@ -82,7 +82,7 @@ QString writeMenuItemString(const std::vector<MenuItem> &menuItems, bool isShell
 		*outPtr++ = QLatin1Char('\t');
 		*outPtr++ = QLatin1Char('\t');
 
-		Q_FOREACH (QChar ch, item.command) {
+		Q_FOREACH (const QChar ch, item.command) {
 			if (ch == QLatin1Char('\n')) { // and newlines to backslash-n's,
 				*outPtr++ = QLatin1Char('\n');
 				*outPtr++ = QLatin1Char('\t');
@@ -425,7 +425,7 @@ template <>
 int readResource(XrmDatabase db, const std::string &name) {
 	auto value = readResource<QString>(db, name);
 	bool ok;
-	int n = value.toInt(&ok);
+	const int n = value.toInt(&ok);
 	Q_ASSERT(ok);
 	return n;
 }
@@ -441,7 +441,7 @@ QString covertRGBColor(const QString &color) {
 																"/"
 																"(?<blue>[0-9a-fA-F]{1,4})"));
 
-		QRegularExpressionMatch match = rgb_regex.match(color);
+		const QRegularExpressionMatch match = rgb_regex.match(color);
 		if (match.hasMatch()) {
 			const uint16_t r = match.captured(QLatin1String("red")).toUShort(nullptr, 16);
 			const uint16_t g = match.captured(QLatin1String("green")).toUShort(nullptr, 16);
@@ -467,7 +467,7 @@ QString covertRGBColor(const QString &color) {
 																 "/"
 																 "(?<blue>[0-9]+(\\.[0-9]+)?)"));
 
-		QRegularExpressionMatch match_rgbi = rgbi_regex.match(color);
+		const QRegularExpressionMatch match_rgbi = rgbi_regex.match(color);
 		if (match_rgbi.hasMatch()) {
 			const qreal r = match_rgbi.captured(QLatin1String("red")).toDouble();
 			const qreal g = match_rgbi.captured(QLatin1String("green")).toDouble();
