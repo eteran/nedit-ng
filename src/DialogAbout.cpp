@@ -40,7 +40,7 @@ QString DialogAbout::createInfoString() {
 	auto versionString = tr("%1.%2").arg(NEDIT_VERSION_MAJ).arg(NEDIT_VERSION_REV);
 #endif
 
-	QString localeString = QLocale::system().bcp47Name();
+	const QString localeString = QLocale::system().bcp47Name();
 	QString gitExtra;
 
 #ifdef NEDIT_BRANCH_GIT

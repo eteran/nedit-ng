@@ -1217,7 +1217,7 @@ QString ReadSymbolicField(Input &input) {
 	// skip over initial blank space
 	input.skipWhitespace();
 
-	Input strStart = input;
+	const Input strStart = input;
 
 	static const QRegularExpression re(QLatin1String("[A-Za-z0-9_+$# \t-]*"));
 
@@ -1328,7 +1328,7 @@ QString MakeQuotedString(const QString &string) {
 	int length = 0;
 
 	// calculate length
-	for (QChar ch : string) {
+	for (const QChar ch : string) {
 		if (ch == Quote) {
 			++length;
 		}
@@ -1343,7 +1343,7 @@ QString MakeQuotedString(const QString &string) {
 	*outPtr++ = Quote;
 
 	// copy string, escaping quotes with ""
-	for (QChar ch : string) {
+	for (const QChar ch : string) {
 		if (ch == Quote) {
 			*outPtr++ = Quote;
 		}

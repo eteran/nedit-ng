@@ -93,7 +93,7 @@ Input &Input::operator++() {
  * @return
  */
 Input Input::operator++(int) {
-	Input copy(*this);
+	const Input copy(*this);
 	if (!atEnd()) {
 		++index_;
 	}
@@ -117,7 +117,7 @@ Input &Input::operator--() {
  * @return
  */
 Input Input::operator--(int) {
-	Input copy(*this);
+	const Input copy(*this);
 	if (index_ > 0) {
 		--index_;
 	}
@@ -234,7 +234,7 @@ void Input::consume(const QRegularExpression &re) {
 	);
 
 	if (match.hasMatch()) {
-		QString cap = match.captured(0);
+		const QString cap = match.captured(0);
 		index_ += cap.size();
 	}
 }
@@ -259,7 +259,7 @@ bool Input::match(const QRegularExpression &re, QString *m) {
 	);
 	if (match.hasMatch()) {
 
-		QString cap = match.captured(0);
+		const QString cap = match.captured(0);
 
 		if (m) {
 			*m = cap;
@@ -369,7 +369,7 @@ QString Input::readUntil(QChar ch) {
 	QString result;
 
 	while (!atEnd()) {
-		QChar c = string_->at(index_);
+		const QChar c = string_->at(index_);
 		if (c == ch) {
 			break;
 		}
