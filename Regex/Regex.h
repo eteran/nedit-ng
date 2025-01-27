@@ -4,12 +4,12 @@
 
 #include "Constants.h"
 #include "RegexError.h"
-#include <string_view>
 
 #include <array>
 #include <bitset>
 #include <cstdint>
 #include <memory>
+#include <string_view>
 #include <vector>
 
 /* Flags for CompileRE default settings (Markus Schwarzenberg) */
