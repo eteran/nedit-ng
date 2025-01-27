@@ -13,7 +13,7 @@ jobs:
   build_ubuntu_20:
     strategy:
       matrix:
-        QT_VERSION: [5.12.8, 6.5.0]
+        QT_VERSION: [5.12.8, 6.7.0]
     runs-on: ubuntu-20.04
     steps:
       - name: Install Qt
@@ -36,7 +36,7 @@ jobs:
   build_windows:
     strategy:
       matrix:
-        QT_VERSION: [5.12.8, 6.5.0]
+        QT_VERSION: [5.12.8, 6.7.0]
     runs-on: windows-2022
     steps:
       - name: Install Qt
