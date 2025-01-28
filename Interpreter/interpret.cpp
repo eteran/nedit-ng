@@ -727,7 +727,7 @@ Symbol *InstallStringConstSymbol(std::string_view str) {
 
 	auto stringName = QStringLiteral("string #%1").arg(stringConstIndex++);
 
-	DataValue value = make_value(str);
+	const DataValue value = make_value(str);
 	return InstallSymbolEx(stringName, CONST_SYM, value);
 }
 
@@ -1614,8 +1614,8 @@ static int concat() {
 */
 static int callSubroutine() {
 
-	Symbol *sym   = Context.PC++->sym;
-	int64_t nArgs = Context.PC++->value;
+	Symbol *sym         = Context.PC++->sym;
+	const int64_t nArgs = Context.PC++->value;
 
 	DISASM_RT(PC - 3, 3);
 	STACKDUMP(nArgs, 3);

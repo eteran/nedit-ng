@@ -45,7 +45,7 @@ struct CalltipAlias {
 };
 
 // Tag File Type
-enum TFT {
+enum TFT : uint8_t {
 	TFT_CHECK,
 	TFT_ETAGS,
 	TFT_CTAGS
@@ -309,7 +309,7 @@ int scanETagsLine(const QString &line, const QString &tagPath, int index, QStrin
 		if (line.mid(posCOM + 1, 7) == QLatin1String("include")) {
 
 			if (!QFileInfo(file).isAbsolute()) {
-				QString incPath = NormalizePathname(tr("%1%2").arg(tagPath, file));
+				const QString incPath = NormalizePathname(tr("%1%2").arg(tagPath, file));
 				return loadTagsFile(incPath, index, recLevel + 1);
 			}
 
@@ -815,7 +815,7 @@ int addTag(const QString &name, const QString &file, size_t lang,
 
 	QMultiHash<QString, Tag> *const table = hashTableByType(searchMode);
 
-	Tag t = {name, file, search, path, lang, posInf, index};
+	const Tag t = {name, file, search, path, lang, posInf, index};
 
 	table->insert(name, t);
 	return 1;
@@ -875,7 +875,7 @@ bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMod
 			continue;
 		}
 
-		File tag = {
+		const File tag = {
 			pathName,
 			timestamp,
 			false,
@@ -951,7 +951,7 @@ bool addTagsFile(const QString &tagSpec, SearchMode mode) {
 			continue;
 		}
 
-		File tag = {
+		const File tag = {
 			pathName,
 			timestamp,
 			false,

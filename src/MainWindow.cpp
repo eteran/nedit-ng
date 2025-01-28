@@ -777,7 +777,7 @@ void MainWindow::setupPrevOpenMenuActions() {
 				}
 
 				if (!document->open(filename)) {
-					int r = QMessageBox::question(
+					const int r = QMessageBox::question(
 						this,
 						tr("Error Opening File"),
 						tr("File could not be opened, would you like to remove it from the 'Open Previous' list?"),
@@ -934,7 +934,7 @@ void MainWindow::action_Open(DocumentWidget *document, const QString &filename) 
  * @param document
  */
 void MainWindow::action_Open(DocumentWidget *document) {
-	QStringList filenames = promptForExistingFiles(this, document->path(), tr("Open File"), QFileDialog::ExistingFiles);
+	const QStringList filenames = promptForExistingFiles(this, document->path(), tr("Open File"), QFileDialog::ExistingFiles);
 	if (filenames.isEmpty()) {
 		return;
 	}
@@ -1122,7 +1122,7 @@ void MainWindow::handleContextMenuEvent(DocumentWidget *document, const QPoint &
 	if (contextMenu_) {
 		if (QAction *action = contextMenu_->exec(pos)) {
 
-			QVariant data = action->data();
+			const QVariant data = action->data();
 			if (!data.isNull()) {
 
 				/* Don't allow users to execute a macro command from the menu (or accel)
@@ -1244,7 +1244,7 @@ void MainWindow::updateWindowMenu() {
 	ui.menu_Windows->addSeparator();
 
 	for (DocumentWidget *document : documents) {
-		QString title = document->getWindowsMenuEntry();
+		const QString title = document->getWindowsMenuEntry();
 
 		QAction *action = ui.menu_Windows->addAction(title);
 		connect(action, &QAction::triggered, document, [document]() {
@@ -1470,8 +1470,8 @@ QMenu *MainWindow::createUserMenu(size_t currentLanguageMode, const gsl::span<Me
 				parentName = parentName.left(subSubSep);
 			}
 
-			QList<QAction *> actions = parentMenu->actions();
-			QAction *parentAction    = nullptr;
+			const QList<QAction *> actions = parentMenu->actions();
+			QAction *parentAction          = nullptr;
 			for (QAction *action : actions) {
 				if (action->text() == parentName) {
 					parentAction = action;
@@ -1635,7 +1635,7 @@ int MainWindow::updateGutterWidth() const {
 	int reqCols = MIN_LINE_NUM_COLS;
 	int maxCols = 0;
 
-	std::vector<DocumentWidget *> documents = openDocuments();
+	const std::vector<DocumentWidget *> documents = openDocuments();
 	for (DocumentWidget *document : documents) {
 		//  We found ourselves a document from this window. Pick a TextArea
 		// (doesn't matter which), so we can probe some details...
@@ -1656,7 +1656,7 @@ int MainWindow::updateGutterWidth() const {
 
 	for (DocumentWidget *document : documents) {
 		if (TextArea *area = document->firstPane()) {
-			int lineNumCols = area->getLineNumCols();
+			const int lineNumCols = area->getLineNumCols();
 			if (lineNumCols == reqCols) {
 				continue;
 			}
@@ -1948,7 +1948,7 @@ void MainWindow::readNEditDB() {
 	   comments and are thrown away. */
 	QTextStream in(&file);
 	while (!in.atEnd()) {
-		QString line = in.readLine();
+		const QString line = in.readLine();
 
 		if (line.isEmpty()) {
 			// blank line
@@ -1987,7 +1987,7 @@ void MainWindow::invalidatePrevOpenMenus() {
 */
 void MainWindow::writeNEditDB() {
 
-	QString historyFile = Settings::historyFile();
+	const QString historyFile = Settings::historyFile();
 	if (historyFile.isNull()) {
 		return;
 	}
@@ -2045,10 +2045,10 @@ void MainWindow::updatePrevOpenMenu() {
 		std::sort(prevOpenSorted.begin(), prevOpenSorted.end());
 	}
 
-	int count = prevOpenSorted.size();
+	const int count = prevOpenSorted.size();
 
 	for (int i = 0; i < count; ++i) {
-		QString filename = prevOpenSorted[i];
+		const QString &filename = prevOpenSorted[i];
 		previousOpenFilesList_[i]->setText(filename);
 		previousOpenFilesList_[i]->setData(filename);
 		previousOpenFilesList_[i]->setVisible(true);
@@ -2191,7 +2191,7 @@ void MainWindow::action_Shift_Open_Selected(DocumentWidget *document) {
 QFileInfoList MainWindow::openFileHelperSystem(DocumentWidget *document, const QRegularExpressionMatch &match, QString *searchPath, QString *searchName) const {
 	const QStringList includeDirs = Preferences::GetPrefIncludePaths();
 
-	QString text = match.captured(1);
+	const QString text = match.captured(1);
 	if (QFileInfo(text).isAbsolute()) {
 		return openFileHelperString(document, text, searchPath, searchName);
 	}
@@ -2201,9 +2201,9 @@ QFileInfoList MainWindow::openFileHelperSystem(DocumentWidget *document, const Q
 	for (const QString &includeDir : includeDirs) {
 		// we need to do this because someone could write #include <path/to/file.h>
 		// which confuses QDir..
-		QFileInfo fullPath(QStringLiteral("%1/%2").arg(includeDir, match.captured(1)));
-		QString filename = fullPath.fileName();
-		QString filepath = fullPath.path();
+		const QFileInfo fullPath(QStringLiteral("%1/%2").arg(includeDir, match.captured(1)));
+		const QString filename = fullPath.fileName();
+		QString filepath       = fullPath.path();
 
 		filepath = NormalizePathname(filepath);
 
@@ -2216,8 +2216,8 @@ QFileInfoList MainWindow::openFileHelperSystem(DocumentWidget *document, const Q
 		}
 
 		QDir dir(filepath);
-		QStringList name_filters    = {filename};
-		QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Hidden | QDir::Files);
+		const QStringList name_filters    = {filename};
+		const QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Hidden | QDir::Files);
 		results.append(localFileList);
 	}
 
@@ -2233,9 +2233,9 @@ QFileInfoList MainWindow::openFileHelperString(DocumentWidget *document, const Q
 	QFileInfoList results;
 
 	if (QFileInfo(text).isAbsolute()) {
-		QFileInfo fullPath(text);
-		QString filename = fullPath.fileName();
-		QString filepath = fullPath.path();
+		const QFileInfo fullPath(text);
+		const QString filename = fullPath.fileName();
+		QString filepath       = fullPath.path();
 
 		filepath = NormalizePathname(filepath);
 
@@ -2243,15 +2243,15 @@ QFileInfoList MainWindow::openFileHelperString(DocumentWidget *document, const Q
 		*searchName = filename;
 
 		QDir dir(filepath);
-		QStringList name_filters    = {filename};
-		QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Hidden | QDir::Files);
+		const QStringList name_filters    = {filename};
+		const QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Hidden | QDir::Files);
 		results.append(localFileList);
 	} else {
 		// we need to do this because someone could write #include "path/to/file.h"
 		// which confuses QDir..
-		QFileInfo fullPath(QStringLiteral("%1/%2").arg(document->path(), text));
-		QString filename = fullPath.fileName();
-		QString filepath = fullPath.path();
+		const QFileInfo fullPath(QStringLiteral("%1/%2").arg(document->path(), text));
+		const QString filename = fullPath.fileName();
+		QString filepath       = fullPath.path();
 
 		filepath = NormalizePathname(filepath);
 
@@ -2259,8 +2259,8 @@ QFileInfoList MainWindow::openFileHelperString(DocumentWidget *document, const Q
 		*searchName = filename;
 
 		QDir dir(filepath);
-		QStringList name_filters    = {filename};
-		QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Hidden | QDir::Files);
+		const QStringList name_filters    = {filename};
+		const QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Hidden | QDir::Files);
 		results.append(localFileList);
 	}
 
@@ -2575,7 +2575,7 @@ void MainWindow::action_Insert_Ctrl_Code(DocumentWidget *document) {
 									   1,
 									   &ok);
 	if (ok) {
-		QString str(QChar::fromLatin1(static_cast<char>(n)));
+		const QString str(QChar::fromLatin1(static_cast<char>(n)));
 		action_Insert_Ctrl_Code(document, str);
 	}
 }
@@ -2621,7 +2621,7 @@ void MainWindow::action_Goto_Line_Number(DocumentWidget *document, const QString
 void MainWindow::action_Goto_Line_Number(DocumentWidget *document) {
 
 	bool ok;
-	QString text = QInputDialog::getText(
+	const QString text = QInputDialog::getText(
 		this,
 		tr("Goto Line Number"),
 		tr("Goto Line (and/or Column) Number:"),
@@ -2914,7 +2914,7 @@ void MainWindow::editIFind_returnPressed() {
 
 	/* Fetch the string, search type and direction from the incremental
 	   search bar widgets at the top of the window */
-	QString searchString = ui.editIFind->text();
+	const QString searchString = ui.editIFind->text();
 
 	const SearchType searchType = [this]() {
 		if (ui.checkIFindCase->isChecked()) {
@@ -2984,7 +2984,7 @@ void MainWindow::checkIFindCase_toggled(bool searchCaseSense) {
  */
 void MainWindow::checkIFindRegex_toggled(bool searchRegex) {
 
-	bool searchCaseSense = ui.checkIFindCase->isChecked();
+	const bool searchCaseSense = ui.checkIFindCase->isChecked();
 
 	// In sticky mode, restore the state of the Case Sensitive button
 	if (Preferences::GetPrefStickyCaseSenseBtn()) {
@@ -3275,7 +3275,7 @@ void MainWindow::action_Mark_Shortcut() {
 			const int key = sequence[1];
 #endif
 			if (key >= Qt::Key_A && key <= Qt::Key_Z) {
-				QString keyseq(QChar{key});
+				const QString keyseq(QChar{key});
 				action_Mark(document, keyseq);
 			} else {
 				QApplication::beep();
@@ -3360,7 +3360,7 @@ void MainWindow::action_Goto_Mark_Shortcut_Helper(bool shifted) {
 			const int key = sequence[1];
 #endif
 			if (key >= Qt::Key_A && key <= Qt::Key_Z) {
-				QString keyseq(QChar{key});
+				const QString keyseq(QChar{key});
 				action_Goto_Mark(document, keyseq, shifted);
 			} else {
 				QApplication::beep();
@@ -3432,7 +3432,7 @@ void MainWindow::updateTipsFileMenu() {
 
 	auto tipsMenu = new QMenu(this);
 
-	for (Tags::File &tf : Tags::TipsFileList) {
+	for (const Tags::File &tf : Tags::TipsFileList) {
 		const QString &filename = tf.filename;
 		QAction *action         = tipsMenu->addAction(filename);
 		action->setData(filename);
@@ -4088,12 +4088,12 @@ void MainWindow::defaultTagCollisionsGroupTriggered(QAction *action) {
  */
 void MainWindow::action_Default_Command_Shell_triggered() {
 	bool ok;
-	QString shell = QInputDialog::getText(this,
-										  tr("Command Shell"),
-										  tr("Enter shell path:"),
-										  QLineEdit::Normal,
-										  Preferences::GetPrefShell(),
-										  &ok);
+	const QString shell = QInputDialog::getText(this,
+												tr("Command Shell"),
+												tr("Enter shell path:"),
+												QLineEdit::Normal,
+												Preferences::GetPrefShell(),
+												&ok);
 
 	if (ok && !shell.isEmpty()) {
 
@@ -4289,7 +4289,7 @@ void MainWindow::action_Default_Search_Keep_Dialogs_Up_toggled(bool state) {
  */
 void MainWindow::defaultSearchGroupTriggered(QAction *action) {
 
-	std::vector<MainWindow *> windows = MainWindow::allWindows();
+	const std::vector<MainWindow *> windows = MainWindow::allWindows();
 
 	if (action == ui.action_Default_Search_Literal) {
 		Preferences::SetPrefSearch(SearchType::Literal);
@@ -4330,7 +4330,7 @@ void MainWindow::defaultSearchGroupTriggered(QAction *action) {
  */
 void MainWindow::defaultSyntaxGroupTriggered(QAction *action) {
 
-	std::vector<MainWindow *> windows = MainWindow::allWindows();
+	const std::vector<MainWindow *> windows = MainWindow::allWindows();
 
 	if (action == ui.action_Default_Syntax_Off) {
 		Preferences::SetPrefHighlightSyntax(false);
@@ -4441,7 +4441,7 @@ void MainWindow::action_Default_Tab_Sort_Tabs_Alphabetically_toggled(bool state)
 	// Set the preference and make the other windows' menus agree
 	Preferences::SetPrefSortTabs(state);
 
-	std::vector<MainWindow *> windows = MainWindow::allWindows();
+	const std::vector<MainWindow *> windows = MainWindow::allWindows();
 
 	for (MainWindow *window : windows) {
 		no_signals(window->ui.action_Default_Tab_Sort_Tabs_Alphabetically)->setChecked(state);
@@ -4544,7 +4544,7 @@ void MainWindow::action_Default_Incremental_Backup_toggled(bool state) {
  */
 void MainWindow::defaultMatchingGroupTriggered(QAction *action) {
 
-	std::vector<MainWindow *> windows = MainWindow::allWindows();
+	const std::vector<MainWindow *> windows = MainWindow::allWindows();
 
 	if (action == ui.action_Default_Matching_Off) {
 		Preferences::SetPrefShowMatching(ShowMatchingStyle::None);
@@ -4723,10 +4723,10 @@ void MainWindow::action_Next_Document() {
 
 	emit_event("next_document");
 
-	bool crossWindows = Preferences::GetPrefGlobalTabNavigate();
-	int currentIndex  = ui.tabWidget->currentIndex();
-	int nextIndex     = currentIndex + 1;
-	int tabCount      = ui.tabWidget->count();
+	const bool crossWindows = Preferences::GetPrefGlobalTabNavigate();
+	const int currentIndex  = ui.tabWidget->currentIndex();
+	const int nextIndex     = currentIndex + 1;
+	const int tabCount      = ui.tabWidget->count();
 
 	if (!crossWindows) {
 		if (nextIndex == tabCount) {
@@ -4737,9 +4737,9 @@ void MainWindow::action_Next_Document() {
 	} else {
 		if (nextIndex == tabCount) {
 
-			std::vector<MainWindow *> windows = MainWindow::allWindows();
-			auto currentIter                  = std::find(windows.begin(), windows.end(), this);
-			auto nextIter                     = std::next(currentIter);
+			const std::vector<MainWindow *> windows = MainWindow::allWindows();
+			auto currentIter                        = std::find(windows.begin(), windows.end(), this);
+			auto nextIter                           = std::next(currentIter);
 
 			if (nextIter == windows.end()) {
 				nextIter = windows.begin();
@@ -4769,10 +4769,10 @@ void MainWindow::action_Prev_Document() {
 
 	emit_event("previous_document");
 
-	bool crossWindows = Preferences::GetPrefGlobalTabNavigate();
-	int currentIndex  = ui.tabWidget->currentIndex();
-	int prevIndex     = currentIndex - 1;
-	int tabCount      = ui.tabWidget->count();
+	const bool crossWindows = Preferences::GetPrefGlobalTabNavigate();
+	const int currentIndex  = ui.tabWidget->currentIndex();
+	const int prevIndex     = currentIndex - 1;
+	const int tabCount      = ui.tabWidget->count();
 
 	if (!crossWindows) {
 		if (currentIndex == 0) {
@@ -4783,9 +4783,9 @@ void MainWindow::action_Prev_Document() {
 	} else {
 		if (currentIndex == 0) {
 
-			std::vector<MainWindow *> windows = MainWindow::allWindows();
-			auto currentIter                  = std::find(windows.rbegin(), windows.rend(), this);
-			auto nextIter                     = std::next(currentIter);
+			const std::vector<MainWindow *> windows = MainWindow::allWindows();
+			auto currentIter                        = std::find(windows.rbegin(), windows.rend(), this);
+			auto nextIter                           = std::next(currentIter);
 
 			if (nextIter == windows.rend()) {
 				nextIter = windows.rbegin();
@@ -4828,7 +4828,7 @@ DocumentWidget *MainWindow::editNewFile(MainWindow *window, const QString &geome
 	DocumentWidget *document;
 
 	// Find a (relatively) unique name for the new file
-	QString name = MainWindow::uniqueUntitledName();
+	const QString name = MainWindow::uniqueUntitledName();
 
 	// create new window/document
 	if (window) {
@@ -4891,7 +4891,7 @@ DocumentWidget *MainWindow::editNewFile(MainWindow *window, const QString &geome
  */
 void MainWindow::allDocumentsBusy(const QString &message) {
 
-	std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+	const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 	if (!currentlyBusy) {
 		busyStartTime  = QDateTime::currentDateTimeUtc().toMSecsSinceEpoch();
@@ -5152,7 +5152,7 @@ void MainWindow::action_Save_As(DocumentWidget *document) {
 	bool addWrap           = false;
 	FileFormats fileFormat = FileFormats::Unix;
 
-	QString fullname = promptForNewFile(document, &fileFormat, &addWrap);
+	const QString fullname = promptForNewFile(document, &fileFormat, &addWrap);
 	if (fullname.isNull()) {
 		return;
 	}
@@ -5392,7 +5392,7 @@ bool MainWindow::closeAllDocumentsInWindow() {
  */
 void MainWindow::closeEvent(QCloseEvent *event) {
 
-	std::vector<MainWindow *> windows = MainWindow::allWindows();
+	const std::vector<MainWindow *> windows = MainWindow::allWindows();
 	if (windows.size() == 1) {
 		// this is only window, then this is the same as exit
 		event->ignore();
@@ -5515,7 +5515,7 @@ bool MainWindow::closeAllFilesAndWindows() {
  * @param document
  */
 void MainWindow::action_Repeat(DocumentWidget *document) {
-	QString lastCommand = CommandRecorder::instance()->lastCommand();
+	const QString lastCommand = CommandRecorder::instance()->lastCommand();
 
 	if (lastCommand.isNull()) {
 		QMessageBox::warning(
@@ -5955,12 +5955,11 @@ void MainWindow::action_Filter_Selection(DocumentWidget *document, CommandSource
 	}
 
 	auto dialog = std::make_unique<DialogFilter>(this);
-	int r       = dialog->exec();
-	if (!r) {
+	if (const int r = dialog->exec(); r == QDialog::Rejected) {
 		return;
 	}
 
-	QString filterText = dialog->currentText();
+	const QString filterText = dialog->currentText();
 	action_Filter_Selection(document, filterText, source);
 }
 
@@ -6026,12 +6025,11 @@ void MainWindow::action_Execute_Command(DocumentWidget *document) {
 	}
 
 	auto dialog = std::make_unique<DialogExecuteCommand>(this);
-	int r       = dialog->exec();
-	if (!r) {
+	if (const int r = dialog->exec(); r == QDialog::Rejected) {
 		return;
 	}
 
-	QString commandText = dialog->currentText();
+	const QString commandText = dialog->currentText();
 	dialog->addHistoryItem(commandText);
 	action_Execute_Command(document, commandText);
 }
@@ -6052,7 +6050,7 @@ void MainWindow::action_Execute_Command_triggered() {
  */
 void MainWindow::shellTriggered(QAction *action) {
 
-	QVariant data = action->data();
+	const QVariant data = action->data();
 	if (!data.isNull()) {
 		const auto index   = data.toUInt();
 		const QString name = ShellMenuData[index].item.name;
@@ -6080,7 +6078,7 @@ void MainWindow::action_Shell_Menu_Command(DocumentWidget *document, const QStri
  */
 void MainWindow::macroTriggered(QAction *action) {
 
-	QVariant actionIndex = action->data();
+	const QVariant actionIndex = action->data();
 	if (!actionIndex.isNull()) {
 		/* Don't allow users to execute a macro command from the menu (or accel)
 		   if there's already a macro command executing, UNLESS the macro is
@@ -6240,7 +6238,11 @@ void MainWindow::editHighlightPatterns() {
 	}
 
 	if (DocumentWidget *document = currentDocument()) {
-		QString languageName = Preferences::LanguageModeName((document->languageMode_ == PLAIN_LANGUAGE_MODE) ? 0 : document->languageMode_);
+
+		const QString languageName = Preferences::LanguageModeName(
+			(document->languageMode_ == PLAIN_LANGUAGE_MODE) ? 0
+															 : document->languageMode_);
+
 		dialogSyntaxPatterns_->setLanguageName(languageName);
 	}
 
@@ -6291,7 +6293,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 	}
 
 	// get the entire text buffer from the text area widget
-	std::string_view fileString = buffer->BufAsString();
+	const std::string_view fileString = buffer->BufAsString();
 
 	/* If we're already outside the boundaries, we must consider wrapping
 	   immediately (Note: fileEnd+1 is a valid starting position. Consider
@@ -6712,7 +6714,7 @@ bool MainWindow::searchAndReplace(DocumentWidget *document, TextArea *area, cons
 		Search::Result searchResult;
 
 		// do the search
-		bool found = searchWindow(
+		const bool found = searchWindow(
 			document,
 			searchString,
 			direction,

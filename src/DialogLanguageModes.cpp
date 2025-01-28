@@ -465,8 +465,8 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 			const QStringList parts = lang->name.split(QLatin1Char(':'));
 
 			if (parts.size() == 2) {
-				const QString oldName = parts[0];
-				const QString newName = parts[1];
+				const QString &oldName = parts[0];
+				const QString &newName = parts[1];
 
 				Highlight::RenameHighlightPattern(oldName, newName);
 				if (dialogSyntaxPatterns_) {
