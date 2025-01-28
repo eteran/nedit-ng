@@ -294,7 +294,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 	const QString initText = ui.editInit->toPlainText();
 	if (!initText.isEmpty()) {
 		const QString widgetText = ensure_newline(initText);
-		int stoppedAt      = 0;
+		int stoppedAt            = 0;
 		if (!CheckMacroString(this, widgetText, tr("initialization macro"), &stoppedAt)) {
 			QTextCursor cursor = ui.editInit->textCursor();
 			cursor.setPosition(stoppedAt);
