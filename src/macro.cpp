@@ -1772,7 +1772,7 @@ std::error_code getCharacterMS(DocumentWidget *document, Arguments arguments, Da
 	pos = std::clamp<int64_t>(pos, 0, buf->length());
 
 	// Return the character in a pre-allocated string)
-	std::string str(1, buf->BufGetCharacter(TextCursor(pos)));
+	const std::string str(1, buf->BufGetCharacter(TextCursor(pos)));
 
 	*result = make_value(str);
 	return MacroErrorCode::Success;
@@ -3127,7 +3127,7 @@ std::error_code splitMS(DocumentWidget *document, Arguments arguments, DataValue
 		const int64_t elementEnd = found ? searchResult.start : strLength;
 		const int64_t elementLen = elementEnd - lastEnd;
 
-		std::string_view str(
+		const std::string_view str(
 			&sourceStr[static_cast<size_t>(lastEnd)],
 			static_cast<size_t>(elementLen));
 
@@ -3165,7 +3165,9 @@ std::error_code splitMS(DocumentWidget *document, Arguments arguments, DataValue
 			/* We skipped the last character to prevent an endless loop.
 			   Add it to the list. */
 			const int64_t elementLen = strLength - lastEnd;
-			const std::string_view str(&sourceStr[static_cast<size_t>(lastEnd)], static_cast<size_t>(elementLen));
+			const std::string_view str(
+				&sourceStr[static_cast<size_t>(lastEnd)],
+				static_cast<size_t>(elementLen));
 
 			element = make_value(str);
 			if (!ArrayInsert(result, indexStr, &element)) {

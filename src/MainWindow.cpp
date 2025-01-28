@@ -2307,7 +2307,7 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 	QString searchName;
 	QString searchPath;
 
-	QFileInfoList fileList = openFileHelper(document, text, &searchPath, &searchName);
+	const QFileInfoList fileList = openFileHelper(document, text, &searchPath, &searchName);
 
 	if (!searchPath.endsWith(QLatin1Char('/'))) {
 		searchPath.append(QLatin1Char('/'));
@@ -3457,7 +3457,7 @@ void MainWindow::updateTagsFileMenu() {
 
 	auto tagsMenu = new QMenu(this);
 
-	for (Tags::File &tf : Tags::TagsFileList) {
+	for (const Tags::File &tf : Tags::TagsFileList) {
 		const QString &filename = tf.filename;
 		QAction *action         = tagsMenu->addAction(filename);
 		action->setData(filename);
@@ -5187,7 +5187,7 @@ void MainWindow::action_Revert_to_Saved_triggered() {
 		// re-reading file is irreversible, prompt the user first
 		if (document->fileChanged()) {
 
-			int result = QMessageBox::question(
+			const int result = QMessageBox::question(
 				this,
 				tr("Discard Changes"),
 				tr("Discard changes to\n%1%2?").arg(document->path(), document->filename()),
@@ -5323,7 +5323,7 @@ bool MainWindow::checkPrefsChangesSaved() {
 		return true;
 	}
 
-	QString importedFile = Preferences::ImportedSettingsFile();
+	const QString importedFile = Preferences::ImportedSettingsFile();
 
 	QMessageBox messageBox(this);
 	messageBox.setWindowTitle(tr("Default Preferences"));
@@ -5638,7 +5638,7 @@ bool MainWindow::eventFilter(QObject *object, QEvent *ev) {
 		initToggleButtonsiSearch(searchType);
 
 		// Beware the value changed callback is processed as part of this call
-		int previousPosition = ui.editIFind->cursorPosition();
+		const int previousPosition = ui.editIFind->cursorPosition();
 		ui.editIFind->setText(searchStr);
 		ui.editIFind->setCursorPosition(previousPosition);
 		return true;
@@ -5649,13 +5649,13 @@ bool MainWindow::eventFilter(QObject *object, QEvent *ev) {
 			auto event  = static_cast<QHelpEvent *>(ev);
 			auto tabBar = ui.tabWidget->tabBar();
 
-			int index = tabBar->tabAt(event->pos());
+			const int index = tabBar->tabAt(event->pos());
 			if (index != -1) {
 
 				if (DocumentWidget *document = documentAt(index)) {
 
 					QString labelString;
-					QString filename = document->filename();
+					const QString filename = document->filename();
 
 					/* Set tab label to document's filename. Position of "*" (modified)
 					 * will change per label alignment setting */
@@ -6176,7 +6176,7 @@ void MainWindow::action_Detach_Document_Dialog(DocumentWidget *document) {
 
 	if (tabCount() > 1) {
 
-		int result = QMessageBox::question(
+		const int result = QMessageBox::question(
 			nullptr,
 			tr("Detach Tab"),
 			tr("Detach %1?").arg(document->filename()),

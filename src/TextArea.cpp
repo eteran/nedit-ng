@@ -74,8 +74,8 @@ QString asciiToUnicode(std::string_view string) {
 	QString s;
 	s.reserve(static_cast<int>(string.size()));
 
-	for (char c : string) {
-		uint32_t ch = c & 0xff;
+	for (const char c : string) {
+		const uint32_t ch = c & 0xff;
 		if (ch < 0x80 || ch >= 0xa0) {
 			s.append(QChar(ch));
 		} else {
@@ -164,7 +164,7 @@ QString expandAllTabs(const QString &text, int tab_width) {
 	}
 
 	// Allocate the new string
-	int len = text.size() + (tab_width - 1) * nTabs;
+	const int len = text.size() + (tab_width - 1) * nTabs;
 
 	QString textCpy;
 	textCpy.reserve(len);
@@ -172,7 +172,7 @@ QString expandAllTabs(const QString &text, int tab_width) {
 	auto it = std::back_inserter(textCpy);
 
 	// Now replace 'em
-	for (QChar ch : text) {
+	for (const QChar ch : text) {
 		if (ch == QLatin1Char('\t')) {
 			std::fill_n(it, tab_width, QLatin1Char(' '));
 		} else {
@@ -1159,7 +1159,7 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
 		setCursor(Qt::BlankCursor);
 	}
 
-	QString text = event->text();
+	const QString text = event->text();
 	if (text.isEmpty()) {
 		return;
 	}
@@ -2413,7 +2413,7 @@ void TextArea::offsetAbsLineNum(TextCursor oldFirstChar) {
 */
 void TextArea::findLineEnd(TextCursor startPos, bool startPosIsLineStart, TextCursor *lineEnd, TextCursor *nextLineStart) {
 
-	TextCursor end = buffer_->BufEndOfBuffer();
+	const TextCursor end = buffer_->BufEndOfBuffer();
 
 	// if we're not wrapping use more efficient BufEndOfLine
 	if (!continuousWrap_) {
@@ -2961,8 +2961,8 @@ uint32_t TextArea::styleOfPos(TextCursor lineStartPos, size_t lineLen, size_t li
 		return FILL_MASK;
 	}
 
-	TextCursor pos = lineStartPos + std::min(lineIndex, lineLen);
-	uint32_t style = 0;
+	const TextCursor pos = lineStartPos + std::min(lineIndex, lineLen);
+	uint32_t style       = 0;
 
 	if (lineIndex >= lineLen) {
 		style = FILL_MASK;
@@ -2989,7 +2989,7 @@ uint32_t TextArea::styleOfPos(TextCursor lineStartPos, size_t lineLen, size_t li
 
 	/* store in the RANGESET_MASK portion of style the rangeset index for pos */
 	if (document_->rangesetTable_) {
-		size_t rangesetIndex = document_->rangesetTable_->index1ofPos(pos, true);
+		const size_t rangesetIndex = document_->rangesetTable_->index1ofPos(pos, true);
 		style |= ((rangesetIndex << RANGESET_SHIFT) & RANGESET_MASK);
 	}
 
@@ -3022,7 +3022,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 	bool underlineStyle  = false;
 	bool fastPath        = true;
 
-	enum DrawType {
+	enum DrawType : uint8_t {
 		DrawStyle,
 		DrawHighlight,
 		DrawSelect,
@@ -3248,7 +3248,7 @@ QColor TextArea::getRangesetColor(size_t ind, QColor bground) const {
 		const std::unique_ptr<RangesetTable> &tab = document_->rangesetTable_;
 
 		QColor color;
-		int valid = tab->getColorValid(ind, &color);
+		const int valid = tab->getColorValid(ind, &color);
 		if (valid == 0) {
 			const QString color_name = tab->getColorName(ind);
 			if (!color_name.isNull()) {
@@ -3525,8 +3525,8 @@ void TextArea::updateCalltip(int calltipID) {
 	// If we're not in strict mode try to keep the tip on-screen
 	if (calltip_.alignMode == TipAlignMode::Sloppy) {
 
-		QScreen *currentScreen = QGuiApplication::primaryScreen();
-		QRect screenGeometry   = currentScreen->geometry();
+		QScreen *currentScreen     = QGuiApplication::primaryScreen();
+		const QRect screenGeometry = currentScreen->geometry();
 
 		// make sure tip doesn't run off right or left side of screen
 		if (abs.x() + tipWidth >= screenGeometry.width() - CALLTIP_EDGE_GUARD) {
@@ -3604,19 +3604,20 @@ void TextArea::setupBGClasses(const QString &str) {
 
 	size_t class_no = 1;
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-	QStringList formats = str.split(QLatin1Char(';'), Qt::SkipEmptyParts);
+	const QStringList formats = str.split(QLatin1Char(';'), Qt::SkipEmptyParts);
 #else
-	QStringList formats = str.split(QLatin1Char(';'), QString::SkipEmptyParts);
+	const QStringList formats = str.split(QLatin1Char(';'), QString::SkipEmptyParts);
 #endif
+
 	for (const QString &format : formats) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-		QStringList s1 = format.split(QLatin1Char(':'), Qt::SkipEmptyParts);
+		const QStringList s1 = format.split(QLatin1Char(':'), Qt::SkipEmptyParts);
 #else
-		QStringList s1 = format.split(QLatin1Char(':'), QString::SkipEmptyParts);
+		const QStringList s1 = format.split(QLatin1Char(':'), QString::SkipEmptyParts);
 #endif
 		if (s1.size() == 2) {
-			QString ranges = s1[0];
-			QString color  = s1[1];
+			const QString ranges = s1[0];
+			const QString color  = s1[1];
 
 			if (class_no > UINT8_MAX) {
 				break;
@@ -3639,7 +3640,7 @@ void TextArea::setupBGClasses(const QString &str) {
 #endif
 
 			for (const QString &range : rangeList) {
-				QRegularExpression regex(QRegularExpression::anchoredPattern(QLatin1String("([0-9]+)(?:-([0-9]+))?")));
+				const QRegularExpression regex(QRegularExpression::anchoredPattern(QLatin1String("([0-9]+)(?:-([0-9]+))?")));
 				const QRegularExpressionMatch match = regex.match(range);
 
 				if (match.hasMatch()) {
@@ -3649,8 +3650,8 @@ void TextArea::setupBGClasses(const QString &str) {
 
 					bool loOK;
 					bool hiOK;
-					int lowerBound = lo.toInt(&loOK);
-					int upperBound = hi.toInt(&hiOK);
+					const int lowerBound = lo.toInt(&loOK);
+					int upperBound       = hi.toInt(&hiOK);
 
 					if (loOK) {
 						if (!hiOK) {
@@ -3787,7 +3788,7 @@ void TextArea::setColors(const QColor &textFG, const QColor &textBG, const QColo
 ** a drag operation)
 */
 void TextArea::cancelDrag() {
-	DragStates dragState = dragState_;
+	const DragStates dragState = dragState_;
 
 	autoScrollTimer_->stop();
 
@@ -5076,7 +5077,7 @@ void TextArea::insertPrimarySelection(bool isColumnar) {
 		return;
 	}
 
-	std::string string = mimeData->text().toStdString();
+	const std::string string = mimeData->text().toStdString();
 
 	// Insert it in the text widget
 	if (isColumnar) {
@@ -5264,7 +5265,7 @@ void TextArea::forwardParagraphAP(EventFlags flags) {
 
 	TextCursor pos = std::min(buffer_->BufEndOfLine(insertPos) + 1, buffer_->BufEndOfBuffer());
 	while (pos < buffer_->length()) {
-		char c = buffer_->BufGetCharacter(pos);
+		const char c = buffer_->BufGetCharacter(pos);
 		if (c == '\n') {
 			break;
 		}
@@ -5300,7 +5301,7 @@ void TextArea::backwardParagraphAP(EventFlags flags) {
 	TextCursor pos      = std::max(parStart - 2, buffer_->BufStartOfBuffer());
 
 	while (pos > 0) {
-		char c = buffer_->BufGetCharacter(pos);
+		const char c = buffer_->BufGetCharacter(pos);
 		if (c == '\n') {
 			break;
 		}
@@ -5343,8 +5344,8 @@ void TextArea::processTabAP(EventFlags flags) {
 	   instead of the cursor position as the indent.  When replacing
 	   rectangular selections, tabs are automatically recalculated as
 	   if the inserted text began at the start of the line */
-	TextCursor insertPos = pendingSelection() ? sel.start() : cursorPos_;
-	TextCursor lineStart = buffer_->BufStartOfLine(insertPos);
+	TextCursor insertPos       = pendingSelection() ? sel.start() : cursorPos_;
+	const TextCursor lineStart = buffer_->BufStartOfLine(insertPos);
 
 	if (pendingSelection() && sel.isRectangular()) {
 		insertPos = buffer_->BufCountForwardDispChars(lineStart, sel.rectStart());
@@ -5670,8 +5671,8 @@ void TextArea::extendAdjustAP(QMouseEvent *event, EventFlags flags) {
 
 	EMIT_EVENT_0("extend_adjust");
 
-	DragStates dragState = dragState_;
-	const bool rectDrag  = flags & RectFlag;
+	const DragStates dragState = dragState_;
+	const bool rectDrag        = flags & RectFlag;
 
 	// Make sure the proper initialization was done on mouse down
 	if (dragState != PRIMARY_DRAG && dragState != PRIMARY_CLICKED && dragState != PRIMARY_RECT_DRAG) {
@@ -5829,7 +5830,7 @@ void TextArea::copyToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
 
 	EMIT_EVENT_0("copy_to_end_drag");
 
-	DragStates dragState = dragState_;
+	const DragStates dragState = dragState_;
 
 	if (dragState != PRIMARY_BLOCK_DRAG) {
 		copyToAP(event, flags | SuppressRecording);
@@ -6632,7 +6633,7 @@ void TextArea::moveToOrEndDragAP(QMouseEvent *event, EventFlags flags) {
 
 	EMIT_EVENT_0("move_to_or_end_drag");
 
-	DragStates dragState = dragState_;
+	const DragStates dragState = dragState_;
 
 	if (dragState != PRIMARY_BLOCK_DRAG) {
 		moveToAP(event, flags | SuppressRecording);
@@ -6646,7 +6647,7 @@ void TextArea::moveToAP(QMouseEvent *event, EventFlags flags) {
 
 	EMIT_EVENT_0("move_to");
 
-	DragStates dragState = dragState_;
+	const DragStates dragState = dragState_;
 
 	const TextBuffer::Selection &secondary = buffer_->secondary;
 	const TextBuffer::Selection &primary   = buffer_->primary;
@@ -6704,8 +6705,8 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 	const TextBuffer::Selection secondary = buffer_->secondary;
 	const TextBuffer::Selection primary   = buffer_->primary;
 
-	DragStates dragState = dragState_; // save before endDrag
-	const bool silent    = flags & NoBellFlag;
+	const DragStates dragState = dragState_; // save before endDrag
+	const bool silent          = flags & NoBellFlag;
 
 	endDrag();
 	if (checkReadOnly()) {
@@ -6733,8 +6734,8 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 	}
 
 	// Both primary and secondary are in this widget, do the exchange here
-	std::string primaryText = buffer_->BufGetSelectionText();
-	std::string secText     = buffer_->BufGetSecSelectText();
+	const std::string primaryText = buffer_->BufGetSelectionText();
+	const std::string secText     = buffer_->BufGetSecSelectText();
 
 	const bool secWasRect = secondary.isRectangular();
 	buffer_->BufReplaceSecSelect(primaryText);
@@ -6886,13 +6887,13 @@ void TextArea::pageLeftAP(EventFlags flags) {
 
 		horizontalScrollBar()->triggerAction(QAbstractSlider::SliderPageStepSub);
 	} else {
-		TextCursor lineStartPos = buffer_->BufStartOfLine(insertPos);
+		const TextCursor lineStartPos = buffer_->BufStartOfLine(insertPos);
 		if (insertPos == lineStartPos && horizontalScrollBar()->value() == 0) {
 			ringIfNecessary(silent);
 			return;
 		}
 		const int64_t indent = buffer_->BufCountDispChars(lineStartPos, insertPos);
-		TextCursor pos       = buffer_->BufCountForwardDispChars(lineStartPos, std::max<int64_t>(0, indent - viewRect.width() / fixedFontWidth_));
+		const TextCursor pos = buffer_->BufCountForwardDispChars(lineStartPos, std::max<int64_t>(0, indent - viewRect.width() / fixedFontWidth_));
 		setInsertPosition(pos);
 
 		horizontalScrollBar()->triggerAction(QAbstractSlider::SliderPageStepSub);
@@ -6907,10 +6908,10 @@ void TextArea::pageRightAP(EventFlags flags) {
 
 	EMIT_EVENT_0("page_right");
 
-	const QRect viewRect     = viewport()->contentsRect();
-	TextCursor insertPos     = cursorPos_;
-	const int oldHorizOffset = horizontalScrollBar()->value();
-	const bool silent        = flags & NoBellFlag;
+	const QRect viewRect       = viewport()->contentsRect();
+	const TextCursor insertPos = cursorPos_;
+	const int oldHorizOffset   = horizontalScrollBar()->value();
+	const bool silent          = flags & NoBellFlag;
 
 	cancelDrag();
 	if (flags & ScrollbarFlag) {

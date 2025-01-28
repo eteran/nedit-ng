@@ -2699,8 +2699,8 @@ void DocumentWidget::addWrapNewlines() {
 	}
 
 	// Modify the buffer to add wrapping
-	TextArea *area         = textAreas[0];
-	std::string fileString = area->TextGetWrapped(info_->buffer->BufStartOfBuffer(), info_->buffer->BufEndOfBuffer());
+	TextArea *area               = textAreas[0];
+	const std::string fileString = area->TextGetWrapped(info_->buffer->BufStartOfBuffer(), info_->buffer->BufEndOfBuffer());
 
 	info_->buffer->BufSetAll(fileString);
 
@@ -3420,7 +3420,7 @@ void DocumentWidget::refreshMenuToggleStates() {
 	win->ui.action_Split_Pane->setEnabled(textPanesCount() < MaxPanes);
 	win->ui.action_Close_Pane->setEnabled(textPanesCount() > 1);
 
-	std::vector<MainWindow *> windows = MainWindow::allWindows(/*includeInvisible=*/true);
+	const std::vector<MainWindow *> windows = MainWindow::allWindows(/*includeInvisible=*/true);
 	win->ui.action_Move_Tab_To->setEnabled(windows.size() > 1);
 }
 
@@ -3870,7 +3870,7 @@ void DocumentWidget::findDefinitionHelper(TextArea *area, const QString &arg, Ta
 	} else {
 		Tags::searchMode = search_type;
 
-		QString selected = getAnySelection(ErrorSound::Silent);
+		const QString selected = getAnySelection(ErrorSound::Silent);
 		if (selected.isEmpty()) {
 			return;
 		}
@@ -4764,8 +4764,8 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 	if (shellCmdData_->flags & ERROR_DIALOGS) {
 		bool cancel = false;
 		// NOTE(eteran): assumes UNIX return code style!
-		bool failure     = exitCode != 0;
-		bool errorReport = !errText.isEmpty();
+		const bool failure     = exitCode != 0;
+		const bool errorReport = !errText.isEmpty();
 
 		if (failure && errorReport) {
 			errText.remove(trailingNewlines);
@@ -4782,7 +4782,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 			cancel = (msgBox.exec() == QMessageBox::Cancel);
 
 		} else if (failure) {
-			QString dialogOutText = QString::fromLocal8Bit(outText.data(), std::min<size_t>(MaxMessageLength, outText.size()));
+			const QString dialogOutText = QString::fromLocal8Bit(outText.data(), std::min<size_t>(MaxMessageLength, outText.size()));
 
 			QMessageBox msgBox;
 			msgBox.setWindowTitle(tr("Command Failure"));
