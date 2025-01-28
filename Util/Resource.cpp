@@ -14,7 +14,7 @@
  */
 QByteArray loadResource(const QString &resource) {
 
-	QResource res(resource);
+	const QResource res(resource);
 	if (!res.isValid()) {
 		qFatal("Failed to load internal resource");
 	}

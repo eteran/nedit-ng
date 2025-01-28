@@ -82,7 +82,7 @@ QString NormalizePathname(const QString &pathname) {
 	}
 
 	QString cleanedPath = QDir::cleanPath(path);
-	QFileInfo cleanedFi(cleanedPath);
+	const QFileInfo cleanedFi(cleanedPath);
 
 	// IFF it is a directory, insist that it ends in a slash
 	if (cleanedFi.isDir()) {

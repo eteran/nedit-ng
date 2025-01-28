@@ -6922,9 +6922,9 @@ void TextArea::pageRightAP(EventFlags flags) {
 		}
 
 	} else {
-		TextCursor lineStartPos = buffer_->BufStartOfLine(insertPos);
-		int64_t indent          = buffer_->BufCountDispChars(lineStartPos, insertPos);
-		TextCursor pos          = buffer_->BufCountForwardDispChars(lineStartPos, indent + viewRect.width() / fixedFontWidth_);
+		const TextCursor lineStartPos = buffer_->BufStartOfLine(insertPos);
+		const int64_t indent          = buffer_->BufCountDispChars(lineStartPos, insertPos);
+		const TextCursor pos          = buffer_->BufCountForwardDispChars(lineStartPos, indent + viewRect.width() / fixedFontWidth_);
 
 		setInsertPosition(pos);
 
@@ -6950,7 +6950,7 @@ void TextArea::nextPageAP(EventFlags flags) {
 	int visLineNum;
 	TextCursor lineStartPos;
 	int64_t targetLine;
-	int pageForwardCount = std::max(1, nVisibleLines_ - 1);
+	const int pageForwardCount = std::max(1, nVisibleLines_ - 1);
 
 	const bool silent         = flags & NoBellFlag;
 	const bool maintainColumn = flags & ColumnFlag;
@@ -7332,13 +7332,13 @@ void TextArea::updateFontMetrics(const QFont &font) {
 		qWarning("NEdit: a variable width font has been specified. This is not supported, and will result in unexpected results");
 	}
 
-	QFontMetrics fm(font);
+	const QFontMetrics fm(font);
 	fixedFontWidth_          = Font::maxWidth(fm);
 	const int standardHeight = fm.ascent() + fm.descent();
 
 	QFont boldFont = font;
 	boldFont.setWeight(QFont::Bold);
-	QFontMetrics fmb(boldFont);
+	const QFontMetrics fmb(boldFont);
 	const int boldHeight = fmb.ascent() + fmb.descent();
 
 	fixedFontHeight_ = std::max(standardHeight, boldHeight);
@@ -7384,7 +7384,7 @@ std::string TextArea::TextGetWrapped(TextCursor startPos, TextCursor endPos) {
 	while (toPos < endPos) {
 		outBuf.BufCopyFromBuf(buffer_, fromPos, toPos, outPos);
 		outPos += toPos - fromPos;
-		char c = outBuf.BufGetCharacter(outPos - 1);
+		const char c = outBuf.BufGetCharacter(outPos - 1);
 		if (c == ' ' || c == '\t') {
 			outBuf.BufReplace(outPos - 1, outPos, "\n");
 		} else if (c != '\n') {
@@ -7432,7 +7432,7 @@ void TextArea::insertStringAP(const QString &string, EventFlags flags) {
 		return;
 	}
 
-	std::string str = string.toStdString();
+	const std::string str = string.toStdString();
 
 	if (smartIndent_) {
 		SmartIndentEvent smartIndent;
@@ -7973,8 +7973,8 @@ void TextArea::zoomOutAP(TextArea::EventFlags flags) {
 	Q_UNUSED(flags)
 	const QList<int> sizes = Font::pointSizes(font_);
 
-	int currentSize = font_.pointSize();
-	int index       = sizes.indexOf(currentSize);
+	const int currentSize = font_.pointSize();
+	const int index       = sizes.indexOf(currentSize);
 	if (index != 0) {
 		font_.setPointSize(sizes[index - 1]);
 		document_->action_Set_Fonts(font_.toString());
@@ -7991,8 +7991,8 @@ void TextArea::zoomInAP(TextArea::EventFlags flags) {
 	Q_UNUSED(flags)
 	const QList<int> sizes = Font::pointSizes(font_);
 
-	int currentSize = font_.pointSize();
-	int index       = sizes.indexOf(currentSize);
+	const int currentSize = font_.pointSize();
+	const int index       = sizes.indexOf(currentSize);
 	if (index != sizes.size() - 1) {
 		font_.setPointSize(sizes[index + 1]);
 		document_->action_Set_Fonts(font_.toString());

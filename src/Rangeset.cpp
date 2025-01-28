@@ -207,7 +207,7 @@ int64_t rangesetWeightedAtOrBefore(Rangeset *rangeset, TextCursor pos) {
 template <class T>
 int64_t rangesetShuffleToFrom(T *table, int64_t to, int64_t from, int64_t n, int64_t delta) {
 	int64_t end;
-	int64_t diff = from - to;
+	const int64_t diff = from - to;
 
 	if (n <= 0) {
 		return 0;
@@ -263,8 +263,8 @@ Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins
 		return rangeset; // all beyond the end
 	}
 
-	TextCursor end_del     = pos + del;
-	const int64_t movement = ins - del;
+	const TextCursor end_del = pos + del;
+	const int64_t movement   = ins - del;
 
 	/* the idea now is to determine the first range not concerned with the
 	   movement: its index will be j. For indices j to n-1, we will adjust
@@ -320,8 +320,8 @@ Rangeset *rangesetInclMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, 
 		i++;
 	}
 
-	TextCursor end_del     = pos + del;
-	const int64_t movement = ins - del;
+	const TextCursor end_del = pos + del;
+	const int64_t movement   = ins - del;
 
 	/* the idea now is to determine the first range not concerned with the
 	   movement: its index will be j. For indices j to n-1, we will adjust
@@ -371,8 +371,8 @@ Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins
 		return rangeset; // all beyond the end
 	}
 
-	TextCursor end_del     = pos + del;
-	const int64_t movement = ins - del;
+	const TextCursor end_del = pos + del;
+	const int64_t movement   = ins - del;
 
 	/* the idea now is to determine the first range not concerned with the
 	   movement: its index will be j. For indices j to n-1, we will adjust
@@ -431,8 +431,8 @@ Rangeset *rangesetExclMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, 
 		i++;
 	}
 
-	TextCursor end_del     = pos + del;
-	const int64_t movement = ins - del;
+	const TextCursor end_del = pos + del;
+	const int64_t movement   = ins - del;
 
 	/* the idea now is to determine the first range not concerned with the
 	   movement: its index will be j. For indices j to n-1, we will adjust
@@ -489,8 +489,8 @@ Rangeset *rangesetBreakMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins,
 		i++;
 	}
 
-	TextCursor end_del     = pos + del;
-	const int64_t movement = ins - del;
+	const TextCursor end_del = pos + del;
+	const int64_t movement   = ins - del;
 
 	/* the idea now is to determine the first range not concerned with the
 	   movement: its index will be j. For indices j to n-1, we will adjust

@@ -86,7 +86,7 @@ void DialogPrint::buttonPrint_clicked() {
 
 		if (dialog.exec()) {
 			const QStringList selectedFiles = dialog.selectedFiles();
-			const QString filename          = selectedFiles[0];
+			const QString &filename         = selectedFiles[0];
 
 			QPrinter printer;
 			printer.setOutputFormat(QPrinter::PdfFormat);

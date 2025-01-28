@@ -29,7 +29,7 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f)
 	ui.listItems->setModel(model_);
 
 	// Copy the list of menu information to one that the user can freely edit
-	for (MenuData &menuData : ShellMenuData) {
+	for (const MenuData &menuData : ShellMenuData) {
 		model_->addItem(menuData.item);
 	}
 
@@ -244,7 +244,7 @@ void DialogShellMenu::buttonBox_accepted() {
 */
 std::optional<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
 
-	QString nameText = ui.editName->text();
+	const QString nameText = ui.editName->text();
 	if (nameText.isEmpty()) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Menu Entry"), tr("Please specify a name for the menu item"));
@@ -259,7 +259,7 @@ std::optional<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
 		return {};
 	}
 
-	QString cmdText = ui.editCommand->toPlainText();
+	const QString cmdText = ui.editCommand->toPlainText();
 	if (cmdText.isEmpty()) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Command to Execute"), tr("Please specify macro command(s) to execute"));
@@ -323,8 +323,8 @@ bool DialogShellMenu::applyDialogChanges() {
 	std::vector<MenuData> newItems;
 
 	for (int i = 0; i < model_->rowCount(); ++i) {
-		QModelIndex index = model_->index(i, 0);
-		auto item         = model_->itemFromIndex(index);
+		const QModelIndex index = model_->index(i, 0);
+		auto item               = model_->itemFromIndex(index);
 		newItems.push_back({*item, nullptr});
 	}
 

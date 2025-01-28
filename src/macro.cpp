@@ -3270,7 +3270,7 @@ std::error_code lineMV(DocumentWidget *document, Arguments arguments, DataValue 
 
 	TextBuffer *buf      = document->buffer();
 	TextArea *area       = MainWindow::fromDocument(document)->lastFocus();
-	TextCursor cursorPos = area->cursorPos();
+	const TextCursor cursorPos = area->cursorPos();
 
 	if (const std::optional<Location> loc = area->positionToLineAndCol(cursorPos)) {
 		*result = make_value(loc->line);
@@ -3289,7 +3289,7 @@ std::error_code columnMV(DocumentWidget *document, Arguments arguments, DataValu
 
 	TextBuffer *buf      = document->buffer();
 	TextArea *area       = MainWindow::fromDocument(document)->lastFocus();
-	TextCursor cursorPos = area->cursorPos();
+	const TextCursor cursorPos = area->cursorPos();
 
 	*result = make_value(buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos));
 	return MacroErrorCode::Success;
@@ -4698,7 +4698,7 @@ std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, Dat
 
 	if (!arguments.empty()) {
 		QString index;
-		if (std::error_code ec = readArgument(arguments[0], &index)) {
+		if (const std::error_code ec = readArgument(arguments[0], &index)) {
 			return ec;
 		}
 
@@ -4805,8 +4805,8 @@ std::error_code focusPaneAP(DocumentWidget *document, Arguments arguments, DataV
 	MainWindow *win = MainWindow::fromDocument(document);
 	Q_ASSERT(win);
 
-	std::vector<TextArea *> panes = document->textPanes();
-	QPointer<TextArea> lastFocus  = win->lastFocus();
+	const std::vector<TextArea *> panes = document->textPanes();
+	const QPointer<TextArea> lastFocus  = win->lastFocus();
 
 	// Find the currently focused pane for relative indexing
 	size_t paneIndex = 0;
@@ -4817,7 +4817,7 @@ std::error_code focusPaneAP(DocumentWidget *document, Arguments arguments, DataV
 	}
 
 	QString index;
-	if (std::error_code ec = readArgument(arguments[0], &index)) {
+	if (const std::error_code ec = readArgument(arguments[0], &index)) {
 		return ec;
 	}
 
@@ -4830,8 +4830,8 @@ std::error_code focusPaneAP(DocumentWidget *document, Arguments arguments, DataV
 	} else if (index == QLatin1String("previous")) {
 		paneIndex = (paneIndex - 1) % panes.size();
 	} else {
-		bool ok = false;
-		int n   = index.toInt(&ok);
+		bool ok     = false;
+		const int n = index.toInt(&ok);
 		if (!ok) {
 			return MacroErrorCode::InvalidArgument;
 		}
@@ -5180,22 +5180,22 @@ void RegisterMacroSubroutines() {
 	/* Install symbols for built-in routines and variables, with pointers
 	   to the appropriate c routines to do the work */
 	for (const SubRoutine &routine : MacroSubrs) {
-		DataValue subrPtr = make_value(routine.function);
+		const DataValue subrPtr = make_value(routine.function);
 		InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
 	}
 
 	for (const SubRoutine &routine : SpecialVars) {
-		DataValue subrPtr = make_value(routine.function);
+		const DataValue subrPtr = make_value(routine.function);
 		InstallSymbol(routine.name, PROC_VALUE_SYM, subrPtr);
 	}
 
 	for (const SubRoutine &routine : MenuMacroSubrNames) {
-		DataValue subrPtr = make_value(routine.function);
+		const DataValue subrPtr = make_value(routine.function);
 		InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
 	}
 
 	for (const SubRoutine &routine : TextAreaSubrNames) {
-		DataValue subrPtr = make_value(routine.function);
+		const DataValue subrPtr = make_value(routine.function);
 		InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
 	}
 
@@ -5217,7 +5217,7 @@ void returnShellCommandOutput(DocumentWidget *document, std::string_view outText
 
 	if (const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_) {
 
-		DataValue retVal = make_value(outText);
+		const DataValue retVal = make_value(outText);
 
 		modifyReturnedValue(cmdData->context, retVal);
 
@@ -5289,7 +5289,7 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 					QLatin1String("expected '{'"));
 			}
 
-			QString code = in.mid();
+			const QString code = in.mid();
 
 			int stoppedAt;
 			QString errMsg;
@@ -5318,7 +5318,7 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 
 					sym->value = make_value(prog);
 				} else {
-					DataValue subrPtr = make_value(prog);
+					const DataValue subrPtr = make_value(prog);
 					InstallSymbolEx(routineName, MACRO_FUNCTION_SYM, subrPtr);
 				}
 			}
@@ -5331,7 +5331,7 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 			   definitions in a file which is loaded from another macro file, it
 			   will probably run the code blocks in reverse order! */
 		} else {
-			QString code = in.mid();
+			const QString code = in.mid();
 			int stoppedAt;
 			QString errMsg;
 			Program *const prog = compileMacro(code, &errMsg, &stoppedAt);

@@ -122,7 +122,7 @@ void DialogFind::checkKeep_toggled(bool checked) {
  * @brief DialogFind::updateFindButton
  */
 void DialogFind::updateFindButton() {
-	bool buttonState = !ui.textFind->text().isEmpty();
+	const bool buttonState = !ui.textFind->text().isEmpty();
 	ui.buttonFind->setEnabled(buttonState);
 }
 
@@ -324,7 +324,7 @@ void DialogFind::checkRegex_toggled(bool checked) {
  */
 void DialogFind::checkCase_toggled(bool checked) {
 
-	bool searchCaseSense = checked;
+	const bool searchCaseSense = checked;
 
 	/* Save the state of the Case Sensitive button
 	   depending on the state of the Regex button*/

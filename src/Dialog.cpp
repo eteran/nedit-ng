@@ -21,10 +21,10 @@ void Dialog::showEvent(QShowEvent *event) {
 	Q_UNUSED(event)
 
 	if (Preferences::GetPrefRepositionDialogs()) {
-		QPoint pos = QCursor::pos();
+		const QPoint pos = QCursor::pos();
 
-		int x = pos.x() - (width() / 2);
-		int y = pos.y() - (height() / 2);
+		const int x = pos.x() - (width() / 2);
+		const int y = pos.y() - (height() / 2);
 
 		// no effort is made to fixup the location to prevent it from being
 		// partially off screen. At least on KDE Plasma, this happens

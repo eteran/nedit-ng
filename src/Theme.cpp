@@ -30,7 +30,7 @@ const auto DEFAULT_CURSOR_FG = QLatin1String("black");
  * @brief load
  */
 void load() {
-	QString filename = Settings::themeFile();
+	const QString filename = Settings::themeFile();
 
 	QFile file(filename);
 	if (!file.open(QIODevice::ReadOnly)) {
@@ -107,12 +107,12 @@ void load() {
  * @brief save
  */
 void save() {
-	QString filename = Settings::themeFile();
+	const QString filename = Settings::themeFile();
 
 	QFile file(filename);
 	if (file.open(QIODevice::WriteOnly)) {
 		QDomDocument xml;
-		QDomProcessingInstruction pi = xml.createProcessingInstruction(QLatin1String("xml"), QLatin1String(R"(version="1.0" encoding="UTF-8")"));
+		const QDomProcessingInstruction pi = xml.createProcessingInstruction(QLatin1String("xml"), QLatin1String(R"(version="1.0" encoding="UTF-8")"));
 
 		xml.appendChild(pi);
 
@@ -178,6 +178,8 @@ void save() {
 			case Font::Italic | Font::Bold:
 				style.setAttribute(QLatin1String("font"), QLatin1String("Bold Italic"));
 				break;
+			default:
+				qFatal("NEdit: internal error saving theme file");
 			}
 
 			root.appendChild(style);

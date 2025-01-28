@@ -38,7 +38,7 @@ DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFl
 		const int current          = currentSize.isValid() ? currentSize.toInt() : font.pointSize();
 
 		ui.fontSize->clear();
-		for (int size : sizes) {
+		for (const int size : sizes) {
 			ui.fontSize->addItem(QStringLiteral("%1").arg(size), size);
 		}
 

@@ -43,7 +43,7 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f)
 	ui.listItems->setModel(model_);
 
 	// Copy the list of menu information to one that the user can freely edit
-	for (MenuData &menuData : MacroMenuData) {
+	for (const MenuData &menuData : MacroMenuData) {
 		model_->addItem(menuData.item);
 	}
 
@@ -262,7 +262,7 @@ bool DialogMacros::validateFields(Verbosity verbosity) {
 */
 std::optional<MenuItem> DialogMacros::readFields(Verbosity verbosity) {
 
-	QString nameText = ui.editName->text();
+	const QString nameText = ui.editName->text();
 
 	if (nameText.isEmpty()) {
 		if (verbosity == Verbosity::Verbose) {
@@ -365,8 +365,8 @@ bool DialogMacros::applyDialogChanges() {
 	std::vector<MenuData> newItems;
 
 	for (int i = 0; i < model_->rowCount(); ++i) {
-		QModelIndex index = model_->index(i, 0);
-		auto item         = model_->itemFromIndex(index);
+		const QModelIndex index = model_->index(i, 0);
+		auto item               = model_->itemFromIndex(index);
 		newItems.push_back({*item, nullptr});
 	}
 

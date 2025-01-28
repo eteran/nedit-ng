@@ -67,14 +67,14 @@ QStringList readExtensionList(Input &in) {
 
 		in.skipWhitespace();
 
-		Input strStart = in;
+		const Input strStart = in;
 
 		while (!in.atEnd() && *in != QLatin1Char(' ') && *in != QLatin1Char('\t') && *in != QLatin1Char(':')) {
 			++in;
 		}
 
-		int len     = in - strStart;
-		QString ext = strStart.mid(len);
+		const int len     = in - strStart;
+		const QString ext = strStart.mid(len);
 		extensionList.push_back(ext);
 	}
 
@@ -491,17 +491,17 @@ void RestoreNEditPrefs() {
 
 void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 
-	QString prefFileName = Settings::configFile();
+	const QString prefFileName = Settings::configFile();
 	if (prefFileName.isNull()) {
 		QMessageBox::warning(parent, tr("Error saving Preferences"), tr("Unable to save preferences: Cannot determine filename."));
 		return;
 	}
 
 	if (verbosity == Verbosity::Verbose) {
-		int resp = QMessageBox::information(parent, tr("Save Preferences"),
-											ImportedFile.isNull() ? tr("Default preferences will be saved in the file:\n%1\nNEdit automatically loads this file each time it is started.").arg(prefFileName)
-																  : tr("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS FROM FILE: %2").arg(prefFileName, ImportedFile),
-											QMessageBox::Ok | QMessageBox::Cancel);
+		const int resp = QMessageBox::information(parent, tr("Save Preferences"),
+												  ImportedFile.isNull() ? tr("Default preferences will be saved in the file:\n%1\nNEdit automatically loads this file each time it is started.").arg(prefFileName)
+																		: tr("Default preferences will be saved in the file:\n%1\nSAVING WILL INCORPORATE SETTINGS FROM FILE: %2").arg(prefFileName, ImportedFile),
+												  QMessageBox::Ok | QMessageBox::Cancel);
 
 		if (resp == QMessageBox::Cancel) {
 			return;
@@ -1402,9 +1402,8 @@ bool reportError(QWidget *toDialog, const QString &string, int stoppedAt, const 
 		}
 	}
 
-	int len = stoppedAt - c + (stoppedAt == string.size() ? 0 : 1);
-
-	QString errorLine = tr("%1<==").arg(string.mid(c, len));
+	const int len           = stoppedAt - c + (stoppedAt == string.size() ? 0 : 1);
+	const QString errorLine = tr("%1<==").arg(string.mid(c, len));
 
 	if (!toDialog) {
 		qWarning("NEdit: %s in %s:\n%s", qPrintable(message), qPrintable(errorIn), qPrintable(errorLine));

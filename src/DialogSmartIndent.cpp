@@ -40,7 +40,7 @@ DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, 
 	ui.editModMacro->setTabStopWidth(tabStop * Font::characterWidth(ui.editModMacro->fontMetrics(), QLatin1Char(' ')));
 #endif
 
-	QString languageMode = Preferences::LanguageModeName((document->getLanguageMode() == PLAIN_LANGUAGE_MODE) ? 0 : document->getLanguageMode());
+	const QString languageMode = Preferences::LanguageModeName((document->getLanguageMode() == PLAIN_LANGUAGE_MODE) ? 0 : document->getLanguageMode());
 
 	updateLanguageModes();
 	setLanguageMode(languageMode);
@@ -82,8 +82,8 @@ void DialogSmartIndent::updateLanguageModes() {
  * @param s
  */
 void DialogSmartIndent::setLanguageMode(const QString &s) {
-	languageMode_ = s;
-	int index     = ui.comboLanguageMode->findText(languageMode_, Qt::MatchFixedString | Qt::MatchCaseSensitive);
+	languageMode_   = s;
+	const int index = ui.comboLanguageMode->findText(languageMode_, Qt::MatchFixedString | Qt::MatchCaseSensitive);
 	if (index != -1) {
 		ui.comboLanguageMode->setCurrentIndex(index);
 	}
@@ -244,7 +244,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	}
 
 	// Get the current data
-	SmartIndentEntry newMacros = getSmartIndentDialogData();
+	const SmartIndentEntry newMacros = getSmartIndentDialogData();
 
 	/* If it's a new language, add it at the end, otherwise replace the
 	   existing macros */
@@ -256,7 +256,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 	   re-do the smart indent macros */
 	for (DocumentWidget *document : DocumentWidget::allDocuments()) {
 
-		QString lmName = Preferences::LanguageModeName(document->getLanguageMode());
+		const QString lmName = Preferences::LanguageModeName(document->getLanguageMode());
 		if (!lmName.isNull()) {
 			if (lmName == newMacros.language) {
 
@@ -291,9 +291,9 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 	// the dialog is entirely blank.
 
 	// Check the initialization macro
-	QString initText = ui.editInit->toPlainText();
+	const QString initText = ui.editInit->toPlainText();
 	if (!initText.isEmpty()) {
-		QString widgetText = ensure_newline(initText);
+		const QString widgetText = ensure_newline(initText);
 		int stoppedAt      = 0;
 		if (!CheckMacroString(this, widgetText, tr("initialization macro"), &stoppedAt)) {
 			QTextCursor cursor = ui.editInit->textCursor();
@@ -305,14 +305,14 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 	}
 
 	// Test compile the newline macro
-	QString newlineText = ui.editNewline->toPlainText();
+	const QString newlineText = ui.editNewline->toPlainText();
 	if (newlineText.isEmpty()) {
 		QMessageBox::warning(this, tr("Smart Indent"), tr("Newline macro required"));
 		return false;
 	}
 
 	{
-		QString widgetText = ensure_newline(newlineText);
+		const QString widgetText = ensure_newline(newlineText);
 		QString errMsg;
 		int stoppedAt = 0;
 
@@ -327,9 +327,9 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 	}
 
 	// Test compile the modify macro
-	QString modMacroText = ui.editModMacro->toPlainText();
+	const QString modMacroText = ui.editModMacro->toPlainText();
 	if (!modMacroText.isEmpty()) {
-		QString widgetText = ensure_newline(modMacroText);
+		const QString widgetText = ensure_newline(modMacroText);
 		QString errMsg;
 		int stoppedAt = 0;
 

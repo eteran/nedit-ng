@@ -541,7 +541,7 @@ DocumentWidget::DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget 
 	showStats_       = Preferences::GetPrefStatsLine();
 
 	if (backlightChars_) {
-		QString cTypes = Preferences::GetPrefBacklightCharTypes();
+		const QString cTypes = Preferences::GetPrefBacklightCharTypes();
 		if (!cTypes.isNull()) {
 			backlightCharTypes_ = cTypes;
 		}
@@ -623,7 +623,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 	showStats_               = Preferences::GetPrefStatsLine();
 
 	if (backlightChars_) {
-		QString cTypes = Preferences::GetPrefBacklightCharTypes();
+		const QString cTypes = Preferences::GetPrefBacklightCharTypes();
 		if (!cTypes.isNull()) {
 			backlightCharTypes_ = cTypes;
 		}
@@ -763,7 +763,7 @@ void DocumentWidget::refreshTabState() {
 	}
 
 	QTabWidget *tabWidget = win->tabWidget();
-	int index             = tabWidget->indexOf(this);
+	const int index       = tabWidget->indexOf(this);
 
 	QString labelString;
 	QString filename = info_->filename;
@@ -888,7 +888,7 @@ size_t DocumentWidget::matchLanguageMode() const {
 		for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
 			if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {
 
-				std::optional<Search::Result> searchResult = Search::SearchString(
+				const std::optional<Search::Result> searchResult = Search::SearchString(
 					first200,
 					Preferences::LanguageModes[i].recognitionExpr,
 					Direction::Forward,
@@ -1234,11 +1234,10 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
 	/* Dim/undim smart-indent and highlighting menu items depending on
 	   whether patterns/macros are available */
-	QString languageModeName   = Preferences::LanguageModeName(mode);
-	bool haveHighlightPatterns = Highlight::FindPatternSet(languageModeName);
-	bool haveSmartIndentMacros = SmartIndent::smartIndentMacrosAvailable(Preferences::LanguageModeName(mode));
-
-	const bool topDocument = isTopDocument();
+	QString languageModeName         = Preferences::LanguageModeName(mode);
+	const bool haveHighlightPatterns = Highlight::FindPatternSet(languageModeName);
+	const bool haveSmartIndentMacros = SmartIndent::smartIndentMacrosAvailable(Preferences::LanguageModeName(mode));
+	const bool topDocument           = isTopDocument();
 
 	if (topDocument) {
 		win->ui.action_Highlight_Syntax->setEnabled(haveHighlightPatterns);
@@ -1553,7 +1552,7 @@ void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<M
 				updateSelectionSensitiveMenu(subMenu, menuList, enabled);
 			} else {
 				if (action->data().isValid()) {
-					size_t index = action->data().toUInt();
+					const size_t index = action->data().toUInt();
 					if (index >= menuList.size()) {
 						return;
 					}
@@ -1820,7 +1819,7 @@ void DocumentWidget::undo() {
 	if (!info_->buffer->primary.hasSelection() || Preferences::GetPrefUndoModifiesSelection()) {
 		/* position the cursor in the focus pane after the changed text
 		   to show the user where the undo was done */
-		if (QPointer<TextArea> area = win->lastFocus()) {
+		if (const QPointer<TextArea> area = win->lastFocus()) {
 			area->TextSetCursorPos(undo.startPos + restoredTextLength);
 		}
 	}
@@ -1833,7 +1832,7 @@ void DocumentWidget::undo() {
 		}
 	}
 
-	if (QPointer<TextArea> area = win->lastFocus()) {
+	if (const QPointer<TextArea> area = win->lastFocus()) {
 		makeSelectionVisible(area);
 	}
 
@@ -1875,7 +1874,7 @@ void DocumentWidget::redo() {
 	if (!info_->buffer->primary.hasSelection() || Preferences::GetPrefUndoModifiesSelection()) {
 		/* position the cursor in the focus pane after the changed text
 		   to show the user where the undo was done */
-		if (QPointer<TextArea> area = win->lastFocus()) {
+		if (const QPointer<TextArea> area = win->lastFocus()) {
 			area->TextSetCursorPos(redo.startPos + restoredTextLength);
 		}
 	}
@@ -1889,7 +1888,7 @@ void DocumentWidget::redo() {
 		}
 	}
 
-	if (QPointer<TextArea> area = win->lastFocus()) {
+	if (const QPointer<TextArea> area = win->lastFocus()) {
 		makeSelectionVisible(area);
 	}
 
@@ -2002,7 +2001,7 @@ void DocumentWidget::checkForChangesToFile() {
 	const bool silent = (!isTopDocument() || !win->isVisible());
 
 	// Get the file mode and modification time
-	QString fullname = fullPath();
+	const QString fullname = fullPath();
 
 	QT_STATBUF statbuf;
 	if (QT_STAT(fullname.toUtf8().data(), &statbuf) != 0) {
@@ -2030,7 +2029,7 @@ void DocumentWidget::checkForChangesToFile() {
 			switch (error) {
 			case ENOENT: {
 				// A component of the path file_name does not exist.
-				int resp = QMessageBox::critical(
+				const int resp = QMessageBox::critical(
 					this,
 					tr("File not Found"),
 					tr("File '%1' (or directory in its path) no longer exists.\n"
@@ -2041,7 +2040,7 @@ void DocumentWidget::checkForChangesToFile() {
 			} break;
 			case EACCES: {
 				// Search permission denied for a path component. We add one to the response because Re-Save wouldn't really make sense here.
-				int resp = QMessageBox::critical(
+				const int resp = QMessageBox::critical(
 					this,
 					tr("Permission Denied"),
 					tr("You no longer have access to file '%1'.\n"
@@ -2052,7 +2051,7 @@ void DocumentWidget::checkForChangesToFile() {
 			} break;
 			default: {
 				// Everything else. This hints at an internal error (eg. ENOTDIR) or at some bad state at the host.
-				int resp = QMessageBox::critical(
+				const int resp = QMessageBox::critical(
 					this,
 					tr("File not Accessible"),
 					tr("Error while checking the status of file '%1':\n"
@@ -2483,12 +2482,12 @@ bool DocumentWidget::saveDocument() {
 
 bool DocumentWidget::doSave() {
 
-	QString fullname = fullPath();
+	const QString fullname = fullPath();
 
 	/*  Check for root and warn him if he wants to write to a file with
 		none of the write bits set.  */
 	if (isAdministrator()) {
-		QFileInfo fi(fullname);
+		const QFileInfo fi(fullname);
 		if (fi.exists() && ((fi.permissions() & (QFile::WriteOwner | QFile::WriteUser | QFile::WriteGroup)) == 0)) {
 			int result = QMessageBox::warning(
 				this,
@@ -2745,7 +2744,7 @@ bool DocumentWidget::writeBckVersion() {
 		}
 
 		// Get the full name of the file
-		QString fullname = fullPath();
+		const QString fullname = fullPath();
 
 		// Generate name for old version
 		auto bckname = QStringLiteral("%1.bck").arg(fullname);
@@ -2857,7 +2856,7 @@ bool DocumentWidget::fileWasModifiedExternally() const {
 		return false;
 	}
 
-	QString fullname = fullPath();
+	const QString fullname = fullPath();
 
 	QT_STATBUF statbuf;
 	if (QT_STAT(fullname.toLocal8Bit().data(), &statbuf) != 0) {
@@ -6641,7 +6640,7 @@ void DocumentWidget::cancelLearning() {
 		return;
 	}
 
-	DocumentWidget *const document = CommandRecorder::instance()->macroRecordDocument();
+	QPointer<DocumentWidget> document = CommandRecorder::instance()->macroRecordDocument();
 	Q_ASSERT(document);
 
 	for (MainWindow *window : MainWindow::allWindows()) {
@@ -6664,7 +6663,7 @@ void DocumentWidget::finishLearning() {
 		return;
 	}
 
-	DocumentWidget *const document = CommandRecorder::instance()->macroRecordDocument();
+	QPointer<DocumentWidget> document = CommandRecorder::instance()->macroRecordDocument();
 	Q_ASSERT(document);
 
 	CommandRecorder::instance()->stopRecording();

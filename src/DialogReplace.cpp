@@ -38,7 +38,7 @@ int countWritableWindows() {
 		document->checkForChangesToFile();
 
 		const std::vector<DocumentWidget *> afterDocuments = DocumentWidget::allDocuments();
-		size_t nAfter                                      = afterDocuments.size();
+		const size_t nAfter                                = afterDocuments.size();
 
 		if (nAfter != nBefore) {
 			// The user has destroyed a file; start counting all over again
@@ -428,7 +428,7 @@ void DialogReplace::buttonMulti_clicked() {
 	}
 
 	// temporary list of writable documents, used during multi-file replacements
-	std::vector<DocumentWidget *> writeableDocuments = collectWritableWindows();
+	const std::vector<DocumentWidget *> writeableDocuments = collectWritableWindows();
 
 	// Initialize/update the list of files.
 	dialogMultiReplace->uploadFileListItems(writeableDocuments);

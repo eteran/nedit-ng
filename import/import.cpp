@@ -231,7 +231,7 @@ std::vector<MenuItem> loadMenuItemString(const QString &inString, bool isShellCo
 				return items;
 			}
 
-			item.command = p;
+			item.command = std::move(p);
 		}
 
 		in.skipWhitespaceNL();
@@ -245,7 +245,7 @@ void SaveTheme(const QString &filename, const std::vector<Style> &styles) {
 	QFile file(filename);
 	if (file.open(QIODevice::WriteOnly)) {
 		QDomDocument xml;
-		QDomProcessingInstruction pi = xml.createProcessingInstruction(QLatin1String("xml"), QLatin1String(R"(version="1.0" encoding="UTF-8")"));
+		const QDomProcessingInstruction pi = xml.createProcessingInstruction(QLatin1String("xml"), QLatin1String(R"(version="1.0" encoding="UTF-8")"));
 
 		xml.appendChild(pi);
 
@@ -447,7 +447,7 @@ QString covertRGBColor(const QString &color) {
 			const uint16_t g = match.captured(QLatin1String("green")).toUShort(nullptr, 16);
 			const uint16_t b = match.captured(QLatin1String("blue")).toUShort(nullptr, 16);
 
-			QColor c(r, g, b);
+			const QColor c(r, g, b);
 			auto newColor = QString::asprintf("#%02x%02x%02x",
 											  ((c.rgb() & 0x00ff0000) >> 16),
 											  ((c.rgb() & 0x0000ff00) >> 8),
@@ -473,7 +473,7 @@ QString covertRGBColor(const QString &color) {
 			const qreal g = match_rgbi.captured(QLatin1String("green")).toDouble();
 			const qreal b = match_rgbi.captured(QLatin1String("blue")).toDouble();
 
-			QColor c(static_cast<int>(r * 255), static_cast<int>(g * 255), static_cast<int>(b * 255));
+			const QColor c(static_cast<int>(r * 255), static_cast<int>(g * 255), static_cast<int>(b * 255));
 			auto newColor = QString::asprintf("#%02x%02x%02x",
 											  ((c.rgb() & 0x00ff0000) >> 16),
 											  ((c.rgb() & 0x0000ff00) >> 8),
@@ -550,9 +550,9 @@ int main(int argc, char *argv[]) {
 	Settings::macroCommands  = readResource<QString>(prefDB, "nedit.macroCommands");
 	Settings::bgMenuCommands = readResource<QString>(prefDB, "nedit.bgMenuCommands");
 
-	std::vector<MenuItem> shellCommands  = loadMenuItemString(Settings::shellCommands, true);
-	std::vector<MenuItem> macroCommands  = loadMenuItemString(Settings::macroCommands, false);
-	std::vector<MenuItem> bgMenuCommands = loadMenuItemString(Settings::bgMenuCommands, false);
+	const std::vector<MenuItem> shellCommands  = loadMenuItemString(Settings::shellCommands, true);
+	const std::vector<MenuItem> macroCommands  = loadMenuItemString(Settings::macroCommands, false);
+	const std::vector<MenuItem> bgMenuCommands = loadMenuItemString(Settings::bgMenuCommands, false);
 
 	Settings::shellCommands  = writeMenuItemString(shellCommands, true);
 	Settings::macroCommands  = writeMenuItemString(macroCommands, false);

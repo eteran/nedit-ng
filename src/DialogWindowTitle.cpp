@@ -76,7 +76,7 @@ DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, 
 	path_     = document->path();
 	filename_ = document->filename();
 
-	QString clearCase = ClearCase::GetViewTag();
+	const QString clearCase = ClearCase::GetViewTag();
 
 	viewTag_     = !clearCase.isNull() ? clearCase : tr("viewtag");
 	serverName_  = IsServer ? Preferences::GetPrefServerName() : tr("servername");
@@ -131,7 +131,7 @@ void DialogWindowTitle::setToggleButtons() {
 	// Read-only takes precedence on locked
 	ui.checkFileLocked->setEnabled(!lockReasons_.isPermLocked());
 
-	QString ccTag = ClearCase::GetViewTag();
+	const QString ccTag = ClearCase::GetViewTag();
 
 	ui.checkClearCasePresent->setChecked(!ccTag.isNull());
 	ui.checkServerNamePresent->setChecked(isServer_);
@@ -157,7 +157,7 @@ void DialogWindowTitle::editFormat_textChanged(const QString &text) {
  */
 void DialogWindowTitle::formatChangedCB() {
 
-	bool filenameSet = ui.checkDirectoryPresent->isChecked();
+	const bool filenameSet = ui.checkDirectoryPresent->isChecked();
 
 	if (suppressFormatUpdate_) {
 		return; // Prevent recursive feedback
@@ -171,7 +171,7 @@ void DialogWindowTitle::formatChangedCB() {
 		serverName = ui.checkServerNamePresent->isChecked() ? serverName_ : QString();
 	}
 
-	QString title = formatWindowTitleAndUpdate(
+	const QString title = formatWindowTitleAndUpdate(
 		filename_,
 		filenameSet_ ? path_ : tr("/a/very/long/path/used/as/example/"),
 		ui.checkClearCasePresent->isChecked() ? viewTag_ : QString(),
@@ -406,11 +406,11 @@ void DialogWindowTitle::checkDirectory_toggled(bool checked) {
 
 	if (checked) {
 		QString buf;
-		QString value = ui.editDirectory->text();
+		const QString value = ui.editDirectory->text();
 		if (!value.isEmpty()) {
 
 			bool ok;
-			int maxComp = value.toInt(&ok);
+			const int maxComp = value.toInt(&ok);
 
 			if (ok && maxComp > 0) {
 				buf = tr(" %%1d ").arg(maxComp);

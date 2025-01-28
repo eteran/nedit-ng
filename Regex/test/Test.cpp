@@ -726,7 +726,7 @@ int main() {
 
 	for (const Test &t : tests) {
 		try {
-			Regex re(t.input, RE_DEFAULT_STANDARD);
+			const Regex re(t.input, RE_DEFAULT_STANDARD);
 
 			std::string bytes;
 
@@ -783,7 +783,7 @@ int main() {
 #if defined(NEDIT_INCLUDE_DECOMPILER)
 	for (const Test &t : tests) {
 		try {
-			Regex re(t.input, RE_DEFAULT_STANDARD);
+			const Regex re(t.input, RE_DEFAULT_STANDARD);
 			decompileRegex(re);
 		} catch (...) {
 			std::cerr << "EXCEPTION: " << t.input << '\n';

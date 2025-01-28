@@ -108,7 +108,7 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 		/* Get the current information displayed by the dialog.  If it's bad,
 		   give the user the chance to throw it out or go back and fix it.  If
 		   it has changed, give the user the chance to apply discard or cancel. */
-		std::unique_ptr<PatternSet> currentPatternSet = getDialogPatternSet();
+		const std::unique_ptr<PatternSet> currentPatternSet = getDialogPatternSet();
 
 		if (!currentPatternSet) {
 			QMessageBox messageBox(this);
@@ -130,7 +130,7 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 			}
 		} else if (*activePatternSet != *currentPatternSet) {
 
-			int resp = QMessageBox::warning(
+			const int resp = QMessageBox::warning(
 				this,
 				tr("Language Mode"),
 				tr("Apply changes for language mode %1?").arg(previousLanguage_),
@@ -185,7 +185,7 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
  */
 void DialogSyntaxPatterns::SetLangModeMenu(const QString &name) {
 
-	int index = ui.comboLanguageMode->findText(name, Qt::MatchFixedString);
+	const int index = ui.comboLanguageMode->findText(name, Qt::MatchFixedString);
 	if (index != -1) {
 		ui.comboLanguageMode->setCurrentIndex(index);
 	} else {
@@ -199,7 +199,7 @@ void DialogSyntaxPatterns::SetLangModeMenu(const QString &name) {
  */
 void DialogSyntaxPatterns::setStyleMenu(const QString &name) {
 
-	int index = ui.comboHighlightStyle->findText(name, Qt::MatchFixedString);
+	const int index = ui.comboHighlightStyle->findText(name, Qt::MatchFixedString);
 	if (index != -1) {
 		ui.comboHighlightStyle->setCurrentIndex(index);
 	} else {
@@ -279,7 +279,7 @@ void DialogSyntaxPatterns::buttonLanguageMode_clicked() {
  * @brief DialogSyntaxPatterns::buttonHighlightStyle_clicked
  */
 void DialogSyntaxPatterns::buttonHighlightStyle_clicked() {
-	QString style = ui.comboHighlightStyle->currentText();
+	const QString style = ui.comboHighlightStyle->currentText();
 	if (!style.isEmpty()) {
 
 		if (!dialogDrawingStyles_) {
@@ -412,7 +412,7 @@ void DialogSyntaxPatterns::buttonDeletePattern_clicked() {
 
 	const QString languageMode = ui.comboLanguageMode->currentText();
 
-	int resp = QMessageBox::warning(
+	const int resp = QMessageBox::warning(
 		this,
 		tr("Delete Pattern"),
 		tr("Are you sure you want to delete syntax highlighting patterns for language mode %1?").arg(languageMode),
@@ -463,7 +463,7 @@ void DialogSyntaxPatterns::buttonRestore_clicked() {
 		return;
 	}
 
-	int resp = QMessageBox::warning(
+	const int resp = QMessageBox::warning(
 		this,
 		tr("Discard Changes"),
 		tr("Are you sure you want to discard all changes to syntax highlighting patterns for language mode %1?").arg(languageMode),
@@ -481,7 +481,7 @@ void DialogSyntaxPatterns::buttonRestore_clicked() {
 	model_->clear();
 
 	// Update the dialog
-	for (HighlightPattern &pattern : patternSet->patterns) {
+	for (const HighlightPattern &pattern : patternSet->patterns) {
 		model_->addItem(pattern);
 	}
 
@@ -558,10 +558,10 @@ void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QMod
 	// previous was OK, so let's update the contents of the dialog
 	if (const auto pattern = model_->itemFromIndex(current)) {
 
-		bool isSubpat    = !pattern->subPatternOf.isNull();
-		bool isDeferred  = pattern->flags & DEFER_PARSING;
-		bool isColorOnly = pattern->flags & COLOR_ONLY;
-		bool isRange     = (!pattern->endRE.isNull());
+		const bool isSubpat    = !pattern->subPatternOf.isNull();
+		const bool isDeferred  = pattern->flags & DEFER_PARSING;
+		const bool isColorOnly = pattern->flags & COLOR_ONLY;
+		const bool isRange     = (!pattern->endRE.isNull());
 
 		ui.editPatternName->setText(pattern->name);
 		ui.editParentPattern->setText(!pattern->subPatternOf.isNull() ? pattern->subPatternOf : QString());
@@ -628,7 +628,7 @@ void DialogSyntaxPatterns::updateHighlightStyleMenu() {
 
 	if (auto blocker = no_signals(ui.comboHighlightStyle)) {
 
-		QString pattern = ui.comboHighlightStyle->currentText();
+		const QString pattern = ui.comboHighlightStyle->currentText();
 		ui.comboHighlightStyle->clear();
 
 		for (const HighlightStyle &style : Highlight::HighlightStyles) {
@@ -746,7 +746,7 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 	}
 
 	bool ok;
-	int lineContext = ui.editContextLines->text().toInt(&ok);
+	const int lineContext = ui.editContextLines->text().toInt(&ok);
 	if (!ok) {
 		QMessageBox::critical(this, tr("Warning"), tr("Can't read integer value \"%1\" in context lines").arg(ui.editContextLines->text()));
 		return nullptr;
@@ -758,7 +758,7 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 		return nullptr;
 	}
 
-	int charContext = ui.editContextChars->text().toInt(&ok);
+	const int charContext = ui.editContextChars->text().toInt(&ok);
 	if (!ok) {
 		QMessageBox::critical(this, tr("Warning"), tr("Can't read integer value \"%1\" in context chars").arg(ui.editContextChars->text()));
 		return nullptr;
@@ -777,7 +777,7 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 	patternSet->charContext  = charContext;
 
 	for (int i = 0; i < model_->rowCount(); ++i) {
-		QModelIndex index = model_->index(i, 0);
+		const QModelIndex index = model_->index(i, 0);
 		if (auto pattern = model_->itemFromIndex(index)) {
 			patternSet->patterns.push_back(*pattern);
 		}
@@ -797,7 +797,7 @@ std::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity verbo
 	HighlightPattern pat;
 
 	// read the type buttons
-	int colorOnly = ui.radioColoring->isChecked();
+	const int colorOnly = ui.radioColoring->isChecked();
 	if (ui.radioPass2->isChecked()) {
 		pat.flags |= DEFER_PARSING;
 	} else if (colorOnly) {
@@ -810,7 +810,7 @@ std::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity verbo
 		return {};
 	}
 
-	pat.name = name;
+	pat.name = std::move(name);
 	if (pat.name.isEmpty()) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Pattern Name"), tr("Please specify a name for the pattern"));
@@ -836,7 +836,7 @@ std::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity verbo
 
 		auto outPtr = std::back_inserter(outStr);
 
-		Q_FOREACH (QChar ch, pat.startRE) {
+		Q_FOREACH (const QChar ch, pat.startRE) {
 			if (ch != QLatin1Char(' ') && ch != QLatin1Char('\t')) {
 				*outPtr++ = ch;
 			}
@@ -859,7 +859,7 @@ std::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity verbo
 
 	// read the parent field
 	if (ui.radioSubPattern->isChecked() || colorOnly) {
-		QString parent = ui.editParentPattern->text().simplified();
+		const QString parent = ui.editParentPattern->text().simplified();
 		if (parent.isEmpty()) {
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Specify Parent Pattern"), tr("Please specify a parent pattern"));

@@ -72,7 +72,7 @@ void DialogMultiReplace::buttonReplace_clicked() {
 	/*
 	 * Protect the user against him/herself; Maybe this is a bit too much?
 	 */
-	int res = QMessageBox::question(
+	const int res = QMessageBox::question(
 		this,
 		tr("Multi-File Replacement"),
 		tr("Multi-file replacements are difficult to undo. Proceed with the replacement?"),

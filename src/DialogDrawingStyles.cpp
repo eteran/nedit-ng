@@ -70,8 +70,8 @@ void DialogDrawingStyles::connectSlots() {
 void DialogDrawingStyles::setStyleByName(const QString &name) {
 
 	for (int i = 0; i < model_->rowCount(); ++i) {
-		QModelIndex index = model_->index(i, 0);
-		auto ptr          = model_->itemFromIndex(index);
+		const QModelIndex index = model_->index(i, 0);
+		auto ptr                = model_->itemFromIndex(index);
 		if (ptr->name == name) {
 			ui.listItems->setCurrentIndex(index);
 			break;
@@ -201,7 +201,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 		// don't allow deleting the last "Plain" entry since it's reserved
 		if (style->name == QLatin1String("Plain")) {
 			// unless there is more than one "Plain"
-			int count = countPlainEntries();
+			const int count = countPlainEntries();
 			if (count < 2) {
 				ui.buttonDelete->setEnabled(false);
 			}
@@ -252,7 +252,7 @@ std::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosit
 
 	HighlightStyle hs;
 
-	QString name = ui.editName->text().simplified();
+	const QString name = ui.editName->text().simplified();
 	if (name.isNull()) {
 		return {};
 	}
@@ -269,7 +269,7 @@ std::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosit
 	}
 
 	// read the color field
-	QString color = ui.editColorFG->text().simplified();
+	const QString color = ui.editColorFG->text().simplified();
 	if (color.isEmpty()) {
 		return {};
 	}
@@ -292,7 +292,7 @@ std::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosit
 	}
 
 	// read the background color field - this may be empty
-	QString bgColor = ui.editColorBG->text().simplified();
+	const QString bgColor = ui.editColorBG->text().simplified();
 	if (bgColor.isEmpty()) {
 		hs.bgColor = QString();
 	} else {
@@ -348,7 +348,7 @@ bool DialogDrawingStyles::applyDialogChanges() {
 		// and make sure it has the text updated as well
 		auto ptr = model_->itemFromIndex(index);
 		if (ptr->name == QLatin1String("Plain") && dialogFields->name != QLatin1String("Plain")) {
-			int count = countPlainEntries();
+			const int count = countPlainEntries();
 			if (count < 2) {
 				QMessageBox::information(this,
 										 tr("Highlight Style"),
@@ -363,8 +363,8 @@ bool DialogDrawingStyles::applyDialogChanges() {
 	std::vector<HighlightStyle> newStyles;
 
 	for (int i = 0; i < model_->rowCount(); ++i) {
-		QModelIndex index = model_->index(i, 0);
-		auto style        = model_->itemFromIndex(index);
+		const QModelIndex index = model_->index(i, 0);
+		auto style              = model_->itemFromIndex(index);
 		newStyles.push_back(*style);
 	}
 
@@ -407,7 +407,7 @@ bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
 	// the last "Plain" entry though
 	auto ptr = model_->itemFromIndex(index);
 	if (ptr->name == QLatin1String("Plain") && dialogFields->name != QLatin1String("Plain")) {
-		int count = countPlainEntries();
+		const int count = countPlainEntries();
 		if (count < 2) {
 			QMessageBox::information(this, tr("Highlight Style"), tr("There must be at least one Plain entry. Cannot rename this entry."));
 			return false;
@@ -438,8 +438,8 @@ bool DialogDrawingStyles::updateCurrentItem() {
 int DialogDrawingStyles::countPlainEntries() const {
 	int count = 0;
 	for (int i = 0; i < model_->rowCount(); ++i) {
-		QModelIndex index = model_->index(i, 0);
-		auto style        = model_->itemFromIndex(index);
+		const QModelIndex index = model_->index(i, 0);
+		auto style              = model_->itemFromIndex(index);
 		if (style->name == QLatin1String("Plain")) {
 			++count;
 		}
@@ -453,9 +453,9 @@ int DialogDrawingStyles::countPlainEntries() const {
  */
 void DialogDrawingStyles::chooseColor(QLineEdit *edit) {
 
-	QString name = edit->text();
+	const QString name = edit->text();
 
-	QColor color = QColorDialog::getColor(X11Colors::fromString(name), this);
+	const QColor color = QColorDialog::getColor(X11Colors::fromString(name), this);
 	if (color.isValid()) {
 		edit->setText(QStringLiteral("#%1").arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0')));
 	}
