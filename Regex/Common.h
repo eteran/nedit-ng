@@ -11,11 +11,6 @@
 #include <cstdint>
 #include <cstring>
 
-template <class Ptr>
-unsigned int U_CHAR_AT(Ptr p) noexcept {
-	return static_cast<unsigned int>(*p);
-}
-
 template <class T>
 T *OPERAND(T *p) noexcept {
 	static_assert(sizeof(T) == 1, "Invalid Pointer Type");

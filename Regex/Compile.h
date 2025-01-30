@@ -3,6 +3,7 @@
 #define COMPILE_H_
 
 #include "Reader.h"
+
 #include <bitset>
 #include <cstdint>
 #include <string_view>
