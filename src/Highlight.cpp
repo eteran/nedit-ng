@@ -342,7 +342,7 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 
 	// copy the buffer range into a string
 
-	std::string str                     = buf->BufGetRange(beginSafety, endSafety);
+	const std::string str               = buf->BufGetRange(beginSafety, endSafety);
 	std::basic_string<uint8_t> styleStr = styleBuf->BufGetRange(beginSafety, endSafety);
 
 	const char *const string   = str.data();

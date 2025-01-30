@@ -146,6 +146,8 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 			case QMessageBox::Apply:
 				updatePatternSet();
 				break;
+			default:
+				break;
 			}
 		}
 	}

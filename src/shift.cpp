@@ -113,8 +113,8 @@ std::string fillParagraph(std::string_view text, int64_t leftMargin, int64_t fir
 	++nLines;
 
 	// produce a string to prepend to lines to indent them to the left margin
-	std::string leadIndentStr = makeIndentString(firstLineIndent, tabDist, allowTabs);
-	std::string indentString  = makeIndentString(leftMargin, tabDist, allowTabs);
+	const std::string leadIndentStr = makeIndentString(firstLineIndent, tabDist, allowTabs);
+	const std::string indentString  = makeIndentString(leftMargin, tabDist, allowTabs);
 
 	std::string outText;
 	outText.reserve(cleanedText.size() + leadIndentStr.size() + indentString.size() * (nLines - 1));
@@ -566,9 +566,9 @@ std::string shiftText(std::string_view text, ShiftDirection direction, bool tabs
 
 			auto segment = text.substr(gsl::narrow<size_t>(lineStartPtr - text.begin()));
 
-			std::string shiftedLineString = (direction == ShiftDirection::Right)
-												? shiftLineRight(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars)
-												: shiftLineLeft(segment, textPtr - lineStartPtr, tabDist, nChars);
+			const std::string shiftedLineString = (direction == ShiftDirection::Right)
+													  ? shiftLineRight(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars)
+													  : shiftLineLeft(segment, textPtr - lineStartPtr, tabDist, nChars);
 
 			std::copy(shiftedLineString.begin(), shiftedLineString.end(), shiftedPtr);
 

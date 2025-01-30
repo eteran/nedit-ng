@@ -2183,7 +2183,7 @@ static int arrayIter() {
 
 	DataValue *iteratorValPtr = &FP_GET_SYM_VAL(Context.FrameP, iterator);
 
-	ArrayIterator thisEntry = to_iterator(*iteratorValPtr);
+	const ArrayIterator thisEntry = to_iterator(*iteratorValPtr);
 
 	if (thisEntry.it != thisEntry.m->end()) {
 		*itemValPtr     = make_value(thisEntry.it->first);

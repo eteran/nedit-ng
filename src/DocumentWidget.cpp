@@ -4782,7 +4782,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 			cancel = (msgBox.exec() == QMessageBox::Cancel);
 
 		} else if (failure) {
-			const QString dialogOutText = QString::fromLocal8Bit(outText.data(), std::min<size_t>(MaxMessageLength, outText.size()));
+			const auto dialogOutText = QString::fromLocal8Bit(outText.data(), std::min<size_t>(MaxMessageLength, outText.size()));
 
 			QMessageBox msgBox;
 			msgBox.setWindowTitle(tr("Command Failure"));
@@ -4820,7 +4820,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 		   (remaining) output in the text widget as requested, and move the
 		   insert point to the end */
 		if (shellCmdData_->flags & OUTPUT_TO_DIALOG) {
-			QString dialogOutText = QString::fromLocal8Bit(outText.data(), std::min<size_t>(MaxMessageLength, outText.size()));
+			auto dialogOutText = QString::fromLocal8Bit(outText.data(), std::min<size_t>(MaxMessageLength, outText.size()));
 			dialogOutText.remove(trailingNewlines);
 
 			if (!dialogOutText.isEmpty()) {
@@ -5926,8 +5926,8 @@ void DocumentWidget::handleUnparsedRegion(UTextBuffer *styleBuf, TextCursor pos)
 	}
 
 	// Copy the buffer range into a string
-	std::string str    = buf->BufGetRange(beginSafety, endSafety);
-	const char *string = str.data();
+	const std::string str = buf->BufGetRange(beginSafety, endSafety);
+	const char *string    = str.data();
 
 	std::basic_string<uint8_t> styleStr = styleBuf->BufGetRange(beginSafety, endSafety);
 	uint8_t *const styleString          = styleStr.data();

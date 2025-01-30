@@ -3616,8 +3616,8 @@ void TextArea::setupBGClasses(const QString &str) {
 		const QStringList s1 = format.split(QLatin1Char(':'), QString::SkipEmptyParts);
 #endif
 		if (s1.size() == 2) {
-			const QString ranges = s1[0];
-			const QString color  = s1[1];
+			const QString &ranges = s1[0];
+			const QString &color  = s1[1];
 
 			if (class_no > UINT8_MAX) {
 				break;
@@ -3927,9 +3927,9 @@ void TextArea::TextDMakeInsertPosVisible() {
 */
 void TextArea::cancelBlockDrag() {
 
-	std::shared_ptr<TextBuffer> origBuf  = std::move(dragOrigBuf_);
-	const TextBuffer::Selection *origSel = &origBuf->primary;
-	auto modRangeStart                   = TextCursor(-1);
+	const std::shared_ptr<TextBuffer> origBuf = std::move(dragOrigBuf_);
+	const TextBuffer::Selection *origSel      = &origBuf->primary;
+	auto modRangeStart                        = TextCursor(-1);
 	TextCursor origModRangeEnd;
 	TextCursor bufModRangeEnd;
 
@@ -5414,9 +5414,8 @@ void TextArea::selectWord(int pointerX) {
 void TextArea::selectLine() {
 
 	const TextCursor insertPos = cursorPos_;
-
-	TextCursor endPos   = buffer_->BufEndOfLine(insertPos);
-	TextCursor startPos = buffer_->BufStartOfLine(insertPos);
+	const TextCursor endPos    = buffer_->BufEndOfLine(insertPos);
+	const TextCursor startPos  = buffer_->BufStartOfLine(insertPos);
 
 	buffer_->BufSelect(startPos, std::min(endPos + 1, buffer_->BufEndOfBuffer()));
 	setInsertPosition(endPos);
@@ -5463,7 +5462,7 @@ TextCursor TextArea::xyToPos(int x, int y, PositionType posType) const {
 	}
 
 	// Find the position at the start of the line
-	TextCursor lineStart = lineStarts_[visLineNum];
+	const TextCursor lineStart = lineStarts_[visLineNum];
 
 	// If the line start was empty, return the last position in the buffer
 	if (lineStart == -1) {
@@ -5471,8 +5470,8 @@ TextCursor TextArea::xyToPos(int x, int y, PositionType posType) const {
 	}
 
 	// Get the line text and its length
-	int64_t lineLen     = visLineLength(visLineNum);
-	std::string lineStr = buffer_->BufGetRange(lineStart, lineStart + lineLen);
+	const int64_t lineLen     = visLineLength(visLineNum);
+	const std::string lineStr = buffer_->BufGetRange(lineStart, lineStart + lineLen);
 
 	/* Step through character positions from the beginning of the line
 	   to find the character position corresponding to the x coordinate */
@@ -5611,7 +5610,7 @@ void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
 	int column;
 
 	// Find the new anchor point for the rest of this drag operation
-	TextCursor newPos = coordToPosition(event->pos());
+	const TextCursor newPos = coordToPosition(event->pos());
 	coordToUnconstrainedPosition(event->pos(), &row, &column);
 	column = offsetWrappedColumn(row, column);
 	if (sel->hasSelection()) {
@@ -5772,7 +5771,7 @@ void TextArea::deleteToStartOfLineAP(EventFlags flags) {
 	const TextCursor insertPos = cursorPos_;
 	TextCursor lineStart;
 
-	bool silent = (flags & NoBellFlag);
+	const bool silent = (flags & NoBellFlag);
 
 	if (flags & WrapFlag) {
 		lineStart = startOfLine(insertPos);
@@ -5844,10 +5843,10 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 
 	EMIT_EVENT_0("copy_to");
 
-	DragStates dragState                   = dragState_;
+	const DragStates dragState             = dragState_;
 	const TextBuffer::Selection &secondary = buffer_->secondary;
 	const TextBuffer::Selection &primary   = buffer_->primary;
-	bool rectangular                       = secondary.isRectangular();
+	const bool rectangular                 = secondary.isRectangular();
 
 	endDrag();
 	if (!((dragState == SECONDARY_DRAG && secondary.hasSelection()) || (dragState == SECONDARY_RECT_DRAG && secondary.hasSelection()) || dragState == SECONDARY_CLICKED || dragState == NOT_CLICKED)) {
@@ -5862,7 +5861,7 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 	if (secondary.hasSelection()) {
 
 		TextDBlankCursor();
-		std::string textToCopy = buffer_->BufGetSecSelectText();
+		const std::string textToCopy = buffer_->BufGetSecSelectText();
 		if (primary.hasSelection() && rectangular) {
 			buffer_->BufReplaceSelected(textToCopy);
 			setInsertPosition(buffer_->BufCursorPosHint());
@@ -5880,7 +5879,7 @@ void TextArea::copyToAP(QMouseEvent *event, EventFlags flags) {
 		unblankCursor();
 
 	} else if (primary.hasSelection()) {
-		std::string textToCopy = buffer_->BufGetSelectionText();
+		const std::string textToCopy = buffer_->BufGetSelectionText();
 		setInsertPosition(coordToPosition(event->pos()));
 		TextInsertAtCursor(textToCopy, false, autoWrapPastedText_);
 	} else {
@@ -5905,7 +5904,7 @@ void TextArea::finishBlockDrag() {
 	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, dragInsertPos_, dragInserted_, dragDeleted_);
 
 	// Get the original (pre-modified) range of text from saved backup buffer
-	std::string deletedText = dragOrigBuf_->BufGetRange(modRangeStart, origModRangeEnd);
+	const std::string deletedText = dragOrigBuf_->BufGetRange(modRangeStart, origModRangeEnd);
 
 	// Free the backup buffer
 	dragOrigBuf_ = nullptr;
@@ -5957,7 +5956,7 @@ void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 */
 bool TextArea::inSelection(const QPoint &p) const {
 
-	TextCursor pos = xyToPos(p, PositionType::Character);
+	const TextCursor pos = xyToPos(p, PositionType::Character);
 
 	int row;
 	int column;
@@ -5982,7 +5981,7 @@ void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
 	const TextBuffer::Selection &sel = buffer_->secondary;
 
 	// Find the new anchor point and make the new selection
-	TextCursor pos = coordToPosition(event->pos());
+	const TextCursor pos = coordToPosition(event->pos());
 	if (sel.hasSelection()) {
 		TextCursor anchor;
 		if (std::abs(pos - sel.start()) < std::abs(pos - sel.end())) {
@@ -5992,7 +5991,7 @@ void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
 		}
 		buffer_->BufSecondarySelect(anchor, pos);
 	} else {
-		TextCursor anchor = pos;
+		const TextCursor anchor = pos;
 		Q_UNUSED(anchor)
 	}
 
@@ -6138,7 +6137,7 @@ void TextArea::beginBlockDrag() {
 	if (sel.isRectangular()) {
 		TextBuffer testBuf;
 
-		std::string testText = buffer_->BufGetRange(sel.start(), sel.end());
+		const std::string testText = buffer_->BufGetRange(sel.start(), sel.end());
 		testBuf.BufSetTabDistance(buffer_->BufGetTabDistance(), true);
 		testBuf.BufSetUseTabs(buffer_->BufGetUseTabs());
 		testBuf.BufSetAll(testText);
@@ -6159,12 +6158,12 @@ void TextArea::beginBlockDrag() {
 	/* For non-rectangular selections, fill in the rectangular information in
 	   the selection for overlay mode drags which are done rectangularly */
 	if (!sel.isRectangular()) {
-		TextCursor lineStart = buffer_->BufStartOfLine(sel.start());
+		const TextCursor lineStart = buffer_->BufStartOfLine(sel.start());
 		if (dragNLines_ == 0) {
 			dragOrigBuf_->primary.rectStart_ = buffer_->BufCountDispChars(lineStart, sel.start());
 			dragOrigBuf_->primary.rectEnd_   = buffer_->BufCountDispChars(lineStart, sel.end());
 		} else {
-			TextCursor lineEnd = buffer_->BufGetCharacter(sel.end() - 1) == '\n' ? sel.end() - 1 : sel.end();
+			const TextCursor lineEnd = buffer_->BufGetCharacter(sel.end() - 1) == '\n' ? sel.end() - 1 : sel.end();
 			findTextMargins(buffer_, lineStart, lineEnd, &dragOrigBuf_->primary.rectStart_, &dragOrigBuf_->primary.rectEnd_);
 		}
 	}
@@ -6189,9 +6188,9 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	auto &origBuf                        = dragOrigBuf_;
 	int dragXOffset                      = dragXOffset_;
 	const TextBuffer::Selection &origSel = origBuf->primary;
-	bool rectangular                     = origSel.isRectangular();
-	BlockDragTypes oldDragType           = dragType_;
-	int64_t nLines                       = dragNLines_;
+	const bool rectangular               = origSel.isRectangular();
+	const BlockDragTypes oldDragType     = dragType_;
+	const int64_t nLines                 = dragNLines_;
 	auto modRangeStart                   = TextCursor(-1);
 	auto tempModRangeEnd                 = TextCursor(-1);
 	auto bufModRangeEnd                  = TextCursor(-1);
@@ -6254,7 +6253,7 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	   was rectangular.  To use a plain selection as if it were rectangular,
 	   the start and end positions need to be moved to the line boundaries
 	   and trailing newlines must be excluded */
-	TextCursor origSelLineStart = origBuf->BufStartOfLine(origSel.start());
+	const TextCursor origSelLineStart = origBuf->BufStartOfLine(origSel.start());
 
 	if (!rectangular && origBuf->BufGetCharacter(origSel.end() - 1) == '\n') {
 		origSelLineEnd = origSel.end() - 1;
@@ -6365,7 +6364,7 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	// Do the insert in the temporary buffer
 	if (rectangular || overlay) {
 
-		std::string insText = origBuf->BufGetTextInRect(origSelLineStart, origSelLineEnd, origSel.rectStart(), origSel.rectEnd());
+		const std::string insText = origBuf->BufGetTextInRect(origSelLineStart, origSelLineEnd, origSel.rectStart(), origSel.rectEnd());
 		if (overlay) {
 			tempBuf.BufOverlayRect(TextCursor(insStart - tempStart), insRectStart, insRectStart + origSel.rectEnd() - origSel.rectStart(), insText, &insertInserted, &insertDeleted);
 		} else {
@@ -6374,7 +6373,7 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 		trackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd, insStart, insertInserted, insertDeleted);
 
 	} else {
-		std::string insText = origBuf->BufGetSelectionText();
+		const std::string insText = origBuf->BufGetSelectionText();
 		tempBuf.BufInsert(TextCursor(insStart - tempStart), insText);
 		trackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd, insStart, origSel.end() - origSel.start(), 0);
 		insertInserted = origSel.end() - origSel.start();
@@ -6382,7 +6381,7 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	}
 
 	// Make the changes in the real buffer
-	std::string repText = tempBuf.BufGetRange(TextCursor(modRangeStart - tempStart), TextCursor(tempModRangeEnd - tempStart));
+	const std::string repText = tempBuf.BufGetRange(TextCursor(modRangeStart - tempStart), TextCursor(tempModRangeEnd - tempStart));
 
 	TextDBlankCursor();
 	buffer_->BufReplace(modRangeStart, bufModRangeEnd, repText);
@@ -6407,7 +6406,7 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 
 	// Reset the selection and cursor position
 	if (rectangular || overlay) {
-		int64_t insRectEnd = insRectStart + origSel.rectEnd() - origSel.rectStart();
+		const int64_t insRectEnd = insRectStart + origSel.rectEnd() - origSel.rectStart();
 		buffer_->BufRectSelect(insStart, insStart + insertInserted, insRectStart, insRectEnd);
 		setInsertPosition(buffer_->BufCountForwardDispChars(buffer_->BufCountForwardNLines(insStart, dragNLines_), insRectEnd));
 	} else {
@@ -6432,7 +6431,7 @@ void TextArea::callMovedCBs() {
 
 void TextArea::adjustSecondarySelection(const QPoint &coord) {
 
-	TextCursor newPos = coordToPosition(coord);
+	const TextCursor newPos = coordToPosition(coord);
 
 	if (dragState_ == SECONDARY_RECT_DRAG) {
 

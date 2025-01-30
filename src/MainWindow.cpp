@@ -2215,7 +2215,7 @@ QFileInfoList MainWindow::openFileHelperSystem(DocumentWidget *document, const Q
 			*searchName = filename;
 		}
 
-		QDir dir(filepath);
+		const QDir dir(filepath);
 		const QStringList name_filters    = {filename};
 		const QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Hidden | QDir::Files);
 		results.append(localFileList);
@@ -2242,7 +2242,7 @@ QFileInfoList MainWindow::openFileHelperString(DocumentWidget *document, const Q
 		*searchPath = filepath;
 		*searchName = filename;
 
-		QDir dir(filepath);
+		const QDir dir(filepath);
 		const QStringList name_filters    = {filename};
 		const QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Hidden | QDir::Files);
 		results.append(localFileList);
@@ -2258,7 +2258,7 @@ QFileInfoList MainWindow::openFileHelperString(DocumentWidget *document, const Q
 		*searchPath = filepath;
 		*searchName = filename;
 
-		QDir dir(filepath);
+		const QDir dir(filepath);
 		const QStringList name_filters    = {filename};
 		const QFileInfoList localFileList = dir.entryInfoList(name_filters, QDir::NoDotAndDotDot | QDir::Hidden | QDir::Files);
 		results.append(localFileList);
@@ -5062,11 +5062,11 @@ QString MainWindow::promptForNewFile(DocumentWidget *document, FileFormats *form
 
 			QObject::connect(wrapCheck, &QCheckBox::toggled, document, [wrapCheck, document](bool checked) {
 				if (checked) {
-					int ret = QMessageBox::information(document, tr("Add Wrap"),
-													   tr("This operation adds permanent line breaks to match the automatic wrapping done by the Continuous Wrap mode Preferences Option.\n\n"
-														  "*** This Option is Irreversible ***\n\n"
-														  "Once newlines are inserted, continuous wrapping will no longer work automatically on these lines"),
-													   QMessageBox::Ok | QMessageBox::Cancel);
+					const int ret = QMessageBox::information(document, tr("Add Wrap"),
+															 tr("This operation adds permanent line breaks to match the automatic wrapping done by the Continuous Wrap mode Preferences Option.\n\n"
+																"*** This Option is Irreversible ***\n\n"
+																"Once newlines are inserted, continuous wrapping will no longer work automatically on these lines"),
+															 QMessageBox::Ok | QMessageBox::Cancel);
 
 					if (ret != QMessageBox::Ok) {
 						wrapCheck->setChecked(false);
@@ -5108,7 +5108,7 @@ void MainWindow::action_Save_All(DocumentWidget *document) {
 
 	emit_event("save_all");
 
-	std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
+	const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 	for (DocumentWidget *document : documents) {
 		if (document->checkReadOnly()) {
 			continue;
