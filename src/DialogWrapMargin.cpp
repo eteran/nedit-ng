@@ -12,9 +12,7 @@ DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt
 	ui.setupUi(this);
 	connectSlots();
 
-	QTimer::singleShot(0, this, [this]() {
-		resize(0, 0);
-	});
+	Dialog::shrinkToFit(this);
 
 	const int margin = document ? document->firstPane()->getWrapMargin() : Preferences::GetPrefWrapMargin();
 

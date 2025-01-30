@@ -45,7 +45,7 @@ struct CalltipAlias {
 };
 
 // Tag File Type
-enum TFT {
+enum TFT : uint8_t {
 	TFT_CHECK,
 	TFT_ETAGS,
 	TFT_CTAGS
@@ -67,7 +67,7 @@ QMultiHash<QString, Tag> LoadedTips;
 // Check if a line has non-ws characters
 bool lineEmpty(const QString &line) {
 
-	for (QChar ch : line) {
+	for (const QChar ch : line) {
 		if (ch == QLatin1Char('\n')) {
 			break;
 		}
@@ -97,7 +97,7 @@ QList<Tag> getTagFromTable(QMultiHash<QString, Tag> &table, const QString &name)
  */
 int64_t moveAheadNLines(std::string_view str, int64_t &pos, int64_t n) {
 
-	int64_t i = n;
+	const int64_t i = n;
 	while (static_cast<size_t>(pos) != str.size() && n > 0) {
 		if (str[static_cast<size_t>(pos)] == '\n') {
 			--n;
@@ -174,7 +174,7 @@ int scanCTagsLine(const QString &line, const QString &tagPath, int index) {
 
 	static const auto regex = QRegularExpression(QLatin1String(R"(^([^\t]+)\t([^\t]+)\t([^\n]+)$)"));
 
-	QRegularExpressionMatch match = regex.match(line);
+	const QRegularExpressionMatch match = regex.match(line);
 	if (!match.hasMatch()) {
 		return 0;
 	}
@@ -183,8 +183,8 @@ int scanCTagsLine(const QString &line, const QString &tagPath, int index) {
 		return 0;
 	}
 
-	QString name         = match.captured(1);
-	QString file         = match.captured(2);
+	const QString name   = match.captured(1);
+	const QString file   = match.captured(2);
 	QString searchString = match.captured(3);
 
 	if (name.startsWith(QLatin1Char('!'))) {
@@ -207,7 +207,7 @@ int scanCTagsLine(const QString &line, const QString &tagPath, int index) {
 		**             ?<ANY expr>?;"  <flags> --> exuberant ctags
 		*/
 
-		int posTagREEnd = searchString.lastIndexOf(QLatin1Char(';'));
+		const int posTagREEnd = searchString.lastIndexOf(QLatin1Char(';'));
 
 		if (posTagREEnd == -1 ||
 			searchString.mid(posTagREEnd, 2) != QLatin1String(";\"") ||
@@ -264,9 +264,9 @@ int scanETagsLine(const QString &line, const QString &tagPath, int index, QStrin
 
 	if (!file.isEmpty() && posDEL != -1 && (posSOH > posDEL) && (posCOM > posSOH)) {
 		// exuberant ctags -e style
-		QString searchString = line.left(posDEL);
-		QString name         = line.mid(posDEL + 1, (posSOH - posDEL) - 1);
-		int pos              = line.mid(posCOM + 1).toInt();
+		const QString searchString = line.left(posDEL);
+		const QString name         = line.mid(posDEL + 1, (posSOH - posDEL) - 1);
+		const int pos              = line.mid(posCOM + 1).toInt();
 
 		// No ability to set language mode for the moment
 		return addTag(name, file, PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
@@ -274,7 +274,7 @@ int scanETagsLine(const QString &line, const QString &tagPath, int index, QStrin
 
 	if (!file.isEmpty() && posDEL != -1 && (posCOM > posDEL)) {
 		// old etags style, part  name<soh>  is missing here!
-		QString searchString = line.left(posDEL);
+		const QString searchString = line.left(posDEL);
 
 		// guess name: take the last alnum (plus _) part of searchString
 		int len = posDEL;
@@ -294,8 +294,8 @@ int scanETagsLine(const QString &line, const QString &tagPath, int index, QStrin
 			pos--;
 		}
 
-		QString name = searchString.mid(pos + 1, len - pos);
-		pos          = line.mid(posCOM + 1).toInt();
+		const QString name = searchString.mid(pos + 1, len - pos);
+		pos                = line.mid(posCOM + 1).toInt();
 
 		return addTag(name, file, PLAIN_LANGUAGE_MODE, searchString, pos, tagPath, index);
 	}
@@ -309,7 +309,7 @@ int scanETagsLine(const QString &line, const QString &tagPath, int index, QStrin
 		if (line.mid(posCOM + 1, 7) == QLatin1String("include")) {
 
 			if (!QFileInfo(file).isAbsolute()) {
-				QString incPath = NormalizePathname(tr("%1%2").arg(tagPath, file));
+				const QString incPath = NormalizePathname(tr("%1%2").arg(tagPath, file));
 				return loadTagsFile(incPath, index, recLevel + 1);
 			}
 
@@ -336,8 +336,8 @@ int loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 	 * definition source files are (in most cases) specified relatively inside
 	 * the tags file to the tags files directory.
 	 */
-	QFileInfo fi(tagSpec);
-	QString resolvedTagsFile = fi.canonicalFilePath();
+	const QFileInfo fi(tagSpec);
+	const QString resolvedTagsFile = fi.canonicalFilePath();
 	if (resolvedTagsFile.isEmpty()) {
 		return 0;
 	}
@@ -359,7 +359,7 @@ int loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 		   doesn't think we died. */
 		MainWindow::allDocumentsBusy(tr("Loading tags file..."));
 
-		QString line = stream.readLine();
+		const QString line = stream.readLine();
 
 		/* the first character in the file decides if the file is treat as
 		   etags or ctags file.
@@ -446,7 +446,7 @@ CalltipToken nextTFBlock(QTextStream &stream, QString &header, QString &body, in
 	}
 
 	// Now we know it's a meaningful block
-	bool dummy1 = searchLine(line, include_regex);
+	const bool dummy1 = searchLine(line, include_regex);
 	if (dummy1 || searchLine(line, alias_regex)) {
 		// INCLUDE or ALIAS block
 
@@ -508,7 +508,7 @@ CalltipToken nextTFBlock(QTextStream &stream, QString &header, QString &body, in
 				return TF_ERROR_EOF;
 			}
 
-			QString currentLine = rstrip((line));
+			const QString currentLine = rstrip((line));
 
 			if (i != 0) {
 				body.push_back(QLatin1Char(':'));
@@ -615,8 +615,8 @@ int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 		return 0;
 	}
 
-	QFileInfo fi(tipFullPath);
-	QString resolvedTipsFile = fi.canonicalFilePath();
+	const QFileInfo fi(tipFullPath);
+	const QString resolvedTipsFile = fi.canonicalFilePath();
 	if (resolvedTipsFile.isEmpty()) {
 		return 0;
 	}
@@ -704,7 +704,7 @@ int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
 			const Tag &first_tag = tags[0];
 
-			QStringList segments = alias.sources.split(QLatin1Char(':'));
+			const QStringList segments = alias.sources.split(QLatin1Char(':'));
 			for (const QString &src : segments) {
 				addTag(src, resolvedTipsFile, first_tag.language, QString(), first_tag.posInf, tipPathInfo.pathname, index);
 			}
@@ -815,7 +815,7 @@ int addTag(const QString &name, const QString &file, size_t lang,
 
 	QMultiHash<QString, Tag> *const table = hashTableByType(searchMode);
 
-	Tag t = {name, file, search, path, lang, posInf, index};
+	const Tag t = {name, file, search, path, lang, posInf, index};
 
 	table->insert(name, t);
 	return 1;
@@ -842,7 +842,7 @@ bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMod
 #else
 	auto sep = QLatin1Char(':');
 #endif
-	QStringList filenames = tagSpec.split(sep);
+	const QStringList filenames = tagSpec.split(sep);
 
 	for (const QString &filename : filenames) {
 		if (QFileInfo(filename).isAbsolute() || filename.startsWith(QLatin1Char('~'))) {
@@ -869,13 +869,13 @@ bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMod
 		}
 
 		// or if the file isn't found...
-		QFileInfo fileInfo(pathName);
-		QDateTime timestamp = fileInfo.lastModified();
+		const QFileInfo fileInfo(pathName);
+		const QDateTime timestamp = fileInfo.lastModified();
 		if (timestamp.isNull()) {
 			continue;
 		}
 
-		File tag = {
+		const File tag = {
 			pathName,
 			timestamp,
 			false,
@@ -915,7 +915,7 @@ bool addTagsFile(const QString &tagSpec, SearchMode mode) {
 #else
 	auto sep = QLatin1Char(':');
 #endif
-	QStringList filenames = tagSpec.split(sep);
+	const QStringList filenames = tagSpec.split(sep);
 
 	for (const QString &filename : filenames) {
 
@@ -942,8 +942,8 @@ bool addTagsFile(const QString &tagSpec, SearchMode mode) {
 			continue;
 		}
 
-		QFileInfo fileInfo(pathName);
-		QDateTime timestamp = fileInfo.lastModified();
+		const QFileInfo fileInfo(pathName);
+		const QDateTime timestamp = fileInfo.lastModified();
 
 		if (timestamp.isNull()) {
 			// Problem reading this tags file. Return false
@@ -951,7 +951,7 @@ bool addTagsFile(const QString &tagSpec, SearchMode mode) {
 			continue;
 		}
 
-		File tag = {
+		const File tag = {
 			pathName,
 			timestamp,
 			false,
@@ -988,7 +988,7 @@ bool deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload) 
 #else
 	auto sep = QLatin1Char(':');
 #endif
-	QStringList filenames = tagSpec.split(sep);
+	const QStringList filenames = tagSpec.split(sep);
 
 	for (const QString &filename : filenames) {
 
@@ -1053,8 +1053,8 @@ QList<Tag> lookupTagFromList(std::deque<File> *FileList, const QString &name, Se
 
 			if (tf.loaded) {
 
-				QFileInfo fileInfo(tf.filename);
-				QDateTime timestamp = fileInfo.lastModified();
+				const QFileInfo fileInfo(tf.filename);
+				const QDateTime timestamp = fileInfo.lastModified();
 
 				if (timestamp.isNull()) {
 					qWarning("NEdit: Error getting status for tag file %s", qPrintable(tf.filename));
@@ -1078,8 +1078,8 @@ QList<Tag> lookupTagFromList(std::deque<File> *FileList, const QString &name, Se
 
 			if (load_status) {
 
-				QFileInfo fileInfo(tf.filename);
-				QDateTime timestamp = fileInfo.lastModified();
+				const QFileInfo fileInfo(tf.filename);
+				const QDateTime timestamp = fileInfo.lastModified();
 
 				if (timestamp.isNull()) {
 					if (!tf.loaded) {
@@ -1129,7 +1129,7 @@ bool fakeRegExSearch(std::string_view buffer, const QString &searchString, int64
 	Direction dir;
 	bool ctagsMode;
 
-	std::string_view fileString = buffer;
+	const std::string_view fileString = buffer;
 
 	// determine search direction and start position
 	if (*startPos != -1) { // etags mode!
@@ -1288,7 +1288,7 @@ void showMatchingCalltip(QWidget *parent, TextArea *area, int id) {
 
 			Search::Result searchResult;
 
-			bool found = Search::SearchString(
+			const bool found = Search::SearchString(
 				fileString,
 				QLatin1String(R"(\n\s*\n)"),
 				Direction::Forward,
@@ -1319,8 +1319,8 @@ void showMatchingCalltip(QWidget *parent, TextArea *area, int id) {
 		}
 
 		// 5. Copy the calltip to a string
-		int64_t tipLen = endPos - startPos;
-		auto message   = QString::fromLatin1(&fileString[static_cast<size_t>(startPos)], gsl::narrow<int>(tipLen));
+		const int64_t tipLen = endPos - startPos;
+		const auto message   = QString::fromLatin1(&fileString[static_cast<size_t>(startPos)], gsl::narrow<int>(tipLen));
 
 		// 6. Display it
 		tagsShowCalltip(area, message);
@@ -1341,7 +1341,7 @@ void showMatchingCalltip(QWidget *parent, TextArea *area, int id) {
  * @return
  */
 bool searchLine(const QString &line, const QRegularExpression &re) {
-	QRegularExpressionMatch match = re.match(line);
+	const QRegularExpressionMatch match = re.match(line);
 	return match.hasMatch();
 }
 

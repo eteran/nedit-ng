@@ -41,7 +41,7 @@ QString copyMacroToEnd(Input &in) {
 	// to anchor the parse (if not, it will take the whole file)
 	input.skipWhitespaceNL();
 
-	QString code = input.mid();
+	const QString code = input.mid();
 
 	if (!code.startsWith(QLatin1Char('{'))) {
 		Preferences::reportError(
@@ -277,7 +277,7 @@ std::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
 
 	try {
 		// read name field
-		QString nameStr = in.readUntil(QLatin1Char(':'));
+		const QString nameStr = in.readUntil(QLatin1Char(':'));
 		if (nameStr.isEmpty()) {
 			Raise<ParseError>("no name field");
 		}
@@ -289,7 +289,7 @@ std::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
 		++in;
 
 		// read accelerator field
-		QString accStr = in.readUntil(QLatin1Char(':'));
+		const QString accStr = in.readUntil(QLatin1Char(':'));
 
 		if (in.atEnd()) {
 			Raise<ParseError>("end not expected");
@@ -373,7 +373,7 @@ std::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
 				return {};
 			}
 
-			cmdStr = p;
+			cmdStr = std::move(p);
 		}
 
 		in.skipWhitespaceNL();
@@ -563,7 +563,7 @@ void loadContextMenuYaml(std::vector<MenuData> &menuItems) {
 				} else if (key == "shortcut") {
 					menuItem.shortcut = QKeySequence::fromString(QString::fromUtf8(value.as<std::string>().c_str()));
 				} else if (key == "input") {
-					std::string input_type = value.as<std::string>();
+					const std::string input_type = value.as<std::string>();
 					if (input_type == "selection") {
 						menuItem.input = FROM_SELECTION;
 					} else {
@@ -642,7 +642,7 @@ void loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
  * @param index
  */
 void setDefaultIndex(const std::vector<MenuData> &infoList, size_t index) {
-	QString defaultMenuName = infoList[index].info->umiName;
+	const QString defaultMenuName = infoList[index].info->umiName;
 
 	/* Scan the list for items with the same name and a language mode
 	   specified. If one is found, then set the default index to the
@@ -663,18 +663,18 @@ void setDefaultIndex(const std::vector<MenuData> &infoList, size_t index) {
 */
 void parseMenuItemName(const QString &menuItemName, const std::unique_ptr<UserMenuInfo> &info) {
 
-	int index = menuItemName.indexOf(QLatin1Char('@'));
+	const int index = menuItemName.indexOf(QLatin1Char('@'));
 	if (index != -1) {
-		QString languageString = menuItemName.mid(index);
+		const QString languageString = menuItemName.mid(index);
 		if (languageString == QLatin1String("*")) {
 			/* only language is "*": this is for all but language specific macros */
 			info->umiIsDefault = true;
 			return;
 		}
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-		QStringList languages = languageString.split(QLatin1Char('@'), Qt::SkipEmptyParts);
+		const QStringList languages = languageString.split(QLatin1Char('@'), Qt::SkipEmptyParts);
 #else
-		QStringList languages = languageString.split(QLatin1Char('@'), QString::SkipEmptyParts);
+		const QStringList languages = languageString.split(QLatin1Char('@'), QString::SkipEmptyParts);
 #endif
 		std::vector<size_t> languageModes;
 
@@ -684,7 +684,7 @@ void parseMenuItemName(const QString &menuItemName, const std::unique_ptr<UserMe
 			   returned then this means, that language mode name after
 			   "@" is unknown (i.e. not defined) */
 
-			size_t languageMode = Preferences::FindLanguageMode(language);
+			const size_t languageMode = Preferences::FindLanguageMode(language);
 			if (languageMode == PLAIN_LANGUAGE_MODE) {
 				languageModes.push_back(UNKNOWN_LANGUAGE_MODE);
 			} else {
@@ -705,7 +705,7 @@ void parseMenuItemName(const QString &menuItemName, const std::unique_ptr<UserMe
 */
 QString stripLanguageMode(const QString &menuItemName) {
 
-	int index = menuItemName.indexOf(QLatin1Char('@'));
+	const int index = menuItemName.indexOf(QLatin1Char('@'));
 	if (index != -1) {
 		return menuItemName.left(index);
 	}
@@ -734,9 +734,7 @@ std::unique_ptr<UserMenuInfo> parseMenuItemRec(const MenuItem &item) {
 	return newInfo;
 }
 
-}
-
-static std::vector<MenuData> &selectMenu(CommandTypes type) {
+std::vector<MenuData> &selectMenu(CommandTypes type) {
 	switch (type) {
 	case CommandTypes::Shell:
 		return ShellMenuData;
@@ -747,6 +745,8 @@ static std::vector<MenuData> &selectMenu(CommandTypes type) {
 	}
 
 	Q_UNREACHABLE();
+}
+
 }
 
 MenuData *find_menu_item(const QString &name, CommandTypes type) {

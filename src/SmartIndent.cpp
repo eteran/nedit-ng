@@ -47,13 +47,13 @@ QString readSmartIndentMacro(Input &in) {
 	}
 
 	// Find the end of the macro
-	int macroEnd = in.find(MacroEndBoundary);
+	const int macroEnd = in.find(MacroEndBoundary);
 	if (macroEnd == -1) {
 		return QString();
 	}
 
 	// Copy the macro
-	QString macroStr = in.mid(macroEnd - in.index());
+	const QString macroStr = in.mid(macroEnd - in.index());
 
 	// Remove leading tabs added by writer routine
 	in += macroEnd - in.index();
@@ -360,7 +360,7 @@ void loadSmartIndentCommonString(const QString &string) {
  * @return
  */
 QString writeSmartIndentString() {
-	QString filename = Settings::smartIndentFile();
+	const QString filename = Settings::smartIndentFile();
 	try {
 		YAML::Emitter out;
 

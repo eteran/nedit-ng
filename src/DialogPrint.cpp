@@ -23,8 +23,8 @@ DialogPrint::DialogPrint(QString contents, QString jobName, DocumentWidget *docu
 	ui.setupUi(this);
 	connectSlots();
 
-	QStringList printers   = QPrinterInfo::availablePrinterNames();
-	QString defaultPrinter = QPrinterInfo::defaultPrinterName();
+	const QStringList printers   = QPrinterInfo::availablePrinterNames();
+	const QString defaultPrinter = QPrinterInfo::defaultPrinterName();
 	ui.printers->addItem(tr("Print to File (PDF)"));
 
 	ui.printers->addItems(printers);
@@ -85,8 +85,8 @@ void DialogPrint::buttonPrint_clicked() {
 		dialog.setNameFilter(tr("*.pdf"));
 
 		if (dialog.exec()) {
-			QStringList selectedFiles = dialog.selectedFiles();
-			QString filename          = selectedFiles[0];
+			const QStringList selectedFiles = dialog.selectedFiles();
+			const QString &filename         = selectedFiles[0];
 
 			QPrinter printer;
 			printer.setOutputFormat(QPrinter::PdfFormat);

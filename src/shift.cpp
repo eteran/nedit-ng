@@ -52,7 +52,7 @@ std::string fillParagraph(std::string_view text, int64_t leftMargin, int64_t fir
 
 	bool inMargin = true;
 
-	for (char ch : text) {
+	for (const char ch : text) {
 		if (ch == '\t' || ch == ' ') {
 			if (!inMargin) {
 				*outPtr++ = ch;
@@ -113,8 +113,8 @@ std::string fillParagraph(std::string_view text, int64_t leftMargin, int64_t fir
 	++nLines;
 
 	// produce a string to prepend to lines to indent them to the left margin
-	std::string leadIndentStr = makeIndentString(firstLineIndent, tabDist, allowTabs);
-	std::string indentString  = makeIndentString(leftMargin, tabDist, allowTabs);
+	const std::string leadIndentStr = makeIndentString(firstLineIndent, tabDist, allowTabs);
+	const std::string indentString  = makeIndentString(leftMargin, tabDist, allowTabs);
 
 	std::string outText;
 	outText.reserve(cleanedText.size() + leadIndentStr.size() + indentString.size() * (nLines - 1));
@@ -124,7 +124,7 @@ std::string fillParagraph(std::string_view text, int64_t leftMargin, int64_t fir
 	// prepend the indent string to each line of the filled text
 	std::copy(leadIndentStr.begin(), leadIndentStr.end(), outPtr2);
 
-	for (char ch : cleanedText) {
+	for (const char ch : cleanedText) {
 		*outPtr2++ = ch;
 		if (ch == '\n') {
 			std::copy(indentString.begin(), indentString.end(), outPtr2);
@@ -149,7 +149,7 @@ TextCursor findParagraphEnd(TextBuffer *buf, TextCursor startPos) {
 
 	TextCursor pos = buf->BufEndOfLine(startPos) + 1;
 	while (pos < buf->length()) {
-		char c = buf->BufGetCharacter(pos);
+		const char c = buf->BufGetCharacter(pos);
 		if (c == '\n') {
 			break;
 		}
@@ -230,7 +230,7 @@ std::string fillParagraphs(std::string_view text, int64_t rightMargin, int tabDi
 
 		// Skip over white space
 		while (paraStart < buf.length()) {
-			char ch = buf.BufGetCharacter(paraStart);
+			const char ch = buf.BufGetCharacter(paraStart);
 			if (ch != ' ' && ch != '\t' && ch != '\n') {
 				break;
 			}
@@ -245,28 +245,28 @@ std::string fillParagraphs(std::string_view text, int64_t rightMargin, int tabDi
 		paraStart = buf.BufStartOfLine(paraStart);
 
 		// Find the end of the paragraph
-		TextCursor paraEnd = findParagraphEnd(&buf, paraStart);
+		const TextCursor paraEnd = findParagraphEnd(&buf, paraStart);
 
 		/* Operate on either the one paragraph, or to make them all identical,
 		   do all of them together (fill paragraph can format all the paragraphs
 		   it finds with identical specs if it gets passed more than one) */
-		TextCursor fillEnd = alignWithFirst ? TextCursor(buf.length()) : paraEnd;
+		const TextCursor fillEnd = alignWithFirst ? TextCursor(buf.length()) : paraEnd;
 
 		/* Get the paragraph in a text string (or all of the paragraphs if
 		   we're making them all the same) */
-		std::string paraText = buf.BufGetRange(paraStart, fillEnd);
+		const std::string paraText = buf.BufGetRange(paraStart, fillEnd);
 
 		/* Find separate left margins for the first and for the first line of
 		   the paragraph, and for rest of the remainder of the paragraph */
 		auto it = std::find(paraText.begin(), paraText.end(), '\n');
 
-		long firstLineLen    = std::distance(paraText.begin(), it);
-		auto secondLineStart = (it == paraText.end()) ? paraText.begin() : it + 1;
-		int firstLineIndent  = findLeftMargin(paraText.begin(), paraText.end(), firstLineLen, tabDist);
-		int leftMargin       = findLeftMargin(secondLineStart, paraText.end(), paraEnd - paraStart - (secondLineStart - paraText.begin()), tabDist);
+		const long firstLineLen    = std::distance(paraText.begin(), it);
+		const auto secondLineStart = (it == paraText.end()) ? paraText.begin() : it + 1;
+		const int firstLineIndent  = findLeftMargin(paraText.begin(), paraText.end(), firstLineLen, tabDist);
+		const int leftMargin       = findLeftMargin(secondLineStart, paraText.end(), paraEnd - paraStart - (secondLineStart - paraText.begin()), tabDist);
 
 		// Fill the paragraph
-		std::string filledText = fillParagraph(paraText, leftMargin, firstLineIndent, rightMargin, tabDist, useTabs);
+		const std::string filledText = fillParagraph(paraText, leftMargin, firstLineIndent, rightMargin, tabDist, useTabs);
 
 		// Replace it in the buffer
 		buf.BufReplace(paraStart, fillEnd, filledText);
@@ -360,8 +360,8 @@ QString shiftLineLeft(const QString &line, int64_t lineLen, int tabDist, int nCh
 						   back spaces */
 						out.chop(1);
 
-						int whiteGoal = whiteWidth - i;
-						whiteWidth    = lastWhiteWidth;
+						const int whiteGoal = whiteWidth - i;
+						whiteWidth          = lastWhiteWidth;
 
 						while (whiteWidth < whiteGoal) {
 							out.append(QLatin1Char(' '));
@@ -419,8 +419,8 @@ std::string shiftLineLeft(std::string_view line, int64_t lineLen, int tabDist, i
 						   back spaces */
 						out.pop_back();
 
-						int whiteGoal = whiteWidth - i;
-						whiteWidth    = lastWhiteWidth;
+						const int whiteGoal = whiteWidth - i;
+						whiteWidth          = lastWhiteWidth;
 
 						while (whiteWidth < whiteGoal) {
 							out.append(1, ' ');
@@ -566,9 +566,9 @@ std::string shiftText(std::string_view text, ShiftDirection direction, bool tabs
 
 			auto segment = text.substr(gsl::narrow<size_t>(lineStartPtr - text.begin()));
 
-			std::string shiftedLineString = (direction == ShiftDirection::Right)
-												? shiftLineRight(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars)
-												: shiftLineLeft(segment, textPtr - lineStartPtr, tabDist, nChars);
+			const std::string shiftedLineString = (direction == ShiftDirection::Right)
+													  ? shiftLineRight(segment, textPtr - lineStartPtr, tabsAllowed, tabDist, nChars)
+													  : shiftLineLeft(segment, textPtr - lineStartPtr, tabDist, nChars);
 
 			std::copy(shiftedLineString.begin(), shiftedLineString.end(), shiftedPtr);
 
@@ -605,8 +605,8 @@ void shiftRect(DocumentWidget *document, TextArea *area, ShiftDirection directio
 
 	// Calculate the the left/right offset for the new rectangle
 	if (byTab) {
-		int emTabDist = area->getEmulateTabs();
-		offset        = (emTabDist == 0) ? buf->BufGetTabDistance() : emTabDist;
+		const int emTabDist = area->getEmulateTabs();
+		offset              = (emTabDist == 0) ? buf->BufGetTabDistance() : emTabDist;
 	} else {
 		offset = 1;
 	}
@@ -670,7 +670,7 @@ void shiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection dir
 
 	} else if (isRect) {
 		const TextCursor cursorPos = area->cursorPos();
-		int64_t origLength         = buf->length();
+		const int64_t origLength   = buf->length();
 		shiftRect(document, area, direction, byTab, selStart, selEnd, rectStart, rectEnd);
 
 		area->TextSetCursorPos((cursorPos < (selEnd + to_integer(selStart)) / 2) ? selStart : cursorPos + (buf->length() - origLength));
@@ -689,13 +689,13 @@ void shiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection dir
 
 	// shift the text by the appropriate distance
 	if (byTab) {
-		int emTabDist = area->getEmulateTabs();
-		shiftDist     = emTabDist == 0 ? buf->BufGetTabDistance() : emTabDist;
+		const int emTabDist = area->getEmulateTabs();
+		shiftDist           = emTabDist == 0 ? buf->BufGetTabDistance() : emTabDist;
 	} else {
 		shiftDist = 1;
 	}
 
-	std::string shiftedText = shiftText(text, direction, buf->BufGetUseTabs(), buf->BufGetTabDistance(), shiftDist);
+	const std::string shiftedText = shiftText(text, direction, buf->BufGetUseTabs(), buf->BufGetTabDistance(), shiftDist);
 
 	buf->BufReplaceSelected(shiftedText);
 
@@ -712,8 +712,8 @@ void fillSelection(DocumentWidget *document, TextArea *area) {
 	bool isRect;
 	int64_t rightMargin;
 
-	TextCursor insertPos = area->cursorPos();
-	int hasSelection     = document->buffer()->primary.hasSelection();
+	const TextCursor insertPos = area->cursorPos();
+	const bool hasSelection    = document->buffer()->primary.hasSelection();
 	std::string text;
 
 	/* Find the range of characters and get the text to fill.  If there is a
@@ -756,7 +756,7 @@ void fillSelection(DocumentWidget *document, TextArea *area) {
 	}
 
 	// Fill the text
-	std::string filledText = fillParagraphs(
+	const std::string filledText = fillParagraphs(
 		text,
 		rightMargin,
 		buf->BufGetTabDistance(),

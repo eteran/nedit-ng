@@ -208,7 +208,7 @@ std::bitset<256> Regex::makeDelimiterTable(std::string_view delimiters) {
 
 	std::bitset<256> table;
 
-	for (char ch : delimiters) {
+	for (const char ch : delimiters) {
 		table[static_cast<size_t>(ch)] = true;
 	}
 

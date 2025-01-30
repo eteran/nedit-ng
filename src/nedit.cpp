@@ -62,7 +62,7 @@ int main(int argc, char *argv[]) {
 		for (int i = 1; i < argc && strcmp(argv[i], "--") != 0; i++) {
 
 			if (strcmp(argv[i], "-V") == 0 || strcmp(argv[i], "-version") == 0) {
-				QString infoString = DialogAbout::createInfoString();
+				const QString infoString = DialogAbout::createInfoString();
 				printf("%s", qPrintable(infoString));
 				exit(EXIT_SUCCESS);
 			}
@@ -100,13 +100,13 @@ int main(int argc, char *argv[]) {
 	// NOTE: for issue #41, translate QMessageBox.
 	QTranslator qtTranslator;
 	if (qtTranslator.load(QLocale(), QLatin1String("qtbase"), QLatin1String("_"), QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
-		app.installTranslator(&qtTranslator);
+		QApplication::installTranslator(&qtTranslator);
 	}
 
 	QTranslator translator;
 	// look up e.g. :/i18n/nedit-ng_{lang}.qm
 	if (translator.load(QLocale(), QLatin1String("nedit-ng"), QLatin1String("_"), QLatin1String(":/i18n"))) {
-		app.installTranslator(&translator);
+		QApplication::installTranslator(&translator);
 	}
 
 	// NOTE(eteran): for issue #38, re-add -geometry <arg> because Qt has
@@ -129,7 +129,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	// Make all text fields use fixed-width fonts by default
-	QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+	const QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 	QApplication::setFont(fixedFont, "QLineEdit");
 	QApplication::setFont(fixedFont, "QTextEdit");
 	QApplication::setFont(fixedFont, "QPlainTextEdit");

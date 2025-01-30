@@ -43,7 +43,7 @@ QString GetViewTag() {
 
 	if (!ClearCaseViewTagFound) {
 		/* Extract the view name from the CLEARCASE_ROOT environment variable */
-		QByteArray envPtr = qgetenv("CLEARCASE_ROOT");
+		const QByteArray envPtr = qgetenv("CLEARCASE_ROOT");
 		if (!envPtr.isNull()) {
 
 			ClearCaseViewRoot = QString::fromLocal8Bit(envPtr);

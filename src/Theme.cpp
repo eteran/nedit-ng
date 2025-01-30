@@ -30,7 +30,7 @@ const auto DEFAULT_CURSOR_FG = QLatin1String("black");
  * @brief load
  */
 void load() {
-	QString filename = Settings::themeFile();
+	const QString filename = Settings::themeFile();
 
 	QFile file(filename);
 	if (!file.open(QIODevice::ReadOnly)) {
@@ -66,10 +66,10 @@ void load() {
 		for (; !style.isNull(); style = style.nextSiblingElement(QLatin1String("style"))) {
 
 			HighlightStyle hs;
-			hs.name      = style.attribute(QLatin1String("name"));
-			hs.color     = style.attribute(QLatin1String("foreground"), QLatin1String("black"));
-			hs.bgColor   = style.attribute(QLatin1String("background"), QString());
-			QString font = style.attribute(QLatin1String("font"), QLatin1String("Plain"));
+			hs.name            = style.attribute(QLatin1String("name"));
+			hs.color           = style.attribute(QLatin1String("foreground"), QLatin1String("black"));
+			hs.bgColor         = style.attribute(QLatin1String("background"), QString());
+			const QString font = style.attribute(QLatin1String("font"), QLatin1String("Plain"));
 
 			if (hs.name.isEmpty()) {
 				qWarning("NEdit: style name required");
@@ -107,12 +107,12 @@ void load() {
  * @brief save
  */
 void save() {
-	QString filename = Settings::themeFile();
+	const QString filename = Settings::themeFile();
 
 	QFile file(filename);
 	if (file.open(QIODevice::WriteOnly)) {
 		QDomDocument xml;
-		QDomProcessingInstruction pi = xml.createProcessingInstruction(QLatin1String("xml"), QLatin1String(R"(version="1.0" encoding="UTF-8")"));
+		const QDomProcessingInstruction pi = xml.createProcessingInstruction(QLatin1String("xml"), QLatin1String(R"(version="1.0" encoding="UTF-8")"));
 
 		xml.appendChild(pi);
 
@@ -178,6 +178,8 @@ void save() {
 			case Font::Italic | Font::Bold:
 				style.setAttribute(QLatin1String("font"), QLatin1String("Bold Italic"));
 				break;
+			default:
+				qFatal("NEdit: internal error saving theme file");
 			}
 
 			root.appendChild(style);

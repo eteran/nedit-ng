@@ -26,9 +26,7 @@ DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowF
 
 	ui.textFind->installEventFilter(this);
 
-	QTimer::singleShot(0, this, [this]() {
-		resize(0, 0);
-	});
+	Dialog::shrinkToFit(this);
 }
 
 /**
@@ -122,7 +120,7 @@ void DialogFind::checkKeep_toggled(bool checked) {
  * @brief DialogFind::updateFindButton
  */
 void DialogFind::updateFindButton() {
-	bool buttonState = !ui.textFind->text().isEmpty();
+	const bool buttonState = !ui.textFind->text().isEmpty();
 	ui.buttonFind->setEnabled(buttonState);
 }
 
@@ -251,7 +249,7 @@ std::optional<DialogFind::Fields> DialogFind::readFields() {
 	Fields fields;
 
 	// Get the search string, search type, and direction from the dialog
-	QString findText = ui.textFind->text();
+	const QString findText = ui.textFind->text();
 
 	if (ui.checkRegex->isChecked()) {
 		int regexDefault;
@@ -300,8 +298,8 @@ std::optional<DialogFind::Fields> DialogFind::readFields() {
  */
 void DialogFind::checkRegex_toggled(bool checked) {
 
-	bool searchRegex     = checked;
-	bool searchCaseSense = ui.checkCase->isChecked();
+	const bool searchRegex     = checked;
+	const bool searchCaseSense = ui.checkCase->isChecked();
 
 	// In sticky mode, restore the state of the Case Sensitive button
 	if (Preferences::GetPrefStickyCaseSenseBtn()) {
@@ -324,7 +322,7 @@ void DialogFind::checkRegex_toggled(bool checked) {
  */
 void DialogFind::checkCase_toggled(bool checked) {
 
-	bool searchCaseSense = checked;
+	const bool searchCaseSense = checked;
 
 	/* Save the state of the Case Sensitive button
 	   depending on the state of the Regex button*/

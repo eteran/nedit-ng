@@ -13,9 +13,7 @@ DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f)
 	ui.setupUi(this);
 	connectSlots();
 
-	QTimer::singleShot(0, this, [this]() {
-		resize(0, 0);
-	});
+	Dialog::shrinkToFit(this);
 
 	// seed the history with a blank string, makes later logic simpler
 	history_ << QLatin1String("");
@@ -70,7 +68,7 @@ void DialogFilter::showEvent(QShowEvent *event) {
  */
 void DialogFilter::buttonBox_accepted() {
 
-	QString s = ui.textFilter->text();
+	const QString s = ui.textFilter->text();
 	if (!s.isEmpty()) {
 		history_ << s;
 	}

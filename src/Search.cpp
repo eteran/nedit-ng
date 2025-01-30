@@ -465,12 +465,12 @@ std::optional<std::string> Search::ReplaceAllInString(std::string_view inString,
 
 	/* rehearse the search first to determine the size of the buffer needed
 	   to hold the substituted text.  No substitution done here yet */
-	bool found        = true;
-	int replaceLen    = replaceString.size();
-	int nFound        = 0;
-	int64_t removeLen = 0;
-	int64_t addLen    = 0;
-	int64_t beginPos  = 0;
+	bool found           = true;
+	const int replaceLen = replaceString.size();
+	int nFound           = 0;
+	int64_t removeLen    = 0;
+	int64_t addLen       = 0;
+	int64_t beginPos     = 0;
 
 	*copyStart = -1;
 

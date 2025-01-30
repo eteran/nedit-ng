@@ -45,7 +45,7 @@ struct SubRoutine {
 	LibraryRoutine function;
 };
 
-enum class MacroErrorCode {
+enum class MacroErrorCode : uint8_t {
 	Success = 0,
 	ArrayFull,
 	InvalidMode,
@@ -85,7 +85,10 @@ enum class MacroErrorCode {
 };
 
 struct MacroErrorCategory : std::error_category {
+	[[nodiscard]]
 	const char *name() const noexcept override { return "macro_error"; }
+
+	[[nodiscard]]
 	std::string message(int ev) const override;
 };
 
@@ -232,14 +235,14 @@ std::optional<TextArea::EventFlags> flagsFromArguments(Arguments arguments, size
 std::error_code make_error_code(MacroErrorCode e) {
 	// NOTE(eteran): error_code uses the address of this,
 	// so it needs global lifetime
-	static MacroErrorCategory category;
+	static const MacroErrorCategory category;
 	return {static_cast<int>(e), category};
 }
 
 // Global symbols for returning values from built-in functions
 constexpr int N_RETURN_GLOBALS = 5;
 
-enum retGlobalSyms {
+enum retGlobalSyms : uint8_t {
 	STRING_DIALOG_BUTTON,
 	SEARCH_END,
 	READ_STATUS,
@@ -284,7 +287,7 @@ std::error_code readArgument(const DataValue &dv, int64_t *result) {
 	if (is_string(dv)) {
 		auto s = QString::fromStdString(to_string(dv));
 		bool ok;
-		int64_t val = s.toLongLong(&ok);
+		const int64_t val = s.toLongLong(&ok);
 		if (!ok) {
 			return MacroErrorCode::NotAnInteger;
 		}
@@ -312,7 +315,7 @@ std::error_code readArgument(const DataValue &dv, int *result) {
 	if (is_string(dv)) {
 		auto s = QString::fromStdString(to_string(dv));
 		bool ok;
-		int val = s.toInt(&ok);
+		const int val = s.toInt(&ok);
 		if (!ok) {
 			return MacroErrorCode::NotAnInteger;
 		}
@@ -376,7 +379,7 @@ std::error_code readArgument(const DataValue &dv, QString *result) {
 template <class T>
 std::error_code readArguments(Arguments arguments, size_t index, T arg) {
 
-	static_assert(std::is_pointer<T>::value, "Argument is not a pointer");
+	static_assert(std::is_pointer_v<T>, "Argument is not a pointer");
 
 	if (arguments.size() - index < 1) {
 		return MacroErrorCode::WrongNumberOfArguments;
@@ -396,13 +399,13 @@ std::error_code readArguments(Arguments arguments, size_t index, T arg) {
 template <class T, class... Ts>
 std::error_code readArguments(Arguments arguments, size_t index, T arg, Ts... args) {
 
-	static_assert(std::is_pointer<T>::value, "Argument is not a pointer");
+	static_assert(std::is_pointer_v<T>, "Argument is not a pointer");
 
 	if ((arguments.size() - index) < (sizeof...(args)) + 1) {
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
-	if (std::error_code ec = readArgument(arguments[index], arg)) {
+	if (const std::error_code ec = readArgument(arguments[index], arg)) {
 		return ec;
 	}
 
@@ -449,7 +452,7 @@ std::error_code readSearchArgs(Arguments arguments, Direction *searchDirection, 
 	for (const DataValue &dv : arguments) {
 
 		QString argStr;
-		if (std::error_code ec = readArgument(dv, &argStr)) {
+		if (const std::error_code ec = readArgument(dv, &argStr)) {
 			return ec;
 		}
 
@@ -477,7 +480,7 @@ std::error_code readSearchArgs(Arguments arguments, Direction *searchDirection, 
 Direction searchDirection(Arguments arguments, size_t index) {
 	for (size_t i = index; i < arguments.size(); ++i) {
 		QString arg;
-		if (std::error_code ec = readArgument(arguments[i], &arg)) {
+		if (const std::error_code ec = readArgument(arguments[i], &arg)) {
 			return Direction::Forward;
 		}
 
@@ -502,7 +505,7 @@ Direction searchDirection(Arguments arguments, size_t index) {
 bool searchKeepDialogs(Arguments arguments, size_t index) {
 	for (size_t i = index; i < arguments.size(); ++i) {
 		QString arg;
-		if (std::error_code ec = readArgument(arguments[i], &arg)) {
+		if (const std::error_code ec = readArgument(arguments[i], &arg)) {
 			return Preferences::GetPrefKeepSearchDlogs();
 		}
 
@@ -527,7 +530,7 @@ bool searchKeepDialogs(Arguments arguments, size_t index) {
 WrapMode searchWrap(Arguments arguments, size_t index) {
 	for (size_t i = index; i < arguments.size(); ++i) {
 		QString arg;
-		if (std::error_code ec = readArgument(arguments[i], &arg)) {
+		if (const std::error_code ec = readArgument(arguments[i], &arg)) {
 			return Preferences::GetPrefSearchWraps();
 		}
 
@@ -554,7 +557,7 @@ SearchType searchType(Arguments arguments, size_t index) {
 	for (size_t i = index; i < arguments.size(); ++i) {
 		QString arg;
 
-		if (std::error_code ec = readArgument(arguments[i], &arg)) {
+		if (const std::error_code ec = readArgument(arguments[i], &arg)) {
 			return Preferences::GetPrefSearch();
 		}
 
@@ -578,7 +581,7 @@ std::optional<bool> toggle_or_bool(Arguments arguments, bool previous, std::erro
 	switch (arguments.size()) {
 	case 1: {
 		int next;
-		if (std::error_code ec = readArguments(arguments, 0, &next)) {
+		if (const std::error_code ec = readArguments(arguments, 0, &next)) {
 			*error = ec;
 			return {};
 		}
@@ -648,8 +651,8 @@ std::error_code textEventArg(DocumentWidget *document, Arguments arguments, Data
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
-	typename std::decay<T>::type argument;
-	if (std::error_code ec = readArgument(arguments[0], &argument)) {
+	std::decay_t<T> argument;
+	if (const std::error_code ec = readArgument(arguments[0], &argument)) {
 		return ec;
 	}
 
@@ -675,7 +678,7 @@ std::error_code menuEventSM(DocumentWidget *document, Arguments arguments, DataV
 	document = MacroFocusDocument();
 
 	QString string;
-	if (std::error_code ec = readArguments(arguments, 0, &string)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &string)) {
 		return ec;
 	}
 
@@ -694,7 +697,7 @@ std::error_code menuEventSU(DocumentWidget *document, Arguments arguments, DataV
 	document = MacroFocusDocument();
 
 	QString string;
-	if (std::error_code ec = readArguments(arguments, 0, &string)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &string)) {
 		return ec;
 	}
 
@@ -764,12 +767,12 @@ std::error_code scrollDownMS(DocumentWidget *document, Arguments arguments, Data
 	QString unitsString = QLatin1String("line");
 	switch (arguments.size()) {
 	case 2:
-		if (std::error_code ec = readArguments(arguments, 0, &count, &unitsString)) {
+		if (const std::error_code ec = readArguments(arguments, 0, &count, &unitsString)) {
 			return ec;
 		}
 		break;
 	case 1:
-		if (std::error_code ec = readArguments(arguments, 0, &count)) {
+		if (const std::error_code ec = readArguments(arguments, 0, &count)) {
 			return ec;
 		}
 		break;
@@ -802,12 +805,12 @@ std::error_code scrollUpMS(DocumentWidget *document, Arguments arguments, DataVa
 	QString unitsString = QLatin1String("line");
 	switch (arguments.size()) {
 	case 2:
-		if (std::error_code ec = readArguments(arguments, 0, &count, &unitsString)) {
+		if (const std::error_code ec = readArguments(arguments, 0, &count, &unitsString)) {
 			return ec;
 		}
 		break;
 	case 1:
-		if (std::error_code ec = readArguments(arguments, 0, &count)) {
+		if (const std::error_code ec = readArguments(arguments, 0, &count)) {
 			return ec;
 		}
 		break;
@@ -847,7 +850,7 @@ std::error_code closeMS(DocumentWidget *document, Arguments arguments, DataValue
 
 	if (arguments.size() == 1) {
 		QString string;
-		if (std::error_code ec = readArguments(arguments, 0, &string)) {
+		if (const std::error_code ec = readArguments(arguments, 0, &string)) {
 			return ec;
 		}
 
@@ -889,7 +892,7 @@ std::error_code newMS(DocumentWidget *document, Arguments arguments, DataValue *
 
 	if (arguments.size() == 1) {
 		QString string;
-		if (std::error_code ec = readArguments(arguments, 0, &string)) {
+		if (const std::error_code ec = readArguments(arguments, 0, &string)) {
 			return ec;
 		}
 
@@ -945,7 +948,7 @@ std::error_code saveAsMS(DocumentWidget *document, Arguments arguments, DataValu
 	}
 
 	QString filename;
-	if (std::error_code ec = readArgument(arguments[0], &filename)) {
+	if (const std::error_code ec = readArgument(arguments[0], &filename)) {
 		return ec;
 	}
 
@@ -954,7 +957,7 @@ std::error_code saveAsMS(DocumentWidget *document, Arguments arguments, DataValu
 	// NOTE(eteran): "wrapped" optional argument is not documented
 	if (arguments.size() == 2) {
 		QString string;
-		if (std::error_code ec = readArgument(arguments[1], &string)) {
+		if (const std::error_code ec = readArgument(arguments[1], &string)) {
 			return ec;
 		}
 
@@ -983,13 +986,13 @@ std::error_code findMS(DocumentWidget *document, Arguments arguments, DataValue 
 	}
 
 	QString string;
-	if (std::error_code ec = readArguments(arguments, 0, &string)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &string)) {
 		return ec;
 	}
 
-	Direction direction = searchDirection(arguments, 1);
-	SearchType type     = searchType(arguments, 1);
-	WrapMode wrap       = searchWrap(arguments, 1);
+	const Direction direction = searchDirection(arguments, 1);
+	const SearchType type     = searchType(arguments, 1);
+	const WrapMode wrap       = searchWrap(arguments, 1);
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		window->action_Find(document, string, direction, type, wrap);
@@ -1004,9 +1007,9 @@ std::error_code findDialogMS(DocumentWidget *document, Arguments arguments, Data
 	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
-	Direction direction = searchDirection(arguments, 0);
-	SearchType type     = searchType(arguments, 0);
-	bool keep           = searchKeepDialogs(arguments, 0);
+	const Direction direction = searchDirection(arguments, 0);
+	const SearchType type     = searchType(arguments, 0);
+	const bool keep           = searchKeepDialogs(arguments, 0);
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		window->action_Find_Dialog(document, direction, type, keep);
@@ -1021,8 +1024,8 @@ std::error_code findAgainMS(DocumentWidget *document, Arguments arguments, DataV
 	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
-	Direction direction = searchDirection(arguments, 0);
-	WrapMode wrap       = searchWrap(arguments, 0);
+	const Direction direction = searchDirection(arguments, 0);
+	const WrapMode wrap       = searchWrap(arguments, 0);
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		window->action_Find_Again(document, direction, wrap);
@@ -1037,9 +1040,9 @@ std::error_code findSelectionMS(DocumentWidget *document, Arguments arguments, D
 	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
-	Direction direction = searchDirection(arguments, 0);
-	SearchType type     = searchType(arguments, 0);
-	WrapMode wrap       = searchWrap(arguments, 0);
+	const Direction direction = searchDirection(arguments, 0);
+	const SearchType type     = searchType(arguments, 0);
+	const WrapMode wrap       = searchWrap(arguments, 0);
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		window->action_Find_Selection(document, direction, type, wrap);
@@ -1060,13 +1063,13 @@ std::error_code replaceMS(DocumentWidget *document, Arguments arguments, DataVal
 
 	QString searchString;
 	QString replaceString;
-	if (std::error_code ec = readArguments(arguments, 0, &searchString, &replaceString)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &searchString, &replaceString)) {
 		return ec;
 	}
 
-	Direction direction = searchDirection(arguments, 2);
-	SearchType type     = searchType(arguments, 2);
-	WrapMode wrap       = searchWrap(arguments, 2);
+	const Direction direction = searchDirection(arguments, 2);
+	const SearchType type     = searchType(arguments, 2);
+	const WrapMode wrap       = searchWrap(arguments, 2);
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		window->action_Replace(document, searchString, replaceString, direction, type, wrap);
@@ -1081,9 +1084,9 @@ std::error_code replaceDialogMS(DocumentWidget *document, Arguments arguments, D
 	// ensure that we are dealing with the document which currently has the focus
 	document = MacroFocusDocument();
 
-	Direction direction = searchDirection(arguments, 0);
-	SearchType type     = searchType(arguments, 0);
-	bool keep           = searchKeepDialogs(arguments, 0);
+	const Direction direction = searchDirection(arguments, 0);
+	const SearchType type     = searchType(arguments, 0);
+	const bool keep           = searchKeepDialogs(arguments, 0);
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		window->action_Replace_Dialog(document, direction, type, keep);
@@ -1102,8 +1105,8 @@ std::error_code replaceAgainMS(DocumentWidget *document, Arguments arguments, Da
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
-	WrapMode wrap       = searchWrap(arguments, 0);
-	Direction direction = searchDirection(arguments, 0);
+	const WrapMode wrap       = searchWrap(arguments, 0);
+	const Direction direction = searchDirection(arguments, 0);
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		window->action_Replace_Again(document, direction, wrap);
@@ -1128,13 +1131,13 @@ std::error_code gotoMarkMS(DocumentWidget *document, Arguments arguments, DataVa
 	bool extend = false;
 
 	QString mark;
-	if (std::error_code ec = readArguments(arguments, 0, &mark)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &mark)) {
 		return ec;
 	}
 
 	if (arguments.size() == 2) {
 		QString argument;
-		if (std::error_code ec = readArgument(arguments[1], &argument)) {
+		if (const std::error_code ec = readArgument(arguments[1], &argument)) {
 			return ec;
 		}
 
@@ -1165,7 +1168,7 @@ std::error_code gotoMarkDialogMS(DocumentWidget *document, Arguments arguments, 
 
 	if (arguments.size() == 1) {
 		QString argument;
-		if (std::error_code ec = readArgument(arguments[1], &argument)) {
+		if (const std::error_code ec = readArgument(arguments[1], &argument)) {
 			return ec;
 		}
 
@@ -1194,7 +1197,7 @@ std::error_code findDefinitionMS(DocumentWidget *document, Arguments arguments, 
 
 	QString argument;
 	if (arguments.size() == 1) {
-		if (std::error_code ec = readArgument(arguments[1], &argument)) {
+		if (const std::error_code ec = readArgument(arguments[1], &argument)) {
 			return ec;
 		}
 	}
@@ -1216,7 +1219,7 @@ std::error_code repeatMacroMS(DocumentWidget *document, Arguments arguments, Dat
 	QString howString;
 	QString method;
 
-	if (std::error_code ec = readArguments(arguments, 0, &howString, &method)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &howString, &method)) {
 		return ec;
 	}
 
@@ -1260,7 +1263,7 @@ std::error_code detachDocumentDialogMS(DocumentWidget *document, Arguments argum
 std::error_code setAutoIndentMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	QString string;
-	if (std::error_code ec = readArguments(arguments, 0, &string)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &string)) {
 		return ec;
 	}
 
@@ -1284,7 +1287,7 @@ std::error_code setAutoIndentMS(DocumentWidget *document, Arguments arguments, D
 std::error_code setEmTabDistMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
 	int number;
-	if (std::error_code ec = readArguments(arguments, 0, &number)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &number)) {
 		return ec;
 	}
 
@@ -1312,7 +1315,7 @@ std::error_code setFontsMS(DocumentWidget *document, Arguments arguments, DataVa
 	QString fontName;
 
 	if (arguments.size() == 1) {
-		if (std::error_code ec = readArguments(arguments, 0, &fontName)) {
+		if (const std::error_code ec = readArguments(arguments, 0, &fontName)) {
 			return ec;
 		}
 	} else {
@@ -1320,7 +1323,7 @@ std::error_code setFontsMS(DocumentWidget *document, Arguments arguments, DataVa
 		QString boldName;
 		QString boldItalicName;
 
-		if (std::error_code ec = readArguments(arguments, 0, &fontName, &italicName, &boldName, &boldItalicName)) {
+		if (const std::error_code ec = readArguments(arguments, 0, &fontName, &italicName, &boldName, &boldItalicName)) {
 			qWarning("NEdit: set_fonts requires 1 or 4 arguments");
 			return ec;
 		}
@@ -1340,7 +1343,7 @@ std::error_code setShowMatchingMS(DocumentWidget *document, Arguments arguments,
 
 	if (!arguments.empty()) {
 		QString arg;
-		if (std::error_code ec = readArgument(arguments[0], &arg)) {
+		if (const std::error_code ec = readArgument(arguments[0], &arg)) {
 			return ec;
 		}
 
@@ -1378,7 +1381,7 @@ std::error_code setTabDistMS(DocumentWidget *document, Arguments arguments, Data
 	if (!arguments.empty()) {
 		int newTabDist = 0;
 
-		std::error_code ec = readArguments(arguments, 0, &newTabDist);
+		const std::error_code ec = readArguments(arguments, 0, &newTabDist);
 		if (!ec && newTabDist > 0 && newTabDist <= TextBuffer::MAX_EXP_CHAR_LEN) {
 			document->setTabDistance(newTabDist);
 		} else {
@@ -1399,7 +1402,7 @@ std::error_code setWrapMarginMS(DocumentWidget *document, Arguments arguments, D
 	if (!arguments.empty()) {
 		int newMargin = 0;
 
-		std::error_code ec = readArguments(arguments, 0, &newMargin);
+		const std::error_code ec = readArguments(arguments, 0, &newMargin);
 		if (!ec && newMargin > 0 && newMargin <= 1000) {
 
 			const std::vector<TextArea *> panes = document->textPanes();
@@ -1425,7 +1428,7 @@ std::error_code setWrapTextMS(DocumentWidget *document, Arguments arguments, Dat
 	if (!arguments.empty()) {
 
 		QString arg;
-		if (std::error_code ec = readArgument(arguments[0], &arg)) {
+		if (const std::error_code ec = readArgument(arguments[0], &arg)) {
 			return ec;
 		}
 
@@ -1451,7 +1454,7 @@ std::error_code setLanguageModeMS(DocumentWidget *document, Arguments arguments,
 	document = MacroFocusDocument();
 
 	QString languageMode;
-	if (std::error_code ec = readArguments(arguments, 0, &languageMode)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &languageMode)) {
 		return ec;
 	}
 
@@ -1471,14 +1474,14 @@ std::error_code findIncrMS(DocumentWidget *document, Arguments arguments, DataVa
 	bool continued = false;
 
 	QString arg;
-	if (std::error_code ec = readArgument(arguments[0], &arg)) {
+	if (const std::error_code ec = readArgument(arguments[0], &arg)) {
 		qWarning("NEdit: find action requires search string argument");
 		return ec;
 	}
 
 	for (i = 1; i < arguments.size(); ++i) {
 		QString arg2;
-		if (std::error_code ec = readArgument(arguments[0], &arg2)) {
+		if (const std::error_code ec = readArgument(arguments[0], &arg2)) {
 			return ec;
 		}
 
@@ -1526,7 +1529,7 @@ std::error_code replaceFindMS(DocumentWidget *document, Arguments arguments, Dat
 
 	QString searchString;
 	QString replaceString;
-	if (std::error_code ec = readArguments(arguments, 0, &searchString, &replaceString)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &searchString, &replaceString)) {
 		return MacroErrorCode::InvalidSearchReplaceArgs;
 	}
 
@@ -1571,7 +1574,7 @@ std::error_code backgroundMenuCommandMS(DocumentWidget *document, Arguments argu
 	Q_ASSERT(win);
 
 	QString name;
-	if (std::error_code ec = readArguments(arguments, 0, &name)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &name)) {
 		qWarning("NEdit: bg_menu_command requires item-name argument\n");
 		return ec;
 	}
@@ -1590,7 +1593,7 @@ std::error_code lengthMS(DocumentWidget *document, Arguments arguments, DataValu
 	Q_UNUSED(document)
 
 	QString string;
-	if (std::error_code ec = readArguments(arguments, 0, &string)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &string)) {
 		return ec;
 	}
 
@@ -1610,13 +1613,13 @@ std::error_code minMS(DocumentWidget *document, Arguments arguments, DataValue *
 	}
 
 	int minVal;
-	if (std::error_code ec = readArgument(arguments[0], &minVal)) {
+	if (const std::error_code ec = readArgument(arguments[0], &minVal)) {
 		return ec;
 	}
 
 	for (const DataValue &dv : arguments) {
 		int value;
-		if (std::error_code ec = readArgument(dv, &value)) {
+		if (const std::error_code ec = readArgument(dv, &value)) {
 			return ec;
 		}
 
@@ -1636,13 +1639,13 @@ std::error_code maxMS(DocumentWidget *document, Arguments arguments, DataValue *
 	}
 
 	int maxVal;
-	if (std::error_code ec = readArgument(arguments[0], &maxVal)) {
+	if (const std::error_code ec = readArgument(arguments[0], &maxVal)) {
 		return ec;
 	}
 
 	for (const DataValue &dv : arguments) {
 		int value;
-		if (std::error_code ec = readArgument(dv, &value)) {
+		if (const std::error_code ec = readArgument(dv, &value)) {
 			return ec;
 		}
 
@@ -1662,7 +1665,7 @@ std::error_code focusWindowMS(DocumentWidget *document, Arguments arguments, Dat
 	}
 
 	QString string;
-	if (std::error_code ec = readArgument(arguments[0], &string)) {
+	if (const std::error_code ec = readArgument(arguments[0], &string)) {
 		return ec;
 	}
 
@@ -1735,7 +1738,7 @@ std::error_code getRangeMS(DocumentWidget *document, Arguments arguments, DataVa
 	TextBuffer *buf = document->buffer();
 
 	// Validate arguments and convert to int
-	if (std::error_code ec = readArguments(arguments, 0, &from, &to)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &from, &to)) {
 		return ec;
 	}
 
@@ -1746,7 +1749,7 @@ std::error_code getRangeMS(DocumentWidget *document, Arguments arguments, DataVa
 		std::swap(from, to);
 	}
 
-	std::string rangeText = buf->BufGetRange(TextCursor(from), TextCursor(to));
+	const std::string rangeText = buf->BufGetRange(TextCursor(from), TextCursor(to));
 
 	*result = make_value(rangeText);
 	return MacroErrorCode::Success;
@@ -1762,14 +1765,14 @@ std::error_code getCharacterMS(DocumentWidget *document, Arguments arguments, Da
 	TextBuffer *buf = document->buffer();
 
 	// Validate arguments and convert to int
-	if (std::error_code ec = readArguments(arguments, 0, &pos)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &pos)) {
 		return ec;
 	}
 
 	pos = std::clamp<int64_t>(pos, 0, buf->length());
 
 	// Return the character in a pre-allocated string)
-	std::string str(1, buf->BufGetCharacter(TextCursor(pos)));
+	const std::string str(1, buf->BufGetCharacter(TextCursor(pos)));
 
 	*result = make_value(str);
 	return MacroErrorCode::Success;
@@ -1789,7 +1792,7 @@ std::error_code replaceRangeMS(DocumentWidget *document, Arguments arguments, Da
 	std::string string;
 
 	// Validate arguments and convert to int
-	if (std::error_code ec = readArguments(arguments, 0, &from, &to, &string)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &from, &to, &string)) {
 		return ec;
 	}
 
@@ -1821,7 +1824,7 @@ std::error_code replaceSelectionMS(DocumentWidget *document, Arguments arguments
 	std::string string;
 
 	// Validate argument and convert to string
-	if (std::error_code ec = readArguments(arguments, 0, &string)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &string)) {
 		return ec;
 	}
 
@@ -1864,7 +1867,7 @@ std::error_code getSelectionMS(DocumentWidget *document, Arguments arguments, Da
 		// Return the text as an allocated string
 		*result = make_value(text);
 	} else {
-		std::string selText = document->buffer()->BufGetSelectionText();
+		const std::string selText = document->buffer()->BufGetSelectionText();
 
 		// Return the text as an allocated string
 		*result = make_value(selText);
@@ -1882,7 +1885,7 @@ std::error_code validNumberMS(DocumentWidget *document, Arguments arguments, Dat
 
 	std::string string;
 
-	if (std::error_code ec = readArguments(arguments, 0, &string)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &string)) {
 		return ec;
 	}
 
@@ -1903,7 +1906,7 @@ std::error_code replaceSubstringMS(DocumentWidget *document, Arguments arguments
 	QString replStr;
 
 	// Validate arguments and convert to int
-	if (std::error_code ec = readArguments(arguments, 0, &string, &from, &to, &replStr)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &string, &from, &to, &replStr)) {
 		return ec;
 	}
 
@@ -1939,15 +1942,15 @@ std::error_code substringMS(DocumentWidget *document, Arguments arguments, DataV
 	int from;
 	QString string;
 
-	if (std::error_code ec = readArguments(arguments, 0, &string, &from)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &string, &from)) {
 		return ec;
 	}
 
-	int length = string.size();
-	int to     = string.size();
+	const int length = string.size();
+	int to           = string.size();
 
 	if (arguments.size() == 3) {
-		if (std::error_code ec = readArgument(arguments[2], &to)) {
+		if (const std::error_code ec = readArgument(arguments[2], &to)) {
 			return ec;
 		}
 	}
@@ -1985,7 +1988,7 @@ std::error_code toupperMS(DocumentWidget *document, Arguments arguments, DataVal
 	std::string string;
 
 	// Validate arguments and convert to int
-	if (std::error_code ec = readArguments(arguments, 0, &string)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &string)) {
 		return ec;
 	}
 
@@ -2004,7 +2007,7 @@ std::error_code tolowerMS(DocumentWidget *document, Arguments arguments, DataVal
 	std::string string;
 
 	// Validate arguments and convert to int
-	if (std::error_code ec = readArguments(arguments, 0, &string)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &string)) {
 		return ec;
 	}
 
@@ -2024,7 +2027,7 @@ std::error_code stringToClipboardMS(DocumentWidget *document, Arguments argument
 	QString string;
 
 	// Get the string argument
-	if (std::error_code ec = readArguments(arguments, 0, &string)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &string)) {
 		return ec;
 	}
 
@@ -2067,7 +2070,7 @@ std::error_code readFileMS(DocumentWidget *document, Arguments arguments, DataVa
 	std::string name;
 
 	// Validate arguments
-	if (std::error_code ec = readArguments(arguments, 0, &name)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &name)) {
 		return ec;
 	}
 
@@ -2075,7 +2078,7 @@ std::error_code readFileMS(DocumentWidget *document, Arguments arguments, DataVa
 	try {
 		std::ifstream file(name, std::ios::binary);
 		if (file) {
-			std::string contents(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
+			const std::string contents(std::istreambuf_iterator<char>{file}, std::istreambuf_iterator<char>{});
 
 			*result = make_value(contents);
 
@@ -2106,7 +2109,7 @@ std::error_code writeOrAppendFile(bool append, DocumentWidget *document, Argumen
 	std::string string;
 
 	// Validate argument
-	if (std::error_code ec = readArguments(arguments, 0, &string, &name)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &string, &name)) {
 		return ec;
 	}
 
@@ -2162,11 +2165,11 @@ std::error_code searchStringMS(DocumentWidget *document, Arguments arguments, Da
 		return MacroErrorCode::TooFewArguments;
 	}
 
-	if (std::error_code ec = readArguments(arguments, 0, &string, &searchStr, &beginPos)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &string, &searchStr, &beginPos)) {
 		return ec;
 	}
 
-	if (std::error_code ec = readSearchArgs(arguments.subspan(3), &direction, &type, &wrap)) {
+	if (const std::error_code ec = readSearchArgs(arguments.subspan(3), &direction, &type, &wrap)) {
 		return ec;
 	}
 
@@ -2279,7 +2282,7 @@ std::error_code replaceInStringMS(DocumentWidget *document, Arguments arguments,
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
-	if (std::error_code ec = readArguments(arguments, 0, &string, &searchStr, &replaceStr)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &string, &searchStr, &replaceStr)) {
 		return ec;
 	}
 
@@ -2287,7 +2290,7 @@ std::error_code replaceInStringMS(DocumentWidget *document, Arguments arguments,
 		// Read the optional search type and force arguments
 		QString argStr;
 
-		if (std::error_code ec = readArgument(arguments[i], &argStr)) {
+		if (const std::error_code ec = readArgument(arguments[i], &argStr)) {
 			return ec;
 		}
 
@@ -2337,7 +2340,7 @@ std::error_code setCursorPosMS(DocumentWidget *document, Arguments arguments, Da
 	int pos;
 
 	// Get argument and convert to int
-	if (std::error_code ec = readArguments(arguments, 0, &pos)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &pos)) {
 		return ec;
 	}
 
@@ -2353,7 +2356,7 @@ std::error_code selectMS(DocumentWidget *document, Arguments arguments, DataValu
 	int64_t end;
 
 	// Get arguments and convert to int
-	if (std::error_code ec = readArguments(arguments, 0, &start, &end)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &start, &end)) {
 		return ec;
 	}
 
@@ -2378,7 +2381,7 @@ std::error_code selectRectangleMS(DocumentWidget *document, Arguments arguments,
 	int right     = 0;
 
 	// Get arguments and convert to int
-	if (std::error_code ec = readArguments(arguments, 0, &start, &end, &left, &right)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &start, &end, &left, &right)) {
 		return ec;
 	}
 
@@ -2415,7 +2418,7 @@ std::error_code tPrintMS(DocumentWidget *document, Arguments arguments, DataValu
 	}
 
 	for (size_t i = 0; i < arguments.size(); i++) {
-		if (std::error_code ec = readArgument(arguments[i], &string)) {
+		if (const std::error_code ec = readArgument(arguments[i], &string)) {
 			return ec;
 		}
 
@@ -2437,11 +2440,11 @@ std::error_code getenvMS(DocumentWidget *document, Arguments arguments, DataValu
 	std::string name;
 
 	// Get name of variable to get
-	if (std::error_code ec = readArguments(arguments, 0, &name)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &name)) {
 		return MacroErrorCode::NotAString;
 	}
 
-	QByteArray value = qgetenv(name.c_str());
+	const QByteArray value = qgetenv(name.c_str());
 
 	// Return the text as an allocated string
 	*result = make_value(QString::fromLocal8Bit(value));
@@ -2453,7 +2456,7 @@ std::error_code shellCmdMS(DocumentWidget *document, Arguments arguments, DataVa
 	QString cmdString;
 	QString inputString;
 
-	if (std::error_code ec = readArguments(arguments, 0, &cmdString, &inputString)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &cmdString, &inputString)) {
 		return ec;
 	}
 
@@ -2477,7 +2480,7 @@ std::error_code dialogMS(DocumentWidget *document, Arguments arguments, DataValu
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
-	QPointer<DocumentWidget> documentPointer        = MacroRunDocument();
+	const QPointer<DocumentWidget> documentPointer  = MacroRunDocument();
 	const std::shared_ptr<MacroCommandData> cmdData = documentPointer->macroCmdData_;
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
@@ -2492,13 +2495,13 @@ std::error_code dialogMS(DocumentWidget *document, Arguments arguments, DataValu
 		return MacroErrorCode::NeedsArguments;
 	}
 
-	if (std::error_code ec = readArgument(arguments[0], &message)) {
+	if (const std::error_code ec = readArgument(arguments[0], &message)) {
 		return ec;
 	}
 
 	// check that all button labels can be read
 	for (size_t i = 1; i < arguments.size(); i++) {
-		if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
+		if (const std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 			return ec;
 		}
 	}
@@ -2517,7 +2520,7 @@ std::error_code dialogMS(DocumentWidget *document, Arguments arguments, DataValu
 		prompt->addButton(QDialogButtonBox::Ok);
 	} else {
 		for (size_t i = 1; i < arguments.size(); ++i) {
-			if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
+			if (const std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 				// NOTE(eteran): does not report
 				Q_UNUSED(ec);
 			}
@@ -2548,7 +2551,7 @@ std::error_code stringDialogMS(DocumentWidget *document, Arguments arguments, Da
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
-	QPointer<DocumentWidget> documentPointer        = MacroRunDocument();
+	const QPointer<DocumentWidget> documentPointer  = MacroRunDocument();
 	const std::shared_ptr<MacroCommandData> cmdData = documentPointer->macroCmdData_;
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
@@ -2563,13 +2566,13 @@ std::error_code stringDialogMS(DocumentWidget *document, Arguments arguments, Da
 		return MacroErrorCode::NeedsArguments;
 	}
 
-	if (std::error_code ec = readArgument(arguments[0], &message)) {
+	if (const std::error_code ec = readArgument(arguments[0], &message)) {
 		return ec;
 	}
 
 	// check that all button labels can be read
 	for (size_t i = 1; i < arguments.size(); i++) {
-		if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
+		if (const std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 			return ec;
 		}
 	}
@@ -2588,7 +2591,7 @@ std::error_code stringDialogMS(DocumentWidget *document, Arguments arguments, Da
 		prompt->addButton(QDialogButtonBox::Ok);
 	} else {
 		for (size_t i = 1; i < arguments.size(); ++i) {
-			if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
+			if (const std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 				// NOTE(eteran): does not report
 				Q_UNUSED(ec);
 			}
@@ -2659,13 +2662,13 @@ std::error_code calltipMS(DocumentWidget *document, Arguments arguments, DataVal
 	}
 
 	// Read the tip text or key
-	if (std::error_code ec = readArgument(arguments[0], &tipText)) {
+	if (const std::error_code ec = readArgument(arguments[0], &tipText)) {
 		return ec;
 	}
 
 	// Read the anchor position (-1 for unanchored)
 	if (arguments.size() > 1) {
-		if (std::error_code ec = readArgument(arguments[1], &anchorPos)) {
+		if (const std::error_code ec = readArgument(arguments[1], &anchorPos)) {
 			return ec;
 		}
 	} else {
@@ -2677,7 +2680,7 @@ std::error_code calltipMS(DocumentWidget *document, Arguments arguments, DataVal
 
 	// Any further args are directives for relative positioning
 	for (i = 2; i < arguments.size(); ++i) {
-		if (std::error_code ec = readArgument(arguments[i], &txtArg)) {
+		if (const std::error_code ec = readArgument(arguments[i], &txtArg)) {
 			return ec;
 		}
 
@@ -2750,7 +2753,7 @@ std::error_code killCalltipMS(DocumentWidget *document, Arguments arguments, Dat
 		return MacroErrorCode::TooManyArguments;
 	}
 	if (!arguments.empty()) {
-		if (std::error_code ec = readArgument(arguments[0], &calltipID)) {
+		if (const std::error_code ec = readArgument(arguments[0], &calltipID)) {
 			return ec;
 		}
 	}
@@ -2782,11 +2785,11 @@ std::error_code replaceAllInSelectionMS(DocumentWidget *document, Arguments argu
 	QString searchString;
 	QString replaceString;
 
-	if (std::error_code ec = readArguments(arguments, 0, &searchString, &replaceString)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &searchString, &replaceString)) {
 		return ec;
 	}
 
-	SearchType type = searchType(arguments, 2);
+	const SearchType type = searchType(arguments, 2);
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		window->action_Replace_In_Selection(document, searchString, replaceString, type);
@@ -2811,11 +2814,11 @@ std::error_code replaceAllMS(DocumentWidget *document, Arguments arguments, Data
 	QString searchString;
 	QString replaceString;
 
-	if (std::error_code ec = readArguments(arguments, 0, &searchString, &replaceString)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &searchString, &replaceString)) {
 		return ec;
 	}
 
-	SearchType type = searchType(arguments, 2);
+	const SearchType type = searchType(arguments, 2);
 
 	if (auto window = MainWindow::fromDocument(document)) {
 		window->action_Replace_All(document, searchString, replaceString, type);
@@ -2940,7 +2943,7 @@ std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, Data
 
 	/* Ignore the focused window passed as the function argument and put
 	   the dialog up over the window which is executing the macro */
-	QPointer<DocumentWidget> documentPointer        = MacroRunDocument();
+	const QPointer<DocumentWidget> documentPointer  = MacroRunDocument();
 	const std::shared_ptr<MacroCommandData> cmdData = documentPointer->macroCmdData_;
 
 	/* Dialogs require macro to be suspended and interleaved with other macros.
@@ -2955,11 +2958,11 @@ std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, Data
 		return MacroErrorCode::TooFewArguments;
 	}
 
-	if (std::error_code ec = readArgument(arguments[0], &message)) {
+	if (const std::error_code ec = readArgument(arguments[0], &message)) {
 		return ec;
 	}
 
-	if (std::error_code ec = readArgument(arguments[1], &text)) {
+	if (const std::error_code ec = readArgument(arguments[1], &text)) {
 		return ec;
 	}
 
@@ -2969,7 +2972,7 @@ std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, Data
 
 	// check that all button labels can be read
 	for (size_t i = 2; i < arguments.size(); i++) {
-		if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
+		if (const std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 			return ec;
 		}
 	}
@@ -2989,7 +2992,7 @@ std::error_code listDialogMS(DocumentWidget *document, Arguments arguments, Data
 		prompt->addButton(QDialogButtonBox::Ok);
 	} else {
 		for (size_t i = 2; i < arguments.size(); ++i) {
-			if (std::error_code ec = readArgument(arguments[i], &btnLabel)) {
+			if (const std::error_code ec = readArgument(arguments[i], &btnLabel)) {
 				// NOTE(eteran): does not report
 				Q_UNUSED(ec);
 			}
@@ -3029,12 +3032,12 @@ std::error_code stringCompareMS(DocumentWidget *document, Arguments arguments, D
 		return MacroErrorCode::WrongNumberOfArguments;
 	}
 
-	if (std::error_code ec = readArguments(arguments, 0, &leftStr, &rightStr)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &leftStr, &rightStr)) {
 		return ec;
 	}
 
 	for (i = 2; i < arguments.size(); ++i) {
-		if (std::error_code ec = readArgument(arguments[i], &argStr)) {
+		if (const std::error_code ec = readArgument(arguments[i], &argStr)) {
 			return ec;
 		}
 
@@ -3121,10 +3124,10 @@ std::error_code splitMS(DocumentWidget *document, Arguments arguments, DataValue
 			&searchResult,
 			document->getWindowDelimiters());
 
-		int64_t elementEnd = found ? searchResult.start : strLength;
-		int64_t elementLen = elementEnd - lastEnd;
+		const int64_t elementEnd = found ? searchResult.start : strLength;
+		const int64_t elementLen = elementEnd - lastEnd;
 
-		std::string_view str(
+		const std::string_view str(
 			&sourceStr[static_cast<size_t>(lastEnd)],
 			static_cast<size_t>(elementLen));
 
@@ -3161,8 +3164,10 @@ std::error_code splitMS(DocumentWidget *document, Arguments arguments, DataValue
 		} else {
 			/* We skipped the last character to prevent an endless loop.
 			   Add it to the list. */
-			int64_t elementLen = strLength - lastEnd;
-			std::string_view str(&sourceStr[static_cast<size_t>(lastEnd)], static_cast<size_t>(elementLen));
+			const int64_t elementLen = strLength - lastEnd;
+			const std::string_view str(
+				&sourceStr[static_cast<size_t>(lastEnd)],
+				static_cast<size_t>(elementLen));
 
 			element = make_value(str);
 			if (!ArrayInsert(result, indexStr, &element)) {
@@ -3268,9 +3273,9 @@ std::error_code lineMV(DocumentWidget *document, Arguments arguments, DataValue 
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	TextBuffer *buf      = document->buffer();
-	TextArea *area       = MainWindow::fromDocument(document)->lastFocus();
-	TextCursor cursorPos = area->cursorPos();
+	TextBuffer *buf            = document->buffer();
+	TextArea *area             = MainWindow::fromDocument(document)->lastFocus();
+	const TextCursor cursorPos = area->cursorPos();
 
 	if (const std::optional<Location> loc = area->positionToLineAndCol(cursorPos)) {
 		*result = make_value(loc->line);
@@ -3287,9 +3292,9 @@ std::error_code columnMV(DocumentWidget *document, Arguments arguments, DataValu
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	TextBuffer *buf      = document->buffer();
-	TextArea *area       = MainWindow::fromDocument(document)->lastFocus();
-	TextCursor cursorPos = area->cursorPos();
+	TextBuffer *buf            = document->buffer();
+	TextArea *area             = MainWindow::fromDocument(document)->lastFocus();
+	const TextCursor cursorPos = area->cursorPos();
 
 	*result = make_value(buf->BufCountDispChars(buf->BufStartOfLine(cursorPos), cursorPos));
 	return MacroErrorCode::Success;
@@ -3375,8 +3380,8 @@ std::error_code wrapMarginMV(DocumentWidget *document, Arguments arguments, Data
 		return MacroErrorCode::TooManyArguments;
 	}
 
-	int margin = document->firstPane()->getWrapMargin();
-	int nCols  = document->firstPane()->getColumns();
+	const int margin = document->firstPane()->getWrapMargin();
+	const int nCols  = document->firstPane()->getColumns();
 
 	*result = make_value((margin == 0) ? nCols : margin);
 	return MacroErrorCode::Success;
@@ -3422,8 +3427,8 @@ std::error_code autoIndentMV(DocumentWidget *document, Arguments arguments, Data
 		return MacroErrorCode::InvalidIndentStyle;
 	}
 
-	QLatin1String res = to_string(document->autoIndentStyle());
-	*result           = make_value(res);
+	const QLatin1String res = to_string(document->autoIndentStyle());
+	*result                 = make_value(res);
 	return MacroErrorCode::Success;
 }
 
@@ -3437,8 +3442,8 @@ std::error_code wrapTextMV(DocumentWidget *document, Arguments arguments, DataVa
 		return MacroErrorCode::InvalidWrapStyle;
 	}
 
-	QLatin1String res = to_string(document->wrapMode());
-	*result           = make_value(res);
+	const QLatin1String res = to_string(document->wrapMode());
+	*result                 = make_value(res);
 	return MacroErrorCode::Success;
 }
 
@@ -3466,8 +3471,8 @@ std::error_code incBackupMV(DocumentWidget *document, Arguments arguments, DataV
 std::error_code showMatchingMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	QLatin1String res = to_string(document->showMatchingStyle());
-	*result           = make_value(res);
+	const QLatin1String res = to_string(document->showMatchingStyle());
+	*result                 = make_value(res);
 	return MacroErrorCode::Success;
 }
 
@@ -3502,8 +3507,8 @@ std::error_code lockedMV(DocumentWidget *document, Arguments arguments, DataValu
 std::error_code fileFormatMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	QLatin1String res = to_string(document->fileFormat());
-	*result           = make_value(res);
+	const QLatin1String res = to_string(document->fileFormat());
+	*result                 = make_value(res);
 	return MacroErrorCode::Success;
 }
 
@@ -3639,7 +3644,7 @@ std::error_code emTabDistMV(DocumentWidget *document, Arguments arguments, DataV
 
 	Q_UNUSED(arguments)
 
-	int dist = document->firstPane()->getEmulateTabs();
+	const int dist = document->firstPane()->getEmulateTabs();
 
 	*result = make_value(dist);
 	return MacroErrorCode::Success;
@@ -3694,7 +3699,7 @@ std::error_code rangesetListMV(DocumentWidget *document, Arguments arguments, Da
 	}
 
 	std::vector<uint8_t> rangesetList = rangesetTable->labels();
-	size_t nRangesets                 = rangesetList.size();
+	const size_t nRangesets           = rangesetList.size();
 	for (size_t i = 0; i < nRangesets; i++) {
 
 		element = make_value(rangesetList[i]);
@@ -3753,7 +3758,7 @@ std::error_code rangesetCreateMS(DocumentWidget *document, Arguments arguments, 
 	}
 
 	int nRangesetsRequired;
-	if (std::error_code ec = readArgument(arguments[0], &nRangesetsRequired)) {
+	if (const std::error_code ec = readArgument(arguments[0], &nRangesetsRequired)) {
 		return ec;
 	}
 
@@ -3782,8 +3787,8 @@ std::error_code rangesetDestroyMS(DocumentWidget *document, Arguments arguments,
 	}
 
 	if (is_array(arguments[0])) {
-		DataValue *array = arguments.data();
-		int arraySize    = ArraySize(array);
+		DataValue *array    = arguments.data();
+		const int arraySize = ArraySize(array);
 
 		std::vector<int> deleteLabels;
 		deleteLabels.reserve(static_cast<size_t>(arraySize));
@@ -3806,7 +3811,7 @@ std::error_code rangesetDestroyMS(DocumentWidget *document, Arguments arguments,
 			deleteLabels.push_back(label);
 		}
 
-		for (int label : deleteLabels) {
+		for (const int label : deleteLabels) {
 			rangesetTable->forgetLabel(label);
 		}
 	} else {
@@ -3838,7 +3843,7 @@ std::error_code rangesetGetByNameMS(DocumentWidget *document, Arguments argument
 	int insertIndex                                     = 0;
 	DataValue element;
 
-	if (std::error_code ec = readArguments(arguments, 0, &name)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &name)) {
 		return MacroErrorCode::Param1NotAString;
 	}
 
@@ -3849,11 +3854,11 @@ std::error_code rangesetGetByNameMS(DocumentWidget *document, Arguments argument
 	}
 
 	std::vector<uint8_t> rangesetList = rangesetTable->labels();
-	size_t nRangesets                 = rangesetList.size();
+	const size_t nRangesets           = rangesetList.size();
 	for (size_t i = 0; i < nRangesets; ++i) {
-		int label = rangesetList[i];
+		const int label = rangesetList[i];
 		if (Rangeset *rangeset = rangesetTable->RangesetFetch(label)) {
-			QString rangeset_name = rangeset->name();
+			const QString rangeset_name = rangeset->name();
 
 			if (rangeset_name == name) {
 
@@ -3937,7 +3942,7 @@ std::error_code rangesetAddMS(DocumentWidget *document, Arguments arguments, Dat
 		// add a range bounded by the start and end positions in $2, $3
 		int64_t tmp_start;
 		int64_t tmp_end;
-		if (std::error_code ec = readArguments(arguments, 1, &tmp_start, &tmp_end)) {
+		if (const std::error_code ec = readArguments(arguments, 1, &tmp_start, &tmp_end)) {
 			return ec;
 		}
 
@@ -4035,11 +4040,11 @@ std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments arguments
 
 	if (arguments.size() == 3) {
 		// remove a range bounded by the start and end positions in $2, $3
-		if (std::error_code ec = readArgument(arguments[1], &start)) {
+		if (const std::error_code ec = readArgument(arguments[1], &start)) {
 			return ec;
 		}
 
-		if (std::error_code ec = readArgument(arguments[2], &end)) {
+		if (const std::error_code ec = readArgument(arguments[2], &end)) {
 			return ec;
 		}
 
@@ -4070,7 +4075,7 @@ std::error_code rangesetInvertMS(DocumentWidget *document, Arguments arguments, 
 	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
 	int label;
-	if (std::error_code ec = readArguments(arguments, 0, &label)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &label)) {
 		return ec;
 	}
 
@@ -4105,7 +4110,7 @@ std::error_code rangesetInfoMS(DocumentWidget *document, Arguments arguments, Da
 	const std::unique_ptr<RangesetTable> &rangesetTable = document->rangesetTable_;
 
 	int label;
-	if (std::error_code ec = readArguments(arguments, 0, &label)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &label)) {
 		return ec;
 	}
 
@@ -4186,7 +4191,7 @@ std::error_code rangesetRangeMS(DocumentWidget *document, Arguments arguments, D
 			range = rangeset->RangesetSpan();
 		} else if (arguments.size() == 2) {
 			int rangeIndex;
-			if (std::error_code ec = readArgument(arguments[1], &rangeIndex)) {
+			if (const std::error_code ec = readArgument(arguments[1], &rangeIndex)) {
 				return ec;
 			}
 
@@ -4251,7 +4256,7 @@ std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments argume
 		TextArea *area = MainWindow::fromDocument(document)->lastFocus();
 		pos            = to_integer(area->cursorPos());
 	} else if (arguments.size() == 2) {
-		if (std::error_code ec = readArgument(arguments[1], &pos)) {
+		if (const std::error_code ec = readArgument(arguments[1], &pos)) {
 			return ec;
 		}
 	}
@@ -4299,7 +4304,7 @@ std::error_code rangesetSetColorMS(DocumentWidget *document, Arguments arguments
 	}
 
 	QString color_name;
-	if (std::error_code ec = readArgument(arguments[1], &color_name)) {
+	if (const std::error_code ec = readArgument(arguments[1], &color_name)) {
 		return MacroErrorCode::Param2NotAString;
 	}
 
@@ -4338,7 +4343,7 @@ std::error_code rangesetSetNameMS(DocumentWidget *document, Arguments arguments,
 	}
 
 	QString name;
-	if (std::error_code ec = readArgument(arguments[1], &name)) {
+	if (const std::error_code ec = readArgument(arguments[1], &name)) {
 		return MacroErrorCode::Param2NotAString;
 	}
 
@@ -4378,12 +4383,12 @@ std::error_code rangesetSetModeMS(DocumentWidget *document, Arguments arguments,
 
 	QString update_fn_name;
 	if (arguments.size() == 2) {
-		if (std::error_code ec = readArgument(arguments[1], &update_fn_name)) {
+		if (const std::error_code ec = readArgument(arguments[1], &update_fn_name)) {
 			return MacroErrorCode::Param2NotAString;
 		}
 	}
 
-	bool ok = rangeset->setMode(update_fn_name);
+	const bool ok = rangeset->setMode(update_fn_name);
 	if (!ok) {
 		return MacroErrorCode::InvalidMode;
 	}
@@ -4441,8 +4446,8 @@ std::error_code fillStyleResult(DataValue *result, DocumentWidget *document, con
 	   (only possible if we pass through the dynamic highlight pattern tables
 	   in other words, only if we have a pattern code) */
 	if (patCode) {
-		QColor color = document->highlightColorValueOfCode(patCode);
-		DV           = make_value(color.name());
+		const QColor color = document->highlightColorValueOfCode(patCode);
+		DV                 = make_value(color.name());
 
 		if (!ArrayInsert(result, "rgb", &DV)) {
 			return MacroErrorCode::InsertFailed;
@@ -4459,8 +4464,8 @@ std::error_code fillStyleResult(DataValue *result, DocumentWidget *document, con
 	   (only possible if we pass through the dynamic highlight pattern tables
 	   in other words, only if we have a pattern code) */
 	if (patCode) {
-		QColor color = document->highlightBGColorOfCode(patCode);
-		DV           = make_value(color.name());
+		const QColor color = document->highlightBGColorOfCode(patCode);
+		DV                 = make_value(color.name());
 
 		if (!ArrayInsert(result, "back_rgb", &DV)) {
 			return MacroErrorCode::InsertFailed;
@@ -4501,7 +4506,7 @@ std::error_code getStyleByNameMS(DocumentWidget *document, Arguments arguments, 
 	QString styleName;
 
 	// Validate number of arguments
-	if (std::error_code ec = readArguments(arguments, 0, &styleName)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &styleName)) {
 		return MacroErrorCode::Param1NotAString;
 	}
 
@@ -4539,7 +4544,7 @@ std::error_code getStyleAtPosMS(DocumentWidget *document, Arguments arguments, D
 	TextBuffer *buf = document->buffer();
 
 	// Validate number of arguments
-	if (std::error_code ec = readArguments(arguments, 0, &bufferPos)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &bufferPos)) {
 		return ec;
 	}
 
@@ -4553,7 +4558,7 @@ std::error_code getStyleAtPosMS(DocumentWidget *document, Arguments arguments, D
 	}
 
 	// Determine pattern code
-	size_t patCode = document->highlightCodeOfPos(TextCursor(bufferPos));
+	const size_t patCode = document->highlightCodeOfPos(TextCursor(bufferPos));
 	if (patCode == 0) {
 		// if there is no pattern we just return an empty array.
 		return MacroErrorCode::Success;
@@ -4625,7 +4630,7 @@ std::error_code getPatternByNameMS(DocumentWidget *document, Arguments arguments
 	*result = make_value(std::make_shared<Array>());
 
 	// Validate number of arguments
-	if (std::error_code ec = readArguments(arguments, 0, &patternName)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &patternName)) {
 		return MacroErrorCode::Param1NotAString;
 	}
 
@@ -4659,7 +4664,7 @@ std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arguments,
 	*result = make_value(std::make_shared<Array>());
 
 	// Validate number of arguments
-	if (std::error_code ec = readArguments(arguments, 0, &bufferPos)) {
+	if (const std::error_code ec = readArguments(arguments, 0, &bufferPos)) {
 		return ec;
 	}
 
@@ -4676,7 +4681,7 @@ std::error_code getPatternAtPosMS(DocumentWidget *document, Arguments arguments,
 	}
 
 	// Determine the highlighting pattern used
-	size_t patCode = document->highlightCodeOfPos(TextCursor(bufferPos));
+	const size_t patCode = document->highlightCodeOfPos(TextCursor(bufferPos));
 	if (patCode == 0) {
 		// if there is no highlighting pattern we just return an empty array.
 		return MacroErrorCode::Success;
@@ -4698,7 +4703,7 @@ std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, Dat
 
 	if (!arguments.empty()) {
 		QString index;
-		if (std::error_code ec = readArgument(arguments[0], &index)) {
+		if (const std::error_code ec = readArgument(arguments[0], &index)) {
 			return ec;
 		}
 
@@ -4771,7 +4776,7 @@ std::error_code raiseWindowMS(DocumentWidget *document, Arguments arguments, Dat
 	bool focus = Preferences::GetPrefFocusOnRaise();
 	if (arguments.size() > 1) {
 		QString argument;
-		if (std::error_code ec = readArgument(arguments[1], &argument)) {
+		if (const std::error_code ec = readArgument(arguments[1], &argument)) {
 			return ec;
 		}
 
@@ -4805,8 +4810,8 @@ std::error_code focusPaneAP(DocumentWidget *document, Arguments arguments, DataV
 	MainWindow *win = MainWindow::fromDocument(document);
 	Q_ASSERT(win);
 
-	std::vector<TextArea *> panes = document->textPanes();
-	QPointer<TextArea> lastFocus  = win->lastFocus();
+	const std::vector<TextArea *> panes = document->textPanes();
+	const QPointer<TextArea> lastFocus  = win->lastFocus();
 
 	// Find the currently focused pane for relative indexing
 	size_t paneIndex = 0;
@@ -4817,7 +4822,7 @@ std::error_code focusPaneAP(DocumentWidget *document, Arguments arguments, DataV
 	}
 
 	QString index;
-	if (std::error_code ec = readArgument(arguments[0], &index)) {
+	if (const std::error_code ec = readArgument(arguments[0], &index)) {
 		return ec;
 	}
 
@@ -4830,8 +4835,8 @@ std::error_code focusPaneAP(DocumentWidget *document, Arguments arguments, DataV
 	} else if (index == QLatin1String("previous")) {
 		paneIndex = (paneIndex - 1) % panes.size();
 	} else {
-		bool ok = false;
-		int n   = index.toInt(&ok);
+		bool ok     = false;
+		const int n = index.toInt(&ok);
 		if (!ok) {
 			return MacroErrorCode::InvalidArgument;
 		}
@@ -5180,22 +5185,22 @@ void RegisterMacroSubroutines() {
 	/* Install symbols for built-in routines and variables, with pointers
 	   to the appropriate c routines to do the work */
 	for (const SubRoutine &routine : MacroSubrs) {
-		DataValue subrPtr = make_value(routine.function);
+		const DataValue subrPtr = make_value(routine.function);
 		InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
 	}
 
 	for (const SubRoutine &routine : SpecialVars) {
-		DataValue subrPtr = make_value(routine.function);
+		const DataValue subrPtr = make_value(routine.function);
 		InstallSymbol(routine.name, PROC_VALUE_SYM, subrPtr);
 	}
 
 	for (const SubRoutine &routine : MenuMacroSubrNames) {
-		DataValue subrPtr = make_value(routine.function);
+		const DataValue subrPtr = make_value(routine.function);
 		InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
 	}
 
 	for (const SubRoutine &routine : TextAreaSubrNames) {
-		DataValue subrPtr = make_value(routine.function);
+		const DataValue subrPtr = make_value(routine.function);
 		InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
 	}
 
@@ -5217,7 +5222,7 @@ void returnShellCommandOutput(DocumentWidget *document, std::string_view outText
 
 	if (const std::shared_ptr<MacroCommandData> cmdData = document->macroCmdData_) {
 
-		DataValue retVal = make_value(outText);
+		const DataValue retVal = make_value(outText);
 
 		modifyReturnedValue(cmdData->context, retVal);
 
@@ -5289,7 +5294,7 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 					QLatin1String("expected '{'"));
 			}
 
-			QString code = in.mid();
+			const QString code = in.mid();
 
 			int stoppedAt;
 			QString errMsg;
@@ -5318,7 +5323,7 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 
 					sym->value = make_value(prog);
 				} else {
-					DataValue subrPtr = make_value(prog);
+					const DataValue subrPtr = make_value(prog);
 					InstallSymbolEx(routineName, MACRO_FUNCTION_SYM, subrPtr);
 				}
 			}
@@ -5331,7 +5336,7 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 			   definitions in a file which is loaded from another macro file, it
 			   will probably run the code blocks in reverse order! */
 		} else {
-			QString code = in.mid();
+			const QString code = in.mid();
 			int stoppedAt;
 			QString errMsg;
 			Program *const prog = compileMacro(code, &errMsg, &stoppedAt);
