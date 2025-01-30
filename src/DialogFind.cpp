@@ -26,9 +26,7 @@ DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowF
 
 	ui.textFind->installEventFilter(this);
 
-	QTimer::singleShot(0, this, [this]() {
-		resize(0, 0);
-	});
+	Dialog::shrinkToFit(this);
 }
 
 /**

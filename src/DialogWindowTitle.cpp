@@ -62,9 +62,7 @@ DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, 
 	ui.setupUi(this);
 	connectSlots();
 
-	QTimer::singleShot(0, this, [this]() {
-		resize(0, 0);
-	});
+	Dialog::shrinkToFit(this);
 
 	static const QRegularExpression rx(QLatin1String("[0-9]"));
 	ui.editDirectory->setValidator(new QRegularExpressionValidator(rx, this));

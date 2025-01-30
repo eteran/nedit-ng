@@ -2,6 +2,8 @@
 #include "Dialog.h"
 #include "Preferences.h"
 
+#include <QTimer>
+
 /**
  * @brief Dialog::Dialog
  * @param parent passed to QDialog's constructor
@@ -31,4 +33,19 @@ void Dialog::showEvent(QShowEvent *event) {
 		// automagically for us. We can revisit this if need be
 		move(x, y);
 	}
+}
+
+/**
+ * @brief
+ *
+ * @param dialog
+ *
+ * Shrinks the size of the dialog to the minimum possible given its layout.
+ * Does so in a timer with a 0 timeout so the event loop has a chance to actually
+ * do the resize
+ */
+void Dialog::shrinkToFit(Dialog *dialog) {
+	QTimer::singleShot(0, dialog, [dialog]() {
+		dialog->resize(0, 0);
+	});
 }

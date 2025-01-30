@@ -14,9 +14,7 @@ DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::Window
 	ui.setupUi(this);
 	connectSlots();
 
-	QTimer::singleShot(0, this, [this]() {
-		resize(0, 0);
-	});
+	Dialog::shrinkToFit(this);
 
 	ui.lineEdit->setValidator(new QIntValidator(0, INT_MAX, this));
 

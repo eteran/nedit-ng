@@ -95,9 +95,7 @@ DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, Qt::W
 	ui.textFind->installEventFilter(this);
 	ui.textReplace->installEventFilter(this);
 
-	QTimer::singleShot(0, this, [this]() {
-		resize(0, 0);
-	});
+	Dialog::shrinkToFit(this);
 }
 
 /**

@@ -23,9 +23,7 @@ DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlag
 	ui.setupUi(this);
 	connectSlots();
 
-	QTimer::singleShot(0, this, [this]() {
-		resize(0, 0);
-	});
+	Dialog::shrinkToFit(this);
 
 	int emTabDist;
 	int useTabs;

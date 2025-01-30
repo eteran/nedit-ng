@@ -18,9 +18,7 @@ DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFl
 	ui.setupUi(this);
 	connectSlots();
 
-	QTimer::singleShot(0, this, [this]() {
-		resize(0, 0);
-	});
+	Dialog::shrinkToFit(this);
 
 	if (!document_) {
 		ui.buttonBox->removeButton(ui.buttonBox->button(QDialogButtonBox::Apply));

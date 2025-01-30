@@ -12,9 +12,7 @@ DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f)
 	ui.setupUi(this);
 	connectSlots();
 
-	QTimer::singleShot(0, this, [this]() {
-		resize(0, 0);
-	});
+	Dialog::shrinkToFit(this);
 
 	ui.editWidth->setValidator(new QIntValidator(0, INT_MAX, this));
 	ui.editHeight->setValidator(new QIntValidator(0, INT_MAX, this));
