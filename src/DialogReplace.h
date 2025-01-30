@@ -5,11 +5,11 @@
 #include "Dialog.h"
 #include "Direction.h"
 #include "SearchType.h"
+#include "ui_DialogReplace.h"
 
 #include <QPointer>
-#include <optional>
 
-#include "ui_DialogReplace.h"
+#include <optional>
 
 class DialogMultiReplace;
 class DocumentWidget;

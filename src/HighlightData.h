@@ -3,6 +3,7 @@
 #define HIGHLIGHT_DATA_H_X_
 
 #include "Regex.h"
+
 #include <cstdint>
 #include <memory>
 #include <vector>

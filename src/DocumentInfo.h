@@ -10,11 +10,13 @@
 #include "UndoInfo.h"
 #include "Util/FileFormats.h"
 #include "WrapStyle.h"
+
 #include <QString>
 #include <QtGlobal>
+#include <qplatformdefs.h>
+
 #include <deque>
 #include <memory>
-#include <qplatformdefs.h>
 
 #ifdef Q_OS_MACOS
 #include <sys/stat.h>

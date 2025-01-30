@@ -5,11 +5,11 @@
 #include "Dialog.h"
 #include "Direction.h"
 #include "SearchType.h"
+#include "ui_DialogFind.h"
+
 #include <QPointer>
 
 #include <optional>
-
-#include "ui_DialogFind.h"
 
 class DocumentWidget;
 class MainWindow;

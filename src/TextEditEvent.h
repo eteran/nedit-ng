@@ -3,6 +3,7 @@
 #define TEXT_EDIT_EVENT_H_
 
 #include "TextArea.h"
+
 #include <QEvent>
 #include <QString>
 

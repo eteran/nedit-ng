@@ -3,6 +3,7 @@
 #define DIRECTION_H_
 
 #include <QLatin1String>
+
 #include <cstdint>
 
 enum class Direction : uint8_t {

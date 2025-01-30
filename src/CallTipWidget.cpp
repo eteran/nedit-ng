@@ -1,5 +1,6 @@
 
 #include "CallTipWidget.h"
+
 #include <QClipboard>
 #include <QFontDatabase>
 #include <QToolTip>

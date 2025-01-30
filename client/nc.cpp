@@ -1,6 +1,5 @@
 
 #include "Settings.h"
-
 #include "Util/ClearCase.h"
 #include "Util/FileSystem.h"
 #include "Util/ServerCommon.h"

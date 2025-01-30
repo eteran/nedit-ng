@@ -3,7 +3,9 @@
 #define TEXT_AREA_MIME_DATA_H_
 
 #include "TextBufferFwd.h"
+
 #include <QMimeData>
+
 #include <memory>
 
 class TextArea;

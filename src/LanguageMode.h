@@ -4,6 +4,7 @@
 
 #include "IndentStyle.h"
 #include "WrapStyle.h"
+
 #include <QString>
 #include <QStringList>
 

@@ -3,7 +3,9 @@
 #define SMART_INDENT_H_
 
 #include "Util/QtHelper.h"
+
 #include <QPointer>
+
 #include <memory>
 #include <vector>
 
@@ -24,7 +26,6 @@ void loadSmartIndentString(const QString &string);
 bool smartIndentMacrosAvailable(const QString &languageModeName);
 QString writeSmartIndentCommonString();
 QString writeSmartIndentString();
-void editCommonSmartIndentMacro();
 void renameSmartIndentMacros(const QString &oldName, const QString &newName);
 void updateLangModeMenuSmartIndent();
 QString loadDefaultCommonMacros();

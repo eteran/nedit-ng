@@ -1,11 +1,11 @@
 
 #include "Util/Resource.h"
 
-#include <gsl/gsl_util>
-
 #include <QByteArray>
 #include <QResource>
 #include <QString>
+
+#include <gsl/gsl_util>
 
 /**
  * @brief loadResource

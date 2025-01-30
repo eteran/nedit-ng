@@ -1,6 +1,7 @@
 
 #include "Decompile.h"
 #include "Regex.h"
+
 #include <cassert>
 
 namespace {

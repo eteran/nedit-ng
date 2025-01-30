@@ -9,7 +9,6 @@
 
 #include <QIntValidator>
 #include <QMessageBox>
-#include <QTimer>
 
 /**
  * @brief DialogTabs::DialogTabs

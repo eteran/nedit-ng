@@ -4,6 +4,7 @@
 
 #include "TextBuffer.h"
 #include "TextCursor.h"
+
 #include <QChar>
 
 // Element in bookmark table

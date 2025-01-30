@@ -3,6 +3,7 @@
 #include "DocumentWidget.h"
 #include "TextEditEvent.h"
 #include "WindowMenuEvent.h"
+
 #include <QtDebug>
 
 namespace {

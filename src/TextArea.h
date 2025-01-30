@@ -10,7 +10,6 @@
 #include "StyleTableEntry.h"
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
-#include <string_view>
 
 #include <QAbstractScrollArea>
 #include <QColor>
@@ -22,9 +21,9 @@
 #include <QVector>
 
 #include <memory>
-#include <vector>
-
 #include <optional>
+#include <string_view>
+#include <vector>
 
 class CallTipWidget;
 class TextArea;

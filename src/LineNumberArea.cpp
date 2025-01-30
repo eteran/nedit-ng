@@ -2,6 +2,7 @@
 #include "LineNumberArea.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
+
 #include <QPaintEvent>
 #include <QPainter>
 

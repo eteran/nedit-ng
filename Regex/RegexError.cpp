@@ -1,5 +1,6 @@
 
 #include "RegexError.h"
+
 #include <QByteArray>
 #include <QtDebug>
 

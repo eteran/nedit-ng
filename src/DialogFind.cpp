@@ -10,8 +10,6 @@
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QMessageBox>
-#include <QMimeData>
-#include <QTimer>
 
 /**
  * @brief DialogFind::DialogFind

@@ -3,6 +3,7 @@
 #define TRUNC_SUBSTITUTION_H_
 
 #include "from_integer.h"
+
 #include <QtDebug>
 
 enum class TruncSubstitution {

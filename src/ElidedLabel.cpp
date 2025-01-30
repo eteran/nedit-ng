@@ -1,11 +1,11 @@
 
 #include "ElidedLabel.h"
 #include "Font.h"
+
 #include <QApplication>
 #include <QClipboard>
 #include <QContextMenuEvent>
 #include <QMenu>
-#include <QMimeData>
 #include <QRegularExpression>
 #include <QScreen>
 #include <QTextDocument>

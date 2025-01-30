@@ -11,8 +11,6 @@
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QMessageBox>
-#include <QMimeData>
-#include <QTimer>
 
 namespace {
 

@@ -3,7 +3,9 @@
 #define PATTERN_SET_H_
 
 #include "HighlightPattern.h"
+
 #include <QString>
+
 #include <vector>
 
 class PatternSet {

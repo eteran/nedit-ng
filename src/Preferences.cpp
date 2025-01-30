@@ -19,10 +19,6 @@
 #include "nedit.h"
 #include "userCmds.h"
 
-#include <yaml-cpp/yaml.h>
-
-#include <algorithm>
-
 #include <QInputDialog>
 #include <QMessageBox>
 #include <QPushButton>
@@ -30,6 +26,10 @@
 #include <QSettings>
 #include <QString>
 #include <QtDebug>
+
+#include <algorithm>
+
+#include <yaml-cpp/yaml.h>
 
 namespace Preferences {
 namespace {

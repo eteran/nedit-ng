@@ -2,6 +2,7 @@
 #include "Util/ServerCommon.h"
 #include "Util/Host.h"
 #include "Util/User.h"
+
 #include <QCryptographicHash>
 #include <QDir>
 #include <QStandardPaths>

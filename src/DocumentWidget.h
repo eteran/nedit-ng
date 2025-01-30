@@ -21,18 +21,16 @@
 #include "Util/FileFormats.h"
 #include "Verbosity.h"
 #include "WrapStyle.h"
-#include <string_view>
-
 #include "ui_DocumentWidget.h"
 
 #include <QPointer>
 #include <QProcess>
 #include <QWidget>
 
-#include <gsl/span>
-
 #include <optional>
+#include <string_view>
 
+#include <gsl/span>
 #include <sys/stat.h>
 
 class HighlightPattern;
@@ -40,7 +38,6 @@ class MainWindow;
 class PatternSet;
 class Regex;
 class Style;
-struct StyleTableEntry;
 class TextArea;
 class UndoInfo;
 struct DragEndEvent;
@@ -50,6 +47,7 @@ struct Program;
 struct ShellCommandData;
 struct SmartIndentData;
 struct SmartIndentEvent;
+struct StyleTableEntry;
 struct WindowHighlightData;
 
 class QDir;

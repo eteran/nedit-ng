@@ -12,7 +12,6 @@
 
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
-#include <QTimer>
 
 namespace {
 

@@ -4,7 +4,6 @@
 
 #include <QIntValidator>
 #include <QMessageBox>
-#include <QTimer>
 
 DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {

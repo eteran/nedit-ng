@@ -3,6 +3,7 @@
 #define HIGHLIGHT_STYLE_MODEL_H_
 
 #include "HighlightStyle.h"
+
 #include <QAbstractItemModel>
 
 class HighlightStyleModel final : public QAbstractItemModel {

@@ -3,6 +3,7 @@
 #define UTIL_REGEX_H_
 
 #include <memory>
+
 class QString;
 class Regex;
 

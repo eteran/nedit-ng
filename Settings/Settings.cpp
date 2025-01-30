@@ -8,6 +8,7 @@
 #include <QStandardPaths>
 #include <QtDebug>
 #include <QtGlobal>
+
 #include <random>
 
 namespace Settings {

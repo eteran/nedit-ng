@@ -17,8 +17,6 @@
 #include "WindowHighlightData.h"
 #include "X11Colors.h"
 
-#include <yaml-cpp/yaml.h>
-
 #include <QFile>
 #include <QFileInfo>
 #include <QMessageBox>
@@ -32,9 +30,11 @@
 #include <cstring>
 #include <memory>
 
-// list of available highlight styles
+#include <yaml-cpp/yaml.h>
+
 namespace Highlight {
 
+// list of available highlight styles
 std::vector<HighlightStyle> HighlightStyles;
 
 // Pattern sources loaded from the .nedit file or set by the user

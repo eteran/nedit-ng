@@ -3,6 +3,7 @@
 #define DOCUMENT_MODEL_H_
 
 #include "DocumentWidget.h"
+
 #include <QAbstractItemModel>
 
 class DocumentModel final : public QAbstractItemModel {

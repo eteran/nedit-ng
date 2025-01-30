@@ -4,6 +4,7 @@
 
 #include <QString>
 #include <QtGlobal>
+
 #include <optional>
 #include <string>
 #include <string_view>

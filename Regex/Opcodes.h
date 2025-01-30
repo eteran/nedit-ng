@@ -3,6 +3,7 @@
 #define OPCODES_H_
 
 #include "Constants.h"
+
 #include <cstdint>
 
 /* STRUCTURE FOR A REGULAR EXPRESSION (regex) gPROGRAM'.

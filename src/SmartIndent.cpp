@@ -11,14 +11,15 @@
 #include "Util/algorithm.h"
 #include "shift.h"
 
-#include <yaml-cpp/yaml.h>
-
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QPointer>
 #include <QtDebug>
+
 #include <climits>
 #include <cstring>
+
+#include <yaml-cpp/yaml.h>
 
 namespace SmartIndent {
 
