@@ -1,10 +1,9 @@
 
 #include "SearchType.h"
 #include "Settings.h"
+#include "Util/Input.h"
 #include "WrapStyle.h"
 #include "parse.h"
-
-#include "Util/Input.h"
 
 #include <QColor>
 #include <QDomDocument>

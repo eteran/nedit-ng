@@ -7,7 +7,6 @@
 
 #include <QIntValidator>
 #include <QMessageBox>
-#include <QTimer>
 
 DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f), document_(document) {

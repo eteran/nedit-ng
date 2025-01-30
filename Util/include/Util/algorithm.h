@@ -3,6 +3,7 @@
 #define ALGORITHM_H_
 
 #include <QtGlobal>
+
 #include <algorithm>
 #include <cstddef>
 #include <string_view>

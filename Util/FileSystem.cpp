@@ -3,12 +3,12 @@
 #include "Util/ClearCase.h"
 #include "Util/FileFormats.h"
 
+#include <QDir>
+#include <QFileInfo>
+
 #include <fstream>
 #include <iostream>
 #include <iterator>
-
-#include <QDir>
-#include <QFileInfo>
 
 namespace {
 

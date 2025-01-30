@@ -3,6 +3,7 @@
 #define DRAG_END_EVENT_H_
 
 #include "TextCursor.h"
+
 #include <cstdint>
 #include <string_view>
 

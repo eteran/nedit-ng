@@ -8,6 +8,7 @@
 #include <cstdio>
 #include <cctype>
 #include <string>
+
 #include <gsl/gsl_util>
 
 /* Macros to add error processing to AddOp and AddSym calls */

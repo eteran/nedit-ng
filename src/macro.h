@@ -3,6 +3,7 @@
 #define MACRO_H_
 
 #include <QTimer>
+
 #include <memory>
 #include <string_view>
 

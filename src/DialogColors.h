@@ -4,6 +4,7 @@
 
 #include "Dialog.h"
 #include "ui_DialogColors.h"
+
 #include <QColor>
 
 class DialogColors final : public Dialog {

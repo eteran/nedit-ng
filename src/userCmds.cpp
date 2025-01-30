@@ -15,6 +15,7 @@
 
 #include <memory>
 #include <optional>
+
 #include <yaml-cpp/yaml.h>
 
 /* Descriptions of the current user programmed menu items for re-generating

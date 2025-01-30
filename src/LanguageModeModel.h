@@ -3,6 +3,7 @@
 #define LANGUAGE_MODE_MODEL_H_
 
 #include "LanguageMode.h"
+
 #include <QAbstractItemModel>
 
 class LanguageModeModel final : public QAbstractItemModel {

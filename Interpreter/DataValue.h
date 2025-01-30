@@ -2,18 +2,17 @@
 #ifndef DATA_VALUE_H_
 #define DATA_VALUE_H_
 
-#include <string_view>
-
-#include <gsl/span>
+#include <QString>
 
 #include <limits>
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <system_error>
 #include <variant>
 
-#include <QString>
+#include <gsl/span>
 
 class DocumentWidget;
 struct DataValue;

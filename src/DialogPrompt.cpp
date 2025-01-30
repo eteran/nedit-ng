@@ -1,5 +1,6 @@
 
 #include "DialogPrompt.h"
+
 #include <QPushButton>
 
 /**

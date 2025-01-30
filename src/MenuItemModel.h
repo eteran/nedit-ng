@@ -3,6 +3,7 @@
 #define MENU_ITEM_MODEL_H_
 
 #include "MenuItem.h"
+
 #include <QAbstractItemModel>
 
 class MenuItemModel final : public QAbstractItemModel {

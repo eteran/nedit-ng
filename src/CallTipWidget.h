@@ -3,6 +3,7 @@
 #define CALLTIP_WIDGET_H_
 
 #include "ui_CallTipWidget.h"
+
 #include <QWidget>
 
 class CallTipWidget final : public QWidget {

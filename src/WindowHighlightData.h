@@ -13,7 +13,7 @@
 class PatternSet;
 
 // Data structure attached to window to hold all syntax highlighting
-// information (for both drawing and incremental reparsing)
+// information (for both drawing and incremental re-parsing)
 struct WindowHighlightData {
 	std::vector<uint8_t> parentStyles;
 	std::vector<StyleTableEntry> styleTable;

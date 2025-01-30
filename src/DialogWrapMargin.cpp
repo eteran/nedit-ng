@@ -5,7 +5,6 @@
 #include "TextArea.h"
 
 #include <QMessageBox>
-#include <QTimer>
 
 DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f), document_(document) {

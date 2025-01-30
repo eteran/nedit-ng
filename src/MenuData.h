@@ -3,6 +3,7 @@
 #define MENU_DATA_H_
 
 #include "MenuItem.h"
+
 #include <memory>
 #include <vector>
 

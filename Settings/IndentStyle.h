@@ -3,6 +3,7 @@
 #define INDENT_STYLE_H_
 
 #include "from_integer.h"
+
 #include <QLatin1String>
 #include <QtDebug>
 

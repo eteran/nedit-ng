@@ -55,12 +55,12 @@
 #include <QToolTip>
 #include <qplatformdefs.h>
 
-#include <algorithm>
-#include <cmath>
-
 #ifdef Q_OS_LINUX
 #include <QLibrary>
 #endif
+
+#include <algorithm>
+#include <cmath>
 
 namespace {
 

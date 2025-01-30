@@ -4,6 +4,7 @@
 
 #include "Rangeset.h"
 #include "TextCursor.h"
+
 #include <cstddef>
 #include <cstdint>
 #include <vector>

@@ -5,10 +5,11 @@
 #include "Direction.h"
 #include "SearchType.h"
 #include "WrapMode.h"
-#include <string_view>
 
 #include <QString>
+
 #include <optional>
+#include <string_view>
 
 class DocumentWidget;
 class MainWindow;

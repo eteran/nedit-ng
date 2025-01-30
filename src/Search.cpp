@@ -11,11 +11,11 @@
 #include "Util/utils.h"
 #include "userCmds.h"
 
-#include <gsl/gsl_util>
-
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
+
+#include <gsl/gsl_util>
 
 namespace {
 

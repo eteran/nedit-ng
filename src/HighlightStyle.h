@@ -3,6 +3,7 @@
 #define HIGHLIGHT_STYLE_H_
 
 #include "Font.h"
+
 #include <QString>
 
 struct HighlightStyle {

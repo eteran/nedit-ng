@@ -3,6 +3,7 @@
 #define SMART_INDENT_EVENT_H_
 
 #include "TextCursor.h"
+
 #include <string_view>
 
 enum SmartIndentReason {

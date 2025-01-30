@@ -5,6 +5,7 @@
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "Preferences.h"
+
 #include <QMessageBox>
 
 /**

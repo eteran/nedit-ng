@@ -3,8 +3,8 @@
 #include "DocumentWidget.h"
 #include "Font.h"
 #include "Preferences.h"
+
 #include <QPushButton>
-#include <QTimer>
 
 /**
  * @brief DialogFonts::DialogFonts

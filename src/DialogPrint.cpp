@@ -8,6 +8,7 @@
 #include <QPainter>
 #include <QPrinterInfo>
 #include <QTextDocument>
+
 #include <utility>
 
 /**

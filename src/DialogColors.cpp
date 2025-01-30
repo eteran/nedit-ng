@@ -9,7 +9,6 @@
 #include <QMessageBox>
 #include <QPainter>
 #include <QPixmap>
-#include <QTimer>
 
 namespace {
 

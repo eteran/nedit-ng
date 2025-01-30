@@ -4,6 +4,7 @@
 
 #include <QCoreApplication>
 #include <QStringList>
+
 #include <memory>
 
 class QString;

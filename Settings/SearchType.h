@@ -3,6 +3,7 @@
 #define SEARCH_TYPE_H_
 
 #include "from_integer.h"
+
 #include <QLatin1String>
 #include <QtDebug>
 

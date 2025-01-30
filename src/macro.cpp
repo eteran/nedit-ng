@@ -25,15 +25,15 @@
 #include "interpret.h"
 #include "parse.h"
 
-#include <algorithm>
-#include <fstream>
-#include <optional>
-#include <stack>
-
 #include <QClipboard>
 #include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QMimeData>
+
+#include <algorithm>
+#include <fstream>
+#include <optional>
+#include <stack>
 
 // DISABLED for 5.4
 // #define ENABLE_BACKLIGHT_STRING

@@ -1,5 +1,6 @@
 
 #include "KeySequenceEdit.h"
+
 #include <QAction>
 #include <QBoxLayout>
 #include <QEvent>

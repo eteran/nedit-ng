@@ -2,7 +2,8 @@
 #ifndef REGEX_ERROR_H_
 #define REGEX_ERROR_H_
 
-#include <Util/Compiler.h>
+#include "Util/Compiler.h"
+
 #include <exception>
 #include <string>
 

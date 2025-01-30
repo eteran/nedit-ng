@@ -5,13 +5,13 @@
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
 #include "Util/QtHelper.h"
-#include <string_view>
+
+#include <QCoreApplication>
 
 #include <memory>
 #include <optional>
+#include <string_view>
 #include <vector>
-
-#include <QCoreApplication>
 
 class HighlightPattern;
 class PatternSet;
