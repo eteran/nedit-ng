@@ -2377,7 +2377,7 @@ Program *compileMacro(const QString &expr, QString *msg, int *stoppedAt) {
 static int yylex(void) {
 
     int i;
-    Symbol *s;    
+    Symbol *s;
     static const char escape[] = "\\\"ntbrfave";
     static const char replace[] = "\\\"\n\t\b\r\f\a\v\x1B"; /* ASCII escape */
 

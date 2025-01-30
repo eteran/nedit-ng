@@ -43,7 +43,7 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f)
 	ui.listItems->setModel(model_);
 
 	// Copy the list of menu information to one that the user can freely edit
-	for (MenuData &menuData : MacroMenuData) {
+	for (const MenuData &menuData : MacroMenuData) {
 		model_->addItem(menuData.item);
 	}
 
@@ -52,7 +52,7 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f)
 
 	// default to selecting the first item
 	if (model_->rowCount() != 0) {
-		QModelIndex index = model_->index(0, 0);
+		const QModelIndex index = model_->index(0, 0);
 		ui.listItems->setCurrentIndex(index);
 	}
 }
@@ -113,7 +113,7 @@ void DialogMacros::buttonDelete_clicked() {
  */
 void DialogMacros::buttonPasteLRMacro_clicked() {
 
-	QString replayMacro = CommandRecorder::instance()->replayMacro();
+	const QString replayMacro = CommandRecorder::instance()->replayMacro();
 	if (replayMacro.isEmpty()) {
 		return;
 	}
@@ -262,7 +262,7 @@ bool DialogMacros::validateFields(Verbosity verbosity) {
 */
 std::optional<MenuItem> DialogMacros::readFields(Verbosity verbosity) {
 
-	QString nameText = ui.editName->text();
+	const QString nameText = ui.editName->text();
 
 	if (nameText.isEmpty()) {
 		if (verbosity == Verbosity::Verbose) {
@@ -352,7 +352,7 @@ bool DialogMacros::applyDialogChanges() {
 		}
 
 		// Get the current selected item
-		QModelIndex index = ui.listItems->currentIndex();
+		const QModelIndex index = ui.listItems->currentIndex();
 		if (!index.isValid()) {
 			return false;
 		}
@@ -365,8 +365,8 @@ bool DialogMacros::applyDialogChanges() {
 	std::vector<MenuData> newItems;
 
 	for (int i = 0; i < model_->rowCount(); ++i) {
-		QModelIndex index = model_->index(i, 0);
-		auto item         = model_->itemFromIndex(index);
+		const QModelIndex index = model_->index(i, 0);
+		auto item               = model_->itemFromIndex(index);
 		newItems.push_back({*item, nullptr});
 	}
 
@@ -409,7 +409,7 @@ bool DialogMacros::updateCurrentItem(const QModelIndex &index) {
  * @return
  */
 bool DialogMacros::updateCurrentItem() {
-	QModelIndex index = ui.listItems->currentIndex();
+	const QModelIndex index = ui.listItems->currentIndex();
 	if (index.isValid()) {
 		return updateCurrentItem(index);
 	}

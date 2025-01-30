@@ -1,11 +1,11 @@
 
 #include "Util/Resource.h"
 
-#include <gsl/gsl_util>
-
 #include <QByteArray>
 #include <QResource>
 #include <QString>
+
+#include <gsl/gsl_util>
 
 /**
  * @brief loadResource
@@ -14,7 +14,7 @@
  */
 QByteArray loadResource(const QString &resource) {
 
-	QResource res(resource);
+	const QResource res(resource);
 	if (!res.isValid()) {
 		qFatal("Failed to load internal resource");
 	}

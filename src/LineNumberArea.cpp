@@ -2,6 +2,7 @@
 #include "LineNumberArea.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
+
 #include <QPaintEvent>
 #include <QPainter>
 
@@ -53,7 +54,7 @@ void LineNumberArea::paintEvent(QPaintEvent *event) {
 #endif
 		if (lineStart != -1 && (lineStart == 0 || area_->buffer_->BufGetCharacter(lineStart - 1) == '\n')) {
 			const auto number = QString::number(line);
-			QRect rect(Padding, y, width() - (Padding * 2), lineHeight);
+			const QRect rect(Padding, y, width() - (Padding * 2), lineHeight);
 			painter.drawText(rect, Qt::TextSingleLine | Qt::AlignVCenter | Qt::AlignRight, number);
 			++line;
 		} else {

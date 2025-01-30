@@ -12,6 +12,7 @@
 
 #include <cassert>
 #include <charconv>
+#include <cstdint>
 #include <cstring>
 #include <limits>
 #include <regex>
@@ -24,7 +25,7 @@ namespace {
 const auto FirstPassToken = reinterpret_cast<uint8_t *>(1);
 
 // Flags for function shortcut_escape()
-enum ShortcutEscapeFlag {
+enum ShortcutEscapeFlag : uint8_t {
 	CHECK_ESCAPE       = 0, // Check an escape sequence for validity only.
 	CHECK_CLASS_ESCAPE = 1, // Check the validity of an escape within a character class
 	EMIT_CLASS_BYTES   = 2, // Emit equivalent character class bytes, e.g \d=0123456789

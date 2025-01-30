@@ -11,8 +11,6 @@
 #include <QClipboard>
 #include <QKeyEvent>
 #include <QMessageBox>
-#include <QMimeData>
-#include <QTimer>
 
 namespace {
 
@@ -38,7 +36,7 @@ int countWritableWindows() {
 		document->checkForChangesToFile();
 
 		const std::vector<DocumentWidget *> afterDocuments = DocumentWidget::allDocuments();
-		size_t nAfter                                      = afterDocuments.size();
+		const size_t nAfter                                = afterDocuments.size();
 
 		if (nAfter != nBefore) {
 			// The user has destroyed a file; start counting all over again
@@ -95,9 +93,7 @@ DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, Qt::W
 	ui.textFind->installEventFilter(this);
 	ui.textReplace->installEventFilter(this);
 
-	QTimer::singleShot(0, this, [this]() {
-		resize(0, 0);
-	});
+	Dialog::shrinkToFit(this);
 }
 
 /**
@@ -428,7 +424,7 @@ void DialogReplace::buttonMulti_clicked() {
 	}
 
 	// temporary list of writable documents, used during multi-file replacements
-	std::vector<DocumentWidget *> writeableDocuments = collectWritableWindows();
+	const std::vector<DocumentWidget *> writeableDocuments = collectWritableWindows();
 
 	// Initialize/update the list of files.
 	dialogMultiReplace->uploadFileListItems(writeableDocuments);
@@ -602,8 +598,8 @@ std::optional<DialogReplace::Fields> DialogReplace::readFields() {
 
 	/* Get the search and replace strings, search type, and direction
 	   from the dialog */
-	QString replaceText     = ui.textFind->text();
-	QString replaceWithText = ui.textReplace->text();
+	const QString replaceText     = ui.textFind->text();
+	const QString replaceWithText = ui.textReplace->text();
 
 	if (ui.checkRegex->isChecked()) {
 		int regexDefault;

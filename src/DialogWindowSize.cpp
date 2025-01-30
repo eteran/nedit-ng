@@ -4,7 +4,6 @@
 
 #include <QIntValidator>
 #include <QMessageBox>
-#include <QTimer>
 
 DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
@@ -12,9 +11,7 @@ DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f)
 	ui.setupUi(this);
 	connectSlots();
 
-	QTimer::singleShot(0, this, [this]() {
-		resize(0, 0);
-	});
+	Dialog::shrinkToFit(this);
 
 	ui.editWidth->setValidator(new QIntValidator(0, INT_MAX, this));
 	ui.editHeight->setValidator(new QIntValidator(0, INT_MAX, this));
@@ -35,7 +32,7 @@ void DialogWindowSize::buttonBox_accepted() {
 		return;
 	}
 
-	int rowValue = width.toInt(&ok);
+	const int rowValue = width.toInt(&ok);
 	if (!ok) {
 		QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in number of rows").arg(width));
 		return;
@@ -46,7 +43,7 @@ void DialogWindowSize::buttonBox_accepted() {
 		return;
 	}
 
-	int colValue = height.toInt(&ok);
+	const int colValue = height.toInt(&ok);
 	if (!ok) {
 		QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in number of columns").arg(height));
 		return;

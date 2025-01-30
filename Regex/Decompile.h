@@ -3,9 +3,11 @@
 #define DECOMPILE_H_
 
 #include "Opcodes.h"
+
 #include <string>
 #include <variant>
 #include <vector>
+
 class Regex;
 
 struct Instruction1 {

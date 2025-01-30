@@ -12,7 +12,6 @@
 
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
-#include <QTimer>
 
 namespace {
 
@@ -62,9 +61,7 @@ DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, 
 	ui.setupUi(this);
 	connectSlots();
 
-	QTimer::singleShot(0, this, [this]() {
-		resize(0, 0);
-	});
+	Dialog::shrinkToFit(this);
 
 	static const QRegularExpression rx(QLatin1String("[0-9]"));
 	ui.editDirectory->setValidator(new QRegularExpressionValidator(rx, this));
@@ -76,7 +73,7 @@ DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, 
 	path_     = document->path();
 	filename_ = document->filename();
 
-	QString clearCase = ClearCase::GetViewTag();
+	const QString clearCase = ClearCase::GetViewTag();
 
 	viewTag_     = !clearCase.isNull() ? clearCase : tr("viewtag");
 	serverName_  = IsServer ? Preferences::GetPrefServerName() : tr("servername");
@@ -131,7 +128,7 @@ void DialogWindowTitle::setToggleButtons() {
 	// Read-only takes precedence on locked
 	ui.checkFileLocked->setEnabled(!lockReasons_.isPermLocked());
 
-	QString ccTag = ClearCase::GetViewTag();
+	const QString ccTag = ClearCase::GetViewTag();
 
 	ui.checkClearCasePresent->setChecked(!ccTag.isNull());
 	ui.checkServerNamePresent->setChecked(isServer_);
@@ -157,13 +154,13 @@ void DialogWindowTitle::editFormat_textChanged(const QString &text) {
  */
 void DialogWindowTitle::formatChangedCB() {
 
-	bool filenameSet = ui.checkDirectoryPresent->isChecked();
+	const bool filenameSet = ui.checkDirectoryPresent->isChecked();
 
 	if (suppressFormatUpdate_) {
 		return; // Prevent recursive feedback
 	}
 
-	QString format = ui.editFormat->text();
+	const QString format = ui.editFormat->text();
 	QString serverName;
 	if (ui.checkServerEqualsCC->isChecked() && ui.checkClearCasePresent->isChecked()) {
 		serverName = viewTag_;
@@ -171,7 +168,7 @@ void DialogWindowTitle::formatChangedCB() {
 		serverName = ui.checkServerNamePresent->isChecked() ? serverName_ : QString();
 	}
 
-	QString title = formatWindowTitleAndUpdate(
+	const QString title = formatWindowTitleAndUpdate(
 		filename_,
 		filenameSet_ ? path_ : tr("/a/very/long/path/used/as/example/"),
 		ui.checkClearCasePresent->isChecked() ? viewTag_ : QString(),
@@ -268,8 +265,8 @@ QString DialogWindowTitle::formatWindowTitleAndUpdate(const QString &filename, c
 
 		if (state.noOfComponents >= 0) {
 
-			QString value = ui.editDirectory->text();
-			auto comp     = QString::number(state.noOfComponents);
+			const QString value = ui.editDirectory->text();
+			const auto comp     = QString::number(state.noOfComponents);
 
 			// Don't overwrite unless diff.
 			if (value != comp) {
@@ -406,11 +403,11 @@ void DialogWindowTitle::checkDirectory_toggled(bool checked) {
 
 	if (checked) {
 		QString buf;
-		QString value = ui.editDirectory->text();
+		const QString value = ui.editDirectory->text();
 		if (!value.isEmpty()) {
 
 			bool ok;
-			int maxComp = value.toInt(&ok);
+			const int maxComp = value.toInt(&ok);
 
 			if (ok && maxComp > 0) {
 				buf = tr(" %%1d ").arg(maxComp);
@@ -510,7 +507,7 @@ void DialogWindowTitle::checkServerEqualsCC_toggled(bool checked) {
  * @param string
  */
 void DialogWindowTitle::appendToFormat(const QString &string) {
-	QString format = ui.editFormat->text();
+	const QString format = ui.editFormat->text();
 	ui.editFormat->setText(format + string);
 }
 
@@ -545,7 +542,7 @@ void DialogWindowTitle::removeFromFormat(const QString &string) {
 void DialogWindowTitle::buttonBox_clicked(QAbstractButton *button) {
 	if (ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
 
-		QString format = ui.editFormat->text();
+		const QString format = ui.editFormat->text();
 
 		if (format != Preferences::GetPrefTitleFormat()) {
 			Preferences::SetPrefTitleFormat(format);
@@ -570,7 +567,7 @@ void DialogWindowTitle::editDirectory_textChanged(const QString &text) {
 
 	QString format = ui.editFormat->text();
 	bool ok;
-	int maxComp = text.toInt(&ok);
+	const int maxComp = text.toInt(&ok);
 
 	static const QRegularExpression re(QLatin1String("%[0-9]?d"));
 
@@ -671,7 +668,7 @@ QString DialogWindowTitle::formatWindowTitleInternal(const QString &filename, co
 					format_it++; // delete the argument
 
 					if (filenameSet) {
-						QString trailingPath = GetTrailingPathComponents(path, noOfComponents);
+						const QString trailingPath = GetTrailingPathComponents(path, noOfComponents);
 
 						// prefix with ellipsis if components were skipped
 						if (trailingPath != path) {

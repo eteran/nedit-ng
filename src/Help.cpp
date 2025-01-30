@@ -1,6 +1,7 @@
 
 #include "Help.h"
 #include "Util/version.h"
+
 #include <QDesktopServices>
 #include <QMessageBox>
 #include <QUrl>

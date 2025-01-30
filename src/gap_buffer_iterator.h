@@ -3,6 +3,7 @@
 #define GAP_BUFFER_ITERATOR_H_
 
 #include "gap_buffer_fwd.h"
+
 #include <cassert>
 #include <iterator>
 #include <type_traits>

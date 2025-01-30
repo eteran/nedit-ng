@@ -3,6 +3,7 @@
 #define UNDO_INFO_H_
 
 #include "TextCursor.h"
+
 #include <string>
 
 /* The accumulated list of undo operations can potentially consume huge

@@ -3,8 +3,8 @@
 #include "DocumentWidget.h"
 #include "Font.h"
 #include "Preferences.h"
+
 #include <QPushButton>
-#include <QTimer>
 
 /**
  * @brief DialogFonts::DialogFonts
@@ -18,9 +18,7 @@ DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFl
 	ui.setupUi(this);
 	connectSlots();
 
-	QTimer::singleShot(0, this, [this]() {
-		resize(0, 0);
-	});
+	Dialog::shrinkToFit(this);
 
 	if (!document_) {
 		ui.buttonBox->removeButton(ui.buttonBox->button(QDialogButtonBox::Apply));
@@ -38,7 +36,7 @@ DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFl
 		const int current          = currentSize.isValid() ? currentSize.toInt() : font.pointSize();
 
 		ui.fontSize->clear();
-		for (int size : sizes) {
+		for (const int size : sizes) {
 			ui.fontSize->addItem(QStringLiteral("%1").arg(size), size);
 		}
 
@@ -91,7 +89,7 @@ void DialogFonts::updateFont() {
 
 	QFont font = ui.fontCombo->currentFont();
 	font.setPointSize(ui.fontSize->currentData().toInt());
-	QString fontName = font.toString();
+	const QString fontName = font.toString();
 
 	if (document_) {
 		document_->action_Set_Fonts(fontName);

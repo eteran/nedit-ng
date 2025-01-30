@@ -79,7 +79,7 @@ Main::Main(const QStringList &args) {
 	QPointer<DocumentWidget> lastFile;
 
 	// Enable a Qt style sheet if present
-	QString styleFile = Settings::styleFile();
+	const QString styleFile = Settings::styleFile();
 	QFile file(styleFile);
 	if (file.open(QIODevice::ReadOnly)) {
 		qApp->setStyleSheet(QString::fromUtf8(file.readAll()));
@@ -176,7 +176,7 @@ Main::Main(const QStringList &args) {
 			i = nextArg(args, i);
 
 			bool ok;
-			int n = args[i].toInt(&ok);
+			const int n = args[i].toInt(&ok);
 			if (!ok) {
 				fprintf(stderr, "NEdit: argument to rows should be a number\n");
 			} else {
@@ -186,7 +186,7 @@ Main::Main(const QStringList &args) {
 			i = nextArg(args, i);
 
 			bool ok;
-			int n = args[i].toInt(&ok);
+			const int n = args[i].toInt(&ok);
 			if (!ok) {
 				fprintf(stderr, "NEdit: argument to cols should be a number\n");
 			} else {
@@ -196,7 +196,7 @@ Main::Main(const QStringList &args) {
 			i = nextArg(args, i);
 
 			bool ok;
-			int n = args[i].toInt(&ok);
+			const int n = args[i].toInt(&ok);
 			if (!ok) {
 				fprintf(stderr, "NEdit: argument to tabs should be a number\n");
 			} else {
@@ -249,7 +249,7 @@ Main::Main(const QStringList &args) {
 		} else if (opts && args[i] == QLatin1String("-import")) {
 			i = nextArg(args, i); // already processed, skip
 		} else if (opts && (args[i] == QLatin1String("-V") || args[i] == QLatin1String("-version"))) {
-			QString infoString = DialogAbout::createInfoString();
+			const QString infoString = DialogAbout::createInfoString();
 			printf("%s", qPrintable(infoString));
 			exit(EXIT_SUCCESS);
 		} else if (opts && (args[i] == QLatin1String("-h") || args[i] == QLatin1String("-help"))) {
@@ -380,7 +380,7 @@ bool Main::checkDoMacroArg(const QString &macro) {
 
 	/* Add a terminating newline (which command line users are likely to omit
 	   since they are typically invoking a single routine) */
-	QString macroString = macro + QLatin1Char('\n');
+	const QString macroString = macro + QLatin1Char('\n');
 
 	// Do a test parse
 	if (!isMacroValid(macroString, &errMsg, &stoppedAt)) {

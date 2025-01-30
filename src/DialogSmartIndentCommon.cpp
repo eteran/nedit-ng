@@ -72,7 +72,7 @@ void DialogSmartIndentCommon::buttonCheck_clicked() {
  * @brief DialogSmartIndentCommon::buttonRestore_clicked
  */
 void DialogSmartIndentCommon::buttonRestore_clicked() {
-	int resp = QMessageBox::question(
+	const int resp = QMessageBox::question(
 		this,
 		tr("Discard Changes"),
 		tr("Are you sure you want to discard all changes to common smart indent macros"),
@@ -95,10 +95,10 @@ void DialogSmartIndentCommon::buttonRestore_clicked() {
  */
 bool DialogSmartIndentCommon::checkSmartIndentCommonDialogData() {
 
-	QString code = ui.editCode->toPlainText();
+	const QString code = ui.editCode->toPlainText();
 
 	if (!code.isEmpty()) {
-		QString widgetText = ensure_newline(code);
+		const QString widgetText = ensure_newline(code);
 		int stoppedAt;
 		if (!CheckMacroString(this, widgetText, tr("macros"), &stoppedAt)) {
 			QTextCursor cursor = ui.editCode->textCursor();
@@ -123,7 +123,7 @@ bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 		return false;
 	}
 
-	QString code = ui.editCode->toPlainText();
+	const QString code = ui.editCode->toPlainText();
 
 	// Get the current data
 	SmartIndent::CommonMacros = ensure_newline(code);

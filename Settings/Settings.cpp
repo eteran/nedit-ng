@@ -8,6 +8,7 @@
 #include <QStandardPaths>
 #include <QtDebug>
 #include <QtGlobal>
+
 #include <random>
 
 namespace Settings {
@@ -31,7 +32,7 @@ QString defaultTextFont() {
 }
 
 template <class T>
-using IsEnum = typename std::enable_if<std::is_enum<T>::value>::type;
+using IsEnum = std::enable_if_t<std::is_enum_v<T>>;
 
 template <class T, class = IsEnum<T>>
 T readEnum(QSettings &settings, const QString &key, const T &defaultValue = T()) {
@@ -59,7 +60,7 @@ QString randomString(int length) {
 	std::uniform_int_distribution<> dist(0, sizeof(alphabet) - 1);
 
 	for (int i = 0; i < length; ++i) {
-		size_t index = dist(mt);
+		const size_t index = dist(mt);
 		randomString.append(QChar::fromLatin1(alphabet[index]));
 	}
 
@@ -276,7 +277,7 @@ QString smartIndentFile() {
  */
 void loadPreferences(bool isServer) {
 
-	QString filename = configFile();
+	const QString filename = configFile();
 	QSettings settings(filename, QSettings::IniFormat);
 
 	shellCommands         = settings.value(tr("nedit.shellCommands"), QLatin1String("*")).toString();
@@ -462,7 +463,7 @@ void importSettings(const QString &filename) {
  * @return
  */
 bool savePreferences() {
-	QString filename = configFile();
+	const QString filename = configFile();
 	QSettings settings(filename, QSettings::IniFormat);
 
 	settings.setValue(tr("nedit.shellCommands"), shellCommands);

@@ -4,6 +4,7 @@
 
 #include <QKeySequence>
 #include <QString>
+
 #include <cstdint>
 #include <memory>
 

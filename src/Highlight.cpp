@@ -17,8 +17,6 @@
 #include "WindowHighlightData.h"
 #include "X11Colors.h"
 
-#include <yaml-cpp/yaml.h>
-
 #include <QFile>
 #include <QFileInfo>
 #include <QMessageBox>
@@ -32,9 +30,11 @@
 #include <cstring>
 #include <memory>
 
-// list of available highlight styles
+#include <yaml-cpp/yaml.h>
+
 namespace Highlight {
 
+// list of available highlight styles
 std::vector<HighlightStyle> HighlightStyles;
 
 // Pattern sources loaded from the .nedit file or set by the user
@@ -180,12 +180,11 @@ void recolorSubexpression(const std::unique_ptr<Regex> &re, size_t subexpr, uint
 */
 void passTwoParseString(const HighlightData *pattern, const char *string, uint8_t *styleString, int64_t length, const ParseContext *ctx, const char *lookBehindTo, const char *match_to) {
 
-	bool inParseRegion     = false;
-	const char *parseStart = nullptr;
-	const char *parseEnd;
-	uint8_t *s              = styleString;
-	const char *c           = string;
-	uint8_t firstPass2Style = pattern[1].style;
+	bool inParseRegion            = false;
+	const char *parseStart        = nullptr;
+	uint8_t *s                    = styleString;
+	const char *c                 = string;
+	const uint8_t firstPass2Style = pattern[1].style;
 
 	for (;; c++, s++) {
 		if (!inParseRegion && c != match_to && (*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || *s >= firstPass2Style)) {
@@ -194,7 +193,7 @@ void passTwoParseString(const HighlightData *pattern, const char *string, uint8_
 		}
 
 		if (inParseRegion && (c == match_to || !(*s == UNFINISHED_STYLE || *s == PLAIN_STYLE || *s >= firstPass2Style))) {
-			parseEnd = c;
+			const char *parseEnd = c;
 			if (parseStart != string) {
 				*ctx->prev_char = static_cast<unsigned char>(*(parseStart - 1));
 			}
@@ -252,7 +251,7 @@ void modifyStyleBuf(const std::shared_ptr<UTextBuffer> &styleBuf, uint8_t *style
 	   the modifications.  Unfinished styles in the original match any
 	   pass 2 style */
 	for (ch = styleString, pos = startPos; pos < modStart && pos < endPos; ++ch, ++pos) {
-		uint8_t bufChar = styleBuf->BufGetCharacter(pos);
+		const uint8_t bufChar = styleBuf->BufGetCharacter(pos);
 		if (*ch != bufChar && !(bufChar == UNFINISHED_STYLE && (*ch == PLAIN_STYLE || *ch >= firstPass2Style))) {
 
 			minPos = std::min(minPos, pos);
@@ -261,7 +260,7 @@ void modifyStyleBuf(const std::shared_ptr<UTextBuffer> &styleBuf, uint8_t *style
 	}
 
 	for (ch = &styleString[std::max(0, modEnd - startPos)], pos = std::max(modEnd, startPos); pos < endPos; ++ch, ++pos) {
-		uint8_t bufChar = styleBuf->BufGetCharacter(pos);
+		const uint8_t bufChar = styleBuf->BufGetCharacter(pos);
 		if (*ch != bufChar && !(bufChar == UNFINISHED_STYLE && (*ch == PLAIN_STYLE || *ch >= firstPass2Style))) {
 
 			minPos = std::min(minPos, pos);
@@ -303,10 +302,10 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	TextCursor beginSafety;
 	TextCursor p;
 	uint8_t style;
-	uint8_t firstPass2Style = (!pass2Patterns) ? UINT8_MAX : pass2Patterns[1].style;
+	const uint8_t firstPass2Style = (!pass2Patterns) ? UINT8_MAX : pass2Patterns[1].style;
 
 	// Begin parsing one context distance back (or to the last style change)
-	uint8_t beginStyle = pass1Patterns->style;
+	const uint8_t beginStyle = pass1Patterns->style;
 	if (canCrossLineBoundaries(contextRequirements)) {
 		beginSafety = backwardOneContext(buf, contextRequirements, beginParse);
 		for (p = beginParse; p >= beginSafety; --p) {
@@ -343,11 +342,11 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 
 	// copy the buffer range into a string
 
-	std::string str                     = buf->BufGetRange(beginSafety, endSafety);
+	const std::string str               = buf->BufGetRange(beginSafety, endSafety);
 	std::basic_string<uint8_t> styleStr = styleBuf->BufGetRange(beginSafety, endSafety);
 
 	const char *const string   = str.data();
-	uint8_t *const styleString = &styleStr[0];
+	uint8_t *const styleString = styleStr.data();
 	const char *const match_to = string + str.size();
 
 	// Parse it with pass 1 patterns
@@ -494,7 +493,7 @@ uint8_t findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHig
 	TextCursor checkBackTo;
 	TextCursor safeParseStart;
 
-	std::vector<uint8_t> &parentStyles                    = highlightData->parentStyles;
+	const std::vector<uint8_t> &parentStyles              = highlightData->parentStyles;
 	const std::unique_ptr<HighlightData[]> &pass1Patterns = highlightData->pass1Patterns;
 	const ReparseContext &context                         = highlightData->contextRequirements;
 
@@ -507,7 +506,7 @@ uint8_t findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHig
 		return PLAIN_STYLE;
 	}
 
-	uint8_t startStyle = highlightData->styleBuffer->BufGetCharacter(*pos);
+	const uint8_t startStyle = highlightData->styleBuffer->BufGetCharacter(*pos);
 
 	if (isPlain(startStyle)) {
 		return PLAIN_STYLE;
@@ -548,7 +547,7 @@ uint8_t findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHig
 
 		/* If the style is preceded by a parent style, it's safe to parse
 		 * with the parent style, provided that the parent is parsable. */
-		uint8_t style = highlightData->styleBuffer->BufGetCharacter(i);
+		const uint8_t style = highlightData->styleBuffer->BufGetCharacter(i);
 		if (isParentStyle(parentStyles, style, runningStyle)) {
 			if (patternIsParsable(patternOfStyle(pass1Patterns, style))) {
 				*pos = i + 1;
@@ -578,7 +577,7 @@ uint8_t findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHig
 		   the style has the same parent will probably catch 99% of the cases
 		   in practice. */
 		else if (runningStyle != style && isParentStyle(parentStyles, parentStyleOf(parentStyles, runningStyle), style)) {
-			uint8_t parentStyle = parentStyleOf(parentStyles, runningStyle);
+			const uint8_t parentStyle = parentStyleOf(parentStyles, runningStyle);
 			if (patternIsParsable(patternOfStyle(pass1Patterns, parentStyle))) {
 				*pos = i + 1;
 				return parentStyle;
@@ -669,7 +668,7 @@ void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightDat
 			startPattern = &pass1Patterns[0];
 		}
 
-		TextCursor endAt = parseBufferRange(startPattern, pass2Patterns, buf, styleBuf, context, beginParse, endParse);
+		const TextCursor endAt = parseBufferRange(startPattern, pass2Patterns, buf, styleBuf, context, beginParse, endParse);
 
 		/* If parse completed at this level, move one style up in the
 		   hierarchy and start again from where the previous parse left off. */
@@ -711,7 +710,7 @@ bool readHighlightPattern(Input &in, QString *errMsg, HighlightPattern *pattern)
 		*errMsg = tr("pattern name is required");
 		return false;
 	}
-	pattern->name = name;
+	pattern->name = std::move(name);
 
 	if (!Preferences::SkipDelimiter(in, errMsg)) {
 		return false;
@@ -1086,7 +1085,7 @@ void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted
 	/* First and foremost, the style buffer must track the text buffer
 	   accurately and correctly */
 	if (nInserted > 0) {
-		std::basic_string<uint8_t> insStyle(static_cast<size_t>(nInserted), UNFINISHED_STYLE);
+		const std::basic_string<uint8_t> insStyle(static_cast<size_t>(nInserted), UNFINISHED_STYLE);
 		styleBuffer->BufReplace(pos, pos + nDeleted, insStyle);
 	} else {
 		styleBuffer->BufRemove(pos, pos + nDeleted);
@@ -1206,7 +1205,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 							subExecuted = true;
 						}
 
-						for (size_t subExpr : subPat->endSubexpressions) {
+						for (const size_t subExpr : subPat->endSubexpressions) {
 							recolorSubexpression(pattern->endRE, subExpr, subPat->style, string_ptr, style_ptr);
 						}
 					}
@@ -1305,7 +1304,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 					subExecuted = true;
 				}
 
-				for (size_t subExpr : subSubPat->startSubexpressions) {
+				for (const size_t subExpr : subSubPat->startSubexpressions) {
 					recolorSubexpression(subPat->startRE, subExpr, subSubPat->style, string_ptr, style_ptr);
 				}
 			}

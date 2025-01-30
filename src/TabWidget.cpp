@@ -1,6 +1,6 @@
 
 #include "TabWidget.h"
-#include <QTabBar>
+
 #include <QToolButton>
 
 /**

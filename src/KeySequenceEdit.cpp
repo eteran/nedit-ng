@@ -1,5 +1,6 @@
 
 #include "KeySequenceEdit.h"
+
 #include <QAction>
 #include <QBoxLayout>
 #include <QEvent>
@@ -223,7 +224,7 @@ void KeySequenceEdit::keyPressEvent(QKeyEvent *e) {
 		return;
 	}
 
-	QString selectedText = lineEdit_->selectedText();
+	const QString selectedText = lineEdit_->selectedText();
 	if (!selectedText.isEmpty() && selectedText == lineEdit_->text()) {
 		clear();
 		if (nextKey == Qt::Key_Backspace) {

@@ -13,17 +13,17 @@
 #include "Util/FileFormats.h"
 #include "WrapMode.h"
 #include "WrapStyle.h"
+#include "ui_MainWindow.h"
 #include "userCmds.h"
-
-#include <gsl/span>
-#include <vector>
 
 #include <QFileDialog>
 #include <QFileInfoList>
 #include <QMainWindow>
 #include <QPointer>
 
-#include "ui_MainWindow.h"
+#include <vector>
+
+#include <gsl/span>
 
 class DialogColors;
 class DialogFind;

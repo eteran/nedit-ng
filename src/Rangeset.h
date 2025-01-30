@@ -5,7 +5,9 @@
 #include "TextBufferFwd.h"
 #include "TextCursor.h"
 #include "TextRange.h"
+
 #include <QColor>
+
 #include <optional>
 #include <vector>
 

@@ -4,6 +4,7 @@
 
 #include "Dialog.h"
 #include "ui_DialogRepeat.h"
+
 #include <QPointer>
 
 class DocumentWidget;

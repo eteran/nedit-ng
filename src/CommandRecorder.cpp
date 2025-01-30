@@ -3,6 +3,7 @@
 #include "DocumentWidget.h"
 #include "TextEditEvent.h"
 #include "WindowMenuEvent.h"
+
 #include <QtDebug>
 
 namespace {
@@ -109,7 +110,7 @@ QString CommandRecorder::escapeString(const QString &s) {
 
 	QString r;
 	r.reserve(s.size());
-	for (QChar ch : s) {
+	for (const QChar ch : s) {
 		if (EscapeChars.contains(ch)) {
 			r.append(QLatin1Char('\\'));
 		}
@@ -163,7 +164,7 @@ void CommandRecorder::lastActionHook(const WindowMenuEvent *ev) {
 	}
 
 	// Record the action and its parameters
-	QString actionString = actionToString(ev);
+	const QString actionString = actionToString(ev);
 	if (!actionString.isNull()) {
 		lastCommand_ = actionString;
 
@@ -190,7 +191,7 @@ void CommandRecorder::lastActionHook(const TextEditEvent *ev) {
 	}
 
 	// Record the action and its parameters
-	QString actionString = actionToString(ev);
+	const QString actionString = actionToString(ev);
 	if (!actionString.isNull()) {
 		lastCommand_ = actionString;
 

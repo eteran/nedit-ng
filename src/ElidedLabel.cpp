@@ -1,11 +1,11 @@
 
 #include "ElidedLabel.h"
 #include "Font.h"
+
 #include <QApplication>
 #include <QClipboard>
 #include <QContextMenuEvent>
 #include <QMenu>
-#include <QMimeData>
 #include <QRegularExpression>
 #include <QScreen>
 #include <QTextDocument>
@@ -64,7 +64,7 @@ QSize ElidedLabel::sizeHint() const {
 	QScreen *currentScreen = QGuiApplication::primaryScreen();
 
 	const int maxWidth = currentScreen->geometry().width() * 3 / 4;
-	QFontMetrics fm(fontMetrics());
+	const QFontMetrics fm(fontMetrics());
 
 	int textWidth = Font::stringWidth(fm, fullText_);
 	if (textWidth > maxWidth) {
@@ -96,13 +96,13 @@ void ElidedLabel::clear() {
  */
 void ElidedLabel::squeezeTextToLabel() {
 
-	QFontMetrics fm(fontMetrics());
-	int labelWidth = size().width();
+	const QFontMetrics fm(fontMetrics());
+	const int labelWidth = size().width();
 	QStringList squeezedLines;
 	bool squeezed = false;
 
 	for (const QString &line : fullText_.split(QLatin1Char('\n'))) {
-		int lineWidth = Font::stringWidth(fm, line);
+		const int lineWidth = Font::stringWidth(fm, line);
 		if (lineWidth > labelWidth) {
 			squeezed = true;
 			squeezedLines << fm.elidedText(line, elideMode_, labelWidth);
@@ -126,9 +126,9 @@ void ElidedLabel::squeezeTextToLabel() {
  */
 void ElidedLabel::setAlignment(Qt::Alignment alignment) {
 	// save fullText and restore it
-	QString tmpFull(fullText_);
+	QString tmpFull(std::move(fullText_));
 	QLabel::setAlignment(alignment);
-	fullText_ = tmpFull;
+	fullText_ = std::move(tmpFull);
 }
 
 /**

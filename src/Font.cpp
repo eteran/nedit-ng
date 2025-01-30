@@ -81,7 +81,7 @@ QList<int> pointSizes(const QFont &font) {
 	// but that list CAN be empty. If it is, just fall back on the standard
 	// list of sizes which may or may be usable... but it's arguably better
 	// than an empty list
-	QFontInfo fi(font);
+	const QFontInfo fi(font);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 	QFontDatabase database;
 	QList<int> sizes = database.pointSizes(fi.family(), fi.styleName());

@@ -4,12 +4,12 @@
 
 #include "CallTip.h"
 #include "Util/QtHelper.h"
-#include <string_view>
-
-#include <deque>
 
 #include <QDateTime>
 #include <QString>
+
+#include <deque>
+#include <string_view>
 
 class TextArea;
 class QTextStream;

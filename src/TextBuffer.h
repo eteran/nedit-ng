@@ -7,14 +7,14 @@
 #include "TextRange.h"
 #include "gap_buffer.h"
 
-#include <gsl/gsl_util>
-
 #include <cstdint>
 #include <deque>
 #include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
+
+#include <gsl/gsl_util>
 
 struct SelectionPos {
 	TextCursor start;

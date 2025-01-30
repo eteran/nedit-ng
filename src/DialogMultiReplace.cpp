@@ -5,6 +5,7 @@
 #include "DocumentWidget.h"
 #include "MainWindow.h"
 #include "Preferences.h"
+
 #include <QMessageBox>
 
 /**
@@ -72,7 +73,7 @@ void DialogMultiReplace::buttonReplace_clicked() {
 	/*
 	 * Protect the user against him/herself; Maybe this is a bit too much?
 	 */
-	int res = QMessageBox::question(
+	const int res = QMessageBox::question(
 		this,
 		tr("Multi-File Replacement"),
 		tr("Multi-file replacements are difficult to undo. Proceed with the replacement?"),
@@ -98,7 +99,7 @@ void DialogMultiReplace::buttonReplace_clicked() {
 	bool noWritableLeft = true;
 
 	// Perform the replacements and mark the selected files (history)
-	for (QModelIndex index : selections) {
+	for (const QModelIndex index : selections) {
 		if (DocumentWidget *writeableDocument = model_->itemFromIndex(index)) {
 
 			/* First check again whether the file is still writable. If the

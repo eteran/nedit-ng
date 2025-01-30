@@ -3,12 +3,12 @@
 #include "Util/ClearCase.h"
 #include "Util/FileFormats.h"
 
+#include <QDir>
+#include <QFileInfo>
+
 #include <fstream>
 #include <iostream>
 #include <iterator>
-
-#include <QDir>
-#include <QFileInfo>
 
 namespace {
 
@@ -33,7 +33,7 @@ PathInfo parseFilename(const QString &fullname) {
 
 	PathInfo fileInfo;
 
-	QString cleanedPath = QDir::cleanPath(fullname);
+	const QString cleanedPath = QDir::cleanPath(fullname);
 
 	const int fullLen = cleanedPath.size();
 	int scanStart     = -1;
@@ -49,8 +49,8 @@ PathInfo parseFilename(const QString &fullname) {
 	const int i = cleanedPath.lastIndexOf(QLatin1Char('/'), scanStart);
 
 	// move chars before / (or ] or :) into pathname,& after into filename
-	int pathLen = i + 1;
-	int fileLen = fullLen - pathLen;
+	const int pathLen = i + 1;
+	const int fileLen = fullLen - pathLen;
 
 	fileInfo.pathname = cleanedPath.left(pathLen);
 	fileInfo.filename = cleanedPath.mid(pathLen, fileLen);
@@ -67,7 +67,7 @@ PathInfo parseFilename(const QString &fullname) {
 QString NormalizePathname(const QString &pathname) {
 
 	QString path = QDir::cleanPath(pathname);
-	QFileInfo fi(path);
+	const QFileInfo fi(path);
 
 	// if this is a relative pathname, prepend current directory
 	if (fi.isRelative()) {
@@ -82,7 +82,7 @@ QString NormalizePathname(const QString &pathname) {
 	}
 
 	QString cleanedPath = QDir::cleanPath(path);
-	QFileInfo cleanedFi(cleanedPath);
+	const QFileInfo cleanedFi(cleanedPath);
 
 	// IFF it is a directory, insist that it ends in a slash
 	if (cleanedFi.isDir()) {
@@ -156,7 +156,7 @@ void ConvertToDos(std::string &text) {
 
 	// How long a string will we need?
 	size_t outLength = 0;
-	for (char ch : text) {
+	for (const char ch : text) {
 		if (ch == '\n') {
 			outLength++;
 		}
@@ -167,7 +167,7 @@ void ConvertToDos(std::string &text) {
 	outString.reserve(outLength);
 	auto outPtr = std::back_inserter(outString);
 
-	for (char ch : text) {
+	for (const char ch : text) {
 		if (ch == '\n') {
 			*outPtr++ = '\r';
 		}

@@ -3,6 +3,7 @@
 #define CALL_TIP_H_
 
 #include "TextCursor.h"
+
 #include <variant>
 
 enum class TipHAlignMode {

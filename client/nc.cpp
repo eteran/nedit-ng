@@ -1,6 +1,5 @@
 
 #include "Settings.h"
-
 #include "Util/ClearCase.h"
 #include "Util/FileSystem.h"
 #include "Util/ServerCommon.h"
@@ -196,7 +195,7 @@ std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			i = nextArg(args, i);
 
 			bool ok;
-			int n = args[i].toInt(&ok);
+			const int n = args[i].toInt(&ok);
 			if (!ok) {
 				fprintf(stderr, "nc-ng: argument to timeout should be a number\n");
 			} else {
@@ -237,7 +236,7 @@ std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			i = nextArg(args, i);
 
 			bool ok;
-			int lineArg = args[i].toInt(&ok);
+			const int lineArg = args[i].toInt(&ok);
 			if (!ok) {
 				fprintf(stderr, "nc-ng: argument to line should be a number\n");
 			} else {
@@ -246,7 +245,7 @@ std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 		} else if (opts && (args[i][0] == QLatin1Char('+'))) {
 
 			bool ok;
-			int lineArg = args[i].toInt(&ok);
+			const int lineArg = args[i].toInt(&ok);
 			if (!ok) {
 				fprintf(stderr, "nc-ng: argument to + should be a number\n");
 			} else {
@@ -439,7 +438,7 @@ int main(int argc, char *argv[]) {
 	QCoreApplication app(argc, argv);
 
 	// Read the application resources into the Preferences data structure
-	QString filename = Settings::configFile();
+	const QString filename = Settings::configFile();
 	QSettings settings(filename, QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("Server"));
 
@@ -470,7 +469,7 @@ int main(int argc, char *argv[]) {
 		commandLine.arguments.append(ServerPreferences.serverName);
 	}
 
-	QString socketName = LocalSocketName(ServerPreferences.serverName);
+	const QString socketName = LocalSocketName(ServerPreferences.serverName);
 
 	// How many times to try connecting to the socket
 	constexpr int RetryCount = 20;

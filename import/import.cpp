@@ -1,10 +1,9 @@
 
 #include "SearchType.h"
 #include "Settings.h"
+#include "Util/Input.h"
 #include "WrapStyle.h"
 #include "parse.h"
-
-#include "Util/Input.h"
 
 #include <QColor>
 #include <QDomDocument>
@@ -54,7 +53,7 @@ QString writeMenuItemString(const std::vector<MenuItem> &menuItems, bool isShell
 
 		// handle that we do mnemonics the Qt way...
 		if (!item.mnemonic.isEmpty()) {
-			int n = name.indexOf(item.mnemonic);
+			const int n = name.indexOf(item.mnemonic);
 			if (n != -1) {
 				name.insert(n, QLatin1Char('&'));
 			}
@@ -82,7 +81,7 @@ QString writeMenuItemString(const std::vector<MenuItem> &menuItems, bool isShell
 		*outPtr++ = QLatin1Char('\t');
 		*outPtr++ = QLatin1Char('\t');
 
-		Q_FOREACH (QChar ch, item.command) {
+		Q_FOREACH (const QChar ch, item.command) {
 			if (ch == QLatin1Char('\n')) { // and newlines to backslash-n's,
 				*outPtr++ = QLatin1Char('\n');
 				*outPtr++ = QLatin1Char('\t');
@@ -121,7 +120,7 @@ QString copyMacroToEnd(Input &in) {
 	// to anchor the parse (if not, it will take the whole file)
 	input.skipWhitespaceNL();
 
-	QString code = input.mid();
+	const QString code = input.mid();
 
 	if (!code.startsWith(QLatin1Char('{'))) {
 		qWarning("Error In Macro/Command String");
@@ -231,7 +230,7 @@ std::vector<MenuItem> loadMenuItemString(const QString &inString, bool isShellCo
 				return items;
 			}
 
-			item.command = p;
+			item.command = std::move(p);
 		}
 
 		in.skipWhitespaceNL();
@@ -245,7 +244,7 @@ void SaveTheme(const QString &filename, const std::vector<Style> &styles) {
 	QFile file(filename);
 	if (file.open(QIODevice::WriteOnly)) {
 		QDomDocument xml;
-		QDomProcessingInstruction pi = xml.createProcessingInstruction(QLatin1String("xml"), QLatin1String(R"(version="1.0" encoding="UTF-8")"));
+		const QDomProcessingInstruction pi = xml.createProcessingInstruction(QLatin1String("xml"), QLatin1String(R"(version="1.0" encoding="UTF-8")"));
 
 		xml.appendChild(pi);
 
@@ -425,7 +424,7 @@ template <>
 int readResource(XrmDatabase db, const std::string &name) {
 	auto value = readResource<QString>(db, name);
 	bool ok;
-	int n = value.toInt(&ok);
+	const int n = value.toInt(&ok);
 	Q_ASSERT(ok);
 	return n;
 }
@@ -441,13 +440,13 @@ QString covertRGBColor(const QString &color) {
 																"/"
 																"(?<blue>[0-9a-fA-F]{1,4})"));
 
-		QRegularExpressionMatch match = rgb_regex.match(color);
+		const QRegularExpressionMatch match = rgb_regex.match(color);
 		if (match.hasMatch()) {
-			uint16_t r = match.captured(QLatin1String("red")).toUShort(nullptr, 16);
-			uint16_t g = match.captured(QLatin1String("green")).toUShort(nullptr, 16);
-			uint16_t b = match.captured(QLatin1String("blue")).toUShort(nullptr, 16);
+			const uint16_t r = match.captured(QLatin1String("red")).toUShort(nullptr, 16);
+			const uint16_t g = match.captured(QLatin1String("green")).toUShort(nullptr, 16);
+			const uint16_t b = match.captured(QLatin1String("blue")).toUShort(nullptr, 16);
 
-			QColor c(r, g, b);
+			const QColor c(r, g, b);
 			auto newColor = QString::asprintf("#%02x%02x%02x",
 											  ((c.rgb() & 0x00ff0000) >> 16),
 											  ((c.rgb() & 0x0000ff00) >> 8),
@@ -467,13 +466,13 @@ QString covertRGBColor(const QString &color) {
 																 "/"
 																 "(?<blue>[0-9]+(\\.[0-9]+)?)"));
 
-		QRegularExpressionMatch match_rgbi = rgbi_regex.match(color);
+		const QRegularExpressionMatch match_rgbi = rgbi_regex.match(color);
 		if (match_rgbi.hasMatch()) {
-			qreal r = match_rgbi.captured(QLatin1String("red")).toDouble();
-			qreal g = match_rgbi.captured(QLatin1String("green")).toDouble();
-			qreal b = match_rgbi.captured(QLatin1String("blue")).toDouble();
+			const qreal r = match_rgbi.captured(QLatin1String("red")).toDouble();
+			const qreal g = match_rgbi.captured(QLatin1String("green")).toDouble();
+			const qreal b = match_rgbi.captured(QLatin1String("blue")).toDouble();
 
-			QColor c(static_cast<int>(r * 255), static_cast<int>(g * 255), static_cast<int>(b * 255));
+			const QColor c(static_cast<int>(r * 255), static_cast<int>(g * 255), static_cast<int>(b * 255));
 			auto newColor = QString::asprintf("#%02x%02x%02x",
 											  ((c.rgb() & 0x00ff0000) >> 16),
 											  ((c.rgb() & 0x0000ff00) >> 8),
@@ -497,14 +496,14 @@ QString covertRGBColor(const QString &color) {
 int main(int argc, char *argv[]) {
 
 	if (argc != 2) {
-		std::cerr << "usage: " << argv[0] << " <filename>" << std::endl;
+		std::cerr << "usage: " << argv[0] << " <filename>" << '\n';
 		return -1;
 	}
 
 	Display *dpy = XOpenDisplay(nullptr);
 
 	if (!dpy) {
-		std::cout << "Could not open DISPLAY." << std::endl;
+		std::cout << "Could not open DISPLAY." << '\n';
 		return -1;
 	}
 
@@ -512,7 +511,7 @@ int main(int argc, char *argv[]) {
 
 	std::ifstream file(argv[1]);
 	if (!file) {
-		std::cout << "Could not open resource file." << std::endl;
+		std::cout << "Could not open resource file." << '\n';
 		return -1;
 	}
 
@@ -520,10 +519,10 @@ int main(int argc, char *argv[]) {
 
 	XrmDatabase prefDB = XrmGetStringDatabase(contents.data());
 
-	QString value = readResource<QString>(prefDB, "nedit.fileVersion");
+	const QString value = readResource<QString>(prefDB, "nedit.fileVersion");
 
 	if (value != QLatin1String("5.6") && value != QLatin1String("5.7")) {
-		std::cout << "Importing is only supported for NEdit 5.6 and 5.7" << std::endl;
+		std::cout << "Importing is only supported for NEdit 5.6 and 5.7" << '\n';
 		return -1;
 	}
 
@@ -550,9 +549,9 @@ int main(int argc, char *argv[]) {
 	Settings::macroCommands  = readResource<QString>(prefDB, "nedit.macroCommands");
 	Settings::bgMenuCommands = readResource<QString>(prefDB, "nedit.bgMenuCommands");
 
-	std::vector<MenuItem> shellCommands  = loadMenuItemString(Settings::shellCommands, true);
-	std::vector<MenuItem> macroCommands  = loadMenuItemString(Settings::macroCommands, false);
-	std::vector<MenuItem> bgMenuCommands = loadMenuItemString(Settings::bgMenuCommands, false);
+	const std::vector<MenuItem> shellCommands  = loadMenuItemString(Settings::shellCommands, true);
+	const std::vector<MenuItem> macroCommands  = loadMenuItemString(Settings::macroCommands, false);
+	const std::vector<MenuItem> bgMenuCommands = loadMenuItemString(Settings::bgMenuCommands, false);
 
 	Settings::shellCommands  = writeMenuItemString(shellCommands, true);
 	Settings::macroCommands  = writeMenuItemString(macroCommands, false);
@@ -645,7 +644,7 @@ int main(int argc, char *argv[]) {
 
 	QString line;
 	while (stream.readLineInto(&line)) {
-		QRegularExpressionMatch match = re.match(line);
+		const QRegularExpressionMatch match = re.match(line);
 		if (match.hasMatch()) {
 			Style s;
 			s.name       = match.captured(QLatin1String("name"));
@@ -665,6 +664,6 @@ int main(int argc, char *argv[]) {
 	Settings::savePreferences();
 
 	// Write the theme XML file
-	QString themeFilename = Settings::themeFile();
+	const QString themeFilename = Settings::themeFile();
 	SaveTheme(themeFilename, styles);
 }

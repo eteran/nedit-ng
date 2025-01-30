@@ -1,6 +1,7 @@
 
 #include "DialogDuplicateTags.h"
 #include "DocumentWidget.h"
+
 #include <QAbstractButton>
 #include <QFontDatabase>
 

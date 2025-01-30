@@ -7,16 +7,13 @@
 
 #include <QIntValidator>
 #include <QMessageBox>
-#include <QTimer>
 
 DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f), document_(document) {
 	ui.setupUi(this);
 	connectSlots();
 
-	QTimer::singleShot(0, this, [this]() {
-		resize(0, 0);
-	});
+	Dialog::shrinkToFit(this);
 
 	ui.lineEdit->setValidator(new QIntValidator(0, INT_MAX, this));
 
@@ -34,7 +31,7 @@ bool DialogRepeat::setCommand(const QString &command) {
 
 	/* make a label for the Last command item of the dialog, which includes
 	   the last executed action name */
-	int index = command.indexOf(QLatin1Char('('));
+	const int index = command.indexOf(QLatin1Char('('));
 	if (index == -1) {
 		return false;
 	}

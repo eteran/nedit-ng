@@ -1,8 +1,10 @@
 
 #include "interpret.h"
 #include "Util/utils.h"
+
 #include <cassert>
 #include <cmath>
+
 #include <gsl/gsl_util>
 
 // This enables preemption, useful to disable it for debugging things
@@ -29,7 +31,7 @@ constexpr int NEEDS_CONTINUE = 2;
 
 constexpr int N_ARGS_ARG_SYM = -1; // special arg number meaning $n_args value
 
-enum OpStatusCodes {
+enum OpStatusCodes : uint8_t {
 	STAT_OK = 2,
 	STAT_DONE,
 	STAT_ERROR,
@@ -137,7 +139,7 @@ int execError(const std::error_code &error_code, T &&...args) {
 	QT_WARNING_PUSH
 	QT_WARNING_DISABLE_GCC("-Wformat-security")
 	static char msg[MAX_ERR_MSG_LEN];
-	std::string str = error_code.message();
+	const std::string str = error_code.message();
 	qsnprintf(msg, sizeof(msg), str.c_str(), std::forward<T>(args)...);
 	ErrorMessage = msg;
 	return STAT_ERROR;
@@ -727,7 +729,7 @@ Symbol *InstallStringConstSymbol(std::string_view str) {
 
 	auto stringName = QStringLiteral("string #%1").arg(stringConstIndex++);
 
-	DataValue value = make_value(str);
+	const DataValue value = make_value(str);
 	return InstallSymbolEx(stringName, CONST_SYM, value);
 }
 
@@ -934,8 +936,8 @@ static int pushSymVal() {
 	} else if (s->type == GLOBAL_SYM || s->type == CONST_SYM) {
 		symVal = s->value;
 	} else if (s->type == ARG_SYM) {
-		int nArgs  = FP_GET_ARG_COUNT(Context.FrameP);
-		int argNum = to_integer(s->value);
+		const int nArgs  = FP_GET_ARG_COUNT(Context.FrameP);
+		const int argNum = to_integer(s->value);
 		if (argNum >= nArgs) {
 			return execError("referenced undefined argument: %s", s->name.c_str());
 		}
@@ -946,7 +948,7 @@ static int pushSymVal() {
 		}
 	} else if (s->type == PROC_VALUE_SYM) {
 
-		if (std::error_code ec = (to_subroutine(s->value))(Context.FocusDocument, {}, &symVal)) {
+		if (const std::error_code ec = (to_subroutine(s->value))(Context.FocusDocument, {}, &symVal)) {
 			return execError(ec, s->name.c_str());
 		}
 	} else {
@@ -995,7 +997,7 @@ static int pushArgArray() {
 	DISASM_RT(PC - 1, 1);
 	STACKDUMP(0, 3);
 
-	int nArgs              = FP_GET_ARG_COUNT(Context.FrameP);
+	const int nArgs        = FP_GET_ARG_COUNT(Context.FrameP);
 	DataValue *resultArray = &FP_GET_ARG_ARRAY_CACHE(Context.FrameP);
 
 	if (!is_array(*resultArray)) {
@@ -1033,8 +1035,8 @@ static int pushArraySymVal() {
 	DISASM_RT(PC - 1, 3);
 	STACKDUMP(0, 3);
 
-	Symbol *sym       = Context.PC++->sym;
-	int64_t initEmpty = Context.PC++->value;
+	Symbol *sym             = Context.PC++->sym;
+	const int64_t initEmpty = Context.PC++->value;
 
 	if (sym->type == LOCAL_SYM) {
 		dataPtr = &FP_GET_SYM_VAL(Context.FrameP, sym);
@@ -1154,7 +1156,7 @@ static int add() {
 				bool insertResult = true;
 
 				if (leftIter != leftMap->end() && rightIter != rightMap->end()) {
-					int compareResult = leftIter->first.compare(rightIter->first);
+					const int compareResult = leftIter->first.compare(rightIter->first);
 					if (compareResult < 0) {
 						insertResult = ArrayInsert(&resultArray, leftIter->first, &leftIter->second);
 						++leftIter;
@@ -1227,7 +1229,7 @@ static int subtract() {
 				bool insertResult = true;
 
 				if (leftIter != leftMap->end() && rightIter != rightMap->end()) {
-					int compareResult = leftIter->first.compare(rightIter->first);
+					const int compareResult = leftIter->first.compare(rightIter->first);
 					if (compareResult < 0) {
 						insertResult = ArrayInsert(&resultArray, leftIter->first, &leftIter->second);
 						++leftIter;
@@ -1417,8 +1419,8 @@ static int bitAnd() {
 			auto rightIter = rightMap->begin();
 
 			while (leftIter != leftMap->end() && rightIter != rightMap->end()) {
-				bool insertResult = true;
-				int compareResult = leftIter->first.compare(rightIter->first);
+				bool insertResult       = true;
+				const int compareResult = leftIter->first.compare(rightIter->first);
 
 				if (compareResult < 0) {
 					++leftIter;
@@ -1483,7 +1485,7 @@ static int bitOr() {
 				bool insertResult = true;
 
 				if (leftIter != leftMap->end() && rightIter != rightMap->end()) {
-					int compareResult = leftIter->first.compare(rightIter->first);
+					const int compareResult = leftIter->first.compare(rightIter->first);
 					if (compareResult < 0) {
 						insertResult = ArrayInsert(&resultArray, leftIter->first, &leftIter->second);
 						++leftIter;
@@ -1589,7 +1591,7 @@ static int concat() {
 	POP_STRING(s2);
 	POP_STRING(s1);
 
-	std::string out = s1 + s2;
+	const std::string out = s1 + s2;
 
 	PUSH_STRING(out);
 	return STAT_OK;
@@ -1614,8 +1616,8 @@ static int concat() {
 */
 static int callSubroutine() {
 
-	Symbol *sym   = Context.PC++->sym;
-	int64_t nArgs = Context.PC++->value;
+	Symbol *sym         = Context.PC++->sym;
+	const int64_t nArgs = Context.PC++->value;
 
 	DISASM_RT(PC - 3, 3);
 	STACKDUMP(nArgs, 3);
@@ -1632,7 +1634,7 @@ static int callSubroutine() {
 		// Call the function and check for preemption
 		PreemptRequest = false;
 
-		if (std::error_code ec = to_subroutine(sym->value)(Context.FocusDocument, Arguments(Context.StackP, nArgs), &result)) {
+		if (const std::error_code ec = to_subroutine(sym->value)(Context.FocusDocument, Arguments(Context.StackP, nArgs), &result)) {
 			return execError(ec, sym->name.c_str());
 		}
 
@@ -1715,7 +1717,7 @@ static int returnValOrNone(bool valOnStack) {
 	}
 
 	// get stored return information
-	int nArgs            = FP_GET_ARG_COUNT(Context.FrameP);
+	const int nArgs      = FP_GET_ARG_COUNT(Context.FrameP);
 	DataValue *newFrameP = FP_GET_OLD_FP(Context.FrameP);
 	Context.PC           = FP_GET_RET_PC(Context.FrameP);
 
@@ -1960,13 +1962,13 @@ static int arrayRef() {
 	DataValue valueItem;
 	std::string keyString;
 
-	int64_t nDim = Context.PC++->value;
+	const int64_t nDim = Context.PC++->value;
 
 	DISASM_RT(PC - 2, 2);
 	STACKDUMP(nDim, 3);
 
 	if (nDim > 0) {
-		int errNum = makeArrayKeyFromArgs(nDim, &keyString, false);
+		const int errNum = makeArrayKeyFromArgs(nDim, &keyString, false);
 		if (errNum != STAT_OK) {
 			return errNum;
 		}
@@ -2005,7 +2007,7 @@ static int arrayAssign() {
 	DataValue srcValue;
 	DataValue dstArray;
 
-	int64_t nDim = Context.PC++->value;
+	const int64_t nDim = Context.PC++->value;
 
 	DISASM_RT(PC - 2, 1);
 	STACKDUMP(nDim, 3);
@@ -2013,8 +2015,7 @@ static int arrayAssign() {
 	if (nDim > 0) {
 		POP(srcValue);
 
-		int errNum = makeArrayKeyFromArgs(nDim, &keyString, false);
-		if (errNum != STAT_OK) {
+		if (const int errNum = makeArrayKeyFromArgs(nDim, &keyString, false); errNum != STAT_OK) {
 			return errNum;
 		}
 
@@ -2027,8 +2028,10 @@ static int arrayAssign() {
 		if (is_array(srcValue)) {
 			DataValue arrayCopyValue;
 
-			errNum   = ArrayCopy(&arrayCopyValue, &srcValue);
-			srcValue = arrayCopyValue;
+			const int errNum = ArrayCopy(&arrayCopyValue, &srcValue);
+			srcValue         = arrayCopyValue;
+
+			// TODO(eteran): should we return before assigning to srcValue?
 			if (errNum != STAT_OK) {
 				return errNum;
 			}
@@ -2059,8 +2062,8 @@ static int arrayRefAndAssignSetup() {
 	DataValue moveExpr;
 	std::string keyString;
 
-	int64_t binaryOp = Context.PC++->value;
-	int64_t nDim     = Context.PC++->value;
+	const int64_t binaryOp = Context.PC++->value;
+	const int64_t nDim     = Context.PC++->value;
 
 	DISASM_RT(PC - 3, 3);
 	STACKDUMP(nDim + 1, 3);
@@ -2070,8 +2073,7 @@ static int arrayRefAndAssignSetup() {
 	}
 
 	if (nDim > 0) {
-		int errNum = makeArrayKeyFromArgs(nDim, &keyString, true);
-		if (errNum != STAT_OK) {
+		if (const int errNum = makeArrayKeyFromArgs(nDim, &keyString, true); errNum != STAT_OK) {
 			return errNum;
 		}
 
@@ -2183,7 +2185,7 @@ static int arrayIter() {
 
 	DataValue *iteratorValPtr = &FP_GET_SYM_VAL(Context.FrameP, iterator);
 
-	ArrayIterator thisEntry = to_iterator(*iteratorValPtr);
+	const ArrayIterator thisEntry = to_iterator(*iteratorValPtr);
 
 	if (thisEntry.it != thisEntry.m->end()) {
 		*itemValPtr     = make_value(thisEntry.it->first);
@@ -2260,13 +2262,13 @@ static int deleteArrayElement() {
 	DataValue theArray;
 	std::string keyString;
 
-	int64_t nDim = Context.PC++->value;
+	const int64_t nDim = Context.PC++->value;
 
 	DISASM_RT(PC - 2, 2);
 	STACKDUMP(nDim + 1, 3);
 
 	if (nDim > 0) {
-		int errNum = makeArrayKeyFromArgs(nDim, &keyString, false);
+		const int errNum = makeArrayKeyFromArgs(nDim, &keyString, false);
 		if (errNum != STAT_OK) {
 			return errNum;
 		}

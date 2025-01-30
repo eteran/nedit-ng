@@ -3,16 +3,16 @@
 #define INTERPRET_H_
 
 #include "DataValue.h"
-#include <string_view>
-
-#include <gsl/span>
-
-#include <deque>
-#include <memory>
-#include <vector>
 
 #include <QString>
 #include <QtAlgorithms>
+
+#include <deque>
+#include <memory>
+#include <string_view>
+#include <vector>
+
+#include <gsl/span>
 
 class DocumentWidget;
 struct DataValue;

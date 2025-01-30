@@ -2,6 +2,7 @@
 #include "Rangeset.h"
 #include "TextBuffer.h"
 #include "Util/algorithm.h"
+
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
@@ -207,7 +208,7 @@ int64_t rangesetWeightedAtOrBefore(Rangeset *rangeset, TextCursor pos) {
 template <class T>
 int64_t rangesetShuffleToFrom(T *table, int64_t to, int64_t from, int64_t n, int64_t delta) {
 	int64_t end;
-	int64_t diff = from - to;
+	const int64_t diff = from - to;
 
 	if (n <= 0) {
 		return 0;
@@ -263,8 +264,8 @@ Rangeset *rangesetInsDelMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins
 		return rangeset; // all beyond the end
 	}
 
-	TextCursor end_del = pos + del;
-	int64_t movement   = ins - del;
+	const TextCursor end_del = pos + del;
+	const int64_t movement   = ins - del;
 
 	/* the idea now is to determine the first range not concerned with the
 	   movement: its index will be j. For indices j to n-1, we will adjust
@@ -320,8 +321,8 @@ Rangeset *rangesetInclMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, 
 		i++;
 	}
 
-	TextCursor end_del = pos + del;
-	int64_t movement   = ins - del;
+	const TextCursor end_del = pos + del;
+	const int64_t movement   = ins - del;
 
 	/* the idea now is to determine the first range not concerned with the
 	   movement: its index will be j. For indices j to n-1, we will adjust
@@ -371,8 +372,8 @@ Rangeset *rangesetDelInsMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins
 		return rangeset; // all beyond the end
 	}
 
-	TextCursor end_del = pos + del;
-	int64_t movement   = ins - del;
+	const TextCursor end_del = pos + del;
+	const int64_t movement   = ins - del;
 
 	/* the idea now is to determine the first range not concerned with the
 	   movement: its index will be j. For indices j to n-1, we will adjust
@@ -431,8 +432,8 @@ Rangeset *rangesetExclMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, 
 		i++;
 	}
 
-	TextCursor end_del = pos + del;
-	int64_t movement   = ins - del;
+	const TextCursor end_del = pos + del;
+	const int64_t movement   = ins - del;
 
 	/* the idea now is to determine the first range not concerned with the
 	   movement: its index will be j. For indices j to n-1, we will adjust
@@ -489,8 +490,8 @@ Rangeset *rangesetBreakMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins,
 		i++;
 	}
 
-	TextCursor end_del = pos + del;
-	int64_t movement   = ins - del;
+	const TextCursor end_del = pos + del;
+	const int64_t movement   = ins - del;
 
 	/* the idea now is to determine the first range not concerned with the
 	   movement: its index will be j. For indices j to n-1, we will adjust
@@ -512,7 +513,7 @@ Rangeset *rangesetBreakMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins,
 	   "skipped". This means that rangeTable[i-1],rangeTable[j] is the current range. We will
 	   be inserting in that range, splitting it. */
 
-	bool need_gap = (is_end(i) && is_end(j) && ins > 0);
+	const bool need_gap = (is_end(i) && is_end(j) && ins > 0);
 
 	// if we've got start-end or end-start, skip rangeTable[i]
 	if (is_start(i) != is_start(j)) { // one is start, other is end

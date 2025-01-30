@@ -2,6 +2,7 @@
 #include "Util/ServerCommon.h"
 #include "Util/Host.h"
 #include "Util/User.h"
+
 #include <QCryptographicHash>
 #include <QDir>
 #include <QStandardPaths>
@@ -38,7 +39,7 @@ QString LocalSocketName(const QString &server_name) {
 	// to get a predictable, fixed length string from every user input
 	// https://github.com/eteran/nedit-ng/issues/328
 	const QByteArray hashed_server_name = QCryptographicHash::hash(server_name.toUtf8(), QCryptographicHash::Sha1);
-	const QString server_id             = QString::fromUtf8(hashed_server_name.toHex());
+	const auto server_id                = QString::fromUtf8(hashed_server_name.toHex());
 
 	if (!runtimePath.isEmpty()) {
 		QDir().mkpath(runtimePath);

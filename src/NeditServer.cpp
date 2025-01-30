@@ -124,8 +124,8 @@ QScreen *current_desktop() {
 NeditServer::NeditServer(QObject *parent)
 	: QObject(parent) {
 
-	QString socketName = LocalSocketName(Preferences::GetPrefServerName());
-	server_            = new QLocalServer(this);
+	const QString socketName = LocalSocketName(Preferences::GetPrefServerName());
+	server_                  = new QLocalServer(this);
 	server_->setSocketOptions(QLocalServer::UserAccessOption);
 	connect(server_, &QLocalServer::newConnection, this, &NeditServer::newConnection);
 
@@ -143,7 +143,7 @@ void NeditServer::newConnection() {
 
 	// NOTE(eteran): shared because later a lambda will capture this
 	// and use it to keep this socket alive until it returns
-	std::shared_ptr<QLocalSocket> socket(server_->nextPendingConnection());
+	const std::shared_ptr<QLocalSocket> socket(server_->nextPendingConnection());
 
 	QDataStream stream(socket.get());
 	stream.setVersion(QDataStream::Qt_5_0);

@@ -12,6 +12,9 @@ public:
 
 public:
 	void showEvent(QShowEvent *event) override;
+
+protected:
+	static void shrinkToFit(Dialog *dialog);
 };
 
 #endif
