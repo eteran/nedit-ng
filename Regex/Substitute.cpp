@@ -24,24 +24,24 @@ bool Regex::SubstituteRE(std::string_view source, std::string &dest) const {
 	}
 
 	auto out = std::back_inserter(dest);
-	for (auto in = source.begin(); in != source.end();) {
+	Reader in(source);
 
-		char ch = *in++;
-
+	while (!in.eof()) {
+		char ch         = in.read();
 		char changeCase = '\0';
 		size_t paren_no = InvalidParenNumber;
 
 		if (ch == '\\') {
 			// Process any case altering tokens, i.e \u, \U, \l, \L.
+			if (const char changeToken = in.match_if([](char c) { return c == 'u' || c == 'U' || c == 'l' || c == 'L'; })) {
 
-			if (*in == 'u' || *in == 'U' || *in == 'l' || *in == 'L') {
-				changeCase = *in++;
+				changeCase = changeToken;
 
-				if (in == source.end()) {
+				if (in.eof()) {
 					break;
 				}
 
-				ch = *in++;
+				ch = in.read();
 			}
 		}
 
@@ -51,29 +51,29 @@ bool Regex::SubstituteRE(std::string_view source, std::string &dest) const {
 			/* Can not pass register variable '&src' to function 'numeric_escape'
 			   so make a non-register copy that we can take the address of. */
 
-			decltype(in) src_alias = in;
+			Reader src_alias = in;
 
-			if ('1' <= *in && *in <= '9') {
-				paren_no = static_cast<size_t>(*in++ - '0');
+			if(char digit = in.match_if([](char c) { return '1' <= c && c <= '9'; })) {
+				paren_no = static_cast<size_t>(digit - '0');
 
-			} else if ((test = literal_escape<char>(*in)) != '\0') {
+			} else if ((test = literal_escape<char>(in.peek())) != '\0') {
 				ch = test;
-				in++;
+				in.read();
 
-			} else if ((test = numeric_escape<char>(*in, &src_alias)) != '\0') {
+			} else if ((test = numeric_escape<char>(in.peek(), &src_alias)) != '\0') {
 				ch = test;
 				in = src_alias;
-				in++;
+				in.read();
 
 				/* NOTE: if an octal escape for zero is attempted (e.g. \000), it
 				   will be treated as a literal string. */
-			} else if (in == source.end()) {
+			} else if (in.eof()) {
 				/* If '\' is the last character of the replacement string, it is
 				   interpreted as a literal backslash. */
 
 				ch = '\\';
 			} else {
-				ch = *in++; // Allow any escape sequence (This is
+				ch = in.read(); // Allow any escape sequence (This is
 			} // INCONSISTENT with the 'CompileRE'
 		} // mind set of issuing an error!
 

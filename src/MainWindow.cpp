@@ -94,19 +94,19 @@ std::optional<Location> StringToLineAndCol(const QString &text) {
 		const QString col = match.captured(QLatin1String("col"));
 
 		bool row_ok;
-		int r = row.toInt(&row_ok);
+		int64_t r = row.toLongLong(&row_ok);
 		if (!row_ok) {
 			r = -1;
 		} else {
-			r = std::clamp(r, 0, INT_MAX);
+			r = std::clamp<int64_t>(r, 0, INT_MAX);
 		}
 
 		bool col_ok;
-		int c = col.toInt(&col_ok);
+		int64_t c = col.toLongLong(&col_ok);
 		if (!col_ok) {
 			c = -1;
 		} else {
-			c = std::clamp(c, 0, INT_MAX);
+			c = std::clamp<int64_t>(c, 0, INT_MAX);
 		}
 
 		if (r == -1 && c == -1) {
