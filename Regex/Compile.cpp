@@ -1,6 +1,7 @@
+#include <iostream>
 
-#include "Compile.h"
 #include "Common.h"
+#include "Compile.h"
 #include "Constants.h"
 #include "Execute.h"
 #include "Opcodes.h"
@@ -115,7 +116,7 @@ constexpr uint8_t PUT_OFFSET_R(T v) noexcept {
  * @return
  */
 bool isQuantifier() noexcept {
-	char ch = pContext.Reg_Parse.peek();
+	const char ch = pContext.Reg_Parse.peek();
 	return (ch == '*' || ch == '+' || ch == '?' || ch == pContext.Brace_Char);
 }
 
@@ -655,7 +656,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 
 		pContext.Reg_Parse.match(')');
 
-		if (pContext.Reg_Parse.eof() || pContext.Reg_Parse.peek() == ')' || pContext.Reg_Parse.peek() == '|') {
+		if (pContext.Reg_Parse.eof() || pContext.Reg_Parse.next_is(')') || pContext.Reg_Parse.next_is('|')) {
 			/* Hit end of regex string or end of parenthesized regex; have to
 			 return "something" (i.e. a NOTHING node) to avoid generating an
 			 error. */
@@ -774,20 +775,18 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 			ret_val = emit_node(ANY_OF);
 		}
 
-		if (pContext.Reg_Parse.peek() == ']' || pContext.Reg_Parse.peek() == '-') {
-			/* If '-' or ']' is the first character in a class,
-			   it is a literal character in the class. */
-
-			const char ch = pContext.Reg_Parse.read();
-			last_emit     = static_cast<uint8_t>(ch);
+		/* If '-' or ']' is the first character in a class,
+		   it is a literal character in the class. */
+		if (const char ch = pContext.Reg_Parse.match_if([](char c) { return c == ']' || c == '-'; })) {
+			last_emit = static_cast<uint8_t>(ch);
 			emit_byte(ch);
 		}
 
 		// Handle the rest of the class characters.
-		while (!pContext.Reg_Parse.eof() && pContext.Reg_Parse.peek() != ']') {
+		while (!pContext.Reg_Parse.eof() && !pContext.Reg_Parse.next_is(']')) {
 			if (pContext.Reg_Parse.match('-')) { // Process a range, e.g [a-z].
 
-				if (pContext.Reg_Parse.peek() == ']' || pContext.Reg_Parse.eof()) {
+				if (pContext.Reg_Parse.next_is(']') || pContext.Reg_Parse.eof()) {
 					/* If '-' is the last character in a class it is a literal
 					   character.  If 'Reg_Parse' points to the end of the
 					   regex string, an error will be generated later. */
@@ -959,7 +958,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 
 					if ((test = numeric_escape<uint8_t>(pContext.Reg_Parse.peek(), &pContext.Reg_Parse))) {
 						if (pContext.Is_Case_Insensitive) {
-							emit_byte(tolower(test));
+							emit_byte(safe_tolower(test));
 						} else {
 							emit_byte(test);
 						}
@@ -984,7 +983,7 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 				} else {
 					// Ordinary character
 					if (pContext.Is_Case_Insensitive) {
-						emit_byte(tolower(pContext.Reg_Parse.read()));
+						emit_byte(safe_tolower(pContext.Reg_Parse.read()));
 					} else {
 						emit_byte(pContext.Reg_Parse.read());
 					}
@@ -1061,11 +1060,11 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 		return ret_val;
 	}
 
-	char op_code = pContext.Reg_Parse.peek();
+	char op_code = pContext.Reg_Parse.read();
 
 	if (op_code == '{') { // {n,m} quantifier present
+
 		brace_present++;
-		pContext.Reg_Parse.read();
 
 		/* This code will allow specifying a counting range in any of the
 		   following forms:
@@ -1132,15 +1131,15 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 			min_max[1] = min_max[0]; // {x} means {x,x}
 		}
 
-		if (pContext.Reg_Parse.peek() != '}') {
+		if (!pContext.Reg_Parse.match('}')) {
 			Raise<RegexError>("{m,n} specification missing right '}'");
-		} else if (min_max[1] != REG_INFINITY && min_max[0] > min_max[1]) {
+		}
+
+		if (min_max[1] != REG_INFINITY && min_max[0] > min_max[1]) {
 			// Disallow a backward range.
 			Raise<RegexError>("{%lu,%lu} is an invalid range", min_max[0], min_max[1]);
 		}
 	}
-
-	pContext.Reg_Parse.read();
 
 	// Check for a minimal matching (non-greedy or "lazy") specification.
 	const bool lazy = pContext.Reg_Parse.match('?');
@@ -1584,7 +1583,7 @@ uint8_t *alternative(int *flag_param, len_range &range_param) {
 	/* Loop until we hit the start of the next alternative, the end of this set
 	   of alternatives (end of parentheses), or the end of the regex. */
 
-	while (!pContext.Reg_Parse.eof() && pContext.Reg_Parse.peek() != '|' && pContext.Reg_Parse.peek() != ')') {
+	while (!pContext.Reg_Parse.eof() && !pContext.Reg_Parse.next_is('|') && !pContext.Reg_Parse.next_is(')')) {
 		latest = piece(&flags_local, range_local);
 
 		if (!latest) {
@@ -1710,8 +1709,7 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 		}
 
 		// Are there more alternatives to process?
-
-		if (pContext.Reg_Parse.eof() || pContext.Reg_Parse.peek() != '|') {
+		if (pContext.Reg_Parse.eof() || !pContext.Reg_Parse.next_is('|')) {
 			break;
 		}
 
@@ -1741,10 +1739,10 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
 	// Check for proper termination.
 
-	if (paren != NO_PAREN && pContext.Reg_Parse.read() != ')') {
+	if (paren != NO_PAREN && !pContext.Reg_Parse.match(')')) {
 		Raise<RegexError>("missing right parenthesis ')'");
 	} else if (paren == NO_PAREN && !pContext.Reg_Parse.eof()) {
-		if (pContext.Reg_Parse.peek() == ')') {
+		if (pContext.Reg_Parse.match(')')) {
 			Raise<RegexError>("missing left parenthesis '('");
 		} else {
 			Raise<RegexError>("junk on end"); // "Can't happen" - NOT REACHED
@@ -1785,9 +1783,10 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
 		/* Determine if a parenthesized expression is modified by a quantifier
 		   that can have zero width. */
-		if (pContext.Reg_Parse.peek() == '?' || pContext.Reg_Parse.peek() == '*') {
+		if (pContext.Reg_Parse.next_is('?') || pContext.Reg_Parse.next_is('*')) {
 			zero_width++;
-		} else if (pContext.Reg_Parse.peek() == '{' && pContext.Brace_Char == '{') {
+		} else if (pContext.Reg_Parse.next_is(pContext.Brace_Char)) {
+
 			if (pContext.Reg_Parse.peek(1) == ',' || pContext.Reg_Parse.peek(1) == '}') {
 				zero_width++;
 			} else if (pContext.Reg_Parse.peek(1) == '0') {

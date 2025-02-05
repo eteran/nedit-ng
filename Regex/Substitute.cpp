@@ -26,18 +26,16 @@ bool Regex::SubstituteRE(std::string_view source, std::string &dest) const {
 	auto out = std::back_inserter(dest);
 	Reader in(source);
 
-	while(!in.eof()) {
-		char ch = in.peek();
-		in.read();
-
+	while (!in.eof()) {
+		char ch         = in.read();
 		char changeCase = '\0';
 		size_t paren_no = InvalidParenNumber;
 
 		if (ch == '\\') {
 			// Process any case altering tokens, i.e \u, \U, \l, \L.
+			if (const char changeToken = in.match_if([](char c) { return c == 'u' || c == 'U' || c == 'l' || c == 'L'; })) {
 
-			if (in.peek() == 'u' || in.peek() == 'U' || in.peek() == 'l' || in.peek() == 'L') {
-				changeCase = in.read();
+				changeCase = changeToken;
 
 				if (in.eof()) {
 					break;
@@ -55,8 +53,8 @@ bool Regex::SubstituteRE(std::string_view source, std::string &dest) const {
 
 			Reader src_alias = in;
 
-			if ('1' <= in.peek() && in.peek() <= '9') {
-				paren_no = static_cast<size_t>(in.read() - '0');
+			if(char digit = in.match_if([](char c) { return '1' <= c && c <= '9'; })) {
+				paren_no = static_cast<size_t>(digit - '0');
 
 			} else if ((test = literal_escape<char>(in.peek())) != '\0') {
 				ch = test;
