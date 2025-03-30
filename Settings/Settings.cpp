@@ -67,21 +67,6 @@ QString randomString(int length) {
 	return randomString;
 }
 
-/**
- * @brief configDirectory
- * @return
- */
-QString configDirectory() {
-	static const QByteArray nedit_home = qgetenv("NEDIT_NG_HOME");
-	if (!nedit_home.isEmpty()) {
-		return QString::fromLocal8Bit(nedit_home);
-	}
-
-	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
-	static const auto filename     = QStringLiteral("%1/nedit-ng").arg(configDir);
-	return filename;
-}
-
 }
 
 bool alwaysCheckRelativeTagsSpecs;
@@ -161,6 +146,21 @@ SearchType searchMethod;
 ShowMatchingStyle showMatching;
 TruncSubstitution truncSubstitution;
 WrapStyle autoWrap;
+
+/**
+ * @brief configDirectory
+ * @return
+ */
+QString configDirectory() {
+	static const QByteArray nedit_home = qgetenv("NEDIT_NG_HOME");
+	if (!nedit_home.isEmpty()) {
+		return QString::fromLocal8Bit(nedit_home);
+	}
+
+	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
+	static const auto filename     = QStringLiteral("%1/nedit-ng").arg(configDir);
+	return filename;
+}
 
 /**
  * @brief themeFile
