@@ -46,7 +46,8 @@ FORCE_INLINE uint8_t *NEXT_PTR(uint8_t *ptr) noexcept {
 }
 
 /**
- * @brief end_of_string
+ * @brief
+ *
  * @param ptr
  * @return
  */
@@ -64,7 +65,8 @@ FORCE_INLINE bool end_of_string(const char *ptr) noexcept {
 }
 
 /**
- * @brief get_lower
+ * @brief
+ *
  * @param p
  * @return
  */
@@ -73,7 +75,8 @@ FORCE_INLINE uint16_t get_lower(const uint8_t *p) noexcept {
 }
 
 /**
- * @brief get_upper
+ * @brief
+ *
  * @param p
  * @return
  */
@@ -82,7 +85,8 @@ FORCE_INLINE uint16_t get_upper(const uint8_t *p) noexcept {
 }
 
 /**
- * @brief is_delimiter
+ * @brief
+ *
  * @param ch
  * @return
  */
@@ -96,7 +100,8 @@ bool is_delimiter(int ch) noexcept {
 }
 
 /**
- * @brief greedy_consume
+ * @brief
+ *
  * @param input
  * @param max
  * @param pred
@@ -1020,7 +1025,8 @@ look_behind_to start             end           match_to
 */
 
 /**
- * @brief Regex::ExecRE
+ * @brief
+ *
  * @param string
  * @param end
  * @param reverse

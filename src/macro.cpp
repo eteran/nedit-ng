@@ -93,7 +93,8 @@ struct MacroErrorCategory : std::error_category {
 };
 
 /**
- * @brief MacroErrorCategory::message
+ * @brief
+ *
  * @param ev
  * @return
  */
@@ -177,7 +178,8 @@ std::string MacroErrorCategory::message(int ev) const {
 }
 
 /**
- * @brief flagsFromArguments
+ * @brief
+ *
  * @param arguments
  * @param firstFlag
  * @return The flags if all arguments were valid, otherwise, nothing
@@ -228,7 +230,8 @@ std::optional<TextArea::EventFlags> flagsFromArguments(Arguments arguments, size
 }
 
 /**
- * @brief make_error_code
+ * @brief
+ *
  * @param e
  * @return
  */
@@ -272,7 +275,8 @@ struct is_error_code_enum<MacroErrorCode> : true_type {};
 namespace {
 
 /**
- * @brief readArgument - Get an integer value from a DataValue structure.
+ * @brief
+ *
  * @param dv
  * @param result
  * @return
@@ -300,7 +304,8 @@ std::error_code readArgument(const DataValue &dv, int64_t *result) {
 }
 
 /**
- * @brief readArgument - Get an integer value from a DataValue structure.
+ * @brief
+ *
  * @param dv
  * @param result
  * @return
@@ -328,7 +333,8 @@ std::error_code readArgument(const DataValue &dv, int *result) {
 }
 
 /**
- * @brief readArgument - Get an string value from a DataValue structure.
+ * @brief
+ *
  * @param dv
  * @param result
  * @return
@@ -349,7 +355,8 @@ std::error_code readArgument(const DataValue &dv, std::string *result) {
 }
 
 /**
- * @brief readArgument - Get an string value from a DataValue structure.
+ * @brief
+ *
  * @param dv
  * @param result
  * @return
@@ -370,7 +377,8 @@ std::error_code readArgument(const DataValue &dv, QString *result) {
 }
 
 /**
- * @brief readArguments
+ * @brief
+ *
  * @param arguments
  * @param index
  * @param arg
@@ -389,7 +397,8 @@ std::error_code readArguments(Arguments arguments, size_t index, T arg) {
 }
 
 /**
- * @brief readArguments
+ * @brief
+ *
  * @param arguments
  * @param index
  * @param arg
@@ -571,7 +580,8 @@ SearchType searchType(Arguments arguments, size_t index) {
 }
 
 /**
- * @brief toggle_or_bool
+ * @brief
+ *
  * @param arguments
  * @param previous
  * @param error

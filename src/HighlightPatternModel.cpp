@@ -3,7 +3,8 @@
 #include "Util/algorithm.h"
 
 /**
- * @brief HighlightPatternModel::HighlightPatternModel
+ * @brief
+ *
  * @param parent
  */
 HighlightPatternModel::HighlightPatternModel(QObject *parent)
@@ -11,7 +12,8 @@ HighlightPatternModel::HighlightPatternModel(QObject *parent)
 }
 
 /**
- * @brief HighlightPatternModel::index
+ * @brief
+ *
  * @param row
  * @param column
  * @param parent
@@ -31,7 +33,8 @@ QModelIndex HighlightPatternModel::index(int row, int column, const QModelIndex 
 }
 
 /**
- * @brief HighlightPatternModel::parent
+ * @brief
+ *
  * @param index
  * @return
  */
@@ -41,7 +44,8 @@ QModelIndex HighlightPatternModel::parent(const QModelIndex &index) const {
 }
 
 /**
- * @brief HighlightPatternModel::data
+ * @brief
+ *
  * @param index
  * @param role
  * @return
@@ -67,7 +71,8 @@ QVariant HighlightPatternModel::data(const QModelIndex &index, int role) const {
 }
 
 /**
- * @brief HighlightPatternModel::headerData
+ * @brief
+ *
  * @param section
  * @param orientation
  * @param role
@@ -87,7 +92,8 @@ QVariant HighlightPatternModel::headerData(int section, Qt::Orientation orientat
 }
 
 /**
- * @brief HighlightPatternModel::columnCount
+ * @brief
+ *
  * @param parent
  * @return
  */
@@ -97,7 +103,8 @@ int HighlightPatternModel::columnCount(const QModelIndex &parent) const {
 }
 
 /**
- * @brief HighlightPatternModel::rowCount
+ * @brief
+ *
  * @param parent
  * @return
  */
@@ -107,7 +114,8 @@ int HighlightPatternModel::rowCount(const QModelIndex &parent) const {
 }
 
 /**
- * @brief HighlightPatternModel::addItem
+ * @brief
+ *
  * @param style
  */
 void HighlightPatternModel::addItem(const HighlightPattern &style) {
@@ -117,7 +125,7 @@ void HighlightPatternModel::addItem(const HighlightPattern &style) {
 }
 
 /**
- * @brief HighlightPatternModel::clear
+ * @brief
  */
 void HighlightPatternModel::clear() {
 	beginResetModel();
@@ -126,7 +134,8 @@ void HighlightPatternModel::clear() {
 }
 
 /**
- * @brief HighlightPatternModel::moveItemUp
+ * @brief
+ *
  * @param index
  */
 void HighlightPatternModel::moveItemUp(const QModelIndex &index) {
@@ -141,7 +150,8 @@ void HighlightPatternModel::moveItemUp(const QModelIndex &index) {
 }
 
 /**
- * @brief HighlightPatternModel::moveItemDown
+ * @brief
+ *
  * @param index
  */
 void HighlightPatternModel::moveItemDown(const QModelIndex &index) {
@@ -156,7 +166,8 @@ void HighlightPatternModel::moveItemDown(const QModelIndex &index) {
 }
 
 /**
- * @brief HighlightPatternModel::deleteItem
+ * @brief
+ *
  * @param index
  */
 void HighlightPatternModel::deleteItem(const QModelIndex &index) {
@@ -171,7 +182,8 @@ void HighlightPatternModel::deleteItem(const QModelIndex &index) {
 }
 
 /**
- * @brief HighlightPatternModel::updateItem
+ * @brief
+ *
  * @param index
  * @param item
  * @return
@@ -191,7 +203,8 @@ bool HighlightPatternModel::updateItem(const QModelIndex &index, const Highlight
 }
 
 /**
- * @brief HighlightPatternModel::itemFromIndex
+ * @brief
+ *
  * @param index
  * @return
  */

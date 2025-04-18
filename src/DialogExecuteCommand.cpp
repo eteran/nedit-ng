@@ -4,7 +4,8 @@
 #include <QKeyEvent>
 
 /**
- * @brief DialogExecuteCommand::DialogExecuteCommand
+ * @brief
+ *
  * @param parent
  * @param f
  */
@@ -19,7 +20,8 @@ DialogExecuteCommand::DialogExecuteCommand(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief DialogExecuteCommand::keyPressEvent
+ * @brief
+ *
  * @param event
  */
 void DialogExecuteCommand::keyPressEvent(QKeyEvent *event) {
@@ -49,7 +51,8 @@ void DialogExecuteCommand::keyPressEvent(QKeyEvent *event) {
 }
 
 /**
- * @brief DialogExecuteCommand::showEvent
+ * @brief
+ *
  * @param event
  */
 void DialogExecuteCommand::showEvent(QShowEvent *event) {
@@ -60,7 +63,8 @@ void DialogExecuteCommand::showEvent(QShowEvent *event) {
 }
 
 /**
- * @brief DialogExecuteCommand::addHistoryItem
+ * @brief
+ *
  * @param string
  */
 void DialogExecuteCommand::addHistoryItem(const QString &s) {
@@ -70,7 +74,8 @@ void DialogExecuteCommand::addHistoryItem(const QString &s) {
 }
 
 /**
- * @brief DialogExecuteCommand::currentText
+ * @brief
+ *
  * @return
  */
 QString DialogExecuteCommand::currentText() const {

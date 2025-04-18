@@ -9,7 +9,8 @@
 namespace CommonDialog {
 
 /**
- * @brief setButtonIcons
+ * @brief
+ *
  * @param ui
  */
 template <class Ui>
@@ -22,7 +23,8 @@ void setButtonIcons(Ui *ui) {
 }
 
 /**
- * @brief updateButtonStates
+ * @brief
+ *
  * @param ui
  * @param model
  * @param current
@@ -55,7 +57,8 @@ void updateButtonStates(Ui *ui, Model *model, const QModelIndex &current) {
 }
 
 /**
- * @brief updateButtonStates
+ * @brief
+ *
  * @param ui
  * @param model
  */
@@ -66,7 +69,8 @@ void updateButtonStates(Ui *ui, Model *model) {
 }
 
 /**
- * @brief addNewItem
+ * @brief
+ *
  * @param ui
  * @param model
  * @param func
@@ -84,7 +88,8 @@ void addNewItem(Ui *ui, Model *model, Func func) {
 }
 
 /**
- * @brief deleteItem
+ * @brief
+ *
  * @param ui
  * @param model
  * @param deleted
@@ -110,7 +115,8 @@ void deleteItem(Ui *ui, Model *model, QModelIndex *deleted) {
 }
 
 /**
- * @brief copyItem
+ * @brief
+ *
  * @param ui
  * @param model
  */
@@ -131,7 +137,8 @@ void copyItem(Ui *ui, Model *model) {
 }
 
 /**
- * @brief moveItemUp
+ * @brief
+ *
  * @param ui
  * @param model
  */
@@ -147,7 +154,8 @@ void moveItemUp(Ui *ui, Model *model) {
 }
 
 /**
- * @brief moveItemDown
+ * @brief
+ *
  * @param ui
  * @param model
  */

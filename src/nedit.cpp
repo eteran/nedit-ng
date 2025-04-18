@@ -14,7 +14,8 @@ bool IsServer = false;
 namespace {
 
 /**
- * @brief messageHandler
+ * @brief
+ *
  * @param type
  * @param context
  * @param msg
@@ -47,7 +48,8 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 }
 
 /**
- * @brief main
+ * @brief
+ *
  * @param argc
  * @param argv
  * @return

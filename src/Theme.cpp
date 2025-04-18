@@ -27,7 +27,7 @@ const auto DEFAULT_CURSOR_FG = QLatin1String("black");
 }
 
 /**
- * @brief load
+ * @brief
  */
 void load() {
 	const QString filename = Settings::themeFile();
@@ -104,7 +104,7 @@ void load() {
 }
 
 /**
- * @brief save
+ * @brief
  */
 void save() {
 	const QString filename = Settings::themeFile();

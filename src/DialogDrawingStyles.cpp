@@ -13,7 +13,8 @@
 #include <QRegularExpressionValidator>
 
 /**
- * @brief DialogDrawingStyles::DialogDrawingStyles
+ * @brief
+ *
  * @param parent
  * @param f
  */
@@ -49,7 +50,7 @@ DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatte
 }
 
 /**
- * @brief DialogDrawingStyles::connectSlots
+ * @brief
  */
 void DialogDrawingStyles::connectSlots() {
 	connect(ui.buttonNew, &QPushButton::clicked, this, &DialogDrawingStyles::buttonNew_clicked);
@@ -64,7 +65,8 @@ void DialogDrawingStyles::connectSlots() {
 }
 
 /**
- * @brief DialogDrawingStyles::setStyleByName
+ * @brief
+ *
  * @param name
  */
 void DialogDrawingStyles::setStyleByName(const QString &name) {
@@ -83,7 +85,7 @@ void DialogDrawingStyles::setStyleByName(const QString &name) {
 }
 
 /**
- * @brief DialogDrawingStyles::buttonNew_clicked
+ * @brief
  */
 void DialogDrawingStyles::buttonNew_clicked() {
 
@@ -101,7 +103,7 @@ void DialogDrawingStyles::buttonNew_clicked() {
 }
 
 /**
- * @brief DialogDrawingStyles::buttonCopy_clicked
+ * @brief
  */
 void DialogDrawingStyles::buttonCopy_clicked() {
 
@@ -113,28 +115,29 @@ void DialogDrawingStyles::buttonCopy_clicked() {
 }
 
 /**
- * @brief DialogDrawingStyles::buttonDelete_clicked
+ * @brief
  */
 void DialogDrawingStyles::buttonDelete_clicked() {
 	CommonDialog::deleteItem(&ui, model_, &deleted_);
 }
 
 /**
- * @brief DialogDrawingStyles::buttonUp_clicked
+ * @brief
  */
 void DialogDrawingStyles::buttonUp_clicked() {
 	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
- * @brief DialogDrawingStyles::buttonDown_clicked
+ * @brief
  */
 void DialogDrawingStyles::buttonDown_clicked() {
 	CommonDialog::moveItemDown(&ui, model_);
 }
 
 /**
- * @brief PreferenceList::currentChanged
+ * @brief
+ *
  * @param current
  * @param previous
  */
@@ -210,7 +213,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 }
 
 /**
- * @brief DialogDrawingStyles::buttonBox_accepted
+ * @brief
  */
 void DialogDrawingStyles::buttonBox_accepted() {
 
@@ -222,7 +225,8 @@ void DialogDrawingStyles::buttonBox_accepted() {
 }
 
 /**
- * @brief DialogDrawingStyles::buttonBox_clicked
+ * @brief
+ *
  * @param button
  */
 void DialogDrawingStyles::buttonBox_clicked(QAbstractButton *button) {
@@ -232,7 +236,8 @@ void DialogDrawingStyles::buttonBox_clicked(QAbstractButton *button) {
 }
 
 /**
- * @brief DialogDrawingStyles::validateFields
+ * @brief
+ *
  * @param mode
  * @return
  */
@@ -244,7 +249,8 @@ bool DialogDrawingStyles::validateFields(Verbosity verbosity) {
 }
 
 /**
- * @brief DialogDrawingStyles::readFields
+ * @brief
+ *
  * @param mode
  * @return
  */
@@ -327,7 +333,8 @@ std::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosit
 }
 
 /**
- * @brief DialogDrawingStyles::updateHSList
+ * @brief
+ *
  * @return
  */
 bool DialogDrawingStyles::applyDialogChanges() {
@@ -386,7 +393,8 @@ bool DialogDrawingStyles::applyDialogChanges() {
 }
 
 /**
- * @brief DialogDrawingStyles::updateCurrentItem
+ * @brief
+ *
  * @param item
  * @return
  */
@@ -419,7 +427,8 @@ bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
 }
 
 /**
- * @brief DialogDrawingStyles::updateCurrentItem
+ * @brief
+ *
  * @return
  */
 bool DialogDrawingStyles::updateCurrentItem() {
@@ -432,7 +441,8 @@ bool DialogDrawingStyles::updateCurrentItem() {
 }
 
 /**
- * @brief DialogDrawingStyles::countPlainEntries
+ * @brief
+ *
  * @return
  */
 int DialogDrawingStyles::countPlainEntries() const {
@@ -448,7 +458,8 @@ int DialogDrawingStyles::countPlainEntries() const {
 }
 
 /**
- * @brief DialogColors::chooseColor
+ * @brief
+ *
  * @param edit
  */
 void DialogDrawingStyles::chooseColor(QLineEdit *edit) {
@@ -462,14 +473,14 @@ void DialogDrawingStyles::chooseColor(QLineEdit *edit) {
 }
 
 /**
- * @brief DialogDrawingStyles::buttonForeground_clicked
+ * @brief
  */
 void DialogDrawingStyles::buttonForeground_clicked() {
 	chooseColor(ui.editColorFG);
 }
 
 /**
- * @brief DialogDrawingStyles::buttonBackground_clicked
+ * @brief
  */
 void DialogDrawingStyles::buttonBackground_clicked() {
 	chooseColor(ui.editColorBG);

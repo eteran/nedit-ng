@@ -12,7 +12,8 @@
 #include <QMessageBox>
 
 /**
- * @brief DialogFind::DialogFind
+ * @brief
+ *
  * @param window
  * @param document
  * @param f
@@ -28,7 +29,7 @@ DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowF
 }
 
 /**
- * @brief DialogFind::connectSlots
+ * @brief
  */
 void DialogFind::connectSlots() {
 	connect(ui.buttonFind, &QPushButton::clicked, this, &DialogFind::buttonFind_clicked);
@@ -39,7 +40,8 @@ void DialogFind::connectSlots() {
 }
 
 /**
- * @brief DialogFind::showEvent
+ * @brief
+ *
  * @param event
  */
 void DialogFind::showEvent(QShowEvent *event) {
@@ -48,7 +50,8 @@ void DialogFind::showEvent(QShowEvent *event) {
 }
 
 /**
- * @brief DialogFind::eventFilter
+ * @brief
+ *
  * @param obj
  * @param ev
  * @return
@@ -103,7 +106,8 @@ bool DialogFind::eventFilter(QObject *obj, QEvent *ev) {
 }
 
 /**
- * @brief DialogFind::checkKeep_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogFind::checkKeep_toggled(bool checked) {
@@ -115,7 +119,7 @@ void DialogFind::checkKeep_toggled(bool checked) {
 }
 
 /**
- * @brief DialogFind::updateFindButton
+ * @brief
  */
 void DialogFind::updateFindButton() {
 	const bool buttonState = !ui.textFind->text().isEmpty();
@@ -123,7 +127,8 @@ void DialogFind::updateFindButton() {
 }
 
 /**
- * @brief DialogFind::textFind_textChanged
+ * @brief
+ *
  * @param text
  */
 void DialogFind::textFind_textChanged(const QString &text) {
@@ -191,7 +196,8 @@ void DialogFind::initToggleButtons(SearchType searchType) {
 }
 
 /**
- * @brief DialogFind::setTextFieldFromDocument
+ * @brief
+ *
  * @param document
  */
 void DialogFind::setTextFieldFromDocument(DocumentWidget *document) {
@@ -207,7 +213,7 @@ void DialogFind::setTextFieldFromDocument(DocumentWidget *document) {
 }
 
 /**
- * @brief DialogFind::buttonFind_clicked
+ * @brief
  */
 void DialogFind::buttonFind_clicked() {
 
@@ -291,7 +297,8 @@ std::optional<DialogFind::Fields> DialogFind::readFields() {
 }
 
 /**
- * @brief DialogFind::checkRegex_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogFind::checkRegex_toggled(bool checked) {
@@ -315,7 +322,8 @@ void DialogFind::checkRegex_toggled(bool checked) {
 }
 
 /**
- * @brief DialogFind::checkCase_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogFind::checkCase_toggled(bool checked) {
@@ -332,7 +340,8 @@ void DialogFind::checkCase_toggled(bool checked) {
 }
 
 /**
- * @brief DialogFind::keepDialog
+ * @brief
+ *
  * @return
  */
 bool DialogFind::keepDialog() const {
@@ -340,7 +349,8 @@ bool DialogFind::keepDialog() const {
 }
 
 /**
- * @brief DialogFind::setDocument
+ * @brief
+ *
  * @param document
  */
 void DialogFind::setDocument(DocumentWidget *document) {
@@ -353,7 +363,8 @@ void DialogFind::setDocument(DocumentWidget *document) {
 }
 
 /**
- * @brief DialogFind::setDirection
+ * @brief
+ *
  * @param direction
  */
 void DialogFind::setDirection(Direction direction) {
@@ -361,7 +372,8 @@ void DialogFind::setDirection(Direction direction) {
 }
 
 /**
- * @brief DialogReplace::setKeepDialog
+ * @brief
+ *
  * @param keep
  */
 void DialogFind::setKeepDialog(bool keep) {

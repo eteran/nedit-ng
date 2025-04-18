@@ -49,7 +49,8 @@ const QLatin1String RedundantActions[] = {
 	QLatin1String("start_incremental_find")};
 
 /**
- * @brief isMouseAction
+ * @brief
+ *
  * @param ev
  * @return
  */
@@ -62,7 +63,8 @@ bool isMouseAction(const Event *ev) {
 }
 
 /**
- * @brief isRedundantAction
+ * @brief
+ *
  * @param ev
  * @return
  */
@@ -91,7 +93,8 @@ QString actionToString(const Event *ev) {
 }
 
 /**
- * @brief CommandRecorder::quoteString
+ * @brief
+ *
  * @param s
  * @return
  */
@@ -100,7 +103,8 @@ QString CommandRecorder::quoteString(const QString &s) {
 }
 
 /**
- * @brief CommandRecorder::escapeString
+ * @brief
+ *
  * @param s
  * @return
  */
@@ -120,7 +124,8 @@ QString CommandRecorder::escapeString(const QString &s) {
 }
 
 /**
- * @brief CommandRecorder::CommandRecorder
+ * @brief
+ *
  * @param parent
  */
 CommandRecorder::CommandRecorder(QObject *parent)
@@ -128,7 +133,8 @@ CommandRecorder::CommandRecorder(QObject *parent)
 }
 
 /**
- * @brief CommandRecorder::getInstance
+ * @brief
+ *
  * @return global unique instance
  */
 CommandRecorder *CommandRecorder::instance() {
@@ -137,7 +143,8 @@ CommandRecorder *CommandRecorder::instance() {
 }
 
 /**
- * @brief CommandRecorder::eventFilter
+ * @brief
+ *
  * @param obj
  * @param event
  * @return
@@ -210,7 +217,7 @@ void CommandRecorder::lastActionHook(const TextEditEvent *ev) {
 }
 
 /**
- * @brief CommandRecorder::startRecording
+ * @brief
  */
 void CommandRecorder::startRecording(DocumentWidget *document) {
 	setRecording(true);
@@ -218,7 +225,7 @@ void CommandRecorder::startRecording(DocumentWidget *document) {
 }
 
 /**
- * @brief CommandRecorder::stopRecording
+ * @brief
  */
 void CommandRecorder::stopRecording() {
 	setRecording(false);
@@ -226,7 +233,8 @@ void CommandRecorder::stopRecording() {
 }
 
 /**
- * @brief CommandRecorder::macroRecordWindow
+ * @brief
+ *
  * @return
  */
 QPointer<DocumentWidget> CommandRecorder::macroRecordDocument() const {
@@ -235,7 +243,7 @@ QPointer<DocumentWidget> CommandRecorder::macroRecordDocument() const {
 
 /**
  * stops recording user actions, but does NOT save the buffer
- * @brief CommandRecorder::cancelRecording
+ * @brief
  */
 void CommandRecorder::cancelRecording() {
 	isRecording_ = false;
@@ -244,7 +252,8 @@ void CommandRecorder::cancelRecording() {
 }
 
 /**
- * @brief CommandRecorder::isRecording
+ * @brief
+ *
  * @return
  */
 bool CommandRecorder::isRecording() const {
@@ -252,7 +261,8 @@ bool CommandRecorder::isRecording() const {
 }
 
 /**
- * @brief CommandRecorder::setRecording
+ * @brief
+ *
  * @param enabled
  */
 void CommandRecorder::setRecording(bool enabled) {
@@ -275,7 +285,8 @@ void CommandRecorder::setRecording(bool enabled) {
 }
 
 /**
- * @brief CommandRecorder::lastCommand
+ * @brief
+ *
  * @return
  */
 QString CommandRecorder::lastCommand() const {
@@ -283,7 +294,8 @@ QString CommandRecorder::lastCommand() const {
 }
 
 /**
- * @brief CommandRecorder::replayMacro
+ * @brief
+ *
  * @return
  */
 QString CommandRecorder::replayMacro() const {

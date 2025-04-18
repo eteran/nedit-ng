@@ -6,7 +6,8 @@
 #include <QToolTip>
 
 /**
- * @brief CallTipWidget::CallTipWidget
+ * @brief
+ *
  * @param parent
  * @param f
  */
@@ -26,7 +27,8 @@ CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief CallTipWidget::setText
+ * @brief
+ *
  * @param text
  */
 void CallTipWidget::setText(const QString &text) {
@@ -35,7 +37,8 @@ void CallTipWidget::setText(const QString &text) {
 }
 
 /**
- * @brief CallTipWidget::showEvent
+ * @brief
+ *
  * @param event
  */
 void CallTipWidget::showEvent(QShowEvent *event) {

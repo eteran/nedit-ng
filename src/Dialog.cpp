@@ -5,7 +5,8 @@
 #include <QTimer>
 
 /**
- * @brief Dialog::Dialog
+ * @brief
+ *
  * @param parent passed to QDialog's constructor
  * @param f      passed to QDialog's constructor
  */
@@ -14,7 +15,8 @@ Dialog::Dialog(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief Dialog::showEvent
+ * @brief
+ *
  * @param event
  *
  * reposition the dialog to be centered on the cursor if the setting is enabled

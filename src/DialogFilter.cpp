@@ -4,7 +4,8 @@
 #include <QKeyEvent>
 
 /**
- * @brief DialogFilter::DialogFilter
+ * @brief
+ *
  * @param parent
  * @param f
  */
@@ -24,7 +25,8 @@ void DialogFilter::connectSlots() {
 }
 
 /**
- * @brief DialogFilter::keyPressEvent
+ * @brief
+ *
  * @param event
  */
 void DialogFilter::keyPressEvent(QKeyEvent *event) {
@@ -54,7 +56,8 @@ void DialogFilter::keyPressEvent(QKeyEvent *event) {
 }
 
 /**
- * @brief DialogFilter::showEvent
+ * @brief
+ *
  * @param event
  */
 void DialogFilter::showEvent(QShowEvent *event) {
@@ -64,7 +67,7 @@ void DialogFilter::showEvent(QShowEvent *event) {
 }
 
 /**
- * @brief DialogFilter::buttonBox_accepted
+ * @brief
  */
 void DialogFilter::buttonBox_accepted() {
 
@@ -75,7 +78,8 @@ void DialogFilter::buttonBox_accepted() {
 }
 
 /**
- * @brief DialogFilter::currentText
+ * @brief
+ *
  * @return
  */
 QString DialogFilter::currentText() const {

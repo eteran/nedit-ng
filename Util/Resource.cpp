@@ -8,7 +8,8 @@
 #include <gsl/gsl_util>
 
 /**
- * @brief loadResource
+ * @brief
+ *
  * @param resource
  * @return
  */

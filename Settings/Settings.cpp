@@ -45,7 +45,8 @@ void writeEnum(QSettings &settings, const QString &key, const T &value) {
 }
 
 /**
- * @brief randomString
+ * @brief
+ *
  * @param length
  * @return
  */
@@ -68,7 +69,8 @@ QString randomString(int length) {
 }
 
 /**
- * @brief configDirectory
+ * @brief
+ *
  * @return
  */
 QString configDirectory() {
@@ -163,7 +165,8 @@ TruncSubstitution truncSubstitution;
 WrapStyle autoWrap;
 
 /**
- * @brief themeFile
+ * @brief
+ *
  * @return
  */
 QString themeFile() {
@@ -173,7 +176,8 @@ QString themeFile() {
 }
 
 /**
- * @brief configFile
+ * @brief
+ *
  * @return
  */
 QString configFile() {
@@ -183,7 +187,8 @@ QString configFile() {
 }
 
 /**
- * @brief historyFile
+ * @brief
+ *
  * @return
  */
 QString historyFile() {
@@ -193,7 +198,8 @@ QString historyFile() {
 }
 
 /**
- * @brief autoLoadMacroFile
+ * @brief
+ *
  * @return
  */
 QString autoLoadMacroFile() {
@@ -203,7 +209,8 @@ QString autoLoadMacroFile() {
 }
 
 /**
- * @brief languageModeFile
+ * @brief
+ *
  * @return
  */
 QString languageModeFile() {
@@ -213,7 +220,8 @@ QString languageModeFile() {
 }
 
 /**
- * @brief macroMenuFile
+ * @brief
+ *
  * @return
  */
 QString macroMenuFile() {
@@ -223,7 +231,8 @@ QString macroMenuFile() {
 }
 
 /**
- * @brief shellMenuFile
+ * @brief
+ *
  * @return
  */
 QString shellMenuFile() {
@@ -233,7 +242,8 @@ QString shellMenuFile() {
 }
 
 /**
- * @brief contextMenuFile
+ * @brief
+ *
  * @return
  */
 QString contextMenuFile() {
@@ -243,7 +253,8 @@ QString contextMenuFile() {
 }
 
 /**
- * @brief styleFile
+ * @brief
+ *
  * @return
  */
 QString styleFile() {
@@ -253,7 +264,8 @@ QString styleFile() {
 }
 
 /**
- * @brief highlightPatternsFile
+ * @brief
+ *
  * @return
  */
 QString highlightPatternsFile() {
@@ -263,7 +275,8 @@ QString highlightPatternsFile() {
 }
 
 /**
- * @brief smartIndentFile
+ * @brief
+ *
  * @return
  */
 QString smartIndentFile() {
@@ -273,7 +286,7 @@ QString smartIndentFile() {
 }
 
 /**
- * @brief loadPreferences
+ * @brief
  */
 void loadPreferences(bool isServer) {
 
@@ -370,7 +383,8 @@ void loadPreferences(bool isServer) {
 }
 
 /**
- * @brief importSettings
+ * @brief
+ *
  * @param filename
  */
 void importSettings(const QString &filename) {
@@ -459,7 +473,8 @@ void importSettings(const QString &filename) {
 }
 
 /**
- * @brief savePreferences
+ * @brief
+ *
  * @return
  */
 bool savePreferences() {

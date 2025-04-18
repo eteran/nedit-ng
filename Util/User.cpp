@@ -57,7 +57,8 @@ QString expandTilde(const QString &pathname) {
 }
 
 /**
- * @brief getHomeDir
+ * @brief
+ *
  * @return
  */
 QString getHomeDir() {
@@ -65,7 +66,8 @@ QString getHomeDir() {
 }
 
 /**
- * @brief prependHome
+ * @brief
+ *
  * @param filename
  * @return $HOME/filename
  */

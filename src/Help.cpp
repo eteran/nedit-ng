@@ -9,7 +9,8 @@
 namespace Help {
 
 /**
- * @brief displayTopic
+ * @brief
+ *
  * @param topic
  */
 void displayTopic(Topic topic) {

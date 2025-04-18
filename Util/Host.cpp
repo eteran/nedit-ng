@@ -5,7 +5,8 @@
 #include <QString>
 
 /**
- * @brief GetNameOfHost
+ * @brief
+ *
  * @return the hostname of the system
  */
 QString GetNameOfHost() {

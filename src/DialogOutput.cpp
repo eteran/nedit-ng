@@ -2,7 +2,8 @@
 #include "DialogOutput.h"
 
 /**
- * @brief DialogOutput::DialogOutput
+ * @brief
+ *
  * @param parent
  * @param f
  */
@@ -13,7 +14,8 @@ DialogOutput::DialogOutput(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief DialogOutput::setText
+ * @brief
+ *
  * @param text
  */
 void DialogOutput::setText(const QString &text) {

@@ -6,7 +6,8 @@
 #include <QFontDatabase>
 
 /**
- * @brief DialogDuplicateTags::DialogDuplicateTags
+ * @brief
+ *
  * @param document
  * @param area
  * @param f
@@ -19,7 +20,7 @@ DialogDuplicateTags::DialogDuplicateTags(DocumentWidget *document, TextArea *are
 }
 
 /**
- * @brief DialogDuplicateTags::connectSlots
+ * @brief
  */
 void DialogDuplicateTags::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogDuplicateTags::buttonBox_clicked);
@@ -27,7 +28,8 @@ void DialogDuplicateTags::connectSlots() {
 }
 
 /**
- * @brief DialogDuplicateTags::setTag
+ * @brief
+ *
  * @param tag
  */
 void DialogDuplicateTags::setTag(const QString &tag) {
@@ -35,7 +37,8 @@ void DialogDuplicateTags::setTag(const QString &tag) {
 }
 
 /**
- * @brief DialogDuplicateTags::addListItem
+ * @brief
+ *
  * @param text
  * @param id
  */
@@ -45,7 +48,7 @@ void DialogDuplicateTags::addListItem(const QString &text, int id) {
 }
 
 /**
- * @brief DialogDuplicateTags::buttonBox_accepted
+ * @brief
  */
 void DialogDuplicateTags::buttonBox_accepted() {
 	if (applySelection()) {
@@ -54,7 +57,8 @@ void DialogDuplicateTags::buttonBox_accepted() {
 }
 
 /**
- * @brief DialogDuplicateTags::buttonBox_clicked
+ * @brief
+ *
  * @param button
  */
 void DialogDuplicateTags::buttonBox_clicked(QAbstractButton *button) {
@@ -64,7 +68,8 @@ void DialogDuplicateTags::buttonBox_clicked(QAbstractButton *button) {
 }
 
 /**
- * @brief DialogDuplicateTags::applySelection
+ * @brief
+ *
  * @return
  */
 bool DialogDuplicateTags::applySelection() {

@@ -800,7 +800,8 @@ const X11Color colors[] = {
 }
 
 /**
- * @brief X11Colors::fromString
+ * @brief
+ *
  * @param s
  * @return returns a QColor which matches the name.
  * Intended to mimic the X11 color set

@@ -316,7 +316,7 @@ void InitMacroGlobals() {
 }
 
 /**
- * @brief CleanupMacroGlobals
+ * @brief
  */
 void CleanupMacroGlobals() {
 	for (Symbol *sym : GlobalSymList) {

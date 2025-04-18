@@ -15,7 +15,8 @@
 #include <QMessageBox>
 
 /**
- * @brief DialogWindowBackgroundMenu::DialogWindowBackgroundMenu
+ * @brief
+ *
  * @param parent
  * @param f
  */
@@ -49,7 +50,7 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::connectSlots
+ * @brief
  */
 void DialogWindowBackgroundMenu::connectSlots() {
 	connect(ui.buttonNew, &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonNew_clicked);
@@ -64,7 +65,7 @@ void DialogWindowBackgroundMenu::connectSlots() {
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::buttonNew_clicked
+ * @brief
  */
 void DialogWindowBackgroundMenu::buttonNew_clicked() {
 
@@ -81,7 +82,7 @@ void DialogWindowBackgroundMenu::buttonNew_clicked() {
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::buttonCopy_clicked
+ * @brief
  */
 void DialogWindowBackgroundMenu::buttonCopy_clicked() {
 
@@ -93,14 +94,14 @@ void DialogWindowBackgroundMenu::buttonCopy_clicked() {
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::buttonDelete_clicked
+ * @brief
  */
 void DialogWindowBackgroundMenu::buttonDelete_clicked() {
 	CommonDialog::deleteItem(&ui, model_, &deleted_);
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::buttonPasteLRMacro_clicked
+ * @brief
  */
 void DialogWindowBackgroundMenu::buttonPasteLRMacro_clicked() {
 
@@ -113,21 +114,22 @@ void DialogWindowBackgroundMenu::buttonPasteLRMacro_clicked() {
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::buttonUp_clicked
+ * @brief
  */
 void DialogWindowBackgroundMenu::buttonUp_clicked() {
 	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::buttonDown_clicked
+ * @brief
  */
 void DialogWindowBackgroundMenu::buttonDown_clicked() {
 	CommonDialog::moveItemDown(&ui, model_);
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::currentChanged
+ * @brief
+ *
  * @param current
  * @param previous
  */
@@ -196,7 +198,7 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::buttonCheck_clicked
+ * @brief
  */
 void DialogWindowBackgroundMenu::buttonCheck_clicked() {
 	if (validateFields(Verbosity::Verbose)) {
@@ -207,14 +209,14 @@ void DialogWindowBackgroundMenu::buttonCheck_clicked() {
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::buttonApply_clicked
+ * @brief
  */
 void DialogWindowBackgroundMenu::buttonApply_clicked() {
 	applyDialogChanges();
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::buttonOK_clicked
+ * @brief
  */
 void DialogWindowBackgroundMenu::buttonOK_clicked() {
 
@@ -227,7 +229,8 @@ void DialogWindowBackgroundMenu::buttonOK_clicked() {
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::validateFields
+ * @brief
+ *
  * @param silent
  * @return
  */
@@ -288,7 +291,8 @@ std::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbosi
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::checkMacroText
+ * @brief
+ *
  * @param macro
  * @param silent
  * @return
@@ -323,7 +327,8 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::applyDialogChanges
+ * @brief
+ *
  * @return
  */
 bool DialogWindowBackgroundMenu::applyDialogChanges() {
@@ -368,7 +373,8 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::setPasteReplayEnabled
+ * @brief
+ *
  * @param enabled
  */
 void DialogWindowBackgroundMenu::setPasteReplayEnabled(bool enabled) {
@@ -376,7 +382,8 @@ void DialogWindowBackgroundMenu::setPasteReplayEnabled(bool enabled) {
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::updateCurrentItem
+ * @brief
+ *
  * @param item
  * @return
  */
@@ -397,7 +404,8 @@ bool DialogWindowBackgroundMenu::updateCurrentItem(const QModelIndex &index) {
 }
 
 /**
- * @brief DialogWindowBackgroundMenu::updateCurrentItem
+ * @brief
+ *
  * @return
  */
 bool DialogWindowBackgroundMenu::updateCurrentItem() {

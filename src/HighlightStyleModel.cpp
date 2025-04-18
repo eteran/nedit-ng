@@ -3,7 +3,8 @@
 #include "Util/algorithm.h"
 
 /**
- * @brief HighlightStyleModel::HighlightStyleModel
+ * @brief
+ *
  * @param parent
  */
 HighlightStyleModel::HighlightStyleModel(QObject *parent)
@@ -11,7 +12,8 @@ HighlightStyleModel::HighlightStyleModel(QObject *parent)
 }
 
 /**
- * @brief HighlightStyleModel::index
+ * @brief
+ *
  * @param row
  * @param column
  * @param parent
@@ -31,7 +33,8 @@ QModelIndex HighlightStyleModel::index(int row, int column, const QModelIndex &p
 }
 
 /**
- * @brief HighlightStyleModel::parent
+ * @brief
+ *
  * @param index
  * @return
  */
@@ -41,7 +44,8 @@ QModelIndex HighlightStyleModel::parent(const QModelIndex &index) const {
 }
 
 /**
- * @brief HighlightStyleModel::data
+ * @brief
+ *
  * @param index
  * @param role
  * @return
@@ -67,7 +71,8 @@ QVariant HighlightStyleModel::data(const QModelIndex &index, int role) const {
 }
 
 /**
- * @brief HighlightStyleModel::headerData
+ * @brief
+ *
  * @param section
  * @param orientation
  * @param role
@@ -87,7 +92,8 @@ QVariant HighlightStyleModel::headerData(int section, Qt::Orientation orientatio
 }
 
 /**
- * @brief HighlightStyleModel::columnCount
+ * @brief
+ *
  * @param parent
  * @return
  */
@@ -97,7 +103,8 @@ int HighlightStyleModel::columnCount(const QModelIndex &parent) const {
 }
 
 /**
- * @brief HighlightStyleModel::rowCount
+ * @brief
+ *
  * @param parent
  * @return
  */
@@ -107,7 +114,8 @@ int HighlightStyleModel::rowCount(const QModelIndex &parent) const {
 }
 
 /**
- * @brief HighlightStyleModel::addItem
+ * @brief
+ *
  * @param style
  */
 void HighlightStyleModel::addItem(const HighlightStyle &style) {
@@ -117,7 +125,7 @@ void HighlightStyleModel::addItem(const HighlightStyle &style) {
 }
 
 /**
- * @brief HighlightStyleModel::clear
+ * @brief
  */
 void HighlightStyleModel::clear() {
 	beginResetModel();
@@ -126,7 +134,8 @@ void HighlightStyleModel::clear() {
 }
 
 /**
- * @brief HighlightStyleModel::moveItemUp
+ * @brief
+ *
  * @param index
  */
 void HighlightStyleModel::moveItemUp(const QModelIndex &index) {
@@ -141,7 +150,8 @@ void HighlightStyleModel::moveItemUp(const QModelIndex &index) {
 }
 
 /**
- * @brief HighlightStyleModel::moveItemDown
+ * @brief
+ *
  * @param index
  */
 void HighlightStyleModel::moveItemDown(const QModelIndex &index) {
@@ -156,7 +166,8 @@ void HighlightStyleModel::moveItemDown(const QModelIndex &index) {
 }
 
 /**
- * @brief HighlightStyleModel::deleteItem
+ * @brief
+ *
  * @param index
  */
 void HighlightStyleModel::deleteItem(const QModelIndex &index) {
@@ -171,7 +182,8 @@ void HighlightStyleModel::deleteItem(const QModelIndex &index) {
 }
 
 /**
- * @brief HighlightStyleModel::updateItem
+ * @brief
+ *
  * @param index
  * @param item
  * @return
@@ -191,7 +203,8 @@ bool HighlightStyleModel::updateItem(const QModelIndex &index, const HighlightSt
 }
 
 /**
- * @brief HighlightStyleModel::itemFromIndex
+ * @brief
+ *
  * @param index
  * @return
  */

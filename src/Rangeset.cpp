@@ -558,7 +558,8 @@ QString Rangeset::name() const {
 }
 
 /**
- * @brief Rangeset::RangesetSpan
+ * @brief
+ *
  * @return
  */
 std::optional<TextRange> Rangeset::RangesetSpan() const {
@@ -573,7 +574,8 @@ std::optional<TextRange> Rangeset::RangesetSpan() const {
 }
 
 /**
- * @brief Rangeset::RangesetFindRangeNo
+ * @brief
+ *
  * @param index
  * @return
  */
@@ -1054,7 +1056,8 @@ int64_t Rangeset::RangesetRemove(TextRange r) {
 }
 
 /**
- * @brief Rangeset::operator +=
+ * @brief
+ *
  * @param rhs
  * @return
  */
@@ -1064,7 +1067,8 @@ Rangeset &Rangeset::operator+=(const Rangeset &rhs) {
 }
 
 /**
- * @brief Rangeset::operator -=
+ * @brief
+ *
  * @param rhs
  * @return
  */
@@ -1074,7 +1078,8 @@ Rangeset &Rangeset::operator-=(const Rangeset &rhs) {
 }
 
 /**
- * @brief Rangeset::operator ~
+ * @brief
+ *
  * @return
  */
 Rangeset Rangeset::operator~() const {
@@ -1084,7 +1089,8 @@ Rangeset Rangeset::operator~() const {
 }
 
 /**
- * @brief Rangeset::RangesetGetInfo
+ * @brief
+ *
  * @return
  */
 RangesetInfo Rangeset::RangesetGetInfo() const {
@@ -1099,7 +1105,8 @@ RangesetInfo Rangeset::RangesetGetInfo() const {
 }
 
 /**
- * @brief Rangeset::Rangeset
+ * @brief
+ *
  * @param label
  */
 Rangeset::Rangeset(TextBuffer *buffer, uint8_t label)
@@ -1108,7 +1115,7 @@ Rangeset::Rangeset(TextBuffer *buffer, uint8_t label)
 }
 
 /**
- * @brief Rangeset::~Rangeset
+ * @brief
  */
 Rangeset::~Rangeset() {
 	for (const TextRange &range : ranges_) {

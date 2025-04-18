@@ -19,7 +19,8 @@
 #include <QRegularExpressionValidator>
 
 /**
- * @brief DialogLanguageModes::DialogLanguageModes
+ * @brief
+ *
  * @param parent
  * @param f
  */
@@ -58,7 +59,7 @@ DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatte
 }
 
 /**
- * @brief DialogLanguageModes::connectSlots
+ * @brief
  */
 void DialogLanguageModes::connectSlots() {
 	connect(ui.buttonUp, &QPushButton::clicked, this, &DialogLanguageModes::buttonUp_clicked);
@@ -71,7 +72,8 @@ void DialogLanguageModes::connectSlots() {
 }
 
 /**
- * @brief DialogLanguageModes::currentChanged
+ * @brief
+ *
  * @param current
  * @param previous
  */
@@ -206,7 +208,7 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 }
 
 /**
- * @brief DialogLanguageModes::buttonBox_accepted
+ * @brief
  */
 void DialogLanguageModes::buttonBox_accepted() {
 	if (!updateLMList(Verbosity::Verbose)) {
@@ -217,7 +219,8 @@ void DialogLanguageModes::buttonBox_accepted() {
 }
 
 /**
- * @brief DialogLanguageModes::buttonBox_clicked
+ * @brief
+ *
  * @param button
  */
 void DialogLanguageModes::buttonBox_clicked(QAbstractButton *button) {
@@ -361,7 +364,8 @@ std::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity)
 }
 
 /**
- * @brief DialogLanguageModes::updateLanguageList
+ * @brief
+ *
  * @param mode
  * @return
  */
@@ -400,7 +404,8 @@ bool DialogLanguageModes::updateLanguageList(Verbosity verbosity) {
 }
 
 /**
- * @brief DialogLanguageModes::updateLMList
+ * @brief
+ *
  * @param mode
  * @return
  */
@@ -525,7 +530,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 }
 
 /**
- * @brief DialogLanguageModes::buttonNew_clicked
+ * @brief
  */
 void DialogLanguageModes::buttonNew_clicked() {
 
@@ -542,7 +547,7 @@ void DialogLanguageModes::buttonNew_clicked() {
 }
 
 /**
- * @brief DialogLanguageModes::buttonCopy_clicked
+ * @brief
  */
 void DialogLanguageModes::buttonCopy_clicked() {
 
@@ -554,14 +559,14 @@ void DialogLanguageModes::buttonCopy_clicked() {
 }
 
 /**
- * @brief DialogLanguageModes::buttonUp_clicked
+ * @brief
  */
 void DialogLanguageModes::buttonUp_clicked() {
 	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
- * @brief DialogLanguageModes::buttonDown_clicked
+ * @brief
  */
 void DialogLanguageModes::buttonDown_clicked() {
 	CommonDialog::moveItemDown(&ui, model_);
@@ -580,7 +585,8 @@ int DialogLanguageModes::countLanguageModes(const QString &name) const {
 }
 
 /**
- * @brief DialogLanguageModes::LMHasHighlightPatterns
+ * @brief
+ *
  * @param name
  * @return
  */
@@ -593,7 +599,7 @@ bool DialogLanguageModes::LMHasHighlightPatterns(const QString &name) const {
 }
 
 /**
- * @brief DialogLanguageModes::buttonDelete_clicked
+ * @brief
  */
 void DialogLanguageModes::buttonDelete_clicked() {
 
@@ -632,7 +638,8 @@ void DialogLanguageModes::buttonDelete_clicked() {
 }
 
 /**
- * @brief DialogLanguageModes::updateCurrentItem
+ * @brief
+ *
  * @param item
  * @return
  */
@@ -653,7 +660,8 @@ bool DialogLanguageModes::updateCurrentItem(const QModelIndex &index) {
 }
 
 /**
- * @brief DialogLanguageModes::updateCurrentItem
+ * @brief
+ *
  * @return
  */
 bool DialogLanguageModes::updateCurrentItem() {
@@ -666,7 +674,8 @@ bool DialogLanguageModes::updateCurrentItem() {
 }
 
 /**
- * @brief DialogLanguageModes::validateFields
+ * @brief
+ *
  * @param mode
  * @return
  */

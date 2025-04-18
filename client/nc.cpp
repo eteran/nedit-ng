@@ -48,7 +48,8 @@ struct {
 } ServerPreferences;
 
 /**
- * @brief nextArg
+ * @brief
+ *
  * @param args
  * @param argIndex
  */
@@ -64,7 +65,8 @@ int nextArg(const QStringList &args, int argIndex) {
 
 /**
  *
- * @brief parseCommandString
+ * @brief
+ *
  * @param program
  * @return
  */
@@ -133,7 +135,7 @@ QStringList parseCommandString(const QString &program) {
 }
 
 /**
- * @brief printNcVersion
+ * @brief
  */
 void printNcVersion() {
 	static constexpr const char ncHelpText[] = "nc-ng (nedit-ng) Version %d.%d\n\n"
@@ -147,7 +149,8 @@ void printNcVersion() {
 }
 
 /**
- * @brief parseCommandLine
+ * @brief
+ *
  * @param args
  * @return
  *
@@ -337,7 +340,8 @@ std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 }
 
 /**
- * @brief processCommandLine
+ * @brief
+ *
  * @param args
  * @return
  *
@@ -358,7 +362,8 @@ CommandLine processCommandLine(const QStringList &args) {
 }
 
 /**
- * @brief startServer
+ * @brief
+ *
  * @param message
  * @param commandLineArgs
  * @return
@@ -428,7 +433,8 @@ bool writeToSocket(QLocalSocket *socket, const QByteArray &data) {
 }
 
 /**
- * @brief main
+ * @brief
+ *
  * @param argc
  * @param argv
  * @return

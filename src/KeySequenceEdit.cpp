@@ -21,7 +21,8 @@
 namespace {
 
 /**
- * @brief translateModifiers
+ * @brief
+ *
  * @param state
  * @param text
  * @return
@@ -52,7 +53,7 @@ int translateModifiers(Qt::KeyboardModifiers state, const QString &text) {
 }
 
 /**
- * @brief KeySequenceEdit::resetState
+ * @brief
  */
 void KeySequenceEdit::resetState() {
 	if (releaseTimer_) {
@@ -71,7 +72,7 @@ void KeySequenceEdit::resetState() {
 }
 
 /**
- * @brief KeySequenceEdit::finishEditing
+ * @brief
  */
 void KeySequenceEdit::finishEditing() {
 	resetState();
@@ -80,7 +81,8 @@ void KeySequenceEdit::finishEditing() {
 }
 
 /**
- * @brief KeySequenceEdit::KeySequenceEdit
+ * @brief
+ *
  * @param parent
  * @param f
  */
@@ -106,7 +108,8 @@ KeySequenceEdit::KeySequenceEdit(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief KeySequenceEdit::KeySequenceEdit
+ * @brief
+ *
  * @param keySequence
  * @param parent
  * @param f
@@ -117,7 +120,8 @@ KeySequenceEdit::KeySequenceEdit(const QKeySequence &keySequence, QWidget *paren
 }
 
 /**
- * @brief KeySequenceEdit::maximumSequenceLength
+ * @brief
+ *
  * @return
  */
 int KeySequenceEdit::maximumSequenceLength() const {
@@ -125,7 +129,8 @@ int KeySequenceEdit::maximumSequenceLength() const {
 }
 
 /**
- * @brief KeySequenceEdit::setMaximumSequenceLength
+ * @brief
+ *
  * @param maximum
  */
 void KeySequenceEdit::setMaximumSequenceLength(int maximum) {
@@ -144,7 +149,8 @@ void KeySequenceEdit::setMaximumSequenceLength(int maximum) {
  * This property contains the currently chosen key_ sequence. The shortcut can
  * be changed by the user or via setter function.
  *
- * @brief KeySequenceEdit::keySequence
+ * @brief
+ *
  * @return
  */
 QKeySequence KeySequenceEdit::keySequence() const {
@@ -152,7 +158,8 @@ QKeySequence KeySequenceEdit::keySequence() const {
 }
 
 /**
- * @brief KeySequenceEdit::setKeySequence
+ * @brief
+ *
  * @param keySequence
  */
 void KeySequenceEdit::setKeySequence(const QKeySequence &keySequence) {
@@ -178,14 +185,15 @@ void KeySequenceEdit::setKeySequence(const QKeySequence &keySequence) {
 /**
  * Clears the current key sequence.
  *
- * @brief KeySequenceEdit::clear
+ * @brief
  */
 void KeySequenceEdit::clear() {
 	setKeySequence(QKeySequence());
 }
 
 /**
- * @brief KeySequenceEdit::event
+ * @brief
+ *
  * @param e
  * @return
  */
@@ -204,7 +212,8 @@ bool KeySequenceEdit::event(QEvent *e) {
 }
 
 /**
- * @brief KeySequenceEdit::keyPressEvent
+ * @brief
+ *
  * @param e
  */
 void KeySequenceEdit::keyPressEvent(QKeyEvent *e) {
@@ -269,7 +278,8 @@ void KeySequenceEdit::keyPressEvent(QKeyEvent *e) {
 }
 
 /**
- * @brief KeySequenceEdit::keyReleaseEvent
+ * @brief
+ *
  * @param e
  */
 void KeySequenceEdit::keyReleaseEvent(QKeyEvent *e) {
@@ -284,7 +294,8 @@ void KeySequenceEdit::keyReleaseEvent(QKeyEvent *e) {
 }
 
 /**
- * @brief KeySequenceEdit::timerEvent
+ * @brief
+ *
  * @param e
  */
 void KeySequenceEdit::timerEvent(QTimerEvent *e) {
@@ -297,7 +308,8 @@ void KeySequenceEdit::timerEvent(QTimerEvent *e) {
 }
 
 /**
- * @brief KeySequenceEdit::modifierRequired
+ * @brief
+ *
  * @return
  */
 bool KeySequenceEdit::modifierRequired() const {
@@ -305,7 +317,8 @@ bool KeySequenceEdit::modifierRequired() const {
 }
 
 /**
- * @brief KeySequenceEdit::setModifierRequired
+ * @brief
+ *
  * @param required
  */
 void KeySequenceEdit::setModifierRequired(bool required) {

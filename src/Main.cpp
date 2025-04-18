@@ -31,7 +31,8 @@ constexpr const char cmdLineHelp[] =
 	"                [-h|-help] [--] [file...]\n";
 
 /**
- * @brief nextArg
+ * @brief
+ *
  * @param args
  * @param argIndex
  * @return
@@ -52,14 +53,15 @@ int nextArg(const QStringList &args, int argIndex) {
 }
 
 /**
- * @brief Main::~Main
+ * @brief
  */
 Main::~Main() {
 	CleanupMacroGlobals();
 }
 
 /**
- * @brief Main::Main
+ * @brief
+ *
  * @param args
  */
 Main::Main(const QStringList &args) {

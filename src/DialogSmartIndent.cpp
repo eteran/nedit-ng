@@ -18,7 +18,8 @@
 #include <QMessageBox>
 
 /**
- * @brief DialogSmartIndent::DialogSmartIndent
+ * @brief
+ *
  * @param document
  * @param parent
  * @param f
@@ -50,7 +51,7 @@ DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, 
 }
 
 /**
- * @brief DialogSmartIndent::connectSlots
+ * @brief
  */
 void DialogSmartIndent::connectSlots() {
 	connect(ui.buttonCommon, &QPushButton::clicked, this, &DialogSmartIndent::buttonCommon_clicked);
@@ -64,7 +65,7 @@ void DialogSmartIndent::connectSlots() {
 }
 
 /**
- * @brief DialogSmartIndent::updateLanguageModes
+ * @brief
  */
 void DialogSmartIndent::updateLanguageModes() {
 
@@ -78,7 +79,8 @@ void DialogSmartIndent::updateLanguageModes() {
 }
 
 /**
- * @brief DialogSmartIndent::setLanguageMode
+ * @brief
+ *
  * @param s
  */
 void DialogSmartIndent::setLanguageMode(const QString &s) {
@@ -90,7 +92,8 @@ void DialogSmartIndent::setLanguageMode(const QString &s) {
 }
 
 /**
- * @brief DialogSmartIndent::on_comboLanguageMode_currentIndexChanged
+ * @brief
+ *
  * @param text
  */
 void DialogSmartIndent::on_comboLanguageMode_currentIndexChanged(const QString &text) {
@@ -99,7 +102,7 @@ void DialogSmartIndent::on_comboLanguageMode_currentIndexChanged(const QString &
 }
 
 /**
- * @brief DialogSmartIndent::buttonCommon_clicked
+ * @brief
  */
 void DialogSmartIndent::buttonCommon_clicked() {
 	auto dialog = std::make_unique<DialogSmartIndentCommon>(this);
@@ -107,7 +110,7 @@ void DialogSmartIndent::buttonCommon_clicked() {
 }
 
 /**
- * @brief DialogSmartIndent::buttonLanguageMode_clicked
+ * @brief
  */
 void DialogSmartIndent::buttonLanguageMode_clicked() {
 	if (!dialogLanguageModes_) {
@@ -118,7 +121,7 @@ void DialogSmartIndent::buttonLanguageMode_clicked() {
 }
 
 /**
- * @brief DialogSmartIndent::buttonOK_clicked
+ * @brief
  */
 void DialogSmartIndent::buttonOK_clicked() {
 	// change the macro
@@ -130,14 +133,14 @@ void DialogSmartIndent::buttonOK_clicked() {
 }
 
 /**
- * @brief DialogSmartIndent::buttonApply_clicked
+ * @brief
  */
 void DialogSmartIndent::buttonApply_clicked() {
 	updateSmartIndentData();
 }
 
 /**
- * @brief DialogSmartIndent::buttonCheck_clicked
+ * @brief
  */
 void DialogSmartIndent::buttonCheck_clicked() {
 	if (checkSmartIndentDialogData()) {
@@ -148,7 +151,7 @@ void DialogSmartIndent::buttonCheck_clicked() {
 }
 
 /**
- * @brief DialogSmartIndent::buttonDelete_clicked
+ * @brief
  */
 void DialogSmartIndent::buttonDelete_clicked() {
 
@@ -175,7 +178,7 @@ void DialogSmartIndent::buttonDelete_clicked() {
 }
 
 /**
- * @brief DialogSmartIndent::buttonRestore_clicked
+ * @brief
  */
 void DialogSmartIndent::buttonRestore_clicked() {
 
@@ -208,14 +211,15 @@ void DialogSmartIndent::buttonRestore_clicked() {
 }
 
 /**
- * @brief DialogSmartIndent::buttonHelp_clicked
+ * @brief
  */
 void DialogSmartIndent::buttonHelp_clicked() {
 	Help::displayTopic(Help::Topic::SmartIndent);
 }
 
 /**
- * @brief DialogSmartIndent::setSmartIndentDialogData
+ * @brief
+ *
  * @param is
  */
 void DialogSmartIndent::setSmartIndentDialogData(const SmartIndentEntry *is) {
@@ -278,7 +282,8 @@ bool DialogSmartIndent::updateSmartIndentData() {
 }
 
 /**
- * @brief DialogSmartIndent::checkSmartIndentDialogData
+ * @brief
+ *
  * @return
  */
 bool DialogSmartIndent::checkSmartIndentDialogData() {
@@ -347,7 +352,8 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 }
 
 /**
- * @brief DialogSmartIndent::getSmartIndentDialogData
+ * @brief
+ *
  * @return
  */
 SmartIndentEntry DialogSmartIndent::getSmartIndentDialogData() const {
@@ -361,7 +367,8 @@ SmartIndentEntry DialogSmartIndent::getSmartIndentDialogData() const {
 }
 
 /**
- * @brief DialogSmartIndent::languageMode
+ * @brief
+ *
  * @return
  */
 QString DialogSmartIndent::languageMode() const {

@@ -33,7 +33,8 @@ void RangesetBufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, 
 }
 
 /**
- * @brief RangesetTable::RangesetTable
+ * @brief
+ *
  * @param buffer
  */
 RangesetTable::RangesetTable(TextBuffer *buffer)
@@ -44,7 +45,7 @@ RangesetTable::RangesetTable(TextBuffer *buffer)
 }
 
 /**
- * @brief RangesetTable::~RangesetTable
+ * @brief
  */
 RangesetTable::~RangesetTable() {
 	buffer_->BufRemoveModifyCB(RangesetBufModifiedCB, this);

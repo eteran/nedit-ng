@@ -51,7 +51,8 @@ void ConvertFromMac(char *text, Length length) {
 }
 
 /**
- * @brief ConvertFromDos
+ * @brief
+ *
  * @param text
  * @param length
  * @param pendingCR

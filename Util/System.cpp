@@ -2,7 +2,8 @@
 #include "Util/System.h"
 
 /**
- * @brief buildPlatform
+ * @brief
+ *
  * @return
  */
 QLatin1String buildOperatingSystem() {
@@ -114,8 +115,10 @@ QLatin1String buildArchitecture() {
 }
 
 /**
- * @brief buildCompiler
+ * @brief
+ *
  * @return
+ *
  * @note adapted from QtCreator src/plugins/coreplugin/icore.cpp: compilerString()
  */
 QString buildCompiler() {

@@ -5,7 +5,8 @@
 #include <QString>
 
 /**
- * @brief make_regex
+ * @brief
+ *
  * @param re
  * @param flags
  * @return

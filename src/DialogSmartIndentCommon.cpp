@@ -11,7 +11,8 @@
 #include <QMessageBox>
 
 /**
- * @brief DialogSmartIndentCommon::DialogSmartIndentCommon
+ * @brief
+ *
  * @param parent
  * @param f
  */
@@ -32,7 +33,7 @@ DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlag
 }
 
 /**
- * @brief DialogSmartIndentCommon::connectSlots
+ * @brief
  */
 void DialogSmartIndentCommon::connectSlots() {
 	connect(ui.buttonOK, &QPushButton::clicked, this, &DialogSmartIndentCommon::buttonOK_clicked);
@@ -42,7 +43,7 @@ void DialogSmartIndentCommon::connectSlots() {
 }
 
 /**
- * @brief DialogSmartIndentCommon::buttonOK_clicked
+ * @brief
  */
 void DialogSmartIndentCommon::buttonOK_clicked() {
 	// change the macro
@@ -52,7 +53,7 @@ void DialogSmartIndentCommon::buttonOK_clicked() {
 }
 
 /**
- * @brief DialogSmartIndentCommon::buttonApply_clicked
+ * @brief
  */
 void DialogSmartIndentCommon::buttonApply_clicked() {
 	// change the macro
@@ -60,7 +61,7 @@ void DialogSmartIndentCommon::buttonApply_clicked() {
 }
 
 /**
- * @brief DialogSmartIndentCommon::buttonCheck_clicked
+ * @brief
  */
 void DialogSmartIndentCommon::buttonCheck_clicked() {
 	if (checkSmartIndentCommonDialogData()) {
@@ -69,7 +70,7 @@ void DialogSmartIndentCommon::buttonCheck_clicked() {
 }
 
 /**
- * @brief DialogSmartIndentCommon::buttonRestore_clicked
+ * @brief
  */
 void DialogSmartIndentCommon::buttonRestore_clicked() {
 	const int resp = QMessageBox::question(
@@ -90,7 +91,8 @@ void DialogSmartIndentCommon::buttonRestore_clicked() {
 }
 
 /**
- * @brief DialogSmartIndentCommon::checkSmartIndentCommonDialogData
+ * @brief
+ *
  * @return
  */
 bool DialogSmartIndentCommon::checkSmartIndentCommonDialogData() {

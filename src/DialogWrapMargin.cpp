@@ -20,7 +20,7 @@ DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt
 }
 
 /**
- * @brief DialogWrapMargin::connectSlots
+ * @brief
  */
 void DialogWrapMargin::connectSlots() {
 	connect(ui.checkWrapAndFill, &QCheckBox::toggled, this, &DialogWrapMargin::checkWrapAndFill_toggled);

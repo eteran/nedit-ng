@@ -51,7 +51,8 @@ struct UpdateState {
 };
 
 /**
- * @brief DialogWindowTitle::DialogWindowTitle
+ * @brief
+ *
  * @param document
  * @param parent
  * @param f
@@ -95,7 +96,7 @@ DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, 
 }
 
 /**
- * @brief DialogWindowTitle::connectSlots
+ * @brief
  */
 void DialogWindowTitle::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogWindowTitle::buttonBox_clicked);
@@ -141,7 +142,8 @@ void DialogWindowTitle::setToggleButtons() {
 }
 
 /**
- * @brief DialogWindowTitle::editFormat_textChanged
+ * @brief
+ *
  * @param text
  */
 void DialogWindowTitle::editFormat_textChanged(const QString &text) {
@@ -150,7 +152,7 @@ void DialogWindowTitle::editFormat_textChanged(const QString &text) {
 }
 
 /**
- * @brief DialogWindowTitle::formatChangedCB
+ * @brief
  */
 void DialogWindowTitle::formatChangedCB() {
 
@@ -183,7 +185,8 @@ void DialogWindowTitle::formatChangedCB() {
 }
 
 /**
- * @brief DialogWindowTitle::FormatWindowTitle
+ * @brief
+ *
  * @param document
  * @param clearCaseViewTag
  * @param serverName
@@ -291,7 +294,8 @@ QString DialogWindowTitle::formatWindowTitleAndUpdate(const QString &filename, c
 }
 
 /**
- * @brief DialogWindowTitle::checkFileName_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogWindowTitle::checkFileName_toggled(bool checked) {
@@ -303,7 +307,8 @@ void DialogWindowTitle::checkFileName_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::checkHostName_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogWindowTitle::checkHostName_toggled(bool checked) {
@@ -315,7 +320,8 @@ void DialogWindowTitle::checkHostName_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::checkFileStatus_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogWindowTitle::checkFileStatus_toggled(bool checked) {
@@ -334,7 +340,8 @@ void DialogWindowTitle::checkFileStatus_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::checkBrief_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogWindowTitle::checkBrief_toggled(bool checked) {
@@ -357,7 +364,8 @@ void DialogWindowTitle::checkBrief_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::checkUserName_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogWindowTitle::checkUserName_toggled(bool checked) {
@@ -369,7 +377,8 @@ void DialogWindowTitle::checkUserName_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::checkClearCase_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogWindowTitle::checkClearCase_toggled(bool checked) {
@@ -381,7 +390,8 @@ void DialogWindowTitle::checkClearCase_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::checkServerName_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogWindowTitle::checkServerName_toggled(bool checked) {
@@ -393,7 +403,8 @@ void DialogWindowTitle::checkServerName_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::checkDirectory_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogWindowTitle::checkDirectory_toggled(bool checked) {
@@ -427,7 +438,8 @@ void DialogWindowTitle::checkDirectory_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::checkFileModified_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogWindowTitle::checkFileModified_toggled(bool checked) {
@@ -436,7 +448,8 @@ void DialogWindowTitle::checkFileModified_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::checkFileReadOnly_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogWindowTitle::checkFileReadOnly_toggled(bool checked) {
@@ -445,7 +458,8 @@ void DialogWindowTitle::checkFileReadOnly_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::checkFileLocked_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogWindowTitle::checkFileLocked_toggled(bool checked) {
@@ -454,7 +468,8 @@ void DialogWindowTitle::checkFileLocked_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::checkServerNamePresent_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogWindowTitle::checkServerNamePresent_toggled(bool checked) {
@@ -469,7 +484,8 @@ void DialogWindowTitle::checkServerNamePresent_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::checkClearCasePresent_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogWindowTitle::checkClearCasePresent_toggled(bool checked) {
@@ -481,7 +497,8 @@ void DialogWindowTitle::checkClearCasePresent_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::checkDirectoryPresent_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogWindowTitle::checkDirectoryPresent_toggled(bool checked) {
@@ -490,7 +507,8 @@ void DialogWindowTitle::checkDirectoryPresent_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::checkServerEqualsCC_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogWindowTitle::checkServerEqualsCC_toggled(bool checked) {
@@ -503,7 +521,8 @@ void DialogWindowTitle::checkServerEqualsCC_toggled(bool checked) {
 }
 
 /**
- * @brief DialogWindowTitle::appendToFormat
+ * @brief
+ *
  * @param string
  */
 void DialogWindowTitle::appendToFormat(const QString &string) {
@@ -512,7 +531,8 @@ void DialogWindowTitle::appendToFormat(const QString &string) {
 }
 
 /**
- * @brief DialogWindowTitle::removeFromFormat
+ * @brief
+ *
  * @param string
  */
 void DialogWindowTitle::removeFromFormat(const QString &string) {
@@ -536,7 +556,8 @@ void DialogWindowTitle::removeFromFormat(const QString &string) {
 }
 
 /**
- * @brief DialogWindowTitle::on_buttonBox_clicked
+ * @brief
+ *
  * @param button
  */
 void DialogWindowTitle::buttonBox_clicked(QAbstractButton *button) {
@@ -556,7 +577,8 @@ void DialogWindowTitle::buttonBox_clicked(QAbstractButton *button) {
 }
 
 /**
- * @brief DialogWindowTitle::editDirectory_textChanged
+ * @brief
+ *
  * @param text
  */
 void DialogWindowTitle::editDirectory_textChanged(const QString &text) {
@@ -581,7 +603,8 @@ void DialogWindowTitle::editDirectory_textChanged(const QString &text) {
 }
 
 /**
- * @brief DialogWindowTitle::FormatWindowTitleInternal
+ * @brief
+ *
  * @param filename
  * @param path
  * @param clearCaseViewTag

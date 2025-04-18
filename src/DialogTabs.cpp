@@ -11,7 +11,8 @@
 #include <QMessageBox>
 
 /**
- * @brief DialogTabs::DialogTabs
+ * @brief
+ *
  * @param document
  * @param parent
  * @param f
@@ -56,7 +57,7 @@ DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlag
 }
 
 /**
- * @brief DialogTabs::connectSlots
+ * @brief
  */
 void DialogTabs::connectSlots() {
 	connect(ui.checkEmulateTabs, &QCheckBox::toggled, this, &DialogTabs::checkEmulateTabs_toggled);
@@ -65,7 +66,8 @@ void DialogTabs::connectSlots() {
 }
 
 /**
- * @brief DialogTabs::checkEmulateTabs_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogTabs::checkEmulateTabs_toggled(bool checked) {
@@ -74,7 +76,7 @@ void DialogTabs::checkEmulateTabs_toggled(bool checked) {
 }
 
 /**
- * @brief DialogTabs::buttonBox_accepted
+ * @brief
  */
 void DialogTabs::buttonBox_accepted() {
 
@@ -132,7 +134,7 @@ void DialogTabs::buttonBox_accepted() {
 }
 
 /**
- * @brief DialogTabs::buttonBox_helpRequested
+ * @brief
  */
 void DialogTabs::buttonBox_helpRequested() {
 	Help::displayTopic(Help::Topic::TabsDialog);

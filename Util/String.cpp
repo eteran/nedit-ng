@@ -26,7 +26,8 @@ QString ensure_newline(const QString &string) {
 }
 
 /**
- * @brief to_upper
+ * @brief
+ *
  * @param s
  * @return
  */
@@ -41,7 +42,8 @@ std::string to_upper(std::string_view s) {
 }
 
 /**
- * @brief to_lower
+ * @brief
+ *
  * @param s
  * @return
  */

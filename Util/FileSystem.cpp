@@ -25,7 +25,8 @@ constexpr int FORMAT_SAMPLE_CHARS = 2000;
 /**
  * Decompose a Unix file name into a file name and a path.
  *
- * @brief parseFilename
+ * @brief
+ *
  * @param fullname
  * @return
  */
@@ -60,7 +61,8 @@ PathInfo parseFilename(const QString &fullname) {
 }
 
 /**
- * @brief NormalizePathname
+ * @brief
+ *
  * @param pathname
  * @return
  */
@@ -186,7 +188,8 @@ void ConvertToMac(std::string &text) {
 }
 
 /**
- * @brief ConvertFromMac
+ * @brief
+ *
  * @param text
  */
 void ConvertFromMac(std::string &text) {
@@ -194,7 +197,8 @@ void ConvertFromMac(std::string &text) {
 }
 
 /**
- * @brief ConvertFromDos
+ * @brief
+ *
  * @param text
  */
 void ConvertFromDos(std::string &text) {
@@ -202,7 +206,8 @@ void ConvertFromDos(std::string &text) {
 }
 
 /**
- * @brief ConvertFromDos
+ * @brief
+ *
  * @param text
  * @param pendingCR
  */

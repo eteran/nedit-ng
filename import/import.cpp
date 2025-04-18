@@ -108,7 +108,8 @@ QString writeMenuItemString(const std::vector<MenuItem> &menuItems, bool isShell
 }
 
 /**
- * @brief copyMacroToEnd
+ * @brief
+ *
  * @param in
  * @return
  */
@@ -178,7 +179,8 @@ QString copyMacroToEnd(Input &in) {
 }
 
 /**
- * @brief loadMenuItemString
+ * @brief
+ *
  * @param inString
  * @param isShellCommand
  * @return
@@ -488,7 +490,8 @@ QString covertRGBColor(const QString &color) {
 }
 
 /**
- * @brief main
+ * @brief
+ *
  * @param argc
  * @param argv
  * @return

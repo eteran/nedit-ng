@@ -6,7 +6,8 @@
 #include <QLocale>
 
 /**
- * @brief DialogAbout::DialogAbout
+ * @brief
+ *
  * @param parent
  * @param f
  */
@@ -29,7 +30,8 @@ DialogAbout::DialogAbout(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief DialogAbout::createInfoString
+ * @brief
+ *
  * @return
  */
 QString DialogAbout::createInfoString() {

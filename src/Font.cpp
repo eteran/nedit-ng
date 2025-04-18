@@ -9,7 +9,8 @@
 namespace Font {
 
 /**
- * @brief fromString
+ * @brief
+ *
  * @param fontName
  * @return
  */
@@ -34,7 +35,8 @@ QFont fromString(const QString &fontName) {
 }
 
 /**
- * @brief maxWidth
+ * @brief
+ *
  * @param fm
  * @return
  */
@@ -43,7 +45,8 @@ int maxWidth(const QFontMetrics &fm) {
 }
 
 /**
- * @brief characterWidth
+ * @brief
+ *
  * @param fm
  * @param ch
  * @return
@@ -57,7 +60,8 @@ int characterWidth(const QFontMetrics &fm, QChar ch) {
 }
 
 /**
- * @brief stringWidth
+ * @brief
+ *
  * @param fm
  * @param s
  * @return
@@ -71,7 +75,8 @@ int stringWidth(const QFontMetrics &fm, const QString &s) {
 }
 
 /**
- * @brief pointSizes
+ * @brief
+ *
  * @param font
  * @return
  */

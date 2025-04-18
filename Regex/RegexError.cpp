@@ -5,7 +5,8 @@
 #include <QtDebug>
 
 /**
- * @brief RegexError::RegexError
+ * @brief
+ *
  * @param fmt
  */
 RegexError::RegexError(const char *fmt, ...) {
@@ -18,7 +19,8 @@ RegexError::RegexError(const char *fmt, ...) {
 }
 
 /**
- * @brief RegexError::what
+ * @brief
+ *
  * @return
  */
 const char *RegexError::what() const noexcept {
@@ -26,7 +28,8 @@ const char *RegexError::what() const noexcept {
 }
 
 /**
- * @brief reg_error
+ * @brief
+ *
  * @param str
  */
 void reg_error(const char *str) {

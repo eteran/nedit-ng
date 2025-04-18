@@ -4,7 +4,8 @@
 #include <QPushButton>
 
 /**
- * @brief DialogPrompt::DialogPrompt
+ * @brief
+ *
  * @param parent
  * @param f
  */
@@ -16,14 +17,15 @@ DialogPrompt::DialogPrompt(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief DialogPrompt::connectSlots
+ * @brief
  */
 void DialogPrompt::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogPrompt::buttonBox_clicked);
 }
 
 /**
- * @brief DialogPrompt::addButton
+ * @brief
+ *
  * @param text
  */
 void DialogPrompt::addButton(const QString &text) {
@@ -32,7 +34,8 @@ void DialogPrompt::addButton(const QString &text) {
 }
 
 /**
- * @brief DialogPrompt::addButton
+ * @brief
+ *
  * @param button
  */
 void DialogPrompt::addButton(QDialogButtonBox::StandardButton button) {
@@ -41,7 +44,8 @@ void DialogPrompt::addButton(QDialogButtonBox::StandardButton button) {
 }
 
 /**
- * @brief DialogPrompt::setMessage
+ * @brief
+ *
  * @param text
  */
 void DialogPrompt::setMessage(const QString &text) {
@@ -49,7 +53,8 @@ void DialogPrompt::setMessage(const QString &text) {
 }
 
 /**
- * @brief DialogPrompt::showEvent
+ * @brief
+ *
  * @param event
  */
 void DialogPrompt::showEvent(QShowEvent *event) {
@@ -60,7 +65,8 @@ void DialogPrompt::showEvent(QShowEvent *event) {
 }
 
 /**
- * @brief DialogPrompt::buttonBox_clicked
+ * @brief
+ *
  * @param button
  */
 void DialogPrompt::buttonBox_clicked(QAbstractButton *button) {

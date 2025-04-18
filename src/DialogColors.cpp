@@ -13,7 +13,8 @@
 namespace {
 
 /**
- * @brief toString
+ * @brief
+ *
  * @param color
  * @return
  */
@@ -22,7 +23,8 @@ QString toString(const QColor &color) {
 }
 
 /**
- * @brief toIcon
+ * @brief
+ *
  * @param color
  * @return
  */
@@ -41,7 +43,8 @@ QIcon toIcon(const QColor &color) {
 }
 
 /**
- * @brief DialogColors::DialogColors
+ * @brief
+ *
  * @param parent
  * @param f
  */
@@ -130,7 +133,8 @@ DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief DialogColors::chooseColor
+ * @brief
+ *
  * @param edit
  */
 QColor DialogColors::chooseColor(QPushButton *button, const QColor &currentColor) {
@@ -147,7 +151,7 @@ QColor DialogColors::chooseColor(QPushButton *button, const QColor &currentColor
 }
 
 /**
- * @brief DialogColors::updateColors
+ * @brief
  *
  * Update the colors in the window or in the preferences
  */

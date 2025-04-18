@@ -12,7 +12,8 @@
 #include <utility>
 
 /**
- * @brief DialogPrint::DialogPrint
+ * @brief
+ *
  * @param contents
  * @param jobName
  * @param document
@@ -33,14 +34,15 @@ DialogPrint::DialogPrint(QString contents, QString jobName, DocumentWidget *docu
 }
 
 /**
- * @brief DialogPrint::connectSlots
+ * @brief
  */
 void DialogPrint::connectSlots() {
 	connect(ui.buttonPrint, &QPushButton::clicked, this, &DialogPrint::buttonPrint_clicked);
 }
 
 /**
- * @brief DialogPrint::on_printers_currentIndexChanged
+ * @brief
+ *
  * @param index
  */
 void DialogPrint::on_printers_currentIndexChanged(int index) {
@@ -54,7 +56,8 @@ void DialogPrint::on_printers_currentIndexChanged(int index) {
 }
 
 /**
- * @brief DialogPrint::print
+ * @brief
+ *
  * @param printer
  */
 void DialogPrint::print(QPrinter *printer) const {
@@ -69,7 +72,7 @@ void DialogPrint::print(QPrinter *printer) const {
 }
 
 /**
- * @brief DialogPrint::buttonPrint_clicked
+ * @brief
  */
 void DialogPrint::buttonPrint_clicked() {
 
@@ -128,7 +131,8 @@ void DialogPrint::buttonPrint_clicked() {
 }
 
 /**
- * @brief DialogPrint::showEvent
+ * @brief
+ *
  * @param event
  */
 void DialogPrint::showEvent(QShowEvent *event) {

@@ -6,7 +6,8 @@
 namespace ClearCase {
 
 /**
- * @brief GetVersionExtendedPathIndex
+ * @brief
+ *
  * @param fullname
  * @return
  */
@@ -15,7 +16,8 @@ int GetVersionExtendedPathIndex(const QString &fullname) {
 }
 
 /**
- * @brief GetVersionExtendedPath
+ * @brief
+ *
  * @param fullname
  * @return
  */

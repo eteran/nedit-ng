@@ -6,7 +6,8 @@
 #include <QString>
 
 /**
- * @brief Input::Input
+ * @brief
+ *
  * @param input
  */
 Input::Input(const QString *input)
@@ -15,7 +16,8 @@ Input::Input(const QString *input)
 }
 
 /**
- * @brief Input::operator +=
+ * @brief
+ *
  * @param n
  * @return
  */
@@ -38,7 +40,8 @@ Input &Input::operator-=(int n) {
 }
 
 /**
- * @brief Input::operator *
+ * @brief
+ *
  * @return
  */
 QChar Input::operator*() const {
@@ -46,7 +49,8 @@ QChar Input::operator*() const {
 }
 
 /**
- * @brief Input::read
+ * @brief
+ *
  * @return
  */
 QChar Input::peek() const {
@@ -78,7 +82,8 @@ QChar Input::operator[](int index) const {
 }
 
 /**
- * @brief Input::operator ++
+ * @brief
+ *
  * @return
  */
 Input &Input::operator++() {
@@ -90,7 +95,8 @@ Input &Input::operator++() {
 }
 
 /**
- * @brief Input::operator ++
+ * @brief
+ *
  * @return
  */
 Input Input::operator++(int) {
@@ -102,7 +108,8 @@ Input Input::operator++(int) {
 }
 
 /**
- * @brief Input::operator --
+ * @brief
+ *
  * @return
  */
 Input &Input::operator--() {
@@ -114,7 +121,8 @@ Input &Input::operator--() {
 }
 
 /**
- * @brief Input::operator --
+ * @brief
+ *
  * @return
  */
 Input Input::operator--(int) {
@@ -126,7 +134,8 @@ Input Input::operator--(int) {
 }
 
 /**
- * @brief Input::eof
+ * @brief
+ *
  * @return
  */
 bool Input::atEnd() const {
@@ -134,7 +143,7 @@ bool Input::atEnd() const {
 }
 
 /**
- * @brief Input::consumeWhitespace
+ * @brief
  */
 void Input::skipWhitespace() {
 	while (!atEnd() && (string_->at(index_) == QLatin1Char(' ') || string_->at(index_) == QLatin1Char('\t'))) {
@@ -143,7 +152,7 @@ void Input::skipWhitespace() {
 }
 
 /**
- * @brief Input::skipWhitespaceNL
+ * @brief
  */
 void Input::skipWhitespaceNL() {
 	while (!atEnd() && (string_->at(index_) == QLatin1Char(' ') || string_->at(index_) == QLatin1Char('\t') || string_->at(index_) == QLatin1Char('\n'))) {
@@ -152,7 +161,8 @@ void Input::skipWhitespaceNL() {
 }
 
 /**
- * @brief Input::operator -
+ * @brief
+ *
  * @param rhs
  * @return
  */
@@ -162,7 +172,8 @@ int Input::operator-(const Input &rhs) const {
 }
 
 /**
- * @brief Input::operator +
+ * @brief
+ *
  * @param rhs
  * @return
  */
@@ -173,7 +184,8 @@ Input Input::operator+(int rhs) const {
 }
 
 /**
- * @brief Input::operator -
+ * @brief
+ *
  * @param rhs
  * @return
  */
@@ -184,7 +196,8 @@ Input Input::operator-(int rhs) const {
 }
 
 /**
- * @brief Input::operator ==
+ * @brief
+ *
  * @param rhs
  * @return
  */
@@ -193,7 +206,8 @@ bool Input::operator==(const Input &rhs) const {
 }
 
 /**
- * @brief Input::operator !=
+ * @brief
+ *
  * @param rhs
  * @return
  */
@@ -202,7 +216,8 @@ bool Input::operator!=(const Input &rhs) const {
 }
 
 /**
- * @brief Input::consume
+ * @brief
+ *
  * @param chars
  */
 void Input::consume(const QString &chars) {
@@ -219,7 +234,8 @@ void Input::consume(const QString &chars) {
 }
 
 /**
- * @brief Input::consume
+ * @brief
+ *
  * @param re
  */
 void Input::consume(const QRegularExpression &re) {
@@ -241,7 +257,8 @@ void Input::consume(const QRegularExpression &re) {
 }
 
 /**
- * @brief match
+ * @brief
+ *
  * @param re
  * @param m
  * @return
@@ -274,7 +291,8 @@ bool Input::match(const QRegularExpression &re, QString *m) {
 }
 
 /**
- * @brief Input::match
+ * @brief
+ *
  * @param s
  * @return
  */
@@ -293,7 +311,8 @@ bool Input::match(const QString &s) {
 }
 
 /**
- * @brief Input::match
+ * @brief
+ *
  * @param ch
  * @return
  */
@@ -311,7 +330,8 @@ bool Input::match(QChar ch) {
 }
 
 /**
- * @brief Input::mid
+ * @brief
+ *
  * @param length
  * @return
  */
@@ -320,7 +340,8 @@ QString Input::mid(int length) const {
 }
 
 /**
- * @brief Input::mid
+ * @brief
+ *
  * @return
  */
 QString Input::mid() const {
@@ -328,7 +349,8 @@ QString Input::mid() const {
 }
 
 /**
- * @brief Input::find
+ * @brief
+ *
  * @param s
  * @return
  */
@@ -337,7 +359,8 @@ int Input::find(const QString &s) const {
 }
 
 /**
- * @brief Input::find
+ * @brief
+ *
  * @param ch
  * @return
  */
@@ -346,7 +369,8 @@ int Input::find(QChar ch) const {
 }
 
 /**
- * @brief Input::index
+ * @brief
+ *
  * @return
  */
 int Input::index() const {
@@ -354,7 +378,8 @@ int Input::index() const {
 }
 
 /**
- * @brief Input::string
+ * @brief
+ *
  * @return
  */
 const QString *Input::string() const {
@@ -362,7 +387,8 @@ const QString *Input::string() const {
 }
 
 /**
- * @brief Input::readUntil
+ * @brief
+ *
  * @param ch
  * @return
  */

@@ -3,7 +3,8 @@
 #include "Util/algorithm.h"
 
 /**
- * @brief DocumentModel::LanguageModeModel
+ * @brief
+ *
  * @param parent
  */
 DocumentModel::DocumentModel(QObject *parent)
@@ -11,7 +12,8 @@ DocumentModel::DocumentModel(QObject *parent)
 }
 
 /**
- * @brief DocumentModel::index
+ * @brief
+ *
  * @param row
  * @param column
  * @param parent
@@ -31,7 +33,8 @@ QModelIndex DocumentModel::index(int row, int column, const QModelIndex &parent)
 }
 
 /**
- * @brief DocumentModel::parent
+ * @brief
+ *
  * @param index
  * @return
  */
@@ -41,7 +44,8 @@ QModelIndex DocumentModel::parent(const QModelIndex &index) const {
 }
 
 /**
- * @brief DocumentModel::data
+ * @brief
+ *
  * @param index
  * @param role
  * @return
@@ -67,7 +71,8 @@ QVariant DocumentModel::data(const QModelIndex &index, int role) const {
 }
 
 /**
- * @brief DocumentModel::headerData
+ * @brief
+ *
  * @param section
  * @param orientation
  * @param role
@@ -87,7 +92,8 @@ QVariant DocumentModel::headerData(int section, Qt::Orientation orientation, int
 }
 
 /**
- * @brief DocumentModel::columnCount
+ * @brief
+ *
  * @param parent
  * @return
  */
@@ -97,7 +103,8 @@ int DocumentModel::columnCount(const QModelIndex &parent) const {
 }
 
 /**
- * @brief DocumentModel::rowCount
+ * @brief
+ *
  * @param parent
  * @return
  */
@@ -107,7 +114,8 @@ int DocumentModel::rowCount(const QModelIndex &parent) const {
 }
 
 /**
- * @brief DocumentModel::addItem
+ * @brief
+ *
  * @param style
  */
 void DocumentModel::addItem(DocumentWidget *languageMode) {
@@ -117,7 +125,8 @@ void DocumentModel::addItem(DocumentWidget *languageMode) {
 }
 
 /**
- * @brief DocumentModel::setShowFullPath
+ * @brief
+ *
  * @param showFullPath
  */
 void DocumentModel::setShowFullPath(bool showFullPath) {
@@ -128,7 +137,7 @@ void DocumentModel::setShowFullPath(bool showFullPath) {
 }
 
 /**
- * @brief DocumentModel::clear
+ * @brief
  */
 void DocumentModel::clear() {
 	beginResetModel();
@@ -137,7 +146,8 @@ void DocumentModel::clear() {
 }
 
 /**
- * @brief DocumentModel::moveItemUp
+ * @brief
+ *
  * @param index
  */
 void DocumentModel::moveItemUp(const QModelIndex &index) {
@@ -152,7 +162,8 @@ void DocumentModel::moveItemUp(const QModelIndex &index) {
 }
 
 /**
- * @brief DocumentModel::moveItemDown
+ * @brief
+ *
  * @param index
  */
 void DocumentModel::moveItemDown(const QModelIndex &index) {
@@ -167,7 +178,8 @@ void DocumentModel::moveItemDown(const QModelIndex &index) {
 }
 
 /**
- * @brief DocumentModel::deleteItem
+ * @brief
+ *
  * @param index
  */
 void DocumentModel::deleteItem(const QModelIndex &index) {
@@ -182,7 +194,8 @@ void DocumentModel::deleteItem(const QModelIndex &index) {
 }
 
 /**
- * @brief LanguageModeModel::itemFromIndex
+ * @brief
+ *
  * @param index
  * @return
  */

@@ -113,7 +113,8 @@ int64_t moveAheadNLines(std::string_view str, int64_t &pos, int64_t n) {
 }
 
 /**
- * @brief hashTableByType
+ * @brief
+ *
  * @param mode
  * @return
  */
@@ -126,7 +127,8 @@ QMultiHash<QString, Tag> *hashTableByType(SearchMode mode) {
 }
 
 /**
- * @brief tagListByType
+ * @brief
+ *
  * @param mode
  * @return
  */
@@ -1335,7 +1337,8 @@ void showMatchingCalltip(QWidget *parent, TextArea *area, int id) {
 }
 
 /**
- * @brief searchLine
+ * @brief
+ *
  * @param line
  * @param regex
  * @return
@@ -1346,7 +1349,8 @@ bool searchLine(const QString &line, const QRegularExpression &re) {
 }
 
 /**
- * @brief Retrieve a Tag structure from the hash table
+ * @brief
+ *
  * @param name
  * @param search_type
  * @return
@@ -1361,7 +1365,8 @@ QList<Tag> getTag(const QString &name, SearchMode mode) {
 }
 
 /**
- * @brief A wrapper for calling TextDShowCalltip
+ * @brief
+ *
  * @param area
  * @param text
  * @return

@@ -3,7 +3,8 @@
 #include "interpret.h"
 
 /**
- * @brief isMacroValid
+ * @brief
+ *
  * @param expr
  * @param message
  * @param stoppedAt
