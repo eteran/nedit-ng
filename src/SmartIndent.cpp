@@ -9,6 +9,7 @@
 #include "Util/Raise.h"
 #include "Util/Resource.h"
 #include "Util/algorithm.h"
+#include "Yaml.h"
 #include "shift.h"
 
 #include <QFileInfo>
@@ -96,7 +97,7 @@ std::vector<SmartIndentEntry> loadDefaultIndentSpecs() {
 			for (auto lang_it = value.begin(); lang_it != value.end(); ++lang_it) {
 
 				SmartIndentEntry is;
-				is.language = QString::fromUtf8(lang_it->first.as<std::string>().c_str());
+				is.language = lang_it->first.as<QString>();
 
 				YAML::Node entries = lang_it->second;
 
@@ -106,11 +107,11 @@ std::vector<SmartIndentEntry> loadDefaultIndentSpecs() {
 						const YAML::Node value = set_it->second;
 
 						if (key == "on_init") {
-							is.initMacro = QString::fromUtf8(value.as<std::string>().c_str());
+							is.initMacro = value.as<QString>();
 						} else if (key == "on_newline") {
-							is.newlineMacro = QString::fromUtf8(value.as<std::string>().c_str());
+							is.newlineMacro = value.as<QString>();
 						} else if (key == "on_modification") {
-							is.modMacro = QString::fromUtf8(value.as<std::string>().c_str());
+							is.modMacro = value.as<QString>();
 						}
 					}
 				}
@@ -140,7 +141,7 @@ QString loadDefaultCommonMacros() {
 		const YAML::Node value = it->second;
 
 		if (key == "common") {
-			return QString::fromUtf8(value.as<std::string>().c_str());
+			return value.as<QString>();
 		}
 	}
 
@@ -206,7 +207,7 @@ void loadSmartIndentString(const QString &string) {
 				const YAML::Node value = it->second;
 
 				if (key == "common") {
-					CommonMacros = QString::fromUtf8(value.as<std::string>().c_str());
+					CommonMacros = value.as<QString>();
 					if (CommonMacros == QLatin1String("Default")) {
 						CommonMacros = loadDefaultCommonMacros();
 					}
@@ -214,7 +215,7 @@ void loadSmartIndentString(const QString &string) {
 					for (auto lang_it = value.begin(); lang_it != value.end(); ++lang_it) {
 
 						SmartIndentEntry is;
-						is.language        = QString::fromUtf8(lang_it->first.as<std::string>().c_str());
+						is.language        = lang_it->first.as<QString>();
 						YAML::Node entries = lang_it->second;
 
 						if (entries.IsMap()) {
@@ -223,11 +224,11 @@ void loadSmartIndentString(const QString &string) {
 								const YAML::Node value = set_it->second;
 
 								if (key == "on_init") {
-									is.initMacro = QString::fromUtf8(value.as<std::string>().c_str());
+									is.initMacro = value.as<QString>();
 								} else if (key == "on_newline") {
-									is.newlineMacro = QString::fromUtf8(value.as<std::string>().c_str());
+									is.newlineMacro = value.as<QString>();
 								} else if (key == "on_modification") {
-									is.modMacro = QString::fromUtf8(value.as<std::string>().c_str());
+									is.modMacro = value.as<QString>();
 								}
 							}
 						} else if (entries.as<std::string>() == "Default") {

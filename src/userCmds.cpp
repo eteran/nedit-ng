@@ -8,6 +8,7 @@
 #include "Util/Input.h"
 #include "Util/Raise.h"
 #include "Util/Resource.h"
+#include "Yaml.h"
 #include "parse.h"
 
 #include <QFileInfo>
@@ -420,11 +421,11 @@ void loadMacroMenuYaml(std::vector<MenuData> &menuItems) {
 				const YAML::Node value = it.second;
 
 				if (key == "name") {
-					menuItem.name = QString::fromUtf8(value.as<std::string>().c_str());
+					menuItem.name = value.as<QString>();
 				} else if (key == "command") {
-					menuItem.cmd = QString::fromUtf8(value.as<std::string>().c_str());
+					menuItem.cmd = value.as<QString>();
 				} else if (key == "shortcut") {
-					menuItem.shortcut = QKeySequence::fromString(QString::fromUtf8(value.as<std::string>().c_str()));
+					menuItem.shortcut = QKeySequence::fromString(value.as<QString>());
 				} else if (key == "input") {
 					const std::string &input_type = value.as<std::string>();
 					if (input_type == "selection") {
@@ -481,11 +482,11 @@ void loadShellMenuYaml(std::vector<MenuData> &menuItems) {
 				const YAML::Node value = it.second;
 
 				if (key == "name") {
-					menuItem.name = QString::fromUtf8(value.as<std::string>().c_str());
+					menuItem.name = value.as<QString>();
 				} else if (key == "command") {
-					menuItem.cmd = QString::fromUtf8(value.as<std::string>().c_str());
+					menuItem.cmd = value.as<QString>();
 				} else if (key == "shortcut") {
-					menuItem.shortcut = QKeySequence::fromString(QString::fromUtf8(value.as<std::string>().c_str()));
+					menuItem.shortcut = QKeySequence::fromString(value.as<QString>());
 				} else if (key == "input") {
 					const std::string &input_type = value.as<std::string>();
 					if (input_type == "selection") {
@@ -558,11 +559,11 @@ void loadContextMenuYaml(std::vector<MenuData> &menuItems) {
 				const YAML::Node value = it.second;
 
 				if (key == "name") {
-					menuItem.name = QString::fromUtf8(value.as<std::string>().c_str());
+					menuItem.name = value.as<QString>();
 				} else if (key == "command") {
-					menuItem.cmd = QString::fromUtf8(value.as<std::string>().c_str());
+					menuItem.cmd = value.as<QString>();
 				} else if (key == "shortcut") {
-					menuItem.shortcut = QKeySequence::fromString(QString::fromUtf8(value.as<std::string>().c_str()));
+					menuItem.shortcut = QKeySequence::fromString(value.as<QString>());
 				} else if (key == "input") {
 					const std::string input_type = value.as<std::string>();
 					if (input_type == "selection") {

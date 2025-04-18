@@ -1,5 +1,6 @@
 
 #include "Highlight.h"
+#include "Yaml.h"
 #include "DocumentWidget.h"
 #include "HighlightData.h"
 #include "HighlightPattern.h"
@@ -841,17 +842,17 @@ HighlightPattern readPatternYaml(const YAML::Node &patterns) {
 		const YAML::Node value = it->second;
 
 		if (key == "name") {
-			pattern.name = QString::fromUtf8(value.as<std::string>().c_str());
+			pattern.name = value.as<QString>();
 		} else if (key == "style") {
-			pattern.style = QString::fromUtf8(value.as<std::string>().c_str());
+			pattern.style = value.as<QString>();
 		} else if (key == "regex_start") {
-			pattern.startRE = QString::fromUtf8(value.as<std::string>().c_str());
+			pattern.startRE = value.as<QString>();
 		} else if (key == "regex_end") {
-			pattern.endRE = QString::fromUtf8(value.as<std::string>().c_str());
+			pattern.endRE = value.as<QString>();
 		} else if (key == "regex_error") {
-			pattern.errorRE = QString::fromUtf8(value.as<std::string>().c_str());
+			pattern.errorRE = value.as<QString>();
 		} else if (key == "parent") {
-			pattern.subPatternOf = QString::fromUtf8(value.as<std::string>().c_str());
+			pattern.subPatternOf = value.as<QString>();
 		} else if (key == "defer_parsing") {
 			pattern.flags |= value.as<bool>() ? DEFER_PARSING : 0;
 		} else if (key == "color_only") {
@@ -876,7 +877,7 @@ std::optional<PatternSet> readPatternSetYaml(YAML::const_iterator it) {
 
 	try {
 		PatternSet patternSet;
-		patternSet.languageMode = QString::fromUtf8(it->first.as<std::string>().c_str());
+		patternSet.languageMode = it->first.as<QString>();
 		YAML::Node entries      = it->second;
 
 		if (entries.IsMap()) {
