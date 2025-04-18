@@ -16,6 +16,7 @@
 #include "Util/User.h"
 #include "Util/algorithm.h"
 #include "Util/version.h"
+#include "Yaml.h"
 #include "nedit.h"
 #include "userCmds.h"
 
@@ -95,9 +96,9 @@ std::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 			const YAML::Node value = it->second;
 
 			if (key == "name") {
-				lm.name = QString::fromStdString(value.as<std::string>());
+				lm.name = value.as<QString>();
 			} else if (key == "delimiters") {
-				lm.delimiters = QString::fromStdString(value.as<std::string>());
+				lm.delimiters = value.as<QString>();
 			} else if (key == "tab_distance") {
 				lm.tabDist = value.as<int>();
 			} else if (key == "em_tab_distance") {
@@ -105,9 +106,9 @@ std::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 			} else if (key == "insert_tabs") {
 				lm.insertTabs = value.as<bool>();
 			} else if (key == "regex") {
-				lm.recognitionExpr = QString::fromStdString(value.as<std::string>());
+				lm.recognitionExpr = value.as<QString>();
 			} else if (key == "wrap") {
-				auto string_val = QString::fromStdString(value.as<std::string>());
+				auto string_val = value.as<QString>();
 				auto it         = std::find(std::begin(AutoWrapTypes), std::end(AutoWrapTypes), string_val);
 				if (it == std::end(AutoWrapTypes)) {
 					Raise<ModeError>(tr("unrecognized wrap style"));
@@ -115,7 +116,7 @@ std::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 
 				lm.wrapStyle = static_cast<WrapStyle>(it - std::begin(AutoWrapTypes));
 			} else if (key == "indent") {
-				auto string_val = QString::fromStdString(value.as<std::string>());
+				auto string_val = value.as<QString>();
 				auto it         = std::find(std::begin(AutoIndentTypes), std::end(AutoIndentTypes), string_val);
 				if (it == std::end(AutoIndentTypes)) {
 					Raise<ModeError>(tr("unrecognized indent style"));
@@ -123,14 +124,9 @@ std::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 
 				lm.indentStyle = static_cast<IndentStyle>(it - std::begin(AutoIndentTypes));
 			} else if (key == "default_tips") {
-				lm.defTipsFile = QString::fromStdString(value.as<std::string>());
+				lm.defTipsFile = value.as<QString>();
 			} else if (key == "extensions") {
-				QStringList extensions;
-				for (size_t i = 0; i < value.size(); i++) {
-					const YAML::Node extension = value[i];
-					extensions.push_back(QString::fromUtf8(extension.as<std::string>().c_str()));
-				}
-				lm.extensions = extensions;
+				lm.extensions = value.as<QStringList>();
 			}
 		}
 
