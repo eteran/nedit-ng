@@ -53,7 +53,7 @@ DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatte
 }
 
 /**
- * @brief Connects the slots for the dialog buttons and list view.
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogDrawingStyles::connectSlots() {
 	connect(ui.buttonNew, &QPushButton::clicked, this, &DialogDrawingStyles::buttonNew_clicked);

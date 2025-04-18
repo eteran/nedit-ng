@@ -33,7 +33,7 @@ DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlag
 }
 
 /**
- * @brief
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogSmartIndentCommon::connectSlots() {
 	connect(ui.buttonOK, &QPushButton::clicked, this, &DialogSmartIndentCommon::buttonOK_clicked);

@@ -297,7 +297,7 @@ void MainWindow::setupISearchBar() {
 }
 
 /**
- * @brief
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void MainWindow::connectSlots() {
 	connect(ui.buttonIFind, &QPushButton::clicked, this, &MainWindow::buttonIFind_clicked);

@@ -3,6 +3,12 @@
 
 #include <QPushButton>
 
+/**
+ * @brief
+ *
+ * @param parent
+ * @param f
+ */
 DialogPromptString::DialogPromptString(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
 	setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowCloseButtonHint | Qt::WindowTitleHint);
@@ -10,6 +16,9 @@ DialogPromptString::DialogPromptString(QWidget *parent, Qt::WindowFlags f)
 	connectSlots();
 }
 
+/**
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
+ */
 void DialogPromptString::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogPromptString::buttonBox_clicked);
 }

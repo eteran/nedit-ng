@@ -4,10 +4,10 @@
 #include <QKeyEvent>
 
 /**
- * @brief
+ * @brief Constructor for DialogFilter class
  *
- * @param parent
- * @param f
+ * @param parent The parent widget, defaults to nullptr
+ * @param f The window flags, defaults to Qt::WindowFlags()
  */
 DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
@@ -20,14 +20,20 @@ DialogFilter::DialogFilter(QWidget *parent, Qt::WindowFlags f)
 	history_ << QLatin1String("");
 }
 
+/**
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
+ */
 void DialogFilter::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogFilter::buttonBox_accepted);
 }
 
 /**
- * @brief
+ * @brief Handles key press events for the filter text input.
+ * This method allows the user to navigate through filter history using the up and down arrow keys.
+ * If the up arrow is pressed, it retrieves the previous filter from history.
+ * If the down arrow is pressed, it retrieves the next filter in history.
  *
- * @param event
+ * @param event The key event that was pressed.
  */
 void DialogFilter::keyPressEvent(QKeyEvent *event) {
 	if (ui.textFilter->hasFocus()) {
@@ -56,9 +62,10 @@ void DialogFilter::keyPressEvent(QKeyEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Handles the show event for the dialog.
+ * This method resets the filter text and history index to allow for a fresh start each time the dialog is shown.
  *
- * @param event
+ * @param event The show event that is triggered when the dialog is displayed.
  */
 void DialogFilter::showEvent(QShowEvent *event) {
 	historyIndex_ = 0;
@@ -67,7 +74,7 @@ void DialogFilter::showEvent(QShowEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Handles the acceptance of the dialog.
  */
 void DialogFilter::buttonBox_accepted() {
 
@@ -78,9 +85,9 @@ void DialogFilter::buttonBox_accepted() {
 }
 
 /**
- * @brief
+ * @brief Returns the current text from the filter input field.
  *
- * @return
+ * @return The text currently entered in the filter input field.
  */
 QString DialogFilter::currentText() const {
 	return ui.textFilter->text();

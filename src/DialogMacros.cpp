@@ -59,7 +59,7 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogMacros::connectSlots() {
 	connect(ui.buttonNew, &QPushButton::clicked, this, &DialogMacros::buttonNew_clicked);

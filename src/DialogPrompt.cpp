@@ -17,7 +17,7 @@ DialogPrompt::DialogPrompt(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogPrompt::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogPrompt::buttonBox_clicked);

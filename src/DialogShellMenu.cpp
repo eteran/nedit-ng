@@ -45,7 +45,7 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogShellMenu::connectSlots() {
 	connect(ui.buttonNew, &QPushButton::clicked, this, &DialogShellMenu::buttonNew_clicked);

@@ -56,9 +56,9 @@ Main::~Main() {
 }
 
 /**
- * @brief
+ * @brief Constructor for Main class.
  *
- * @param args
+ * @param args The command line arguments passed to the application.
  */
 Main::Main(const QStringList &args) {
 

@@ -50,7 +50,7 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 }
 
 /**
- * @brief
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogWindowBackgroundMenu::connectSlots() {
 	connect(ui.buttonNew, &QPushButton::clicked, this, &DialogWindowBackgroundMenu::buttonNew_clicked);

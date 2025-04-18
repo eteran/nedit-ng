@@ -2,10 +2,10 @@
 #include "DialogOutput.h"
 
 /**
- * @brief
+ * @brief Constructor for DialogOutput class
  *
- * @param parent
- * @param f
+ * @param parent The parent widget, defaults to nullptr
+ * @param f The window flags, defaults to Qt::WindowFlags()
  */
 DialogOutput::DialogOutput(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
@@ -14,9 +14,9 @@ DialogOutput::DialogOutput(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief
+ * @brief Sets the text in the dialog's plain text edit area.
  *
- * @param text
+ * @param text The text to be set in the plain text edit area.
  */
 void DialogOutput::setText(const QString &text) {
 	ui.plainTextEdit->setPlainText(text);

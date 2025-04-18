@@ -57,7 +57,7 @@ DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlag
 }
 
 /**
- * @brief
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogTabs::connectSlots() {
 	connect(ui.checkEmulateTabs, &QCheckBox::toggled, this, &DialogTabs::checkEmulateTabs_toggled);

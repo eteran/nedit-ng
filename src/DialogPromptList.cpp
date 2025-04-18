@@ -5,6 +5,12 @@
 
 // NOTE(eteran): maybe we want to present an option to have this be a combo box instead?
 
+/**
+ * @brief
+ *
+ * @param parent
+ * @param f
+ */
 DialogPromptList::DialogPromptList(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
 
@@ -13,6 +19,9 @@ DialogPromptList::DialogPromptList(QWidget *parent, Qt::WindowFlags f)
 	connectSlots();
 }
 
+/**
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
+ */
 void DialogPromptList::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogPromptList::buttonBox_clicked);
 }

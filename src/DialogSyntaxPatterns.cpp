@@ -65,7 +65,7 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogSyntaxPatterns::connectSlots() {
 	connect(ui.buttonLanguageMode, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonLanguageMode_clicked);

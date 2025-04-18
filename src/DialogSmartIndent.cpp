@@ -51,7 +51,7 @@ DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, 
 }
 
 /**
- * @brief
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogSmartIndent::connectSlots() {
 	connect(ui.buttonCommon, &QPushButton::clicked, this, &DialogSmartIndent::buttonCommon_clicked);

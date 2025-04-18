@@ -96,7 +96,7 @@ DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, 
 }
 
 /**
- * @brief
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogWindowTitle::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogWindowTitle::buttonBox_clicked);

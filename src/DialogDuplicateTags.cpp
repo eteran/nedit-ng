@@ -20,7 +20,7 @@ DialogDuplicateTags::DialogDuplicateTags(DocumentWidget *document, TextArea *are
 }
 
 /**
- * @brief Connects the slots for the dialog buttons.
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogDuplicateTags::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogDuplicateTags::buttonBox_clicked);

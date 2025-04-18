@@ -59,7 +59,7 @@ DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatte
 }
 
 /**
- * @brief
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogLanguageModes::connectSlots() {
 	connect(ui.buttonUp, &QPushButton::clicked, this, &DialogLanguageModes::buttonUp_clicked);

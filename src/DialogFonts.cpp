@@ -55,7 +55,7 @@ DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFl
 }
 
 /**
- * @brief
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogFonts::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::clicked, this, &DialogFonts::buttonBox_clicked);

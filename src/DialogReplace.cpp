@@ -98,7 +98,7 @@ DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, Qt::W
 }
 
 /**
- * @brief
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogReplace::connectSlots() {
 	connect(ui.buttonFind, &QPushButton::clicked, this, &DialogReplace::buttonFind_clicked);
@@ -134,8 +134,7 @@ bool DialogReplace::eventFilter(QObject *obj, QEvent *ev) {
 
 	if (obj == ui.textFind && ev->type() == QEvent::KeyPress) {
 		auto event = static_cast<QKeyEvent *>(ev);
-
-		int index = window_->rHistIndex_;
+		int index  = window_->rHistIndex_;
 
 		// only process up and down arrow keys
 		if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
