@@ -4,6 +4,7 @@
 
 #include "gap_buffer_fwd.h"
 
+#include <algorithm>
 #include <cassert>
 #include <iterator>
 #include <type_traits>
@@ -93,32 +94,44 @@ public:
 	pointer operator->() const { return &buf_[pos_]; }
 
 public:
+	void swap(gap_buffer_iterator &other) {
+		using std::swap;
+		swap(pos_, other.pos_);
+		swap(buf_, other.buf_);
+	}
+
+public:
 	// templated to allow comparison between const/non-const iterators
 	template <class CharT, class Traits, bool Const>
 	bool operator==(const gap_buffer_iterator<CharT, Traits, Const> &rhs) const {
 		assert(buf_ == rhs.buf_);
 		return pos_ == rhs.pos_;
 	}
+
 	template <class CharT, class Traits, bool Const>
 	bool operator!=(const gap_buffer_iterator<CharT, Traits, Const> &rhs) const {
 		assert(buf_ == rhs.buf_);
 		return pos_ != rhs.pos_;
 	}
+
 	template <class CharT, class Traits, bool Const>
 	bool operator>(const gap_buffer_iterator<CharT, Traits, Const> &rhs) const {
 		assert(buf_ == rhs.buf_);
 		return pos_ > rhs.pos_;
 	}
+
 	template <class CharT, class Traits, bool Const>
 	bool operator<(const gap_buffer_iterator<CharT, Traits, Const> &rhs) const {
 		assert(buf_ == rhs.buf_);
 		return pos_ < rhs.pos_;
 	}
+
 	template <class CharT, class Traits, bool Const>
 	bool operator>=(const gap_buffer_iterator<CharT, Traits, Const> &rhs) const {
 		assert(buf_ == rhs.buf_);
 		return pos_ >= rhs.pos_;
 	}
+
 	template <class CharT, class Traits, bool Const>
 	bool operator<=(const gap_buffer_iterator<CharT, Traits, Const> &rhs) const {
 		assert(buf_ == rhs.buf_);
