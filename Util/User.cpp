@@ -1,5 +1,6 @@
 
 #include "Util/User.h"
+#include "Util/Environment.h"
 
 #include <QDir>
 #include <QStandardPaths>
@@ -14,10 +15,12 @@
 #include <Windows.h>
 #endif
 
-/*
-** Expand tilde characters which begin file names as done by the shell
-** If it doesn't work just return the pathname originally passed pathname
-*/
+/**
+ * @brief Expands a tilde in a pathname to the user's home directory.
+ *
+ * @param pathname the pathname to expand, which may start with a tilde (~).
+ * @return the expanded pathname. If expansion fails, returns the original pathname.
+ */
 QString expandTilde(const QString &pathname) {
 #ifdef Q_OS_UNIX
 	struct passwd *passwdEntry;
@@ -57,27 +60,31 @@ QString expandTilde(const QString &pathname) {
 }
 
 /**
- * @brief
+ * @brief Get the user's home directory.
  *
- * @return
+ * @return The path to the user's home directory.
+ *         On Unix, this is typically /home/username or /Users/username on macOS.
+ *         On Windows, this is typically C:\Users\username.
  */
 QString getHomeDir() {
 	return QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
 }
 
 /**
- * @brief
+ * @brief Prepend the user's home directory to a filename.
  *
- * @param filename
- * @return $HOME/filename
+ * @param filename the filename to prepend with the home directory.
+ * @return "$HOME/filename"
  */
 QString prependHome(const QString &filename) {
 	return QStringLiteral("%1/%2").arg(getHomeDir(), filename);
 }
 
-/*
-** Return the username of the current user
-*/
+/**
+ * @brief Get the username of the current user.
+ *
+ * @return The username of the current user.
+ */
 QString getUserName() {
 #ifdef Q_OS_UNIX
 	static QString user_name;
@@ -95,7 +102,7 @@ QString getUserName() {
 	   is misconfigured through no fault of the user.  Be nice
 	   and let the user start nc anyway. */
 	perror("nedit: getpwuid() failed - reverting to $USER");
-	return QString::fromLocal8Bit(qgetenv("USER"));
+	return GetEnvironmentVariable("USER");
 #elif defined(Q_OS_WIN)
 	wchar_t name[UNLEN + 1] = {};
 	DWORD size              = UNLEN + 1;

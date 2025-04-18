@@ -16,6 +16,7 @@
 #include "SmartIndent.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
+#include "Util/Environment.h"
 #include "Util/FileSystem.h"
 #include "Util/Input.h"
 #include "Util/algorithm.h"
@@ -2454,10 +2455,8 @@ std::error_code getenvMS(DocumentWidget *document, Arguments arguments, DataValu
 		return MacroErrorCode::NotAString;
 	}
 
-	const QByteArray value = qgetenv(name.c_str());
-
 	// Return the text as an allocated string
-	*result = make_value(QString::fromLocal8Bit(value));
+	*result = make_value(GetEnvironmentVariable(name));
 	return MacroErrorCode::Success;
 }
 

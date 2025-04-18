@@ -60,8 +60,7 @@ int getArgumentParameter(const QStringList &args, int argIndex) {
 		exit(EXIT_FAILURE);
 	}
 
-	++argIndex;
-	return argIndex;
+	return ++argIndex;
 }
 
 /**

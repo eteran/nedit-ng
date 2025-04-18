@@ -9,13 +9,13 @@
 #include <QString>
 #include <QStringList>
 
-/*
- * Create the server socket name for the server with serverName.
- * names are generated as follows as either of the following
+/**
+ * @brief Create the server socket name for the server with serverName.
+ * Names are generated as follows:
  *
- * $RUNTIME_PATH/nedit-ng_<host_name>_<server_name>_<display>
+ * $RUNTIME_PATH/nedit-ng_<host_name>_<server_name>
  *
- * nedit-ng_<host_name>_<user>_<server_name>_<display>
+ * nedit-ng_<host_name>_<user>_<server_name>
  *
  * <server_name> is the name that can be set by the user to allow
  * for multiple servers to run on the same display. <server_name>
@@ -26,9 +26,10 @@
  * A typical example of $RUNTIME_PATH would be something like:
  * /var/run/user/1000/
  *
- * NOTE(eteran): to avoid path length issues, server_name is hashed in order
- * to create a predictable, fixed length string. Which is then rendered to the path
- * as a hex-string
+ * @param server_name the unique name of the server
+ * @return the server socket name as a QString
+ *
+ * @note The server name is hashed to ensure a predictable, fixed length string.
  */
 QString LocalSocketName(const QString &server_name) {
 

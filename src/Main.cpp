@@ -31,19 +31,15 @@ constexpr const char cmdLineHelp[] =
 	"                [-h|-help] [--] [file...]\n";
 
 /**
- * @brief
+ * @brief Gets the index of the next argument parameter.
  *
- * @param args
- * @param argIndex
- * @return
+ * @param args the command line arguments.
+ * @param argIndex the current argument index.
+ * @return the next argument index.
  */
-int nextArg(const QStringList &args, int argIndex) {
-
+int getArgumentParameter(const QStringList &args, int argIndex) {
 	if (argIndex + 1 >= args.size()) {
-		fprintf(stderr, "NEdit: %s requires an argument\n%s",
-				qPrintable(args[argIndex]),
-				cmdLineHelp);
-
+		fprintf(stderr, "NEdit: %s requires an argument\n%s", qPrintable(args[argIndex]), cmdLineHelp);
 		exit(EXIT_FAILURE);
 	}
 
@@ -53,7 +49,7 @@ int nextArg(const QStringList &args, int argIndex) {
 }
 
 /**
- * @brief
+ * @brief Destructor for Main class.
  */
 Main::~Main() {
 	CleanupMacroGlobals();
@@ -115,7 +111,7 @@ Main::Main(const QStringList &args) {
 		}
 
 		if (arg == QLatin1String("-import")) {
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 			Preferences::ImportPrefFile(args[i]);
 		}
 	}
@@ -141,23 +137,23 @@ Main::Main(const QStringList &args) {
 		}
 
 		if (opts && args[i] == QLatin1String("-tags")) {
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 			if (!Tags::addTagsFile(args[i], Tags::SearchMode::TAG)) {
 				fprintf(stderr, "NEdit: Unable to load tags file\n");
 			}
 
 		} else if (opts && args[i] == QLatin1String("-do")) {
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 			if (checkDoMacroArg(args[i])) {
 				toDoCommand = args[i];
 			}
 		} else if (opts && args[i] == QLatin1String("-svrname")) {
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 
 			Settings::serverNameOverride = args[i];
 			IsServer                     = true;
 		} else if (opts && (args[i] == QLatin1String("-font") || args[i] == QLatin1String("-fn"))) {
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 
 			Settings::fontName = args[i];
 		} else if (opts && args[i] == QLatin1String("-wrap")) {
@@ -175,7 +171,7 @@ Main::Main(const QStringList &args) {
 		} else if (opts && args[i] == QLatin1String("-noautosave")) {
 			Settings::autoSave = false;
 		} else if (opts && args[i] == QLatin1String("-rows")) {
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 
 			bool ok;
 			const int n = args[i].toInt(&ok);
@@ -185,7 +181,7 @@ Main::Main(const QStringList &args) {
 				Settings::textRows = n;
 			}
 		} else if (opts && args[i] == QLatin1String("-columns")) {
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 
 			bool ok;
 			const int n = args[i].toInt(&ok);
@@ -195,7 +191,7 @@ Main::Main(const QStringList &args) {
 				Settings::textCols = n;
 			}
 		} else if (opts && args[i] == QLatin1String("-tabs")) {
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 
 			bool ok;
 			const int n = args[i].toInt(&ok);
@@ -217,7 +213,7 @@ Main::Main(const QStringList &args) {
 		} else if (opts && args[i] == QLatin1String("-group")) {
 			group = 2; // 2: start new group, 1: in group
 		} else if (opts && args[i] == QLatin1String("-line")) {
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 
 			bool ok;
 			lineNum = args[i].toInt(&ok);
@@ -241,15 +237,15 @@ Main::Main(const QStringList &args) {
 		} else if (opts && args[i] == QLatin1String("-noiconic")) {
 			iconic = false;
 		} else if (opts && (args[i] == QLatin1String("-geometry") || args[i] == QLatin1String("-g"))) {
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 
 			geometry = args[i];
 		} else if (opts && args[i] == QLatin1String("-lm")) {
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 
 			langMode = args[i];
 		} else if (opts && args[i] == QLatin1String("-import")) {
-			i = nextArg(args, i); // already processed, skip
+			i = getArgumentParameter(args, i); // already processed, skip
 		} else if (opts && (args[i] == QLatin1String("-V") || args[i] == QLatin1String("-version"))) {
 			const QString infoString = DialogAbout::createInfoString();
 			printf("%s", qPrintable(infoString));
@@ -372,9 +368,12 @@ Main::Main(const QStringList &args) {
 	}
 }
 
-/*
-** Return true if -do macro is valid, otherwise write an error on stderr
-*/
+/**
+ * @brief Check if the macro argument for -do is valid.
+ *
+ * @param macro The macro string to check.
+ * @return Return true if -do macro is valid, otherwise report the an and return false.
+ */
 bool Main::checkDoMacroArg(const QString &macro) {
 
 	QString errMsg;

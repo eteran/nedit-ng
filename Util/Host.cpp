@@ -5,7 +5,7 @@
 #include <QString>
 
 /**
- * @brief
+ * @brief Get the hostname of the system.
  *
  * @return the hostname of the system
  */
