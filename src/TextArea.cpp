@@ -6524,7 +6524,7 @@ int TextArea::offsetWrappedRow(int row) const {
 	return gsl::narrow<int>(buffer_->BufCountLines(firstChar_, lineStarts_[row]));
 }
 
-void TextArea::setWordDelimiters(const std::string &delimiters) {
+void TextArea::setWordDelimiters(std::string_view delimiters) {
 
 	// add mandatory delimiters blank, tab, and newline to the list
 	delimiters_ = " \t\n";

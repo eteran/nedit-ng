@@ -770,9 +770,9 @@ Symbol *InstallSymbolEx(const QString &name, SymTypes type, const DataValue &val
 	return InstallSymbol(name.toStdString(), type, value);
 }
 
-Symbol *InstallSymbol(const std::string &name, SymTypes type, const DataValue &value) {
+Symbol *InstallSymbol(std::string_view name, SymTypes type, const DataValue &value) {
 
-	auto s = new Symbol{name, type, value};
+	auto s = new Symbol{std::string(name), type, value};
 
 	if (type == LOCAL_SYM) {
 		LocalSymList.push_front(s);
