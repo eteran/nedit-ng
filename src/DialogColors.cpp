@@ -13,27 +13,26 @@
 namespace {
 
 /**
- * @brief
+ * @brief Converts a QColor to a string representation.
  *
- * @param color
- * @return
+ * @param color The QColor to convert.
+ * @return A QString representing the color in hexadecimal format.
  */
 QString toString(const QColor &color) {
 	return QStringLiteral("#%1").arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0'));
 }
 
 /**
- * @brief
+ * @brief Converts a QColor to a 32x32 QIcon containing just the color.
  *
- * @param color
- * @return
+ * @param color The QColor to convert.
+ * @return A QIcon representing the color.
  */
 QIcon toIcon(const QColor &color) {
-	QPixmap pixmap(16, 16);
+	QPixmap pixmap(32, 32);
 	QPainter painter(&pixmap);
 
 	painter.fillRect(1, 1, 30, 30, color);
-
 	painter.setPen(Qt::black);
 	painter.drawRect(0, 0, 32, 32);
 
@@ -43,10 +42,10 @@ QIcon toIcon(const QColor &color) {
 }
 
 /**
- * @brief
+ * @brief Constructor for DialogColors class
  *
- * @param parent
- * @param f
+ * @param parent The parent widget, defaults to nullptr
+ * @param f The window flags, defaults to Qt::WindowFlags()
  */
 DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
@@ -133,17 +132,18 @@ DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief
+ * @brief Opens a color dialog to choose a color for the given button.
+ * Updates the button's icon and text with the chosen color.
  *
- * @param edit
+ * @param button The button to update with the chosen color.
+ * @param currentColor The current color to show in the dialog.
+ * @return The chosen color, or an invalid color if the user cancels the dialog.
  */
 QColor DialogColors::chooseColor(QPushButton *button, const QColor &currentColor) {
 
 	QColor color = QColorDialog::getColor(currentColor, this);
 	if (color.isValid()) {
-		QPixmap pixmap(16, 16);
-		pixmap.fill(color);
-		button->setIcon(QIcon(pixmap));
+		button->setIcon(toIcon(color));
 		button->setText(toString(color));
 	}
 
@@ -151,9 +151,7 @@ QColor DialogColors::chooseColor(QPushButton *button, const QColor &currentColor
 }
 
 /**
- * @brief
- *
- * Update the colors in the window or in the preferences
+ * @brief Update the colors in the window or in the preferences
  */
 void DialogColors::updateColors() {
 

@@ -13,10 +13,13 @@
 #include <QRegularExpressionValidator>
 
 /**
- * @brief
+ * @brief Constructor for DialogDrawingStyles class
  *
- * @param parent
- * @param f
+ * @param dialogSyntaxPatterns Pointer to the DialogSyntaxPatterns instance
+ * @param highlightStyles Reference to the vector of HighlightStyle objects
+ *                        that will be modified by this dialog.
+ * @param parent The parent widget, defaults to nullptr
+ * @param f The window flags, defaults to Qt::WindowFlags()
  */
 DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatterns, std::vector<HighlightStyle> &highlightStyles, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f), highlightStyles_(highlightStyles), dialogSyntaxPatterns_(dialogSyntaxPatterns) {
@@ -50,7 +53,7 @@ DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatte
 }
 
 /**
- * @brief
+ * @brief Connects the slots for the dialog buttons and list view.
  */
 void DialogDrawingStyles::connectSlots() {
 	connect(ui.buttonNew, &QPushButton::clicked, this, &DialogDrawingStyles::buttonNew_clicked);
@@ -65,9 +68,9 @@ void DialogDrawingStyles::connectSlots() {
 }
 
 /**
- * @brief
+ * @brief Sets the current style by name in the dialog.
  *
- * @param name
+ * @param name The name of the style to set as current.
  */
 void DialogDrawingStyles::setStyleByName(const QString &name) {
 
@@ -85,7 +88,7 @@ void DialogDrawingStyles::setStyleByName(const QString &name) {
 }
 
 /**
- * @brief
+ * @brief Handler for the "New" button click event.
  */
 void DialogDrawingStyles::buttonNew_clicked() {
 
@@ -103,7 +106,7 @@ void DialogDrawingStyles::buttonNew_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handler for the "Copy" button click event.
  */
 void DialogDrawingStyles::buttonCopy_clicked() {
 
@@ -115,31 +118,31 @@ void DialogDrawingStyles::buttonCopy_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handler for the "Delete" button click event.
  */
 void DialogDrawingStyles::buttonDelete_clicked() {
 	CommonDialog::deleteItem(&ui, model_, &deleted_);
 }
 
 /**
- * @brief
+ * @brief Handler for the "Up" button click event.
  */
 void DialogDrawingStyles::buttonUp_clicked() {
 	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
- * @brief
+ * @brief Handler for the "Down" button click event.
  */
 void DialogDrawingStyles::buttonDown_clicked() {
 	CommonDialog::moveItemDown(&ui, model_);
 }
 
 /**
- * @brief
+ * @brief Handler for the change of the current item in the list view.
  *
- * @param current
- * @param previous
+ * @param current The currently selected item index.
+ * @param previous The previously selected item index.
  */
 void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
 
@@ -213,7 +216,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 }
 
 /**
- * @brief
+ * @brief Handler for the "Accepted" button click event.
  */
 void DialogDrawingStyles::buttonBox_accepted() {
 
@@ -225,9 +228,10 @@ void DialogDrawingStyles::buttonBox_accepted() {
 }
 
 /**
- * @brief
+ * @brief Handler for the button box click event.
+ * Handles the Apply button click to apply changes without closing the dialog.
  *
- * @param button
+ * @param button The button that was clicked in the button box.
  */
 void DialogDrawingStyles::buttonBox_clicked(QAbstractButton *button) {
 	if (ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
@@ -236,10 +240,10 @@ void DialogDrawingStyles::buttonBox_clicked(QAbstractButton *button) {
 }
 
 /**
- * @brief
+ * @brief Validates the fields in the dialog.
  *
- * @param mode
- * @return
+ * @param verbosity The verbosity level for error messages.
+ * @return true if the fields are valid, false otherwise.
  */
 bool DialogDrawingStyles::validateFields(Verbosity verbosity) {
 	if (readFields(verbosity)) {
@@ -249,10 +253,10 @@ bool DialogDrawingStyles::validateFields(Verbosity verbosity) {
 }
 
 /**
- * @brief
+ * @brief Reads the fields from the dialog and returns a HighlightStyle object.
  *
- * @param mode
- * @return
+ * @param verbosity The verbosity level for error messages.
+ * @return A filled out HighlightStyle object if successful, or an empty optional if validation fails.
  */
 std::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosity) {
 
@@ -333,9 +337,9 @@ std::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosit
 }
 
 /**
- * @brief
+ * @brief Applies the changes made in the dialog to the highlight styles.
  *
- * @return
+ * @return true if the changes were successfully applied, false otherwise.
  */
 bool DialogDrawingStyles::applyDialogChanges() {
 
@@ -393,10 +397,10 @@ bool DialogDrawingStyles::applyDialogChanges() {
 }
 
 /**
- * @brief
+ * @brief Updates an item in the dialog with the current field values.
  *
- * @param item
- * @return
+ * @param index The item to update, specified by its index in the model.
+ * @return true if the item was successfully updated, false otherwise.
  */
 bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
 	// Get the current contents of the "patterns" dialog fields
@@ -410,7 +414,7 @@ bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
 		return false;
 	}
 
-	// update the currently selected item's associated data
+	// update the item's associated data
 	// and make sure it has the text updated as well. Disallow renaming
 	// the last "Plain" entry though
 	auto ptr = model_->itemFromIndex(index);
@@ -427,9 +431,9 @@ bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
 }
 
 /**
- * @brief
+ * @brief Updates the currently selected item in the dialog with the current field values.
  *
- * @return
+ * @return true if the item was successfully updated, false otherwise.
  */
 bool DialogDrawingStyles::updateCurrentItem() {
 	const QModelIndex index = ui.listItems->currentIndex();
@@ -441,9 +445,9 @@ bool DialogDrawingStyles::updateCurrentItem() {
 }
 
 /**
- * @brief
+ * @brief Counts the number of "Plain" entries in the model.
  *
- * @return
+ * @return The count of "Plain" entries in the model.
  */
 int DialogDrawingStyles::countPlainEntries() const {
 	int count = 0;
@@ -458,9 +462,9 @@ int DialogDrawingStyles::countPlainEntries() const {
 }
 
 /**
- * @brief
+ * @brief Opens a color dialog to choose a color for the specified QLineEdit.
  *
- * @param edit
+ * @param edit The QLineEdit to update with the chosen color.
  */
 void DialogDrawingStyles::chooseColor(QLineEdit *edit) {
 
@@ -473,14 +477,14 @@ void DialogDrawingStyles::chooseColor(QLineEdit *edit) {
 }
 
 /**
- * @brief
+ * @brief Handler for the "Foreground" button click event.
  */
 void DialogDrawingStyles::buttonForeground_clicked() {
 	chooseColor(ui.editColorFG);
 }
 
 /**
- * @brief
+ * @brief Handler for the "Background" button click event.
  */
 void DialogDrawingStyles::buttonBackground_clicked() {
 	chooseColor(ui.editColorBG);

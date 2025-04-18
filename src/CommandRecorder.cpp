@@ -49,10 +49,10 @@ const QLatin1String RedundantActions[] = {
 	QLatin1String("start_incremental_find")};
 
 /**
- * @brief
+ * @brief Checks if the event is a mouse action.
  *
- * @param ev
- * @return
+ * @param ev The event to check
+ * @return true if the event is a mouse action, false otherwise
  */
 template <class Event>
 bool isMouseAction(const Event *ev) {
@@ -63,10 +63,10 @@ bool isMouseAction(const Event *ev) {
 }
 
 /**
- * @brief
+ * @brief Checks if the action is redundant.
  *
- * @param ev
- * @return
+ * @param ev The event to check
+ * @return true if the action is redundant, false otherwise
  */
 template <class Event>
 bool isRedundantAction(const Event *ev) {
@@ -76,10 +76,12 @@ bool isRedundantAction(const Event *ev) {
 	});
 }
 
-/*
-** Create a macro string to represent an invocation of an action routine.
-** Returns nullptr for non-operational or un-recordable actions.
-*/
+/**
+ * @brief Create a macro string to represent an invocation of an action routine.
+ *
+ * @param ev The event to convert to a string.
+ * @return QString representing the action, or QString() if the action is not recordable.
+ */
 template <class Event>
 QString actionToString(const Event *ev) {
 
@@ -93,20 +95,24 @@ QString actionToString(const Event *ev) {
 }
 
 /**
- * @brief
+ * @brief Quote a string for use in a command.
  *
- * @param s
- * @return
+ * @param s The string to quote.
+ * @return The string quoted with double quotes.
+ *
+ * @note If the string contains double quotes, they will NOT be escaped.
+ * 	 This is intended for use in strings which have already been
+ * 	 escaped using escapeString().
  */
 QString CommandRecorder::quoteString(const QString &s) {
 	return QStringLiteral("\"%1\"").arg(s);
 }
 
 /**
- * @brief
+ * @brief Escape a string for use in a command.
  *
- * @param s
- * @return
+ * @param s The string to escape.
+ * @return The string with special characters escaped.
  */
 QString CommandRecorder::escapeString(const QString &s) {
 
@@ -124,18 +130,18 @@ QString CommandRecorder::escapeString(const QString &s) {
 }
 
 /**
- * @brief
+ * @brief CommandRecorder constructor.
  *
- * @param parent
+ * @param parent The parent object.
  */
 CommandRecorder::CommandRecorder(QObject *parent)
 	: QObject(parent) {
 }
 
 /**
- * @brief
+ * @brief Get the global unique instance of CommandRecorder.
  *
- * @return global unique instance
+ * @return Global unique instance.
  */
 CommandRecorder *CommandRecorder::instance() {
 	static CommandRecorder instance;
@@ -143,11 +149,11 @@ CommandRecorder *CommandRecorder::instance() {
 }
 
 /**
- * @brief
+ * @brief Event filter for CommandRecorder.
  *
- * @param obj
- * @param event
- * @return
+ * @param obj The object that received the event.
+ * @param event The event that was received.
+ * @return true if the event was handled, false otherwise.
  */
 bool CommandRecorder::eventFilter(QObject *obj, QEvent *event) {
 
@@ -162,6 +168,11 @@ bool CommandRecorder::eventFilter(QObject *obj, QEvent *event) {
 	return false;
 }
 
+/**
+ * @brief Hook for the last action performed.
+ *
+ * @param ev The event containing the action performed.
+ */
 void CommandRecorder::lastActionHook(const WindowMenuEvent *ev) {
 
 	/* The last action is recorded for the benefit of repeating the last
@@ -189,6 +200,11 @@ void CommandRecorder::lastActionHook(const WindowMenuEvent *ev) {
 	}
 }
 
+/**
+ * @brief Hook for the last action performed in a text edit event.
+ *
+ * @param ev The event containing the action performed.
+ */
 void CommandRecorder::lastActionHook(const TextEditEvent *ev) {
 
 	/* The last action is recorded for the benefit of repeating the last
@@ -217,7 +233,9 @@ void CommandRecorder::lastActionHook(const TextEditEvent *ev) {
 }
 
 /**
- * @brief
+ * @brief Starts recording user actions.
+ *
+ * @param document The document widget where the recording will take place.
  */
 void CommandRecorder::startRecording(DocumentWidget *document) {
 	setRecording(true);
@@ -225,7 +243,7 @@ void CommandRecorder::startRecording(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Stops recording user actions and clears the macro record buffer.
  */
 void CommandRecorder::stopRecording() {
 	setRecording(false);
@@ -233,17 +251,17 @@ void CommandRecorder::stopRecording() {
 }
 
 /**
- * @brief
+ * @brief Returns the document where the macro is being recorded.
  *
- * @return
+ * @return A pointer to the document widget where the macro is being recorded.
  */
 QPointer<DocumentWidget> CommandRecorder::macroRecordDocument() const {
 	return macroRecordDocument_;
 }
 
 /**
- * stops recording user actions, but does NOT save the buffer
- * @brief
+ * @brief Cancels the current recording session.
+ * But does NOT save the buffer
  */
 void CommandRecorder::cancelRecording() {
 	isRecording_ = false;
@@ -252,18 +270,18 @@ void CommandRecorder::cancelRecording() {
 }
 
 /**
- * @brief
+ * @brief Checks if the recorder is currently recording user actions.
  *
- * @return
+ * @return true if recording is active, false otherwise.
  */
 bool CommandRecorder::isRecording() const {
 	return isRecording_;
 }
 
 /**
- * @brief
+ * @brief Sets the recording state of the CommandRecorder.
  *
- * @param enabled
+ * @param enabled If true, starts recording; if false, stops recording.
  */
 void CommandRecorder::setRecording(bool enabled) {
 
@@ -285,18 +303,18 @@ void CommandRecorder::setRecording(bool enabled) {
 }
 
 /**
- * @brief
+ * @brief Returns the last command executed.
  *
- * @return
+ * @return The last command.
  */
 QString CommandRecorder::lastCommand() const {
 	return lastCommand_;
 }
 
 /**
- * @brief
+ * @brief Returns the macro string that can be replayed.
  *
- * @return
+ * @return The macro string to replay.
  */
 QString CommandRecorder::replayMacro() const {
 	return replayMacro_;

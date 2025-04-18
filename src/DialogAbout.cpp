@@ -6,10 +6,10 @@
 #include <QLocale>
 
 /**
- * @brief
+ * @brief Constructor for DialogAbout class
  *
- * @param parent
- * @param f
+ * @param parent The parent widget, defaults to nullptr
+ * @param f The window flags, defaults to Qt::WindowFlags()
  */
 DialogAbout::DialogAbout(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
@@ -30,9 +30,9 @@ DialogAbout::DialogAbout(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief
+ * @brief Creates the information string for the about dialog.
  *
- * @return
+ * @return A QString containing the version and build information.
  */
 QString DialogAbout::createInfoString() {
 
