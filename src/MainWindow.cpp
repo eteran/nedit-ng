@@ -3330,7 +3330,7 @@ void MainWindow::action_Mark_Shortcut() {
 
 		if (DocumentWidget *document = currentDocument()) {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-			const Qt::Key key = sequence[1].key();
+			const auto key = static_cast<int>(sequence[1].key());
 #else
 			const int key = sequence[1];
 #endif
@@ -3417,7 +3417,7 @@ void MainWindow::action_Goto_Mark_Shortcut_Helper(bool shifted) {
 		if (DocumentWidget *document = currentDocument()) {
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-			const Qt::Key key = sequence[1].key();
+			const auto key = static_cast<int>(sequence[1].key());
 #else
 			const int key = sequence[1];
 #endif
