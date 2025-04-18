@@ -800,9 +800,9 @@ const X11Color colors[] = {
 }
 
 /**
- * @brief
+ * @brief Converts a string to a QColor.
  *
- * @param s
+ * @param s The name of the color to convert.
  * @return returns a QColor which matches the name.
  * Intended to mimic the X11 color set
  */
@@ -816,5 +816,6 @@ QColor X11Colors::fromString(const QString &s) {
 		return {it->r, it->g, it->b};
 	}
 
+	// If it's not found in the predefined colors, try to create a QColor from the string directly.
 	return QColor(s);
 }

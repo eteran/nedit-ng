@@ -5,9 +5,10 @@
 #include <QtDebug>
 
 /**
- * @brief
+ * @brief RegexError constructor.
  *
- * @param fmt
+ * @param fmt Format string for the error message.
+ * @param ... Variable arguments for the format string.
  */
 RegexError::RegexError(const char *fmt, ...) {
 	char buf[1024];
@@ -19,18 +20,18 @@ RegexError::RegexError(const char *fmt, ...) {
 }
 
 /**
- * @brief
+ * @brief Returns the error message.
  *
- * @return
+ * @return The error message string.
  */
 const char *RegexError::what() const noexcept {
 	return error_.c_str();
 }
 
 /**
- * @brief
+ * @brief Logs an internal error message for regular expressions.
  *
- * @param str
+ * @param str The error message string.
  */
 void reg_error(const char *str) {
 	qCritical("NEdit: Internal error processing regular expression (%s)", str);

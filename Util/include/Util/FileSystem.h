@@ -32,17 +32,12 @@ void ConvertFromDos(std::string &text, char *pendingCR);
 template <class Integer>
 using IsInteger = typename std::enable_if<std::is_integral<Integer>::value>::type;
 
-/*
-** Converts a string (which may represent the entire contents of the file)
-** from DOS or Macintosh format to Unix format.  Conversion is done in-place.
-**
-** In the DOS case, the length will be shorter. The routine has support for
-** block-wise file to string conversion: if the text has a trailing '\r' and
-** 'pendingCR' is not null, the '\r' is deposited in there and is not
-** converted. If there is no trailing '\r', a '\0' is deposited in 'pendingCR'
-** It's the caller's responsibility to make sure that the pending character,
-** if present, is inserted at the beginning of the next block to convert.
-*/
+/**
+ * @brief Converts a string from Mac format to Unix format in place.
+ *
+ * @param text the text to convert, which may represent the entire contents of the file.
+ * @param length the length of the text in characters.
+ */
 template <class Length, class = IsInteger<Length>>
 void ConvertFromMac(char *text, Length length) {
 
@@ -51,11 +46,12 @@ void ConvertFromMac(char *text, Length length) {
 }
 
 /**
- * @brief
+ * @brief Converts a string from DOS format to Unix format in place.
  *
- * @param text
- * @param length
- * @param pendingCR
+ * @param text the text to convert, which may represent the entire contents of the file.
+ * @param length the length of the text in characters.
+ * @param pendingCR an optional pointer to a character that will hold a pending '\r' if it exists.
+ *                  If there is no trailing '\r', it will be set to '\0'.
  */
 template <class Length, class = IsInteger<Length>>
 void ConvertFromDos(char *text, Length *length, char *pendingCR) {
