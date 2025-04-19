@@ -21,7 +21,9 @@ public:
 	/**
 	 * @brief Construct a new Basic Reader object for lexing a string
 	 *
-	 * @param input
+	 * @param input The string to read from
+	 *
+	 * @note The string must remain valid for the lifetime of the reader.
 	 */
 	explicit BasicReader(std::basic_string_view<Ch> input) noexcept
 		: input_(input) {
@@ -34,18 +36,19 @@ public:
 
 public:
 	/**
-	 * @brief Returns true if the reader is at the end of the stream
+	 * @brief Determines if the reader has reached the end of the input string.
 	 *
-	 * @return bool
+	 * @return true if the end of the input string has been reached, false otherwise.
 	 */
 	bool eof() const noexcept {
 		return index_ == input_.size();
 	}
 
 	/**
-	 * @brief Returns the next character in the string without advancing the position
+	 * @brief Returns a character in the string without advancing the position.
 	 *
-	 * @return Ch
+	 * @param n The index of the character to peek at relative to the current point in the input.
+	 * @return The character in the string, or '\0' if at the end of the string.
 	 */
 	Ch peek(size_t n) const noexcept {
 		if (eof()) {
@@ -61,9 +64,9 @@ public:
 	}
 
 	/**
-	 * @brief Returns the next character in the string without advancing the position
+	 * @brief Returns the next character in the string without advancing the position.
 	 *
-	 * @return Ch
+	 * @return The next character in the string, or '\0' if at the end of the string.
 	 */
 	Ch peek() const noexcept {
 		if (eof()) {
@@ -74,18 +77,18 @@ public:
 	}
 
 	/**
-	 * @brief returns true if the next character matches <ch>
+	 * @brief Determines if the next character in the string matches `ch`.
 	 *
-	 * @return bool
+	 * @return true if the next character matches `ch`, false otherwise.
 	 */
 	bool next_is(Ch ch) const noexcept {
 		return peek() == ch;
 	}
 
 	/**
-	 * @brief returns true if the next characters matches <s>
+	 * @brief Determines if the next sequence of characters in the string matches `s`.
 	 *
-	 * @return bool
+	 * @return true if the next sequence matches `s`, false otherwise.
 	 */
 	bool next_is(std::string_view s) const noexcept {
 		if (input_.compare(index_, s.size(), s) != 0) {
@@ -96,9 +99,9 @@ public:
 	}
 
 	/**
-	 * @brief Returns the next character in the string and advances the position
+	 * @brief Reads the next character in the string and advances the position.
 	 *
-	 * @return Ch
+	 * @return The next character in the string, or '\0' if at the end of the string.
 	 */
 	Ch read() noexcept {
 		if (eof()) {
@@ -110,10 +113,10 @@ public:
 
 	/**
 	 * @brief Consumes while the next character is in the input set <chars>
-	 * and returns the number of consumed characters
+	 * and returns the number of consumed characters.
 	 *
-	 * @param chars
-	 * @return size_t
+	 * @param chars A string view containing characters to consume.
+	 * @return The number of characters consumed.
 	 */
 	size_t consume(std::basic_string_view<Ch> chars) noexcept {
 		return consume_while([chars](Ch ch) {
@@ -123,9 +126,9 @@ public:
 
 	/**
 	 * @brief Consumes while the next character is whitespace (tab or space)
-	 * and returns the number of consumed characters
+	 * and returns the number of consumed characters.
 	 *
-	 * @return size_t
+	 * @return The number of whitespace characters consumed.
 	 */
 	size_t consume_whitespace() noexcept {
 		return consume_while([](Ch ch) {
@@ -135,10 +138,10 @@ public:
 
 	/**
 	 * @brief Consumes while a given predicate function returns true
-	 * and returns the number of consumed characters
+	 * and returns the number of consumed characters.
 	 *
-	 * @param pred
-	 * @return size_t
+	 * @param pred A predicate function that takes a character and returns true if it should be consumed.
+	 * @return The number of characters consumed.
 	 */
 	template <class Pred>
 	size_t consume_while(Pred pred) noexcept(noexcept(pred)) {
@@ -156,11 +159,10 @@ public:
 	}
 
 	/**
-	 * @brief Returns true and advances the position
-	 * if the next character matches <ch>
+	 * @brief If the `ch` matches the char at the current position, consume it and advance the position.
 	 *
-	 * @param ch
-	 * @return bool
+	 * @param ch The character to match.
+	 * @return true if the next character matches `ch`, false otherwise.
 	 */
 	bool match(Ch ch) noexcept {
 		if (!next_is(ch)) {
@@ -171,6 +173,9 @@ public:
 		return true;
 	}
 
+	/**
+	 * @brief Puts back the last read character, effectively moving the position back by one.
+	 */
 	void putback() noexcept {
 		if (index_ > 0) {
 			--index_;
@@ -178,11 +183,10 @@ public:
 	}
 
 	/**
-	 * @brief Returns true and advances the position
-	 * if the next sequences of characters matches <s>
+	 * @brief If the `s` matches the text at the current position, consume it and advance the position.
 	 *
-	 * @param s
-	 * @return bool
+	 * @param s The string to match against the next characters in the input.
+	 * @return true if the next characters match `s`, false otherwise.
 	 */
 	bool match(std::basic_string_view<Ch> s) noexcept {
 		if (!next_is(s)) {
@@ -196,8 +200,8 @@ public:
 	/**
 	 * @brief Matches a single character if it matches the given predicate
 	 *
-	 * @param pred
-	 * @return Ch
+	 * @param pred A predicate function that takes a character and returns true if it should be matched.
+	 * @return The matched character if it satisfies the predicate, or '\0' if it does not match.
 	 */
 	template <class Pred>
 	Ch match_if(Pred pred) noexcept {
@@ -211,9 +215,9 @@ public:
 	}
 
 	/**
-	 * @brief match until end of input or a newline is found
+	 * @brief match until end of input or a newline is found.
 	 *
-	 * @return std::basic_string_view<Ch>
+	 * @return The matched line, or an empty string if no characters were matched.
 	 */
 	std::basic_string_view<Ch> match_line() noexcept {
 
@@ -233,9 +237,9 @@ public:
 	}
 
 	/**
-	 * @brief Matches until the end of the input and returns the string matched
+	 * @brief Matches until the end of the input and returns the string matched.
 	 *
-	 * @return std::optional<std::basic_string_view<Ch>>
+	 * @return The matched string, or an empty string if no characters were matched.
 	 */
 	std::optional<std::basic_string_view<Ch>> match_any() {
 		if (eof()) {
@@ -249,10 +253,10 @@ public:
 
 	/**
 	 * @brief Returns the matching string and advances the position
-	 * if the next sequences of characters matches <regex>
+	 * if the next sequences of characters matches `regex`
 	 *
-	 * @param s
-	 * @return bool
+	 * @param regex The regular expression to match against the next characters in the input.
+	 * @return The matched string if it satisfies the regex, or an empty optional if it does not match.
 	 */
 	std::optional<std::basic_string_view<Ch>> match(const std::basic_regex<Ch> &regex) {
 		std::match_results<const Ch *> matches;
@@ -273,8 +277,8 @@ public:
 	 * @brief Returns the matching string and advances the position
 	 * for each character satisfying the given predicate
 	 *
-	 * @param pred
-	 * @return std::optional<std::basic_string_view<Ch>>
+	 * @param pred A predicate function that takes a character and returns true if it should be matched.
+	 * @return The matched string if it satisfies the predicate, or an empty optional if it does not match.
 	 */
 	template <class Pred>
 	std::optional<std::basic_string_view<Ch>> match_while(Pred pred) {
@@ -298,28 +302,28 @@ public:
 	}
 
 	/**
-	 * @brief Returns the current position in the string
+	 * @brief Get the current position in the string
 	 *
-	 * @return size_t
+	 * @return The current index in the string.
 	 */
 	size_t index() const noexcept {
 		return index_;
 	}
 
 	/**
-	 * @brief Returns the current position in the string as a line/column pair
+	 * @brief Get the current position in the string as a line/column pair.
 	 *
-	 * @return Location
+	 * @return The current position in the string as a Location object.
 	 */
 	Location location() const noexcept {
 		return location(index_);
 	}
 
 	/**
-	 * @brief Returns the position of <index> in the string as line/column pair
+	 * @brief Get the position of `index` in the string as line/column pair
 	 *
-	 * @param index
-	 * @return Location
+	 * @param index The index in the string to get the location for.
+	 * @return The location of the specified index in the string as a Location object.
 	 */
 	Location location(size_t index) const noexcept {
 		size_t line = 1;
