@@ -2,6 +2,8 @@
 #ifndef COMPILE_H_
 #define COMPILE_H_
 
+#include "Reader.h"
+
 #include <bitset>
 #include <cstdint>
 #include <string_view>
@@ -11,7 +13,7 @@ class Regex;
 
 // Global work variables for 'CompileRE'.
 struct ParseContext {
-	std::string_view::iterator Reg_Parse; // Input scan ptr (scans user's regex)
+	Reader Reg_Parse; // Input scan ptr (scans user's regex)
 	std::string_view InputString;
 	std::vector<uint8_t> Code;
 	const char *Meta_Char;

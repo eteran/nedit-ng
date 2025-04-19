@@ -4,16 +4,12 @@
 
 #include "Constants.h"
 #include "Opcodes.h"
+#include "Reader.h"
 #include "RegexError.h"
 #include "Util/Raise.h"
 
 #include <cstdint>
 #include <cstring>
-
-template <class Ptr>
-unsigned int U_CHAR_AT(Ptr p) noexcept {
-	return static_cast<unsigned int>(*p);
-}
 
 template <class T>
 T *OPERAND(T *p) noexcept {
@@ -70,8 +66,8 @@ constexpr R literal_escape(Ch ch) noexcept {
  * octal escape.  RegexError is thrown if \x0, \x00, \0, \00, \000, or
  * \0000 is specified.
  *--------------------------------------------------------------------*/
-template <class R, class Ch, class Iterator>
-R numeric_escape(Ch ch, Iterator *parse) {
+template <class R, class Ch>
+R numeric_escape(Ch ch, Reader *reader) {
 
 	static const char digits[] = "fedcbaFEDCBA9876543210";
 
@@ -105,10 +101,10 @@ R numeric_escape(Ch ch, Iterator *parse) {
 		return '\0'; // Not a numeric escape
 	}
 
-	Iterator scan = *parse;
-	scan++; // Only change *parse on success.
+	Reader scan = *reader;
+	scan.read(); // Only change reader on success.
 
-	const char *pos_ptr = ::strchr(digit_str, static_cast<int>(*scan));
+	const char *pos_ptr = ::strchr(digit_str, static_cast<int>(scan.peek()));
 
 	for (int i = 0; pos_ptr != nullptr && (i < width); i++) {
 		const ptrdiff_t pos = (pos_ptr - digit_str) + pos_delta;
@@ -131,8 +127,8 @@ R numeric_escape(Ch ch, Iterator *parse) {
 					  considered to be part of the octal escape. */
 		}
 
-		scan++;
-		pos_ptr = ::strchr(digit_str, static_cast<int>(*scan));
+		scan.read();
+		pos_ptr = ::strchr(digit_str, static_cast<int>(scan.peek()));
 	}
 
 	// Handle the case of "\0" i.e. trying to specify a nullptr character.
@@ -145,8 +141,8 @@ R numeric_escape(Ch ch, Iterator *parse) {
 	} else {
 		// Point to the last character of the number on success.
 
-		scan--;
-		*parse = scan;
+		scan.putback();
+		*reader = scan;
 	}
 
 	return static_cast<R>(value);

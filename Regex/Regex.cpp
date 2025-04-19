@@ -230,5 +230,5 @@ bool Regex::isValid() const noexcept {
 		return false;
 	}
 
-	return (U_CHAR_AT(program.data()) == Magic);
+	return (program[0] == Magic);
 }

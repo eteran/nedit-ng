@@ -1067,26 +1067,26 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 		*Context.StackP++ = make_value(string);                 \
 	} while (0)
 
-#define BINARY_NUMERIC_OPERATION(op) \
-	do {                             \
-		int n1;                      \
-		int n2;                      \
-		DISASM_RT(PC - 1, 1);        \
-		STACKDUMP(2, 3);             \
-		POP_INT(n2);                 \
-		POP_INT(n1);                 \
-		PUSH_INT(n1 op n2);          \
-		return STAT_OK;              \
+#define BINARY_NUMERIC_OPERATION(op)  \
+	do {                              \
+		int n1;                       \
+		int n2;                       \
+		DISASM_RT(Context.PC - 1, 1); \
+		STACKDUMP(2, 3);              \
+		POP_INT(n2);                  \
+		POP_INT(n1);                  \
+		PUSH_INT(n1 op n2);           \
+		return STAT_OK;               \
 	} while (0)
 
-#define UNARY_NUMERIC_OPERATION(op) \
-	do {                            \
-		int n;                      \
-		DISASM_RT(PC - 1, 1);       \
-		STACKDUMP(1, 3);            \
-		POP_INT(n);                 \
-		PUSH_INT(op n);             \
-		return STAT_OK;             \
+#define UNARY_NUMERIC_OPERATION(op)   \
+	do {                              \
+		int n;                        \
+		DISASM_RT(Context.PC - 1, 1); \
+		STACKDUMP(1, 3);              \
+		POP_INT(n);                   \
+		PUSH_INT(op n);               \
+		return STAT_OK;               \
 	} while (0)
 
 /**
@@ -1105,7 +1105,7 @@ static int pushSymVal() {
 
 	DataValue symVal;
 
-	DISASM_RT(PC - 1, 2);
+	DISASM_RT(Context.PC - 1, 2);
 	STACKDUMP(0, 3);
 
 	Symbol *s = Context.PC++->sym;
@@ -1151,7 +1151,7 @@ static int pushSymVal() {
 static int pushArgVal() {
 	int argNum;
 
-	DISASM_RT(PC - 1, 1);
+	DISASM_RT(Context.PC - 1, 1);
 	STACKDUMP(1, 3);
 
 	POP_INT(argNum);
@@ -1172,7 +1172,7 @@ static int pushArgVal() {
  * @return Returns STAT_OK on success, or an error code if an error occurred.
  */
 static int pushArgCount() {
-	DISASM_RT(PC - 1, 1);
+	DISASM_RT(Context.PC - 1, 1);
 	STACKDUMP(0, 3);
 
 	PUSH_INT(FP_GET_ARG_COUNT(Context.FrameP));
@@ -1188,7 +1188,7 @@ static int pushArgArray() {
 
 	DataValue argVal;
 
-	DISASM_RT(PC - 1, 1);
+	DISASM_RT(Context.PC - 1, 1);
 	STACKDUMP(0, 3);
 
 	const int nArgs        = FP_GET_ARG_COUNT(Context.FrameP);
@@ -1231,7 +1231,7 @@ static int pushArraySymVal() {
 
 	DataValue *dataPtr;
 
-	DISASM_RT(PC - 1, 3);
+	DISASM_RT(Context.PC - 1, 3);
 	STACKDUMP(0, 3);
 
 	Symbol *sym             = Context.PC++->sym;
@@ -1275,7 +1275,7 @@ static int assign() {
 	DataValue *dataPtr;
 	DataValue value;
 
-	DISASM_RT(PC - 1, 2);
+	DISASM_RT(Context.PC - 1, 2);
 	STACKDUMP(1, 3);
 
 	Symbol *sym = Context.PC++->sym;
@@ -1319,7 +1319,7 @@ static int dupStack() {
 
 	DataValue value;
 
-	DISASM_RT(PC - 1, 1);
+	DISASM_RT(Context.PC - 1, 1);
 	STACKDUMP(1, 3);
 
 	PEEK(value, 0);
@@ -1345,7 +1345,7 @@ static int add() {
 	DataValue leftVal;
 	DataValue rightVal;
 
-	DISASM_RT(PC - 1, 1);
+	DISASM_RT(Context.PC - 1, 1);
 	STACKDUMP(2, 3);
 
 	PEEK(rightVal, 0);
@@ -1424,7 +1424,7 @@ static int subtract() {
 	DataValue leftVal;
 	DataValue rightVal;
 
-	DISASM_RT(PC - 1, 1);
+	DISASM_RT(Context.PC - 1, 1);
 	STACKDUMP(2, 3);
 
 	PEEK(rightVal, 0);
@@ -1508,7 +1508,7 @@ static int divide() {
 	int n1;
 	int n2;
 
-	DISASM_RT(PC - 1, 1);
+	DISASM_RT(Context.PC - 1, 1);
 	STACKDUMP(2, 3);
 
 	POP_INT(n2);
@@ -1529,7 +1529,7 @@ static int modulo() {
 	int n1;
 	int n2;
 
-	DISASM_RT(PC - 1, 1);
+	DISASM_RT(Context.PC - 1, 1);
 	STACKDUMP(2, 3);
 
 	POP_INT(n2);
@@ -1621,7 +1621,7 @@ static int eq() {
 	DataValue v1;
 	DataValue v2;
 
-	DISASM_RT(PC - 1, 1);
+	DISASM_RT(Context.PC - 1, 1);
 	STACKDUMP(2, 3);
 
 	POP(v1);
@@ -1684,7 +1684,7 @@ static int bitAnd() {
 	DataValue leftVal;
 	DataValue rightVal;
 
-	DISASM_RT(PC - 1, 1);
+	DISASM_RT(Context.PC - 1, 1);
 	STACKDUMP(2, 3);
 
 	PEEK(rightVal, 0);
@@ -1756,7 +1756,7 @@ static int bitOr() {
 	DataValue leftVal;
 	DataValue rightVal;
 
-	DISASM_RT(PC - 1, 1);
+	DISASM_RT(Context.PC - 1, 1);
 	STACKDUMP(2, 3);
 
 	PEEK(rightVal, 0);
@@ -1858,7 +1858,7 @@ static int power() {
 	int n2;
 	int n3;
 
-	DISASM_RT(PC - 1, 1);
+	DISASM_RT(Context.PC - 1, 1);
 	STACKDUMP(2, 3);
 
 	POP_INT(n2);
@@ -1906,7 +1906,7 @@ static int concat() {
 	std::string s1;
 	std::string s2;
 
-	DISASM_RT(PC - 1, 1);
+	DISASM_RT(Context.PC - 1, 1);
 	STACKDUMP(2, 3);
 
 	POP_STRING(s2);
@@ -1950,7 +1950,7 @@ static int callSubroutine() {
 	Symbol *sym         = Context.PC++->sym;
 	const int64_t nArgs = Context.PC++->value;
 
-	DISASM_RT(PC - 3, 3);
+	DISASM_RT(Context.PC - 3, 3);
 	STACKDUMP(nArgs, 3);
 
 	/*
@@ -2059,8 +2059,8 @@ static int returnValOrNone(bool valOnStack) {
 
 	DataValue retVal;
 
-	DISASM_RT(PC - 1, 1);
-	STACKDUMP(StackP - FrameP + FP_GET_ARG_COUNT(FrameP) + FP_TO_ARGS_DIST, 3);
+	DISASM_RT(Context.PC - 1, 1);
+	STACKDUMP(Context.StackP - Context.FrameP + FP_GET_ARG_COUNT(Context.FrameP) + FP_TO_ARGS_DIST, 3);
 
 	// return value is on the stack
 	if (valOnStack) {
@@ -2110,7 +2110,7 @@ static int branch() {
 	** After:  Prog->  branchDest, next, ..., (branchdest)[next]
 	*/
 
-	DISASM_RT(PC - 1, 2);
+	DISASM_RT(Context.PC - 1, 2);
 	STACKDUMP(0, 3);
 
 	Context.PC += Context.PC->value;
@@ -2132,7 +2132,7 @@ static int branchTrue() {
 
 	int value;
 
-	DISASM_RT(PC - 1, 2);
+	DISASM_RT(Context.PC - 1, 2);
 	STACKDUMP(1, 3);
 
 	POP_INT(value);
@@ -2161,7 +2161,7 @@ static int branchFalse() {
 
 	int value;
 
-	DISASM_RT(PC - 1, 2);
+	DISASM_RT(Context.PC - 1, 2);
 	STACKDUMP(1, 3);
 
 	POP_INT(value);
@@ -2189,7 +2189,7 @@ static int branchNever() {
 	** After:  Prog->  branchDest, [next], ...
 	*/
 
-	DISASM_RT(PC - 1, 2);
+	DISASM_RT(Context.PC - 1, 2);
 	STACKDUMP(0, 3);
 
 	Context.PC++;
@@ -2372,7 +2372,7 @@ static int arrayRef() {
 
 	const int64_t nDim = Context.PC++->value;
 
-	DISASM_RT(PC - 2, 2);
+	DISASM_RT(Context.PC - 2, 2);
 	STACKDUMP(nDim, 3);
 
 	if (nDim > 0) {
@@ -2422,7 +2422,7 @@ static int arrayAssign() {
 
 	const int64_t nDim = Context.PC++->value;
 
-	DISASM_RT(PC - 2, 1);
+	DISASM_RT(Context.PC - 2, 1);
 	STACKDUMP(nDim, 3);
 
 	if (nDim > 0) {
@@ -2482,7 +2482,7 @@ static int arrayRefAndAssignSetup() {
 	const int64_t binaryOp = Context.PC++->value;
 	const int64_t nDim     = Context.PC++->value;
 
-	DISASM_RT(PC - 3, 3);
+	DISASM_RT(Context.PC - 3, 3);
 	STACKDUMP(nDim + 1, 3);
 
 	if (binaryOp) {
@@ -2532,7 +2532,7 @@ static int beginArrayIter() {
 
 	DataValue arrayVal;
 
-	DISASM_RT(PC - 1, 2);
+	DISASM_RT(Context.PC - 1, 2);
 	STACKDUMP(1, 3);
 
 	Symbol *iterator = Context.PC++->sym;
@@ -2580,7 +2580,7 @@ static int arrayIter() {
 
 	DataValue *itemValPtr;
 
-	DISASM_RT(PC - 1, 4);
+	DISASM_RT(Context.PC - 1, 4);
 	STACKDUMP(0, 3);
 
 	Symbol *const item     = Context.PC++->sym;
@@ -2643,7 +2643,7 @@ static int inArray() {
 
 	int inResult = 0;
 
-	DISASM_RT(PC - 1, 1);
+	DISASM_RT(Context.PC - 1, 1);
 	STACKDUMP(2, 3);
 
 	POP(theArray);
@@ -2698,7 +2698,7 @@ static int deleteArrayElement() {
 
 	const int64_t nDim = Context.PC++->value;
 
-	DISASM_RT(PC - 2, 2);
+	DISASM_RT(Context.PC - 2, 2);
 	STACKDUMP(nDim + 1, 3);
 
 	if (nDim > 0) {
@@ -2927,19 +2927,19 @@ static void disasm(Inst *inst, size_t nInstr) {
  */
 static void stackdump(int n, int extra) {
 	// TheStack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
-	int nArgs = FP_GET_ARG_COUNT(FrameP);
+	int nArgs = FP_GET_ARG_COUNT(Context.FrameP);
 	int i;
 	char buffer[256];
 	printf("Stack ----->\n");
 	for (i = 0; i < n + extra; i++) {
 		const char *pos = "";
-		DataValue *dv   = &StackP[-i - 1];
-		if (dv < TheStack) {
+		DataValue *dv   = &Context.StackP[-i - 1];
+		if (dv < Context.Stack.get()) {
 			printf("--------------Stack base--------------\n");
 			break;
 		}
 
-		long offset = dv - FrameP;
+		long offset = dv - Context.FrameP;
 
 		printf("%4.4s", i < n ? ">>>>" : "");
 		printf("%8p ", static_cast<void *>(dv));

@@ -439,6 +439,7 @@ std::optional<Search::Result> SearchStringEx(std::string_view string, std::strin
 ** items.
 */
 bool replaceUsingRegex(std::string_view searchStr, std::string_view replaceStr, std::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
+	// TODO(eteran): just return an optional<std::string>
 	try {
 		Regex compiledRE(searchStr, defaultFlags);
 		compiledRE.execute(sourceStr, static_cast<size_t>(beginPos), sourceStr.size(), prevChar, -1, delimiters, false);
