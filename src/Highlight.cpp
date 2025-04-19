@@ -697,7 +697,8 @@ void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightDat
 }
 
 /**
- * @brief readHighlightPattern
+ * @brief
+ *
  * @param in
  * @param errMsg
  * @param pattern
@@ -828,7 +829,8 @@ std::optional<std::vector<HighlightPattern>> readHighlightPatterns(Input &in, QS
 }
 
 /**
- * @brief readPatternYaml
+ * @brief
+ *
  * @param patterns
  * @return
  */
@@ -866,7 +868,8 @@ HighlightPattern readPatternYaml(const YAML::Node &patterns) {
 }
 
 /**
- * @brief readPatternSetYaml
+ * @brief
+ *
  * @param it
  * @return
  */
@@ -997,7 +1000,8 @@ std::optional<PatternSet> readPatternSet(Input &in) {
 }
 
 /**
- * @brief find_subpattern
+ * @brief
+ *
  * @param pattern
  * @param index
  * @return
@@ -1019,7 +1023,8 @@ HighlightData *find_subpattern(const HighlightData *pattern, size_t index) {
 }
 
 /**
- * @brief readDefaultPatternSets
+ * @brief
+ *
  * @return
  */
 std::vector<PatternSet> readDefaultPatternSets() {
@@ -1409,7 +1414,8 @@ HighlightData *patternOfStyle(const std::unique_ptr<HighlightData[]> &patterns, 
 }
 
 /**
- * @brief indexOfNamedPattern
+ * @brief
+ *
  * @param patterns
  * @param name
  * @return
@@ -1430,7 +1436,8 @@ size_t indexOfNamedPattern(const std::vector<HighlightPattern> &patterns, const 
 }
 
 /**
- * @brief findTopLevelParentIndex
+ * @brief
+ *
  * @param patterns
  * @param index
  * @return
@@ -1634,7 +1641,8 @@ bool NamedStyleExists(const QString &styleName) {
  * Look through the list of pattern sets, and find the one for a particular
  * language.
  *
- * @brief FindPatternSet
+ * @brief
+ *
  * @param languageMode
  * @return nullptr if not found.
  */

@@ -149,7 +149,8 @@ R numeric_escape(Ch ch, Reader *reader) {
 }
 
 /**
- * @brief GET_OFFSET
+ * @brief
+ *
  * @param p
  * @return
  */

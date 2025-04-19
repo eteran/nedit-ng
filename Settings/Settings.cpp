@@ -1,6 +1,7 @@
 
 #include "Settings.h"
 #include "Util/Resource.h"
+#include "Util/Environment.h"
 #include "from_integer.h"
 
 #include <QFontDatabase>
@@ -10,6 +11,7 @@
 #include <QtGlobal>
 
 #include <random>
+#include <type_traits>
 
 namespace Settings {
 
@@ -36,18 +38,21 @@ using IsEnum = std::enable_if_t<std::is_enum_v<T>>;
 
 template <class T, class = IsEnum<T>>
 T readEnum(QSettings &settings, const QString &key, const T &defaultValue = T()) {
-	return from_integer<T>(settings.value(key, static_cast<int>(defaultValue)).toInt());
+	using U = std::underlying_type_t<T>;
+	return from_integer<T>(settings.value(key, static_cast<U>(defaultValue)).toInt());
 }
 
 template <class T, class = IsEnum<T>>
 void writeEnum(QSettings &settings, const QString &key, const T &value) {
-	settings.setValue(key, static_cast<int>(value));
+	using U = std::underlying_type_t<T>;
+	settings.setValue(key, static_cast<U>(value));
 }
 
 /**
- * @brief randomString
- * @param length
- * @return
+ * @brief Generates a random string of the specified length using alphanumeric characters.
+ *
+ * @param length the length of the random string to generate.
+ * @return The random string.
  */
 QString randomString(int length) {
 	static const char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -68,13 +73,17 @@ QString randomString(int length) {
 }
 
 /**
- * @brief configDirectory
- * @return
+ * @brief Returns the configuration directory.
+ *
+ * @return The path to the configuration directory.
+ *
+ * @note If the environment variable `NEDIT_NG_HOME` is set,
+ * it will be used as the configuration directory.
  */
 QString configDirectory() {
-	static const QByteArray nedit_home = qgetenv("NEDIT_NG_HOME");
+	static const QString nedit_home = GetEnvironmentVariable("NEDIT_NG_HOME");
 	if (!nedit_home.isEmpty()) {
-		return QString::fromLocal8Bit(nedit_home);
+		return nedit_home;
 	}
 
 	static const QString configDir = QStandardPaths::writableLocation(QStandardPaths::GenericConfigLocation);
@@ -163,8 +172,9 @@ TruncSubstitution truncSubstitution;
 WrapStyle autoWrap;
 
 /**
- * @brief themeFile
- * @return
+ * @brief Gets the path of the theme file.
+ *
+ * @return The path to the theme file.
  */
 QString themeFile() {
 	static const QString configDir = configDirectory();
@@ -173,8 +183,9 @@ QString themeFile() {
 }
 
 /**
- * @brief configFile
- * @return
+ * @brief Gets the path of the configuration file.
+ *
+ * @return The path to the configuration file.
  */
 QString configFile() {
 	static const QString configDir = configDirectory();
@@ -183,8 +194,9 @@ QString configFile() {
 }
 
 /**
- * @brief historyFile
- * @return
+ * @brief Gets the path of the history file.
+ *
+ * @return The path to the history file.
  */
 QString historyFile() {
 	static const QString configDir = configDirectory();
@@ -193,8 +205,9 @@ QString historyFile() {
 }
 
 /**
- * @brief autoLoadMacroFile
- * @return
+ * @brief Gets the path of the auto-load macro file.
+ *
+ * @return The path to the auto-load macro file.
  */
 QString autoLoadMacroFile() {
 	static const QString configDir = configDirectory();
@@ -203,8 +216,9 @@ QString autoLoadMacroFile() {
 }
 
 /**
- * @brief languageModeFile
- * @return
+ * @brief Gets the path of the language mode file.
+ *
+ * @return The path to the language mode file.
  */
 QString languageModeFile() {
 	static const QString configDir = configDirectory();
@@ -213,8 +227,9 @@ QString languageModeFile() {
 }
 
 /**
- * @brief macroMenuFile
- * @return
+ * @brief Gets the path of the macro menu file.
+ *
+ * @return The path to the macro menu file.
  */
 QString macroMenuFile() {
 	static const QString configDir = configDirectory();
@@ -223,8 +238,9 @@ QString macroMenuFile() {
 }
 
 /**
- * @brief shellMenuFile
- * @return
+ * @brief Gets the path of the shell menu file.
+ *
+ * @return The path to the shell menu file.
  */
 QString shellMenuFile() {
 	static const QString configDir = configDirectory();
@@ -233,8 +249,9 @@ QString shellMenuFile() {
 }
 
 /**
- * @brief contextMenuFile
- * @return
+ * @brief Gets the path of the context menu file.
+ *
+ * @return The path to the context menu file.
  */
 QString contextMenuFile() {
 	static const QString configDir = configDirectory();
@@ -243,8 +260,9 @@ QString contextMenuFile() {
 }
 
 /**
- * @brief styleFile
- * @return
+ * @brief Gets the path of the style file.
+ *
+ * @return The path to the style file.
  */
 QString styleFile() {
 	static const QString configDir = configDirectory();
@@ -253,8 +271,9 @@ QString styleFile() {
 }
 
 /**
- * @brief highlightPatternsFile
- * @return
+ * @brief Gets the path of the highlight patterns file.
+ *
+ * @return The path to the highlight patterns file.
  */
 QString highlightPatternsFile() {
 	static const QString configDir = configDirectory();
@@ -263,8 +282,9 @@ QString highlightPatternsFile() {
 }
 
 /**
- * @brief smartIndentFile
- * @return
+ * @brief Gets the path of the smart indent file.
+ *
+ * @return The path to the smart indent file.
  */
 QString smartIndentFile() {
 	static const QString configDir = configDirectory();
@@ -273,7 +293,10 @@ QString smartIndentFile() {
 }
 
 /**
- * @brief loadPreferences
+ * @brief Loads the user preferences from the configuration file.
+ *
+ * @param isServer if true, the and the configuration does not specify a server name,
+ *                 a random server name will be generated.
  */
 void loadPreferences(bool isServer) {
 
@@ -370,8 +393,11 @@ void loadPreferences(bool isServer) {
 }
 
 /**
- * @brief importSettings
- * @param filename
+ * @brief Loads setting from a file and merges them into the current settings.
+ *
+ * @param filename the path to the settings file to import.
+ *
+ * @note This function assumes that settings have already been loaded.
  */
 void importSettings(const QString &filename) {
 	if (!settingsLoaded_) {
@@ -459,8 +485,9 @@ void importSettings(const QString &filename) {
 }
 
 /**
- * @brief savePreferences
- * @return
+ * @brief Saves the user preferences to the configuration file.
+ *
+ * @return true if the preferences were saved successfully, false otherwise.
  */
 bool savePreferences() {
 	const QString filename = configFile();

@@ -9,9 +9,12 @@
 namespace Font {
 
 /**
- * @brief fromString
- * @param fontName
- * @return
+ * @brief Converts a font name string to a QFont object.
+ * This function takes a font name in the format used by QFont::fromString()
+ * and attempts to ensure that the font is set up with integer metrics.
+ *
+ * @param fontName The name of the font to convert, in the format used by QFont::fromString().
+ * @return A QFont object representing the specified font.
  */
 QFont fromString(const QString &fontName) {
 	QFont font;
@@ -34,19 +37,21 @@ QFont fromString(const QString &fontName) {
 }
 
 /**
- * @brief maxWidth
- * @param fm
- * @return
+ * @brief Returns the maximum width of a character in the given font metrics.
+ *
+ * @param fm The QFontMetrics object containing the font metrics.
+ * @return The maximum width of a character in the font, typically the width of 'X'.
  */
 int maxWidth(const QFontMetrics &fm) {
 	return Font::characterWidth(fm, QLatin1Char('X'));
 }
 
 /**
- * @brief characterWidth
- * @param fm
- * @param ch
- * @return
+ * @brief Returns the width of a single character in the given font metrics.
+ *
+ * @param fm The QFontMetrics object containing the font metrics.
+ * @param ch The character for which to calculate the width.
+ * @return The width of the specified character in the font.
  */
 int characterWidth(const QFontMetrics &fm, QChar ch) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
@@ -57,10 +62,11 @@ int characterWidth(const QFontMetrics &fm, QChar ch) {
 }
 
 /**
- * @brief stringWidth
- * @param fm
- * @param s
- * @return
+ * @brief Returns the width of a string in the given font metrics.
+ *
+ * @param fm The QFontMetrics object containing the font metrics.
+ * @param s The string for which to calculate the width.
+ * @return The width of the specified string in the font.
  */
 int stringWidth(const QFontMetrics &fm, const QString &s) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
@@ -71,9 +77,10 @@ int stringWidth(const QFontMetrics &fm, const QString &s) {
 }
 
 /**
- * @brief pointSizes
- * @param font
- * @return
+ * @brief Returns a list of point sizes supported by the given font.
+ *
+ * @param font The QFont object for which to retrieve the point sizes.
+ * @return A list of integers representing the point sizes supported by the font.
  */
 QList<int> pointSizes(const QFont &font) {
 

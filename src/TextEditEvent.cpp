@@ -3,7 +3,8 @@
 #include "CommandRecorder.h"
 
 /**
- * @brief TextEditEvent::TextEditEvent
+ * @brief
+ *
  * @param macroString
  * @param argument
  * @param flags
@@ -13,7 +14,8 @@ TextEditEvent::TextEditEvent(QString macroString, TextArea::EventFlags flags, QS
 }
 
 /**
- * @brief TextEditEvent::TextEditEvent
+ * @brief
+ *
  * @param macroString
  * @param flags
  */
@@ -22,7 +24,8 @@ TextEditEvent::TextEditEvent(QString macroString, TextArea::EventFlags flags)
 }
 
 /**
- * @brief TextEditEvent::argumentString
+ * @brief
+ *
  * @return
  */
 QString TextEditEvent::argumentString() const {
@@ -82,7 +85,8 @@ QString TextEditEvent::argumentString() const {
 }
 
 /**
- * @brief TextEditEvent::toString
+ * @brief
+ *
  * @return
  */
 QString TextEditEvent::toString() const {
@@ -90,7 +94,8 @@ QString TextEditEvent::toString() const {
 }
 
 /**
- * @brief TextEditEvent::actionString
+ * @brief
+ *
  * @return
  */
 QString TextEditEvent::actionString() const {

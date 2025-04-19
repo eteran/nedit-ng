@@ -725,7 +725,8 @@ void BasicTextBuffer<Ch, Tr>::BufRemovePreDeleteCB(pre_delete_callback_type bufP
 }
 
 /**
- * @brief BasicTextBuffer<Ch, Tr>::BufEndOfBuffer
+ * @brief
+ *
  * @return
  */
 template <class Ch, class Tr>
@@ -2116,7 +2117,8 @@ void BasicTextBuffer<Ch, Tr>::BufSetSelectionUpdate(selection_update_callback_ty
 }
 
 /**
- * @brief TextSelection::setSelection
+ * @brief
+ *
  * @param newStart
  * @param newEnd
  */
@@ -2130,7 +2132,8 @@ void BasicTextBuffer<Ch, Tr>::Selection::setSelection(TextCursor newStart, TextC
 }
 
 /**
- * @brief TextSelection::setRectSelect
+ * @brief
+ *
  * @param newStart
  * @param newEnd
  * @param newRectStart
@@ -2148,7 +2151,8 @@ void BasicTextBuffer<Ch, Tr>::Selection::setRectSelect(TextCursor newStart, Text
 }
 
 /**
- * @brief TextSelection::getSelectionPos
+ * @brief
+ *
  * @param start
  * @param end
  * @param isRect
@@ -2187,7 +2191,8 @@ std::optional<SelectionPos> BasicTextBuffer<Ch, Tr>::Selection::getSelectionPos(
 }
 
 /**
- * @brief TextSelection::updateSelection
+ * @brief
+ *
  * @param pos
  * @param nDeleted
  * @param nInserted

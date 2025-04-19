@@ -55,8 +55,9 @@ std::deque<Symbol *> GlobalSymList;
 std::deque<Symbol *> LocalSymList; // symbols local to the program
 Inst Prog[PROGRAM_SIZE];           // the program
 Inst *ProgP;                       // next free spot for code gen.
-Inst *LoopStack[LOOP_STACK_SIZE];  // addresses of break, cont stmts
-Inst **LoopStackPtr = LoopStack;   //  to fill at the end of a loop
+// TODO(eteran): replace this with std::stack<Inst *>.
+Inst *LoopStack[LOOP_STACK_SIZE]; // addresses of break, cont stmts
+Inst **LoopStackPtr = LoopStack;  //  to fill at the end of a loop
 
 // Global data for the interpreter
 MacroContext Context;
@@ -71,41 +72,94 @@ constexpr int FP_OLD_FP_INDEX          = -3;
 constexpr int FP_RET_PC_INDEX          = -4;
 constexpr int FP_TO_ARGS_DIST          = 4; // should be 0 - (above index)
 
+/**
+ * @brief Get the argument array cache from the frame pointer.
+ *
+ * @param FrameP Pointer to the frame data.
+ * @return Reference to the argument array cache.
+ */
 DataValue &FP_GET_ARG_ARRAY_CACHE(DataValue *FrameP) {
 	return FrameP[FP_ARG_ARRAY_CACHE_INDEX];
 }
 
+/**
+ * @brief Get the number of arguments from the frame pointer.
+ *
+ * @param FrameP Pointer to the frame data.
+ * @return Number of arguments as an integer.
+ */
 int FP_GET_ARG_COUNT(const DataValue *FrameP) {
 	return to_integer(FrameP[FP_ARG_COUNT_INDEX]);
 }
 
+/**
+ * @brief Get the old frame pointer from the frame pointer.
+ *
+ * @param FrameP Pointer to the frame data.
+ * @return Pointer to the old frame pointer as a DataValue.
+ */
 DataValue *FP_GET_OLD_FP(const DataValue *FrameP) {
 	return to_data_value(FrameP[FP_OLD_FP_INDEX]);
 }
 
+/**
+ * @brief Get the return program counter from the frame pointer.
+ *
+ * @param FrameP Pointer to the frame data.
+ * @return Pointer to the instruction that is the return program counter.
+ */
 Inst *FP_GET_RET_PC(const DataValue *FrameP) {
 	return to_instruction(FrameP[FP_RET_PC_INDEX]);
 }
 
+/**
+ * @brief Get the start index for arguments in the frame pointer.
+ *
+ * @param FrameP Pointer to the frame data.
+ * @return Start index for arguments in the frame pointer.
+ */
 int FP_ARG_START_INDEX(const DataValue *FrameP) {
 	return -(FP_GET_ARG_COUNT(FrameP) + FP_TO_ARGS_DIST);
 }
 
+/**
+ * @brief Get the argument at index n from the frame pointer.
+ *
+ * @param FrameP Pointer to the frame data.
+ * @param n Index of the argument to retrieve.
+ * @return Reference to the argument at index n in the frame pointer.
+ */
 const DataValue &FP_GET_ARG_N(const DataValue *FrameP, int n) {
 	return FrameP[n + FP_ARG_START_INDEX(FrameP)];
 }
 
+/**
+ * @brief Get the symbol value at index n from the frame pointer.
+ *
+ * @param FrameP Pointer to the frame data.
+ * @param n Index of the symbol to retrieve.
+ * @return Reference to the symbol value at index n in the frame pointer.
+ */
 DataValue &FP_GET_SYM_N(DataValue *FrameP, int n) {
 	return FrameP[n];
 }
 
+/**
+ * @brief Get the symbol value for a given symbol from the frame pointer.
+ *
+ * @param FrameP Pointer to the frame data.
+ * @param sym Pointer to the symbol whose value is to be retrieved.
+ * @return Reference to the symbol value in the frame pointer.
+ */
 DataValue &FP_GET_SYM_VAL(DataValue *FrameP, Symbol *sym) {
 	return FP_GET_SYM_N(FrameP, to_integer(sym->value));
 }
 
-/*
-** Save and restore execution context to data structure "context"
-*/
+/**
+ * @brief Save the current execution context to the provided context pointer.
+ *
+ * @param context Pointer to the context where the current execution state will be saved.
+ */
 template <class Pointer>
 void saveContext(Pointer context) {
 	context->Stack         = Context.Stack;
@@ -116,6 +170,11 @@ void saveContext(Pointer context) {
 	context->FocusDocument = Context.FocusDocument;
 }
 
+/**
+ * @brief Restore the execution context from the provided context pointer.
+ *
+ * @param context Pointer to the context from which the execution state will be restored.
+ */
 template <class Pointer>
 void restoreContext(Pointer context) {
 	Context.Stack         = context->Stack;
@@ -126,11 +185,13 @@ void restoreContext(Pointer context) {
 	Context.FocusDocument = context->FocusDocument;
 }
 
-/*
-** combine two strings in a static area and set ErrMsg to point to the
-** result.  Returns false so a single return execError() statement can
-** be used to both process the message and return.
-*/
+/**
+ * @brief Formats an error message using a std::error_code and additional arguments.
+ *
+ * @param error_code The error code to format the message from.
+ * @param args Additional arguments to format the message with.
+ * @return int Returns STAT_ERROR after setting the ErrorMessage.
+ */
 template <class... T>
 int execError(const std::error_code &error_code, T &&...args) {
 	// NOTE(eteran): this warning is not needed for this function because
@@ -146,24 +207,33 @@ int execError(const std::error_code &error_code, T &&...args) {
 	QT_WARNING_POP
 }
 
+/**
+ * @brief Formats an error message using a format string and additional arguments.
+ *
+ * @param fmt The format string for the error message.
+ * @param args Additional arguments to format the message with.
+ * @return int Returns STAT_ERROR after setting the ErrorMessage.
+ */
 template <class... T>
-int execError(const char *s1, T &&...args) {
+int execError(const char *fmt, T &&...args) {
 	// NOTE(eteran): this warning is not needed for this function because
 	// we happen to know that the inputs for `execError` always originate
 	// from string constants
 	QT_WARNING_PUSH
 	QT_WARNING_DISABLE_GCC("-Wformat-security")
 	static char msg[MAX_ERR_MSG_LEN];
-	qsnprintf(msg, sizeof(msg), s1, std::forward<T>(args)...);
+	qsnprintf(msg, sizeof(msg), fmt, std::forward<T>(args)...);
 	ErrorMessage = msg;
 	return STAT_ERROR;
 	QT_WARNING_POP
 }
 
-/*
-** checks errno after operations which can set it.  If an error occurred,
-** creates appropriate error messages and returns false
-*/
+/**
+ * @brief Check for errors after a mathematical operation and return an error code.
+ *
+ * @param s The name of the operation to check for errors.
+ * @return int Returns STAT_OK if no error, or an error code if an error occurred.
+ */
 int errCheck(const char *s) {
 	switch (errno) {
 	case EDOM:
@@ -248,7 +318,6 @@ static void stackdump(int n, int extra);
 
 /* Array for mapping operations to functions for performing the operations
    Must correspond to the enum called "operations" in interpret.h */
-
 using operation_type = int (*)();
 
 static const operation_type OpFns[N_OPS] = {
@@ -297,11 +366,11 @@ static const operation_type OpFns[N_OPS] = {
 	pushArgArray,
 };
 
-/*
-** Initialize macro language global variables.  Must be called before
-** any macros are even parsed, because the parser uses action routine
-** symbols to comprehend hyphenated names.
-*/
+/**
+ * @brief Initializes macro language global variables. Must be called before
+ * any macros are parsed, as the parser uses action routine
+ * symbols to comprehend hyphenated names.
+ */
 void InitMacroGlobals() {
 
 	// Add subroutine argument symbols ($1, $2, ..., $9)
@@ -316,7 +385,7 @@ void InitMacroGlobals() {
 }
 
 /**
- * @brief CleanupMacroGlobals
+ * @brief Cleans up macro language global variables. Deletes all symbols
  */
 void CleanupMacroGlobals() {
 	for (Symbol *sym : GlobalSymList) {
@@ -332,21 +401,20 @@ void CleanupMacroGlobals() {
 ** a self contained program that can be run with ExecuteMacro.
 */
 
-/*
-** Start collecting instructions for a program. Clears the program
-** and the symbol table.
-*/
+/**
+ * @brief Begin creating a program for the macro interpreter.
+ */
 void BeginCreatingProgram() {
 	LocalSymList.clear();
 	ProgP        = Prog;
 	LoopStackPtr = LoopStack;
 }
 
-/*
-** Finish up the program under construction, and return it (code and
-** symbol table) as a package that ExecuteMacro can execute.  This
-** program must be freed with FreeProgram.
-*/
+/**
+ * @brief Finish up the program under construction, and return it (code and
+ * symbol table) as a package that ExecuteMacro can execute. The caller is
+ * responsible for deleting the returned Program object.
+ */
 Program *FinishCreatingProgram() {
 
 	auto newProg = std::make_unique<Program>();
@@ -367,9 +435,9 @@ Program *FinishCreatingProgram() {
 	return newProg.release();
 }
 
-/*
-** Add an operator (instruction) to the end of the current program
-*/
+/**
+ * @brief Add an operator (instruction) to the end of the current program
+ */
 bool AddOp(int op, QString *msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
 		*msg = MacroTooLarge;
@@ -380,9 +448,13 @@ bool AddOp(int op, QString *msg) {
 	return true;
 }
 
-/*
-** Add a symbol operand to the current program
-*/
+/**
+ * @brief Add a symbol operand to the current program.
+ *
+ * @param sym Pointer to the symbol to be added.
+ * @param msg Pointer to a QString for error messages.
+ * @return true if the symbol was added successfully, false if the program is too large.
+ */
 bool AddSym(Symbol *sym, QString *msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
 		*msg = MacroTooLarge;
@@ -393,9 +465,13 @@ bool AddSym(Symbol *sym, QString *msg) {
 	return true;
 }
 
-/*
-** Add an immediate value operand to the current program
-*/
+/**
+ * @brief Add an immediate value operand to the current program.
+ *
+ * @param value The immediate value to be added.
+ * @param msg Pointer to a QString for error messages.
+ * @return true if the value was added successfully, false if the program is too large.
+ */
 bool AddImmediate(int value, QString *msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
 		*msg = MacroTooLarge;
@@ -406,9 +482,13 @@ bool AddImmediate(int value, QString *msg) {
 	return true;
 }
 
-/*
-** Add a branch offset operand to the current program
-*/
+/**
+ * @brief Add a branch offset operand to the current program.
+ *
+ * @param to Pointer to the instruction to which the branch should point.
+ * @param msg Pointer to a QString for error messages.
+ * @return true if the branch offset was added successfully, false if the program is too large.
+ */
 bool AddBranchOffset(const Inst *to, QString *msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
 		*msg = MacroTooLarge;
@@ -423,18 +503,24 @@ bool AddBranchOffset(const Inst *to, QString *msg) {
 	return true;
 }
 
-/*
-** Return the address at which the next instruction will be stored
-*/
+/**
+ * @brief Return the address at which the next instruction will be stored.
+ *
+ * @return Pointer to the next instruction location in the program.
+ */
 Inst *GetPC() {
 	return ProgP;
 }
 
-/*
-** Swap the positions of two contiguous blocks of code.  The first block
-** running between locations start and boundary, and the second between
-** boundary and end.
-*/
+/**
+ * @brief Swap the positions of two contiguous blocks of code.  The first block
+ * running between locations start and boundary, and the second between
+ * boundary and end.
+ *
+ * @param start Pointer to the start of the first block.
+ * @param boundary Pointer to the end of the first block and start of the second.
+ * @param end Pointer to the end of the second block.
+ */
 void SwapCode(Inst *start, Inst *boundary, Inst *end) {
 
 	// double-reverse method: reverse elements of both parts then whole lot
@@ -454,10 +540,21 @@ void SwapCode(Inst *start, Inst *boundary, Inst *end) {
 ** address for a break or continue statement, and FillLoopAddrs to fill
 ** in all the addresses and return to the level of the enclosing loop.
 */
+
+/**
+ * @brief Start a new loop address list for break and continue statements.
+ *
+ */
 void StartLoopAddrList() {
 	addLoopAddr(nullptr);
 }
 
+/**
+ * @brief Add an address to the loop stack for a break or continue statement.
+ *
+ * @param addr Pointer to the instruction address where the break or continue should branch.
+ * @return true if the loop stack is empty (no enclosing loop), false if the address was added successfully.
+ */
 bool AddBreakAddr(Inst *addr) {
 	if (LoopStackPtr == LoopStack) {
 		return true;
@@ -468,6 +565,12 @@ bool AddBreakAddr(Inst *addr) {
 	return false;
 }
 
+/**
+ * @brief Add an address to the loop stack for a continue statement.
+ *
+ * @param addr Pointer to the instruction address where the continue should branch.
+ * @return true if the loop stack is empty (no enclosing loop), false if the address was added successfully.
+ */
 bool AddContinueAddr(Inst *addr) {
 	if (LoopStackPtr == LoopStack) {
 		return true;
@@ -478,6 +581,11 @@ bool AddContinueAddr(Inst *addr) {
 	return false;
 }
 
+/**
+ * @brief Add an address to the loop stack.
+ *
+ * @param addr Pointer to the instruction address to be added to the loop stack.
+ */
 static void addLoopAddr(Inst *addr) {
 	if (LoopStackPtr > &LoopStack[LOOP_STACK_SIZE - 1]) {
 		qCritical("NEdit: loop stack overflow in macro parser");
@@ -486,6 +594,12 @@ static void addLoopAddr(Inst *addr) {
 	*LoopStackPtr++ = addr;
 }
 
+/**
+ * @brief Fill the loop addresses for break and continue statements
+ *
+ * @param breakAddr The address to which break statements should branch.
+ * @param continueAddr The address to which continue statements should branch.
+ */
 void FillLoopAddrs(const Inst *breakAddr, const Inst *continueAddr) {
 	while (true) {
 		LoopStackPtr--;
@@ -508,13 +622,20 @@ void FillLoopAddrs(const Inst *breakAddr, const Inst *continueAddr) {
 	}
 }
 
-/*
-** Execute a compiled macro, "prog", using the arguments in the array
-** "args".  Returns one of MACRO_DONE, MACRO_PREEMPT, or MACRO_ERROR.
-** if MACRO_DONE is returned, the macro completed, and the returned value
-** (if any) can be read from "result".  If MACRO_PREEMPT is returned, the
-** macro exceeded its allotted time-slice and scheduled...
-*/
+/**
+ * @brief Execute a compiled macro, "prog", using the arguments in the array
+ * "args".
+ *
+ * @param document The document in which the macro is being executed.
+ * @param prog The compiled program to execute.
+ * @param arguments The arguments to pass to the macro.
+ * @param result Pointer to a DataValue where the result of the macro execution will be stored.
+ * @param continuation A shared pointer to a MacroContext that will hold the state of the macro execution for resuming later.
+ * @param msg Pointer to a QString where error messages will be stored if an error occurs.
+ * @return Returns one of the ExecReturnCodes: MACRO_DONE, MACRO_PREEMPT, or MACRO_ERROR.
+ * if MACRO_DONE is returned, the macro completed, and the returned value (if any) can be read from "result".
+ * If MACRO_PREEMPT is returned, the macro exceeded its allotted time-slice and scheduled...
+ */
 int executeMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg) {
 
 	/* Create an execution context (a stack, a stack pointer, a frame pointer,
@@ -552,10 +673,14 @@ int executeMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> a
 	return continueMacro(context, result, msg);
 }
 
-/*
-** Continue the execution of a suspended macro whose state is described in
-** "continuation"
-*/
+/**
+ * @brief Continue the execution of a suspended macro whose state is described in `continuation`
+ *
+ * @param continuation A MacroContext that holds the state of the macro execution.
+ * @param result Where the result of the macro execution will be stored.
+ * @param msg Pointer to a QString where error messages will be stored if an error occurs.
+ * @return Returns one of the ExecReturnCodes: MACRO_DONE, MACRO_PREEMPT, or MACRO_ERROR.
+ */
 ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation, DataValue *result, QString *msg) {
 
 	int instCount = 0;
@@ -614,13 +739,15 @@ ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation,
 	}
 }
 
-/*
-** If a macro is already executing, and requests that another macro be run,
-** this can be called instead of ExecuteMacro to run it in the same context
-** as if it were a subroutine.  This saves the caller from maintaining
-** separate contexts, and serializes processing of the two macros without
-** additional work.
-*/
+/**
+ * @brief If a macro is already executing, and requests that another macro be run,
+ * this can be called instead of ExecuteMacro to run it in the same context
+ * as if it were a subroutine.  This saves the caller from maintaining
+ * separate contexts, and serializes processing of the two macros without
+ * additional work.
+ *
+ * @param prog The program to run as a subroutine.
+ */
 void RunMacroAsSubrCall(Program *prog) {
 
 	/* See "callSubroutine" for a description of the stack frame
@@ -639,54 +766,65 @@ void RunMacroAsSubrCall(Program *prog) {
 	}
 }
 
-/*
-** Cause a macro in progress to be preempted (called by commands which take
-** a long time, or want to return to the event loop.  Call ResumeMacroExecution
-** to resume.
-*/
+/**
+ * @brief Cause a macro in progress to be preempted (called by commands which take
+ * a long time, or want to return to the event loop. Call ResumeMacroExecution
+ * to resume.
+ */
 void preemptMacro() {
 	PreemptRequest = true;
 }
 
-/*
-** Reset the return value for a subroutine which caused preemption (this is
-** how to return a value from a routine which preempts instead of returning
-** a value directly).
-*/
+/**
+ * @brief Reset the return value for a subroutine which caused preemption (this is
+ * how to return a value from a routine which preempts instead of returning
+ * a value directly).
+ *
+ * @param context The context of the macro execution.
+ * @param dv The DataValue to set as the return value.
+ */
 void modifyReturnedValue(const std::shared_ptr<MacroContext> &context, const DataValue &dv) {
 	if ((context->PC - 1)->func == fetchRetVal) {
 		*(context->StackP - 1) = dv;
 	}
 }
 
-/*
-** Called within a routine invoked from a macro, returns the document in
-** which the macro is executing (where the banner is, not where it is focused)
-*/
+/**
+ * @brief Called within a routine invoked from a macro.
+ *
+ * @return The document in which the macro is executing
+ * (where the banner is, not where it is focused).
+ */
 DocumentWidget *MacroRunDocument() {
 	return Context.RunDocument;
 }
 
-/*
-** Called within a routine invoked from a macro, returns the document to which
-** the currently executing macro is focused (the window which macro commands
-** modify, not the window from which the macro is being run)
-*/
+/**
+ * @brief Called within a routine invoked from a macro.
+ *
+ * @return The document to which the currently executing macro is focused
+ * (the window which macro commands modify, not the window from
+ * which the macro is being run).
+ */
 DocumentWidget *MacroFocusDocument() {
 	return Context.FocusDocument;
 }
 
-/*
-** Set the window to which macro subroutines and actions which operate on an
-** implied window are directed.
-*/
+/**
+ * @brief Set the window to which macro subroutines and actions which operate on an
+ * implied window are directed.
+ *
+ * @param document The document widget to set as the focus document.
+ */
 void SetMacroFocusDocument(DocumentWidget *document) {
 	Context.FocusDocument = document;
 }
 
-/*
-** install an array iteration symbol
-*/
+/**
+ * @brief install an array iteration symbol
+ *
+ * @return The installed iterator symbol.
+ */
 Symbol *InstallIteratorSymbol() {
 
 	static int interatorNameIndex = 0;
@@ -696,9 +834,12 @@ Symbol *InstallIteratorSymbol() {
 	return InstallSymbolEx(symbolName, LOCAL_SYM, make_value(ArrayIterator()));
 }
 
-/*
-** Lookup a constant string by its value.
-*/
+/**
+ * @brief Lookup a constant string by its value.
+ *
+ * @param value The string value to look up.
+ * @return The Symbol if found, nullptr otherwise.
+ */
 Symbol *LookupStringConstSymbol(std::string_view value) {
 
 	auto it = std::find_if(GlobalSymList.begin(), GlobalSymList.end(), [value](Symbol *s) {
@@ -712,13 +853,22 @@ Symbol *LookupStringConstSymbol(std::string_view value) {
 	return nullptr;
 }
 
+/**
+ * @brief Install a string constant symbol in the global symbol table.
+ *
+ * @param str The string to be installed as a constant symbol.
+ * @return The installed Symbol.
+ */
 Symbol *InstallStringConstSymbolEx(const QString &str) {
 	return InstallStringConstSymbol(str.toStdString());
 }
 
-/*
-** install string str in the global symbol table with a string name
-*/
+/**
+ * @brief Install a string constant symbol in the global symbol table.
+ *
+ * @param str The string to be installed as a constant symbol.
+ * @return The installed Symbol.
+ */
 Symbol *InstallStringConstSymbol(std::string_view str) {
 
 	static int stringConstIndex = 0;
@@ -733,13 +883,22 @@ Symbol *InstallStringConstSymbol(std::string_view str) {
 	return InstallSymbolEx(stringName, CONST_SYM, value);
 }
 
-/*
-** find a symbol in the symbol table
-*/
+/**
+ * @brief find a symbol in the symbol table
+ *
+ * @param name The name of the symbol to look up.
+ * @return The Symbol if found, nullptr otherwise.
+ */
 Symbol *LookupSymbolEx(const QString &name) {
 	return LookupSymbol(name.toStdString());
 }
 
+/**
+ * @brief find a symbol in the symbol table
+ *
+ * @param name The name of the symbol to look up.
+ * @return The Symbol if found, nullptr otherwise.
+ */
 Symbol *LookupSymbol(std::string_view name) {
 
 	// first look for a local symbol
@@ -763,16 +922,29 @@ Symbol *LookupSymbol(std::string_view name) {
 	return nullptr;
 }
 
-/*
-** install symbol name in symbol table
-*/
+/**
+ * @brief install symbol name in symbol table
+ *
+ * @param name The name of the symbol to install.
+ * @param type The type of the symbol (e.g., LOCAL_SYM, GLOBAL_SYM, CONST_SYM, etc.).
+ * @param value The value associated with the symbol.
+ * @return The installed Symbol.
+ */
 Symbol *InstallSymbolEx(const QString &name, SymTypes type, const DataValue &value) {
 	return InstallSymbol(name.toStdString(), type, value);
 }
 
-Symbol *InstallSymbol(const std::string &name, SymTypes type, const DataValue &value) {
+/**
+ * @brief install symbol name in symbol table
+ *
+ * @param name The name of the symbol to install.
+ * @param type The type of the symbol (e.g., LOCAL_SYM, GLOBAL_SYM, CONST_SYM, etc.).
+ * @param value The value associated with the symbol.
+ * @return The installed Symbol.
+ */
+Symbol *InstallSymbol(std::string_view name, SymTypes type, const DataValue &value) {
 
-	auto s = new Symbol{name, type, value};
+	auto s = new Symbol{std::string(name), type, value};
 
 	if (type == LOCAL_SYM) {
 		LocalSymList.push_front(s);
@@ -782,16 +954,18 @@ Symbol *InstallSymbol(const std::string &name, SymTypes type, const DataValue &v
 	return s;
 }
 
-/*
-** Promote a symbol from local to global, removing it from the local symbol
-** list.
-**
-** This is used as a forward declaration feature for macro functions.
-** If a function is called (ie while parsing the macro) where the
-** function isn't defined yet, the symbol is put into the GlobalSymList
-** so that the function definition uses the same symbol.
-**
-*/
+/**
+ * @brief Promote a symbol from local to global, removing it from the local symbol
+ * list.
+ *
+ * This is used as a forward declaration feature for macro functions.
+ * If a function is called (ie while parsing the macro) where the
+ * function isn't defined yet, the symbol is put into the GlobalSymList
+ * so that the function definition uses the same symbol.
+ *
+ * @param sym The symbol to promote.
+ * @return The promoted Symbol if successful, or the original Symbol if it was not a LOCAL_SYM.
+ */
 Symbol *PromoteToGlobal(Symbol *sym) {
 
 	if (sym->type != LOCAL_SYM) {
@@ -893,36 +1067,41 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 		*Context.StackP++ = make_value(string);                 \
 	} while (0)
 
-#define BINARY_NUMERIC_OPERATION(op) \
-	do {                             \
-		int n1;                      \
-		int n2;                      \
-		DISASM_RT(Context.PC - 1, 1);        \
-		STACKDUMP(2, 3);             \
-		POP_INT(n2);                 \
-		POP_INT(n1);                 \
-		PUSH_INT(n1 op n2);          \
-		return STAT_OK;              \
+#define BINARY_NUMERIC_OPERATION(op)  \
+	do {                              \
+		int n1;                       \
+		int n2;                       \
+		DISASM_RT(Context.PC - 1, 1); \
+		STACKDUMP(2, 3);              \
+		POP_INT(n2);                  \
+		POP_INT(n1);                  \
+		PUSH_INT(n1 op n2);           \
+		return STAT_OK;               \
 	} while (0)
 
-#define UNARY_NUMERIC_OPERATION(op) \
-	do {                            \
-		int n;                      \
-		DISASM_RT(Context.PC - 1, 1);       \
-		STACKDUMP(1, 3);            \
-		POP_INT(n);                 \
-		PUSH_INT(op n);             \
-		return STAT_OK;             \
+#define UNARY_NUMERIC_OPERATION(op)   \
+	do {                              \
+		int n;                        \
+		DISASM_RT(Context.PC - 1, 1); \
+		STACKDUMP(1, 3);              \
+		POP_INT(n);                   \
+		PUSH_INT(op n);               \
+		return STAT_OK;               \
 	} while (0)
 
-/*
-** copy a symbol's value onto the stack
-** Before: Prog->  [Sym], next, ...
-**         TheStack-> next, ...
-** After:  Prog->  Sym, [next], ...
-**         TheStack-> [symVal], next, ...
-*/
+/**
+ * @brief Push the value of a symbol onto the stack.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int pushSymVal() {
+
+	/*
+	** Before: Prog->  [Sym], next, ...
+	**         TheStack-> next, ...
+	** After:  Prog->  Sym, [next], ...
+	**         TheStack-> [symVal], next, ...
+	*/
 
 	DataValue symVal;
 
@@ -964,6 +1143,11 @@ static int pushSymVal() {
 	return STAT_OK;
 }
 
+/**
+ * @brief Push the value of a subroutine argument onto the stack.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int pushArgVal() {
 	int argNum;
 
@@ -982,6 +1166,11 @@ static int pushArgVal() {
 	return STAT_OK;
 }
 
+/**
+ * @brief Push the number of arguments passed to the current subroutine onto the stack.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int pushArgCount() {
 	DISASM_RT(Context.PC - 1, 1);
 	STACKDUMP(0, 3);
@@ -990,6 +1179,11 @@ static int pushArgCount() {
 	return STAT_OK;
 }
 
+/**
+ * @brief Push an array of arguments onto the stack.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int pushArgArray() {
 
 	DataValue argVal;
@@ -1019,16 +1213,21 @@ static int pushArgArray() {
 	return STAT_OK;
 }
 
-/*
-** Push an array (by reference) onto the stack
-** Before: Prog->  [ArraySym], makeEmpty, next, ...
-**         TheStack-> next, ...
-** After:  Prog->  ArraySym, makeEmpty, [next], ...
-**         TheStack-> [elemValue], next, ...
-** makeEmpty is either true (1) or false (0): if true, and the element is not
-** present in the array, create it.
-*/
+/**
+ * @brief Push an array symbol value onto the stack.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int pushArraySymVal() {
+
+	/*
+	** Before: Prog->  [ArraySym], makeEmpty, next, ...
+	**         TheStack-> next, ...
+	** After:  Prog->  ArraySym, makeEmpty, [next], ...
+	**         TheStack-> [elemValue], next, ...
+	** makeEmpty is either true (1) or false (0): if true, and the element is not
+	** present in the array, create it.
+	*/
 
 	DataValue *dataPtr;
 
@@ -1059,15 +1258,19 @@ static int pushArraySymVal() {
 	return STAT_OK;
 }
 
-/*
-** assign top value to next symbol
-**
-** Before: Prog->  [symbol], next, ...
-**         TheStack-> [value], next, ...
-** After:  Prog->  symbol, [next], ...
-**         TheStack-> next, ...
-*/
+/**
+ * @brief Assign the top value of the stack to a symbol.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int assign() {
+
+	/*
+	** Before: Prog->  [symbol], next, ...
+	**         TheStack-> [value], next, ...
+	** After:  Prog->  symbol, [next], ...
+	**         TheStack-> next, ...
+	*/
 
 	DataValue *dataPtr;
 	DataValue value;
@@ -1102,12 +1305,18 @@ static int assign() {
 	return STAT_OK;
 }
 
-/*
-** copy the top value of the stack
-** Before: TheStack-> value, next, ...
-** After:  TheStack-> value, value, next, ...
-*/
+/**
+ * @brief Duplicate the top value of the stack.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int dupStack() {
+
+	/*
+	 ** Before: TheStack-> value, next, ...
+	 ** After:  TheStack-> value, value, next, ...
+	 */
+
 	DataValue value;
 
 	DISASM_RT(Context.PC - 1, 1);
@@ -1119,15 +1328,20 @@ static int dupStack() {
 	return STAT_OK;
 }
 
-/*
-** if left and right arguments are arrays, then the result is a new array
-** in which all the keys from both the right and left are copied
-** the values from the right array are used in the result array when the
-** keys are the same
-** Before: TheStack-> value2, value1, next, ...
-** After:  TheStack-> resValue, next, ...
-*/
+/**
+ * @brief Add two values together.
+ * If both values are arrays, the result is a new array containing all keys
+ * from both arrays, with values from the right array used when keys are the same.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int add() {
+
+	/*
+	** Before: TheStack-> value2, value1, next, ...
+	** After:  TheStack-> resValue, next, ...
+	*/
+
 	DataValue leftVal;
 	DataValue rightVal;
 
@@ -1194,14 +1408,18 @@ static int add() {
 	return STAT_OK;
 }
 
-/*
-** if left and right arguments are arrays, then the result is a new array
-** in which only the keys which exist in the left array but not in the right
-** are copied
-** Before: TheStack-> value2, value1, next, ...
-** After:  TheStack-> resValue, next, ...
-*/
+/**
+ * @brief Subtract two values. If both values are arrays, the result is a new array
+ * containing all keys from the left array that do not exist in the right array.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int subtract() {
+
+	/*
+	** Before: TheStack-> value2, value1, next, ...
+	** After:  TheStack-> resValue, next, ...
+	*/
 
 	DataValue leftVal;
 	DataValue rightVal;
@@ -1271,10 +1489,21 @@ static int subtract() {
 ** Before: TheStack-> value, next, ...
 ** After:  TheStack-> resValue, next, ...
 */
+
+/**
+ * @brief Multiply two values together.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int multiply() {
 	BINARY_NUMERIC_OPERATION(*);
 }
 
+/**
+ * @brief Divide two values.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int divide() {
 	int n1;
 	int n2;
@@ -1291,6 +1520,11 @@ static int divide() {
 	return STAT_OK;
 }
 
+/**
+ * @brief Calculate the modulo of two values.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int modulo() {
 	int n1;
 	int n2;
@@ -1307,41 +1541,83 @@ static int modulo() {
 	return STAT_OK;
 }
 
+/**
+ * @brief Negate the top value of the stack.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int negate() {
 	UNARY_NUMERIC_OPERATION(-);
 }
 
+/**
+ * @brief Increment the top value of the stack.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int increment() {
 	UNARY_NUMERIC_OPERATION(++);
 }
 
+/**
+ * @brief Decrement the top value of the stack.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int decrement() {
 	UNARY_NUMERIC_OPERATION(--);
 }
 
+/**
+ * @brief Compare two values for greater than.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int gt() {
 	BINARY_NUMERIC_OPERATION(>);
 }
 
+/**
+ * @brief Compare two values for less than.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int lt() {
 	BINARY_NUMERIC_OPERATION(<);
 }
 
+/**
+ * @brief Compare two values for greater than or equal to.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int ge() {
 	BINARY_NUMERIC_OPERATION(>=);
 }
 
+/**
+ * @brief Compare two values for less than or equal to.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int le() {
 	BINARY_NUMERIC_OPERATION(<=);
 }
 
-/*
-** verify that compares are between integers and/or strings only
-** Before: TheStack-> value1, value2, next, ...
-** After:  TheStack-> resValue, next, ...
-** where resValue is 1 for true, 0 for false
-*/
+/**
+ * @brief Compare two values for equality.
+ * This function is only valid for strings and integers.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int eq() {
+
+	/*
+	 ** Before: TheStack-> value1, value2, next, ...
+	 ** After:  TheStack-> resValue, next, ...
+	 ** where resValue is 1 for true, 0 for false
+	 */
+
 	DataValue v1;
 	DataValue v2;
 
@@ -1381,20 +1657,29 @@ static int eq() {
 	return STAT_OK;
 }
 
-// negated eq() call
+/**
+ * @brief Compare two values for inequality.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int ne() {
 	eq();
 	return logicalNot();
 }
 
-/*
-** if left and right arguments are arrays, then the result is a new array
-** in which only the keys which exist in both the right or left are copied
-** the values from the right array are used in the result array
-** Before: TheStack-> value2, value1, next, ...
-** After:  TheStack-> resValue, next, ...
-*/
+/**
+ * @brief Perform a bitwise AND operation on two values.
+ * If both values are arrays, the result is a new array containing all keys
+ * that exist in both arrays, with values from the right array used in the result.
+ *
+ * @return
+ */
 static int bitAnd() {
+
+	/*
+	 ** Before: TheStack-> value2, value1, next, ...
+	 ** After:  TheStack-> resValue, next, ...
+	 */
 
 	DataValue leftVal;
 	DataValue rightVal;
@@ -1450,14 +1735,23 @@ static int bitAnd() {
 	return STAT_OK;
 }
 
-/*
-** if left and right arguments are arrays, then the result is a new array
-** in which only the keys which exist in either the right or left but not both
-** are copied
-** Before: TheStack-> value2, value1, next, ...
-** After:  TheStack-> resValue, next, ...
-*/
+/**
+ * @brief Perform a bitwise OR operation on two values.
+ * If both values are arrays, the result is a new array containing all keys
+ * that exist in either the left or right array, but not both. (XOR)
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ *
+ * @note The fact that this function is an XOR operation when both values are arrays
+ * is a design choice that may not be intuitive. But we have to keep the
+ * behavior consistent with the original NEdit macro language.
+ */
 static int bitOr() {
+
+	/*
+	 ** Before: TheStack-> value2, value1, next, ...
+	 ** After:  TheStack-> resValue, next, ...
+	 */
 
 	DataValue leftVal;
 	DataValue rightVal;
@@ -1521,24 +1815,45 @@ static int bitOr() {
 	return STAT_OK;
 }
 
+/**
+ * @brief Perform a logical AND operation on two values.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int logicalAnd() {
 	BINARY_NUMERIC_OPERATION(&&);
 }
 
+/**
+ * @brief Perform a logical OR operation on two values.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int logicalOr() {
 	BINARY_NUMERIC_OPERATION(||);
 }
 
+/**
+ * @brief Perform a logical NOT operation on the top value of the stack.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int logicalNot() {
 	UNARY_NUMERIC_OPERATION(!);
 }
 
-/*
-** raise one number to the power of another
-** Before: TheStack-> raisedBy, number, next, ...
-** After:  TheStack-> result, next, ...
-*/
+/**
+ * @brief Raise one number to the power of another.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int power() {
+
+	/*
+	** Before: TheStack-> raisedBy, number, next, ...
+	** After:  TheStack-> result, next, ...
+	*/
+
 	int n1;
 	int n2;
 	int n3;
@@ -1576,12 +1891,18 @@ static int power() {
 	return errCheck("exponentiation");
 }
 
-/*
-** concatenate two top items on the stack
-** Before: TheStack-> str2, str1, next, ...
-** After:  TheStack-> result, next, ...
-*/
+/**
+ * @brief Concatenate two strings from the top of the stack.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int concat() {
+
+	/*
+	** Before: TheStack-> str2, str1, next, ...
+	** After:  TheStack-> result, next, ...
+	*/
+
 	std::string s1;
 	std::string s2;
 
@@ -1598,23 +1919,33 @@ static int concat() {
 }
 
 /*
-** Call a subroutine or function (user defined or built-in).  Args are the
-** subroutine's symbol, and the number of arguments which have been pushed
-** on the stack.
+
 **
-** For a macro subroutine, the return address, frame pointer, number of
-** arguments and space for local variables are added to the stack, and the
-** PC is set to point to the new function. For a built-in routine, the
-** arguments are popped off the stack, and the routine is just called.
-**
-** Before: Prog->  [subrSym], nArgs, next, ...
-**         TheStack-> argN-arg1, next, ...
-** After:  Prog->  next, ...            -- (built-in called subr)
-**         TheStack-> retVal?, next, ...
-**    or:  Prog->  (in called)next, ... -- (macro code called subr)
-**         TheStack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
 */
+
+/**
+ * @brief Call a subroutine or function.
+ * This function handles both built-in functions and macro subroutines.
+ * Args are the subroutine's symbol, and the number of arguments which
+ * have been pushed on the stack.
+ *
+ * For a macro subroutine, the return address, frame pointer, number of
+ * arguments and space for local variables are added to the stack, and the
+ * PC is set to point to the new function. For a built-in routine, the
+ * arguments are popped off the stack, and the routine is just called.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int callSubroutine() {
+
+	/*
+	 ** Before: Prog->  [subrSym], nArgs, next, ...
+	 **         TheStack-> argN-arg1, next, ...
+	 ** After:  Prog->  next, ...            -- (built-in called subr)
+	 **         TheStack-> retVal?, next, ...
+	 **    or:  Prog->  (in called)next, ... -- (macro code called subr)
+	 **         TheStack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
+	 */
 
 	Symbol *sym         = Context.PC++->sym;
 	const int64_t nArgs = Context.PC++->value;
@@ -1680,32 +2011,52 @@ static int callSubroutine() {
 	return execError("%s is not a function or subroutine", sym->name.c_str());
 }
 
-/*
-** This should never be executed, returnVal checks for the presence of this
-** instruction at the PC to decide whether to push the function's return
-** value, then skips over it without executing.
-*/
+/**
+ * @brief Fetch the return value of a subroutine.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ *
+ * @note This should never be executed, returnVal checks for the presence of this
+ * instruction at the PC to decide whether to push the function's return
+ * value, then skips over it without executing.
+ */
 static int fetchRetVal() {
 	return execError("internal error: frv");
 }
 
-// see comments for returnValOrNone()
+/**
+ * @brief Return from a subroutine call without a return value.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int returnNoVal() {
 	return returnValOrNone(false);
 }
 
+/**
+ * @brief Return from a subroutine call with a return value.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int returnVal() {
 	return returnValOrNone(true);
 }
 
-/*
-** Return from a subroutine call
-** Before: Prog->  [next], ...
-**         TheStack-> retVal?, ...(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
-** After:  Prog->  next, ..., (in caller)[FETCH_RET_VAL?], ...
-**         TheStack-> retVal?, next, ...
-*/
+/**
+ * @brief Return from a subroutine call, either with or without a return value.
+ *
+ * @param valOnStack Indicates whether the return value is on the stack.
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int returnValOrNone(bool valOnStack) {
+
+	/*
+	** Before: Prog->  [next], ...
+	**         TheStack-> retVal?, ...(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
+	** After:  Prog->  next, ..., (in caller)[FETCH_RET_VAL?], ...
+	**         TheStack-> retVal?, next, ...
+	*/
+
 	DataValue retVal;
 
 	DISASM_RT(Context.PC - 1, 1);
@@ -1747,13 +2098,18 @@ static int returnValOrNone(bool valOnStack) {
 	return (Context.PC == nullptr) ? STAT_DONE : STAT_OK;
 }
 
-/*
-** Unconditional branch offset by immediate operand
-**
-** Before: Prog->  [branchDest], next, ..., (branchdest)next
-** After:  Prog->  branchDest, next, ..., (branchdest)[next]
-*/
+/**
+ * @brief Branch to an address specified by the immediate operand.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int branch() {
+
+	/*
+	** Before: Prog->  [branchDest], next, ..., (branchdest)next
+	** After:  Prog->  branchDest, next, ..., (branchdest)[next]
+	*/
+
 	DISASM_RT(Context.PC - 1, 2);
 	STACKDUMP(0, 3);
 
@@ -1761,15 +2117,19 @@ static int branch() {
 	return STAT_OK;
 }
 
-/*
-** Conditional branches if stack value is true/false (non-zero/0) to address
-** of immediate operand (pops stack)
-**
-** Before: Prog->  [branchDest], next, ..., (branchdest)next
-** After:  either: Prog->  branchDest, [next], ...
-** After:  or:     Prog->  branchDest, next, ..., (branchdest)[next]
-*/
+/**
+ * @brief Branch to an address if the top value of the stack is true (non-zero).
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int branchTrue() {
+
+	/*
+	** Before: Prog->  [branchDest], next, ..., (branchdest)next
+	** After:  either: Prog->  branchDest, [next], ...
+	** After:  or:     Prog->  branchDest, next, ..., (branchdest)[next]
+	*/
+
 	int value;
 
 	DISASM_RT(Context.PC - 1, 2);
@@ -1786,7 +2146,19 @@ static int branchTrue() {
 	return STAT_OK;
 }
 
+/**
+ * @brief Branch to an address if the top value of the stack is false (zero).
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int branchFalse() {
+
+	/*
+	 ** Before: Prog->  [branchDest], next, ..., (branchdest)next
+	 ** After:  either: Prog->  branchDest, [next], ...
+	 ** After:  or:     Prog->  branchDest, next, ..., (branchdest)[next]
+	 */
+
 	int value;
 
 	DISASM_RT(Context.PC - 1, 2);
@@ -1803,15 +2175,20 @@ static int branchFalse() {
 	return STAT_OK;
 }
 
-/*
-** Ignore the address following the instruction and continue.  Why? So
-** some code that uses conditional branching doesn't have to figure out
-** whether to store a branch address.
-**
-** Before: Prog->  [branchDest], next, ...
-** After:  Prog->  branchDest, [next], ...
-*/
+/**
+ * @brief Branch to an address that is never taken.
+ * Why? So some code that uses conditional branching
+ * doesn't have to figure out whether to store a branch address.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int branchNever() {
+
+	/*
+	** Before: Prog->  [branchDest], next, ...
+	** After:  Prog->  branchDest, [next], ...
+	*/
+
 	DISASM_RT(Context.PC - 1, 2);
 	STACKDUMP(0, 3);
 
@@ -1819,22 +2196,26 @@ static int branchNever() {
 	return STAT_OK;
 }
 
-/*
-** recursively copy(duplicate) the sparse array nodes of an array
-** this does not duplicate the key/node data since they are never
-** modified, only replaced
-*/
+/**
+ * @brief Recursively copy an array.
+ *
+ * @param dstArray The destination array to copy to.
+ * @param srcArray The source array to copy from.
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 int ArrayCopy(DataValue *dstArray, const DataValue *srcArray) {
 	*dstArray = *srcArray;
 	return STAT_OK;
 }
 
-/*
-** creates a string of a single key for all the sub-scripts
-** using ARRAY_DIM_SEP as a separator
-** this function uses the PEEK macros in order to remove most limits on
-** the number of arguments to an array
-*/
+/**
+ * @brief Create a key string for an array from the arguments on the stack.
+ *
+ * @param nArgs The number of arguments to process from the stack.
+ * @param keyString A pointer to a string where the key will be stored.
+ * @param leaveParams If true, the parameters will not be popped from the stack after processing.
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int makeArrayKeyFromArgs(int64_t nArgs, std::string *keyString, bool leaveParams) {
 	DataValue tmpVal;
 
@@ -1866,9 +2247,14 @@ static int makeArrayKeyFromArgs(int64_t nArgs, std::string *keyString, bool leav
 	return STAT_OK;
 }
 
-/*
-** insert a DataValue into an array
-*/
+/**
+ * @brief Insert a value into an array at the specified key.
+ *
+ * @param theArray The array to insert into.
+ * @param keyStr The key under which to insert the value.
+ * @param theValue The value to insert.
+ * @return Returns true if the insertion was successful, false otherwise.
+ */
 bool ArrayInsert(DataValue *theArray, const std::string &keyStr, DataValue *theValue) {
 
 	const ArrayPtr &m = to_array(*theArray);
@@ -1881,9 +2267,12 @@ bool ArrayInsert(DataValue *theArray, const std::string &keyStr, DataValue *theV
 	return true;
 }
 
-/*
-** remove a node from an array whose key matches keyStr
-*/
+/**
+ * @brief Delete a value from an array at the specified key.
+ *
+ * @param theArray The array from which to delete the value.
+ * @param keyStr The key of the value to delete.
+ */
 void ArrayDelete(DataValue *theArray, const std::string &keyStr) {
 
 	const ArrayPtr &m = to_array(*theArray);
@@ -1894,27 +2283,36 @@ void ArrayDelete(DataValue *theArray, const std::string &keyStr) {
 	}
 }
 
-/*
-** remove all nodes from an array
-*/
+/**
+ * @brief Delete all values from an array.
+ *
+ * @param theArray The array to clear.
+ */
 void ArrayDeleteAll(DataValue *theArray) {
 
 	const ArrayPtr &m = to_array(*theArray);
 	m->clear();
 }
 
-/*
-** returns the number of elements (nodes containing values) of an array
-*/
+/**
+ * @brief Get the size of an array.
+ *
+ * @param theArray The array to get the size of.
+ * @return Returns the size of the array.
+ */
 int ArraySize(DataValue *theArray) {
 	const ArrayPtr &m = to_array(*theArray);
 	return gsl::narrow<int>(m->size());
 }
 
-/*
-** retrieves an array node whose key matches
-** returns 1 for success 0 for not found
-*/
+/**
+ * @brief Get a value from an array by its key.
+ *
+ * @param theArray The array to search in.
+ * @param keyStr The key string to look for in the array.
+ * @param theValue A pointer to where the found value will be stored.
+ * @return Returns true if the value was found, false otherwise.
+ */
 bool ArrayGet(DataValue *theArray, const std::string &keyStr, DataValue *theValue) {
 
 	const ArrayPtr &m = to_array(*theArray);
@@ -1927,9 +2325,12 @@ bool ArrayGet(DataValue *theArray, const std::string &keyStr, DataValue *theValu
 	return false;
 }
 
-/*
-** get pointer to start iterating an array
-*/
+/**
+ * @brief Initialize an iterator for the first element of an array.
+ *
+ * @param theArray The array to iterate over.
+ * @return Returns an ArrayIterator initialized to the first element of the array.
+ */
 ArrayIterator arrayIterateFirst(DataValue *theArray) {
 
 	const ArrayPtr &m = to_array(*theArray);
@@ -1938,9 +2339,12 @@ ArrayIterator arrayIterateFirst(DataValue *theArray) {
 	return it;
 }
 
-/*
-** move iterator to next entry in array
-*/
+/**
+ * @brief Advance the iterator to the next element in the array.
+ *
+ * @param iterator The iterator to advance.
+ * @return Returns the updated iterator, now pointing to the next element.
+ */
 ArrayIterator arrayIterateNext(ArrayIterator iterator) {
 
 	Q_ASSERT(iterator.it != iterator.m->end());
@@ -1948,15 +2352,19 @@ ArrayIterator arrayIterateNext(ArrayIterator iterator) {
 	return iterator;
 }
 
-/*
-** evaluate an array element and push the result onto the stack
-**
-** Before: Prog->  [nDim], next, ...
-**         TheStack-> indnDim, ... ind1, ArraySym, next, ...
-** After:  Prog->  nDim, [next], ...
-**         TheStack-> indexedArrayVal, next, ...
-*/
+/**
+ * @brief Evaluate an array element and push the result onto the stack.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int arrayRef() {
+
+	/*
+	 ** Before: Prog->  [nDim], next, ...
+	 **         TheStack-> indnDim, ... ind1, ArraySym, next, ...
+	 ** After:  Prog->  nDim, [next], ...
+	 **         TheStack-> indexedArrayVal, next, ...
+	 */
 
 	DataValue srcArray;
 	DataValue valueItem;
@@ -1994,15 +2402,20 @@ static int arrayRef() {
 	return execError("operator [] on non-array");
 }
 
-/*
-** assign to an array element of a referenced array on the stack
-**
-** Before: Prog->  [nDim], next, ...
-**         TheStack-> rhs, indnDim, ... ind1, ArraySym, next, ...
-** After:  Prog->  nDim, [next], ...
-**         TheStack-> next, ...
-*/
+/**
+ * @brief Assign a value to an array element.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int arrayAssign() {
+
+	/*
+	** Before: Prog->  [nDim], next, ...
+	**         TheStack-> rhs, indnDim, ... ind1, ArraySym, next, ...
+	** After:  Prog->  nDim, [next], ...
+	**         TheStack-> next, ...
+	*/
+
 	std::string keyString;
 	DataValue srcValue;
 	DataValue dstArray;
@@ -2047,15 +2460,19 @@ static int arrayAssign() {
 	return execError("empty operator []");
 }
 
-/*
-** for use with assign-op operators (eg a[i,j] += k
-**
-** Before: Prog->  [binOp], nDim, next, ...
-**         TheStack-> [rhs], indnDim, ... ind1, next, ...
-** After:  Prog->  binOp, nDim, [next], ...
-**         TheStack-> [rhs], arrayValue, next, ...
-*/
+/**
+ * @brief Set up for an array reference and assignment operation.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int arrayRefAndAssignSetup() {
+
+	/*
+	 ** Before: Prog->  [binOp], nDim, next, ...
+	 **         TheStack-> [rhs], indnDim, ... ind1, next, ...
+	 ** After:  Prog->  binOp, nDim, [next], ...
+	 **         TheStack-> [rhs], arrayValue, next, ...
+	 */
 
 	DataValue srcArray;
 	DataValue valueItem;
@@ -2095,19 +2512,23 @@ static int arrayRefAndAssignSetup() {
 	return execError("array[] not an lvalue");
 }
 
-/*
-** setup symbol values for array iteration in interpreter
-**
-** Before: Prog->  [iter], ARRAY_ITER, iterVar, iter, endLoopBranch, next, ...
-**         TheStack-> [arrayVal], next, ...
-** After:  Prog->  iter, [ARRAY_ITER], iterVar, iter, endLoopBranch, next, ...
-**         TheStack-> [next], ...
-** Where:
-**      iter is a symbol which gives the position of the iterator value in
-**              the stack frame
-**      arrayVal is the data value holding the array in question
-*/
+/**
+ * @brief Setup symbol values for array iteration in the interpreter.
+ *
+ * @return
+ */
 static int beginArrayIter() {
+
+	/*
+	 ** Before: Prog->  [iter], ARRAY_ITER, iterVar, iter, endLoopBranch, next, ...
+	 **         TheStack-> [arrayVal], next, ...
+	 ** After:  Prog->  iter, [ARRAY_ITER], iterVar, iter, endLoopBranch, next, ...
+	 **         TheStack-> [next], ...
+	 ** Where:
+	 **      iter is a symbol which gives the position of the iterator value in
+	 **              the stack frame
+	 **      arrayVal is the data value holding the array in question
+	 */
 
 	DataValue arrayVal;
 
@@ -2132,29 +2553,30 @@ static int beginArrayIter() {
 	return STAT_OK;
 }
 
-/*
-** copy key to symbol if node is still valid, marked bad by a color of -1
-** then move iterator to next node
-** this allows iterators to progress even if you delete any node in the array
-** except the item just after the current key
-**
-** Before: Prog->  iter, ARRAY_ITER, [iterVar], iter, endLoopBranch, next, ...
-**         TheStack-> [next], ...
-** After:  Prog->  iter, ARRAY_ITER, iterVar, iter, endLoopBranch, [next], ...
-**         TheStack-> [next], ...      (unchanged)
-** Where:
-**      iter is a symbol which gives the position of the iterator value in
-**              the stack frame (set up by BEGIN_ARRAY_ITER); that value refers
-**              to the array and a position within it
-**      iterVal is the programmer-visible symbol which will take the current
-**              key value
-**      endLoopBranch is the instruction offset to the instruction following the
-**              loop (measured from itself)
-**      arrayVal is the data value holding the array in question
-** The return-to-start-of-loop branch (at the end of the loop) should address
-** the ARRAY_ITER instruction
-*/
+/**
+ * @brief Advance the array iterator and assign the current key to a symbol.
+ *
+ * @return
+ */
 static int arrayIter() {
+
+	/*
+	 ** Before: Prog->  iter, ARRAY_ITER, [iterVar], iter, endLoopBranch, next, ...
+	 **         TheStack-> [next], ...
+	 ** After:  Prog->  iter, ARRAY_ITER, iterVar, iter, endLoopBranch, [next], ...
+	 **         TheStack-> [next], ...      (unchanged)
+	 ** Where:
+	 **      iter is a symbol which gives the position of the iterator value in
+	 **              the stack frame (set up by BEGIN_ARRAY_ITER); that value refers
+	 **              to the array and a position within it
+	 **      iterVal is the programmer-visible symbol which will take the current
+	 **              key value
+	 **      endLoopBranch is the instruction offset to the instruction following the
+	 **              loop (measured from itself)
+	 **      arrayVal is the data value holding the array in question
+	 ** The return-to-start-of-loop branch (at the end of the loop) should address
+	 ** the ARRAY_ITER instruction
+	 */
 
 	DataValue *itemValPtr;
 
@@ -2197,19 +2619,24 @@ static int arrayIter() {
 	return STAT_OK;
 }
 
-/*
-** determine if a key or keys exists in an array
-** if the left argument is a string or integer a single check is performed
-** if the key exists, 1 is pushed onto the stack, otherwise 0
-** if the left argument is an array 1 is pushed onto the stack if every key
-** in the left array exists in the right array, otherwise 0
-**
-** Before: Prog->  [next], ...
-**         TheStack-> [ArraySym], inSymbol, next, ...
-** After:  Prog->  [next], ...      -- (unchanged)
-**         TheStack-> next, ...
-*/
+/**
+ * @brief Check if a value is in an array.
+ * If the left argument is a string or integer, it checks if that key exists in the array.
+ * If the key exists, it pushes 1 onto the stack, otherwise 0.
+ * If the left argument is an array, it checks if every key in the left array exists in the right array.
+ *
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int inArray() {
+
+	/*
+	 ** Before: Prog->  [next], ...
+	 **         TheStack-> [ArraySym], inSymbol, next, ...
+	 ** After:  Prog->  [next], ...      -- (unchanged)
+	 **         TheStack-> next, ...
+	 */
+
 	DataValue theArray;
 	DataValue leftArray;
 	DataValue theValue;
@@ -2249,16 +2676,23 @@ static int inArray() {
 	return STAT_OK;
 }
 
-/*
-** remove a given key from an array unless nDim is 0, then all keys are removed
-**
-** for use with assign-op operators (eg a[i,j] += k
-** Before: Prog->  [nDim], next, ...
-**         TheStack-> [indnDim], ... ind1, arrayValue, next, ...
-** After:  Prog->  nDim, [next], ...
-**         TheStack-> next, ...
-*/
+/**
+ * @brief Delete an element from an array.
+ * If nDim is greater than 0, it deletes the element at the specified key.
+ * If nDim is 0, it deletes all elements from the array.
+ *
+ * @return Returns STAT_OK on success, or an error code if an error occurred.
+ */
 static int deleteArrayElement() {
+
+	/*
+	 ** for use with assign-op operators (eg a[i,j] += k
+	 ** Before: Prog->  [nDim], next, ...
+	 **         TheStack-> [indnDim], ... ind1, arrayValue, next, ...
+	 ** After:  Prog->  nDim, [next], ...
+	 **         TheStack-> next, ...
+	 */
+
 	DataValue theArray;
 	std::string keyString;
 
@@ -2287,6 +2721,13 @@ static int deleteArrayElement() {
 	return STAT_OK;
 }
 
+/**
+ * @brief Convert a string to an integer.
+ *
+ * @param string The string to convert.
+ * @param number A pointer to an integer where the result will be stored.
+ * @return Returns true if the conversion was successful, false otherwise.
+ */
 bool StringToNum(const std::string &string, int *number) {
 	auto it = string.begin();
 
@@ -2320,7 +2761,12 @@ bool StringToNum(const std::string &string, int *number) {
 	return true;
 }
 
-#if defined(DEBUG_DISASSEMBLER) // dumping values in disassembly or stack dump
+#ifdef DEBUG_DISASSEMBLER // dumping values in disassembly or stack dump
+/**
+ * @brief Dump a DataValue to the console for debugging purposes.
+ *
+ * @param dv The DataValue to dump.
+ */
 static void dumpVal(DataValue dv) {
 
 	auto escape_string = [](const std::string &s) -> std::string {
@@ -2366,6 +2812,13 @@ static void dumpVal(DataValue dv) {
 #endif
 
 #ifdef DEBUG_DISASSEMBLER // For debugging code generation
+
+/**
+ * @brief Disassemble a sequence of instructions for debugging purposes.
+ *
+ * @param inst Pointer to the array of instructions to disassemble.
+ * @param nInstr The number of instructions in the array.
+ */
 static void disasm(Inst *inst, size_t nInstr) {
 	static const char *opNames[N_OPS] = {
 		"RETURN_NO_VAL",          // returnNoVal
@@ -2465,6 +2918,13 @@ static void disasm(Inst *inst, size_t nInstr) {
 
 #ifdef DEBUG_STACK // for run-time stack dumping
 #define STACK_DUMP_ARG_PREFIX "Arg"
+
+/**
+ * @brief Dump the current stack for debugging purposes.
+ *
+ * @param n The number of stack entries to dump.
+ * @param extra Additional stack entries to dump beyond the specified number.
+ */
 static void stackdump(int n, int extra) {
 	// TheStack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
 	int nArgs = FP_GET_ARG_COUNT(Context.FrameP);
@@ -2513,5 +2973,4 @@ static void stackdump(int n, int extra) {
 		printf("\n");
 	}
 }
-
 #endif

@@ -110,7 +110,8 @@ ParseContext pContext;
  * but allows patterns to get big without disasters. */
 
 /**
- * @brief Regex::execute
+ * @brief
+ *
  * @param string
  * @param reverse
  * @return
@@ -120,7 +121,8 @@ bool Regex::execute(std::string_view string, bool reverse) {
 }
 
 /**
- * @brief Regex::execute
+ * @brief
+ *
  * @param string
  * @param offset
  * @param reverse
@@ -131,7 +133,8 @@ bool Regex::execute(std::string_view string, size_t offset, bool reverse) {
 }
 
 /**
- * @brief Regex::execute
+ * @brief
+ *
  * @param string
  * @param offset
  * @param delimiters
@@ -143,7 +146,8 @@ bool Regex::execute(std::string_view string, size_t offset, const char *delimite
 }
 
 /**
- * @brief Regex::execute
+ * @brief
+ *
  * @param string
  * @param offset
  * @param end_offset
@@ -163,7 +167,8 @@ bool Regex::execute(std::string_view string, size_t offset, size_t end_offset, c
 }
 
 /**
- * @brief Regex::execute
+ * @brief
+ *
  * @param string
  * @param offset
  * @param end_offset

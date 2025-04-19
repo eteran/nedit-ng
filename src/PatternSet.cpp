@@ -4,7 +4,8 @@
 // comparisons do NOT include the "languageMode"
 
 /**
- * @brief PatternSet::operator !=
+ * @brief
+ *
  * @param rhs
  * @return
  */
@@ -26,7 +27,8 @@ bool PatternSet::operator!=(const PatternSet &rhs) const {
 }
 
 /**
- * @brief PatternSet::operator ==
+ * @brief
+ *
  * @param rhs
  * @return
  */

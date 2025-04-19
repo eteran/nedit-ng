@@ -4,9 +4,10 @@
 #include <QKeyEvent>
 
 /**
- * @brief DialogExecuteCommand::DialogExecuteCommand
- * @param parent
- * @param f
+ * @brief Constructor for DialogExecuteCommand class
+ *
+ * @param parent The parent widget, defaults to nullptr
+ * @param f The window flags, defaults to Qt::WindowFlags()
  */
 DialogExecuteCommand::DialogExecuteCommand(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
@@ -19,8 +20,13 @@ DialogExecuteCommand::DialogExecuteCommand(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief DialogExecuteCommand::keyPressEvent
- * @param event
+ * @brief Handles key press events for the command text input.
+ * This method allows the user to navigate through command history using the up and down arrow keys.
+ * If the up arrow is pressed, it retrieves the previous command from history.
+ * If the down arrow is pressed, it retrieves the next command in history.
+ * If the key pressed is not an arrow key, it passes the event to the base class for default handling.
+ *
+ * @param event The key event that was pressed.
  */
 void DialogExecuteCommand::keyPressEvent(QKeyEvent *event) {
 	if (ui.textCommand->hasFocus()) {
@@ -49,8 +55,10 @@ void DialogExecuteCommand::keyPressEvent(QKeyEvent *event) {
 }
 
 /**
- * @brief DialogExecuteCommand::showEvent
- * @param event
+ * @brief Handles the show event for the dialog.
+ * This method resets the command history index to 0 and clears the command text input.
+ *
+ * @param event The show event that triggered this method.
  */
 void DialogExecuteCommand::showEvent(QShowEvent *event) {
 	Dialog::showEvent(event);
@@ -60,8 +68,9 @@ void DialogExecuteCommand::showEvent(QShowEvent *event) {
 }
 
 /**
- * @brief DialogExecuteCommand::addHistoryItem
- * @param string
+ * @brief Adds a command to the history.
+ *
+ * @param string The command string to be added to the history.
  */
 void DialogExecuteCommand::addHistoryItem(const QString &s) {
 	if (!s.isEmpty()) {
@@ -70,8 +79,9 @@ void DialogExecuteCommand::addHistoryItem(const QString &s) {
 }
 
 /**
- * @brief DialogExecuteCommand::currentText
- * @return
+ * @brief Returns the current text in the command input field.
+ *
+ * @return The current text in the command input field.
  */
 QString DialogExecuteCommand::currentText() const {
 	return ui.textCommand->text();

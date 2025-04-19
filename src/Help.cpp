@@ -9,8 +9,9 @@
 namespace Help {
 
 /**
- * @brief displayTopic
- * @param topic
+ * @brief Displays the help topic in the default web browser.
+ *
+ * @param topic The help topic to display.
  */
 void displayTopic(Topic topic) {
 
@@ -34,6 +35,11 @@ void displayTopic(Topic topic) {
 	default:
 		url = QStringLiteral("https://eteran.github.io/nedit-ng/%1.%2/").arg(NEDIT_VERSION_MAJ).arg(NEDIT_VERSION_REV);
 		break;
+	}
+
+	if (url.isEmpty()) {
+		QMessageBox::warning(nullptr, QObject::tr("Help"), QObject::tr("No help available for this topic."));
+		return;
 	}
 
 	QDesktopServices::openUrl(url);

@@ -3,7 +3,8 @@
 #include "Util/algorithm.h"
 
 /**
- * @brief MenuItemModel::MenuItemModel
+ * @brief
+ *
  * @param parent
  */
 MenuItemModel::MenuItemModel(QObject *parent)
@@ -11,7 +12,8 @@ MenuItemModel::MenuItemModel(QObject *parent)
 }
 
 /**
- * @brief MenuItemModel::index
+ * @brief
+ *
  * @param row
  * @param column
  * @param parent
@@ -31,7 +33,8 @@ QModelIndex MenuItemModel::index(int row, int column, const QModelIndex &parent)
 }
 
 /**
- * @brief MenuItemModel::parent
+ * @brief
+ *
  * @param index
  * @return
  */
@@ -41,7 +44,8 @@ QModelIndex MenuItemModel::parent(const QModelIndex &index) const {
 }
 
 /**
- * @brief MenuItemModel::data
+ * @brief
+ *
  * @param index
  * @param role
  * @return
@@ -65,7 +69,8 @@ QVariant MenuItemModel::data(const QModelIndex &index, int role) const {
 }
 
 /**
- * @brief MenuItemModel::headerData
+ * @brief
+ *
  * @param section
  * @param orientation
  * @param role
@@ -85,7 +90,8 @@ QVariant MenuItemModel::headerData(int section, Qt::Orientation orientation, int
 }
 
 /**
- * @brief MenuItemModel::columnCount
+ * @brief
+ *
  * @param parent
  * @return
  */
@@ -95,7 +101,8 @@ int MenuItemModel::columnCount(const QModelIndex &parent) const {
 }
 
 /**
- * @brief MenuItemModel::rowCount
+ * @brief
+ *
  * @param parent
  * @return
  */
@@ -105,7 +112,8 @@ int MenuItemModel::rowCount(const QModelIndex &parent) const {
 }
 
 /**
- * @brief MenuItemModel::addItem
+ * @brief
+ *
  * @param style
  */
 void MenuItemModel::addItem(const MenuItem &style) {
@@ -115,7 +123,7 @@ void MenuItemModel::addItem(const MenuItem &style) {
 }
 
 /**
- * @brief MenuItemModel::clear
+ * @brief
  */
 void MenuItemModel::clear() {
 	beginResetModel();
@@ -124,7 +132,8 @@ void MenuItemModel::clear() {
 }
 
 /**
- * @brief MenuItemModel::moveItemUp
+ * @brief
+ *
  * @param index
  */
 void MenuItemModel::moveItemUp(const QModelIndex &index) {
@@ -139,7 +148,8 @@ void MenuItemModel::moveItemUp(const QModelIndex &index) {
 }
 
 /**
- * @brief MenuItemModel::moveItemDown
+ * @brief
+ *
  * @param index
  */
 void MenuItemModel::moveItemDown(const QModelIndex &index) {
@@ -154,7 +164,8 @@ void MenuItemModel::moveItemDown(const QModelIndex &index) {
 }
 
 /**
- * @brief MenuItemModel::deleteItem
+ * @brief
+ *
  * @param index
  */
 void MenuItemModel::deleteItem(const QModelIndex &index) {

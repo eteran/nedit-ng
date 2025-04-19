@@ -2,8 +2,9 @@
 #include "Util/System.h"
 
 /**
- * @brief buildPlatform
- * @return
+ * @brief Gets the operating system that NEdit was built on.
+ *
+ * @return The operating system name.
  */
 QLatin1String buildOperatingSystem() {
 #if defined(Q_OS_AIX)
@@ -71,6 +72,11 @@ QLatin1String buildOperatingSystem() {
 #endif
 }
 
+/**
+ * @brief Gets the architecture that NEdit was built for.
+ *
+ * @return The architecture name.
+ */
 QLatin1String buildArchitecture() {
 #if defined(Q_PROCESSOR_ALPHA)
 	return QLatin1String("alpha");
@@ -114,8 +120,10 @@ QLatin1String buildArchitecture() {
 }
 
 /**
- * @brief buildCompiler
- * @return
+ * @brief Gets the compiler that NEdit was built with.
+ *
+ * @return A QString containing the compiler name and version.
+ *
  * @note adapted from QtCreator src/plugins/coreplugin/icore.cpp: compilerString()
  */
 QString buildCompiler() {

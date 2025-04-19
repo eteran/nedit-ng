@@ -20,7 +20,8 @@
 #include <QMessageBox>
 
 /**
- * @brief DialogSyntaxPatterns::DialogSyntaxPatterns
+ * @brief
+ *
  * @param parent
  * @param f
  */
@@ -64,7 +65,7 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief DialogSyntaxPatterns::connectSlots
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogSyntaxPatterns::connectSlots() {
 	connect(ui.buttonLanguageMode, &QPushButton::clicked, this, &DialogSyntaxPatterns::buttonLanguageMode_clicked);
@@ -83,7 +84,8 @@ void DialogSyntaxPatterns::connectSlots() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::setLanguageName
+ * @brief
+ *
  * @param name
  */
 void DialogSyntaxPatterns::setLanguageName(const QString &name) {
@@ -182,7 +184,8 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 }
 
 /**
- * @brief DialogSyntaxPatterns::SetLangModeMenu
+ * @brief
+ *
  * @param name
  */
 void DialogSyntaxPatterns::SetLangModeMenu(const QString &name) {
@@ -196,7 +199,8 @@ void DialogSyntaxPatterns::SetLangModeMenu(const QString &name) {
 }
 
 /**
- * @brief DialogSyntaxPatterns::setStyleMenu
+ * @brief
+ *
  * @param name
  */
 void DialogSyntaxPatterns::setStyleMenu(const QString &name) {
@@ -210,7 +214,7 @@ void DialogSyntaxPatterns::setStyleMenu(const QString &name) {
 }
 
 /**
- * @brief DialogSyntaxPatterns::updateLabels
+ * @brief
  */
 void DialogSyntaxPatterns::updateLabels() {
 
@@ -258,7 +262,8 @@ void DialogSyntaxPatterns::updateLabels() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::on_comboLanguageMode_currentIndexChanged
+ * @brief
+ *
  * @param currentText
  */
 void DialogSyntaxPatterns::on_comboLanguageMode_currentIndexChanged(const QString &text) {
@@ -266,7 +271,7 @@ void DialogSyntaxPatterns::on_comboLanguageMode_currentIndexChanged(const QStrin
 }
 
 /**
- * @brief DialogSyntaxPatterns::buttonLanguageMode_clicked
+ * @brief
  */
 void DialogSyntaxPatterns::buttonLanguageMode_clicked() {
 
@@ -278,7 +283,7 @@ void DialogSyntaxPatterns::buttonLanguageMode_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::buttonHighlightStyle_clicked
+ * @brief
  */
 void DialogSyntaxPatterns::buttonHighlightStyle_clicked() {
 	const QString style = ui.comboHighlightStyle->currentText();
@@ -294,7 +299,8 @@ void DialogSyntaxPatterns::buttonHighlightStyle_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::updateCurrentItem
+ * @brief
+ *
  * @param item
  * @return
  */
@@ -315,7 +321,8 @@ bool DialogSyntaxPatterns::updateCurrentItem(const QModelIndex &index) {
 }
 
 /**
- * @brief DialogSyntaxPatterns::updateCurrentItem
+ * @brief
+ *
  * @return
  */
 bool DialogSyntaxPatterns::updateCurrentItem() {
@@ -328,7 +335,7 @@ bool DialogSyntaxPatterns::updateCurrentItem() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::buttonNew_clicked
+ * @brief
  */
 void DialogSyntaxPatterns::buttonNew_clicked() {
 
@@ -345,14 +352,14 @@ void DialogSyntaxPatterns::buttonNew_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::buttonDelete_clicked
+ * @brief
  */
 void DialogSyntaxPatterns::buttonDelete_clicked() {
 	CommonDialog::deleteItem(&ui, model_, &deleted_);
 }
 
 /**
- * @brief DialogSyntaxPatterns::buttonCopy_clicked
+ * @brief
  */
 void DialogSyntaxPatterns::buttonCopy_clicked() {
 
@@ -364,21 +371,21 @@ void DialogSyntaxPatterns::buttonCopy_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::buttonUp_clicked
+ * @brief
  */
 void DialogSyntaxPatterns::buttonUp_clicked() {
 	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
- * @brief DialogSyntaxPatterns::buttonDown_clicked
+ * @brief
  */
 void DialogSyntaxPatterns::buttonDown_clicked() {
 	CommonDialog::moveItemDown(&ui, model_);
 }
 
 /**
- * @brief DialogSyntaxPatterns::buttonOK_clicked
+ * @brief
  */
 void DialogSyntaxPatterns::buttonOK_clicked() {
 	// change the patterns
@@ -390,14 +397,14 @@ void DialogSyntaxPatterns::buttonOK_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::buttonApply_clicked
+ * @brief
  */
 void DialogSyntaxPatterns::buttonApply_clicked() {
 	updatePatternSet();
 }
 
 /**
- * @brief DialogSyntaxPatterns::buttonCheck_clicked
+ * @brief
  */
 void DialogSyntaxPatterns::buttonCheck_clicked() {
 	if (checkHighlightDialogData()) {
@@ -408,7 +415,7 @@ void DialogSyntaxPatterns::buttonCheck_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::buttonDeletePattern_clicked
+ * @brief
  */
 void DialogSyntaxPatterns::buttonDeletePattern_clicked() {
 
@@ -450,7 +457,7 @@ void DialogSyntaxPatterns::buttonDeletePattern_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::buttonRestore_clicked
+ * @brief
  */
 void DialogSyntaxPatterns::buttonRestore_clicked() {
 
@@ -499,14 +506,15 @@ void DialogSyntaxPatterns::buttonRestore_clicked() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::buttonHelp_clicked
+ * @brief
  */
 void DialogSyntaxPatterns::buttonHelp_clicked() {
 	Help::displayTopic(Help::Topic::Syntax);
 }
 
 /**
- * @brief PreferenceList::currentChanged
+ * @brief
+ *
  * @param current
  * @param previous
  */
@@ -624,7 +632,7 @@ void DialogSyntaxPatterns::UpdateLanguageModeMenu() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::updateHighlightStyleMenu
+ * @brief
  */
 void DialogSyntaxPatterns::updateHighlightStyleMenu() {
 
@@ -642,7 +650,8 @@ void DialogSyntaxPatterns::updateHighlightStyleMenu() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::updatePatternSet
+ * @brief
+ *
  * @return
  */
 bool DialogSyntaxPatterns::updatePatternSet() {
@@ -721,7 +730,8 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 }
 
 /**
- * @brief DialogSyntaxPatterns::checkHighlightDialogData
+ * @brief
+ *
  * @return
  */
 bool DialogSyntaxPatterns::checkHighlightDialogData() {
@@ -900,7 +910,8 @@ std::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity verbo
 }
 
 /**
- * @brief DialogSyntaxPatterns::validateFields
+ * @brief
+ *
  * @param mode
  * @return
  */
@@ -936,7 +947,8 @@ bool DialogSyntaxPatterns::TestHighlightPatterns(const std::unique_ptr<PatternSe
 }
 
 /**
- * @brief DialogSyntaxPatterns::RenameHighlightPattern
+ * @brief
+ *
  * @param oldName
  * @param newName
  */
@@ -947,7 +959,8 @@ void DialogSyntaxPatterns::RenameHighlightPattern(const QString &oldName, const 
 }
 
 /**
- * @brief DialogSyntaxPatterns::LMHasHighlightPatterns
+ * @brief
+ *
  * @param languageMode
  * @return
  */

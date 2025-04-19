@@ -35,7 +35,8 @@ namespace {
  * trim off added tabs and return the string. Returns QString() if the macro
  * end boundary string is not found.
  *
- * @brief readSmartIndentMacro
+ * @brief
+ *
  * @param in
  * @return
  */
@@ -65,7 +66,8 @@ QString readSmartIndentMacro(Input &in) {
 }
 
 /**
- * @brief isDefaultIndentSpec
+ * @brief
+ *
  * @param indentSpec
  * @return
  */
@@ -79,7 +81,8 @@ bool isDefaultIndentSpec(const SmartIndentEntry *indentSpec) {
 }
 
 /**
- * @brief loadDefaultIndentSpecs
+ * @brief
+ *
  * @return
  */
 std::vector<SmartIndentEntry> loadDefaultIndentSpecs() {
@@ -129,7 +132,8 @@ std::vector<SmartIndentEntry> loadDefaultIndentSpecs() {
 }
 
 /**
- * @brief loadDefaultCommonMacros
+ * @brief
+ *
  * @return
  */
 QString loadDefaultCommonMacros() {
@@ -149,7 +153,8 @@ QString loadDefaultCommonMacros() {
 }
 
 /**
- * @brief findDefaultIndentSpec
+ * @brief
+ *
  * @param language
  * @return
  */
@@ -180,7 +185,8 @@ bool smartIndentMacrosAvailable(const QString &languageModeName) {
 }
 
 /**
- * @brief loadSmartIndentString
+ * @brief
+ *
  * @param string
  * @return
  */
@@ -334,7 +340,8 @@ void loadSmartIndentString(const QString &string) {
 }
 
 /**
- * @brief loadSmartIndentCommonString
+ * @brief
+ *
  * @param string
  */
 void loadSmartIndentCommonString(const QString &string) {
@@ -358,7 +365,8 @@ void loadSmartIndentCommonString(const QString &string) {
 }
 
 /**
- * @brief writeSmartIndentString
+ * @brief
+ *
  * @return
  */
 QString writeSmartIndentString() {
@@ -417,7 +425,8 @@ QString writeSmartIndentString() {
 }
 
 /**
- * @brief writeSmartIndentCommonString
+ * @brief
+ *
  * @return
  */
 QString writeSmartIndentCommonString() {
@@ -425,7 +434,8 @@ QString writeSmartIndentCommonString() {
 }
 
 /**
- * @brief findIndentSpec
+ * @brief
+ *
  * @param language
  * @return
  */

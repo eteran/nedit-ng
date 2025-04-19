@@ -54,7 +54,8 @@ bool PrefsHaveChanged = false;
 QString ImportedFile;
 
 /**
- * @brief readExtensionList
+ * @brief
+ *
  * @param in
  * @return
  */
@@ -391,7 +392,8 @@ void translatePrefFormats(uint32_t fileVer) {
 }
 
 /**
- * @brief WriteLanguageModesString
+ * @brief
+ *
  * @return
  */
 QString WriteLanguageModesString() {

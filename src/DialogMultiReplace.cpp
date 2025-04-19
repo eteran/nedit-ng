@@ -9,7 +9,8 @@
 #include <QMessageBox>
 
 /**
- * @brief DialogMultiReplace::DialogMultiReplace
+ * @brief
+ *
  * @param replace
  * @param f
  */
@@ -23,7 +24,7 @@ DialogMultiReplace::DialogMultiReplace(DialogReplace *replace, Qt::WindowFlags f
 }
 
 /**
- * @brief DialogMultiReplace::connectSlots
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogMultiReplace::connectSlots() {
 	connect(ui.buttonDeselectAll, &QPushButton::clicked, this, &DialogMultiReplace::buttonDeselectAll_clicked);
@@ -33,7 +34,8 @@ void DialogMultiReplace::connectSlots() {
 }
 
 /**
- * @brief DialogMultiReplace::checkShowPaths_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogMultiReplace::checkShowPaths_toggled(bool checked) {
@@ -41,21 +43,21 @@ void DialogMultiReplace::checkShowPaths_toggled(bool checked) {
 }
 
 /**
- * @brief DialogMultiReplace::buttonDeselectAll_clicked
+ * @brief
  */
 void DialogMultiReplace::buttonDeselectAll_clicked() {
 	ui.listFiles->clearSelection();
 }
 
 /**
- * @brief DialogMultiReplace::buttonSelectAll_clicked
+ * @brief
  */
 void DialogMultiReplace::buttonSelectAll_clicked() {
 	ui.listFiles->selectAll();
 }
 
 /**
- * @brief DialogMultiReplace::buttonReplace_clicked
+ * @brief
  */
 void DialogMultiReplace::buttonReplace_clicked() {
 
@@ -148,7 +150,7 @@ void DialogMultiReplace::buttonReplace_clicked() {
 }
 
 /**
- * @brief DialogMultiReplace::uploadFileListItems
+ * @brief
  */
 void DialogMultiReplace::uploadFileListItems(const std::vector<DocumentWidget *> &writeableDocuments) const {
 

@@ -80,7 +80,8 @@ std::vector<DocumentWidget *> collectWritableWindows() {
 }
 
 /**
- * @brief DialogReplace::DialogReplace
+ * @brief
+ *
  * @param window
  * @param document
  * @param f
@@ -97,7 +98,7 @@ DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, Qt::W
 }
 
 /**
- * @brief DialogReplace::connectSlots
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogReplace::connectSlots() {
 	connect(ui.buttonFind, &QPushButton::clicked, this, &DialogReplace::buttonFind_clicked);
@@ -113,7 +114,8 @@ void DialogReplace::connectSlots() {
 }
 
 /**
- * @brief DialogReplace::showEvent
+ * @brief
+ *
  * @param event
  */
 void DialogReplace::showEvent(QShowEvent *event) {
@@ -122,7 +124,8 @@ void DialogReplace::showEvent(QShowEvent *event) {
 }
 
 /**
- * @brief DialogReplace::eventFilter
+ * @brief
+ *
  * @param obj
  * @param ev
  * @return
@@ -131,8 +134,7 @@ bool DialogReplace::eventFilter(QObject *obj, QEvent *ev) {
 
 	if (obj == ui.textFind && ev->type() == QEvent::KeyPress) {
 		auto event = static_cast<QKeyEvent *>(ev);
-
-		int index = window_->rHistIndex_;
+		int index  = window_->rHistIndex_;
 
 		// only process up and down arrow keys
 		if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
@@ -212,7 +214,8 @@ bool DialogReplace::eventFilter(QObject *obj, QEvent *ev) {
 }
 
 /**
- * @brief DialogReplace::checkKeep_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogReplace::checkKeep_toggled(bool checked) {
@@ -224,7 +227,8 @@ void DialogReplace::checkKeep_toggled(bool checked) {
 }
 
 /**
- * @brief DialogReplace::textFind_textChanged
+ * @brief
+ *
  * @param text
  */
 void DialogReplace::textFind_textChanged(const QString &text) {
@@ -233,7 +237,7 @@ void DialogReplace::textFind_textChanged(const QString &text) {
 }
 
 /**
- * @brief DialogReplace::buttonFind_clicked
+ * @brief
  */
 void DialogReplace::buttonFind_clicked() {
 
@@ -271,7 +275,7 @@ void DialogReplace::buttonFind_clicked() {
 }
 
 /**
- * @brief DialogReplace::buttonReplace_clicked
+ * @brief
  */
 void DialogReplace::buttonReplace_clicked() {
 
@@ -303,7 +307,7 @@ void DialogReplace::buttonReplace_clicked() {
 }
 
 /**
- * @brief DialogReplace::buttonReplaceFind_clicked
+ * @brief
  */
 void DialogReplace::buttonReplaceFind_clicked() {
 
@@ -335,7 +339,7 @@ void DialogReplace::buttonReplaceFind_clicked() {
 }
 
 /**
- * @brief DialogReplace::buttonWindow_clicked
+ * @brief
  */
 void DialogReplace::buttonWindow_clicked() {
 
@@ -365,7 +369,7 @@ void DialogReplace::buttonWindow_clicked() {
 }
 
 /**
- * @brief DialogReplace::buttonSelection_clicked
+ * @brief
  */
 void DialogReplace::buttonSelection_clicked() {
 
@@ -395,7 +399,7 @@ void DialogReplace::buttonSelection_clicked() {
 }
 
 /**
- * @brief DialogReplace::buttonMulti_clicked
+ * @brief
  */
 void DialogReplace::buttonMulti_clicked() {
 
@@ -434,7 +438,8 @@ void DialogReplace::buttonMulti_clicked() {
 }
 
 /**
- * @brief DialogReplace::checkRegex_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogReplace::checkRegex_toggled(bool checked) {
@@ -458,7 +463,8 @@ void DialogReplace::checkRegex_toggled(bool checked) {
 }
 
 /**
- * @brief DialogReplace::checkCase_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogReplace::checkCase_toggled(bool checked) {
@@ -475,7 +481,8 @@ void DialogReplace::checkCase_toggled(bool checked) {
 }
 
 /**
- * @brief DialogReplace::setTextFieldFromDocument
+ * @brief
+ *
  * @param document
  */
 void DialogReplace::setTextFieldFromDocument(DocumentWidget *document) {
@@ -551,7 +558,7 @@ void DialogReplace::initToggleButtons(SearchType searchType) {
 }
 
 /**
- * @brief DialogReplace::updateFindButton
+ * @brief
  */
 void DialogReplace::updateFindButton() {
 	const bool buttonState = !ui.textFind->text().isEmpty();
@@ -559,7 +566,7 @@ void DialogReplace::updateFindButton() {
 }
 
 /**
- * @brief DialogReplace::UpdateReplaceActionButtons
+ * @brief
  */
 void DialogReplace::UpdateReplaceActionButtons() {
 
@@ -569,7 +576,8 @@ void DialogReplace::UpdateReplaceActionButtons() {
 }
 
 /**
- * @brief DialogReplace::setActionButtons
+ * @brief
+ *
  * @param replaceBtn
  * @param replaceFindBtn
  * @param replaceAndFindBtn
@@ -642,7 +650,8 @@ std::optional<DialogReplace::Fields> DialogReplace::readFields() {
 }
 
 /**
- * @brief DialogReplace::keepDialog
+ * @brief
+ *
  * @return
  */
 bool DialogReplace::keepDialog() const {
@@ -650,7 +659,8 @@ bool DialogReplace::keepDialog() const {
 }
 
 /**
- * @brief DialogReplace::setDocument
+ * @brief
+ *
  * @param document
  */
 void DialogReplace::setDocument(DocumentWidget *document) {
@@ -663,7 +673,8 @@ void DialogReplace::setDocument(DocumentWidget *document) {
 }
 
 /**
- * @brief DialogReplace::setDirection
+ * @brief
+ *
  * @param direction
  */
 void DialogReplace::setDirection(Direction direction) {
@@ -671,7 +682,8 @@ void DialogReplace::setDirection(Direction direction) {
 }
 
 /**
- * @brief DialogReplace::setKeepDialog
+ * @brief
+ *
  * @param keep
  */
 void DialogReplace::setKeepDialog(bool keep) {
@@ -679,7 +691,8 @@ void DialogReplace::setKeepDialog(bool keep) {
 }
 
 /**
- * @brief DialogReplace::setReplaceText
+ * @brief
+ *
  * @param text
  */
 void DialogReplace::setReplaceText(const QString &text) {

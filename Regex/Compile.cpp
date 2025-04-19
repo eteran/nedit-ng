@@ -91,7 +91,8 @@ uint8_t *next_ptr(uint8_t *ptr) noexcept {
 }
 
 /**
- * @brief PUT_OFFSET_L
+ * @brief
+ *
  * @param v
  * @return
  */
@@ -101,7 +102,8 @@ constexpr uint8_t PUT_OFFSET_L(T v) noexcept {
 }
 
 /**
- * @brief PUT_OFFSET_R
+ * @brief
+ *
  * @param v
  * @return
  */
@@ -111,9 +113,9 @@ constexpr uint8_t PUT_OFFSET_R(T v) noexcept {
 }
 
 /**
- * @brief isQuantifier
- * @param it
- * @return
+ * @brief Check if the next character is a quantifier.
+ *
+ * @return Returns true if the next character is a quantifier (*, +, ?, or {).
  */
 bool isQuantifier() noexcept {
 	const char ch = pContext.Reg_Parse.peek();

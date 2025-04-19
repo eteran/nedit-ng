@@ -3,7 +3,8 @@
 #include "CommandRecorder.h"
 
 /**
- * @brief WindowMenuEvent::WindowMenuEvent
+ * @brief
+ *
  * @param macroString
  * @param arguments
  */
@@ -12,7 +13,8 @@ WindowMenuEvent::WindowMenuEvent(QString macroString, QStringList arguments)
 }
 
 /**
- * @brief WindowMenuEvent::argumentString
+ * @brief
+ *
  * @return
  */
 QString WindowMenuEvent::argumentString() const {
@@ -26,7 +28,8 @@ QString WindowMenuEvent::argumentString() const {
 }
 
 /**
- * @brief WindowMenuEvent::toString
+ * @brief
+ *
  * @return
  */
 QString WindowMenuEvent::toString() const {
@@ -34,7 +37,8 @@ QString WindowMenuEvent::toString() const {
 }
 
 /**
- * @brief WindowMenuEvent::actionString
+ * @brief
+ *
  * @return
  */
 QString WindowMenuEvent::actionString() const {

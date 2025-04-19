@@ -132,8 +132,9 @@ constexpr CharMatchTable FlashingChars[] = {
 };
 
 /**
- * @brief isAdministrator
- * @return
+ * @brief Checks if the current user is an administrator.
+ *
+ * @return True if the user is an administrator, false otherwise.
  */
 bool isAdministrator() {
 #ifdef Q_OS_UNIX
@@ -144,8 +145,9 @@ bool isAdministrator() {
 }
 
 /**
- * @brief errorString
- * @param error
+ * @brief Converts an error code to a QString representation.
+ *
+ * @param error The error code to convert, typically from errno.
  * @return The result of strerror(error), but as a QString
  */
 QString errorString(int error) {
@@ -153,13 +155,14 @@ QString errorString(int error) {
 }
 
 /**
- * @brief modifiedCB
- * @param pos
- * @param nInserted
- * @param nDeleted
- * @param nRestyled
- * @param deletedText
- * @param user
+ * @brief Calls the registered callbacks for modified events in the text buffer.
+ *
+ * @param pos The position in the text buffer where the modification occurred.
+ * @param nInserted The number of characters inserted.
+ * @param nDeleted The number of characters deleted.
+ * @param nRestyled The number of characters restyled.
+ * @param deletedText The text that was deleted during the modification.
+ * @param user Pointer to the user data, typically a DocumentWidget instance.
  */
 void modifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, void *user) {
 	if (auto document = static_cast<DocumentWidget *>(user)) {
@@ -168,10 +171,11 @@ void modifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRe
 }
 
 /**
- * @brief smartIndentCB
- * @param area
- * @param data
- * @param user
+ * @brief Calls the registered callbacks for smart indent events in the text area.
+ *
+ * @param area The text area where the smart indent event occurred.
+ * @param data The smart indent event data containing information about the indent operation.
+ * @param user Pointer to the user data, typically a DocumentWidget instance.
  */
 void smartIndentCB(TextArea *area, SmartIndentEvent *data, void *user) {
 	if (auto document = static_cast<DocumentWidget *>(user)) {
@@ -180,9 +184,10 @@ void smartIndentCB(TextArea *area, SmartIndentEvent *data, void *user) {
 }
 
 /**
- * @brief movedCB
- * @param area
- * @param user
+ * @brief Calls the registered callbacks for moved events in the text area.
+ *
+ * @param area The text area where the move event occurred.
+ * @param user Pointer to the user data, typically a DocumentWidget instance.
  */
 void movedCB(TextArea *area, void *user) {
 	if (auto document = static_cast<DocumentWidget *>(user)) {
@@ -191,9 +196,10 @@ void movedCB(TextArea *area, void *user) {
 }
 
 /**
- * @brief dragStartCB
- * @param area
- * @param user
+ * @brief Calls the registered callbacks for drag start events in the text area.
+ *
+ * @param area The text area where the drag started.
+ * @param user Pointer to the user data, typically a DocumentWidget instance.
  */
 void dragStartCB(TextArea *area, void *user) {
 	if (auto document = static_cast<DocumentWidget *>(user)) {
@@ -202,10 +208,11 @@ void dragStartCB(TextArea *area, void *user) {
 }
 
 /**
- * @brief dragEndCB
- * @param area
- * @param data
- * @param user
+ * @brief Calls the registered callbacks for drag end events in the text area.
+ *
+ * @param area The text area where the drag ended.
+ * @param data The drag end event data containing information about the drag operation.
+ * @param user Pointer to the user data, typically a DocumentWidget instance.
  */
 void dragEndCB(TextArea *area, const DragEndEvent *data, void *user) {
 	if (auto document = static_cast<DocumentWidget *>(user)) {
@@ -214,10 +221,11 @@ void dragEndCB(TextArea *area, const DragEndEvent *data, void *user) {
 }
 
 /**
- * @brief handleUnparsedRegionCB
- * @param area
- * @param pos
- * @param user
+ * @brief Calls the registered callbacks for unparsed regions in the text area.
+ *
+ * @param area The text area where the unparsed region is located.
+ * @param pos The position of the unparsed region in the text area.
+ * @param user Pointer to the user data, typically a DocumentWidget instance.
  */
 void handleUnparsedRegionCB(const TextArea *area, TextCursor pos, const void *user) {
 	if (auto document = static_cast<const DocumentWidget *>(user)) {
@@ -225,14 +233,21 @@ void handleUnparsedRegionCB(const TextArea *area, TextCursor pos, const void *us
 	}
 }
 
-/*
-** Buffer replacement wrapper routine to be used for inserting output from
-** a command into the buffer, which takes into account that the buffer may
-** have been shrunken by the user (eg, by Undo). If necessary, the starting
-** and ending positions (part of the state of the command) are corrected.
-*/
-// TODO(eteran): I think the bufReplaceEx function already sanitizes its input,
-//               so it's possible that this function is redundant.
+/**
+ * @brief Buffer replacement wrapper routine to be used for inserting output from
+ * a command into the buffer, which takes into account that the buffer may
+ * have been shrunken by the user (eg, by Undo). If necessary, the starting
+ * and ending positions (part of the state of the command) are corrected.
+ *
+ * @param buf The text buffer to modify.
+ * @param start The starting position in the buffer where the replacement should begin.
+ * @param end The ending position in the buffer where the replacement should end.
+ * @param text The text to insert into the buffer.
+ *
+ * @note This function may appear to be redundant to TextBuffer::BufReplace(),
+ * but it also updates the start and end positions if necessary so that the calling
+ * code can safely use the start and end positions after the replacement.
+ */
 void safeBufReplace(TextBuffer *buf, TextCursor *start, TextCursor *end, std::string_view text) {
 
 	const TextCursor last = buf->BufEndOfBuffer();
@@ -243,10 +258,14 @@ void safeBufReplace(TextBuffer *buf, TextCursor *start, TextCursor *end, std::st
 	buf->BufReplace(*start, *end, text);
 }
 
-/*
-** Update a position across buffer modifications specified by
-** "modPos", "nDeleted", and "nInserted".
-*/
+/**
+ * @brief Update a position across buffer modifications.
+ *
+ * @param position The position to maintain.
+ * @param modPos The position of the modification.
+ * @param nInserted The number of characters inserted.
+ * @param nDeleted The number of characters deleted.
+ */
 void maintainPosition(TextCursor &position, TextCursor modPos, int64_t nInserted, int64_t nDeleted) {
 	if (modPos > position) {
 		return;
@@ -259,10 +278,14 @@ void maintainPosition(TextCursor &position, TextCursor modPos, int64_t nInserted
 	}
 }
 
-/*
-** Update a selection across buffer modifications specified by
-** "pos", "nDeleted", and "nInserted".
-*/
+/**
+ * @brief Maintain the selection across buffer modifications.
+ *
+ * @param sel The selection to maintain.
+ * @param pos The position of the modification.
+ * @param nInserted The number of characters inserted.
+ * @param nDeleted The number of characters deleted.
+ */
 void maintainSelection(TextBuffer::Selection &sel, TextCursor pos, int64_t nInserted, int64_t nDeleted) {
 	if (!sel.hasSelection() || pos > sel.end()) {
 		return;
@@ -277,10 +300,11 @@ void maintainSelection(TextBuffer::Selection &sel, TextCursor pos, int64_t nInse
 }
 
 /**
- * @brief determineUndoType
- * @param nInserted
- * @param nDeleted
- * @return
+ * @brief Determines the type of undo operation based on the number of characters inserted and deleted.
+ *
+ * @param nInserted The number of characters inserted.
+ * @param nDeleted The number of characters deleted.
+ * @return The type of undo operation.
  */
 UndoTypes determineUndoType(int64_t nInserted, int64_t nDeleted) {
 
@@ -318,9 +342,13 @@ UndoTypes determineUndoType(int64_t nInserted, int64_t nDeleted) {
 }
 
 /**
- * @brief createRepeatMacro
- * @param how
- * @return
+ * @brief Creates a repeat macro string based on the specified repetition type.
+ *
+ * @param how The type of repetition, which can be one of the following:
+ * - REPEAT_TO_END: Repeat until the end of the document.
+ * - REPEAT_IN_SEL: Repeat within the current selection.
+ * - Positive Integer: Repeat a specified number of times.
+ * @return The repeat macro.
  */
 QLatin1String createRepeatMacro(int how) {
 
@@ -346,9 +374,18 @@ QLatin1String createRepeatMacro(int how) {
 }
 
 /**
-** Replaces '%' with <fullName> and '#' with <lineNumber>. But '%%' and '##'
-** are replaced by '%' and '#'.
-*/
+ * @brief Escapes a command string by replacing special placeholders with their
+ * corresponding values.
+ * This function replaces:
+ * - '%' with the full name provided in `fullName`
+ * - '#' with the line number provided in `lineNumber`
+ * * If '%%' or '##' is found, they are replaced with '%' and '#' respectively.
+ *
+ * @param command The command string to escape, which may contain '%' and '#' placeholders.
+ * @param fullName The full name to replace '%' with in the command string.
+ * @param lineNumber The line number to replace '#' with in the command string.
+ * @return The escaped command string with placeholders replaced.
+ */
 QString escapeCommand(const QString &command, const QString &fullName, int64_t lineNumber) {
 	QString ret;
 	for (int i = 0; i < command.size(); ++i) {
@@ -373,25 +410,27 @@ QString escapeCommand(const QString &command, const QString &fullName, int64_t l
 
 }
 
-/*
-** Open an existing file specified by name and path.  Use the document
-** inDocument unless inDocument is nullptr or points to a document which is
-** already in use (displays a file other than Untitled, or is Untitled but
-** modified). Flags can be any of:
-**
-**  CREATE:               If file is not found, (optionally) prompt the user
-**                        whether to create
-**  SUPPRESS_CREATE_WARN  When creating a file, don't ask the user
-**  PREF_READ_ONLY        Make the file read-only regardless
-**
-** If languageMode is passed as QString(), it will be determined automatically
-** from the file extension or file contents.
-**
-** If background is true, then the file will be open in background. This
-** works in association with the SetLanguageMode() function that has
-** the syntax highlighting deferred, in order to speed up the file-
-** opening operation when multiple files are being opened in succession.
-*/
+/**
+ * @brief Open an existing file specified by name and path.
+ *
+ * @param inDocument The document to use, or nullptr to create a new one.
+ * @param name The name of the file to open.
+ * @param path The path to the file to open.
+ * @param flags Flags that can be any of:
+ * - CREATE: If the file is not found, (optionally) prompt the user whether to create it.
+ * - SUPPRESS_CREATE_WARN: When creating a file, don't ask the user.
+ * - PREF_READ_ONLY: Make the file read-only regardless.
+ * @param geometry The geometry of the window to open the document in, or an empty string for default.
+ * @param iconic If true, the document will be opened in an iconic state (minimized).
+ * @param languageMode The language mode to use for the document, or QString() to determine it automatically.
+ * @param tabbed If true, the document will be opened in a tabbed interface.
+ * @param background If true, the file will be opened in the background without raising the window.
+ * This is useful for batch processing or when opening multiple files at once.
+ * @return A pointer to the DocumentWidget that was created or used, or nullptr if the operation failed.
+ *
+ * @note If `inDocument` is provided, but is in use (displaying a file other
+ * than Untitled, or is Untitled but is modified), a new document will be created.
+ */
 DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, const QString &name, const QString &path, int flags, const QString &geometry, bool iconic, const QString &languageMode, bool tabbed, bool background) {
 
 	// first look to see if file is already displayed in a window
@@ -496,12 +535,13 @@ DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, con
 }
 
 /**
- * Used for creating a clone of a document, not quite ready yet...
  *
- * @brief DocumentWidget::DocumentWidget
- * @param info_ptr
- * @param parent
- * @param f
+ * @brief Create a new document widget for an existing document which shares the same
+ * DocumentInfo structure as the original document.
+ *
+ * @param info_ptr A shared pointer to the DocumentInfo structure containing information about the document.
+ * @param parent The parent widget for this document widget, or nullptr if it has no parent.
+ * @param f Window flags for the document widget, defaulting to Qt::WindowFlags().
  */
 DocumentWidget::DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget *parent, Qt::WindowFlags f)
 	: QWidget(parent, f), info_(info_ptr) {
@@ -568,10 +608,11 @@ DocumentWidget::DocumentWidget(std::shared_ptr<DocumentInfo> &info_ptr, QWidget 
 }
 
 /**
- * @brief DocumentWidget::DocumentWidget
- * @param name
- * @param parent
- * @param f
+ * @brief Constructor for DocumentWidget.
+ *
+ * @param name The name of the document, typically the filename.
+ * @param parent The parent widget, or nullptr if it has no parent.
+ * @param f Window flags for the document widget, defaulting to Qt::WindowFlags().
  */
 DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowFlags f)
 	: QWidget(parent, f) {
@@ -654,7 +695,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 }
 
 /**
- * @brief DocumentWidget::~DocumentWidget
+ * @brief Destructor for DocumentWidget.
  */
 DocumentWidget::~DocumentWidget() {
 
@@ -674,9 +715,10 @@ DocumentWidget::~DocumentWidget() {
 }
 
 /**
- * @brief DocumentWidget::createTextArea
- * @param buffer
- * @return
+ * @brief Create a new TextArea for this document widget.
+ *
+ * @param buffer A shared pointer to the TextBuffer that this TextArea will use.
+ * @return A pointer to the newly created TextArea.
  */
 TextArea *DocumentWidget::createTextArea(const std::shared_ptr<TextBuffer> &buffer) {
 
@@ -731,10 +773,11 @@ TextArea *DocumentWidget::createTextArea(const std::shared_ptr<TextBuffer> &buff
 	return area;
 }
 
-/*
-** Change the window appearance and the window to show that the file it
-** contains has been modified
-*/
+/**
+ * @brief Set the window modified state for this document widget.
+ *
+ * @param modified If true, the document is to be marked as modified.
+ */
 void DocumentWidget::setWindowModified(bool modified) {
 	MainWindow *win = MainWindow::fromDocument(this);
 	if (!win) {
@@ -752,9 +795,9 @@ void DocumentWidget::setWindowModified(bool modified) {
 	refreshTabState();
 }
 
-/*
-** update the tab label, etc. of a tab, per the states of it's document.
-*/
+/**
+ * @brief Refresh the tab state for this document widget.
+ */
 void DocumentWidget::refreshTabState() {
 
 	MainWindow *win = MainWindow::fromDocument(this);
@@ -804,32 +847,38 @@ void DocumentWidget::refreshTabState() {
 	tabWidget->setTabText(index, labelString);
 }
 
-/*
-** Apply language mode matching criteria and set languageMode_ to
-** the appropriate mode for the current file, trigger language mode
-** specific actions (turn on/off highlighting), and update the language
-** mode menu item.  If forceNewDefaults is true, re-establish default
-** settings for language-specific preferences regardless of whether
-** they were previously set by the user.
-*/
+/**
+ * @brief Determine the language mode for this document widget.
+ * Apply language mode matching criteria and set the languageMode to
+ * the appropriate mode for the current file, trigger language mode
+ * specific actions (turn on/off highlighting), and update the language
+ * mode menu item.
+ *
+ * @param forceNewDefaults If true, re-establish default settings for language-specific preferences
+ * regardless of whether they were previously set by the user.
+ */
 void DocumentWidget::determineLanguageMode(bool forceNewDefaults) {
 	setLanguageMode(matchLanguageMode(), forceNewDefaults);
 }
 
 /**
- * @brief DocumentWidget::getLanguageMode
- * @return
+ * @brief Get the current language mode for this document widget.
+ *
+ * @return The index of the current language mode in Preferences::LanguageModes
+ * or PLAIN_LANGUAGE_MODE for plain text.
  */
 size_t DocumentWidget::getLanguageMode() const {
 	return languageMode_;
 }
 
-/*
-** Set the language mode for the window, update the menu and trigger language
-** mode specific actions (turn on/off highlighting).  If forceNewDefaults is
-** true, re-establish default settings for language-specific preferences
-** regardless of whether they were previously set by the user.
-*/
+/**
+ * @brief Set the language mode for this document widget. update
+ * the menu and trigger language mode specific actions (turn on/off highlighting).
+ *
+ * @param mode The language mode to set, which is an index into Preferences::LanguageModes.
+ * @param forceNewDefaults If true, re-establish default settings for language-specific preferences
+ * regardless of whether they were previously set by the user.
+ */
 void DocumentWidget::setLanguageMode(size_t mode, bool forceNewDefaults) {
 
 	// Do mode-specific actions
@@ -857,9 +906,11 @@ void DocumentWidget::setLanguageMode(size_t mode, bool forceNewDefaults) {
 }
 
 /**
- * @brief DocumentWidget::action_Set_Language_Mode
- * @param languageMode
- * @param forceNewDefaults
+ * @brief Set the language mode for this document widget.
+ *
+ * @param languageMode The language mode to set, which is a string representing the language.
+ * @param forceNewDefaults If true, re-establish default settings for language-specific preferences
+ * regardless of whether they were previously set by the user.
  */
 void DocumentWidget::action_Set_Language_Mode(const QString &languageMode, bool forceNewDefaults) {
 	emit_event("set_language_mode", languageMode);
@@ -867,23 +918,28 @@ void DocumentWidget::action_Set_Language_Mode(const QString &languageMode, bool 
 }
 
 /**
- * @brief DocumentWidget::action_Set_Language_Mode
- * @param languageMode
+ * @brief Set the language mode for this document widget.
+ *
+ * @param languageMode The language mode to set, which is a string representing the language.
  */
 void DocumentWidget::action_Set_Language_Mode(const QString &languageMode) {
 	action_Set_Language_Mode(languageMode, /*forceNewDefaults=*/false);
 }
 
 /**
- * @brief DocumentWidget::matchLanguageMode
- * @return
+ * @brief Match the language mode for this document widget based on the file's
+ * content and file extension.
+ *
+ * @return The index of the matched language mode in Preferences::LanguageModes,
+ * or PLAIN_LANGUAGE_MODE if no match is found.
  */
 size_t DocumentWidget::matchLanguageMode() const {
 
-	/*... look for an explicit mode statement first */
+	// TODO(eteran): look for an explicit mode statement first
+	constexpr size_t CharsToCheck = 200;
 
 	// Do a regular expression search on for recognition pattern
-	const std::string first200 = info_->buffer->BufGetRange(info_->buffer->BufStartOfBuffer(), info_->buffer->BufStartOfBuffer() + 200);
+	const std::string first200 = info_->buffer->BufGetRange(info_->buffer->BufStartOfBuffer(), info_->buffer->BufStartOfBuffer() + CharsToCheck);
 	if (!first200.empty()) {
 		for (size_t i = 0; i < Preferences::LanguageModes.size(); i++) {
 			if (!Preferences::LanguageModes[i].recognitionExpr.isNull()) {
@@ -929,8 +985,9 @@ size_t DocumentWidget::matchLanguageMode() const {
 }
 
 /**
- * @brief DocumentWidget::movedCallback
- * @param area
+ * @brief Callback for when the cursor is moved.
+ *
+ * @param area The text area that was moved.
  */
 void DocumentWidget::movedCallback(TextArea *area) {
 
@@ -952,8 +1009,9 @@ void DocumentWidget::movedCallback(TextArea *area) {
 }
 
 /**
- * @brief DocumentWidget::dragStartCallback
- * @param area
+ * @brief Callback for when a drag operation starts.
+ *
+ * @param area The text area where the drag operation started.
  */
 void DocumentWidget::dragStartCallback(TextArea *area) {
 	Q_UNUSED(area)
@@ -961,10 +1019,15 @@ void DocumentWidget::dragStartCallback(TextArea *area) {
 	info_->ignoreModify = true;
 }
 
-/*
-** Keep the marks in the windows book-mark table up to date across
-** changes to the underlying buffer
-*/
+/**
+ * @brief Update the mark table for all bookmarks in this document widget.
+ * Keeps the marks in the window's bookmark table up to date across
+ * changes to the underlying buffer.
+ *
+ * @param pos The position in the text buffer where the modification occurred.
+ * @param nInserted The number of characters inserted at the position.
+ * @param nDeleted The number of characters deleted at the position.
+ */
 void DocumentWidget::updateMarkTable(TextCursor pos, int64_t nInserted, int64_t nDeleted) {
 
 	for (auto &entry : markTable_) {
@@ -975,13 +1038,14 @@ void DocumentWidget::updateMarkTable(TextCursor pos, int64_t nInserted, int64_t 
 }
 
 /**
- * @brief DocumentWidget::modifiedCallback
- * @param pos
- * @param nInserted
- * @param nDeleted
- * @param nRestyled
- * @param deletedText
- * @param area
+ * @brief Callback for when the document is modified.
+ *
+ * @param pos The position in the text buffer where the modification occurred.
+ * @param nInserted The number of characters inserted at the position.
+ * @param nDeleted The number of characters deleted at the position.
+ * @param nRestyled The number of characters restyled (not used here).
+ * @param deletedText The text that was deleted during the modification.
+ * @param area The text area where the modification occurred (or nullptr if not applicable).
  */
 void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, TextArea *area) {
 	Q_UNUSED(nRestyled)
@@ -1052,21 +1116,23 @@ void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t
 }
 
 /**
- * @brief DocumentWidget::modifiedCallback
- * @param pos
- * @param nInserted
- * @param nDeleted
- * @param nRestyled
- * @param deletedText
+ * @brief Callback for when the document is modified.
+ *
+ * @param pos The position in the text buffer where the modification occurred.
+ * @param nInserted The number of characters inserted at the position.
+ * @param nDeleted The number of characters deleted at the position.
+ * @param nRestyled The number of characters restyled.
+ * @param deletedText The text that was deleted during the modification.
  */
 void DocumentWidget::modifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText) {
 	modifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText, nullptr);
 }
 
 /**
- * @brief DocumentWidget::dragEndCallback
- * @param area
- * @param data
+ * @brief Callback for when a drag operation ends.
+ *
+ * @param area The text area where the drag operation ended.
+ * @param data The drag end event containing information about the drag operation.
  */
 void DocumentWidget::dragEndCallback(TextArea *area, const DragEndEvent *event) {
 
@@ -1084,9 +1150,10 @@ void DocumentWidget::dragEndCallback(TextArea *area, const DragEndEvent *event) 
 }
 
 /**
- * @brief DocumentWidget::smartIndentCallback
- * @param area
- * @param data
+ * @brief Callback for smart indentation events.
+ *
+ * @param area The text area where the smart indentation event occurred.
+ * @param data The smart indentation event containing information about the event.
  */
 void DocumentWidget::smartIndentCallback(TextArea *area, SmartIndentEvent *event) {
 
@@ -1106,9 +1173,11 @@ void DocumentWidget::smartIndentCallback(TextArea *area, SmartIndentEvent *event
 	}
 }
 
-/*
-** raise the document and its window and optionally focus.
-*/
+/**
+ * @brief Raise the document and its window, optionally focusing the text area.
+ *
+ * @param focus If true, the text area will be focused after raising the window.
+ */
 void DocumentWidget::raiseFocusDocumentWindow(bool focus) {
 	raiseDocument();
 
@@ -1132,16 +1201,14 @@ void DocumentWidget::raiseFocusDocumentWindow(bool focus) {
 }
 
 /**
- * raise the document and its shell window and focus depending on pref.
- *
- * @brief DocumentWidget::RaiseDocumentWindow
+ * @brief Raise the document and its shell window and focus depending on user preferences.
  */
 void DocumentWidget::raiseDocumentWindow() {
 	raiseFocusDocumentWindow(Preferences::GetPrefFocusOnRaise());
 }
 
 /**
- * @brief DocumentWidget::documentRaised
+ * @brief Callback for when the document is raised.
  */
 void DocumentWidget::documentRaised() {
 	// Turn on syntax highlight that might have been deferred.
@@ -1163,6 +1230,9 @@ void DocumentWidget::documentRaised() {
 	}
 }
 
+/**
+ * @brief Raise the document in the main window, making it the current document.
+ */
 void DocumentWidget::raiseDocument() {
 	MainWindow *win = MainWindow::fromDocument(this);
 	if (!win) {
@@ -1172,10 +1242,14 @@ void DocumentWidget::raiseDocument() {
 	win->tabWidget()->setCurrentWidget(this);
 }
 
-/*
-** Change the language mode to the one indexed by "mode", reseting word
-** delimiters, syntax highlighting and other mode specific parameters
-*/
+/**
+ * @brief Reapply the language mode for this document widget.
+ * Changes the language mode to the one indexed by "mode", resetting word
+ * delimiters, syntax highlighting, and other mode-specific parameters.
+ *
+ * @param mode The index of the language mode to apply, which is an index into Preferences::LanguageModes.
+ * @param forceDefaults If true, re-establish default settings for language-specific preferences
+ */
 void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
 	MainWindow *win = MainWindow::fromDocument(this);
@@ -1285,8 +1359,9 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 }
 
 /**
- * @brief DocumentWidget::setTabDistance
- * @param distance
+ * @brief Set the tab distance for this document widget.
+ *
+ * @param distance The distance to set for tabs, in spaces.
  */
 void DocumentWidget::setTabDistance(int distance) {
 
@@ -1329,8 +1404,9 @@ void DocumentWidget::setTabDistance(int distance) {
 }
 
 /**
- * @brief DocumentWidget::setEmTabDistance
- * @param distance
+ * @brief Set the emulated tab distance for this document widget.
+ *
+ * @param distance The distance to set for emulated tabs, in spaces.
  */
 void DocumentWidget::setEmTabDistance(int distance) {
 
@@ -1342,8 +1418,9 @@ void DocumentWidget::setEmTabDistance(int distance) {
 }
 
 /**
- * @brief DocumentWidget::setInsertTabs
- * @param value
+ * @brief Set whether to insert tabs or spaces when the user presses the Tab key.
+ *
+ * @param value If true, tabs will be inserted; if false, spaces will be inserted.
  */
 void DocumentWidget::setInsertTabs(bool value) {
 
@@ -1351,9 +1428,12 @@ void DocumentWidget::setInsertTabs(bool value) {
 	info_->buffer->BufSetUseTabs(value);
 }
 
-/*
-** Set autoindent state to one of None, Auto, or Smart.
-*/
+/**
+ * @brief Set the auto-indent style for this document widget.
+ *
+ * @param indentStyle The style of auto-indentation to set, which can be one of
+ * IndentStyle::None, IndentStyle::Auto, or IndentStyle::Smart.
+ */
 void DocumentWidget::setAutoIndent(IndentStyle indentStyle) {
 
 	const bool autoIndent  = (indentStyle == IndentStyle::Auto);
@@ -1386,9 +1466,12 @@ void DocumentWidget::setAutoIndent(IndentStyle indentStyle) {
 	no_signals(win->ui.action_Indent_Off)->setChecked(indentStyle == IndentStyle::None);
 }
 
-/*
-** Select auto-wrap mode, one of None, Newline, or Continuous
-*/
+/**
+ * @brief Set the auto-wrap style for this document widget.
+ *
+ * @param wrapStyle The style of auto-wrapping to set, which can be one of
+ * WrapStyle::None, WrapStyle::Newline, or WrapStyle::Continuous.
+ */
 void DocumentWidget::setAutoWrap(WrapStyle wrapStyle) {
 
 	emit_event("set_wrap_text", to_string(wrapStyle));
@@ -1418,16 +1501,18 @@ void DocumentWidget::setAutoWrap(WrapStyle wrapStyle) {
 }
 
 /**
- * @brief DocumentWidget::textPanesCount
- * @return
+ * @brief Get the number of text panes in this document widget.
+ *
+ * @return The number of text panes in the document widget.
  */
 int DocumentWidget::textPanesCount() const {
 	return splitter_->count();
 }
 
 /**
- * @brief DocumentWidget::textPanes
- * @return
+ * @brief Get a list of all text panes in this document widget.
+ *
+ * @return A vector of pointers to TextArea objects representing the text panes.
  */
 std::vector<TextArea *> DocumentWidget::textPanes() const {
 
@@ -1446,8 +1531,9 @@ std::vector<TextArea *> DocumentWidget::textPanes() const {
 }
 
 /**
- * @brief DocumentWidget::isTopDocument
- * @return
+ * @brief Check if this document widget is the top document in its main window.
+ *
+ * @return True if this document is the top document in its main window, false otherwise.
  */
 bool DocumentWidget::isTopDocument() const {
 
@@ -1460,8 +1546,9 @@ bool DocumentWidget::isTopDocument() const {
 }
 
 /**
- * @brief DocumentWidget::getWindowsMenuEntry
- * @return
+ * @brief Get the entry for this document in the Windows menu.
+ *
+ * @return A QString representing the entry for this document in the Windows menu.
  */
 QString DocumentWidget::getWindowsMenuEntry() const {
 
@@ -1474,10 +1561,11 @@ QString DocumentWidget::getWindowsMenuEntry() const {
 	return fullTitle;
 }
 
-/*
-** Turn off syntax highlighting and free style buffer, compiled patterns, and
-** related data.
-*/
+/**
+ * @brief Stop highlighting syntax in the document widget.
+ * This function frees the highlight data and removes the highlight
+ * from all text areas in the document widget.
+ */
 void DocumentWidget::stopHighlighting() {
 	if (!highlightData_) {
 		return;
@@ -1494,8 +1582,9 @@ void DocumentWidget::stopHighlighting() {
 }
 
 /**
- * @brief DocumentWidget::firstPane
- * @return
+ * @brief Get the first text pane in this document widget.
+ *
+ * @return A pointer to the first TextArea in the splitter, or nullptr if no text area is found.
  */
 TextArea *DocumentWidget::firstPane() const {
 
@@ -1508,25 +1597,26 @@ TextArea *DocumentWidget::firstPane() const {
 	return nullptr;
 }
 
-/*
-** Get the set of word delimiters for the language mode set in the current
-** document.  Returns QString() when no language mode is set (it would be easy
-** to return the default delimiter set when the current language mode is
-** "Plain", or the mode doesn't have its own delimiters, but this is usually
-** used to supply delimiters for RE searching.
-*/
+/**
+ * @brief Get the document delimiters for the current language mode.
+ *
+ * @return A QString containing the delimiters for the current language mode,
+ * or an empty QString if the language mode is plain text.
+ *
+ * @note it would be easy to return the default delimiter set when the
+ * current language mode is "Plain", or the mode doesn't have its own
+ * delimiters, but this is usually used to supply delimiters for RE searching,
+ * and the regex engine can skip compiling a delimiter table when delimiters is null.
+ */
 QString DocumentWidget::documentDelimiters() const {
-	if (languageMode_ == PLAIN_LANGUAGE_MODE) {
-		return QString();
-	}
-
-	return Preferences::LanguageModes[languageMode_].delimiters;
+	// TODO(eteran): this function is just a wrapper around getWindowDelimiters() to
+	// maintain compatibility with the old code. It should be removed in the future.
+	return getWindowDelimiters();
 }
 
-/*
-** Disable/enable user programmable menu items which depend on there being
-** a selection in their associated window.
-*/
+/**
+ * @brief Disable/enable selection-sensitive menus in the main window.
+ */
 void DocumentWidget::updateSelectionSensitiveMenus(bool enabled) {
 
 	if (!isTopDocument()) {
@@ -1543,6 +1633,13 @@ void DocumentWidget::updateSelectionSensitiveMenus(bool enabled) {
 	updateSelectionSensitiveMenu(win->contextMenu_, BGMenuData, enabled);
 }
 
+/**
+ * @brief Update the enabled state of selection-sensitive menu items.
+ *
+ * @param menu The menu to update.
+ * @param menuList The list of menu items to check against.
+ * @param enabled If true, the menu items will be enabled; if false, they will be disabled.
+ */
 void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<MenuData> &menuList, bool enabled) {
 
 	if (menu) {
@@ -1566,14 +1663,20 @@ void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<M
 	}
 }
 
-/*
-** saveUndoInformation stores away the changes made to the text buffer.  As a
-** side effect, it also increments the autoSave operation and character counts
-** since it needs to do the classification anyhow.
-**
-** Note: This routine must be kept efficient.  It is called for every
-**       character typed.
-*/
+/**
+ * @brief Save undo information for the current text modification.
+ * stores away the changes made to the text buffer. As a
+ * side effect, it also increments the autoSave operation and character counts
+ * since it needs to do the classification anyhow.
+ *
+ * @param pos The position in the text buffer where the modification occurred.
+ * @param nInserted The number of characters inserted at the position.
+ * @param nDeleted The number of characters deleted at the position.
+ * @param deletedText The text that was deleted during the modification.
+ *
+ * @note This routine must be kept efficient. It is called for every
+ * character typed.
+ */
 void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, std::string_view deletedText) {
 
 	const int isUndo = (!info_->undo.empty() && info_->undo.front().inUndo);
@@ -1679,30 +1782,39 @@ void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int6
 	}
 }
 
-/*
-** clearUndoList, clearRedoList
-**
-** Functions for clearing all of the information off of the undo or redo
-** lists and adjusting the edit menu accordingly
-*/
+/**
+ * @brief Clear the undo list for this document widget.
+ * This function clears the undo list and emits a signal to indicate
+ * whether undo is available.
+ */
 void DocumentWidget::clearUndoList() {
 
 	info_->undo.clear();
 	Q_EMIT canUndoChanged(!info_->undo.empty());
 }
 
+/**
+ * @brief Clear the redo list for this document widget.
+ * This function clears the redo list and emits a signal to indicate
+ * whether redo is available.
+ */
 void DocumentWidget::clearRedoList() {
 
 	info_->redo.clear();
 	Q_EMIT canRedoChanged(!info_->redo.empty());
 }
 
-/*
-** Add deleted text to the beginning or end
-** of the text saved for undoing the last operation.  This routine is intended
-** for continuing of a string of one character deletes or replaces, but will
-** work with more than one character.
-*/
+/**
+ * @brief Append deleted text to the last undo record.
+ * The function adds deleted text to the beginning or end of the
+ * text saved for undoing the last operation. This is intended for
+ * continuing a string of one-character deletes or replaces, but will
+ * work with more than one character.
+ *
+ * @param deletedText The text that was deleted.
+ * @param deletedLen The length of the deleted text.
+ * @param direction The direction in which the text was deleted (forward or backward).
+ */
 void DocumentWidget::appendDeletedText(std::string_view deletedText, int64_t deletedLen, Direction direction) {
 	UndoInfo &undo = info_->undo.front();
 
@@ -1723,11 +1835,14 @@ void DocumentWidget::appendDeletedText(std::string_view deletedText, int64_t del
 	undo.oldText = std::move(comboText);
 }
 
-/*
-** Add an undo record to the this's undo
-** list if the item pushes the undo operation or character counts past the
-** limits, trim the undo list to an acceptable length.
-*/
+/**
+ * @brief Add an undo item to the undo list.
+ * This function adds an undo item to the undo list, ensuring that the
+ * undo list does not exceed the defined limits. If the undo list exceeds
+ * the limit, it trims the list to a specified length.
+ *
+ * @param undo The UndoInfo object containing the undo information to be added.
+ */
 void DocumentWidget::addUndoItem(UndoInfo &&undo) {
 
 	info_->undo.emplace_front(std::move(undo));
@@ -1740,18 +1855,20 @@ void DocumentWidget::addUndoItem(UndoInfo &&undo) {
 	Q_EMIT canUndoChanged(!info_->undo.empty());
 }
 
-/*
-** Add an item (already allocated by the caller) to the this's redo list.
-*/
+/**
+ * @brief Add a redo item to the redo list.
+ *
+ * @param redo The UndoInfo object containing the redo information to be added.
+ */
 void DocumentWidget::addRedoItem(UndoInfo &&redo) {
 
 	info_->redo.emplace_front(std::move(redo));
 	Q_EMIT canRedoChanged(!info_->redo.empty());
 }
 
-/*
-** Pop the current undo record from the undo list
-*/
+/**
+ * @brief Remove the last undo item from the undo list.
+ */
 void DocumentWidget::removeUndoItem() {
 
 	if (info_->undo.empty()) {
@@ -1762,9 +1879,9 @@ void DocumentWidget::removeUndoItem() {
 	Q_EMIT canUndoChanged(!info_->undo.empty());
 }
 
-/*
-** Pop the current redo record from the redo list
-*/
+/**
+ * @brief Remove the last redo item from the redo list.
+ */
 void DocumentWidget::removeRedoItem() {
 
 	if (info_->redo.empty()) {
@@ -1775,10 +1892,11 @@ void DocumentWidget::removeRedoItem() {
 	Q_EMIT canRedoChanged(!info_->redo.empty());
 }
 
-/*
-** Trim records off of the END of the undo list to reduce it to length
-** maxLength
-*/
+/**
+ * @brief Trim the undo list to a specified maximum length.
+ *
+ * @param maxLength The maximum length to which the undo list should be trimmed.
+ */
 void DocumentWidget::trimUndoList(size_t maxLength) {
 
 	if (info_->undo.size() <= maxLength) {
@@ -1792,6 +1910,9 @@ void DocumentWidget::trimUndoList(size_t maxLength) {
 	info_->undo.erase(it, info_->undo.end());
 }
 
+/**
+ * @brief Undo the last operation in the document widget.
+ */
 void DocumentWidget::undo() {
 
 	MainWindow *win = MainWindow::fromDocument(this);
@@ -1849,6 +1970,9 @@ void DocumentWidget::undo() {
 	removeUndoItem();
 }
 
+/**
+ * @brief Redo the last undone operation in the document widget.
+ */
 void DocumentWidget::redo() {
 
 	MainWindow *win = MainWindow::fromDocument(this);
@@ -1906,17 +2030,19 @@ void DocumentWidget::redo() {
 }
 
 /**
- * @brief DocumentWidget::isReadOnly
- * @return
+ * @brief Check if the document widget is read-only or locked.
+ *
+ * @return True if the document is read-only or locked, false otherwise.
  */
 bool DocumentWidget::isReadOnly() const {
 	return info_->lockReasons.isAnyLocked();
 }
 
-/*
-** Check the read-only or locked status of the window and beep and return
-** false if the window should not be written in.
-*/
+/**
+ * @brief Check if the document widget is read-only and beep if it is.
+ *
+ * @return True if the document is read-only, false otherwise.
+ */
 bool DocumentWidget::checkReadOnly() const {
 	if (isReadOnly()) {
 		QApplication::beep();
@@ -1925,18 +2051,20 @@ bool DocumentWidget::checkReadOnly() const {
 	return false;
 }
 
-/*
-** If the selection (or cursor position if there's no selection) is not
-** fully shown, scroll to bring it in to view.
-*/
+/**
+ * @brief Make the selection (or cursor position if there's no selection)
+ * in the specified text area visible.
+ *
+ * @param area The TextArea in which to make the selection visible.
+ */
 void DocumentWidget::makeSelectionVisible(TextArea *area) {
 	area->makeSelectionVisible();
 	Q_EMIT updateStatus(this, area);
 }
 
-/*
-** Remove the backup file associated with this window
-*/
+/**
+ * @brief Remove the backup file associated with this document widget.
+ */
 void DocumentWidget::removeBackupFile() const {
 
 	// Don't delete backup files when backups aren't activated.
@@ -1947,10 +2075,11 @@ void DocumentWidget::removeBackupFile() const {
 	QFile::remove(backupFileName());
 }
 
-/*
-** Generate the name of the backup file for this window from the filename
-** and path in the window data structure & write into name
-*/
+/**
+ * @brief Get the backup file name for this document widget.
+ *
+ * @return A QString representing the backup file name.
+ */
 QString DocumentWidget::backupFileName() const {
 
 	if (info_->filenameSet) {
@@ -1960,10 +2089,12 @@ QString DocumentWidget::backupFileName() const {
 	return prependHome(QStringLiteral("~%1").arg(info_->filename));
 }
 
-/*
-** Check if the file in the window was changed by an external source.
-** and put up a warning dialog if it has.
-*/
+/**
+ * @brief Check for changes to the file associated with this document widget.
+ * This function checks if the file has been modified externally and
+ * prompts the user to save changes if necessary. It also updates the
+ * document's read-only status based on the file's permissions.
+ */
 void DocumentWidget::checkForChangesToFile() {
 
 	/* Maximum frequency of checking for external modifications. The periodic
@@ -2136,8 +2267,10 @@ void DocumentWidget::checkForChangesToFile() {
 }
 
 /**
- * @brief DocumentWidget::fullPath
- * @return
+ * @brief Get the full path of the document widget.
+ *
+ * @return A QString representing the full path of the document widget,
+ * which is a combination of the path and filename.
  */
 QString DocumentWidget::fullPath() const {
 
@@ -2150,37 +2283,40 @@ QString DocumentWidget::fullPath() const {
 }
 
 /**
- * @brief DocumentWidget::filename
- * @return
+ * @brief Get the filename of the document widget.
+ *
+ * @return A QString representing the filename of the document widget.
  */
 QString DocumentWidget::filename() const {
 	return info_->filename;
 }
 
 /**
- * @brief DocumentWidget::setFilename
- * @param filename
+ * @brief Set the filename for the document widget.
+ *
+ * @param filename The new filename to set for the document widget.
  */
 void DocumentWidget::setFilename(const QString &filename) {
 	info_->filename = filename;
 }
 
 /**
- * @brief DocumentWidget::path
- * @return
+ * @brief Get the path of the document widget.
+ *
+ * @return A QString representing the path of the document widget.
  */
 QString DocumentWidget::path() const {
 	return info_->path;
 }
 
-/*
- * Check if the contents of the TextBuffer is equal
- * the contents of the file named fileName. The format of
- * the file (UNIX/DOS/MAC) is handled properly.
+/**
+ * @brief Compare the contents of the document widget with a file.
+ * The format of the file (UNIX/DOS/MAC) is handled properly.
  *
- * Return values
- * false: no difference found
- * true : difference found or could not compare contents.
+ * @param fileName The name of the file to compare against.
+ * @return True if the contents differ or if an error occurs, false if they are the same.
+ *
+ * @note This function reads the file in chunks and compares it with the document's buffer,
  */
 bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 
@@ -2285,6 +2421,11 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 	return false;
 }
 
+/**
+ * @brief Revert the document widget to its saved state.
+ * This function re-reads the file associated with the document widget,
+ * restoring the text areas to their saved state and updating the window title.
+ */
 void DocumentWidget::revertToSaved() {
 
 	MainWindow *win = MainWindow::fromDocument(this);
@@ -2354,11 +2495,13 @@ void DocumentWidget::revertToSaved() {
 	}
 }
 
-/*
-** Create a backup file for the current document.  The name for the backup file
-** is generated using the name and path stored in the window and adding a
-** tilde (~) on UNIX.
-*/
+/**
+ * @brief Write a backup file for the current document. The name of the backup
+ * file is generated using the document's path and filename, with a tilde (~)
+ * appended to the filename on UNIX systems.
+ *
+ * @return True if the backup file was successfully written, false otherwise.
+ */
 bool DocumentWidget::writeBackupFile() {
 	FILE *fp;
 
@@ -2420,8 +2563,9 @@ bool DocumentWidget::writeBackupFile() {
 }
 
 /**
- * @brief DocumentWidget::saveDocument
- * @return
+ * @brief Save the current document.
+ *
+ * @return True if the document was successfully saved, false otherwise.
  */
 bool DocumentWidget::saveDocument() {
 
@@ -2480,6 +2624,11 @@ bool DocumentWidget::saveDocument() {
 	return status;
 }
 
+/**
+ * @brief Save the document to its current filename.
+ *
+ * @return True if the document was successfully saved, false otherwise.
+ */
 bool DocumentWidget::doSave() {
 
 	const QString fullname = fullPath();
@@ -2578,10 +2727,11 @@ bool DocumentWidget::doSave() {
 }
 
 /**
- * @brief DocumentWidget::saveDocumentAs
- * @param newName
- * @param addWrap
- * @return
+ * @brief Save the document with a new name.
+ *
+ * @param newName The new name to save the document as. If null, a prompt will be shown to the user.
+ * @param addWrap If true, the document will be wrapped with newlines before saving.
+ * @return True if the document was successfully saved, false otherwise.
  */
 bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 
@@ -2676,11 +2826,10 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 	return retVal;
 }
 
-/*
-** Change a document created in NEdit's continuous wrap mode to the more
-** conventional Unix format of embedded newlines.  Indicate to the user
-** by turning off Continuous Wrap mode.
-*/
+/**
+ * @brief Add newlines to the document to convert it from continuous wrap mode
+ * to a more conventional format with embedded newlines.
+ */
 void DocumentWidget::addWrapNewlines() {
 
 	TextCursor insertPositions[MaxPanes];
@@ -2722,11 +2871,13 @@ void DocumentWidget::addWrapNewlines() {
 	no_signals(win->ui.action_Wrap_Continuous)->setChecked(false);
 }
 
-/*
-** If saveOldVersion is on, copies the existing version of the file to
-** <filename>.bck in anticipation of a new version being saved.  Returns
-** true if backup fails and user requests that the new file not be written.
-*/
+/**
+ * @brief Write a backup version of the current document if the `saveOldVersion` flag is set.
+ * This function creates a backup file with the name `<filename>.bck` in the
+ * same directory as the current document.
+ *
+ * @return True if the backup was successfully written, false otherwise.
+ */
 bool DocumentWidget::writeBckVersion() {
 
 	struct BackupError {
@@ -2845,11 +2996,13 @@ bool DocumentWidget::writeBckVersion() {
 	}
 }
 
-/*
-** Return true if the file displayed in window has been modified externally
-** to nedit.  This should return false if the file has been deleted or is
-** unavailable.
-*/
+/**
+ * @brief Check if the file associated with the document widget was modified externally.
+ *
+ * @return True if the file was modified externally, false otherwise.
+ *
+ * @note This function will return false if the file has been deleted or is unavailable.
+ */
 bool DocumentWidget::fileWasModifiedExternally() const {
 
 	if (!info_->filenameSet) {
@@ -2874,6 +3027,12 @@ bool DocumentWidget::fileWasModifiedExternally() const {
 	return true;
 }
 
+/**
+ * @brief Close the file and the window, optionally prompting the user.
+ *
+ * @param preResponse The mode to use for prompting the user before closing the file.
+ * @return True if the file and window were successfully closed, false otherwise.
+ */
 bool DocumentWidget::closeFileAndWindow(CloseMode preResponse) {
 
 	/* If the window is a normal & unmodified file or an empty new file,
@@ -2930,9 +3089,9 @@ bool DocumentWidget::closeFileAndWindow(CloseMode preResponse) {
 	return true;
 }
 
-/*
-** Close a document, or an editor window
-*/
+/**
+ * @brief Close the document widget and clean up associated resources.
+ */
 void DocumentWidget::closeDocument() {
 
 	// Free smart indent macro programs
@@ -3046,9 +3205,10 @@ void DocumentWidget::closeDocument() {
 }
 
 /**
- * @brief DocumentWidget::fromArea
- * @param area
- * @return
+ * @brief Get the document widget from a given text area.
+ *
+ * @param area The text area from which to retrieve the document widget.
+ * @return A pointer to the document widget associated with the text area, or nullptr if the area is null.
  */
 DocumentWidget *DocumentWidget::fromArea(TextArea *area) {
 
@@ -3060,8 +3220,10 @@ DocumentWidget *DocumentWidget::fromArea(TextArea *area) {
 }
 
 /**
- * @brief DocumentWidget::open
- * @param fullpath
+ * @brief Open a document widget for the specified file path.
+ *
+ * @param fullpath The full path to the file to be opened.
+ * @return A pointer to the newly opened document widget, or nullptr if the file could not be opened.
  */
 DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 
@@ -3083,11 +3245,12 @@ DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 }
 
 /**
- * @brief DocumentWidget::doOpen
- * @param name
- * @param path
- * @param flags
- * @return
+ * @brief Open a document widget for the specified file name and path.
+ *
+ * @param name The name of the file to be opened.
+ * @param path The path to the file to be opened.
+ * @param flags Flags to control the opening behavior, such as whether to create the file if it does not exist or to suppress warnings.
+ * @return True if the document was successfully opened, false otherwise.
  */
 bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags) {
 
@@ -3305,9 +3468,9 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 	}
 }
 
-/*
-** refresh window state for this document
-*/
+/**
+ * @brief Refresh the window states and UI elements based on the current document state.
+ */
 void DocumentWidget::refreshWindowStates() {
 
 	if (!isTopDocument()) {
@@ -3352,10 +3515,9 @@ void DocumentWidget::refreshWindowStates() {
 	win->updateLineNumDisp();
 }
 
-/*
-** Refresh the various settings/state of the shell window per the
-** settings of the top document.
-*/
+/**
+ * @brief Refresh the menu bar and its items based on the current document state.
+ */
 void DocumentWidget::refreshMenuBar() {
 	MainWindow *win = MainWindow::fromDocument(this);
 	if (!win) {
@@ -3371,10 +3533,9 @@ void DocumentWidget::refreshMenuBar() {
 	updateSelectionSensitiveMenus(info_->wasSelected);
 }
 
-/*
-** Refresh the menu entries per the settings of the
-** top document.
-*/
+/**
+ * @brief Refresh the toggle states of the menu items based on the current document state.
+ */
 void DocumentWidget::refreshMenuToggleStates() {
 
 	if (!isTopDocument()) {
@@ -3424,10 +3585,11 @@ void DocumentWidget::refreshMenuToggleStates() {
 	win->ui.action_Move_Tab_To->setEnabled(windows.size() > 1);
 }
 
-/*
-** Run the newline macro with information from the smart-indent callback
-** structure passed by the widget
-*/
+/**
+ * @brief Execute the newline macro for smart indentation.
+ *
+ * @param event The SmartIndentEvent containing the position and other data for the newline macro.
+ */
 void DocumentWidget::executeNewlineMacro(SmartIndentEvent *event) {
 
 	if (const std::unique_ptr<SmartIndentData> &winData = info_->smartIndentData) {
@@ -3480,10 +3642,11 @@ void DocumentWidget::executeNewlineMacro(SmartIndentEvent *event) {
 	}
 }
 
-/*
-** Set showMatching state to one of None, Delimeter or Range.
-** Update the menu to reflect the change of state.
-*/
+/**
+ * @brief Set the style for showing matching characters in the document.
+ *
+ * @param state The style to set for showing matching characters.
+ */
 void DocumentWidget::setShowMatching(ShowMatchingStyle state) {
 
 	emit_event("set_show_matching", to_string(state));
@@ -3511,10 +3674,11 @@ void DocumentWidget::setShowMatching(ShowMatchingStyle state) {
 	}
 }
 
-/*
-** Run the modification macro with information from the smart-indent callback
-** structure passed by the widget
-*/
+/**
+ * @brief Execute the modification macro for smart indentation.
+ *
+ * @param event The SmartIndentEvent containing the position and characters typed.
+ */
 void DocumentWidget::executeModMacro(SmartIndentEvent *event) {
 
 	if (const std::unique_ptr<SmartIndentData> &winData = info_->smartIndentData) {
@@ -3560,7 +3724,7 @@ void DocumentWidget::executeModMacro(SmartIndentEvent *event) {
 }
 
 /**
- * @brief DocumentWidget::macroBannerTimeoutProc
+ * @brief Display a banner message indicating that a macro command is in progress.
  */
 void DocumentWidget::macroBannerTimeoutProc() {
 
@@ -3583,7 +3747,7 @@ void DocumentWidget::macroBannerTimeoutProc() {
 }
 
 /**
- * @brief DocumentWidget::shellBannerTimeoutProc
+ * @brief Display a banner message indicating that a shell command is in progress.
  */
 void DocumentWidget::shellBannerTimeoutProc() {
 
@@ -3605,6 +3769,11 @@ void DocumentWidget::shellBannerTimeoutProc() {
 	}
 }
 
+/**
+ * @brief Close the document widget, prompting the user if necessary.
+ *
+ * @param mode The mode to use for prompting the user before closing the file.
+ */
 void DocumentWidget::actionClose(CloseMode mode) {
 
 	closeFileAndWindow(mode);
@@ -3612,6 +3781,11 @@ void DocumentWidget::actionClose(CloseMode mode) {
 	MainWindow::updateWindowMenus();
 }
 
+/**
+ * @brief Include the contents of a file into the current document at the cursor position or selection.
+ *
+ * @param name The name of the file to include.
+ */
 void DocumentWidget::includeFile(const QString &name) {
 
 	if (checkReadOnly()) {
@@ -3661,6 +3835,17 @@ void DocumentWidget::includeFile(const QString &name) {
 	}
 }
 
+/**
+ * @brief Find the matching character in the document based on the specified parameters.
+ *
+ * @param toMatch The character to match.
+ * @param styleToMatch The style to match for the character.
+ * @param charPos The position of the character to match.
+ * @param startLimit How far to search backwards for the matching character.
+ * @param endLimit How far to search forwards for the matching character.
+ * @return An optional TextCursor indicating the position of the matching character,
+ * or an empty optional if no match is found.
+ */
 std::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style styleToMatch, TextCursor charPos, TextCursor startLimit, TextCursor endLimit) {
 
 	Style style;
@@ -3684,7 +3869,6 @@ std::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style s
 	const Direction direction = matchIt->direction;
 
 	// find it in the buffer
-
 	int nestDepth = 1;
 
 	switch (direction) {
@@ -3750,6 +3934,12 @@ std::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style s
 	return {};
 }
 
+/**
+ * @brief Go to the matching character in the document based on the current selection or cursor position.
+ *
+ * @param area The text area in which to perform the operation.
+ * @param select If true, select to the matching character; otherwise, just move the cursor to it.
+ */
 void DocumentWidget::gotoMatchingCharacter(TextArea *area, bool select) {
 
 	/* get the character to match and its position from the selection, or
@@ -3815,10 +4005,14 @@ void DocumentWidget::gotoMatchingCharacter(TextArea *area, bool select) {
 	}
 }
 
-/*
-** This code path is followed if the request came from either
-** findDefinition or findDefCalltip.  This should probably be refactored.
-*/
+/**
+ * @brief Helper function to find a definition or calltip in the document.
+ *
+ * @param area The text area in which to perform the search.
+ * @param value The value to search for, either a calltip or a tag.
+ * @param search_type The type of search to perform (TIP or TAG).
+ * @return An integer status code indicating the result of the search.
+ */
 int DocumentWidget::findDefinitionHelperCommon(TextArea *area, const QString &value, Tags::SearchMode search_type) {
 
 	// TODO(eteran): change status to a more type safe success/fail
@@ -3859,11 +4053,16 @@ int DocumentWidget::findDefinitionHelperCommon(TextArea *area, const QString &va
 	return status;
 }
 
-/*
-** Lookup the definition for the current primary selection the currently
-** loaded tags file and bring up the file and line that the tags file
-** indicates.
-*/
+/**
+ * @brief Helper function to find a definition or calltip in the document.
+ * Looks up the definition for the current primary selection the currently
+ * loaded tags file and bring up the file and line that the tags file
+ * indicates.
+ *
+ * @param area The text area in which to perform the search.
+ * @param arg The argument to search for, either a calltip or a tag.
+ * @param search_type The type of search to perform (TIP or TAG).
+ */
 void DocumentWidget::findDefinitionHelper(TextArea *area, const QString &arg, Tags::SearchMode search_type) {
 	if (!arg.isNull()) {
 		findDefinitionHelperCommon(area, arg, search_type);
@@ -3880,9 +4079,10 @@ void DocumentWidget::findDefinitionHelper(TextArea *area, const QString &arg, Ta
 }
 
 /**
- * @brief DocumentWidget::findDefinitionCalltip
- * @param area
- * @param tipName
+ * @brief Find a definition or calltip in the document based on the specified area and tip name.
+ *
+ * @param area The text area in which to perform the search.
+ * @param tipName The name of the calltip to search for.
  */
 void DocumentWidget::findDefinitionCalltip(TextArea *area, const QString &tipName) {
 
@@ -3897,18 +4097,20 @@ void DocumentWidget::findDefinitionCalltip(TextArea *area, const QString &tipNam
 }
 
 /**
- * @brief DocumentWidget::findDefinition
- * @param area
- * @param tagName
+ * @brief Find a definition or tag in the document based on the specified area and tag name.
+ *
+ * @param area The text area in which to perform the search.
+ * @param tagName The name of the tag to search for.
  */
 void DocumentWidget::findDefinition(TextArea *area, const QString &tagName) {
 	findDefinitionHelper(area, tagName, Tags::SearchMode::TAG);
 }
 
 /**
- * @brief DocumentWidget::execAP
- * @param area
- * @param command
+ * @brief Execute a shell command in the context of the specified text area.
+ *
+ * @param area The text area in which to execute the command.
+ * @param command The shell command to execute.
  */
 void DocumentWidget::execAP(TextArea *area, const QString &command) {
 
@@ -3919,11 +4121,14 @@ void DocumentWidget::execAP(TextArea *area, const QString &command) {
 	executeShellCommand(area, command, CommandSource::User);
 }
 
-/*
-** Execute shell command "command", depositing the result at the current
-** insert position or in the current selection if the window has a
-** selection.
-*/
+/**
+ * @brief Execute a shell command in the context of the specified text area,
+ * depositing the result at the current cursor position or in the current selection.
+ *
+ * @param area The text area in which to execute the command.
+ * @param command The shell command to execute.
+ * @param source The source of the command.
+ */
 void DocumentWidget::executeShellCommand(TextArea *area, const QString &command, CommandSource source) {
 	MainWindow *win = MainWindow::fromDocument(this);
 	if (!win) {
@@ -3979,9 +4184,10 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
 }
 
 /**
- * @brief DocumentWidget::printWindow
- * @param area
- * @param selectedOnly
+ * @brief Print the contents of the specified text area.
+ *
+ * @param area The text area whose contents to print.
+ * @param selectedOnly If true, only print the selected text; otherwise, print the entire buffer.
  */
 void DocumentWidget::printWindow(TextArea *area, bool selectedOnly) {
 
@@ -4017,11 +4223,10 @@ void DocumentWidget::printWindow(TextArea *area, bool selectedOnly) {
 }
 
 /**
- * Print a string
+ * @brief Print a string
  *
- * @brief DocumentWidget::printString
- * @param string
- * @param jobname
+ * @param string The string to print.
+ * @param jobname The name of the print job.
  */
 void DocumentWidget::printString(const std::string &string, const QString &jobname) {
 
@@ -4035,7 +4240,7 @@ void DocumentWidget::printString(const std::string &string, const QString &jobna
 }
 
 /**
- * @brief DocumentWidget::splitPane
+ * @brief Split the current document pane into two panes.
  */
 void DocumentWidget::splitPane() {
 
@@ -4068,9 +4273,9 @@ void DocumentWidget::splitPane() {
 	area->setFocus();
 }
 
-/*
-** Close the window pane that last had the keyboard focus.
-*/
+/**
+ * @brief Close the window pane that last had the keyboard focus.
+ */
 void DocumentWidget::closePane() {
 
 	if (splitter_->count() <= 1) {
@@ -4102,15 +4307,16 @@ void DocumentWidget::closePane() {
 	delete panes.back();
 }
 
-/*
-** Turn on smart-indent (well almost).  Unfortunately, this doesn't do
-** everything.  It requires that the smart indent callback (SmartIndentCB)
-** is already attached to all of the text widgets in the window, and that the
-** smartIndent resource must be turned on in the widget.  These are done
-** separately, because they are required per-text widget, and therefore must
-** be repeated whenever a new text widget is created within this window
-** (a split-window command).
-*/
+/**
+ * @brief Turn on smart-indent (well almost). Unfortunately, this doesn't do
+ * everything. It requires that the smart indent callback is already attached
+ * to all of the text widgets in the window, and that the smartIndent resource
+ * must be turned on in the widget. These are done separately, because they are
+ * required per-text widget, and therefore must be repeated whenever a new text
+ * widget is created within this window (a split-window command).
+ *
+ * @param verbosity The verbosity level for messages during the smart indent setup.
+ */
 void DocumentWidget::beginSmartIndent(Verbosity verbosity) {
 
 	static bool initialized = false;
@@ -4189,9 +4395,11 @@ void DocumentWidget::beginSmartIndent(Verbosity verbosity) {
 }
 
 /**
- * @brief DocumentWidget::updateSignals
- * @param from
- * @param to
+ * @brief Update the signals connected to the MainWindow when this document is moved
+ * to a different MainWindow.
+ *
+ * @param from The MainWindow from which the document is being moved.
+ * @param to The MainWindow to which the document is being moved.
  */
 void DocumentWidget::updateSignals(MainWindow *from, MainWindow *to) {
 
@@ -4206,10 +4414,12 @@ void DocumentWidget::updateSignals(MainWindow *from, MainWindow *to) {
 	connect(this, &DocumentWidget::contextMenuRequested, to, &MainWindow::handleContextMenuEvent);
 }
 
-/*
-** present dialog for selecting a target window to move this document
-** into. Do nothing if there is only one shell window opened.
-*/
+/**
+ * @brief Present dialog for selecting a target window to move this document
+ * into. Do nothing if there is only one shell window opened.
+ *
+ * @param fromWindow The MainWindow from which the document is being moved.
+ */
 void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 
 	// all windows
@@ -4277,9 +4487,11 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 	}
 }
 
-/*
-** Turn on and off the display of the statistics line
-*/
+/**
+ * @brief Show or hide the statistics line in the document widget.
+ *
+ * @param state True to show the stats line, false to hide it.
+ */
 void DocumentWidget::showStatsLine(bool state) {
 
 	/* In continuous wrap mode, text widgets must be told to keep track of
@@ -4295,8 +4507,9 @@ void DocumentWidget::showStatsLine(bool state) {
 }
 
 /**
- * @brief DocumentWidget::setWrapMargin
- * @param margin
+ * @brief Set the wrap margin for all text areas in the document widget.
+ *
+ * @param margin The wrap margin to set, in characters.
  */
 void DocumentWidget::setWrapMargin(int margin) {
 	for (TextArea *area : textPanes()) {
@@ -4304,9 +4517,11 @@ void DocumentWidget::setWrapMargin(int margin) {
 	}
 }
 
-/*
-** Set the fonts for "window" from a font name, and updates the display.
-*/
+/**
+ * @brief Set the fonts for the document widget from a font name.
+ *
+ * @param fontName The name of the font to set for the document widget.
+ */
 void DocumentWidget::action_Set_Fonts(const QString &fontName) {
 
 	emit_event("set_fonts", fontName);
@@ -4327,9 +4542,11 @@ void DocumentWidget::action_Set_Fonts(const QString &fontName) {
 	Q_EMIT fontChanged(this);
 }
 
-/*
-** Set the backlight character class string
-*/
+/**
+ * @brief Set the backlight character types for the document widget.
+ *
+ * @param applyBacklightTypes The string containing the types of characters to backlight.
+ */
 void DocumentWidget::setBacklightChars(const QString &applyBacklightTypes) {
 
 	backlightChars_     = !applyBacklightTypes.isNull();
@@ -4341,24 +4558,27 @@ void DocumentWidget::setBacklightChars(const QString &applyBacklightTypes) {
 }
 
 /**
- * @brief DocumentWidget::backlightCharTypes
- * @return
+ * @brief Get the backlight character types for the document widget.
+ *
+ * @return A string containing the types of characters to backlight.
  */
 QString DocumentWidget::backlightCharTypes() const {
 	return backlightCharTypes_;
 }
 
 /**
- * @brief DocumentWidget::backlightChars
- * @return
+ * @brief Check if backlight characters is enabled in the document widget.
+ *
+ * @return True if backlight characters is enabled, false otherwise.
  */
 bool DocumentWidget::backlightChars() const {
 	return backlightChars_;
 }
 
 /**
- * @brief DocumentWidget::setShowStatisticsLine
- * @param value
+ * @brief Set whether to show the statistics line in the document widget.
+ *
+ * @param value True to show the stats line, false to hide it.
  */
 void DocumentWidget::setShowStatisticsLine(bool value) {
 
@@ -4374,24 +4594,27 @@ void DocumentWidget::setShowStatisticsLine(bool value) {
 }
 
 /**
- * @brief DocumentWidget::showStatisticsLine
- * @return
+ * @brief Check if the statistics line is currently shown in the document widget.
+ *
+ * @return True if the stats line is shown, false otherwise.
  */
 bool DocumentWidget::showStatisticsLine() const {
 	return showStats_;
 }
 
 /**
- * @brief DocumentWidget::matchSyntaxBased
- * @return
+ * @brief Check if syntax-based matching is enabled in the document widget.
+ *
+ * @return True if syntax-based matching is enabled, false otherwise.
  */
 bool DocumentWidget::matchSyntaxBased() const {
 	return info_->matchSyntaxBased;
 }
 
 /**
- * @brief DocumentWidget::setMatchSyntaxBased
- * @param value
+ * @brief Set whether to use syntax-based matching in the document widget.
+ *
+ * @param value True to enable syntax-based matching, false to disable it.
  */
 void DocumentWidget::setMatchSyntaxBased(bool value) {
 
@@ -4407,16 +4630,19 @@ void DocumentWidget::setMatchSyntaxBased(bool value) {
 }
 
 /**
- * @brief DocumentWidget::overstrike
- * @return
+ * @brief Check if the document widget is currently in overstrike mode.
+ *
+ * @return True if in overstrike mode, false if in insert mode.
  */
 bool DocumentWidget::overstrike() const {
 	return info_->overstrike;
 }
 
-/*
-** Set insert/overstrike mode
-*/
+/**
+ * @brief Set the overstrike mode for the document widget.
+ *
+ * @param overstrike True to enable overstrike mode, false to enable insert mode.
+ */
 void DocumentWidget::setOverstrike(bool overstrike) {
 
 	emit_event("set_overtype_mode", overstrike ? QLatin1String("1") : QLatin1String("0"));
@@ -4435,10 +4661,11 @@ void DocumentWidget::setOverstrike(bool overstrike) {
 }
 
 /**
- * @brief DocumentWidget::gotoAP
- * @param area
- * @param lineNum
- * @param column
+ * @brief Go to a specific line and column in the specified text area.
+ *
+ * @param area The text area in which to go to the specified line and column.
+ * @param lineNum The line number to go to. If -1, the current line is used.
+ * @param column The column number to go to. If -1, the current column is used.
  */
 void DocumentWidget::gotoAP(TextArea *area, int64_t line, int64_t column) {
 
@@ -4469,16 +4696,17 @@ void DocumentWidget::gotoAP(TextArea *area, int64_t line, int64_t column) {
 }
 
 /**
- * @brief DocumentWidget::setColors
- * @param textFg
- * @param textBg
- * @param selectFg
- * @param selectBg
- * @param hiliteFg
- * @param hiliteBg
- * @param lineNoFg
- * @param lineNoBg
- * @param cursorFg
+ * @brief Set the colors for various elements in the document widget.
+ *
+ * @param textFg The color for text foreground.
+ * @param textBg The color for text background.
+ * @param selectFg The color for selected text foreground.
+ * @param selectBg The color for selected text background.
+ * @param hiliteFg The color for highlighted text foreground.
+ * @param hiliteBg The color for highlighted text background.
+ * @param lineNoFg The color for line numbers foreground.
+ * @param lineNoBg The color for line numbers background.
+ * @param cursorFg The color for the cursor foreground.
  */
 void DocumentWidget::setColors(const QColor &textFg, const QColor &textBg, const QColor &selectFg, const QColor &selectBg, const QColor &hiliteFg, const QColor &hiliteBg, const QColor &lineNoFg, const QColor &lineNoBg, const QColor &cursorFg) {
 
@@ -4496,17 +4724,19 @@ void DocumentWidget::setColors(const QColor &textFg, const QColor &textBg, const
 }
 
 /**
- * @brief DocumentWidget::modeMessageDisplayed
- * @return
+ * @brief Check if a mode message is currently displayed in the stats line.
+ *
+ * @return True if a mode message is displayed, false otherwise.
  */
 bool DocumentWidget::modeMessageDisplayed() const {
 	return !modeMessage_.isNull();
 }
 
-/*
-** Display a special message in the stats line (show the stats line if it
-** is not currently shown).
-*/
+/**
+ * @brief Set a mode message in the stats line of the document widget.
+ *
+ * @param message The message to display in the stats line. If null, no message is set.
+ */
 void DocumentWidget::setModeMessage(const QString &message) {
 
 	if (message.isNull()) {
@@ -4526,10 +4756,9 @@ void DocumentWidget::setModeMessage(const QString &message) {
 	}
 }
 
-/*
-** Clear special statistics line message set in setModeMessage, returns
-** the statistics line to its original state as set in showStats_
-*/
+/**
+ * @brief Clear the mode message displayed in the stats line.
+ */
 void DocumentWidget::clearModeMessage() {
 
 	if (!modeMessageDisplayed()) {
@@ -4548,7 +4777,9 @@ void DocumentWidget::clearModeMessage() {
 	Q_EMIT updateStatus(this, nullptr);
 }
 
-// Decref the default calltips file(s) for this window
+/**
+ * @brief Unload the language mode tips file for the current language mode.
+ */
 void DocumentWidget::unloadLanguageModeTipsFile() {
 
 	const size_t mode = languageMode_;
@@ -4557,29 +4788,28 @@ void DocumentWidget::unloadLanguageModeTipsFile() {
 	}
 }
 
-/*
-** Issue a shell command and feed it the string "input".  Output can be
-** directed either to text widget "textW" where it replaces the text between
-** the positions "replaceLeft" and "replaceRight", to a separate pop-up dialog
-** (OUTPUT_TO_DIALOG), or to a macro-language string (OUTPUT_TO_STRING).  If
-** "input" is nullptr, no input is fed to the process.  If an input string is
-** provided, it is freed when the command completes.  Flags:
-**
-**   ACCUMULATE         Causes output from the command to be saved up until
-**                      the command completes.
-**   ERROR_DIALOGS      Presents stderr output separately in popup a dialog,
-**                      and also reports failed exit status as a popup dialog
-**                      including the command output.
-**   REPLACE_SELECTION  Causes output to replace the selection in textW.
-**   RELOAD_FILE_AFTER  Causes the file to be completely reloaded after the
-**                      command completes.
-**   OUTPUT_TO_DIALOG   Send output to a pop-up dialog instead of textW
-**   OUTPUT_TO_STRING   Output to a macro-language string instead of a text
-**                      widget or dialog.
-**
-** REPLACE_SELECTION, ERROR_DIALOGS, and OUTPUT_TO_STRING can only be used
-** along with ACCUMULATE (these operations can't be done incrementally).
-*/
+/**
+ * @brief Issue a shell command in the context of the specified text area.
+ *
+ * @param window The MainWindow in which to execute the command.
+ * @param area The text area in which to execute the command.
+ * @param command The shell command to execute.
+ * @param input The input string to feed to the command.
+ * @param flags Flags to control the behavior of the command execution. On of:
+ * 	   - ACCUMULATE: Accumulate output until the command completes.
+ * 	   - ERROR_DIALOGS: Show error dialogs for stderr output and failed exit status.
+ * 	   - REPLACE_SELECTION: Replace the current selection in the text area with the command output.
+ * 	   - RELOAD_FILE_AFTER: Reload the file after the command completes.
+ * 	   - OUTPUT_TO_DIALOG: Send output to a pop-up dialog instead of the text area.
+ * 	   - OUTPUT_TO_STRING: Output to a macro-language string instead of the text area or dialog.
+ *
+ * @param replaceLeft The left position in the text area to replace with the command output.
+ * @param replaceRight The right position in the text area to replace with the command output.
+ * @param source The source of the command (User, Macro, etc.).
+ *
+ * @note REPLACE_SELECTION, ERROR_DIALOGS, and OUTPUT_TO_STRING can only be used
+ * along with ACCUMULATE (these operations can't be done incrementally).
+ */
 void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QString &command, const QString &input, int flags, TextCursor replaceLeft, TextCursor replaceRight, CommandSource source) {
 
 	// verify consistency of input parameters
@@ -4684,13 +4914,14 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 	}
 }
 
-/*
-** Clean up after the execution of a shell command sub-process and present
-** the output/errors to the user as requested in the initial issueCommand
-** call.  If "terminatedOnError" is true, don't bother trying to read the
-** output, just close the i/o descriptors, free the memory, and restore the
-** user interface state.
-*/
+/**
+ * @brief Process the completion of a shell command execution.
+ * Cleans up after the shell command execution and presents the output/errors
+ * to the user as requested in the initial issueCommand call.
+ *
+ * @param exitCode The exit code of the process.
+ * @param exitStatus The exit status of the process.
+ */
 void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStatus) {
 
 	MainWindow *win = MainWindow::fromDocument(this);
@@ -4857,9 +5088,10 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 	}
 }
 
-/*
-** Cancel the shell command in progress
-*/
+/**
+ * @brief Abort the currently running shell command, if any.
+ *
+ */
 void DocumentWidget::abortShellCommand() {
 	if (shellCmdData_) {
 		if (QProcess *process = shellCmdData_->process) {
@@ -4868,10 +5100,13 @@ void DocumentWidget::abortShellCommand() {
 	}
 }
 
-/*
-** Execute the line of text where the the insertion cursor is positioned
-** as a shell command.
-*/
+/**
+ * @brief Execute the line of text where the insertion cursor is positioned
+ * as a shell command.
+ *
+ * @param area The text area in which to execute the command.
+ * @param source The source of the command (User, Macro, etc.).
+ */
 void DocumentWidget::execCursorLine(TextArea *area, CommandSource source) {
 
 	MainWindow *win = MainWindow::fromDocument(this);
@@ -4931,11 +5166,13 @@ void DocumentWidget::execCursorLine(TextArea *area, CommandSource source) {
 		source);
 }
 
-/*
-** Filter the current selection through shell command "command".  The selection
-** is removed, and replaced by the output from the command execution.  Failed
-** command status and output to stderr are presented in dialog form.
-*/
+/**
+ * @brief Filter the current selection through a shell command. The selection
+ * is removed, and replaced by the output from the command execution.
+ *
+ * @param command The shell command to execute on the selection.
+ * @param source The source of the command (User, Macro, etc.).
+ */
 void DocumentWidget::filterSelection(const QString &command, CommandSource source) {
 
 	if (checkReadOnly()) {
@@ -4975,11 +5212,14 @@ void DocumentWidget::filterSelection(const QString &command, CommandSource sourc
 		source);
 }
 
-/*
-** Do a shell command, with the options allowed to users (input source,
-** output destination, save first and load after) in the shell commands
-** menu.
-*/
+/**
+ * @brief Execute a shell command from the shell menu.
+ *
+ * @param inWindow The MainWindow in which to execute the command.
+ * @param area The text area in which to execute the command.
+ * @param item The menu item containing the command and its options.
+ * @param source The source of the command (User, Macro, etc.).
+ */
 void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const MenuItem &item, CommandSource source) {
 	doShellMenuCmd(
 		inWindow,
@@ -4993,6 +5233,19 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 		source);
 }
 
+/**
+ * @brief Execute a shell command from the shell menu.
+ *
+ * @param inWindow The MainWindow in which to execute the command.
+ * @param area The text area in which to execute the command.
+ * @param command The shell command to execute.
+ * @param input The input source for the command execution.
+ * @param output The output destination for the command execution.
+ * @param outputReplacesInput If true, the output will replace the input in the text area.
+ * @param saveFirst If true, the document will be saved before executing the command.
+ * @param loadAfter If true, the document will be reloaded after executing the command.
+ * @param source The source of the command (User, Macro, etc.).
+ */
 void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, CommandSource source) {
 
 	int flags = 0;
@@ -5118,18 +5371,21 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 }
 
 /**
- * @brief DocumentWidget::widgetToPaneIndex
- * @param area
- * @return
+ * @brief Convert a TextArea pointer to its index in the splitter.
+ *
+ * @param area The TextArea whose index in the splitter is to be found.
+ * @return The index of the TextArea in the splitter, or -1 if not found.
  */
 int DocumentWidget::widgetToPaneIndex(TextArea *area) const {
 	return splitter_->indexOf(area);
 }
 
-/*
-** Execute shell command "command", on input string "input", depositing the
-** in a macro string (via a call back to ReturnShellCommandOutput).
-*/
+/**
+ * @brief Execute a shell command and return its output as a macro string.
+ *
+ * @param command The shell command to execute.
+ * @param input The input string to feed to the command.
+ */
 void DocumentWidget::shellCmdToMacroString(const QString &command, const QString &input) {
 
 	MainWindow *win = MainWindow::fromDocument(this);
@@ -5149,9 +5405,11 @@ void DocumentWidget::shellCmdToMacroString(const QString &command, const QString
 		CommandSource::Macro);
 }
 
-/*
-** Set the auto-scroll margin
-*/
+/**
+ * @brief Set the auto-scroll margin for the document widget.
+ *
+ * @param margin The margin in pixels to set for auto-scrolling.
+ */
 void DocumentWidget::setAutoScroll(int margin) {
 
 	for (TextArea *area : textPanes()) {
@@ -5160,8 +5418,9 @@ void DocumentWidget::setAutoScroll(int margin) {
 }
 
 /**
- * @brief DocumentWidget::repeatMacro
- * @param macro
+ * @brief executes a repeat macro string for a given command.
+ *
+ * @param macro The macro command to repeat.
  * @param how REPEAT_IN_SEL, REPEAT_TO_END or a non-negative integer value
  *
  * Dispatches a macro to which repeats macro command in "command", either
@@ -5169,7 +5428,7 @@ void DocumentWidget::setAutoScroll(int margin) {
  * selected range ("how" == REPEAT_IN_SEL), or to the end of the window
  * ("how" == REPEAT_TO_END).
  *
- * Note that as with most macro routines, this returns BEFORE the macro is
+ * @note that as with most macro routines, this returns BEFORE the macro is
  * finished executing
  */
 void DocumentWidget::repeatMacro(const QString &macro, int how) {
@@ -5197,8 +5456,9 @@ void DocumentWidget::repeatMacro(const QString &macro, int how) {
 }
 
 /**
- * @brief DocumentWidget::allDocuments
- * @return
+ * @brief Get a list of all open DocumentWidget instances across all MainWindow instances.
+ *
+ * @return A vector containing pointers to all open DocumentWidget instances.
  */
 std::vector<DocumentWidget *> DocumentWidget::allDocuments() {
 	const std::vector<MainWindow *> windows = MainWindow::allWindows();
@@ -5216,7 +5476,7 @@ std::vector<DocumentWidget *> DocumentWidget::allDocuments() {
 }
 
 /**
- * @brief DocumentWidget::beginLearn
+ * @brief Begin the learn mode for the document widget.
  */
 void DocumentWidget::beginLearn() {
 
@@ -5261,10 +5521,14 @@ void DocumentWidget::beginLearn() {
 	}
 }
 
-/*
-** Read an NEdit macro file.  Extends the syntax of the macro parser with
-** define keyword, and allows intermixing of defines with immediate actions.
-*/
+/**
+ * @brief Read a macro file and parse its contents.
+ * Extends the syntax of the macro parser with a define keyword,
+ * and allows intermixing of defines with immediate actions.
+ *
+ * @param fileName The name of the macro file to read.
+ * @param warnNotExist If true, show a warning message if the file does not exist.
+ */
 void DocumentWidget::readMacroFile(const QString &fileName, bool warnNotExist) {
 
 	/* read-in macro file and force a terminating \n, to prevent syntax
@@ -5284,11 +5548,11 @@ void DocumentWidget::readMacroFile(const QString &fileName, bool warnNotExist) {
 	readCheckMacroString(this, text, this, fileName, nullptr);
 }
 
-/*
-** Run a pre-compiled macro, changing the interface state to reflect that
-** a macro is running, and handling preemption, resumption, and cancellation.
-** frees prog when macro execution is complete;
-*/
+/**
+ * @brief Run a macro program in the context of the document widget.
+ *
+ * @param prog The pre-compiled macro program to run.
+ */
 void DocumentWidget::runMacro(Program *prog) {
 
 	/* If a macro is already running, just call the program as a subroutine,
@@ -5344,10 +5608,10 @@ void DocumentWidget::runMacro(Program *prog) {
 	}
 }
 
-/*
-** Clean up after the execution of a macro command: free memory, and restore
-** the user interface state.
-*/
+/**
+ * @brief Cleans up after macro command execution.
+ *
+ */
 void DocumentWidget::finishMacroCmdExecution() {
 
 	const bool closeOnCompletion = macroCmdData_->closeOnCompletion;
@@ -5381,8 +5645,10 @@ void DocumentWidget::finishMacroCmdExecution() {
 }
 
 /**
- * @brief DocumentWidget::continueWorkProcEx
- * @return
+ * @brief Continue executing a macro command after a preemption.
+ *
+ * @return MacroContinuationCode::Continue if the macro should continue,
+ *         MacroContinuationCode::Stop if the macro should stop.
  */
 DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProc() {
 
@@ -5413,11 +5679,11 @@ DocumentWidget::MacroContinuationCode DocumentWidget::continueWorkProc() {
 	return MacroContinuationCode::Stop;
 }
 
-/*
-** Continue with macro execution after preemption.  Called by the routines
-** whose actions cause preemption when they have completed their lengthy tasks.
-** Re-establishes macro execution work proc.
-*/
+/**
+ * @brief Resume macro execution after a preemption. Called by the
+ * routines whose actions cause preemption when they have completed their
+ * lengthy tasks. Re-establishes macro execution work proc.
+ */
 void DocumentWidget::resumeMacroExecution() {
 
 	if (const std::shared_ptr<MacroCommandData> cmdData = macroCmdData_) {
@@ -5436,12 +5702,14 @@ void DocumentWidget::resumeMacroExecution() {
 	}
 }
 
-/*
-** Check the character before the insertion cursor of textW and flash
-** matching parenthesis, brackets, or braces, by temporarily highlighting
-** the matching character (a timer procedure is scheduled for removing the
-** highlights)
-*/
+/**
+ * @brief Check the character before the insertion cursor of area and flash
+ * matching parenthesis, brackets, or braces, by temporarily highlighting
+ * the matching character (a timer procedure is scheduled for removing the
+ * highlights)
+ *
+ * @param area The TextArea in which to flash the matching character.
+ */
 void DocumentWidget::flashMatchingChar(TextArea *area) {
 
 	// if a marker is already drawn, erase it and cancel the timeout
@@ -5518,18 +5786,18 @@ void DocumentWidget::flashMatchingChar(TextArea *area) {
 	flashTimer_->start();
 }
 
-/*
-** Erase the marker drawn on a matching parenthesis bracket or brace
-** character.
-*/
+/**
+ * @brief Erase the marker drawn on a matching parenthesis bracket or brace
+ * character.
+ */
 void DocumentWidget::eraseFlash() {
 	info_->buffer->BufUnhighlight();
 }
 
-/*
-** Find the pattern set matching the window's current language mode, or
-** tell the user if it can't be done (if warn is true) and return nullptr.
-*/
+/**
+ * @brief Find the pattern set matching the window's current language mode, or
+ * tell the user if it can't be done (based on verbosity) and return nullptr.
+ */
 PatternSet *DocumentWidget::findPatternsForWindow(Verbosity verbosity) {
 
 	// Find the window's language mode.  If none is set, warn user
@@ -5568,10 +5836,9 @@ PatternSet *DocumentWidget::findPatternsForWindow(Verbosity verbosity) {
 	return patterns;
 }
 
-/*
-** Free highlighting data from a window destined for destruction, without
-** re-displaying.
-*/
+/**
+ * @brief Free the highlighting data associated with the document widget.
+ */
 void DocumentWidget::freeHighlightingData() {
 
 	if (!highlightData_) {
@@ -5587,10 +5854,10 @@ void DocumentWidget::freeHighlightingData() {
 	}
 }
 
-/*
-** Change highlight fonts and/or styles in a highlighted window, without
-** re-parsing.
-*/
+/**
+ * @brief Update the highlight styles in the document widget.
+ *
+ */
 void DocumentWidget::updateHighlightStyles() {
 
 	std::unique_ptr<WindowHighlightData> &oldHighlightData = highlightData_;
@@ -5628,9 +5895,12 @@ void DocumentWidget::updateHighlightStyles() {
 	}
 }
 
-/*
-** Find the HighlightPattern structure with a given name in the window.
-*/
+/**
+ * @brief Find a HighlightPattern by name in the window's highlight data.
+ *
+ * @param name The name of the HighlightPattern to find.
+ * @return A pointer to the HighlightPattern if found, or nullptr if not found.
+ */
 HighlightPattern *DocumentWidget::findPatternOfWindow(const QString &name) const {
 
 	if (const std::unique_ptr<WindowHighlightData> &hData = highlightData_) {
@@ -5647,9 +5917,11 @@ HighlightPattern *DocumentWidget::findPatternOfWindow(const QString &name) const
 }
 
 /**
- * @brief DocumentWidget::highlightBGColorOfCode
- * @param hCode
- * @return
+ * @brief Get the background color for highlighting of a given highlight code.
+ *
+ * @param hCode The highlight code for which to get the background color.
+ * @return The background color for the highlight code, or the background color
+ * of the first text widget if no specific color is set.
  */
 QColor DocumentWidget::highlightBGColorOfCode(size_t hCode) const {
 	StyleTableEntry *entry = styleTableEntryOfCode(hCode);
@@ -5662,16 +5934,14 @@ QColor DocumentWidget::highlightBGColorOfCode(size_t hCode) const {
 	return firstPane()->getBackgroundColor();
 }
 
-/*
-** Returns the highlight style of the character at a given position of a
-** window. To avoid breaking encapsulation, the highlight style is converted
-** to a Style object (no other module has to know that characters are used
-** to represent highlight styles; that would complicate future extensions).
-** Returns Style() if the window has highlighting turned off.
-** The only guarantee that this function offers, is that when the same
-** value is returned for two positions, the corresponding characters have
-** the same highlight style.
-**/
+/**
+ * @brief Returns the highlight style of the character at a given position of a
+ * window.
+ *
+ * @param pos The position in the text buffer for which to get the highlight style.
+ * @return A Style object representing the highlight style at the position. Style()
+ * if no highlight data is available or if the style is not found.
+ */
 Style DocumentWidget::getHighlightInfo(TextCursor pos) {
 
 	HighlightData *pattern                                    = nullptr;
@@ -5704,11 +5974,14 @@ Style DocumentWidget::getHighlightInfo(TextCursor pos) {
 	return Style(pattern->userStyleIndex);
 }
 
-/*
-** Returns the length over which a particular style applies, starting at pos.
-** If the initial code value *checkCode is zero, the highlight code of pos
-** is used.
-*/
+/**
+ * @brief Returns the length over which a particular style applies, starting
+ * at pos. If the initial code value checkCode is zero, the highlight code
+ * of pos is used.
+ *
+ * @param pos The position in the text buffer from which to start checking the style.
+ * @return The length in characters over which the style applies, or 0 if no style is found.
+ */
 int64_t DocumentWidget::styleLengthOfCodeFromPos(TextCursor pos) const {
 
 	const TextCursor oldPos = pos;
@@ -5750,9 +6023,12 @@ int64_t DocumentWidget::styleLengthOfCodeFromPos(TextCursor pos) const {
 	return pos - oldPos;
 }
 
-/*
-** Functions to return style information from the highlighting style table.
-*/
+/**
+ * @brief Returns the highlight name of a given highlight code.
+ *
+ * @param hCode The highlight code for which to get the name.
+ * @return The highlight name as a QString, or an empty QString if no entry is found.
+ */
 QString DocumentWidget::highlightNameOfCode(size_t hCode) const {
 	if (StyleTableEntry *entry = styleTableEntryOfCode(hCode)) {
 		return entry->highlightName;
@@ -5761,6 +6037,12 @@ QString DocumentWidget::highlightNameOfCode(size_t hCode) const {
 	return QString();
 }
 
+/**
+ * @brief Returns the highlight style name of a given highlight code.
+ *
+ * @param hCode The highlight code for which to get the style name.
+ * @return The highlight style name as a QString, or an empty QString if no entry is found.
+ */
 QString DocumentWidget::highlightStyleOfCode(size_t hCode) const {
 	if (StyleTableEntry *entry = styleTableEntryOfCode(hCode)) {
 		return entry->styleName;
@@ -5769,6 +6051,12 @@ QString DocumentWidget::highlightStyleOfCode(size_t hCode) const {
 	return QString();
 }
 
+/**
+ * @brief Returns the highlight color value of a given highlight code.
+ *
+ * @param hCode The highlight code for which to get the color value.
+ * @return The highlight color as a QColor, or the foreground color of the first text widget if no entry is found.
+ */
 QColor DocumentWidget::highlightColorValueOfCode(size_t hCode) const {
 	if (StyleTableEntry *entry = styleTableEntryOfCode(hCode)) {
 		return entry->color;
@@ -5778,10 +6066,12 @@ QColor DocumentWidget::highlightColorValueOfCode(size_t hCode) const {
 	return firstPane()->getForegroundColor();
 }
 
-/*
-** Returns a pointer to the entry in the style table for the entry of code
-** hCode (if any).
-*/
+/**
+ * @brief Get the StyleTableEntry for a given highlight code.
+ *
+ * @param hCode The highlight code for which to get the StyleTableEntry.
+ * @return A pointer to the StyleTableEntry if found, or nullptr if not found.
+ */
 StyleTableEntry *DocumentWidget::styleTableEntryOfCode(size_t hCode) const {
 	const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
 
@@ -5793,10 +6083,12 @@ StyleTableEntry *DocumentWidget::styleTableEntryOfCode(size_t hCode) const {
 	return &highlightData->styleTable[hCode];
 }
 
-/*
-** Picks up the entry in the style buffer for the position (if any).
-** Returns the style code or zero.
-*/
+/**
+ * @brief Get the highlight code for a given position in the text buffer.
+ *
+ * @param pos The position in the text buffer for which to get the highlight code.
+ * @return The highlight code as a size_t, or 0 if no highlight data is available
+ */
 size_t DocumentWidget::highlightCodeOfPos(TextCursor pos) const {
 
 	size_t hCode = 0;
@@ -5816,10 +6108,13 @@ size_t DocumentWidget::highlightCodeOfPos(TextCursor pos) const {
 	return hCode;
 }
 
-/*
-** Returns the length over which a particular highlight code applies, starting
-** at pos.
-*/
+/**
+ * @brief Returns the length over which a particular highlight code applies,
+ * starting at pos.
+ *
+ * @param pos The position in the text buffer from which to start checking the highlight code.
+ * @return The length in characters over which the highlight code applies, or 0 if no highlight code is found.
+ */
 int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
 
 	const TextCursor oldPos = pos;
@@ -5860,15 +6155,16 @@ int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
 	return pos - oldPos;
 }
 
-/*
-** Callback to parse an "unfinished" region of the buffer.  "unfinished" means
-** that the buffer has been parsed with pass 1 patterns, but this section has
-** not yet been exposed, and thus never had pass 2 patterns applied.  This
-** callback is invoked when the text widget's display routines encounter one
-** of these unfinished regions.  "pos" is the first position encountered which
-** needs re-parsing.  This routine applies pass 2 patterns to a chunk of
-** the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
-*/
+/**
+ * @brief Callback to parse an "unfinished" region of the buffer. "unfinished" means
+ * that the buffer has been parsed with pass 1 patterns, but this section has
+ * not yet been exposed, and thus never had pass 2 patterns applied.  This
+ * callback is invoked when the text widget's display routines encounter one
+ * of these unfinished regions. This routine applies pass 2 patterns to a chunk of
+ * the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
+ * @param styleBuf The style buffer to update with the new styles.
+ * @param pos the first position encountered which needs re-parsing.
+ */
 void DocumentWidget::handleUnparsedRegion(UTextBuffer *styleBuf, TextCursor pos) const {
 	TextBuffer *buf                                           = info_->buffer.get();
 	const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
@@ -5956,18 +6252,23 @@ void DocumentWidget::handleUnparsedRegion(UTextBuffer *styleBuf, TextCursor pos)
 }
 
 /**
- * @brief DocumentWidget::handleUnparsedRegion
- * @param styleBuf
- * @param pos
+ * @brief Handle an unparsed region in the style buffer.
+ *
+ * @param styleBuf The style buffer to update with the new styles.
+ * @param pos The position in the text buffer where the unparsed region starts.
+ * This is a convenience overload that calls the main handleUnparsedRegion
  */
 void DocumentWidget::handleUnparsedRegion(const std::shared_ptr<UTextBuffer> &styleBuf, TextCursor pos) const {
 	handleUnparsedRegion(styleBuf.get(), pos);
 }
 
-/*
-** Turn on syntax highlighting.  If "warn" is true, warn the user when it
-** can't be done, otherwise, just return.
-*/
+/**
+ * @brief Start syntax highlighting for the document widget.
+ *
+ * @param verbosity The verbosity level for warnings and messages.
+ * If Verbosity::Silent, no warnings will be shown if highlighting cannot be started.
+ * If Verbosity::Verbose, warnings will be shown if highlighting cannot be started.
+ */
 void DocumentWidget::startHighlighting(Verbosity verbosity) {
 
 	/* Find the pattern set matching the window's current
@@ -6025,10 +6326,11 @@ void DocumentWidget::startHighlighting(Verbosity verbosity) {
 	setCursor(prevCursor);
 }
 
-/*
-** Attach style information from a window's highlight data to a
-** text widget and redisplay.
-*/
+/**
+ * @brief Attach syntax highlighting information to a TextArea widget.
+ *
+ * @param area The TextArea widget to which the highlight data should be attached.
+ */
 void DocumentWidget::attachHighlightToWidget(TextArea *area) {
 	if (const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_) {
 		area->attachHighlightData(
@@ -6040,11 +6342,13 @@ void DocumentWidget::attachHighlightToWidget(TextArea *area) {
 	}
 }
 
-/*
-** Create complete syntax highlighting information from "patternSrc", using
-** highlighting fonts from "window", includes pattern compilation.  If errors
-** are encountered, warns user with a dialog and returns nullptr.
-*/
+/**
+ * @brief Create highlight data for the document widget based on the provided pattern set.
+ *
+ * @param patternSet The PatternSet containing the highlight patterns to use.
+ * @param verbosity The verbosity level for warnings and messages.
+ * @return The compiled highlight data,
+ */
 std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(PatternSet *patternSet, Verbosity verbosity) {
 
 	std::vector<HighlightPattern> &patterns = patternSet->patterns;
@@ -6277,11 +6581,13 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	return highlightData;
 }
 
-/*
-** Transform pattern sources into the compiled highlight information
-** actually used by the code.  Output is a tree of HighlightData structures
-** containing compiled regular expressions and style information.
-*/
+/**
+ * @brief Compile the highlight patterns into HighlightData structures.
+ *
+ * @param patternSrc The source patterns to compile.
+ * @param verbosity The verbosity level for warnings and messages.
+ * @return An array of HighlightData structures containing the compiled patterns.
+ */
 std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vector<HighlightPattern> &patternSrc, Verbosity verbosity) {
 
 	/* Allocate memory for the compiled patterns.  The list is terminated
@@ -6497,9 +6803,12 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 	return compiledPats;
 }
 
-/*
-** compile a regular expression and present a user friendly dialog on failure.
-*/
+/**
+ * @brief Compile a regular expression and show a warning dialog if it fails.
+ *
+ * @param re The regular expression to compile.
+ * @return The compiled regular expression.
+ */
 std::unique_ptr<Regex> DocumentWidget::compileRegexAndWarn(const QString &re) {
 
 	try {
@@ -6524,16 +6833,18 @@ std::unique_ptr<Regex> DocumentWidget::compileRegexAndWarn(const QString &re) {
 	}
 }
 
-/*
-** Call this before closing a window, to clean up macro references to the
-** window, stop any macro which might be running from it, free associated
-** memory, and check that a macro is not attempting to close the window from
-** which it is run.  If this is being called from a macro, and the window
-** this routine is examining is the window from which the macro was run, this
-** routine will return false, and the caller must NOT CLOSE THE WINDOW.
-** Instead, empty it and make it Untitled, and let the macro completion
-** process close the window when the macro is finished executing.
-*/
+/**
+ * @brief Call this before closing a window, to clean up macro references to the
+ * window, stop any macro which might be running from it, free associated
+ * memory, and check that a macro is not attempting to close the window from
+ * which it is run.
+ *
+ * @return true if the window can be closed, false if it is running a macro
+ * and the macro is trying to close the window.
+ * If false is returned, the caller should not close the window, but instead
+ * empty it and make it Untitled, and let the macro completion process close
+ * the window when the macro is finished executing.
+ */
 bool DocumentWidget::macroWindowCloseActions() {
 	const std::shared_ptr<MacroCommandData> cmdData = macroCmdData_;
 
@@ -6575,9 +6886,9 @@ bool DocumentWidget::macroWindowCloseActions() {
 	return true;
 }
 
-/*
-** Cancel the macro command in progress (user cancellation via GUI)
-*/
+/**
+ * @brief Abort the macro command currently executing in this document widget.
+ */
 void DocumentWidget::abortMacroCommand() {
 	if (!macroCmdData_) {
 		return;
@@ -6595,9 +6906,9 @@ void DocumentWidget::abortMacroCommand() {
 	finishMacroCmdExecution();
 }
 
-/*
-** Cancel Learn mode, or macro execution (they're bound to the same menu item)
-*/
+/**
+ * @brief Cancel the current macro or learning operation.
+ */
 void DocumentWidget::cancelMacroOrLearn() {
 	if (CommandRecorder::instance()->isRecording()) {
 		cancelLearning();
@@ -6606,9 +6917,9 @@ void DocumentWidget::cancelMacroOrLearn() {
 	}
 }
 
-/*
-** Execute the learn/replay sequence
-*/
+/**
+ * @brief Replay the last recorded macro.
+ */
 void DocumentWidget::replay() {
 
 	const QString replayMacro = CommandRecorder::instance()->replayMacro();
@@ -6630,6 +6941,9 @@ void DocumentWidget::replay() {
 	}
 }
 
+/**
+ * @brief Cancel the current learning operation.
+ */
 void DocumentWidget::cancelLearning() {
 
 	if (!CommandRecorder::instance()->isRecording()) {
@@ -6653,6 +6967,9 @@ void DocumentWidget::cancelLearning() {
 	document->clearModeMessage();
 }
 
+/**
+ * @brief Finished the current learning operation.
+ */
 void DocumentWidget::finishLearning() {
 
 	if (!CommandRecorder::instance()->isRecording()) {
@@ -6679,11 +6996,12 @@ void DocumentWidget::finishLearning() {
 	document->clearModeMessage();
 }
 
-/*
-** Executes macro string "macro" using the lastFocus pane in this document.
-** Reports errors via a dialog, integrating the name "errInName" into the
-** message to help identify the source of the error.
-*/
+/**
+ * @brief Execute a macro string in the context of this document widget.
+ *
+ * @param macro The macro string to execute.
+ * @param errInName A string indicating where the error occurred, used for error reporting.
+ */
 void DocumentWidget::doMacro(const QString &macro, const QString &errInName) {
 
 	/* Add a terminating newline (which command line users are likely to omit
@@ -6703,9 +7021,9 @@ void DocumentWidget::doMacro(const QString &macro, const QString &errInName) {
 	runMacro(prog);
 }
 
-/*
-**  Read the initial NEdit macro file if one exists.
-*/
+/**
+ * @brief Read the initial macro file specified in the settings.
+ */
 void DocumentWidget::readMacroInitFile() {
 
 	static bool initFileLoaded = false;
@@ -6722,16 +7040,19 @@ void DocumentWidget::readMacroInitFile() {
 	}
 }
 
-/*
-** Parse and execute a macro string including macro definitions.  Report
-** parsing errors in a dialog.
-*/
+/**
+ * @brief Read a macro string and execute it, checking for errors.
+ *
+ * @param string The macro string to read and execute.
+ * @param errIn A string indicating where the error occurred, used for error reporting.
+ * @return true if the macro string was read and executed successfully, false if there was an error.
+ */
 bool DocumentWidget::readMacroString(const QString &string, const QString &errIn) {
 	return readCheckMacroString(this, string, this, errIn, nullptr);
 }
 
 /**
- * @brief DocumentWidget::endSmartIndent
+ * @brief End a smart indent operation.
  */
 void DocumentWidget::endSmartIndent() {
 
@@ -6743,25 +7064,30 @@ void DocumentWidget::endSmartIndent() {
 }
 
 /**
- * @brief DocumentWidget::inSmartIndentMacros
- * @return
+ * @brief Check if the current smart indent operation is in a macro.
+ *
+ * @return true if the smart indent operation is in a macro, false otherwise.
  */
 bool DocumentWidget::inSmartIndentMacros() const {
 	return info_->smartIndentData && (info_->smartIndentData->inModMacro || info_->smartIndentData->inNewLineMacro);
 }
 
 /**
- * @brief DocumentWidget::getAnySelection
- * @return
+ * @brief Get the current selection from the clipboard or the buffer.
+ *
+ * @return The current selection as a QString.
+ * If no selection is available, returns an empty QString.
  */
 QString DocumentWidget::getAnySelection() const {
 	return getAnySelection(ErrorSound::Silent);
 }
 
 /**
- * @brief DocumentWidget::GetAnySelection
- * @param errorSound
- * @return
+ * @brief Get the current selection from the clipboard or the buffer.
+ *
+ * @param errorSound Whether to play an error sound if no selection is available.
+ * @return The current selection as a QString.
+ * If no selection is available, returns an empty QString.
  */
 QString DocumentWidget::getAnySelection(ErrorSound errorSound) const {
 
@@ -6784,14 +7110,17 @@ QString DocumentWidget::getAnySelection(ErrorSound errorSound) const {
 	return QString();
 }
 
-/*
-** Get the set of word delimiters for the language mode set in the current
-** window.  Returns nullptr when no language mode is set (it would be easy to
-** return the default delimiter set when the current language mode is "Plain",
-** or the mode doesn't have its own delimiters, but this is usually used
-** to supply delimiters for RE searching, and the regex engine can skip
-** compiling a delimiter table when delimiters is null).
-*/
+/**
+ * @brief Get the set of word delimiters for the language mode set in the current
+ * window.
+ *
+ * @return QString containing the delimiters.
+ *
+ * @note it would be easy to return the default delimiter set when the
+ * current language mode is "Plain", or the mode doesn't have its own
+ * delimiters, but this is usually used to supply delimiters for RE searching,
+ * and the regex engine can skip compiling a delimiter table when delimiters is null.
+ */
 QString DocumentWidget::getWindowDelimiters() const {
 	if (languageMode_ == PLAIN_LANGUAGE_MODE) {
 		return QString();
@@ -6801,16 +7130,18 @@ QString DocumentWidget::getWindowDelimiters() const {
 }
 
 /**
- * @brief DocumentWidget::useTabs
- * @return
+ * @brief Check if the document uses tabs for indentation.
+ *
+ * @return true if tabs are used for indentation, false otherwise.
  */
 bool DocumentWidget::useTabs() const {
 	return info_->buffer->BufGetUseTabs();
 }
 
 /**
- * @brief DocumentWidget::setUseTabs
- * @param value
+ * @brief Set whether the document should use tabs for indentation.
+ *
+ * @param value true to use tabs, false to use spaces for indentation.
  */
 void DocumentWidget::setUseTabs(bool value) {
 
@@ -6819,16 +7150,18 @@ void DocumentWidget::setUseTabs(bool value) {
 }
 
 /**
- * @brief DocumentWidget::highlightSyntax
- * @return
+ * @brief Check if syntax highlighting is enabled for the document.
+ *
+ * @return true if syntax highlighting is enabled, false otherwise.
  */
 bool DocumentWidget::highlightSyntax() const {
 	return highlightSyntax_;
 }
 
 /**
- * @brief DocumentWidget::setHighlightSyntax
- * @param value
+ * @brief Set whether syntax highlighting should be enabled for the document.
+ *
+ * @param value true to enable syntax highlighting, false to disable it.
  */
 void DocumentWidget::setHighlightSyntax(bool value) {
 
@@ -6850,16 +7183,18 @@ void DocumentWidget::setHighlightSyntax(bool value) {
 }
 
 /**
- * @brief DocumentWidget::makeBackupCopy
- * @return
+ * @brief Check if a backup copy should be made when saving the document.
+ *
+ * @return true if a backup copy should be made, false otherwise.
  */
 bool DocumentWidget::makeBackupCopy() const {
 	return info_->saveOldVersion;
 }
 
 /**
- * @brief DocumentWidget::setMakeBackupCopy
- * @param value
+ * @brief Set whether a backup copy should be made when saving the document.
+ *
+ * @param value true to make a backup copy, false otherwise.
  */
 void DocumentWidget::setMakeBackupCopy(bool value) {
 
@@ -6875,16 +7210,18 @@ void DocumentWidget::setMakeBackupCopy(bool value) {
 }
 
 /**
- * @brief DocumentWidget::incrementalBackup
- * @return
+ * @brief Check if incremental backup (auto-save) is enabled for the document.
+ *
+ * @return true if incremental backup is enabled, false otherwise.
  */
 bool DocumentWidget::incrementalBackup() const {
 	return info_->autoSave;
 }
 
 /**
- * @brief DocumentWidget::setIncrementalBackup
- * @param value
+ * @brief Set whether incremental backup (auto-save) should be enabled for the document.
+ *
+ * @param value true to enable incremental backup, false to disable it.
  */
 void DocumentWidget::setIncrementalBackup(bool value) {
 
@@ -6905,13 +7242,19 @@ void DocumentWidget::setIncrementalBackup(bool value) {
 }
 
 /**
- * @brief DocumentWidget::userLocked
- * @return
+ * @brief Check if the document is locked by the user.
+ *
+ * @return true if the document is user-locked, false otherwise.
  */
 bool DocumentWidget::userLocked() const {
 	return info_->lockReasons.isUserLocked();
 }
 
+/**
+ * @brief Set whether the document should be locked by the user.
+ *
+ * @param value true to lock the document, false to unlock it.
+ */
 void DocumentWidget::setUserLocked(bool value) {
 	emit_event("set_locked", QString::number(value));
 
@@ -6932,9 +7275,10 @@ void DocumentWidget::setUserLocked(bool value) {
 }
 
 /**
- * @brief DocumentWidget::addMark
- * @param area
- * @param label
+ * @brief Add a mark to the specified text area with the given label.
+ *
+ * @param area The text area to which the mark should be added.
+ * @param label The label for the mark, which should be a single character.
  */
 void DocumentWidget::addMark(TextArea *area, QChar label) {
 
@@ -6957,6 +7301,12 @@ void DocumentWidget::addMark(TextArea *area, QChar label) {
 	}
 }
 
+/**
+ * @brief Select a numbered line in the specified text area.
+ *
+ * @param area The text area in which to select the line.
+ * @param lineNum The line number to select, starting from 1.
+ */
 void DocumentWidget::selectNumberedLine(TextArea *area, int64_t lineNum) {
 	int i;
 	TextCursor lineStart = {};
@@ -6994,6 +7344,13 @@ void DocumentWidget::selectNumberedLine(TextArea *area, int64_t lineNum) {
 	area->TextSetCursorPos(lineStart);
 }
 
+/**
+ * @brief Go to a marked position in the specified text area.
+ *
+ * @param area The text area in which to go to the mark.
+ * @param label The label of the mark to go to, which should be a single character.
+ * @param extendSel If true, extend the current selection to include the marked position.
+ */
 void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
 
 	// look up the mark in the mark table
@@ -7044,16 +7401,21 @@ void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
 }
 
 /**
- * @brief DocumentWidget::lockReasons
- * @return
+ * @brief Get the lock reasons for the document.
+ *
+ * @return The reasons why the document is locked, such as user lock, read-only mode, etc.
  */
 LockReasons DocumentWidget::lockReasons() const {
 	return info_->lockReasons;
 }
 
-/*      Finds all matches and handles tag "collisions". Prompts user with a
-		list of collided tags in the hash table and allows the user to select
-		the correct one. */
+/**
+ * @brief Find all matches for a given string in the specified text area.
+ *
+ * @param area The text area in which to search for matches.
+ * @param string The string to search for in the text area.
+ * @return The number of matches found, or -1 if the string is empty.
+ */
 int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 
 	int i;
@@ -7195,11 +7557,10 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 }
 
 /**
- * @brief DocumentWidget::createSelectMenuEx
- * @param area
- * @param args
+ * @brief Create a menu for user to select from the collided tags
  *
- * Create a Menu for user to select from the collided tags
+ * @param area The text area in which the tags were found.
+ * @param args The list of tags that collided, which will be displayed in the menu.
  */
 void DocumentWidget::createSelectMenu(TextArea *area, const QStringList &args) {
 
@@ -7211,13 +7572,20 @@ void DocumentWidget::createSelectMenu(TextArea *area, const QStringList &args) {
 	dialog->exec();
 }
 
-/*
-** Try to display a calltip
-**  anchored:       If true, tip appears at position pos
-**  lookup:         If true, text is considered a key to be searched for in the
-**                  tip and/or tag database depending on search_type
-**  search_type:    Either TIP or TIP_FROM_TAG
-*/
+/**
+ * @brief Try to display a calltip with the given text.
+ *
+ * @param text The text to display in the calltip.
+ * @param anchored If true, the calltip will be anchored at the specified position.
+ * @param pos The position at which to anchor the calltip, if anchored is true.
+ * @param lookup If true, the text is considered a key to be searched for in the
+ * 				tip and/or tag database depending on search_type.
+ * @param search_type The type of search to perform, either TAG or TIP_FROM_TAG.
+ * @param hAlign The horizontal alignment of the calltip.
+ * @param vAlign The vertical alignment of the calltip.
+ * @param alignMode The alignment mode for the calltip.
+ * @return The id of the calltip if it was successfully displayed, or 0 if it was not.
+ */
 int DocumentWidget::showTipString(const QString &text, bool anchored, int pos, bool lookup, Tags::SearchMode search_type, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode) {
 	if (search_type == Tags::SearchMode::TAG) {
 		return 0;
@@ -7243,8 +7611,12 @@ int DocumentWidget::showTipString(const QString &text, bool anchored, int pos, b
 	return findDefinitionHelperCommon(win->lastFocus(), text, search_type);
 }
 
-/*  Open a new (or existing) editor window to the location specified in
-	tagFiles[i], tagSearch[i], tagPosInf[i] */
+/**
+ * @brief Edit a tagged location in the document.
+ *
+ * @param area The text area in which the tag was found.
+ * @param i The index of the tag in the Tags::tagFiles array.
+ */
 void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 
 	const PathInfo fi = parseFilename(Tags::tagFiles[i]);
@@ -7306,24 +7678,27 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 }
 
 /**
- * @brief DocumentWidget::fileFormat
- * @return
+ * @brief Get the file format of the document.
+ *
+ * @return The file format of the document.
  */
 FileFormats DocumentWidget::fileFormat() const {
 	return info_->fileFormat;
 }
 
 /**
- * @brief DocumentWidget::defaultFont
- * @return
+ * @brief Get the default font used in the document.
+ *
+ * @return The default font used in the document.
  */
 QFont DocumentWidget::defaultFont() const {
 	return font_;
 }
 
 /**
- * @brief DocumentWidget::setPath
- * @param pathname
+ * @brief Set the path for the document.
+ *
+ * @param pathname The path to set for the document.
  */
 void DocumentWidget::setPath(const QString &pathname) {
 	info_->path = pathname;
@@ -7335,88 +7710,99 @@ void DocumentWidget::setPath(const QString &pathname) {
 }
 
 /**
- * @brief DocumentWidget::setPath
- * @param pathname
+ * @brief Set the path for the document using a QDir object.
+ *
+ * @param pathname The QDir object representing the path to set for the document.
  */
 void DocumentWidget::setPath(const QDir &pathname) {
 	setPath(pathname.path());
 }
 
 /**
- * @brief DocumentWidget::device
- * @return
+ * @brief Get the path of the document.
+ *
+ * @return The device identifier of the document's file.
  */
 dev_t DocumentWidget::device() const {
 	return info_->statbuf.st_dev;
 }
 
 /**
- * @brief DocumentWidget::inode
- * @return
+ * @brief Get the inode number of the document's file.
+ *
+ * @return The inode number of the document's file.
  */
 ino_t DocumentWidget::inode() const {
 	return info_->statbuf.st_ino;
 }
 
 /**
- * @brief DocumentWidget::buffer
- * @return
+ * @brief Get the buffer associated with the document widget.
+ *
+ * @return A pointer to the TextBuffer associated with the document widget.
  */
 TextBuffer *DocumentWidget::buffer() const {
 	return info_->buffer.get();
 }
 
 /**
- * @brief DocumentWidget::filenameSet
- * @return
+ * @brief Check if the filename is set for the document.
+ *
+ * @return true if the filename is set, false otherwise.
  */
 bool DocumentWidget::filenameSet() const {
 	return info_->filenameSet;
 }
 
 /**
- * @brief DocumentWidget::fileChanged
- * @return
+ * @brief Check if the file has been changed since it was last saved.
+ *
+ * @return true if the file has been changed, false otherwise.
  */
 bool DocumentWidget::fileChanged() const {
 	return info_->fileChanged;
 }
 
 /**
- * @brief DocumentWidget::showMatchingStyle
- * @return
+ * @brief Get the current language mode of the document.
+ *
+ * @return The current language mode of the document.
  */
 ShowMatchingStyle DocumentWidget::showMatchingStyle() const {
 	return info_->showMatchingStyle;
 }
 
 /**
- * @brief DocumentWidget::autoIndentStyle
- * @return
+ * @brief Get the auto-indent style used in the document.
+ *
+ * @return The auto-indent style used in the document.
  */
 IndentStyle DocumentWidget::autoIndentStyle() const {
 	return info_->indentStyle;
 }
 
 /**
- * @brief DocumentWidget::wrapMode
- * @return
+ * @brief Get the wrap mode used in the document.
+ *
+ * @return The wrap mode used in the document.
  */
 WrapStyle DocumentWidget::wrapMode() const {
 	return info_->wrapMode;
 }
 
 /**
- * @brief DocumentWidget::setFileFormat
- * @param format
+ * @brief Set the file format for the document.
+ *
+ * @param format The file format to set for the document.
  */
 void DocumentWidget::setFileFormat(FileFormats fileFormat) {
 	info_->fileFormat = fileFormat;
 }
 
 /**
- * @brief dragEnterEvent
- * @param event
+ * @brief Handle drag enter events for the document widget.
+ *
+ * @param event The drag enter event to handle.
  */
 void DocumentWidget::dragEnterEvent(QDragEnterEvent *event) {
 	if (event->mimeData()->hasUrls()) {
@@ -7425,8 +7811,9 @@ void DocumentWidget::dragEnterEvent(QDragEnterEvent *event) {
 }
 
 /**
- * @brief dropEvent
- * @param event
+ * @brief Handle drop events for the document widget.
+ *
+ * @param event The drop event to handle.
  */
 void DocumentWidget::dropEvent(QDropEvent *event) {
 	auto urls = event->mimeData()->urls();

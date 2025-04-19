@@ -244,7 +244,7 @@ public:
 	void setReadOnly(bool value);
 	void setSmartIndent(bool value);
 	void setStyleBuffer(UTextBuffer *buffer);
-	void setWordDelimiters(const std::string &delimiters);
+	void setWordDelimiters(std::string_view delimiters);
 	void setWrapMargin(int value);
 	void TextDKillCalltip(int id);
 	void TextDMaintainAbsLineNum(bool state);

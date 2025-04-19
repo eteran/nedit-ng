@@ -64,7 +64,12 @@ int16_t tagFileIndex = 0;
 QMultiHash<QString, Tag> LoadedTags;
 QMultiHash<QString, Tag> LoadedTips;
 
-// Check if a line has non-ws characters
+/**
+ * @brief Check if a line is empty or contains only whitespace characters.
+ *
+ * @param line The line to check.
+ * @return true if the line is empty or contains only whitespace characters, false otherwise.
+ */
 bool lineEmpty(const QString &line) {
 
 	for (const QChar ch : line) {
@@ -79,21 +84,54 @@ bool lineEmpty(const QString &line) {
 	return true;
 }
 
+/**
+ * @brief Splits a tag specification string into a list of file paths.
+ *
+ * @param tagSpec The tag specification string containing file paths separated by a specific character.
+ * @return A QStringList containing the individual file paths.
+ */
+QStringList tagSpecToFileList(const QString &tagSpec) {
+#ifdef Q_OS_WIN
+	auto sep = QLatin1Char(';');
+#else
+	auto sep = QLatin1Char(':');
+#endif
+	return tagSpec.split(sep);
+}
+
+/**
+ * @brief Remove trailing whitespace and newline characters from a string.
+ *
+ * @param s The string to process.
+ * @return The processed string with trailing whitespace and newline characters removed.
+ */
 QString rstrip(QString s) {
 	static const QRegularExpression re(QLatin1String("\\s*\\n"));
 	return s.replace(re, QString());
 }
 
+/**
+ * @brief Get unique tags from a list of tags.
+ *
+ * @param tags The list of tags to process.
+ * @return A list of unique tags.
+ */
 QList<Tag> getTagFromTable(QMultiHash<QString, Tag> &table, const QString &name) {
 	auto tags = table.values(name);
 	tags      = getUniqueTags(tags);
 	return tags;
 }
 
-/*
- * Given a string and a position, advance the position by n lines, where line
- * separators (for now) are \n.  If the end of string is reached before n
- * lines, return the number of lines advanced, else normally return -1.
+/**
+ * @brief Move the position ahead by n lines in the given string.
+ * This function advances the position by n lines, where line
+ * separators (for now) are '\n'.
+ *
+ * @param str The string to process.
+ * @param pos The current position in the string, which will be updated.
+ * @param n The number of lines to move ahead.
+ * @return If the end of string is reached before n lines, return the number of lines advanced,
+ * else normally return -1.
  */
 int64_t moveAheadNLines(std::string_view str, int64_t &pos, int64_t n) {
 
@@ -113,9 +151,10 @@ int64_t moveAheadNLines(std::string_view str, int64_t &pos, int64_t n) {
 }
 
 /**
- * @brief hashTableByType
- * @param mode
- * @return
+ * @brief Get the hash table based on the search mode.
+ *
+ * @param mode The search mode to determine which hash table to return.
+ * @return A pointer to the appropriate hash table.
  */
 QMultiHash<QString, Tag> *hashTableByType(SearchMode mode) {
 	if (mode == SearchMode::TIP) {
@@ -126,9 +165,10 @@ QMultiHash<QString, Tag> *hashTableByType(SearchMode mode) {
 }
 
 /**
- * @brief tagListByType
- * @param mode
- * @return
+ * @brief Get the list of files based on the search mode.
+ *
+ * @param mode The search mode to determine which file list to return.
+ * @return A pointer to the appropriate file list.
  */
 std::deque<File> *tagListByType(SearchMode mode) {
 	if (mode == SearchMode::TAG) {
@@ -138,12 +178,11 @@ std::deque<File> *tagListByType(SearchMode mode) {
 	return &TipsFileList;
 }
 
-/*  Delete a tag from the cache.
- *  Search is limited to valid matches of 'name','file', 'search', posInf, and 'index'.
- *  EX: delete all tags matching index 2 ==>
- *                      delTag(tagname,nullptr,-2,nullptr,-2,2);
- *  (posInf = -2 is an invalid match, posInf range: -1 .. +MAXINT,
-	 lang = -2 is also an invalid match)
+/**
+ * @brief Delete a tag from the hash table based on its index.
+ *
+ * @param index The index of the tag to delete.
+ * @return true if at least one tag was deleted, false otherwise.
  */
 bool delTag(int index) {
 	int del = 0;
@@ -166,10 +205,14 @@ bool delTag(int index) {
 	return del > 0;
 }
 
-/*
-** Scans one <line> from a ctags tags file (<index>) in tagPath.
-** Return value: Number of tag specs added.
-*/
+/**
+ * @brief Scans a line from a ctags tags file and adds the tag to the hash table.
+ *
+ * @param line The line to scan from the ctags file.
+ * @param tagPath The path to the tags file.
+ * @param index The index of the tag in the tags file.
+ * @return The number of tag specifications added, or 0 if the line is not valid.
+ */
 int scanCTagsLine(const QString &line, const QString &tagPath, int index) {
 
 	static const auto regex = QRegularExpression(QLatin1String(R"(^([^\t]+)\t([^\t]+)\t([^\n]+)$)"));
@@ -243,11 +286,15 @@ int scanCTagsLine(const QString &line, const QString &tagPath, int index) {
 		index);
 }
 
-/*
- * Scans one <line> from an etags (emacs) tags file (<index>) in tagPath.
- * recLevel = current recursion level for tags file including
- * file = destination definition file. possibly modified. len=MAXPATHLEN!
- * Return value: Number of tag specs added.
+/**
+ * @brief Scans a line from an etags tags file and adds the tag to the hash table.
+ *
+ * @param line The line to scan from the etags file.
+ * @param tagPath The path to the tags file.
+ * @param index The index of the tag in the tags file.
+ * @param file The destination file for the tag definition, which may be modified.
+ * @param recLevel The current recursion level for tags file inclusion.
+ * @return The number of tag specifications added, or 0 if the line is not valid.
  */
 int scanETagsLine(const QString &line, const QString &tagPath, int index, QString &file, int recLevel) {
 
@@ -320,10 +367,14 @@ int scanETagsLine(const QString &line, const QString &tagPath, int index, QStrin
 	return 0;
 }
 
-/*
-** Loads tagsFile into the hash table.
-** Returns the number of added tag specifications.
-*/
+/**
+ * @brief Loads a tags file into the hash table.
+ *
+ * @param tagSpec The specification of the tags file to load.
+ * @param index The index of the tags file in the list of loaded tags files.
+ * @param recLevel The current recursion level for tags file inclusion.
+ * @return The number of tag specifications added, or 0 if the file could not be loaded.
+ */
 int loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 
 	int nTagsAdded  = 0;
@@ -387,22 +438,21 @@ int loadTagsFile(const QString &tagSpec, int index, int recLevel) {
 	return nTagsAdded;
 }
 
-/*
-** Get the next block from a tips file.  A block is a \n\n+ delimited set of
-** lines in a calltips file.  All of the parameters except <fp> are return
-** values, and most have different roles depending on the type of block
-** that is found.
-**      header:     Depends on the block type
-**      body:       Depends on the block type.  Used to return a new
-**                  dynamically allocated string.
-**      blkLine:    Returns the line number of the first line of the block
-**                  after the "* xxxx *" line.
-**      currLine:   Used to keep track of the current line in the file.
-*/
+/**
+ * @brief Get the next block from a tips file.
+ * A block is a "\n\n+"" delimited set of lines in a calltips file.
+ *
+ * @param stream The QTextStream to read from the tips file.
+ * @param header The header of the block, which depends on the block type.
+ * @param body The body of the block, which depends on the block type.
+ * @param blkLine The line number of the first line of the block after the "* xxxx *" line.
+ * @param currLine The current line number in the file, which is updated as lines are read.
+ * @return A CalltipToken representing the type of block found, or TF_EOF if the end of file is reached.
+ */
 CalltipToken nextTFBlock(QTextStream &stream, QString &header, QString &body, int *blkLine, int *currLine) {
 
 	// These are the different kinds of tokens
-	static const auto commenTF_regex = QRegularExpression(QLatin1String(R"(^\s*\* comment \*\s*$)"));
+	static const auto comment_regex  = QRegularExpression(QLatin1String(R"(^\s*\* comment \*\s*$)"));
 	static const auto version_regex  = QRegularExpression(QLatin1String(R"(^\s*\* version \*\s*$)"));
 	static const auto include_regex  = QRegularExpression(QLatin1String(R"(^\s*\* include \*\s*$)"));
 	static const auto language_regex = QRegularExpression(QLatin1String(R"(^\s*\* language \*\s*$)"));
@@ -428,7 +478,7 @@ CalltipToken nextTFBlock(QTextStream &stream, QString &header, QString &body, in
 		}
 
 		// We've got a non-blank line -- is it a comment block?
-		if (!searchLine(line, commenTF_regex)) {
+		if (!searchLine(line, comment_regex)) {
 			break;
 		}
 
@@ -589,12 +639,16 @@ CalltipToken nextTFBlock(QTextStream &stream, QString &header, QString &body, in
 	return code;
 }
 
-/*
-** Load a calltips file and insert all of the entries into the global tips
-** database.  Each tip is essentially stored as its filename and the line
-** at which it appears--the exact same way ctags indexes source-code.  That's
-** why calltips and tags share so much code.
-*/
+/**
+ * @brief Load a calltips file and insert all of the entries into the global tips database.
+ * Each tip is essentially stored as its filename and the line at which it appears.
+ * The exact same way ctags indexes source-code. That's why calltips and tags share so much code.
+ *
+ * @param tipsFile The path to the calltips file to load.
+ * @param index The index of the calltips file in the list of loaded tips files.
+ * @param recLevel The current recursion level for calltips file inclusion.
+ * @return The number of tips added from the file, or 0 if the file could not be loaded.
+ */
 int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
 	int currLine    = 0;
@@ -714,7 +768,14 @@ int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
 	return nTipsAdded;
 }
 
-int matchTagRec(QList<Tag> &tags, Tag &tag) {
+/**
+ * @brief Match a tag against a list of tags recursively.
+ *
+ * @param tags The list of tags to match against.
+ * @param tag The tag to match.
+ * @return true if a match is found, false otherwise.
+ */
+bool matchTagRecord(QList<Tag> &tags, Tag &tag) {
 	QString newFile;
 	if (QFileInfo(tag.file).isAbsolute()) {
 		newFile = tag.file;
@@ -751,12 +812,19 @@ int matchTagRec(QList<Tag> &tags, Tag &tag) {
 				continue;
 			}
 		}
-		return 1;
+		return true;
 	}
 
-	return 0;
+	return false;
 }
 
+/**
+ * @brief Get unique tags from a list of tags.
+ * This function filters out duplicate tags based on their properties.
+ *
+ * @param tags The list of tags to filter.
+ * @return A list of unique tags.
+ */
 QList<Tag> getUniqueTags(QList<Tag> &tags) {
 	QList<Tag> ntags;
 
@@ -765,7 +833,7 @@ QList<Tag> getUniqueTags(QList<Tag> &tags) {
 	}
 
 	for (Tag t1 : tags) {
-		if (!matchTagRec(ntags, t1)) {
+		if (!matchTagRecord(ntags, t1)) {
 			ntags.append(t1);
 		}
 	}
@@ -788,6 +856,8 @@ std::deque<File> TipsFileList;
 
 /* These are all transient global variables -- they don't hold any state
 	between tag/tip lookups */
+
+// TODO(eteran): we really should avoid global state like this
 SearchMode searchMode = SearchMode::TAG;
 QString tagName;
 
@@ -801,15 +871,26 @@ TipHAlignMode globHAlign;
 TipVAlignMode globVAlign;
 TipAlignMode globAlignMode;
 
-/* Add a tag specification to the hash table
-**   Return Value: true (1)  ... tag spec is always added.
-**   (We don't return boolean as the return value is used as counter increment!)
-**
-** Update 11/29/2020:
-**   to help speed up the loading of large tag files, we no longer check
-**   if tag already exists, and instead delegate the checking and removal
-**   of repeated tags to getTag().
-*/
+/**
+ * @brief Add a tag specification to the hash table.
+ *
+ * @param name The name of the tag.
+ * @param file The file where the tag is defined.
+ * @param lang The language mode of the tag.
+ * @param search The search string for the tag, which may be empty.
+ * @param posInf The position information for the tag, which may be -1 if not applicable.
+ * @param path The path to the tag file.
+ * @param index The index of the tag in the tags file.
+ * @return 1 if the tag was added successfully, 0 otherwise.
+ *
+ * @note 2020-11-29: To help speed up the loading of large tag files,
+ * we no longer check if the tag already exists in the hash table.
+ * Instead, we delegate the checking and removal of repeated tags to
+ * the getTag() function, which will return a list of unique tags.
+ *
+ * @note This function returns an int and not a bool because it is used in a context
+ * where the return value is used to indicate the number of tags added.
+ */
 int addTag(const QString &name, const QString &file, size_t lang,
 		   const QString &search, int64_t posInf, const QString &path, int index) {
 
@@ -821,11 +902,17 @@ int addTag(const QString &name, const QString &file, size_t lang,
 	return 1;
 }
 
-/*
-** AddRelTagsFile():  Rescan tagSpec for relative tag file specs
-** (not starting with [/~]) and extend the tag files list if in
-** windowPath a tags file matching the relative spec has been found.
-*/
+/**
+ * @brief Add relative tags files to the tag list.
+ * Rescan tagSpec for relative tag file specs
+ * (not starting with [/~]) and extend the tag files list if in
+ * windowPath a tags file matching the relative spec has been found.
+ *
+ * @param tagSpec The specification of the tags files to add, which may contain relative paths.
+ * @param windowPath The path of the window where the tags files are located.
+ * @param mode The search mode to use for the tags files (TAG or TIP).
+ * @return true if at least one tags file was added, false otherwise.
+ */
 bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMode mode) {
 
 	bool added = false;
@@ -837,13 +924,7 @@ bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMod
 		return false;
 	}
 
-#ifdef Q_OS_WIN
-	auto sep = QLatin1Char(';');
-#else
-	auto sep = QLatin1Char(':');
-#endif
-	const QStringList filenames = tagSpec.split(sep);
-
+	const QStringList filenames = tagSpecToFileList(tagSpec);
 	for (const QString &filename : filenames) {
 		if (QFileInfo(filename).isAbsolute() || filename.startsWith(QLatin1Char('~'))) {
 			continue;
@@ -891,17 +972,16 @@ bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMod
 	return added;
 }
 
-/*
-** AddTagsFile():  Set up the the list of tag files to manage from a file spec.
-** It can list multiple tags files, specified by separating them with colons.
-** The config entry would look like this:
-**      Nedit.tags: <tagfile1>:<tagfile2>
-** Returns true if all files were found in the FileList or loaded successfully,
-** false otherwise.
-*/
+/**
+ * @brief Add tags files to the tag list.
+ * This function sets up the list of tag files to manage from a file specification.
+ * It can list multiple tags files, specified by separating them with colons.
+ *
+ * @param tagSpec The specification of the tags files to add, which may contain relative paths.
+ * @param mode The search mode to use for the tags files (TAG or TIP).
+ * @return true if all files were found in the FileList or loaded successfully, false otherwise.
+ */
 bool addTagsFile(const QString &tagSpec, SearchMode mode) {
-
-	bool added = true;
 
 	searchMode                 = mode;
 	std::deque<File> *FileList = tagListByType(searchMode);
@@ -910,13 +990,7 @@ bool addTagsFile(const QString &tagSpec, SearchMode mode) {
 		return false;
 	}
 
-#ifdef Q_OS_WIN
-	auto sep = QLatin1Char(';');
-#else
-	auto sep = QLatin1Char(':');
-#endif
-	const QStringList filenames = tagSpec.split(sep);
-
+	const QStringList filenames = tagSpecToFileList(tagSpec);
 	for (const QString &filename : filenames) {
 
 		QString pathName;
@@ -938,7 +1012,6 @@ bool addTagsFile(const QString &tagSpec, SearchMode mode) {
 			 * about tip files. */
 
 			++(it->refcount);
-			added = true;
 			continue;
 		}
 
@@ -947,8 +1020,7 @@ bool addTagsFile(const QString &tagSpec, SearchMode mode) {
 
 		if (timestamp.isNull()) {
 			// Problem reading this tags file. Return false
-			added = false;
-			continue;
+			return false;
 		}
 
 		const File tag = {
@@ -962,15 +1034,16 @@ bool addTagsFile(const QString &tagSpec, SearchMode mode) {
 	}
 
 	MainWindow::updateMenuItems();
-	return added;
+	return true;
 }
 
-/* Un-manage a colon-delimited set of tags files
- * Return true if all files were found in the FileList and unloaded, false
- * if any file was not found in the FileList.
- * "mode" is either TAG or TIP
- * If "force_unload" is true, a calltips file will be deleted even if its
- * refcount is nonzero.
+/**
+ * @brief Delete tags files from the tag list.
+ *
+ * @param tagSpec The specification of the tags files to delete, which may contain relative paths.
+ * @param mode The search mode to use for the tags files (TAG or TIP).
+ * @param force_unload If true, force the deletion of calltips files even if their refcount is nonzero.
+ * @return true if all files were found in the FileList and unloaded, false
  */
 bool deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload) {
 
@@ -981,15 +1054,7 @@ bool deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload) 
 	searchMode                       = mode;
 	std::deque<File> *const FileList = tagListByType(searchMode);
 
-	bool removed = true;
-
-#ifdef Q_OS_WIN
-	auto sep = QLatin1Char(';');
-#else
-	auto sep = QLatin1Char(':');
-#endif
-	const QStringList filenames = tagSpec.split(sep);
-
+	const QStringList filenames = tagSpecToFileList(tagSpec);
 	for (const QString &filename : filenames) {
 
 		QString pathName;
@@ -1027,13 +1092,21 @@ bool deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload) 
 
 		// If any file can't be removed, return false
 		if (it == FileList->end()) {
-			removed = false;
+			return false;
 		}
 	}
 
-	return removed != 0;
+	return true;
 }
 
+/**
+ * @brief Look up a tag in the list of tags files.
+ *
+ * @param FileList The list of tags files to search in.
+ * @param name The name of the tag to look up.
+ * @param mode The search mode to use for the tag lookup (TAG or TIP).
+ * @return A list of tags that match the given name.
+ */
 QList<Tag> lookupTagFromList(std::deque<File> *FileList, const QString &name, SearchMode mode) {
 
 	/*
@@ -1099,10 +1172,14 @@ QList<Tag> lookupTagFromList(std::deque<File> *FileList, const QString &name, Se
 	return getTag(name, mode);
 }
 
-/*
-** Given a tag name, lookup the file and path of the definition
-** and the proper search string.
-*/
+/**
+ * @brief lookup the file and path of the definition
+ * and the proper search string.
+ *
+ * @param name The name of the tag to look up.
+ * @param mode The search mode to use for the tag lookup (TAG or TIP).
+ * @return A list of tags that match the given name.
+ */
 QList<Tag> lookupTag(const QString &name, SearchMode mode) {
 
 	searchMode = mode;
@@ -1114,11 +1191,25 @@ QList<Tag> lookupTag(const QString &name, SearchMode mode) {
 }
 
 /*
-** ctags search expressions are literal strings with a search direction flag,
-** line starting "^" and ending "$" delimiters. This routine translates them
-** into NEdit compatible regular expressions and does the search.
-** Etags search expressions are plain literals strings, which
+**
+**
+**
+**
 */
+
+/**
+ * @brief Perform a regex search in a buffer using a search string.
+ * ctags search expressions are literal strings with a search direction flag,
+ * line starting "^" and ending "$" delimiters. This routine translates them
+ * into NEdit compatible regular expressions and does the search. Etags
+ * search expressions are plain literals strings.
+ *
+ * @param buffer The buffer to search in.
+ * @param searchString The search string to use, which may contain regex-like syntax.
+ * @param startPos The starting position for the search, which may be -1 for etags mode.
+ * @param endPos A pointer to store the end position of the found match.
+ * @return true if a match is found, false otherwise.
+ */
 bool fakeRegExSearch(std::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos) {
 
 	if (searchString.isEmpty()) {
@@ -1235,11 +1326,14 @@ bool fakeRegExSearch(std::string_view buffer, const QString &searchString, int64
 	return false;
 }
 
-/*
-** Show the calltip specified by tagFiles[i], tagSearch[i], tagPosInf[i]
-** This reads from either a source code file (if searchMode == TIP_FROM_TAG)
-** or a calltips file (if searchMode == TIP).
-*/
+/**
+ * @brief Show a matching calltip for a tag.
+ * This reads from either a source code file (if searchMode == TIP_FROM_TAG)
+ * or a calltips file (if searchMode == TIP).
+ * @param parent The parent widget for the calltip dialog.
+ * @param area The text area where the calltip will be displayed.
+ * @param id The index of the tag in the tag files list.
+ */
 void showMatchingCalltip(QWidget *parent, TextArea *area, int id) {
 	try {
 		int64_t startPos = 0;
@@ -1335,21 +1429,22 @@ void showMatchingCalltip(QWidget *parent, TextArea *area, int id) {
 }
 
 /**
- * @brief searchLine
- * @param line
- * @param regex
- * @return
+ * @brief Search a line for a regular expression match.
+ *
+ * @param line The line to search in.
+ * @param regex The regular expression to search for.
+ * @return true if a match is found, false otherwise.
  */
 bool searchLine(const QString &line, const QRegularExpression &re) {
-	const QRegularExpressionMatch match = re.match(line);
-	return match.hasMatch();
+	return re.match(line).hasMatch();
 }
 
 /**
- * @brief Retrieve a Tag structure from the hash table
- * @param name
- * @param search_type
- * @return
+ * @brief Get a tag from the loaded tags or tips.
+ *
+ * @param name The name of the tag to look up.
+ * @param mode The search mode to use for the tag lookup (TAG or TIP).
+ * @return A list of tags that match the given name.
  */
 QList<Tag> getTag(const QString &name, SearchMode mode) {
 
@@ -1361,10 +1456,11 @@ QList<Tag> getTag(const QString &name, SearchMode mode) {
 }
 
 /**
- * @brief A wrapper for calling TextDShowCalltip
- * @param area
- * @param text
- * @return
+ * @brief Show a calltip in the text area.
+ *
+ * @param area The text area where the calltip will be displayed.
+ * @param text The text to display in the calltip.
+ * @return true if the calltip was shown successfully, otherwise false.
  */
 int tagsShowCalltip(TextArea *area, const QString &text) {
 	if (!text.isNull()) {
