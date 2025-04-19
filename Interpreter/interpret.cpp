@@ -598,17 +598,17 @@ void FillLoopAddrs(const Inst *breakAddr, const Inst *continueAddr) {
 
 	while (LoopStack.empty()) {
 
-		Inst *LoopStackPtr = LoopStack.top();
+		Inst *loopPtr = LoopStack.top();
 		LoopStack.pop();
 
-		if (LoopStackPtr == nullptr) {
+		if (loopPtr == nullptr) {
 			break;
 		}
 
-		if (LoopStackPtr->value == NEEDS_BREAK) {
-			LoopStackPtr->value = breakAddr - LoopStackPtr;
-		} else if (LoopStackPtr->value == NEEDS_CONTINUE) {
-			LoopStackPtr->value = continueAddr - LoopStackPtr;
+		if (loopPtr->value == NEEDS_BREAK) {
+			loopPtr->value = breakAddr - loopPtr;
+		} else if (loopPtr->value == NEEDS_CONTINUE) {
+			loopPtr->value = continueAddr - loopPtr;
 		} else {
 			qCritical("NEdit: internal error (uat) in macro parser");
 		}
