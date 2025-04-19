@@ -4,6 +4,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <stack>
 
 #include <gsl/gsl_util>
 
@@ -20,7 +21,6 @@ constexpr int STACK_SIZE = 1024;
 
 constexpr int PROGRAM_SIZE      = 4096; // Maximum program size
 constexpr int MAX_ERR_MSG_LEN   = 256;  // Max. length for error messages
-constexpr int LOOP_STACK_SIZE   = 200;  // (Approx.) Number of break/continue stmts allowed per program
 constexpr int INSTRUCTION_LIMIT = 100;  // Number of instructions the interpreter is allowed to execute before preempting and returning to allow other things to run
 
 /* Temporary markers placed in a branch address location to designate
@@ -55,9 +55,7 @@ std::deque<Symbol *> GlobalSymList;
 std::deque<Symbol *> LocalSymList; // symbols local to the program
 Inst Prog[PROGRAM_SIZE];           // the program
 Inst *ProgP;                       // next free spot for code gen.
-// TODO(eteran): replace this with std::stack<Inst *>.
-Inst *LoopStack[LOOP_STACK_SIZE]; // addresses of break, cont stmts
-Inst **LoopStackPtr = LoopStack;  //  to fill at the end of a loop
+std::stack<Inst *> LoopStack;      // addresses of break, cont stmts
 
 // Global data for the interpreter
 MacroContext Context;
@@ -406,8 +404,8 @@ void CleanupMacroGlobals() {
  */
 void BeginCreatingProgram() {
 	LocalSymList.clear();
-	ProgP        = Prog;
-	LoopStackPtr = LoopStack;
+	ProgP     = Prog;
+	LoopStack = std::stack<Inst *>();
 }
 
 /**
@@ -556,7 +554,7 @@ void StartLoopAddrList() {
  * @return true if the loop stack is empty (no enclosing loop), false if the address was added successfully.
  */
 bool AddBreakAddr(Inst *addr) {
-	if (LoopStackPtr == LoopStack) {
+	if (LoopStack.empty()) {
 		return true;
 	}
 
@@ -572,7 +570,7 @@ bool AddBreakAddr(Inst *addr) {
  * @return true if the loop stack is empty (no enclosing loop), false if the address was added successfully.
  */
 bool AddContinueAddr(Inst *addr) {
-	if (LoopStackPtr == LoopStack) {
+	if (LoopStack.empty()) {
 		return true;
 	}
 
@@ -587,11 +585,7 @@ bool AddContinueAddr(Inst *addr) {
  * @param addr Pointer to the instruction address to be added to the loop stack.
  */
 static void addLoopAddr(Inst *addr) {
-	if (LoopStackPtr > &LoopStack[LOOP_STACK_SIZE - 1]) {
-		qCritical("NEdit: loop stack overflow in macro parser");
-		return;
-	}
-	*LoopStackPtr++ = addr;
+	LoopStack.push(addr);
 }
 
 /**
@@ -601,21 +595,20 @@ static void addLoopAddr(Inst *addr) {
  * @param continueAddr The address to which continue statements should branch.
  */
 void FillLoopAddrs(const Inst *breakAddr, const Inst *continueAddr) {
-	while (true) {
-		LoopStackPtr--;
-		if (LoopStackPtr < LoopStack) {
-			qCritical("NEdit: internal error (lsu) in macro parser");
-			return;
-		}
 
-		if (*LoopStackPtr == nullptr) {
+	while (LoopStack.empty()) {
+
+		Inst *loopPtr = LoopStack.top();
+		LoopStack.pop();
+
+		if (loopPtr == nullptr) {
 			break;
 		}
 
-		if ((*LoopStackPtr)->value == NEEDS_BREAK) {
-			(*LoopStackPtr)->value = breakAddr - *LoopStackPtr;
-		} else if ((*LoopStackPtr)->value == NEEDS_CONTINUE) {
-			(*LoopStackPtr)->value = continueAddr - *LoopStackPtr;
+		if (loopPtr->value == NEEDS_BREAK) {
+			loopPtr->value = breakAddr - loopPtr;
+		} else if (loopPtr->value == NEEDS_CONTINUE) {
+			loopPtr->value = continueAddr - loopPtr;
 		} else {
 			qCritical("NEdit: internal error (uat) in macro parser");
 		}
