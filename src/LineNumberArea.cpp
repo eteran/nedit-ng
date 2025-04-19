@@ -7,7 +7,8 @@
 #include <QPainter>
 
 /**
- * @brief LineNumberArea::LineNumberArea
+ * @brief
+ *
  * @param editor
  */
 LineNumberArea::LineNumberArea(TextArea *area)
@@ -16,7 +17,8 @@ LineNumberArea::LineNumberArea(TextArea *area)
 }
 
 /**
- * @brief LineNumberArea::sizeHint
+ * @brief
+ *
  * @return
  */
 QSize LineNumberArea::sizeHint() const {
@@ -24,7 +26,8 @@ QSize LineNumberArea::sizeHint() const {
 }
 
 /**
- * @brief LineNumberArea::paintEvent
+ * @brief
+ *
  * @param event
  */
 void LineNumberArea::paintEvent(QPaintEvent *event) {
@@ -68,7 +71,8 @@ void LineNumberArea::paintEvent(QPaintEvent *event) {
 }
 
 /**
- * @brief LineNumberArea::contextMenuEvent
+ * @brief
+ *
  * @param event
  */
 void LineNumberArea::contextMenuEvent(QContextMenuEvent *event) {
@@ -76,7 +80,8 @@ void LineNumberArea::contextMenuEvent(QContextMenuEvent *event) {
 }
 
 /**
- * @brief LineNumberArea::wheelEvent
+ * @brief
+ *
  * @param event
  */
 void LineNumberArea::wheelEvent(QWheelEvent *event) {
@@ -84,7 +89,8 @@ void LineNumberArea::wheelEvent(QWheelEvent *event) {
 }
 
 /**
- * @brief LineNumberArea::mouseDoubleClickEvent
+ * @brief
+ *
  * @param event
  */
 void LineNumberArea::mouseDoubleClickEvent(QMouseEvent *event) {
@@ -99,7 +105,8 @@ void LineNumberArea::mouseDoubleClickEvent(QMouseEvent *event) {
 }
 
 /**
- * @brief LineNumberArea::mouseMoveEvent
+ * @brief
+ *
  * @param event
  */
 void LineNumberArea::mouseMoveEvent(QMouseEvent *event) {
@@ -112,7 +119,8 @@ void LineNumberArea::mouseMoveEvent(QMouseEvent *event) {
 }
 
 /**
- * @brief LineNumberArea::mousePressEvent
+ * @brief
+ *
  * @param event
  */
 void LineNumberArea::mousePressEvent(QMouseEvent *event) {
@@ -125,7 +133,8 @@ void LineNumberArea::mousePressEvent(QMouseEvent *event) {
 }
 
 /**
- * @brief LineNumberArea::mouseReleaseEvent
+ * @brief
+ *
  * @param event
  */
 void LineNumberArea::mouseReleaseEvent(QMouseEvent *event) {

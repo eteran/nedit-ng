@@ -11,7 +11,8 @@
 #include <QMessageBox>
 
 /**
- * @brief DialogShellMenu::DialogShellMenu
+ * @brief
+ *
  * @param parent
  * @param f
  */
@@ -44,7 +45,7 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief DialogShellMenu::connectSlots
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogShellMenu::connectSlots() {
 	connect(ui.buttonNew, &QPushButton::clicked, this, &DialogShellMenu::buttonNew_clicked);
@@ -58,7 +59,7 @@ void DialogShellMenu::connectSlots() {
 }
 
 /**
- * @brief DialogShellMenu::buttonNew_clicked
+ * @brief
  */
 void DialogShellMenu::buttonNew_clicked() {
 
@@ -75,7 +76,7 @@ void DialogShellMenu::buttonNew_clicked() {
 }
 
 /**
- * @brief DialogShellMenu::buttonCopy_clicked
+ * @brief
  */
 void DialogShellMenu::buttonCopy_clicked() {
 
@@ -87,28 +88,29 @@ void DialogShellMenu::buttonCopy_clicked() {
 }
 
 /**
- * @brief DialogShellMenu::buttonDelete_clicked
+ * @brief
  */
 void DialogShellMenu::buttonDelete_clicked() {
 	CommonDialog::deleteItem(&ui, model_, &deleted_);
 }
 
 /**
- * @brief DialogShellMenu::buttonUp_clicked
+ * @brief
  */
 void DialogShellMenu::buttonUp_clicked() {
 	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
- * @brief DialogShellMenu::buttonDown_clicked
+ * @brief
  */
 void DialogShellMenu::buttonDown_clicked() {
 	CommonDialog::moveItemDown(&ui, model_);
 }
 
 /**
- * @brief DialogShellMenu::currentChanged
+ * @brief
+ *
  * @param current
  * @param previous
  */
@@ -215,7 +217,8 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
 }
 
 /**
- * @brief DialogShellMenu::buttonBox_clicked
+ * @brief
+ *
  * @param button
  */
 void DialogShellMenu::buttonBox_clicked(QAbstractButton *button) {
@@ -225,7 +228,7 @@ void DialogShellMenu::buttonBox_clicked(QAbstractButton *button) {
 }
 
 /**
- * @brief DialogShellMenu::buttonBox_accepted
+ * @brief
  */
 void DialogShellMenu::buttonBox_accepted() {
 	// Read the dialog fields, and update the menus
@@ -298,7 +301,8 @@ std::optional<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
 }
 
 /**
- * @brief DialogShellMenu::applyDialogChanges
+ * @brief
+ *
  * @return
  */
 bool DialogShellMenu::applyDialogChanges() {
@@ -343,7 +347,8 @@ bool DialogShellMenu::applyDialogChanges() {
 }
 
 /**
- * @brief DialogShellMenu::radioToSameDocument_toggled
+ * @brief
+ *
  * @param checked
  */
 void DialogShellMenu::radioToSameDocument_toggled(bool checked) {
@@ -351,7 +356,8 @@ void DialogShellMenu::radioToSameDocument_toggled(bool checked) {
 }
 
 /**
- * @brief DialogShellMenu::updateCurrentItem
+ * @brief
+ *
  * @param item
  * @return
  */
@@ -372,7 +378,8 @@ bool DialogShellMenu::updateCurrentItem(const QModelIndex &index) {
 }
 
 /**
- * @brief DialogShellMenu::updateCurrentItem
+ * @brief
+ *
  * @return
  */
 bool DialogShellMenu::updateCurrentItem() {
@@ -385,7 +392,8 @@ bool DialogShellMenu::updateCurrentItem() {
 }
 
 /**
- * @brief DialogShellMenu::validateFields
+ * @brief
+ *
  * @param mode
  * @return
  */

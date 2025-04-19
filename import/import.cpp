@@ -37,6 +37,13 @@ struct MenuItem {
 	QString flags;
 };
 
+/**
+ * @brief Writes a menu item string in the format used by NEdit.
+ *
+ * @param menuItems the list of menu items to write.
+ * @param isShellCommand if true, the command is a shell command, otherwise it is a macro.
+ * @return a QString containing the formatted menu item string.
+ */
 QString writeMenuItemString(const std::vector<MenuItem> &menuItems, bool isShellCommand) {
 
 	QString outStr;
@@ -108,9 +115,10 @@ QString writeMenuItemString(const std::vector<MenuItem> &menuItems, bool isShell
 }
 
 /**
- * @brief copyMacroToEnd
- * @param in
- * @return
+ * @brief Copies a macro from the input stream to the end of the string.
+ *
+ * @param in the input stream containing the macro.
+ * @return a QString containing the macro body, or an empty string if the macro is invalid.
  */
 QString copyMacroToEnd(Input &in) {
 
@@ -178,10 +186,11 @@ QString copyMacroToEnd(Input &in) {
 }
 
 /**
- * @brief loadMenuItemString
- * @param inString
- * @param isShellCommand
- * @return
+ * @brief Loads a menu item string from the input string.
+ *
+ * @param inString the input string containing the menu items.
+ * @param isShellCommand if true, the items are shell commands, otherwise they are macros.
+ * @return a vector of MenuItem objects parsed from the input string.
  */
 std::vector<MenuItem> loadMenuItemString(const QString &inString, bool isShellCommand) {
 
@@ -239,6 +248,12 @@ std::vector<MenuItem> loadMenuItemString(const QString &inString, bool isShellCo
 	}
 }
 
+/**
+ * @brief Saves the current theme to a file in XML format.
+ *
+ * @param filename the name of the file to save the theme to.
+ * @param styles the list of styles to save in the theme.
+ */
 void SaveTheme(const QString &filename, const std::vector<Style> &styles) {
 
 	QFile file(filename);
@@ -304,9 +319,21 @@ void SaveTheme(const QString &filename, const std::vector<Style> &styles) {
 	}
 }
 
+/**
+ * @brief Converts a string to a specific enum type.
+ *
+ * @param str the string to convert.
+ * @return the converted enum value.
+ */
 template <class T>
 T from_string(const QString &str);
 
+/**
+ * @brief Converts a string to a SearchType enum value.
+ *
+ * @param str the string to convert.
+ * @return the converted SearchType value.
+ */
 template <>
 SearchType from_string(const QString &str) {
 
@@ -333,6 +360,12 @@ SearchType from_string(const QString &str) {
 	abort();
 }
 
+/**
+ * @brief Converts a string to a WrapStyle enum value.
+ *
+ * @param str the string to convert.
+ * @return the converted WrapStyle value.
+ */
 template <>
 WrapStyle from_string(const QString &str) {
 
@@ -350,6 +383,12 @@ WrapStyle from_string(const QString &str) {
 	abort();
 }
 
+/**
+ * @brief Converts a string to a IndentStyle enum value.
+ *
+ * @param str the string to convert.
+ * @return the converted IndentStyle value.
+ */
 template <>
 IndentStyle from_string(const QString &str) {
 
@@ -367,6 +406,12 @@ IndentStyle from_string(const QString &str) {
 	abort();
 }
 
+/**
+ * @brief Converts a string to a ShowMatchingStyle enum value.
+ *
+ * @param str the string to convert.
+ * @return the converted ShowMatchingStyle value.
+ */
 template <>
 ShowMatchingStyle from_string(const QString &str) {
 
@@ -401,27 +446,56 @@ ShowMatchingStyle from_string(const QString &str) {
 
 namespace {
 
+/**
+ * @brief Reads a resource from the XrmDatabase.
+ *
+ * @param db the XrmDatabase to read from.
+ * @param name the name of the resource to read.
+ * @return the value of the resource as a QString, bool, or int.
+ *         The type is determined by the template parameter T.
+ */
 template <class T>
-T readResource(XrmDatabase db, const std::string &name);
+T readResource(XrmDatabase db, const char *name);
 
+/**
+ * @brief Reads a resource from the XrmDatabase and returns it as a QString.
+ *
+ * @param db the XrmDatabase to read from.
+ * @param name the name of the resource to read.
+ * @return the value of the resource as a QString.
+ */
 template <>
-QString readResource(XrmDatabase db, const std::string &name) {
+QString readResource(XrmDatabase db, const char *name) {
 	char *type;
 	XrmValue resValue;
-	XrmGetResource(db, name.c_str(), APP_CLASS, &type, &resValue);
+	XrmGetResource(db, name, APP_CLASS, &type, &resValue);
 	auto ret = QString::fromLatin1(resValue.addr, static_cast<int>(resValue.size - 1));
 	Q_ASSERT(!ret.isEmpty());
 	return ret;
 }
 
+/**
+ * @brief Reads a resource from the XrmDatabase and returns it as a bool.
+ *
+ * @param db the XrmDatabase to read from.
+ * @param name the name of the resource to read.
+ * @return the value of the resource as a bool.
+ */
 template <>
-bool readResource(XrmDatabase db, const std::string &name) {
+bool readResource(XrmDatabase db, const char *name) {
 	auto value = readResource<QString>(db, name);
 	return value.compare(QLatin1String("true"), Qt::CaseInsensitive) == 0;
 }
 
+/**
+ * @brief Reads a resource from the XrmDatabase and returns it as an int.
+ *
+ * @param db the XrmDatabase to read from.
+ * @param name the name of the resource to read.
+ * @return the value of the resource as an int.
+ */
 template <>
-int readResource(XrmDatabase db, const std::string &name) {
+int readResource(XrmDatabase db, const char *name) {
 	auto value = readResource<QString>(db, name);
 	bool ok;
 	const int n = value.toInt(&ok);
@@ -429,6 +503,12 @@ int readResource(XrmDatabase db, const std::string &name) {
 	return n;
 }
 
+/**
+ * @brief Converts a color string in RGB or RGBi format to a hex color string.
+ *
+ * @param color the color string to convert, in either RGB or RGBi format.
+ * @return a QString containing the color in hex format (e.g., "#RRGGBB").
+ */
 QString covertRGBColor(const QString &color) {
 
 	{
@@ -488,10 +568,11 @@ QString covertRGBColor(const QString &color) {
 }
 
 /**
- * @brief main
- * @param argc
- * @param argv
- * @return
+ * @brief Main function for importing NEdit preferences from a resource file.
+ *
+ * @param argc the number of command line arguments.
+ * @param argv the command line arguments, where argv[1] is the filename of the resource file to import.
+ * @return 0 on success, -1 if an error occurred.
  */
 int main(int argc, char *argv[]) {
 

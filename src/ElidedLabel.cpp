@@ -15,7 +15,8 @@
 #endif
 
 /**
- * @brief ElidedLabel::ElidedLabel
+ * @brief
+ *
  * @param text
  * @param parent
  */
@@ -29,7 +30,8 @@ ElidedLabel::ElidedLabel(const QString &text, QWidget *parent)
 }
 
 /**
- * @brief ElidedLabel::ElidedLabel
+ * @brief
+ *
  * @param parent
  */
 ElidedLabel::ElidedLabel(QWidget *parent)
@@ -39,7 +41,7 @@ ElidedLabel::ElidedLabel(QWidget *parent)
 }
 
 /**
- * @brief ElidedLabel::resizeEvent
+ * @brief
  */
 void ElidedLabel::resizeEvent(QResizeEvent *event) {
 	Q_UNUSED(event);
@@ -47,7 +49,8 @@ void ElidedLabel::resizeEvent(QResizeEvent *event) {
 }
 
 /**
- * @brief ElidedLabel::minimumSizeHint
+ * @brief
+ *
  * @return
  */
 QSize ElidedLabel::minimumSizeHint() const {
@@ -57,7 +60,8 @@ QSize ElidedLabel::minimumSizeHint() const {
 }
 
 /**
- * @brief ElidedLabel::sizeHint
+ * @brief
+ *
  * @return
  */
 QSize ElidedLabel::sizeHint() const {
@@ -75,7 +79,8 @@ QSize ElidedLabel::sizeHint() const {
 }
 
 /**
- * @brief ElidedLabel::setText
+ * @brief
+ *
  * @param text
  */
 void ElidedLabel::setText(const QString &text) {
@@ -84,7 +89,7 @@ void ElidedLabel::setText(const QString &text) {
 }
 
 /**
- * @brief ElidedLabel::clear
+ * @brief
  */
 void ElidedLabel::clear() {
 	fullText_.clear();
@@ -92,7 +97,7 @@ void ElidedLabel::clear() {
 }
 
 /**
- * @brief ElidedLabel::squeezeTextToLabel
+ * @brief
  */
 void ElidedLabel::squeezeTextToLabel() {
 
@@ -121,7 +126,8 @@ void ElidedLabel::squeezeTextToLabel() {
 }
 
 /**
- * @brief ElidedLabel::setAlignment
+ * @brief
+ *
  * @param alignment
  */
 void ElidedLabel::setAlignment(Qt::Alignment alignment) {
@@ -132,7 +138,8 @@ void ElidedLabel::setAlignment(Qt::Alignment alignment) {
 }
 
 /**
- * @brief ElidedLabel::textElideMode
+ * @brief
+ *
  * @return
  */
 Qt::TextElideMode ElidedLabel::textElideMode() const {
@@ -140,7 +147,8 @@ Qt::TextElideMode ElidedLabel::textElideMode() const {
 }
 
 /**
- * @brief ElidedLabel::setTextElideMode
+ * @brief
+ *
  * @param mode
  */
 void ElidedLabel::setTextElideMode(Qt::TextElideMode mode) {
@@ -149,7 +157,8 @@ void ElidedLabel::setTextElideMode(Qt::TextElideMode mode) {
 }
 
 /**
- * @brief ElidedLabel::fullText
+ * @brief
+ *
  * @return
  */
 QString ElidedLabel::fullText() const {
@@ -157,7 +166,8 @@ QString ElidedLabel::fullText() const {
 }
 
 /**
- * @brief ElidedLabel::contextMenuEvent
+ * @brief
+ *
  * @param ev
  */
 void ElidedLabel::contextMenuEvent(QContextMenuEvent *ev) {
@@ -189,7 +199,8 @@ void ElidedLabel::contextMenuEvent(QContextMenuEvent *ev) {
 }
 
 /**
- * @brief ElidedLabel::keyPressEvent
+ * @brief
+ *
  * @param event
  */
 void ElidedLabel::keyPressEvent(QKeyEvent *event) {
@@ -224,7 +235,8 @@ void ElidedLabel::keyPressEvent(QKeyEvent *event) {
 }
 
 /**
- * @brief ElidedLabel::mouseReleaseEvent
+ * @brief
+ *
  * @param event
  */
 void ElidedLabel::mouseReleaseEvent(QMouseEvent *event) {

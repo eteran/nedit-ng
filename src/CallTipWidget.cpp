@@ -6,9 +6,10 @@
 #include <QToolTip>
 
 /**
- * @brief CallTipWidget::CallTipWidget
- * @param parent
- * @param f
+ * @brief Constructor for CallTipWidget
+ *
+ * @param parent the parent widget
+ * @param f the window flags
  */
 CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f)
 	: QWidget(parent, f) {
@@ -26,8 +27,9 @@ CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief CallTipWidget::setText
- * @param text
+ * @brief Sets the text for the call tip widget.
+ *
+ * @param text the text to display in the call tip
  */
 void CallTipWidget::setText(const QString &text) {
 	ui.labelTip->setText(text);
@@ -35,8 +37,11 @@ void CallTipWidget::setText(const QString &text) {
 }
 
 /**
- * @brief CallTipWidget::showEvent
- * @param event
+ * @brief Handles the show event for the call tip widget.
+ * This resizes the widget to its minimum size when shown.
+ *
+ * @param event the show event
+ *
  */
 void CallTipWidget::showEvent(QShowEvent *event) {
 	Q_UNUSED(event)

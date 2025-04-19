@@ -86,7 +86,8 @@ uint8_t *next_ptr(uint8_t *ptr) noexcept {
 }
 
 /**
- * @brief PUT_OFFSET_L
+ * @brief
+ *
  * @param v
  * @return
  */
@@ -96,7 +97,8 @@ constexpr uint8_t PUT_OFFSET_L(T v) noexcept {
 }
 
 /**
- * @brief PUT_OFFSET_R
+ * @brief
+ *
  * @param v
  * @return
  */
@@ -106,7 +108,8 @@ constexpr uint8_t PUT_OFFSET_R(T v) noexcept {
 }
 
 /**
- * @brief isQuantifier
+ * @brief
+ *
  * @param it
  * @return
  */
@@ -115,7 +118,8 @@ bool isQuantifier(std::string_view::iterator it) noexcept {
 }
 
 /**
- * @brief matchChar
+ * @brief
+ *
  * @param it
  * @param ch
  * @return

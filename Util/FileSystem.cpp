@@ -23,11 +23,10 @@ constexpr int FORMAT_SAMPLE_CHARS = 2000;
 }
 
 /**
- * Decompose a Unix file name into a file name and a path.
+ * @brief Decompose a Unix file name into a file name and a path.
  *
- * @brief parseFilename
- * @param fullname
- * @return
+ * @param fullname the full file name, which may include a path.
+ * @return a PathInfo structure containing the path and file name.
  */
 PathInfo parseFilename(const QString &fullname) {
 
@@ -60,9 +59,10 @@ PathInfo parseFilename(const QString &fullname) {
 }
 
 /**
- * @brief NormalizePathname
- * @param pathname
- * @return
+ * @brief Normalize a pathname.
+ *
+ * @param pathname the pathname to normalize.
+ * @return the normalized pathname, which is always absolute and ends with a slash if it is a directory.
  */
 QString NormalizePathname(const QString &pathname) {
 
@@ -94,9 +94,13 @@ QString NormalizePathname(const QString &pathname) {
 	return cleanedPath;
 }
 
-/*
-** Return the trailing 'n' no. of path components
-*/
+/**
+ * @brief Get the Trailing Path Components object
+ *
+ * @param path the full path from which to extract components.
+ * @param components the number of trailing path components to return.
+ * @return the trailing path components.
+ */
 QString GetTrailingPathComponents(const QString &path, int components) {
 
 	return path.section(
@@ -106,14 +110,16 @@ QString GetTrailingPathComponents(const QString &path, int components) {
 		QString::SectionIncludeLeadingSep);
 }
 
-/*
-** Samples up to a maximum of FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS
-** characters, to determine whether text represents a MS DOS or Macintosh
-** format file.  If there's ANY ambiguity (a newline in the sample not paired
-** with a return in an otherwise DOS looking file, or a newline appearing in
-** the sampled portion of a Macintosh looking file), the file is judged to be
-** Unix format.
-*/
+/**
+ * @brief Determine the format of a file based on its content.
+ *
+ * @param text the content of the file as a string view.
+ * @return FileFormats the format of the file, which can be Unix, Dos, or Mac.
+ *
+ * @note Samples up to FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS
+ * characters to determine the file format. If any ambiguity exists, it is
+ * judged to be Unix format.
+ */
 FileFormats FormatOfFile(std::string_view text) {
 
 	size_t nNewlines = 0;
@@ -148,10 +154,11 @@ FileFormats FormatOfFile(std::string_view text) {
 	return FileFormats::Unix;
 }
 
-/*
-** Converts a string (which may represent the entire contents of the file) from
-** Unix to DOS format.
-*/
+/**
+ * @brief Converts a string from Unix to DOS format in place.
+ *
+ * @param text the string to convert, which may represent the entire contents of the file.
+ */
 void ConvertToDos(std::string &text) {
 
 	// How long a string will we need?
@@ -177,34 +184,40 @@ void ConvertToDos(std::string &text) {
 	text = std::move(outString);
 }
 
-/*
-** Converts a string (which may represent the entire contents of the file)
-** from Unix to Macintosh format.
-*/
+/**
+ * @brief Converts a string from Unix to Macintosh format in place.
+ *
+ * @param text the string to convert, which may represent the entire contents of the file.
+ */
 void ConvertToMac(std::string &text) {
 	std::replace(text.begin(), text.end(), '\n', '\r');
 }
 
 /**
- * @brief ConvertFromMac
- * @param text
+ * @brief Converts a string from Macintosh format to Unix format in place.
+ *
+ * @param text the string to convert, which may represent the entire contents of the file.
  */
 void ConvertFromMac(std::string &text) {
 	std::replace(text.begin(), text.end(), '\r', '\n');
 }
 
 /**
- * @brief ConvertFromDos
- * @param text
+ * @brief Converts a string from DOS format to Unix format in place.
+ *
+ * @param text the string to convert, which may represent the entire contents of the file.
  */
 void ConvertFromDos(std::string &text) {
 	ConvertFromDos(text, nullptr);
 }
 
 /**
- * @brief ConvertFromDos
- * @param text
- * @param pendingCR
+ * @brief Converts a string from DOS format to Unix format in place, handling
+ * a pending carriage return if it exists.
+ *
+ * @param text the string to convert, which may represent the entire contents of the file.
+ * @param pendingCR a pointer to a character that will hold a pending carriage return if it exists.
+ *                  If there is no pending carriage return, it will be set to '\0'.
  */
 void ConvertFromDos(std::string &text, char *pendingCR) {
 
@@ -235,12 +248,13 @@ void ConvertFromDos(std::string &text, char *pendingCR) {
 	text.erase(out, text.end());
 }
 
-/*
-** Reads a text file into a string buffer, converting line breaks to
-** unix-style if appropriate.
-**
-** Force a terminating \n, if this is requested
-*/
+/**
+ * @brief Reads any text file and converts its line endings to Unix format.
+ *
+ * @param fileName the name of the file to read.
+ * @param forceNL if true, ensures that the returned string ends with a newline character.
+ * @return The contents of the file in Unix format, or an empty string if the file could not be read.
+ */
 QString ReadAnyTextFile(const QString &fileName, bool forceNL) {
 
 	std::ifstream file(fileName.toStdString());

@@ -17,6 +17,9 @@ DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f)
 	ui.editHeight->setValidator(new QIntValidator(0, INT_MAX, this));
 }
 
+/**
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
+ */
 void DialogWindowSize::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogWindowSize::buttonBox_accepted);
 }

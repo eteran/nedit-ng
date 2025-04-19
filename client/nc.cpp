@@ -25,14 +25,14 @@
 
 namespace {
 
-constexpr const char cmdLineHelp[] = "Usage: nc-ng [-read] [-create]\n"
-									 "             [-line n | +n] [-do command] [-lm languagemode]\n"
-									 "             [-svrname name] [-svrcmd command]\n"
-									 "             [-ask] [-noask] [-timeout seconds]\n"
-									 "             [-geometry geometry | -g geometry] [-icon | -iconic]\n"
-									 "             [-tabbed] [-untabbed] [-group] [-wait]\n"
-									 "             [-V | -version] [-h|-help]\n"
-									 "             [--] [file...]\n";
+constexpr const char UsageMessage[] = "Usage: nc-ng [-read] [-create]\n"
+									  "             [-line n | +n] [-do command] [-lm languagemode]\n"
+									  "             [-svrname name] [-svrcmd command]\n"
+									  "             [-ask] [-noask] [-timeout seconds]\n"
+									  "             [-geometry geometry | -g geometry] [-icon | -iconic]\n"
+									  "             [-tabbed] [-untabbed] [-group] [-wait]\n"
+									  "             [-V | -version] [-h|-help]\n"
+									  "             [--] [file...]\n";
 
 struct CommandLine {
 	QStringList arguments;
@@ -48,25 +48,26 @@ struct {
 } ServerPreferences;
 
 /**
- * @brief nextArg
- * @param args
- * @param argIndex
+ * @brief Gets the index of the next argument parameter.
+ *
+ * @param args the command line arguments.
+ * @param argIndex the current argument index.
+ * @return the next argument index.
  */
-int nextArg(const QStringList &args, int argIndex) {
+int getArgumentParameter(const QStringList &args, int argIndex) {
 	if (argIndex + 1 >= args.size()) {
-		fprintf(stderr, "nc-ng: %s requires an argument\n%s", qPrintable(args[argIndex]), cmdLineHelp);
+		fprintf(stderr, "nc-ng: %s requires an argument\n%s", qPrintable(args[argIndex]), UsageMessage);
 		exit(EXIT_FAILURE);
 	}
 
-	++argIndex;
-	return argIndex;
+	return ++argIndex;
 }
 
 /**
+ * @brief Parses a command string into a list of arguments.
  *
- * @brief parseCommandString
- * @param program
- * @return
+ * @param program the command string to parse.
+ * @return a list of arguments.
  */
 QStringList parseCommandString(const QString &program) {
 
@@ -133,7 +134,7 @@ QStringList parseCommandString(const QString &program) {
 }
 
 /**
- * @brief printNcVersion
+ * @brief Prints the version information of the nc-ng client.
  */
 void printNcVersion() {
 	static constexpr const char ncHelpText[] = "nc-ng (nedit-ng) Version %d.%d\n\n"
@@ -147,12 +148,12 @@ void printNcVersion() {
 }
 
 /**
- * @brief parseCommandLine
- * @param args
- * @return
+ * @brief Parses the command line arguments into a CommandLine structure.
+ * This is the internal implementation of processCommandLine.
  *
- * Converts command line into a command string suitable for passing to the
- * server
+ * @param args the command line arguments
+ * @return an optional CommandLine structure containing the parsed arguments
+ *         or an empty optional if the command line is invalid.
  */
 std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 
@@ -184,15 +185,15 @@ std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 		} else if (opts && args[i] == QLatin1String("-wait")) {
 			ServerPreferences.waitForClose = true;
 		} else if (opts && args[i] == QLatin1String("-svrname")) {
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 
 			ServerPreferences.serverName = args[i];
 		} else if (opts && args[i] == QLatin1String("-svrcmd")) {
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 
 			ServerPreferences.serverCmd = args[i];
 		} else if (opts && args[i] == QLatin1String("-timeout")) {
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 
 			bool ok;
 			const int n = args[i].toInt(&ok);
@@ -202,18 +203,18 @@ std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 				ServerPreferences.timeOut = n;
 			}
 		} else if (opts && args[i] == QLatin1String("-do")) {
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 
 			toDoCommand = args[i];
 		} else if (opts && args[i] == QLatin1String("-lm")) {
 			commandLine.arguments.push_back(args[i]);
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 
 			langMode = args[i];
 			commandLine.arguments.push_back(args[i]);
 		} else if (opts && (args[i] == QLatin1String("-g") || args[i] == QLatin1String("-geometry"))) {
 			commandLine.arguments.push_back(args[i]);
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 
 			geometry = args[i];
 			commandLine.arguments.push_back(args[i]);
@@ -233,7 +234,7 @@ std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			iconic = 1;
 			commandLine.arguments.push_back(args[i]);
 		} else if (opts && args[i] == QLatin1String("-line")) {
-			i = nextArg(args, i);
+			i = getArgumentParameter(args, i);
 
 			bool ok;
 			const int lineArg = args[i].toInt(&ok);
@@ -259,11 +260,11 @@ std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			printNcVersion();
 			exit(EXIT_SUCCESS);
 		} else if (opts && (args[i] == QLatin1String("-h") || args[i] == QLatin1String("-help"))) {
-			fprintf(stderr, "%s", cmdLineHelp);
+			fprintf(stderr, "%s", UsageMessage);
 			exit(EXIT_SUCCESS);
 		} else if (opts && (args[i][0] == QLatin1Char('-'))) {
 
-			fprintf(stderr, "nc-ng: Unrecognized option %s\n%s", qPrintable(args[i]), cmdLineHelp);
+			fprintf(stderr, "nc-ng: Unrecognized option %s\n%s", qPrintable(args[i]), UsageMessage);
 			exit(EXIT_FAILURE);
 		} else {
 
@@ -337,14 +338,13 @@ std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 }
 
 /**
- * @brief processCommandLine
- * @param args
- * @return
+ * @brief  Reconstruct the command line in string commandLine in case we have
+ * to start a server (nc command line args parallel nedit's). Include -svrname
+ * if nc wants a named server, so nedit will match. Special characters are protected
+ * from the shell by escaping EVERYTHING with '\'.
  *
- * Reconstruct the command line in string commandLine in case we have to start
- * a server (nc command line args parallel nedit's). Include -svrname if nc
- * wants a named server, so nedit will match. Special characters are protected
- * from the shell by escaping EVERYTHING with '\'
+ * @param args the command line arguments.
+ * @return CommandLine structure containing the command and arguments.
  */
 CommandLine processCommandLine(const QStringList &args) {
 
@@ -358,12 +358,11 @@ CommandLine processCommandLine(const QStringList &args) {
 }
 
 /**
- * @brief startServer
- * @param message
- * @param commandLineArgs
- * @return
+ * @brief Prompt the user about starting a server, with "message", then start server.
  *
- * Prompt the user about starting a server, with "message", then start server
+ * @param message a message to display to the user, typically asking whether to start the server.
+ * @param commandLineArgs the command line arguments to pass to the server.
+ * @return 0 on success, -1 if the server failed to start, -2 if the user canceled starting the server.
  */
 int startServer(const char *message, const QStringList &commandLineArgs) {
 
@@ -405,6 +404,13 @@ int startServer(const char *message, const QStringList &commandLineArgs) {
 	return 0;
 }
 
+/**
+ * @brief Write data to the socket.
+ *
+ * @param socket the local socket to write to.
+ * @param data the data to write.
+ * @return true if all data was written successfully, false otherwise.
+ */
 bool writeToSocket(QLocalSocket *socket, const QByteArray &data) {
 	int64_t remaining = data.size();
 	const char *ptr   = data.data();
@@ -428,10 +434,12 @@ bool writeToSocket(QLocalSocket *socket, const QByteArray &data) {
 }
 
 /**
- * @brief main
- * @param argc
- * @param argv
- * @return
+ * @brief Main function for the nc-ng client.
+ *
+ * @param argc the number of command line arguments.
+ * @param argv the command line arguments.
+ * @return 0 on success, -1 if the server could not be connected to or started.
+ *         If the user cancels starting the server, it returns -2.
  */
 int main(int argc, char *argv[]) {
 

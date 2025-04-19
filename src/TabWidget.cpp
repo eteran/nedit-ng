@@ -4,7 +4,8 @@
 #include <QToolButton>
 
 /**
- * @brief TabWidget::TabWidget
+ * @brief
+ *
  * @param parent
  */
 TabWidget::TabWidget(QWidget *parent)
@@ -18,7 +19,7 @@ TabWidget::TabWidget(QWidget *parent)
 }
 
 /**
- * @brief TabWidget::tabInserted
+ * @brief
  */
 void TabWidget::tabInserted(int index) {
 	Q_EMIT tabCountChanged(count());
@@ -26,7 +27,7 @@ void TabWidget::tabInserted(int index) {
 }
 
 /**
- * @brief TabWidget::tabRemoved
+ * @brief
  */
 void TabWidget::tabRemoved(int index) {
 	Q_EMIT tabCountChanged(count());

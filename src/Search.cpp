@@ -28,7 +28,8 @@ int NHist     = 0;
 int HistStart = 0;
 
 /**
- * @brief forwardRegexSearch
+ * @brief
+ *
  * @param string
  * @param searchString
  * @param wrap
@@ -80,7 +81,8 @@ std::optional<Search::Result> forwardRegexSearch(std::string_view string, std::s
 }
 
 /**
- * @brief backwardRegexSearch
+ * @brief
+ *
  * @param string
  * @param searchString
  * @param wrap
@@ -138,7 +140,8 @@ std::optional<Search::Result> backwardRegexSearch(std::string_view string, std::
 }
 
 /**
- * @brief searchRegex
+ * @brief
+ *
  * @param string
  * @param searchString
  * @param direction
@@ -161,7 +164,8 @@ std::optional<Search::Result> searchRegex(std::string_view string, std::string_v
 }
 
 /**
- * @brief searchLiteral
+ * @brief
+ *
  * @param string
  * @param searchString
  * @param caseSensitivity
@@ -584,7 +588,8 @@ std::optional<std::string> Search::ReplaceAllInString(std::string_view inString,
 }
 
 /**
- * @brief Search::SearchString
+ * @brief
+ *
  * @param string
  * @param searchString
  * @param direction
@@ -599,7 +604,8 @@ std::optional<Search::Result> Search::SearchString(std::string_view string, cons
 }
 
 /**
- * @brief Search::SearchString
+ * @brief
+ *
  * @param string
  * @param searchString
  * @param direction
@@ -755,7 +761,8 @@ int Search::historyIndex(int nCycles) {
 }
 
 /**
- * @brief Search::HistoryByIndex
+ * @brief
+ *
  * @param index
  */
 auto Search::HistoryByIndex(int index) -> HistoryEntry * {

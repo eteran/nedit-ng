@@ -8,9 +8,10 @@
 #include <gsl/gsl_util>
 
 /**
- * @brief loadResource
- * @param resource
- * @return
+ * @brief Loads an internal resource from the application's resources.
+ *
+ * @param resource the name of the resource to load, e.g., ":/path/to/resource".
+ * @return a QByteArray containing the resource data.
  */
 QByteArray loadResource(const QString &resource) {
 

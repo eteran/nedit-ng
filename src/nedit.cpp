@@ -14,10 +14,11 @@ bool IsServer = false;
 namespace {
 
 /**
- * @brief messageHandler
- * @param type
- * @param context
- * @param msg
+ * @brief Custom message handler for Qt logging.
+ *
+ * @param type The type of the message (debug, warning, info, critical, fatal).
+ * @param context The context of the message, including file, function, and line number.
+ * @param msg The message to log.
  */
 void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
 
@@ -47,10 +48,11 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
 }
 
 /**
- * @brief main
- * @param argc
- * @param argv
- * @return
+ * @brief Main entry point for the NEdit application.
+ *
+ * @param argc The number of command line arguments.
+ * @param argv The command line arguments as an array of strings.
+ * @return Returns the exit code of the application.
  */
 int main(int argc, char *argv[]) {
 

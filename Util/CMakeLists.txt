@@ -71,6 +71,7 @@ configure_file(include/Util/version.h.in include/Util/version.h)
 
 add_library(Util
 	ClearCase.cpp
+	Environment.cpp
 	FileSystem.cpp
 	Host.cpp
 	Input.cpp
@@ -82,10 +83,13 @@ add_library(Util
 	User.cpp
 	include/Util/algorithm.h
 	include/Util/ClearCase.h
+	include/Util/Compiler.h
+	include/Util/Environment.h
 	include/Util/FileFormats.h
 	include/Util/FileSystem.h
 	include/Util/Host.h
 	include/Util/Input.h
+	include/Util/QtHelper.h
 	include/Util/Raise.h
 	include/Util/regex.h
 	include/Util/Resource.h
@@ -95,8 +99,6 @@ add_library(Util
 	include/Util/User.h
 	include/Util/utils.h
 	include/Util/version.h.in
-	include/Util/QtHelper.h
-	include/Util/Compiler.h
 )
 
 target_include_directories(Util

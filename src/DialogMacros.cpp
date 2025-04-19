@@ -16,7 +16,8 @@
 #include <QMessageBox>
 
 /**
- * @brief DialogMacros::DialogMacros
+ * @brief
+ *
  * @param parent
  * @param f
  */
@@ -58,7 +59,7 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief DialogMacros::connectSlots
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogMacros::connectSlots() {
 	connect(ui.buttonNew, &QPushButton::clicked, this, &DialogMacros::buttonNew_clicked);
@@ -73,7 +74,7 @@ void DialogMacros::connectSlots() {
 }
 
 /**
- * @brief DialogMacros::buttonNew_clicked
+ * @brief
  */
 void DialogMacros::buttonNew_clicked() {
 
@@ -90,7 +91,7 @@ void DialogMacros::buttonNew_clicked() {
 }
 
 /**
- * @brief DialogMacros::buttonCopy_clicked
+ * @brief
  */
 void DialogMacros::buttonCopy_clicked() {
 
@@ -102,14 +103,14 @@ void DialogMacros::buttonCopy_clicked() {
 }
 
 /**
- * @brief DialogMacros::buttonDelete_clicked
+ * @brief
  */
 void DialogMacros::buttonDelete_clicked() {
 	CommonDialog::deleteItem(&ui, model_, &deleted_);
 }
 
 /**
- * @brief DialogMacros::buttonPasteLRMacro_clicked
+ * @brief
  */
 void DialogMacros::buttonPasteLRMacro_clicked() {
 
@@ -122,21 +123,22 @@ void DialogMacros::buttonPasteLRMacro_clicked() {
 }
 
 /**
- * @brief DialogMacros::buttonUp_clicked
+ * @brief
  */
 void DialogMacros::buttonUp_clicked() {
 	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
- * @brief DialogMacros::buttonDown_clicked
+ * @brief
  */
 void DialogMacros::buttonDown_clicked() {
 	CommonDialog::moveItemDown(&ui, model_);
 }
 
 /**
- * @brief DialogMacros::currentChanged
+ * @brief
+ *
  * @param current
  * @param previous
  */
@@ -205,7 +207,7 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
 }
 
 /**
- * @brief DialogMacros::buttonCheck_clicked
+ * @brief
  */
 void DialogMacros::buttonCheck_clicked() {
 	if (validateFields(Verbosity::Verbose)) {
@@ -216,14 +218,14 @@ void DialogMacros::buttonCheck_clicked() {
 }
 
 /**
- * @brief DialogMacros::buttonApply_clicked
+ * @brief
  */
 void DialogMacros::buttonApply_clicked() {
 	applyDialogChanges();
 }
 
 /**
- * @brief DialogMacros::buttonOK_clicked
+ * @brief
  */
 void DialogMacros::buttonOK_clicked() {
 
@@ -236,7 +238,8 @@ void DialogMacros::buttonOK_clicked() {
 }
 
 /**
- * @brief DialogMacros::validateFields
+ * @brief
+ *
  * @param mode
  * @return
  */
@@ -305,7 +308,8 @@ std::optional<MenuItem> DialogMacros::readFields(Verbosity verbosity) {
 }
 
 /**
- * @brief DialogMacros::checkMacroText
+ * @brief
+ *
  * @param macro
  * @param mode
  * @return
@@ -340,7 +344,8 @@ bool DialogMacros::checkMacroText(const QString &macro, Verbosity verbosity) {
 }
 
 /**
- * @brief DialogMacros::applyDialogChanges
+ * @brief
+ *
  * @return
  */
 bool DialogMacros::applyDialogChanges() {
@@ -385,7 +390,8 @@ bool DialogMacros::applyDialogChanges() {
 }
 
 /**
- * @brief DialogMacros::updateCurrentItem
+ * @brief
+ *
  * @param item
  * @return
  */
@@ -405,7 +411,8 @@ bool DialogMacros::updateCurrentItem(const QModelIndex &index) {
 }
 
 /**
- * @brief DialogMacros::updateCurrentItem
+ * @brief
+ *
  * @return
  */
 bool DialogMacros::updateCurrentItem() {

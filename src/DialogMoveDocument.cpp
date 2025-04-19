@@ -3,7 +3,8 @@
 #include "MainWindow.h"
 
 /**
- * @brief DialogMoveDocument::DialogMoveDocument
+ * @brief
+ *
  * @param parent
  * @param f
  */
@@ -18,7 +19,8 @@ DialogMoveDocument::DialogMoveDocument(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief DialogMoveDocument::addItem
+ * @brief
+ *
  * @param window
  */
 void DialogMoveDocument::addItem(MainWindow *window) {
@@ -27,14 +29,15 @@ void DialogMoveDocument::addItem(MainWindow *window) {
 }
 
 /**
- * @brief DialogMoveDocument::resetSelection
+ * @brief
  */
 void DialogMoveDocument::resetSelection() {
 	ui.listWindows->setCurrentRow(0);
 }
 
 /**
- * @brief DialogMoveDocument::setLabel
+ * @brief
+ *
  * @param label
  */
 void DialogMoveDocument::setLabel(const QString &label) {
@@ -42,7 +45,8 @@ void DialogMoveDocument::setLabel(const QString &label) {
 }
 
 /**
- * @brief DialogMoveDocument::setMultipleDocuments
+ * @brief
+ *
  * @param value
  */
 void DialogMoveDocument::setMultipleDocuments(bool value) {
@@ -50,7 +54,8 @@ void DialogMoveDocument::setMultipleDocuments(bool value) {
 }
 
 /**
- * @brief DialogMoveDocument::selectionIndex
+ * @brief
+ *
  * @return
  */
 int DialogMoveDocument::selectionIndex() const {
@@ -58,7 +63,8 @@ int DialogMoveDocument::selectionIndex() const {
 }
 
 /**
- * @brief DialogMoveDocument::moveAllSelected
+ * @brief
+ *
  * @return
  */
 bool DialogMoveDocument::moveAllSelected() const {

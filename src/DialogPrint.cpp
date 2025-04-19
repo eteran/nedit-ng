@@ -12,12 +12,13 @@
 #include <utility>
 
 /**
- * @brief DialogPrint::DialogPrint
- * @param contents
- * @param jobName
- * @param document
- * @param parent
- * @param f
+ * @brief Constructor for DialogPrint class
+ *
+ * @param contents The contents to be printed, typically the text from a document.
+ * @param jobName The name of the print job, used for identification.
+ * @param document The DocumentWidget instance that contains the document to be printed.
+ * @param parent The parent widget, defaults to nullptr.
+ * @param f The window flags, defaults to Qt::WindowFlags().
  */
 DialogPrint::DialogPrint(QString contents, QString jobName, DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f), document_(document), contents_(std::move(contents)), jobName_(std::move(jobName)) {
@@ -33,15 +34,16 @@ DialogPrint::DialogPrint(QString contents, QString jobName, DocumentWidget *docu
 }
 
 /**
- * @brief DialogPrint::connectSlots
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogPrint::connectSlots() {
 	connect(ui.buttonPrint, &QPushButton::clicked, this, &DialogPrint::buttonPrint_clicked);
 }
 
 /**
- * @brief DialogPrint::on_printers_currentIndexChanged
- * @param index
+ * @brief Handles the change in the selected printer index.
+ *
+ * @param index The index of the currently selected printer in the dropdown.
  */
 void DialogPrint::on_printers_currentIndexChanged(int index) {
 	if (index == 0) {
@@ -54,8 +56,9 @@ void DialogPrint::on_printers_currentIndexChanged(int index) {
 }
 
 /**
- * @brief DialogPrint::print
- * @param printer
+ * @brief Prints the contents of the dialog to the specified printer.
+ *
+ * @param printer The QPrinter instance to which the contents will be printed.
  */
 void DialogPrint::print(QPrinter *printer) const {
 	if (!document_) {
@@ -69,7 +72,7 @@ void DialogPrint::print(QPrinter *printer) const {
 }
 
 /**
- * @brief DialogPrint::buttonPrint_clicked
+ * @brief Handles the print button click event.
  */
 void DialogPrint::buttonPrint_clicked() {
 
@@ -128,8 +131,9 @@ void DialogPrint::buttonPrint_clicked() {
 }
 
 /**
- * @brief DialogPrint::showEvent
- * @param event
+ * @brief Handles the show event of the dialog.
+ *
+ * @param event The show event that is triggered when the dialog is displayed.
  */
 void DialogPrint::showEvent(QShowEvent *event) {
 	Q_UNUSED(event)

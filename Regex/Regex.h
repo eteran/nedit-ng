@@ -99,7 +99,7 @@ public:
 	/**
 	 * Perform substitutions after a 'Regex' match.
 	 *
-	 * @brief SubstituteRE
+	 * @brief
 	 * @param source
 	 * @param dest
 	 * @return
@@ -107,7 +107,7 @@ public:
 	bool SubstituteRE(std::string_view source, std::string &dest) const;
 
 	/**
-	 * @brief isValid
+	 * @brief
 	 * @return
 	 */
 	bool isValid() const noexcept;

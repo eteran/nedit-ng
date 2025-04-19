@@ -267,7 +267,8 @@ QString writeContextMenuYaml(const std::vector<MenuData> &menuItems) {
 }
 
 /**
- * @brief readMenuItem
+ * @brief
+ *
  * @param in
  * @param listType
  */
@@ -399,7 +400,8 @@ std::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
 }
 
 /**
- * @brief loadMacroMenuYaml
+ * @brief
+ *
  * @param menuItems
  */
 void loadMacroMenuYaml(std::vector<MenuData> &menuItems) {
@@ -537,7 +539,8 @@ void loadShellMenuYaml(std::vector<MenuData> &menuItems) {
 }
 
 /**
- * @brief loadContextMenuYaml
+ * @brief
+ *
  * @param menuItems
  */
 void loadContextMenuYaml(std::vector<MenuData> &menuItems) {
@@ -591,7 +594,8 @@ void loadContextMenuYaml(std::vector<MenuData> &menuItems) {
 }
 
 /**
- * @brief loadMenuItemString
+ * @brief
+ *
  * @param inString
  * @param menuItems
  * @param listType
@@ -639,7 +643,8 @@ void loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 }
 
 /**
- * @brief setDefaultIndex
+ * @brief
+ *
  * @param infoList
  * @param index
  */

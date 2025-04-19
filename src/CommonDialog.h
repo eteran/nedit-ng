@@ -9,8 +9,9 @@
 namespace CommonDialog {
 
 /**
- * @brief setButtonIcons
- * @param ui
+ * @brief Sets the icons for the buttons in a dialog.
+ *
+ * @param ui Pointer to the UI object containing the buttons.
  */
 template <class Ui>
 void setButtonIcons(Ui *ui) {
@@ -22,10 +23,13 @@ void setButtonIcons(Ui *ui) {
 }
 
 /**
- * @brief updateButtonStates
- * @param ui
- * @param model
- * @param current
+ * @brief Updates the states of the buttons based on the current selection in a model.
+ * If the index is valid, the buttons will be enabled or disabled based on the position of the selected item.
+ * If the index is invalid, all buttons will be disabled.
+ *
+ * @param ui Pointer to the UI object containing the buttons.
+ * @param model Pointer to the model containing the items.
+ * @param current The currently selected index in the model.
  */
 template <class Ui, class Model>
 void updateButtonStates(Ui *ui, Model *model, const QModelIndex &current) {
@@ -55,9 +59,10 @@ void updateButtonStates(Ui *ui, Model *model, const QModelIndex &current) {
 }
 
 /**
- * @brief updateButtonStates
- * @param ui
- * @param model
+ * @brief Updates the button states based on the current selection in the model.
+ *
+ * @param ui Pointer to the UI object containing the buttons.
+ * @param model Pointer to the model containing the items.
  */
 template <class Ui, class Model>
 void updateButtonStates(Ui *ui, Model *model) {
@@ -66,10 +71,11 @@ void updateButtonStates(Ui *ui, Model *model) {
 }
 
 /**
- * @brief addNewItem
- * @param ui
- * @param model
- * @param func
+ * @brief Adds a new item to the model and updates the UI.
+ *
+ * @param ui Pointer to the UI object containing the model.
+ * @param model Pointer to the model where the item will be added.
+ * @param func A function that returns a new item to be added to the model.
  */
 template <class Ui, class Model, class Func>
 void addNewItem(Ui *ui, Model *model, Func func) {
@@ -84,10 +90,11 @@ void addNewItem(Ui *ui, Model *model, Func func) {
 }
 
 /**
- * @brief deleteItem
- * @param ui
- * @param model
- * @param deleted
+ * @brief Deletes the currently selected item from the model and updates the UI.
+ *
+ * @param ui Pointer to the UI object containing the model.
+ * @param model Pointer to the model from which the item will be deleted.
+ * @param deleted Pointer to a QModelIndex where the deleted item index will be stored.
  */
 template <class Ui, class Model>
 void deleteItem(Ui *ui, Model *model, QModelIndex *deleted) {
@@ -110,9 +117,10 @@ void deleteItem(Ui *ui, Model *model, QModelIndex *deleted) {
 }
 
 /**
- * @brief copyItem
- * @param ui
- * @param model
+ * @brief Copies the currently selected item in the model and adds it as a new item.
+ *
+ * @param ui Pointer to the UI object containing the model.
+ * @param model Pointer to the model from which the item will be copied.
  */
 template <class Ui, class Model>
 void copyItem(Ui *ui, Model *model) {
@@ -131,9 +139,10 @@ void copyItem(Ui *ui, Model *model) {
 }
 
 /**
- * @brief moveItemUp
- * @param ui
- * @param model
+ * @brief Moves the currently selected item up in the model and updates the UI.
+ *
+ * @param ui Pointer to the UI object containing the model.
+ * @param model Pointer to the model where the item will be moved.
  */
 template <class Ui, class Model>
 void moveItemUp(Ui *ui, Model *model) {
@@ -147,9 +156,10 @@ void moveItemUp(Ui *ui, Model *model) {
 }
 
 /**
- * @brief moveItemDown
- * @param ui
- * @param model
+ * @brief Moves the currently selected item down in the model and updates the UI.
+ *
+ * @param ui Pointer to the UI object containing the model.
+ * @param model Pointer to the model where the item will be moved.
  */
 template <class Ui, class Model>
 void moveItemDown(Ui *ui, Model *model) {

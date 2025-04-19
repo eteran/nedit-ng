@@ -27,7 +27,7 @@ const auto DEFAULT_CURSOR_FG = QLatin1String("black");
 }
 
 /**
- * @brief load
+ * @brief Load the theme from the specified file or the default one if not found.
  */
 void load() {
 	const QString filename = Settings::themeFile();
@@ -104,7 +104,7 @@ void load() {
 }
 
 /**
- * @brief save
+ * @brief Save the current theme to the default theme file.
  */
 void save() {
 	const QString filename = Settings::themeFile();

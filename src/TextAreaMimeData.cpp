@@ -4,7 +4,8 @@
 #include "TextBuffer.h"
 
 /**
- * @brief TextAreaMimeData::TextAreaMimeData
+ * @brief
+ *
  * @param buffer
  */
 TextAreaMimeData::TextAreaMimeData(std::shared_ptr<TextBuffer> buffer)
@@ -12,7 +13,8 @@ TextAreaMimeData::TextAreaMimeData(std::shared_ptr<TextBuffer> buffer)
 }
 
 /**
- * @brief TextAreaMimeData::retrieveData
+ * @brief
+ *
  * @param mimeType
  * @param type
  * @return
@@ -32,7 +34,8 @@ QVariant TextAreaMimeData::retrieveData(const QString &mimeType, QVariant::Type 
 }
 
 /**
- * @brief TextAreaMimeData::formats
+ * @brief
+ *
  * @return
  */
 QStringList TextAreaMimeData::formats() const {
@@ -48,7 +51,8 @@ QStringList TextAreaMimeData::formats() const {
 }
 
 /**
- * @brief TextAreaMimeData::hasFormat
+ * @brief
+ *
  * @param mimeType
  * @return
  */
@@ -57,7 +61,8 @@ bool TextAreaMimeData::hasFormat(const QString &mimeType) const {
 }
 
 /**
- * @brief TextAreaMimeData::buffer
+ * @brief
+ *
  * @return
  */
 TextBuffer *TextAreaMimeData::buffer() const {
@@ -65,7 +70,8 @@ TextBuffer *TextAreaMimeData::buffer() const {
 }
 
 /**
- * @brief TextAreaMimeData::isOwner
+ * @brief
+ *
  * @param mimeData
  * @param buffer
  * @return

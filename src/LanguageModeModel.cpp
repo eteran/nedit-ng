@@ -3,7 +3,8 @@
 #include "Util/algorithm.h"
 
 /**
- * @brief LanguageModeModel::LanguageModeModel
+ * @brief
+ *
  * @param parent
  */
 LanguageModeModel::LanguageModeModel(QObject *parent)
@@ -11,7 +12,8 @@ LanguageModeModel::LanguageModeModel(QObject *parent)
 }
 
 /**
- * @brief LanguageModeModel::index
+ * @brief
+ *
  * @param row
  * @param column
  * @param parent
@@ -31,7 +33,8 @@ QModelIndex LanguageModeModel::index(int row, int column, const QModelIndex &par
 }
 
 /**
- * @brief LanguageModeModel::parent
+ * @brief
+ *
  * @param index
  * @return
  */
@@ -41,7 +44,8 @@ QModelIndex LanguageModeModel::parent(const QModelIndex &index) const {
 }
 
 /**
- * @brief LanguageModeModel::data
+ * @brief
+ *
  * @param index
  * @param role
  * @return
@@ -67,7 +71,8 @@ QVariant LanguageModeModel::data(const QModelIndex &index, int role) const {
 }
 
 /**
- * @brief LanguageModeModel::headerData
+ * @brief
+ *
  * @param section
  * @param orientation
  * @param role
@@ -87,7 +92,8 @@ QVariant LanguageModeModel::headerData(int section, Qt::Orientation orientation,
 }
 
 /**
- * @brief LanguageModeModel::columnCount
+ * @brief
+ *
  * @param parent
  * @return
  */
@@ -97,7 +103,8 @@ int LanguageModeModel::columnCount(const QModelIndex &parent) const {
 }
 
 /**
- * @brief LanguageModeModel::rowCount
+ * @brief
+ *
  * @param parent
  * @return
  */
@@ -107,7 +114,8 @@ int LanguageModeModel::rowCount(const QModelIndex &parent) const {
 }
 
 /**
- * @brief LanguageModeModel::addItem
+ * @brief
+ *
  * @param style
  */
 void LanguageModeModel::addItem(const LanguageMode &languageMode) {
@@ -117,7 +125,7 @@ void LanguageModeModel::addItem(const LanguageMode &languageMode) {
 }
 
 /**
- * @brief LanguageModeModel::clear
+ * @brief
  */
 void LanguageModeModel::clear() {
 	beginResetModel();
@@ -126,7 +134,8 @@ void LanguageModeModel::clear() {
 }
 
 /**
- * @brief LanguageModeModel::moveItemUp
+ * @brief
+ *
  * @param index
  */
 void LanguageModeModel::moveItemUp(const QModelIndex &index) {
@@ -141,7 +150,8 @@ void LanguageModeModel::moveItemUp(const QModelIndex &index) {
 }
 
 /**
- * @brief LanguageModeModel::moveItemDown
+ * @brief
+ *
  * @param index
  */
 void LanguageModeModel::moveItemDown(const QModelIndex &index) {
@@ -156,7 +166,8 @@ void LanguageModeModel::moveItemDown(const QModelIndex &index) {
 }
 
 /**
- * @brief LanguageModeModel::deleteItem
+ * @brief
+ *
  * @param index
  */
 void LanguageModeModel::deleteItem(const QModelIndex &index) {
@@ -185,7 +196,8 @@ bool LanguageModeModel::updateItem(const QModelIndex &index, const LanguageMode 
 }
 
 /**
- * @brief LanguageModeModel::itemFromIndex
+ * @brief
+ *
  * @param index
  * @return
  */

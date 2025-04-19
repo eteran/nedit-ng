@@ -46,7 +46,8 @@ QScreen *screenAt(QPoint pos) {
 }
 
 /**
- * @brief isLocatedOnDesktop
+ * @brief
+ *
  * @param widget
  * @param currentDesktop
  * @return
@@ -60,7 +61,8 @@ bool isLocatedOnDesktop(QWidget *widget, QScreen *currentDesktop) {
 }
 
 /**
- * @brief documentForTargetScreen
+ * @brief
+ *
  * @param currentDesktop
  * @return
  */
@@ -79,7 +81,8 @@ DocumentWidget *documentForTargetScreen(QScreen *currentDesktop) {
 }
 
 /**
- * @brief findDocumentOnDesktop
+ * @brief
+ *
  * @param tabbed
  * @param currentDesktop
  * @return
@@ -108,7 +111,8 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, QScreen *currentDesktop) {
 }
 
 /**
- * @brief current_desktop
+ * @brief
+ *
  * @return
  */
 QScreen *current_desktop() {
@@ -118,7 +122,8 @@ QScreen *current_desktop() {
 }
 
 /**
- * @brief NeditServer::NeditServer
+ * @brief
+ *
  * @param parent
  */
 NeditServer::NeditServer(QObject *parent)
@@ -137,7 +142,7 @@ NeditServer::NeditServer(QObject *parent)
 }
 
 /**
- * @brief NeditServer::newConnection
+ * @brief
  */
 void NeditServer::newConnection() {
 

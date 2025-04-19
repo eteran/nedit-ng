@@ -12,10 +12,11 @@
 #include <QMessageBox>
 
 /**
- * @brief DialogFind::DialogFind
- * @param window
- * @param document
- * @param f
+ * @brief Constructor for DialogFind class
+ *
+ * @param window MainWindow instance that owns this dialog
+ * @param document DocumentWidget instance that the dialog is associated with
+ * @param f Window flags for the dialog, defaults to Qt::WindowFlags()
  */
 DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f)
 	: Dialog(window, f), window_(window), document_(document) {
@@ -28,7 +29,7 @@ DialogFind::DialogFind(MainWindow *window, DocumentWidget *document, Qt::WindowF
 }
 
 /**
- * @brief DialogFind::connectSlots
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
  */
 void DialogFind::connectSlots() {
 	connect(ui.buttonFind, &QPushButton::clicked, this, &DialogFind::buttonFind_clicked);
@@ -39,8 +40,9 @@ void DialogFind::connectSlots() {
 }
 
 /**
- * @brief DialogFind::showEvent
- * @param event
+ * @brief Handles the show event for the dialog.
+ *
+ * @param event The show event that is triggered when the dialog is shown.
  */
 void DialogFind::showEvent(QShowEvent *event) {
 	Dialog::showEvent(event);
@@ -48,16 +50,17 @@ void DialogFind::showEvent(QShowEvent *event) {
 }
 
 /**
- * @brief DialogFind::eventFilter
- * @param obj
- * @param ev
- * @return
+ * @brief Event filter for the text input field.
+ *
+ * @param obj The object being filtered, expected to be the text input field.
+ * @param ev The event being filtered, expected to be a key press event.
+ * @return True if the event was handled, false otherwise.
  */
 bool DialogFind::eventFilter(QObject *obj, QEvent *ev) {
+
 	if (obj == ui.textFind && ev->type() == QEvent::KeyPress) {
 		auto event = static_cast<QKeyEvent *>(ev);
-
-		int index = window_->fHistIndex_;
+		int index  = window_->fHistIndex_;
 
 		// only process up and down arrow keys
 		if (event->key() != Qt::Key_Up && event->key() != Qt::Key_Down) {
@@ -103,8 +106,9 @@ bool DialogFind::eventFilter(QObject *obj, QEvent *ev) {
 }
 
 /**
- * @brief DialogFind::checkKeep_toggled
- * @param checked
+ * @brief Handles the toggling of the "keep" checkbox.
+ *
+ * @param checked Indicates whether the checkbox is checked or not.
  */
 void DialogFind::checkKeep_toggled(bool checked) {
 	if (checked && document_) {
@@ -115,7 +119,7 @@ void DialogFind::checkKeep_toggled(bool checked) {
 }
 
 /**
- * @brief DialogFind::updateFindButton
+ * @brief Updates the state of the Find button based on the text input.
  */
 void DialogFind::updateFindButton() {
 	const bool buttonState = !ui.textFind->text().isEmpty();
@@ -123,18 +127,21 @@ void DialogFind::updateFindButton() {
 }
 
 /**
- * @brief DialogFind::textFind_textChanged
- * @param text
+ * @brief Handles "text changed" events in the text input field.
+ *
+ * @param text The text that was changed in the input field.
  */
 void DialogFind::textFind_textChanged(const QString &text) {
 	Q_UNUSED(text)
 	updateFindButton();
 }
 
-/*
-** initialize the state of the regex/case/word toggle buttons, and the sticky
-** case sensitivity states.
-*/
+/**
+ * @brief Initialize the state of the regex/case/word toggle buttons,
+ * and the sticky case sensitivity states.
+ *
+ * @param searchType The type of search to initialize the buttons for.
+ */
 void DialogFind::initToggleButtons(SearchType searchType) {
 	/* Set the initial search type and remember the corresponding case
 	   sensitivity states in case sticky case sensitivity is required. */
@@ -191,8 +198,9 @@ void DialogFind::initToggleButtons(SearchType searchType) {
 }
 
 /**
- * @brief DialogFind::setTextFieldFromDocument
- * @param document
+ * @brief Sets the text field in the dialog from the current selection in the document.
+ *
+ * @param document The DocumentWidget instance from which to get the selection text.
  */
 void DialogFind::setTextFieldFromDocument(DocumentWidget *document) {
 
@@ -207,7 +215,7 @@ void DialogFind::setTextFieldFromDocument(DocumentWidget *document) {
 }
 
 /**
- * @brief DialogFind::buttonFind_clicked
+ * @brief Handles the click event for the Find button.
  */
 void DialogFind::buttonFind_clicked() {
 
@@ -237,11 +245,14 @@ void DialogFind::buttonFind_clicked() {
 	}
 }
 
-/*
-** Fetch and verify (particularly regular expression) search and replace
-** strings and search type from the Find dialog.  If the strings are ok,
-** save a copy in the search history, and return the fields
-*/
+/**
+ * @brief Fetch and verify (particularly regular expression) search and replace
+ * strings and search type from the Find dialog. If the strings are ok,
+ * save a copy in the search history, and return the fields
+ *
+ * @return A Fields structure containing the search parameters if valid,
+ * otherwise an empty optional.
+ */
 std::optional<DialogFind::Fields> DialogFind::readFields() {
 
 	Fields fields;
@@ -291,8 +302,9 @@ std::optional<DialogFind::Fields> DialogFind::readFields() {
 }
 
 /**
- * @brief DialogFind::checkRegex_toggled
- * @param checked
+ * @brief Handles the toggling of the regex checkbox.
+ *
+ * @param checked Indicates whether the checkbox is checked or not.
  */
 void DialogFind::checkRegex_toggled(bool checked) {
 
@@ -315,8 +327,9 @@ void DialogFind::checkRegex_toggled(bool checked) {
 }
 
 /**
- * @brief DialogFind::checkCase_toggled
- * @param checked
+ * @brief Handles the toggling of the Case Sensitive checkbox.
+ *
+ * @param checked Indicates whether the checkbox is checked or not.
  */
 void DialogFind::checkCase_toggled(bool checked) {
 
@@ -332,16 +345,18 @@ void DialogFind::checkCase_toggled(bool checked) {
 }
 
 /**
- * @brief DialogFind::keepDialog
- * @return
+ * @brief Returns whether the dialog should remain open after a search operation.
+ *
+ * @return true if the dialog should remain open, false otherwise.
  */
 bool DialogFind::keepDialog() const {
 	return ui.checkKeep->isChecked();
 }
 
 /**
- * @brief DialogFind::setDocument
- * @param document
+ * @brief Sets the document for which this dialog is being used.
+ *
+ * @param document The DocumentWidget instance to set for this dialog.
  */
 void DialogFind::setDocument(DocumentWidget *document) {
 	Q_ASSERT(document);
@@ -353,16 +368,19 @@ void DialogFind::setDocument(DocumentWidget *document) {
 }
 
 /**
- * @brief DialogFind::setDirection
- * @param direction
+ * @brief Sets the search direction for the dialog.
+ *
+ * @param direction The direction to set for the search operation, either Forward or Backward.
  */
 void DialogFind::setDirection(Direction direction) {
 	ui.checkBackward->setChecked(direction == Direction::Backward);
 }
 
 /**
- * @brief DialogReplace::setKeepDialog
- * @param keep
+ * @brief Sets whether the dialog should remain open after a search operation.
+ *
+ * @param keep If true, the dialog will remain open after a search operation;
+ *             if false, the dialog will close after a search operation.
  */
 void DialogFind::setKeepDialog(bool keep) {
 	ui.checkKeep->setChecked(keep);

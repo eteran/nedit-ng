@@ -8,6 +8,13 @@
 #include <QIntValidator>
 #include <QMessageBox>
 
+/**
+ * @brief
+ *
+ * @param document
+ * @param parent
+ * @param f
+ */
 DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f), document_(document) {
 	ui.setupUi(this);
@@ -23,6 +30,9 @@ DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::Window
 	}
 }
 
+/**
+ * @brief Connects the slots for the dialog's buttons and other UI elements.
+ */
 void DialogRepeat::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogRepeat::buttonBox_accepted);
 }

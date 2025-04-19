@@ -65,7 +65,8 @@
 namespace {
 
 /**
- * @brief asciiToUnicode
+ * @brief
+ *
  * @param chars
  * @param len
  * @return
@@ -137,7 +138,8 @@ constexpr uint32_t RANGESET_MASK     = (0x3f << RANGESET_SHIFT);
 constexpr int MAX_DISP_LINE_LEN = 1024;
 
 /**
- * @brief offscreenV
+ * @brief
+ *
  * @param desktop
  * @param top
  * @param height
@@ -305,7 +307,8 @@ void trackModifyRange(TextCursor *rangeStart, TextCursor *modRangeEnd, TextCurso
 }
 
 /**
- * @brief isModifier
+ * @brief
+ *
  * @param e
  * @return
  */
@@ -483,7 +486,8 @@ constexpr InputHandler inputHandlers[] = {
 }
 
 /**
- * @brief TextArea::TextArea
+ * @brief
+ *
  * @param document
  * @param buffer
  * @param font
@@ -566,7 +570,8 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
 }
 
 /**
- * @brief TextArea::pasteClipboard
+ * @brief
+ *
  * @param flags
  */
 void TextArea::pasteClipboard(EventFlags flags) {
@@ -581,7 +586,8 @@ void TextArea::pasteClipboard(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::cutClipboard
+ * @brief
+ *
  * @param flags
  */
 void TextArea::cutClipboard(EventFlags flags) {
@@ -591,7 +597,8 @@ void TextArea::cutClipboard(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::toggleOverstrike
+ * @brief
+ *
  * @param flags
  */
 void TextArea::toggleOverstrike(EventFlags flags) {
@@ -601,7 +608,8 @@ void TextArea::toggleOverstrike(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::endOfLine
+ * @brief
+ *
  * @param flags
  */
 void TextArea::endOfLine(EventFlags flags) {
@@ -625,7 +633,8 @@ void TextArea::endOfLine(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::deleteNextCharacter
+ * @brief
+ *
  * @param flags
  */
 void TextArea::deleteNextCharacter(EventFlags flags) {
@@ -655,7 +664,8 @@ void TextArea::deleteNextCharacter(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::copyClipboard
+ * @brief
+ *
  * @param flags
  */
 void TextArea::copyClipboard(EventFlags flags) {
@@ -672,7 +682,8 @@ void TextArea::copyClipboard(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::deletePreviousWord
+ * @brief
+ *
  * @param flags
  */
 void TextArea::deletePreviousWord(EventFlags flags) {
@@ -711,7 +722,8 @@ void TextArea::deletePreviousWord(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::beginningOfLine
+ * @brief
+ *
  * @param flags
  */
 void TextArea::beginningOfLine(EventFlags flags) {
@@ -747,7 +759,8 @@ void TextArea::beginningOfLine(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::processCancel
+ * @brief
+ *
  * @param flags
  */
 void TextArea::processCancel(EventFlags flags) {
@@ -767,7 +780,8 @@ void TextArea::processCancel(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::deletePreviousCharacter
+ * @brief
+ *
  * @param flags
  */
 void TextArea::deletePreviousCharacter(EventFlags flags) {
@@ -812,7 +826,8 @@ void TextArea::deletePreviousCharacter(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::newline
+ * @brief
+ *
  * @param flags
  */
 void TextArea::newline(EventFlags flags) {
@@ -827,7 +842,8 @@ void TextArea::newline(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::processUp
+ * @brief
+ *
  * @param flags
  */
 void TextArea::processUp(EventFlags flags) {
@@ -849,7 +865,8 @@ void TextArea::processUp(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::processDown
+ * @brief
+ *
  * @param flags
  */
 void TextArea::processDown(EventFlags flags) {
@@ -871,7 +888,8 @@ void TextArea::processDown(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::forwardCharacter
+ * @brief
+ *
  * @param flags
  */
 void TextArea::forwardCharacter(EventFlags flags) {
@@ -892,7 +910,8 @@ void TextArea::forwardCharacter(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::backwardCharacter
+ * @brief
+ *
  * @param flags
  */
 void TextArea::backwardCharacter(EventFlags flags) {
@@ -913,7 +932,7 @@ void TextArea::backwardCharacter(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::~TextArea
+ * @brief
  */
 TextArea::~TextArea() {
 	if (buffer_) {
@@ -923,7 +942,8 @@ TextArea::~TextArea() {
 }
 
 /**
- * @brief TextArea::verticalScrollBar_valueChanged
+ * @brief
+ *
  * @param value
  */
 void TextArea::verticalScrollBar_valueChanged(int value) {
@@ -963,7 +983,8 @@ void TextArea::verticalScrollBar_valueChanged(int value) {
 }
 
 /**
- * @brief TextArea::horizontalScrollBar_valueChanged
+ * @brief
+ *
  * @param value
  */
 void TextArea::horizontalScrollBar_valueChanged(int value) {
@@ -977,7 +998,7 @@ void TextArea::horizontalScrollBar_valueChanged(int value) {
 }
 
 /**
- * @brief TextArea::cursorBlinkTimerTimeout
+ * @brief
  */
 void TextArea::cursorBlinkTimerTimeout() {
 
@@ -990,7 +1011,7 @@ void TextArea::cursorBlinkTimerTimeout() {
 }
 
 /**
- * @brief TextArea::autoScrollTimerTimeout
+ * @brief
  */
 void TextArea::autoScrollTimerTimeout() {
 
@@ -1062,7 +1083,8 @@ void TextArea::autoScrollTimerTimeout() {
 }
 
 /**
- * @brief TextArea::focusInEvent
+ * @brief
+ *
  * @param event
  */
 void TextArea::focusInEvent(QFocusEvent *event) {
@@ -1080,7 +1102,8 @@ void TextArea::focusInEvent(QFocusEvent *event) {
 }
 
 /**
- * @brief TextArea::focusOutEvent
+ * @brief
+ *
  * @param event
  */
 void TextArea::focusOutEvent(QFocusEvent *event) {
@@ -1096,7 +1119,8 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
 }
 
 /**
- * @brief TextArea::keyPressEvent
+ * @brief
+ *
  * @param event
  */
 void TextArea::keyPressEvent(QKeyEvent *event) {
@@ -1168,7 +1192,8 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
 }
 
 /**
- * @brief TextArea::mouseDoubleClickEvent
+ * @brief
+ *
  * @param event
  */
 void TextArea::mouseDoubleClickEvent(QMouseEvent *event) {
@@ -1193,7 +1218,8 @@ void TextArea::mouseDoubleClickEvent(QMouseEvent *event) {
 }
 
 /**
- * @brief TextArea::mouseTripleClickEvent
+ * @brief
+ *
  * @param event
  */
 void TextArea::mouseTripleClickEvent(QMouseEvent *event) {
@@ -1204,7 +1230,8 @@ void TextArea::mouseTripleClickEvent(QMouseEvent *event) {
 }
 
 /**
- * @brief TextArea::mouseQuadrupleClickEvent
+ * @brief
+ *
  * @param event
  */
 void TextArea::mouseQuadrupleClickEvent(QMouseEvent *event) {
@@ -1216,7 +1243,8 @@ void TextArea::mouseQuadrupleClickEvent(QMouseEvent *event) {
 /**
  * "extend_adjust", "extend_adjust('rect')", "mouse_pan"
  *
- * @brief TextArea::mouseMoveEvent
+ * @brief
+ *
  * @param event
  */
 void TextArea::mouseMoveEvent(QMouseEvent *event) {
@@ -1249,7 +1277,8 @@ void TextArea::mouseMoveEvent(QMouseEvent *event) {
 
 /**
  * "grab_focus", "extend_start", "extend_start('rect')", "mouse_pan"
- * @brief TextArea::mousePressEvent
+ * @brief
+ *
  * @param event
  */
 void TextArea::mousePressEvent(QMouseEvent *event) {
@@ -1321,7 +1350,8 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 /**
  * "extend_end", "copy_to_or_end_drag", "end_drag"
  *
- * @brief TextArea::mouseReleaseEvent
+ * @brief
+ *
  * @param event
  */
 void TextArea::mouseReleaseEvent(QMouseEvent *event) {
@@ -1371,7 +1401,8 @@ void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 /**
- * @brief TextArea::paintEvent
+ * @brief
+ *
  * @param event
  */
 void TextArea::paintEvent(QPaintEvent *event) {
@@ -1402,7 +1433,8 @@ void TextArea::paintEvent(QPaintEvent *event) {
 }
 
 /**
- * @brief TextArea::resizeEvent
+ * @brief
+ *
  * @param event
  */
 void TextArea::resizeEvent(QResizeEvent *event) {
@@ -1419,7 +1451,8 @@ void TextArea::resizeEvent(QResizeEvent *event) {
 }
 
 /**
- * @brief TextArea::bufPreDeleteCallback
+ * @brief
+ *
  * @param pos
  * @param nDeleted
  */
@@ -1440,7 +1473,8 @@ void TextArea::bufPreDeleteCallback(TextCursor pos, int64_t nDeleted) {
 }
 
 /**
- * @brief TextArea::bufModifiedCallback
+ * @brief
+ *
  * @param pos
  * @param nInserted
  * @param nDeleted
@@ -1570,7 +1604,8 @@ void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nD
 }
 
 /**
- * @brief TextArea::setBacklightCharTypes
+ * @brief
+ *
  * @param charTypes
  */
 void TextArea::setBacklightCharTypes(const QString &charTypes) {
@@ -1579,7 +1614,7 @@ void TextArea::setBacklightCharTypes(const QString &charTypes) {
 }
 
 /**
- * @brief TextArea::hideOrShowHScrollBar
+ * @brief
  */
 void TextArea::hideOrShowHScrollBar() {
 	const QRect viewRect = viewport()->contentsRect();
@@ -1601,7 +1636,8 @@ void TextArea::hideOrShowHScrollBar() {
  * available _after_ the modification. In other cases, we can still perform the
  * calculation afterwards (possibly even more efficiently).
  *
- * @brief TextArea::measureDeletedLines
+ * @brief
+ *
  * @param pos
  * @param nDeleted
  */
@@ -1884,7 +1920,8 @@ TextCursor TextArea::startOfLine(TextCursor pos) const {
  * delimiting where the line starts need to be recalculated, and for deciding
  * what part of the text to redisplay.
  *
- * @brief TextArea::findWrapRange
+ * @brief
+ *
  * @param deletedText
  * @param pos
  * @param nInserted
@@ -2343,7 +2380,7 @@ void TextArea::redisplayRect(const QRect &rect) {
  * Update the minimum, maximum, page increment, and value for
  * vertical scroll bar.
  *
- * @brief TextArea::updateVScrollBarRange
+ * @brief
  */
 void TextArea::updateVScrollBarRange() {
 	/* NOTE(eteran) Originally, it seemed that some special handling was needed
@@ -2361,7 +2398,8 @@ void TextArea::updateVScrollBarRange() {
  * it can pass "startPosIsLineStart" as true to make the call more efficient by
  * avoiding the additional step of scanning back to the last newline.
  *
- * @brief TextArea::forwardNLines
+ * @brief
+ *
  * @param startPos
  * @param nLines
  * @param startPosIsLineStart
@@ -2447,7 +2485,8 @@ void TextArea::findLineEnd(TextCursor startPos, bool startPosIsLineStart, TextCu
  * displayed text, particularly since it's usually called for each typed
  * character!
  *
- * @brief TextArea::updateHScrollBarRange
+ * @brief
+ *
  * @return
  */
 bool TextArea::updateHScrollBarRange() {
@@ -2475,7 +2514,8 @@ bool TextArea::updateHScrollBarRange() {
 /**
  * Return true if there are lines visible with no corresponding buffer text
  *
- * @brief TextArea::emptyLinesVisible
+ * @brief
+ *
  * @return
  */
 bool TextArea::emptyLinesVisible() const {
@@ -2486,7 +2526,8 @@ bool TextArea::emptyLinesVisible() const {
  * Find the line number of position "pos" relative to the first line of
  * displayed text. Returns false if the line is not displayed.
  *
- * @brief TextArea::posToVisibleLineNum
+ * @brief
+ *
  * @param pos
  * @param lineNum
  * @return
@@ -2528,7 +2569,8 @@ bool TextArea::posToVisibleLineNum(TextCursor pos, int *lineNum) const {
 /**
  * Return the width in pixels of the displayed line pointed to by "visLineNum"
  *
- * @brief TextArea::measureVisLine
+ * @brief
+ *
  * @param visLineNum
  * @return
  */
@@ -2553,7 +2595,8 @@ int64_t TextArea::measureVisLine(int visLineNum) const {
  * Return the length of a line (number of displayable characters) by examining
  * entries in the line starts array rather than by scanning for newlines
  *
- * @brief TextArea::visLineLength
+ * @brief
+ *
  * @param visLineNum
  * @return
  */
@@ -2715,7 +2758,7 @@ void TextArea::redisplayRange(TextCursor start, TextCursor end) {
 }
 
 /**
- * @brief TextArea::repaintLineNumbers
+ * @brief
  */
 void TextArea::repaintLineNumbers() {
 	lineNumberArea_->update();
@@ -3168,7 +3211,8 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 /**
  * Draw a cursor with top center at x, y.
  *
- * @brief TextArea::drawCursor
+ * @brief
+ *
  * @param painter
  * @param x
  * @param y
@@ -3236,7 +3280,8 @@ void TextArea::drawCursor(QPainter *painter, int x, int y) {
 }
 
 /**
- * @brief TextArea::getRangesetColor
+ * @brief
+ *
  * @param ind
  * @param bground
  * @return
@@ -3266,7 +3311,8 @@ QColor TextArea::getRangesetColor(size_t ind, QColor bground) const {
 }
 
 /**
- * @brief TextArea::handleResize
+ * @brief
+ *
  * @param widthChanged
  */
 void TextArea::handleResize(bool widthChanged) {
@@ -3349,7 +3395,8 @@ int64_t TextArea::countLines(TextCursor startPos, TextCursor endPos, bool startP
 }
 
 /**
- * @brief TextArea::setCursorStyle
+ * @brief
+ *
  * @param style
  */
 void TextArea::setCursorStyle(CursorStyles style) {
@@ -3360,7 +3407,7 @@ void TextArea::setCursorStyle(CursorStyles style) {
 }
 
 /**
- * @brief TextArea::TextDBlankCursor
+ * @brief
  */
 void TextArea::TextDBlankCursor() {
 	if (cursorOn_) {
@@ -3370,7 +3417,7 @@ void TextArea::TextDBlankCursor() {
 }
 
 /**
- * @brief TextArea::unblankCursor
+ * @brief
  */
 void TextArea::unblankCursor() {
 	if (!cursorOn_) {
@@ -3749,7 +3796,8 @@ bool TextArea::positionToXY(TextCursor pos, int *x, int *y) const {
 /**
  * Change the (non syntax-highlight) colors
  *
- * @brief TextArea::setColors
+ * @brief
+ *
  * @param textFG
  * @param textBG
  * @param selectionFG
@@ -4091,7 +4139,8 @@ void TextArea::keyMoveExtendSelection(TextCursor origPos, bool rectangular) {
 }
 
 /**
- * @brief TextArea::moveRight
+ * @brief
+ *
  * @return
  */
 bool TextArea::moveRight() {
@@ -4104,7 +4153,8 @@ bool TextArea::moveRight() {
 }
 
 /**
- * @brief TextArea::moveLeft
+ * @brief
+ *
  * @return
  */
 bool TextArea::moveLeft() {
@@ -4117,7 +4167,8 @@ bool TextArea::moveLeft() {
 }
 
 /**
- * @brief TextArea::moveUp
+ * @brief
+ *
  * @param absolute
  * @return
  */
@@ -4169,7 +4220,8 @@ bool TextArea::moveUp(bool absolute) {
 }
 
 /**
- * @brief TextArea::moveDown
+ * @brief
+ *
  * @param absolute
  * @return
  */
@@ -4210,7 +4262,8 @@ bool TextArea::moveDown(bool absolute) {
 }
 
 /**
- * @brief TextArea::checkReadOnly
+ * @brief
+ *
  * @return
  */
 bool TextArea::checkReadOnly() const {
@@ -5570,7 +5623,8 @@ bool TextArea::clickTracker(QMouseEvent *event, bool inDoubleClickHandler) {
 }
 
 /**
- * @brief TextArea::selectAllAP
+ * @brief
+ *
  * @param flags
  */
 void TextArea::selectAllAP(EventFlags flags) {
@@ -5582,7 +5636,8 @@ void TextArea::selectAllAP(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::deselectAllAP
+ * @brief
+ *
  * @param flags
  */
 void TextArea::deselectAllAP(EventFlags flags) {
@@ -5594,7 +5649,8 @@ void TextArea::deselectAllAP(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::extendStartAP
+ * @brief
+ *
  * @param event
  * @param flags
  */
@@ -5662,7 +5718,8 @@ void TextArea::extendStartAP(QMouseEvent *event, EventFlags flags) {
 }
 
 /**
- * @brief TextArea::extendAdjustAP
+ * @brief
+ *
  * @param event
  * @param flags
  */
@@ -5925,7 +5982,8 @@ void TextArea::finishBlockDrag() {
 }
 
 /**
- * @brief TextArea::secondaryOrDragStartAP
+ * @brief
+ *
  * @param event
  * @param flags
  */
@@ -5970,7 +6028,8 @@ bool TextArea::inSelection(const QPoint &p) const {
 }
 
 /**
- * @brief TextArea::secondaryStartAP
+ * @brief
+ *
  * @param event
  * @param flags
  */
@@ -6011,7 +6070,8 @@ void TextArea::secondaryStartAP(QMouseEvent *event, EventFlags flags) {
 }
 
 /**
- * @brief TextArea::secondaryOrDragAdjustAP
+ * @brief
+ *
  * @param event
  * @param flags
  */
@@ -6464,7 +6524,7 @@ int TextArea::offsetWrappedRow(int row) const {
 	return gsl::narrow<int>(buffer_->BufCountLines(firstChar_, lineStarts_[row]));
 }
 
-void TextArea::setWordDelimiters(const std::string &delimiters) {
+void TextArea::setWordDelimiters(std::string_view delimiters) {
 
 	// add mandatory delimiters blank, tab, and newline to the list
 	delimiters_ = " \t\n";
@@ -6495,7 +6555,8 @@ void TextArea::setLineNumCols(int value) {
 }
 
 /**
- * @brief TextArea::lineNumberAreaWidth
+ * @brief
+ *
  * @return
  */
 int TextArea::lineNumberAreaWidth() const {
@@ -7182,7 +7243,8 @@ TextCursor TextArea::preferredColumnPos(int64_t column, TextCursor lineStartPos)
 }
 
 /**
- * @brief TextArea::cursorPos
+ * @brief
+ *
  * @return
  */
 TextCursor TextArea::cursorPos() const {
@@ -7322,7 +7384,8 @@ UTextBuffer *TextArea::styleBuffer() const {
 }
 
 /**
- * @brief TextArea::updateFontMetrics
+ * @brief
+ *
  * @param font
  */
 void TextArea::updateFontMetrics(const QFont &font) {
@@ -7415,7 +7478,8 @@ int TextArea::getColumns() const {
 }
 
 /**
- * @brief TextArea::selfInsertAP
+ * @brief
+ *
  * @param string
  * @param flags
  */
@@ -7515,7 +7579,8 @@ TextCursor TextArea::lineAndColToPosition(Location loc) const {
 }
 
 /**
- * @brief TextArea::lineAndColToPosition
+ * @brief
+ *
  * @param line
  * @param column
  * @return
@@ -7529,7 +7594,8 @@ TextCursor TextArea::lineAndColToPosition(int64_t line, int64_t column) const {
 }
 
 /**
- * @brief TextArea::TextDGetCalltipID
+ * @brief
+ *
  * @param id
  * @return
  */
@@ -7547,7 +7613,8 @@ int TextArea::TextDGetCalltipID(int id) const {
 }
 
 /**
- * @brief TextArea::TextDKillCalltip
+ * @brief
+ *
  * @param id
  */
 void TextArea::TextDKillCalltip(int id) {
@@ -7635,7 +7702,8 @@ void TextArea::TextDMaintainAbsLineNum(bool state) {
 }
 
 /**
- * @brief TextArea::buffer
+ * @brief
+ *
  * @return
  */
 TextBuffer *TextArea::buffer() const {
@@ -7643,7 +7711,8 @@ TextBuffer *TextArea::buffer() const {
 }
 
 /**
- * @brief TextArea::minimumFontWidth
+ * @brief
+ *
  * @return
  */
 int TextArea::minimumFontWidth() const {
@@ -7651,7 +7720,8 @@ int TextArea::minimumFontWidth() const {
 }
 
 /**
- * @brief TextArea::maximumFontWidth
+ * @brief
+ *
  * @return
  */
 int TextArea::maximumFontWidth() const {
@@ -7659,7 +7729,8 @@ int TextArea::maximumFontWidth() const {
 }
 
 /**
- * @brief TextArea::TextNumVisibleLines
+ * @brief
+ *
  * @return
  */
 int64_t TextArea::TextNumVisibleLines() const {
@@ -7667,7 +7738,8 @@ int64_t TextArea::TextNumVisibleLines() const {
 }
 
 /**
- * @brief TextArea::TextFirstVisibleLine
+ * @brief
+ *
  * @return
  */
 int64_t TextArea::TextFirstVisibleLine() const {
@@ -7675,7 +7747,8 @@ int64_t TextArea::TextFirstVisibleLine() const {
 }
 
 /**
- * @brief TextArea::TextVisibleWidth
+ * @brief
+ *
  * @return
  */
 int TextArea::TextVisibleWidth() const {
@@ -7684,7 +7757,8 @@ int TextArea::TextVisibleWidth() const {
 }
 
 /**
- * @brief TextArea::beginningOfSelectionAP
+ * @brief
+ *
  * @param flags
  */
 void TextArea::beginningOfSelectionAP(EventFlags flags) {
@@ -7704,7 +7778,8 @@ void TextArea::beginningOfSelectionAP(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::deleteSelectionAP
+ * @brief
+ *
  * @param flags
  */
 void TextArea::deleteSelectionAP(EventFlags flags) {
@@ -7720,7 +7795,8 @@ void TextArea::deleteSelectionAP(EventFlags flags) {
 }
 
 /**
- * @brief TextArea::isDelimeter
+ * @brief
+ *
  * @param ch
  * @return
  */
@@ -7837,7 +7913,7 @@ void TextArea::removeWidgetHighlight() {
 }
 
 /**
- * @brief TextArea::showResizeNotification
+ * @brief
  * Shows the size of the widget in rows/columns.
  * Lifted from Konsole's TerminalDisplay::showResizeNotification
  */
@@ -7966,7 +8042,8 @@ void TextArea::makeSelectionVisible() {
 }
 
 /**
- * @brief TextArea::zoomOutAP
+ * @brief
+ *
  * @param flags
  */
 void TextArea::zoomOutAP(TextArea::EventFlags flags) {
@@ -7984,7 +8061,8 @@ void TextArea::zoomOutAP(TextArea::EventFlags flags) {
 }
 
 /**
- * @brief TextArea::zoomInAP
+ * @brief
+ *
  * @param flags
  */
 void TextArea::zoomInAP(TextArea::EventFlags flags) {
@@ -8002,7 +8080,8 @@ void TextArea::zoomInAP(TextArea::EventFlags flags) {
 }
 
 /**
- * @brief TextArea::wheelEvent
+ * @brief
+ *
  * @param event
  */
 void TextArea::wheelEvent(QWheelEvent *event) {
@@ -8018,7 +8097,8 @@ void TextArea::wheelEvent(QWheelEvent *event) {
 }
 
 /**
- * @brief TextArea::visibleLineContainsCursor
+ * @brief
+ *
  * @param visLine
  * @param cursor
  * @return
@@ -8037,7 +8117,8 @@ bool TextArea::visibleLineContainsCursor(int visLine, TextCursor cursor) const {
 }
 
 /**
- * @brief TextArea::document
+ * @brief
+ *
  * @return
  */
 DocumentWidget *TextArea::document() const {
@@ -8045,7 +8126,8 @@ DocumentWidget *TextArea::document() const {
 }
 
 /**
- * @brief TextArea::fixedFontHeight
+ * @brief
+ *
  * @return
  */
 int TextArea::fixedFontHeight() const {
@@ -8053,7 +8135,8 @@ int TextArea::fixedFontHeight() const {
 }
 
 /**
- * @brief TextArea::fixedFontWidth
+ * @brief
+ *
  * @return
  */
 int TextArea::fixedFontWidth() const {
