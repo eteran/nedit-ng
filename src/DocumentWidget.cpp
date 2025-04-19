@@ -162,7 +162,7 @@ QString errorString(int error) {
  * @param nDeleted The number of characters deleted.
  * @param nRestyled The number of characters restyled.
  * @param deletedText The text that was deleted during the modification.
- * @param user Pointer to the user data, typically a DocumentWidget instance.
+ * @param user The user data, typically a DocumentWidget instance.
  */
 void modifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, void *user) {
 	if (auto document = static_cast<DocumentWidget *>(user)) {
@@ -175,7 +175,7 @@ void modifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRe
  *
  * @param area The text area where the smart indent event occurred.
  * @param data The smart indent event data containing information about the indent operation.
- * @param user Pointer to the user data, typically a DocumentWidget instance.
+ * @param user The user data, typically a DocumentWidget instance.
  */
 void smartIndentCB(TextArea *area, SmartIndentEvent *data, void *user) {
 	if (auto document = static_cast<DocumentWidget *>(user)) {
@@ -187,7 +187,7 @@ void smartIndentCB(TextArea *area, SmartIndentEvent *data, void *user) {
  * @brief Calls the registered callbacks for moved events in the text area.
  *
  * @param area The text area where the move event occurred.
- * @param user Pointer to the user data, typically a DocumentWidget instance.
+ * @param user The user data, typically a DocumentWidget instance.
  */
 void movedCB(TextArea *area, void *user) {
 	if (auto document = static_cast<DocumentWidget *>(user)) {
@@ -199,7 +199,7 @@ void movedCB(TextArea *area, void *user) {
  * @brief Calls the registered callbacks for drag start events in the text area.
  *
  * @param area The text area where the drag started.
- * @param user Pointer to the user data, typically a DocumentWidget instance.
+ * @param user The user data, typically a DocumentWidget instance.
  */
 void dragStartCB(TextArea *area, void *user) {
 	if (auto document = static_cast<DocumentWidget *>(user)) {
@@ -212,7 +212,7 @@ void dragStartCB(TextArea *area, void *user) {
  *
  * @param area The text area where the drag ended.
  * @param data The drag end event data containing information about the drag operation.
- * @param user Pointer to the user data, typically a DocumentWidget instance.
+ * @param user The user data, typically a DocumentWidget instance.
  */
 void dragEndCB(TextArea *area, const DragEndEvent *data, void *user) {
 	if (auto document = static_cast<DocumentWidget *>(user)) {
@@ -225,7 +225,7 @@ void dragEndCB(TextArea *area, const DragEndEvent *data, void *user) {
  *
  * @param area The text area where the unparsed region is located.
  * @param pos The position of the unparsed region in the text area.
- * @param user Pointer to the user data, typically a DocumentWidget instance.
+ * @param user The user data, typically a DocumentWidget instance.
  */
 void handleUnparsedRegionCB(const TextArea *area, TextCursor pos, const void *user) {
 	if (auto document = static_cast<const DocumentWidget *>(user)) {
@@ -6163,7 +6163,7 @@ int64_t DocumentWidget::highlightLengthOfCodeFromPos(TextCursor pos) const {
  * of these unfinished regions. This routine applies pass 2 patterns to a chunk of
  * the buffer of size PASS_2_REPARSE_CHUNK_SIZE beyond pos.
  * @param styleBuf The style buffer to update with the new styles.
- * @param pos the first position encountered which needs re-parsing.
+ * @param pos The first position encountered which needs re-parsing.
  */
 void DocumentWidget::handleUnparsedRegion(UTextBuffer *styleBuf, TextCursor pos) const {
 	TextBuffer *buf                                           = info_->buffer.get();

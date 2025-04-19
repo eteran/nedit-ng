@@ -33,9 +33,9 @@ constexpr const char cmdLineHelp[] =
 /**
  * @brief Gets the index of the next argument parameter.
  *
- * @param args the command line arguments.
- * @param argIndex the current argument index.
- * @return the next argument index.
+ * @param args The command line arguments.
+ * @param argIndex The current argument index.
+ * @return The next argument index.
  */
 int getArgumentParameter(const QStringList &args, int argIndex) {
 	if (argIndex + 1 >= args.size()) {

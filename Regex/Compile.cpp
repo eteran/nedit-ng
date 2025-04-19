@@ -67,10 +67,14 @@ char White_Space[WHITE_SPACE_SIZE]; // Arrays used by
 char Word_Char[ALNUM_CHAR_SIZE];    // functions
 char Letter_Char[ALNUM_CHAR_SIZE];  // init_ansi_classes () and shortcut_escape ().
 
-/*----------------------------------------------------------------------*
- * next_ptr - compute the address of a node's "NEXT" pointer.
- * Note: a simplified inline version is available via NEXT_PTR(),
- *----------------------------------------------------------------------*/
+/**
+ * @brief compute the address of a node's "NEXT" pointer.
+ *
+ * @param ptr The current node.
+ * @return The next node, or nullptr if there is no next node.
+ *
+ * @note A simplified inline version is available via NEXT_PTR().
+ */
 uint8_t *next_ptr(uint8_t *ptr) noexcept {
 
 	if (pContext.FirstPass) {
@@ -91,10 +95,10 @@ uint8_t *next_ptr(uint8_t *ptr) noexcept {
 }
 
 /**
- * @brief
+ * @brief Get the MSB of a value to be used as an offset in a regex node.
  *
- * @param v
- * @return
+ * @param v Value to extract the MSB from.
+ * @return The MSB of the offset.
  */
 template <class T>
 constexpr uint8_t PUT_OFFSET_L(T v) noexcept {
@@ -102,10 +106,10 @@ constexpr uint8_t PUT_OFFSET_L(T v) noexcept {
 }
 
 /**
- * @brief
+ * @brief Get the LSB of a value to be used as an offset in a regex node.
  *
- * @param v
- * @return
+ * @param v Value to extract the LSB from.
+ * @return The LSB of the offset.
  */
 template <class T>
 constexpr uint8_t PUT_OFFSET_R(T v) noexcept {
@@ -122,12 +126,11 @@ bool isQuantifier() noexcept {
 	return (ch == '*' || ch == '+' || ch == '?' || ch == pContext.Brace_Char);
 }
 
-/*--------------------------------------------------------------------*
- * init_ansi_classes
+/**
+ * @brief Generate character class sets using locale aware ANSI C functions.
  *
- * Generate character class sets using locale aware ANSI C functions.
- *
- *--------------------------------------------------------------------*/
+ * @return Returns true if the character classes were initialized successfully.
+ */
 bool init_ansi_classes() noexcept {
 
 	static bool initialized = false;
@@ -177,15 +180,13 @@ bool init_ansi_classes() noexcept {
 	return true;
 }
 
-/*----------------------------------------------------------------------*
- * emit_node
+/**
+ * @brief Emit (if appropriate) the op code for a regex node atom.
+ *        The NEXT pointer is initialized to 0x0000.
  *
- * Emit (if appropriate) the op code for a regex node atom.
- *
- * The NEXT pointer is initialized to 0x0000.
- *
- * Returns a pointer to the START of the emitted node.
- *----------------------------------------------------------------------*/
+ * @param op_code The opcode to emit.
+ * @return A pointer to the start of the emitted node.
+ */
 template <class T>
 uint8_t *emit_node(T op_code) noexcept {
 
@@ -201,11 +202,11 @@ uint8_t *emit_node(T op_code) noexcept {
 	return &pContext.Code[end_offset];
 }
 
-/*----------------------------------------------------------------------*
- * emit_byte
+/**
+ * @brief Emit (if appropriate) a byte of code (usually part of an operand).
  *
- * Emit (if appropriate) a byte of code (usually part of an operand.)
- *----------------------------------------------------------------------*/
+ * @param ch The byte to emit.
+ */
 template <class T>
 void emit_byte(T ch) noexcept {
 
@@ -216,12 +217,11 @@ void emit_byte(T ch) noexcept {
 	}
 }
 
-/*----------------------------------------------------------------------*
- * emit_class_byte
+/**
+ * @brief Emit (if appropriate) a byte of code (usually part of a character class operand).
  *
- * Emit (if appropriate) a byte of code (usually part of a character
- * class operand.)
- *----------------------------------------------------------------------*/
+ * @param ch The byte to emit, which can be a character or a special character class.
+ */
 template <class T>
 void emit_class_byte(T ch) noexcept {
 
@@ -244,11 +244,14 @@ void emit_class_byte(T ch) noexcept {
 	}
 }
 
-/*----------------------------------------------------------------------*
- * emit_special
+/**
+ * @brief Emit nodes that need special processing.
  *
- * Emit nodes that need special processing.
- *----------------------------------------------------------------------*/
+ * @param op_code The opcode to emit, which can be a special operation like look-behind or count testing.
+ * @param test_val The value to test against, such as a look-behind length or a count value.
+ * @param index The index to use for count operations.
+ * @return A pointer to the start of the emitted node, or a special token if in first pass.
+ */
 template <class Ch>
 uint8_t *emit_special(Ch op_code, uint32_t test_val, size_t index) noexcept {
 
@@ -290,9 +293,12 @@ uint8_t *emit_special(Ch op_code, uint32_t test_val, size_t index) noexcept {
 	return ret_val;
 }
 
-/*----------------------------------------------------------------------*
- * tail - Set the next-pointer at the end of a node chain.
- *----------------------------------------------------------------------*/
+/**
+ * @brief Set the NEXT pointer of the last node in a chain to point to a specific location.
+ *
+ * @param search_from The start of the node chain to search.
+ * @param point_to The location where the NEXT pointer should point.
+ */
 void tail(uint8_t *search_from, const uint8_t *point_to) {
 
 	if (pContext.FirstPass) {
@@ -318,13 +324,18 @@ void tail(uint8_t *search_from, const uint8_t *point_to) {
 	scan[2] = PUT_OFFSET_R(offset);
 }
 
-/*----------------------------------------------------------------------*
- * insert
- *
- * Insert a node in front of already emitted node(s).  Means relocating
+/**
+ * @brief Insert a node in front of already emitted node(s).  Means relocating
  * the operand. The parameter 'insert_pos' points to the location
  * where the new node is to be inserted.
- *----------------------------------------------------------------------*/
+ *
+ * @param op The opcode for the node to insert, such as BRACE, LAZY_BRACE, or INIT_COUNT.
+ * @param insert_pos A pointer to the position in the code where the new node should be inserted.
+ * @param min The minimum value for the node, used for BRACE and LAZY_BRACE.
+ * @param max The maximum value for the node, used for BRACE and LAZY_BRACE.
+ * @param index The index value for INIT_COUNT, which is used to track the number of matches.
+ * @return A pointer to the start of the newly inserted node, or a special token if in first pass.
+ */
 uint8_t *insert(uint8_t op, const uint8_t *insert_pos, uint32_t min, uint32_t max, uint16_t index) {
 
 	if (pContext.FirstPass) {
@@ -371,13 +382,11 @@ uint8_t *insert(uint8_t op, const uint8_t *insert_pos, uint32_t min, uint32_t ma
 	return &pContext.Code[offset]; // Return a pointer to the start of the code moved.
 }
 
-/*--------------------------------------------------------------------*
- * shortcut_escape
- *
- * Implements convenient escape sequences that represent entire
+/**
+ * @brief Implements convenient escape sequences that represent entire
  * character classes or special location assertions (similar to escapes
  * supported by Perl)
- *                                                  _
+ *
  *    \d     Digits                  [0-9]           |
  *    \D     NOT a digit             [^0-9]          | (Examples
  *    \l     Letters                 [a-zA-Z]        |  at left
@@ -408,7 +417,11 @@ uint8_t *insert(uint8_t op, const uint8_t *insert_pos, uint32_t min, uint32_t ma
  *       Same as CHECK_ESCAPE but only allows characters valid within
  *       a class.
  *
- *--------------------------------------------------------------------*/
+ * @tparam Flags The flags to determine the behavior of the function.
+ * @param ch The character to check for a shortcut escape sequence.
+ * @param flag_param A pointer to an integer that will be modified to indicate
+ * @return A pointer to the start of the emitted node, or nullptr if the character
+ */
 template <ShortcutEscapeFlag Flags, class Ch>
 uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 
@@ -522,11 +535,9 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 	return ret_val;
 }
 
-/*--------------------------------------------------------------------*
- * offset_tail
- *
- * Perform a tail operation on (ptr + offset).
- *--------------------------------------------------------------------*/
+/**
+ * @brief Perform a tail operation on (ptr + offset) but only if 'ptr' is not null.
+ */
 void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
 
 	if (pContext.FirstPass || !ptr) {
@@ -536,12 +547,14 @@ void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
 	tail(ptr + offset, val);
 }
 
-/*--------------------------------------------------------------------*
- * branch_tail
- *
- * Perform a tail operation on (ptr + offset) but only if 'ptr' is a
+/**
+ * @brief Perform a tail operation on (ptr + offset) but only if 'ptr' is a
  * BRANCH node.
- *--------------------------------------------------------------------*/
+ *
+ * @param ptr The BRANCH node.
+ * @param offset The offset to apply to the pointer.
+ * @param val The value to set the NEXT pointer to, if applicable.
+ */
 void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
 
 	if (pContext.FirstPass || !ptr || GET_OP_CODE(ptr) != BRANCH) {
@@ -551,10 +564,8 @@ void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
 	tail(ptr + offset, val);
 }
 
-/*--------------------------------------------------------------------*
- * back_ref
- *
- * Process a request to match a previous parenthesized thing.
+/**
+ * @brief Process a request to match a previous parenthesized thing.
  * Parenthetical entities are numbered beginning at 1 by counting
  * opening parentheses from left to to right.  \0 would represent
  * whole match, but would confuse numeric_escape as an octal escape,
@@ -563,7 +574,13 @@ void branch_tail(uint8_t *ptr, int offset, uint8_t *val) {
  * Constructs of the form \~1, \~2, etc. are cross-regex back
  * references and are used in syntax highlighting patterns to match
  * text previously matched by another regex. *** IMPLEMENT LATER ***
- *--------------------------------------------------------------------*/
+ *
+ * @tparam Flags The flags to determine the behavior of the function.
+ * @param reader The reader to use for matching the back reference.
+ * @param flag_param An integer that will be modified to indicate
+ * @return The start of the emitted node, or nullptr if the back reference
+ *         is invalid or not applicable.
+ */
 template <ShortcutEscapeFlag Flags>
 uint8_t *back_ref(Reader reader, int *flag_param) {
 
@@ -624,15 +641,19 @@ uint8_t *back_ref(Reader reader, int *flag_param) {
 	return ret_val;
 }
 
-/*----------------------------------------------------------------------*
- * atom
+/**
+ * @brief Process one regex item at the lowest level.
  *
- * Process one regex item at the lowest level
+ * @param flag_param An integer that will be modified to indicate
+ *                   whether the atom has a fixed width or is simple.
+ * @param range_param A len_range structure that will be modified
+ *                    to indicate the lower and upper bounds of the atom's length.
+ * @return The start of the emitted node, or nullptr if an error occurs.
  *
- * OPTIMIZATION:  Lumps a continuous sequence of ordinary characters
- * together so that it can turn them into a single EXACTLY node, which
- * is smaller to store and faster to run.
- *----------------------------------------------------------------------*/
+ * @note As an optimization, lumps a continuous sequence of ordinary characters
+ *       together so that it can turn them into a single EXACTLY node, which
+ *       is smaller to store and faster to run.
+ */
 uint8_t *atom(int *flag_param, len_range &range_param) {
 
 	uint8_t *ret_val;
@@ -1030,15 +1051,20 @@ uint8_t *atom(int *flag_param, len_range &range_param) {
 	return ret_val;
 }
 
-/*----------------------------------------------------------------------*
- * piece - something followed by possible '*', '+', '?', or "{m,n}"
- *
+/**
+ * @brief Something followed by possible '*', '+', '?', or "{m,n}"
  * Note that the branching code sequences used for the general cases of
  * *, +. ?, and {m,n} are somewhat optimized:  they use the same
  * NOTHING node as both the endmarker for their branch list and the
  * body of the last branch. It might seem that this node could be
  * dispensed with entirely, but the endmarker role is not redundant.
- *----------------------------------------------------------------------*/
+ *
+ * @param flag_param An integer that will be modified to indicate
+ *                   whether the piece has a fixed width or is simple.
+ * @param range_param A len_range structure that will be modified
+ *                    to indicate the lower and upper bounds of the piece's length.
+ * @return The start of the emitted node, or nullptr if an error occurs.
+ */
 uint8_t *piece(int *flag_param, len_range &range_param) {
 
 	uint8_t *next;
@@ -1561,12 +1587,16 @@ uint8_t *piece(int *flag_param, len_range &range_param) {
 	return ret_val;
 }
 
-/*----------------------------------------------------------------------*
- * alternative
+/**
+ * @brief Processes one alternative of an '|' operator.
+ * Connects the NEXT pointers of each regex atom together sequentially.
  *
- * Processes one alternative of an '|' operator.  Connects the NEXT
- * pointers of each regex atom together sequentially.
- *----------------------------------------------------------------------*/
+ * @param flag_param An integer that will be modified to indicate
+ *                   whether the alternative has a fixed width or is simple.
+ * @param range_param A len_range structure that will be modified
+ *                    to indicate the lower and upper bounds of the alternative's length.
+ * @return The start of the emitted node for the alternative, or nullptr if an error occurs.
+ */
 uint8_t *alternative(int *flag_param, len_range &range_param) {
 
 	uint8_t *ret_val;
@@ -1616,17 +1646,22 @@ uint8_t *alternative(int *flag_param, len_range &range_param) {
 	return ret_val;
 }
 
-/*----------------------------------------------------------------------*
- * chunk                                                                *
- *                                                                      *
- * Process main body of regex or process a parenthesized "thing".       *
- *                                                                      *
- * Caller must absorb opening parenthesis.                              *
- *                                                                      *
- * Combining parenthesis handling with the base level of regular        *
- * expression is a trifle forced, but the need to tie the tails of the  *
- * branches to what follows makes it hard to avoid.                     *
- *----------------------------------------------------------------------*/
+/**
+ * @brief Processes a chunk of the regex, which may be a parenthesized expression,
+ * a lookahead/lookbehind assertion, or a simple expression.
+ * Caller must absorb opening parenthesis.
+ *
+ * Combining parenthesis handling with the base level of regular
+ * expression is a trifle forced, but the need to tie the tails of the
+ * branches to what follows makes it hard to avoid.
+ *
+ * @param paren The type of parenthesis or special expression being processed.
+ * @param flag_param An integer that will be modified to indicate
+ *                   whether the chunk has a fixed width or is simple.
+ * @param range_param A len_range structure that will be modified
+ *                    to indicate the lower and upper bounds of the chunk's length.
+ * @return The start of the emitted node for the chunk, or nullptr if an error occurs.
+ */
 uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
 	uint8_t *ret_val  = nullptr;
@@ -1823,20 +1858,24 @@ uint8_t *chunk(int paren, int *flag_param, len_range &range_param) {
 
 }
 
-/*----------------------------------------------------------------------*
- * Regex
- *
- * Compiles a regular expression into the internal format used by
- * 'ExecRE'.
- *
+/**
+ * @brief Constructor for the Regex class.
  * The default behaviour wrt. case sensitivity and newline matching can
  * be controlled through the defaultFlags argument (Markus Schwarzenberg).
  * Future extensions are possible by using other flag bits.
- * Note that currently only the case sensitivity flag is effectively used.
  *
  * Beware that the optimization and preparation code in here knows about
  * some of the structure of the compiled Regex.
- *----------------------------------------------------------------------*/
+ *
+ * @param exp The regular expression to compile.
+ * @param defaultFlags Flags that control the default behavior of the regex compilation.
+ *
+ * @note The defaultFlags can be a combination of the following:
+ * - RE_DEFAULT_CASE_INSENSITIVE: If set, the regex will be case insensitive.
+ * - RE_DEFAULT_MATCH_NEWLINE: If set, newlines are matched in character classes.
+ *
+ * @note The defaultFlags argument is currently only used to set the case sensitivity.
+ */
 Regex::Regex(std::string_view exp, int defaultFlags) {
 
 	Regex *const re = this;

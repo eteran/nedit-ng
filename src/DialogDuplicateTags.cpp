@@ -8,8 +8,8 @@
 /**
  * @brief Constructor for DialogDuplicateTags class.
  *
- * @param document Pointer to the DocumentWidget where the tags are defined.
- * @param area Pointer to the TextArea where the tags are being used.
+ * @param document The DocumentWidget where the tags are defined.
+ * @param area The TextArea where the tags are being used.
  * @param f The window flags for the dialog, defaults to Qt::WindowFlags().
  */
 DialogDuplicateTags::DialogDuplicateTags(DocumentWidget *document, TextArea *area, Qt::WindowFlags f)

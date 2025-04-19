@@ -31,7 +31,7 @@ public:
 	 * Match a 'Regex' structure against a string.
 	 *
 	 * @param start          Text to search within
-	 * @param end            Pointer to the logical end of the string
+	 * @param end            The logical end of the string
 	 * @param reverse        Backward search.
 	 * @param prev_char      Character immediately prior to 'string'.  Set to '\n' or -1 if true beginning of text.
 	 * @param succ_char      Character immediately after 'end'.  Set to '\n' or -1 if true beginning of text.

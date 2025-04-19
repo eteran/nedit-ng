@@ -7,7 +7,7 @@
 /**
  * @brief Ensures that the given string ends with a newline character.
  *
- * @param string the input string to check.
+ * @param string The input string to check.
  * @return The input string with a newline appended if it does not already end with one.
  *
  * @note The macro language requires newline terminators for statements, but the
@@ -31,7 +31,7 @@ QString ensure_newline(const QString &string) {
 /**
  * @brief Converts a string to uppercase.
  *
- * @param s the input string to convert.
+ * @param s The input string to convert.
  * @return A new string with all characters converted to uppercase.
  */
 std::string to_upper(std::string_view s) {
@@ -47,7 +47,7 @@ std::string to_upper(std::string_view s) {
 /**
  * @brief Converts a string to lowercase.
  *
- * @param s the input string to convert.
+ * @param s The input string to convert.
  * @return A new string with all characters converted to lowercase.
  */
 std::string to_lower(std::string_view s) {

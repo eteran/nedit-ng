@@ -35,8 +35,8 @@ using IsInteger = typename std::enable_if<std::is_integral<Integer>::value>::typ
 /**
  * @brief Converts a string from Mac format to Unix format in place.
  *
- * @param text the text to convert, which may represent the entire contents of the file.
- * @param length the length of the text in characters.
+ * @param text The text to convert, which may represent the entire contents of the file.
+ * @param length The length of the text in characters.
  */
 template <class Length, class = IsInteger<Length>>
 void ConvertFromMac(char *text, Length length) {
@@ -48,9 +48,9 @@ void ConvertFromMac(char *text, Length length) {
 /**
  * @brief Converts a string from DOS format to Unix format in place.
  *
- * @param text the text to convert, which may represent the entire contents of the file.
- * @param length the length of the text in characters.
- * @param pendingCR an optional pointer to a character that will hold a pending '\r' if it exists.
+ * @param text The text to convert, which may represent the entire contents of the file.
+ * @param length The length of the text in characters.
+ * @param pendingCR An optional pointer to a character that will hold a pending '\r' if it exists.
  *                  If there is no trailing '\r', it will be set to '\0'.
  */
 template <class Length, class = IsInteger<Length>>

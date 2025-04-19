@@ -73,7 +73,7 @@ constexpr int FP_TO_ARGS_DIST          = 4; // should be 0 - (above index)
 /**
  * @brief Get the argument array cache from the frame pointer.
  *
- * @param FrameP Pointer to the frame data.
+ * @param FrameP The frame data.
  * @return Reference to the argument array cache.
  */
 DataValue &FP_GET_ARG_ARRAY_CACHE(DataValue *FrameP) {
@@ -83,7 +83,7 @@ DataValue &FP_GET_ARG_ARRAY_CACHE(DataValue *FrameP) {
 /**
  * @brief Get the number of arguments from the frame pointer.
  *
- * @param FrameP Pointer to the frame data.
+ * @param FrameP The frame data.
  * @return Number of arguments as an integer.
  */
 int FP_GET_ARG_COUNT(const DataValue *FrameP) {
@@ -93,8 +93,8 @@ int FP_GET_ARG_COUNT(const DataValue *FrameP) {
 /**
  * @brief Get the old frame pointer from the frame pointer.
  *
- * @param FrameP Pointer to the frame data.
- * @return Pointer to the old frame pointer as a DataValue.
+ * @param FrameP The frame data.
+ * @return The old frame pointer as a DataValue.
  */
 DataValue *FP_GET_OLD_FP(const DataValue *FrameP) {
 	return to_data_value(FrameP[FP_OLD_FP_INDEX]);
@@ -103,8 +103,8 @@ DataValue *FP_GET_OLD_FP(const DataValue *FrameP) {
 /**
  * @brief Get the return program counter from the frame pointer.
  *
- * @param FrameP Pointer to the frame data.
- * @return Pointer to the instruction that is the return program counter.
+ * @param FrameP The frame data.
+ * @return The instruction that is the return program counter.
  */
 Inst *FP_GET_RET_PC(const DataValue *FrameP) {
 	return to_instruction(FrameP[FP_RET_PC_INDEX]);
@@ -113,7 +113,7 @@ Inst *FP_GET_RET_PC(const DataValue *FrameP) {
 /**
  * @brief Get the start index for arguments in the frame pointer.
  *
- * @param FrameP Pointer to the frame data.
+ * @param FrameP The frame data.
  * @return Start index for arguments in the frame pointer.
  */
 int FP_ARG_START_INDEX(const DataValue *FrameP) {
@@ -123,7 +123,7 @@ int FP_ARG_START_INDEX(const DataValue *FrameP) {
 /**
  * @brief Get the argument at index n from the frame pointer.
  *
- * @param FrameP Pointer to the frame data.
+ * @param FrameP The frame data.
  * @param n Index of the argument to retrieve.
  * @return Reference to the argument at index n in the frame pointer.
  */
@@ -134,7 +134,7 @@ const DataValue &FP_GET_ARG_N(const DataValue *FrameP, int n) {
 /**
  * @brief Get the symbol value at index n from the frame pointer.
  *
- * @param FrameP Pointer to the frame data.
+ * @param FrameP The frame data.
  * @param n Index of the symbol to retrieve.
  * @return Reference to the symbol value at index n in the frame pointer.
  */
@@ -145,8 +145,8 @@ DataValue &FP_GET_SYM_N(DataValue *FrameP, int n) {
 /**
  * @brief Get the symbol value for a given symbol from the frame pointer.
  *
- * @param FrameP Pointer to the frame data.
- * @param sym Pointer to the symbol whose value is to be retrieved.
+ * @param FrameP The frame data.
+ * @param sym The symbol whose value is to be retrieved.
  * @return Reference to the symbol value in the frame pointer.
  */
 DataValue &FP_GET_SYM_VAL(DataValue *FrameP, Symbol *sym) {
@@ -156,7 +156,7 @@ DataValue &FP_GET_SYM_VAL(DataValue *FrameP, Symbol *sym) {
 /**
  * @brief Save the current execution context to the provided context pointer.
  *
- * @param context Pointer to the context where the current execution state will be saved.
+ * @param context The context where the current execution state will be saved.
  */
 template <class Pointer>
 void saveContext(Pointer context) {
@@ -171,7 +171,7 @@ void saveContext(Pointer context) {
 /**
  * @brief Restore the execution context from the provided context pointer.
  *
- * @param context Pointer to the context from which the execution state will be restored.
+ * @param context The context from which the execution state will be restored.
  */
 template <class Pointer>
 void restoreContext(Pointer context) {
@@ -449,8 +449,8 @@ bool AddOp(int op, QString *msg) {
 /**
  * @brief Add a symbol operand to the current program.
  *
- * @param sym Pointer to the symbol to be added.
- * @param msg Pointer to a QString for error messages.
+ * @param sym The symbol to be added.
+ * @param msg Where error messages will be stored if an error occurs.
  * @return true if the symbol was added successfully, false if the program is too large.
  */
 bool AddSym(Symbol *sym, QString *msg) {
@@ -467,7 +467,7 @@ bool AddSym(Symbol *sym, QString *msg) {
  * @brief Add an immediate value operand to the current program.
  *
  * @param value The immediate value to be added.
- * @param msg Pointer to a QString for error messages.
+ * @param msg Where error messages will be stored if an error occurs.
  * @return true if the value was added successfully, false if the program is too large.
  */
 bool AddImmediate(int value, QString *msg) {
@@ -483,8 +483,8 @@ bool AddImmediate(int value, QString *msg) {
 /**
  * @brief Add a branch offset operand to the current program.
  *
- * @param to Pointer to the instruction to which the branch should point.
- * @param msg Pointer to a QString for error messages.
+ * @param to The instruction to which the branch should point.
+ * @param msg Where error messages will be stored if an error occurs.
  * @return true if the branch offset was added successfully, false if the program is too large.
  */
 bool AddBranchOffset(const Inst *to, QString *msg) {
@@ -504,7 +504,7 @@ bool AddBranchOffset(const Inst *to, QString *msg) {
 /**
  * @brief Return the address at which the next instruction will be stored.
  *
- * @return Pointer to the next instruction location in the program.
+ * @return The next instruction location in the program.
  */
 Inst *GetPC() {
 	return ProgP;
@@ -515,9 +515,9 @@ Inst *GetPC() {
  * running between locations start and boundary, and the second between
  * boundary and end.
  *
- * @param start Pointer to the start of the first block.
- * @param boundary Pointer to the end of the first block and start of the second.
- * @param end Pointer to the end of the second block.
+ * @param start The start of the first block.
+ * @param boundary The end of the first block and start of the second.
+ * @param end The end of the second block.
  */
 void SwapCode(Inst *start, Inst *boundary, Inst *end) {
 
@@ -550,7 +550,7 @@ void StartLoopAddrList() {
 /**
  * @brief Add an address to the loop stack for a break or continue statement.
  *
- * @param addr Pointer to the instruction address where the break or continue should branch.
+ * @param addr The instruction address where the break or continue should branch.
  * @return true if the loop stack is empty (no enclosing loop), false if the address was added successfully.
  */
 bool AddBreakAddr(Inst *addr) {
@@ -566,7 +566,7 @@ bool AddBreakAddr(Inst *addr) {
 /**
  * @brief Add an address to the loop stack for a continue statement.
  *
- * @param addr Pointer to the instruction address where the continue should branch.
+ * @param addr The instruction address where the continue should branch.
  * @return true if the loop stack is empty (no enclosing loop), false if the address was added successfully.
  */
 bool AddContinueAddr(Inst *addr) {
@@ -582,7 +582,7 @@ bool AddContinueAddr(Inst *addr) {
 /**
  * @brief Add an address to the loop stack.
  *
- * @param addr Pointer to the instruction address to be added to the loop stack.
+ * @param addr The instruction address to be added to the loop stack.
  */
 static void addLoopAddr(Inst *addr) {
 	LoopStack.push(addr);
@@ -622,9 +622,9 @@ void FillLoopAddrs(const Inst *breakAddr, const Inst *continueAddr) {
  * @param document The document in which the macro is being executed.
  * @param prog The compiled program to execute.
  * @param arguments The arguments to pass to the macro.
- * @param result Pointer to a DataValue where the result of the macro execution will be stored.
+ * @param result Where the result of the macro execution will be stored.
  * @param continuation A shared pointer to a MacroContext that will hold the state of the macro execution for resuming later.
- * @param msg Pointer to a QString where error messages will be stored if an error occurs.
+ * @param msg Where error messages will be stored if an error occurs.
  * @return Returns one of the ExecReturnCodes: MACRO_DONE, MACRO_PREEMPT, or MACRO_ERROR.
  * if MACRO_DONE is returned, the macro completed, and the returned value (if any) can be read from "result".
  * If MACRO_PREEMPT is returned, the macro exceeded its allotted time-slice and scheduled...
@@ -671,7 +671,7 @@ int executeMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> a
  *
  * @param continuation A MacroContext that holds the state of the macro execution.
  * @param result Where the result of the macro execution will be stored.
- * @param msg Pointer to a QString where error messages will be stored if an error occurs.
+ * @param msg Where error messages will be stored if an error occurs.
  * @return Returns one of the ExecReturnCodes: MACRO_DONE, MACRO_PREEMPT, or MACRO_ERROR.
  */
 ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation, DataValue *result, QString *msg) {
@@ -2809,7 +2809,7 @@ static void dumpVal(DataValue dv) {
 /**
  * @brief Disassemble a sequence of instructions for debugging purposes.
  *
- * @param inst Pointer to the array of instructions to disassemble.
+ * @param inst The array of instructions to disassemble.
  * @param nInstr The number of instructions in the array.
  */
 static void disasm(Inst *inst, size_t nInstr) {

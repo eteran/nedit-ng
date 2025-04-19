@@ -18,8 +18,8 @@
 /**
  * @brief Expands a tilde in a pathname to the user's home directory.
  *
- * @param pathname the pathname to expand, which may start with a tilde (~).
- * @return the expanded pathname. If expansion fails, returns the original pathname.
+ * @param pathname The pathname to expand, which may start with a tilde (~).
+ * @return The expanded pathname. If expansion fails, returns the original pathname.
  */
 QString expandTilde(const QString &pathname) {
 #ifdef Q_OS_UNIX
@@ -73,7 +73,7 @@ QString getHomeDir() {
 /**
  * @brief Prepend the user's home directory to a filename.
  *
- * @param filename the filename to prepend with the home directory.
+ * @param filename The filename to prepend with the home directory.
  * @return "$HOME/filename"
  */
 QString prependHome(const QString &filename) {

@@ -8,8 +8,8 @@
 /**
  * @brief Constructor for CallTipWidget
  *
- * @param parent the parent widget
- * @param f the window flags
+ * @param parent The parent widget
+ * @param f The window flags
  */
 CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f)
 	: QWidget(parent, f) {
@@ -29,7 +29,7 @@ CallTipWidget::CallTipWidget(QWidget *parent, Qt::WindowFlags f)
 /**
  * @brief Sets the text for the call tip widget.
  *
- * @param text the text to display in the call tip
+ * @param text The text to display in the call tip
  */
 void CallTipWidget::setText(const QString &text) {
 	ui.labelTip->setText(text);
@@ -40,7 +40,7 @@ void CallTipWidget::setText(const QString &text) {
  * @brief Handles the show event for the call tip widget.
  * This resizes the widget to its minimum size when shown.
  *
- * @param event the show event
+ * @param event The show event
  *
  */
 void CallTipWidget::showEvent(QShowEvent *event) {

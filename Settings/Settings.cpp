@@ -51,7 +51,7 @@ void writeEnum(QSettings &settings, const QString &key, const T &value) {
 /**
  * @brief Generates a random string of the specified length using alphanumeric characters.
  *
- * @param length the length of the random string to generate.
+ * @param length The length of the random string to generate.
  * @return The random string.
  */
 QString randomString(int length) {
@@ -295,7 +295,7 @@ QString smartIndentFile() {
 /**
  * @brief Loads the user preferences from the configuration file.
  *
- * @param isServer if true, the and the configuration does not specify a server name,
+ * @param isServer If true, the and the configuration does not specify a server name,
  *                 a random server name will be generated.
  */
 void loadPreferences(bool isServer) {
@@ -395,7 +395,7 @@ void loadPreferences(bool isServer) {
 /**
  * @brief Loads setting from a file and merges them into the current settings.
  *
- * @param filename the path to the settings file to import.
+ * @param filename The path to the settings file to import.
  *
  * @note This function assumes that settings have already been loaded.
  */

@@ -11,27 +11,38 @@
 #include <cstdint>
 #include <cstring>
 
+/**
+ * @brief Get the operand pointer for a given opcode pointer.
+ *
+ * @param p The opcode.
+ * @return The operand of the opcode.
+ */
 template <class T>
 T *OPERAND(T *p) noexcept {
 	static_assert(sizeof(T) == 1, "Invalid Pointer Type");
 	return p + NODE_SIZE<size_t>;
 }
 
+/**
+ * @brief Get the op code at a given pointer.
+ *
+ * @param p The opcode.
+ * @return The op code.
+ */
 template <class T>
 uint8_t GET_OP_CODE(T *p) noexcept {
 	static_assert(sizeof(T) == 1, "Invalid Pointer Type");
 	return *reinterpret_cast<uint8_t *>(p);
 }
 
-/*--------------------------------------------------------------------*
- * literal_escape
+/**
+ * @brief Recognize escaped literal characters (prefixed with backslash),
+ *        and translates them into the corresponding character.
  *
- * Recognize escaped literal characters (prefixed with backslash),
- * and translate them into the corresponding character.
- *
- * Returns the proper character value or nullptr if not a valid literal
- * escape.
- *--------------------------------------------------------------------*/
+ * @param ch The character to check for a literal escape.
+ * @return The proper character value or nullptr if not a valid literal
+ *         escape.
+ */
 template <class R, class Ch>
 constexpr R literal_escape(Ch ch) noexcept {
 
@@ -53,19 +64,18 @@ constexpr R literal_escape(Ch ch) noexcept {
 	return '\0';
 }
 
-/*--------------------------------------------------------------------*
- * numeric_escape
- *
- * Implements hex and octal numeric escape sequence syntax.
- *
+/**
+ * @brief Implements hex and octal numeric escape sequence syntax.
  * Hexadecimal Escape: \x##    Max of two digits  Must have leading 'x'.
  * Octal Escape:       \0###   Max of three digits and not greater
  *                             than 377 octal.  Must have leading zero.
  *
- * Returns the actual character value or '\0' if not a valid hex or
+ * @param ch The character that indicates the type of numeric escape.
+ * @param reader The Reader object to read from.
+ * @return The actual character value or '\0' if not a valid hex or
  * octal escape.  RegexError is thrown if \x0, \x00, \0, \00, \000, or
  * \0000 is specified.
- *--------------------------------------------------------------------*/
+ */
 template <class R, class Ch>
 R numeric_escape(Ch ch, Reader *reader) {
 
@@ -149,10 +159,10 @@ R numeric_escape(Ch ch, Reader *reader) {
 }
 
 /**
- * @brief
+ * @brief Get the offset from a pointer to an opcode.
  *
- * @param p
- * @return
+ * @param p The opcode.
+ * @return The offset as a 16-bit unsigned integer.
  */
 inline uint16_t GET_OFFSET(const void *p) noexcept {
 	auto ptr = reinterpret_cast<const uint8_t *>(p);

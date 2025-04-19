@@ -15,7 +15,7 @@
 /**
  * @brief Constructor for DialogDrawingStyles class
  *
- * @param dialogSyntaxPatterns Pointer to the DialogSyntaxPatterns instance
+ * @param dialogSyntaxPatterns The DialogSyntaxPatterns instance
  * @param highlightStyles Reference to the vector of HighlightStyle objects
  *                        that will be modified by this dialog.
  * @param parent The parent widget, defaults to nullptr
