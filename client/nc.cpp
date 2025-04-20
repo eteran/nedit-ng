@@ -409,7 +409,7 @@ int startServer(const char *message, const QStringList &commandLineArgs) {
  *
  * @param socket The local socket to write to.
  * @param data The data to write.
- * @return true if all data was written successfully, false otherwise.
+ * @return `true` if all data was written successfully, `false` otherwise.
  */
 bool writeToSocket(QLocalSocket *socket, const QByteArray &data) {
 	int64_t remaining = data.size();

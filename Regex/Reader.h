@@ -38,7 +38,7 @@ public:
 	/**
 	 * @brief Determines if the reader has reached the end of the input string.
 	 *
-	 * @return true if the end of the input string has been reached, false otherwise.
+	 * @return `true` if the end of the input string has been reached, `false` otherwise.
 	 */
 	bool eof() const noexcept {
 		return index_ == input_.size();
@@ -79,7 +79,7 @@ public:
 	/**
 	 * @brief Determines if the next character in the string matches `ch`.
 	 *
-	 * @return true if the next character matches `ch`, false otherwise.
+	 * @return `true` if the next character matches `ch`, `false` otherwise.
 	 */
 	bool next_is(Ch ch) const noexcept {
 		return peek() == ch;
@@ -88,7 +88,7 @@ public:
 	/**
 	 * @brief Determines if the next sequence of characters in the string matches `s`.
 	 *
-	 * @return true if the next sequence matches `s`, false otherwise.
+	 * @return `true` if the next sequence matches `s`, `false` otherwise.
 	 */
 	bool next_is(std::string_view s) const noexcept {
 		if (input_.compare(index_, s.size(), s) != 0) {
@@ -137,10 +137,10 @@ public:
 	}
 
 	/**
-	 * @brief Consumes while a given predicate function returns true
+	 * @brief Consumes while a given predicate function returns `true`
 	 * and returns the number of consumed characters.
 	 *
-	 * @param pred A predicate function that takes a character and returns true if it should be consumed.
+	 * @param pred A predicate function that takes a character and returns `true` if it should be consumed.
 	 * @return The number of characters consumed.
 	 */
 	template <class Pred>
@@ -162,7 +162,7 @@ public:
 	 * @brief If the `ch` matches the char at the current position, consume it and advance the position.
 	 *
 	 * @param ch The character to match.
-	 * @return true if the next character matches `ch`, false otherwise.
+	 * @return `true` if the next character matches `ch`, `false` otherwise.
 	 */
 	bool match(Ch ch) noexcept {
 		if (!next_is(ch)) {
@@ -186,7 +186,7 @@ public:
 	 * @brief If the `s` matches the text at the current position, consume it and advance the position.
 	 *
 	 * @param s The string to match against the next characters in the input.
-	 * @return true if the next characters match `s`, false otherwise.
+	 * @return `true` if the next characters match `s`, `false` otherwise.
 	 */
 	bool match(std::basic_string_view<Ch> s) noexcept {
 		if (!next_is(s)) {
@@ -200,7 +200,7 @@ public:
 	/**
 	 * @brief Matches a single character if it matches the given predicate
 	 *
-	 * @param pred A predicate function that takes a character and returns true if it should be matched.
+	 * @param pred A predicate function that takes a character and returns `true` if it should be matched.
 	 * @return The matched character if it satisfies the predicate, or '\0' if it does not match.
 	 */
 	template <class Pred>
@@ -277,7 +277,7 @@ public:
 	 * @brief Returns the matching string and advances the position
 	 * for each character satisfying the given predicate
 	 *
-	 * @param pred A predicate function that takes a character and returns true if it should be matched.
+	 * @param pred A predicate function that takes a character and returns `true` if it should be matched.
 	 * @return The matched string if it satisfies the predicate, or an empty optional if it does not match.
 	 */
 	template <class Pred>

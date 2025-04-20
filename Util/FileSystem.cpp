@@ -252,7 +252,7 @@ void ConvertFromDos(std::string &text, char *pendingCR) {
  * @brief Reads any text file and converts its line endings to Unix format.
  *
  * @param fileName The name of the file to read.
- * @param forceNL If true, ensures that the returned string ends with a newline character.
+ * @param forceNL If `true`, ensures that the returned string ends with a newline character.
  * @return The contents of the file in Unix format, or an empty string if the file could not be read.
  */
 QString ReadAnyTextFile(const QString &fileName, bool forceNL) {

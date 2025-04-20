@@ -992,7 +992,7 @@ bool attempt(Regex *prog, const char *string) {
  * match a Regex against a string
  *
  * If 'end' is non-nullptr, matches may not BEGIN past end, but may extend past
- * it.  If reverse is true, 'end' must be specified, and searching begins at
+ * it.  If reverse is `true`, 'end' must be specified, and searching begins at
  * 'end'.  "isbol" should be set to true if the beginning of the string is the
  * actual beginning of a line (since 'ExecRE' can't look backwards from the
  * beginning to find whether there was a newline before).  Likewise, "isbow"

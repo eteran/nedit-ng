@@ -372,7 +372,7 @@ Main::Main(const QStringList &args) {
  * @brief Check if the macro argument for -do is valid.
  *
  * @param macro The macro string to check.
- * @return Return true if -do macro is valid, otherwise report the an and return false.
+ * @return `true` if -do macro is valid, otherwise report the an and return `false`.
  */
 bool Main::checkDoMacroArg(const QString &macro) {
 

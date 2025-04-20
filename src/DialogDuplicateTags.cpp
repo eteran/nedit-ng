@@ -71,7 +71,7 @@ void DialogDuplicateTags::buttonBox_clicked(QAbstractButton *button) {
 /**
  * @brief Applies the selection made in the dialog.
  *
- * @return true if the selection was successfully applied, false otherwise.
+ * @return `true` if the selection was successfully applied, `false` otherwise.
  */
 bool DialogDuplicateTags::applySelection() {
 	QListWidgetItem *item = ui.listWidget->currentItem();

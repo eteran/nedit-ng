@@ -925,7 +925,7 @@ bool DialogSyntaxPatterns::validateFields(Verbosity verbosity) {
 
 /*
 ** Do a test compile of patterns in "patSet" and report problems to the
-** user via dialog.  Returns true if patterns are ok.
+** user via dialog.  Returns `true` if patterns are ok.
 */
 bool DialogSyntaxPatterns::TestHighlightPatterns(const std::unique_ptr<PatternSet> &patSet) {
 

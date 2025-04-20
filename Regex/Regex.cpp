@@ -110,11 +110,11 @@ ParseContext pContext;
  * but allows patterns to get big without disasters. */
 
 /**
- * @brief
+ * @brief Execute a `Regex` structure against a string.
  *
- * @param string
- * @param reverse
- * @return
+ * @param string Text to search within
+ * @param reverse If `true`, search backwards through the string.
+ * @return `true` if the regex matches, `false` otherwise.
  */
 bool Regex::execute(std::string_view string, bool reverse) {
 	return execute(string, 0, reverse);

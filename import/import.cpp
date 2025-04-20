@@ -41,7 +41,7 @@ struct MenuItem {
  * @brief Writes a menu item string in the format used by NEdit.
  *
  * @param menuItems The list of menu items to write.
- * @param isShellCommand If true, the command is a shell command, otherwise it is a macro.
+ * @param isShellCommand If `true`, the command is a shell command, otherwise it is a macro.
  * @return The formatted menu item string.
  */
 QString writeMenuItemString(const std::vector<MenuItem> &menuItems, bool isShellCommand) {
@@ -189,7 +189,7 @@ QString copyMacroToEnd(Input &in) {
  * @brief Loads a menu item string from the input string.
  *
  * @param inString The input string containing the menu items.
- * @param isShellCommand if true, the items are shell commands, otherwise they are macros.
+ * @param isShellCommand if `true`, the items are shell commands, otherwise they are macros.
  * @return A vector of MenuItem objects parsed from the input string.
  */
 std::vector<MenuItem> loadMenuItemString(const QString &inString, bool isShellCommand) {

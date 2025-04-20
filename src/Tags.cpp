@@ -68,7 +68,7 @@ QMultiHash<QString, Tag> LoadedTips;
  * @brief Check if a line is empty or contains only whitespace characters.
  *
  * @param line The line to check.
- * @return true if the line is empty or contains only whitespace characters, false otherwise.
+ * @return `true` if the line is empty or contains only whitespace characters, `false` otherwise.
  */
 bool lineEmpty(const QString &line) {
 
@@ -182,7 +182,7 @@ std::deque<File> *tagListByType(SearchMode mode) {
  * @brief Delete a tag from the hash table based on its index.
  *
  * @param index The index of the tag to delete.
- * @return true if at least one tag was deleted, false otherwise.
+ * @return `true` if at least one tag was deleted, `false` otherwise.
  */
 bool delTag(int index) {
 	int del = 0;
@@ -773,7 +773,7 @@ int loadTipsFile(const QString &tipsFile, int index, int recLevel) {
  *
  * @param tags The list of tags to match against.
  * @param tag The tag to match.
- * @return true if a match is found, false otherwise.
+ * @return `true` if a match is found, `false` otherwise.
  */
 bool matchTagRecord(QList<Tag> &tags, Tag &tag) {
 	QString newFile;
@@ -911,7 +911,7 @@ int addTag(const QString &name, const QString &file, size_t lang,
  * @param tagSpec The specification of the tags files to add, which may contain relative paths.
  * @param windowPath The path of the window where the tags files are located.
  * @param mode The search mode to use for the tags files (TAG or TIP).
- * @return true if at least one tags file was added, false otherwise.
+ * @return `true` if at least one tags file was added, `false` otherwise.
  */
 bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMode mode) {
 
@@ -979,7 +979,7 @@ bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMod
  *
  * @param tagSpec The specification of the tags files to add, which may contain relative paths.
  * @param mode The search mode to use for the tags files (TAG or TIP).
- * @return true if all files were found in the FileList or loaded successfully, false otherwise.
+ * @return `true` if all files were found in the FileList or loaded successfully, `false` otherwise.
  */
 bool addTagsFile(const QString &tagSpec, SearchMode mode) {
 
@@ -1042,8 +1042,8 @@ bool addTagsFile(const QString &tagSpec, SearchMode mode) {
  *
  * @param tagSpec The specification of the tags files to delete, which may contain relative paths.
  * @param mode The search mode to use for the tags files (TAG or TIP).
- * @param force_unload If true, force the deletion of calltips files even if their refcount is nonzero.
- * @return true if all files were found in the FileList and unloaded, false
+ * @param force_unload If `true`, force the deletion of calltips files even if their refcount is nonzero.
+ * @return `true` if all files were found in the FileList and unloaded, false
  */
 bool deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload) {
 
@@ -1208,7 +1208,7 @@ QList<Tag> lookupTag(const QString &name, SearchMode mode) {
  * @param searchString The search string to use, which may contain regex-like syntax.
  * @param startPos The starting position for the search, which may be -1 for etags mode.
  * @param endPos A pointer to store the end position of the found match.
- * @return true if a match is found, false otherwise.
+ * @return `true` if a match is found, `false` otherwise.
  */
 bool fakeRegExSearch(std::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos) {
 
@@ -1433,7 +1433,7 @@ void showMatchingCalltip(QWidget *parent, TextArea *area, int id) {
  *
  * @param line The line to search in.
  * @param regex The regular expression to search for.
- * @return true if a match is found, false otherwise.
+ * @return `true` if a match is found, `false` otherwise.
  */
 bool searchLine(const QString &line, const QRegularExpression &re) {
 	return re.match(line).hasMatch();
@@ -1460,7 +1460,7 @@ QList<Tag> getTag(const QString &name, SearchMode mode) {
  *
  * @param area The text area where the calltip will be displayed.
  * @param text The text to display in the calltip.
- * @return true if the calltip was shown successfully, otherwise false.
+ * @return `true` if the calltip was shown successfully, otherwise false.
  */
 int tagsShowCalltip(TextArea *area, const QString &text) {
 	if (!text.isNull()) {

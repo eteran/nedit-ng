@@ -451,7 +451,7 @@ bool AddOp(int op, QString *msg) {
  *
  * @param sym The symbol to be added.
  * @param msg Where error messages will be stored if an error occurs.
- * @return true if the symbol was added successfully, false if the program is too large.
+ * @return `true` if the symbol was added successfully, `false` if the program is too large.
  */
 bool AddSym(Symbol *sym, QString *msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
@@ -468,7 +468,7 @@ bool AddSym(Symbol *sym, QString *msg) {
  *
  * @param value The immediate value to be added.
  * @param msg Where error messages will be stored if an error occurs.
- * @return true if the value was added successfully, false if the program is too large.
+ * @return `true` if the value was added successfully, `false` if the program is too large.
  */
 bool AddImmediate(int value, QString *msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
@@ -485,7 +485,7 @@ bool AddImmediate(int value, QString *msg) {
  *
  * @param to The instruction to which the branch should point.
  * @param msg Where error messages will be stored if an error occurs.
- * @return true if the branch offset was added successfully, false if the program is too large.
+ * @return `true` if the branch offset was added successfully, `false` if the program is too large.
  */
 bool AddBranchOffset(const Inst *to, QString *msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
@@ -551,7 +551,7 @@ void StartLoopAddrList() {
  * @brief Add an address to the loop stack for a break or continue statement.
  *
  * @param addr The instruction address where the break or continue should branch.
- * @return true if the loop stack is empty (no enclosing loop), false if the address was added successfully.
+ * @return `true` if the loop stack is empty (no enclosing loop), `false` if the address was added successfully.
  */
 bool AddBreakAddr(Inst *addr) {
 	if (LoopStack.empty()) {
@@ -567,7 +567,7 @@ bool AddBreakAddr(Inst *addr) {
  * @brief Add an address to the loop stack for a continue statement.
  *
  * @param addr The instruction address where the continue should branch.
- * @return true if the loop stack is empty (no enclosing loop), false if the address was added successfully.
+ * @return `true` if the loop stack is empty (no enclosing loop), `false` if the address was added successfully.
  */
 bool AddContinueAddr(Inst *addr) {
 	if (LoopStack.empty()) {
@@ -1218,7 +1218,7 @@ static int pushArraySymVal() {
 	**         TheStack-> next, ...
 	** After:  Prog->  ArraySym, makeEmpty, [next], ...
 	**         TheStack-> [elemValue], next, ...
-	** makeEmpty is either true (1) or false (0): if true, and the element is not
+	** makeEmpty is either true (1) or false (0): if `true`, and the element is not
 	** present in the array, create it.
 	*/
 
@@ -2111,7 +2111,7 @@ static int branch() {
 }
 
 /**
- * @brief Branch to an address if the top value of the stack is true (non-zero).
+ * @brief Branch to an address if the top value of the stack is `true` (non-zero).
  *
  * @return Returns STAT_OK on success, or an error code if an error occurred.
  */
@@ -2140,7 +2140,7 @@ static int branchTrue() {
 }
 
 /**
- * @brief Branch to an address if the top value of the stack is false (zero).
+ * @brief Branch to an address if the top value of the stack is `false` (zero).
  *
  * @return Returns STAT_OK on success, or an error code if an error occurred.
  */
@@ -2206,7 +2206,7 @@ int ArrayCopy(DataValue *dstArray, const DataValue *srcArray) {
  *
  * @param nArgs The number of arguments to process from the stack.
  * @param keyString A pointer to a string where the key will be stored.
- * @param leaveParams If true, the parameters will not be popped from the stack after processing.
+ * @param leaveParams If `true`, the parameters will not be popped from the stack after processing.
  * @return Returns STAT_OK on success, or an error code if an error occurred.
  */
 static int makeArrayKeyFromArgs(int64_t nArgs, std::string *keyString, bool leaveParams) {
@@ -2246,7 +2246,7 @@ static int makeArrayKeyFromArgs(int64_t nArgs, std::string *keyString, bool leav
  * @param theArray The array to insert into.
  * @param keyStr The key under which to insert the value.
  * @param theValue The value to insert.
- * @return Returns true if the insertion was successful, false otherwise.
+ * @return `true` if the insertion was successful, `false` otherwise.
  */
 bool ArrayInsert(DataValue *theArray, const std::string &keyStr, DataValue *theValue) {
 
@@ -2291,7 +2291,7 @@ void ArrayDeleteAll(DataValue *theArray) {
  * @brief Get the size of an array.
  *
  * @param theArray The array to get the size of.
- * @return Returns the size of the array.
+ * @return The size of the array.
  */
 int ArraySize(DataValue *theArray) {
 	const ArrayPtr &m = to_array(*theArray);
@@ -2304,7 +2304,7 @@ int ArraySize(DataValue *theArray) {
  * @param theArray The array to search in.
  * @param keyStr The key string to look for in the array.
  * @param theValue A pointer to where the found value will be stored.
- * @return Returns true if the value was found, false otherwise.
+ * @return `true` if the value was found, `false` otherwise.
  */
 bool ArrayGet(DataValue *theArray, const std::string &keyStr, DataValue *theValue) {
 
@@ -2718,8 +2718,8 @@ static int deleteArrayElement() {
  * @brief Convert a string to an integer.
  *
  * @param string The string to convert.
- * @param number A pointer to an integer where the result will be stored.
- * @return Returns true if the conversion was successful, false otherwise.
+ * @param number An integer where the result will be stored.
+ * @return `true` if the conversion was successful, `false` otherwise.
  */
 bool StringToNum(const std::string &string, int *number) {
 	auto it = string.begin();

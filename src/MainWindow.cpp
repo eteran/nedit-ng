@@ -5449,7 +5449,7 @@ void MainWindow::action_Exit_triggered() {
 
 /*
 ** Check if preferences have changed, and if so, ask the user if he wants
-** to re-save.  Returns false if user requests cancellation of Exit (or whatever
+** to re-save.  Returns `false` if user requests cancellation of Exit (or whatever
 ** operation triggered this call to be made).
 */
 bool MainWindow::checkPrefsChangesSaved() {
@@ -6675,7 +6675,7 @@ bool MainWindow::searchAndSelect(DocumentWidget *document, TextArea *area, const
 /*
 ** Search for "searchString" in "window", and select the matching text in
 ** the window when found (or beep or put up a dialog if not found).  If
-** "continued" is true and a prior incremental search starting position is
+** "continued" is `true` and a prior incremental search starting position is
 ** recorded, search from that original position, otherwise, search from the
 ** current cursor position.
 */
@@ -7393,8 +7393,8 @@ void MainWindow::iSearchTryBeepOnWrap(Direction direction, TextCursor beginPos, 
 }
 
 /*
-** Return true if "searchString" exactly matches the text in the window's
-** current primary selection using search algorithm "searchType".  If true,
+** Return `true` if "searchString" exactly matches the text in the window's
+** current primary selection using search algorithm "searchType".  If `true`,
 ** also return the position of the selection in "left" and "right".
 */
 bool MainWindow::searchMatchesSelection(DocumentWidget *document, const QString &searchString, SearchType searchType, TextRange *textRange, TextCursor *extentBW, TextCursor *extentFW) {

@@ -33,8 +33,8 @@ public:
 	 * @param start          Text to search within
 	 * @param end            The logical end of the string
 	 * @param reverse        Backward search.
-	 * @param prev_char      Character immediately prior to 'string'.  Set to '\n' or -1 if true beginning of text.
-	 * @param succ_char      Character immediately after 'end'.  Set to '\n' or -1 if true beginning of text.
+	 * @param prev_char      Character immediately prior to `string`.  Set to '\n' or -1 if `true` beginning of text.
+	 * @param succ_char      Character immediately after `end`.  Set to '\n' or -1 if `true` beginning of text.
 	 * @param delimiters     Word delimiters to use (nullptr for default)
 	 * @param look_behind_to Boundary for look-behind; defaults to "string" if nullptr
 	 * @param match_till     Boundary to where match can extend. \0 is assumed to be the boundary if not set. Lookahead can cross the boundary.
@@ -90,8 +90,8 @@ public:
 	 * @param offset     Offset into the string to begin search
 	 * @param end_offset Offset into the string to end search
 	 * @param delimiters Word delimiters to use (nullptr for default)
-	 * @param prev       Character immediately prior to 'string'.  Set to '\n' or -1 if true beginning of text.
-	 * @param succ       Character immediately after 'end'.  Set to '\n' or -1 if true beginning of text.
+	 * @param prev       Character immediately prior to `string`.  Set to '\n' or -1 if `true` beginning of text.
+	 * @param succ       Character immediately after `end`.  Set to '\n' or -1 if `true` beginning of text.
 	 * @param reverse    Backward search.
 	 */
 	bool execute(std::string_view string, size_t offset, size_t end_offset, int prev, int succ, const char *delimiters, bool reverse = false);

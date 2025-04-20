@@ -155,7 +155,7 @@ Input Input::operator--(int) {
 /**
  * @brief Checks if the input has reached the end of the string.
  *
- * @return true if the input index is at the end of the string, false otherwise.
+ * @return `true` if the input index is at the end of the string, `false` otherwise.
  */
 bool Input::atEnd() const {
 	return index_ == string_->size();
@@ -218,7 +218,7 @@ Input Input::operator-(int rhs) const {
  * @brief Checks if two Input objects are equal.
  *
  * @param rhs The Input object to compare with the current Input object.
- * @return true if both Input objects have the same string and index, false otherwise.
+ * @return `true` if both Input objects have the same string and index, `false` otherwise.
  */
 bool Input::operator==(const Input &rhs) const {
 	return string_ == rhs.string_ && index_ == rhs.index_;
@@ -228,7 +228,7 @@ bool Input::operator==(const Input &rhs) const {
  * @brief Checks if two Input objects are not equal.
  *
  * @param rhs The Input object to compare with the current Input object.
- * @return true if either the string or index of the two Input objects differ, false otherwise.
+ * @return `true` if either the string or index of the two Input objects differ, `false` otherwise.
  */
 bool Input::operator!=(const Input &rhs) const {
 	return string_ != rhs.string_ || index_ != rhs.index_;
@@ -280,7 +280,7 @@ void Input::consume(const QRegularExpression &re) {
  *
  * @param re The regular expression to match against the input string.
  * @param m An optional pointer to a QString where the captured match will be stored.
- * @return true if the match is successful, false otherwise.
+ * @return `true` if the match is successful, `false` otherwise.
  */
 bool Input::match(const QRegularExpression &re, QString *m) {
 
@@ -313,7 +313,7 @@ bool Input::match(const QRegularExpression &re, QString *m) {
  * @brief Matches the input string against a specific string and advances the index if successful.
  *
  * @param s The string to match against the input string.
- * @return true if the match is successful, false otherwise.
+ * @return `true` if the match is successful, `false` otherwise.
  */
 bool Input::match(const QString &s) {
 	if (index_ + s.size() > string_->size()) {
@@ -333,7 +333,7 @@ bool Input::match(const QString &s) {
  * @brief Matches the input string against a specific character and advances the index if successful.
  *
  * @param ch The character to match against the input string.
- * @return true if the match is successful, false otherwise.
+ * @return `true` if the match is successful, `false` otherwise.
  */
 bool Input::match(QChar ch) {
 	if (index_ >= string_->size()) {

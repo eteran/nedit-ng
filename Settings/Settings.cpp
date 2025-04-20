@@ -295,7 +295,7 @@ QString smartIndentFile() {
 /**
  * @brief Loads the user preferences from the configuration file.
  *
- * @param isServer If true, the and the configuration does not specify a server name,
+ * @param isServer If `true`, the and the configuration does not specify a server name,
  *                 a random server name will be generated.
  */
 void loadPreferences(bool isServer) {
@@ -487,7 +487,7 @@ void importSettings(const QString &filename) {
 /**
  * @brief Saves the user preferences to the configuration file.
  *
- * @return true if the preferences were saved successfully, false otherwise.
+ * @return `true` if the preferences were saved successfully, `false` otherwise.
  */
 bool savePreferences() {
 	const QString filename = configFile();

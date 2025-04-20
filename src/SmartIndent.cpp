@@ -178,7 +178,7 @@ const SmartIndentEntry *findDefaultIndentSpec(const QString &language) {
 }
 
 /*
-** Returns true if there are smart indent macros for a named language
+** Returns `true` if there are smart indent macros for a named language
 */
 bool smartIndentMacrosAvailable(const QString &languageModeName) {
 	return findIndentSpec(languageModeName) != nullptr;
@@ -457,7 +457,7 @@ const SmartIndentEntry *findIndentSpec(const QString &language) {
 }
 
 /*
-** Returns true if there are smart indent macros, or potential macros
+** Returns `true` if there are smart indent macros, or potential macros
 ** not yet committed in the smart indent dialog for a language mode,
 */
 bool LMHasSmartIndentMacros(const QString &languageMode) {

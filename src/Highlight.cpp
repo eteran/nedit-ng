@@ -100,7 +100,7 @@ TextCursor lastModified(const Ptr &buffer) {
 }
 
 /*
-** Return true if `patternSet` exactly matches one of the default pattern sets
+** Return `true` if `patternSet` exactly matches one of the default pattern sets
 */
 bool isDefaultPatternSet(const PatternSet &patternSet) {
 	if (std::optional<PatternSet> defaultPatSet = readDefaultPatternSet(patternSet.languageMode)) {
@@ -115,7 +115,7 @@ bool isDefaultPatternSet(const PatternSet &patternSet) {
 ** can't.  Leaf patterns are not suitable for parsing, because patterns
 ** contain the expressions used for parsing within the context of their own
 ** operation, i.e. the parent pattern initiates, and leaf patterns merely
-** confirm and color.  Returns true if the pattern is suitable for parsing.
+** confirm and color.  Returns `true` if the pattern is suitable for parsing.
 */
 bool patternIsParsable(HighlightData *pattern) {
 	return pattern && pattern->subPatternRE;
@@ -1125,7 +1125,7 @@ void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted
 ** "match_to" indicates the boundary till where matches may extend. If nullptr,
 ** it is assumed that the end of the string indicates the boundary.
 **
-** Returns true if parsing was done and the parse succeeded.  Returns false if
+** Returns `true` if parsing was done and the parse succeeded.  Returns `false` if
 ** the error pattern matched, if the end of the string was reached without
 ** matching the end expression, or in the unlikely event of an internal error.
 */

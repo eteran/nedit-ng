@@ -92,7 +92,7 @@ QString RangesetTable::getColorName(size_t index) const {
 /*
 ** Find the index of the first range which includes the position.
 ** Returns the index of the rangeset in the rangeset table + 1 if an including
-** rangeset was found, 0 otherwise. If needs_color is true, "colorless" ranges
+** rangeset was found, 0 otherwise. If needs_color is `true`, "colorless" ranges
 ** will be skipped.
 */
 size_t RangesetTable::index1ofPos(TextCursor pos, bool needs_color) {
@@ -187,7 +187,7 @@ int RangesetTable::RangesetCreate() {
 }
 
 /*
-** Return true if label is a valid identifier for a range set.
+** Return `true` if label is a valid identifier for a range set.
 */
 bool RangesetTable::LabelOK(int label) {
 	return std::find(rangeset_labels.begin(), rangeset_labels.end(), label) != rangeset_labels.end();

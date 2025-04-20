@@ -243,7 +243,7 @@ void DialogDrawingStyles::buttonBox_clicked(QAbstractButton *button) {
  * @brief Validates the fields in the dialog.
  *
  * @param verbosity The verbosity level for error messages.
- * @return true if the fields are valid, false otherwise.
+ * @return `true` if the fields are valid, `false` otherwise.
  */
 bool DialogDrawingStyles::validateFields(Verbosity verbosity) {
 	if (readFields(verbosity)) {
@@ -339,7 +339,7 @@ std::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosit
 /**
  * @brief Applies the changes made in the dialog to the highlight styles.
  *
- * @return true if the changes were successfully applied, false otherwise.
+ * @return `true` if the changes were successfully applied, `false` otherwise.
  */
 bool DialogDrawingStyles::applyDialogChanges() {
 
@@ -400,7 +400,7 @@ bool DialogDrawingStyles::applyDialogChanges() {
  * @brief Updates an item in the dialog with the current field values.
  *
  * @param index The item to update, specified by its index in the model.
- * @return true if the item was successfully updated, false otherwise.
+ * @return `true` if the item was successfully updated, `false` otherwise.
  */
 bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
 	// Get the current contents of the "patterns" dialog fields
@@ -433,7 +433,7 @@ bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
 /**
  * @brief Updates the currently selected item in the dialog with the current field values.
  *
- * @return true if the item was successfully updated, false otherwise.
+ * @return `true` if the item was successfully updated, `false` otherwise.
  */
 bool DialogDrawingStyles::updateCurrentItem() {
 	const QModelIndex index = ui.listItems->currentIndex();

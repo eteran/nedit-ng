@@ -4286,7 +4286,7 @@ std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments argume
 /*
 ** Set the color of a range set's ranges. it is ignored if the color cannot be
 ** found/applied. If no color is applied, any current color is removed. Returns
-** true if the rangeset is valid.
+** `true` if the rangeset is valid.
 */
 std::error_code rangesetSetColorMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
@@ -4326,7 +4326,7 @@ std::error_code rangesetSetColorMS(DocumentWidget *document, Arguments arguments
 
 /*
 ** Set the name of a range set's ranges. Returns
-** true if the rangeset is valid.
+** `true` if the rangeset is valid.
 */
 std::error_code rangesetSetNameMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
@@ -4364,7 +4364,7 @@ std::error_code rangesetSetNameMS(DocumentWidget *document, Arguments arguments,
 }
 
 /*
-** Change a range's modification response. Returns true if the rangeset is
+** Change a range's modification response. Returns `true` if the rangeset is
 ** valid and the response type name is valid.
 */
 std::error_code rangesetSetModeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {

@@ -52,7 +52,7 @@ const QLatin1String RedundantActions[] = {
  * @brief Checks if the event is a mouse action.
  *
  * @param ev The event to check
- * @return true if the event is a mouse action, false otherwise
+ * @return `true` if the event is a mouse action, false otherwise
  */
 template <class Event>
 bool isMouseAction(const Event *ev) {
@@ -66,7 +66,7 @@ bool isMouseAction(const Event *ev) {
  * @brief Checks if the action is redundant.
  *
  * @param ev The event to check
- * @return true if the action is redundant, false otherwise
+ * @return `true` if the action is redundant, false otherwise
  */
 template <class Event>
 bool isRedundantAction(const Event *ev) {
@@ -153,7 +153,7 @@ CommandRecorder *CommandRecorder::instance() {
  *
  * @param obj The object that received the event.
  * @param event The event that was received.
- * @return true if the event was handled, false otherwise.
+ * @return `true` if the event was handled, `false` otherwise.
  */
 bool CommandRecorder::eventFilter(QObject *obj, QEvent *event) {
 
@@ -272,7 +272,7 @@ void CommandRecorder::cancelRecording() {
 /**
  * @brief Checks if the recorder is currently recording user actions.
  *
- * @return true if recording is active, false otherwise.
+ * @return `true` if recording is active, `false` otherwise.
  */
 bool CommandRecorder::isRecording() const {
 	return isRecording_;
@@ -281,7 +281,7 @@ bool CommandRecorder::isRecording() const {
 /**
  * @brief Sets the recording state of the CommandRecorder.
  *
- * @param enabled If true, starts recording; if false, stops recording.
+ * @param enabled If `true`, starts recording; if false, stops recording.
  */
 void CommandRecorder::setRecording(bool enabled) {
 

@@ -134,7 +134,7 @@ constexpr CharMatchTable FlashingChars[] = {
 /**
  * @brief Checks if the current user is an administrator.
  *
- * @return True if the user is an administrator, false otherwise.
+ * @return `true` if the user is an administrator, `false` otherwise.
  */
 bool isAdministrator() {
 #ifdef Q_OS_UNIX
@@ -421,10 +421,10 @@ QString escapeCommand(const QString &command, const QString &fullName, int64_t l
  * - SUPPRESS_CREATE_WARN: When creating a file, don't ask the user.
  * - PREF_READ_ONLY: Make the file read-only regardless.
  * @param geometry The geometry of the window to open the document in, or an empty string for default.
- * @param iconic If true, the document will be opened in an iconic state (minimized).
+ * @param iconic If `true`, the document will be opened in an iconic state (minimized).
  * @param languageMode The language mode to use for the document, or QString() to determine it automatically.
- * @param tabbed If true, the document will be opened in a tabbed interface.
- * @param background If true, the file will be opened in the background without raising the window.
+ * @param tabbed If `true`, the document will be opened in a tabbed interface.
+ * @param background If `true`, the file will be opened in the background without raising the window.
  * This is useful for batch processing or when opening multiple files at once.
  * @return A pointer to the DocumentWidget that was created or used, or nullptr if the operation failed.
  *
@@ -776,7 +776,7 @@ TextArea *DocumentWidget::createTextArea(const std::shared_ptr<TextBuffer> &buff
 /**
  * @brief Set the window modified state for this document widget.
  *
- * @param modified If true, the document is to be marked as modified.
+ * @param modified If `true`, the document is to be marked as modified.
  */
 void DocumentWidget::setWindowModified(bool modified) {
 	MainWindow *win = MainWindow::fromDocument(this);
@@ -854,7 +854,7 @@ void DocumentWidget::refreshTabState() {
  * specific actions (turn on/off highlighting), and update the language
  * mode menu item.
  *
- * @param forceNewDefaults If true, re-establish default settings for language-specific preferences
+ * @param forceNewDefaults If `true`, re-establish default settings for language-specific preferences
  * regardless of whether they were previously set by the user.
  */
 void DocumentWidget::determineLanguageMode(bool forceNewDefaults) {
@@ -876,7 +876,7 @@ size_t DocumentWidget::getLanguageMode() const {
  * the menu and trigger language mode specific actions (turn on/off highlighting).
  *
  * @param mode The language mode to set, which is an index into Preferences::LanguageModes.
- * @param forceNewDefaults If true, re-establish default settings for language-specific preferences
+ * @param forceNewDefaults If `true`, re-establish default settings for language-specific preferences
  * regardless of whether they were previously set by the user.
  */
 void DocumentWidget::setLanguageMode(size_t mode, bool forceNewDefaults) {
@@ -909,7 +909,7 @@ void DocumentWidget::setLanguageMode(size_t mode, bool forceNewDefaults) {
  * @brief Set the language mode for this document widget.
  *
  * @param languageMode The language mode to set, which is a string representing the language.
- * @param forceNewDefaults If true, re-establish default settings for language-specific preferences
+ * @param forceNewDefaults If `true`, re-establish default settings for language-specific preferences
  * regardless of whether they were previously set by the user.
  */
 void DocumentWidget::action_Set_Language_Mode(const QString &languageMode, bool forceNewDefaults) {
@@ -1176,7 +1176,7 @@ void DocumentWidget::smartIndentCallback(TextArea *area, SmartIndentEvent *event
 /**
  * @brief Raise the document and its window, optionally focusing the text area.
  *
- * @param focus If true, the text area will be focused after raising the window.
+ * @param focus If `true`, the text area will be focused after raising the window.
  */
 void DocumentWidget::raiseFocusDocumentWindow(bool focus) {
 	raiseDocument();
@@ -1248,7 +1248,7 @@ void DocumentWidget::raiseDocument() {
  * delimiters, syntax highlighting, and other mode-specific parameters.
  *
  * @param mode The index of the language mode to apply, which is an index into Preferences::LanguageModes.
- * @param forceDefaults If true, re-establish default settings for language-specific preferences
+ * @param forceDefaults If `true`, re-establish default settings for language-specific preferences
  */
 void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
@@ -1420,7 +1420,7 @@ void DocumentWidget::setEmTabDistance(int distance) {
 /**
  * @brief Set whether to insert tabs or spaces when the user presses the Tab key.
  *
- * @param value If true, tabs will be inserted; if false, spaces will be inserted.
+ * @param value If `true`, tabs will be inserted; if false, spaces will be inserted.
  */
 void DocumentWidget::setInsertTabs(bool value) {
 
@@ -1533,7 +1533,7 @@ std::vector<TextArea *> DocumentWidget::textPanes() const {
 /**
  * @brief Check if this document widget is the top document in its main window.
  *
- * @return True if this document is the top document in its main window, false otherwise.
+ * @return `true` if this document is the top document in its main window, `false` otherwise.
  */
 bool DocumentWidget::isTopDocument() const {
 
@@ -1638,7 +1638,7 @@ void DocumentWidget::updateSelectionSensitiveMenus(bool enabled) {
  *
  * @param menu The menu to update.
  * @param menuList The list of menu items to check against.
- * @param enabled If true, the menu items will be enabled; if false, they will be disabled.
+ * @param enabled If `true`, the menu items will be enabled; if false, they will be disabled.
  */
 void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<MenuData> &menuList, bool enabled) {
 
@@ -2032,7 +2032,7 @@ void DocumentWidget::redo() {
 /**
  * @brief Check if the document widget is read-only or locked.
  *
- * @return True if the document is read-only or locked, false otherwise.
+ * @return `true` if the document is read-only or locked, `false` otherwise.
  */
 bool DocumentWidget::isReadOnly() const {
 	return info_->lockReasons.isAnyLocked();
@@ -2041,7 +2041,7 @@ bool DocumentWidget::isReadOnly() const {
 /**
  * @brief Check if the document widget is read-only and beep if it is.
  *
- * @return True if the document is read-only, false otherwise.
+ * @return `true` if the document is read-only, `false` otherwise.
  */
 bool DocumentWidget::checkReadOnly() const {
 	if (isReadOnly()) {
@@ -2314,7 +2314,7 @@ QString DocumentWidget::path() const {
  * The format of the file (UNIX/DOS/MAC) is handled properly.
  *
  * @param fileName The name of the file to compare against.
- * @return True if the contents differ or if an error occurs, false if they are the same.
+ * @return `true` if the contents differ or if an error occurs, `false` if they are the same.
  *
  * @note This function reads the file in chunks and compares it with the document's buffer,
  */
@@ -2500,7 +2500,7 @@ void DocumentWidget::revertToSaved() {
  * file is generated using the document's path and filename, with a tilde (~)
  * appended to the filename on UNIX systems.
  *
- * @return True if the backup file was successfully written, false otherwise.
+ * @return `true` if the backup file was successfully written, `false` otherwise.
  */
 bool DocumentWidget::writeBackupFile() {
 	FILE *fp;
@@ -2565,7 +2565,7 @@ bool DocumentWidget::writeBackupFile() {
 /**
  * @brief Save the current document.
  *
- * @return True if the document was successfully saved, false otherwise.
+ * @return `true` if the document was successfully saved, `false` otherwise.
  */
 bool DocumentWidget::saveDocument() {
 
@@ -2627,7 +2627,7 @@ bool DocumentWidget::saveDocument() {
 /**
  * @brief Save the document to its current filename.
  *
- * @return True if the document was successfully saved, false otherwise.
+ * @return `true` if the document was successfully saved, `false` otherwise.
  */
 bool DocumentWidget::doSave() {
 
@@ -2730,8 +2730,8 @@ bool DocumentWidget::doSave() {
  * @brief Save the document with a new name.
  *
  * @param newName The new name to save the document as. If null, a prompt will be shown to the user.
- * @param addWrap If true, the document will be wrapped with newlines before saving.
- * @return True if the document was successfully saved, false otherwise.
+ * @param addWrap If `true`, the document will be wrapped with newlines before saving.
+ * @return `true` if the document was successfully saved, `false` otherwise.
  */
 bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 
@@ -2876,7 +2876,7 @@ void DocumentWidget::addWrapNewlines() {
  * This function creates a backup file with the name `<filename>.bck` in the
  * same directory as the current document.
  *
- * @return True if the backup was successfully written, false otherwise.
+ * @return `true` if the backup was successfully written, `false` otherwise.
  */
 bool DocumentWidget::writeBckVersion() {
 
@@ -2999,9 +2999,9 @@ bool DocumentWidget::writeBckVersion() {
 /**
  * @brief Check if the file associated with the document widget was modified externally.
  *
- * @return True if the file was modified externally, false otherwise.
+ * @return `true` if the file was modified externally, `false` otherwise.
  *
- * @note This function will return false if the file has been deleted or is unavailable.
+ * @note This function will return `false` if the file has been deleted or is unavailable.
  */
 bool DocumentWidget::fileWasModifiedExternally() const {
 
@@ -3031,7 +3031,7 @@ bool DocumentWidget::fileWasModifiedExternally() const {
  * @brief Close the file and the window, optionally prompting the user.
  *
  * @param preResponse The mode to use for prompting the user before closing the file.
- * @return True if the file and window were successfully closed, false otherwise.
+ * @return `true` if the file and window were successfully closed, `false` otherwise.
  */
 bool DocumentWidget::closeFileAndWindow(CloseMode preResponse) {
 
@@ -3250,7 +3250,7 @@ DocumentWidget *DocumentWidget::open(const QString &fullpath) {
  * @param name The name of the file to be opened.
  * @param path The path to the file to be opened.
  * @param flags Flags to control the opening behavior, such as whether to create the file if it does not exist or to suppress warnings.
- * @return True if the document was successfully opened, false otherwise.
+ * @return `true` if the document was successfully opened, `false` otherwise.
  */
 bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags) {
 
@@ -3414,7 +3414,7 @@ bool DocumentWidget::doOpen(const QString &name, const QString &path, int flags)
 
 		/* Any errors that happen after this point leave the window in a
 		 * "broken" state, and thus RevertToSaved will abandon the window if
-		 * info_->fileMissing is false and doOpen fails. */
+		 * info_->fileMissing is `false` and doOpen fails. */
 		info_->statbuf.st_mode  = statbuf.st_mode;
 		info_->statbuf.st_uid   = statbuf.st_uid;
 		info_->statbuf.st_gid   = statbuf.st_gid;
@@ -3938,7 +3938,7 @@ std::optional<TextCursor> DocumentWidget::findMatchingChar(char toMatch, Style s
  * @brief Go to the matching character in the document based on the current selection or cursor position.
  *
  * @param area The text area in which to perform the operation.
- * @param select If true, select to the matching character; otherwise, just move the cursor to it.
+ * @param select If `true`, select to the matching character; otherwise, just move the cursor to it.
  */
 void DocumentWidget::gotoMatchingCharacter(TextArea *area, bool select) {
 
@@ -4187,7 +4187,7 @@ void DocumentWidget::executeShellCommand(TextArea *area, const QString &command,
  * @brief Print the contents of the specified text area.
  *
  * @param area The text area whose contents to print.
- * @param selectedOnly If true, only print the selected text; otherwise, print the entire buffer.
+ * @param selectedOnly If `true`, only print the selected text; otherwise, print the entire buffer.
  */
 void DocumentWidget::printWindow(TextArea *area, bool selectedOnly) {
 
@@ -4490,7 +4490,7 @@ void DocumentWidget::moveDocument(MainWindow *fromWindow) {
 /**
  * @brief Show or hide the statistics line in the document widget.
  *
- * @param state True to show the stats line, false to hide it.
+ * @param state `true` to show the stats line, false to hide it.
  */
 void DocumentWidget::showStatsLine(bool state) {
 
@@ -4569,7 +4569,7 @@ QString DocumentWidget::backlightCharTypes() const {
 /**
  * @brief Check if backlight characters is enabled in the document widget.
  *
- * @return True if backlight characters is enabled, false otherwise.
+ * @return `true` if backlight characters is enabled, `false` otherwise.
  */
 bool DocumentWidget::backlightChars() const {
 	return backlightChars_;
@@ -4578,7 +4578,7 @@ bool DocumentWidget::backlightChars() const {
 /**
  * @brief Set whether to show the statistics line in the document widget.
  *
- * @param value True to show the stats line, false to hide it.
+ * @param value `true` to show the stats line, false to hide it.
  */
 void DocumentWidget::setShowStatisticsLine(bool value) {
 
@@ -4596,7 +4596,7 @@ void DocumentWidget::setShowStatisticsLine(bool value) {
 /**
  * @brief Check if the statistics line is currently shown in the document widget.
  *
- * @return True if the stats line is shown, false otherwise.
+ * @return `true` if the stats line is shown, `false` otherwise.
  */
 bool DocumentWidget::showStatisticsLine() const {
 	return showStats_;
@@ -4605,7 +4605,7 @@ bool DocumentWidget::showStatisticsLine() const {
 /**
  * @brief Check if syntax-based matching is enabled in the document widget.
  *
- * @return True if syntax-based matching is enabled, false otherwise.
+ * @return `true` if syntax-based matching is enabled, `false` otherwise.
  */
 bool DocumentWidget::matchSyntaxBased() const {
 	return info_->matchSyntaxBased;
@@ -4614,7 +4614,7 @@ bool DocumentWidget::matchSyntaxBased() const {
 /**
  * @brief Set whether to use syntax-based matching in the document widget.
  *
- * @param value True to enable syntax-based matching, false to disable it.
+ * @param value `true` to enable syntax-based matching, false to disable it.
  */
 void DocumentWidget::setMatchSyntaxBased(bool value) {
 
@@ -4632,7 +4632,7 @@ void DocumentWidget::setMatchSyntaxBased(bool value) {
 /**
  * @brief Check if the document widget is currently in overstrike mode.
  *
- * @return True if in overstrike mode, false if in insert mode.
+ * @return `true` if in overstrike mode, `false` if in insert mode.
  */
 bool DocumentWidget::overstrike() const {
 	return info_->overstrike;
@@ -4641,7 +4641,7 @@ bool DocumentWidget::overstrike() const {
 /**
  * @brief Set the overstrike mode for the document widget.
  *
- * @param overstrike True to enable overstrike mode, false to enable insert mode.
+ * @param overstrike `true` to enable overstrike mode, false to enable insert mode.
  */
 void DocumentWidget::setOverstrike(bool overstrike) {
 
@@ -4726,7 +4726,7 @@ void DocumentWidget::setColors(const QColor &textFg, const QColor &textBg, const
 /**
  * @brief Check if a mode message is currently displayed in the stats line.
  *
- * @return True if a mode message is displayed, false otherwise.
+ * @return `true` if a mode message is displayed, `false` otherwise.
  */
 bool DocumentWidget::modeMessageDisplayed() const {
 	return !modeMessage_.isNull();
@@ -5241,9 +5241,9 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
  * @param command The shell command to execute.
  * @param input The input source for the command execution.
  * @param output The output destination for the command execution.
- * @param outputReplacesInput If true, the output will replace the input in the text area.
- * @param saveFirst If true, the document will be saved before executing the command.
- * @param loadAfter If true, the document will be reloaded after executing the command.
+ * @param outputReplacesInput If `true`, the output will replace the input in the text area.
+ * @param saveFirst If `true`, the document will be saved before executing the command.
+ * @param loadAfter If `true`, the document will be reloaded after executing the command.
  * @param source The source of the command (User, Macro, etc.).
  */
 void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const QString &command, InSrcs input, OutDests output, bool outputReplacesInput, bool saveFirst, bool loadAfter, CommandSource source) {
@@ -5527,7 +5527,7 @@ void DocumentWidget::beginLearn() {
  * and allows intermixing of defines with immediate actions.
  *
  * @param fileName The name of the macro file to read.
- * @param warnNotExist If true, show a warning message if the file does not exist.
+ * @param warnNotExist If `true`, show a warning message if the file does not exist.
  */
 void DocumentWidget::readMacroFile(const QString &fileName, bool warnNotExist) {
 
@@ -6839,7 +6839,7 @@ std::unique_ptr<Regex> DocumentWidget::compileRegexAndWarn(const QString &re) {
  * memory, and check that a macro is not attempting to close the window from
  * which it is run.
  *
- * @return true if the window can be closed, false if it is running a macro
+ * @return `true` if the window can be closed, `false` if it is running a macro
  * and the macro is trying to close the window.
  * If false is returned, the caller should not close the window, but instead
  * empty it and make it Untitled, and let the macro completion process close
@@ -7045,7 +7045,7 @@ void DocumentWidget::readMacroInitFile() {
  *
  * @param string The macro string to read and execute.
  * @param errIn A string indicating where the error occurred, used for error reporting.
- * @return true if the macro string was read and executed successfully, false if there was an error.
+ * @return `true` if the macro string was read and executed successfully, `false` if there was an error.
  */
 bool DocumentWidget::readMacroString(const QString &string, const QString &errIn) {
 	return readCheckMacroString(this, string, this, errIn, nullptr);
@@ -7066,7 +7066,7 @@ void DocumentWidget::endSmartIndent() {
 /**
  * @brief Check if the current smart indent operation is in a macro.
  *
- * @return true if the smart indent operation is in a macro, false otherwise.
+ * @return `true` if the smart indent operation is in a macro, `false` otherwise.
  */
 bool DocumentWidget::inSmartIndentMacros() const {
 	return info_->smartIndentData && (info_->smartIndentData->inModMacro || info_->smartIndentData->inNewLineMacro);
@@ -7132,7 +7132,7 @@ QString DocumentWidget::getWindowDelimiters() const {
 /**
  * @brief Check if the document uses tabs for indentation.
  *
- * @return true if tabs are used for indentation, false otherwise.
+ * @return `true` if tabs are used for indentation, `false` otherwise.
  */
 bool DocumentWidget::useTabs() const {
 	return info_->buffer->BufGetUseTabs();
@@ -7141,7 +7141,7 @@ bool DocumentWidget::useTabs() const {
 /**
  * @brief Set whether the document should use tabs for indentation.
  *
- * @param value true to use tabs, false to use spaces for indentation.
+ * @param value `true` to use tabs, false to use spaces for indentation.
  */
 void DocumentWidget::setUseTabs(bool value) {
 
@@ -7152,7 +7152,7 @@ void DocumentWidget::setUseTabs(bool value) {
 /**
  * @brief Check if syntax highlighting is enabled for the document.
  *
- * @return true if syntax highlighting is enabled, false otherwise.
+ * @return `true` if syntax highlighting is enabled, `false` otherwise.
  */
 bool DocumentWidget::highlightSyntax() const {
 	return highlightSyntax_;
@@ -7161,7 +7161,7 @@ bool DocumentWidget::highlightSyntax() const {
 /**
  * @brief Set whether syntax highlighting should be enabled for the document.
  *
- * @param value true to enable syntax highlighting, false to disable it.
+ * @param value `true` to enable syntax highlighting, false to disable it.
  */
 void DocumentWidget::setHighlightSyntax(bool value) {
 
@@ -7185,7 +7185,7 @@ void DocumentWidget::setHighlightSyntax(bool value) {
 /**
  * @brief Check if a backup copy should be made when saving the document.
  *
- * @return true if a backup copy should be made, false otherwise.
+ * @return `true` if a backup copy should be made, `false` otherwise.
  */
 bool DocumentWidget::makeBackupCopy() const {
 	return info_->saveOldVersion;
@@ -7194,7 +7194,7 @@ bool DocumentWidget::makeBackupCopy() const {
 /**
  * @brief Set whether a backup copy should be made when saving the document.
  *
- * @param value true to make a backup copy, false otherwise.
+ * @param value `true` to make a backup copy, `false` otherwise.
  */
 void DocumentWidget::setMakeBackupCopy(bool value) {
 
@@ -7212,7 +7212,7 @@ void DocumentWidget::setMakeBackupCopy(bool value) {
 /**
  * @brief Check if incremental backup (auto-save) is enabled for the document.
  *
- * @return true if incremental backup is enabled, false otherwise.
+ * @return `true` if incremental backup is enabled, `false` otherwise.
  */
 bool DocumentWidget::incrementalBackup() const {
 	return info_->autoSave;
@@ -7221,7 +7221,7 @@ bool DocumentWidget::incrementalBackup() const {
 /**
  * @brief Set whether incremental backup (auto-save) should be enabled for the document.
  *
- * @param value true to enable incremental backup, false to disable it.
+ * @param value `true` to enable incremental backup, false to disable it.
  */
 void DocumentWidget::setIncrementalBackup(bool value) {
 
@@ -7244,7 +7244,7 @@ void DocumentWidget::setIncrementalBackup(bool value) {
 /**
  * @brief Check if the document is locked by the user.
  *
- * @return true if the document is user-locked, false otherwise.
+ * @return `true` if the document is user-locked, `false` otherwise.
  */
 bool DocumentWidget::userLocked() const {
 	return info_->lockReasons.isUserLocked();
@@ -7253,7 +7253,7 @@ bool DocumentWidget::userLocked() const {
 /**
  * @brief Set whether the document should be locked by the user.
  *
- * @param value true to lock the document, false to unlock it.
+ * @param value `true` to lock the document, false to unlock it.
  */
 void DocumentWidget::setUserLocked(bool value) {
 	emit_event("set_locked", QString::number(value));
@@ -7349,7 +7349,7 @@ void DocumentWidget::selectNumberedLine(TextArea *area, int64_t lineNum) {
  *
  * @param area The text area in which to go to the mark.
  * @param label The label of the mark to go to, which should be a single character.
- * @param extendSel If true, extend the current selection to include the marked position.
+ * @param extendSel If `true`, extend the current selection to include the marked position.
  */
 void DocumentWidget::gotoMark(TextArea *area, QChar label, bool extendSel) {
 
@@ -7576,9 +7576,9 @@ void DocumentWidget::createSelectMenu(TextArea *area, const QStringList &args) {
  * @brief Try to display a calltip with the given text.
  *
  * @param text The text to display in the calltip.
- * @param anchored If true, the calltip will be anchored at the specified position.
- * @param pos The position at which to anchor the calltip, if anchored is true.
- * @param lookup If true, the text is considered a key to be searched for in the
+ * @param anchored If `true`, the calltip will be anchored at the specified position.
+ * @param pos The position at which to anchor the calltip, if anchored is `true`.
+ * @param lookup If `true`, the text is considered a key to be searched for in the
  * 				tip and/or tag database depending on search_type.
  * @param search_type The type of search to perform, either TAG or TIP_FROM_TAG.
  * @param hAlign The horizontal alignment of the calltip.
@@ -7748,7 +7748,7 @@ TextBuffer *DocumentWidget::buffer() const {
 /**
  * @brief Check if the filename is set for the document.
  *
- * @return true if the filename is set, false otherwise.
+ * @return `true` if the filename is set, `false` otherwise.
  */
 bool DocumentWidget::filenameSet() const {
 	return info_->filenameSet;
@@ -7757,7 +7757,7 @@ bool DocumentWidget::filenameSet() const {
 /**
  * @brief Check if the file has been changed since it was last saved.
  *
- * @return true if the file has been changed, false otherwise.
+ * @return `true` if the file has been changed, `false` otherwise.
  */
 bool DocumentWidget::fileChanged() const {
 	return info_->fileChanged;

@@ -119,7 +119,7 @@ constexpr uint8_t PUT_OFFSET_R(T v) noexcept {
 /**
  * @brief Check if the next character is a quantifier.
  *
- * @return Returns true if the next character is a quantifier (*, +, ?, or {).
+ * @return `true` if the next character is a quantifier (*, +, ?, or {).
  */
 bool isQuantifier() noexcept {
 	const char ch = pContext.Reg_Parse.peek();
@@ -129,7 +129,7 @@ bool isQuantifier() noexcept {
 /**
  * @brief Generate character class sets using locale aware ANSI C functions.
  *
- * @return Returns true if the character classes were initialized successfully.
+ * @return `true` if the character classes were initialized successfully.
  */
 bool init_ansi_classes() noexcept {
 
@@ -536,7 +536,7 @@ uint8_t *shortcut_escape(Ch ch, int *flag_param) {
 }
 
 /**
- * @brief Perform a tail operation on (ptr + offset) but only if 'ptr' is not null.
+ * @brief Perform a tail operation on (ptr + offset) but only if `ptr` is not nullptr.
  */
 void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
 
@@ -548,7 +548,7 @@ void offset_tail(uint8_t *ptr, int offset, uint8_t *val) {
 }
 
 /**
- * @brief Perform a tail operation on (ptr + offset) but only if 'ptr' is a
+ * @brief Perform a tail operation on (ptr + offset) but only if `ptr` is a
  * BRANCH node.
  *
  * @param ptr The BRANCH node.
