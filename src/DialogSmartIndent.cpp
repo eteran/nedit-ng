@@ -202,7 +202,7 @@ void DialogSmartIndent::buttonRestore_clicked() {
 	}
 
 	// if a stored version of the indent macros exist, replace them, if not, add a new one
-	insert_or_replace(SmartIndent::SmartIndentSpecs, *spec, [spec](const SmartIndentEntry &entry) {
+	Upsert(SmartIndent::SmartIndentSpecs, *spec, [spec](const SmartIndentEntry &entry) {
 		return entry.language == spec->language;
 	});
 
@@ -252,7 +252,7 @@ bool DialogSmartIndent::updateSmartIndentData() {
 
 	/* If it's a new language, add it at the end, otherwise replace the
 	   existing macros */
-	insert_or_replace(SmartIndent::SmartIndentSpecs, newMacros, [this](const SmartIndentEntry &entry) {
+	Upsert(SmartIndent::SmartIndentSpecs, newMacros, [this](const SmartIndentEntry &entry) {
 		return entry.language == languageMode_;
 	});
 

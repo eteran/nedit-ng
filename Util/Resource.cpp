@@ -13,7 +13,7 @@
  * @param resource The name of the resource to load, e.g., ":/path/to/resource".
  * @return The resource data.
  */
-QByteArray loadResource(const QString &resource) {
+QByteArray LoadResource(const QString &resource) {
 
 	const QResource res(resource);
 	if (!res.isValid()) {

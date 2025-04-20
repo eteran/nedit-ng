@@ -86,7 +86,7 @@ bool isDefaultIndentSpec(const SmartIndentEntry *indentSpec) {
  * @return
  */
 std::vector<SmartIndentEntry> loadDefaultIndentSpecs() {
-	static QByteArray defaultIndentRules = loadResource(QLatin1String("DefaultSmartIndent.yaml"));
+	static QByteArray defaultIndentRules = LoadResource(QLatin1String("DefaultSmartIndent.yaml"));
 	static YAML::Node indentRules        = YAML::Load(defaultIndentRules.data());
 
 	std::vector<SmartIndentEntry> specs;
@@ -119,7 +119,7 @@ std::vector<SmartIndentEntry> loadDefaultIndentSpecs() {
 					}
 				}
 
-				insert_or_replace(specs, is, [&is](const SmartIndentEntry &entry) {
+				Upsert(specs, is, [&is](const SmartIndentEntry &entry) {
 					return entry.language == is.language;
 				});
 			}
@@ -137,7 +137,7 @@ std::vector<SmartIndentEntry> loadDefaultIndentSpecs() {
  * @return
  */
 QString loadDefaultCommonMacros() {
-	static QByteArray defaultIndentRules = loadResource(QLatin1String("DefaultSmartIndent.yaml"));
+	static QByteArray defaultIndentRules = LoadResource(QLatin1String("DefaultSmartIndent.yaml"));
 	static YAML::Node indentRules        = YAML::Load(defaultIndentRules.data());
 
 	for (auto it = indentRules.begin(); it != indentRules.end(); ++it) {
@@ -204,7 +204,7 @@ void loadSmartIndentString(const QString &string) {
 			if (QFileInfo::exists(filename)) {
 				indentRules = YAML::LoadFile(filename.toUtf8().data());
 			} else {
-				static QByteArray defaultIndentRules = loadResource(QLatin1String("DefaultSmartIndent.yaml"));
+				static QByteArray defaultIndentRules = LoadResource(QLatin1String("DefaultSmartIndent.yaml"));
 				indentRules                          = YAML::Load(defaultIndentRules.data());
 			}
 
@@ -248,7 +248,7 @@ void loadSmartIndentString(const QString &string) {
 							is = *spec;
 						}
 
-						insert_or_replace(SmartIndentSpecs, is, [&is](const SmartIndentEntry &entry) {
+						Upsert(SmartIndentSpecs, is, [&is](const SmartIndentEntry &entry) {
 							return entry.language == is.language;
 						});
 					}
@@ -324,7 +324,7 @@ void loadSmartIndentString(const QString &string) {
 					}
 				}
 
-				insert_or_replace(SmartIndentSpecs, is, [&is](const SmartIndentEntry &entry) {
+				Upsert(SmartIndentSpecs, is, [&is](const SmartIndentEntry &entry) {
 					return entry.language == is.language;
 				});
 			}

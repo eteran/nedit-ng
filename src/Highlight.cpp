@@ -1028,7 +1028,7 @@ HighlightData *find_subpattern(const HighlightData *pattern, size_t index) {
  * @return
  */
 std::vector<PatternSet> readDefaultPatternSets() {
-	static QByteArray defaultPatternSets = loadResource(QLatin1String("DefaultPatternSets.yaml"));
+	static QByteArray defaultPatternSets = LoadResource(QLatin1String("DefaultPatternSets.yaml"));
 	static YAML::Node patternSets        = YAML::Load(defaultPatternSets.data());
 
 	std::vector<PatternSet> defaultPatterns;
@@ -1469,7 +1469,7 @@ void LoadHighlightString(const QString &string) {
 		if (QFileInfo::exists(highlightPatternsFile)) {
 			patternSets = YAML::LoadFile(highlightPatternsFile.toUtf8().data());
 		} else {
-			static QByteArray defaultPatternSets = loadResource(QLatin1String("DefaultPatternSets.yaml"));
+			static QByteArray defaultPatternSets = LoadResource(QLatin1String("DefaultPatternSets.yaml"));
 			patternSets                          = YAML::Load(defaultPatternSets.data());
 		}
 
@@ -1481,7 +1481,7 @@ void LoadHighlightString(const QString &string) {
 			}
 
 			// Add/change the pattern set in the list
-			insert_or_replace(PatternSets, *patSet, [&patSet](const PatternSet &patternSet) {
+			Upsert(PatternSets, *patSet, [&patSet](const PatternSet &patternSet) {
 				return patternSet.languageMode == patSet->languageMode;
 			});
 		}
@@ -1497,7 +1497,7 @@ void LoadHighlightString(const QString &string) {
 			}
 
 			// Add/change the pattern set in the list
-			insert_or_replace(PatternSets, *patSet, [&patSet](const PatternSet &patternSet) {
+			Upsert(PatternSets, *patSet, [&patSet](const PatternSet &patternSet) {
 				return patternSet.languageMode == patSet->languageMode;
 			});
 

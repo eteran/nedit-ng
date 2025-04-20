@@ -483,7 +483,7 @@ void DialogSyntaxPatterns::buttonRestore_clicked() {
 	}
 
 	// if a stored version of the pattern set exists, replace it, if it doesn't, add a new one
-	insert_or_replace(Highlight::PatternSets, *patternSet, [languageMode](const PatternSet &pattern) {
+	Upsert(Highlight::PatternSets, *patternSet, [languageMode](const PatternSet &pattern) {
 		return pattern.languageMode == languageMode;
 	});
 

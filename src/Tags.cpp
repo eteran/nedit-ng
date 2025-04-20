@@ -91,11 +91,16 @@ bool lineEmpty(const QString &line) {
  * @return A QStringList containing the individual file paths.
  */
 QStringList tagSpecToFileList(const QString &tagSpec) {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
+auto sep = QDir::listSeparator();
+#else
 #ifdef Q_OS_WIN
 	auto sep = QLatin1Char(';');
 #else
 	auto sep = QLatin1Char(':');
 #endif
+#endif
+
 	return tagSpec.split(sep);
 }
 

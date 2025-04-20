@@ -295,7 +295,7 @@ void loadLanguageModesString(const QString &string) {
 		if (QFileInfo::exists(languageModeFile)) {
 			languages = YAML::LoadAllFromFile(languageModeFile.toUtf8().data());
 		} else {
-			static QByteArray defaultLanguageModes = loadResource(QLatin1String("DefaultLanguageModes.yaml"));
+			static QByteArray defaultLanguageModes = LoadResource(QLatin1String("DefaultLanguageModes.yaml"));
 			languages                              = YAML::LoadAll(defaultLanguageModes.data());
 		}
 
@@ -306,7 +306,7 @@ void loadLanguageModesString(const QString &string) {
 				break;
 			}
 
-			insert_or_replace(LanguageModes, *lm, [&lm](const LanguageMode &languageMode) {
+			Upsert(LanguageModes, *lm, [&lm](const LanguageMode &languageMode) {
 				return languageMode.name == lm->name;
 			});
 		}
@@ -319,7 +319,7 @@ void loadLanguageModesString(const QString &string) {
 				break;
 			}
 
-			insert_or_replace(LanguageModes, *lm, [&lm](const LanguageMode &languageMode) {
+			Upsert(LanguageModes, *lm, [&lm](const LanguageMode &languageMode) {
 				return languageMode.name == lm->name;
 			});
 

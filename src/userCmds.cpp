@@ -411,7 +411,7 @@ void loadMacroMenuYaml(std::vector<MenuData> &menuItems) {
 		if (QFileInfo::exists(filename)) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
-			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultMacroMenu.yaml"));
+			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultMacroMenu.yaml"));
 			menu                          = YAML::LoadAll(defaultMenu.data());
 		}
 
@@ -462,13 +462,13 @@ void loadShellMenuYaml(std::vector<MenuData> &menuItems) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
 #if defined(Q_OS_LINUX)
-			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultShellMenuLinux.yaml"));
+			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultShellMenuLinux.yaml"));
 #elif defined(Q_OS_FREEBSD)
-			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultShellMenuFreeBSD.yaml"));
+			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultShellMenuFreeBSD.yaml"));
 #elif defined(Q_OS_UNIX)
-			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultShellMenuUnix.yaml"));
+			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultShellMenuUnix.yaml"));
 #elif defined(Q_OS_WIN)
-			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultShellMenuWindows.yaml"));
+			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultShellMenuWindows.yaml"));
 #else
 			// Using an "unsupported" system so we don't have a set of defaults. Just use an empty one
 			static QByteArray defaultMenu;
@@ -550,7 +550,7 @@ void loadContextMenuYaml(std::vector<MenuData> &menuItems) {
 		if (QFileInfo::exists(filename)) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
-			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultContextMenu.yaml"));
+			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultContextMenu.yaml"));
 			menu                          = YAML::LoadAll(defaultMenu.data());
 		}
 

@@ -5,6 +5,6 @@
 class QByteArray;
 class QString;
 
-QByteArray loadResource(const QString &resource);
+QByteArray LoadResource(const QString &resource);
 
 #endif

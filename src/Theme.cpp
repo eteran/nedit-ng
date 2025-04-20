@@ -96,7 +96,7 @@ void load() {
 			}
 
 			// pattern set was read correctly, add/change it in the list
-			insert_or_replace(Highlight::HighlightStyles, hs, [&hs](const HighlightStyle &entry) {
+			Upsert(Highlight::HighlightStyles, hs, [&hs](const HighlightStyle &entry) {
 				return entry.name == hs.name;
 			});
 		}

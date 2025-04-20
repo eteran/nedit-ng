@@ -8,7 +8,7 @@
 #define CURSOR_COMPARE_TO_INTEGER
 
 template <class Integer>
-using IsInteger = typename std::enable_if<std::is_integral<Integer>::value>::type;
+using IsInteger = std::enable_if_t<std::is_integral<Integer>::value>;
 
 template <class T>
 class BasicTextCursor {

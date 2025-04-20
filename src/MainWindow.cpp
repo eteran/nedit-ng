@@ -1891,7 +1891,7 @@ void MainWindow::addToPrevOpenMenu(const QString &filename) {
 	// If the name is already in the list, move it to the start
 	const int index = PrevOpen.indexOf(filename);
 	if (index != -1) {
-		moveItem(PrevOpen, index, 0);
+		MoveItem(PrevOpen, index, 0);
 		MainWindow::invalidatePrevOpenMenus();
 		MainWindow::writeNEditDB();
 		return;
