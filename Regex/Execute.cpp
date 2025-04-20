@@ -18,15 +18,22 @@ namespace {
 bool match(uint8_t *prog, size_t *branch_index_param);
 bool attempt(Regex *prog, const char *string);
 
-/* The next_ptr () function can consume up to 30% of the time during matching
-   because it is called an immense number of times (an average of 25
-   next_ptr() calls per match() call was witnessed for Perl syntax
-   highlighting). Therefore it is well worth removing some of the function
-   call overhead by selectively inlining the next_ptr() calls. Moreover,
-   the inlined code can be simplified for matching because one of the tests,
-   only necessary during compilation, can be left out.
-   The net result of using this inlined version at two critical places is
-   a 25% speedup (again, witnesses on Perl syntax highlighting). */
+/**
+ * @brief Get the next pointer in the regex program.
+ *
+ * @param ptr The current position in the regex program.
+ * @return The next pointer in the regex program, or nullptr if there is no next pointer.
+ *
+ * @note The `next_ptr()` function can consume up to 30% of the time
+ * during matching because it is called an immense number of times
+ * (an average of 25 `next_ptr()` calls per `match()` call was witnessed
+ * for Perl syntax highlighting). Therefore it is well worth removing
+ * some of the function call overhead by selectively inlining the `next_ptr()` calls.
+ * Moreover, the inlined code can be simplified for matching because one of the tests,
+ * only necessary during compilation, can be left out. The net result of using this
+ * inlined version at two critical places is a 25% speedup
+ * (again, witnesses on Perl syntax highlighting).
+ */
 FORCE_INLINE uint8_t *NEXT_PTR(uint8_t *ptr) noexcept {
 
 	// NOTE(eteran): like next_ptr, but is inline
@@ -46,10 +53,10 @@ FORCE_INLINE uint8_t *NEXT_PTR(uint8_t *ptr) noexcept {
 }
 
 /**
- * @brief
+ * @brief Determine if the end of the string has been reached.
  *
- * @param ptr
- * @return
+ * @param ptr The current position in the string.
+ * @return `true` if the end of the string has been reached, `false` otherwise.
  */
 FORCE_INLINE bool end_of_string(const char *ptr) noexcept {
 
@@ -65,30 +72,30 @@ FORCE_INLINE bool end_of_string(const char *ptr) noexcept {
 }
 
 /**
- * @brief
+ * @brief Get the first 16-bit operand of a node.
  *
- * @param p
- * @return
+ * @param p The current position in the regex program.
+ * @return The first 16-bit operand of a node.
  */
 FORCE_INLINE uint16_t get_lower(const uint8_t *p) noexcept {
 	return static_cast<uint8_t>(((p[NODE_SIZE<size_t> + 0] & 0xff) << 8) + ((p[NODE_SIZE<size_t> + 1]) & 0xff));
 }
 
 /**
- * @brief
+ * @brief Get the second 16-bit operand of a node.
  *
- * @param p
- * @return
+ * @param p The current position in the regex program.
+ * @return The second 16-bit operand of a node.
  */
 FORCE_INLINE uint16_t get_upper(const uint8_t *p) noexcept {
 	return static_cast<uint8_t>(((p[NODE_SIZE<size_t> + 2] & 0xff) << 8) + ((p[NODE_SIZE<size_t> + 3]) & 0xff));
 }
 
 /**
- * @brief
+ * @brief Check if a character is a delimiter.
  *
- * @param ch
- * @return
+ * @param ch The character to check.
+ * @return `true` if the character is a delimiter, `false` otherwise.
  */
 bool is_delimiter(int ch) noexcept {
 	auto n = static_cast<unsigned int>(ch);
@@ -100,12 +107,12 @@ bool is_delimiter(int ch) noexcept {
 }
 
 /**
- * @brief
+ * @brief Consume characters from the input string while a predicate is `true`.
  *
- * @param input
- * @param max
- * @param pred
- * @return
+ * @param input The input string to consume from.
+ * @param max The maximum number of characters to consume.
+ * @param pred A predicate function that takes a character and returns `true` if it should be consumed.
+ * @return The number of characters consumed from the input string.
  */
 template <class Pred>
 uint32_t greedy_consume(const char *input, uint32_t max, Pred pred) {
@@ -117,19 +124,15 @@ uint32_t greedy_consume(const char *input, uint32_t max, Pred pred) {
 	return count;
 }
 
-/*----------------------------------------------------------------------*
- * greedy
+/**
+ * @brief Repeatedly match something simple up to "max" times.
  *
- * Repeatedly match something simple up to "max" times. If max <= 0
- * then match as much as possible (max = infinity).  Uses uint32_t
- * variables to maximize the amount of text matchable for unbounded
- * qualifiers like '*' and '+'.  This will allow at least 4,294,967,295
- * matches (4 Gig!) for an ANSI C compliant compiler.  If you are
- * applying a regex to something bigger than that, you shouldn't be
- * using NEdit!
- *
- * Returns the actual number of matches.
- *----------------------------------------------------------------------*/
+ * @param p The current position in the regex program.
+ * @param max The maximum number of times to match.
+ *            If `max` is less than or equal to zero, match as much as possible.
+ *            If `max` is greater than zero, match up to `max` times.
+ * @return The actual number of matches made.
+ */
 uint32_t greedy(uint8_t *p, uint32_t max) {
 
 	uint32_t count = 0;
@@ -227,16 +230,6 @@ uint32_t greedy(uint8_t *p, uint32_t max) {
 	return count;
 }
 
-/*----------------------------------------------------------------------*
- * match - main matching routine
- *
- * Conceptually the strategy is simple: check to see whether the
- * current node matches, call self recursively to see whether the rest
- * matches, and then act accordingly.  In practice we make some effort
- * to avoid recursion, in particular by going through "ordinary" nodes
- * (that don't need to know whether the rest of the match failed) by a
- * loop instead of by recursion.  Returns 0 failure, 1 success.
- *----------------------------------------------------------------------*/
 #define MATCH_RETURN(X)             \
 	do {                            \
 		--eContext.Recursion_Count; \
@@ -250,6 +243,19 @@ uint32_t greedy(uint8_t *p, uint32_t max) {
 		}                                        \
 	} while (0)
 
+/**
+ * @brief The main matching routine.
+ * Conceptually the strategy is simple: check to see whether the
+ * current node matches, call self recursively to see whether the rest
+ * matches, and then act accordingly. In practice we make some effort
+ * to avoid recursion, in particular by going through "ordinary" nodes
+ * (that don't need to know whether the rest of the match failed) by a
+ * loop instead of by recursion.
+ *
+ * @param prog The regex program to match against the input string.
+ * @param branch_index_param If not `nullptr`, this will be set to the index of the branch that matched.
+ * @return `true` if the match is successful, `false` otherwise.
+ */
 bool match(uint8_t *prog, size_t *branch_index_param) {
 
 	if (++eContext.Recursion_Count > RecursionLimit) {
@@ -656,7 +662,6 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				}
 
 				// Couldn't or didn't match.
-
 				if (lazy) {
 					if (!greedy(next_op, 1)) {
 						MATCH_RETURN(false);
@@ -952,9 +957,13 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 	MATCH_RETURN(false);
 }
 
-/*----------------------------------------------------------------------*
- * attempt - try match at specific point, returns: false failure, true success
- *----------------------------------------------------------------------*/
+/**
+ * @brief Attempt to match at a specific point.
+ *
+ * @param prog The regex program to match against the input string.
+ * @param string The input string to match against the regex program.
+ * @return `true` if the match is successful, `false` otherwise.
+ */
 bool attempt(Regex *prog, const char *string) {
 
 	size_t branch_index = 0; // Must be set to zero !
@@ -988,56 +997,45 @@ bool attempt(Regex *prog, const char *string) {
 
 }
 
-/*
- * match a Regex against a string
- *
- * If 'end' is non-nullptr, matches may not BEGIN past end, but may extend past
- * it.  If reverse is `true`, 'end' must be specified, and searching begins at
- * 'end'.  "isbol" should be set to true if the beginning of the string is the
- * actual beginning of a line (since 'ExecRE' can't look backwards from the
- * beginning to find whether there was a newline before).  Likewise, "isbow"
- * asks whether the string is preceded by a word delimiter.  End of string is
- * always treated as a word and line boundary (there may be cases where it
- * shouldn't be, in which case, this should be changed).  "delimit" (if
- * non-null) specifies a null-terminated string of characters to be considered
- * word delimiters matching "<" and ">".  if "delimit" is nullptr, the default
- * delimiters (as set in SetREDefaultWordDelimiters) are used.
- * Look_behind_to indicates the position till where it is safe to
- * perform look-behind matches. If set, it should be smaller than or equal
- * to the start position of the search (pointed at by string). If it is nullptr,
- * it defaults to the start position.
- * Finally, match_to indicates the logical end of the string, till where
- * matches are allowed to extend. Note that look-ahead patterns may look
- * past that boundary. If match_to is set to nullptr, the physical end of the string
- * assumed to correspond to the logical boundary. Match_to, if set, must be
- * larger than or equal to end, if set.
- */
-
-/*
-Notes: look_behind_to <= start <= end <= match_to
-
-look_behind_to start             end           match_to
-|              |                 |             |
-+--------------+-----------------+-------------+
-|  Look Behind | String Contents | Look Ahead  |
-+--------------+-----------------+-------------+
-
-*/
-
 /**
- * @brief
+ * @brief Match a Regex against a string.
  *
- * @param string
- * @param end
- * @param reverse
- * @param prev_char
- * @param succ_char
- * @param delimiters
- * @param look_behind_to
- * @param match_to
- * @return
+ * @param start The logical start of the string to match against.
+ * @param end The logical end of the string to match against. If `nullptr`, the
+ *            physical end of the string is used. Matches may not BEGIN past this
+ *            point, but may extend past it.
+ * @param reverse If `true`, the search is performed in reverse, starting at `end`
+ * @param prev_char The character before the start of the match, or -1 if there is no
+ *                  character before the start of the match (e.g. at the beginning
+ *                  of the string).
+ * @param succ_char The character after the end of the match, or -1 if there is no
+ *                  character after the end of the match (e.g. at the end of the
+ *                  string).
+ * @param delimiters A null-terminated string of characters to be considered
+ *                   word delimiters matching "<" and ">". If `nullptr`, the
+ *                   default delimiters (as set in SetREDefaultWordDelimiters)
+ *                   are used.
+ * @param look_behind_to The position till where it is safe to perform
+ *                       look-behind matches. If `nullptr`, it defaults to the
+ *                       start position of the search (pointed at by `start`).
+ *                       If set, it must be smaller than or equal to `start`.
+ * @param match_to The logical end of the string, till where matches are allowed
+ *                 to extend. If `nullptr`, the physical end of the string is used.
+ * @param string_end The physical end of the string. Must not be `nullptr` as it is used
+ *                   to determine the physical end of the string regardless of '\0' termination.
+ * @return `true` if the match is successful, `false` otherwise.
  */
 bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_char, int succ_char, const char *delimiters, const char *look_behind_to, const char *match_to, const char *string_end) {
+
+	/*
+	Notes: look_behind_to <= start <= end <= match_to
+
+	look_behind_to start             end           match_to
+	|              |                 |             |
+	+--------------+-----------------+-------------+
+	|  Look Behind | String Contents | Look Ahead  |
+	+--------------+-----------------+-------------+
+	*/
 
 	Regex *const re = this;
 
