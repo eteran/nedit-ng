@@ -935,9 +935,9 @@ Symbol *InstallSymbolEx(const QString &name, SymTypes type, const DataValue &val
  * @param value The value associated with the symbol.
  * @return The installed Symbol.
  */
-Symbol *InstallSymbol(std::string_view name, SymTypes type, const DataValue &value) {
+Symbol *InstallSymbol(std::string name, SymTypes type, const DataValue &value) {
 
-	auto s = new Symbol{std::string(name), type, value};
+	auto s = new Symbol{std::move(name), type, value};
 
 	if (type == LOCAL_SYM) {
 		LocalSymList.push_front(s);

@@ -146,7 +146,7 @@ Program *FinishCreatingProgram();
 Symbol *InstallIteratorSymbol();
 Symbol *InstallStringConstSymbol(std::string_view str);
 Symbol *InstallStringConstSymbolEx(const QString &str);
-Symbol *InstallSymbol(std::string_view name, SymTypes type, const DataValue &value);
+Symbol *InstallSymbol(std::string name, SymTypes type, const DataValue &value);
 Symbol *InstallSymbolEx(const QString &name, enum SymTypes type, const DataValue &value);
 Symbol *LookupStringConstSymbol(std::string_view value);
 Symbol *LookupSymbolEx(const QString &name);
