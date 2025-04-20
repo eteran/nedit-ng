@@ -90,7 +90,7 @@ bool lineEmpty(const QString &line) {
  * @param tagSpec The tag specification string containing file paths separated by a specific character.
  * @return A QStringList containing the individual file paths.
  */
-QStringList tagSpecToFileList(const QString &tagSpec) {
+QStringList ParseTagSpec(const QString &tagSpec) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
 auto sep = QDir::listSeparator();
 #else
@@ -929,7 +929,7 @@ bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMod
 		return false;
 	}
 
-	const QStringList filenames = tagSpecToFileList(tagSpec);
+	const QStringList filenames = ParseTagSpec(tagSpec);
 	for (const QString &filename : filenames) {
 		if (QFileInfo(filename).isAbsolute() || filename.startsWith(QLatin1Char('~'))) {
 			continue;
@@ -995,7 +995,7 @@ bool addTagsFile(const QString &tagSpec, SearchMode mode) {
 		return false;
 	}
 
-	const QStringList filenames = tagSpecToFileList(tagSpec);
+	const QStringList filenames = ParseTagSpec(tagSpec);
 	for (const QString &filename : filenames) {
 
 		QString pathName;
@@ -1059,7 +1059,7 @@ bool deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload) 
 	searchMode                       = mode;
 	std::deque<File> *const FileList = tagListByType(searchMode);
 
-	const QStringList filenames = tagSpecToFileList(tagSpec);
+	const QStringList filenames = ParseTagSpec(tagSpec);
 	for (const QString &filename : filenames) {
 
 		QString pathName;
