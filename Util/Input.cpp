@@ -8,7 +8,7 @@
 /**
  * @brief Constructs an Input object from a QString pointer.
  *
- * @param input A pointer to a QString that represents the input string.
+ * @param input A QString that represents the input string.
  */
 Input::Input(const QString *input)
 	: string_(input), index_(0) {

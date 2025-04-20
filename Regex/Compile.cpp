@@ -185,7 +185,7 @@ bool init_ansi_classes() noexcept {
  *        The NEXT pointer is initialized to 0x0000.
  *
  * @param op_code The opcode to emit.
- * @return A pointer to the start of the emitted node.
+ * @return The start of the emitted node.
  */
 template <class T>
 uint8_t *emit_node(T op_code) noexcept {
@@ -250,7 +250,7 @@ void emit_class_byte(T ch) noexcept {
  * @param op_code The opcode to emit, which can be a special operation like look-behind or count testing.
  * @param test_val The value to test against, such as a look-behind length or a count value.
  * @param index The index to use for count operations.
- * @return A pointer to the start of the emitted node, or a special token if in first pass.
+ * @return The start of the emitted node, or a special token if in first pass.
  */
 template <class Ch>
 uint8_t *emit_special(Ch op_code, uint32_t test_val, size_t index) noexcept {
@@ -330,11 +330,11 @@ void tail(uint8_t *search_from, const uint8_t *point_to) {
  * where the new node is to be inserted.
  *
  * @param op The opcode for the node to insert, such as BRACE, LAZY_BRACE, or INIT_COUNT.
- * @param insert_pos A pointer to the position in the code where the new node should be inserted.
+ * @param insert_pos The position in the code where the new node should be inserted.
  * @param min The minimum value for the node, used for BRACE and LAZY_BRACE.
  * @param max The maximum value for the node, used for BRACE and LAZY_BRACE.
  * @param index The index value for INIT_COUNT, which is used to track the number of matches.
- * @return A pointer to the start of the newly inserted node, or a special token if in first pass.
+ * @return The start of the newly inserted node, or a special token if in first pass.
  */
 uint8_t *insert(uint8_t op, const uint8_t *insert_pos, uint32_t min, uint32_t max, uint16_t index) {
 
@@ -419,8 +419,8 @@ uint8_t *insert(uint8_t op, const uint8_t *insert_pos, uint32_t min, uint32_t ma
  *
  * @tparam Flags The flags to determine the behavior of the function.
  * @param ch The character to check for a shortcut escape sequence.
- * @param flag_param A pointer to an integer that will be modified to indicate
- * @return A pointer to the start of the emitted node, or nullptr if the character
+ * @param flag_param An integer that will be modified to indicate
+ * @return The start of the emitted node, or nullptr if the character
  */
 template <ShortcutEscapeFlag Flags, class Ch>
 uint8_t *shortcut_escape(Ch ch, int *flag_param) {

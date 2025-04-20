@@ -426,7 +426,7 @@ QString escapeCommand(const QString &command, const QString &fullName, int64_t l
  * @param tabbed If `true`, the document will be opened in a tabbed interface.
  * @param background If `true`, the file will be opened in the background without raising the window.
  * This is useful for batch processing or when opening multiple files at once.
- * @return A pointer to the DocumentWidget that was created or used, or nullptr if the operation failed.
+ * @return The DocumentWidget that was created or used, or nullptr if the operation failed.
  *
  * @note If `inDocument` is provided, but is in use (displaying a file other
  * than Untitled, or is Untitled but is modified), a new document will be created.
@@ -718,7 +718,7 @@ DocumentWidget::~DocumentWidget() {
  * @brief Create a new TextArea for this document widget.
  *
  * @param buffer A shared pointer to the TextBuffer that this TextArea will use.
- * @return A pointer to the newly created TextArea.
+ * @return The newly created TextArea.
  */
 TextArea *DocumentWidget::createTextArea(const std::shared_ptr<TextBuffer> &buffer) {
 
@@ -1584,7 +1584,7 @@ void DocumentWidget::stopHighlighting() {
 /**
  * @brief Get the first text pane in this document widget.
  *
- * @return A pointer to the first TextArea in the splitter, or nullptr if no text area is found.
+ * @return The first TextArea in the splitter, or nullptr if no text area is found.
  */
 TextArea *DocumentWidget::firstPane() const {
 
@@ -3208,7 +3208,7 @@ void DocumentWidget::closeDocument() {
  * @brief Get the document widget from a given text area.
  *
  * @param area The text area from which to retrieve the document widget.
- * @return A pointer to the document widget associated with the text area, or nullptr if the area is null.
+ * @return The document widget associated with the text area, or nullptr if the area is null.
  */
 DocumentWidget *DocumentWidget::fromArea(TextArea *area) {
 
@@ -3223,7 +3223,7 @@ DocumentWidget *DocumentWidget::fromArea(TextArea *area) {
  * @brief Open a document widget for the specified file path.
  *
  * @param fullpath The full path to the file to be opened.
- * @return A pointer to the newly opened document widget, or nullptr if the file could not be opened.
+ * @return The newly opened document widget, or nullptr if the file could not be opened.
  */
 DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 
@@ -5899,7 +5899,7 @@ void DocumentWidget::updateHighlightStyles() {
  * @brief Find a HighlightPattern by name in the window's highlight data.
  *
  * @param name The name of the HighlightPattern to find.
- * @return A pointer to the HighlightPattern if found, or nullptr if not found.
+ * @return The HighlightPattern if found, or nullptr if not found.
  */
 HighlightPattern *DocumentWidget::findPatternOfWindow(const QString &name) const {
 
@@ -6070,7 +6070,7 @@ QColor DocumentWidget::highlightColorValueOfCode(size_t hCode) const {
  * @brief Get the StyleTableEntry for a given highlight code.
  *
  * @param hCode The highlight code for which to get the StyleTableEntry.
- * @return A pointer to the StyleTableEntry if found, or nullptr if not found.
+ * @return The StyleTableEntry if found, or nullptr if not found.
  */
 StyleTableEntry *DocumentWidget::styleTableEntryOfCode(size_t hCode) const {
 	const std::unique_ptr<WindowHighlightData> &highlightData = highlightData_;
@@ -7739,7 +7739,7 @@ ino_t DocumentWidget::inode() const {
 /**
  * @brief Get the buffer associated with the document widget.
  *
- * @return A pointer to the TextBuffer associated with the document widget.
+ * @return The TextBuffer associated with the document widget.
  */
 TextBuffer *DocumentWidget::buffer() const {
 	return info_->buffer.get();

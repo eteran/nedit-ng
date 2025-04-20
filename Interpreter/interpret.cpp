@@ -623,7 +623,7 @@ void FillLoopAddrs(const Inst *breakAddr, const Inst *continueAddr) {
  * @param prog The compiled program to execute.
  * @param arguments The arguments to pass to the macro.
  * @param result Where the result of the macro execution will be stored.
- * @param continuation A shared pointer to a MacroContext that will hold the state of the macro execution for resuming later.
+ * @param continuation A MacroContext that will hold the state of the macro execution for resuming later.
  * @param msg Where error messages will be stored if an error occurs.
  * @return One of the ExecReturnCodes: MACRO_DONE, MACRO_PREEMPT, or MACRO_ERROR.
  * if MACRO_DONE is returned, the macro completed, and the returned value (if any) can be read from "result".
@@ -2205,7 +2205,7 @@ int ArrayCopy(DataValue *dstArray, const DataValue *srcArray) {
  * @brief Create a key string for an array from the arguments on the stack.
  *
  * @param nArgs The number of arguments to process from the stack.
- * @param keyString A pointer to a string where the key will be stored.
+ * @param keyString A string where the key will be stored.
  * @param leaveParams If `true`, the parameters will not be popped from the stack after processing.
  * @return STAT_OK on success, or an error code if an error occurred.
  */
@@ -2303,7 +2303,7 @@ int ArraySize(DataValue *theArray) {
  *
  * @param theArray The array to search in.
  * @param keyStr The key string to look for in the array.
- * @param theValue A pointer to where the found value will be stored.
+ * @param theValue Where the found value will be stored.
  * @return `true` if the value was found, `false` otherwise.
  */
 bool ArrayGet(DataValue *theArray, const std::string &keyStr, DataValue *theValue) {

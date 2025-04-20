@@ -216,7 +216,7 @@ void ConvertFromDos(std::string &text) {
  * a pending carriage return if it exists.
  *
  * @param text The string to convert, which may represent the entire contents of the file.
- * @param pendingCR A pointer to a character that will hold a pending carriage return if it exists.
+ * @param pendingCR A character that will hold a pending carriage return if it exists.
  *                  If there is no pending carriage return, it will be set to '\0'.
  */
 void ConvertFromDos(std::string &text, char *pendingCR) {

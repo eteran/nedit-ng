@@ -154,7 +154,7 @@ int64_t moveAheadNLines(std::string_view str, int64_t &pos, int64_t n) {
  * @brief Get the hash table based on the search mode.
  *
  * @param mode The search mode to determine which hash table to return.
- * @return A pointer to the appropriate hash table.
+ * @return The appropriate hash table.
  */
 QMultiHash<QString, Tag> *hashTableByType(SearchMode mode) {
 	if (mode == SearchMode::TIP) {
@@ -168,7 +168,7 @@ QMultiHash<QString, Tag> *hashTableByType(SearchMode mode) {
  * @brief Get the list of files based on the search mode.
  *
  * @param mode The search mode to determine which file list to return.
- * @return A pointer to the appropriate file list.
+ * @return The appropriate file list.
  */
 std::deque<File> *tagListByType(SearchMode mode) {
 	if (mode == SearchMode::TAG) {
@@ -1190,13 +1190,6 @@ QList<Tag> lookupTag(const QString &name, SearchMode mode) {
 	return lookupTagFromList(&TagsFileList, name, mode);
 }
 
-/*
-**
-**
-**
-**
-*/
-
 /**
  * @brief Perform a regex search in a buffer using a search string.
  * ctags search expressions are literal strings with a search direction flag,
@@ -1207,7 +1200,7 @@ QList<Tag> lookupTag(const QString &name, SearchMode mode) {
  * @param buffer The buffer to search in.
  * @param searchString The search string to use, which may contain regex-like syntax.
  * @param startPos The starting position for the search, which may be -1 for etags mode.
- * @param endPos A pointer to store the end position of the found match.
+ * @param endPos Where to store the end position of the found match.
  * @return `true` if a match is found, `false` otherwise.
  */
 bool fakeRegExSearch(std::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos) {

@@ -253,7 +253,7 @@ void CommandRecorder::stopRecording() {
 /**
  * @brief Returns the document where the macro is being recorded.
  *
- * @return A pointer to the document widget where the macro is being recorded.
+ * @return The document widget where the macro is being recorded.
  */
 QPointer<DocumentWidget> CommandRecorder::macroRecordDocument() const {
 	return macroRecordDocument_;
