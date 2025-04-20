@@ -52,7 +52,7 @@ void messageHandler(QtMsgType type, const QMessageLogContext &context, const QSt
  *
  * @param argc The number of command line arguments.
  * @param argv The command line arguments as an array of strings.
- * @return Returns the exit code of the application.
+ * @return The exit code of the application.
  */
 int main(int argc, char *argv[]) {
 
