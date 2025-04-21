@@ -261,8 +261,8 @@ public:
 	std::optional<std::basic_string_view<Ch>> match(const std::basic_regex<Ch> &regex) {
 		std::match_results<const Ch *> matches;
 
-		const Ch *first = &input_[index_];
-		const Ch *last  = &input_[input_.size()];
+		const Ch *first = input_.data() + index_;
+		const Ch *last  = input_.data() + input_.size();
 
 		if (std::regex_search(first, last, matches, regex, std::regex_constants::match_continuous)) {
 			std::basic_string_view<Ch> m(matches[0].first, matches[0].second - matches[0].first);
