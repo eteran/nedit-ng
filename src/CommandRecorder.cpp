@@ -101,8 +101,8 @@ QString actionToString(const Event *ev) {
  * @return The string quoted with double quotes.
  *
  * @note If the string contains double quotes, they will NOT be escaped.
- * 	 This is intended for use in strings which have already been
- * 	 escaped using escapeString().
+ *       This is intended for use in strings which have already been
+ *       escaped using escapeString().
  */
 QString CommandRecorder::quoteString(const QString &s) {
 	return QStringLiteral("\"%1\"").arg(s);

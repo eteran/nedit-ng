@@ -16,10 +16,10 @@
 #include <QMessageBox>
 
 /**
- * @brief
+ * @brief Constructor for DialogMacros class.
  *
- * @param parent
- * @param f
+ * @param parent The parent widget, defaults to nullptr.
+ * @param f The window flags for the dialog, defaults to Qt::WindowFlags().
  */
 DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
@@ -74,7 +74,7 @@ void DialogMacros::connectSlots() {
 }
 
 /**
- * @brief
+ * @brief Handles the "New" button click event.
  */
 void DialogMacros::buttonNew_clicked() {
 
@@ -91,7 +91,7 @@ void DialogMacros::buttonNew_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the "Copy" button click event.
  */
 void DialogMacros::buttonCopy_clicked() {
 
@@ -103,14 +103,14 @@ void DialogMacros::buttonCopy_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the "Delete" button click event.
  */
 void DialogMacros::buttonDelete_clicked() {
 	CommonDialog::deleteItem(&ui, model_, &deleted_);
 }
 
 /**
- * @brief
+ * @brief Handles the "Paste LR Macro" button click event.
  */
 void DialogMacros::buttonPasteLRMacro_clicked() {
 
@@ -123,24 +123,24 @@ void DialogMacros::buttonPasteLRMacro_clicked() {
 }
 
 /**
- * @brief
+ * @brief Moves the currently selected item up in the model and updates the UI.
  */
 void DialogMacros::buttonUp_clicked() {
 	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
- * @brief
+ * @brief Moves the currently selected item down in the model and updates the UI.
  */
 void DialogMacros::buttonDown_clicked() {
 	CommonDialog::moveItemDown(&ui, model_);
 }
 
 /**
- * @brief
+ * @brief Handles the change of the current item in the list view.
  *
- * @param current
- * @param previous
+ * @param current The currently selected item index.
+ * @param previous The previously selected item index, used for validation.
  */
 void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
 	static bool canceled = false;
@@ -181,7 +181,7 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
 
 	// this is only safe if we aren't moving due to a delete operation
 	if (previous.isValid() && previous != deleted_ && !skip_check) {
-		if (!updateCurrentItem(previous)) {
+		if (!updateItem(previous)) {
 			// reselect the old item
 			canceled = true;
 			Q_EMIT restore(previous);
@@ -207,7 +207,7 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
 }
 
 /**
- * @brief
+ * @brief handles the "Check" button click event.
  */
 void DialogMacros::buttonCheck_clicked() {
 	if (validateFields(Verbosity::Verbose)) {
@@ -218,14 +218,14 @@ void DialogMacros::buttonCheck_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the "Apply" button click event.
  */
 void DialogMacros::buttonApply_clicked() {
 	applyDialogChanges();
 }
 
 /**
- * @brief
+ * @brief Handles the "OK" button click event.
  */
 void DialogMacros::buttonOK_clicked() {
 
@@ -238,10 +238,10 @@ void DialogMacros::buttonOK_clicked() {
 }
 
 /**
- * @brief
+ * @brief Validates the fields in the dialog.
  *
- * @param mode
- * @return
+ * @param verbosity The verbosity level for error messages.
+ * @return `true` if the fields are valid, `false` otherwise.
  */
 bool DialogMacros::validateFields(Verbosity verbosity) {
 
@@ -257,12 +257,13 @@ bool DialogMacros::validateFields(Verbosity verbosity) {
 	return true;
 }
 
-/*
-** Read the name, accelerator, mnemonic, and command fields from the shell or
-** macro commands dialog into a newly allocated MenuItem.  Returns a
-** pointer to the new MenuItem structure as the function value, or nullptr on
-** failure.
-*/
+/**
+ * @brief Read the name, accelerator, mnemonic, and command fields from the shell or
+ * macro commands dialog into a newly allocated MenuItem.
+ *
+ * @param verbosity The verbosity level for error messages.
+ * @return A MenuItem object if the fields are valid, or an empty optional if validation fails.
+ */
 std::optional<MenuItem> DialogMacros::readFields(Verbosity verbosity) {
 
 	const QString nameText = ui.editName->text();
@@ -308,11 +309,11 @@ std::optional<MenuItem> DialogMacros::readFields(Verbosity verbosity) {
 }
 
 /**
- * @brief
+ * @brief Checks if the macro text is valid.
  *
- * @param macro
- * @param mode
- * @return
+ * @param macro The macro text to check.
+ * @param verbosity The verbosity level for error messages.
+ * @return `true` if the macro text is valid, `false` otherwise.
  */
 bool DialogMacros::checkMacroText(const QString &macro, Verbosity verbosity) {
 
@@ -344,9 +345,9 @@ bool DialogMacros::checkMacroText(const QString &macro, Verbosity verbosity) {
 }
 
 /**
- * @brief
+ * @brief Applies the changes made in the dialog to the macro menu data.
  *
- * @return
+ * @return `true` if the changes were successfully applied, `false` otherwise.
  */
 bool DialogMacros::applyDialogChanges() {
 
@@ -390,12 +391,12 @@ bool DialogMacros::applyDialogChanges() {
 }
 
 /**
- * @brief
+ * @brief Updates a given item in the dialog based on the provided index.
  *
- * @param item
- * @return
+ * @param item The index of the item to update in the model.
+ * @return `true` if the item was successfully updated, `false` otherwise.
  */
-bool DialogMacros::updateCurrentItem(const QModelIndex &index) {
+bool DialogMacros::updateItem(const QModelIndex &index) {
 
 	auto dialogFields = readFields(Verbosity::Verbose);
 	if (!dialogFields) {
@@ -411,14 +412,14 @@ bool DialogMacros::updateCurrentItem(const QModelIndex &index) {
 }
 
 /**
- * @brief
+ * @brief Updates the currently selected item in the dialog with the current field values.
  *
- * @return
+ * @return `true` if the item was successfully updated, `false` otherwise.
  */
 bool DialogMacros::updateCurrentItem() {
 	const QModelIndex index = ui.listItems->currentIndex();
 	if (index.isValid()) {
-		return updateCurrentItem(index);
+		return updateItem(index);
 	}
 
 	return true;

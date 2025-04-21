@@ -41,7 +41,7 @@ private:
 private:
 	bool validateFields(Verbosity verbosity);
 	bool updateCurrentItem();
-	bool updateCurrentItem(const QModelIndex &index);
+	bool updateItem(const QModelIndex &index);
 	bool updateLanguageList(Verbosity verbosity);
 	bool updateLMList(Verbosity verbosity);
 	std::optional<LanguageMode> readFields(Verbosity verbosity);

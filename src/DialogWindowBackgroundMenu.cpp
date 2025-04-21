@@ -172,7 +172,7 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
 
 	// this is only safe if we aren't moving due to a delete operation
 	if (previous.isValid() && previous != deleted_ && !skip_check) {
-		if (!updateCurrentItem(previous)) {
+		if (!updateItem(previous)) {
 			// reselect the old item
 			canceled = true;
 			Q_EMIT restore(previous);
@@ -387,7 +387,7 @@ void DialogWindowBackgroundMenu::setPasteReplayEnabled(bool enabled) {
  * @param item
  * @return
  */
-bool DialogWindowBackgroundMenu::updateCurrentItem(const QModelIndex &index) {
+bool DialogWindowBackgroundMenu::updateItem(const QModelIndex &index) {
 	// Get the current contents of the "patterns" dialog fields
 	auto dialogFields = readFields(Verbosity::Verbose);
 	if (!dialogFields) {
@@ -411,7 +411,7 @@ bool DialogWindowBackgroundMenu::updateCurrentItem(const QModelIndex &index) {
 bool DialogWindowBackgroundMenu::updateCurrentItem() {
 	const QModelIndex index = ui.listItems->currentIndex();
 	if (index.isValid()) {
-		return updateCurrentItem(index);
+		return updateItem(index);
 	}
 
 	return true;

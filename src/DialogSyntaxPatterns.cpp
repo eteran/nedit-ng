@@ -304,7 +304,7 @@ void DialogSyntaxPatterns::buttonHighlightStyle_clicked() {
  * @param item
  * @return
  */
-bool DialogSyntaxPatterns::updateCurrentItem(const QModelIndex &index) {
+bool DialogSyntaxPatterns::updateItem(const QModelIndex &index) {
 	// Get the current contents of the "patterns" dialog fields
 	auto dialogFields = readFields(Verbosity::Verbose);
 	if (!dialogFields) {
@@ -328,7 +328,7 @@ bool DialogSyntaxPatterns::updateCurrentItem(const QModelIndex &index) {
 bool DialogSyntaxPatterns::updateCurrentItem() {
 	const QModelIndex index = ui.listItems->currentIndex();
 	if (index.isValid()) {
-		return updateCurrentItem(index);
+		return updateItem(index);
 	}
 
 	return true;
@@ -557,7 +557,7 @@ void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QMod
 
 	// this is only safe if we aren't moving due to a delete operation
 	if (previous.isValid() && previous != deleted_ && !skip_check) {
-		if (!updateCurrentItem(previous)) {
+		if (!updateItem(previous)) {
 			// reselect the old item
 			canceled = true;
 			Q_EMIT restore(previous);

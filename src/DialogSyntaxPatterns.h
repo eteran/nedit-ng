@@ -62,7 +62,7 @@ private:
 	bool checkHighlightDialogData();
 	bool TestHighlightPatterns(const std::unique_ptr<PatternSet> &patSet);
 	bool updateCurrentItem();
-	bool updateCurrentItem(const QModelIndex &index);
+	bool updateItem(const QModelIndex &index);
 	bool updatePatternSet();
 	std::optional<HighlightPattern> readFields(Verbosity verbosity);
 	std::unique_ptr<PatternSet> getDialogPatternSet();

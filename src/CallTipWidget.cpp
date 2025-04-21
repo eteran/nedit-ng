@@ -38,7 +38,7 @@ void CallTipWidget::setText(const QString &text) {
 
 /**
  * @brief Handles the show event for the call tip widget.
- * This resizes the widget to its minimum size when shown.
+ *        This resizes the widget to its minimum size when shown.
  *
  * @param event The show event
  *

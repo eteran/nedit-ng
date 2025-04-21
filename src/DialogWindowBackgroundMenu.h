@@ -44,7 +44,7 @@ private:
 	bool validateFields(Verbosity verbosity);
 	bool checkMacroText(const QString &macro, Verbosity verbosity);
 	bool updateCurrentItem();
-	bool updateCurrentItem(const QModelIndex &index);
+	bool updateItem(const QModelIndex &index);
 	std::optional<MenuItem> readFields(Verbosity verbosity);
 
 private:

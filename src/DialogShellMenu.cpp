@@ -153,7 +153,7 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
 
 	// this is only safe if we aren't moving due to a delete operation
 	if (previous.isValid() && previous != deleted_ && !skip_check) {
-		if (!updateCurrentItem(previous)) {
+		if (!updateItem(previous)) {
 			// reselect the old item
 			canceled = true;
 			Q_EMIT restore(previous);
@@ -361,7 +361,7 @@ void DialogShellMenu::radioToSameDocument_toggled(bool checked) {
  * @param item
  * @return
  */
-bool DialogShellMenu::updateCurrentItem(const QModelIndex &index) {
+bool DialogShellMenu::updateItem(const QModelIndex &index) {
 	// Get the current contents of the "patterns" dialog fields
 	auto dialogFields = readFields(Verbosity::Verbose);
 	if (!dialogFields) {
@@ -385,7 +385,7 @@ bool DialogShellMenu::updateCurrentItem(const QModelIndex &index) {
 bool DialogShellMenu::updateCurrentItem() {
 	const QModelIndex index = ui.listItems->currentIndex();
 	if (index.isValid()) {
-		return updateCurrentItem(index);
+		return updateItem(index);
 	}
 
 	return true;

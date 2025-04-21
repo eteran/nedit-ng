@@ -3,10 +3,10 @@
 #include "MainWindow.h"
 
 /**
- * @brief
+ * @brief Constructor for DialogMoveDocument class.
  *
- * @param parent
- * @param f
+ * @param parent The parent widget, defaults to nullptr.
+ * @param f The window flags, defaults to Qt::WindowFlags().
  */
 DialogMoveDocument::DialogMoveDocument(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
@@ -19,9 +19,9 @@ DialogMoveDocument::DialogMoveDocument(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief
+ * @brief Adds a MainWindow item to the dialog's list.
  *
- * @param window
+ * @param window The MainWindow instance to add.
  */
 void DialogMoveDocument::addItem(MainWindow *window) {
 	windows_.push_back(window);
@@ -29,43 +29,44 @@ void DialogMoveDocument::addItem(MainWindow *window) {
 }
 
 /**
- * @brief
+ * @brief Resets the selection in the dialog's list to the first item.
  */
 void DialogMoveDocument::resetSelection() {
 	ui.listWindows->setCurrentRow(0);
 }
 
 /**
- * @brief
+ * @brief Sets the label text in the dialog.
  *
- * @param label
+ * @param label The label text to set in the dialog.
  */
 void DialogMoveDocument::setLabel(const QString &label) {
 	ui.label->setText(tr("Move %1 into window of").arg(label));
 }
 
 /**
- * @brief
+ * @brief Sets whether the dialog should allow moving multiple documents.
  *
- * @param value
+ * @param value If `true`, the dialog will show the checkbox to move all selected documents;
+ *              if `false`, it will hide that checkbox.
  */
 void DialogMoveDocument::setMultipleDocuments(bool value) {
 	ui.checkMoveAll->setVisible(value);
 }
 
 /**
- * @brief
+ * @brief Returns the index of the currently selected item in the dialog's list.
  *
- * @return
+ * @return The index of the currently selected item, or -1 if no item is selected.
  */
 int DialogMoveDocument::selectionIndex() const {
 	return ui.listWindows->currentRow();
 }
 
 /**
- * @brief
+ * @brief Returns whether the dialog should move all selected documents.
  *
- * @return
+ * @return `true` if the checkbox to move all selected documents is checked, `false` otherwise.
  */
 bool DialogMoveDocument::moveAllSelected() const {
 	return ui.checkMoveAll->isChecked();

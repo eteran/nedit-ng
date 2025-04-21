@@ -9,10 +9,10 @@
 #include <QMessageBox>
 
 /**
- * @brief
+ * @brief Constructor for DialogMultiReplace class.
  *
- * @param replace
- * @param f
+ * @param replace The DialogReplace instance that this dialog is associated with.
+ * @param f The window flags for the dialog, defaults to Qt::WindowFlags().
  */
 DialogMultiReplace::DialogMultiReplace(DialogReplace *replace, Qt::WindowFlags f)
 	: Dialog(replace, f), replace_(replace) {
@@ -34,30 +34,30 @@ void DialogMultiReplace::connectSlots() {
 }
 
 /**
- * @brief
+ * @brief Handles the toggling of the "Show Path Names" checkbox.
  *
- * @param checked
+ * @param checked Indicates whether the checkbox is checked or not.
  */
 void DialogMultiReplace::checkShowPaths_toggled(bool checked) {
 	model_->setShowFullPath(checked);
 }
 
 /**
- * @brief
+ * @brief Handles the "Deselect All" button click event.
  */
 void DialogMultiReplace::buttonDeselectAll_clicked() {
 	ui.listFiles->clearSelection();
 }
 
 /**
- * @brief
+ * @brief Handles the "Select All" button click event.
  */
 void DialogMultiReplace::buttonSelectAll_clicked() {
 	ui.listFiles->selectAll();
 }
 
 /**
- * @brief
+ * @brief Handles the "Replace" button click event.
  */
 void DialogMultiReplace::buttonReplace_clicked() {
 
@@ -150,7 +150,7 @@ void DialogMultiReplace::buttonReplace_clicked() {
 }
 
 /**
- * @brief
+ * @brief Uploads the list of writeable documents to the model for display in the dialog.
  */
 void DialogMultiReplace::uploadFileListItems(const std::vector<DocumentWidget *> &writeableDocuments) const {
 
