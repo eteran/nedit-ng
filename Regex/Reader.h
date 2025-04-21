@@ -261,9 +261,9 @@ public:
 	std::optional<std::basic_string_view<Ch>> match(const std::basic_regex<Ch> &regex) {
 		std::match_results<const Ch *> matches;
 
-		std::basic_string_view<Ch> m = input_.substr(index_);
+		std::basic_string_view<Ch> str = input_.substr(index_);
 
-		if (std::regex_search(m.begin(), m.end(), matches, regex, std::regex_constants::match_continuous)) {
+		if (std::regex_search(str.begin(), str.end(), matches, regex, std::regex_constants::match_continuous)) {
 			std::basic_string_view<Ch> m(matches[0].first, matches[0].second - matches[0].first);
 			index_ += m.size();
 			return m;
