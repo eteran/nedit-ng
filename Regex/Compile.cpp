@@ -591,7 +591,7 @@ uint8_t *back_ref(Reader reader, int *flag_param) {
 #endif
 
 	// Only \1, \2, ... \9 are supported.
-	auto digit = reader.match(std::regex("[0123456789]"));
+	auto digit = reader.match(std::regex("[0-9]"));
 	if (!digit) {
 		return nullptr;
 	}
