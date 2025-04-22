@@ -20,10 +20,10 @@
 #include <QMessageBox>
 
 /**
- * @brief
+ * @brief Constructor for the DialogSyntaxPatterns class.
  *
- * @param parent
- * @param f
+ * @param parent The parent widget for this dialog, defaults to nullptr.
+ * @param f The window flags for the dialog, defaults to Qt::WindowFlags().
  */
 DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
@@ -84,9 +84,9 @@ void DialogSyntaxPatterns::connectSlots() {
 }
 
 /**
- * @brief
+ * @brief Sets the language name for the dialog and updates the UI accordingly.
  *
- * @param name
+ * @param name The name of the language mode to set.
  */
 void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 
@@ -184,9 +184,9 @@ void DialogSyntaxPatterns::setLanguageName(const QString &name) {
 }
 
 /**
- * @brief
+ * @brief Sets the language mode menu to the specified name.
  *
- * @param name
+ * @param name The name of the language mode to set in the combo box.
  */
 void DialogSyntaxPatterns::SetLangModeMenu(const QString &name) {
 
@@ -199,9 +199,9 @@ void DialogSyntaxPatterns::SetLangModeMenu(const QString &name) {
 }
 
 /**
- * @brief
+ * @brief Sets the highlight style menu to the specified name.
  *
- * @param name
+ * @param name The name of the highlight style to set in the combo box.
  */
 void DialogSyntaxPatterns::setStyleMenu(const QString &name) {
 
@@ -214,7 +214,7 @@ void DialogSyntaxPatterns::setStyleMenu(const QString &name) {
 }
 
 /**
- * @brief
+ * @brief Updates the labels in the dialog based on the current selection of radio buttons.
  */
 void DialogSyntaxPatterns::updateLabels() {
 
@@ -262,16 +262,16 @@ void DialogSyntaxPatterns::updateLabels() {
 }
 
 /**
- * @brief
+ * @brief Handles the current index change in the language mode combo box.
  *
- * @param currentText
+ * @param currentText The text of the currently selected language mode in the combo box.
  */
 void DialogSyntaxPatterns::on_comboLanguageMode_currentIndexChanged(const QString &text) {
 	setLanguageName(text);
 }
 
 /**
- * @brief
+ * @brief Opens the dialog for selecting language modes.
  */
 void DialogSyntaxPatterns::buttonLanguageMode_clicked() {
 
@@ -283,7 +283,7 @@ void DialogSyntaxPatterns::buttonLanguageMode_clicked() {
 }
 
 /**
- * @brief
+ * @brief Opens the dialog for selecting highlight styles.
  */
 void DialogSyntaxPatterns::buttonHighlightStyle_clicked() {
 	const QString style = ui.comboHighlightStyle->currentText();
@@ -299,10 +299,10 @@ void DialogSyntaxPatterns::buttonHighlightStyle_clicked() {
 }
 
 /**
- * @brief
+ * @brief Updates the item in the model with the current dialog fields.
  *
- * @param item
- * @return
+ * @param item The QModelIndex of the item to update.
+ * @return `true` if the item was successfully updated, `false` otherwise.
  */
 bool DialogSyntaxPatterns::updateItem(const QModelIndex &index) {
 	// Get the current contents of the "patterns" dialog fields
@@ -321,9 +321,9 @@ bool DialogSyntaxPatterns::updateItem(const QModelIndex &index) {
 }
 
 /**
- * @brief
+ * @brief Updates the pattern set based on the current dialog fields.
  *
- * @return
+ * @return `true` if the pattern set was successfully updated, `false` otherwise.
  */
 bool DialogSyntaxPatterns::updateCurrentItem() {
 	const QModelIndex index = ui.listItems->currentIndex();
@@ -335,7 +335,7 @@ bool DialogSyntaxPatterns::updateCurrentItem() {
 }
 
 /**
- * @brief
+ * @brief Handles the click event for the "New" button in the dialog.
  */
 void DialogSyntaxPatterns::buttonNew_clicked() {
 
@@ -352,14 +352,14 @@ void DialogSyntaxPatterns::buttonNew_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the click event for the "Delete" button in the dialog.
  */
 void DialogSyntaxPatterns::buttonDelete_clicked() {
 	CommonDialog::deleteItem(&ui, model_, &deleted_);
 }
 
 /**
- * @brief
+ * @brief Handles the click event for the "Copy" button in the dialog.
  */
 void DialogSyntaxPatterns::buttonCopy_clicked() {
 
@@ -371,21 +371,21 @@ void DialogSyntaxPatterns::buttonCopy_clicked() {
 }
 
 /**
- * @brief
+ * @brief Moves the currently selected item up in the model and updates the UI.
  */
 void DialogSyntaxPatterns::buttonUp_clicked() {
 	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
- * @brief
+ * @brief Moves the currently selected item down in the model and updates the UI.
  */
 void DialogSyntaxPatterns::buttonDown_clicked() {
 	CommonDialog::moveItemDown(&ui, model_);
 }
 
 /**
- * @brief
+ * @brief Handles the click event for the "OK" button in the dialog.
  */
 void DialogSyntaxPatterns::buttonOK_clicked() {
 	// change the patterns
@@ -397,14 +397,14 @@ void DialogSyntaxPatterns::buttonOK_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the click event for the "Apply" button in the dialog.
  */
 void DialogSyntaxPatterns::buttonApply_clicked() {
 	updatePatternSet();
 }
 
 /**
- * @brief
+ * @brief Checks the highlight dialog data for errors and displays a message.
  */
 void DialogSyntaxPatterns::buttonCheck_clicked() {
 	if (checkHighlightDialogData()) {
@@ -415,7 +415,7 @@ void DialogSyntaxPatterns::buttonCheck_clicked() {
 }
 
 /**
- * @brief
+ * @brief Deletes the currently selected syntax highlighting patterns for the specified language mode.
  */
 void DialogSyntaxPatterns::buttonDeletePattern_clicked() {
 
@@ -457,7 +457,7 @@ void DialogSyntaxPatterns::buttonDeletePattern_clicked() {
 }
 
 /**
- * @brief
+ * @brief Restores the default syntax highlighting patterns for the current language mode.
  */
 void DialogSyntaxPatterns::buttonRestore_clicked() {
 
@@ -506,17 +506,17 @@ void DialogSyntaxPatterns::buttonRestore_clicked() {
 }
 
 /**
- * @brief
+ * @brief Displays the help topic for syntax patterns.
  */
 void DialogSyntaxPatterns::buttonHelp_clicked() {
 	Help::displayTopic(Help::Topic::Syntax);
 }
 
 /**
- * @brief
+ * @brief Handles the change of the current item in the model.
  *
- * @param current
- * @param previous
+ * @param current The QModelIndex of the currently selected item.
+ * @param previous The QModelIndex of the previously selected item.
  */
 void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
 	static bool canceled = false;
@@ -612,10 +612,9 @@ void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QMod
 	updateLabels();
 }
 
-/*
-** If a syntax highlighting dialog is up, ask to have the option menu for
-** choosing language mode updated (via a call to CreateLanguageModeMenu)
-*/
+/**
+ * @brief Updates the language mode menu in the dialog.
+ */
 void DialogSyntaxPatterns::UpdateLanguageModeMenu() {
 
 	if (auto blocker = no_signals(ui.comboLanguageMode)) {
@@ -632,7 +631,7 @@ void DialogSyntaxPatterns::UpdateLanguageModeMenu() {
 }
 
 /**
- * @brief
+ * @brief Updates the highlight style menu in the dialog.
  */
 void DialogSyntaxPatterns::updateHighlightStyleMenu() {
 
@@ -650,9 +649,9 @@ void DialogSyntaxPatterns::updateHighlightStyleMenu() {
 }
 
 /**
- * @brief
+ * @brief Updates the pattern set based on the current dialog fields and applies it to all documents.
  *
- * @return
+ * @return `true` if the pattern set was successfully updated, `false` otherwise.
  */
 bool DialogSyntaxPatterns::updatePatternSet() {
 
@@ -730,9 +729,9 @@ bool DialogSyntaxPatterns::updatePatternSet() {
 }
 
 /**
- * @brief
+ * @brief Checks the highlight dialog data for validity and compiles the patterns.
  *
- * @return
+ * @return `true` if the patterns are valid and compiled successfully, `false` otherwise.
  */
 bool DialogSyntaxPatterns::checkHighlightDialogData() {
 	// Get the pattern information from the dialog
@@ -745,10 +744,13 @@ bool DialogSyntaxPatterns::checkHighlightDialogData() {
 	return patternSet->patterns.empty() ? true : TestHighlightPatterns(patternSet);
 }
 
-/*
-** Get the current information that the user has entered in the syntax
-** highlighting dialog.  Return nullptr if the data is currently invalid
-*/
+/**
+ * @brief  Get the current information that the user has entered in the syntax
+ * highlighting dialog.
+ *
+ * @return A PatternSet object containing the dialog's current state, or
+ * nullptr if there was an error.
+ */
 std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 
 	// Get the line and character context values
@@ -798,12 +800,12 @@ std::unique_ptr<PatternSet> DialogSyntaxPatterns::getDialogPatternSet() {
 	return patternSet;
 }
 
-/*
-** Read the pattern fields of the highlight dialog, and produce an allocated
-** HighlightPattern structure reflecting the contents, or pop up dialogs
-** telling the user what's wrong (Passing "silent" as true, suppresses these
-** dialogs).  Returns nullptr on error.
-*/
+/**
+ * @brief Reads the fields from the dialog and returns a HighlightPattern object.
+ *
+ * @param verbosity The verbosity level for error messages.
+ * @return A HighlightPattern object if the fields are valid, or an empty optional if there are errors.
+ */
 std::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity verbosity) {
 
 	HighlightPattern pat;
@@ -910,10 +912,10 @@ std::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity verbo
 }
 
 /**
- * @brief
+ * @brief Validates the fields in the dialog and returns `true` if they are valid.
  *
- * @param mode
- * @return
+ * @param mode The verbosity level for error messages.
+ * @return `true` if the fields are valid, `false` otherwise.
  */
 bool DialogSyntaxPatterns::validateFields(Verbosity verbosity) {
 	if (readFields(verbosity)) {
@@ -923,10 +925,12 @@ bool DialogSyntaxPatterns::validateFields(Verbosity verbosity) {
 	return false;
 }
 
-/*
-** Do a test compile of patterns in "patSet" and report problems to the
-** user via dialog.  Returns `true` if patterns are ok.
-*/
+/**
+ * @brief Do a test compile of patterns in `patSet` and report problems to the user via dialog.
+ *
+ * @param patSet The pattern set to test for validity.
+ * @return `true` if the patterns compiled successfully, `false` otherwise.
+ */
 bool DialogSyntaxPatterns::TestHighlightPatterns(const std::unique_ptr<PatternSet> &patSet) {
 
 	try {
@@ -947,10 +951,10 @@ bool DialogSyntaxPatterns::TestHighlightPatterns(const std::unique_ptr<PatternSe
 }
 
 /**
- * @brief
+ * @brief Renames a highlight pattern in the dialog.
  *
- * @param oldName
- * @param newName
+ * @param oldName The old name of the highlight pattern to rename.
+ * @param newName The new name to set for the highlight pattern.
  */
 void DialogSyntaxPatterns::RenameHighlightPattern(const QString &oldName, const QString &newName) {
 	if (ui.comboLanguageMode->currentText() == oldName) {
@@ -959,10 +963,10 @@ void DialogSyntaxPatterns::RenameHighlightPattern(const QString &oldName, const 
 }
 
 /**
- * @brief
+ * @brief Checks if the current language mode has highlight patterns defined.
  *
- * @param languageMode
- * @return
+ * @param languageMode The language mode to check for highlight patterns.
+ * @return `true` if the language mode has highlight patterns, `false` otherwise.
  */
 bool DialogSyntaxPatterns::LMHasHighlightPatterns(const QString &languageMode) {
 	return languageMode == ui.comboLanguageMode->currentText() && model_->rowCount() != 0;

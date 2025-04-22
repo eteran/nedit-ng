@@ -11,11 +11,11 @@
 #include <QMessageBox>
 
 /**
- * @brief
+ * @brief Constructor for the DialogTabs class.
  *
- * @param document
- * @param parent
- * @param f
+ * @param document The DocumentWidget associated with this dialog, used to determine the tab settings.
+ * @param parent The parent widget for this dialog, defaults to nullptr.
+ * @param f The window flags for the dialog, defaults to Qt::WindowFlags().
  */
 DialogTabs::DialogTabs(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f), document_(document) {
@@ -66,9 +66,9 @@ void DialogTabs::connectSlots() {
 }
 
 /**
- * @brief
+ * @brief Handles the toggling of the "Emulate Tabs" checkbox.
  *
- * @param checked
+ * @param checked Indicates whether the checkbox is checked or not.
  */
 void DialogTabs::checkEmulateTabs_toggled(bool checked) {
 	ui.labelEmulatedTabSpacing->setEnabled(checked);
@@ -76,7 +76,7 @@ void DialogTabs::checkEmulateTabs_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handles the "Accept" button click event in the dialog.
  */
 void DialogTabs::buttonBox_accepted() {
 
@@ -134,7 +134,7 @@ void DialogTabs::buttonBox_accepted() {
 }
 
 /**
- * @brief
+ * @brief Displays the help topic for the tabs dialog.
  */
 void DialogTabs::buttonBox_helpRequested() {
 	Help::displayTopic(Help::Topic::TabsDialog);

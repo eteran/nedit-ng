@@ -21,8 +21,8 @@
  * @brief Constructor for the DialogSmartIndent class.
  *
  * @param document The DocumentWidget associated with this dialog, used to determine the language mode.
- * @param parent The parent widget for this dialog, typically the main window.
- * @param f Window flags for the dialog, allowing customization of its appearance and behavior.
+ * @param parent The parent widget for this dialog, defaults to nullptr.
+ * @param f The window flags for the dialog, defaults to Qt::WindowFlags().
  */
 DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {

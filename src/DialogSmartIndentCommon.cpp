@@ -11,10 +11,10 @@
 #include <QMessageBox>
 
 /**
- * @brief
+ * @brief Constructor for the DialogSmartIndentCommon class.
  *
- * @param parent
- * @param f
+ * @param parent The parent widget for this dialog, defaults to nullptr.
+ * @param f The window flags for the dialog, defaults to Qt::WindowFlags().
  */
 DialogSmartIndentCommon::DialogSmartIndentCommon(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
@@ -43,7 +43,7 @@ void DialogSmartIndentCommon::connectSlots() {
 }
 
 /**
- * @brief
+ * @brief Handles the "OK" button click event in the dialog.
  */
 void DialogSmartIndentCommon::buttonOK_clicked() {
 	// change the macro
@@ -53,7 +53,7 @@ void DialogSmartIndentCommon::buttonOK_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the "Apply" button click event in the dialog.
  */
 void DialogSmartIndentCommon::buttonApply_clicked() {
 	// change the macro
@@ -61,7 +61,7 @@ void DialogSmartIndentCommon::buttonApply_clicked() {
 }
 
 /**
- * @brief
+ * @brief Checks the smart indent macros for errors and displays a message.
  */
 void DialogSmartIndentCommon::buttonCheck_clicked() {
 	if (checkSmartIndentCommonDialogData()) {
@@ -70,7 +70,7 @@ void DialogSmartIndentCommon::buttonCheck_clicked() {
 }
 
 /**
- * @brief
+ * @brief Restores the common smart indent macros to their default values.
  */
 void DialogSmartIndentCommon::buttonRestore_clicked() {
 	const int resp = QMessageBox::question(
@@ -91,9 +91,9 @@ void DialogSmartIndentCommon::buttonRestore_clicked() {
 }
 
 /**
- * @brief
+ * @brief Checks the data in the smart indent common dialog for validity.
  *
- * @return
+ * @return `true` if the data is valid, `false` otherwise.
  */
 bool DialogSmartIndentCommon::checkSmartIndentCommonDialogData() {
 
@@ -113,11 +113,13 @@ bool DialogSmartIndentCommon::checkSmartIndentCommonDialogData() {
 	return true;
 }
 
-/*
-** Update the smart indent macros being edited in the dialog
-** with the information that the dialog is currently displaying, and
-** apply changes to any window which is currently using the macros.
-*/
+/**
+ * @brief Update the smart indent macros being edited in the dialog
+ * with the information that the dialog is currently displaying, and
+ * apply changes to any window which is currently using the macros.
+ *
+ * @return `true` if the update was successful, `false` otherwise.
+ */
 bool DialogSmartIndentCommon::updateSmartIndentCommonData() {
 
 	// Make sure the patterns are valid and compile
