@@ -361,7 +361,7 @@ void DialogShellMenu::radioToSameDocument_toggled(bool checked) {
 }
 
 /**
- * @brief Updates the item in the model with the current dialog fields.
+ * @brief Updates an item in the model with the current dialog fields.
  *
  * @param index The QModelIndex of the item to update.
  * @return `true` if the item was successfully updated, `false` otherwise.

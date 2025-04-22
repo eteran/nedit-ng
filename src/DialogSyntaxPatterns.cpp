@@ -299,7 +299,7 @@ void DialogSyntaxPatterns::buttonHighlightStyle_clicked() {
 }
 
 /**
- * @brief Updates the item in the model with the current dialog fields.
+ * @brief Updates an item in the model with the current dialog fields.
  *
  * @param item The QModelIndex of the item to update.
  * @return `true` if the item was successfully updated, `false` otherwise.
