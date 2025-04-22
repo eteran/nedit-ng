@@ -2225,7 +2225,7 @@ void BasicTextBuffer<Ch, Tr>::Selection::updateSelection(TextCursor pos, int64_t
 }
 
 /*
-** Return true if position "pos" with indentation "dispIndex" is in this
+** Return `true` if position "pos" with indentation "dispIndex" is in this
 ** selection
 */
 template <class Ch, class Tr>
@@ -2234,7 +2234,7 @@ bool BasicTextBuffer<Ch, Tr>::Selection::inSelection(TextCursor pos, TextCursor 
 }
 
 /*
-** Return true if this selection is rectangular, and touches a buffer position
+** Return `true` if this selection is rectangular, and touches a buffer position
 ** within "rangeStart" to "rangeEnd"
 */
 template <class Ch, class Tr>

@@ -18,11 +18,11 @@
 #include <QMessageBox>
 
 /**
- * @brief
+ * @brief Constructor for the DialogSmartIndent class.
  *
- * @param document
- * @param parent
- * @param f
+ * @param document The DocumentWidget associated with this dialog, used to determine the language mode.
+ * @param parent The parent widget for this dialog, typically the main window.
+ * @param f Window flags for the dialog, allowing customization of its appearance and behavior.
  */
 DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
@@ -65,7 +65,7 @@ void DialogSmartIndent::connectSlots() {
 }
 
 /**
- * @brief
+ * @brief Updates the list of available language modes in the combo box.
  */
 void DialogSmartIndent::updateLanguageModes() {
 
@@ -79,9 +79,9 @@ void DialogSmartIndent::updateLanguageModes() {
 }
 
 /**
- * @brief
+ * @brief Sets the current language mode for the dialog.
  *
- * @param s
+ * @param s The name of the language mode to set.
  */
 void DialogSmartIndent::setLanguageMode(const QString &s) {
 	languageMode_   = s;
@@ -92,9 +92,9 @@ void DialogSmartIndent::setLanguageMode(const QString &s) {
 }
 
 /**
- * @brief
+ * @brief Handles the change of the language mode in the combo box.
  *
- * @param text
+ * @param text The text of the selected language mode in the combo box.
  */
 void DialogSmartIndent::on_comboLanguageMode_currentIndexChanged(const QString &text) {
 	languageMode_ = text;
@@ -102,7 +102,7 @@ void DialogSmartIndent::on_comboLanguageMode_currentIndexChanged(const QString &
 }
 
 /**
- * @brief
+ * @brief Opens the common smart indent dialog for editing shared macros.
  */
 void DialogSmartIndent::buttonCommon_clicked() {
 	auto dialog = std::make_unique<DialogSmartIndentCommon>(this);
@@ -110,7 +110,7 @@ void DialogSmartIndent::buttonCommon_clicked() {
 }
 
 /**
- * @brief
+ * @brief Opens the dialog for managing language modes.
  */
 void DialogSmartIndent::buttonLanguageMode_clicked() {
 	if (!dialogLanguageModes_) {
@@ -121,7 +121,7 @@ void DialogSmartIndent::buttonLanguageMode_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the "OK" button click event.
  */
 void DialogSmartIndent::buttonOK_clicked() {
 	// change the macro
@@ -133,14 +133,14 @@ void DialogSmartIndent::buttonOK_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the "Apply" button click event.
  */
 void DialogSmartIndent::buttonApply_clicked() {
 	updateSmartIndentData();
 }
 
 /**
- * @brief
+ * @brief Checks the smart indent macros for errors and displays a message.
  */
 void DialogSmartIndent::buttonCheck_clicked() {
 	if (checkSmartIndentDialogData()) {
@@ -151,7 +151,7 @@ void DialogSmartIndent::buttonCheck_clicked() {
 }
 
 /**
- * @brief
+ * @brief Deletes the smart indent macros for the current language mode after user confirmation.
  */
 void DialogSmartIndent::buttonDelete_clicked() {
 
@@ -178,7 +178,7 @@ void DialogSmartIndent::buttonDelete_clicked() {
 }
 
 /**
- * @brief
+ * @brief Restores the default smart indent macros for the current language mode after user confirmation.
  */
 void DialogSmartIndent::buttonRestore_clicked() {
 
@@ -211,16 +211,17 @@ void DialogSmartIndent::buttonRestore_clicked() {
 }
 
 /**
- * @brief
+ * @brief Displays the help topic for smart indent macros.
  */
 void DialogSmartIndent::buttonHelp_clicked() {
 	Help::displayTopic(Help::Topic::SmartIndent);
 }
 
 /**
- * @brief
+ * @brief Sets the smart indent dialog data based on the provided SmartIndentEntry.
  *
- * @param is
+ * @param is The SmartIndentEntry containing the smart indent macros.
+ *           If null, the dialog fields will be cleared.
  */
 void DialogSmartIndent::setSmartIndentDialogData(const SmartIndentEntry *is) {
 
@@ -235,11 +236,11 @@ void DialogSmartIndent::setSmartIndentDialogData(const SmartIndentEntry *is) {
 	}
 }
 
-/*
-** Update the smart indent macros being edited in the dialog
-** with the information that the dialog is currently displaying, and
-** apply changes to any window which is currently using the macros.
-*/
+/**
+ * @brief Update the smart indent macros being edited in the dialog
+ * with the information that the dialog is currently displaying, and
+ * apply changes to any window which is currently using the macros.
+ */
 bool DialogSmartIndent::updateSmartIndentData() {
 
 	// Make sure the patterns are valid and compile
@@ -282,9 +283,9 @@ bool DialogSmartIndent::updateSmartIndentData() {
 }
 
 /**
- * @brief
+ * @brief Checks the data in the smart indent dialog for validity.
  *
- * @return
+ * @return `true` if the data is valid, `false` otherwise.
  */
 bool DialogSmartIndent::checkSmartIndentDialogData() {
 
@@ -352,9 +353,9 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 }
 
 /**
- * @brief
+ * @brief Retrieves the smart indent dialog data from the dialog fields.
  *
- * @return
+ * @return A SmartIndentEntry containing the language mode and macros.
  */
 SmartIndentEntry DialogSmartIndent::getSmartIndentDialogData() const {
 
@@ -367,9 +368,9 @@ SmartIndentEntry DialogSmartIndent::getSmartIndentDialogData() const {
 }
 
 /**
- * @brief
+ * @brief Returns the current language mode set in the dialog.
  *
- * @return
+ * @return The name of the language mode as a QString.
  */
 QString DialogSmartIndent::languageMode() const {
 	return languageMode_;

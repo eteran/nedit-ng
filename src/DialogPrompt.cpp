@@ -4,10 +4,10 @@
 #include <QPushButton>
 
 /**
- * @brief
+ * @brief Constructor for DialogPrompt class.
  *
- * @param parent
- * @param f
+ * @param parent The parent widget, defaults to nullptr.
+ * @param f The window flags, defaults to Qt::WindowFlags().
  */
 DialogPrompt::DialogPrompt(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
@@ -24,9 +24,9 @@ void DialogPrompt::connectSlots() {
 }
 
 /**
- * @brief
+ * @brief Adds a button to the dialog's button box with the specified text.
  *
- * @param text
+ * @param text The text to be displayed on the button.
  */
 void DialogPrompt::addButton(const QString &text) {
 	QPushButton *btn = ui.buttonBox->addButton(text, QDialogButtonBox::AcceptRole);
@@ -34,9 +34,9 @@ void DialogPrompt::addButton(const QString &text) {
 }
 
 /**
- * @brief
+ * @brief Adds a standard button to the dialog's button box.
  *
- * @param button
+ * @param button The standard button to be added, such as QDialogButtonBox::Ok, QDialogButtonBox::Cancel, etc.
  */
 void DialogPrompt::addButton(QDialogButtonBox::StandardButton button) {
 	QPushButton *btn = ui.buttonBox->addButton(button);
@@ -44,18 +44,19 @@ void DialogPrompt::addButton(QDialogButtonBox::StandardButton button) {
 }
 
 /**
- * @brief
+ * @brief Sets the message text in the dialog's message label.
  *
- * @param text
+ * @param text The text to be displayed in the message label.
  */
 void DialogPrompt::setMessage(const QString &text) {
 	ui.message->setText(text);
 }
 
 /**
- * @brief
+ * @brief Handles the show event of the dialog.
+ * This method resets the result to 0 and adjusts the size of the dialog when it is shown.
  *
- * @param event
+ * @param event The show event that is triggered when the dialog is displayed.
  */
 void DialogPrompt::showEvent(QShowEvent *event) {
 
@@ -65,9 +66,9 @@ void DialogPrompt::showEvent(QShowEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Handles the button click event in the button box.
  *
- * @param button
+ * @param button The button that was clicked in the button box.
  */
 void DialogPrompt::buttonBox_clicked(QAbstractButton *button) {
 

@@ -12,7 +12,7 @@ public:
 	~DialogPromptList() override = default;
 
 public:
-	int result() const {
+	int result() const noexcept {
 		return result_;
 	}
 
