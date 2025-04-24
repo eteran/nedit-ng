@@ -35,7 +35,7 @@ void DialogWindowSize::connectSlots() {
 void DialogWindowSize::buttonBox_accepted() {
 
 	bool ok;
-	const QString rows  = ui.editRows->text();
+	const QString rows    = ui.editRows->text();
 	const QString columns = ui.editColumns->text();
 
 	if (rows.isEmpty()) {

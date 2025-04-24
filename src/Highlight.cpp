@@ -1,6 +1,5 @@
 
 #include "Highlight.h"
-#include "Yaml.h"
 #include "DocumentWidget.h"
 #include "HighlightData.h"
 #include "HighlightPattern.h"
@@ -17,6 +16,7 @@
 #include "Util/algorithm.h"
 #include "WindowHighlightData.h"
 #include "X11Colors.h"
+#include "Yaml.h"
 
 #include <QFile>
 #include <QFileInfo>
@@ -50,33 +50,67 @@ constexpr int REPARSE_CHUNK_SIZE = 80;
 
 constexpr auto STYLE_NOT_FOUND = static_cast<size_t>(-1);
 
-constexpr bool isPlain(uint8_t style) {
+/**
+ * @brief Check if a style is plain or unfinished.
+ *
+ * @param style The style to check.
+ * @return `true` if the style is plain or unfinished, `false` otherwise.
+ */
+constexpr bool IsPlain(uint8_t style) {
 	return (style == PLAIN_STYLE || style == UNFINISHED_STYLE);
 }
 
-/* Compare two styles where one of the styles may not yet have been processed
-   with pass2 patterns */
-constexpr bool equivalentStyle(uint8_t style1, uint8_t style2, uint8_t firstPass2Style) {
+/**
+ * @brief Compare two styles where one of the styles may not yet have been
+ * processed with pass2 patterns
+ *
+ * @param style1 The first style to compare.
+ * @param style2 The second style to compare.
+ * @param firstPass2Style The style used for the first pass of pass2 patterns.
+ * @return `true` if the styles are equivalent, `false` otherwise.
+ */
+constexpr bool EquivalentStyle(uint8_t style1, uint8_t style2, uint8_t firstPass2Style) {
 	return (style1 == style2) ||
 		   (style1 == UNFINISHED_STYLE && (style2 == PLAIN_STYLE || style2 >= firstPass2Style)) ||
 		   (style2 == UNFINISHED_STYLE && (style1 == PLAIN_STYLE || style1 >= firstPass2Style));
 }
 
-/* Scanning context can be reduced (with big efficiency gains) if we
-   know that patterns can't cross line boundaries, which is implied
-   by a context requirement of 1 line and 0 characters */
-bool canCrossLineBoundaries(const ReparseContext &contextRequirements) {
+/**
+ * @brief Determine if the context requirements allow crossing line boundaries.
+ * Scanning context can be reduced (with big efficiency gains) if we
+ * know that patterns can't cross line boundaries, which is implied
+ * by a context requirement of 1 line and 0 characters
+ *
+ * @param contextRequirements The context requirements to check.
+ * @return `true` if crossing line boundaries is allowed, `false` otherwise.
+ */
+bool CanCrossLineBoundaries(const ReparseContext &contextRequirements) {
 	return (contextRequirements.nLines != 1 || contextRequirements.nChars != 0);
 }
 
-uint8_t parentStyleOf(const std::vector<uint8_t> &parentStyles, uint8_t style) {
+/**
+ * @brief Get the parent style of a given style.
+ *
+ * @param parentStyles The parent styles vector, which maps styles to their parent styles.
+ * @param style The style for which to find the parent.
+ * @return The parent style of the given style.
+ */
+uint8_t ParentStyleOf(const std::vector<uint8_t> &parentStyles, uint8_t style) {
 	Q_ASSERT(style != 0);
 	return parentStyles[style - UNFINISHED_STYLE];
 }
 
-bool isParentStyle(const std::vector<uint8_t> &parentStyles, uint8_t style1, uint8_t style2) {
+/**
+ * @brief Check if one style is a an ancestor of another style.
+ *
+ * @param parentStyles The parent styles vector, which maps styles to their parent styles.
+ * @param style1 The style to check if it is a parent of `style2`.
+ * @param style2 The style to check if it is a child of `style1`.
+ * @return `true` if `style1` is in the parent chain of `style2`, `false` otherwise.
+ */
+bool IsParentStyle(const std::vector<uint8_t> &parentStyles, uint8_t style1, uint8_t style2) {
 
-	for (uint8_t p = parentStyleOf(parentStyles, style2); p != 0; p = parentStyleOf(parentStyles, p)) {
+	for (uint8_t p = ParentStyleOf(parentStyles, style2); p != 0; p = ParentStyleOf(parentStyles, p)) {
 		if (style1 == p) {
 			return true;
 		}
@@ -85,13 +119,16 @@ bool isParentStyle(const std::vector<uint8_t> &parentStyles, uint8_t style1, uin
 	return false;
 }
 
-/*
-** Return the last modified position in buffer (as marked by modifyStyleBuf
-** by the convention used for conveying modification information to the
-** text widget, which is selecting the text)
-*/
+/**
+ * @brief Get the last modified position in a text buffer (as marked by modifyStyleBuf
+ * by the convention used for conveying modification information to the text widget,
+ * which is selecting the text)
+ *
+ * @param buffer The text buffer to check for modifications.
+ * @return The last modified position as a TextCursor.
+ */
 template <class Ptr>
-TextCursor lastModified(const Ptr &buffer) {
+TextCursor LastModified(const Ptr &buffer) {
 	if (buffer->primary.hasSelection()) {
 		return std::max(buffer->BufStartOfBuffer(), buffer->primary.end());
 	}
@@ -99,10 +136,13 @@ TextCursor lastModified(const Ptr &buffer) {
 	return buffer->BufStartOfBuffer();
 }
 
-/*
-** Return `true` if `patternSet` exactly matches one of the default pattern sets
-*/
-bool isDefaultPatternSet(const PatternSet &patternSet) {
+/**
+ * @brief Check if a given pattern set is the default pattern set for its language mode.
+ *
+ * @param patternSet The pattern set to check.
+ * @return `true` if `patternSet` exactly matches one of the default pattern sets.
+ */
+bool IsDefaultPatternSet(const PatternSet &patternSet) {
 	if (std::optional<PatternSet> defaultPatSet = readDefaultPatternSet(patternSet.languageMode)) {
 		return patternSet == *defaultPatSet;
 	}
@@ -307,11 +347,11 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 
 	// Begin parsing one context distance back (or to the last style change)
 	const uint8_t beginStyle = pass1Patterns->style;
-	if (canCrossLineBoundaries(contextRequirements)) {
+	if (CanCrossLineBoundaries(contextRequirements)) {
 		beginSafety = backwardOneContext(buf, contextRequirements, beginParse);
 		for (p = beginParse; p >= beginSafety; --p) {
 			style = styleBuf->BufGetCharacter(p - 1);
-			if (!equivalentStyle(style, beginStyle, firstPass2Style)) {
+			if (!EquivalentStyle(style, beginStyle, firstPass2Style)) {
 				beginSafety = p;
 				break;
 			}
@@ -319,7 +359,7 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	} else {
 		for (beginSafety = std::max(TextCursor(), beginParse - 1); beginSafety > 0; --beginSafety) {
 			style = styleBuf->BufGetCharacter(beginSafety);
-			if (!equivalentStyle(style, beginStyle, firstPass2Style) || buf->BufGetCharacter(beginSafety) == '\n') {
+			if (!EquivalentStyle(style, beginStyle, firstPass2Style) || buf->BufGetCharacter(beginSafety) == '\n') {
 				++beginSafety;
 				break;
 			}
@@ -333,7 +373,7 @@ TextCursor parseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 		return TextCursor();
 	}
 
-	if (canCrossLineBoundaries(contextRequirements)) {
+	if (CanCrossLineBoundaries(contextRequirements)) {
 		endSafety = forwardOneContext(buf, contextRequirements, endParse);
 	} else if (endParse >= buf->length() || (buf->BufGetCharacter(endParse - 1) == '\n')) {
 		endSafety = endParse;
@@ -509,7 +549,7 @@ uint8_t findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHig
 
 	const uint8_t startStyle = highlightData->styleBuffer->BufGetCharacter(*pos);
 
-	if (isPlain(startStyle)) {
+	if (IsPlain(startStyle)) {
 		return PLAIN_STYLE;
 	}
 
@@ -549,7 +589,7 @@ uint8_t findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHig
 		/* If the style is preceded by a parent style, it's safe to parse
 		 * with the parent style, provided that the parent is parsable. */
 		const uint8_t style = highlightData->styleBuffer->BufGetCharacter(i);
-		if (isParentStyle(parentStyles, style, runningStyle)) {
+		if (IsParentStyle(parentStyles, style, runningStyle)) {
 			if (patternIsParsable(patternOfStyle(pass1Patterns, style))) {
 				*pos = i + 1;
 				return style;
@@ -563,7 +603,7 @@ uint8_t findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHig
 		/* If the style is preceded by a child style, it's safe to resume
 		   parsing with the running style, provided that the running
 		   style is parsable. */
-		else if (isParentStyle(parentStyles, runningStyle, style)) {
+		else if (IsParentStyle(parentStyles, runningStyle, style)) {
 			if (patternIsParsable(patternOfStyle(pass1Patterns, runningStyle))) {
 				*pos = i + 1;
 				return runningStyle;
@@ -577,8 +617,8 @@ uint8_t findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHig
 		   is parsable. Checking for siblings is very hard; checking whether
 		   the style has the same parent will probably catch 99% of the cases
 		   in practice. */
-		else if (runningStyle != style && isParentStyle(parentStyles, parentStyleOf(parentStyles, runningStyle), style)) {
-			const uint8_t parentStyle = parentStyleOf(parentStyles, runningStyle);
+		else if (runningStyle != style && IsParentStyle(parentStyles, ParentStyleOf(parentStyles, runningStyle), style)) {
+			const uint8_t parentStyle = ParentStyleOf(parentStyles, runningStyle);
 			if (patternIsParsable(patternOfStyle(pass1Patterns, parentStyle))) {
 				*pos = i + 1;
 				return parentStyle;
@@ -613,7 +653,7 @@ uint8_t findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHig
 			   parsable ancestor) and hope that the highlighting errors are
 			   minor. */
 			while (!patternIsParsable(patternOfStyle(pass1Patterns, runningStyle))) {
-				runningStyle = parentStyleOf(parentStyles, runningStyle);
+				runningStyle = ParentStyleOf(parentStyles, runningStyle);
 			}
 
 			return runningStyle;
@@ -675,22 +715,22 @@ void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightDat
 		   hierarchy and start again from where the previous parse left off. */
 		if (endAt < endParse) {
 			beginParse = endAt;
-			endParse   = forwardOneContext(buf, context, std::max(endAt, std::max(lastModified(styleBuf), lastMod)));
-			if (isPlain(parseInStyle)) {
+			endParse   = forwardOneContext(buf, context, std::max(endAt, std::max(LastModified(styleBuf), lastMod)));
+			if (IsPlain(parseInStyle)) {
 				qCritical("NEdit: internal error: incr. reparse fell short");
 				return;
 			}
-			parseInStyle = parentStyleOf(parentStyles, parseInStyle);
+			parseInStyle = ParentStyleOf(parentStyles, parseInStyle);
 
 			// One context distance beyond last style changed means we're done
-		} else if (lastModified(styleBuf) <= lastMod) {
+		} else if (LastModified(styleBuf) <= lastMod) {
 			return;
 
 			/* Styles are changing beyond the modification, continue extending
 			   the end of the parse range by powers of 2 * REPARSE_CHUNK_SIZE and
 			   reparse until nothing changes */
 		} else {
-			lastMod  = lastModified(styleBuf);
+			lastMod  = LastModified(styleBuf);
 			endParse = std::min(buf->BufEndOfBuffer(), forwardOneContext(buf, context, lastMod) + (REPARSE_CHUNK_SIZE << nPasses));
 		}
 	}
@@ -1523,7 +1563,7 @@ QString WriteHighlightString() {
 		YAML::Emitter out;
 		out << YAML::BeginMap;
 		for (const PatternSet &patternSet : PatternSets) {
-			if (isDefaultPatternSet(patternSet)) {
+			if (IsDefaultPatternSet(patternSet)) {
 				out << YAML::Key << patternSet.languageMode.toUtf8().data();
 				out << YAML::Value << "Default";
 			} else {

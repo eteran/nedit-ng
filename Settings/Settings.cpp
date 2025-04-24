@@ -1,7 +1,7 @@
 
 #include "Settings.h"
-#include "Util/Resource.h"
 #include "Util/Environment.h"
+#include "Util/Resource.h"
 #include "from_integer.h"
 
 #include <QFontDatabase>

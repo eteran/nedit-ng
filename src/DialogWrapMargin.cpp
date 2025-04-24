@@ -6,6 +6,13 @@
 
 #include <QMessageBox>
 
+/**
+ * @brief Constructor for the DialogWrapMargin class.
+ *
+ * @param document The DocumentWidget associated with this dialog, which provides the context for the wrap margin setting.
+ * @param parent The parent widget for this dialog, defaults to nullptr.
+ * @param f The window flags for the dialog, defaults to Qt::WindowFlags().
+ */
 DialogWrapMargin::DialogWrapMargin(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f), document_(document) {
 	ui.setupUi(this);
@@ -27,11 +34,19 @@ void DialogWrapMargin::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogWrapMargin::buttonBox_accepted);
 }
 
+/**
+ * @brief Handles the toggling of the "Wrap and Fill" checkbox.
+ *
+ * @param checked Indicates whether the "Wrap and Fill" checkbox is checked.
+ */
 void DialogWrapMargin::checkWrapAndFill_toggled(bool checked) {
 	ui.label->setEnabled(!checked);
 	ui.spinWrapAndFill->setEnabled(!checked);
 }
 
+/**
+ * @brief Handles the acceptance of the dialog when the "OK" button is clicked.
+ */
 void DialogWrapMargin::buttonBox_accepted() {
 
 	int margin;

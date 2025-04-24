@@ -789,48 +789,47 @@ int main() {
 		return -1;
 	}
 
-	if(!test_regex_error("[0-9]{0}")) {
+	if (!test_regex_error("[0-9]{0}")) {
 		std::cerr << "ERROR    : Failed to catch invalid range (1)\n";
 		return -1;
 	}
 
-	if(!test_regex_error("[0-9]{0,0}")) {
+	if (!test_regex_error("[0-9]{0,0}")) {
 		std::cerr << "ERROR    : Failed to catch invalid range (2)\n";
 		return -1;
 	}
 
-	if(!test_regex_error("[0-9]{1,0}")) {
+	if (!test_regex_error("[0-9]{1,0}")) {
 		std::cerr << "ERROR    : Failed to catch invalid range (3)\n";
 		return -1;
 	}
 
-	if(!test_regex_error("[0-9]{,0}")) {
+	if (!test_regex_error("[0-9]{,0}")) {
 		std::cerr << "ERROR    : Failed to catch invalid range (4)\n";
 		return -1;
 	}
 
-	if(!test_regex_error("[0-9]{1,2")) {
+	if (!test_regex_error("[0-9]{1,2")) {
 		std::cerr << "ERROR    : Failed to catch missing end bracket\n";
 		return -1;
 	}
 
-	if(!test_regex_error("[0-9]{10,2}")) {
+	if (!test_regex_error("[0-9]{10,2}")) {
 		std::cerr << "ERROR    : Failed to catch backwards range\n";
 		return -1;
 	}
 
-	if(!test_regex_error("([0-9]|[A-Z]")) {
+	if (!test_regex_error("([0-9]|[A-Z]")) {
 		std::cerr << "ERROR    : Failed to catch missing closing paren\n";
 		return -1;
 	}
 
-	if(!test_regex_error("(([0-9]|[A-Z]")) {
+	if (!test_regex_error("(([0-9]|[A-Z]")) {
 		std::cerr << "ERROR    : Failed to catch extra opening paren\n";
 		return -1;
 	}
 
-
-	if(!test_regex_error("([0-9]|[A-Z]))")) {
+	if (!test_regex_error("([0-9]|[A-Z]))")) {
 		std::cerr << "ERROR    : Failed to catch extra closing paren\n";
 		return -1;
 	}

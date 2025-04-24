@@ -92,7 +92,7 @@ bool lineEmpty(const QString &line) {
  */
 QStringList ParseTagSpec(const QString &tagSpec) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
-auto sep = QDir::listSeparator();
+	auto sep = QDir::listSeparator();
 #else
 #ifdef Q_OS_WIN
 	auto sep = QLatin1Char(';');

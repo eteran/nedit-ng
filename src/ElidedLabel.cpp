@@ -15,10 +15,10 @@
 #endif
 
 /**
- * @brief
+ * @brief Constructor for ElidedLabel.
  *
- * @param text
- * @param parent
+ * @param text The text to display in the label.
+ * @param parent The parent widget for this label.
  */
 ElidedLabel::ElidedLabel(const QString &text, QWidget *parent)
 	: QLabel(parent) {
@@ -30,9 +30,9 @@ ElidedLabel::ElidedLabel(const QString &text, QWidget *parent)
 }
 
 /**
- * @brief
+ * @brief Constructor for ElidedLabel.
  *
- * @param parent
+ * @param parent The parent widget for this label.
  */
 ElidedLabel::ElidedLabel(QWidget *parent)
 	: QLabel(parent) {
@@ -41,7 +41,7 @@ ElidedLabel::ElidedLabel(QWidget *parent)
 }
 
 /**
- * @brief
+ * @brief Reimplemented resizeEvent to adjust the text when the label is resized.
  */
 void ElidedLabel::resizeEvent(QResizeEvent *event) {
 	Q_UNUSED(event);
@@ -49,9 +49,9 @@ void ElidedLabel::resizeEvent(QResizeEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Returns the minimum size hint for the label.
  *
- * @return
+ * @return The minimum size hint for the label.
  */
 QSize ElidedLabel::minimumSizeHint() const {
 	QSize sh = QLabel::minimumSizeHint();
@@ -60,9 +60,9 @@ QSize ElidedLabel::minimumSizeHint() const {
 }
 
 /**
- * @brief
+ * @brief Returns the size hint for the label.
  *
- * @return
+ * @return The size hint for the label.
  */
 QSize ElidedLabel::sizeHint() const {
 	QScreen *currentScreen = QGuiApplication::primaryScreen();
@@ -79,9 +79,9 @@ QSize ElidedLabel::sizeHint() const {
 }
 
 /**
- * @brief
+ * @brief Sets the text for the label.
  *
- * @param text
+ * @param text The new text to set for the label.
  */
 void ElidedLabel::setText(const QString &text) {
 	fullText_ = text;
@@ -89,7 +89,7 @@ void ElidedLabel::setText(const QString &text) {
 }
 
 /**
- * @brief
+ * @brief Clears the text in the label.
  */
 void ElidedLabel::clear() {
 	fullText_.clear();
@@ -97,7 +97,7 @@ void ElidedLabel::clear() {
 }
 
 /**
- * @brief
+ * @brief Squeezes the text to fit within the label's width, eliding it if necessary.
  */
 void ElidedLabel::squeezeTextToLabel() {
 
@@ -126,9 +126,9 @@ void ElidedLabel::squeezeTextToLabel() {
 }
 
 /**
- * @brief
+ * @brief Sets the alignment for the label.
  *
- * @param alignment
+ * @param alignment The alignment to set for the label.
  */
 void ElidedLabel::setAlignment(Qt::Alignment alignment) {
 	// save fullText and restore it
@@ -138,18 +138,18 @@ void ElidedLabel::setAlignment(Qt::Alignment alignment) {
 }
 
 /**
- * @brief
+ * @brief Returns the text elide mode used by the label.
  *
- * @return
+ * @return The text elide mode used by the label.
  */
 Qt::TextElideMode ElidedLabel::textElideMode() const {
 	return elideMode_;
 }
 
 /**
- * @brief
+ * @brief Sets the text elide mode for the label.
  *
- * @param mode
+ * @param mode The text elide mode to set for the label.
  */
 void ElidedLabel::setTextElideMode(Qt::TextElideMode mode) {
 	elideMode_ = mode;
@@ -157,18 +157,18 @@ void ElidedLabel::setTextElideMode(Qt::TextElideMode mode) {
 }
 
 /**
- * @brief
+ * @brief Returns the full text set via setText.
  *
- * @return
+ * @return The full, un-elided text of the label.
  */
 QString ElidedLabel::fullText() const {
 	return fullText_;
 }
 
 /**
- * @brief
+ * @brief Reimplemented contextMenuEvent to provide a custom context menu
  *
- * @param ev
+ * @param ev The context menu event that triggered this function.
  */
 void ElidedLabel::contextMenuEvent(QContextMenuEvent *ev) {
 	// We want to reimplement "Copy" to include the elided text.
@@ -180,8 +180,7 @@ void ElidedLabel::contextMenuEvent(QContextMenuEvent *ev) {
 	// For now I chose to show it when the text is squeezed; when it's not, the
 	// standard popup menu can do the job (select all, copy).
 
-	const bool squeezed        = text() != fullText_;
-	const bool showCustomPopup = squeezed;
+	const bool showCustomPopup = text() != fullText_;
 	if (showCustomPopup) {
 		QMenu menu(this);
 
@@ -199,9 +198,10 @@ void ElidedLabel::contextMenuEvent(QContextMenuEvent *ev) {
 }
 
 /**
- * @brief
+ * @brief Reimplemented keyPressEvent to handle the Copy action.
+ * This function allows the user to copy the full text of the label.
  *
- * @param event
+ * @param event The key event that triggered this function.
  */
 void ElidedLabel::keyPressEvent(QKeyEvent *event) {
 	if (event == QKeySequence::Copy) {
@@ -213,7 +213,7 @@ void ElidedLabel::keyPressEvent(QKeyEvent *event) {
 			// Ex: abcde...yz, selecting de...y  (selectionStart=3)
 			// charsBeforeSelection = selectionStart = 2 (ab)
 			// charsAfterSelection = 1 (z)
-			// final selection length= 26 - 2 - 1 = 23
+			// final selection length = 26 - 2 - 1 = 23
 			const int start         = selectionStart();
 			int charsAfterSelection = text().length() - start - selectedText().length();
 			txt                     = fullText_;
@@ -235,9 +235,10 @@ void ElidedLabel::keyPressEvent(QKeyEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Reimplemented mouseReleaseEvent to handle the selection and copying of text.
+ * This function allows the user to select the full text of the label.
  *
- * @param event
+ * @param event The mouse event that triggered this function.
  */
 void ElidedLabel::mouseReleaseEvent(QMouseEvent *event) {
 
@@ -250,7 +251,7 @@ void ElidedLabel::mouseReleaseEvent(QMouseEvent *event) {
 			// Ex: abcde...yz, selecting de...y  (selectionStart=3)
 			// charsBeforeSelection = selectionStart = 2 (ab)
 			// charsAfterSelection = 1 (z)
-			// final selection length= 26 - 2 - 1 = 23
+			// final selection length = 26 - 2 - 1 = 23
 			const int start         = selectionStart();
 			int charsAfterSelection = text().length() - start - selectedText().length();
 			txt                     = fullText_;

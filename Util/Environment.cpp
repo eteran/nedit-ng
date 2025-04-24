@@ -32,5 +32,5 @@ QString GetEnvironmentVariable(const QString &name) {
  * @return The value of the environment variable, or QString() if not found.
  */
 QString GetEnvironmentVariable(const std::string &name) {
-    return GetEnvironmentVariable(name.c_str());
+	return GetEnvironmentVariable(name.c_str());
 }
