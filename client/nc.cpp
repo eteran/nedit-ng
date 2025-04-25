@@ -446,7 +446,7 @@ int main(int argc, char *argv[]) {
 	QCoreApplication app(argc, argv);
 
 	// Read the application resources into the Preferences data structure
-	const QString filename = Settings::configFile();
+	const QString filename = Settings::ConfigFile();
 	QSettings settings(filename, QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("Server"));
 

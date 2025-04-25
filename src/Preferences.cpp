@@ -291,9 +291,9 @@ void loadLanguageModesString(const QString &string) {
 
 		YAML::Node languages;
 
-		const QString languageModeFile = Settings::languageModeFile();
-		if (QFileInfo::exists(languageModeFile)) {
-			languages = YAML::LoadAllFromFile(languageModeFile.toUtf8().data());
+		const QString LanguageModeFile = Settings::LanguageModeFile();
+		if (QFileInfo::exists(LanguageModeFile)) {
+			languages = YAML::LoadAllFromFile(LanguageModeFile.toUtf8().data());
 		} else {
 			static QByteArray defaultLanguageModes = LoadResource(QLatin1String("DefaultLanguageModes.yaml"));
 			languages                              = YAML::LoadAll(defaultLanguageModes.data());
@@ -398,7 +398,7 @@ void translatePrefFormats(uint32_t fileVer) {
  */
 QString WriteLanguageModesString() {
 
-	const QString filename = Settings::languageModeFile();
+	const QString filename = Settings::LanguageModeFile();
 
 	try {
 		YAML::Emitter out;
@@ -479,7 +479,7 @@ bool PreferencesChanged() {
 
 void RestoreNEditPrefs() {
 
-	Settings::loadPreferences(IsServer);
+	Settings::Load(IsServer);
 
 	/* Do further parsing on resource types which RestorePreferences does
 	 * not understand and reads as strings, to put them in the final form
@@ -489,7 +489,7 @@ void RestoreNEditPrefs() {
 
 void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 
-	const QString prefFileName = Settings::configFile();
+	const QString prefFileName = Settings::ConfigFile();
 	if (prefFileName.isNull()) {
 		QMessageBox::warning(parent, tr("Error saving Preferences"), tr("Unable to save preferences: Cannot determine filename."));
 		return;
@@ -514,7 +514,7 @@ void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 	Settings::smartIndentInit       = SmartIndent::writeSmartIndentString();
 	Settings::smartIndentInitCommon = SmartIndent::writeSmartIndentCommonString();
 
-	if (!Settings::savePreferences()) {
+	if (!Settings::Save()) {
 		QMessageBox::warning(
 			parent,
 			tr("Save Preferences"),
@@ -530,7 +530,7 @@ void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 ** derived from defaults, the .nedit file, and X resources.
 */
 void ImportPrefFile(const QString &filename) {
-	Settings::importSettings(filename);
+	Settings::Import(filename);
 
 	// NOTE(eteran): fix for issue #106
 	translatePrefFormats(NEDIT_VERSION);

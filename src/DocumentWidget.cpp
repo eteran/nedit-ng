@@ -7030,7 +7030,7 @@ void DocumentWidget::readMacroInitFile() {
 
 	if (!initFileLoaded) {
 
-		const QString autoloadName = Settings::autoLoadMacroFile();
+		const QString autoloadName = Settings::AutoLoadMacroFile();
 		if (autoloadName.isNull()) {
 			return;
 		}

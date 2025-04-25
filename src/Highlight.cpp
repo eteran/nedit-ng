@@ -1505,9 +1505,9 @@ void LoadHighlightString(const QString &string) {
 
 		YAML::Node patternSets;
 
-		const QString highlightPatternsFile = Settings::highlightPatternsFile();
-		if (QFileInfo::exists(highlightPatternsFile)) {
-			patternSets = YAML::LoadFile(highlightPatternsFile.toUtf8().data());
+		const QString HighlightPatternsFile = Settings::HighlightPatternsFile();
+		if (QFileInfo::exists(HighlightPatternsFile)) {
+			patternSets = YAML::LoadFile(HighlightPatternsFile.toUtf8().data());
 		} else {
 			static QByteArray defaultPatternSets = LoadResource(QLatin1String("DefaultPatternSets.yaml"));
 			patternSets                          = YAML::Load(defaultPatternSets.data());
@@ -1557,7 +1557,7 @@ void LoadHighlightString(const QString &string) {
 */
 QString WriteHighlightString() {
 
-	const QString filename = Settings::highlightPatternsFile();
+	const QString filename = Settings::HighlightPatternsFile();
 
 	try {
 		YAML::Emitter out;

@@ -1942,12 +1942,12 @@ void MainWindow::readNEditDB() {
 		return;
 	}
 
-	const QString historyFile = Settings::historyFile();
-	if (historyFile.isNull()) {
+	const QString HistoryFile = Settings::HistoryFile();
+	if (HistoryFile.isNull()) {
 		return;
 	}
 
-	const QFileInfo info(historyFile);
+	const QFileInfo info(HistoryFile);
 	const QDateTime mtime = info.lastModified();
 
 	/*  Stat history file to see whether someone touched it after this
@@ -1961,7 +1961,7 @@ void MainWindow::readNEditDB() {
 	lastNeditdbModTime = mtime;
 
 	// open the file
-	QFile file(historyFile);
+	QFile file(HistoryFile);
 	if (!file.open(QIODevice::ReadOnly)) {
 		return;
 	}
@@ -2012,8 +2012,8 @@ void MainWindow::invalidatePrevOpenMenus() {
 */
 void MainWindow::writeNEditDB() {
 
-	const QString historyFile = Settings::historyFile();
-	if (historyFile.isNull()) {
+	const QString HistoryFile = Settings::HistoryFile();
+	if (HistoryFile.isNull()) {
 		return;
 	}
 
@@ -2022,7 +2022,7 @@ void MainWindow::writeNEditDB() {
 		return;
 	}
 
-	QFile file(historyFile);
+	QFile file(HistoryFile);
 	if (file.open(QIODevice::WriteOnly)) {
 		QTextStream ts(&file);
 

@@ -200,7 +200,7 @@ void loadSmartIndentString(const QString &string) {
 		try {
 			YAML::Node indentRules;
 
-			const QString filename = Settings::smartIndentFile();
+			const QString filename = Settings::SmartIndentFile();
 			if (QFileInfo::exists(filename)) {
 				indentRules = YAML::LoadFile(filename.toUtf8().data());
 			} else {
@@ -370,7 +370,7 @@ void loadSmartIndentCommonString(const QString &string) {
  * @return
  */
 QString writeSmartIndentString() {
-	const QString filename = Settings::smartIndentFile();
+	const QString filename = Settings::SmartIndentFile();
 	try {
 		YAML::Emitter out;
 

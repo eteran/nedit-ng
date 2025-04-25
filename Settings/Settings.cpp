@@ -1,8 +1,8 @@
 
 #include "Settings.h"
+#include "FromInteger.h"
 #include "Util/Environment.h"
 #include "Util/Resource.h"
-#include "FromInteger.h"
 
 #include <QFontDatabase>
 #include <QSettings>
@@ -27,7 +27,7 @@ const QStringList DEFAULT_INCLUDE_PATHS = {
 const auto DEFAULT_DELIMITERS      = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
 const auto DEFAULT_BACKLIGHT_CHARS = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
 
-QString defaultTextFont() {
+QString DefaultTextFont() {
 	QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
 	fixedFont.setPointSize(12);
 	return fixedFont.toString();
@@ -37,13 +37,13 @@ template <class T>
 using IsEnum = std::enable_if_t<std::is_enum_v<T>>;
 
 template <class T, class = IsEnum<T>>
-T readEnum(QSettings &settings, const QString &key, const T &defaultValue = T()) {
+T ReadEnum(QSettings &settings, const QString &key, const T &defaultValue = T()) {
 	using U = std::underlying_type_t<T>;
 	return FromInteger<T>(settings.value(key, static_cast<U>(defaultValue)).toInt());
 }
 
 template <class T, class = IsEnum<T>>
-void writeEnum(QSettings &settings, const QString &key, const T &value) {
+void WriteEnum(QSettings &settings, const QString &key, const T &value) {
 	using U = std::underlying_type_t<T>;
 	settings.setValue(key, static_cast<U>(value));
 }
@@ -54,11 +54,11 @@ void writeEnum(QSettings &settings, const QString &key, const T &value) {
  * @param length The length of the random string to generate.
  * @return The random string.
  */
-QString randomString(int length) {
-	static const char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+QString RandomString(int length) {
+	static constexpr char alphabet[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
-	QString randomString;
-	randomString.reserve(length);
+	QString str;
+	str.reserve(length);
 
 	std::random_device rd;
 	std::mt19937 mt(rd());
@@ -66,10 +66,10 @@ QString randomString(int length) {
 
 	for (int i = 0; i < length; ++i) {
 		const size_t index = dist(mt);
-		randomString.append(QChar::fromLatin1(alphabet[index]));
+		str.append(QChar::fromLatin1(alphabet[index]));
 	}
 
-	return randomString;
+	return str;
 }
 
 /**
@@ -80,7 +80,7 @@ QString randomString(int length) {
  * @note If the environment variable `NEDIT_NG_HOME` is set,
  * it will be used as the configuration directory.
  */
-QString configDirectory() {
+QString ConfigDirectory() {
 	static const QString nedit_home = GetEnvironmentVariable("NEDIT_NG_HOME");
 	if (!nedit_home.isEmpty()) {
 		return nedit_home;
@@ -176,8 +176,8 @@ WrapStyle autoWrap;
  *
  * @return The path to the theme file.
  */
-QString themeFile() {
-	static const QString configDir = configDirectory();
+QString ThemeFile() {
+	static const QString configDir = ConfigDirectory();
 	static const auto filename     = QStringLiteral("%1/theme.xml").arg(configDir);
 	return filename;
 }
@@ -187,8 +187,8 @@ QString themeFile() {
  *
  * @return The path to the configuration file.
  */
-QString configFile() {
-	static const QString configDir = configDirectory();
+QString ConfigFile() {
+	static const QString configDir = ConfigDirectory();
 	static const auto filename     = QStringLiteral("%1/config.ini").arg(configDir);
 	return filename;
 }
@@ -198,8 +198,8 @@ QString configFile() {
  *
  * @return The path to the history file.
  */
-QString historyFile() {
-	static const QString configDir = configDirectory();
+QString HistoryFile() {
+	static const QString configDir = ConfigDirectory();
 	static const auto filename     = QStringLiteral("%1/history").arg(configDir);
 	return filename;
 }
@@ -209,8 +209,8 @@ QString historyFile() {
  *
  * @return The path to the auto-load macro file.
  */
-QString autoLoadMacroFile() {
-	static const QString configDir = configDirectory();
+QString AutoLoadMacroFile() {
+	static const QString configDir = ConfigDirectory();
 	static const auto filename     = QStringLiteral("%1/autoload.nm").arg(configDir);
 	return filename;
 }
@@ -220,8 +220,8 @@ QString autoLoadMacroFile() {
  *
  * @return The path to the language mode file.
  */
-QString languageModeFile() {
-	static const QString configDir = configDirectory();
+QString LanguageModeFile() {
+	static const QString configDir = ConfigDirectory();
 	static const auto filename     = QStringLiteral("%1/languages.yaml").arg(configDir);
 	return filename;
 }
@@ -231,8 +231,8 @@ QString languageModeFile() {
  *
  * @return The path to the macro menu file.
  */
-QString macroMenuFile() {
-	static const QString configDir = configDirectory();
+QString MactoMenuFile() {
+	static const QString configDir = ConfigDirectory();
 	static const auto filename     = QStringLiteral("%1/macros.yaml").arg(configDir);
 	return filename;
 }
@@ -242,8 +242,8 @@ QString macroMenuFile() {
  *
  * @return The path to the shell menu file.
  */
-QString shellMenuFile() {
-	static const QString configDir = configDirectory();
+QString ShellMenuFile() {
+	static const QString configDir = ConfigDirectory();
 	static const auto filename     = QStringLiteral("%1/shell.yaml").arg(configDir);
 	return filename;
 }
@@ -253,8 +253,8 @@ QString shellMenuFile() {
  *
  * @return The path to the context menu file.
  */
-QString contextMenuFile() {
-	static const QString configDir = configDirectory();
+QString ContextMenuFile() {
+	static const QString configDir = ConfigDirectory();
 	static const auto filename     = QStringLiteral("%1/context.yaml").arg(configDir);
 	return filename;
 }
@@ -264,8 +264,8 @@ QString contextMenuFile() {
  *
  * @return The path to the style file.
  */
-QString styleFile() {
-	static const QString configDir = configDirectory();
+QString StyleFile() {
+	static const QString configDir = ConfigDirectory();
 	static const auto filename     = QStringLiteral("%1/style.qss").arg(configDir);
 	return filename;
 }
@@ -275,8 +275,8 @@ QString styleFile() {
  *
  * @return The path to the highlight patterns file.
  */
-QString highlightPatternsFile() {
-	static const QString configDir = configDirectory();
+QString HighlightPatternsFile() {
+	static const QString configDir = ConfigDirectory();
 	static const auto filename     = QStringLiteral("%1/patterns.yaml").arg(configDir);
 	return filename;
 }
@@ -286,8 +286,8 @@ QString highlightPatternsFile() {
  *
  * @return The path to the smart indent file.
  */
-QString smartIndentFile() {
-	static const QString configDir = configDirectory();
+QString SmartIndentFile() {
+	static const QString configDir = ConfigDirectory();
 	static const auto filename     = QStringLiteral("%1/indent.yaml").arg(configDir);
 	return filename;
 }
@@ -298,9 +298,9 @@ QString smartIndentFile() {
  * @param isServer If `true`, the and the configuration does not specify a server name,
  *                 a random server name will be generated.
  */
-void loadPreferences(bool isServer) {
+void Load(bool isServer) {
 
-	const QString filename = configFile();
+	const QString filename = ConfigFile();
 	QSettings settings(filename, QSettings::IniFormat);
 
 	shellCommands         = settings.value(tr("nedit.shellCommands"), QLatin1String("*")).toString();
@@ -311,11 +311,11 @@ void loadPreferences(bool isServer) {
 	smartIndentInit       = settings.value(tr("nedit.smartIndentInit"), QLatin1String("*")).toString();
 	smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), QLatin1String("*")).toString();
 
-	autoWrap          = readEnum(settings, tr("nedit.autoWrap"), WrapStyle::None);
-	autoIndent        = readEnum(settings, tr("nedit.autoIndent"), IndentStyle::Auto);
-	showMatching      = readEnum(settings, tr("nedit.showMatching"), ShowMatchingStyle::Delimiter);
-	searchMethod      = readEnum(settings, tr("nedit.searchMethod"), SearchType::Literal);
-	truncSubstitution = readEnum(settings, tr("nedit.truncSubstitution"), TruncSubstitution::Fail);
+	autoWrap          = ReadEnum(settings, tr("nedit.autoWrap"), WrapStyle::None);
+	autoIndent        = ReadEnum(settings, tr("nedit.autoIndent"), IndentStyle::Auto);
+	showMatching      = ReadEnum(settings, tr("nedit.showMatching"), ShowMatchingStyle::Delimiter);
+	searchMethod      = ReadEnum(settings, tr("nedit.searchMethod"), SearchType::Literal);
+	truncSubstitution = ReadEnum(settings, tr("nedit.truncSubstitution"), TruncSubstitution::Fail);
 
 	wrapMargin             = settings.value(tr("nedit.wrapMargin"), 0).toInt();
 	autoSave               = settings.value(tr("nedit.autoSave"), true).toBool();
@@ -355,7 +355,7 @@ void loadPreferences(bool isServer) {
 	tabDistance                  = settings.value(tr("nedit.tabDistance"), 8).toInt();
 	emulateTabs                  = settings.value(tr("nedit.emulateTabs"), 0).toInt();
 	insertTabs                   = settings.value(tr("nedit.insertTabs"), true).toBool();
-	fontName                     = settings.value(tr("nedit.textFont"), defaultTextFont()).toString();
+	fontName                     = settings.value(tr("nedit.textFont"), DefaultTextFont()).toString();
 	shell                        = settings.value(tr("nedit.shell"), QLatin1String("DEFAULT")).toString();
 	geometry                     = settings.value(tr("nedit.geometry"), QString()).toString();
 	tagFile                      = settings.value(tr("nedit.tagFile"), QString()).toString();
@@ -382,7 +382,7 @@ void loadPreferences(bool isServer) {
 	honorSymlinks                = settings.value(tr("nedit.honorSymlinks"), true).toBool();
 
 	if (isServer && serverName.isEmpty()) {
-		serverName = randomString(8);
+		serverName = RandomString(8);
 	}
 
 	if (includePaths.isEmpty()) {
@@ -399,7 +399,7 @@ void loadPreferences(bool isServer) {
  *
  * @note This function assumes that settings have already been loaded.
  */
-void importSettings(const QString &filename) {
+void Import(const QString &filename) {
 	if (!settingsLoaded_) {
 		qWarning("NEdit: Warning, importing while no previous settings loaded!");
 	}
@@ -414,11 +414,11 @@ void importSettings(const QString &filename) {
 	smartIndentInit       = settings.value(tr("nedit.smartIndentInit"), smartIndentInit).toString();
 	smartIndentInitCommon = settings.value(tr("nedit.smartIndentInitCommon"), smartIndentInitCommon).toString();
 
-	autoWrap          = readEnum(settings, tr("nedit.autoWrap"), autoWrap);
-	autoIndent        = readEnum(settings, tr("nedit.autoIndent"), autoIndent);
-	showMatching      = readEnum(settings, tr("nedit.showMatching"), showMatching);
-	searchMethod      = readEnum(settings, tr("nedit.searchMethod"), searchMethod);
-	truncSubstitution = readEnum(settings, tr("nedit.truncSubstitution"), truncSubstitution);
+	autoWrap          = ReadEnum(settings, tr("nedit.autoWrap"), autoWrap);
+	autoIndent        = ReadEnum(settings, tr("nedit.autoIndent"), autoIndent);
+	showMatching      = ReadEnum(settings, tr("nedit.showMatching"), showMatching);
+	searchMethod      = ReadEnum(settings, tr("nedit.searchMethod"), searchMethod);
+	truncSubstitution = ReadEnum(settings, tr("nedit.truncSubstitution"), truncSubstitution);
 
 	wrapMargin            = settings.value(tr("nedit.wrapMargin"), wrapMargin).toInt();
 	autoSave              = settings.value(tr("nedit.autoSave"), autoSave).toBool();
@@ -489,8 +489,8 @@ void importSettings(const QString &filename) {
  *
  * @return `true` if the preferences were saved successfully, `false` otherwise.
  */
-bool savePreferences() {
-	const QString filename = configFile();
+bool Save() {
+	const QString filename = ConfigFile();
 	QSettings settings(filename, QSettings::IniFormat);
 
 	settings.setValue(tr("nedit.shellCommands"), shellCommands);
@@ -501,11 +501,11 @@ bool savePreferences() {
 	settings.setValue(tr("nedit.smartIndentInit"), smartIndentInit);
 	settings.setValue(tr("nedit.smartIndentInitCommon"), smartIndentInitCommon);
 
-	writeEnum(settings, tr("nedit.autoWrap"), autoWrap);
-	writeEnum(settings, tr("nedit.autoIndent"), autoIndent);
-	writeEnum(settings, tr("nedit.showMatching"), showMatching);
-	writeEnum(settings, tr("nedit.searchMethod"), searchMethod);
-	writeEnum(settings, tr("nedit.truncSubstitution"), truncSubstitution);
+	WriteEnum(settings, tr("nedit.autoWrap"), autoWrap);
+	WriteEnum(settings, tr("nedit.autoIndent"), autoIndent);
+	WriteEnum(settings, tr("nedit.showMatching"), showMatching);
+	WriteEnum(settings, tr("nedit.searchMethod"), searchMethod);
+	WriteEnum(settings, tr("nedit.truncSubstitution"), truncSubstitution);
 
 	settings.setValue(tr("nedit.wrapMargin"), wrapMargin);
 	settings.setValue(tr("nedit.autoSave"), autoSave);

@@ -742,9 +742,9 @@ int main(int argc, char *argv[]) {
 	// Write the INI file...
 	// this has the side effect of creating the configuration directory as well
 	// making it so we don't have to try extra hard to make SaveTheme work :-)
-	Settings::savePreferences();
+	Settings::Save();
 
 	// Write the theme XML file
-	const QString themeFilename = Settings::themeFile();
+	const QString themeFilename = Settings::ThemeFile();
 	SaveTheme(themeFilename, styles);
 }

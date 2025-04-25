@@ -77,8 +77,8 @@ Main::Main(const QStringList &args) {
 	QPointer<DocumentWidget> lastFile;
 
 	// Enable a Qt style sheet if present
-	const QString styleFile = Settings::styleFile();
-	QFile file(styleFile);
+	const QString StyleFile = Settings::StyleFile();
+	QFile file(StyleFile);
 	if (file.open(QIODevice::ReadOnly)) {
 		qApp->setStyleSheet(QString::fromUtf8(file.readAll()));
 		file.close();

@@ -113,7 +113,7 @@ QString copyMacroToEnd(Input &in) {
 }
 
 QString writeMacroMenuYaml(const std::vector<MenuData> &menuItems) {
-	const QString filename = Settings::macroMenuFile();
+	const QString filename = Settings::MactoMenuFile();
 
 	try {
 		YAML::Emitter out;
@@ -152,7 +152,7 @@ QString writeMacroMenuYaml(const std::vector<MenuData> &menuItems) {
 }
 
 QString writeShellMenuYaml(const std::vector<MenuData> &menuItems) {
-	const QString filename = Settings::shellMenuFile();
+	const QString filename = Settings::ShellMenuFile();
 
 	try {
 		YAML::Emitter out;
@@ -228,7 +228,7 @@ QString writeShellMenuYaml(const std::vector<MenuData> &menuItems) {
 }
 
 QString writeContextMenuYaml(const std::vector<MenuData> &menuItems) {
-	const QString filename = Settings::contextMenuFile();
+	const QString filename = Settings::ContextMenuFile();
 
 	try {
 		YAML::Emitter out;
@@ -407,7 +407,7 @@ std::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
 void loadMacroMenuYaml(std::vector<MenuData> &menuItems) {
 	try {
 		std::vector<YAML::Node> menu;
-		const QString filename = Settings::macroMenuFile();
+		const QString filename = Settings::MactoMenuFile();
 		if (QFileInfo::exists(filename)) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
@@ -457,7 +457,7 @@ void loadMacroMenuYaml(std::vector<MenuData> &menuItems) {
 void loadShellMenuYaml(std::vector<MenuData> &menuItems) {
 	try {
 		std::vector<YAML::Node> menu;
-		const QString filename = Settings::shellMenuFile();
+		const QString filename = Settings::ShellMenuFile();
 		if (QFileInfo::exists(filename)) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
@@ -546,7 +546,7 @@ void loadShellMenuYaml(std::vector<MenuData> &menuItems) {
 void loadContextMenuYaml(std::vector<MenuData> &menuItems) {
 	try {
 		std::vector<YAML::Node> menu;
-		const QString filename = Settings::contextMenuFile();
+		const QString filename = Settings::ContextMenuFile();
 		if (QFileInfo::exists(filename)) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
