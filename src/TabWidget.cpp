@@ -4,9 +4,9 @@
 #include <QToolButton>
 
 /**
- * @brief
+ * @brief TabWidget constructor.
  *
- * @param parent
+ * @param parent The parent widget for this TabWidget.
  */
 TabWidget::TabWidget(QWidget *parent)
 	: QTabWidget(parent) {
@@ -19,7 +19,8 @@ TabWidget::TabWidget(QWidget *parent)
 }
 
 /**
- * @brief
+ * @brief Handles the insertion of a new tab.
+ * Emits a signal to notify that the tab count has changed.
  */
 void TabWidget::tabInserted(int index) {
 	Q_EMIT tabCountChanged(count());
@@ -27,7 +28,8 @@ void TabWidget::tabInserted(int index) {
 }
 
 /**
- * @brief
+ * @brief Handles the removal of a tab.
+ * Emits a signal to notify that the tab count has changed.
  */
 void TabWidget::tabRemoved(int index) {
 	Q_EMIT tabCountChanged(count());

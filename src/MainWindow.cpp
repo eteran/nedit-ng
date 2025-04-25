@@ -3550,7 +3550,7 @@ void MainWindow::action_Unload_Tips_File(DocumentWidget *document, const QString
 	Q_UNUSED(document)
 	emit_event("unload_tips_file", filename);
 
-	if (Tags::deleteTagsFile(filename, Tags::SearchMode::TIP, /*force_unload=*/true)) {
+	if (Tags::DeleteTagsFile(filename, Tags::SearchMode::TIP, /*force_unload=*/true)) {
 		for (MainWindow *window : MainWindow::allWindows()) {
 			window->updateTipsFileMenu();
 		}
@@ -3568,7 +3568,7 @@ void MainWindow::action_Unload_Tags_File(DocumentWidget *document, const QString
 	Q_UNUSED(document)
 	emit_event("unload_tags_file", filename);
 
-	if (Tags::deleteTagsFile(filename, Tags::SearchMode::TAG, /*force_unload=*/true)) {
+	if (Tags::DeleteTagsFile(filename, Tags::SearchMode::TAG, /*force_unload=*/true)) {
 		for (MainWindow *window : MainWindow::allWindows()) {
 			window->updateTagsFileMenu();
 		}
@@ -3586,7 +3586,7 @@ void MainWindow::action_Load_Tips_File(DocumentWidget *document, const QString &
 	Q_UNUSED(document)
 	emit_event("load_tips_file", filename);
 
-	if (!Tags::addTagsFile(filename, Tags::SearchMode::TIP)) {
+	if (!Tags::AddTagsFile(filename, Tags::SearchMode::TIP)) {
 		QMessageBox::warning(
 			this,
 			tr("Error Reading File"),
@@ -3629,7 +3629,7 @@ void MainWindow::action_Load_Tags_File(DocumentWidget *document, const QString &
 
 	emit_event("load_tags_file", filename);
 
-	if (!Tags::addTagsFile(filename, Tags::SearchMode::TAG)) {
+	if (!Tags::AddTagsFile(filename, Tags::SearchMode::TAG)) {
 		QMessageBox::warning(
 			document,
 			tr("Error Reading File"),

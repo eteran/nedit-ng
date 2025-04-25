@@ -364,10 +364,10 @@ void translatePrefFormats(uint32_t fileVer) {
 		loadLanguageModesString(Settings::languageModes);
 	}
 	if (!Settings::smartIndentInit.isNull()) {
-		SmartIndent::loadSmartIndentString(Settings::smartIndentInit);
+		SmartIndent::LoadSmartIndentString(Settings::smartIndentInit);
 	}
 	if (!Settings::smartIndentInitCommon.isNull()) {
-		SmartIndent::loadSmartIndentCommonString(Settings::smartIndentInitCommon);
+		SmartIndent::LoadSmartIndentCommonString(Settings::smartIndentInitCommon);
 	}
 
 	Theme::load();
@@ -511,8 +511,8 @@ void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 	Settings::bgMenuCommands        = write_bg_menu_commands_string();
 	Settings::highlightPatterns     = Highlight::WriteHighlightString();
 	Settings::languageModes         = WriteLanguageModesString();
-	Settings::smartIndentInit       = SmartIndent::writeSmartIndentString();
-	Settings::smartIndentInitCommon = SmartIndent::writeSmartIndentCommonString();
+	Settings::smartIndentInit       = SmartIndent::WriteSmartIndentString();
+	Settings::smartIndentInitCommon = SmartIndent::WriteSmartIndentCommonString();
 
 	if (!Settings::Save()) {
 		QMessageBox::warning(

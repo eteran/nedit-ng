@@ -31,16 +31,13 @@ QString CommonMacros;
 namespace {
 
 /**
- * Read a macro (arbitrary text terminated by the macro end boundary string)
- * trim off added tabs and return the string. Returns QString() if the macro
- * end boundary string is not found.
+ * @brief Read a macro (arbitrary text terminated by the macro end boundary string)
+ * trim off added tabs and return the string.
  *
- * @brief
- *
- * @param in
- * @return
+ * @param in Input object containing the macro text.
+ * @return The macro text with leading tabs removed, or an empty string if the macro end boundary is not found.
  */
-QString readSmartIndentMacro(Input &in) {
+QString ReadSmartIndentMacro(Input &in) {
 
 	static const auto MacroEndBoundary = QLatin1String("--End-of-Macro--");
 
@@ -66,14 +63,14 @@ QString readSmartIndentMacro(Input &in) {
 }
 
 /**
- * @brief
+ * @brief Check if the given indent specification is the default one for its language.
  *
- * @param indentSpec
- * @return
+ * @param indentSpec The indent specification to check.
+ * @return `true` if the indent specification is the default for its language, `false` otherwise.
  */
-bool isDefaultIndentSpec(const SmartIndentEntry *indentSpec) {
+bool IsDefaultIndentSpec(const SmartIndentEntry *indentSpec) {
 
-	if (const SmartIndentEntry *spec = findDefaultIndentSpec(indentSpec->language)) {
+	if (const SmartIndentEntry *spec = FindDefaultIndentSpec(indentSpec->language)) {
 		return (*spec == *indentSpec);
 	}
 
@@ -81,11 +78,11 @@ bool isDefaultIndentSpec(const SmartIndentEntry *indentSpec) {
 }
 
 /**
- * @brief
+ * @brief Load the default smart indent specifications from the resource file.
  *
- * @return
+ * @return A vector of `SmartIndentEntry` objects containing the default indent specifications.
  */
-std::vector<SmartIndentEntry> loadDefaultIndentSpecs() {
+std::vector<SmartIndentEntry> LoadDefaultIndentSpecs() {
 	static QByteArray defaultIndentRules = LoadResource(QLatin1String("DefaultSmartIndent.yaml"));
 	static YAML::Node indentRules        = YAML::Load(defaultIndentRules.data());
 
@@ -136,7 +133,7 @@ std::vector<SmartIndentEntry> loadDefaultIndentSpecs() {
  *
  * @return
  */
-QString loadDefaultCommonMacros() {
+QString LoadDefaultCommonMacros() {
 	static QByteArray defaultIndentRules = LoadResource(QLatin1String("DefaultSmartIndent.yaml"));
 	static YAML::Node indentRules        = YAML::Load(defaultIndentRules.data());
 
@@ -158,13 +155,13 @@ QString loadDefaultCommonMacros() {
  * @param language
  * @return
  */
-const SmartIndentEntry *findDefaultIndentSpec(const QString &language) {
+const SmartIndentEntry *FindDefaultIndentSpec(const QString &language) {
 
 	if (language.isNull()) {
 		return nullptr;
 	}
 
-	static const std::vector<SmartIndentEntry> defaultSpecs = loadDefaultIndentSpecs();
+	static const std::vector<SmartIndentEntry> defaultSpecs = LoadDefaultIndentSpecs();
 
 	auto it = std::find_if(defaultSpecs.begin(), defaultSpecs.end(), [&language](const SmartIndentEntry &spec) {
 		return language == spec.language;
@@ -180,8 +177,8 @@ const SmartIndentEntry *findDefaultIndentSpec(const QString &language) {
 /*
 ** Returns `true` if there are smart indent macros for a named language
 */
-bool smartIndentMacrosAvailable(const QString &languageModeName) {
-	return findIndentSpec(languageModeName) != nullptr;
+bool SmartIndentMacrosAvailable(const QString &languageModeName) {
+	return FindIndentSpec(languageModeName) != nullptr;
 }
 
 /**
@@ -190,7 +187,7 @@ bool smartIndentMacrosAvailable(const QString &languageModeName) {
  * @param string
  * @return
  */
-void loadSmartIndentString(const QString &string) {
+void LoadSmartIndentString(const QString &string) {
 
 	struct ParseError {
 		QString message;
@@ -215,7 +212,7 @@ void loadSmartIndentString(const QString &string) {
 				if (key == "common") {
 					CommonMacros = value.as<QString>();
 					if (CommonMacros == QLatin1String("Default")) {
-						CommonMacros = loadDefaultCommonMacros();
+						CommonMacros = LoadDefaultCommonMacros();
 					}
 				} else if (key == "languages") {
 					for (auto lang_it = value.begin(); lang_it != value.end(); ++lang_it) {
@@ -240,7 +237,7 @@ void loadSmartIndentString(const QString &string) {
 						} else if (entries.as<std::string>() == "Default") {
 							/* look for "Default" keyword, and if it's there, return the default
 							   smart indent macros */
-							const SmartIndentEntry *spec = findDefaultIndentSpec(is.language);
+							const SmartIndentEntry *spec = FindDefaultIndentSpec(is.language);
 							if (!spec) {
 								Raise<ParseError>(tr("no default smart indent macro for language: %1").arg(is.language));
 							}
@@ -291,7 +288,7 @@ void loadSmartIndentString(const QString &string) {
 				if (in.match(QLatin1String("Default"))) {
 					/* look for "Default" keyword, and if it's there, return the default
 					   smart indent macros */
-					const SmartIndentEntry *spec = findDefaultIndentSpec(is.language);
+					const SmartIndentEntry *spec = FindDefaultIndentSpec(is.language);
 					if (!spec) {
 						Raise<ParseError>(tr("no default smart indent macro for language: %1").arg(is.language));
 					}
@@ -301,19 +298,19 @@ void loadSmartIndentString(const QString &string) {
 
 					/* read the initialization macro (arbitrary text terminated by the
 					   macro end boundary string) */
-					is.initMacro = readSmartIndentMacro(in);
+					is.initMacro = ReadSmartIndentMacro(in);
 					if (is.initMacro.isNull()) {
 						Raise<ParseError>(tr("no end boundary to initialization macro"));
 					}
 
 					// read the newline macro
-					is.newlineMacro = readSmartIndentMacro(in);
+					is.newlineMacro = ReadSmartIndentMacro(in);
 					if (is.newlineMacro.isNull()) {
 						Raise<ParseError>(tr("no end boundary to newline macro"));
 					}
 
 					// read the modify macro
-					is.modMacro = readSmartIndentMacro(in);
+					is.modMacro = ReadSmartIndentMacro(in);
 					if (is.modMacro.isNull()) {
 						Raise<ParseError>(tr("no end boundary to modify macro"));
 					}
@@ -344,7 +341,7 @@ void loadSmartIndentString(const QString &string) {
  *
  * @param string
  */
-void loadSmartIndentCommonString(const QString &string) {
+void LoadSmartIndentCommonString(const QString &string) {
 
 	if (string != QLatin1String("*")) {
 		Input in(&string);
@@ -355,7 +352,7 @@ void loadSmartIndentCommonString(const QString &string) {
 		/* look for "Default" keyword, and if it's there, return the default
 		   smart common macro */
 		if (in.match(QLatin1String("Default"))) {
-			CommonMacros = loadDefaultCommonMacros();
+			CommonMacros = LoadDefaultCommonMacros();
 			return;
 		}
 
@@ -365,18 +362,20 @@ void loadSmartIndentCommonString(const QString &string) {
 }
 
 /**
- * @brief
+ * @brief Writes the smart indent specifications to a YAML file.
  *
- * @return
+ * @return The string that should be written to the global preferences file.
+ *         If the specifications are successfully written, it returns "*".
+ *         If an error occurs during writing, it returns an empty string.
  */
-QString writeSmartIndentString() {
+QString WriteSmartIndentString() {
 	const QString filename = Settings::SmartIndentFile();
 	try {
 		YAML::Emitter out;
 
 		out << YAML::BeginMap;
 
-		static const QString defaults = loadDefaultCommonMacros();
+		static const QString defaults = LoadDefaultCommonMacros();
 		if (CommonMacros == defaults) {
 			out << YAML::Key << "common" << YAML::Value << "Default";
 		} else {
@@ -388,7 +387,7 @@ QString writeSmartIndentString() {
 		out << YAML::BeginMap;
 		for (const SmartIndentEntry &sis : SmartIndentSpecs) {
 			out << YAML::Key << sis.language.toUtf8().data() << YAML::Value;
-			if (isDefaultIndentSpec(&sis)) {
+			if (IsDefaultIndentSpec(&sis)) {
 				out << "Default";
 			} else {
 				out << YAML::BeginMap;
@@ -425,21 +424,23 @@ QString writeSmartIndentString() {
 }
 
 /**
- * @brief
+ * @brief Returns a common smart indent string.
  *
- * @return
+ * @return A string representing the common smart indent macros.
+ *         If the common macros are not set, it returns a default string "*".
  */
-QString writeSmartIndentCommonString() {
+QString WriteSmartIndentCommonString() {
 	return QLatin1String("*");
 }
 
 /**
- * @brief
+ * @brief Find the smart indent specification for a given language mode.
  *
- * @param language
- * @return
+ * @param language The language mode to search for in the smart indent specifications.
+ * @return The `SmartIndentEntry` for the specified language mode,
+ * or `nullptr` if no specification is found.
  */
-const SmartIndentEntry *findIndentSpec(const QString &language) {
+const SmartIndentEntry *FindIndentSpec(const QString &language) {
 
 	if (language.isNull()) {
 		return nullptr;
@@ -456,24 +457,31 @@ const SmartIndentEntry *findIndentSpec(const QString &language) {
 	return nullptr;
 }
 
-/*
-** Returns `true` if there are smart indent macros, or potential macros
-** not yet committed in the smart indent dialog for a language mode,
-*/
+/**
+ * @brief Check if there are smart indent macros for a given language mode.
+ *
+ * @param languageMode The language mode to check for smart indent macros.
+ * @return `true` if there are smart indent macros for the language mode,
+ * or potential macros not yet committed in the smart indent dialog for a
+ * language mode, `false` otherwise.
+ */
 bool LMHasSmartIndentMacros(const QString &languageMode) {
-	if (findIndentSpec(languageMode) != nullptr) {
+	if (FindIndentSpec(languageMode) != nullptr) {
 		return true;
 	}
 
 	return SmartIndentDialog && SmartIndentDialog->languageMode() == languageMode;
 }
 
-/*
-** Change the language mode name of smart indent macro sets for language
-** "oldName" to "newName" in both the stored macro sets, and the pattern set
-** currently being edited in the dialog.
-*/
-void renameSmartIndentMacros(const QString &oldName, const QString &newName) {
+/**
+ * @brief Rename smart indent macros for a specific language mode.
+ * This function updates the language name in the smart indent specifications
+ * and the dialog if it is currently open.
+ *
+ * @param oldName The old language mode name to be replaced.
+ * @param newName The new language mode name to set.
+ */
+void RenameSmartIndentMacros(const QString &oldName, const QString &newName) {
 
 	auto it = std::find_if(SmartIndentSpecs.begin(), SmartIndentSpecs.end(), [&oldName](const SmartIndentEntry &entry) {
 		return entry.language == oldName;
@@ -490,11 +498,11 @@ void renameSmartIndentMacros(const QString &oldName, const QString &newName) {
 	}
 }
 
-/*
-** If a smart indent dialog is up, ask to have the option menu for
-** choosing language mode updated.
-*/
-void updateLangModeMenuSmartIndent() {
+/**
+ * @brief Update the language mode menu in the smart indent dialog.
+ * If the dialog is open, it updates the language modes available for smart indent.
+ */
+void UpdateLangModeMenuSmartIndent() {
 
 	if (SmartIndentDialog) {
 		SmartIndentDialog->updateLanguageModes();

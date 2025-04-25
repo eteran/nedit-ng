@@ -9,6 +9,14 @@
 
 class QLineEdit;
 
+/**
+ * @class KeySequenceEdit
+ * @brief The KeySequenceEdit widget allows to input a QKeySequence.
+ *
+ * This widget lets the user choose a QKeySequence, which is usually used as
+ * a shortcut. The recording is initiated when the widget receives the focus
+ * and ends one second after the user releases the last key.
+ */
 class KeySequenceEdit final : public QWidget {
 	Q_OBJECT
 	Q_PROPERTY(QKeySequence keySequence READ keySequence WRITE setKeySequence NOTIFY keySequenceChanged USER true)

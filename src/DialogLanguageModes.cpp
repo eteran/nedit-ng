@@ -280,14 +280,14 @@ std::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity)
 	const QString tipsFile = ui.editCallTips->text();
 	if (!tipsFile.isEmpty()) {
 		// Ensure that AddTagsFile will work
-		if (!Tags::addTagsFile(tipsFile, Tags::SearchMode::TIP)) {
+		if (!Tags::AddTagsFile(tipsFile, Tags::SearchMode::TIP)) {
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Error reading Calltips"), tr("Can't read default calltips file(s):\n  \"%1\"\n").arg(tipsFile));
 			}
 			return {};
 		}
 
-		if (!Tags::deleteTagsFile(tipsFile, Tags::SearchMode::TIP, false)) {
+		if (!Tags::DeleteTagsFile(tipsFile, Tags::SearchMode::TIP, false)) {
 			qCritical("NEdit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"", qPrintable(tipsFile));
 		}
 	}
@@ -481,7 +481,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 					dialogSyntaxPatterns_->RenameHighlightPattern(oldName, newName);
 				}
 
-				SmartIndent::renameSmartIndentMacros(oldName, newName);
+				SmartIndent::RenameSmartIndentMacros(oldName, newName);
 
 				// make a copy of the language mode, and set the new name
 				LanguageMode newLanguageMode = *lang;
@@ -513,7 +513,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 		for (DocumentWidget *currentDocument : DocumentWidget::allDocuments()) {
 			const size_t currentLanguageMode = currentDocument->getLanguageMode();
 			if (currentLanguageMode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[currentLanguageMode].defTipsFile.isNull()) {
-				Tags::addTagsFile(Preferences::LanguageModes[currentLanguageMode].defTipsFile, Tags::SearchMode::TIP);
+				Tags::AddTagsFile(Preferences::LanguageModes[currentLanguageMode].defTipsFile, Tags::SearchMode::TIP);
 			}
 		}
 
@@ -523,7 +523,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 		}
 
 		// The same for the smart indent macro dialog
-		SmartIndent::updateLangModeMenuSmartIndent();
+		SmartIndent::UpdateLangModeMenuSmartIndent();
 
 		// Note that preferences have been changed
 		Preferences::MarkPrefsChanged();

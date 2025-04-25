@@ -524,7 +524,7 @@ DocumentWidget *DocumentWidget::editExistingFile(DocumentWidget *inDocument, con
 	auto fullname = QStringLiteral("%1%2").arg(path, name);
 
 	if (Preferences::GetPrefAlwaysCheckRelTagsSpecs()) {
-		Tags::addRelTagsFile(Preferences::GetPrefTagFile(), path, Tags::SearchMode::TAG);
+		Tags::AddRelativeTagsFile(Preferences::GetPrefTagFile(), path, Tags::SearchMode::TAG);
 		for (MainWindow *window : MainWindow::allWindows()) {
 			window->updateTagsFileMenu();
 		}
@@ -1270,7 +1270,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
 	// Decref oldMode's default calltips file if needed
 	if (oldMode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[oldMode].defTipsFile.isNull()) {
-		Tags::deleteTagsFile(Preferences::LanguageModes[oldMode].defTipsFile, Tags::SearchMode::TIP, false);
+		Tags::DeleteTagsFile(Preferences::LanguageModes[oldMode].defTipsFile, Tags::SearchMode::TIP, false);
 	}
 
 	// Set delimiters for all text widgets
@@ -1297,7 +1297,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 	const QString oldlanguageModeName = Preferences::LanguageModeName(oldMode);
 
 	const bool emTabDistIsDef   = oldEmTabDist == Preferences::GetPrefEmTabDist(oldMode);
-	const bool indentStyleIsDef = info_->indentStyle == Preferences::GetPrefAutoIndent(oldMode) || (Preferences::GetPrefAutoIndent(oldMode) == IndentStyle::Smart && info_->indentStyle == IndentStyle::Auto && !SmartIndent::smartIndentMacrosAvailable(Preferences::LanguageModeName(oldMode)));
+	const bool indentStyleIsDef = info_->indentStyle == Preferences::GetPrefAutoIndent(oldMode) || (Preferences::GetPrefAutoIndent(oldMode) == IndentStyle::Smart && info_->indentStyle == IndentStyle::Auto && !SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(oldMode)));
 	const bool highlightIsDef   = highlightSyntax_ == Preferences::GetPrefHighlightSyntax() || (Preferences::GetPrefHighlightSyntax() && Highlight::FindPatternSet(oldlanguageModeName) == nullptr);
 	const WrapStyle wrapMode    = wrapModeIsDef || forceDefaults ? Preferences::GetPrefWrap(mode) : info_->wrapMode;
 	const int tabDist           = tabDistIsDef || forceDefaults ? Preferences::GetPrefTabDist(mode) : info_->buffer->BufGetTabDistance();
@@ -1310,7 +1310,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 	   whether patterns/macros are available */
 	const QString languageModeName   = Preferences::LanguageModeName(mode);
 	const bool haveHighlightPatterns = Highlight::FindPatternSet(languageModeName);
-	const bool haveSmartIndentMacros = SmartIndent::smartIndentMacrosAvailable(Preferences::LanguageModeName(mode));
+	const bool haveSmartIndentMacros = SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(mode));
 	const bool topDocument           = isTopDocument();
 
 	if (topDocument) {
@@ -1351,7 +1351,7 @@ void DocumentWidget::reapplyLanguageMode(size_t mode, bool forceDefaults) {
 
 	// Load calltips files for new mode
 	if (mode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[mode].defTipsFile.isNull()) {
-		Tags::addTagsFile(Preferences::LanguageModes[mode].defTipsFile, Tags::SearchMode::TIP);
+		Tags::AddTagsFile(Preferences::LanguageModes[mode].defTipsFile, Tags::SearchMode::TIP);
 	}
 
 	// Add/remove language specific menu items
@@ -3569,7 +3569,7 @@ void DocumentWidget::refreshMenuToggleStates() {
 	no_signals(win->ui.action_Matching_Syntax)->setChecked(info_->matchSyntaxBased);
 	no_signals(win->ui.action_Read_Only)->setChecked(info_->lockReasons.isUserLocked());
 
-	win->ui.action_Indent_Smart->setEnabled(SmartIndent::smartIndentMacrosAvailable(Preferences::LanguageModeName(languageMode_)));
+	win->ui.action_Indent_Smart->setEnabled(SmartIndent::SmartIndentMacrosAvailable(Preferences::LanguageModeName(languageMode_)));
 	win->ui.action_Highlight_Syntax->setEnabled(languageMode_ != PLAIN_LANGUAGE_MODE);
 
 	setAutoIndent(info_->indentStyle);
@@ -4040,7 +4040,7 @@ int DocumentWidget::findDefinitionHelperCommon(TextArea *area, const QString &va
 		if (status == 0) {
 			// Didn't find any matches
 			if (Tags::searchMode == Tags::SearchMode::TIP_FROM_TAG || Tags::searchMode == Tags::SearchMode::TIP) {
-				Tags::tagsShowCalltip(area, tr("No match for \"%1\" in calltips or tags.").arg(Tags::tagName));
+				Tags::TagsShowCalltip(area, tr("No match for \"%1\" in calltips or tags.").arg(Tags::tagName));
 			} else {
 				QMessageBox::warning(this, tr("Tags"), tr("\"%1\" not found in tags %2").arg(Tags::tagName, (Tags::TagsFileList.size() > 1) ? tr("files") : tr("file")));
 			}
@@ -4334,7 +4334,7 @@ void DocumentWidget::beginSmartIndent(Verbosity verbosity) {
 	}
 
 	// Look up the appropriate smart-indent macros for the language
-	const SmartIndentEntry *indentMacros = SmartIndent::findIndentSpec(modeName);
+	const SmartIndentEntry *indentMacros = SmartIndent::FindIndentSpec(modeName);
 	if (!indentMacros) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(
@@ -4784,7 +4784,7 @@ void DocumentWidget::unloadLanguageModeTipsFile() {
 
 	const size_t mode = languageMode_;
 	if (mode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[mode].defTipsFile.isNull()) {
-		Tags::deleteTagsFile(Preferences::LanguageModes[mode].defTipsFile, Tags::SearchMode::TIP, false);
+		Tags::DeleteTagsFile(Preferences::LanguageModes[mode].defTipsFile, Tags::SearchMode::TIP, false);
 	}
 }
 
@@ -7431,7 +7431,7 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 
 	Tags::tagName = string;
 
-	const QList<Tags::Tag> tags = Tags::lookupTag(string, Tags::searchMode);
+	const QList<Tags::Tag> tags = Tags::LookupTag(string, Tags::searchMode);
 
 	// First look up all of the matching tags
 	for (const Tags::Tag &tag : tags) {
@@ -7550,7 +7550,7 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 	if (Tags::searchMode == Tags::SearchMode::TAG) {
 		editTaggedLocation(area, 0);
 	} else {
-		Tags::showMatchingCalltip(this, area, 0);
+		Tags::ShowMatchingCalltip(this, area, 0);
 	}
 
 	return 1;
@@ -7605,7 +7605,7 @@ int DocumentWidget::showTipString(const QString &text, bool anchored, int pos, b
 
 	// If this isn't a lookup request, just display it.
 	if (!lookup) {
-		return Tags::tagsShowCalltip(win->lastFocus(), text);
+		return Tags::TagsShowCalltip(win->lastFocus(), text);
 	}
 
 	return findDefinitionHelperCommon(win->lastFocus(), text, search_type);
@@ -7654,7 +7654,7 @@ void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 	int64_t endPos;
 
 	// search for the tags file search string in the newly opened file
-	if (!Tags::fakeRegExSearch(documentToSearch->buffer()->BufAsString(), Tags::tagSearch[i], &startPos, &endPos)) {
+	if (!Tags::FakeRegexSearch(documentToSearch->buffer()->BufAsString(), Tags::tagSearch[i], &startPos, &endPos)) {
 		QMessageBox::warning(
 			this,
 			tr("Tag Error"),

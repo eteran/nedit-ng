@@ -47,7 +47,7 @@ DialogSmartIndent::DialogSmartIndent(DocumentWidget *document, QWidget *parent, 
 	setLanguageMode(languageMode);
 
 	// Fill in the dialog information for the selected language mode
-	setSmartIndentDialogData(SmartIndent::findIndentSpec(languageMode_));
+	setSmartIndentDialogData(SmartIndent::FindIndentSpec(languageMode_));
 }
 
 /**
@@ -98,7 +98,7 @@ void DialogSmartIndent::setLanguageMode(const QString &s) {
  */
 void DialogSmartIndent::on_comboLanguageMode_currentIndexChanged(const QString &text) {
 	languageMode_ = text;
-	setSmartIndentDialogData(SmartIndent::findIndentSpec(text));
+	setSmartIndentDialogData(SmartIndent::FindIndentSpec(text));
 }
 
 /**
@@ -182,7 +182,7 @@ void DialogSmartIndent::buttonDelete_clicked() {
  */
 void DialogSmartIndent::buttonRestore_clicked() {
 
-	const SmartIndentEntry *spec = SmartIndent::findDefaultIndentSpec(languageMode_);
+	const SmartIndentEntry *spec = SmartIndent::FindDefaultIndentSpec(languageMode_);
 	if (!spec) {
 		QMessageBox::warning(
 			this,

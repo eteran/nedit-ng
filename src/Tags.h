@@ -21,7 +21,7 @@ Q_DECLARE_NAMESPACE_TR(Tags)
 constexpr int MaxDupTags = 100;
 
 // file_type and search_type arguments are to select between tips and tags,
-// and should be one of TAG or TIP.  TIP_FROM_TAG is for ShowTipString.
+// and should be one of TAG or TIP. TIP_FROM_TAG is for ShowTipString.
 enum class SearchMode {
 	None = -1,
 	TAG,
@@ -58,18 +58,18 @@ enum CalltipToken {
 	TF_ERROR_EOF
 };
 
-QList<Tag> lookupTag(const QString &name, SearchMode mode);
-bool addRelTagsFile(const QString &tagSpec, const QString &windowPath, SearchMode mode);
-bool addTagsFile(const QString &tagSpec, SearchMode mode);
-bool deleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload);
-bool fakeRegExSearch(std::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos);
-int tagsShowCalltip(TextArea *area, const QString &text);
-void showMatchingCalltip(QWidget *parent, TextArea *area, int id);
+QList<Tag> LookupTag(const QString &name, SearchMode mode);
+bool AddRelativeTagsFile(const QString &tagSpec, const QString &windowPath, SearchMode mode);
+bool AddTagsFile(const QString &tagSpec, SearchMode mode);
+bool DeleteTagsFile(const QString &tagSpec, SearchMode mode, bool force_unload);
+bool FakeRegexSearch(std::string_view buffer, const QString &searchString, int64_t *startPos, int64_t *endPos);
+int TagsShowCalltip(TextArea *area, const QString &text);
+void ShowMatchingCalltip(QWidget *parent, TextArea *area, int id);
 
-QList<Tag> lookupTagFromList(std::deque<File> *FileList, const QString &name, SearchMode mode);
-QList<Tag> getTag(const QString &name, SearchMode mode);
-int addTag(const QString &name, const QString &file, size_t lang, const QString &search, int64_t posInf, const QString &path, int index);
-bool searchLine(const QString &line, const QRegularExpression &re);
+QList<Tag> LookupTagFromList(std::deque<File> *FileList, const QString &name, SearchMode mode);
+QList<Tag> GetTag(const QString &name, SearchMode mode);
+int AddTag(const QString &name, const QString &file, size_t lang, const QString &search, int64_t posInf, const QString &path, int index);
+bool SearchLine(const QString &line, const QRegularExpression &re);
 
 extern std::deque<File> TagsFileList; // list of loaded tags files
 extern std::deque<File> TipsFileList; // list of loaded calltips tag files
