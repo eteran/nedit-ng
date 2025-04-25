@@ -1474,7 +1474,7 @@ void DocumentWidget::setAutoIndent(IndentStyle indentStyle) {
  */
 void DocumentWidget::setAutoWrap(WrapStyle wrapStyle) {
 
-	emit_event("set_wrap_text", to_string(wrapStyle));
+	emit_event("set_wrap_text", ToString(wrapStyle));
 
 	const bool autoWrap = (wrapStyle == WrapStyle::Newline);
 	const bool contWrap = (wrapStyle == WrapStyle::Continuous);
@@ -3649,7 +3649,7 @@ void DocumentWidget::executeNewlineMacro(SmartIndentEvent *event) {
  */
 void DocumentWidget::setShowMatching(ShowMatchingStyle state) {
 
-	emit_event("set_show_matching", to_string(state));
+	emit_event("set_show_matching", ToString(state));
 
 	info_->showMatchingStyle = state;
 	if (!isTopDocument()) {

@@ -901,7 +901,7 @@ void MainWindow::action_New_triggered() {
  */
 void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
 
-	emit_event("new", to_string(mode));
+	emit_event("new", ToString(mode));
 
 	Q_ASSERT(document);
 
@@ -970,7 +970,7 @@ void MainWindow::action_Open_triggered() {
  */
 void MainWindow::action_Close(DocumentWidget *document, CloseMode mode) {
 
-	emit_event("close", to_string(mode));
+	emit_event("close", ToString(mode));
 	document->actionClose(mode);
 }
 
@@ -2783,7 +2783,7 @@ void MainWindow::action_Shift_Find() {
  */
 void MainWindow::action_Find_Again(DocumentWidget *document, Direction direction, WrapMode wrap) {
 
-	emit_event("find_again", to_string(direction), to_string(wrap));
+	emit_event("find_again", ToString(direction), ToString(wrap));
 
 	if (const QPointer<TextArea> area = lastFocus()) {
 		searchAndSelectSame(
@@ -2827,7 +2827,7 @@ void MainWindow::action_Shift_Find_Again() {
  */
 void MainWindow::action_Find_Selection(DocumentWidget *document, Direction direction, SearchType type, WrapMode wrap) {
 
-	emit_event("find_selection", to_string(direction), to_string(type), to_string(wrap));
+	emit_event("find_selection", ToString(direction), ToString(type), ToString(wrap));
 
 	if (const QPointer<TextArea> area = lastFocus()) {
 		searchForSelected(
@@ -3218,7 +3218,7 @@ void MainWindow::action_Shift_Replace_Find_Again(DocumentWidget *document) {
  */
 void MainWindow::action_Replace_Again(DocumentWidget *document, Direction direction, WrapMode wrap) {
 
-	emit_event("replace_again", to_string(direction), to_string(wrap));
+	emit_event("replace_again", ToString(direction), ToString(wrap));
 
 	if (document->checkReadOnly()) {
 		return;
@@ -3875,7 +3875,7 @@ void MainWindow::action_Show_Line_Numbers_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Set_Auto_Indent(DocumentWidget *document, IndentStyle state) {
-	emit_event("set_auto_indent", to_string(state));
+	emit_event("set_auto_indent", ToString(state));
 	document->setAutoIndent(state);
 }
 
@@ -3905,7 +3905,7 @@ void MainWindow::indentGroupTriggered(QAction *action) {
  * @param state
  */
 void MainWindow::action_Set_Auto_Wrap(DocumentWidget *document, WrapStyle state) {
-	emit_event("set_wrap_text", to_string(state));
+	emit_event("set_wrap_text", ToString(state));
 	document->setAutoWrap(state);
 }
 
@@ -5835,7 +5835,7 @@ bool MainWindow::eventFilter(QObject *object, QEvent *ev) {
  */
 void MainWindow::action_Find(DocumentWidget *document, const QString &string, Direction direction, SearchType type, WrapMode searchWrap) {
 
-	emit_event("find", string, to_string(direction), to_string(type), to_string(searchWrap));
+	emit_event("find", string, ToString(direction), ToString(type), ToString(searchWrap));
 
 	if (const QPointer<TextArea> area = lastFocus()) {
 		searchAndSelect(
@@ -5900,7 +5900,7 @@ void MainWindow::action_Find_Selection_triggered() {
  */
 void MainWindow::action_Replace(DocumentWidget *document, const QString &searchString, const QString &replaceString, Direction direction, SearchType type, WrapMode wrap) {
 
-	emit_event("replace", searchString, replaceString, to_string(direction), to_string(type), to_string(wrap));
+	emit_event("replace", searchString, replaceString, ToString(direction), ToString(type), ToString(wrap));
 
 	if (document->checkReadOnly()) {
 		return;
@@ -6002,7 +6002,7 @@ void MainWindow::action_Replace_triggered() {
  */
 void MainWindow::action_Replace_All(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType type) {
 
-	emit_event("replace_all", searchString, replaceString, to_string(type));
+	emit_event("replace_all", searchString, replaceString, ToString(type));
 
 	if (document->checkReadOnly()) {
 		return;
@@ -7045,7 +7045,7 @@ void MainWindow::searchForSelected(DocumentWidget *document, TextArea *area, Dir
  */
 void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType type) {
 
-	emit_event("replace_in_selection", searchString, replaceString, to_string(type));
+	emit_event("replace_in_selection", searchString, replaceString, ToString(type));
 
 	if (document->checkReadOnly()) {
 		return;

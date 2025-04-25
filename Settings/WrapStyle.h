@@ -2,7 +2,7 @@
 #ifndef WRAP_STYLE_H_
 #define WRAP_STYLE_H_
 
-#include "from_integer.h"
+#include "FromInteger.h"
 
 #include <QLatin1String>
 #include <QtDebug>
@@ -15,7 +15,7 @@ enum class WrapStyle : int {
 };
 
 template <>
-inline WrapStyle from_integer(int value) {
+inline WrapStyle FromInteger(int value) {
 	switch (value) {
 	case static_cast<int>(WrapStyle::Default):
 	case static_cast<int>(WrapStyle::None):
@@ -28,7 +28,7 @@ inline WrapStyle from_integer(int value) {
 	}
 }
 
-inline QLatin1String to_string(WrapStyle style) {
+inline QLatin1String ToString(WrapStyle style) {
 
 	switch (style) {
 	case WrapStyle::None:

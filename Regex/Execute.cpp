@@ -15,8 +15,8 @@
 
 namespace {
 
-bool match(uint8_t *prog, size_t *branch_index_param);
-bool attempt(Regex *prog, const char *string);
+bool Match(uint8_t *prog, size_t *branch_index_param);
+bool Attempt(Regex *prog, const char *string);
 
 /**
  * @brief Get the next pointer in the regex program.
@@ -26,7 +26,7 @@ bool attempt(Regex *prog, const char *string);
  *
  * @note The `next_ptr()` function can consume up to 30% of the time
  * during matching because it is called an immense number of times
- * (an average of 25 `next_ptr()` calls per `match()` call was witnessed
+ * (an average of 25 `next_ptr()` calls per `Match()` call was witnessed
  * for Perl syntax highlighting). Therefore it is well worth removing
  * some of the function call overhead by selectively inlining the `next_ptr()` calls.
  * Moreover, the inlined code can be simplified for matching because one of the tests,
@@ -133,7 +133,7 @@ uint32_t GreedyConsume(const char *input, uint32_t max, Pred pred) {
  *            If `max` is greater than zero, match up to `max` times.
  * @return The actual number of matches made.
  */
-uint32_t greedy(uint8_t *p, uint32_t max) {
+uint32_t Greedy(uint8_t *p, uint32_t max) {
 
 	uint32_t count = 0;
 
@@ -219,9 +219,9 @@ uint32_t greedy(uint8_t *p, uint32_t max) {
 		break;
 	default:
 		/* Called inappropriately.  Only atoms that are SIMPLE should generate
-		 * a call to greedy.  The above cases should cover all the atoms that
+		 * a call to Greedy.  The above cases should cover all the atoms that
 		 * are SIMPLE. */
-		reg_error("internal error #10 'greedy'");
+		reg_error("internal error #10 'Greedy'");
 		count = 0U; // Best we can do.
 	}
 
@@ -256,7 +256,7 @@ uint32_t greedy(uint8_t *p, uint32_t max) {
  * @param branch_index_param If not `nullptr`, this will be set to the index of the branch that matched.
  * @return `true` if the match is successful, `false` otherwise.
  */
-bool match(uint8_t *prog, size_t *branch_index_param) {
+bool Match(uint8_t *prog, size_t *branch_index_param) {
 
 	if (++eContext.Recursion_Count > RecursionLimit) {
 		// Prevent duplicate errors
@@ -284,7 +284,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 				do {
 					const char *save = eContext.Reg_Input;
 
-					if (match(OPERAND(scan), nullptr)) {
+					if (Match(OPERAND(scan), nullptr)) {
 						if (branch_index_param) {
 							*branch_index_param = branch_index_local;
 						}
@@ -646,15 +646,15 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 
 			if (lazy) {
 				if (min > 0) {
-					num_matched = greedy(next_op, min);
+					num_matched = Greedy(next_op, min);
 				}
 			} else {
-				num_matched = greedy(next_op, max);
+				num_matched = Greedy(next_op, max);
 			}
 
 			while (min <= num_matched && num_matched <= max) {
 				if (next_char == '\0' || (!EndOfString(eContext.Reg_Input) && static_cast<char>(next_char) == *eContext.Reg_Input)) {
-					if (match(next, nullptr)) {
+					if (Match(next, nullptr)) {
 						MATCH_RETURN(true);
 					}
 
@@ -663,7 +663,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 
 				// Couldn't or didn't match.
 				if (lazy) {
-					if (!greedy(next_op, 1)) {
+					if (!Greedy(next_op, 1)) {
 						MATCH_RETURN(false);
 					}
 
@@ -770,7 +770,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 			const char *saved_end  = eContext.End_Of_String;
 			eContext.End_Of_String = nullptr;
 
-			const bool answer = match(next, nullptr); // Does the look-ahead regex match?
+			const bool answer = Match(next, nullptr); // Does the look-ahead regex match?
 
 			CHECK_RECURSION_LIMIT();
 
@@ -840,7 +840,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 					break;
 				}
 
-				const bool answer = match(next, nullptr); // Does the look-behind regex match?
+				const bool answer = Match(next, nullptr); // Does the look-behind regex match?
 
 				CHECK_RECURSION_LIMIT();
 
@@ -906,7 +906,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 					eContext.Back_Ref_End[no]   = nullptr;
 				}
 
-				if (match(next, nullptr)) {
+				if (Match(next, nullptr)) {
 					/* Do not set 'Start_Ptr_Ptr' if some later invocation (think
 					   recursion) of the same parentheses already has. */
 
@@ -927,7 +927,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
 					eContext.Back_Ref_End[no] = save;
 				}
 
-				if (match(next, nullptr)) {
+				if (Match(next, nullptr)) {
 					/* Do not set 'End_Ptr_Ptr' if some later invocation of the
 					   same parentheses already has. */
 
@@ -964,7 +964,7 @@ bool match(uint8_t *prog, size_t *branch_index_param) {
  * @param string The input string to match against the regex program.
  * @return `true` if the match is successful, `false` otherwise.
  */
-bool attempt(Regex *prog, const char *string) {
+bool Attempt(Regex *prog, const char *string) {
 
 	size_t branch_index = 0; // Must be set to zero !
 
@@ -982,7 +982,7 @@ bool attempt(Regex *prog, const char *string) {
 	std::fill_n(prog->startp.begin(), eContext.Total_Paren + 1, nullptr);
 	std::fill_n(prog->endp.begin(), eContext.Total_Paren + 1, nullptr);
 
-	if (match((&prog->program[REGEX_START_OFFSET]), &branch_index)) {
+	if (Match((&prog->program[REGEX_START_OFFSET]), &branch_index)) {
 		prog->startp[0]  = string;
 		prog->endp[0]    = eContext.Reg_Input;     // <-- One char AFTER
 		prog->extentpBW  = eContext.Extent_Ptr_BW; //     matched string!
@@ -1102,7 +1102,7 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 	if (!reverse) { // Forward Search
 		if (re->anchor) {
 			// Search is anchored at BOL
-			if (attempt(re, start)) {
+			if (Attempt(re, start)) {
 				ret_val = true;
 				return checked_return(ret_val);
 			}
@@ -1110,7 +1110,7 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 			for (str = start; !EndOfString(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
 
 				if (*str == '\n') {
-					if (attempt(re, str + 1)) {
+					if (Attempt(re, str + 1)) {
 						ret_val = true;
 						break;
 					}
@@ -1125,7 +1125,7 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 			for (str = start; !EndOfString(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
 
 				if (*str == re->match_start) {
-					if (attempt(re, str)) {
+					if (Attempt(re, str)) {
 						ret_val = true;
 						break;
 					}
@@ -1138,7 +1138,7 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 		// General case
 		for (str = start; !EndOfString(str) && str != end && !eContext.Recursion_Limit_Exceeded; str++) {
 
-			if (attempt(re, str)) {
+			if (Attempt(re, str)) {
 				ret_val = true;
 				break;
 			}
@@ -1150,7 +1150,7 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 #else
 		if (!eContext.Recursion_Limit_Exceeded && !ret_val && EndOfString(str) && str != end) {
 #endif
-			if (attempt(re, str)) {
+			if (Attempt(re, str)) {
 				ret_val = true;
 			}
 		}
@@ -1169,14 +1169,14 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 		// Search is anchored at BOL
 		for (str = (end - 1); str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
 			if (*str == '\n') {
-				if (attempt(re, str + 1)) {
+				if (Attempt(re, str + 1)) {
 					ret_val = true;
 					return checked_return(ret_val);
 				}
 			}
 		}
 
-		if (!eContext.Recursion_Limit_Exceeded && attempt(re, start)) {
+		if (!eContext.Recursion_Limit_Exceeded && Attempt(re, start)) {
 			ret_val = true;
 			return checked_return(ret_val);
 		}
@@ -1188,7 +1188,7 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 		// We know what char match must start with.
 		for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
 			if (*str == re->match_start) {
-				if (attempt(re, str)) {
+				if (Attempt(re, str)) {
 					ret_val = true;
 					break;
 				}
@@ -1200,7 +1200,7 @@ bool Regex::ExecRE(const char *start, const char *end, bool reverse, int prev_ch
 
 	// General case
 	for (str = end; str >= start && !eContext.Recursion_Limit_Exceeded; str--) {
-		if (attempt(re, str)) {
+		if (Attempt(re, str)) {
 			ret_val = true;
 			break;
 		}

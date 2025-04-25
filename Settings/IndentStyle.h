@@ -2,7 +2,7 @@
 #ifndef INDENT_STYLE_H_
 #define INDENT_STYLE_H_
 
-#include "from_integer.h"
+#include "FromInteger.h"
 
 #include <QLatin1String>
 #include <QtDebug>
@@ -15,7 +15,7 @@ enum class IndentStyle {
 };
 
 template <>
-inline IndentStyle from_integer(int value) {
+inline IndentStyle FromInteger(int value) {
 	switch (value) {
 	case static_cast<int>(IndentStyle::Default):
 	case static_cast<int>(IndentStyle::None):
@@ -28,7 +28,7 @@ inline IndentStyle from_integer(int value) {
 	}
 }
 
-inline QLatin1String to_string(IndentStyle style) {
+inline QLatin1String ToString(IndentStyle style) {
 
 	switch (style) {
 	case IndentStyle::None:

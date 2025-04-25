@@ -2,7 +2,7 @@
 #ifndef SEARCH_TYPE_H_
 #define SEARCH_TYPE_H_
 
-#include "from_integer.h"
+#include "FromInteger.h"
 
 #include <QLatin1String>
 #include <QtDebug>
@@ -20,7 +20,7 @@ enum class SearchType {
 };
 
 template <>
-inline SearchType from_integer(int value) {
+inline SearchType FromInteger(int value) {
 	switch (value) {
 	case static_cast<int>(SearchType::Literal):
 	case static_cast<int>(SearchType::CaseSense):
@@ -35,7 +35,7 @@ inline SearchType from_integer(int value) {
 	}
 }
 
-inline QLatin1String to_string(SearchType style) {
+inline QLatin1String ToString(SearchType style) {
 
 	switch (style) {
 	case SearchType::Literal:

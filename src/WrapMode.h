@@ -9,7 +9,7 @@ enum class WrapMode {
 	Wrap
 };
 
-inline QLatin1String to_string(WrapMode wrap) {
+inline QLatin1String ToString(WrapMode wrap) {
 
 	switch (wrap) {
 	case WrapMode::NoWrap:

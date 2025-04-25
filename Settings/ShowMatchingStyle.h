@@ -2,7 +2,7 @@
 #ifndef SHOW_MATCHING_STYLE_H_
 #define SHOW_MATCHING_STYLE_H_
 
-#include "from_integer.h"
+#include "FromInteger.h"
 
 #include <QLatin1String>
 #include <QtDebug>
@@ -14,7 +14,7 @@ enum class ShowMatchingStyle {
 };
 
 template <>
-inline ShowMatchingStyle from_integer(int value) {
+inline ShowMatchingStyle FromInteger(int value) {
 	switch (value) {
 	case static_cast<int>(ShowMatchingStyle::None):
 	case static_cast<int>(ShowMatchingStyle::Delimiter):
@@ -26,7 +26,7 @@ inline ShowMatchingStyle from_integer(int value) {
 	}
 }
 
-inline QLatin1String to_string(ShowMatchingStyle style) {
+inline QLatin1String ToString(ShowMatchingStyle style) {
 
 	switch (style) {
 	case ShowMatchingStyle::None:

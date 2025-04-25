@@ -2,7 +2,7 @@
 #include "Settings.h"
 #include "Util/Environment.h"
 #include "Util/Resource.h"
-#include "from_integer.h"
+#include "FromInteger.h"
 
 #include <QFontDatabase>
 #include <QSettings>
@@ -39,7 +39,7 @@ using IsEnum = std::enable_if_t<std::is_enum_v<T>>;
 template <class T, class = IsEnum<T>>
 T readEnum(QSettings &settings, const QString &key, const T &defaultValue = T()) {
 	using U = std::underlying_type_t<T>;
-	return from_integer<T>(settings.value(key, static_cast<U>(defaultValue)).toInt());
+	return FromInteger<T>(settings.value(key, static_cast<U>(defaultValue)).toInt());
 }
 
 template <class T, class = IsEnum<T>>

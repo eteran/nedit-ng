@@ -3436,7 +3436,7 @@ std::error_code autoIndentMV(DocumentWidget *document, Arguments arguments, Data
 		return MacroErrorCode::InvalidIndentStyle;
 	}
 
-	const QLatin1String res = to_string(document->autoIndentStyle());
+	const QLatin1String res = ToString(document->autoIndentStyle());
 	*result                 = make_value(res);
 	return MacroErrorCode::Success;
 }
@@ -3451,7 +3451,7 @@ std::error_code wrapTextMV(DocumentWidget *document, Arguments arguments, DataVa
 		return MacroErrorCode::InvalidWrapStyle;
 	}
 
-	const QLatin1String res = to_string(document->wrapMode());
+	const QLatin1String res = ToString(document->wrapMode());
 	*result                 = make_value(res);
 	return MacroErrorCode::Success;
 }
@@ -3480,7 +3480,7 @@ std::error_code incBackupMV(DocumentWidget *document, Arguments arguments, DataV
 std::error_code showMatchingMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	const QLatin1String res = to_string(document->showMatchingStyle());
+	const QLatin1String res = ToString(document->showMatchingStyle());
 	*result                 = make_value(res);
 	return MacroErrorCode::Success;
 }
@@ -3516,7 +3516,7 @@ std::error_code lockedMV(DocumentWidget *document, Arguments arguments, DataValu
 std::error_code fileFormatMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	const QLatin1String res = to_string(document->fileFormat());
+	const QLatin1String res = ToString(document->fileFormat());
 	*result                 = make_value(res);
 	return MacroErrorCode::Success;
 }
