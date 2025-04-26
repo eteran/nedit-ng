@@ -385,7 +385,7 @@ bool Main::checkDoMacroArg(const QString &macro) {
 
 	// Do a test parse
 	if (!isMacroValid(macroString, &errMsg, &stoppedAt)) {
-		Preferences::reportError(nullptr, macroString, stoppedAt, tr("argument to -do"), errMsg);
+		Preferences::ReportError(nullptr, macroString, stoppedAt, tr("argument to -do"), errMsg);
 		return false;
 	}
 

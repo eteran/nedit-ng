@@ -10,7 +10,7 @@
 #include "SignalBlocker.h"
 #include "Util/String.h"
 #include "parse.h"
-#include "userCmds.h"
+#include "UserCommands.h"
 
 #include <QMessageBox>
 
@@ -306,7 +306,7 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 	int stoppedAt;
 	if (!isMacroValid(macro, &errMsg, &stoppedAt)) {
 		if (verbosity == Verbosity::Verbose) {
-			Preferences::reportError(this, macro, stoppedAt, tr("macro"), errMsg);
+			Preferences::ReportError(this, macro, stoppedAt, tr("macro"), errMsg);
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
 		cursor.setPosition(stoppedAt);
@@ -317,7 +317,7 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 
 	if (stoppedAt != macro.size()) {
 		if (verbosity == Verbosity::Verbose) {
-			Preferences::reportError(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
+			Preferences::ReportError(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
 		}
 
 		QTextCursor cursor = ui.editMacro->textCursor();
@@ -363,7 +363,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
 	BGMenuData = std::move(newItems);
 
-	parse_menu_item_list(BGMenuData);
+	ParseMenuItemList(BGMenuData);
 
 	// Update the menus themselves in all of the NEdit windows
 	for (MainWindow *window : MainWindow::allWindows()) {

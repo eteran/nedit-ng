@@ -13,7 +13,7 @@
 #include "SmartIndent.h"
 #include "TextArea.h"
 #include "Util/regex.h"
-#include "userCmds.h"
+#include "UserCommands.h"
 
 #include <QMessageBox>
 #include <QRegularExpressionValidator>
@@ -502,7 +502,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 
 		/* Update user menu info to update language mode dependencies of
 		   user menu items */
-		update_user_menu_info();
+		UpdateUserMenuInfo();
 
 		// Update the menus in the window menu bars ...
 		for (MainWindow *win : MainWindow::allWindows()) {

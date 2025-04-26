@@ -9,7 +9,7 @@
 #include "Util/String.h"
 #include "Util/algorithm.h"
 #include "Util/utils.h"
-#include "userCmds.h"
+#include "UserCommands.h"
 
 #include <algorithm>
 #include <cstdlib>

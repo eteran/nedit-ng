@@ -120,7 +120,7 @@ QString writeMenuItemString(const std::vector<MenuItem> &menuItems, bool isShell
  * @param in The input stream containing the macro.
  * @return The macro body, or an empty string if the macro is invalid.
  */
-QString copyMacroToEnd(Input &in) {
+QString CopyMacroToEnd(Input &in) {
 
 	Input input = in;
 
@@ -192,7 +192,7 @@ QString copyMacroToEnd(Input &in) {
  * @param isShellCommand if `true`, the items are shell commands, otherwise they are macros.
  * @return A vector of MenuItem objects parsed from the input string.
  */
-std::vector<MenuItem> loadMenuItemString(const QString &inString, bool isShellCommand) {
+std::vector<MenuItem> LoadMenuItemString(const QString &inString, bool isShellCommand) {
 
 	std::vector<MenuItem> items;
 
@@ -234,7 +234,7 @@ std::vector<MenuItem> loadMenuItemString(const QString &inString, bool isShellCo
 			item.command = in.readUntil(QLatin1Char('\n'));
 		} else {
 
-			QString p = copyMacroToEnd(in);
+			QString p = CopyMacroToEnd(in);
 			if (p.isNull()) {
 				return items;
 			}
@@ -630,9 +630,9 @@ int main(int argc, char *argv[]) {
 	Settings::macroCommands  = readResource<QString>(prefDB, "nedit.macroCommands");
 	Settings::bgMenuCommands = readResource<QString>(prefDB, "nedit.bgMenuCommands");
 
-	const std::vector<MenuItem> shellCommands  = loadMenuItemString(Settings::shellCommands, true);
-	const std::vector<MenuItem> macroCommands  = loadMenuItemString(Settings::macroCommands, false);
-	const std::vector<MenuItem> bgMenuCommands = loadMenuItemString(Settings::bgMenuCommands, false);
+	const std::vector<MenuItem> shellCommands  = LoadMenuItemString(Settings::shellCommands, true);
+	const std::vector<MenuItem> macroCommands  = LoadMenuItemString(Settings::macroCommands, false);
+	const std::vector<MenuItem> bgMenuCommands = LoadMenuItemString(Settings::bgMenuCommands, false);
 
 	Settings::shellCommands  = writeMenuItemString(shellCommands, true);
 	Settings::macroCommands  = writeMenuItemString(macroCommands, false);

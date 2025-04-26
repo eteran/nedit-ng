@@ -11,7 +11,7 @@
 #include "Preferences.h"
 #include "Util/String.h"
 #include "parse.h"
-#include "userCmds.h"
+#include "UserCommands.h"
 
 #include <QMessageBox>
 
@@ -321,7 +321,7 @@ bool DialogMacros::checkMacroText(const QString &macro, Verbosity verbosity) {
 	int stoppedAt;
 	if (!isMacroValid(macro, &errMsg, &stoppedAt)) {
 		if (verbosity == Verbosity::Verbose) {
-			Preferences::reportError(this, macro, stoppedAt, tr("macro"), errMsg);
+			Preferences::ReportError(this, macro, stoppedAt, tr("macro"), errMsg);
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
 		cursor.setPosition(stoppedAt);
@@ -332,7 +332,7 @@ bool DialogMacros::checkMacroText(const QString &macro, Verbosity verbosity) {
 
 	if (stoppedAt != macro.size()) {
 		if (verbosity == Verbosity::Verbose) {
-			Preferences::reportError(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
+			Preferences::ReportError(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
 		cursor.setPosition(stoppedAt);
@@ -378,7 +378,7 @@ bool DialogMacros::applyDialogChanges() {
 
 	MacroMenuData = std::move(newItems);
 
-	parse_menu_item_list(MacroMenuData);
+	ParseMenuItemList(MacroMenuData);
 
 	// Update the menus themselves in all of the NEdit windows
 	for (MainWindow *window : MainWindow::allWindows()) {

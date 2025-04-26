@@ -37,7 +37,7 @@
 #include "interpret.h"
 #include "macro.h"
 #include "parse.h"
-#include "userCmds.h"
+#include "UserCommands.h"
 
 #include <QButtonGroup>
 #include <QClipboard>
@@ -4375,7 +4375,7 @@ void DocumentWidget::beginSmartIndent(Verbosity verbosity) {
 	siData->newlineMacro = std::unique_ptr<Program>(compileMacro(indentMacros->newlineMacro, &errMsg, &stoppedAt));
 
 	if (!siData->newlineMacro) {
-		Preferences::reportError(this, indentMacros->newlineMacro, stoppedAt, tr("newline macro"), errMsg);
+		Preferences::ReportError(this, indentMacros->newlineMacro, stoppedAt, tr("newline macro"), errMsg);
 		return;
 	}
 
@@ -4386,7 +4386,7 @@ void DocumentWidget::beginSmartIndent(Verbosity verbosity) {
 		if (!siData->modMacro) {
 
 			siData->newlineMacro = nullptr;
-			Preferences::reportError(this, indentMacros->modMacro, stoppedAt, tr("smart indent modify macro"), errMsg);
+			Preferences::ReportError(this, indentMacros->modMacro, stoppedAt, tr("smart indent modify macro"), errMsg);
 			return;
 		}
 	}
@@ -7013,7 +7013,7 @@ void DocumentWidget::doMacro(const QString &macro, const QString &errInName) {
 	int stoppedAt;
 	Program *const prog = compileMacro(qMacro, &errMsg, &stoppedAt);
 	if (!prog) {
-		Preferences::reportError(this, qMacro, stoppedAt, errInName, errMsg);
+		Preferences::ReportError(this, qMacro, stoppedAt, errInName, errMsg);
 		return;
 	}
 

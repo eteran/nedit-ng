@@ -42,7 +42,7 @@
 #include "WindowMenuEvent.h"
 #include "nedit.h"
 #include "shift.h"
-#include "userCmds.h"
+#include "UserCommands.h"
 
 #include <QActionGroup>
 #include <QButtonGroup>
@@ -7514,7 +7514,7 @@ void MainWindow::updateMenuItems() {
 */
 bool MainWindow::execNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source) {
 
-	if (MenuData *p = find_menu_item(name, CommandTypes::Shell)) {
+	if (MenuData *p = FindMenuItem(name, CommandTypes::Shell)) {
 
 		if (p->item.output == TO_SAME_WINDOW && document->checkReadOnly()) {
 			return false;
@@ -7542,7 +7542,7 @@ bool MainWindow::execNamedMacroMenuCmd(DocumentWidget *document, TextArea *area,
 	Q_UNUSED(source)
 	Q_UNUSED(area)
 
-	if (MenuData *p = find_menu_item(name, CommandTypes::Macro)) {
+	if (MenuData *p = FindMenuItem(name, CommandTypes::Macro)) {
 		document->doMacro(
 			p->item.cmd,
 			tr("macro menu command"));
@@ -7567,7 +7567,7 @@ bool MainWindow::execNamedBGMenuCmd(DocumentWidget *document, TextArea *area, co
 	Q_UNUSED(source)
 	Q_UNUSED(area)
 
-	if (MenuData *p = find_menu_item(name, CommandTypes::Context)) {
+	if (MenuData *p = FindMenuItem(name, CommandTypes::Context)) {
 		document->doMacro(
 			p->item.cmd,
 			tr("background menu macro"));

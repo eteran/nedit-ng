@@ -326,7 +326,7 @@ void LoadSmartIndentString(const QString &string) {
 				});
 			}
 		} catch (const ParseError &e) {
-			Preferences::reportError(
+			Preferences::ReportError(
 				nullptr,
 				*in.string(),
 				in.index(),

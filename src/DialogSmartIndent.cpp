@@ -323,7 +323,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 		int stoppedAt = 0;
 
 		if (!isMacroValid(widgetText, &errMsg, &stoppedAt)) {
-			Preferences::reportError(this, widgetText, stoppedAt, tr("newline macro"), errMsg);
+			Preferences::ReportError(this, widgetText, stoppedAt, tr("newline macro"), errMsg);
 			QTextCursor cursor = ui.editNewline->textCursor();
 			cursor.setPosition(stoppedAt);
 			ui.editNewline->setTextCursor(cursor);
@@ -340,7 +340,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 		int stoppedAt = 0;
 
 		if (!isMacroValid(widgetText, &errMsg, &stoppedAt)) {
-			Preferences::reportError(this, widgetText, stoppedAt, tr("modify macro"), errMsg);
+			Preferences::ReportError(this, widgetText, stoppedAt, tr("modify macro"), errMsg);
 			QTextCursor cursor = ui.editModMacro->textCursor();
 			cursor.setPosition(stoppedAt);
 			ui.editModMacro->setTextCursor(cursor);

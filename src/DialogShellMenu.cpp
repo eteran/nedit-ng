@@ -6,7 +6,7 @@
 #include "MenuItem.h"
 #include "MenuItemModel.h"
 #include "Preferences.h"
-#include "userCmds.h"
+#include "UserCommands.h"
 
 #include <QMessageBox>
 
@@ -339,7 +339,7 @@ bool DialogShellMenu::applyDialogChanges() {
 
 	ShellMenuData = std::move(newItems);
 
-	parse_menu_item_list(ShellMenuData);
+	ParseMenuItemList(ShellMenuData);
 
 	// Update the menus themselves in all of the NEdit windows
 	for (MainWindow *window : MainWindow::allWindows()) {

@@ -1028,7 +1028,7 @@ std::optional<PatternSet> readPatternSet(Input &in) {
 		// pattern set was read correctly, make an allocated copy to return
 		return patSet;
 	} catch (const HighlightError &error) {
-		Preferences::reportError(
+		Preferences::ReportError(
 			nullptr,
 			*in.string(),
 			in.index(),

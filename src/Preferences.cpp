@@ -18,7 +18,7 @@
 #include "Util/version.h"
 #include "Yaml.h"
 #include "nedit.h"
-#include "userCmds.h"
+#include "UserCommands.h"
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -274,7 +274,7 @@ std::optional<LanguageMode> readLanguageMode(Input &in) {
 
 		return lm;
 	} catch (const ModeError &error) {
-		reportError(
+		ReportError(
 			nullptr,
 			*in.string(),
 			in.index(),
@@ -349,13 +349,13 @@ void translatePrefFormats(uint32_t fileVer) {
 	   the standard resource manager routines */
 
 	if (!Settings::shellCommands.isNull()) {
-		load_shell_commands_string(Settings::shellCommands);
+		LoadShellCommandsString(Settings::shellCommands);
 	}
 	if (!Settings::macroCommands.isNull()) {
-		load_macro_commands_string(Settings::macroCommands);
+		LoadMacroCommandsString(Settings::macroCommands);
 	}
 	if (!Settings::bgMenuCommands.isNull()) {
-		load_bg_menu_commands_string(Settings::bgMenuCommands);
+		LoadContextMenuCommandsString(Settings::bgMenuCommands);
 	}
 	if (!Settings::highlightPatterns.isNull()) {
 		Highlight::LoadHighlightString(Settings::highlightPatterns);
@@ -388,7 +388,7 @@ void translatePrefFormats(uint32_t fileVer) {
 	/* setup language mode dependent info of user menus (to increase
 	   performance when switching between documents of different
 	   language modes) */
-	setup_user_menu_info();
+	SetupUserMenuInfo();
 }
 
 /**
@@ -506,9 +506,9 @@ void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 		}
 	}
 
-	Settings::shellCommands         = write_shell_commands_string();
-	Settings::macroCommands         = write_macro_commands_string();
-	Settings::bgMenuCommands        = write_bg_menu_commands_string();
+	Settings::shellCommands         = WriteShellCommandsString();
+	Settings::macroCommands         = WriteMacroCommandsString();
+	Settings::bgMenuCommands        = WriteContextMenuCommandsString();
 	Settings::highlightPatterns     = Highlight::WriteHighlightString();
 	Settings::languageModes         = WriteLanguageModesString();
 	Settings::smartIndentInit       = SmartIndent::WriteSmartIndentString();
@@ -1378,7 +1378,7 @@ bool SkipDelimiter(Input &in, QString *errMsg) {
 ** For a dialog, pass the dialog parent in toDialog.
 */
 
-bool reportError(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message) {
+bool ReportError(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message) {
 
 	// NOTE(eteran): hack to work around the fact that stoppedAt can be a "one past the end iterator"
 	stoppedAt = std::clamp<int64_t>(stoppedAt, 0, string.size() - 1);
