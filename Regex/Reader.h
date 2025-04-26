@@ -259,12 +259,16 @@ public:
 	 * @return The matched string if it satisfies the regex, or an empty optional if it does not match.
 	 */
 	std::optional<std::basic_string_view<Ch>> match(const std::basic_regex<Ch> &regex) {
-		std::match_results<const Ch *> matches;
 
 		std::basic_string_view<Ch> str = input_.substr(index_);
+		std::match_results<typename std::basic_string_view<Ch>::const_iterator> match;
 
-		if (std::regex_search(str.begin(), str.end(), matches, regex, std::regex_constants::match_continuous)) {
-			std::basic_string_view<Ch> m(matches[0].first, matches[0].second - matches[0].first);
+		if (std::regex_search(str.begin(), str.end(), match, regex, std::regex_constants::match_continuous)) {
+
+			auto index = std::distance(str.begin(), match[0].first);
+			auto size  = std::distance(match[0].first, match[0].second);
+			std::basic_string_view<Ch> m(str.data() + index, size);
+
 			index_ += m.size();
 			return m;
 		}
