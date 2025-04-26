@@ -11,7 +11,7 @@ struct Test {
 	std::string_view output;
 };
 
-int test_regex_match(std::string_view regex, std::string_view input) {
+int TextRegexMatch(std::string_view regex, std::string_view input) {
 	Regex re(regex, RE_DEFAULT_STANDARD);
 
 	if (re.execute(input)) {
@@ -21,7 +21,7 @@ int test_regex_match(std::string_view regex, std::string_view input) {
 	return -1;
 }
 
-bool test_regex_error(std::string_view regex) {
+bool TextRegexError(std::string_view regex) {
 	try {
 		Regex re(regex, RE_DEFAULT_STANDARD);
 	} catch (const std::exception &) {
@@ -759,84 +759,83 @@ int main() {
 		}
 	}
 
-	if (test_regex_match("^A", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != 0) {
+	if (TextRegexMatch("^A", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != 0) {
 		std::cerr << "ERROR    : Failed to match buffer start (with text)\n";
 		return -1;
 	}
 
-	if (test_regex_match("Z$", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != 0) {
+	if (TextRegexMatch("Z$", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != 0) {
 		std::cerr << "ERROR    : Failed to match buffer end (with text)\n";
 		return -1;
 	}
 
-	if (test_regex_match("^ABCDEFGHIJKLMNOPQRSTUVWXYZ$", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != 0) {
+	if (TextRegexMatch("^ABCDEFGHIJKLMNOPQRSTUVWXYZ$", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != 0) {
 		std::cerr << "ERROR    : Failed to match whole line\n";
 		return -1;
 	}
 
-	if (test_regex_match("^", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != 0) {
+	if (TextRegexMatch("^", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != 0) {
 		std::cerr << "ERROR    : Failed to match buffer start\n";
 		return -1;
 	}
 
-	if (test_regex_match("$", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != 0) {
+	if (TextRegexMatch("$", "ABCDEFGHIJKLMNOPQRSTUVWXYZ") != 0) {
 		std::cerr << "ERROR    : Failed to match buffer end\n";
 		return -1;
 	}
 
-	if (test_regex_match("[0-9]{1,1234}", "123456") != 0) {
+	if (TextRegexMatch("[0-9]{1,1234}", "123456") != 0) {
 		std::cerr << "ERROR    : Failed to match min/max\n";
 		return -1;
 	}
 
-	if(!test_regex_error("[0-9]{0}")) {
+	if (!TextRegexError("[0-9]{0}")) {
 		std::cerr << "ERROR    : Failed to catch invalid range (1)\n";
 		return -1;
 	}
 
-	if(!test_regex_error("[0-9]{0,0}")) {
+	if (!TextRegexError("[0-9]{0,0}")) {
 		std::cerr << "ERROR    : Failed to catch invalid range (2)\n";
 		return -1;
 	}
 
-	if(!test_regex_error("[0-9]{1,0}")) {
+	if (!TextRegexError("[0-9]{1,0}")) {
 		std::cerr << "ERROR    : Failed to catch invalid range (3)\n";
 		return -1;
 	}
 
-	if(!test_regex_error("[0-9]{,0}")) {
+	if (!TextRegexError("[0-9]{,0}")) {
 		std::cerr << "ERROR    : Failed to catch invalid range (4)\n";
 		return -1;
 	}
 
-	if(!test_regex_error("[0-9]{1,2")) {
+	if (!TextRegexError("[0-9]{1,2")) {
 		std::cerr << "ERROR    : Failed to catch missing end bracket\n";
 		return -1;
 	}
 
-	if(!test_regex_error("[0-9]{10,2}")) {
+	if (!TextRegexError("[0-9]{10,2}")) {
 		std::cerr << "ERROR    : Failed to catch backwards range\n";
 		return -1;
 	}
 
-	if(!test_regex_error("([0-9]|[A-Z]")) {
+	if (!TextRegexError("([0-9]|[A-Z]")) {
 		std::cerr << "ERROR    : Failed to catch missing closing paren\n";
 		return -1;
 	}
 
-	if(!test_regex_error("(([0-9]|[A-Z]")) {
+	if (!TextRegexError("(([0-9]|[A-Z]")) {
 		std::cerr << "ERROR    : Failed to catch extra opening paren\n";
 		return -1;
 	}
 
-
-	if(!test_regex_error("([0-9]|[A-Z]))")) {
+	if (!TextRegexError("([0-9]|[A-Z]))")) {
 		std::cerr << "ERROR    : Failed to catch extra closing paren\n";
 		return -1;
 	}
 
 #if 0 // testing "catastrophic backtracking"
-    if (test_regex_match(R"((\\?.)*\\\n)", R"(Ada:Default\n\tAwk:Default\n\tC++:Default\n\tC:Default\n\tCSS:Default\n\tCsh:Default\n\tFortran:Default\n\tJava:Default\n\tJavaScript:Default\n\tLaTeX:Default\n\tLex:Default\n\tMakefile:Default\n\tMatlab:Default\n\tNEdit Macro:Default\n\tPascal:Default\n\tPerl:Default\n\tPostScript:Default\n\tPython:Default\n\tRegex:Default\n\tSGML HTML:Default\n\tSQL:Default\n\tSh Ksh Bash:Default\n\tTcl:Default\n\tVHDL:Default\n\tVerilog:Default\n\tXML:Default\n\tX Resources:Default\n\tYacc:Default)") != 0) {
+    if (TextRegexMatch(R"((\\?.)*\\\n)", R"(Ada:Default\n\tAwk:Default\n\tC++:Default\n\tC:Default\n\tCSS:Default\n\tCsh:Default\n\tFortran:Default\n\tJava:Default\n\tJavaScript:Default\n\tLaTeX:Default\n\tLex:Default\n\tMakefile:Default\n\tMatlab:Default\n\tNEdit Macro:Default\n\tPascal:Default\n\tPerl:Default\n\tPostScript:Default\n\tPython:Default\n\tRegex:Default\n\tSGML HTML:Default\n\tSQL:Default\n\tSh Ksh Bash:Default\n\tTcl:Default\n\tVHDL:Default\n\tVerilog:Default\n\tXML:Default\n\tX Resources:Default\n\tYacc:Default)") != 0) {
 		std::cerr << "ERROR    : Failed to X resources match\n";
 		return -1;
     }

@@ -9,11 +9,11 @@
 #include <QMessageBox>
 
 /**
- * @brief
+ * @brief Constructor for DialogRepeat class.
  *
- * @param document
- * @param parent
- * @param f
+ * @param document The DocumentWidget instance associated with this dialog.
+ * @param parent The parent widget, defaults to nullptr.
+ * @param f The window flags, defaults to Qt::WindowFlags().
  */
 DialogRepeat::DialogRepeat(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f), document_(document) {
@@ -37,6 +37,12 @@ void DialogRepeat::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogRepeat::buttonBox_accepted);
 }
 
+/**
+ * @brief Sets the command for the dialog to repeat.
+ *
+ * @param command The command string that is the last executed action name.
+ * @return `true` if the command was set successfully, `false` otherwise.
+ */
 bool DialogRepeat::setCommand(const QString &command) {
 
 	/* make a label for the Last command item of the dialog, which includes
@@ -51,6 +57,9 @@ bool DialogRepeat::setCommand(const QString &command) {
 	return true;
 }
 
+/**
+ * @brief Handles the "Accept" button click event in the dialog.
+ */
 void DialogRepeat::buttonBox_accepted() {
 	if (!doRepeatDialogAction()) {
 		return;
@@ -59,6 +68,11 @@ void DialogRepeat::buttonBox_accepted() {
 	accept();
 }
 
+/**
+ * @brief Handles the "Repeat" action in the dialog.
+ *
+ * @return true if the action was successfully performed, false otherwise.
+ */
 bool DialogRepeat::doRepeatDialogAction() {
 
 	if (!document_) {

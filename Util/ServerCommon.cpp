@@ -26,8 +26,8 @@
  * A typical example of $RUNTIME_PATH would be something like:
  * /var/run/user/1000/
  *
- * @param server_name the unique name of the server
- * @return the server socket name as a QString
+ * @param server_name The unique name of the server
+ * @return The server socket name as a QString
  *
  * @note The server name is hashed to ensure a predictable, fixed length string.
  */

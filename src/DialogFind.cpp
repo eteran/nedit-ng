@@ -54,7 +54,7 @@ void DialogFind::showEvent(QShowEvent *event) {
  *
  * @param obj The object being filtered, expected to be the text input field.
  * @param ev The event being filtered, expected to be a key press event.
- * @return True if the event was handled, false otherwise.
+ * @return `true` if the event was handled, `false` otherwise.
  */
 bool DialogFind::eventFilter(QObject *obj, QEvent *ev) {
 
@@ -347,7 +347,7 @@ void DialogFind::checkCase_toggled(bool checked) {
 /**
  * @brief Returns whether the dialog should remain open after a search operation.
  *
- * @return true if the dialog should remain open, false otherwise.
+ * @return `true` if the dialog should remain open, `false` otherwise.
  */
 bool DialogFind::keepDialog() const {
 	return ui.checkKeep->isChecked();
@@ -379,7 +379,7 @@ void DialogFind::setDirection(Direction direction) {
 /**
  * @brief Sets whether the dialog should remain open after a search operation.
  *
- * @param keep If true, the dialog will remain open after a search operation;
+ * @param keep If `true`, the dialog will remain open after a search operation;
  *             if false, the dialog will close after a search operation.
  */
 void DialogFind::setKeepDialog(bool keep) {

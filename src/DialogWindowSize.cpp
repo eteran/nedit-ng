@@ -5,6 +5,12 @@
 #include <QIntValidator>
 #include <QMessageBox>
 
+/**
+ * @brief Constructor for the DialogWindowSize class.
+ *
+ * @param parent The parent widget for this dialog, defaults to nullptr.
+ * @param f The window flags for the dialog, defaults to Qt::WindowFlags().
+ */
 DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
 
@@ -13,8 +19,8 @@ DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f)
 
 	Dialog::shrinkToFit(this);
 
-	ui.editWidth->setValidator(new QIntValidator(0, INT_MAX, this));
-	ui.editHeight->setValidator(new QIntValidator(0, INT_MAX, this));
+	ui.editRows->setValidator(new QIntValidator(0, INT_MAX, this));
+	ui.editColumns->setValidator(new QIntValidator(0, INT_MAX, this));
 }
 
 /**
@@ -23,32 +29,34 @@ DialogWindowSize::DialogWindowSize(QWidget *parent, Qt::WindowFlags f)
 void DialogWindowSize::connectSlots() {
 	connect(ui.buttonBox, &QDialogButtonBox::accepted, this, &DialogWindowSize::buttonBox_accepted);
 }
-
+/**
+ * @brief Handles the acceptance of the dialog when the "OK" button is clicked.
+ */
 void DialogWindowSize::buttonBox_accepted() {
 
 	bool ok;
-	const QString width  = ui.editWidth->text();
-	const QString height = ui.editHeight->text();
+	const QString rows    = ui.editRows->text();
+	const QString columns = ui.editColumns->text();
 
-	if (width.isEmpty()) {
+	if (rows.isEmpty()) {
 		QMessageBox::warning(this, tr("Warning"), tr("Please supply a value for number of rows"));
 		return;
 	}
 
-	const int rowValue = width.toInt(&ok);
+	const int rowValue = rows.toInt(&ok);
 	if (!ok) {
-		QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in number of rows").arg(width));
+		QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in number of rows").arg(rows));
 		return;
 	}
 
-	if (height.isEmpty()) {
+	if (columns.isEmpty()) {
 		QMessageBox::warning(this, tr("Warning"), tr("Please supply a value for number of columns"));
 		return;
 	}
 
-	const int colValue = height.toInt(&ok);
+	const int colValue = columns.toInt(&ok);
 	if (!ok) {
-		QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in number of columns").arg(height));
+		QMessageBox::warning(this, tr("Warning"), tr("Can't read integer value \"%1\" in number of columns").arg(columns));
 		return;
 	}
 

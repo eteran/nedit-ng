@@ -15,7 +15,7 @@
 /**
  * @brief Constructor for DialogDrawingStyles class
  *
- * @param dialogSyntaxPatterns Pointer to the DialogSyntaxPatterns instance
+ * @param dialogSyntaxPatterns The DialogSyntaxPatterns instance
  * @param highlightStyles Reference to the vector of HighlightStyle objects
  *                        that will be modified by this dialog.
  * @param parent The parent widget, defaults to nullptr
@@ -184,7 +184,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 
 	// this is only safe if we aren't moving due to a delete operation
 	if (previous.isValid() && previous != deleted_ && !skip_check) {
-		if (!updateCurrentItem(previous)) {
+		if (!updateItem(previous)) {
 			// reselect the old item
 			canceled = true;
 			Q_EMIT restore(previous);
@@ -243,7 +243,7 @@ void DialogDrawingStyles::buttonBox_clicked(QAbstractButton *button) {
  * @brief Validates the fields in the dialog.
  *
  * @param verbosity The verbosity level for error messages.
- * @return true if the fields are valid, false otherwise.
+ * @return `true` if the fields are valid, `false` otherwise.
  */
 bool DialogDrawingStyles::validateFields(Verbosity verbosity) {
 	if (readFields(verbosity)) {
@@ -339,7 +339,7 @@ std::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosit
 /**
  * @brief Applies the changes made in the dialog to the highlight styles.
  *
- * @return true if the changes were successfully applied, false otherwise.
+ * @return `true` if the changes were successfully applied, `false` otherwise.
  */
 bool DialogDrawingStyles::applyDialogChanges() {
 
@@ -400,9 +400,9 @@ bool DialogDrawingStyles::applyDialogChanges() {
  * @brief Updates an item in the dialog with the current field values.
  *
  * @param index The item to update, specified by its index in the model.
- * @return true if the item was successfully updated, false otherwise.
+ * @return `true` if the item was successfully updated, `false` otherwise.
  */
-bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
+bool DialogDrawingStyles::updateItem(const QModelIndex &index) {
 	// Get the current contents of the "patterns" dialog fields
 	auto dialogFields = readFields(Verbosity::Verbose);
 	if (!dialogFields) {
@@ -433,12 +433,12 @@ bool DialogDrawingStyles::updateCurrentItem(const QModelIndex &index) {
 /**
  * @brief Updates the currently selected item in the dialog with the current field values.
  *
- * @return true if the item was successfully updated, false otherwise.
+ * @return `true` if the item was successfully updated, `false` otherwise.
  */
 bool DialogDrawingStyles::updateCurrentItem() {
 	const QModelIndex index = ui.listItems->currentIndex();
 	if (index.isValid()) {
-		return updateCurrentItem(index);
+		return updateItem(index);
 	}
 
 	return true;

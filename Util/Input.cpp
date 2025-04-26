@@ -8,7 +8,7 @@
 /**
  * @brief Constructs an Input object from a QString pointer.
  *
- * @param input A pointer to a QString that represents the input string.
+ * @param input A QString that represents the input string.
  */
 Input::Input(const QString *input)
 	: string_(input), index_(0) {
@@ -18,8 +18,8 @@ Input::Input(const QString *input)
 /**
  * @brief Advances the input index by a specified number of characters.
  *
- * @param n the number of characters to advance the index by.
- * @return a reference to the current Input object.
+ * @param n The number of characters to advance the index by.
+ * @return Areference to the current Input object.
  */
 Input &Input::operator+=(int n) {
 	index_ += n;
@@ -33,8 +33,8 @@ Input &Input::operator+=(int n) {
 /**
  * @brief Decreases the input index by a specified number of characters.
  *
- * @param n the number of characters to decrease the index by.
- * @return a reference to the current Input object.
+ * @param n The number of characters to decrease the index by.
+ * @return Areference to the current Input object.
  */
 Input &Input::operator-=(int n) {
 	index_ -= n;
@@ -48,7 +48,7 @@ Input &Input::operator-=(int n) {
 /**
  * @brief Returns the current character at the input index without advancing the index.
  *
- * @return the current character at the input index.
+ * @return The current character at the input index.
  *
  * @note If the index is out of bounds, it returns an empty QChar.
  */
@@ -59,7 +59,7 @@ QChar Input::operator*() const {
 /**
  * @brief Returns the current character at the input index without advancing the index.
  *
- * @return the current character at the input index, or an empty QChar if at the end.
+ * @return The current character at the input index, or an empty QChar if at the end.
  */
 QChar Input::peek() const {
 	if (atEnd()) {
@@ -72,7 +72,7 @@ QChar Input::peek() const {
 /**
  * @brief Reads the current character at the input index and advances the index by one.
  *
- * @return the current character at the input index, or an empty QChar if at the end.
+ * @return The current character at the input index, or an empty QChar if at the end.
  */
 QChar Input::read() {
 	if (atEnd()) {
@@ -89,8 +89,8 @@ QChar Input::read() {
 /**
  * @brief Reads the character at the given index relative to the current input index.
  *
- * @param index the relative index to read from the current input index.
- * @return the character at the specified index, or an empty QChar if out of bounds.
+ * @param index The relative index to read from the current input index.
+ * @return The character at the specified index, or an empty QChar if out of bounds.
  */
 QChar Input::operator[](int index) const {
 	if ((index_ + index) >= string_->size()) {
@@ -103,7 +103,7 @@ QChar Input::operator[](int index) const {
 /**
  * @brief Pre increment operator for Input.
  *
- * @return a reference to the current Input object.
+ * @return Areference to the current Input object.
  */
 Input &Input::operator++() {
 	if (!atEnd()) {
@@ -116,7 +116,7 @@ Input &Input::operator++() {
 /**
  * @brief Post increment operator for Input.
  *
- * @return a copy of the current Input object before incrementing the index.
+ * @return Acopy of the current Input object before incrementing the index.
  */
 Input Input::operator++(int) {
 	const Input copy(*this);
@@ -129,7 +129,7 @@ Input Input::operator++(int) {
 /**
  * @brief Pre decrement operator for Input.
  *
- * @return a reference to the current Input object.
+ * @return Areference to the current Input object.
  */
 Input &Input::operator--() {
 	if (index_ > 0) {
@@ -142,7 +142,7 @@ Input &Input::operator--() {
 /**
  * @brief Post decrement operator for Input.
  *
- * @return a copy of the current Input object before decrementing the index.
+ * @return Acopy of the current Input object before decrementing the index.
  */
 Input Input::operator--(int) {
 	const Input copy(*this);
@@ -155,7 +155,7 @@ Input Input::operator--(int) {
 /**
  * @brief Checks if the input has reached the end of the string.
  *
- * @return true if the input index is at the end of the string, false otherwise.
+ * @return `true` if the input index is at the end of the string, `false` otherwise.
  */
 bool Input::atEnd() const {
 	return index_ == string_->size();
@@ -182,8 +182,8 @@ void Input::skipWhitespaceNL() {
 /**
  * @brief Subtracts the index of another Input object from the current Input object's index.
  *
- * @param rhs the Input object to subtract from the current Input object's index.
- * @return the difference in indices between the two Input objects.
+ * @param rhs The Input object to subtract from the current Input object's index.
+ * @return The difference in indices between the two Input objects.
  */
 int Input::operator-(const Input &rhs) const {
 	Q_ASSERT(string_ == rhs.string_);
@@ -193,8 +193,8 @@ int Input::operator-(const Input &rhs) const {
 /**
  * @brief Adds an integer to the current Input object's index.
  *
- * @param rhs the integer to add to the current Input object's index.
- * @return a new Input object with the updated index.
+ * @param rhs The integer to add to the current Input object's index.
+ * @return Anew Input object with the updated index.
  */
 Input Input::operator+(int rhs) const {
 	Input next = *this;
@@ -205,8 +205,8 @@ Input Input::operator+(int rhs) const {
 /**
  * @brief Subtracts an integer from the current Input object's index.
  *
- * @param rhs the integer to subtract from the current Input object's index.
- * @return a new Input object with the updated index.
+ * @param rhs The integer to subtract from the current Input object's index.
+ * @return Anew Input object with the updated index.
  */
 Input Input::operator-(int rhs) const {
 	Input next = *this;
@@ -217,8 +217,8 @@ Input Input::operator-(int rhs) const {
 /**
  * @brief Checks if two Input objects are equal.
  *
- * @param rhs the Input object to compare with the current Input object.
- * @return true if both Input objects have the same string and index, false otherwise.
+ * @param rhs The Input object to compare with the current Input object.
+ * @return `true` if both Input objects have the same string and index, `false` otherwise.
  */
 bool Input::operator==(const Input &rhs) const {
 	return string_ == rhs.string_ && index_ == rhs.index_;
@@ -227,8 +227,8 @@ bool Input::operator==(const Input &rhs) const {
 /**
  * @brief Checks if two Input objects are not equal.
  *
- * @param rhs the Input object to compare with the current Input object.
- * @return true if either the string or index of the two Input objects differ, false otherwise.
+ * @param rhs The Input object to compare with the current Input object.
+ * @return `true` if either the string or index of the two Input objects differ, `false` otherwise.
  */
 bool Input::operator!=(const Input &rhs) const {
 	return string_ != rhs.string_ || index_ != rhs.index_;
@@ -237,7 +237,7 @@ bool Input::operator!=(const Input &rhs) const {
 /**
  * @brief Consumes characters from the input string until a character not in the specified set is found.
  *
- * @param chars a QString containing characters to consume.
+ * @param chars A string containing the characters to consume.
  */
 void Input::consume(const QString &chars) {
 
@@ -255,7 +255,7 @@ void Input::consume(const QString &chars) {
 /**
  * @brief Consumes characters from the input string that match a given regular expression.
  *
- * @param re the regular expression to match against the input string.
+ * @param re The regular expression to match against the input string.
  */
 void Input::consume(const QRegularExpression &re) {
 	const QRegularExpressionMatch match = re.match(
@@ -278,9 +278,9 @@ void Input::consume(const QRegularExpression &re) {
 /**
  * @brief Matches the input string against a regular expression and advances the index if successful.
  *
- * @param re the regular expression to match against the input string.
- * @param m an optional pointer to a QString where the captured match will be stored.
- * @return true if the match is successful, false otherwise.
+ * @param re The regular expression to match against the input string.
+ * @param m An optional pointer to a QString where the captured match will be stored.
+ * @return `true` if the match is successful, `false` otherwise.
  */
 bool Input::match(const QRegularExpression &re, QString *m) {
 
@@ -312,8 +312,8 @@ bool Input::match(const QRegularExpression &re, QString *m) {
 /**
  * @brief Matches the input string against a specific string and advances the index if successful.
  *
- * @param s the string to match against the input string.
- * @return true if the match is successful, false otherwise.
+ * @param s The string to match against the input string.
+ * @return `true` if the match is successful, `false` otherwise.
  */
 bool Input::match(const QString &s) {
 	if (index_ + s.size() > string_->size()) {
@@ -332,8 +332,8 @@ bool Input::match(const QString &s) {
 /**
  * @brief Matches the input string against a specific character and advances the index if successful.
  *
- * @param ch the character to match against the input string.
- * @return true if the match is successful, false otherwise.
+ * @param ch The character to match against the input string.
+ * @return `true` if the match is successful, `false` otherwise.
  */
 bool Input::match(QChar ch) {
 	if (index_ >= string_->size()) {
@@ -351,7 +351,7 @@ bool Input::match(QChar ch) {
 /**
  * @brief Returns a substring starting from the current index with a specified length.
  *
- * @param length the length of the substring to return.
+ * @param length The length of the substring to return.
  * @return The substring starting from the current index with the specified length.
  */
 QString Input::mid(int length) const {
@@ -370,8 +370,8 @@ QString Input::mid() const {
 /**
  * @brief Finds the index of a substring in the input string starting from the current index.
  *
- * @param s the substring to find in the input string.
- * @return the index of the substring in the input string, or -1 if not found.
+ * @param s The substring to find in the input string.
+ * @return The index of the substring in the input string, or -1 if not found.
  */
 int Input::find(const QString &s) const {
 	return string_->indexOf(s, index_);
@@ -380,8 +380,8 @@ int Input::find(const QString &s) const {
 /**
  * @brief Finds the index of a specific character in the input string starting from the current index.
  *
- * @param ch the character to find in the input string.
- * @return the index of the character in the input string, or -1 if not found.
+ * @param ch The character to find in the input string.
+ * @return The index of the character in the input string, or -1 if not found.
  */
 int Input::find(QChar ch) const {
 	return string_->indexOf(ch, index_);
@@ -390,7 +390,7 @@ int Input::find(QChar ch) const {
 /**
  * @brief Returns the index of the current input position.
  *
- * @return the index of the current input position in the input string.
+ * @return The index of the current input position in the input string.
  */
 int Input::index() const {
 	return index_;
@@ -399,7 +399,7 @@ int Input::index() const {
 /**
  * @brief Returns a pointer to the input string.
  *
- * @return a pointer to the input string.
+ * @return Apointer to the input string.
  */
 const QString *Input::string() const {
 	return string_;
@@ -408,8 +408,8 @@ const QString *Input::string() const {
 /**
  * @brief Reads characters from the input string until a specified character is encountered.
  *
- * @param ch the character to read until.
- * @return a QString containing the characters read until the specified character.
+ * @param ch The character to read until.
+ * @return The characters read until the specified character.
  */
 QString Input::readUntil(QChar ch) {
 	QString result;

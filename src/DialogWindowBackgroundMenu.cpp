@@ -10,15 +10,15 @@
 #include "SignalBlocker.h"
 #include "Util/String.h"
 #include "parse.h"
-#include "userCmds.h"
+#include "UserCommands.h"
 
 #include <QMessageBox>
 
 /**
- * @brief
+ * @brief Constructor for the DialogWindowBackgroundMenu class.
  *
- * @param parent
- * @param f
+ * @param parent The parent widget for this dialog, defaults to nullptr.
+ * @param f The window flags for the dialog, defaults to Qt::WindowFlags().
  */
 DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
@@ -65,7 +65,7 @@ void DialogWindowBackgroundMenu::connectSlots() {
 }
 
 /**
- * @brief
+ * @brief Handler for the "New" button click event.
  */
 void DialogWindowBackgroundMenu::buttonNew_clicked() {
 
@@ -82,7 +82,7 @@ void DialogWindowBackgroundMenu::buttonNew_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handler for the "Copy" button click event.
  */
 void DialogWindowBackgroundMenu::buttonCopy_clicked() {
 
@@ -94,14 +94,14 @@ void DialogWindowBackgroundMenu::buttonCopy_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handler for the "Delete" button click event.
  */
 void DialogWindowBackgroundMenu::buttonDelete_clicked() {
 	CommonDialog::deleteItem(&ui, model_, &deleted_);
 }
 
 /**
- * @brief
+ * @brief Handler for the "Paste LR Macro" button click event.
  */
 void DialogWindowBackgroundMenu::buttonPasteLRMacro_clicked() {
 
@@ -114,24 +114,24 @@ void DialogWindowBackgroundMenu::buttonPasteLRMacro_clicked() {
 }
 
 /**
- * @brief
+ * @brief Moves the currently selected item up in the model and updates the UI.
  */
 void DialogWindowBackgroundMenu::buttonUp_clicked() {
 	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
- * @brief
+ * @brief Moves the currently selected item down in the model and updates the UI.
  */
 void DialogWindowBackgroundMenu::buttonDown_clicked() {
 	CommonDialog::moveItemDown(&ui, model_);
 }
 
 /**
- * @brief
+ * @brief Handles the change of the current item in the list view.
  *
- * @param current
- * @param previous
+ * @param current The QModelIndex of the currently selected item.
+ * @param previous The QModelIndex of the previously selected item.
  */
 void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
 	static bool canceled = false;
@@ -172,7 +172,7 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
 
 	// this is only safe if we aren't moving due to a delete operation
 	if (previous.isValid() && previous != deleted_ && !skip_check) {
-		if (!updateCurrentItem(previous)) {
+		if (!updateItem(previous)) {
 			// reselect the old item
 			canceled = true;
 			Q_EMIT restore(previous);
@@ -198,7 +198,7 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
 }
 
 /**
- * @brief
+ * @brief Checks the macro text for validity and displays a message box if there are errors.
  */
 void DialogWindowBackgroundMenu::buttonCheck_clicked() {
 	if (validateFields(Verbosity::Verbose)) {
@@ -209,14 +209,14 @@ void DialogWindowBackgroundMenu::buttonCheck_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the click event for the "Apply" button in the dialog.
  */
 void DialogWindowBackgroundMenu::buttonApply_clicked() {
 	applyDialogChanges();
 }
 
 /**
- * @brief
+ * @brief Handles the click event for the "OK" button in the dialog.
  */
 void DialogWindowBackgroundMenu::buttonOK_clicked() {
 
@@ -229,10 +229,10 @@ void DialogWindowBackgroundMenu::buttonOK_clicked() {
 }
 
 /**
- * @brief
+ * @brief Validates the fields in the dialog and returns whether they are valid.
  *
- * @param silent
- * @return
+ * @param verbosity The verbosity level for error messages.
+ * @return `true` if the fields are valid, `false` otherwise.
  */
 bool DialogWindowBackgroundMenu::validateFields(Verbosity verbosity) {
 
@@ -243,9 +243,12 @@ bool DialogWindowBackgroundMenu::validateFields(Verbosity verbosity) {
 	return false;
 }
 
-/*
-** Read the name, accelerator, mnemonic, and command fields.
-*/
+/**
+ * @brief Read the name, accelerator, mnemonic, and command fields.
+ *
+ * @param verbosity The verbosity level for error messages.
+ * @return A MenuItem structure containing the dialog fields if valid, or an empty optional if the fields are invalid.
+ */
 std::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbosity) {
 
 	const QString nameText = ui.editName->text();
@@ -291,11 +294,11 @@ std::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbosi
 }
 
 /**
- * @brief
+ * @brief Checks the macro text for validity and reports errors if any.
  *
- * @param macro
- * @param silent
- * @return
+ * @param macro The macro text to check for validity.
+ * @param verbosity The verbosity level for error messages.
+ * @return `true` if the macro text is valid, `false` otherwise.
  */
 bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity verbosity) {
 
@@ -303,7 +306,7 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 	int stoppedAt;
 	if (!isMacroValid(macro, &errMsg, &stoppedAt)) {
 		if (verbosity == Verbosity::Verbose) {
-			Preferences::reportError(this, macro, stoppedAt, tr("macro"), errMsg);
+			Preferences::ReportError(this, macro, stoppedAt, tr("macro"), errMsg);
 		}
 		QTextCursor cursor = ui.editMacro->textCursor();
 		cursor.setPosition(stoppedAt);
@@ -314,7 +317,7 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 
 	if (stoppedAt != macro.size()) {
 		if (verbosity == Verbosity::Verbose) {
-			Preferences::reportError(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
+			Preferences::ReportError(this, macro, stoppedAt, tr("macro"), tr("syntax error"));
 		}
 
 		QTextCursor cursor = ui.editMacro->textCursor();
@@ -327,9 +330,9 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 }
 
 /**
- * @brief
+ * @brief Applies the changes made in the dialog to the model and updates the menus.
  *
- * @return
+ * @return `true` if the changes were successfully applied, `false` otherwise.
  */
 bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
@@ -360,7 +363,7 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 
 	BGMenuData = std::move(newItems);
 
-	parse_menu_item_list(BGMenuData);
+	ParseMenuItemList(BGMenuData);
 
 	// Update the menus themselves in all of the NEdit windows
 	for (MainWindow *window : MainWindow::allWindows()) {
@@ -373,21 +376,21 @@ bool DialogWindowBackgroundMenu::applyDialogChanges() {
 }
 
 /**
- * @brief
+ * @brief Sets whether the "Paste LR Macro" button is enabled or disabled.
  *
- * @param enabled
+ * @param enabled If `true`, the button will be enabled; if `false`, it will be disabled.
  */
 void DialogWindowBackgroundMenu::setPasteReplayEnabled(bool enabled) {
 	ui.buttonPasteLRMacro->setEnabled(enabled);
 }
 
 /**
- * @brief
+ * @brief Updates an item in the model with the current dialog fields.
  *
- * @param item
- * @return
+ * @param item The item to update in the model.
+ * @return `true` if the item was successfully updated, `false` otherwise.
  */
-bool DialogWindowBackgroundMenu::updateCurrentItem(const QModelIndex &index) {
+bool DialogWindowBackgroundMenu::updateItem(const QModelIndex &index) {
 	// Get the current contents of the "patterns" dialog fields
 	auto dialogFields = readFields(Verbosity::Verbose);
 	if (!dialogFields) {
@@ -404,14 +407,14 @@ bool DialogWindowBackgroundMenu::updateCurrentItem(const QModelIndex &index) {
 }
 
 /**
- * @brief
+ * @brief Updates the currently selected item in the model with the current dialog fields.
  *
- * @return
+ * @return `true` if the item was successfully updated, `false` otherwise.
  */
 bool DialogWindowBackgroundMenu::updateCurrentItem() {
 	const QModelIndex index = ui.listItems->currentIndex();
 	if (index.isValid()) {
-		return updateCurrentItem(index);
+		return updateItem(index);
 	}
 
 	return true;

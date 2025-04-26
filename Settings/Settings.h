@@ -29,22 +29,22 @@ enum ColorTypes : int {
 namespace Settings {
 Q_DECLARE_NAMESPACE_TR(Settings)
 
-void loadPreferences(bool isServer);
-bool savePreferences();
-void importSettings(const QString &filename);
+void Load(bool isServer);
+bool Save();
+void Import(const QString &filename);
 
 // Paths
-QString configFile();
-QString historyFile();
-QString autoLoadMacroFile();
-QString styleFile();
-QString themeFile();
-QString languageModeFile();
-QString highlightPatternsFile();
-QString macroMenuFile();
-QString shellMenuFile();
-QString contextMenuFile();
-QString smartIndentFile();
+QString ConfigFile();
+QString HistoryFile();
+QString AutoLoadMacroFile();
+QString StyleFile();
+QString ThemeFile();
+QString LanguageModeFile();
+QString HighlightPatternsFile();
+QString MactoMenuFile();
+QString ShellMenuFile();
+QString ContextMenuFile();
+QString SmartIndentFile();
 
 // Standard
 extern bool showResizeNotification;

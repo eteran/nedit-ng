@@ -6,15 +6,15 @@
 #include "MenuItem.h"
 #include "MenuItemModel.h"
 #include "Preferences.h"
-#include "userCmds.h"
+#include "UserCommands.h"
 
 #include <QMessageBox>
 
 /**
- * @brief
+ * @brief Constructor for the DialogShellMenu class.
  *
- * @param parent
- * @param f
+ * @param parent The parent widget for this dialog, defaults to nullptr.
+ * @param f The window flags for the dialog, defaults to Qt::WindowFlags().
  */
 DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
@@ -59,7 +59,7 @@ void DialogShellMenu::connectSlots() {
 }
 
 /**
- * @brief
+ * @brief Handles the toggling of the "New" radio button.
  */
 void DialogShellMenu::buttonNew_clicked() {
 
@@ -76,7 +76,7 @@ void DialogShellMenu::buttonNew_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the "Copy" button click event.
  */
 void DialogShellMenu::buttonCopy_clicked() {
 
@@ -88,31 +88,31 @@ void DialogShellMenu::buttonCopy_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the "Delete" button click event.
  */
 void DialogShellMenu::buttonDelete_clicked() {
 	CommonDialog::deleteItem(&ui, model_, &deleted_);
 }
 
 /**
- * @brief
+ * @brief Moves the currently selected item up in the model and updates the UI.
  */
 void DialogShellMenu::buttonUp_clicked() {
 	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
- * @brief
+ * @brief Moves the currently selected item down in the model and updates the UI.
  */
 void DialogShellMenu::buttonDown_clicked() {
 	CommonDialog::moveItemDown(&ui, model_);
 }
 
 /**
- * @brief
+ * @brief Handles the change of the current item in the list view.
  *
- * @param current
- * @param previous
+ * @param current The current index in the list view.
+ * @param previous The previous index in the list view.
  */
 void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
 	static bool canceled = false;
@@ -153,7 +153,7 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
 
 	// this is only safe if we aren't moving due to a delete operation
 	if (previous.isValid() && previous != deleted_ && !skip_check) {
-		if (!updateCurrentItem(previous)) {
+		if (!updateItem(previous)) {
 			// reselect the old item
 			canceled = true;
 			Q_EMIT restore(previous);
@@ -217,9 +217,9 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
 }
 
 /**
- * @brief
+ * @brief Handles the click event for the button box in the dialog.
  *
- * @param button
+ * @param button The button that was clicked in the button box.
  */
 void DialogShellMenu::buttonBox_clicked(QAbstractButton *button) {
 	if (ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
@@ -228,7 +228,7 @@ void DialogShellMenu::buttonBox_clicked(QAbstractButton *button) {
 }
 
 /**
- * @brief
+ * @brief Handles the "Accept" button click event in the dialog.
  */
 void DialogShellMenu::buttonBox_accepted() {
 	// Read the dialog fields, and update the menus
@@ -240,11 +240,16 @@ void DialogShellMenu::buttonBox_accepted() {
 }
 
 /*
-** Read the name, accelerator, mnemonic, and command fields from the shell or
-** macro commands dialog into a newly allocated MenuItem.  Returns a
-** pointer to the new MenuItem structure as the function value, or nullptr on
-** failure.
+
 */
+
+/**
+ * @brief Read the name, accelerator, mnemonic, and command fields from the shell or
+ * macro commands dialog into a MenuItem.
+ *
+ * @param verbosity The verbosity level for error messages.
+ * @return the new MenuItem structure as the function value, or an empty optional if the fields are invalid.
+ */
 std::optional<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
 
 	const QString nameText = ui.editName->text();
@@ -301,9 +306,9 @@ std::optional<MenuItem> DialogShellMenu::readFields(Verbosity verbosity) {
 }
 
 /**
- * @brief
+ * @brief Applies the changes made in the dialog to the model and updates the menus.
  *
- * @return
+ * @return `true` if the changes were successfully applied, `false` otherwise.
  */
 bool DialogShellMenu::applyDialogChanges() {
 
@@ -334,7 +339,7 @@ bool DialogShellMenu::applyDialogChanges() {
 
 	ShellMenuData = std::move(newItems);
 
-	parse_menu_item_list(ShellMenuData);
+	ParseMenuItemList(ShellMenuData);
 
 	// Update the menus themselves in all of the NEdit windows
 	for (MainWindow *window : MainWindow::allWindows()) {
@@ -347,21 +352,21 @@ bool DialogShellMenu::applyDialogChanges() {
 }
 
 /**
- * @brief
+ * @brief Handles the toggling of the "To Same Document" radio button.
  *
- * @param checked
+ * @param checked Indicates whether the radio button is checked or not.
  */
 void DialogShellMenu::radioToSameDocument_toggled(bool checked) {
 	ui.checkReplaceInput->setEnabled(checked);
 }
 
 /**
- * @brief
+ * @brief Updates an item in the model with the current dialog fields.
  *
- * @param item
- * @return
+ * @param index The QModelIndex of the item to update.
+ * @return `true` if the item was successfully updated, `false` otherwise.
  */
-bool DialogShellMenu::updateCurrentItem(const QModelIndex &index) {
+bool DialogShellMenu::updateItem(const QModelIndex &index) {
 	// Get the current contents of the "patterns" dialog fields
 	auto dialogFields = readFields(Verbosity::Verbose);
 	if (!dialogFields) {
@@ -378,24 +383,24 @@ bool DialogShellMenu::updateCurrentItem(const QModelIndex &index) {
 }
 
 /**
- * @brief
+ * @brief Updates the currently selected item in the dialog.
  *
- * @return
+ * @return `true` if the item was successfully updated, `false` otherwise.
  */
 bool DialogShellMenu::updateCurrentItem() {
 	const QModelIndex index = ui.listItems->currentIndex();
 	if (index.isValid()) {
-		return updateCurrentItem(index);
+		return updateItem(index);
 	}
 
 	return true;
 }
 
 /**
- * @brief
+ * @brief Validates the fields in the dialog and returns whether they are valid.
  *
- * @param mode
- * @return
+ * @param verbosity The verbosity level for error messages.
+ * @return `true` if the fields are valid, `false` otherwise.
  */
 bool DialogShellMenu::validateFields(Verbosity verbosity) {
 	if (readFields(verbosity)) {

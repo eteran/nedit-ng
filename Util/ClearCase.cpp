@@ -9,8 +9,8 @@ namespace ClearCase {
 /**
  * @brief Get the index of the version extended path in a ClearCase filename.
  *
- * @param fullname the full ClearCase filename, which may include a version extended path.
- * @return the index of the version extended path, or -1 if not found.
+ * @param fullname The full ClearCase filename, which may include a version extended path.
+ * @return The index of the version extended path, or -1 if not found.
  */
 int GetVersionExtendedPathIndex(const QString &fullname) {
 	return fullname.indexOf(QLatin1String("@@/"));
@@ -19,8 +19,8 @@ int GetVersionExtendedPathIndex(const QString &fullname) {
 /**
  * @brief Get the version extended path from a ClearCase filename.
  *
- * @param fullname the full ClearCase filename, which may include a version extended path.
- * @return the version extended path if found, or an empty string if not found.
+ * @param fullname The full ClearCase filename, which may include a version extended path.
+ * @return The version extended path if found, or an empty string if not found.
  */
 QString GetVersionExtendedPath(const QString &fullname) {
 	const int n = GetVersionExtendedPathIndex(fullname);

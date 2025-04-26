@@ -3436,7 +3436,7 @@ std::error_code autoIndentMV(DocumentWidget *document, Arguments arguments, Data
 		return MacroErrorCode::InvalidIndentStyle;
 	}
 
-	const QLatin1String res = to_string(document->autoIndentStyle());
+	const QLatin1String res = ToString(document->autoIndentStyle());
 	*result                 = make_value(res);
 	return MacroErrorCode::Success;
 }
@@ -3451,7 +3451,7 @@ std::error_code wrapTextMV(DocumentWidget *document, Arguments arguments, DataVa
 		return MacroErrorCode::InvalidWrapStyle;
 	}
 
-	const QLatin1String res = to_string(document->wrapMode());
+	const QLatin1String res = ToString(document->wrapMode());
 	*result                 = make_value(res);
 	return MacroErrorCode::Success;
 }
@@ -3480,7 +3480,7 @@ std::error_code incBackupMV(DocumentWidget *document, Arguments arguments, DataV
 std::error_code showMatchingMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	const QLatin1String res = to_string(document->showMatchingStyle());
+	const QLatin1String res = ToString(document->showMatchingStyle());
 	*result                 = make_value(res);
 	return MacroErrorCode::Success;
 }
@@ -3516,7 +3516,7 @@ std::error_code lockedMV(DocumentWidget *document, Arguments arguments, DataValu
 std::error_code fileFormatMV(DocumentWidget *document, Arguments arguments, DataValue *result) {
 	Q_UNUSED(arguments)
 
-	const QLatin1String res = to_string(document->fileFormat());
+	const QLatin1String res = ToString(document->fileFormat());
 	*result                 = make_value(res);
 	return MacroErrorCode::Success;
 }
@@ -4286,7 +4286,7 @@ std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments argume
 /*
 ** Set the color of a range set's ranges. it is ignored if the color cannot be
 ** found/applied. If no color is applied, any current color is removed. Returns
-** true if the rangeset is valid.
+** `true` if the rangeset is valid.
 */
 std::error_code rangesetSetColorMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
@@ -4326,7 +4326,7 @@ std::error_code rangesetSetColorMS(DocumentWidget *document, Arguments arguments
 
 /*
 ** Set the name of a range set's ranges. Returns
-** true if the rangeset is valid.
+** `true` if the rangeset is valid.
 */
 std::error_code rangesetSetNameMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
@@ -4364,7 +4364,7 @@ std::error_code rangesetSetNameMS(DocumentWidget *document, Arguments arguments,
 }
 
 /*
-** Change a range's modification response. Returns true if the rangeset is
+** Change a range's modification response. Returns `true` if the rangeset is
 ** valid and the response type name is valid.
 */
 std::error_code rangesetSetModeMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
@@ -5281,7 +5281,7 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 				if (errPos) {
 					*errPos = in.index();
 				}
-				return Preferences::reportError(
+				return Preferences::ReportError(
 					dialogParent,
 					*in.string(),
 					in.index(),
@@ -5295,7 +5295,7 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 				if (errPos) {
 					*errPos = in.index();
 				}
-				return Preferences::reportError(
+				return Preferences::ReportError(
 					dialogParent,
 					*in.string(),
 					in.index(),
@@ -5313,7 +5313,7 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 					*errPos = in.index() + stoppedAt;
 				}
 
-				return Preferences::reportError(
+				return Preferences::ReportError(
 					dialogParent,
 					code,
 					stoppedAt,
@@ -5354,7 +5354,7 @@ bool readCheckMacroString(QWidget *dialogParent, const QString &string, Document
 					*errPos = in.index() + stoppedAt;
 				}
 
-				return Preferences::reportError(
+				return Preferences::ReportError(
 					dialogParent,
 					code,
 					stoppedAt,

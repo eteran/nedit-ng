@@ -50,9 +50,9 @@ struct {
 /**
  * @brief Gets the index of the next argument parameter.
  *
- * @param args the command line arguments.
- * @param argIndex the current argument index.
- * @return the next argument index.
+ * @param args The command line arguments.
+ * @param argIndex The current argument index.
+ * @return The next argument index.
  */
 int getArgumentParameter(const QStringList &args, int argIndex) {
 	if (argIndex + 1 >= args.size()) {
@@ -66,8 +66,8 @@ int getArgumentParameter(const QStringList &args, int argIndex) {
 /**
  * @brief Parses a command string into a list of arguments.
  *
- * @param program the command string to parse.
- * @return a list of arguments.
+ * @param program The command string to parse.
+ * @return A list of arguments.
  */
 QStringList parseCommandString(const QString &program) {
 
@@ -151,8 +151,8 @@ void printNcVersion() {
  * @brief Parses the command line arguments into a CommandLine structure.
  * This is the internal implementation of processCommandLine.
  *
- * @param args the command line arguments
- * @return an optional CommandLine structure containing the parsed arguments
+ * @param args The command line arguments
+ * @return A CommandLine structure containing the parsed arguments
  *         or an empty optional if the command line is invalid.
  */
 std::optional<CommandLine> parseCommandLine(const QStringList &args) {
@@ -343,7 +343,7 @@ std::optional<CommandLine> parseCommandLine(const QStringList &args) {
  * if nc wants a named server, so nedit will match. Special characters are protected
  * from the shell by escaping EVERYTHING with '\'.
  *
- * @param args the command line arguments.
+ * @param args The command line arguments.
  * @return CommandLine structure containing the command and arguments.
  */
 CommandLine processCommandLine(const QStringList &args) {
@@ -360,8 +360,8 @@ CommandLine processCommandLine(const QStringList &args) {
 /**
  * @brief Prompt the user about starting a server, with "message", then start server.
  *
- * @param message a message to display to the user, typically asking whether to start the server.
- * @param commandLineArgs the command line arguments to pass to the server.
+ * @param message A message to display to the user, typically asking whether to start the server.
+ * @param commandLineArgs The command line arguments to pass to the server.
  * @return 0 on success, -1 if the server failed to start, -2 if the user canceled starting the server.
  */
 int startServer(const char *message, const QStringList &commandLineArgs) {
@@ -407,9 +407,9 @@ int startServer(const char *message, const QStringList &commandLineArgs) {
 /**
  * @brief Write data to the socket.
  *
- * @param socket the local socket to write to.
- * @param data the data to write.
- * @return true if all data was written successfully, false otherwise.
+ * @param socket The local socket to write to.
+ * @param data The data to write.
+ * @return `true` if all data was written successfully, `false` otherwise.
  */
 bool writeToSocket(QLocalSocket *socket, const QByteArray &data) {
 	int64_t remaining = data.size();
@@ -436,8 +436,8 @@ bool writeToSocket(QLocalSocket *socket, const QByteArray &data) {
 /**
  * @brief Main function for the nc-ng client.
  *
- * @param argc the number of command line arguments.
- * @param argv the command line arguments.
+ * @param argc The number of command line arguments.
+ * @param argv The command line arguments.
  * @return 0 on success, -1 if the server could not be connected to or started.
  *         If the user cancels starting the server, it returns -2.
  */
@@ -446,7 +446,7 @@ int main(int argc, char *argv[]) {
 	QCoreApplication app(argc, argv);
 
 	// Read the application resources into the Preferences data structure
-	const QString filename = Settings::configFile();
+	const QString filename = Settings::ConfigFile();
 	QSettings settings(filename, QSettings::IniFormat);
 	settings.beginGroup(QLatin1String("Server"));
 

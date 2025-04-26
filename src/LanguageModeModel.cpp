@@ -143,7 +143,7 @@ void LanguageModeModel::moveItemUp(const QModelIndex &index) {
 		const int row = index.row();
 		if (row > 0) {
 			beginMoveRows(QModelIndex(), row, row, QModelIndex(), row - 1);
-			moveItem(items_, row, row - 1);
+			MoveItem(items_, row, row - 1);
 			endMoveRows();
 		}
 	}
@@ -159,7 +159,7 @@ void LanguageModeModel::moveItemDown(const QModelIndex &index) {
 		const int row = index.row();
 		if (row < rowCount() - 1) {
 			beginMoveRows(QModelIndex(), row, row, QModelIndex(), row + 2);
-			moveItem(items_, row, row + 1);
+			MoveItem(items_, row, row + 1);
 			endMoveRows();
 		}
 	}

@@ -13,16 +13,16 @@
 #include "SmartIndent.h"
 #include "TextArea.h"
 #include "Util/regex.h"
-#include "userCmds.h"
+#include "UserCommands.h"
 
 #include <QMessageBox>
 #include <QRegularExpressionValidator>
 
 /**
- * @brief
+ * @brief Constructor for DialogLanguageModes class.
  *
- * @param parent
- * @param f
+ * @param parent The parent widget for this dialog, defaults to nullptr.
+ * @param f The window flags for this dialog, defaults to Qt::WindowFlags().
  */
 DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatterns, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f), dialogSyntaxPatterns_(dialogSyntaxPatterns) {
@@ -72,10 +72,10 @@ void DialogLanguageModes::connectSlots() {
 }
 
 /**
- * @brief
+ * @brief Updates the current item in the dialog based on the provided index.
  *
- * @param current
- * @param previous
+ * @param current The index of the current item to update.
+ * @param previous The index of the previous item, used for validation.
  */
 void DialogLanguageModes::currentChanged(const QModelIndex &current, const QModelIndex &previous) {
 	static bool canceled = false;
@@ -122,7 +122,7 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 
 	// this is only safe if we aren't moving due to a delete operation
 	if (previous.isValid() && previous != deleted_ && !skip_check) {
-		if (!updateCurrentItem(previous)) {
+		if (!updateItem(previous)) {
 			// reselect the old item
 			canceled = true;
 			Q_EMIT restore(previous);
@@ -208,7 +208,7 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 }
 
 /**
- * @brief
+ * @brief Handles the "Accept" button click event.
  */
 void DialogLanguageModes::buttonBox_accepted() {
 	if (!updateLMList(Verbosity::Verbose)) {
@@ -219,9 +219,9 @@ void DialogLanguageModes::buttonBox_accepted() {
 }
 
 /**
- * @brief
+ * @brief Handles the button box click event.
  *
- * @param button
+ * @param button The button that was clicked in the button box.
  */
 void DialogLanguageModes::buttonBox_clicked(QAbstractButton *button) {
 	if (ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
@@ -229,11 +229,14 @@ void DialogLanguageModes::buttonBox_clicked(QAbstractButton *button) {
 	}
 }
 
-/*
-** Read the fields in the language modes dialog and create a LanguageMode data
-** structure reflecting the current state of the selected language mode in the dialog.
-** If any of the information is incorrect or missing, display a warning dialog.
-*/
+/**
+ * @brief Read the fields in the language modes dialog and create a LanguageMode data
+ * structure reflecting the current state of the selected language mode in the dialog.
+ * If any of the information is incorrect or missing, display a warning dialog.
+ *
+ * @param verbosity The verbosity level for error messages.
+ * @return A LanguageMode object if the fields are valid, or an empty optional if validation fails.
+ */
 std::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity) {
 
 	LanguageMode lm;
@@ -277,14 +280,14 @@ std::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity)
 	const QString tipsFile = ui.editCallTips->text();
 	if (!tipsFile.isEmpty()) {
 		// Ensure that AddTagsFile will work
-		if (!Tags::addTagsFile(tipsFile, Tags::SearchMode::TIP)) {
+		if (!Tags::AddTagsFile(tipsFile, Tags::SearchMode::TIP)) {
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this, tr("Error reading Calltips"), tr("Can't read default calltips file(s):\n  \"%1\"\n").arg(tipsFile));
 			}
 			return {};
 		}
 
-		if (!Tags::deleteTagsFile(tipsFile, Tags::SearchMode::TIP, false)) {
+		if (!Tags::DeleteTagsFile(tipsFile, Tags::SearchMode::TIP, false)) {
 			qCritical("NEdit: Internal error: Trouble deleting calltips file(s):\n  \"%s\"", qPrintable(tipsFile));
 		}
 	}
@@ -364,10 +367,10 @@ std::optional<LanguageMode> DialogLanguageModes::readFields(Verbosity verbosity)
 }
 
 /**
- * @brief
+ * @brief Updates the currently selected language mode in the dialog with the current field values.
  *
- * @param mode
- * @return
+ * @param verbosity The verbosity level for error messages.
+ * @return `true` if the item was successfully updated, `false` otherwise.
  */
 bool DialogLanguageModes::updateLanguageList(Verbosity verbosity) {
 
@@ -404,10 +407,10 @@ bool DialogLanguageModes::updateLanguageList(Verbosity verbosity) {
 }
 
 /**
- * @brief
+ * @brief Updates the language mode list and applies changes to all open documents.
  *
- * @param mode
- * @return
+ * @param verbosity The verbosity level for error messages.
+ * @return `true` if the language mode list was successfully updated, `false` otherwise.
  */
 bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 
@@ -478,7 +481,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 					dialogSyntaxPatterns_->RenameHighlightPattern(oldName, newName);
 				}
 
-				SmartIndent::renameSmartIndentMacros(oldName, newName);
+				SmartIndent::RenameSmartIndentMacros(oldName, newName);
 
 				// make a copy of the language mode, and set the new name
 				LanguageMode newLanguageMode = *lang;
@@ -499,7 +502,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 
 		/* Update user menu info to update language mode dependencies of
 		   user menu items */
-		update_user_menu_info();
+		UpdateUserMenuInfo();
 
 		// Update the menus in the window menu bars ...
 		for (MainWindow *win : MainWindow::allWindows()) {
@@ -510,7 +513,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 		for (DocumentWidget *currentDocument : DocumentWidget::allDocuments()) {
 			const size_t currentLanguageMode = currentDocument->getLanguageMode();
 			if (currentLanguageMode != PLAIN_LANGUAGE_MODE && !Preferences::LanguageModes[currentLanguageMode].defTipsFile.isNull()) {
-				Tags::addTagsFile(Preferences::LanguageModes[currentLanguageMode].defTipsFile, Tags::SearchMode::TIP);
+				Tags::AddTagsFile(Preferences::LanguageModes[currentLanguageMode].defTipsFile, Tags::SearchMode::TIP);
 			}
 		}
 
@@ -520,7 +523,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 		}
 
 		// The same for the smart indent macro dialog
-		SmartIndent::updateLangModeMenuSmartIndent();
+		SmartIndent::UpdateLangModeMenuSmartIndent();
 
 		// Note that preferences have been changed
 		Preferences::MarkPrefsChanged();
@@ -530,7 +533,7 @@ bool DialogLanguageModes::updateLMList(Verbosity verbosity) {
 }
 
 /**
- * @brief
+ * @brief Handles the "New" button click event.
  */
 void DialogLanguageModes::buttonNew_clicked() {
 
@@ -547,7 +550,7 @@ void DialogLanguageModes::buttonNew_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the "Copy" button click event.
  */
 void DialogLanguageModes::buttonCopy_clicked() {
 
@@ -559,19 +562,25 @@ void DialogLanguageModes::buttonCopy_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the "Up" button click event.
  */
 void DialogLanguageModes::buttonUp_clicked() {
 	CommonDialog::moveItemUp(&ui, model_);
 }
 
 /**
- * @brief
+ * @brief Handles the "Down" button click event.
  */
 void DialogLanguageModes::buttonDown_clicked() {
 	CommonDialog::moveItemDown(&ui, model_);
 }
 
+/**
+ * @brief Counts the number of language modes with the specified name.
+ *
+ * @param name The name of the language mode to count.
+ * @return The count of language modes with the specified name.
+ */
 int DialogLanguageModes::countLanguageModes(const QString &name) const {
 	int count = 0;
 	for (int i = 0; i < model_->rowCount(); ++i) {
@@ -585,10 +594,10 @@ int DialogLanguageModes::countLanguageModes(const QString &name) const {
 }
 
 /**
- * @brief
+ * @brief Checks if the specified language mode has highlight patterns defined.
  *
- * @param name
- * @return
+ * @param name The name of the language mode to check for highlight patterns.
+ * @return `true` if the language mode has highlight patterns defined, `false` otherwise.
  */
 bool DialogLanguageModes::LMHasHighlightPatterns(const QString &name) const {
 	if (Highlight::FindPatternSet(name) != nullptr) {
@@ -599,7 +608,7 @@ bool DialogLanguageModes::LMHasHighlightPatterns(const QString &name) const {
 }
 
 /**
- * @brief
+ * @brief Handles the "Delete" button click event.
  */
 void DialogLanguageModes::buttonDelete_clicked() {
 
@@ -638,12 +647,12 @@ void DialogLanguageModes::buttonDelete_clicked() {
 }
 
 /**
- * @brief
+ * @brief Updates the given item in the dialog with the current field values.
  *
- * @param item
- * @return
+ * @param item The index of the item to update.
+ * @return `true` if the item was successfully updated, `false` otherwise.
  */
-bool DialogLanguageModes::updateCurrentItem(const QModelIndex &index) {
+bool DialogLanguageModes::updateItem(const QModelIndex &index) {
 	// Get the current contents of the "patterns" dialog fields
 	auto dialogFields = readFields(Verbosity::Verbose);
 	if (!dialogFields) {
@@ -660,24 +669,24 @@ bool DialogLanguageModes::updateCurrentItem(const QModelIndex &index) {
 }
 
 /**
- * @brief
+ * @brief Updates the currently selected item in the dialog with the current field values.
  *
- * @return
+ * @return `true` if the item was successfully updated, `false` otherwise.
  */
 bool DialogLanguageModes::updateCurrentItem() {
 	const QModelIndex index = ui.listItems->currentIndex();
 	if (index.isValid()) {
-		return updateCurrentItem(index);
+		return updateItem(index);
 	}
 
 	return true;
 }
 
 /**
- * @brief
+ * @brief Validates the fields in the dialog.
  *
- * @param mode
- * @return
+ * @param verbosity The verbosity level for error messages.
+ * @return `true` if the fields are valid, `false` otherwise.
  */
 bool DialogLanguageModes::validateFields(Verbosity verbosity) {
 	if (readFields(verbosity)) {

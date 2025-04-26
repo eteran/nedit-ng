@@ -15,7 +15,7 @@ private:
 	void showEvent(QShowEvent *event) override;
 
 public:
-	int result() const {
+	int result() const noexcept {
 		return result_;
 	}
 

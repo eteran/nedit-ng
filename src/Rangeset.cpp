@@ -591,7 +591,7 @@ std::optional<TextRange> Rangeset::RangesetFindRangeNo(int index) const {
 
 /*
 ** Find out whether the position pos is included in one of the ranges of
-** rangeset. Returns the containing range's index if true, -1 otherwise.
+** rangeset. Returns the containing range's index if `true`, -1 otherwise.
 ** Note: ranges are indexed from zero.
 */
 int64_t Rangeset::RangesetFindRangeOfPos(TextCursor pos, bool incl_end) const {
@@ -717,7 +717,7 @@ bool Rangeset::setMode(const QString &mode) {
 
 /*
 ** Find out whether the position pos is included in one of the ranges of
-** rangeset. Returns the containing range's index if true, -1 otherwise.
+** rangeset. Returns the containing range's index if `true`, -1 otherwise.
 ** Essentially the same as the RangesetFindRangeOfPos() function, but uses the
 ** last_index member of the rangeset and weighted_at_or_before() for speedy
 ** lookup in refresh tasks. The rangeset is assumed to be valid, as is the
@@ -817,7 +817,7 @@ int64_t Rangeset::RangesetAdd(const Rangeset &other) {
 	   ranges (from origSet and plusSet) - don't worry, they're both considered
 	   read-only - building the merged set in newRanges */
 
-	bool isOld = true; // true if origRanges points to a range in oldRanges[]
+	bool isOld = true; // `true` if origRanges points to a range in oldRanges[]
 
 	while (nOrigRanges > 0 || nPlusRanges > 0) {
 

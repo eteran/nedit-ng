@@ -14,9 +14,11 @@
 
 namespace {
 
-/*
-** Count no. of writable windows, but first update the status of all files.
-*/
+/**
+ * @brief Count no. of writable windows, but first update the status of all files.
+ *
+ * @return Number of writable windows.
+ */
 int countWritableWindows() {
 
 	int nWritable = 0;
@@ -58,9 +60,11 @@ int countWritableWindows() {
 	return nWritable;
 }
 
-/*
-** Collects a list of writable windows (sorted by file name).
-**/
+/**
+ * @brief Collects a list of writable windows (sorted by file name).
+ *
+ * @return A vector of writable DocumentWidget instances.
+ */
 std::vector<DocumentWidget *> collectWritableWindows() {
 
 	std::vector<DocumentWidget *> documents;
@@ -80,11 +84,11 @@ std::vector<DocumentWidget *> collectWritableWindows() {
 }
 
 /**
- * @brief
+ * @brief Constructor for the DialogReplace class.
  *
- * @param window
- * @param document
- * @param f
+ * @param window The MainWindow instance associated with this dialog.
+ * @param document The DocumentWidget instance associated with this dialog.
+ * @param f The window flags for the dialog, defaults to Qt::WindowFlags().
  */
 DialogReplace::DialogReplace(MainWindow *window, DocumentWidget *document, Qt::WindowFlags f)
 	: Dialog(window, f), window_(window), document_(document) {
@@ -114,9 +118,9 @@ void DialogReplace::connectSlots() {
 }
 
 /**
- * @brief
+ * @brief Handles the show event for the dialog.
  *
- * @param event
+ * @param event The show event that triggered this function.
  */
 void DialogReplace::showEvent(QShowEvent *event) {
 	Dialog::showEvent(event);
@@ -124,11 +128,11 @@ void DialogReplace::showEvent(QShowEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Filters events for the dialog's text fields to handle up and down arrow keys
  *
- * @param obj
- * @param ev
- * @return
+ * @param obj The object that received the event
+ * @param ev The event that was triggered
+ * @return true if the event was handled, false otherwise
  */
 bool DialogReplace::eventFilter(QObject *obj, QEvent *ev) {
 
@@ -214,9 +218,9 @@ bool DialogReplace::eventFilter(QObject *obj, QEvent *ev) {
 }
 
 /**
- * @brief
+ * @brief Handles the dialog's keep checkbox toggle event.
  *
- * @param checked
+ * @param checked Whether the checkbox is checked or not.
  */
 void DialogReplace::checkKeep_toggled(bool checked) {
 	if (checked && document_) {
@@ -227,9 +231,9 @@ void DialogReplace::checkKeep_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handles the dialog's text changed event for the find text field.
  *
- * @param text
+ * @param text The text that was entered in the find field.
  */
 void DialogReplace::textFind_textChanged(const QString &text) {
 	Q_UNUSED(text)
@@ -237,7 +241,7 @@ void DialogReplace::textFind_textChanged(const QString &text) {
 }
 
 /**
- * @brief
+ * @brief Handles the dialog's "Find" button click event.
  */
 void DialogReplace::buttonFind_clicked() {
 
@@ -275,7 +279,7 @@ void DialogReplace::buttonFind_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the dialog's "Replace" button click event.
  */
 void DialogReplace::buttonReplace_clicked() {
 
@@ -307,7 +311,7 @@ void DialogReplace::buttonReplace_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the dialog's "Replace and Find" button click event.
  */
 void DialogReplace::buttonReplaceFind_clicked() {
 
@@ -339,7 +343,7 @@ void DialogReplace::buttonReplaceFind_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the dialog's "Window" button click event.
  */
 void DialogReplace::buttonWindow_clicked() {
 
@@ -369,7 +373,7 @@ void DialogReplace::buttonWindow_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the dialog's "Selection" button click event.
  */
 void DialogReplace::buttonSelection_clicked() {
 
@@ -399,7 +403,7 @@ void DialogReplace::buttonSelection_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the dialog's "Multi" button click event.
  */
 void DialogReplace::buttonMulti_clicked() {
 
@@ -438,9 +442,9 @@ void DialogReplace::buttonMulti_clicked() {
 }
 
 /**
- * @brief
+ * @brief Handles the toggling of the Regex checkbox in the dialog.
  *
- * @param checked
+ * @param checked Whether the Regex checkbox is checked or not.
  */
 void DialogReplace::checkRegex_toggled(bool checked) {
 
@@ -463,9 +467,9 @@ void DialogReplace::checkRegex_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handles the toggling of the Case Sensitive checkbox in the dialog.
  *
- * @param checked
+ * @param checked Whether the Case Sensitive checkbox is checked or not.
  */
 void DialogReplace::checkCase_toggled(bool checked) {
 
@@ -481,9 +485,9 @@ void DialogReplace::checkCase_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Sets the find text field from the document's current selection or content.
  *
- * @param document
+ * @param document The DocumentWidget instance from which to set the text field.
  */
 void DialogReplace::setTextFieldFromDocument(DocumentWidget *document) {
 
@@ -497,11 +501,12 @@ void DialogReplace::setTextFieldFromDocument(DocumentWidget *document) {
 	ui.textFind->setText(initialText);
 }
 
-/*
-** Shared routine for replace and find dialogs and i-search bar to initialize
-** the state of the regex/case/word toggle buttons, and the sticky case
-** sensitivity states.
-*/
+/**
+ * @brief Initialize the state of the regex/case/word toggle buttons,
+ * and the sticky case sensitivity states.
+ *
+ * @param searchType The type of search to initialize the buttons for.
+ */
 void DialogReplace::initToggleButtons(SearchType searchType) {
 	/* Set the initial search type and remember the corresponding case
 	   sensitivity states in case sticky case sensitivity is required. */
@@ -558,7 +563,7 @@ void DialogReplace::initToggleButtons(SearchType searchType) {
 }
 
 /**
- * @brief
+ * @brief Updates the state of the "Find" button based on the text in the find field.
  */
 void DialogReplace::updateFindButton() {
 	const bool buttonState = !ui.textFind->text().isEmpty();
@@ -566,7 +571,7 @@ void DialogReplace::updateFindButton() {
 }
 
 /**
- * @brief
+ * @brief Updates the state of the replace action buttons based on the current text in the find field.
  */
 void DialogReplace::UpdateReplaceActionButtons() {
 
@@ -576,14 +581,14 @@ void DialogReplace::UpdateReplaceActionButtons() {
 }
 
 /**
- * @brief
+ * @brief Sets the state of the action buttons in the dialog.
  *
- * @param replaceBtn
- * @param replaceFindBtn
- * @param replaceAndFindBtn
- * @param replaceInWinBtn
- * @param replaceInSelBtn
- * @param replaceAllBtn
+ * @param replaceBtn The state for the Replace button.
+ * @param replaceFindBtn The state for the Find button.
+ * @param replaceAndFindBtn The state for the Replace and Find button.
+ * @param replaceInWinBtn The state for the In Window button.
+ * @param replaceInSelBtn The state for the In Selection button.
+ * @param replaceAllBtn The state for the Replace All button (multi).
  */
 void DialogReplace::setActionButtons(bool replaceBtn, bool replaceFindBtn, bool replaceAndFindBtn, bool replaceInWinBtn, bool replaceInSelBtn, bool replaceAllBtn) {
 
@@ -595,11 +600,13 @@ void DialogReplace::setActionButtons(bool replaceBtn, bool replaceFindBtn, bool 
 	ui.buttonMulti->setEnabled(replaceAllBtn); // all is multi here
 }
 
-/*
-** Fetch and verify (particularly regular expression) search and replace
-** strings and search type from the Replace dialog.  If the strings are ok,
-** save a copy in the search history, and return the fields
-*/
+/**
+ * @brief Fetch and verify (particularly regular expression) search and replace
+ * strings and search type from the Replace dialog. If the strings are ok,
+ * save a copy in the search history, and return the fields
+ *
+ * @return A Fields struct containing the search and replace information.
+ */
 std::optional<DialogReplace::Fields> DialogReplace::readFields() {
 
 	Fields fields;
@@ -650,18 +657,18 @@ std::optional<DialogReplace::Fields> DialogReplace::readFields() {
 }
 
 /**
- * @brief
+ * @brief Returns whether the dialog should remain open after a search operation.
  *
- * @return
+ * @return `true` if the dialog should remain open, `false` otherwise.
  */
 bool DialogReplace::keepDialog() const {
 	return ui.checkKeep->isChecked();
 }
 
 /**
- * @brief
+ * @brief Sets the document for which this dialog is being used.
  *
- * @param document
+ * @param document The DocumentWidget instance to set for this dialog.
  */
 void DialogReplace::setDocument(DocumentWidget *document) {
 	Q_ASSERT(document);
@@ -673,16 +680,16 @@ void DialogReplace::setDocument(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Sets the search direction for the dialog.
  *
- * @param direction
+ * @param direction The direction to set for the search operation, either Forward or Backward.
  */
 void DialogReplace::setDirection(Direction direction) {
 	ui.checkBackward->setChecked(direction == Direction::Backward);
 }
 
 /**
- * @brief
+ * @brief Sets whether the dialog should remain open after a search operation.
  *
  * @param keep
  */
@@ -691,9 +698,9 @@ void DialogReplace::setKeepDialog(bool keep) {
 }
 
 /**
- * @brief
+ * @brief Sets the text in the replace text field of the dialog.
  *
- * @param text
+ * @param text The text to set in the replace field.
  */
 void DialogReplace::setReplaceText(const QString &text) {
 	ui.textReplace->setText(text);

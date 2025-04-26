@@ -110,50 +110,53 @@ ParseContext pContext;
  * but allows patterns to get big without disasters. */
 
 /**
- * @brief
+ * @brief Execute a `Regex` structure against a string.
  *
- * @param string
- * @param reverse
- * @return
+ * @param string Text to search within
+ * @param reverse If `true`, search backwards through the string.
+ * @return `true` if the regex matches, `false` otherwise.
  */
 bool Regex::execute(std::string_view string, bool reverse) {
 	return execute(string, 0, reverse);
 }
 
 /**
- * @brief
+ * @brief Execute a `Regex` structure against a string starting at a specific offset.
  *
- * @param string
- * @param offset
- * @param reverse
- * @return
+ * @param string Text to search within
+ * @param offset Offset into the string to begin search.
+ * @param reverse If `true`, search backwards through the string.
+ * @return `true` if the regex matches, `false` otherwise.
  */
 bool Regex::execute(std::string_view string, size_t offset, bool reverse) {
 	return execute(string, offset, nullptr, reverse);
 }
 
 /**
- * @brief
+ * @brief Execute a `Regex` structure against a string starting at a specific offset,
+ *        using a specific set of delimiters.
  *
- * @param string
- * @param offset
- * @param delimiters
- * @param reverse
- * @return
+ * @param string Text to search within
+ * @param offset Offset into the string to begin search.
+ * @param delimiters Word delimiters to use (nullptr for default).
+ * @param reverse If `true`, search backwards through the string.
+ * @return `true` if the regex matches, `false` otherwise.
  */
 bool Regex::execute(std::string_view string, size_t offset, const char *delimiters, bool reverse) {
 	return execute(string, offset, string.size(), delimiters, reverse);
 }
 
 /**
- * @brief
+ * @brief Execute a `Regex` structure against a substring of a string,
+ *        starting at a specific offset and ending at a specific end_offset,
+ *        using a specific set of delimiters.
  *
- * @param string
- * @param offset
- * @param end_offset
- * @param delimiters
- * @param reverse
- * @return
+ * @param string Text to search within
+ * @param offset Offset into the string to begin search.
+ * @param end_offset Offset into the string to end search.
+ * @param delimiters Word delimiters to use (nullptr for default).
+ * @param reverse If `true`, search backwards through the string.
+ * @return `true` if the regex matches, `false` otherwise.
  */
 bool Regex::execute(std::string_view string, size_t offset, size_t end_offset, const char *delimiters, bool reverse) {
 	return execute(
@@ -167,16 +170,19 @@ bool Regex::execute(std::string_view string, size_t offset, size_t end_offset, c
 }
 
 /**
- * @brief
+ * @brief Execute a `Regex` structure against a substring of a string,
+ * 	  starting at a specific offset and ending at a specific end_offset,
+ *    using a specific set of delimiters,
+ *    and considering characters immediately before and after the substring.
  *
- * @param string
- * @param offset
- * @param end_offset
- * @param prev
- * @param succ
- * @param delimiters
- * @param reverse
- * @return
+ * @param string Text to search within
+ * @param offset Offset into the string to begin search.
+ * @param end_offset Offset into the string to end search.
+ * @param prev Character immediately prior to `string`. Set to '\n' or -1 if `string` starts at the beginning of text.
+ * @param succ Character immediately after `end`. Set to '\n' or -1 if `string` ends at the ending of text.
+ * @param delimiters Word delimiters to use (nullptr for default).
+ * @param reverse If `true`, search backwards through the string.
+ * @return `true` if the regex matches, `false` otherwise.
  */
 bool Regex::execute(std::string_view string, size_t offset, size_t end_offset, int prev, int succ, const char *delimiters, bool reverse) {
 	assert(offset <= end_offset);
@@ -193,22 +199,21 @@ bool Regex::execute(std::string_view string, size_t offset, size_t end_offset, i
 		string.data() + string.size());
 }
 
-/*----------------------------------------------------------------------*
- * SetDefaultWordDelimiters
+/**
+ * @brief Set the default word delimiters for regex operations.
  *
- * Builds a default delimiter table that persists across 'ExecRE' calls.
- *----------------------------------------------------------------------*/
+ * @param delimiters The characters to be used as word delimiters.
+ */
 void Regex::SetDefaultWordDelimiters(std::string_view delimiters) {
 	Default_Delimiters = makeDelimiterTable(delimiters);
 }
 
-/*----------------------------------------------------------------------*
- * makeDelimiterTable
+/**
+ * @brief Create a bitset table of delimiters from a string.
  *
- * Translate a null-terminated string of delimiters into a 256 byte
- * lookup table for determining whether a character is a delimiter or
- * not.
- *----------------------------------------------------------------------*/
+ * @param delimiters A string containing characters that are considered delimiters.
+ * @return A bitset where each bit represents whether a character is a delimiter.
+ */
 std::bitset<256> Regex::makeDelimiterTable(std::string_view delimiters) {
 
 	std::bitset<256> table;
@@ -225,6 +230,11 @@ std::bitset<256> Regex::makeDelimiterTable(std::string_view delimiters) {
 	return table;
 }
 
+/**
+ * @brief Check if the regex program is valid.
+ *
+ * @return `true` if the regex program is valid, `false` otherwise.
+ */
 bool Regex::isValid() const noexcept {
 	if (program.empty()) {
 		return false;

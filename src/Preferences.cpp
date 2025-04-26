@@ -18,7 +18,7 @@
 #include "Util/version.h"
 #include "Yaml.h"
 #include "nedit.h"
-#include "userCmds.h"
+#include "UserCommands.h"
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -274,7 +274,7 @@ std::optional<LanguageMode> readLanguageMode(Input &in) {
 
 		return lm;
 	} catch (const ModeError &error) {
-		reportError(
+		ReportError(
 			nullptr,
 			*in.string(),
 			in.index(),
@@ -291,11 +291,11 @@ void loadLanguageModesString(const QString &string) {
 
 		YAML::Node languages;
 
-		const QString languageModeFile = Settings::languageModeFile();
-		if (QFileInfo::exists(languageModeFile)) {
-			languages = YAML::LoadAllFromFile(languageModeFile.toUtf8().data());
+		const QString LanguageModeFile = Settings::LanguageModeFile();
+		if (QFileInfo::exists(LanguageModeFile)) {
+			languages = YAML::LoadAllFromFile(LanguageModeFile.toUtf8().data());
 		} else {
-			static QByteArray defaultLanguageModes = loadResource(QLatin1String("DefaultLanguageModes.yaml"));
+			static QByteArray defaultLanguageModes = LoadResource(QLatin1String("DefaultLanguageModes.yaml"));
 			languages                              = YAML::LoadAll(defaultLanguageModes.data());
 		}
 
@@ -306,7 +306,7 @@ void loadLanguageModesString(const QString &string) {
 				break;
 			}
 
-			insert_or_replace(LanguageModes, *lm, [&lm](const LanguageMode &languageMode) {
+			Upsert(LanguageModes, *lm, [&lm](const LanguageMode &languageMode) {
 				return languageMode.name == lm->name;
 			});
 		}
@@ -319,7 +319,7 @@ void loadLanguageModesString(const QString &string) {
 				break;
 			}
 
-			insert_or_replace(LanguageModes, *lm, [&lm](const LanguageMode &languageMode) {
+			Upsert(LanguageModes, *lm, [&lm](const LanguageMode &languageMode) {
 				return languageMode.name == lm->name;
 			});
 
@@ -349,13 +349,13 @@ void translatePrefFormats(uint32_t fileVer) {
 	   the standard resource manager routines */
 
 	if (!Settings::shellCommands.isNull()) {
-		load_shell_commands_string(Settings::shellCommands);
+		LoadShellCommandsString(Settings::shellCommands);
 	}
 	if (!Settings::macroCommands.isNull()) {
-		load_macro_commands_string(Settings::macroCommands);
+		LoadMacroCommandsString(Settings::macroCommands);
 	}
 	if (!Settings::bgMenuCommands.isNull()) {
-		load_bg_menu_commands_string(Settings::bgMenuCommands);
+		LoadContextMenuCommandsString(Settings::bgMenuCommands);
 	}
 	if (!Settings::highlightPatterns.isNull()) {
 		Highlight::LoadHighlightString(Settings::highlightPatterns);
@@ -364,10 +364,10 @@ void translatePrefFormats(uint32_t fileVer) {
 		loadLanguageModesString(Settings::languageModes);
 	}
 	if (!Settings::smartIndentInit.isNull()) {
-		SmartIndent::loadSmartIndentString(Settings::smartIndentInit);
+		SmartIndent::LoadSmartIndentString(Settings::smartIndentInit);
 	}
 	if (!Settings::smartIndentInitCommon.isNull()) {
-		SmartIndent::loadSmartIndentCommonString(Settings::smartIndentInitCommon);
+		SmartIndent::LoadSmartIndentCommonString(Settings::smartIndentInitCommon);
 	}
 
 	Theme::load();
@@ -388,7 +388,7 @@ void translatePrefFormats(uint32_t fileVer) {
 	/* setup language mode dependent info of user menus (to increase
 	   performance when switching between documents of different
 	   language modes) */
-	setup_user_menu_info();
+	SetupUserMenuInfo();
 }
 
 /**
@@ -398,7 +398,7 @@ void translatePrefFormats(uint32_t fileVer) {
  */
 QString WriteLanguageModesString() {
 
-	const QString filename = Settings::languageModeFile();
+	const QString filename = Settings::LanguageModeFile();
 
 	try {
 		YAML::Emitter out;
@@ -479,7 +479,7 @@ bool PreferencesChanged() {
 
 void RestoreNEditPrefs() {
 
-	Settings::loadPreferences(IsServer);
+	Settings::Load(IsServer);
 
 	/* Do further parsing on resource types which RestorePreferences does
 	 * not understand and reads as strings, to put them in the final form
@@ -489,7 +489,7 @@ void RestoreNEditPrefs() {
 
 void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 
-	const QString prefFileName = Settings::configFile();
+	const QString prefFileName = Settings::ConfigFile();
 	if (prefFileName.isNull()) {
 		QMessageBox::warning(parent, tr("Error saving Preferences"), tr("Unable to save preferences: Cannot determine filename."));
 		return;
@@ -506,15 +506,15 @@ void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 		}
 	}
 
-	Settings::shellCommands         = write_shell_commands_string();
-	Settings::macroCommands         = write_macro_commands_string();
-	Settings::bgMenuCommands        = write_bg_menu_commands_string();
+	Settings::shellCommands         = WriteShellCommandsString();
+	Settings::macroCommands         = WriteMacroCommandsString();
+	Settings::bgMenuCommands        = WriteContextMenuCommandsString();
 	Settings::highlightPatterns     = Highlight::WriteHighlightString();
 	Settings::languageModes         = WriteLanguageModesString();
-	Settings::smartIndentInit       = SmartIndent::writeSmartIndentString();
-	Settings::smartIndentInitCommon = SmartIndent::writeSmartIndentCommonString();
+	Settings::smartIndentInit       = SmartIndent::WriteSmartIndentString();
+	Settings::smartIndentInitCommon = SmartIndent::WriteSmartIndentCommonString();
 
-	if (!Settings::savePreferences()) {
+	if (!Settings::Save()) {
 		QMessageBox::warning(
 			parent,
 			tr("Save Preferences"),
@@ -530,7 +530,7 @@ void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 ** derived from defaults, the .nedit file, and X resources.
 */
 void ImportPrefFile(const QString &filename) {
-	Settings::importSettings(filename);
+	Settings::Import(filename);
 
 	// NOTE(eteran): fix for issue #106
 	translatePrefFormats(NEDIT_VERSION);
@@ -1378,7 +1378,7 @@ bool SkipDelimiter(Input &in, QString *errMsg) {
 ** For a dialog, pass the dialog parent in toDialog.
 */
 
-bool reportError(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message) {
+bool ReportError(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message) {
 
 	// NOTE(eteran): hack to work around the fact that stoppedAt can be a "one past the end iterator"
 	stoppedAt = std::clamp<int64_t>(stoppedAt, 0, string.size() - 1);

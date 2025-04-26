@@ -24,7 +24,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLineEdit" name="editWidth"/>
+      <widget class="QLineEdit" name="editRows"/>
      </item>
      <item>
       <widget class="QLabel" name="label_2">
@@ -34,7 +34,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="editHeight"/>
+      <widget class="QLineEdit" name="editColumns"/>
      </item>
     </layout>
    </item>

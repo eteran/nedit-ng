@@ -39,7 +39,7 @@ private:
 	bool applyDialogChanges();
 	bool validateFields(Verbosity verbosity);
 	bool updateCurrentItem();
-	bool updateCurrentItem(const QModelIndex &index);
+	bool updateItem(const QModelIndex &index);
 	std::optional<MenuItem> readFields(Verbosity verbosity);
 
 private:

@@ -15,11 +15,15 @@
 
 namespace {
 
-/*
-** Remove empty parenthesis pairs and multiple spaces in a row
-** with one space.
-** Also remove leading and trailing spaces and dashes.
-*/
+/**
+ * @brief Cleans up a window title.
+ * Remove empty parenthesis pairs.
+ * Replace multiple spaces in a row with one space.
+ * Remove leading and trailing spaces and dashes.
+ *
+ * @param title The title to compress.
+ * @return A compressed version of the title.
+ */
 QString compressWindowTitle(const QString &title) {
 
 	QString result = title;
@@ -51,11 +55,11 @@ struct UpdateState {
 };
 
 /**
- * @brief
+ * @brief Constructor for the DialogWindowTitle class.
  *
- * @param document
- * @param parent
- * @param f
+ * @param document The DocumentWidget associated with this dialog, which provides the context for the title formatting.
+ * @param parent The parent widget for this dialog, defaults to nullptr.
+ * @param f The window flags for the dialog, defaults to Qt::WindowFlags().
  */
 DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f) {
@@ -119,7 +123,9 @@ void DialogWindowTitle::connectSlots() {
 	connect(ui.editFormat, &QLineEdit::textChanged, this, &DialogWindowTitle::editFormat_textChanged);
 }
 
-// a utility that sets the values of all toggle buttons
+/**
+ * @brief Sets the values of all toggle buttons
+ */
 void DialogWindowTitle::setToggleButtons() {
 
 	ui.checkDirectoryPresent->setChecked(filenameSet_);
@@ -142,9 +148,9 @@ void DialogWindowTitle::setToggleButtons() {
 }
 
 /**
- * @brief
+ * @brief Handles the text change event for the format edit field.
  *
- * @param text
+ * @param text The new text in the format edit field.
  */
 void DialogWindowTitle::editFormat_textChanged(const QString &text) {
 	Q_UNUSED(text)
@@ -152,7 +158,7 @@ void DialogWindowTitle::editFormat_textChanged(const QString &text) {
 }
 
 /**
- * @brief
+ * @brief Handles the text change event for the directory edit field.
  */
 void DialogWindowTitle::formatChangedCB() {
 
@@ -185,14 +191,14 @@ void DialogWindowTitle::formatChangedCB() {
 }
 
 /**
- * @brief
+ * @brief Formats the window title based on the provided parameters.
  *
- * @param document
- * @param clearCaseViewTag
- * @param serverName
- * @param isServer
- * @param titleFormat
- * @return
+ * @param document The DocumentWidget containing the document information.
+ * @param clearCaseViewTag The ClearCase view tag to use in the title.
+ * @param serverName The server name to use in the title.
+ * @param isServer Indicates if we are in server mode.
+ * @param titleFormat The format string to use for the title.
+ * @return The formatted window title.
  */
 QString DialogWindowTitle::formatWindowTitle(DocumentWidget *document, const QString &clearCaseViewTag, const QString &serverName, bool isServer, const QString &format) {
 	return formatWindowTitleInternal(
@@ -208,22 +214,34 @@ QString DialogWindowTitle::formatWindowTitle(DocumentWidget *document, const QSt
 		nullptr);
 }
 
-/*
-** Format the windows title using a printf like formatting string.
-** The following flags are recognised:
-**  %c    : ClearCase view tag
-**  %s    : server name
-**  %[n]d : directory, with one optional digit specifying the max number
-**          of trailing directory components to display. Skipped components are
-**          replaced by an ellipsis (...).
-**  %f    : file name
-**  %h    : host name
-**  %S    : file status
-**  %u    : user name
-**
-**  if the ClearCase view tag and server name are identical, only the first one
-**  specified in the formatting string will be displayed.
-*/
+/**
+ * @brief Format the windows title using a printf like formatting string.
+ *
+ *  The following flags are recognised:
+ *  %c    : ClearCase view tag
+ *  %s    : server name
+ *  %[n]d : directory, with one optional digit specifying the max number
+ *          of trailing directory components to display. Skipped components are
+ *          replaced by an ellipsis (...).
+ *  %f    : file name
+ *  %h    : host name
+ *  %S    : file status
+ *  %u    : user name
+ *
+ * @param filename The name of the file to be displayed in the title.
+ * @param path The path to the file, used for directory components.
+ * @param clearCaseViewTag The ClearCase view tag to use in the title, if applicable.
+ * @param serverName The server name to use in the title, if applicable.
+ * @param isServer Indicates if we are in server mode.
+ * @param filenameSet Indicates if the filename is set.
+ * @param lockReasons The lock reasons for the file, used to determine its status.
+ * @param fileChanged Indicates if the file has been changed.
+ * @param titleFormat The format string to use for the title, which may contain placeholders for the various components.
+ * @return The formatted window title.
+ *
+ * @note If the ClearCase view tag and server name are identical, only the first one
+ *       specified in the formatting string will be displayed.
+ */
 QString DialogWindowTitle::formatWindowTitleAndUpdate(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &titleFormat) {
 
 	UpdateState state;
@@ -294,9 +312,9 @@ QString DialogWindowTitle::formatWindowTitleAndUpdate(const QString &filename, c
 }
 
 /**
- * @brief
+ * @brief Handler for the filename toggle button.
  *
- * @param checked
+ * @param checked Indicates whether the filename checkbox is checked.
  */
 void DialogWindowTitle::checkFileName_toggled(bool checked) {
 	if (checked) {
@@ -307,9 +325,9 @@ void DialogWindowTitle::checkFileName_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handler for the hostname toggle button.
  *
- * @param checked
+ * @param checked Indicates whether the hostname checkbox is checked.
  */
 void DialogWindowTitle::checkHostName_toggled(bool checked) {
 	if (checked) {
@@ -320,9 +338,9 @@ void DialogWindowTitle::checkHostName_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handler for the file status toggle button.
  *
- * @param checked
+ * @param checked Indicates whether the file status checkbox is checked.
  */
 void DialogWindowTitle::checkFileStatus_toggled(bool checked) {
 	ui.checkBrief->setEnabled(checked);
@@ -340,9 +358,9 @@ void DialogWindowTitle::checkFileStatus_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handler for the brief toggle button.
  *
- * @param checked
+ * @param checked Indicates whether the brief checkbox is checked.
  */
 void DialogWindowTitle::checkBrief_toggled(bool checked) {
 
@@ -364,9 +382,9 @@ void DialogWindowTitle::checkBrief_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handler for the username toggle button.
  *
- * @param checked
+ * @param checked Indicates whether the username checkbox is checked.
  */
 void DialogWindowTitle::checkUserName_toggled(bool checked) {
 	if (checked) {
@@ -377,9 +395,9 @@ void DialogWindowTitle::checkUserName_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handler for the ClearCase toggle button.
  *
- * @param checked
+ * @param checked Indicates whether the ClearCase checkbox is checked.
  */
 void DialogWindowTitle::checkClearCase_toggled(bool checked) {
 	if (checked) {
@@ -390,9 +408,9 @@ void DialogWindowTitle::checkClearCase_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handler for the server name toggle button.
  *
- * @param checked
+ * @param checked Indicates whether the server name checkbox is checked.
  */
 void DialogWindowTitle::checkServerName_toggled(bool checked) {
 	if (checked) {
@@ -403,9 +421,9 @@ void DialogWindowTitle::checkServerName_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handler for the directory toggle button.
  *
- * @param checked
+ * @param checked Indicates whether the directory checkbox is checked.
  */
 void DialogWindowTitle::checkDirectory_toggled(bool checked) {
 
@@ -438,9 +456,9 @@ void DialogWindowTitle::checkDirectory_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handler for the file modified toggle button.
  *
- * @param checked
+ * @param checked Indicates whether the file modified checkbox is checked.
  */
 void DialogWindowTitle::checkFileModified_toggled(bool checked) {
 	fileChanged_ = checked;
@@ -448,9 +466,9 @@ void DialogWindowTitle::checkFileModified_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handler for the file read-only toggle button.
  *
- * @param checked
+ * @param checked Indicates whether the file read-only checkbox is checked.
  */
 void DialogWindowTitle::checkFileReadOnly_toggled(bool checked) {
 	lockReasons_.setPermLocked(checked);
@@ -458,9 +476,9 @@ void DialogWindowTitle::checkFileReadOnly_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handler for the file locked toggle button.
  *
- * @param checked
+ * @param checked Indicates whether the file locked checkbox is checked.
  */
 void DialogWindowTitle::checkFileLocked_toggled(bool checked) {
 	lockReasons_.setUserLocked(checked);
@@ -468,9 +486,9 @@ void DialogWindowTitle::checkFileLocked_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handler for the server name present toggle button.
  *
- * @param checked
+ * @param checked Indicates whether the server name present checkbox is checked.
  */
 void DialogWindowTitle::checkServerNamePresent_toggled(bool checked) {
 
@@ -484,9 +502,9 @@ void DialogWindowTitle::checkServerNamePresent_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handler for the ClearCase present toggle button.
  *
- * @param checked
+ * @param checked Indicates whether the ClearCase present checkbox is checked.
  */
 void DialogWindowTitle::checkClearCasePresent_toggled(bool checked) {
 	if (!checked) {
@@ -497,9 +515,9 @@ void DialogWindowTitle::checkClearCasePresent_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handler for the directory present toggle button.
  *
- * @param checked
+ * @param checked Indicates whether the directory present checkbox is checked.
  */
 void DialogWindowTitle::checkDirectoryPresent_toggled(bool checked) {
 	Q_UNUSED(checked)
@@ -507,9 +525,9 @@ void DialogWindowTitle::checkDirectoryPresent_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Handler for the server equals ClearCase toggle button.
  *
- * @param checked
+ * @param checked Indicates whether the server equals ClearCase checkbox is checked.
  */
 void DialogWindowTitle::checkServerEqualsCC_toggled(bool checked) {
 	if (checked) {
@@ -521,9 +539,9 @@ void DialogWindowTitle::checkServerEqualsCC_toggled(bool checked) {
 }
 
 /**
- * @brief
+ * @brief Appends a string to the format edit field.
  *
- * @param string
+ * @param string The string to append to the format.
  */
 void DialogWindowTitle::appendToFormat(const QString &string) {
 	const QString format = ui.editFormat->text();
@@ -531,9 +549,9 @@ void DialogWindowTitle::appendToFormat(const QString &string) {
 }
 
 /**
- * @brief
+ * @brief Removes a string from the format edit field.
  *
- * @param string
+ * @param string The string to remove from the format.
  */
 void DialogWindowTitle::removeFromFormat(const QString &string) {
 
@@ -556,9 +574,9 @@ void DialogWindowTitle::removeFromFormat(const QString &string) {
 }
 
 /**
- * @brief
+ * @brief Handles the button box click event.
  *
- * @param button
+ * @param button The button that was clicked in the button box.
  */
 void DialogWindowTitle::buttonBox_clicked(QAbstractButton *button) {
 	if (ui.buttonBox->standardButton(button) == QDialogButtonBox::Apply) {
@@ -577,9 +595,9 @@ void DialogWindowTitle::buttonBox_clicked(QAbstractButton *button) {
 }
 
 /**
- * @brief
+ * @brief Handles the text change event for the directory edit field.
  *
- * @param text
+ * @param text The new text in the directory edit field.
  */
 void DialogWindowTitle::editDirectory_textChanged(const QString &text) {
 
@@ -603,19 +621,19 @@ void DialogWindowTitle::editDirectory_textChanged(const QString &text) {
 }
 
 /**
- * @brief
+ * @brief Formats the window title based on the provided parameters.
  *
- * @param filename
- * @param path
- * @param clearCaseViewTag
- * @param serverName
- * @param isServer
- * @param filenameSet
- * @param lockReasons
- * @param fileChanged
- * @param titleFormat
- * @param state
- * @return
+ * @param filename The name of the file to be displayed in the title.
+ * @param path The path to the file, used for directory components.
+ * @param clearCaseViewTag The ClearCase view tag to use in the title, if applicable.
+ * @param serverName The server name to use in the title, if applicable.
+ * @param isServer Indicates if we are in server mode.
+ * @param filenameSet Indicates if the filename is set.
+ * @param lockReasons The lock reasons for the file, used to determine its status.
+ * @param fileChanged Indicates if the file has been changed.
+ * @param titleFormat The format string to use for the title, which may contain placeholders for the various components.
+ * @param state An UpdateState structure to store the state of the title components.
+ * @return The formatted window title.
  */
 QString DialogWindowTitle::formatWindowTitleInternal(const QString &filename, const QString &path, const QString &clearCaseViewTag, const QString &serverName, bool isServer, bool filenameSet, LockReasons lockReasons, bool fileChanged, const QString &format, UpdateState *state) {
 	QString title;

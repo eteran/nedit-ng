@@ -214,8 +214,8 @@ set(PROJECT_SOURCES
 	Theme.h
 	UndoInfo.cpp
 	UndoInfo.h
-	userCmds.cpp
-	userCmds.h
+	UserCommands.cpp
+	UserCommands.h
 	Verbosity.h
 	WindowHighlightData.h
 	WindowMenuEvent.cpp

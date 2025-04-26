@@ -8,15 +8,7 @@
 #include <QLineEdit>
 #include <QStyle>
 
-/*!
-	\class KeySequenceEdit
-	\brief The KeySequenceEdit widget allows to input a QKeySequence.
 
-
-	This widget lets the user choose a QKeySequence, which is usually used as
-	a shortcut. The recording is initiated when the widget receives the focus
-	and ends one second after the user releases the last key_.
-*/
 
 namespace {
 
@@ -27,7 +19,7 @@ namespace {
  * @param text
  * @return
  */
-int translateModifiers(Qt::KeyboardModifiers state, const QString &text) {
+int TranslateModifiers(Qt::KeyboardModifiers state, const QString &text) {
 	int result = 0;
 	// The shift modifier only counts when it is not used to type a symbol
 	// that is only reachable using the shift key_ anyway
@@ -245,7 +237,7 @@ void KeySequenceEdit::keyPressEvent(QKeyEvent *e) {
 		return;
 	}
 
-	nextKey |= translateModifiers(e->modifiers(), e->text());
+	nextKey |= TranslateModifiers(e->modifiers(), e->text());
 
 	keys_.push_back(nextKey);
 

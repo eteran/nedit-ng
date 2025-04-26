@@ -77,8 +77,8 @@ public:
 		int64_t rectEnd() const { return rectEnd_; }
 
 	public:
-		bool selected_     = false; // true if the selection is active
-		bool rectangular_  = false; // true if the selection is rectangular
+		bool selected_     = false; // `true` if the selection is active
+		bool rectangular_  = false; // `true` if the selection is rectangular
 		bool zeroWidth_    = false; // Width 0 selections aren't "real" selections, but they can be useful when creating rectangular selections from the keyboard.
 		TextCursor start_  = {};    // Pos. of start of selection, or if rectangular start of line containing it.
 		TextCursor end_    = {};    // Pos. of end of selection, or if rectangular end of line containing it.
@@ -222,7 +222,7 @@ private:
 private:
 	TextCursor cursorPosHint_ = {};              // hint for reasonable cursor position after a buffer modification operation
 	int tabDist_              = DefaultTabWidth; // equiv. number of characters in a tab
-	bool useTabs_             = true;            // true if buffer routines are allowed to use tabs for padding in rectangular operations
+	bool useTabs_             = true;            // `true` if buffer routines are allowed to use tabs for padding in rectangular operations
 	bool syncXSelection_      = true;
 
 private:

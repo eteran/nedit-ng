@@ -592,7 +592,7 @@ std::string shiftText(std::string_view text, ShiftDirection direction, bool tabs
 
 /*
 ** Shift the selection left or right by a single character, or by one tab stop
-** if "byTab" is true.  (The length of a tab stop is the size of an emulated
+** if "byTab" is `true`.  (The length of a tab stop is the size of an emulated
 ** tab if emulated tabs are turned on, or a hardware tab if not).
 */
 void shiftRect(DocumentWidget *document, TextArea *area, ShiftDirection direction, bool byTab, TextCursor selStart, TextCursor selEnd, int64_t rectStart, int64_t rectEnd) {
@@ -640,7 +640,7 @@ void shiftRect(DocumentWidget *document, TextArea *area, ShiftDirection directio
 
 /*
 ** Shift the selection left or right by a single character, or by one tab stop
-** if "byTab" is true.  (The length of a tab stop is the size of an emulated
+** if "byTab" is `true`.  (The length of a tab stop is the size of an emulated
 ** tab if emulated tabs are turned on, or a hardware tab if not).
 */
 void shiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection direction, bool byTab) {

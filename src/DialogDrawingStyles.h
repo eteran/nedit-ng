@@ -45,7 +45,7 @@ private:
 	bool validateFields(Verbosity verbosity);
 	std::optional<HighlightStyle> readFields(Verbosity verbosity);
 	bool updateCurrentItem();
-	bool updateCurrentItem(const QModelIndex &index);
+	bool updateItem(const QModelIndex &index);
 	int countPlainEntries() const;
 	void chooseColor(QLineEdit *edit);
 

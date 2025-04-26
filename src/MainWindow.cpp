@@ -42,7 +42,7 @@
 #include "WindowMenuEvent.h"
 #include "nedit.h"
 #include "shift.h"
-#include "userCmds.h"
+#include "UserCommands.h"
 
 #include <QActionGroup>
 #include <QButtonGroup>
@@ -901,7 +901,7 @@ void MainWindow::action_New_triggered() {
  */
 void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
 
-	emit_event("new", to_string(mode));
+	emit_event("new", ToString(mode));
 
 	Q_ASSERT(document);
 
@@ -970,7 +970,7 @@ void MainWindow::action_Open_triggered() {
  */
 void MainWindow::action_Close(DocumentWidget *document, CloseMode mode) {
 
-	emit_event("close", to_string(mode));
+	emit_event("close", ToString(mode));
 	document->actionClose(mode);
 }
 
@@ -1891,7 +1891,7 @@ void MainWindow::addToPrevOpenMenu(const QString &filename) {
 	// If the name is already in the list, move it to the start
 	const int index = PrevOpen.indexOf(filename);
 	if (index != -1) {
-		moveItem(PrevOpen, index, 0);
+		MoveItem(PrevOpen, index, 0);
 		MainWindow::invalidatePrevOpenMenus();
 		MainWindow::writeNEditDB();
 		return;
@@ -1942,12 +1942,12 @@ void MainWindow::readNEditDB() {
 		return;
 	}
 
-	const QString historyFile = Settings::historyFile();
-	if (historyFile.isNull()) {
+	const QString HistoryFile = Settings::HistoryFile();
+	if (HistoryFile.isNull()) {
 		return;
 	}
 
-	const QFileInfo info(historyFile);
+	const QFileInfo info(HistoryFile);
 	const QDateTime mtime = info.lastModified();
 
 	/*  Stat history file to see whether someone touched it after this
@@ -1961,7 +1961,7 @@ void MainWindow::readNEditDB() {
 	lastNeditdbModTime = mtime;
 
 	// open the file
-	QFile file(historyFile);
+	QFile file(HistoryFile);
 	if (!file.open(QIODevice::ReadOnly)) {
 		return;
 	}
@@ -2012,8 +2012,8 @@ void MainWindow::invalidatePrevOpenMenus() {
 */
 void MainWindow::writeNEditDB() {
 
-	const QString historyFile = Settings::historyFile();
-	if (historyFile.isNull()) {
+	const QString HistoryFile = Settings::HistoryFile();
+	if (HistoryFile.isNull()) {
 		return;
 	}
 
@@ -2022,7 +2022,7 @@ void MainWindow::writeNEditDB() {
 		return;
 	}
 
-	QFile file(historyFile);
+	QFile file(HistoryFile);
 	if (file.open(QIODevice::WriteOnly)) {
 		QTextStream ts(&file);
 
@@ -2783,7 +2783,7 @@ void MainWindow::action_Shift_Find() {
  */
 void MainWindow::action_Find_Again(DocumentWidget *document, Direction direction, WrapMode wrap) {
 
-	emit_event("find_again", to_string(direction), to_string(wrap));
+	emit_event("find_again", ToString(direction), ToString(wrap));
 
 	if (const QPointer<TextArea> area = lastFocus()) {
 		searchAndSelectSame(
@@ -2827,7 +2827,7 @@ void MainWindow::action_Shift_Find_Again() {
  */
 void MainWindow::action_Find_Selection(DocumentWidget *document, Direction direction, SearchType type, WrapMode wrap) {
 
-	emit_event("find_selection", to_string(direction), to_string(type), to_string(wrap));
+	emit_event("find_selection", ToString(direction), ToString(type), ToString(wrap));
 
 	if (const QPointer<TextArea> area = lastFocus()) {
 		searchForSelected(
@@ -3218,7 +3218,7 @@ void MainWindow::action_Shift_Replace_Find_Again(DocumentWidget *document) {
  */
 void MainWindow::action_Replace_Again(DocumentWidget *document, Direction direction, WrapMode wrap) {
 
-	emit_event("replace_again", to_string(direction), to_string(wrap));
+	emit_event("replace_again", ToString(direction), ToString(wrap));
 
 	if (document->checkReadOnly()) {
 		return;
@@ -3550,7 +3550,7 @@ void MainWindow::action_Unload_Tips_File(DocumentWidget *document, const QString
 	Q_UNUSED(document)
 	emit_event("unload_tips_file", filename);
 
-	if (Tags::deleteTagsFile(filename, Tags::SearchMode::TIP, /*force_unload=*/true)) {
+	if (Tags::DeleteTagsFile(filename, Tags::SearchMode::TIP, /*force_unload=*/true)) {
 		for (MainWindow *window : MainWindow::allWindows()) {
 			window->updateTipsFileMenu();
 		}
@@ -3568,7 +3568,7 @@ void MainWindow::action_Unload_Tags_File(DocumentWidget *document, const QString
 	Q_UNUSED(document)
 	emit_event("unload_tags_file", filename);
 
-	if (Tags::deleteTagsFile(filename, Tags::SearchMode::TAG, /*force_unload=*/true)) {
+	if (Tags::DeleteTagsFile(filename, Tags::SearchMode::TAG, /*force_unload=*/true)) {
 		for (MainWindow *window : MainWindow::allWindows()) {
 			window->updateTagsFileMenu();
 		}
@@ -3586,7 +3586,7 @@ void MainWindow::action_Load_Tips_File(DocumentWidget *document, const QString &
 	Q_UNUSED(document)
 	emit_event("load_tips_file", filename);
 
-	if (!Tags::addTagsFile(filename, Tags::SearchMode::TIP)) {
+	if (!Tags::AddTagsFile(filename, Tags::SearchMode::TIP)) {
 		QMessageBox::warning(
 			this,
 			tr("Error Reading File"),
@@ -3629,7 +3629,7 @@ void MainWindow::action_Load_Tags_File(DocumentWidget *document, const QString &
 
 	emit_event("load_tags_file", filename);
 
-	if (!Tags::addTagsFile(filename, Tags::SearchMode::TAG)) {
+	if (!Tags::AddTagsFile(filename, Tags::SearchMode::TAG)) {
 		QMessageBox::warning(
 			document,
 			tr("Error Reading File"),
@@ -3875,7 +3875,7 @@ void MainWindow::action_Show_Line_Numbers_toggled(bool state) {
  * @param state
  */
 void MainWindow::action_Set_Auto_Indent(DocumentWidget *document, IndentStyle state) {
-	emit_event("set_auto_indent", to_string(state));
+	emit_event("set_auto_indent", ToString(state));
 	document->setAutoIndent(state);
 }
 
@@ -3905,7 +3905,7 @@ void MainWindow::indentGroupTriggered(QAction *action) {
  * @param state
  */
 void MainWindow::action_Set_Auto_Wrap(DocumentWidget *document, WrapStyle state) {
-	emit_event("set_wrap_text", to_string(state));
+	emit_event("set_wrap_text", ToString(state));
 	document->setAutoWrap(state);
 }
 
@@ -5449,7 +5449,7 @@ void MainWindow::action_Exit_triggered() {
 
 /*
 ** Check if preferences have changed, and if so, ask the user if he wants
-** to re-save.  Returns false if user requests cancellation of Exit (or whatever
+** to re-save.  Returns `false` if user requests cancellation of Exit (or whatever
 ** operation triggered this call to be made).
 */
 bool MainWindow::checkPrefsChangesSaved() {
@@ -5835,7 +5835,7 @@ bool MainWindow::eventFilter(QObject *object, QEvent *ev) {
  */
 void MainWindow::action_Find(DocumentWidget *document, const QString &string, Direction direction, SearchType type, WrapMode searchWrap) {
 
-	emit_event("find", string, to_string(direction), to_string(type), to_string(searchWrap));
+	emit_event("find", string, ToString(direction), ToString(type), ToString(searchWrap));
 
 	if (const QPointer<TextArea> area = lastFocus()) {
 		searchAndSelect(
@@ -5900,7 +5900,7 @@ void MainWindow::action_Find_Selection_triggered() {
  */
 void MainWindow::action_Replace(DocumentWidget *document, const QString &searchString, const QString &replaceString, Direction direction, SearchType type, WrapMode wrap) {
 
-	emit_event("replace", searchString, replaceString, to_string(direction), to_string(type), to_string(wrap));
+	emit_event("replace", searchString, replaceString, ToString(direction), ToString(type), ToString(wrap));
 
 	if (document->checkReadOnly()) {
 		return;
@@ -6002,7 +6002,7 @@ void MainWindow::action_Replace_triggered() {
  */
 void MainWindow::action_Replace_All(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType type) {
 
-	emit_event("replace_all", searchString, replaceString, to_string(type));
+	emit_event("replace_all", searchString, replaceString, ToString(type));
 
 	if (document->checkReadOnly()) {
 		return;
@@ -6675,7 +6675,7 @@ bool MainWindow::searchAndSelect(DocumentWidget *document, TextArea *area, const
 /*
 ** Search for "searchString" in "window", and select the matching text in
 ** the window when found (or beep or put up a dialog if not found).  If
-** "continued" is true and a prior incremental search starting position is
+** "continued" is `true` and a prior incremental search starting position is
 ** recorded, search from that original position, otherwise, search from the
 ** current cursor position.
 */
@@ -7045,7 +7045,7 @@ void MainWindow::searchForSelected(DocumentWidget *document, TextArea *area, Dir
  */
 void MainWindow::action_Replace_In_Selection(DocumentWidget *document, const QString &searchString, const QString &replaceString, SearchType type) {
 
-	emit_event("replace_in_selection", searchString, replaceString, to_string(type));
+	emit_event("replace_in_selection", searchString, replaceString, ToString(type));
 
 	if (document->checkReadOnly()) {
 		return;
@@ -7393,8 +7393,8 @@ void MainWindow::iSearchTryBeepOnWrap(Direction direction, TextCursor beginPos, 
 }
 
 /*
-** Return true if "searchString" exactly matches the text in the window's
-** current primary selection using search algorithm "searchType".  If true,
+** Return `true` if "searchString" exactly matches the text in the window's
+** current primary selection using search algorithm "searchType".  If `true`,
 ** also return the position of the selection in "left" and "right".
 */
 bool MainWindow::searchMatchesSelection(DocumentWidget *document, const QString &searchString, SearchType searchType, TextRange *textRange, TextCursor *extentBW, TextCursor *extentFW) {
@@ -7514,7 +7514,7 @@ void MainWindow::updateMenuItems() {
 */
 bool MainWindow::execNamedShellMenuCmd(DocumentWidget *document, TextArea *area, const QString &name, CommandSource source) {
 
-	if (MenuData *p = find_menu_item(name, CommandTypes::Shell)) {
+	if (MenuData *p = FindMenuItem(name, CommandTypes::Shell)) {
 
 		if (p->item.output == TO_SAME_WINDOW && document->checkReadOnly()) {
 			return false;
@@ -7542,7 +7542,7 @@ bool MainWindow::execNamedMacroMenuCmd(DocumentWidget *document, TextArea *area,
 	Q_UNUSED(source)
 	Q_UNUSED(area)
 
-	if (MenuData *p = find_menu_item(name, CommandTypes::Macro)) {
+	if (MenuData *p = FindMenuItem(name, CommandTypes::Macro)) {
 		document->doMacro(
 			p->item.cmd,
 			tr("macro menu command"));
@@ -7567,7 +7567,7 @@ bool MainWindow::execNamedBGMenuCmd(DocumentWidget *document, TextArea *area, co
 	Q_UNUSED(source)
 	Q_UNUSED(area)
 
-	if (MenuData *p = find_menu_item(name, CommandTypes::Context)) {
+	if (MenuData *p = FindMenuItem(name, CommandTypes::Context)) {
 		document->doMacro(
 			p->item.cmd,
 			tr("background menu macro"));

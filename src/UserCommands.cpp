@@ -1,5 +1,5 @@
 
-#include "userCmds.h"
+#include "UserCommands.h"
 #include "LanguageMode.h"
 #include "MenuData.h"
 #include "MenuItem.h"
@@ -35,7 +35,7 @@ namespace {
 ** to be re-generated from the text as needed, but compile time is
 ** negligible for most macros.
 */
-QString copyMacroToEnd(Input &in) {
+QString CopyMacroToEnd(Input &in) {
 
 	Input input = in;
 
@@ -46,7 +46,7 @@ QString copyMacroToEnd(Input &in) {
 	const QString code = input.mid();
 
 	if (!code.startsWith(QLatin1Char('{'))) {
-		Preferences::reportError(
+		Preferences::ReportError(
 			nullptr,
 			code,
 			input.index() - in.index(),
@@ -60,7 +60,7 @@ QString copyMacroToEnd(Input &in) {
 	int stoppedAt;
 	QString errMsg;
 	if (!isMacroValid(code, &errMsg, &stoppedAt)) {
-		Preferences::reportError(
+		Preferences::ReportError(
 			nullptr,
 			code,
 			stoppedAt,
@@ -112,8 +112,14 @@ QString copyMacroToEnd(Input &in) {
 	return retStr;
 }
 
-QString writeMacroMenuYaml(const std::vector<MenuData> &menuItems) {
-	const QString filename = Settings::macroMenuFile();
+/**
+ * @brief
+ *
+ * @param menuItems
+ * @return
+ */
+QString WriteMacroMenuYaml(const std::vector<MenuData> &menuItems) {
+	const QString filename = Settings::MactoMenuFile();
 
 	try {
 		YAML::Emitter out;
@@ -151,8 +157,14 @@ QString writeMacroMenuYaml(const std::vector<MenuData> &menuItems) {
 	return QString();
 }
 
-QString writeShellMenuYaml(const std::vector<MenuData> &menuItems) {
-	const QString filename = Settings::shellMenuFile();
+/**
+ * @brief
+ *
+ * @param menuItems
+ * @return
+ */
+QString WriteShellMenuYaml(const std::vector<MenuData> &menuItems) {
+	const QString filename = Settings::ShellMenuFile();
 
 	try {
 		YAML::Emitter out;
@@ -227,8 +239,14 @@ QString writeShellMenuYaml(const std::vector<MenuData> &menuItems) {
 	return QString();
 }
 
-QString writeContextMenuYaml(const std::vector<MenuData> &menuItems) {
-	const QString filename = Settings::contextMenuFile();
+/**
+ * @brief
+ *
+ * @param menuItems
+ * @return
+ */
+QString WriteContextMenuYaml(const std::vector<MenuData> &menuItems) {
+	const QString filename = Settings::ContextMenuFile();
 
 	try {
 		YAML::Emitter out;
@@ -272,7 +290,7 @@ QString writeContextMenuYaml(const std::vector<MenuData> &menuItems) {
  * @param in
  * @param listType
  */
-std::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
+std::optional<MenuItem> ReadMenuItem(Input &in, CommandTypes listType) {
 
 	struct ParseError {
 		std::string message;
@@ -371,7 +389,7 @@ std::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
 
 		} else {
 
-			QString p = copyMacroToEnd(in);
+			QString p = CopyMacroToEnd(in);
 			if (p.isNull()) {
 				return {};
 			}
@@ -404,14 +422,14 @@ std::optional<MenuItem> readMenuItem(Input &in, CommandTypes listType) {
  *
  * @param menuItems
  */
-void loadMacroMenuYaml(std::vector<MenuData> &menuItems) {
+void LoadMacroMenuYaml(std::vector<MenuData> &menuItems) {
 	try {
 		std::vector<YAML::Node> menu;
-		const QString filename = Settings::macroMenuFile();
+		const QString filename = Settings::MactoMenuFile();
 		if (QFileInfo::exists(filename)) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
-			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultMacroMenu.yaml"));
+			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultMacroMenu.yaml"));
 			menu                          = YAML::LoadAll(defaultMenu.data());
 		}
 
@@ -454,21 +472,21 @@ void loadMacroMenuYaml(std::vector<MenuData> &menuItems) {
 	}
 }
 
-void loadShellMenuYaml(std::vector<MenuData> &menuItems) {
+void LoadShellMenuYaml(std::vector<MenuData> &menuItems) {
 	try {
 		std::vector<YAML::Node> menu;
-		const QString filename = Settings::shellMenuFile();
+		const QString filename = Settings::ShellMenuFile();
 		if (QFileInfo::exists(filename)) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
 #if defined(Q_OS_LINUX)
-			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultShellMenuLinux.yaml"));
+			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultShellMenuLinux.yaml"));
 #elif defined(Q_OS_FREEBSD)
-			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultShellMenuFreeBSD.yaml"));
+			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultShellMenuFreeBSD.yaml"));
 #elif defined(Q_OS_UNIX)
-			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultShellMenuUnix.yaml"));
+			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultShellMenuUnix.yaml"));
 #elif defined(Q_OS_WIN)
-			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultShellMenuWindows.yaml"));
+			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultShellMenuWindows.yaml"));
 #else
 			// Using an "unsupported" system so we don't have a set of defaults. Just use an empty one
 			static QByteArray defaultMenu;
@@ -543,14 +561,14 @@ void loadShellMenuYaml(std::vector<MenuData> &menuItems) {
  *
  * @param menuItems
  */
-void loadContextMenuYaml(std::vector<MenuData> &menuItems) {
+void LoadContextMenuYaml(std::vector<MenuData> &menuItems) {
 	try {
 		std::vector<YAML::Node> menu;
-		const QString filename = Settings::contextMenuFile();
+		const QString filename = Settings::ContextMenuFile();
 		if (QFileInfo::exists(filename)) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
-			static QByteArray defaultMenu = loadResource(QLatin1String("DefaultContextMenu.yaml"));
+			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultContextMenu.yaml"));
 			menu                          = YAML::LoadAll(defaultMenu.data());
 		}
 
@@ -600,15 +618,15 @@ void loadContextMenuYaml(std::vector<MenuData> &menuItems) {
  * @param menuItems
  * @param listType
  */
-void loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItems, CommandTypes listType) {
+void LoadMenuItemString(const QString &inString, std::vector<MenuData> &menuItems, CommandTypes listType) {
 
 	if (inString == QLatin1String("*")) {
 		if (listType == CommandTypes::Context) {
-			loadContextMenuYaml(menuItems);
+			LoadContextMenuYaml(menuItems);
 		} else if (listType == CommandTypes::Macro) {
-			loadMacroMenuYaml(menuItems);
+			LoadMacroMenuYaml(menuItems);
 		} else if (listType == CommandTypes::Shell) {
-			loadShellMenuYaml(menuItems);
+			LoadShellMenuYaml(menuItems);
 		}
 	} else {
 		Input in(&inString);
@@ -623,7 +641,7 @@ void loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
 				return;
 			}
 
-			std::optional<MenuItem> f = readMenuItem(in, listType);
+			std::optional<MenuItem> f = ReadMenuItem(in, listType);
 			if (!f) {
 				break;
 			}
@@ -648,7 +666,7 @@ void loadMenuItemString(const QString &inString, std::vector<MenuData> &menuItem
  * @param infoList
  * @param index
  */
-void setDefaultIndex(const std::vector<MenuData> &infoList, size_t index) {
+void SetDefaultIndex(const std::vector<MenuData> &infoList, size_t index) {
 	const QString defaultMenuName = infoList[index].info->umiName;
 
 	/* Scan the list for items with the same name and a language mode
@@ -668,7 +686,7 @@ void setDefaultIndex(const std::vector<MenuData> &infoList, size_t index) {
 ** Extract language mode related info out of given menu item name string.
 ** Store this info in given user menu info structure.
 */
-void parseMenuItemName(const QString &menuItemName, const std::unique_ptr<UserMenuInfo> &info) {
+void ParseMenuItemName(const QString &menuItemName, const std::unique_ptr<UserMenuInfo> &info) {
 
 	const int index = menuItemName.indexOf(QLatin1Char('@'));
 	if (index != -1) {
@@ -710,7 +728,7 @@ void parseMenuItemName(const QString &menuItemName, const std::unique_ptr<UserMe
 ** Returns the menuItemName stripped of language mode parts
 ** (i.e. parts starting with "@").
 */
-QString stripLanguageMode(const QString &menuItemName) {
+QString StripLanguageMode(const QString &menuItemName) {
 
 	const int index = menuItemName.indexOf(QLatin1Char('@'));
 	if (index != -1) {
@@ -725,23 +743,23 @@ QString stripLanguageMode(const QString &menuItemName) {
 ** Parse a single menu item. Allocate & setup a user menu info element
 ** holding extracted info.
 */
-std::unique_ptr<UserMenuInfo> parseMenuItemRec(const MenuItem &item) {
+std::unique_ptr<UserMenuInfo> ParseMenuItemRecord(const MenuItem &item) {
 
 	auto newInfo = std::make_unique<UserMenuInfo>();
 
-	newInfo->umiName = stripLanguageMode(item.name);
+	newInfo->umiName = StripLanguageMode(item.name);
 
 	// init. remaining parts of user menu info element
 	newInfo->umiIsDefault    = false;
 	newInfo->umiDefaultIndex = static_cast<size_t>(-1);
 
 	// assign language mode info to new user menu info element
-	parseMenuItemName(item.name, newInfo);
+	ParseMenuItemName(item.name, newInfo);
 
 	return newInfo;
 }
 
-std::vector<MenuData> &selectMenu(CommandTypes type) {
+std::vector<MenuData> &SelectMenu(CommandTypes type) {
 	switch (type) {
 	case CommandTypes::Shell:
 		return ShellMenuData;
@@ -756,9 +774,9 @@ std::vector<MenuData> &selectMenu(CommandTypes type) {
 
 }
 
-MenuData *find_menu_item(const QString &name, CommandTypes type) {
+MenuData *FindMenuItem(const QString &name, CommandTypes type) {
 
-	std::vector<MenuData> &menu = selectMenu(type);
+	std::vector<MenuData> &menu = SelectMenu(type);
 
 	auto it = std::find_if(menu.begin(), menu.end(), [&name](const MenuData &entry) {
 		return entry.item.name == name;
@@ -775,16 +793,16 @@ MenuData *find_menu_item(const QString &name, CommandTypes type) {
 ** Generate a text string for the preferences file describing the contents
 ** of the shell cmd list, macro menu and background menus.
 */
-QString write_shell_commands_string() {
-	return writeShellMenuYaml(ShellMenuData);
+QString WriteShellCommandsString() {
+	return WriteShellMenuYaml(ShellMenuData);
 }
 
-QString write_macro_commands_string() {
-	return writeMacroMenuYaml(MacroMenuData);
+QString WriteMacroCommandsString() {
+	return WriteMacroMenuYaml(MacroMenuData);
 }
 
-QString write_bg_menu_commands_string() {
-	return writeContextMenuYaml(BGMenuData);
+QString WriteContextMenuCommandsString() {
+	return WriteContextMenuYaml(BGMenuData);
 }
 
 /*
@@ -792,16 +810,16 @@ QString write_bg_menu_commands_string() {
 ** background menu and add them to the internal list used for constructing
 ** menus
 */
-void load_shell_commands_string(const QString &inString) {
-	loadMenuItemString(inString, ShellMenuData, CommandTypes::Shell);
+void LoadShellCommandsString(const QString &inString) {
+	LoadMenuItemString(inString, ShellMenuData, CommandTypes::Shell);
 }
 
-void load_macro_commands_string(const QString &inString) {
-	loadMenuItemString(inString, MacroMenuData, CommandTypes::Macro);
+void LoadMacroCommandsString(const QString &inString) {
+	LoadMenuItemString(inString, MacroMenuData, CommandTypes::Macro);
 }
 
-void load_bg_menu_commands_string(const QString &inString) {
-	loadMenuItemString(inString, BGMenuData, CommandTypes::Context);
+void LoadContextMenuCommandsString(const QString &inString) {
+	LoadMenuItemString(inString, BGMenuData, CommandTypes::Context);
 }
 
 /*
@@ -810,10 +828,10 @@ void load_bg_menu_commands_string(const QString &inString) {
 ** string (reason: language mode info from preference string is read *after*
 ** user menu preference string was read).
 */
-void setup_user_menu_info() {
-	parse_menu_item_list(ShellMenuData);
-	parse_menu_item_list(MacroMenuData);
-	parse_menu_item_list(BGMenuData);
+void SetupUserMenuInfo() {
+	ParseMenuItemList(ShellMenuData);
+	ParseMenuItemList(MacroMenuData);
+	ParseMenuItemList(BGMenuData);
 }
 
 /*
@@ -821,21 +839,21 @@ void setup_user_menu_info() {
 ** Update user menu info to take into account e.g. change of language modes
 ** (i.e. add / move / delete of language modes etc).
 */
-void update_user_menu_info() {
+void UpdateUserMenuInfo() {
 	for (auto &item : ShellMenuData) {
 		item.info = nullptr;
 	}
-	parse_menu_item_list(ShellMenuData);
+	ParseMenuItemList(ShellMenuData);
 
 	for (auto &item : MacroMenuData) {
 		item.info = nullptr;
 	}
-	parse_menu_item_list(MacroMenuData);
+	ParseMenuItemList(MacroMenuData);
 
 	for (auto &item : BGMenuData) {
 		item.info = nullptr;
 	}
-	parse_menu_item_list(BGMenuData);
+	ParseMenuItemList(BGMenuData);
 }
 
 /*
@@ -843,25 +861,22 @@ void update_user_menu_info() {
 ** Parse given menu item list and setup a user menu info list for
 ** management of user menu.
 */
-
-void parse_menu_item_list(std::vector<MenuData> &itemList) {
+void ParseMenuItemList(std::vector<MenuData> &itemList) {
 
 	/* 1st pass: setup user menu info: extract language modes, menu name &
 	   default indication; build user menu ID */
 	for (MenuData &data : itemList) {
-		data.info = parseMenuItemRec(data.item);
+		data.info = ParseMenuItemRecord(data.item);
 	}
 
 	// 2nd pass: solve "default" dependencies
 	for (size_t i = 0; i < itemList.size(); i++) {
-		const std::unique_ptr<UserMenuInfo> &info = itemList[i].info;
-
 		/* If the user menu item is a default one, then scan the list for
 		   items with the same name and a language mode specified.
 		   If one is found, then set the default index to the index of the
 		   current default item. */
-		if (info->umiIsDefault) {
-			setDefaultIndex(itemList, i);
+		if (itemList[i].info->umiIsDefault) {
+			SetDefaultIndex(itemList, i);
 		}
 	}
 }

@@ -2,7 +2,7 @@
 #ifndef TRUNC_SUBSTITUTION_H_
 #define TRUNC_SUBSTITUTION_H_
 
-#include "from_integer.h"
+#include "FromInteger.h"
 
 #include <QtDebug>
 
@@ -14,7 +14,7 @@ enum class TruncSubstitution {
 };
 
 template <>
-inline TruncSubstitution from_integer(int value) {
+inline TruncSubstitution FromInteger(int value) {
 	switch (value) {
 	case static_cast<int>(TruncSubstitution::Silent):
 	case static_cast<int>(TruncSubstitution::Fail):

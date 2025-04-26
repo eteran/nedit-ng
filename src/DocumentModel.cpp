@@ -3,21 +3,22 @@
 #include "Util/algorithm.h"
 
 /**
- * @brief
+ * @brief Constructor for DocumentModel.
  *
- * @param parent
+ * @param parent Parent object, defaults to nullptr.
  */
 DocumentModel::DocumentModel(QObject *parent)
 	: QAbstractItemModel(parent) {
 }
 
 /**
- * @brief
+ * @brief Creates an index for a specific row and column in the model.
  *
- * @param row
- * @param column
- * @param parent
- * @return
+ * @param row The row number for the index.
+ * @param column The column number for the index.
+ * @param parent The parent index, defaults to an invalid index.
+ * @return A QModelIndex representing the specified row and column.
+ * If the row or column is out of bounds, an invalid index is returned.
  */
 QModelIndex DocumentModel::index(int row, int column, const QModelIndex &parent) const {
 
@@ -33,10 +34,10 @@ QModelIndex DocumentModel::index(int row, int column, const QModelIndex &parent)
 }
 
 /**
- * @brief
+ * @brief Returns the parent of a given index.
  *
- * @param index
- * @return
+ * @param index The index for which to get the parent.
+ * @return The parent of the given index.
  */
 QModelIndex DocumentModel::parent(const QModelIndex &index) const {
 	Q_UNUSED(index)
@@ -44,11 +45,11 @@ QModelIndex DocumentModel::parent(const QModelIndex &index) const {
 }
 
 /**
- * @brief
+ * @brief Returns the data for a given index and role.
  *
- * @param index
- * @param role
- * @return
+ * @param index The index for which to retrieve data.
+ * @param role The role for which to retrieve data, such as Qt::DisplayRole or Qt::UserRole.
+ * @return The data for the specified index and role.
  */
 QVariant DocumentModel::data(const QModelIndex &index, int role) const {
 	if (index.isValid()) {
@@ -71,12 +72,12 @@ QVariant DocumentModel::data(const QModelIndex &index, int role) const {
 }
 
 /**
- * @brief
+ * @brief Returns the header data for a specific section and orientation.
  *
- * @param section
- * @param orientation
- * @param role
- * @return
+ * @param section The section number for which to retrieve header data.
+ * @param orientation The orientation of the header, either Qt::Horizontal or Qt::Vertical.
+ * @param role The role for which to retrieve header data, such as Qt::DisplayRole.
+ * @return The header data for the specified section and orientation.
  */
 QVariant DocumentModel::headerData(int section, Qt::Orientation orientation, int role) const {
 	if (role == Qt::DisplayRole && orientation == Qt::Horizontal) {
@@ -92,10 +93,10 @@ QVariant DocumentModel::headerData(int section, Qt::Orientation orientation, int
 }
 
 /**
- * @brief
+ * @brief Returns the number of columns in the model.
  *
- * @param parent
- * @return
+ * @param parent The parent index, defaults to an invalid index.
+ * @return The number of columns in the model.
  */
 int DocumentModel::columnCount(const QModelIndex &parent) const {
 	Q_UNUSED(parent)
@@ -103,10 +104,10 @@ int DocumentModel::columnCount(const QModelIndex &parent) const {
 }
 
 /**
- * @brief
+ * @brief Returns the number of rows in the model.
  *
- * @param parent
- * @return
+ * @param parent The parent index, defaults to an invalid index.
+ * @return The number of rows in the model.
  */
 int DocumentModel::rowCount(const QModelIndex &parent) const {
 	Q_UNUSED(parent)
@@ -114,20 +115,21 @@ int DocumentModel::rowCount(const QModelIndex &parent) const {
 }
 
 /**
- * @brief
+ * @brief Adds a new item to the model.
  *
- * @param style
+ * @param document The DocumentWidget to be added.
  */
-void DocumentModel::addItem(DocumentWidget *languageMode) {
+void DocumentModel::addItem(DocumentWidget *document) {
 	beginInsertRows(QModelIndex(), rowCount(), rowCount());
-	items_.push_back(languageMode);
+	items_.push_back(document);
 	endInsertRows();
 }
 
 /**
- * @brief
+ * @brief Sets whether to show the full path of documents in the model.
  *
- * @param showFullPath
+ * @param showFullPath If `true`, the full path of documents will be shown; otherwise,
+ * only the filename will be displayed.
  */
 void DocumentModel::setShowFullPath(bool showFullPath) {
 	showFullPath_ = showFullPath;
@@ -137,7 +139,7 @@ void DocumentModel::setShowFullPath(bool showFullPath) {
 }
 
 /**
- * @brief
+ * @brief Clears all items from the model.
  */
 void DocumentModel::clear() {
 	beginResetModel();
@@ -146,41 +148,41 @@ void DocumentModel::clear() {
 }
 
 /**
- * @brief
+ * @brief Moves an item up in the model.
  *
- * @param index
+ * @param index The index of the item to move up.
  */
 void DocumentModel::moveItemUp(const QModelIndex &index) {
 	if (index.isValid()) {
 		const int row = index.row();
 		if (row > 0) {
 			beginMoveRows(QModelIndex(), row, row, QModelIndex(), row - 1);
-			moveItem(items_, row, row - 1);
+			MoveItem(items_, row, row - 1);
 			endMoveRows();
 		}
 	}
 }
 
 /**
- * @brief
+ * @brief Moves an item down in the model.
  *
- * @param index
+ * @param index The index of the item to move down.
  */
 void DocumentModel::moveItemDown(const QModelIndex &index) {
 	if (index.isValid()) {
 		const int row = index.row();
 		if (row < rowCount() - 1) {
 			beginMoveRows(QModelIndex(), row, row, QModelIndex(), row + 2);
-			moveItem(items_, row, row + 1);
+			MoveItem(items_, row, row + 1);
 			endMoveRows();
 		}
 	}
 }
 
 /**
- * @brief
+ * @brief Deletes an item from the model at the specified index.
  *
- * @param index
+ * @param index The index of the item to delete.
  */
 void DocumentModel::deleteItem(const QModelIndex &index) {
 	if (index.isValid()) {
@@ -194,10 +196,10 @@ void DocumentModel::deleteItem(const QModelIndex &index) {
 }
 
 /**
- * @brief
+ * @brief Returns the DocumentWidget associated with a given index.
  *
- * @param index
- * @return
+ * @param index The index for which to retrieve the DocumentWidget.
+ * @return The DocumentWidget if the index is valid and within bounds; otherwise, returns nullptr.
  */
 DocumentWidget *DocumentModel::itemFromIndex(const QModelIndex &index) {
 	if (index.isValid()) {

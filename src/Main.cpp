@@ -33,9 +33,9 @@ constexpr const char cmdLineHelp[] =
 /**
  * @brief Gets the index of the next argument parameter.
  *
- * @param args the command line arguments.
- * @param argIndex the current argument index.
- * @return the next argument index.
+ * @param args The command line arguments.
+ * @param argIndex The current argument index.
+ * @return The next argument index.
  */
 int getArgumentParameter(const QStringList &args, int argIndex) {
 	if (argIndex + 1 >= args.size()) {
@@ -77,8 +77,8 @@ Main::Main(const QStringList &args) {
 	QPointer<DocumentWidget> lastFile;
 
 	// Enable a Qt style sheet if present
-	const QString styleFile = Settings::styleFile();
-	QFile file(styleFile);
+	const QString StyleFile = Settings::StyleFile();
+	QFile file(StyleFile);
 	if (file.open(QIODevice::ReadOnly)) {
 		qApp->setStyleSheet(QString::fromUtf8(file.readAll()));
 		file.close();
@@ -120,7 +120,7 @@ Main::Main(const QStringList &args) {
 	   file resource is intended to be set and forgotten.  Running nedit in a
 	   directory without a tags should not cause it to spew out errors. */
 	if (!Preferences::GetPrefTagFile().isEmpty()) {
-		Tags::addTagsFile(Preferences::GetPrefTagFile(), Tags::SearchMode::TAG);
+		Tags::AddTagsFile(Preferences::GetPrefTagFile(), Tags::SearchMode::TAG);
 	}
 
 	if (!Preferences::GetPrefServerName().isEmpty()) {
@@ -138,7 +138,7 @@ Main::Main(const QStringList &args) {
 
 		if (opts && args[i] == QLatin1String("-tags")) {
 			i = getArgumentParameter(args, i);
-			if (!Tags::addTagsFile(args[i], Tags::SearchMode::TAG)) {
+			if (!Tags::AddTagsFile(args[i], Tags::SearchMode::TAG)) {
 				fprintf(stderr, "NEdit: Unable to load tags file\n");
 			}
 
@@ -372,7 +372,7 @@ Main::Main(const QStringList &args) {
  * @brief Check if the macro argument for -do is valid.
  *
  * @param macro The macro string to check.
- * @return Return true if -do macro is valid, otherwise report the an and return false.
+ * @return `true` if -do macro is valid, otherwise report the an and return `false`.
  */
 bool Main::checkDoMacroArg(const QString &macro) {
 
@@ -385,7 +385,7 @@ bool Main::checkDoMacroArg(const QString &macro) {
 
 	// Do a test parse
 	if (!isMacroValid(macroString, &errMsg, &stoppedAt)) {
-		Preferences::reportError(nullptr, macroString, stoppedAt, tr("argument to -do"), errMsg);
+		Preferences::ReportError(nullptr, macroString, stoppedAt, tr("argument to -do"), errMsg);
 		return false;
 	}
 

@@ -3,6 +3,6 @@
 #define SETTINGS_FROM_INTEGER_H_
 
 template <class T>
-inline T from_integer(int value);
+inline T FromInteger(int value);
 
 #endif

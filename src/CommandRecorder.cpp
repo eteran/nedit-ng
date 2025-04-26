@@ -52,7 +52,7 @@ const QLatin1String RedundantActions[] = {
  * @brief Checks if the event is a mouse action.
  *
  * @param ev The event to check
- * @return true if the event is a mouse action, false otherwise
+ * @return `true` if the event is a mouse action, false otherwise
  */
 template <class Event>
 bool isMouseAction(const Event *ev) {
@@ -66,7 +66,7 @@ bool isMouseAction(const Event *ev) {
  * @brief Checks if the action is redundant.
  *
  * @param ev The event to check
- * @return true if the action is redundant, false otherwise
+ * @return `true` if the action is redundant, false otherwise
  */
 template <class Event>
 bool isRedundantAction(const Event *ev) {
@@ -101,8 +101,8 @@ QString actionToString(const Event *ev) {
  * @return The string quoted with double quotes.
  *
  * @note If the string contains double quotes, they will NOT be escaped.
- * 	 This is intended for use in strings which have already been
- * 	 escaped using escapeString().
+ *       This is intended for use in strings which have already been
+ *       escaped using escapeString().
  */
 QString CommandRecorder::quoteString(const QString &s) {
 	return QStringLiteral("\"%1\"").arg(s);
@@ -153,7 +153,7 @@ CommandRecorder *CommandRecorder::instance() {
  *
  * @param obj The object that received the event.
  * @param event The event that was received.
- * @return true if the event was handled, false otherwise.
+ * @return `true` if the event was handled, `false` otherwise.
  */
 bool CommandRecorder::eventFilter(QObject *obj, QEvent *event) {
 
@@ -253,7 +253,7 @@ void CommandRecorder::stopRecording() {
 /**
  * @brief Returns the document where the macro is being recorded.
  *
- * @return A pointer to the document widget where the macro is being recorded.
+ * @return The document widget where the macro is being recorded.
  */
 QPointer<DocumentWidget> CommandRecorder::macroRecordDocument() const {
 	return macroRecordDocument_;
@@ -272,7 +272,7 @@ void CommandRecorder::cancelRecording() {
 /**
  * @brief Checks if the recorder is currently recording user actions.
  *
- * @return true if recording is active, false otherwise.
+ * @return `true` if recording is active, `false` otherwise.
  */
 bool CommandRecorder::isRecording() const {
 	return isRecording_;
@@ -281,7 +281,7 @@ bool CommandRecorder::isRecording() const {
 /**
  * @brief Sets the recording state of the CommandRecorder.
  *
- * @param enabled If true, starts recording; if false, stops recording.
+ * @param enabled If `true`, starts recording; if false, stops recording.
  */
 void CommandRecorder::setRecording(bool enabled) {
 

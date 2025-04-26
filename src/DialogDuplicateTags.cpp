@@ -8,8 +8,8 @@
 /**
  * @brief Constructor for DialogDuplicateTags class.
  *
- * @param document Pointer to the DocumentWidget where the tags are defined.
- * @param area Pointer to the TextArea where the tags are being used.
+ * @param document The DocumentWidget where the tags are defined.
+ * @param area The TextArea where the tags are being used.
  * @param f The window flags for the dialog, defaults to Qt::WindowFlags().
  */
 DialogDuplicateTags::DialogDuplicateTags(DocumentWidget *document, TextArea *area, Qt::WindowFlags f)
@@ -71,7 +71,7 @@ void DialogDuplicateTags::buttonBox_clicked(QAbstractButton *button) {
 /**
  * @brief Applies the selection made in the dialog.
  *
- * @return true if the selection was successfully applied, false otherwise.
+ * @return `true` if the selection was successfully applied, `false` otherwise.
  */
 bool DialogDuplicateTags::applySelection() {
 	QListWidgetItem *item = ui.listWidget->currentItem();
@@ -90,7 +90,7 @@ bool DialogDuplicateTags::applySelection() {
 	if (Tags::searchMode == Tags::SearchMode::TAG) {
 		document_->editTaggedLocation(area_, id); // Open the file with the definition
 	} else {
-		Tags::showMatchingCalltip(this, area_, id);
+		Tags::ShowMatchingCalltip(this, area_, id);
 	}
 
 	return true;

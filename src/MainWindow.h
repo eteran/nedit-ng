@@ -14,7 +14,7 @@
 #include "WrapMode.h"
 #include "WrapStyle.h"
 #include "ui_MainWindow.h"
-#include "userCmds.h"
+#include "UserCommands.h"
 
 #include <QFileDialog>
 #include <QFileInfoList>

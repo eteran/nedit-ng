@@ -73,7 +73,7 @@ constexpr int FP_TO_ARGS_DIST          = 4; // should be 0 - (above index)
 /**
  * @brief Get the argument array cache from the frame pointer.
  *
- * @param FrameP Pointer to the frame data.
+ * @param FrameP The frame data.
  * @return Reference to the argument array cache.
  */
 DataValue &FP_GET_ARG_ARRAY_CACHE(DataValue *FrameP) {
@@ -83,7 +83,7 @@ DataValue &FP_GET_ARG_ARRAY_CACHE(DataValue *FrameP) {
 /**
  * @brief Get the number of arguments from the frame pointer.
  *
- * @param FrameP Pointer to the frame data.
+ * @param FrameP The frame data.
  * @return Number of arguments as an integer.
  */
 int FP_GET_ARG_COUNT(const DataValue *FrameP) {
@@ -93,8 +93,8 @@ int FP_GET_ARG_COUNT(const DataValue *FrameP) {
 /**
  * @brief Get the old frame pointer from the frame pointer.
  *
- * @param FrameP Pointer to the frame data.
- * @return Pointer to the old frame pointer as a DataValue.
+ * @param FrameP The frame data.
+ * @return The old frame pointer as a DataValue.
  */
 DataValue *FP_GET_OLD_FP(const DataValue *FrameP) {
 	return to_data_value(FrameP[FP_OLD_FP_INDEX]);
@@ -103,8 +103,8 @@ DataValue *FP_GET_OLD_FP(const DataValue *FrameP) {
 /**
  * @brief Get the return program counter from the frame pointer.
  *
- * @param FrameP Pointer to the frame data.
- * @return Pointer to the instruction that is the return program counter.
+ * @param FrameP The frame data.
+ * @return The instruction that is the return program counter.
  */
 Inst *FP_GET_RET_PC(const DataValue *FrameP) {
 	return to_instruction(FrameP[FP_RET_PC_INDEX]);
@@ -113,7 +113,7 @@ Inst *FP_GET_RET_PC(const DataValue *FrameP) {
 /**
  * @brief Get the start index for arguments in the frame pointer.
  *
- * @param FrameP Pointer to the frame data.
+ * @param FrameP The frame data.
  * @return Start index for arguments in the frame pointer.
  */
 int FP_ARG_START_INDEX(const DataValue *FrameP) {
@@ -123,7 +123,7 @@ int FP_ARG_START_INDEX(const DataValue *FrameP) {
 /**
  * @brief Get the argument at index n from the frame pointer.
  *
- * @param FrameP Pointer to the frame data.
+ * @param FrameP The frame data.
  * @param n Index of the argument to retrieve.
  * @return Reference to the argument at index n in the frame pointer.
  */
@@ -134,7 +134,7 @@ const DataValue &FP_GET_ARG_N(const DataValue *FrameP, int n) {
 /**
  * @brief Get the symbol value at index n from the frame pointer.
  *
- * @param FrameP Pointer to the frame data.
+ * @param FrameP The frame data.
  * @param n Index of the symbol to retrieve.
  * @return Reference to the symbol value at index n in the frame pointer.
  */
@@ -145,8 +145,8 @@ DataValue &FP_GET_SYM_N(DataValue *FrameP, int n) {
 /**
  * @brief Get the symbol value for a given symbol from the frame pointer.
  *
- * @param FrameP Pointer to the frame data.
- * @param sym Pointer to the symbol whose value is to be retrieved.
+ * @param FrameP The frame data.
+ * @param sym The symbol whose value is to be retrieved.
  * @return Reference to the symbol value in the frame pointer.
  */
 DataValue &FP_GET_SYM_VAL(DataValue *FrameP, Symbol *sym) {
@@ -156,7 +156,7 @@ DataValue &FP_GET_SYM_VAL(DataValue *FrameP, Symbol *sym) {
 /**
  * @brief Save the current execution context to the provided context pointer.
  *
- * @param context Pointer to the context where the current execution state will be saved.
+ * @param context The context where the current execution state will be saved.
  */
 template <class Pointer>
 void saveContext(Pointer context) {
@@ -171,7 +171,7 @@ void saveContext(Pointer context) {
 /**
  * @brief Restore the execution context from the provided context pointer.
  *
- * @param context Pointer to the context from which the execution state will be restored.
+ * @param context The context from which the execution state will be restored.
  */
 template <class Pointer>
 void restoreContext(Pointer context) {
@@ -449,9 +449,9 @@ bool AddOp(int op, QString *msg) {
 /**
  * @brief Add a symbol operand to the current program.
  *
- * @param sym Pointer to the symbol to be added.
- * @param msg Pointer to a QString for error messages.
- * @return true if the symbol was added successfully, false if the program is too large.
+ * @param sym The symbol to be added.
+ * @param msg Where error messages will be stored if an error occurs.
+ * @return `true` if the symbol was added successfully, `false` if the program is too large.
  */
 bool AddSym(Symbol *sym, QString *msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
@@ -467,8 +467,8 @@ bool AddSym(Symbol *sym, QString *msg) {
  * @brief Add an immediate value operand to the current program.
  *
  * @param value The immediate value to be added.
- * @param msg Pointer to a QString for error messages.
- * @return true if the value was added successfully, false if the program is too large.
+ * @param msg Where error messages will be stored if an error occurs.
+ * @return `true` if the value was added successfully, `false` if the program is too large.
  */
 bool AddImmediate(int value, QString *msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
@@ -483,9 +483,9 @@ bool AddImmediate(int value, QString *msg) {
 /**
  * @brief Add a branch offset operand to the current program.
  *
- * @param to Pointer to the instruction to which the branch should point.
- * @param msg Pointer to a QString for error messages.
- * @return true if the branch offset was added successfully, false if the program is too large.
+ * @param to The instruction to which the branch should point.
+ * @param msg Where error messages will be stored if an error occurs.
+ * @return `true` if the branch offset was added successfully, `false` if the program is too large.
  */
 bool AddBranchOffset(const Inst *to, QString *msg) {
 	if (ProgP >= &Prog[PROGRAM_SIZE]) {
@@ -504,7 +504,7 @@ bool AddBranchOffset(const Inst *to, QString *msg) {
 /**
  * @brief Return the address at which the next instruction will be stored.
  *
- * @return Pointer to the next instruction location in the program.
+ * @return The next instruction location in the program.
  */
 Inst *GetPC() {
 	return ProgP;
@@ -515,9 +515,9 @@ Inst *GetPC() {
  * running between locations start and boundary, and the second between
  * boundary and end.
  *
- * @param start Pointer to the start of the first block.
- * @param boundary Pointer to the end of the first block and start of the second.
- * @param end Pointer to the end of the second block.
+ * @param start The start of the first block.
+ * @param boundary The end of the first block and start of the second.
+ * @param end The end of the second block.
  */
 void SwapCode(Inst *start, Inst *boundary, Inst *end) {
 
@@ -550,8 +550,8 @@ void StartLoopAddrList() {
 /**
  * @brief Add an address to the loop stack for a break or continue statement.
  *
- * @param addr Pointer to the instruction address where the break or continue should branch.
- * @return true if the loop stack is empty (no enclosing loop), false if the address was added successfully.
+ * @param addr The instruction address where the break or continue should branch.
+ * @return `true` if the loop stack is empty (no enclosing loop), `false` if the address was added successfully.
  */
 bool AddBreakAddr(Inst *addr) {
 	if (LoopStack.empty()) {
@@ -566,8 +566,8 @@ bool AddBreakAddr(Inst *addr) {
 /**
  * @brief Add an address to the loop stack for a continue statement.
  *
- * @param addr Pointer to the instruction address where the continue should branch.
- * @return true if the loop stack is empty (no enclosing loop), false if the address was added successfully.
+ * @param addr The instruction address where the continue should branch.
+ * @return `true` if the loop stack is empty (no enclosing loop), `false` if the address was added successfully.
  */
 bool AddContinueAddr(Inst *addr) {
 	if (LoopStack.empty()) {
@@ -582,7 +582,7 @@ bool AddContinueAddr(Inst *addr) {
 /**
  * @brief Add an address to the loop stack.
  *
- * @param addr Pointer to the instruction address to be added to the loop stack.
+ * @param addr The instruction address to be added to the loop stack.
  */
 static void addLoopAddr(Inst *addr) {
 	LoopStack.push(addr);
@@ -622,10 +622,10 @@ void FillLoopAddrs(const Inst *breakAddr, const Inst *continueAddr) {
  * @param document The document in which the macro is being executed.
  * @param prog The compiled program to execute.
  * @param arguments The arguments to pass to the macro.
- * @param result Pointer to a DataValue where the result of the macro execution will be stored.
- * @param continuation A shared pointer to a MacroContext that will hold the state of the macro execution for resuming later.
- * @param msg Pointer to a QString where error messages will be stored if an error occurs.
- * @return Returns one of the ExecReturnCodes: MACRO_DONE, MACRO_PREEMPT, or MACRO_ERROR.
+ * @param result Where the result of the macro execution will be stored.
+ * @param continuation A MacroContext that will hold the state of the macro execution for resuming later.
+ * @param msg Where error messages will be stored if an error occurs.
+ * @return One of the ExecReturnCodes: MACRO_DONE, MACRO_PREEMPT, or MACRO_ERROR.
  * if MACRO_DONE is returned, the macro completed, and the returned value (if any) can be read from "result".
  * If MACRO_PREEMPT is returned, the macro exceeded its allotted time-slice and scheduled...
  */
@@ -671,8 +671,8 @@ int executeMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> a
  *
  * @param continuation A MacroContext that holds the state of the macro execution.
  * @param result Where the result of the macro execution will be stored.
- * @param msg Pointer to a QString where error messages will be stored if an error occurs.
- * @return Returns one of the ExecReturnCodes: MACRO_DONE, MACRO_PREEMPT, or MACRO_ERROR.
+ * @param msg Where error messages will be stored if an error occurs.
+ * @return One of the ExecReturnCodes: MACRO_DONE, MACRO_PREEMPT, or MACRO_ERROR.
  */
 ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation, DataValue *result, QString *msg) {
 
@@ -1085,7 +1085,7 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 /**
  * @brief Push the value of a symbol onto the stack.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int pushSymVal() {
 
@@ -1139,7 +1139,7 @@ static int pushSymVal() {
 /**
  * @brief Push the value of a subroutine argument onto the stack.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int pushArgVal() {
 	int argNum;
@@ -1162,7 +1162,7 @@ static int pushArgVal() {
 /**
  * @brief Push the number of arguments passed to the current subroutine onto the stack.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int pushArgCount() {
 	DISASM_RT(Context.PC - 1, 1);
@@ -1175,7 +1175,7 @@ static int pushArgCount() {
 /**
  * @brief Push an array of arguments onto the stack.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int pushArgArray() {
 
@@ -1209,7 +1209,7 @@ static int pushArgArray() {
 /**
  * @brief Push an array symbol value onto the stack.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int pushArraySymVal() {
 
@@ -1218,7 +1218,7 @@ static int pushArraySymVal() {
 	**         TheStack-> next, ...
 	** After:  Prog->  ArraySym, makeEmpty, [next], ...
 	**         TheStack-> [elemValue], next, ...
-	** makeEmpty is either true (1) or false (0): if true, and the element is not
+	** makeEmpty is either true (1) or false (0): if `true`, and the element is not
 	** present in the array, create it.
 	*/
 
@@ -1254,7 +1254,7 @@ static int pushArraySymVal() {
 /**
  * @brief Assign the top value of the stack to a symbol.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int assign() {
 
@@ -1301,7 +1301,7 @@ static int assign() {
 /**
  * @brief Duplicate the top value of the stack.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int dupStack() {
 
@@ -1326,7 +1326,7 @@ static int dupStack() {
  * If both values are arrays, the result is a new array containing all keys
  * from both arrays, with values from the right array used when keys are the same.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int add() {
 
@@ -1405,7 +1405,7 @@ static int add() {
  * @brief Subtract two values. If both values are arrays, the result is a new array
  * containing all keys from the left array that do not exist in the right array.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int subtract() {
 
@@ -1486,7 +1486,7 @@ static int subtract() {
 /**
  * @brief Multiply two values together.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int multiply() {
 	BINARY_NUMERIC_OPERATION(*);
@@ -1495,7 +1495,7 @@ static int multiply() {
 /**
  * @brief Divide two values.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int divide() {
 	int n1;
@@ -1516,7 +1516,7 @@ static int divide() {
 /**
  * @brief Calculate the modulo of two values.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int modulo() {
 	int n1;
@@ -1537,7 +1537,7 @@ static int modulo() {
 /**
  * @brief Negate the top value of the stack.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int negate() {
 	UNARY_NUMERIC_OPERATION(-);
@@ -1546,7 +1546,7 @@ static int negate() {
 /**
  * @brief Increment the top value of the stack.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int increment() {
 	UNARY_NUMERIC_OPERATION(++);
@@ -1555,7 +1555,7 @@ static int increment() {
 /**
  * @brief Decrement the top value of the stack.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int decrement() {
 	UNARY_NUMERIC_OPERATION(--);
@@ -1564,7 +1564,7 @@ static int decrement() {
 /**
  * @brief Compare two values for greater than.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int gt() {
 	BINARY_NUMERIC_OPERATION(>);
@@ -1573,7 +1573,7 @@ static int gt() {
 /**
  * @brief Compare two values for less than.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int lt() {
 	BINARY_NUMERIC_OPERATION(<);
@@ -1582,7 +1582,7 @@ static int lt() {
 /**
  * @brief Compare two values for greater than or equal to.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int ge() {
 	BINARY_NUMERIC_OPERATION(>=);
@@ -1591,7 +1591,7 @@ static int ge() {
 /**
  * @brief Compare two values for less than or equal to.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int le() {
 	BINARY_NUMERIC_OPERATION(<=);
@@ -1601,7 +1601,7 @@ static int le() {
  * @brief Compare two values for equality.
  * This function is only valid for strings and integers.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int eq() {
 
@@ -1653,7 +1653,7 @@ static int eq() {
 /**
  * @brief Compare two values for inequality.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int ne() {
 	eq();
@@ -1733,7 +1733,7 @@ static int bitAnd() {
  * If both values are arrays, the result is a new array containing all keys
  * that exist in either the left or right array, but not both. (XOR)
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  *
  * @note The fact that this function is an XOR operation when both values are arrays
  * is a design choice that may not be intuitive. But we have to keep the
@@ -1811,7 +1811,7 @@ static int bitOr() {
 /**
  * @brief Perform a logical AND operation on two values.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int logicalAnd() {
 	BINARY_NUMERIC_OPERATION(&&);
@@ -1820,7 +1820,7 @@ static int logicalAnd() {
 /**
  * @brief Perform a logical OR operation on two values.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int logicalOr() {
 	BINARY_NUMERIC_OPERATION(||);
@@ -1829,7 +1829,7 @@ static int logicalOr() {
 /**
  * @brief Perform a logical NOT operation on the top value of the stack.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int logicalNot() {
 	UNARY_NUMERIC_OPERATION(!);
@@ -1838,7 +1838,7 @@ static int logicalNot() {
 /**
  * @brief Raise one number to the power of another.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int power() {
 
@@ -1887,7 +1887,7 @@ static int power() {
 /**
  * @brief Concatenate two strings from the top of the stack.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int concat() {
 
@@ -1927,7 +1927,7 @@ static int concat() {
  * PC is set to point to the new function. For a built-in routine, the
  * arguments are popped off the stack, and the routine is just called.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int callSubroutine() {
 
@@ -2007,7 +2007,7 @@ static int callSubroutine() {
 /**
  * @brief Fetch the return value of a subroutine.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  *
  * @note This should never be executed, returnVal checks for the presence of this
  * instruction at the PC to decide whether to push the function's return
@@ -2020,7 +2020,7 @@ static int fetchRetVal() {
 /**
  * @brief Return from a subroutine call without a return value.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int returnNoVal() {
 	return returnValOrNone(false);
@@ -2029,7 +2029,7 @@ static int returnNoVal() {
 /**
  * @brief Return from a subroutine call with a return value.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int returnVal() {
 	return returnValOrNone(true);
@@ -2039,7 +2039,7 @@ static int returnVal() {
  * @brief Return from a subroutine call, either with or without a return value.
  *
  * @param valOnStack Indicates whether the return value is on the stack.
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int returnValOrNone(bool valOnStack) {
 
@@ -2094,7 +2094,7 @@ static int returnValOrNone(bool valOnStack) {
 /**
  * @brief Branch to an address specified by the immediate operand.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int branch() {
 
@@ -2111,9 +2111,9 @@ static int branch() {
 }
 
 /**
- * @brief Branch to an address if the top value of the stack is true (non-zero).
+ * @brief Branch to an address if the top value of the stack is `true` (non-zero).
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int branchTrue() {
 
@@ -2140,9 +2140,9 @@ static int branchTrue() {
 }
 
 /**
- * @brief Branch to an address if the top value of the stack is false (zero).
+ * @brief Branch to an address if the top value of the stack is `false` (zero).
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int branchFalse() {
 
@@ -2173,7 +2173,7 @@ static int branchFalse() {
  * Why? So some code that uses conditional branching
  * doesn't have to figure out whether to store a branch address.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int branchNever() {
 
@@ -2194,7 +2194,7 @@ static int branchNever() {
  *
  * @param dstArray The destination array to copy to.
  * @param srcArray The source array to copy from.
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 int ArrayCopy(DataValue *dstArray, const DataValue *srcArray) {
 	*dstArray = *srcArray;
@@ -2205,9 +2205,9 @@ int ArrayCopy(DataValue *dstArray, const DataValue *srcArray) {
  * @brief Create a key string for an array from the arguments on the stack.
  *
  * @param nArgs The number of arguments to process from the stack.
- * @param keyString A pointer to a string where the key will be stored.
- * @param leaveParams If true, the parameters will not be popped from the stack after processing.
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @param keyString A string where the key will be stored.
+ * @param leaveParams If `true`, the parameters will not be popped from the stack after processing.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int makeArrayKeyFromArgs(int64_t nArgs, std::string *keyString, bool leaveParams) {
 	DataValue tmpVal;
@@ -2246,7 +2246,7 @@ static int makeArrayKeyFromArgs(int64_t nArgs, std::string *keyString, bool leav
  * @param theArray The array to insert into.
  * @param keyStr The key under which to insert the value.
  * @param theValue The value to insert.
- * @return Returns true if the insertion was successful, false otherwise.
+ * @return `true` if the insertion was successful, `false` otherwise.
  */
 bool ArrayInsert(DataValue *theArray, const std::string &keyStr, DataValue *theValue) {
 
@@ -2291,7 +2291,7 @@ void ArrayDeleteAll(DataValue *theArray) {
  * @brief Get the size of an array.
  *
  * @param theArray The array to get the size of.
- * @return Returns the size of the array.
+ * @return The size of the array.
  */
 int ArraySize(DataValue *theArray) {
 	const ArrayPtr &m = to_array(*theArray);
@@ -2303,8 +2303,8 @@ int ArraySize(DataValue *theArray) {
  *
  * @param theArray The array to search in.
  * @param keyStr The key string to look for in the array.
- * @param theValue A pointer to where the found value will be stored.
- * @return Returns true if the value was found, false otherwise.
+ * @param theValue Where the found value will be stored.
+ * @return `true` if the value was found, `false` otherwise.
  */
 bool ArrayGet(DataValue *theArray, const std::string &keyStr, DataValue *theValue) {
 
@@ -2322,7 +2322,7 @@ bool ArrayGet(DataValue *theArray, const std::string &keyStr, DataValue *theValu
  * @brief Initialize an iterator for the first element of an array.
  *
  * @param theArray The array to iterate over.
- * @return Returns an ArrayIterator initialized to the first element of the array.
+ * @return An ArrayIterator initialized to the first element of the array.
  */
 ArrayIterator arrayIterateFirst(DataValue *theArray) {
 
@@ -2336,7 +2336,7 @@ ArrayIterator arrayIterateFirst(DataValue *theArray) {
  * @brief Advance the iterator to the next element in the array.
  *
  * @param iterator The iterator to advance.
- * @return Returns the updated iterator, now pointing to the next element.
+ * @return The updated iterator, now pointing to the next element.
  */
 ArrayIterator arrayIterateNext(ArrayIterator iterator) {
 
@@ -2348,7 +2348,7 @@ ArrayIterator arrayIterateNext(ArrayIterator iterator) {
 /**
  * @brief Evaluate an array element and push the result onto the stack.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int arrayRef() {
 
@@ -2398,7 +2398,7 @@ static int arrayRef() {
 /**
  * @brief Assign a value to an array element.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int arrayAssign() {
 
@@ -2456,7 +2456,7 @@ static int arrayAssign() {
 /**
  * @brief Set up for an array reference and assignment operation.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int arrayRefAndAssignSetup() {
 
@@ -2619,7 +2619,7 @@ static int arrayIter() {
  * If the left argument is an array, it checks if every key in the left array exists in the right array.
  *
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int inArray() {
 
@@ -2674,7 +2674,7 @@ static int inArray() {
  * If nDim is greater than 0, it deletes the element at the specified key.
  * If nDim is 0, it deletes all elements from the array.
  *
- * @return Returns STAT_OK on success, or an error code if an error occurred.
+ * @return STAT_OK on success, or an error code if an error occurred.
  */
 static int deleteArrayElement() {
 
@@ -2718,8 +2718,8 @@ static int deleteArrayElement() {
  * @brief Convert a string to an integer.
  *
  * @param string The string to convert.
- * @param number A pointer to an integer where the result will be stored.
- * @return Returns true if the conversion was successful, false otherwise.
+ * @param number An integer where the result will be stored.
+ * @return `true` if the conversion was successful, `false` otherwise.
  */
 bool StringToNum(const std::string &string, int *number) {
 	auto it = string.begin();
@@ -2809,7 +2809,7 @@ static void dumpVal(DataValue dv) {
 /**
  * @brief Disassemble a sequence of instructions for debugging purposes.
  *
- * @param inst Pointer to the array of instructions to disassemble.
+ * @param inst The array of instructions to disassemble.
  * @param nInstr The number of instructions in the array.
  */
 static void disasm(Inst *inst, size_t nInstr) {

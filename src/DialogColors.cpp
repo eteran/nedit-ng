@@ -16,7 +16,7 @@ namespace {
  * @brief Converts a QColor to a string representation.
  *
  * @param color The QColor to convert.
- * @return A QString representing the color in hexadecimal format.
+ * @return The color in hexadecimal format.
  */
 QString toString(const QColor &color) {
 	return QStringLiteral("#%1").arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0'));

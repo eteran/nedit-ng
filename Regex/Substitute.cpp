@@ -7,9 +7,13 @@
 #include <algorithm>
 #include <iterator>
 
-/*
-**  SubstituteRE - Perform substitutions after a 'Regex' match.
-*/
+/**
+ * @brief Perform substitutions after a `Regex` match.
+ *
+ * @param source The source string to perform substitutions on.
+ * @param dest The destination string where substitutions will be written.
+ * @return `true` if substitutions were successful, `false` if the regex is invalid or an error occurred.
+ */
 bool Regex::SubstituteRE(std::string_view source, std::string &dest) const {
 
 	constexpr auto InvalidParenNumber = static_cast<size_t>(-1);
@@ -53,7 +57,7 @@ bool Regex::SubstituteRE(std::string_view source, std::string &dest) const {
 
 			Reader src_alias = in;
 
-			if(char digit = in.match_if([](char c) { return '1' <= c && c <= '9'; })) {
+			if (char digit = in.match_if([](char c) { return '1' <= c && c <= '9'; })) {
 				paren_no = static_cast<size_t>(digit - '0');
 
 			} else if ((test = literal_escape<char>(in.peek())) != '\0') {

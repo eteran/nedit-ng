@@ -2095,7 +2095,7 @@ void TextArea::findWrapRange(std::string_view deletedText, TextCursor pos, int64
 /*
 ** Same as BufEndOfLine, but takes in to account line breaks when wrapping
 ** is turned on.  If the caller knows that startPos is at a line start, it
-** can pass "startPosIsLineStart" as true to make the call more efficient
+** can pass "startPosIsLineStart" as `true` to make the call more efficient
 ** by avoiding the additional step of scanning back to the last newline.
 **
 ** Note that the definition of the end of a line is less clear when continuous
@@ -2351,7 +2351,7 @@ TextCursor TextArea::countBackwardNLines(TextCursor startPos, int64_t nLines) co
 }
 
 /*
-** Return true if a separate absolute top line number is being maintained
+** Return `true` if a separate absolute top line number is being maintained
 ** (for displaying line numbers or showing in the statistics line).
 */
 bool TextArea::maintainingAbsTopLineNum() const {
@@ -2395,7 +2395,7 @@ void TextArea::updateVScrollBarRange() {
 /**
  * Same as BufCountForwardNLines, but takes in to account line breaks when
  * wrapping is turned on. If the caller knows that startPos is at a line start,
- * it can pass "startPosIsLineStart" as true to make the call more efficient by
+ * it can pass "startPosIsLineStart" as `true` to make the call more efficient by
  * avoiding the additional step of scanning back to the last newline.
  *
  * @brief
@@ -2507,12 +2507,12 @@ bool TextArea::updateHScrollBarRange() {
 	horizontalScrollBar()->setRange(0, gsl::narrow<int>(std::max<int64_t>(maxWidth - viewRect.width() + 1, 0)));
 	horizontalScrollBar()->setPageStep(std::max(viewRect.width() - 100, 10));
 
-	// Return true if scroll position was changed
+	// Return `true` if scroll position was changed
 	return origHOffset != horizontalScrollBar()->value();
 }
 
 /**
- * Return true if there are lines visible with no corresponding buffer text
+ * Return `true` if there are lines visible with no corresponding buffer text
  *
  * @brief
  *
@@ -2524,7 +2524,7 @@ bool TextArea::emptyLinesVisible() const {
 
 /**
  * Find the line number of position "pos" relative to the first line of
- * displayed text. Returns false if the line is not displayed.
+ * displayed text. Returns `false` if the line is not displayed.
  *
  * @brief
  *
@@ -2635,8 +2635,8 @@ int TextArea::visLineLength(int visLineNum) const {
 ** continuous wrap mode and always expects to wrap at a newline character.
 **
 ** Given the position of the end of the line, as returned by TextDEndOfLine
-** or BufEndOfLine, this returns true if there is a line terminating
-** character, and false if there's not.  On the last character in the
+** or BufEndOfLine, this returns `true` if there is a line terminating
+** character, and `false` if there's not.  On the last character in the
 ** buffer, this function can't tell for certain whether a trailing space was
 ** used as a wrap point, and just guesses that it wasn't.  So if an exact
 ** accounting is necessary, don't use this function.
@@ -3365,7 +3365,7 @@ void TextArea::handleResize(bool widthChanged) {
 /*
 ** Same as BufCountLines, but takes in to account wrapping if wrapping is
 ** turned on.  If the caller knows that startPos is at a line start, it
-** can pass "startPosIsLineStart" as true to make the call more efficient
+** can pass "startPosIsLineStart" as `true` to make the call more efficient
 ** by avoiding the additional step of scanning back to the last newline.
 */
 int64_t TextArea::countLines(TextCursor startPos, TextCursor endPos, bool startPosIsLineStart) {
@@ -3729,7 +3729,7 @@ void TextArea::setupBGClasses(const QString &str) {
 /*
 ** Translate a buffer text position to the XY location where the center
 ** of the cursor would be positioned to point to that character.  Returns
-** false if the position is not displayed because it is VERTICALLY out
+** `false` if the position is not displayed because it is VERTICALLY out
 ** of view.  If the position is horizontally out of view, returns the
 ** x coordinate where the position would be if it were visible.
 */
@@ -4352,7 +4352,7 @@ void TextArea::TextInsertAtCursor(std::string_view chars, bool allowPendingDelet
 }
 
 /*
-** Return true if pending delete is on and there's a selection contiguous
+** Return `true` if pending delete is on and there's a selection contiguous
 ** with the cursor ready to be deleted.  These criteria are used to decide
 ** if typing a character or inserting something should delete the selection
 ** first.
@@ -4517,7 +4517,7 @@ void TextArea::insertText(std::string_view text) {
 ** Wraps the end of a line beginning at lineStartPos and ending at lineEndPos
 ** in "buf", at the last white-space on the line >= limitPos.  (The implicit
 ** assumption is that just the last character of the line exceeds the wrap
-** margin, and anywhere on the line we can wrap is correct).  Returns false if
+** margin, and anywhere on the line we can wrap is correct).  Returns `false` if
 ** unable to wrap the line.  "breakAt", returns the character position at
 ** which the line was broken,
 **
@@ -6010,7 +6010,7 @@ void TextArea::secondaryOrDragStartAP(QMouseEvent *event, EventFlags flags) {
 }
 
 /*
-** Return true if position (x, y) is inside of the primary selection
+** Return `true` if position (x, y) is inside of the primary selection
 */
 bool TextArea::inSelection(const QPoint &p) const {
 

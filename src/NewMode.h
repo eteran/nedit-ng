@@ -11,7 +11,7 @@ enum class NewMode {
 	Opposite
 };
 
-inline QLatin1String to_string(NewMode mode) {
+inline QLatin1String ToString(NewMode mode) {
 
 	switch (mode) {
 	case NewMode::Prefs:

@@ -7,11 +7,11 @@
 #include <QPushButton>
 
 /**
- * @brief
+ * @brief Constructor for DialogFonts class.
  *
- * @param document
- * @param parent
- * @param f
+ * @param document The DocumentWidget where the font settings will be applied.
+ * @param parent The parent widget, defaults to nullptr.
+ * @param f The window flags for the dialog, defaults to Qt::WindowFlags().
  */
 DialogFonts::DialogFonts(DocumentWidget *document, QWidget *parent, Qt::WindowFlags f)
 	: Dialog(parent, f), document_(document) {
@@ -62,9 +62,9 @@ void DialogFonts::connectSlots() {
 }
 
 /**
- * @brief
+ * @brief Handles the button box click event.
  *
- * @param button
+ * @param button The button that was clicked in the button box.
  */
 void DialogFonts::buttonBox_clicked(QAbstractButton *button) {
 
@@ -83,9 +83,7 @@ void DialogFonts::buttonBox_clicked(QAbstractButton *button) {
 }
 
 /**
- * Accept the changes in the dialog and set the font
- *
- * @brief
+ * @brief Accept the changes in the dialog and set the font.
  */
 void DialogFonts::updateFont() {
 
