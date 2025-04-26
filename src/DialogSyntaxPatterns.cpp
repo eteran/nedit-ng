@@ -31,7 +31,7 @@ DialogSyntaxPatterns::DialogSyntaxPatterns(QWidget *parent, Qt::WindowFlags f)
 	ui.setupUi(this);
 	connectSlots();
 
-	CommonDialog::setButtonIcons(&ui);
+	CommonDialog::SetButtonIcons(&ui);
 
 	model_ = new HighlightPatternModel(this);
 	ui.listItems->setModel(model_);
@@ -343,7 +343,7 @@ void DialogSyntaxPatterns::buttonNew_clicked() {
 		return;
 	}
 
-	CommonDialog::addNewItem(&ui, model_, []() {
+	CommonDialog::AddNewItem(&ui, model_, []() {
 		HighlightPattern style;
 		// some sensible defaults...
 		style.name = tr("New Item");
@@ -355,7 +355,7 @@ void DialogSyntaxPatterns::buttonNew_clicked() {
  * @brief Handles the click event for the "Delete" button in the dialog.
  */
 void DialogSyntaxPatterns::buttonDelete_clicked() {
-	CommonDialog::deleteItem(&ui, model_, &deleted_);
+	CommonDialog::DeleteItem(&ui, model_, &deleted_);
 }
 
 /**
@@ -367,21 +367,21 @@ void DialogSyntaxPatterns::buttonCopy_clicked() {
 		return;
 	}
 
-	CommonDialog::copyItem(&ui, model_);
+	CommonDialog::CopyItem(&ui, model_);
 }
 
 /**
  * @brief Moves the currently selected item up in the model and updates the UI.
  */
 void DialogSyntaxPatterns::buttonUp_clicked() {
-	CommonDialog::moveItemUp(&ui, model_);
+	CommonDialog::MoveItemUp(&ui, model_);
 }
 
 /**
  * @brief Moves the currently selected item down in the model and updates the UI.
  */
 void DialogSyntaxPatterns::buttonDown_clicked() {
-	CommonDialog::moveItemDown(&ui, model_);
+	CommonDialog::MoveItemDown(&ui, model_);
 }
 
 /**
@@ -608,7 +608,7 @@ void DialogSyntaxPatterns::currentChanged(const QModelIndex &current, const QMod
 		setStyleMenu(QLatin1String("Plain"));
 	}
 
-	CommonDialog::updateButtonStates(&ui, model_, current);
+	CommonDialog::UpdateButtonStates(&ui, model_, current);
 	updateLabels();
 }
 

@@ -34,7 +34,7 @@ DialogMacros::DialogMacros(QWidget *parent, Qt::WindowFlags f)
 	ui.editMacro->setTabStopWidth(tabStop * Font::characterWidth(ui.editMacro->fontMetrics(), QLatin1Char(' ')));
 #endif
 
-	CommonDialog::setButtonIcons(&ui);
+	CommonDialog::SetButtonIcons(&ui);
 
 	ui.editAccelerator->setMaximumSequenceLength(1);
 
@@ -82,7 +82,7 @@ void DialogMacros::buttonNew_clicked() {
 		return;
 	}
 
-	CommonDialog::addNewItem(&ui, model_, []() {
+	CommonDialog::AddNewItem(&ui, model_, []() {
 		MenuItem item;
 		// some sensible defaults...
 		item.name = tr("New Item");
@@ -99,14 +99,14 @@ void DialogMacros::buttonCopy_clicked() {
 		return;
 	}
 
-	CommonDialog::copyItem(&ui, model_);
+	CommonDialog::CopyItem(&ui, model_);
 }
 
 /**
  * @brief Handles the "Delete" button click event.
  */
 void DialogMacros::buttonDelete_clicked() {
-	CommonDialog::deleteItem(&ui, model_, &deleted_);
+	CommonDialog::DeleteItem(&ui, model_, &deleted_);
 }
 
 /**
@@ -126,14 +126,14 @@ void DialogMacros::buttonPasteLRMacro_clicked() {
  * @brief Moves the currently selected item up in the model and updates the UI.
  */
 void DialogMacros::buttonUp_clicked() {
-	CommonDialog::moveItemUp(&ui, model_);
+	CommonDialog::MoveItemUp(&ui, model_);
 }
 
 /**
  * @brief Moves the currently selected item down in the model and updates the UI.
  */
 void DialogMacros::buttonDown_clicked() {
-	CommonDialog::moveItemDown(&ui, model_);
+	CommonDialog::MoveItemDown(&ui, model_);
 }
 
 /**
@@ -203,7 +203,7 @@ void DialogMacros::currentChanged(const QModelIndex &current, const QModelIndex 
 	}
 
 	// ensure that the appropriate buttons are enabled
-	CommonDialog::updateButtonStates(&ui, model_, current);
+	CommonDialog::UpdateButtonStates(&ui, model_, current);
 }
 
 /**

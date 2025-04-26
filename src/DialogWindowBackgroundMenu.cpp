@@ -25,7 +25,7 @@ DialogWindowBackgroundMenu::DialogWindowBackgroundMenu(QWidget *parent, Qt::Wind
 	ui.setupUi(this);
 	connectSlots();
 
-	CommonDialog::setButtonIcons(&ui);
+	CommonDialog::SetButtonIcons(&ui);
 
 	ui.editAccelerator->setMaximumSequenceLength(1);
 
@@ -73,7 +73,7 @@ void DialogWindowBackgroundMenu::buttonNew_clicked() {
 		return;
 	}
 
-	CommonDialog::addNewItem(&ui, model_, []() {
+	CommonDialog::AddNewItem(&ui, model_, []() {
 		MenuItem item;
 		// some sensible defaults...
 		item.name = tr("New Item");
@@ -90,14 +90,14 @@ void DialogWindowBackgroundMenu::buttonCopy_clicked() {
 		return;
 	}
 
-	CommonDialog::copyItem(&ui, model_);
+	CommonDialog::CopyItem(&ui, model_);
 }
 
 /**
  * @brief Handler for the "Delete" button click event.
  */
 void DialogWindowBackgroundMenu::buttonDelete_clicked() {
-	CommonDialog::deleteItem(&ui, model_, &deleted_);
+	CommonDialog::DeleteItem(&ui, model_, &deleted_);
 }
 
 /**
@@ -117,14 +117,14 @@ void DialogWindowBackgroundMenu::buttonPasteLRMacro_clicked() {
  * @brief Moves the currently selected item up in the model and updates the UI.
  */
 void DialogWindowBackgroundMenu::buttonUp_clicked() {
-	CommonDialog::moveItemUp(&ui, model_);
+	CommonDialog::MoveItemUp(&ui, model_);
 }
 
 /**
  * @brief Moves the currently selected item down in the model and updates the UI.
  */
 void DialogWindowBackgroundMenu::buttonDown_clicked() {
-	CommonDialog::moveItemDown(&ui, model_);
+	CommonDialog::MoveItemDown(&ui, model_);
 }
 
 /**
@@ -194,7 +194,7 @@ void DialogWindowBackgroundMenu::currentChanged(const QModelIndex &current, cons
 	}
 
 	// ensure that the appropriate buttons are enabled
-	CommonDialog::updateButtonStates(&ui, model_, current);
+	CommonDialog::UpdateButtonStates(&ui, model_, current);
 }
 
 /**

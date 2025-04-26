@@ -30,7 +30,7 @@ DialogLanguageModes::DialogLanguageModes(DialogSyntaxPatterns *dialogSyntaxPatte
 	ui.setupUi(this);
 	connectSlots();
 
-	CommonDialog::setButtonIcons(&ui);
+	CommonDialog::SetButtonIcons(&ui);
 
 	model_ = new LanguageModeModel(this);
 	ui.listItems->setModel(model_);
@@ -204,7 +204,7 @@ void DialogLanguageModes::currentChanged(const QModelIndex &current, const QMode
 	}
 
 	// ensure that the appropriate buttons are enabled
-	CommonDialog::updateButtonStates(&ui, model_, current);
+	CommonDialog::UpdateButtonStates(&ui, model_, current);
 }
 
 /**
@@ -541,7 +541,7 @@ void DialogLanguageModes::buttonNew_clicked() {
 		return;
 	}
 
-	CommonDialog::addNewItem(&ui, model_, []() {
+	CommonDialog::AddNewItem(&ui, model_, []() {
 		LanguageMode item;
 		// some sensible defaults...
 		item.name = tr("New Item");
@@ -558,21 +558,21 @@ void DialogLanguageModes::buttonCopy_clicked() {
 		return;
 	}
 
-	CommonDialog::copyItem(&ui, model_);
+	CommonDialog::CopyItem(&ui, model_);
 }
 
 /**
  * @brief Handles the "Up" button click event.
  */
 void DialogLanguageModes::buttonUp_clicked() {
-	CommonDialog::moveItemUp(&ui, model_);
+	CommonDialog::MoveItemUp(&ui, model_);
 }
 
 /**
  * @brief Handles the "Down" button click event.
  */
 void DialogLanguageModes::buttonDown_clicked() {
-	CommonDialog::moveItemDown(&ui, model_);
+	CommonDialog::MoveItemDown(&ui, model_);
 }
 
 /**
@@ -641,7 +641,7 @@ void DialogLanguageModes::buttonDelete_clicked() {
 			deleted_ = index;
 			model_->deleteItem(index);
 			ui.listItems->scrollTo(ui.listItems->currentIndex());
-			CommonDialog::updateButtonStates(&ui, model_);
+			CommonDialog::UpdateButtonStates(&ui, model_);
 		}
 	}
 }
