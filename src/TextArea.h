@@ -38,11 +38,11 @@ class QLabel;
 
 constexpr auto NO_HINT = TextCursor(-1);
 
-using UnfinishedStyleCallback = void (*)(const TextArea *, TextCursor, const void *);
-using CursorMovedCallback     = void (*)(TextArea *, void *);
-using DragStartCallback       = void (*)(TextArea *, void *);
-using DragEndCallback         = void (*)(TextArea *, const DragEndEvent *, void *);
-using SmartIndentCallback     = void (*)(TextArea *, SmartIndentEvent *, void *);
+using UnfinishedStyleFunc = void (*)(const TextArea *, TextCursor, const void *);
+using CursorMovedFunc     = void (*)(TextArea *, void *);
+using DragStartFunc       = void (*)(TextArea *, void *);
+using DragEndFunc         = void (*)(TextArea *, const DragEndEvent *, void *);
+using SmartIndentFunc     = void (*)(TextArea *, SmartIndentEvent *, void *);
 
 class TextArea final : public QAbstractScrollArea {
 	Q_OBJECT
@@ -95,10 +95,10 @@ public:
 public:
 	// NOTE(eteran): if these aren't expected to have side effects, then some
 	// of them may be able to be replaced with signals
-	void addCursorMovementCallback(CursorMovedCallback callback, void *arg);
-	void addDragStartCallback(DragStartCallback callback, void *arg);
-	void addDragEndCallback(DragEndCallback callback, void *arg);
-	void addSmartIndentCallback(SmartIndentCallback callback, void *arg);
+	void addCursorMovementCallback(CursorMovedFunc callback, void *arg);
+	void addDragStartCallback(DragStartFunc callback, void *arg);
+	void addDragEndCallback(DragEndFunc callback, void *arg);
+	void addSmartIndentCallback(SmartIndentFunc callback, void *arg);
 	void resetCursorBlink(bool startsBlanked);
 
 protected:
@@ -226,7 +226,7 @@ public:
 	TextCursor lineAndColToPosition(int64_t line, int64_t column) const;
 	TextCursor lineAndColToPosition(Location loc) const;
 	TextCursor TextLastVisiblePos() const;
-	void attachHighlightData(UTextBuffer *styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, UnfinishedStyleCallback unfinishedHighlightCB, void *user);
+	void attachHighlightData(UTextBuffer *styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, UnfinishedStyleFunc unfinishedHighlightCB, void *user);
 	void makeSelectionVisible();
 	void removeWidgetHighlight();
 	void setAutoIndent(bool value);
@@ -390,7 +390,7 @@ private:
 	TextCursor dragSourceDeletePos_                = {};      // location from which move source text was removed at start of drag
 	TextCursor firstChar_                          = {};      // Buffer positions of first and last displayed character (lastChar_ points either to a newline or one character beyond the end of the buffer)
 	TextCursor lastChar_                           = {};
-	UnfinishedStyleCallback unfinishedHighlightCB_ = nullptr; // Callback to parse "unfinished" regions
+	UnfinishedStyleFunc unfinishedHighlightCB_ = nullptr; // Callback to parse "unfinished" regions
 	bool autoIndent_                               = false;
 	bool autoShowInsertPos_                        = true;
 	bool autoWrapPastedText_                       = false;
@@ -453,10 +453,10 @@ private:
 	uint32_t unfinishedStyle_;                // Style buffer entry which triggers on-the-fly re-parsing of region
 
 private:
-	std::vector<std::pair<CursorMovedCallback, void *>> movedCallbacks_;
-	std::vector<std::pair<DragStartCallback, void *>> dragStartCallbacks_;
-	std::vector<std::pair<DragEndCallback, void *>> dragEndCallbacks_;
-	std::vector<std::pair<SmartIndentCallback, void *>> smartIndentCallbacks_;
+	std::vector<std::pair<CursorMovedFunc, void *>> movedCallbacks_;
+	std::vector<std::pair<DragStartFunc, void *>> dragStartCallbacks_;
+	std::vector<std::pair<DragEndFunc, void *>> dragEndCallbacks_;
+	std::vector<std::pair<SmartIndentFunc, void *>> smartIndentCallbacks_;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(TextArea::EventFlags)

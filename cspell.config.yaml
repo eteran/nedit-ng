@@ -29,6 +29,7 @@ words:
   - nedit
   - overtype
   - pixmap
+  - pixmaps
   - qgetenv
   - qobject
   - qreal
@@ -38,12 +39,8 @@ words:
   - qvsnprintf
   - rangeset
   - rangesets
-  - Rebecca
   - reparse
   - Schwarzenberg
   - Teran
-  - unblank
-  - unhighlight
-  - unixware
   - untabbed
   - Vohlken

@@ -669,7 +669,7 @@ int LoadTipsFile(const QString &tipsFile, int index, int recLevel) {
 
 	// find the tips file
 	// Allow ~ in Unix filenames
-	const QString tipFullPath = expandTilde(tipsFile);
+	const QString tipFullPath = ExpandTilde(tipsFile);
 	if (tipFullPath.isNull()) {
 		return 0;
 	}

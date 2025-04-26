@@ -370,7 +370,7 @@ void translatePrefFormats(uint32_t fileVer) {
 		SmartIndent::LoadSmartIndentCommonString(Settings::smartIndentInitCommon);
 	}
 
-	Theme::load();
+	Theme::Load();
 
 	// translate the font names into QFont suitable for the text widget
 	Settings::font = Font::fromString(Settings::fontName);
@@ -378,11 +378,11 @@ void translatePrefFormats(uint32_t fileVer) {
 	/*
 	**  The default set for the command shell ("DEFAULT") is
 	**  only a place-holder, the actual default is the user's login shell
-	**  (or whatever is implemented in getDefaultShell()). We put the login
+	**  (or whatever is implemented in GetDefaultShell()). We put the login
 	**  shell's name in PrefData here.
 	*/
 	if (Settings::shell == QLatin1String("DEFAULT")) {
-		Settings::shell = getDefaultShell();
+		Settings::shell = GetDefaultShell();
 	}
 
 	/* setup language mode dependent info of user menus (to increase
@@ -521,7 +521,7 @@ void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 			tr("Unable to save preferences in %1").arg(prefFileName));
 	}
 
-	Theme::save();
+	Theme::Save();
 	PrefsHaveChanged = false;
 }
 

@@ -293,7 +293,7 @@ std::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosit
 	}
 
 	// Verify that the color is a valid X color spec
-	QColor rgb = X11Colors::fromString(hs.color);
+	QColor rgb = X11Colors::FromString(hs.color);
 	if (!rgb.isValid()) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X color specification: %1").arg(hs.color));
@@ -311,7 +311,7 @@ std::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosit
 
 	// Verify that the background color (if present) is a valid X color spec
 	if (!hs.bgColor.isEmpty()) {
-		rgb = X11Colors::fromString(hs.bgColor);
+		rgb = X11Colors::FromString(hs.bgColor);
 		if (!rgb.isValid()) {
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this,
@@ -470,7 +470,7 @@ void DialogDrawingStyles::chooseColor(QLineEdit *edit) {
 
 	const QString name = edit->text();
 
-	const QColor color = QColorDialog::getColor(X11Colors::fromString(name), this);
+	const QColor color = QColorDialog::getColor(X11Colors::FromString(name), this);
 	if (color.isValid()) {
 		edit->setText(QStringLiteral("#%1").arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0')));
 	}

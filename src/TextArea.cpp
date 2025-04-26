@@ -65,13 +65,12 @@
 namespace {
 
 /**
- * @brief
+ * @brief Convert an ASCII string to a Unicode QString.
  *
- * @param chars
- * @param len
- * @return
+ * @param string The ASCII string to convert.
+ * @return The string, converted to unicode.
  */
-QString asciiToUnicode(std::string_view string) {
+QString AsciiToUnicode(std::string_view string) {
 	QString s;
 	s.reserve(static_cast<int>(string.size()));
 
@@ -138,25 +137,28 @@ constexpr uint32_t RANGESET_MASK     = (0x3f << RANGESET_SHIFT);
 constexpr int MAX_DISP_LINE_LEN = 1024;
 
 /**
- * @brief
+ * @brief Checks if the calltip is off-screen vertically.
  *
- * @param desktop
- * @param top
- * @param height
- * @return
+ * @param screen The screen on which the calltip is displayed.
+ * @param top The top position of the calltip.
+ * @param height The height of the calltip.
+ * @return `true` if the calltip is off-screen vertically, `false` otherwise.
  */
-bool offscreenV(QScreen *screen, int top, int height) {
+bool OffScreenV(QScreen *screen, int top, int height) {
 	return (top < CALLTIP_EDGE_GUARD || top + height >= screen->geometry().height() - CALLTIP_EDGE_GUARD);
 }
 
-/*
-** Returns a new string with each \t replaced with tab_width spaces or
-** a pointer to text if there were no tabs.
-** Note that this is dumb replacement, not smart tab-like behavior!  The goal
-** is to prevent tabs from turning into squares in calltips, not to get the
-** formatting just right.
-*/
-QString expandAllTabs(const QString &text, int tab_width) {
+/**
+ * @brief Expands all tabs in a given text to spaces.
+ *
+ * @param text The text in which to expand tabs.
+ * @param tab_width The number of spaces to replace each tab character with.
+ * @return A new string with all tabs replaced by spaces, or the original text if no tabs were found.
+ * @note This function performs a simple replacement of tab characters with spaces.
+ *       It does not implement smart tab behavior, so the formatting may not be perfect.
+ *       The goal is to prevent tabs from appearing as squares in calltips.
+ */
+QString ExpandAllTabs(const QString &text, int tab_width) {
 
 	// First count 'em
 	const auto nTabs = static_cast<int>(std::count(text.begin(), text.end(), QLatin1Char('\t')));
@@ -185,11 +187,17 @@ QString expandAllTabs(const QString &text, int tab_width) {
 	return textCpy;
 }
 
-/*
-** Find the left and right margins of text between "start" and "end" in
-** buffer "buf".  Note that "start is assumed to be at the start of a line.
-*/
-void findTextMargins(TextBuffer *buf, TextCursor start, TextCursor end, int64_t *leftMargin, int64_t *rightMargin) {
+/**
+ * @brief Find the left and right margins of text in a given range of a text buffer.
+ *
+ * @param buf The text buffer to analyze.
+ * @param start The starting position of the text range.
+ * @param end The ending position of the text range.
+ * @param leftMargin Where to store the left margin width.
+ * @param rightMargin Where to store the right margin width.
+ * @note `start` is assumed to be at the start of a line.
+ */
+void FindTextMargins(TextBuffer *buf, TextCursor start, TextCursor end, int64_t *leftMargin, int64_t *rightMargin) {
 
 	int width    = 0;
 	int maxWidth = 0;
@@ -226,11 +234,17 @@ void findTextMargins(TextBuffer *buf, TextCursor start, TextCursor end, int64_t 
 	*rightMargin = maxWidth;
 }
 
-/*
-** Find a text position in buffer "buf" by counting forward or backward
-** from a reference position with known line number
-*/
-TextCursor findRelativeLineStart(const TextBuffer *buf, TextCursor referencePos, int64_t referenceLineNum, int64_t newLineNum) {
+/**
+ * @brief Find a text position in a buffer by counting forward or backward from a reference position with known line number.
+ *
+ * @param buf The text buffer to search in.
+ * @param referencePos The position in the buffer from which to start counting.
+ * @param referenceLineNum The line number of the reference position.
+ * @param newLineNum The line number to find relative to the reference position.
+ * @return The start of the line at the new line number.
+
+ */
+TextCursor FindRelativeLineStart(const TextBuffer *buf, TextCursor referencePos, int64_t referenceLineNum, int64_t newLineNum) {
 
 	if (newLineNum < referenceLineNum) {
 		return buf->BufCountBackwardNLines(referencePos, referenceLineNum - newLineNum);
@@ -243,51 +257,77 @@ TextCursor findRelativeLineStart(const TextBuffer *buf, TextCursor referencePos,
 	return buf->BufStartOfLine(referencePos);
 }
 
-/*
-** Callback attached to the text buffer to receive delete information before
-** the modifications are actually made.
-*/
-void bufPreDeleteCB(TextCursor pos, int64_t nDeleted, void *arg) {
+/**
+ * @brief Callback attached to the text buffer to receive delete information before
+ * the modifications are actually made.
+ *
+ * @param pos The position in the text buffer where deletion starts.
+ * @param nDeleted The number of characters to be deleted.
+ * @param arg Pointer to the TextArea instance that will handle the callback.
+ */
+void PreDeleteCallback(TextCursor pos, int64_t nDeleted, void *arg) {
 	auto area = static_cast<TextArea *>(arg);
 	area->bufPreDeleteCallback(pos, nDeleted);
 }
 
-/*
-** Callback attached to the text buffer to receive modification information
-*/
-void bufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, void *arg) {
+/**
+ * @brief Callback attached to the text buffer to receive modification information.
+ *
+ * @param pos The position in the text buffer where the modification starts.
+ * @param nInserted The number of characters inserted.
+ * @param nDeleted The number of characters deleted.
+ * @param nRestyled The number of characters restyled.
+ * @param deletedText The text that was deleted.
+ * @param arg Pointer to the TextArea instance that will handle the callback.
+ */
+void ModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, void *arg) {
 	auto area = static_cast<TextArea *>(arg);
 	area->bufModifiedCallback(pos, nInserted, nDeleted, nRestyled, deletedText);
 }
 
-/*
-** Count the number of newlines in a text string
-*/
-int64_t countNewlines(std::string_view string) {
+/**
+ * @brief Count the number of newline characters in a string.
+ *
+ * @param string The string to count newlines in.
+ * @return The number of newline characters in the string.
+ */
+int64_t CountNewlines(std::string_view string) {
 	return std::count(string.begin(), string.end(), '\n');
 }
 
-void ringIfNecessary(bool silent) {
+/**
+ * @brief Ring the bell if necessary.
+ *
+ * @param silent If true, no sound will be made.
+ */
+void BeepIfNecessary(bool silent) {
 	if (!silent) {
 		QApplication::beep();
 	}
 }
 
-/*
-** Maintain boundaries of changed region between two buffers which
-** start out with identical contents, but diverge through insertion,
-** deletion, and replacement, such that the buffers can be reconciled
-** by replacing the changed region of either buffer with the changed
-** region of the other.
-**
-** rangeStart is the beginning of the modification region in the shared
-** coordinates of both buffers (which are identical up to rangeStart).
-** modRangeEnd is the end of the changed region for the buffer being
-** modified, unmodRangeEnd is the end of the region for the buffer NOT
-** being modified.  A value of -1 in rangeStart indicates that there
-** have been no modifications so far.
-*/
-void trackModifyRange(TextCursor *rangeStart, TextCursor *modRangeEnd, TextCursor *unmodRangeEnd, TextCursor modPos, int64_t nInserted, int64_t nDeleted) {
+/**
+ * @brief  Maintain boundaries of changed region between two buffers which
+ * start out with identical contents, but diverge through insertion,
+ * deletion, and replacement, such that the buffers can be reconciled
+ * by replacing the changed region of either buffer with the changed
+ * region of the other.
+ *
+ * rangeStart is the beginning of the modification region in the shared
+ * coordinates of both buffers (which are identical up to rangeStart).
+ * modRangeEnd is the end of the changed region for the buffer being
+ * modified, unmodRangeEnd is the end of the region for the buffer NOT
+ ** being modified. A value of -1 in rangeStart indicates that there
+ * have been no modifications so far.
+ *
+ * @param rangeStart The start of the modified range in the shared coordinates.
+ * @param modRangeEnd The end of the modified range in the modified buffer.
+ * @param unmodRangeEnd The end of the modified range in the unmodified buffer.
+ * @param modPos The position in the modified buffer where the change occurs.
+ * @param nInserted The number of characters inserted at modPos.
+ * @param nDeleted The number of characters deleted at modPos.
+ */
+void TrackModifyRange(TextCursor *rangeStart, TextCursor *modRangeEnd, TextCursor *unmodRangeEnd, TextCursor modPos, int64_t nInserted, int64_t nDeleted) {
 	if (*rangeStart == -1) {
 		*rangeStart    = modPos;
 		*modRangeEnd   = modPos + nInserted;
@@ -307,12 +347,12 @@ void trackModifyRange(TextCursor *rangeStart, TextCursor *modRangeEnd, TextCurso
 }
 
 /**
- * @brief
+ * @brief Check if a key event is a modifier key event.
  *
- * @param e
- * @return
+ * @param e The key event to check.
+ * @return `true` if the event is a modifier key event, `false` otherwise.
  */
-bool isModifier(QKeyEvent *e) {
+bool IsModifier(QKeyEvent *e) {
 
 	Q_ASSERT(e);
 	switch (e->key()) {
@@ -337,7 +377,7 @@ struct InputHandler {
 };
 
 // NOTE(eteran): a nullptr handler just means "beep"
-constexpr InputHandler inputHandlers[] = {
+constexpr InputHandler InputHandlers[] = {
 
 	// Keyboard zoom support
 	{Qt::Key_Equal, Qt::ControlModifier, &TextArea::zoomInAP, TextArea::NoneFlag},  // zoom-in()
@@ -486,11 +526,11 @@ constexpr InputHandler inputHandlers[] = {
 }
 
 /**
- * @brief
+ * @brief Constructor for the TextArea class.
  *
- * @param document
- * @param buffer
- * @param font
+ * @param document The DocumentWidget associated with this text area.
+ * @param buffer The TextBuffer that contains the text displayed in this area.
+ * @param font The font used for rendering text in this area.
  */
 TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &font)
 	: QAbstractScrollArea(document), document_(document), buffer_(buffer), font_(font) {
@@ -546,13 +586,13 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
 	/* Attach the callback to the text buffer for receiving modification
 	 * information */
 	if (buffer) {
-		buffer->BufAddModifyCB(bufModifiedCB, this);
-		buffer->BufAddPreDeleteCB(bufPreDeleteCB, this);
+		buffer->BufAddModifyCB(ModifiedCallback, this);
+		buffer->BufAddPreDeleteCB(PreDeleteCallback, this);
 	}
 
 	// Update the display to reflect the contents of the buffer
 	if (buffer) {
-		bufModifiedCB(buffer_->BufStartOfBuffer(), buffer->length(), 0, 0, {}, this);
+		ModifiedCallback(buffer_->BufStartOfBuffer(), buffer->length(), 0, 0, {}, this);
 	}
 
 	// Decide if the horizontal scroll bar needs to be visible
@@ -570,9 +610,9 @@ TextArea::TextArea(DocumentWidget *document, TextBuffer *buffer, const QFont &fo
 }
 
 /**
- * @brief
+ * @brief Paste the clipboard content into the text area.
  *
- * @param flags
+ * @param flags Flags that determine how the paste operation is performed.
  */
 void TextArea::pasteClipboard(EventFlags flags) {
 
@@ -586,9 +626,9 @@ void TextArea::pasteClipboard(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Cut the selected text and place it in the clipboard.
  *
- * @param flags
+ * @param flags Flags that determine how the cut operation is performed.
  */
 void TextArea::cutClipboard(EventFlags flags) {
 
@@ -597,9 +637,9 @@ void TextArea::cutClipboard(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Toggle the overstrike mode in the text area.
  *
- * @param flags
+ * @param flags Flags that determine how the toggle operation is performed.
  */
 void TextArea::toggleOverstrike(EventFlags flags) {
 
@@ -608,9 +648,9 @@ void TextArea::toggleOverstrike(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Move the cursor to the end of the current line.
  *
- * @param flags
+ * @param flags Flags that determine how the end of line operation is performed.
  */
 void TextArea::endOfLine(EventFlags flags) {
 
@@ -633,9 +673,9 @@ void TextArea::endOfLine(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Delete the next character at the cursor position.
  *
- * @param flags
+ * @param flags Flags that determine how the delete operation is performed.
  */
 void TextArea::deleteNextCharacter(EventFlags flags) {
 
@@ -654,7 +694,7 @@ void TextArea::deleteNextCharacter(EventFlags flags) {
 	}
 
 	if (insertPos == buffer_->BufEndOfBuffer()) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 		return;
 	}
 
@@ -664,9 +704,9 @@ void TextArea::deleteNextCharacter(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Copy the selected text to the clipboard.
  *
- * @param flags
+ * @param flags Flags that determine how the copy operation is performed.
  */
 void TextArea::copyClipboard(EventFlags flags) {
 
@@ -682,9 +722,9 @@ void TextArea::copyClipboard(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Delete the previous word at the cursor position.
  *
- * @param flags
+ * @param flags Flags that determine how the delete operation is performed.
  */
 void TextArea::deletePreviousWord(EventFlags flags) {
 
@@ -705,7 +745,7 @@ void TextArea::deletePreviousWord(EventFlags flags) {
 	}
 
 	if (insertPos == lineStart) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 		return;
 	}
 
@@ -722,9 +762,9 @@ void TextArea::deletePreviousWord(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Move the cursor to the beginning of the current file.
  *
- * @param flags
+ * @param flags Flags that determine how the beginning of file operation is performed.
  */
 void TextArea::beginningOfLine(EventFlags flags) {
 
@@ -759,9 +799,9 @@ void TextArea::beginningOfLine(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Process a cancel event, typically used to clear selections or calltips.
  *
- * @param flags
+ * @param flags Flags that determine how the cancel operation is performed.
  */
 void TextArea::processCancel(EventFlags flags) {
 
@@ -780,9 +820,9 @@ void TextArea::processCancel(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Delete the previous character at the cursor position.
  *
- * @param flags
+ * @param flags Flags that determine how the delete operation is performed.
  */
 void TextArea::deletePreviousCharacter(EventFlags flags) {
 
@@ -801,7 +841,7 @@ void TextArea::deletePreviousCharacter(EventFlags flags) {
 	}
 
 	if (insertPos == buffer_->BufStartOfBuffer()) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 		return;
 	}
 
@@ -826,9 +866,9 @@ void TextArea::deletePreviousCharacter(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Insert a newline at the current cursor position.
  *
- * @param flags
+ * @param flags Flags that determine how the newline operation is performed.
  */
 void TextArea::newline(EventFlags flags) {
 
@@ -856,7 +896,7 @@ void TextArea::processUp(EventFlags flags) {
 
 	cancelDrag();
 	if (!moveUp(absolute)) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 	}
 
 	checkMoveSelectionChange(flags, insertPos);
@@ -879,7 +919,7 @@ void TextArea::processDown(EventFlags flags) {
 
 	cancelDrag();
 	if (!moveDown(absolute)) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 	}
 
 	checkMoveSelectionChange(flags, insertPos);
@@ -901,7 +941,7 @@ void TextArea::forwardCharacter(EventFlags flags) {
 
 	cancelDrag();
 	if (!moveRight()) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 	}
 
 	checkMoveSelectionChange(flags, insertPos);
@@ -923,7 +963,7 @@ void TextArea::backwardCharacter(EventFlags flags) {
 
 	cancelDrag();
 	if (!moveLeft()) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 	}
 
 	checkMoveSelectionChange(flags, insertPos);
@@ -936,8 +976,8 @@ void TextArea::backwardCharacter(EventFlags flags) {
  */
 TextArea::~TextArea() {
 	if (buffer_) {
-		buffer_->BufRemoveModifyCB(bufModifiedCB, this);
-		buffer_->BufRemovePreDeleteCB(bufPreDeleteCB, this);
+		buffer_->BufRemoveModifyCB(ModifiedCallback, this);
+		buffer_->BufRemovePreDeleteCB(PreDeleteCallback, this);
 	}
 }
 
@@ -1129,15 +1169,15 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
 		return;
 	}
 
-	if (isModifier(event)) {
+	if (IsModifier(event)) {
 		return;
 	}
 
-	auto it = std::find_if(std::begin(inputHandlers), std::end(inputHandlers), [event](const InputHandler &handler) {
+	auto it = std::find_if(std::begin(InputHandlers), std::end(InputHandlers), [event](const InputHandler &handler) {
 		return handler.key == event->key() && handler.modifiers == event->modifiers();
 	});
 
-	if (it != std::end(inputHandlers)) {
+	if (it != std::end(InputHandlers)) {
 		if (it->handler) {
 			(this->*(it->handler))(it->flags);
 		} else {
@@ -1504,7 +1544,7 @@ void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nD
 		findWrapRange(deletedText, pos, nInserted, nDeleted, &wrapModStart, &wrapModEnd, &linesInserted, &linesDeleted);
 	} else {
 		linesInserted = (nInserted == 0) ? 0 : buffer_->BufCountLines(pos, pos + nInserted);
-		linesDeleted  = (nDeleted == 0) ? 0 : countNewlines(deletedText);
+		linesDeleted  = (nDeleted == 0) ? 0 : CountNewlines(deletedText);
 	}
 
 	// Update the line starts and topLineNum
@@ -1522,7 +1562,7 @@ void TextArea::bufModifiedCallback(TextCursor pos, int64_t nInserted, int64_t nD
 	   (non-wrapped) line number of the text displayed */
 	if (maintainingAbsTopLineNum() && (nInserted != 0 || nDeleted != 0)) {
 		if (pos + nDeleted < oldFirstChar) {
-			absTopLineNum_ = absTopLineNum_ + buffer_->BufCountLines(pos, pos + nInserted) - countNewlines(deletedText);
+			absTopLineNum_ = absTopLineNum_ + buffer_->BufCountLines(pos, pos + nInserted) - CountNewlines(deletedText);
 		} else if (pos < oldFirstChar) {
 			resetAbsLineNum();
 		}
@@ -3180,7 +3220,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 		renderFont.setUnderline(true);
 	}
 
-	const auto s = asciiToUnicode(string);
+	const auto s = AsciiToUnicode(string);
 	QRect rect(x, y, toX - x, fixedFontHeight_);
 
 	painter->save();
@@ -3297,7 +3337,7 @@ QColor TextArea::getRangesetColor(size_t ind, QColor bground) const {
 		if (valid == 0) {
 			const QString color_name = tab->getColorName(ind);
 			if (!color_name.isNull()) {
-				color = X11Colors::fromString(color_name);
+				color = X11Colors::FromString(color_name);
 			}
 			tab->assignColor(ind, color);
 		}
@@ -3585,9 +3625,9 @@ void TextArea::updateCalltip(int calltipID) {
 		}
 
 		// Try to keep the tip onscreen vertically if possible
-		if (screenGeometry.height() > tipHeight && offscreenV(currentScreen, abs.y(), tipHeight)) {
+		if (screenGeometry.height() > tipHeight && OffScreenV(currentScreen, abs.y(), tipHeight)) {
 			// Maybe flipping from below to above (or vice-versa) will help
-			if (!offscreenV(currentScreen, abs.y() + flip_delta, tipHeight)) {
+			if (!OffScreenV(currentScreen, abs.y() + flip_delta, tipHeight)) {
 				abs.setY(abs.y() + flip_delta);
 			}
 
@@ -3677,7 +3717,7 @@ void TextArea::setupBGClasses(const QString &str) {
 			// side effects of this.
 			const auto nextClass = static_cast<uint8_t>(class_no++);
 
-			const QColor pix         = X11Colors::fromString(color);
+			const QColor pix         = X11Colors::FromString(color);
 			bgClassColors[nextClass] = pix;
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
@@ -3984,12 +4024,12 @@ void TextArea::cancelBlockDrag() {
 	/* If the operation was a move, make the modify range reflect the
 	   removal of the text from the starting position */
 	if (dragSourceDeleted_ != 0) {
-		trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, dragSourceDeletePos_, dragSourceInserted_, dragSourceDeleted_);
+		TrackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, dragSourceDeletePos_, dragSourceInserted_, dragSourceDeleted_);
 	}
 
 	/* Include the insert being undone from the last step in the modified
 	   range. */
-	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, dragInsertPos_, dragInserted_, dragDeleted_);
+	TrackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, dragInsertPos_, dragInserted_, dragDeleted_);
 
 	// Make the changes in the buffer
 	const std::string repText = origBuf->BufGetRange(modRangeStart, origModRangeEnd);
@@ -4904,7 +4944,7 @@ void TextArea::processShiftUpAP(EventFlags flags) {
 
 	cancelDrag();
 	if (!moveUp(absolute)) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 	}
 
 	keyMoveExtendSelection(insertPos, flags & RectFlag);
@@ -4922,7 +4962,7 @@ void TextArea::processShiftDownAP(EventFlags flags) {
 
 	cancelDrag();
 	if (!moveDown(absolute)) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 	}
 
 	keyMoveExtendSelection(insertPos, flags & RectFlag);
@@ -4954,7 +4994,7 @@ void TextArea::keySelectAP(EventFlags flags) {
 	}
 
 	if (!stat) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 	} else {
 		keyMoveExtendSelection(insertPos, flags & RectFlag);
 		checkAutoShowInsertPos();
@@ -5244,7 +5284,7 @@ void TextArea::backwardWordAP(EventFlags flags) {
 
 	cancelDrag();
 	if (insertPos == 0) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 		return;
 	}
 
@@ -5270,7 +5310,7 @@ void TextArea::forwardWordAP(EventFlags flags) {
 
 	cancelDrag();
 	if (insertPos == buffer_->length()) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 		return;
 	}
 
@@ -5312,7 +5352,7 @@ void TextArea::forwardParagraphAP(EventFlags flags) {
 
 	cancelDrag();
 	if (insertPos == buffer_->length()) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 		return;
 	}
 
@@ -5346,7 +5386,7 @@ void TextArea::backwardParagraphAP(EventFlags flags) {
 
 	cancelDrag();
 	if (insertPos == 0) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 		return;
 	}
 
@@ -5846,7 +5886,7 @@ void TextArea::deleteToStartOfLineAP(EventFlags flags) {
 	}
 
 	if (insertPos == lineStart) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 		return;
 	}
 
@@ -5957,8 +5997,8 @@ void TextArea::finishBlockDrag() {
 	/* Find the changed region of the buffer, covering both the deletion
 	   of the selected text at the drag start position, and insertion at
 	   the drag destination */
-	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, dragSourceDeletePos_, dragSourceInserted_, dragSourceDeleted_);
-	trackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, dragInsertPos_, dragInserted_, dragDeleted_);
+	TrackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, dragSourceDeletePos_, dragSourceInserted_, dragSourceDeleted_);
+	TrackModifyRange(&modRangeStart, &bufModRangeEnd, &origModRangeEnd, dragInsertPos_, dragInserted_, dragDeleted_);
 
 	// Get the original (pre-modified) range of text from saved backup buffer
 	const std::string deletedText = dragOrigBuf_->BufGetRange(modRangeStart, origModRangeEnd);
@@ -6224,7 +6264,7 @@ void TextArea::beginBlockDrag() {
 			dragOrigBuf_->primary.rectEnd_   = buffer_->BufCountDispChars(lineStart, sel.end());
 		} else {
 			const TextCursor lineEnd = buffer_->BufGetCharacter(sel.end() - 1) == '\n' ? sel.end() - 1 : sel.end();
-			findTextMargins(buffer_, lineStart, lineEnd, &dragOrigBuf_->primary.rectStart_, &dragOrigBuf_->primary.rectEnd_);
+			FindTextMargins(buffer_, lineStart, lineEnd, &dragOrigBuf_->primary.rectStart_, &dragOrigBuf_->primary.rectEnd_);
 		}
 	}
 
@@ -6285,7 +6325,7 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 
 	   The hard part is keeping track of the changes such that a single replace
 	   operation will do everything.  This is done using a routine called
-	   trackModifyRange which tracks expanding ranges of changes in the two
+	   TrackModifyRange which tracks expanding ranges of changes in the two
 	   buffers in modRangeStart, tempModRangeEnd, and bufModRangeEnd. */
 
 	/* Create a temporary buffer for accumulating changes which will
@@ -6329,7 +6369,7 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 	   operation is a move, expand the modified-range to include undoing the
 	   text-removal at the site from which the text was dragged. */
 	if (dragType != oldDragType && dragSourceDeleted_ != 0) {
-		trackModifyRange(&modRangeStart, &bufModRangeEnd, &tempModRangeEnd, dragSourceDeletePos_, dragSourceInserted_, dragSourceDeleted_);
+		TrackModifyRange(&modRangeStart, &bufModRangeEnd, &tempModRangeEnd, dragSourceDeletePos_, dragSourceInserted_, dragSourceDeleted_);
 	}
 
 	/* Do, or re-do the original text removal at the site where a move began.
@@ -6359,7 +6399,7 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 		}
 
 		if (dragType != oldDragType) {
-			trackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd, sourceDeletePos, sourceInserted, sourceDeleted);
+			TrackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd, sourceDeletePos, sourceInserted, sourceDeleted);
 		}
 
 	} else {
@@ -6370,7 +6410,7 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 
 	/* Expand the modified-range to include undoing the insert from the last
 	   call. */
-	trackModifyRange(&modRangeStart, &bufModRangeEnd, &tempModRangeEnd, dragInsertPos_, dragInserted_, dragDeleted_);
+	TrackModifyRange(&modRangeStart, &bufModRangeEnd, &tempModRangeEnd, dragInsertPos_, dragInserted_, dragDeleted_);
 
 	/* Find the line number and column of the insert position.  Note that in
 	   continuous wrap mode, these must be calculated as if the text were
@@ -6400,7 +6440,7 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 
 	/* find the position associated with the start of the new line in the
 	   temporary buffer */
-	TextCursor insLineStart = findRelativeLineStart(&tempBuf, TextCursor(referencePos - tempStart), referenceLine, insLineNum) + to_integer(tempStart);
+	TextCursor insLineStart = FindRelativeLineStart(&tempBuf, TextCursor(referencePos - tempStart), referenceLine, insLineNum) + to_integer(tempStart);
 
 	if (insLineStart - tempStart == tempBuf.length()) {
 		insLineStart = tempBuf.BufStartOfLine(TextCursor(insLineStart - tempStart)) + to_integer(tempStart);
@@ -6430,12 +6470,12 @@ void TextArea::blockDragSelection(const QPoint &pos, BlockDragTypes dragType) {
 		} else {
 			tempBuf.BufInsertCol(insRectStart, TextCursor(insStart - tempStart), insText, &insertInserted, &insertDeleted);
 		}
-		trackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd, insStart, insertInserted, insertDeleted);
+		TrackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd, insStart, insertInserted, insertDeleted);
 
 	} else {
 		const std::string insText = origBuf->BufGetSelectionText();
 		tempBuf.BufInsert(TextCursor(insStart - tempStart), insText);
-		trackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd, insStart, origSel.end() - origSel.start(), 0);
+		TrackModifyRange(&modRangeStart, &tempModRangeEnd, &bufModRangeEnd, insStart, origSel.end() - origSel.start(), 0);
 		insertInserted = origSel.end() - origSel.start();
 		insertDeleted  = 0;
 	}
@@ -6628,7 +6668,7 @@ void TextArea::deleteToEndOfLineAP(EventFlags flags) {
 	}
 
 	if (insertPos == lineEnd) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 		return;
 	}
 	buffer_->BufRemove(insertPos, lineEnd);
@@ -6777,7 +6817,7 @@ void TextArea::exchangeAP(QMouseEvent *event, EventFlags flags) {
 	   selection overlap, just beep and return */
 	if (!secondary.hasSelection() || (primary.hasSelection() && ((primary.start() <= secondary.start() && primary.end() > secondary.start()) || (secondary.start() <= primary.start() && secondary.end() > primary.start())))) {
 		buffer_->BufSecondaryUnselect();
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 		/* If there's no secondary selection, but the primary selection is
 		   being dragged, we must not forget to finish the dragging.
 		   Otherwise, modifications aren't recorded. */
@@ -6941,7 +6981,7 @@ void TextArea::pageLeftAP(EventFlags flags) {
 	cancelDrag();
 	if (flags & ScrollbarFlag) {
 		if (horizontalScrollBar()->value() == 0) {
-			ringIfNecessary(silent);
+			BeepIfNecessary(silent);
 			return;
 		}
 
@@ -6949,7 +6989,7 @@ void TextArea::pageLeftAP(EventFlags flags) {
 	} else {
 		const TextCursor lineStartPos = buffer_->BufStartOfLine(insertPos);
 		if (insertPos == lineStartPos && horizontalScrollBar()->value() == 0) {
-			ringIfNecessary(silent);
+			BeepIfNecessary(silent);
 			return;
 		}
 		const int64_t indent = buffer_->BufCountDispChars(lineStartPos, insertPos);
@@ -6979,7 +7019,7 @@ void TextArea::pageRightAP(EventFlags flags) {
 		horizontalScrollBar()->triggerAction(QAbstractSlider::SliderPageStepAdd);
 
 		if (horizontalScrollBar()->value() == oldHorizOffset) {
-			ringIfNecessary(silent);
+			BeepIfNecessary(silent);
 		}
 
 	} else {
@@ -6992,7 +7032,7 @@ void TextArea::pageRightAP(EventFlags flags) {
 		horizontalScrollBar()->triggerAction(QAbstractSlider::SliderPageStepAdd);
 
 		if (horizontalScrollBar()->value() == oldHorizOffset && insertPos == pos) {
-			ringIfNecessary(silent);
+			BeepIfNecessary(silent);
 		}
 
 		checkMoveSelectionChange(flags, insertPos);
@@ -7021,7 +7061,7 @@ void TextArea::nextPageAP(EventFlags flags) {
 		targetLine = std::min(topLineNum_ + pageForwardCount, lastTopLine);
 
 		if (targetLine == topLineNum_) {
-			ringIfNecessary(silent);
+			BeepIfNecessary(silent);
 			return;
 		}
 
@@ -7034,7 +7074,7 @@ void TextArea::nextPageAP(EventFlags flags) {
 		column     = preferredColumn(&visLineNum, &lineStartPos);
 		if (lineStartPos == lineStarts_[gsl::narrow<int>(targetLine)]) {
 			if (insertPos >= buffer_->length() || topLineNum_ == lastTopLine) {
-				ringIfNecessary(silent);
+				BeepIfNecessary(silent);
 				return;
 			}
 
@@ -7057,7 +7097,7 @@ void TextArea::nextPageAP(EventFlags flags) {
 			}
 
 			if (lineStartPos == pos) {
-				ringIfNecessary(silent);
+				BeepIfNecessary(silent);
 				return;
 			}
 
@@ -7079,7 +7119,7 @@ void TextArea::nextPageAP(EventFlags flags) {
 		}
 	} else { // "standard"
 		if (insertPos >= buffer_->length() && topLineNum_ == lastTopLine) {
-			ringIfNecessary(silent);
+			BeepIfNecessary(silent);
 			return;
 		}
 
@@ -7127,7 +7167,7 @@ void TextArea::previousPageAP(EventFlags flags) {
 		const auto targetLine = std::max<int64_t>(topLineNum_ - pageBackwardCount, 1);
 
 		if (targetLine == topLineNum_) {
-			ringIfNecessary(silent);
+			BeepIfNecessary(silent);
 			return;
 		}
 
@@ -7140,7 +7180,7 @@ void TextArea::previousPageAP(EventFlags flags) {
 		const int64_t column = preferredColumn(&visLineNum, &lineStartPos);
 		if (lineStartPos == lineStarts_[gsl::narrow<int>(targetLine)]) {
 			if (topLineNum_ == 1 && (maintainColumn || column == 0)) {
-				ringIfNecessary(silent);
+				BeepIfNecessary(silent);
 				return;
 			}
 			targetLine = std::max<int64_t>(topLineNum_ - pageBackwardCount, 1);
@@ -7171,7 +7211,7 @@ void TextArea::previousPageAP(EventFlags flags) {
 		}
 	} else { // "standard"
 		if (insertPos <= 0 && topLineNum_ == 1) {
-			ringIfNecessary(silent);
+			BeepIfNecessary(silent);
 			return;
 		}
 
@@ -7286,19 +7326,19 @@ std::optional<Location> TextArea::positionToLineAndCol(TextCursor pos) const {
 	return loc;
 }
 
-void TextArea::addCursorMovementCallback(CursorMovedCallback callback, void *arg) {
+void TextArea::addCursorMovementCallback(CursorMovedFunc callback, void *arg) {
 	movedCallbacks_.emplace_back(callback, arg);
 }
 
-void TextArea::addDragStartCallback(DragStartCallback callback, void *arg) {
+void TextArea::addDragStartCallback(DragStartFunc callback, void *arg) {
 	dragStartCallbacks_.emplace_back(callback, arg);
 }
 
-void TextArea::addDragEndCallback(DragEndCallback callback, void *arg) {
+void TextArea::addDragEndCallback(DragEndFunc callback, void *arg) {
 	dragEndCallbacks_.emplace_back(callback, arg);
 }
 
-void TextArea::addSmartIndentCallback(SmartIndentCallback callback, void *arg) {
+void TextArea::addSmartIndentCallback(SmartIndentFunc callback, void *arg) {
 	smartIndentCallbacks_.emplace_back(callback, arg);
 }
 
@@ -7358,7 +7398,7 @@ int64_t TextArea::getBufferLinesCount() const {
 ** a normal buffer modification if the buffer contains a primary selection
 ** (see extendRangeForStyleMods for more information on this protocol).
 */
-void TextArea::attachHighlightData(UTextBuffer *styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, UnfinishedStyleCallback unfinishedHighlightCB, void *user) {
+void TextArea::attachHighlightData(UTextBuffer *styleBuffer, const std::vector<StyleTableEntry> &styleTable, uint32_t unfinishedStyle, UnfinishedStyleFunc unfinishedHighlightCB, void *user) {
 	styleBuffer_           = styleBuffer;
 	styleTable_            = styleTable;
 	unfinishedStyle_       = unfinishedStyle;
@@ -7680,7 +7720,7 @@ int TextArea::TextDShowCalltip(const QString &text, bool anchored, CallTipPositi
 	}
 
 	// Expand any tabs in the calltip and set the calltip's text
-	calltipWidget_->setText(expandAllTabs(text, buffer_->BufGetTabDistance()));
+	calltipWidget_->setText(ExpandAllTabs(text, buffer_->BufGetTabDistance()));
 	updateCalltip(0);
 
 	return calltip_.ID;
@@ -7822,7 +7862,7 @@ void TextArea::deleteNextWordAP(EventFlags flags) {
 	const bool silent          = flags & NoBellFlag;
 
 	if (insertPos == lineEnd) {
-		ringIfNecessary(silent);
+		BeepIfNecessary(silent);
 		return;
 	}
 

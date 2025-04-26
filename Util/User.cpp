@@ -21,7 +21,7 @@
  * @param pathname The pathname to expand, which may start with a tilde (~).
  * @return The expanded pathname. If expansion fails, returns the original pathname.
  */
-QString expandTilde(const QString &pathname) {
+QString ExpandTilde(const QString &pathname) {
 #ifdef Q_OS_UNIX
 	struct passwd *passwdEntry;
 
@@ -36,7 +36,7 @@ QString expandTilde(const QString &pathname) {
 
 	const QString username = pathname.mid(1, end - 1);
 
-	/* We might consider to re-use the getHomeDir() function,
+	/* We might consider to re-use the GetHomeDir() function,
 	   but to keep the code more similar for both cases ... */
 	if (username.isEmpty()) {
 		passwdEntry = getpwuid(getuid());
@@ -66,7 +66,7 @@ QString expandTilde(const QString &pathname) {
  *         On Unix, this is typically /home/username or /Users/username on macOS.
  *         On Windows, this is typically C:\Users\username.
  */
-QString getHomeDir() {
+QString GetHomeDir() {
 	return QStandardPaths::writableLocation(QStandardPaths::HomeLocation);
 }
 
@@ -76,8 +76,8 @@ QString getHomeDir() {
  * @param filename The filename to prepend with the home directory.
  * @return "$HOME/filename"
  */
-QString prependHome(const QString &filename) {
-	return QStringLiteral("%1/%2").arg(getHomeDir(), filename);
+QString PrependHome(const QString &filename) {
+	return QStringLiteral("%1/%2").arg(GetHomeDir(), filename);
 }
 
 /**
@@ -85,7 +85,7 @@ QString prependHome(const QString &filename) {
  *
  * @return The username of the current user.
  */
-QString getUserName() {
+QString GetUserName() {
 #ifdef Q_OS_UNIX
 	static QString user_name;
 
@@ -118,7 +118,7 @@ QString getUserName() {
 **  This function returns the user's login shell.
 **  In case of errors, the fallback of "sh" will be returned.
 */
-QString getDefaultShell() {
+QString GetDefaultShell() {
 #ifdef Q_OS_UNIX
 	struct passwd *passwdEntry = getpwuid(getuid()); //  getuid() never fails.
 
@@ -132,5 +132,18 @@ QString getDefaultShell() {
 #else
 	// TODO(eteran): maybe return powershell on windows?
 	return QString();
+#endif
+}
+
+/**
+ * @brief Checks if the current user is an administrator.
+ *
+ * @return `true` if the user is an administrator, `false` otherwise.
+ */
+bool IsAdministrator() {
+#ifdef Q_OS_UNIX
+	return getuid() == 0;
+#else
+	return false;
 #endif
 }
