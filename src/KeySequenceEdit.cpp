@@ -8,8 +8,6 @@
 #include <QLineEdit>
 #include <QStyle>
 
-
-
 namespace {
 
 /**

@@ -12,8 +12,8 @@
 #include "Search.h"
 #include "SmartIndent.h"
 #include "TextArea.h"
-#include "Util/regex.h"
 #include "UserCommands.h"
+#include "Util/regex.h"
 
 #include <QMessageBox>
 #include <QRegularExpressionValidator>

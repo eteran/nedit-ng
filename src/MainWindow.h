@@ -10,11 +10,11 @@
 #include "Search.h"
 #include "SearchType.h"
 #include "TextCursor.h"
+#include "UserCommands.h"
 #include "Util/FileFormats.h"
 #include "WrapMode.h"
 #include "WrapStyle.h"
 #include "ui_MainWindow.h"
-#include "UserCommands.h"
 
 #include <QFileDialog>
 #include <QFileInfoList>

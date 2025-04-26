@@ -9,6 +9,7 @@
 #include "SmartIndent.h"
 #include "TextBuffer.h"
 #include "Theme.h"
+#include "UserCommands.h"
 #include "Util/ClearCase.h"
 #include "Util/Input.h"
 #include "Util/Raise.h"
@@ -18,7 +19,6 @@
 #include "Util/version.h"
 #include "Yaml.h"
 #include "nedit.h"
-#include "UserCommands.h"
 
 #include <QInputDialog>
 #include <QMessageBox>

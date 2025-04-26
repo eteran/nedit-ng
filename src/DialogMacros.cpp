@@ -9,9 +9,9 @@
 #include "MenuItem.h"
 #include "MenuItemModel.h"
 #include "Preferences.h"
+#include "UserCommands.h"
 #include "Util/String.h"
 #include "parse.h"
-#include "UserCommands.h"
 
 #include <QMessageBox>
 

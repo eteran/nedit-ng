@@ -1265,16 +1265,16 @@ uint8_t *Piece(int *flag_param, Range &range_param) {
 		 *
 		 */
 
-		Tail(ret_val, EmitNode(BACK));        // 1
+		Tail(ret_val, EmitNode(BACK));         // 1
 		Insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 2,4
 		Insert(NOTHING, ret_val, 0UL, 0UL, 0); // 3
 
 		next = EmitNode(NOTHING); // 2,3
 
 		OffsetTail(ret_val, NODE_SIZE<size_t>, next);        // 2
-		Tail(ret_val, next);                                  // 3
-		Insert(BRANCH, ret_val, 0UL, 0UL, 0);                 // 4,5
-		Tail(ret_val, ret_val + (2 * NODE_SIZE<size_t>));     // 4
+		Tail(ret_val, next);                                 // 3
+		Insert(BRANCH, ret_val, 0UL, 0UL, 0);                // 4,5
+		Tail(ret_val, ret_val + (2 * NODE_SIZE<size_t>));    // 4
 		OffsetTail(ret_val, 3 * NODE_SIZE<size_t>, ret_val); // 5
 
 		if (op_code == '+') {
@@ -1290,11 +1290,11 @@ uint8_t *Piece(int *flag_param, Range &range_param) {
 		 *       \__3_______|  4
 		 */
 
-		Insert(BRANCH, ret_val, 0UL, 0UL, 0);                     // 1,3
+		Insert(BRANCH, ret_val, 0UL, 0UL, 0);                   // 1,3
 		OffsetTail(ret_val, NODE_SIZE<size_t>, EmitNode(BACK)); // 2
-		OffsetTail(ret_val, NODE_SIZE<size_t>, ret_val);         // 1
-		Tail(ret_val, EmitNode(BRANCH));                         // 3
-		Tail(ret_val, EmitNode(NOTHING));                        // 4
+		OffsetTail(ret_val, NODE_SIZE<size_t>, ret_val);        // 1
+		Tail(ret_val, EmitNode(BRANCH));                        // 3
+		Tail(ret_val, EmitNode(NOTHING));                       // 4
 	} else if (op_code == '+') {
 		/* Node structure for (x)+ construct.
 		 *
@@ -1307,7 +1307,7 @@ uint8_t *Piece(int *flag_param, Range &range_param) {
 
 		next = EmitNode(BRANCH); // 1
 
-		Tail(ret_val, next);               // 1
+		Tail(ret_val, next);              // 1
 		Tail(EmitNode(BACK), ret_val);    // 2
 		Tail(next, EmitNode(BRANCH));     // 3
 		Tail(ret_val, EmitNode(NOTHING)); // 4
@@ -1325,8 +1325,8 @@ uint8_t *Piece(int *flag_param, Range &range_param) {
 
 		next = EmitNode(NOTHING); // 1,2,3
 
-		OffsetTail(ret_val, 2 * NODE_SIZE<size_t>, next);  // 1
-		OffsetTail(ret_val, NODE_SIZE<size_t>, next);      // 2
+		OffsetTail(ret_val, 2 * NODE_SIZE<size_t>, next);   // 1
+		OffsetTail(ret_val, NODE_SIZE<size_t>, next);       // 2
 		Tail(ret_val, next);                                // 3
 		Insert(BRANCH, ret_val, 0UL, 0UL, 0);               // 4
 		Tail(ret_val, (ret_val + (2 * NODE_SIZE<size_t>))); // 4
@@ -1340,11 +1340,11 @@ uint8_t *Piece(int *flag_param, Range &range_param) {
 		 */
 
 		Insert(BRANCH, ret_val, 0UL, 0UL, 0); // 1
-		Tail(ret_val, EmitNode(BRANCH));     // 1
+		Tail(ret_val, EmitNode(BRANCH));      // 1
 
 		next = EmitNode(NOTHING); // 2,3
 
-		Tail(ret_val, next);                           // 2
+		Tail(ret_val, next);                          // 2
 		OffsetTail(ret_val, NODE_SIZE<size_t>, next); // 3
 	} else if (op_code == '{' && min_max[0] == min_max[1]) {
 		/* Node structure for (x){m}, (x){m}?, (x){m,m}, or (x){m,m}? constructs.
@@ -1388,7 +1388,7 @@ uint8_t *Piece(int *flag_param, Range &range_param) {
 			Insert(BRANCH, ret_val, 0UL, 0UL, pContext.Num_Braces);  // 4,6
 			Insert(NOTHING, ret_val, 0UL, 0UL, pContext.Num_Braces); // 5
 			Insert(BRANCH, ret_val, 0UL, 0UL, pContext.Num_Braces);  // 3,4,8
-			Tail(EmitNode(BACK), ret_val);                          // 3
+			Tail(EmitNode(BACK), ret_val);                           // 3
 			Tail(ret_val, ret_val + (2 * NODE_SIZE<size_t>));        // 4
 
 			next = EmitNode(NOTHING); // 5,6,7
@@ -1418,18 +1418,18 @@ uint8_t *Piece(int *flag_param, Range &range_param) {
 			next = EmitSpecial(TEST_COUNT, min_max[0], pContext.Num_Braces); // 2,4
 
 			Tail(ret_val, next);                   // 2
-			Tail(EmitNode(BACK), ret_val);        // 3
-			Tail(ret_val, EmitNode(BACK));        // 4
+			Tail(EmitNode(BACK), ret_val);         // 3
+			Tail(ret_val, EmitNode(BACK));         // 4
 			Insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 5,7
 			Insert(NOTHING, ret_val, 0UL, 0UL, 0); // 6
 
 			next = EmitNode(NOTHING); // 5,6
 
-			OffsetTail(ret_val, NODE_SIZE<size_t>, next);                         // 5
+			OffsetTail(ret_val, NODE_SIZE<size_t>, next);                          // 5
 			Tail(ret_val, next);                                                   // 6
 			Insert(BRANCH, ret_val, 0UL, 0UL, 0);                                  // 7,8
 			Tail(ret_val, ret_val + (2 * NODE_SIZE<size_t>));                      // 7
-			OffsetTail(ret_val, 3 * NODE_SIZE<size_t>, ret_val);                  // 8
+			OffsetTail(ret_val, 3 * NODE_SIZE<size_t>, ret_val);                   // 8
 			Insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces);            // 9
 			Tail(ret_val, ret_val + INDEX_SIZE<size_t> + (4 * NODE_SIZE<size_t>)); // 9
 
@@ -1454,19 +1454,19 @@ uint8_t *Piece(int *flag_param, Range &range_param) {
 
 			next = EmitSpecial(TEST_COUNT, min_max[0], pContext.Num_Braces); // 4
 
-			Tail(EmitNode(BACK), ret_val);        // 3
-			Tail(next, EmitNode(BACK));           // 4
+			Tail(EmitNode(BACK), ret_val);         // 3
+			Tail(next, EmitNode(BACK));            // 4
 			Insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 6,8
 			Insert(NOTHING, ret_val, 0UL, 0UL, 0); // 5
 			Insert(BRANCH, ret_val, 0UL, 0UL, 0);  // 8,9
 
 			next = EmitNode(NOTHING); // 5,6,7
 
-			OffsetTail(ret_val, NODE_SIZE<size_t>, next);                         // 5
-			OffsetTail(ret_val, 2 * NODE_SIZE<size_t>, next);                     // 6
-			OffsetTail(ret_val, 3 * NODE_SIZE<size_t>, next);                     // 7
+			OffsetTail(ret_val, NODE_SIZE<size_t>, next);                          // 5
+			OffsetTail(ret_val, 2 * NODE_SIZE<size_t>, next);                      // 6
+			OffsetTail(ret_val, 3 * NODE_SIZE<size_t>, next);                      // 7
 			Tail(ret_val, ret_val + (2 * NODE_SIZE<size_t>));                      // 8
-			OffsetTail(next, -NODE_SIZE<int>, ret_val);                           // 9
+			OffsetTail(next, -NODE_SIZE<int>, ret_val);                            // 9
 			Insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces);            // 10
 			Tail(ret_val, ret_val + INDEX_SIZE<size_t> + (4 * NODE_SIZE<size_t>)); // 10
 		}
@@ -1490,11 +1490,11 @@ uint8_t *Piece(int *flag_param, Range &range_param) {
 
 			Tail(ret_val, next);                  // 2
 			Insert(BRANCH, ret_val, 0UL, 0UL, 0); // 3,4,7
-			Tail(EmitNode(BACK), ret_val);       // 3
+			Tail(EmitNode(BACK), ret_val);        // 3
 
 			next = EmitNode(BRANCH); // 4,5
 
-			Tail(ret_val, next);                           // 4
+			Tail(ret_val, next);                          // 4
 			Tail(next, EmitNode(NOTHING));                // 5,6
 			OffsetTail(ret_val, NODE_SIZE<size_t>, next); // 6
 
@@ -1518,12 +1518,12 @@ uint8_t *Piece(int *flag_param, Range &range_param) {
 			next = EmitSpecial(TEST_COUNT, min_max[0], pContext.Num_Braces); // 2
 
 			Tail(ret_val, next);                  // 2
-			Tail(EmitNode(BACK), ret_val);       // 3
+			Tail(EmitNode(BACK), ret_val);        // 3
 			Insert(BRANCH, ret_val, 0UL, 0UL, 0); // 4,6
 
 			next = EmitNode(BACK); // 4
 
-			Tail(next, ret_val);                           // 4
+			Tail(next, ret_val);                          // 4
 			OffsetTail(ret_val, NODE_SIZE<size_t>, next); // 5
 			Tail(ret_val, EmitNode(BRANCH));              // 6
 			Tail(ret_val, EmitNode(NOTHING));             // 7
@@ -1552,20 +1552,20 @@ uint8_t *Piece(int *flag_param, Range &range_param) {
 
 			next = EmitSpecial(TEST_COUNT, min_max[0], pContext.Num_Braces); // 4
 
-			Tail(EmitNode(BACK), ret_val);       // 3
-			Tail(next, EmitNode(BACK));          // 4
+			Tail(EmitNode(BACK), ret_val);        // 3
+			Tail(next, EmitNode(BACK));           // 4
 			Insert(BRANCH, ret_val, 0UL, 0UL, 0); // 5,6
 
 			next = EmitNode(BRANCH); // 5,8
 
-			Tail(ret_val, next);                         // 5
+			Tail(ret_val, next);                        // 5
 			OffsetTail(next, -NODE_SIZE<int>, ret_val); // 6
 
 			next = EmitNode(NOTHING); // 7,8
 
 			OffsetTail(ret_val, NODE_SIZE<size_t>, next); // 7
 
-			OffsetTail(next, -NODE_SIZE<int>, next);                              // 8
+			OffsetTail(next, -NODE_SIZE<int>, next);                               // 8
 			Insert(INIT_COUNT, ret_val, 0UL, 0UL, pContext.Num_Braces);            // 9
 			Tail(ret_val, ret_val + INDEX_SIZE<size_t> + (2 * NODE_SIZE<size_t>)); // 9
 		}

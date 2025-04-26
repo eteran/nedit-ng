@@ -183,8 +183,8 @@ set(PROJECT_SOURCES
 	ReparseContext.h
 	Search.cpp
 	Search.h
-	shift.cpp
-	shift.h
+	Shift.cpp
+	Shift.h
 	ShiftDirection.h
 	SignalBlocker.h
 	SmartIndent.cpp

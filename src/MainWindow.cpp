@@ -30,10 +30,12 @@
 #include "Regex.h"
 #include "Search.h"
 #include "Settings.h"
+#include "Shift.h"
 #include "SignalBlocker.h"
 #include "SmartIndent.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
+#include "UserCommands.h"
 #include "Util/ClearCase.h"
 #include "Util/FileSystem.h"
 #include "Util/algorithm.h"
@@ -41,8 +43,6 @@
 #include "Util/utils.h"
 #include "WindowMenuEvent.h"
 #include "nedit.h"
-#include "shift.h"
-#include "UserCommands.h"
 
 #include <QActionGroup>
 #include <QButtonGroup>

@@ -6,10 +6,10 @@
 #include "Preferences.h"
 #include "Regex.h"
 #include "TextBuffer.h"
+#include "UserCommands.h"
 #include "Util/String.h"
 #include "Util/algorithm.h"
 #include "Util/utils.h"
-#include "UserCommands.h"
 
 #include <algorithm>
 #include <cstdlib>
