@@ -46,9 +46,9 @@ namespace {
 /* Initial forward expansion of parsing region in incremental re-parsing,
    when style changes propagate forward beyond the original modification.
    This distance is increased by a factor of two for each subsequent step. */
-constexpr int REPARSE_CHUNK_SIZE = 80;
+constexpr int ReparseChunkSize = 80;
 
-constexpr auto STYLE_NOT_FOUND = static_cast<size_t>(-1);
+constexpr auto StyleNotFound = static_cast<size_t>(-1);
 
 /**
  * @brief Check if a style is plain or unfinished.
@@ -792,11 +792,11 @@ void IncrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightDat
 			return;
 
 			/* Styles are changing beyond the modification, continue extending
-			   the end of the parse range by powers of 2 * REPARSE_CHUNK_SIZE and
+			   the end of the parse range by powers of 2 * ReparseChunkSize and
 			   reparse until nothing changes */
 		} else {
 			lastMod  = LastModified(styleBuf);
-			endParse = std::min(buf->BufEndOfBuffer(), ForwardOneContext(buf, context, lastMod) + (REPARSE_CHUNK_SIZE << nPasses));
+			endParse = std::min(buf->BufEndOfBuffer(), ForwardOneContext(buf, context, lastMod) + (ReparseChunkSize << nPasses));
 		}
 	}
 }
@@ -1729,7 +1729,7 @@ QString WriteHighlightString() {
 bool FontOfNamedStyleIsBold(const QString &styleName) {
 	const size_t styleNo = IndexOfNamedStyle(styleName);
 
-	if (styleNo == STYLE_NOT_FOUND) {
+	if (styleNo == StyleNotFound) {
 		return false;
 	}
 
@@ -1746,7 +1746,7 @@ bool FontOfNamedStyleIsBold(const QString &styleName) {
 bool FontOfNamedStyleIsItalic(const QString &styleName) {
 	const size_t styleNo = IndexOfNamedStyle(styleName);
 
-	if (styleNo == STYLE_NOT_FOUND) {
+	if (styleNo == StyleNotFound) {
 		return false;
 	}
 
@@ -1763,7 +1763,7 @@ bool FontOfNamedStyleIsItalic(const QString &styleName) {
 QString FgColorOfNamedStyle(const QString &styleName) {
 	const size_t styleNo = IndexOfNamedStyle(styleName);
 
-	if (styleNo == STYLE_NOT_FOUND) {
+	if (styleNo == StyleNotFound) {
 		return QLatin1String("black");
 	}
 
@@ -1779,7 +1779,7 @@ QString FgColorOfNamedStyle(const QString &styleName) {
 QString BgColorOfNamedStyle(const QString &styleName) {
 	const size_t styleNo = IndexOfNamedStyle(styleName);
 
-	if (styleNo == STYLE_NOT_FOUND) {
+	if (styleNo == StyleNotFound) {
 		return QLatin1String("");
 	}
 
@@ -1793,7 +1793,7 @@ QString BgColorOfNamedStyle(const QString &styleName) {
  * @return `true` if the style exists, `false` otherwise.
  */
 bool NamedStyleExists(const QString &styleName) {
-	return IndexOfNamedStyle(styleName) != STYLE_NOT_FOUND;
+	return IndexOfNamedStyle(styleName) != StyleNotFound;
 }
 
 /**
@@ -1839,7 +1839,7 @@ std::optional<PatternSet> ReadDefaultPatternSet(const QString &langModeName) {
  * @brief Find the index of a named style in the HighlightStyles list.
  *
  * @param styleName The name of the style to find the index for.
- * @return The index of the style in the HighlightStyles list, or STYLE_NOT_FOUND if the style does not exist.
+ * @return The index of the style in the HighlightStyles list, or StyleNotFound if the style does not exist.
  */
 size_t IndexOfNamedStyle(const QString &styleName) {
 	for (size_t i = 0; i < HighlightStyles.size(); i++) {
@@ -1848,7 +1848,7 @@ size_t IndexOfNamedStyle(const QString &styleName) {
 		}
 	}
 
-	return STYLE_NOT_FOUND;
+	return StyleNotFound;
 }
 
 /**
