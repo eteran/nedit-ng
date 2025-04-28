@@ -105,7 +105,7 @@ private:
 };
 
 /**
- *
+ * @brief Default constructor for gap_buffer.
  */
 template <class Ch, class Tr>
 gap_buffer<Ch, Tr>::gap_buffer()
@@ -113,7 +113,9 @@ gap_buffer<Ch, Tr>::gap_buffer()
 }
 
 /**
+ * @brief Constructor for gap_buffer with a specified reserve size.
  *
+ * @param reserve_size The size to reserve for the buffer.
  */
 template <class Ch, class Tr>
 gap_buffer<Ch, Tr>::gap_buffer(size_type reserve_size)
@@ -127,7 +129,10 @@ gap_buffer<Ch, Tr>::gap_buffer(size_type reserve_size)
 }
 
 /**
+ * @brief Returns the character at the specified index.
  *
+ * @param n The index of the character to retrieve.
+ * @return The character at the specified index.
  */
 template <class Ch, class Tr>
 Ch gap_buffer<Ch, Tr>::operator[](size_type n) const noexcept {
@@ -140,7 +145,10 @@ Ch gap_buffer<Ch, Tr>::operator[](size_type n) const noexcept {
 }
 
 /**
+ * @brief Returns the character at the specified index.
  *
+ * @param n The index of the character to retrieve.
+ * @return The character at the specified index.
  */
 template <class Ch, class Tr>
 Ch &gap_buffer<Ch, Tr>::operator[](size_type n) noexcept {
@@ -153,7 +161,10 @@ Ch &gap_buffer<Ch, Tr>::operator[](size_type n) noexcept {
 }
 
 /**
+ * @brief Returns the character at the specified index, throwing an exception if out of range.
  *
+ * @param n The index of the character to retrieve.
+ * @return The character at the specified index.
  */
 template <class Ch, class Tr>
 Ch gap_buffer<Ch, Tr>::at(size_type n) const {
@@ -170,7 +181,10 @@ Ch gap_buffer<Ch, Tr>::at(size_type n) const {
 }
 
 /**
+ * @brief Returns the character at the specified index, throwing an exception if out of range.
  *
+ * @param n The index of the character to retrieve.
+ * @return The character at the specified index.
  */
 template <class Ch, class Tr>
 Ch &gap_buffer<Ch, Tr>::at(size_type n) {
@@ -187,7 +201,12 @@ Ch &gap_buffer<Ch, Tr>::at(size_type n) {
 }
 
 /**
+ * @brief Compares a substring starting at the specified position with another string.
  *
+ * @param pos The starting position in the buffer.
+ * @param str The string to compare with.
+ * @return An integer less than, equal to, or greater than zero if the substring is
+ * less than, equal to, or greater than the specified string.
  */
 template <class Ch, class Tr>
 int gap_buffer<Ch, Tr>::compare(size_type pos, view_type str) const noexcept {
@@ -224,7 +243,12 @@ int gap_buffer<Ch, Tr>::compare(size_type pos, view_type str) const noexcept {
 }
 
 /**
+ * @brief Compares a character at the specified position with another character.
  *
+ * @param pos The position in the buffer to compare.
+ * @param ch The character to compare with.
+ * @return An integer less than, equal to, or greater than zero if the character at
+ * the specified position is less than, equal to, or greater than the specified character.
  */
 template <class Ch, class Tr>
 int gap_buffer<Ch, Tr>::compare(size_type pos, Ch ch) const noexcept {
@@ -241,7 +265,9 @@ int gap_buffer<Ch, Tr>::compare(size_type pos, Ch ch) const noexcept {
 }
 
 /**
+ * @brief Converts the contents of the gap buffer to a string.
  *
+ * @return A string containing the contents of the gap buffer.
  */
 template <class Ch, class Tr>
 auto gap_buffer<Ch, Tr>::to_string() const -> string_type {
@@ -253,7 +279,11 @@ auto gap_buffer<Ch, Tr>::to_string() const -> string_type {
 }
 
 /**
+ * @brief Converts a range of the gap buffer to a string.
  *
+ * @param start The starting position of the range.
+ * @param end The ending position of the range.
+ * @return A string containing the specified range of the gap buffer.
  */
 template <class Ch, class Tr>
 auto gap_buffer<Ch, Tr>::to_string(size_type start, size_type end) const -> string_type {
