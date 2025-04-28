@@ -5833,9 +5833,9 @@ bool MainWindow::eventFilter(QObject *object, QEvent *ev) {
  * @param keepDialogs
  * @param type
  */
-void MainWindow::action_Find(DocumentWidget *document, const QString &string, Direction direction, SearchType type, WrapMode searchWrap) {
+void MainWindow::action_Find(DocumentWidget *document, const QString &string, Direction direction, SearchType type, WrapMode SearchWrap) {
 
-	EmitEvent("find", string, ToString(direction), ToString(type), ToString(searchWrap));
+	EmitEvent("find", string, ToString(direction), ToString(type), ToString(SearchWrap));
 
 	if (const QPointer<TextArea> area = lastFocus()) {
 		searchAndSelect(
@@ -5844,7 +5844,7 @@ void MainWindow::action_Find(DocumentWidget *document, const QString &string, Di
 			string,
 			direction,
 			type,
-			searchWrap);
+			SearchWrap);
 	}
 }
 
@@ -6441,12 +6441,12 @@ void MainWindow::setIncrementalSearchLine(bool value) {
  * @param searchString
  * @param direction
  * @param searchType
- * @param searchWrap
+ * @param SearchWrap
  * @param beginPos
  * @param searchResult
  * @return
  */
-bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, Search::Result *searchResult) {
+bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode SearchWrap, int64_t beginPos, Search::Result *searchResult) {
 
 	TextBuffer *buffer    = document->buffer();
 	const int64_t fileEnd = buffer->length() - 1;
@@ -6494,7 +6494,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 		}
 
 		if (!found) {
-			if (searchWrap == WrapMode::Wrap) {
+			if (SearchWrap == WrapMode::Wrap) {
 				if (direction == Direction::Forward && beginPos != 0) {
 					if (Preferences::GetPrefBeepOnSearchWrap()) {
 						QApplication::beep();
@@ -6564,7 +6564,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 			}
 		}
 	} else { // incremental search
-		if (outsideBounds && searchWrap == WrapMode::Wrap) {
+		if (outsideBounds && SearchWrap == WrapMode::Wrap) {
 			beginPos      = (direction == Direction::Forward) ? 0 : fileEnd + 1;
 			outsideBounds = false;
 		}
@@ -6574,7 +6574,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 									  searchString,
 									  direction,
 									  searchType,
-									  searchWrap,
+									  SearchWrap,
 									  beginPos,
 									  searchResult,
 									  document->getWindowDelimiters());
@@ -6594,7 +6594,7 @@ bool MainWindow::searchWindow(DocumentWidget *document, const QString &searchStr
 ** the window when found (or beep or put up a dialog if not found).  Also
 ** adds the search string to the global search history.
 */
-bool MainWindow::searchAndSelect(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap) {
+bool MainWindow::searchAndSelect(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode SearchWrap) {
 
 	TextCursor beginPos;
 	TextRange selectionRange;
@@ -6640,7 +6640,7 @@ bool MainWindow::searchAndSelect(DocumentWidget *document, TextArea *area, const
 	Search::Result searchResult;
 
 	// do the search.  SearchWindow does appropriate dialogs and beeps
-	if (!searchWindow(document, searchString, direction, searchType, searchWrap, to_integer(beginPos), &searchResult)) {
+	if (!searchWindow(document, searchString, direction, searchType, SearchWrap, to_integer(beginPos), &searchResult)) {
 		return false;
 	}
 
@@ -6651,7 +6651,7 @@ bool MainWindow::searchAndSelect(DocumentWidget *document, TextArea *area, const
 	   beginning at the start of the search, go to the next occurrence,
 	   otherwise repeated finds will get "stuck" at zero-length matches */
 	if (direction == Direction::Forward && beginPos == startPos && beginPos == endPos) {
-		if (!movedFwd && !searchWindow(document, searchString, direction, searchType, searchWrap, to_integer(beginPos + 1), &searchResult)) {
+		if (!movedFwd && !searchWindow(document, searchString, direction, searchType, SearchWrap, to_integer(beginPos + 1), &searchResult)) {
 			return false;
 		}
 
@@ -6679,7 +6679,7 @@ bool MainWindow::searchAndSelect(DocumentWidget *document, TextArea *area, const
 ** recorded, search from that original position, otherwise, search from the
 ** current cursor position.
 */
-bool MainWindow::searchAndSelectIncremental(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, bool continued) {
+bool MainWindow::searchAndSelectIncremental(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode SearchWrap, bool continued) {
 
 	/* If there's a search in progress, start the search from the original
 	   starting position, otherwise search from the cursor position. */
@@ -6721,7 +6721,7 @@ bool MainWindow::searchAndSelectIncremental(DocumentWidget *document, TextArea *
 	Search::Result searchResult;
 
 	// do the search.  SearchWindow does appropriate dialogs and beeps
-	if (!searchWindow(document, searchString, direction, searchType, searchWrap, to_integer(beginPos), &searchResult)) {
+	if (!searchWindow(document, searchString, direction, searchType, SearchWrap, to_integer(beginPos), &searchResult)) {
 		return false;
 	}
 
@@ -6734,7 +6734,7 @@ bool MainWindow::searchAndSelectIncremental(DocumentWidget *document, TextArea *
 	   beginning at the start of the search, go to the next occurrence,
 	   otherwise repeated finds will get "stuck" at zero-length matches */
 	if (direction == Direction::Forward && beginPos == startPos && beginPos == endPos) {
-		if (!searchWindow(document, searchString, direction, searchType, searchWrap, to_integer(beginPos + 1), &searchResult)) {
+		if (!searchWindow(document, searchString, direction, searchType, SearchWrap, to_integer(beginPos + 1), &searchResult)) {
 			return false;
 		}
 
@@ -6755,7 +6755,7 @@ bool MainWindow::searchAndSelectIncremental(DocumentWidget *document, TextArea *
 ** Replace selection with "replaceString" and search for string "searchString"
 ** in window "window", using algorithm "searchType" and direction "direction"
 */
-bool MainWindow::replaceAndSearch(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap) {
+bool MainWindow::replaceAndSearch(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode SearchWrap) {
 
 	TextRange selectionRange;
 	TextCursor extentBW;
@@ -6801,7 +6801,7 @@ bool MainWindow::replaceAndSearch(DocumentWidget *document, TextArea *area, cons
 	}
 
 	// do the search; beeps/dialogs are taken care of
-	searchAndSelect(document, area, searchString, direction, searchType, searchWrap);
+	searchAndSelect(document, area, searchString, direction, searchType, SearchWrap);
 	return replaced;
 }
 
@@ -6812,7 +6812,7 @@ bool MainWindow::replaceAndSearch(DocumentWidget *document, TextArea *area, cons
 ** return search type in "searchType", and returns true.
 ** Otherwise, returns false.
 */
-bool MainWindow::searchAndSelectSame(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap) {
+bool MainWindow::searchAndSelectSame(DocumentWidget *document, TextArea *area, Direction direction, WrapMode SearchWrap) {
 
 	const Search::HistoryEntry *entry = Search::HistoryByIndex(1);
 	if (!entry) {
@@ -6826,7 +6826,7 @@ bool MainWindow::searchAndSelectSame(DocumentWidget *document, TextArea *area, D
 		entry->search,
 		direction,
 		entry->type,
-		searchWrap);
+		SearchWrap);
 }
 
 /*
@@ -6834,7 +6834,7 @@ bool MainWindow::searchAndSelectSame(DocumentWidget *document, TextArea *area, D
 ** "searchType" and direction "direction", and replace it with "replaceString"
 ** Also adds the search and replace strings to the global search history.
 */
-bool MainWindow::searchAndReplace(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap) {
+bool MainWindow::searchAndReplace(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode SearchWrap) {
 
 	/* NOTE(eteran): OK, the whole point of extentBW, and extentFW
 	 * are to help with regex search/replace operations involving look-ahead and
@@ -6883,7 +6883,7 @@ bool MainWindow::searchAndReplace(DocumentWidget *document, TextArea *area, cons
 			searchString,
 			direction,
 			searchType,
-			searchWrap,
+			SearchWrap,
 			to_integer(beginPos),
 			&searchResult);
 
@@ -6945,7 +6945,7 @@ bool MainWindow::searchAndReplace(DocumentWidget *document, TextArea *area, cons
 ** Search and replace using previously entered search strings (from dialog
 ** or selection).
 */
-bool MainWindow::replaceSame(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap) {
+bool MainWindow::replaceSame(DocumentWidget *document, TextArea *area, Direction direction, WrapMode SearchWrap) {
 
 	const Search::HistoryEntry *entry = Search::HistoryByIndex(1);
 	if (!entry) {
@@ -6960,7 +6960,7 @@ bool MainWindow::replaceSame(DocumentWidget *document, TextArea *area, Direction
 		entry->replace,
 		direction,
 		entry->type,
-		searchWrap);
+		SearchWrap);
 }
 
 /**
@@ -6998,9 +6998,9 @@ void MainWindow::action_Replace_Find(DocumentWidget *document, const QString &se
  * @param area
  * @param direction
  * @param searchType
- * @param searchWrap
+ * @param SearchWrap
  */
-void MainWindow::searchForSelected(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap) {
+void MainWindow::searchForSelected(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode SearchWrap) {
 
 	const QString selected = document->getAnySelection();
 	if (selected.isEmpty()) {
@@ -7032,7 +7032,7 @@ void MainWindow::searchForSelected(DocumentWidget *document, TextArea *area, Dir
 		selected,
 		direction,
 		searchType,
-		searchWrap);
+		SearchWrap);
 }
 
 /**

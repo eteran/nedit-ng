@@ -156,8 +156,8 @@ set(PROJECT_SOURCES
 	LineNumberArea.h
 	Location.h
 	LockReasons.h
-	macro.cpp
-	macro.h
+	Macro.cpp
+	Macro.h
 	Main.cpp
 	Main.h
 	MainWindow.cpp

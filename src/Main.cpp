@@ -11,7 +11,7 @@
 #include "Settings.h"
 #include "Util/FileSystem.h"
 #include "interpret.h"
-#include "macro.h"
+#include "Macro.h"
 #include "nedit.h"
 #include "parse.h"
 

@@ -36,7 +36,7 @@
 #include "WindowMenuEvent.h"
 #include "X11Colors.h"
 #include "interpret.h"
-#include "macro.h"
+#include "Macro.h"
 #include "parse.h"
 
 #include <QButtonGroup>
@@ -5047,7 +5047,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 				dialog->show();
 			}
 		} else if (shellCmdData_->flags & OUTPUT_TO_STRING) {
-			returnShellCommandOutput(this, outText, exitCode);
+			ReturnShellCommandOutput(this, outText, exitCode);
 		} else {
 
 			auto area       = shellCmdData_->area;
@@ -5532,7 +5532,7 @@ void DocumentWidget::readMacroFile(const QString &fileName, bool warnNotExist) {
 	}
 
 	// Parse text
-	readCheckMacroString(this, text, this, fileName, nullptr);
+	ReadCheckMacroString(this, text, this, fileName, nullptr);
 }
 
 /**
@@ -7035,7 +7035,7 @@ void DocumentWidget::readMacroInitFile() {
  * @return `true` if the macro string was read and executed successfully, `false` if there was an error.
  */
 bool DocumentWidget::readMacroString(const QString &string, const QString &errIn) {
-	return readCheckMacroString(this, string, this, errIn, nullptr);
+	return ReadCheckMacroString(this, string, this, errIn, nullptr);
 }
 
 /**

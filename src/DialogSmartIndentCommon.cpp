@@ -6,7 +6,7 @@
 #include "Preferences.h"
 #include "SmartIndent.h"
 #include "Util/String.h"
-#include "macro.h"
+#include "Macro.h"
 
 #include <QMessageBox>
 

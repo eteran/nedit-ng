@@ -3,7 +3,7 @@
 #include "CommandRecorder.h"
 #include "DocumentWidget.h"
 #include "TextBuffer.h"
-#include "macro.h"
+#include "Macro.h"
 
 #include <QIntValidator>
 #include <QMessageBox>

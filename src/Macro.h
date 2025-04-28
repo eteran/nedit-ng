@@ -21,10 +21,10 @@ enum RepeatMethod {
 };
 
 bool CheckMacroString(QWidget *dialogParent, const QString &string, const QString &errIn, int *errPos);
-bool readCheckMacroString(QWidget *dialogParent, const QString &string, DocumentWidget *runDocument, const QString &errIn, int *errPos);
+bool ReadCheckMacroString(QWidget *dialogParent, const QString &string, DocumentWidget *runDocument, const QString &errIn, int *errPos);
 
 void RegisterMacroSubroutines();
-void returnShellCommandOutput(DocumentWidget *document, std::string_view outText, int status);
+void ReturnShellCommandOutput(DocumentWidget *document, std::string_view outText, int status);
 
 /* Data attached to window during shell command execution with
    information for controlling and communicating with the process */

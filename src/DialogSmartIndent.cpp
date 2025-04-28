@@ -12,7 +12,7 @@
 #include "SmartIndentEntry.h"
 #include "Util/String.h"
 #include "Util/algorithm.h"
-#include "macro.h"
+#include "Macro.h"
 #include "parse.h"
 
 #include <QMessageBox>
