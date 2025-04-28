@@ -143,7 +143,7 @@ TextCursor LastModified(const Ptr &buffer) {
  * @return `true` if `patternSet` exactly matches one of the default pattern sets.
  */
 bool IsDefaultPatternSet(const PatternSet &patternSet) {
-	if (std::optional<PatternSet> defaultPatSet = readDefaultPatternSet(patternSet.languageMode)) {
+	if (std::optional<PatternSet> defaultPatSet = ReadDefaultPatternSet(patternSet.languageMode)) {
 		return patternSet == *defaultPatSet;
 	}
 
@@ -280,7 +280,7 @@ void PassTwoParseString(const HighlightData *pattern, const char *string, uint8_
 			match_to = parseEnd;
 			length   = std::min<int64_t>(parseEnd - parseStart, length - (parseStart - string));
 
-			parseString(
+			ParseString(
 				pattern,
 				stringPtr,
 				stylePtr,
@@ -404,7 +404,7 @@ TextCursor ParseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	// Begin parsing one context distance back (or to the last style change)
 	const uint8_t beginStyle = pass1Patterns->style;
 	if (CanCrossLineBoundaries(contextRequirements)) {
-		beginSafety = backwardOneContext(buf, contextRequirements, beginParse);
+		beginSafety = BackwardOneContext(buf, contextRequirements, beginParse);
 		for (p = beginParse; p >= beginSafety; --p) {
 			style = styleBuf->BufGetCharacter(p - 1);
 			if (!EquivalentStyle(style, beginStyle, firstPass2Style)) {
@@ -430,7 +430,7 @@ TextCursor ParseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	}
 
 	if (CanCrossLineBoundaries(contextRequirements)) {
-		endSafety = forwardOneContext(buf, contextRequirements, endParse);
+		endSafety = ForwardOneContext(buf, contextRequirements, endParse);
 	} else if (endParse >= buf->length() || (buf->BufGetCharacter(endParse - 1) == '\n')) {
 		endSafety = endParse;
 	} else {
@@ -447,14 +447,14 @@ TextCursor ParseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	const char *const match_to = string + str.size();
 
 	// Parse it with pass 1 patterns
-	int prev_char = getPrevChar(buf, beginParse);
+	int prev_char = GetPrevChar(buf, beginParse);
 	ParseContext ctx;
 	ctx.prev_char         = &prev_char;
 	ctx.text              = str;
 	const char *stringPtr = &string[beginParse - beginSafety];
 	uint8_t *stylePtr     = &styleString[beginParse - beginSafety];
 
-	parseString(
+	ParseString(
 		&pass1Patterns[0],
 		stringPtr,
 		stylePtr,
@@ -497,7 +497,7 @@ TextCursor ParseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	int safe_prev_char = '\0';
 	if (beginSafety < modStart) {
 		if (endSafety > modStart) {
-			endPass2Safety = forwardOneContext(buf, contextRequirements, modStart);
+			endPass2Safety = ForwardOneContext(buf, contextRequirements, modStart);
 			if (endPass2Safety + PASS_2_REPARSE_CHUNK_SIZE >= modEnd) {
 				endPass2Safety = endSafety;
 			}
@@ -505,7 +505,7 @@ TextCursor ParseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 			endPass2Safety = endSafety;
 		}
 
-		safe_prev_char = getPrevChar(buf, beginSafety);
+		safe_prev_char = GetPrevChar(buf, beginSafety);
 		ctx.prev_char  = &safe_prev_char;
 
 		if (endPass2Safety == endSafety) {
@@ -540,7 +540,7 @@ TextCursor ParseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	   to ensure that parsing at modEnd is correct. */
 	if (endParse > modEnd) {
 		if (beginSafety > modEnd) {
-			prev_char = getPrevChar(buf, beginSafety);
+			prev_char = GetPrevChar(buf, beginSafety);
 			PassTwoParseString(
 				&pass2Patterns[0],
 				string,
@@ -550,9 +550,9 @@ TextCursor ParseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 				string,
 				match_to);
 		} else {
-			startPass2Safety = std::max(beginSafety, backwardOneContext(buf, contextRequirements, modEnd));
+			startPass2Safety = std::max(beginSafety, BackwardOneContext(buf, contextRequirements, modEnd));
 
-			prev_char = getPrevChar(buf, startPass2Safety);
+			prev_char = GetPrevChar(buf, startPass2Safety);
 			PassTwoParseString(
 				&pass2Patterns[0],
 				&string[startPass2Safety - beginSafety],
@@ -571,21 +571,25 @@ TextCursor ParseBufferRange(const HighlightData *pass1Patterns, const std::uniqu
 	return endParse;
 }
 
-/*
-** Back up position pointed to by "pos" enough that parsing from that point
-** on will satisfy context guarantees for pattern matching for modifications
-** at pos.  Returns the style with which to begin parsing.  The caller is
-** guaranteed that parsing may safely BEGIN with that style, but not that it
-** will continue at that level.
-**
-** This routine can be fooled if a continuous style run of more than one
-** context distance in length is produced by multiple pattern matches which
-** abut, rather than by a single continuous match.  In this  case the
-** position returned by this routine may be a bad starting point which will
-** result in an incorrect re-parse.  However this will happen very rarely,
-** and, if it does, is unlikely to result in incorrect highlighting.
-*/
-uint8_t findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlightData> &highlightData, TextCursor *pos) {
+/**
+ * @brief  Back up position pointed to by `pos` enough that parsing from that point
+ * on will satisfy context guarantees for pattern matching for modifications
+ * at `pos`. The caller is guaranteed that parsing may safely BEGIN with that style,
+ * but not that it will continue at that level.
+ *
+ * This routine can be fooled if a continuous style run of more than one
+ * context distance in length is produced by multiple pattern matches which
+ * abut, rather than by a single continuous match. In this case the
+ * position returned by this routine may be a bad starting point which will
+ * result in an incorrect re-parse. However this will happen very rarely,
+ * and, if it does, is unlikely to result in incorrect highlighting.
+ *
+ * @param buf The text buffer to check for styles.
+ * @param highlightData The highlight data containing the patterns and context requirements.
+ * @param pos The position in the buffer to check for styles.
+ * @return Returns the style with which to begin parsing.
+ */
+uint8_t FindSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHighlightData> &highlightData, TextCursor *pos) {
 
 	TextCursor checkBackTo;
 	TextCursor safeParseStart;
@@ -595,7 +599,7 @@ uint8_t findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHig
 	const ReparseContext &context                         = highlightData->contextRequirements;
 
 	// We must begin at least one context distance back from the change
-	*pos = backwardOneContext(buf, context, *pos);
+	*pos = BackwardOneContext(buf, context, *pos);
 
 	/* If the new position is outside of any styles or at the beginning of
 	   the buffer, this is a safe place to begin parsing, and we're done */
@@ -626,8 +630,8 @@ uint8_t findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHig
 	const TextCursor begin = buf->BufStartOfBuffer();
 
 	if (PatternIsParsable(patternOfStyle(pass1Patterns, startStyle))) {
-		safeParseStart = backwardOneContext(buf, context, *pos);
-		checkBackTo    = backwardOneContext(buf, context, safeParseStart);
+		safeParseStart = BackwardOneContext(buf, context, *pos);
+		checkBackTo    = BackwardOneContext(buf, context, safeParseStart);
 	} else {
 		safeParseStart = begin;
 		checkBackTo    = begin;
@@ -717,13 +721,18 @@ uint8_t findSafeParseRestartPos(TextBuffer *buf, const std::unique_ptr<WindowHig
 	}
 }
 
-/*
-** Re-parse the smallest region possible around a modification to buffer "buf"
-** to guarantee that the promised context lines and characters have
-** been presented to the patterns.  Changes the style buffer in "highlightData"
-** with the parsing result.
-*/
-void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, TextCursor pos, int64_t nInserted) {
+/**
+ * @brief Re-parse the smallest region possible around a modification to buffer `buf`
+ * to guarantee that the promised context lines and characters have
+ * been presented to the patterns. Changes the style buffer in "highlightData"
+ * with the parsing result.
+ *
+ * @param highlightData The highlight data containing the patterns and context requirements.
+ * @param buf The text buffer to re-parse.
+ * @param pos The position in the buffer where the modification occurred.
+ * @param nInserted The number of characters inserted at `pos`.
+ */
+void IncrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightData, TextBuffer *buf, TextCursor pos, int64_t nInserted) {
 
 	const std::shared_ptr<UTextBuffer> &styleBuf          = highlightData->styleBuffer;
 	const std::unique_ptr<HighlightData[]> &pass1Patterns = highlightData->pass1Patterns;
@@ -735,13 +744,13 @@ void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightDat
 	   far enough back in the buffer such that the guaranteed number of
 	   lines and characters of context are examined. */
 	TextCursor beginParse = pos;
-	uint8_t parseInStyle  = findSafeParseRestartPos(buf, highlightData, &beginParse);
+	uint8_t parseInStyle  = FindSafeParseRestartPos(buf, highlightData, &beginParse);
 
 	/* Find the position "endParse" at which point it is safe to stop
 	   parsing, unless styles are getting changed beyond the last
 	   modification */
 	TextCursor lastMod  = pos + nInserted;
-	TextCursor endParse = forwardOneContext(buf, context, lastMod);
+	TextCursor endParse = ForwardOneContext(buf, context, lastMod);
 
 	/*
 	** Parse the buffer from beginParse, until styles compare
@@ -771,7 +780,7 @@ void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightDat
 		   hierarchy and start again from where the previous parse left off. */
 		if (endAt < endParse) {
 			beginParse = endAt;
-			endParse   = forwardOneContext(buf, context, std::max(endAt, std::max(LastModified(styleBuf), lastMod)));
+			endParse   = ForwardOneContext(buf, context, std::max(endAt, std::max(LastModified(styleBuf), lastMod)));
 			if (IsPlain(parseInStyle)) {
 				qCritical("NEdit: internal error: incr. reparse fell short");
 				return;
@@ -787,20 +796,20 @@ void incrementalReparse(const std::unique_ptr<WindowHighlightData> &highlightDat
 			   reparse until nothing changes */
 		} else {
 			lastMod  = LastModified(styleBuf);
-			endParse = std::min(buf->BufEndOfBuffer(), forwardOneContext(buf, context, lastMod) + (REPARSE_CHUNK_SIZE << nPasses));
+			endParse = std::min(buf->BufEndOfBuffer(), ForwardOneContext(buf, context, lastMod) + (REPARSE_CHUNK_SIZE << nPasses));
 		}
 	}
 }
 
 /**
- * @brief
+ * @brief Read a highlight pattern from the input stream.
  *
- * @param in
- * @param errMsg
- * @param pattern
- * @return
+ * @param in The input stream to read from.
+ * @param errMsg Where to store error messages.
+ * @param pattern The HighlightPattern structure to fill with the read data.
+ * @return Returns `true` if the pattern was read successfully, `false` otherwise.
  */
-bool readHighlightPattern(Input &in, QString *errMsg, HighlightPattern *pattern) {
+bool ReadHighlightPattern(Input &in, QString *errMsg, HighlightPattern *pattern) {
 
 	// read the name field
 	QString name = Preferences::ReadSymbolicField(in);
@@ -882,12 +891,15 @@ bool readHighlightPattern(Input &in, QString *errMsg, HighlightPattern *pattern)
 	return true;
 }
 
-/*
-** Parse a set of highlight patterns into a vector of HighlightPattern
-** structures, and a language mode name.  If unsuccessful, returns an empty
-** vector message in "errMsg".
-*/
-std::optional<std::vector<HighlightPattern>> readHighlightPatterns(Input &in, QString *errMsg) {
+/**
+ * @brief Parse a set of highlight patterns. If unsuccessful, places an error message
+ * in `errMsg` and returns an empty optional.
+ *
+ * @param in The input stream to read from.
+ * @param errMsg Where to store error messages.
+ * @return The HighlightPatterns if successful, or an empty optional if there was an error.
+ */
+std::optional<std::vector<HighlightPattern>> ReadHighlightPatterns(Input &in, QString *errMsg) {
 	// skip over blank space
 	in.skipWhitespaceNL();
 
@@ -914,7 +926,7 @@ std::optional<std::vector<HighlightPattern>> readHighlightPatterns(Input &in, QS
 		}
 
 		HighlightPattern pat;
-		if (!readHighlightPattern(in, errMsg, &pat)) {
+		if (!ReadHighlightPattern(in, errMsg, &pat)) {
 			return {};
 		}
 
@@ -925,12 +937,12 @@ std::optional<std::vector<HighlightPattern>> readHighlightPatterns(Input &in, QS
 }
 
 /**
- * @brief
+ * @brief Read a highlight pattern from a YAML node.
  *
- * @param patterns
- * @return
+ * @param patterns The YAML node containing the pattern data.
+ * @return The HighlightPattern read from the YAML node.
  */
-HighlightPattern readPatternYaml(const YAML::Node &patterns) {
+HighlightPattern ReadPatternYaml(const YAML::Node &patterns) {
 	HighlightPattern pattern;
 	pattern.flags = 0;
 
@@ -964,12 +976,12 @@ HighlightPattern readPatternYaml(const YAML::Node &patterns) {
 }
 
 /**
- * @brief
+ * @brief Reqads a pattern set from a YAML iterator.
  *
- * @param it
- * @return
+ * @param it The YAML iterator pointing to the pattern set data.
+ * @return The PatternSet if successful, or an empty optional if there was an error.
  */
-std::optional<PatternSet> readPatternSetYaml(YAML::const_iterator it) {
+std::optional<PatternSet> ReadPatternSetYaml(YAML::const_iterator it) {
 	struct HighlightError {
 		QString message;
 	};
@@ -992,7 +1004,7 @@ std::optional<PatternSet> readPatternSetYaml(YAML::const_iterator it) {
 				} else if (key == "patterns") {
 					for (YAML::Node entry : value) {
 
-						HighlightPattern pattern = readPatternYaml(entry);
+						HighlightPattern pattern = ReadPatternYaml(entry);
 
 						if (pattern.name.isEmpty()) {
 							Raise<HighlightError>(tr("pattern name field required"));
@@ -1007,7 +1019,7 @@ std::optional<PatternSet> readPatternSetYaml(YAML::const_iterator it) {
 				}
 			}
 		} else if (entries.as<std::string>() == "Default") {
-			return readDefaultPatternSet(patternSet.languageMode);
+			return ReadDefaultPatternSet(patternSet.languageMode);
 		}
 
 		return patternSet;
@@ -1020,11 +1032,13 @@ std::optional<PatternSet> readPatternSetYaml(YAML::const_iterator it) {
 	return {};
 }
 
-/*
-** Read in a pattern set character string, and advance *inPtr beyond it.
-** Returns nullptr and outputs an error to stderr on failure.
-*/
-std::optional<PatternSet> readPatternSet(Input &in) {
+/**
+ * @brief Read a pattern set from the input stream.
+ *
+ * @param in The input stream to read from.
+ * @return The PatternSet if successful, or an empty optional if there was an error.
+ */
+std::optional<PatternSet> ReadPatternSet(Input &in) {
 
 	struct HighlightError {
 		QString message;
@@ -1052,7 +1066,7 @@ std::optional<PatternSet> readPatternSet(Input &in) {
 		/* look for "Default" keyword, and if it's there, return the default
 		   pattern set */
 		if (in.match(QLatin1String("Default"))) {
-			std::optional<PatternSet> retPatSet = readDefaultPatternSet(patSet.languageMode);
+			std::optional<PatternSet> retPatSet = ReadDefaultPatternSet(patSet.languageMode);
 			if (!retPatSet) {
 				Raise<HighlightError>(tr("No default pattern set"));
 			}
@@ -1074,7 +1088,7 @@ std::optional<PatternSet> readPatternSet(Input &in) {
 		}
 
 		// read pattern list
-		std::optional<std::vector<HighlightPattern>> patterns = readHighlightPatterns(in, &errMsg);
+		std::optional<std::vector<HighlightPattern>> patterns = ReadHighlightPatterns(in, &errMsg);
 		if (!patterns) {
 			Raise<HighlightError>(errMsg);
 		}
@@ -1096,13 +1110,14 @@ std::optional<PatternSet> readPatternSet(Input &in) {
 }
 
 /**
- * @brief
+ * @brief Find a sub-pattern in a highlight pattern by its index.
  *
- * @param pattern
- * @param index
- * @return
+ * @param pattern The highlight pattern to search in.
+ * @param index The index of the sub-pattern to find. This index is relative to the
+ *              sub-patterns of the main pattern, skipping over color-only sub-patterns.
+ * @return The sub-pattern found at the specified index, or `nullptr` if no such sub-pattern exists.
  */
-HighlightData *find_subpattern(const HighlightData *pattern, size_t index) {
+HighlightData *FindSubPattern(const HighlightData *pattern, size_t index) {
 
 	// Figure out which sub-pattern matched
 	for (size_t i = 0; i < pattern->nSubPatterns; i++) {
@@ -1119,19 +1134,18 @@ HighlightData *find_subpattern(const HighlightData *pattern, size_t index) {
 }
 
 /**
- * @brief
+ * @brief Read the default pattern sets from a resource file.
  *
- * @return
+ * @return A vector of PatternSet objects containing the default patterns.
  */
-std::vector<PatternSet> readDefaultPatternSets() {
+std::vector<PatternSet> ReadDefaultPatternSets() {
 	static QByteArray defaultPatternSets = LoadResource(QLatin1String("DefaultPatternSets.yaml"));
 	static YAML::Node patternSets        = YAML::Load(defaultPatternSets.data());
 
 	std::vector<PatternSet> defaultPatterns;
 
 	for (auto it = patternSets.begin(); it != patternSets.end(); ++it) {
-		// Read each pattern set, abort on error
-		if (std::optional<PatternSet> patSet = readPatternSetYaml(it)) {
+		if (std::optional<PatternSet> patSet = ReadPatternSetYaml(it)) {
 			defaultPatterns.push_back(*patSet);
 		}
 	}
@@ -1141,27 +1155,35 @@ std::vector<PatternSet> readDefaultPatternSets() {
 
 }
 
-/*
-** Buffer modification callback for triggering re-parsing of modified
-** text and keeping the style buffer synchronized with the text buffer.
-** This must be attached to the the text buffer BEFORE any widget text
-** display callbacks, so it can get the style buffer ready to be used
-** by the text display routines.
-**
-** Update the style buffer for changes to the text, and mark any style
-** changes by selecting the region in the style buffer.  This strange
-** protocol of informing the text display to redraw style changes by
-** making selections in the style buffer is used because this routine
-** is intended to be called BEFORE the text display callback paints the
-** text (to minimize redraws and, most importantly, to synchronize the
-** style buffer with the text buffer).  If we redraw now, the text
-** display hasn't yet processed the modification, redrawing later is
-** not only complicated, it will double-draw almost everything typed.
-**
-** Note: This routine must be kept efficient.  It is called for every
-** character typed.
-*/
-void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, void *user) {
+/**
+ * @brief Buffer modification callback for triggering re-parsing of modified
+ * text and keeping the style buffer synchronized with the text buffer.
+ * This must be attached to the the text buffer BEFORE any widget text
+ * display callbacks, so it can get the style buffer ready to be used
+ * by the text display routines.
+ *
+ * Update the style buffer for changes to the text, and mark any style
+ * changes by selecting the region in the style buffer. This strange
+ * protocol of informing the text display to redraw style changes by
+ * making selections in the style buffer is used because this routine
+ * is intended to be called BEFORE the text display callback paints the
+ * text (to minimize redraws and, most importantly, to synchronize the
+ * style buffer with the text buffer). If we redraw now, the text
+ * display hasn't yet processed the modification, redrawing later is
+ * not only complicated, it will double-draw almost everything typed.
+ *
+ *
+ * @param pos The position in the text buffer where the modification occurred.
+ * @param nInserted The number of characters inserted at `pos`.
+ * @param nDeleted The number of characters deleted at `pos`.
+ * @param nRestyled The number of characters restyled at `pos`.
+ * @param deletedText The text that was deleted at `pos`.
+ * @param user The DocumentWidget that owns the text buffer being modified.
+ *
+ * @note This function must be kept efficient, as it is called for every
+ * character typed in the text buffer.
+ */
+void SyntaxHighlightModifyCallback(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, void *user) {
 
 	Q_UNUSED(nRestyled)
 	Q_UNUSED(deletedText)
@@ -1202,30 +1224,28 @@ void SyntaxHighlightModifyCB(TextCursor pos, int64_t nInserted, int64_t nDeleted
 
 	// Re-parse around the changed region
 	if (highlightData->pass1Patterns) {
-		incrementalReparse(highlightData, document->buffer(), pos, nInserted);
+		IncrementalReparse(highlightData, document->buffer(), pos, nInserted);
 	}
 }
 
-/*
-** Parses "string" according to compiled regular expressions in "pattern"
-** until endRE is or errorRE are matched, or end of string is reached.
-** Advances "string_ptr", "style_ptr" pointers to the next character past
-** the end of the parsed section, and updates "prevChar" to reflect
-** the new character before "string_ptr".
-**
-** "length" is how much of the string must be parsed.
-**
-** "look_behind_to" indicates the boundary till where look-behind patterns may
-** look back. If nullptr, the start of the string is assumed to be the boundary.
-**
-** "match_to" indicates the boundary till where matches may extend. If nullptr,
-** it is assumed that the end of the string indicates the boundary.
-**
-** Returns `true` if parsing was done and the parse succeeded.  Returns `false` if
-** the error pattern matched, if the end of the string was reached without
-** matching the end expression, or in the unlikely event of an internal error.
-*/
-bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t *&style_ptr, int64_t length, const ParseContext *ctx, const char *look_behind_to, const char *match_to) {
+/**
+ * @brief Parses `string_ptr` according to compiled regular expressions in `pattern`
+ * until endRE is or errorRE are matched, or end of string is reached.
+ * Advances `string_ptr`, `style_ptr` pointers to the next character past
+ * the end of the parsed section.
+ *
+ * @param pattern The highlight pattern to parse.
+ * @param string_ptr The current position in the string being parsed.
+ * @param style_ptr The current position in the style buffer.
+ * @param length The length of the string to parse, starting from `string_ptr`.
+ * @param ctx The parse context containing the text and previous character.
+ * @param look_behind_to The position in the string where look-behind patterns may look back.
+ * @param match_to The position in the string where matches may extend to. If `nullptr`, it is assumed that the end of the string is the boundary.
+ * @return `true` if parsing was done and the parse succeeded. `false` if
+ * the error pattern matched, if the end of the string was reached without
+ * matching the end expression, or in the unlikely event of an internal error.
+ */
+bool ParseString(const HighlightData *pattern, const char *&string_ptr, uint8_t *&style_ptr, int64_t length, const ParseContext *ctx, const char *look_behind_to, const char *match_to) {
 
 	if (length <= 0) {
 		return false;
@@ -1301,7 +1321,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 									look_behind_to,
 									match_to,
 									end_ptr)) {
-								qCritical("NEdit: Internal error, failed to recover end match in parseString");
+								qCritical("NEdit: Internal error, failed to recover end match in ParseString");
 								return false;
 							}
 							subExecuted = true;
@@ -1332,7 +1352,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 			--subIndex;
 		}
 
-		HighlightData *subPat = find_subpattern(pattern, subIndex);
+		HighlightData *subPat = FindSubPattern(pattern, subIndex);
 		Q_ASSERT(subPat);
 
 		// the sub-pattern is a simple match, just color it
@@ -1356,7 +1376,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 			}
 
 			// Parse to the end of the subPattern
-			parseString(
+			ParseString(
 				subPat,
 				stringPtr,
 				stylePtr,
@@ -1373,7 +1393,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 			   Without that restriction, matching becomes unstable. */
 
 			// Parse to the end of the subPattern
-			parseString(
+			ParseString(
 				subPat,
 				stringPtr,
 				stylePtr,
@@ -1400,7 +1420,7 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 							look_behind_to,
 							match_to,
 							end_ptr)) {
-						qCritical("NEdit: Internal error, failed to recover start match in parseString");
+						qCritical("NEdit: Internal error, failed to recover start match in ParseString");
 						return false;
 					}
 					subExecuted = true;
@@ -1434,26 +1454,35 @@ bool parseString(const HighlightData *pattern, const char *&string_ptr, uint8_t 
 	return pattern->endRE == nullptr;
 }
 
-/*
-** Get the character before position "pos" in buffer "buf"
-*/
-int getPrevChar(TextBuffer *buf, TextCursor pos) {
+/**
+ * @brief Get the character before position "pos" in buffer "buf"
+ *
+ * @param buf The text buffer to get the character from.
+ * @param pos The position in the buffer from which to get the previous character.
+ * @return The character before "pos" in the buffer, or -1 if "pos" is at the start of the buffer.
+ */
+int GetPrevChar(TextBuffer *buf, TextCursor pos) {
 	return pos == buf->BufStartOfBuffer() ? -1 : buf->BufGetCharacter(pos - 1);
 }
 
-/*
-** Return a position far enough back in "buf" from "fromPos" to give patterns
-** their guaranteed amount of context for matching (from "context").  If
-** backing up by lines yields the greater distance, the returned position will
-** be to the newline character before the start of the line, rather than to
-** the first character of the line.  (I did this because earlier prototypes of
-** the syntax highlighting code, which were based on single-line context, used
-** this to ensure that line-spanning expressions would be detected.  I think
-** it may reduce some 2 line context requirements to one line, at a cost of
-** only one extra character, but I'm not sure, and my brain hurts from
-** thinking about it).
-*/
-TextCursor backwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos) {
+/**
+ * @brief Calculates a position far enough back in `buf` from `fromPos` to give patterns
+ * their guaranteed amount of context for matching (from `context`). If
+ * backing up by lines yields the greater distance, the returned position will
+ * be to the newline character before the start of the line, rather than to
+ * the first character of the line. (I did this because earlier prototypes of
+ * the syntax highlighting code, which were based on single-line context, used
+ * this to ensure that line-spanning expressions would be detected. I think
+ * it may reduce some 2 line context requirements to one line, at a cost of
+ * only one extra character, but I'm not sure, and my brain hurts from
+ * thinking about it).
+ *
+ * @param buf The text buffer to search in.
+ * @param context The reparse context containing the number of lines and characters required.
+ * @param fromPos The position in the buffer from which to start searching.
+ * @return A position in the buffer that is far enough back to ensure the required context for matching.
+ */
+TextCursor BackwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos) {
 
 	const TextCursor begin = buf->BufStartOfBuffer();
 
@@ -1468,15 +1497,19 @@ TextCursor backwardOneContext(TextBuffer *buf, const ReparseContext &context, Te
 	return std::max(begin, std::min(std::max(begin, buf->BufCountBackwardNLines(fromPos, context.nLines - 1) - 1), fromPos - context.nChars));
 }
 
-/*
-** Return a position far enough forward in "buf" from "fromPos" to ensure
-** that patterns are given their required amount of context for matching
-** (from "context").  If moving forward by lines yields the greater
-** distance, the returned position will be the first character of of the
-** next line, rather than the newline character at the end (see notes in
-** backwardOneContext).
-*/
-TextCursor forwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos) {
+/**
+ * @brief Get a position far enough forward in `buf` from `fromPos` to ensure
+ * that patterns are given their required amount of context for matching
+ * (from `context`). If moving forward by lines yields the greater distance,
+ * the returned position will be the first character of the next line, rather
+ * than the newline character at the end (see notes in BackwardOneContext).
+ *
+ * @param buf The text buffer to search in.
+ * @param context The reparse context containing the number of lines and characters required.
+ * @param fromPos The position in the buffer from which to start searching.
+ * @return A position in the buffer that is far enough forward to ensure the required context for matching.
+ */
+TextCursor ForwardOneContext(TextBuffer *buf, const ReparseContext &context, TextCursor fromPos) {
 
 	const TextCursor end = buf->BufEndOfBuffer();
 
@@ -1491,9 +1524,13 @@ TextCursor forwardOneContext(TextBuffer *buf, const ReparseContext &context, Tex
 	return std::min(end, std::max(buf->BufCountForwardNLines(fromPos, context.nLines), fromPos + context.nChars));
 }
 
-/*
-** Search for a pattern in pattern list "patterns" with style "style"
-*/
+/**
+ * @brief Search for a pattern in pattern list `patterns` with style `style`.
+ *
+ * @param patterns The HighlightData patterns to search in.
+ * @param style The style to search for in the patterns.
+ * @return The HighlightData pattern with the specified style, or nullptr if no such pattern exists.
+ */
 HighlightData *patternOfStyle(const std::unique_ptr<HighlightData[]> &patterns, uint8_t style) {
 
 	for (size_t i = 0; patterns[i].style != 0; ++i) {
@@ -1510,13 +1547,13 @@ HighlightData *patternOfStyle(const std::unique_ptr<HighlightData[]> &patterns, 
 }
 
 /**
- * @brief
+ * @brief Find the index of a named pattern in the list of patterns.
  *
- * @param patterns
- * @param name
- * @return
+ * @param patterns The HighlightPatterns to search in.
+ * @param name The name of the pattern to find.
+ * @return The index of the pattern with the specified name, or PATTERN_NOT_FOUND if no such pattern exists.
  */
-size_t indexOfNamedPattern(const std::vector<HighlightPattern> &patterns, const QString &name) {
+size_t IndexOfNamedPattern(const std::vector<HighlightPattern> &patterns, const QString &name) {
 
 	if (name.isNull()) {
 		return PATTERN_NOT_FOUND;
@@ -1532,17 +1569,17 @@ size_t indexOfNamedPattern(const std::vector<HighlightPattern> &patterns, const 
 }
 
 /**
- * @brief
+ * @brief Find the top-level parent index of a pattern in the list of patterns.
  *
- * @param patterns
- * @param index
- * @return
+ * @param patterns The HighlightPatterns to search in.
+ * @param index The index of the pattern whose top-level parent index is to be found.
+ * @return The index of the top-level parent pattern, or PATTERN_NOT_FOUND if the pattern has no parent.
  */
-size_t findTopLevelParentIndex(const std::vector<HighlightPattern> &patterns, size_t index) {
+size_t FindTopLevelParentIndex(const std::vector<HighlightPattern> &patterns, size_t index) {
 
 	size_t topIndex = index;
 	while (!patterns[topIndex].subPatternOf.isNull()) {
-		topIndex = indexOfNamedPattern(patterns, patterns[topIndex].subPatternOf);
+		topIndex = IndexOfNamedPattern(patterns, patterns[topIndex].subPatternOf);
 		if (index == topIndex) {
 			return PATTERN_NOT_FOUND; // amai: circular dependency ?!
 		}
@@ -1550,11 +1587,16 @@ size_t findTopLevelParentIndex(const std::vector<HighlightPattern> &patterns, si
 	return topIndex;
 }
 
-/*
-** Read a string representing highlight pattern sets and add them
-** to the PatternSets list of loaded highlight patterns.  Note that the
-** patterns themselves are not parsed until they are actually used.
-*/
+/**
+ * @brief Read a string representing highlight pattern sets and add them
+ * to the PatternSets list of loaded highlight patterns.
+ *
+ * @param string The string containing the highlight pattern sets to load.
+ * If the string is "*", all highlight patterns from the default pattern
+ * sets file are loaded.
+ *
+ * @note the patterns themselves are not parsed until they are actually used.
+ */
 void LoadHighlightString(const QString &string) {
 
 	if (string == QLatin1String("*")) {
@@ -1571,7 +1613,7 @@ void LoadHighlightString(const QString &string) {
 
 		for (auto it = patternSets.begin(); it != patternSets.end(); ++it) {
 			// Read each pattern set, abort on error
-			std::optional<PatternSet> patSet = readPatternSetYaml(it);
+			std::optional<PatternSet> patSet = ReadPatternSetYaml(it);
 			if (!patSet) {
 				break;
 			}
@@ -1587,7 +1629,7 @@ void LoadHighlightString(const QString &string) {
 		Q_FOREVER {
 
 			// Read each pattern set, abort on error
-			std::optional<PatternSet> patSet = readPatternSet(in);
+			std::optional<PatternSet> patSet = ReadPatternSet(in);
 			if (!patSet) {
 				break;
 			}
@@ -1606,11 +1648,13 @@ void LoadHighlightString(const QString &string) {
 	}
 }
 
-/*
-** Create a string in the correct format for the highlightPatterns resource,
-** containing all of the highlight pattern information from the stored
-** highlight pattern list (PatternSets) for this session.
-*/
+/**
+ * @brief Create a string in the correct format for the highlightPatterns resource,
+ * containing all of the highlight pattern information from the stored
+ * highlight pattern list (PatternSets) for this session.
+ *
+ * @return A string containing the highlight patterns in the correct format, or an empty string if there was an error.
+ */
 QString WriteHighlightString() {
 
 	const QString filename = Settings::HighlightPatternsFile();
@@ -1676,6 +1720,12 @@ QString WriteHighlightString() {
 	return QString();
 }
 
+/**
+ * @brief Check if the font of a named style is bold.
+ *
+ * @param styleName The name of the style to check.
+ * @return `true` if the font is bold, `false` otherwise.
+ */
 bool FontOfNamedStyleIsBold(const QString &styleName) {
 	const size_t styleNo = IndexOfNamedStyle(styleName);
 
@@ -1687,6 +1737,12 @@ bool FontOfNamedStyleIsBold(const QString &styleName) {
 	return (fontNum & Font::Bold);
 }
 
+/**
+ * @brief Check if the font of a named style is italic.
+ *
+ * @param styleName The name of the style to check.
+ * @return `true` if the font is italic, `false` otherwise.
+ */
 bool FontOfNamedStyleIsItalic(const QString &styleName) {
 	const size_t styleNo = IndexOfNamedStyle(styleName);
 
@@ -1698,11 +1754,12 @@ bool FontOfNamedStyleIsItalic(const QString &styleName) {
 	return (fontNum & Font::Italic);
 }
 
-/*
-** Find the color associated with a named style.  This routine must only be
-** called with a valid styleName (call NamedStyleExists to find out whether
-** styleName is valid).
-*/
+/**
+ * @brief Find the foreground color associated with a named style.
+ *
+ * @param styleName The name of the style to find the foreground color for.
+ * @return The foreground color of the named style, or "black" if the style is not found.
+ */
 QString FgColorOfNamedStyle(const QString &styleName) {
 	const size_t styleNo = IndexOfNamedStyle(styleName);
 
@@ -1713,9 +1770,12 @@ QString FgColorOfNamedStyle(const QString &styleName) {
 	return HighlightStyles[styleNo].color;
 }
 
-/*
-** Find the background color associated with a named style.
-*/
+/**
+ * @brief Find the background color associated with a named style.
+ *
+ * @param styleName The name of the style to find the background color for.
+ * @return The background color of the named style, or an empty string if the style is not found.
+ */
 QString BgColorOfNamedStyle(const QString &styleName) {
 	const size_t styleNo = IndexOfNamedStyle(styleName);
 
@@ -1726,42 +1786,43 @@ QString BgColorOfNamedStyle(const QString &styleName) {
 	return HighlightStyles[styleNo].bgColor;
 }
 
-/*
-** Determine whether a named style exists
-*/
+/**
+ * @brief Check if a named style exists in the HighlightStyles list.
+ *
+ * @param styleName The name of the style to check for existence.
+ * @return `true` if the style exists, `false` otherwise.
+ */
 bool NamedStyleExists(const QString &styleName) {
 	return IndexOfNamedStyle(styleName) != STYLE_NOT_FOUND;
 }
 
 /**
- * Look through the list of pattern sets, and find the one for a particular
- * language.
+ * @brief Look through the list of pattern sets, and find the one for a particular language.
  *
- * @brief
- *
- * @param languageMode
- * @return nullptr if not found.
+ * @param languageMode The language mode name to search for in the pattern sets.
+ * @return The PatternSet for the specified language mode, or `nullptr` if no such pattern set exists.
  */
 PatternSet *FindPatternSet(const QString &languageMode) {
 
-	auto it = std::find_if(PatternSets.begin(), PatternSets.end(), [&languageMode](PatternSet &patternSet) {
-		return (patternSet.languageMode == languageMode);
-	});
-
-	if (it != PatternSets.end()) {
-		return &*it;
+	for (size_t i = 0; i < PatternSets.size(); i++) {
+		if (PatternSets[i].languageMode == languageMode) {
+			return &PatternSets[i];
+		}
 	}
 
 	return nullptr;
 }
 
-/*
-** Given a language mode name, determine if there is a default (built-in)
-** pattern set available for that language mode, and if so, return it
-*/
-std::optional<PatternSet> readDefaultPatternSet(const QString &langModeName) {
+/**
+ * @brief Given a language mode name, determine if there is a default (built-in)
+ * pattern set available for that language mode, and if so, return it
+ *
+ * @param langModeName The name of the language mode to search for in the default pattern sets.
+ * @return The PatternSet for the specified language mode if it exists, or an empty optional if no such pattern set exists.
+ */
+std::optional<PatternSet> ReadDefaultPatternSet(const QString &langModeName) {
 
-	static const std::vector<PatternSet> defaultPatternSets = readDefaultPatternSets();
+	static const std::vector<PatternSet> defaultPatternSets = ReadDefaultPatternSets();
 
 	auto it = std::find_if(defaultPatternSets.begin(), defaultPatternSets.end(), [&langModeName](const PatternSet &patternSet) {
 		return langModeName == patternSet.languageMode;
@@ -1774,10 +1835,12 @@ std::optional<PatternSet> readDefaultPatternSet(const QString &langModeName) {
 	return {};
 }
 
-/*
-** Returns a unique number of a given style name
-** If styleName is not found, return STYLE_NOT_FOUND.
-*/
+/**
+ * @brief Find the index of a named style in the HighlightStyles list.
+ *
+ * @param styleName The name of the style to find the index for.
+ * @return The index of the style in the HighlightStyles list, or STYLE_NOT_FOUND if the style does not exist.
+ */
 size_t IndexOfNamedStyle(const QString &styleName) {
 	for (size_t i = 0; i < HighlightStyles.size(); i++) {
 		if (HighlightStyles[i].name == styleName) {
@@ -1788,11 +1851,12 @@ size_t IndexOfNamedStyle(const QString &styleName) {
 	return STYLE_NOT_FOUND;
 }
 
-/*
-** Change the language mode name of pattern sets for language "oldName" to
-** "newName" in both the stored patterns, and the pattern set currently being
-** edited in the dialog.
-*/
+/**
+ * @brief Rename a highlight pattern set from `oldName` to `newName`.
+ *
+ * @param oldName The old name of the highlight pattern set.
+ * @param newName The new name to assign to the highlight pattern set.
+ */
 void RenameHighlightPattern(const QString &oldName, const QString &newName) {
 
 	for (PatternSet &patternSet : Highlight::PatternSets) {

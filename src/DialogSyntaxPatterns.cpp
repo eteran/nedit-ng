@@ -463,7 +463,7 @@ void DialogSyntaxPatterns::buttonRestore_clicked() {
 
 	const QString languageMode = ui.comboLanguageMode->currentText();
 
-	std::optional<PatternSet> patternSet = Highlight::readDefaultPatternSet(languageMode);
+	std::optional<PatternSet> patternSet = Highlight::ReadDefaultPatternSet(languageMode);
 	if (!patternSet) {
 		QMessageBox::warning(
 			this,

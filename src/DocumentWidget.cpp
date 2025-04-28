@@ -616,7 +616,7 @@ DocumentWidget::DocumentWidget(const QString &name, QWidget *parent, Qt::WindowF
 
 	// Every document has a backing buffer
 	info_->buffer = std::make_shared<TextBuffer>();
-	info_->buffer->BufAddModifyCB(Highlight::SyntaxHighlightModifyCB, this);
+	info_->buffer->BufAddModifyCB(Highlight::SyntaxHighlightModifyCallback, this);
 	info_->buffer->BufSetSelectionUpdate(TextArea::updatePrimarySelection);
 
 	// create the text widget
@@ -698,7 +698,7 @@ DocumentWidget::~DocumentWidget() {
 	freeHighlightingData();
 
 	info_->buffer->BufRemoveModifyCB(ModifiedCallback, this);
-	info_->buffer->BufRemoveModifyCB(Highlight::SyntaxHighlightModifyCB, this);
+	info_->buffer->BufRemoveModifyCB(Highlight::SyntaxHighlightModifyCallback, this);
 }
 
 /**
@@ -1661,7 +1661,7 @@ void DocumentWidget::updateSelectionSensitiveMenu(QMenu *menu, const gsl::span<M
  * @param nDeleted The number of characters deleted at the position.
  * @param deletedText The text that was deleted during the modification.
  *
- * @note This routine must be kept efficient. It is called for every
+ * @note This function must be kept efficient, as it is called for every
  * character typed.
  */
 void DocumentWidget::saveUndoInformation(TextCursor pos, int64_t nInserted, int64_t nDeleted, std::string_view deletedText) {
@@ -6172,7 +6172,7 @@ void DocumentWidget::handleUnparsedRegion(UTextBuffer *styleBuf, TextCursor pos)
 	   pos is parsed correctly (beginSafety), at most one context distance back
 	   from pos, unless there is a pass 1 section from which to start */
 	const TextCursor beginParse = pos;
-	TextCursor beginSafety      = Highlight::backwardOneContext(buf, context, beginParse);
+	TextCursor beginSafety      = Highlight::BackwardOneContext(buf, context, beginParse);
 
 	for (TextCursor p = beginParse; p >= beginSafety; --p) {
 		const uint8_t ch = styleBuf->BufGetCharacter(p);
@@ -6187,7 +6187,7 @@ void DocumentWidget::handleUnparsedRegion(UTextBuffer *styleBuf, TextCursor pos)
 	   the end of the unfinished region, or a max. of PASS_2_REPARSE_CHUNK_SIZE
 	   characters forward from the requested position */
 	TextCursor endParse  = std::min(buf->BufEndOfBuffer(), pos + PASS_2_REPARSE_CHUNK_SIZE);
-	TextCursor endSafety = Highlight::forwardOneContext(buf, context, endParse);
+	TextCursor endSafety = Highlight::ForwardOneContext(buf, context, endParse);
 
 	for (TextCursor p = pos; p < endSafety; ++p) {
 		const uint8_t ch = styleBuf->BufGetCharacter(p);
@@ -6202,7 +6202,7 @@ void DocumentWidget::handleUnparsedRegion(UTextBuffer *styleBuf, TextCursor pos)
 			if (ch < firstPass2Style) {
 				endSafety = p;
 			} else {
-				endSafety = Highlight::forwardOneContext(buf, context, endParse);
+				endSafety = Highlight::ForwardOneContext(buf, context, endParse);
 			}
 			break;
 		}
@@ -6217,13 +6217,13 @@ void DocumentWidget::handleUnparsedRegion(UTextBuffer *styleBuf, TextCursor pos)
 	uint8_t *stylePtr                   = styleStr.data();
 
 	// Parse it with pass 2 patterns
-	int prev_char = Highlight::getPrevChar(buf, beginSafety);
+	int prev_char = Highlight::GetPrevChar(buf, beginSafety);
 	Highlight::ParseContext ctx;
 	ctx.prev_char  = &prev_char;
 	ctx.delimiters = documentDelimiters();
 	ctx.text       = str;
 
-	Highlight::parseString(
+	Highlight::ParseString(
 		&pass2Patterns[0],
 		string,
 		stylePtr,
@@ -6290,7 +6290,7 @@ void DocumentWidget::startHighlighting(Verbosity verbosity) {
 		ctx.text              = info_->buffer->BufAsString();
 		const char *stringPtr = ctx.text.data();
 
-		Highlight::parseString(
+		Highlight::ParseString(
 			&highlightData->pass1Patterns[0],
 			stringPtr,
 			stylePtr,
@@ -6352,7 +6352,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	}
 
 	for (const HighlightPattern &pattern : patterns) {
-		if (!pattern.subPatternOf.isNull() && Highlight::indexOfNamedPattern(patterns, pattern.subPatternOf) == PATTERN_NOT_FOUND) {
+		if (!pattern.subPatternOf.isNull() && Highlight::IndexOfNamedPattern(patterns, pattern.subPatternOf) == PATTERN_NOT_FOUND) {
 			QMessageBox::warning(
 				this,
 				tr("Parent Pattern"),
@@ -6379,7 +6379,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 		for (HighlightPattern &pattern : patterns) {
 
 			if (!pattern.subPatternOf.isNull()) {
-				const size_t parent_index = Highlight::findTopLevelParentIndex(patterns, i);
+				const size_t parent_index = Highlight::FindTopLevelParentIndex(patterns, i);
 				if (parent_index == PATTERN_NOT_FOUND) {
 					QMessageBox::warning(
 						this,
@@ -6489,7 +6489,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 		if (pattern.subPatternOf.isNull()) {
 			*parentStylesPtr++ = PLAIN_STYLE;
 		} else {
-			*parentStylesPtr++ = pass1Pats[Highlight::indexOfNamedPattern(pass1PatternSrc, pattern.subPatternOf)].style;
+			*parentStylesPtr++ = pass1Pats[Highlight::IndexOfNamedPattern(pass1PatternSrc, pattern.subPatternOf)].style;
 		}
 	}
 
@@ -6499,7 +6499,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 		if (pattern.subPatternOf.isNull()) {
 			*parentStylesPtr++ = PLAIN_STYLE;
 		} else {
-			*parentStylesPtr++ = pass2Pats[Highlight::indexOfNamedPattern(pass2PatternSrc, pattern.subPatternOf)].style;
+			*parentStylesPtr++ = pass2Pats[Highlight::IndexOfNamedPattern(pass2PatternSrc, pattern.subPatternOf)].style;
 		}
 	}
 
@@ -6593,7 +6593,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 		if (patternSrc[i].subPatternOf.isNull()) {
 			compiledPats[0].nSubPatterns++;
 		} else {
-			compiledPats[Highlight::indexOfNamedPattern(patternSrc, patternSrc[i].subPatternOf)].nSubPatterns++;
+			compiledPats[Highlight::IndexOfNamedPattern(patternSrc, patternSrc[i].subPatternOf)].nSubPatterns++;
 		}
 	}
 
@@ -6611,7 +6611,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 		if (patternSrc[i].subPatternOf.isNull()) {
 			compiledPats[0].subPatterns[compiledPats[0].nSubPatterns++] = &compiledPats[i];
 		} else {
-			const size_t parentIndex = Highlight::indexOfNamedPattern(patternSrc, patternSrc[i].subPatternOf);
+			const size_t parentIndex = Highlight::IndexOfNamedPattern(patternSrc, patternSrc[i].subPatternOf);
 
 			compiledPats[parentIndex].subPatterns[compiledPats[parentIndex].nSubPatterns++] = &compiledPats[i];
 		}
