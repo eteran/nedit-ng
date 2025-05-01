@@ -1,8 +1,8 @@
-/* A Bison parser, made by GNU Bison 3.7.1.  */
+/* A Bison parser, made by GNU Bison 3.8.2.  */
 
 /* Bison implementation for Yacc-like parsers in C
 
-   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2020 Free Software Foundation,
+   Copyright (C) 1984, 1989-1990, 2000-2015, 2018-2021 Free Software Foundation,
    Inc.
 
    This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
    GNU General Public License for more details.
 
    You should have received a copy of the GNU General Public License
-   along with this program.  If not, see <http://www.gnu.org/licenses/>.  */
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* As a special exception, you may create a larger work that contains
    part or all of the Bison parser skeleton and distribute that work
@@ -45,11 +45,11 @@
    define necessary library symbols; they are noted "INFRINGES ON
    USER NAME SPACE" below.  */
 
-/* Identify Bison output.  */
-#define YYBISON 1
+/* Identify Bison output, and Bison version.  */
+#define YYBISON 30802
 
-/* Bison version.  */
-#define YYBISON_VERSION "3.7.1"
+/* Bison version string.  */
+#define YYBISON_VERSION "3.8.2"
 
 /* Skeleton name.  */
 #define YYSKELETON_NAME "yacc.c"
@@ -67,7 +67,7 @@
 
 
 /* First part of user prologue.  */
-#line 1 "parser.y"
+#line 1 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
 
 #include "parse.h"
 #include "interpret.h"
@@ -78,6 +78,7 @@
 #include <cstdio>
 #include <cctype>
 #include <string>
+
 #include <gsl/gsl_util>
 
 /* Macros to add error processing to AddOp and AddSym calls */
@@ -104,7 +105,7 @@ extern Inst *LoopStack[]; /* addresses of break, cont stmts */
 extern Inst **LoopStackPtr;  /*  to fill at the end of a loop */
 
 
-#line 108 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 109 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -252,6 +253,18 @@ typedef int_least16_t yytype_int16;
 typedef short yytype_int16;
 #endif
 
+/* Work around bug in HP-UX 11.23, which defines these macros
+   incorrectly for preprocessor constants.  This workaround can likely
+   be removed in 2023, as HPE has promised support for HP-UX 11.23
+   (aka HP-UX 11i v2) only through the end of 2022; see Table 2 of
+   <https://h20195.www2.hpe.com/V2/getpdf.aspx/4AA4-7673ENW.pdf>.  */
+#ifdef __hpux
+# undef UINT_LEAST8_MAX
+# undef UINT_LEAST16_MAX
+# define UINT_LEAST8_MAX 255
+# define UINT_LEAST16_MAX 65535
+#endif
+
 #if defined __UINT_LEAST8_MAX__ && __UINT_LEAST8_MAX__ <= __INT_MAX__
 typedef __UINT_LEAST8_TYPE__ yytype_uint8;
 #elif (!defined __UINT_LEAST8_MAX__ && defined YY_STDINT_H \
@@ -349,17 +362,23 @@ typedef int yy_state_fast_t;
 
 /* Suppress unused-variable warnings by "using" E.  */
 #if ! defined lint || defined __GNUC__
-# define YYUSE(E) ((void) (E))
+# define YY_USE(E) ((void) (E))
 #else
-# define YYUSE(E) /* empty */
+# define YY_USE(E) /* empty */
 #endif
 
-#if defined __GNUC__ && ! defined __ICC && 407 <= __GNUC__ * 100 + __GNUC_MINOR__
 /* Suppress an incorrect diagnostic about yylval being uninitialized.  */
-# define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                            \
+#if defined __GNUC__ && ! defined __ICC && 406 <= __GNUC__ * 100 + __GNUC_MINOR__
+# if __GNUC__ * 100 + __GNUC_MINOR__ < 407
+#  define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                           \
+    _Pragma ("GCC diagnostic push")                                     \
+    _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")
+# else
+#  define YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN                           \
     _Pragma ("GCC diagnostic push")                                     \
     _Pragma ("GCC diagnostic ignored \"-Wuninitialized\"")              \
     _Pragma ("GCC diagnostic ignored \"-Wmaybe-uninitialized\"")
+# endif
 # define YY_IGNORE_MAYBE_UNINITIALIZED_END      \
     _Pragma ("GCC diagnostic pop")
 #else
@@ -577,20 +596,20 @@ static const yytype_int8 yytranslate[] =
 };
 
 #if YYDEBUG
-  /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
+/* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,    73,    73,    76,    79,    82,    86,    87,    88,    90,
-      91,    93,    94,    97,   100,   104,   109,   109,   119,   125,
-     131,   134,   138,   141,   144,   147,   150,   153,   156,   159,
-     162,   165,   168,   173,   178,   183,   188,   193,   198,   203,
-     208,   213,   218,   223,   227,   231,   235,   239,   244,   248,
-     251,   254,   258,   261,   264,   268,   269,   273,   276,   280,
-     283,   287,   291,   294,   297,   300,   305,   306,   309,   312,
-     315,   318,   321,   324,   327,   330,   333,   336,   339,   342,
-     345,   348,   351,   354,   357,   360,   363,   366,   369,   372,
-     376,   380,   384,   388,   392,   396,   400,   404,   407,   411,
-     416,   421,   422
+       0,    74,    74,    77,    80,    83,    87,    88,    89,    91,
+      92,    94,    95,    98,   101,   105,   110,   110,   120,   126,
+     132,   135,   139,   142,   145,   148,   151,   154,   157,   160,
+     163,   166,   169,   174,   179,   184,   189,   194,   199,   204,
+     209,   214,   219,   224,   228,   232,   236,   240,   245,   249,
+     252,   255,   259,   262,   265,   269,   270,   274,   277,   281,
+     284,   288,   292,   295,   298,   301,   306,   307,   310,   313,
+     316,   319,   322,   325,   328,   331,   334,   337,   340,   343,
+     346,   349,   352,   355,   358,   361,   364,   367,   370,   373,
+     377,   381,   385,   389,   393,   397,   401,   405,   408,   412,
+     417,   422,   423
 };
 #endif
 
@@ -625,20 +644,6 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#ifdef YYPRINT
-/* YYTOKNUM[NUM] -- (External) token number corresponding to the
-   (internal) symbol number NUM (which must be that of a token).  */
-static const yytype_int16 yytoknum[] =
-{
-       0,   256,   257,   258,   259,   260,   261,   262,   263,   264,
-     265,   266,   267,   268,   269,   270,    61,   271,   272,   273,
-     274,   275,   276,   277,   278,   279,   280,   124,    38,   281,
-     282,   283,   284,   285,   286,   287,    43,    45,    42,    47,
-      37,   288,   289,   290,   291,   292,    91,    40,   123,   125,
-      10,    41,    59,    93,    44
-};
-#endif
-
 #define YYPACT_NINF (-66)
 
 #define yypact_value_is_default(Yyn) \
@@ -649,8 +654,8 @@ static const yytype_int16 yytoknum[] =
 #define yytable_value_is_error(Yyn) \
   0
 
-  /* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
-     STATE-NUM.  */
+/* YYPACT[STATE-NUM] -- Index in YYTABLE of the portion describing
+   STATE-NUM.  */
 static const yytype_int16 yypact[] =
 {
       22,   -66,    11,   187,   -66,   159,    12,   -15,   -66,   -66,
@@ -676,9 +681,9 @@ static const yytype_int16 yypact[] =
      -66,    78,   -66,   -66,   -66,   260,    78,   -66
 };
 
-  /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
-     Performed when YYTABLE does not specify something else to do.  Zero
-     means the default is an error.  */
+/* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
+   Performed when YYTABLE does not specify something else to do.  Zero
+   means the default is an error.  */
 static const yytype_int8 yydefact[] =
 {
        0,     5,     0,     0,     1,    48,     0,     0,    94,    95,
@@ -704,7 +709,7 @@ static const yytype_int8 yydefact[] =
      101,     7,   101,    13,    17,     0,     6,    15
 };
 
-  /* YYPGOTO[NTERM-NUM].  */
+/* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
      -66,   -66,   -65,   -34,    -3,   -66,   -60,   -66,   -14,   -22,
@@ -712,17 +717,17 @@ static const yytype_int8 yypgoto[] =
      -66,   -13
 };
 
-  /* YYDEFGOTO[NTERM-NUM].  */
-static const yytype_int16 yydefgoto[] =
+/* YYDEFGOTO[NTERM-NUM].  */
+static const yytype_uint8 yydefgoto[] =
 {
-      -1,     2,   178,    17,   179,   194,    19,    20,   118,    63,
+       0,     2,   178,    17,   179,   194,    19,    20,   118,    63,
       64,    21,    29,   173,    44,    22,    23,   193,    67,   100,
      101,     3
 };
 
-  /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
-     positive, shift that token.  If negative, reduce the rule whose
-     number is the opposite.  If YYTABLE_NINF, syntax error.  */
+/* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
+   positive, shift that token.  If negative, reduce the rule whose
+   number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int16 yytable[] =
 {
       18,   117,    49,    98,    99,   115,   116,     6,    33,    34,
@@ -841,8 +846,8 @@ static const yytype_int16 yycheck[] =
       20,    21,    22,    23
 };
 
-  /* YYSTOS[STATE-NUM] -- The (internal number of the) accessing
-     symbol of state STATE-NUM.  */
+/* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
+   state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
        0,     1,    56,    76,     0,     5,     6,     8,     9,    11,
@@ -868,7 +873,7 @@ static const yytype_int8 yystos[] =
       51,    76,    49,    57,    57,    76,    76,    57
 };
 
-  /* YYR1[YYN] -- Symbol number of symbol that rule YYN derives.  */
+/* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
        0,    55,    56,    56,    56,    56,    57,    57,    57,    58,
@@ -884,7 +889,7 @@ static const yytype_int8 yyr1[] =
       75,    76,    76
 };
 
-  /* YYR2[YYN] -- Number of symbols on the right hand side of rule YYN.  */
+/* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
        0,     2,     2,     5,     4,     1,     5,     4,     1,     1,
@@ -909,6 +914,7 @@ enum { YYENOMEM = -2 };
 #define YYACCEPT        goto yyacceptlab
 #define YYABORT         goto yyabortlab
 #define YYERROR         goto yyerrorlab
+#define YYNOMEM         goto yyexhaustedlab
 
 
 #define YYRECOVERING()  (!!yyerrstatus)
@@ -949,10 +955,7 @@ do {                                            \
     YYFPRINTF Args;                             \
 } while (0)
 
-/* This macro is provided for backward compatibility. */
-# ifndef YY_LOCATION_PRINT
-#  define YY_LOCATION_PRINT(File, Loc) ((void) 0)
-# endif
+
 
 
 # define YY_SYMBOL_PRINT(Title, Kind, Value, Location)                    \
@@ -976,15 +979,11 @@ yy_symbol_value_print (FILE *yyo,
                        yysymbol_kind_t yykind, YYSTYPE const * const yyvaluep)
 {
   FILE *yyoutput = yyo;
-  YYUSE (yyoutput);
+  YY_USE (yyoutput);
   if (!yyvaluep)
     return;
-# ifdef YYPRINT
-  if (yykind < YYNTOKENS)
-    YYPRINT (yyo, yytoknum[yykind], *yyvaluep);
-# endif
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  YYUSE (yykind);
+  YY_USE (yykind);
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
@@ -1098,13 +1097,13 @@ static void
 yydestruct (const char *yymsg,
             yysymbol_kind_t yykind, YYSTYPE *yyvaluep)
 {
-  YYUSE (yyvaluep);
+  YY_USE (yyvaluep);
   if (!yymsg)
     yymsg = "Deleting";
   YY_SYMBOL_PRINT (yymsg, yykind, yyvaluep, yylocationp);
 
   YY_IGNORE_MAYBE_UNINITIALIZED_BEGIN
-  YYUSE (yykind);
+  YY_USE (yykind);
   YY_IGNORE_MAYBE_UNINITIALIZED_END
 }
 
@@ -1167,6 +1166,7 @@ yyparse (void)
   YYDPRINTF ((stderr, "Starting parse\n"));
 
   yychar = YYEMPTY; /* Cause a token to be read.  */
+
   goto yysetstate;
 
 
@@ -1192,7 +1192,7 @@ yysetstate:
 
   if (yyss + yystacksize - 1 <= yyssp)
 #if !defined yyoverflow && !defined YYSTACK_RELOCATE
-    goto yyexhaustedlab;
+    YYNOMEM;
 #else
     {
       /* Get the current used size of the three stacks, in elements.  */
@@ -1220,7 +1220,7 @@ yysetstate:
 # else /* defined YYSTACK_RELOCATE */
       /* Extend the stack our own way.  */
       if (YYMAXDEPTH <= yystacksize)
-        goto yyexhaustedlab;
+        YYNOMEM;
       yystacksize *= 2;
       if (YYMAXDEPTH < yystacksize)
         yystacksize = YYMAXDEPTH;
@@ -1231,7 +1231,7 @@ yysetstate:
           YY_CAST (union yyalloc *,
                    YYSTACK_ALLOC (YY_CAST (YYSIZE_T, YYSTACK_BYTES (yystacksize))));
         if (! yyptr)
-          goto yyexhaustedlab;
+          YYNOMEM;
         YYSTACK_RELOCATE (yyss_alloc, yyss);
         YYSTACK_RELOCATE (yyvs_alloc, yyvs);
 #  undef YYSTACK_RELOCATE
@@ -1252,6 +1252,7 @@ yysetstate:
         YYABORT;
     }
 #endif /* !defined yyoverflow && !defined YYSTACK_RELOCATE */
+
 
   if (yystate == YYFINAL)
     YYACCEPT;
@@ -1365,783 +1366,783 @@ yyreduce:
   switch (yyn)
     {
   case 2: /* program: blank stmts  */
-#line 73 "parser.y"
+#line 74 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                         {
                 ADD_OP(OP_RETURN_NO_VAL); return 0;
             }
-#line 1373 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1374 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 3: /* program: blank '{' blank stmts '}'  */
-#line 76 "parser.y"
+#line 77 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                         {
                 ADD_OP(OP_RETURN_NO_VAL); return 0;
             }
-#line 1381 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1382 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 4: /* program: blank '{' blank '}'  */
-#line 79 "parser.y"
+#line 80 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                   {
                 ADD_OP(OP_RETURN_NO_VAL); return 0;
             }
-#line 1389 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1390 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 5: /* program: error  */
-#line 82 "parser.y"
+#line 83 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                     {
                 return 1;
             }
-#line 1397 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1398 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 12: /* stmt: IF '(' cond ')' blank block  */
-#line 94 "parser.y"
+#line 95 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                                            {
                 SET_BR_OFF((yyvsp[-3].inst), GetPC());
             }
-#line 1405 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1406 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 13: /* stmt: IF '(' cond ')' blank block else blank block  */
-#line 97 "parser.y"
+#line 98 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                                                       {
                 SET_BR_OFF((yyvsp[-6].inst), ((yyvsp[-2].inst)+1)); SET_BR_OFF((yyvsp[-2].inst), GetPC());
             }
-#line 1413 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1414 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 14: /* stmt: while '(' cond ')' blank block  */
-#line 100 "parser.y"
+#line 101 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                              {
                 ADD_OP(OP_BRANCH); ADD_BR_OFF((yyvsp[-5].inst));
                 SET_BR_OFF((yyvsp[-3].inst), GetPC()); FillLoopAddrs(GetPC(), (yyvsp[-5].inst));
             }
-#line 1422 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1423 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 15: /* stmt: for '(' comastmts ';' cond ';' comastmts ')' blank block  */
-#line 104 "parser.y"
+#line 105 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                                                        {
                 FillLoopAddrs(GetPC()+2+((yyvsp[-3].inst)-((yyvsp[-5].inst)+1)), GetPC());
                 SwapCode((yyvsp[-5].inst)+1, (yyvsp[-3].inst), GetPC());
                 ADD_OP(OP_BRANCH); ADD_BR_OFF((yyvsp[-7].inst)); SET_BR_OFF((yyvsp[-5].inst), GetPC());
             }
-#line 1432 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1433 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 16: /* $@1: %empty  */
-#line 109 "parser.y"
+#line 110 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                               {
                 Symbol *iterSym = InstallIteratorSymbol();
                 ADD_OP(OP_BEGIN_ARRAY_ITER); ADD_SYM(iterSym);
                 ADD_OP(OP_ARRAY_ITER); ADD_SYM((yyvsp[-3].sym)); ADD_SYM(iterSym); ADD_BR_OFF(nullptr);
             }
-#line 1442 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1443 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 17: /* stmt: for '(' SYMBOL IN arrayexpr ')' $@1 blank block  */
-#line 114 "parser.y"
+#line 115 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                             {
                     ADD_OP(OP_BRANCH); ADD_BR_OFF((yyvsp[-4].inst)+2);
                     SET_BR_OFF((yyvsp[-4].inst)+5, GetPC());
                     FillLoopAddrs(GetPC(), (yyvsp[-4].inst)+2);
             }
-#line 1452 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1453 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 18: /* stmt: BREAK '\n' blank  */
-#line 119 "parser.y"
+#line 120 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                {
                 ADD_OP(OP_BRANCH); ADD_BR_OFF(nullptr);
                 if (AddBreakAddr(GetPC()-1)) {
                     yyerror("break outside loop"); YYERROR;
                 }
             }
-#line 1463 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1464 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 19: /* stmt: CONTINUE '\n' blank  */
-#line 125 "parser.y"
+#line 126 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                   {
                 ADD_OP(OP_BRANCH); ADD_BR_OFF(nullptr);
                 if (AddContinueAddr(GetPC()-1)) {
                     yyerror("continue outside loop"); YYERROR;
                 }
             }
-#line 1474 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1475 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 20: /* stmt: RETURN expr '\n' blank  */
-#line 131 "parser.y"
+#line 132 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                      {
                 ADD_OP(OP_RETURN);
             }
-#line 1482 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1483 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 21: /* stmt: RETURN '\n' blank  */
-#line 134 "parser.y"
+#line 135 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                 {
                 ADD_OP(OP_RETURN_NO_VAL);
             }
-#line 1490 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1491 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 22: /* simpstmt: SYMBOL '=' expr  */
-#line 138 "parser.y"
+#line 139 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                             {
                 ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-2].sym));
             }
-#line 1498 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1499 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 23: /* simpstmt: evalsym ADDEQ expr  */
-#line 141 "parser.y"
+#line 142 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                  {
                 ADD_OP(OP_ADD); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-2].sym));
             }
-#line 1506 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1507 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 24: /* simpstmt: evalsym SUBEQ expr  */
-#line 144 "parser.y"
+#line 145 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                  {
                 ADD_OP(OP_SUB); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-2].sym));
             }
-#line 1514 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1515 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 25: /* simpstmt: evalsym MULEQ expr  */
-#line 147 "parser.y"
+#line 148 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                  {
                 ADD_OP(OP_MUL); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-2].sym));
             }
-#line 1522 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1523 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 26: /* simpstmt: evalsym DIVEQ expr  */
-#line 150 "parser.y"
+#line 151 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                  {
                 ADD_OP(OP_DIV); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-2].sym));
             }
-#line 1530 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1531 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 27: /* simpstmt: evalsym MODEQ expr  */
-#line 153 "parser.y"
+#line 154 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                  {
                 ADD_OP(OP_MOD); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-2].sym));
             }
-#line 1538 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1539 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 28: /* simpstmt: evalsym ANDEQ expr  */
-#line 156 "parser.y"
+#line 157 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                  {
                 ADD_OP(OP_BIT_AND); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-2].sym));
             }
-#line 1546 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1547 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 29: /* simpstmt: evalsym OREQ expr  */
-#line 159 "parser.y"
+#line 160 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                 {
                 ADD_OP(OP_BIT_OR); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-2].sym));
             }
-#line 1554 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1555 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 30: /* simpstmt: DELETE arraylv '[' arglist ']'  */
-#line 162 "parser.y"
+#line 163 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                              {
                 ADD_OP(OP_ARRAY_DELETE); ADD_IMMED((yyvsp[-1].nArgs));
             }
-#line 1562 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1563 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 31: /* simpstmt: initarraylv '[' arglist ']' '=' expr  */
-#line 165 "parser.y"
+#line 166 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                                    {
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-3].nArgs));
             }
-#line 1570 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1571 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 32: /* simpstmt: initarraylv '[' arglist ']' ADDEQ expr  */
-#line 168 "parser.y"
+#line 169 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                                      {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED((yyvsp[-3].nArgs));
                 ADD_OP(OP_ADD);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-3].nArgs));
             }
-#line 1580 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1581 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 33: /* simpstmt: initarraylv '[' arglist ']' SUBEQ expr  */
-#line 173 "parser.y"
+#line 174 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                                      {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED((yyvsp[-3].nArgs));
                 ADD_OP(OP_SUB);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-3].nArgs));
             }
-#line 1590 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1591 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 34: /* simpstmt: initarraylv '[' arglist ']' MULEQ expr  */
-#line 178 "parser.y"
+#line 179 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                                      {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED((yyvsp[-3].nArgs));
                 ADD_OP(OP_MUL);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-3].nArgs));
             }
-#line 1600 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1601 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 35: /* simpstmt: initarraylv '[' arglist ']' DIVEQ expr  */
-#line 183 "parser.y"
+#line 184 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                                      {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED((yyvsp[-3].nArgs));
                 ADD_OP(OP_DIV);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-3].nArgs));
             }
-#line 1610 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1611 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 36: /* simpstmt: initarraylv '[' arglist ']' MODEQ expr  */
-#line 188 "parser.y"
+#line 189 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                                      {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED((yyvsp[-3].nArgs));
                 ADD_OP(OP_MOD);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-3].nArgs));
             }
-#line 1620 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1621 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 37: /* simpstmt: initarraylv '[' arglist ']' ANDEQ expr  */
-#line 193 "parser.y"
+#line 194 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                                      {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED((yyvsp[-3].nArgs));
                 ADD_OP(OP_BIT_AND);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-3].nArgs));
             }
-#line 1630 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1631 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 38: /* simpstmt: initarraylv '[' arglist ']' OREQ expr  */
-#line 198 "parser.y"
+#line 199 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                                     {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(1); ADD_IMMED((yyvsp[-3].nArgs));
                 ADD_OP(OP_BIT_OR);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-3].nArgs));
             }
-#line 1640 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1641 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 39: /* simpstmt: initarraylv '[' arglist ']' INCR  */
-#line 203 "parser.y"
+#line 204 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                                {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(0); ADD_IMMED((yyvsp[-2].nArgs));
                 ADD_OP(OP_INCR);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-2].nArgs));
             }
-#line 1650 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1651 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 40: /* simpstmt: initarraylv '[' arglist ']' DECR  */
-#line 208 "parser.y"
+#line 209 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                                {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(0); ADD_IMMED((yyvsp[-2].nArgs));
                 ADD_OP(OP_DECR);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-2].nArgs));
             }
-#line 1660 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1661 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 41: /* simpstmt: INCR initarraylv '[' arglist ']'  */
-#line 213 "parser.y"
+#line 214 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                                {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(0); ADD_IMMED((yyvsp[-1].nArgs));
                 ADD_OP(OP_INCR);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-1].nArgs));
             }
-#line 1670 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1671 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 42: /* simpstmt: DECR initarraylv '[' arglist ']'  */
-#line 218 "parser.y"
+#line 219 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                                {
                 ADD_OP(OP_ARRAY_REF_ASSIGN_SETUP); ADD_IMMED(0); ADD_IMMED((yyvsp[-1].nArgs));
                 ADD_OP(OP_DECR);
                 ADD_OP(OP_ARRAY_ASSIGN); ADD_IMMED((yyvsp[-1].nArgs));
             }
-#line 1680 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1681 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 43: /* simpstmt: SYMBOL '(' arglist ')'  */
-#line 223 "parser.y"
+#line 224 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                      {
                 ADD_OP(OP_SUBR_CALL);
                 ADD_SYM(PromoteToGlobal((yyvsp[-3].sym))); ADD_IMMED((yyvsp[-1].nArgs));
             }
-#line 1689 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1690 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 44: /* simpstmt: INCR SYMBOL  */
-#line 227 "parser.y"
+#line 228 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                           {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[0].sym)); ADD_OP(OP_INCR);
                 ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[0].sym));
             }
-#line 1698 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1699 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 45: /* simpstmt: SYMBOL INCR  */
-#line 231 "parser.y"
+#line 232 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                           {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[-1].sym)); ADD_OP(OP_INCR);
                 ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-1].sym));
             }
-#line 1707 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1708 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 46: /* simpstmt: DECR SYMBOL  */
-#line 235 "parser.y"
+#line 236 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                           {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[0].sym)); ADD_OP(OP_DECR);
                 ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[0].sym));
             }
-#line 1716 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1717 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 47: /* simpstmt: SYMBOL DECR  */
-#line 239 "parser.y"
+#line 240 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                           {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[-1].sym)); ADD_OP(OP_DECR);
                 ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-1].sym));
             }
-#line 1725 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1726 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 48: /* evalsym: SYMBOL  */
-#line 244 "parser.y"
+#line 245 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                    {
                 (yyval.sym) = (yyvsp[0].sym); ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[0].sym));
             }
-#line 1733 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1734 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 49: /* comastmts: %empty  */
-#line 248 "parser.y"
+#line 249 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                           {
                 (yyval.inst) = GetPC();
             }
-#line 1741 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1742 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 50: /* comastmts: simpstmt  */
-#line 251 "parser.y"
+#line 252 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                        {
                 (yyval.inst) = GetPC();
             }
-#line 1749 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1750 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 51: /* comastmts: comastmts ',' simpstmt  */
-#line 254 "parser.y"
+#line 255 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                      {
                 (yyval.inst) = GetPC();
             }
-#line 1757 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1758 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 52: /* arglist: %empty  */
-#line 258 "parser.y"
+#line 259 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                           {
                 (yyval.nArgs) = 0;
             }
-#line 1765 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1766 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 53: /* arglist: expr  */
-#line 261 "parser.y"
+#line 262 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                    {
                 (yyval.nArgs) = 1;
             }
-#line 1773 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1774 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 54: /* arglist: arglist ',' expr  */
-#line 264 "parser.y"
+#line 265 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                {
                 (yyval.nArgs) = (yyvsp[-2].nArgs) + 1;
             }
-#line 1781 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1782 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 56: /* expr: expr numexpr  */
-#line 269 "parser.y"
+#line 270 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                         {
                 ADD_OP(OP_CONCAT);
             }
-#line 1789 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1790 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 57: /* initarraylv: SYMBOL  */
-#line 273 "parser.y"
+#line 274 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                        {
                     ADD_OP(OP_PUSH_ARRAY_SYM); ADD_SYM((yyvsp[0].sym)); ADD_IMMED(1);
                 }
-#line 1797 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1798 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 58: /* initarraylv: initarraylv '[' arglist ']'  */
-#line 276 "parser.y"
+#line 277 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                               {
                     ADD_OP(OP_ARRAY_REF); ADD_IMMED((yyvsp[-1].nArgs));
                 }
-#line 1805 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1806 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 59: /* arraylv: SYMBOL  */
-#line 280 "parser.y"
+#line 281 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                    {
                 ADD_OP(OP_PUSH_ARRAY_SYM); ADD_SYM((yyvsp[0].sym)); ADD_IMMED(0);
             }
-#line 1813 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1814 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 60: /* arraylv: arraylv '[' arglist ']'  */
-#line 283 "parser.y"
+#line 284 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                       {
                 ADD_OP(OP_ARRAY_REF); ADD_IMMED((yyvsp[-1].nArgs));
             }
-#line 1821 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1822 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 61: /* arrayexpr: numexpr  */
-#line 287 "parser.y"
+#line 288 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                     {
                 (yyval.inst) = GetPC();
             }
-#line 1829 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1830 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 62: /* numexpr: NUMBER  */
-#line 291 "parser.y"
+#line 292 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                    {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[0].sym));
             }
-#line 1837 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1838 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 63: /* numexpr: STRING  */
-#line 294 "parser.y"
+#line 295 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                      {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[0].sym));
             }
-#line 1845 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1846 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 64: /* numexpr: SYMBOL  */
-#line 297 "parser.y"
+#line 298 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                      {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[0].sym));
             }
-#line 1853 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1854 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 65: /* numexpr: SYMBOL '(' arglist ')'  */
-#line 300 "parser.y"
+#line 301 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                      {
                 ADD_OP(OP_SUBR_CALL);
                 ADD_SYM(PromoteToGlobal((yyvsp[-3].sym))); ADD_IMMED((yyvsp[-1].nArgs));
                 ADD_OP(OP_FETCH_RET_VAL);
             }
-#line 1863 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1864 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 67: /* numexpr: ARG_LOOKUP '[' numexpr ']'  */
-#line 306 "parser.y"
+#line 307 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                          {
                ADD_OP(OP_PUSH_ARG);
             }
-#line 1871 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1872 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 68: /* numexpr: ARG_LOOKUP '[' ']'  */
-#line 309 "parser.y"
+#line 310 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                  {
                ADD_OP(OP_PUSH_ARG_COUNT);
             }
-#line 1879 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1880 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 69: /* numexpr: ARG_LOOKUP  */
-#line 312 "parser.y"
+#line 313 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                          {
                ADD_OP(OP_PUSH_ARG_ARRAY);
             }
-#line 1887 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1888 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 70: /* numexpr: numexpr '[' arglist ']'  */
-#line 315 "parser.y"
+#line 316 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                       {
                 ADD_OP(OP_ARRAY_REF); ADD_IMMED((yyvsp[-1].nArgs));
             }
-#line 1895 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1896 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 71: /* numexpr: numexpr '+' numexpr  */
-#line 318 "parser.y"
+#line 319 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                   {
                 ADD_OP(OP_ADD);
             }
-#line 1903 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1904 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 72: /* numexpr: numexpr '-' numexpr  */
-#line 321 "parser.y"
+#line 322 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                   {
                 ADD_OP(OP_SUB);
             }
-#line 1911 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1912 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 73: /* numexpr: numexpr '*' numexpr  */
-#line 324 "parser.y"
+#line 325 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                   {
                 ADD_OP(OP_MUL);
             }
-#line 1919 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1920 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 74: /* numexpr: numexpr '/' numexpr  */
-#line 327 "parser.y"
+#line 328 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                   {
                 ADD_OP(OP_DIV);
             }
-#line 1927 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1928 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 75: /* numexpr: numexpr '%' numexpr  */
-#line 330 "parser.y"
+#line 331 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                   {
                 ADD_OP(OP_MOD);
             }
-#line 1935 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1936 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 76: /* numexpr: numexpr POW numexpr  */
-#line 333 "parser.y"
+#line 334 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                   {
                 ADD_OP(OP_POWER);
             }
-#line 1943 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1944 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 77: /* numexpr: '-' numexpr  */
-#line 336 "parser.y"
+#line 337 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                              {
                 ADD_OP(OP_NEGATE);
             }
-#line 1951 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1952 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 78: /* numexpr: numexpr GT numexpr  */
-#line 339 "parser.y"
+#line 340 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                   {
                 ADD_OP(OP_GT);
             }
-#line 1959 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1960 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 79: /* numexpr: numexpr GE numexpr  */
-#line 342 "parser.y"
+#line 343 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                   {
                 ADD_OP(OP_GE);
             }
-#line 1967 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1968 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 80: /* numexpr: numexpr LT numexpr  */
-#line 345 "parser.y"
+#line 346 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                   {
                 ADD_OP(OP_LT);
             }
-#line 1975 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1976 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 81: /* numexpr: numexpr LE numexpr  */
-#line 348 "parser.y"
+#line 349 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                   {
                 ADD_OP(OP_LE);
             }
-#line 1983 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1984 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 82: /* numexpr: numexpr EQ numexpr  */
-#line 351 "parser.y"
+#line 352 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                   {
                 ADD_OP(OP_EQ);
             }
-#line 1991 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 1992 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 83: /* numexpr: numexpr NE numexpr  */
-#line 354 "parser.y"
+#line 355 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                   {
                 ADD_OP(OP_NE);
             }
-#line 1999 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2000 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 84: /* numexpr: numexpr '&' numexpr  */
-#line 357 "parser.y"
+#line 358 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                   {
                 ADD_OP(OP_BIT_AND);
             }
-#line 2007 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2008 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 85: /* numexpr: numexpr '|' numexpr  */
-#line 360 "parser.y"
+#line 361 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                    {
                 ADD_OP(OP_BIT_OR);
             }
-#line 2015 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2016 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 86: /* numexpr: numexpr and numexpr  */
-#line 363 "parser.y"
+#line 364 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                             {
                 ADD_OP(OP_AND); SET_BR_OFF((yyvsp[-1].inst), GetPC());
             }
-#line 2023 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2024 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 87: /* numexpr: numexpr or numexpr  */
-#line 366 "parser.y"
+#line 367 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                           {
                 ADD_OP(OP_OR); SET_BR_OFF((yyvsp[-1].inst), GetPC());
             }
-#line 2031 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2032 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 88: /* numexpr: NOT numexpr  */
-#line 369 "parser.y"
+#line 370 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                           {
                 ADD_OP(OP_NOT);
             }
-#line 2039 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2040 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 89: /* numexpr: INCR SYMBOL  */
-#line 372 "parser.y"
+#line 373 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                           {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[0].sym)); ADD_OP(OP_INCR);
                 ADD_OP(OP_DUP); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[0].sym));
             }
-#line 2048 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2049 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 90: /* numexpr: SYMBOL INCR  */
-#line 376 "parser.y"
+#line 377 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                           {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[-1].sym)); ADD_OP(OP_DUP);
                 ADD_OP(OP_INCR); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-1].sym));
             }
-#line 2057 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2058 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 91: /* numexpr: DECR SYMBOL  */
-#line 380 "parser.y"
+#line 381 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                           {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[0].sym)); ADD_OP(OP_DECR);
                 ADD_OP(OP_DUP); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[0].sym));
             }
-#line 2066 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2067 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 92: /* numexpr: SYMBOL DECR  */
-#line 384 "parser.y"
+#line 385 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                           {
                 ADD_OP(OP_PUSH_SYM); ADD_SYM((yyvsp[-1].sym)); ADD_OP(OP_DUP);
                 ADD_OP(OP_DECR); ADD_OP(OP_ASSIGN); ADD_SYM((yyvsp[-1].sym));
             }
-#line 2075 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2076 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 93: /* numexpr: numexpr IN numexpr  */
-#line 388 "parser.y"
+#line 389 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                                  {
                 ADD_OP(OP_IN_ARRAY);
             }
-#line 2083 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2084 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 94: /* while: WHILE  */
-#line 392 "parser.y"
+#line 393 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
               {
             (yyval.inst) = GetPC(); StartLoopAddrList();
         }
-#line 2091 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2092 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 95: /* for: FOR  */
-#line 396 "parser.y"
+#line 397 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
             {
             StartLoopAddrList(); (yyval.inst) = GetPC();
         }
-#line 2099 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2100 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 96: /* else: ELSE  */
-#line 400 "parser.y"
+#line 401 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
              {
             ADD_OP(OP_BRANCH); (yyval.inst) = GetPC(); ADD_BR_OFF(nullptr);
         }
-#line 2107 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2108 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 97: /* cond: %empty  */
-#line 404 "parser.y"
+#line 405 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                       {
             ADD_OP(OP_BRANCH_NEVER); (yyval.inst) = GetPC(); ADD_BR_OFF(nullptr);
         }
-#line 2115 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2116 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 98: /* cond: numexpr  */
-#line 407 "parser.y"
+#line 408 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
                   {
             ADD_OP(OP_BRANCH_FALSE); (yyval.inst) = GetPC(); ADD_BR_OFF(nullptr);
         }
-#line 2123 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2124 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 99: /* and: AND  */
-#line 411 "parser.y"
+#line 412 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
             {
             ADD_OP(OP_DUP); ADD_OP(OP_BRANCH_FALSE); (yyval.inst) = GetPC();
             ADD_BR_OFF(nullptr);
         }
-#line 2132 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2133 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
   case 100: /* or: OR  */
-#line 416 "parser.y"
+#line 417 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
            {
             ADD_OP(OP_DUP); ADD_OP(OP_BRANCH_TRUE); (yyval.inst) = GetPC();
             ADD_BR_OFF(nullptr);
         }
-#line 2141 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2142 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
     break;
 
 
-#line 2145 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
+#line 2146 "/home/eteran/projects/nedit-ng/build/Interpreter/parser.cpp"
 
       default: break;
     }
@@ -2223,6 +2224,7 @@ yyerrorlab:
      label yyerrorlab therefore never appears in user code.  */
   if (0)
     YYERROR;
+  ++yynerrs;
 
   /* Do not reclaim the symbols of the rule whose action triggered
      this YYERROR.  */
@@ -2283,7 +2285,7 @@ yyerrlab1:
 `-------------------------------------*/
 yyacceptlab:
   yyresult = 0;
-  goto yyreturn;
+  goto yyreturnlab;
 
 
 /*-----------------------------------.
@@ -2291,24 +2293,22 @@ yyacceptlab:
 `-----------------------------------*/
 yyabortlab:
   yyresult = 1;
-  goto yyreturn;
+  goto yyreturnlab;
 
 
-#if !defined yyoverflow
-/*-------------------------------------------------.
-| yyexhaustedlab -- memory exhaustion comes here.  |
-`-------------------------------------------------*/
+/*-----------------------------------------------------------.
+| yyexhaustedlab -- YYNOMEM (memory exhaustion) comes here.  |
+`-----------------------------------------------------------*/
 yyexhaustedlab:
   yyerror (YY_("memory exhausted"));
   yyresult = 2;
-  goto yyreturn;
-#endif
+  goto yyreturnlab;
 
 
-/*-------------------------------------------------------.
-| yyreturn -- parsing is finished, clean up and return.  |
-`-------------------------------------------------------*/
-yyreturn:
+/*----------------------------------------------------------.
+| yyreturnlab -- parsing is finished, clean up and return.  |
+`----------------------------------------------------------*/
+yyreturnlab:
   if (yychar != YYEMPTY)
     {
       /* Make sure we have latest lookahead translation.  See comments at
@@ -2335,7 +2335,7 @@ yyreturn:
   return yyresult;
 }
 
-#line 425 "parser.y"
+#line 426 "/home/eteran/projects/nedit-ng/Interpreter/parser.y"
  /* User Subroutines Section */
 
 
@@ -2347,257 +2347,268 @@ yyreturn:
 ** to where parsing failed in stoppedAt.
 */
 Program *compileMacro(const QString &expr, QString *msg, int *stoppedAt) {
-    BeginCreatingProgram();
+	BeginCreatingProgram();
 
-    /* call yyparse to parse the string and check for success.  If the parse
-       failed, return the error message and string index (the grammar aborts
-       parsing at the first error) */
-    QString::const_iterator start = expr.begin();
-    InPtr  = start;
-    EndPtr = start + expr.size();
+	/* call yyparse to parse the string and check for success.  If the parse
+	   failed, return the error message and string index (the grammar aborts
+	   parsing at the first error) */
+	QString::const_iterator start = expr.begin();
+	InPtr                         = start;
+	EndPtr                        = start + expr.size();
 
-    if (yyparse()) {
-		*msg       = ErrMsg;
-        *stoppedAt = gsl::narrow<int>(InPtr - start);
-        Program *prog = FinishCreatingProgram();
-        delete prog;
-        return nullptr;
-    }
+	if (yyparse()) {
+		*msg          = ErrMsg;
+		*stoppedAt    = gsl::narrow<int>(InPtr - start);
+		Program *prog = FinishCreatingProgram();
+		delete prog;
+		return nullptr;
+	}
 
-    /* get the newly created program */
-    Program *prog = FinishCreatingProgram();
+	/* get the newly created program */
+	Program *prog = FinishCreatingProgram();
 
-    /* parse succeeded */
-    *msg       = QString();
-    *stoppedAt = gsl::narrow<int>(InPtr - start);
-    return prog;
+	/* parse succeeded */
+	*msg       = QString();
+	*stoppedAt = gsl::narrow<int>(InPtr - start);
+	return prog;
 }
-
 
 static int yylex(void) {
 
-    int i;
-    Symbol *s;
-    static const char escape[] = "\\\"ntbrfave";
-    static const char replace[] = "\\\"\n\t\b\r\f\a\v\x1B"; /* ASCII escape */
+	int i;
+	Symbol *s;
+	static const char escape[]  = "\\\"ntbrfave";
+	static const char replace[] = "\\\"\n\t\b\r\f\a\v\x1B"; /* ASCII escape */
 
-    /* skip whitespace, backslash-newline combinations, and comments, which are
-       all considered whitespace */
-    for (;;) {
-        if (*InPtr == QLatin1Char('\\') && *(InPtr + 1) == QLatin1Char('\n')) {
-            InPtr += 2;
-        } else if (*InPtr == QLatin1Char(' ') || *InPtr == QLatin1Char('\t')) {
-            InPtr++;
-        } else if (*InPtr == QLatin1Char('#')) {
-            while (*InPtr != QLatin1Char('\n') && InPtr != EndPtr) {
-                /* Comments stop at escaped newlines */
-                if (*InPtr == QLatin1Char('\\') && *(InPtr + 1) == QLatin1Char('\n')) {
-                    InPtr += 2;
-                    break;
-                }
-                InPtr++;
-            }
-        } else {
-            break;
-        }
-    }
+	/* skip whitespace, backslash-newline combinations, and comments, which are
+	   all considered whitespace */
+	for (;;) {
+		if (*InPtr == QLatin1Char('\\') && *(InPtr + 1) == QLatin1Char('\n')) {
+			InPtr += 2;
+		} else if (*InPtr == QLatin1Char(' ') || *InPtr == QLatin1Char('\t')) {
+			InPtr++;
+		} else if (*InPtr == QLatin1Char('#')) {
+			while (*InPtr != QLatin1Char('\n') && InPtr != EndPtr) {
+				/* Comments stop at escaped newlines */
+				if (*InPtr == QLatin1Char('\\') && *(InPtr + 1) == QLatin1Char('\n')) {
+					InPtr += 2;
+					break;
+				}
+				InPtr++;
+			}
+		} else {
+			break;
+		}
+	}
 
-    /* return end of input at the end of the string */
-    if (InPtr == EndPtr) {
-        return 0;
-    }
+	/* return end of input at the end of the string */
+	if (InPtr == EndPtr) {
+		return 0;
+	}
 
-    /* process number tokens */
-    if (safe_isdigit(InPtr->toLatin1()))  { /* number */
+	/* process number tokens */
+	if (InPtr->isDigit()) { /* number */
 
-        QString value;
-        auto p = std::back_inserter(value);
+		QString value;
+		auto p = std::back_inserter(value);
 
-        *p++ = *InPtr++;
-        while (InPtr != EndPtr && safe_isdigit(InPtr->toLatin1())) {
-            *p++ = *InPtr++;
-        }
+		*p++ = *InPtr++;
+		while (InPtr != EndPtr && InPtr->isDigit()) {
+			*p++ = *InPtr++;
+		}
 
-        int n = value.toInt();
+		int n = value.toInt();
 
-        char name[28];
-        snprintf(name, sizeof(name), "const %d", n);
+		char name[28];
+		snprintf(name, sizeof(name), "const %d", n);
 
-        if ((yylval.sym = LookupSymbol(name)) == nullptr) {
-            yylval.sym = InstallSymbol(name, CONST_SYM, make_value(n));
-        }
+		if ((yylval.sym = LookupSymbol(name)) == nullptr) {
+			yylval.sym = InstallSymbol(name, CONST_SYM, make_value(n));
+		}
 
-        return NUMBER;
-    }
+		return NUMBER;
+	}
 
-    /* process symbol tokens.  "define" is a special case not handled
-       by this parser, considered end of input. */
-    if (safe_isalpha(InPtr->toLatin1()) || *InPtr == QLatin1Char('$')) {
+	/* process symbol tokens.  "define" is a special case not handled
+	   by this parser, considered end of input. */
+	if (safe_isalpha(InPtr->toLatin1()) || *InPtr == QLatin1Char('$')) {
 
-        QString symName;
-        auto p = std::back_inserter(symName);
+		QString symName;
+		auto p = std::back_inserter(symName);
 
-        *p++ = *InPtr++;
+		*p++ = *InPtr++;
 		while ((InPtr != EndPtr) && (safe_isalnum(InPtr->toLatin1()) || *InPtr == QLatin1Char('_'))) {
-            *p++ = *InPtr++;
-        }
+			*p++ = *InPtr++;
+		}
 
-        if (symName == QLatin1String("while"))    return WHILE;
-        if (symName == QLatin1String("if"))       return IF;
-        if (symName == QLatin1String("else"))     return ELSE;
-        if (symName == QLatin1String("for"))      return FOR;
-        if (symName == QLatin1String("break"))    return BREAK;
-        if (symName == QLatin1String("continue")) return CONTINUE;
-        if (symName == QLatin1String("return"))   return RETURN;
-        if (symName == QLatin1String("in"))       return IN;
-        if (symName == QLatin1String("$args"))    return ARG_LOOKUP;
-        if (symName == QLatin1String("delete") && follow_non_whitespace('(', SYMBOL, DELETE) == DELETE) return DELETE;
-        if (symName == QLatin1String("define")) {
-            InPtr -= 6;
-            return 0;
-        }
+		if (symName == QLatin1String("while")) return WHILE;
+		if (symName == QLatin1String("if")) return IF;
+		if (symName == QLatin1String("else")) return ELSE;
+		if (symName == QLatin1String("for")) return FOR;
+		if (symName == QLatin1String("break")) return BREAK;
+		if (symName == QLatin1String("continue")) return CONTINUE;
+		if (symName == QLatin1String("return")) return RETURN;
+		if (symName == QLatin1String("in")) return IN;
+		if (symName == QLatin1String("$args")) return ARG_LOOKUP;
+		if (symName == QLatin1String("delete") && follow_non_whitespace('(', SYMBOL, DELETE) == DELETE) return DELETE;
+		if (symName == QLatin1String("define")) {
+			InPtr -= 6;
+			return 0;
+		}
 
+		if ((s = LookupSymbolEx(symName)) == nullptr) {
+			s = InstallSymbolEx(symName,
+								symName[0] == QLatin1Char('$') ? (((symName[1] > QLatin1Char('0') && symName[1] <= QLatin1Char('9')) && symName.size() == 2) ? ARG_SYM : GLOBAL_SYM) : LOCAL_SYM,
+								make_value());
+		}
 
-        if ((s = LookupSymbolEx(symName)) == nullptr) {
-            s = InstallSymbolEx(symName,
-                              symName[0]==QLatin1Char('$') ? (((symName[1] > QLatin1Char('0') && symName[1] <= QLatin1Char('9')) && symName.size() == 2) ? ARG_SYM : GLOBAL_SYM) : LOCAL_SYM,
-                              make_value());
-        }
+		yylval.sym = s;
+		return SYMBOL;
+	}
 
-        yylval.sym = s;
-        return SYMBOL;
-    }
+	/* Process quoted strings with embedded escape sequences:
+		 For backslashes we recognise hexadecimal values with initial 'x' such
+	   as "\x1B"; octal value (upto 3 oct digits with a possible leading zero)
+	   such as "\33", "\033" or "\0033", and the C escapes: \", \', \n, \t, \b,
+	   \r, \f, \a, \v, and the added \e for the escape character, as for REs.
+		 Disallow hex/octal zero values (NUL): instead ignore the introductory
+	   backslash, eg "\x0xyz" becomes "x0xyz" and "\0000hello" becomes
+	   "0000hello". */
 
-    /* Process quoted strings with embedded escape sequences:
-         For backslashes we recognise hexadecimal values with initial 'x' such
-       as "\x1B"; octal value (upto 3 oct digits with a possible leading zero)
-       such as "\33", "\033" or "\0033", and the C escapes: \", \', \n, \t, \b,
-       \r, \f, \a, \v, and the added \e for the escape character, as for REs.
-         Disallow hex/octal zero values (NUL): instead ignore the introductory
-       backslash, eg "\x0xyz" becomes "x0xyz" and "\0000hello" becomes
-       "0000hello". */
+	if (*InPtr == QLatin1Char('\"')) {
 
-    if (*InPtr == QLatin1Char('\"')) {
+		QString string;
+		auto p = std::back_inserter(string);
 
-        QString string;
-        auto p = std::back_inserter(string);
+		InPtr++;
+		while (InPtr != EndPtr && *InPtr != QLatin1Char('\"') && *InPtr != QLatin1Char('\n')) {
 
-        InPtr++;
-        while (InPtr != EndPtr && *InPtr != QLatin1Char('\"') && *InPtr != QLatin1Char('\n')) {
+			if (*InPtr == QLatin1Char('\\')) {
+				QString::const_iterator backslash = InPtr;
+				InPtr++;
+				if (*InPtr == QLatin1Char('\n')) {
+					InPtr++;
+					continue;
+				}
+				if (*InPtr == QLatin1Char('x')) {
+					/* a hex introducer */
+					int hexValue                = 0;
+					const char *const hexDigits = "0123456789abcdef";
+					const char *hexD;
 
-            if (*InPtr == QLatin1Char('\\')) {
-                QString::const_iterator backslash = InPtr;
-                InPtr++;
-                if (*InPtr == QLatin1Char('\n')) {
-                    InPtr++;
-                    continue;
-                }
-                if (*InPtr == QLatin1Char('x')) {
-                    /* a hex introducer */
-                    int hexValue = 0;
-                    const char *const hexDigits = "0123456789abcdef";
-                    const char *hexD;
+					InPtr++;
 
-                    InPtr++;
+					if (InPtr == EndPtr || (hexD = strchr(hexDigits, safe_tolower(InPtr->toLatin1()))) == nullptr) {
+						*p++ = QLatin1Char('x');
+					} else {
+						hexValue = static_cast<int>(hexD - hexDigits);
+						InPtr++;
 
-                    if (InPtr == EndPtr || (hexD = strchr(hexDigits, safe_tolower(InPtr->toLatin1()))) == nullptr) {
-                        *p++ = QLatin1Char('x');
-                    } else {
-                        hexValue = static_cast<int>(hexD - hexDigits);
-                        InPtr++;
+						/* now do we have another digit? only accept one more */
+						if (InPtr != EndPtr && (hexD = strchr(hexDigits, safe_tolower(InPtr->toLatin1()))) != nullptr) {
+							hexValue = static_cast<int>(hexD - hexDigits + (hexValue << 4));
+							InPtr++;
+						}
 
-                        /* now do we have another digit? only accept one more */
-                        if (InPtr != EndPtr && (hexD = strchr(hexDigits, safe_tolower(InPtr->toLatin1()))) != nullptr){
-                          hexValue = static_cast<int>(hexD - hexDigits + (hexValue << 4));
-                          InPtr++;
-                        }
+						if (hexValue != 0) {
+							*p++ = QLatin1Char(static_cast<char>(hexValue));
+						} else {
+							InPtr = backslash + 1; /* just skip the backslash */
+						}
+					}
+					continue;
+				}
 
-                        if (hexValue != 0) {
-                            *p++ = QLatin1Char(static_cast<char>(hexValue));
-                        } else {
-                            InPtr = backslash + 1; /* just skip the backslash */
-                        }
-                    }
-                    continue;
-                }
+				/* the RE documentation requires \0 as the octal introducer;
+				   here you can start with any octal digit, but you are only
+				   allowed up to three (or four if the first is '0'). */
+				if (QLatin1Char('0') <= *InPtr && *InPtr <= QLatin1Char('7')) {
 
-                /* the RE documentation requires \0 as the octal introducer;
-                   here you can start with any octal digit, but you are only
-                   allowed up to three (or four if the first is '0'). */
-                if (QLatin1Char('0') <= *InPtr && *InPtr <= QLatin1Char('7')) {
+					if (*InPtr == QLatin1Char('0')) {
+						InPtr++; /* octal introducer: don't count this digit */
+					}
 
-                    if (*InPtr == QLatin1Char('0')) {
-                        InPtr++;  /* octal introducer: don't count this digit */
-                    }
+					if (QLatin1Char('0') <= *InPtr && *InPtr <= QLatin1Char('7')) {
+						/* treat as octal - first digit */
+						char octD    = InPtr++->toLatin1();
+						int octValue = octD - '0';
 
-                    if (QLatin1Char('0') <= *InPtr && *InPtr <= QLatin1Char('7')) {
-                        /* treat as octal - first digit */
-                        char octD = InPtr++->toLatin1();
-                        int octValue = octD - '0';
+						if (QLatin1Char('0') <= *InPtr && *InPtr <= QLatin1Char('7')) {
+							/* second digit */
+							octD     = InPtr++->toLatin1();
+							octValue = (octValue << 3) + octD - '0';
+							/* now do we have another digit? can we add it?
+							   if value is going to be too big for char (greater
+							   than 0377), stop converting now before adding the
+							   third digit */
+							if (QLatin1Char('0') <= *InPtr && *InPtr <= QLatin1Char('7') &&
+								octValue <= 037) {
+								/* third digit is acceptable */
+								octD     = InPtr++->toLatin1();
+								octValue = (octValue << 3) + octD - '0';
+							}
+						}
 
-                        if (QLatin1Char('0') <= *InPtr && *InPtr <= QLatin1Char('7')) {
-                            /* second digit */
-                            octD = InPtr++->toLatin1();
-                            octValue = (octValue << 3) + octD - '0';
-                            /* now do we have another digit? can we add it?
-                               if value is going to be too big for char (greater
-                               than 0377), stop converting now before adding the
-                               third digit */
-                            if (QLatin1Char('0') <= *InPtr && *InPtr <= QLatin1Char('7') &&
-                                octValue <= 037) {
-                                /* third digit is acceptable */
-                                octD = InPtr++->toLatin1();
-                                octValue = (octValue << 3) + octD - '0';
-                            }
-                        }
+						if (octValue != 0) {
+							*p++ = QLatin1Char(static_cast<char>(octValue));
+						} else {
+							InPtr = backslash + 1; /* just skip the backslash */
+						}
+					} else {                   /* \0 followed by non-digits: go back to 0 */
+						InPtr = backslash + 1; /* just skip the backslash */
+					}
+					continue;
+				}
 
-                        if (octValue != 0) {
-                            *p++ = QLatin1Char(static_cast<char>(octValue));
-                        } else {
-                            InPtr = backslash + 1; /* just skip the backslash */
-                        }
-                    } else { /* \0 followed by non-digits: go back to 0 */
-                        InPtr = backslash + 1; /* just skip the backslash */
-                    }
-                    continue;
-                }
+				for (i = 0; escape[i] != '\0'; i++) {
+					if (QLatin1Char(escape[i]) == *InPtr) {
+						*p++ = QLatin1Char(replace[i]);
+						InPtr++;
+						break;
+					}
+				}
 
-                for (i = 0; escape[i] != '\0'; i++) {
-                    if (QLatin1Char(escape[i]) == *InPtr) {
-                        *p++ = QLatin1Char(replace[i]);
-                        InPtr++;
-                        break;
-                    }
-                }
+				/* if we get here, we didn't recognise the character after
+				   the backslash: just copy it next time round the loop */
+			} else {
+				*p++ = *InPtr++;
+			}
+		}
 
-                /* if we get here, we didn't recognise the character after
-                   the backslash: just copy it next time round the loop */
-            } else {
-                *p++= *InPtr++;
-            }
-        }
+		InPtr++;
+		yylval.sym = InstallStringConstSymbolEx(string);
+		return STRING;
+	}
 
-        InPtr++;
-        yylval.sym = InstallStringConstSymbolEx(string);
-        return STRING;
-    }
-
-    /* process remaining two character tokens or return single char as token */
-    switch(InPtr++->toLatin1()) {
-    case '>':   return follow('=', GE, GT);
-    case '<':   return follow('=', LE, LT);
-    case '=':   return follow('=', EQ, '=');
-    case '!':   return follow('=', NE, NOT);
-    case '+':   return follow2('+', INCR, '=', ADDEQ, '+');
-    case '-':   return follow2('-', DECR, '=', SUBEQ, '-');
-    case '|':   return follow2('|', OR, '=', OREQ, '|');
-    case '&':   return follow2('&', AND, '=', ANDEQ, '&');
-    case '*':   return follow2('*', POW, '=', MULEQ, '*');
-    case '/':   return follow('=', DIVEQ, '/');
-    case '%':   return follow('=', MODEQ, '%');
-    case '^':   return POW;
-    default:    return (InPtr-1)->toLatin1();
-    }
+	/* process remaining two character tokens or return single char as token */
+	switch (InPtr++->toLatin1()) {
+	case '>':
+		return follow('=', GE, GT);
+	case '<':
+		return follow('=', LE, LT);
+	case '=':
+		return follow('=', EQ, '=');
+	case '!':
+		return follow('=', NE, NOT);
+	case '+':
+		return follow2('+', INCR, '=', ADDEQ, '+');
+	case '-':
+		return follow2('-', DECR, '=', SUBEQ, '-');
+	case '|':
+		return follow2('|', OR, '=', OREQ, '|');
+	case '&':
+		return follow2('&', AND, '=', ANDEQ, '&');
+	case '*':
+		return follow2('*', POW, '=', MULEQ, '*');
+	case '/':
+		return follow('=', DIVEQ, '/');
+	case '%':
+		return follow('=', MODEQ, '%');
+	case '^':
+		return POW;
+	default:
+		return (InPtr - 1)->toLatin1();
+	}
 }
 
 /*
@@ -2605,41 +2616,38 @@ static int yylex(void) {
 */
 static int follow(char expect, int yes, int no) {
 
-    if (*InPtr++ == QLatin1Char(expect))
-        return yes;
-    InPtr--;
-    return no;
+	if (*InPtr++ == QLatin1Char(expect))
+		return yes;
+	InPtr--;
+	return no;
 }
 
 static int follow2(char expect1, int yes1, char expect2, int yes2, int no) {
 
-    QChar next = *InPtr++;
-    if (next == QLatin1Char(expect1))
-        return yes1;
-    if (next == QLatin1Char(expect2))
-        return yes2;
-    InPtr--;
-    return no;
+	QChar next = *InPtr++;
+	if (next == QLatin1Char(expect1))
+		return yes1;
+	if (next == QLatin1Char(expect2))
+		return yes2;
+	InPtr--;
+	return no;
 }
 
 static int follow_non_whitespace(char expect, int yes, int no) {
 
-    QString::const_iterator localInPtr = InPtr;
+	QString::const_iterator localInPtr = InPtr;
 
-    while (1) {
-        if (*localInPtr == QLatin1Char(' ') || *localInPtr == QLatin1Char('\t')) {
-            ++localInPtr;
-        }
-        else if (*localInPtr == QLatin1Char('\\') && *(localInPtr + 1) == QLatin1Char('\n')) {
-            localInPtr += 2;
-        }
-        else if (*localInPtr == QLatin1Char(expect)) {
-            return(yes);
-        }
-        else {
-            return(no);
-        }
-    }
+	while (1) {
+		if (*localInPtr == QLatin1Char(' ') || *localInPtr == QLatin1Char('\t')) {
+			++localInPtr;
+		} else if (*localInPtr == QLatin1Char('\\') && *(localInPtr + 1) == QLatin1Char('\n')) {
+			localInPtr += 2;
+		} else if (*localInPtr == QLatin1Char(expect)) {
+			return (yes);
+		} else {
+			return (no);
+		}
+	}
 }
 
 /*
@@ -2649,6 +2657,6 @@ static int follow_non_whitespace(char expect, int yes, int no) {
 ** of ParseExpr)
 */
 static int yyerror(const char *s) {
-	ErrMsg = QString::fromLatin1(s);
-    return 0;
+	ErrMsg = QString::fromUtf8(s);
+	return 0;
 }

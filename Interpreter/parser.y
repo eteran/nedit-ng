@@ -434,257 +434,268 @@ blank:  /* nothing */
 ** to where parsing failed in stoppedAt.
 */
 Program *compileMacro(const QString &expr, QString *msg, int *stoppedAt) {
-    BeginCreatingProgram();
+	BeginCreatingProgram();
 
-    /* call yyparse to parse the string and check for success.  If the parse
-       failed, return the error message and string index (the grammar aborts
-       parsing at the first error) */
-    QString::const_iterator start = expr.begin();
-    InPtr  = start;
-    EndPtr = start + expr.size();
+	/* call yyparse to parse the string and check for success.  If the parse
+	   failed, return the error message and string index (the grammar aborts
+	   parsing at the first error) */
+	QString::const_iterator start = expr.begin();
+	InPtr                         = start;
+	EndPtr                        = start + expr.size();
 
-    if (yyparse()) {
-        *msg       = ErrMsg;
-        *stoppedAt = gsl::narrow<int>(InPtr - start);
-        Program *prog = FinishCreatingProgram();
-        delete prog;
-        return nullptr;
-    }
+	if (yyparse()) {
+		*msg          = ErrMsg;
+		*stoppedAt    = gsl::narrow<int>(InPtr - start);
+		Program *prog = FinishCreatingProgram();
+		delete prog;
+		return nullptr;
+	}
 
-    /* get the newly created program */
-    Program *prog = FinishCreatingProgram();
+	/* get the newly created program */
+	Program *prog = FinishCreatingProgram();
 
-    /* parse succeeded */
-    *msg       = QString();
-    *stoppedAt = gsl::narrow<int>(InPtr - start);
-    return prog;
+	/* parse succeeded */
+	*msg       = QString();
+	*stoppedAt = gsl::narrow<int>(InPtr - start);
+	return prog;
 }
-
 
 static int yylex(void) {
 
-    int i;
-    Symbol *s;
-    static const char escape[] = "\\\"ntbrfave";
-    static const char replace[] = "\\\"\n\t\b\r\f\a\v\x1B"; /* ASCII escape */
+	int i;
+	Symbol *s;
+	static const char escape[]  = "\\\"ntbrfave";
+	static const char replace[] = "\\\"\n\t\b\r\f\a\v\x1B"; /* ASCII escape */
 
-    /* skip whitespace, backslash-newline combinations, and comments, which are
-       all considered whitespace */
-    for (;;) {
-        if (*InPtr == QLatin1Char('\\') && *(InPtr + 1) == QLatin1Char('\n')) {
-            InPtr += 2;
-        } else if (*InPtr == QLatin1Char(' ') || *InPtr == QLatin1Char('\t')) {
-            InPtr++;
-        } else if (*InPtr == QLatin1Char('#')) {
-            while (*InPtr != QLatin1Char('\n') && InPtr != EndPtr) {
-                /* Comments stop at escaped newlines */
-                if (*InPtr == QLatin1Char('\\') && *(InPtr + 1) == QLatin1Char('\n')) {
-                    InPtr += 2;
-                    break;
-                }
-                InPtr++;
-            }
-        } else {
-            break;
-        }
-    }
+	/* skip whitespace, backslash-newline combinations, and comments, which are
+	   all considered whitespace */
+	for (;;) {
+		if (*InPtr == QLatin1Char('\\') && *(InPtr + 1) == QLatin1Char('\n')) {
+			InPtr += 2;
+		} else if (*InPtr == QLatin1Char(' ') || *InPtr == QLatin1Char('\t')) {
+			InPtr++;
+		} else if (*InPtr == QLatin1Char('#')) {
+			while (*InPtr != QLatin1Char('\n') && InPtr != EndPtr) {
+				/* Comments stop at escaped newlines */
+				if (*InPtr == QLatin1Char('\\') && *(InPtr + 1) == QLatin1Char('\n')) {
+					InPtr += 2;
+					break;
+				}
+				InPtr++;
+			}
+		} else {
+			break;
+		}
+	}
 
-    /* return end of input at the end of the string */
-    if (InPtr == EndPtr) {
-        return 0;
-    }
+	/* return end of input at the end of the string */
+	if (InPtr == EndPtr) {
+		return 0;
+	}
 
-    /* process number tokens */
-    if (safe_isdigit(InPtr->toLatin1()))  { /* number */
+	/* process number tokens */
+	if (InPtr->isDigit()) { /* number */
 
-        QString value;
-        auto p = std::back_inserter(value);
+		QString value;
+		auto p = std::back_inserter(value);
 
-        *p++ = *InPtr++;
-        while (InPtr != EndPtr && safe_isdigit(InPtr->toLatin1())) {
-            *p++ = *InPtr++;
-        }
+		*p++ = *InPtr++;
+		while (InPtr != EndPtr && InPtr->isDigit()) {
+			*p++ = *InPtr++;
+		}
 
-        int n = value.toInt();
+		int n = value.toInt();
 
-        char name[28];
-        snprintf(name, sizeof(name), "const %d", n);
+		char name[28];
+		snprintf(name, sizeof(name), "const %d", n);
 
-        if ((yylval.sym = LookupSymbol(name)) == nullptr) {
-            yylval.sym = InstallSymbol(name, CONST_SYM, make_value(n));
-        }
+		if ((yylval.sym = LookupSymbol(name)) == nullptr) {
+			yylval.sym = InstallSymbol(name, CONST_SYM, make_value(n));
+		}
 
-        return NUMBER;
-    }
+		return NUMBER;
+	}
 
-    /* process symbol tokens.  "define" is a special case not handled
-       by this parser, considered end of input. */
-    if (safe_isalpha(InPtr->toLatin1()) || *InPtr == QLatin1Char('$')) {
+	/* process symbol tokens.  "define" is a special case not handled
+	   by this parser, considered end of input. */
+	if (safe_isalpha(InPtr->toLatin1()) || *InPtr == QLatin1Char('$')) {
 
-        QString symName;
-        auto p = std::back_inserter(symName);
+		QString symName;
+		auto p = std::back_inserter(symName);
 
-        *p++ = *InPtr++;
-        while ((InPtr != EndPtr) && (safe_isalnum(InPtr->toLatin1()) || *InPtr == QLatin1Char('_'))) {
-            *p++ = *InPtr++;
-        }
+		*p++ = *InPtr++;
+		while ((InPtr != EndPtr) && (safe_isalnum(InPtr->toLatin1()) || *InPtr == QLatin1Char('_'))) {
+			*p++ = *InPtr++;
+		}
 
-        if (symName == QLatin1String("while"))    return WHILE;
-        if (symName == QLatin1String("if"))       return IF;
-        if (symName == QLatin1String("else"))     return ELSE;
-        if (symName == QLatin1String("for"))      return FOR;
-        if (symName == QLatin1String("break"))    return BREAK;
-        if (symName == QLatin1String("continue")) return CONTINUE;
-        if (symName == QLatin1String("return"))   return RETURN;
-        if (symName == QLatin1String("in"))       return IN;
-        if (symName == QLatin1String("$args"))    return ARG_LOOKUP;
-        if (symName == QLatin1String("delete") && follow_non_whitespace('(', SYMBOL, DELETE) == DELETE) return DELETE;
-        if (symName == QLatin1String("define")) {
-            InPtr -= 6;
-            return 0;
-        }
+		if (symName == QLatin1String("while")) return WHILE;
+		if (symName == QLatin1String("if")) return IF;
+		if (symName == QLatin1String("else")) return ELSE;
+		if (symName == QLatin1String("for")) return FOR;
+		if (symName == QLatin1String("break")) return BREAK;
+		if (symName == QLatin1String("continue")) return CONTINUE;
+		if (symName == QLatin1String("return")) return RETURN;
+		if (symName == QLatin1String("in")) return IN;
+		if (symName == QLatin1String("$args")) return ARG_LOOKUP;
+		if (symName == QLatin1String("delete") && follow_non_whitespace('(', SYMBOL, DELETE) == DELETE) return DELETE;
+		if (symName == QLatin1String("define")) {
+			InPtr -= 6;
+			return 0;
+		}
 
+		if ((s = LookupSymbolEx(symName)) == nullptr) {
+			s = InstallSymbolEx(symName,
+								symName[0] == QLatin1Char('$') ? (((symName[1] > QLatin1Char('0') && symName[1] <= QLatin1Char('9')) && symName.size() == 2) ? ARG_SYM : GLOBAL_SYM) : LOCAL_SYM,
+								make_value());
+		}
 
-        if ((s = LookupSymbolEx(symName)) == nullptr) {
-            s = InstallSymbolEx(symName,
-                              symName[0]==QLatin1Char('$') ? (((symName[1] > QLatin1Char('0') && symName[1] <= QLatin1Char('9')) && symName.size() == 2) ? ARG_SYM : GLOBAL_SYM) : LOCAL_SYM,
-                              make_value());
-        }
+		yylval.sym = s;
+		return SYMBOL;
+	}
 
-        yylval.sym = s;
-        return SYMBOL;
-    }
+	/* Process quoted strings with embedded escape sequences:
+		 For backslashes we recognise hexadecimal values with initial 'x' such
+	   as "\x1B"; octal value (upto 3 oct digits with a possible leading zero)
+	   such as "\33", "\033" or "\0033", and the C escapes: \", \', \n, \t, \b,
+	   \r, \f, \a, \v, and the added \e for the escape character, as for REs.
+		 Disallow hex/octal zero values (NUL): instead ignore the introductory
+	   backslash, eg "\x0xyz" becomes "x0xyz" and "\0000hello" becomes
+	   "0000hello". */
 
-    /* Process quoted strings with embedded escape sequences:
-         For backslashes we recognise hexadecimal values with initial 'x' such
-       as "\x1B"; octal value (upto 3 oct digits with a possible leading zero)
-       such as "\33", "\033" or "\0033", and the C escapes: \", \', \n, \t, \b,
-       \r, \f, \a, \v, and the added \e for the escape character, as for REs.
-         Disallow hex/octal zero values (NUL): instead ignore the introductory
-       backslash, eg "\x0xyz" becomes "x0xyz" and "\0000hello" becomes
-       "0000hello". */
+	if (*InPtr == QLatin1Char('\"')) {
 
-    if (*InPtr == QLatin1Char('\"')) {
+		QString string;
+		auto p = std::back_inserter(string);
 
-        QString string;
-        auto p = std::back_inserter(string);
+		InPtr++;
+		while (InPtr != EndPtr && *InPtr != QLatin1Char('\"') && *InPtr != QLatin1Char('\n')) {
 
-        InPtr++;
-        while (InPtr != EndPtr && *InPtr != QLatin1Char('\"') && *InPtr != QLatin1Char('\n')) {
+			if (*InPtr == QLatin1Char('\\')) {
+				QString::const_iterator backslash = InPtr;
+				InPtr++;
+				if (*InPtr == QLatin1Char('\n')) {
+					InPtr++;
+					continue;
+				}
+				if (*InPtr == QLatin1Char('x')) {
+					/* a hex introducer */
+					int hexValue                = 0;
+					const char *const hexDigits = "0123456789abcdef";
+					const char *hexD;
 
-            if (*InPtr == QLatin1Char('\\')) {
-                QString::const_iterator backslash = InPtr;
-                InPtr++;
-                if (*InPtr == QLatin1Char('\n')) {
-                    InPtr++;
-                    continue;
-                }
-                if (*InPtr == QLatin1Char('x')) {
-                    /* a hex introducer */
-                    int hexValue = 0;
-                    const char *const hexDigits = "0123456789abcdef";
-                    const char *hexD;
+					InPtr++;
 
-                    InPtr++;
+					if (InPtr == EndPtr || (hexD = strchr(hexDigits, safe_tolower(InPtr->toLatin1()))) == nullptr) {
+						*p++ = QLatin1Char('x');
+					} else {
+						hexValue = static_cast<int>(hexD - hexDigits);
+						InPtr++;
 
-                    if (InPtr == EndPtr || (hexD = strchr(hexDigits, safe_tolower(InPtr->toLatin1()))) == nullptr) {
-                        *p++ = QLatin1Char('x');
-                    } else {
-                        hexValue = static_cast<int>(hexD - hexDigits);
-                        InPtr++;
+						/* now do we have another digit? only accept one more */
+						if (InPtr != EndPtr && (hexD = strchr(hexDigits, safe_tolower(InPtr->toLatin1()))) != nullptr) {
+							hexValue = static_cast<int>(hexD - hexDigits + (hexValue << 4));
+							InPtr++;
+						}
 
-                        /* now do we have another digit? only accept one more */
-                        if (InPtr != EndPtr && (hexD = strchr(hexDigits, safe_tolower(InPtr->toLatin1()))) != nullptr){
-                          hexValue = static_cast<int>(hexD - hexDigits + (hexValue << 4));
-                          InPtr++;
-                        }
+						if (hexValue != 0) {
+							*p++ = QLatin1Char(static_cast<char>(hexValue));
+						} else {
+							InPtr = backslash + 1; /* just skip the backslash */
+						}
+					}
+					continue;
+				}
 
-                        if (hexValue != 0) {
-                            *p++ = QLatin1Char(static_cast<char>(hexValue));
-                        } else {
-                            InPtr = backslash + 1; /* just skip the backslash */
-                        }
-                    }
-                    continue;
-                }
+				/* the RE documentation requires \0 as the octal introducer;
+				   here you can start with any octal digit, but you are only
+				   allowed up to three (or four if the first is '0'). */
+				if (QLatin1Char('0') <= *InPtr && *InPtr <= QLatin1Char('7')) {
 
-                /* the RE documentation requires \0 as the octal introducer;
-                   here you can start with any octal digit, but you are only
-                   allowed up to three (or four if the first is '0'). */
-                if (QLatin1Char('0') <= *InPtr && *InPtr <= QLatin1Char('7')) {
+					if (*InPtr == QLatin1Char('0')) {
+						InPtr++; /* octal introducer: don't count this digit */
+					}
 
-                    if (*InPtr == QLatin1Char('0')) {
-                        InPtr++;  /* octal introducer: don't count this digit */
-                    }
+					if (QLatin1Char('0') <= *InPtr && *InPtr <= QLatin1Char('7')) {
+						/* treat as octal - first digit */
+						char octD    = InPtr++->toLatin1();
+						int octValue = octD - '0';
 
-                    if (QLatin1Char('0') <= *InPtr && *InPtr <= QLatin1Char('7')) {
-                        /* treat as octal - first digit */
-                        char octD = InPtr++->toLatin1();
-                        int octValue = octD - '0';
+						if (QLatin1Char('0') <= *InPtr && *InPtr <= QLatin1Char('7')) {
+							/* second digit */
+							octD     = InPtr++->toLatin1();
+							octValue = (octValue << 3) + octD - '0';
+							/* now do we have another digit? can we add it?
+							   if value is going to be too big for char (greater
+							   than 0377), stop converting now before adding the
+							   third digit */
+							if (QLatin1Char('0') <= *InPtr && *InPtr <= QLatin1Char('7') &&
+								octValue <= 037) {
+								/* third digit is acceptable */
+								octD     = InPtr++->toLatin1();
+								octValue = (octValue << 3) + octD - '0';
+							}
+						}
 
-                        if (QLatin1Char('0') <= *InPtr && *InPtr <= QLatin1Char('7')) {
-                            /* second digit */
-                            octD = InPtr++->toLatin1();
-                            octValue = (octValue << 3) + octD - '0';
-                            /* now do we have another digit? can we add it?
-                               if value is going to be too big for char (greater
-                               than 0377), stop converting now before adding the
-                               third digit */
-                            if (QLatin1Char('0') <= *InPtr && *InPtr <= QLatin1Char('7') &&
-                                octValue <= 037) {
-                                /* third digit is acceptable */
-                                octD = InPtr++->toLatin1();
-                                octValue = (octValue << 3) + octD - '0';
-                            }
-                        }
+						if (octValue != 0) {
+							*p++ = QLatin1Char(static_cast<char>(octValue));
+						} else {
+							InPtr = backslash + 1; /* just skip the backslash */
+						}
+					} else {                   /* \0 followed by non-digits: go back to 0 */
+						InPtr = backslash + 1; /* just skip the backslash */
+					}
+					continue;
+				}
 
-                        if (octValue != 0) {
-                            *p++ = QLatin1Char(static_cast<char>(octValue));
-                        } else {
-                            InPtr = backslash + 1; /* just skip the backslash */
-                        }
-                    } else { /* \0 followed by non-digits: go back to 0 */
-                        InPtr = backslash + 1; /* just skip the backslash */
-                    }
-                    continue;
-                }
+				for (i = 0; escape[i] != '\0'; i++) {
+					if (QLatin1Char(escape[i]) == *InPtr) {
+						*p++ = QLatin1Char(replace[i]);
+						InPtr++;
+						break;
+					}
+				}
 
-                for (i = 0; escape[i] != '\0'; i++) {
-                    if (QLatin1Char(escape[i]) == *InPtr) {
-                        *p++ = QLatin1Char(replace[i]);
-                        InPtr++;
-                        break;
-                    }
-                }
+				/* if we get here, we didn't recognise the character after
+				   the backslash: just copy it next time round the loop */
+			} else {
+				*p++ = *InPtr++;
+			}
+		}
 
-                /* if we get here, we didn't recognise the character after
-                   the backslash: just copy it next time round the loop */
-            } else {
-                *p++= *InPtr++;
-            }
-        }
+		InPtr++;
+		yylval.sym = InstallStringConstSymbolEx(string);
+		return STRING;
+	}
 
-        InPtr++;
-        yylval.sym = InstallStringConstSymbolEx(string);
-        return STRING;
-    }
-
-    /* process remaining two character tokens or return single char as token */
-    switch(InPtr++->toLatin1()) {
-    case '>':   return follow('=', GE, GT);
-    case '<':   return follow('=', LE, LT);
-    case '=':   return follow('=', EQ, '=');
-    case '!':   return follow('=', NE, NOT);
-    case '+':   return follow2('+', INCR, '=', ADDEQ, '+');
-    case '-':   return follow2('-', DECR, '=', SUBEQ, '-');
-    case '|':   return follow2('|', OR, '=', OREQ, '|');
-    case '&':   return follow2('&', AND, '=', ANDEQ, '&');
-    case '*':   return follow2('*', POW, '=', MULEQ, '*');
-    case '/':   return follow('=', DIVEQ, '/');
-    case '%':   return follow('=', MODEQ, '%');
-    case '^':   return POW;
-    default:    return (InPtr-1)->toLatin1();
-    }
+	/* process remaining two character tokens or return single char as token */
+	switch (InPtr++->toLatin1()) {
+	case '>':
+		return follow('=', GE, GT);
+	case '<':
+		return follow('=', LE, LT);
+	case '=':
+		return follow('=', EQ, '=');
+	case '!':
+		return follow('=', NE, NOT);
+	case '+':
+		return follow2('+', INCR, '=', ADDEQ, '+');
+	case '-':
+		return follow2('-', DECR, '=', SUBEQ, '-');
+	case '|':
+		return follow2('|', OR, '=', OREQ, '|');
+	case '&':
+		return follow2('&', AND, '=', ANDEQ, '&');
+	case '*':
+		return follow2('*', POW, '=', MULEQ, '*');
+	case '/':
+		return follow('=', DIVEQ, '/');
+	case '%':
+		return follow('=', MODEQ, '%');
+	case '^':
+		return POW;
+	default:
+		return (InPtr - 1)->toLatin1();
+	}
 }
 
 /*
@@ -692,41 +703,38 @@ static int yylex(void) {
 */
 static int follow(char expect, int yes, int no) {
 
-    if (*InPtr++ == QLatin1Char(expect))
-        return yes;
-    InPtr--;
-    return no;
+	if (*InPtr++ == QLatin1Char(expect))
+		return yes;
+	InPtr--;
+	return no;
 }
 
 static int follow2(char expect1, int yes1, char expect2, int yes2, int no) {
 
-    QChar next = *InPtr++;
-    if (next == QLatin1Char(expect1))
-        return yes1;
-    if (next == QLatin1Char(expect2))
-        return yes2;
-    InPtr--;
-    return no;
+	QChar next = *InPtr++;
+	if (next == QLatin1Char(expect1))
+		return yes1;
+	if (next == QLatin1Char(expect2))
+		return yes2;
+	InPtr--;
+	return no;
 }
 
 static int follow_non_whitespace(char expect, int yes, int no) {
 
-    QString::const_iterator localInPtr = InPtr;
+	QString::const_iterator localInPtr = InPtr;
 
-    while (1) {
-        if (*localInPtr == QLatin1Char(' ') || *localInPtr == QLatin1Char('\t')) {
-            ++localInPtr;
-        }
-        else if (*localInPtr == QLatin1Char('\\') && *(localInPtr + 1) == QLatin1Char('\n')) {
-            localInPtr += 2;
-        }
-        else if (*localInPtr == QLatin1Char(expect)) {
-            return(yes);
-        }
-        else {
-            return(no);
-        }
-    }
+	while (1) {
+		if (*localInPtr == QLatin1Char(' ') || *localInPtr == QLatin1Char('\t')) {
+			++localInPtr;
+		} else if (*localInPtr == QLatin1Char('\\') && *(localInPtr + 1) == QLatin1Char('\n')) {
+			localInPtr += 2;
+		} else if (*localInPtr == QLatin1Char(expect)) {
+			return (yes);
+		} else {
+			return (no);
+		}
+	}
 }
 
 /*
@@ -736,6 +744,6 @@ static int follow_non_whitespace(char expect, int yes, int no) {
 ** of ParseExpr)
 */
 static int yyerror(const char *s) {
-    ErrMsg = QString::fromLatin1(s);
-    return 0;
+	ErrMsg = QString::fromUtf8(s);
+	return 0;
 }
