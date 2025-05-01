@@ -71,7 +71,7 @@ bool DialogFind::eventFilter(QObject *obj, QEvent *ev) {
 		index += (event->key() == Qt::Key_Up) ? 1 : -1;
 
 		// if the index is out of range, beep and return
-		if (index != 0 && Search::historyIndex(index) == -1) {
+		if (index != 0 && Search::HistoryIndex(index) == -1) {
 			QApplication::beep();
 			return true;
 		}

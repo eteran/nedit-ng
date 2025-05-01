@@ -22,7 +22,7 @@ DialogShellMenu::DialogShellMenu(QWidget *parent, Qt::WindowFlags f)
 	ui.setupUi(this);
 	connectSlots();
 
-	CommonDialog::setButtonIcons(&ui);
+	CommonDialog::SetButtonIcons(&ui);
 
 	ui.editAccelerator->setMaximumSequenceLength(1);
 
@@ -67,7 +67,7 @@ void DialogShellMenu::buttonNew_clicked() {
 		return;
 	}
 
-	CommonDialog::addNewItem(&ui, model_, []() {
+	CommonDialog::AddNewItem(&ui, model_, []() {
 		MenuItem item;
 		// some sensible defaults...
 		item.name = tr("New Item");
@@ -84,28 +84,28 @@ void DialogShellMenu::buttonCopy_clicked() {
 		return;
 	}
 
-	CommonDialog::copyItem(&ui, model_);
+	CommonDialog::CopyItem(&ui, model_);
 }
 
 /**
  * @brief Handles the "Delete" button click event.
  */
 void DialogShellMenu::buttonDelete_clicked() {
-	CommonDialog::deleteItem(&ui, model_, &deleted_);
+	CommonDialog::DeleteItem(&ui, model_, &deleted_);
 }
 
 /**
  * @brief Moves the currently selected item up in the model and updates the UI.
  */
 void DialogShellMenu::buttonUp_clicked() {
-	CommonDialog::moveItemUp(&ui, model_);
+	CommonDialog::MoveItemUp(&ui, model_);
 }
 
 /**
  * @brief Moves the currently selected item down in the model and updates the UI.
  */
 void DialogShellMenu::buttonDown_clicked() {
-	CommonDialog::moveItemDown(&ui, model_);
+	CommonDialog::MoveItemDown(&ui, model_);
 }
 
 /**
@@ -213,7 +213,7 @@ void DialogShellMenu::currentChanged(const QModelIndex &current, const QModelInd
 	}
 
 	// ensure that the appropriate buttons are enabled
-	CommonDialog::updateButtonStates(&ui, model_, current);
+	CommonDialog::UpdateButtonStates(&ui, model_, current);
 }
 
 /**

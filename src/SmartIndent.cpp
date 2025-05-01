@@ -4,13 +4,13 @@
 #include "DialogSmartIndentCommon.h"
 #include "Preferences.h"
 #include "Settings.h"
+#include "Shift.h"
 #include "SmartIndentEntry.h"
 #include "Util/Input.h"
 #include "Util/Raise.h"
 #include "Util/Resource.h"
 #include "Util/algorithm.h"
 #include "Yaml.h"
-#include "shift.h"
 
 #include <QFileInfo>
 #include <QMessageBox>

@@ -27,7 +27,7 @@ DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatte
 	ui.setupUi(this);
 	connectSlots();
 
-	CommonDialog::setButtonIcons(&ui);
+	CommonDialog::SetButtonIcons(&ui);
 
 	model_ = new HighlightStyleModel(this);
 	ui.listItems->setModel(model_);
@@ -84,7 +84,7 @@ void DialogDrawingStyles::setStyleByName(const QString &name) {
 	}
 
 	ui.listItems->scrollTo(ui.listItems->currentIndex());
-	CommonDialog::updateButtonStates(&ui, model_);
+	CommonDialog::UpdateButtonStates(&ui, model_);
 }
 
 /**
@@ -96,7 +96,7 @@ void DialogDrawingStyles::buttonNew_clicked() {
 		return;
 	}
 
-	CommonDialog::addNewItem(&ui, model_, []() {
+	CommonDialog::AddNewItem(&ui, model_, []() {
 		HighlightStyle style;
 		// some sensible defaults...
 		style.name  = tr("New Item");
@@ -114,28 +114,28 @@ void DialogDrawingStyles::buttonCopy_clicked() {
 		return;
 	}
 
-	CommonDialog::copyItem(&ui, model_);
+	CommonDialog::CopyItem(&ui, model_);
 }
 
 /**
  * @brief Handler for the "Delete" button click event.
  */
 void DialogDrawingStyles::buttonDelete_clicked() {
-	CommonDialog::deleteItem(&ui, model_, &deleted_);
+	CommonDialog::DeleteItem(&ui, model_, &deleted_);
 }
 
 /**
  * @brief Handler for the "Up" button click event.
  */
 void DialogDrawingStyles::buttonUp_clicked() {
-	CommonDialog::moveItemUp(&ui, model_);
+	CommonDialog::MoveItemUp(&ui, model_);
 }
 
 /**
  * @brief Handler for the "Down" button click event.
  */
 void DialogDrawingStyles::buttonDown_clicked() {
-	CommonDialog::moveItemDown(&ui, model_);
+	CommonDialog::MoveItemDown(&ui, model_);
 }
 
 /**
@@ -202,7 +202,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 		ui.checkItalic->setChecked((style->font & Font::Italic) != 0);
 
 		// ensure that the appropriate buttons are enabled
-		CommonDialog::updateButtonStates(&ui, model_, current);
+		CommonDialog::UpdateButtonStates(&ui, model_, current);
 
 		// don't allow deleting the last "Plain" entry since it's reserved
 		if (style->name == QLatin1String("Plain")) {
@@ -293,7 +293,7 @@ std::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosit
 	}
 
 	// Verify that the color is a valid X color spec
-	QColor rgb = X11Colors::fromString(hs.color);
+	QColor rgb = X11Colors::FromString(hs.color);
 	if (!rgb.isValid()) {
 		if (verbosity == Verbosity::Verbose) {
 			QMessageBox::warning(this, tr("Invalid Color"), tr("Invalid X color specification: %1").arg(hs.color));
@@ -311,7 +311,7 @@ std::optional<HighlightStyle> DialogDrawingStyles::readFields(Verbosity verbosit
 
 	// Verify that the background color (if present) is a valid X color spec
 	if (!hs.bgColor.isEmpty()) {
-		rgb = X11Colors::fromString(hs.bgColor);
+		rgb = X11Colors::FromString(hs.bgColor);
 		if (!rgb.isValid()) {
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(this,
@@ -470,7 +470,7 @@ void DialogDrawingStyles::chooseColor(QLineEdit *edit) {
 
 	const QString name = edit->text();
 
-	const QColor color = QColorDialog::getColor(X11Colors::fromString(name), this);
+	const QColor color = QColorDialog::getColor(X11Colors::FromString(name), this);
 	if (color.isValid()) {
 		edit->setText(QStringLiteral("#%1").arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0')));
 	}

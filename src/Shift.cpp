@@ -1,5 +1,5 @@
 
-#include "shift.h"
+#include "Shift.h"
 #include "DocumentWidget.h"
 #include "TextArea.h"
 #include "TextBuffer.h"
@@ -11,7 +11,15 @@
 
 namespace {
 
-std::string makeIndentString(int64_t indent, int tabDist, bool allowTabs) {
+/**
+ * @brief Create an indentation string based on the specified indent level, tab distance, and whether tabs are allowed.
+ *
+ * @param indent The number of indentation levels to create.
+ * @param tabDist The number of spaces that a tab represents.
+ * @param allowTabs Whether to use tabs for indentation.
+ * @return A string containing the appropriate indentation characters.
+ */
+std::string MakeIndentString(int64_t indent, int tabDist, bool allowTabs) {
 
 	std::string indentString;
 	indentString.reserve(static_cast<size_t>(indent));
@@ -35,13 +43,21 @@ std::string makeIndentString(int64_t indent, int tabDist, bool allowTabs) {
 	return indentString;
 }
 
-/*
-** Trim leading space, and arrange text to fill between leftMargin and
-** rightMargin (except for the first line which fills from firstLineIndent),
-** re-creating whitespace to the left of the text using tabs (if allowTabs is
-** true) calculated using tabDist, and spaces.
-*/
-std::string fillParagraph(std::string_view text, int64_t leftMargin, int64_t firstLineIndent, int64_t rightMargin, int tabDist, bool allowTabs) {
+/**
+ * @brief Trim leading space, and arrange text to fill between leftMargin and
+ * rightMargin (except for the first line which fills from firstLineIndent),
+ * re-creating whitespace to the left of the text using tabs (if allowTabs is
+ * `true`) calculated using tabDist, and spaces.
+ *
+ * @param text The text to fill, which may contain newlines and whitespace.
+ * @param leftMargin The left margin in columns.
+ * @param firstLineIndent The indentation for the first line in columns.
+ * @param rightMargin The right margin in columns.
+ * @param tabDist The distance in columns that a tab represents.
+ * @param allowTabs Whether to allow tabs in the indentation.
+ * @return A string containing the filled paragraph with appropriate indentation.
+ */
+std::string FillParagraph(std::string_view text, int64_t leftMargin, int64_t firstLineIndent, int64_t rightMargin, int tabDist, bool allowTabs) {
 
 	size_t nLines = 1;
 
@@ -113,8 +129,8 @@ std::string fillParagraph(std::string_view text, int64_t leftMargin, int64_t fir
 	++nLines;
 
 	// produce a string to prepend to lines to indent them to the left margin
-	const std::string leadIndentStr = makeIndentString(firstLineIndent, tabDist, allowTabs);
-	const std::string indentString  = makeIndentString(leftMargin, tabDist, allowTabs);
+	const std::string leadIndentStr = MakeIndentString(firstLineIndent, tabDist, allowTabs);
+	const std::string indentString  = MakeIndentString(leftMargin, tabDist, allowTabs);
 
 	std::string outText;
 	outText.reserve(cleanedText.size() + leadIndentStr.size() + indentString.size() * (nLines - 1));
@@ -140,10 +156,14 @@ std::string fillParagraph(std::string_view text, int64_t leftMargin, int64_t fir
 	return outText;
 }
 
-/*
-** Find the boundaries of the paragraph containing pos
-*/
-TextCursor findParagraphEnd(TextBuffer *buf, TextCursor startPos) {
+/**
+ * @brief Find the boundaries of the paragraph containing pos.
+ *
+ * @param buf The text buffer containing the text.
+ * @param startPos The starting position in the buffer to search for the end of the paragraph.
+ * @return The position of the end of the paragraph, or the end of the buffer if no end is found.
+ */
+TextCursor FindParagraphEnd(TextBuffer *buf, TextCursor startPos) {
 
 	static const char whiteChars[] = " \t";
 
@@ -164,14 +184,20 @@ TextCursor findParagraphEnd(TextBuffer *buf, TextCursor startPos) {
 	return pos < buf->length() ? pos : buf->BufEndOfBuffer();
 }
 
-/*
-** Find the implied left margin of a text string (the number of columns to the
-** first non-whitespace character on any line) up to either the terminating
-** null character at the end of the string, or "length" characters, whichever
-** comes first.
-*/
+/**
+ * @brief Find the implied left margin of a text string (the number of columns to the
+ * first non-whitespace character on any line) up to either the terminating
+ * null character at the end of the string, or "length" characters, whichever
+ * comes first.
+ *
+ * @param first The beginning of the input range.
+ * @param last The end of the input range.
+ * @param length The maximum number of characters to consider in the input range.
+ * @param tabDist The distance in columns that a tab represents.
+ * @return The left margin in columns, or 0 if no non-whitespace characters are found.
+ */
 template <class In, class Size>
-int findLeftMargin(In first, In last, Size length, int tabDist) {
+int FindLeftMargin(In first, In last, Size length, int tabDist) {
 
 	int col         = 0;
 	auto leftMargin = std::numeric_limits<int>::max();
@@ -245,7 +271,7 @@ std::string fillParagraphs(std::string_view text, int64_t rightMargin, int tabDi
 		paraStart = buf.BufStartOfLine(paraStart);
 
 		// Find the end of the paragraph
-		const TextCursor paraEnd = findParagraphEnd(&buf, paraStart);
+		const TextCursor paraEnd = FindParagraphEnd(&buf, paraStart);
 
 		/* Operate on either the one paragraph, or to make them all identical,
 		   do all of them together (fill paragraph can format all the paragraphs
@@ -262,11 +288,11 @@ std::string fillParagraphs(std::string_view text, int64_t rightMargin, int tabDi
 
 		const long firstLineLen    = std::distance(paraText.begin(), it);
 		const auto secondLineStart = (it == paraText.end()) ? paraText.begin() : it + 1;
-		const int firstLineIndent  = findLeftMargin(paraText.begin(), paraText.end(), firstLineLen, tabDist);
-		const int leftMargin       = findLeftMargin(secondLineStart, paraText.end(), paraEnd - paraStart - (secondLineStart - paraText.begin()), tabDist);
+		const int firstLineIndent  = FindLeftMargin(paraText.begin(), paraText.end(), firstLineLen, tabDist);
+		const int leftMargin       = FindLeftMargin(secondLineStart, paraText.end(), paraEnd - paraStart - (secondLineStart - paraText.begin()), tabDist);
 
 		// Fill the paragraph
-		const std::string filledText = fillParagraph(paraText, leftMargin, firstLineIndent, rightMargin, tabDist, useTabs);
+		const std::string filledText = FillParagraph(paraText, leftMargin, firstLineIndent, rightMargin, tabDist, useTabs);
 
 		// Replace it in the buffer
 		buf.BufReplace(paraStart, fillEnd, filledText);
@@ -722,7 +748,7 @@ void fillSelection(DocumentWidget *document, TextArea *area) {
 	   the insertion cursor */
 	if (!buf->BufGetSelectionPos(&left, &right, &isRect, &rectStart, &rectEnd)) {
 		left  = findParagraphStart(buf, insertPos);
-		right = findParagraphEnd(buf, insertPos);
+		right = FindParagraphEnd(buf, insertPos);
 		if (left == right) {
 			QApplication::beep();
 			return;

@@ -156,8 +156,8 @@ set(PROJECT_SOURCES
 	LineNumberArea.h
 	Location.h
 	LockReasons.h
-	macro.cpp
-	macro.h
+	Macro.cpp
+	Macro.h
 	Main.cpp
 	Main.h
 	MainWindow.cpp
@@ -183,8 +183,8 @@ set(PROJECT_SOURCES
 	ReparseContext.h
 	Search.cpp
 	Search.h
-	shift.cpp
-	shift.h
+	Shift.cpp
+	Shift.h
 	ShiftDirection.h
 	SignalBlocker.h
 	SmartIndent.cpp

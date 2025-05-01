@@ -8,18 +8,20 @@
 #include <QLineEdit>
 #include <QStyle>
 
-
-
 namespace {
 
 /**
- * @brief
+ * @brief Extracts the keyboard modifiers from a QKeyEvent.
  *
- * @param state
- * @param text
- * @return
+ * @param e The QKeyEvent from which to extract the modifiers.
+ * @return An integer representing the extracted modifiers.
+ *         The result is a bitwise OR of the modifier flags (Qt::SHIFT, Qt::CTRL, Qt::META, Qt::ALT).
  */
-int TranslateModifiers(Qt::KeyboardModifiers state, const QString &text) {
+int ExtractModifiers(QKeyEvent *e) {
+
+	const Qt::KeyboardModifiers state = e->modifiers();
+	const QString &text               = e->text();
+
 	int result = 0;
 	// The shift modifier only counts when it is not used to type a symbol
 	// that is only reachable using the shift key_ anyway
@@ -45,7 +47,7 @@ int TranslateModifiers(Qt::KeyboardModifiers state, const QString &text) {
 }
 
 /**
- * @brief
+ * @brief Resets the state of the KeySequenceEdit widget.
  */
 void KeySequenceEdit::resetState() {
 	if (releaseTimer_) {
@@ -64,7 +66,7 @@ void KeySequenceEdit::resetState() {
 }
 
 /**
- * @brief
+ * @brief Finishes the editing of the key sequence.
  */
 void KeySequenceEdit::finishEditing() {
 	resetState();
@@ -73,10 +75,10 @@ void KeySequenceEdit::finishEditing() {
 }
 
 /**
- * @brief
+ * @brief Constructor for KeySequenceEdit.
  *
- * @param parent
- * @param f
+ * @param parent The parent widget, defaults to nullptr.
+ * @param f The window flags, defaults to Qt::WindowFlags().
  */
 KeySequenceEdit::KeySequenceEdit(QWidget *parent, Qt::WindowFlags f)
 	: QWidget(parent, f) {
@@ -100,11 +102,11 @@ KeySequenceEdit::KeySequenceEdit(QWidget *parent, Qt::WindowFlags f)
 }
 
 /**
- * @brief
+ * @brief Constructor for KeySequenceEdit with an initial key sequence.
  *
- * @param keySequence
- * @param parent
- * @param f
+ * @param keySequence The initial key sequence to set.
+ * @param parent The parent widget, defaults to nullptr.
+ * @param f The window flags, defaults to Qt::WindowFlags().
  */
 KeySequenceEdit::KeySequenceEdit(const QKeySequence &keySequence, QWidget *parent, Qt::WindowFlags f)
 	: KeySequenceEdit(parent, f) {
@@ -112,18 +114,18 @@ KeySequenceEdit::KeySequenceEdit(const QKeySequence &keySequence, QWidget *paren
 }
 
 /**
- * @brief
+ * @brief Returns the maximum length of the key sequence.
  *
- * @return
+ * @return The maximum length of the key sequence, which is an integer between 1 and 4.
  */
 int KeySequenceEdit::maximumSequenceLength() const {
 	return maximumSequenceLength_;
 }
 
 /**
- * @brief
+ * @brief Sets the maximum length of the key sequence.
  *
- * @param maximum
+ * @param maximum The maximum length to set for the key sequence.
  */
 void KeySequenceEdit::setMaximumSequenceLength(int maximum) {
 
@@ -138,21 +140,18 @@ void KeySequenceEdit::setMaximumSequenceLength(int maximum) {
 }
 
 /**
- * This property contains the currently chosen key_ sequence. The shortcut can
- * be changed by the user or via setter function.
+ * @brief Returns the current key sequence.
  *
- * @brief
- *
- * @return
+ * @return The current key sequence as a QKeySequence object.
  */
 QKeySequence KeySequenceEdit::keySequence() const {
 	return keySequence_;
 }
 
 /**
- * @brief
+ * @brief Sets the key sequence for the KeySequenceEdit widget.
  *
- * @param keySequence
+ * @param keySequence The key sequence to set.
  */
 void KeySequenceEdit::setKeySequence(const QKeySequence &keySequence) {
 	resetState();
@@ -175,19 +174,17 @@ void KeySequenceEdit::setKeySequence(const QKeySequence &keySequence) {
 }
 
 /**
- * Clears the current key sequence.
- *
- * @brief
+ * @brief Clears the current key sequence.
  */
 void KeySequenceEdit::clear() {
 	setKeySequence(QKeySequence());
 }
 
 /**
- * @brief
+ * @brief Handles events for the KeySequenceEdit widget.
  *
- * @param e
- * @return
+ * @param e The event to handle.
+ * @return `true` if the event was handled, `false` otherwise.
  */
 bool KeySequenceEdit::event(QEvent *e) {
 	switch (e->type()) {
@@ -204,9 +201,9 @@ bool KeySequenceEdit::event(QEvent *e) {
 }
 
 /**
- * @brief
+ * @brief Handles key press events for the KeySequenceEdit widget.
  *
- * @param e
+ * @param e The key event to handle.
  */
 void KeySequenceEdit::keyPressEvent(QKeyEvent *e) {
 	int nextKey = e->key();
@@ -237,7 +234,7 @@ void KeySequenceEdit::keyPressEvent(QKeyEvent *e) {
 		return;
 	}
 
-	nextKey |= TranslateModifiers(e->modifiers(), e->text());
+	nextKey |= ExtractModifiers(e);
 
 	keys_.push_back(nextKey);
 
@@ -270,9 +267,9 @@ void KeySequenceEdit::keyPressEvent(QKeyEvent *e) {
 }
 
 /**
- * @brief
+ * @brief Handles key release events for the KeySequenceEdit widget.
  *
- * @param e
+ * @param e The key event to handle.
  */
 void KeySequenceEdit::keyReleaseEvent(QKeyEvent *e) {
 	if (prevKey_ == e->key()) {
@@ -286,9 +283,9 @@ void KeySequenceEdit::keyReleaseEvent(QKeyEvent *e) {
 }
 
 /**
- * @brief
+ * @brief Handles timer events for the KeySequenceEdit widget.
  *
- * @param e
+ * @param e The timer event to handle.
  */
 void KeySequenceEdit::timerEvent(QTimerEvent *e) {
 	if (e->timerId() == releaseTimer_) {
@@ -300,18 +297,18 @@ void KeySequenceEdit::timerEvent(QTimerEvent *e) {
 }
 
 /**
- * @brief
+ * @brief Returns whether a modifier key is required for the key sequence.
  *
- * @return
+ * @return `true` if a modifier key is required, `false` otherwise.
  */
 bool KeySequenceEdit::modifierRequired() const {
 	return modifierRequired_;
 }
 
 /**
- * @brief
+ * @brief Sets whether a modifier key is required for the key sequence.
  *
- * @param required
+ * @param required If `true`, a modifier key is required; if `false`, it is not required.
  */
 void KeySequenceEdit::setModifierRequired(bool required) {
 	modifierRequired_ = required;

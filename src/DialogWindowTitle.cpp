@@ -24,7 +24,7 @@ namespace {
  * @param title The title to compress.
  * @return A compressed version of the title.
  */
-QString compressWindowTitle(const QString &title) {
+QString CompressWindowTitle(const QString &title) {
 
 	QString result = title;
 
@@ -747,7 +747,7 @@ QString DialogWindowTitle::formatWindowTitleInternal(const QString &filename, co
 
 			case 'u': // user name
 				userNamePresent = true;
-				title.append(getUserName());
+				title.append(GetUser());
 				break;
 
 			case '%': // escaped %
@@ -783,7 +783,7 @@ QString DialogWindowTitle::formatWindowTitleInternal(const QString &filename, co
 		}
 	}
 
-	title = compressWindowTitle(title);
+	title = CompressWindowTitle(title);
 
 	if (title.isEmpty()) {
 		title = tr("<empty>"); // For preview purposes only

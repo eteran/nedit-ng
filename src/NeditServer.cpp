@@ -21,7 +21,17 @@
 
 namespace {
 
-QScreen *screenAt(QPoint pos) {
+/**
+ * @brief Find the screen at a given position.
+ *
+ * @param pos The position to check.
+ * @return The screen at the given position, or nullptr if no screen contains that position.
+ * @note This function is a workaround for Qt versions before 5.10, which do not have
+ *       QGuiApplication::screenAt(). It iterates through all screens and their virtual siblings
+ *       to find the one that contains the given position.
+ *       In Qt 5.10 and later, it uses QApplication::screenAt() directly.
+ */
+QScreen *ScreenAt(QPoint pos) {
 #if QT_VERSION < QT_VERSION_CHECK(5, 10, 0)
 	QVarLengthArray<const QScreen *, 8> visitedScreens;
 	for (const QScreen *screen : QGuiApplication::screens()) {
@@ -52,12 +62,12 @@ QScreen *screenAt(QPoint pos) {
  * @param currentDesktop
  * @return
  */
-bool isLocatedOnDesktop(QWidget *widget, QScreen *currentDesktop) {
+bool IsLocatedOnDesktop(QWidget *widget, QScreen *currentDesktop) {
 	if (!currentDesktop) {
 		return true;
 	}
 
-	return screenAt(widget->pos()) == currentDesktop;
+	return ScreenAt(widget->pos()) == currentDesktop;
 }
 
 /**
@@ -66,13 +76,13 @@ bool isLocatedOnDesktop(QWidget *widget, QScreen *currentDesktop) {
  * @param currentDesktop
  * @return
  */
-DocumentWidget *documentForTargetScreen(QScreen *currentDesktop) {
+DocumentWidget *DocumentForTargetScreen(QScreen *currentDesktop) {
 	const std::vector<MainWindow *> windows = MainWindow::allWindows();
 
 	// Find a window on the current desktop to hold the new document
 	for (MainWindow *window : windows) {
 
-		if (isLocatedOnDesktop(window, currentDesktop)) {
+		if (IsLocatedOnDesktop(window, currentDesktop)) {
 			return window->currentDocument();
 		}
 	}
@@ -87,7 +97,7 @@ DocumentWidget *documentForTargetScreen(QScreen *currentDesktop) {
  * @param currentDesktop
  * @return
  */
-DocumentWidget *findDocumentOnDesktop(int tabbed, QScreen *currentDesktop) {
+DocumentWidget *FindDocumentOnDesktop(int tabbed, QScreen *currentDesktop) {
 
 	if (tabbed == 0 || (tabbed == -1 && !Preferences::GetPrefOpenInTab())) {
 
@@ -98,12 +108,12 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, QScreen *currentDesktop) {
 				continue;
 			}
 
-			if (isLocatedOnDesktop(document, currentDesktop)) {
+			if (IsLocatedOnDesktop(document, currentDesktop)) {
 				return document;
 			}
 		}
 	} else {
-		return documentForTargetScreen(currentDesktop);
+		return DocumentForTargetScreen(currentDesktop);
 	}
 
 	// No window found on current desktop -> create new window
@@ -111,20 +121,20 @@ DocumentWidget *findDocumentOnDesktop(int tabbed, QScreen *currentDesktop) {
 }
 
 /**
- * @brief
+ * @brief Get the current desktop screen based on the cursor position.
  *
- * @return
+ * @return The screen at the cursor position, or nullptr if no screen is found.
  */
-QScreen *current_desktop() {
-	return screenAt(QCursor::pos());
+QScreen *CurrentDesktop() {
+	return ScreenAt(QCursor::pos());
 }
 
 }
 
 /**
- * @brief
+ * @brief Constructor for the NeditServer class.
  *
- * @param parent
+ * @param parent The parent QObject, defaults to nullptr.
  */
 NeditServer::NeditServer(QObject *parent)
 	: QObject(parent) {
@@ -142,7 +152,7 @@ NeditServer::NeditServer(QObject *parent)
 }
 
 /**
- * @brief
+ * @brief Handles new connections to the NEdit server.
  */
 void NeditServer::newConnection() {
 
@@ -180,7 +190,7 @@ void NeditServer::newConnection() {
 	int lastIconic = 0;
 
 	QPointer<DocumentWidget> lastFile;
-	QScreen *const currentDesktop = current_desktop();
+	QScreen *const currentDesktop = CurrentDesktop();
 
 	auto array = jsonDocument.array();
 	/* If the command string is empty, put up an empty, Untitled window
@@ -189,7 +199,7 @@ void NeditServer::newConnection() {
 		std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
 		auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *document) {
-			return (!document->filenameSet() && !document->fileChanged() && isLocatedOnDesktop(MainWindow::fromDocument(document), currentDesktop));
+			return (!document->filenameSet() && !document->fileChanged() && IsLocatedOnDesktop(MainWindow::fromDocument(document), currentDesktop));
 		});
 
 		if (it == documents.end()) {
@@ -197,7 +207,7 @@ void NeditServer::newConnection() {
 			const int tabbed = -1;
 
 			MainWindow::editNewFile(
-				MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop)),
+				MainWindow::fromDocument(FindDocumentOnDesktop(tabbed, currentDesktop)),
 				QString(),
 				false,
 				QString());
@@ -240,13 +250,13 @@ void NeditServer::newConnection() {
 			if (doCommand.isEmpty()) {
 
 				auto it = std::find_if(documents.begin(), documents.end(), [currentDesktop](DocumentWidget *doc) {
-					return (!doc->filenameSet() && !doc->fileChanged() && isLocatedOnDesktop(MainWindow::fromDocument(doc), currentDesktop));
+					return (!doc->filenameSet() && !doc->fileChanged() && IsLocatedOnDesktop(MainWindow::fromDocument(doc), currentDesktop));
 				});
 
 				if (it == documents.end()) {
 
 					MainWindow::editNewFile(
-						MainWindow::fromDocument(findDocumentOnDesktop(tabbed, currentDesktop)),
+						MainWindow::fromDocument(FindDocumentOnDesktop(tabbed, currentDesktop)),
 						QString(),
 						iconicFlag,
 						languageMode.isEmpty() ? QString() : languageMode);
@@ -301,7 +311,7 @@ void NeditServer::newConnection() {
 			   macros to execute on. */
 
 			document = DocumentWidget::editExistingFile(
-				findDocumentOnDesktop(tabbed, currentDesktop),
+				FindDocumentOnDesktop(tabbed, currentDesktop),
 				fi.filename,
 				fi.pathname,
 				editFlags,

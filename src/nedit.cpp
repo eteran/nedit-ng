@@ -20,7 +20,7 @@ namespace {
  * @param context The context of the message, including file, function, and line number.
  * @param msg The message to log.
  */
-void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
+void MessageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg) {
 
 	Q_UNUSED(context);
 
@@ -75,7 +75,7 @@ int main(int argc, char *argv[]) {
 	}
 #endif
 
-	qInstallMessageHandler(messageHandler);
+	qInstallMessageHandler(MessageHandler);
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);

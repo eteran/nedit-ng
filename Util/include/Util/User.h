@@ -4,10 +4,11 @@
 
 class QString;
 
-QString expandTilde(const QString &pathname);
-QString getHomeDir();
-QString getUserName();
-QString prependHome(const QString &filename);
-QString getDefaultShell();
+QString ExpandTilde(const QString &pathname);
+QString GetHomeDir();
+QString GetUser();
+QString PrependHome(const QString &filename);
+QString GetDefaultShell();
+bool IsAdministrator();
 
 #endif

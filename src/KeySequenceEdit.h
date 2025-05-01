@@ -1,6 +1,6 @@
 
-#ifndef QKEYSEQUENCEEDIT_H
-#define QKEYSEQUENCEEDIT_H
+#ifndef QKEY_SEQUENCE_EDIT_H_
+#define QKEY_SEQUENCE_EDIT_H_
 
 #include <QKeySequence>
 #include <QToolButton>

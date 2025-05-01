@@ -4,6 +4,7 @@
 #include "DialogAbout.h"
 #include "DocumentWidget.h"
 #include "EditFlags.h"
+#include "Macro.h"
 #include "MainWindow.h"
 #include "NeditServer.h"
 #include "Preferences.h"
@@ -11,7 +12,6 @@
 #include "Settings.h"
 #include "Util/FileSystem.h"
 #include "interpret.h"
-#include "macro.h"
 #include "nedit.h"
 #include "parse.h"
 
@@ -37,7 +37,7 @@ constexpr const char cmdLineHelp[] =
  * @param argIndex The current argument index.
  * @return The next argument index.
  */
-int getArgumentParameter(const QStringList &args, int argIndex) {
+int GetArgumentParameter(const QStringList &args, int argIndex) {
 	if (argIndex + 1 >= args.size()) {
 		fprintf(stderr, "NEdit: %s requires an argument\n%s", qPrintable(args[argIndex]), cmdLineHelp);
 		exit(EXIT_FAILURE);
@@ -111,7 +111,7 @@ Main::Main(const QStringList &args) {
 		}
 
 		if (arg == QLatin1String("-import")) {
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 			Preferences::ImportPrefFile(args[i]);
 		}
 	}
@@ -137,23 +137,23 @@ Main::Main(const QStringList &args) {
 		}
 
 		if (opts && args[i] == QLatin1String("-tags")) {
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 			if (!Tags::AddTagsFile(args[i], Tags::SearchMode::TAG)) {
 				fprintf(stderr, "NEdit: Unable to load tags file\n");
 			}
 
 		} else if (opts && args[i] == QLatin1String("-do")) {
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 			if (checkDoMacroArg(args[i])) {
 				toDoCommand = args[i];
 			}
 		} else if (opts && args[i] == QLatin1String("-svrname")) {
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 
 			Settings::serverNameOverride = args[i];
 			IsServer                     = true;
 		} else if (opts && (args[i] == QLatin1String("-font") || args[i] == QLatin1String("-fn"))) {
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 
 			Settings::fontName = args[i];
 		} else if (opts && args[i] == QLatin1String("-wrap")) {
@@ -171,7 +171,7 @@ Main::Main(const QStringList &args) {
 		} else if (opts && args[i] == QLatin1String("-noautosave")) {
 			Settings::autoSave = false;
 		} else if (opts && args[i] == QLatin1String("-rows")) {
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 
 			bool ok;
 			const int n = args[i].toInt(&ok);
@@ -181,7 +181,7 @@ Main::Main(const QStringList &args) {
 				Settings::textRows = n;
 			}
 		} else if (opts && args[i] == QLatin1String("-columns")) {
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 
 			bool ok;
 			const int n = args[i].toInt(&ok);
@@ -191,7 +191,7 @@ Main::Main(const QStringList &args) {
 				Settings::textCols = n;
 			}
 		} else if (opts && args[i] == QLatin1String("-tabs")) {
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 
 			bool ok;
 			const int n = args[i].toInt(&ok);
@@ -213,7 +213,7 @@ Main::Main(const QStringList &args) {
 		} else if (opts && args[i] == QLatin1String("-group")) {
 			group = 2; // 2: start new group, 1: in group
 		} else if (opts && args[i] == QLatin1String("-line")) {
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 
 			bool ok;
 			lineNum = args[i].toInt(&ok);
@@ -237,15 +237,15 @@ Main::Main(const QStringList &args) {
 		} else if (opts && args[i] == QLatin1String("-noiconic")) {
 			iconic = false;
 		} else if (opts && (args[i] == QLatin1String("-geometry") || args[i] == QLatin1String("-g"))) {
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 
 			geometry = args[i];
 		} else if (opts && args[i] == QLatin1String("-lm")) {
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 
 			langMode = args[i];
 		} else if (opts && args[i] == QLatin1String("-import")) {
-			i = getArgumentParameter(args, i); // already processed, skip
+			i = GetArgumentParameter(args, i); // already processed, skip
 		} else if (opts && (args[i] == QLatin1String("-V") || args[i] == QLatin1String("-version"))) {
 			const QString infoString = DialogAbout::createInfoString();
 			printf("%s", qPrintable(infoString));

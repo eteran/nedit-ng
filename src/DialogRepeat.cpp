@@ -2,8 +2,8 @@
 #include "DialogRepeat.h"
 #include "CommandRecorder.h"
 #include "DocumentWidget.h"
+#include "Macro.h"
 #include "TextBuffer.h"
-#include "macro.h"
 
 #include <QIntValidator>
 #include <QMessageBox>

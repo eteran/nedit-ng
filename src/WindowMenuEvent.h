@@ -25,7 +25,7 @@ private:
 };
 
 template <class... Types>
-void emit_event(const char *name, Types... args) {
+void EmitEvent(const char *name, Types... args) {
 	WindowMenuEvent menuEvent(QString::fromLatin1(name), {args...});
 	QApplication::sendEvent(qApp, &menuEvent);
 }

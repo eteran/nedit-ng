@@ -4,8 +4,8 @@
 
 namespace Theme {
 
-void load();
-void save();
+void Load();
+void Save();
 
 }
 

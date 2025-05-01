@@ -6,10 +6,10 @@
 #include "Preferences.h"
 #include "Regex.h"
 #include "TextBuffer.h"
+#include "UserCommands.h"
 #include "Util/String.h"
 #include "Util/algorithm.h"
 #include "Util/utils.h"
-#include "UserCommands.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -20,10 +20,11 @@
 namespace {
 
 // Maximum length of search string history
-constexpr int MAX_SEARCH_HISTORY = 100;
+constexpr int MaxSearchHistory = 100;
 
 // History mechanism for search and replace strings
-Search::HistoryEntry SearchReplaceHistory[MAX_SEARCH_HISTORY];
+// TODO(eteran): this appears to be just a circular queue
+Search::HistoryEntry SearchReplaceHistory[MaxSearchHistory];
 int NHist     = 0;
 int HistStart = 0;
 
@@ -500,10 +501,10 @@ std::optional<std::string> Search::ReplaceAllInString(std::string_view inString,
 			beginPos = (searchResult.start == searchResult.end) ? searchResult.end + 1 : searchResult.end;
 			++nFound;
 			removeLen += searchResult.end - searchResult.start;
-			if (isRegexType(searchType)) {
+			if (IsRegexType(searchType)) {
 				std::string replaceResult;
 
-				replaceUsingRE(
+				ReplaceUsingRE(
 					searchString,
 					replaceString,
 					inString.substr(static_cast<size_t>(searchResult.extentBW)),
@@ -511,7 +512,7 @@ std::optional<std::string> Search::ReplaceAllInString(std::string_view inString,
 					replaceResult,
 					searchResult.start == 0 ? -1 : inString[static_cast<size_t>(searchResult.start) - 1],
 					delimiters,
-					defaultRegexFlags(searchType));
+					DefaultRegexFlags(searchType));
 
 				addLen += gsl::narrow<int64_t>(replaceResult.size());
 			} else {
@@ -557,10 +558,10 @@ std::optional<std::string> Search::ReplaceAllInString(std::string_view inString,
 					&inString[static_cast<size_t>(lastEndPos + (searchResult.start - lastEndPos))]);
 			}
 
-			if (isRegexType(searchType)) {
+			if (IsRegexType(searchType)) {
 				std::string replaceResult;
 
-				replaceUsingRE(
+				ReplaceUsingRE(
 					searchString,
 					replaceString,
 					inString.substr(static_cast<size_t>(searchResult.extentBW)),
@@ -568,7 +569,7 @@ std::optional<std::string> Search::ReplaceAllInString(std::string_view inString,
 					replaceResult,
 					searchResult.start == 0 ? -1 : inString[static_cast<size_t>(searchResult.start) - 1],
 					delimiters,
-					defaultRegexFlags(searchType));
+					DefaultRegexFlags(searchType));
 
 				outString.append(replaceResult);
 			} else {
@@ -629,7 +630,20 @@ bool Search::SearchString(std::string_view string, const QString &searchString, 
 	return false;
 }
 
-bool Search::replaceUsingRE(const QString &searchStr, const QString &replaceStr, std::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags) {
+/**
+ * @brief
+ *
+ * @param searchStr
+ * @param replaceStr
+ * @param sourceStr
+ * @param beginPos
+ * @param dest
+ * @param prevChar
+ * @param delimiters
+ * @param defaultFlags
+ * @return
+ */
+bool Search::ReplaceUsingRE(const QString &searchStr, const QString &replaceStr, std::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags) {
 	return replaceUsingRegex(
 		searchStr.toStdString(),
 		replaceStr.toStdString(),
@@ -646,10 +660,10 @@ bool Search::replaceUsingRE(const QString &searchStr, const QString &replaceStr,
 ** If replaceString is nullptr, duplicate the last replaceString used.
 ** Contiguous incremental searches share the same history entry (each new
 ** search modifies the current search string, until a non-incremental search
-** is made.  To mark the end of an incremental search, call saveSearchHistory
+** is made.  To mark the end of an incremental search, call SaveSearchHistory
 ** again with an empty search string and isIncremental==false.
 */
-void Search::saveSearchHistory(const QString &searchString, QString replaceString, SearchType searchType, bool isIncremental) {
+void Search::SaveSearchHistory(const QString &searchString, QString replaceString, SearchType searchType, bool isIncremental) {
 
 	static bool currentItemIsIncremental = false;
 
@@ -664,7 +678,7 @@ void Search::saveSearchHistory(const QString &searchString, QString replaceStrin
 		return;
 	}
 
-	const int index = historyIndex(1);
+	const int index = HistoryIndex(1);
 
 	// If replaceString is nullptr, duplicate the last one (if any)
 	if (replaceString.isNull()) {
@@ -699,9 +713,9 @@ void Search::saveSearchHistory(const QString &searchString, QString replaceStrin
 		}
 	}
 
-	/* If there are more than MAX_SEARCH_HISTORY strings saved, recycle
+	/* If there are more than MaxSearchHistory strings saved, recycle
 	   some space, free the entry that's about to be overwritten */
-	if (NHist != MAX_SEARCH_HISTORY) {
+	if (NHist != MaxSearchHistory) {
 		++NHist;
 	}
 
@@ -714,7 +728,7 @@ void Search::saveSearchHistory(const QString &searchString, QString replaceStrin
 
 	++HistStart;
 
-	if (HistStart >= MAX_SEARCH_HISTORY) {
+	if (HistStart >= MaxSearchHistory) {
 		HistStart = 0;
 	}
 }
@@ -722,7 +736,7 @@ void Search::saveSearchHistory(const QString &searchString, QString replaceStrin
 /*
 ** Checks whether a search mode in one of the regular expression modes.
 */
-bool Search::isRegexType(SearchType searchType) {
+bool Search::IsRegexType(SearchType searchType) {
 	return searchType == SearchType::Regex || searchType == SearchType::RegexNoCase;
 }
 
@@ -730,7 +744,7 @@ bool Search::isRegexType(SearchType searchType) {
 ** Returns the default flags for regular expression matching, given a
 ** regular expression search mode.
 */
-int Search::defaultRegexFlags(SearchType searchType) {
+int Search::DefaultRegexFlags(SearchType searchType) {
 	switch (searchType) {
 	case SearchType::Regex:
 		return RE_DEFAULT_STANDARD;
@@ -744,10 +758,10 @@ int Search::defaultRegexFlags(SearchType searchType) {
 
 /*
 ** return an index into the circular buffer arrays of history information
-** for search strings, given the number of saveSearchHistory cycles back from
+** for search strings, given the number of SaveSearchHistory cycles back from
 ** the current time.
 */
-int Search::historyIndex(int nCycles) {
+int Search::HistoryIndex(int nCycles) {
 
 	if (nCycles > NHist || nCycles <= 0) {
 		return -1;
@@ -755,7 +769,7 @@ int Search::historyIndex(int nCycles) {
 
 	int index = HistStart - nCycles;
 	if (index < 0) {
-		index = MAX_SEARCH_HISTORY + index;
+		index = MaxSearchHistory + index;
 	}
 
 	return index;
@@ -772,7 +786,7 @@ auto Search::HistoryByIndex(int index) -> HistoryEntry * {
 		return nullptr;
 	}
 
-	const int n = historyIndex(index);
+	const int n = HistoryIndex(index);
 	if (n == -1) {
 		return nullptr;
 	}

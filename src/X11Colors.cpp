@@ -12,7 +12,7 @@ struct X11Color {
 	QLatin1String name;
 };
 
-const X11Color colors[] = {
+const X11Color Colors[] = {
 	{255, 250, 250, QLatin1String("snow")},
 	{248, 248, 255, QLatin1String("ghost white")},
 	{248, 248, 255, QLatin1String("GhostWhite")},
@@ -805,13 +805,13 @@ const X11Color colors[] = {
  * @param s The name of the color to convert.
  * @return QColor object representing the color.
  */
-QColor X11Colors::fromString(const QString &s) {
+QColor X11Colors::FromString(const QString &s) {
 
-	auto it = std::find_if(std::begin(colors), std::end(colors), [&s](const X11Color &color) {
+	auto it = std::find_if(std::begin(Colors), std::end(Colors), [&s](const X11Color &color) {
 		return color.name == s;
 	});
 
-	if (it != std::end(colors)) {
+	if (it != std::end(Colors)) {
 		return {it->r, it->g, it->b};
 	}
 

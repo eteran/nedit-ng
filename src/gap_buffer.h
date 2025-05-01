@@ -82,15 +82,15 @@ public:
 	view_type to_view(size_type start, size_type end) noexcept;
 
 public:
-	void append(view_type str);
-	void append(Ch ch);
-	void insert(size_type pos, view_type str);
-	void insert(size_type pos, Ch ch);
 	size_type erase(size_type start, size_type end) noexcept;
-	void replace(size_type start, size_type end, view_type str);
-	void replace(size_type start, size_type end, Ch ch);
+	void append(Ch ch);
+	void append(view_type str);
 	void assign(view_type str);
 	void clear() noexcept;
+	void insert(size_type pos, Ch ch);
+	void insert(size_type pos, view_type str);
+	void replace(size_type start, size_type end, Ch ch);
+	void replace(size_type start, size_type end, view_type str);
 
 private:
 	void move_gap(size_type pos) noexcept;
@@ -101,11 +101,11 @@ private:
 	std::unique_ptr<Ch[]> buf_; // points to the internal buffer
 	size_type gap_start_;       // points to the first character of the gap
 	size_type gap_end_;         // points to the first char after the gap
-	size_type size_;            // length of the text in the buffer (the length of the buffer itself must be calculated: gapEnd - gapStart + length)
+	size_type size_;            // length of the text in the buffer (the length of the buffer itself must be calculated: gap_end_ - gap_start_ + size_)
 };
 
 /**
- *
+ * @brief Default constructor for gap_buffer.
  */
 template <class Ch, class Tr>
 gap_buffer<Ch, Tr>::gap_buffer()
@@ -113,7 +113,9 @@ gap_buffer<Ch, Tr>::gap_buffer()
 }
 
 /**
+ * @brief Constructor for gap_buffer with a specified reserve size.
  *
+ * @param reserve_size The size to reserve for the buffer.
  */
 template <class Ch, class Tr>
 gap_buffer<Ch, Tr>::gap_buffer(size_type reserve_size)
@@ -127,7 +129,10 @@ gap_buffer<Ch, Tr>::gap_buffer(size_type reserve_size)
 }
 
 /**
+ * @brief Returns the character at the specified index.
  *
+ * @param n The index of the character to retrieve.
+ * @return The character at the specified index.
  */
 template <class Ch, class Tr>
 Ch gap_buffer<Ch, Tr>::operator[](size_type n) const noexcept {
@@ -140,7 +145,10 @@ Ch gap_buffer<Ch, Tr>::operator[](size_type n) const noexcept {
 }
 
 /**
+ * @brief Returns the character at the specified index.
  *
+ * @param n The index of the character to retrieve.
+ * @return The character at the specified index.
  */
 template <class Ch, class Tr>
 Ch &gap_buffer<Ch, Tr>::operator[](size_type n) noexcept {
@@ -153,7 +161,10 @@ Ch &gap_buffer<Ch, Tr>::operator[](size_type n) noexcept {
 }
 
 /**
+ * @brief Returns the character at the specified index, throwing an exception if out of range.
  *
+ * @param n The index of the character to retrieve.
+ * @return The character at the specified index.
  */
 template <class Ch, class Tr>
 Ch gap_buffer<Ch, Tr>::at(size_type n) const {
@@ -170,7 +181,10 @@ Ch gap_buffer<Ch, Tr>::at(size_type n) const {
 }
 
 /**
+ * @brief Returns the character at the specified index, throwing an exception if out of range.
  *
+ * @param n The index of the character to retrieve.
+ * @return The character at the specified index.
  */
 template <class Ch, class Tr>
 Ch &gap_buffer<Ch, Tr>::at(size_type n) {
@@ -187,7 +201,12 @@ Ch &gap_buffer<Ch, Tr>::at(size_type n) {
 }
 
 /**
+ * @brief Compares a substring starting at the specified position with another string.
  *
+ * @param pos The starting position in the buffer.
+ * @param str The string to compare with.
+ * @return An integer less than, equal to, or greater than zero if the substring is
+ * less than, equal to, or greater than the specified string.
  */
 template <class Ch, class Tr>
 int gap_buffer<Ch, Tr>::compare(size_type pos, view_type str) const noexcept {
@@ -224,7 +243,12 @@ int gap_buffer<Ch, Tr>::compare(size_type pos, view_type str) const noexcept {
 }
 
 /**
+ * @brief Compares a character at the specified position with another character.
  *
+ * @param pos The position in the buffer to compare.
+ * @param ch The character to compare with.
+ * @return An integer less than, equal to, or greater than zero if the character at
+ * the specified position is less than, equal to, or greater than the specified character.
  */
 template <class Ch, class Tr>
 int gap_buffer<Ch, Tr>::compare(size_type pos, Ch ch) const noexcept {
@@ -241,7 +265,9 @@ int gap_buffer<Ch, Tr>::compare(size_type pos, Ch ch) const noexcept {
 }
 
 /**
+ * @brief Converts the contents of the gap buffer to a string.
  *
+ * @return A string containing the contents of the gap buffer.
  */
 template <class Ch, class Tr>
 auto gap_buffer<Ch, Tr>::to_string() const -> string_type {
@@ -253,7 +279,11 @@ auto gap_buffer<Ch, Tr>::to_string() const -> string_type {
 }
 
 /**
+ * @brief Converts a range of the gap buffer to a string.
  *
+ * @param start The starting position of the range.
+ * @param end The ending position of the range.
+ * @return A string containing the specified range of the gap buffer.
  */
 template <class Ch, class Tr>
 auto gap_buffer<Ch, Tr>::to_string(size_type start, size_type end) const -> string_type {
@@ -282,7 +312,12 @@ auto gap_buffer<Ch, Tr>::to_string(size_type start, size_type end) const -> stri
 }
 
 /**
+ * @brief Converts the contents of the gap buffer to a string view.
  *
+ * @return A string view containing the contents of the gap buffer.
+ *
+ * @note This function moves the gap to the end of the buffer if necessary
+ * to ensure that the data is contiguous.
  */
 template <class Ch, class Tr>
 auto gap_buffer<Ch, Tr>::to_view() noexcept -> view_type {
@@ -304,7 +339,15 @@ auto gap_buffer<Ch, Tr>::to_view() noexcept -> view_type {
 }
 
 /**
+ * @brief Converts a substring of the gap buffer to a string view.
  *
+ * @param start The starting position of the range.
+ * @param end The ending position of the range.
+ *
+ * @return A string view containing the the substring of the gap buffer.
+ *
+ * @note This function moves the gap to the end of the buffer if necessary
+ * to ensure that the data is contiguous.
  */
 template <class Ch, class Tr>
 auto gap_buffer<Ch, Tr>::to_view(size_type start, size_type end) noexcept -> view_type {
@@ -330,7 +373,9 @@ auto gap_buffer<Ch, Tr>::to_view(size_type start, size_type end) noexcept -> vie
 }
 
 /**
+ * @brief Appends a string to the end of the gap buffer.
  *
+ * @param str The string to append.
  */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::append(view_type str) {
@@ -338,7 +383,9 @@ void gap_buffer<Ch, Tr>::append(view_type str) {
 }
 
 /**
+ * @brief Appends a character to the end of the gap buffer.
  *
+ * @param ch The character to append.
  */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::append(Ch ch) {
@@ -346,7 +393,10 @@ void gap_buffer<Ch, Tr>::append(Ch ch) {
 }
 
 /**
+ * @brief Inserts a string at the specified position in the gap buffer.
  *
+ * @param pos The position at which to insert the string.
+ * @param str The string to insert.
  */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::insert(size_type pos, view_type str) {
@@ -374,7 +424,10 @@ void gap_buffer<Ch, Tr>::insert(size_type pos, view_type str) {
 }
 
 /**
+ * @brief Inserts a character at the specified position in the gap buffer.
  *
+ * @param pos The position at which to insert the character.
+ * @param ch The character to insert.
  */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::insert(size_type pos, Ch ch) {
@@ -402,7 +455,11 @@ void gap_buffer<Ch, Tr>::insert(size_type pos, Ch ch) {
 }
 
 /**
+ * @brief Erases a range of characters from the gap buffer.
  *
+ * @param start The starting position of the range to erase.
+ * @param end The ending position of the range to erase.
+ * @return The position where the gap starts after the erase operation.
  */
 template <class Ch, class Tr>
 auto gap_buffer<Ch, Tr>::erase(size_type start, size_type end) noexcept -> size_type {
@@ -416,7 +473,11 @@ auto gap_buffer<Ch, Tr>::erase(size_type start, size_type end) noexcept -> size_
 }
 
 /**
+ * @brief Replaces a range of characters in the gap buffer with a string.
  *
+ * @param start The starting position of the range to replace.
+ * @param end The ending position of the range to replace.
+ * @param str The string to insert in place of the erased range.
  */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::replace(size_type start, size_type end, view_type str) {
@@ -424,7 +485,11 @@ void gap_buffer<Ch, Tr>::replace(size_type start, size_type end, view_type str) 
 }
 
 /**
+ * @brief Replaces a range of characters in the gap buffer with a character.
  *
+ * @param start The starting position of the range to replace.
+ * @param end The ending position of the range to replace.
+ * @param ch The character to insert in place of the erased range.
  */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::replace(size_type start, size_type end, Ch ch) {
@@ -432,7 +497,9 @@ void gap_buffer<Ch, Tr>::replace(size_type start, size_type end, Ch ch) {
 }
 
 /**
+ * @brief Assigns a string to the gap buffer, replacing its current contents.
  *
+ * @param str The string to assign to the gap buffer.
  */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::assign(view_type str) {
@@ -440,7 +507,7 @@ void gap_buffer<Ch, Tr>::assign(view_type str) {
 }
 
 /**
- *
+ * @brief Clears the gap buffer, removing all its contents.
  */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::clear() noexcept {
@@ -448,7 +515,11 @@ void gap_buffer<Ch, Tr>::clear() noexcept {
 }
 
 /**
+ * @brief Moves the gap to the specified position in the buffer.
  *
+ * This function adjusts the contents of the buffer to ensure that the gap
+ * starts at the specified position. It shifts characters as necessary to
+ * maintain the integrity of the buffer's contents.
  */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::move_gap(size_type pos) noexcept {
@@ -465,10 +536,13 @@ void gap_buffer<Ch, Tr>::move_gap(size_type pos) noexcept {
 	gap_start_ += (pos - gap_start_);
 }
 
-/*
-** Reallocate the text storage in "buf_" to have a gap starting at "new_gap_start"
-** and a gap size of "new_gap_size", preserving the buffer's current contents.
-*/
+/**
+ * @brief Reallocate the text storage to have a gap starting at `new_gap_start`
+ * and a gap size of `new_gap_size`, preserving the buffer's current contents.
+ *
+ * @param new_gap_start The new starting position of the gap in the buffer.
+ * @param new_gap_size The new size of the gap in the buffer.
+ */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::reallocate_buffer(size_type new_gap_start, size_type new_gap_size) {
 
@@ -495,10 +569,12 @@ void gap_buffer<Ch, Tr>::reallocate_buffer(size_type new_gap_start, size_type ne
 #endif
 }
 
-/*
-** Removes the contents of the buffer between start and end (and moves the gap
-** to the site of the delete).
-*/
+/**
+ * @brief Removes the contents of the buffer between start and end (and moves the gap to the site of the delete).
+ *
+ * @param start The starting position of the range to delete.
+ * @param end The ending position of the range to delete.
+ */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::delete_range(size_type start, size_type end) noexcept {
 
@@ -517,6 +593,11 @@ void gap_buffer<Ch, Tr>::delete_range(size_type start, size_type end) noexcept {
 	size_ -= (end - start);
 }
 
+/**
+ * @brief Swaps the contents of this gap buffer with another gap buffer.
+ *
+ * @param other The other gap buffer to swap with.
+ */
 template <class Ch, class Tr>
 void gap_buffer<Ch, Tr>::swap(gap_buffer &other) noexcept {
 	using std::swap;

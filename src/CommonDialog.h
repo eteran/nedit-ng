@@ -14,7 +14,7 @@ namespace CommonDialog {
  * @param ui The UI object containing the buttons.
  */
 template <class Ui>
-void setButtonIcons(Ui *ui) {
+void SetButtonIcons(Ui *ui) {
 	ui->buttonNew->setIcon(QIcon::fromTheme(QLatin1String("document-new")));
 	ui->buttonDelete->setIcon(QIcon::fromTheme(QLatin1String("edit-delete")));
 	ui->buttonCopy->setIcon(QIcon::fromTheme(QLatin1String("edit-copy")));
@@ -32,7 +32,7 @@ void setButtonIcons(Ui *ui) {
  * @param current The currently selected index in the model.
  */
 template <class Ui, class Model>
-void updateButtonStates(Ui *ui, Model *model, const QModelIndex &current) {
+void UpdateButtonStates(Ui *ui, Model *model, const QModelIndex &current) {
 	if (current.isValid()) {
 		if (current.row() == 0) {
 			ui->buttonUp->setEnabled(false);
@@ -65,9 +65,9 @@ void updateButtonStates(Ui *ui, Model *model, const QModelIndex &current) {
  * @param model The model containing the items.
  */
 template <class Ui, class Model>
-void updateButtonStates(Ui *ui, Model *model) {
+void UpdateButtonStates(Ui *ui, Model *model) {
 	QModelIndex index = ui->listItems->currentIndex();
-	updateButtonStates(ui, model, index);
+	UpdateButtonStates(ui, model, index);
 }
 
 /**
@@ -78,7 +78,7 @@ void updateButtonStates(Ui *ui, Model *model) {
  * @param func A function that returns a new item to be added to the model.
  */
 template <class Ui, class Model, class Func>
-void addNewItem(Ui *ui, Model *model, Func func) {
+void AddNewItem(Ui *ui, Model *model, Func func) {
 
 	model->addItem(func());
 
@@ -86,7 +86,7 @@ void addNewItem(Ui *ui, Model *model, Func func) {
 	ui->listItems->setCurrentIndex(index);
 
 	ui->listItems->scrollTo(ui->listItems->currentIndex());
-	updateButtonStates(ui, model);
+	UpdateButtonStates(ui, model);
 }
 
 /**
@@ -97,7 +97,7 @@ void addNewItem(Ui *ui, Model *model, Func func) {
  * @param deleted The QModelIndex where the deleted item index will be stored.
  */
 template <class Ui, class Model>
-void deleteItem(Ui *ui, Model *model, QModelIndex *deleted) {
+void DeleteItem(Ui *ui, Model *model, QModelIndex *deleted) {
 	QModelIndex index = ui->listItems->currentIndex();
 	if (index.isValid()) {
 
@@ -113,7 +113,7 @@ void deleteItem(Ui *ui, Model *model, QModelIndex *deleted) {
 	}
 
 	ui->listItems->scrollTo(ui->listItems->currentIndex());
-	CommonDialog::updateButtonStates(ui, model);
+	UpdateButtonStates(ui, model);
 }
 
 /**
@@ -123,7 +123,7 @@ void deleteItem(Ui *ui, Model *model, QModelIndex *deleted) {
  * @param model The model from which the item will be copied.
  */
 template <class Ui, class Model>
-void copyItem(Ui *ui, Model *model) {
+void CopyItem(Ui *ui, Model *model) {
 
 	QModelIndex index = ui->listItems->currentIndex();
 	if (index.isValid()) {
@@ -135,7 +135,7 @@ void copyItem(Ui *ui, Model *model) {
 	}
 
 	ui->listItems->scrollTo(ui->listItems->currentIndex());
-	updateButtonStates(ui, model);
+	UpdateButtonStates(ui, model);
 }
 
 /**
@@ -145,14 +145,14 @@ void copyItem(Ui *ui, Model *model) {
  * @param model The model where the item will be moved.
  */
 template <class Ui, class Model>
-void moveItemUp(Ui *ui, Model *model) {
+void MoveItemUp(Ui *ui, Model *model) {
 	QModelIndex index = ui->listItems->currentIndex();
 	if (index.isValid()) {
 		model->moveItemUp(index);
 	}
 
 	ui->listItems->scrollTo(ui->listItems->currentIndex());
-	updateButtonStates(ui, model);
+	UpdateButtonStates(ui, model);
 }
 
 /**
@@ -162,14 +162,14 @@ void moveItemUp(Ui *ui, Model *model) {
  * @param model The model where the item will be moved.
  */
 template <class Ui, class Model>
-void moveItemDown(Ui *ui, Model *model) {
+void MoveItemDown(Ui *ui, Model *model) {
 	QModelIndex index = ui->listItems->currentIndex();
 	if (index.isValid()) {
 		model->moveItemDown(index);
 	}
 
 	ui->listItems->scrollTo(ui->listItems->currentIndex());
-	updateButtonStates(ui, model);
+	UpdateButtonStates(ui, model);
 }
 
 }

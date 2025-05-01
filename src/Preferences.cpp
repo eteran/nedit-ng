@@ -9,6 +9,7 @@
 #include "SmartIndent.h"
 #include "TextBuffer.h"
 #include "Theme.h"
+#include "UserCommands.h"
 #include "Util/ClearCase.h"
 #include "Util/Input.h"
 #include "Util/Raise.h"
@@ -18,7 +19,6 @@
 #include "Util/version.h"
 #include "Yaml.h"
 #include "nedit.h"
-#include "UserCommands.h"
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -59,7 +59,7 @@ QString ImportedFile;
  * @param in
  * @return
  */
-QStringList readExtensionList(Input &in) {
+QStringList ReadExtensionList(Input &in) {
 	QStringList extensionList;
 
 	// skip over blank space
@@ -83,7 +83,7 @@ QStringList readExtensionList(Input &in) {
 	return extensionList;
 }
 
-std::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
+std::optional<LanguageMode> ReadLanguageModeYaml(const YAML::Node &language) {
 
 	struct ModeError {
 		QString message;
@@ -145,7 +145,7 @@ std::optional<LanguageMode> readLanguageModeYaml(const YAML::Node &language) {
 	return {};
 }
 
-std::optional<LanguageMode> readLanguageMode(Input &in) {
+std::optional<LanguageMode> ReadLanguageMode(Input &in) {
 
 	struct ModeError {
 		QString message;
@@ -172,7 +172,7 @@ std::optional<LanguageMode> readLanguageMode(Input &in) {
 		}
 
 		// read list of extensions
-		lm.extensions = readExtensionList(in);
+		lm.extensions = ReadExtensionList(in);
 		if (!SkipDelimiter(in, &errMsg)) {
 			Raise<ModeError>(errMsg);
 		}
@@ -285,7 +285,7 @@ std::optional<LanguageMode> readLanguageMode(Input &in) {
 	return {};
 }
 
-void loadLanguageModesString(const QString &string) {
+void LoadLanguageModesString(const QString &string) {
 
 	if (string == QLatin1String("*")) {
 
@@ -301,7 +301,7 @@ void loadLanguageModesString(const QString &string) {
 
 		for (YAML::Node language : languages) {
 
-			std::optional<LanguageMode> lm = readLanguageModeYaml(language);
+			std::optional<LanguageMode> lm = ReadLanguageModeYaml(language);
 			if (!lm) {
 				break;
 			}
@@ -314,7 +314,7 @@ void loadLanguageModesString(const QString &string) {
 		Input in(&string);
 
 		Q_FOREVER {
-			std::optional<LanguageMode> lm = readLanguageMode(in);
+			std::optional<LanguageMode> lm = ReadLanguageMode(in);
 			if (!lm) {
 				break;
 			}
@@ -341,9 +341,9 @@ void loadLanguageModesString(const QString &string) {
 ** In addition this function covers settings that, while simple, require
 ** additional steps before they can be published.
 */
-void translatePrefFormats(uint32_t fileVer) {
+void TranslatePrefFormats(uint32_t fileVersion) {
 
-	Q_UNUSED(fileVer)
+	Q_UNUSED(fileVersion)
 
 	/* Parse the strings which represent types which are not decoded by
 	   the standard resource manager routines */
@@ -361,7 +361,7 @@ void translatePrefFormats(uint32_t fileVer) {
 		Highlight::LoadHighlightString(Settings::highlightPatterns);
 	}
 	if (!Settings::languageModes.isNull()) {
-		loadLanguageModesString(Settings::languageModes);
+		LoadLanguageModesString(Settings::languageModes);
 	}
 	if (!Settings::smartIndentInit.isNull()) {
 		SmartIndent::LoadSmartIndentString(Settings::smartIndentInit);
@@ -370,7 +370,7 @@ void translatePrefFormats(uint32_t fileVer) {
 		SmartIndent::LoadSmartIndentCommonString(Settings::smartIndentInitCommon);
 	}
 
-	Theme::load();
+	Theme::Load();
 
 	// translate the font names into QFont suitable for the text widget
 	Settings::font = Font::fromString(Settings::fontName);
@@ -378,11 +378,11 @@ void translatePrefFormats(uint32_t fileVer) {
 	/*
 	**  The default set for the command shell ("DEFAULT") is
 	**  only a place-holder, the actual default is the user's login shell
-	**  (or whatever is implemented in getDefaultShell()). We put the login
+	**  (or whatever is implemented in GetDefaultShell()). We put the login
 	**  shell's name in PrefData here.
 	*/
 	if (Settings::shell == QLatin1String("DEFAULT")) {
-		Settings::shell = getDefaultShell();
+		Settings::shell = GetDefaultShell();
 	}
 
 	/* setup language mode dependent info of user menus (to increase
@@ -484,7 +484,7 @@ void RestoreNEditPrefs() {
 	/* Do further parsing on resource types which RestorePreferences does
 	 * not understand and reads as strings, to put them in the final form
 	 * in which nedit stores and uses. */
-	translatePrefFormats(NEDIT_VERSION);
+	TranslatePrefFormats(NEDIT_VERSION);
 }
 
 void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
@@ -521,7 +521,7 @@ void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 			tr("Unable to save preferences in %1").arg(prefFileName));
 	}
 
-	Theme::save();
+	Theme::Save();
 	PrefsHaveChanged = false;
 }
 
@@ -533,7 +533,7 @@ void ImportPrefFile(const QString &filename) {
 	Settings::Import(filename);
 
 	// NOTE(eteran): fix for issue #106
-	translatePrefFormats(NEDIT_VERSION);
+	TranslatePrefFormats(NEDIT_VERSION);
 }
 
 void SetPrefOpenInTab(bool state) {

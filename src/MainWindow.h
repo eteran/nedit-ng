@@ -10,11 +10,11 @@
 #include "Search.h"
 #include "SearchType.h"
 #include "TextCursor.h"
+#include "UserCommands.h"
 #include "Util/FileFormats.h"
 #include "WrapMode.h"
 #include "WrapStyle.h"
 #include "ui_MainWindow.h"
-#include "UserCommands.h"
 
 #include <QFileDialog>
 #include <QFileInfoList>
@@ -79,14 +79,14 @@ public:
 	bool getShowLineNumbers() const;
 	bool prefOrUserCancelsSubst(DocumentWidget *document);
 	bool replaceAll(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
-	bool replaceAndSearch(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap);
-	bool replaceSame(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
-	bool searchAndReplace(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode searchWrap);
-	bool searchAndSelect(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap);
-	bool searchAndSelectIncremental(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, bool continued);
-	bool searchAndSelectSame(DocumentWidget *document, TextArea *area, Direction direction, WrapMode searchWrap);
+	bool replaceAndSearch(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode SearchWrap);
+	bool replaceSame(DocumentWidget *document, TextArea *area, Direction direction, WrapMode SearchWrap);
+	bool searchAndReplace(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, Direction direction, SearchType searchType, WrapMode SearchWrap);
+	bool searchAndSelect(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode SearchWrap);
+	bool searchAndSelectIncremental(DocumentWidget *document, TextArea *area, const QString &searchString, Direction direction, SearchType searchType, WrapMode SearchWrap, bool continued);
+	bool searchAndSelectSame(DocumentWidget *document, TextArea *area, Direction direction, WrapMode SearchWrap);
 	bool searchMatchesSelection(DocumentWidget *document, const QString &searchString, SearchType searchType, TextRange *textRange, TextCursor *extentBW, TextCursor *extentFW);
-	bool searchWindow(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWrap, int64_t beginPos, Search::Result *searchResult);
+	bool searchWindow(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode SearchWrap, int64_t beginPos, Search::Result *searchResult);
 	DocumentWidget *createDocument(const QString &name);
 	DocumentWidget *currentDocument() const;
 	DocumentWidget *documentAt(int index) const;
@@ -105,7 +105,7 @@ public:
 	void openFile(DocumentWidget *document, const QString &text);
 	void parseGeometry(QString geometry);
 	void replaceInSelection(DocumentWidget *document, TextArea *area, const QString &searchString, const QString &replaceString, SearchType searchType);
-	void searchForSelected(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode searchWrap);
+	void searchForSelected(DocumentWidget *document, TextArea *area, Direction direction, SearchType searchType, WrapMode SearchWrap);
 	void setIncrementalSearchLine(bool value);
 	void setShowLineNumbers(bool show);
 	void setWindowSizeDefault(int rows, int cols);
@@ -184,7 +184,7 @@ public:
 	void action_Find_Definition(DocumentWidget *document);
 	void action_Find_Definition(DocumentWidget *document, const QString &argument);
 	void action_Find_Dialog(DocumentWidget *document, Direction direction, SearchType type, bool keepDialog);
-	void action_Find(DocumentWidget *document, const QString &string, Direction direction, SearchType type, WrapMode searchWrap);
+	void action_Find(DocumentWidget *document, const QString &string, Direction direction, SearchType type, WrapMode SearchWrap);
 	void action_Find_Incremental(DocumentWidget *document, const QString &searchString, Direction direction, SearchType searchType, WrapMode searchWraps, bool isContinue);
 	void action_Find_Selection(DocumentWidget *document, Direction direction, SearchType type, WrapMode wrap);
 	void action_Goto_Line_Number(DocumentWidget *document);

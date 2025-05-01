@@ -53,15 +53,15 @@ DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f)
 
 	Dialog::shrinkToFit(this);
 
-	textFG_        = X11Colors::fromString(Preferences::GetPrefColorName(TEXT_FG_COLOR));
-	textBG_        = X11Colors::fromString(Preferences::GetPrefColorName(TEXT_BG_COLOR));
-	selectionFG_   = X11Colors::fromString(Preferences::GetPrefColorName(SELECT_FG_COLOR));
-	selectionBG_   = X11Colors::fromString(Preferences::GetPrefColorName(SELECT_BG_COLOR));
-	matchFG_       = X11Colors::fromString(Preferences::GetPrefColorName(HILITE_FG_COLOR));
-	matchBG_       = X11Colors::fromString(Preferences::GetPrefColorName(HILITE_BG_COLOR));
-	lineNumbersFG_ = X11Colors::fromString(Preferences::GetPrefColorName(LINENO_FG_COLOR));
-	lineNumbersBG_ = X11Colors::fromString(Preferences::GetPrefColorName(LINENO_BG_COLOR));
-	cursorFG_      = X11Colors::fromString(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
+	textFG_        = X11Colors::FromString(Preferences::GetPrefColorName(TEXT_FG_COLOR));
+	textBG_        = X11Colors::FromString(Preferences::GetPrefColorName(TEXT_BG_COLOR));
+	selectionFG_   = X11Colors::FromString(Preferences::GetPrefColorName(SELECT_FG_COLOR));
+	selectionBG_   = X11Colors::FromString(Preferences::GetPrefColorName(SELECT_BG_COLOR));
+	matchFG_       = X11Colors::FromString(Preferences::GetPrefColorName(HILITE_FG_COLOR));
+	matchBG_       = X11Colors::FromString(Preferences::GetPrefColorName(HILITE_BG_COLOR));
+	lineNumbersFG_ = X11Colors::FromString(Preferences::GetPrefColorName(LINENO_FG_COLOR));
+	lineNumbersBG_ = X11Colors::FromString(Preferences::GetPrefColorName(LINENO_BG_COLOR));
+	cursorFG_      = X11Colors::FromString(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
 
 	ui.pushButtonFG->setText(Preferences::GetPrefColorName(TEXT_FG_COLOR));
 	ui.pushButtonBG->setText(Preferences::GetPrefColorName(TEXT_BG_COLOR));

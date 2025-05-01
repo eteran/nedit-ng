@@ -12,7 +12,7 @@ namespace {
 
 // --------------------------------------------------------------------------
 
-constexpr std::array<uint8_t, N_RANGESETS> rangeset_labels = {
+constexpr std::array<uint8_t, N_RANGESETS> RangesetLabels = {
 	{58, 10, 15, 1, 27, 52, 14, 3, 61, 13, 31, 30, 45, 28, 41, 55,
 	 33, 20, 62, 34, 42, 18, 57, 47, 24, 49, 19, 50, 25, 38, 40, 2,
 	 21, 39, 59, 22, 60, 4, 6, 16, 29, 37, 48, 46, 54, 43, 32, 56,
@@ -20,6 +20,16 @@ constexpr std::array<uint8_t, N_RANGESETS> rangeset_labels = {
 
 // --------------------------------------------------------------------------
 
+/**
+ * @brief
+ *
+ * @param pos
+ * @param nInserted
+ * @param nDeleted
+ * @param nRestyled
+ * @param deletedText
+ * @param user
+ */
 void RangesetBufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, int64_t nRestyled, std::string_view deletedText, void *user) {
 	Q_UNUSED(nRestyled)
 
@@ -33,7 +43,7 @@ void RangesetBufModifiedCB(TextCursor pos, int64_t nInserted, int64_t nDeleted, 
 }
 
 /**
- * @brief
+ * @brief Constructor for RangesetTable
  *
  * @param buffer
  */
@@ -51,10 +61,13 @@ RangesetTable::~RangesetTable() {
 	buffer_->BufRemoveModifyCB(RangesetBufModifiedCB, this);
 }
 
-/*
-** Fetch the rangeset identified by label
-*/
-Rangeset *RangesetTable::RangesetFetch(int label) {
+/**
+ * @brief Fetch the rangeset identified by label.
+ *
+ * @param label
+ * @return
+ */
+Rangeset *RangesetTable::fetch(int label) {
 	auto it = std::find_if(sets_.begin(), sets_.end(), [label](const Rangeset &set) {
 		return set.label_ == label;
 	});
@@ -66,9 +79,11 @@ Rangeset *RangesetTable::RangesetFetch(int label) {
 	return &*it;
 }
 
-/*
-** Forget the rangeset identified by label
-*/
+/**
+ * @brief Forget the rangeset identified by label.
+ *
+ * @param label
+ */
 void RangesetTable::forgetLabel(int label) {
 	auto it = std::find_if(sets_.begin(), sets_.end(), [label](const Rangeset &set) {
 		return set.label_ == label;
@@ -79,9 +94,12 @@ void RangesetTable::forgetLabel(int label) {
 	}
 }
 
-/*
-** Return the color name, if any.
-*/
+/**
+ * @brief Return the color name, if any.
+ *
+ * @param index
+ * @return
+ */
 QString RangesetTable::getColorName(size_t index) const {
 	Q_ASSERT(index <= sets_.size());
 
@@ -89,12 +107,16 @@ QString RangesetTable::getColorName(size_t index) const {
 	return set.color_name_;
 }
 
-/*
-** Find the index of the first range which includes the position.
-** Returns the index of the rangeset in the rangeset table + 1 if an including
-** rangeset was found, 0 otherwise. If needs_color is `true`, "colorless" ranges
-** will be skipped.
-*/
+/**
+ * @brief Find the index of the first range which includes the position.
+ * Returns the index of the rangeset in the rangeset table + 1 if an including
+ * rangeset was found, 0 otherwise. If needs_color is `true`, "colorless" ranges
+ * will be skipped.
+ *
+ * @param pos
+ * @param needs_color
+ * @return
+ */
 size_t RangesetTable::index1ofPos(TextCursor pos, bool needs_color) {
 
 	for (size_t i = 0; i < sets_.size(); ++i) {
@@ -109,10 +131,13 @@ size_t RangesetTable::index1ofPos(TextCursor pos, bool needs_color) {
 	return 0;
 }
 
-/*
-** Assign a color pixel value to a rangeset via the rangeset table. If ok is
-** false, the color_set flag is set to an invalid (negative) value.
-*/
+/**
+ * @brief Assign a color pixel value to a rangeset via the rangeset table.
+ * If the color is invalid, the color_set flag is set to an invalid (negative) value.
+ *
+ * @param index
+ * @param color
+ */
 void RangesetTable::assignColor(size_t index, const QColor &color) {
 	Q_ASSERT(index <= sets_.size());
 
@@ -122,9 +147,13 @@ void RangesetTable::assignColor(size_t index, const QColor &color) {
 	set.color_     = color;
 }
 
-/*
-** Return the color color validity, if any, and the value in *color.
-*/
+/**
+ * @brief Return the color color validity, if any, and the value in *color.
+ *
+ * @param index
+ * @param color
+ * @return
+ */
 int RangesetTable::getColorValid(size_t index, QColor *color) const {
 	Q_ASSERT(index <= sets_.size());
 
@@ -134,13 +163,20 @@ int RangesetTable::getColorValid(size_t index, QColor *color) const {
 	return set.color_set_;
 }
 
-/*
-** Return the number of rangesets that are available to create
-*/
+/**
+ * @brief Return the number of rangesets that are available to create.
+ *
+ * @return
+ */
 int RangesetTable::rangesetsAvailable() const {
 	return static_cast<int>(N_RANGESETS - sets_.size());
 }
 
+/**
+ * @brief
+ *
+ * @return
+ */
 std::vector<uint8_t> RangesetTable::labels() const {
 	std::vector<uint8_t> list;
 	list.reserve(sets_.size());
@@ -152,6 +188,13 @@ std::vector<uint8_t> RangesetTable::labels() const {
 	return list;
 }
 
+/**
+ * @brief
+ *
+ * @param pos
+ * @param ins
+ * @param del
+ */
 void RangesetTable::updatePos(TextCursor pos, int64_t ins, int64_t del) {
 
 	if (ins == 0 && del == 0) {
@@ -163,32 +206,37 @@ void RangesetTable::updatePos(TextCursor pos, int64_t ins, int64_t del) {
 	}
 }
 
-/*
-** Create a new empty rangeset
-*/
-int RangesetTable::RangesetCreate() {
+/**
+ * @brief Create a new empty rangeset.
+ *
+ * @return
+ */
+int RangesetTable::create() {
 
 	const std::vector<uint8_t> list = labels();
 
 	// find the first label not used
-	const auto it = std::find_if(rangeset_labels.begin(), rangeset_labels.end(), [&list](char ch) {
+	const auto it = std::find_if(RangesetLabels.begin(), RangesetLabels.end(), [&list](char ch) {
 		return std::find(list.begin(), list.end(), ch) == list.end();
 	});
 
-	if (it == rangeset_labels.end()) {
+	if (it == RangesetLabels.end()) {
 		return 0;
 	}
 
-	const size_t labelIndex = (it - rangeset_labels.begin());
-	const uint8_t label     = rangeset_labels[labelIndex];
+	const size_t labelIndex = (it - RangesetLabels.begin());
+	const uint8_t label     = RangesetLabels[labelIndex];
 
 	sets_.insert(sets_.begin(), Rangeset(buffer_, label));
 	return label;
 }
 
-/*
-** Return `true` if label is a valid identifier for a range set.
-*/
-bool RangesetTable::LabelOK(int label) {
-	return std::find(rangeset_labels.begin(), rangeset_labels.end(), label) != rangeset_labels.end();
+/**
+ * @brief Return `true` if label is a valid identifier for a range set.
+ *
+ * @param label
+ * @return
+ */
+bool RangesetTable::labelOK(int label) {
+	return std::find(RangesetLabels.begin(), RangesetLabels.end(), label) != RangesetLabels.end();
 }

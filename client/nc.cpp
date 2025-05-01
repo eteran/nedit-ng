@@ -54,7 +54,7 @@ struct {
  * @param argIndex The current argument index.
  * @return The next argument index.
  */
-int getArgumentParameter(const QStringList &args, int argIndex) {
+int GetArgumentParameter(const QStringList &args, int argIndex) {
 	if (argIndex + 1 >= args.size()) {
 		fprintf(stderr, "nc-ng: %s requires an argument\n%s", qPrintable(args[argIndex]), UsageMessage);
 		exit(EXIT_FAILURE);
@@ -69,7 +69,7 @@ int getArgumentParameter(const QStringList &args, int argIndex) {
  * @param program The command string to parse.
  * @return A list of arguments.
  */
-QStringList parseCommandString(const QString &program) {
+QStringList ParseCommandString(const QString &program) {
 
 	QStringList args;
 	QString arg;
@@ -136,7 +136,7 @@ QStringList parseCommandString(const QString &program) {
 /**
  * @brief Prints the version information of the nc-ng client.
  */
-void printNcVersion() {
+void PrintVersion() {
 	static constexpr const char ncHelpText[] = "nc-ng (nedit-ng) Version %d.%d\n\n"
 											   "Built on: %s, %s, %s\n";
 	printf(ncHelpText,
@@ -155,7 +155,7 @@ void printNcVersion() {
  * @return A CommandLine structure containing the parsed arguments
  *         or an empty optional if the command line is invalid.
  */
-std::optional<CommandLine> parseCommandLine(const QStringList &args) {
+std::optional<CommandLine> ParseCommandLine(const QStringList &args) {
 
 	CommandLine commandLine;
 	QString toDoCommand;
@@ -185,15 +185,15 @@ std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 		} else if (opts && args[i] == QLatin1String("-wait")) {
 			ServerPreferences.waitForClose = true;
 		} else if (opts && args[i] == QLatin1String("-svrname")) {
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 
 			ServerPreferences.serverName = args[i];
 		} else if (opts && args[i] == QLatin1String("-svrcmd")) {
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 
 			ServerPreferences.serverCmd = args[i];
 		} else if (opts && args[i] == QLatin1String("-timeout")) {
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 
 			bool ok;
 			const int n = args[i].toInt(&ok);
@@ -203,18 +203,18 @@ std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 				ServerPreferences.timeOut = n;
 			}
 		} else if (opts && args[i] == QLatin1String("-do")) {
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 
 			toDoCommand = args[i];
 		} else if (opts && args[i] == QLatin1String("-lm")) {
 			commandLine.arguments.push_back(args[i]);
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 
 			langMode = args[i];
 			commandLine.arguments.push_back(args[i]);
 		} else if (opts && (args[i] == QLatin1String("-g") || args[i] == QLatin1String("-geometry"))) {
 			commandLine.arguments.push_back(args[i]);
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 
 			geometry = args[i];
 			commandLine.arguments.push_back(args[i]);
@@ -234,7 +234,7 @@ std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 			iconic = 1;
 			commandLine.arguments.push_back(args[i]);
 		} else if (opts && args[i] == QLatin1String("-line")) {
-			i = getArgumentParameter(args, i);
+			i = GetArgumentParameter(args, i);
 
 			bool ok;
 			const int lineArg = args[i].toInt(&ok);
@@ -257,7 +257,7 @@ std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 		} else if (opts && (args[i] == QLatin1String("-noask"))) {
 			ServerPreferences.autoStart = true;
 		} else if (opts && (args[i] == QLatin1String("-version") || args[i] == QLatin1String("-V"))) {
-			printNcVersion();
+			PrintVersion();
 			exit(EXIT_SUCCESS);
 		} else if (opts && (args[i] == QLatin1String("-h") || args[i] == QLatin1String("-help"))) {
 			fprintf(stderr, "%s", UsageMessage);
@@ -349,7 +349,7 @@ std::optional<CommandLine> parseCommandLine(const QStringList &args) {
 CommandLine processCommandLine(const QStringList &args) {
 
 	// Convert command line arguments into a command string for the server
-	if (std::optional<CommandLine> commandLine = parseCommandLine(args)) {
+	if (std::optional<CommandLine> commandLine = ParseCommandLine(args)) {
 		return *commandLine;
 	}
 
@@ -364,7 +364,7 @@ CommandLine processCommandLine(const QStringList &args) {
  * @param commandLineArgs The command line arguments to pass to the server.
  * @return 0 on success, -1 if the server failed to start, -2 if the user canceled starting the server.
  */
-int startServer(const char *message, const QStringList &commandLineArgs) {
+int StartServer(const char *message, const QStringList &commandLineArgs) {
 
 	// prompt user whether to start server
 	if (!ServerPreferences.autoStart) {
@@ -381,7 +381,7 @@ int startServer(const char *message, const QStringList &commandLineArgs) {
 
 	// make sure we get any arguments out of the server command
 	// (typically -server is in there, but there could be more)
-	QStringList arguments = parseCommandString(ServerPreferences.serverCmd);
+	QStringList arguments = ParseCommandString(ServerPreferences.serverCmd);
 
 	// add on the arguments that were on the command line
 	arguments.append(commandLineArgs);
@@ -411,7 +411,7 @@ int startServer(const char *message, const QStringList &commandLineArgs) {
  * @param data The data to write.
  * @return `true` if all data was written successfully, `false` otherwise.
  */
-bool writeToSocket(QLocalSocket *socket, const QByteArray &data) {
+bool WriteToSocket(QLocalSocket *socket, const QByteArray &data) {
 	int64_t remaining = data.size();
 	const char *ptr   = data.data();
 
@@ -494,7 +494,7 @@ int main(int argc, char *argv[]) {
 		socket->connectToServer(socketName, QIODevice::WriteOnly);
 		if (!socket->waitForConnected(gsl::narrow<int>(timeout.count()))) {
 			if (i == 0) {
-				switch (startServer("No servers available, start one? (y|n) [y]: ", commandLine.arguments)) {
+				switch (StartServer("No servers available, start one? (y|n) [y]: ", commandLine.arguments)) {
 				case -1: // Start failed
 					exit(EXIT_FAILURE);
 				case -2: // Start canceled by user
@@ -512,7 +512,7 @@ int main(int argc, char *argv[]) {
 		stream.setVersion(QDataStream::Qt_5_0);
 		stream << commandLine.jsonRequest;
 
-		writeToSocket(socket.get(), ba);
+		WriteToSocket(socket.get(), ba);
 
 		// if we are enabling wait mode, we simply wait for the server
 		// to close the socket. We'll leave it to the server to track
