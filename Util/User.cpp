@@ -11,6 +11,7 @@
 #include <pwd.h>
 #include <unistd.h>
 #elif defined(Q_OS_WIN)
+#define WIN32_LEAN_AND_MEAN
 #include <Lmcons.h>
 #include <Windows.h>
 #endif
@@ -85,7 +86,7 @@ QString PrependHome(const QString &filename) {
  *
  * @return The username of the current user.
  */
-QString GetUserName() {
+QString GetUser() {
 #ifdef Q_OS_UNIX
 	static QString user_name;
 
@@ -94,7 +95,7 @@ QString GetUserName() {
 	}
 
 	if (const struct passwd *passwdEntry = getpwuid(getuid())) {
-		user_name = QString::fromLatin1(passwdEntry->pw_name);
+		user_name = QString::fromUtf8(passwdEntry->pw_name);
 		return user_name;
 	}
 

@@ -6,7 +6,7 @@ class QString;
 
 QString ExpandTilde(const QString &pathname);
 QString GetHomeDir();
-QString GetUserName();
+QString GetUser();
 QString PrependHome(const QString &filename);
 QString GetDefaultShell();
 bool IsAdministrator();

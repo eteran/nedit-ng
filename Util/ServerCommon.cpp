@@ -47,5 +47,5 @@ QString LocalSocketName(const QString &server_name) {
 		return QStringLiteral("%1/nedit-ng_%2_%3").arg(runtimePath, hostname, server_id);
 	}
 
-	return QStringLiteral("nedit-ng_%1_%2_%3").arg(GetUserName(), hostname, server_id);
+	return QStringLiteral("nedit-ng_%1_%2_%3").arg(GetUser(), hostname, server_id);
 }
