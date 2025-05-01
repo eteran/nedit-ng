@@ -18,8 +18,8 @@ public:
 
 public:
 	QString getColorName(size_t index) const;
-	Rangeset *RangesetFetch(int label);
-	int RangesetCreate();
+	Rangeset *fetch(int label);
+	int create();
 	int getColorValid(size_t index, QColor *color) const;
 	int rangesetsAvailable() const;
 	size_t index1ofPos(TextCursor pos, bool needs_color);
@@ -29,7 +29,7 @@ public:
 	void updatePos(TextCursor pos, int64_t ins, int64_t del);
 
 public:
-	static bool LabelOK(int label);
+	static bool labelOK(int label);
 
 public:
 	TextBuffer *buffer_;

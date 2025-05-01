@@ -2888,9 +2888,9 @@ void MainWindow::editIFind_textChanged(const QString &text) {
 	   fails, silently skip it.  (This allows users to compose the expression
 	   in peace when they have unfinished syntax, but still get beeps when
 	   correct syntax doesn't match) */
-	if (Search::isRegexType(searchType)) {
+	if (Search::IsRegexType(searchType)) {
 		try {
-			auto compiledRE = make_regex(text, Search::defaultRegexFlags(searchType));
+			auto compiledRE = make_regex(text, Search::DefaultRegexFlags(searchType));
 		} catch (const RegexError &) {
 			return;
 		}
@@ -3154,7 +3154,7 @@ void MainWindow::endISearch() {
 	iSearchStartPos_ = TextCursor(-1);
 
 	// Mark the end of incremental search history overwriting
-	Search::saveSearchHistory(QString(), QString(), SearchType::Literal, /*isIncremental=*/false);
+	Search::SaveSearchHistory(QString(), QString(), SearchType::Literal, /*isIncremental=*/false);
 
 	// Pop down the search line (if it's not pegged up in Preferences)
 	tempShowISearch(false);
@@ -5755,7 +5755,7 @@ bool MainWindow::eventFilter(QObject *object, QEvent *ev) {
 		index += (event->key() == Qt::Key_Up) ? 1 : -1;
 
 		// if the index is out of range, beep and return
-		if (index != 0 && Search::historyIndex(index) == -1) {
+		if (index != 0 && Search::HistoryIndex(index) == -1) {
 			QApplication::beep();
 			return true;
 		}
@@ -6601,7 +6601,7 @@ bool MainWindow::searchAndSelect(DocumentWidget *document, TextArea *area, const
 	bool movedFwd = false;
 
 	// Save a copy of searchString in the search history
-	Search::saveSearchHistory(searchString, QString(), searchType, /*isIncremental=*/false);
+	Search::SaveSearchHistory(searchString, QString(), searchType, /*isIncremental=*/false);
 
 	/* set the position to start the search so we don't find the same
 	   string that was found on the last search */
@@ -6708,7 +6708,7 @@ bool MainWindow::searchAndSelectIncremental(DocumentWidget *document, TextArea *
 	   the search history itself, which can be detected by matching the
 	   search string with the search string of the current history index. */
 	if (!(iSearchHistIndex_ > 1 && (searchString == Search::HistoryByIndex(iSearchHistIndex_)->search))) {
-		Search::saveSearchHistory(searchString, QString(), searchType, /*isIncremental=*/true);
+		Search::SaveSearchHistory(searchString, QString(), searchType, /*isIncremental=*/true);
 		// Reset the incremental search history pointer to the beginning
 		iSearchHistIndex_ = 1;
 	}
@@ -6763,7 +6763,7 @@ bool MainWindow::replaceAndSearch(DocumentWidget *document, TextArea *area, cons
 	TextBuffer *buffer = document->buffer();
 
 	// Save a copy of search and replace strings in the search history
-	Search::saveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
+	Search::SaveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
 
 	bool replaced = false;
 
@@ -6773,11 +6773,11 @@ bool MainWindow::replaceAndSearch(DocumentWidget *document, TextArea *area, cons
 		int64_t replaceLen = 0;
 
 		// replace the text
-		if (Search::isRegexType(searchType)) {
+		if (Search::IsRegexType(searchType)) {
 			std::string replaceResult;
 			const std::string foundString = buffer->BufGetRange(extentBW, extentFW + 1);
 
-			Search::replaceUsingRE(
+			Search::ReplaceUsingRE(
 				searchString,
 				replaceString,
 				foundString,
@@ -6785,7 +6785,7 @@ bool MainWindow::replaceAndSearch(DocumentWidget *document, TextArea *area, cons
 				replaceResult,
 				selectionRange.start == 0 ? -1 : buffer->BufGetCharacter(selectionRange.start - 1),
 				document->getWindowDelimiters(),
-				Search::defaultRegexFlags(searchType));
+				Search::DefaultRegexFlags(searchType));
 
 			buffer->BufReplace(selectionRange, replaceResult);
 			replaceLen = ssize(replaceResult);
@@ -6855,7 +6855,7 @@ bool MainWindow::searchAndReplace(DocumentWidget *document, TextArea *area, cons
 	TextCursor extentFW;
 
 	// Save a copy of search and replace strings in the search history
-	Search::saveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
+	Search::SaveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
 
 	// If the text selected in the window matches the search string,
 	// the user is probably using search then replace method, so
@@ -6902,11 +6902,11 @@ bool MainWindow::searchAndReplace(DocumentWidget *document, TextArea *area, cons
 	int64_t replaceLen;
 
 	// replace the text
-	if (Search::isRegexType(searchType)) {
+	if (Search::IsRegexType(searchType)) {
 		std::string replaceResult;
 		const std::string foundString = buffer->BufGetRange(extentBW, extentFW + 1);
 
-		Search::replaceUsingRE(
+		Search::ReplaceUsingRE(
 			searchString,
 			replaceString,
 			foundString,
@@ -6914,7 +6914,7 @@ bool MainWindow::searchAndReplace(DocumentWidget *document, TextArea *area, cons
 			replaceResult,
 			selectionRange.start == 0 ? -1 : buffer->BufGetCharacter(selectionRange.start - 1),
 			document->getWindowDelimiters(),
-			Search::defaultRegexFlags(searchType));
+			Search::DefaultRegexFlags(searchType));
 
 		buffer->BufReplace(selectionRange, replaceResult);
 		replaceLen = ssize(replaceResult);
@@ -7074,7 +7074,7 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 	bool cancelSubst  = true;
 
 	// save a copy of search and replace strings in the search history
-	Search::saveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
+	Search::SaveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
 
 	TextBuffer *buffer = document->buffer();
 
@@ -7152,11 +7152,11 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 		}
 
 		// replace the string and compensate for length change
-		if (Search::isRegexType(searchType)) {
+		if (Search::IsRegexType(searchType)) {
 			std::string replaceResult;
 			const std::string foundString = tempBuf.BufGetRange(TextCursor(searchResult->extentBW + realOffset), TextCursor(searchResult->extentFW + realOffset + 1));
 
-			substSuccess = Search::replaceUsingRE(
+			substSuccess = Search::ReplaceUsingRE(
 				searchString,
 				replaceString,
 				foundString,
@@ -7164,7 +7164,7 @@ void MainWindow::replaceInSelection(DocumentWidget *document, TextArea *area, co
 				replaceResult,
 				(searchResult->start + realOffset) == 0 ? -1 : tempBuf.BufGetCharacter(TextCursor(searchResult->start + realOffset - 1)),
 				document->getWindowDelimiters(),
-				Search::defaultRegexFlags(searchType));
+				Search::DefaultRegexFlags(searchType));
 
 			if (!substSuccess) {
 				cancelSubst = prefOrUserCancelsSubst(document);
@@ -7310,7 +7310,7 @@ bool MainWindow::replaceAll(DocumentWidget *document, TextArea *area, const QStr
 	}
 
 	// save a copy of search and replace strings in the search history
-	Search::saveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
+	Search::SaveSearchHistory(searchString, replaceString, searchType, /*isIncremental=*/false);
 
 	TextBuffer *buffer = document->buffer();
 
@@ -7399,7 +7399,7 @@ void MainWindow::iSearchTryBeepOnWrap(Direction direction, TextCursor beginPos, 
 */
 bool MainWindow::searchMatchesSelection(DocumentWidget *document, const QString &searchString, SearchType searchType, TextRange *textRange, TextCursor *extentBW, TextCursor *extentFW) {
 
-	const int regexLookContext = Search::isRegexType(searchType) ? 1000 : 0;
+	const int regexLookContext = Search::IsRegexType(searchType) ? 1000 : 0;
 
 	int64_t selLen;
 	TextCursor selStart;

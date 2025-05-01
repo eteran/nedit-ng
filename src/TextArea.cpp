@@ -89,12 +89,12 @@ constexpr int DefaultVMargin     = 2;
 constexpr int DefaultHMargin     = 2;
 constexpr int DefaultCursorWidth = 2;
 
-constexpr int SIZE_HINT_DURATION = 1000;
+constexpr int SizeHintDuration = 1000;
 
-constexpr int CALLTIP_EDGE_GUARD = 5;
+constexpr int CalltipEdgeGuard = 5;
 
 // Length of delay in milliseconds for vertical auto-scrolling
-constexpr int VERTICAL_SCROLL_DELAY = 50;
+constexpr int VerticalScrollDelay = 50;
 
 /* Masks for text drawing methods.  These are or'd together to form an
    integer which describes what drawing calls to use to draw a string */
@@ -134,7 +134,7 @@ constexpr uint32_t RANGESET_MASK     = (0x3f << RANGESET_SHIFT);
 /* Maximum displayable line length (how many characters will fit across the
    widest window).  This amount of memory is temporarily allocated from the
    stack in the redisplayLine routine for drawing strings */
-constexpr int MAX_DISP_LINE_LEN = 1024;
+constexpr int MaxDisplayLineLength = 1024;
 
 /**
  * @brief Checks if the calltip is off-screen vertically.
@@ -145,7 +145,7 @@ constexpr int MAX_DISP_LINE_LEN = 1024;
  * @return `true` if the calltip is off-screen vertically, `false` otherwise.
  */
 bool OffScreenV(QScreen *screen, int top, int height) {
-	return (top < CALLTIP_EDGE_GUARD || top + height >= screen->geometry().height() - CALLTIP_EDGE_GUARD);
+	return (top < CalltipEdgeGuard || top + height >= screen->geometry().height() - CalltipEdgeGuard);
 }
 
 /**
@@ -161,7 +161,7 @@ bool OffScreenV(QScreen *screen, int top, int height) {
 QString ExpandAllTabs(const QString &text, int tab_width) {
 
 	// First count 'em
-	const auto nTabs = static_cast<int>(std::count(text.begin(), text.end(), QLatin1Char('\t')));
+	const auto nTabs = text.count(QLatin1Char('\t'));
 
 	if (nTabs == 0) {
 		return text;
@@ -882,9 +882,9 @@ void TextArea::newline(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Handles the up arrow key event, moving the cursor up in the text area.
  *
- * @param flags
+ * @param flags Flags that determine how the up arrow key event is processed.
  */
 void TextArea::processUp(EventFlags flags) {
 
@@ -905,9 +905,9 @@ void TextArea::processUp(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Handles the down arrow key event, moving the cursor down in the text area.
  *
- * @param flags
+ * @param flags Flags that determine how the down arrow key event is processed.
  */
 void TextArea::processDown(EventFlags flags) {
 
@@ -928,9 +928,9 @@ void TextArea::processDown(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Move the cursor forward by one character.
  *
- * @param flags
+ * @param flags Flags that determine how the forward character operation is performed.
  */
 void TextArea::forwardCharacter(EventFlags flags) {
 
@@ -950,9 +950,9 @@ void TextArea::forwardCharacter(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Move the cursor backward by one character.
  *
- * @param flags
+ * @param flags Flags that determine how the backward character operation is performed.
  */
 void TextArea::backwardCharacter(EventFlags flags) {
 
@@ -972,7 +972,7 @@ void TextArea::backwardCharacter(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Destructor for the TextArea class.
  */
 TextArea::~TextArea() {
 	if (buffer_) {
@@ -982,9 +982,9 @@ TextArea::~TextArea() {
 }
 
 /**
- * @brief
+ * @brief Handles the vertical scroll bar value change event.
  *
- * @param value
+ * @param value The new value of the vertical scroll bar.
  */
 void TextArea::verticalScrollBar_valueChanged(int value) {
 
@@ -1023,9 +1023,9 @@ void TextArea::verticalScrollBar_valueChanged(int value) {
 }
 
 /**
- * @brief
+ * @brief Handles the horizontal scroll bar value change event.
  *
- * @param value
+ * @param value The new value of the horizontal scroll bar.
  */
 void TextArea::horizontalScrollBar_valueChanged(int value) {
 	Q_UNUSED(value)
@@ -1038,7 +1038,7 @@ void TextArea::horizontalScrollBar_valueChanged(int value) {
 }
 
 /**
- * @brief
+ * @brief Handles the timeout event for the cursor blink timer.
  */
 void TextArea::cursorBlinkTimerTimeout() {
 
@@ -1051,7 +1051,7 @@ void TextArea::cursorBlinkTimerTimeout() {
 }
 
 /**
- * @brief
+ * @brief Handles the timeout event for the auto-scroll timer.
  */
 void TextArea::autoScrollTimerTimeout() {
 
@@ -1065,8 +1065,8 @@ void TextArea::autoScrollTimerTimeout() {
 	 * scrolling, see if the position where the CURSOR would go is outside */
 	const TextCursor newPos = coordToPosition(mouseCoord);
 
-	int cursorX;
-	int cursorY;
+	int cursorX = 0;
+	int cursorY = 0;
 	if (dragState_ == PRIMARY_RECT_DRAG) {
 		cursorX = mouseCoord.x();
 	} else if (!positionToXY(newPos, &cursorX, &cursorY)) {
@@ -1118,14 +1118,16 @@ void TextArea::autoScrollTimerTimeout() {
 
 	// re-establish the timer proc (this routine) to continue processing
 	autoScrollTimer_->start(mouseCoord.y() >= viewRect.top() && mouseCoord.y() < viewRect.bottom()
-								? (VERTICAL_SCROLL_DELAY * fontWidth) / fontHeight
-								: (VERTICAL_SCROLL_DELAY));
+								? (VerticalScrollDelay * fontWidth) / fontHeight
+								: (VerticalScrollDelay));
 }
 
 /**
- * @brief
+ * @brief Handles the focus in event for the text area.
+ * Generally, this method manages the cursor blink timer and
+ * cursor style when the text area gains focus.
  *
- * @param event
+ * @param event The focus event that triggered this method.
  */
 void TextArea::focusInEvent(QFocusEvent *event) {
 
@@ -1142,9 +1144,11 @@ void TextArea::focusInEvent(QFocusEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Handles the focus out event for the text area.
+ * Generally, this method manages the cursor blink timer and
+ * cursor style when the text area loses focus.
  *
- * @param event
+ * @param event The focus event that triggered this method.
  */
 void TextArea::focusOutEvent(QFocusEvent *event) {
 
@@ -1159,9 +1163,9 @@ void TextArea::focusOutEvent(QFocusEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Handles key press events for the text area.
  *
- * @param event
+ * @param event The key event that triggered this method.
  */
 void TextArea::keyPressEvent(QKeyEvent *event) {
 
@@ -1232,9 +1236,9 @@ void TextArea::keyPressEvent(QKeyEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Handles mouse double-click events for the text area.
  *
- * @param event
+ * @param event The mouse event that triggered this method.
  */
 void TextArea::mouseDoubleClickEvent(QMouseEvent *event) {
 	if (event->button() == Qt::LeftButton) {
@@ -1258,9 +1262,9 @@ void TextArea::mouseDoubleClickEvent(QMouseEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Handles mouse triple-click events for the text area.
  *
- * @param event
+ * @param event The mouse event that triggered this method.
  */
 void TextArea::mouseTripleClickEvent(QMouseEvent *event) {
 	if (event->button() == Qt::LeftButton) {
@@ -1270,9 +1274,9 @@ void TextArea::mouseTripleClickEvent(QMouseEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Handles mouse quadruple-click events for the text area.
  *
- * @param event
+ * @param event The mouse event that triggered this method.
  */
 void TextArea::mouseQuadrupleClickEvent(QMouseEvent *event) {
 	if (event->button() == Qt::LeftButton) {
@@ -1281,11 +1285,10 @@ void TextArea::mouseQuadrupleClickEvent(QMouseEvent *event) {
 }
 
 /**
- * "extend_adjust", "extend_adjust('rect')", "mouse_pan"
+ * @brief Handles mouse move events for the text area.
+ * This is associated with: "extend_adjust", "extend_adjust('rect')", and "mouse_pan".
  *
- * @brief
- *
- * @param event
+ * @param event The mouse event that triggered this method.
  */
 void TextArea::mouseMoveEvent(QMouseEvent *event) {
 
@@ -1316,10 +1319,10 @@ void TextArea::mouseMoveEvent(QMouseEvent *event) {
 }
 
 /**
- * "grab_focus", "extend_start", "extend_start('rect')", "mouse_pan"
- * @brief
+ * @brief Handles mouse press events for the text area.
+ * This is associated with: "grab_focus", "extend_start", "extend_start('rect')", and "mouse_pan"
  *
- * @param event
+ * @param event The mouse event that triggered this method.
  */
 void TextArea::mousePressEvent(QMouseEvent *event) {
 
@@ -2937,7 +2940,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 	 * draw parts whenever the style changes (also note if the cursor is on
 	 * this line, and where it should be drawn to take advantage of the x
 	 * position which we've gone to so much trouble to calculate) */
-	char buffer[MAX_DISP_LINE_LEN];
+	char buffer[MaxDisplayLineLength];
 	char *outPtr = buffer;
 	int x        = startX;
 	size_t charIndex;
@@ -2992,7 +2995,7 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 			x += fixedFontWidth_;
 		}
 
-		if (outPtr - buffer + TextBuffer::MAX_EXP_CHAR_LEN >= MAX_DISP_LINE_LEN || x >= rightClip) {
+		if (outPtr - buffer + TextBuffer::MAX_EXP_CHAR_LEN >= MaxDisplayLineLength || x >= rightClip) {
 			break;
 		}
 	}
@@ -3616,12 +3619,12 @@ void TextArea::updateCalltip(int calltipID) {
 		const QRect screenGeometry = currentScreen->geometry();
 
 		// make sure tip doesn't run off right or left side of screen
-		if (abs.x() + tipWidth >= screenGeometry.width() - CALLTIP_EDGE_GUARD) {
-			abs.setX(screenGeometry.width() - tipWidth - CALLTIP_EDGE_GUARD);
+		if (abs.x() + tipWidth >= screenGeometry.width() - CalltipEdgeGuard) {
+			abs.setX(screenGeometry.width() - tipWidth - CalltipEdgeGuard);
 		}
 
-		if (abs.x() < CALLTIP_EDGE_GUARD) {
-			abs.setX(CALLTIP_EDGE_GUARD);
+		if (abs.x() < CalltipEdgeGuard) {
+			abs.setX(CalltipEdgeGuard);
 		}
 
 		// Try to keep the tip onscreen vertically if possible
@@ -3633,9 +3636,9 @@ void TextArea::updateCalltip(int calltipID) {
 
 			// Make sure the tip doesn't end up *totally* offscreen
 			else if (abs.y() + tipHeight < 0) {
-				abs.setY(CALLTIP_EDGE_GUARD);
+				abs.setY(CalltipEdgeGuard);
 			} else if (abs.y() >= screenGeometry.height()) {
-				abs.setY(screenGeometry.height() - tipHeight - CALLTIP_EDGE_GUARD);
+				abs.setY(screenGeometry.height() - tipHeight - CalltipEdgeGuard);
 			}
 			// If no case applied, just go with the default placement.
 		}
@@ -7969,7 +7972,7 @@ void TextArea::showResizeNotification() {
 			resizeWidget_->setStyleSheet(QStringLiteral("background-color:palette(window);border-style:solid;border-width:1px;border-color:palette(dark)"));
 
 			resizeTimer_ = new QTimer(this);
-			resizeTimer_->setInterval(SIZE_HINT_DURATION);
+			resizeTimer_->setInterval(SizeHintDuration);
 			resizeTimer_->setSingleShot(true);
 			connect(resizeTimer_, &QTimer::timeout, resizeWidget_, &QLabel::hide);
 		}

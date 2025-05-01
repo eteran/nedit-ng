@@ -3789,7 +3789,7 @@ std::error_code rangesetCreateMS(DocumentWidget *document, Arguments arguments, 
 	}
 
 	if (arguments.empty()) {
-		const int label = rangesetTable->RangesetCreate();
+		const int label = rangesetTable->create();
 		*result         = make_value(label);
 		return MacroErrorCode::Success;
 	}
@@ -3806,7 +3806,7 @@ std::error_code rangesetCreateMS(DocumentWidget *document, Arguments arguments, 
 	}
 
 	for (int i = 0; i < nRangesetsRequired; i++) {
-		DataValue element = make_value(rangesetTable->RangesetCreate());
+		DataValue element = make_value(rangesetTable->create());
 		ArrayInsert(result, std::to_string(i), &element);
 	}
 
@@ -3841,7 +3841,7 @@ std::error_code rangesetDestroyMS(DocumentWidget *document, Arguments arguments,
 
 			std::error_code ec;
 			int label;
-			if ((ec = ReadArgument(element, &label)) || !RangesetTable::LabelOK(label)) {
+			if ((ec = ReadArgument(element, &label)) || !RangesetTable::labelOK(label)) {
 				return MacroErrorCode::InvalidRangesetLabelInArray;
 			}
 
@@ -3854,7 +3854,7 @@ std::error_code rangesetDestroyMS(DocumentWidget *document, Arguments arguments,
 	} else {
 		std::error_code ec;
 		int label;
-		if ((ec = ReadArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
+		if ((ec = ReadArgument(arguments[0], &label)) || !RangesetTable::labelOK(label)) {
 			return MacroErrorCode::InvalidRangesetLabel;
 		}
 
@@ -3894,7 +3894,7 @@ std::error_code rangesetGetByNameMS(DocumentWidget *document, Arguments argument
 	const size_t nRangesets           = rangesetList.size();
 	for (size_t i = 0; i < nRangesets; ++i) {
 		const int label = rangesetList[i];
-		if (Rangeset *rangeset = rangesetTable->RangesetFetch(label)) {
+		if (Rangeset *rangeset = rangesetTable->fetch(label)) {
 			const QString rangeset_name = rangeset->name();
 
 			if (rangeset_name == name) {
@@ -3930,7 +3930,7 @@ std::error_code rangesetAddMS(DocumentWidget *document, Arguments arguments, Dat
 
 	int label;
 	std::error_code ec;
-	if ((ec = ReadArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
+	if ((ec = ReadArgument(arguments[0], &label)) || !RangesetTable::labelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
@@ -3938,7 +3938,7 @@ std::error_code rangesetAddMS(DocumentWidget *document, Arguments arguments, Dat
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
 
-	Rangeset *targetRangeset = rangesetTable->RangesetFetch(label);
+	Rangeset *targetRangeset = rangesetTable->fetch(label);
 	if (!targetRangeset) {
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
@@ -3963,11 +3963,11 @@ std::error_code rangesetAddMS(DocumentWidget *document, Arguments arguments, Dat
 	if (arguments.size() == 2) {
 		// add ranges taken from a second set
 		std::error_code ec;
-		if ((ec = ReadArgument(arguments[1], &label)) || !RangesetTable::LabelOK(label)) {
+		if ((ec = ReadArgument(arguments[1], &label)) || !RangesetTable::labelOK(label)) {
 			return MacroErrorCode::Param2InvalidRangesetLabel;
 		}
 
-		Rangeset *sourceRangeset = rangesetTable->RangesetFetch(label);
+		Rangeset *sourceRangeset = rangesetTable->fetch(label);
 		if (!sourceRangeset) {
 			return MacroErrorCode::Rangeset2DoesNotExist;
 		}
@@ -4029,7 +4029,7 @@ std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments arguments
 
 	int label;
 	std::error_code ec;
-	if ((ec = ReadArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
+	if ((ec = ReadArgument(arguments[0], &label)) || !RangesetTable::labelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
@@ -4037,7 +4037,7 @@ std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments arguments
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
 
-	Rangeset *targetRangeset = rangesetTable->RangesetFetch(label);
+	Rangeset *targetRangeset = rangesetTable->fetch(label);
 	if (!targetRangeset) {
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
@@ -4064,11 +4064,11 @@ std::error_code rangesetSubtractMS(DocumentWidget *document, Arguments arguments
 
 	if (arguments.size() == 2) {
 		// remove ranges taken from a second set
-		if ((ec = ReadArgument(arguments[1], &label)) || !RangesetTable::LabelOK(label)) {
+		if ((ec = ReadArgument(arguments[1], &label)) || !RangesetTable::labelOK(label)) {
 			return MacroErrorCode::Param2InvalidRangesetLabel;
 		}
 
-		Rangeset *sourceRangeset = rangesetTable->RangesetFetch(label);
+		Rangeset *sourceRangeset = rangesetTable->fetch(label);
 		if (!sourceRangeset) {
 			return MacroErrorCode::Rangeset2DoesNotExist;
 		}
@@ -4116,7 +4116,7 @@ std::error_code rangesetInvertMS(DocumentWidget *document, Arguments arguments, 
 		return ec;
 	}
 
-	if (!RangesetTable::LabelOK(label)) {
+	if (!RangesetTable::labelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
@@ -4124,7 +4124,7 @@ std::error_code rangesetInvertMS(DocumentWidget *document, Arguments arguments, 
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
 
-	Rangeset *rangeset = rangesetTable->RangesetFetch(label);
+	Rangeset *rangeset = rangesetTable->fetch(label);
 	if (!rangeset) {
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
@@ -4151,14 +4151,14 @@ std::error_code rangesetInfoMS(DocumentWidget *document, Arguments arguments, Da
 		return ec;
 	}
 
-	if (!RangesetTable::LabelOK(label)) {
+	if (!RangesetTable::labelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
 	RangesetInfo rangeset_info;
 
 	if (rangesetTable) {
-		if (Rangeset *rangeset = rangesetTable->RangesetFetch(label)) {
+		if (Rangeset *rangeset = rangesetTable->fetch(label)) {
 			rangeset_info = rangeset->RangesetGetInfo();
 		}
 	}
@@ -4210,7 +4210,7 @@ std::error_code rangesetRangeMS(DocumentWidget *document, Arguments arguments, D
 
 	int label;
 	std::error_code ec;
-	if ((ec = ReadArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
+	if ((ec = ReadArgument(arguments[0], &label)) || !RangesetTable::labelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
@@ -4223,7 +4223,7 @@ std::error_code rangesetRangeMS(DocumentWidget *document, Arguments arguments, D
 
 	std::optional<TextRange> range;
 
-	if (Rangeset *rangeset = rangesetTable->RangesetFetch(label)) {
+	if (Rangeset *rangeset = rangesetTable->fetch(label)) {
 		if (arguments.size() == 1) {
 			range = rangeset->RangesetSpan();
 		} else if (arguments.size() == 2) {
@@ -4275,7 +4275,7 @@ std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments argume
 
 	int label;
 	std::error_code ec;
-	if ((ec = ReadArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
+	if ((ec = ReadArgument(arguments[0], &label)) || !RangesetTable::labelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
@@ -4283,7 +4283,7 @@ std::error_code rangesetIncludesPosMS(DocumentWidget *document, Arguments argume
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
 
-	Rangeset *rangeset = rangesetTable->RangesetFetch(label);
+	Rangeset *rangeset = rangesetTable->fetch(label);
 	if (!rangeset) {
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
@@ -4327,7 +4327,7 @@ std::error_code rangesetSetColorMS(DocumentWidget *document, Arguments arguments
 
 	int label;
 	std::error_code ec;
-	if ((ec = ReadArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
+	if ((ec = ReadArgument(arguments[0], &label)) || !RangesetTable::labelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
@@ -4335,7 +4335,7 @@ std::error_code rangesetSetColorMS(DocumentWidget *document, Arguments arguments
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
 
-	Rangeset *rangeset = rangesetTable->RangesetFetch(label);
+	Rangeset *rangeset = rangesetTable->fetch(label);
 	if (!rangeset) {
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
@@ -4366,7 +4366,7 @@ std::error_code rangesetSetNameMS(DocumentWidget *document, Arguments arguments,
 
 	int label;
 	std::error_code ec;
-	if ((ec = ReadArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
+	if ((ec = ReadArgument(arguments[0], &label)) || !RangesetTable::labelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
@@ -4374,7 +4374,7 @@ std::error_code rangesetSetNameMS(DocumentWidget *document, Arguments arguments,
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
 
-	Rangeset *rangeset = rangesetTable->RangesetFetch(label);
+	Rangeset *rangeset = rangesetTable->fetch(label);
 	if (!rangeset) {
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
@@ -4405,7 +4405,7 @@ std::error_code rangesetSetModeMS(DocumentWidget *document, Arguments arguments,
 
 	int label;
 	std::error_code ec;
-	if ((ec = ReadArgument(arguments[0], &label)) || !RangesetTable::LabelOK(label)) {
+	if ((ec = ReadArgument(arguments[0], &label)) || !RangesetTable::labelOK(label)) {
 		return MacroErrorCode::Param1InvalidRangesetLabel;
 	}
 
@@ -4413,7 +4413,7 @@ std::error_code rangesetSetModeMS(DocumentWidget *document, Arguments arguments,
 		return MacroErrorCode::RangesetDoesNotExist;
 	}
 
-	Rangeset *rangeset = rangesetTable->RangesetFetch(label);
+	Rangeset *rangeset = rangesetTable->fetch(label);
 	if (!rangeset) {
 		return MacroErrorCode::RangesetDoesNotExist;
 	}

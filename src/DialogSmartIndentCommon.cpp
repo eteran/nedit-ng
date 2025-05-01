@@ -3,10 +3,10 @@
 #include "DocumentWidget.h"
 #include "Font.h"
 #include "LanguageMode.h"
+#include "Macro.h"
 #include "Preferences.h"
 #include "SmartIndent.h"
 #include "Util/String.h"
-#include "Macro.h"
 
 #include <QMessageBox>
 

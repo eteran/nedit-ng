@@ -6,13 +6,13 @@
 #include "Font.h"
 #include "Help.h"
 #include "LanguageMode.h"
+#include "Macro.h"
 #include "MainWindow.h"
 #include "Preferences.h"
 #include "SmartIndent.h"
 #include "SmartIndentEntry.h"
 #include "Util/String.h"
 #include "Util/algorithm.h"
-#include "Macro.h"
 #include "parse.h"
 
 #include <QMessageBox>

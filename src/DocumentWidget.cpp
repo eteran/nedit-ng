@@ -11,6 +11,7 @@
 #include "Font.h"
 #include "Highlight.h"
 #include "HighlightData.h"
+#include "Macro.h"
 #include "MainWindow.h"
 #include "PatternSet.h"
 #include "Preferences.h"
@@ -36,7 +37,6 @@
 #include "WindowMenuEvent.h"
 #include "X11Colors.h"
 #include "interpret.h"
-#include "Macro.h"
 #include "parse.h"
 
 #include <QButtonGroup>
