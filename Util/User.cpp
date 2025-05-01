@@ -13,6 +13,7 @@
 #elif defined(Q_OS_WIN)
 #define WIN32_LEAN_AND_MEAN
 #include <Lmcons.h>
+#include <Shlobj.h>
 #include <Windows.h>
 #endif
 
@@ -130,8 +131,9 @@ QString GetDefaultShell() {
 	}
 
 	return QString::fromUtf8(passwdEntry->pw_shell);
+#elif defined(Q_OS_WIN)
+	return QLatin1String("powershell.exe");
 #else
-	// TODO(eteran): maybe return powershell on windows?
 	return QString();
 #endif
 }
@@ -144,6 +146,8 @@ QString GetDefaultShell() {
 bool IsAdministrator() {
 #ifdef Q_OS_UNIX
 	return getuid() == 0;
+#elif defined(Q_OS_WIN)
+	return IsUserAnAdmin();
 #else
 	return false;
 #endif

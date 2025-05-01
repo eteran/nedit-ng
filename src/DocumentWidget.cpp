@@ -4249,7 +4249,7 @@ void DocumentWidget::splitPane() {
 		// then "lineStarts_" array. The simplest thing to do to make it work correctly
 		// is to schedule the scrolling for after the event is fully processed
 		// FIXES https://github.com/eteran/nedit-ng/issues/239
-		QTimer::singleShot(0, [area, scrollPosition]() {
+		QTimer::singleShot(0, this, [area, scrollPosition]() {
 			area->verticalScrollBar()->setValue(scrollPosition);
 		});
 	}
@@ -4865,6 +4865,10 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 	args << QLatin1String("-c");
 	args << command;
 	process->start(userShell, args);
+
+	// TODO(eteran): detect if they are on windows, and if they are using cmd.exe or powershell.exe
+	// if so, then the args looks very different. It needs to be something like this:
+	// powershell.exe -ExecutionPolicy Bypass -Command "{code}"
 
 	// if there's nothing to write to the process' stdin, close it now, otherwise
 	// write it to the process
@@ -7803,7 +7807,7 @@ void DocumentWidget::dragEnterEvent(QDragEnterEvent *event) {
  * @param event The drop event to handle.
  */
 void DocumentWidget::dropEvent(QDropEvent *event) {
-	auto urls = event->mimeData()->urls();
+	const auto urls = event->mimeData()->urls();
 	for (const QUrl &url : urls) {
 		if (!url.isLocalFile()) {
 			QApplication::beep();
