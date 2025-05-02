@@ -18,7 +18,7 @@ namespace {
  * @param color The QColor to convert.
  * @return The color in hexadecimal format.
  */
-QString toString(const QColor &color) {
+QString ToString(const QColor &color) {
 	return QStringLiteral("#%1").arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0'));
 }
 
@@ -28,7 +28,7 @@ QString toString(const QColor &color) {
  * @param color The QColor to convert.
  * @return A QIcon representing the color.
  */
-QIcon toIcon(const QColor &color) {
+QIcon ToIcon(const QColor &color) {
 	QPixmap pixmap(32, 32);
 	QPainter painter(&pixmap);
 
@@ -73,15 +73,15 @@ DialogColors::DialogColors(QWidget *parent, Qt::WindowFlags f)
 	ui.pushButtonLineNumbersBG->setText(Preferences::GetPrefColorName(LINENO_BG_COLOR));
 	ui.pushButtonCursor->setText(Preferences::GetPrefColorName(CURSOR_FG_COLOR));
 
-	ui.pushButtonFG->setIcon(toIcon(textFG_));
-	ui.pushButtonBG->setIcon(toIcon(textBG_));
-	ui.pushButtonSelectionFG->setIcon(toIcon(selectionFG_));
-	ui.pushButtonSelectionBG->setIcon(toIcon(selectionBG_));
-	ui.pushButtonMatchFG->setIcon(toIcon(matchFG_));
-	ui.pushButtonMatchBG->setIcon(toIcon(matchBG_));
-	ui.pushButtonLineNumbersFG->setIcon(toIcon(lineNumbersFG_));
-	ui.pushButtonLineNumbersBG->setIcon(toIcon(lineNumbersBG_));
-	ui.pushButtonCursor->setIcon(toIcon(cursorFG_));
+	ui.pushButtonFG->setIcon(ToIcon(textFG_));
+	ui.pushButtonBG->setIcon(ToIcon(textBG_));
+	ui.pushButtonSelectionFG->setIcon(ToIcon(selectionFG_));
+	ui.pushButtonSelectionBG->setIcon(ToIcon(selectionBG_));
+	ui.pushButtonMatchFG->setIcon(ToIcon(matchFG_));
+	ui.pushButtonMatchBG->setIcon(ToIcon(matchBG_));
+	ui.pushButtonLineNumbersFG->setIcon(ToIcon(lineNumbersFG_));
+	ui.pushButtonLineNumbersBG->setIcon(ToIcon(lineNumbersBG_));
+	ui.pushButtonCursor->setIcon(ToIcon(cursorFG_));
 
 	connect(ui.pushButtonFG, &QPushButton::clicked, this, [this]() {
 		textFG_ = chooseColor(ui.pushButtonFG, textFG_);
@@ -143,8 +143,8 @@ QColor DialogColors::chooseColor(QPushButton *button, const QColor &currentColor
 
 	QColor color = QColorDialog::getColor(currentColor, this);
 	if (color.isValid()) {
-		button->setIcon(toIcon(color));
-		button->setText(toString(color));
+		button->setIcon(ToIcon(color));
+		button->setText(ToString(color));
 	}
 
 	return color;
@@ -168,13 +168,13 @@ void DialogColors::updateColors() {
 			cursorFG_);
 	}
 
-	Preferences::SetPrefColorName(TEXT_FG_COLOR, toString(textFG_));
-	Preferences::SetPrefColorName(TEXT_BG_COLOR, toString(textBG_));
-	Preferences::SetPrefColorName(SELECT_FG_COLOR, toString(selectionFG_));
-	Preferences::SetPrefColorName(SELECT_BG_COLOR, toString(selectionBG_));
-	Preferences::SetPrefColorName(HILITE_FG_COLOR, toString(matchFG_));
-	Preferences::SetPrefColorName(HILITE_BG_COLOR, toString(matchBG_));
-	Preferences::SetPrefColorName(LINENO_FG_COLOR, toString(lineNumbersFG_));
-	Preferences::SetPrefColorName(LINENO_BG_COLOR, toString(lineNumbersBG_));
-	Preferences::SetPrefColorName(CURSOR_FG_COLOR, toString(cursorFG_));
+	Preferences::SetPrefColorName(TEXT_FG_COLOR, ToString(textFG_));
+	Preferences::SetPrefColorName(TEXT_BG_COLOR, ToString(textBG_));
+	Preferences::SetPrefColorName(SELECT_FG_COLOR, ToString(selectionFG_));
+	Preferences::SetPrefColorName(SELECT_BG_COLOR, ToString(selectionBG_));
+	Preferences::SetPrefColorName(HILITE_FG_COLOR, ToString(matchFG_));
+	Preferences::SetPrefColorName(HILITE_BG_COLOR, ToString(matchBG_));
+	Preferences::SetPrefColorName(LINENO_FG_COLOR, ToString(lineNumbersFG_));
+	Preferences::SetPrefColorName(LINENO_BG_COLOR, ToString(lineNumbersBG_));
+	Preferences::SetPrefColorName(CURSOR_FG_COLOR, ToString(cursorFG_));
 }

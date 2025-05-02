@@ -305,6 +305,13 @@ std::string FillParagraphs(std::string_view text, int64_t rightMargin, int tabDi
 	return buf.BufGetAll();
 }
 
+/**
+ * @brief
+ *
+ * @param buf
+ * @param startPos
+ * @return
+ */
 TextCursor FindParagraphStart(TextBuffer *buf, TextCursor startPos) {
 
 	static const char whiteChars[] = " \t";
@@ -332,22 +339,57 @@ TextCursor FindParagraphStart(TextBuffer *buf, TextCursor startPos) {
 	return parStart > buf->BufStartOfBuffer() ? parStart : buf->BufStartOfBuffer();
 }
 
+/**
+ * @brief
+ *
+ * @param text
+ * @return
+ */
 int64_t CountLines(std::string_view text) {
 	return std::count(text.begin(), text.end(), '\n') + 1;
 }
 
+/**
+ * @brief
+ *
+ * @param text
+ * @return
+ */
 int64_t CountLines(const QString &text) {
 	return text.count(QLatin1Char('\n')) + 1;
 }
 
+/**
+ * @brief
+ *
+ * @param pos
+ * @param tabDist
+ * @return
+ */
 bool AtTabStop(int pos, int tabDist) {
 	return (pos % tabDist == 0);
 }
 
+/**
+ * @brief
+ *
+ * @param pos
+ * @param tabDist
+ * @return
+ */
 int NextTab(int pos, int tabDist) {
 	return (pos / tabDist) * tabDist + tabDist;
 }
 
+/**
+ * @brief
+ *
+ * @param line
+ * @param lineLen
+ * @param tabDist
+ * @param nChars
+ * @return
+ */
 QString ShiftLineLeft(const QString &line, int64_t lineLen, int tabDist, int nChars) {
 	auto lineInPtr = line.begin();
 
@@ -406,6 +448,15 @@ QString ShiftLineLeft(const QString &line, int64_t lineLen, int tabDist, int nCh
 	}
 }
 
+/**
+ * @brief
+ *
+ * @param line
+ * @param lineLen
+ * @param tabDist
+ * @param nChars
+ * @return
+ */
 std::string ShiftLineLeft(std::string_view line, int64_t lineLen, int tabDist, int nChars) {
 
 	auto lineInPtr = line.begin();
@@ -465,6 +516,16 @@ std::string ShiftLineLeft(std::string_view line, int64_t lineLen, int tabDist, i
 	}
 }
 
+/**
+ * @brief
+ *
+ * @param line
+ * @param lineLen
+ * @param tabsAllowed
+ * @param tabDist
+ * @param nChars
+ * @return
+ */
 QString ShiftLineRight(const QString &line, int64_t lineLen, bool tabsAllowed, int tabDist, int nChars) {
 	int whiteWidth;
 	int i;
@@ -514,6 +575,16 @@ QString ShiftLineRight(const QString &line, int64_t lineLen, bool tabsAllowed, i
 	}
 }
 
+/**
+ * @brief
+ *
+ * @param line
+ * @param lineLen
+ * @param tabsAllowed
+ * @param tabDist
+ * @param nChars
+ * @return
+ */
 std::string ShiftLineRight(std::string_view line, int64_t lineLen, bool tabsAllowed, int tabDist, int nChars) {
 	int whiteWidth;
 
@@ -562,6 +633,16 @@ std::string ShiftLineRight(std::string_view line, int64_t lineLen, bool tabsAllo
 	}
 }
 
+/**
+ * @brief
+ *
+ * @param text
+ * @param direction
+ * @param tabsAllowed
+ * @param tabDist
+ * @param nChars
+ * @return
+ */
 std::string ShiftText(std::string_view text, ShiftDirection direction, bool tabsAllowed, int tabDist, int nChars) {
 	size_t bufLen;
 
@@ -729,6 +810,12 @@ void ShiftSelection(DocumentWidget *document, TextArea *area, ShiftDirection dir
 	buf->BufSelect(selStart, newEndPos);
 }
 
+/**
+ * @brief
+ *
+ * @param document
+ * @param area
+ */
 void FillSelection(DocumentWidget *document, TextArea *area) {
 	TextBuffer *buf = document->buffer();
 	TextCursor left;

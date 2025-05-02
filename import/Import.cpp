@@ -44,7 +44,7 @@ struct MenuItem {
  * @param isShellCommand If `true`, the command is a shell command, otherwise it is a macro.
  * @return The formatted menu item string.
  */
-QString writeMenuItemString(const std::vector<MenuItem> &menuItems, bool isShellCommand) {
+QString WriteMenuItemString(const std::vector<MenuItem> &menuItems, bool isShellCommand) {
 
 	QString outStr;
 	auto outPtr = std::back_inserter(outStr);
@@ -326,7 +326,7 @@ void SaveTheme(const QString &filename, const std::vector<Style> &styles) {
  * @return The converted enum value.
  */
 template <class T>
-T from_string(const QString &str);
+T FromString(const QString &str);
 
 /**
  * @brief Converts a string to a SearchType enum value.
@@ -335,7 +335,7 @@ T from_string(const QString &str);
  * @return The converted SearchType value.
  */
 template <>
-SearchType from_string(const QString &str) {
+SearchType FromString(const QString &str) {
 
 	if (str == QLatin1String("Literal")) {
 		return SearchType::Literal;
@@ -367,7 +367,7 @@ SearchType from_string(const QString &str) {
  * @return The converted WrapStyle value.
  */
 template <>
-WrapStyle from_string(const QString &str) {
+WrapStyle FromString(const QString &str) {
 
 	if (str == QLatin1String("None")) {
 		return WrapStyle::None;
@@ -390,7 +390,7 @@ WrapStyle from_string(const QString &str) {
  * @return The converted IndentStyle value.
  */
 template <>
-IndentStyle from_string(const QString &str) {
+IndentStyle FromString(const QString &str) {
 
 	if (str == QLatin1String("None")) {
 		return IndentStyle::None;
@@ -413,7 +413,7 @@ IndentStyle from_string(const QString &str) {
  * @return The converted ShowMatchingStyle value.
  */
 template <>
-ShowMatchingStyle from_string(const QString &str) {
+ShowMatchingStyle FromString(const QString &str) {
 
 	/* For backward compatibility, "False" and "True" are still accepted.
 	   They are internally converted to "Off" and "Delimiter" respectively.*/
@@ -455,7 +455,7 @@ namespace {
  *         The type is determined by the template parameter T.
  */
 template <class T>
-T readResource(XrmDatabase db, const char *name);
+T ReadResource(XrmDatabase db, const char *name);
 
 /**
  * @brief Reads a resource from the XrmDatabase and returns it as a QString.
@@ -465,7 +465,7 @@ T readResource(XrmDatabase db, const char *name);
  * @return The value of the resource as a QString.
  */
 template <>
-QString readResource(XrmDatabase db, const char *name) {
+QString ReadResource(XrmDatabase db, const char *name) {
 	char *type;
 	XrmValue resValue;
 	XrmGetResource(db, name, APP_CLASS, &type, &resValue);
@@ -482,8 +482,8 @@ QString readResource(XrmDatabase db, const char *name) {
  * @return The value of the resource as a bool.
  */
 template <>
-bool readResource(XrmDatabase db, const char *name) {
-	auto value = readResource<QString>(db, name);
+bool ReadResource(XrmDatabase db, const char *name) {
+	auto value = ReadResource<QString>(db, name);
 	return value.compare(QLatin1String("true"), Qt::CaseInsensitive) == 0;
 }
 
@@ -495,8 +495,8 @@ bool readResource(XrmDatabase db, const char *name) {
  * @return The value of the resource as an int.
  */
 template <>
-int readResource(XrmDatabase db, const char *name) {
-	auto value = readResource<QString>(db, name);
+int ReadResource(XrmDatabase db, const char *name) {
+	auto value = ReadResource<QString>(db, name);
 	bool ok;
 	const int n = value.toInt(&ok);
 	Q_ASSERT(ok);
@@ -509,7 +509,7 @@ int readResource(XrmDatabase db, const char *name) {
  * @param color The color string to convert, in either RGB or RGBi format.
  * @return The color in hex format (e.g., "#RRGGBB").
  */
-QString covertRGBColor(const QString &color) {
+QString ConvertRgbColor(const QString &color) {
 
 	{
 		// convert RGB style colors
@@ -600,7 +600,7 @@ int main(int argc, char *argv[]) {
 
 	XrmDatabase prefDB = XrmGetStringDatabase(contents.data());
 
-	const QString value = readResource<QString>(prefDB, "nedit.fileVersion");
+	const QString value = ReadResource<QString>(prefDB, "nedit.fileVersion");
 
 	if (value != QLatin1String("5.6") && value != QLatin1String("5.7")) {
 		std::cout << "Importing is only supported for NEdit 5.6 and 5.7" << '\n';
@@ -626,91 +626,91 @@ int main(int argc, char *argv[]) {
 	Settings::wordDelimiters               = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
 
 	// string preferences
-	Settings::shellCommands  = readResource<QString>(prefDB, "nedit.shellCommands");
-	Settings::macroCommands  = readResource<QString>(prefDB, "nedit.macroCommands");
-	Settings::bgMenuCommands = readResource<QString>(prefDB, "nedit.bgMenuCommands");
+	Settings::shellCommands  = ReadResource<QString>(prefDB, "nedit.shellCommands");
+	Settings::macroCommands  = ReadResource<QString>(prefDB, "nedit.macroCommands");
+	Settings::bgMenuCommands = ReadResource<QString>(prefDB, "nedit.bgMenuCommands");
 
 	const std::vector<MenuItem> shellCommands  = LoadMenuItemString(Settings::shellCommands, true);
 	const std::vector<MenuItem> macroCommands  = LoadMenuItemString(Settings::macroCommands, false);
 	const std::vector<MenuItem> bgMenuCommands = LoadMenuItemString(Settings::bgMenuCommands, false);
 
-	Settings::shellCommands  = writeMenuItemString(shellCommands, true);
-	Settings::macroCommands  = writeMenuItemString(macroCommands, false);
-	Settings::bgMenuCommands = writeMenuItemString(bgMenuCommands, false);
+	Settings::shellCommands  = WriteMenuItemString(shellCommands, true);
+	Settings::macroCommands  = WriteMenuItemString(macroCommands, false);
+	Settings::bgMenuCommands = WriteMenuItemString(bgMenuCommands, false);
 
-	Settings::highlightPatterns     = readResource<QString>(prefDB, "nedit.highlightPatterns");
-	Settings::languageModes         = readResource<QString>(prefDB, "nedit.languageModes");
-	Settings::smartIndentInit       = readResource<QString>(prefDB, "nedit.smartIndentInit");
-	Settings::smartIndentInitCommon = readResource<QString>(prefDB, "nedit.smartIndentInitCommon");
-	Settings::shell                 = readResource<QString>(prefDB, "nedit.shell");
-	Settings::titleFormat           = readResource<QString>(prefDB, "nedit.titleFormat");
+	Settings::highlightPatterns     = ReadResource<QString>(prefDB, "nedit.highlightPatterns");
+	Settings::languageModes         = ReadResource<QString>(prefDB, "nedit.languageModes");
+	Settings::smartIndentInit       = ReadResource<QString>(prefDB, "nedit.smartIndentInit");
+	Settings::smartIndentInitCommon = ReadResource<QString>(prefDB, "nedit.smartIndentInitCommon");
+	Settings::shell                 = ReadResource<QString>(prefDB, "nedit.shell");
+	Settings::titleFormat           = ReadResource<QString>(prefDB, "nedit.titleFormat");
 
 	// boolean preferences
-	Settings::autoSave              = readResource<bool>(prefDB, "nedit.autoSave");
-	Settings::saveOldVersion        = readResource<bool>(prefDB, "nedit.saveOldVersion");
-	Settings::searchDialogs         = readResource<bool>(prefDB, "nedit.searchDialogs");
-	Settings::retainSearchDialogs   = readResource<bool>(prefDB, "nedit.retainSearchDialogs");
-	Settings::stickyCaseSenseButton = readResource<bool>(prefDB, "nedit.stickyCaseSenseButton");
-	Settings::repositionDialogs     = readResource<bool>(prefDB, "nedit.repositionDialogs");
-	Settings::statisticsLine        = readResource<bool>(prefDB, "nedit.statisticsLine");
-	Settings::tabBar                = readResource<bool>(prefDB, "nedit.tabBar");
-	Settings::searchWraps           = readResource<bool>(prefDB, "nedit.searchWraps");
-	Settings::prefFileRead          = readResource<bool>(prefDB, "nedit.prefFileRead");
-	Settings::sortOpenPrevMenu      = readResource<bool>(prefDB, "nedit.sortOpenPrevMenu");
-	Settings::backlightChars        = readResource<bool>(prefDB, "nedit.backlightChars");
-	Settings::highlightSyntax       = readResource<bool>(prefDB, "nedit.highlightSyntax");
-	Settings::smartTags             = readResource<bool>(prefDB, "nedit.smartTags");
-	Settings::insertTabs            = readResource<bool>(prefDB, "nedit.insertTabs");
-	Settings::warnFileMods          = readResource<bool>(prefDB, "nedit.warnFileMods");
-	Settings::toolTips              = readResource<bool>(prefDB, "nedit.toolTips");
-	Settings::tabBarHideOne         = readResource<bool>(prefDB, "nedit.tabBarHideOne");
-	Settings::globalTabNavigate     = readResource<bool>(prefDB, "nedit.globalTabNavigate");
-	Settings::sortTabs              = readResource<bool>(prefDB, "nedit.sortTabs");
-	Settings::appendLF              = readResource<bool>(prefDB, "nedit.appendLF");
-	Settings::matchSyntaxBased      = readResource<bool>(prefDB, "nedit.matchSyntaxBased");
-	Settings::beepOnSearchWrap      = readResource<bool>(prefDB, "nedit.beepOnSearchWrap");
-	Settings::autoScroll            = readResource<bool>(prefDB, "nedit.autoScroll");
-	Settings::iSearchLine           = readResource<bool>(prefDB, "nedit.iSearchLine");
-	Settings::lineNumbers           = readResource<bool>(prefDB, "nedit.lineNumbers");
-	Settings::pathInWindowsMenu     = readResource<bool>(prefDB, "nedit.pathInWindowsMenu");
-	Settings::warnRealFileMods      = readResource<bool>(prefDB, "nedit.warnRealFileMods");
-	Settings::warnExit              = readResource<bool>(prefDB, "nedit.warnExit");
-	Settings::openInTab             = readResource<bool>(prefDB, "nedit.openInTab");
+	Settings::autoSave              = ReadResource<bool>(prefDB, "nedit.autoSave");
+	Settings::saveOldVersion        = ReadResource<bool>(prefDB, "nedit.saveOldVersion");
+	Settings::searchDialogs         = ReadResource<bool>(prefDB, "nedit.searchDialogs");
+	Settings::retainSearchDialogs   = ReadResource<bool>(prefDB, "nedit.retainSearchDialogs");
+	Settings::stickyCaseSenseButton = ReadResource<bool>(prefDB, "nedit.stickyCaseSenseButton");
+	Settings::repositionDialogs     = ReadResource<bool>(prefDB, "nedit.repositionDialogs");
+	Settings::statisticsLine        = ReadResource<bool>(prefDB, "nedit.statisticsLine");
+	Settings::tabBar                = ReadResource<bool>(prefDB, "nedit.tabBar");
+	Settings::searchWraps           = ReadResource<bool>(prefDB, "nedit.searchWraps");
+	Settings::prefFileRead          = ReadResource<bool>(prefDB, "nedit.prefFileRead");
+	Settings::sortOpenPrevMenu      = ReadResource<bool>(prefDB, "nedit.sortOpenPrevMenu");
+	Settings::backlightChars        = ReadResource<bool>(prefDB, "nedit.backlightChars");
+	Settings::highlightSyntax       = ReadResource<bool>(prefDB, "nedit.highlightSyntax");
+	Settings::smartTags             = ReadResource<bool>(prefDB, "nedit.smartTags");
+	Settings::insertTabs            = ReadResource<bool>(prefDB, "nedit.insertTabs");
+	Settings::warnFileMods          = ReadResource<bool>(prefDB, "nedit.warnFileMods");
+	Settings::toolTips              = ReadResource<bool>(prefDB, "nedit.toolTips");
+	Settings::tabBarHideOne         = ReadResource<bool>(prefDB, "nedit.tabBarHideOne");
+	Settings::globalTabNavigate     = ReadResource<bool>(prefDB, "nedit.globalTabNavigate");
+	Settings::sortTabs              = ReadResource<bool>(prefDB, "nedit.sortTabs");
+	Settings::appendLF              = ReadResource<bool>(prefDB, "nedit.appendLF");
+	Settings::matchSyntaxBased      = ReadResource<bool>(prefDB, "nedit.matchSyntaxBased");
+	Settings::beepOnSearchWrap      = ReadResource<bool>(prefDB, "nedit.beepOnSearchWrap");
+	Settings::autoScroll            = ReadResource<bool>(prefDB, "nedit.autoScroll");
+	Settings::iSearchLine           = ReadResource<bool>(prefDB, "nedit.iSearchLine");
+	Settings::lineNumbers           = ReadResource<bool>(prefDB, "nedit.lineNumbers");
+	Settings::pathInWindowsMenu     = ReadResource<bool>(prefDB, "nedit.pathInWindowsMenu");
+	Settings::warnRealFileMods      = ReadResource<bool>(prefDB, "nedit.warnRealFileMods");
+	Settings::warnExit              = ReadResource<bool>(prefDB, "nedit.warnExit");
+	Settings::openInTab             = ReadResource<bool>(prefDB, "nedit.openInTab");
 
 	// integer preferences
-	Settings::emulateTabs = readResource<int>(prefDB, "nedit.emulateTabs");
-	Settings::tabDistance = readResource<int>(prefDB, "nedit.tabDistance");
-	Settings::textRows    = readResource<int>(prefDB, "nedit.textRows");
-	Settings::textCols    = readResource<int>(prefDB, "nedit.textCols");
-	Settings::wrapMargin  = readResource<int>(prefDB, "nedit.wrapMargin");
+	Settings::emulateTabs = ReadResource<int>(prefDB, "nedit.emulateTabs");
+	Settings::tabDistance = ReadResource<int>(prefDB, "nedit.tabDistance");
+	Settings::textRows    = ReadResource<int>(prefDB, "nedit.textRows");
+	Settings::textCols    = ReadResource<int>(prefDB, "nedit.textCols");
+	Settings::wrapMargin  = ReadResource<int>(prefDB, "nedit.wrapMargin");
 
 	// enumeration values
-	Settings::searchMethod = from_string<SearchType>(readResource<QString>(prefDB, "nedit.searchMethod"));
-	Settings::autoWrap     = from_string<WrapStyle>(readResource<QString>(prefDB, "nedit.autoWrap"));
-	Settings::showMatching = from_string<ShowMatchingStyle>(readResource<QString>(prefDB, "nedit.showMatching"));
-	Settings::autoIndent   = from_string<IndentStyle>(readResource<QString>(prefDB, "nedit.autoIndent"));
+	Settings::searchMethod = FromString<SearchType>(ReadResource<QString>(prefDB, "nedit.searchMethod"));
+	Settings::autoWrap     = FromString<WrapStyle>(ReadResource<QString>(prefDB, "nedit.autoWrap"));
+	Settings::showMatching = FromString<ShowMatchingStyle>(ReadResource<QString>(prefDB, "nedit.showMatching"));
+	Settings::autoIndent   = FromString<IndentStyle>(ReadResource<QString>(prefDB, "nedit.autoIndent"));
 
 	// theme colors
-	Settings::colors[ColorTypes::TEXT_BG_COLOR]   = readResource<QString>(prefDB, "nedit.textBgColor");
-	Settings::colors[ColorTypes::TEXT_FG_COLOR]   = readResource<QString>(prefDB, "nedit.textFgColor");
-	Settings::colors[ColorTypes::SELECT_BG_COLOR] = readResource<QString>(prefDB, "nedit.selectBgColor");
-	Settings::colors[ColorTypes::SELECT_FG_COLOR] = readResource<QString>(prefDB, "nedit.selectFgColor");
-	Settings::colors[ColorTypes::HILITE_BG_COLOR] = readResource<QString>(prefDB, "nedit.hiliteBgColor");
-	Settings::colors[ColorTypes::HILITE_FG_COLOR] = readResource<QString>(prefDB, "nedit.hiliteFgColor");
-	Settings::colors[ColorTypes::CURSOR_FG_COLOR] = readResource<QString>(prefDB, "nedit.cursorFgColor");
-	Settings::colors[ColorTypes::LINENO_FG_COLOR] = readResource<QString>(prefDB, "nedit.lineNoFgColor");
+	Settings::colors[ColorTypes::TEXT_BG_COLOR]   = ReadResource<QString>(prefDB, "nedit.textBgColor");
+	Settings::colors[ColorTypes::TEXT_FG_COLOR]   = ReadResource<QString>(prefDB, "nedit.textFgColor");
+	Settings::colors[ColorTypes::SELECT_BG_COLOR] = ReadResource<QString>(prefDB, "nedit.selectBgColor");
+	Settings::colors[ColorTypes::SELECT_FG_COLOR] = ReadResource<QString>(prefDB, "nedit.selectFgColor");
+	Settings::colors[ColorTypes::HILITE_BG_COLOR] = ReadResource<QString>(prefDB, "nedit.hiliteBgColor");
+	Settings::colors[ColorTypes::HILITE_FG_COLOR] = ReadResource<QString>(prefDB, "nedit.hiliteFgColor");
+	Settings::colors[ColorTypes::CURSOR_FG_COLOR] = ReadResource<QString>(prefDB, "nedit.cursorFgColor");
+	Settings::colors[ColorTypes::LINENO_FG_COLOR] = ReadResource<QString>(prefDB, "nedit.lineNoFgColor");
 
 	// convert RGB: style colors
 	for (QString &color : Settings::colors) {
-		color = covertRGBColor(color);
+		color = ConvertRgbColor(color);
 	}
 
 	// fonts
 #if 0
-	Settings::textFont                = readResource<QString>(prefDB, "nedit.textFont");
-	Settings::boldHighlightFont       = readResource<QString>(prefDB, "nedit.boldHighlightFont");
-	Settings::italicHighlightFont     = readResource<QString>(prefDB, "nedit.italicHighlightFont");
-	Settings::boldItalicHighlightFont = readResource<QString>(prefDB, "nedit.boldItalicHighlightFont");
+	Settings::textFont                = ReadResource<QString>(prefDB, "nedit.textFont");
+	Settings::boldHighlightFont       = ReadResource<QString>(prefDB, "nedit.boldHighlightFont");
+	Settings::italicHighlightFont     = ReadResource<QString>(prefDB, "nedit.italicHighlightFont");
+	Settings::boldItalicHighlightFont = ReadResource<QString>(prefDB, "nedit.boldItalicHighlightFont");
 #else
 	qWarning("WARNING: fonts will not be imported\n"
 			 "X11 uses a different specification than Qt and it is difficult to map between the two reliably");
@@ -719,7 +719,7 @@ int main(int argc, char *argv[]) {
 #endif
 
 	std::vector<Style> styles;
-	QString style = readResource<QString>(prefDB, "nedit.styles");
+	QString style = ReadResource<QString>(prefDB, "nedit.styles");
 	QTextStream stream(&style);
 	static const QRegularExpression re(QLatin1String("\\s*(?<name>[^:]+):(?<foreground>[^:/]+)(/(?<background>[^:]+))?:(?<font>[^:]+)"));
 
@@ -729,8 +729,8 @@ int main(int argc, char *argv[]) {
 		if (match.hasMatch()) {
 			Style s;
 			s.name       = match.captured(QLatin1String("name"));
-			s.foreground = covertRGBColor(match.captured(QLatin1String("foreground")));
-			s.background = covertRGBColor(match.captured(QLatin1String("background")));
+			s.foreground = ConvertRgbColor(match.captured(QLatin1String("foreground")));
+			s.background = ConvertRgbColor(match.captured(QLatin1String("background")));
 			s.font       = match.captured(QLatin1String("font"));
 
 			styles.push_back(s);

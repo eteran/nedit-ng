@@ -56,11 +56,11 @@ QScreen *ScreenAt(QPoint pos) {
 }
 
 /**
- * @brief
+ * @brief Check if a widget is located on the specified desktop screen.
  *
- * @param widget
- * @param currentDesktop
- * @return
+ * @param widget The widget to check.
+ * @param currentDesktop The current desktop screen to check against.
+ * @return `true` if the widget is located on the current desktop, `false` otherwise.
  */
 bool IsLocatedOnDesktop(QWidget *widget, QScreen *currentDesktop) {
 	if (!currentDesktop) {
@@ -71,10 +71,10 @@ bool IsLocatedOnDesktop(QWidget *widget, QScreen *currentDesktop) {
 }
 
 /**
- * @brief
+ * @brief Find a document widget for the target screen.
  *
- * @param currentDesktop
- * @return
+ * @param currentDesktop The current desktop screen to find a document for.
+ * @return The document widget on the target screen, or nullptr if no such document exists.
  */
 DocumentWidget *DocumentForTargetScreen(QScreen *currentDesktop) {
 	const std::vector<MainWindow *> windows = MainWindow::allWindows();
@@ -91,11 +91,11 @@ DocumentWidget *DocumentForTargetScreen(QScreen *currentDesktop) {
 }
 
 /**
- * @brief
+ * @brief Find a document on the current desktop based on the tabbed state.
  *
- * @param tabbed
- * @param currentDesktop
- * @return
+ * @param tabbed The tabbed state: 0 for a new window, -1 for a new tab, or any other value for an existing tab.
+ * @param currentDesktop The current desktop screen to search for documents.
+ * @return The found document widget, or nullptr if no suitable document is found.
  */
 DocumentWidget *FindDocumentOnDesktop(int tabbed, QScreen *currentDesktop) {
 

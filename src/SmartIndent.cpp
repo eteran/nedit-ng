@@ -129,9 +129,9 @@ std::vector<SmartIndentEntry> LoadDefaultIndentSpecs() {
 }
 
 /**
- * @brief
+ * @brief Load the default common macros from the resource file.
  *
- * @return
+ * @return The common macros, or an empty string if not found.
  */
 QString LoadDefaultCommonMacros() {
 	static QByteArray defaultIndentRules = LoadResource(QLatin1String("DefaultSmartIndent.yaml"));
@@ -150,10 +150,10 @@ QString LoadDefaultCommonMacros() {
 }
 
 /**
- * @brief
+ * @brief Find the default indent specification for a given language mode name.
  *
- * @param language
- * @return
+ * @param language The language mode name to search for.
+ * @return The `SmartIndentEntry` for the default indent specification, or `nullptr` if not found.
  */
 const SmartIndentEntry *FindDefaultIndentSpec(const QString &language) {
 
@@ -163,202 +163,229 @@ const SmartIndentEntry *FindDefaultIndentSpec(const QString &language) {
 
 	static const std::vector<SmartIndentEntry> defaultSpecs = LoadDefaultIndentSpecs();
 
-	auto it = std::find_if(defaultSpecs.begin(), defaultSpecs.end(), [&language](const SmartIndentEntry &spec) {
-		return language == spec.language;
-	});
-
-	if (it != defaultSpecs.end()) {
-		return &*it;
+	for (const SmartIndentEntry &spec : defaultSpecs) {
+		if (spec.language == language) {
+			return &spec;
+		}
 	}
 
 	return nullptr;
 }
 
-/*
-** Returns `true` if there are smart indent macros for a named language
-*/
-bool SmartIndentMacrosAvailable(const QString &languageModeName) {
-	return FindIndentSpec(languageModeName) != nullptr;
+/**
+ * @brief Check if smart indent macros are available for a given language mode name.
+ *
+ * @param languageMode The name of the language mode to check for smart indent macros.
+ * @return `true` if there are smart indent macros for a named language.
+ */
+bool SmartIndentMacrosAvailable(const QString &languageMode) {
+	return FindIndentSpec(languageMode) != nullptr;
 }
 
 /**
- * @brief
- *
- * @param string
- * @return
+ * @brief Load smart indent specifications from a YAML file.
  */
-void LoadSmartIndentString(const QString &string) {
+void LoadSmartIndentFromYaml() {
 
 	struct ParseError {
 		QString message;
 	};
 
-	if (string == QLatin1String("*")) {
-		try {
-			YAML::Node indentRules;
+	try {
+		YAML::Node indentRules;
 
-			const QString filename = Settings::SmartIndentFile();
-			if (QFileInfo::exists(filename)) {
-				indentRules = YAML::LoadFile(filename.toUtf8().data());
-			} else {
-				static QByteArray defaultIndentRules = LoadResource(QLatin1String("DefaultSmartIndent.yaml"));
-				indentRules                          = YAML::Load(defaultIndentRules.data());
-			}
+		const QString filename = Settings::SmartIndentFile();
+		if (QFileInfo::exists(filename)) {
+			indentRules = YAML::LoadFile(filename.toUtf8().data());
+		} else {
+			static QByteArray defaultIndentRules = LoadResource(QLatin1String("DefaultSmartIndent.yaml"));
+			indentRules                          = YAML::Load(defaultIndentRules.data());
+		}
 
-			for (auto it = indentRules.begin(); it != indentRules.end(); ++it) {
-				const std::string key  = it->first.as<std::string>();
-				const YAML::Node value = it->second;
+		for (auto it = indentRules.begin(); it != indentRules.end(); ++it) {
+			const std::string key  = it->first.as<std::string>();
+			const YAML::Node value = it->second;
 
-				if (key == "common") {
-					CommonMacros = value.as<QString>();
-					if (CommonMacros == QLatin1String("Default")) {
-						CommonMacros = LoadDefaultCommonMacros();
-					}
-				} else if (key == "languages") {
-					for (auto lang_it = value.begin(); lang_it != value.end(); ++lang_it) {
+			if (key == "common") {
+				CommonMacros = value.as<QString>();
+				if (CommonMacros == QLatin1String("Default")) {
+					CommonMacros = LoadDefaultCommonMacros();
+				}
+			} else if (key == "languages") {
+				for (auto lang_it = value.begin(); lang_it != value.end(); ++lang_it) {
 
-						SmartIndentEntry is;
-						is.language        = lang_it->first.as<QString>();
-						YAML::Node entries = lang_it->second;
+					SmartIndentEntry is;
+					is.language        = lang_it->first.as<QString>();
+					YAML::Node entries = lang_it->second;
 
-						if (entries.IsMap()) {
-							for (auto set_it = entries.begin(); set_it != entries.end(); ++set_it) {
-								const std::string key  = set_it->first.as<std::string>();
-								const YAML::Node value = set_it->second;
+					if (entries.IsMap()) {
+						for (auto set_it = entries.begin(); set_it != entries.end(); ++set_it) {
+							const std::string key  = set_it->first.as<std::string>();
+							const YAML::Node value = set_it->second;
 
-								if (key == "on_init") {
-									is.initMacro = value.as<QString>();
-								} else if (key == "on_newline") {
-									is.newlineMacro = value.as<QString>();
-								} else if (key == "on_modification") {
-									is.modMacro = value.as<QString>();
-								}
+							if (key == "on_init") {
+								is.initMacro = value.as<QString>();
+							} else if (key == "on_newline") {
+								is.newlineMacro = value.as<QString>();
+							} else if (key == "on_modification") {
+								is.modMacro = value.as<QString>();
 							}
-						} else if (entries.as<std::string>() == "Default") {
-							/* look for "Default" keyword, and if it's there, return the default
-							   smart indent macros */
-							const SmartIndentEntry *spec = FindDefaultIndentSpec(is.language);
-							if (!spec) {
-								Raise<ParseError>(tr("no default smart indent macro for language: %1").arg(is.language));
-							}
-
-							is = *spec;
+						}
+					} else if (entries.as<std::string>() == "Default") {
+						/* look for "Default" keyword, and if it's there, return the default
+						   smart indent macros */
+						const SmartIndentEntry *spec = FindDefaultIndentSpec(is.language);
+						if (!spec) {
+							Raise<ParseError>(tr("no default smart indent macro for language: %1").arg(is.language));
 						}
 
-						Upsert(SmartIndentSpecs, is, [&is](const SmartIndentEntry &entry) {
-							return entry.language == is.language;
-						});
+						is = *spec;
 					}
+
+					Upsert(SmartIndentSpecs, is, [&is](const SmartIndentEntry &entry) {
+						return entry.language == is.language;
+					});
 				}
 			}
-		} catch (const YAML::Exception &ex) {
-			qWarning("NEdit: Parse error in smart indent spec: %s", ex.what());
-		} catch (const ParseError &ex) {
-			qWarning("NEdit: Parse error in smart indent spec: %s", qPrintable(ex.message));
 		}
-	} else {
-
-		Input in(&string);
-		QString errMsg;
-
-		try {
-			for (;;) {
-				SmartIndentEntry is;
-
-				// skip over blank space
-				in.skipWhitespaceNL();
-
-				// finished
-				if (in.atEnd()) {
-					return;
-				}
-
-				// read language mode name
-				is.language = Preferences::ReadSymbolicField(in);
-				if (is.language.isNull()) {
-					Raise<ParseError>(tr("language mode name required"));
-				}
-
-				if (!Preferences::SkipDelimiter(in, &errMsg)) {
-					Raise<ParseError>(errMsg);
-				}
-
-				/* look for "Default" keyword, and if it's there, return the default
-				   smart indent macros */
-				if (in.match(QLatin1String("Default"))) {
-					/* look for "Default" keyword, and if it's there, return the default
-					   smart indent macros */
-					const SmartIndentEntry *spec = FindDefaultIndentSpec(is.language);
-					if (!spec) {
-						Raise<ParseError>(tr("no default smart indent macro for language: %1").arg(is.language));
-					}
-
-					is = *spec;
-				} else {
-
-					/* read the initialization macro (arbitrary text terminated by the
-					   macro end boundary string) */
-					is.initMacro = ReadSmartIndentMacro(in);
-					if (is.initMacro.isNull()) {
-						Raise<ParseError>(tr("no end boundary to initialization macro"));
-					}
-
-					// read the newline macro
-					is.newlineMacro = ReadSmartIndentMacro(in);
-					if (is.newlineMacro.isNull()) {
-						Raise<ParseError>(tr("no end boundary to newline macro"));
-					}
-
-					// read the modify macro
-					is.modMacro = ReadSmartIndentMacro(in);
-					if (is.modMacro.isNull()) {
-						Raise<ParseError>(tr("no end boundary to modify macro"));
-					}
-
-					// if there's no mod macro, make it null so it won't be executed
-					if (is.modMacro.isEmpty()) {
-						is.modMacro = QString();
-					}
-				}
-
-				Upsert(SmartIndentSpecs, is, [&is](const SmartIndentEntry &entry) {
-					return entry.language == is.language;
-				});
-			}
-		} catch (const ParseError &e) {
-			Preferences::ReportError(
-				nullptr,
-				*in.string(),
-				in.index(),
-				tr("smart indent specification"),
-				e.message);
-		}
+	} catch (const YAML::Exception &ex) {
+		qWarning("NEdit: Parse error in smart indent spec: %s", ex.what());
+	} catch (const ParseError &ex) {
+		qWarning("NEdit: Parse error in smart indent spec: %s", qPrintable(ex.message));
 	}
 }
 
 /**
- * @brief
+ * @brief Load smart indent specifications from a string.
  *
- * @param string
+ * @param string The string containing the smart indent specifications.
+ */
+void LoadSmartIndentFromString(const QString &string) {
+
+	struct ParseError {
+		QString message;
+	};
+
+	Input in(&string);
+	QString errMsg;
+
+	try {
+		for (;;) {
+			SmartIndentEntry is;
+
+			// skip over blank space
+			in.skipWhitespaceNL();
+
+			// finished
+			if (in.atEnd()) {
+				return;
+			}
+
+			// read language mode name
+			is.language = Preferences::ReadSymbolicField(in);
+			if (is.language.isNull()) {
+				Raise<ParseError>(tr("language mode name required"));
+			}
+
+			if (!Preferences::SkipDelimiter(in, &errMsg)) {
+				Raise<ParseError>(errMsg);
+			}
+
+			/* look for "Default" keyword, and if it's there, return the default
+			   smart indent macros */
+			if (in.match(QLatin1String("Default"))) {
+				/* look for "Default" keyword, and if it's there, return the default
+				   smart indent macros */
+				const SmartIndentEntry *spec = FindDefaultIndentSpec(is.language);
+				if (!spec) {
+					Raise<ParseError>(tr("no default smart indent macro for language: %1").arg(is.language));
+				}
+
+				is = *spec;
+			} else {
+
+				/* read the initialization macro (arbitrary text terminated by the
+				   macro end boundary string) */
+				is.initMacro = ReadSmartIndentMacro(in);
+				if (is.initMacro.isNull()) {
+					Raise<ParseError>(tr("no end boundary to initialization macro"));
+				}
+
+				// read the newline macro
+				is.newlineMacro = ReadSmartIndentMacro(in);
+				if (is.newlineMacro.isNull()) {
+					Raise<ParseError>(tr("no end boundary to newline macro"));
+				}
+
+				// read the modify macro
+				is.modMacro = ReadSmartIndentMacro(in);
+				if (is.modMacro.isNull()) {
+					Raise<ParseError>(tr("no end boundary to modify macro"));
+				}
+
+				// if there's no mod macro, make it null so it won't be executed
+				if (is.modMacro.isEmpty()) {
+					is.modMacro = QString();
+				}
+			}
+
+			Upsert(SmartIndentSpecs, is, [&is](const SmartIndentEntry &entry) {
+				return entry.language == is.language;
+			});
+		}
+	} catch (const ParseError &e) {
+		Preferences::ReportError(
+			nullptr,
+			*in.string(),
+			in.index(),
+			tr("smart indent specification"),
+			e.message);
+	}
+}
+
+/**
+ * @brief Load smart indent specifications from a string or a file.
+ *
+ * @param string The string containing the smart indent specifications, or "*" to load from the YAML file.
+ */
+void LoadSmartIndentString(const QString &string) {
+
+	if (string == QLatin1String("*")) {
+		LoadSmartIndentFromYaml();
+	} else {
+		LoadSmartIndentFromString(string);
+	}
+}
+
+/**
+ * @brief Load the common smart indent string from a given string.
+ *
+ * @param string The string containing the common smart indent macros.
+ *               If the string is "Default", the default common macros are loaded.
+ *               If the string is "*", it indicates that the common macros should be loaded
+ *               from the YAML file, which already happens in `LoadSmartIndentString`.
+ *
  */
 void LoadSmartIndentCommonString(const QString &string) {
 
 	if (string != QLatin1String("*")) {
-		Input in(&string);
-
-		// skip over blank space
-		in.skipWhitespaceNL();
-
-		/* look for "Default" keyword, and if it's there, return the default
-		   smart common macro */
-		if (in.match(QLatin1String("Default"))) {
-			CommonMacros = LoadDefaultCommonMacros();
-			return;
-		}
-
-		// Remove leading tabs added by writer routine
-		CommonMacros = ShiftText(in.mid(), ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/ 8);
+		return;
 	}
+
+	Input in(&string);
+
+	// skip over blank space
+	in.skipWhitespaceNL();
+
+	/* look for "Default" keyword, and if it's there, return the default
+	   smart common macro */
+	if (in.match(QLatin1String("Default"))) {
+		CommonMacros = LoadDefaultCommonMacros();
+		return;
+	}
+
+	// Remove leading tabs added by writer routine
+	CommonMacros = ShiftText(in.mid(), ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/ 8);
 }
 
 /**
@@ -446,12 +473,10 @@ const SmartIndentEntry *FindIndentSpec(const QString &language) {
 		return nullptr;
 	}
 
-	auto it = std::find_if(SmartIndentSpecs.begin(), SmartIndentSpecs.end(), [&language](const SmartIndentEntry &entry) {
-		return entry.language == language;
-	});
-
-	if (it != SmartIndentSpecs.end()) {
-		return &*it;
+	for (const SmartIndentEntry &spec : SmartIndentSpecs) {
+		if (spec.language == language) {
+			return &spec;
+		}
 	}
 
 	return nullptr;

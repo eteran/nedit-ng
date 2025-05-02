@@ -22,12 +22,12 @@ endif()
 if(QT_VERSION_MAJOR EQUAL 6)
     qt6_add_executable(nedit-import
 		MANUAL_FINALIZATION
-		import.cpp
+		Import.cpp
 		${APP_ICON_RESOURCE_WINDOWS}
     )
 else()
     add_executable(nedit-import
-		import.cpp
+	Import.cpp
 		${APP_ICON_RESOURCE_WINDOWS}
     )
 endif()

@@ -17,13 +17,19 @@
 namespace {
 
 // Maximum stack size
-constexpr int STACK_SIZE = 1024;
+constexpr int MaxStackSize = 1024;
 
-constexpr int PROGRAM_SIZE      = 4096; // Maximum program size
-constexpr int MAX_ERR_MSG_LEN   = 256;  // Max. length for error messages
-constexpr int INSTRUCTION_LIMIT = 100;  // Number of instructions the interpreter is allowed to execute before preempting and returning to allow other things to run
+// Maximum program size
+constexpr int MaxProgramSize = 4096;
 
-/* Temporary markers placed in a branch address location to designate
+// Maximum length for error messages
+constexpr int MaxErrorMessageLen = 256;
+
+// Number of instructions the interpreter is allowed to execute before
+// preempting and returning to allow other things to run
+constexpr int INSTRUCTION_LIMIT = 100;
+
+/* Temporary markers placed in a Branch address location to designate
    which loop address (break or continue) the location needs */
 
 constexpr int NEEDS_BREAK    = 1;
@@ -32,10 +38,10 @@ constexpr int NEEDS_CONTINUE = 2;
 constexpr int N_ARGS_ARG_SYM = -1; // special arg number meaning $n_args value
 
 enum OpStatusCodes : uint8_t {
-	STAT_OK = 2,
-	STAT_DONE,
-	STAT_ERROR,
-	STAT_PREEMPT
+	StatusOk = 2,
+	StatusDone,
+	StatusError,
+	StatusPreempt
 };
 
 /* Message strings used in macros (so they don't get repeated every time
@@ -53,7 +59,7 @@ std::deque<Symbol *> GlobalSymList;
 
 // Temporary global data for use while accumulating programs
 std::deque<Symbol *> LocalSymList; // symbols local to the program
-Inst Prog[PROGRAM_SIZE];           // the program
+Inst Prog[MaxProgramSize];         // the program
 Inst *ProgP;                       // next free spot for code gen.
 std::stack<Inst *> LoopStack;      // addresses of break, cont stmts
 
@@ -188,20 +194,20 @@ void restoreContext(Pointer context) {
  *
  * @param error_code The error code to format the message from.
  * @param args Additional arguments to format the message with.
- * @return int Returns STAT_ERROR after setting the ErrorMessage.
+ * @return int Returns StatusError after setting the ErrorMessage.
  */
 template <class... T>
-int execError(const std::error_code &error_code, T &&...args) {
+int ExecError(const std::error_code &error_code, T &&...args) {
 	// NOTE(eteran): this warning is not needed for this function because
-	// we happen to know that the inputs for `execError` always originate
+	// we happen to know that the inputs for `ExecError` always originate
 	// from string constants
 	QT_WARNING_PUSH
 	QT_WARNING_DISABLE_GCC("-Wformat-security")
-	static char msg[MAX_ERR_MSG_LEN];
+	static char msg[MaxErrorMessageLen];
 	const std::string str = error_code.message();
 	qsnprintf(msg, sizeof(msg), str.c_str(), std::forward<T>(args)...);
 	ErrorMessage = msg;
-	return STAT_ERROR;
+	return StatusError;
 	QT_WARNING_POP
 }
 
@@ -210,19 +216,19 @@ int execError(const std::error_code &error_code, T &&...args) {
  *
  * @param fmt The format string for the error message.
  * @param args Additional arguments to format the message with.
- * @return int Returns STAT_ERROR after setting the ErrorMessage.
+ * @return int Returns StatusError after setting the ErrorMessage.
  */
 template <class... T>
-int execError(const char *fmt, T &&...args) {
+int ExecError(const char *fmt, T &&...args) {
 	// NOTE(eteran): this warning is not needed for this function because
-	// we happen to know that the inputs for `execError` always originate
+	// we happen to know that the inputs for `ExecError` always originate
 	// from string constants
 	QT_WARNING_PUSH
 	QT_WARNING_DISABLE_GCC("-Wformat-security")
-	static char msg[MAX_ERR_MSG_LEN];
+	static char msg[MaxErrorMessageLen];
 	qsnprintf(msg, sizeof(msg), fmt, std::forward<T>(args)...);
 	ErrorMessage = msg;
-	return STAT_ERROR;
+	return StatusError;
 	QT_WARNING_POP
 }
 
@@ -230,85 +236,85 @@ int execError(const char *fmt, T &&...args) {
  * @brief Check for errors after a mathematical operation and return an error code.
  *
  * @param s The name of the operation to check for errors.
- * @return int Returns STAT_OK if no error, or an error code if an error occurred.
+ * @return int Returns StatusOk if no error, or an error code if an error occurred.
  */
-int errCheck(const char *s) {
+int ErrorCheck(const char *s) {
 	switch (errno) {
 	case EDOM:
-		return execError("%s argument out of domain", s);
+		return ExecError("%s argument out of domain", s);
 	case ERANGE:
-		return execError("%s result out of range", s);
+		return ExecError("%s result out of range", s);
 	default:
-		return STAT_OK;
+		return StatusOk;
 	}
 }
 
 }
 
-static void addLoopAddr(Inst *addr);
-static int returnNoVal();
-static int returnVal();
-static int returnValOrNone(bool valOnStack);
-static int pushSymVal();
-static int pushArgVal();
-static int pushArgCount();
-static int pushArgArray();
-static int pushArraySymVal();
-static int dupStack();
-static int add();
-static int subtract();
-static int multiply();
-static int divide();
-static int modulo();
-static int negate();
-static int increment();
-static int decrement();
-static int gt();
-static int lt();
-static int ge();
-static int le();
-static int eq();
-static int ne();
-static int bitAnd();
-static int bitOr();
-static int logicalAnd();
-static int logicalOr();
-static int logicalNot();
-static int power();
-static int concat();
-static int assign();
-static int callSubroutine();
-static int fetchRetVal();
-static int branch();
-static int branchTrue();
-static int branchFalse();
-static int branchNever();
-static int arrayRef();
-static int arrayAssign();
-static int arrayRefAndAssignSetup();
-static int beginArrayIter();
-static int arrayIter();
-static int inArray();
-static int deleteArrayElement();
+static void AddLoopAddress(Inst *addr);
+static int ReturnNoValue();
+static int ReturnValue();
+static int ReturnValueOrNone(bool valOnStack);
+static int PushSymValue();
+static int PushArgValue();
+static int PushArgCount();
+static int PushArgArray();
+static int PushArraySymVal();
+static int DupStack();
+static int Add();
+static int Subtract();
+static int Multiply();
+static int Divide();
+static int Modulo();
+static int Negate();
+static int Increment();
+static int Decrement();
+static int Gt();
+static int Lt();
+static int Ge();
+static int Le();
+static int Eq();
+static int Ne();
+static int BitAnd();
+static int BitOr();
+static int LogicalAnd();
+static int LogicalOr();
+static int LogicalNot();
+static int Power();
+static int Concat();
+static int Assign();
+static int CallSubroutine();
+static int FetchReturnVal();
+static int Branch();
+static int BranchTrue();
+static int BranchFalse();
+static int BranchNever();
+static int ArrayRef();
+static int ArrayAssign();
+static int ArrayRefAndAssignSetup();
+static int BeginArrayIter();
+static int ArrayIter();
+static int InArray();
+static int DeleteArrayElement();
 
-static ArrayIterator arrayIterateFirst(DataValue *theArray);
-static ArrayIterator arrayIterateNext(ArrayIterator iterator);
+static ArrayIterator ArrayIterateFirst(DataValue *theArray);
+static ArrayIterator ArrayIterateNext(ArrayIterator iterator);
 
 #if defined(DEBUG_ASSEMBLY) || defined(DEBUG_STACK)
 #define DEBUG_DISASSEMBLER
-static void disasm(Inst *inst, size_t nInstr);
+static void Disassemble(Inst *inst, size_t nInstr);
 #endif
 
 #ifdef DEBUG_ASSEMBLY // for disassembly
-#define DISASM(i, n) disasm(i, n)
+#define DISASM(i, n) Disassemble(i, n)
 #else
 #define DISASM(i, n)
 #endif
 
 #ifdef DEBUG_STACK // for run-time instruction and stack trace
-static void stackdump(int n, int extra);
-#define STACKDUMP(n, x) stackdump(n, x)
-#define DISASM_RT(i, n) disasm(i, n)
+static void StackDump(int n, int extra);
+#define STACKDUMP(n, x) StackDump(n, x)
+#define DISASM_RT(i, n) Disassemble(i, n)
 #else
 #define STACKDUMP(n, x)
 #define DISASM_RT(i, n)
@@ -319,49 +325,49 @@ static void stackdump(int n, int extra);
 using operation_type = int (*)();
 
 static const operation_type OpFns[N_OPS] = {
-	returnNoVal,
-	returnVal,
-	pushSymVal,
-	dupStack,
-	add,
-	subtract,
-	multiply,
-	divide,
-	modulo,
-	negate,
-	increment,
-	decrement,
-	gt,
-	lt,
-	ge,
-	le,
-	eq,
-	ne,
-	bitAnd,
-	bitOr,
-	logicalAnd,
-	logicalOr,
-	logicalNot,
-	power,
-	concat,
-	assign,
-	callSubroutine,
-	fetchRetVal,
-	branch,
-	branchTrue,
-	branchFalse,
-	branchNever,
-	arrayRef,
-	arrayAssign,
-	beginArrayIter,
-	arrayIter,
-	inArray,
-	deleteArrayElement,
-	pushArraySymVal,
-	arrayRefAndAssignSetup,
-	pushArgVal,
-	pushArgCount,
-	pushArgArray,
+	ReturnNoValue,
+	ReturnValue,
+	PushSymValue,
+	DupStack,
+	Add,
+	Subtract,
+	Multiply,
+	Divide,
+	Modulo,
+	Negate,
+	Increment,
+	Decrement,
+	Gt,
+	Lt,
+	Ge,
+	Le,
+	Eq,
+	Ne,
+	BitAnd,
+	BitOr,
+	LogicalAnd,
+	LogicalOr,
+	LogicalNot,
+	Power,
+	Concat,
+	Assign,
+	CallSubroutine,
+	FetchReturnVal,
+	Branch,
+	BranchTrue,
+	BranchFalse,
+	BranchNever,
+	ArrayRef,
+	ArrayAssign,
+	BeginArrayIter,
+	ArrayIter,
+	InArray,
+	DeleteArrayElement,
+	PushArraySymVal,
+	ArrayRefAndAssignSetup,
+	PushArgValue,
+	PushArgCount,
+	PushArgArray,
 };
 
 /**
@@ -394,7 +400,7 @@ void CleanupMacroGlobals() {
 /*
 ** To build a program for the interpreter, call BeginCreatingProgram, to
 ** begin accumulating the program, followed by calls to AddOp, AddSym,
-** and InstallSymbol to add symbols and operations.  When the new program
+** and InstallSymbol to Add symbols and operations.  When the new program
 ** is finished, collect the results with FinishCreatingProgram.  This returns
 ** a self contained program that can be run with ExecuteMacro.
 */
@@ -423,7 +429,7 @@ Program *FinishCreatingProgram() {
 
 	int fpOffset = 0;
 
-	/* Local variables' values are stored on the stack.  Here we assign
+	/* Local variables' values are stored on the stack.  Here we Assign
 	   frame pointer offsets to them. */
 	for (Symbol *s : newProg->localSymList) {
 		s->value = make_value(fpOffset++);
@@ -437,7 +443,7 @@ Program *FinishCreatingProgram() {
  * @brief Add an operator (instruction) to the end of the current program
  */
 bool AddOp(int op, QString *msg) {
-	if (ProgP >= &Prog[PROGRAM_SIZE]) {
+	if (ProgP >= &Prog[MaxProgramSize]) {
 		*msg = MacroTooLarge;
 		return false;
 	}
@@ -454,7 +460,7 @@ bool AddOp(int op, QString *msg) {
  * @return `true` if the symbol was added successfully, `false` if the program is too large.
  */
 bool AddSym(Symbol *sym, QString *msg) {
-	if (ProgP >= &Prog[PROGRAM_SIZE]) {
+	if (ProgP >= &Prog[MaxProgramSize]) {
 		*msg = MacroTooLarge;
 		return false;
 	}
@@ -471,7 +477,7 @@ bool AddSym(Symbol *sym, QString *msg) {
  * @return `true` if the value was added successfully, `false` if the program is too large.
  */
 bool AddImmediate(int value, QString *msg) {
-	if (ProgP >= &Prog[PROGRAM_SIZE]) {
+	if (ProgP >= &Prog[MaxProgramSize]) {
 		*msg = MacroTooLarge;
 		return false;
 	}
@@ -481,19 +487,19 @@ bool AddImmediate(int value, QString *msg) {
 }
 
 /**
- * @brief Add a branch offset operand to the current program.
+ * @brief Add a Branch offset operand to the current program.
  *
- * @param to The instruction to which the branch should point.
+ * @param to The instruction to which the Branch should point.
  * @param msg Where error messages will be stored if an error occurs.
- * @return `true` if the branch offset was added successfully, `false` if the program is too large.
+ * @return `true` if the Branch offset was added successfully, `false` if the program is too large.
  */
 bool AddBranchOffset(const Inst *to, QString *msg) {
-	if (ProgP >= &Prog[PROGRAM_SIZE]) {
+	if (ProgP >= &Prog[MaxProgramSize]) {
 		*msg = MacroTooLarge;
 		return false;
 	}
 
-	/* we don't use gsl::narrow here because when to is nullptr (to indicate
+	/* we don't use gsl::narrow here because when `to` is nullptr (to indicate
 	 * end of program) it produces values that won't fit into an int on
 	 * 64-bit systems */
 	ProgP->value = static_cast<int>(to - ProgP);
@@ -529,12 +535,12 @@ void SwapCode(Inst *start, Inst *boundary, Inst *end) {
 }
 
 /*
-** Maintain a stack to save addresses of branch operations for break and
+** Maintain a stack to save addresses of Branch operations for break and
 ** continue statements, so they can be filled in once the information
-** on where to branch is known.
+** on where to Branch is known.
 **
 ** Call StartLoopAddrList at the beginning of a loop, AddBreakAddr or
-** AddContinueAddr to register the address at which to store the branch
+** AddContinueAddr to register the address at which to store the Branch
 ** address for a break or continue statement, and FillLoopAddrs to fill
 ** in all the addresses and return to the level of the enclosing loop.
 */
@@ -544,13 +550,13 @@ void SwapCode(Inst *start, Inst *boundary, Inst *end) {
  *
  */
 void StartLoopAddrList() {
-	addLoopAddr(nullptr);
+	AddLoopAddress(nullptr);
 }
 
 /**
  * @brief Add an address to the loop stack for a break or continue statement.
  *
- * @param addr The instruction address where the break or continue should branch.
+ * @param addr The instruction address where the break or continue should Branch.
  * @return `true` if the loop stack is empty (no enclosing loop), `false` if the address was added successfully.
  */
 bool AddBreakAddr(Inst *addr) {
@@ -558,7 +564,7 @@ bool AddBreakAddr(Inst *addr) {
 		return true;
 	}
 
-	addLoopAddr(addr);
+	AddLoopAddress(addr);
 	addr->value = NEEDS_BREAK;
 	return false;
 }
@@ -566,7 +572,7 @@ bool AddBreakAddr(Inst *addr) {
 /**
  * @brief Add an address to the loop stack for a continue statement.
  *
- * @param addr The instruction address where the continue should branch.
+ * @param addr The instruction address where the continue should Branch.
  * @return `true` if the loop stack is empty (no enclosing loop), `false` if the address was added successfully.
  */
 bool AddContinueAddr(Inst *addr) {
@@ -574,7 +580,7 @@ bool AddContinueAddr(Inst *addr) {
 		return true;
 	}
 
-	addLoopAddr(addr);
+	AddLoopAddress(addr);
 	addr->value = NEEDS_CONTINUE;
 	return false;
 }
@@ -584,15 +590,15 @@ bool AddContinueAddr(Inst *addr) {
  *
  * @param addr The instruction address to be added to the loop stack.
  */
-static void addLoopAddr(Inst *addr) {
+static void AddLoopAddress(Inst *addr) {
 	LoopStack.push(addr);
 }
 
 /**
  * @brief Fill the loop addresses for break and continue statements
  *
- * @param breakAddr The address to which break statements should branch.
- * @param continueAddr The address to which continue statements should branch.
+ * @param breakAddr The address to which break statements should Branch.
+ * @param continueAddr The address to which continue statements should Branch.
  */
 void FillLoopAddrs(const Inst *breakAddr, const Inst *continueAddr) {
 
@@ -636,7 +642,7 @@ int executeMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> a
 	   preemption and resumption of execution */
 
 	auto context           = std::make_shared<MacroContext>();
-	context->Stack         = std::shared_ptr<DataValue>(new DataValue[STACK_SIZE], std::default_delete<DataValue[]>());
+	context->Stack         = std::shared_ptr<DataValue>(new DataValue[MaxStackSize], std::default_delete<DataValue[]>());
 	context->StackP        = context->Stack.get();
 	context->PC            = prog->code.data();
 	context->RunDocument   = document;
@@ -688,7 +694,7 @@ ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation,
 
 	/*
 	** Execution Loop:  Call the successive routine addresses in the program
-	** until one returns something other than STAT_OK, then take action
+	** until one returns something other than StatusOk, then take action
 	*/
 	restoreContext(continuation);
 	ErrorMessage = nullptr;
@@ -699,22 +705,22 @@ ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation,
 
 		auto status = static_cast<OpStatusCodes>(inst->func());
 
-		// If error return was not STAT_OK, return to caller
+		// If error return was not StatusOk, return to caller
 		switch (status) {
-		case STAT_PREEMPT:
+		case StatusPreempt:
 			saveContext(continuation);
 			restoreContext(&oldContext);
 			return MACRO_PREEMPT;
-		case STAT_ERROR:
+		case StatusError:
 			*msg = QString::fromLatin1(ErrorMessage);
 			restoreContext(&oldContext);
 			return MACRO_ERROR;
-		case STAT_DONE:
+		case StatusDone:
 			*msg    = QString();
 			*result = *--Context.StackP;
 			restoreContext(&oldContext);
 			return MACRO_DONE;
-		case STAT_OK:
+		case StatusOk:
 			break;
 		}
 
@@ -743,7 +749,7 @@ ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation,
  */
 void RunMacroAsSubrCall(Program *prog) {
 
-	/* See "callSubroutine" for a description of the stack frame
+	/* See "CallSubroutine" for a description of the stack frame
 	   for a subroutine call */
 	*Context.StackP++ = make_value(Context.PC);     // return PC
 	*Context.StackP++ = make_value(Context.FrameP); // old FrameP
@@ -777,7 +783,7 @@ void preemptMacro() {
  * @param dv The DataValue to set as the return value.
  */
 void modifyReturnedValue(const std::shared_ptr<MacroContext> &context, const DataValue &dv) {
-	if ((context->PC - 1)->func == fetchRetVal) {
+	if ((context->PC - 1)->func == FetchReturnVal) {
 		*(context->StackP - 1) = dv;
 	}
 }
@@ -1002,15 +1008,15 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 #define POP(dataVal)                               \
 	do {                                           \
 		if (Context.StackP == Context.Stack.get()) \
-			return execError(StackUnderflowMsg);   \
+			return ExecError(StackUnderflowMsg);   \
 		(dataVal) = *--Context.StackP;             \
 	} while (0)
 
-#define PUSH(dataVal)                                           \
-	do {                                                        \
-		if (Context.StackP >= &Context.Stack.get()[STACK_SIZE]) \
-			return execError(StackOverflowMsg);                 \
-		*Context.StackP++ = (dataVal);                          \
+#define PUSH(dataVal)                                             \
+	do {                                                          \
+		if (Context.StackP >= &Context.Stack.get()[MaxStackSize]) \
+			return ExecError(StackOverflowMsg);                   \
+		*Context.StackP++ = (dataVal);                            \
 	} while (0)
 
 #define PEEK(dataVal, peekIndex)                         \
@@ -1021,43 +1027,43 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 #define POP_INT(number)                                              \
 	do {                                                             \
 		if (Context.StackP == Context.Stack.get())                   \
-			return execError(StackUnderflowMsg);                     \
+			return ExecError(StackUnderflowMsg);                     \
 		--Context.StackP;                                            \
 		if (is_string(*Context.StackP)) {                            \
 			if (!StringToNum(to_string(*Context.StackP), &(number))) \
-				return execError(StringToNumberMsg);                 \
+				return ExecError(StringToNumberMsg);                 \
 		} else if (is_integer(*Context.StackP))                      \
 			(number) = to_integer(*Context.StackP);                  \
 		else                                                         \
-			return execError(CantConvertArrayToInteger);             \
+			return ExecError(CantConvertArrayToInteger);             \
 	} while (0)
 
 #define POP_STRING(string_ref)                                          \
 	do {                                                                \
 		if (Context.StackP == Context.Stack.get())                      \
-			return execError(StackUnderflowMsg);                        \
+			return ExecError(StackUnderflowMsg);                        \
 		--Context.StackP;                                               \
 		if (is_integer(*Context.StackP)) {                              \
 			(string_ref) = std::to_string(to_integer(*Context.StackP)); \
 		} else if (is_string(*Context.StackP)) {                        \
 			(string_ref) = to_string(*Context.StackP);                  \
 		} else {                                                        \
-			return execError(CantConvertArrayToString);                 \
+			return ExecError(CantConvertArrayToString);                 \
 		}                                                               \
 	} while (0)
 
-#define PUSH_INT(number)                                        \
-	do {                                                        \
-		if (Context.StackP >= &Context.Stack.get()[STACK_SIZE]) \
-			return execError(StackOverflowMsg);                 \
-		*Context.StackP++ = make_value(number);                 \
+#define PUSH_INT(number)                                          \
+	do {                                                          \
+		if (Context.StackP >= &Context.Stack.get()[MaxStackSize]) \
+			return ExecError(StackOverflowMsg);                   \
+		*Context.StackP++ = make_value(number);                   \
 	} while (0)
 
-#define PUSH_STRING(string)                                     \
-	do {                                                        \
-		if (Context.StackP >= &Context.Stack.get()[STACK_SIZE]) \
-			return execError(StackOverflowMsg);                 \
-		*Context.StackP++ = make_value(string);                 \
+#define PUSH_STRING(string)                                       \
+	do {                                                          \
+		if (Context.StackP >= &Context.Stack.get()[MaxStackSize]) \
+			return ExecError(StackOverflowMsg);                   \
+		*Context.StackP++ = make_value(string);                   \
 	} while (0)
 
 #define BINARY_NUMERIC_OPERATION(op)  \
@@ -1069,7 +1075,7 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 		POP_INT(n2);                  \
 		POP_INT(n1);                  \
 		PUSH_INT(n1 op n2);           \
-		return STAT_OK;               \
+		return StatusOk;              \
 	} while (0)
 
 #define UNARY_NUMERIC_OPERATION(op)   \
@@ -1079,15 +1085,15 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 		STACKDUMP(1, 3);              \
 		POP_INT(n);                   \
 		PUSH_INT(op n);               \
-		return STAT_OK;               \
+		return StatusOk;              \
 	} while (0)
 
 /**
  * @brief Push the value of a symbol onto the stack.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int pushSymVal() {
+static int PushSymValue() {
 
 	/*
 	** Before: Prog->  [Sym], next, ...
@@ -1111,7 +1117,7 @@ static int pushSymVal() {
 		const int nArgs  = FP_GET_ARG_COUNT(Context.FrameP);
 		const int argNum = to_integer(s->value);
 		if (argNum >= nArgs) {
-			return execError("referenced undefined argument: %s", s->name.c_str());
+			return ExecError("referenced undefined argument: %s", s->name.c_str());
 		}
 		if (argNum == N_ARGS_ARG_SYM) {
 			symVal = make_value(nArgs);
@@ -1121,27 +1127,27 @@ static int pushSymVal() {
 	} else if (s->type == PROC_VALUE_SYM) {
 
 		if (const std::error_code ec = (to_subroutine(s->value))(Context.FocusDocument, {}, &symVal)) {
-			return execError(ec, s->name.c_str());
+			return ExecError(ec, s->name.c_str());
 		}
 	} else {
-		return execError("reading non-variable: %s", s->name.c_str());
+		return ExecError("reading non-variable: %s", s->name.c_str());
 	}
 
 	if (is_unset(symVal)) {
-		return execError("variable not set: %s", s->name.c_str());
+		return ExecError("variable not set: %s", s->name.c_str());
 	}
 
 	PUSH(symVal);
 
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
  * @brief Push the value of a subroutine argument onto the stack.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int pushArgVal() {
+static int PushArgValue() {
 	int argNum;
 
 	DISASM_RT(Context.PC - 1, 1);
@@ -1153,31 +1159,31 @@ static int pushArgVal() {
 	const int nArgs = FP_GET_ARG_COUNT(Context.FrameP);
 	if (argNum >= nArgs || argNum < 0) {
 		auto argStr = std::to_string(argNum + 1);
-		return execError("referenced undefined argument: $args[%s]", argStr.c_str());
+		return ExecError("referenced undefined argument: $args[%s]", argStr.c_str());
 	}
 	PUSH(FP_GET_ARG_N(Context.FrameP, argNum));
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
  * @brief Push the number of arguments passed to the current subroutine onto the stack.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int pushArgCount() {
+static int PushArgCount() {
 	DISASM_RT(Context.PC - 1, 1);
 	STACKDUMP(0, 3);
 
 	PUSH_INT(FP_GET_ARG_COUNT(Context.FrameP));
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
  * @brief Push an array of arguments onto the stack.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int pushArgArray() {
+static int PushArgArray() {
 
 	DataValue argVal;
 
@@ -1197,21 +1203,21 @@ static int pushArgArray() {
 
 			argVal = FP_GET_ARG_N(Context.FrameP, argNum);
 			if (!ArrayInsert(resultArray, intStr, &argVal)) {
-				return execError("array insertion failure");
+				return ExecError("array insertion failure");
 			}
 		}
 	}
 
 	PUSH(*resultArray);
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
  * @brief Push an array symbol value onto the stack.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int pushArraySymVal() {
+static int PushArraySymVal() {
 
 	/*
 	** Before: Prog->  [ArraySym], makeEmpty, next, ...
@@ -1235,7 +1241,7 @@ static int pushArraySymVal() {
 	} else if (sym->type == GLOBAL_SYM) {
 		dataPtr = &sym->value;
 	} else {
-		return execError("assigning to non-lvalue array or non-array: %s", sym->name.c_str());
+		return ExecError("assigning to non-lvalue array or non-array: %s", sym->name.c_str());
 	}
 
 	if (initEmpty && is_unset(*dataPtr)) {
@@ -1243,20 +1249,20 @@ static int pushArraySymVal() {
 	}
 
 	if (is_unset(*dataPtr)) {
-		return execError("variable not set: %s", sym->name.c_str());
+		return ExecError("variable not set: %s", sym->name.c_str());
 	}
 
 	PUSH(*dataPtr);
 
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
  * @brief Assign the top value of the stack to a symbol.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int assign() {
+static int Assign() {
 
 	/*
 	** Before: Prog->  [symbol], next, ...
@@ -1281,11 +1287,11 @@ static int assign() {
 		dataPtr = &sym->value;
 		break;
 	case ARG_SYM:
-		return execError("assignment to function argument: %s", sym->name.c_str());
+		return ExecError("assignment to function argument: %s", sym->name.c_str());
 	case PROC_VALUE_SYM:
-		return execError("assignment to read-only variable: %s", sym->name.c_str());
+		return ExecError("assignment to read-only variable: %s", sym->name.c_str());
 	default:
-		return execError("assignment to non-variable: %s", sym->name.c_str());
+		return ExecError("assignment to non-variable: %s", sym->name.c_str());
 	}
 
 	POP(value);
@@ -1295,15 +1301,15 @@ static int assign() {
 	}
 
 	*dataPtr = value;
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
  * @brief Duplicate the top value of the stack.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int dupStack() {
+static int DupStack() {
 
 	/*
 	 ** Before: TheStack-> value, next, ...
@@ -1318,7 +1324,7 @@ static int dupStack() {
 	PEEK(value, 0);
 	PUSH(value);
 
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
@@ -1326,9 +1332,9 @@ static int dupStack() {
  * If both values are arrays, the result is a new array containing all keys
  * from both arrays, with values from the right array used when keys are the same.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int add() {
+static int Add() {
 
 	/*
 	** Before: TheStack-> value2, value1, next, ...
@@ -1383,12 +1389,12 @@ static int add() {
 					++rightIter;
 				}
 				if (!insertResult) {
-					return execError("array insertion failure");
+					return ExecError("array insertion failure");
 				}
 			}
 			PUSH(resultArray);
 		} else {
-			return execError("can't mix math with arrays and non-arrays");
+			return ExecError("can't mix math with arrays and non-arrays");
 		}
 	} else {
 		int n1;
@@ -1398,16 +1404,16 @@ static int add() {
 		POP_INT(n1);
 		PUSH_INT(n1 + n2);
 	}
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
  * @brief Subtract two values. If both values are arrays, the result is a new array
  * containing all keys from the left array that do not exist in the right array.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int subtract() {
+static int Subtract() {
 
 	/*
 	** Before: TheStack-> value2, value1, next, ...
@@ -1455,12 +1461,12 @@ static int subtract() {
 					++leftIter;
 				}
 				if (!insertResult) {
-					return execError("array insertion failure");
+					return ExecError("array insertion failure");
 				}
 			}
 			PUSH(resultArray);
 		} else {
-			return execError("can't mix math with arrays and non-arrays");
+			return ExecError("can't mix math with arrays and non-arrays");
 		}
 	} else {
 		int n1;
@@ -1470,7 +1476,7 @@ static int subtract() {
 		POP_INT(n1);
 		PUSH_INT(n1 - n2);
 	}
-	return STAT_OK;
+	return StatusOk;
 }
 
 /*
@@ -1486,18 +1492,18 @@ static int subtract() {
 /**
  * @brief Multiply two values together.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int multiply() {
+static int Multiply() {
 	BINARY_NUMERIC_OPERATION(*);
 }
 
 /**
  * @brief Divide two values.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int divide() {
+static int Divide() {
 	int n1;
 	int n2;
 
@@ -1507,18 +1513,18 @@ static int divide() {
 	POP_INT(n2);
 	POP_INT(n1);
 	if (n2 == 0) {
-		return execError("division by zero");
+		return ExecError("division by zero");
 	}
 	PUSH_INT(n1 / n2);
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
- * @brief Calculate the modulo of two values.
+ * @brief Calculate the Modulo of two values.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int modulo() {
+static int Modulo() {
 	int n1;
 	int n2;
 
@@ -1528,72 +1534,72 @@ static int modulo() {
 	POP_INT(n2);
 	POP_INT(n1);
 	if (n2 == 0) {
-		return execError("modulo by zero");
+		return ExecError("Modulo by zero");
 	}
 	PUSH_INT(n1 % n2);
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
  * @brief Negate the top value of the stack.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int negate() {
+static int Negate() {
 	UNARY_NUMERIC_OPERATION(-);
 }
 
 /**
  * @brief Increment the top value of the stack.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int increment() {
+static int Increment() {
 	UNARY_NUMERIC_OPERATION(++);
 }
 
 /**
  * @brief Decrement the top value of the stack.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int decrement() {
+static int Decrement() {
 	UNARY_NUMERIC_OPERATION(--);
 }
 
 /**
  * @brief Compare two values for greater than.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int gt() {
+static int Gt() {
 	BINARY_NUMERIC_OPERATION(>);
 }
 
 /**
  * @brief Compare two values for less than.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int lt() {
+static int Lt() {
 	BINARY_NUMERIC_OPERATION(<);
 }
 
 /**
  * @brief Compare two values for greater than or equal to.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int ge() {
+static int Ge() {
 	BINARY_NUMERIC_OPERATION(>=);
 }
 
 /**
  * @brief Compare two values for less than or equal to.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int le() {
+static int Le() {
 	BINARY_NUMERIC_OPERATION(<=);
 }
 
@@ -1601,9 +1607,9 @@ static int le() {
  * @brief Compare two values for equality.
  * This function is only valid for strings and integers.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int eq() {
+static int Eq() {
 
 	/*
 	 ** Before: TheStack-> value1, value2, next, ...
@@ -1643,21 +1649,21 @@ static int eq() {
 			v1 = make_value(number == to_integer(v1));
 		}
 	} else {
-		return execError("incompatible types to compare");
+		return ExecError("incompatible types to compare");
 	}
 
 	PUSH(v1);
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
  * @brief Compare two values for inequality.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int ne() {
-	eq();
-	return logicalNot();
+static int Ne() {
+	Eq();
+	return LogicalNot();
 }
 
 /**
@@ -1667,7 +1673,7 @@ static int ne() {
  *
  * @return
  */
-static int bitAnd() {
+static int BitAnd() {
 
 	/*
 	 ** Before: TheStack-> value2, value1, next, ...
@@ -1710,12 +1716,12 @@ static int bitAnd() {
 					++rightIter;
 				}
 				if (!insertResult) {
-					return execError("array insertion failure");
+					return ExecError("array insertion failure");
 				}
 			}
 			PUSH(resultArray);
 		} else {
-			return execError("can't mix math with arrays and non-arrays");
+			return ExecError("can't mix math with arrays and non-arrays");
 		}
 	} else {
 		int n1;
@@ -1725,7 +1731,7 @@ static int bitAnd() {
 		POP_INT(n1);
 		PUSH_INT(n1 & n2);
 	}
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
@@ -1733,13 +1739,13 @@ static int bitAnd() {
  * If both values are arrays, the result is a new array containing all keys
  * that exist in either the left or right array, but not both. (XOR)
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  *
  * @note The fact that this function is an XOR operation when both values are arrays
  * is a design choice that may not be intuitive. But we have to keep the
  * behavior consistent with the original NEdit macro language.
  */
-static int bitOr() {
+static int BitOr() {
 
 	/*
 	 ** Before: TheStack-> value2, value1, next, ...
@@ -1791,12 +1797,12 @@ static int bitOr() {
 					++rightIter;
 				}
 				if (!insertResult) {
-					return execError("array insertion failure");
+					return ExecError("array insertion failure");
 				}
 			}
 			PUSH(resultArray);
 		} else {
-			return execError("can't mix math with arrays and non-arrays");
+			return ExecError("can't mix math with arrays and non-arrays");
 		}
 	} else {
 		int n1;
@@ -1805,42 +1811,42 @@ static int bitOr() {
 		POP_INT(n1);
 		PUSH_INT(n1 | n2);
 	}
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
  * @brief Perform a logical AND operation on two values.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int logicalAnd() {
+static int LogicalAnd() {
 	BINARY_NUMERIC_OPERATION(&&);
 }
 
 /**
  * @brief Perform a logical OR operation on two values.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int logicalOr() {
+static int LogicalOr() {
 	BINARY_NUMERIC_OPERATION(||);
 }
 
 /**
  * @brief Perform a logical NOT operation on the top value of the stack.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int logicalNot() {
+static int LogicalNot() {
 	UNARY_NUMERIC_OPERATION(!);
 }
 
 /**
- * @brief Raise one number to the power of another.
+ * @brief Raise one number to the Power of another.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int power() {
+static int Power() {
 
 	/*
 	** Before: TheStack-> raisedBy, number, next, ...
@@ -1881,15 +1887,15 @@ static int power() {
 	}
 
 	PUSH_INT(n3);
-	return errCheck("exponentiation");
+	return ErrorCheck("exponentiation");
 }
 
 /**
  * @brief Concatenate two strings from the top of the stack.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int concat() {
+static int Concat() {
 
 	/*
 	** Before: TheStack-> str2, str1, next, ...
@@ -1908,7 +1914,7 @@ static int concat() {
 	const std::string out = s1 + s2;
 
 	PUSH_STRING(out);
-	return STAT_OK;
+	return StatusOk;
 }
 
 /*
@@ -1927,9 +1933,9 @@ static int concat() {
  * PC is set to point to the new function. For a built-in routine, the
  * arguments are popped off the stack, and the routine is just called.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int callSubroutine() {
+static int CallSubroutine() {
 
 	/*
 	 ** Before: Prog->  [subrSym], nArgs, next, ...
@@ -1959,20 +1965,20 @@ static int callSubroutine() {
 		PreemptRequest = false;
 
 		if (const std::error_code ec = to_subroutine(sym->value)(Context.FocusDocument, Arguments(Context.StackP, nArgs), &result)) {
-			return execError(ec, sym->name.c_str());
+			return ExecError(ec, sym->name.c_str());
 		}
 
-		if (Context.PC->func == fetchRetVal) {
+		if (Context.PC->func == FetchReturnVal) {
 
 			if (is_unset(result)) {
-				return execError("%s does not return a value", sym->name.c_str());
+				return ExecError("%s does not return a value", sym->name.c_str());
 			}
 
 			PUSH(result);
 			Context.PC++;
 		}
 
-		return PreemptRequest ? STAT_PREEMPT : STAT_OK;
+		return PreemptRequest ? StatusPreempt : StatusOk;
 	}
 
 	/*
@@ -1997,51 +2003,51 @@ static int callSubroutine() {
 			FP_GET_SYM_VAL(Context.FrameP, s) = make_value();
 			Context.StackP++;
 		}
-		return STAT_OK;
+		return StatusOk;
 	}
 
 	// Calling a non subroutine symbol
-	return execError("%s is not a function or subroutine", sym->name.c_str());
+	return ExecError("%s is not a function or subroutine", sym->name.c_str());
 }
 
 /**
  * @brief Fetch the return value of a subroutine.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  *
- * @note This should never be executed, returnVal checks for the presence of this
+ * @note This should never be executed, ReturnValue checks for the presence of this
  * instruction at the PC to decide whether to push the function's return
  * value, then skips over it without executing.
  */
-static int fetchRetVal() {
-	return execError("internal error: frv");
+static int FetchReturnVal() {
+	return ExecError("internal error: frv");
 }
 
 /**
  * @brief Return from a subroutine call without a return value.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int returnNoVal() {
-	return returnValOrNone(false);
+static int ReturnNoValue() {
+	return ReturnValueOrNone(false);
 }
 
 /**
  * @brief Return from a subroutine call with a return value.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int returnVal() {
-	return returnValOrNone(true);
+static int ReturnValue() {
+	return ReturnValueOrNone(true);
 }
 
 /**
  * @brief Return from a subroutine call, either with or without a return value.
  *
  * @param valOnStack Indicates whether the return value is on the stack.
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int returnValOrNone(bool valOnStack) {
+static int ReturnValueOrNone(bool valOnStack) {
 
 	/*
 	** Before: Prog->  [next], ...
@@ -2078,25 +2084,25 @@ static int returnValOrNone(bool valOnStack) {
 		} else {
 			PUSH(make_value());
 		}
-	} else if (Context.PC->func == fetchRetVal) {
+	} else if (Context.PC->func == FetchReturnVal) {
 		if (valOnStack) {
 			PUSH(retVal);
 			Context.PC++;
 		} else {
-			return execError("using return value of %s which does not return a value", ((Context.PC - 2)->sym->name.c_str()));
+			return ExecError("using return value of %s which does not return a value", ((Context.PC - 2)->sym->name.c_str()));
 		}
 	}
 
 	// nullptr return PC indicates end of program
-	return (Context.PC == nullptr) ? STAT_DONE : STAT_OK;
+	return (Context.PC == nullptr) ? StatusDone : StatusOk;
 }
 
 /**
  * @brief Branch to an address specified by the immediate operand.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int branch() {
+static int Branch() {
 
 	/*
 	** Before: Prog->  [branchDest], next, ..., (branchdest)next
@@ -2107,15 +2113,15 @@ static int branch() {
 	STACKDUMP(0, 3);
 
 	Context.PC += Context.PC->value;
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
  * @brief Branch to an address if the top value of the stack is `true` (non-zero).
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int branchTrue() {
+static int BranchTrue() {
 
 	/*
 	** Before: Prog->  [branchDest], next, ..., (branchdest)next
@@ -2136,15 +2142,15 @@ static int branchTrue() {
 		Context.PC = addr;
 	}
 
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
  * @brief Branch to an address if the top value of the stack is `false` (zero).
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int branchFalse() {
+static int BranchFalse() {
 
 	/*
 	 ** Before: Prog->  [branchDest], next, ..., (branchdest)next
@@ -2165,17 +2171,17 @@ static int branchFalse() {
 		Context.PC = addr;
 	}
 
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
  * @brief Branch to an address that is never taken.
  * Why? So some code that uses conditional branching
- * doesn't have to figure out whether to store a branch address.
+ * doesn't have to figure out whether to store a Branch address.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int branchNever() {
+static int BranchNever() {
 
 	/*
 	** Before: Prog->  [branchDest], next, ...
@@ -2186,7 +2192,7 @@ static int branchNever() {
 	STACKDUMP(0, 3);
 
 	Context.PC++;
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
@@ -2194,11 +2200,11 @@ static int branchNever() {
  *
  * @param dstArray The destination array to copy to.
  * @param srcArray The source array to copy from.
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
 int ArrayCopy(DataValue *dstArray, const DataValue *srcArray) {
 	*dstArray = *srcArray;
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
@@ -2207,9 +2213,9 @@ int ArrayCopy(DataValue *dstArray, const DataValue *srcArray) {
  * @param nArgs The number of arguments to process from the stack.
  * @param keyString A string where the key will be stored.
  * @param leaveParams If `true`, the parameters will not be popped from the stack after processing.
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int makeArrayKeyFromArgs(int64_t nArgs, std::string *keyString, bool leaveParams) {
+static int MakeArrayKeyFromArgs(int64_t nArgs, std::string *keyString, bool leaveParams) {
 	DataValue tmpVal;
 
 	std::string str;
@@ -2225,7 +2231,7 @@ static int makeArrayKeyFromArgs(int64_t nArgs, std::string *keyString, bool leav
 			auto s = to_string(tmpVal);
 			str.append(s.begin(), s.end());
 		} else {
-			return execError("can only index array with string or int.");
+			return ExecError("can only index array with string or int.");
 		}
 	}
 
@@ -2237,7 +2243,7 @@ static int makeArrayKeyFromArgs(int64_t nArgs, std::string *keyString, bool leav
 
 	*keyString = str;
 
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
@@ -2324,7 +2330,7 @@ bool ArrayGet(DataValue *theArray, const std::string &keyStr, DataValue *theValu
  * @param theArray The array to iterate over.
  * @return An ArrayIterator initialized to the first element of the array.
  */
-ArrayIterator arrayIterateFirst(DataValue *theArray) {
+ArrayIterator ArrayIterateFirst(DataValue *theArray) {
 
 	const ArrayPtr &m = to_array(*theArray);
 	ArrayIterator it{m, m->begin()};
@@ -2338,7 +2344,7 @@ ArrayIterator arrayIterateFirst(DataValue *theArray) {
  * @param iterator The iterator to advance.
  * @return The updated iterator, now pointing to the next element.
  */
-ArrayIterator arrayIterateNext(ArrayIterator iterator) {
+ArrayIterator ArrayIterateNext(ArrayIterator iterator) {
 
 	Q_ASSERT(iterator.it != iterator.m->end());
 	++(iterator.it);
@@ -2348,9 +2354,9 @@ ArrayIterator arrayIterateNext(ArrayIterator iterator) {
 /**
  * @brief Evaluate an array element and push the result onto the stack.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int arrayRef() {
+static int ArrayRef() {
 
 	/*
 	 ** Before: Prog->  [nDim], next, ...
@@ -2369,38 +2375,38 @@ static int arrayRef() {
 	STACKDUMP(nDim, 3);
 
 	if (nDim > 0) {
-		const int errNum = makeArrayKeyFromArgs(nDim, &keyString, false);
-		if (errNum != STAT_OK) {
+		const int errNum = MakeArrayKeyFromArgs(nDim, &keyString, false);
+		if (errNum != StatusOk) {
 			return errNum;
 		}
 
 		POP(srcArray);
 		if (is_array(srcArray)) {
 			if (!ArrayGet(&srcArray, keyString, &valueItem)) {
-				return execError("referenced array value not in array: %s", keyString.c_str());
+				return ExecError("referenced array value not in array: %s", keyString.c_str());
 			}
 			PUSH(valueItem);
-			return STAT_OK;
+			return StatusOk;
 		}
 
-		return execError("operator [] on non-array");
+		return ExecError("operator [] on non-array");
 	}
 
 	POP(srcArray);
 	if (is_array(srcArray)) {
 		PUSH_INT(ArraySize(&srcArray));
-		return STAT_OK;
+		return StatusOk;
 	}
 
-	return execError("operator [] on non-array");
+	return ExecError("operator [] on non-array");
 }
 
 /**
  * @brief Assign a value to an array element.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int arrayAssign() {
+static int ArrayAssign() {
 
 	/*
 	** Before: Prog->  [nDim], next, ...
@@ -2421,14 +2427,14 @@ static int arrayAssign() {
 	if (nDim > 0) {
 		POP(srcValue);
 
-		if (const int errNum = makeArrayKeyFromArgs(nDim, &keyString, false); errNum != STAT_OK) {
+		if (const int errNum = MakeArrayKeyFromArgs(nDim, &keyString, false); errNum != StatusOk) {
 			return errNum;
 		}
 
 		POP(dstArray);
 
 		if (!is_array(dstArray) && is_unset(dstArray)) {
-			return execError("cannot assign array element of non-array");
+			return ExecError("cannot Assign array element of non-array");
 		}
 
 		if (is_array(srcValue)) {
@@ -2438,27 +2444,27 @@ static int arrayAssign() {
 			srcValue         = arrayCopyValue;
 
 			// TODO(eteran): should we return before assigning to srcValue?
-			if (errNum != STAT_OK) {
+			if (errNum != StatusOk) {
 				return errNum;
 			}
 		}
 
 		if (ArrayInsert(&dstArray, keyString, &srcValue)) {
-			return STAT_OK;
+			return StatusOk;
 		}
 
-		return execError("array member allocation failure");
+		return ExecError("array member allocation failure");
 	}
 
-	return execError("empty operator []");
+	return ExecError("empty operator []");
 }
 
 /**
  * @brief Set up for an array reference and assignment operation.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int arrayRefAndAssignSetup() {
+static int ArrayRefAndAssignSetup() {
 
 	/*
 	 ** Before: Prog->  [binOp], nDim, next, ...
@@ -2483,26 +2489,26 @@ static int arrayRefAndAssignSetup() {
 	}
 
 	if (nDim > 0) {
-		if (const int errNum = makeArrayKeyFromArgs(nDim, &keyString, true); errNum != STAT_OK) {
+		if (const int errNum = MakeArrayKeyFromArgs(nDim, &keyString, true); errNum != StatusOk) {
 			return errNum;
 		}
 
 		PEEK(srcArray, nDim);
 		if (is_array(srcArray)) {
 			if (!ArrayGet(&srcArray, keyString, &valueItem)) {
-				return execError("referenced array value not in array: %s", keyString.c_str());
+				return ExecError("referenced array value not in array: %s", keyString.c_str());
 			}
 			PUSH(valueItem);
 			if (binaryOp) {
 				PUSH(moveExpr);
 			}
-			return STAT_OK;
+			return StatusOk;
 		}
 
-		return execError("operator [] on non-array");
+		return ExecError("operator [] on non-array");
 	}
 
-	return execError("array[] not an lvalue");
+	return ExecError("array[] not an lvalue");
 }
 
 /**
@@ -2510,7 +2516,7 @@ static int arrayRefAndAssignSetup() {
  *
  * @return
  */
-static int beginArrayIter() {
+static int BeginArrayIter() {
 
 	/*
 	 ** Before: Prog->  [iter], ARRAY_ITER, iterVar, iter, endLoopBranch, next, ...
@@ -2533,25 +2539,25 @@ static int beginArrayIter() {
 	POP(arrayVal);
 
 	if (iterator->type != LOCAL_SYM) {
-		return execError("bad temporary iterator: %s", iterator->name.c_str());
+		return ExecError("bad temporary iterator: %s", iterator->name.c_str());
 	}
 
 	DataValue *iteratorValPtr = &FP_GET_SYM_VAL(Context.FrameP, iterator);
 
 	if (!is_array(arrayVal)) {
-		return execError("can't iterate non-array");
+		return ExecError("can't iterate non-array");
 	}
 
-	*iteratorValPtr = make_value(arrayIterateFirst(&arrayVal));
-	return STAT_OK;
+	*iteratorValPtr = make_value(ArrayIterateFirst(&arrayVal));
+	return StatusOk;
 }
 
 /**
- * @brief Advance the array iterator and assign the current key to a symbol.
+ * @brief Advance the array iterator and Assign the current key to a symbol.
  *
  * @return
  */
-static int arrayIter() {
+static int ArrayIter() {
 
 	/*
 	 ** Before: Prog->  iter, ARRAY_ITER, [iterVar], iter, endLoopBranch, next, ...
@@ -2567,7 +2573,7 @@ static int arrayIter() {
 	 **      endLoopBranch is the instruction offset to the instruction following the
 	 **              loop (measured from itself)
 	 **      arrayVal is the data value holding the array in question
-	 ** The return-to-start-of-loop branch (at the end of the loop) should address
+	 ** The return-to-start-of-loop Branch (at the end of the loop) should address
 	 ** the ARRAY_ITER instruction
 	 */
 
@@ -2589,13 +2595,13 @@ static int arrayIter() {
 		itemValPtr = &(item->value);
 		break;
 	default:
-		return execError("can't assign to: %s", item->name.c_str());
+		return ExecError("can't Assign to: %s", item->name.c_str());
 	}
 
 	*itemValPtr = make_value();
 
 	if (iterator->type != LOCAL_SYM) {
-		return execError("bad temporary iterator: %s", iterator->name.c_str());
+		return ExecError("bad temporary iterator: %s", iterator->name.c_str());
 	}
 
 	DataValue *iteratorValPtr = &FP_GET_SYM_VAL(Context.FrameP, iterator);
@@ -2604,12 +2610,12 @@ static int arrayIter() {
 
 	if (thisEntry.it != thisEntry.m->end()) {
 		*itemValPtr     = make_value(thisEntry.it->first);
-		*iteratorValPtr = make_value(arrayIterateNext(thisEntry));
+		*iteratorValPtr = make_value(ArrayIterateNext(thisEntry));
 	} else {
 		Context.PC = branchAddr;
 	}
 
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
@@ -2619,9 +2625,9 @@ static int arrayIter() {
  * If the left argument is an array, it checks if every key in the left array exists in the right array.
  *
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int inArray() {
+static int InArray() {
 
 	/*
 	 ** Before: Prog->  [next], ...
@@ -2641,7 +2647,7 @@ static int inArray() {
 
 	POP(theArray);
 	if (!is_array(theArray)) {
-		return execError("operator in on non-array");
+		return ExecError("operator in on non-array");
 	}
 
 	PEEK(leftArray, 0);
@@ -2666,7 +2672,7 @@ static int inArray() {
 		}
 	}
 	PUSH_INT(inResult);
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
@@ -2674,12 +2680,12 @@ static int inArray() {
  * If nDim is greater than 0, it deletes the element at the specified key.
  * If nDim is 0, it deletes all elements from the array.
  *
- * @return STAT_OK on success, or an error code if an error occurred.
+ * @return StatusOk on success, or an error code if an error occurred.
  */
-static int deleteArrayElement() {
+static int DeleteArrayElement() {
 
 	/*
-	 ** for use with assign-op operators (eg a[i,j] += k
+	 ** for use with Assign-op operators (eg a[i,j] += k
 	 ** Before: Prog->  [nDim], next, ...
 	 **         TheStack-> [indnDim], ... ind1, arrayValue, next, ...
 	 ** After:  Prog->  nDim, [next], ...
@@ -2695,8 +2701,8 @@ static int deleteArrayElement() {
 	STACKDUMP(nDim + 1, 3);
 
 	if (nDim > 0) {
-		const int errNum = makeArrayKeyFromArgs(nDim, &keyString, false);
-		if (errNum != STAT_OK) {
+		const int errNum = MakeArrayKeyFromArgs(nDim, &keyString, false);
+		if (errNum != StatusOk) {
 			return errNum;
 		}
 	}
@@ -2709,9 +2715,9 @@ static int deleteArrayElement() {
 			ArrayDeleteAll(&theArray);
 		}
 	} else {
-		return execError("attempt to delete from non-array");
+		return ExecError("attempt to delete from non-array");
 	}
-	return STAT_OK;
+	return StatusOk;
 }
 
 /**
@@ -2760,7 +2766,7 @@ bool StringToNum(const std::string &string, int *number) {
  *
  * @param dv The DataValue to dump.
  */
-static void dumpVal(DataValue dv) {
+static void DumpValue(DataValue dv) {
 
 	auto escape_string = [](const std::string &s) -> std::string {
 		std::string r;
@@ -2812,48 +2818,48 @@ static void dumpVal(DataValue dv) {
  * @param inst The array of instructions to disassemble.
  * @param nInstr The number of instructions in the array.
  */
-static void disasm(Inst *inst, size_t nInstr) {
+static void Disassemble(Inst *inst, size_t nInstr) {
 	static const char *opNames[N_OPS] = {
-		"RETURN_NO_VAL",          // returnNoVal
-		"RETURN",                 // returnVal
-		"PUSH_SYM",               // pushSymVal
-		"DUP",                    // dupStack
-		"ADD",                    // add
-		"SUB",                    // subtract
-		"MUL",                    // multiply
-		"DIV",                    // divide
-		"MOD",                    // modulo
-		"NEGATE",                 // negate
-		"INCR",                   // increment
-		"DECR",                   // decrement
-		"GT",                     // gt
-		"LT",                     // lt
-		"GE",                     // ge
-		"LE",                     // le
-		"EQ",                     // eq
-		"NE",                     // ne
-		"BIT_AND",                // bitAnd
-		"BIT_OR",                 // bitOr
+		"RETURN_NO_VAL",          // ReturnNoValue
+		"RETURN",                 // ReturnValue
+		"PUSH_SYM",               // PushSymValue
+		"DUP",                    // DupStack
+		"ADD",                    // Add
+		"SUB",                    // Subtract
+		"MUL",                    // Multiply
+		"DIV",                    // Divide
+		"MOD",                    // Modulo
+		"NEGATE",                 // Negate
+		"INCR",                   // Increment
+		"DECR",                   // Decrement
+		"GT",                     // Gt
+		"LT",                     // Lt
+		"GE",                     // Ge
+		"LE",                     // Le
+		"EQ",                     // Eq
+		"NE",                     // Ne
+		"BIT_AND",                // BitAnd
+		"BIT_OR",                 // BitOr
 		"AND",                    // and
 		"OR",                     // or
 		"NOT",                    // not
-		"POWER",                  // power
-		"CONCAT",                 // concat
-		"ASSIGN",                 // assign
-		"SUBR_CALL",              // callSubroutine
-		"FETCH_RET_VAL",          // fetchRetVal
-		"BRANCH",                 // branch
-		"BRANCH_TRUE",            // branchTrue
-		"BRANCH_FALSE",           // branchFalse
-		"BRANCH_NEVER",           // branchNever
-		"ARRAY_REF",              // arrayRef
-		"ARRAY_ASSIGN",           // arrayAssign
-		"BEGIN_ARRAY_ITER",       // beginArrayIter
-		"ARRAY_ITER",             // arrayIter
-		"IN_ARRAY",               // inArray
-		"ARRAY_DELETE",           // deleteArrayElement
-		"PUSH_ARRAY_SYM",         // pushArraySymVal
-		"ARRAY_REF_ASSIGN_SETUP", // arrayRefAndAssignSetup
+		"POWER",                  // Power
+		"CONCAT",                 // Concat
+		"ASSIGN",                 // Assign
+		"SUBR_CALL",              // CallSubroutine
+		"FETCH_RET_VAL",          // FetchReturnVal
+		"BRANCH",                 // Branch
+		"BRANCH_TRUE",            // BranchTrue
+		"BRANCH_FALSE",           // BranchFalse
+		"BRANCH_NEVER",           // BranchNever
+		"ARRAY_REF",              // ArrayRef
+		"ARRAY_ASSIGN",           // ArrayAssign
+		"BEGIN_ARRAY_ITER",       // BeginArrayIter
+		"ARRAY_ITER",             // ArrayIter
+		"IN_ARRAY",               // InArray
+		"ARRAY_DELETE",           // DeleteArrayElement
+		"PUSH_ARRAY_SYM",         // PushArraySymVal
+		"ARRAY_REF_ASSIGN_SETUP", // ArrayRefAndAssignSetup
 		"PUSH_ARG",               // $arg[expr]
 		"PUSH_ARG_COUNT",         // $arg[]
 		"PUSH_ARG_ARRAY"          // $arg
@@ -2870,7 +2876,7 @@ static void disasm(Inst *inst, size_t nInstr) {
 					Symbol *sym = inst[i + 1].sym;
 					printf("%s", sym->name.c_str());
 					if (is_string(sym->value) && sym->name.compare(0, 8, "string #") == 0) {
-						dumpVal(sym->value);
+						DumpValue(sym->value);
 					}
 					++i;
 				} else if (j == OP_BRANCH || j == OP_BRANCH_FALSE || j == OP_BRANCH_NEVER || j == OP_BRANCH_TRUE) {
@@ -2918,7 +2924,7 @@ static void disasm(Inst *inst, size_t nInstr) {
  * @param n The number of stack entries to dump.
  * @param extra Additional stack entries to dump beyond the specified number.
  */
-static void stackdump(int n, int extra) {
+static void StackDump(int n, int extra) {
 	// TheStack-> symN-sym1(FP), argArray, nArgs, oldFP, retPC, argN-arg1, next, ...
 	int nArgs = FP_GET_ARG_COUNT(Context.FrameP);
 	int i;
@@ -2962,7 +2968,7 @@ static void stackdump(int n, int extra) {
 		}
 
 		printf("%-6s ", pos);
-		dumpVal(*dv);
+		DumpValue(*dv);
 		printf("\n");
 	}
 }

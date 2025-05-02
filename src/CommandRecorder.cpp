@@ -55,7 +55,7 @@ const QLatin1String RedundantActions[] = {
  * @return `true` if the event is a mouse action, false otherwise
  */
 template <class Event>
-bool isMouseAction(const Event *ev) {
+bool IsMouseAction(const Event *ev) {
 
 	return std::any_of(std::begin(MouseActions), std::end(MouseActions), [ev](const QLatin1String &action) {
 		return action == ev->actionString();
@@ -69,7 +69,7 @@ bool isMouseAction(const Event *ev) {
  * @return `true` if the action is redundant, false otherwise
  */
 template <class Event>
-bool isRedundantAction(const Event *ev) {
+bool IsRedundantAction(const Event *ev) {
 
 	return std::any_of(std::begin(RedundantActions), std::end(RedundantActions), [ev](const QLatin1String &action) {
 		return action == ev->actionString();
@@ -83,9 +83,9 @@ bool isRedundantAction(const Event *ev) {
  * @return QString representing the action, or QString() if the action is not recordable.
  */
 template <class Event>
-QString actionToString(const Event *ev) {
+QString ActionToString(const Event *ev) {
 
-	if (isRedundantAction(ev) || isMouseAction(ev)) {
+	if (IsRedundantAction(ev) || IsMouseAction(ev)) {
 		return QString();
 	}
 
@@ -182,14 +182,14 @@ void CommandRecorder::lastActionHook(const WindowMenuEvent *ev) {
 	}
 
 	// Record the action and its parameters
-	const QString actionString = actionToString(ev);
+	const QString actionString = ActionToString(ev);
 	if (!actionString.isNull()) {
 		lastCommand_ = actionString;
 
 		if (isRecording_) {
 			/* beep on un-recordable operations which require a mouse position, to
 			   remind the user that the action was not recorded */
-			if (isMouseAction(ev)) {
+			if (IsMouseAction(ev)) {
 				QApplication::beep();
 				return;
 			}
@@ -214,14 +214,14 @@ void CommandRecorder::lastActionHook(const TextEditEvent *ev) {
 	}
 
 	// Record the action and its parameters
-	const QString actionString = actionToString(ev);
+	const QString actionString = ActionToString(ev);
 	if (!actionString.isNull()) {
 		lastCommand_ = actionString;
 
 		if (isRecording_) {
 			/* beep on un-recordable operations which require a mouse position, to
 			   remind the user that the action was not recorded */
-			if (isMouseAction(ev)) {
+			if (IsMouseAction(ev)) {
 				QApplication::beep();
 				return;
 			}

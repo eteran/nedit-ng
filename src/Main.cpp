@@ -21,7 +21,7 @@
 
 namespace {
 
-constexpr const char cmdLineHelp[] =
+constexpr const char HelpText[] =
 	"Usage: nedit-ng [-read] [-create] [-line n | +n] [-server] [-do command]\n"
 	"                [-tags file] [-tabs n] [-wrap] [-nowrap] [-autowrap]\n"
 	"                [-autoindent] [-noautoindent] [-autosave] [-noautosave]\n"
@@ -39,7 +39,7 @@ constexpr const char cmdLineHelp[] =
  */
 int GetArgumentParameter(const QStringList &args, int argIndex) {
 	if (argIndex + 1 >= args.size()) {
-		fprintf(stderr, "NEdit: %s requires an argument\n%s", qPrintable(args[argIndex]), cmdLineHelp);
+		fprintf(stderr, "NEdit: %s requires an argument\n%s", qPrintable(args[argIndex]), HelpText);
 		exit(EXIT_FAILURE);
 	}
 
@@ -251,10 +251,10 @@ Main::Main(const QStringList &args) {
 			printf("%s", qPrintable(infoString));
 			exit(EXIT_SUCCESS);
 		} else if (opts && (args[i] == QLatin1String("-h") || args[i] == QLatin1String("-help"))) {
-			fprintf(stderr, "%s", cmdLineHelp);
+			fprintf(stderr, "%s", HelpText);
 			exit(EXIT_SUCCESS);
 		} else if (opts && (args[i].startsWith(QLatin1Char('-')))) {
-			fprintf(stderr, "nedit: Unrecognized option %s\n%s", qPrintable(args[i]), cmdLineHelp);
+			fprintf(stderr, "nedit: Unrecognized option %s\n%s", qPrintable(args[i]), HelpText);
 			exit(EXIT_FAILURE);
 		} else {
 

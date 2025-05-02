@@ -54,10 +54,11 @@ bool PrefsHaveChanged = false;
 QString ImportedFile;
 
 /**
- * @brief
+ * @brief Reads a list of file extensions from the input stream until it
+ * encounters a colon (':') or the end of the stream.
  *
- * @param in
- * @return
+ * @param in The input stream to read from.
+ * @return A list of file extensions read from the input stream.
  */
 QStringList ReadExtensionList(Input &in) {
 	QStringList extensionList;

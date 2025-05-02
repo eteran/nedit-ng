@@ -149,7 +149,7 @@ void PrintVersion() {
 
 /**
  * @brief Parses the command line arguments into a CommandLine structure.
- * This is the internal implementation of processCommandLine.
+ * This is the internal implementation of ProcessCommandLine.
  *
  * @param args The command line arguments
  * @return A CommandLine structure containing the parsed arguments
@@ -346,7 +346,7 @@ std::optional<CommandLine> ParseCommandLine(const QStringList &args) {
  * @param args The command line arguments.
  * @return CommandLine structure containing the command and arguments.
  */
-CommandLine processCommandLine(const QStringList &args) {
+CommandLine ProcessCommandLine(const QStringList &args) {
 
 	// Convert command line arguments into a command string for the server
 	if (std::optional<CommandLine> commandLine = ParseCommandLine(args)) {
@@ -455,7 +455,7 @@ int main(int argc, char *argv[]) {
 	ServerPreferences.serverName   = settings.value(QLatin1String("nc.serverName"), QString()).toString();
 	ServerPreferences.waitForClose = settings.value(QLatin1String("nc.waitForClose"), false).toBool();
 	ServerPreferences.timeOut      = settings.value(QLatin1String("nc.timeOut"), 10).toInt();
-	CommandLine commandLine        = processCommandLine(QCoreApplication::arguments());
+	CommandLine commandLine        = ProcessCommandLine(QCoreApplication::arguments());
 
 	/* Make sure that the time out unit is at least 1 second and not too
 	   large either (overflow!). */

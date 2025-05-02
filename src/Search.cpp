@@ -39,7 +39,7 @@ int HistStart = 0;
  * @param defaultFlags
  * @return
  */
-std::optional<Search::Result> forwardRegexSearch(std::string_view string, std::string_view searchString, WrapMode wrap, int64_t beginPos, const char *delimiters, int defaultFlags) {
+std::optional<Search::Result> ForwardRegexSearch(std::string_view string, std::string_view searchString, WrapMode wrap, int64_t beginPos, const char *delimiters, int defaultFlags) {
 
 	try {
 		Regex compiledRE(searchString, defaultFlags);
@@ -92,7 +92,7 @@ std::optional<Search::Result> forwardRegexSearch(std::string_view string, std::s
  * @param defaultFlags
  * @return
  */
-std::optional<Search::Result> backwardRegexSearch(std::string_view string, std::string_view searchString, WrapMode wrap, int64_t beginPos, const char *delimiters, int defaultFlags) {
+std::optional<Search::Result> BackwardRegexSearch(std::string_view string, std::string_view searchString, WrapMode wrap, int64_t beginPos, const char *delimiters, int defaultFlags) {
 
 	try {
 		Regex compiledRE(searchString, defaultFlags);
@@ -152,13 +152,13 @@ std::optional<Search::Result> backwardRegexSearch(std::string_view string, std::
  * @param defaultFlags
  * @return
  */
-std::optional<Search::Result> searchRegex(std::string_view string, std::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, const char *delimiters, int defaultFlags) {
+std::optional<Search::Result> SearchRegex(std::string_view string, std::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, const char *delimiters, int defaultFlags) {
 
 	switch (direction) {
 	case Direction::Forward:
-		return forwardRegexSearch(string, searchString, wrap, beginPos, delimiters, defaultFlags);
+		return ForwardRegexSearch(string, searchString, wrap, beginPos, delimiters, defaultFlags);
 	case Direction::Backward:
-		return backwardRegexSearch(string, searchString, wrap, beginPos, delimiters, defaultFlags);
+		return BackwardRegexSearch(string, searchString, wrap, beginPos, delimiters, defaultFlags);
 	}
 
 	Q_UNREACHABLE();
@@ -175,7 +175,7 @@ std::optional<Search::Result> searchRegex(std::string_view string, std::string_v
  * @param beginPos
  * @return
  */
-std::optional<Search::Result> searchLiteral(std::string_view string, std::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, Qt::CaseSensitivity caseSensitivity) {
+std::optional<Search::Result> SearchLiteral(std::string_view string, std::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, Qt::CaseSensitivity caseSensitivity) {
 
 	if (searchString.empty()) {
 		return {};
@@ -286,7 +286,7 @@ std::optional<Search::Result> searchLiteral(std::string_view string, std::string
 **  will suffice in that case.
 **
 */
-std::optional<Search::Result> searchLiteralWord(std::string_view string, std::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, const char *delimiters, Qt::CaseSensitivity caseSensitivity) {
+std::optional<Search::Result> SearchLiteralWord(std::string_view string, std::string_view searchString, Direction direction, WrapMode wrap, int64_t beginPos, const char *delimiters, Qt::CaseSensitivity caseSensitivity) {
 
 	if (searchString.empty()) {
 		return {};
@@ -414,17 +414,17 @@ std::optional<Search::Result> searchLiteralWord(std::string_view string, std::st
 std::optional<Search::Result> SearchStringEx(std::string_view string, std::string_view searchString, Direction direction, SearchType searchType, WrapMode wrap, int64_t beginPos, const char *delimiters) {
 	switch (searchType) {
 	case SearchType::CaseSenseWord:
-		return searchLiteralWord(string, searchString, direction, wrap, beginPos, delimiters, Qt::CaseSensitive);
+		return SearchLiteralWord(string, searchString, direction, wrap, beginPos, delimiters, Qt::CaseSensitive);
 	case SearchType::LiteralWord:
-		return searchLiteralWord(string, searchString, direction, wrap, beginPos, delimiters, Qt::CaseInsensitive);
+		return SearchLiteralWord(string, searchString, direction, wrap, beginPos, delimiters, Qt::CaseInsensitive);
 	case SearchType::CaseSense:
-		return searchLiteral(string, searchString, direction, wrap, beginPos, Qt::CaseSensitive);
+		return SearchLiteral(string, searchString, direction, wrap, beginPos, Qt::CaseSensitive);
 	case SearchType::Literal:
-		return searchLiteral(string, searchString, direction, wrap, beginPos, Qt::CaseInsensitive);
+		return SearchLiteral(string, searchString, direction, wrap, beginPos, Qt::CaseInsensitive);
 	case SearchType::Regex:
-		return searchRegex(string, searchString, direction, wrap, beginPos, delimiters, RE_DEFAULT_STANDARD);
+		return SearchRegex(string, searchString, direction, wrap, beginPos, delimiters, RE_DEFAULT_STANDARD);
 	case SearchType::RegexNoCase:
-		return searchRegex(string, searchString, direction, wrap, beginPos, delimiters, RE_DEFAULT_CASE_INSENSITIVE);
+		return SearchRegex(string, searchString, direction, wrap, beginPos, delimiters, RE_DEFAULT_CASE_INSENSITIVE);
 	}
 
 	Q_UNREACHABLE();
@@ -439,7 +439,7 @@ std::optional<Search::Result> SearchStringEx(std::string_view string, std::strin
 ** code to continue using strings to represent the search and replace
 ** items.
 */
-bool replaceUsingRegex(std::string_view searchStr, std::string_view replaceStr, std::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
+bool ReplaceUsingRegex(std::string_view searchStr, std::string_view replaceStr, std::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const char *delimiters, int defaultFlags) {
 	// TODO(eteran): just return an optional<std::string>
 	try {
 		Regex compiledRE(searchStr, defaultFlags);
@@ -644,7 +644,7 @@ bool Search::SearchString(std::string_view string, const QString &searchString, 
  * @return
  */
 bool Search::ReplaceUsingRE(const QString &searchStr, const QString &replaceStr, std::string_view sourceStr, int64_t beginPos, std::string &dest, int prevChar, const QString &delimiters, int defaultFlags) {
-	return replaceUsingRegex(
+	return ReplaceUsingRegex(
 		searchStr.toStdString(),
 		replaceStr.toStdString(),
 		sourceStr,

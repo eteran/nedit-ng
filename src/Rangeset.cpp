@@ -15,7 +15,7 @@ RangesetUpdateFn RangesetDelInsMaintain;
 RangesetUpdateFn RangesetExclMaintain;
 RangesetUpdateFn RangesetBreakMaintain;
 
-constexpr auto DefaultUpdateFuncName = QLatin1String("maintain");
+auto DefaultUpdateFuncName = QLatin1String("maintain");
 
 struct {
 	QLatin1String name;
@@ -187,7 +187,7 @@ TextCursor *FlattenRanges(std::vector<TextRange> &ranges) {
 ** update the last_index value of the range set. Return's the index value. This
 ** will be twice p->n_ranges if pos is beyond the end.
 */
-int64_t rangesetWeightedAtOrBefore(Rangeset *rangeset, TextCursor pos) {
+int64_t RangesetWeightedAtOrBefore(Rangeset *rangeset, TextCursor pos) {
 
 	int64_t i;
 
@@ -218,10 +218,10 @@ int64_t rangesetWeightedAtOrBefore(Rangeset *rangeset, TextCursor pos) {
 }
 
 /*
-** Adjusts values in tab[] by an amount delta, perhaps moving them meanwhile.
+** Adjusts values in table[] by an amount delta, perhaps moving them meanwhile.
 */
 template <class T>
-int64_t rangesetShuffleToFrom(T *table, int64_t to, int64_t from, int64_t n, int64_t delta) {
+int64_t RangesetShuffleToFrom(T *table, int64_t to, int64_t from, int64_t n, int64_t delta) {
 	int64_t end;
 	const int64_t diff = from - to;
 
@@ -273,7 +273,7 @@ Rangeset *RangesetInsDelMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins
 	TextCursor *rangeTable = FlattenRanges(rangeset->ranges_);
 	auto n                 = 2 * static_cast<int64_t>(rangeset->ranges_.size());
 
-	int64_t i = rangesetWeightedAtOrBefore(rangeset, pos);
+	int64_t i = RangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n) {
 		return rangeset; // all beyond the end
@@ -305,7 +305,7 @@ Rangeset *RangesetInsDelMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins
 		i++;
 	}
 
-	rangesetShuffleToFrom(rangeTable, i, j, n - j, movement);
+	RangesetShuffleToFrom(rangeTable, i, j, n - j, movement);
 
 	n -= (j - i);
 
@@ -323,7 +323,7 @@ Rangeset *RangesetInclMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, 
 	TextCursor *rangeTable = FlattenRanges(rangeset->ranges_);
 	auto n                 = 2 * static_cast<int64_t>(rangeset->ranges_.size());
 
-	int64_t i = rangesetWeightedAtOrBefore(rangeset, pos);
+	int64_t i = RangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n) {
 		return rangeset; // all beyond the end
@@ -362,7 +362,7 @@ Rangeset *RangesetInclMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, 
 		i++;
 	}
 
-	rangesetShuffleToFrom(rangeTable, i, j, n - j, movement);
+	RangesetShuffleToFrom(rangeTable, i, j, n - j, movement);
 
 	n -= (j - i);
 
@@ -381,7 +381,7 @@ Rangeset *RangesetDelInsMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins
 	TextCursor *rangeTable = FlattenRanges(rangeset->ranges_);
 	auto n                 = 2 * static_cast<int64_t>(rangeset->ranges_.size());
 
-	int64_t i = rangesetWeightedAtOrBefore(rangeset, pos);
+	int64_t i = RangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n) {
 		return rangeset; // all beyond the end
@@ -415,7 +415,7 @@ Rangeset *RangesetDelInsMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins
 		i++;
 	}
 
-	rangesetShuffleToFrom(rangeTable, i, j, n - j, movement);
+	RangesetShuffleToFrom(rangeTable, i, j, n - j, movement);
 
 	n -= (j - i);
 
@@ -434,7 +434,7 @@ Rangeset *RangesetExclMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, 
 	TextCursor *rangeTable = FlattenRanges(rangeset->ranges_);
 	int64_t n              = 2 * static_cast<int64_t>(rangeset->ranges_.size());
 
-	int64_t i = rangesetWeightedAtOrBefore(rangeset, pos);
+	int64_t i = RangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n) {
 		return rangeset; // all beyond the end
@@ -474,7 +474,7 @@ Rangeset *RangesetExclMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins, 
 		i++;
 	}
 
-	rangesetShuffleToFrom(rangeTable, i, j, n - j, movement);
+	RangesetShuffleToFrom(rangeTable, i, j, n - j, movement);
 
 	n -= (j - i);
 
@@ -492,7 +492,7 @@ Rangeset *RangesetBreakMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins,
 
 	auto n = 2 * static_cast<int64_t>(rangeset->ranges_.size());
 
-	int64_t i = rangesetWeightedAtOrBefore(rangeset, pos);
+	int64_t i = RangesetWeightedAtOrBefore(rangeset, pos);
 
 	if (i == n) {
 		return rangeset; // all beyond the end
@@ -548,7 +548,7 @@ Rangeset *RangesetBreakMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins,
 	}
 
 	// adjust other position values: shuffle them up or down if necessary
-	rangesetShuffleToFrom(rangeTable, i, j, n - j, movement);
+	RangesetShuffleToFrom(rangeTable, i, j, n - j, movement);
 
 	if (need_gap) { // add the gap informations
 		rangeTable[i - 2] = pos;
