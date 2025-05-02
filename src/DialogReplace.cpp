@@ -15,11 +15,11 @@
 namespace {
 
 /**
- * @brief Count no. of writable windows, but first update the status of all files.
+ * @brief Count the number of writable windows, but first update the status of all files.
  *
  * @return Number of writable windows.
  */
-int countWritableWindows() {
+int CountWritableWindows() {
 
 	int nWritable = 0;
 
@@ -65,7 +65,7 @@ int countWritableWindows() {
  *
  * @return A vector of writable DocumentWidget instances.
  */
-std::vector<DocumentWidget *> collectWritableWindows() {
+std::vector<DocumentWidget *> CollectWritableWindows() {
 
 	std::vector<DocumentWidget *> documents;
 	std::vector<DocumentWidget *> allDocuments = DocumentWidget::allDocuments();
@@ -432,7 +432,7 @@ void DialogReplace::buttonMulti_clicked() {
 	}
 
 	// temporary list of writable documents, used during multi-file replacements
-	const std::vector<DocumentWidget *> writeableDocuments = collectWritableWindows();
+	const std::vector<DocumentWidget *> writeableDocuments = CollectWritableWindows();
 
 	// Initialize/update the list of files.
 	dialogMultiReplace->uploadFileListItems(writeableDocuments);
@@ -577,7 +577,7 @@ void DialogReplace::UpdateReplaceActionButtons() {
 
 	// Is there any text in the search for field
 	const bool searchText = !ui.textFind->text().isEmpty();
-	setActionButtons(searchText, searchText, searchText, searchText, searchText && document_->info_->wasSelected, searchText && (countWritableWindows() > 1));
+	setActionButtons(searchText, searchText, searchText, searchText, searchText && document_->info_->wasSelected, searchText && (CountWritableWindows() > 1));
 }
 
 /**

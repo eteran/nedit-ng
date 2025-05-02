@@ -14,15 +14,15 @@
 namespace Theme {
 namespace {
 
-const auto DEFAULT_TEXT_FG   = QLatin1String("#221f1e");
-const auto DEFAULT_TEXT_BG   = QLatin1String("#d6d2d0");
-const auto DEFAULT_SEL_FG    = QLatin1String("#ffffff");
-const auto DEFAULT_SEL_BG    = QLatin1String("#43ace8");
-const auto DEFAULT_HI_FG     = QLatin1String("white"); /* These are colors for flashing */
-const auto DEFAULT_HI_BG     = QLatin1String("red");   /* matching parens. */
-const auto DEFAULT_LINENO_FG = QLatin1String("black");
-const auto DEFAULT_LINENO_BG = QLatin1String("#d6d2d0");
-const auto DEFAULT_CURSOR_FG = QLatin1String("black");
+const auto DefaultTextFG      = QLatin1String("#221f1e");
+const auto DefaultTextBG      = QLatin1String("#d6d2d0");
+const auto DefaultSelFG       = QLatin1String("#ffffff");
+const auto DefaultSelBG       = QLatin1String("#43ace8");
+const auto DefaultHighlightFG = QLatin1String("white"); /* These are colors for flashing */
+const auto DefaultHighlightBG = QLatin1String("red");   /* matching parens. */
+const auto DefaultLineNumFG   = QLatin1String("black");
+const auto DefaultLineNumBG   = QLatin1String("#d6d2d0");
+const auto DefaultCursorFG    = QLatin1String("black");
 
 }
 
@@ -51,15 +51,15 @@ void Load() {
 		const QDomElement cursor    = root.firstChildElement(QLatin1String("cursor"));
 		const QDomElement lineno    = root.firstChildElement(QLatin1String("line-numbers"));
 
-		Settings::colors[ColorTypes::TEXT_BG_COLOR]   = text.attribute(QLatin1String("background"), DEFAULT_TEXT_BG);
-		Settings::colors[ColorTypes::TEXT_FG_COLOR]   = text.attribute(QLatin1String("foreground"), DEFAULT_TEXT_FG);
-		Settings::colors[ColorTypes::SELECT_BG_COLOR] = selection.attribute(QLatin1String("background"), DEFAULT_SEL_BG);
-		Settings::colors[ColorTypes::SELECT_FG_COLOR] = selection.attribute(QLatin1String("foreground"), DEFAULT_SEL_FG);
-		Settings::colors[ColorTypes::HILITE_BG_COLOR] = highlight.attribute(QLatin1String("background"), DEFAULT_HI_BG);
-		Settings::colors[ColorTypes::HILITE_FG_COLOR] = highlight.attribute(QLatin1String("foreground"), DEFAULT_HI_FG);
-		Settings::colors[ColorTypes::LINENO_FG_COLOR] = lineno.attribute(QLatin1String("foreground"), DEFAULT_LINENO_FG);
-		Settings::colors[ColorTypes::LINENO_BG_COLOR] = lineno.attribute(QLatin1String("background"), DEFAULT_LINENO_BG);
-		Settings::colors[ColorTypes::CURSOR_FG_COLOR] = cursor.attribute(QLatin1String("foreground"), DEFAULT_CURSOR_FG);
+		Settings::colors[ColorTypes::TEXT_BG_COLOR]   = text.attribute(QLatin1String("background"), DefaultTextBG);
+		Settings::colors[ColorTypes::TEXT_FG_COLOR]   = text.attribute(QLatin1String("foreground"), DefaultTextFG);
+		Settings::colors[ColorTypes::SELECT_BG_COLOR] = selection.attribute(QLatin1String("background"), DefaultSelBG);
+		Settings::colors[ColorTypes::SELECT_FG_COLOR] = selection.attribute(QLatin1String("foreground"), DefaultSelFG);
+		Settings::colors[ColorTypes::HILITE_BG_COLOR] = highlight.attribute(QLatin1String("background"), DefaultHighlightBG);
+		Settings::colors[ColorTypes::HILITE_FG_COLOR] = highlight.attribute(QLatin1String("foreground"), DefaultHighlightFG);
+		Settings::colors[ColorTypes::LINENO_FG_COLOR] = lineno.attribute(QLatin1String("foreground"), DefaultLineNumFG);
+		Settings::colors[ColorTypes::LINENO_BG_COLOR] = lineno.attribute(QLatin1String("background"), DefaultLineNumBG);
+		Settings::colors[ColorTypes::CURSOR_FG_COLOR] = cursor.attribute(QLatin1String("foreground"), DefaultCursorFG);
 
 		// load styles for syntax highlighting...
 		QDomElement style = root.firstChildElement(QLatin1String("style"));

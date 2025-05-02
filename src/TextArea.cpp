@@ -98,21 +98,21 @@ constexpr int VerticalScrollDelay = 50;
 
 /* Masks for text drawing methods.  These are or'd together to form an
    integer which describes what drawing calls to use to draw a string */
-constexpr int STYLE_LOOKUP_SHIFT = 0;
-constexpr int FILL_SHIFT         = 8;
-constexpr int SECONDARY_SHIFT    = 9;
-constexpr int PRIMARY_SHIFT      = 10;
-constexpr int HIGHLIGHT_SHIFT    = 11;
-constexpr int BACKLIGHT_SHIFT    = 12;
-constexpr int RANGESET_SHIFT     = 20;
+constexpr int StyleLookupShift = 0;
+constexpr int FillShift        = 8;
+constexpr int SecondaryShift   = 9;
+constexpr int PrimaryShift     = 10;
+constexpr int HighlightShift   = 11;
+constexpr int BacklightShift   = 12;
+constexpr int RangesetShift    = 20;
 
-constexpr uint32_t STYLE_LOOKUP_MASK = (0xff << STYLE_LOOKUP_SHIFT);
-constexpr uint32_t FILL_MASK         = (1 << FILL_SHIFT);
-constexpr uint32_t SECONDARY_MASK    = (1 << SECONDARY_SHIFT);
-constexpr uint32_t PRIMARY_MASK      = (1 << PRIMARY_SHIFT);
-constexpr uint32_t HIGHLIGHT_MASK    = (1 << HIGHLIGHT_SHIFT);
-constexpr uint32_t BACKLIGHT_MASK    = (0xff << BACKLIGHT_SHIFT);
-constexpr uint32_t RANGESET_MASK     = (0x3f << RANGESET_SHIFT);
+constexpr uint32_t StyleLookupMask = (0xff << StyleLookupShift);
+constexpr uint32_t FillMask        = (1 << FillShift);
+constexpr uint32_t SecondaryMask   = (1 << SecondaryShift);
+constexpr uint32_t PrimaryMask     = (1 << PrimaryShift);
+constexpr uint32_t HighlightMask   = (1 << HighlightShift);
+constexpr uint32_t BacklightMask   = (0xff << BacklightShift);
+constexpr uint32_t RangesetMask    = (0x3f << RangesetShift);
 
 /* If you use both 32-Bit Style mask layout:
    Bits +----------------+----------------+----------------+----------------+
@@ -132,7 +132,7 @@ constexpr uint32_t RANGESET_MASK     = (0x3f << RANGESET_SHIFT);
    This leaves 6 "unused" bits */
 
 /* Maximum displayable line length (how many characters will fit across the
-   widest window).  This amount of memory is temporarily allocated from the
+   widest window). This amount of memory is temporarily allocated from the
    stack in the redisplayLine routine for drawing strings */
 constexpr int MaxDisplayLineLength = 1024;
 
@@ -242,7 +242,6 @@ void FindTextMargins(TextBuffer *buf, TextCursor start, TextCursor end, int64_t 
  * @param referenceLineNum The line number of the reference position.
  * @param newLineNum The line number to find relative to the reference position.
  * @return The start of the line at the new line number.
-
  */
 TextCursor FindRelativeLineStart(const TextBuffer *buf, TextCursor referencePos, int64_t referenceLineNum, int64_t newLineNum) {
 
@@ -1391,11 +1390,10 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 }
 
 /**
- * "extend_end", "copy_to_or_end_drag", "end_drag"
+ * @brief Handles mouse release events for the text area.
+ * This is associated with: "extend_end", "copy_to_or_end_drag", and "end_drag"
  *
- * @brief
- *
- * @param event
+ * @param event The mouse event that triggered this method.
  */
 void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 
@@ -1444,9 +1442,11 @@ void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Handles paint events for the text area.
+ * This methods is the main rendering function for the text area,
+ * drawing the text, and other visual elements.
  *
- * @param event
+ * @param event The paint event that triggered this method.
  */
 void TextArea::paintEvent(QPaintEvent *event) {
 
@@ -1476,9 +1476,9 @@ void TextArea::paintEvent(QPaintEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Handles resize events for the text area.
  *
- * @param event
+ * @param event The resize event that triggered this method.
  */
 void TextArea::resizeEvent(QResizeEvent *event) {
 
@@ -2764,13 +2764,17 @@ void TextArea::redisplayRange(TextCursor start, TextCursor end) {
 			lastLine = nVisibleLines_ - 1;
 		}
 	}
+	if(startLine < 0 || startLine >= nVisibleLines_ || lastLine < 0 || lastLine >= nVisibleLines_) {
+		qWarning("NEdit: Internal Error, redisplayRange called with invalid line numbers");
+		return;
+	}
 
 	// Get the starting and ending positions within the lines
 	const int startIndex = (lineStarts_[startLine] == -1) ? 0 : start - lineStarts_[startLine];
 	int endIndex;
 	if (end >= lastChar_) {
 		/* Request to redisplay beyond lastChar_, so tell redisplayLine() to
-		 * display everything to infy.  */
+		 * display everything to infinity. */
 		endIndex = INT_MAX;
 	} else if (lineStarts_[lastLine] == -1) {
 		/*  Here, lastLine is determined by posToVisibleLineNum()
@@ -3044,14 +3048,14 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 uint32_t TextArea::styleOfPos(TextCursor lineStartPos, size_t lineLen, size_t lineIndex, int64_t dispIndex, int thisChar) const {
 
 	if (lineStartPos == -1 || !buffer_) {
-		return FILL_MASK;
+		return FillMask;
 	}
 
 	const TextCursor pos = lineStartPos + std::min(lineIndex, lineLen);
 	uint32_t style       = 0;
 
 	if (lineIndex >= lineLen) {
-		style = FILL_MASK;
+		style = FillMask;
 	} else if (styleBuffer_) {
 		style = styleBuffer_->BufGetCharacter(pos);
 		if (style == unfinishedStyle_) {
@@ -3062,29 +3066,29 @@ uint32_t TextArea::styleOfPos(TextCursor lineStartPos, size_t lineLen, size_t li
 	}
 
 	if (buffer_->primary.inSelection(pos, lineStartPos, dispIndex)) {
-		style |= PRIMARY_MASK;
+		style |= PrimaryMask;
 	}
 
 	if (buffer_->highlight.inSelection(pos, lineStartPos, dispIndex)) {
-		style |= HIGHLIGHT_MASK;
+		style |= HighlightMask;
 	}
 
 	if (buffer_->secondary.inSelection(pos, lineStartPos, dispIndex)) {
-		style |= SECONDARY_MASK;
+		style |= SecondaryMask;
 	}
 
-	/* store in the RANGESET_MASK portion of style the rangeset index for pos */
+	/* store in the RangesetMask portion of style the rangeset index for pos */
 	if (document_->rangesetTable_) {
 		const size_t rangesetIndex = document_->rangesetTable_->index1ofPos(pos, true);
-		style |= ((rangesetIndex << RANGESET_SHIFT) & RANGESET_MASK);
+		style |= ((rangesetIndex << RangesetShift) & RangesetMask);
 	}
 
-	/* store in the BACKLIGHT_MASK portion of style the background color class
+	/* store in the BacklightMask portion of style the background color class
 	   of the character thisChar */
 	if (!bgClass_.empty()) {
 		auto index = static_cast<size_t>(thisChar);
 		if (index < bgClass_.size()) {
-			style |= (bgClass_[index] << BACKLIGHT_SHIFT);
+			style |= (bgClass_[index] << BacklightShift);
 		}
 	}
 	return style;
@@ -3117,15 +3121,15 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 
 	const DrawType drawType = [style]() {
 		// select a GC
-		if (style & (STYLE_LOOKUP_MASK | BACKLIGHT_MASK | RANGESET_MASK)) {
+		if (style & (StyleLookupMask | BacklightMask | RangesetMask)) {
 			return DrawStyle;
 		}
 
-		if (style & HIGHLIGHT_MASK) {
+		if (style & HighlightMask) {
 			return DrawHighlight;
 		}
 
-		if (style & PRIMARY_MASK) {
+		if (style & PrimaryMask) {
 			return DrawSelect;
 		}
 
@@ -3150,8 +3154,8 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 			   for normal drawing, or drawing within a selection or highlight are
 			   pre-allocated and pre-configured.  For syntax highlighting, GCs are
 			   configured here, on the fly. */
-		if (style & STYLE_LOOKUP_MASK) {
-			styleRec       = &styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A];
+		if (style & StyleLookupMask) {
+			styleRec       = &styleTable_[(style & StyleLookupMask) - ASCII_A];
 			underlineStyle = styleRec->isUnderlined;
 
 			renderFont.setBold(styleRec->isBold);
@@ -3174,7 +3178,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 		 ** 5 Backlight (if NOT fill)
 		 ** 6 DefaultBackground
 		 */
-		if (style & PRIMARY_MASK) {
+		if (style & PrimaryMask) {
 			bground = pal.color(QPalette::Highlight);
 
 			// NOTE(eteran): enabling this makes working with darker themes a lot nicer
@@ -3185,17 +3189,17 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 				fground = pal.color(QPalette::HighlightedText);
 			}
 
-		} else if (style & HIGHLIGHT_MASK) {
+		} else if (style & HighlightMask) {
 			bground = matchBGColor_;
 			if (!colorizeHighlightedText_) {
 				fground = matchFGColor_;
 			}
-		} else if (style & RANGESET_MASK) {
-			bground = getRangesetColor((style & RANGESET_MASK) >> RANGESET_SHIFT, bground);
+		} else if (style & RangesetMask) {
+			bground = getRangesetColor((style & RangesetMask) >> RangesetShift, bground);
 		} else if (styleRec && !styleRec->bgColorName.isNull()) {
 			bground = styleRec->bgColor;
-		} else if ((style & BACKLIGHT_MASK) && !(style & FILL_MASK)) {
-			bground = bgClassColors_[(style >> BACKLIGHT_SHIFT) & 0xff];
+		} else if ((style & BacklightMask) && !(style & FillMask)) {
+			bground = bgClassColors_[(style >> BacklightShift) & 0xff];
 		} else {
 			bground = pal.color(QPalette::Base);
 		}
@@ -3207,7 +3211,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 	}
 
 	// Draw blank area rather than text, if that was the request
-	if (style & FILL_MASK) {
+	if (style & FillMask) {
 
 		// wipes out to right hand edge of widget
 		if (toX >= viewRect.left()) {
@@ -3219,7 +3223,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 	}
 
 	// Underline if style is secondary selection
-	if ((style & SECONDARY_MASK) || underlineStyle) {
+	if ((style & SecondaryMask) || underlineStyle) {
 		renderFont.setUnderline(true);
 	}
 

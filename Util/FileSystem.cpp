@@ -12,13 +12,13 @@
 
 namespace {
 
-/* Parameters to algorithm used to auto-detect DOS format files.  NEdit will
-   scan up to the lesser of FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS
+/* Parameters to algorithm used to auto-detect DOS format files. NEdit will
+   scan up to the lesser of FormatSampleLines lines and FormatSampleChars
    characters of the beginning of the file, checking that all newlines are
-   paired with carriage returns.  If even a single counterexample exists,
+   paired with carriage returns. If even a single counterexample exists,
    the file is judged to be in Unix format. */
-constexpr int FORMAT_SAMPLE_LINES = 5;
-constexpr int FORMAT_SAMPLE_CHARS = 2000;
+constexpr int FormatSampleLines = 5;
+constexpr int FormatSampleChars = 2000;
 
 }
 
@@ -47,7 +47,7 @@ PathInfo ParseFilename(const QString &fullname) {
 	// find the last slash
 	const int i = cleanedPath.lastIndexOf(QLatin1Char('/'), scanStart);
 
-	// move chars before / (or ] or :) into pathname,& after into filename
+	// move chars before / (or ] or :) into pathname, & after into filename
 	const int pathLen = i + 1;
 	const int fileLen = fullLen - pathLen;
 
@@ -116,7 +116,7 @@ QString GetTrailingPathComponents(const QString &path, int components) {
  * @param text The content of the file as a string view.
  * @return FileFormats the format of the file, which can be Unix, Dos, or Mac.
  *
- * @note Samples up to FORMAT_SAMPLE_LINES lines and FORMAT_SAMPLE_CHARS
+ * @note Samples up to FormatSampleLines lines and FormatSampleChars
  * characters to determine the file format. If any ambiguity exists, it is
  * judged to be Unix format.
  */
@@ -125,7 +125,7 @@ FileFormats FormatOfFile(std::string_view text) {
 	size_t nNewlines = 0;
 	size_t nReturns  = 0;
 
-	const size_t sampleSize = std::min<size_t>(text.size(), FORMAT_SAMPLE_CHARS);
+	const size_t sampleSize = std::min<size_t>(text.size(), FormatSampleChars);
 	const auto end          = text.begin() + sampleSize;
 
 	for (auto it = text.begin(); it != end; ++it) {
@@ -135,7 +135,7 @@ FileFormats FormatOfFile(std::string_view text) {
 				return FileFormats::Unix;
 			}
 
-			if (nNewlines >= FORMAT_SAMPLE_LINES) {
+			if (nNewlines >= FormatSampleLines) {
 				return FileFormats::Dos;
 			}
 		} else if (*it == '\r') {
