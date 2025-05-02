@@ -304,7 +304,7 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 
 	QString errMsg;
 	int stoppedAt;
-	if (!isMacroValid(macro, &errMsg, &stoppedAt)) {
+	if (!IsMacroValid(macro, &errMsg, &stoppedAt)) {
 		if (verbosity == Verbosity::Verbose) {
 			Preferences::ReportError(this, macro, stoppedAt, tr("macro"), errMsg);
 		}

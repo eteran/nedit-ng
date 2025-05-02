@@ -300,6 +300,10 @@ QString SmartIndentFile() {
  */
 void Load(bool isServer) {
 
+	if (settingsLoaded_) {
+		return; // Already loaded
+	}
+
 	const QString filename = ConfigFile();
 	QSettings settings(filename, QSettings::IniFormat);
 

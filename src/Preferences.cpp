@@ -470,14 +470,28 @@ QString WriteLanguageModesString() {
 // list of available language modes and language specific preferences
 std::vector<LanguageMode> LanguageModes;
 
+/**
+ * @brief
+ *
+ * @return
+ */
 QString ImportedSettingsFile() {
 	return ImportedFile;
 }
 
+/**
+ * @brief
+ *
+ * @return
+ */
 bool PreferencesChanged() {
 	return PrefsHaveChanged;
 }
 
+/**
+ * @brief
+ *
+ */
 void RestoreNEditPrefs() {
 
 	Settings::Load(IsServer);
@@ -488,6 +502,12 @@ void RestoreNEditPrefs() {
 	TranslatePrefFormats(NEDIT_VERSION);
 }
 
+/**
+ * @brief
+ *
+ * @param parent
+ * @param verbosity
+ */
 void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 
 	const QString prefFileName = Settings::ConfigFile();
@@ -526,10 +546,12 @@ void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 	PrefsHaveChanged = false;
 }
 
-/*
-** Load an additional preferences file on top of the existing preferences
-** derived from defaults, the .nedit file, and X resources.
-*/
+/**
+ * @brief Load an additional preferences file on top of the existing preferences
+ * derived from defaults, and config files.
+ *
+ * @param filename
+ */
 void ImportPrefFile(const QString &filename) {
 	Settings::Import(filename);
 
@@ -537,6 +559,11 @@ void ImportPrefFile(const QString &filename) {
 	TranslatePrefFormats(NEDIT_VERSION);
 }
 
+/**
+ * @brief
+ *
+ * @param state
+ */
 void SetPrefOpenInTab(bool state) {
 	if (Settings::openInTab != state) {
 		PrefsHaveChanged = true;
@@ -544,10 +571,20 @@ void SetPrefOpenInTab(bool state) {
 	Settings::openInTab = state;
 }
 
+/**
+ * @brief
+ *
+ * @return
+ */
 bool GetPrefOpenInTab() {
 	return Settings::openInTab;
 }
 
+/**
+ * @brief
+ *
+ * @param state
+ */
 void SetPrefWrap(WrapStyle state) {
 	if (Settings::autoWrap != state) {
 		PrefsHaveChanged = true;
@@ -555,6 +592,12 @@ void SetPrefWrap(WrapStyle state) {
 	Settings::autoWrap = state;
 }
 
+/**
+ * @brief
+ *
+ * @param langMode
+ * @return
+ */
 WrapStyle GetPrefWrap(size_t langMode) {
 	if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].wrapStyle == WrapStyle::Default) {
 		return Settings::autoWrap;
@@ -563,6 +606,11 @@ WrapStyle GetPrefWrap(size_t langMode) {
 	return LanguageModes[langMode].wrapStyle;
 }
 
+/**
+ * @brief
+ *
+ * @param margin
+ */
 void SetPrefWrapMargin(int margin) {
 	if (Settings::wrapMargin != margin) {
 		PrefsHaveChanged = true;

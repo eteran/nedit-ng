@@ -138,7 +138,7 @@ QString CopyMacroToEnd(Input &in) {
 	// Parse the input
 	int stoppedAt;
 	QString errMsg;
-	if (!isMacroValid(code, &errMsg, &stoppedAt)) {
+	if (!IsMacroValid(code, &errMsg, &stoppedAt)) {
 		qWarning("Error In Macro/Command String");
 		return QString();
 	}

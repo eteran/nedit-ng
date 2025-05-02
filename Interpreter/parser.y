@@ -433,7 +433,7 @@ blank:  /* nothing */
 ** the error message is returned in msg, and the length of the string up
 ** to where parsing failed in stoppedAt.
 */
-Program *compileMacro(const QString &expr, QString *msg, int *stoppedAt) {
+Program *CompileMacro(const QString &expr, QString *msg, int *stoppedAt) {
 	BeginCreatingProgram();
 
 	/* call yyparse to parse the string and check for success.  If the parse

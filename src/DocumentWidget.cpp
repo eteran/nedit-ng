@@ -4359,7 +4359,7 @@ void DocumentWidget::beginSmartIndent(Verbosity verbosity) {
 	QString errMsg;
 
 	auto siData          = std::make_unique<SmartIndentData>();
-	siData->newlineMacro = std::unique_ptr<Program>(compileMacro(indentMacros->newlineMacro, &errMsg, &stoppedAt));
+	siData->newlineMacro = std::unique_ptr<Program>(CompileMacro(indentMacros->newlineMacro, &errMsg, &stoppedAt));
 
 	if (!siData->newlineMacro) {
 		Preferences::ReportError(this, indentMacros->newlineMacro, stoppedAt, tr("newline macro"), errMsg);
@@ -4369,7 +4369,7 @@ void DocumentWidget::beginSmartIndent(Verbosity verbosity) {
 	if (indentMacros->modMacro.isNull()) {
 		siData->modMacro = nullptr;
 	} else {
-		siData->modMacro = std::unique_ptr<Program>(compileMacro(indentMacros->modMacro, &errMsg, &stoppedAt));
+		siData->modMacro = std::unique_ptr<Program>(CompileMacro(indentMacros->modMacro, &errMsg, &stoppedAt));
 		if (!siData->modMacro) {
 
 			siData->newlineMacro = nullptr;
@@ -5436,7 +5436,7 @@ void DocumentWidget::repeatMacro(const QString &macro, int how) {
 	// Parse the resulting macro into an executable program "prog"
 	QString errMsg;
 	int stoppedAt;
-	Program *const prog = compileMacro(loopedCmd, &errMsg, &stoppedAt);
+	Program *const prog = CompileMacro(loopedCmd, &errMsg, &stoppedAt);
 	if (!prog) {
 		qWarning("NEdit: internal error, repeat macro syntax wrong: %s", qPrintable(errMsg));
 		return;
@@ -6922,7 +6922,7 @@ void DocumentWidget::replay() {
 		QString errMsg;
 		int stoppedAt;
 
-		Program *const prog = compileMacro(replayMacro, &errMsg, &stoppedAt);
+		Program *const prog = CompileMacro(replayMacro, &errMsg, &stoppedAt);
 		if (!prog) {
 			qWarning("NEdit: internal error, learn/replay macro syntax error: %s", qPrintable(errMsg));
 			return;
@@ -7002,7 +7002,7 @@ void DocumentWidget::doMacro(const QString &macro, const QString &errInName) {
 
 	// Parse the macro and report errors if it fails
 	int stoppedAt;
-	Program *const prog = compileMacro(qMacro, &errMsg, &stoppedAt);
+	Program *const prog = CompileMacro(qMacro, &errMsg, &stoppedAt);
 	if (!prog) {
 		Preferences::ReportError(this, qMacro, stoppedAt, errInName, errMsg);
 		return;

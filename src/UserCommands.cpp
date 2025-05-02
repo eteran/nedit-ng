@@ -59,7 +59,7 @@ QString CopyMacroToEnd(Input &in) {
 	// Parse the input
 	int stoppedAt;
 	QString errMsg;
-	if (!isMacroValid(code, &errMsg, &stoppedAt)) {
+	if (!IsMacroValid(code, &errMsg, &stoppedAt)) {
 		Preferences::ReportError(
 			nullptr,
 			code,

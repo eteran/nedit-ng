@@ -319,7 +319,7 @@ bool DialogMacros::checkMacroText(const QString &macro, Verbosity verbosity) {
 
 	QString errMsg;
 	int stoppedAt;
-	if (!isMacroValid(macro, &errMsg, &stoppedAt)) {
+	if (!IsMacroValid(macro, &errMsg, &stoppedAt)) {
 		if (verbosity == Verbosity::Verbose) {
 			Preferences::ReportError(this, macro, stoppedAt, tr("macro"), errMsg);
 		}
