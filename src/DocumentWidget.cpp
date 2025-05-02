@@ -3174,7 +3174,7 @@ void DocumentWidget::closeDocument() {
 
 	// Close of window running a macro may have been disabled.
 	// NOTE(eteran): this may be redundant...
-	MainWindow::checkCloseEnableState();
+	MainWindow::updateCloseEnableState();
 	MainWindow::updateWindowMenus();
 
 	// if we deleted the last tab, then we can close the window too
@@ -3226,7 +3226,7 @@ DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 		Preferences::GetPrefOpenInTab(),
 		/*background=*/false);
 
-	MainWindow::checkCloseEnableState();
+	MainWindow::updateCloseEnableState();
 
 	return document;
 }
@@ -3764,7 +3764,7 @@ void DocumentWidget::shellBannerTimeoutProc() {
 void DocumentWidget::actionClose(CloseMode mode) {
 
 	closeFileAndWindow(mode);
-	MainWindow::checkCloseEnableState();
+	MainWindow::updateCloseEnableState();
 	MainWindow::updateWindowMenus();
 }
 
@@ -5304,7 +5304,7 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 			outWidget   = document->firstPane();
 			range.start = TextCursor();
 			range.end   = TextCursor();
-			MainWindow::checkCloseEnableState();
+			MainWindow::updateCloseEnableState();
 		}
 		break;
 	case TO_SAME_WINDOW:

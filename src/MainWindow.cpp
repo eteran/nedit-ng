@@ -64,17 +64,33 @@
 
 namespace {
 
-bool currentlyBusy   = false;
-bool modeMessageSet  = false;
-qint64 busyStartTime = 0;
-
-QPointer<DocumentWidget> lastFocusDocument;
-
+bool CurrentlyBusy   = false;
+bool ModeMessageSet  = false;
+qint64 BusyStartTime = 0;
+QPointer<DocumentWidget> LastFocusDocument;
 QVector<QString> PrevOpen;
 
-/*
-** Extract the line and column number from the text string.
-*/
+/**
+ * @brief Create a shortcut object.
+ *
+ * @param seq The key sequence for the shortcut.
+ * @param parent The parent widget for the shortcut.
+ * @param func The function to connect to the shortcut activation signal.
+ * @return The created shortcut object.
+ */
+template <class Func>
+QShortcut *CreateShortcut(const QKeySequence &seq, QWidget *parent, Func func) {
+	auto shortcut = new QShortcut(seq, parent);
+	QObject::connect(shortcut, &QShortcut::activated, parent, func);
+	return shortcut;
+}
+
+/**
+ * @brief Converts a string representation of a line and column number into a Location object.
+ *
+ * @param text The string containing the line and column information, formatted as "line:column" or "line,column".
+ * @return A Location object containing the line and column numbers, or an empty optional if the string is invalid.
+ */
 std::optional<Location> StringToLineAndCol(const QString &text) {
 
 	static const QRegularExpression re(QLatin1String(
@@ -120,26 +136,30 @@ std::optional<Location> StringToLineAndCol(const QString &text) {
 }
 
 /**
- * @brief
+ * @brief Recursively adds all actions from a QMenu to a QActionGroup.
  *
- * @param group
- * @param menu
+ * @param group The QActionGroup to which the actions will be added.
+ * @param menu The QMenu from which actions will be added.
  */
-void addToGroup(QActionGroup *group, QMenu *menu) {
+void AddToGroup(QActionGroup *group, QMenu *menu) {
 	Q_FOREACH (QAction *action, menu->actions()) {
 		if (QMenu *subMenu = action->menu()) {
-			addToGroup(group, subMenu);
+			AddToGroup(group, subMenu);
 		}
 		group->addAction(action);
 	}
 }
 
-/*
-** Capitalize or lowercase the contents of the selection (or of the character
-** before the cursor if there is no selection).
-*/
+/**
+ * @brief Change the case of the selection in a document widget.
+ * This function applies a transformation function `F` to each character in the
+ * selection or to the character before the cursor if there is no selection.
+ *
+ * @param document The document widget containing the text area.
+ * @param area The text area where the selection is made.
+ */
 template <int (&F)(unsigned char) noexcept>
-void changeCase(DocumentWidget *document, TextArea *area) {
+void ChangeCase(DocumentWidget *document, TextArea *area) {
 
 	TextBuffer *buf = document->buffer();
 
@@ -180,32 +200,32 @@ void changeCase(DocumentWidget *document, TextArea *area) {
 }
 
 /**
- * @brief
+ * @brief Change the case of the selection to uppercase.
  *
- * @param document
- * @param area
+ * @param document The document widget containing the text area.
+ * @param area The text area where the selection is made.
  */
-void upcaseSelection(DocumentWidget *document, TextArea *area) {
-	changeCase<safe_toupper>(document, area);
+void UpcaseSelection(DocumentWidget *document, TextArea *area) {
+	ChangeCase<safe_toupper>(document, area);
 }
 
 /**
- * @brief
+ * @brief Change the case of the selection to lowercase.
  *
- * @param document
- * @param area
+ * @param document The document widget containing the text area.
+ * @param area The text area where the selection is made.
  */
-void downcaseSelection(DocumentWidget *document, TextArea *area) {
-	changeCase<safe_tolower>(document, area);
+void DowncaseSelection(DocumentWidget *document, TextArea *area) {
+	ChangeCase<safe_tolower>(document, area);
 }
 
 }
 
 /**
- * @brief
+ * @brief MainWindow constructor.
  *
- * @param parent
- * @param flags
+ * @param parent The parent widget, or nullptr if this is the main window.
+ * @param flags The window flags to apply to the main window.
  */
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 	: QMainWindow(parent, flags) {
@@ -252,7 +272,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 		windows.push_back(this);
 	}
 
-	MainWindow::checkCloseEnableState(windows);
+	MainWindow::updateCloseEnableState(windows);
 	const bool enabled = windows.size() > 1;
 	for (MainWindow *window : windows) {
 		window->ui.action_Move_Tab_To->setEnabled(enabled);
@@ -266,7 +286,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 }
 
 /**
- * @brief
+ * @brief Destructor for MainWindow.
  */
 MainWindow::~MainWindow() {
 	// disconnect this signal explicitly or we set off the UBSAN during qApp
@@ -275,7 +295,7 @@ MainWindow::~MainWindow() {
 }
 
 /**
- * @brief
+ * @brief Initializes the incremental search bar settings and connects the necessary signals.
  */
 void MainWindow::setupISearchBar() {
 	// determine the strings and button settings to use
@@ -430,9 +450,13 @@ void MainWindow::connectSlots() {
 }
 
 /**
- * @brief
+ * @brief Parses the geometry string to set the window size and position.
+ * This function extracts the number of rows and columns from the geometry string,
+ * calculates the pixel dimensions based on the fixed font size, and sets the
+ * minimum size of the document widget accordingly. If the geometry string is empty,
+ * it defaults to the preferences for rows and columns.
  *
- * @param geometry
+ * @param geometry The geometry string in the format "cols x rows" or "cols,rows".
  */
 void MainWindow::parseGeometry(QString geometry) {
 	int rows = -1;
@@ -488,7 +512,7 @@ void MainWindow::parseGeometry(QString geometry) {
 }
 
 /**
- * @brief
+ * @brief Sets up the tab bar for the main window.
  */
 void MainWindow::setupTabBar() {
 #ifndef PER_TAB_CLOSE
@@ -509,7 +533,7 @@ void MainWindow::setupTabBar() {
 }
 
 /**
- * @brief
+ * @brief Sets up the default preferences for the global settings.
  */
 void MainWindow::setupGlobalPreferenceDefaults() {
 
@@ -625,7 +649,7 @@ void MainWindow::setupGlobalPreferenceDefaults() {
 }
 
 /**
- * @brief
+ * @brief Sets up the default preferences for the document settings.
  */
 void MainWindow::setupDocumentPreferenceDefaults() {
 
@@ -679,7 +703,7 @@ void MainWindow::setupDocumentPreferenceDefaults() {
 }
 
 /**
- * @brief
+ * @brief Sets up the default menu items based on the current preferences.
  */
 void MainWindow::setupMenuDefaults() {
 
@@ -702,18 +726,11 @@ void MainWindow::setupMenuDefaults() {
 	MainWindow::updateMenuItems();
 }
 
-template <class Func>
-QShortcut *create_shortcut(const QKeySequence &seq, QWidget *parent, Func func) {
-	auto shortcut = new QShortcut(seq, parent);
-	QObject::connect(shortcut, &QShortcut::activated, parent, func);
-	return shortcut;
-}
-
 /**
+ * @brief Sets up the menu strings and their shortcuts.
+ * This function sets the text for various actions in the main window's menu,
  * nedit has some menu shortcuts which are different from conventional
  * shortcuts. Fortunately, Qt has a means to do this stuff manually.
- *
- * @brief
  */
 void MainWindow::setupMenuStrings() {
 
@@ -730,82 +747,80 @@ void MainWindow::setupMenuStrings() {
 	ui.action_Goto_Mark->setText(tr("G&oto Mark\t[Shift] Alt+G a-z"));
 	ui.action_Goto_Matching->setText(tr("Goto &Matching (..)\t[Shift] Ctrl+M"));
 
-	create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_9), this, [this]() { action_Shift_Left_Tabs(); });
-	create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_0), this, [this]() { action_Shift_Right_Tabs(); });
-	create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_F), this, [this]() { action_Shift_Find(); });
-	create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_G), this, [this]() { action_Shift_Find_Again(); });
-	create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H), this, [this]() { action_Shift_Find_Selection(); });
-	create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_I), this, [this]() { action_Shift_Find_Incremental(); });
-	create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_R), this, [this]() { action_Shift_Replace(); });
-	create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_M), this, [this]() { action_Shift_Goto_Matching(); });
-	create_shortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Y), this, [this]() { action_Shift_Open_Selected(); });
+	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_9), this, [this]() { action_Shift_Left_Tabs(); });
+	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_0), this, [this]() { action_Shift_Right_Tabs(); });
+	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_F), this, [this]() { action_Shift_Find(); });
+	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_G), this, [this]() { action_Shift_Find_Again(); });
+	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_H), this, [this]() { action_Shift_Find_Selection(); });
+	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_I), this, [this]() { action_Shift_Find_Incremental(); });
+	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_R), this, [this]() { action_Shift_Replace(); });
+	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_M), this, [this]() { action_Shift_Goto_Matching(); });
+	CreateShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_Y), this, [this]() { action_Shift_Open_Selected(); });
 
 	// This is an annoying solution... we can probably do better...
 	for (int key = Qt::Key_A; key <= Qt::Key_Z; ++key) {
-		create_shortcut(QKeySequence(Qt::ALT | Qt::Key_M, key), this, [this]() { action_Mark_Shortcut(); });
-		create_shortcut(QKeySequence(Qt::ALT | Qt::Key_G, key), this, [this]() { action_Goto_Mark_Shortcut(); });
-		create_shortcut(QKeySequence(Qt::SHIFT | Qt::ALT | Qt::Key_G, key), this, [this]() { action_Shift_Goto_Mark_Shortcut(); });
+		CreateShortcut(QKeySequence(Qt::ALT | Qt::Key_M, key), this, [this]() { action_Mark_Shortcut(); });
+		CreateShortcut(QKeySequence(Qt::ALT | Qt::Key_G, key), this, [this]() { action_Goto_Mark_Shortcut(); });
+		CreateShortcut(QKeySequence(Qt::SHIFT | Qt::ALT | Qt::Key_G, key), this, [this]() { action_Shift_Goto_Mark_Shortcut(); });
 	}
 
-	create_shortcut(QKeySequence(Qt::CTRL | Qt::Key_PageDown), this, [this]() { action_Next_Document(); });
-	create_shortcut(QKeySequence(Qt::CTRL | Qt::Key_PageUp), this, [this]() { action_Prev_Document(); });
-	create_shortcut(QKeySequence(Qt::ALT | Qt::Key_Home), this, [this]() { action_Last_Document(); });
+	CreateShortcut(QKeySequence(Qt::CTRL | Qt::Key_PageDown), this, [this]() { action_Next_Document(); });
+	CreateShortcut(QKeySequence(Qt::CTRL | Qt::Key_PageUp), this, [this]() { action_Prev_Document(); });
+	CreateShortcut(QKeySequence(Qt::ALT | Qt::Key_Home), this, [this]() { action_Last_Document(); });
 }
 
 /**
- * @brief
+ * @brief Sets up the actions for the "Open Previous" menu.
  */
 void MainWindow::setupPrevOpenMenuActions() {
 	const int maxPrevOpenFiles = Preferences::GetPrefMaxPrevOpenFiles();
 
 	if (maxPrevOpenFiles <= 0) {
 		ui.action_Open_Previous->setEnabled(false);
-	} else {
+		return;
+	}
 
-		// create all of the actions
-		for (int i = 0; i < maxPrevOpenFiles; ++i) {
-			auto action = new QAction(this);
-			action->setVisible(true);
-			previousOpenFilesList_.push_back(action);
-		}
+	// create all of the actions
+	for (int i = 0; i < maxPrevOpenFiles; ++i) {
+		auto action = new QAction(this);
+		action->setVisible(true);
+		previousOpenFilesList_.push_back(action);
+	}
 
-		auto prevMenu = new QMenu(this);
+	auto prevMenu = new QMenu(this);
 
-		prevMenu->addActions(previousOpenFilesList_);
+	prevMenu->addActions(previousOpenFilesList_);
 
-		connect(prevMenu, &QMenu::triggered, this, [this](QAction *action) {
-			auto filename = action->data().toString();
+	connect(prevMenu, &QMenu::triggered, this, [this](QAction *action) {
+		auto filename = action->data().toString();
 
-			if (DocumentWidget *document = currentDocument()) {
-				if (filename.isNull()) {
-					return;
-				}
-
-				if (!document->open(filename)) {
-					const int r = QMessageBox::question(
-						this,
-						tr("Error Opening File"),
-						tr("File could not be opened, would you like to remove it from the 'Open Previous' list?"),
-						QMessageBox::Yes | QMessageBox::No);
-
-					if (r == QMessageBox::Yes) {
-						removeFromPrevOpenMenu(filename);
-						MainWindow::invalidatePrevOpenMenus();
-					}
-				}
+		if (DocumentWidget *document = currentDocument()) {
+			if (filename.isNull()) {
+				return;
 			}
 
-			MainWindow::checkCloseEnableState();
-		});
+			if (!document->open(filename)) {
+				const int r = QMessageBox::question(
+					this,
+					tr("Error Opening File"),
+					tr("File could not be opened, would you like to remove it from the 'Open Previous' list?"),
+					QMessageBox::Yes | QMessageBox::No);
 
-		ui.action_Open_Previous->setMenu(prevMenu);
-	}
+				if (r == QMessageBox::Yes) {
+					removeFromPrevOpenMenu(filename);
+					MainWindow::invalidatePrevOpenMenus();
+				}
+			}
+		}
+
+		MainWindow::updateCloseEnableState();
+	});
+
+	ui.action_Open_Previous->setMenu(prevMenu);
 }
 
 /**
- * under some configurations, menu items have different text/functionality
- *
- * @brief
+ * @brief Sets up the alternative menus based on the current preferences.
  */
 void MainWindow::setupMenuAlternativeMenus() {
 	if (!Preferences::GetPrefOpenInTab()) {
@@ -816,7 +831,7 @@ void MainWindow::setupMenuAlternativeMenus() {
 }
 
 /**
- * @brief
+ * @brief Sets up the action groups (radio selections) for the menu items.
  */
 void MainWindow::setupMenuGroups() {
 	auto indentGroup = new QActionGroup(this);
@@ -885,7 +900,7 @@ void MainWindow::setupMenuGroups() {
 }
 
 /**
- * @brief
+ * @brief Creates a new document in the current window or tab.
  */
 void MainWindow::action_New_triggered() {
 	if (DocumentWidget *document = currentDocument()) {
@@ -894,10 +909,10 @@ void MainWindow::action_New_triggered() {
 }
 
 /**
- * @brief
+ * @brief Creates a new document based on the specified mode.
  *
- * @param document
- * @param mode
+ * @param document The document widget where the new file will be created.
+ * @param mode The mode in which to create the new document.
  */
 void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
 
@@ -920,26 +935,26 @@ void MainWindow::action_New(DocumentWidget *document, NewMode mode) {
 	}();
 
 	MainWindow::editNewFile(openInTab ? this : nullptr, QString(), /*iconic=*/false, QString(), QDir(document->path()));
-	MainWindow::checkCloseEnableState();
+	MainWindow::updateCloseEnableState();
 }
 
 /**
- * @brief
+ * @brief Opens an existing document in the specified document widget.
  *
- * @param document
- * @param filename
+ * @param document The document widget where the file will be opened.
+ * @param filename The name of the file to open.
  */
 void MainWindow::action_Open(DocumentWidget *document, const QString &filename) {
 
 	EmitEvent("open", filename);
 	document->open(filename);
-	MainWindow::checkCloseEnableState();
+	MainWindow::updateCloseEnableState();
 }
 
 /**
- * @brief
+ * @brief Opens existing files in the specified document widget.
  *
- * @param document
+ * @param document The document widget where the files will be opened.
  */
 void MainWindow::action_Open(DocumentWidget *document) {
 	const QStringList filenames = promptForExistingFiles(this, document->path(), tr("Open File"), QFileDialog::ExistingFiles);
@@ -953,7 +968,7 @@ void MainWindow::action_Open(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Opens an existing document in the current document widget.
  */
 void MainWindow::action_Open_triggered() {
 
@@ -963,10 +978,10 @@ void MainWindow::action_Open_triggered() {
 }
 
 /**
- * @brief
+ * @brief Closes the specified document widget.
  *
- * @param document
- * @param mode
+ * @param document The document widget to close.
+ * @param mode The mode in which to close the document.
  */
 void MainWindow::action_Close(DocumentWidget *document, CloseMode mode) {
 
@@ -975,7 +990,7 @@ void MainWindow::action_Close(DocumentWidget *document, CloseMode mode) {
 }
 
 /**
- * @brief
+ * @brief Closes the current document.
  */
 void MainWindow::action_Close_triggered() {
 
@@ -985,7 +1000,7 @@ void MainWindow::action_Close_triggered() {
 }
 
 /**
- * @brief
+ * @brief Displays the "About" dialog.
  */
 void MainWindow::action_About_triggered() {
 	auto dialog = std::make_unique<DialogAbout>(this);
@@ -993,18 +1008,17 @@ void MainWindow::action_About_triggered() {
 }
 
 /**
- * @brief
+ * @brief Selects all text in the specified document widget.
  *
- * @param document
+ * @param document The document widget in which to select all text.
  */
 void MainWindow::action_Select_All(DocumentWidget *document) {
-
 	EmitEvent("select_all");
 	document->firstPane()->selectAllAP();
 }
 
 /**
- * @brief
+ * @brief Selects all text in the current document.
  */
 void MainWindow::action_Select_All_triggered() {
 
@@ -1014,10 +1028,10 @@ void MainWindow::action_Select_All_triggered() {
 }
 
 /**
- * @brief
+ * @brief Includes a file in the specified document widget.
  *
- * @param document
- * @param filename
+ * @param document The document widget in which to include the file.
+ * @param filename The name of the file to include.
  */
 void MainWindow::action_Include_File(DocumentWidget *document, const QString &filename) {
 
@@ -1035,9 +1049,9 @@ void MainWindow::action_Include_File(DocumentWidget *document, const QString &fi
 }
 
 /**
- * @brief
+ * @brief Includes a file in the current document.
  *
- * @param document
+ * @param document The document widget in which to include the file.
  */
 void MainWindow::action_Include_File(DocumentWidget *document) {
 	if (document->checkReadOnly()) {
@@ -1054,7 +1068,7 @@ void MainWindow::action_Include_File(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Triggers the action to include a file in the current document.
  */
 void MainWindow::action_Include_File_triggered() {
 
@@ -1064,7 +1078,7 @@ void MainWindow::action_Include_File_triggered() {
 }
 
 /**
- * @brief
+ * @brief Cuts the selected text in the specified text area to the clipboard.
  */
 void MainWindow::action_Cut_triggered() {
 	if (const QPointer<TextArea> area = lastFocus()) {
@@ -1073,7 +1087,7 @@ void MainWindow::action_Cut_triggered() {
 }
 
 /**
- * @brief
+ * @brief Copies the selected text in the specified text area to the clipboard.
  */
 void MainWindow::action_Copy_triggered() {
 	if (const QPointer<TextArea> area = lastFocus()) {
@@ -1082,7 +1096,7 @@ void MainWindow::action_Copy_triggered() {
 }
 
 /**
- * @brief
+ * @brief Pastes the text from the clipboard into the specified text area.
  */
 void MainWindow::action_Paste_triggered() {
 	if (const QPointer<TextArea> area = lastFocus()) {
@@ -1091,7 +1105,7 @@ void MainWindow::action_Paste_triggered() {
 }
 
 /**
- * @brief
+ * @brief Pastes the text from the clipboard into the specified text area as a column.
  */
 void MainWindow::action_Paste_Column_triggered() {
 	if (const QPointer<TextArea> area = lastFocus()) {
@@ -1100,9 +1114,9 @@ void MainWindow::action_Paste_Column_triggered() {
 }
 
 /**
- * @brief
+ * @brief Deletes the selected text in the specified document widget.
  *
- * @param document
+ * @param document The document widget in which to delete the selected text.
  */
 void MainWindow::action_Delete(DocumentWidget *document) {
 
@@ -1116,7 +1130,7 @@ void MainWindow::action_Delete(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Deletes the selected text in the current document.
  */
 void MainWindow::action_Delete_triggered() {
 
@@ -1126,11 +1140,10 @@ void MainWindow::action_Delete_triggered() {
 }
 
 /**
- * @brief
+ * @brief Handles the context menu event for a document widget.
  *
- * @param document
- * @param pos
- * @return
+ * @param document The document widget where the context menu event occurred.
+ * @param pos The position in the document widget where the context menu was requested.
  */
 void MainWindow::handleContextMenuEvent(DocumentWidget *document, const QPoint &pos) {
 	if (contextMenu_) {
@@ -1141,9 +1154,9 @@ void MainWindow::handleContextMenuEvent(DocumentWidget *document, const QPoint &
 
 				/* Don't allow users to execute a macro command from the menu (or accel)
 				 * if there's already a macro command executing, UNLESS the macro is
-				 * directly called from another one.  NEdit can't handle
+				 * directly called from another one. NEdit can't handle
 				 * running multiple, independent uncoordinated, macros in the same
-				 * window.  Macros may invoke macro menu commands recursively via the
+				 * window. Macros may invoke macro menu commands recursively via the
 				 * macro_menu_command action proc, which is important for being able to
 				 * repeat any operation, and to embed macros within each other at any
 				 * level, however, a call here with a macro running means that THE USER
@@ -1167,10 +1180,10 @@ void MainWindow::handleContextMenuEvent(DocumentWidget *document, const QPoint &
 }
 
 /**
- * @brief
+ * @brief Creates a new document widget with the specified name.
  *
- * @param name
- * @return
+ * @param name The name of the document to create.
+ * @return The newly created DocumentWidget.
  */
 DocumentWidget *MainWindow::createDocument(const QString &name) {
 	auto document = new DocumentWidget(name, this);
@@ -1191,28 +1204,28 @@ DocumentWidget *MainWindow::createDocument(const QString &name) {
 }
 
 /**
- * @brief
+ * @brief Updates the undo menu item based on the availability of undo actions.
  *
- * @param available
+ * @param available `true` if undo is available, `false` otherwise.
  */
 void MainWindow::undoAvailable(bool available) {
 	ui.action_Undo->setEnabled(available);
 }
 
 /**
- * @brief
+ * @brief Updates the redo menu item based on the availability of redo actions.
  *
- * @param available
+ * @param available `true` if redo is available, `false` otherwise.
  */
 void MainWindow::redoAvailable(bool available) {
 	ui.action_Redo->setEnabled(available);
 }
 
 /**
- * @brief
+ * @brief Enables or disables menu items based on the selection state of the document widget.
  *
- * @param document
- * @param selected
+ * @param document The document widget where the selection state has changed.
+ * @param selected `true` if there is a selection, `false` otherwise.
  */
 void MainWindow::selectionChanged(bool selected) {
 
@@ -1229,7 +1242,7 @@ void MainWindow::selectionChanged(bool selected) {
 }
 
 /**
- * @brief
+ * @brief Updates the Window menu for all open NEdit windows.
  */
 void MainWindow::updateWindowMenus() {
 
@@ -1238,10 +1251,10 @@ void MainWindow::updateWindowMenus() {
 	}
 }
 
-/*
-** Update the Window menu of a single window to reflect the current state of
-** all NEdit windows as determined by the global window list.
-*/
+/**
+ * @brief Update the Window menu of a single window to reflect the current state of
+ * all NEdit windows as determined by the global window list.
+ */
 void MainWindow::updateWindowMenu() {
 
 	// Make a sorted list of windows
@@ -1272,17 +1285,17 @@ void MainWindow::updateWindowMenu() {
 }
 
 /**
- * @brief
+ * @brief Returns the number of tabs currently open in the window.
  *
- * @return
+ * @return The number of tabs in the window.
  */
 size_t MainWindow::tabCount() const {
 	return static_cast<size_t>(ui.tabWidget->count());
 }
 
-/*
-** Sort tabs in the tab bar alphabetically, if demanded so.
-*/
+/**
+ * @brief Sorts the tabs in the tab bar alphabetically based on their filenames and paths.
+ */
 void MainWindow::sortTabBar() {
 
 	if (!Preferences::GetPrefSortTabs()) {
@@ -1309,9 +1322,10 @@ void MainWindow::sortTabBar() {
 }
 
 /**
- * @brief
+ * @brief Returns all MainWindow instances currently open in the application.
  *
- * @return
+ * @param includeInvisible If `true`, includes windows that are not currently visible.
+ * @return All MainWindow instances.
  */
 std::vector<MainWindow *> MainWindow::allWindows(bool includeInvisible) {
 
@@ -1340,9 +1354,9 @@ std::vector<MainWindow *> MainWindow::allWindows(bool includeInvisible) {
 }
 
 /**
- * @brief
+ * @brief Returns the first MainWindow instance found in the application.
  *
- * @return
+ * @return The first MainWindow instance, or `nullptr` if none exists.
  */
 MainWindow *MainWindow::firstWindow() {
 
@@ -1358,9 +1372,9 @@ MainWindow *MainWindow::firstWindow() {
 }
 
 /**
- * @brief
+ * @brief Returns all open DocumentWidget instances in the current MainWindow.
  *
- * @return
+ * @return All open DocumentWidget instances.
  */
 std::vector<DocumentWidget *> MainWindow::openDocuments() const {
 
@@ -1377,12 +1391,14 @@ std::vector<DocumentWidget *> MainWindow::openDocuments() const {
 	return documents;
 }
 
-/*
-** Make sure the close menu item is enabled/disabled appropriately for the
-** current set of windows.  It should be disabled only for the last Untitled,
-** unmodified, editor window, and enabled otherwise.
-*/
-void MainWindow::checkCloseEnableState(const std::vector<MainWindow *> &windows) {
+/**
+ * @brief Make sure the close menu item is enabled/disabled appropriately for the
+ * current set of windows. It should be disabled only for the last Untitled,
+ * unmodified, editor window, and enabled otherwise.
+ *
+ * @param windows The list of MainWindow instances to check.
+ */
+void MainWindow::updateCloseEnableState(const std::vector<MainWindow *> &windows) {
 	if (windows.empty()) {
 		return;
 	}
@@ -1406,14 +1422,22 @@ void MainWindow::checkCloseEnableState(const std::vector<MainWindow *> &windows)
 	}
 }
 
-void MainWindow::checkCloseEnableState() {
+/**
+ * @brief Updates the enable state of the close menu item for all open MainWindow instances.
+ */
+void MainWindow::updateCloseEnableState() {
 	const std::vector<MainWindow *> windows = MainWindow::allWindows();
-	checkCloseEnableState(windows);
+	updateCloseEnableState(windows);
 }
 
-/*
-** Create either the Shell menu, Macro menu or Background menu
-*/
+/**
+ * @brief Create either the Shell menu, Macro menu or Context menu
+ *
+ * @param currentLanguageMode The current language mode of the document.
+ * @param data The menu data containing information about the commands.
+ * @param type The type of command to create the menu for (Shell, Macro, or Context).
+ * @return The created QMenu.
+ */
 QMenu *MainWindow::createUserMenu(size_t currentLanguageMode, const gsl::span<MenuData> &data, CommandTypes type) {
 
 	auto rootMenu = new QMenu(this);
@@ -1516,10 +1540,11 @@ QMenu *MainWindow::createUserMenu(size_t currentLanguageMode, const gsl::span<Me
 	return rootMenu;
 }
 
-/*
-** Update the Shell, Macro, and Window Background menus of window
-** "window" from the currently loaded command descriptions.
-*/
+/**
+ * @brief Updates the user menus (Shell, Macro, and Background) for the specified document.
+ *
+ * @param document The document widget for which to update the user menus.
+ */
 void MainWindow::updateUserMenus(DocumentWidget *document) {
 
 	const size_t language = document->languageMode_;
@@ -1542,7 +1567,7 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	}
 	shellGroup_ = new QActionGroup(this);
 	shellGroup_->setExclusive(false);
-	addToGroup(shellGroup_, shellMenu_);
+	AddToGroup(shellGroup_, shellMenu_);
 	connect(shellGroup_, &QActionGroup::triggered, this, &MainWindow::shellTriggered);
 
 	if (macroMenu_) {
@@ -1563,7 +1588,7 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 	}
 	macroGroup_ = new QActionGroup(this);
 	macroGroup_->setExclusive(false);
-	addToGroup(macroGroup_, macroMenu_);
+	AddToGroup(macroGroup_, macroMenu_);
 	connect(macroGroup_, &QActionGroup::triggered, this, &MainWindow::macroTriggered);
 
 	// update background menu, which is owned by a single document
@@ -1574,7 +1599,7 @@ void MainWindow::updateUserMenus(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Updates the user menus for the current document.
  */
 void MainWindow::updateUserMenus() {
 	if (DocumentWidget *document = currentDocument()) {
@@ -1582,10 +1607,10 @@ void MainWindow::updateUserMenus() {
 	}
 }
 
-/*
-** Re-build the language mode sub-menu using the current data stored
-** in the master list: LanguageModes.
-*/
+/**
+ * @brief Re-build the language mode sub-menu using the current data stored
+ * in the master list: LanguageModes.
+ */
 void MainWindow::updateLanguageModeSubmenu() {
 
 	auto languageGroup   = new QActionGroup(this);
@@ -2171,7 +2196,7 @@ void MainWindow::action_Open_Selected(DocumentWidget *document) {
 		QApplication::beep();
 	}
 
-	MainWindow::checkCloseEnableState();
+	MainWindow::updateCloseEnableState();
 }
 
 /**
@@ -2216,7 +2241,7 @@ void MainWindow::action_Shift_Open_Selected(DocumentWidget *document) {
 		QApplication::beep();
 	}
 
-	MainWindow::checkCloseEnableState();
+	MainWindow::updateCloseEnableState();
 }
 
 QFileInfoList MainWindow::openFileHelperSystem(DocumentWidget *document, const QRegularExpressionMatch &match, QString *searchPath, QString *searchName) const {
@@ -2370,7 +2395,7 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 			/*background=*/false);
 	}
 
-	MainWindow::checkCloseEnableState();
+	MainWindow::updateCloseEnableState();
 }
 
 /**
@@ -2387,7 +2412,7 @@ void MainWindow::action_Shift_Left(DocumentWidget *document) {
 	}
 
 	if (const QPointer<TextArea> area = lastFocus()) {
-		shiftSelection(document, area, ShiftDirection::Left, /*byTab=*/false);
+		ShiftSelection(document, area, ShiftDirection::Left, /*byTab=*/false);
 	}
 }
 
@@ -2415,7 +2440,7 @@ void MainWindow::action_Shift_Right(DocumentWidget *document) {
 	}
 
 	if (const QPointer<TextArea> area = lastFocus()) {
-		shiftSelection(document, area, ShiftDirection::Right, /*byTab=*/false);
+		ShiftSelection(document, area, ShiftDirection::Right, /*byTab=*/false);
 	}
 }
 
@@ -2443,7 +2468,7 @@ void MainWindow::action_Shift_Left_Tabs(DocumentWidget *document) {
 	}
 
 	if (const QPointer<TextArea> area = lastFocus()) {
-		shiftSelection(document, area, ShiftDirection::Left, /*byTab=*/true);
+		ShiftSelection(document, area, ShiftDirection::Left, /*byTab=*/true);
 	}
 }
 
@@ -2470,7 +2495,7 @@ void MainWindow::action_Shift_Right_Tabs(DocumentWidget *document) {
 	}
 
 	if (const QPointer<TextArea> area = lastFocus()) {
-		shiftSelection(document, area, ShiftDirection::Right, /*byTab=*/true);
+		ShiftSelection(document, area, ShiftDirection::Right, /*byTab=*/true);
 	}
 }
 
@@ -2497,7 +2522,7 @@ void MainWindow::action_Lower_case(DocumentWidget *document) {
 	}
 
 	if (const QPointer<TextArea> area = lastFocus()) {
-		downcaseSelection(document, area);
+		DowncaseSelection(document, area);
 	}
 }
 
@@ -2525,7 +2550,7 @@ void MainWindow::action_Upper_case(DocumentWidget *document) {
 	}
 
 	if (const QPointer<TextArea> area = lastFocus()) {
-		upcaseSelection(document, area);
+		UpcaseSelection(document, area);
 	}
 }
 
@@ -2553,7 +2578,7 @@ void MainWindow::action_Fill_Paragraph(DocumentWidget *document) {
 	}
 
 	if (const QPointer<TextArea> area = lastFocus()) {
-		fillSelection(document, area);
+		FillSelection(document, area);
 	}
 }
 
@@ -4941,8 +4966,8 @@ void MainWindow::action_Last_Document() {
 
 	EmitEvent("last_document");
 
-	if (lastFocusDocument) {
-		lastFocusDocument->raiseFocusDocumentWindow(/*focus=*/true);
+	if (LastFocusDocument) {
+		LastFocusDocument->raiseFocusDocumentWindow(/*focus=*/true);
 	}
 }
 
@@ -5020,9 +5045,9 @@ void MainWindow::allDocumentsBusy(const QString &message) {
 
 	const std::vector<DocumentWidget *> documents = DocumentWidget::allDocuments();
 
-	if (!currentlyBusy) {
-		busyStartTime  = QDateTime::currentDateTimeUtc().toMSecsSinceEpoch();
-		modeMessageSet = false;
+	if (!CurrentlyBusy) {
+		BusyStartTime  = QDateTime::currentDateTimeUtc().toMSecsSinceEpoch();
+		ModeMessageSet = false;
 
 		/*
 		 * We don't the display message here yet, but defer it for a while.
@@ -5033,18 +5058,18 @@ void MainWindow::allDocumentsBusy(const QString &message) {
 		 */
 		QApplication::setOverrideCursor(Qt::WaitCursor);
 
-	} else if (!modeMessageSet && !message.isNull() && (QDateTime::currentDateTimeUtc().toMSecsSinceEpoch() - busyStartTime) > 1000) {
+	} else if (!ModeMessageSet && !message.isNull() && (QDateTime::currentDateTimeUtc().toMSecsSinceEpoch() - BusyStartTime) > 1000) {
 
 		// Show the mode message when we've been busy for more than a second
 		for (DocumentWidget *document : documents) {
 			document->setModeMessage(message);
 		}
-		modeMessageSet = true;
+		ModeMessageSet = true;
 	}
 
 	/* Keep UI alive while loading large files */
 	QApplication::processEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
-	currentlyBusy = true;
+	CurrentlyBusy = true;
 }
 
 /**
@@ -5056,9 +5081,9 @@ void MainWindow::allDocumentsUnbusy() {
 		document->clearModeMessage();
 	}
 
-	currentlyBusy  = false;
-	modeMessageSet = false;
-	busyStartTime  = 0;
+	CurrentlyBusy  = false;
+	ModeMessageSet = false;
+	BusyStartTime  = 0;
 
 	QApplication::restoreOverrideCursor();
 }
@@ -5356,7 +5381,7 @@ void MainWindow::action_Revert_to_Saved_triggered() {
 void MainWindow::action_New_Window(DocumentWidget *document) {
 	EmitEvent("new_window");
 	MainWindow::editNewFile(Preferences::GetPrefOpenInTab() ? nullptr : this, QString(), /*iconic=*/false, QString(), QDir(document->path()));
-	MainWindow::checkCloseEnableState();
+	MainWindow::updateCloseEnableState();
 }
 
 /**
@@ -5690,7 +5715,7 @@ void MainWindow::focusChanged(QWidget *from, QWidget *to) {
 
 	if (auto area = qobject_cast<TextArea *>(from)) {
 		if (auto document = DocumentWidget::fromArea(area)) {
-			lastFocusDocument = document;
+			LastFocusDocument = document;
 		}
 	}
 
@@ -7710,9 +7735,9 @@ void MainWindow::updateWindowReadOnly(DocumentWidget *document) {
 }
 
 /**
- * @brief
+ * @brief Updates the window title based on the current document's state.
  *
- * @param document
+ * @param document The document widget for which the title should be updated.
  */
 void MainWindow::updateWindowTitle(DocumentWidget *document) {
 
@@ -7751,9 +7776,9 @@ void MainWindow::updateWindowTitle(DocumentWidget *document) {
 
 #ifdef PER_TAB_CLOSE
 /**
- * @brief
+ * @brief Closes the tab at the specified index.
  *
- * @param index
+ * @param index The index of the tab to close.
  */
 void MainWindow::tabWidget_tabCloseRequested(int index) {
 	if (DocumentWidget *document = documentAt(index)) {
@@ -7763,9 +7788,9 @@ void MainWindow::tabWidget_tabCloseRequested(int index) {
 #endif
 
 /**
- * @brief
+ * @brief Returns the last focused TextArea in the current document.
  *
- * @return
+ * @return The last focused TextArea, or the first pane if none was set.
  */
 QPointer<TextArea> MainWindow::lastFocus() {
 

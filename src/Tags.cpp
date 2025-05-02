@@ -51,15 +51,15 @@ enum TFT : uint8_t {
 	TFT_CTAGS
 };
 
-constexpr int MAX_LINE                        = 2048;
-constexpr int MAX_TAG_INCLUDE_RECURSION_LEVEL = 5;
+constexpr int MaxLine                     = 2048;
+constexpr int MaxTagIncludeRecursionLevel = 5;
 
 /* Take this many lines when making a tip from a tag.
    (should probably be a language-dependent option, but...) */
-constexpr int TIP_DEFAULT_LINES = 4;
+constexpr int TipDefaultLines = 4;
 
 // used  in AddRelTagsFile and AddTagsFile
-int16_t tagFileIndex = 0;
+int16_t TagFileIndex = 0;
 
 QMultiHash<QString, Tag> LoadedTags;
 QMultiHash<QString, Tag> LoadedTips;
@@ -385,7 +385,7 @@ int LoadTagsFile(const QString &tagSpec, int index, int recLevel) {
 	int nTagsAdded  = 0;
 	int tagFileType = TFT_CHECK;
 
-	if (recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {
+	if (recLevel > MaxTagIncludeRecursionLevel) {
 		return 0;
 	}
 	/* the path of the tags file must be resolved to find the right files:
@@ -661,7 +661,7 @@ int LoadTipsFile(const QString &tipsFile, int index, int recLevel) {
 	size_t langMode = PLAIN_LANGUAGE_MODE;
 	std::vector<CalltipAlias> aliases;
 
-	if (recLevel > MAX_TAG_INCLUDE_RECURSION_LEVEL) {
+	if (recLevel > MaxTagIncludeRecursionLevel) {
 		qWarning("NEdit: Warning: Reached recursion limit before loading calltips file:\n\t%s",
 				 qPrintable(tipsFile));
 		return 0;
@@ -966,7 +966,7 @@ bool AddRelativeTagsFile(const QString &tagSpec, const QString &windowPath, Sear
 			pathName,
 			timestamp,
 			false,
-			++tagFileIndex,
+			++TagFileIndex,
 			1 // NOTE(eteran): added just so there aren't any uninitialized members
 		};
 
@@ -1033,7 +1033,7 @@ bool AddTagsFile(const QString &tagSpec, SearchMode mode) {
 			pathName,
 			timestamp,
 			false,
-			++tagFileIndex,
+			++TagFileIndex,
 			1};
 
 		FileList->push_front(tag);
@@ -1241,7 +1241,7 @@ bool FakeRegexSearch(std::string_view buffer, const QString &searchString, int64
 
 	// Build the search regex.
 	QString searchSubs;
-	searchSubs.reserve(3 * MAX_LINE + 3);
+	searchSubs.reserve(3 * MaxLine + 3);
 	auto outPtr = std::back_inserter(searchSubs);
 
 	{
@@ -1393,16 +1393,16 @@ void ShowMatchingCalltip(QWidget *parent, TextArea *area, int id) {
 
 			if (!found) {
 				// Just take 4 lines
-				MoveAheadNLines(fileString, endPos, TIP_DEFAULT_LINES);
+				MoveAheadNLines(fileString, endPos, TipDefaultLines);
 				--endPos; // Lose the last \n
 			} else {
 				endPos = searchResult.start;
 			}
 
 		} else { // Mode = TIP_FROM_TAG
-			// 4. Copy TIP_DEFAULT_LINES lines of text to the calltip string
+			// 4. Copy TipDefaultLines lines of text to the calltip string
 			endPos = startPos;
-			MoveAheadNLines(fileString, endPos, TIP_DEFAULT_LINES);
+			MoveAheadNLines(fileString, endPos, TipDefaultLines);
 
 			// Make sure not to overrun the fileString with ". . ."
 			if (static_cast<size_t>(endPos) <= (fileString.size() - 5)) {

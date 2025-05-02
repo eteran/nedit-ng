@@ -59,7 +59,7 @@ QString ReadSmartIndentMacro(Input &in) {
 	in += macroEnd - in.index();
 	in += MacroEndBoundary.size();
 
-	return shiftText(macroStr, ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars=*/8);
+	return ShiftText(macroStr, ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars=*/8);
 }
 
 /**
@@ -357,7 +357,7 @@ void LoadSmartIndentCommonString(const QString &string) {
 		}
 
 		// Remove leading tabs added by writer routine
-		CommonMacros = shiftText(in.mid(), ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/ 8);
+		CommonMacros = ShiftText(in.mid(), ShiftDirection::Left, /*tabsAllowed=*/true, /*tabDist=*/8, /*nChars*/ 8);
 	}
 }
 

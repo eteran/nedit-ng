@@ -212,7 +212,7 @@ void NeditServer::newConnection() {
 				false,
 				QString());
 
-			MainWindow::checkCloseEnableState();
+			MainWindow::updateCloseEnableState();
 		} else {
 			(*it)->raiseDocument();
 		}
@@ -288,7 +288,7 @@ void NeditServer::newConnection() {
 				}
 			}
 
-			MainWindow::checkCloseEnableState();
+			MainWindow::updateCloseEnableState();
 			return;
 		}
 
@@ -380,6 +380,6 @@ void NeditServer::newConnection() {
 		} else {
 			lastFile->raiseDocumentWindow();
 		}
-		MainWindow::checkCloseEnableState();
+		MainWindow::updateCloseEnableState();
 	}
 }
