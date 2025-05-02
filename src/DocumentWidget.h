@@ -138,7 +138,7 @@ public:
 	bool matchSyntaxBased() const;
 	bool modeMessageDisplayed() const;
 	bool overstrike() const;
-	void readMacroFile(const QString &fileName, bool warnNotExist);
+	void readMacroFile(const QString &filename, bool warnNotExist);
 	bool readMacroString(const QString &string, const QString &errIn);
 	bool showStatisticsLine() const;
 	bool useTabs() const;
@@ -230,7 +230,7 @@ private:
 	StyleTableEntry *styleTableEntryOfCode(size_t hCode) const;
 	TextArea *createTextArea(const std::shared_ptr<TextBuffer> &buffer);
 	bool closeFileAndWindow(CloseMode preResponse);
-	bool compareDocumentToFile(const QString &fileName) const;
+	bool compareDocumentToFile(const QString &filename) const;
 	bool doOpen(const QString &name, const QString &path, int flags);
 	bool doSave();
 	bool fileWasModifiedExternally() const;

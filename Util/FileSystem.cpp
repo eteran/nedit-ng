@@ -28,7 +28,7 @@ constexpr int FORMAT_SAMPLE_CHARS = 2000;
  * @param fullname The full file name, which may include a path.
  * @return APathInfo structure containing the path and file name.
  */
-PathInfo parseFilename(const QString &fullname) {
+PathInfo ParseFilename(const QString &fullname) {
 
 	PathInfo fileInfo;
 
@@ -249,15 +249,15 @@ void ConvertFromDos(std::string &text, char *pendingCR) {
 }
 
 /**
- * @brief Reads any text file and converts its line endings to Unix format.
+ * @brief Reads any text file and converts its line endings to
+ * Unix format and ensures it ends with a newline.
  *
- * @param fileName The name of the file to read.
- * @param forceNL If `true`, ensures that the returned string ends with a newline character.
+ * @param filename The name of the file to read.
  * @return The contents of the file in Unix format, or an empty string if the file could not be read.
  */
-QString ReadAnyTextFile(const QString &fileName, bool forceNL) {
+QString ReadAnyTextFile(const QString &filename) {
 
-	std::ifstream file(fileName.toStdString());
+	std::ifstream file(filename.toStdString());
 	if (!file) {
 		return {};
 	}
@@ -281,7 +281,7 @@ QString ReadAnyTextFile(const QString &fileName, bool forceNL) {
 		}
 
 		// now, that the string is in Unix format, check for terminating \n
-		if (forceNL && contents.back() != '\n') {
+		if (contents.back() != '\n') {
 			contents.push_back('\n');
 		}
 

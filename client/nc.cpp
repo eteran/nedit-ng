@@ -269,7 +269,7 @@ std::optional<CommandLine> ParseCommandLine(const QStringList &args) {
 		} else {
 
 			// this just essentially checks that the path is sane
-			const PathInfo fi  = parseFilename(args[i]);
+			const PathInfo fi  = ParseFilename(args[i]);
 			const QString path = fi.pathname + fi.filename;
 
 			int isTabbed;

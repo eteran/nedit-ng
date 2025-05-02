@@ -2300,12 +2300,12 @@ QString DocumentWidget::path() const {
  * @brief Compare the contents of the document widget with a file.
  * The format of the file (UNIX/DOS/MAC) is handled properly.
  *
- * @param fileName The name of the file to compare against.
+ * @param filename The name of the file to compare against.
  * @return `true` if the contents differ or if an error occurs, `false` if they are the same.
  *
  * @note This function reads the file in chunks and compares it with the document's buffer,
  */
-bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
+bool DocumentWidget::compareDocumentToFile(const QString &filename) const {
 
 	// Number of bytes read at once
 	constexpr auto PREFERRED_CMPBUF_LEN = static_cast<int64_t>(0x8000);
@@ -2315,7 +2315,7 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 	// TODO(eteran): in the age of modern computers, we can just memory map
 	// the whole file and use that for comparison
 
-	QFile file(fileName);
+	QFile file(filename);
 	if (!file.open(QIODevice::ReadOnly)) {
 		return true;
 	}
@@ -2743,7 +2743,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 		addWrapNewlines();
 	}
 
-	const PathInfo fi = parseFilename(fullname);
+	const PathInfo fi = ParseFilename(fullname);
 
 	// If the requested file is this file, just save it and return
 	if (info_->filename == fi.filename && info_->path == fi.pathname) {
@@ -3214,7 +3214,7 @@ DocumentWidget *DocumentWidget::fromArea(TextArea *area) {
  */
 DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 
-	const PathInfo fi        = parseFilename(fullpath);
+	const PathInfo fi        = ParseFilename(fullpath);
 	DocumentWidget *document = DocumentWidget::editExistingFile(
 		this,
 		fi.filename,
@@ -5517,26 +5517,26 @@ void DocumentWidget::beginLearn() {
  * Extends the syntax of the macro parser with a define keyword,
  * and allows intermixing of defines with immediate actions.
  *
- * @param fileName The name of the macro file to read.
+ * @param filename The name of the macro file to read.
  * @param warnNotExist If `true`, show a warning message if the file does not exist.
  */
-void DocumentWidget::readMacroFile(const QString &fileName, bool warnNotExist) {
+void DocumentWidget::readMacroFile(const QString &filename, bool warnNotExist) {
 
 	/* read-in macro file and force a terminating \n, to prevent syntax
 	** errors with statements on the last line
 	*/
-	const QString text = ReadAnyTextFile(fileName, /*forceNL=*/true);
+	const QString text = ReadAnyTextFile(filename);
 	if (text.isNull()) {
 		if (warnNotExist) {
 			QMessageBox::critical(this,
 								  tr("Read Macro"),
-								  tr("Error reading macro file %1: %2").arg(fileName, ErrorString(errno)));
+								  tr("Error reading macro file %1: %2").arg(filename, ErrorString(errno)));
 		}
 		return;
 	}
 
 	// Parse text
-	ReadCheckMacroString(this, text, this, fileName, nullptr);
+	ReadCheckMacroString(this, text, this, filename, nullptr);
 }
 
 /**
@@ -7451,7 +7451,7 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 		Tags::tagSearch[nMatches] = searchString;
 		Tags::tagPosInf[nMatches] = startPos;
 
-		const PathInfo fi = parseFilename(Tags::tagFiles[nMatches]);
+		const PathInfo fi = ParseFilename(Tags::tagFiles[nMatches]);
 
 		// Is this match in the current file?  If so, use it!
 		if (Preferences::GetPrefSmartTags() && info_->filename == fi.filename && info_->path == fi.pathname) {
@@ -7509,7 +7509,7 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 
 			QString temp;
 
-			const PathInfo fi = parseFilename(Tags::tagFiles[i]);
+			const PathInfo fi = ParseFilename(Tags::tagFiles[i]);
 
 			if ((i < nMatches - 1 && (Tags::tagFiles[i] == Tags::tagFiles[i + 1])) || (i > 0 && (Tags::tagFiles[i] == Tags::tagFiles[i - 1]))) {
 
@@ -7610,7 +7610,7 @@ int DocumentWidget::showTipString(const QString &text, bool anchored, int pos, b
  */
 void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 
-	const PathInfo fi = parseFilename(Tags::tagFiles[i]);
+	const PathInfo fi = ParseFilename(Tags::tagFiles[i]);
 
 	// open the file containing the definition
 	DocumentWidget::editExistingFile(
@@ -7814,7 +7814,7 @@ void DocumentWidget::dropEvent(QDropEvent *event) {
 			break;
 		}
 
-		const QString fileName = url.toLocalFile();
-		open(fileName);
+		const QString filename = url.toLocalFile();
+		open(filename);
 	}
 }

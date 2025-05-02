@@ -2382,7 +2382,7 @@ void MainWindow::openFile(DocumentWidget *document, const QString &text) {
 	// OK, we've got some things to try to open, let's go for it!
 	for (const QFileInfo &file : fileList) {
 
-		const PathInfo fi = parseFilename(file.absoluteFilePath());
+		const PathInfo fi = ParseFilename(file.absoluteFilePath());
 		DocumentWidget::editExistingFile(
 			openInTab ? document : nullptr,
 			fi.filename,

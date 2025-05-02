@@ -299,7 +299,7 @@ void NeditServer::newConnection() {
 			EditFlags::CREATE |
 			(createFlag ? EditFlags::SUPPRESS_CREATE_WARN : 0);
 
-		const PathInfo fi = parseFilename(fullname);
+		const PathInfo fi = ParseFilename(fullname);
 
 		DocumentWidget *document = MainWindow::findWindowWithFile(fi);
 		if (!document) {

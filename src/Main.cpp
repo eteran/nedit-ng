@@ -258,7 +258,7 @@ Main::Main(const QStringList &args) {
 			exit(EXIT_FAILURE);
 		} else {
 
-			const PathInfo fi = parseFilename(args[i]);
+			const PathInfo fi = ParseFilename(args[i]);
 
 			/* determine if file is to be opened in new tab, by
 			   factoring the options -group, -tabbed & -untabbed */

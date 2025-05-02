@@ -403,7 +403,7 @@ int LoadTagsFile(const QString &tagSpec, int index, int recLevel) {
 		return 0;
 	}
 
-	const PathInfo tagPathInfo = parseFilename(resolvedTagsFile);
+	const PathInfo tagPathInfo = ParseFilename(resolvedTagsFile);
 
 	QString filename;
 
@@ -681,7 +681,7 @@ int LoadTipsFile(const QString &tipsFile, int index, int recLevel) {
 	}
 
 	// Get the path to the tips file
-	const PathInfo tipPathInfo = parseFilename(resolvedTipsFile);
+	const PathInfo tipPathInfo = ParseFilename(resolvedTipsFile);
 
 	QFile file(resolvedTipsFile);
 	if (!file.open(QIODevice::ReadOnly)) {
