@@ -4971,11 +4971,31 @@ void MainWindow::action_Last_Document() {
 	}
 }
 
+/**
+ * @brief
+ *
+ * @param window
+ * @param geometry
+ * @param iconic
+ * @param languageMode
+ * @return
+ */
 DocumentWidget *MainWindow::editNewFile(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode) {
 	return editNewFile(window, geometry, iconic, languageMode, QDir::currentPath());
 }
 
+/**
+ * @brief
+ *
+ * @param window
+ * @param geometry
+ * @param iconic
+ * @param languageMode
+ * @param defaultPath
+ * @return
+ */
 DocumentWidget *MainWindow::editNewFile(MainWindow *window, const QString &geometry, bool iconic, const QString &languageMode, const QDir &defaultPath) {
+
 	DocumentWidget *document;
 
 	// Find a (relatively) unique name for the new file
@@ -5037,9 +5057,9 @@ DocumentWidget *MainWindow::editNewFile(MainWindow *window, const QString &geome
 }
 
 /**
- * @brief
+ * @brief Mark all documents as busy.
  *
- * @param message
+ * @param message A message to display while busy, or null if no message should be displayed.
  */
 void MainWindow::allDocumentsBusy(const QString &message) {
 
@@ -5067,7 +5087,7 @@ void MainWindow::allDocumentsBusy(const QString &message) {
 		ModeMessageSet = true;
 	}
 
-	/* Keep UI alive while loading large files */
+	// Keep UI alive while loading large files
 	QApplication::processEvents(QEventLoop::ExcludeUserInputEvents | QEventLoop::ExcludeSocketNotifiers);
 	CurrentlyBusy = true;
 }
