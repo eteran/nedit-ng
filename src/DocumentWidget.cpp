@@ -814,7 +814,7 @@ void DocumentWidget::refreshTabState() {
 		}
 	}
 
-	static const auto saveIcon = QIcon::fromTheme(QLatin1String("document-save"));
+	static const auto saveIcon = QIcon::fromTheme(QStringLiteral("document-save"));
 	if (!saveIcon.isNull()) {
 		tabWidget->setTabIcon(index, info_->fileChanged ? saveIcon : QIcon());
 		labelString = filename;
@@ -2070,7 +2070,7 @@ void DocumentWidget::removeBackupFile() const {
 QString DocumentWidget::backupFileName() const {
 
 	if (info_->filenameSet) {
-		return QStringLiteral("%1~%2").arg(info_->path, info_->filename);
+		return QLatin1String("%1~%2").arg(info_->path, info_->filename);
 	}
 
 	return PrependHome(QStringLiteral("~%1").arg(info_->filename));
@@ -2266,7 +2266,7 @@ QString DocumentWidget::fullPath() const {
 	}
 
 	Q_ASSERT(info_->path.endsWith(QLatin1Char('/')));
-	return QStringLiteral("%1%2").arg(info_->path, info_->filename);
+	return QLatin1String("%1%2").arg(info_->path, info_->filename);
 }
 
 /**
@@ -4862,7 +4862,7 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 
 	// start it off!
 	QStringList args;
-	args << QLatin1String("-c");
+	args << QStringLiteral("-c");
 	args << command;
 	process->start(userShell, args);
 
@@ -6350,7 +6350,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	}
 
 	// Check that the styles and parent pattern names actually exist
-	if (!Highlight::NamedStyleExists(QLatin1String("Plain"))) {
+	if (!Highlight::NamedStyleExists(QStringLiteral("Plain"))) {
 		QMessageBox::warning(this, tr("Highlight Style"), tr("Highlight style \"Plain\" is missing"));
 		return nullptr;
 	}
@@ -6411,8 +6411,8 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	auto p1Ptr = std::back_inserter(pass1PatternSrc);
 	auto p2Ptr = std::back_inserter(pass2PatternSrc);
 
-	*p1Ptr++ = HighlightPattern(QLatin1String("Plain"));
-	*p2Ptr++ = HighlightPattern(QLatin1String("Plain"));
+	*p1Ptr++ = HighlightPattern(QStringLiteral("Plain"));
+	*p2Ptr++ = HighlightPattern(QStringLiteral("Plain"));
 
 	for (const HighlightPattern &pattern : patterns) {
 		if (pattern.flags & DEFER_PARSING) {

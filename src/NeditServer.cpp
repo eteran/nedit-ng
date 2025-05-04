@@ -228,16 +228,16 @@ void NeditServer::newConnection() {
 
 		auto file = entry.toObject();
 
-		const bool wait            = file[QLatin1String("wait")].toBool();
+		const bool wait            = file[QStringLiteral("wait")].toBool();
 		const int lineNum          = file[QLatin1String("line_number")].toInt();
-		const int readFlag         = file[QLatin1String("read")].toInt();
-		const int createFlag       = file[QLatin1String("create")].toInt();
-		const int iconicFlag       = file[QLatin1String("iconic")].toInt();
+		const int readFlag         = file[QStringLiteral("read")].toInt();
+		const int createFlag       = file[QStringLiteral("create")].toInt();
+		const int iconicFlag       = file[QStringLiteral("iconic")].toInt();
 		const int tabbed           = file[QLatin1String("is_tabbed")].toInt();
-		const QString fullname     = file[QLatin1String("path")].toString();
-		const QString doCommand    = file[QLatin1String("toDoCommand")].toString();
-		const QString languageMode = file[QLatin1String("langMode")].toString();
-		const QString geometry     = file[QLatin1String("geometry")].toString();
+		const QString fullname     = file[QStringLiteral("path")].toString();
+		const QString doCommand    = file[QStringLiteral("toDoCommand")].toString();
+		const QString languageMode = file[QStringLiteral("langMode")].toString();
+		const QString geometry     = file[QStringLiteral("geometry")].toString();
 
 		/* An empty file name means:
 		 *   put up an empty, Untitled window, or use an existing one

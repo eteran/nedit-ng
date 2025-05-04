@@ -39,7 +39,7 @@ namespace {
  */
 QString ReadSmartIndentMacro(Input &in) {
 
-	static const auto MacroEndBoundary = QLatin1String("--End-of-Macro--");
+	static const auto MacroEndBoundary = QStringLiteral("--End-of-Macro--");
 
 	// Strip leading newline
 	if (*in == QLatin1Char('\n')) {
@@ -208,7 +208,7 @@ void LoadSmartIndentFromYaml() {
 
 			if (key == "common") {
 				CommonMacros = value.as<QString>();
-				if (CommonMacros == QLatin1String("Default")) {
+				if (CommonMacros == QStringLiteral("Default")) {
 					CommonMacros = LoadDefaultCommonMacros();
 				}
 			} else if (key == "languages") {
@@ -293,7 +293,7 @@ void LoadSmartIndentFromString(const QString &string) {
 
 			/* look for "Default" keyword, and if it's there, return the default
 			   smart indent macros */
-			if (in.match(QLatin1String("Default"))) {
+			if (in.match(QStringLiteral("Default"))) {
 				/* look for "Default" keyword, and if it's there, return the default
 				   smart indent macros */
 				const SmartIndentEntry *spec = FindDefaultIndentSpec(is.language);
@@ -379,7 +379,7 @@ void LoadSmartIndentCommonString(const QString &string) {
 
 	/* look for "Default" keyword, and if it's there, return the default
 	   smart common macro */
-	if (in.match(QLatin1String("Default"))) {
+	if (in.match(QStringLiteral("Default"))) {
 		CommonMacros = LoadDefaultCommonMacros();
 		return;
 	}

@@ -358,7 +358,7 @@ int ScanETagsLine(const QString &line, const QString &tagPath, int index, QStrin
 		file = line.left(posCOM);
 
 		// check if that's an include file ...
-		if (line.mid(posCOM + 1, 7) == QLatin1String("include")) {
+		if (line.mid(posCOM + 1, 7) == QStringLiteral("include")) {
 
 			if (!QFileInfo(file).isAbsolute()) {
 				const QString incPath = NormalizePathname(tr("%1%2").arg(tagPath, file));
@@ -728,7 +728,7 @@ int LoadTipsFile(const QString &tipsFile, int index, int recLevel) {
 			// Switch to the new language mode if it's valid, else ignore it.
 			const size_t oldLangMode = std::exchange(langMode, Preferences::FindLanguageMode(header));
 
-			if (langMode == PLAIN_LANGUAGE_MODE && header != QLatin1String("Plain")) {
+			if (langMode == PLAIN_LANGUAGE_MODE && header != QStringLiteral("Plain")) {
 
 				qWarning("NEdit: Error reading calltips file:\n\t%s\nUnknown language mode: \"%s\"",
 						 qPrintable(tipsFile),

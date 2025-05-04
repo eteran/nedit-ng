@@ -101,13 +101,13 @@ int main(int argc, char *argv[]) {
 
 	// NOTE: for issue #41, translate QMessageBox.
 	QTranslator qtTranslator;
-	if (qtTranslator.load(QLocale(), QLatin1String("qtbase"), QLatin1String("_"), QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
+	if (qtTranslator.load(QLocale(), QStringLiteral("qtbase"), QLatin1String("_"), QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
 		QApplication::installTranslator(&qtTranslator);
 	}
 
 	QTranslator translator;
 	// look up e.g. :/i18n/nedit-ng_{lang}.qm
-	if (translator.load(QLocale(), QLatin1String("nedit-ng"), QLatin1String("_"), QLatin1String(":/i18n"))) {
+	if (translator.load(QLocale(), QStringLiteral("nedit-ng"), QLatin1String("_"), QLatin1String(":/i18n"))) {
 		QApplication::installTranslator(&translator);
 	}
 
@@ -115,19 +115,19 @@ int main(int argc, char *argv[]) {
 	// removed it at this point
 	QStringList arguments = QApplication::arguments();
 	if (!geometry.isNull()) {
-		arguments.insert(1, QLatin1String("-geometry"));
+		arguments.insert(1, QStringLiteral("-geometry"));
 		arguments.insert(2, geometry);
 	}
 
 #ifdef Q_OS_MACOS
-	qApp->setStyle(QStyleFactory::create(QLatin1String("fusion")));
+	qApp->setStyle(QStyleFactory::create(QStringLiteral("fusion")));
 #endif
 
 	// Light/Dark icons on all platforms
 	if (qApp->palette().window().color().lightnessF() >= 0.5) {
-		QIcon::setThemeName(QLatin1String("breeze-nedit"));
+		QIcon::setThemeName(QStringLiteral("breeze-nedit"));
 	} else {
-		QIcon::setThemeName(QLatin1String("breeze-dark-nedit"));
+		QIcon::setThemeName(QStringLiteral("breeze-dark-nedit"));
 	}
 
 	// Make all text fields use fixed-width fonts by default

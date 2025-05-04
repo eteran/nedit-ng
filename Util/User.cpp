@@ -55,7 +55,7 @@ QString ExpandTilde(const QString &pathname) {
 		}
 	}
 
-	return QStringLiteral("%1/%2").arg(QString::fromUtf8(passwdEntry->pw_dir), pathname.mid(end));
+	return QLatin1String("%1/%2").arg(QString::fromUtf8(passwdEntry->pw_dir), pathname.mid(end));
 #else
 	return pathname;
 #endif
@@ -79,7 +79,7 @@ QString GetHomeDir() {
  * @return "$HOME/filename"
  */
 QString PrependHome(const QString &filename) {
-	return QStringLiteral("%1/%2").arg(GetHomeDir(), filename);
+	return QLatin1String("%1/%2").arg(GetHomeDir(), filename);
 }
 
 /**

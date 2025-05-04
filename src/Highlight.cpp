@@ -1065,7 +1065,7 @@ std::optional<PatternSet> ReadPatternSet(Input &in) {
 
 		/* look for "Default" keyword, and if it's there, return the default
 		   pattern set */
-		if (in.match(QLatin1String("Default"))) {
+		if (in.match(QStringLiteral("Default"))) {
 			std::optional<PatternSet> retPatSet = ReadDefaultPatternSet(patSet.languageMode);
 			if (!retPatSet) {
 				Raise<HighlightError>(tr("No default pattern set"));

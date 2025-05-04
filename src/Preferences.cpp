@@ -382,7 +382,7 @@ void TranslatePrefFormats(uint32_t fileVersion) {
 	**  (or whatever is implemented in GetDefaultShell()). We put the login
 	**  shell's name in PrefData here.
 	*/
-	if (Settings::shell == QLatin1String("DEFAULT")) {
+	if (Settings::shell == QStringLiteral("DEFAULT")) {
 		Settings::shell = GetDefaultShell();
 	}
 

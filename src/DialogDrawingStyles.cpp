@@ -205,7 +205,7 @@ void DialogDrawingStyles::currentChanged(const QModelIndex &current, const QMode
 		CommonDialog::UpdateButtonStates(&ui, model_, current);
 
 		// don't allow deleting the last "Plain" entry since it's reserved
-		if (style->name == QLatin1String("Plain")) {
+		if (style->name == QStringLiteral("Plain")) {
 			// unless there is more than one "Plain"
 			const int count = countPlainEntries();
 			if (count < 2) {
@@ -358,7 +358,7 @@ bool DialogDrawingStyles::applyDialogChanges() {
 		// update the currently selected item's associated data
 		// and make sure it has the text updated as well
 		auto ptr = model_->itemFromIndex(index);
-		if (ptr->name == QLatin1String("Plain") && dialogFields->name != QLatin1String("Plain")) {
+		if (ptr->name == QStringLiteral("Plain") && dialogFields->name != QStringLiteral("Plain")) {
 			const int count = countPlainEntries();
 			if (count < 2) {
 				QMessageBox::information(this,
@@ -418,7 +418,7 @@ bool DialogDrawingStyles::updateItem(const QModelIndex &index) {
 	// and make sure it has the text updated as well. Disallow renaming
 	// the last "Plain" entry though
 	auto ptr = model_->itemFromIndex(index);
-	if (ptr->name == QLatin1String("Plain") && dialogFields->name != QLatin1String("Plain")) {
+	if (ptr->name == QStringLiteral("Plain") && dialogFields->name != QStringLiteral("Plain")) {
 		const int count = countPlainEntries();
 		if (count < 2) {
 			QMessageBox::information(this, tr("Highlight Style"), tr("There must be at least one Plain entry. Cannot rename this entry."));
@@ -454,7 +454,7 @@ int DialogDrawingStyles::countPlainEntries() const {
 	for (int i = 0; i < model_->rowCount(); ++i) {
 		const QModelIndex index = model_->index(i, 0);
 		auto style              = model_->itemFromIndex(index);
-		if (style->name == QLatin1String("Plain")) {
+		if (style->name == QStringLiteral("Plain")) {
 			++count;
 		}
 	}

@@ -106,8 +106,8 @@ std::optional<Location> StringToLineAndCol(const QString &text) {
 
 	const QRegularExpressionMatch match = re.match(text);
 	if (match.hasMatch()) {
-		const QString row = match.captured(QLatin1String("row"));
-		const QString col = match.captured(QLatin1String("col"));
+		const QString row = match.captured(QStringLiteral("row"));
+		const QString col = match.captured(QStringLiteral("col"));
 
 		bool row_ok;
 		int64_t r = row.toLongLong(&row_ok);
@@ -307,7 +307,7 @@ void MainWindow::setupISearchBar() {
 	ui.editIFind->installEventFilter(this);
 
 	// make sure that the ifind button has an icon
-	ui.buttonIFind->setIcon(QIcon::fromTheme(QLatin1String("edit-find")));
+	ui.buttonIFind->setIcon(QIcon::fromTheme(QStringLiteral("edit-find")));
 
 	// default to hiding the optional panels
 	ui.incrementalSearchFrame->setVisible(showISearchLine_);
@@ -519,7 +519,7 @@ void MainWindow::setupTabBar() {
 	// create and hook up the tab close button
 	auto deleteTabButton = new QToolButton(ui.tabWidget);
 	deleteTabButton->setToolButtonStyle(Qt::ToolButtonIconOnly);
-	deleteTabButton->setIcon(QIcon::fromTheme(QLatin1String("tab-close")));
+	deleteTabButton->setIcon(QIcon::fromTheme(QStringLiteral("tab-close")));
 	deleteTabButton->setAutoRaise(true);
 	deleteTabButton->setFocusPolicy(Qt::NoFocus);
 	deleteTabButton->setObjectName(tr("tab-close"));
@@ -1615,7 +1615,7 @@ void MainWindow::updateLanguageModeSubmenu() {
 
 	auto languageGroup   = new QActionGroup(this);
 	auto languageMenu    = new QMenu(this);
-	QAction *plainAction = languageMenu->addAction(QLatin1String("Plain"));
+	QAction *plainAction = languageMenu->addAction(QStringLiteral("Plain"));
 	plainAction->setData(static_cast<qulonglong>(PLAIN_LANGUAGE_MODE));
 	plainAction->setCheckable(true);
 	plainAction->setChecked(true);
@@ -5313,7 +5313,7 @@ void MainWindow::action_Save_All_triggered() {
 void MainWindow::action_Save_As(DocumentWidget *document, const QString &filename, bool wrapped) {
 
 	if (wrapped) {
-		EmitEvent("save_as", filename, QLatin1String("wrapped"));
+		EmitEvent("save_as", filename, QStringLiteral("wrapped"));
 	} else {
 		EmitEvent("save_as", filename);
 	}

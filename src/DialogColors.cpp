@@ -19,7 +19,7 @@ namespace {
  * @return The color in hexadecimal format.
  */
 QString ToString(const QColor &color) {
-	return QStringLiteral("#%1").arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0'));
+	return QLatin1String("#%1").arg((color.rgb() & 0x00ffffff), 6, 16, QLatin1Char('0'));
 }
 
 /**

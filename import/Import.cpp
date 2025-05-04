@@ -259,57 +259,57 @@ void SaveTheme(const QString &filename, const std::vector<Style> &styles) {
 	QFile file(filename);
 	if (file.open(QIODevice::WriteOnly)) {
 		QDomDocument xml;
-		const QDomProcessingInstruction pi = xml.createProcessingInstruction(QLatin1String("xml"), QLatin1String(R"(version="1.0" encoding="UTF-8")"));
+		const QDomProcessingInstruction pi = xml.createProcessingInstruction(QStringLiteral("xml"), QLatin1String(R"(version="1.0" encoding="UTF-8")"));
 
 		xml.appendChild(pi);
 
-		QDomElement root = xml.createElement(QLatin1String("theme"));
-		root.setAttribute(QLatin1String("name"), QLatin1String("default"));
+		QDomElement root = xml.createElement(QStringLiteral("theme"));
+		root.setAttribute(QStringLiteral("name"), QStringLiteral("default"));
 		xml.appendChild(root);
 
 		// save basic color Settings::..
 		{
-			QDomElement text = xml.createElement(QLatin1String("text"));
-			text.setAttribute(QLatin1String("foreground"), Settings::colors[ColorTypes::TEXT_FG_COLOR]);
-			text.setAttribute(QLatin1String("background"), Settings::colors[ColorTypes::TEXT_BG_COLOR]);
+			QDomElement text = xml.createElement(QStringLiteral("text"));
+			text.setAttribute(QStringLiteral("foreground"), Settings::colors[ColorTypes::TEXT_FG_COLOR]);
+			text.setAttribute(QStringLiteral("background"), Settings::colors[ColorTypes::TEXT_BG_COLOR]);
 			root.appendChild(text);
 		}
 
 		{
-			QDomElement selection = xml.createElement(QLatin1String("selection"));
-			selection.setAttribute(QLatin1String("foreground"), Settings::colors[ColorTypes::SELECT_FG_COLOR]);
-			selection.setAttribute(QLatin1String("background"), Settings::colors[ColorTypes::SELECT_BG_COLOR]);
+			QDomElement selection = xml.createElement(QStringLiteral("selection"));
+			selection.setAttribute(QStringLiteral("foreground"), Settings::colors[ColorTypes::SELECT_FG_COLOR]);
+			selection.setAttribute(QStringLiteral("background"), Settings::colors[ColorTypes::SELECT_BG_COLOR]);
 			root.appendChild(selection);
 		}
 
 		{
-			QDomElement highlight = xml.createElement(QLatin1String("highlight"));
-			highlight.setAttribute(QLatin1String("foreground"), Settings::colors[ColorTypes::HILITE_FG_COLOR]);
-			highlight.setAttribute(QLatin1String("background"), Settings::colors[ColorTypes::HILITE_BG_COLOR]);
+			QDomElement highlight = xml.createElement(QStringLiteral("highlight"));
+			highlight.setAttribute(QStringLiteral("foreground"), Settings::colors[ColorTypes::HILITE_FG_COLOR]);
+			highlight.setAttribute(QStringLiteral("background"), Settings::colors[ColorTypes::HILITE_BG_COLOR]);
 			root.appendChild(highlight);
 		}
 
 		{
-			QDomElement cursor = xml.createElement(QLatin1String("cursor"));
-			cursor.setAttribute(QLatin1String("foreground"), Settings::colors[ColorTypes::CURSOR_FG_COLOR]);
+			QDomElement cursor = xml.createElement(QStringLiteral("cursor"));
+			cursor.setAttribute(QStringLiteral("foreground"), Settings::colors[ColorTypes::CURSOR_FG_COLOR]);
 			root.appendChild(cursor);
 		}
 
 		{
-			QDomElement lineno = xml.createElement(QLatin1String("line-numbers"));
-			lineno.setAttribute(QLatin1String("foreground"), Settings::colors[ColorTypes::LINENO_FG_COLOR]);
+			QDomElement lineno = xml.createElement(QStringLiteral("line-numbers"));
+			lineno.setAttribute(QStringLiteral("foreground"), Settings::colors[ColorTypes::LINENO_FG_COLOR]);
 			root.appendChild(lineno);
 		}
 
 		// save styles for syntax highlighting...
 		for (const Style &hs : styles) {
-			QDomElement style = xml.createElement(QLatin1String("style"));
-			style.setAttribute(QLatin1String("name"), hs.name);
-			style.setAttribute(QLatin1String("foreground"), hs.foreground);
+			QDomElement style = xml.createElement(QStringLiteral("style"));
+			style.setAttribute(QStringLiteral("name"), hs.name);
+			style.setAttribute(QStringLiteral("foreground"), hs.foreground);
 			if (!hs.background.isEmpty()) {
-				style.setAttribute(QLatin1String("background"), hs.background);
+				style.setAttribute(QStringLiteral("background"), hs.background);
 			}
-			style.setAttribute(QLatin1String("font"), hs.font);
+			style.setAttribute(QStringLiteral("font"), hs.font);
 
 			root.appendChild(style);
 		}
@@ -337,22 +337,22 @@ T FromString(const QString &str);
 template <>
 SearchType FromString(const QString &str) {
 
-	if (str == QLatin1String("Literal")) {
+	if (str == QStringLiteral("Literal")) {
 		return SearchType::Literal;
 	}
-	if (str == QLatin1String("CaseSense")) {
+	if (str == QStringLiteral("CaseSense")) {
 		return SearchType::CaseSense;
 	}
-	if (str == QLatin1String("RegExp")) {
+	if (str == QStringLiteral("RegExp")) {
 		return SearchType::Regex;
 	}
-	if (str == QLatin1String("LiteralWord")) {
+	if (str == QStringLiteral("LiteralWord")) {
 		return SearchType::LiteralWord;
 	}
-	if (str == QLatin1String("CaseSenseWord")) {
+	if (str == QStringLiteral("CaseSenseWord")) {
 		return SearchType::CaseSenseWord;
 	}
-	if (str == QLatin1String("RegExpNoCase")) {
+	if (str == QStringLiteral("RegExpNoCase")) {
 		return SearchType::RegexNoCase;
 	}
 
@@ -369,13 +369,13 @@ SearchType FromString(const QString &str) {
 template <>
 WrapStyle FromString(const QString &str) {
 
-	if (str == QLatin1String("None")) {
+	if (str == QStringLiteral("None")) {
 		return WrapStyle::None;
 	}
-	if (str == QLatin1String("Newline")) {
+	if (str == QStringLiteral("Newline")) {
 		return WrapStyle::Newline;
 	}
-	if (str == QLatin1String("Continuous")) {
+	if (str == QStringLiteral("Continuous")) {
 		return WrapStyle::Continuous;
 	}
 
@@ -392,13 +392,13 @@ WrapStyle FromString(const QString &str) {
 template <>
 IndentStyle FromString(const QString &str) {
 
-	if (str == QLatin1String("None")) {
+	if (str == QStringLiteral("None")) {
 		return IndentStyle::None;
 	}
-	if (str == QLatin1String("Auto")) {
+	if (str == QStringLiteral("Auto")) {
 		return IndentStyle::Auto;
 	}
-	if (str == QLatin1String("Smart")) {
+	if (str == QStringLiteral("Smart")) {
 		return IndentStyle::Smart;
 	}
 
@@ -418,19 +418,19 @@ ShowMatchingStyle FromString(const QString &str) {
 	/* For backward compatibility, "False" and "True" are still accepted.
 	   They are internally converted to "Off" and "Delimiter" respectively.*/
 
-	if (str == QLatin1String("Off")) {
+	if (str == QStringLiteral("Off")) {
 		return ShowMatchingStyle::None;
 	}
-	if (str == QLatin1String("Delimiter")) {
+	if (str == QStringLiteral("Delimiter")) {
 		return ShowMatchingStyle::Delimiter;
 	}
-	if (str == QLatin1String("Range")) {
+	if (str == QStringLiteral("Range")) {
 		return ShowMatchingStyle::Range;
 	}
-	if (str == QLatin1String("False")) {
+	if (str == QStringLiteral("False")) {
 		return ShowMatchingStyle::None;
 	}
-	if (str == QLatin1String("True")) {
+	if (str == QStringLiteral("True")) {
 		return ShowMatchingStyle::Delimiter;
 	}
 
@@ -484,7 +484,7 @@ QString ReadResource(XrmDatabase db, const char *name) {
 template <>
 bool ReadResource(XrmDatabase db, const char *name) {
 	auto value = ReadResource<QString>(db, name);
-	return value.compare(QLatin1String("true"), Qt::CaseInsensitive) == 0;
+	return value.compare(QStringLiteral("true"), Qt::CaseInsensitive) == 0;
 }
 
 /**
@@ -522,9 +522,9 @@ QString ConvertRgbColor(const QString &color) {
 
 		const QRegularExpressionMatch rgbMatch = rgbRegex.match(color);
 		if (rgbMatch.hasMatch()) {
-			const uint16_t r = rgbMatch.captured(QLatin1String("red")).toUShort(nullptr, 16);
-			const uint16_t g = rgbMatch.captured(QLatin1String("green")).toUShort(nullptr, 16);
-			const uint16_t b = rgbMatch.captured(QLatin1String("blue")).toUShort(nullptr, 16);
+			const uint16_t r = rgbMatch.captured(QStringLiteral("red")).toUShort(nullptr, 16);
+			const uint16_t g = rgbMatch.captured(QStringLiteral("green")).toUShort(nullptr, 16);
+			const uint16_t b = rgbMatch.captured(QStringLiteral("blue")).toUShort(nullptr, 16);
 
 			const QColor c(r, g, b);
 			auto newColor = QString::asprintf("#%02x%02x%02x",
@@ -548,9 +548,9 @@ QString ConvertRgbColor(const QString &color) {
 
 		const QRegularExpressionMatch rgbiMatch = rgbiRegex.match(color);
 		if (rgbiMatch.hasMatch()) {
-			const qreal r = rgbiMatch.captured(QLatin1String("red")).toDouble();
-			const qreal g = rgbiMatch.captured(QLatin1String("green")).toDouble();
-			const qreal b = rgbiMatch.captured(QLatin1String("blue")).toDouble();
+			const qreal r = rgbiMatch.captured(QStringLiteral("red")).toDouble();
+			const qreal g = rgbiMatch.captured(QStringLiteral("green")).toDouble();
+			const qreal b = rgbiMatch.captured(QStringLiteral("blue")).toDouble();
 
 			const QColor c(static_cast<int>(r * 255), static_cast<int>(g * 255), static_cast<int>(b * 255));
 			auto newColor = QString::asprintf("#%02x%02x%02x",
@@ -728,10 +728,10 @@ int main(int argc, char *argv[]) {
 		const QRegularExpressionMatch match = re.match(line);
 		if (match.hasMatch()) {
 			Style s;
-			s.name       = match.captured(QLatin1String("name"));
-			s.foreground = ConvertRgbColor(match.captured(QLatin1String("foreground")));
-			s.background = ConvertRgbColor(match.captured(QLatin1String("background")));
-			s.font       = match.captured(QLatin1String("font"));
+			s.name       = match.captured(QStringLiteral("name"));
+			s.foreground = ConvertRgbColor(match.captured(QStringLiteral("foreground")));
+			s.background = ConvertRgbColor(match.captured(QStringLiteral("background")));
+			s.font       = match.captured(QStringLiteral("font"));
 
 			styles.push_back(s);
 		}
