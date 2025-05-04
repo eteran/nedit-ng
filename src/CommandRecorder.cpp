@@ -105,7 +105,7 @@ QString ActionToString(const Event *ev) {
  *       escaped using escapeString().
  */
 QString CommandRecorder::quoteString(const QString &s) {
-	return QLatin1String("\"%1\"").arg(s);
+	return QStringLiteral("\"%1\"").arg(s);
 }
 
 /**

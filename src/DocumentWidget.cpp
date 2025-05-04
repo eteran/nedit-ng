@@ -2070,7 +2070,7 @@ void DocumentWidget::removeBackupFile() const {
 QString DocumentWidget::backupFileName() const {
 
 	if (info_->filenameSet) {
-		return QLatin1String("%1~%2").arg(info_->path, info_->filename);
+		return QStringLiteral("%1~%2").arg(info_->path, info_->filename);
 	}
 
 	return PrependHome(QStringLiteral("~%1").arg(info_->filename));
@@ -2266,7 +2266,7 @@ QString DocumentWidget::fullPath() const {
 	}
 
 	Q_ASSERT(info_->path.endsWith(QLatin1Char('/')));
-	return QLatin1String("%1%2").arg(info_->path, info_->filename);
+	return QStringLiteral("%1%2").arg(info_->path, info_->filename);
 }
 
 /**

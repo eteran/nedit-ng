@@ -90,7 +90,7 @@ QString TextEditEvent::argumentString() const {
  * @return
  */
 QString TextEditEvent::toString() const {
-	return QLatin1String("%1(%2)").arg(macroString_, argumentString());
+	return QStringLiteral("%1(%2)").arg(macroString_, argumentString());
 }
 
 /**
