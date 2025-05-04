@@ -418,7 +418,7 @@ void BeginCreatingProgram() {
  * symbol table) as a package that ExecuteMacro can execute. The caller is
  * responsible for deleting the returned Program object.
  */
-Program *FinishCreatingProgram() {
+std::unique_ptr<Program> FinishCreatingProgram() {
 
 	auto newProg = std::make_unique<Program>();
 	std::copy(Prog, ProgP, std::back_inserter(newProg->code));
@@ -435,7 +435,7 @@ Program *FinishCreatingProgram() {
 	}
 
 	DISASM(newProg->code.data(), newProg->code.size());
-	return newProg.release();
+	return newProg;
 }
 
 /**

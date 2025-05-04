@@ -142,7 +142,7 @@ bool AddImmediate(int value, QString *msg);
 bool AddOp(int op, QString *msg);
 bool AddSym(Symbol *sym, QString *msg);
 Inst *GetPC();
-Program *FinishCreatingProgram();
+std::unique_ptr<Program> FinishCreatingProgram();
 Symbol *InstallIteratorSymbol();
 Symbol *InstallStringConstSymbol(std::string_view str);
 Symbol *InstallStringConstSymbolEx(const QString &str);

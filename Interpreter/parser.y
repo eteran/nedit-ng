@@ -446,18 +446,17 @@ Program *CompileMacro(const QString &expr, QString *msg, int *stoppedAt) {
 	if (yyparse()) {
 		*msg          = ErrMsg;
 		*stoppedAt    = gsl::narrow<int>(InPtr - start);
-		Program *prog = FinishCreatingProgram();
-		delete prog;
+		std::unique_ptr<Program> prog = FinishCreatingProgram();
 		return nullptr;
 	}
 
 	/* get the newly created program */
-	Program *prog = FinishCreatingProgram();
+	std::unique_ptr<Program> prog = FinishCreatingProgram();
 
 	/* parse succeeded */
 	*msg       = QString();
 	*stoppedAt = gsl::narrow<int>(InPtr - start);
-	return prog;
+	return prog.release();
 }
 
 static int yylex(void) {
