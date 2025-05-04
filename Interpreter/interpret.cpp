@@ -415,8 +415,7 @@ void BeginCreatingProgram() {
 
 /**
  * @brief Finish up the program under construction, and return it (code and
- * symbol table) as a package that ExecuteMacro can execute. The caller is
- * responsible for deleting the returned Program object.
+ * symbol table) as a package that ExecuteMacro can execute.
  */
 std::unique_ptr<Program> FinishCreatingProgram() {
 
