@@ -36,52 +36,52 @@ QString TextEditEvent::argumentString() const {
 	}
 
 	if (flags_ & TextArea::AbsoluteFlag) {
-		args << QLatin1String("\"absolute\"");
+		args << QStringLiteral("\"absolute\"");
 	}
 	if (flags_ & TextArea::ColumnFlag) {
-		args << QLatin1String("\"column\"");
+		args << QStringLiteral("\"column\"");
 	}
 	if (flags_ & TextArea::CopyFlag) {
-		args << QLatin1String("\"copy\"");
+		args << QStringLiteral("\"copy\"");
 	}
 	if (flags_ & TextArea::DownFlag) {
-		args << QLatin1String("\"down\"");
+		args << QStringLiteral("\"down\"");
 	}
 	if (flags_ & TextArea::ExtendFlag) {
-		args << QLatin1String("\"extend\"");
+		args << QStringLiteral("\"extend\"");
 	}
 	if (flags_ & TextArea::LeftFlag) {
-		args << QLatin1String("\"left\"");
+		args << QStringLiteral("\"left\"");
 	}
 	if (flags_ & TextArea::OverlayFlag) {
-		args << QLatin1String("\"overlay\"");
+		args << QStringLiteral("\"overlay\"");
 	}
 	if (flags_ & TextArea::RectFlag) {
-		args << QLatin1String("\"rect\"");
+		args << QStringLiteral("\"rect\"");
 	}
 	if (flags_ & TextArea::RightFlag) {
-		args << QLatin1String("\"right\"");
+		args << QStringLiteral("\"right\"");
 	}
 	if (flags_ & TextArea::UpFlag) {
-		args << QLatin1String("\"up\"");
+		args << QStringLiteral("\"up\"");
 	}
 	if (flags_ & TextArea::WrapFlag) {
-		args << QLatin1String("\"wrap\"");
+		args << QStringLiteral("\"wrap\"");
 	}
 	if (flags_ & TextArea::TailFlag) {
-		args << QLatin1String("\"tail\"");
+		args << QStringLiteral("\"tail\"");
 	}
 	if (flags_ & TextArea::StutterFlag) {
-		args << QLatin1String("\"stutter\"");
+		args << QStringLiteral("\"stutter\"");
 	}
 	if (flags_ & TextArea::ScrollbarFlag) {
-		args << QLatin1String("\"scrollbar\"");
+		args << QStringLiteral("\"scrollbar\"");
 	}
 	if (flags_ & TextArea::NoBellFlag) {
-		args << QLatin1String("\"nobell\"");
+		args << QStringLiteral("\"nobell\"");
 	}
 
-	return args.join(QLatin1String(","));
+	return args.join(QStringLiteral(","));
 }
 
 /**

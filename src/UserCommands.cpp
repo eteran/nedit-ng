@@ -149,7 +149,7 @@ QString WriteMacroMenuYaml(const std::vector<MenuData> &menuItems) {
 			file.write("\n");
 		}
 
-		return QLatin1String("*");
+		return QStringLiteral("*");
 	} catch (const YAML::Exception &ex) {
 		qWarning("NEdit: Error writing %s in config directory:\n%s", qPrintable(filename), ex.what());
 	}
@@ -231,7 +231,7 @@ QString WriteShellMenuYaml(const std::vector<MenuData> &menuItems) {
 			file.write("\n");
 		}
 
-		return QLatin1String("*");
+		return QStringLiteral("*");
 	} catch (const YAML::Exception &ex) {
 		qWarning("NEdit: Error writing %s in config directory:\n%s", qPrintable(filename), ex.what());
 	}
@@ -276,7 +276,7 @@ QString WriteContextMenuYaml(const std::vector<MenuData> &menuItems) {
 			file.write("\n");
 		}
 
-		return QLatin1String("*");
+		return QStringLiteral("*");
 	} catch (const YAML::Exception &ex) {
 		qWarning("NEdit: Error writing %s in config directory:\n%s", qPrintable(filename), ex.what());
 	}

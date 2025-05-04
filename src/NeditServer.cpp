@@ -229,11 +229,11 @@ void NeditServer::newConnection() {
 		auto file = entry.toObject();
 
 		const bool wait            = file[QStringLiteral("wait")].toBool();
-		const int lineNum          = file[QLatin1String("line_number")].toInt();
+		const int lineNum          = file[QStringLiteral("line_number")].toInt();
 		const int readFlag         = file[QStringLiteral("read")].toInt();
 		const int createFlag       = file[QStringLiteral("create")].toInt();
 		const int iconicFlag       = file[QStringLiteral("iconic")].toInt();
-		const int tabbed           = file[QLatin1String("is_tabbed")].toInt();
+		const int tabbed           = file[QStringLiteral("is_tabbed")].toInt();
 		const QString fullname     = file[QStringLiteral("path")].toString();
 		const QString doCommand    = file[QStringLiteral("toDoCommand")].toString();
 		const QString languageMode = file[QStringLiteral("langMode")].toString();
@@ -284,7 +284,7 @@ void NeditServer::newConnection() {
 					} else {
 						(*win)->raiseDocumentWindow();
 					}
-					(*win)->doMacro(doCommand, QLatin1String("-do macro"));
+					(*win)->doMacro(doCommand, QStringLiteral("-do macro"));
 				}
 			}
 
@@ -347,7 +347,7 @@ void NeditServer::newConnection() {
 				if (document->macroCmdData_) {
 					QApplication::beep();
 				} else {
-					document->doMacro(doCommand, QLatin1String("-do macro"));
+					document->doMacro(doCommand, QStringLiteral("-do macro"));
 				}
 			}
 

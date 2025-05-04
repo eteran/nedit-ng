@@ -93,7 +93,7 @@ QShortcut *CreateShortcut(const QKeySequence &seq, QWidget *parent, Func func) {
  */
 std::optional<Location> StringToLineAndCol(const QString &text) {
 
-	static const QRegularExpression re(QLatin1String(
+	static const QRegularExpression re(QStringLiteral(
 		"^"
 		"\\s*"
 		"(?<row>[-+]?[1-9]\\d*)?"
@@ -239,12 +239,12 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags flags)
 
 	connect(qApp, &QApplication::focusChanged, this, &MainWindow::focusChanged);
 
-	ui.menu_Windows->setStyleSheet(QLatin1String("QMenu { menu-scrollable: 1; }"));
+	ui.menu_Windows->setStyleSheet(QStringLiteral("QMenu { menu-scrollable: 1; }"));
 
 #ifdef Q_OS_LINUX
 	using DisablerFunc = void (*)(QWidget *);
 
-	static auto setNoAccel = reinterpret_cast<DisablerFunc>(QLibrary::resolve(QLatin1String("libKF5WidgetsAddons.so"), "_ZN19KAcceleratorManager10setNoAccelEP7QWidget"));
+	static auto setNoAccel = reinterpret_cast<DisablerFunc>(QLibrary::resolve(QStringLiteral("libKF5WidgetsAddons.so"), "_ZN19KAcceleratorManager10setNoAccelEP7QWidget"));
 	if (setNoAccel) {
 		setNoAccel(ui.tabWidget->tabBar());
 	}

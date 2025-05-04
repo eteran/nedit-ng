@@ -110,7 +110,7 @@ QStringList ParseTagSpec(const QString &tagSpec) {
  * @return The processed string with trailing whitespace and newline characters removed.
  */
 QString StripRight(QString s) {
-	static const QRegularExpression re(QLatin1String("\\s*\\n"));
+	static const QRegularExpression re(QStringLiteral("\\s*\\n"));
 	return s.replace(re, QString());
 }
 
@@ -219,7 +219,7 @@ bool DeleteTag(int index) {
  */
 int ScanCTagsLine(const QString &line, const QString &tagPath, int index) {
 
-	static const auto regex = QRegularExpression(QLatin1String(R"(^([^\t]+)\t([^\t]+)\t([^\n]+)$)"));
+	static const auto regex = QRegularExpression(QStringLiteral(R"(^([^\t]+)\t([^\t]+)\t([^\n]+)$)"));
 
 	const QRegularExpressionMatch match = regex.match(line);
 	if (!match.hasMatch()) {
