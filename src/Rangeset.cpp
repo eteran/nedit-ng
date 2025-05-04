@@ -28,10 +28,14 @@ struct {
 	{QLatin1String("exclude"), RangesetExclMaintain},
 	{QLatin1String("break"), RangesetBreakMaintain}};
 
-/*
-** Refresh the given range on the screen. If the range indicated is null, we
-** refresh the screen for the whole file.
-*/
+/**
+ * @brief Refresh the given range on the screen. If the range indicated is invalid, we
+ * refresh the screen for the whole file.
+ *
+ * @param buffer The text buffer to refresh.
+ * @param start The start position of the range to refresh.
+ * @param end The end position of the range to refresh.
+ */
 void RefreshRange(TextBuffer *buffer, TextCursor start, TextCursor end) {
 	if (buffer) {
 		buffer->BufCheckDisplay(start, end);
@@ -72,16 +76,18 @@ void RefreshAllRanges(TextBuffer *buffer, Rangeset *rangeset) {
 
 // --------------------------------------------------------------------------
 
-/*
-** Find the index of the first integer in table greater than or equal to pos.
-** Fails with len (the total number of entries). The start index base can be
-** chosen appropriately.
-*/
-
-// NOTE(eteran): this just an implementation of std::lower_bound.
-//               though it is probably better to replace the fundamental
-//               data-structures instead of replacing a few random
-//               functions
+/**
+ * @brief Searches for the first element in the range which is not ordered before val.
+ *
+ * @param table the sorted array to search.
+ * @param base the base index to start searching from.
+ * @param len the length of the array.
+ * @param val the value to search for in the array.
+ * @return the index of the first element in the array which is not ordered before val.
+ *         If val is greater than all elements, returns len.
+ *
+ * @note This function is effectively the same as `std::lower_bound`.
+ */
 template <class T>
 int64_t AtOrBefore(const T *table, int64_t base, int64_t len, T val) {
 
@@ -116,6 +122,16 @@ int64_t AtOrBefore(const T *table, int64_t base, int64_t len, T val) {
 	return mid;
 }
 
+/**
+ * @brief Searches for the first element in the range which is not ordered before val.
+ *
+ * @param table the sorted array to search.
+ * @param base the base index to start searching from.
+ * @param len the length of the array.
+ * @param val the value to search for in the array.
+ * @return the index of the first element in the array which is not ordered before val.
+ *         If val is greater than all elements, returns len.
+ */
 template <class T>
 int64_t WeightedAtOrBefore(const T *table, int64_t base, int64_t len, T val) {
 
@@ -565,17 +581,21 @@ Rangeset *RangesetBreakMaintain(Rangeset *rangeset, TextCursor pos, int64_t ins,
 
 }
 
-/*
-** Return the name, if any.
-*/
+/**
+ * @brief Get the name of the rangeset.
+ *
+ * @return The name of the rangeset, or a QString() if no name is set.
+ */
 QString Rangeset::name() const {
 	return name_;
 }
 
 /**
- * @brief
+ * @brief Get the span of the rangeset, which is the range from the start of the first
+ * range to the end of the last range.
  *
- * @return
+ * @return A TextRange containing the span of the rangeset if it has ranges,
+ * or an empty optional if the rangeset is empty.
  */
 std::optional<TextRange> Rangeset::RangesetSpan() const {
 	if (ranges_.empty()) {
@@ -589,10 +609,11 @@ std::optional<TextRange> Rangeset::RangesetSpan() const {
 }
 
 /**
- * @brief
+ * @brief Find the range at the given index.
  *
- * @param index
- * @return
+ * @param index The index of the range to find.
+ * @return The TextRange containing the range if found, or an empty optional
+ * if the index is out of bounds.
  */
 std::optional<TextRange> Rangeset::RangesetFindRangeNo(int index) const {
 
@@ -604,11 +625,13 @@ std::optional<TextRange> Rangeset::RangesetFindRangeNo(int index) const {
 	return ranges_[n];
 }
 
-/*
-** Find out whether the position pos is included in one of the ranges of
-** rangeset. Returns the containing range's index if `true`, -1 otherwise.
-** Note: ranges are indexed from zero.
-*/
+/**
+ * @brief Find the range that contains the position `pos`.
+ *
+ * @param pos The position to check.
+ * @param incl_end If `true`, the end of the range is included in the check.
+ * @return The containing range's index if found, -1 otherwise.
+ */
 int64_t Rangeset::RangesetFindRangeOfPos(TextCursor pos, bool incl_end) const {
 
 	if (ranges_.empty()) {
@@ -636,17 +659,21 @@ int64_t Rangeset::RangesetFindRangeOfPos(TextCursor pos, bool incl_end) const {
 	return -1; // not in any range
 }
 
-/*
-** Get number of ranges in rangeset.
-*/
+/**
+ * @brief Get the number of ranges in the rangeset.
+ *
+ * @return The number of ranges in the rangeset.
+ */
 int64_t Rangeset::size() const {
 	return ssize(ranges_);
 }
 
-/*
-** Invert the rangeset (replace it with its complement in the range 0-maxpos).
-** Returns the new number of ranges. Never adds more than one range.
-*/
+/**
+ * @brief Invert the rangeset (replace it with its complement in the range 0-maxpos).
+ * Never adds more than one range.
+ *
+ * @return The new number of ranges.
+ */
 int64_t Rangeset::RangesetInverse() {
 
 	const TextCursor first = buffer_->BufStartOfBuffer();
@@ -688,9 +715,14 @@ int64_t Rangeset::RangesetInverse() {
 	return ssize(ranges_);
 }
 
-/*
-** Assign a color name to a rangeset via the rangeset table.
-*/
+/**
+ * @brief Assign a color name to a rangeset via the rangeset table.
+ *
+ * @param buffer The text buffer to refresh.
+ * @param color_name The name of the color to set for the rangeset. If `color_name` is
+ * empty, the color is cleared.
+ * @return `true` if the color was set, else `false`.
+ */
 bool Rangeset::setColor(TextBuffer *buffer, const QString &color_name) {
 
 	// store new color name value
@@ -701,18 +733,25 @@ bool Rangeset::setColor(TextBuffer *buffer, const QString &color_name) {
 	return true;
 }
 
-/*
-** Assign a name to a rangeset via the rangeset table.
-*/
+/**
+ * @brief Change a range set's name.
+ *
+ * @param name The name to set for the rangeset. If `name` is empty, the name is
+ * cleared.
+ * @return `true` if the name was set, else `false`.
+ */
 bool Rangeset::setName(const QString &name) {
 	name_ = name.isEmpty() ? QString() : name;
 	return true;
 }
 
-/*
-** Change a range set's modification behaviour. Returns true (non-zero)
-** if the update function name was found, else false.
-*/
+/**
+ * @brief Change a range set's modification behaviour.
+ *
+ * @param mode The mode to set for the rangeset. If `mode` is null, the default
+ * mode is set.
+ * @return `true` if the update function name was found, else `false`.
+ */
 bool Rangeset::setMode(const QString &mode) {
 
 	if (mode.isNull()) {
@@ -730,15 +769,17 @@ bool Rangeset::setMode(const QString &mode) {
 	return false;
 }
 
-/*
-** Find out whether the position pos is included in one of the ranges of
-** rangeset. Returns the containing range's index if `true`, -1 otherwise.
-** Essentially the same as the RangesetFindRangeOfPos() function, but uses the
-** last_index member of the rangeset and WeightedAtOrBefore() for speedy
-** lookup in refresh tasks. The rangeset is assumed to be valid, as is the
-** position. We also don't allow checking of the endpoint.
-** Returns the including range index, or -1 if not found.
-*/
+/**
+ * @brief Find out whether the position `pos` is included in one of the ranges of
+ * rangeset.
+ * Essentially the same as the `RangesetFindRangeOfPos()` function, but uses the
+ * last_index member of the rangeset and WeightedAtOrBefore() for speedy
+ * lookup in refresh tasks. The rangeset is assumed to be valid, as is the
+ * position. We also don't allow checking of the endpoint.
+ *
+ * @param pos The position to check.
+ * @return The containing range's index if `true`, -1 otherwise.
+ */
 int64_t Rangeset::RangesetCheckRangeOfPos(TextCursor pos) {
 
 	int64_t index;
@@ -798,9 +839,12 @@ int64_t Rangeset::RangesetCheckRangeOfPos(TextCursor pos) {
 	return -1; // not in any range
 }
 
-/*
-** Merge the ranges in rangeset other into this rangeset.
-*/
+/**
+ * @brief Merges the ranges in the specified Rangeset into this Rangeset.
+ *
+ * @param other The Rangeset containing ranges to be added to this Rangeset.
+ * @return The new number of ranges in this Rangeset after addition.
+ */
 int64_t Rangeset::RangesetAdd(const Rangeset &other) {
 
 	if (other.ranges_.empty()) {
@@ -878,9 +922,12 @@ int64_t Rangeset::RangesetAdd(const Rangeset &other) {
 	return ssize(ranges_);
 }
 
-/*
-** Subtract the ranges of other from this rangeset.
-*/
+/**
+ * @brief Removes the ranges in the specified Rangeset from this Rangeset.
+ *
+ * @param other The Rangeset containing ranges to be removed from this Rangeset.
+ * @return The new number of ranges in this Rangeset after removal.
+ */
 int64_t Rangeset::RangesetRemove(const Rangeset &other) {
 
 	if (ranges_.empty() || other.ranges_.empty()) {
@@ -968,10 +1015,12 @@ int64_t Rangeset::RangesetRemove(const Rangeset &other) {
 	return ssize(ranges_);
 }
 
-/*
-** Add the range indicated by the positions start and end. Returns the
-** new number of ranges in the set.
-*/
+/**
+ * @brief Adds a specified range to the rangeset.
+ *
+ * @param r The TextRange to add to the rangeset.
+ * @return The new number of ranges in the set after addition.
+ */
 int64_t Rangeset::RangesetAdd(TextRange r) {
 
 	if (r.start > r.end) {
@@ -1025,10 +1074,12 @@ int64_t Rangeset::RangesetAdd(TextRange r) {
 	return ssize(ranges_);
 }
 
-/*
-** Remove the range indicated by the positions start and end. Returns the
-** new number of ranges in the set.
-*/
+/**
+ * @brief Removes a specified range from the rangeset.
+ *
+ * @param r The TextRange to remove from the rangeset.
+ * @return The new number of ranges in the set after removal.
+ */
 int64_t Rangeset::RangesetRemove(TextRange r) {
 
 	if (r.start > r.end) {
@@ -1071,10 +1122,10 @@ int64_t Rangeset::RangesetRemove(TextRange r) {
 }
 
 /**
- * @brief
+ * @brief Adds the ranges of another Rangeset to this one.
  *
- * @param rhs
- * @return
+ * @param rhs The Rangeset to add to this one.
+ * @return A reference to this Rangeset after the addition.
  */
 Rangeset &Rangeset::operator+=(const Rangeset &rhs) {
 	RangesetAdd(rhs);
@@ -1082,10 +1133,10 @@ Rangeset &Rangeset::operator+=(const Rangeset &rhs) {
 }
 
 /**
- * @brief
+ * @brief Subtracts the ranges of another Rangeset from this one.
  *
- * @param rhs
- * @return
+ * @param rhs The Rangeset to subtract from this one.
+ * @return A reference to this Rangeset after the subtraction.
  */
 Rangeset &Rangeset::operator-=(const Rangeset &rhs) {
 	RangesetRemove(rhs);
@@ -1093,9 +1144,9 @@ Rangeset &Rangeset::operator-=(const Rangeset &rhs) {
 }
 
 /**
- * @brief
+ * @brief Inverts the rangeset, creating a new one that represents the complement of the current rangeset.
  *
- * @return
+ * @return A new Rangeset object that is the inverse of the current rangeset.
  */
 Rangeset Rangeset::operator~() const {
 	Rangeset ret(*this);
@@ -1104,9 +1155,9 @@ Rangeset Rangeset::operator~() const {
 }
 
 /**
- * @brief
+ * @brief Get information about the rangeset.
  *
- * @return
+ * @return A RangesetInfo structure containing details about the rangeset.
  */
 RangesetInfo Rangeset::RangesetGetInfo() const {
 	RangesetInfo info;
@@ -1120,9 +1171,10 @@ RangesetInfo Rangeset::RangesetGetInfo() const {
 }
 
 /**
- * @brief
+ * @brief Constructor for Rangeset.
  *
- * @param label
+ * @param buffer The text buffer this rangeset is associated with.
+ * @param label A label for the rangeset, used to identify it.
  */
 Rangeset::Rangeset(TextBuffer *buffer, uint8_t label)
 	: buffer_(buffer), label_(label) {
@@ -1130,7 +1182,7 @@ Rangeset::Rangeset(TextBuffer *buffer, uint8_t label)
 }
 
 /**
- * @brief
+ * @brief Destructor for Rangeset.
  */
 Rangeset::~Rangeset() {
 	for (const TextRange &range : ranges_) {

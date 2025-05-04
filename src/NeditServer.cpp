@@ -240,8 +240,8 @@ void NeditServer::newConnection() {
 		const QString geometry     = file[QStringLiteral("geometry")].toString();
 
 		/* An empty file name means:
-		 *   put up an empty, Untitled window, or use an existing one
-		 *   choose a random window for executing the -do macro upon
+		 *  put up an empty, Untitled window, or use an existing one
+		 *  choose a random window for executing the -do macro upon
 		 */
 		if (fullname.isEmpty()) {
 
