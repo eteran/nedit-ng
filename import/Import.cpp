@@ -513,18 +513,18 @@ QString ConvertRgbColor(const QString &color) {
 
 	{
 		// convert RGB style colors
-		static const QRegularExpression rgb_regex(QLatin1String("rgb:"
-																"(?<red>[0-9a-fA-F]{1,4})"
-																"/"
-																"(?<green>[0-9a-fA-F]{1,4})"
-																"/"
-																"(?<blue>[0-9a-fA-F]{1,4})"));
+		static const QRegularExpression rgbRegex(QLatin1String("rgb:"
+															   "(?<red>[0-9a-fA-F]{1,4})"
+															   "/"
+															   "(?<green>[0-9a-fA-F]{1,4})"
+															   "/"
+															   "(?<blue>[0-9a-fA-F]{1,4})"));
 
-		const QRegularExpressionMatch match = rgb_regex.match(color);
-		if (match.hasMatch()) {
-			const uint16_t r = match.captured(QLatin1String("red")).toUShort(nullptr, 16);
-			const uint16_t g = match.captured(QLatin1String("green")).toUShort(nullptr, 16);
-			const uint16_t b = match.captured(QLatin1String("blue")).toUShort(nullptr, 16);
+		const QRegularExpressionMatch rgbMatch = rgbRegex.match(color);
+		if (rgbMatch.hasMatch()) {
+			const uint16_t r = rgbMatch.captured(QLatin1String("red")).toUShort(nullptr, 16);
+			const uint16_t g = rgbMatch.captured(QLatin1String("green")).toUShort(nullptr, 16);
+			const uint16_t b = rgbMatch.captured(QLatin1String("blue")).toUShort(nullptr, 16);
 
 			const QColor c(r, g, b);
 			auto newColor = QString::asprintf("#%02x%02x%02x",
@@ -539,18 +539,18 @@ QString ConvertRgbColor(const QString &color) {
 		// convert RGBi style colors
 		// NOTE(eteran): this regex is slightly more brittle than I'd like, but this is such a rarely used format
 		// that I'm leaving it this way for now... I'll improve this later
-		static const QRegularExpression rgbi_regex(QLatin1String("RGBi:"
+		static const QRegularExpression rgbiRegex(QLatin1String("RGBi:"
 																 "(?<red>[0-9]+(\\.[0-9]+)?)"
 																 "/"
 																 "(?<green>[0-9]+(\\.[0-9]+)?)"
 																 "/"
 																 "(?<blue>[0-9]+(\\.[0-9]+)?)"));
 
-		const QRegularExpressionMatch match_rgbi = rgbi_regex.match(color);
-		if (match_rgbi.hasMatch()) {
-			const qreal r = match_rgbi.captured(QLatin1String("red")).toDouble();
-			const qreal g = match_rgbi.captured(QLatin1String("green")).toDouble();
-			const qreal b = match_rgbi.captured(QLatin1String("blue")).toDouble();
+		const QRegularExpressionMatch rgbiMatch = rgbiRegex.match(color);
+		if (rgbiMatch.hasMatch()) {
+			const qreal r = rgbiMatch.captured(QLatin1String("red")).toDouble();
+			const qreal g = rgbiMatch.captured(QLatin1String("green")).toDouble();
+			const qreal b = rgbiMatch.captured(QLatin1String("blue")).toDouble();
 
 			const QColor c(static_cast<int>(r * 255), static_cast<int>(g * 255), static_cast<int>(b * 255));
 			auto newColor = QString::asprintf("#%02x%02x%02x",

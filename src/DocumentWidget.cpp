@@ -3599,7 +3599,7 @@ void DocumentWidget::executeNewlineMacro(SmartIndentEvent *event) {
 		++(winData->inNewLineMacro);
 
 		std::shared_ptr<MacroContext> continuation;
-		int stat = executeMacro(this, winData->newlineMacro.get(), args, &result, continuation, &errMsg);
+		int stat = ExecuteMacro(this, winData->newlineMacro.get(), args, &result, continuation, &errMsg);
 
 		// Don't allow preemption or time limit.  Must get return value
 		while (stat == MACRO_TIME_LIMIT) {
@@ -3689,7 +3689,7 @@ void DocumentWidget::executeModMacro(SmartIndentEvent *event) {
 		++(winData->inModMacro);
 
 		std::shared_ptr<MacroContext> continuation;
-		int stat = executeMacro(this, winData->modMacro.get(), args, &result, continuation, &errMsg);
+		int stat = ExecuteMacro(this, winData->modMacro.get(), args, &result, continuation, &errMsg);
 
 		while (stat == MACRO_TIME_LIMIT) {
 			stat = continueMacro(continuation, &result, &errMsg);
@@ -5581,7 +5581,7 @@ void DocumentWidget::runMacro(Program *prog) {
 	// Begin macro execution
 	DataValue result;
 	QString errMsg;
-	const int stat = executeMacro(this, prog, {}, &result, macroCmdData_->context, &errMsg);
+	const int stat = ExecuteMacro(this, prog, {}, &result, macroCmdData_->context, &errMsg);
 
 	switch (stat) {
 	case MACRO_ERROR:

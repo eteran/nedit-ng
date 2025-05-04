@@ -1403,9 +1403,13 @@ QString MakeQuotedString(const QString &string) {
 	return outStr;
 }
 
-/*
-** Skip a delimiter and it's surrounding whitespace
-*/
+/**
+ * @brief Skip a delimiter and it's surrounding whitespace.
+ *
+ * @param in The input stream to read from.
+ * @param errMsg Will be set to an error message if the delimiter is not found.
+ * @return `true` if the delimiter was found and skipped, `false` if there was a syntax error.
+ */
 bool SkipDelimiter(Input &in, QString *errMsg) {
 
 	in.skipWhitespace();
@@ -1420,14 +1424,18 @@ bool SkipDelimiter(Input &in, QString *errMsg) {
 	return true;
 }
 
-/*
-** Report parsing errors in resource strings or macros, formatted nicely so
-** the user can tell where things became botched.  Errors can be sent either
-** to stderr, or displayed in a dialog.  For stderr, pass toDialog as nullptr.
-** For a dialog, pass the dialog parent in toDialog.
-*/
-
-bool ReportError(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message) {
+/**
+ * @brief Report parsing errors in resource strings or macros, formatted nicely so
+ * the user can tell where things became botched.
+ *
+ * @param parent The parent dialog, or nullptr to report to stderr.
+ * @param string the string that was being parsed.
+ * @param stoppedAt the index in the string where parsing stopped.
+ * @param errorIn the name of the resource or macro being parsed.
+ * @param message a message describing the error, e.g. "unrecognized indent style".
+ * @return `true` if the error was reported successfully, `false` if it could not be reported.
+ */
+bool ReportError(QWidget *parent, const QString &string, int stoppedAt, const QString &errorIn, const QString &message) {
 
 	// NOTE(eteran): hack to work around the fact that stoppedAt can be a "one past the end iterator"
 	stoppedAt = std::clamp<int64_t>(stoppedAt, 0, string.size() - 1);
@@ -1452,10 +1460,10 @@ bool ReportError(QWidget *toDialog, const QString &string, int stoppedAt, const 
 	const int len           = stoppedAt - c + (stoppedAt == string.size() ? 0 : 1);
 	const QString errorLine = tr("%1<==").arg(string.mid(c, len));
 
-	if (!toDialog) {
+	if (!parent) {
 		qWarning("NEdit: %s in %s:\n%s", qPrintable(message), qPrintable(errorIn), qPrintable(errorLine));
 	} else {
-		QMessageBox::warning(toDialog, tr("Parse Error"), tr("%1 in %2:\n%3").arg(message, errorIn, errorLine));
+		QMessageBox::warning(parent, tr("Parse Error"), tr("%1 in %2:\n%3").arg(message, errorIn, errorLine));
 	}
 
 	return false;

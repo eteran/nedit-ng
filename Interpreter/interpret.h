@@ -157,7 +157,7 @@ void StartLoopAddrList();
 void SwapCode(Inst *start, Inst *boundary, Inst *end);
 
 // Routines for executing programs
-int executeMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg);
+int ExecuteMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg);
 ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation, DataValue *result, QString *msg);
 void RunMacroAsSubrCall(Program *prog);
 void preemptMacro();

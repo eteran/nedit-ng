@@ -165,7 +165,7 @@ DataValue &FP_GET_SYM_VAL(DataValue *FrameP, Symbol *sym) {
  * @param context The context where the current execution state will be saved.
  */
 template <class Pointer>
-void saveContext(Pointer context) {
+void SaveContext(Pointer context) {
 	context->Stack         = Context.Stack;
 	context->StackP        = Context.StackP;
 	context->FrameP        = Context.FrameP;
@@ -180,7 +180,7 @@ void saveContext(Pointer context) {
  * @param context The context from which the execution state will be restored.
  */
 template <class Pointer>
-void restoreContext(Pointer context) {
+void RestoreContext(Pointer context) {
 	Context.Stack         = context->Stack;
 	Context.StackP        = context->StackP;
 	Context.FrameP        = context->FrameP;
@@ -635,7 +635,7 @@ void FillLoopAddrs(const Inst *breakAddr, const Inst *continueAddr) {
  * if MACRO_DONE is returned, the macro completed, and the returned value (if any) can be read from "result".
  * If MACRO_PREEMPT is returned, the macro exceeded its allotted time-slice and scheduled...
  */
-int executeMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg) {
+int ExecuteMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg) {
 
 	/* Create an execution context (a stack, a stack pointer, a frame pointer,
 	   and a program counter) which will retain the program state across
@@ -688,7 +688,7 @@ ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation,
 	   triggered within smart-indent) within executing macros, this call is
 	   reentrant. */
 	MacroContext oldContext;
-	saveContext(&oldContext);
+	SaveContext(&oldContext);
 
 	Q_ASSERT(continuation);
 
@@ -696,7 +696,7 @@ ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation,
 	** Execution Loop:  Call the successive routine addresses in the program
 	** until one returns something other than StatusOk, then take action
 	*/
-	restoreContext(continuation);
+	RestoreContext(continuation);
 	ErrorMessage = nullptr;
 	Q_FOREVER {
 
@@ -708,17 +708,17 @@ ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation,
 		// If error return was not StatusOk, return to caller
 		switch (status) {
 		case StatusPreempt:
-			saveContext(continuation);
-			restoreContext(&oldContext);
+			SaveContext(continuation);
+			RestoreContext(&oldContext);
 			return MACRO_PREEMPT;
 		case StatusError:
 			*msg = QString::fromLatin1(ErrorMessage);
-			restoreContext(&oldContext);
+			RestoreContext(&oldContext);
 			return MACRO_ERROR;
 		case StatusDone:
 			*msg    = QString();
 			*result = *--Context.StackP;
-			restoreContext(&oldContext);
+			RestoreContext(&oldContext);
 			return MACRO_DONE;
 		case StatusOk:
 			break;
@@ -730,8 +730,8 @@ ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation,
 		++instCount;
 #if defined(ENABLE_PREEMPTION)
 		if (instCount >= INSTRUCTION_LIMIT) {
-			saveContext(continuation);
-			restoreContext(&oldContext);
+			SaveContext(continuation);
+			RestoreContext(&oldContext);
 			return MACRO_TIME_LIMIT;
 		}
 #endif
