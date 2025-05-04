@@ -97,17 +97,17 @@ int main(int argc, char *argv[]) {
 	}
 
 	QApplication app(argc, argv);
-	QApplication::setWindowIcon(QIcon(QLatin1String(":/nedit-ng.png")));
+	QApplication::setWindowIcon(QIcon(QStringLiteral(":/nedit-ng.png")));
 
 	// NOTE: for issue #41, translate QMessageBox.
 	QTranslator qtTranslator;
-	if (qtTranslator.load(QLocale(), QStringLiteral("qtbase"), QLatin1String("_"), QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
+	if (qtTranslator.load(QLocale(), QStringLiteral("qtbase"), QStringLiteral("_"), QLibraryInfo::location(QLibraryInfo::TranslationsPath))) {
 		QApplication::installTranslator(&qtTranslator);
 	}
 
 	QTranslator translator;
 	// look up e.g. :/i18n/nedit-ng_{lang}.qm
-	if (translator.load(QLocale(), QStringLiteral("nedit-ng"), QLatin1String("_"), QLatin1String(":/i18n"))) {
+	if (translator.load(QLocale(), QStringLiteral("nedit-ng"), QStringLiteral("_"), QStringLiteral(":/i18n"))) {
 		QApplication::installTranslator(&translator);
 	}
 

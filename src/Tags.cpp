@@ -456,11 +456,11 @@ int LoadTagsFile(const QString &tagSpec, int index, int recLevel) {
 CalltipToken NextTipsFileBlock(QTextStream &stream, QString &header, QString &body, int *blkLine, int *currLine) {
 
 	// These are the different kinds of tokens
-	static const auto comment_regex  = QRegularExpression(QLatin1String(R"(^\s*\* comment \*\s*$)"));
-	static const auto version_regex  = QRegularExpression(QLatin1String(R"(^\s*\* version \*\s*$)"));
-	static const auto include_regex  = QRegularExpression(QLatin1String(R"(^\s*\* include \*\s*$)"));
-	static const auto language_regex = QRegularExpression(QLatin1String(R"(^\s*\* language \*\s*$)"));
-	static const auto alias_regex    = QRegularExpression(QLatin1String(R"(^\s*\* alias \*\s*$)"));
+	static const auto comment_regex  = QRegularExpression(QStringLiteral(R"(^\s*\* comment \*\s*$)"));
+	static const auto version_regex  = QRegularExpression(QStringLiteral(R"(^\s*\* version \*\s*$)"));
+	static const auto include_regex  = QRegularExpression(QStringLiteral(R"(^\s*\* include \*\s*$)"));
+	static const auto language_regex = QRegularExpression(QStringLiteral(R"(^\s*\* language \*\s*$)"));
+	static const auto alias_regex    = QRegularExpression(QStringLiteral(R"(^\s*\* alias \*\s*$)"));
 
 	QString line;
 	CalltipToken code;

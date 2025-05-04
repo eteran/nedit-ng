@@ -286,11 +286,11 @@ std::optional<CommandLine> ParseCommandLine(const QStringList &args) {
 			}
 
 			QVariantMap file;
-			file[QLatin1String("line_number")] = lineNum;
+			file[QStringLiteral("line_number")] = lineNum;
 			file[QStringLiteral("read")]        = read;
 			file[QStringLiteral("create")]      = create;
 			file[QStringLiteral("iconic")]      = iconic;
-			file[QLatin1String("is_tabbed")]   = isTabbed;
+			file[QStringLiteral("is_tabbed")]   = isTabbed;
 			file[QStringLiteral("path")]        = path;
 			file[QStringLiteral("toDoCommand")] = toDoCommand;
 			file[QStringLiteral("langMode")]    = langMode;
@@ -314,11 +314,11 @@ std::optional<CommandLine> ParseCommandLine(const QStringList &args) {
 	if (!toDoCommand.isEmpty() || fileCount == 0) {
 
 		QVariantMap file;
-		file[QLatin1String("line_number")] = 0;
+		file[QStringLiteral("line_number")] = 0;
 		file[QStringLiteral("read")]        = 0;
 		file[QStringLiteral("create")]      = 0;
 		file[QStringLiteral("iconic")]      = iconic;
-		file[QLatin1String("is_tabbed")]   = tabbed;
+		file[QStringLiteral("is_tabbed")]   = tabbed;
 		file[QStringLiteral("path")]        = QString();
 		file[QStringLiteral("toDoCommand")] = toDoCommand;
 		file[QStringLiteral("langMode")]    = langMode;
@@ -450,11 +450,11 @@ int main(int argc, char *argv[]) {
 	QSettings settings(filename, QSettings::IniFormat);
 	settings.beginGroup(QStringLiteral("Server"));
 
-	ServerPreferences.autoStart    = settings.value(QLatin1String("nc.autoStart"), true).toBool();
-	ServerPreferences.serverCmd    = settings.value(QLatin1String("nc.serverCommand"), QLatin1String("nedit-ng -server")).toString();
-	ServerPreferences.serverName   = settings.value(QLatin1String("nc.serverName"), QString()).toString();
-	ServerPreferences.waitForClose = settings.value(QLatin1String("nc.waitForClose"), false).toBool();
-	ServerPreferences.timeOut      = settings.value(QLatin1String("nc.timeOut"), 10).toInt();
+	ServerPreferences.autoStart    = settings.value(QStringLiteral("nc.autoStart"), true).toBool();
+	ServerPreferences.serverCmd    = settings.value(QStringLiteral("nc.serverCommand"), QStringLiteral("nedit-ng -server")).toString();
+	ServerPreferences.serverName   = settings.value(QStringLiteral("nc.serverName"), QString()).toString();
+	ServerPreferences.waitForClose = settings.value(QStringLiteral("nc.waitForClose"), false).toBool();
+	ServerPreferences.timeOut      = settings.value(QStringLiteral("nc.timeOut"), 10).toInt();
 	CommandLine commandLine        = ProcessCommandLine(QCoreApplication::arguments());
 
 	/* Make sure that the time out unit is at least 1 second and not too

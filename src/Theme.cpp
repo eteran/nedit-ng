@@ -14,14 +14,14 @@
 namespace Theme {
 namespace {
 
-const auto DefaultTextFG      = QLatin1String("#221f1e");
-const auto DefaultTextBG      = QLatin1String("#d6d2d0");
-const auto DefaultSelFG       = QLatin1String("#ffffff");
-const auto DefaultSelBG       = QLatin1String("#43ace8");
+const auto DefaultTextFG      = QStringLiteral("#221f1e");
+const auto DefaultTextBG      = QStringLiteral("#d6d2d0");
+const auto DefaultSelFG       = QStringLiteral("#ffffff");
+const auto DefaultSelBG       = QStringLiteral("#43ace8");
 const auto DefaultHighlightFG = QStringLiteral("white"); /* These are colors for flashing */
 const auto DefaultHighlightBG = QStringLiteral("red");   /* matching parens. */
 const auto DefaultLineNumFG   = QStringLiteral("black");
-const auto DefaultLineNumBG   = QLatin1String("#d6d2d0");
+const auto DefaultLineNumBG   = QStringLiteral("#d6d2d0");
 const auto DefaultCursorFG    = QStringLiteral("black");
 
 }
@@ -34,7 +34,7 @@ void Load() {
 
 	QFile file(filename);
 	if (!file.open(QIODevice::ReadOnly)) {
-		file.setFileName(QLatin1String(":/DefaultStyles.xml"));
+		file.setFileName(QStringLiteral(":/DefaultStyles.xml"));
 		if (!file.open(QIODevice::ReadOnly)) {
 			qFatal("NEdit: failed to open theme file!");
 		}
@@ -88,7 +88,7 @@ void Load() {
 				hs.font = Font::Italic;
 			} else if (font == QStringLiteral("Bold")) {
 				hs.font = Font::Bold;
-			} else if (font == QLatin1String("Bold Italic")) {
+			} else if (font == QStringLiteral("Bold Italic")) {
 				hs.font = Font::Italic | Font::Bold;
 			} else {
 				qWarning("NEdit: unrecognized font type %s in %s", qPrintable(font), qPrintable(hs.name));
@@ -112,7 +112,7 @@ void Save() {
 	QFile file(filename);
 	if (file.open(QIODevice::WriteOnly)) {
 		QDomDocument xml;
-		const QDomProcessingInstruction pi = xml.createProcessingInstruction(QStringLiteral("xml"), QLatin1String(R"(version="1.0" encoding="UTF-8")"));
+		const QDomProcessingInstruction pi = xml.createProcessingInstruction(QStringLiteral("xml"), QStringLiteral(R"(version="1.0" encoding="UTF-8")"));
 
 		xml.appendChild(pi);
 
@@ -176,7 +176,7 @@ void Save() {
 				style.setAttribute(QStringLiteral("font"), QStringLiteral("Bold"));
 				break;
 			case Font::Italic | Font::Bold:
-				style.setAttribute(QStringLiteral("font"), QLatin1String("Bold Italic"));
+				style.setAttribute(QStringLiteral("font"), QStringLiteral("Bold Italic"));
 				break;
 			default:
 				qFatal("NEdit: internal error saving theme file");
