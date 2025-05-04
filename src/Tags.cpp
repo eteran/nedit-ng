@@ -44,11 +44,10 @@ struct CalltipAlias {
 	QString sources;
 };
 
-// Tag File Type
-enum TFT : uint8_t {
-	TFT_CHECK,
-	TFT_ETAGS,
-	TFT_CTAGS
+enum TagFileType : uint8_t {
+	TagFileUnknown,
+	TagFileETags,
+	TagFileCTags
 };
 
 constexpr int MaxLine                     = 2048;
@@ -382,8 +381,8 @@ int ScanETagsLine(const QString &line, const QString &tagPath, int index, QStrin
  */
 int LoadTagsFile(const QString &tagSpec, int index, int recLevel) {
 
-	int nTagsAdded  = 0;
-	int tagFileType = TFT_CHECK;
+	int nTagsAdded          = 0;
+	TagFileType tagFileType = TagFileUnknown;
 
 	if (recLevel > MaxTagIncludeRecursionLevel) {
 		return 0;
@@ -420,19 +419,19 @@ int LoadTagsFile(const QString &tagSpec, int index, int recLevel) {
 		/* the first character in the file decides if the file is treat as
 		   etags or ctags file.
 		 */
-		if (tagFileType == TFT_CHECK) {
+		if (tagFileType == TagFileUnknown) {
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
 			if (line.startsWith(QChar::FormFeed)) { // <np>
 #else
 			if (line.startsWith(QChar(0x000c))) { // <np>
 #endif
-				tagFileType = TFT_ETAGS;
+				tagFileType = TagFileETags;
 			} else {
-				tagFileType = TFT_CTAGS;
+				tagFileType = TagFileCTags;
 			}
 		}
 
-		if (tagFileType == TFT_CTAGS) {
+		if (tagFileType == TagFileCTags) {
 			nTagsAdded += ScanCTagsLine(line, tagPathInfo.pathname, index);
 		} else {
 			nTagsAdded += ScanETagsLine(line, tagPathInfo.pathname, index, filename, recLevel);

@@ -21,14 +21,14 @@ struct Symbol;
 
 constexpr const char ARRAY_DIM_SEP[] = "\034";
 
-enum SymTypes {
-	CONST_SYM,
-	GLOBAL_SYM,
-	LOCAL_SYM,
-	ARG_SYM,
-	PROC_VALUE_SYM,
-	C_FUNCTION_SYM,
-	MACRO_FUNCTION_SYM
+enum SymbolType {
+	SymbolConst,
+	SymbolGlobal,
+	SymbolLocal,
+	SymbolArg,
+	SymbolProcValue,
+	SymbolBuiltinFunc,
+	SymbolMacroFunc
 };
 
 #define N_OPS 43
@@ -96,7 +96,7 @@ union Inst {
 /* symbol table entry */
 struct Symbol {
 	std::string name;
-	SymTypes type;
+	SymbolType type;
 	DataValue value;
 };
 
@@ -146,8 +146,8 @@ Program *FinishCreatingProgram();
 Symbol *InstallIteratorSymbol();
 Symbol *InstallStringConstSymbol(std::string_view str);
 Symbol *InstallStringConstSymbolEx(const QString &str);
-Symbol *InstallSymbol(std::string name, SymTypes type, const DataValue &value);
-Symbol *InstallSymbolEx(const QString &name, enum SymTypes type, const DataValue &value);
+Symbol *InstallSymbol(std::string name, SymbolType type, const DataValue &value);
+Symbol *InstallSymbolEx(const QString &name, enum SymbolType type, const DataValue &value);
 Symbol *LookupStringConstSymbol(std::string_view value);
 Symbol *LookupSymbolEx(const QString &name);
 Symbol *LookupSymbol(std::string_view name);

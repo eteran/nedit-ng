@@ -19,7 +19,7 @@ auto DefaultUpdateFuncName = QLatin1String("maintain");
 
 struct {
 	QLatin1String name;
-	RangesetUpdateFn *update_fn;
+	RangesetUpdateFn *updateFunc;
 } RangesetUpdateMap[] = {
 	{DefaultUpdateFuncName, RangesetInsDelMaintain},
 	{QLatin1String("ins_del"), RangesetInsDelMaintain},
@@ -760,7 +760,7 @@ bool Rangeset::setMode(const QString &mode) {
 
 	for (const auto &entry : RangesetUpdateMap) {
 		if (entry.name == mode) {
-			update_      = entry.update_fn;
+			update_      = entry.updateFunc;
 			update_name_ = entry.name;
 			return true;
 		}

@@ -5223,28 +5223,28 @@ void RegisterMacroSubroutines() {
 	   to the appropriate c routines to do the work */
 	for (const SubRoutine &routine : MacroSubrs) {
 		const DataValue subrPtr = make_value(routine.function);
-		InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
+		InstallSymbol(routine.name, SymbolBuiltinFunc, subrPtr);
 	}
 
 	for (const SubRoutine &routine : SpecialVars) {
 		const DataValue subrPtr = make_value(routine.function);
-		InstallSymbol(routine.name, PROC_VALUE_SYM, subrPtr);
+		InstallSymbol(routine.name, SymbolProcValue, subrPtr);
 	}
 
 	for (const SubRoutine &routine : MenuMacroSubrNames) {
 		const DataValue subrPtr = make_value(routine.function);
-		InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
+		InstallSymbol(routine.name, SymbolBuiltinFunc, subrPtr);
 	}
 
 	for (const SubRoutine &routine : TextAreaSubrNames) {
 		const DataValue subrPtr = make_value(routine.function);
-		InstallSymbol(routine.name, C_FUNCTION_SYM, subrPtr);
+		InstallSymbol(routine.name, SymbolBuiltinFunc, subrPtr);
 	}
 
 	/* Define global variables used for return values, remember their
 	   locations so they can be set without a LookupSymbol call */
 	for (unsigned int i = 0; i < ReturnGlobalNamesCount; i++) {
-		ReturnGlobals[i] = InstallSymbol(ReturnGlobalNames[i], GLOBAL_SYM, make_value());
+		ReturnGlobals[i] = InstallSymbol(ReturnGlobalNames[i], SymbolGlobal, make_value());
 	}
 }
 
@@ -5352,16 +5352,16 @@ bool ReadCheckMacroString(QWidget *dialogParent, const QString &string, Document
 			if (runDocument) {
 				if (Symbol *const sym = LookupSymbolEx(routineName)) {
 
-					if (sym->type == MACRO_FUNCTION_SYM) {
+					if (sym->type == SymbolMacroFunc) {
 						delete to_program(sym->value);
 					} else {
-						sym->type = MACRO_FUNCTION_SYM;
+						sym->type = SymbolMacroFunc;
 					}
 
 					sym->value = make_value(prog);
 				} else {
 					const DataValue subrPtr = make_value(prog);
-					InstallSymbolEx(routineName, MACRO_FUNCTION_SYM, subrPtr);
+					InstallSymbolEx(routineName, SymbolMacroFunc, subrPtr);
 				}
 			}
 

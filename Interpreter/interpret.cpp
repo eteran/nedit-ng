@@ -27,15 +27,14 @@ constexpr int MaxErrorMessageLen = 256;
 
 // Number of instructions the interpreter is allowed to execute before
 // preempting and returning to allow other things to run
-constexpr int INSTRUCTION_LIMIT = 100;
+constexpr int InstructionLimit = 100;
 
 /* Temporary markers placed in a Branch address location to designate
    which loop address (break or continue) the location needs */
+constexpr int NeedsBreak    = 1;
+constexpr int NeedsContinue = 2;
 
-constexpr int NEEDS_BREAK    = 1;
-constexpr int NEEDS_CONTINUE = 2;
-
-constexpr int N_ARGS_ARG_SYM = -1; // special arg number meaning $n_args value
+constexpr int ArgCountSym = -1; // special arg number meaning $n_args value
 
 enum OpStatusCodes : uint8_t {
 	StatusOk = 2,
@@ -381,11 +380,11 @@ void InitMacroGlobals() {
 	for (int i = 0; i < 9; i++) {
 		static char argName[3] = "$x";
 		argName[1]             = static_cast<char>('1' + i);
-		InstallSymbol(argName, ARG_SYM, make_value(i));
+		InstallSymbol(argName, SymbolArg, make_value(i));
 	}
 
 	// Add special symbol $n_args
-	InstallSymbol("$n_args", ARG_SYM, make_value(N_ARGS_ARG_SYM));
+	InstallSymbol("$n_args", SymbolArg, make_value(ArgCountSym));
 }
 
 /**
@@ -565,7 +564,7 @@ bool AddBreakAddr(Inst *addr) {
 	}
 
 	AddLoopAddress(addr);
-	addr->value = NEEDS_BREAK;
+	addr->value = NeedsBreak;
 	return false;
 }
 
@@ -581,7 +580,7 @@ bool AddContinueAddr(Inst *addr) {
 	}
 
 	AddLoopAddress(addr);
-	addr->value = NEEDS_CONTINUE;
+	addr->value = NeedsContinue;
 	return false;
 }
 
@@ -611,9 +610,9 @@ void FillLoopAddrs(const Inst *breakAddr, const Inst *continueAddr) {
 			break;
 		}
 
-		if (loopPtr->value == NEEDS_BREAK) {
+		if (loopPtr->value == NeedsBreak) {
 			loopPtr->value = breakAddr - loopPtr;
-		} else if (loopPtr->value == NEEDS_CONTINUE) {
+		} else if (loopPtr->value == NeedsContinue) {
 			loopPtr->value = continueAddr - loopPtr;
 		} else {
 			qCritical("NEdit: internal error (uat) in macro parser");
@@ -729,7 +728,7 @@ ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation,
 		   X, other macros, and other shell scripts a chance to execute */
 		++instCount;
 #if defined(ENABLE_PREEMPTION)
-		if (instCount >= INSTRUCTION_LIMIT) {
+		if (instCount >= InstructionLimit) {
 			SaveContext(continuation);
 			RestoreContext(&oldContext);
 			return MACRO_TIME_LIMIT;
@@ -830,7 +829,7 @@ Symbol *InstallIteratorSymbol() {
 
 	auto symbolName = QStringLiteral("aryiter %1").arg(interatorNameIndex++);
 
-	return InstallSymbolEx(symbolName, LOCAL_SYM, make_value(ArrayIterator()));
+	return InstallSymbolEx(symbolName, SymbolLocal, make_value(ArrayIterator()));
 }
 
 /**
@@ -842,7 +841,7 @@ Symbol *InstallIteratorSymbol() {
 Symbol *LookupStringConstSymbol(std::string_view value) {
 
 	auto it = std::find_if(GlobalSymList.begin(), GlobalSymList.end(), [value](Symbol *s) {
-		return (s->type == CONST_SYM && is_string(s->value) && to_string(s->value) == value);
+		return (s->type == SymbolConst && is_string(s->value) && to_string(s->value) == value);
 	});
 
 	if (it != GlobalSymList.end()) {
@@ -879,7 +878,7 @@ Symbol *InstallStringConstSymbol(std::string_view str) {
 	auto stringName = QStringLiteral("string #%1").arg(stringConstIndex++);
 
 	const DataValue value = make_value(str);
-	return InstallSymbolEx(stringName, CONST_SYM, value);
+	return InstallSymbolEx(stringName, SymbolConst, value);
 }
 
 /**
@@ -925,11 +924,11 @@ Symbol *LookupSymbol(std::string_view name) {
  * @brief install symbol name in symbol table
  *
  * @param name The name of the symbol to install.
- * @param type The type of the symbol (e.g., LOCAL_SYM, GLOBAL_SYM, CONST_SYM, etc.).
+ * @param type The type of the symbol (e.g., SymbolLocal, SymbolGlobal, SymbolConst, etc.).
  * @param value The value associated with the symbol.
  * @return The installed Symbol.
  */
-Symbol *InstallSymbolEx(const QString &name, SymTypes type, const DataValue &value) {
+Symbol *InstallSymbolEx(const QString &name, SymbolType type, const DataValue &value) {
 	return InstallSymbol(name.toStdString(), type, value);
 }
 
@@ -937,15 +936,15 @@ Symbol *InstallSymbolEx(const QString &name, SymTypes type, const DataValue &val
  * @brief install symbol name in symbol table
  *
  * @param name The name of the symbol to install.
- * @param type The type of the symbol (e.g., LOCAL_SYM, GLOBAL_SYM, CONST_SYM, etc.).
+ * @param type The type of the symbol (e.g., SymbolLocal, SymbolGlobal, SymbolConst, etc.).
  * @param value The value associated with the symbol.
  * @return The installed Symbol.
  */
-Symbol *InstallSymbol(std::string name, SymTypes type, const DataValue &value) {
+Symbol *InstallSymbol(std::string name, SymbolType type, const DataValue &value) {
 
 	auto s = new Symbol{std::move(name), type, value};
 
-	if (type == LOCAL_SYM) {
+	if (type == SymbolLocal) {
 		LocalSymList.push_front(s);
 	} else {
 		GlobalSymList.push_back(s);
@@ -963,11 +962,11 @@ Symbol *InstallSymbol(std::string name, SymTypes type, const DataValue &value) {
  * so that the function definition uses the same symbol.
  *
  * @param sym The symbol to promote.
- * @return The promoted Symbol if successful, or the original Symbol if it was not a LOCAL_SYM.
+ * @return The promoted Symbol if successful, or the original Symbol if it was not a SymbolLocal.
  */
 Symbol *PromoteToGlobal(Symbol *sym) {
 
-	if (sym->type != LOCAL_SYM) {
+	if (sym->type != SymbolLocal) {
 		return sym;
 	}
 
@@ -975,17 +974,17 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 	LocalSymList.erase(std::remove(LocalSymList.begin(), LocalSymList.end(), sym), LocalSymList.end());
 
 	/* There are two scenarios which could make this check succeed:
-	   a) this sym is in the GlobalSymList as a LOCAL_SYM symbol
-	   b) there is another symbol as a non-LOCAL_SYM in the GlobalSymList
+	   a) this sym is in the GlobalSymList as a SymbolLocal symbol
+	   b) there is another symbol as a non-SymbolLocal in the GlobalSymList
 	   Both are errors, without question.
 	   We currently just print this warning, but we should error out the
 	   parsing process. */
 	Symbol *const s = LookupSymbol(sym->name);
 	if (sym == s) {
 		/* case a)
-		   just make this symbol a GLOBAL_SYM symbol and return */
+		   just make this symbol a SymbolGlobal symbol and return */
 		qInfo("NEdit: To boldly go where no local sym has gone before: %s", sym->name.c_str());
-		sym->type = GLOBAL_SYM;
+		sym->type = SymbolGlobal;
 		return sym;
 	}
 
@@ -997,8 +996,8 @@ Symbol *PromoteToGlobal(Symbol *sym) {
 
 	/* Add the symbol directly to the GlobalSymList, because InstallSymbol()
 	 * will allocate a new Symbol, which results in a memory leak of sym.
-	 * Don't use MACRO_FUNCTION_SYM as type */
-	sym->type = GLOBAL_SYM;
+	 * Don't use SymbolMacroFunc as type */
+	sym->type = SymbolGlobal;
 
 	GlobalSymList.push_back(sym);
 
@@ -1109,22 +1108,22 @@ static int PushSymValue() {
 
 	Symbol *s = Context.PC++->sym;
 
-	if (s->type == LOCAL_SYM) {
+	if (s->type == SymbolLocal) {
 		symVal = FP_GET_SYM_VAL(Context.FrameP, s);
-	} else if (s->type == GLOBAL_SYM || s->type == CONST_SYM) {
+	} else if (s->type == SymbolGlobal || s->type == SymbolConst) {
 		symVal = s->value;
-	} else if (s->type == ARG_SYM) {
+	} else if (s->type == SymbolArg) {
 		const int nArgs  = FP_GET_ARG_COUNT(Context.FrameP);
 		const int argNum = to_integer(s->value);
 		if (argNum >= nArgs) {
 			return ExecError("referenced undefined argument: %s", s->name.c_str());
 		}
-		if (argNum == N_ARGS_ARG_SYM) {
+		if (argNum == ArgCountSym) {
 			symVal = make_value(nArgs);
 		} else {
 			symVal = FP_GET_ARG_N(Context.FrameP, argNum);
 		}
-	} else if (s->type == PROC_VALUE_SYM) {
+	} else if (s->type == SymbolProcValue) {
 
 		if (const std::error_code ec = (to_subroutine(s->value))(Context.FocusDocument, {}, &symVal)) {
 			return ExecError(ec, s->name.c_str());
@@ -1236,9 +1235,9 @@ static int PushArraySymVal() {
 	Symbol *sym             = Context.PC++->sym;
 	const int64_t initEmpty = Context.PC++->value;
 
-	if (sym->type == LOCAL_SYM) {
+	if (sym->type == SymbolLocal) {
 		dataPtr = &FP_GET_SYM_VAL(Context.FrameP, sym);
-	} else if (sym->type == GLOBAL_SYM) {
+	} else if (sym->type == SymbolGlobal) {
 		dataPtr = &sym->value;
 	} else {
 		return ExecError("assigning to non-lvalue array or non-array: %s", sym->name.c_str());
@@ -1280,15 +1279,15 @@ static int Assign() {
 	Symbol *sym = Context.PC++->sym;
 
 	switch (sym->type) {
-	case LOCAL_SYM:
+	case SymbolLocal:
 		dataPtr = &FP_GET_SYM_VAL(Context.FrameP, sym);
 		break;
-	case GLOBAL_SYM:
+	case SymbolGlobal:
 		dataPtr = &sym->value;
 		break;
-	case ARG_SYM:
+	case SymbolArg:
 		return ExecError("assignment to function argument: %s", sym->name.c_str());
-	case PROC_VALUE_SYM:
+	case SymbolProcValue:
 		return ExecError("assignment to read-only variable: %s", sym->name.c_str());
 	default:
 		return ExecError("assignment to non-variable: %s", sym->name.c_str());
@@ -1955,7 +1954,7 @@ static int CallSubroutine() {
 	/*
 	** If the subroutine is built-in, call the built-in routine
 	*/
-	if (sym->type == C_FUNCTION_SYM) {
+	if (sym->type == SymbolBuiltinFunc) {
 		DataValue result;
 
 		// "pop" stack back to the first argument in the call stack
@@ -1988,7 +1987,7 @@ static int CallSubroutine() {
 	** stack for local variables (and initialize them), on top of the argument
 	** values which are already there.
 	*/
-	if (sym->type == MACRO_FUNCTION_SYM) {
+	if (sym->type == SymbolMacroFunc) {
 
 		*Context.StackP++ = make_value(Context.PC);     // return PC
 		*Context.StackP++ = make_value(Context.FrameP); // old FrameP
@@ -2538,7 +2537,7 @@ static int BeginArrayIter() {
 
 	POP(arrayVal);
 
-	if (iterator->type != LOCAL_SYM) {
+	if (iterator->type != SymbolLocal) {
 		return ExecError("bad temporary iterator: %s", iterator->name.c_str());
 	}
 
@@ -2588,10 +2587,10 @@ static int ArrayIter() {
 	++Context.PC;
 
 	switch (item->type) {
-	case LOCAL_SYM:
+	case SymbolLocal:
 		itemValPtr = &FP_GET_SYM_VAL(Context.FrameP, item);
 		break;
-	case GLOBAL_SYM:
+	case SymbolGlobal:
 		itemValPtr = &(item->value);
 		break;
 	default:
@@ -2600,7 +2599,7 @@ static int ArrayIter() {
 
 	*itemValPtr = make_value();
 
-	if (iterator->type != LOCAL_SYM) {
+	if (iterator->type != SymbolLocal) {
 		return ExecError("bad temporary iterator: %s", iterator->name.c_str());
 	}
 

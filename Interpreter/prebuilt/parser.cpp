@@ -2423,7 +2423,7 @@ static int yylex(void) {
 		snprintf(name, sizeof(name), "const %d", n);
 
 		if ((yylval.sym = LookupSymbol(name)) == nullptr) {
-			yylval.sym = InstallSymbol(name, CONST_SYM, make_value(n));
+			yylval.sym = InstallSymbol(name, SymbolConst, make_value(n));
 		}
 
 		return NUMBER;
@@ -2458,7 +2458,7 @@ static int yylex(void) {
 
 		if ((s = LookupSymbolEx(symName)) == nullptr) {
 			s = InstallSymbolEx(symName,
-								symName[0] == QLatin1Char('$') ? (((symName[1] > QLatin1Char('0') && symName[1] <= QLatin1Char('9')) && symName.size() == 2) ? ARG_SYM : GLOBAL_SYM) : LOCAL_SYM,
+								symName[0] == QLatin1Char('$') ? (((symName[1] > QLatin1Char('0') && symName[1] <= QLatin1Char('9')) && symName.size() == 2) ? SymbolArg : SymbolGlobal) : SymbolLocal,
 								make_value());
 		}
 
