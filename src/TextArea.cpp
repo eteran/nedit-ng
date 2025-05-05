@@ -2764,7 +2764,7 @@ void TextArea::redisplayRange(TextCursor start, TextCursor end) {
 			lastLine = nVisibleLines_ - 1;
 		}
 	}
-	if(startLine < 0 || startLine >= nVisibleLines_ || lastLine < 0 || lastLine >= nVisibleLines_) {
+	if (startLine < 0 || startLine >= nVisibleLines_ || lastLine < 0 || lastLine >= nVisibleLines_) {
 		qWarning("NEdit: Internal Error, redisplayRange called with invalid line numbers");
 		return;
 	}

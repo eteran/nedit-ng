@@ -290,7 +290,7 @@ std::optional<MenuItem> DialogMacros::readFields(Verbosity verbosity) {
 		return {};
 	}
 
-	cmdText = ensure_newline(cmdText);
+	cmdText = EnsureNewline(cmdText);
 	if (!checkMacroText(cmdText, verbosity)) {
 		return {};
 	}

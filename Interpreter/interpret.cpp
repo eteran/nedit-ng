@@ -29,12 +29,13 @@ constexpr int MaxErrorMessageLen = 256;
 // preempting and returning to allow other things to run
 constexpr int InstructionLimit = 100;
 
-/* Temporary markers placed in a Branch address location to designate
-   which loop address (break or continue) the location needs */
+// Temporary markers placed in a Branch address location to designate
+// which loop address (break or continue) the location needs
 constexpr int NeedsBreak    = 1;
 constexpr int NeedsContinue = 2;
 
-constexpr int ArgCountSym = -1; // special arg number meaning $n_args value
+// special arg number meaning $n_args value
+constexpr int ArgCountSym = -1;
 
 enum OpStatusCodes : uint8_t {
 	StatusOk = 2,

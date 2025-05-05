@@ -11,6 +11,7 @@
 #include "Regex.h"
 #include "Settings.h"
 #include "Util/FileSystem.h"
+#include "Util/String.h"
 #include "interpret.h"
 #include "nedit.h"
 #include "parse.h"
@@ -381,7 +382,7 @@ bool Main::checkDoMacroArg(const QString &macro) {
 
 	/* Add a terminating newline (which command line users are likely to omit
 	   since they are typically invoking a single routine) */
-	const QString macroString = macro + QLatin1Char('\n');
+	const QString macroString = EnsureNewline(macro);
 
 	// Do a test parse
 	if (!IsMacroValid(macroString, &errMsg, &stoppedAt)) {

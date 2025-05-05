@@ -280,7 +280,7 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 		switch (GetOpCode(scan)) {
 		case BRANCH:
 			if (GetOpCode(next) != BRANCH) { // No choice.
-				next = Operand(scan);          // Avoid recursion.
+				next = Operand(scan);        // Avoid recursion.
 			} else {
 				size_t branch_index_local = 0;
 

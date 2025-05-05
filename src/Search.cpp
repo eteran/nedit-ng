@@ -188,8 +188,8 @@ std::optional<Search::Result> SearchLiteral(std::string_view string, std::string
 		lcString = std::string(searchString);
 		ucString = std::string(searchString);
 	} else {
-		ucString = to_upper(searchString);
-		lcString = to_lower(searchString);
+		ucString = ToUpper(searchString);
+		lcString = ToLower(searchString);
 	}
 
 	const auto first = string.begin();
@@ -355,8 +355,8 @@ std::optional<Search::Result> SearchLiteralWord(std::string_view string, std::st
 		ucString = std::string(searchString);
 		lcString = std::string(searchString);
 	} else {
-		ucString = to_upper(searchString);
-		lcString = to_lower(searchString);
+		ucString = ToUpper(searchString);
+		lcString = ToLower(searchString);
 	}
 
 	if (direction == Direction::Forward) {

@@ -275,7 +275,7 @@ std::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbosi
 		return {};
 	}
 
-	cmdText = ensure_newline(cmdText);
+	cmdText = EnsureNewline(cmdText);
 	if (!checkMacroText(cmdText, verbosity)) {
 		return {};
 	}

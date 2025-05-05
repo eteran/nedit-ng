@@ -29,6 +29,7 @@
 #include "Util/FileSystem.h"
 #include "Util/Input.h"
 #include "Util/Raise.h"
+#include "Util/String.h"
 #include "Util/User.h"
 #include "Util/algorithm.h"
 #include "Util/regex.h"
@@ -6997,7 +6998,7 @@ void DocumentWidget::doMacro(const QString &macro, const QString &errInName) {
 
 	/* Add a terminating newline (which command line users are likely to omit
 	   since they are typically invoking a single routine) */
-	const QString qMacro = macro + QLatin1Char('\n');
+	const QString qMacro = EnsureNewline(macro);
 	QString errMsg;
 
 	// Parse the macro and report errors if it fails

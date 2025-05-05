@@ -514,11 +514,11 @@ QString ConvertRgbColor(const QString &color) {
 	{
 		// convert RGB style colors
 		static const QRegularExpression rgbRegex(QStringLiteral("rgb:"
-															   "(?<red>[0-9a-fA-F]{1,4})"
-															   "/"
-															   "(?<green>[0-9a-fA-F]{1,4})"
-															   "/"
-															   "(?<blue>[0-9a-fA-F]{1,4})"));
+																"(?<red>[0-9a-fA-F]{1,4})"
+																"/"
+																"(?<green>[0-9a-fA-F]{1,4})"
+																"/"
+																"(?<blue>[0-9a-fA-F]{1,4})"));
 
 		const QRegularExpressionMatch rgbMatch = rgbRegex.match(color);
 		if (rgbMatch.hasMatch()) {
