@@ -24,9 +24,9 @@ private:
 	QStringList arguments_;
 };
 
-template <class... Types>
-void EmitEvent(const char *name, Types... args) {
-	WindowMenuEvent menuEvent(QString::fromLatin1(name), {args...});
+template <class... Ts>
+void EmitEvent(const char *name, Ts &&...args) {
+	WindowMenuEvent menuEvent(QString::fromLatin1(name), {std::forward<Ts>(args)...});
 	QApplication::sendEvent(qApp, &menuEvent);
 }
 

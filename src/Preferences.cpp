@@ -288,7 +288,7 @@ std::optional<LanguageMode> ReadLanguageMode(Input &in) {
 
 void LoadLanguageModesString(const QString &string) {
 
-	if (string == QLatin1String("*")) {
+	if (string == QStringLiteral("*")) {
 
 		YAML::Node languages;
 
@@ -296,7 +296,7 @@ void LoadLanguageModesString(const QString &string) {
 		if (QFileInfo::exists(LanguageModeFile)) {
 			languages = YAML::LoadAllFromFile(LanguageModeFile.toUtf8().data());
 		} else {
-			static QByteArray defaultLanguageModes = LoadResource(QLatin1String("DefaultLanguageModes.yaml"));
+			static QByteArray defaultLanguageModes = LoadResource(QStringLiteral("DefaultLanguageModes.yaml"));
 			languages                              = YAML::LoadAll(defaultLanguageModes.data());
 		}
 
@@ -457,7 +457,7 @@ QString WriteLanguageModesString() {
 			file.write("\n");
 		}
 
-		return QLatin1String("*");
+		return QStringLiteral("*");
 	} catch (const YAML::Exception &ex) {
 		qWarning("NEdit: Error writing %s in config directory:\n%s", qPrintable(filename), ex.what());
 	}
@@ -1242,7 +1242,7 @@ bool ReadNumericField(Input &in, int *value) {
 	// skip over blank space
 	in.skipWhitespace();
 
-	static const QRegularExpression re(QLatin1String("(0|[-+]?[1-9][0-9]*)"));
+	static const QRegularExpression re(QStringLiteral("(0|[-+]?[1-9][0-9]*)"));
 	QString number;
 	if (in.match(re, &number)) {
 		bool ok;
@@ -1266,7 +1266,7 @@ QString ReadSymbolicField(Input &input) {
 
 	const Input strStart = input;
 
-	static const QRegularExpression re(QLatin1String("[A-Za-z0-9_+$# \t-]*"));
+	static const QRegularExpression re(QStringLiteral("[A-Za-z0-9_+$# \t-]*"));
 
 	input.match(re);
 

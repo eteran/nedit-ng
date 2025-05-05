@@ -51,7 +51,7 @@ QString CopyMacroToEnd(Input &in) {
 			code,
 			input.index() - in.index(),
 			QLatin1String("macro menu item"),
-			QLatin1String("expecting '{'"));
+			QStringLiteral("expecting '{'"));
 
 		return QString();
 	}
@@ -93,7 +93,7 @@ QString CopyMacroToEnd(Input &in) {
 	auto retPtr = std::back_inserter(retStr);
 
 	while (input.index() != stoppedAt + in.index()) {
-		if (input.match(QLatin1String("\n\t\t"))) {
+		if (input.match(QStringLiteral("\n\t\t"))) {
 			*retPtr++ = QLatin1Char('\n');
 		} else {
 			*retPtr++ = *input++;
@@ -429,7 +429,7 @@ void LoadMacroMenuYaml(std::vector<MenuData> &menuItems) {
 		if (QFileInfo::exists(filename)) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
-			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultMacroMenu.yaml"));
+			static QByteArray defaultMenu = LoadResource(QStringLiteral("DefaultMacroMenu.yaml"));
 			menu                          = YAML::LoadAll(defaultMenu.data());
 		}
 
@@ -480,13 +480,13 @@ void LoadShellMenuYaml(std::vector<MenuData> &menuItems) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
 #if defined(Q_OS_LINUX)
-			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultShellMenuLinux.yaml"));
+			static QByteArray defaultMenu = LoadResource(QStringLiteral("DefaultShellMenuLinux.yaml"));
 #elif defined(Q_OS_FREEBSD)
-			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultShellMenuFreeBSD.yaml"));
+			static QByteArray defaultMenu = LoadResource(QStringLiteral("DefaultShellMenuFreeBSD.yaml"));
 #elif defined(Q_OS_UNIX)
-			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultShellMenuUnix.yaml"));
+			static QByteArray defaultMenu = LoadResource(QStringLiteral("DefaultShellMenuUnix.yaml"));
 #elif defined(Q_OS_WIN)
-			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultShellMenuWindows.yaml"));
+			static QByteArray defaultMenu = LoadResource(QStringLiteral("DefaultShellMenuWindows.yaml"));
 #else
 			// Using an "unsupported" system so we don't have a set of defaults. Just use an empty one
 			static QByteArray defaultMenu;
@@ -568,7 +568,7 @@ void LoadContextMenuYaml(std::vector<MenuData> &menuItems) {
 		if (QFileInfo::exists(filename)) {
 			menu = YAML::LoadAllFromFile(filename.toUtf8().data());
 		} else {
-			static QByteArray defaultMenu = LoadResource(QLatin1String("DefaultContextMenu.yaml"));
+			static QByteArray defaultMenu = LoadResource(QStringLiteral("DefaultContextMenu.yaml"));
 			menu                          = YAML::LoadAll(defaultMenu.data());
 		}
 
@@ -620,7 +620,7 @@ void LoadContextMenuYaml(std::vector<MenuData> &menuItems) {
  */
 void LoadMenuItemString(const QString &inString, std::vector<MenuData> &menuItems, CommandTypes listType) {
 
-	if (inString == QLatin1String("*")) {
+	if (inString == QStringLiteral("*")) {
 		if (listType == CommandTypes::Context) {
 			LoadContextMenuYaml(menuItems);
 		} else if (listType == CommandTypes::Macro) {
@@ -691,7 +691,7 @@ void ParseMenuItemName(const QString &menuItemName, const std::unique_ptr<UserMe
 	const int index = menuItemName.indexOf(QLatin1Char('@'));
 	if (index != -1) {
 		const QString languageString = menuItemName.mid(index);
-		if (languageString == QLatin1String("*")) {
+		if (languageString == QStringLiteral("*")) {
 			/* only language is "*": this is for all but language specific macros */
 			info->umiIsDefault = true;
 			return;

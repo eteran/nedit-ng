@@ -56,7 +56,7 @@ QString WriteMenuItemString(const std::vector<MenuItem> &menuItems, bool isShell
 
 		QString name = item.name;
 
-		name.replace(QLatin1String("&"), QLatin1String("&&"));
+		name.replace(QStringLiteral("&"), QStringLiteral("&&"));
 
 		// handle that we do mnemonics the Qt way...
 		if (!item.mnemonic.isEmpty()) {
@@ -166,7 +166,7 @@ QString CopyMacroToEnd(Input &in) {
 	auto retPtr = std::back_inserter(retStr);
 
 	while (input.index() != stoppedAt + in.index()) {
-		if (input.match(QLatin1String("\n\t\t"))) {
+		if (input.match(QStringLiteral("\n\t\t"))) {
 			*retPtr++ = QLatin1Char('\n');
 		} else {
 			*retPtr++ = *input++;
@@ -259,7 +259,7 @@ void SaveTheme(const QString &filename, const std::vector<Style> &styles) {
 	QFile file(filename);
 	if (file.open(QIODevice::WriteOnly)) {
 		QDomDocument xml;
-		const QDomProcessingInstruction pi = xml.createProcessingInstruction(QStringLiteral("xml"), QLatin1String(R"(version="1.0" encoding="UTF-8")"));
+		const QDomProcessingInstruction pi = xml.createProcessingInstruction(QStringLiteral("xml"), QStringLiteral(R"(version="1.0" encoding="UTF-8")"));
 
 		xml.appendChild(pi);
 
@@ -513,7 +513,7 @@ QString ConvertRgbColor(const QString &color) {
 
 	{
 		// convert RGB style colors
-		static const QRegularExpression rgbRegex(QLatin1String("rgb:"
+		static const QRegularExpression rgbRegex(QStringLiteral("rgb:"
 															   "(?<red>[0-9a-fA-F]{1,4})"
 															   "/"
 															   "(?<green>[0-9a-fA-F]{1,4})"
@@ -539,7 +539,7 @@ QString ConvertRgbColor(const QString &color) {
 		// convert RGBi style colors
 		// NOTE(eteran): this regex is slightly more brittle than I'd like, but this is such a rarely used format
 		// that I'm leaving it this way for now... I'll improve this later
-		static const QRegularExpression rgbiRegex(QLatin1String("RGBi:"
+		static const QRegularExpression rgbiRegex(QStringLiteral("RGBi:"
 																 "(?<red>[0-9]+(\\.[0-9]+)?)"
 																 "/"
 																 "(?<green>[0-9]+(\\.[0-9]+)?)"
@@ -602,7 +602,7 @@ int main(int argc, char *argv[]) {
 
 	const QString value = ReadResource<QString>(prefDB, "nedit.fileVersion");
 
-	if (value != QLatin1String("5.6") && value != QLatin1String("5.7")) {
+	if (value != QStringLiteral("5.6") && value != QStringLiteral("5.7")) {
 		std::cout << "Importing is only supported for NEdit 5.6 and 5.7" << '\n';
 		return -1;
 	}
@@ -621,9 +621,9 @@ int main(int argc, char *argv[]) {
 	Settings::autoScrollVPadding           = 4;
 	Settings::maxPrevOpenFiles             = 30;
 	Settings::truncSubstitution            = TruncSubstitution::Fail;
-	Settings::backlightCharTypes           = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
+	Settings::backlightCharTypes           = QStringLiteral("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
 	Settings::tagFile                      = QString();
-	Settings::wordDelimiters               = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
+	Settings::wordDelimiters               = QStringLiteral(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
 
 	// string preferences
 	Settings::shellCommands  = ReadResource<QString>(prefDB, "nedit.shellCommands");
@@ -715,13 +715,13 @@ int main(int argc, char *argv[]) {
 	qWarning("WARNING: fonts will not be imported\n"
 			 "X11 uses a different specification than Qt and it is difficult to map between the two reliably");
 
-	Settings::fontName = QLatin1String("Courier New,10,-1,5,50,0,0,0,0,0");
+	Settings::fontName = QStringLiteral("Courier New,10,-1,5,50,0,0,0,0,0");
 #endif
 
 	std::vector<Style> styles;
 	QString style = ReadResource<QString>(prefDB, "nedit.styles");
 	QTextStream stream(&style);
-	static const QRegularExpression re(QLatin1String("\\s*(?<name>[^:]+):(?<foreground>[^:/]+)(/(?<background>[^:]+))?:(?<font>[^:]+)"));
+	static const QRegularExpression re(QStringLiteral("\\s*(?<name>[^:]+):(?<foreground>[^:/]+)(/(?<background>[^:]+))?:(?<font>[^:]+)"));
 
 	QString line;
 	while (stream.readLineInto(&line)) {

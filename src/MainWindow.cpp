@@ -479,7 +479,7 @@ void MainWindow::parseGeometry(QString geometry) {
 		rows = Preferences::GetPrefRows();
 		cols = Preferences::GetPrefCols();
 	} else {
-		static const QRegularExpression re(QLatin1String("(?:([0-9]+)(?:[xX]([0-9]+)(?:([\\+-][0-9]+)(?:([\\+-][0-9]+))?)?)?)?"));
+		static const QRegularExpression re(QStringLiteral("(?:([0-9]+)(?:[xX]([0-9]+)(?:([\\+-][0-9]+)(?:([\\+-][0-9]+))?)?)?)?"));
 		const QRegularExpressionMatch match = re.match(geometry);
 		if (match.hasMatch()) {
 			cols = match.captured(1).toInt();
@@ -1471,15 +1471,15 @@ QMenu *MainWindow::createUserMenu(size_t currentLanguageMode, const gsl::span<Me
 					// create the actual action or, if it represents one of our
 					// *very* common entries make it equivalent to the global
 					// QAction representing that task
-					if (menuData.item.cmd.trimmed() == QLatin1String("cut_clipboard()")) {
+					if (menuData.item.cmd.trimmed() == QStringLiteral("cut_clipboard()")) {
 						parentMenu->addAction(ui.action_Cut);
-					} else if (menuData.item.cmd.trimmed() == QLatin1String("copy_clipboard()")) {
+					} else if (menuData.item.cmd.trimmed() == QStringLiteral("copy_clipboard()")) {
 						parentMenu->addAction(ui.action_Copy);
-					} else if (menuData.item.cmd.trimmed() == QLatin1String("paste_clipboard()")) {
+					} else if (menuData.item.cmd.trimmed() == QStringLiteral("paste_clipboard()")) {
 						parentMenu->addAction(ui.action_Paste);
-					} else if (menuData.item.cmd.trimmed() == QLatin1String("undo()")) {
+					} else if (menuData.item.cmd.trimmed() == QStringLiteral("undo()")) {
 						parentMenu->addAction(ui.action_Undo);
-					} else if (menuData.item.cmd.trimmed() == QLatin1String("redo()")) {
+					} else if (menuData.item.cmd.trimmed() == QStringLiteral("redo()")) {
 						parentMenu->addAction(ui.action_Redo);
 					} else {
 						QAction *action = parentMenu->addAction(name);
@@ -2325,8 +2325,8 @@ QFileInfoList MainWindow::openFileHelperString(DocumentWidget *document, const Q
 
 QFileInfoList MainWindow::openFileHelper(DocumentWidget *document, const QString &text, QString *searchPath, QString *searchName) const {
 
-	static const QRegularExpression reSystem(QLatin1String("#include\\s*<([^>]+)>"));
-	static const QRegularExpression reLocal(QLatin1String("#include\\s*\"([^\"]+)\""));
+	static const QRegularExpression reSystem(QStringLiteral("#include\\s*<([^>]+)>"));
+	static const QRegularExpression reLocal(QStringLiteral("#include\\s*\"([^\"]+)\""));
 
 	{
 		const QRegularExpressionMatch match = reSystem.match(text);
@@ -2598,7 +2598,7 @@ void MainWindow::action_Fill_Paragraph_triggered() {
 void MainWindow::action_Insert_Form_Feed_triggered() {
 
 	if (const QPointer<TextArea> area = lastFocus()) {
-		area->insertStringAP(QLatin1String("\f"));
+		area->insertStringAP(QStringLiteral("\f"));
 	}
 }
 
@@ -7327,7 +7327,7 @@ bool MainWindow::prefOrUserCancelsSubst(DocumentWidget *document) {
 			messageBox.setText(tr("The result length of the substitution exceeded an internal limit.\n"
 								  "Executing the substitution will result in loss of data."));
 
-			QPushButton *buttonLose   = messageBox.addButton(QLatin1String("Lose Data"), QMessageBox::AcceptRole);
+			QPushButton *buttonLose   = messageBox.addButton(tr("Lose Data"), QMessageBox::AcceptRole);
 			QPushButton *buttonCancel = messageBox.addButton(QMessageBox::Cancel);
 			Q_UNUSED(buttonLose)
 
@@ -7630,7 +7630,7 @@ bool MainWindow::execNamedBGMenuCmd(DocumentWidget *document, TextArea *area, co
  */
 void MainWindow::setShowLineNumbers(bool show) {
 
-	EmitEvent("set_show_line_numbers", show ? QLatin1String("1") : QLatin1String("0"));
+	EmitEvent("set_show_line_numbers", show ? QStringLiteral("1") : QStringLiteral("0"));
 
 	no_signals(ui.action_Show_Line_Numbers)->setChecked(show);
 	showLineNumbers_ = show;

@@ -47,7 +47,7 @@ DialogDrawingStyles::DialogDrawingStyles(DialogSyntaxPatterns *dialogSyntaxPatte
 	}
 
 	// Valid characters are letters, numbers, _, -, +, $, #, and internal whitespace.
-	static const QRegularExpression rx(QLatin1String("[\\sA-Za-z0-9_+$#-]+"));
+	static const QRegularExpression rx(QStringLiteral("[\\sA-Za-z0-9_+$#-]+"));
 	auto validator = new QRegularExpressionValidator(rx, this);
 	ui.editName->setValidator(validator);
 }

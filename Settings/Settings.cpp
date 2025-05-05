@@ -20,12 +20,12 @@ namespace {
 bool settingsLoaded_ = false;
 
 const QStringList DEFAULT_INCLUDE_PATHS = {
-	QLatin1String("/usr/include/"),
-	QLatin1String("/usr/local/include/"),
+	QStringLiteral("/usr/include/"),
+	QStringLiteral("/usr/local/include/"),
 };
 
-const auto DEFAULT_DELIMITERS      = QLatin1String(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
-const auto DEFAULT_BACKLIGHT_CHARS = QLatin1String("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
+const auto DEFAULT_DELIMITERS      = QStringLiteral(".,/\\`'!|@#%^&*()-=+{}[]\":;<>?");
+const auto DEFAULT_BACKLIGHT_CHARS = QStringLiteral("0-8,10-31,127:red;9:#dedede;32,160-255:#f0f0f0;128-159:orange");
 
 QString DefaultTextFont() {
 	QFont fixedFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
@@ -307,13 +307,13 @@ void Load(bool isServer) {
 	const QString filename = ConfigFile();
 	QSettings settings(filename, QSettings::IniFormat);
 
-	shellCommands         = settings.value(QStringLiteral("nedit.shellCommands"), QLatin1String("*")).toString();
-	macroCommands         = settings.value(QStringLiteral("nedit.macroCommands"), QLatin1String("*")).toString();
-	bgMenuCommands        = settings.value(QStringLiteral("nedit.bgMenuCommands"), QLatin1String("*")).toString();
-	highlightPatterns     = settings.value(QStringLiteral("nedit.highlightPatterns"), QLatin1String("*")).toString();
-	languageModes         = settings.value(QStringLiteral("nedit.languageModes"), QLatin1String("*")).toString();
-	smartIndentInit       = settings.value(QStringLiteral("nedit.smartIndentInit"), QLatin1String("*")).toString();
-	smartIndentInitCommon = settings.value(QStringLiteral("nedit.smartIndentInitCommon"), QLatin1String("*")).toString();
+	shellCommands         = settings.value(QStringLiteral("nedit.shellCommands"), QStringLiteral("*")).toString();
+	macroCommands         = settings.value(QStringLiteral("nedit.macroCommands"), QStringLiteral("*")).toString();
+	bgMenuCommands        = settings.value(QStringLiteral("nedit.bgMenuCommands"), QStringLiteral("*")).toString();
+	highlightPatterns     = settings.value(QStringLiteral("nedit.highlightPatterns"), QStringLiteral("*")).toString();
+	languageModes         = settings.value(QStringLiteral("nedit.languageModes"), QStringLiteral("*")).toString();
+	smartIndentInit       = settings.value(QStringLiteral("nedit.smartIndentInit"), QStringLiteral("*")).toString();
+	smartIndentInitCommon = settings.value(QStringLiteral("nedit.smartIndentInitCommon"), QStringLiteral("*")).toString();
 
 	autoWrap          = ReadEnum(settings, QStringLiteral("nedit.autoWrap"), WrapStyle::None);
 	autoIndent        = ReadEnum(settings, QStringLiteral("nedit.autoIndent"), IndentStyle::Auto);
@@ -377,7 +377,7 @@ void Load(bool isServer) {
 	heavyCursor                  = settings.value(QStringLiteral("nedit.heavyCursor"), false).toBool();
 	prefFileRead                 = settings.value(QStringLiteral("nedit.prefFileRead"), false).toBool();
 	findReplaceUsesSelection     = settings.value(QStringLiteral("nedit.findReplaceUsesSelection"), false).toBool();
-	titleFormat                  = settings.value(QStringLiteral("nedit.titleFormat"), QLatin1String("{%c} [%s] %f (%S) - %d")).toString();
+	titleFormat                  = settings.value(QStringLiteral("nedit.titleFormat"), QStringLiteral("{%c} [%s] %f (%S) - %d")).toString();
 	undoModifiesSelection        = settings.value(QStringLiteral("nedit.undoModifiesSelection"), true).toBool();
 	splitHorizontally            = settings.value(QStringLiteral("nedit.splitHorizontally"), false).toBool();
 	truncateLongNamesInTabs      = settings.value(QStringLiteral("nedit.truncateLongNamesInTabs"), 0).toInt();

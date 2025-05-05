@@ -1139,7 +1139,7 @@ HighlightData *FindSubPattern(const HighlightData *pattern, size_t index) {
  * @return A vector of PatternSet objects containing the default patterns.
  */
 std::vector<PatternSet> ReadDefaultPatternSets() {
-	static QByteArray defaultPatternSets = LoadResource(QLatin1String("DefaultPatternSets.yaml"));
+	static QByteArray defaultPatternSets = LoadResource(QStringLiteral("DefaultPatternSets.yaml"));
 	static YAML::Node patternSets        = YAML::Load(defaultPatternSets.data());
 
 	std::vector<PatternSet> defaultPatterns;
@@ -1599,7 +1599,7 @@ size_t FindTopLevelParentIndex(const std::vector<HighlightPattern> &patterns, si
  */
 void LoadHighlightString(const QString &string) {
 
-	if (string == QLatin1String("*")) {
+	if (string == QStringLiteral("*")) {
 
 		YAML::Node patternSets;
 
@@ -1607,7 +1607,7 @@ void LoadHighlightString(const QString &string) {
 		if (QFileInfo::exists(HighlightPatternsFile)) {
 			patternSets = YAML::LoadFile(HighlightPatternsFile.toUtf8().data());
 		} else {
-			static QByteArray defaultPatternSets = LoadResource(QLatin1String("DefaultPatternSets.yaml"));
+			static QByteArray defaultPatternSets = LoadResource(QStringLiteral("DefaultPatternSets.yaml"));
 			patternSets                          = YAML::Load(defaultPatternSets.data());
 		}
 
@@ -1712,7 +1712,7 @@ QString WriteHighlightString() {
 			file.write("\n");
 		}
 
-		return QLatin1String("*");
+		return QStringLiteral("*");
 	} catch (const YAML::Exception &ex) {
 		qWarning("NEdit: Error writing %s in config directory:\n%s", qPrintable(filename), ex.what());
 	}
@@ -1764,7 +1764,7 @@ QString FgColorOfNamedStyle(const QString &styleName) {
 	const size_t styleNo = IndexOfNamedStyle(styleName);
 
 	if (styleNo == StyleNotFound) {
-		return QLatin1String("black");
+		return QStringLiteral("black");
 	}
 
 	return HighlightStyles[styleNo].color;
@@ -1780,7 +1780,7 @@ QString BgColorOfNamedStyle(const QString &styleName) {
 	const size_t styleNo = IndexOfNamedStyle(styleName);
 
 	if (styleNo == StyleNotFound) {
-		return QLatin1String("");
+		return QStringLiteral("");
 	}
 
 	return HighlightStyles[styleNo].bgColor;

@@ -858,8 +858,8 @@ std::optional<HighlightPattern> DialogSyntaxPatterns::readFields(Verbosity verbo
 
 		pat.startRE = outStr;
 
-		static const QRegularExpression re(QLatin1String(R"([^&\\123456789 \t])"));
-		if (pat.startRE.contains(re) || (pat.startRE[0] != QLatin1Char('\\') && pat.startRE[0] != QLatin1Char('&')) || pat.startRE.contains(QLatin1String("\\\\"))) {
+		static const QRegularExpression re(QStringLiteral(R"([^&\\123456789 \t])"));
+		if (pat.startRE.contains(re) || (pat.startRE[0] != QLatin1Char('\\') && pat.startRE[0] != QLatin1Char('&')) || pat.startRE.contains(QStringLiteral("\\\\"))) {
 
 			if (verbosity == Verbosity::Verbose) {
 				QMessageBox::warning(

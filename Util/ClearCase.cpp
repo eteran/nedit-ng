@@ -13,7 +13,7 @@ namespace ClearCase {
  * @return The index of the version extended path, or -1 if not found.
  */
 int GetVersionExtendedPathIndex(const QString &fullname) {
-	return fullname.indexOf(QLatin1String("@@/"));
+	return fullname.indexOf(QStringLiteral("@@/"));
 }
 
 /**

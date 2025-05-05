@@ -257,7 +257,7 @@ int ScanCTagsLine(const QString &line, const QString &tagPath, int index) {
 		const int posTagREEnd = searchString.lastIndexOf(QLatin1Char(';'));
 
 		if (posTagREEnd == -1 ||
-			searchString.mid(posTagREEnd, 2) != QLatin1String(";\"") ||
+			searchString.mid(posTagREEnd, 2) != QStringLiteral(";\"") ||
 			searchString.startsWith(searchString.right(1))) {
 			//  -> original ctags format = exuberant ctags format 1
 		} else {

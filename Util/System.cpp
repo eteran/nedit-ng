@@ -130,20 +130,20 @@ QString buildCompiler() {
 #if defined(Q_CC_CLANG) // must be before GNU, because clang claims to be GNU too
 	QString isAppleString;
 #if defined(__apple_build_version__) // Apple clang has other version numbers
-	isAppleString = QLatin1String(" (Apple)");
+	isAppleString = QStringLiteral(" (Apple)");
 #endif
-	return QLatin1String("Clang ") +
+	return QStringLiteral("Clang ") +
 		   QString::number(__clang_major__) +
 		   QLatin1Char('.') +
 		   QString::number(__clang_minor__) +
 		   isAppleString;
 #elif defined(Q_CC_GNU)
-	return QLatin1String("GCC ") + QLatin1String(__VERSION__);
+	return QStringLiteral("GCC ") + QStringLiteral(__VERSION__);
 #elif defined(Q_CC_MSVC)
-	if (_MSC_VER > 1999) return QLatin1String("MSVC <unknown>");
-	if (_MSC_VER >= 1910) return QLatin1String("MSVC 2017");
-	if (_MSC_VER >= 1900) return QLatin1String("MSVC 2015");
+	if (_MSC_VER > 1999) return QStringLiteral("MSVC <unknown>");
+	if (_MSC_VER >= 1910) return QStringLiteral("MSVC 2017");
+	if (_MSC_VER >= 1900) return QStringLiteral("MSVC 2015");
 #else
-	return QLatin1String("<unknown compiler>");
+	return QStringLiteral("<unknown compiler>");
 #endif
 }

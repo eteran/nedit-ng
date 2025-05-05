@@ -804,9 +804,9 @@ void DocumentWidget::refreshTabState() {
 		if (absTruncate > 3) {
 			if (filename.size() > absTruncate) {
 				if (Settings::truncateLongNamesInTabs > 0) {
-					filename = QStringLiteral("%1%2").arg(QLatin1String("..."), filename.right(absTruncate - 3));
+					filename = QStringLiteral("%1%2").arg(QStringLiteral("..."), filename.right(absTruncate - 3));
 				} else {
-					filename = QStringLiteral("%1%2").arg(filename.left(absTruncate - 3), QLatin1String("..."));
+					filename = QStringLiteral("%1%2").arg(filename.left(absTruncate - 3), QStringLiteral("..."));
 				}
 			}
 		} else {
@@ -4569,7 +4569,7 @@ bool DocumentWidget::backlightChars() const {
  */
 void DocumentWidget::setShowStatisticsLine(bool value) {
 
-	EmitEvent("set_statistics_line", value ? QLatin1String("1") : QLatin1String("0"));
+	EmitEvent("set_statistics_line", value ? QStringLiteral("1") : QStringLiteral("0"));
 
 	// stats line is a shell-level item, so we toggle the button state
 	// regardless of it's 'topness'
@@ -4605,7 +4605,7 @@ bool DocumentWidget::matchSyntaxBased() const {
  */
 void DocumentWidget::setMatchSyntaxBased(bool value) {
 
-	EmitEvent("set_match_syntax_based", value ? QLatin1String("1") : QLatin1String("0"));
+	EmitEvent("set_match_syntax_based", value ? QStringLiteral("1") : QStringLiteral("0"));
 
 	if (isTopDocument()) {
 		if (auto win = MainWindow::fromDocument(this)) {
@@ -4632,7 +4632,7 @@ bool DocumentWidget::overstrike() const {
  */
 void DocumentWidget::setOverstrike(bool overstrike) {
 
-	EmitEvent("set_overtype_mode", overstrike ? QLatin1String("1") : QLatin1String("0"));
+	EmitEvent("set_overtype_mode", overstrike ? QStringLiteral("1") : QStringLiteral("0"));
 
 	if (isTopDocument()) {
 		if (auto win = MainWindow::fromDocument(this)) {
@@ -4978,7 +4978,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 	}
 
 	static constexpr int MaxMessageLength = 4096;
-	static const QRegularExpression trailingNewlines(QLatin1String("\\n+$"));
+	static const QRegularExpression trailingNewlines(QStringLiteral("\\n+$"));
 
 	/* Present error and stderr-information dialogs.  If a command returned
 	   error output, or if the process' exit status indicated failure,
@@ -6635,7 +6635,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 			return nullptr;
 		}
 
-		static const QRegularExpression re(QLatin1String("[0-9]+"));
+		static const QRegularExpression re(QStringLiteral("[0-9]+"));
 
 		{
 			if (!patternSrc[i].startRE.isNull()) {
@@ -7189,7 +7189,7 @@ bool DocumentWidget::makeBackupCopy() const {
  */
 void DocumentWidget::setMakeBackupCopy(bool value) {
 
-	EmitEvent("set_make_backup_copy", value ? QLatin1String("1") : QLatin1String("0"));
+	EmitEvent("set_make_backup_copy", value ? QStringLiteral("1") : QStringLiteral("0"));
 
 	if (isTopDocument()) {
 		if (auto win = MainWindow::fromDocument(this)) {

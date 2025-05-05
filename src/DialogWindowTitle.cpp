@@ -29,12 +29,12 @@ QString CompressWindowTitle(const QString &title) {
 	QString result = title;
 
 	// remove empty brackets
-	result.replace(QLatin1String("()"), QString());
-	result.replace(QLatin1String("{}"), QString());
-	result.replace(QLatin1String("[]"), QString());
+	result.replace(QStringLiteral("()"), QString());
+	result.replace(QStringLiteral("{}"), QString());
+	result.replace(QStringLiteral("[]"), QString());
 
 	// remove leading/trailing whitespace/dashes
-	static const QRegularExpression regex(QLatin1String("((^[\\s-]+)|([\\s-]+$))"));
+	static const QRegularExpression regex(QStringLiteral("((^[\\s-]+)|([\\s-]+$))"));
 	result.replace(regex, QString());
 
 	return result.simplified();
@@ -68,7 +68,7 @@ DialogWindowTitle::DialogWindowTitle(DocumentWidget *document, QWidget *parent, 
 
 	Dialog::shrinkToFit(this);
 
-	static const QRegularExpression rx(QLatin1String("[0-9]"));
+	static const QRegularExpression rx(QStringLiteral("[0-9]"));
 	ui.editDirectory->setValidator(new QRegularExpressionValidator(rx, this));
 
 	/* copy attributes from current this so that we can use as many
@@ -318,9 +318,9 @@ QString DialogWindowTitle::formatWindowTitleAndUpdate(const QString &filename, c
  */
 void DialogWindowTitle::checkFileName_toggled(bool checked) {
 	if (checked) {
-		appendToFormat(QLatin1String(" %f"));
+		appendToFormat(QStringLiteral(" %f"));
 	} else {
-		removeFromFormat(QLatin1String("%f"));
+		removeFromFormat(QStringLiteral("%f"));
 	}
 }
 
@@ -331,9 +331,9 @@ void DialogWindowTitle::checkFileName_toggled(bool checked) {
  */
 void DialogWindowTitle::checkHostName_toggled(bool checked) {
 	if (checked) {
-		appendToFormat(QLatin1String(" [%h]"));
+		appendToFormat(QStringLiteral(" [%h]"));
 	} else {
-		removeFromFormat(QLatin1String("%h"));
+		removeFromFormat(QStringLiteral("%h"));
 	}
 }
 
@@ -347,13 +347,13 @@ void DialogWindowTitle::checkFileStatus_toggled(bool checked) {
 
 	if (checked) {
 		if (ui.checkBrief->isChecked()) {
-			appendToFormat(QLatin1String(" (%*S)"));
+			appendToFormat(QStringLiteral(" (%*S)"));
 		} else {
-			appendToFormat(QLatin1String(" (%S)"));
+			appendToFormat(QStringLiteral(" (%S)"));
 		}
 	} else {
-		removeFromFormat(QLatin1String("%S"));
-		removeFromFormat(QLatin1String("%*S"));
+		removeFromFormat(QStringLiteral("%S"));
+		removeFromFormat(QStringLiteral("%*S"));
 	}
 }
 
@@ -372,10 +372,10 @@ void DialogWindowTitle::checkBrief_toggled(bool checked) {
 
 	if (checked) {
 		// Find all %S occurrences and replace them by %*S
-		format.replace(QLatin1String("%S"), QLatin1String("%*S"));
+		format.replace(QStringLiteral("%S"), QStringLiteral("%*S"));
 	} else {
 		// Replace all %*S occurrences by %S
-		format.replace(QLatin1String("%*S"), QLatin1String("%S"));
+		format.replace(QStringLiteral("%*S"), QStringLiteral("%S"));
 	}
 
 	ui.editFormat->setText(format);
@@ -388,9 +388,9 @@ void DialogWindowTitle::checkBrief_toggled(bool checked) {
  */
 void DialogWindowTitle::checkUserName_toggled(bool checked) {
 	if (checked) {
-		appendToFormat(QLatin1String(" %u"));
+		appendToFormat(QStringLiteral(" %u"));
 	} else {
-		removeFromFormat(QLatin1String("%u"));
+		removeFromFormat(QStringLiteral("%u"));
 	}
 }
 
@@ -401,9 +401,9 @@ void DialogWindowTitle::checkUserName_toggled(bool checked) {
  */
 void DialogWindowTitle::checkClearCase_toggled(bool checked) {
 	if (checked) {
-		appendToFormat(QLatin1String(" {%c}"));
+		appendToFormat(QStringLiteral(" {%c}"));
 	} else {
-		removeFromFormat(QLatin1String("%c"));
+		removeFromFormat(QStringLiteral("%c"));
 	}
 }
 
@@ -414,9 +414,9 @@ void DialogWindowTitle::checkClearCase_toggled(bool checked) {
  */
 void DialogWindowTitle::checkServerName_toggled(bool checked) {
 	if (checked) {
-		appendToFormat(QLatin1String(" [%s]"));
+		appendToFormat(QStringLiteral(" [%s]"));
 	} else {
-		removeFromFormat(QLatin1String("%s"));
+		removeFromFormat(QStringLiteral("%s"));
 	}
 }
 
@@ -448,7 +448,7 @@ void DialogWindowTitle::checkDirectory_toggled(bool checked) {
 		}
 		appendToFormat(buf);
 	} else {
-		removeFromFormat(QLatin1String("%d"));
+		removeFromFormat(QStringLiteral("%d"));
 		for (int i = 1; i < 10; ++i) {
 			removeFromFormat(tr("%%1d").arg(i));
 		}
@@ -561,12 +561,12 @@ void DialogWindowTitle::removeFromFormat(const QString &string) {
 	// the brace(s) for removal
 
 	// NOTE(eteran): this one can't be static because it is parameterized
-	const QRegularExpression re1(tr(R"([\{\(\[\<]?%1[\}\)\]\>]?)").arg(QRegularExpression::escape(string)));
+	const QRegularExpression re1(QStringLiteral(R"([\{\(\[\<]?%1[\}\)\]\>]?)").arg(QRegularExpression::escape(string)));
 	format.replace(re1, QString());
 
 	// remove leading/trailing whitespace/dashes
-	static const QRegularExpression re2(QLatin1String("^[\\s]+"));
-	static const QRegularExpression re3(QLatin1String("[\\s]+$"));
+	static const QRegularExpression re2(QStringLiteral("^[\\s]+"));
+	static const QRegularExpression re3(QStringLiteral("[\\s]+$"));
 	format.replace(re2, QString());
 	format.replace(re3, QString());
 
@@ -588,7 +588,7 @@ void DialogWindowTitle::buttonBox_clicked(QAbstractButton *button) {
 		}
 
 	} else if (ui.buttonBox->standardButton(button) == QDialogButtonBox::RestoreDefaults) {
-		ui.editFormat->setText(QLatin1String("{%c} [%s] %f (%S) - %d"));
+		ui.editFormat->setText(QStringLiteral("{%c} [%s] %f (%S) - %d"));
 	} else if (ui.buttonBox->standardButton(button) == QDialogButtonBox::Help) {
 		Help::displayTopic(Help::Topic::CustomTitleDialog);
 	}
@@ -609,7 +609,7 @@ void DialogWindowTitle::editDirectory_textChanged(const QString &text) {
 	bool ok;
 	const int maxComp = text.toInt(&ok);
 
-	static const QRegularExpression re(QLatin1String("%[0-9]?d"));
+	static const QRegularExpression re(QStringLiteral("%[0-9]?d"));
 
 	if (ok && maxComp > 0) {
 		format.replace(re, tr("%%1d").arg(maxComp));
@@ -713,7 +713,7 @@ QString DialogWindowTitle::formatWindowTitleInternal(const QString &filename, co
 
 						// prefix with ellipsis if components were skipped
 						if (trailingPath != path) {
-							title.append(QLatin1String("..."));
+							title.append(QStringLiteral("..."));
 						}
 						title.append(trailingPath);
 					}

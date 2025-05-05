@@ -42,7 +42,7 @@ QStringList TextAreaMimeData::formats() const {
 
 	if (buffer_->primary.hasSelection()) {
 		static const QStringList f = {
-			QLatin1String("text/plain")};
+			QStringLiteral("text/plain")};
 
 		return f;
 	}

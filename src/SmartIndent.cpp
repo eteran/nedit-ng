@@ -83,7 +83,7 @@ bool IsDefaultIndentSpec(const SmartIndentEntry *indentSpec) {
  * @return A vector of `SmartIndentEntry` objects containing the default indent specifications.
  */
 std::vector<SmartIndentEntry> LoadDefaultIndentSpecs() {
-	static QByteArray defaultIndentRules = LoadResource(QLatin1String("DefaultSmartIndent.yaml"));
+	static QByteArray defaultIndentRules = LoadResource(QStringLiteral("DefaultSmartIndent.yaml"));
 	static YAML::Node indentRules        = YAML::Load(defaultIndentRules.data());
 
 	std::vector<SmartIndentEntry> specs;
@@ -134,7 +134,7 @@ std::vector<SmartIndentEntry> LoadDefaultIndentSpecs() {
  * @return The common macros, or an empty string if not found.
  */
 QString LoadDefaultCommonMacros() {
-	static QByteArray defaultIndentRules = LoadResource(QLatin1String("DefaultSmartIndent.yaml"));
+	static QByteArray defaultIndentRules = LoadResource(QStringLiteral("DefaultSmartIndent.yaml"));
 	static YAML::Node indentRules        = YAML::Load(defaultIndentRules.data());
 
 	for (auto it = indentRules.begin(); it != indentRules.end(); ++it) {
@@ -198,7 +198,7 @@ void LoadSmartIndentFromYaml() {
 		if (QFileInfo::exists(filename)) {
 			indentRules = YAML::LoadFile(filename.toUtf8().data());
 		} else {
-			static QByteArray defaultIndentRules = LoadResource(QLatin1String("DefaultSmartIndent.yaml"));
+			static QByteArray defaultIndentRules = LoadResource(QStringLiteral("DefaultSmartIndent.yaml"));
 			indentRules                          = YAML::Load(defaultIndentRules.data());
 		}
 
@@ -350,7 +350,7 @@ void LoadSmartIndentFromString(const QString &string) {
  */
 void LoadSmartIndentString(const QString &string) {
 
-	if (string == QLatin1String("*")) {
+	if (string == QStringLiteral("*")) {
 		LoadSmartIndentFromYaml();
 	} else {
 		LoadSmartIndentFromString(string);
@@ -368,7 +368,7 @@ void LoadSmartIndentString(const QString &string) {
  */
 void LoadSmartIndentCommonString(const QString &string) {
 
-	if (string != QLatin1String("*")) {
+	if (string != QStringLiteral("*")) {
 		return;
 	}
 
@@ -442,7 +442,7 @@ QString WriteSmartIndentString() {
 			file.write("\n");
 		}
 
-		return QLatin1String("*");
+		return QStringLiteral("*");
 	} catch (const YAML::Exception &ex) {
 		qWarning("NEdit: Error writing %s in config directory:\n%s", qPrintable(filename), ex.what());
 	}
@@ -457,7 +457,7 @@ QString WriteSmartIndentString() {
  *         If the common macros are not set, it returns a default string "*".
  */
 QString WriteSmartIndentCommonString() {
-	return QLatin1String("*");
+	return QStringLiteral("*");
 }
 
 /**

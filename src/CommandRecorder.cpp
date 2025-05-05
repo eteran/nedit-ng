@@ -116,7 +116,7 @@ QString CommandRecorder::quoteString(const QString &s) {
  */
 QString CommandRecorder::escapeString(const QString &s) {
 
-	static const QString EscapeChars = QLatin1String("\\\"\n\t\b\r\f\a\v");
+	static const auto EscapeChars = QStringLiteral("\\\"\n\t\b\r\f\a\v");
 
 	QString r;
 	r.reserve(s.size());
@@ -177,7 +177,7 @@ void CommandRecorder::lastActionHook(const WindowMenuEvent *ev) {
 
 	/* The last action is recorded for the benefit of repeating the last
 	   action.  Don't record repeat_macro and wipe out the real action */
-	if (ev->actionString() == QLatin1String("repeat_macro")) {
+	if (ev->actionString() == QStringLiteral("repeat_macro")) {
 		return;
 	}
 
@@ -209,7 +209,7 @@ void CommandRecorder::lastActionHook(const TextEditEvent *ev) {
 
 	/* The last action is recorded for the benefit of repeating the last
 	   action.  Don't record repeat_macro and wipe out the real action */
-	if (ev->actionString() == QLatin1String("repeat_macro")) {
+	if (ev->actionString() == QStringLiteral("repeat_macro")) {
 		return;
 	}
 

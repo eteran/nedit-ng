@@ -3732,7 +3732,7 @@ void TextArea::setupBGClasses(const QString &str) {
 #else
 			const QStringList rangeList = ranges.split(QLatin1Char(','), QString::SkipEmptyParts);
 #endif
-			static const QRegularExpression regex(QRegularExpression::anchoredPattern(QLatin1String("([0-9]+)(?:-([0-9]+))?")));
+			static const QRegularExpression regex(QRegularExpression::anchoredPattern(QStringLiteral("([0-9]+)(?:-([0-9]+))?")));
 
 			for (const QString &range : rangeList) {
 				const QRegularExpressionMatch match = regex.match(range);

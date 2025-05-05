@@ -1263,9 +1263,9 @@ std::error_code repeatMacroMS(DocumentWidget *document, Arguments arguments, Dat
 	}
 
 	int how;
-	if (howString.compare(QLatin1String("in_selection"), Qt::CaseInsensitive) == 0) {
+	if (howString.compare(QStringLiteral("in_selection"), Qt::CaseInsensitive) == 0) {
 		how = REPEAT_IN_SEL;
-	} else if (howString.compare(QLatin1String("to_end"), Qt::CaseInsensitive) == 0) {
+	} else if (howString.compare(QStringLiteral("to_end"), Qt::CaseInsensitive) == 0) {
 		how = REPEAT_TO_END;
 	} else {
 		bool ok;
@@ -1398,9 +1398,9 @@ std::error_code setShowMatchingMS(DocumentWidget *document, Arguments arguments,
 		   It is quite unlikely, though, that anyone ever used this
 		   action procedure via the macro language or a key binding,
 		   so this can probably be left out safely. */
-		else if (arg == QLatin1String("0")) {
+		else if (arg == QStringLiteral("0")) {
 			document->setShowMatching(ShowMatchingStyle::None);
-		} else if (arg == QLatin1String("1")) {
+		} else if (arg == QStringLiteral("1")) {
 			document->setShowMatching(ShowMatchingStyle::Delimiter);
 		} else {
 			qWarning("NEdit: Invalid argument for set_show_matching");
@@ -1900,7 +1900,7 @@ std::error_code getSelectionMS(DocumentWidget *document, Arguments arguments, Da
 
 		QString text = document->getAnySelection(ErrorSound::Beep);
 		if (text.isNull()) {
-			text = QLatin1String("");
+			text = QStringLiteral("");
 		}
 
 		// Return the text as an allocated string
@@ -2888,7 +2888,7 @@ std::error_code replaceAllMS(DocumentWidget *document, Arguments arguments, Data
 */
 std::error_code filenameDialogMS(DocumentWidget *document, Arguments arguments, DataValue *result) {
 
-	QString title = QLatin1String("Choose Filename");
+	QString title = QStringLiteral("Choose Filename");
 	QString mode  = QStringLiteral("exist");
 	QString defaultPath;
 	QString defaultFilter;
@@ -2943,7 +2943,7 @@ std::error_code filenameDialogMS(DocumentWidget *document, Arguments arguments, 
 
 	//  Set default filter
 	if (defaultFilter.isEmpty()) {
-		defaultFilter = QLatin1String("*");
+		defaultFilter = QStringLiteral("*");
 	}
 
 	QString filename;
@@ -3285,7 +3285,7 @@ std::error_code backlightStringMV(DocumentWidget *document, Arguments arguments,
 	QString backlightString = document->backlightCharTypes();
 
 	if (backlightString.isNull() || !document->backlightChars()) {
-		backlightString = QLatin1String("");
+		backlightString = QStringLiteral("");
 	}
 
 	*result = make_value(backlightString);
@@ -5299,12 +5299,12 @@ bool ReadCheckMacroString(QWidget *dialogParent, const QString &string, Document
 		}
 
 		// look for define keyword, and compile and store defined routines
-		static const QRegularExpression defineRE(QLatin1String("define[ \t]"));
+		static const QRegularExpression defineRE(QStringLiteral("define[ \t]"));
 		if (in.match(defineRE)) {
 			in.skipWhitespace();
 
 			QString routineName;
-			static const QRegularExpression identRE(QLatin1String("[A-Za-z0-9_]+"));
+			static const QRegularExpression identRE(QStringLiteral("[A-Za-z0-9_]+"));
 			if (!in.match(identRE, &routineName)) {
 				if (errPos) {
 					*errPos = in.index();
@@ -5314,7 +5314,7 @@ bool ReadCheckMacroString(QWidget *dialogParent, const QString &string, Document
 					*in.string(),
 					in.index(),
 					errIn,
-					QLatin1String("expected identifier"));
+					QStringLiteral("expected identifier"));
 			}
 
 			in.skipWhitespaceNL();
@@ -5328,7 +5328,7 @@ bool ReadCheckMacroString(QWidget *dialogParent, const QString &string, Document
 					*in.string(),
 					in.index(),
 					errIn,
-					QLatin1String("expected '{'"));
+					QStringLiteral("expected '{'"));
 			}
 
 			const QString code = in.mid();
