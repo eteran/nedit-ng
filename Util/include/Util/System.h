@@ -5,8 +5,8 @@
 #include <QLatin1String>
 #include <QString>
 
-QLatin1String buildOperatingSystem();
-QLatin1String buildArchitecture();
-QString buildCompiler();
+QLatin1String BuildOperatingSystem();
+QLatin1String BuildArchitecture();
+QString BuildCompiler();
 
 #endif

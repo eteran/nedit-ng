@@ -6,7 +6,7 @@
  *
  * @return The operating system name.
  */
-QLatin1String buildOperatingSystem() {
+QLatin1String BuildOperatingSystem() {
 #if defined(Q_OS_AIX)
 	return QLatin1String("AIX");
 #elif defined(Q_OS_BSD4)
@@ -77,7 +77,7 @@ QLatin1String buildOperatingSystem() {
  *
  * @return The architecture name.
  */
-QLatin1String buildArchitecture() {
+QLatin1String BuildArchitecture() {
 #if defined(Q_PROCESSOR_ALPHA)
 	return QLatin1String("alpha");
 #elif defined(Q_PROCESSOR_ARM_32)
@@ -126,7 +126,7 @@ QLatin1String buildArchitecture() {
  *
  * @note adapted from QtCreator src/plugins/coreplugin/icore.cpp: compilerString()
  */
-QString buildCompiler() {
+QString BuildCompiler() {
 #if defined(Q_CC_CLANG) // must be before GNU, because clang claims to be GNU too
 	QString isAppleString;
 #if defined(__apple_build_version__) // Apple clang has other version numbers
@@ -140,9 +140,11 @@ QString buildCompiler() {
 #elif defined(Q_CC_GNU)
 	return QStringLiteral("GCC ") + QStringLiteral(__VERSION__);
 #elif defined(Q_CC_MSVC)
-	if (_MSC_VER > 1999) return QStringLiteral("MSVC <unknown>");
-	if (_MSC_VER >= 1910) return QStringLiteral("MSVC 2017");
-	if (_MSC_VER >= 1900) return QStringLiteral("MSVC 2015");
+	if (_MSC_VER > 1999) return QLatin1String("MSVC <unknown>");
+	if (_MSC_VER >= 1930) return QLatin1String("MSVC 2022");
+	if (_MSC_VER >= 1920) return QLatin1String("MSVC 2019");
+	if (_MSC_VER >= 1910) return QLatin1String("MSVC 2017");
+	if (_MSC_VER >= 1900) return QLatin1String("MSVC 2015");
 #else
 	return QStringLiteral("<unknown compiler>");
 #endif

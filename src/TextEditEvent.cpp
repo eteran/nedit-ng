@@ -3,30 +3,30 @@
 #include "CommandRecorder.h"
 
 /**
- * @brief
+ * @brief Constructor for TextEditEvent.
  *
- * @param macroString
- * @param argument
- * @param flags
+ * @param action The action associated with the event.
+ * @param argument The argument associated with the event.
+ * @param flags The flags associated with the event.
  */
-TextEditEvent::TextEditEvent(QString macroString, TextArea::EventFlags flags, QString argument)
-	: QEvent(eventType), macroString_(std::move(macroString)), argument_(std::move(argument)), flags_(flags) {
+TextEditEvent::TextEditEvent(QString action, TextArea::EventFlags flags, QString argument)
+	: QEvent(eventType), action_(std::move(action)), argument_(std::move(argument)), flags_(flags) {
 }
 
 /**
- * @brief
+ * @brief Constructor for TextEditEvent without an argument.
  *
- * @param macroString
- * @param flags
+ * @param action The action associated with the event.
+ * @param flags The flags associated with the event.
  */
-TextEditEvent::TextEditEvent(QString macroString, TextArea::EventFlags flags)
-	: QEvent(eventType), macroString_(std::move(macroString)), flags_(flags) {
+TextEditEvent::TextEditEvent(QString action, TextArea::EventFlags flags)
+	: QEvent(eventType), action_(std::move(action)), flags_(flags) {
 }
 
 /**
- * @brief
+ * @brief Generates a string representation of the event's arguments.
  *
- * @return
+ * @return A string representation of the event's arguments.
  */
 QString TextEditEvent::argumentString() const {
 	QStringList args;
@@ -85,19 +85,19 @@ QString TextEditEvent::argumentString() const {
 }
 
 /**
- * @brief
+ * @brief Generates a string representation of the event.
  *
- * @return
+ * @return A string representation of the event.
  */
 QString TextEditEvent::toString() const {
-	return QStringLiteral("%1(%2)").arg(macroString_, argumentString());
+	return QStringLiteral("%1(%2)").arg(action_, argumentString());
 }
 
 /**
- * @brief
+ * @brief Returns the action associated with the event.
  *
- * @return
+ * @return The action associated with the event.
  */
 QString TextEditEvent::actionString() const {
-	return macroString_;
+	return action_;
 }

@@ -142,9 +142,9 @@ void PrintVersion() {
 	printf(ncHelpText,
 		   NEDIT_VERSION_MAJ,
 		   NEDIT_VERSION_REV,
-		   buildOperatingSystem().latin1(),
-		   buildArchitecture().latin1(),
-		   buildCompiler().toLatin1().data());
+		   BuildOperatingSystem().latin1(),
+		   BuildArchitecture().latin1(),
+		   BuildCompiler().toLatin1().data());
 }
 
 /**

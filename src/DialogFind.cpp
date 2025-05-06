@@ -272,7 +272,7 @@ std::optional<DialogFind::Fields> DialogFind::readFields() {
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
 		try {
-			auto compiledRE = make_regex(findText, regexDefault);
+			auto compiledRE = MakeRegex(findText, regexDefault);
 		} catch (const RegexError &e) {
 			QMessageBox::warning(
 				this,

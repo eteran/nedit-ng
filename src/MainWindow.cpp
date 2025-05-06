@@ -2915,7 +2915,7 @@ void MainWindow::editIFind_textChanged(const QString &text) {
 	   correct syntax doesn't match) */
 	if (Search::IsRegexType(searchType)) {
 		try {
-			auto compiledRE = make_regex(text, Search::DefaultRegexFlags(searchType));
+			auto compiledRE = MakeRegex(text, Search::DefaultRegexFlags(searchType));
 		} catch (const RegexError &) {
 			return;
 		}

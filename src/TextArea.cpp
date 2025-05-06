@@ -7678,6 +7678,17 @@ void TextArea::TextDKillCalltip(int id) {
 	}
 }
 
+/**
+ * @brief
+ *
+ * @param text
+ * @param anchored
+ * @param pos
+ * @param hAlign
+ * @param vAlign
+ * @param alignMode
+ * @return
+ */
 int TextArea::TextDShowCalltip(const QString &text, bool anchored, CallTipPosition pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode) {
 
 	static int StaticCalltipID = 1;
@@ -7749,64 +7760,63 @@ void TextArea::TextDMaintainAbsLineNum(bool state) {
 }
 
 /**
- * @brief
+ * @brief Returns the text buffer associated with this text area.
  *
- * @return
+ * @return The text buffer.
  */
 TextBuffer *TextArea::buffer() const {
 	return buffer_;
 }
 
 /**
- * @brief
+ * @brief Returns the fixed font width.
  *
- * @return
+ * @return The fixed font width.
  */
 int TextArea::minimumFontWidth() const {
 	return fixedFontWidth_;
 }
 
 /**
- * @brief
+ * @brief The maximum font width.
  *
- * @return
+ * @return The maximum font width.
  */
 int TextArea::maximumFontWidth() const {
 	return fixedFontWidth_;
 }
 
 /**
- * @brief
+ * @brief Returns the number of visible lines in the text area.
  *
- * @return
+ * @return The number of visible lines.
  */
 int64_t TextArea::TextNumVisibleLines() const {
 	return nVisibleLines_;
 }
 
 /**
- * @brief
+ * @brief Returns line number of the first visible line.
  *
- * @return
+ * @return The line number of the first visible line.
  */
 int64_t TextArea::TextFirstVisibleLine() const {
 	return topLineNum_;
 }
 
 /**
- * @brief
+ * @brief Returns the width of the text area that is visible.
  *
- * @return
+ * @return The width of the visible text area.
  */
 int TextArea::TextVisibleWidth() const {
-	const QRect viewRect = viewport()->contentsRect();
-	return viewRect.width();
+	return viewport()->contentsRect().width();
 }
 
 /**
- * @brief
+ * @brief Moves the cursor to the beginning of the selection.
  *
- * @param flags
+ * @param flags Event flags.
  */
 void TextArea::beginningOfSelectionAP(EventFlags flags) {
 
@@ -7825,9 +7835,9 @@ void TextArea::beginningOfSelectionAP(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Deletes the current selection.
  *
- * @param flags
+ * @param flags Event flags.
  */
 void TextArea::deleteSelectionAP(EventFlags flags) {
 
@@ -7842,15 +7852,20 @@ void TextArea::deleteSelectionAP(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Checks if the character is a delimiter.
  *
- * @param ch
- * @return
+ * @param ch Character to check.
+ * @return `true` if the character is a delimiter, `false` otherwise.
  */
 bool TextArea::isDelimeter(char ch) const {
 	return delimiters_.find(ch) != std::string::npos;
 }
 
+/**
+ * @brief Deletes the next word from the cursor position.
+ *
+ * @param flags Event flags
+ */
 void TextArea::deleteNextWordAP(EventFlags flags) {
 
 	EMIT_EVENT_0("delete_next_word");
@@ -7884,6 +7899,11 @@ void TextArea::deleteNextWordAP(EventFlags flags) {
 	callCursorMovementCBs();
 }
 
+/**
+ * @brief Moves the cursor to the end of the selection.
+ *
+ * @param flags Event flags.
+ */
 void TextArea::endOfSelectionAP(EventFlags flags) {
 
 	EMIT_EVENT_0("end_of_selection");
@@ -7900,6 +7920,13 @@ void TextArea::endOfSelectionAP(EventFlags flags) {
 	}
 }
 
+/**
+ * @brief Scroll up by a specified number of lines or pages.
+ *
+ * @param count Number of lines or pages to scroll up.
+ * @param units ScrollUnit indicating whether to scroll by lines or pages.
+ * @param flags
+ */
 void TextArea::scrollUpAP(int count, ScrollUnit units, EventFlags flags) {
 
 	EMIT_EVENT_0("scroll_up");
@@ -7914,6 +7941,13 @@ void TextArea::scrollUpAP(int count, ScrollUnit units, EventFlags flags) {
 	verticalScrollBar()->setValue(prevValue - nLines);
 }
 
+/**
+ * @brief Scroll down by a specified number of lines or pages.
+ *
+ * @param count Number of lines or pages to scroll down.
+ * @param units ScrollUnit indicating whether to scroll by lines or pages.
+ * @param flags Event flags.
+ */
 void TextArea::scrollDownAP(int count, ScrollUnit units, EventFlags flags) {
 
 	EMIT_EVENT_0("scroll_down");
@@ -7927,42 +7961,70 @@ void TextArea::scrollDownAP(int count, ScrollUnit units, EventFlags flags) {
 	verticalScrollBar()->setValue(prevValue + nLines);
 }
 
+/**
+ * @brief Scroll left by a specified number of pixels.
+ *
+ * @param pixels Number of pixels to scroll left.
+ * @param flags Event flags.
+ */
 void TextArea::scrollLeftAP(int pixels, EventFlags flags) {
 	EMIT_EVENT_0("scroll_left");
 	horizontalScrollBar()->setValue(horizontalScrollBar()->value() - pixels);
 }
 
+/**
+ * @brief Scroll right by a specified number of pixels.
+ *
+ * @param pixels Number of pixels to scroll right.
+ * @param flags Event flags.
+ */
 void TextArea::scrollRightAP(int pixels, EventFlags flags) {
 	EMIT_EVENT_0("scroll_right");
 	horizontalScrollBar()->setValue(horizontalScrollBar()->value() + pixels);
 }
 
+/**
+ * @brief Scroll to a specific line in the text area.
+ *
+ * @param line The line number to scroll to.
+ * @param flags Event flags.
+ */
 void TextArea::scrollToLineAP(int line, EventFlags flags) {
 	EMIT_EVENT_0("scroll_to_line");
 	verticalScrollBar()->setValue(line);
 }
 
+/**
+ * @brief Handler for the previous document action.
+ *
+ * @param flags Event flags.
+ */
 void TextArea::previousDocumentAP(EventFlags flags) {
 	EMIT_EVENT_0("previous_document");
 	// handled at higher layer, this is a placeholder
 }
 
+/**
+ * @brief Handler for the next document action.
+ *
+ * @param flags Event flags.
+ */
 void TextArea::nextDocumentAP(EventFlags flags) {
 	EMIT_EVENT_0("next_document");
 	// handled at higher layer, this is a placeholder
 }
 
-/*
-** Remove style information from a text widget and redisplay it.
-*/
+/**
+ * @brief Remove style information from a text widget and redisplay it.
+ */
 void TextArea::removeWidgetHighlight() {
 	attachHighlightData(nullptr, {}, UNFINISHED_STYLE, nullptr, nullptr);
 }
 
 /**
- * @brief
- * Shows the size of the widget in rows/columns.
- * Lifted from Konsole's TerminalDisplay::showResizeNotification
+ * @brief Shows the size of the widget in rows/columns.
+ *
+ * @note Lifted from Konsole's TerminalDisplay::showResizeNotification
  */
 void TextArea::showResizeNotification() {
 	if (showTerminalSizeHint_ && isVisible()) {
@@ -7990,13 +8052,14 @@ void TextArea::showResizeNotification() {
 	}
 }
 
-/*
-** If the selection (or cursor position if there's no selection) is not
-** fully shown, scroll to bring it in to view.  Note that as written,
-** this won't work well with multi-line selections.  Modest re-write
-** of the horizontal scrolling part would be quite easy to make it work
-** well with rectangular selections.
-*/
+/**
+ * @brief Makes the selection visible in the text area.
+ * If the selection (or cursor position if there's no selection) is not
+ * fully shown, scroll to bring it in to view. Note that as written,
+ * this won't work well with multi-line selections. Modest re-write
+ * of the horizontal scrolling part would be quite easy to make it work
+ * well with rectangular selections.
+ */
 void TextArea::makeSelectionVisible() {
 
 	const QRect viewRect = viewport()->contentsRect();
@@ -8089,9 +8152,9 @@ void TextArea::makeSelectionVisible() {
 }
 
 /**
- * @brief
+ * @brief Handles zooming out in the text area.
  *
- * @param flags
+ * @param flags The event flags.
  */
 void TextArea::zoomOutAP(TextArea::EventFlags flags) {
 	Q_UNUSED(flags)
@@ -8108,9 +8171,9 @@ void TextArea::zoomOutAP(TextArea::EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Handles zooming in the text area.
  *
- * @param flags
+ * @param flags The event flags.
  */
 void TextArea::zoomInAP(TextArea::EventFlags flags) {
 	Q_UNUSED(flags)
@@ -8127,9 +8190,9 @@ void TextArea::zoomInAP(TextArea::EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Handles the wheel event for zooming in and out.
  *
- * @param event
+ * @param event The wheel event.
  */
 void TextArea::wheelEvent(QWheelEvent *event) {
 	if (event->modifiers() == Qt::ControlModifier) {
@@ -8144,52 +8207,55 @@ void TextArea::wheelEvent(QWheelEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Determines if the given visible line contains the cursor.
  *
- * @param visLine
- * @param cursor
- * @return
+ * @param visLine The visible line number to check.
+ * @param cursor The cursor position to check.
+ * @return `true` if the visible line contains the cursor, `false` otherwise.
  */
 bool TextArea::visibleLineContainsCursor(int visLine, TextCursor cursor) const {
 	const TextCursor lineStart = lineStarts_[visLine];
 
 	if (lineStart != TextCursor(-1)) {
 		const TextCursor lineEnd = endOfLine(lineStart, /*startPosIsLineStart=*/true);
-		if (cursor >= lineStart && cursor <= lineEnd) {
-			return true;
-		}
+		return (cursor >= lineStart && cursor <= lineEnd);
 	}
 
 	return false;
 }
 
 /**
- * @brief
+ * @brief Returns the document associated with this text area.
  *
- * @return
+ * @return The document associated with this text area.
  */
 DocumentWidget *TextArea::document() const {
 	return document_;
 }
 
 /**
- * @brief
+ * @brief Returns the height of a fixed-width font character.
  *
- * @return
+ * @return The height of a fixed-width font character.
  */
 int TextArea::fixedFontHeight() const {
 	return fixedFontHeight_;
 }
 
 /**
- * @brief
+ * @brief Returns the width of a fixed-width font character.
  *
- * @return
+ * @return The width of a fixed-width font character.
  */
 int TextArea::fixedFontWidth() const {
 	return fixedFontWidth_;
 }
 
+/**
+ * @brief
+ *
+ * @param buffer
+ */
 void TextArea::updatePrimarySelection(const std::shared_ptr<TextBuffer> &buffer) {
 #ifdef Q_OS_UNIX
 	if (QApplication::clipboard()->supportsSelection()) {

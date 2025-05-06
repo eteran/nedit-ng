@@ -5526,7 +5526,7 @@ void DocumentWidget::readMacroFile(const QString &filename, bool warnNotExist) {
 	/* read-in macro file and force a terminating \n, to prevent syntax
 	** errors with statements on the last line
 	*/
-	const QString text = ReadAnyTextFile(filename);
+	const QString text = ReadTextFile(filename);
 	if (text.isNull()) {
 		if (warnNotExist) {
 			QMessageBox::critical(this,
@@ -6804,7 +6804,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 std::unique_ptr<Regex> DocumentWidget::compileRegexAndWarn(const QString &re) {
 
 	try {
-		return make_regex(re, RE_DEFAULT_STANDARD);
+		return MakeRegex(re, RE_DEFAULT_STANDARD);
 	} catch (const RegexError &e) {
 
 		constexpr int MaxLength = 4096;

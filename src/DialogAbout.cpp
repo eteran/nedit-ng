@@ -60,9 +60,9 @@ QString DialogAbout::createInfoString() {
 			  "       Locale: %9\n"
 			  "%10\n")
 		.arg(versionString,
-			 buildOperatingSystem(),
-			 buildArchitecture(),
-			 buildCompiler(),
+			 BuildOperatingSystem(),
+			 BuildArchitecture(),
+			 BuildCompiler(),
 			 QStringLiteral(QT_VERSION_STR),
 			 QString::fromLatin1(qVersion()),
 			 localeString,

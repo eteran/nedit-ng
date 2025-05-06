@@ -628,7 +628,7 @@ std::optional<DialogReplace::Fields> DialogReplace::readFields() {
 		/* If the search type is a regular expression, test compile it
 		   immediately and present error messages */
 		try {
-			auto compiledRE = make_regex(replaceText, regexDefault);
+			auto compiledRE = MakeRegex(replaceText, regexDefault);
 		} catch (const RegexError &e) {
 			QMessageBox::warning(this, tr("Search String"), tr("Please re-specify the search string:\n%1").arg(QString::fromLatin1(e.what())));
 			return {};

@@ -255,7 +255,7 @@ void ConvertFromDos(std::string &text, char *pendingCR) {
  * @param filename The name of the file to read.
  * @return The contents of the file in Unix format, or an empty string if the file could not be read.
  */
-QString ReadAnyTextFile(const QString &filename) {
+QString ReadTextFile(const QString &filename) {
 
 	std::ifstream file(filename.toStdString());
 	if (!file) {
