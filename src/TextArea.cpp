@@ -7744,16 +7744,18 @@ int TextArea::TextDShowCalltip(const QString &text, bool anchored, CallTipPositi
 	return calltip_.ID;
 }
 
-/*
-** In continuous wrap mode, internal line numbers are calculated after
-** wrapping.  A separate non-wrapped line count is maintained when line
-** numbering is turned on.  There is some performance cost to maintaining this
-** line count, so normally absolute line numbers are not tracked if line
-** numbering is off.  This routine allows callers to specify that they still
-** want this line count maintained (for use via TextDPosToLineAndCol).
-** More specifically, this allows the line number reported in the statistics
-** line to be calibrated in absolute lines, rather than post-wrapped lines.
-*/
+/**
+ * @brief In continuous wrap mode, internal line numbers are calculated after
+ * wrapping. A separate non-wrapped line count is maintained when line
+ * numbering is turned on. There is some performance cost to maintaining this
+ * line count, so normally absolute line numbers are not tracked if line
+ * numbering is off. This routine allows callers to specify that they still
+ * want this line count maintained (for use via TextDPosToLineAndCol).
+ * More specifically, this allows the line number reported in the statistics
+ * line to be calibrated in absolute lines, rather than post-wrapped lines.
+ *
+ * @param state
+ */
 void TextArea::TextDMaintainAbsLineNum(bool state) {
 	needAbsTopLineNum_ = state;
 	resetAbsLineNum();
