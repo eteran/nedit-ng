@@ -1,4 +1,3 @@
-#include <iostream>
 
 #include "Common.h"
 #include "Compile.h"
@@ -17,7 +16,6 @@
 #include <cstring>
 #include <limits>
 #include <regex>
-#include <string>
 
 #include <gsl/gsl_util>
 
@@ -398,7 +396,7 @@ uint8_t *Insert(uint8_t op, const uint8_t *insert_pos, uint32_t min, uint32_t ma
  *
  *    \B     Matches any character that is NOT a word-delimiter
  *
- *    Codes for the "emit" parameter:
+ *    Codes for the `Flags` template parameter:
  *
  *    EMIT_NODE
  *       Emit a shortcut node.  Shortcut nodes have an implied set of
@@ -426,11 +424,11 @@ uint8_t *Insert(uint8_t op, const uint8_t *insert_pos, uint32_t min, uint32_t ma
 template <ShortcutEscapeFlag Flags, class Ch>
 uint8_t *ShortcutEscape(Ch ch, int *flag_param) {
 
-	static const char codes[] = "ByYdDlLsSwW";
+	constexpr char codes[] = "ByYdDlLsSwW";
 
-	const char *clazz = nullptr;
-	auto ret_val      = FirstPassToken; // Assume success.
 	const char *valid_codes;
+	const char *class_name = nullptr;
+	auto ret_val           = FirstPassToken; // Assume success.
 
 	if constexpr (Flags == EMIT_CLASS_BYTES || Flags == CHECK_CLASS_ESCAPE) {
 		valid_codes = codes + 3; // \B, \y and \Y are not allowed in classes
@@ -450,15 +448,15 @@ uint8_t *ShortcutEscape(Ch ch, int *flag_param) {
 	case 'd':
 	case 'D':
 		if constexpr (Flags == EMIT_CLASS_BYTES) {
-			clazz = AsciiDigits;
-		} else if (Flags == EMIT_NODE) {
+			class_name = AsciiDigits;
+		} else if constexpr (Flags == EMIT_NODE) {
 			ret_val = (safe_islower(ch) ? EmitNode(DIGIT) : EmitNode(NOT_DIGIT));
 		}
 		break;
 	case 'l':
 	case 'L':
 		if constexpr (Flags == EMIT_CLASS_BYTES) {
-			clazz = LetterChar;
+			class_name = LetterChar;
 		} else if constexpr (Flags == EMIT_NODE) {
 			ret_val = (safe_islower(ch) ? EmitNode(LETTER) : EmitNode(NOT_LETTER));
 		}
@@ -470,7 +468,7 @@ uint8_t *ShortcutEscape(Ch ch, int *flag_param) {
 				EmitByte('\n');
 			}
 
-			clazz = WhiteSpace;
+			class_name = WhiteSpace;
 		} else if constexpr (Flags == EMIT_NODE) {
 			if (pContext.Match_Newline) {
 				ret_val = (safe_islower(ch) ? EmitNode(SPACE_NL) : EmitNode(NOT_SPACE_NL));
@@ -482,8 +480,8 @@ uint8_t *ShortcutEscape(Ch ch, int *flag_param) {
 	case 'w':
 	case 'W':
 		if constexpr (Flags == EMIT_CLASS_BYTES) {
-			clazz = WordChar;
-		} else if (Flags == EMIT_NODE) {
+			class_name = WordChar;
+		} else if constexpr (Flags == EMIT_NODE) {
 			ret_val = (safe_islower(ch) ? EmitNode(WORD_CHAR) : EmitNode(NOT_WORD_CHAR));
 		}
 		break;
@@ -523,13 +521,13 @@ uint8_t *ShortcutEscape(Ch ch, int *flag_param) {
 		*flag_param |= (HAS_WIDTH | SIMPLE);
 	}
 
-	if (clazz) {
+	if (class_name) {
 		// Emit bytes within a character class operand.
 
 		// TODO(eteran): maybe emit the length of the string first
 		// so we don't have to depend on the NUL character during execution
-		while (*clazz != '\0') {
-			EmitByte(*clazz++);
+		while (*class_name != '\0') {
+			EmitByte(*class_name++);
 		}
 	}
 
@@ -1073,9 +1071,9 @@ uint8_t *Piece(int *flag_param, Range &range_param) {
 	uint16_t min_max[2] = {0, REG_INFINITY};
 	int flags_local;
 	int i;
-	int brace_present    = 0;
-	bool comma_present   = false;
-	int digit_present[2] = {0, 0};
+	int brace_present       = 0;
+	bool comma_present      = false;
+	size_t digit_present[2] = {0, 0};
 	Range range_local;
 
 	uint8_t *ret_val = Atom(&flags_local, range_local);

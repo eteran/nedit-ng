@@ -39,7 +39,7 @@ QString GetVersionExtendedPath(const QString &fullname) {
  * @note This function caches the view tag after the first call, so subsequent calls
  * will return the cached value without re-evaluating the environment variable.
  * @note If user has ClearCase and is in a view, CLEARCASE_ROOT will be set and
- * the view tag can be extracted.  This check is safe and efficient enough
+ * the view tag can be extracted. This check is safe and efficient enough
  * that it doesn't impact non-clearcase users, so it is not conditionally
  * compiled. (Thanks to Max Vohlken)
  */

@@ -8273,5 +8273,7 @@ void TextArea::updatePrimarySelection(const std::shared_ptr<TextBuffer> &buffer)
 		auto data = new TextAreaMimeData(buffer);
 		QApplication::clipboard()->setMimeData(data, QClipboard::Selection);
 	}
+#else
+	Q_UNUSED(buffer);
 #endif
 }

@@ -205,7 +205,7 @@ int ExecError(const std::error_code &error_code, T &&...args) {
 	QT_WARNING_DISABLE_GCC("-Wformat-security")
 	static char msg[MaxErrorMessageLen];
 	const std::string str = error_code.message();
-	qsnprintf(msg, sizeof(msg), str.c_str(), std::forward<T>(args)...);
+	snprintf(msg, sizeof(msg), str.c_str(), std::forward<T>(args)...);
 	ErrorMessage = msg;
 	return StatusError;
 	QT_WARNING_POP
@@ -226,7 +226,7 @@ int ExecError(const char *fmt, T &&...args) {
 	QT_WARNING_PUSH
 	QT_WARNING_DISABLE_GCC("-Wformat-security")
 	static char msg[MaxErrorMessageLen];
-	qsnprintf(msg, sizeof(msg), fmt, std::forward<T>(args)...);
+	snprintf(msg, sizeof(msg), fmt, std::forward<T>(args)...);
 	ErrorMessage = msg;
 	return StatusError;
 	QT_WARNING_POP
