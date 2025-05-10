@@ -14,15 +14,15 @@
 namespace Theme {
 namespace {
 
-const auto DEFAULT_TEXT_FG   = QLatin1String("#221f1e");
-const auto DEFAULT_TEXT_BG   = QLatin1String("#d6d2d0");
-const auto DEFAULT_SEL_FG    = QLatin1String("#ffffff");
-const auto DEFAULT_SEL_BG    = QLatin1String("#43ace8");
-const auto DEFAULT_HI_FG     = QLatin1String("white"); /* These are colors for flashing */
-const auto DEFAULT_HI_BG     = QLatin1String("red");   /* matching parens. */
-const auto DEFAULT_LINENO_FG = QLatin1String("black");
-const auto DEFAULT_LINENO_BG = QLatin1String("#d6d2d0");
-const auto DEFAULT_CURSOR_FG = QLatin1String("black");
+const auto DefaultTextFG      = QStringLiteral("#221f1e");
+const auto DefaultTextBG      = QStringLiteral("#d6d2d0");
+const auto DefaultSelFG       = QStringLiteral("#ffffff");
+const auto DefaultSelBG       = QStringLiteral("#43ace8");
+const auto DefaultHighlightFG = QStringLiteral("white"); /* These are colors for flashing */
+const auto DefaultHighlightBG = QStringLiteral("red");   /* matching parens. */
+const auto DefaultLineNumFG   = QStringLiteral("black");
+const auto DefaultLineNumBG   = QStringLiteral("#d6d2d0");
+const auto DefaultCursorFG    = QStringLiteral("black");
 
 }
 
@@ -34,7 +34,7 @@ void Load() {
 
 	QFile file(filename);
 	if (!file.open(QIODevice::ReadOnly)) {
-		file.setFileName(QLatin1String(":/DefaultStyles.xml"));
+		file.setFileName(QStringLiteral(":/DefaultStyles.xml"));
 		if (!file.open(QIODevice::ReadOnly)) {
 			qFatal("NEdit: failed to open theme file!");
 		}
@@ -42,34 +42,34 @@ void Load() {
 
 	QDomDocument xml;
 	if (xml.setContent(&file)) {
-		const QDomElement root = xml.firstChildElement(QLatin1String("theme"));
+		const QDomElement root = xml.firstChildElement(QStringLiteral("theme"));
 
 		// load basic color Settings::..
-		const QDomElement text      = root.firstChildElement(QLatin1String("text"));
-		const QDomElement selection = root.firstChildElement(QLatin1String("selection"));
-		const QDomElement highlight = root.firstChildElement(QLatin1String("highlight"));
-		const QDomElement cursor    = root.firstChildElement(QLatin1String("cursor"));
-		const QDomElement lineno    = root.firstChildElement(QLatin1String("line-numbers"));
+		const QDomElement text      = root.firstChildElement(QStringLiteral("text"));
+		const QDomElement selection = root.firstChildElement(QStringLiteral("selection"));
+		const QDomElement highlight = root.firstChildElement(QStringLiteral("highlight"));
+		const QDomElement cursor    = root.firstChildElement(QStringLiteral("cursor"));
+		const QDomElement lineno    = root.firstChildElement(QStringLiteral("line-numbers"));
 
-		Settings::colors[ColorTypes::TEXT_BG_COLOR]   = text.attribute(QLatin1String("background"), DEFAULT_TEXT_BG);
-		Settings::colors[ColorTypes::TEXT_FG_COLOR]   = text.attribute(QLatin1String("foreground"), DEFAULT_TEXT_FG);
-		Settings::colors[ColorTypes::SELECT_BG_COLOR] = selection.attribute(QLatin1String("background"), DEFAULT_SEL_BG);
-		Settings::colors[ColorTypes::SELECT_FG_COLOR] = selection.attribute(QLatin1String("foreground"), DEFAULT_SEL_FG);
-		Settings::colors[ColorTypes::HILITE_BG_COLOR] = highlight.attribute(QLatin1String("background"), DEFAULT_HI_BG);
-		Settings::colors[ColorTypes::HILITE_FG_COLOR] = highlight.attribute(QLatin1String("foreground"), DEFAULT_HI_FG);
-		Settings::colors[ColorTypes::LINENO_FG_COLOR] = lineno.attribute(QLatin1String("foreground"), DEFAULT_LINENO_FG);
-		Settings::colors[ColorTypes::LINENO_BG_COLOR] = lineno.attribute(QLatin1String("background"), DEFAULT_LINENO_BG);
-		Settings::colors[ColorTypes::CURSOR_FG_COLOR] = cursor.attribute(QLatin1String("foreground"), DEFAULT_CURSOR_FG);
+		Settings::colors[ColorTypes::TEXT_BG_COLOR]   = text.attribute(QStringLiteral("background"), DefaultTextBG);
+		Settings::colors[ColorTypes::TEXT_FG_COLOR]   = text.attribute(QStringLiteral("foreground"), DefaultTextFG);
+		Settings::colors[ColorTypes::SELECT_BG_COLOR] = selection.attribute(QStringLiteral("background"), DefaultSelBG);
+		Settings::colors[ColorTypes::SELECT_FG_COLOR] = selection.attribute(QStringLiteral("foreground"), DefaultSelFG);
+		Settings::colors[ColorTypes::HILITE_BG_COLOR] = highlight.attribute(QStringLiteral("background"), DefaultHighlightBG);
+		Settings::colors[ColorTypes::HILITE_FG_COLOR] = highlight.attribute(QStringLiteral("foreground"), DefaultHighlightFG);
+		Settings::colors[ColorTypes::LINENO_FG_COLOR] = lineno.attribute(QStringLiteral("foreground"), DefaultLineNumFG);
+		Settings::colors[ColorTypes::LINENO_BG_COLOR] = lineno.attribute(QStringLiteral("background"), DefaultLineNumBG);
+		Settings::colors[ColorTypes::CURSOR_FG_COLOR] = cursor.attribute(QStringLiteral("foreground"), DefaultCursorFG);
 
 		// load styles for syntax highlighting...
-		QDomElement style = root.firstChildElement(QLatin1String("style"));
-		for (; !style.isNull(); style = style.nextSiblingElement(QLatin1String("style"))) {
+		QDomElement style = root.firstChildElement(QStringLiteral("style"));
+		for (; !style.isNull(); style = style.nextSiblingElement(QStringLiteral("style"))) {
 
 			HighlightStyle hs;
-			hs.name            = style.attribute(QLatin1String("name"));
-			hs.color           = style.attribute(QLatin1String("foreground"), QLatin1String("black"));
-			hs.bgColor         = style.attribute(QLatin1String("background"), QString());
-			const QString font = style.attribute(QLatin1String("font"), QLatin1String("Plain"));
+			hs.name            = style.attribute(QStringLiteral("name"));
+			hs.color           = style.attribute(QStringLiteral("foreground"), QStringLiteral("black"));
+			hs.bgColor         = style.attribute(QStringLiteral("background"), QString());
+			const QString font = style.attribute(QStringLiteral("font"), QStringLiteral("Plain"));
 
 			if (hs.name.isEmpty()) {
 				qWarning("NEdit: style name required");
@@ -82,13 +82,13 @@ void Load() {
 			}
 
 			// map the font to it's associated value
-			if (font == QLatin1String("Plain")) {
+			if (font == QStringLiteral("Plain")) {
 				hs.font = Font::Plain;
-			} else if (font == QLatin1String("Italic")) {
+			} else if (font == QStringLiteral("Italic")) {
 				hs.font = Font::Italic;
-			} else if (font == QLatin1String("Bold")) {
+			} else if (font == QStringLiteral("Bold")) {
 				hs.font = Font::Bold;
-			} else if (font == QLatin1String("Bold Italic")) {
+			} else if (font == QStringLiteral("Bold Italic")) {
 				hs.font = Font::Italic | Font::Bold;
 			} else {
 				qWarning("NEdit: unrecognized font type %s in %s", qPrintable(font), qPrintable(hs.name));
@@ -112,71 +112,71 @@ void Save() {
 	QFile file(filename);
 	if (file.open(QIODevice::WriteOnly)) {
 		QDomDocument xml;
-		const QDomProcessingInstruction pi = xml.createProcessingInstruction(QLatin1String("xml"), QLatin1String(R"(version="1.0" encoding="UTF-8")"));
+		const QDomProcessingInstruction pi = xml.createProcessingInstruction(QStringLiteral("xml"), QStringLiteral(R"(version="1.0" encoding="UTF-8")"));
 
 		xml.appendChild(pi);
 
-		QDomElement root = xml.createElement(QLatin1String("theme"));
-		root.setAttribute(QLatin1String("name"), QLatin1String("default"));
+		QDomElement root = xml.createElement(QStringLiteral("theme"));
+		root.setAttribute(QStringLiteral("name"), QStringLiteral("default"));
 		xml.appendChild(root);
 
 		// save basic color Settings::..
 		{
-			QDomElement text = xml.createElement(QLatin1String("text"));
-			text.setAttribute(QLatin1String("foreground"), Settings::colors[ColorTypes::TEXT_FG_COLOR]);
-			text.setAttribute(QLatin1String("background"), Settings::colors[ColorTypes::TEXT_BG_COLOR]);
+			QDomElement text = xml.createElement(QStringLiteral("text"));
+			text.setAttribute(QStringLiteral("foreground"), Settings::colors[ColorTypes::TEXT_FG_COLOR]);
+			text.setAttribute(QStringLiteral("background"), Settings::colors[ColorTypes::TEXT_BG_COLOR]);
 			root.appendChild(text);
 		}
 
 		{
-			QDomElement selection = xml.createElement(QLatin1String("selection"));
-			selection.setAttribute(QLatin1String("foreground"), Settings::colors[ColorTypes::SELECT_FG_COLOR]);
-			selection.setAttribute(QLatin1String("background"), Settings::colors[ColorTypes::SELECT_BG_COLOR]);
+			QDomElement selection = xml.createElement(QStringLiteral("selection"));
+			selection.setAttribute(QStringLiteral("foreground"), Settings::colors[ColorTypes::SELECT_FG_COLOR]);
+			selection.setAttribute(QStringLiteral("background"), Settings::colors[ColorTypes::SELECT_BG_COLOR]);
 			root.appendChild(selection);
 		}
 
 		{
-			QDomElement highlight = xml.createElement(QLatin1String("highlight"));
-			highlight.setAttribute(QLatin1String("foreground"), Settings::colors[ColorTypes::HILITE_FG_COLOR]);
-			highlight.setAttribute(QLatin1String("background"), Settings::colors[ColorTypes::HILITE_BG_COLOR]);
+			QDomElement highlight = xml.createElement(QStringLiteral("highlight"));
+			highlight.setAttribute(QStringLiteral("foreground"), Settings::colors[ColorTypes::HILITE_FG_COLOR]);
+			highlight.setAttribute(QStringLiteral("background"), Settings::colors[ColorTypes::HILITE_BG_COLOR]);
 			root.appendChild(highlight);
 		}
 
 		{
-			QDomElement cursor = xml.createElement(QLatin1String("cursor"));
-			cursor.setAttribute(QLatin1String("foreground"), Settings::colors[ColorTypes::CURSOR_FG_COLOR]);
+			QDomElement cursor = xml.createElement(QStringLiteral("cursor"));
+			cursor.setAttribute(QStringLiteral("foreground"), Settings::colors[ColorTypes::CURSOR_FG_COLOR]);
 			root.appendChild(cursor);
 		}
 
 		{
-			QDomElement lineno = xml.createElement(QLatin1String("line-numbers"));
-			lineno.setAttribute(QLatin1String("foreground"), Settings::colors[ColorTypes::LINENO_FG_COLOR]);
-			lineno.setAttribute(QLatin1String("background"), Settings::colors[ColorTypes::LINENO_BG_COLOR]);
+			QDomElement lineno = xml.createElement(QStringLiteral("line-numbers"));
+			lineno.setAttribute(QStringLiteral("foreground"), Settings::colors[ColorTypes::LINENO_FG_COLOR]);
+			lineno.setAttribute(QStringLiteral("background"), Settings::colors[ColorTypes::LINENO_BG_COLOR]);
 			root.appendChild(lineno);
 		}
 
 		// save styles for syntax highlighting...
 		for (const HighlightStyle &hs : Highlight::HighlightStyles) {
-			QDomElement style = xml.createElement(QLatin1String("style"));
-			style.setAttribute(QLatin1String("name"), hs.name);
-			style.setAttribute(QLatin1String("foreground"), hs.color);
+			QDomElement style = xml.createElement(QStringLiteral("style"));
+			style.setAttribute(QStringLiteral("name"), hs.name);
+			style.setAttribute(QStringLiteral("foreground"), hs.color);
 			if (!hs.bgColor.isEmpty()) {
-				style.setAttribute(QLatin1String("background"), hs.bgColor);
+				style.setAttribute(QStringLiteral("background"), hs.bgColor);
 			}
 
 			// map the font to it's associated value
 			switch (hs.font) {
 			case Font::Plain:
-				style.setAttribute(QLatin1String("font"), QLatin1String("Plain"));
+				style.setAttribute(QStringLiteral("font"), QStringLiteral("Plain"));
 				break;
 			case Font::Italic:
-				style.setAttribute(QLatin1String("font"), QLatin1String("Italic"));
+				style.setAttribute(QStringLiteral("font"), QStringLiteral("Italic"));
 				break;
 			case Font::Bold:
-				style.setAttribute(QLatin1String("font"), QLatin1String("Bold"));
+				style.setAttribute(QStringLiteral("font"), QStringLiteral("Bold"));
 				break;
 			case Font::Italic | Font::Bold:
-				style.setAttribute(QLatin1String("font"), QLatin1String("Bold Italic"));
+				style.setAttribute(QStringLiteral("font"), QStringLiteral("Bold Italic"));
 				break;
 			default:
 				qFatal("NEdit: internal error saving theme file");

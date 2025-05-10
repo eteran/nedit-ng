@@ -1,4 +1,3 @@
-#include <iostream>
 
 #include "Common.h"
 #include "Compile.h"
@@ -17,7 +16,6 @@
 #include <cstring>
 #include <limits>
 #include <regex>
-#include <string>
 
 #include <gsl/gsl_util>
 
@@ -73,7 +71,7 @@ char LetterChar[AlnumCharSize];  // InitAnsiClasses() and ShortcutEscape().
  * @param ptr The current node.
  * @return The next node, or nullptr if there is no next node.
  *
- * @note A simplified inline version is available via NEXT_PTR().
+ * @note A slightly simplified inline version is available via NextPointer().
  */
 uint8_t *NextPtr(uint8_t *ptr) noexcept {
 
@@ -81,13 +79,13 @@ uint8_t *NextPtr(uint8_t *ptr) noexcept {
 		return nullptr;
 	}
 
-	const int offset = GET_OFFSET(ptr);
+	const int offset = GetOffset(ptr);
 
 	if (offset == 0) {
 		return nullptr;
 	}
 
-	if (GET_OP_CODE(ptr) == BACK) {
+	if (GetOpCode(ptr) == BACK) {
 		return (ptr - offset);
 	}
 
@@ -313,7 +311,7 @@ void Tail(uint8_t *search_from, const uint8_t *point_to) {
 	}
 
 	int64_t offset;
-	if (GET_OP_CODE(scan) == BACK) {
+	if (GetOpCode(scan) == BACK) {
 		offset = scan - point_to;
 	} else {
 		offset = point_to - scan;
@@ -379,7 +377,7 @@ uint8_t *Insert(uint8_t op, const uint8_t *insert_pos, uint32_t min, uint32_t ma
 	}
 
 	pContext.Code.insert(pContext.Code.begin() + offset, new_node, ptr);
-	return &pContext.Code[offset]; // Return a pointer to the start of the code moved.
+	return &pContext.Code[static_cast<size_t>(offset)]; // Return a pointer to the start of the code moved.
 }
 
 /**
@@ -398,7 +396,7 @@ uint8_t *Insert(uint8_t op, const uint8_t *insert_pos, uint32_t min, uint32_t ma
  *
  *    \B     Matches any character that is NOT a word-delimiter
  *
- *    Codes for the "emit" parameter:
+ *    Codes for the `Flags` template parameter:
  *
  *    EMIT_NODE
  *       Emit a shortcut node.  Shortcut nodes have an implied set of
@@ -426,11 +424,11 @@ uint8_t *Insert(uint8_t op, const uint8_t *insert_pos, uint32_t min, uint32_t ma
 template <ShortcutEscapeFlag Flags, class Ch>
 uint8_t *ShortcutEscape(Ch ch, int *flag_param) {
 
-	static const char codes[] = "ByYdDlLsSwW";
+	constexpr char codes[] = "ByYdDlLsSwW";
 
-	const char *clazz = nullptr;
-	auto ret_val      = FirstPassToken; // Assume success.
 	const char *valid_codes;
+	const char *class_name = nullptr;
+	auto ret_val           = FirstPassToken; // Assume success.
 
 	if constexpr (Flags == EMIT_CLASS_BYTES || Flags == CHECK_CLASS_ESCAPE) {
 		valid_codes = codes + 3; // \B, \y and \Y are not allowed in classes
@@ -450,15 +448,15 @@ uint8_t *ShortcutEscape(Ch ch, int *flag_param) {
 	case 'd':
 	case 'D':
 		if constexpr (Flags == EMIT_CLASS_BYTES) {
-			clazz = AsciiDigits;
-		} else if (Flags == EMIT_NODE) {
+			class_name = AsciiDigits;
+		} else if constexpr (Flags == EMIT_NODE) {
 			ret_val = (safe_islower(ch) ? EmitNode(DIGIT) : EmitNode(NOT_DIGIT));
 		}
 		break;
 	case 'l':
 	case 'L':
 		if constexpr (Flags == EMIT_CLASS_BYTES) {
-			clazz = LetterChar;
+			class_name = LetterChar;
 		} else if constexpr (Flags == EMIT_NODE) {
 			ret_val = (safe_islower(ch) ? EmitNode(LETTER) : EmitNode(NOT_LETTER));
 		}
@@ -470,7 +468,7 @@ uint8_t *ShortcutEscape(Ch ch, int *flag_param) {
 				EmitByte('\n');
 			}
 
-			clazz = WhiteSpace;
+			class_name = WhiteSpace;
 		} else if constexpr (Flags == EMIT_NODE) {
 			if (pContext.Match_Newline) {
 				ret_val = (safe_islower(ch) ? EmitNode(SPACE_NL) : EmitNode(NOT_SPACE_NL));
@@ -482,8 +480,8 @@ uint8_t *ShortcutEscape(Ch ch, int *flag_param) {
 	case 'w':
 	case 'W':
 		if constexpr (Flags == EMIT_CLASS_BYTES) {
-			clazz = WordChar;
-		} else if (Flags == EMIT_NODE) {
+			class_name = WordChar;
+		} else if constexpr (Flags == EMIT_NODE) {
 			ret_val = (safe_islower(ch) ? EmitNode(WORD_CHAR) : EmitNode(NOT_WORD_CHAR));
 		}
 		break;
@@ -523,13 +521,13 @@ uint8_t *ShortcutEscape(Ch ch, int *flag_param) {
 		*flag_param |= (HAS_WIDTH | SIMPLE);
 	}
 
-	if (clazz) {
+	if (class_name) {
 		// Emit bytes within a character class operand.
 
 		// TODO(eteran): maybe emit the length of the string first
 		// so we don't have to depend on the NUL character during execution
-		while (*clazz != '\0') {
-			EmitByte(*clazz++);
+		while (*class_name != '\0') {
+			EmitByte(*class_name++);
 		}
 	}
 
@@ -558,7 +556,7 @@ void OffsetTail(uint8_t *ptr, int offset, uint8_t *val) {
  */
 void BranchTail(uint8_t *ptr, int offset, uint8_t *val) {
 
-	if (pContext.FirstPass || !ptr || GET_OP_CODE(ptr) != BRANCH) {
+	if (pContext.FirstPass || !ptr || GetOpCode(ptr) != BRANCH) {
 		return;
 	}
 
@@ -569,7 +567,7 @@ void BranchTail(uint8_t *ptr, int offset, uint8_t *val) {
  * @brief Process a request to match a previous parenthesized thing.
  * Parenthetical entities are numbered beginning at 1 by counting
  * opening parentheses from left to to right.  \0 would represent
- * whole match, but would confuse numeric_escape as an octal escape,
+ * whole match, but would confuse NumericEscape as an octal escape,
  * so it is forbidden.
  *
  * Constructs of the form \~1, \~2, etc. are cross-regex back
@@ -600,7 +598,7 @@ uint8_t *BackRef(Reader reader, int *flag_param) {
 
 	auto paren_no = static_cast<uint8_t>((*digit)[0] - '0');
 
-	// Should be caught by numeric_escape.
+	// Should be caught by NumericEscape.
 	if (paren_no == 0) {
 		return nullptr;
 	}
@@ -838,9 +836,9 @@ uint8_t *Atom(int *flag_param, Range &range_param) {
 						   since shortcut escapes represent a set of characters,
 						   and it would not be clear which character of the
 						   class should be treated as the "last" character. */
-						if ((test = numeric_escape<uint8_t>(pContext.Reg_Parse.peek(), &pContext.Reg_Parse))) {
+						if ((test = NumericEscape<uint8_t>(pContext.Reg_Parse.peek(), &pContext.Reg_Parse))) {
 							last_value = test;
-						} else if ((test = literal_escape<uint8_t>(pContext.Reg_Parse.peek()))) {
+						} else if ((test = LiteralEscape<uint8_t>(pContext.Reg_Parse.peek()))) {
 							last_value = test;
 						} else if (ShortcutEscape<CHECK_CLASS_ESCAPE>(pContext.Reg_Parse.peek(), nullptr)) {
 							Raise<RegexError>("\\%c is not allowed as range operand", pContext.Reg_Parse.peek());
@@ -879,11 +877,11 @@ uint8_t *Atom(int *flag_param, Range &range_param) {
 				} // End class character range code.
 			} else if (pContext.Reg_Parse.match('\\')) {
 
-				if ((test = numeric_escape<uint8_t>(pContext.Reg_Parse.peek(), &pContext.Reg_Parse)) != '\0') {
+				if ((test = NumericEscape<uint8_t>(pContext.Reg_Parse.peek(), &pContext.Reg_Parse)) != '\0') {
 					EmitClassByte(test);
 
 					last_emit = test;
-				} else if ((test = literal_escape<uint8_t>(pContext.Reg_Parse.peek())) != '\0') {
+				} else if ((test = LiteralEscape<uint8_t>(pContext.Reg_Parse.peek())) != '\0') {
 					EmitByte(test);
 					last_emit = test;
 				} else if (ShortcutEscape<CHECK_CLASS_ESCAPE>(pContext.Reg_Parse.peek(), nullptr)) {
@@ -981,13 +979,13 @@ uint8_t *Atom(int *flag_param, Range &range_param) {
 
 					// at the escaped character
 
-					if ((test = numeric_escape<uint8_t>(pContext.Reg_Parse.peek(), &pContext.Reg_Parse))) {
+					if ((test = NumericEscape<uint8_t>(pContext.Reg_Parse.peek(), &pContext.Reg_Parse))) {
 						if (pContext.Is_Case_Insensitive) {
 							EmitByte(safe_tolower(test));
 						} else {
 							EmitByte(test);
 						}
-					} else if ((test = literal_escape<uint8_t>(pContext.Reg_Parse.peek()))) {
+					} else if ((test = LiteralEscape<uint8_t>(pContext.Reg_Parse.peek()))) {
 						EmitByte(test);
 					} else if (BackRef<CHECK_ESCAPE>(pContext.Reg_Parse, nullptr)) {
 						// Leave back reference for next 'atom' call
@@ -1070,12 +1068,12 @@ uint8_t *Atom(int *flag_param, Range &range_param) {
 uint8_t *Piece(int *flag_param, Range &range_param) {
 
 	uint8_t *next;
-	uint32_t min_max[2] = {0, REG_INFINITY};
+	uint16_t min_max[2] = {0, REG_INFINITY};
 	int flags_local;
 	int i;
-	int brace_present    = 0;
-	bool comma_present   = false;
-	int digit_present[2] = {0, 0};
+	int brace_present     = 0;
+	bool comma_present    = false;
+	bool digit_present[2] = {false, false};
 	Range range_local;
 
 	uint8_t *ret_val = Atom(&flags_local, range_local);
@@ -1119,7 +1117,7 @@ uint8_t *Piece(int *flag_param, Range &range_param) {
 
 			if (auto digits = pContext.Reg_Parse.match(std::regex("[0-9]+"))) {
 
-				digit_present[i] = digits->size();
+				digit_present[i] = digits->size() != 0;
 
 				const char *ptr = digits->data();
 				auto result     = std::from_chars(ptr, ptr + digits->size(), min_max[i]);
@@ -1829,7 +1827,7 @@ uint8_t *Chunk(int paren, int *flag_param, Range &range_param) {
 			if (pContext.Reg_Parse.peek(1) == ',' || pContext.Reg_Parse.peek(1) == '}') {
 				zero_width++;
 			} else if (pContext.Reg_Parse.peek(1) == '0') {
-				int i = 2;
+				size_t i = 2;
 
 				while (pContext.Reg_Parse.peek(i) == '0') {
 					i++;
@@ -1975,22 +1973,22 @@ Regex::Regex(std::string_view exp, int defaultFlags) {
 	// First BRANCH.
 	uint8_t *scan = (&re->program[REGEX_START_OFFSET]);
 
-	if (GET_OP_CODE(NextPtr(scan)) == END) { // Only one top-level choice.
-		scan = OPERAND(scan);
+	if (GetOpCode(NextPtr(scan)) == END) { // Only one top-level choice.
+		scan = Operand(scan);
 
 		// Starting-point info.
-		if (GET_OP_CODE(scan) == EXACTLY) {
-			re->match_start = static_cast<char>(*OPERAND(scan));
+		if (GetOpCode(scan) == EXACTLY) {
+			re->match_start = static_cast<char>(*Operand(scan));
 
-		} else if (PLUS <= GET_OP_CODE(scan) && GET_OP_CODE(scan) <= LAZY_PLUS) {
+		} else if (PLUS <= GetOpCode(scan) && GetOpCode(scan) <= LAZY_PLUS) {
 
 			/* Allow x+ or x+? at the start of the regex to be
 			   optimized. */
 
-			if (GET_OP_CODE(scan + NODE_SIZE<size_t>) == EXACTLY) {
-				re->match_start = static_cast<char>(*OPERAND(scan + NODE_SIZE<size_t>));
+			if (GetOpCode(scan + NODE_SIZE<size_t>) == EXACTLY) {
+				re->match_start = static_cast<char>(*Operand(scan + NODE_SIZE<size_t>));
 			}
-		} else if (GET_OP_CODE(scan) == BOL) {
+		} else if (GetOpCode(scan) == BOL) {
 			re->anchor++;
 		}
 	}

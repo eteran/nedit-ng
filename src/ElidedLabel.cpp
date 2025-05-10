@@ -117,7 +117,7 @@ void ElidedLabel::squeezeTextToLabel() {
 	}
 
 	if (squeezed) {
-		QLabel::setText(squeezedLines.join(QLatin1String("\n")));
+		QLabel::setText(squeezedLines.join(QStringLiteral("\n")));
 		setToolTip(fullText_);
 	} else {
 		QLabel::setText(fullText_);
@@ -220,7 +220,7 @@ void ElidedLabel::keyPressEvent(QKeyEvent *event) {
 
 			// Strip markup tags
 			if (textFormat() == Qt::RichText || (textFormat() == Qt::AutoText && Qt::mightBeRichText(txt))) {
-				txt.replace(QRegularExpression(QLatin1String("<[^>]*>")), QString());
+				txt.replace(QRegularExpression(QStringLiteral("<[^>]*>")), QString());
 				// account for stripped characters
 				charsAfterSelection -= fullText_.length() - txt.length();
 			}
@@ -258,7 +258,7 @@ void ElidedLabel::mouseReleaseEvent(QMouseEvent *event) {
 
 			// Strip markup tags
 			if (textFormat() == Qt::RichText || (textFormat() == Qt::AutoText && Qt::mightBeRichText(txt))) {
-				txt.replace(QRegularExpression(QLatin1String("<[^>]*>")), QString());
+				txt.replace(QRegularExpression(QStringLiteral("<[^>]*>")), QString());
 				// account for stripped characters
 				charsAfterSelection -= fullText_.length() - txt.length();
 			}

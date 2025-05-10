@@ -9,26 +9,30 @@
 #include <cassert>
 #include <cstring>
 
-/*
-** Get the entire contents of a text buffer.
-*/
+/**
+ * @brief  Get the entire contents of a text buffer.
+ *
+ * @return A string containing the entire contents of the text buffer.
+ */
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetAll() const -> string_type {
 	return buffer_.to_string();
 }
 
-/*
-** Get the entire contents of a text buffer as a read-only view of
-** contiguous characters
-*/
+/**
+ * @brief  Get the entire contents of a text buffer as a read-only view of
+ * contiguous characters
+ *
+ * @return A read-only view of the entire contents of the text buffer.
+ */
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufAsString() noexcept -> view_type {
 	return buffer_.to_view();
 }
 
-/*
-** Replace the entire contents of the text buffer
-*/
+/**
+ * @brief Replace the entire contents of the text buffer
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufSetAll(view_type text) {
 
@@ -49,15 +53,24 @@ void BasicTextBuffer<Ch, Tr>::BufSetAll(view_type text) {
 	callModifyCBs(BufStartOfBuffer(), deleteLength, insertLength, 0, deletedText);
 }
 
-/*
-** Return a copy of the text between "start" and "end" character positions
-** Positions start at 0, and the range does not include the character pointed to by "end"
-*/
+/**
+ * @brief Returns a copy of the text between "start" and "end" character positions.
+ *
+ * @param range The range of text to retrieve.
+ * @return A string containing the text between the specified positions.
+ */
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetRange(TextRange range) const -> string_type {
 	return BufGetRange(range.start, range.end);
 }
 
+/**
+ * @brief Returns a copy of the text between "start" and "end" character positions.
+ *
+ * @param start The starting position of the range.
+ * @param end The ending position of the range.
+ * @return A string containing the text between the specified positions.
+ */
 template <class Ch, class Tr>
 auto BasicTextBuffer<Ch, Tr>::BufGetRange(TextCursor start, TextCursor end) const -> string_type {
 
@@ -66,7 +79,9 @@ auto BasicTextBuffer<Ch, Tr>::BufGetRange(TextCursor start, TextCursor end) cons
 }
 
 /**
+ * @brief Returns the first character in the buffer.
  *
+ * @return The first character in the buffer.
  */
 template <class Ch, class Tr>
 Ch BasicTextBuffer<Ch, Tr>::front() const noexcept {
@@ -74,16 +89,21 @@ Ch BasicTextBuffer<Ch, Tr>::front() const noexcept {
 }
 
 /**
+ * @brief Returns the last character in the buffer.
  *
+ * @return The last character in the buffer.
  */
 template <class Ch, class Tr>
 Ch BasicTextBuffer<Ch, Tr>::back() const noexcept {
 	return BufGetCharacter(BufEndOfBuffer() - 1);
 }
 
-/*
-** Return the character at buffer position "pos".  Positions start at 0.
-*/
+/**
+ * @brief Returns the character at the specified position in the buffer.
+ *
+ * @param pos The position of the character to retrieve.
+ * @return The character at the specified position, or a default-constructed character if the position is out of bounds.
+ */
 template <class Ch, class Tr>
 Ch BasicTextBuffer<Ch, Tr>::BufGetCharacter(TextCursor pos) const noexcept {
 
@@ -95,8 +115,15 @@ Ch BasicTextBuffer<Ch, Tr>::BufGetCharacter(TextCursor pos) const noexcept {
 }
 
 /*
-** Insert string "text" at position "pos"
+**
 */
+
+/**
+ * @brief Insert string `text` at position `pos`
+ *
+ * @param pos The position to insert the text at.
+ * @param text The text to insert.
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufInsert(TextCursor pos, view_type text) noexcept {
 
@@ -112,6 +139,12 @@ void BasicTextBuffer<Ch, Tr>::BufInsert(TextCursor pos, view_type text) noexcept
 	callModifyCBs(pos, 0, nInserted, 0, {});
 }
 
+/**
+ * @brief
+ *
+ * @param pos
+ * @param ch
+ */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::BufInsert(TextCursor pos, Ch ch) noexcept {
 
@@ -2191,13 +2224,11 @@ std::optional<SelectionPos> BasicTextBuffer<Ch, Tr>::Selection::getSelectionPos(
 }
 
 /**
- * @brief
+ * @brief Update an individual selection for changes in the corresponding text
  *
  * @param pos
  * @param nDeleted
  * @param nInserted
- *
- * Update an individual selection for changes in the corresponding text
  */
 template <class Ch, class Tr>
 void BasicTextBuffer<Ch, Tr>::Selection::updateSelection(TextCursor pos, int64_t nDeleted, int64_t nInserted) {

@@ -5,7 +5,7 @@
 struct Program;
 class QString;
 
-Program *compileMacro(const QString &expr, QString *message, int *stoppedAt);
-bool isMacroValid(const QString &expr, QString *message, int *stoppedAt);
+Program *CompileMacro(const QString &expr, QString *message, int *stoppedAt);
+bool IsMacroValid(const QString &expr, QString *message, int *stoppedAt);
 
 #endif

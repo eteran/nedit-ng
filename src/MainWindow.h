@@ -144,8 +144,8 @@ public:
 	static void addToPrevOpenMenu(const QString &filename);
 	static void allDocumentsBusy(const QString &message);
 	static void allDocumentsUnbusy();
-	static void checkCloseEnableState();
-	static void checkCloseEnableState(const std::vector<MainWindow *> &windows);
+	static void updateCloseEnableState();
+	static void updateCloseEnableState(const std::vector<MainWindow *> &windows);
 	static void invalidatePrevOpenMenus();
 	static void readNEditDB();
 	static void updateMenuItems();

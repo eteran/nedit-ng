@@ -5,6 +5,7 @@ function(TARGET_ADD_WARNINGS TARGET)
 	if((TARGET_COMPILER_GCC) OR (TARGET_COMPILER_CLANG))
 		target_compile_options(${TARGET}
 		PUBLIC
+			-pedantic
 			-W
 			-Wall
 			#-Wconversion
@@ -21,7 +22,6 @@ function(TARGET_ADD_WARNINGS TARGET)
 			-Wnon-virtual-dtor
 			-Woverloaded-virtual
 			-Wunused
-			-pedantic
 		)
 
 		if(TARGET_COMPILER_CLANG)
@@ -46,7 +46,16 @@ function(TARGET_ADD_WARNINGS TARGET)
 				-Wsuggest-final-methods
 				-Wsuggest-final-types
 				-Wsuggest-override
+				-Wfloat-conversion
+				-Wfloat-equal
 			)
 	    endif()
+
+	elseif(TARGET_COMPILER_MSVC)
+		target_compile_options(${TARGET}
+		PUBLIC
+			/W4
+			#/WX
+		)
 	endif()
 endfunction()

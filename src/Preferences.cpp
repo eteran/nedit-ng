@@ -54,10 +54,11 @@ bool PrefsHaveChanged = false;
 QString ImportedFile;
 
 /**
- * @brief
+ * @brief Reads a list of file extensions from the input stream until it
+ * encounters a colon (':') or the end of the stream.
  *
- * @param in
- * @return
+ * @param in The input stream to read from.
+ * @return A list of file extensions read from the input stream.
  */
 QStringList ReadExtensionList(Input &in) {
 	QStringList extensionList;
@@ -287,7 +288,7 @@ std::optional<LanguageMode> ReadLanguageMode(Input &in) {
 
 void LoadLanguageModesString(const QString &string) {
 
-	if (string == QLatin1String("*")) {
+	if (string == QStringLiteral("*")) {
 
 		YAML::Node languages;
 
@@ -295,7 +296,7 @@ void LoadLanguageModesString(const QString &string) {
 		if (QFileInfo::exists(LanguageModeFile)) {
 			languages = YAML::LoadAllFromFile(LanguageModeFile.toUtf8().data());
 		} else {
-			static QByteArray defaultLanguageModes = LoadResource(QLatin1String("DefaultLanguageModes.yaml"));
+			static QByteArray defaultLanguageModes = LoadResource(QStringLiteral("DefaultLanguageModes.yaml"));
 			languages                              = YAML::LoadAll(defaultLanguageModes.data());
 		}
 
@@ -381,7 +382,7 @@ void TranslatePrefFormats(uint32_t fileVersion) {
 	**  (or whatever is implemented in GetDefaultShell()). We put the login
 	**  shell's name in PrefData here.
 	*/
-	if (Settings::shell == QLatin1String("DEFAULT")) {
+	if (Settings::shell == QStringLiteral("DEFAULT")) {
 		Settings::shell = GetDefaultShell();
 	}
 
@@ -456,7 +457,7 @@ QString WriteLanguageModesString() {
 			file.write("\n");
 		}
 
-		return QLatin1String("*");
+		return QStringLiteral("*");
 	} catch (const YAML::Exception &ex) {
 		qWarning("NEdit: Error writing %s in config directory:\n%s", qPrintable(filename), ex.what());
 	}
@@ -469,14 +470,28 @@ QString WriteLanguageModesString() {
 // list of available language modes and language specific preferences
 std::vector<LanguageMode> LanguageModes;
 
+/**
+ * @brief
+ *
+ * @return
+ */
 QString ImportedSettingsFile() {
 	return ImportedFile;
 }
 
+/**
+ * @brief
+ *
+ * @return
+ */
 bool PreferencesChanged() {
 	return PrefsHaveChanged;
 }
 
+/**
+ * @brief
+ *
+ */
 void RestoreNEditPrefs() {
 
 	Settings::Load(IsServer);
@@ -487,6 +502,12 @@ void RestoreNEditPrefs() {
 	TranslatePrefFormats(NEDIT_VERSION);
 }
 
+/**
+ * @brief
+ *
+ * @param parent
+ * @param verbosity
+ */
 void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 
 	const QString prefFileName = Settings::ConfigFile();
@@ -525,10 +546,12 @@ void SaveNEditPrefs(QWidget *parent, Verbosity verbosity) {
 	PrefsHaveChanged = false;
 }
 
-/*
-** Load an additional preferences file on top of the existing preferences
-** derived from defaults, the .nedit file, and X resources.
-*/
+/**
+ * @brief Load an additional preferences file on top of the existing preferences
+ * derived from defaults, and config files.
+ *
+ * @param filename
+ */
 void ImportPrefFile(const QString &filename) {
 	Settings::Import(filename);
 
@@ -536,6 +559,11 @@ void ImportPrefFile(const QString &filename) {
 	TranslatePrefFormats(NEDIT_VERSION);
 }
 
+/**
+ * @brief
+ *
+ * @param state
+ */
 void SetPrefOpenInTab(bool state) {
 	if (Settings::openInTab != state) {
 		PrefsHaveChanged = true;
@@ -543,10 +571,20 @@ void SetPrefOpenInTab(bool state) {
 	Settings::openInTab = state;
 }
 
+/**
+ * @brief
+ *
+ * @return
+ */
 bool GetPrefOpenInTab() {
 	return Settings::openInTab;
 }
 
+/**
+ * @brief
+ *
+ * @param state
+ */
 void SetPrefWrap(WrapStyle state) {
 	if (Settings::autoWrap != state) {
 		PrefsHaveChanged = true;
@@ -554,6 +592,12 @@ void SetPrefWrap(WrapStyle state) {
 	Settings::autoWrap = state;
 }
 
+/**
+ * @brief
+ *
+ * @param langMode
+ * @return
+ */
 WrapStyle GetPrefWrap(size_t langMode) {
 	if (langMode == PLAIN_LANGUAGE_MODE || LanguageModes[langMode].wrapStyle == WrapStyle::Default) {
 		return Settings::autoWrap;
@@ -562,6 +606,11 @@ WrapStyle GetPrefWrap(size_t langMode) {
 	return LanguageModes[langMode].wrapStyle;
 }
 
+/**
+ * @brief
+ *
+ * @param margin
+ */
 void SetPrefWrapMargin(int margin) {
 	if (Settings::wrapMargin != margin) {
 		PrefsHaveChanged = true;
@@ -1193,7 +1242,7 @@ bool ReadNumericField(Input &in, int *value) {
 	// skip over blank space
 	in.skipWhitespace();
 
-	static const QRegularExpression re(QLatin1String("(0|[-+]?[1-9][0-9]*)"));
+	static const QRegularExpression re(QStringLiteral("(0|[-+]?[1-9][0-9]*)"));
 	QString number;
 	if (in.match(re, &number)) {
 		bool ok;
@@ -1217,7 +1266,7 @@ QString ReadSymbolicField(Input &input) {
 
 	const Input strStart = input;
 
-	static const QRegularExpression re(QLatin1String("[A-Za-z0-9_+$# \t-]*"));
+	static const QRegularExpression re(QStringLiteral("[A-Za-z0-9_+$# \t-]*"));
 
 	input.match(re);
 
@@ -1354,9 +1403,13 @@ QString MakeQuotedString(const QString &string) {
 	return outStr;
 }
 
-/*
-** Skip a delimiter and it's surrounding whitespace
-*/
+/**
+ * @brief Skip a delimiter and it's surrounding whitespace.
+ *
+ * @param in The input stream to read from.
+ * @param errMsg Will be set to an error message if the delimiter is not found.
+ * @return `true` if the delimiter was found and skipped, `false` if there was a syntax error.
+ */
 bool SkipDelimiter(Input &in, QString *errMsg) {
 
 	in.skipWhitespace();
@@ -1371,14 +1424,18 @@ bool SkipDelimiter(Input &in, QString *errMsg) {
 	return true;
 }
 
-/*
-** Report parsing errors in resource strings or macros, formatted nicely so
-** the user can tell where things became botched.  Errors can be sent either
-** to stderr, or displayed in a dialog.  For stderr, pass toDialog as nullptr.
-** For a dialog, pass the dialog parent in toDialog.
-*/
-
-bool ReportError(QWidget *toDialog, const QString &string, int stoppedAt, const QString &errorIn, const QString &message) {
+/**
+ * @brief Report parsing errors in resource strings or macros, formatted nicely so
+ * the user can tell where things became botched.
+ *
+ * @param parent The parent dialog, or nullptr to report to stderr.
+ * @param string the string that was being parsed.
+ * @param stoppedAt the index in the string where parsing stopped.
+ * @param errorIn the name of the resource or macro being parsed.
+ * @param message a message describing the error, e.g. "unrecognized indent style".
+ * @return `true` if the error was reported successfully, `false` if it could not be reported.
+ */
+bool ReportError(QWidget *parent, const QString &string, int stoppedAt, const QString &errorIn, const QString &message) {
 
 	// NOTE(eteran): hack to work around the fact that stoppedAt can be a "one past the end iterator"
 	stoppedAt = std::clamp<int64_t>(stoppedAt, 0, string.size() - 1);
@@ -1403,10 +1460,10 @@ bool ReportError(QWidget *toDialog, const QString &string, int stoppedAt, const 
 	const int len           = stoppedAt - c + (stoppedAt == string.size() ? 0 : 1);
 	const QString errorLine = tr("%1<==").arg(string.mid(c, len));
 
-	if (!toDialog) {
+	if (!parent) {
 		qWarning("NEdit: %s in %s:\n%s", qPrintable(message), qPrintable(errorIn), qPrintable(errorLine));
 	} else {
-		QMessageBox::warning(toDialog, tr("Parse Error"), tr("%1 in %2:\n%3").arg(message, errorIn, errorLine));
+		QMessageBox::warning(parent, tr("Parse Error"), tr("%1 in %2:\n%3").arg(message, errorIn, errorLine));
 	}
 
 	return false;

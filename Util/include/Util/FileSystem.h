@@ -19,8 +19,8 @@ struct PathInfo {
 FileFormats FormatOfFile(std::string_view text);
 QString GetTrailingPathComponents(const QString &path, int components);
 QString NormalizePathname(const QString &pathname);
-QString ReadAnyTextFile(const QString &fileName, bool forceNL);
-PathInfo parseFilename(const QString &fullname);
+QString ReadTextFile(const QString &filename);
+PathInfo ParseFilename(const QString &fullname);
 
 // std::string based conversions
 void ConvertToMac(std::string &text);

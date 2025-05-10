@@ -2346,7 +2346,7 @@ yyreturnlab:
 ** the error message is returned in msg, and the length of the string up
 ** to where parsing failed in stoppedAt.
 */
-Program *compileMacro(const QString &expr, QString *msg, int *stoppedAt) {
+Program *CompileMacro(const QString &expr, QString *msg, int *stoppedAt) {
 	BeginCreatingProgram();
 
 	/* call yyparse to parse the string and check for success.  If the parse
@@ -2359,18 +2359,17 @@ Program *compileMacro(const QString &expr, QString *msg, int *stoppedAt) {
 	if (yyparse()) {
 		*msg          = ErrMsg;
 		*stoppedAt    = gsl::narrow<int>(InPtr - start);
-		Program *prog = FinishCreatingProgram();
-		delete prog;
+		std::unique_ptr<Program> prog = FinishCreatingProgram();
 		return nullptr;
 	}
 
 	/* get the newly created program */
-	Program *prog = FinishCreatingProgram();
+	std::unique_ptr<Program> prog = FinishCreatingProgram();
 
 	/* parse succeeded */
 	*msg       = QString();
 	*stoppedAt = gsl::narrow<int>(InPtr - start);
-	return prog;
+	return prog.release();
 }
 
 static int yylex(void) {
@@ -2423,7 +2422,7 @@ static int yylex(void) {
 		snprintf(name, sizeof(name), "const %d", n);
 
 		if ((yylval.sym = LookupSymbol(name)) == nullptr) {
-			yylval.sym = InstallSymbol(name, CONST_SYM, make_value(n));
+			yylval.sym = InstallSymbol(name, SymbolConst, make_value(n));
 		}
 
 		return NUMBER;
@@ -2458,7 +2457,7 @@ static int yylex(void) {
 
 		if ((s = LookupSymbolEx(symName)) == nullptr) {
 			s = InstallSymbolEx(symName,
-								symName[0] == QLatin1Char('$') ? (((symName[1] > QLatin1Char('0') && symName[1] <= QLatin1Char('9')) && symName.size() == 2) ? ARG_SYM : GLOBAL_SYM) : LOCAL_SYM,
+								symName[0] == QLatin1Char('$') ? (((symName[1] > QLatin1Char('0') && symName[1] <= QLatin1Char('9')) && symName.size() == 2) ? SymbolArg : SymbolGlobal) : SymbolLocal,
 								make_value());
 		}
 

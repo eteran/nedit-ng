@@ -18,7 +18,7 @@
  * @return The operand of the opcode.
  */
 template <class T>
-T *OPERAND(T *p) noexcept {
+T *Operand(T *p) noexcept {
 	static_assert(sizeof(T) == 1, "Invalid Pointer Type");
 	return p + NODE_SIZE<size_t>;
 }
@@ -30,7 +30,7 @@ T *OPERAND(T *p) noexcept {
  * @return The op code.
  */
 template <class T>
-uint8_t GET_OP_CODE(T *p) noexcept {
+uint8_t GetOpCode(T *p) noexcept {
 	static_assert(sizeof(T) == 1, "Invalid Pointer Type");
 	return *reinterpret_cast<uint8_t *>(p);
 }
@@ -44,7 +44,7 @@ uint8_t GET_OP_CODE(T *p) noexcept {
  *         escape.
  */
 template <class R, class Ch>
-constexpr R literal_escape(Ch ch) noexcept {
+constexpr R LiteralEscape(Ch ch) noexcept {
 
 	constexpr char valid_escape[] = {
 		'a', 'b', 'e', 'f', 'n', 'r', 't', 'v', '(', ')', '-', '[', ']', '<',
@@ -77,7 +77,7 @@ constexpr R literal_escape(Ch ch) noexcept {
  * \0000 is specified.
  */
 template <class R, class Ch>
-R numeric_escape(Ch ch, Reader *reader) {
+R NumericEscape(Ch ch, Reader *reader) {
 
 	static const char digits[] = "fedcbaFEDCBA9876543210";
 
@@ -162,11 +162,11 @@ R numeric_escape(Ch ch, Reader *reader) {
  * @brief Get the offset from a pointer to an opcode.
  *
  * @param p The opcode.
- * @return The offset as a 16-bit unsigned integer.
+ * @return The offset as a 16-bit integer.
  */
-inline uint16_t GET_OFFSET(const void *p) noexcept {
-	auto ptr = reinterpret_cast<const uint8_t *>(p);
-	return static_cast<uint16_t>(((ptr[1] & 0xff) << 8) + (ptr[2] & 0xff));
+inline int16_t GetOffset(const void *p) noexcept {
+	auto ptr = static_cast<const uint8_t *>(p);
+	return static_cast<int16_t>(((ptr[1] & 0xff) << 8) + (ptr[2] & 0xff));
 }
 
 #endif

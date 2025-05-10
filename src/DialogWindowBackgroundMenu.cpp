@@ -275,7 +275,7 @@ std::optional<MenuItem> DialogWindowBackgroundMenu::readFields(Verbosity verbosi
 		return {};
 	}
 
-	cmdText = ensure_newline(cmdText);
+	cmdText = EnsureNewline(cmdText);
 	if (!checkMacroText(cmdText, verbosity)) {
 		return {};
 	}
@@ -304,7 +304,7 @@ bool DialogWindowBackgroundMenu::checkMacroText(const QString &macro, Verbosity 
 
 	QString errMsg;
 	int stoppedAt;
-	if (!isMacroValid(macro, &errMsg, &stoppedAt)) {
+	if (!IsMacroValid(macro, &errMsg, &stoppedAt)) {
 		if (verbosity == Verbosity::Verbose) {
 			Preferences::ReportError(this, macro, stoppedAt, tr("macro"), errMsg);
 		}

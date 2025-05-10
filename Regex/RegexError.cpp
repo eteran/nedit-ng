@@ -14,7 +14,7 @@ RegexError::RegexError(const char *fmt, ...) {
 	char buf[1024];
 	va_list ap;
 	va_start(ap, fmt);
-	qvsnprintf(buf, sizeof(buf), fmt, ap);
+	vsnprintf(buf, sizeof(buf), fmt, ap);
 	va_end(ap);
 	error_ = buf;
 }

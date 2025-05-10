@@ -98,21 +98,21 @@ constexpr int VerticalScrollDelay = 50;
 
 /* Masks for text drawing methods.  These are or'd together to form an
    integer which describes what drawing calls to use to draw a string */
-constexpr int STYLE_LOOKUP_SHIFT = 0;
-constexpr int FILL_SHIFT         = 8;
-constexpr int SECONDARY_SHIFT    = 9;
-constexpr int PRIMARY_SHIFT      = 10;
-constexpr int HIGHLIGHT_SHIFT    = 11;
-constexpr int BACKLIGHT_SHIFT    = 12;
-constexpr int RANGESET_SHIFT     = 20;
+constexpr int StyleLookupShift = 0;
+constexpr int FillShift        = 8;
+constexpr int SecondaryShift   = 9;
+constexpr int PrimaryShift     = 10;
+constexpr int HighlightShift   = 11;
+constexpr int BacklightShift   = 12;
+constexpr int RangesetShift    = 20;
 
-constexpr uint32_t STYLE_LOOKUP_MASK = (0xff << STYLE_LOOKUP_SHIFT);
-constexpr uint32_t FILL_MASK         = (1 << FILL_SHIFT);
-constexpr uint32_t SECONDARY_MASK    = (1 << SECONDARY_SHIFT);
-constexpr uint32_t PRIMARY_MASK      = (1 << PRIMARY_SHIFT);
-constexpr uint32_t HIGHLIGHT_MASK    = (1 << HIGHLIGHT_SHIFT);
-constexpr uint32_t BACKLIGHT_MASK    = (0xff << BACKLIGHT_SHIFT);
-constexpr uint32_t RANGESET_MASK     = (0x3f << RANGESET_SHIFT);
+constexpr uint32_t StyleLookupMask = (0xff << StyleLookupShift);
+constexpr uint32_t FillMask        = (1 << FillShift);
+constexpr uint32_t SecondaryMask   = (1 << SecondaryShift);
+constexpr uint32_t PrimaryMask     = (1 << PrimaryShift);
+constexpr uint32_t HighlightMask   = (1 << HighlightShift);
+constexpr uint32_t BacklightMask   = (0xff << BacklightShift);
+constexpr uint32_t RangesetMask    = (0x3f << RangesetShift);
 
 /* If you use both 32-Bit Style mask layout:
    Bits +----------------+----------------+----------------+----------------+
@@ -132,7 +132,7 @@ constexpr uint32_t RANGESET_MASK     = (0x3f << RANGESET_SHIFT);
    This leaves 6 "unused" bits */
 
 /* Maximum displayable line length (how many characters will fit across the
-   widest window).  This amount of memory is temporarily allocated from the
+   widest window). This amount of memory is temporarily allocated from the
    stack in the redisplayLine routine for drawing strings */
 constexpr int MaxDisplayLineLength = 1024;
 
@@ -242,7 +242,6 @@ void FindTextMargins(TextBuffer *buf, TextCursor start, TextCursor end, int64_t 
  * @param referenceLineNum The line number of the reference position.
  * @param newLineNum The line number to find relative to the reference position.
  * @return The start of the line at the new line number.
-
  */
 TextCursor FindRelativeLineStart(const TextBuffer *buf, TextCursor referencePos, int64_t referenceLineNum, int64_t newLineNum) {
 
@@ -1391,11 +1390,10 @@ void TextArea::mousePressEvent(QMouseEvent *event) {
 }
 
 /**
- * "extend_end", "copy_to_or_end_drag", "end_drag"
+ * @brief Handles mouse release events for the text area.
+ * This is associated with: "extend_end", "copy_to_or_end_drag", and "end_drag"
  *
- * @brief
- *
- * @param event
+ * @param event The mouse event that triggered this method.
  */
 void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 
@@ -1444,9 +1442,11 @@ void TextArea::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Handles paint events for the text area.
+ * This methods is the main rendering function for the text area,
+ * drawing the text, and other visual elements.
  *
- * @param event
+ * @param event The paint event that triggered this method.
  */
 void TextArea::paintEvent(QPaintEvent *event) {
 
@@ -1476,9 +1476,9 @@ void TextArea::paintEvent(QPaintEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Handles resize events for the text area.
  *
- * @param event
+ * @param event The resize event that triggered this method.
  */
 void TextArea::resizeEvent(QResizeEvent *event) {
 
@@ -2764,13 +2764,17 @@ void TextArea::redisplayRange(TextCursor start, TextCursor end) {
 			lastLine = nVisibleLines_ - 1;
 		}
 	}
+	if (startLine < 0 || startLine >= nVisibleLines_ || lastLine < 0 || lastLine >= nVisibleLines_) {
+		qWarning("NEdit: Internal Error, redisplayRange called with invalid line numbers");
+		return;
+	}
 
 	// Get the starting and ending positions within the lines
 	const int startIndex = (lineStarts_[startLine] == -1) ? 0 : start - lineStarts_[startLine];
 	int endIndex;
 	if (end >= lastChar_) {
 		/* Request to redisplay beyond lastChar_, so tell redisplayLine() to
-		 * display everything to infy.  */
+		 * display everything to infinity. */
 		endIndex = INT_MAX;
 	} else if (lineStarts_[lastLine] == -1) {
 		/*  Here, lastLine is determined by posToVisibleLineNum()
@@ -3044,14 +3048,14 @@ void TextArea::redisplayLine(QPainter *painter, int visLineNum, int leftClip, in
 uint32_t TextArea::styleOfPos(TextCursor lineStartPos, size_t lineLen, size_t lineIndex, int64_t dispIndex, int thisChar) const {
 
 	if (lineStartPos == -1 || !buffer_) {
-		return FILL_MASK;
+		return FillMask;
 	}
 
 	const TextCursor pos = lineStartPos + std::min(lineIndex, lineLen);
 	uint32_t style       = 0;
 
 	if (lineIndex >= lineLen) {
-		style = FILL_MASK;
+		style = FillMask;
 	} else if (styleBuffer_) {
 		style = styleBuffer_->BufGetCharacter(pos);
 		if (style == unfinishedStyle_) {
@@ -3062,29 +3066,29 @@ uint32_t TextArea::styleOfPos(TextCursor lineStartPos, size_t lineLen, size_t li
 	}
 
 	if (buffer_->primary.inSelection(pos, lineStartPos, dispIndex)) {
-		style |= PRIMARY_MASK;
+		style |= PrimaryMask;
 	}
 
 	if (buffer_->highlight.inSelection(pos, lineStartPos, dispIndex)) {
-		style |= HIGHLIGHT_MASK;
+		style |= HighlightMask;
 	}
 
 	if (buffer_->secondary.inSelection(pos, lineStartPos, dispIndex)) {
-		style |= SECONDARY_MASK;
+		style |= SecondaryMask;
 	}
 
-	/* store in the RANGESET_MASK portion of style the rangeset index for pos */
+	/* store in the RangesetMask portion of style the rangeset index for pos */
 	if (document_->rangesetTable_) {
 		const size_t rangesetIndex = document_->rangesetTable_->index1ofPos(pos, true);
-		style |= ((rangesetIndex << RANGESET_SHIFT) & RANGESET_MASK);
+		style |= ((rangesetIndex << RangesetShift) & RangesetMask);
 	}
 
-	/* store in the BACKLIGHT_MASK portion of style the background color class
+	/* store in the BacklightMask portion of style the background color class
 	   of the character thisChar */
 	if (!bgClass_.empty()) {
 		auto index = static_cast<size_t>(thisChar);
 		if (index < bgClass_.size()) {
-			style |= (bgClass_[index] << BACKLIGHT_SHIFT);
+			style |= (bgClass_[index] << BacklightShift);
 		}
 	}
 	return style;
@@ -3117,15 +3121,15 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 
 	const DrawType drawType = [style]() {
 		// select a GC
-		if (style & (STYLE_LOOKUP_MASK | BACKLIGHT_MASK | RANGESET_MASK)) {
+		if (style & (StyleLookupMask | BacklightMask | RangesetMask)) {
 			return DrawStyle;
 		}
 
-		if (style & HIGHLIGHT_MASK) {
+		if (style & HighlightMask) {
 			return DrawHighlight;
 		}
 
-		if (style & PRIMARY_MASK) {
+		if (style & PrimaryMask) {
 			return DrawSelect;
 		}
 
@@ -3150,8 +3154,8 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 			   for normal drawing, or drawing within a selection or highlight are
 			   pre-allocated and pre-configured.  For syntax highlighting, GCs are
 			   configured here, on the fly. */
-		if (style & STYLE_LOOKUP_MASK) {
-			styleRec       = &styleTable_[(style & STYLE_LOOKUP_MASK) - ASCII_A];
+		if (style & StyleLookupMask) {
+			styleRec       = &styleTable_[(style & StyleLookupMask) - ASCII_A];
 			underlineStyle = styleRec->isUnderlined;
 
 			renderFont.setBold(styleRec->isBold);
@@ -3174,7 +3178,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 		 ** 5 Backlight (if NOT fill)
 		 ** 6 DefaultBackground
 		 */
-		if (style & PRIMARY_MASK) {
+		if (style & PrimaryMask) {
 			bground = pal.color(QPalette::Highlight);
 
 			// NOTE(eteran): enabling this makes working with darker themes a lot nicer
@@ -3185,17 +3189,17 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 				fground = pal.color(QPalette::HighlightedText);
 			}
 
-		} else if (style & HIGHLIGHT_MASK) {
+		} else if (style & HighlightMask) {
 			bground = matchBGColor_;
 			if (!colorizeHighlightedText_) {
 				fground = matchFGColor_;
 			}
-		} else if (style & RANGESET_MASK) {
-			bground = getRangesetColor((style & RANGESET_MASK) >> RANGESET_SHIFT, bground);
+		} else if (style & RangesetMask) {
+			bground = getRangesetColor((style & RangesetMask) >> RangesetShift, bground);
 		} else if (styleRec && !styleRec->bgColorName.isNull()) {
 			bground = styleRec->bgColor;
-		} else if ((style & BACKLIGHT_MASK) && !(style & FILL_MASK)) {
-			bground = bgClassColors_[(style >> BACKLIGHT_SHIFT) & 0xff];
+		} else if ((style & BacklightMask) && !(style & FillMask)) {
+			bground = bgClassColors_[(style >> BacklightShift) & 0xff];
 		} else {
 			bground = pal.color(QPalette::Base);
 		}
@@ -3207,7 +3211,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 	}
 
 	// Draw blank area rather than text, if that was the request
-	if (style & FILL_MASK) {
+	if (style & FillMask) {
 
 		// wipes out to right hand edge of widget
 		if (toX >= viewRect.left()) {
@@ -3219,7 +3223,7 @@ void TextArea::drawString(QPainter *painter, uint32_t style, int x, int y, int t
 	}
 
 	// Underline if style is secondary selection
-	if ((style & SECONDARY_MASK) || underlineStyle) {
+	if ((style & SecondaryMask) || underlineStyle) {
 		renderFont.setUnderline(true);
 	}
 
@@ -3728,7 +3732,7 @@ void TextArea::setupBGClasses(const QString &str) {
 #else
 			const QStringList rangeList = ranges.split(QLatin1Char(','), QString::SkipEmptyParts);
 #endif
-			static const QRegularExpression regex(QRegularExpression::anchoredPattern(QLatin1String("([0-9]+)(?:-([0-9]+))?")));
+			static const QRegularExpression regex(QRegularExpression::anchoredPattern(QStringLiteral("([0-9]+)(?:-([0-9]+))?")));
 
 			for (const QString &range : rangeList) {
 				const QRegularExpressionMatch match = regex.match(range);
@@ -7674,6 +7678,17 @@ void TextArea::TextDKillCalltip(int id) {
 	}
 }
 
+/**
+ * @brief
+ *
+ * @param text
+ * @param anchored
+ * @param pos
+ * @param hAlign
+ * @param vAlign
+ * @param alignMode
+ * @return
+ */
 int TextArea::TextDShowCalltip(const QString &text, bool anchored, CallTipPosition pos, TipHAlignMode hAlign, TipVAlignMode vAlign, TipAlignMode alignMode) {
 
 	static int StaticCalltipID = 1;
@@ -7729,80 +7744,81 @@ int TextArea::TextDShowCalltip(const QString &text, bool anchored, CallTipPositi
 	return calltip_.ID;
 }
 
-/*
-** In continuous wrap mode, internal line numbers are calculated after
-** wrapping.  A separate non-wrapped line count is maintained when line
-** numbering is turned on.  There is some performance cost to maintaining this
-** line count, so normally absolute line numbers are not tracked if line
-** numbering is off.  This routine allows callers to specify that they still
-** want this line count maintained (for use via TextDPosToLineAndCol).
-** More specifically, this allows the line number reported in the statistics
-** line to be calibrated in absolute lines, rather than post-wrapped lines.
-*/
+/**
+ * @brief In continuous wrap mode, internal line numbers are calculated after
+ * wrapping. A separate non-wrapped line count is maintained when line
+ * numbering is turned on. There is some performance cost to maintaining this
+ * line count, so normally absolute line numbers are not tracked if line
+ * numbering is off. This routine allows callers to specify that they still
+ * want this line count maintained (for use via TextDPosToLineAndCol).
+ * More specifically, this allows the line number reported in the statistics
+ * line to be calibrated in absolute lines, rather than post-wrapped lines.
+ *
+ * @param state
+ */
 void TextArea::TextDMaintainAbsLineNum(bool state) {
 	needAbsTopLineNum_ = state;
 	resetAbsLineNum();
 }
 
 /**
- * @brief
+ * @brief Returns the text buffer associated with this text area.
  *
- * @return
+ * @return The text buffer.
  */
 TextBuffer *TextArea::buffer() const {
 	return buffer_;
 }
 
 /**
- * @brief
+ * @brief Returns the fixed font width.
  *
- * @return
+ * @return The fixed font width.
  */
 int TextArea::minimumFontWidth() const {
 	return fixedFontWidth_;
 }
 
 /**
- * @brief
+ * @brief The maximum font width.
  *
- * @return
+ * @return The maximum font width.
  */
 int TextArea::maximumFontWidth() const {
 	return fixedFontWidth_;
 }
 
 /**
- * @brief
+ * @brief Returns the number of visible lines in the text area.
  *
- * @return
+ * @return The number of visible lines.
  */
 int64_t TextArea::TextNumVisibleLines() const {
 	return nVisibleLines_;
 }
 
 /**
- * @brief
+ * @brief Returns line number of the first visible line.
  *
- * @return
+ * @return The line number of the first visible line.
  */
 int64_t TextArea::TextFirstVisibleLine() const {
 	return topLineNum_;
 }
 
 /**
- * @brief
+ * @brief Returns the width of the text area that is visible.
  *
- * @return
+ * @return The width of the visible text area.
  */
 int TextArea::TextVisibleWidth() const {
-	const QRect viewRect = viewport()->contentsRect();
-	return viewRect.width();
+	return viewport()->contentsRect().width();
 }
 
 /**
- * @brief
+ * @brief Moves the cursor to the beginning of the selection.
  *
- * @param flags
+ * @param flags Event flags.
  */
 void TextArea::beginningOfSelectionAP(EventFlags flags) {
 
@@ -7821,9 +7837,9 @@ void TextArea::beginningOfSelectionAP(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Deletes the current selection.
  *
- * @param flags
+ * @param flags Event flags.
  */
 void TextArea::deleteSelectionAP(EventFlags flags) {
 
@@ -7838,15 +7854,20 @@ void TextArea::deleteSelectionAP(EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Checks if the character is a delimiter.
  *
- * @param ch
- * @return
+ * @param ch Character to check.
+ * @return `true` if the character is a delimiter, `false` otherwise.
  */
 bool TextArea::isDelimeter(char ch) const {
 	return delimiters_.find(ch) != std::string::npos;
 }
 
+/**
+ * @brief Deletes the next word from the cursor position.
+ *
+ * @param flags Event flags
+ */
 void TextArea::deleteNextWordAP(EventFlags flags) {
 
 	EMIT_EVENT_0("delete_next_word");
@@ -7880,6 +7901,11 @@ void TextArea::deleteNextWordAP(EventFlags flags) {
 	callCursorMovementCBs();
 }
 
+/**
+ * @brief Moves the cursor to the end of the selection.
+ *
+ * @param flags Event flags.
+ */
 void TextArea::endOfSelectionAP(EventFlags flags) {
 
 	EMIT_EVENT_0("end_of_selection");
@@ -7896,6 +7922,13 @@ void TextArea::endOfSelectionAP(EventFlags flags) {
 	}
 }
 
+/**
+ * @brief Scroll up by a specified number of lines or pages.
+ *
+ * @param count Number of lines or pages to scroll up.
+ * @param units ScrollUnit indicating whether to scroll by lines or pages.
+ * @param flags
+ */
 void TextArea::scrollUpAP(int count, ScrollUnit units, EventFlags flags) {
 
 	EMIT_EVENT_0("scroll_up");
@@ -7910,6 +7943,13 @@ void TextArea::scrollUpAP(int count, ScrollUnit units, EventFlags flags) {
 	verticalScrollBar()->setValue(prevValue - nLines);
 }
 
+/**
+ * @brief Scroll down by a specified number of lines or pages.
+ *
+ * @param count Number of lines or pages to scroll down.
+ * @param units ScrollUnit indicating whether to scroll by lines or pages.
+ * @param flags Event flags.
+ */
 void TextArea::scrollDownAP(int count, ScrollUnit units, EventFlags flags) {
 
 	EMIT_EVENT_0("scroll_down");
@@ -7923,42 +7963,70 @@ void TextArea::scrollDownAP(int count, ScrollUnit units, EventFlags flags) {
 	verticalScrollBar()->setValue(prevValue + nLines);
 }
 
+/**
+ * @brief Scroll left by a specified number of pixels.
+ *
+ * @param pixels Number of pixels to scroll left.
+ * @param flags Event flags.
+ */
 void TextArea::scrollLeftAP(int pixels, EventFlags flags) {
 	EMIT_EVENT_0("scroll_left");
 	horizontalScrollBar()->setValue(horizontalScrollBar()->value() - pixels);
 }
 
+/**
+ * @brief Scroll right by a specified number of pixels.
+ *
+ * @param pixels Number of pixels to scroll right.
+ * @param flags Event flags.
+ */
 void TextArea::scrollRightAP(int pixels, EventFlags flags) {
 	EMIT_EVENT_0("scroll_right");
 	horizontalScrollBar()->setValue(horizontalScrollBar()->value() + pixels);
 }
 
+/**
+ * @brief Scroll to a specific line in the text area.
+ *
+ * @param line The line number to scroll to.
+ * @param flags Event flags.
+ */
 void TextArea::scrollToLineAP(int line, EventFlags flags) {
 	EMIT_EVENT_0("scroll_to_line");
 	verticalScrollBar()->setValue(line);
 }
 
+/**
+ * @brief Handler for the previous document action.
+ *
+ * @param flags Event flags.
+ */
 void TextArea::previousDocumentAP(EventFlags flags) {
 	EMIT_EVENT_0("previous_document");
 	// handled at higher layer, this is a placeholder
 }
 
+/**
+ * @brief Handler for the next document action.
+ *
+ * @param flags Event flags.
+ */
 void TextArea::nextDocumentAP(EventFlags flags) {
 	EMIT_EVENT_0("next_document");
 	// handled at higher layer, this is a placeholder
 }
 
-/*
-** Remove style information from a text widget and redisplay it.
-*/
+/**
+ * @brief Remove style information from a text widget and redisplay it.
+ */
 void TextArea::removeWidgetHighlight() {
 	attachHighlightData(nullptr, {}, UNFINISHED_STYLE, nullptr, nullptr);
 }
 
 /**
- * @brief
- * Shows the size of the widget in rows/columns.
- * Lifted from Konsole's TerminalDisplay::showResizeNotification
+ * @brief Shows the size of the widget in rows/columns.
+ *
+ * @note Lifted from Konsole's TerminalDisplay::showResizeNotification
  */
 void TextArea::showResizeNotification() {
 	if (showTerminalSizeHint_ && isVisible()) {
@@ -7986,13 +8054,14 @@ void TextArea::showResizeNotification() {
 	}
 }
 
-/*
-** If the selection (or cursor position if there's no selection) is not
-** fully shown, scroll to bring it in to view.  Note that as written,
-** this won't work well with multi-line selections.  Modest re-write
-** of the horizontal scrolling part would be quite easy to make it work
-** well with rectangular selections.
-*/
+/**
+ * @brief Makes the selection visible in the text area.
+ * If the selection (or cursor position if there's no selection) is not
+ * fully shown, scroll to bring it in to view. Note that as written,
+ * this won't work well with multi-line selections. Modest re-write
+ * of the horizontal scrolling part would be quite easy to make it work
+ * well with rectangular selections.
+ */
 void TextArea::makeSelectionVisible() {
 
 	const QRect viewRect = viewport()->contentsRect();
@@ -8085,9 +8154,9 @@ void TextArea::makeSelectionVisible() {
 }
 
 /**
- * @brief
+ * @brief Handles zooming out in the text area.
  *
- * @param flags
+ * @param flags The event flags.
  */
 void TextArea::zoomOutAP(TextArea::EventFlags flags) {
 	Q_UNUSED(flags)
@@ -8104,9 +8173,9 @@ void TextArea::zoomOutAP(TextArea::EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Handles zooming in the text area.
  *
- * @param flags
+ * @param flags The event flags.
  */
 void TextArea::zoomInAP(TextArea::EventFlags flags) {
 	Q_UNUSED(flags)
@@ -8123,9 +8192,9 @@ void TextArea::zoomInAP(TextArea::EventFlags flags) {
 }
 
 /**
- * @brief
+ * @brief Handles the wheel event for zooming in and out.
  *
- * @param event
+ * @param event The wheel event.
  */
 void TextArea::wheelEvent(QWheelEvent *event) {
 	if (event->modifiers() == Qt::ControlModifier) {
@@ -8140,52 +8209,55 @@ void TextArea::wheelEvent(QWheelEvent *event) {
 }
 
 /**
- * @brief
+ * @brief Determines if the given visible line contains the cursor.
  *
- * @param visLine
- * @param cursor
- * @return
+ * @param visLine The visible line number to check.
+ * @param cursor The cursor position to check.
+ * @return `true` if the visible line contains the cursor, `false` otherwise.
  */
 bool TextArea::visibleLineContainsCursor(int visLine, TextCursor cursor) const {
 	const TextCursor lineStart = lineStarts_[visLine];
 
 	if (lineStart != TextCursor(-1)) {
 		const TextCursor lineEnd = endOfLine(lineStart, /*startPosIsLineStart=*/true);
-		if (cursor >= lineStart && cursor <= lineEnd) {
-			return true;
-		}
+		return (cursor >= lineStart && cursor <= lineEnd);
 	}
 
 	return false;
 }
 
 /**
- * @brief
+ * @brief Returns the document associated with this text area.
  *
- * @return
+ * @return The document associated with this text area.
  */
 DocumentWidget *TextArea::document() const {
 	return document_;
 }
 
 /**
- * @brief
+ * @brief Returns the height of a fixed-width font character.
  *
- * @return
+ * @return The height of a fixed-width font character.
  */
 int TextArea::fixedFontHeight() const {
 	return fixedFontHeight_;
 }
 
 /**
- * @brief
+ * @brief Returns the width of a fixed-width font character.
  *
- * @return
+ * @return The width of a fixed-width font character.
  */
 int TextArea::fixedFontWidth() const {
 	return fixedFontWidth_;
 }
 
+/**
+ * @brief
+ *
+ * @param buffer
+ */
 void TextArea::updatePrimarySelection(const std::shared_ptr<TextBuffer> &buffer) {
 #ifdef Q_OS_UNIX
 	if (QApplication::clipboard()->supportsSelection()) {
@@ -8201,5 +8273,7 @@ void TextArea::updatePrimarySelection(const std::shared_ptr<TextBuffer> &buffer)
 		auto data = new TextAreaMimeData(buffer);
 		QApplication::clipboard()->setMimeData(data, QClipboard::Selection);
 	}
+#else
+	Q_UNUSED(buffer);
 #endif
 }

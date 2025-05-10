@@ -80,7 +80,7 @@ constexpr auto ssize(const C &c) -> std::common_type_t<ptrdiff_t, std::make_sign
  * @param arr The fixed-size array whose size is to be determined.
  * @return The size of the array as a signed integer type.
  */
-template <class T, ptrdiff_t N>
+template <class T, class Integer, Integer N>
 constexpr ptrdiff_t ssize(const T (&)[N]) noexcept {
 	return N;
 }

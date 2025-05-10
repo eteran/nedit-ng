@@ -267,7 +267,7 @@ public:
 
 			auto index = std::distance(str.begin(), match[0].first);
 			auto size  = std::distance(match[0].first, match[0].second);
-			std::basic_string_view<Ch> m(str.data() + index, size);
+			std::basic_string_view<Ch> m(str.data() + index, static_cast<size_t>(size));
 
 			index_ += m.size();
 			return m;

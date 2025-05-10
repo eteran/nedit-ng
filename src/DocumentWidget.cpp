@@ -29,6 +29,7 @@
 #include "Util/FileSystem.h"
 #include "Util/Input.h"
 #include "Util/Raise.h"
+#include "Util/String.h"
 #include "Util/User.h"
 #include "Util/algorithm.h"
 #include "Util/regex.h"
@@ -804,9 +805,9 @@ void DocumentWidget::refreshTabState() {
 		if (absTruncate > 3) {
 			if (filename.size() > absTruncate) {
 				if (Settings::truncateLongNamesInTabs > 0) {
-					filename = QStringLiteral("%1%2").arg(QLatin1String("..."), filename.right(absTruncate - 3));
+					filename = QStringLiteral("%1%2").arg(QStringLiteral("..."), filename.right(absTruncate - 3));
 				} else {
-					filename = QStringLiteral("%1%2").arg(filename.left(absTruncate - 3), QLatin1String("..."));
+					filename = QStringLiteral("%1%2").arg(filename.left(absTruncate - 3), QStringLiteral("..."));
 				}
 			}
 		} else {
@@ -814,7 +815,7 @@ void DocumentWidget::refreshTabState() {
 		}
 	}
 
-	static const auto saveIcon = QIcon::fromTheme(QLatin1String("document-save"));
+	static const auto saveIcon = QIcon::fromTheme(QStringLiteral("document-save"));
 	if (!saveIcon.isNull()) {
 		tabWidget->setTabIcon(index, info_->fileChanged ? saveIcon : QIcon());
 		labelString = filename;
@@ -2300,12 +2301,12 @@ QString DocumentWidget::path() const {
  * @brief Compare the contents of the document widget with a file.
  * The format of the file (UNIX/DOS/MAC) is handled properly.
  *
- * @param fileName The name of the file to compare against.
+ * @param filename The name of the file to compare against.
  * @return `true` if the contents differ or if an error occurs, `false` if they are the same.
  *
  * @note This function reads the file in chunks and compares it with the document's buffer,
  */
-bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
+bool DocumentWidget::compareDocumentToFile(const QString &filename) const {
 
 	// Number of bytes read at once
 	constexpr auto PREFERRED_CMPBUF_LEN = static_cast<int64_t>(0x8000);
@@ -2315,7 +2316,7 @@ bool DocumentWidget::compareDocumentToFile(const QString &fileName) const {
 	// TODO(eteran): in the age of modern computers, we can just memory map
 	// the whole file and use that for comparison
 
-	QFile file(fileName);
+	QFile file(filename);
 	if (!file.open(QIODevice::ReadOnly)) {
 		return true;
 	}
@@ -2743,7 +2744,7 @@ bool DocumentWidget::saveDocumentAs(const QString &newName, bool addWrap) {
 		addWrapNewlines();
 	}
 
-	const PathInfo fi = parseFilename(fullname);
+	const PathInfo fi = ParseFilename(fullname);
 
 	// If the requested file is this file, just save it and return
 	if (info_->filename == fi.filename && info_->path == fi.pathname) {
@@ -3174,7 +3175,7 @@ void DocumentWidget::closeDocument() {
 
 	// Close of window running a macro may have been disabled.
 	// NOTE(eteran): this may be redundant...
-	MainWindow::checkCloseEnableState();
+	MainWindow::updateCloseEnableState();
 	MainWindow::updateWindowMenus();
 
 	// if we deleted the last tab, then we can close the window too
@@ -3214,7 +3215,7 @@ DocumentWidget *DocumentWidget::fromArea(TextArea *area) {
  */
 DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 
-	const PathInfo fi        = parseFilename(fullpath);
+	const PathInfo fi        = ParseFilename(fullpath);
 	DocumentWidget *document = DocumentWidget::editExistingFile(
 		this,
 		fi.filename,
@@ -3226,7 +3227,7 @@ DocumentWidget *DocumentWidget::open(const QString &fullpath) {
 		Preferences::GetPrefOpenInTab(),
 		/*background=*/false);
 
-	MainWindow::checkCloseEnableState();
+	MainWindow::updateCloseEnableState();
 
 	return document;
 }
@@ -3599,7 +3600,7 @@ void DocumentWidget::executeNewlineMacro(SmartIndentEvent *event) {
 		++(winData->inNewLineMacro);
 
 		std::shared_ptr<MacroContext> continuation;
-		int stat = executeMacro(this, winData->newlineMacro.get(), args, &result, continuation, &errMsg);
+		int stat = ExecuteMacro(this, winData->newlineMacro.get(), args, &result, continuation, &errMsg);
 
 		// Don't allow preemption or time limit.  Must get return value
 		while (stat == MACRO_TIME_LIMIT) {
@@ -3689,7 +3690,7 @@ void DocumentWidget::executeModMacro(SmartIndentEvent *event) {
 		++(winData->inModMacro);
 
 		std::shared_ptr<MacroContext> continuation;
-		int stat = executeMacro(this, winData->modMacro.get(), args, &result, continuation, &errMsg);
+		int stat = ExecuteMacro(this, winData->modMacro.get(), args, &result, continuation, &errMsg);
 
 		while (stat == MACRO_TIME_LIMIT) {
 			stat = continueMacro(continuation, &result, &errMsg);
@@ -3764,7 +3765,7 @@ void DocumentWidget::shellBannerTimeoutProc() {
 void DocumentWidget::actionClose(CloseMode mode) {
 
 	closeFileAndWindow(mode);
-	MainWindow::checkCloseEnableState();
+	MainWindow::updateCloseEnableState();
 	MainWindow::updateWindowMenus();
 }
 
@@ -4359,7 +4360,7 @@ void DocumentWidget::beginSmartIndent(Verbosity verbosity) {
 	QString errMsg;
 
 	auto siData          = std::make_unique<SmartIndentData>();
-	siData->newlineMacro = std::unique_ptr<Program>(compileMacro(indentMacros->newlineMacro, &errMsg, &stoppedAt));
+	siData->newlineMacro = std::unique_ptr<Program>(CompileMacro(indentMacros->newlineMacro, &errMsg, &stoppedAt));
 
 	if (!siData->newlineMacro) {
 		Preferences::ReportError(this, indentMacros->newlineMacro, stoppedAt, tr("newline macro"), errMsg);
@@ -4369,7 +4370,7 @@ void DocumentWidget::beginSmartIndent(Verbosity verbosity) {
 	if (indentMacros->modMacro.isNull()) {
 		siData->modMacro = nullptr;
 	} else {
-		siData->modMacro = std::unique_ptr<Program>(compileMacro(indentMacros->modMacro, &errMsg, &stoppedAt));
+		siData->modMacro = std::unique_ptr<Program>(CompileMacro(indentMacros->modMacro, &errMsg, &stoppedAt));
 		if (!siData->modMacro) {
 
 			siData->newlineMacro = nullptr;
@@ -4569,7 +4570,7 @@ bool DocumentWidget::backlightChars() const {
  */
 void DocumentWidget::setShowStatisticsLine(bool value) {
 
-	EmitEvent("set_statistics_line", value ? QLatin1String("1") : QLatin1String("0"));
+	EmitEvent("set_statistics_line", value ? QStringLiteral("1") : QStringLiteral("0"));
 
 	// stats line is a shell-level item, so we toggle the button state
 	// regardless of it's 'topness'
@@ -4605,7 +4606,7 @@ bool DocumentWidget::matchSyntaxBased() const {
  */
 void DocumentWidget::setMatchSyntaxBased(bool value) {
 
-	EmitEvent("set_match_syntax_based", value ? QLatin1String("1") : QLatin1String("0"));
+	EmitEvent("set_match_syntax_based", value ? QStringLiteral("1") : QStringLiteral("0"));
 
 	if (isTopDocument()) {
 		if (auto win = MainWindow::fromDocument(this)) {
@@ -4632,7 +4633,7 @@ bool DocumentWidget::overstrike() const {
  */
 void DocumentWidget::setOverstrike(bool overstrike) {
 
-	EmitEvent("set_overtype_mode", overstrike ? QLatin1String("1") : QLatin1String("0"));
+	EmitEvent("set_overtype_mode", overstrike ? QStringLiteral("1") : QStringLiteral("0"));
 
 	if (isTopDocument()) {
 		if (auto win = MainWindow::fromDocument(this)) {
@@ -4862,7 +4863,7 @@ void DocumentWidget::issueCommand(MainWindow *window, TextArea *area, const QStr
 
 	// start it off!
 	QStringList args;
-	args << QLatin1String("-c");
+	args << QStringLiteral("-c");
 	args << command;
 	process->start(userShell, args);
 
@@ -4978,7 +4979,7 @@ void DocumentWidget::processFinished(int exitCode, QProcess::ExitStatus exitStat
 	}
 
 	static constexpr int MaxMessageLength = 4096;
-	static const QRegularExpression trailingNewlines(QLatin1String("\\n+$"));
+	static const QRegularExpression trailingNewlines(QStringLiteral("\\n+$"));
 
 	/* Present error and stderr-information dialogs.  If a command returned
 	   error output, or if the process' exit status indicated failure,
@@ -5304,7 +5305,7 @@ void DocumentWidget::doShellMenuCmd(MainWindow *inWindow, TextArea *area, const 
 			outWidget   = document->firstPane();
 			range.start = TextCursor();
 			range.end   = TextCursor();
-			MainWindow::checkCloseEnableState();
+			MainWindow::updateCloseEnableState();
 		}
 		break;
 	case TO_SAME_WINDOW:
@@ -5436,7 +5437,7 @@ void DocumentWidget::repeatMacro(const QString &macro, int how) {
 	// Parse the resulting macro into an executable program "prog"
 	QString errMsg;
 	int stoppedAt;
-	Program *const prog = compileMacro(loopedCmd, &errMsg, &stoppedAt);
+	Program *const prog = CompileMacro(loopedCmd, &errMsg, &stoppedAt);
 	if (!prog) {
 		qWarning("NEdit: internal error, repeat macro syntax wrong: %s", qPrintable(errMsg));
 		return;
@@ -5517,26 +5518,26 @@ void DocumentWidget::beginLearn() {
  * Extends the syntax of the macro parser with a define keyword,
  * and allows intermixing of defines with immediate actions.
  *
- * @param fileName The name of the macro file to read.
+ * @param filename The name of the macro file to read.
  * @param warnNotExist If `true`, show a warning message if the file does not exist.
  */
-void DocumentWidget::readMacroFile(const QString &fileName, bool warnNotExist) {
+void DocumentWidget::readMacroFile(const QString &filename, bool warnNotExist) {
 
 	/* read-in macro file and force a terminating \n, to prevent syntax
 	** errors with statements on the last line
 	*/
-	const QString text = ReadAnyTextFile(fileName, /*forceNL=*/true);
+	const QString text = ReadTextFile(filename);
 	if (text.isNull()) {
 		if (warnNotExist) {
 			QMessageBox::critical(this,
 								  tr("Read Macro"),
-								  tr("Error reading macro file %1: %2").arg(fileName, ErrorString(errno)));
+								  tr("Error reading macro file %1: %2").arg(filename, ErrorString(errno)));
 		}
 		return;
 	}
 
 	// Parse text
-	ReadCheckMacroString(this, text, this, fileName, nullptr);
+	ReadCheckMacroString(this, text, this, filename, nullptr);
 }
 
 /**
@@ -5581,7 +5582,7 @@ void DocumentWidget::runMacro(Program *prog) {
 	// Begin macro execution
 	DataValue result;
 	QString errMsg;
-	const int stat = executeMacro(this, prog, {}, &result, macroCmdData_->context, &errMsg);
+	const int stat = ExecuteMacro(this, prog, {}, &result, macroCmdData_->context, &errMsg);
 
 	switch (stat) {
 	case MACRO_ERROR:
@@ -6350,7 +6351,7 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	}
 
 	// Check that the styles and parent pattern names actually exist
-	if (!Highlight::NamedStyleExists(QLatin1String("Plain"))) {
+	if (!Highlight::NamedStyleExists(QStringLiteral("Plain"))) {
 		QMessageBox::warning(this, tr("Highlight Style"), tr("Highlight style \"Plain\" is missing"));
 		return nullptr;
 	}
@@ -6411,8 +6412,8 @@ std::unique_ptr<WindowHighlightData> DocumentWidget::createHighlightData(Pattern
 	auto p1Ptr = std::back_inserter(pass1PatternSrc);
 	auto p2Ptr = std::back_inserter(pass2PatternSrc);
 
-	*p1Ptr++ = HighlightPattern(QLatin1String("Plain"));
-	*p2Ptr++ = HighlightPattern(QLatin1String("Plain"));
+	*p1Ptr++ = HighlightPattern(QStringLiteral("Plain"));
+	*p2Ptr++ = HighlightPattern(QStringLiteral("Plain"));
 
 	for (const HighlightPattern &pattern : patterns) {
 		if (pattern.flags & DEFER_PARSING) {
@@ -6635,7 +6636,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 			return nullptr;
 		}
 
-		static const QRegularExpression re(QLatin1String("[0-9]+"));
+		static const QRegularExpression re(QStringLiteral("[0-9]+"));
 
 		{
 			if (!patternSrc[i].startRE.isNull()) {
@@ -6803,7 +6804,7 @@ std::unique_ptr<HighlightData[]> DocumentWidget::compilePatterns(const std::vect
 std::unique_ptr<Regex> DocumentWidget::compileRegexAndWarn(const QString &re) {
 
 	try {
-		return make_regex(re, RE_DEFAULT_STANDARD);
+		return MakeRegex(re, RE_DEFAULT_STANDARD);
 	} catch (const RegexError &e) {
 
 		constexpr int MaxLength = 4096;
@@ -6922,7 +6923,7 @@ void DocumentWidget::replay() {
 		QString errMsg;
 		int stoppedAt;
 
-		Program *const prog = compileMacro(replayMacro, &errMsg, &stoppedAt);
+		Program *const prog = CompileMacro(replayMacro, &errMsg, &stoppedAt);
 		if (!prog) {
 			qWarning("NEdit: internal error, learn/replay macro syntax error: %s", qPrintable(errMsg));
 			return;
@@ -6997,12 +6998,12 @@ void DocumentWidget::doMacro(const QString &macro, const QString &errInName) {
 
 	/* Add a terminating newline (which command line users are likely to omit
 	   since they are typically invoking a single routine) */
-	const QString qMacro = macro + QLatin1Char('\n');
+	const QString qMacro = EnsureNewline(macro);
 	QString errMsg;
 
 	// Parse the macro and report errors if it fails
 	int stoppedAt;
-	Program *const prog = compileMacro(qMacro, &errMsg, &stoppedAt);
+	Program *const prog = CompileMacro(qMacro, &errMsg, &stoppedAt);
 	if (!prog) {
 		Preferences::ReportError(this, qMacro, stoppedAt, errInName, errMsg);
 		return;
@@ -7189,7 +7190,7 @@ bool DocumentWidget::makeBackupCopy() const {
  */
 void DocumentWidget::setMakeBackupCopy(bool value) {
 
-	EmitEvent("set_make_backup_copy", value ? QLatin1String("1") : QLatin1String("0"));
+	EmitEvent("set_make_backup_copy", value ? QStringLiteral("1") : QStringLiteral("0"));
 
 	if (isTopDocument()) {
 		if (auto win = MainWindow::fromDocument(this)) {
@@ -7451,7 +7452,7 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 		Tags::tagSearch[nMatches] = searchString;
 		Tags::tagPosInf[nMatches] = startPos;
 
-		const PathInfo fi = parseFilename(Tags::tagFiles[nMatches]);
+		const PathInfo fi = ParseFilename(Tags::tagFiles[nMatches]);
 
 		// Is this match in the current file?  If so, use it!
 		if (Preferences::GetPrefSmartTags() && info_->filename == fi.filename && info_->path == fi.pathname) {
@@ -7509,7 +7510,7 @@ int DocumentWidget::findAllMatches(TextArea *area, const QString &string) {
 
 			QString temp;
 
-			const PathInfo fi = parseFilename(Tags::tagFiles[i]);
+			const PathInfo fi = ParseFilename(Tags::tagFiles[i]);
 
 			if ((i < nMatches - 1 && (Tags::tagFiles[i] == Tags::tagFiles[i + 1])) || (i > 0 && (Tags::tagFiles[i] == Tags::tagFiles[i - 1]))) {
 
@@ -7610,7 +7611,7 @@ int DocumentWidget::showTipString(const QString &text, bool anchored, int pos, b
  */
 void DocumentWidget::editTaggedLocation(TextArea *area, int i) {
 
-	const PathInfo fi = parseFilename(Tags::tagFiles[i]);
+	const PathInfo fi = ParseFilename(Tags::tagFiles[i]);
 
 	// open the file containing the definition
 	DocumentWidget::editExistingFile(
@@ -7814,7 +7815,7 @@ void DocumentWidget::dropEvent(QDropEvent *event) {
 			break;
 		}
 
-		const QString fileName = url.toLocalFile();
-		open(fileName);
+		const QString filename = url.toLocalFile();
+		open(filename);
 	}
 }

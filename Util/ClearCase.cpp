@@ -13,7 +13,7 @@ namespace ClearCase {
  * @return The index of the version extended path, or -1 if not found.
  */
 int GetVersionExtendedPathIndex(const QString &fullname) {
-	return fullname.indexOf(QLatin1String("@@/"));
+	return fullname.indexOf(QStringLiteral("@@/"));
 }
 
 /**
@@ -39,17 +39,13 @@ QString GetVersionExtendedPath(const QString &fullname) {
  * @note This function caches the view tag after the first call, so subsequent calls
  * will return the cached value without re-evaluating the environment variable.
  * @note If user has ClearCase and is in a view, CLEARCASE_ROOT will be set and
- * the view tag can be extracted.  This check is safe and efficient enough
+ * the view tag can be extracted. This check is safe and efficient enough
  * that it doesn't impact non-clearcase users, so it is not conditionally
  * compiled. (Thanks to Max Vohlken)
  */
 QString GetViewTag() {
 
-	static bool ClearCaseViewTagFound = false;
-	static QString ClearCaseViewRoot;
-	static QString ClearCaseViewTag;
-
-	if (!ClearCaseViewTagFound) {
+	static QString ClearCaseViewTag = []() {
 		/* Extract the view name from the CLEARCASE_ROOT environment variable */
 		const QString ClearCaseViewRoot = GetEnvironmentVariable("CLEARCASE_ROOT");
 		if (!ClearCaseViewRoot.isNull()) {
@@ -58,11 +54,9 @@ QString GetViewTag() {
 				ClearCaseViewTag = ClearCaseViewRoot.mid(tagPtr + 1);
 			}
 		}
-	}
-	/* If we don't find it first time, we will never find it, so may just as
-	 * well say that we have found it.
-	 */
-	ClearCaseViewTagFound = true;
+		return ClearCaseViewRoot;
+	}();
+
 	return ClearCaseViewTag;
 }
 

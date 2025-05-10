@@ -56,11 +56,11 @@ QScreen *ScreenAt(QPoint pos) {
 }
 
 /**
- * @brief
+ * @brief Check if a widget is located on the specified desktop screen.
  *
- * @param widget
- * @param currentDesktop
- * @return
+ * @param widget The widget to check.
+ * @param currentDesktop The current desktop screen to check against.
+ * @return `true` if the widget is located on the current desktop, `false` otherwise.
  */
 bool IsLocatedOnDesktop(QWidget *widget, QScreen *currentDesktop) {
 	if (!currentDesktop) {
@@ -71,10 +71,10 @@ bool IsLocatedOnDesktop(QWidget *widget, QScreen *currentDesktop) {
 }
 
 /**
- * @brief
+ * @brief Find a document widget for the target screen.
  *
- * @param currentDesktop
- * @return
+ * @param currentDesktop The current desktop screen to find a document for.
+ * @return The document widget on the target screen, or nullptr if no such document exists.
  */
 DocumentWidget *DocumentForTargetScreen(QScreen *currentDesktop) {
 	const std::vector<MainWindow *> windows = MainWindow::allWindows();
@@ -91,11 +91,11 @@ DocumentWidget *DocumentForTargetScreen(QScreen *currentDesktop) {
 }
 
 /**
- * @brief
+ * @brief Find a document on the current desktop based on the tabbed state.
  *
- * @param tabbed
- * @param currentDesktop
- * @return
+ * @param tabbed The tabbed state: 0 for a new window, -1 for a new tab, or any other value for an existing tab.
+ * @param currentDesktop The current desktop screen to search for documents.
+ * @return The found document widget, or nullptr if no suitable document is found.
  */
 DocumentWidget *FindDocumentOnDesktop(int tabbed, QScreen *currentDesktop) {
 
@@ -212,7 +212,7 @@ void NeditServer::newConnection() {
 				false,
 				QString());
 
-			MainWindow::checkCloseEnableState();
+			MainWindow::updateCloseEnableState();
 		} else {
 			(*it)->raiseDocument();
 		}
@@ -228,20 +228,20 @@ void NeditServer::newConnection() {
 
 		auto file = entry.toObject();
 
-		const bool wait            = file[QLatin1String("wait")].toBool();
-		const int lineNum          = file[QLatin1String("line_number")].toInt();
-		const int readFlag         = file[QLatin1String("read")].toInt();
-		const int createFlag       = file[QLatin1String("create")].toInt();
-		const int iconicFlag       = file[QLatin1String("iconic")].toInt();
-		const int tabbed           = file[QLatin1String("is_tabbed")].toInt();
-		const QString fullname     = file[QLatin1String("path")].toString();
-		const QString doCommand    = file[QLatin1String("toDoCommand")].toString();
-		const QString languageMode = file[QLatin1String("langMode")].toString();
-		const QString geometry     = file[QLatin1String("geometry")].toString();
+		const bool wait            = file[QStringLiteral("wait")].toBool();
+		const int lineNum          = file[QStringLiteral("line_number")].toInt();
+		const int readFlag         = file[QStringLiteral("read")].toInt();
+		const int createFlag       = file[QStringLiteral("create")].toInt();
+		const int iconicFlag       = file[QStringLiteral("iconic")].toInt();
+		const int tabbed           = file[QStringLiteral("is_tabbed")].toInt();
+		const QString fullname     = file[QStringLiteral("path")].toString();
+		const QString doCommand    = file[QStringLiteral("toDoCommand")].toString();
+		const QString languageMode = file[QStringLiteral("langMode")].toString();
+		const QString geometry     = file[QStringLiteral("geometry")].toString();
 
 		/* An empty file name means:
-		 *   put up an empty, Untitled window, or use an existing one
-		 *   choose a random window for executing the -do macro upon
+		 *  put up an empty, Untitled window, or use an existing one
+		 *  choose a random window for executing the -do macro upon
 		 */
 		if (fullname.isEmpty()) {
 
@@ -284,11 +284,11 @@ void NeditServer::newConnection() {
 					} else {
 						(*win)->raiseDocumentWindow();
 					}
-					(*win)->doMacro(doCommand, QLatin1String("-do macro"));
+					(*win)->doMacro(doCommand, QStringLiteral("-do macro"));
 				}
 			}
 
-			MainWindow::checkCloseEnableState();
+			MainWindow::updateCloseEnableState();
 			return;
 		}
 
@@ -299,7 +299,7 @@ void NeditServer::newConnection() {
 			EditFlags::CREATE |
 			(createFlag ? EditFlags::SUPPRESS_CREATE_WARN : 0);
 
-		const PathInfo fi = parseFilename(fullname);
+		const PathInfo fi = ParseFilename(fullname);
 
 		DocumentWidget *document = MainWindow::findWindowWithFile(fi);
 		if (!document) {
@@ -347,7 +347,7 @@ void NeditServer::newConnection() {
 				if (document->macroCmdData_) {
 					QApplication::beep();
 				} else {
-					document->doMacro(doCommand, QLatin1String("-do macro"));
+					document->doMacro(doCommand, QStringLiteral("-do macro"));
 				}
 			}
 
@@ -380,6 +380,6 @@ void NeditServer::newConnection() {
 		} else {
 			lastFile->raiseDocumentWindow();
 		}
-		MainWindow::checkCloseEnableState();
+		MainWindow::updateCloseEnableState();
 	}
 }

@@ -127,12 +127,12 @@ QString GetDefaultShell() {
 	if (!passwdEntry) {
 		//  Something bad happened! Do something, quick!
 		perror("NEdit: Failed to get passwd entry (falling back to 'sh')");
-		return QLatin1String("sh");
+		return QStringLiteral("sh");
 	}
 
 	return QString::fromUtf8(passwdEntry->pw_shell);
 #elif defined(Q_OS_WIN)
-	return QLatin1String("powershell.exe");
+	return QStringLiteral("powershell.exe");
 #else
 	return QString();
 #endif

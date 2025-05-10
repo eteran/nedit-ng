@@ -21,14 +21,14 @@ struct Symbol;
 
 constexpr const char ARRAY_DIM_SEP[] = "\034";
 
-enum SymTypes {
-	CONST_SYM,
-	GLOBAL_SYM,
-	LOCAL_SYM,
-	ARG_SYM,
-	PROC_VALUE_SYM,
-	C_FUNCTION_SYM,
-	MACRO_FUNCTION_SYM
+enum SymbolType {
+	SymbolConst,
+	SymbolGlobal,
+	SymbolLocal,
+	SymbolArg,
+	SymbolProcValue,
+	SymbolBuiltinFunc,
+	SymbolMacroFunc
 };
 
 #define N_OPS 43
@@ -96,7 +96,7 @@ union Inst {
 /* symbol table entry */
 struct Symbol {
 	std::string name;
-	SymTypes type;
+	SymbolType type;
 	DataValue value;
 };
 
@@ -142,12 +142,12 @@ bool AddImmediate(int value, QString *msg);
 bool AddOp(int op, QString *msg);
 bool AddSym(Symbol *sym, QString *msg);
 Inst *GetPC();
-Program *FinishCreatingProgram();
+std::unique_ptr<Program> FinishCreatingProgram();
 Symbol *InstallIteratorSymbol();
 Symbol *InstallStringConstSymbol(std::string_view str);
 Symbol *InstallStringConstSymbolEx(const QString &str);
-Symbol *InstallSymbol(std::string name, SymTypes type, const DataValue &value);
-Symbol *InstallSymbolEx(const QString &name, enum SymTypes type, const DataValue &value);
+Symbol *InstallSymbol(std::string name, SymbolType type, const DataValue &value);
+Symbol *InstallSymbolEx(const QString &name, enum SymbolType type, const DataValue &value);
 Symbol *LookupStringConstSymbol(std::string_view value);
 Symbol *LookupSymbolEx(const QString &name);
 Symbol *LookupSymbol(std::string_view name);
@@ -157,7 +157,7 @@ void StartLoopAddrList();
 void SwapCode(Inst *start, Inst *boundary, Inst *end);
 
 // Routines for executing programs
-int executeMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg);
+int ExecuteMacro(DocumentWidget *document, Program *prog, gsl::span<DataValue> arguments, DataValue *result, std::shared_ptr<MacroContext> &continuation, QString *msg);
 ExecReturnCodes continueMacro(const std::shared_ptr<MacroContext> &continuation, DataValue *result, QString *msg);
 void RunMacroAsSubrCall(Program *prog);
 void preemptMacro();

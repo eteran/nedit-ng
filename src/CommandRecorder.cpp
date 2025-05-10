@@ -55,7 +55,7 @@ const QLatin1String RedundantActions[] = {
  * @return `true` if the event is a mouse action, false otherwise
  */
 template <class Event>
-bool isMouseAction(const Event *ev) {
+bool IsMouseAction(const Event *ev) {
 
 	return std::any_of(std::begin(MouseActions), std::end(MouseActions), [ev](const QLatin1String &action) {
 		return action == ev->actionString();
@@ -69,7 +69,7 @@ bool isMouseAction(const Event *ev) {
  * @return `true` if the action is redundant, false otherwise
  */
 template <class Event>
-bool isRedundantAction(const Event *ev) {
+bool IsRedundantAction(const Event *ev) {
 
 	return std::any_of(std::begin(RedundantActions), std::end(RedundantActions), [ev](const QLatin1String &action) {
 		return action == ev->actionString();
@@ -83,9 +83,9 @@ bool isRedundantAction(const Event *ev) {
  * @return QString representing the action, or QString() if the action is not recordable.
  */
 template <class Event>
-QString actionToString(const Event *ev) {
+QString ActionToString(const Event *ev) {
 
-	if (isRedundantAction(ev) || isMouseAction(ev)) {
+	if (IsRedundantAction(ev) || IsMouseAction(ev)) {
 		return QString();
 	}
 
@@ -116,7 +116,7 @@ QString CommandRecorder::quoteString(const QString &s) {
  */
 QString CommandRecorder::escapeString(const QString &s) {
 
-	static const QString EscapeChars = QLatin1String("\\\"\n\t\b\r\f\a\v");
+	static const auto EscapeChars = QStringLiteral("\\\"\n\t\b\r\f\a\v");
 
 	QString r;
 	r.reserve(s.size());
@@ -177,19 +177,19 @@ void CommandRecorder::lastActionHook(const WindowMenuEvent *ev) {
 
 	/* The last action is recorded for the benefit of repeating the last
 	   action.  Don't record repeat_macro and wipe out the real action */
-	if (ev->actionString() == QLatin1String("repeat_macro")) {
+	if (ev->actionString() == QStringLiteral("repeat_macro")) {
 		return;
 	}
 
 	// Record the action and its parameters
-	const QString actionString = actionToString(ev);
+	const QString actionString = ActionToString(ev);
 	if (!actionString.isNull()) {
 		lastCommand_ = actionString;
 
 		if (isRecording_) {
 			/* beep on un-recordable operations which require a mouse position, to
 			   remind the user that the action was not recorded */
-			if (isMouseAction(ev)) {
+			if (IsMouseAction(ev)) {
 				QApplication::beep();
 				return;
 			}
@@ -209,19 +209,19 @@ void CommandRecorder::lastActionHook(const TextEditEvent *ev) {
 
 	/* The last action is recorded for the benefit of repeating the last
 	   action.  Don't record repeat_macro and wipe out the real action */
-	if (ev->actionString() == QLatin1String("repeat_macro")) {
+	if (ev->actionString() == QStringLiteral("repeat_macro")) {
 		return;
 	}
 
 	// Record the action and its parameters
-	const QString actionString = actionToString(ev);
+	const QString actionString = ActionToString(ev);
 	if (!actionString.isNull()) {
 		lastCommand_ = actionString;
 
 		if (isRecording_) {
 			/* beep on un-recordable operations which require a mouse position, to
 			   remind the user that the action was not recorded */
-			if (isMouseAction(ev)) {
+			if (IsMouseAction(ev)) {
 				QApplication::beep();
 				return;
 			}

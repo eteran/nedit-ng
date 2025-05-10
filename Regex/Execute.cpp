@@ -24,28 +24,31 @@ bool Attempt(Regex *prog, const char *string);
  * @param ptr The current position in the regex program.
  * @return The next pointer in the regex program, or nullptr if there is no next pointer.
  *
- * @note The `next_ptr()` function can consume up to 30% of the time
+ * @note The `NextPtr()` function can consume up to 30% of the time
  * during matching because it is called an immense number of times
- * (an average of 25 `next_ptr()` calls per `Match()` call was witnessed
+ * (an average of 25 `NextPtr()` calls per `Match()` call was witnessed
  * for Perl syntax highlighting). Therefore it is well worth removing
- * some of the function call overhead by selectively inlining the `next_ptr()` calls.
+ * some of the function call overhead by selectively inlining the `NextPtr()` calls.
  * Moreover, the inlined code can be simplified for matching because one of the tests,
  * only necessary during compilation, can be left out. The net result of using this
  * inlined version at two critical places is a 25% speedup
  * (again, witnesses on Perl syntax highlighting).
+ *
+ * @note This function used to be a macro, but was changed to an inline function
+ * to improve type safety and maintainability.
  */
-FORCE_INLINE uint8_t *NEXT_PTR(uint8_t *ptr) noexcept {
+FORCE_INLINE uint8_t *NextPointer(uint8_t *ptr) noexcept {
 
-	// NOTE(eteran): like next_ptr, but is inline
+	// NOTE(eteran): like NextPtr, but is inline
 	// doesn't do "is this a first pass compile" check
 
-	const uint16_t offset = GET_OFFSET(ptr);
+	const int offset = GetOffset(ptr);
 
 	if (offset == 0) {
 		return nullptr;
 	}
 
-	if (GET_OP_CODE(ptr) == BACK) {
+	if (GetOpCode(ptr) == BACK) {
 		return (ptr - offset);
 	}
 
@@ -138,10 +141,10 @@ uint32_t Greedy(uint8_t *p, uint32_t max) {
 	uint32_t count = 0;
 
 	const char *const input_str = eContext.Reg_Input;
-	const uint8_t *operand      = OPERAND(p); // Literal char or start of class characters.
+	const uint8_t *operand      = Operand(p); // Literal char or start of class characters.
 	const uint32_t max_cmp      = (max > 0) ? max : std::numeric_limits<uint32_t>::max();
 
-	switch (GET_OP_CODE(p)) {
+	switch (GetOpCode(p)) {
 	case ANY:
 		// Race to the end of the line or string. Dot DOESN'T match newline.
 		count = GreedyConsume(input_str, max_cmp, [](char ch) { return ch != '\n'; });
@@ -272,19 +275,19 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 	uint8_t *scan = prog;
 
 	while (scan) {
-		uint8_t *next = NEXT_PTR(scan);
+		uint8_t *next = NextPointer(scan);
 
-		switch (GET_OP_CODE(scan)) {
+		switch (GetOpCode(scan)) {
 		case BRANCH:
-			if (GET_OP_CODE(next) != BRANCH) { // No choice.
-				next = OPERAND(scan);          // Avoid recursion.
+			if (GetOpCode(next) != BRANCH) { // No choice.
+				next = Operand(scan);        // Avoid recursion.
 			} else {
 				size_t branch_index_local = 0;
 
 				do {
 					const char *save = eContext.Reg_Input;
 
-					if (Match(OPERAND(scan), nullptr)) {
+					if (Match(Operand(scan), nullptr)) {
 						if (branch_index_param) {
 							*branch_index_param = branch_index_local;
 						}
@@ -296,15 +299,15 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 					++branch_index_local;
 
 					eContext.Reg_Input = save; // Backtrack.
-					scan               = NEXT_PTR(scan);
-				} while (scan != nullptr && GET_OP_CODE(scan) == BRANCH);
+					scan               = NextPointer(scan);
+				} while (scan != nullptr && GetOpCode(scan) == BRANCH);
 
 				MATCH_RETURN(false); // NOT REACHED
 			}
 			break;
 
 		case EXACTLY: {
-			uint8_t *opnd = OPERAND(scan);
+			uint8_t *opnd = Operand(scan);
 
 			// Inline the first character, for speed.
 			if (EndOfString(eContext.Reg_Input) || static_cast<char>(*opnd) != *eContext.Reg_Input) {
@@ -327,7 +330,7 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 
 		case SIMILAR: {
 			uint8_t test;
-			uint8_t *opnd = OPERAND(scan);
+			uint8_t *opnd = Operand(scan);
 
 			/* Note: the SIMILAR operand was converted to lower case during
 				   regex compile. */
@@ -549,7 +552,7 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 										as a member of the character set. */
 			}
 
-			if (::strchr(reinterpret_cast<char *>(OPERAND(scan)), *eContext.Reg_Input) == nullptr) {
+			if (::strchr(reinterpret_cast<char *>(Operand(scan)), *eContext.Reg_Input) == nullptr) {
 				MATCH_RETURN(false);
 			}
 
@@ -564,7 +567,7 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 				MATCH_RETURN(false); // See comment for ANY_OF.
 			}
 
-			if (::strchr(reinterpret_cast<char *>(OPERAND(scan)), *eContext.Reg_Input) != nullptr) {
+			if (::strchr(reinterpret_cast<char *>(Operand(scan)), *eContext.Reg_Input) != nullptr) {
 				MATCH_RETURN(false);
 			}
 
@@ -595,15 +598,15 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 			/* Lookahead (when possible) to avoid useless match attempts
 			   when we know what character comes next. */
 
-			if (GET_OP_CODE(next) == EXACTLY) {
-				next_char = *OPERAND(next);
+			if (GetOpCode(next) == EXACTLY) {
+				next_char = *Operand(next);
 			} else {
 				next_char = '\0'; // i.e. Don't know what next character is.
 			}
 
-			next_op = OPERAND(scan);
+			next_op = Operand(scan);
 
-			switch (GET_OP_CODE(scan)) {
+			switch (GetOpCode(scan)) {
 			case LAZY_STAR:
 				lazy = true;
 				[[fallthrough]];
@@ -632,14 +635,14 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 				lazy = true;
 				[[fallthrough]];
 			case BRACE:
-				min = static_cast<uint32_t>(GET_OFFSET(scan + NEXT_PTR_SIZE<size_t>));
-				max = static_cast<uint32_t>(GET_OFFSET(scan + (2 * NEXT_PTR_SIZE<size_t>)));
+				min = static_cast<uint32_t>(GetOffset(scan + NEXT_PTR_SIZE<size_t>));
+				max = static_cast<uint32_t>(GetOffset(scan + (2 * NEXT_PTR_SIZE<size_t>)));
 
 				if (max <= REG_INFINITY) {
 					max = std::numeric_limits<uint32_t>::max();
 				}
 
-				next_op = OPERAND(scan + (2 * NEXT_PTR_SIZE<size_t>));
+				next_op = Operand(scan + (2 * NEXT_PTR_SIZE<size_t>));
 			}
 
 			save = eContext.Reg_Input;
@@ -691,15 +694,15 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 			break;
 
 		case INIT_COUNT:
-			eContext.BraceCounts[*OPERAND(scan)] = 0;
+			eContext.BraceCounts[*Operand(scan)] = 0;
 			break;
 
 		case INC_COUNT:
-			eContext.BraceCounts[*OPERAND(scan)]++;
+			eContext.BraceCounts[*Operand(scan)]++;
 			break;
 
 		case TEST_COUNT:
-			if (eContext.BraceCounts[*OPERAND(scan)] < static_cast<uint32_t>(GET_OFFSET(scan + NEXT_PTR_SIZE<size_t> + INDEX_SIZE<size_t>))) {
+			if (eContext.BraceCounts[*Operand(scan)] < static_cast<uint32_t>(GetOffset(scan + NEXT_PTR_SIZE<size_t> + INDEX_SIZE<size_t>))) {
 				next = scan + NODE_SIZE<size_t> + INDEX_SIZE<size_t> + NEXT_PTR_SIZE<size_t>;
 			}
 			break;
@@ -713,10 +716,10 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 		{
 			const char *captured;
 			const char *finish;
-			const uint8_t paren_no = *OPERAND(scan);
+			const uint8_t paren_no = *Operand(scan);
 
 #ifdef ENABLE_CROSS_REGEX_BACKREF
-			if (GET_OP_CODE(scan) == X_REGEX_BR || GET_OP_CODE(scan) == X_REGEX_BR_CI) {
+			if (GetOpCode(scan) == X_REGEX_BR || GetOpCode(scan) == X_REGEX_BR_CI) {
 				if (eContext.Cross_Regex_Backref == nullptr) {
 					MATCH_RETURN(0);
 				}
@@ -737,9 +740,9 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 				}
 
 #ifdef ENABLE_CROSS_REGEX_BACKREF
-				if (GET_OP_CODE(scan) == BACK_REF_CI || GET_OP_CODE(scan) == X_REGEX_BR_CI) {
+				if (GetOpCode(scan) == BACK_REF_CI || GetOpCode(scan) == X_REGEX_BR_CI) {
 #else
-				if (GET_OP_CODE(scan) == BACK_REF_CI) {
+				if (GetOpCode(scan) == BACK_REF_CI) {
 #endif
 					while (captured < finish) {
 						if (EndOfString(eContext.Reg_Input) || safe_tolower(*captured++) != safe_tolower(*eContext.Reg_Input++)) {
@@ -774,7 +777,7 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 
 			CHECK_RECURSION_LIMIT();
 
-			if ((GET_OP_CODE(scan) == POS_AHEAD_OPEN) ? answer : !answer) {
+			if ((GetOpCode(scan) == POS_AHEAD_OPEN) ? answer : !answer) {
 				/* Remember the last (most to the right) character position
 				   that we consume in the input for a successful match.  This
 				   is info that may be needed should an attempt be made to
@@ -793,13 +796,13 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 				/* Jump to the node just after the (?=...) or (?!...)
 				   Construct. */
 
-				next = NEXT_PTR(OPERAND(scan)); // Skip 1st branch
+				next = NextPointer(Operand(scan)); // Skip 1st branch
 				// Skip the chain of branches inside the look-ahead
-				while (GET_OP_CODE(next) == BRANCH) {
-					next = NEXT_PTR(next);
+				while (GetOpCode(next) == BRANCH) {
+					next = NextPointer(next);
 				}
 
-				next = NEXT_PTR(next); // Skip the LOOK_AHEAD_CLOSE
+				next = NextPointer(next); // Skip the LOOK_AHEAD_CLOSE
 			} else {
 				eContext.Reg_Input     = save;      // Backtrack to look-ahead start.
 				eContext.End_Of_String = saved_end; // Restore logical end.
@@ -870,19 +873,19 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 			eContext.Reg_Input     = save;
 			eContext.End_Of_String = saved_end;
 
-			if ((GET_OP_CODE(scan) == POS_BEHIND_OPEN) ? found : !found) {
+			if ((GetOpCode(scan) == POS_BEHIND_OPEN) ? found : !found) {
 				/* The look-behind matches, so we must jump to the next
 				   node. The look-behind node is followed by a chain of
 				   branches (contents of the look-behind expression), and
 				   terminated by a look-behind-close node. */
-				next = NEXT_PTR(OPERAND(scan) + LENGTH_SIZE<size_t>); // 1st branch
+				next = NextPointer(Operand(scan) + LENGTH_SIZE<size_t>); // 1st branch
 
 				// Skip the chained branches inside the look-ahead
-				while (GET_OP_CODE(next) == BRANCH) {
-					next = NEXT_PTR(next);
+				while (GetOpCode(next) == BRANCH) {
+					next = NextPointer(next);
 				}
 
-				next = NEXT_PTR(next); // Skip LOOK_BEHIND_CLOSE
+				next = NextPointer(next); // Skip LOOK_BEHIND_CLOSE
 			} else {
 				// Not a match
 				MATCH_RETURN(false);
@@ -896,9 +899,9 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 			MATCH_RETURN(true);
 
 		default:
-			if ((GET_OP_CODE(scan) > OPEN) && (GET_OP_CODE(scan) < OPEN + MaxSubExpr)) {
+			if ((GetOpCode(scan) > OPEN) && (GetOpCode(scan) < OPEN + MaxSubExpr)) {
 
-				const uint8_t no = GET_OP_CODE(scan) - OPEN;
+				const uint8_t no = GetOpCode(scan) - OPEN;
 				const char *save = eContext.Reg_Input;
 
 				if (no < 10) {
@@ -918,9 +921,9 @@ bool Match(uint8_t *prog, size_t *branch_index_param) {
 				} else {
 					MATCH_RETURN(false);
 				}
-			} else if ((GET_OP_CODE(scan) > CLOSE) && (GET_OP_CODE(scan) < CLOSE + MaxSubExpr)) {
+			} else if ((GetOpCode(scan) > CLOSE) && (GetOpCode(scan) < CLOSE + MaxSubExpr)) {
 
-				const uint8_t no = GET_OP_CODE(scan) - CLOSE;
+				const uint8_t no = GetOpCode(scan) - CLOSE;
 				const char *save = eContext.Reg_Input;
 
 				if (no < 10) {

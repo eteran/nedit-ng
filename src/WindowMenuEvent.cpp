@@ -3,19 +3,19 @@
 #include "CommandRecorder.h"
 
 /**
- * @brief
+ * @brief Constructor for WindowMenuEvent.
  *
- * @param macroString
- * @param arguments
+ * @param action The action triggering the event.
+ * @param arguments The arguments for the action.
  */
-WindowMenuEvent::WindowMenuEvent(QString macroString, QStringList arguments)
-	: QEvent(eventType), macroString_(std::move(macroString)), arguments_(std::move(arguments)) {
+WindowMenuEvent::WindowMenuEvent(QString action, QStringList arguments)
+	: QEvent(eventType), action_(std::move(action)), arguments_(std::move(arguments)) {
 }
 
 /**
- * @brief
+ * @brief Returns the argument string for the event.
  *
- * @return
+ * @return A string representation of the arguments.
  */
 QString WindowMenuEvent::argumentString() const {
 	QStringList args;
@@ -28,19 +28,20 @@ QString WindowMenuEvent::argumentString() const {
 }
 
 /**
- * @brief
+ * @brief Returns a string representation of the event.
  *
- * @return
+ * @return A string representation of the event.
+ * @note The format is "action(arguments)".
  */
 QString WindowMenuEvent::toString() const {
-	return QStringLiteral("%1(%2)").arg(macroString_, argumentString());
+	return QStringLiteral("%1(%2)").arg(action_, argumentString());
 }
 
 /**
- * @brief
+ * @brief Returns the action string for the event.
  *
- * @return
+ * @return The action string associated with the event.
  */
 QString WindowMenuEvent::actionString() const {
-	return macroString_;
+	return action_;
 }

@@ -299,7 +299,7 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 	// Check the initialization macro
 	const QString initText = ui.editInit->toPlainText();
 	if (!initText.isEmpty()) {
-		const QString widgetText = ensure_newline(initText);
+		const QString widgetText = EnsureNewline(initText);
 		int stoppedAt            = 0;
 		if (!CheckMacroString(this, widgetText, tr("initialization macro"), &stoppedAt)) {
 			QTextCursor cursor = ui.editInit->textCursor();
@@ -318,11 +318,11 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 	}
 
 	{
-		const QString widgetText = ensure_newline(newlineText);
+		const QString widgetText = EnsureNewline(newlineText);
 		QString errMsg;
 		int stoppedAt = 0;
 
-		if (!isMacroValid(widgetText, &errMsg, &stoppedAt)) {
+		if (!IsMacroValid(widgetText, &errMsg, &stoppedAt)) {
 			Preferences::ReportError(this, widgetText, stoppedAt, tr("newline macro"), errMsg);
 			QTextCursor cursor = ui.editNewline->textCursor();
 			cursor.setPosition(stoppedAt);
@@ -335,11 +335,11 @@ bool DialogSmartIndent::checkSmartIndentDialogData() {
 	// Test compile the modify macro
 	const QString modMacroText = ui.editModMacro->toPlainText();
 	if (!modMacroText.isEmpty()) {
-		const QString widgetText = ensure_newline(modMacroText);
+		const QString widgetText = EnsureNewline(modMacroText);
 		QString errMsg;
 		int stoppedAt = 0;
 
-		if (!isMacroValid(widgetText, &errMsg, &stoppedAt)) {
+		if (!IsMacroValid(widgetText, &errMsg, &stoppedAt)) {
 			Preferences::ReportError(this, widgetText, stoppedAt, tr("modify macro"), errMsg);
 			QTextCursor cursor = ui.editModMacro->textCursor();
 			cursor.setPosition(stoppedAt);
@@ -361,9 +361,9 @@ SmartIndentEntry DialogSmartIndent::getSmartIndentDialogData() const {
 
 	SmartIndentEntry is;
 	is.language     = languageMode_;
-	is.initMacro    = ui.editInit->toPlainText().isEmpty() ? QString() : ensure_newline(ui.editInit->toPlainText());
-	is.newlineMacro = ui.editNewline->toPlainText().isEmpty() ? QString() : ensure_newline(ui.editNewline->toPlainText());
-	is.modMacro     = ui.editModMacro->toPlainText().isEmpty() ? QString() : ensure_newline(ui.editModMacro->toPlainText());
+	is.initMacro    = ui.editInit->toPlainText().isEmpty() ? QString() : EnsureNewline(ui.editInit->toPlainText());
+	is.newlineMacro = ui.editNewline->toPlainText().isEmpty() ? QString() : EnsureNewline(ui.editNewline->toPlainText());
+	is.modMacro     = ui.editModMacro->toPlainText().isEmpty() ? QString() : EnsureNewline(ui.editModMacro->toPlainText());
 	return is;
 }
 

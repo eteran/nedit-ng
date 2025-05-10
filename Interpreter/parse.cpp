@@ -11,8 +11,8 @@
  *                  parsing stopped, if it was invalid. If the macro is valid, this will be set to 0.
  * @return `true` if the macro is valid, `false` otherwise.
  */
-bool isMacroValid(const QString &expr, QString *message, int *stoppedAt) {
-	if (Program *prog = compileMacro(expr, message, stoppedAt)) {
+bool IsMacroValid(const QString &expr, QString *message, int *stoppedAt) {
+	if (Program *prog = CompileMacro(expr, message, stoppedAt)) {
 		delete prog;
 		return true;
 	}

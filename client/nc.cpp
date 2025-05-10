@@ -142,14 +142,14 @@ void PrintVersion() {
 	printf(ncHelpText,
 		   NEDIT_VERSION_MAJ,
 		   NEDIT_VERSION_REV,
-		   buildOperatingSystem().latin1(),
-		   buildArchitecture().latin1(),
-		   buildCompiler().toLatin1().data());
+		   BuildOperatingSystem().latin1(),
+		   BuildArchitecture().latin1(),
+		   BuildCompiler().toLatin1().data());
 }
 
 /**
  * @brief Parses the command line arguments into a CommandLine structure.
- * This is the internal implementation of processCommandLine.
+ * This is the internal implementation of ProcessCommandLine.
  *
  * @param args The command line arguments
  * @return A CommandLine structure containing the parsed arguments
@@ -175,24 +175,24 @@ std::optional<CommandLine> ParseCommandLine(const QStringList &args) {
 
 	for (int i = 1; i < args.size(); i++) {
 
-		if (opts && args[i] == QLatin1String("--")) {
+		if (opts && args[i] == QStringLiteral("--")) {
 			opts = false; // treat all remaining arguments as filenames
 			continue;
 		}
 
-		if (opts && args[i] == QLatin1String("-debug-proto")) {
+		if (opts && args[i] == QStringLiteral("-debug-proto")) {
 			debug_proto = true;
-		} else if (opts && args[i] == QLatin1String("-wait")) {
+		} else if (opts && args[i] == QStringLiteral("-wait")) {
 			ServerPreferences.waitForClose = true;
-		} else if (opts && args[i] == QLatin1String("-svrname")) {
+		} else if (opts && args[i] == QStringLiteral("-svrname")) {
 			i = GetArgumentParameter(args, i);
 
 			ServerPreferences.serverName = args[i];
-		} else if (opts && args[i] == QLatin1String("-svrcmd")) {
+		} else if (opts && args[i] == QStringLiteral("-svrcmd")) {
 			i = GetArgumentParameter(args, i);
 
 			ServerPreferences.serverCmd = args[i];
-		} else if (opts && args[i] == QLatin1String("-timeout")) {
+		} else if (opts && args[i] == QStringLiteral("-timeout")) {
 			i = GetArgumentParameter(args, i);
 
 			bool ok;
@@ -202,38 +202,38 @@ std::optional<CommandLine> ParseCommandLine(const QStringList &args) {
 			} else {
 				ServerPreferences.timeOut = n;
 			}
-		} else if (opts && args[i] == QLatin1String("-do")) {
+		} else if (opts && args[i] == QStringLiteral("-do")) {
 			i = GetArgumentParameter(args, i);
 
 			toDoCommand = args[i];
-		} else if (opts && args[i] == QLatin1String("-lm")) {
+		} else if (opts && args[i] == QStringLiteral("-lm")) {
 			commandLine.arguments.push_back(args[i]);
 			i = GetArgumentParameter(args, i);
 
 			langMode = args[i];
 			commandLine.arguments.push_back(args[i]);
-		} else if (opts && (args[i] == QLatin1String("-g") || args[i] == QLatin1String("-geometry"))) {
+		} else if (opts && (args[i] == QStringLiteral("-g") || args[i] == QStringLiteral("-geometry"))) {
 			commandLine.arguments.push_back(args[i]);
 			i = GetArgumentParameter(args, i);
 
 			geometry = args[i];
 			commandLine.arguments.push_back(args[i]);
-		} else if (opts && args[i] == QLatin1String("-read")) {
+		} else if (opts && args[i] == QStringLiteral("-read")) {
 			read = 1;
-		} else if (opts && args[i] == QLatin1String("-create")) {
+		} else if (opts && args[i] == QStringLiteral("-create")) {
 			create = 1;
-		} else if (opts && args[i] == QLatin1String("-tabbed")) {
+		} else if (opts && args[i] == QStringLiteral("-tabbed")) {
 			tabbed = 1;
 			group  = 0; // override -group option
-		} else if (opts && args[i] == QLatin1String("-untabbed")) {
+		} else if (opts && args[i] == QStringLiteral("-untabbed")) {
 			tabbed = 0;
 			group  = 0; // override -group option
-		} else if (opts && args[i] == QLatin1String("-group")) {
+		} else if (opts && args[i] == QStringLiteral("-group")) {
 			group = 2; // 2: start new group, 1: in group
-		} else if (opts && (args[i] == QLatin1String("-iconic") || args[i] == QLatin1String("-icon"))) {
+		} else if (opts && (args[i] == QStringLiteral("-iconic") || args[i] == QStringLiteral("-icon"))) {
 			iconic = 1;
 			commandLine.arguments.push_back(args[i]);
-		} else if (opts && args[i] == QLatin1String("-line")) {
+		} else if (opts && args[i] == QStringLiteral("-line")) {
 			i = GetArgumentParameter(args, i);
 
 			bool ok;
@@ -252,14 +252,14 @@ std::optional<CommandLine> ParseCommandLine(const QStringList &args) {
 			} else {
 				lineNum = lineArg;
 			}
-		} else if (opts && (args[i] == QLatin1String("-ask"))) {
+		} else if (opts && (args[i] == QStringLiteral("-ask"))) {
 			ServerPreferences.autoStart = false;
-		} else if (opts && (args[i] == QLatin1String("-noask"))) {
+		} else if (opts && (args[i] == QStringLiteral("-noask"))) {
 			ServerPreferences.autoStart = true;
-		} else if (opts && (args[i] == QLatin1String("-version") || args[i] == QLatin1String("-V"))) {
+		} else if (opts && (args[i] == QStringLiteral("-version") || args[i] == QStringLiteral("-V"))) {
 			PrintVersion();
 			exit(EXIT_SUCCESS);
-		} else if (opts && (args[i] == QLatin1String("-h") || args[i] == QLatin1String("-help"))) {
+		} else if (opts && (args[i] == QStringLiteral("-h") || args[i] == QStringLiteral("-help"))) {
 			fprintf(stderr, "%s", UsageMessage);
 			exit(EXIT_SUCCESS);
 		} else if (opts && (args[i][0] == QLatin1Char('-'))) {
@@ -269,7 +269,7 @@ std::optional<CommandLine> ParseCommandLine(const QStringList &args) {
 		} else {
 
 			// this just essentially checks that the path is sane
-			const PathInfo fi  = parseFilename(args[i]);
+			const PathInfo fi  = ParseFilename(args[i]);
 			const QString path = fi.pathname + fi.filename;
 
 			int isTabbed;
@@ -286,16 +286,16 @@ std::optional<CommandLine> ParseCommandLine(const QStringList &args) {
 			}
 
 			QVariantMap file;
-			file[QLatin1String("line_number")] = lineNum;
-			file[QLatin1String("read")]        = read;
-			file[QLatin1String("create")]      = create;
-			file[QLatin1String("iconic")]      = iconic;
-			file[QLatin1String("is_tabbed")]   = isTabbed;
-			file[QLatin1String("path")]        = path;
-			file[QLatin1String("toDoCommand")] = toDoCommand;
-			file[QLatin1String("langMode")]    = langMode;
-			file[QLatin1String("geometry")]    = geometry;
-			file[QLatin1String("wait")]        = ServerPreferences.waitForClose;
+			file[QStringLiteral("line_number")] = lineNum;
+			file[QStringLiteral("read")]        = read;
+			file[QStringLiteral("create")]      = create;
+			file[QStringLiteral("iconic")]      = iconic;
+			file[QStringLiteral("is_tabbed")]   = isTabbed;
+			file[QStringLiteral("path")]        = path;
+			file[QStringLiteral("toDoCommand")] = toDoCommand;
+			file[QStringLiteral("langMode")]    = langMode;
+			file[QStringLiteral("geometry")]    = geometry;
+			file[QStringLiteral("wait")]        = ServerPreferences.waitForClose;
 			commandData.append(file);
 
 			++fileCount;
@@ -314,16 +314,16 @@ std::optional<CommandLine> ParseCommandLine(const QStringList &args) {
 	if (!toDoCommand.isEmpty() || fileCount == 0) {
 
 		QVariantMap file;
-		file[QLatin1String("line_number")] = 0;
-		file[QLatin1String("read")]        = 0;
-		file[QLatin1String("create")]      = 0;
-		file[QLatin1String("iconic")]      = iconic;
-		file[QLatin1String("is_tabbed")]   = tabbed;
-		file[QLatin1String("path")]        = QString();
-		file[QLatin1String("toDoCommand")] = toDoCommand;
-		file[QLatin1String("langMode")]    = langMode;
-		file[QLatin1String("geometry")]    = geometry;
-		file[QLatin1String("wait")]        = ServerPreferences.waitForClose;
+		file[QStringLiteral("line_number")] = 0;
+		file[QStringLiteral("read")]        = 0;
+		file[QStringLiteral("create")]      = 0;
+		file[QStringLiteral("iconic")]      = iconic;
+		file[QStringLiteral("is_tabbed")]   = tabbed;
+		file[QStringLiteral("path")]        = QString();
+		file[QStringLiteral("toDoCommand")] = toDoCommand;
+		file[QStringLiteral("langMode")]    = langMode;
+		file[QStringLiteral("geometry")]    = geometry;
+		file[QStringLiteral("wait")]        = ServerPreferences.waitForClose;
 		commandData.append(file);
 	}
 
@@ -346,7 +346,7 @@ std::optional<CommandLine> ParseCommandLine(const QStringList &args) {
  * @param args The command line arguments.
  * @return CommandLine structure containing the command and arguments.
  */
-CommandLine processCommandLine(const QStringList &args) {
+CommandLine ProcessCommandLine(const QStringList &args) {
 
 	// Convert command line arguments into a command string for the server
 	if (std::optional<CommandLine> commandLine = ParseCommandLine(args)) {
@@ -448,14 +448,14 @@ int main(int argc, char *argv[]) {
 	// Read the application resources into the Preferences data structure
 	const QString filename = Settings::ConfigFile();
 	QSettings settings(filename, QSettings::IniFormat);
-	settings.beginGroup(QLatin1String("Server"));
+	settings.beginGroup(QStringLiteral("Server"));
 
-	ServerPreferences.autoStart    = settings.value(QLatin1String("nc.autoStart"), true).toBool();
-	ServerPreferences.serverCmd    = settings.value(QLatin1String("nc.serverCommand"), QLatin1String("nedit-ng -server")).toString();
-	ServerPreferences.serverName   = settings.value(QLatin1String("nc.serverName"), QString()).toString();
-	ServerPreferences.waitForClose = settings.value(QLatin1String("nc.waitForClose"), false).toBool();
-	ServerPreferences.timeOut      = settings.value(QLatin1String("nc.timeOut"), 10).toInt();
-	CommandLine commandLine        = processCommandLine(QCoreApplication::arguments());
+	ServerPreferences.autoStart    = settings.value(QStringLiteral("nc.autoStart"), true).toBool();
+	ServerPreferences.serverCmd    = settings.value(QStringLiteral("nc.serverCommand"), QStringLiteral("nedit-ng -server")).toString();
+	ServerPreferences.serverName   = settings.value(QStringLiteral("nc.serverName"), QString()).toString();
+	ServerPreferences.waitForClose = settings.value(QStringLiteral("nc.waitForClose"), false).toBool();
+	ServerPreferences.timeOut      = settings.value(QStringLiteral("nc.timeOut"), 10).toInt();
+	CommandLine commandLine        = ProcessCommandLine(QCoreApplication::arguments());
 
 	/* Make sure that the time out unit is at least 1 second and not too
 	   large either (overflow!). */
@@ -473,7 +473,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	if (!ServerPreferences.serverName.isEmpty()) {
-		commandLine.arguments.append(QLatin1String("-svrname"));
+		commandLine.arguments.append(QStringLiteral("-svrname"));
 		commandLine.arguments.append(ServerPreferences.serverName);
 	}
 
