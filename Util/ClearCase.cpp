@@ -45,11 +45,7 @@ QString GetVersionExtendedPath(const QString &fullname) {
  */
 QString GetViewTag() {
 
-	static bool ClearCaseViewTagFound = false;
-	static QString ClearCaseViewRoot;
-	static QString ClearCaseViewTag;
-
-	if (!ClearCaseViewTagFound) {
+	static QString ClearCaseViewTag = []() {
 		/* Extract the view name from the CLEARCASE_ROOT environment variable */
 		const QString ClearCaseViewRoot = GetEnvironmentVariable("CLEARCASE_ROOT");
 		if (!ClearCaseViewRoot.isNull()) {
@@ -58,11 +54,9 @@ QString GetViewTag() {
 				ClearCaseViewTag = ClearCaseViewRoot.mid(tagPtr + 1);
 			}
 		}
-	}
-	/* If we don't find it first time, we will never find it, so may just as
-	 * well say that we have found it.
-	 */
-	ClearCaseViewTagFound = true;
+		return ClearCaseViewRoot;
+	}();
+
 	return ClearCaseViewTag;
 }
 

@@ -140,11 +140,13 @@ QString BuildCompiler() {
 #elif defined(Q_CC_GNU)
 	return QStringLiteral("GCC ") + QStringLiteral(__VERSION__);
 #elif defined(Q_CC_MSVC)
-	if (_MSC_VER > 1999) return QLatin1String("MSVC <unknown>");
-	if (_MSC_VER >= 1930) return QLatin1String("MSVC 2022");
-	if (_MSC_VER >= 1920) return QLatin1String("MSVC 2019");
-	if (_MSC_VER >= 1910) return QLatin1String("MSVC 2017");
-	if (_MSC_VER >= 1900) return QLatin1String("MSVC 2015");
+	// clang-format off
+	if constexpr (_MSC_VER > 1999) return QLatin1String("MSVC <unknown>");
+	else if constexpr (_MSC_VER >= 1930) return QLatin1String("MSVC 2022");
+	else if constexpr (_MSC_VER >= 1920) return QLatin1String("MSVC 2019");
+	else if constexpr (_MSC_VER >= 1910) return QLatin1String("MSVC 2017");
+	else if constexpr (_MSC_VER >= 1900) return QLatin1String("MSVC 2015");
+	// clang-format on
 #else
 	return QStringLiteral("<unknown compiler>");
 #endif
