@@ -379,7 +379,7 @@ uint8_t *Insert(uint8_t op, const uint8_t *insert_pos, uint32_t min, uint32_t ma
 	}
 
 	pContext.Code.insert(pContext.Code.begin() + offset, new_node, ptr);
-	return &pContext.Code[offset]; // Return a pointer to the start of the code moved.
+	return &pContext.Code[static_cast<size_t>(offset)]; // Return a pointer to the start of the code moved.
 }
 
 /**
@@ -1070,7 +1070,7 @@ uint8_t *Atom(int *flag_param, Range &range_param) {
 uint8_t *Piece(int *flag_param, Range &range_param) {
 
 	uint8_t *next;
-	uint32_t min_max[2] = {0, REG_INFINITY};
+	uint16_t min_max[2] = {0, REG_INFINITY};
 	int flags_local;
 	int i;
 	int brace_present    = 0;
@@ -1829,7 +1829,7 @@ uint8_t *Chunk(int paren, int *flag_param, Range &range_param) {
 			if (pContext.Reg_Parse.peek(1) == ',' || pContext.Reg_Parse.peek(1) == '}') {
 				zero_width++;
 			} else if (pContext.Reg_Parse.peek(1) == '0') {
-				int i = 2;
+				size_t i = 2;
 
 				while (pContext.Reg_Parse.peek(i) == '0') {
 					i++;

@@ -1,5 +1,6 @@
 
 #include "nedit.h"
+#include "DialogAbout.h"
 #include "Main.h"
 
 #include <QApplication>

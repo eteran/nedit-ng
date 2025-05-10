@@ -3,41 +3,54 @@
 #define UTILS_H_
 
 #include <cctype>
+#include <type_traits>
 
-inline int safe_isascii(unsigned char ch) noexcept {
+template <class Integer>
+using IsInteger = std::enable_if_t<std::is_integral<Integer>::value>;
+
+template <class Ch, class = IsInteger<Ch>>
+int safe_isascii(Ch ch) noexcept {
 	return static_cast<int>(ch) < 0x80;
 }
 
-inline int safe_isalnum(unsigned char ch) noexcept {
-	return std::isalnum(ch);
+template <class Ch, class = IsInteger<Ch>>
+int safe_isalnum(Ch ch) noexcept {
+	return std::isalnum(static_cast<unsigned char>(ch));
 }
 
-inline int safe_isspace(unsigned char ch) noexcept {
-	return std::isspace(ch);
+template <class Ch, class = IsInteger<Ch>>
+int safe_isspace(Ch ch) noexcept {
+	return std::isspace(static_cast<unsigned char>(ch));
 }
 
-inline int safe_isalpha(unsigned char ch) noexcept {
-	return std::isalpha(ch);
+template <class Ch, class = IsInteger<Ch>>
+int safe_isalpha(Ch ch) noexcept {
+	return std::isalpha(static_cast<unsigned char>(ch));
 }
 
-inline int safe_isdigit(unsigned char ch) noexcept {
-	return std::isdigit(ch);
+template <class Ch, class = IsInteger<Ch>>
+int safe_isdigit(Ch ch) noexcept {
+	return std::isdigit(static_cast<unsigned char>(ch));
 }
 
-inline int safe_islower(unsigned char ch) noexcept {
-	return std::islower(ch);
+template <class Ch, class = IsInteger<Ch>>
+int safe_islower(Ch ch) noexcept {
+	return std::islower(static_cast<unsigned char>(ch));
 }
 
-inline int safe_isupper(unsigned char ch) noexcept {
-	return std::isupper(ch);
+template <class Ch, class = IsInteger<Ch>>
+int safe_isupper(Ch ch) noexcept {
+	return std::isupper(static_cast<unsigned char>(ch));
 }
 
-inline int safe_tolower(unsigned char ch) noexcept {
-	return std::tolower(ch);
+template <class Ch, class = IsInteger<Ch>>
+int safe_tolower(Ch ch) noexcept {
+	return std::tolower(static_cast<unsigned char>(ch));
 }
 
-inline int safe_toupper(unsigned char ch) noexcept {
-	return std::toupper(ch);
+template <class Ch, class = IsInteger<Ch>>
+int safe_toupper(Ch ch) noexcept {
+	return std::toupper(static_cast<unsigned char>(ch));
 }
 
 #endif

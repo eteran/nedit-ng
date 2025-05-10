@@ -303,8 +303,6 @@ if(TARGET_COMPILER_MSVC)
 	target_compile_definitions(nedit-ng
 		PUBLIC -D_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING
 	)
-
-        target_compile_options(nedit-ng PRIVATE /W4)
 endif()
 
 include(GNUInstallDirs)
