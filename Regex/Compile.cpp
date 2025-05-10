@@ -1071,9 +1071,9 @@ uint8_t *Piece(int *flag_param, Range &range_param) {
 	uint16_t min_max[2] = {0, REG_INFINITY};
 	int flags_local;
 	int i;
-	int brace_present       = 0;
-	bool comma_present      = false;
-	size_t digit_present[2] = {0, 0};
+	int brace_present     = 0;
+	bool comma_present    = false;
+	bool digit_present[2] = {false, false};
 	Range range_local;
 
 	uint8_t *ret_val = Atom(&flags_local, range_local);
@@ -1117,7 +1117,7 @@ uint8_t *Piece(int *flag_param, Range &range_param) {
 
 			if (auto digits = pContext.Reg_Parse.match(std::regex("[0-9]+"))) {
 
-				digit_present[i] = digits->size();
+				digit_present[i] = digits->size() != 0;
 
 				const char *ptr = digits->data();
 				auto result     = std::from_chars(ptr, ptr + digits->size(), min_max[i]);
